@@ -1,1 +1,28 @@
-// Intentionally empty. Initial analysis will generate this automatically.
+Sections:
+	.init       type:code align:4
+	.text       type:code align:16
+	.over       type:code align:8
+	.ctors      type:rodata align:1
+	.dtors      type:rodata align:1
+	.rodata     type:rodata align:8
+	.data       type:data align:32
+	.bss        type:bss align:32
+	.sdata      type:data align:8
+	.sbss       type:bss align:8
+	.sdata2     type:rodata align:8
+
+prodg_fixes.cpp:
+	.ctors      start:0x803C8B60 end:0x803C8B64 skip
+	.dtors      start:0x803C8C40 end:0x803C8C44 skip
+	.sdata2     start:0x80500C98 end:0x80500CA0 skip
+
+zAI.cpp:
+	.init       start:0x80003100 end:0x800034A0
+	.text       start:0x800034A0 end:0x80045E3C
+	.over       start:0x803A4208 end:0x803C6A3C
+	.ctors      start:0x803C8B64 end:0x803C8C3C
+	.dtors      start:0x803C8C44 end:0x803C8C5C
+	.rodata     start:0x803C8C60 end:0x803D0710
+	.data       start:0x80415180 end:0x804156F4
+	.bss        start:0x80456560 end:0x804575C0
+	.sdata      start:0x804FEDC0 end:0x804FEDD0

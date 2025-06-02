@@ -59,7 +59,7 @@ class Object:
             "extra_clang_flags": [],
             "host": None,
             "lib": None,
-            "mw_version": None,
+            "toolchain_version": None,
             "progress_category": None,
             "scratch_preset_id": None,
             "shift_jis": None,
@@ -92,7 +92,7 @@ class Object:
         set_default("asflags", config.asflags)
         set_default("asm_dir", config.asm_dir)
         set_default("host", False)
-        set_default("mw_version", config.linker_version)
+        set_default("toolchain_version", config.linker_version)
         set_default("scratch_preset_id", config.scratch_preset_id)
         set_default("shift_jis", config.shift_jis)
         set_default("src_dir", config.src_dir)
@@ -421,7 +421,7 @@ def generate_build_ninja(
     n.variable("ldflags", make_flags_str(config.ldflags))
     if config.linker_version is None:
         sys.exit("ProjectConfig.linker_version missing")
-    n.variable("mw_version", Path(config.linker_version))
+    n.variable("toolchain_version", Path(config.linker_version))
     n.newline()
 
     ###
@@ -602,7 +602,7 @@ def generate_build_ninja(
     ###
     # Build rules
     ###
-    compiler_path = compilers / "$mw_version"
+    compiler_path = compilers / "$toolchain_version"
 
     # MWCC
     mwcc = compiler_path / "mwcceppc.exe"
@@ -613,10 +613,24 @@ def generate_build_ninja(
     mwcc_sjis_cmd = f"{wrapper_cmd}{sjiswrap} {mwcc} $cflags -MMD -c $in -o $basedir"
     mwcc_sjis_implicit: List[Optional[Path]] = [*mwcc_implicit, sjiswrap]
 
-    # MWLD
-    mwld = compiler_path / "mwldeppc.exe"
-    mwld_cmd = f"{wrapper_cmd}{mwld} $ldflags -o $out @$out.rsp"
-    mwld_implicit: List[Optional[Path]] = [compilers_implicit or mwld, wrapper_implicit]
+    # NGCCC
+    ngccc = compiler_path / "ngccc.exe"
+    if is_windows():
+        ngccc_cmd = f'cmd /c "set SN_NGC_PATH={os.path.abspath(compiler_path)}&& {ngccc} $cflags -c -o $out $in"'
+    else:
+        ngccc_cmd = f"env SN_NGC_PATH={os.path.abspath(compiler_path)} {wrapper_cmd}{ngccc} $cflags -c -o $out $in"
+    ngccc_implicit: List[Optional[Path]] = [
+        compilers_implicit or ngccc,
+        wrapper_implicit,
+    ]
+
+    # NGCLD
+    ngcld = compiler_path / "ngcld.exe"
+    ngcld_cmd = f"{wrapper_cmd}{ngcld} $ldflags -o $out @$out.rsp"
+    ngcld_implicit: List[Optional[Path]] = [
+        compilers_implicit or ngcld,
+        wrapper_implicit,
+    ]
 
     # GNU as
     gnu_as = binutils / f"powerpc-eabi-as{EXE}"
@@ -632,11 +646,13 @@ def generate_build_ninja(
         mwcc_sjis_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
         mwcc_implicit.append(transform_dep)
         mwcc_sjis_implicit.append(transform_dep)
+        ngccc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
+        ngccc_implicit.append(transform_dep)
 
     n.comment("Link ELF file")
     n.rule(
         name="link",
-        command=mwld_cmd,
+        command=ngcld_cmd,
         description="LINK $out",
         rspfile="$out.rsp",
         rspfile_content="$in_newline",
@@ -666,6 +682,16 @@ def generate_build_ninja(
         name="mwcc_sjis",
         command=mwcc_sjis_cmd,
         description="MWCC $out",
+        depfile="$basefile.d",
+        deps="gcc",
+    )
+    n.newline()
+
+    n.comment("ProDG build")
+    n.rule(
+        name="prodg",
+        command=ngccc_cmd,
+        description="ProDG $out",
         depfile="$basefile.d",
         deps="gcc",
     )
@@ -785,10 +811,10 @@ def generate_build_ninja(
             n.comment(f"Link {self.name}")
             if self.module_id == 0:
                 elf_path = build_path / f"{self.name}.elf"
-                elf_ldflags = f"$ldflags -lcf {serialize_path(self.ldscript)}"
+                elf_ldflags = f"$ldflags"
                 if config.generate_map:
                     elf_map = map_path(elf_path)
-                    elf_ldflags += f" -map {serialize_path(elf_map)}"
+                    elf_ldflags += f" -Map {serialize_path(elf_map)}"
                 else:
                     elf_map = None
                 n.build(
@@ -797,7 +823,7 @@ def generate_build_ninja(
                     inputs=self.inputs,
                     implicit=[
                         self.ldscript,
-                        *mwld_implicit,
+                        *ngcld_implicit,
                     ],
                     implicit_outputs=elf_map,
                     variables={"ldflags": elf_ldflags},
@@ -807,7 +833,7 @@ def generate_build_ninja(
                 preplf_path = build_path / self.name / f"{self.name}.preplf"
                 plf_path = build_path / self.name / f"{self.name}.plf"
                 preplf_ldflags = "$ldflags -sdata 0 -sdata2 0 -r"
-                plf_ldflags = f"$ldflags -sdata 0 -sdata2 0 -r1 -lcf {serialize_path(self.ldscript)}"
+                plf_ldflags = f"$ldflags -sdata 0 -sdata2 0 -r1"
                 if self.entry:
                     plf_ldflags += f" -m {self.entry}"
                     # -strip_partial is only valid with -m
@@ -815,9 +841,9 @@ def generate_build_ninja(
                         plf_ldflags += " -strip_partial"
                 if config.generate_map:
                     preplf_map = map_path(preplf_path)
-                    preplf_ldflags += f" -map {serialize_path(preplf_map)}"
+                    preplf_ldflags += f" -Map {serialize_path(preplf_map)}"
                     plf_map = map_path(plf_path)
-                    plf_ldflags += f" -map {serialize_path(plf_map)}"
+                    plf_ldflags += f" -Map {serialize_path(plf_map)}"
                 else:
                     preplf_map = None
                     plf_map = None
@@ -825,7 +851,7 @@ def generate_build_ninja(
                     outputs=preplf_path,
                     rule="link",
                     inputs=self.inputs,
-                    implicit=mwld_implicit,
+                    implicit=ngcld_implicit,
                     implicit_outputs=preplf_map,
                     variables={"ldflags": preplf_ldflags},
                     order_only="post-compile",
@@ -834,7 +860,7 @@ def generate_build_ninja(
                     outputs=plf_path,
                     rule="link",
                     inputs=self.inputs,
-                    implicit=[self.ldscript, preplf_path, *mwld_implicit],
+                    implicit=[self.ldscript, preplf_path, *ngcld_implicit],
                     implicit_outputs=plf_map,
                     variables={"ldflags": plf_ldflags},
                     order_only="post-compile",
@@ -866,31 +892,30 @@ def generate_build_ninja(
                 # Ensure extra_cflags is a unique instance,
                 # and insert into there to avoid modifying shared sets of flags
                 extra_cflags = obj.options["extra_cflags"] = list(extra_cflags)
+                extra_cflags.insert(0, "-x")
                 if file_is_cpp(src_path):
-                    extra_cflags.insert(0, "-lang=c++")
+                    extra_cflags.insert(1, "c++")
                 else:
-                    extra_cflags.insert(0, "-lang=c")
+                    extra_cflags.insert(1, "c")
 
             all_cflags = cflags + extra_cflags
             cflags_str = make_flags_str(all_cflags)
-            used_compiler_versions.add(obj.options["mw_version"])
+            used_compiler_versions.add(obj.options["toolchain_version"])
 
-            # Add MWCC build rule
+            # Add ProDG build rule
             lib_name = obj.options["lib"]
             n.comment(f"{obj.name}: {lib_name} (linked {obj.completed})")
             n.build(
                 outputs=obj.src_obj_path,
-                rule="mwcc_sjis" if obj.options["shift_jis"] else "mwcc",
+                rule="prodg",
                 inputs=src_path,
                 variables={
-                    "mw_version": Path(obj.options["mw_version"]),
+                    "toolchain_version": Path(obj.options["toolchain_version"]),
                     "cflags": cflags_str,
-                    "basedir": os.path.dirname(obj.src_obj_path),
+                    "basedir": str(obj.src_obj_path),
                     "basefile": obj.src_obj_path.with_suffix(""),
                 },
-                implicit=(
-                    mwcc_sjis_implicit if obj.options["shift_jis"] else mwcc_implicit
-                ),
+                implicit=ngccc_implicit,
                 order_only="pre-compile",
             )
 
@@ -1032,16 +1057,16 @@ def generate_build_ninja(
                 link_steps.append(module_link_step)
         n.newline()
 
-        # Check if all compiler versions exist
-        for mw_version in used_compiler_versions:
-            mw_path = compilers / mw_version / "mwcceppc.exe"
-            if config.compilers_path and not os.path.exists(mw_path):
-                sys.exit(f"Compiler {mw_path} does not exist")
+        # # Check if all compiler versions exist
+        # for toolchain_version in used_compiler_versions:
+        #     mw_path = compilers / toolchain_version / "mwcceppc.exe"
+        #     if config.compilers_path and not os.path.exists(mw_path):
+        #         sys.exit(f"Compiler {mw_path} does not exist")
 
-        # Check if linker exists
-        mw_path = compilers / str(config.linker_version) / "mwldeppc.exe"
-        if config.compilers_path and not os.path.exists(mw_path):
-            sys.exit(f"Linker {mw_path} does not exist")
+        # # Check if linker exists
+        # mw_path = compilers / str(config.linker_version) / "mwldeppc.exe"
+        # if config.compilers_path and not os.path.exists(mw_path):
+        #     sys.exit(f"Linker {mw_path} does not exist")
 
         # Add all build steps needed before we link and after compiling objects
         write_custom_step("post-compile", "pre-compile")
@@ -1462,6 +1487,11 @@ def generate_objdiff_config(
         "Wii/1.5": "mwcc_43_188",
         "Wii/1.6": "mwcc_43_202",
         "Wii/1.7": "mwcc_43_213",
+        "ProDG/3.5": "prodg_35",
+        "ProDG/3.5b140": "prodg_35_b140",
+        "ProDG/3.7": "prodg_37",
+        "ProDG/3.8.1": "prodg_381",
+        "ProDG/3.9.3": "prodg_393",
     }
 
     def add_unit(
@@ -1523,9 +1553,11 @@ def generate_objdiff_config(
                 elif value == "nodeferred":
                     reverse_fn_order = False
 
-        compiler_version = COMPILER_MAP.get(obj.options["mw_version"])
+        compiler_version = COMPILER_MAP.get(obj.options["toolchain_version"])
         if compiler_version is None:
-            print(f"Missing scratch compiler mapping for {obj.options['mw_version']}")
+            print(
+                f"Missing scratch compiler mapping for {obj.options['toolchain_version']}"
+            )
         else:
             cflags_str = make_flags_str(all_cflags)
             unit_config["scratch"] = {

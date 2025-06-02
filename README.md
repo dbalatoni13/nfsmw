@@ -1,4 +1,4 @@
-Need for Speed: Most Wanted  
+Need for Speed: Most Wanted (GC)
 [![Build Status]][actions] [![Code Progress]][progress] [![Data Progress]][progress] [![Discord Badge]][discord]
 =============
 
@@ -6,11 +6,11 @@ Need for Speed: Most Wanted
 [actions]: https://github.com/dbalatoni13/nfsug/actions/workflows/build.yml
 [Code Progress]: https://decomp.dev/dbalatoni13/nsfmw.svg?mode=shield&measure=code&label=Code
 [Data Progress]: https://decomp.dev/dbalatoni13/nsfmw.svg?mode=shield&measure=data&label=Data
-[progress]: https://decomp.dev/zeldaret/tww
+[progress]: https://decomp.dev/dbalatoni13/nfsmw
 [Discord Badge]: https://img.shields.io/discord/458389297192632330?color=%237289DA&logo=discord&logoColor=%23FFFFFF
-[discord]: https://discord.gg/bBEqpmSV
+[discord]: https://discord.gg/sbYEXeMK
 
-A work-in-progress decompilation of Need for Speed: Most Wanted.
+A work-in-progress decompilation of the GameCube version of Need for Speed: Most Wanted.
 
 This repository does **not** contain any game assets or assembly whatsoever. An existing copy of the game is required.
 
@@ -64,11 +64,6 @@ sudo xattr -rd com.apple.quarantine '/Applications/Wine Crossover.app'
   git clone https://github.com/my/repo.git
   ```
 
-- Copy your game's disc image to `orig/GAMEID`.
-
-  - Supported formats: ISO (GCM), RVZ, WIA, WBFS, CISO, NFS, GCZ, TGC
-  - After the initial build, the disc image can be deleted to save space.
-
 - Configure:
 
   ```sh
@@ -81,6 +76,12 @@ sudo xattr -rd com.apple.quarantine '/Applications/Wine Crossover.app'
 
   ```sh
   ninja
+  ```
+
+- Extract `NFSMWRELEASE.elf`, copy it into `orig/GOWE69` and convert it into a DOL:
+
+  ```sh
+  ./build/tools/dtk elf2dol ./orig/GOWE69/NFSMWRELEASE.elf ./orig/GOWE69/sys/main.dol
   ```
 
 # Diffing
