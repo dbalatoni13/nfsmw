@@ -1,0 +1,30 @@
+#pragma once
+
+enum PS_ResetOptions {
+  RESET_OPTION_MODULATE = 1,
+  RESET_OPTION_DEFAULT = 0,
+};
+
+enum ePixelShaderLightingMode {
+  NUM_LIGHTING_MODES = 11,
+  LM_DOUBLECHANNEL_NO_LIGHT_AND2VERT = 10,
+  LM_SINGLECHANNEL_FOUR_LIGHTS_FROMVERT = 9,
+  LM_SINGLECHANNEL_THREE_LIGHTS_FROMVERT = 8,
+  LM_SINGLECHANNEL_TWO_LIGHTS_FROMVERT = 7,
+  LM_SINGLECHANNEL_ONE_LIGHT_FROMVERT = 6,
+  LM_SINGLECHANNEL_NO_LIGHT_FROMVERT = 5,
+  LM_SINGLECHANNEL_FOUR_LIGHTS = 4,
+  LM_SINGLECHANNEL_THREE_LIGHTS = 3,
+  LM_SINGLECHANNEL_TWO_LIGHTS = 2,
+  LM_SINGLECHANNEL_ONE_LIGHT = 1,
+  LM_SINGLECHANNEL_NO_LIGHT = 0,
+  LM_ERROR = -1,
+};
+
+int psGouraud(int);
+int psReset(int opt);
+int ps_NoLighting(int bVertexColour, int opt);
+
+int vsReset(int opt);
+int vsResetTexGen(int opt, int stage);
+int vsVtxAttrFmt(int opt);
