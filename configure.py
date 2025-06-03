@@ -275,6 +275,8 @@ config.libs = [
             Object(NonMatching, "Speed/Indep/SourceLists/zWorld2.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zOnline.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zFeOverlay.cpp"),
+
+            Object(NonMatching, "Speed/Indep/Src/Misc/Main.cpp"),
         ],
     },
     {
