@@ -36,3 +36,5 @@ compile_commands.json
 
 symbols/
 decompiled.cpp
+
+tools/elftools
