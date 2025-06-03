@@ -756,7 +756,7 @@ config.libs = [
                 "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSReboot.c",
             ),
             Object(
-                NonMatching,
+                Matching,
                 "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/__ppc_eabi_init.cpp",
             ),
         ],

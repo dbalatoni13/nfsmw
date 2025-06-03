@@ -28,3 +28,6 @@ Speed/Indep/SourceLists/zAI.cpp:
 
 LibSN/crt0.s:
 	.init       start:0x80003100 end:0x80003468
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/__ppc_eabi_init.cpp:
+	.init       start:0x80003468 end:0x8000348C
