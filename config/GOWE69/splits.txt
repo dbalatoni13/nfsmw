@@ -18,13 +18,24 @@ prodg_fixes.cpp:
 
 Speed/Indep/SourceLists/zAI.cpp:
 	.text       start:0x800034A0 end:0x80045E3C
-	.over       start:0x803A4208 end:0x803C6A3C
-	.ctors      start:0x803C8B64 end:0x803C8C3C
-	.dtors      start:0x803C8C44 end:0x803C8C5C
+	.ctors      start:0x803C8B64 end:0x803C8B8C
 	.rodata     start:0x803C8C60 end:0x803D0710
 	.data       start:0x80415180 end:0x804156F4
 	.bss        start:0x80456560 end:0x804575C0
 	.sdata      start:0x804FEDC0 end:0x804FEDD0
+
+Speed/Indep/SourceLists/zEcstasy.cpp:
+	.text       start:0x800F486C end:0x80118248
+	.ctors      start:0x803C8B8C end:0x803C8B90
+	.rodata     start:0x803DF51C end:0x803E4290
+	.data       start:0x8041AB34 end:0x8041B5E4
+	.bss        start:0x80464F28 end:0x804729E0
+
+asd:
+	.text       start:0x8017FE00 end:0x8017FE2C
+	.over       start:0x803A4208 end:0x803C6A3C
+	.ctors      start:0x803C8B90 end:0x803C8C20
+	.dtors      start:0x803C8C44 end:0x803C8C5C
 
 LibSN/crt0.s:
 	.init       start:0x80003100 end:0x80003468

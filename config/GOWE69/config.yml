@@ -7,3 +7,4 @@ splits: config/GOWE69/splits.txt
 # Change this to match the linker verison.
 # See config.example.yml for a list.
 mw_comment_version: 11
+quick_analysis: true
