@@ -1,6 +1,4 @@
-__start = .init:0x80003100; // type:label scope:global
-fn_80003100 = .init:0x80003100; // type:function size:0x154
-lbl_80003244 = .init:0x80003244; // type:label
+__start = .init:0x80003100; // type:function size:0x154 scope:global
 fn_80003254 = .init:0x80003254; // type:function size:0x6C
 fn_800032C0 = .init:0x800032C0; // type:function size:0x40
 fn_80003300 = .init:0x80003300; // type:function size:0x28
@@ -8,7 +6,7 @@ lbl_80003328 = .init:0x80003328; // type:label align:8 data:double
 lbl_8000332C = .init:0x8000332C; // type:label
 fn_80003334 = .init:0x80003334; // type:function size:0x130
 __premain = .init:0x80003464; // type:label scope:global
-fn_80003464 = .init:0x80003464; // type:function size:0x4
+__init_vm = .init:0x80003464; // type:function size:0x4
 __init_hardware = .init:0x80003468; // type:function size:0x24 scope:global
 gcc2_compiled. = .text:0x800034A0; // type:label scope:local
 __16AITrafficManagerGQ23Sim5Param = .text:0x800034A0; // type:function size:0x6C4 scope:global
