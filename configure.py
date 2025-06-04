@@ -275,6 +275,30 @@ config.libs = [
             Object(NonMatching, "Speed/Indep/SourceLists/zWorld2.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zOnline.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zFeOverlay.cpp"),
+
+            Object(NonMatching, "Speed/Indep/Src/Misc/Main.cpp"),
+        ],
+    },
+    {
+        "lib": "libsn",
+        "toolchain_version": config.linker_version,
+        "cflags": cflags_runtime,
+        "host": False,
+        "progress_category": "libs",  # str | List[str]
+        "objects": [
+            Object(NonMatching, "LibSN/crt0.s"),
+            Object(NonMatching, "LibSN/cvtll.c"),
+            Object(NonMatching, "LibSN/debug.c"),
+            Object(NonMatching, "LibSN/dummy.c"),
+            Object(NonMatching, "LibSN/fileserver.c"),
+            Object(NonMatching, "LibSN/FSasync.c"),
+            Object(NonMatching, "LibSN/inituser.c"),
+            Object(NonMatching, "LibSN/ppcdown.c"),
+            Object(NonMatching, "LibSN/prof.c"),
+            Object(NonMatching, "LibSN/proview.c"),
+            Object(NonMatching, "LibSN/sndvd.c"),
+            Object(NonMatching, "LibSN/tealeaf.c"),
+            Object(NonMatching, "LibSN/tors.c"),
         ],
     },
     {
@@ -756,7 +780,7 @@ config.libs = [
                 "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSReboot.c",
             ),
             Object(
-                NonMatching,
+                Matching,
                 "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/__ppc_eabi_init.cpp",
             ),
         ],
