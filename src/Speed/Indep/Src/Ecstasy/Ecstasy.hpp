@@ -54,29 +54,31 @@ struct eSolid : public eSolidPlatInterface, public bTNode<eSolid> {
 };
 
 struct eView : public eViewPlatInterface {
-  // total size: 0x54
-  EVIEW_ID ID;      // offset 0x4, size 0x4
-  char Active;      // offset 0x8, size 0x1
-  char LetterBox;   // offset 0x9, size 0x1
-  char pad0;        // offset 0xA, size 0x1
-  char pad1;        // offset 0xB, size 0x1
-  float H;          // offset 0xC, size 0x4
-  float NearZ;      // offset 0x10, size 0x4
-  float FarZ;       // offset 0x14, size 0x4
-  float FovBias;    // offset 0x18, size 0x4
+  // total size: 0x68
+  EVIEW_ID ID; // offset 0x4, size 0x4
+  char Active; // offset 0x8, size 0x1
+  char LetterBox; // offset 0x9, size 0x1
+  char pad0; // offset 0xA, size 0x1
+  char pad1; // offset 0xB, size 0x1
+  float H; // offset 0xC, size 0x4
+  float NearZ; // offset 0x10, size 0x4
+  float FarZ; // offset 0x14, size 0x4
+  float FovBias; // offset 0x18, size 0x4
   float FovDegrees; // offset 0x1C, size 0x4
-  // int BlackAndWhiteMode;               // offset 0x20, size 0x4
-  int PixelMinSize;                    // offset 0x24, size 0x4
-  bVector3 ViewDirection;              // offset 0x28, size 0x10
-  Camera *pCamera;                     // offset 0x34, size 0x4
-  bTList<CameraMover> CameraMoverList; // offset 0x38, size 0x8
-  unsigned int NumCopsInView;          // offset 0x40, size 0x4
-  // unsigned int NumCopsTotal;           // offset 0x44, size 0x4
-  // unsigned int NumCopsCherry;                     // offset 0x48, size 0x4
-  struct TextureInfo *pBlendMask;                 // offset 0x4C, size 0x4
-  struct eDynamicLightContext *WorldLightContext; // offset 0x50, size 0x4
-  struct eRenderTarget *RenderTargetTable[1];     // offset 0x4C, size 0x4
-  unsigned int pad50;
+  int BlackAndWhiteMode; // offset 0x20, size 0x4
+  int PixelMinSize; // offset 0x24, size 0x4
+  bVector3 ViewDirection; // offset 0x28, size 0x10
+  Camera * pCamera; // offset 0x38, size 0x4
+  bTList<CameraMover> CameraMoverList; // offset 0x3C, size 0x8
+  unsigned int NumCopsInView; // offset 0x44, size 0x4
+  unsigned int NumCopsTotal; // offset 0x48, size 0x4
+  unsigned int NumCopsCherry; // offset 0x4C, size 0x4
+  TextureInfo * pBlendMask; // offset 0x50, size 0x4
+  struct eDynamicLightContext * WorldLightContext; // offset 0x54, size 0x4
+  eRenderTarget * RenderTargetTable[1]; // offset 0x58, size 0x4
+  struct ScreenEffectDB * ScreenEffects; // offset 0x5C, size 0x4
+  struct Rain * Precipitation; // offset 0x60, size 0x4
+  struct FacePixelation * facePixelation; // offset 0x64, size 0x4
 
   eView();
   ~eView();
