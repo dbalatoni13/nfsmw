@@ -125,9 +125,6 @@ config = ProjectConfig()
 config.version = str(args.version)
 version_num = VERSIONS.index(config.version)
 
-if version_num == 0:
-    args.debug = True
-
 # Apply arguments
 config.build_dir = args.build_dir
 config.dtk_path = args.dtk
@@ -176,6 +173,7 @@ config.scratch_preset_id = None
 # Generally leave untouched, with overrides added below.
 cflags_base = [
     "-O2",
+    "-gdwarf",
     # "-Wall",
     "-I include",
     "-I src",
@@ -189,12 +187,11 @@ cflags_base = [
 
 # Debug flags
 if args.debug:
-    # Or -sym dwarf-2 for Wii compilers
-    cflags_base.extend(["-gdwarf", "-DDEBUG=1"])
+    cflags_base.append("-DDEBUG=1")
 else:
     cflags_base.append("-DNDEBUG=1")
 
-cflags_game = [*cflags_base, "-mps-nodf", "-mfast-cast"]
+cflags_game = [*cflags_base, "-mps-nodf", "-mfast-cast", "-G3"]
 
 # Metrowerks library flags
 cflags_runtime = [*cflags_base]
@@ -275,30 +272,6 @@ config.libs = [
             Object(NonMatching, "Speed/Indep/SourceLists/zWorld2.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zOnline.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zFeOverlay.cpp"),
-
-            Object(NonMatching, "Speed/Indep/Src/Misc/Main.cpp"),
-        ],
-    },
-    {
-        "lib": "libsn",
-        "toolchain_version": config.linker_version,
-        "cflags": cflags_runtime,
-        "host": False,
-        "progress_category": "libs",  # str | List[str]
-        "objects": [
-            Object(NonMatching, "LibSN/crt0.s"),
-            Object(NonMatching, "LibSN/cvtll.c"),
-            Object(NonMatching, "LibSN/debug.c"),
-            Object(NonMatching, "LibSN/dummy.c"),
-            Object(NonMatching, "LibSN/fileserver.c"),
-            Object(NonMatching, "LibSN/FSasync.c"),
-            Object(NonMatching, "LibSN/inituser.c"),
-            Object(NonMatching, "LibSN/ppcdown.c"),
-            Object(NonMatching, "LibSN/prof.c"),
-            Object(NonMatching, "LibSN/proview.c"),
-            Object(NonMatching, "LibSN/sndvd.c"),
-            Object(NonMatching, "LibSN/tealeaf.c"),
-            Object(NonMatching, "LibSN/tors.c"),
         ],
     },
     {
