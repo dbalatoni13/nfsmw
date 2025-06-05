@@ -33,8 +33,19 @@ Speed/Indep/SourceLists/zEcstasy.cpp:
 
 asd:
 	.text       start:0x8017FE00 end:0x8017FE2C
+	.ctors      start:0x803C8B90 end:0x803C8BB0
+
+Speed/Indep/SourceLists/zMisc.cpp:
+	.text       start:0x801FAB64 end:0x8020DEA0
+	.ctors      start:0x803C8BB0 end:0x803C8BB4
+	.rodata     start:0x803F6638 end:0x803F9804
+	.data       start:0x8041E598 end:0x8041EFE8
+	.bss        start:0x8047FEA4 end:0x804801A4
+
+asd2:
+	.text       start:0x8020DEF0 end:0x803A30AC
 	.over       start:0x803A4208 end:0x803C6A3C
-	.ctors      start:0x803C8B90 end:0x803C8C20
+	.ctors      start:0x803C8BB4 end:0x803C8C20
 	.dtors      start:0x803C8C44 end:0x803C8C5C
 
 LibSN/crt0.s:
