@@ -27,9 +27,11 @@ struct SlotPool : public bTNode<SlotPool> {
   int TotalNumSlots;         // offset 0x2C, size 0x4
   SlotPoolEntry Slots[1];    // offset 0x30, size 0x4
 
-  void SetFlag(SlotPoolFlags flag);
+  void SetFlag(SlotPoolFlags flag) {}
 
-  void ClearFlag(SlotPoolFlags flag) { Flags = (SlotPoolFlags)(((int)Flags) & ~flag); }
+  void ClearFlag(SlotPoolFlags flag) {
+    Flags = static_cast<SlotPoolFlags>((static_cast<int>(Flags)) & ~flag);
+  }
 
   SlotPoolFlags GetFlags();
 

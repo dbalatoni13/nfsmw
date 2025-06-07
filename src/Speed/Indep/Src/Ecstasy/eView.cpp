@@ -2,9 +2,11 @@
 #include "EcstasyData.hpp"
 #include "Speed/GameCube/Src/Ecstasy/eViewPlat.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bVector.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-eView eViews[16];
+eView eViews[22];
 
 eView::eView() {
   bMemSet(this, 0, sizeof(*this));
@@ -12,15 +14,14 @@ eView::eView() {
   this->FovBias = 1.0f;
   this->SetID(this - eViews);
   this->SetPlatInfo(eViewPlatInterface::GimmeMyViewPlatInfo(this->ID));
+  this->PixelMinSize = 4;
+  this->ScreenEffects = nullptr;
+  this->Precipitation = nullptr;
+  this->facePixelation = nullptr;
 }
-
-eView::~eView() {}
 
 eVisibleState eView::GetVisibleState(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world) {
   eVisibleState vis_state = this->GetVisibleStateSB(aabb_min, aabb_max, local_world);
-  if (vis_state == EVISIBLESTATE_PARTIAL) {
-    this->GetVisibleStateGB(aabb_min, aabb_max, local_world);
-  }
 }
 
 eVisibleState eView::GetVisibleState(eModel *model, bMatrix4 *local_world) {
@@ -33,10 +34,10 @@ eVisibleState eView::GetVisibleState(eModel *model, bMatrix4 *local_world) {
 int eView::GetPixelSize(float radius, float distance) {
   float pixel_size;
 
-  if (distance > radius / 2) {
+  if (GT(distance, radius / 2.0f)) {
     pixel_size = (radius * this->H) / distance;
   } else {
-    pixel_size = 2 * this->H;
+    pixel_size = 2.0f * this->H;
   }
   return pixel_size;
 }
@@ -50,12 +51,12 @@ int eView::GetPixelSize(const bVector3 *position, float radius) {
   float dir_z = position->z - cam_position->z;
   float pixel_size;
 
-  if (dir_x * cam_direction->x + dir_y * cam_direction->y + dir_z * cam_direction->z < -radius) {
+  if (LT(dir_x * cam_direction->x + dir_y * cam_direction->y + dir_z * cam_direction->z, -radius)) {
     return 0;
   } else {
-    float distance_ahead = sqrtf(dir_x * dir_x + dir_y * dir_y + dir_z * dir_z);
+    float distance_ahead = bSqrt(dir_x * dir_x + dir_y * dir_y + dir_z * dir_z);
     float distance_away = distance_ahead - radius;
-    if (distance_away > radius / 2) {
+    if (GT(distance_away, radius / 2)) {
       pixel_size = (radius * this->H) / distance_away;
     } else {
       pixel_size = 2 * this->H;
@@ -68,6 +69,7 @@ int eView::GetPixelSize(const bVector3 *bbox_min, const bVector3 *bbox_max) {
   Camera *camera = this->GetCamera();
   bVector3 *cam_position = camera->GetPosition();
   bVector3 *cam_direction = camera->GetDirection();
+  // TODO
   float pos_x = bbox_min->x;
   float pos_y = bbox_min->y;
   float pos_z = bbox_min->z;
@@ -82,13 +84,13 @@ int eView::GetPixelSize(const bVector3 *bbox_min, const bVector3 *bbox_max) {
   float dir_z = pos_z - cam_position->z;
   float pixel_size;
 
-  if (dir_x * cam_direction->x + dir_y * cam_direction->y + dir_z * cam_direction->z < -radius) {
+  if (LT(dir_x * cam_direction->x + dir_y * cam_direction->y + dir_z * cam_direction->z, -radius)) {
     return 0;
   } else {
-    float distance_ahead = sqrtf(dir_x * dir_x + dir_y * dir_y + dir_z * dir_z);
+    float distance_ahead = bSqrt(dir_x * dir_x + dir_y * dir_y + dir_z * dir_z);
     float distance_away = distance_ahead - radius;
     rad_y = this->H;
-    if (distance_away > radius) {
+    if (GT(distance_away, radius)) {
       rad_y = (radius * this->H) / distance_away;
     }
     pixel_size = rad_y;
@@ -96,4 +98,12 @@ int eView::GetPixelSize(const bVector3 *bbox_min, const bVector3 *bbox_max) {
   return pixel_size;
 }
 
-eView *eGetView(int view_id) { return &eViews[view_id]; }
+void eView::AttachCameraMover(CameraMover *camera_mover) {
+  this->CameraMoverList.AddHead(camera_mover);
+  eUpdateViewMode();
+}
+
+void eView::UnattachCameraMover(CameraMover *camera_mover) {
+  this->CameraMoverList.Remove(camera_mover);
+  eUpdateViewMode();
+}

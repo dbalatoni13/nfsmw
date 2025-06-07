@@ -1,6 +1,7 @@
 #include "./eViewPlat.hpp"
 #include "EcstasyEx.hpp"
 #include "Speed/GameCube/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/World/Car.hpp"
 #include "Speed/Indep/Src/World/Scenery.hpp"
@@ -43,7 +44,7 @@ void eInitSunPat();
 void eWaitUntilRenderingDone();
 void InitSlotPoolsEx();
 void eSetScissor(int xOrig, int yOrig, int wd, int ht);
-void eSetCopyFilter(FILTER_ID filter_index);
+void eSetCopyFilter(FILTER_ID filter_index, bool enable);
 void eSetBackgroundColor(_GXColor clr);
 void __InitRenderMode();
 void __InitMem();
@@ -92,10 +93,10 @@ Camera Player2Camera;
 Camera Player1RVMCamera;
 Camera Player1HeadlightCamera;
 Camera Player2HeadlightCamera;
-Mtx44 Player1HeadlightProjection;
-Mtx44 Player2HeadlightProjection;
 Mtx44 Player1ReflectionProjection;
+Mtx44 Player1SpecularProjection;
 Mtx44 Player2ReflectionProjection;
+Mtx44 Player2SpecularProjection;
 
 volatile int FrameCounter = 0;
 volatile unsigned int LastFrameCounterTick = 0;
@@ -104,43 +105,42 @@ int ScreenWidth;
 int ScreenHeight;
 SlotPool *ActiveTextureSlotPool;
 
-Bool bEURGB60;                                 // size: 0x1
-int _firstFrame;                               // size: 0x4
-void *_frameBuffer1;                           // size: 0x4
-void *_frameBuffer2;                           // size: 0x4
-void *_currentBuffer;                          // size: 0x4
-int _GxInitialized;                            // size: 0x4
-static unsigned char e_bDither;                // size: 0x1
-static unsigned int fbSize;                    // size: 0x4
-void *_tempFIFO;                               // size: 0x4
-void *_defaultFIFO;                            // size: 0x4
-GXFifoObj *_defaultFIFOObj;                    // size: 0x4
-volatile Bool bHangDiagnose;                   // size: 0x1
-volatile Bool bHangRecovery;                   // size: 0x1
-volatile int e_resync;                         // size: 0x4
-volatile int e_keepalive;                      // size: 0x4
-volatile int e_recover;                        // size: 0x4
-static const unsigned char DEFAULT_STALL = 0;  // size: 0x1
-static const unsigned char DEFAULT_DLSAVE = 0; // size: 0x1
-Bool bStallWorkaround;                         // size: 0x1
-Bool bDLSaveContext;                           // size: 0x1
-int scis_xOrig;                                // size: 0x4
-int scis_yOrig;                                // size: 0x4
-int scis_wd;                                   // size: 0x4
-int scis_ht;                                   // size: 0x4
-int filt_00;                                   // size: 0x4
-int filt_01;                                   // size: 0x4
-int filt_10;                                   // size: 0x4
-int filt_11;                                   // size: 0x4
-int filt_12;                                   // size: 0x4
-int filt_sum;                                  // size: 0x4
-unsigned char CopyFilter[11][7];               // size: 0x4D
-Bool bESyncError;                              // size: 0x1
-volatile unsigned long eMAX_ITERATIONS;        // size: 0x4
-static char _err[256];                         // size: 0x100
-static char _err2[256];                        // size: 0x100
-static const bool EnableSunRender = false;     // size: 0x1
-static const bool EnableLetterBoxes = false;   // size: 0x1
+Bool bEURGB60;                                                      // size: 0x1
+int _firstFrame;                                                    // size: 0x4
+void *_frameBuffer1;                                                // size: 0x4
+void *_frameBuffer2;                                                // size: 0x4
+void *_currentBuffer;                                               // size: 0x4
+int _GxInitialized;                                                 // size: 0x4
+static unsigned char e_bDither;                                     // size: 0x1
+static unsigned int fbSize;                                         // size: 0x4
+void *_defaultFIFO;                                                 // size: 0x4
+GXFifoObj *_defaultFIFOObj;                                         // size: 0x4
+volatile Bool bHangDiagnose;                                        // size: 0x1
+volatile Bool bHangRecovery;                                        // size: 0x1
+volatile int e_resync;                                              // size: 0x4
+volatile int e_keepalive;                                           // size: 0x4
+volatile int e_recover;                                             // size: 0x4
+static const unsigned char DEFAULT_STALL = 0;                       // size: 0x1
+static const unsigned char DEFAULT_DLSAVE = 0;                      // size: 0x1
+Bool bStallWorkaround;                                              // size: 0x1
+Bool bDLSaveContext;                                                // size: 0x1
+int scis_xOrig;                                                     // size: 0x4
+int scis_yOrig;                                                     // size: 0x4
+int scis_wd;                                                        // size: 0x4
+int scis_ht;                                                        // size: 0x4
+int filt_00;                                                        // size: 0x4
+int filt_01;                                                        // size: 0x4
+int filt_10;                                                        // size: 0x4
+int filt_11;                                                        // size: 0x4
+int filt_12;                                                        // size: 0x4
+int filt_sum;                                                       // size: 0x4
+unsigned char CopyFilter[11][7];                                    // size: 0x4D
+Bool bESyncError;                                                   // size: 0x1
+volatile unsigned long eMAX_ITERATIONS;                             // size: 0x4
+static char _err[256];                                              // size: 0x100
+static char _err2[256];                                             // size: 0x100
+static const bool EnableSunRender = false;                          // size: 0x1
+static const bool EnableLetterBoxes = false;                        // size: 0x1
 static const float TweakOverrideSunIntensityForRoadSpecular = 0.0f; // size: 0x4
 bool EnableRainIn2P;                                                // size: 0x1
 int efbWcrt;                                                        // size: 0x4
@@ -149,7 +149,7 @@ bool IsPal50Mode;                                                   // size: 0x1
 int xfbHcrt = 574;                                                  // size: 0x4
 int efbHcrt = 480;                                                  // size: 0x4
 float efbxfbRatio = 1.0f;                                           // size: 0x4
-GXRenderModeObj PalNFS01IntDfScale; // size: 0x3C
+GXRenderModeObj PalNFS01IntDfScale;                                 // size: 0x3C
 Bool bEProgressive;
 volatile unsigned short e_sync;          // size: 0x2
 volatile unsigned short e_endsync;       // size: 0x2
@@ -207,56 +207,82 @@ void InitSlotPools(void) {
 }
 
 void epInitViews(void) {
-  eView *view = eGetView(0, false);
-  view->SetRenderTarget0(eGetRenderTarget(0));
-  view->SetCamera(&FlailerCamera);
-  view->SetActive(1);
-
-  view = eGetView(1, false);
-  view->SetRenderTarget0(eGetRenderTarget(1));
-  view->SetCamera(&Player1Camera);
-  view->SetActive(1);
-
-  view = eGetView(2, false);
-  view->SetRenderTarget0(eGetRenderTarget(2));
-  view->SetCamera(&Player2Camera);
-  view->SetActive(0);
-
-  view = eGetView(8, false);
-  view->SetCamera(&Player1HeadlightCamera);
-  view->SetRenderTarget0(eGetRenderTarget(3));
-  view->SetActive(1);
-  view->GetPlatInfo()->SetLightPerspectiveProjection(
-      &Player1HeadlightProjection);
-
-  view = eGetView(9, false);
-  view->SetCamera(&Player2HeadlightCamera);
-  view->SetRenderTarget0(eGetRenderTarget(4));
-  view->SetActive(0);
-  view->GetPlatInfo()->SetLightPerspectiveProjection(
-      &Player2HeadlightProjection);
-
-  view = eGetView(3, false);
-  view->SetRenderTarget0(eGetRenderTarget(5));
-  view->SetActive(0);
-  view->SetCamera(&Player1RVMCamera);
-
-  view = eGetView(4, false);
-  view->SetRenderTarget0(eGetRenderTarget(6));
-  view->SetCamera(&Player1Camera);
-  view->SetActive(1);
-  view->GetPlatInfo()->SetLightPerspectiveProjection(
-      &Player1ReflectionProjection);
-
-  view = eGetView(5, false);
-  view->SetRenderTarget0(eGetRenderTarget(7));
-  view->SetCamera(&Player2Camera);
-  view->SetActive(0);
-  view->GetPlatInfo()->SetLightPerspectiveProjection(
-      &Player2ReflectionProjection);
+  {
+    eView *view = eGetView(0, false);
+    view->SetRenderTarget(eGetRenderTarget(0), 0);
+    view->SetCamera(&FlailerCamera);
+    view->SetActive(1);
+  }
+  {
+    eView *view = eGetView(1, false);
+    view->SetRenderTarget(eGetRenderTarget(1), 0);
+    view->SetCamera(&Player1Camera);
+    view->SetActive(1);
+    view->ScreenEffects = new ScreenEffectDB();
+    view->ScreenEffects->SetMyView(view);
+    view->Precipitation = new Rain(view, RAIN);
+    view->facePixelation = new FacePixelation(view);
+  }
+  {
+    eView *view = eGetView(2, false);
+    view->SetRenderTarget(eGetRenderTarget(2), 0);
+    view->SetCamera(&Player2Camera);
+    view->SetActive(0);
+    view->ScreenEffects = new ScreenEffectDB();
+    view->ScreenEffects->SetMyView(view);
+    view->Precipitation = EnableRainIn2P ? new Rain(view, RAIN) : nullptr;
+  }
+  {
+    eView *view = eGetView(3, false);
+    view->SetRenderTarget0(eGetRenderTarget(3));
+    view->SetCamera(&Player1RVMCamera);
+    view->SetActive(0);
+  }
+  {
+    eView *view = eGetView(6, false);
+    view->SetRenderTarget0(eGetRenderTarget(4));
+    view->SetCamera(&Player1Camera);
+    view->SetActive(1);
+    view->Precipitation = eGetView(1, false)->Precipitation;
+    view->GetPlatInfo()->SetLightPerspectiveProjection(&Player1SpecularProjection);
+  }
+  {
+    eView *view = eGetView(7, false);
+    view->SetRenderTarget0(eGetRenderTarget(5));
+    view->SetCamera(&Player2Camera);
+    view->SetActive(0);
+    view->Precipitation = eGetView(2, false)->Precipitation;
+    view->GetPlatInfo()->SetLightPerspectiveProjection(&Player2SpecularProjection);
+  }
+  {
+    eView *view = eGetView(8, false);
+    view->SetCamera(&Player1Camera);
+    view->SetRenderTarget(eGetRenderTarget(6), 0);
+    view->SetActive(0);
+  }
+  {
+    eView *view = eGetView(9, false);
+    view->SetCamera(&Player1Camera);
+    view->SetRenderTarget0(eGetRenderTarget(7));
+    view->SetActive(0);
+  }
+  {
+    eView *view = eGetView(10, false);
+    view->SetRenderTarget(eGetRenderTarget(8), 0);
+    view->SetCamera(&Player1Camera);
+    view->SetActive(0);
+  }
+  {
+    eView *view = eGetView(11, false);
+    view->SetRenderTarget(eGetRenderTarget(9), 0);
+    view->SetCamera(&Player1Camera);
+    view->SetActive(0);
+  }
 }
 
-EVIEWMODE eGetCurrentViewMode() { return CurrentViewMode; }
+EVIEWMODE eGetCurrentViewMode() {
+  return CurrentViewMode;
+}
 
 // void eUpdateViewMode(void) {
 //   int iVar1;
@@ -333,6 +359,7 @@ void eUpdateViewMode(void) {
   }
 }
 
+// TODO move RaceCoordinator
 struct RaceCoordinator {
   int unk_00;
   uint8_t unk04[0x4C];
@@ -344,8 +371,7 @@ RaceCoordinator *pRaceCoordinator;
 eView *GetPlayerView(int nPlayerNumber) {
   int viewId;
 
-  if (((pRaceCoordinator != nullptr) && (pRaceCoordinator->unk_00 == 5)) &&
-      (pRaceCoordinator->unk_50 != nullptr)) {
+  if (((pRaceCoordinator != nullptr) && (pRaceCoordinator->unk_00 == 5)) && (pRaceCoordinator->unk_50 != nullptr)) {
     if (nPlayerNumber != pRaceCoordinator->unk_50[5]) {
       return nullptr;
     }
@@ -371,7 +397,9 @@ void RadialBlurOn(int nPlayerNumber) {
   }
 }
 
-void RadialBlurOff(eView *view) { view->pBlendMask = nullptr; }
+void RadialBlurOff(eView *view) {
+  view->pBlendMask = nullptr;
+}
 
 void RadialBlurOff(int nPlayerNumber) {
   eView *view = GetPlayerView(nPlayerNumber);
@@ -391,24 +419,35 @@ int RadialBlurOnOff(bool on, int nPlayerNumber) {
 
 void RadialBlurAlpha(int param_1, float param_2, float param_3) {}
 
-bool bStraddlesNearZ(Camera *camera, Car *car) { return false; }
+bool bStraddlesNearZ(Camera *camera, Car *car) {
+  return false;
+}
 
-void eForceBackgroundColour(unsigned char, unsigned char, unsigned char, float,
-                            const char *) {}
+void eForceBackgroundColour(unsigned char, unsigned char, unsigned char, float, const char *) {}
 
-int eClampTopLeft(bool bOnOff, int nUnused) { return false; }
+int eClampTopLeft(bool bOnOff, int nUnused) {
+  return false;
+}
 
 void eTagHeadlightCallback(SceneryDrawInfo *info) {
   info->SceneryInst->Rotation[1] = 512;
 }
 
-float GetVifTime() { return VifTime * (1.0f / 65536); }
+float GetVifTime() {
+  return VifTime * (1.0f / 65536);
+}
 
-int DisplayCullingStats(int screen_x, int screen_y) { return 0; }
+int DisplayCullingStats(int screen_x, int screen_y) {
+  return 0;
+}
 
-int eGetScreenWidth() { return ScreenWidth; }
+int eGetScreenWidth() {
+  return ScreenWidth;
+}
 
-int eGetScreenHeight() { return ScreenWidth; }
+int eGetScreenHeight() {
+  return ScreenWidth;
+}
 
 void eSetScreenDisplayOffsets(int offset_x, int offset_y) {}
 
@@ -433,18 +472,17 @@ TextureInfo *eGetRenderTargetTextureInfo(int name_hash) {
   return nullptr;
 }
 
-eRenderTarget *eGetCurrentRenderTarget() { return CurrentRenderTarget; }
+eRenderTarget *eGetCurrentRenderTarget() {
+  return CurrentRenderTarget;
+}
 
 void eSetCurrentRenderTarget(eRenderTarget *render_target) {
   CurrentRenderTarget = render_target;
   if (render_target != nullptr) {
-    GXSetViewport(render_target->ScissorX, render_target->ScissorY,
-                  render_target->FrameWidth, render_target->FrameHeight, 0.0,
-                  1.0);
-    eSetScissor(CurrentRenderTarget->ScissorX, CurrentRenderTarget->ScissorY,
-                CurrentRenderTarget->ScissorW, CurrentRenderTarget->ScissorH);
+    GXSetViewport(render_target->ScissorX, render_target->ScissorY, render_target->FrameWidth, render_target->FrameHeight, 0.0, 1.0);
+    eSetScissor(CurrentRenderTarget->ScissorX, CurrentRenderTarget->ScissorY, CurrentRenderTarget->ScissorW, CurrentRenderTarget->ScissorH);
     eSetBackgroundColor(CurrentRenderTarget->BackgroundColour);
-    eSetCopyFilter(CurrentRenderTarget->GetCopyFilter());
+    eSetCopyFilter(CurrentRenderTarget->GetCopyFilter(), false);
   }
 }
 
@@ -472,9 +510,8 @@ void eInitGX() {
   __InitRenderMode();
   __InitMem();
   VIConfigure(_rmode);
-  _tempFIFO = bMALLOC(0x10000, "src/ecstasy/EcstasyE.cpp", 0x1243, 0x800);
-  _defaultFIFO = bMALLOC(0x40000, "src/ecstasy/EcstasyE.cpp", 0x1244, 0x800);
-  _defaultFIFOObj = GXInit(_defaultFIFO, 0x40000);
+  _defaultFIFO = bMalloc(0x42000, 0x800);
+  _defaultFIFOObj = GXInit(_defaultFIFO, 0x42000);
   GXSetDrawDoneCallback(cb_DrawDone);
   GXSetDrawSyncCallback(sync_cb);
   __InitGX();
@@ -517,8 +554,7 @@ void __InitRenderMode() {
 
 void __InitMem() {
   fbSize = (((_rmode->fbWidth + 15) & 0xfff0) * _rmode->xfbHeight) * 2;
-  void *pFB = _frameBuffer1 = bMALLOC(fbSize * 2, "src/ecstasy/EcstasyE.cpp",
-                                      VERSION_SELECT(4756, 0), 0x800);
+  void *pFB = _frameBuffer1 = bMalloc(fbSize * 2, 0x800);
   _currentBuffer = (u8 *)pFB + fbSize;
   _frameBuffer2 = (u8 *)pFB + fbSize;
 }
@@ -553,8 +589,7 @@ void __InitGX(void) {
   eSetScissor(scis_xOrig, scis_yOrig, scis_wd, scis_ht);
   GXSetDispCopySrc(0, 0, _rmode->fbWidth, _rmode->efbHeight);
   GXSetDispCopyDst(_rmode->fbWidth, _rmode->xfbHeight);
-  GXSetDispCopyYScale(static_cast<float>(_rmode->xfbHeight) /
-                      static_cast<float>(_rmode->efbHeight));
+  GXSetDispCopyYScale(static_cast<float>(_rmode->xfbHeight) / static_cast<float>(_rmode->efbHeight));
   filt_00 = _rmode->vfilter[0];
   filt_01 = _rmode->vfilter[1];
   filt_10 = _rmode->vfilter[2];
@@ -603,11 +638,9 @@ void __InitMatrices(void) {
   float transy = (_rmode->efbHeight - _rmode->efbHeight * 0.95f) * 0.5f;
   MTXScale(fe_scale, 0.95f, 0.95f, 1.0f);
   MTXTransApply(fe_scale, viewMOrthographic, transx, transy, 0.0f);
-  C_MTXOrtho(projMOrthographic, 0.0f, _rmode->efbHeight, 0.0f, _rmode->fbWidth,
-             0.0f, -16777215.0f);
+  C_MTXOrtho(projMOrthographic, 0.0f, _rmode->efbHeight, 0.0f, _rmode->fbWidth, 0.0f, -16777215.0f);
   MTXIdentity(viewMOrthographicScreenQuad);
-  C_MTXOrtho(projMOrthographicScreenQuad, 0.0f, _rmode->efbHeight, 0.0f,
-             _rmode->fbWidth, 0.0f, -16777215.0f);
+  C_MTXOrtho(projMOrthographicScreenQuad, 0.0f, _rmode->efbHeight, 0.0f, _rmode->fbWidth, 0.0f, -16777215.0f);
   GXSetCurrentMtx(0);
   GXLoadPosMtxImm(viewMOrthographic, 0);
   GXSetProjection(projMOrthographic, GX_ORTHOGRAPHIC);
@@ -661,12 +694,15 @@ void VIAdvanceFrame(void) {
     VISetBlack(0);
   }
   VIFlush();
-  _currentBuffer =
-      _currentBuffer == _frameBuffer1 ? _frameBuffer2 : _frameBuffer1;
+  _currentBuffer = _currentBuffer == _frameBuffer1 ? _frameBuffer2 : _frameBuffer1;
 }
 
 void eCopyDisp(Bool bClear) {
-  eSetCopyFilter(FILTER_DEFAULT);
+  if (_rmode->aa) {
+    eSetCopyFilter(FILTER_EFB_XFB_AA, true);
+  } else {
+    eSetCopyFilter(FILTER_EFB_XFB, true);
+  }
   GXCopyDisp(_currentBuffer, bClear != 0);
 }
 
@@ -674,11 +710,13 @@ void eDLSaveContext(Bool bEnabled) {
   static Bool _enabled;
   if (bEnabled != _enabled) {
     GXSetMisc(GX_MT_DL_SAVE_CONTEXT, bEnabled != 0);
+    _enabled = bEnabled;
   }
-  _enabled = bEnabled;
 }
 
-void eSetBackgroundColor(_GXColor clr) { GXSetCopyClear(clr, 0x00FFFFFF); }
+void eSetBackgroundColor(_GXColor clr) {
+  GXSetCopyClear(clr, 0x00FFFFFF);
+}
 
 void eSetPixelFormat(int nZFormat) {
   static GXZFmt16 prevFmt;
@@ -706,9 +744,8 @@ void eSetScissor(int xOrig, int yOrig, int wd, int ht) {
   }
 }
 
-void eSetCopyFilter(FILTER_ID filter_index) {
-  GXSetCopyFilter(_rmode->aa, _rmode->sample_pattern, GX_TRUE,
-                  CopyFilter[filter_index]);
+void eSetCopyFilter(FILTER_ID filter_index, bool enable) {
+  GXSetCopyFilter(_rmode->aa, _rmode->sample_pattern, GX_TRUE, CopyFilter[filter_index]);
 }
 
 void eUpdateCopyFilter2(Bool enable) {
@@ -724,8 +761,7 @@ void eUpdateCopyFilter2(Bool enable) {
     for (i = 0, j = 7; j != 0; i++, j--) {
       _vfilter[i] = static_cast<FILTER_ID>(_rmode->vfilter[i]);
     }
-    GXSetCopyFilter(_rmode->aa, _rmode->sample_pattern, GX_TRUE,
-                    _rmode->vfilter);
+    GXSetCopyFilter(_rmode->aa, _rmode->sample_pattern, GX_TRUE, _rmode->vfilter);
   }
 }
 
@@ -733,10 +769,8 @@ void eDrawStartup(void) {
   GXColor clr = {0};
   clr.a = 0xFF;
   GXSetFog(GX_FOG_LIN, 16.0f, 512.0f, 0.5f, 10000.0f, clr);
-  GXInitTexObj(&HeadlightClipTextureObj, &HeadlightClipTextureTestData, 2, 1,
-               GX_TF_RGB565, GX_CLAMP, GX_CLAMP, 0);
-  GXInitTexObjLOD(&HeadlightClipTextureObj, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f,
-                  0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+  GXInitTexObj(&HeadlightClipTextureObj, &HeadlightClipTextureTestData, 2, 1, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, 0);
+  GXInitTexObjLOD(&HeadlightClipTextureObj, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
 }
 
 void eExStartup(void) {
@@ -750,8 +784,7 @@ void eExStartup(void) {
   PSMTXTrans(g_m0, 0.5f, 0.5f, 1.0f);
   PSMTXConcat(g_m0, g_m1, g_m2);
   eDEMOInitROMFont();
-  if ((OSGetResetCode() == OS_RESETCODE_RESTART) &&
-      (OSGetProgressiveMode() != 0) && (VIGetDTVStatus() == 1)) {
+  if ((OSGetResetCode() == OS_RESETCODE_RESTART) && (OSGetProgressiveMode() != 0) && (VIGetDTVStatus() == 1)) {
     eProgressiveScanSetMode(1);
   } else {
     __InitRenderMode();
@@ -766,19 +799,17 @@ void eWaitRetrace(unsigned int in) {
   volatile unsigned long count;
   volatile unsigned long iterations;
 
-  count = in;
-  if (in == 0) {
-    in = VIGetRetraceCount();
-    count = in;
+  count = in ? in : VIGetRetraceCount();
+  iterations = 0;
+  e_retrace_count = count;
+  while (VIGetRetraceCount() == count) {
+    iterations++;
   }
-  do {
-    e_retrace_count = count;
-    iterations = VIGetRetraceCount();
-    count = e_retrace_count;
-  } while (iterations == in);
 }
 
-void sync_cb(unsigned short token) { e_sync = token; }
+void sync_cb(unsigned short token) {
+  e_sync = token;
+}
 
 unsigned short eEmitSync(Bool bFlush) {
   last_sync_token++;
@@ -791,7 +822,9 @@ unsigned short eEmitSync(Bool bFlush) {
 
 static volatile Bool bDrawDoneEncountered;
 
-void cb_DrawDone() { bDrawDoneEncountered = true; }
+void cb_DrawDone() {
+  bDrawDoneEncountered = true;
+}
 
 void eSendDrawDone(unsigned char bFlush) {
   bDrawDoneEncountered = false;
@@ -801,7 +834,9 @@ void eSendDrawDone(unsigned char bFlush) {
   }
 }
 
-Bool eIsDrawDone() { return bDrawDoneEncountered; }
+Bool eIsDrawDone() {
+  return bDrawDoneEncountered;
+}
 unsigned short GXReadDrawSync();
 
 Bool IsSyncValid() {
@@ -846,7 +881,7 @@ static Bool KeepAlive(void) {
       return true;
     }
     ms = bGetTickerDifference(t_entry, bGetTicker());
-    if ((ms > 4.0f) || (ms < 0.0f)) {
+    if ((ms > 4.0f) || LT(ms, 0.0f)) {
       return GXReadDrawSync() == sent_token;
     }
   } while (true);

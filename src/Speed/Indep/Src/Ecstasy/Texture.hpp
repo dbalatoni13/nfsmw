@@ -87,3 +87,13 @@ struct TextureInfo : public TextureInfoPlatInterface, public bTNode<TextureInfo>
   void *PaletteData;                    // offset 0x74, size 0x4
   int ReferenceCount;                   // offset 0x78, size 0x4
 };
+
+struct TextureVRAMDataHeader : public bTNode<TextureVRAMDataHeader> {
+  // total size: 0x18
+  int Version;                  // offset 0x8, size 0x4
+  unsigned int FilenameHash;    // offset 0xC, size 0x4
+  int EndianSwapped;            // offset 0x10, size 0x4
+  struct bChunk *VRAMDataChunk; // offset 0x14, size 0x4
+
+  void EndianSwap() {}
+};
