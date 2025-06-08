@@ -159,9 +159,6 @@ config.asflags = [
     f"-I build/{config.version}/include",
     f"--defsym BUILD_VERSION={version_num}",
 ]
-config.extra_clang_flags = [
-    "-std=c++98",
-]
 ldscript_path = Path("config") / config.version / "ldscript.ld"
 config.ldflags = ["-T", str(ldscript_path)]
 
@@ -177,7 +174,7 @@ config.scratch_preset_id = 176
 cflags_base = [
     "-O2",
     "-gdwarf",
-    "-G0",
+    "-G3",
     # "-Wall",
     "-I include",
     "-I src",
