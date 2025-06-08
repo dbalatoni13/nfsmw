@@ -16,7 +16,16 @@ struct TextureInfoPlatInfo : public bTNode<TextureInfoPlatInfo> {
   unsigned int Format;                      // offset 0x38, size 0x4
 };
 
-struct TextureInfoPlatInterface {
+class TextureInfoPlatInterface {
   // total size: 0x4
-  struct TextureInfoPlatInfo *PlatInfo; // offset 0x0, size 0x4
+  TextureInfoPlatInfo *PlatInfo; // offset 0x0, size 0x4
+
+public:
+  void *CreateAnimData();
+  void ReleaseAnimData(void *anim_data);
+  void SetPlatInfo(TextureInfoPlatInfo *info);
+
+  TextureInfoPlatInfo *GetPlatInfo() {
+    return this->PlatInfo;
+  }
 };
