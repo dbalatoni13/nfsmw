@@ -1,0 +1,3 @@
+namespace SimpleModelAnim {
+    void Init();
+}
