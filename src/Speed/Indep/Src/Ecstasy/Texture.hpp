@@ -97,3 +97,5 @@ struct TextureVRAMDataHeader : public bTNode<TextureVRAMDataHeader> {
 
   void EndianSwap() {}
 };
+
+void eInitTextures();

@@ -1,0 +1,2 @@
+int eInitEnginePlat();
+void epInitViews();
