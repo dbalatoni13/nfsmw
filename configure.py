@@ -174,7 +174,6 @@ config.scratch_preset_id = 176
 cflags_base = [
     "-O2",
     "-gdwarf",
-    "-G3",
     # "-Wall",
     "-I include",
     "-I src",

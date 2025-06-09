@@ -1,10 +1,11 @@
 #include "./Texture.hpp"
+#include "./eStreamingPack.hpp"
 #include "Speed/GameCube/Src/Ecstasy/TextureInfoPlat.hpp"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
-#include "eStreamingPack.hpp"
 
 SlotPool *TexturePackSlotPool;
 BOOL DuplicateTextureWarningEnabled;
@@ -140,6 +141,16 @@ void TextureAnimPack::InitAnims() {
     texture_anim->CurrentFrame = 0;
     texture_anim++;
   }
+}
+
+void UpdateTextureAnimations() {
+  // ProfileNode profile_node;
+  float world_time; // f29
+  float real_time;  // f30
+  int tweak_fps;
+
+  // if ((TheGameFlowManager.CurrentGameFlowState == GAMEFLOW_STATE_IN_FRONTEND) || (WorldTimeElapsed != 0.0)) {
+  // }
 }
 
 void eLoadStreamingTexture(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num) {

@@ -18,18 +18,70 @@ prodg_fixes.cpp:
 
 Speed/Indep/SourceLists/zAI.cpp:
 	.text       start:0x800034A0 end:0x80045E3C
-	.ctors      start:0x803C8B64 end:0x803C8B70
+	.ctors      start:0x803C8B64 end:0x803C8B68
 	.rodata     start:0x803C8C60 end:0x803D0710
 	.data       start:0x80415180 end:0x804156F4
 	.bss        start:0x80456560 end:0x804575C0
 	.sdata      start:0x804FEDC0 end:0x804FEDD0
 
+Speed/Indep/SourceLists/zAnim.cpp:
+	.text       start:0x80045E3C end:0x80050370
+	.ctors      start:0x803C8B68 end:0x803C8B6C
+	.rodata     start:0x803D0710 end:0x803D10AC
+	.data       start:0x804156F4 end:0x804158D8
+	.bss        start:0x804575C0 end:0x80457780
+
+Speed/Indep/SourceLists/zAttribSys.cpp:
+	.text       start:0x80050370 end:0x8005C1F8
+	.ctors      start:0x803C8B6C end:0x803C8B70
+	.data       start:0x804158D8 end:0x80416400
+	.bss        start:0x80457780 end:0x8045A20C
+
 Speed/Indep/SourceLists/zBWare.cpp:
 	.text       start:0x8005C1F8 end:0x80069424
-	.ctors      start:0x803C8B70 end:0x803C8B8C
+	.ctors      start:0x803C8B70 end:0x803C8B74
 	.rodata     start:0x803D10AC end:0x803D3AE4
-	.data       start:0x80415FE4 end:0x8041648C
+	.data       start:0x80416400 end:0x8041648C
 	.bss        start:0x8045A20C end:0x8045AB34
+
+Speed/Indep/SourceLists/zCamera.cpp:
+	.text       start:0x80069424 end:0x80083604
+	.ctors      start:0x803C8B74 end:0x803C8B78
+	.rodata     start:0x803D3AE4 end:0x803D3F50
+	.data       start:0x8041648C end:0x80417108
+	.bss        start:0x8045AB34 end:0x8045B0F8
+
+Speed/Indep/SourceLists/zDebug.cpp:
+	.text       start:0x80083604 end:0x80083680
+	.ctors      start:0x803C8B78 end:0x803C8B7C
+	.bss        start:0x8045B0F8 end:0x8045B108
+
+Speed/Indep/SourceLists/zDynamics.cpp:
+	.text       start:0x80083680 end:0x8008A7B0
+	.ctors      start:0x803C8B7C end:0x803C8B80
+	.rodata     start:0x803D3F50 end:0x803D5E28
+	.bss        start:0x8045B108 end:0x8045B110
+
+Speed/Indep/SourceLists/zEagl4Anim.cpp:
+	.text       start:0x8008A7B0 end:0x800A6128
+	.ctors      start:0x803C8B80 end:0x803C8B84
+	.rodata     start:0x803D5E28 end:0x803D8A6C
+	.data       start:0x80417108 end:0x80417634
+	.bss        start:0x8045B110 end:0x8045B268
+
+Speed/Indep/SourceLists/zEAXSound.cpp:
+	.text       start:0x800A6128 end:0x800CAF5C
+	.ctors      start:0x803C8B84 end:0x803C8B88
+	.rodata     start:0x803D8A6C end:0x803DD468
+	.data       start:0x80417634 end:0x80417F60
+	.bss        start:0x8045B268 end:0x8045DE60
+
+Speed/Indep/SourceLists/zEAXSound2.cpp:
+	.text       start:0x800CAF5C end:0x800F486C
+	.ctors      start:0x803C8B88 end:0x803C8B8C
+	.rodata     start:0x803DD468 end:0x803DD6D8
+	.data       start:0x80417F60 end:0x8041AB34
+	.bss        start:0x8045DE60 end:0x80461F5C
 
 Speed/Indep/SourceLists/zEcstasy.cpp:
 	.text       start:0x800F486C end:0x80118248
@@ -38,9 +90,58 @@ Speed/Indep/SourceLists/zEcstasy.cpp:
 	.data       start:0x8041AB34 end:0x8041B5E4
 	.bss        start:0x80461F5C end:0x804729E0
 
-asd:
-	.text       start:0x80118248 end:0x801FAB64
-	.ctors      start:0x803C8B90 end:0x803C8BB0
+Speed/Indep/SourceLists/zFe.cpp:
+	.text       start:0x80118248 end:0x80142AC0
+	.ctors      start:0x803C8B90 end:0x803C8B94
+	.rodata     start:0x803E4290 end:0x803EA794
+	.data       start:0x8041B5E4 end:0x8041BE08
+	.bss        start:0x804729E0 end:0x80472FBC
+
+Speed/Indep/SourceLists/zFe2.cpp:
+	.text       start:0x80142AC0 end:0x8017FE2C
+	.ctors      start:0x803C8B94 end:0x803C8B98
+	.rodata     start:0x803EA794 end:0x803EB9FC
+	.data       start:0x8041BE08 end:0x8041D060
+	.bss        start:0x80472FBC end:0x80473CD0
+
+Speed/Indep/SourceLists/zFEng.cpp:
+	.text       start:0x8017FE2C end:0x80191550
+	.ctors      start:0x803C8B98 end:0x803C8B9C
+	.data       start:0x8041D060 end:0x8041D1DC
+	.bss        start:0x80473CD0 end:0x80473E74
+
+Speed/Indep/SourceLists/zFoundation.cpp:
+	.text       start:0x80191550 end:0x8019A1F0
+	.ctors      start:0x803C8B9C end:0x803C8BA0
+	.rodata     start:0x803EB9FC end:0x803ED2FC
+	.data       start:0x8041D1DC end:0x8041D31C
+	.bss        start:0x80473E74 end:0x80473EF8
+
+Speed/Indep/SourceLists/zGameModes.cpp:
+	.text       start:0x8019A1F0 end:0x8019A26C
+	.ctors      start:0x803C8BA0 end:0x803C8BA4
+	.bss        start:0x80473EF8 end:0x80473F00
+
+Speed/Indep/SourceLists/zGameplay.cpp:
+	.text       start:0x8019A26C end:0x801BCB0C
+	.ctors      start:0x803C8BA4 end:0x803C8BA8
+	.rodata     start:0x803ED2FC end:0x803EEF24
+	.data       start:0x8041D31C end:0x8041D5A4
+	.bss        start:0x80473F00 end:0x80473FE0
+
+Speed/Indep/SourceLists/zLua.cpp:
+	.text       start:0x801BCB0C end:0x801D3B44
+	.ctors      start:0x803C8BA8 end:0x803C8BAC
+	.rodata     start:0x803EEF24 end:0x803F3EB8
+	.data       start:0x8041D5A4 end:0x8041D7EC
+	.bss        start:0x80473FE0 end:0x80474024
+
+Speed/Indep/SourceLists/zMain.cpp:
+	.text       start:0x801D3B44 end:0x801FAB64
+	.ctors      start:0x803C8BAC end:0x803C8BB0
+	.rodata     start:0x803F3EB8 end:0x803F6638
+	.data       start:0x8041D7EC end:0x8041E598
+	.bss        start:0x80474024 end:0x8047FEA4
 
 Speed/Indep/SourceLists/zMisc.cpp:
 	.text       start:0x801FAB64 end:0x8020DEA0
@@ -49,10 +150,89 @@ Speed/Indep/SourceLists/zMisc.cpp:
 	.data       start:0x8041E598 end:0x8041EFE8
 	.bss        start:0x8047FEA4 end:0x804801A4
 
+Speed/Indep/SourceLists/zMiscSmall.cpp:
+	.text       start:0x8020DEA0 end:0x8020DF1C
+	.ctors      start:0x803C8BB4 end:0x803C8BB8
+	.bss        start:0x804801A4 end:0x804801AC
+
+Speed/Indep/SourceLists/zMission.cpp:
+	.text       start:0x8020DF1C end:0x8020DF98
+	.ctors      start:0x803C8BB8 end:0x803C8BBC
+	.bss        start:0x804801AC end:0x804801D8
+
+Speed/Indep/SourceLists/zPhysics.cpp:
+	.text       start:0x8020DF98 end:0x80231A64
+	.ctors      start:0x803C8BBC end:0x803C8BC0
+	.rodata     start:0x803F9804 end:0x803FAB04
+	.data       start:0x8041EFE8 end:0x8041F358
+	.bss        start:0x804801D8 end:0x8048A1A8
+
+Speed/Indep/SourceLists/zPhysicsBehaviors.cpp:
+	.text       start:0x80231A64 end:0x8026B4F4
+	.ctors      start:0x803C8BC0 end:0x803C8BC4
+	.rodata     start:0x803FAB04 end:0x80403B1C
+	.data       start:0x8041F358 end:0x8041F7F4
+	.bss        start:0x8048A1A8 end:0x8048BD18
+
+Speed/Indep/SourceLists/zPlatform.cpp:
+	.text       start:0x8026B4F4 end:0x80272870
+	.ctors      start:0x803C8BC4 end:0x803C8BC8
+	.rodata     start:0x80403B1C end:0x804074A4
+	.data       start:0x8041F7F4 end:0x80435814
+	.bss        start:0x8048BD18 end:0x80496A20
+
+Speed/Indep/SourceLists/zRender.cpp:
+	.text       start:0x80272870 end:0x802728EC
+	.ctors      start:0x803C8BC8 end:0x803C8BCC
+	.bss        start:0x80496A20 end:0x80496A28
+
+Speed/Indep/SourceLists/zSim.cpp:
+	.text       start:0x802728EC end:0x8028A17C
+	.ctors      start:0x803C8BCC end:0x803C8BD0
+	.data       start:0x80435814 end:0x80435970
+	.bss        start:0x80496A28 end:0x80498974
+
+Speed/Indep/SourceLists/zSpeech.cpp:
+	.text       start:0x8028A17C end:0x802B5C44
+	.ctors      start:0x803C8BD0 end:0x803C8BD4
+	.rodata     start:0x804074A4 end:0x8040DCC4
+	.data       start:0x80435970 end:0x80435FFC
+	.bss        start:0x80498974 end:0x8049A5A4
+
+Speed/Indep/SourceLists/zTrack.cpp:
+	.text       start:0x802B5C44 end:0x802C5544
+	.ctors      start:0x803C8BD4 end:0x803C8BD8
+	.data       start:0x80435FFC end:0x804374BC
+	.bss        start:0x8049A5A4 end:0x804A5E60
+
+Speed/Indep/SourceLists/zWorld.cpp:
+	.text       start:0x802C5544 end:0x802ECA00
+	.ctors      start:0x803C8BD8 end:0x803C8BDC
+	.rodata     start:0x8040DCC4 end:0x8040E370
+	.data       start:0x804374BC end:0x80438F80
+	.bss        start:0x804A5E60 end:0x804AA598
+
+Speed/Indep/SourceLists/zWorld2.cpp:
+	.text       start:0x802ECA00 end:0x8030EB08
+	.ctors      start:0x803C8BDC end:0x803C8BE0
+	.rodata     start:0x8040E370 end:0x8040FBB8
+	.data       start:0x80438F80 end:0x804390F0
+	.bss        start:0x804AA598 end:0x804AAA88
+
+Speed/Indep/SourceLists/zOnline.cpp:
+	.over       start:0x803A41B8 end:0x803A4294
+	.ctors      start:0x803C8BE0 end:0x803C8BE4
+	.bss        start:0x804AAA88 end:0x804AAA90
+
+Speed/Indep/SourceLists/zFeOverlay.cpp:
+	.over       start:0x803A4294 end:0x803C6A3C
+	.ctors      start:0x803C8BE4 end:0x803C8BE8
+	.data       start:0x804390F0 end:0x804394D0
+	.bss        start:0x804AAA90 end:0x804B4DE8
+
 asd2:
-	.text       start:0x8020DEF0 end:0x803A30AC
-	.over       start:0x803A4208 end:0x803C6A3C
-	.ctors      start:0x803C8BB4 end:0x803C8C20
+	.text       start:0x8030EB08 end:0x803A30AC
+	.ctors      start:0x803C8BE8 end:0x803C8C20
 	.dtors      start:0x803C8C44 end:0x803C8C5C
 
 LibSN/crt0.s:
