@@ -7,11 +7,25 @@ public:
   bNode *Next; // offset 0x0, size 0x4
   bNode *Prev; // offset 0x4, size 0x4
 
+  bNode() {}
+
+  ~bNode() {}
+
   bNode *GetNext() {
     return Next;
   }
   bNode *GetPrev() {
     return Prev;
+  }
+
+  bNode *AddBefore(bNode *insert_point) {
+    bNode *new_prev = insert_point->Prev;
+    bNode *new_next = insert_point->Next; // unused
+    new_prev->Next = this;
+    insert_point->Prev = this;
+    this->Prev = new_prev;
+    this->Next = insert_point;
+    return this; // TODO
   }
 
   bNode *AddAfter(bNode *insert_point) {
@@ -34,6 +48,10 @@ public:
 };
 
 template <typename T> struct bTNode : public bNode {
+  bTNode() {}
+
+  ~bTNode() {}
+
   T *GetNext() {
     return (T *)bNode::GetNext();
   }
@@ -76,15 +94,19 @@ public:
   bNode *GetHead() {
     return this->HeadNode.GetNext();
   }
-  bNode *GetTail();                    // TODO
+  bNode *GetTail() {
+    return this->HeadNode.GetPrev();
+  }
   bNode *GetNextCircular(bNode *node); // TODO
   bNode *GetPrevCircular(bNode *node); // TODO
   bNode *AddHead(bNode *node) {
     return node->AddAfter(&this->HeadNode);
   }
-  bNode *AddTail(bNode *node);                        // TODO
-  bNode *AddBefore(bNode *insert_point, bNode *node); // TODO
-  bNode *AddAfter(bNode *insert_point, bNode *node);  // TODO
+  bNode *AddTail(bNode *node) {
+    return node->AddBefore(&this->HeadNode);
+  }
+  bNode *AddBefore(bNode *insert_point, bNode *node);
+  bNode *AddAfter(bNode *insert_point, bNode *node); // TODO
   bNode *Remove(bNode *node) {
     return node->Remove();
   }

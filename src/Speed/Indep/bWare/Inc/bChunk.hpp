@@ -42,11 +42,17 @@ public:
     unsigned int *pdata;
   }
 
-  bChunk *GetFirstChunk() {}
+  bChunk *GetFirstChunk() {
+    return &this[1];
+  }
 
-  bChunk *GetLastChunk() {}
+  bChunk *GetLastChunk() {
+    return (bChunk *)((char *)this + this->Size) + 1;
+  }
 
-  bChunk *GetNext() {}
+  bChunk *GetNext() {
+    return this->GetLastChunk();
+  }
 
   bChunk *GetLastChunk(struct bChunk *first_chunk, int sizeof_binary) {}
 };
