@@ -232,3 +232,4 @@ struct TextureAnimPackHeader {
 };
 
 void eInitTextures();
+void UpdateTextureAnimations();
