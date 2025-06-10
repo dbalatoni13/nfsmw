@@ -205,6 +205,8 @@ cflags_libc = [*cflags_base]
 
 config.linker_version = "ProDG/3.9.3"
 
+extra_clang_flags = ["-std=c++98"]
+
 
 # Helper function for Dolphin libraries
 def DolphinLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
