@@ -57,3 +57,7 @@ struct SlotPool : public bTNode<SlotPool> {
 SlotPool *bNewSlotPool(int slot_size, int num_slots, const char *debug_name, int memory_pool);
 
 extern struct SlotPool * ePolySlotPool;
+
+extern unsigned char * CurrentBufferStart;
+extern unsigned char * CurrentBufferPos;
+extern unsigned char * CurrentBufferEnd;
