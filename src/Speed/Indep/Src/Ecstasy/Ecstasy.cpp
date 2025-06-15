@@ -53,6 +53,7 @@ int eInitEngine() {
     return eInitEnginePlat();
 }
 
+//UNSOLVED: https://decomp.me/scratch/D4lah
 void ePreDisplay() {
     TickSFX();
     RenderSunAsFlare();
@@ -166,6 +167,7 @@ void SetupSceneryCullInfo(eView *view /* r30 */, SceneryCullInfo &info /* r29 */
 
 void eSwapDynamicFrameMemory() {}
 
+//UNSOLVED: https://decomp.me/scratch/QlAlG
 struct TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash /* r3 */) {
     if (numOtherTex < 0) return NULL;
 
