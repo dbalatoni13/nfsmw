@@ -35,6 +35,14 @@ struct eViewPlatInfo {
 
 enum eVisibleState;
 
+enum EVIEWMODE {
+    EVIEWMODE_TWOV = 4,
+    EVIEWMODE_TWOH = 3,
+    EVIEWMODE_ONE_RVM = 2,
+    EVIEWMODE_ONE = 1,
+    EVIEWMODE_NONE = 0,
+};
+
 class eViewPlatInterface {
   // total size: 0x4
   eViewPlatInfo *PlatInfo; // offset 0x0, size 0x4

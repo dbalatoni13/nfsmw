@@ -19,3 +19,7 @@ void bFree(SlotPool *slot_pool, void *first_slot, void *last_slot);
 extern "C" {
 void bMemSet(void *dest, unsigned char pattern, unsigned int size);
 }
+
+inline void * __vn(unsigned int size, const char * file, int line) {
+    return new char[size];
+}
