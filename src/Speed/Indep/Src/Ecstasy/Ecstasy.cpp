@@ -1,5 +1,6 @@
 #include "./Ecstasy.hpp"
 
+#include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/Src/Animation/AnimEngineManager.hpp"
@@ -7,6 +8,7 @@
 #include "Speed/Indep/Src/Frontend/FEngFont.hpp"
 #include "Speed/Indep/Src/World/SimpleModelAnim.hpp"
 #include "Speed/Indep/Src/World/ScreenEffects.hpp"
+#include "Speed/Indep/Src/World/Scenery.hpp"
 #include "Speed/Indep/Src/World/Sun.hpp"
 #include "./eModel.hpp"
 #include "./EcstasyE.hpp"
@@ -29,6 +31,10 @@ int Eframecurrent;
 unsigned int FrameMallocAllocNum;
 unsigned int FrameMallocFailed;
 unsigned int FrameMallocFailAmount;
+
+TextureInfo *OtherEcstacyTextures[30];
+unsigned int OtherEcstacyTextures_name_hash[30];
+unsigned int numOtherTex;
 
 void eAllocateFrameMallocBuffers(unsigned int total_size /* r3 */);
 
@@ -129,10 +135,47 @@ void eSwapFrameMallocBuffers() {
     Eframecurrent = amount_used;
     FrameMemoryBufferAmountUsed[1] = FrameMemoryBufferAmountUsed[0];
     FrameMemoryBufferAmountUsed[0] = amount_used;
-    CurrentBufferEnd = FrameMemoryBufferSize + buffer1;
-    CurrentBufferStart = buffer1;
     FrameMemoryBuffer[1] = buffer0;
-    FrameMallocAllocNum = 0;
-    CurrentBufferPos = buffer1;
     FrameMemoryBuffer[0] = buffer1;
+    CurrentBufferStart = buffer1;
+    CurrentBufferPos = buffer1;
+    CurrentBufferEnd = FrameMemoryBufferSize + buffer1;
+    FrameMallocAllocNum = 0;
 }
+
+void SetupSceneryCullInfo(eView *view /* r30 */, SceneryCullInfo &info /* r29 */, int exclude_flags /* r31 */) {
+    EVIEWMODE view_mode; // r3
+    int view_id; // r11
+
+    view_mode = eGetCurrentViewMode();
+    exclude_flags |= 0x10;
+    view_id = view->GetID();
+    if (view_id - 1 <= 1U) exclude_flags |= 2;
+    if (view_mode - 3 <= 1U) exclude_flags |= 1;
+    if (view_id - 0x10 <= 0x5U) exclude_flags |= 0x100;
+
+    if (!GRaceStatus::fObj->Exists() || GRaceStatus::fObj->Get().GetPlayMode() == 1) exclude_flags |= 4;
+    if (exclude_flags & 0x1800) exclude_flags |= 0x40;
+    if (exclude_flags & 0x1000) exclude_flags |= 2;
+    if (view_id == 3) exclude_flags |= 0x20;
+
+    SetupSceneryCullInfoPlat(view, info);
+    info.ExcludeFlags = exclude_flags;
+}
+
+
+void eSwapDynamicFrameMemory() {}
+
+struct TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash /* r3 */) {
+    if (numOtherTex < 0) return NULL;
+
+    for (unsigned int i = 0; i < numOtherTex; i++) {
+        if (OtherEcstacyTextures_name_hash[i] == name_hash) {
+            return OtherEcstacyTextures[i];
+        }
+    }
+
+    return NULL;
+}
+
+bool eIsWidescreen() { return false; } // Unlocks fullscreen on GameCube for free?

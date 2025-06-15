@@ -1,4 +1,5 @@
-#include "./eViewPlat.hpp"
+#include "./Ecstasy.hpp"
+
 #include "EcstasyEx.hpp"
 #include "Speed/GameCube/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
@@ -19,14 +20,6 @@ enum VIDEO_MODE {
   MODE_NTSC = 2,
   MODE_PAL60 = 1,
   MODE_PAL = 0,
-};
-
-enum EVIEWMODE {
-  EVIEWMODE_TWOV = 4,
-  EVIEWMODE_TWOH = 3,
-  EVIEWMODE_ONE_RVM = 2,
-  EVIEWMODE_ONE = 1,
-  EVIEWMODE_NONE = 0,
 };
 
 // TODO put these in correct headers

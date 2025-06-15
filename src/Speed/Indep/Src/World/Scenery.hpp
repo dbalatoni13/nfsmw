@@ -26,3 +26,18 @@ struct SceneryDrawInfo {
   char unk08[4];
   SceneryInstance *SceneryInst; // offset 0x8, size 0x4
 };
+
+struct SceneryCullInfo {
+    // total size: 0xBC
+    struct bMatrix4 FacadeMatrix; // offset 0x0, size 0x40
+    struct bMatrix4 ClipMatrix; // offset 0x40, size 0x40
+    struct eView *pView; // offset 0x80, size 0x4
+    int ExcludeFlags; // offset 0x84, size 0x4
+    struct SceneryDrawInfo * pFirstDrawInfo; // offset 0x88, size 0x4
+    struct SceneryDrawInfo * pCurrentDrawInfo; // offset 0x8C, size 0x4
+    struct SceneryDrawInfo * pTopDrawInfo; // offset 0x90, size 0x4
+    struct bVector3 Position; // offset 0x94, size 0x10
+    struct bVector3 Direction; // offset 0xA4, size 0x10
+    float H; // offset 0xB4, size 0x4
+    int PrecullerSectionNumber; // offset 0xB8, size 0x4
+};
