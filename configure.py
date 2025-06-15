@@ -192,8 +192,6 @@ if args.debug:
 else:
     cflags_base.append("-DNDEBUG=1")
 
-extra_clang_flags = ["-std=c++98"]
-
 cflags_game = [*cflags_base, "-mps-nodf", "-mfast-cast", "-G0"]
 
 # Metrowerks library flags
@@ -208,7 +206,6 @@ cflags_libc = [*cflags_base]
 config.linker_version = "ProDG/3.9.3"
 
 extra_clang_flags = ["-std=c++98"]
-
 
 
 # Helper function for Dolphin libraries
