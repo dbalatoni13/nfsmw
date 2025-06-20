@@ -422,10 +422,6 @@ int eClampTopLeft(bool bOnOff, int nUnused) {
   return false;
 }
 
-void eTagHeadlightCallback(SceneryDrawInfo *info) {
-  info->SceneryInst->Rotation[1] = 512;
-}
-
 float GetVifTime() {
   return VifTime * (1.0f / 65536);
 }

@@ -17,24 +17,27 @@
 #include "./eLight.hpp"
 #include "./eEnvMapE.hpp"
 
-float renderModifier;
+float renderModifier = 1.0f;
 unsigned int numCopsActiveCherry;
 unsigned int numCopsActiveTotal;
 unsigned int numCopsActiveView;
 unsigned char * FrameMemoryBuffer[2];
-unsigned int FrameMemoryBufferSize;
+unsigned int FrameMemoryBufferSize = 0;
 int FrameMemoryBufferAmountUsed[2];
-unsigned int FrameMallocMaxFailAmount;
-int Eframelargest;
-int Eframecurrent;
+//
+unsigned int FrameMallocAllocNum = 0;
+unsigned int FrameMallocFailed = 0;
+unsigned int FrameMallocFailAmount = 0;
+//
+unsigned int FrameMallocMaxFailAmount = 0;
 
-unsigned int FrameMallocAllocNum;
-unsigned int FrameMallocFailed;
-unsigned int FrameMallocFailAmount;
+int Eframelargest = 0;
+int Eframecurrent = 0;
 
 TextureInfo *OtherEcstacyTextures[30];
 unsigned int OtherEcstacyTextures_name_hash[30];
-unsigned int numOtherTex;
+
+unsigned int numOtherTex = 0;
 
 void eAllocateFrameMallocBuffers(unsigned int total_size /* r3 */);
 
@@ -53,7 +56,9 @@ int eInitEngine() {
     return eInitEnginePlat();
 }
 
-//UNSOLVED: https://decomp.me/scratch/D4lah
+//STRIPPED
+int eCloseEngine() {}
+
 void ePreDisplay() {
     TickSFX();
     RenderSunAsFlare();
@@ -71,7 +76,7 @@ void ePreDisplay() {
     eGetView(1, false)->NumCopsCherry = 0;
     eGetView(1, false)->NumCopsTotal = 0;
     eGetView(1, false)->NumCopsInView = 0;
-    if (!(renderModifier >= 0.25f)) {
+    if (renderModifier < 0.25f) {
         renderModifier = 0.25f;
     }
 }
@@ -113,6 +118,9 @@ void eAllocateFrameMallocBuffers(unsigned int total_size) {
     FrameMallocAllocNum = 0;
 }
 
+//STRIPPED
+void eFreeFrameMallocBuffers() {}
+
 void eSwapFrameMallocBuffers() {
     unsigned char * buffer0; // r30
     unsigned char * buffer1; // r3
@@ -144,6 +152,9 @@ void eSwapFrameMallocBuffers() {
     FrameMallocAllocNum = 0;
 }
 
+//STRIPPED
+int eGetSizeofFrameMallocBuffers(int * pamount_used /* r3 */) {}
+
 void SetupSceneryCullInfo(eView *view /* r30 */, SceneryCullInfo &info /* r29 */, int exclude_flags /* r31 */) {
     EVIEWMODE view_mode; // r3
     int view_id; // r11
@@ -167,8 +178,21 @@ void SetupSceneryCullInfo(eView *view /* r30 */, SceneryCullInfo &info /* r29 */
 
 void eSwapDynamicFrameMemory() {}
 
-//UNSOLVED: https://decomp.me/scratch/QlAlG
-struct TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash /* r3 */) {
+//STRIPPED
+void eTagHeadlightCallback(SceneryDrawInfo *info) {
+  info->SceneryInst->Rotation[1] = 512;
+}
+
+//STRIPPED
+void RenderMWDebugTopology(eView *view /* r3 */) {};
+
+//STRIPPED
+void eDebugRender(eView *view /* r4 */) {}
+
+//STRIPPED
+void eAddOtherEcstacyTexture(unsigned int name_hash /* r3 */, TextureInfo *tex /* r4 */) {};
+
+struct TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash) {
     if (numOtherTex < 0) return NULL;
 
     for (unsigned int i = 0; i < numOtherTex; i++) {
@@ -180,4 +204,28 @@ struct TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash /* r3 */) {
     return NULL;
 }
 
+//STRIPPED
+void eRemoveOtherEcstacyTexture(unsigned int name_hash /* r3 */) {}
+
 bool eIsWidescreen() { return false; } // Unlocks fullscreen on GameCube for free?
+
+enum polyCountEnum {
+    NUM_POLY_COUNT_TYPES = 10,
+    POLY_COUNT_RVM_WORLDMODEL = 9,
+    POLY_COUNT_REFLECTION_WORLDMODEL = 8,
+    POLY_COUNT_MAIN_WORLDMODEL = 7,
+    POLY_COUNT_RVM_SCENERY = 6,
+    POLY_COUNT_REFLECTION_SCENERY = 5,
+    POLY_COUNT_MAIN_SCENERY = 4,
+    POLY_COUNT_ENVMAP_SCENERY = 3,
+    POLY_COUNT_RVM_CAR = 2,
+    POLY_COUNT_REFLECTION_CAR = 1,
+    POLY_COUNT_MAIN_CAR = 0,
+};
+
+//STRIPPED
+void AddPolyCount(polyCountEnum type /* r3 */, struct eModel * model /* r4 */) {}
+void ClearPolyCounts() {}
+int GetPolyCount(polyCountEnum type /* r3 */) {}
+int GetModelCount(enum polyCountEnum type /* r3 */) {}
+char *GetPCType(enum polyCountEnum type /* r3 */) {}

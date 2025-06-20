@@ -21,5 +21,6 @@ void bMemSet(void *dest, unsigned char pattern, unsigned int size);
 }
 
 inline void * __vn(unsigned int size, const char * file, int line) {
+    // file = new char[size];
     return new char[size];
 }
