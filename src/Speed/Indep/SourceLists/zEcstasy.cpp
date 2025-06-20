@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.cpp"
+#include "Speed/Indep/Src/Ecstasy/eStreamingPack.cpp"
 
 #include "Speed/Indep/Src/Ecstasy/eView.cpp"
 
