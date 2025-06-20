@@ -1,2 +1,3 @@
 ColumnLimit: 150
 AllowShortFunctionsOnASingleLine: Empty
+IndentWidth: 4

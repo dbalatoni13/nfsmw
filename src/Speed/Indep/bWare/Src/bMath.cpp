@@ -16,47 +16,47 @@ static unsigned short bFastATanTable[] = {
 
 // Credit: Brawltendo
 unsigned short bATan(float x, float y) {
-  int quad = 0;
-  if (LT(x, 0.0f)) {
-    quad = 1;
-    x = -x;
-  }
-  float r = y;
-  if (LT(y, 0.0f)) {
-    quad ^= 3;
-    y = -y;
-  }
-
-  unsigned short a;
-  if (GT(x, y)) {
-    int i = ((y / x) * 65536.0f);
-    const unsigned short *table = &bFastATanTable[i >> 8];
-    a = (table[0] + (((table[1] - table[0]) * (i & 0xFF)) >> 8));
-  } else {
-    if (GT(y, x)) {
-      int i = ((x / y) * 65536.0f);
-      const unsigned short *table = &bFastATanTable[i >> 8];
-      a = 16384 - (((table[1] - table[0]) * (i & 0xFF)) >> 8) - table[0];
-    } else if (y == 0.0f) {
-      a = 0;
-    } else {
-      a = 8192;
+    int quad = 0;
+    if (x < 0.0f) {
+        quad = 1;
+        x = -x;
     }
-  }
+    float r = y;
+    if (y < 0.0f) {
+        quad ^= 3;
+        y = -y;
+    }
 
-  if (!quad)
-    return a;
-  else if (quad == 3)
-    return -a;
-  else if (quad == 1)
-    return 32768 - a;
-  else
-    return 32768 + a;
+    unsigned short a;
+    if (x > y) {
+        int i = ((y / x) * 65536.0f);
+        const unsigned short *table = &bFastATanTable[i >> 8];
+        a = (table[0] + (((table[1] - table[0]) * (i & 0xFF)) >> 8));
+    } else {
+        if (y > x) {
+            int i = ((x / y) * 65536.0f);
+            const unsigned short *table = &bFastATanTable[i >> 8];
+            a = 16384 - (((table[1] - table[0]) * (i & 0xFF)) >> 8) - table[0];
+        } else if (y == 0.0f) {
+            a = 0;
+        } else {
+            a = 8192;
+        }
+    }
+
+    if (!quad)
+        return a;
+    else if (quad == 3)
+        return -a;
+    else if (quad == 1)
+        return 32768 - a;
+    else
+        return 32768 + a;
 }
 
 float bDistBetween(const bVector3 *v1, const bVector3 *v2) {
-  float x = v1->x - v2->x;
-  float y = v1->y - v2->y;
-  float z = v1->z - v2->z;
-  return bSqrt(x * x + y * y + z * z);
+    float x = v1->x - v2->x;
+    float y = v1->y - v2->y;
+    float z = v1->z - v2->z;
+    return bSqrt(x * x + y * y + z * z);
 }

@@ -5,4 +5,4 @@ void epInitViews();
 bool IsRainDisabled();
 void eFixUpTablesPlat();
 EVIEWMODE eGetCurrentViewMode();
-void SetupSceneryCullInfoPlat(struct eView * view /* r29 */, struct SceneryCullInfo & info /* r30 */);
+void SetupSceneryCullInfoPlat(struct eView *view /* r29 */, struct SceneryCullInfo &info /* r30 */);

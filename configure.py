@@ -192,7 +192,15 @@ if args.debug:
 else:
     cflags_base.append("-DNDEBUG=1")
 
-cflags_game = [*cflags_base, "-mps-nodf", "-mfast-cast", "-G0"]
+cflags_game = [
+    *cflags_base,
+    "-mps-nodf",
+    "-mfast-cast",
+    "-G0",
+    "-ffast-math",
+    "-fno-strength-reduce",
+    "-fforce-addr",
+]
 
 # Metrowerks library flags
 cflags_runtime = [*cflags_base]

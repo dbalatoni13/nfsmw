@@ -20,6 +20,6 @@ extern "C" {
 void bMemSet(void *dest, unsigned char pattern, unsigned int size);
 }
 
-inline void * __vn(unsigned int size, const char * file, int line) {
+inline void *__vn(unsigned int size, const char *file, int line) {
     return new char[size];
 }

@@ -10,4 +10,6 @@
 #define VERSION_SELECT(USA, PAL) (PAL)
 #endif
 
+#define REFRESH_RATE (60.0f)
+
 #endif
