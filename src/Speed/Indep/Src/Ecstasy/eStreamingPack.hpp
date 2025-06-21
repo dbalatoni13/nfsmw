@@ -111,4 +111,14 @@ struct eStreamPackLoader {
     bTList<eStreamingPack> *GetLoadedStreamingPackList() {}
 };
 
+struct eStreamingPackLoadTable {
+    // total size: 0x10
+    char MemoryPoolNum; // offset 0x0, size 0x1
+    char Locked; // offset 0x1, size 0x1
+    short NumLoadsPending; // offset 0x2, size 0x2
+    void (* Callback)(void *); // offset 0x4, size 0x4
+    void * Param; // offset 0x8, size 0x4
+    eStreamPackLoader * StreamPackLoader; // offset 0xC, size 0x4
+};
+
 extern eStreamPackLoader StreamingTexturePackLoader;

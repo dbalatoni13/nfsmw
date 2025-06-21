@@ -13,28 +13,39 @@
 #include "Speed/Indep/Src/World/Scenery.hpp"
 #include "Speed/Indep/Src/World/ScreenEffects.hpp"
 #include "Speed/Indep/Src/World/SimpleModelAnim.hpp"
+#include "Speed/Indep/Src/World/ScreenEffects.hpp"
+#include "Speed/Indep/Src/World/Scenery.hpp"
 #include "Speed/Indep/Src/World/Sun.hpp"
+#include "./eModel.hpp"
+#include "./EcstasyE.hpp"
+#include "./Texture.hpp"
+#include "./eSolid.hpp"
+#include "./eLight.hpp"
+#include "./eEnvMapE.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-float renderModifier;
+float renderModifier = 1.0f;
 unsigned int numCopsActiveCherry;
 unsigned int numCopsActiveTotal;
 unsigned int numCopsActiveView;
-unsigned char *FrameMemoryBuffer[2];
-unsigned int FrameMemoryBufferSize;
+unsigned char * FrameMemoryBuffer[2];
+unsigned int FrameMemoryBufferSize = 0;
 int FrameMemoryBufferAmountUsed[2];
-unsigned int FrameMallocMaxFailAmount;
-int Eframelargest;
-int Eframecurrent;
+//
+unsigned int FrameMallocAllocNum = 0;
+unsigned int FrameMallocFailed = 0;
+unsigned int FrameMallocFailAmount = 0;
+//
+unsigned int FrameMallocMaxFailAmount = 0;
 
-unsigned int FrameMallocAllocNum;
-unsigned int FrameMallocFailed;
-unsigned int FrameMallocFailAmount;
+int Eframelargest = 0;
+int Eframecurrent = 0;
 
 TextureInfo *OtherEcstacyTextures[30];
 unsigned int OtherEcstacyTextures_name_hash[30];
-unsigned int numOtherTex;
+
+unsigned int numOtherTex = 0;
 
 void eAllocateFrameMallocBuffers(unsigned int total_size /* r3 */);
 
@@ -52,6 +63,9 @@ int eInitEngine() {
     SimpleModelAnim::Init();
     return eInitEnginePlat();
 }
+
+//STRIPPED
+int eCloseEngine() {}
 
 // UNSOLVED: https://decomp.me/scratch/D4lah
 void ePreDisplay() {
@@ -113,6 +127,9 @@ void eAllocateFrameMallocBuffers(unsigned int total_size) {
     FrameMallocAllocNum = 0;
 }
 
+//STRIPPED
+void eFreeFrameMallocBuffers() {}
+
 void eSwapFrameMallocBuffers() {
     unsigned char *buffer0; // r30
     unsigned char *buffer1; // r3
@@ -144,6 +161,9 @@ void eSwapFrameMallocBuffers() {
     FrameMallocAllocNum = 0;
 }
 
+//STRIPPED
+int eGetSizeofFrameMallocBuffers(int * pamount_used /* r3 */) {}
+
 void SetupSceneryCullInfo(eView *view /* r30 */, SceneryCullInfo &info /* r29 */, int exclude_flags /* r31 */) {
     EVIEWMODE view_mode; // r3
     int view_id;         // r11
@@ -173,10 +193,23 @@ void SetupSceneryCullInfo(eView *view /* r30 */, SceneryCullInfo &info /* r29 */
 
 void eSwapDynamicFrameMemory() {}
 
+//STRIPPED
+void eTagHeadlightCallback(SceneryDrawInfo *info) {
+  info->SceneryInst->Rotation[1] = 512;
+}
+
+//STRIPPED
+void RenderMWDebugTopology(eView *view /* r3 */) {};
+
+//STRIPPED
+void eDebugRender(eView *view /* r4 */) {}
+
+//STRIPPED
+void eAddOtherEcstacyTexture(unsigned int name_hash /* r3 */, TextureInfo *tex /* r4 */) {};
+
 // UNSOLVED: https://decomp.me/scratch/QlAlG
-struct TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash /* r3 */) {
-    if (numOtherTex < 0)
-        return nullptr;
+struct TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash) {
+    if (numOtherTex < 0) return NULL;
 
     for (unsigned int i = 0; i < numOtherTex; i++) {
         if (OtherEcstacyTextures_name_hash[i] == name_hash) {
@@ -187,6 +220,28 @@ struct TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash /* r3 */) {
     return nullptr;
 }
 
-bool eIsWidescreen() {
-    return false;
-} // Unlocks fullscreen on GameCube for free?
+//STRIPPED
+void eRemoveOtherEcstacyTexture(unsigned int name_hash /* r3 */) {}
+
+bool eIsWidescreen() { return false; } // Unlocks fullscreen on GameCube for free?
+
+enum polyCountEnum {
+    NUM_POLY_COUNT_TYPES = 10,
+    POLY_COUNT_RVM_WORLDMODEL = 9,
+    POLY_COUNT_REFLECTION_WORLDMODEL = 8,
+    POLY_COUNT_MAIN_WORLDMODEL = 7,
+    POLY_COUNT_RVM_SCENERY = 6,
+    POLY_COUNT_REFLECTION_SCENERY = 5,
+    POLY_COUNT_MAIN_SCENERY = 4,
+    POLY_COUNT_ENVMAP_SCENERY = 3,
+    POLY_COUNT_RVM_CAR = 2,
+    POLY_COUNT_REFLECTION_CAR = 1,
+    POLY_COUNT_MAIN_CAR = 0,
+};
+
+//STRIPPED
+void AddPolyCount(polyCountEnum type /* r3 */, struct eModel * model /* r4 */) {}
+void ClearPolyCounts() {}
+int GetPolyCount(polyCountEnum type /* r3 */) {}
+int GetModelCount(enum polyCountEnum type /* r3 */) {}
+char *GetPCType(enum polyCountEnum type /* r3 */) {}
