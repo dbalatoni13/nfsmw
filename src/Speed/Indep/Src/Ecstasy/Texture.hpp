@@ -6,10 +6,61 @@
 
 #include "Speed/Indep/Src/Ecstasy/eStreamingPack.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 extern SlotPool *TexturePackSlotPool;
+
+enum TextureScrollType {
+    TEXSCROLL_OFFSETSCALE = 3,
+    TEXSCROLL_SNAP = 2,
+    TEXSCROLL_SMOOTH = 1,
+    TEXSCROLL_NONE = 0,
+};
+
+enum TextureLockType {
+    TEXLOCK_READWRITE = 2,
+    TEXLOCK_WRITE = 1,
+    TEXLOCK_READ = 0,
+};
+
+enum TextureCompressionType {
+    TEXCOMP_8BIT_64 = 129,
+    TEXCOMP_8BIT_16 = 128,
+    TEXCOMP_16BIT_3555 = 19,
+    TEXCOMP_16BIT_565 = 18,
+    TEXCOMP_16BIT_1555 = 17,
+    TEXCOMP_DXTC5 = 38,
+    TEXCOMP_DXTC3 = 36,
+    TEXCOMP_DXTC1 = 34,
+    TEXCOMP_S3TC = 34,
+    TEXCOMP_DXT = 33,
+    TEXCOMP_32BIT = 32,
+    TEXCOMP_24BIT = 24,
+    TEXCOMP_16BIT = 16,
+    TEXCOMP_8BIT = 8,
+    TEXCOMP_4BIT = 4,
+    TEXCOMP_DEFAULT = 0,
+};
+
+enum TextureAlphaUsageType {
+    TEXUSAGE_MODULATED = 2,
+    TEXUSAGE_PUNCHTHRU = 1,
+    TEXUSAGE_NONE = 0,
+};
+
+enum TextureAlphaBlendType {
+    TEXBLEND_DEST_OVERBRIGHT = 8,
+    TEXBLEND_DEST_SUBTRACTIVE = 7,
+    TEXBLEND_DEST_ADDATIVE = 6,
+    TEXBLEND_DEST_BLEND = 5,
+    TEXBLEND_OVERBRIGHT = 4,
+    TEXBLEND_SUBTRACTIVE = 3,
+    TEXBLEND_ADDATIVE = 2,
+    TEXBLEND_BLEND = 1,
+    TEXBLEND_SRCCOPY = 0,
+};
 
 struct TextureIndexEntry {
     // total size: 0x8
@@ -43,27 +94,51 @@ class TexturePack : public bTNode<TexturePack> {
     int TextureDataSize;            // offset 0x1C, size 0x4
 
   public:
+    TexturePack(TexturePackHeader *pack_header, int num_textures, const char *pack_name, const char *filename);
+    ~TexturePack();
+    void AttachTextureTable(TextureInfo *texture_info_table, TextureInfoPlatInfo *plat_info_table, int num_texture_info);
+    void UnattachTextureTable(TextureInfo *texture_info_table, TextureInfoPlatInfo *plat_info_table, int num_texture_info);
+    void AttachTextureInfo(TextureInfo *texture_info, TextureInfoPlatInfo *plat_info, TextureIndexEntry *index_entry);
+    void UnattachTextureInfo(TextureInfo *texture_info, struct TextureInfoPlatInfo *plat_info, TextureIndexEntry *index_entry);
+    void AssignTextureData(char *texture_data, int begin_pos, int num_bytes);
+    void UnAssignTextureData(int begin_pos, int num_bytes);
+    TextureIndexEntry *GetTextureIndexEntry(unsigned int name_hash);
     TextureInfo *GetLoadedTexture(unsigned int name_hash);
+    TextureInfo *GetTexture(unsigned int name_hash);
 
     void *operator new(size_t size) {}
 
-    void operator delete(void *ptr) {}
+    void operator delete(void *ptr) {
+        bFree(TexturePackSlotPool, ptr);
+    }
 
-    const char *GetName() {}
+    const char *GetName() {
+        return this->Name;
+    }
 
-    const char *GetFilename() {}
+    const char *GetFilename() {
+        return this->Filename;
+    }
 
-    unsigned int GetNameHash() {}
+    unsigned int GetNameHash() {
+        return this->NameHash;
+    }
 
     int GetNumTextures() {
         return this->NumTextures;
     }
 
-    void SetTextureDataSize(int size) {}
+    void SetTextureDataSize(int size) {
+        this->TextureDataSize = size;
+    }
 
-    int GetTextureDataSize() {}
+    int GetTextureDataSize() {
+        return this->GetTextureDataSize();
+    }
 
-    TexturePackHeader *GetTexturePackHeader() {}
+    TexturePackHeader *GetTexturePackHeader() {
+        return this->pPackHeader;
+    }
 };
 
 struct TextureInfo : public TextureInfoPlatInterface, public bTNode<TextureInfo> {
@@ -108,6 +183,9 @@ struct TextureInfo : public TextureInfoPlatInterface, public bTNode<TextureInfo>
     int ReferenceCount;                   // offset 0x78, size 0x4
 
   public:
+    float GetScroll(float time, float speed, int scroll_type, float time_step);
+    void Print();
+
     TextureInfo() {}
 
     char *GetName() {}
@@ -160,17 +238,40 @@ struct TextureInfo : public TextureInfoPlatInterface, public bTNode<TextureInfo>
 
     bool IsDoubleSided() {}
 
-    void EndianSwap() {}
+    void EndianSwap() {
+        bEndianSwap32(&this->NameHash);
+        bEndianSwap32(&this->ClassNameHash);
+        bEndianSwap32(&this->ImageParentHash);
+        bEndianSwap32(&this->ImagePlacement);
+        bEndianSwap32(&this->PalettePlacement);
+        bEndianSwap32(&this->ImageSize);
+        bEndianSwap32(&this->PaletteSize);
+        bEndianSwap32(&this->BaseImageSize);
+        bEndianSwap16(&this->Width);
+        bEndianSwap16(&this->Height);
+        bEndianSwap16(&this->NumPaletteEntries);
+        bEndianSwap16(&this->ScrollTimeStep);
+        bEndianSwap16(&this->ScrollSpeedS);
+        bEndianSwap16(&this->ScrollSpeedT);
+        bEndianSwap16(&this->OffsetS);
+        bEndianSwap16(&this->OffsetT);
+        bEndianSwap16(&this->ScaleS);
+        bEndianSwap16(&this->ScaleT);
+    }
 };
 
 struct TextureVRAMDataHeader : public bTNode<TextureVRAMDataHeader> {
     // total size: 0x18
     int Version;               // offset 0x8, size 0x4
     unsigned int FilenameHash; // offset 0xC, size 0x4
-    int EndianSwapped;         // offset 0x10, size 0x4
+    BOOL EndianSwapped;        // offset 0x10, size 0x4
     bChunk *VRAMDataChunk;     // offset 0x14, size 0x4
 
-    void EndianSwap() {}
+    void EndianSwap() {
+        bPlatEndianSwap(&this->Version);
+        bPlatEndianSwap(&this->FilenameHash);
+        this->EndianSwapped = true;
+    }
 };
 
 struct TextureAnimEntry {

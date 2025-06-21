@@ -3,6 +3,7 @@
 #include "./bVector.hpp"
 
 float bSin(unsigned short angle);
+float bSin(float angle);
 float bCos(unsigned short angle);
 
 inline float bTan(unsigned short angle) {
@@ -46,3 +47,21 @@ inline float bSqrt(float x) {
 inline int bMax(int a, int b) {
     return a > b ? a : b;
 }
+
+inline unsigned short bDegToAng(float degrees) {
+    return static_cast<unsigned short>(degrees * (65536.0f / 360.0f));
+}
+
+inline unsigned short bRadToAng(float radians) {}
+
+inline float bAngToRad(unsigned short angle) {}
+
+inline float bDegToRad(float degrees) {}
+
+inline float bAngToDeg(unsigned short angle) {}
+
+inline float bRadToDeg(float radians) {}
+
+inline float bAngToRad(short angle) {}
+
+inline float bAngToDeg(short angle) {}

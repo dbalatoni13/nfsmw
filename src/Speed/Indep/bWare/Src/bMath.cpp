@@ -1,5 +1,34 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
-#include "types.h"
+
+void bEndianSwap64(void *value /* r3 */) {
+    long long temp; // r9
+}
+
+void bEndianSwap32(void *value /* r3 */) {
+    unsigned int temp; // r0
+}
+
+void bEndianSwap16(void *value /* r3 */) {
+    unsigned short temp;
+}
+
+void bPlatEndianSwap(bVector2 *value /* r30 */) {}
+
+void bPlatEndianSwap(bVector3 *value /* r30 */) {}
+
+void bPlatEndianSwap(bVector4 *value /* r30 */) {}
+
+void bPlatEndianSwap(bMatrix4 *value /* r30 */) {}
+
+float bSin(unsigned short angle);
+
+float bSin(float angle) {
+    return bSin(bRadToAng(angle));
+}
+
+float bCos(unsigned short angle) {
+    return bSin(static_cast<unsigned short>(angle + bDegToAng(90.0f)));
+}
 
 static unsigned short bFastATanTable[] = {
     0,    41,   81,   122,  163,  204,  244,  285,  326,  367,  407,  448,  489,  529,  570,  610,  651,  692,  732,  773,  813,  854,  894,  935,
@@ -21,7 +50,7 @@ unsigned short bATan(float x, float y) {
         quad = 1;
         x = -x;
     }
-    float r = y;
+
     if (y < 0.0f) {
         quad ^= 3;
         y = -y;
@@ -29,29 +58,31 @@ unsigned short bATan(float x, float y) {
 
     unsigned short a;
     if (x > y) {
-        int i = ((y / x) * 65536.0f);
+        float r = y;
+        int i = static_cast<int>((r / x) * 65536.0f);
         const unsigned short *table = &bFastATanTable[i >> 8];
         a = (table[0] + (((table[1] - table[0]) * (i & 0xFF)) >> 8));
     } else {
         if (y > x) {
-            int i = ((x / y) * 65536.0f);
+            float r = y;
+            int i = static_cast<int>((x / r) * 65536.0f);
             const unsigned short *table = &bFastATanTable[i >> 8];
-            a = 16384 - (((table[1] - table[0]) * (i & 0xFF)) >> 8) - table[0];
+            a = bDegToAng(90.0f) - (((table[1] - table[0]) * (i & 0xFF)) >> 8) - table[0];
         } else if (y == 0.0f) {
             a = 0;
         } else {
-            a = 8192;
+            a = bDegToAng(45.0f);
         }
     }
 
-    if (!quad)
+    if (quad == 0)
         return a;
     else if (quad == 3)
         return -a;
     else if (quad == 1)
-        return 32768 - a;
+        return bDegToAng(180.0f) - a;
     else
-        return 32768 + a;
+        return bDegToAng(180.0f) + a;
 }
 
 float bDistBetween(const bVector3 *v1, const bVector3 *v2) {

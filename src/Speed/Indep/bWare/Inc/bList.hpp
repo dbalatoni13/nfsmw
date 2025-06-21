@@ -132,7 +132,7 @@ template <typename T> class bTList : public bList {
     T *GetTail() {
         return (T *)bList::GetTail();
     }
-    T *GetNextCircular(T *node) {
+    T *GetNextCircular(bNode *node) {
         return (T *)bList::GetNextCircular(node);
     }
     T *GetPrevCircular(bNode *node) {

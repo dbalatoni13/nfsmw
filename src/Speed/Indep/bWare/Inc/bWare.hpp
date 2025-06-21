@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
+#include "bVector.hpp"
 
 #if DEBUG
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
@@ -22,4 +23,41 @@ void bMemSet(void *dest, unsigned char pattern, unsigned int size);
 
 inline void *__vn(unsigned int size, const char *file, int line) {
     return new char[size];
+}
+
+void bEndianSwap64(void *value);
+void bEndianSwap32(void *value);
+void bEndianSwap16(void *value);
+void bPlatEndianSwap(bVector2 *value);
+void bPlatEndianSwap(bVector3 *value);
+void bPlatEndianSwap(bVector4 *value);
+void bPlatEndianSwap(bMatrix4 *value);
+
+void bBreak();
+
+void bInitSharedStringPool(int size);
+void bCloseSharedStringPool();
+const char *bAllocateSharedString(const char *s);
+void bFreeSharedString(const char *s);
+unsigned int bStringHash(const char *text);
+unsigned int bStringHash(const char *text, int prefix_hash);
+
+inline void bPlatEndianSwap(int *value) {
+    bEndianSwap32(value);
+}
+
+inline void bPlatEndianSwap(unsigned int *value) {
+    bEndianSwap32(value);
+}
+
+inline void bPlatEndianSwap(short *value) {
+    bEndianSwap16(value);
+}
+
+inline void bPlatEndianSwap(unsigned short *value) {
+    bEndianSwap16(value);
+}
+
+inline void bPlatEndianSwap(float *value) {
+    bEndianSwap32(value);
 }

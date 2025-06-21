@@ -1,5 +1,7 @@
 #pragma once
 
+#include "types.h"
+
 class bChunk {
     // total size: 0x8
     unsigned int ID; // offset 0x0, size 0x4
@@ -17,11 +19,13 @@ class bChunk {
         return this->ID;
     }
 
-    int GetSize() {
+    BOOL GetSize() {
         return this->Size;
     }
 
-    int IsNestedChunk() {}
+    BOOL IsNestedChunk() {
+        return this->GetID() < 0;
+    }
 
     int IsDataChunk() {}
 
@@ -32,7 +36,9 @@ class bChunk {
         }
     }
 
-    char *GetData() {}
+    char *GetData() {
+        return reinterpret_cast<char *>(&this[1]);
+    }
 
     char *GetAlignedData(int alignment_size) {}
 

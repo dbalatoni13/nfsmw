@@ -122,3 +122,5 @@ struct eStreamingPackLoadTable {
 };
 
 extern eStreamPackLoader StreamingTexturePackLoader;
+
+void *ScanHashTableKey32(unsigned int key_value, void *table_start, int table_length, int entry_key_offset, int entry_size);

@@ -25,6 +25,8 @@ class TextureInfoPlatInterface {
     void SetAnimData(void *anim_data);
     void ReleaseAnimData(void *anim_data);
     void SetPlatInfo(TextureInfoPlatInfo *info);
+    void Init();
+    void Close();
 
     TextureInfoPlatInfo *GetPlatInfo() {
         return this->PlatInfo;

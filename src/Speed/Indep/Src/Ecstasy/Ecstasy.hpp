@@ -341,3 +341,32 @@ struct FacePixelation {
 
     static void Disable() {}
 };
+
+struct LoadedTable {
+    // total size: 0x2004
+    int NumLoaded;              // offset 0x0, size 0x4
+    unsigned char Counts[8192]; // offset 0x4, size 0x2000
+
+    LoadedTable() {}
+
+    int IsLoaded(unsigned int hash) {
+        return *this->GetPtr(hash) == 0;
+    }
+
+    void SetLoaded(unsigned int hash) {
+        this->NumLoaded++;
+        unsigned char *p = this->GetPtr(hash);
+        *p = *p + 1;
+    }
+
+    void SetUnloaded(unsigned int hash) {
+        this->NumLoaded--;
+        unsigned char *p = this->GetPtr(hash);
+        *p = *p - 1;
+    }
+
+    unsigned char *GetPtr(unsigned int hash) {}
+};
+
+void eFixupReplacementTexturesAfterUnloading(TextureInfo *texture_info);
+void eNotifyTextureLoading(TexturePack *texture_pack, TextureInfo *texture_info, bool loading);
