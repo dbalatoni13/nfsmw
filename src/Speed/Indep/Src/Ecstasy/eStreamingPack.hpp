@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include <cstddef>
 
 struct eStreamingEntry {
@@ -35,7 +36,7 @@ struct eStreamingPack : public bTNode<eStreamingPack> {
     int HeaderLoaded;                             // offset 0x14, size 0x4
     int HeaderSize;                               // offset 0x18, size 0x4
     bChunk *HeaderChunks;                         // offset 0x1C, size 0x4
-    struct ResourceFile *pResourceFile;           // offset 0x20, size 0x4
+    ResourceFile *pResourceFile;           // offset 0x20, size 0x4
     eStreamingEntry *StreamingEntryTable;         // offset 0x24, size 0x4
     int StreamingEntryNumEntries;                 // offset 0x28, size 0x4
     int NumLoadsPending;                          // offset 0x2C, size 0x4
@@ -47,6 +48,14 @@ struct eStreamingPack : public bTNode<eStreamingPack> {
 
     void *operator new(size_t size) {}
     void operator delete(void *ptr) {}
+
+    //STRIPPED
+    void InitForHibernation();
+    //STRIPPED
+    bool IsHeaderInMemoryPool();
+    int GetHeaderMemoryEntries(void **memory_entries, int num_memory_entries);
+
+    eStreamingPack() {};
 
     void RegisterLoadStreamingEntry(eStreamingEntry *entry) {}
 
@@ -89,7 +98,19 @@ struct eStreamPackLoader {
     const char *(*DebugGetNameFunc)(unsigned int);                                         // offset 0x28, size 0x4
     int NumLoadedStreamingPacks;                                                           // offset 0x2C, size 0x4
     int NumLoadedStreamingEntries;                                                         // offset 0x30, size 0x4
-    int NumLoadedBytes;                                                                    // offset 0x34, size 0x4
+    int NumLoadedBytes;                                                                  // offset 0x34, size 0x4
+
+    eStreamPackLoader(
+        int required_chunk_alignment,
+        void (* loaded_streaming_entry_callback)(bChunk *, eStreamingEntry *, eStreamingPack *),
+        void (* unloaded_streaming_entry_callback)(bChunk *, eStreamingEntry *, eStreamingPack *),
+        void (* loading_header_phase1_callback)(eStreamingPackHeaderLoadingInfoPhase1 *),
+        void (* loading_header_phase2_callback)(eStreamingPackHeaderLoadingInfoPhase2 *),
+        void (* unloading_header_callback)(eStreamingPack *)
+    );
+    int GetMemoryEntries(unsigned int * name_hash_table, int num_hashes, void **memory_entries, int num_memory_entries);
+    eStreamingEntry *GetStreamingEntry(unsigned int name_hash, eStreamingPack * streaming_pack);
+    eStreamingEntry *GetStreamingEntry(unsigned int name_hash);
 
     eStreamingPack *CreateStreamingPack(const char *filename, void (*callback_function)(void *), void *callback_param, int memory_pool_num);
     void LoadStreamingEntry(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num);
