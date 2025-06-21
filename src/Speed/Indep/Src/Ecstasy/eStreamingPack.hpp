@@ -3,6 +3,7 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
+#include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include <cstddef>
 
 struct eStreamingEntry {

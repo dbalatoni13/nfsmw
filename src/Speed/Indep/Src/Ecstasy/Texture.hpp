@@ -79,7 +79,7 @@ struct TexturePackHeader {
     int EndianSwapped;                         // offset 0x6C, size 0x4
     struct TexturePack *pTexturePack;          // offset 0x70, size 0x4
     TextureIndexEntry *TextureIndexEntryTable; // offset 0x74, size 0x4
-    eStreamingEntry *TextureStreamEntryTable;  // offset 0x78, size 0x4
+    struct eStreamingEntry *TextureStreamEntryTable;  // offset 0x78, size 0x4
 
     void EndianSwap() {}
 };
