@@ -172,3 +172,22 @@ int eStreamPackLoader::GetMemoryEntries(unsigned int * name_hash_table /* r27 */
 
     return num_memory_entries;
 }
+
+extern int bStrCmp(const char * s1 /* r3 */, const char * s2 /* r4 */);
+eStreamingPack *eStreamPackLoader::GetLoadedStreamingPack(const char *filename) {
+    eStreamingPack *streaming_pack;
+
+    for (
+        streaming_pack = this->LoadedStreamingPackList.GetHead();
+        streaming_pack != this->LoadedStreamingPackList.EndOfList();
+        streaming_pack = streaming_pack->GetNext())
+    {
+        if (!bStrCmp(filename, streaming_pack->Filename)) {
+            streaming_pack->Remove();
+            this->LoadedStreamingPackList.AddHead(streaming_pack);
+            return streaming_pack;
+        }
+    }
+
+    return nullptr;
+}

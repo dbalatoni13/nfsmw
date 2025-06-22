@@ -67,7 +67,6 @@ int eInitEngine() {
 //STRIPPED
 int eCloseEngine() {}
 
-// UNSOLVED: https://decomp.me/scratch/D4lah
 void ePreDisplay() {
     TickSFX();
     RenderSunAsFlare();
@@ -78,13 +77,13 @@ void ePreDisplay() {
         DoTinting(eGetView(1, false));
     }
     UpdateLightFlareParameters();
-    numCopsActiveCherry = eGetView(2, false)->NumCopsCherry;
-    numCopsActiveTotal = eGetView(2, false)->NumCopsTotal;
-    numCopsActiveView = eGetView(2, false)->NumCopsInView;
-    renderModifier = 1.0f - numCopsActiveCherry * 0.2f;
-    eGetView(1, false)->NumCopsCherry = 0;
-    eGetView(1, false)->NumCopsTotal = 0;
+    numCopsActiveView = eGetView(1, false)->NumCopsInView;
+    numCopsActiveTotal = eGetView(1, false)->NumCopsTotal;
+    numCopsActiveCherry = eGetView(1, false)->NumCopsCherry;
     eGetView(1, false)->NumCopsInView = 0;
+    eGetView(1, false)->NumCopsTotal = 0;
+    renderModifier = 1.0f - numCopsActiveCherry / 5.0f;
+    eGetView(1, false)->NumCopsCherry = 0;
     if (renderModifier < 0.25f) {
         renderModifier = 0.25f;
     }
@@ -207,7 +206,6 @@ void eDebugRender(eView *view /* r4 */) {}
 //STRIPPED
 void eAddOtherEcstacyTexture(unsigned int name_hash /* r3 */, TextureInfo *tex /* r4 */) {};
 
-// UNSOLVED: https://decomp.me/scratch/QlAlG
 struct TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash) {
     if (numOtherTex < 0) return NULL;
 
