@@ -1,6 +1,6 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
-#include "Speed/Indep/bWare/Inc/bVector.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 bool eBeginStrip(TextureInfo *a, int b, bMatrix4 *c) {
     // Local variables

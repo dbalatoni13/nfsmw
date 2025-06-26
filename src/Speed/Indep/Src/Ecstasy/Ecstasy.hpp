@@ -9,7 +9,7 @@
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Ecstasy/EcstasyData.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
-#include "Speed/Indep/bWare/Inc/bVector.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 extern eView eViews[22];
 
@@ -90,6 +90,7 @@ struct eView : public eViewPlatInterface {
     int GetPixelSize(float radius, float distance);
     int GetPixelSize(const bVector3 *position, float radius);
     int GetPixelSize(const bVector3 *bbox_min, const bVector3 *bbox_max);
+    void BiasMatrixForZSorting(bMatrix4 *pL2W, float zBias);
     void AttachCameraMover(CameraMover *camera_mover);
     void UnattachCameraMover(CameraMover *camera_mover);
 
@@ -133,9 +134,9 @@ struct eView : public eViewPlatInterface {
 eView *eGetView(int view_id);
 
 inline eView *eGetView(int view_id, bool doAssert) {
-    if (doAssert) {
-        // ?
-    }
+    // if (doAssert) {
+    //     // ?
+    // }
     return &eViews[view_id];
 }
 
@@ -150,6 +151,7 @@ enum ScreenEffectType {
     SE_MOTION_BLUR = 1,
     SE_TINT = 0,
 };
+
 enum ScreenEffectControl {
     SEC_FUNCTION = 2,
     SEC_BOOLEAN = 1,
@@ -304,7 +306,9 @@ struct Rain {
 
     float GetRainIntensity() {}
 
-    float GetCloudIntensity() {}
+    float GetCloudIntensity() {
+        return this->CloudIntensity;
+    }
 
     float GetRoadDampness() {}
 
@@ -370,3 +374,6 @@ struct LoadedTable {
 
 void eFixupReplacementTexturesAfterUnloading(TextureInfo *texture_info);
 void eNotifyTextureLoading(TexturePack *texture_pack, TextureInfo *texture_info, bool loading);
+TextureInfo *eGetRenderTargetTextureInfo(int name_hash);
+TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash);
+float GetSunIntensity(eView *view);

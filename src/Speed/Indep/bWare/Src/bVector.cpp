@@ -1,4 +1,4 @@
-#include "Speed/Indep/bWare/Inc/bVector.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "math.h"
 
 float bDistBetween(const bVector3 *v1, const bVector3 *v2) {

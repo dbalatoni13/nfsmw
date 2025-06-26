@@ -29,9 +29,11 @@ struct GameFlowManager {
 
     void SetSingleFunction(void (*function)(), const char *debug_name) {}
 
-    enum GameFlowState GetState() {}
+    GameFlowState GetState() {}
 
-    bool IsInFrontend() {}
+    bool IsInFrontend() {
+        return this->CurrentGameFlowState == GAMEFLOW_STATE_IN_FRONTEND;
+    }
 
     bool IsInGame() {}
 
@@ -39,3 +41,7 @@ struct GameFlowManager {
 };
 
 extern GameFlowManager TheGameFlowManager; // size: 0x24
+
+inline bool IsGameFlowInFrontEnd() {
+    return TheGameFlowManager.IsInFrontend();
+}

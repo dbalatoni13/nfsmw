@@ -1,6 +1,7 @@
 #include "Texture.hpp"
 #include "Ecstasy.hpp"
 #include "Speed/GameCube/Src/Ecstasy/TextureInfoPlat.hpp"
+#include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
@@ -47,7 +48,41 @@ TextureVRAMDataHeader *FindVRAMData(unsigned int filename_hash) {
 TexturePackHeader *InternalLoadTexturePackHeaderChunks(bChunk *chunk) {}
 
 // UNSOLVED
-void InternalUnloadTexturePackHeaderChunks(bChunk *chunk) {}
+void InternalUnloadTexturePackHeaderChunks(bChunk *chunk) {
+    TexturePackHeader *texture_pack_header = nullptr;
+    TextureInfo *texture_info_table = nullptr;
+    TextureInfoPlatInfo *plat_info_table = nullptr;
+    int num_texture_info = 0;
+
+    bChunk *current_chunk = chunk->GetFirstChunk();
+    bChunk *last_chunk = chunk->GetLastChunk();
+    while (current_chunk != last_chunk) {
+        unsigned int current_chunk_id = current_chunk->GetID();
+
+        if (current_chunk_id == BCHUNK_TEXTURE_PACK_INFO_HEADER) {
+            texture_pack_header = reinterpret_cast<TexturePackHeader *>(current_chunk->GetData());
+        } else if (current_chunk_id == BCHUNK_TEXTURE_PACK_INFO_KEYS) {
+        } else if (current_chunk_id == BCHUNK_TEXTURE_PACK_INFO_ENTRIES) {
+        } else if (current_chunk_id == BCHUNK_TEXTURE_PACK_INFO_TEXTURES) {
+            texture_info_table = reinterpret_cast<TextureInfo *>(current_chunk->GetData());
+            num_texture_info = current_chunk->GetSize() / sizeof(TextureInfo);
+        } else if (current_chunk_id == BCHUNK_TEXTURE_PACK_INFO_COMPS) {
+            plat_info_table = reinterpret_cast<TextureInfoPlatInfo *>(current_chunk->GetData());
+        }
+
+        current_chunk = current_chunk->GetNext();
+    }
+    if (texture_pack_header != nullptr) { // fake
+        texture_pack_header->pTexturePack->UnAssignTextureData(0, texture_pack_header->pTexturePack->GetTextureDataSize());
+    }
+    if (texture_info_table != nullptr) {
+        texture_pack_header->pTexturePack->UnattachTextureTable(texture_info_table, plat_info_table, num_texture_info);
+    }
+    if (texture_pack_header->pTexturePack != nullptr) {
+        delete texture_pack_header->pTexturePack;
+    }
+    texture_pack_header->pTexturePack = nullptr;
+}
 
 TextureVRAMDataHeader *InternalLoadVRAMDataChunks(bChunk *chunk) {
     bChunk *vram_header_chunk = chunk->GetFirstChunk();
@@ -57,6 +92,7 @@ TextureVRAMDataHeader *InternalLoadVRAMDataChunks(bChunk *chunk) {
     TextureVRAMDataHeader *vram_header = reinterpret_cast<TextureVRAMDataHeader *>(vram_header_chunk->GetData());
     if (!vram_header->EndianSwapped) {
         vram_header->EndianSwap();
+        vram_header->EndianSwapped = true;
     }
     vram_header->VRAMDataChunk = vram_data_chunk;
     TextureVRAMDataHeaderList.AddTail(vram_header);
@@ -64,24 +100,90 @@ TextureVRAMDataHeader *InternalLoadVRAMDataChunks(bChunk *chunk) {
     return vram_header;
 }
 
-int UnloaderTexturePack(struct bChunk *chunk) {
-    if (chunk->GetID() == 0xB3300000) {
+int LoaderTexturePack(bChunk *chunk) {
+    if (chunk->GetID() == BCHUNK_TEXTURE_PACK) {
+        TexturePackHeader *texture_pack_header = nullptr;
+        char *texture_data;    // UNUSED
+        int texture_data_size; // UNUSED
+        bChunk *current_chunk = chunk->GetFirstChunk();
+        bChunk *last_chunk = chunk->GetLastChunk();
+
+        while (current_chunk != last_chunk) {
+            unsigned int current_chunk_id = current_chunk->GetID();
+            if (current_chunk_id == BCHUNK_TEXTURE_PACK_INFO) {
+                texture_pack_header = InternalLoadTexturePackHeaderChunks(current_chunk);
+                PrevLoadedTexturePack = texture_pack_header->pTexturePack;
+            } else if (current_chunk_id == BCHUNK_TEXTURE_PACK_DATA) {
+                InternalLoadVRAMDataChunks(current_chunk);
+            }
+            current_chunk = current_chunk->GetNext();
+        }
+        TextureVRAMDataHeader *vram_header = FindVRAMData(texture_pack_header->FilenameHash);
+        if (vram_header != nullptr) {
+            TexturePack *texture_pack = texture_pack_header->pTexturePack;
+            bChunk *vram_data_chunk = vram_header->VRAMDataChunk;
+            char *texture_data = vram_data_chunk->GetAlignedData(128);
+            int texture_data_size = vram_data_chunk->GetAlignedSize(128);
+            texture_pack->AssignTextureData(texture_data, 0, texture_data_size);
+            texture_pack->SetTextureDataSize(texture_data_size);
+            vram_header->Remove();
+        }
+        return 1;
+    } else if (chunk->GetID() == BCHUNK_TEXTURE_PACK_DATA) {
+        InternalLoadVRAMDataChunks(chunk);
+        return 1;
+    } else if (chunk->GetID() == BCHUNK_TEXTURE_ANIM_PACK) {
+        bChunk *chunk_header = chunk->GetFirstChunk();
+        bChunk *chunk_anims = chunk_header->GetNext();
+        bChunk *chunk_entries = chunk_anims->GetNext();
+        TextureAnimPackHeader *header = reinterpret_cast<TextureAnimPackHeader *>(chunk_header->GetData());
+        if (!header->EndianSwapped) {
+            header->EndianSwap();
+        }
+        if (header->Version == 1) {
+            TextureAnim *anims = reinterpret_cast<TextureAnim *>(chunk_anims->GetData());
+            TextureAnimEntry *entries = reinterpret_cast<TextureAnimEntry *>(chunk_entries->GetData());
+            int num_anims = chunk_anims->GetSize() / sizeof(*anims);
+            int num_anim_entries = chunk_entries->GetSize() / sizeof(*entries);
+            if (!header->EndianSwapped) {
+                for (int i = 0; i < num_anims; i++) {
+                    anims[i].EndianSwap();
+                }
+                for (int j = 0; j < num_anim_entries; j++) {
+                    entries[j].EndianSwap();
+                }
+            }
+            header->pTextureAnimPack = new TextureAnimPack(PrevLoadedTexturePack, anims, entries, num_anims, num_anim_entries);
+            header->pTextureAnimPack->InitAnims();
+        } else {
+            header->pTextureAnimPack = nullptr;
+        }
+        if (header != nullptr) {
+            header->EndianSwapped = true;
+        }
+        return 1;
+    }
+    return 0;
+}
+
+int UnloaderTexturePack(bChunk *chunk) {
+    if (chunk->GetID() == BCHUNK_TEXTURE_PACK) {
         TexturePackHeader *texture_pack_header;
         bChunk *current_chunk = chunk->GetFirstChunk();
         bChunk *last_chunk = chunk->GetLastChunk();
 
         while (current_chunk != last_chunk) {
             unsigned int current_chunk_id = current_chunk->GetID();
-            if (current_chunk_id == 0xB3310000) {
+            if (current_chunk_id == BCHUNK_TEXTURE_PACK_INFO) {
                 InternalUnloadTexturePackHeaderChunks(current_chunk);
                 PrevLoadedTexturePack = nullptr;
             }
             current_chunk = current_chunk->GetNext();
         }
         return 1;
-    } else if (chunk->GetID() == 0xB3320000) {
+    } else if (chunk->GetID() == BCHUNK_TEXTURE_PACK_DATA) {
         return 1;
-    } else if (chunk->GetID() == 0xB0300100) {
+    } else if (chunk->GetID() == BCHUNK_TEXTURE_ANIM_PACK) {
         bChunk *chunk_header = chunk->GetFirstChunk();
         TextureAnimPackHeader *header = reinterpret_cast<TextureAnimPackHeader *>(chunk_header->GetData());
         if (header->Version == 1) {
@@ -159,7 +261,7 @@ void TexturePack::AttachTextureInfo(TextureInfo *texture_info, TextureInfoPlatIn
     texture_info->ImageData = nullptr;
     texture_info->PaletteData = nullptr;
     texture_info->SetPlatInfo(plat_info);
-    if (texture_info->NameHash == 0x66994f4a) {
+    if (texture_info->NameHash == BinHash<'D', 'E', 'F', 'A', 'U', 'L', 'T', 'A', 'L', 'P', 'H', 'A'>::value) {
         DefaultTextureInfo = texture_info;
     }
     eDirtyTextures = 1;
@@ -211,6 +313,21 @@ void TexturePack::AssignTextureData(char *texture_data, int begin_pos, int num_b
 inline void ClearTextureInfoCache(unsigned int name_hash) {
     int cache_index = name_hash & 0xFF;
     TextureInfoCache[cache_index] = nullptr;
+}
+
+inline TextureInfo *GetTextureInfoCache(unsigned int name_hash) {
+    int cache_index = name_hash & 0xFF;
+    TextureInfo *t = TextureInfoCache[cache_index];
+    if ((t != nullptr) && (t->NameHash == name_hash)) {
+        return t;
+    }
+    return nullptr;
+}
+
+inline void SetTextureInfoCache(TextureInfo *t) {
+    int cache_index = t->NameHash & 0xFF;
+    TextureInfoCache[cache_index] = t;
+    TextureInfoCacheSafety[cache_index] = t->NameHash;
 }
 
 void TexturePack::UnAssignTextureData(int begin_pos, int num_bytes) {
@@ -292,7 +409,7 @@ TextureInfo *eCreateTextureInfo() {
     return texture_info;
 }
 
-void eDestroyTextureInfo(struct TextureInfo *texture_info) {
+void eDestroyTextureInfo(TextureInfo *texture_info) {
     TextureInfoPlatInfo *plat_info = texture_info->GetPlatInfo();
     if (plat_info != nullptr) {
         delete plat_info;
@@ -487,11 +604,11 @@ int eLoadStreamingTexturePack(const char *filename, void (*callback_function)(vo
     return streaming_pack != nullptr;
 }
 
-void TextureLoadingStreamingPackPhase1(eStreamingPackHeaderLoadingInfoPhase1 *loading_info /* r27 */) {
-    bChunk *list_chunk;     // r28
-    bChunk *null_chunk;     // r30
-    bChunk *header_chunk;   // r29
-    int header_chunks_size; // r9
+void TextureLoadingStreamingPackPhase1(eStreamingPackHeaderLoadingInfoPhase1 *loading_info) {
+    bChunk *list_chunk;
+    bChunk *null_chunk;
+    bChunk *header_chunk;
+    int header_chunks_size;
 
     list_chunk = loading_info->TempHeaderChunks;
     EndianSwapChunkHeader(list_chunk);
@@ -499,10 +616,9 @@ void TextureLoadingStreamingPackPhase1(eStreamingPackHeaderLoadingInfoPhase1 *lo
     EndianSwapChunkHeader(header_chunk);
     null_chunk = header_chunk->GetNext();
     EndianSwapChunkHeader(null_chunk);
-    // TODO wrong
-    header_chunks_size = header_chunk[1].GetSize();
+    header_chunks_size = null_chunk->GetSize();
     loading_info->NextLoadAmount = header_chunks_size + 16;
-    loading_info->NextLoadPosition = (size_t)null_chunk - (size_t)list_chunk;
+    loading_info->NextLoadPosition = (uintptr_t)null_chunk - (uintptr_t)list_chunk;
 }
 
 void TextureLoadingStreamingPackPhase2(eStreamingPackHeaderLoadingInfoPhase2 *loading_info) {
@@ -547,9 +663,53 @@ float TextureInfo::GetScroll(float time, float speed, int scroll_type, float tim
 
 void MaybePrintUnusedTextures() {}
 
-// UNSOLVED
+// UNSOLVED https://decomp.me/scratch/3GvPG
 TextureInfo *GetTextureInfo(unsigned int name_hash /* r30 */, BOOL return_default_texture_if_not_found /* r27 */,
-                            BOOL include_unloaded_textures /* r5 */) {}
+                            BOOL include_unloaded_textures /* r5 */) {
+    if (name_hash != 0) {
+        TextureInfo *texture_info = GetTextureInfoCache(name_hash);
+        if (texture_info != nullptr) {
+            return texture_info;
+        }
+        for (TexturePack *p = TexturePackList.GetHead(); p != TexturePackList.EndOfList(); p = p->GetNext()) {
+            if (TextureLoadedTable.IsLoaded(name_hash)) {
+                continue; // wrong
+            }
+            TextureInfo *texture_info;
+            if (include_unloaded_textures) {
+                texture_info = p->GetTexture(name_hash);
+            } else {
+                texture_info = p->GetLoadedTexture(name_hash);
+            }
+            if (texture_info != nullptr) {
+                TexturePackList.Remove(p);
+                TexturePackList.AddHead(p);
+                texture_info->UsedFlag = true;
+                SetTextureInfoCache(texture_info);
+                return texture_info;
+            }
+        }
+        {
+            TextureInfo *texture_info = eGetRenderTargetTextureInfo(name_hash);
+            if (texture_info != nullptr) {
+                return texture_info;
+            }
+            texture_info = eGetOtherEcstacyTexture(name_hash);
+            if (texture_info != nullptr) {
+                return texture_info;
+            }
+        }
+    }
+    if (return_default_texture_if_not_found) {
+        TextureInfo *texture_info = DefaultTextureInfo;
+        if (texture_info == nullptr) {
+            bBreak();
+            return nullptr;
+        }
+        return texture_info;
+    }
+    return nullptr;
+}
 
 TextureInfo *FixupTextureInfo(TextureInfo *texture_info, unsigned int name_hash, TexturePack *texture_pack, bool loading) {
     if (loading) {

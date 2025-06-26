@@ -18,7 +18,7 @@ struct SlotPool : public bTNode<SlotPool> {
     SlotPool *NextSlotPool;    // offset 0x8, size 0x4
     const char *DebugName;     // offset 0xC, size 0x4
     SlotPoolEntry *FreeSlots;  // offset 0x10, size 0x4
-    enum SlotPoolFlags Flags;  // offset 0x14, size 0x4
+    SlotPoolFlags Flags;       // offset 0x14, size 0x4
     int NumAllocatedSlots;     // offset 0x18, size 0x4
     int MostNumAllocatedSlots; // offset 0x1C, size 0x4
     int MemoryPool;            // offset 0x20, size 0x4

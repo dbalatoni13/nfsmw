@@ -1,3 +1,5 @@
+#pragma once
+
 extern class Activity {};
 extern class ITrafficMgr {};
 extern class IVehicleCache {};

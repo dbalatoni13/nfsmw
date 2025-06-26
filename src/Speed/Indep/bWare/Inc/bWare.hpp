@@ -2,16 +2,19 @@
 #pragma once
 
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
-#include "bVector.hpp"
+#include "bMath.hpp"
 
 #if DEBUG
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
+// this macro might not be a thing
 #define bMALLOC(size, debug_text, debug_line, allocation_params) bMalloc((size), (debug_text), (debug_line), (allocation_params))
 #else
 void *bMalloc(int size, int allocation_params);
+// this macro might not be a thing
 #define bMALLOC(size, debug_text, debug_line, allocation_params) bMalloc((size), (allocation_params))
 #endif
 
+void *bMalloc(SlotPool *slot_pool);
 void *bMalloc(SlotPool *slot_pool, int num_slots, void **last_slot);
 void bFree(void *ptr);
 void bFree(SlotPool *slot_pool, void *p);
@@ -21,7 +24,7 @@ extern "C" {
 void bMemSet(void *dest, unsigned char pattern, unsigned int size);
 }
 
-inline void *__vn(unsigned int size, const char *file, int line) {
+inline void *operator new[](size_t size, const char *file, int line) {
     return new char[size];
 }
 

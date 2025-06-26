@@ -1,24 +1,56 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-void bEndianSwap64(void *value /* r3 */) {
-    long long temp; // r9
+void bEndianSwap64(void *value) {
+    int64_t temp = *reinterpret_cast<int64_t *>(value);
+    *reinterpret_cast<uint8_t *>(value) = temp;
+    *(reinterpret_cast<uint8_t *>(value) + 1) = temp >> 8;
+    *(reinterpret_cast<uint8_t *>(value) + 2) = temp >> 16;
+    *(reinterpret_cast<uint8_t *>(value) + 3) = temp >> 24;
+    *(reinterpret_cast<uint8_t *>(value) + 4) = temp >> 32;
+    *(reinterpret_cast<uint8_t *>(value) + 5) = temp >> 40;
+    *(reinterpret_cast<uint8_t *>(value) + 6) = temp >> 48;
+    *(reinterpret_cast<uint8_t *>(value) + 7) = temp >> 56;
 }
 
-void bEndianSwap32(void *value /* r3 */) {
-    unsigned int temp; // r0
+void bEndianSwap32(void *value) {
+    uint32_t temp = *reinterpret_cast<uint32_t *>(value);
+    *reinterpret_cast<uint8_t *>(value) = temp;
+    *(reinterpret_cast<uint8_t *>(value) + 1) = temp >> 8;
+    *(reinterpret_cast<uint8_t *>(value) + 2) = temp >> 16;
+    *(reinterpret_cast<uint8_t *>(value) + 3) = temp >> 24;
 }
 
-void bEndianSwap16(void *value /* r3 */) {
-    unsigned short temp;
+void bEndianSwap16(void *value) {
+    uint16_t temp = *reinterpret_cast<uint16_t *>(value);
+    *reinterpret_cast<uint8_t *>(value) = temp;
+    *(reinterpret_cast<uint8_t *>(value) + 1) = temp >> 8;
 }
 
-void bPlatEndianSwap(bVector2 *value /* r30 */) {}
+void bPlatEndianSwap(bVector2 *value) {
+    bPlatEndianSwap(&value->x);
+    bPlatEndianSwap(&value->y);
+}
 
-void bPlatEndianSwap(bVector3 *value /* r30 */) {}
+void bPlatEndianSwap(bVector3 *value) {
+    bPlatEndianSwap(&value->x);
+    bPlatEndianSwap(&value->y);
+    bPlatEndianSwap(&value->z);
+}
 
-void bPlatEndianSwap(bVector4 *value /* r30 */) {}
+void bPlatEndianSwap(bVector4 *value) {
+    bPlatEndianSwap(&value->x);
+    bPlatEndianSwap(&value->y);
+    bPlatEndianSwap(&value->z);
+    bPlatEndianSwap(&value->w);
+}
 
-void bPlatEndianSwap(bMatrix4 *value /* r30 */) {}
+void bPlatEndianSwap(bMatrix4 *value) {
+    bPlatEndianSwap(&value->v0);
+    bPlatEndianSwap(&value->v1);
+    bPlatEndianSwap(&value->v2);
+    bPlatEndianSwap(&value->v3);
+}
 
 float bSin(unsigned short angle);
 

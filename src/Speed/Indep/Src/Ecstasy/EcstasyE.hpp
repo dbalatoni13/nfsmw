@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Speed/GameCube/Src/Ecstasy/eViewPlat.hpp"
 
 int eInitEnginePlat();

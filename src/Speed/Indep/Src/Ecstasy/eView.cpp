@@ -2,8 +2,8 @@
 #include "EcstasyData.hpp"
 #include "Speed/GameCube/Src/Ecstasy/eViewPlat.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
+#include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
-#include "Speed/Indep/bWare/Inc/bVector.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 eView eViews[22];
@@ -65,6 +65,7 @@ int eView::GetPixelSize(const bVector3 *position, float radius) {
     return pixel_size;
 }
 
+// UNSOLVED
 int eView::GetPixelSize(const bVector3 *bbox_min, const bVector3 *bbox_max) {
     Camera *camera = this->GetCamera();
     bVector3 *cam_position = camera->GetPosition();
@@ -77,7 +78,7 @@ int eView::GetPixelSize(const bVector3 *bbox_min, const bVector3 *bbox_max) {
     float rad_y = bbox_max->y;
     float rad_z = bbox_max->z;
 
-    float radius = sqrtf(rad_x * rad_x + rad_y * rad_y + rad_z * rad_z);
+    float radius = bSqrt(rad_x * rad_x + rad_y * rad_y + rad_z * rad_z);
 
     float dir_x = pos_x - cam_position->x;
     float dir_y = pos_y - cam_position->y;
@@ -96,6 +97,27 @@ int eView::GetPixelSize(const bVector3 *bbox_min, const bVector3 *bbox_max) {
         pixel_size = rad_y;
     }
     return pixel_size;
+}
+
+void eView::BiasMatrixForZSorting(bMatrix4 *pL2W, float zBias) {
+    if (this->pCamera != nullptr) {
+        bMatrix4 m;
+        bIdentity(&m);
+
+        bVector3 *pObjPosition = reinterpret_cast<bVector3 *>(&pL2W->v3);
+        bVector3 *pCamPosition = this->pCamera->GetPosition();
+        m.v0.x = zBias;
+        m.v1.y = zBias;
+        m.v2.z = zBias;
+
+        bVector3 v = *pObjPosition - *pCamPosition;
+        v *= zBias;
+        v += *pCamPosition;
+        *reinterpret_cast<bVector3 *>(&m.v3) = v;
+        m.v3.w = 1.0f;
+        bFill(&pL2W->v3, 0.0f, 0.0f, 0.0f, 1.0f);
+        eMulMatrix(pL2W, pL2W, &m);
+    }
 }
 
 void eView::AttachCameraMover(CameraMover *camera_mover) {

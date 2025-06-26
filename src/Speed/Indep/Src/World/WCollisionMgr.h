@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Speed/Indep/bWare/Inc/bVector.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 namespace WCollisionMgr {
 
 class ICollisionHandler {
-  ICollisionHandler() {}
+    ICollisionHandler() {}
 
-public:
-  virtual bool OnWCollide(const struct WorldCollisionInfo &cInfo, const struct bVector3 &cPoint, void *userdata);
+  public:
+    virtual bool OnWCollide(const struct WorldCollisionInfo &cInfo, const struct bVector3 &cPoint, void *userdata);
 };
 
 }; // namespace WCollisionMgr

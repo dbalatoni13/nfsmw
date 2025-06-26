@@ -8,3 +8,12 @@ splits: config/GOWE69/splits.txt
 # See config.example.yml for a list.
 mw_comment_version: 11
 quick_analysis: true
+
+block_relocations:
+# - source: .text:0x800F92C0
+#   end: .text:0x800F92C8
+# - source: .text:0x800F9368
+#   end: .text:0x800F9370
+
+- target: .text:0x80135100
+- target: .text:0x80135000
