@@ -5,6 +5,7 @@
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+
 int AllowCompressedStreamingTexturesInThisPoolNum; // size: 0x4, address: 0x8041A5E4
 SlotPool *eStreamingPackSlotPool;
 eStreamingPackLoadTable QueuedLoadingTables[64]; // size: 0x400, address: 0x8046A770
@@ -175,8 +176,11 @@ int eStreamPackLoader::GetMemoryEntries(unsigned int *name_hash_table /* r27 */,
 eStreamingPack *eStreamPackLoader::GetLoadedStreamingPack(const char *filename) {
     eStreamingPack *streaming_pack;
 
-    for (streaming_pack = this->LoadedStreamingPackList.GetHead(); streaming_pack != this->LoadedStreamingPackList.EndOfList();
-         streaming_pack = streaming_pack->GetNext()) {
+    for (
+        streaming_pack = this->LoadedStreamingPackList.GetHead();
+        streaming_pack != this->LoadedStreamingPackList.EndOfList();
+        streaming_pack = streaming_pack->GetNext())
+    {
         if (!bStrCmp(filename, streaming_pack->Filename)) {
             streaming_pack->Remove();
             this->LoadedStreamingPackList.AddHead(streaming_pack);
@@ -185,4 +189,57 @@ eStreamingPack *eStreamPackLoader::GetLoadedStreamingPack(const char *filename) 
     }
 
     return nullptr;
+}
+
+eStreamingPack *eStreamPackLoader::GetLoadedStreamingPack(unsigned int name_hash) {
+    eStreamingPack *streaming_pack;
+
+    for (
+        streaming_pack = this->LoadedStreamingPackList.GetHead();
+        streaming_pack != this->LoadedStreamingPackList.EndOfList();
+        streaming_pack = streaming_pack->GetNext())
+    {
+        if (this->GetStreamingEntry(name_hash, streaming_pack)) {
+            streaming_pack->Remove();
+            this->LoadedStreamingPackList.AddHead(streaming_pack);
+            return streaming_pack;
+        }
+    }
+
+    return nullptr;
+}
+
+eStreamingEntry *eStreamPackLoader::GetStreamingEntry(unsigned int name_hash, eStreamingPack *streaming_pack) {
+    if (!streaming_pack->DisabledFlag) {
+        int num_entries = streaming_pack->StreamingEntryNumEntries;
+        if (streaming_pack->StreamingEntryTable) {
+        eStreamingEntry *streaming_entry = (eStreamingEntry *)ScanHashTableKey32(name_hash, streaming_pack->StreamingEntryTable, num_entries, 0x0, 0x18);
+        if (streaming_entry) {
+            return streaming_entry;
+        }
+    }
+    }
+    return nullptr;
+}
+
+eStreamingEntry *eStreamPackLoader::GetStreamingEntry(unsigned int name_hash) {
+    eStreamingPack *streaming_pack;
+
+    for (
+        streaming_pack = this->LoadedStreamingPackList.GetHead();
+        streaming_pack != this->LoadedStreamingPackList.EndOfList();
+        streaming_pack = streaming_pack->GetNext())
+    {
+        eStreamingEntry *streaming_entry = this->GetStreamingEntry(name_hash, streaming_pack);
+        if (streaming_entry) {
+            return streaming_entry;
+        }
+    }
+
+    return nullptr;
+}
+
+bChunk *eStreamPackLoader::GetAlignedChunkDataPtr(unsigned char *chunk_data) {
+    int byte_alignment = this->RequiredChunkAlignment - 1;
+    return (bChunk *)((size_t)(chunk_data + byte_alignment) & ~(size_t)byte_alignment);
 }

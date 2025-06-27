@@ -112,14 +112,20 @@ struct eStreamPackLoader {
     int NumLoadedStreamingEntries;                                                         // offset 0x30, size 0x4
     int NumLoadedBytes;                                                                    // offset 0x34, size 0x4
 
-    eStreamPackLoader(int required_chunk_alignment, void (*loaded_streaming_entry_callback)(bChunk *, eStreamingEntry *, eStreamingPack *),
-                      void (*unloaded_streaming_entry_callback)(bChunk *, eStreamingEntry *, eStreamingPack *),
-                      void (*loading_header_phase1_callback)(eStreamingPackHeaderLoadingInfoPhase1 *),
-                      void (*loading_header_phase2_callback)(eStreamingPackHeaderLoadingInfoPhase2 *),
-                      void (*unloading_header_callback)(eStreamingPack *));
-    int GetMemoryEntries(unsigned int *name_hash_table, int num_hashes, void **memory_entries, int num_memory_entries);
+    eStreamPackLoader(
+        int required_chunk_alignment,
+        void (* loaded_streaming_entry_callback)(bChunk *, eStreamingEntry *, eStreamingPack *),
+        void (* unloaded_streaming_entry_callback)(bChunk *, eStreamingEntry *, eStreamingPack *),
+        void (* loading_header_phase1_callback)(eStreamingPackHeaderLoadingInfoPhase1 *),
+        void (* loading_header_phase2_callback)(eStreamingPackHeaderLoadingInfoPhase2 *),
+        void (* unloading_header_callback)(eStreamingPack *)
+    );
+    int GetMemoryEntries(unsigned int * name_hash_table, int num_hashes, void **memory_entries, int num_memory_entries);
+    eStreamingPack *GetLoadedStreamingPack(const char *filename);
+    eStreamingPack *GetLoadedStreamingPack(unsigned int name_hash);
     eStreamingEntry *GetStreamingEntry(unsigned int name_hash, eStreamingPack *streaming_pack);
     eStreamingEntry *GetStreamingEntry(unsigned int name_hash);
+    bChunk *GetAlignedChunkDataPtr(unsigned char *chunk_data);
 
     eStreamingPack *CreateStreamingPack(const char *filename, void (*callback_function)(void *), void *callback_param, int memory_pool_num);
     void LoadStreamingEntry(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num);
@@ -127,7 +133,6 @@ struct eStreamPackLoader {
     void UnloadStreamingEntry(unsigned int name_hash, eStreamingPack *streaming_pack);
     void UnloadStreamingEntry(unsigned int *name_hash_table, int num_hashes);
     void UnloadAllStreamingEntries(const char *filename);
-    eStreamingPack *GetLoadedStreamingPack(const char *filename);
     int DeleteStreamingPack(const char *filename);
 
     void DisableStreamingPack(const char *filename) {}
