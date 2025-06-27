@@ -243,3 +243,7 @@ bChunk *eStreamPackLoader::GetAlignedChunkDataPtr(unsigned char *chunk_data) {
     int byte_alignment = this->RequiredChunkAlignment - 1;
     return (bChunk *)((size_t)(chunk_data + byte_alignment) & ~(size_t)byte_alignment);
 }
+
+eStreamingPackLoadTable *eStreamPackLoader::GetStreamPackLoadingTable() {
+    
+}

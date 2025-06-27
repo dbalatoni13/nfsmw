@@ -126,6 +126,7 @@ struct eStreamPackLoader {
     eStreamingEntry *GetStreamingEntry(unsigned int name_hash, eStreamingPack *streaming_pack);
     eStreamingEntry *GetStreamingEntry(unsigned int name_hash);
     bChunk *GetAlignedChunkDataPtr(unsigned char *chunk_data);
+    struct eStreamingPackLoadTable *GetStreamPackLoadingTable();
 
     eStreamingPack *CreateStreamingPack(const char *filename, void (*callback_function)(void *), void *callback_param, int memory_pool_num);
     void LoadStreamingEntry(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num);
