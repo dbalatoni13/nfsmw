@@ -1,4 +1,9 @@
+#ifndef GAMECUBE_ECSTASY_ECSTASY_H
+#define GAMECUBE_ECSTASY_ECSTASY_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 enum PS_ResetOptions {
     RESET_OPTION_MODULATE = 1,
@@ -28,3 +33,5 @@ int ps_NoLighting(int bVertexColour, int opt);
 int vsReset(int opt);
 int vsResetTexGen(int opt, int stage);
 int vsVtxAttrFmt(int opt);
+
+#endif

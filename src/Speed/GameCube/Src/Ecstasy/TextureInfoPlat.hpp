@@ -1,4 +1,9 @@
+#ifndef GAMECUBE_ECSTASY_TEXTURE_INFO_PLAT_H
+#define GAMECUBE_ECSTASY_TEXTURE_INFO_PLAT_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include <dolphin.h>
@@ -32,3 +37,5 @@ class TextureInfoPlatInterface {
         return this->PlatInfo;
     }
 };
+
+#endif

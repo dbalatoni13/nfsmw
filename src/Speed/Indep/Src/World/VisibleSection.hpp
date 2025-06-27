@@ -1,4 +1,9 @@
+#ifndef WORLD_VISIBLE_SECTION_H
+#define WORLD_VISIBLE_SECTION_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
@@ -31,6 +36,10 @@ struct DrivableScenerySection : public bTNode<DrivableScenerySection> {
     short NumVisibleSections;          // offset 0x10, size 0x2
     short VisibleSections[72];         // offset 0x12, size 0x90
     short Padding;                     // offset 0xA2, size 0x2
+
+    int GetVisibleSection(int i) {
+        return this->VisibleSections[i];
+    }
 };
 
 struct DrivableSectionsInRegion {
@@ -155,6 +164,8 @@ class VisibleSectionManager {
 
   public:
     void UnallocateUserInfo(int section_number);
+    DrivableScenerySection *FindDrivableSection(const bVector2 *point);
+    DrivableScenerySection *FindDrivableSection(int section_number /* r4 */);
 
     VisibleSectionUserInfo *GetUserInfo(int section_number) {
         return this->UserInfoTable[section_number];
@@ -162,3 +173,5 @@ class VisibleSectionManager {
 };
 
 extern VisibleSectionManager TheVisibleSectionManager; // size: 0x6830
+
+#endif

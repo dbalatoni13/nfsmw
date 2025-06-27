@@ -1,4 +1,9 @@
+#ifndef WORLD_SUN_H
+#define WORLD_SUN_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #define BCHUNK_SUN_INFOS 0x00034202
 
@@ -46,3 +51,5 @@ struct SunChunkInfo {
 void RenderSunAsFlare();
 
 extern SunChunkInfo *SunInfo;
+
+#endif

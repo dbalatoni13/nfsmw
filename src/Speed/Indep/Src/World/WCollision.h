@@ -1,4 +1,9 @@
+#ifndef WORLD_WCOLLISION_H
+#define WORLD_WCOLLISION_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include <types.h>
 
@@ -51,3 +56,5 @@ struct WorldCollisionInfo {
     unsigned short fPad;
     WCollisionInstance *fCInst;
 };
+
+#endif

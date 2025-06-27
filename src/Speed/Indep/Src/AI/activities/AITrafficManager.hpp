@@ -1,4 +1,9 @@
+#ifndef AI_ACTIVITIES_AI_TRAFFIC_MANAGER_H
+#define AI_ACTIVITIES_AI_TRAFFIC_MANAGER_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 extern class Activity {};
 extern class ITrafficMgr {};
@@ -29,3 +34,5 @@ class AITrafficManager : public Activity, public ITrafficMgr, public IVehicleCac
 
     AITrafficManager(Param params);
 };
+
+#endif

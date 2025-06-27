@@ -1,4 +1,9 @@
+#ifndef ECSTASY_DEFRAG_FIXER_H
+#define ECSTASY_DEFRAG_FIXER_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include <types.h>
 
@@ -22,3 +27,5 @@ struct DefragFixer {
     void Add(void *pmem, int mem_size, int movement_offset);
     void *Fix(void *pmem);
 };
+
+#endif

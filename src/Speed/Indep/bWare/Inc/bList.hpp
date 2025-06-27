@@ -1,4 +1,9 @@
+#ifndef BWARE_BLIST_H
+#define BWARE_BLIST_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include "types.h"
 
@@ -162,3 +167,5 @@ template <typename T> class bTList : public bList {
     T *AddSorted(SortFunc check_flip);
     void Sort(SortFunc check_flip);
 };
+
+#endif

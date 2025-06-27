@@ -1,4 +1,9 @@
+#ifndef BWARE_BMATH_H
+#define BWARE_BMATH_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include <math.h>
 
@@ -644,3 +649,5 @@ inline bMatrix4 &bMatrix4::operator=(const bMatrix4 &m) {
 inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector4 *position) {}
 
 inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector3 *position) {}
+
+#endif

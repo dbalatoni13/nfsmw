@@ -1,4 +1,9 @@
+#ifndef GAMECUBE_ECSTASY_ESOLID_PLAT_H
+#define GAMECUBE_ECSTASY_ESOLID_PLAT_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 struct eSolidPlatInfo {
     // total size: 0x24
@@ -19,3 +24,5 @@ struct eSolidPlatInterface {
     // total size: 0x4
     struct eSolidPlatInfo *PlatInfo; // offset 0x0, size 0x4
 };
+
+#endif

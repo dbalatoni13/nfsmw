@@ -1,4 +1,9 @@
+#ifndef WORLD_WCOLISSION_TRI_H
+#define WORLD_WCOLISSION_TRI_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include "./WCollision.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -13,3 +18,5 @@ struct WCollisionTri {
     WSurface fSurface;                    // offset 0x2C, size 0x2
     unsigned short PAD;                   // offset 0x2E, size 0x2
 };
+
+#endif

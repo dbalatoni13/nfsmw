@@ -1,4 +1,9 @@
+#ifndef WORLD_WORLD_H
+#define WORLD_WORLD_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include "Speed/Indep/Src/World/WCollisionTri.h"
 
@@ -20,3 +25,5 @@ enum eTimeOfDay {
 };
 
 eTimeOfDay GetCurrentTimeOfDay();
+
+#endif

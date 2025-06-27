@@ -1,4 +1,9 @@
+#ifndef PHYSICS_DYANMICS_COLLISION_H
+#define PHYSICS_DYANMICS_COLLISION_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
@@ -32,3 +37,5 @@ struct CollisionInstance {
     bVector4 fInvMatRow2Length;                        // offset 0x20, size 0x10
     bVector4 fInvPosRadius;                            // offset 0x30, size 0x10
 };
+
+#endif

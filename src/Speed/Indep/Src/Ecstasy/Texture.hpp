@@ -1,4 +1,9 @@
+#ifndef ECSTASY_TEXTURE_H
+#define ECSTASY_TEXTURE_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #ifdef TARGET_GC
 #include "Speed/GameCube/Src/Ecstasy/TextureInfoPlat.hpp"
@@ -88,16 +93,16 @@ struct TextureIndexEntry {
 
 struct TexturePackHeader {
     // total size: 0x7C
-    int Version;                               // offset 0x0, size 0x4
-    char Name[28];                             // offset 0x4, size 0x1C
-    char Filename[64];                         // offset 0x20, size 0x40
-    unsigned int FilenameHash;                 // offset 0x60, size 0x4
-    unsigned int PermChunkByteOffset;          // offset 0x64, size 0x4
-    unsigned int PermChunkByteSize;            // offset 0x68, size 0x4
-    BOOL EndianSwapped;                        // offset 0x6C, size 0x4
-    struct TexturePack *pTexturePack;          // offset 0x70, size 0x4
-    TextureIndexEntry *TextureIndexEntryTable; // offset 0x74, size 0x4
-    struct eStreamingEntry *TextureStreamEntryTable;  // offset 0x78, size 0x4
+    int Version;                                     // offset 0x0, size 0x4
+    char Name[28];                                   // offset 0x4, size 0x1C
+    char Filename[64];                               // offset 0x20, size 0x40
+    unsigned int FilenameHash;                       // offset 0x60, size 0x4
+    unsigned int PermChunkByteOffset;                // offset 0x64, size 0x4
+    unsigned int PermChunkByteSize;                  // offset 0x68, size 0x4
+    BOOL EndianSwapped;                              // offset 0x6C, size 0x4
+    struct TexturePack *pTexturePack;                // offset 0x70, size 0x4
+    TextureIndexEntry *TextureIndexEntryTable;       // offset 0x74, size 0x4
+    struct eStreamingEntry *TextureStreamEntryTable; // offset 0x78, size 0x4
 
     void EndianSwap() {}
 };
@@ -365,3 +370,5 @@ struct TextureAnimPackHeader {
 void eInitTextures();
 void UpdateTextureAnimations();
 TextureInfo *GetTextureInfo(unsigned int name_hash, BOOL return_default_texture_if_not_found, BOOL include_unloaded_textures);
+
+#endif

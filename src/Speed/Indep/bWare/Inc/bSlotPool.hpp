@@ -1,4 +1,9 @@
+#ifndef BWARE_BSLOT_POOL_H
+#define BWARE_BSLOT_POOL_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include "./bList.hpp"
 
@@ -61,3 +66,5 @@ extern struct SlotPool *ePolySlotPool;
 extern unsigned char *CurrentBufferStart;
 extern unsigned char *CurrentBufferPos;
 extern unsigned char *CurrentBufferEnd;
+
+#endif

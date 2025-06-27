@@ -1,4 +1,9 @@
+#ifndef ECSTASY_ECSTASY_H
+#define ECSTASY_ECSTASY_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #if TARGET_GC
 #include "Speed/GameCube/Src/Ecstasy/eSolidPlat.hpp"
@@ -377,3 +382,5 @@ void eNotifyTextureLoading(TexturePack *texture_pack, TextureInfo *texture_info,
 TextureInfo *eGetRenderTargetTextureInfo(int name_hash);
 TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash);
 float GetSunIntensity(eView *view);
+
+#endif

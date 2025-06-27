@@ -1,4 +1,9 @@
+#ifndef SUPPORT_MISC_STRINGHASH_H
+#define SUPPORT_MISC_STRINGHASH_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 // clang-format off
 template<int c00=0, int c01=0, int c02=0, int c03=0, int c04=0, int c05=0, int c06=0, int c07=0, 
@@ -32,3 +37,5 @@ public:
 };
 
 // clang-format on
+
+#endif

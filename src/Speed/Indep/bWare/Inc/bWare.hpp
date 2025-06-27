@@ -1,5 +1,9 @@
+#ifndef BWARE_BWARE_H
+#define BWARE_BWARE_H
 
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "bMath.hpp"
@@ -64,3 +68,5 @@ inline void bPlatEndianSwap(unsigned short *value) {
 inline void bPlatEndianSwap(float *value) {
     bEndianSwap32(value);
 }
+
+#endif

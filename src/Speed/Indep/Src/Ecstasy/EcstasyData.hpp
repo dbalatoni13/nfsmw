@@ -1,4 +1,9 @@
+#ifndef ECSTASY_ECSTASY_DATA_H
+#define ECSTASY_ECSTASY_DATA_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 enum EVIEW_ID {
     NUM_RVM_VIEWS = 1,
@@ -84,3 +89,5 @@ enum FILTER_ID {
     FILTER_DEFAULT = 1,
     FILTER_OFF = 0,
 };
+
+#endif

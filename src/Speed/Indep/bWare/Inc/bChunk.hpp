@@ -1,4 +1,9 @@
+#ifndef BWARE_BCHUNK_H
+#define BWARE_BCHUNK_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include "types.h"
 
@@ -126,3 +131,5 @@ class bChunkCarpHeader {
         this->mLastAddress = address;
     }
 };
+
+#endif

@@ -1,4 +1,9 @@
+#ifndef WORLD_SCENERY_H
+#define WORLD_SCENERY_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -41,3 +46,5 @@ struct SceneryCullInfo {
     float H;                                  // offset 0xB4, size 0x4
     int PrecullerSectionNumber;               // offset 0xB8, size 0x4
 };
+
+#endif

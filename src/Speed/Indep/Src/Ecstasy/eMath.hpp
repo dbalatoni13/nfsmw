@@ -1,4 +1,9 @@
+#ifndef ECSTASY_EMATH_H
+#define ECSTASY_EMATH_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
@@ -29,3 +34,5 @@ extern bMatrix4 eMathZeroMatrix;     // size: 0x40
 inline struct bMatrix4 *eGetIdentityMatrix() {
     return &eMathIdentityMatrix;
 }
+
+#endif
