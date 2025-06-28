@@ -245,5 +245,89 @@ bChunk *eStreamPackLoader::GetAlignedChunkDataPtr(unsigned char *chunk_data) {
 }
 
 eStreamingPackLoadTable *eStreamPackLoader::GetStreamPackLoadingTable() {
-    
+    for (int i = 0; i < 0x40; i++) {
+        if (QueuedLoadingTables[i].Locked != 0) continue;
+
+        QueuedLoadingTables[i].StreamPackLoader = this;
+        QueuedLoadingTables[i].Locked = 1;
+        return &QueuedLoadingTables[i];
+    }
+
+    return nullptr;
+}
+
+void eStreamPackLoader::InternalLoadedStreamingEntryCallback(void *callback_param, int error_status, void *callback_param2) {
+    eStreamingPackLoadTable *loading_table = (eStreamingPackLoadTable *)callback_param2;
+    eStreamingEntry *streaming_entry = (eStreamingEntry *)callback_param;
+    eStreamPackLoader *stream_pack_loader = loading_table->StreamPackLoader;
+    unsigned int name_hash = streaming_entry->NameHash;
+    eStreamingPack *streaming_pack = stream_pack_loader->GetLoadedStreamingPack(name_hash);
+
+    streaming_entry->Flags &= ~0x10;
+    if (error_status == 0) {
+        stream_pack_loader->NumLoadedStreamingEntries++;
+        stream_pack_loader->NumLoadedBytes += streaming_entry->ChunkByteSize;
+        if (streaming_entry->Flags & 0x20) {
+            stream_pack_loader->InternalUnloadStreamingEntry(streaming_pack, streaming_entry);
+            streaming_entry->Flags &= ~0x20;
+        } else {
+            bChunk *loaded_chunks = stream_pack_loader->GetAlignedChunkDataPtr(streaming_entry->ChunkData);
+            if (streaming_entry->Flags & 1) {
+                LZHeader * lz_header;
+                char malloc_name[128];
+                int uncompressed_size;
+                int malloc_size;
+                int memory_pool_num;
+                int allocation_params = 0x2000;
+                unsigned char *uncompressed_data;
+                unsigned char *compressed_data;
+                unsigned char *base_loaded_data;
+                int actual_decompressed_size;
+
+                bPlatEndianSwap((unsigned int *)loaded_chunks);
+                bPlatEndianSwap((unsigned short *)loaded_chunks + 3);
+                bPlatEndianSwap((unsigned char *)loaded_chunks); // extra call
+                bPlatEndianSwap((unsigned int *)loaded_chunks + 2);
+                bPlatEndianSwap((unsigned int *)loaded_chunks + 3);
+
+                bSPrintf(malloc_name, "%s", streaming_pack->Filename);
+                
+                malloc_size = streaming_entry->UncompressedSize + stream_pack_loader->RequiredChunkAlignment;
+                memory_pool_num = loading_table->MemoryPoolNum;
+                if (memory_pool_num != 0) {
+                    if (bLargestMalloc(memory_pool_num) > malloc_size) {
+                        allocation_params = (memory_pool_num & 0xF) | 0x2000;
+                    } else {
+                        PrintStreamingPackMemoryWarning(malloc_name, malloc_size, memory_pool_num);
+                    }
+                }
+                compressed_data = (unsigned char *)loaded_chunks;
+                uncompressed_data = (unsigned char *)bMalloc(malloc_size, allocation_params);
+                base_loaded_data = streaming_entry->ChunkData;
+                streaming_entry->ChunkData = uncompressed_data;
+                loaded_chunks = stream_pack_loader->GetAlignedChunkDataPtr(streaming_entry->ChunkData);
+                // what?
+                LZDecompress(compressed_data, (unsigned char *)loaded_chunks);
+                bFree(base_loaded_data);
+                stream_pack_loader->LoadedStreamingEntryCallback(loaded_chunks, streaming_entry, streaming_pack);
+            }
+        }
+    }
+
+    if (streaming_pack) {
+        streaming_pack->NumLoadsPending--;
+    }
+    if (loading_table) {
+        loading_table->NumLoadsPending--;
+        if (!loading_table->NumLoadsPending) {
+            if (loading_table->Callback) {
+                loading_table->Callback(loading_table->Param);
+            }
+            loading_table->StreamPackLoader = 0;
+            loading_table->Locked = 0;
+            loading_table->NumLoadsPending = 0;
+            loading_table->Callback = 0;
+            loading_table->Param = 0;
+        }
+    }
 }

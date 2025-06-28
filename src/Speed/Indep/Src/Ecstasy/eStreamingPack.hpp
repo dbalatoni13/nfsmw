@@ -127,6 +127,7 @@ struct eStreamPackLoader {
     eStreamingEntry *GetStreamingEntry(unsigned int name_hash);
     bChunk *GetAlignedChunkDataPtr(unsigned char *chunk_data);
     struct eStreamingPackLoadTable *GetStreamPackLoadingTable();
+    static void InternalLoadedStreamingEntryCallback(void *callback_param, int error_status, void *callback_param2);
 
     eStreamingPack *CreateStreamingPack(const char *filename, void (*callback_function)(void *), void *callback_param, int memory_pool_num);
     void LoadStreamingEntry(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num);
@@ -143,6 +144,8 @@ struct eStreamPackLoader {
     void RegisterLoadStreamingEntry(eStreamingEntry *entry) {}
 
     void RegisterUnloadStreamingEntry(eStreamingEntry *entry) {}
+
+    void InternalUnloadStreamingEntry(eStreamingPack *streaming_pack, eStreamingEntry *streaming_entry);
 
     bTList<eStreamingPack> *GetLoadedStreamingPackList() {}
 };
