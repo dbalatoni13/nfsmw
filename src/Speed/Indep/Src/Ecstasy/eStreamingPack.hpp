@@ -37,7 +37,7 @@ struct eStreamingPack : public bTNode<eStreamingPack> {
     int HeaderLoaded;                             // offset 0x14, size 0x4
     int HeaderSize;                               // offset 0x18, size 0x4
     bChunk *HeaderChunks;                         // offset 0x1C, size 0x4
-    ResourceFile *pResourceFile;           // offset 0x20, size 0x4
+    ResourceFile *pResourceFile;                  // offset 0x20, size 0x4
     eStreamingEntry *StreamingEntryTable;         // offset 0x24, size 0x4
     int StreamingEntryNumEntries;                 // offset 0x28, size 0x4
     int NumLoadsPending;                          // offset 0x2C, size 0x4
@@ -117,6 +117,7 @@ struct eStreamPackLoader {
     bChunk *GetAlignedChunkDataPtr(unsigned char *chunk_data);
     struct eStreamingPackLoadTable *GetStreamPackLoadingTable();
     static void InternalLoadedStreamingEntryCallback(void *callback_param, int error_status, void *callback_param2);
+    void InternalLoadStreamingEntry(eStreamingPackLoadTable *loading_table, struct eStreamingPack *streaming_pack, struct eStreamingEntry *streaming_entry);
 
     eStreamingPack *CreateStreamingPack(const char *filename, void (*callback_function)(void *), void *callback_param, int memory_pool_num);
     void LoadStreamingEntry(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num);
