@@ -13,15 +13,7 @@
 #include "Speed/Indep/Src/World/Scenery.hpp"
 #include "Speed/Indep/Src/World/ScreenEffects.hpp"
 #include "Speed/Indep/Src/World/SimpleModelAnim.hpp"
-#include "Speed/Indep/Src/World/ScreenEffects.hpp"
-#include "Speed/Indep/Src/World/Scenery.hpp"
 #include "Speed/Indep/Src/World/Sun.hpp"
-#include "./eModel.hpp"
-#include "./EcstasyE.hpp"
-#include "./Texture.hpp"
-#include "./eSolid.hpp"
-#include "./eLight.hpp"
-#include "./eEnvMapE.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
@@ -29,7 +21,7 @@ float renderModifier = 1.0f;
 unsigned int numCopsActiveCherry;
 unsigned int numCopsActiveTotal;
 unsigned int numCopsActiveView;
-unsigned char * FrameMemoryBuffer[2];
+unsigned char *FrameMemoryBuffer[2];
 unsigned int FrameMemoryBufferSize = 0;
 int FrameMemoryBufferAmountUsed[2];
 //
@@ -64,7 +56,7 @@ int eInitEngine() {
     return eInitEnginePlat();
 }
 
-//STRIPPED
+// STRIPPED
 int eCloseEngine() {}
 
 void ePreDisplay() {
@@ -82,8 +74,8 @@ void ePreDisplay() {
     numCopsActiveCherry = eGetView(1, false)->NumCopsCherry;
     eGetView(1, false)->NumCopsInView = 0;
     eGetView(1, false)->NumCopsTotal = 0;
-    renderModifier = 1.0f - numCopsActiveCherry / 5.0f;
     eGetView(1, false)->NumCopsCherry = 0;
+    renderModifier = 1.0f - numCopsActiveCherry / 5.0f;
     if (renderModifier < 0.25f) {
         renderModifier = 0.25f;
     }
@@ -117,8 +109,8 @@ void eFixUpTables() {
 void eAllocateFrameMallocBuffers(unsigned int total_size) {
     unsigned int buffer_size = (total_size >> 1) & 0x7FFFFFF0; // r29
 
-    FrameMemoryBuffer[0] = (unsigned char *)__vn(buffer_size, "d:/mw/speed/gamecube/src/ecstasy/Ecstasy.cpp", 315);
-    FrameMemoryBuffer[1] = (unsigned char *)__vn(buffer_size, "d:/mw/speed/gamecube/src/ecstasy/Ecstasy.cpp", 316);
+    FrameMemoryBuffer[0] = new (__FILE__, __LINE__) unsigned char[buffer_size];
+    FrameMemoryBuffer[1] = new (__FILE__, __LINE__) unsigned char[buffer_size];
 
     FrameMemoryBufferSize = buffer_size;
     CurrentBufferPos = FrameMemoryBuffer[0];
@@ -126,7 +118,7 @@ void eAllocateFrameMallocBuffers(unsigned int total_size) {
     FrameMallocAllocNum = 0;
 }
 
-//STRIPPED
+// STRIPPED
 void eFreeFrameMallocBuffers() {}
 
 void eSwapFrameMallocBuffers() {
@@ -160,8 +152,8 @@ void eSwapFrameMallocBuffers() {
     FrameMallocAllocNum = 0;
 }
 
-//STRIPPED
-int eGetSizeofFrameMallocBuffers(int * pamount_used /* r3 */) {}
+// STRIPPED
+int eGetSizeofFrameMallocBuffers(int *pamount_used /* r3 */) {}
 
 void SetupSceneryCullInfo(eView *view /* r30 */, SceneryCullInfo &info /* r29 */, int exclude_flags /* r31 */) {
     EVIEWMODE view_mode; // r3
@@ -192,22 +184,23 @@ void SetupSceneryCullInfo(eView *view /* r30 */, SceneryCullInfo &info /* r29 */
 
 void eSwapDynamicFrameMemory() {}
 
-//STRIPPED
+// STRIPPED
 void eTagHeadlightCallback(SceneryDrawInfo *info) {
-  info->SceneryInst->Rotation[1] = 512;
+    info->SceneryInst->Rotation[1] = 512;
 }
 
-//STRIPPED
+// STRIPPED
 void RenderMWDebugTopology(eView *view /* r3 */) {};
 
-//STRIPPED
+// STRIPPED
 void eDebugRender(eView *view /* r4 */) {}
 
-//STRIPPED
+// STRIPPED
 void eAddOtherEcstacyTexture(unsigned int name_hash /* r3 */, TextureInfo *tex /* r4 */) {};
 
 struct TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash) {
-    if (numOtherTex < 0) return NULL;
+    if (numOtherTex < 0)
+        return NULL;
 
     for (unsigned int i = 0; i < numOtherTex; i++) {
         if (OtherEcstacyTextures_name_hash[i] == name_hash) {
@@ -218,10 +211,12 @@ struct TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash) {
     return nullptr;
 }
 
-//STRIPPED
+// STRIPPED
 void eRemoveOtherEcstacyTexture(unsigned int name_hash /* r3 */) {}
 
-bool eIsWidescreen() { return false; } // Unlocks fullscreen on GameCube for free?
+bool eIsWidescreen() {
+    return false;
+} // Unlocks fullscreen on GameCube for free?
 
 enum polyCountEnum {
     NUM_POLY_COUNT_TYPES = 10,
@@ -237,9 +232,9 @@ enum polyCountEnum {
     POLY_COUNT_MAIN_CAR = 0,
 };
 
-//STRIPPED
-void AddPolyCount(polyCountEnum type /* r3 */, struct eModel * model /* r4 */) {}
+// STRIPPED
+void AddPolyCount(polyCountEnum type /* r3 */, struct eModel *model /* r4 */) {}
 void ClearPolyCounts() {}
 int GetPolyCount(polyCountEnum type /* r3 */) {}
-int GetModelCount(enum polyCountEnum type /* r3 */) {}
-char *GetPCType(enum polyCountEnum type /* r3 */) {}
+int GetModelCount(polyCountEnum type /* r3 */) {}
+char *GetPCType(polyCountEnum type /* r3 */) {}

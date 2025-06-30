@@ -1,4 +1,9 @@
+#ifndef ECSTASY_TEXTURE_H
+#define ECSTASY_TEXTURE_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #ifdef TARGET_GC
 #include "Speed/GameCube/Src/Ecstasy/TextureInfoPlat.hpp"
@@ -6,9 +11,27 @@
 
 #include "Speed/Indep/Src/Ecstasy/eStreamingPack.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
-#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+
+#define BCHUNK_TEXTURE_ANIM_PACK 0xB0300100
+
+#define BCHUNK_TEXTURE_PACK 0xB3300000
+#define BCHUNK_TEXTURE_PACK_INFO 0xB3310000
+#define BCHUNK_TEXTURE_PACK_BINARY 0xB3312000
+#define BCHUNK_TEXTURE_PACK_ANIM 0xB3312004
+#define BCHUNK_TEXTURE_PACK_DATA 0xB3320000
+
+#define BCHUNK_TEXTURE_PACK_INFO_HEADER 0x33310001
+#define BCHUNK_TEXTURE_PACK_INFO_KEYS 0x33310002
+#define BCHUNK_TEXTURE_PACK_INFO_ENTRIES 0x33310003
+#define BCHUNK_TEXTURE_PACK_INFO_TEXTURES 0x33310004
+#define BCHUNK_TEXTURE_PACK_INFO_COMPS 0x33310005
+#define BCHUNK_TEXTURE_PACK_ANIM_NAMES 0x33312001
+#define BCHUNK_TEXTURE_PACK_ANIM_FRAMES 0x33312002
+#define BCHUNK_TEXTURE_PACK_DATA_HEADER 0x33320001
+#define BCHUNK_TEXTURE_PACK_DATA_ARRAY 0x33320002
+#define BCHUNK_TEXTURE_PACK_DATA_UNKNOWN 0x33320003
 
 extern SlotPool *TexturePackSlotPool;
 
@@ -70,16 +93,16 @@ struct TextureIndexEntry {
 
 struct TexturePackHeader {
     // total size: 0x7C
-    int Version;                               // offset 0x0, size 0x4
-    char Name[28];                             // offset 0x4, size 0x1C
-    char Filename[64];                         // offset 0x20, size 0x40
-    unsigned int FilenameHash;                 // offset 0x60, size 0x4
-    unsigned int PermChunkByteOffset;          // offset 0x64, size 0x4
-    unsigned int PermChunkByteSize;            // offset 0x68, size 0x4
-    int EndianSwapped;                         // offset 0x6C, size 0x4
-    struct TexturePack *pTexturePack;          // offset 0x70, size 0x4
-    TextureIndexEntry *TextureIndexEntryTable; // offset 0x74, size 0x4
-    struct eStreamingEntry *TextureStreamEntryTable;  // offset 0x78, size 0x4
+    int Version;                                     // offset 0x0, size 0x4
+    char Name[28];                                   // offset 0x4, size 0x1C
+    char Filename[64];                               // offset 0x20, size 0x40
+    unsigned int FilenameHash;                       // offset 0x60, size 0x4
+    unsigned int PermChunkByteOffset;                // offset 0x64, size 0x4
+    unsigned int PermChunkByteSize;                  // offset 0x68, size 0x4
+    BOOL EndianSwapped;                              // offset 0x6C, size 0x4
+    struct TexturePack *pTexturePack;                // offset 0x70, size 0x4
+    TextureIndexEntry *TextureIndexEntryTable;       // offset 0x74, size 0x4
+    struct eStreamingEntry *TextureStreamEntryTable; // offset 0x78, size 0x4
 
     void EndianSwap() {}
 };
@@ -270,7 +293,6 @@ struct TextureVRAMDataHeader : public bTNode<TextureVRAMDataHeader> {
     void EndianSwap() {
         bPlatEndianSwap(&this->Version);
         bPlatEndianSwap(&this->FilenameHash);
-        this->EndianSwapped = true;
     }
 };
 
@@ -281,7 +303,9 @@ struct TextureAnimEntry {
     void *pPlatAnimData;       // offset 0x8, size 0x4
     unsigned int pad;          // offset 0xC, size 0x4
 
-    void EndianSwap() {}
+    void EndianSwap() {
+        bPlatEndianSwap(&this->NameHash);
+    }
 };
 
 struct TextureAnim {
@@ -295,7 +319,14 @@ struct TextureAnim {
     BOOL Valid;                         // offset 0x2C, size 0x4
     int CurrentFrame;                   // offset 0x30, size 0x4
 
-    void EndianSwap() {}
+    void EndianSwap() {
+        bPlatEndianSwap(&this->NameHash);
+        bPlatEndianSwap(&this->NumFrames);
+        bPlatEndianSwap(&this->FramesPerSecond);
+        bPlatEndianSwap(&this->TimeBase);
+        bPlatEndianSwap(&this->Valid);
+        bPlatEndianSwap(&this->CurrentFrame);
+    }
 };
 
 struct TextureAnimPack : public bTNode<TextureAnimPack> {
@@ -311,7 +342,9 @@ struct TextureAnimPack : public bTNode<TextureAnimPack> {
     ~TextureAnimPack();
     void InitAnims();
 
-    void *operator new(size_t size) {}
+    void *operator new(size_t size) {
+        return bMalloc(TexturePackSlotPool);
+    }
 
     void operator delete(void *ptr) {
         bFree(TexturePackSlotPool, ptr);
@@ -324,13 +357,29 @@ struct TextureAnimPackHeader {
     // total size: 0x10
     int Version;                       // offset 0x0, size 0x4
     TextureAnimPack *pTextureAnimPack; // offset 0x4, size 0x4
-    int EndianSwapped;                 // offset 0x8, size 0x4
+    BOOL EndianSwapped;                // offset 0x8, size 0x4
     int pad;                           // offset 0xC, size 0x4
 
     TextureAnimPackHeader() {}
 
-    void EndianSwap() {}
+    void EndianSwap() {
+        bPlatEndianSwap(&this->Version);
+    }
 };
+
+extern TextureInfo *DefaultTextureInfo;
 
 void eInitTextures();
 void UpdateTextureAnimations();
+TextureInfo *GetTextureInfo(unsigned int name_hash, BOOL return_default_texture_if_not_found, BOOL include_unloaded_textures);
+TextureInfo *FixupTextureInfo(TextureInfo *texture_info, unsigned int name_hash, TexturePack *texture_pack, bool loading);
+
+inline TextureInfo *FixupTextureInfoLoading(TextureInfo *texture_info, unsigned int name_hash, TexturePack *texture_pack) {
+    return FixupTextureInfo(texture_info, name_hash, texture_pack, true);
+}
+
+inline TextureInfo *FixupTextureInfoUnloading(TextureInfo *texture_info, unsigned int name_hash, TexturePack *texture_pack) {
+    return FixupTextureInfo(texture_info, name_hash, texture_pack, false);
+}
+
+#endif

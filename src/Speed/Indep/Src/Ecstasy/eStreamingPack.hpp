@@ -1,9 +1,15 @@
-#pragma once
+#ifndef ECSTASY_ESTREAMING_PACK_H
+#define ECSTASY_ESTREAMING_PACK_H
 
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+#include "Speed/Indep/Src/Ecstasy/Texture.hpp"
+#include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
-#include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
-#include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include <cstddef>
 
 struct eStreamingEntry {
@@ -17,7 +23,12 @@ struct eStreamingEntry {
     unsigned short RefCount;      // offset 0x12, size 0x2
     unsigned char *ChunkData;     // offset 0x14, size 0x4
 
-    void EndianSwap() {}
+    void EndianSwap() {
+        bPlatEndianSwap(&this->NameHash);
+        bPlatEndianSwap(&this->ChunkByteOffset);
+        bPlatEndianSwap(&this->ChunkByteSize);
+        bPlatEndianSwap(&this->UncompressedSize);
+    }
 };
 
 struct eStreamingPackHeaderLoadingInfo {
@@ -50,9 +61,9 @@ struct eStreamingPack : public bTNode<eStreamingPack> {
     void *operator new(size_t size) {}
     void operator delete(void *ptr) {}
 
-    //STRIPPED
+    // STRIPPED
     void InitForHibernation();
-    //STRIPPED
+    // STRIPPED
     bool IsHeaderInMemoryPool();
     int GetHeaderMemoryEntries(void **memory_entries, int num_memory_entries);
 
@@ -142,14 +153,18 @@ struct eStreamPackLoader {
 
 struct eStreamingPackLoadTable {
     // total size: 0x10
-    char MemoryPoolNum; // offset 0x0, size 0x1
-    char Locked; // offset 0x1, size 0x1
-    short NumLoadsPending; // offset 0x2, size 0x2
-    void (* Callback)(void *); // offset 0x4, size 0x4
-    void * Param; // offset 0x8, size 0x4
-    eStreamPackLoader * StreamPackLoader; // offset 0xC, size 0x4
+    char MemoryPoolNum;                  // offset 0x0, size 0x1
+    char Locked;                         // offset 0x1, size 0x1
+    short NumLoadsPending;               // offset 0x2, size 0x2
+    void (*Callback)(void *);            // offset 0x4, size 0x4
+    void *Param;                         // offset 0x8, size 0x4
+    eStreamPackLoader *StreamPackLoader; // offset 0xC, size 0x4
 };
 
 extern eStreamPackLoader StreamingTexturePackLoader;
+extern eStreamPackLoader StreamingSolidPackLoader;
 
+void InitStreamingPacks();
 void *ScanHashTableKey32(unsigned int key_value, void *table_start, int table_length, int entry_key_offset, int entry_size);
+
+#endif

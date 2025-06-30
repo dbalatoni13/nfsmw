@@ -1,6 +1,11 @@
-#pragma once
+#ifndef BWARE_BLIST_H
+#define BWARE_BLIST_H
 
-#include "types.h"
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+#include <cstddef>
 
 class bNode {
   public:
@@ -43,7 +48,7 @@ class bNode {
         bNode *prev_node = this->Prev;
         prev_node->Next = next_node;
         next_node->Prev = prev_node;
-        return prev_node; // TODO
+        return this;
     }
 };
 
@@ -110,7 +115,9 @@ struct bList {
     bNode *Remove(bNode *node) {
         return node->Remove();
     }
-    bNode *RemoveHead();                   // TODO
+    bNode *RemoveHead() {
+        return this->GetHead()->Remove();
+    }
     bNode *RemoveTail();                   // TODO
     int GetNodeNumber(bNode *node);        // TODO
     int IsInList(bNode *node);             // TODO
@@ -162,3 +169,44 @@ template <typename T> class bTList : public bList {
     T *AddSorted(SortFunc check_flip);
     void Sort(SortFunc check_flip);
 };
+
+struct bPNode : public bTNode<bPNode> {
+    // total size: 0xC
+    void *Object; // offset 0x8, size 0x4
+
+    bPNode(void *object) {
+        this->Object = object;
+    }
+
+    static void *Malloc();
+    static void Free(void *ptr);
+
+    void *operator new(size_t size) {
+        return Malloc();
+    }
+
+    void operator delete(void *ptr) {
+        Free(ptr);
+    }
+};
+
+template <typename T> class bPList : public bTList<bPNode> {
+  public:
+    bPNode *AddHead(T *object) {
+        return (bPNode *)bList::AddHead(new bPNode(object));
+    }
+    bPNode *AddTail(T *object) {
+        return (bPNode *)bList::AddTail(new bPNode(object));
+    }
+    void Remove(bNode *node) {
+        bList::Remove(node);
+    }
+    void RemoveHead() {
+        delete reinterpret_cast<bPNode *>(bList::RemoveHead());
+    }
+    void RemoveTail() {
+        bList::RemoveTail();
+    }
+};
+
+#endif

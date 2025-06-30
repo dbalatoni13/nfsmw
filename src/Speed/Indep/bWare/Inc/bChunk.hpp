@@ -1,4 +1,9 @@
+#ifndef BWARE_BCHUNK_H
+#define BWARE_BCHUNK_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include "types.h"
 
@@ -40,9 +45,13 @@ class bChunk {
         return reinterpret_cast<char *>(&this[1]);
     }
 
-    char *GetAlignedData(int alignment_size) {}
+    char *GetAlignedData(int alignment_size) {
+        return reinterpret_cast<char *>(reinterpret_cast<uintptr_t>(this->GetData() + alignment_size - 1) & ~(alignment_size - 1));
+    }
 
-    int GetAlignedSize(int alignment_size) {}
+    int GetAlignedSize(int alignment_size) {
+        return this->Size - (this->GetAlignedData(alignment_size) - this->GetData());
+    }
 
     void VerifyAlignment(int alignment_size) {
         unsigned int *pdata;
@@ -122,3 +131,5 @@ class bChunkCarpHeader {
         this->mLastAddress = address;
     }
 };
+
+#endif

@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/World/Car.hpp"
 #include "Speed/Indep/Src/World/Scenery.hpp"
+#include "Speed/Indep/Src/World/Sun.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
@@ -93,7 +94,7 @@ Mtx44 Player2SpecularProjection;
 
 volatile int FrameCounter = 0;
 volatile unsigned int LastFrameCounterTick = 0;
-enum VIDEO_MODE eCurrentVideoMode;
+VIDEO_MODE eCurrentVideoMode;
 int ScreenWidth;
 int ScreenHeight;
 SlotPool *ActiveTextureSlotPool;
@@ -420,6 +421,26 @@ void eForceBackgroundColour(unsigned char, unsigned char, unsigned char, float, 
 
 int eClampTopLeft(bool bOnOff, int nUnused) {
     return false;
+}
+
+// UNSOLVED https://decomp.me/scratch/xURfH
+bool IsSunInFrustrum(eView *player_view) {
+    SunChunkInfo *sun_info = SunInfo;
+
+    if (sun_info == nullptr) {
+        return false;
+    }
+    bVector2 sunpos_xy(sun_info->PositionX, sun_info->PositionY);
+    bVector2 campos_xy(player_view->GetCamera()->GetPosition()->x, player_view->GetCamera()->GetPosition()->y);
+
+    bVector2 to_pt_xy_un = sunpos_xy - campos_xy;
+    bVector2 cam_dir_xy_un(player_view->GetCamera()->GetDirection()->x, player_view->GetCamera()->GetDirection()->y);
+    bVector2 to_pt_xy = bNormalize(to_pt_xy_un);
+    bVector2 cam_dir_xy = bNormalize(cam_dir_xy_un);
+
+    float dotp = bDot(&to_pt_xy, &cam_dir_xy);
+
+    return dotp > 0.5f;
 }
 
 float GetVifTime() {

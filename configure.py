@@ -181,6 +181,8 @@ cflags_base = [
     "-I src/Speed/GameCube/bWare/GameCube/dolphinsdk/include",
     "-I include/libc",
     "-DTARGET_GC",
+    "-DGEKKO",
+    "-D_USE_MATH_DEFINES",
     f"-I build/{config.version}/include",
     f"-DBUILD_VERSION={version_num}",
     f"-DVERSION_{config.version}",
@@ -195,7 +197,7 @@ else:
 cflags_game = [
     *cflags_base,
     "-mps-nodf",
-    "-mfast-cast",
+    # "-mfast-cast",
     "-G0",
     "-ffast-math",
     "-fno-strength-reduce",
@@ -213,7 +215,7 @@ cflags_libc = [*cflags_base]
 
 config.linker_version = "ProDG/3.9.3"
 
-config.extra_clang_flags = ["-std=c++98"]
+config.extra_clang_flags = ["-std=gnu++98"]
 
 
 # Helper function for Dolphin libraries

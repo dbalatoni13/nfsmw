@@ -1,27 +1,35 @@
+#ifndef BWARE_BWARE_H
+#define BWARE_BWARE_H
 
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
-#include "bVector.hpp"
+#include "bMath.hpp"
 
 #if DEBUG
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
+// this macro might not be a thing
 #define bMALLOC(size, debug_text, debug_line, allocation_params) bMalloc((size), (debug_text), (debug_line), (allocation_params))
 #else
 void *bMalloc(int size, int allocation_params);
+// this macro might not be a thing
 #define bMALLOC(size, debug_text, debug_line, allocation_params) bMalloc((size), (allocation_params))
 #endif
 
+void *bMalloc(SlotPool *slot_pool);
 void *bMalloc(SlotPool *slot_pool, int num_slots, void **last_slot);
 void bFree(void *ptr);
 void bFree(SlotPool *slot_pool, void *p);
 void bFree(SlotPool *slot_pool, void *first_slot, void *last_slot);
+void bMemCpy(void *dest, const void *src, unsigned int numbytes);
 
 extern "C" {
 void bMemSet(void *dest, unsigned char pattern, unsigned int size);
 }
 
-inline void *__vn(unsigned int size, const char *file, int line) {
+inline void *operator new[](size_t size, const char *file, int line) {
     return new char[size];
 }
 
@@ -33,6 +41,10 @@ void bPlatEndianSwap(bVector3 *value);
 void bPlatEndianSwap(bVector4 *value);
 void bPlatEndianSwap(bMatrix4 *value);
 
+float bGetTickerDifference(unsigned int start_ticks);
+int bGetFixTickerDifference(unsigned int start_ticks, unsigned int end_ticks);
+float bGetTickerDifference(unsigned int start_ticks, unsigned int end_ticks);
+unsigned int bGetTicker();
 void bBreak();
 
 void bInitSharedStringPool(int size);
@@ -63,3 +75,5 @@ inline void bPlatEndianSwap(unsigned char *value) {}
 inline void bPlatEndianSwap(float *value) {
     bEndianSwap32(value);
 }
+
+#endif

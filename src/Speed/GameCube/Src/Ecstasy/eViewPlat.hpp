@@ -1,8 +1,13 @@
+#ifndef GAMECUBE_ECSTASY_EVIEW_PLAT_H
+#define GAMECUBE_ECSTASY_EVIEW_PLAT_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include "Speed/Indep/Src/Ecstasy/EcstasyData.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
-#include "Speed/Indep/bWare/Inc/bVector.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include <dolphin.h>
 
 struct eView;
@@ -90,3 +95,5 @@ struct eRenderTarget {
 
     TextureInfo *GetTextureInfo();
 };
+
+#endif

@@ -1,4 +1,9 @@
+#ifndef GAMECUBE_ECSTASY_ECSTASY_EX_H
+#define GAMECUBE_ECSTASY_ECSTASY_EX_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include <dolphin.h>
@@ -61,3 +66,5 @@ struct cFullSizeMap {
     cCaptureBuffer fullSizeBuffer;                        // offset 0x8, size 0x20
     /*const struct __vtbl_ptr_type *_vptr.cFullSizeMap;*/ // offset 0x28, size 0x4
 };
+
+#endif

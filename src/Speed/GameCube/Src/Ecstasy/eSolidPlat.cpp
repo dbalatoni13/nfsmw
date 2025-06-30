@@ -1,4 +1,3 @@
-#include "./eSolidPlat.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 
 int eLoadSolidListPlatChunks(bChunk *chunk) {

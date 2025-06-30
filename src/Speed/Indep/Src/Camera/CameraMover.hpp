@@ -1,4 +1,9 @@
+#ifndef CAMERA_CAMERAMOVER_H
+#define CAMERA_CAMERAMOVER_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include "./Camera.hpp"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
@@ -46,3 +51,5 @@ struct CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollisio
 
     CameraMover();
 };
+
+#endif

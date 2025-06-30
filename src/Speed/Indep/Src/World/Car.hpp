@@ -1,4 +1,9 @@
+#ifndef WORLD_CAR_H
+#define WORLD_CAR_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
@@ -31,3 +36,5 @@ struct SkinCompositeParams {
 
 void UpdateSkinCompositeCache(SkinCompositeParams *skin_composite_params);
 void FlushFromSkinCompositeCache(unsigned int texture_name_hash);
+
+#endif

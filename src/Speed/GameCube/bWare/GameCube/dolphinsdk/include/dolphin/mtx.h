@@ -6,7 +6,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#define GEKKO
+
 #ifndef GEKKO
 #define MTX_USE_C
 #undef MTX_USE_PS
@@ -18,27 +18,26 @@ extern "C" {
 #endif
 #endif
 
-
 #define MTX_PTR_OFFSET 3
 
 #define MTX44_PTR_OFFSET 4
 
 typedef struct {
 
-  u32 numMtx;
-  MtxPtr stackBase;
-  MtxPtr stackPtr;
+    u32 numMtx;
+    MtxPtr stackBase;
+    MtxPtr stackPtr;
 
 } MtxStack, *MtxStackPtr;
 
-#define MTXDegToRad(a) ((a)*0.017453292f)
-#define MTXRadToDeg(a) ((a)*57.29577951f)
+#define MTXDegToRad(a) ((a) * 0.017453292f)
+#define MTXRadToDeg(a) ((a) * 57.29577951f)
 #define MTXRowCol(m, r, c) ((m)[(r)][(c)])
 
 void C_MTXIdentity(Mtx m);
 void C_MTXCopy(const Mtx src, Mtx dst);
 void C_MTXConcat(const Mtx a, const Mtx b, Mtx ab);
-void C_MTXConcatArray(const Mtx a, const Mtx* srcBase, Mtx* dstBase, u32 count);
+void C_MTXConcatArray(const Mtx a, const Mtx *srcBase, Mtx *dstBase, u32 count);
 void C_MTXTranspose(const Mtx src, Mtx xPose);
 u32 C_MTXInverse(const Mtx src, Mtx inv);
 u32 C_MTXInvXpose(const Mtx src, Mtx invX);
@@ -47,7 +46,7 @@ u32 C_MTXInvXpose(const Mtx src, Mtx invX);
 void PSMTXIdentity(Mtx m);
 void PSMTXCopy(const Mtx src, Mtx dst);
 void PSMTXConcat(const Mtx a, const Mtx b, Mtx ab);
-void PSMTXConcatArray(const Mtx a, const Mtx* srcBase, Mtx* dstBase, u32 count);
+void PSMTXConcatArray(const Mtx a, const Mtx *srcBase, Mtx *dstBase, u32 count);
 void PSMTXTranspose(const Mtx src, Mtx xPose);
 u32 PSMTXInverse(const Mtx src, Mtx inv);
 u32 PSMTXInvXpose(const Mtx src, Mtx invX);
@@ -71,16 +70,16 @@ u32 PSMTXInvXpose(const Mtx src, Mtx invX);
 #define MTXInvXpose C_MTXInvXpose
 #endif
 
-void C_MTXMultVec(const Mtx m, const Vec* src, Vec* dst);
-void C_MTXMultVecArray(const Mtx m, const Vec* srcBase, Vec* dstBase, u32 count);
-void C_MTXMultVecSR(const Mtx m, const Vec* src, Vec* dst);
-void C_MTXMultVecArraySR(const Mtx m, const Vec* srcBase, Vec* dstBase, u32 count);
+void C_MTXMultVec(const Mtx m, const Vec *src, Vec *dst);
+void C_MTXMultVecArray(const Mtx m, const Vec *srcBase, Vec *dstBase, u32 count);
+void C_MTXMultVecSR(const Mtx m, const Vec *src, Vec *dst);
+void C_MTXMultVecArraySR(const Mtx m, const Vec *srcBase, Vec *dstBase, u32 count);
 
 #ifdef GEKKO
-void PSMTXMultVec(const Mtx m, const Vec* src, Vec* dst);
-void PSMTXMultVecArray(const Mtx m, const Vec* srcBase, Vec* dstBase, u32 count);
-void PSMTXMultVecSR(const Mtx m, const Vec* src, Vec* dst);
-void PSMTXMultVecArraySR(const Mtx m, const Vec* srcBase, Vec* dstBase, u32 count);
+void PSMTXMultVec(const Mtx m, const Vec *src, Vec *dst);
+void PSMTXMultVecArray(const Mtx m, const Vec *srcBase, Vec *dstBase, u32 count);
+void PSMTXMultVecSR(const Mtx m, const Vec *src, Vec *dst);
+void PSMTXMultVecArraySR(const Mtx m, const Vec *srcBase, Vec *dstBase, u32 count);
 #endif
 
 #ifdef MTX_USE_PS
@@ -95,8 +94,8 @@ void PSMTXMultVecArraySR(const Mtx m, const Vec* srcBase, Vec* dstBase, u32 coun
 #define MTXMultVecArraySR C_MTXMultVecArraySR
 #endif
 
-void C_MTXQuat(Mtx m, const Quaternion* q);
-void C_MTXReflect(Mtx m, const Vec* p, const Vec* n);
+void C_MTXQuat(Mtx m, const Quaternion *q);
+void C_MTXReflect(Mtx m, const Vec *p, const Vec *n);
 
 void C_MTXTrans(Mtx m, f32 xT, f32 yT, f32 zT);
 void C_MTXTransApply(const Mtx src, Mtx dst, f32 xT, f32 yT, f32 zT);
@@ -105,11 +104,11 @@ void C_MTXScaleApply(const Mtx src, Mtx dst, f32 xS, f32 yS, f32 zS);
 
 void C_MTXRotRad(Mtx m, char axis, f32 rad);
 void C_MTXRotTrig(Mtx m, char axis, f32 sinA, f32 cosA);
-void C_MTXRotAxisRad(Mtx m, const Vec* axis, f32 rad);
+void C_MTXRotAxisRad(Mtx m, const Vec *axis, f32 rad);
 
 #ifdef GEKKO
-void PSMTXQuat(Mtx m, const Quaternion* q);
-void PSMTXReflect(Mtx m, const Vec* p, const Vec* n);
+void PSMTXQuat(Mtx m, const Quaternion *q);
+void PSMTXReflect(Mtx m, const Vec *p, const Vec *n);
 
 void PSMTXTrans(Mtx m, f32 xT, f32 yT, f32 zT);
 void PSMTXTransApply(const Mtx src, Mtx dst, f32 xT, f32 yT, f32 zT);
@@ -118,7 +117,7 @@ void PSMTXScaleApply(const Mtx src, Mtx dst, f32 xS, f32 yS, f32 zS);
 
 void PSMTXRotRad(Mtx m, char axis, f32 rad);
 void PSMTXRotTrig(Mtx m, char axis, f32 sinA, f32 cosA);
-void PSMTXRotAxisRad(register Mtx m, const Vec* axis, register f32 rad);
+void PSMTXRotAxisRad(register Mtx m, const Vec *axis, register f32 rad);
 #endif
 
 #ifdef MTX_USE_PS
@@ -151,7 +150,7 @@ void PSMTXRotAxisRad(register Mtx m, const Vec* axis, register f32 rad);
 
 #endif
 
-void C_MTXLookAt(Mtx m, const Point3d* camPos, const Vec* camUp, const Point3d* target);
+void C_MTXLookAt(Mtx m, const Point3d *camPos, const Vec *camUp, const Point3d *target);
 
 #define MTXLookAt C_MTXLookAt
 
@@ -163,47 +162,44 @@ void C_MTXOrtho(Mtx44 m, f32 t, f32 b, f32 l, f32 r, f32 n, f32 f);
 #define MTXPerspective C_MTXPerspective
 #define MTXOrtho C_MTXOrtho
 
-void C_MTXLightFrustum(Mtx m, f32 t, f32 b, f32 l, f32 r, f32 n, f32 scaleS, f32 scaleT, f32 transS,
-                       f32 transT);
+void C_MTXLightFrustum(Mtx m, f32 t, f32 b, f32 l, f32 r, f32 n, f32 scaleS, f32 scaleT, f32 transS, f32 transT);
 
-void C_MTXLightPerspective(Mtx m, f32 fovY, f32 aspect, f32 scaleS, f32 scaleT, f32 transS,
-                           f32 transT);
+void C_MTXLightPerspective(Mtx m, f32 fovY, f32 aspect, f32 scaleS, f32 scaleT, f32 transS, f32 transT);
 
-void C_MTXLightOrtho(Mtx m, f32 t, f32 b, f32 l, f32 r, f32 scaleS, f32 scaleT, f32 transS,
-                     f32 transT);
+void C_MTXLightOrtho(Mtx m, f32 t, f32 b, f32 l, f32 r, f32 scaleS, f32 scaleT, f32 transS, f32 transT);
 
 #define MTXLightFrustum C_MTXLightFrustum
 #define MTXLightPerspective C_MTXLightPerspective
 #define MTXLightOrtho C_MTXLightOrtho
 
-void C_VECAdd(const Vec* a, const Vec* b, Vec* ab);
-void C_VECSubtract(const Vec* a, const Vec* b, Vec* a_b);
-void C_VECScale(const Vec* src, Vec* dst, f32 scale);
-void C_VECNormalize(const Vec* src, Vec* unit);
-f32 C_VECSquareMag(const Vec* v);
-f32 C_VECMag(const Vec* v);
-f32 C_VECDotProduct(const Vec* a, const Vec* b);
-void C_VECCrossProduct(const Vec* a, const Vec* b, Vec* axb);
-f32 C_VECSquareDistance(const Vec* a, const Vec* b);
-f32 C_VECDistance(const Vec* a, const Vec* b);
-void C_VECReflect(const Vec* src, const Vec* normal, Vec* dst);
-void C_VECHalfAngle(const Vec* a, const Vec* b, Vec* half);
+void C_VECAdd(const Vec *a, const Vec *b, Vec *ab);
+void C_VECSubtract(const Vec *a, const Vec *b, Vec *a_b);
+void C_VECScale(const Vec *src, Vec *dst, f32 scale);
+void C_VECNormalize(const Vec *src, Vec *unit);
+f32 C_VECSquareMag(const Vec *v);
+f32 C_VECMag(const Vec *v);
+f32 C_VECDotProduct(const Vec *a, const Vec *b);
+void C_VECCrossProduct(const Vec *a, const Vec *b, Vec *axb);
+f32 C_VECSquareDistance(const Vec *a, const Vec *b);
+f32 C_VECDistance(const Vec *a, const Vec *b);
+void C_VECReflect(const Vec *src, const Vec *normal, Vec *dst);
+void C_VECHalfAngle(const Vec *a, const Vec *b, Vec *half);
 
 #ifdef GEKKO
-void PSVECAdd(const Vec* a, const Vec* b, Vec* ab);
-void PSVECSubtract(const Vec* a, const Vec* b, Vec* a_b);
-void PSVECScale(const Vec* src, Vec* dst, f32 scale);
-void PSVECNormalize(const Vec* src, Vec* unit);
-f32 PSVECSquareMag(const Vec* v);
-f32 PSVECMag(const Vec* v);
-f32 PSVECDotProduct(const Vec* a, const Vec* b);
-void PSVECCrossProduct(const Vec* a, const Vec* b, Vec* axb);
-f32 PSVECSquareDistance(const Vec* a, const Vec* b);
-f32 PSVECDistance(const Vec* a, const Vec* b);
+void PSVECAdd(const Vec *a, const Vec *b, Vec *ab);
+void PSVECSubtract(const Vec *a, const Vec *b, Vec *a_b);
+void PSVECScale(const Vec *src, Vec *dst, f32 scale);
+void PSVECNormalize(const Vec *src, Vec *unit);
+f32 PSVECSquareMag(const Vec *v);
+f32 PSVECMag(const Vec *v);
+f32 PSVECDotProduct(const Vec *a, const Vec *b);
+void PSVECCrossProduct(const Vec *a, const Vec *b, Vec *axb);
+f32 PSVECSquareDistance(const Vec *a, const Vec *b);
+f32 PSVECDistance(const Vec *a, const Vec *b);
 #endif
 
 // TODO
-#if defined( MTX_USE_PS)
+#if defined(MTX_USE_PS)
 #define VECAdd PSVECAdd
 #define VECSubtract PSVECSubtract
 #define VECScale PSVECScale
@@ -230,37 +226,35 @@ f32 PSVECDistance(const Vec* a, const Vec* b);
 #define VECReflect C_VECReflect
 #define VECHalfAngle C_VECHalfAngle
 
-void C_QUATAdd(const Quaternion* p, const Quaternion* q, Quaternion* r);
-void C_QUATSubtract(const Quaternion* p, const Quaternion* q, Quaternion* r);
-void C_QUATMultiply(const Quaternion* p, const Quaternion* q, Quaternion* pq);
-void C_QUATDivide(const Quaternion* p, const Quaternion* q, Quaternion* r);
-void C_QUATScale(const Quaternion* q, Quaternion* r, f32 scale);
-f32 C_QUATDotProduct(const Quaternion* p, const Quaternion* q);
-void C_QUATNormalize(const Quaternion* src, Quaternion* unit);
-void C_QUATInverse(const Quaternion* src, Quaternion* inv);
-void C_QUATExp(const Quaternion* q, Quaternion* r);
-void C_QUATLogN(const Quaternion* q, Quaternion* r);
+void C_QUATAdd(const Quaternion *p, const Quaternion *q, Quaternion *r);
+void C_QUATSubtract(const Quaternion *p, const Quaternion *q, Quaternion *r);
+void C_QUATMultiply(const Quaternion *p, const Quaternion *q, Quaternion *pq);
+void C_QUATDivide(const Quaternion *p, const Quaternion *q, Quaternion *r);
+void C_QUATScale(const Quaternion *q, Quaternion *r, f32 scale);
+f32 C_QUATDotProduct(const Quaternion *p, const Quaternion *q);
+void C_QUATNormalize(const Quaternion *src, Quaternion *unit);
+void C_QUATInverse(const Quaternion *src, Quaternion *inv);
+void C_QUATExp(const Quaternion *q, Quaternion *r);
+void C_QUATLogN(const Quaternion *q, Quaternion *r);
 
-void C_QUATMakeClosest(const Quaternion* q, const Quaternion* qto, Quaternion* r);
-void C_QUATRotAxisRad(Quaternion* r, const Vec* axis, f32 rad);
-void C_QUATMtx(Quaternion* r, const Mtx m);
+void C_QUATMakeClosest(const Quaternion *q, const Quaternion *qto, Quaternion *r);
+void C_QUATRotAxisRad(Quaternion *r, const Vec *axis, f32 rad);
+void C_QUATMtx(Quaternion *r, const Mtx m);
 
-void C_QUATLerp(const Quaternion* p, const Quaternion* q, Quaternion* r, f32 t);
-void C_QUATSlerp(const Quaternion* p, const Quaternion* q, Quaternion* r, f32 t);
-void C_QUATSquad(const Quaternion* p, const Quaternion* a, const Quaternion* b, const Quaternion* q,
-                 Quaternion* r, f32 t);
-void C_QUATCompA(const Quaternion* qprev, const Quaternion* q, const Quaternion* qnext,
-                 Quaternion* a);
+void C_QUATLerp(const Quaternion *p, const Quaternion *q, Quaternion *r, f32 t);
+void C_QUATSlerp(const Quaternion *p, const Quaternion *q, Quaternion *r, f32 t);
+void C_QUATSquad(const Quaternion *p, const Quaternion *a, const Quaternion *b, const Quaternion *q, Quaternion *r, f32 t);
+void C_QUATCompA(const Quaternion *qprev, const Quaternion *q, const Quaternion *qnext, Quaternion *a);
 
 #ifdef GEKKO
-void PSQUATAdd(const Quaternion* p, const Quaternion* q, Quaternion* r);
-void PSQUATSubtract(const Quaternion* p, const Quaternion* q, Quaternion* r);
-void PSQUATMultiply(const Quaternion* p, const Quaternion* q, Quaternion* pq);
-void PSQUATDivide(const Quaternion* p, const Quaternion* q, Quaternion* r);
-void PSQUATScale(const Quaternion* q, Quaternion* r, f32 scale);
-f32 PSQUATDotProduct(const Quaternion* p, const Quaternion* q);
-void PSQUATNormalize(const Quaternion* src, Quaternion* unit);
-void PSQUATInverse(const Quaternion* src, Quaternion* inv);
+void PSQUATAdd(const Quaternion *p, const Quaternion *q, Quaternion *r);
+void PSQUATSubtract(const Quaternion *p, const Quaternion *q, Quaternion *r);
+void PSQUATMultiply(const Quaternion *p, const Quaternion *q, Quaternion *pq);
+void PSQUATDivide(const Quaternion *p, const Quaternion *q, Quaternion *r);
+void PSQUATScale(const Quaternion *q, Quaternion *r, f32 scale);
+f32 PSQUATDotProduct(const Quaternion *p, const Quaternion *q);
+void PSQUATNormalize(const Quaternion *src, Quaternion *unit);
+void PSQUATInverse(const Quaternion *src, Quaternion *inv);
 #endif
 
 #ifdef MTX_USE_PS
@@ -295,25 +289,23 @@ void PSQUATInverse(const Quaternion* src, Quaternion* inv);
 
 #ifdef GEKKO
 void PSMTXReorder(const Mtx src, ROMtx dest);
-void PSMTXROMultVecArray(const ROMtx m, const Vec* srcBase, Vec* dstBase, u32 count);
-void PSMTXROSkin2VecArray(const ROMtx m0, const ROMtx m1, const f32* wtBase, const Vec* srcBase,
-                          Vec* dstBase, u32 count);
-void PSMTXMultS16VecArray(const Mtx m, const S16Vec* srcBase, Vec* dstBase, u32 count);
-void PSMTXROMultS16VecArray(const ROMtx m, const S16Vec* srcBase, Vec* dstBase, u32 count);
+void PSMTXROMultVecArray(const ROMtx m, const Vec *srcBase, Vec *dstBase, u32 count);
+void PSMTXROSkin2VecArray(const ROMtx m0, const ROMtx m1, const f32 *wtBase, const Vec *srcBase, Vec *dstBase, u32 count);
+void PSMTXMultS16VecArray(const Mtx m, const S16Vec *srcBase, Vec *dstBase, u32 count);
+void PSMTXROMultS16VecArray(const ROMtx m, const S16Vec *srcBase, Vec *dstBase, u32 count);
 #endif
 
-void MTXInitStack(MtxStack* sPtr, u32 numMtx);
-MtxPtr MTXPush(MtxStack* sPtr, const Mtx m);
-MtxPtr MTXPushFwd(MtxStack* sPtr, const Mtx m);
-MtxPtr MTXPushInv(MtxStack* sPtr, const Mtx m);
-MtxPtr MTXPushInvXpose(MtxStack* sPtr, const Mtx m);
-MtxPtr MTXPop(MtxStack* sPtr);
-MtxPtr MTXGetStackPtr(const MtxStack* sPtr);
+void MTXInitStack(MtxStack *sPtr, u32 numMtx);
+MtxPtr MTXPush(MtxStack *sPtr, const Mtx m);
+MtxPtr MTXPushFwd(MtxStack *sPtr, const Mtx m);
+MtxPtr MTXPushInv(MtxStack *sPtr, const Mtx m);
+MtxPtr MTXPushInvXpose(MtxStack *sPtr, const Mtx m);
+MtxPtr MTXPop(MtxStack *sPtr);
+MtxPtr MTXGetStackPtr(const MtxStack *sPtr);
 
-#define MTXAllocStack(sPtr, numMtx)                                                                \
-  (((MtxStackPtr)(sPtr))->stackBase = (MtxPtr)OSAlloc(((numMtx) * sizeof(Mtx))))
+#define MTXAllocStack(sPtr, numMtx) (((MtxStackPtr)(sPtr))->stackBase = (MtxPtr)OSAlloc(((numMtx) * sizeof(Mtx))))
 
-#define MTXFreeStack(sPtr) (OSFree((void*)(((MtxStackPtr)(sPtr))->stackBase)))
+#define MTXFreeStack(sPtr) (OSFree((void *)(((MtxStackPtr)(sPtr))->stackBase)))
 
 #ifdef __cplusplus
 }

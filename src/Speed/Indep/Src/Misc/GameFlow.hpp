@@ -1,4 +1,9 @@
+#ifndef MISC_GAME_FLOW_H
+#define MISC_GAME_FLOW_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 enum GameFlowState {
     GAMEFLOW_STATE_EXIT_DEMO_DISC = 9,
@@ -29,13 +34,31 @@ struct GameFlowManager {
 
     void SetSingleFunction(void (*function)(), const char *debug_name) {}
 
-    enum GameFlowState GetState() {}
+    GameFlowState GetState() {
+        return this->CurrentGameFlowState;
+    }
 
-    bool IsInFrontend() {}
+    bool IsInFrontend() {
+        return this->CurrentGameFlowState == GAMEFLOW_STATE_IN_FRONTEND;
+    }
 
-    bool IsInGame() {}
+    bool IsInGame() {
+        return this->CurrentGameFlowState == GAMEFLOW_STATE_RACING;
+    }
 
-    bool IsLoading() {}
+    bool IsLoading() {
+        return this->GetState() == GAMEFLOW_STATE_LOADING_REGION || this->GetState() == GAMEFLOW_STATE_LOADING_TRACK;
+    }
 };
 
 extern GameFlowManager TheGameFlowManager; // size: 0x24
+
+inline bool IsGameFlowInFrontEnd() {
+    return TheGameFlowManager.IsInFrontend();
+}
+
+inline bool IsGameFlowInGame() {
+    return TheGameFlowManager.IsInGame();
+}
+
+#endif
