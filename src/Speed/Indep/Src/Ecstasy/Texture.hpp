@@ -9,7 +9,6 @@
 #include "Speed/GameCube/Src/Ecstasy/TextureInfoPlat.hpp"
 #endif
 
-#include "Speed/Indep/Src/Ecstasy/eStreamingPack.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
