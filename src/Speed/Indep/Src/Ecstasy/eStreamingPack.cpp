@@ -77,7 +77,7 @@ void *ScanHashTableKey32(unsigned int key_value, void *table_start, int table_le
         }
         return table_base;
     }
-    return NULL;
+    return nullptr;
 }
 
 //STRIPPED
@@ -90,7 +90,7 @@ void *ScanHashTableKey8(unsigned char key_value /* r8 */, void *table_start /* r
 
 
     if (table_start == 0 || table_length <= 0 || entry_key_offset + 1U > entry_size) {
-        return NULL;
+        return nullptr;
     }
     
     high_index = table_length - 1;
@@ -130,7 +130,7 @@ void *ScanHashTableKey8(unsigned char key_value /* r8 */, void *table_start /* r
         }
         return table_base;
     }
-    return NULL;
+    return nullptr;
 }
 
 int eStreamingPack::GetHeaderMemoryEntries(void **memory_entries, int num_memory_entries) {
