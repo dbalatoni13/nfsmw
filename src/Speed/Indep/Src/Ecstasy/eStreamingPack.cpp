@@ -32,7 +32,7 @@ void *ScanHashTableKey32(unsigned int key_value, void *table_start, int table_le
     int high_index;
 
     if (table_start == 0 || table_length <= 0 || entry_key_offset + 4U > entry_size) {
-        return NULL;
+        return nullptr;
     }
 
     high_index = table_length - 1;
@@ -296,21 +296,22 @@ void eStreamPackLoader::InternalLoadedStreamingEntryCallback(void *callback_para
                 memory_pool_num = loading_table->MemoryPoolNum;
                 if (memory_pool_num != 0) {
                     if (bLargestMalloc(memory_pool_num) > malloc_size) {
-                        allocation_params = (memory_pool_num & 0xF) | 0x2000;
+                        allocation_params |= (memory_pool_num & 0xF);
                     } else {
                         PrintStreamingPackMemoryWarning(malloc_name, malloc_size, memory_pool_num);
                     }
                 }
                 compressed_data = (unsigned char *)loaded_chunks;
-                uncompressed_data = (unsigned char *)bMalloc(malloc_size, allocation_params);
+                uncompressed_data = (unsigned char *)bMALLOC(malloc_size, __FILE__, __LINE__, allocation_params);
                 base_loaded_data = streaming_entry->ChunkData;
                 streaming_entry->ChunkData = uncompressed_data;
                 loaded_chunks = stream_pack_loader->GetAlignedChunkDataPtr(streaming_entry->ChunkData);
                 // what?
                 LZDecompress(compressed_data, (unsigned char *)loaded_chunks);
                 bFree(base_loaded_data);
-                stream_pack_loader->LoadedStreamingEntryCallback(loaded_chunks, streaming_entry, streaming_pack);
             }
+
+            stream_pack_loader->LoadedStreamingEntryCallback(loaded_chunks, streaming_entry, streaming_pack);
         }
     }
 
@@ -330,4 +331,65 @@ void eStreamPackLoader::InternalLoadedStreamingEntryCallback(void *callback_para
             loading_table->Param = 0;
         }
     }
+}
+
+void eStreamPackLoader::InternalLoadStreamingEntry(eStreamingPackLoadTable *loading_table, eStreamingPack *streaming_pack, eStreamingEntry *streaming_entry) {
+    unsigned int name_hash = streaming_entry->NameHash;
+
+    if (!loading_table || !streaming_pack || !streaming_entry) return;
+
+    if (streaming_entry->RefCount != 0) {
+        streaming_entry->RefCount++;
+        return;
+    }
+
+    if (streaming_entry->Flags & 0x10) {
+        streaming_entry->Flags &= ~0x20;
+        streaming_entry->RefCount++;
+    } else {
+        char malloc_name[128];
+
+        bSPrintf(malloc_name, "%s%s", streaming_pack->Filename,
+            (streaming_entry->Flags & 0x1) ? " - Compressed" : "");
+
+        int malloc_size = streaming_entry->ChunkByteSize + this->RequiredChunkAlignment;
+        int allocation_params = 0x2000;
+        int memory_pool_num = loading_table->MemoryPoolNum;
+
+        if (streaming_entry->Flags & 0x1) {
+            allocation_params = 0x2040;
+            if (memory_pool_num != AllowCompressedStreamingTexturesInThisPoolNum) {
+                memory_pool_num = 0;
+            }
+        }
+        if (memory_pool_num != 0) {
+            if (bLargestMalloc(memory_pool_num) > malloc_size) {
+                allocation_params |= (memory_pool_num & 0xF);
+            } else {
+                PrintStreamingPackMemoryWarning(malloc_name, malloc_size, memory_pool_num);
+            }
+        }
+
+        streaming_entry->ChunkData = (unsigned char *)bMALLOC(malloc_size, __FILE__, __LINE__, allocation_params);
+        streaming_entry->RefCount++;
+        streaming_pack->NumLoadsPending++;
+        if (loading_table) {
+            loading_table->NumLoadsPending++;
+        }
+        streaming_entry->Flags |= 0x10;
+        bChunk *aligned_chunk_data = this->GetAlignedChunkDataPtr(streaming_entry->ChunkData);
+        AddQueuedFile2(
+            aligned_chunk_data,
+            streaming_pack->Filename,
+            streaming_entry->ChunkByteOffset,
+            streaming_entry->ChunkByteSize,
+            eStreamPackLoader::InternalLoadedStreamingEntryCallback,
+            streaming_entry, 
+            loading_table,
+            nullptr
+        );
+    }
+
+    streaming_pack->NumLoadedStreamingEntries++;
+    streaming_pack->NumLoadedBytes += streaming_entry->ChunkByteSize;
 }
