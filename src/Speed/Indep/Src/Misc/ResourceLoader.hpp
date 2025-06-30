@@ -50,4 +50,14 @@ void EndianSwapChunkHeader(bChunk *chunk);
 void EndianSwapChunkHeadersRecursive(bChunk *chunks, int sizeof_chunks);
 void EndianSwapChunkHeadersRecursive(bChunk *first_chunk, bChunk *last_chunk);
 
+extern int ChunkMovementOffset; // size: 0x4
+
+inline bool AreChunksBeingMoved() {
+    return ChunkMovementOffset;
+}
+
+inline int GetChunkMovementOffset() {
+    return ChunkMovementOffset;
+}
+
 #endif

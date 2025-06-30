@@ -1,14 +1,46 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
+
+struct eStripVert {
+    // total size: 0x18
+    float x;          // offset 0x0, size 0x4
+    float y;          // offset 0x4, size 0x4
+    float z;          // offset 0x8, size 0x4
+    unsigned int col; // offset 0xC, size 0x4
+    float u;          // offset 0x10, size 0x4
+    float v;          // offset 0x14, size 0x4
+};
+
+struct eStrip {
+    // total size: 0x604
+    int m_NumVerts;              // offset 0x0, size 0x4
+    eStripVert m_StripVerts[64]; // offset 0x4, size 0x600
+};
+
+eStrip *e_current_strip;
+eStripVert *e_strip_verts;
+TextureInfo *e_strip_texture_info;
+int e_current_strip_vert;
+int e_current_strip_uv;
+int e_current_strip_col;
+bMatrix4 e_strip_matrix;
+eStrip eSTRIP;
 
 bool eBeginStrip(TextureInfo *a, int b, bMatrix4 *c) {
-    // Local variables
     unsigned char *buf;
-
-    //   // Inlines
-    //   // Range: 0x8010E678 -> 0x8010E684
-    //   inline void bIdentity(struct bMatrix4 * a, struct bMatrix4 * a) {}
+    e_current_strip = &eSTRIP;
+    e_current_strip_col = 0;
+    e_current_strip_vert = 0;
+    e_current_strip_uv = 0;
+    e_strip_texture_info = a;
+    if (c != nullptr) {
+        bMemCpy(&e_strip_matrix, c, 0x40);
+    } else {
+        bIdentity(&e_strip_matrix);
+    }
+    return true;
 }
 
 bool eEndStrip(eView *view) {

@@ -28,4 +28,6 @@ struct DefragFixer {
     void *Fix(void *pmem);
 };
 
+extern DefragFixer gDefragFixer;
+
 #endif

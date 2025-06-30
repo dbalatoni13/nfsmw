@@ -70,19 +70,19 @@ int eView::GetPixelSize(const bVector3 *bbox_min, const bVector3 *bbox_max) {
     Camera *camera = this->GetCamera();
     bVector3 *cam_position = camera->GetPosition();
     bVector3 *cam_direction = camera->GetDirection();
-    // TODO
-    float pos_x = bbox_min->x;
-    float pos_y = bbox_min->y;
-    float pos_z = bbox_min->z;
-    float rad_x = bbox_max->x;
-    float rad_y = bbox_max->y;
-    float rad_z = bbox_max->z;
 
-    float radius = bSqrt(rad_x * rad_x + rad_y * rad_y + rad_z * rad_z);
+    float pos_x = bbox_min->x - bbox_max->x;
+    float pos_y = bbox_min->y - bbox_max->y;
+    float pos_z = bbox_min->z - bbox_max->z;
 
-    float dir_x = pos_x - cam_position->x;
-    float dir_y = pos_y - cam_position->y;
-    float dir_z = pos_z - cam_position->z;
+    float radius = bSqrt(pos_x * pos_x + pos_y * pos_y + pos_z * pos_z) * 0.5f;
+    float rad_x = (bbox_min->x + bbox_max->x) * 0.5f;
+    float rad_y = (bbox_min->y + bbox_max->y) * 0.5f;
+    float rad_z = (bbox_min->z + bbox_max->z) * 0.5f;
+
+    float dir_x = rad_x - cam_position->x;
+    float dir_y = rad_y - cam_position->y;
+    float dir_z = rad_z - cam_position->z;
     float pixel_size;
 
     if (dir_x * cam_direction->x + dir_y * cam_direction->y + dir_z * cam_direction->z < -radius) {

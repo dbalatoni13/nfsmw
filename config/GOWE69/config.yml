@@ -17,3 +17,8 @@ block_relocations:
 
 - target: .text:0x80135100
 - target: .text:0x80135000
+- target: .text:0x80134001
+- target: .text:0x80134008
+- target: .text:0x80134010
+- target: .text:0x80134100
+- target: .text:0x80134000

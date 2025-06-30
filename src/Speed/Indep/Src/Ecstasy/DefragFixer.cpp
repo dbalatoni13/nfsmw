@@ -1,6 +1,8 @@
 #include "DefragFixer.hpp"
 #include <types.h>
 
+DefragFixer gDefragFixer;
+
 void DefragFixer::Add(void *pmem, int mem_size, int movement_offset) {
     uintptr_t mem_low = (uintptr_t)pmem;
     uintptr_t mem_high = (uintptr_t)pmem + mem_size;

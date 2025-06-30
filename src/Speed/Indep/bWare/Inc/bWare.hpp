@@ -23,6 +23,7 @@ void *bMalloc(SlotPool *slot_pool, int num_slots, void **last_slot);
 void bFree(void *ptr);
 void bFree(SlotPool *slot_pool, void *p);
 void bFree(SlotPool *slot_pool, void *first_slot, void *last_slot);
+void bMemCpy(void *dest, const void *src, unsigned int numbytes);
 
 extern "C" {
 void bMemSet(void *dest, unsigned char pattern, unsigned int size);
@@ -40,6 +41,10 @@ void bPlatEndianSwap(bVector3 *value);
 void bPlatEndianSwap(bVector4 *value);
 void bPlatEndianSwap(bMatrix4 *value);
 
+float bGetTickerDifference(unsigned int start_ticks);
+int bGetFixTickerDifference(unsigned int start_ticks, unsigned int end_ticks);
+float bGetTickerDifference(unsigned int start_ticks, unsigned int end_ticks);
+unsigned int bGetTicker();
 void bBreak();
 
 void bInitSharedStringPool(int size);

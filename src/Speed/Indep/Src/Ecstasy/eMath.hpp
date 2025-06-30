@@ -35,4 +35,8 @@ inline struct bMatrix4 *eGetIdentityMatrix() {
     return &eMathIdentityMatrix;
 }
 
+inline struct bMatrix4 *eGetZeroMatrix() {
+    return &eMathZeroMatrix;
+}
+
 #endif

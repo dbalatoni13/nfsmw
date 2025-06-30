@@ -605,20 +605,15 @@ int eLoadStreamingTexturePack(const char *filename, void (*callback_function)(vo
 }
 
 void TextureLoadingStreamingPackPhase1(eStreamingPackHeaderLoadingInfoPhase1 *loading_info) {
-    bChunk *list_chunk;
-    bChunk *null_chunk;
-    bChunk *header_chunk;
-    int header_chunks_size;
-
-    list_chunk = loading_info->TempHeaderChunks;
+    bChunk *list_chunk = loading_info->TempHeaderChunks;
     EndianSwapChunkHeader(list_chunk);
-    header_chunk = list_chunk->GetFirstChunk();
-    EndianSwapChunkHeader(header_chunk);
-    null_chunk = header_chunk->GetNext();
+    bChunk *null_chunk = list_chunk->GetFirstChunk();
     EndianSwapChunkHeader(null_chunk);
-    header_chunks_size = null_chunk->GetSize();
+    bChunk *header_chunk = null_chunk->GetNext();
+    EndianSwapChunkHeader(header_chunk);
+    int header_chunks_size = header_chunk->GetSize();
     loading_info->NextLoadAmount = header_chunks_size + 16;
-    loading_info->NextLoadPosition = (uintptr_t)null_chunk - (uintptr_t)list_chunk;
+    loading_info->NextLoadPosition = (uintptr_t)header_chunk - (uintptr_t)list_chunk;
 }
 
 void TextureLoadingStreamingPackPhase2(eStreamingPackHeaderLoadingInfoPhase2 *loading_info) {

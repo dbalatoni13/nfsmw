@@ -12,6 +12,7 @@
 bTList<eLightMaterial> LightMaterialList;    // size: 0x8, address: 0x80460DDC
 eLightMaterial DefaultLightMaterialData;     // size: 0xA8, address: 0x80460DE4
 static eLightMaterial *DefaultLightMaterial; // size: 0x4, address: 0x8041A63C
+int DrawLightFlares;
 
 int LoaderLights(bChunk *bchunk /* r30 */) {}
 
@@ -305,6 +306,37 @@ TextureInfo *eLightFlareTextureInfos[3];      // size: 0xC, address: 0x8046B134
 void eLightUpdateTextures() {
     for (unsigned int i = 0; i < 3; i++) {
         eLightFlareTextureInfos[i] = GetTextureInfo(eLightFlareTextureNameHashes[i], 0, 0);
+    }
+}
+
+// UNSOLVED https://decomp.me/scratch/5KagX
+void eRenderWorldLightFlares(eView *view /* r26 */, flareType type /* r24 */) {
+    bMatrix4 *local_world; // r23
+    int num_visible;
+    int num_scenery_culled;
+    int total;
+    DrivableScenerySection *scenery_section;
+    bVector2 *camera_position;
+
+    if (DrawLightFlares != 0 && IsGameFlowInGame()) {
+        camera_position = reinterpret_cast<bVector2 *>(view->GetCamera()->GetPosition());
+        local_world = eGetIdentityMatrix();
+        scenery_section = TheVisibleSectionManager.FindDrivableSection(camera_position);
+        if (scenery_section == nullptr) {
+            return;
+        }
+        for (int i = 0; i < scenery_section->NumVisibleSections; i++) {
+            VisibleSectionUserInfo *user_info = TheVisibleSectionManager.GetUserInfo(scenery_section->GetVisibleSection(i));
+            if (user_info != nullptr) {
+                eLightFlarePackHeader *pack = user_info->pLightFlarePack;
+                if (pack != nullptr && view->GetVisibleState(&pack->BBoxMin, &pack->BBoxMax, nullptr) != EVISIBLESTATE_NOT) {
+                    for (eLightFlare *light_flare = pack->LightFlareList.GetHead(); light_flare != pack->LightFlareList.EndOfList();
+                         light_flare = light_flare->GetNext()) {
+                        eRenderLightFlare(view, light_flare, local_world, 1.0f, REF_NONE, type, 0.0f, 0, 1.0f);
+                    }
+                }
+            }
+        }
     }
 }
 

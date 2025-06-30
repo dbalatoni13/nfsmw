@@ -8,7 +8,6 @@
 #include <math.h>
 
 #if TARGET_GC
-#include "dolphin/mtx/GeoTypes.h"
 #include "dolphin/mtx44_ext.h"
 #else
 #error Choose a platform
@@ -69,6 +68,12 @@ inline float bSqrt(float x) {
 
 inline int bMax(int a, int b) {
     return a > b ? a : b;
+}
+
+inline float bMax(float a, float b) {
+    float c = a - b;
+    float d;
+    return c < 0.0f ? b : a;
 }
 
 inline int bAbs(int a) {

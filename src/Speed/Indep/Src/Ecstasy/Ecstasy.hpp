@@ -6,59 +6,17 @@
 #endif
 
 #if TARGET_GC
-#include "Speed/GameCube/Src/Ecstasy/eSolidPlat.hpp"
 #include "Speed/GameCube/Src/Ecstasy/eViewPlat.hpp"
 
 #endif
+#include "EcstasyData.hpp"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
-#include "Speed/Indep/Src/Ecstasy/EcstasyData.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "eModel.hpp"
 
 extern eView eViews[22];
-
-struct eModel : public bTNode<eModel> {
-    // total size: 0x18
-    unsigned int NameHash;                                     // offset 0x8, size 0x4
-    struct eSolid *Solid;                                      // offset 0xC, size 0x4
-    struct eReplacementTextureTable *pReplacementTextureTable; // offset 0x10, size 0x4
-    int NumReplacementTextures;                                // offset 0x14, size 0x4
-
-    int GetBoundingBox(bVector3 *min, bVector3 *max);
-};
-
-struct eSolid : public eSolidPlatInterface, public bTNode<eSolid> {
-    // total size: 0xE0
-    unsigned char Version;                          // offset 0xC, size 0x1
-    unsigned char EndianSwapped;                    // offset 0xD, size 0x1
-    unsigned short Flags;                           // offset 0xE, size 0x2
-    unsigned int NameHash;                          // offset 0x10, size 0x4
-    short NumPolys;                                 // offset 0x14, size 0x2
-    short NumVerts;                                 // offset 0x16, size 0x2
-    char NumBones;                                  // offset 0x18, size 0x1
-    char NumTextureTableEntries;                    // offset 0x19, size 0x1
-    char NumLightMaterials;                         // offset 0x1A, size 0x1
-    char NumPositionMarkerTableEntries;             // offset 0x1B, size 0x1
-    int ReferencedFrameCounter;                     // offset 0x1C, size 0x4
-    float AABBMinX;                                 // offset 0x20, size 0x4
-    float AABBMinY;                                 // offset 0x24, size 0x4
-    float AABBMinZ;                                 // offset 0x28, size 0x4
-    struct eTextureEntry *pTextureTable;            // offset 0x2C, size 0x4
-    float AABBMaxX;                                 // offset 0x30, size 0x4
-    float AABBMaxY;                                 // offset 0x34, size 0x4
-    float AABBMaxZ;                                 // offset 0x38, size 0x4
-    struct eLightMaterialEntry *LightMaterialTable; // offset 0x3C, size 0x4
-    bMatrix4 PivotMatrix;                           // offset 0x40, size 0x40
-    struct ePositionMarker *PositionMarkerTable;    // offset 0x80, size 0x4
-    struct eNormalSmoother *NormalSmoother;         // offset 0x84, size 0x4
-    struct bTList<eModel> ModelList;                // offset 0x88, size 0x8
-    struct eDamageVertex *DamageVertexTable;        // offset 0x90, size 0x4
-    struct eConnectivityData *ConnectivityData;     // offset 0x94, size 0x4
-    float Volume;                                   // offset 0x98, size 0x4
-    float Density;                                  // offset 0x9C, size 0x4
-    char Name[64];                                  // offset 0xA0, size 0x40
-};
 
 struct eView : public eViewPlatInterface {
     // total size: 0x68
@@ -374,13 +332,77 @@ struct LoadedTable {
         *p = *p - 1;
     }
 
-    unsigned char *GetPtr(unsigned int hash) {}
+    unsigned char *GetPtr(unsigned int hash) {
+        return &this->Counts[hash & 0x1FFF];
+    }
+};
+
+struct eSolidPlatInfo {
+    // total size: 0x24
+    unsigned short Version;              // offset 0x0, size 0x2
+    unsigned short StripFlags;           // offset 0x2, size 0x2
+    unsigned short NumStrips;            // offset 0x4, size 0x2
+    unsigned short NumIdxClrTable;       // offset 0x6, size 0x2
+    unsigned int SizeofStripData;        // offset 0x8, size 0x4
+    unsigned int DataOffset0;            // offset 0xC, size 0x4
+    unsigned int DataOffset1;            // offset 0x10, size 0x4
+    unsigned int DataOffset2;            // offset 0x14, size 0x4
+    unsigned int DataOffset3;            // offset 0x18, size 0x4
+    struct eStripEntry *StripEntryTable; // offset 0x1C, size 0x4
+    unsigned char *StripDataStart;       // offset 0x20, size 0x4
+};
+
+class eSolidPlatInterface {
+    // total size: 0x4
+    eSolidPlatInfo *PlatInfo; // offset 0x0, size 0x4
+
+  public:
+    int UnloaderPlatChunks(bChunk *chunk);
+    int FixPlatInfo();
+    int UnFixPlatInfo();
+    void SetSmoothVertex(unsigned int vertex_offset, float nx, float ny, float nz);
+
+    eSolidPlatInfo *GetPlatInfo() {
+        return this->PlatInfo;
+    }
+};
+
+struct eReplacementTextureTable {
+    // total size: 0xC
+    unsigned int hOldNameHash; // offset 0x0, size 0x4
+    unsigned int hNewNameHash; // offset 0x4, size 0x4
+    TextureInfo *pTextureInfo; // offset 0x8, size 0x4
+
+    eReplacementTextureTable() {}
+
+    void InvalidateTexture() {
+        this->pTextureInfo = reinterpret_cast<TextureInfo *>(-1);
+    }
+
+    unsigned int GetNewNameHash() {}
+
+    unsigned int GetOldNameHash() {}
+
+    void SetOldNameHash(unsigned int name_hash) {}
+
+    void SetNewNameHash(unsigned int name_hash) {}
+
+    void SetExplicit(unsigned int name_hash, TextureInfo *pRepTextureInfo) {}
+
+    TextureInfo *GetCurrentTexture() {
+        return pTextureInfo;
+    }
+
+    void SetCurrentTexture(TextureInfo *texture_info) {
+        this->pTextureInfo = texture_info;
+    }
 };
 
 void eFixupReplacementTexturesAfterUnloading(TextureInfo *texture_info);
 void eNotifyTextureLoading(TexturePack *texture_pack, TextureInfo *texture_info, bool loading);
 TextureInfo *eGetRenderTargetTextureInfo(int name_hash);
 TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash);
+int eLoadSolidListPlatChunks(bChunk *chunk);
 float GetSunIntensity(eView *view);
 
 #endif

@@ -5,6 +5,10 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
+
 enum EVIEW_ID {
     NUM_RVM_VIEWS = 1,
     NUM_PLAYER_VIEWS = 3,
@@ -88,6 +92,99 @@ enum FILTER_ID {
     FILTER_EFB_XFB = 2,
     FILTER_DEFAULT = 1,
     FILTER_OFF = 0,
+};
+
+struct eTextureEntry {
+    // total size: 0x8
+    unsigned int NameHash;            // offset 0x0, size 0x4
+    struct TextureInfo *pTextureInfo; // offset 0x4, size 0x4
+
+    void EndianSwap() {}
+};
+
+struct eSolidListHeader : public bTNode<eSolidListHeader> {
+    // total size: 0x90
+    int Version;                                   // offset 0x8, size 0x4
+    int NumSolids;                                 // offset 0xC, size 0x4
+    char Filename[56];                             // offset 0x10, size 0x38
+    char GroupName[32];                            // offset 0x48, size 0x20
+    unsigned int PermChunkByteOffset;              // offset 0x68, size 0x4
+    unsigned int PermChunkByteSize;                // offset 0x6C, size 0x4
+    short MaxSolidChunkByteAlignment;              // offset 0x70, size 0x2
+    short EndianSwapped;                           // offset 0x72, size 0x2
+    struct eSolidIndexEntry *SolidIndexEntryTable; // offset 0x74, size 0x4
+    struct eStreamingEntry *SolidStreamEntryTable; // offset 0x78, size 0x4
+    short NumTexturePacks;                         // offset 0x7C, size 0x2
+    short NumDefaultTextures;                      // offset 0x7E, size 0x2
+    bPList<struct TexturePack> TexturePackList;    // offset 0x80, size 0x8
+    bPList<eTextureEntry> DefaultTextureList;      // offset 0x88, size 0x8
+
+    void EndianSwap() {
+        bPlatEndianSwap(&this->Version);
+        bPlatEndianSwap(&this->NumSolids);
+        bPlatEndianSwap(&this->PermChunkByteOffset);
+        bPlatEndianSwap(&this->PermChunkByteSize);
+        bPlatEndianSwap(&this->MaxSolidChunkByteAlignment);
+    }
+};
+
+struct eSolidIndexEntry {
+    // total size: 0x8
+    unsigned int NameHash; // offset 0x0, size 0x4
+    struct eSolid *Solid;  // offset 0x4, size 0x4
+
+    void EndianSwap() {
+        bPlatEndianSwap(&this->NameHash);
+    }
+};
+
+struct eLightMaterialEntry {
+    // total size: 0x8
+    unsigned int NameHash;                // offset 0x0, size 0x4
+    struct eLightMaterial *LightMaterial; // offset 0x4, size 0x4
+
+    void EndianSwap() {}
+};
+
+struct eSmoothVertex {
+    // total size: 0x8
+    unsigned int VertexHash;            // offset 0x0, size 0x4
+    unsigned char SmoothingGroupNumber; // offset 0x4, size 0x1
+    char NX;                            // offset 0x5, size 0x1
+    char NY;                            // offset 0x6, size 0x1
+    char NZ;                            // offset 0x7, size 0x1
+
+    void EndianSwap() {}
+};
+
+struct eSmoothVertexPlat {
+    // total size: 0xC
+    unsigned int VertexHash;     // offset 0x0, size 0x4
+    unsigned int SmoothingGroup; // offset 0x4, size 0x4
+    unsigned int VertexOffset;   // offset 0x8, size 0x4
+
+    void EndianSwap() {}
+};
+
+struct eNormalSmoother {
+    // total size: 0xC
+    eSmoothVertex *SmoothVertexTable;         // offset 0x0, size 0x4
+    eSmoothVertexPlat *SmoothVertexPlatTable; // offset 0x4, size 0x4
+    short NumSmoothVertex;                    // offset 0x8, size 0x2
+    short NumSmoothVertexPlat;                // offset 0xA, size 0x2
+
+    void EndianSwap() {}
+};
+
+struct ePositionMarker {
+    // total size: 0x50
+    unsigned int NameHash; // offset 0x0, size 0x4
+    int iParam0;           // offset 0x4, size 0x4
+    float fParam0;         // offset 0x8, size 0x4
+    float fParam1;         // offset 0xC, size 0x4
+    bMatrix4 Matrix;       // offset 0x10, size 0x40
+
+    void EndianSwap() {}
 };
 
 #endif

@@ -201,5 +201,6 @@ void eResestLightFlarePool();
 eLightFlare *eGetNextLightFlareInPool(unsigned int XcludeViewIDs);
 int eRenderLightFlare(eView *view, eLightFlare *light_flare, bMatrix4 *local_world, float intensity_scale, enum eLightReflexionType ReflexionAction,
                       flareType destinationType, float RefelectionOverride, unsigned int ColourOverRide, float sizescale);
+eLightMaterial *elGetLightMaterial(unsigned int name_hash);
 
 #endif
