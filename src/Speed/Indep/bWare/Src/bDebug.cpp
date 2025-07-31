@@ -1,5 +1,5 @@
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
-#include "dolphin.h"
+#include <dolphin.h>
 
 void bInitTicker(float min_wraparound_time);
 

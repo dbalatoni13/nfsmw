@@ -48,14 +48,13 @@ void bList::Sort(SortFunc check_flip) {
     }
 }
 
-SlotPool *bPNodeSlotPool;
-int bPListWantToClose;
-int bPListAllocationNumber;
+SlotPool *bPNodeSlotPool = nullptr;
+BOOL bPListWantToClose = false;
 
 void bPListInit(int num_expected_bpnodes) {
     if (!bPNodeSlotPool) {
-        bPNodeSlotPool = bNewSlotPool(0xC, num_expected_bpnodes, "bPNode SlotPool", GetVirtualMemoryAllocParams());
-        bPListWantToClose = 0;
+        bPNodeSlotPool = bNewSlotPool(12, num_expected_bpnodes, "bPNode SlotPool", GetVirtualMemoryAllocParams());
+        bPListWantToClose = false;
     }
 }
 
@@ -65,7 +64,7 @@ void bPListClose() {
             bDeleteSlotPool(bPNodeSlotPool);
             bPNodeSlotPool = nullptr;
         } else {
-            bPListWantToClose = 1;
+            bPListWantToClose = true;
         }
     }
 }
@@ -79,7 +78,7 @@ void *bPNode::Malloc() {
 
 void bPNode::Free(void *ptr) {
     bFree(bPNodeSlotPool, ptr);
-    if (bPListWantToClose != 0) {
+    if (bPListWantToClose) {
         bPListClose();
     }
 }

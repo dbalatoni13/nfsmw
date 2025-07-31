@@ -35,20 +35,20 @@ Speed/Indep/SourceLists/zAttribSys.cpp:
 	.text       start:0x80050370 end:0x8005C1F8
 	.ctors      start:0x803C8B6C end:0x803C8B70
 	.data       start:0x804158D8 end:0x80415938
-	.bss        start:0x80457780 end:0x8045A20C
+	.bss        start:0x80457780 end:0x804578A0
 
 Speed/Indep/SourceLists/zBWare.cpp:
 	.text       start:0x8005C1F8 end:0x80064DB4
 	.ctors      start:0x803C8B70 end:0x803C8B74
 	.rodata     start:0x803D0E74 end:0x803D3AE4
-	.data       start:0x80415938 end:0x8041648C
-	.bss        start:0x8045A20C end:0x8045AB34
+	.data       start:0x80415938 end:0x80416488
+	.bss        start:0x804578A0 end:0x8045AB34
 
 Speed/Indep/SourceLists/zCamera.cpp:
 	.text       start:0x80064DB4 end:0x80083604
 	.ctors      start:0x803C8B74 end:0x803C8B78
 	.rodata     start:0x803D3AE4 end:0x803D3F50
-	.data       start:0x8041648C end:0x80417108
+	.data       start:0x80416488 end:0x80417108
 	.bss        start:0x8045AB34 end:0x8045B0F8
 
 Speed/Indep/SourceLists/zDebug.cpp:

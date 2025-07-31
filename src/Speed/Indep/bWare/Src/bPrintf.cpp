@@ -1,15 +1,23 @@
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 
-#include <cstdarg>
 #include <stdarg.h>
 
-static bPrintfLocaleInfo g_locale;
+char *_nan_table[4] = {
+    "-1.#INF",
+    "1.#INF ",
+    "1.#QNAN",
+    "1.#SNAN",
+};
+static char *nullstr = "(null)";
+static char *badptr = "(badptr)";
+
+static bPrintfLocaleInfo g_locale = {'.', ',', 3};
 static char bPutCharBuffer[160];
-static long bPutCharBufferPos;
+static long bPutCharBufferPos = 0;
 static char bBufferedTerminalChannel;
-float bVSPrintfTime;
-int bVSPrintfCount;
+float bVSPrintfTime = 0.0f;
+int bVSPrintfCount = 0;
 
 int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList);
 

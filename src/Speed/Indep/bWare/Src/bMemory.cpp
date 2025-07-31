@@ -8,8 +8,7 @@
 #include "dolphin/types.h"
 
 #if TARGET_GC
-#include "dolphin/ar.h"
-#include "dolphin/os.h"
+#include <dolphin.h>
 #else
 #error Choose platform
 #endif
@@ -21,22 +20,22 @@ void VMInit(size_t, uintptr_t, size_t);
 BOOL VMAlloc(uintptr_t, size_t);
 }
 
-int bMemoryAutomaticVerifyPoolIntegrity;       // size: 0x4, address: 0x80416418
-int bMemoryRandomFillPattern;                  // size: 0x4, address: 0x80416430
-BOOL bMemoryTracing;                           // size: 0x4, address: 0x80416438
-int bMemoryBreakOnAllocationNumber;            // size: 0x4, address: 0x8041643C
-int bMemoryAllocationNumber;                   // size: 0x4, address: 0x80416440
+int bMemoryAutomaticVerifyPoolIntegrity = 0;   // size: 0x4, address: 0x80416418
+int bMemoryRandomFillPattern = 0;              // size: 0x4, address: 0x80416430
+BOOL bMemoryTracing = false;                   // size: 0x4, address: 0x80416438
+int bMemoryBreakOnAllocationNumber = -1;       // size: 0x4, address: 0x8041643C
+int bMemoryAllocationNumber = 0;               // size: 0x4, address: 0x80416440
 bMemoryAllocator TheMemoryAllocator;           // size: 0xC, address: 0x8045790C
 bMemoryAllocator TheMemoryPersistentAllocator; // size: 0xC, address: 0x8045791C
 // static const int bMemoryEnableFancyStompDetector; // size: 0x4
-const char *pTraceDebugText;            // size: 0x4, address: 0x80416450
-int TraceDebugLine;                     // size: 0x4, address: 0x80416454
-int MemoryInitialized;                  // size: 0x4, address: 0x80416458
-int bMemoryPersistentPoolNumber;        // size: 0x4, address: 0x80416460
+const char *pTraceDebugText = nullptr;  // size: 0x4, address: 0x80416450
+int TraceDebugLine = 0;                 // size: 0x4, address: 0x80416454
+int MemoryInitialized = 0;              // size: 0x4, address: 0x80416458
 char MemoryPoolMem[16][96];             // size: 0x600, address: 0x8045A20D
 MemoryPool *MemoryPools[16];            // size: 0x40, address: 0x8045A810
 MemoryPoolInfo MemoryPoolInfoTable[16]; // size: 0x100, address: 0x8045A850
-unsigned int MemoryPoolZeroSize;        // size: 0x4, address: 0x8041645C
+unsigned int MemoryPoolZeroSize = 0;    // size: 0x4, address: 0x8041645C
+int bMemoryPersistentPoolNumber = -1;   // size: 0x4, address: 0x80416460
 
 void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
 

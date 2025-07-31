@@ -714,6 +714,15 @@ struct bQuaternion {
     float z; // offset 0x8, size 0x4
     float w; // offset 0xC, size 0x4
 
+    bQuaternion() {}
+
+    bQuaternion(float _x, float _y, float _z, float _w) {
+        this->x = _x;
+        this->y = _y;
+        this->z = _z;
+        this->w = _w;
+    }
+
     bQuaternion &Slerp(bQuaternion &r, const bQuaternion &target, float t) const;
 };
 

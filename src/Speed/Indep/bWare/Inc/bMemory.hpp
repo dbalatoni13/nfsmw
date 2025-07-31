@@ -168,17 +168,19 @@ struct TagValuePair {
     } mValue;                  // offset 0x4, size 0x4
     const TagValuePair *mNext; // offset 0x8, size 0x4
 };
-}; // namespace EA
 
+namespace Allocator {
 struct IAllocator {
-    virtual void *Alloc(unsigned int size, const EA::TagValuePair &flags) = 0;
+    virtual void *Alloc(unsigned int size, const TagValuePair &flags) = 0;
     virtual void Free(void *pBlock, unsigned int size) = 0;
     virtual int AddRef() = 0;
     virtual int Release() = 0;
     virtual ~IAllocator() {}
 };
+} // namespace Allocator
+}; // namespace EA
 
-class bMemoryAllocator : public IAllocator {
+class bMemoryAllocator : public EA::Allocator::IAllocator {
     // total size: 0xC
     int mRefcount;  // offset 0x4, size 0x4
     int PoolNumber; // offset 0x8, size 0x4

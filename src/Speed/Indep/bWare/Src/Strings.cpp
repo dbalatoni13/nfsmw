@@ -1,8 +1,7 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-static char bMemoryDebugStringNoName[8]; // size: 0x8, address: 0x80416460
-bSharedStringPool gSharedStringPool;     // size: 0x2840, address: 0x8045792C
+bSharedStringPool gSharedStringPool; // size: 0x2840, address: 0x8045792C
 
 unsigned int bStringHashUpper(const char *text) {
     unsigned int h = ~0;

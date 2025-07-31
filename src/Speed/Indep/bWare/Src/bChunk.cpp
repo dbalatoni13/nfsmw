@@ -5,6 +5,8 @@ int bChunkLoaderFunctionNull(bChunk *chunk) {
     return chunk->GetID() == 0;
 }
 
+bChunkLoader bChunkLoaderNull(0, bChunkLoaderFunctionNull, bChunkLoaderFunctionNull);
+
 bChunkLoader::bChunkLoader(unsigned int id, int (*loader)(bChunk *), int (*unloader)(bChunk *)) {
     this->LoaderFunction = loader;
     this->UnloaderFunction = unloader;

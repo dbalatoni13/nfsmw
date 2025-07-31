@@ -1,5 +1,9 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+bVector3 bUnitVector3(1.0f, 0.0f, 0.0f);
+bVector4 bUnitVector4(1.0f, 0.0f, 0.0f, 0.0f);
+bVector3 bVector3FLT_MAX(3.4028235e38f, 3.4028235e38f, 3.4028235e38f);
+
 float bDistBetween(const bVector3 *v1, const bVector3 *v2) {
     float x = v1->x - v2->x;
     float y = v1->y - v2->y;

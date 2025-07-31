@@ -1,6 +1,9 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bFunk.hpp"
-#include "dolphin/types.h"
+
+#include <types.h>
+
+bList bFunkServerList;
 
 void bFunkCallASync(const char *server_name, int function_num, const void *data, int size) {
     bFunkPacketHeader header;
