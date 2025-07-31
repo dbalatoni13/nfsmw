@@ -176,6 +176,8 @@ cflags_base = [
     "-gdwarf",
     "-G0",
     # "-Wall",
+    "-I src/Speed/GameCube/bWare/GameCube/bWare/GameCube/SN",
+    # "-I src/Speed/Indep/Libs/Support/stlgc",
     "-I src/Speed/GameCube/Libs/stl/STLport-4.5/stlport",
     "-I include",
     "-I src/Speed/GameCube/bWare/GameCube/dolphinsdk/include",
