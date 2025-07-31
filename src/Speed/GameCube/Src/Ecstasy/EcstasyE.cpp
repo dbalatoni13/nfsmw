@@ -288,17 +288,17 @@ EVIEWMODE eGetCurrentViewMode() {
 //   eView::eView *eview_player2 = eView::eGetView(2);
 //   eView::eView *eview_player1_rvm = eView::eGetView(3);
 
-//   if (eview_player1->GetCameraMover() != nullptr) {
-//     if (eview_player2->GetCameraMover() != nullptr) {
+//   if (eview_player1->GetCameraMover()) {
+//     if (eview_player2->GetCameraMover()) {
 //       CurrentViewMode = EVIEWMODE_TWOH;
 //     }
-//   } else if (eview_player1->GetCameraMover() != nullptr) {
-//     if (eview_player1_rvm->GetCameraMover() != nullptr) {
+//   } else if (eview_player1->GetCameraMover()) {
+//     if (eview_player1_rvm->GetCameraMover()) {
 //       CurrentViewMode = EVIEWMODE_ONE_RVM;
 //     }
 //   } else {
 //     CurrentViewMode = EVIEWMODE_NONE;
-//     // if (eview_player1->GetCameraMover() != nullptr)
+//     // if (eview_player1->GetCameraMover())
 //     CurrentViewMode = EVIEWMODE_ONE;
 //   }
 // }
@@ -333,13 +333,13 @@ void eUpdateViewMode(void) {
     if (node1 != (bNode *)&eview_player1->CameraMoverList) {
         node3 = (eview_player1->CameraMoverList).HeadNode.GetNext();
     }
-    if (node3 != nullptr) {
+    if (node3) {
         node2 = (eview_player1_rvm->CameraMoverList).HeadNode.GetNext();
         node3 = (bNode *)0x0;
         if (node2 != (bNode *)&eview_player1_rvm->CameraMoverList) {
             node3 = node2;
         }
-        if (node3 != nullptr) {
+        if (node3) {
             CurrentViewMode = EVIEWMODE_ONE_RVM;
             return;
         }
@@ -365,7 +365,7 @@ RaceCoordinator *pRaceCoordinator;
 eView *GetPlayerView(int nPlayerNumber) {
     int viewId;
 
-    if (((pRaceCoordinator != nullptr) && (pRaceCoordinator->unk_00 == 5)) && (pRaceCoordinator->unk_50 != nullptr)) {
+    if (((pRaceCoordinator) && (pRaceCoordinator->unk_00 == 5)) && (pRaceCoordinator->unk_50)) {
         if (nPlayerNumber != pRaceCoordinator->unk_50[5]) {
             return nullptr;
         }
@@ -379,14 +379,14 @@ TextureInfo *pTextureInfoRadialBlur;
 int VifTime;
 
 void RadialBlurOn(eView *view) {
-    if ((pRaceCoordinator == nullptr) || (pRaceCoordinator->unk_00 != 8)) {
+    if (!pRaceCoordinator || (pRaceCoordinator->unk_00 != 8)) {
         view->pBlendMask = pTextureInfoRadialBlur;
     }
 }
 
 void RadialBlurOn(int nPlayerNumber) {
     eView *view = GetPlayerView(nPlayerNumber);
-    if (view != nullptr) {
+    if (view) {
         RadialBlurOn(view);
     }
 }
@@ -427,7 +427,7 @@ int eClampTopLeft(bool bOnOff, int nUnused) {
 bool IsSunInFrustrum(eView *player_view) {
     SunChunkInfo *sun_info = SunInfo;
 
-    if (sun_info == nullptr) {
+    if (!sun_info) {
         return false;
     }
     bVector2 sunpos_xy(sun_info->PositionX, sun_info->PositionY);
@@ -488,7 +488,7 @@ eRenderTarget *eGetCurrentRenderTarget() {
 
 void eSetCurrentRenderTarget(eRenderTarget *render_target) {
     CurrentRenderTarget = render_target;
-    if (render_target != nullptr) {
+    if (render_target) {
         GXSetViewport(render_target->ScissorX, render_target->ScissorY, render_target->FrameWidth, render_target->FrameHeight, 0.0, 1.0);
         eSetScissor(CurrentRenderTarget->ScissorX, CurrentRenderTarget->ScissorY, CurrentRenderTarget->ScissorW, CurrentRenderTarget->ScissorH);
         eSetBackgroundColor(CurrentRenderTarget->BackgroundColour);

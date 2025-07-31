@@ -130,7 +130,7 @@ void eSolid::NotifyTextureMoving(TexturePack *texture_pack, TextureInfo *texture
 }
 
 void eSolid::ReplaceLightMaterial(unsigned int old_name_hash, eLightMaterial *new_light_material) {
-    if (new_light_material == nullptr) {
+    if (!new_light_material) {
         return;
     }
     eLightMaterialEntry *elme = this->LightMaterialTable;
@@ -151,10 +151,10 @@ ePositionMarker *eSolid::GetPostionMarker(ePositionMarker *prev_marker /* r11 */
     int numposition_markers = this->NumPositionMarkerTableEntries;
     ePositionMarker *next_marker;
 
-    if ((position_marker_table == nullptr) || (numposition_markers == 0)) {
+    if (!position_marker_table || (numposition_markers == 0)) {
         return nullptr;
     }
-    if (prev_marker != nullptr) {
+    if (prev_marker) {
         if (prev_marker >= position_marker_table) {
             if (prev_marker < &position_marker_table[numposition_markers - 1]) {
                 return prev_marker + 1;
@@ -168,8 +168,7 @@ ePositionMarker *eSolid::GetPostionMarker(ePositionMarker *prev_marker /* r11 */
 // UNSOLVED
 ePositionMarker *eSolid::GetPostionMarker(unsigned int namehash /* r31 */) {
     ePositionMarker *position_marker = nullptr;
-    for (position_marker = this->GetPostionMarker(position_marker); position_marker != nullptr;
-         position_marker = this->GetPostionMarker(position_marker)) {
+    for (position_marker = this->GetPostionMarker(position_marker); position_marker; position_marker = this->GetPostionMarker(position_marker)) {
         if (position_marker->NameHash == namehash) {
             return position_marker;
         }
@@ -237,7 +236,7 @@ eSolidListHeader *InternalLoaderSolidHeaderChunks(bChunk *chunk) {
         }
         current_chunk = current_chunk->GetNext();
     }
-    if (solid_list_header != nullptr) {
+    if (solid_list_header) {
         solid_list_header->EndianSwapped = 1;
     }
     solid_list_header->TexturePackList.InitList();
@@ -273,9 +272,9 @@ void InternalUnloaderSolidChunks(bChunk *chunk, eSolidListHeader *solid_list_hea
         }
         solid_chunk = solid_chunk->GetNext();
     }
-    if (solid_list_header != nullptr) {
+    if (solid_list_header) {
         eSolidIndexEntry *index_entry = GetSolidIndexEntry(solid_list_header, solid->NameHash);
-        if (index_entry != nullptr) {
+        if (index_entry) {
             index_entry->Solid = nullptr;
             SolidLoadedTable.SetUnloaded(solid->NameHash);
         }
@@ -298,7 +297,7 @@ int LoaderSolidList(bChunk *chunk) {
     while (current_chunk < last_chunk) {
         unsigned int current_chunk_id = current_chunk->GetID();
         if (current_chunk_id == BCHUNK_MESH_CONTAINER_INFO) {
-            if (solid_list_header != nullptr) {
+            if (solid_list_header) {
                 NotifySolidLoader(solid_list_header);
             }
             solid_list_header = InternalLoaderSolidHeaderChunks(current_chunk);
@@ -307,7 +306,7 @@ int LoaderSolidList(bChunk *chunk) {
         }
         current_chunk = current_chunk->GetNext();
     }
-    if (solid_list_header != nullptr) {
+    if (solid_list_header) {
         NotifySolidLoader(solid_list_header);
     }
     return 1;
@@ -343,7 +342,7 @@ void SolidLoadedStreamingEntryCallback(bChunk *chunk, eStreamingEntry *streaming
 
 void SolidUnloadedStreamingEntryCallback(bChunk *chunk, eStreamingEntry *streaming_entry, eStreamingPack *streaming_pack) {
     eSolid *solid = eFindSolid(streaming_entry->NameHash);
-    if (solid != nullptr) {
+    if (solid) {
         InternalUnloaderSolidChunks(chunk, streaming_pack->SolidListHeader);
     }
 }
@@ -366,7 +365,7 @@ int eLoadStreamingSolidPack(const char *filename, void (*callback_function)(void
 }
 
 eSolidIndexEntry *GetSolidIndexEntry(eSolidListHeader *list_header, unsigned int name_hash) {
-    if (list_header == nullptr) {
+    if (!list_header) {
         return nullptr;
     } else {
         return reinterpret_cast<eSolidIndexEntry *>(ScanHashTableKey32(name_hash, list_header->SolidIndexEntryTable, list_header->NumSolids, 0, 8));
@@ -427,20 +426,20 @@ eSolid *eFindSolid(unsigned int name_hash /* r31 */, eSolidListHeader *solid_lis
     }
     unsigned int start_time = bGetTicker();
     eSolid *solid = nullptr; // r27
-    if (solid_list_header != nullptr) {
+    if (solid_list_header) {
         eSolidIndexEntry *index_entry = GetSolidIndexEntry(solid_list_header, name_hash);
-        if (index_entry != nullptr) {
+        if (index_entry) {
             solid = index_entry->Solid;
         }
     } else {
         for (eSolidListHeader *list_header /* r30 */ = SolidListHeaderList.GetHead(); list_header != SolidListHeaderList.EndOfList();
              list_header = list_header->GetNext()) {
             eSolidIndexEntry *index_entry = GetSolidIndexEntry(list_header, name_hash);
-            if (index_entry == nullptr) {
+            if (!index_entry) {
                 continue;
             }
             solid = index_entry->Solid;
-            if (solid != nullptr) {
+            if (solid) {
                 SolidListHeaderList.Remove(list_header);
                 SolidListHeaderList.AddHead(list_header);
                 break;

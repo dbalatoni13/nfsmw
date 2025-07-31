@@ -1,10 +1,9 @@
 #include "./eStreamingPack.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
+#include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "Speed/Indep/bWare/Inc/bMemory.hpp"
-#include "Speed/Indep/bWare/Inc/Strings.hpp"
-
 
 int AllowCompressedStreamingTexturesInThisPoolNum; // size: 0x4, address: 0x8041A5E4
 SlotPool *eStreamingPackSlotPool;
@@ -17,36 +16,35 @@ void InitStreamingPacks() {
     eStreamingPackSlotPool = bNewSlotPool(0x44, 0x40, test, GetVirtualMemoryAllocParams());
 }
 
-//STRIPPED
+// STRIPPED
 void CloseStreamingPacks() {}
 
-void PrintStreamingPackMemoryWarning(const char * malloc_name /* r3 */, int malloc_size /* r4 */, int memory_pool_num /* r5 */) {
+void PrintStreamingPackMemoryWarning(const char *malloc_name /* r3 */, int malloc_size /* r4 */, int memory_pool_num /* r5 */) {
     int language_pool_num; // probably used for EU release
 
     bGetMemoryPoolNum("LanguageMemoryPool");
 }
 
 void *ScanHashTableKey32(unsigned int key_value, void *table_start, int table_length, int entry_key_offset, int entry_size) {
-    unsigned char* table_base;
+    unsigned char *table_base;
     int low_index;
     int high_index;
-
 
     if (table_start == 0 || table_length <= 0 || entry_key_offset + 4U > entry_size) {
         return NULL;
     }
-    
+
     high_index = table_length - 1;
     low_index = 0;
 
     while (low_index <= high_index) {
         int mid_index;
         unsigned int mid_key_value;
-        unsigned char* mid_entry;
-        
+        unsigned char *mid_entry;
+
         mid_key_value = low_index + high_index;
-        mid_index = (int) (mid_key_value + (mid_key_value >> 0x1FU)) >> 1;
-        table_base = &((unsigned char*)table_start)[mid_index * entry_size];
+        mid_index = (int)(mid_key_value + (mid_key_value >> 0x1FU)) >> 1;
+        table_base = &((unsigned char *)table_start)[mid_index * entry_size];
         if (key_value < *(unsigned int *)&table_base[entry_key_offset]) {
             high_index = mid_index - 1;
             continue;
@@ -62,7 +60,7 @@ void *ScanHashTableKey32(unsigned int key_value, void *table_start, int table_le
                     table_base = mid_entry;
                     if (--mid_index > 0) {
                         mid_entry = table_base - entry_size;
-                        if (*(unsigned int*)(mid_entry + entry_key_offset) != key_value) {
+                        if (*(unsigned int *)(mid_entry + entry_key_offset) != key_value) {
                             break;
                         }
                         continue;
@@ -76,30 +74,31 @@ void *ScanHashTableKey32(unsigned int key_value, void *table_start, int table_le
     return NULL;
 }
 
-//STRIPPED
-void *ScanHashTableKey16(unsigned short key_value /* r8 */, void *table_start /* r4 */, int table_length /* r5 */, int entry_key_offset /* r6 */, int entry_size /* r7 */);
+// STRIPPED
+void *ScanHashTableKey16(unsigned short key_value /* r8 */, void *table_start /* r4 */, int table_length /* r5 */, int entry_key_offset /* r6 */,
+                         int entry_size /* r7 */);
 
-void *ScanHashTableKey8(unsigned char key_value /* r8 */, void *table_start /* r4 */, int table_length /* r5 */, int entry_key_offset /* r6 */, int entry_size /* r7 */) {
-    unsigned char* table_base;
+void *ScanHashTableKey8(unsigned char key_value /* r8 */, void *table_start /* r4 */, int table_length /* r5 */, int entry_key_offset /* r6 */,
+                        int entry_size /* r7 */) {
+    unsigned char *table_base;
     int low_index;
     int high_index;
-
 
     if (table_start == 0 || table_length <= 0 || entry_key_offset + 1U > entry_size) {
         return NULL;
     }
-    
+
     high_index = table_length - 1;
     low_index = 0;
 
     while (low_index <= high_index) {
         int mid_index;
         unsigned int mid_key_value;
-        unsigned char* mid_entry;
-        
+        unsigned char *mid_entry;
+
         mid_key_value = low_index + high_index;
-        mid_index = (int) (mid_key_value + (mid_key_value >> 0x1FU)) >> 1;
-        table_base = &((unsigned char*)table_start)[mid_index * entry_size];
+        mid_index = (int)(mid_key_value + (mid_key_value >> 0x1FU)) >> 1;
+        table_base = &((unsigned char *)table_start)[mid_index * entry_size];
         if (key_value < table_base[entry_key_offset]) {
             high_index = mid_index - 1;
             continue;
@@ -130,24 +129,22 @@ void *ScanHashTableKey8(unsigned char key_value /* r8 */, void *table_start /* r
 }
 
 int eStreamingPack::GetHeaderMemoryEntries(void **memory_entries, int num_memory_entries) {
-    if (this->HeaderChunks != nullptr) {
+    if (this->HeaderChunks) {
         memory_entries[num_memory_entries++] = (void *)this->HeaderChunks;
     }
-    if (this->pResourceFile != nullptr) {
+    if (this->pResourceFile) {
         memory_entries[num_memory_entries++] = (void *)this->pResourceFile->GetMemory();
     }
-    
+
     return num_memory_entries;
 }
 
-eStreamPackLoader::eStreamPackLoader(
-    int required_chunk_alignment,
-    void (* loaded_streaming_entry_callback)(struct bChunk *, struct eStreamingEntry *, struct eStreamingPack *),
-    void (* unloaded_streaming_entry_callback)(struct bChunk *, struct eStreamingEntry *, struct eStreamingPack *),
-    void (* loading_header_phase1_callback)(struct eStreamingPackHeaderLoadingInfoPhase1 *),
-    void (* loading_header_phase2_callback)(struct eStreamingPackHeaderLoadingInfoPhase2 *),
-    void (* unloading_header_callback)(struct eStreamingPack *))
-{
+eStreamPackLoader::eStreamPackLoader(int required_chunk_alignment,
+                                     void (*loaded_streaming_entry_callback)(struct bChunk *, struct eStreamingEntry *, struct eStreamingPack *),
+                                     void (*unloaded_streaming_entry_callback)(struct bChunk *, struct eStreamingEntry *, struct eStreamingPack *),
+                                     void (*loading_header_phase1_callback)(struct eStreamingPackHeaderLoadingInfoPhase1 *),
+                                     void (*loading_header_phase2_callback)(struct eStreamingPackHeaderLoadingInfoPhase2 *),
+                                     void (*unloading_header_callback)(struct eStreamingPack *)) {
     this->PrintLoading = 0;
     this->NumLoadedStreamingPacks = 0;
     this->NumLoadedStreamingEntries = 0;
@@ -160,7 +157,8 @@ eStreamPackLoader::eStreamPackLoader(
     this->UnloadingHeaderCallback = unloading_header_callback;
 }
 
-int eStreamPackLoader::GetMemoryEntries(unsigned int * name_hash_table /* r27 */, int num_hashes /* r29 */, void **memory_entries /* r28 */, int num_memory_entries /* r31 */) {
+int eStreamPackLoader::GetMemoryEntries(unsigned int *name_hash_table /* r27 */, int num_hashes /* r29 */, void **memory_entries /* r28 */,
+                                        int num_memory_entries /* r31 */) {
     for (int n = 0; n < num_hashes; n++) {
         unsigned int name_hash = name_hash_table[n];
         if (name_hash != 0) {
@@ -177,11 +175,8 @@ int eStreamPackLoader::GetMemoryEntries(unsigned int * name_hash_table /* r27 */
 eStreamingPack *eStreamPackLoader::GetLoadedStreamingPack(const char *filename) {
     eStreamingPack *streaming_pack;
 
-    for (
-        streaming_pack = this->LoadedStreamingPackList.GetHead();
-        streaming_pack != this->LoadedStreamingPackList.EndOfList();
-        streaming_pack = streaming_pack->GetNext())
-    {
+    for (streaming_pack = this->LoadedStreamingPackList.GetHead(); streaming_pack != this->LoadedStreamingPackList.EndOfList();
+         streaming_pack = streaming_pack->GetNext()) {
         if (!bStrCmp(filename, streaming_pack->Filename)) {
             streaming_pack->Remove();
             this->LoadedStreamingPackList.AddHead(streaming_pack);

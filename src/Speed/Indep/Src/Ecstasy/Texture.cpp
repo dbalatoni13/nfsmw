@@ -72,13 +72,13 @@ void InternalUnloadTexturePackHeaderChunks(bChunk *chunk) {
 
         current_chunk = current_chunk->GetNext();
     }
-    if (texture_pack_header != nullptr) { // fake
+    if (texture_pack_header) { // fake
         texture_pack_header->pTexturePack->UnAssignTextureData(0, texture_pack_header->pTexturePack->GetTextureDataSize());
     }
-    if (texture_info_table != nullptr) {
+    if (texture_info_table) {
         texture_pack_header->pTexturePack->UnattachTextureTable(texture_info_table, plat_info_table, num_texture_info);
     }
-    if (texture_pack_header->pTexturePack != nullptr) {
+    if (texture_pack_header->pTexturePack) {
         delete texture_pack_header->pTexturePack;
     }
     texture_pack_header->pTexturePack = nullptr;
@@ -119,7 +119,7 @@ int LoaderTexturePack(bChunk *chunk) {
             current_chunk = current_chunk->GetNext();
         }
         TextureVRAMDataHeader *vram_header = FindVRAMData(texture_pack_header->FilenameHash);
-        if (vram_header != nullptr) {
+        if (vram_header) {
             TexturePack *texture_pack = texture_pack_header->pTexturePack;
             bChunk *vram_data_chunk = vram_header->VRAMDataChunk;
             char *texture_data = vram_data_chunk->GetAlignedData(128);
@@ -158,7 +158,7 @@ int LoaderTexturePack(bChunk *chunk) {
         } else {
             header->pTextureAnimPack = nullptr;
         }
-        if (header != nullptr) {
+        if (header) {
             header->EndianSwapped = true;
         }
         return 1;
@@ -195,16 +195,16 @@ int UnloaderTexturePack(bChunk *chunk) {
 }
 
 TexturePack::TexturePack(TexturePackHeader *pack_header, int num_textures, const char *pack_name, const char *filename) {
-    if (pack_name == nullptr && pack_header != nullptr) {
+    if (!pack_name && pack_header) {
         pack_name = pack_header->Name;
     }
-    if (filename == nullptr && pack_header != nullptr) {
+    if (!filename && pack_header) {
         filename = pack_header->Filename;
     }
-    if (pack_name == nullptr) {
+    if (!pack_name) {
         pack_name = "<null>";
     }
-    if (filename == nullptr) {
+    if (!filename) {
         filename = "<null>";
     }
     this->Name = bAllocateSharedString(pack_name);
@@ -244,10 +244,10 @@ void TexturePack::UnattachTextureTable(TextureInfo *texture_info_table, TextureI
 }
 
 void TexturePack::AttachTextureInfo(TextureInfo *texture_info, TextureInfoPlatInfo *plat_info, TextureIndexEntry *index_entry) {
-    if (index_entry == nullptr) {
+    if (!index_entry) {
         index_entry = this->GetTextureIndexEntry(texture_info->NameHash);
     }
-    if (index_entry != nullptr) {
+    if (index_entry) {
         index_entry->pTextureInfo = texture_info;
         TextureLoadedTable.SetLoaded(texture_info->NameHash);
     }
@@ -268,10 +268,10 @@ void TexturePack::AttachTextureInfo(TextureInfo *texture_info, TextureInfoPlatIn
 }
 
 void TexturePack::UnattachTextureInfo(TextureInfo *texture_info, TextureInfoPlatInfo *plat_info, TextureIndexEntry *index_entry) {
-    if (index_entry == nullptr) {
+    if (!index_entry) {
         index_entry = this->GetTextureIndexEntry(texture_info->NameHash);
     }
-    if (index_entry != nullptr) {
+    if (index_entry) {
         index_entry->pTextureInfo = nullptr;
         TextureLoadedTable.SetUnloaded(texture_info->NameHash);
     }
@@ -285,7 +285,7 @@ void TexturePack::AssignTextureData(char *texture_data, int begin_pos, int num_b
     TextureInfo *assigned_texture_info = nullptr;
     for (int n = 0; n < this->NumTextures; n++) {
         TextureInfo *t = this->pPackHeader->TextureIndexEntryTable[n].pTextureInfo;
-        if (t == nullptr) {
+        if (!t) {
             continue;
         }
         bool initialized_something = false;
@@ -297,7 +297,7 @@ void TexturePack::AssignTextureData(char *texture_data, int begin_pos, int num_b
             initialized_something = true;
             t->PaletteData = texture_data + (t->PalettePlacement - begin_pos);
         }
-        if (initialized_something && t->ImageData != nullptr) {
+        if (initialized_something && t->ImageData) {
             num_assigned++;
             t->Init();
             assigned_texture_info = t;
@@ -318,7 +318,7 @@ inline void ClearTextureInfoCache(unsigned int name_hash) {
 inline TextureInfo *GetTextureInfoCache(unsigned int name_hash) {
     int cache_index = name_hash & 0xFF;
     TextureInfo *t = TextureInfoCache[cache_index];
-    if ((t != nullptr) && (t->NameHash == name_hash)) {
+    if (t && (t->NameHash == name_hash)) {
         return t;
     }
     return nullptr;
@@ -335,7 +335,7 @@ void TexturePack::UnAssignTextureData(int begin_pos, int num_bytes) {
     TextureInfo *unassigned_texture_info = nullptr;
     for (int n = 0; n < this->NumTextures; n++) {
         TextureInfo *t = this->pPackHeader->TextureIndexEntryTable[n].pTextureInfo;
-        if (t == nullptr) {
+        if (!t) {
             continue;
         }
         bool unassigned_something = false;
@@ -347,7 +347,7 @@ void TexturePack::UnAssignTextureData(int begin_pos, int num_bytes) {
             unassigned_something = true;
             t->PaletteData = nullptr;
         }
-        if (t->ImageData == nullptr && unassigned_something) {
+        if (!t->ImageData && unassigned_something) {
             t->Close();
             unsigned int texture_name_hash = t->NameHash;
             ClearTextureInfoCache(texture_name_hash);
@@ -367,7 +367,7 @@ void TexturePack::UnAssignTextureData(int begin_pos, int num_bytes) {
 
 TextureIndexEntry *TexturePack::GetTextureIndexEntry(unsigned int name_hash) {
 
-    if ((this->pPackHeader != nullptr) && (this->pPackHeader->TextureIndexEntryTable != nullptr)) {
+    if (this->pPackHeader && this->pPackHeader->TextureIndexEntryTable) {
         return reinterpret_cast<TextureIndexEntry *>(
             ScanHashTableKey32(name_hash, this->pPackHeader->TextureIndexEntryTable, this->NumTextures, 0, 8));
     }
@@ -381,10 +381,10 @@ TextureInfo *TexturePack::GetLoadedTexture(unsigned int name_hash) {
         return nullptr;
     }
     TextureIndexEntry *index_entry = this->GetTextureIndexEntry(name_hash);
-    if (index_entry != nullptr && index_entry->pTextureInfo != nullptr) {
+    if (index_entry && index_entry->pTextureInfo) {
         // TODO
-        if ((index_entry->pTextureInfo->ImageData == nullptr) ||
-            (bVar1 = true, index_entry->pTextureInfo->PaletteSize != 0 && (index_entry->pTextureInfo->PaletteData == nullptr))) {
+        if (!index_entry->pTextureInfo->ImageData ||
+            (bVar1 = true, index_entry->pTextureInfo->PaletteSize != 0 && !index_entry->pTextureInfo->PaletteData)) {
             bVar1 = false;
         }
         if (bVar1) {
@@ -396,7 +396,7 @@ TextureInfo *TexturePack::GetLoadedTexture(unsigned int name_hash) {
 
 TextureInfo *TexturePack::GetTexture(unsigned int name_hash) {
     TextureIndexEntry *index_entry = this->GetTextureIndexEntry(name_hash);
-    if (index_entry != nullptr) {
+    if (index_entry) {
         return index_entry->pTextureInfo;
     }
     return nullptr;
@@ -411,10 +411,10 @@ TextureInfo *eCreateTextureInfo() {
 
 void eDestroyTextureInfo(TextureInfo *texture_info) {
     TextureInfoPlatInfo *plat_info = texture_info->GetPlatInfo();
-    if (plat_info != nullptr) {
+    if (plat_info) {
         delete plat_info;
     }
-    if (texture_info != nullptr) {
+    if (texture_info) {
         delete texture_info;
     }
 }
@@ -444,7 +444,7 @@ TextureAnimPack::~TextureAnimPack() {
 
         for (int j = 0; j < num_frames; j++) {
             TextureAnimEntry *frame_entry = &base_entry[j];
-            if (frame_entry->pTextureInfo != nullptr) {
+            if (frame_entry->pTextureInfo) {
                 frame_entry->pTextureInfo->ReleaseAnimData(frame_entry->pPlatAnimData);
             }
         }
@@ -464,7 +464,7 @@ void TextureAnimPack::InitAnims() {
         for (int j = 0; j < num_frames; j++) {
             TextureAnimEntry *frame_entry = &base_entry[j];
             TextureInfo *texture_info = this->ParentTexturePack->GetLoadedTexture(frame_entry->NameHash);
-            if (texture_info != nullptr) {
+            if (texture_info) {
                 frame_entry->pTextureInfo = texture_info;
                 frame_entry->pPlatAnimData = texture_info->CreateAnimData();
             } else {
@@ -663,7 +663,7 @@ TextureInfo *GetTextureInfo(unsigned int name_hash /* r30 */, BOOL return_defaul
                             BOOL include_unloaded_textures /* r5 */) {
     if (name_hash != 0) {
         TextureInfo *texture_info = GetTextureInfoCache(name_hash);
-        if (texture_info != nullptr) {
+        if (texture_info) {
             return texture_info;
         }
         for (TexturePack *p = TexturePackList.GetHead(); p != TexturePackList.EndOfList(); p = p->GetNext()) {
@@ -676,7 +676,7 @@ TextureInfo *GetTextureInfo(unsigned int name_hash /* r30 */, BOOL return_defaul
             } else {
                 texture_info = p->GetLoadedTexture(name_hash);
             }
-            if (texture_info != nullptr) {
+            if (texture_info) {
                 TexturePackList.Remove(p);
                 TexturePackList.AddHead(p);
                 texture_info->UsedFlag = true;
@@ -686,18 +686,18 @@ TextureInfo *GetTextureInfo(unsigned int name_hash /* r30 */, BOOL return_defaul
         }
         {
             TextureInfo *texture_info = eGetRenderTargetTextureInfo(name_hash);
-            if (texture_info != nullptr) {
+            if (texture_info) {
                 return texture_info;
             }
             texture_info = eGetOtherEcstacyTexture(name_hash);
-            if (texture_info != nullptr) {
+            if (texture_info) {
                 return texture_info;
             }
         }
     }
     if (return_default_texture_if_not_found) {
         TextureInfo *texture_info = DefaultTextureInfo;
-        if (texture_info == nullptr) {
+        if (!texture_info) {
             bBreak();
             return nullptr;
         }
@@ -710,20 +710,20 @@ TextureInfo *FixupTextureInfo(TextureInfo *texture_info, unsigned int name_hash,
     if (loading) {
         if (texture_info == DefaultTextureInfo) {
             TextureInfo *info = texture_pack->GetLoadedTexture(name_hash);
-            if (info != nullptr) {
+            if (info) {
                 info->UsedFlag = true;
                 return info;
             }
         }
     } else if (texture_info->pTexturePack == texture_pack) {
         TextureInfo *info = texture_pack->GetLoadedTexture(name_hash);
-        if (info == nullptr) {
+        if (!info) {
             info = GetTextureInfo(name_hash, false, false);
-            if (info != nullptr) {
+            if (info) {
                 return info;
             }
             info = DefaultTextureInfo;
-            if (info == nullptr) {
+            if (!info) {
                 bBreak();
             }
             return info;
@@ -734,16 +734,16 @@ TextureInfo *FixupTextureInfo(TextureInfo *texture_info, unsigned int name_hash,
 
 TextureInfo *FixupTextureInfoNull(TextureInfo *texture_info, unsigned int name_hash, TexturePack *texture_pack, bool loading) {
     if (loading) {
-        if (texture_info == nullptr) {
+        if (!texture_info) {
             TextureInfo *info = texture_pack->GetLoadedTexture(name_hash);
-            if (info != nullptr) {
+            if (info) {
                 info->UsedFlag = true;
                 return info;
             }
         }
-    } else if (texture_info != nullptr && texture_info->pTexturePack == texture_pack) {
+    } else if (texture_info && texture_info->pTexturePack == texture_pack) {
         TextureInfo *info = texture_pack->GetLoadedTexture(name_hash);
-        if (info == nullptr) {
+        if (!info) {
             return GetTextureInfo(name_hash, false, false);
         }
     }

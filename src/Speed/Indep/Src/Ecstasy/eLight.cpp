@@ -140,7 +140,7 @@ int elSetupEnvMap(eDynamicLightContext *light_context, bMatrix4 *local_world, bM
     bMatrix4 world_local;
 
     eInvertRotationMatrix(&world_local, local_world);
-    if (camera_world_position != nullptr) {
+    if (camera_world_position) {
         bVector4 v;
         v.x = camera_world_position->x - local_world->v3.x;
         v.y = camera_world_position->y - local_world->v3.y;
@@ -166,7 +166,7 @@ int elSetupEnvMap(eDynamicLightContext *light_context, bMatrix4 *local_world, bM
         light_context->LocalEyePosition = v;
         light_context->LocalEyePosition.w = 1.0f;
     }
-    if ((world_view != nullptr) && (camera_world_position != nullptr)) {
+    if (world_view && camera_world_position) {
         bMatrix4 *envmap_matrix = &light_context->EnvMapMatrix;
         bVector4 *camera_local_space;
         eMulMatrix(envmap_matrix, local_world, world_view);
@@ -194,7 +194,7 @@ int elSetupLightContext(eDynamicLightContext *light_context /* r31 */, eShaperLi
                         bMatrix4 *world_view /* r27 */, bVector4 *camera_world_position /* r29 */, eView *view /* r26 */) {
     // ProfileNode profile_node;
 
-    if ((light_context == nullptr) || (local_world == nullptr) || (shaper_lights == nullptr)) {
+    if (!light_context || !local_world || !shaper_lights) {
         return 0;
     } else {
         elResetLightContext(light_context);
@@ -322,14 +322,14 @@ void eRenderWorldLightFlares(eView *view /* r26 */, flareType type /* r24 */) {
         camera_position = reinterpret_cast<bVector2 *>(view->GetCamera()->GetPosition());
         local_world = eGetIdentityMatrix();
         scenery_section = TheVisibleSectionManager.FindDrivableSection(camera_position);
-        if (scenery_section == nullptr) {
+        if (!scenery_section) {
             return;
         }
         for (int i = 0; i < scenery_section->NumVisibleSections; i++) {
             VisibleSectionUserInfo *user_info = TheVisibleSectionManager.GetUserInfo(scenery_section->GetVisibleSection(i));
-            if (user_info != nullptr) {
+            if (user_info) {
                 eLightFlarePackHeader *pack = user_info->pLightFlarePack;
-                if (pack != nullptr && view->GetVisibleState(&pack->BBoxMin, &pack->BBoxMax, nullptr) != EVISIBLESTATE_NOT) {
+                if (pack && view->GetVisibleState(&pack->BBoxMin, &pack->BBoxMax, nullptr) != EVISIBLESTATE_NOT) {
                     for (eLightFlare *light_flare = pack->LightFlareList.GetHead(); light_flare != pack->LightFlareList.EndOfList();
                          light_flare = light_flare->GetNext()) {
                         eRenderLightFlare(view, light_flare, local_world, 1.0f, REF_NONE, type, 0.0f, 0, 1.0f);

@@ -100,7 +100,7 @@ int eView::GetPixelSize(const bVector3 *bbox_min, const bVector3 *bbox_max) {
 }
 
 void eView::BiasMatrixForZSorting(bMatrix4 *pL2W, float zBias) {
-    if (this->pCamera != nullptr) {
+    if (this->pCamera) {
         bMatrix4 m;
         bIdentity(&m);
 

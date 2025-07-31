@@ -35,7 +35,7 @@ bool eBeginStrip(TextureInfo *a, int b, bMatrix4 *c) {
     e_current_strip_vert = 0;
     e_current_strip_uv = 0;
     e_strip_texture_info = a;
-    if (c != nullptr) {
+    if (c) {
         bMemCpy(&e_strip_matrix, c, 0x40);
     } else {
         bIdentity(&e_strip_matrix);

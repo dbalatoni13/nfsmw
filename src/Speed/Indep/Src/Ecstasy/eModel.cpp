@@ -33,7 +33,7 @@ void AddReplacementTextureTableFixup(eReplacementTextureTable *r, int num) {
     ReplacementTextureTableFixup *free_fixup = nullptr;
     for (int index = 0; index < NUM_REPLACEMENTS; index++) {
         ReplacementTextureTableFixup *fixup = &ReplacementTextureTableFixups[index];
-        if (free_fixup == nullptr && fixup->pReplacementTextureTable == nullptr) {
+        if (!free_fixup && !fixup->pReplacementTextureTable) {
             free_fixup = fixup;
             continue;
         }
@@ -65,7 +65,7 @@ void RemoveReplacementTextureTableFixup(eReplacementTextureTable *r) {
 void eFixupReplacementTextureTables() {
     for (int index = 0; index < NUM_REPLACEMENTS; index++) {
         ReplacementTextureTableFixup *fixup = &ReplacementTextureTableFixups[index];
-        if (fixup->pReplacementTextureTable != nullptr) {
+        if (fixup->pReplacementTextureTable) {
             for (int n = 0; n < fixup->NumReplacementTextures; n++) {
                 TextureInfo *texture_info = reinterpret_cast<TextureInfo *>(gDefragFixer.Fix(fixup->pReplacementTextureTable[n].pTextureInfo));
                 fixup->pReplacementTextureTable[n].SetCurrentTexture(texture_info);
@@ -77,7 +77,7 @@ void eFixupReplacementTextureTables() {
 void eFixupReplacementTexturesAfterUnloading(TextureInfo *texture_info) {
     for (int index = 0; index < NUM_REPLACEMENTS; index++) {
         ReplacementTextureTableFixup *fixup = &ReplacementTextureTableFixups[index];
-        if (fixup->pReplacementTextureTable != nullptr) {
+        if (fixup->pReplacementTextureTable) {
             for (int n = 0; n < fixup->NumReplacementTextures; n++) {
                 if (fixup->pReplacementTextureTable[n].GetCurrentTexture() == texture_info) {
                     fixup->pReplacementTextureTable[n].InvalidateTexture();
@@ -98,12 +98,12 @@ void eModel::Init(unsigned int name_hash) {
 }
 
 void eModel::UnInit() {
-    if (this->NameHash != 0 || this->Solid != nullptr) {
+    if (this->NameHash != 0 || this->Solid) {
         this->Remove();
     }
     this->Solid = nullptr;
     this->NameHash = 0;
-    if (this->pReplacementTextureTable != nullptr) {
+    if (this->pReplacementTextureTable) {
         RemoveReplacementTextureTableFixup(this->pReplacementTextureTable);
     }
     this->pReplacementTextureTable = nullptr;
@@ -130,7 +130,7 @@ void eModel::ConnectSolid(eSolid *new_solid) {
     }
     this->Remove();
 
-    if (new_solid != nullptr) {
+    if (new_solid) {
         new_solid->ModelList.AddTail(this);
     } else {
         UnattachedModelList.AddTail(new_solid);
@@ -139,7 +139,7 @@ void eModel::ConnectSolid(eSolid *new_solid) {
 }
 
 void eModel::AttachReplacementTextureTable(eReplacementTextureTable *replacement_texture_table, int num_textures, int instance_index) {
-    if (this->pReplacementTextureTable != nullptr) {
+    if (this->pReplacementTextureTable) {
         RemoveReplacementTextureTableFixup(this->pReplacementTextureTable);
     }
     this->pReplacementTextureTable = replacement_texture_table;
@@ -152,14 +152,14 @@ void eModel::RestoreReplacementTextureTable(TextureInfo ***replaced_textures) {
     int num_replacement_textures = this->NumReplacementTextures;
     eSolid *solid = this->Solid;
 
-    if (replacement_texture_table == nullptr || solid == nullptr || this->NumReplacementTextures == 0) {
+    if (!replacement_texture_table || !solid || !this->NumReplacementTextures) {
         return;
     }
     eReplacementTextureTable *replacement_texture_entry = replacement_texture_table;
 
     for (int n = 0; n < num_replacement_textures; n++) {
         TextureInfo **replaced_texture = replaced_textures[n];
-        if (replaced_texture != nullptr) {
+        if (replaced_texture) {
             TextureInfo *new_texture_info = *replaced_texture;
             TextureInfo *old_texture_info = replacement_texture_entry->pTextureInfo;
 
@@ -177,7 +177,7 @@ void eModel::ApplyReplacementTextureTable(TextureInfo ***replaced_textures) {
     int num_replacement_textures = this->NumReplacementTextures;
     int num_solid_textures = solid->NumTextureTableEntries;
 
-    if (replacement_texture_table == nullptr || solid == nullptr || num_replacement_textures == 0) {
+    if (!replacement_texture_table || !solid || !num_replacement_textures) {
         return;
     }
 
@@ -207,7 +207,7 @@ void eModel::ApplyReplacementTextureTable(TextureInfo ***replaced_textures) {
 }
 
 int eModel::GetBoundingBox(bVector3 *min, bVector3 *max) {
-    if (this->Solid != nullptr) {
+    if (this->Solid) {
         this->Solid->GetBoundingBox(min, max);
         return 1;
     } else {
@@ -222,34 +222,34 @@ int eModel::GetBoundingBox(bVector3 *min, bVector3 *max) {
 }
 
 bVector4 *eModel::GetPivotPosition() {
-    if (this->Solid != nullptr) {
+    if (this->Solid) {
         return &this->Solid->PivotMatrix.v3;
     }
     return nullptr;
 }
 
 bMatrix4 *eModel::GetPivotMatrix() {
-    if (this->Solid != nullptr) {
+    if (this->Solid) {
         return &this->Solid->PivotMatrix;
     }
     return nullptr;
 }
 
 void eModel::ReplaceLightMaterial(unsigned int old_name_hash, eLightMaterial *new_light_material) {
-    if (this->Solid != nullptr) {
+    if (this->Solid) {
         this->Solid->ReplaceLightMaterial(old_name_hash, new_light_material);
     }
 }
 
 ePositionMarker *eModel::GetPostionMarker(ePositionMarker *prev_marker) {
-    if (this->Solid != nullptr) {
+    if (this->Solid) {
         return this->Solid->GetPostionMarker(prev_marker);
     }
     return nullptr;
 }
 
 ePositionMarker *eModel::GetPostionMarker(unsigned int namehash) {
-    if (this->Solid != nullptr) {
+    if (this->Solid) {
         return this->Solid->GetPostionMarker(namehash);
     }
     return nullptr;
@@ -283,15 +283,15 @@ int eSmoothNormals(eModel **model_table, int num_models) {
     eSolid *solid_table[256];
     int num_solids;
 
-    if ((model_table == nullptr) || (num_models > 0xff) || (num_models < 0)) {
+    if (!model_table || (num_models > 0xff) || (num_models < 0)) {
         return 0;
     } else if (num_models == 0) {
         return 1;
     } else {
         num_solids = 0;
         for (int i = 0; i < num_models; i++) {
-            if (model_table[i] != nullptr) {
-                if (model_table[i]->Solid != nullptr && model_table[i]->Solid->NormalSmoother != nullptr) {
+            if (model_table[i]) {
+                if (model_table[i]->Solid && model_table[i]->Solid->NormalSmoother) {
                     solid_table[num_solids] = model_table[i]->Solid;
                     num_solids++;
                 }

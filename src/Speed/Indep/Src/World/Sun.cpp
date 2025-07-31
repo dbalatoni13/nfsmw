@@ -57,7 +57,7 @@ void SetCurrentSunInfo(unsigned int name_hash) {
             }
         }
     }
-    if (SunInfo == nullptr) {
+    if (!SunInfo) {
         SunPosition.x = 0.0f;
         SunPosition.y = 0.0f;
         SunPosition.z = 0.0f;
@@ -115,7 +115,7 @@ void SunTrackUnloader(void) {
 void RenderSunAsFlare() {
     bVector3 sp8; // position3d
 
-    if (SunInfo != nullptr) {
+    if (SunInfo) {
         float fVar1;
         float fVar2;
         float fVar3;
@@ -142,7 +142,7 @@ void RenderSunAsFlare() {
         fVar2 = local_38.pad;
         fVar1 = local_38.z;
         eLightFlare *light_flare = eGetNextLightFlareInPool(0x3e);
-        if (light_flare != nullptr) {
+        if (light_flare) {
             light_flare->Flags = 2;
             light_flare->PositionX = fVar1;
             light_flare->PositionY = fVar2;
@@ -154,7 +154,7 @@ void RenderSunAsFlare() {
         local_38.x = SunInfo->PositionZ * fVar6 * 60.0f;
         // bVector3((bVector3 *)&local_38.z, (bVector3 *)&local_28.z);
         light_flare = eGetNextLightFlareInPool(0x3f0036);
-        if (light_flare != nullptr) {
+        if (light_flare) {
             light_flare->Flags = 2;
             light_flare->PositionX = local_38.z;
             light_flare->PositionY = local_38.pad;
@@ -166,7 +166,7 @@ void RenderSunAsFlare() {
 
 float GetSunIntensity(eView *view) {
     float amount = 1.0f;
-    if (view->Precipitation != nullptr) {
+    if (view->Precipitation) {
         amount = 1.0f - view->Precipitation->GetCloudIntensity();
     }
     if (AmIinATunnel(view, 1) != 0) {
@@ -176,10 +176,10 @@ float GetSunIntensity(eView *view) {
 }
 
 void GetSunPos(eView *view, float *x, float *y, float *z) {
-    if (SunInfo == nullptr) {
+    if (!SunInfo) {
         return;
     }
-    if (view != nullptr) {
+    if (view) {
         Camera *view_camera = view->GetCamera();
         bVector3 CamPosWORLD(*view_camera->GetPosition());
         *x = SunInfo->PositionX + CamPosWORLD.x;
