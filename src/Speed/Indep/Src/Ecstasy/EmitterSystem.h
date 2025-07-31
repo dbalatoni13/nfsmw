@@ -9,6 +9,8 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Texture.hpp"
 
+#include "Speed/Indep/Libs/Support/Utility/UTLContainer.h"
+
 struct smVector3 {
     // total size: 0x8
     char x;            // offset 0x0, size 0x1
@@ -133,22 +135,41 @@ struct EmitterLibraryHeader {
     int SectionNumber;       // offset 0xC, size 0x4
 };
 
+// TODO right place?
+struct WorldFXTrigger : public bTNode<WorldFXTrigger> {
+    // total size: 0x30
+    EmitterLibrary *mLib;        // offset 0x8, size 0x4
+    float mTriggerRadius;        // offset 0xC, size 0x4
+    bVector3 mWorldPos;          // offset 0x10, size 0x10
+    float mResetTime;            // offset 0x20, size 0x4
+    unsigned short mProbability; // offset 0x24, size 0x2
+    unsigned char mState;        // offset 0x26, size 0x1
+    unsigned char mFlags;        // offset 0x27, size 0x1
+    float mLastEnd;              // offset 0x28, size 0x4
+    unsigned int pad;            // offset 0x2C, size 0x4
+};
+
 struct EmitterSystem {
+    struct LibEntry {
+        unsigned int Key;
+        EmitterLibrary *Lib;
+    };
+
     // total size: 0x3AC
-    int mTotalNumParticles;             // offset 0x0, size 0x4
-    int mParticleListCounts[66];        // offset 0x4, size 0x108
-    bPList<Emitter> mParticleLists[66]; // offset 0x10C, size 0x210
-    bVector3 mInterestPoints[2];        // offset 0x31C, size 0x20
-    bVector3 mInterestVectors[2];       // offset 0x33C, size 0x20
-    // struct map<unsigned int, EmitterDataAttribWrapper *, _type_map> mEmitterDataMap;   // offset 0x35C, size 0x10
-    // struct map<unsigned int, EmitterGroupAttribWrapper *, _type_map> mEmitterGroupMap; // offset 0x36C, size 0x10
-    bTList<EmitterGroup> mEmitterGroups; // offset 0x37C, size 0x8
-    // bTList<WorldFXTrigger> mWorldTriggers; // offset 0x384, size 0x8
-    int mNumTriggers;               // offset 0x38C, size 0x4
-    TextureInfo *mCurrentTexture;   // offset 0x390, size 0x4
-    unsigned int mNumEmitterGroups; // offset 0x394, size 0x4
-    unsigned int mNumEmitters;      // offset 0x398, size 0x4
-    // struct vector<EmitterSystem::LibEntry, _type_vector> mLibs;                        // offset 0x39C, size 0x10
+    int mTotalNumParticles;                                                                        // offset 0x0, size 0x4
+    int mParticleListCounts[66];                                                                   // offset 0x4, size 0x108
+    bPList<Emitter> mParticleLists[66];                                                            // offset 0x10C, size 0x210
+    bVector3 mInterestPoints[2];                                                                   // offset 0x31C, size 0x20
+    bVector3 mInterestVectors[2];                                                                  // offset 0x33C, size 0x20
+    UTL::Container::map<unsigned int, EmitterDataAttribWrapper *, _type_vector> mEmitterDataMap;   // offset 0x35C, size 0x10
+    UTL::Container::map<unsigned int, EmitterGroupAttribWrapper *, _type_vector> mEmitterGroupMap; // offset 0x36C, size 0x10
+    bTList<EmitterGroup> mEmitterGroups;                                                           // offset 0x37C, size 0x8
+    bTList<WorldFXTrigger> mWorldTriggers;                                                         // offset 0x384, size 0x8
+    int mNumTriggers;                                                                              // offset 0x38C, size 0x4
+    TextureInfo *mCurrentTexture;                                                                  // offset 0x390, size 0x4
+    unsigned int mNumEmitterGroups;                                                                // offset 0x394, size 0x4
+    unsigned int mNumEmitters;                                                                     // offset 0x398, size 0x4
+    UTL::Container::vector<EmitterSystem::LibEntry, _type_vector> mLibs;                           // offset 0x39C, size 0x10
 
     void OrphanParticlesFromThisEmitter(Emitter *em);
     void KillParticlesFromThisEmitter(Emitter *em);
