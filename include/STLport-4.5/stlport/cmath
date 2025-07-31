@@ -1,0 +1,187 @@
+/*
+ * Copyright (c) 1999 
+ * Boris Fomitchev
+ *
+ * This material is provided "as is", with absolutely no warranty expressed
+ * or implied. Any use is at your own risk.
+ *
+ * Permission to use or copy this software for any purpose is hereby granted 
+ * without fee, provided the above notices are retained on all copies.
+ * Permission to modify the code and to distribute modified code is granted,
+ * provided the above notices are retained, and a notice that the code was
+ * modified is included with the above copyright notice.
+ *
+ */
+
+#ifndef _STLP_CMATH
+# define _STLP_CMATH
+
+# ifndef _STLP_OUTERMOST_HEADER_ID
+#  define _STLP_OUTERMOST_HEADER_ID  0x109
+#  include <stl/_prolog.h>
+# endif
+
+# if defined (_STLP_USE_NEW_C_HEADERS)
+#  if defined (_STLP_HAS_NO_NAMESPACES) && ! defined (exception)
+#   define exception __math_exception
+#  endif
+#  include _STLP_NATIVE_CPP_C_HEADER(cmath)
+#  if defined (_STLP_HAS_NO_NAMESPACES)
+#   undef exception
+#  endif
+# else
+#  include <math.h>
+# endif
+
+#  if (defined (__SUNPRO_CC) && (__SUNPRO_CC > 0x500)) || \
+     !( defined (__IBMCPP__) && (__IBMCPP__ >= 500) || ! ( defined (__HP_aCC) && (__HP_aCC >= 30000) ))
+# ifndef _STLP_HAS_NO_NAMESPACES
+namespace std {
+# endif
+  extern "C" double hypot(double x, double y);
+# ifndef _STLP_HAS_NO_NAMESPACES
+}
+# endif
+
+#  endif
+
+#  ifdef _STLP_IMPORT_VENDOR_CSTD
+_STLP_BEGIN_NAMESPACE
+# if ! defined (_STLP_NO_CSTD_FUNCTION_IMPORTS)
+# ifdef _STLP_HAS_NATIVE_FLOAT_ABS
+using _STLP_VENDOR_CSTD::abs;
+# endif
+using _STLP_VENDOR_CSTD::acos;
+using _STLP_VENDOR_CSTD::asin;
+using _STLP_VENDOR_CSTD::atan2;
+using _STLP_VENDOR_CSTD::atan;
+using _STLP_VENDOR_CSTD::ceil;
+using _STLP_VENDOR_CSTD::cos;
+using _STLP_VENDOR_CSTD::cosh;
+using _STLP_VENDOR_CSTD::exp;
+using _STLP_VENDOR_CSTD::fabs;
+using _STLP_VENDOR_CSTD::floor;
+using _STLP_VENDOR_CSTD::fmod;
+using _STLP_VENDOR_CSTD::frexp;
+using _STLP_VENDOR_CSTD::ldexp;
+using _STLP_VENDOR_CSTD::log10;
+using _STLP_VENDOR_CSTD::log;
+using _STLP_VENDOR_CSTD::modf;
+using _STLP_VENDOR_CSTD::pow;
+using _STLP_VENDOR_CSTD::sin;
+using _STLP_VENDOR_CSTD::sinh;
+using _STLP_VENDOR_CSTD::sqrt;
+using _STLP_VENDOR_CSTD::tan;
+using _STLP_VENDOR_CSTD::tanh;
+# endif /* BUG */
+_STLP_END_NAMESPACE
+#  endif /* _STLP_IMPORT_VENDOR_CSTD */
+
+
+_STLP_BEGIN_NAMESPACE
+
+# ifdef _STLP_SAME_FUNCTION_NAME_RESOLUTION_BUG
+
+// this proxy is needed for some compilers to resolve problems
+// calling sqrt() from within sqrt(), etc.
+template <class _Tp>
+struct _STL_math_proxy {
+  static inline _Tp _do_abs(const _Tp& __x)     { return _STLP_VENDOR_CSTD::fabs(__x); } 
+  static inline _Tp _do_acos(const _Tp& __x)    { return _STLP_VENDOR_CSTD::acos(__x); } 
+  static inline _Tp _do_asin(const _Tp& __x)    { return _STLP_VENDOR_CSTD::asin(__x); } 
+  static inline _Tp _do_atan(const _Tp& __x)    { return _STLP_VENDOR_CSTD::atan(__x); } 
+  static inline _Tp _do_atan2(const _Tp& __x, const _Tp& __y)  { return _STLP_VENDOR_CSTD::atan2(__x, __y); } 
+  static inline _Tp _do_cos(const _Tp& __x)     { return _STLP_VENDOR_CSTD::cos(__x); } 
+  static inline _Tp _do_cosh(const _Tp& __x)    { return _STLP_VENDOR_CSTD::cosh(__x); } 
+  static inline _Tp _do_floor(const _Tp& __x)    { return _STLP_VENDOR_CSTD::floor(__x); } 
+  static inline _Tp _do_ceil(const _Tp& __x)    { return _STLP_VENDOR_CSTD::ceil(__x); } 
+  static inline _Tp _do_fmod(const _Tp& __x, const _Tp& __y)    { return _STLP_VENDOR_CSTD::fmod(__x, __y); } 
+  static inline _Tp _do_frexp(const _Tp& __x, int* __y)    { return _STLP_VENDOR_CSTD::frexp(__x, __y); } 
+  static inline _Tp _do_ldexp(const _Tp& __x, int __y)    { return _STLP_VENDOR_CSTD::ldexp(__x, __y); } 
+  static inline _Tp _do_modf(const _Tp& __x, double* __y) { return _STLP_VENDOR_CSTD::modf(__x, __y); }
+  static inline _Tp _do_log(const _Tp& __x)     { return _STLP_VENDOR_CSTD::log(__x); } 
+  static inline _Tp _do_log10(const _Tp& __x)   { return _STLP_VENDOR_CSTD::log10(__x); } 
+  static inline _Tp _do_pow(const _Tp& __x, const _Tp& __y)    { return _STLP_VENDOR_CSTD::pow(__x, __y); } 
+  static inline _Tp _do_pow(const _Tp& __x, int __y)    { return _STLP_VENDOR_CSTD::pow(__x, __y); } 
+  static inline _Tp _do_sin(const _Tp& __x)     { return _STLP_VENDOR_CSTD::sin(__x); } 
+  static inline _Tp _do_sinh(const _Tp& __x)    { return _STLP_VENDOR_CSTD::sinh(__x); } 
+
+  static inline _Tp _do_sqrt(const _Tp& __x)    { return _STLP_VENDOR_CSTD::sqrt(__x); } 
+  static inline _Tp _do_tan(const _Tp& __x)     { return _STLP_VENDOR_CSTD::tan(__x); } 
+  static inline _Tp _do_tanh(const _Tp& __x)    { return _STLP_VENDOR_CSTD::tanh(__x); } 
+  static inline _Tp _do_exp(const _Tp& __x)     { return _STLP_VENDOR_CSTD::exp(__x); } 
+  static inline _Tp _do_hypot(const _Tp& __x, const _Tp& __y)   { return _STLP_VENDOR_CSTD::hypot(__x, __y); } 
+};
+
+#  define _STLP_DO_ABS(_Tp)   _STL_math_proxy<_Tp>::_do_abs
+#  define _STLP_DO_ACOS(_Tp)  _STL_math_proxy<_Tp>::_do_acos
+#  define _STLP_DO_ASIN(_Tp)  _STL_math_proxy<_Tp>::_do_asin
+#  define _STLP_DO_ATAN(_Tp)  _STL_math_proxy<_Tp>::_do_atan
+#  define _STLP_DO_ATAN2(_Tp) _STL_math_proxy<_Tp>::_do_atan2
+#  define _STLP_DO_COS(_Tp)   _STL_math_proxy<_Tp>::_do_cos
+#  define _STLP_DO_COSH(_Tp)  _STL_math_proxy<_Tp>::_do_cosh
+#  define _STLP_DO_FLOOR(_Tp) _STL_math_proxy<_Tp>::_do_floor
+#  define _STLP_DO_CEIL(_Tp) _STL_math_proxy<_Tp>::_do_ceil
+#  define _STLP_DO_FMOD(_Tp) _STL_math_proxy<_Tp>::_do_fmod
+#  define _STLP_DO_FREXP(_Tp) _STL_math_proxy<_Tp>::_do_frexp
+#  define _STLP_DO_LDEXP(_Tp) _STL_math_proxy<_Tp>::_do_ldexp
+#  define _STLP_DO_MODF(_Tp) _STL_math_proxy<_Tp>::_do_modf
+#  define _STLP_DO_LOG(_Tp)   _STL_math_proxy<_Tp>::_do_log
+#  define _STLP_DO_LOG10(_Tp) _STL_math_proxy<_Tp>::_do_log10
+#  define _STLP_DO_POW(_Tp)   _STL_math_proxy<_Tp>::_do_pow
+#  define _STLP_DO_SIN(_Tp)   _STL_math_proxy<_Tp>::_do_sin
+#  define _STLP_DO_SINH(_Tp)  _STL_math_proxy<_Tp>::_do_sinh
+#  define _STLP_DO_SQRT(_Tp)  _STL_math_proxy<_Tp>::_do_sqrt
+#  define _STLP_DO_TAN(_Tp)   _STL_math_proxy<_Tp>::_do_tan
+#  define _STLP_DO_TANH(_Tp)  _STL_math_proxy<_Tp>::_do_tanh
+#  define _STLP_DO_EXP(_Tp)   _STL_math_proxy<_Tp>::_do_exp
+#  define _STLP_DO_HYPOT(_Tp) _STL_math_proxy<_Tp>::_do_hypot
+# else
+
+#  define _STLP_DO_ABS(_Tp)   _STLP_VENDOR_CSTD::fabs
+#  define _STLP_DO_ACOS(_Tp)  _STLP_VENDOR_CSTD::acos
+#  define _STLP_DO_ASIN(_Tp)  _STLP_VENDOR_CSTD::asin
+#  define _STLP_DO_ATAN(_Tp)  _STLP_VENDOR_CSTD::atan
+#  define _STLP_DO_ATAN2(_Tp) _STLP_VENDOR_CSTD::atan2
+#  define _STLP_DO_COS(_Tp)   _STLP_VENDOR_CSTD::cos
+#  define _STLP_DO_COSH(_Tp)  _STLP_VENDOR_CSTD::cosh
+#  define _STLP_DO_FLOOR(_Tp)  _STLP_VENDOR_CSTD::floor
+#  define _STLP_DO_CEIL(_Tp)   _STLP_VENDOR_CSTD::ceil
+#  define _STLP_DO_FMOD(_Tp)   _STLP_VENDOR_CSTD::fmod
+#  define _STLP_DO_FREXP(_Tp) _STLP_VENDOR_CSTD::frexp
+#  define _STLP_DO_LDEXP(_Tp) _STLP_VENDOR_CSTD::ldexp
+#  define _STLP_DO_MODF(_Tp) _STLP_VENDOR_CSTD::modf
+#  define _STLP_DO_LOG(_Tp)   _STLP_VENDOR_CSTD::log
+#  define _STLP_DO_LOG10(_Tp) _STLP_VENDOR_CSTD::log10
+#  define _STLP_DO_POW(_Tp)   _STLP_VENDOR_CSTD::pow
+#  define _STLP_DO_SIN(_Tp)   _STLP_VENDOR_CSTD::sin
+#  define _STLP_DO_SINH(_Tp)  _STLP_VENDOR_CSTD::sinh
+#  define _STLP_DO_SQRT(_Tp)  _STLP_VENDOR_CSTD::sqrt
+#  define _STLP_DO_TAN(_Tp)   _STLP_VENDOR_CSTD::tan
+#  define _STLP_DO_TANH(_Tp)  _STLP_VENDOR_CSTD::tanh
+#  define _STLP_DO_EXP(_Tp)   _STLP_VENDOR_CSTD::exp
+# if defined (__GNUC__) || defined ( __IBMCPP__ )
+#  define _STLP_DO_HYPOT(_Tp) ::hypot
+# else
+#  define _STLP_DO_HYPOT(_Tp) _STLP_VENDOR_CSTD::hypot
+# endif
+
+# endif
+
+_STLP_END_NAMESPACE
+
+# if defined (_STLP_HAS_NO_NEW_C_HEADERS) || defined(_STLP_MSVC) || defined (__ICL)
+#  include <stl/_cmath.h>
+# endif /* NEW_C_HEADERS */
+
+
+# if (_STLP_OUTERMOST_HEADER_ID ==  0x109 )
+#  include <stl/_epilog.h>
+#  undef _STLP_OUTERMOST_HEADER_ID
+# endif
+
+#endif /* _STLP_CMATH */
+
+// Local Variables:
+// mode:C++
+// End:
