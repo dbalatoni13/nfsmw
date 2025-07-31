@@ -32,6 +32,20 @@ struct SlotPool : public bTNode<SlotPool> {
     int TotalNumSlots;         // offset 0x2C, size 0x4
     SlotPoolEntry Slots[1];    // offset 0x30, size 0x4
 
+    static SlotPool *NewSlotPool(int slot_size, int num_slots, const char *debug_name, int memory_pool);
+    static void DeleteSlotPool(SlotPool *slot_pool);
+
+    void FlushSlotPool();
+    void ExpandSlotPool(int num_extra_slots);
+    int GetSlotNumber(void *p);
+    void *GetSlot(int slot_number);
+    void *GetAllocatedSlot(int n);
+    void CleanupExpandedSlotPools();
+    void *Malloc();
+    void *FastMalloc();
+    void Free(void *p);
+    void *Malloc(int num_slots, void **last_slot);
+
     void SetFlag(SlotPoolFlags flag) {}
 
     void ClearFlag(SlotPoolFlags flag) {
@@ -44,22 +58,51 @@ struct SlotPool : public bTNode<SlotPool> {
 
     const char *GetName();
 
-    int IsFull();
+    BOOL IsFull() {
+        return this->NumAllocatedSlots == this->TotalNumSlots;
+    }
 
-    int IsEmpty();
+    BOOL IsEmpty() {
+        return this->NumAllocatedSlots == 0;
+    }
 
-    int HasOverflowed();
+    BOOL HasOverflowed();
 
-    int CountFreeSlots();
+    int CountFreeSlots() {
+        return this->TotalNumSlots - this->NumAllocatedSlots;
+    }
 
-    int CountAllocatedSlots();
+    int CountAllocatedSlots() {
+        return this->NumAllocatedSlots;
+    }
 
-    int CountTotalSlots();
+    int CountTotalSlots() {
+        return this->TotalNumSlots;
+    }
 
-    int CountMostAllocatedSlots();
+    int CountMostAllocatedSlots() {
+        return this->MostNumAllocatedSlots;
+    }
+};
+
+struct SlotPoolManager {
+    // total size: 0xC
+    BOOL Initialized;              // offset 0x0, size 0x4
+    bTList<SlotPool> SlotPoolList; // offset 0x4, size 0x8
+
+    SlotPoolManager();
+    ~SlotPoolManager();
+    SlotPool *NewSlotPool(int slot_size, int num_slots, const char *debug_name, int memory_pool);
+    void DeleteSlotPool(SlotPool *slot_pool);
+    void PrintAllSlotPools();
+    void CleanupExpandedSlotPools();
 };
 
 SlotPool *bNewSlotPool(int slot_size, int num_slots, const char *debug_name, int memory_pool);
+void bDeleteSlotPool(SlotPool *slot_pool);
+void *bOMalloc(SlotPool *slot_pool);
+void bFree(SlotPool *slot_pool, void *p);
+void bFree(SlotPool *slot_pool, void *first_slot, void *last_slot);
 
 extern struct SlotPool *ePolySlotPool;
 

@@ -81,14 +81,14 @@ void EmitterSystem::KillEverything() {
     EmitterGroup *local_r3_72;
     EmitterGroup *pEVar2;
 
-    pEVar1 = (EmitterGroup *)(this->mEmitterGroups).__base.HeadNode.Next;
-    while (grp = pEVar1, grp != (EmitterGroup *)&this->mEmitterGroups) {
-        pEVar2 = (EmitterGroup *)(grp->__base).__base.Next;
-        pEVar1 = grp;
-        if (((grp->mFlags & 2) == 0) && (pEVar1 = pEVar2, grp != (EmitterGroup *)0x0)) {
-            EmitterGroup(grp, 3);
-        }
-    }
-    local_r3_72 = (EmitterGroup *)GetNumParticleTextures();
-    SetParticleSystemStats(0, 0x400, 0, (int)local_r3_72, gEmitterSystem.mNumEmitters, 500, gEmitterSystem.mNumEmitterGroups, 200);
+    // pEVar1 = (EmitterGroup *)(this->mEmitterGroups).__base.HeadNode.Next;
+    // while (grp = pEVar1, grp != (EmitterGroup *)&this->mEmitterGroups) {
+    //     pEVar2 = (EmitterGroup *)(grp->__base).__base.Next;
+    //     pEVar1 = grp;
+    //     if (((grp->mFlags & 2) == 0) && (pEVar1 = pEVar2, grp != (EmitterGroup *)0x0)) {
+    //         EmitterGroup(grp, 3);
+    //     }
+    // }
+    // local_r3_72 = (EmitterGroup *)GetNumParticleTextures();
+    // SetParticleSystemStats(0, 0x400, 0, (int)local_r3_72, gEmitterSystem.mNumEmitters, 500, gEmitterSystem.mNumEmitterGroups, 200);
 }

@@ -1,5 +1,8 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+
+unsigned int bDefaultSeed;
 
 void bEndianSwap64(void *value) {
     int64_t temp = *reinterpret_cast<int64_t *>(value);
@@ -50,6 +53,57 @@ void bPlatEndianSwap(bMatrix4 *value) {
     bPlatEndianSwap(&value->v1);
     bPlatEndianSwap(&value->v2);
     bPlatEndianSwap(&value->v3);
+}
+
+// UNSOLVED
+int bDiv(int a, int b) {
+    if (b == 0) {
+        if (a == 0) {
+            return 0;
+        }
+        if (a > 0) {
+            return 0x7fffffff;
+        }
+        return -0x80000000;
+    } else {
+        int half_inverse_b = 0x7fffffff / b;
+        return ((((long long)a * half_inverse_b) >> 32) << 16 | (unsigned int)((long long)a * half_inverse_b) >> 16) << 1;
+    }
+}
+
+void bSetRandomSeed(unsigned int value, unsigned int *seed) {
+    *seed = value;
+    bRandom(1, seed);
+}
+
+unsigned int bRandom(int range, unsigned int *seed) {
+    if (range == 0) {
+        return 0;
+    }
+    unsigned int result = *seed;
+    unsigned int next = result ^ 0x1d872b41;
+    unsigned int temp = next ^ (next >> 5);
+    *seed = temp ^ (next ^ (temp << 0x1b));
+    return result - (result / range) * range;
+}
+
+float bRandom(float range, unsigned int *seed) {
+    return range * 4.656613e-10f * bRandom(0x7fffffff, seed);
+}
+
+unsigned int bRandom(int range) {
+    return bRandom(range, &bDefaultSeed);
+}
+
+float bRandom(float range) {
+    return bRandom(range, &bDefaultSeed);
+}
+
+// UNSOLVED
+float bFMod(float a, float b) {
+    float d = bAbs(b);
+    float c = a / d;
+    return (c - bFloor(c)) * d;
 }
 
 float bSin(unsigned short angle);
@@ -117,9 +171,59 @@ unsigned short bATan(float x, float y) {
         return bDegToAng(180.0f) + a;
 }
 
-float bDistBetween(const bVector3 *v1, const bVector3 *v2) {
-    float x = v1->x - v2->x;
-    float y = v1->y - v2->y;
-    float z = v1->z - v2->z;
-    return bSqrt(x * x + y * y + z * z);
+void bMathTimingTest() {}
+
+void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src) {
+    eInvertMatrix(dest, const_cast<bMatrix4 *>(src));
+}
+
+// UNSOLVED
+float fDeterminant(bMatrix4 *m) {
+    float value =
+        m->v0.x * m->v1.y * m->v2.z * m->v3.w +
+        (((m->v0.z * m->v1.x * m->v2.y * m->v3.w + m->v0.y * m->v1.z * m->v2.x * m->v3.w +
+           (((m->v0.y * m->v1.x * m->v2.w * m->v3.z + m->v0.x * m->v1.w * m->v2.y * m->v3.z +
+              (((m->v0.w * m->v1.y * m->v2.x * m->v3.z + m->v0.x * m->v1.z * m->v2.w * m->v3.y +
+                 (((m->v0.w * m->v1.x * m->v2.z * m->v3.y + m->v0.z * m->v1.w * m->v2.x * m->v3.y +
+                    (((m->v0.z * m->v1.y * m->v2.w * m->v3.x + m->v0.y * m->v1.w * m->v2.z * m->v3.x +
+                       ((m->v0.w * m->v1.z * m->v2.y * m->v3.x - m->v0.z * m->v1.w * m->v2.y * m->v3.x) - m->v0.w * m->v1.y * m->v2.z * m->v3.x)) -
+                      m->v0.y * m->v1.z * m->v2.w * m->v3.x) -
+                     m->v0.w * m->v1.z * m->v2.x * m->v3.y)) -
+                   m->v0.x * m->v1.w * m->v2.z * m->v3.y) -
+                  m->v0.z * m->v1.x * m->v2.w * m->v3.y)) -
+                m->v0.y * m->v1.w * m->v2.x * m->v3.z) -
+               m->v0.w * m->v1.x * m->v2.y * m->v3.z)) -
+             m->v0.x * m->v1.y * m->v2.w * m->v3.z) -
+            m->v0.z * m->v1.y * m->v2.x * m->v3.w)) -
+          m->v0.x * m->v1.z * m->v2.y * m->v3.w) -
+         m->v0.y * m->v1.x * m->v2.z * m->v3.w);
+
+    return value;
+}
+
+void hermite_parameter(bVector4 *dest, const bMatrix4 *b, float t) {
+    bVector4 u;
+
+    u.x = t * t * t;
+    u.y = t * t;
+    u.z = t;
+    u.w = 1.0f;
+    eMulVector(dest, b, &u);
+}
+
+void bMulMatrix(bMatrix4 *dest, const bMatrix4 *a, const bMatrix4 *b) {
+    eMulMatrix(dest, const_cast<bMatrix4 *>(b), const_cast<bMatrix4 *>(a));
+}
+
+void bMulMatrix(bVector4 *dest, const bMatrix4 *m, const bVector4 *v) {
+    eMulVector(dest, m, v);
+}
+
+void bMulMatrix(bVector3 *dest, const bMatrix4 *m, const bVector3 *v) {
+    eMulVector(dest, m, v);
+}
+
+bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m) {
+    MTX44Transpose(*reinterpret_cast<const Mtx44 *>(m), *reinterpret_cast<Mtx44 *>(dest));
+    return dest;
 }

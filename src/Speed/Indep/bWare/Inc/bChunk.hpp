@@ -7,6 +7,8 @@
 
 #include "types.h"
 
+#define BCHUNK_NESTED_FLAG 0x80000000
+
 class bChunk {
     // total size: 0x8
     unsigned int ID; // offset 0x0, size 0x4
@@ -29,10 +31,12 @@ class bChunk {
     }
 
     BOOL IsNestedChunk() {
-        return this->GetID() < 0;
+        return this->GetID() & BCHUNK_NESTED_FLAG;
     }
 
-    int IsDataChunk() {}
+    int IsDataChunk() {
+        return !IsNestedChunk();
+    }
 
     int CountChildren() {
         /* anonymous block */ {
@@ -76,12 +80,23 @@ typedef int (*bChunkLoaderFunction)(struct bChunk *);
 
 class bChunkLoader {
     // total size: 0x10
-    struct bChunkLoader *Next;             // offset 0x0, size 0x4
+    bChunkLoader *Next;                    // offset 0x0, size 0x4
     unsigned int ID;                       // offset 0x4, size 0x4
     bChunkLoaderFunction LoaderFunction;   // offset 0x8, size 0x4
     bChunkLoaderFunction UnloaderFunction; // offset 0xC, size 0x4
 
   public:
+    static bChunkLoader *sLoaderTable[64];
+    static unsigned char sNumLoaders[64];
+
+    static bChunkLoader *FindLoader(unsigned int id);
+
+    static unsigned int GetHash(unsigned int id) {
+        return id + (id >> 6) + (id >> 0xc) & 0x3f;
+    }
+
+    bChunkLoader(unsigned int id, int (*loader)(bChunk *), int (*unloader)(bChunk *));
+
     bChunkLoaderFunction GetLoaderFunction() {
         return this->LoaderFunction;
     }
@@ -89,18 +104,18 @@ class bChunkLoader {
     bChunkLoaderFunction GetUnloaderFunction() {
         return this->UnloaderFunction;
     }
-
-    unsigned int GetHash(unsigned int id) {}
 };
 
 class bChunkCarpHeader {
     // total size: 0x10
-    int mCrpSize;                          // offset 0x0, size 0x4
-    int mSectionNumber;                    // offset 0x4, size 0x4
-    int mFlags;                            // offset 0x8, size 0x4
-    struct bChunkCarpHeader *mLastAddress; // offset 0xC, size 0x4
+    int mCrpSize;                   // offset 0x0, size 0x4
+    int mSectionNumber;             // offset 0x4, size 0x4
+    int mFlags;                     // offset 0x8, size 0x4
+    bChunkCarpHeader *mLastAddress; // offset 0xC, size 0x4
 
   public:
+    void PlatformEndianSwap();
+
     bChunkCarpHeader() {}
 
     ~bChunkCarpHeader() {}

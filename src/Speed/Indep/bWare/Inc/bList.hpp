@@ -6,6 +6,7 @@
 #endif
 
 #include <cstddef>
+#include <types.h>
 
 class bNode {
   public:
@@ -74,21 +75,23 @@ template <typename T> struct bTNode : public bNode {
 struct bList {
     bNode HeadNode; // offset 0x0, size 0x8
 
-    typedef long (*SortFunc)(bNode *, bNode *);
+    typedef int (*SortFunc)(bNode *, bNode *);
 
   public:
     bList() {
-        // TODO fake match
-        bNode **prev = &this->HeadNode.Prev;
         this->HeadNode.Next = &this->HeadNode;
-        *prev = &this->HeadNode;
+        this->HeadNode.Prev = &this->HeadNode;
     }
     ~bList() {}
+
+    bNode *GetNode(int ordinal_number);
+    int TraversebList(bNode *match_node);
+    void Sort(SortFunc check_flip);
+    void MergeSort(SortFunc cmp);
+
     void InitList() {
-        // TODO fake match
-        bNode **prev = &this->HeadNode.Prev;
         this->HeadNode.Next = &this->HeadNode;
-        *prev = &this->HeadNode;
+        this->HeadNode.Prev = &this->HeadNode;
     }
     int IsEmpty() {
         return this->HeadNode.GetNext() == &this->HeadNode; // TODO
@@ -123,10 +126,11 @@ struct bList {
     int IsInList(bNode *node);             // TODO
     int CountElements();                   // TODO
     bNode *AddSorted(SortFunc check_flip); // TODO
-    void Sort(SortFunc check_flip);        // TODO
 };
 
 template <typename T> class bTList : public bList {
+    typedef int (*SortFuncT)(T *, T *);
+
   public:
     bTList() {}
     ~bTList() {}
@@ -166,8 +170,12 @@ template <typename T> class bTList : public bList {
     T *RemoveTail() {
         return (T *)bList::RemoveTail();
     }
-    T *AddSorted(SortFunc check_flip);
-    void Sort(SortFunc check_flip);
+    T *AddSorted(SortFuncT check_flip) {
+        // TODO
+    }
+    void Sort(SortFuncT check_flip) {
+        bList::Sort((SortFunc)check_flip);
+    }
 };
 
 struct bPNode : public bTNode<bPNode> {

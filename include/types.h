@@ -4,5 +4,6 @@
 #include "dolphin/types.h"
 
 typedef unsigned int uintptr_t;
+typedef int intptr_t;
 
 #endif

@@ -98,4 +98,14 @@ typedef unsigned char Bool;
 #endif
 #endif
 
+#ifndef AT_ADDRESS
+#ifdef __SN__
+#define AT_ADDRESS(xyz) __attribute__((address((xyz))))
+#elif defined(__MWERKS__)
+#define AT_ADDRESS(xyz) : (xyz)
+#else
+#define AT_ADDRESS(xyz)
+#endif
+#endif
+
 #endif // _DOLPHIN_TYPES

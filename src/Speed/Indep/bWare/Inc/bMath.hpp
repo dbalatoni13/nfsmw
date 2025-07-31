@@ -13,6 +13,7 @@
 #error Choose a platform
 #endif
 
+unsigned int bRandom(int range, unsigned int *seed);
 float bSin(unsigned short angle);
 float bSin(float angle);
 float bCos(unsigned short angle);
@@ -40,6 +41,7 @@ inline float bSqrt(float x) {
     float half = 0.5f;
     float one = 1.0f;
 
+#if TARGET_GC
     if (x > bSqrtEPS) {
         asm("frsqrte %0, %1" : "=f"(y0) : "f"(x));
         t0 = y0 * y0;
@@ -62,8 +64,22 @@ inline float bSqrt(float x) {
     } else {
         y0 = 0.0f;
     }
+#else
+#error Choose a platform
+#endif
 
     return y0;
+}
+
+inline float bMin(float a, float b) {
+    float c = a - b;
+    float d;
+#if TARGET_GC
+    asm("fsel %0, %1, %2, %3" : "=f"(d) : "f"(c), "f"(b), "f"(a));
+#else
+#error Choose a platform
+#endif
+    return d;
 }
 
 inline int bMax(int a, int b) {
@@ -73,7 +89,12 @@ inline int bMax(int a, int b) {
 inline float bMax(float a, float b) {
     float c = a - b;
     float d;
-    return c < 0.0f ? b : a;
+#if TARGET_GC
+    asm("fsel %0, %1, %2, %3" : "=f"(d) : "f"(c), "f"(a), "f"(b));
+#else
+#error Choose a platform
+#endif
+    return d;
 }
 
 inline int bAbs(int a) {
@@ -81,6 +102,28 @@ inline int bAbs(int a) {
         return -a;
     }
     return a;
+}
+
+inline float bAbs(float a) {
+    float f_abs;
+#if TARGET_GC
+    asm("fabs %0, %1" : "=f"(f_abs) : "f"(a));
+#else
+#error Choose a platform
+#endif
+    return f_abs;
+}
+
+inline float bTruncate(float a) {
+    return static_cast<int>(a);
+}
+
+inline float bFloor(float a) {
+    float t = bTruncate(a);
+    if (t > a) {
+        t -= 1.0f;
+    }
+    return t;
 }
 
 inline unsigned short bDegToAng(float degrees) {
@@ -173,6 +216,8 @@ inline bVector2 bNormalize(const bVector2 &v) {
     bNormalize(&dest, &v);
     return dest;
 }
+
+int bEqual(const bVector2 *v1, const bVector2 *v2, float epsilon);
 
 inline float bDot(const bVector2 *v1, const bVector2 *v2) {
     return v1->x * v2->x + v1->y * v2->y;
@@ -614,6 +659,13 @@ inline bVector4 &bVector4::operator=(const bVector4 &v) {
     return *this;
 }
 
+// inline bVector4 &bConvertToBond(bVector4 &dest, const struct bVector4 &v) {
+//     float w; // f13
+//     float z; // f9
+//     float y; // f10
+//     float x; // f0
+// }
+
 struct bMatrix4 {
     // total size: 0x40
     bVector4 v0; // offset 0x0, size 0x10
@@ -654,5 +706,15 @@ inline bMatrix4 &bMatrix4::operator=(const bMatrix4 &m) {
 inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector4 *position) {}
 
 inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector3 *position) {}
+
+struct bQuaternion {
+    // total size: 0x10
+    float x; // offset 0x0, size 0x4
+    float y; // offset 0x4, size 0x4
+    float z; // offset 0x8, size 0x4
+    float w; // offset 0xC, size 0x4
+
+    bQuaternion &Slerp(bQuaternion &r, const bQuaternion &target, float t) const;
+};
 
 #endif

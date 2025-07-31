@@ -16,14 +16,9 @@ extern "C" {
 #define OS_BASE_CACHED (OS_CACHED_REGION_PREFIX << 16)
 #define OS_BASE_UNCACHED (OS_UNCACHED_REGION_PREFIX << 16)
 
-#ifdef __MWERKS__
-#define AT_ADDRESS(xyz) : (xyz)
-#else
-#define AT_ADDRESS(xyz)
-#endif
 typedef s64 OSTime;
 typedef u32 OSTick;
-u32 __OSBusClock AT_ADDRESS(OS_BASE_CACHED | 0x00F8); // sync with OSLoMem.h
+u32 __OSBusClock AT_ADDRESS(OS_BASE_CACHED | 0x00F8);  // sync with OSLoMem.h
 u32 __OSCoreClock AT_ADDRESS(OS_BASE_CACHED | 0x00FC); // sync with OSLoMem.h
 #define OS_BUS_CLOCK (u32) __OSBusClock
 #define OS_CORE_CLOCK __OSCoreClock
@@ -32,8 +27,8 @@ u32 __OSCoreClock AT_ADDRESS(OS_BASE_CACHED | 0x00FC); // sync with OSLoMem.h
 #ifndef _DEBUG
 #define OSPhysicalToCached(paddr) ((void *)((u32)(paddr) + OS_BASE_CACHED))
 #define OSPhysicalToUncached(paddr) ((void *)((u32)(paddr) + OS_BASE_UNCACHED))
-#define OSCachedToPhysical(caddr) ((u32)((u8 *)(caddr)-OS_BASE_CACHED))
-#define OSUncachedToPhysical(ucaddr) ((u32)((u8 *)(ucaddr)-OS_BASE_UNCACHED))
+#define OSCachedToPhysical(caddr) ((u32)((u8 *)(caddr) - OS_BASE_CACHED))
+#define OSUncachedToPhysical(ucaddr) ((u32)((u8 *)(ucaddr) - OS_BASE_UNCACHED))
 #define OSCachedToUncached(caddr) ((void *)((u8 *)(caddr) + (OS_BASE_UNCACHED - OS_BASE_CACHED)))
 #define OSUncachedToCached(ucaddr) ((void *)((u8 *)(ucaddr) - (OS_BASE_UNCACHED - OS_BASE_CACHED)))
 #else
@@ -48,9 +43,9 @@ u32 OSUncachedToCached(void *ucaddr);
 #define OSTicksToCycles(ticks) (((ticks) * ((OS_CORE_CLOCK * 2) / OS_TIMER_CLOCK)) / 2)
 #define OSTicksToSeconds(ticks) ((ticks) / OS_TIMER_CLOCK)
 #define OSTicksToMilliseconds(ticks) ((ticks) / (OS_TIMER_CLOCK / 1000))
-#define OSTicksToMicroseconds(ticks) (((ticks)*8) / (OS_TIMER_CLOCK / 125000))
-#define OSTicksToNanoseconds(ticks) (((ticks)*8000) / (OS_TIMER_CLOCK / 125000))
-#define OSSecondsToTicks(sec) ((sec)*OS_TIMER_CLOCK)
+#define OSTicksToMicroseconds(ticks) (((ticks) * 8) / (OS_TIMER_CLOCK / 125000))
+#define OSTicksToNanoseconds(ticks) (((ticks) * 8000) / (OS_TIMER_CLOCK / 125000))
+#define OSSecondsToTicks(sec) ((sec) * OS_TIMER_CLOCK)
 #define OSMillisecondsToTicks(msec) ((msec) * (OS_TIMER_CLOCK / 1000))
 #define OSMicrosecondsToTicks(usec) (((usec) * (OS_TIMER_CLOCK / 125000)) / 8)
 #define OSNanosecondsToTicks(nsec) (((nsec) * (OS_TIMER_CLOCK / 125000)) / 8000)
@@ -60,11 +55,11 @@ u32 OSUncachedToCached(void *ucaddr);
 #define OSRoundUp32B(x) (((u32)(x) + 0x1F) & ~(0x1F))
 #define OSRoundDown32B(x) (((u32)(x)) & ~(0x1F))
 
-#define OSRoundUp(x, align) (((x) + (align)-1) & (-(align)))
-#define OSRoundUpPtr(x, align) ((void*)((((u32)(x)) + (align)-1) & (~((align)-1))))
+#define OSRoundUp(x, align) (((x) + (align) - 1) & (-(align)))
+#define OSRoundUpPtr(x, align) ((void *)((((u32)(x)) + (align) - 1) & (~((align) - 1))))
 
 #define OSRoundDown(x, align) ((x) & (-(align)))
-#define OSRoundDownPtr(x, align) ((void*)(((u32)(x)) & (~((align)-1))))
+#define OSRoundDownPtr(x, align) ((void *)(((u32)(x)) & (~((align) - 1))))
 
 void OSInit();
 
@@ -72,11 +67,11 @@ OSTime OSGetTime();
 OSTick OSGetTick();
 
 typedef struct OSCalendarTime {
-    int sec; // seconds after the minute [0, 61]
-    int min; // minutes after the hour [0, 59]
+    int sec;  // seconds after the minute [0, 61]
+    int min;  // minutes after the hour [0, 59]
     int hour; // hours since midnight [0, 23]
     int mday; // day of the month [1, 31]
-    int mon; // month since January [0, 11]
+    int mon;  // month since January [0, 11]
     int year; // years in AD [1, ...]
     int wday; // days since Sunday [0, 6]
     int yday; // days since January 1 [0, 365]

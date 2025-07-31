@@ -1,9 +1,11 @@
 #include "eModel.hpp"
 #include "DefragFixer.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
+#include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Texture.hpp"
-#include "dolphin/types.h"
 #include "eSolid.hpp"
+
+#include <types.h>
 
 struct ReplacementTextureTableFixup {
     // total size: 0x8
