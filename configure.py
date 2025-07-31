@@ -176,10 +176,11 @@ cflags_base = [
     "-gdwarf",
     "-G0",
     # "-Wall",
+    "-I include/STLport-4.5.3/stlport",
     "-I include",
-    "-I src",
-    "-I include/libc",
     "-I src/Speed/GameCube/bWare/GameCube/dolphinsdk/include",
+    "-I ./",
+    "-I src",
     "-DTARGET_GC",
     "-DGEKKO",
     "-D_USE_MATH_DEFINES",
@@ -215,7 +216,7 @@ cflags_libc = [*cflags_base]
 
 config.linker_version = "ProDG/3.9.3"
 
-config.extra_clang_flags = ["-std=gnu++98"]
+config.extra_clang_flags = ["-std=gnu++98", "-D_STLP_NO_NEW_C_HEADERS"]
 
 
 # Helper function for Dolphin libraries
