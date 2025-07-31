@@ -5,7 +5,7 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/bWare/Inc/bDebug.hpp"
+#include "bDebug.hpp"
 
 struct bSharedString {
     // total size: 0x8

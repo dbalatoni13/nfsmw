@@ -5,8 +5,8 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "bMath.hpp"
+#include "bSlotPool.hpp"
 
 #if DEBUG
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params);

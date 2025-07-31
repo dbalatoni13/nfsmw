@@ -5,9 +5,9 @@
 #pragma once
 #endif
 
-#include "./bMath.hpp"
-
 #include <types.h>
+
+#include "bMath.hpp"
 
 struct SpeedScriptFile {
     // total size: 0x54

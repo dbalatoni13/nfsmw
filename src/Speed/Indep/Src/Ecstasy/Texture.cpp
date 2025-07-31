@@ -6,11 +6,14 @@
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/World/Car.hpp"
+#include "eStreamingPack.hpp"
+
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
-#include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "eStreamingPack.hpp"
+
 #include "version.h"
 
 TextureInfo *DefaultTextureInfo;

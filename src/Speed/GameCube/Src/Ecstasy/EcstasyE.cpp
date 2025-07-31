@@ -5,7 +5,6 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/World/Car.hpp"
-#include "Speed/Indep/Src/World/Scenery.hpp"
 #include "Speed/Indep/Src/World/Sun.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
@@ -14,7 +13,6 @@
 #include "dolphin/gx/GXFrameBuffer.h"
 #include "dolphin/gx/GXManage.h"
 #include "dolphin/vi.h"
-#include "version.h"
 
 enum VIDEO_MODE {
     NUM_VIDEO_MODES = 3,

@@ -15,7 +15,6 @@
 #include "Speed/Indep/Src/World/SimpleModelAnim.hpp"
 #include "Speed/Indep/Src/World/Sun.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
-#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 float renderModifier = 1.0f;
 unsigned int numCopsActiveCherry;
