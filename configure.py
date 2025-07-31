@@ -178,8 +178,8 @@ cflags_base = [
     # "-Wall",
     "-I include",
     "-I src",
-    "-I src/Speed/GameCube/bWare/GameCube/dolphinsdk/include",
     "-I include/libc",
+    "-I src/Speed/GameCube/bWare/GameCube/dolphinsdk/include",
     "-DTARGET_GC",
     "-DGEKKO",
     "-D_USE_MATH_DEFINES",
@@ -1018,16 +1018,6 @@ config.libs = [
             ),
         ],
     ),
-    {
-        "lib": "Runtime.PPCEABI.H",
-        "toolchain_version": config.linker_version,
-        "cflags": cflags_runtime,
-        "progress_category": "sdk",  # str | List[str]
-        "objects": [
-            Object(NonMatching, "Runtime.PPCEABI.H/global_destructor_chain.c"),
-            Object(NonMatching, "Runtime.PPCEABI.H/__init_cpp_exceptions.cpp"),
-        ],
-    },
     {
         "lib": "OdemuExi2",
         "toolchain_version": config.linker_version,

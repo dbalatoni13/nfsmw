@@ -32,7 +32,7 @@ void CompressVector(const bVector3 *bv, smVector3 *sv) {
     sv->magnitude = magn;
 }
 
-void NotifyLibOfDeletion(void *lib /* r3 */, EmitterGroup *grp /* r4 */) {
+void NotifyLibOfDeletion(void *lib, EmitterGroup *grp) {
     EmitterLibrary *emlib = reinterpret_cast<EmitterLibrary *>(lib);
     emlib->mGroup = nullptr;
 }
