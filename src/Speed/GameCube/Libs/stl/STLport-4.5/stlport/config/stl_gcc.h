@@ -3,7 +3,9 @@
  */
 
 #if defined(SN_TARGET_NGC)
+#	undef __GNUC__
 #	undef __GNUC_MINOR__
+#	define __GNUC__ 2
 #	define __GNUC_MINOR__ 95
 #	define __STL_TARGET_NGC
 //#   define _NOTHREADS		1
