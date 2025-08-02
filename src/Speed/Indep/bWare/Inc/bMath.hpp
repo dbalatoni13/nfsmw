@@ -14,6 +14,7 @@
 #endif
 
 unsigned int bRandom(int range, unsigned int *seed);
+float bRandom(float range, unsigned int *seed);
 float bSin(unsigned short angle);
 float bSin(float angle);
 float bCos(unsigned short angle);
@@ -440,7 +441,7 @@ struct bVector4 {
 
     bVector4(float _x, float _y, float _z, float _w) {}
 
-    bVector4(const bVector4 &v) {}
+    bVector4(const bVector4 &v);
 
     bVector4 &operator=(const bVector4 &v);
 
@@ -448,7 +449,7 @@ struct bVector4 {
 
     bVector4 &operator+=(const bVector4 &v) {}
 
-    bVector4 &operator*=(float scale) {}
+    bVector4 &operator*=(float scale);
 
     bVector4 &operator/=(float inv_scale) {}
 
@@ -654,8 +655,17 @@ inline bVector4 bMax(const bVector4 &v1, const bVector4 &v2) {
     bVector4 dest;
 }
 
+inline bVector4::bVector4(const bVector4 &v) {
+    bCopy(this, &v);
+}
+
 inline bVector4 &bVector4::operator=(const bVector4 &v) {
     bCopy(this, &v);
+    return *this;
+}
+
+inline bVector4 &bVector4::operator*=(float scale) {
+    bScale(this, this, scale);
     return *this;
 }
 
@@ -697,6 +707,10 @@ inline void bIdentity(bMatrix4 *a) {
     MTX44Identity(*reinterpret_cast<Mtx44 *>(a));
 }
 
+inline void eIdentity(bMatrix4 *a) {
+    bIdentity(a);
+}
+
 inline bMatrix4 &bMatrix4::operator=(const bMatrix4 &m) {
     bCopy(this, &m);
     return *this;
@@ -725,5 +739,7 @@ struct bQuaternion {
 
     bQuaternion &Slerp(bQuaternion &r, const bQuaternion &target, float t) const;
 };
+
+void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float u4);
 
 #endif

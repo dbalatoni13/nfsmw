@@ -48,7 +48,7 @@ float bGetTickerDifference(unsigned int start_ticks) {
 }
 
 int bGetFixTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
-    return bGetTickerDifference(start_ticks, end_ticks) * 65536.0f;
+    return static_cast<int>(bGetTickerDifference(start_ticks, end_ticks) * 65536.0f);
 }
 
 void bInitTicker(float min_wraparound_time) {}

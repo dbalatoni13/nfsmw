@@ -46,7 +46,9 @@ struct SlotPool : public bTNode<SlotPool> {
     void Free(void *p);
     void *Malloc(int num_slots, void **last_slot);
 
-    void SetFlag(SlotPoolFlags flag) {}
+    void SetFlag(SlotPoolFlags flag) {
+        Flags = static_cast<SlotPoolFlags>((static_cast<int>(Flags)) | flag);
+    }
 
     void ClearFlag(SlotPoolFlags flag) {
         Flags = static_cast<SlotPoolFlags>((static_cast<int>(Flags)) & ~flag);
@@ -66,7 +68,9 @@ struct SlotPool : public bTNode<SlotPool> {
         return this->NumAllocatedSlots == 0;
     }
 
-    BOOL HasOverflowed();
+    BOOL HasOverflowed() {
+        return !(this->TotalNumSlots == this->NumSlots);
+    }
 
     int CountFreeSlots() {
         return this->TotalNumSlots - this->NumAllocatedSlots;

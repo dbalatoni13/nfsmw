@@ -14,7 +14,7 @@ class BinHash
 {
 private:
     #define M(x) (x) // This is a placeholder for modification of x.
-    #define H(x, h) (h * 0x21 + x)
+    #define H(x, h) (h * 33 + x)
     enum {
         V00=0xFFFFFFFF,
         V01=H(M(c00),V00), V02=H(M(c01),V01), V03=H(M(c02),V02), V04=H(M(c03),V03), V05=H(M(c04),V04),

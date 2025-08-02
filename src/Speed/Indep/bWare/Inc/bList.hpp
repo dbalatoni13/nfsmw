@@ -133,7 +133,11 @@ template <typename T> class bTList : public bList {
 
   public:
     bTList() {}
-    ~bTList() {}
+    ~bTList() {
+        while (!this->IsEmpty()) {
+            delete this->RemoveHead();
+        }
+    }
     T *EndOfList() {
         return (T *)bList::EndOfList();
     }
@@ -175,6 +179,11 @@ template <typename T> class bTList : public bList {
     }
     void Sort(SortFuncT check_flip) {
         bList::Sort((SortFunc)check_flip);
+    }
+    void DeleteAllElements() {
+        while (!this->IsEmpty()) {
+            delete this->RemoveHead();
+        }
     }
 };
 

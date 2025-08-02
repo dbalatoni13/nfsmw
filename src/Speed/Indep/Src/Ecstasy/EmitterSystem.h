@@ -1,15 +1,19 @@
 #ifndef ECSTASY_EMITTER_SYSTEM_H
 #define ECSTASY_EMITTER_SYSTEM_H
 
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/UTLContainer.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/emitterdata.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/emittergroup.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribCollection.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Texture.hpp"
-
-#include "Speed/Indep/Libs/Support/Utility/UTLContainer.h"
 
 struct smVector3 {
     // total size: 0x8
@@ -36,7 +40,14 @@ struct EmitterControl {
     // total size: 0x8
     EmitterControlState mState; // offset 0x0, size 0x4
     float mTime;                // offset 0x4, size 0x4
+
+    EmitterControl() {
+        this->mState = ECS_NOT_STARTED;
+        this->mTime = 0.0f;
+    }
 };
+
+extern SlotPool *ParticleSlotPool;
 
 struct EmitterParticle : public bTNode<EmitterParticle> {
     // total size: 0x40
@@ -55,30 +66,71 @@ struct EmitterParticle : public bTNode<EmitterParticle> {
     unsigned short mAnimFrame;   // offset 0x3C, size 0x2
     unsigned char mInitialAngle; // offset 0x3E, size 0x1
     unsigned char mRotOffset;    // offset 0x3F, size 0x1
+
+    void operator delete(void *ptr) {
+        bFree(ParticleSlotPool, ptr);
+    }
+
+    ~EmitterParticle() {}
 };
 
 struct EmitterGroup;
 
+class EmitterDataAttribWrapper {
+    // total size: 0x94
+  private:
+    const Attrib::Gen::emitterdata mStaticData; // offset 0x0, size 0x14
+  public:
+    bMatrix4 mColourBasis; // offset 0x14, size 0x40
+    bMatrix4 mExtraBasis;  // offset 0x54, size 0x40
+
+    EmitterDataAttribWrapper(const Attrib::Collection *spec);
+    void CalculateBases();
+
+    const Attrib::Gen::emitterdata &GetAttributes() const {
+        return mStaticData;
+    }
+};
+
+struct EmitterGroupAttribWrapper {
+    // total size: 0x14
+    const Attrib::Gen::emittergroup mStaticData; // offset 0x0, size 0x14
+
+    EmitterGroupAttribWrapper(const Attrib::Collection *spec);
+};
+
+extern SlotPool *EmitterSlotPool;
+
 struct Emitter : public bTNode<Emitter> {
     // total size: 0x90
   private:
-    EmitterControl mControl;                       // offset 0x8, size 0x8
-    float mParticleAccumulation;                   // offset 0x10, size 0x4
-    unsigned int mRandomSeed;                      // offset 0x14, size 0x4
-    unsigned int mFlags;                           // offset 0x18, size 0x4
-    unsigned short mNumParticles;                  // offset 0x1C, size 0x2
-    unsigned short mListIndex;                     // offset 0x1E, size 0x2
-    bMatrix4 mLocalWorld;                          // offset 0x20, size 0x40
-    bVector3 mInheritVelocity;                     // offset 0x60, size 0x10
-    float mMinIntensity;                           // offset 0x70, size 0x4
-    float mMaxIntensity;                           // offset 0x74, size 0x4
-    struct TexturePageRange *mTexturePageRange;    // offset 0x78, size 0x4
-    struct EmitterDataAttribWrapper *mDynamicData; // offset 0x7C, size 0x4
-    bTList<EmitterParticle> mParticles;            // offset 0x80, size 0x8
-    bPNode *mTexPageTokenNode;                     // offset 0x88, size 0x4
-    EmitterGroup *mGroup;                          // offset 0x8C, size 0x4
+    EmitterControl mControl;                    // offset 0x8, size 0x8
+    float mParticleAccumulation;                // offset 0x10, size 0x4
+    unsigned int mRandomSeed;                   // offset 0x14, size 0x4
+    unsigned int mFlags;                        // offset 0x18, size 0x4
+    unsigned short mNumParticles;               // offset 0x1C, size 0x2
+    unsigned short mListIndex;                  // offset 0x1E, size 0x2
+    bMatrix4 mLocalWorld;                       // offset 0x20, size 0x40
+    bVector3 mInheritVelocity;                  // offset 0x60, size 0x10
+    float mMinIntensity;                        // offset 0x70, size 0x4
+    float mMaxIntensity;                        // offset 0x74, size 0x4
+    struct TexturePageRange *mTexturePageRange; // offset 0x78, size 0x4
+    EmitterDataAttribWrapper *mDynamicData;     // offset 0x7C, size 0x4
+    bTList<EmitterParticle> mParticles;         // offset 0x80, size 0x8
+    bPNode *mTexPageTokenNode;                  // offset 0x88, size 0x4
+    EmitterGroup *mGroup;                       // offset 0x8C, size 0x4
 
   public:
+    Emitter(const Attrib::Collection *spec, EmitterGroup *parent_group);
+
+    void operator delete(void *ptr) {
+        bFree(EmitterSlotPool, ptr);
+    }
+
+    ~Emitter();
+    unsigned short CalcParticleListIndex();
+    void GetStandardUVs(unsigned int *mUVStart, unsigned int *mUVEnd);
+
     unsigned int GetNumParticles() {
         return mNumParticles;
     }
@@ -96,6 +148,8 @@ struct Emitter : public bTNode<Emitter> {
     }
 };
 
+extern SlotPool *EmitterGroupSlotPool;
+
 struct EmitterGroup : public bTNode<EmitterGroup> {
     // total size: 0x80
     struct bTList<Emitter> mEmitters;                // offset 0x8, size 0x8
@@ -109,12 +163,52 @@ struct EmitterGroup : public bTNode<EmitterGroup> {
     float mFarClip;                                  // offset 0x64, size 0x4
     float mIntensity;                                // offset 0x68, size 0x4
     void (*mDeleteCallback)(void *, EmitterGroup *); // offset 0x6C, size 0x4
-    struct EmitterGroupAttribWrapper *mDynamicData;  // offset 0x70, size 0x4
+    EmitterGroupAttribWrapper *mDynamicData;         // offset 0x70, size 0x4
     unsigned int mNumZeroParticleFrames;             // offset 0x74, size 0x4
     unsigned int mCreationTimeStamp;                 // offset 0x78, size 0x4
     unsigned int pad;                                // offset 0x7C, size 0x4
 
+    EmitterGroup(const Attrib::Collection *spec, unsigned int creation_context_flags);
+    ~EmitterGroup();
     unsigned int GetNumParticles();
+    void SubscribeToDeletion(void *subscriber, void (*callback)(void *, struct EmitterGroup *));
+    void SetLocalWorld(const bMatrix4 *m);
+    bool SetEmitters(unsigned int creation_context_flags);
+    void UnloadEmitters(bool kill_particles);
+
+    EmitterGroup() {}
+    void *operator new(size_t size) {}
+    void operator delete(void *ptr) {
+        bFree(EmitterGroupSlotPool, ptr);
+    }
+
+    bool IsStatic() {
+        return this->mFlags & 2;
+    }
+
+    void SetAutoUpdate(bool val) {
+        if (val) {
+            this->mFlags |= 1;
+        } else {
+            this->mFlags &= ~1;
+        }
+    }
+
+    void SetEnabledFlag() {
+        this->mFlags |= 16;
+    }
+
+    void SetLoadedFlag() {
+        this->mFlags |= 8;
+    }
+
+    void ClearLoadedFlag() {
+        this->mFlags &= ~8;
+    }
+
+    unsigned int GetFlags() {
+        return this->mFlags;
+    }
 };
 
 struct EmitterLibrary {
@@ -149,7 +243,7 @@ struct WorldFXTrigger : public bTNode<WorldFXTrigger> {
     unsigned int pad;            // offset 0x2C, size 0x4
 };
 
-struct EmitterSystem {
+class EmitterSystem {
     struct LibEntry {
         unsigned int Key;
         EmitterLibrary *Lib;
@@ -171,10 +265,28 @@ struct EmitterSystem {
     unsigned int mNumEmitters;                                                                     // offset 0x398, size 0x4
     UTL::Container::vector<EmitterSystem::LibEntry, _type_vector> mLibs;                           // offset 0x39C, size 0x10
 
+  public:
     void OrphanParticlesFromThisEmitter(Emitter *em);
     void KillParticlesFromThisEmitter(Emitter *em);
     void KillParticle(Emitter *em, EmitterParticle *particle);
     void KillEverything();
+    void ServiceWorldEffects();
+    void RefreshWorldEffects();
+    bool IsCloseEnough(const bVector3 *group_pos, float farclip, int frustrum, float cos_angle_fov);
+    EmitterGroup *CreateEmitterGroup(const Attrib::StringKey &group_name, unsigned int creation_context_flags);
+    EmitterGroup *CreateEmitterGroup(const unsigned int &group_key, unsigned int creation_context_flags);
+    EmitterGroup *CreateEmitterGroup(const Attrib::Collection *group_spec, unsigned int creation_context_flags);
+    EmitterGroupAttribWrapper *GetEmitterGroup(const Attrib::Collection *spec);
+    void RemoveEmitterGroup(EmitterGroup *group);
+    EmitterDataAttribWrapper *GetEmitterData(const Attrib::Collection *spec);
+
+    int GetNumEmitters() {
+        return this->mNumEmitters;
+    }
+
+    int GetNumEmitterGroups() {
+        return this->mNumEmitterGroups;
+    }
 };
 
 #endif
