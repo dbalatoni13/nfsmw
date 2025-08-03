@@ -172,9 +172,8 @@ config.scratch_preset_id = 176
 # Base flags, common to most GC/Wii games.
 # Generally leave untouched, with overrides added below.
 cflags_base = [
-    "-O2",
+    "-O1",
     "-gdwarf",
-    "-G0",
     # "-Wall",
     "-I src/Speed/Indep/Libs/Support/stlgc",
     "-I src/Speed/GameCube/Libs/stl/STLport-4.5/stlport",
@@ -203,8 +202,30 @@ cflags_game = [
     # "-mfast-cast",
     "-G0",
     "-ffast-math",
-    "-fno-strength-reduce",
+    # "-fno-strength-reduce",
     "-fforce-addr",
+    "-fcse-follow-jumps",
+    "-fcse-skip-blocks",
+    "-fforce-mem",
+    "-fgcse",
+    "-frerun-cse-after-loop",
+    "-fschedule-insns",
+    "-fschedule-insns2",
+    "-fexpensive-optimizations",
+    "-frerun-loop-opt",
+    "-fbranch-probabilities",
+    # "-fdata-sections",
+    # "-fno-defer-pop",
+    # "-fno-function-cse",
+    # "-fpeephole",
+    # "-fregmove",
+    # "-fthread-jumps",
+    # "-fmove-all-movables",
+    # "-freduce-all-givs",
+    # # "-fcaller-saves",
+    # # "-ffloat-store",
+    # # "-funroll-all-loops",
+    # # "-fstrict-aliasing",
 ]
 
 # Metrowerks library flags

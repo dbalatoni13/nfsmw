@@ -30,6 +30,7 @@ int bList::TraversebList(bNode *match_node) {
     return n;
 }
 
+// UNSOLVED
 void bList::Sort(SortFunc check_flip) {
     bNode *node = this->GetHead();
     bNode *next_node = node->GetNext();

@@ -662,7 +662,6 @@ float TextureInfo::GetScroll(float time, float speed, int scroll_type, float tim
 
 void MaybePrintUnusedTextures() {}
 
-// UNSOLVED https://decomp.me/scratch/3GvPG
 TextureInfo *GetTextureInfo(unsigned int name_hash /* r30 */, BOOL return_default_texture_if_not_found /* r27 */,
                             BOOL include_unloaded_textures /* r5 */) {
     if (name_hash != 0) {
@@ -672,7 +671,7 @@ TextureInfo *GetTextureInfo(unsigned int name_hash /* r30 */, BOOL return_defaul
         }
         for (TexturePack *p = TexturePackList.GetHead(); p != TexturePackList.EndOfList(); p = p->GetNext()) {
             if (TextureLoadedTable.IsLoaded(name_hash)) {
-                continue; // wrong
+                break;
             }
             TextureInfo *texture_info;
             if (include_unloaded_textures) {

@@ -331,7 +331,6 @@ void SlotPoolManager::DeleteSlotPool(SlotPool *slot_pool) {
     }
 }
 
-// UNSOLVED
 void SlotPoolManager::CleanupExpandedSlotPools() {
     for (SlotPool *slot_pool = this->SlotPoolList.GetHead(); slot_pool != this->SlotPoolList.EndOfList(); slot_pool = slot_pool->GetNext()) {
         slot_pool->CleanupExpandedSlotPools();

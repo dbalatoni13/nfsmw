@@ -309,7 +309,6 @@ void eLightUpdateTextures() {
     }
 }
 
-// UNSOLVED https://decomp.me/scratch/5KagX
 void eRenderWorldLightFlares(eView *view /* r26 */, flareType type /* r24 */) {
     bMatrix4 *local_world; // r23
     int num_visible;
@@ -379,7 +378,6 @@ void eLightMaterial::BuildData() {
     this->UpdatePlatInfo();
 }
 
-// UNSOLVED
 eLightMaterial *elGetLightMaterial(unsigned int name_hash /* r10 */) {
     for (eLightMaterial *elm = LightMaterialList.GetHead(); elm != LightMaterialList.EndOfList(); elm = elm->GetNext()) {
         if (elm->NameHash == name_hash) {

@@ -92,18 +92,22 @@ class EmitterDataAttribWrapper {
     }
 };
 
-struct EmitterGroupAttribWrapper {
+class EmitterGroupAttribWrapper {
     // total size: 0x14
     const Attrib::Gen::emittergroup mStaticData; // offset 0x0, size 0x14
 
+  public:
     EmitterGroupAttribWrapper(const Attrib::Collection *spec);
+
+    const Attrib::Gen::emittergroup &GetAttributes() const {
+        return this->mStaticData;
+    }
 };
 
 extern SlotPool *EmitterSlotPool;
 
 struct Emitter : public bTNode<Emitter> {
     // total size: 0x90
-  private:
     EmitterControl mControl;                    // offset 0x8, size 0x8
     float mParticleAccumulation;                // offset 0x10, size 0x4
     unsigned int mRandomSeed;                   // offset 0x14, size 0x4
@@ -130,6 +134,7 @@ struct Emitter : public bTNode<Emitter> {
     ~Emitter();
     unsigned short CalcParticleListIndex();
     void GetStandardUVs(unsigned int *mUVStart, unsigned int *mUVEnd);
+    const Attrib::Gen::emitterdata &GetAttributes() const;
 
     unsigned int GetNumParticles() {
         return mNumParticles;
@@ -146,11 +151,29 @@ struct Emitter : public bTNode<Emitter> {
     void SetOrphanedParticlesFlag() {
         this->mFlags |= 8;
     }
+
+    void Enable() {
+        this->mFlags |= 0x10;
+    }
+
+    void Disable() {
+        this->mFlags &= ~0x10;
+    }
+
+    void SetInheritVelocity(const bVector3 *vel) {
+        this->mInheritVelocity = *vel;
+    }
+
+    void SetLocalWorld(const bMatrix4 *local_world) {
+        this->mLocalWorld = *local_world;
+    }
+
+    void MakeOneShot() {}
 };
 
 extern SlotPool *EmitterGroupSlotPool;
 
-struct EmitterGroup : public bTNode<EmitterGroup> {
+class EmitterGroup : public bTNode<EmitterGroup> {
     // total size: 0x80
     struct bTList<Emitter> mEmitters;                // offset 0x8, size 0x8
     unsigned int mGroupKey;                          // offset 0x10, size 0x4
@@ -168,6 +191,7 @@ struct EmitterGroup : public bTNode<EmitterGroup> {
     unsigned int mCreationTimeStamp;                 // offset 0x78, size 0x4
     unsigned int pad;                                // offset 0x7C, size 0x4
 
+  public:
     EmitterGroup(const Attrib::Collection *spec, unsigned int creation_context_flags);
     ~EmitterGroup();
     unsigned int GetNumParticles();
@@ -175,15 +199,16 @@ struct EmitterGroup : public bTNode<EmitterGroup> {
     void SetLocalWorld(const bMatrix4 *m);
     bool SetEmitters(unsigned int creation_context_flags);
     void UnloadEmitters(bool kill_particles);
+    unsigned int NumEmitters() const;
+    bool MakeOneShot(bool force_all);
+    void SetInheritVelocity(const bVector3 *vel);
+    void Enable();
+    void Disable();
 
     EmitterGroup() {}
     void *operator new(size_t size) {}
     void operator delete(void *ptr) {
         bFree(EmitterGroupSlotPool, ptr);
-    }
-
-    bool IsStatic() {
-        return this->mFlags & 2;
     }
 
     void SetAutoUpdate(bool val) {
@@ -194,8 +219,8 @@ struct EmitterGroup : public bTNode<EmitterGroup> {
         }
     }
 
-    void SetEnabledFlag() {
-        this->mFlags |= 16;
+    bool IsStatic() {
+        return this->mFlags & 2;
     }
 
     void SetLoadedFlag() {
@@ -206,8 +231,20 @@ struct EmitterGroup : public bTNode<EmitterGroup> {
         this->mFlags &= ~8;
     }
 
+    void SetEnabledFlag() {
+        this->mFlags |= 0x10;
+    }
+
+    void ClearEnabledFlag() {
+        this->mFlags &= ~0x10;
+    }
+
     unsigned int GetFlags() {
         return this->mFlags;
+    }
+
+    const Attrib::Gen::emittergroup &GetAttribs() const {
+        return this->mDynamicData->GetAttributes();
     }
 };
 
@@ -219,6 +256,8 @@ struct EmitterLibrary {
     unsigned short mNumTriggers;  // offset 0xA, size 0x2
     EmitterGroup *mGroup;         // offset 0xC, size 0x4
     bMatrix4 LocalWorld;          // offset 0x10, size 0x40
+
+    void EndianSwap();
 };
 
 struct EmitterLibraryHeader {
@@ -227,6 +266,8 @@ struct EmitterLibraryHeader {
     int Version;             // offset 0x4, size 0x4
     int NumEmitterLibraries; // offset 0x8, size 0x4
     int SectionNumber;       // offset 0xC, size 0x4
+
+    unsigned short *GetLibraryNumTriggers(int i);
 };
 
 // TODO right place?
@@ -266,6 +307,7 @@ class EmitterSystem {
     UTL::Container::vector<EmitterSystem::LibEntry, _type_vector> mLibs;                           // offset 0x39C, size 0x10
 
   public:
+    EmitterSystem();
     void OrphanParticlesFromThisEmitter(Emitter *em);
     void KillParticlesFromThisEmitter(Emitter *em);
     void KillParticle(Emitter *em, EmitterParticle *particle);

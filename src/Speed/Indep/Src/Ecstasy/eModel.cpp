@@ -118,7 +118,6 @@ void eModel::ReconnectSolid(eSolidListHeader *solid_list_header) {
     }
 }
 
-// UNSOLVED
 void eModel::ConnectSolid(eSolid *new_solid) {
     unsigned int name_hash = this->NameHash;
     if (name_hash == 0) {

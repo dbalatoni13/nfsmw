@@ -7,6 +7,7 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribCollection.h"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 SlotPool *ParticleSlotPool;
 SlotPool *EmitterSlotPool;
@@ -49,7 +50,6 @@ void NotifyLibOfDeletion(void *lib, EmitterGroup *grp) {
     emlib->mGroup = nullptr;
 }
 
-// UNSOLVED typical cmpw bne blr instead of b
 unsigned int EmitterGroup::GetNumParticles() {
     if (this->mNumEmitters == 0) {
         return 0;
@@ -61,7 +61,6 @@ unsigned int EmitterGroup::GetNumParticles() {
     return cnt;
 }
 
-// UNSOLVED typical cmpw bne blr instead of b
 void EmitterSystem::OrphanParticlesFromThisEmitter(Emitter *em) {
     if (em->HasOrphanedParticles()) {
         return;
@@ -76,8 +75,7 @@ void EmitterSystem::OrphanParticlesFromThisEmitter(Emitter *em) {
     em->SetOrphanedParticlesFlag();
 }
 
-// UNSOLVED typical cmpw bne blr instead of b
-void EmitterSystem::KillParticlesFromThisEmitter(Emitter *em /* r31 */) {
+void EmitterSystem::KillParticlesFromThisEmitter(Emitter *em) {
     bTList<EmitterParticle> &plist = em->GetParticles();
 
     for (EmitterParticle *particle = plist.GetHead(); particle != plist.EndOfList();) {
@@ -121,7 +119,6 @@ void InitEmitterGroupSlotPool() {
     EmitterGroupSlotPool->ClearFlag(SLOTPOOL_FLAG_OVERFLOW_IF_FULL);
 }
 
-// UNSOLVED typical
 void EmitterSystem::ServiceWorldEffects() {
     for (std::vector<LibEntry>::iterator it = this->mLibs.begin(); it != this->mLibs.end(); it++) {
         EmitterLibrary *lib = it->Lib;
@@ -134,7 +131,7 @@ void EmitterSystem::ServiceWorldEffects() {
                 this->IsCloseEnough(reinterpret_cast<bVector3 *>(&lib->LocalWorld.v3), clip_distance_to_use, 1, cos_fov_angle_to_use);
             if (close_enough_soon) {
                 if (!lib->mGroup) {
-                    EmitterGroup *emgroup = gEmitterSystem.CreateEmitterGroup(reinterpret_cast<Attrib::Collection *>(lib), 0x8000000);
+                    EmitterGroup *emgroup = gEmitterSystem.CreateEmitterGroup(lib->GroupKey, 0x8000000);
                     if (emgroup) {
                         emgroup->SubscribeToDeletion(lib, NotifyLibOfDeletion);
                         lib->mGroup = emgroup;
@@ -157,7 +154,7 @@ void EmitterSystem::RefreshWorldEffects() {
     for (std::vector<LibEntry>::iterator it = this->mLibs.begin(); it != this->mLibs.end(); it++) {
         EmitterLibrary *lib = it->Lib;
         if (!lib->mGroup && (lib->SectionNumber != 0)) {
-            EmitterGroup *emgroup = gEmitterSystem.CreateEmitterGroup(reinterpret_cast<Attrib::Collection *>(lib), 0x8000000);
+            EmitterGroup *emgroup = gEmitterSystem.CreateEmitterGroup(lib->GroupKey, 0x8000000);
             if (emgroup) {
                 emgroup->SubscribeToDeletion(lib, NotifyLibOfDeletion);
                 lib->mGroup = emgroup;
@@ -179,7 +176,6 @@ void ExpandFXSlotPools() {
     EmitterGroupSlotPool->ClearFlag(SLOTPOOL_FLAG_WARN_IF_OVERFLOW);
 }
 
-// UNSOLVED
 void CollapseFXSlotPools() {
     ParticleSlotPool->ClearFlag(SLOTPOOL_FLAG_OVERFLOW_IF_FULL);
     EmitterSlotPool->ClearFlag(SLOTPOOL_FLAG_OVERFLOW_IF_FULL);
@@ -344,4 +340,105 @@ EmitterGroup::~EmitterGroup() {
     if (this->mSubscriber && this->mDeleteCallback) {
         this->mDeleteCallback(this->mSubscriber, this);
     }
+}
+
+unsigned int EmitterGroup::NumEmitters() const {
+    return this->GetAttribs().Num_Emitters();
+}
+
+const Attrib::Gen::emitterdata &Emitter::GetAttributes() const {
+    return this->mDynamicData->GetAttributes();
+}
+
+void EmitterGroup::SetLocalWorld(const bMatrix4 *m) {
+    this->mLocalWorld = *m;
+    for (Emitter *em = this->mEmitters.GetHead(); em != this->mEmitters.EndOfList(); em = em->GetNext()) {
+        em->SetLocalWorld(m);
+    }
+}
+
+void EmitterGroup::SetInheritVelocity(const bVector3 *vel) {
+    for (Emitter *em = this->mEmitters.GetHead(); em != this->mEmitters.EndOfList(); em = em->GetNext()) {
+        em->SetInheritVelocity(vel);
+    }
+}
+
+void EmitterGroup::Enable() {
+    for (Emitter *emitter = this->mEmitters.GetHead(); emitter != this->mEmitters.EndOfList(); emitter = emitter->GetNext()) {
+        emitter->Enable();
+    }
+    this->SetEnabledFlag();
+}
+
+void EmitterGroup::Disable() {
+    for (Emitter *emitter = this->mEmitters.GetHead(); emitter != this->mEmitters.EndOfList(); emitter = emitter->GetNext()) {
+        emitter->Disable();
+    }
+    this->ClearEnabledFlag();
+}
+
+void EmitterLibrary::EndianSwap() {
+    bPlatEndianSwap(&this->LocalWorld);
+    bPlatEndianSwap(&this->SectionNumber);
+    bPlatEndianSwap(&this->mNumTriggers);
+}
+
+bool EmitterGroup::MakeOneShot(bool force_all) {
+    bool at_least_one_was_oneshot = false;
+    bool bVar2;
+
+    Emitter *emitter = this->mEmitters.GetHead();
+    do {
+        if (emitter == (Emitter *)&this->mEmitters) {
+            bVar2 = false;
+            if ((force_all) || (at_least_one_was_oneshot)) {
+                bVar2 = true;
+            }
+            return bVar2;
+        }
+        if (force_all) {
+        LAB_80111078:
+            emitter->mFlags = emitter->mFlags | 1;
+        } else {
+            const Attrib::Gen::emitterdata atr = emitter->GetAttributes();
+            bool one_shot = force_all;
+            if (atr.IsValid() && atr.IsOneShot()) {
+                at_least_one_was_oneshot = true;
+                one_shot = true;
+            }
+            if (one_shot)
+                goto LAB_80111078;
+        }
+        emitter = emitter->GetNext();
+    } while (true);
+}
+
+unsigned short *EmitterLibraryHeader::GetLibraryNumTriggers(int i) {
+    // EmitterLibrary *local_r3_44;
+    // EmitterLibrary *lib;
+    // int ix;
+
+    // local_r3_44 = (EmitterLibrary *)&lib->LocalWorld;
+    // if (i == 0) {
+    //     return (unsigned short *)((int)&(lib->LocalWorld).v0.z + 2);
+    // }
+    // for (ix = 0; ix < i; ix++) {
+    //     if (ix == i) {
+    //         return &local_r3_44->mNumTriggers;
+    //     }
+    //     local_r3_44 = (EmitterLibrary *)(&local_r3_44[1].GroupKey + (unsigned int)local_r3_44->mNumTriggers * 0xc);
+    //     if (ix == i) {
+    //         return &local_r3_44->mNumTriggers;
+    //     }
+    // }
+    // return nullptr;
+}
+
+EmitterSystem::EmitterSystem() {
+    this->mNumEmitterGroups = 0;
+    this->mNumEmitters = 0;
+    this->mCurrentTexture = nullptr;
+    this->mLibs.reserve(400);
+    this->mTotalNumParticles = 0;
+    bMemSet(this->mParticleListCounts, 0, sizeof(this->mParticleListCounts));
 }

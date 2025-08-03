@@ -56,7 +56,6 @@ void eSolid::FixLightMaterialTable() {
     }
 }
 
-// UNSOLVED https://decomp.me/scratch/xbgnl
 void EmptySolidTextureFixupInfo(eSolidListHeader *list_header /* r31 */) {
     while (!list_header->TexturePackList.IsEmpty()) {
         list_header->TexturePackList.RemoveHead();

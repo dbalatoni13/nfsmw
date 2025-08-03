@@ -13,7 +13,7 @@
 namespace Attrib {
 
 // Rotates (v) by (amount) bits
-unsigned int RotateNTo32(unsigned int v, unsigned int amount) {
+inline unsigned int RotateNTo32(unsigned int v, unsigned int amount) {
     return (v << amount) | (v >> (32 - amount));
 }
 

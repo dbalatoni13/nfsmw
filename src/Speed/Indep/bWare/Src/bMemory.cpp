@@ -94,26 +94,24 @@ void MemoryPool::FreeMemory(void *p, int size, const char *debug_name) {
     this->Mutex.Unlock();
 }
 
-// UNSOLVED
 int MemoryPool::GetAmountFree() {
     int amount_free = 0;
 
     this->Mutex.Lock();
     for (FreeBlock *f = this->FreeBlockList.GetHead(); f != this->FreeBlockList.EndOfList(); f = f->GetNext()) {
-        amount_free += f[1].Size;
+        amount_free += f->Size;
     }
     this->Mutex.Unlock();
     return amount_free;
 }
 
-// UNSOLVED
 int MemoryPool::GetLargestFreeBlock() {
     int largest_block = 0;
 
     this->Mutex.Lock();
     for (FreeBlock *f = this->FreeBlockList.GetHead(); f != this->FreeBlockList.EndOfList(); f = f->GetNext()) {
-        if (largest_block < f[1].Size) {
-            largest_block = f[1].Size;
+        if (f->Size > largest_block) {
+            largest_block = f->Size;
         }
     }
     this->Mutex.Unlock();
@@ -143,7 +141,6 @@ void MemoryPool::PrintAllocations(int from_allocation, int to_allocation) {
     }
 }
 
-// UNSOLVED
 int MemoryPool::GetAllocations(void **allocations, int max_allocations) {
     this->AllocationHeaderList.Sort(CheckFlipMemoryByAddress);
     int num_allocations = 0;
@@ -177,9 +174,9 @@ void MemoryPool::TraceDeletePool() {
     bFunkGameCube("CODEINE", 26, &packet, sizeof(packet));
 }
 
-// UNSOLVED
 void MemoryPool::TraceFreeMemory(void *p, int size) {
     bMemoryTraceFreePacket packet;
+    // TODO
     bMemoryTraceFreePacket *fake_match = &packet;
 
     memset(fake_match, 0, sizeof(packet));

@@ -86,7 +86,6 @@ SpeedScriptEntry *SpeedScript::AddEntry() {
     return entry;
 }
 
-// UNSOLVED https://decomp.me/scratch/vnknq
 bool SpeedScript::ParseNextWord(char *word, const char *buffer, int buffer_size, int *pbuffer_pos, int *pline_number) {
     int buffer_pos = *pbuffer_pos;
     bool currently_in_comment = false;
@@ -108,7 +107,7 @@ bool SpeedScript::ParseNextWord(char *word, const char *buffer, int buffer_size,
         if (!currently_in_comment) {
             if ((c == '/') && (buffer[buffer_pos + 1] == '/')) {
                 currently_in_comment = true;
-            } else if (IsWhiteSpace(c)) {
+            } else if (!IsWhiteSpace(c)) {
                 break;
             }
         }

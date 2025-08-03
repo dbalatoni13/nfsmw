@@ -38,17 +38,21 @@ struct emittergroup : Instance {
         const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());
     }
 
-    unsigned int Num_Emitters() {}
-
-    float &FarClip() const {
-        return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->FarClip;
+    unsigned int Num_Emitters() const {
+        return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->_Array_Emitters.GetLength();
     }
 
     UMath::Vector2 &IntensityRanges(unsigned int index) const {
         const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());
     }
 
-    unsigned int Num_IntensityRanges() {}
+    unsigned int Num_IntensityRanges() {
+        return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->_Array_IntensityRanges.GetLength();
+    }
+
+    float &FarClip() const {
+        return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->FarClip;
+    }
 };
 } // namespace Gen
 } // namespace Attrib
