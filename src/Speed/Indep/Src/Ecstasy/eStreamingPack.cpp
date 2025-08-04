@@ -4,6 +4,9 @@
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
+#include "Speed/Indep/Src/Misc/LZCompress.hpp"
+#include "Speed/Indep/Src/Misc/QueuedFile.hpp"
 
 
 int AllowCompressedStreamingTexturesInThisPoolNum; // size: 0x4, address: 0x8041A5E4

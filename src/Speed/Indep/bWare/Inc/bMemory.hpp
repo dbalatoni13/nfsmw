@@ -201,6 +201,7 @@ extern MemoryPool *MemoryPools[16];
 unsigned int GetVirtualMemoryAllocParams();
 int GetVirtualMemoryPoolNumber();
 int bGetMemoryPoolNum(const char *memory_pool_name);
+int bLargestMalloc(int allocation_params);
 void bVerifyPoolIntegrity(int pool);
 
 inline int bMemoryGetPoolNum(int allocation_params) {
