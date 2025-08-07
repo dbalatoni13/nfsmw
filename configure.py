@@ -213,19 +213,16 @@ cflags_game = [
     "-fschedule-insns2",
     "-fexpensive-optimizations",
     "-frerun-loop-opt",
-    "-fbranch-probabilities",
-    # "-fdata-sections",
+    "-fmove-all-movables",
     # "-fno-defer-pop",
     # "-fno-function-cse",
     # "-fpeephole",
     # "-fregmove",
-    # "-fthread-jumps",
-    # "-fmove-all-movables",
+    # "-fno-thread-jumps",
     # "-freduce-all-givs",
     # # "-fcaller-saves",
     # # "-ffloat-store",
     # # "-funroll-all-loops",
-    # # "-fstrict-aliasing",
 ]
 
 # Metrowerks library flags

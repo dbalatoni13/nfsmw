@@ -1,7 +1,6 @@
 #ifndef ECSTASY_EMITTER_SYSTEM_H
 #define ECSTASY_EMITTER_SYSTEM_H
 
-#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -14,6 +13,8 @@
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Texture.hpp"
+
+#define BCHUNK_TPK_SETTINGS 0x0003BD00
 
 struct smVector3 {
     // total size: 0x8
@@ -41,10 +42,13 @@ struct EmitterControl {
     EmitterControlState mState; // offset 0x0, size 0x4
     float mTime;                // offset 0x4, size 0x4
 
+    // Range: 0x80113D1C -> 0x801140C4
+
     EmitterControl() {
         this->mState = ECS_NOT_STARTED;
         this->mTime = 0.0f;
     }
+    bool Update(float dt, struct Emitter *em, float &rollover_time);
 };
 
 extern SlotPool *ParticleSlotPool;
@@ -106,23 +110,36 @@ class EmitterGroupAttribWrapper {
 
 extern SlotPool *EmitterSlotPool;
 
+// TODO move?
+struct TexturePageRange {
+    // total size: 0x20
+    float u0;                      // offset 0x0, size 0x4
+    float u1;                      // offset 0x4, size 0x4
+    float v0;                      // offset 0x8, size 0x4
+    float v1;                      // offset 0xC, size 0x4
+    unsigned int flags;            // offset 0x10, size 0x4
+    unsigned int texture_namehash; // offset 0x14, size 0x4
+    unsigned int pad1;             // offset 0x18, size 0x4
+    unsigned int pad2;             // offset 0x1C, size 0x4
+};
+
 struct Emitter : public bTNode<Emitter> {
     // total size: 0x90
-    EmitterControl mControl;                    // offset 0x8, size 0x8
-    float mParticleAccumulation;                // offset 0x10, size 0x4
-    unsigned int mRandomSeed;                   // offset 0x14, size 0x4
-    unsigned int mFlags;                        // offset 0x18, size 0x4
-    unsigned short mNumParticles;               // offset 0x1C, size 0x2
-    unsigned short mListIndex;                  // offset 0x1E, size 0x2
-    bMatrix4 mLocalWorld;                       // offset 0x20, size 0x40
-    bVector3 mInheritVelocity;                  // offset 0x60, size 0x10
-    float mMinIntensity;                        // offset 0x70, size 0x4
-    float mMaxIntensity;                        // offset 0x74, size 0x4
-    struct TexturePageRange *mTexturePageRange; // offset 0x78, size 0x4
-    EmitterDataAttribWrapper *mDynamicData;     // offset 0x7C, size 0x4
-    bTList<EmitterParticle> mParticles;         // offset 0x80, size 0x8
-    bPNode *mTexPageTokenNode;                  // offset 0x88, size 0x4
-    EmitterGroup *mGroup;                       // offset 0x8C, size 0x4
+    EmitterControl mControl;                // offset 0x8, size 0x8
+    float mParticleAccumulation;            // offset 0x10, size 0x4
+    unsigned int mRandomSeed;               // offset 0x14, size 0x4
+    unsigned int mFlags;                    // offset 0x18, size 0x4
+    unsigned short mNumParticles;           // offset 0x1C, size 0x2
+    unsigned short mListIndex;              // offset 0x1E, size 0x2
+    bMatrix4 mLocalWorld;                   // offset 0x20, size 0x40
+    bVector3 mInheritVelocity;              // offset 0x60, size 0x10
+    float mMinIntensity;                    // offset 0x70, size 0x4
+    float mMaxIntensity;                    // offset 0x74, size 0x4
+    TexturePageRange *mTexturePageRange;    // offset 0x78, size 0x4
+    EmitterDataAttribWrapper *mDynamicData; // offset 0x7C, size 0x4
+    bTList<EmitterParticle> mParticles;     // offset 0x80, size 0x8
+    bPNode *mTexPageTokenNode;              // offset 0x88, size 0x4
+    EmitterGroup *mGroup;                   // offset 0x8C, size 0x4
 
   public:
     Emitter(const Attrib::Collection *spec, EmitterGroup *parent_group);
@@ -132,16 +149,28 @@ struct Emitter : public bTNode<Emitter> {
     }
 
     ~Emitter();
+    void GetInitialParticleColorAndSize(const bMatrix4 *xtra_basis, const bMatrix4 *clr_basis, EmitterParticle *outParticle) const;
+    void GetDiscVelocity(float &x, float &y, float &z, unsigned int &rand_seed) const;
+    void GetConeVelocity(float &x, float &y, float &z, unsigned int &rand_seed) const;
     unsigned short CalcParticleListIndex();
     void GetStandardUVs(unsigned int *mUVStart, unsigned int *mUVEnd);
     const Attrib::Gen::emitterdata &GetAttributes() const;
+    bool Update(float dt, float &rollover_time);
 
     unsigned int GetNumParticles() {
-        return mNumParticles;
+        return this->mNumParticles;
     }
 
     bTList<EmitterParticle> &GetParticles() {
-        return mParticles;
+        return this->mParticles;
+    }
+
+    unsigned short GetParticleListIndex() {
+        return this->mListIndex;
+    }
+
+    void DecrementNumParticles() {
+        this->mNumParticles--;
     }
 
     bool HasOrphanedParticles() {
@@ -150,6 +179,10 @@ struct Emitter : public bTNode<Emitter> {
 
     void SetOrphanedParticlesFlag() {
         this->mFlags |= 8;
+    }
+
+    bool IsEnabled() const {
+        return this->mFlags & 0x10;
     }
 
     void Enable() {
@@ -195,7 +228,6 @@ class EmitterGroup : public bTNode<EmitterGroup> {
     EmitterGroup(const Attrib::Collection *spec, unsigned int creation_context_flags);
     ~EmitterGroup();
     unsigned int GetNumParticles();
-    void SubscribeToDeletion(void *subscriber, void (*callback)(void *, struct EmitterGroup *));
     void SetLocalWorld(const bMatrix4 *m);
     bool SetEmitters(unsigned int creation_context_flags);
     void UnloadEmitters(bool kill_particles);
@@ -204,6 +236,9 @@ class EmitterGroup : public bTNode<EmitterGroup> {
     void SetInheritVelocity(const bVector3 *vel);
     void Enable();
     void Disable();
+    void SubscribeToDeletion(void *subscriber, void (*callback)(void *, struct EmitterGroup *));
+    void UnSubscribe();
+    void DeleteEmitters();
 
     EmitterGroup() {}
     void *operator new(size_t size) {}
@@ -243,8 +278,20 @@ class EmitterGroup : public bTNode<EmitterGroup> {
         return this->mFlags;
     }
 
+    bool IsFlagSet(unsigned int flag) {
+        return (this->mFlags & flag) != 0;
+    }
+
     const Attrib::Gen::emittergroup &GetAttribs() const {
         return this->mDynamicData->GetAttributes();
+    }
+
+    const bVector3 *GetPosition() {
+        return reinterpret_cast<const bVector3 *>(&this->mLocalWorld.v3);
+    }
+
+    float GetFarClip() {
+        return mFarClip;
     }
 };
 
@@ -262,12 +309,14 @@ struct EmitterLibrary {
 
 struct EmitterLibraryHeader {
     // total size: 0x10
-    int EndianSwapped;       // offset 0x0, size 0x4
+    BOOL EndianSwapped;      // offset 0x0, size 0x4
     int Version;             // offset 0x4, size 0x4
     int NumEmitterLibraries; // offset 0x8, size 0x4
     int SectionNumber;       // offset 0xC, size 0x4
 
     unsigned short *GetLibraryNumTriggers(int i);
+    EmitterLibrary *GetLibrary(int i);
+    void EndianSwap();
 };
 
 // TODO right place?
@@ -282,13 +331,28 @@ struct WorldFXTrigger : public bTNode<WorldFXTrigger> {
     unsigned char mFlags;        // offset 0x27, size 0x1
     float mLastEnd;              // offset 0x28, size 0x4
     unsigned int pad;            // offset 0x2C, size 0x4
+
+    void EndianSwap() {
+        bPlatEndianSwap(&this->mTriggerRadius);
+        bPlatEndianSwap(&this->mWorldPos);
+        bPlatEndianSwap(&this->mResetTime);
+        bPlatEndianSwap(&this->mProbability);
+        bPlatEndianSwap(&this->mState); // or mFlags?
+    }
 };
 
 class EmitterSystem {
     struct LibEntry {
         unsigned int Key;
         EmitterLibrary *Lib;
+
+        bool operator<(const LibEntry &other) const {
+            return this->Key < other.Key;
+        }
     };
+
+    static TexturePageRange *mTextureRanges;
+    static int mNumTextureRanges;
 
     // total size: 0x3AC
     int mTotalNumParticles;                                                                        // offset 0x0, size 0x4
@@ -307,6 +371,10 @@ class EmitterSystem {
     UTL::Container::vector<EmitterSystem::LibEntry, _type_vector> mLibs;                           // offset 0x39C, size 0x10
 
   public:
+    static int TexturePageLoader(bChunk *bchunk);
+    static int TexturePageUnloader(bChunk *bchunk);
+    static void SetTexturePageRanges(int num_ranges, TexturePageRange *ranges);
+
     EmitterSystem();
     void OrphanParticlesFromThisEmitter(Emitter *em);
     void KillParticlesFromThisEmitter(Emitter *em);
@@ -318,9 +386,19 @@ class EmitterSystem {
     EmitterGroup *CreateEmitterGroup(const Attrib::StringKey &group_name, unsigned int creation_context_flags);
     EmitterGroup *CreateEmitterGroup(const unsigned int &group_key, unsigned int creation_context_flags);
     EmitterGroup *CreateEmitterGroup(const Attrib::Collection *group_spec, unsigned int creation_context_flags);
+    void AddEmitterGroup(EmitterGroup *group);
     EmitterGroupAttribWrapper *GetEmitterGroup(const Attrib::Collection *spec);
     void RemoveEmitterGroup(EmitterGroup *group);
+    void UpdateInterestPoints();
+    EmitterLibrary *FindLibrary(unsigned int key);
+    void AddLibrary(EmitterLibrary *lib);
+    void RemoveLibrary(EmitterLibrary *lib);
     EmitterDataAttribWrapper *GetEmitterData(const Attrib::Collection *spec);
+    void Init();
+    bool IsCloseEnough(const bVector3 *group_pos, float farclip, int frustrum, float cos_angle_fov) const;
+    bool IsCloseEnough(const bVector4 *group_pos, float farclip, int frustrum, float cos_angle_fov) const;
+    bool IsCloseEnough(EmitterGroup *group, int frustrum, float cos_angle_fov) const;
+    void KillEffectsMatchingFlag(unsigned int flags_to_match);
 
     int GetNumEmitters() {
         return this->mNumEmitters;
@@ -328,6 +406,14 @@ class EmitterSystem {
 
     int GetNumEmitterGroups() {
         return this->mNumEmitterGroups;
+    }
+
+    void OnDeleteEmitter() {
+        this->mNumEmitters--;
+    }
+
+    bTList<WorldFXTrigger> &GetTriggers() {
+        return this->mWorldTriggers;
     }
 };
 

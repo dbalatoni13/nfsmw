@@ -31,12 +31,12 @@ struct _type_set {
 
 namespace UTL {
 namespace Container {
-// template <typename T, typename Tag> struct vector : public std::vector<T, UTL::Std::Allocator<T, Tag> > {};
+template <typename T, typename Tag> struct vector : public std::vector<T, UTL::Std::Allocator<T, Tag> > {};
 // template <typename Key, typename T, typename Tag> struct map : public std::map<Key, T, std::less<Key>, UTL::Std::Allocator<T, _type_vector> > {};
 // template <typename T, typename Tag> struct set : public std::set<T, std::less<T>, UTL::Std::Allocator<T, _type_set> > {};
 
 // temporary
-template <typename T, typename Tag> struct vector : public std::vector<T> {};
+// template <typename T, typename Tag> struct vector : public std::vector<T> {};
 template <typename Key, typename T, typename Tag> struct map : public std::map<Key, T> {};
 template <typename T, typename Tag> struct set : public std::set<T> {};
 

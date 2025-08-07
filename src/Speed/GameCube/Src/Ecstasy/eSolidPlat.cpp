@@ -1,5 +1,6 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 
+// UNSOLVED
 int eLoadSolidListPlatChunks(bChunk *chunk) {
     bChunk *current_chunk;
     bChunk *last_chunk = chunk;
@@ -9,6 +10,7 @@ int eLoadSolidListPlatChunks(bChunk *chunk) {
     return 1;
 }
 
+// UNSOLVED
 int eUnloadSolidListPlatChunks(bChunk *chunk) {
     bChunk *current_chunk;
     bChunk *last_chunk = chunk;

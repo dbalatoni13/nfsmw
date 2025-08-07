@@ -235,12 +235,7 @@ struct bVector3 {
 
     bVector3 operator+() {}
 
-    bVector3(float _x, float _y, float _z) {
-        x = _x;
-        y = _y;
-        z = _z;
-    }
-
+    bVector3(float _x, float _y, float _z);
     bVector3(const bVector3 &v);
     bVector3 &operator*=(float scale);
     bVector3 &operator+=(const bVector3 &v);
@@ -323,6 +318,10 @@ inline bVector3 bSub(const bVector3 &v1, const bVector3 &v2) {
     bVector3 dest;
     bSub(&dest, &v1, &v2);
     return dest;
+}
+
+inline bVector3::bVector3(float _x, float _y, float _z) {
+    bFill(this, _x, _y, _z);
 }
 
 inline bVector3::bVector3(const bVector3 &v) {
@@ -439,7 +438,7 @@ struct bVector4 {
 
     bVector4 operator+() {}
 
-    bVector4(float _x, float _y, float _z, float _w) {}
+    bVector4(float _x, float _y, float _z, float _w);
 
     bVector4(const bVector4 &v);
 
@@ -659,6 +658,10 @@ inline bVector4::bVector4(const bVector4 &v) {
     bCopy(this, &v);
 }
 
+inline bVector4::bVector4(float _x, float _y, float _z, float _w) {
+    bFill(this, _x, _y, _z, _w);
+}
+
 inline bVector4 &bVector4::operator=(const bVector4 &v) {
     bCopy(this, &v);
     return *this;
@@ -685,8 +688,7 @@ struct bMatrix4 {
 
     bMatrix4() {}
 
-    bMatrix4(const bMatrix4 &m) {}
-
+    bMatrix4(const bMatrix4 &m);
     bMatrix4 &operator=(const bMatrix4 &m);
 
     bVector4 &operator[](int index) {}
@@ -709,6 +711,10 @@ inline void bIdentity(bMatrix4 *a) {
 
 inline void eIdentity(bMatrix4 *a) {
     bIdentity(a);
+}
+
+inline bMatrix4::bMatrix4(const bMatrix4 &m) {
+    bCopy(this, &m);
 }
 
 inline bMatrix4 &bMatrix4::operator=(const bMatrix4 &m) {
@@ -741,5 +747,6 @@ struct bQuaternion {
 };
 
 void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float u4);
+void hermite_parameter(bVector4 *dest, const bMatrix4 *b, float t);
 
 #endif

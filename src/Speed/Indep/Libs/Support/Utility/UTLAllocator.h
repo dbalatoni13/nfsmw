@@ -7,6 +7,8 @@
 
 #include <cstddef>
 
+#include "Speed/Indep/bWare/Inc/bMemory.hpp"
+
 namespace UTL {
 namespace Std {
 template <typename T, typename Tag> struct Allocator {
@@ -20,12 +22,24 @@ template <typename T, typename Tag> struct Allocator {
     Allocator() {}
     template <typename U, typename V> Allocator(const Allocator<U, Tag> &) {}
 
-    pointer allocate(std::size_t n, const void * = 0) {
-        return static_cast<pointer>(::operator new(n * sizeof(T)));
+    pointer allocate(std::size_t n) {
+        if (n != 0) {
+            return reinterpret_cast<pointer>(gFastMem.Alloc(n * sizeof(T), NULL));
+        }
+        return nullptr;
     }
 
-    void deallocate(pointer p, std::size_t) {
-        ::operator delete(p);
+    pointer allocate(std::size_t n, std::size_t, std::size_t) {
+        if (n != 0) {
+            return reinterpret_cast<pointer>(gFastMem.Alloc(n * sizeof(T), NULL));
+        }
+        return nullptr;
+    }
+
+    void deallocate(pointer p, std::size_t n) {
+        if (p) {
+            gFastMem.Free(p, n * sizeof(T), nullptr);
+        }
     }
 };
 

@@ -518,7 +518,7 @@ void eInitGX() {
     __InitRenderMode();
     __InitMem();
     VIConfigure(_rmode);
-    _defaultFIFO = bMalloc(0x42000, 0x800);
+    _defaultFIFO = bMALLOC(0x42000, "", 0, 0x800);
     _defaultFIFOObj = GXInit(_defaultFIFO, 0x42000);
     GXSetDrawDoneCallback(cb_DrawDone);
     GXSetDrawSyncCallback(sync_cb);
@@ -562,7 +562,7 @@ void __InitRenderMode() {
 
 void __InitMem() {
     fbSize = (((_rmode->fbWidth + 15) & 0xfff0) * _rmode->xfbHeight) * 2;
-    void *pFB = _frameBuffer1 = bMalloc(fbSize * 2, 0x800);
+    void *pFB = _frameBuffer1 = bMALLOC(fbSize * 2, "", 0, 0x800);
     _currentBuffer = (u8 *)pFB + fbSize;
     _frameBuffer2 = (u8 *)pFB + fbSize;
 }

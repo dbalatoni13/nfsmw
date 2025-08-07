@@ -196,6 +196,47 @@ class bMemoryAllocator : public EA::Allocator::IAllocator {
     }
 };
 
+struct AllocDesc {
+    // total size: 0x10
+    unsigned int mIndex; // offset 0x0, size 0x4
+    const char *mName;   // offset 0x4, size 0x4
+    unsigned int mCount; // offset 0x8, size 0x4
+    unsigned int mHigh;  // offset 0xC, size 0x4
+};
+
+struct FastMem {
+    // total size: 0x32C
+    FreeBlock *mFreeLists[64];   // offset 0x0, size 0x100
+    const char *mName;           // offset 0x100, size 0x4
+    unsigned int mExpansionSize; // offset 0x104, size 0x4
+    unsigned int mLocks;         // offset 0x108, size 0x4
+    bool mInited;                // offset 0x10C, size 0x1
+    void *mBlock;                // offset 0x110, size 0x4
+    unsigned int mBytes;         // offset 0x114, size 0x4
+    unsigned int mUsed;          // offset 0x118, size 0x4
+    unsigned int mAlloc[64];     // offset 0x11C, size 0x100
+    unsigned int mAvail[64];     // offset 0x21C, size 0x100
+    unsigned int mAllocOver;     // offset 0x31C, size 0x4
+    AllocDesc *mTrack;           // offset 0x320, size 0x4
+    unsigned int mTrackMax;      // offset 0x324, size 0x4
+    unsigned int mTrackCount;    // offset 0x328, size 0x4
+
+    FastMem();
+    FastMem(EA::Allocator::IAllocator *allocator, unsigned int bytes, const char *name, unsigned int expansionsize, unsigned int trackingsize);
+    void Init();
+    void Deinit();
+    void *Alloc(unsigned int bytes, const char *kind);
+    void Free(void *ptr, unsigned int bytes, const char *kind);
+    void *CoreAlloc(unsigned int bytes, const char *kind);
+    void CoreFree(void *ptr);
+    bool SplitOrExpand(unsigned int bytes);
+    bool AssignToFree(unsigned int bytes);
+    bool CreateBlock(unsigned int listIndex);
+    void DumpRecord();
+};
+
+extern FastMem gFastMem;
+
 extern MemoryPool *MemoryPools[16];
 
 unsigned int GetVirtualMemoryAllocParams();

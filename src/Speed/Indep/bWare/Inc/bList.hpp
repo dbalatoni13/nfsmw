@@ -121,9 +121,11 @@ struct bList {
     bNode *RemoveHead() {
         return this->GetHead()->Remove();
     }
-    bNode *RemoveTail();                   // TODO
-    int GetNodeNumber(bNode *node);        // TODO
-    int IsInList(bNode *node);             // TODO
+    bNode *RemoveTail();            // TODO
+    int GetNodeNumber(bNode *node); // TODO
+    int IsInList(bNode *node) {
+        return this->TraversebList(node);
+    }
     int CountElements();                   // TODO
     bNode *AddSorted(SortFunc check_flip); // TODO
 };

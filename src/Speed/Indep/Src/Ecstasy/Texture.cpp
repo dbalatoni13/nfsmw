@@ -2,7 +2,6 @@
 #include "Ecstasy.hpp"
 #include "Speed/GameCube/Src/Ecstasy/TextureInfoPlat.hpp"
 #include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
-#include "Speed/Indep/Src/Ecstasy/eStreamingPack.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"

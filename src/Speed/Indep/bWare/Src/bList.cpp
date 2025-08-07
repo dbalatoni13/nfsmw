@@ -2,18 +2,16 @@
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
-// UNSOLVED, matches on MWCC
 bNode *bList::GetNode(int ordinal_number) {
     int n = 0;
     bNode *node = this->GetHead();
     while (node != this->EndOfList() && (n != ordinal_number)) {
-        node = node->GetNext();
         n++;
+        node = node->GetNext();
     }
     return node;
 }
 
-// UNSOLVED, matches on MWCC
 int bList::TraversebList(bNode *match_node) {
     bNode *node = this->GetHead();
     int n = 0;
@@ -21,8 +19,8 @@ int bList::TraversebList(bNode *match_node) {
         if (node == match_node) {
             return n + 1;
         }
-        node = node->GetNext();
         n++;
+        node = node->GetNext();
     }
     if (match_node) {
         n = 0;

@@ -56,7 +56,7 @@ void eSolid::FixLightMaterialTable() {
     }
 }
 
-void EmptySolidTextureFixupInfo(eSolidListHeader *list_header /* r31 */) {
+void EmptySolidTextureFixupInfo(eSolidListHeader *list_header) {
     while (!list_header->TexturePackList.IsEmpty()) {
         list_header->TexturePackList.RemoveHead();
     }
@@ -88,7 +88,8 @@ bool eSolid::NotifyTextureLoading(TexturePack *texture_pack /* r27 */) {
     return textures_changed;
 }
 
-bool eSolid::NotifyTextureUnloading(TexturePack *texture_pack /* r27 */) {
+// UNSOLVED
+bool eSolid::NotifyTextureUnloading(TexturePack *texture_pack) {
     bool textures_changed = false;
 
     for (int n = 0; n < this->NumTextureTableEntries; n++) {
@@ -202,7 +203,6 @@ eSolidListHeader *InternalUnloaderSolidHeaderChunks(bChunk *chunk) {
     return solid_list_header;
 }
 
-// UNSOLVED
 eSolidListHeader *InternalLoaderSolidHeaderChunks(bChunk *chunk) {
     eSolidListHeader *solid_list_header = nullptr;
     bChunk *current_chunk = chunk->GetFirstChunk();
@@ -212,7 +212,7 @@ eSolidListHeader *InternalLoaderSolidHeaderChunks(bChunk *chunk) {
         unsigned int current_chunk_id = current_chunk->GetID();
         if (current_chunk_id == BCHUNK_MESH_CONTAINER_HEADER) {
             solid_list_header = reinterpret_cast<eSolidListHeader *>(current_chunk->GetData());
-            if (solid_list_header->Version == 0) {
+            if (!solid_list_header->EndianSwapped) {
                 solid_list_header->EndianSwap();
             }
             SolidListHeaderList.AddTail(solid_list_header);
