@@ -81,75 +81,75 @@ bool GetConstraintBasis(EffectParticleConstraint constraint, bVector4 &x_basis, 
     bool res = true;
 
     switch (constraint) {
-    case CONSTRAIN_PARTICLE_XY_AXIS:
-        x_basis = bVector4(1.0f, 0.0f, 0.0f, 0.0f);
-        y_basis = bVector4(0.0f, 1.0f, 0.0f, 0.0f);
-        if (particle_angle != 0) {
-            float cos = bCos(particle_angle);
-            float sin = bSin(particle_angle);
-            x_basis.x = cos;
-            x_basis.y = sin;
-            x_basis.z = 0.0f;
-            x_basis.w = 0.0f;
-
-            y_basis.x = -sin;
-            y_basis.y = cos;
-            y_basis.z = 0.0f;
-            y_basis.w = 0.0f;
-        }
-        break;
-    case CONSTRAIN_PARTICLE_XZ_AXIS:
-        x_basis = bVector4(1.0f, 0.0f, 0.0f, 0.0f);
-        y_basis = bVector4(0.0f, 0.0f, 1.0f, 0.0f);
-        if (particle_angle != 0) {
-            float cos = bCos(particle_angle);
-            float sin = bSin(particle_angle);
-            x_basis.x = cos;
-            x_basis.y = 0.0f;
-            x_basis.z = -sin;
-            x_basis.w = 0.0f;
-
-            y_basis.x = sin;
-            y_basis.y = 0.0f;
-            y_basis.z = cos;
-            y_basis.w = 0.0f;
-        }
-        break;
-    case CONSTRAIN_PARTICLE_YZ_AXIS:
-        x_basis = bVector4(0.0f, 1.0f, 0.0f, 0.0f);
-        y_basis = bVector4(0.0f, 0.0f, 1.0f, 0.0f);
-        if (particle_angle != 0) {
-            float cos = bCos(particle_angle);
-            float sin = bSin(particle_angle);
-            x_basis.x = 0.0f;
-            x_basis.y = cos;
-            x_basis.z = sin;
-            x_basis.w = 0.0f;
-
-            y_basis.x = 0.0f;
-            y_basis.y = -sin;
-            y_basis.z = cos;
-            y_basis.w = 0.0f;
-        }
-        break;
-    case CONSTRAIN_PARTICLE_CAMERA:
-        if (world_view) {
-            x_basis = bVector4(world_view->v0.x, world_view->v1.x, world_view->v2.x, 0.0f);
-            y_basis = bVector4(world_view->v0.y, world_view->v1.y, world_view->v2.y, 0.0f);
+        case CONSTRAIN_PARTICLE_XY_AXIS:
+            x_basis = bVector4(1.0f, 0.0f, 0.0f, 0.0f);
+            y_basis = bVector4(0.0f, 1.0f, 0.0f, 0.0f);
             if (particle_angle != 0) {
-                bMatrix4 rz;
-                eCreateRotationZ(&rz, particle_angle);
-                eMulVector(&x_basis, &rz, &x_basis);
-                eMulVector(&y_basis, &rz, &y_basis);
+                float cos = bCos(particle_angle);
+                float sin = bSin(particle_angle);
+                x_basis.x = cos;
+                x_basis.y = sin;
+                x_basis.z = 0.0f;
+                x_basis.w = 0.0f;
+
+                y_basis.x = -sin;
+                y_basis.y = cos;
+                y_basis.z = 0.0f;
+                y_basis.w = 0.0f;
             }
-        } else {
+            break;
+        case CONSTRAIN_PARTICLE_XZ_AXIS:
+            x_basis = bVector4(1.0f, 0.0f, 0.0f, 0.0f);
+            y_basis = bVector4(0.0f, 0.0f, 1.0f, 0.0f);
+            if (particle_angle != 0) {
+                float cos = bCos(particle_angle);
+                float sin = bSin(particle_angle);
+                x_basis.x = cos;
+                x_basis.y = 0.0f;
+                x_basis.z = -sin;
+                x_basis.w = 0.0f;
+
+                y_basis.x = sin;
+                y_basis.y = 0.0f;
+                y_basis.z = cos;
+                y_basis.w = 0.0f;
+            }
+            break;
+        case CONSTRAIN_PARTICLE_YZ_AXIS:
+            x_basis = bVector4(0.0f, 1.0f, 0.0f, 0.0f);
+            y_basis = bVector4(0.0f, 0.0f, 1.0f, 0.0f);
+            if (particle_angle != 0) {
+                float cos = bCos(particle_angle);
+                float sin = bSin(particle_angle);
+                x_basis.x = 0.0f;
+                x_basis.y = cos;
+                x_basis.z = sin;
+                x_basis.w = 0.0f;
+
+                y_basis.x = 0.0f;
+                y_basis.y = -sin;
+                y_basis.z = cos;
+                y_basis.w = 0.0f;
+            }
+            break;
+        case CONSTRAIN_PARTICLE_CAMERA:
+            if (world_view) {
+                x_basis = bVector4(world_view->v0.x, world_view->v1.x, world_view->v2.x, 0.0f);
+                y_basis = bVector4(world_view->v0.y, world_view->v1.y, world_view->v2.y, 0.0f);
+                if (particle_angle != 0) {
+                    bMatrix4 rz;
+                    eCreateRotationZ(&rz, particle_angle);
+                    eMulVector(&x_basis, &rz, &x_basis);
+                    eMulVector(&y_basis, &rz, &y_basis);
+                }
+            } else {
+                res = false;
+            }
+            break;
+        case CONSTRAIN_PARTICLE_NONE:
+        default:
             res = false;
-        }
-        break;
-    case CONSTRAIN_PARTICLE_NONE:
-    default:
-        res = false;
-        break;
+            break;
     }
     return res;
 }
@@ -668,6 +668,57 @@ void EmitterLibraryHeader::EndianSwap() {
     this->EndianSwapped = true;
 }
 
+// UNSOLVED
+EmitterParticle *EmitterSystem::GetNewParticle(Emitter *spawning_emitter) {
+    unsigned short uVar1;
+    bool done;
+    bool bVar3;
+    unsigned int uVar4;
+    bNode *pbVar5;
+    EmitterGroup *grp;
+    EmitterGroup *this_00;
+    EmitterGroup *local_r31_188;
+
+    if (this->mTotalNumParticles == 1024) {
+        bool high_priority = spawning_emitter->GetEmitterGroup()->GetFlags() & 0x40000;
+        if (high_priority) {
+            done = false;
+            grp = this->mEmitterGroups.GetHead();
+            while (this_00 = grp, bVar3 = !done, bVar3) {
+                if (this_00 == this->mEmitterGroups.EndOfList()) {
+                    if (bVar3) {
+                        grp = this->mEmitterGroups.GetHead();
+                        while ((bVar3 && (grp != this->mEmitterGroups.EndOfList()))) {
+                            local_r31_188 = grp->GetNext();
+                            if (((grp->GetFlags() & 0x40000) == 0) && (done = true)) {
+                                delete grp;
+                            }
+                            bVar3 = !done;
+                            grp = local_r31_188;
+                        }
+                    }
+                    break;
+                }
+                grp = this_00->GetNext();
+                uVar4 = this_00->GetNumParticles();
+                if ((uVar4 != 0) && (uVar4 = this_00->GetFlags(), (uVar4 & 0x8000000) != 0) && ((uVar4 & 0x40000) == 0) &&
+                    ((uVar4 & 0x4000000) == 0 && (done = true))) {
+                    delete this_00;
+                }
+            }
+        }
+    }
+    EmitterParticle *new_particle = new EmitterParticle();
+    if (new_particle) {
+        new_particle->mFlags = spawning_emitter->mFlags & 0xFFFF0000;
+        spawning_emitter->GetParticles().AddTail(new_particle);
+        int listix = spawning_emitter->GetParticleListIndex();
+        this->mTotalNumParticles++;
+        this->mParticleListCounts[listix]++;
+    }
+    return new_particle;
+}
+
 void EmitterSystem::KillParticle(Emitter *em, EmitterParticle *particle) {
     int listix = em->GetParticleListIndex();
     this->mParticleListCounts[listix]--;
@@ -781,10 +832,48 @@ EmitterSystem::EmitterSystem() {
     bMemSet(this->mParticleListCounts, 0, sizeof(this->mParticleListCounts));
 }
 
+void afxGetWorldViewMatrix(eView *view, bMatrix4 *world_view) {
+    Camera *camera = view->GetCamera();
+    bCopy(world_view, camera->GetCameraMatrix());
+}
+
 void EmitterSystem::Init() {
     InitParticleSlotPool();
     InitEmitterSlotPool();
     InitEmitterGroupSlotPool();
+}
+
+EmitterDataAttribWrapper *EmitterSystem::GetEmitterData(const Attrib::Collection *spec) {}
+
+EmitterGroupAttribWrapper *EmitterSystem::GetEmitterGroup(const Attrib::Collection *spec) {}
+
+bool EmitterSystem::IsCloseEnough(const bVector3 *group_pos, float farclip, int frustrum, float cos_angle_fov) const {
+    const bVector3 *group_position = group_pos;
+    int num_points = 1;
+
+    if (eGetCurrentViewMode() == EVIEWMODE_TWOH) {
+        num_points = 2;
+    }
+    if (frustrum == 0) {
+        for (int i = 0; i < num_points; i++) {
+            float distance = bDistBetween(group_position, &this->mInterestPoints[i]);
+            if (distance < farclip) {
+                return true;
+            }
+        }
+    } else {
+        for (int i = 0; i < num_points; i++) {
+            float distance = bDistBetween(group_position, &this->mInterestPoints[i]);
+            if (distance < farclip) {
+                bVector3 toGroup = *group_position - this->mInterestPoints[i];
+                toGroup /= distance;
+                if (bDot(&toGroup, &this->mInterestVectors[i]) > cos_angle_fov) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 bool EmitterSystem::IsCloseEnough(const bVector4 *group_pos, float farclip, int frustrum, float cos_angle_fov) const {
@@ -815,6 +904,80 @@ void UpdateTriggers() {
             trig->mState = 1;
         }
     }
+}
+
+int EmitterSystem::Loader(bChunk *bchunk) {
+    if (bchunk->GetID() == 0x3bb00) {
+        return true;
+    } else if (bchunk->GetID() == BCHUNK_EMITTER_SYSTEM) {
+        EmitterLibraryHeader *header = reinterpret_cast<EmitterLibraryHeader *>(bchunk->GetAlignedData(16));
+        header->EndianSwap();
+        for (int i = 0; i < header->NumEmitterLibraries; i++) {
+            EmitterLibrary *lib = header->GetLibrary(i);
+            bPlatEndianSwap(&lib->GroupKey);
+            unsigned short *pnum_triggers = header->GetLibraryNumTriggers(i);
+            int num_triggers = *pnum_triggers;
+            WorldFXTrigger *triggers = header->GetLibraryTriggers(i);
+
+            gEmitterSystem.AddLibrary(lib);
+            if (lib->SectionNumber != 0) {
+                if (num_triggers == 0) {
+                    EmitterGroup *emgroup;
+                    if (lib->SectionNumber == 0xa28) {
+                        emgroup = gEmitterSystem.CreateEmitterGroup(lib->GroupKey, 0x8020000);
+                    } else {
+                        emgroup = nullptr;
+                    }
+                    if (emgroup) {
+                        emgroup->SubscribeToDeletion(lib, NotifyLibOfDeletion);
+                        lib->mGroup = emgroup;
+                        emgroup->SetLocalWorld(&lib->LocalWorld);
+                        emgroup->SetAutoUpdate(true);
+                    }
+                } else if (num_triggers > 0) {
+                    for (int i = 0; i < num_triggers; i++) {
+                        WorldFXTrigger *fx_trigger = &triggers[i];
+                        fx_trigger->mState = 1;
+                        fx_trigger->mLib = lib;
+                        gEmitterSystem.AddTrigger(fx_trigger);
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+BOOL EmitterSystem::Unloader(bChunk *bchunk) {
+    // TODO hash
+    if (bchunk->GetID() == 0x3bb00) {
+        EmitterPackHeader *pack_header = reinterpret_cast<EmitterPackHeader *>(bchunk->GetAlignedData(16));
+        EmitterGroup *emitter_group = reinterpret_cast<EmitterGroup *>(&pack_header[1]);
+        for (int num_emitter_groups = pack_header->NumEmitterGroups; num_emitter_groups != 0; num_emitter_groups--) {
+            gEmitterSystem.RemoveEmitterGroup(emitter_group);
+            emitter_group++;
+        }
+        return true;
+    } else if (bchunk->GetID() == BCHUNK_EMITTER_SYSTEM) {
+        EmitterLibraryHeader *header = reinterpret_cast<EmitterLibraryHeader *>(bchunk->GetAlignedData(16));
+        for (int i = 0; i < header->NumEmitterLibraries; i++) {
+            EmitterLibrary *lib = header->GetLibrary(i);
+            EmitterGroup *group = lib->mGroup;
+            delete group;
+            bTList<WorldFXTrigger> &trigs = gEmitterSystem.GetTriggers();
+            for (WorldFXTrigger *trig = trigs.GetHead(); trig != trigs.EndOfList();) {
+                WorldFXTrigger *next = trig->GetNext();
+                if (trig->mLib == lib) {
+                    gEmitterSystem.KillTrigger(trig);
+                }
+                trig = next;
+            }
+            gEmitterSystem.RemoveLibrary(lib);
+        }
+        return true;
+    }
+    return false;
 }
 
 int EmitterSystem::TexturePageLoader(bChunk *bchunk) {
@@ -888,6 +1051,189 @@ void EmitterGroup::DeleteEmitters() {
         }
         gEmitterSystem.OnDeleteEmitter();
     }
+}
+
+// TODO move
+void UpdateXenonEmitters(float dt);
+
+void EmitterSystem::Update(float dt) {
+    if (!_EnableParticleSystem) {
+        return;
+    }
+    this->ServiceWorldEffects();
+    HandleFXTriggers();
+    this->UpdateInterestPoints();
+
+    EmitterGroup *next_group;
+    for (EmitterGroup *group = this->mEmitterGroups.GetHead(); group != this->mEmitterGroups.EndOfList(); group = next_group) {
+        next_group = group->GetNext();
+        if (group->IsAutoUpdate()) {
+            group->Update(dt);
+        } else {
+            if ((group->GetFlags() & 0x40000000) && !group->IsOldSurfaceEffect() && group->GetNumParticles() == 0) {
+                group->IncZeroParticleFrame();
+                if (group->GetNumZeroParticleFrames() > 10)
+                    group->DeleteEmitters();
+            }
+        }
+        if (group->CurrentNumEmitters() == 0 && !group->IsStatic()) {
+            delete group;
+        }
+        if (group->IsOldSurfaceEffect() && group->GetNumParticles() == 0) {
+            delete group;
+        }
+    }
+    this->UpdateParticles(dt);
+    UpdateXenonEmitters(dt);
+}
+
+void EmitterGroup::Update(float dt) {
+    if (!_EnableParticleSystem || !this->IsEnabled()) {
+        return;
+    }
+    bool closeEnough2spawn = gEmitterSystem.IsCloseEnough(this, !(this->GetFlags() & 0x40000), 0.7f);
+    Emitter *next_emitter;
+    for (Emitter *emitter = this->mEmitters.GetHead(); emitter != this->mEmitters.EndOfList(); emitter = next_emitter) {
+        next_emitter = emitter->GetNext();
+        float rollover_time = 0.0f;
+        bool will_require_respawn = emitter->Update(dt, rollover_time);
+        EmitterControlState state = emitter->GetControlState();
+        if (will_require_respawn && closeEnough2spawn && (dt + rollover_time > 0.0f)) {
+            emitter->SpawnParticles(dt + rollover_time, this->mIntensity);
+        }
+        if (state == ECS_OFF) {
+            gEmitterSystem.OrphanParticlesFromThisEmitter(emitter);
+            if (emitter->GetNumParticles() == 0) {
+                emitter->Remove();
+                this->mNumEmitters--;
+                delete emitter;
+                gEmitterSystem.OnDeleteEmitter();
+            }
+        }
+        if (this->IsOldSurfaceEffect() && emitter->GetNumParticles() == 0) {
+            emitter->Remove();
+            this->mNumEmitters--;
+            delete emitter;
+            gEmitterSystem.OnDeleteEmitter();
+        }
+    }
+}
+
+bool EmitterControl::Update(float dt, Emitter *em, float &rollover_time) {
+    bool will_require_spawn;
+
+    if (!_EnableParticleSystem || !em->IsEnabled()) {
+        return false;
+    }
+    rollover_time = 0.0f;
+    float start_delay = em->GetAttributes().StartDelay();
+    bool random_start_delay = em->GetAttributes().StartDelayRandomVariance();
+    if (random_start_delay) {
+        start_delay = bRandom(start_delay);
+    }
+    float on_cycle = em->GetAttributes().OnCycle();
+    float on_cycle_variance = em->GetAttributes().OnCycleVariance();
+    float off_cycle = em->GetAttributes().OffCycle();
+    float off_cycle_variance = em->GetAttributes().OffCycleVariance();
+    bool forced_to_oneshot = em->GetFlags() & 0x400000;
+    bool is_one_shot = false;
+
+    if (em->GetAttributes().IsOneShot() || forced_to_oneshot) {
+        is_one_shot = true;
+    }
+    bool has_start_delay = false;
+    if (start_delay > 0.0f || start_delay < 0.0f) {
+        has_start_delay = true;
+    }
+    bool has_on_cycle = false;
+    if (on_cycle > 0.0f || on_cycle < 0.0f || on_cycle_variance > 0.0f || on_cycle_variance < 0.0f) {
+        has_on_cycle = true;
+    }
+    bool has_off_cycle = false;
+    if (off_cycle > 0.0f || off_cycle < 0.0f || off_cycle_variance > 0.0f || off_cycle_variance < 0.0f) {
+        has_off_cycle = true;
+    }
+    // what?...
+    if (has_off_cycle ? !has_on_cycle : !has_on_cycle) {
+    } else if (!is_one_shot && !has_off_cycle) {
+        has_on_cycle = false;
+    }
+    static unsigned int aseed;
+    switch (this->mState) {
+        case ECS_NOT_STARTED:
+            if (has_start_delay) {
+                this->mState = ECS_DELAYING;
+                this->mTime = start_delay - dt;
+                will_require_spawn = false;
+                break;
+            }
+            if (has_on_cycle) {
+                this->mState = ECS_ON_CYCLE;
+                this->mTime = (on_cycle + bRandom(on_cycle_variance, &aseed)) - dt;
+                if (this->mTime < 0.0f) {
+                    this->mTime = 0.0f;
+                }
+                will_require_spawn = true;
+                break;
+            }
+            will_require_spawn = true;
+            this->mTime = 0.0f;
+            this->mState = ECS_ON;
+            break;
+        case ECS_DELAYING:
+            this->mTime -= dt;
+            if (this->mTime > 0.0f) {
+                will_require_spawn = false;
+                break;
+            }
+            rollover_time = this->mTime;
+            will_require_spawn = true;
+            if (has_on_cycle) {
+                this->mState = ECS_ON_CYCLE;
+                this->mTime += on_cycle + bRandom(on_cycle_variance, &aseed);
+                break;
+            }
+            this->mTime = 0.0f;
+            this->mState = ECS_ON;
+            break;
+        case ECS_ON_CYCLE:
+            will_require_spawn = true;
+            this->mTime -= dt;
+            if (this->mTime > 0.0f) {
+                break;
+            }
+            rollover_time = this->mTime + dt;
+            if (is_one_shot) {
+                this->mState = ECS_OFF;
+                this->mTime = 0.0f;
+                break;
+            }
+            this->mState = ECS_OFF_CYCLE;
+            this->mTime += off_cycle + bRandom(off_cycle_variance, &aseed);
+            break;
+        case ECS_OFF_CYCLE:
+            this->mTime -= dt;
+            if (this->mTime > 0.0f) {
+                will_require_spawn = false;
+                break;
+            }
+            rollover_time = this->mTime;
+            this->mState = ECS_ON_CYCLE;
+            this->mTime += on_cycle + bRandom(on_cycle_variance, &aseed);
+            will_require_spawn = true;
+            break;
+        case ECS_ON:
+            will_require_spawn = true;
+            break;
+        case ECS_OFF:
+            will_require_spawn = false;
+            break;
+        case ECS_ERROR:
+        default:
+            will_require_spawn = false;
+            break;
+    }
+    return will_require_spawn;
 }
 
 bool Emitter::Update(float dt, float &rollover_time) {

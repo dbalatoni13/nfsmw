@@ -2,3 +2,4 @@ Standard: c++03
 ColumnLimit: 150
 AllowShortFunctionsOnASingleLine: Empty
 IndentWidth: 4
+IndentCaseLabels: true

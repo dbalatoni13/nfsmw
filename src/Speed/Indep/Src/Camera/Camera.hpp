@@ -39,9 +39,13 @@ struct Camera {
     int LastDisparateTime;    // offset 0x288, size 0x4
     int RenderDash;           // offset 0x28C, size 0x4
 
-    bMatrix4 *GetCameraMatrix() {}
+    bMatrix4 *GetCameraMatrix() {
+        return &this->CurrentKey.Matrix;
+    }
 
-    int GetRenderDash() {}
+    int GetRenderDash() {
+        return this->RenderDash;
+    }
 
     float GetFocalDistance() {}
 

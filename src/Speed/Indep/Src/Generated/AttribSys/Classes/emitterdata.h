@@ -134,10 +134,10 @@ struct emitterdata : Instance {
         float Gravity;                           // offset 0x108, size 0x4
         int SpreadAsDisc;                        // offset 0x10c, size 0x4
         char AlphaToKillAt;                      // offset 0x110, size 0x1
-        bool NoKillAtAlpha;                      // offset 0x111, size 0x1
-        bool IsOneShot;                          // offset 0x112, size 0x1
-        bool StartDelayRandomVariance;           // offset 0x113, size 0x1
-        bool EliminateUnnecessaryRandomness;     // offset 0x114, size 0x1
+        bool NoKillAtAlpha;                      // offset 0x114, size 0x1
+        bool IsOneShot;                          // offset 0x118, size 0x1
+        bool StartDelayRandomVariance;           // offset 0x11C, size 0x1
+        bool EliminateUnnecessaryRandomness;     // offset 0x120, size 0x1
     };
 
     void operator delete(void *ptr, size_t bytes) {

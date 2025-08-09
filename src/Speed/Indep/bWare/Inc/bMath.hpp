@@ -15,6 +15,8 @@
 
 unsigned int bRandom(int range, unsigned int *seed);
 float bRandom(float range, unsigned int *seed);
+unsigned int bRandom(int range);
+float bRandom(float range);
 float bSin(unsigned short angle);
 float bSin(float angle);
 float bCos(unsigned short angle);
@@ -238,12 +240,11 @@ struct bVector3 {
     bVector3(float _x, float _y, float _z);
     bVector3(const bVector3 &v);
     bVector3 &operator*=(float scale);
+    bVector3 &operator/=(float inv_scale);
     bVector3 &operator+=(const bVector3 &v);
-    bVector3 operator+(const bVector3 &v);
+    bVector3 operator+(const bVector3 &v) const;
     bVector3 &operator=(const bVector3 &v);
-    bVector3 operator-(const bVector3 &v);
-
-    bVector3 &operator/=(float inv_scale) {}
+    bVector3 operator-(const bVector3 &v) const;
 
     int operator==(const bVector3 &v) {}
 
@@ -333,16 +334,21 @@ inline bVector3 &bVector3::operator*=(float scale) {
     return *this;
 }
 
+inline bVector3 &bVector3::operator/=(float inv_scale) {
+    bScale(this, this, 1.0f / inv_scale);
+    return *this;
+}
+
 inline bVector3 &bVector3::operator+=(const bVector3 &v) {
     bAdd(this, this, &v);
     return *this;
 }
 
-inline bVector3 bVector3::operator+(const bVector3 &v) {
+inline bVector3 bVector3::operator+(const bVector3 &v) const {
     return bAdd(*this, v);
 }
 
-inline bVector3 bVector3::operator-(const bVector3 &v) {
+inline bVector3 bVector3::operator-(const bVector3 &v) const {
     return bSub(*this, v);
 }
 
@@ -397,7 +403,11 @@ inline float bLength(const bVector3 &v) {
     return bLength(&v);
 }
 
-inline float bDistBetween(const bVector3 &v1, const bVector3 &v2) {}
+float bDistBetween(const bVector3 *v1, const bVector3 *v2);
+
+inline float bDistBetween(const bVector3 &v1, const bVector3 &v2) {
+    return bDistBetween(&v1, &v2);
+}
 
 inline bVector3 bScale(const bVector3 &v, float scale) {
     bVector3 dest;
