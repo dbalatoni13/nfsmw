@@ -6,11 +6,7 @@ on:
 
 jobs:
   build:
-    # This is a *private* build container.
-    # See docs/github_actions.md for more information.
-    container: ghcr.io/dbalatoni13/nfs-gc-build:main
-
-    runs-on: ubuntu-latest
+    runs-on: windows-2022
     strategy:
       fail-fast: false
       matrix:
@@ -29,14 +25,26 @@ jobs:
       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
     # Copy the original files to the workspace
+    # TODO this only supports GOWE69
     - name: Prepare
-      run: cp -R /orig .
-
+      shell: pwsh
+      env:
+        BUILD_REPO_TAG: "v1.0"
+        BUILD_REPO_AUTHOR: dbalatoni13
+        BUILD_REPO_NAME: nfs-gc-build
+      run: |
+        curl -L -H "Authorization: Bearer ${{ secrets.ORIG_FILES_TOKEN }}" `
+          "https://api.github.com/repos/${env:BUILD_REPO_AUTHOR}/${env:BUILD_REPO_NAME}/zipball/${env:BUILD_REPO_TAG}" `
+          --output orig.zip
+        Expand-Archive -Path orig.zip -DestinationPath .
+        $folders = Get-ChildItem -Directory | Where-Object { $_.Name -like "${env:BUILD_REPO_AUTHOR}-${env:BUILD_REPO_NAME}*" }
+        $folderName = $folders[0].Name
+        $path = Join-Path $folderName "orig/${{ matrix.version }}"
+        Copy-Item -Path $path -Destination orig -Recurse -Force
     # Build the project
     - name: Build
       run: |
-        python configure.py --map --version ${{ matrix.version }} \
-            --binutils /binutils --compilers /compilers
+        python configure.py --map --version ${{ matrix.version }}
         ninja all_source progress build/${{ matrix.version }}/report.json
 
     # Upload map files
