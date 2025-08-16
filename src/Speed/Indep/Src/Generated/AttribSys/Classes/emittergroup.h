@@ -7,7 +7,7 @@
 
 #include <cstddef>
 
-#include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 
@@ -34,19 +34,29 @@ struct emittergroup : Instance {
 
     ~emittergroup() {}
 
-    RefSpec &Emitters(unsigned int index) const {
+    const RefSpec &Emitters(unsigned int index) const {
         const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());
+        if (index < lp->_Array_Emitters.GetLength()) {
+            return lp->Emitters[index];
+        } else {
+            return *reinterpret_cast<const RefSpec *>(DefaultDataArea(sizeof(RefSpec)));
+        }
     }
 
     unsigned int Num_Emitters() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->_Array_Emitters.GetLength();
     }
 
-    UMath::Vector2 &IntensityRanges(unsigned int index) const {
+    const UMath::Vector2 &IntensityRanges(unsigned int index) const {
         const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());
+        if (index < lp->_Array_IntensityRanges.GetLength()) {
+            return lp->IntensityRanges[index];
+        } else {
+            return *reinterpret_cast<const UMath::Vector2 *>(DefaultDataArea(sizeof(UMath::Vector2)));
+        }
     }
 
-    unsigned int Num_IntensityRanges() {
+    unsigned int Num_IntensityRanges() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->_Array_IntensityRanges.GetLength();
     }
 

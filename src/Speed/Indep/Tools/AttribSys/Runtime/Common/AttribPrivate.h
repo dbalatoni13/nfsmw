@@ -10,7 +10,7 @@ namespace Attrib {
 
 class Private {
   public:
-    int GetLength();
+    int GetLength() const;
 
   private:
     unsigned char mData[8];

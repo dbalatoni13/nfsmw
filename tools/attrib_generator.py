@@ -12,7 +12,7 @@ FILE_PROLOGUE = """
 
 #include <cstddef>
 
-#include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 
@@ -55,6 +55,7 @@ def get_layout_struct_field(field):
     type_name = field["TypeName"]
     count = field["MaxCount"]
     offset = field["Offset"]
+    # TODO override because of the different alignment on GC
     size = field["Size"]
     is_array = False
 
@@ -81,9 +82,23 @@ def get_getter(field):
     out = ""
     field_name = field["Name"]
     type_name = field["TypeName"]
+    type = type_replacement.get(type_name, type_name)
 
     if "Array" in field["Flags"]:
-        pass  # TODO
+        out += f"""const {type} &{field_name}(unsigned int index) const {{
+            const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());
+            if (index < lp->_Array_{field_name}.GetLength()) {{
+            return lp->{field_name}[index];
+        }} else {{
+            return *reinterpret_cast<const {type} *>(DefaultDataArea(sizeof({type})));
+        }}
+        }}
+
+        unsigned int Num_{field_name}() const {{
+            return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->_Array_{field_name}.GetLength();
+        }}
+        
+        """
     else:
         if type_name == "EA::Reflection::Text":
             out += f"""const char*{field_name}() const {{
@@ -92,8 +107,7 @@ def get_getter(field):
 
 """
         else:
-            type = type_replacement.get(type_name, type_name)
-            out += f"""{type} &{field_name}() const {{
+            out += f"""const {type} &{field_name}() const {{
     return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->{field_name};
 }}
 

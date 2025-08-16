@@ -27,18 +27,24 @@ inline void Free(void *ptr, unsigned int bytes, const char *name) {
 }
 
 class RefSpec {
+    // total size: 0xC
+    unsigned int mClassKey;           // offset 0x0, size 0x4
+    unsigned int mCollectionKey;      // offset 0x4, size 0x4
+    const Collection *mCollectionPtr; // offset 0x8, size 0x4
+
   public:
+    void SetCollection(const Collection *collectionPtr);
+    const Class *GetClass() const;
+    const Collection *GetCollection() const;
+    const Collection *GetCollectionWithDefault() const;
+    void Clean() const;
+
     unsigned int GetClassKey() {
         return mClassKey;
     }
     unsigned int GetCollectionKey() {
         return mCollectionKey;
     }
-
-  private:
-    unsigned int mClassKey;
-    unsigned int mCollectionKey;
-    const Collection *mCollectionPtr;
 };
 
 struct Instance {
@@ -53,6 +59,10 @@ struct Instance {
 
     Instance(const struct Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner);
     ~Instance();
+    unsigned int GetClass() const;
+    unsigned int GetCollection() const;
+    unsigned int GetParent() const;
+    void SetParent(unsigned int parent);
     void *GetAttributePointer(unsigned int attribkey, unsigned int index);
 
     void *GetLayoutPointer() const {

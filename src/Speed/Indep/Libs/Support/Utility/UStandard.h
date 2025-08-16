@@ -1,5 +1,5 @@
-#ifndef SUPPORT_UTILITY_CONTAINER_H
-#define SUPPORT_UTILITY_CONTAINER_H
+#ifndef SUPPORT_UTILITY_USTANDARD_H
+#define SUPPORT_UTILITY_USTANDARD_H
 
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
@@ -30,17 +30,17 @@ struct _type_set {
 };
 
 namespace UTL {
-namespace Container {
+namespace Std {
+
 template <typename T, typename Tag> struct vector : public std::vector<T, UTL::Std::Allocator<T, Tag> > {};
-// template <typename Key, typename T, typename Tag> struct map : public std::map<Key, T, std::less<Key>, UTL::Std::Allocator<T, _type_vector> > {};
-// template <typename T, typename Tag> struct set : public std::set<T, std::less<T>, UTL::Std::Allocator<T, _type_set> > {};
+template <typename Key, typename T, typename Tag> struct map : public std::map<Key, T, std::less<Key>, UTL::Std::Allocator<T, Tag> > {};
+template <typename T, typename Tag> struct set : public std::set<T, std::less<T>, UTL::Std::Allocator<T, Tag> > {};
 
-// temporary
 // template <typename T, typename Tag> struct vector : public std::vector<T> {};
-template <typename Key, typename T, typename Tag> struct map : public std::map<Key, T> {};
-template <typename T, typename Tag> struct set : public std::set<T> {};
+// template <typename Key, typename T, typename Tag> struct map : public std::map<Key, T> {};
+// template <typename T, typename Tag> struct set : public std::set<T> {};
 
-}; // namespace Container
+}; // namespace Std
 }; // namespace UTL
 
 #endif

@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
+
 enum PlayMode {
     UNK0,
     UNK1,
@@ -17,14 +19,6 @@ struct GTimer {
     float mTotalTime; // offset 0x4, size 0x4
     bool mRunning;    // offset 0x8, size 0x1
 };
-struct Vector3 {
-    // total size: 0x10
-    float x;   // offset 0x0, size 0x4
-    float y;   // offset 0x4, size 0x4
-    float z;   // offset 0x8, size 0x4
-    float pad; // offset 0xC, size 0x4
-};
-//
 
 struct GRacerInfo {
     // total size: 0x1A8
@@ -68,9 +62,9 @@ struct GRacerInfo {
     struct GTimer mRaceTimer;          // offset 0x160, size 0xC
     struct GTimer mLapTimer;           // offset 0x16C, size 0xC
     struct GTimer mCheckTimer;         // offset 0x178, size 0xC
-    struct Vector3 mSavedPosition;     // offset 0x184, size 0xC
+    UMath::Vector3 mSavedPosition;     // offset 0x184, size 0xC
     float mSavedHeatLevel;             // offset 0x190, size 0x4
-    struct Vector3 mSavedDirection;    // offset 0x194, size 0xC
+    UMath::Vector3 mSavedDirection;    // offset 0x194, size 0xC
     float mSavedSpeed;                 // offset 0x1A0, size 0x4
     bool mDNF;                         // offset 0x1A4, size 0x1
 };

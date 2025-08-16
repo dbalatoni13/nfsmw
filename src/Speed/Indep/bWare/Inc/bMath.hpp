@@ -74,6 +74,10 @@ inline float bSqrt(float x) {
     return y0;
 }
 
+inline int bMin(int a, int b) {
+    return a > b ? b : a;
+}
+
 inline float bMin(float a, float b) {
     float c = a - b;
     float d;
@@ -129,6 +133,10 @@ inline float bFloor(float a) {
     return t;
 }
 
+inline int bClamp(int a, int MINIMUM, int MAXIMUM) {
+    return bMin(bMax(a, MINIMUM), MAXIMUM);
+}
+
 inline unsigned short bDegToAng(float degrees) {
     return static_cast<int>(degrees * 65536.0f) / 360;
 }
@@ -141,7 +149,9 @@ inline float bAngToRad(unsigned short angle) {}
 
 inline float bDegToRad(float degrees) {}
 
-inline float bAngToDeg(unsigned short angle) {}
+inline float bAngToDeg(unsigned short angle) {
+    return static_cast<unsigned int>(angle) * (65536.0f / 360.0f);
+}
 
 inline float bRadToDeg(float radians) {}
 
@@ -187,6 +197,7 @@ struct bVector2 {
 
 bVector2 *bNormalize(bVector2 *dest, const bVector2 *v);
 bVector2 *bNormalize(bVector2 *dest, const bVector2 *v, float length);
+bVector2 *bScaleAdd(bVector2 *dest, const bVector2 *v1, const bVector2 *v2, float scale);
 
 inline bVector2 *bFill(bVector2 *dest, float x, float y) {
     dest->x = x;
@@ -258,6 +269,7 @@ struct bVector3 {
 };
 
 bVector3 *bNormalize(bVector3 *dest, const bVector3 *v);
+bVector3 *bScaleAdd(bVector3 *dest, const bVector3 *v1, const bVector3 *v2, float scale);
 
 inline bVector3 *bFill(bVector3 *dest, float x, float y, float z) {
     dest->x = x;
@@ -513,6 +525,7 @@ struct bVector4 {
 };
 
 bVector4 *bNormalize(bVector4 *dest, const bVector4 *v);
+bVector4 *bScaleAdd(bVector4 *dest, const bVector4 *v1, const bVector4 *v2, float scale);
 
 inline bVector4 *bFill(bVector4 *dest, float x, float y, float z, float w) {
     dest->x = x;

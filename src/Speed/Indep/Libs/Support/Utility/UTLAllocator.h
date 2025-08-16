@@ -20,16 +20,10 @@ template <typename T, typename Tag> struct Allocator {
     };
 
     Allocator() {}
-    template <typename U, typename V> Allocator(const Allocator<U, Tag> &) {}
+    ~Allocator() {}
+    template <typename U> Allocator(const Allocator<U, Tag> &) {}
 
     pointer allocate(std::size_t n) {
-        if (n != 0) {
-            return reinterpret_cast<pointer>(gFastMem.Alloc(n * sizeof(T), NULL));
-        }
-        return nullptr;
-    }
-
-    pointer allocate(std::size_t n, std::size_t, std::size_t) {
         if (n != 0) {
             return reinterpret_cast<pointer>(gFastMem.Alloc(n * sizeof(T), NULL));
         }

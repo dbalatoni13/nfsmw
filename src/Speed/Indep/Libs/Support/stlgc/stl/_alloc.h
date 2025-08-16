@@ -496,7 +496,9 @@ template <class _Value, class _Tp, class _MaybeReboundAlloc> class _STLP_alloc_p
     _Value _M_data;
     // construction/destruction
     inline _STLP_alloc_proxy(const _Self &__x) : _MaybeReboundAlloc(__x), _M_data(__x._M_data) {}
-    inline _STLP_alloc_proxy(const _MaybeReboundAlloc &__a, _Value __p) : _MaybeReboundAlloc(__a), _M_data(__p) {}
+    // SPEED TODO did they really modify this?
+    // inline _STLP_alloc_proxy(const _MaybeReboundAlloc &__a, _Value __p) : _MaybeReboundAlloc(__a), _M_data(__p) {}
+    inline _STLP_alloc_proxy(const _MaybeReboundAlloc &__a, _Value __p) : _MaybeReboundAlloc(), _M_data(__p) {}
     inline _Self &operator=(const _Self &__x) {
         _M_data = __x._M_data;
         return *this;

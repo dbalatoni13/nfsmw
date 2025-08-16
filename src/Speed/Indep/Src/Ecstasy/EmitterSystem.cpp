@@ -1,5 +1,6 @@
 #include "EmitterSystem.h"
 #include "EcstasyE.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UVector.h"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/emitterdata.h"
@@ -11,7 +12,6 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "eMath.hpp"
-#include "stl/_algo.h"
 
 #include <algorithm>
 
@@ -66,15 +66,6 @@ unsigned int EmitterGroup::GetNumParticles() {
     }
     return cnt;
 }
-
-// TODO move?
-enum EffectParticleConstraint {
-    CONSTRAIN_PARTICLE_CAMERA = 8,
-    CONSTRAIN_PARTICLE_YZ_AXIS = 3,
-    CONSTRAIN_PARTICLE_XZ_AXIS = 5,
-    CONSTRAIN_PARTICLE_XY_AXIS = 6,
-    CONSTRAIN_PARTICLE_NONE = 0,
-};
 
 bool GetConstraintBasis(EffectParticleConstraint constraint, bVector4 &x_basis, bVector4 &y_basis, unsigned short &particle_angle,
                         bMatrix4 *world_view) {
@@ -352,7 +343,7 @@ void EmitterDataAttribWrapper::CalculateBases() {
     float key2 = this->mStaticData.KeyPositions().z / 3;
     float key3 = this->mStaticData.KeyPositions().w / 3;
 
-    bVector4 partSize(*reinterpret_cast<bVector4 *>(&this->mStaticData.Size()));
+    bVector4 partSize(this->mStaticData.Size());
     partSize *= 0.5f;
     extra_control_matrix.v0.x = partSize.x;
     extra_control_matrix.v1.x = partSize.y;
@@ -501,6 +492,24 @@ unsigned short Emitter::CalcParticleListIndex() {
     return list_index + 2;
 }
 
+void GetAnimatedUVs(EffectParticleAnimation texture_layout_type, int frame, unsigned int *uvS, unsigned int *uvE) {
+    if (texture_layout_type != ANIMATE_PARTICLE_NONE) {
+        float startu = (*uvS >> 16) / 65535.0f;
+        float startv = (*uvS & 0xffff) / 65535.0f;
+        float endu = (*uvE >> 16) / 65535.0f;
+        float endv = (*uvE & 0xffff) / 65535.0f;
+        // TODO some names might be wrong
+        int square_width;
+        int num_sub_squares = frame / texture_layout_type;
+        float xdiff = endu - startu;
+        float fsquarewidth = xdiff / texture_layout_type;
+        int i = frame - num_sub_squares * texture_layout_type;
+        int j = num_sub_squares;
+        *uvS = (int)((i * fsquarewidth + startu) * 65535.0f) << 16 | (int)((j * fsquarewidth + startv) * 65535.0f);
+        *uvE = (int)(((i + 1) * fsquarewidth + startu) * 65535.0f) << 16 | (int)(((j + 1) * fsquarewidth + startv) * 65535.0f);
+    }
+}
+
 void Emitter::GetStandardUVs(unsigned int *mUVStart, unsigned int *mUVEnd) {
     *mUVStart = 0;
     *mUVEnd = 0xffffffff;
@@ -535,7 +544,47 @@ EmitterGroup::~EmitterGroup() {
     }
 }
 
-bool EmitterGroup::SetEmitters(unsigned int creation_context_flags) {}
+bool EmitterGroup::SetEmitters(unsigned int creation_context_flags) {
+    const Attrib::Gen::emittergroup &grpatr = this->GetAttribs();
+    if (grpatr.IsValid()) {
+        int num_emitters = grpatr.Num_Emitters();
+        int num_ranges = grpatr.Num_IntensityRanges();
+        bool setRanges = num_ranges == num_emitters;
+        if (num_emitters == 0) {
+            return false;
+        }
+        for (int i = 0; i < num_emitters; i++) {
+            const Attrib::Collection *emspec = grpatr.Emitters(i).GetCollection();
+            if (emspec) {
+                Attrib::Gen::emitterdata atr(emspec, 0, nullptr);
+                Emitter *emitter = new Emitter(emspec, this);
+                if (!emitter) {
+                    static bool warn_once = false;
+                    if (!warn_once) {
+                        warn_once = true;
+                    }
+                    return false;
+                }
+                emitter->SetLocalWorld(&this->mLocalWorld);
+                if (setRanges) {
+                    UMath::Vector2 range = grpatr.IntensityRanges(i);
+                    if (range.x == range.y || range.x > range.y) {
+                        range.x = 0.0f;
+                        range.y = 1.0f;
+                    }
+                    emitter->SetIntensityRange(range.x, range.y);
+                } else {
+                    emitter->SetIntensityRange(0.0f, 999999.0f);
+                }
+                this->mEmitters.AddTail(emitter);
+                this->mNumEmitters++;
+            }
+        }
+        this->mFarClip = grpatr.FarClip();
+        return true;
+    }
+    return false;
+}
 
 void EmitterGroup::UnloadEmitters(bool kill_particles) {
     while (!mEmitters.IsEmpty()) {
@@ -623,17 +672,36 @@ bool EmitterGroup::MakeOneShot(bool force_all) {
     } while (true);
 }
 
-unsigned short *EmitterLibraryHeader::GetLibraryNumTriggers(int i) {}
+// UNSOLVED
+unsigned short *EmitterLibraryHeader::GetLibraryNumTriggers(int i) {
+    EmitterLibrary *plib = reinterpret_cast<EmitterLibrary *>(&this[1]);
+    EmitterLibrary *lib = plib;
+
+    if (i == 0) {
+        return &plib->mNumTriggers;
+    }
+    int ix;
+    for (ix = 0; ix < i; i++) {
+        unsigned short num_trigs = lib->mNumTriggers;
+        WorldFXTrigger *trigs = reinterpret_cast<WorldFXTrigger *>(&lib[1]);
+        lib = reinterpret_cast<EmitterLibrary *>(&trigs[num_trigs]);
+    }
+    if (ix == i) {
+        return &lib->mNumTriggers;
+    }
+    return nullptr;
+}
 
 // UNSOLVED
 EmitterLibrary *EmitterLibraryHeader::GetLibrary(int i) {
-    EmitterLibrary *lib = reinterpret_cast<EmitterLibrary *>(&this[1]);
+    EmitterLibrary *plib = reinterpret_cast<EmitterLibrary *>(&this[1]);
+    EmitterLibrary *lib = plib;
 
     if (i == 0) {
-        return lib;
+        return plib;
     }
     int ix;
-    for (ix = 0; ix < i;) {
+    for (ix = 0; ix < i; i++) {
         unsigned short num_trigs = lib->mNumTriggers;
         WorldFXTrigger *trigs = reinterpret_cast<WorldFXTrigger *>(&lib[1]);
         lib = reinterpret_cast<EmitterLibrary *>(&trigs[num_trigs]);
@@ -668,9 +736,9 @@ void EmitterLibraryHeader::EndianSwap() {
     this->EndianSwapped = true;
 }
 
-// UNSOLVED
+// UNSOLVED (lazy)
 EmitterParticle *EmitterSystem::GetNewParticle(Emitter *spawning_emitter) {
-    unsigned short uVar1;
+    unsigned short num_emitters;
     bool done;
     bool bVar3;
     unsigned int uVar4;
@@ -728,10 +796,10 @@ void EmitterSystem::KillParticle(Emitter *em, EmitterParticle *particle) {
     delete particle;
 }
 
-bool _EnableParticleSystem;
+bool EnableParticleSystem;
 
 EmitterGroup *EmitterSystem::CreateEmitterGroup(const Attrib::StringKey &group_name, unsigned int creation_context_flags) {
-    if (!_EnableParticleSystem) {
+    if (!EnableParticleSystem) {
         return nullptr;
     }
     // TODO emittergroup
@@ -744,7 +812,7 @@ EmitterGroup *EmitterSystem::CreateEmitterGroup(const Attrib::StringKey &group_n
 }
 
 EmitterGroup *EmitterSystem::CreateEmitterGroup(const unsigned int &group_key, unsigned int creation_context_flags) {
-    if (!_EnableParticleSystem) {
+    if (!EnableParticleSystem) {
         return nullptr;
     }
     // TODO emittergroup
@@ -754,6 +822,95 @@ EmitterGroup *EmitterSystem::CreateEmitterGroup(const unsigned int &group_key, u
     }
 
     return nullptr;
+}
+
+// UNSOLVED
+EmitterGroup *EmitterSystem::CreateEmitterGroup(const Attrib::Collection *group_spec, unsigned int creation_context_flags) {
+    int ThisIsNISCondition;
+    EmitterGroup *grp;
+
+    if (!EnableParticleSystem) {
+        return nullptr;
+    } else {
+        if (group_spec) {
+            if (IsAShittyEffect(Attrib::GetCollectionKey(group_spec))) {
+                return nullptr;
+            }
+        }
+        grp = nullptr;
+        ThisIsNISCondition = IsInNIS;
+        if (!group_spec) {
+            return nullptr;
+        }
+        Attrib::Gen::emittergroup atr(group_spec, 0, nullptr);
+        if (atr.GetCollection() != 0xeec2271a && atr.GetCollection() != 0) {
+            bool all_good = true;
+            int numEmitters = atr.Num_Emitters();
+            for (int i = 0; all_good && i < numEmitters; i++) {
+                const struct Attrib::Collection *emspec = atr.Emitters(i).GetCollection();
+                if (!emspec) {
+                    all_good = false;
+                }
+            }
+            if (!all_good) {
+                return nullptr;
+            }
+            static bool warn_once = false;
+            bool is_full = false;
+            if ((this->mNumEmitters + numEmitters > 500) || (this->mNumEmitterGroups > 199)) {
+                is_full = true;
+            }
+            bool high_priority = creation_context_flags & 0x40000;
+            if (is_full && high_priority) {
+                int need_emitters = this->mNumEmitters + numEmitters - 500;
+                int need_groups = 1;
+                bool done = false;
+                for (EmitterGroup *grp = this->mEmitterGroups.GetHead(); !done && grp != this->mEmitterGroups.EndOfList();) {
+                    EmitterGroup *grpnext = grp->GetNext();
+                    if ((grp->GetFlags() & 0x8000000) && !(grp->GetFlags() & 0x40000) && !(grp->GetFlags() & 0x4000000)) {
+                        need_groups--;
+                        need_emitters -= grp->CurrentNumEmitters();
+                        delete grp;
+                        if ((need_emitters < 1) && (need_groups < 1)) {
+                            done = true;
+                        }
+                    }
+                    grp = grpnext;
+                }
+                if (!done) {
+                    for (EmitterGroup *grp = this->mEmitterGroups.GetHead(); !done && grp != this->mEmitterGroups.EndOfList();) {
+                        EmitterGroup *grpnext = grp->GetNext();
+                        if (!(grp->GetFlags() & 0x40000)) {
+                            done = true;
+                            delete grp;
+                        }
+                        grp = grpnext;
+                    }
+                }
+            }
+            if (ThisIsNISCondition || (this->mNumEmitters + numEmitters < 501 && (this->mNumEmitterGroups < 200))) {
+                grp = new EmitterGroup(group_spec, creation_context_flags);
+                if (grp) {
+                    grp->Enable();
+                    bVector3 bla(0.0f, 0.0f, 0.0f);
+                    grp->SetInheritVelocity(&bla);
+                    EmitterLibrary *lib = this->FindLibrary(atr.GetCollection());
+                    if (lib) {
+                        grp->SetLocalWorld(&lib->LocalWorld);
+                    }
+                    this->mNumEmitters += numEmitters;
+                    this->mNumEmitterGroups++;
+                    this->mEmitterGroups.AddTail(grp);
+                }
+            }
+            // TODO should be if
+            else if (!warn_once) {
+                warn_once = true;
+                return nullptr;
+            }
+        }
+    }
+    return grp;
 }
 
 void EmitterSystem::AddEmitterGroup(EmitterGroup *group) {
@@ -790,6 +947,141 @@ void EmitterSystem::UpdateInterestPoints() {
     }
 }
 
+void EmitterSystem::UpdateParticles(float dt) {
+    if (!EnableParticleSystem || this->mTotalNumParticles == 0) {
+        return;
+    }
+    int time_step = static_cast<int>(dt * 1024.0f);
+    float ed_drag = 0.0f;
+    float ed_gravity = 0.0f;
+    float ed_life = 0.0f;
+    const bMatrix4 *ExtraBasis = nullptr;
+    const bMatrix4 *ColourBasis = nullptr;
+    bool texture_animation = false;
+    EffectParticleAnimation anim_type = ANIMATE_PARTICLE_NONE;
+    float fAnimFPS = 0.0f;
+    const EmitterDataAttribWrapper *last_emitter_data = nullptr;
+
+    for (EmitterGroup *grp = this->mEmitterGroups.GetHead(); grp != this->mEmitterGroups.EndOfList(); grp = grp->GetNext()) {
+        bTList<Emitter> &emitters = grp->GetEmitters();
+        if (!this->IsCloseEnough(grp, 0, 0.7f)) {
+            for (Emitter *em = emitters.GetHead(); em != emitters.EndOfList(); em = em->GetNext()) {
+                gEmitterSystem.KillParticlesFromThisEmitter(em);
+            }
+        } else {
+            for (Emitter *em = emitters.GetHead(); em != emitters.EndOfList(); em = em->GetNext()) {
+                bTList<EmitterParticle> &particles = em->GetParticles();
+                if (particles.IsEmpty()) {
+                    continue;
+                }
+                EmitterDataAttribWrapper *this_emmiter_data = em->GetEmitterData();
+                const Attrib::Gen::emitterdata *this_emitter_data_atr = &this_emmiter_data->GetAttributes();
+                bool emitter_data_switch = this_emmiter_data != last_emitter_data;
+                if (emitter_data_switch) {
+                    ed_drag = this_emitter_data_atr->Drag();
+                    ed_gravity = this_emitter_data_atr->Gravity();
+                    texture_animation = true;
+                    ed_life = this_emitter_data_atr->Life();
+                    ExtraBasis = this_emmiter_data->GetExtraBasis();
+                    ColourBasis = this_emmiter_data->GetColourBasis();
+                    const ParticleAnimationInfo &animinfo = this_emitter_data_atr->TextureAnimation();
+                    if (animinfo.AnimType == ANIMATE_PARTICLE_NONE) {
+                        texture_animation = false;
+                    }
+                    anim_type = animinfo.AnimType;
+                    fAnimFPS = animinfo.FPS;
+                    last_emitter_data = this_emmiter_data;
+                }
+                for (EmitterParticle *particle = particles.GetHead(); particle != particles.EndOfList(); particle = particle->GetNext()) {
+                    bVector3 pvel;
+                    bVector3 pacc;
+                    bVector3 ppos;
+                    UMath::Vector4 t;
+                    UMath::Vector4 extra_params;
+                    UMath::Vector4 col;
+                    if (time_step < particle->mLife) {
+                        if (texture_animation) {
+                            // TODO
+                            // const unsigned int i_num_frames;
+                            const float f_num_frames = dt * fAnimFPS;
+                            const float f_max_frame_index = anim_type * anim_type;
+                            unsigned int frame_index = (int)((f_num_frames / f_max_frame_index) * 65535.0f);
+                            unsigned int cur_frame = particle->mAnimFrame;
+                            cur_frame += frame_index;
+                            unsigned int delta_frames = cur_frame + frame_index;
+                            if (delta_frames > 65535) {
+                                cur_frame -= 65535;
+                            }
+                            frame_index = (int)((float)((unsigned short)cur_frame) * (f_max_frame_index - 1.0f) / 65535.0f);
+                            em->GetStandardUVs(&particle->mUVStart, &particle->mUVEnd);
+                            GetAnimatedUVs(anim_type, frame_index, &particle->mUVStart, &particle->mUVEnd);
+                            particle->mAnimFrame = cur_frame;
+                        }
+                        ppos.x = particle->mPosX;
+                        ppos.y = particle->mPosY;
+                        ppos.z = particle->mPosZ;
+                        ExpandVector(&particle->mVel, &pvel);
+                        ExpandVector(&particle->mAcc, &pacc);
+                        if (ed_drag > 0.0f) {
+                            float vLen = bLength(&pvel);
+                            float testDrag = -dt * ed_drag * vLen;
+                            float dragC; // TODO
+                            bScaleAdd(&pvel, &pvel, &pvel, bMax(-1.0f, testDrag));
+                        }
+                        if ((ed_gravity < 0.0f) || (ed_gravity > 0.0f)) {
+                            pvel.z -= ed_gravity * dt;
+                        } else {
+                            bScaleAdd(&pvel, &pvel, &pacc, dt);
+                        }
+                        bScaleAdd(&ppos, &ppos, &pvel, dt);
+                        particle->mPosX = ppos.x;
+                        particle->mPosY = ppos.y;
+                        particle->mPosZ = ppos.z;
+                        CompressVector(&pvel, &particle->mVel);
+                        CompressVector(&pacc, &particle->mAcc);
+                        particle->mLife -= time_step;
+                        float tlife = static_cast<int>(particle->mLife);
+                        t.w = 1.0f;
+                        t.z = 1.0f - tlife / (ed_life * 1024.0f);
+                        t.y = t.z * t.z;
+                        t.x = t.z * t.y;
+                        RotateTranslate(t, *reinterpret_cast<const UMath::Matrix4 *>(ExtraBasis), extra_params);
+                        particle->mSize = extra_params.x;
+                        unsigned short pangle = static_cast<unsigned int>(particle->mInitialAngle) * 257.0f;
+                        unsigned short adelta = extra_params.y / 255 * static_cast<float>(particle->mRotOffset) + extra_params.y;
+                        if (pangle % 2 == 0) {
+                            pangle += adelta;
+                        } else {
+                            pangle -= adelta;
+                        }
+                        RotateTranslate(t, *reinterpret_cast<const UMath::Matrix4 *>(ColourBasis), col);
+                        particle->mAngle = pangle;
+                        Scale(col, 255.0f, col);
+                        unsigned int r = bClamp(static_cast<int>(col.x), 0, 255);
+                        unsigned int g = bClamp(static_cast<int>(col.y), 0, 255);
+                        unsigned int b = bClamp(static_cast<int>(col.z), 0, 255);
+                        unsigned int a = bClamp(static_cast<int>(col.w), 0, 255);
+                        particle->mColour = r << 24 | g << 16 | b << 8 | a;
+                        // unsigned int alpha_value_to_kill_at = em->GetAttributes().AlphaToKillAt();
+                        if (!em->GetAttributes().NoKillAtAlpha() && (em->GetAttributes().AlphaToKillAt() > a)) {
+                            // EmitterParticle *to_kill = particle;
+                            // particle = particle->GetNext();
+                            // this->KillParticle(em, to_kill);
+                            // TODO according to the dwarf they wrote the same thing twice
+                            // but if not, gotta change the branching
+                            continue;
+                        }
+                    } else {
+                        EmitterParticle *to_kill = particle;
+                        particle = particle->GetNext();
+                        this->KillParticle(em, to_kill);
+                    }
+                }
+            }
+        }
+    }
+}
+
 EmitterLibrary *EmitterSystem::FindLibrary(unsigned int key) {
     LibEntry e;
     e.Key = key;
@@ -801,7 +1093,7 @@ EmitterLibrary *EmitterSystem::FindLibrary(unsigned int key) {
     return nullptr;
 }
 
-// UNSOLVED allocator has to be replaced
+// UNSOLVED diff in Allocator::allocate
 void EmitterSystem::AddLibrary(EmitterLibrary *lib) {
     LibEntry e;
     e.Key = lib->GroupKey;
@@ -823,6 +1115,7 @@ void EmitterSystem::RemoveLibrary(EmitterLibrary *lib) {
     }
 }
 
+// UNSOLVED Allocator::allocate or _STLP_alloc_proxy's constructor causes the diff
 EmitterSystem::EmitterSystem() {
     this->mNumEmitterGroups = 0;
     this->mNumEmitters = 0;
@@ -832,9 +1125,99 @@ EmitterSystem::EmitterSystem() {
     bMemSet(this->mParticleListCounts, 0, sizeof(this->mParticleListCounts));
 }
 
+// UNSOLVED
+void PlatRotateScaleParticle(EmitterParticle *particle, UMath::Vector3 &rightVec, UMath::Vector3 &upVec, UMath::Vector3 &fwdVec,
+                             UMath::Vector3 &newUpVec, UMath::Vector3 &newRightVec) {
+    float angle = bAngToDeg(particle->mAngle);
+
+    UMath::Matrix4 rotMat;
+    BuildRotate(rotMat, angle, fwdVec.x, fwdVec.y, fwdVec.z);
+    RotateTranslate(upVec, rotMat, newUpVec);
+    RotateTranslate(rightVec, rotMat, newRightVec);
+    newRightVec = newRightVec * particle->mSize;
+    newUpVec = newUpVec * particle->mSize;
+}
+
 void afxGetWorldViewMatrix(eView *view, bMatrix4 *world_view) {
     Camera *camera = view->GetCamera();
     bCopy(world_view, camera->GetCameraMatrix());
+}
+
+// TODO move
+void PlatGetViewVectors(eView *view, UMath::Vector3 &rightVec, UMath::Vector3 &upVec, UMath::Vector3 &fwdVec);
+bool PlatStartParticleRender(eView *view, TextureInfo *mTextureInfo, unsigned int mNumParticles);
+void PlatEndParticleRender();
+void PlatAddParticle(const EmitterParticle &particle, const UMath::Vector3 &upVec, const UMath::Vector3 &rightVec, unsigned int hack_flags,
+                     bVector4 *x_constrain_basis, bVector4 *y_constrain_basis);
+void DrawXenonEmitters(eView *view);
+
+// UNSOLVED
+void EmitterSystem::Render(eView *view) {
+    if (!EnableParticleSystem) {
+        return;
+    }
+    int num_textures;
+    int total_num_textures;
+    if (this->mTotalNumParticles > 0) {
+        bMatrix4 world_view;
+        num_textures = 0;
+        afxGetWorldViewMatrix(view, &world_view);
+        for (EmitterGroup *grp = this->mEmitterGroups.GetHead(); grp != this->mEmitterGroups.EndOfList(); grp = grp->GetNext()) {
+            bTList<Emitter> &elist = grp->GetEmitters();
+            for (Emitter *em = elist.GetHead(); em != elist.EndOfList(); em = em->GetNext()) {
+                bTList<EmitterParticle> *plist = &em->GetParticles();
+                if (plist->IsEmpty()) {
+                    continue;
+                }
+                num_textures++;
+                unsigned int texture_hash = em->GetAttributes().Texture().mEnum;
+                this->mCurrentTexture = GetTextureInfo(texture_hash, 1, 0);
+                if (!this->mCurrentTexture) {
+                    continue;
+                }
+                unsigned int sprite_hack_flags = 0;
+                UMath::Vector3 rightVec;
+                UMath::Vector3 upVec;
+                UMath::Vector3 fwdVec;
+                UMath::Vector3 newUpVec;
+                UMath::Vector3 newRightVec;
+                PlatGetViewVectors(view, rightVec, upVec, fwdVec);
+                bool submitParticles = PlatStartParticleRender(view, this->mCurrentTexture, em->GetNumParticles());
+                if (submitParticles) {
+                    EmitterDataAttribWrapper *last_emitter_data_atr = nullptr;
+                    for (EmitterParticle *particle = plist->GetHead(); particle != plist->EndOfList(); particle = particle->GetNext()) {
+                        EmitterDataAttribWrapper *this_emitter_data = em->GetEmitterData();
+                        const Attrib::Gen::emitterdata *this_emitter_data_atr = &this_emitter_data->GetAttributes();
+                        bool emitter_data_switch = this_emitter_data != last_emitter_data_atr;
+                        if (emitter_data_switch) {
+                            last_emitter_data_atr = this_emitter_data;
+                        }
+                        const EffectParticleConstraint &constraint = this_emitter_data_atr->AxisConstraint();
+                        bool axis_constrained = constraint != CONSTRAIN_PARTICLE_NONE;
+                        bVector4 xbasis;
+                        bVector4 ybasis;
+                        if (axis_constrained) {
+                            GetConstraintBasis(constraint, xbasis, ybasis, particle->mAngle, &world_view);
+                            bVector4 vposition(particle->mPosX, particle->mPosY, particle->mPosZ, 1.0f);
+                            eMulVector(&vposition, &world_view, &vposition);
+                            float world_size = particle->mSize;
+                            sprite_hack_flags = 2;
+                            xbasis *= world_size;
+                            ybasis *= world_size;
+                        }
+                        PlatRotateScaleParticle(particle, rightVec, upVec, fwdVec, newUpVec, newRightVec);
+                        PlatAddParticle(*particle, newRightVec, newUpVec, sprite_hack_flags, axis_constrained ? &xbasis : nullptr,
+                                        axis_constrained ? &ybasis : nullptr);
+                    }
+                }
+                PlatEndParticleRender();
+            }
+        }
+        total_num_textures = num_textures;
+        SetParticleSystemStats(this->mTotalNumParticles, 0x400, total_num_textures, GetNumParticleTextures(), gEmitterSystem.GetNumEmitters(), 500,
+                               gEmitterSystem.GetNumEmitterGroups(), 200);
+    }
+    DrawXenonEmitters(view);
 }
 
 void EmitterSystem::Init() {
@@ -843,9 +1226,27 @@ void EmitterSystem::Init() {
     InitEmitterGroupSlotPool();
 }
 
-EmitterDataAttribWrapper *EmitterSystem::GetEmitterData(const Attrib::Collection *spec) {}
+EmitterDataAttribWrapper *EmitterSystem::GetEmitterData(const Attrib::Collection *spec) {
+    unsigned int key = Attrib::GetCollectionKey(spec);
+    std::map<unsigned int, EmitterDataAttribWrapper *>::iterator iter = this->mEmitterDataMap.find(key);
+    if (iter != this->mEmitterDataMap.end()) {
+        return iter->second;
+    }
+    EmitterDataAttribWrapper *ddata = new EmitterDataAttribWrapper(spec);
+    this->mEmitterDataMap[key] = ddata;
+    return ddata;
+}
 
-EmitterGroupAttribWrapper *EmitterSystem::GetEmitterGroup(const Attrib::Collection *spec) {}
+EmitterGroupAttribWrapper *EmitterSystem::GetEmitterGroup(const Attrib::Collection *spec) {
+    unsigned int key = Attrib::GetCollectionKey(spec);
+    std::map<unsigned int, EmitterGroupAttribWrapper *>::iterator iter = this->mEmitterGroupMap.find(key);
+    if (iter != this->mEmitterGroupMap.end()) {
+        return iter->second;
+    }
+    EmitterGroupAttribWrapper *ddata = new EmitterGroupAttribWrapper(spec);
+    this->mEmitterGroupMap[key] = ddata;
+    return ddata;
+}
 
 bool EmitterSystem::IsCloseEnough(const bVector3 *group_pos, float farclip, int frustrum, float cos_angle_fov) const {
     const bVector3 *group_position = group_pos;
@@ -904,6 +1305,58 @@ void UpdateTriggers() {
             trig->mState = 1;
         }
     }
+}
+
+int GetEmitterGroupsToTrigger(bVector3 &pos, EmitterLibrary **lib_buffer_out) {
+    int ix = 0;
+    int num_ret = 0;
+    bTList<WorldFXTrigger> &trigger_list = gEmitterSystem.GetTriggers();
+    for (WorldFXTrigger *trig = trigger_list.GetHead(); trig != trigger_list.EndOfList(); trig = trig->GetNext()) {
+        EmitterLibrary *lib = trig->mLib;
+        bool actually_trigger = false;
+        if (trig->mState == 1) {
+            float event_x = trig->mWorldPos.x;
+            float event_y = trig->mWorldPos.y;
+            float event_z = trig->mWorldPos.z;
+            float dx = bAbs(pos.x - event_x);
+            float dy = bAbs(pos.y - event_y);
+            float dz = bAbs(pos.z - event_z);
+            float r2 = trig->mTriggerRadius * trig->mTriggerRadius;
+            float dist2 = dx * dx + dy * dy + dz * dz;
+            // TODO magic numbers
+            if (dist2 < r2) {
+                bool last_was_intersecting = trig->mFlags & 1;
+                if (!last_was_intersecting) {
+                    if (trig->mProbability != 0) {
+                        if (trig->mProbability == 0xffff) {
+                            actually_trigger = true;
+                        } else {
+                            static unsigned int random_seed;
+                            unsigned int rand_value = bRandom(0xffff, &random_seed);
+                            if (rand_value > trig->mProbability) {
+                                actually_trigger = true;
+                                trig->mFlags |= 2;
+                            } else {
+                                trig->mFlags &= ~2;
+                            }
+                        }
+                    }
+                    if (actually_trigger) {
+                        trig->mState = 2;
+                    }
+                    trig->mFlags |= 1;
+                }
+            } else {
+                trig->mFlags &= ~(1 | 2);
+            }
+        }
+        if (actually_trigger) {
+            num_ret++;
+            lib_buffer_out[ix] = lib;
+            ix++;
+        }
+    }
+    return num_ret;
 }
 
 int EmitterSystem::Loader(bChunk *bchunk) {
@@ -1057,7 +1510,7 @@ void EmitterGroup::DeleteEmitters() {
 void UpdateXenonEmitters(float dt);
 
 void EmitterSystem::Update(float dt) {
-    if (!_EnableParticleSystem) {
+    if (!EnableParticleSystem) {
         return;
     }
     this->ServiceWorldEffects();
@@ -1088,7 +1541,7 @@ void EmitterSystem::Update(float dt) {
 }
 
 void EmitterGroup::Update(float dt) {
-    if (!_EnableParticleSystem || !this->IsEnabled()) {
+    if (!EnableParticleSystem || !this->IsEnabled()) {
         return;
     }
     bool closeEnough2spawn = gEmitterSystem.IsCloseEnough(this, !(this->GetFlags() & 0x40000), 0.7f);
@@ -1122,7 +1575,7 @@ void EmitterGroup::Update(float dt) {
 bool EmitterControl::Update(float dt, Emitter *em, float &rollover_time) {
     bool will_require_spawn;
 
-    if (!_EnableParticleSystem || !em->IsEnabled()) {
+    if (!EnableParticleSystem || !em->IsEnabled()) {
         return false;
     }
     rollover_time = 0.0f;
@@ -1237,7 +1690,7 @@ bool EmitterControl::Update(float dt, Emitter *em, float &rollover_time) {
 }
 
 bool Emitter::Update(float dt, float &rollover_time) {
-    if (!_EnableParticleSystem || !this->IsEnabled()) {
+    if (!EnableParticleSystem || !this->IsEnabled()) {
         return false;
     }
     return this->mControl.Update(dt, this, rollover_time);

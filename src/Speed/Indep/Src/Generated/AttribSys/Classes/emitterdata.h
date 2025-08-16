@@ -7,11 +7,8 @@
 
 #include <cstddef>
 
-#include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
-
-namespace Attrib {
-namespace Gen {
 
 // TODO where to?
 enum EffectParticleAnimation {
@@ -80,8 +77,8 @@ struct ParticleAnimationInfo {
 
 struct ParticleTextureRecord {
     // total size: 0x8
-    enum eTEG_ParticleTextures mEnum; // offset 0x0, size 0x4
-    unsigned int mIndex;              // offset 0x4, size 0x4
+    eTEG_ParticleTextures mEnum; // offset 0x0, size 0x4
+    unsigned int mIndex;         // offset 0x4, size 0x4
 };
 
 enum EffectParticleConstraint {
@@ -91,6 +88,9 @@ enum EffectParticleConstraint {
     CONSTRAIN_PARTICLE_XY_AXIS = 6,
     CONSTRAIN_PARTICLE_NONE = 0,
 };
+
+namespace Attrib {
+namespace Gen {
 
 struct emitterdata : Instance {
     struct _LayoutStruct {
@@ -150,47 +150,47 @@ struct emitterdata : Instance {
 
     ~emitterdata() {}
 
-    UMath::Vector4 &VelocityStart() const {
+    const UMath::Vector4 &VelocityStart() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->VelocityStart;
     }
 
-    UMath::Vector4 &AccelDelta() const {
+    const UMath::Vector4 &AccelDelta() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->AccelDelta;
     }
 
-    UMath::Vector4 &RelativeAngle() const {
+    const UMath::Vector4 &RelativeAngle() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->RelativeAngle;
     }
 
-    UMath::Vector4 &VelocityDelta() const {
+    const UMath::Vector4 &VelocityDelta() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->VelocityDelta;
     }
 
-    UMath::Vector4 &Size() const {
+    const UMath::Vector4 &Size() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Size;
     }
 
-    UMath::Vector4 &KeyPositions() const {
+    const UMath::Vector4 &KeyPositions() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->KeyPositions;
     }
 
-    UMath::Vector4 &VolumeExtent() const {
+    const UMath::Vector4 &VolumeExtent() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->VolumeExtent;
     }
 
-    UMath::Vector4 &AccelStart() const {
+    const UMath::Vector4 &AccelStart() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->AccelStart;
     }
 
-    UMath::Vector4 &VolumeCenter() const {
+    const UMath::Vector4 &VolumeCenter() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->VolumeCenter;
     }
 
-    ParticleAnimationInfo &TextureAnimation() const {
+    const ParticleAnimationInfo &TextureAnimation() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->TextureAnimation;
     }
 
-    ParticleTextureRecord &Texture() const {
+    const ParticleTextureRecord &Texture() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Texture;
     }
 
@@ -198,131 +198,131 @@ struct emitterdata : Instance {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->CollectionName;
     }
 
-    float &InitialAngleRange() const {
+    const float &InitialAngleRange() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->InitialAngleRange;
     }
 
-    float &Drag() const {
+    const float &Drag() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Drag;
     }
 
-    unsigned int &Color1() const {
+    const unsigned int &Color1() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Color1;
     }
 
-    unsigned int &Color3() const {
+    const unsigned int &Color3() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Color3;
     }
 
-    unsigned int &Color4() const {
+    const unsigned int &Color4() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Color4;
     }
 
-    float &OnCycle() const {
+    const float &OnCycle() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->OnCycle;
     }
 
-    float &Life() const {
+    const float &Life() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Life;
     }
 
-    float &NumParticlesVariance() const {
+    const float &NumParticlesVariance() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->NumParticlesVariance;
     }
 
-    float &NumParticles() const {
+    const float &NumParticles() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->NumParticles;
     }
 
-    EffectParticleConstraint &AxisConstraint() const {
+    const EffectParticleConstraint &AxisConstraint() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->AxisConstraint;
     }
 
-    float &OnCycleVariance() const {
+    const float &OnCycleVariance() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->OnCycleVariance;
     }
 
-    float &OffCycleVariance() const {
+    const float &OffCycleVariance() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->OffCycleVariance;
     }
 
-    float &FarClip() const {
+    const float &FarClip() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->FarClip;
     }
 
-    float &OffCycle() const {
+    const float &OffCycle() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->OffCycle;
     }
 
-    float &RotationVariance() const {
+    const float &RotationVariance() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->RotationVariance;
     }
 
-    int &MotionLive() const {
+    const int &MotionLive() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MotionLive;
     }
 
-    unsigned int &Color2() const {
+    const unsigned int &Color2() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Color2;
     }
 
-    float &LifeVariance() const {
+    const float &LifeVariance() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->LifeVariance;
     }
 
-    float &MotionInherit() const {
+    const float &MotionInherit() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MotionInherit;
     }
 
-    float &Speed() const {
+    const float &Speed() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Speed;
     }
 
-    float &StartDelay() const {
+    const float &StartDelay() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->StartDelay;
     }
 
-    float &SpreadAngle() const {
+    const float &SpreadAngle() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SpreadAngle;
     }
 
-    int &RandomRotationDirection() const {
+    const int &RandomRotationDirection() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->RandomRotationDirection;
     }
 
-    float &SpeedVariance() const {
+    const float &SpeedVariance() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SpeedVariance;
     }
 
-    float &MotionInheritVariance() const {
+    const float &MotionInheritVariance() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MotionInheritVariance;
     }
 
-    float &Gravity() const {
+    const float &Gravity() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Gravity;
     }
 
-    int &SpreadAsDisc() const {
+    const int &SpreadAsDisc() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SpreadAsDisc;
     }
 
-    char &AlphaToKillAt() const {
+    const char &AlphaToKillAt() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->AlphaToKillAt;
     }
 
-    bool &NoKillAtAlpha() const {
+    const bool &NoKillAtAlpha() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->NoKillAtAlpha;
     }
 
-    bool &IsOneShot() const {
+    const bool &IsOneShot() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->IsOneShot;
     }
 
-    bool &StartDelayRandomVariance() const {
+    const bool &StartDelayRandomVariance() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->StartDelayRandomVariance;
     }
 
-    bool &EliminateUnnecessaryRandomness() const {
+    const bool &EliminateUnnecessaryRandomness() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->EliminateUnnecessaryRandomness;
     }
 };
