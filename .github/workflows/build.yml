@@ -25,7 +25,6 @@ jobs:
       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
     # Copy the original files to the workspace
-    # TODO this only supports GOWE69
     - name: Prepare
       shell: pwsh
       env:
@@ -38,8 +37,7 @@ jobs:
           --output orig.zip
         Expand-Archive -Path orig.zip -DestinationPath .
         $folders = Get-ChildItem -Directory | Where-Object { $_.Name -like "${env:BUILD_REPO_AUTHOR}-${env:BUILD_REPO_NAME}*" }
-        $folderName = $folders[0].Name
-        $path = Join-Path $folderName "orig/${{ matrix.version }}"
+        $path = Join-Path $folders[0].Name "orig/${{ matrix.version }}"
         Copy-Item -Path $path -Destination orig -Recurse -Force
     # Build the project
     - name: Build
