@@ -10,11 +10,14 @@
 namespace UTL {
 namespace Collections {
 
-template <typename T, std::size_t U> struct Listable {
+template <typename T, std::size_t U> class Listable {
     struct List {};
+
+    static List _mTable;
 
     typedef void (*ForEachFunc_t)(T *);
 
+  public:
     Listable() {}
 
     ~Listable() {}
@@ -26,11 +29,12 @@ template <typename T, std::size_t U> struct Listable {
     const List &GetList() {}
 };
 
-template <typename T, std::size_t Tsize, typename U, std::size_t Usize> struct ListableSet {
+template <typename T, std::size_t Tsize, typename U, std::size_t Usize> class ListableSet {
     struct List {};
 
     typedef void (*ForEachFunc_t)(T *);
 
+  public:
     T *First(U idx);
     T *Last(U idx);
 
@@ -45,6 +49,15 @@ template <typename T, std::size_t Tsize, typename U, std::size_t Usize> struct L
     void AddToList(U to) {}
 
     const List &GetList(U idx) {}
+};
+
+template <typename T> class Countable {
+    static int _mCount;
+
+  public:
+    static int Count() {
+        return _mCount;
+    }
 };
 
 }; // namespace Collections

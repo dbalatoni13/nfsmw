@@ -75,12 +75,6 @@ template <typename T, std::size_t Size, int Alignment> class FixedVector : publi
     virtual std::size_t GetMaxCapacity() const {}
 };
 
-template <typename T, std::size_t Size> class _Storage : public FixedVector<T, Size, 16> {
-    _Storage() {}
-
-    ~_Storage() {}
-};
-
 }; // namespace UTL
 
 #endif

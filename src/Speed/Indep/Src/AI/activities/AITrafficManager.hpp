@@ -5,34 +5,64 @@
 #pragma once
 #endif
 
-extern class Activity {};
-extern class ITrafficMgr {};
-extern class IVehicleCache {};
-extern class Debugable {};
-extern class _type_TrafficList {};
-extern class IVehicle {};
-template <class T, class U> extern struct list {};
-extern enum eTrafficDensity {};
-extern struct PatternMap {};
-extern struct WRoadNav {};
-extern struct trafficpattern {};
-extern class Param {};
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
+#include "Speed/Indep/Src/Debug/Debugable.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/trafficpattern.h"
+#include "Speed/Indep/Src/Input/ActionQueue.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/IActivity.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficMgr.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
+#include "Speed/Indep/Src/Sim/SimActivity.h"
+#include "Speed/Indep/Src/Sim/SimTypes.h"
+#include "Speed/Indep/Src/World/WRoadNetwork.hpp"
 
-class AITrafficManager : public Activity, public ITrafficMgr, public IVehicleCache, public Debugable {
+enum eTrafficDensity {
+    NUM_TRAFFIC_DENSITIES = 4,
+    eTRAFFICDENSITY_HIGH = 3,
+    eTRAFFICDENSITY_MEDIUM = 2,
+    eTRAFFICDENSITY_LOW = 1,
+    eTRAFFICDENSITY_OFF = 0,
+};
+
+struct _type_TrafficList {
+    const char *name() {
+        return "TrafficList";
+    }
+};
+
+class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehicleCache, public Debugable {
+    struct _type_AITrafficManager_PatternMap {
+        const char *name() {
+            return "AITrafficManager::PatternMap";
+        }
+    };
+
+    struct PatternKey {
+        int BHash;
+        unsigned int CollectionKey;
+    };
+
+    struct PatternMap : public UTL::Std::vector<PatternKey, _type_AITrafficManager_PatternMap> {};
+
     // total size: 0x3C4
-    struct HSIMTASK__ *mTask;                             // offset 0x68, size 0x4
-    unsigned int mSpawnIdx;                               // offset 0x6C, size 0x4
-    float mPatternTimer[10];                              // offset 0x70, size 0x28
-    float mNewInstanceTimer;                              // offset 0x98, size 0x4
-    struct list<IVehicle *, _type_TrafficList> mVehicles; // offset 0x9C, size 0x8
-    struct ActionQueue *mActionQ;                         // offset 0xA4, size 0x4
-    enum eTrafficDensity mDensity;                        // offset 0xA8, size 0x4
-    struct PatternMap mPatternMap;                        // offset 0xAC, size 0x10
-    struct WRoadNav mNav;                                 // offset 0xBC, size 0x2F0
-    float mOncommingChance;                               // offset 0x3AC, size 0x4
-    struct trafficpattern mPattern;                       // offset 0x3B0, size 0x14
+    HSIMTASK mTask;                                          // offset 0x68, size 0x4
+    unsigned int mSpawnIdx;                                  // offset 0x6C, size 0x4
+    float mPatternTimer[10];                                 // offset 0x70, size 0x28
+    float mNewInstanceTimer;                                 // offset 0x98, size 0x4
+    UTL::Std::list<IVehicle *, _type_TrafficList> mVehicles; // offset 0x9C, size 0x8
+    ActionQueue *mActionQ;                                   // offset 0xA4, size 0x4
+    eTrafficDensity mDensity;                                // offset 0xA8, size 0x4
+    PatternMap mPatternMap;                                  // offset 0xAC, size 0x10
+    WRoadNav mNav;                                           // offset 0xBC, size 0x2F0
+    float mOncommingChance;                                  // offset 0x3AC, size 0x4
+    Attrib::Gen::trafficpattern mPattern;                    // offset 0x3B0, size 0x14
 
-    AITrafficManager(Param params);
+    static Sim::IActivity *Construct(Sim::Param params);
+
+    AITrafficManager(Sim::Param params);
+    virtual eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const;
+    virtual void OnRemovedVehicleCache(IVehicle *ivehicle);
+    virtual void OnAttached(IAttachable *pOther);
 };
 
 #endif

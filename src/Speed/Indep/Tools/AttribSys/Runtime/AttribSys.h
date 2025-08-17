@@ -6,13 +6,8 @@
 #endif
 
 #include "AttribCollection.h"
+#include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Misc/AttribAlloc.h"
-
-namespace UTL {
-namespace COM {
-class IUnknown;
-}
-} // namespace UTL
 
 // Credit: Brawltendo
 namespace Attrib {

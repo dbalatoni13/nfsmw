@@ -222,16 +222,16 @@ struct FastMem {
     unsigned int mTrackCount;    // offset 0x328, size 0x4
 
     FastMem();
-    FastMem(EA::Allocator::IAllocator *allocator, unsigned int bytes, const char *name, unsigned int expansionsize, unsigned int trackingsize);
+    FastMem(EA::Allocator::IAllocator *allocator, std::size_t bytes, const char *name, unsigned int expansionsize, std::size_t trackingsize);
     void Init();
     void Deinit();
-    void *Alloc(unsigned int bytes, const char *kind);
-    void Free(void *ptr, unsigned int bytes, const char *kind);
-    void *CoreAlloc(unsigned int bytes, const char *kind);
+    void *Alloc(std::size_t bytes, const char *kind);
+    void Free(void *ptr, std::size_t bytes, const char *kind);
+    void *CoreAlloc(std::size_t bytes, const char *kind);
     void CoreFree(void *ptr);
-    bool SplitOrExpand(unsigned int bytes);
-    bool AssignToFree(unsigned int bytes);
-    bool CreateBlock(unsigned int listIndex);
+    bool SplitOrExpand(std::size_t bytes);
+    bool AssignToFree(std::size_t bytes);
+    bool CreateBlock(std::size_t listIndex);
     void DumpRecord();
 };
 
