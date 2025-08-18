@@ -1,0 +1,1 @@
+void *MoveDefragmentAllocation(void *allocation);

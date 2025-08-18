@@ -15,5 +15,6 @@ EVIEWMODE eGetCurrentViewMode();
 void SetupSceneryCullInfoPlat(eView *view, struct SceneryCullInfo &info);
 void SetParticleSystemStats(int num_particles, int max_num_particles, int num_particle_textures, int max_num_particle_textures, int num_emitters,
                             int max_num_emitters, int num_groups, int max_num_groups);
+void eWaitUntilRenderingDone();
 
 #endif

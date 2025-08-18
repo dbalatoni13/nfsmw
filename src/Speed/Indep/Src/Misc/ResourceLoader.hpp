@@ -44,11 +44,18 @@ struct ResourceFile : public bTNode<ResourceFile> {
     void *GetMemory() {
         return this->pFirstChunk;
     }
+
+    void SetAllocationParams(int allocation_params, const char *debug_name);
+    void BeginLoading(void (*callback)(void *), void *callback_param);
 };
 
 void EndianSwapChunkHeader(bChunk *chunk);
 void EndianSwapChunkHeadersRecursive(bChunk *chunks, int sizeof_chunks);
 void EndianSwapChunkHeadersRecursive(bChunk *first_chunk, bChunk *last_chunk);
+
+int ServiceResourceLoading();
+ResourceFile *CreateResourceFile(const char *filename, ResourceFileType type, int flags, int flag_offset, int file_size);
+void UnloadResourceFile(ResourceFile *resource_file);
 
 extern int ChunkMovementOffset; // size: 0x4
 
