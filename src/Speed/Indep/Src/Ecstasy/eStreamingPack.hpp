@@ -1,7 +1,9 @@
 #ifndef ECSTASY_ESTREAMING_PACK_H
 #define ECSTASY_ESTREAMING_PACK_H
 
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "dolphin/types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -39,6 +41,8 @@ struct eStreamingPackHeaderLoadingInfo {
     void *LoadingDoneCallbackParam;      // offset 0xC, size 0x4
 };
 
+extern SlotPool *eStreamingPackSlotPool;
+
 struct eStreamingPack : public bTNode<eStreamingPack> {
     // total size: 0x44
     const char *Filename;                         // offset 0x8, size 0x4
@@ -58,8 +62,14 @@ struct eStreamingPack : public bTNode<eStreamingPack> {
     struct eSolidListHeader *SolidListHeader;     // offset 0x3C, size 0x4
     struct TexturePackHeader *pTexturePackHeader; // offset 0x40, size 0x4
 
-    void *operator new(size_t size) {}
-    void operator delete(void *ptr) {}
+    void *operator new(size_t size) {
+        void *streaming_pack = bOMalloc(eStreamingPackSlotPool);
+        bMemSet(streaming_pack, 0x0, 0x44);
+        return streaming_pack;
+    }
+    void operator delete(void *ptr) {
+        bFree(eStreamingPackSlotPool, ptr);
+    }
 
     // STRIPPED
     void InitForHibernation();
@@ -71,7 +81,11 @@ struct eStreamingPack : public bTNode<eStreamingPack> {
 
     void RegisterLoadStreamingEntry(eStreamingEntry *entry) {}
 
-    void RegisterUnloadStreamingEntry(eStreamingEntry *entry) {}
+    void RegisterUnloadStreamingEntry(eStreamingEntry *entry) {
+        entry->ChunkData = nullptr;
+        this->NumLoadedStreamingEntries--;
+        this->NumLoadedBytes -= entry->ChunkByteSize;
+    }
 };
 
 struct eStreamingPackHeaderLoadingInfoPhase1 {
@@ -130,12 +144,21 @@ struct eStreamPackLoader {
     static void InternalLoadedStreamingEntryCallback(void *callback_param, int error_status, void *callback_param2);
     void InternalLoadStreamingEntry(eStreamingPackLoadTable *loading_table, struct eStreamingPack *streaming_pack, struct eStreamingEntry *streaming_entry);
 
-    eStreamingPack *CreateStreamingPack(const char *filename, void (*callback_function)(void *), void *callback_param, int memory_pool_num);
     void LoadStreamingEntry(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num);
-    void WaitForLoadingToFinish(const char *filename);
+    void LoadStreamingEntry(unsigned int name_hash, void (* callback)(void *) /* r5 */, void * param0 /* r0 */, int memory_pool_num /* r8 */);
+    int IsLoaded(unsigned int name_hash);
     void UnloadStreamingEntry(unsigned int name_hash, eStreamingPack *streaming_pack);
     void UnloadStreamingEntry(unsigned int *name_hash_table, int num_hashes);
     void UnloadAllStreamingEntries(const char *filename);
+    int IsLoading(const char *filename);
+    int TestLoadStreamingEntry(unsigned int *name_hash_table, int num_hashes, int memory_pool_num, bool error_if_out_in_main_pool);
+    bool DefragmentAllocation(void *allocation);
+    void WaitForLoadingToFinish(const char *filename);
+    static void InternalLoadingHeaderPhase1Callback(void *callback_param, int error_status, void *callback_param2);
+    static void InternalLoadingHeaderPhase2Callback(void *callback_param, int error_status, void *callback_param2);
+    static void InternalLoadingHeaderPhase3Callback(void *callback_param);
+    eStreamingPack *CreateStreamingPack(const char *filename, void (*callback_function)(void *), void *callback_param, int memory_pool_num);
+    
     int DeleteStreamingPack(const char *filename);
 
     void DisableStreamingPack(const char *filename) {}
@@ -144,7 +167,10 @@ struct eStreamPackLoader {
 
     void RegisterLoadStreamingEntry(eStreamingEntry *entry) {}
 
-    void RegisterUnloadStreamingEntry(eStreamingEntry *entry) {}
+    void RegisterUnloadStreamingEntry(eStreamingEntry *entry) {
+        this->NumLoadedStreamingEntries--;
+        this->NumLoadedBytes -= entry->ChunkByteSize;
+    }
 
     void InternalUnloadStreamingEntry(eStreamingPack *streaming_pack, eStreamingEntry *streaming_entry);
 
@@ -159,6 +185,13 @@ struct eStreamingPackLoadTable {
     void (*Callback)(void *);            // offset 0x4, size 0x4
     void *Param;                         // offset 0x8, size 0x4
     eStreamPackLoader *StreamPackLoader; // offset 0xC, size 0x4
+};
+
+struct eStreamPackLoadEntryInfo : public bTNode<eStreamPackLoadEntryInfo> {
+    // total size: 0x14
+    eStreamingPack * StreamingPack;     // offset 0x8, size 0x4
+    eStreamingEntry * StreamingEntry;   // offset 0xC, size 0x4
+    unsigned int FileOffset;            // offset 0x10, size 0x4
 };
 
 extern eStreamPackLoader StreamingTexturePackLoader;
