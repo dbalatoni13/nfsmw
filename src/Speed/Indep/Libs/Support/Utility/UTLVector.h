@@ -8,12 +8,13 @@
 #include <cstddef>
 
 namespace UTL {
-template <typename T, int Alignment> class Vector {
-    // total size: 0x10
-    T *mBegin;             // offset 0x0, size 0x4
-    std::size_t mCapacity; // offset 0x4, size 0x4
-    std::size_t mSize;     // offset 0x8, size 0x4
-                           // _vptr; // offset 0xC, size 0x4
+template <typename T, int Alignment = 16> class Vector {
+  public:
+    typedef T value_type;
+    typedef value_type *pointer;
+    typedef const value_type *const_pointer;
+    typedef value_type *iterator;
+    typedef const value_type *const_iterator;
 
   public:
     void Init() {}
@@ -36,15 +37,27 @@ template <typename T, int Alignment> class Vector {
 
     void clear() {}
 
-    T *const *begin() const {}
+    const_iterator begin() const {
+        return mBegin;
+    }
 
-    T *const *end() const {}
+    iterator begin() {
+        return mBegin;
+    }
+
+    const_iterator end() const {
+        return mBegin + mSize;
+    }
+
+    iterator end() {
+        return mBegin + mSize;
+    }
 
     virtual std::size_t GetGrowSize(std::size_t minSize) const {}
 
     virtual void OnGrowRequest(std::size_t newSize) {}
 
-    virtual T **VectorAllocVectorSpace(unsigned int num, std::size_t alignment) {}
+    virtual T **VectorAllocVectorSpace(std::size_t num, unsigned int alignment) {}
 
     virtual void FreeVectorSpace(T **buffer, unsigned int num) {}
 
@@ -55,9 +68,15 @@ template <typename T, int Alignment> class Vector {
     std::size_t indexof(T **pos) {}
 
     T **erase(T **begIt, T **endIt) {}
+
+  private:
+    // total size: 0x10
+    T *mBegin;             // offset 0x0, size 0x4
+    std::size_t mCapacity; // offset 0x4, size 0x4
+    std::size_t mSize;     // offset 0x8, size 0x4
 };
 
-template <typename T, std::size_t Size, int Alignment> class FixedVector : public Vector<T, Alignment> {
+template <typename T, std::size_t Size, int Alignment = 16> class FixedVector : public Vector<T, Alignment> {
     // TODO speed considerations for 64 bit
     int mVectorSpace[(sizeof(T) * Size) / sizeof(int)];
 
@@ -68,9 +87,9 @@ template <typename T, std::size_t Size, int Alignment> class FixedVector : publi
 
     virtual std::size_t GetGrowSize(std::size_t minSize) const {}
 
-    virtual T **AllocVectorSpace(unsigned int num, std::size_t alignment) {}
+    virtual T **AllocVectorSpace(std::size_t num, unsigned int alignment) {}
 
-    virtual void FreeVectorSpace(T **buffer, unsigned int num) {}
+    virtual void FreeVectorSpace(T **buffer, std::size_t) {}
 
     virtual std::size_t GetMaxCapacity() const {}
 };

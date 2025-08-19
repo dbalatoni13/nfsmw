@@ -28,7 +28,9 @@ struct IActivity : public UTL::COM::IUnknown,
 
     virtual ~IActivity() {}
 
-    // void *_IHandle() {}
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
 };
 
 }; // namespace Sim

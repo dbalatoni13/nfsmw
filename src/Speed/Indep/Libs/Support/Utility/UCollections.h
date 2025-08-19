@@ -17,6 +17,7 @@ struct _KeyedNode {
 };
 
 template <typename T, std::size_t Size> class _Storage : public FixedVector<T, Size, 16> {
+  public:
     _Storage() {}
 
     ~_Storage() {}
@@ -25,7 +26,7 @@ template <typename T, std::size_t Size> class _Storage : public FixedVector<T, S
 template <typename T> class Singleton {
   protected:
     Singleton() {}
-    virtual ~Singleton() {}
+    ~Singleton() {}
 
   public:
     // static T *Get() {}

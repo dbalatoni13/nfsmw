@@ -117,6 +117,14 @@ const Matrix4 Matrix4::kIdentity = {{1.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f,
 
 void BuildRotate(Matrix4 &m, float r, float x, float y, float z);
 
+inline float DistanceSquarexz(const Vector3 &a, const Vector3 &b) {
+    return VU0_v3distancesquare(a, b);
+}
+
+inline Vector3 &Vector4To3(Vector4 &c4) {
+    return *reinterpret_cast<Vector3 *>(&c4);
+}
+
 inline void RotateTranslate(const Vector3 &a, const Matrix4 &m, Vector3 &r) {
     VU0_MATRIX4_vect3mult(a, m, r);
 }

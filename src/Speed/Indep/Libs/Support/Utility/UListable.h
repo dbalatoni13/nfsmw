@@ -7,52 +7,112 @@
 
 #include <cstddef>
 
+#include "UTLVector.h"
+
 namespace UTL {
 namespace Collections {
 
 template <typename T, std::size_t U> class Listable {
-    struct List {};
-
-    static List _mTable;
-
-    typedef void (*ForEachFunc_t)(T *);
-
   public:
+    typedef T value_type;
+    typedef value_type *pointer;
+    typedef const value_type *const_pointer;
+    typedef pointer *iterator;
+    typedef const pointer *const_iterator;
+
+    class List : public FixedVector<pointer, U> {
+      public:
+        List(const List &);
+        List();
+        virtual ~List();
+
+        // List &operator=(List &);
+    };
+
+    typedef void (*ForEachFunc)(pointer);
+
+  protected:
     Listable() {}
 
     ~Listable() {}
 
     void Unlist() {}
 
-    ForEachFunc_t ForEach(ForEachFunc_t f) {}
+  public:
+    ForEachFunc ForEach(ForEachFunc f) {}
 
-    const List &GetList() {}
+    static const List &GetList() {
+        return _mTable;
+    }
+
+  private:
+    static List _mTable;
 };
 
-template <typename T, std::size_t Tsize, typename U, std::size_t Usize> class ListableSet {
-    struct List {};
-
-    typedef void (*ForEachFunc_t)(T *);
-
+template <typename T, std::size_t ListSize, typename Enum, std::size_t EnumMax> class ListableSet {
   public:
-    T *First(U idx);
-    T *Last(U idx);
+    typedef T value_type;
+    typedef value_type *pointer;
+    typedef const value_type *const_pointer;
+    typedef pointer *iterator;
+    typedef const pointer *const_iterator;
+
+    class List : public FixedVector<pointer, ListSize> {
+      public:
+        List(const List &);
+        List();
+        virtual ~List();
+
+        // List &operator=(List &);
+    };
+
+    typedef void (*ForEachFunc_t)(pointer);
+
+    static int Count(Enum idx);
+
+    T *First(Enum idx);
+    T *Last(Enum idx);
 
     ~ListableSet() {}
 
     void UnList() {}
 
-    T *Next(U idx) {}
+    T *Next(Enum idx) {}
 
-    ForEachFunc_t ForEach(U idx, ForEachFunc_t f) {}
+    ForEachFunc_t ForEach(Enum idx, ForEachFunc_t f) {}
 
-    void AddToList(U to) {}
+    void AddToList(Enum to) {}
 
-    const List &GetList(U idx) {}
+    static const List &GetList(Enum idx) {
+        return _mLists._buckets[idx];
+    }
+
+  private:
+    class _ListSet {
+      public:
+        // how to access _buckets without making it public?
+        List _buckets[EnumMax];
+
+        void _add(T *, unsigned int);
+
+        void _remove(T *, unsigned int);
+
+        _ListSet();
+        // _ListSet(_ListSet &);
+        ~_ListSet();
+
+        // _ListSet &operator=(const _ListSet &);
+    };
+
+    static _ListSet _mLists;
 };
 
 template <typename T> class Countable {
     static int _mCount;
+
+  protected:
+    Countable() {}
+    ~Countable() {}
 
   public:
     static int Count() {

@@ -12,15 +12,19 @@
 struct IAttachable : public UTL::COM::IUnknown {
     IAttachable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
 
-    // virtual ~IAttachable() {}
+    virtual ~IAttachable();
 
-    // void *_IHandle() {}
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
 
-    // virtual bool Attach(IUnknown *pOther) {}
+    virtual bool Attach(IUnknown *pOther);
 
-    // virtual bool Detach(IUnknown *pOther) {}
+    virtual bool Detach(IUnknown *pOther);
 
-    // virtual bool IsAttached(const IUnknown *pOther) const {}
+    virtual bool IsAttached(const IUnknown *pOther) const;
+
+    virtual void OnAttached(IAttachable *pOther);
 };
 
 #endif

@@ -15,7 +15,9 @@ class ITrafficMgr : public UTL::COM::IUnknown, public UTL::Collections::Singleto
 
     // virtual ~ITrafficMgr() {}
 
-    // void *_IHandle() {}
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
 };
 
 #endif

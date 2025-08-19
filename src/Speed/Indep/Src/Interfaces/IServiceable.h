@@ -24,7 +24,9 @@ struct IServiceable : public UTL::COM::IUnknown {
   public:
     IServiceable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
 
-    void *_IHandle() {}
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
 
   public:
     virtual bool OnService(HSIMSERVICE hCon, Sim::Packet *pkt);

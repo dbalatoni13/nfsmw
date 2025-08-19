@@ -5,12 +5,13 @@
 #pragma once
 #endif
 
-// TODO
-// struct GManager : public Object, public IVehicleCache {
-class GManager {
+#include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
+#include "Speed/Indep/Src/Misc/bFile.hpp"
+
+class GManager : public UTL::COM::Object, public IVehicleCache {
     // total size: 0x308
     const char *mVaultPackFileName;                 // offset 0x1C, size 0x4
-    struct bFile *mVaultPackFile;                   // offset 0x20, size 0x4
+    bFile *mVaultPackFile;                          // offset 0x20, size 0x4
     unsigned int mVaultCount;                       // offset 0x24, size 0x4
     struct GVault *mVaults;                         // offset 0x28, size 0x4
     const char *mVaultNameStrings;                  // offset 0x2C, size 0x4
@@ -79,6 +80,7 @@ class GManager {
     static GManager *mObj;
 
   public:
+    GManager(const char *vaultPackName);
     void RefreshWorldParticleEffects();
 
     static GManager &Get() {

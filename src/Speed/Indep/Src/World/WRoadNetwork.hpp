@@ -101,6 +101,9 @@ struct WRoadNav {
     float fPathGoalParam;                     // offset 0x2E0, size 0x4
     int nPathSegments;                        // offset 0x2E4, size 0x4
     unsigned short *pPathSegments;            // offset 0x2E8, size 0x4
+
+    WRoadNav();
+    virtual ~WRoadNav();
 };
 
 #endif
