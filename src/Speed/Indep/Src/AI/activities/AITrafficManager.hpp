@@ -57,6 +57,7 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
     float mOncommingChance;                                  // offset 0x3AC, size 0x4
     Attrib::Gen::trafficpattern mPattern;                    // offset 0x3B0, size 0x14
 
+  public:
     static Sim::IActivity *Construct(Sim::Param params);
 
     AITrafficManager(Sim::Param params);
@@ -64,12 +65,20 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
     virtual void OnRemovedVehicleCache(IVehicle *ivehicle);
     virtual void OnAttached(IAttachable *pOther);
     virtual void OnDetached(IAttachable *pOther);
+    unsigned int NextSpawn();
+    IVehicle *GetAvailableTrafficVehicle(unsigned int key, bool makenew);
+    bool SpawnTraffic();
     bool NeedsTraffic() const;
     void UpdateDebug();
     void SetTrafficPattern(unsigned int pattern_key);
     bool FindCollisions(const UMath::Vector3 &spawnpoint) const;
     bool CheckRace(const WRoadNav &nav) const;
+    bool FindSpawnPoint(WRoadNav &nav) const;
+    bool ChoosePattern();
+    bool ValidateVehicle(IVehicle *ivehicle, float density) const;
+    float ComputeDensity() const;
     void Update(float dT);
+    virtual void FlushAllTraffic(bool release);
     virtual bool OnTask(HSIMTASK htask, float dT);
     virtual void OnDebugDraw();
 };

@@ -1,0 +1,10 @@
+#ifndef EAXSOUND_DEBUGPRINTSOUND_H
+#define EAXSOUND_DEBUGPRINTSOUND_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

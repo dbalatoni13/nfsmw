@@ -1,0 +1,10 @@
+#ifndef SIM_ENTITIES_LOCALPLAYER_H
+#define SIM_ENTITIES_LOCALPLAYER_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

@@ -1,0 +1,10 @@
+#ifndef EAXSOUND_GINSU_GINSUHELPER_H
+#define EAXSOUND_GINSU_GINSUHELPER_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

@@ -1,0 +1,10 @@
+#ifndef CAMERA_MOVERS_CUBICTWEAKS_H
+#define CAMERA_MOVERS_CUBICTWEAKS_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

@@ -1,0 +1,10 @@
+#ifndef GENERATED_MESSAGES_MSTATEENTER_H
+#define GENERATED_MESSAGES_MSTATEENTER_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

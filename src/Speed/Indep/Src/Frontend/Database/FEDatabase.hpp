@@ -1,0 +1,10 @@
+#ifndef FRONTEND_DATABASE_FEDATABASE_H
+#define FRONTEND_DATABASE_FEDATABASE_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

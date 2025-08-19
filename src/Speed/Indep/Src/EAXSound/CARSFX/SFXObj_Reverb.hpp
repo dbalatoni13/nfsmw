@@ -1,0 +1,10 @@
+#ifndef EAXSOUND_CARSFX_SFXOBJ_REVERB_H
+#define EAXSOUND_CARSFX_SFXOBJ_REVERB_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

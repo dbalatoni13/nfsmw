@@ -1,0 +1,10 @@
+#ifndef EAGL4ANIM_FNDELTASINGLEQ_H
+#define EAGL4ANIM_FNDELTASINGLEQ_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

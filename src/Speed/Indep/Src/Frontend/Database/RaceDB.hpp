@@ -1,0 +1,10 @@
+#ifndef FRONTEND_DATABASE_RACEDB_H
+#define FRONTEND_DATABASE_RACEDB_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

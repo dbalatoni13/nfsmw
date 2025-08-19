@@ -1,0 +1,10 @@
+#ifndef EAXSOUND_STATES_STATE_HELICOPTER_H
+#define EAXSOUND_STATES_STATE_HELICOPTER_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

@@ -1,0 +1,10 @@
+#ifndef EAGL4ANIM_EAGL4REALMATH_H
+#define EAGL4ANIM_EAGL4REALMATH_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

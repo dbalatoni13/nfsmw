@@ -1,0 +1,10 @@
+#ifndef ANIMATION_ANIMSKELETON_H
+#define ANIMATION_ANIMSKELETON_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

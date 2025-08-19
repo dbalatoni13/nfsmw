@@ -1,0 +1,10 @@
+#ifndef FENG_FEMESSAGERESPONSE_H
+#define FENG_FEMESSAGERESPONSE_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

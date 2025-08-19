@@ -7,11 +7,13 @@
 
 #include "GTimer.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Src/Ecstasy/EmitterSystem.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
+#include "Speed/Indep/Src/Interfaces/Simables/isimable.h"
 
 struct GRacerInfo {
     // total size: 0x1A8
-    struct HSIMABLE__ *mhSimable;          // offset 0x0, size 0x4
+    HSIMABLE mhSimable;                    // offset 0x0, size 0x4
     struct GCharacter *mGameCharacter;     // offset 0x4, size 0x4
     const char *mName;                     // offset 0x8, size 0x4
     int mIndex;                            // offset 0xC, size 0x4
@@ -65,23 +67,23 @@ struct GRaceStatus : public UTL::COM::Object, public IVehicleCache {
     bool mIsLoading; // offset 0x1AA0, size 0x1
     // enum PlayMode mPlayMode;                 // offset 0x1AA4, size 0x4
     // enum Context mRaceContext;               // offset 0x1AA8, size 0x4
-    struct GRaceParameters *mRaceParms;      // offset 0x1AAC, size 0x4
-    struct GRaceBin *mRaceBin;               // offset 0x1AB0, size 0x4
-    GTimer mRaceMasterTimer;                 // offset 0x1AB4, size 0xC
-    bool mPlayerPursuitInCooldown;           // offset 0x1AC0, size 0x1
-    float mBonusTime;                        // offset 0x1AC4, size 0x4
-    float mTaskTime;                         // offset 0x1AC8, size 0x4
-    bool mSuddenDeathMode;                   // offset 0x1ACC, size 0x1
-    bool mTimeExpiredMsgSent;                // offset 0x1AD0, size 0x1
-    bool mActivelyRacing;                    // offset 0x1AD4, size 0x1
-    int mLastSecondTickSent;                 // offset 0x1AD8, size 0x4
-    struct WorldModel *mCheckpointModel;     // offset 0x1ADC, size 0x4
-    struct EmitterGroup *mCheckpointEmitter; // offset 0x1AE0, size 0x4
-    bool mQueueBinChange;                    // offset 0x1AE4, size 0x1
-    unsigned int mWarpWhenInFreeRoam;        // offset 0x1AE8, size 0x4
-    int mNumTollbooths;                      // offset 0x1AEC, size 0x4
-    bool mScriptWaitingForLoad;              // offset 0x1AF0, size 0x1
-    bool mRefreshBinAfterRace;               // offset 0x1AF4, size 0x1
+    struct GRaceParameters *mRaceParms;  // offset 0x1AAC, size 0x4
+    struct GRaceBin *mRaceBin;           // offset 0x1AB0, size 0x4
+    GTimer mRaceMasterTimer;             // offset 0x1AB4, size 0xC
+    bool mPlayerPursuitInCooldown;       // offset 0x1AC0, size 0x1
+    float mBonusTime;                    // offset 0x1AC4, size 0x4
+    float mTaskTime;                     // offset 0x1AC8, size 0x4
+    bool mSuddenDeathMode;               // offset 0x1ACC, size 0x1
+    bool mTimeExpiredMsgSent;            // offset 0x1AD0, size 0x1
+    bool mActivelyRacing;                // offset 0x1AD4, size 0x1
+    int mLastSecondTickSent;             // offset 0x1AD8, size 0x4
+    struct WorldModel *mCheckpointModel; // offset 0x1ADC, size 0x4
+    EmitterGroup *mCheckpointEmitter;    // offset 0x1AE0, size 0x4
+    bool mQueueBinChange;                // offset 0x1AE4, size 0x1
+    unsigned int mWarpWhenInFreeRoam;    // offset 0x1AE8, size 0x4
+    int mNumTollbooths;                  // offset 0x1AEC, size 0x4
+    bool mScriptWaitingForLoad;          // offset 0x1AF0, size 0x1
+    bool mRefreshBinAfterRace;           // offset 0x1AF4, size 0x1
     // struct vector<GTrigger *, _type_ID_GRaceStatusTriggerList> mCheckpoints; // offset 0x1AF8, size 0x10
     struct GTrigger *mNextCheckpoint; // offset 0x1B08, size 0x4
     float mLapTimes[10][16];          // offset 0x1B0C, size 0x280

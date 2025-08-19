@@ -1,0 +1,10 @@
+#ifndef INTERFACES_SIMABLES_IRENDERABLE_H
+#define INTERFACES_SIMABLES_IRENDERABLE_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

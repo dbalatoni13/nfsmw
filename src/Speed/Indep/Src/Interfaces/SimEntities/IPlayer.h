@@ -1,0 +1,10 @@
+#ifndef INTERFACES_SIMENTITIES_IPLAYER_H
+#define INTERFACES_SIMENTITIES_IPLAYER_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

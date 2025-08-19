@@ -1,0 +1,10 @@
+#ifndef FRONTEND_MOVIEPLAYER_MOVIEPLAYER_H
+#define FRONTEND_MOVIEPLAYER_MOVIEPLAYER_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

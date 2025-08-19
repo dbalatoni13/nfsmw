@@ -1,0 +1,10 @@
+#ifndef WORLD_VEHICLEPARTDAMAGE_H
+#define WORLD_VEHICLEPARTDAMAGE_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

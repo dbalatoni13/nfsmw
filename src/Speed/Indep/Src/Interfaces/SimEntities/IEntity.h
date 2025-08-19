@@ -1,0 +1,10 @@
+#ifndef INTERFACES_SIMENTITIES_IENTITY_H
+#define INTERFACES_SIMENTITIES_IENTITY_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

@@ -1,0 +1,10 @@
+#ifndef SIM_ACTIVITIES_QUICKGAME_H
+#define SIM_ACTIVITIES_QUICKGAME_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

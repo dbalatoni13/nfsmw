@@ -1,0 +1,10 @@
+#ifndef FRONTEND_HUD_FEMILESTONEBOARD_H
+#define FRONTEND_HUD_FEMILESTONEBOARD_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

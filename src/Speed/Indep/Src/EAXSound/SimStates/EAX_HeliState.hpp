@@ -1,0 +1,10 @@
+#ifndef EAXSOUND_SIMSTATES_EAX_HELISTATE_H
+#define EAXSOUND_SIMSTATES_EAX_HELISTATE_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

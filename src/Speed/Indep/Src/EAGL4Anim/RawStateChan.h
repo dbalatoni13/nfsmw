@@ -1,0 +1,10 @@
+#ifndef EAGL4ANIM_RAWSTATECHAN_H
+#define EAGL4ANIM_RAWSTATECHAN_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

@@ -1,0 +1,10 @@
+#ifndef EAGL4ANIM_FNSTATELESSF3_H
+#define EAGL4ANIM_FNSTATELESSF3_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

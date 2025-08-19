@@ -1,0 +1,10 @@
+#ifndef PHYSICS_SMACKABLETRIGGER_H
+#define PHYSICS_SMACKABLETRIGGER_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

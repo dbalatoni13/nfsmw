@@ -1,0 +1,10 @@
+#ifndef FRONTEND_FEOBJECTCALLBACKS_H
+#define FRONTEND_FEOBJECTCALLBACKS_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

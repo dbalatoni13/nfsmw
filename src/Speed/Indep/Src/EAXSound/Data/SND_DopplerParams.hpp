@@ -1,0 +1,10 @@
+#ifndef EAXSOUND_DATA_SND_DOPPLERPARAMS_H
+#define EAXSOUND_DATA_SND_DOPPLERPARAMS_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

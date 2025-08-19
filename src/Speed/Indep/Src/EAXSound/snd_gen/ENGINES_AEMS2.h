@@ -1,0 +1,10 @@
+#ifndef EAXSOUND_SND_GEN_ENGINES_AEMS2_H
+#define EAXSOUND_SND_GEN_ENGINES_AEMS2_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

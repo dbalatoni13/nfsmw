@@ -1,0 +1,10 @@
+#ifndef EAXSOUND_CARSFX_CARSFX_PRECOLWOOSH_H
+#define EAXSOUND_CARSFX_CARSFX_PRECOLWOOSH_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

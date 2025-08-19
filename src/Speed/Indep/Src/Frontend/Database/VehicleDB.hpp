@@ -1,0 +1,10 @@
+#ifndef FRONTEND_DATABASE_VEHICLEDB_H
+#define FRONTEND_DATABASE_VEHICLEDB_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

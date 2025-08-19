@@ -1,0 +1,10 @@
+#ifndef GAMEPLAY_GINFRACTIONMANAGER_H
+#define GAMEPLAY_GINFRACTIONMANAGER_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

@@ -1,0 +1,10 @@
+#ifndef GENERATED_MESSAGES_MNISCOMPLETE_H
+#define GENERATED_MESSAGES_MNISCOMPLETE_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif
