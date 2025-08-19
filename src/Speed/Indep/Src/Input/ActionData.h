@@ -14,17 +14,29 @@ class ActionData {
   public:
     // bool IsNull() const {}
 
-    // int Slot() const {}
+    int Slot() const {
+        return this->slot;
+    }
 
-    // void SetID(int id) {}
+    void SetID(int id) {
+        this->id = id;
+    }
 
-    // void SetData(float d) {}
+    void SetData(float d) {
+        this->data = d;
+    }
 
-    // void SetSlot(int slot) {}
+    void SetSlot(int slot) {
+        this->slot = slot;
+    }
 
-    // int ID() const {}
+    int ID() const {
+        return this->id;
+    }
 
-    // float Data() const {}
+    float Data() const {
+        return this->data;
+    }
 };
 
 #endif

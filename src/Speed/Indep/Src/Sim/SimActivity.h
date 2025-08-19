@@ -19,6 +19,10 @@ struct Activity : public Sim::Object, public UTL::Collections::GarbageNode<Sim::
     virtual ~Activity();
     void DetachAll();
     virtual void Release();
+
+    virtual void OnAttached(IAttachable *pOther) {}
+
+    virtual void OnDetached(IAttachable *pOther) {}
 };
 
 }; // namespace Sim

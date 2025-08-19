@@ -63,6 +63,15 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
     virtual eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const;
     virtual void OnRemovedVehicleCache(IVehicle *ivehicle);
     virtual void OnAttached(IAttachable *pOther);
+    virtual void OnDetached(IAttachable *pOther);
+    bool NeedsTraffic() const;
+    void UpdateDebug();
+    void SetTrafficPattern(unsigned int pattern_key);
+    bool FindCollisions(const UMath::Vector3 &spawnpoint) const;
+    bool CheckRace(const WRoadNav &nav) const;
+    void Update(float dT);
+    virtual bool OnTask(HSIMTASK htask, float dT);
+    virtual void OnDebugDraw();
 };
 
 #endif

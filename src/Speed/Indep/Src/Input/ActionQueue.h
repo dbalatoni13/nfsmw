@@ -6,6 +6,7 @@
 #endif
 
 #include "ActionData.h"
+#include "ActionRef.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Libs/Support/Utility/UQueue.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
@@ -30,6 +31,10 @@ struct ActionQueue : public UTL::Collections::Listable<ActionQueue, 20> {
     Timer mActivationTime;                 // offset 0x290, size 0x4
 
   public:
+    bool IsEmpty();
+    const ActionRef GetAction();
+    void PopAction();
+
     // static Timer LastAnyActionTime() {}
 
     // void *operator new(std::size_t size, void *ptr) {}

@@ -5,41 +5,30 @@
 #pragma once
 #endif
 
-class ActionData {
-    // total size: 0xC
-    int id;     // offset 0x0, size 0x4
-    int slot;   // offset 0x4, size 0x4
-    float data; // offset 0x8, size 0x4
-
-  public:
-    // bool IsNull() const {}
-
-    // int Slot() const {}
-
-    // void SetID(int id) {}
-
-    // void SetData(float d) {}
-
-    // void SetSlot(int slot) {}
-
-    // int ID() const {}
-
-    // float Data() const {}
-};
+#include "ActionData.h"
 
 class ActionRef {
     // total size: 0x4
     ActionData *actiondata; // offset 0x0, size 0x4
 
+  public:
     // void Print() const {}
 
-    // int ID() const {}
+    int ID() const {
+        return actiondata->ID();
+    }
 
-    // float Data() const {}
+    float Data() const {
+        return actiondata->Data();
+    }
 
-    // int Slot() const {}
+    int Slot() const {
+        return actiondata->Slot();
+    }
 
-    // bool IsNull() const {}
+    // bool IsNull() const {
+    //     return actiondata->IsNull();
+    // }
 };
 
 #endif

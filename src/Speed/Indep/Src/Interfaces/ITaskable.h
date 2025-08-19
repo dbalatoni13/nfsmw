@@ -24,9 +24,11 @@ struct ITaskable : public UTL::COM::IUnknown {
 
     virtual ~ITaskable() {}
 
-    void *_IHandle() {}
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
 
-    virtual bool OnTask(HSIMTASK htask, float dT) {}
+    virtual bool OnTask(HSIMTASK htask, float dT);
 };
 
 }; // namespace Sim

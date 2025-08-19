@@ -5,9 +5,11 @@
 #pragma once
 #endif
 
+#include <list>
+
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
-class SplinePointList /* : public STLlist<UMath::Vector4, _STL::allocator<UMath::Vector4> >*/ {};
+class SplinePointList : public std::list<UMath::Vector4> {};
 
 class USpline {
     enum SplineType {
