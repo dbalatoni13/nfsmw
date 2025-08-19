@@ -1,0 +1,10 @@
+#ifndef PHYSICS_VEHICLEBEHAVIORS_H
+#define PHYSICS_VEHICLEBEHAVIORS_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

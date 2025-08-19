@@ -1,0 +1,10 @@
+#ifndef EAXSOUND_UG_SNDDATAPARAMS_H
+#define EAXSOUND_UG_SNDDATAPARAMS_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

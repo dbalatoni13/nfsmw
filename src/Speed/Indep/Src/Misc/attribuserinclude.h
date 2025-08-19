@@ -1,0 +1,10 @@
+#ifndef MISC_ATTRIBUSERINCLUDE_H
+#define MISC_ATTRIBUSERINCLUDE_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

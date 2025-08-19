@@ -9,6 +9,7 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 class WCollisionMgr {
+  public:
     struct WorldCollisionInfo {
         UMath::Vector4 fCollidePt;
         UMath::Vector4 fNormal;
@@ -35,7 +36,6 @@ class WCollisionMgr {
     unsigned int fSurfaceExclusionMask; // offset 0x0, size 0x4
     unsigned int fPrimitiveMask;        // offset 0x4, size 0x4
 
-  public:
     bool GetWorldHeightAtPointRigorous(const UMath::Vector3 &pt, float &height, UMath::Vector3 *normal);
 
     WCollisionMgr(unsigned int surfaceExclMask, unsigned int primitiveExclMask) {

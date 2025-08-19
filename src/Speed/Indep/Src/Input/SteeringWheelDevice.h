@@ -1,0 +1,10 @@
+#ifndef INPUT_STEERINGWHEELDEVICE_H
+#define INPUT_STEERINGWHEELDEVICE_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

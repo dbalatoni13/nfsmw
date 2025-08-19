@@ -1,0 +1,10 @@
+#ifndef ANIMATION_ANIMENTITY_PROP_H
+#define ANIMATION_ANIMENTITY_PROP_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

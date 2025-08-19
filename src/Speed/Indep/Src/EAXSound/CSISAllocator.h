@@ -1,0 +1,10 @@
+#ifndef EAXSOUND_CSISALLOCATOR_H
+#define EAXSOUND_CSISALLOCATOR_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

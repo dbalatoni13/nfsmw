@@ -1,0 +1,10 @@
+#ifndef EAXSOUND_SND_GEN_COPSPEECH_H
+#define EAXSOUND_SND_GEN_COPSPEECH_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

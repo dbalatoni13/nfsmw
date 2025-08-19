@@ -1,0 +1,10 @@
+#ifndef INTERFACES_SIMABLES_IRBVEHICLE_H
+#define INTERFACES_SIMABLES_IRBVEHICLE_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

@@ -1,0 +1,10 @@
+#ifndef EAXSOUND_STREAM_SPEECHMODULE_H
+#define EAXSOUND_STREAM_SPEECHMODULE_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

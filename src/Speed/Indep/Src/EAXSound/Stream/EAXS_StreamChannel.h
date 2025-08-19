@@ -1,0 +1,10 @@
+#ifndef EAXSOUND_STREAM_EAXS_STREAMCHANNEL_H
+#define EAXSOUND_STREAM_EAXS_STREAMCHANNEL_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

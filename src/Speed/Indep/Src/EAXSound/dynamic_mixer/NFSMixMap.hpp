@@ -1,0 +1,10 @@
+#ifndef EAXSOUND_DYNAMIC_MIXER_NFSMIXMAP_H
+#define EAXSOUND_DYNAMIC_MIXER_NFSMIXMAP_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

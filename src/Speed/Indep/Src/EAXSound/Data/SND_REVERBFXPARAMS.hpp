@@ -1,0 +1,10 @@
+#ifndef EAXSOUND_DATA_SND_REVERBFXPARAMS_H
+#define EAXSOUND_DATA_SND_REVERBFXPARAMS_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

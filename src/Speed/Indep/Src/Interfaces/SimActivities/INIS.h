@@ -1,0 +1,10 @@
+#ifndef INTERFACES_SIMACTIVITIES_INIS_H
+#define INTERFACES_SIMACTIVITIES_INIS_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

@@ -1,0 +1,10 @@
+#ifndef EAXSOUND_OLDSOUNDTEMPLATES_H
+#define EAXSOUND_OLDSOUNDTEMPLATES_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

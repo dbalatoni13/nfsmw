@@ -1,0 +1,10 @@
+#ifndef EAXSOUND_EAXAITUNERCAR_H
+#define EAXSOUND_EAXAITUNERCAR_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

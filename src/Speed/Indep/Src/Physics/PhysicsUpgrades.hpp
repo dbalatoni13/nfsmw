@@ -1,0 +1,10 @@
+#ifndef PHYSICS_PHYSICSUPGRADES_H
+#define PHYSICS_PHYSICSUPGRADES_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

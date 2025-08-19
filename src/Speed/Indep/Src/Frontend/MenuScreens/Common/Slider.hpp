@@ -1,0 +1,10 @@
+#ifndef FRONTEND_MENUSCREENS_COMMON_SLIDER_H
+#define FRONTEND_MENUSCREENS_COMMON_SLIDER_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif

@@ -1,0 +1,10 @@
+#ifndef EAXSOUND_EAXAEMSMANAGER_H
+#define EAXSOUND_EAXAEMSMANAGER_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif
