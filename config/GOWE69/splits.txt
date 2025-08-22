@@ -235,6 +235,13 @@ asd2:
 	.ctors      start:0x803C8BE8 end:0x803C8C20
 	.dtors      start:0x803C8C44 end:0x803C8C5C
 
+snd/source/library/cmn/sstgetpv.c:
+	.text       start:0x803A3224 end:0x803A32BC
+	.rodata     start:0x80415160 end:0x8041516C
+
+snd/source/library/cmn/stimerem.c:
+	.text       start:0x803A32BC end:0x803A3398
+
 LibSN/crt0.s:
 	.init       start:0x80003100 end:0x80003468
 

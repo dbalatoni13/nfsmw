@@ -608,6 +608,37 @@ const Attrib::Gen::emitterdata &Emitter::GetAttributes() const {
     return this->mDynamicData->GetAttributes();
 }
 
+// UNSOLVED
+bool EmitterGroup::MakeOneShot(bool force_all) {
+    bool at_least_one_was_oneshot = false;
+    bool bVar2;
+
+    Emitter *emitter = this->mEmitters.GetHead();
+    do {
+        if (emitter == (Emitter *)&this->mEmitters) {
+            bVar2 = false;
+            if ((force_all) || (at_least_one_was_oneshot)) {
+                bVar2 = true;
+            }
+            return bVar2;
+        }
+        if (force_all) {
+        LAB_80111078:
+            emitter->mFlags = emitter->mFlags | 1;
+        } else {
+            const Attrib::Gen::emitterdata atr = emitter->GetAttributes();
+            bool one_shot = force_all;
+            if (atr.IsValid() && atr.IsOneShot()) {
+                at_least_one_was_oneshot = true;
+                one_shot = true;
+            }
+            if (one_shot)
+                goto LAB_80111078;
+        }
+        emitter = emitter->GetNext();
+    } while (true);
+}
+
 void EmitterGroup::SetLocalWorld(const bMatrix4 *m) {
     this->mLocalWorld = *m;
     for (Emitter *em = this->mEmitters.GetHead(); em != this->mEmitters.EndOfList(); em = em->GetNext()) {
@@ -639,37 +670,6 @@ void EmitterLibrary::EndianSwap() {
     bPlatEndianSwap(&this->LocalWorld);
     bPlatEndianSwap(&this->SectionNumber);
     bPlatEndianSwap(&this->mNumTriggers);
-}
-
-// UNSOLVED
-bool EmitterGroup::MakeOneShot(bool force_all) {
-    bool at_least_one_was_oneshot = false;
-    bool bVar2;
-
-    Emitter *emitter = this->mEmitters.GetHead();
-    do {
-        if (emitter == (Emitter *)&this->mEmitters) {
-            bVar2 = false;
-            if ((force_all) || (at_least_one_was_oneshot)) {
-                bVar2 = true;
-            }
-            return bVar2;
-        }
-        if (force_all) {
-        LAB_80111078:
-            emitter->mFlags = emitter->mFlags | 1;
-        } else {
-            const Attrib::Gen::emitterdata atr = emitter->GetAttributes();
-            bool one_shot = force_all;
-            if (atr.IsValid() && atr.IsOneShot()) {
-                at_least_one_was_oneshot = true;
-                one_shot = true;
-            }
-            if (one_shot)
-                goto LAB_80111078;
-        }
-        emitter = emitter->GetNext();
-    } while (true);
 }
 
 // UNSOLVED
