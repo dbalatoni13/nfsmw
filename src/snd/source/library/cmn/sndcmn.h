@@ -1,3 +1,9 @@
+#ifndef SNDCMN_H
+#define SNDCMN_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
 
 typedef struct TAGGEDPATCH {
     // total size: 0x8
@@ -413,3 +419,5 @@ extern int SNDPLATFORM_getcurframe(int voice);
 int SNDSTRM_getprogvol(int sndstreamhandle);
 
 int SNDtimeremaining(int shandle);
+
+#endif
