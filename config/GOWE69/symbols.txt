@@ -33046,7 +33046,6 @@ lbl_8041515C = .rodata:0x8041515C; // type:object size:0x4 align:4 data:float
 lbl_80415160 = .rodata:0x80415160; // type:object size:0x4 align:4 data:float
 lbl_80415164 = .rodata:0x80415164; // type:object size:0x4 align:4 data:float
 lbl_80415168 = .rodata:0x80415168; // type:object size:0x4 align:4 data:float
-lbl_8041516C = .rodata:0x8041516C; // type:object size:0x14 align:4 data:float
 RandomSortTCDir = .data:0x8041522C; // type:object size:0x4 scope:local data:4byte
 _7ICopMgr.mDisableCops = .data:0x8041525C; // type:object size:0x4 scope:global data:4byte
 _12AICopManager.mCopMinSpawnDist = .data:0x80415264; // type:object size:0x4 scope:global align:4 data:float

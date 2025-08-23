@@ -380,6 +380,8 @@ config.libs = [
             Object(NonMatching, "snd/source/library/cmn/saemstimupdt.c"),
             Object(NonMatching, "snd/source/library/cmn/salloc.c"),
             Object(NonMatching, "snd/source/library/cmn/sbadd.c"),
+            Object(Matching, "snd/source/library/cmn/sbpatinf.c"),
+            Object(Matching, "snd/source/library/cmn/sgetpvol.c"),
             Object(NonMatching, "snd/source/library/cmn/ssballoc.c"),
             Object(NonMatching, "snd/source/library/cmn/ssbhdrcpy.c"),
             Object(NonMatching, "snd/source/library/cmn/ssbhdrsze.c"),

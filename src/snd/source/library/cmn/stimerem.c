@@ -1,5 +1,7 @@
 #include "snd/source/library/cmn/sndcmn.h"
 
+#include "snd/source/library/gc/sndgc.h"
+
 int SNDtimeremaining(int shandle) {
     CHANPUB *ppubv;
     int currentframe;

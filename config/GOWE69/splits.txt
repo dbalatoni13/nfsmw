@@ -231,9 +231,19 @@ Speed/Indep/SourceLists/zFeOverlay.cpp:
 	.bss        start:0x804AAA90 end:0x804B4DE8
 
 asd2:
-	.text       start:0x8030EB08 end:0x803A30AC
+	.text       start:0x8030EB08 end:0x80372DD4
 	.ctors      start:0x803C8BE8 end:0x803C8C20
 	.dtors      start:0x803C8C44 end:0x803C8C5C
+
+snd/source/library/cmn/SNDI_findprime.c:
+	.text       start:0x80372DD4 end:0x80372ED0
+
+snd/source/library/cmn/sbpatinf.c:
+	.text       start:0x803A30AC end:0x803A3190
+
+snd/source/library/cmn/sgetpvol.c:
+	.text       start:0x803A3190 end:0x803A3224
+	.rodata     start:0x80415154 end:0x80415160
 
 snd/source/library/cmn/sstgetpv.c:
 	.text       start:0x803A3224 end:0x803A32BC
