@@ -268,6 +268,12 @@ typedef struct SNDSAMPLEATTR {
     int userdatasize[4]; // offset 0x58, size 0x10
 } SNDSAMPLEATTR;
 
+typedef struct SNDSAMPLEDESC {
+    // total size: 0x1C
+    unsigned int totalframes; // offset 0x0, size 0x4
+    void * psamples[6]; // offset 0x4, size 0x18
+} SNDSAMPLEDESC;
+
 typedef struct SNDPLAYOPTS {
     // total size: 0x18
     signed char vol; // offset 0x0, size 0x1
@@ -385,7 +391,7 @@ typedef struct SNDSTREAMCHANNEL {
 
 extern SNDGLOBALSTATE sndgs;
 
-inline int SNDI_ftoiround(float val) {
+static inline int SNDI_ftoiround(float val) {
     int result;
 
     if (val >= 0.0f) { 
@@ -397,27 +403,45 @@ inline int SNDI_ftoiround(float val) {
     return result;
 }
 
-inline int SNDI_ftoifast(float val) {
+static inline int SNDI_ftoifast(float val) {
     return SNDI_ftoiround(val * 127.0f);
 }
 
 // sst.c
-extern SNDSTREAMCHANNEL *SNDSTRMI_getstreamptr(int sndstreamhandle);
+SNDSTREAMCHANNEL *SNDSTRMI_getstreamptr(int sndstreamhandle);
+
+// salloc.c
+int SNDVOICEI_get(int handle);
+
+// sballoc.c
+TAGGEDPATCH *SNDBANKI_getppatch(BANKVER5 *pb, int patnum);
+
+// spatkey.c
+int iSNDpatchkey(int chan, int *psetchan);
+
+// spat2hdr.c
+void SNDI_patchtohdr(void *pbank, TAGGEDPATCH *ptp, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa, SNDSAMPLEDESC *pssd, unsigned char *isgeneric);
+
+// smemman.c
+void SNDMEMI_free(void *paddr);
+
+// sbvalid.c
+int SNDBANKI_valid(int bhandle);
+
+// sserver.c
+void SNDSYS_entercritical();
+void SNDSYS_leavecritical();
+
+
+
 
 // sgetpvol.c
 int SNDCTRL_getprogvol(int shandle);
 
-// salloc.c
-extern int SNDVOICEI_get(int handle);
-
-// spatkey.c
-extern int iSNDpatchkey(int chan, int *psetchan);
-
-// snddrv.c
-extern int SNDPLATFORM_getcurframe(int voice);
-
+// sstgetpv.c
 int SNDSTRM_getprogvol(int sndstreamhandle);
 
+// stimerem.c
 int SNDtimeremaining(int shandle);
 
 #endif
