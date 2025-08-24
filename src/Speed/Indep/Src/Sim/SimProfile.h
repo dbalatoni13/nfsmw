@@ -5,6 +5,11 @@
 #pragma once
 #endif
 
+struct HSIMPROFILE__ {
+    // total size: 0x4
+    int unused; // offset 0x0, size 0x4
+};
 
+typedef HSIMPROFILE__ *HSIMPROFILE;
 
 #endif

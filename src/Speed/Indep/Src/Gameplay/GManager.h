@@ -86,6 +86,10 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     static GManager &Get() {
         return *mObj;
     }
+
+    static bool Exists() {
+        return mObj != nullptr;
+    }
 };
 
 #endif

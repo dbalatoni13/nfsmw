@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+#include "types.h"
+
 #include "Speed/Indep/Libs/Support/Utility/UTLVector.h"
 
 namespace UTL {
@@ -24,18 +26,25 @@ template <typename T, std::size_t Size> class _Storage : public FixedVector<T, S
 };
 
 template <typename T> class Singleton {
+  public:
+    static T *Get() {
+        return mInstance;
+    }
+
+    static bool Exists() {
+        return mInstance != nullptr;
+    }
+
   protected:
     Singleton() {}
     ~Singleton() {}
 
-  public:
-    // static T *Get() {}
-
-    // static bool Exists() {}
+  private:
+    static T *mInstance;
 };
 
-template <typename T, typename U, int V> class Instanceable {
-    class _List : public FixedVector<_KeyedNode, 32, 16> {};
+template <typename T, typename U, std::size_t Size> class Instanceable {
+    class _List : public FixedVector<_KeyedNode, Size, 16> {};
 
     unsigned int _mHandle;
 

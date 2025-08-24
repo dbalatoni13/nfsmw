@@ -40,10 +40,6 @@ struct trafficpattern : Instance {
 
     static unsigned int ClassKey();
 
-    const char *CollectionName() const {
-        return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->CollectionName;
-    }
-
     const Instance &GetBase() const {
         return *this;
     }
@@ -53,8 +49,15 @@ struct trafficpattern : Instance {
         return *this;
     }
 
+    const float &SpeedStreet(unsigned int index) const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x7c44962f, index));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
+        }
+        return *resultptr;
+    }
+
     const TrafficPatternRecord &Vehicles(unsigned int index) const {
-        // TODO "Vehicles"
         const TrafficPatternRecord *resultptr = reinterpret_cast<const TrafficPatternRecord *>(this->GetAttributePointer(0x94e3c795, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const TrafficPatternRecord *>(DefaultDataArea(sizeof(TrafficPatternRecord)));
@@ -63,8 +66,27 @@ struct trafficpattern : Instance {
     }
 
     unsigned int Num_Vehicles() const {
-        // TODO "Vehicles"
         return this->Get(0x94e3c795).GetLength();
+    }
+
+    const char *CollectionName() const {
+        return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->CollectionName;
+    }
+
+    const float &SpeedHighway(unsigned int index) const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x9e404e33, index));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
+        }
+        return *resultptr;
+    }
+
+    const float &SpawnTime(unsigned int index) const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xbf2fdb5c, index));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
+        }
+        return *resultptr;
     }
 };
 

@@ -1,20 +1,19 @@
-#include "./Ecstasy.hpp"
-
-#include "./EcstasyE.hpp"
-#include "./Texture.hpp"
-#include "./eEnvMapE.hpp"
-#include "./eLight.hpp"
-#include "./eModel.hpp"
-#include "./eSolid.hpp"
-#include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
+#include "Ecstasy.hpp"
+#include "EcstasyE.hpp"
 #include "Speed/Indep/Src/Animation/AnimEngineManager.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Frontend/FEngFont.hpp"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/World/Scenery.hpp"
 #include "Speed/Indep/Src/World/ScreenEffects.hpp"
 #include "Speed/Indep/Src/World/SimpleModelAnim.hpp"
 #include "Speed/Indep/Src/World/Sun.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
+#include "Texture.hpp"
+#include "eEnvMapE.hpp"
+#include "eLight.hpp"
+#include "eModel.hpp"
+#include "eSolid.hpp"
 
 float renderModifier = 1.0f;
 unsigned int numCopsActiveCherry;
@@ -168,7 +167,7 @@ void SetupSceneryCullInfo(eView *view /* r30 */, SceneryCullInfo &info /* r29 */
     if (view_id - 16 <= 5U)
         exclude_flags |= 0x100;
 
-    if (GRaceStatus::fObj->Exists() && GRaceStatus::fObj->Get().GetPlayMode() == 1)
+    if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == 1)
         exclude_flags |= 4;
     if (exclude_flags & 0x1800)
         exclude_flags |= 0x40;

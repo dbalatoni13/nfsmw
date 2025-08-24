@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
+
 class UCrc32 {
     // total size: 0x4
     unsigned int mCRC; // offset 0x0, size 0x4
@@ -12,17 +14,15 @@ class UCrc32 {
   public:
     static const UCrc32 kNull;
 
-    // UCrc32() {}
+    UCrc32() : mCRC(0) {}
 
-    // UCrc32(const char *name) {}
+    UCrc32(const char *name) : mCRC(stringhash(name)) {}
 
     // UCrc32(const void *data, unsigned int datalen) {}
 
-    UCrc32(const UCrc32 &from) {
-        this->mCRC = from.mCRC;
-    }
+    UCrc32(const UCrc32 &from) : mCRC(from.mCRC) {}
 
-    // UCrc32(unsigned int crc) {}
+    UCrc32(unsigned int crc) : mCRC(crc) {}
 
     // const struct UCrc32 &operator=(const struct UCrc32 &from) {}
 

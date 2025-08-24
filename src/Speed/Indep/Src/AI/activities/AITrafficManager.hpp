@@ -16,6 +16,8 @@
 #include "Speed/Indep/Src/Sim/SimTypes.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.hpp"
 
+#include "algorithm"
+
 enum eTrafficDensity {
     NUM_TRAFFIC_DENSITIES = 4,
     eTRAFFICDENSITY_HIGH = 3,
@@ -30,19 +32,32 @@ struct _type_TrafficList {
     }
 };
 
+struct _type_AITrafficManager_PatternMap {
+    const char *name() {
+        return "AITrafficManager::PatternMap";
+    }
+};
+
 class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehicleCache, public Debugable {
-    struct _type_AITrafficManager_PatternMap {
-        const char *name() {
-            return "AITrafficManager::PatternMap";
+    struct PatternKey {
+        int BHash;
+        Attrib::Key CollectionKey;
+
+        bool operator<(const PatternKey &rhs) const {
+            return BHash < rhs.BHash;
         }
     };
 
-    struct PatternKey {
-        int BHash;
-        unsigned int CollectionKey;
+    struct PatternMap : public UTL::Std::vector<PatternKey, _type_AITrafficManager_PatternMap> {
+        Attrib::Key Find(int bhash) const {
+            PatternKey key = {bhash, 0};
+            PatternMap::const_iterator iter = std::lower_bound(this->begin(), this->end(), key);
+            if (iter != this->end() && iter->BHash == bhash) {
+                return iter->CollectionKey;
+            }
+            return 0;
+        }
     };
-
-    struct PatternMap : public UTL::Std::vector<PatternKey, _type_AITrafficManager_PatternMap> {};
 
     // total size: 0x3C4
     HSIMTASK mTask;                                          // offset 0x68, size 0x4
@@ -66,7 +81,7 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
     virtual void OnAttached(IAttachable *pOther);
     virtual void OnDetached(IAttachable *pOther);
     unsigned int NextSpawn();
-    IVehicle *GetAvailableTrafficVehicle(unsigned int key, bool makenew);
+    IVehicle *GetAvailableTrafficVehicle(Attrib::Key key, bool makenew);
     bool SpawnTraffic();
     bool NeedsTraffic() const;
     void UpdateDebug();

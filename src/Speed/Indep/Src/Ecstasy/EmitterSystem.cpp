@@ -824,7 +824,6 @@ EmitterGroup *EmitterSystem::CreateEmitterGroup(const unsigned int &group_key, u
     return nullptr;
 }
 
-// UNSOLVED
 EmitterGroup *EmitterSystem::CreateEmitterGroup(const Attrib::Collection *group_spec, unsigned int creation_context_flags) {
     int ThisIsNISCondition;
     EmitterGroup *grp;
@@ -839,77 +838,87 @@ EmitterGroup *EmitterSystem::CreateEmitterGroup(const Attrib::Collection *group_
         }
         grp = nullptr;
         ThisIsNISCondition = IsInNIS;
-        if (!group_spec) {
-            return nullptr;
-        }
-        Attrib::Gen::emittergroup atr(group_spec, 0, nullptr);
-        if (atr.GetCollection() != 0xeec2271a && atr.GetCollection() != 0) {
-            bool all_good = true;
-            int numEmitters = atr.Num_Emitters();
-            for (int i = 0; all_good && i < numEmitters; i++) {
-                const struct Attrib::Collection *emspec = atr.Emitters(i).GetCollection();
-                if (!emspec) {
-                    all_good = false;
-                }
-            }
-            if (!all_good) {
-                return nullptr;
-            }
-            static bool warn_once = false;
-            bool is_full = false;
-            if ((this->mNumEmitters + numEmitters > 500) || (this->mNumEmitterGroups > 199)) {
-                is_full = true;
-            }
-            bool high_priority = creation_context_flags & 0x40000;
-            if (is_full && high_priority) {
-                int need_emitters = this->mNumEmitters + numEmitters - 500;
-                int need_groups = 1;
-                bool done = false;
-                for (EmitterGroup *grp = this->mEmitterGroups.GetHead(); !done && grp != this->mEmitterGroups.EndOfList();) {
-                    EmitterGroup *grpnext = grp->GetNext();
-                    if ((grp->GetFlags() & 0x8000000) && !(grp->GetFlags() & 0x40000) && !(grp->GetFlags() & 0x4000000)) {
-                        need_groups--;
-                        need_emitters -= grp->CurrentNumEmitters();
-                        delete grp;
-                        if ((need_emitters < 1) && (need_groups < 1)) {
-                            done = true;
-                        }
+        if (group_spec) {
+
+            Attrib::Gen::emittergroup atr(group_spec, 0, nullptr);
+            if (atr.GetCollection() != 0xeec2271a && atr.GetCollection() != 0) {
+                bool all_good = true;
+                int numEmitters = atr.Num_Emitters();
+                for (int i = 0; all_good && i < numEmitters; i++) {
+                    const struct Attrib::Collection *emspec = atr.Emitters(i).GetCollection();
+                    if (!emspec) {
+                        all_good = false;
                     }
-                    grp = grpnext;
                 }
-                if (!done) {
+                if (!all_good) {
+                    return nullptr;
+                }
+                static bool warn_once = false;
+                bool is_full = false;
+                if ((this->mNumEmitters + numEmitters > 500) || (this->mNumEmitterGroups > 199)) {
+                    is_full = true;
+                }
+                bool high_priority = creation_context_flags & 0x40000;
+                if (is_full && high_priority) {
+                    int need_emitters = this->mNumEmitters + numEmitters - 500;
+                    int need_groups = 1;
+                    bool done = false;
                     for (EmitterGroup *grp = this->mEmitterGroups.GetHead(); !done && grp != this->mEmitterGroups.EndOfList();) {
                         EmitterGroup *grpnext = grp->GetNext();
-                        if (!(grp->GetFlags() & 0x40000)) {
-                            done = true;
+                        if ((grp->GetFlags() & 0x8000000) && !(grp->GetFlags() & 0x40000) && !(grp->GetFlags() & 0x4000000)) {
+                            need_groups--;
+                            need_emitters -= grp->CurrentNumEmitters();
                             delete grp;
+                            if ((need_emitters < 1) && (need_groups < 1)) {
+                                done = true;
+                            }
                         }
                         grp = grpnext;
                     }
-                }
-            }
-            if (ThisIsNISCondition || (this->mNumEmitters + numEmitters < 501 && (this->mNumEmitterGroups < 200))) {
-                grp = new EmitterGroup(group_spec, creation_context_flags);
-                if (grp) {
-                    grp->Enable();
-                    bVector3 bla(0.0f, 0.0f, 0.0f);
-                    grp->SetInheritVelocity(&bla);
-                    EmitterLibrary *lib = this->FindLibrary(atr.GetCollection());
-                    if (lib) {
-                        grp->SetLocalWorld(&lib->LocalWorld);
+                    if (!done) {
+                        for (EmitterGroup *grp = this->mEmitterGroups.GetHead(); !done && grp != this->mEmitterGroups.EndOfList();) {
+                            EmitterGroup *grpnext = grp->GetNext();
+                            if (!(grp->GetFlags() & 0x40000)) {
+                                done = true;
+                                delete grp;
+                            }
+                            grp = grpnext;
+                        }
                     }
-                    this->mNumEmitters += numEmitters;
-                    this->mNumEmitterGroups++;
-                    this->mEmitterGroups.AddTail(grp);
                 }
-            }
-            // TODO should be if
-            else if (!warn_once) {
-                warn_once = true;
-                return nullptr;
+
+                if (ThisIsNISCondition || (this->mNumEmitters + numEmitters < 501 && this->mNumEmitterGroups < 200)) {
+                    grp = new EmitterGroup(group_spec, creation_context_flags);
+                    if (grp) {
+                        grp->Enable();
+                        bVector3 zero(0.0f, 0.0f, 0.0f);
+                        grp->SetInheritVelocity(&zero);
+
+                        if (EmitterLibrary *lib = this->FindLibrary(atr.GetCollection())) {
+                            grp->SetLocalWorld(&lib->LocalWorld);
+                        }
+
+                        this->mNumEmitters += numEmitters;
+                        this->mNumEmitterGroups++;
+                        this->mEmitterGroups.AddTail(grp);
+                    } else {
+                        // allocation failed → warn+return
+                        if (!warn_once) {
+                            warn_once = true;
+                        }
+                        return nullptr;
+                    }
+                } else {
+                    // condition failed → warn+return
+                    if (!warn_once) {
+                        warn_once = true;
+                    }
+                    return nullptr;
+                }
             }
         }
     }
+
     return grp;
 }
 

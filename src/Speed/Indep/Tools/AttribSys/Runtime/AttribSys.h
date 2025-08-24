@@ -12,6 +12,8 @@
 // Credit: Brawltendo
 namespace Attrib {
 
+typedef unsigned int Key;
+
 // const int kTypeHandlerCount = 7;
 // unsigned int kTypeHandlerIds[kTypeHandlerCount] = {0x2B936EB7u, 0xAA229CD7u, 0x341F03A0u, 0x600994C4u, 0x681D219Cu, 0x5FDE6463u, 0x57D382C9u};
 
@@ -23,8 +25,8 @@ inline void Free(void *ptr, unsigned int bytes, const char *name) {
 
 class RefSpec {
     // total size: 0xC
-    unsigned int mClassKey;           // offset 0x0, size 0x4
-    unsigned int mCollectionKey;      // offset 0x4, size 0x4
+    Key mClassKey;                    // offset 0x0, size 0x4
+    Key mCollectionKey;               // offset 0x4, size 0x4
     const Collection *mCollectionPtr; // offset 0x8, size 0x4
 
   public:
@@ -34,10 +36,10 @@ class RefSpec {
     const Collection *GetCollectionWithDefault() const;
     void Clean() const;
 
-    unsigned int GetClassKey() {
+    Key GetClassKey() const {
         return mClassKey;
     }
-    unsigned int GetCollectionKey() {
+    Key GetCollectionKey() const {
         return mCollectionKey;
     }
 };
@@ -97,13 +99,13 @@ struct Instance {
 
     Instance(const struct Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner);
     ~Instance();
-    unsigned int GetClass() const;
-    unsigned int GetCollection() const;
-    unsigned int GetParent() const;
+    Key GetClass() const;
+    Key GetCollection() const;
+    Key GetParent() const;
     void SetParent(unsigned int parent);
-    const void *GetAttributePointer(unsigned int attribkey, unsigned int index) const;
+    const void *GetAttributePointer(Key attribkey, unsigned int index) const;
     const Instance &operator=(const Instance &rhs);
-    Attribute Get(unsigned int attributeKey) const;
+    Attribute Get(Key attributeKey) const;
 
     void *GetLayoutPointer() const {
         return mLayoutPtr;

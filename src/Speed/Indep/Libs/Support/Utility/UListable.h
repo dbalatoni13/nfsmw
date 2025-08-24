@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include <algorithm>
 #include <cstddef>
 
 #include "UTLVector.h"
@@ -17,8 +18,6 @@ template <typename T, std::size_t U> class Listable {
     typedef T value_type;
     typedef value_type *pointer;
     typedef const value_type *const_pointer;
-    typedef pointer *iterator;
-    typedef const pointer *const_iterator;
 
     class List : public FixedVector<pointer, U> {
       public:
@@ -30,6 +29,7 @@ template <typename T, std::size_t U> class Listable {
     };
 
     typedef void (*ForEachFunc)(pointer);
+    typedef bool (*ComparisonFunc)(pointer, pointer);
 
   protected:
     Listable() {}
@@ -45,6 +45,10 @@ template <typename T, std::size_t U> class Listable {
         return _mTable;
     }
 
+    static void Sort(ComparisonFunc pred) {
+        std::sort(_mTable.begin(), _mTable.end(), pred);
+    }
+
   private:
     static List _mTable;
 };
@@ -54,11 +58,12 @@ template <typename T, std::size_t ListSize, typename Enum, std::size_t EnumMax> 
     typedef T value_type;
     typedef value_type *pointer;
     typedef const value_type *const_pointer;
-    typedef pointer *iterator;
-    typedef const pointer *const_iterator;
 
     class List : public FixedVector<pointer, ListSize> {
       public:
+        typedef pointer *iterator;
+        typedef const pointer *const_iterator;
+
         List(const List &);
         List();
         virtual ~List();

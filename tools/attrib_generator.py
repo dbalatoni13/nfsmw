@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------------
-# Generate AttribSys class header files from info.yml
+# Generate AttribSys class header files from info.yml and a txt file that contains names in a <hex hash> - <string> format
 # -------------------------------------------------------------------------------
 import sys
 import os
@@ -78,7 +78,7 @@ def get_layout_struct_field(field):
     return out
 
 
-def get_getter(field):
+def get_layout_getter(field):
     out = ""
     field_name = field["Name"]
     type_name = field["TypeName"]
@@ -116,8 +116,40 @@ def get_getter(field):
     return out
 
 
-def process_file(filename, outdirectory):
+def get_non_layout_getter(field, hash):
+    out = ""
+    field_name = field["Name"]
+    type_name = field["TypeName"]
+    type = type_replacement.get(type_name, type_name)
+
+    out += f"""const {type} &{field_name}(unsigned int index) const {{
+        const {type} *resultptr = reinterpret_cast<const {type} *>(this->GetAttributePointer({hash}, index));
+        if (!resultptr) {{
+            resultptr = reinterpret_cast<const {type} *>(DefaultDataArea(sizeof({type})));
+        }}
+        return *resultptr;
+    }}
+        
+"""
+
+    if "Array" in field["Flags"]:
+        out += f"""unsigned int Num_{field_name}() const {{
+            return this->Get({hash}).GetLength();
+        }}
+
+"""
+
+    return out
+
+
+def process_file(filename, strings_file, outdirectory):
     print("Processing file:", filename)
+    strToHash = {}
+    with open(strings_file, "r") as f:
+        for line in f.readlines():
+            split = line.strip().split(" - ")
+            strToHash[split[1]] = split[0]
+
     with open(filename, "rb") as f:
         data = yaml.safe_load(f)
         for clazz in data["Classes"]:
@@ -151,10 +183,16 @@ def process_file(filename, outdirectory):
 """
 
             for field in fields:
-                if "InLayout" not in field["Flags"]:
-                    continue
-
-                out += get_getter(field)
+                if "InLayout" in field["Flags"]:
+                    out += get_layout_getter(field)
+                else:
+                    try:
+                        hash = strToHash[field["Name"]]
+                        out += get_non_layout_getter(field, hash)
+                    except KeyError:
+                        print(
+                            f"Couldn't find hash for field {field['Name']} in class {name}"
+                        )
 
             out += "};\n"
             out += FILE_EPILOGUE
@@ -164,7 +202,11 @@ def process_file(filename, outdirectory):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("Expected usage: {0} <input file> <output directory>".format(sys.argv[0]))
+    if len(sys.argv) < 4:
+        print(
+            "Expected usage: {0} <vault yml file> <vault string file> <output directory>".format(
+                sys.argv[0]
+            )
+        )
         sys.exit(1)
-    process_file(sys.argv[1], sys.argv[2])
+    process_file(sys.argv[1], sys.argv[2], sys.argv[3])

@@ -21,9 +21,9 @@ class Param {
     unsigned int pad;  // offset 0xC, size 0x4
 
   public:
-    Param(const Param &from) : mType(from.mType), mName(from.mName) {
-        this->mData = from.mData;
-    }
+    Param(const Param &from) : mType(from.mType), mName(from.mName), mData(from.mData) {}
+
+    template <typename T> Param(UCrc32 name, T *addr) : mName(name), mData(addr) {}
 };
 
 class Packet {};
@@ -36,7 +36,9 @@ class Object : public UTL::COM::Object, public IServiceable, public ITaskable, p
   protected:
     Object(unsigned int num_interfaces);
 
-    virtual bool OnService(HSIMSERVICE, Sim::Packet *);
+    virtual ~Object();
+
+    virtual bool OnService(HSIMSERVICE hCon, Sim::Packet *pkt);
 
     virtual bool OnTask(HSIMTASK htask, float dT);
 };

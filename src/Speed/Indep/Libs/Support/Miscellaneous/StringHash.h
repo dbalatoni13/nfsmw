@@ -38,4 +38,10 @@ public:
 
 // clang-format on
 
+unsigned int stringhash32(const char *k);
+
+inline unsigned int stringhash(const char *k) {
+    return stringhash32(k);
+}
+
 #endif

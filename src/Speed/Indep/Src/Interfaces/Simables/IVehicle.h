@@ -6,8 +6,12 @@
 #endif
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Src/AI/AIVehicle.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 
 enum eVehicleList {
     VEHICLE_MAX = 10,
@@ -33,7 +37,106 @@ enum PhysicsMode {
     PHYSICS_MODE_SIMULATED = 1,
     PHYSICS_MODE_INACTIVE = 0,
 };
-struct DriverClass;
+
+enum CarType {
+    NUM_CARTYPES = 84,
+    CARTYPE_PICKUPA = 83,
+    CARTYPE_MINIVAN = 82,
+    CARTYPE_TAXI = 81,
+    CARTYPE_PIZZA = 80,
+    CARTYPE_GARB = 79,
+    CARTYPE_CEMTR = 78,
+    CARTYPE_COPSPORTGHOST = 77,
+    CARTYPE_COPSPORTHENCH = 76,
+    CARTYPE_COPGTOGHOST = 75,
+    CARTYPE_PUNTO = 74,
+    CARTYPE_COPGTO = 73,
+    CARTYPE_COPSUVL = 72,
+    CARTYPE_COPGHOST = 71,
+    CARTYPE_CLIO = 70,
+    CARTYPE_BMWM3 = 69,
+    CARTYPE_COBALTSS = 68,
+    CARTYPE_GALLARDO = 67,
+    CARTYPE_DB9 = 66,
+    CARTYPE_CTS = 65,
+    CARTYPE_CLK500 = 64,
+    CARTYPE_CAYMANS = 63,
+    CARTYPE_GTI = 62,
+    CARTYPE_COPSPORT = 61,
+    CARTYPE_A4 = 60,
+    CARTYPE_MURCIELAGO = 59,
+    CARTYPE_RX8SPEEDT = 58,
+    CARTYPE_COPSUV = 57,
+    CARTYPE_RX7 = 56,
+    CARTYPE_CORVETTEC6R = 55,
+    CARTYPE_SUPRA = 54,
+    CARTYPE_ECLIPSEGT = 53,
+    CARTYPE_FORDGT = 52,
+    CARTYPE_COPMIDSIZEINT = 51,
+    CARTYPE_ELISE = 50,
+    CARTYPE_SL65 = 49,
+    CARTYPE_MONARO = 48,
+    CARTYPE_IS300 = 47,
+    CARTYPE_TRAILERCMT = 46,
+    CARTYPE_TRAILERCRATE = 45,
+    CARTYPE_TRAILERCON = 44,
+    CARTYPE_TRAILERLOG = 43,
+    CARTYPE_TRAFAMB = 42,
+    CARTYPE_BMWM3GTRE46 = 41,
+    CARTYPE_911GT2 = 40,
+    CARTYPE_TRAFPIZZA = 39,
+    CARTYPE_TRAFCOURT = 38,
+    CARTYPE_TRAFTAXI = 37,
+    CARTYPE_TRAFVANB = 36,
+    CARTYPE_TRAFSTWAG = 35,
+    CARTYPE_TRAFPICKUPA = 34,
+    CARTYPE_TRAFNEWS = 33,
+    CARTYPE_TRAFMINIVAN = 32,
+    CARTYPE_TRAFGARB = 31,
+    CARTYPE_TRAFFIRE = 30,
+    CARTYPE_TRAFDMPTR = 29,
+    CARTYPE_TRAFCEMTR = 28,
+    CARTYPE_TRAFCAMPER = 27,
+    CARTYPE_TRAF4DSEDC = 26,
+    CARTYPE_TRAF4DSEDA = 25,
+    CARTYPE_997S = 24,
+    CARTYPE_SL500 = 23,
+    CARTYPE_BMWM3GTR = 22,
+    CARTYPE_A3 = 21,
+    CARTYPE_TT = 20,
+    CARTYPE_TRAFFICCOUP = 19,
+    CARTYPE_TRAF4DSEDB = 18,
+    CARTYPE_TRAFSUVA = 17,
+    CARTYPE_TRAFHA = 16,
+    CARTYPE_CORVETTE = 15,
+    CARTYPE_TRAILERB = 14,
+    CARTYPE_TRAILERA = 13,
+    CARTYPE_SLR = 12,
+    CARTYPE_GTO = 11,
+    CARTYPE_SEMI = 10,
+    CARTYPE_CAMARO = 9,
+    CARTYPE_MUSTANGGT = 8,
+    CARTYPE_LANCEREVO8 = 7,
+    CARTYPE_IMPREZAWRX = 6,
+    CARTYPE_RX8 = 5,
+    CARTYPE_COPHELI = 4,
+    CARTYPE_COPMIDSIZE = 3,
+    CARTYPE_VIPER = 2,
+    CARTYPE_CARRERAGT = 1,
+    CARTYPE_911TURBO = 0,
+    CARTYPE_NONE = -1,
+};
+
+enum DriverClass {
+    DRIVER_REMOTE = 6,
+    DRIVER_NIS = 5,
+    DRIVER_NONE = 4,
+    DRIVER_RACER = 3,
+    DRIVER_COP = 2,
+    DRIVER_TRAFFIC = 1,
+    DRIVER_HUMAN = 0,
+};
+
 namespace Physics {
 struct Tunings;
 }; // namespace Physics
@@ -47,60 +150,60 @@ class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet
     }
 
     virtual ~IVehicle() {}
-    virtual void *GetSimable() const;
-    virtual void *GetSimable();
-    virtual UMath::Vector3 &GetPosition();
-    virtual void SetBehaviorOverride(uint32_t, uint32_t);
-    virtual void RemoveBehaviorOverride(uint32_t);
-    virtual void CommitBehaviorOverrides();
-    virtual void SetStaging(bool staging);
-    virtual bool IsStaging();
-    virtual void Launch();
-    virtual float GetPerfectLaunch();
-    virtual void SetDriverStyle(enum DriverStyle style);
-    virtual enum DriverStyle GetDriverStyle();
-    virtual void SetPhysicsMode(enum PhysicsMode mode);
-    virtual enum PhysicsMode GetPhysicsMode();
-    virtual int GetModelType();
-    virtual bool IsSpooled();
-    virtual int GetVehicleClass();
-    virtual int GetVehicleAttributes();
-    virtual char *GetVehicleName();
-    virtual uint32_t GetVehicleKey();
-    virtual void SetDriverClass(DriverClass dc);
-    virtual DriverClass GetDriverClass();
-    virtual bool IsLoading();
-    virtual float GetOffscreenTime();
-    virtual float GetOnScreenTime();
-    virtual void SetVehicleOnGround(const UMath::Vector3 &, const UMath::Vector3 &);
-    virtual void ForceStopOn(bool);
-    virtual void ForceStopOff(bool);
-    virtual bool GetForceStop();
-    virtual bool InShock();
-    virtual bool IsDestroyed();
-    virtual void Activate();
-    virtual void Deactivate();
-    virtual bool IsActive();
-    virtual float GetSpeedometer();
-    virtual float GetSpeed();
-    virtual void SetSpeed(float speed);
-    virtual float GetAbsoluteSpeed();
-    virtual bool IsGlareOn(int id);
-    virtual void GlareOn(int id);
-    virtual void GlareOff(int id);
-    virtual bool IsCollidingWithSoftBarrier();
-    virtual void *GetAIVehiclePtr();
-    virtual float GetSlipAngle();
-    virtual UMath::Vector3 &GetLocalVelocity();
-    virtual void ComputeHeading(UMath::Vector3 *);
-    virtual bool IsAnimating();
-    virtual void SetAnimating(bool animating);
-    virtual bool IsOffWorld();
-    virtual void *GetCustomizations();
-    virtual Physics::Tunings *GetTunings();
-    virtual void SetTunings(const Physics::Tunings &);
-    virtual void *GetPerformance(void *);
-    virtual char *GetCacheName();
+    virtual const ISimable *GetSimable() const = 0;
+    virtual ISimable *GetSimable() = 0;
+    virtual UMath::Vector3 &GetPosition() = 0;
+    virtual void SetBehaviorOverride(UCrc32 mechanic, UCrc32 behavior) = 0;
+    virtual void RemoveBehaviorOverride(UCrc32 mechanic) = 0;
+    virtual void CommitBehaviorOverrides() = 0;
+    virtual void SetStaging(bool staging) = 0;
+    virtual bool IsStaging() = 0;
+    virtual void Launch() = 0;
+    virtual float GetPerfectLaunch() = 0;
+    virtual void SetDriverStyle(DriverStyle style) = 0;
+    virtual DriverStyle GetDriverStyle() = 0;
+    virtual void SetPhysicsMode(PhysicsMode mode) = 0;
+    virtual PhysicsMode GetPhysicsMode() const = 0;
+    virtual CarType GetModelType() = 0;
+    virtual bool IsSpooled() = 0;
+    virtual const UCrc32 GetVehicleClass() = 0;
+    virtual Attrib::Gen::pvehicle &GetVehicleAttributes() = 0;
+    virtual const char *GetVehicleName() = 0;
+    virtual unsigned int GetVehicleKey() = 0;
+    virtual void SetDriverClass(DriverClass dc) = 0;
+    virtual DriverClass GetDriverClass() = 0;
+    virtual bool IsLoading() const = 0;
+    virtual float GetOffscreenTime() = 0;
+    virtual float GetOnScreenTime() = 0;
+    virtual void SetVehicleOnGround(const UMath::Vector3 &resetPos, const UMath::Vector3 &initialVec) = 0;
+    virtual void ForceStopOn(char forceStopBits) = 0;
+    virtual void ForceStopOff(char forceStopBits) = 0;
+    virtual bool GetForceStop() = 0;
+    virtual bool InShock() = 0;
+    virtual bool IsDestroyed() = 0;
+    virtual void Activate() = 0;
+    virtual void Deactivate() = 0;
+    virtual bool IsActive() const = 0;
+    virtual float GetSpeedometer() = 0;
+    virtual float GetSpeed() = 0;
+    virtual void SetSpeed(float speed) = 0;
+    virtual float GetAbsoluteSpeed() = 0;
+    virtual bool IsGlareOn(int glare) = 0;
+    virtual void GlareOn(int glare) = 0; // TODO "ID" enum
+    virtual void GlareOff(int glare) = 0;
+    virtual bool IsCollidingWithSoftBarrier() = 0;
+    virtual AIVehicle *GetAIVehiclePtr() = 0;
+    virtual float GetSlipAngle() = 0;
+    virtual UMath::Vector3 &GetLocalVelocity() = 0;
+    virtual void ComputeHeading(UMath::Vector3 *v) = 0;
+    virtual bool IsAnimating() = 0;
+    virtual void SetAnimating(bool animate) = 0;
+    virtual bool IsOffWorld() = 0;
+    virtual struct FECustomizationRecord *GetCustomizations() = 0;
+    virtual Physics::Tunings *GetTunings() = 0;
+    virtual void SetTunings(const Physics::Tunings &tunings) = 0;
+    virtual bool GetPerformance(struct Performance &performance) = 0;
+    virtual const char *GetCacheName() = 0;
 };
 
 #endif
