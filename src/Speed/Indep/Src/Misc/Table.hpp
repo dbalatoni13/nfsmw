@@ -6,6 +6,7 @@
 #endif
 
 class TableBase {
+  protected:
     // total size: 0x10
     int NumEntries;        // offset 0x0, size 0x4
     float MinArg;          // offset 0x4, size 0x4

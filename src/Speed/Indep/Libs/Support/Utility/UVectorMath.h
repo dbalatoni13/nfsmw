@@ -7,6 +7,14 @@
 
 #include "UTypes.h"
 
+inline float VU0_fabs(const float a) {
+    return a < 0.0f ? -a : a;
+}
+
+inline float VU0_Pow(float x, float e) {
+    return powf(x, e);
+}
+
 inline float VU0_floatmin(const float a, const float b) {
     if (a < b)
         return a;

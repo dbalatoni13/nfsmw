@@ -11,7 +11,7 @@ class VehicleBehavior : public Behavior {
   public:
     virtual ~VehicleBehavior();
 
-    VehicleBehavior(const struct BehaviorParams &bp, unsigned int num_interfaces) : Behavior(bp, num_interfaces) {}
+    VehicleBehavior(const struct BehaviorParams &bp, unsigned int num_interfaces);
 
     class IVehicle *GetVehicle() {
         return mVehicle;

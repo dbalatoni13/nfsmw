@@ -7,6 +7,7 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
+#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 
 class IRigidBody : public UTL::COM::IUnknown, public UTL::Collections::Listable<IRigidBody, 160> {
   public:
@@ -17,6 +18,9 @@ class IRigidBody : public UTL::COM::IUnknown, public UTL::Collections::Listable<
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    // TODO add other virtual functions
+    virtual void ResolveForceAtPoint(const UMath::Vector3 &force, const UMath::Vector3 &pt);
 };
 
 #endif

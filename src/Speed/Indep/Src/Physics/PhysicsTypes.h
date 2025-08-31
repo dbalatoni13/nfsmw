@@ -5,6 +5,62 @@
 #pragma once
 #endif
 
+enum GearID {
+    G_MAX = 10,
+    G_EIGHTH = 9,
+    G_SEVENTH = 8,
+    G_SIXTH = 7,
+    G_FIFTH = 6,
+    G_FOURTH = 5,
+    G_THIRD = 4,
+    G_SECOND = 3,
+    G_FIRST = 2,
+    G_NEUTRAL = 1,
+    G_REVERSE = 0,
+};
 
+enum eTireDamage {
+    TIRE_DAMAGE_BLOWN = 2,
+    TIRE_DAMAGE_PUNCTURED = 1,
+    TIRE_DAMAGE_NONE = 0,
+};
+
+enum ShiftStatus {
+    SHIFT_STATUS_MISSED = 4,
+    SHIFT_STATUS_PERFECT = 3,
+    SHIFT_STATUS_GOOD = 2,
+    SHIFT_STATUS_NORMAL = 1,
+    SHIFT_STATUS_NONE = 0,
+};
+
+struct AxlePair {
+    // total size: 0x8
+    float Front; // offset 0x0, size 0x4
+    float Rear;  // offset 0x4, size 0x4
+
+    float At(int index) const {
+        return (&Front)[index];
+    }
+};
+
+enum DriverStyle {
+    STYLE_DRAG = 1,
+    STYLE_RACING = 0,
+};
+
+enum PhysicsMode {
+    PHYSICS_MODE_EMULATED = 2,
+    PHYSICS_MODE_SIMULATED = 1,
+    PHYSICS_MODE_INACTIVE = 0,
+};
+
+enum ShiftPotential {
+    SHIFT_POTENTIAL_MISS = 5,
+    SHIFT_POTENTIAL_PERFECT = 4,
+    SHIFT_POTENTIAL_GOOD = 3,
+    SHIFT_POTENTIAL_UP = 2,
+    SHIFT_POTENTIAL_DOWN = 1,
+    SHIFT_POTENTIAL_NONE = 0,
+};
 
 #endif

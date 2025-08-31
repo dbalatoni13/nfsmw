@@ -8,6 +8,8 @@
 #include "UTypes.h"
 #include "UVectorMath.h"
 
+#define FLT_EPSILON 0.000001f
+
 namespace UMath {
 
 void BuildRotate(Matrix4 &m, float r, float x, float y, float z);
@@ -18,6 +20,19 @@ inline float DistanceSquarexz(const Vector3 &a, const Vector3 &b) {
 
 inline Vector3 &Vector4To3(Vector4 &c4) {
     return *reinterpret_cast<Vector3 *>(&c4);
+}
+
+inline Vector4 Vector4Make(const Vector3 &c, float w) {
+    // Vector4 res = {c.x, c.y, c.z, w};
+    Vector4 res;
+    res.x = c.x;
+    res.y = c.y;
+    res.z = c.z;
+    return res;
+}
+
+inline const Vector3 &ExtractAxis(const Matrix4 &m, unsigned int row) {
+    return *reinterpret_cast<const Vector3 *>(&m[row]);
 }
 
 inline void RotateTranslate(const Vector3 &a, const Matrix4 &m, Vector3 &r) {
@@ -56,9 +71,22 @@ inline float Dot(const Vector3 &a, const Vector3 &b) {
     return VU0_v3dotprod(a, b);
 }
 
+inline float Clamp(const float a, const float amin, const float amax) {
+    return VU0_floatmax(amin, VU0_floatmin(a, amax));
+}
+
+inline float Abs(const float a) {
+    return VU0_fabs(a);
+}
+
+inline float Pow(const float f, const float e) {
+    return VU0_Pow(f, e);
+}
+
 inline float Ramp(const float a, const float amin, const float amax) {
     float arange = amax - amin;
 
+    // TODO check if arange > epsilon?
     return VU0_floatmax(0.0f, VU0_floatmin((a - amin) / arange, 1.0f));
 }
 

@@ -110,9 +110,11 @@ struct Instance {
     void *GetLayoutPointer() const {
         return mLayoutPtr;
     }
+
     void *GetLayoutPointer() {
         return mLayoutPtr;
     }
+
     void SetDefaultLayout(unsigned int bytes) {
         if (this->mLayoutPtr == nullptr) {
             this->mLayoutPtr = const_cast<void *>(Attrib::DefaultDataArea(bytes));

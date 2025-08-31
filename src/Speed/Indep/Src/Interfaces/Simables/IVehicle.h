@@ -8,10 +8,10 @@
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
-#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/AI/AIVehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
+#include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 
 enum eVehicleList {
     VEHICLE_MAX = 10,
@@ -25,17 +25,6 @@ enum eVehicleList {
     VEHICLE_AI = 2,
     VEHICLE_PLAYERS = 1,
     VEHICLE_ALL = 0,
-};
-
-// TODO move these
-enum DriverStyle {
-    STYLE_DRAG = 1,
-    STYLE_RACING = 0,
-};
-enum PhysicsMode {
-    PHYSICS_MODE_EMULATED = 2,
-    PHYSICS_MODE_SIMULATED = 1,
-    PHYSICS_MODE_INACTIVE = 0,
 };
 
 enum CarType {
