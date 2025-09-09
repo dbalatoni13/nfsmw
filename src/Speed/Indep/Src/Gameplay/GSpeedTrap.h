@@ -1,10 +1,8 @@
-#ifndef AI____GAMEPLAY_GSPEEDTRAP_H
-#define AI____GAMEPLAY_GSPEEDTRAP_H
+#ifndef GAMEPLAY_GSPEEDTRAP_H
+#define GAMEPLAY_GSPEEDTRAP_H
 
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
-
-
 
 #endif

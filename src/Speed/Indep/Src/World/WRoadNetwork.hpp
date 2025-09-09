@@ -9,7 +9,8 @@
 #include "Speed/Indep/Libs/Support/Utility/USpline.h"
 #include "Speed/Indep/Src/Misc/CookieTrail.h"
 
-struct WRoadNav {
+class WRoadNav {
+  public:
     enum ENavType {
         kTypeNone = 0x0000,
         kTypeTraffic = 0x0001,
@@ -40,7 +41,35 @@ struct WRoadNav {
         kLaneMax = 0x0008,
     };
 
-    // total size: 0x2F0
+    WRoadNav();
+    virtual ~WRoadNav();
+    void SetCookieTrail(CookieTrail<NavCookie, 32> *p_cookies);
+    void SetCookieTrail(bool b);
+    void ClearCookieTrail();
+    void ResetCookieTrail();
+    void MaybeAllocatePathSegments();
+    // void WRoadNav::SetPathType(EPathType type);
+    void Reset();
+    bool IsPathSegment(unsigned short path_segment) const;
+    bool OnPath() const;
+    float GetSegmentCentreShift(int segment_number, int which_node);
+    short GetNextOffset(const UMath::Vector3 &to, float &nextLaneOffset, char &nodeInd, bool &useOldStartPos);
+    void SnapToSelectableLane();
+    float SnapToSelectableLane(float input_offset);
+    float SnapToSelectableLane(float input_offset, int segment_no, char node_index);
+    void Reverse();
+    void InitAtPoint(const UMath::Vector3 &pos, const UMath::Vector3 &dir, bool forceCenterLane, float dirWeight);
+    bool CanTrafficSpawn();
+
+    bool IsValid() {
+        return fValid;
+    }
+
+    UMath::Vector3 &GetPosition() {
+        return fPosition;
+    }
+
+  private:                                    // total size: 0x2F0
     int nCookieIndex;                         // offset 0x0, size 0x4
     CookieTrail<NavCookie, 32> *pCookieTrail; // offset 0x4, size 0x4
     NavCookie mCurrentCookie;                 // offset 0x8, size 0x40
@@ -101,9 +130,6 @@ struct WRoadNav {
     float fPathGoalParam;                     // offset 0x2E0, size 0x4
     int nPathSegments;                        // offset 0x2E4, size 0x4
     unsigned short *pPathSegments;            // offset 0x2E8, size 0x4
-
-    WRoadNav();
-    virtual ~WRoadNav();
 };
 
 #endif

@@ -82,6 +82,10 @@ class IUnknown {
     }
 };
 
+inline bool ComparePtr(const IUnknown *pUnk1, const IUnknown *pUnk2) {
+    return pUnk1 == pUnk2;
+}
+
 template <typename T, typename U, typename V> class Factory {
 
   public:

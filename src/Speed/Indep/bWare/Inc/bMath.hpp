@@ -114,6 +114,7 @@ inline int bAbs(int a) {
 inline float bAbs(float a) {
     float f_abs;
 #if TARGET_GC
+    // We are sure they use asm, other options don't match
     asm("fabs %0, %1" : "=f"(f_abs) : "f"(a));
 #else
 #error Choose a platform
@@ -147,7 +148,9 @@ inline unsigned short bRadToAng(float radians) {
 
 inline float bAngToRad(unsigned short angle) {}
 
-inline float bDegToRad(float degrees) {}
+inline float bDegToRad(float degrees) {
+    return degrees * 0.017453292f;
+}
 
 inline float bAngToDeg(unsigned short angle) {
     return static_cast<unsigned int>(angle) * (65536.0f / 360.0f);

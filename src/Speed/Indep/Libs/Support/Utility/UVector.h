@@ -26,23 +26,16 @@ struct UVector3 : public UMath::Vector3 {
         z = f;
     }
 
-    UVector3(const float fx, const float fy, const float fz) {
+    UVector3(float fx, float fy, float fz) {
         x = fx;
         y = fy;
         z = fz;
     }
 
-    UVector3 &operator=(const UVector3 &From) {
+    const UVector3 &operator=(const UVector3 &From) {
         x = From.x;
         y = From.y;
         z = From.z;
-        return *this;
-    }
-
-    UVector3 &operator*=(const UVector3 &b) {
-        x *= b.x;
-        y *= b.y;
-        z *= b.z;
         return *this;
     }
 
@@ -53,11 +46,8 @@ struct UVector3 : public UMath::Vector3 {
         return *this;
     }
 
-    UVector3 &operator*=(const float scalar) {
-        x *= scalar;
-        y *= scalar;
-        z *= scalar;
-        return *this;
+    void operator*=(float scalar) {
+        UMath::Scale(*this, scalar, *this);
     }
 
     UVector3 &operator+=(const UVector3 &v) {
