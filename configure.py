@@ -225,6 +225,11 @@ cflags_game = [
     # # "-funroll-all-loops",
 ]
 
+cflags_cmn = [
+    *cflags_game,
+    "-x c++"
+]
+
 # Metrowerks library flags
 cflags_runtime = [*cflags_base]
 
@@ -370,7 +375,7 @@ config.libs = [
     {
         "lib": "snd",
         "toolchain_version": config.linker_version,
-        "cflags": cflags_game,
+        "cflags": cflags_cmn,
         "host": False,
         "progress_category": "libs",  # str | List[str]
         "objects": [
@@ -380,8 +385,8 @@ config.libs = [
             Object(NonMatching, "snd/source/library/cmn/saemstimupdt.c"),
             Object(NonMatching, "snd/source/library/cmn/salloc.c"),
             Object(NonMatching, "snd/source/library/cmn/sbadd.c"),
-            Object(Matching, "snd/source/library/cmn/sbpatinf.c"),
-            Object(Matching, "snd/source/library/cmn/sgetpvol.c"),
+            Object(NonMatching, "snd/source/library/cmn/sbpatinf.c"),
+            Object(NonMatching, "snd/source/library/cmn/sgetpvol.c"),
             Object(NonMatching, "snd/source/library/cmn/ssballoc.c"),
             Object(NonMatching, "snd/source/library/cmn/ssbhdrcpy.c"),
             Object(NonMatching, "snd/source/library/cmn/ssbhdrsze.c"),

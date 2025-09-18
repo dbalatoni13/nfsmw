@@ -15,6 +15,7 @@
 #include "eModel.hpp"
 #include "eSolid.hpp"
 
+// EAXSound2
 float renderModifier = 1.0f;
 unsigned int numCopsActiveCherry;
 unsigned int numCopsActiveTotal;

@@ -2,6 +2,7 @@
 #define _DOLPHIN_GXCULL
 
 #include <dolphin/types.h>
+#include "GXEnum.h"
 
 #ifdef __cplusplus
 extern "C" {

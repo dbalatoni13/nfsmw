@@ -230,7 +230,7 @@ eLightFlare *eGetNextLightFlareInPool(unsigned int XcludeViewIDs /* r7 */) {
 }
 
 void eInitLightFlarePool() {
-    static BOOL done;
+    static BOOL done = false;
     int PoolIndex;
 
     if (done) {
