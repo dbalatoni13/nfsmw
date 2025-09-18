@@ -20,7 +20,7 @@ struct cCaptureBuffer {
     /* const struct __vtbl_ptr_type *_vptr.cCaptureBuffer; */ // offset 0x1C, size 0x4
 
     cCaptureBuffer();
-    cCaptureBuffer(const int __in_chrg); // TODO virtual?
+    virtual ~cCaptureBuffer();
     void Init(int xO, int yO, int w, int h, int format, int buffer_function);
     void Destroy();
     void CaptureEFB(int opt, int downsample, GXTexFmt capture_format);

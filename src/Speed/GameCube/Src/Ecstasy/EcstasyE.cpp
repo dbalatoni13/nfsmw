@@ -949,3 +949,18 @@ void eHangMetric(Bool bEnable) {
         // *0xCC008000 = arg0;
     }
 }
+
+// ...
+
+// TODO
+void eDEMOSetupScrnSpc(long width /* r3 */, long height /* r4 */, float depth /* f1 */);
+
+void eDEMOInitCaption(long font_type, long width, long height) {
+    eDEMOSetupScrnSpc(width, height, 100.0f);
+    GXSetZMode(GX_TRUE, GX_ALWAYS, GX_TRUE);
+    GXSetNumChans(0);
+    GXSetNumTevStages(1);
+    GXSetTevOp(GX_TEVSTAGE0, GX_REPLACE);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ZERO, GX_LO_CLEAR);
+}

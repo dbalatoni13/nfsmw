@@ -33,11 +33,14 @@ void bList::Sort(SortFunc check_flip) {
     bNode *node = this->GetHead();
     bNode *next_node = node->GetNext();
     int did_swap = 0;
+
     while (node != this->EndOfList() && next_node != this->EndOfList()) {
         if (check_flip(node, next_node) == 0) {
             did_swap++;
             next_node->Remove();
             next_node->AddBefore(node);
+            next_node = node->GetNext();
+            continue;
         }
         node = next_node;
         next_node = next_node->GetNext();

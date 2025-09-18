@@ -59,8 +59,12 @@ unsigned int bGetTicker() {
 
 // UNSOLVED
 float bGetTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
-    unsigned int ticks = end_ticks - start_ticks;
-    return OSTicksToMicroseconds(ticks) * 0.001f;
+    if (start_ticks < end_ticks) {
+        start_ticks = end_ticks - start_ticks;
+    } else {
+        start_ticks = end_ticks - start_ticks;
+    }
+    return OSTicksToMicroseconds(start_ticks) * 0.001f;
 }
 
 void bMutex::Create() {
