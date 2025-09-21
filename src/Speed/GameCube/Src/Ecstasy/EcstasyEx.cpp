@@ -1,9 +1,8 @@
 #include "./EcstasyEx.hpp"
 
 #include "Speed/GameCube/Src/Ecstasy/TextureInfoPlat.hpp"
-#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "dolphin.h"
+#include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "dolphin/gx/GXCull.h"
 #include "dolphin/gx/GXDispList.h"
 #include "dolphin/gx/GXEnum.h"
@@ -13,8 +12,6 @@
 #include "dolphin/gx/GXPixel.h"
 #include "dolphin/gx/GXStruct.h"
 #include "dolphin/gx/GXTev.h"
-
-#include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "dolphin/gx/GXTexture.h"
 #include "dolphin/gx/GXVert.h"
 #include "dolphin/types.h"
@@ -606,8 +603,6 @@ TextureInfo *cSphereMap::BuildSphereMap() {
 }
 
 char ENV_MAP_DISPLAY_LIST[20480];
-
-
 
 // end
 void epCalculateLocalDirectionalPOS16(unsigned int * colour_table0 /* r29 */, unsigned int * colour_table1 /* r22 */, int num_colour_entries /* r5 */, unsigned short * position_table_16 /* r30 */, int * normal_table /* r23 */, unsigned char * index_buffer /* r31 */, int vertex_description /* r7 */, int num_indicies /* r28 */, struct eLightMaterial * light_material /* r11 */, struct eLightContext * light_context /* r12 */);
