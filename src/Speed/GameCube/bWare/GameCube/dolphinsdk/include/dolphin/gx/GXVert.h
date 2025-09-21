@@ -177,6 +177,10 @@ static inline void GXTexCoord1x16(u16 index) {
   GXWGFifo.u16 = index;
 }
 
+static inline void GXTexCoord1x8(u8 index) {
+  GXWGFifo.u8 = index;
+}
+
 static inline void GXUnknownu16(const u16 x) {
   GXWGFifo.u16 = x;
 }
