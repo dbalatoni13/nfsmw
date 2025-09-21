@@ -146,7 +146,9 @@ inline unsigned short bRadToAng(float radians) {
     return static_cast<int>(radians * (65536.0f / (2 * static_cast<float>(M_PI))));
 }
 
-inline float bAngToRad(unsigned short angle) {}
+inline float bAngToRad(unsigned short angle) {
+    return ((float)angle) * 0.0000958738f;
+}
 
 inline float bDegToRad(float degrees) {
     return degrees * 0.017453292f;
@@ -154,6 +156,10 @@ inline float bDegToRad(float degrees) {
 
 inline float bAngToDeg(unsigned short angle) {
     return static_cast<unsigned int>(angle) * (65536.0f / 360.0f);
+}
+
+inline float bCos(float angle) {
+    return bSin(angle + bDegToRad(90.0f));
 }
 
 inline float bRadToDeg(float radians) {}

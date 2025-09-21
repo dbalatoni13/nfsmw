@@ -106,7 +106,35 @@ float bFMod(float a, float b) {
     return (c - bFloor(c)) * d;
 }
 
-float bSin(unsigned short angle);
+float bSin(unsigned short angle) {
+    float a = bAngToRad(angle);
+    float flip_sign = 1.0f;
+    const float pi = 3.1415927f;
+
+    if (a >= 4.712389f) {
+        a -= 2 * pi;
+    } else if (a >= 1.5707964f) {
+        flip_sign = -flip_sign;
+        a -= pi;
+    }
+
+    float result_sin = a;
+    float a2 = a * a;
+    
+    float a3 = a * a2;
+    result_sin -= a3 * 0.16666667f;
+    
+    float a5 = a3 * a2;
+    result_sin += a5 * 0.008333334f;
+    
+    float a7 = a5 * a2;
+    result_sin -= a7 * 0.0001984127f;
+    
+    float a9 = a7 * a2;
+    result_sin += a9 * 0.0000027557319f;
+
+    return result_sin * flip_sign;
+}
 
 float bSin(float angle) {
     return bSin(bRadToAng(angle));

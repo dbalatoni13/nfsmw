@@ -374,6 +374,7 @@ TextureInfo *GetTextureInfo(unsigned int name_hash, BOOL return_default_texture_
 TextureInfo *FixupTextureInfo(TextureInfo *texture_info, unsigned int name_hash, TexturePack *texture_pack, bool loading);
 
 TextureInfo *eCreateTextureInfo();
+void eDestroyTextureInfo(TextureInfo *texture_info);
 
 inline TextureInfo *FixupTextureInfoLoading(TextureInfo *texture_info, unsigned int name_hash, TexturePack *texture_pack) {
     return FixupTextureInfo(texture_info, name_hash, texture_pack, true);
