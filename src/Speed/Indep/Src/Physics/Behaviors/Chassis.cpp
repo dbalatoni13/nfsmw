@@ -1,16 +1,73 @@
 #include "Chassis.h"
 #include "Speed/Indep/Libs/Support/Utility/UVector.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
+#include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
-float Chassis::ComputeMaxSlip(const Chassis::State &state) const {
+Chassis::Chassis(const BehaviorParams &bp) : VehicleBehavior(bp, 0), ISuspension(this), mAttributes(this, 0) {
+    mTireHeat = 0.0f;
+    mJumpTime = 0.0f;
+    mJumpAlititude = 0.0f;
+}
+
+float Chassis::GetRenderMotion() const {
+    return mAttributes.RENDER_MOTION();
+}
+
+Meters Chassis::GetRideHeight(unsigned int idx) const {
+    return INCH2METERS(mAttributes.RIDE_HEIGHT().At(idx / 2));
+}
+
+float Chassis::CalculateUndersteerFactor() const {
+    float magnitude = 0.0f;
+    float slip_avg = (GetWheelSkid(0) + GetWheelSkid(1)) / 2.0f;
+    float steer = (GetWheelSteer(0) + GetWheelSteer(1)) / 2.0f;
+    float speed = GetOwner()->GetRigidBody()->GetSpeed();
+    if ((GetVehicle()->GetSpeed() > 0.0f) && (speed > 1.0f) && (steer * slip_avg < 0.0f)) {
+        magnitude = UMath::Abs(slip_avg) / speed;
+    }
+    return UMath::Min(magnitude, 1.0f);
+}
+
+Mps Chassis::ComputeMaxSlip(const Chassis::State &state) const {
     float ramp = UMath::Ramp(state.speed, 10.0f, 71.0f);
     float result = ramp + 0.5f;
     if (state.gear == G_REVERSE)
         result = 71.0f;
     return result;
 }
+
+void Chassis::DoTireHeat(const Chassis::State &state) {
+    if (state.flags & 1) {
+        for (unsigned int i = 0; i < GetNumWheels(); ++i) {
+            if (GetWheelSlip(i) > 0.5f) {
+                this->mTireHeat += state.time / 3.0f;
+                this->mTireHeat = UMath::Min(this->mTireHeat, 1.0f);
+                return;
+            }
+        }
+    } else {
+        if (this->mTireHeat > 0.0f) {
+            this->mTireHeat -= state.time / 6.0f;
+            this->mTireHeat = UMath::Max(this->mTireHeat, 0.0f);
+        }
+    }
+}
+
+float Chassis::CalculateOversteerFactor() const {
+    float speed = GetOwner()->GetRigidBody()->GetSpeed();
+    float magnitude = 0.0f;
+    if ((this->GetVehicle()->GetSpeed() > 0.0f) && (speed > 1.0f)) {
+        magnitude = UMath::Abs((GetWheelSkid(3) + GetWheelSkid(2)) * 0.5f) / speed;
+    }
+    return UMath::Min(magnitude, 1.0f);
+}
+
+void Chassis::OnTaskSimulate(float dT) {}
 
 float GripVsSpeed[] = {0.833f, 0.958f, 1.008f, 1.0167f, 1.033f, 1.033f, 1.033f, 1.0167f, 1.0f, 1.0f};
 Table GripRangeTable(GripVsSpeed, 10, 0.0f, 1.0f);
@@ -124,7 +181,7 @@ void Chassis::DoAerodynamics(const Chassis::State &state, float drag_pct, float 
             drag_center.y += OffThrottleDragCenterHeight * (1.0f - state.gas_input);
 
         UMath::RotateTranslate(drag_center, state.matrix, drag_center);
-        irb->ResolveForceAtPoint(drag_vector, drag_center);
+        irb->ResolveForce(drag_vector, drag_center);
     }
 
     if (aero_pct > 0.0f) {
@@ -169,31 +226,7 @@ void Chassis::DoAerodynamics(const Chassis::State &state, float drag_pct, float 
             UVector3 force(0.0f, -downforce, 0.0f);
             UMath::RotateTranslate(aero_center, state.matrix, aero_center);
             UMath::Rotate(force, state.matrix, force);
-            irb->ResolveForceAtPoint(force, aero_center);
+            irb->ResolveForce(force, aero_center);
         }
     }
-}
-
-static float LowSpeedSpeed = 0.0f;
-static float HighSpeedSpeed = 30.0f;
-static float MaxYawBonus = 0.35f;
-static float LowSpeedYawBoost = 0.0f;
-static float HighSpeedYawBoost = 1.0f;
-static float YawEBrakeThreshold = 0.5f;
-static float YawAngleThreshold = 20.0f;
-
-// Credits: Brawltendo
-float YawFrictionBoost(float yaw, float ebrake, float speed, float yawcontrol, float grade) {
-    yaw = bAbs(yaw);
-    float retval = 1.0f;
-    retval += bAbs(grade);
-    if (ebrake > YawEBrakeThreshold && yaw < bDegToRad(YawAngleThreshold))
-        return retval;
-
-    float speed_factor = (speed - LowSpeedSpeed) / (HighSpeedSpeed - LowSpeedSpeed);
-    float boost = LowSpeedYawBoost + (HighSpeedYawBoost - LowSpeedYawBoost) * speed_factor;
-    float bonus = yaw * yawcontrol * boost;
-    if (bonus > MaxYawBonus)
-        bonus = MaxYawBonus;
-    return retval + bonus;
 }

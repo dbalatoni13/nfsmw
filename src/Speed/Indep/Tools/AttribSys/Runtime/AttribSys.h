@@ -39,6 +39,7 @@ class RefSpec {
     Key GetClassKey() const {
         return mClassKey;
     }
+
     Key GetCollectionKey() const {
         return mCollectionKey;
     }
@@ -97,7 +98,9 @@ struct Instance {
 
     enum Flags { kDynamic = 1 };
 
+    Instance(const Instance &src);
     Instance(const struct Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner);
+    Instance(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner);
     ~Instance();
     Key GetClass() const;
     Key GetCollection() const;
@@ -106,6 +109,7 @@ struct Instance {
     const void *GetAttributePointer(Key attribkey, unsigned int index) const;
     const Instance &operator=(const Instance &rhs);
     Attribute Get(Key attributeKey) const;
+    void Change(const Collection *collection);
 
     void *GetLayoutPointer() const {
         return mLayoutPtr;
@@ -113,6 +117,10 @@ struct Instance {
 
     void *GetLayoutPointer() {
         return mLayoutPtr;
+    }
+
+    const Collection *GetConstCollection() const {
+        return mCollection;
     }
 
     void SetDefaultLayout(unsigned int bytes) {
@@ -127,5 +135,28 @@ struct Instance {
 };
 
 } // namespace Attrib
+
+template <typename T> class AttributeStructPtr : public T {
+  public:
+    static Attrib::Key GetClassKey();
+
+    AttributeStructPtr(Attrib::Key namekey) : T(namekey, 0, nullptr) {
+        // TODO
+    }
+
+    ~AttributeStructPtr() {}
+
+    const T &operator*() const {
+        return *this;
+    }
+
+    const T *operator->() const {
+        return this;
+    }
+
+    operator const T *() const {
+        return this;
+    }
+};
 
 #endif

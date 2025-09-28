@@ -7,13 +7,10 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
-#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Interfaces/IAttachable.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IEntity.h"
-#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/SimModels/IModel.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICause.h"
-#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
 #include "Speed/Indep/Src/World/World.hpp"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
@@ -24,12 +21,6 @@ struct HSIMABLE__ {
 };
 
 typedef HSIMABLE__ *HSIMABLE;
-
-struct _type_IAttachableList {
-    const char *name() {
-        return "IAttachableList";
-    }
-};
 
 // TODO move?
 enum SimableType {
@@ -75,7 +66,7 @@ class ISimable : public UTL::COM::IUnknown,
 
     virtual void DetachEntity();
 
-    virtual IPlayer *GetPlayer() const;
+    virtual struct IPlayer *GetPlayer() const;
 
     virtual bool IsPlayer() const;
 
@@ -99,9 +90,9 @@ class ISimable : public UTL::COM::IUnknown,
 
     virtual WWorldPos &GetWPos();
 
-    virtual const IRigidBody *GetRigidBody() const;
+    virtual class IRigidBody *GetRigidBody();
 
-    virtual IRigidBody *GetRigidBody();
+    virtual const class IRigidBody *GetRigidBody() const;
 
     virtual bool IsRigidBodySimple() const;
 

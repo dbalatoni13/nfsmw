@@ -9,6 +9,12 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UTLVector.h"
 
+struct _type_UContainer {
+    const char *name() {
+        return "UContainer";
+    }
+};
+
 namespace UTL {
 namespace Collections {
 
@@ -54,7 +60,7 @@ template <typename T, typename U, std::size_t Size> class Instanceable {
   public:
     Instanceable() {}
 
-    // T GetInstanceHandle() const {}
+    T GetInstanceHandle() const {}
 };
 
 template <typename T, std::size_t V> class GarbageNode {
@@ -90,6 +96,18 @@ template <typename T, std::size_t V> class GarbageNode {
     static Collector &GetGC() {
         return _mCollector;
     }
+};
+
+template <typename T, typename Tag> class Container {
+  public:
+    class Elements {
+      public:
+        Elements();
+        ~Elements();
+    };
+
+  private:
+    Elements _mElements;
 };
 
 }; // namespace Collections

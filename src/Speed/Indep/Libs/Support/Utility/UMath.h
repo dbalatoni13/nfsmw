@@ -1,10 +1,12 @@
 #ifndef SUPPORT_UTILITY_UMATH_H
 #define SUPPORT_UTILITY_UMATH_H
 
+#include <cmath>
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "UTypes.h"
 #include "UVectorMath.h"
 
@@ -18,6 +20,12 @@ inline float DistanceSquarexz(const Vector3 &a, const Vector3 &b) {
     return VU0_v3distancesquare(a, b);
 }
 
+inline void Clear(Vector3 &r) {
+    r.x = 0.0f;
+    r.y = 0.0f;
+    r.z = 0.0f;
+}
+
 inline Vector3 &Vector4To3(Vector4 &c4) {
     return *reinterpret_cast<Vector3 *>(&c4);
 }
@@ -28,6 +36,7 @@ inline Vector4 Vector4Make(const Vector3 &c, float w) {
     res.x = c.x;
     res.y = c.y;
     res.z = c.z;
+    res.w = w;
     return res;
 }
 
@@ -59,6 +68,10 @@ inline void ScaleAdd(const Vector3 &a, const float s, const Vector3 &b, Vector3 
     VU0_v3scaleadd(a, s, b, r);
 }
 
+inline void Sub(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &r) {
+    VU0_v3sub(a, b, r);
+}
+
 inline void SetYRot(Matrix4 &r, float a) {
     VU0_MATRIX4setyrot(r, a);
 }
@@ -69,6 +82,14 @@ inline void Rotate(const Vector3 &a, const Matrix4 &m, Vector3 &r) {
 
 inline float Dot(const Vector3 &a, const Vector3 &b) {
     return VU0_v3dotprod(a, b);
+}
+
+inline void Cross(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &r) {
+    VU0_v3crossprod(a, b, r);
+}
+
+inline void UnitCross(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &r) {
+    VU0_v3unitcrossprod(a, b, r);
 }
 
 inline float Clamp(const float a, const float amin, const float amax) {
@@ -112,6 +133,35 @@ inline unsigned int Min(const unsigned int a, const unsigned int b) {
 
 inline unsigned int Max(const unsigned int a, const unsigned int b) {
     return a < b ? b : a;
+}
+
+inline float Atan2d(float o, float a) {
+    return ANGLE2DEG(VU0_Atan2(o, a));
+}
+
+inline float Sqrt(const float f) {
+    return sqrtf(f);
+}
+
+// Credits: Brawltendo
+// Limits the input value to the range [a,l]
+inline float Limit(const float a, const float l) {
+    float retval;
+    if (!(a * l > 0.f)) {
+        retval = a;
+    } else {
+        if (a > 0.f) {
+            retval = UMath::Min(a, l);
+
+        } else {
+            retval = UMath::Max(a, l);
+        }
+    }
+    return retval;
+}
+
+inline float Sina(const float a) {
+    return VU0_Sin(a);
 }
 
 } // namespace UMath

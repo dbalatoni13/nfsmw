@@ -117,9 +117,9 @@ class EngineRacer : protected VehicleBehavior,
 
     ShiftPotential FindShiftPotential(GearID gear, float rpm) const;
     float GetDifferentialAngularVelocity(bool locked) const;
-    float GetDriveWheelSlippage();
+    float GetDriveWheelSlippage() const;
     void SetDifferentialAngularVelocity(float w);
-    float CalcSpeedometer(float rpm, unsigned int gear);
+    float CalcSpeedometer(float rpm, unsigned int gear) const;
     void LimitFreeWheels(float w);
     float GetBrakingTorque(float engine_torque, float rpm) const;
     bool DoGearChange(GearID gear, bool automatic);
@@ -128,9 +128,9 @@ class EngineRacer : protected VehicleBehavior,
     // ITransmission
 
     bool Shift(GearID gear);
-    float GetSpeedometer();
-    float GetMaxSpeedometer();
-    float GetShiftPoint(GearID from_gear, GearID to_gear);
+    float GetSpeedometer() const;
+    float GetMaxSpeedometer() const;
+    float GetShiftPoint(GearID from_gear, GearID to_gear) const;
 
     // IEngine
     virtual bool IsNOSEngaged() const {

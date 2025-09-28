@@ -33,7 +33,7 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
         return mPaused;
     }
 
-    ISimable *GetOwner() {
+    ISimable *GetOwner() const {
         return mIOwner;
     }
 
@@ -52,13 +52,34 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
     virtual ~Behavior();
 
   private:
-    bool mPaused;
-    struct PhysicsObject *mOwner;
-    ISimable *mIOwner;
-    const UCrc32 mMechanic;
-    const UCrc32 mSignature;
-    int mPriority;
-    HSIMPROFILE mProfile;
+    // total size: 0x4C
+    bool mPaused;                 // offset 0x30, size 0x1
+    struct PhysicsObject *mOwner; // offset 0x34, size 0x4
+    ISimable *mIOwner;            // offset 0x38, size 0x4
+    const UCrc32 mMechanic;       // offset 0x3C, size 0x4
+    const UCrc32 mSignature;      // offset 0x40, size 0x4
+    int mPriority;                // offset 0x44, size 0x4
+    HSIMPROFILE mProfile;         // offset 0x48, size 0x4
+};
+
+template <typename T> class BehaviorSpecsPtr : public AttributeStructPtr<T> {
+
+  public:
+    BehaviorSpecsPtr(Behavior *behavior, int index) : AttributeStructPtr<T>(LookupKey(behavior->GetOwner(), index)) {}
+
+    BehaviorSpecsPtr(ISimable *owner, int index) : AttributeStructPtr<T>(0) {
+        // TODO
+    }
+
+    ~BehaviorSpecsPtr() {}
+
+    unsigned int LookupKey(const ISimable *owner, int index) {
+        // TODO
+        // const Attrib::Instance &owneratr; // r30
+        // unsigned int classkey;
+        // struct Attribute attrib; // r1+0x8
+        // struct RefSpec refspec;  // r1+0x18
+    }
 };
 
 #endif

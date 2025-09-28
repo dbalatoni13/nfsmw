@@ -100,4 +100,26 @@ class ITrafficAI : public UTL::COM::IUnknown {
     virtual void StartDriving(float speed);
 };
 
+class IHumanAI : public UTL::COM::IUnknown {
+  protected:
+    virtual ~IHumanAI();
+
+  public:
+    IHumanAI(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
+
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+    virtual void ChangeDragLanes(bool left);
+    virtual bool IsPlayerSteering();
+    virtual bool GetAiControl() const;
+    virtual void SetAiControl(bool ai_control);
+    virtual void SetWorldMoment(const UMath::Vector3 &position, float radius);
+    virtual const UMath::Vector3 &GetWorldMomentPosition();
+    virtual float GetWorldMomentRadius();
+    virtual void ClearWorldMoment();
+    virtual bool IsFacingWrongWay() const;
+};
+
 #endif

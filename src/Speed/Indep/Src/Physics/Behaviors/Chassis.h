@@ -22,6 +22,9 @@
 // Credits: Brawltendo
 class Chassis : public VehicleBehavior, public ISuspension {
   public:
+    struct Fasz {
+        float asd;
+    };
     struct State {
         UMath::Matrix4 matrix;
         UMath::Vector3 local_vel;
@@ -66,10 +69,10 @@ class Chassis : public VehicleBehavior, public ISuspension {
         }
     };
 
-    Chassis(BehaviorParams &bp);
+    Chassis(const BehaviorParams &bp);
 
-    float ComputeMaxSlip(const State &state) const;
-    void OnTaskSimulate(float dT);
+    Mps ComputeMaxSlip(const State &state) const;
+    void DoTireHeat(const Chassis::State &state);
     float ComputeLateralGripScale(const Chassis::State &state) const;
     float ComputeTractionScale(const Chassis::State &state) const;
     void ComputeAckerman(const float steering, const State &state, UMath::Vector4 *left, UMath::Vector4 *right) const;
@@ -79,18 +82,26 @@ class Chassis : public VehicleBehavior, public ISuspension {
                         const Physics::Tunings *tunings);
     void DoJumpStabilizer(State &state);
 
+    /* Overrides */
+    float GetRenderMotion() const;
+    Meters GetRideHeight(unsigned int idx) const;
+    float CalculateUndersteerFactor() const;
+    virtual float CalculateOversteerFactor() const;
+    virtual void OnTaskSimulate(float dT);
+
   private:
-    ICollisionBody *mRBComplex;
-    IInput *mInput;
-    IEngine *mEngine;
-    ITransmission *mTransmission;
-    IDragTransmission *mDragTrany;
-    IEngineDamage *mEngineDamage;
-    ISpikeable *mSpikeDamage;
-    Attrib::Gen::chassis mAttributes;
-    float mJumpTime;
-    float mJumpAltitude;
-    float mTireHeat;
+    // total size: 0x94
+    ICollisionBody *mRBComplex;                         // offset 0x58, size 0x4
+    IInput *mInput;                                     // offset 0x5C, size 0x4
+    IEngine *mEngine;                                   // offset 0x60, size 0x4
+    ITransmission *mTransmission;                       // offset 0x64, size 0x4
+    IDragTransmission *mDragTrany;                      // offset 0x68, size 0x4
+    IEngineDamage *mEngineDamage;                       // offset 0x6C, size 0x4
+    ISpikeable *mSpikeDamage;                           // offset 0x70, size 0x4
+    BehaviorSpecsPtr<Attrib::Gen::chassis> mAttributes; // offset 0x74, size 0x14
+    float mJumpTime;                                    // offset 0x88, size 0x4
+    float mJumpAlititude;                               // offset 0x8C, size 0x4
+    float mTireHeat;                                    // offset 0x90, size 0x4
 };
 
 #endif

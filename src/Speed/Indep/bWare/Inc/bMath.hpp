@@ -138,6 +138,11 @@ inline int bClamp(int a, int MINIMUM, int MAXIMUM) {
     return bMin(bMax(a, MINIMUM), MAXIMUM);
 }
 
+// TODO is this order correct?
+inline float bClamp(float a, float MINIMUM, float MAXIMUM) {
+    return bMin(MAXIMUM, bMax(a, MINIMUM));
+}
+
 inline unsigned short bDegToAng(float degrees) {
     return static_cast<int>(degrees * 65536.0f) / 360;
 }

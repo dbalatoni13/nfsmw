@@ -20,31 +20,35 @@ class ISuspension : public UTL::COM::IUnknown {
     }
 
   public:
-    virtual float GetWheelTraction(unsigned int wheelIndex);
-    virtual unsigned int GetNumWheels();
-    virtual UMath::Vector3 *GetWheelPos(unsigned int wheelIndex);
-    virtual UMath::Vector3 *GetWheelLocalPos(unsigned int wheelIndex);
-    virtual UMath::Vector3 *GetWheelCenterPos(unsigned int wheelIndex);
-    virtual float GetWheelLoad(unsigned int wheelIndex);
+    virtual float GetWheelTraction(unsigned int wheelIndex) const;
+    virtual unsigned int GetNumWheels() const;
+    virtual UMath::Vector3 *GetWheelPos(unsigned int wheelIndex) const;
+    virtual UMath::Vector3 *GetWheelLocalPos(unsigned int wheelIndex) const;
+    virtual UMath::Vector3 *GetWheelCenterPos(unsigned int wheelIndex) const;
+    virtual float GetWheelLoad(unsigned int wheelIndex) const;
     virtual void ApplyVehicleEntryForces(bool enteringVehicle, const UMath::Vector3 &pos, bool calledfromEvent);
-    virtual float GetWheelRoadHeight(unsigned int wheelIndex);
-    virtual bool IsWheelOnGround(unsigned int wheelIndex);
-    virtual float GetCompression(unsigned int wheelIndex);
-    virtual float GuessCompression(unsigned int wheelIndex, float downforce);
-    virtual float GetWheelSlip(unsigned int wheelIndex);
-    virtual float GetToleratedSlip(unsigned int wheelIndex);
-    virtual float GetWheelSkid(unsigned int wheelIndex);
-    virtual float GetWheelSlipAngle(unsigned int wheelIndex);
-    virtual UMath::Vector4 *GetWheelRoadNormal(unsigned int wheelIndex);
-    virtual void *GetWheelRoadSurface(unsigned int wheelIndex);
-    virtual UMath::Vector3 *GetWheelVelocity(unsigned int wheelIndex);
-    virtual unsigned int GetNumWheelsOnGround();
-    virtual float GetWheelAngularVelocity(unsigned int wheelIndex);
+    virtual float GetWheelRoadHeight(unsigned int wheelIndex) const;
+    virtual bool IsWheelOnGround(unsigned int wheelIndex) const;
+    virtual float GetCompression(unsigned int wheelIndex) const;
+    virtual float GuessCompression(unsigned int wheelIndex, float downforce) const;
+    virtual float GetWheelSlip(unsigned int wheelIndex) const;
+    virtual float GetToleratedSlip(unsigned int wheelIndex) const;
+    virtual float GetWheelSkid(unsigned int wheelIndex) const;
+    virtual float GetWheelSlipAngle(unsigned int wheelIndex) const;
+    virtual UMath::Vector4 *GetWheelRoadNormal(unsigned int wheelIndex) const;
+    virtual void *GetWheelRoadSurface(unsigned int wheelIndex) const;
+    virtual UMath::Vector3 *GetWheelVelocity(unsigned int wheelIndex) const;
+    virtual unsigned int GetNumWheelsOnGround() const;
+    virtual float GetWheelAngularVelocity(unsigned int wheelIndex) const;
     virtual void SetWheelAngularVelocity(unsigned int wheelIndex, float av);
-    virtual float GetWheelSteer(unsigned int wheelIndex);
-    virtual float GetRideHeight(unsigned int wheelIndex);
-    virtual float GetWheelRadius(unsigned int wheelIndex);
-    virtual float GetMaxSteering();
+    virtual float GetWheelSteer(unsigned int wheelIndex) const;
+    virtual float CalculateUndersteerFactor() const;
+    virtual float CalculateOversteerFactor() const;
+    virtual float GetRideHeight(unsigned int wheelIndex) const;
+    virtual float GetWheelRadius(unsigned int wheelIndex) const;
+    virtual float GetMaxSteering() const;
+    virtual void MatchSpeed(float speed);
+    virtual float GetRenderMotion() const;
 };
 
 #endif

@@ -5,6 +5,10 @@
 #pragma once
 #endif
 
+namespace Sim {
 
+float GetTime();
+
+};
 
 #endif

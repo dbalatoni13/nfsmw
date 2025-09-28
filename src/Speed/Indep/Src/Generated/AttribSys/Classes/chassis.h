@@ -1,6 +1,7 @@
 #ifndef ATTRIBSYS_CLASSES_CHASSIS_H
 #define ATTRIBSYS_CLASSES_CHASSIS_H
 
+#include "Speed/Indep/Src/Main/AttribSupport.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -40,11 +41,28 @@ struct chassis : Instance {
         Attrib::Free(ptr, bytes, "chassis");
     }
 
+    chassis(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(nullptr, 0, nullptr) {
+        // TODO (parent init too)
+        this->SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
     chassis(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     ~chassis() {}
+
+    void Change(const Collection *c) {
+        Instance::Change(c);
+    }
+
+    void Change(Key collectionkey) {
+        Change(FindCollection(ClassKey(), collectionkey));
+    }
+
+    unsigned int ClassKey() {
+        return 0xafa210f0;
+    }
 
     const AxlePair &SHOCK_DIGRESSION() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SHOCK_DIGRESSION;
