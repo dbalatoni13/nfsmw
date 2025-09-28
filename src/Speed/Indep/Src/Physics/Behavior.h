@@ -73,12 +73,23 @@ template <typename T> class BehaviorSpecsPtr : public AttributeStructPtr<T> {
 
     ~BehaviorSpecsPtr() {}
 
-    unsigned int LookupKey(const ISimable *owner, int index) {
-        // TODO
-        // const Attrib::Instance &owneratr; // r30
-        // unsigned int classkey;
-        // struct Attribute attrib; // r1+0x8
-        // struct RefSpec refspec;  // r1+0x18
+    Attrib::Key LookupKey(const ISimable *owner, int index) {
+        const Attrib::Instance &owneratr = owner->GetAttributes();
+        Attrib::Key classkey;
+        if (!owneratr.IsValid()) {
+            // TODO what's 0xeec2271a?
+            classkey = 0xeec2271a;
+            return classkey;
+        }
+        Attrib::Attribute attrib = owneratr.Get(AttributeStructPtr<T>::GetClassKey());
+        Attrib::RefSpec refspec;
+        if (attrib.Get(index, refspec)) {
+            classkey = refspec.GetCollectionKey();
+            return classkey;
+        } else {
+            classkey = owneratr.GetCollection();
+            return classkey;
+        }
     }
 };
 

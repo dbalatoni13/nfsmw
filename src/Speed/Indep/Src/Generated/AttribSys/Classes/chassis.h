@@ -41,8 +41,8 @@ struct chassis : Instance {
         Attrib::Free(ptr, bytes, "chassis");
     }
 
-    chassis(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(nullptr, 0, nullptr) {
-        // TODO (parent init too)
+    chassis(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
+        : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
@@ -60,7 +60,7 @@ struct chassis : Instance {
         Change(FindCollection(ClassKey(), collectionkey));
     }
 
-    unsigned int ClassKey() {
+    static Key ClassKey() {
         return 0xafa210f0;
     }
 

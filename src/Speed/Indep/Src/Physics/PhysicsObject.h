@@ -9,7 +9,6 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 
-
 struct _type_ID_POMechanics {
     const char *name() {
         return "ID_POMechanics";
@@ -32,6 +31,12 @@ class PhysicsObject : public Sim::Object,
     struct Behaviors : protected UTL::Std::list<Behavior *, _type_ID_POBehaviors> {
         // total size: 0x8
     };
+
+    PhysicsObject(const Attrib::Instance &attribs, SimableType objType, unsigned int wuid, unsigned int num_interfaces);
+    PhysicsObject(const char *attributeClass, const char *attribName, SimableType objType, HSIMABLE owner, unsigned int wuid);
+
+    // Overrides
+    virtual ~PhysicsObject();
 
   private:
     // total size: 0xAC

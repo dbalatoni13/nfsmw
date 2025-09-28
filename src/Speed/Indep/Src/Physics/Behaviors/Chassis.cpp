@@ -5,13 +5,22 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
+#include "Speed/Indep/Src/Physics/PhysicsObject.h"
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
-Chassis::Chassis(const BehaviorParams &bp) : VehicleBehavior(bp, 0), ISuspension(this), mAttributes(this, 0) {
-    mTireHeat = 0.0f;
+// UNSOLVED small diffs
+Chassis::Chassis(const BehaviorParams &bp) : VehicleBehavior(bp, 0), ISuspension(bp.fowner), mAttributes(this, 0) {
     mJumpTime = 0.0f;
     mJumpAlititude = 0.0f;
+    mTireHeat = 0.0f;
+    GetOwner()->QueryInterface(&mRBComplex);
+    GetOwner()->QueryInterface(&mInput);
+    GetOwner()->QueryInterface(&mEngine);
+    GetOwner()->QueryInterface(&mTransmission);
+    GetOwner()->QueryInterface(&mDragTrany);
+    GetOwner()->QueryInterface(&mEngineDamage);
+    GetOwner()->QueryInterface(&mSpikeDamage);
 }
 
 float Chassis::GetRenderMotion() const {

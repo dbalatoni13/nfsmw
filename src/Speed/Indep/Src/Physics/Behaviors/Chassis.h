@@ -22,9 +22,6 @@
 // Credits: Brawltendo
 class Chassis : public VehicleBehavior, public ISuspension {
   public:
-    struct Fasz {
-        float asd;
-    };
     struct State {
         UMath::Matrix4 matrix;
         UMath::Vector3 local_vel;
