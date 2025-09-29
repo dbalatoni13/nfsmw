@@ -7,6 +7,7 @@
 
 #include <cstddef>
 
+#include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 
@@ -31,11 +32,27 @@ struct engine : Instance {
         Attrib::Free(ptr, bytes, "engine");
     }
 
+    engine(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
+        this->SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
     engine(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     ~engine() {}
+
+    void Change(const Collection *c) {
+        Instance::Change(c);
+    }
+
+    void Change(Key collectionkey) {
+        Change(FindCollection(ClassKey(), collectionkey));
+    }
+
+    static Key ClassKey() {
+        return 0xf1f5fbc7;
+    }
 
     const float &TORQUE(unsigned int index) const {
         const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());

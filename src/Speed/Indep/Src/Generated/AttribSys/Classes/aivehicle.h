@@ -7,6 +7,7 @@
 
 #include <cstddef>
 
+#include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 // TOOD move
@@ -40,11 +41,28 @@ struct aivehicle : Instance {
         Attrib::Free(ptr, bytes, "aivehicle");
     }
 
+    aivehicle(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
+        : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
+        this->SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
     aivehicle(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     ~aivehicle() {}
+
+    void Change(const Collection *c) {
+        Instance::Change(c);
+    }
+
+    void Change(Key collectionkey) {
+        Change(FindCollection(ClassKey(), collectionkey));
+    }
+
+    static Key ClassKey() {
+        return 0x22515733;
+    }
 
     const float &TETHER_WEIGHT() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->TETHER_WEIGHT;

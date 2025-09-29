@@ -8,6 +8,7 @@
 #include <cstddef>
 
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 
@@ -70,11 +71,28 @@ struct simsurface : Instance {
         Attrib::Free(ptr, bytes, "simsurface");
     }
 
+    simsurface(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
+        : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
+        this->SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
     simsurface(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     ~simsurface() {}
+
+    void Change(const Collection *c) {
+        Instance::Change(c);
+    }
+
+    void Change(Key collectionkey) {
+        Change(FindCollection(ClassKey(), collectionkey));
+    }
+
+    static Key ClassKey() {
+        return 0xfb111fef;
+    }
 
     const FFBWaveRecord &FFB_SKID(unsigned int index) const {
         const FFBWaveRecord *resultptr = reinterpret_cast<const FFBWaveRecord *>(this->GetAttributePointer(0x0c149044, index));

@@ -8,6 +8,7 @@
 #include <cstddef>
 
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
@@ -76,11 +77,28 @@ struct pvehicle : Instance {
         Attrib::Free(ptr, bytes, "pvehicle");
     }
 
+    pvehicle(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
+        : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
+        this->SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
     pvehicle(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     ~pvehicle() {}
+
+    void Change(const Collection *c) {
+        Instance::Change(c);
+    }
+
+    void Change(Key collectionkey) {
+        Change(FindCollection(ClassKey(), collectionkey));
+    }
+
+    static Key ClassKey() {
+        return 0x4a97ec8f;
+    }
 
     const UMath::Vector4 &TENSOR_SCALE() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->TENSOR_SCALE;

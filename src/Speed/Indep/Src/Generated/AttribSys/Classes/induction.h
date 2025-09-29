@@ -7,6 +7,7 @@
 
 #include <cstddef>
 
+#include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 namespace Attrib {
@@ -27,11 +28,28 @@ struct induction : Instance {
         Attrib::Free(ptr, bytes, "induction");
     }
 
+    induction(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
+        : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
+        this->SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
     induction(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     ~induction() {}
+
+    void Change(const Collection *c) {
+        Instance::Change(c);
+    }
+
+    void Change(Key collectionkey) {
+        Change(FindCollection(ClassKey(), collectionkey));
+    }
+
+    static Key ClassKey() {
+        return 0xc92a0142;
+    }
 
     const float &LOW_BOOST() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->LOW_BOOST;
