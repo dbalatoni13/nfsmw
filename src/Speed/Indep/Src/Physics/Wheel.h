@@ -5,20 +5,31 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
 #include "Speed/Indep/Src/World/World.hpp"
 
 class Wheel {
   public:
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
+    void operator delete(void *mem, std::size_t size) {
+        gFastMem.Free(mem, size, nullptr);
+    }
+
     Wheel() {
         // TODO
     }
 
+    Wheel(unsigned int flags);
     ~Wheel();
-
     bool UpdatePosition(const UMath::Vector3 &body_av, const UMath::Vector3 &body_lv, const UMath::Matrix4 &body_matrix, const UMath::Vector3 &cog,
                         float dT, float wheel_radius, bool usecache, const void *collider, float vehicle_height);
+    bool InitPosition(const IRigidBody &rb, float maxcompression);
+    void Reset();
 
     const UMath::Vector4 &GetNormal() const {
         return mNormal;
@@ -52,12 +63,16 @@ class Wheel {
         return mLocalArm;
     }
 
+    void SetLocalArm(UMath::Vector3 &arm) {
+        mLocalArm = arm;
+    }
+
     float GetCompression() const {
         return mCompression;
     }
 
     void SetCompression(float c) {
-        mCompression = c;
+        mCompression = UMath::Max(c, 0.0f);
     }
 
     const UMath::Vector3 &GetVelocity() const {
@@ -66,21 +81,21 @@ class Wheel {
 
   protected:
     // total size: 0xC4
-    WWorldPos mWorldPos;                                               // offset 0x0, size 0x48
-    UMath::Vector4 mNormal;                                            // offset 0x48, size 0x10
-    UMath::Vector3 mPosition;                                          // offset 0x58, size 0xC
-    enum eWheelFlags { WF_SMOOTHING = 1, WF_CHECKDYNAMIC = 2 } mFlags; // offset 0x64, size 0x4
-    UMath::Vector3 mForce;                                             // offset 0x68, size 0xC
-    float mAirTime;                                                    // offset 0x74, size 0x4
-    UMath::Vector3 mLocalArm;                                          // offset 0x78, size 0xC
-    float mCompression;                                                // offset 0x84, size 0x4
-    UMath::Vector3 mWorldArm;                                          // offset 0x88, size 0xC
-    int pad;                                                           // offset 0x94, size 0x4
-    UMath::Vector3 mVelocity;                                          // offset 0x98, size 0xC
-    int pad2;                                                          // offset 0xA4, size 0x4
-    SimSurface mSurface;                                               // offset 0xA8, size 0x14
-    float mSurfaceStick;                                               // offset 0xBC, size 0x4
-    void *mIntegral;                                                   // offset 0xC0, size 0x4
+    WWorldPos mWorldPos;      // offset 0x0, size 0x3C
+    UMath::Vector4 mNormal;   // offset 0x3C, size 0x10
+    UMath::Vector3 mPosition; // offset 0x4C, size 0xC
+    unsigned int mFlags;      // offset 0x58, size 0x4
+    UMath::Vector3 mForce;    // offset 0x5C, size 0xC
+    float mAirTime;           // offset 0x68, size 0x4
+    UMath::Vector3 mLocalArm; // offset 0x6C, size 0xC
+    float mCompression;       // offset 0x78, size 0x4
+    UMath::Vector3 mWorldArm; // offset 0x7C, size 0xC
+    int pad;                  // offset 0x88, size 0x4
+    UMath::Vector3 mVelocity; // offset 0x8C, size 0xC
+    int pad2;                 // offset 0x98, size 0x4
+    SimSurface mSurface;      // offset 0x9C, size 0x14
+    float mSurfaceStick;      // offset 0xB0, size 0x4
+    UMath::Vector4 mIntegral; // offset 0xB4, size 0x10
 };
 
 #endif

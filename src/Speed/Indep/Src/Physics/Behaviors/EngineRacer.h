@@ -89,7 +89,7 @@ class EngineRacer : protected VehicleBehavior,
         float ratio1 = mTrannyInfo.GEAR_RATIO(from);
         float ratio2 = mTrannyInfo.GEAR_RATIO(to);
 
-        if (ratio1 > 0.0f && ratio2 > FLT_EPSILON)
+        if (ratio1 > 0.0f && ratio2 > FLOAT_EPSILON)
             return ratio1 / ratio2;
         else
             return 0.0f;

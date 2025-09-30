@@ -342,7 +342,7 @@ void EngineRacer::DoInduction(const Physics::Tunings *tunings, float dT) {
 
     if (mSpool > desired_spool) {
         float spool_time = mInductionInfo.SPOOL_TIME_DOWN();
-        if (spool_time > FLT_EPSILON) {
+        if (spool_time > FLOAT_EPSILON) {
             mSpool -= dT / spool_time;
             mSpool = UMath::Max(mSpool, desired_spool);
         } else {
@@ -350,7 +350,7 @@ void EngineRacer::DoInduction(const Physics::Tunings *tunings, float dT) {
         }
     } else if (mSpool < desired_spool) {
         float spool_time = mInductionInfo.SPOOL_TIME_UP();
-        if (spool_time > FLT_EPSILON) {
+        if (spool_time > FLOAT_EPSILON) {
             mSpool += dT / spool_time;
             mSpool = UMath::Min(mSpool, desired_spool);
         } else {

@@ -39,7 +39,6 @@ class ICollisionBody : public UTL::COM::IUnknown, public UTL::Collections::Lista
     virtual bool HasHadCollision() const;
     virtual bool HasHadWorldCollision() const;
     virtual bool HasHadObjectCollision() const;
-    virtual bool HasHadGroundCollision() const;
     virtual void EnableCollisionGeometries(UCrc32 name, bool enable);
     virtual bool DistributeMass();
     virtual const UMath::Vector3 &GetWorldMomentScale() const;
@@ -52,7 +51,7 @@ class ICollisionBody : public UTL::COM::IUnknown, public UTL::Collections::Lista
     virtual const UMath::Vector3 &GetInertiaTensor() const;
     virtual float GetOrientToGround() const;
     virtual bool IsInGroundContact() const;
-    virtual uint32_t GetNumContactPoints() const;
+    virtual unsigned int GetNumContactPoints() const;
     virtual const UMath::Vector4 &GetGroundNormal() const;
     virtual void SetForce(const UMath::Vector3 &v);
     virtual void SetTorque(const UMath::Vector3 &v);

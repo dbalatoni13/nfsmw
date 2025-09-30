@@ -8,16 +8,20 @@
 namespace Physics {
 
 struct Tunings {
-    float steeringTuning;     // offset 0x0, size 0x4
-    float handlingTuning;     // offset 0x4, size 0x4
-    float brakesTuning;       // offset 0x8, size 0x4
-    float rideHeightTuning;   // offset 0xC, size 0x4
-    float aerodynamicsTuning; // offset 0x10, size 0x4
-    float nitrousTuning;      // offset 0x14, size 0x4
-    float turboTuning;        // offset 0x18, size 0x4
+    enum Path {
+        STEERING = 0,
+        HANDLING = 1,
+        BRAKES = 2,
+        RIDEHEIGHT = 3,
+        AERODYNAMICS = 4,
+        NOS = 5,
+        INDUCTION = 6,
+        MAX_TUNINGS = 7,
+    };
+    float Value[7]; // offset 0x0, size 0x1C
 
-    // float LowerLimit(Path path);
-    // float UpperLimit(Path path);
+    static float LowerLimit(Path path);
+    static float UpperLimit(Path path);
 };
 
 } // namespace Physics

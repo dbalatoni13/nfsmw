@@ -42,10 +42,6 @@ struct trafficpattern : Instance {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
-    trafficpattern(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-        this->SetDefaultLayout(sizeof(_LayoutStruct));
-    }
-
     ~trafficpattern() {}
 
     void Change(const Collection *c) {

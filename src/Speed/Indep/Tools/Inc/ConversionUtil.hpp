@@ -27,6 +27,7 @@ typedef float Seconds;
 typedef float Psi;
 typedef float Lbs;
 typedef float Kgm2;
+typedef float Radians;
 
 inline Mph MPS2MPH(const Mps _mps_) {
     return _mps_ * 2.23699f;

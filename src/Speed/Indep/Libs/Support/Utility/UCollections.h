@@ -49,7 +49,7 @@ template <typename T> class Singleton {
     static T *mInstance;
 };
 
-template <typename T, typename U, std::size_t Size> class Instanceable {
+template <typename HandleT, typename U, std::size_t Size> class Instanceable {
     class _List : public FixedVector<_KeyedNode, Size, 16> {};
 
     unsigned int _mHandle;
@@ -60,7 +60,9 @@ template <typename T, typename U, std::size_t Size> class Instanceable {
   public:
     Instanceable() {}
 
-    T GetInstanceHandle() const {}
+    HandleT GetInstanceHandle() const {
+        return reinterpret_cast<HandleT>(_mHandle);
+    }
 };
 
 template <typename T, std::size_t V> class GarbageNode {

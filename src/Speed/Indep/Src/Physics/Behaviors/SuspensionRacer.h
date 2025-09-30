@@ -1,6 +1,7 @@
 #ifndef PHYSICS_BEHAVIORS_SUSPENSIONRACER_H
 #define PHYSICS_BEHAVIORS_SUSPENSIONRACER_H
 
+#include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -21,7 +22,10 @@
 // Credits: Brawltendo
 class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public IAttributeable, Debugable {
   public:
-    SuspensionRacer();
+    static Behavior *Construct(const BehaviorParams &params);
+
+    SuspensionRacer(const BehaviorParams &bp, const SuspensionParams &sp);
+    void CreateTires();
     void OnTaskSimulate(float dT);
     void DoDrifting(const Chassis::State &state);
     void TuneWheelParams(Chassis::State &state);
@@ -33,7 +37,19 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
     float DoHumanSteering(Chassis::State &state);
     float DoAISteering(Chassis::State &state);
     void DoSteering(Chassis::State &state, UMath::Vector3 &right, UMath::Vector3 &left);
+    void DoAerobatics(Chassis::State &state);
     float CalcYawControlLimit(float speed) const;
+
+    // Overrides
+    virtual ~SuspensionRacer();
+    virtual void OnCollision(const Sim::Collision::Info &cinfo);
+    virtual void OnBehaviorChange(const UCrc32 &mechanic);
+    virtual void OnAttributeChange(const Attrib::Collection *aspec, unsigned int attribkey);
+    virtual Meters GetRideHeight(unsigned int idx) const;
+    Radians GetWheelAngularVelocity(int index) const;
+    virtual void MatchSpeed(float speed);
+    virtual UMath::Vector3 GetWheelCenterPos(unsigned int i) const;
+    virtual void Reset();
 
     BehaviorSpecsPtr<Attrib::Gen::tires> mTireInfo;         // offset 0x90, size 0x14
     BehaviorSpecsPtr<Attrib::Gen::brakes> mBrakeInfo;       // offset 0xA4, size 0x14
@@ -122,12 +138,31 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
         float WallNoseTurn;                   // offset 0x8C, size 0x4
         float WallSideTurn;                   // offset 0x90, size 0x4
         float YawControl;                     // offset 0x94, size 0x4
-    } mSteering;                              // offset 0x114, size 0x98
+
+        void Reset() {
+            Previous = 0.0f;
+            Wheels[1] = 0.0f;
+            Wheels[0] = 0.0f;
+            Maximum = 45.0f;
+            LastMaximum = 45.0f;
+            LastInput = 0.0f;
+            InputAverage.Reset(0.0f);
+            InputSpeedCoeffAverage.Reset(0.0f);
+            CollisionTimer = 0.0f;
+            WallNoseTurn = 0.0f;
+            WallSideTurn = 0.0f;
+            YawControl = 1.0f;
+        }
+    } mSteering; // offset 0x114, size 0x98
 
     class Tire : public Wheel {
       public:
         bool IsOnGround() {
             return mCompression > 0.0f;
+        }
+
+        bool IsSlipping() {
+            return mTraction >= 1.0f;
         }
 
         float SetBrake(float brake) {
@@ -140,6 +175,10 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
 
         float GetEBrake() {
             return mEBrake;
+        }
+
+        float GetRoadSpeed() {
+            return mRoadSpeed;
         }
 
         float GetRadius() {
@@ -219,6 +258,23 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
             return mSlipAngle;
         }
 
+        // UNSOLVED why does it load 1.0f first?...
+        void MatchSpeed(float speed) {
+            mLateralSpeed = 0.0f;
+            mRoadSpeed = speed;
+            mTraction = 1.0f;
+            mBrakeLocked = false;
+            mSlip = 0.0f;
+            mAngularAcc = 0.0f;
+            mLastTorque = 0.0f;
+            mBrake = 0.0f;
+            mEBrake = 0.0f;
+            mAV = speed / mRadius;
+        }
+
+        Tire(float radius, int index, const Attrib::Gen::tires *specs, const Attrib::Gen::brakes *brakes);
+        void BeginFrame(float max_slip, float grip_boost, float traction_boost, float drag_reduction);
+        void EndFrame(float dT);
         float ComputeLateralForce(float load, float slip_angle);
         float GetPilotFactor(const float speed);
         void CheckForBrakeLock(float ground_force);
@@ -228,34 +284,34 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
 
       private:
         // total size: 0x140
-        float mRadius;                  // offset 0xC4, size 0x4
-        float mBrake;                   // offset 0xC8, size 0x4
-        float mEBrake;                  // offset 0xCC, size 0x4
-        float mAV;                      // offset 0xD0, size 0x4
-        float mLoad;                    // offset 0xD4, size 0x4
-        float mLateralForce;            // offset 0xD8, size 0x4
-        float mLongitudeForce;          // offset 0xDC, size 0x4
-        float mDriveTorque;             // offset 0xE0, size 0x4
-        float mBrakeTorque;             // offset 0xE4, size 0x4
-        float mLateralBoost;            // offset 0xE8, size 0x4
-        float mTractionBoost;           // offset 0xEC, size 0x4
-        float mSlip;                    // offset 0xF0, size 0x4
-        float mLastTorque;              // offset 0xF4, size 0x4
-        int mWheelIndex;                // offset 0xF8, size 0x4
-        float mRoadSpeed;               // offset 0xFC, size 0x4
-        Attrib::Gen::tires *mSpecs;     // offset 0x100, size 0x4
-        Attrib::Gen::brakes *mBrakes;   // offset 0x104, size 0x4
-        float mAngularAcc;              // offset 0x108, size 0x4
-        int mAxleIndex;                 // offset 0x10C, size 0x4
-        float mTraction;                // offset 0x110, size 0x4
-        float mBottomOutTime;           // offset 0x114, size 0x4
-        float mSlipAngle;               // offset 0x118, size 0x4
-        UMath::Vector2 mTractionCircle; // offset 0x11C, size 0x8
-        float mMaxSlip;                 // offset 0x124, size 0x4
-        float mGripBoost;               // offset 0x128, size 0x4
-        float mDriftFriction;           // offset 0x12C, size 0x4
-        float mLateralSpeed;            // offset 0x130, size 0x4
-        bool mBrakeLocked;              // offset 0x134, size 0x4
+        const float mRadius;                // offset 0xC4, size 0x4
+        float mBrake;                       // offset 0xC8, size 0x4
+        float mEBrake;                      // offset 0xCC, size 0x4
+        float mAV;                          // offset 0xD0, size 0x4
+        float mLoad;                        // offset 0xD4, size 0x4
+        float mLateralForce;                // offset 0xD8, size 0x4
+        float mLongitudeForce;              // offset 0xDC, size 0x4
+        float mDriveTorque;                 // offset 0xE0, size 0x4
+        float mBrakeTorque;                 // offset 0xE4, size 0x4
+        float mLateralBoost;                // offset 0xE8, size 0x4
+        float mTractionBoost;               // offset 0xEC, size 0x4
+        float mSlip;                        // offset 0xF0, size 0x4
+        float mLastTorque;                  // offset 0xF4, size 0x4
+        const int mWheelIndex;              // offset 0xF8, size 0x4
+        float mRoadSpeed;                   // offset 0xFC, size 0x4
+        const Attrib::Gen::tires *mSpecs;   // offset 0x100, size 0x4
+        const Attrib::Gen::brakes *mBrakes; // offset 0x104, size 0x4
+        float mAngularAcc;                  // offset 0x108, size 0x4
+        const int mAxleIndex;               // offset 0x10C, size 0x4
+        float mTraction;                    // offset 0x110, size 0x4
+        float mBottomOutTime;               // offset 0x114, size 0x4
+        float mSlipAngle;                   // offset 0x118, size 0x4
+        UMath::Vector2 mTractionCircle;     // offset 0x11C, size 0x8
+        float mMaxSlip;                     // offset 0x124, size 0x4
+        float mGripBoost;                   // offset 0x128, size 0x4
+        float mDriftFriction;               // offset 0x12C, size 0x4
+        float mLateralSpeed;                // offset 0x130, size 0x4
+        bool mBrakeLocked;                  // offset 0x134, size 0x4
 
         enum LastRotationSign { WAS_POSITIVE, WAS_ZERO, WAS_NEGATIVE } mLastSign; // offset 0x138, size 0x4
 

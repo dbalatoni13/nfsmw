@@ -10,7 +10,7 @@
 #include "UTypes.h"
 #include "UVectorMath.h"
 
-#define FLT_EPSILON 0.000001f
+#define FLOAT_EPSILON 0.000001f
 
 namespace UMath {
 
@@ -28,6 +28,17 @@ inline void Clear(Vector3 &r) {
 
 inline Vector3 &Vector4To3(Vector4 &c4) {
     return *reinterpret_cast<Vector3 *>(&c4);
+}
+
+inline const Vector3 &Vector4To3(const Vector4 &c4) {
+    return *reinterpret_cast<const Vector3 *>(&c4);
+}
+
+inline Vector2 Vector2Make(float x, float y) {
+    Vector2 c;
+    c.x = x;
+    c.y = y;
+    return c;
 }
 
 inline Vector4 Vector4Make(const Vector3 &c, float w) {
@@ -92,6 +103,14 @@ inline void UnitCross(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::V
     VU0_v3unitcrossprod(a, b, r);
 }
 
+inline float Length(const UMath::Vector3 &a) {
+    return VU0_v3length(a);
+}
+
+inline float LengthSquare(const UMath::Vector3 &a) {
+    return VU0_v3lengthsquare(a);
+}
+
 inline float Clamp(const float a, const float amin, const float amax) {
     return VU0_floatmax(amin, VU0_floatmin(a, amax));
 }
@@ -107,7 +126,6 @@ inline float Pow(const float f, const float e) {
 inline float Ramp(const float a, const float amin, const float amax) {
     float arange = amax - amin;
 
-    // TODO check if arange > epsilon?
     return VU0_floatmax(0.0f, VU0_floatmin((a - amin) / arange, 1.0f));
 }
 

@@ -38,8 +38,8 @@ class IRigidBody : public UTL::COM::IUnknown, public UTL::Collections::Listable<
     virtual void GetUpVector(UMath::Vector3 &vec) const;
     virtual void GetMatrix4(UMath::Matrix4 &mat) const;
     virtual const UMath::Vector4 &GetOrientation() const;
-    virtual UMath::Vector3 GetDimension() const;
     virtual void GetDimension(UMath::Vector3 &dim) const;
+    virtual UMath::Vector3 GetDimension() const;
     virtual unsigned int GetTriggerFlags() const;
     virtual const struct WCollider *GetWCollider() const;
     virtual void GetPointVelocity(const UMath::Vector3 &position, UMath::Vector3 &velocity) const;

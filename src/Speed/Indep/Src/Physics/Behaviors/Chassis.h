@@ -66,12 +66,19 @@ class Chassis : public VehicleBehavior, public ISuspension {
         }
     };
 
+    enum SleepState {
+        SS_LATERAL = 2,
+        SS_ALL = 1,
+        SS_NONE = 0,
+    };
+
     Chassis(const BehaviorParams &bp);
 
     Mps ComputeMaxSlip(const State &state) const;
     void DoTireHeat(const Chassis::State &state);
     float ComputeLateralGripScale(const Chassis::State &state) const;
     float ComputeTractionScale(const Chassis::State &state) const;
+    SleepState DoSleep(const Chassis::State &state);
     void ComputeAckerman(const float steering, const State &state, UMath::Vector4 *left, UMath::Vector4 *right) const;
     void SetCOG(float extra_bias, float extra_ride);
     void ComputeState(State &state, float dT);
@@ -80,9 +87,12 @@ class Chassis : public VehicleBehavior, public ISuspension {
     void DoJumpStabilizer(State &state);
 
     /* Overrides */
-    float GetRenderMotion() const;
-    Meters GetRideHeight(unsigned int idx) const;
-    float CalculateUndersteerFactor() const;
+    virtual ~Chassis();
+    virtual Meters GuessCompression(unsigned int id, float downforce) const;
+    virtual void OnBehaviorChange(const UCrc32 &mechanic);
+    virtual float GetRenderMotion() const;
+    virtual Meters GetRideHeight(unsigned int idx) const;
+    virtual float CalculateUndersteerFactor() const;
     virtual float CalculateOversteerFactor() const;
     virtual void OnTaskSimulate(float dT);
 

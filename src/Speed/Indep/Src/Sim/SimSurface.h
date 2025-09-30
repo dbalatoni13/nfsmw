@@ -31,7 +31,7 @@ class SimSurface : public Attrib::Gen::simsurface { /* Size=0x10 */
         // TODO
     }
 
-    SimSurface() : Attrib::Gen::simsurface(nullptr, 0, nullptr) {
+    SimSurface() : Attrib::Gen::simsurface(GetConstCollection(), 0, nullptr) {
         // TODO
         // Change()
     }

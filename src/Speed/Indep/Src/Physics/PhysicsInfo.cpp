@@ -1,4 +1,5 @@
 #include "PhysicsInfo.hpp"
+#include "PhysicsTunings.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Sim/UTil.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
@@ -40,7 +41,7 @@ float Physics::Info::NosBoost(const nos &nos, const Tunings *tunings) {
     float torque_scale = 1.0f;
     float boost = nos.TORQUE_BOOST();
     if (tunings) {
-        boost += boost * tunings->nitrousTuning * 0.25f;
+        boost += boost * tunings->Value[Physics::Tunings::NOS] * 0.25f;
     }
     return boost + torque_scale;
 }
@@ -49,7 +50,7 @@ float Physics::Info::NosBoost(const nos &nos, const Tunings *tunings) {
 float Physics::Info::NosCapacity(const nos &nos, const Tunings *tunings) {
     float capacity = nos.NOS_CAPACITY();
     if (tunings) {
-        capacity -= capacity * tunings->nitrousTuning * 0.25f;
+        capacity -= capacity * tunings->Value[Physics::Tunings::NOS] * 0.25f;
     }
     return capacity;
 }
@@ -61,7 +62,7 @@ float Physics::Info::InductionRPM(const engine &engine, const induction &inducti
 
     // tune the (normalized) RPM at which forced induction kicks in
     if (tunings && spool > 0.0f) {
-        float value = tunings->turboTuning;
+        float value = tunings->Value[Physics::Tunings::INDUCTION];
         float range = value < 0.0f ? spool : (1.0f - spool);
         spool += (range * 0.25f) * value;
     }
@@ -90,7 +91,7 @@ float Physics::Info::InductionBoost(const engine &engine, const induction &induc
         // tuning slider adjusts the induction boost bias
         // -tuning will produce more boost in the low end, while +tuning produces more boost in the high end
         if (tunings) {
-            float value = tunings->turboTuning;
+            float value = tunings->Value[Physics::Tunings::INDUCTION];
             low_boost = low_boost - low_boost * value * 0.25f;
             high_boost = (value * 0.25f + 1.f) * high_boost;
         }

@@ -9,6 +9,12 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Sim/SimProfile.h"
 
+extern Attrib::StringKey BEHAVIOR_MECHANIC_AI;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_ENGINE;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_INPUT;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_RIGIDBODY;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_DAMAGE;
+
 struct BehaviorParams {
     // total size: 0x10
     const Sim::Param &fparams;    // offset 0x0, size 0x4
@@ -19,6 +25,16 @@ struct BehaviorParams {
 
 class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32> {
   public:
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
+    void operator delete(void *mem, std::size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+
     Behavior(const BehaviorParams &params, unsigned int num_interfaces) : Sim::Object(num_interfaces) {}
 
     const UCrc32 &GetMechanic() {
@@ -71,13 +87,13 @@ template <typename T> class BehaviorSpecsPtr : public AttributeStructPtr<T> {
         // TODO
     }
 
-    ~BehaviorSpecsPtr() {}
+    ~BehaviorSpecsPtr();
 
     Attrib::Key LookupKey(const ISimable *owner, int index) {
         const Attrib::Instance &owneratr = owner->GetAttributes();
         Attrib::Key classkey;
         if (!owneratr.IsValid()) {
-            // TODO what's 0xeec2271a?
+            // "default"
             classkey = 0xeec2271a;
             return classkey;
         }

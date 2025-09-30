@@ -8,6 +8,7 @@
 #include <cstddef>
 
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 // TODO where to?
@@ -144,16 +145,16 @@ struct emitterdata : Instance {
         Attrib::Free(ptr, bytes, "emitterdata");
     }
 
-    emmiterdata(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
+    emitterdata(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
-    emmiterdata(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
+    emitterdata(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
-    ~emmiterdata() {}
+    ~emitterdata() {}
 
     void Change(const Collection *c) {
         Instance::Change(c);

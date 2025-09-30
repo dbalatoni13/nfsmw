@@ -94,6 +94,8 @@ class Average : public AverageBase {
 
 class AverageWindow : public Average {
   public:
+    ~AverageWindow();
+
     float GetOldestValue() {
         return pData[iOldestValue];
     }
@@ -103,6 +105,7 @@ class AverageWindow : public Average {
     }
 
     void Record(const float fValue, const float fTimeNow);
+    void Reset(float fValue);
 
     float fTimeWindow;
     int iOldestValue;
