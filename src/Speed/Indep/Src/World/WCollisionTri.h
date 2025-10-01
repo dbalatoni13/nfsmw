@@ -6,6 +6,7 @@
 #endif
 
 #include "./WCollision.h"
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 
 struct WCollisionTri {
@@ -18,5 +19,36 @@ struct WCollisionTri {
     WSurface fSurface;                    // offset 0x2C, size 0x2
     unsigned short PAD;                   // offset 0x2E, size 0x2
 };
+
+struct _type_WCollisionWarnVector {
+    const char *name() {
+        return "WCollisionWarnVector";
+    };
+};
+
+struct _type_WCollisionVector {
+    const char *name() {
+        return "WCollisionVector";
+    };
+};
+
+// TODO move these?
+template <typename T, std::size_t N> class WCollisionWarnVector : public UTL::Std::vector<T, _type_WCollisionWarnVector> {};
+
+struct WCollisionInstanceCacheList : public WCollisionWarnVector<const WCollisionInstance *, 80> {
+    // total size: 0x10
+};
+
+template <typename T> class WCollisionVector : public UTL::Std::vector<T, _type_WCollisionVector> {};
+
+struct WCollisionBarrierList : public WCollisionVector<WCollisionBarrierListEntry> {
+    // total size: 0x10
+};
+
+struct WCollisionTriBlock : public WCollisionVector<WCollisionTri> {};
+
+struct WCollisionTriList : public WCollisionVector<WCollisionTriBlock *> {};
+
+struct WCollisionObjectList : public WCollisionVector<const WCollisionObject *> {};
 
 #endif

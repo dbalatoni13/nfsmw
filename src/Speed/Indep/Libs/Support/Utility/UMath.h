@@ -2,6 +2,7 @@
 #define SUPPORT_UTILITY_UMATH_H
 
 #include <cmath>
+#include <cstring>
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -21,9 +22,10 @@ inline float DistanceSquarexz(const Vector3 &a, const Vector3 &b) {
 }
 
 inline void Clear(Vector3 &r) {
-    r.x = 0.0f;
-    r.y = 0.0f;
-    r.z = 0.0f;
+    // TODO fake match
+    *reinterpret_cast<int *>(&r.x) = 0;
+    *reinterpret_cast<int *>(&r.y) = 0;
+    *reinterpret_cast<int *>(&r.z) = 0;
 }
 
 inline Vector3 &Vector4To3(Vector4 &c4) {
@@ -61,6 +63,14 @@ inline void RotateTranslate(const Vector3 &a, const Matrix4 &m, Vector3 &r) {
 
 inline void RotateTranslate(const Vector4 &a, const Matrix4 &m, Vector4 &r) {
     VU0_MATRIX4_vect4mult(a, m, r);
+}
+
+inline void Mult(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_qmul(a, b, r);
+}
+
+inline void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m) {
+    VU0_quattom4(q, m);
 }
 
 inline void Add(const Vector3 &a, const Vector3 &b, Vector3 &r) {

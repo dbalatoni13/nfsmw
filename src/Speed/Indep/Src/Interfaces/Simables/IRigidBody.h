@@ -9,6 +9,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
+#include "Speed/Indep/Src/World/WCollider.h"
 
 class IRigidBody : public UTL::COM::IUnknown, public UTL::Collections::Listable<IRigidBody, 160> {
   public:
@@ -41,7 +42,7 @@ class IRigidBody : public UTL::COM::IUnknown, public UTL::Collections::Listable<
     virtual void GetDimension(UMath::Vector3 &dim) const;
     virtual UMath::Vector3 GetDimension() const;
     virtual unsigned int GetTriggerFlags() const;
-    virtual const struct WCollider *GetWCollider() const;
+    virtual const WCollider *GetWCollider() const;
     virtual void GetPointVelocity(const UMath::Vector3 &position, UMath::Vector3 &velocity) const;
     virtual void SetPosition(const UMath::Vector3 &pos);
     virtual void SetLinearVelocity(const UMath::Vector3 &vel);

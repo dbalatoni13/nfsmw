@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Src/World/WCollision.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 class WCollisionMgr {
@@ -13,23 +14,22 @@ class WCollisionMgr {
     struct WorldCollisionInfo {
         UMath::Vector4 fCollidePt;
         UMath::Vector4 fNormal;
-        // TODO
-        // WCollisionBarrierListEntry fBle;
-        // const WCollisionObject *fObj;
+        WCollisionBarrierListEntry fBle;
+        const WCollisionObject *fObj;
         float fDist;
         unsigned char fAnimated;
         unsigned char fType;
         uint16_t fPad;
-        // const WCollisionInstance *fCInst;
+        const WCollisionInstance *fCInst;
 
         WorldCollisionInfo() {}
         bool HitSomething() const {}
     };
 
-    struct ICollisionHandler {
+    class ICollisionHandler {
+      public:
         ICollisionHandler() {}
 
-      public:
         virtual bool OnWCollide(const struct WorldCollisionInfo &cInfo, const bVector3 &cPoint, void *userdata);
     };
 

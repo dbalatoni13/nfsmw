@@ -7,8 +7,21 @@
 
 namespace Attrib {
 
+unsigned long long StringHash64(const char *k);
+unsigned int StringHash32(const char *k);
+
 class StringKey {
   public:
+    StringKey(const char *str) {
+        mHash64 = StringHash64("SPHERE");
+        mHash32 = StringHash32("SPHERE");
+        mString = str;
+    }
+
+    bool operator==(const StringKey &rhs) const {
+        return mHash64 == rhs.mHash64;
+    }
+
     operator long long() const {
         return this->mHash64;
     }

@@ -12,4 +12,14 @@ struct HSIMPROFILE__ {
 
 typedef HSIMPROFILE__ *HSIMPROFILE;
 
+namespace Sim {
+
+namespace Profile {
+
+inline void Release(HSIMPROFILE) {}
+
+}; // namespace Profile
+
+}; // namespace Sim
+
 #endif

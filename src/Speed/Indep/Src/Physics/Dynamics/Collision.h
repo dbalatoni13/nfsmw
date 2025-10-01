@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 struct CollisionSurface {
@@ -37,5 +38,36 @@ struct CollisionInstance {
     bVector4 fInvMatRow2Length;                        // offset 0x20, size 0x10
     bVector4 fInvPosRadius;                            // offset 0x30, size 0x10
 };
+
+namespace Dynamics {
+namespace Collision {
+
+class Geometry {
+    // total size: 0xB0
+  public:
+    enum Shape {
+        UNKNOWN = 0,
+        BOX = 1,
+        SPHERE = 2,
+        MAXSHAPES = 3,
+    };
+
+    void Set(const UMath::Matrix4 &orient, const UMath::Vector3 &position, const UMath::Vector3 &dimension, Shape shape, const UMath::Vector3 &delta);
+
+  private:
+    UMath::Vector4 mPosition;         // offset 0x0, size 0x10
+    UMath::Vector4 mNormal[3];        // offset 0x10, size 0x30
+    UMath::Vector4 mExtent[3];        // offset 0x40, size 0x30
+    UMath::Vector4 mCollision_point;  // offset 0x70, size 0x10
+    UMath::Vector4 mCollision_normal; // offset 0x80, size 0x10
+    float mDimension[3];              // offset 0x90, size 0xC
+    unsigned short mShape;            // offset 0x9C, size 0x2
+    unsigned short mPenetratesOther;  // offset 0x9E, size 0x2
+    UMath::Vector3 mDelta;            // offset 0xA0, size 0xC
+    float mOverlap;                   // offset 0xAC, size 0x4
+};
+
+}; // namespace Collision
+}; // namespace Dynamics
 
 #endif

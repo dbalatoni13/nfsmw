@@ -14,8 +14,6 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/tires.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/transmission.h"
 
-using namespace Attrib::Gen;
-
 namespace Physics {
 namespace Info {
 
@@ -25,18 +23,20 @@ enum eInductionType {
     INDUCTION_NONE = 0,
 };
 
-float AerodynamicDownforce(const chassis &chassis, const float speed);
-float EngineInertia(const engine &engine, const bool loaded);
-eInductionType InductionType(const induction &induction);
-float NosBoost(const nos &nos, const Tunings *tunings);
-float NosCapacity(const nos &nos, const Tunings *tunings);
-float InductionRPM(const engine &engine, const induction &induction, const Tunings *tunings);
-float InductionBoost(const engine &engine, const induction &induction, float rpm, float spool, const Tunings *tunings, float *psi);
-float WheelDiameter(const tires &tires, bool front);
-float Speedometer(const transmission &transmission, const engine &engine, const tires &tires, float rpm, GearID gear, const Tunings *tunings);
-float Torque(const engine &engine, float rpm);
-bool ShiftPoints(const transmission &transmission, const engine &engine, const induction &induction, float *shift_up, float *shift_down,
-                 unsigned int numpts);
+float AerodynamicDownforce(const Attrib::Gen::chassis &chassis, const float speed);
+float EngineInertia(const Attrib::Gen::engine &engine, const bool loaded);
+eInductionType InductionType(const Attrib::Gen::induction &induction);
+float NosBoost(const Attrib::Gen::nos &nos, const Tunings *tunings);
+float NosCapacity(const Attrib::Gen::nos &nos, const Tunings *tunings);
+float InductionRPM(const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction, const Tunings *tunings);
+float InductionBoost(const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction, float rpm, float spool, const Tunings *tunings,
+                     float *psi);
+float WheelDiameter(const Attrib::Gen::tires &tires, bool front);
+float Speedometer(const Attrib::Gen::transmission &transmission, const Attrib::Gen::engine &engine, const Attrib::Gen::tires &tires, float rpm,
+                  GearID gear, const Tunings *tunings);
+float Torque(const Attrib::Gen::engine &engine, float rpm);
+bool ShiftPoints(const Attrib::Gen::transmission &transmission, const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction,
+                 float *shift_up, float *shift_down, unsigned int numpts);
 
 struct Performance {
     Performance(float topspeed, float handling, float accel) {

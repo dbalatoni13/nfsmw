@@ -65,7 +65,11 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
     virtual void OnBehaviorChange(const UCrc32 &mechanic);
     virtual void OnPause();
     virtual void OnUnPause();
-    virtual ~Behavior();
+
+    virtual ~Behavior() {
+        // TODO
+        Sim::Profile::Release(nullptr);
+    }
 
   private:
     // total size: 0x4C

@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Interfaces/SimEntities/IEntity.h"
 #include "Speed/Indep/Src/Interfaces/SimModels/IModel.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICause.h"
+#include "Speed/Indep/Src/Main/EventSequencer.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
 #include "Speed/Indep/Src/World/World.hpp"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
@@ -33,11 +34,6 @@ enum SimableType {
     SIMABLE_SMACKABLE = 2,
     SIMABLE_VEHICLE = 1,
     SIMABLE_INVALID = 0,
-};
-
-// TODO remove
-namespace EventSequencer {
-struct IEngine;
 };
 
 class ISimable : public UTL::COM::IUnknown,

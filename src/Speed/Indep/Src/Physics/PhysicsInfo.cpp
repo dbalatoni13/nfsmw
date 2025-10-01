@@ -56,15 +56,19 @@ float Physics::Info::NosCapacity(const nos &nos, const Tunings *tunings) {
 }
 
 // Credits: Brawltendo
-// TODO Not matching on GC yet
 float Physics::Info::InductionRPM(const engine &engine, const induction &induction, const Tunings *tunings) {
     float spool = induction.SPOOL();
 
     // tune the (normalized) RPM at which forced induction kicks in
     if (tunings && spool > 0.0f) {
+        float range;
         float value = tunings->Value[Physics::Tunings::INDUCTION];
-        float range = value < 0.0f ? spool : (1.0f - spool);
-        spool += (range * 0.25f) * value;
+        if (value < 0.0f) {
+            range = spool * 0.25f;
+        } else {
+            range = (1.0f - spool) * 0.25f;
+        }
+        spool += range * value;
     }
 
     // return the unnormalized RPM
@@ -75,10 +79,10 @@ float Physics::Info::InductionRPM(const engine &engine, const induction &inducti
 // UNSOLVED
 float Physics::Info::InductionBoost(const engine &engine, const induction &induction, float rpm, float spool, const Tunings *tunings, float *psi) {
     if (psi) {
-        *psi = 0.f;
+        *psi = 0.0f;
     }
 
-    float spool_clamped = UMath::Clamp(spool, 0.f, 1.f);
+    float spool_clamped = UMath::Clamp(spool, 0.0f, 1.0f);
     float rpm_min = engine.IDLE();
     float rpm_max = engine.RED_LINE();
     float induction_boost = 0.f;
@@ -87,26 +91,27 @@ float Physics::Info::InductionBoost(const engine &engine, const induction &induc
     float low_boost = induction.LOW_BOOST();
     float drag = induction.VACUUM();
 
-    if (high_boost > 0.f || low_boost > 0.f) {
+    if (high_boost > 0.0f || low_boost > 0.0f) {
         // tuning slider adjusts the induction boost bias
         // -tuning will produce more boost in the low end, while +tuning produces more boost in the high end
         if (tunings) {
             float value = tunings->Value[Physics::Tunings::INDUCTION];
             low_boost = low_boost - low_boost * value * 0.25f;
-            high_boost = (value * 0.25f + 1.f) * high_boost;
+            high_boost = (value * 0.25f + 1.0f) * high_boost;
         }
 
         if (rpm >= spool_rpm) {
             float induction_ratio = UMath::Ramp(rpm, spool_rpm, rpm_max);
-            induction_boost = (1.f - induction_ratio) * low_boost + induction_ratio * high_boost;
-            if (psi)
-                *psi = induction.PSI() * UMath::Ramp(induction_boost, 0.f, UMath::Max(high_boost, low_boost)) * spool_clamped;
-        } else if (drag < 0.f) {
+            induction_boost = (1.0f - induction_ratio) * low_boost + induction_ratio * high_boost;
+            if (psi) {
+                *psi = induction.PSI() * UMath::Ramp(induction_boost, 0.0f, UMath::Max(high_boost, low_boost)) * spool_clamped;
+            }
+        } else if (drag < 0.0f) {
             // vacuum effect applies from the min RPM to the boost RPM
             float drag_ratio = UMath::Ramp(rpm, rpm_min, spool_rpm);
             induction_boost = drag_ratio * drag;
             if (psi) {
-                *psi = -(induction.PSI() * UMath::Ramp(-induction_boost, 0.f, UMath::Max(high_boost, low_boost)) * drag_ratio);
+                *psi = -(induction.PSI() * UMath::Ramp(-induction_boost, 0.0f, UMath::Max(high_boost, low_boost)) * drag_ratio);
             }
         }
     }
@@ -214,19 +219,22 @@ bool Physics::Info::ShiftPoints(const transmission &transmission, const engine &
                 // set the upshift RPM to the redline RPM
                 flag = !(max < redline);
             }
-            if (!flag)
+            if (!flag) {
                 shift_up[j] = max;
+            }
         } else {
             flag = 1;
         }
-        if (flag)
+        if (flag) {
             shift_up[j] = redline - 100.0f;
+        }
 
         // calculate downshift RPM for the next gear
-        if (UMath::Abs(g1) > 0.00001f)
+        if (UMath::Abs(g1) > 0.00001f) {
             shift_down[j + 1] = (g2 / g1) * shift_up[j];
-        else
+        } else {
             shift_down[j + 1] = 0.0f;
+        }
     }
 
     shift_up[topgear] = engine.RED_LINE();

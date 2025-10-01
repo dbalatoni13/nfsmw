@@ -11,8 +11,6 @@
 #include "Speed/Indep/Src/Physics/PhysicsTunings.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
-#include <cfloat>
-#include <cmath>
 
 float ZeroDegreeTable[6] = {0.0f};
 float TwoDegreeTable[] = {0.0f, 1.2f, 2.3f, 3.0f, 3.0f, 2.8f};
@@ -1430,3 +1428,5 @@ void SuspensionRacer::DoWheelForces(Chassis::State &state) {
     }
     mNumWheelsOnGround = wheelsOnGround;
 }
+
+void SuspensionRacer::OnDebugDraw() {}

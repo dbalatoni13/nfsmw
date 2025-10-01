@@ -40,12 +40,13 @@ class PhysicsObject : public Sim::Object,
 
   private:
     // total size: 0xAC
-    WWorldPos *mWPos;                                                         // offset 0x58, size 0x4
-    SimableType mObjType;                                                     // offset 0x5C, size 0x4
-    HSIMABLE mOwner;                                                          // offset 0x60, size 0x4
-    Attrib::Instance mAttributes;                                             // offset 0x64, size 0x14
-    IRigidBody *mRigidBody;                                                   // offset 0x78, size 0x4
-    HSIMTASK mSimulateTask;                                                   // offset 0x7C, size 0x4
+    WWorldPos *mWPos;             // offset 0x58, size 0x4
+    SimableType mObjType;         // offset 0x5C, size 0x4
+    HSIMABLE mOwner;              // offset 0x60, size 0x4
+    Attrib::Instance mAttributes; // offset 0x64, size 0x14
+    IRigidBody *mRigidBody;       // offset 0x78, size 0x4
+    HSIMTASK mSimulateTask;       // offset 0x7C, size 0x4
+    // TODO correct one?
     Sim::IEntity *mEntity;                                                    // offset 0x80, size 0x4
     IPlayer *mPlayer;                                                         // offset 0x84, size 0x4
     HSIMSERVICE mBodyService;                                                 // offset 0x88, size 0x4

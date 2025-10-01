@@ -50,6 +50,7 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
     virtual void MatchSpeed(float speed);
     virtual UMath::Vector3 GetWheelCenterPos(unsigned int i) const;
     virtual void Reset();
+    virtual void OnDebugDraw();
 
     BehaviorSpecsPtr<Attrib::Gen::tires> mTireInfo;         // offset 0x90, size 0x14
     BehaviorSpecsPtr<Attrib::Gen::brakes> mBrakeInfo;       // offset 0xA4, size 0x14
