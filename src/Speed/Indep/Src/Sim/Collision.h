@@ -13,14 +13,39 @@ namespace Sim {
 
 namespace Collision {
 
+// total size: 0x80
 struct Info {
-    // total size: 0x80
     enum CollisionType {
         NONE = 0,
         OBJECT = 1,
         WORLD = 2,
         GROUND = 3,
     };
+
+    Info() {
+        position = UMath::Vector3::kZero;
+        objAsurface = nullptr;
+        normal = UMath::Vector3::kZero;
+        type = 0;
+        objAImmobile = 0;
+        objADetached = 0;
+        objBImmobile = 0;
+        objBDetached = 0;
+        sliding = 0;
+        closingVel = UMath::Vector3::kZero;
+        force = 0.0f;
+        armA = UMath::Vector3::kZero;
+        objA = nullptr;
+        armB = UMath::Vector3::kZero;
+        objB = nullptr;
+        objAVel = UMath::Vector3::kZero;
+        impulseA = 0.0f;
+        objBVel = UMath::Vector3::kZero;
+        impulseB = 0.0f;
+        slidingVel = UMath::Vector3::kZero;
+        objBsurface = nullptr;
+    }
+
     UMath::Vector3 position;               // offset 0x0, size 0xC
     const Attrib::Collection *objAsurface; // offset 0xC, size 0x4
     UMath::Vector3 normal;                 // offset 0x10, size 0xC
@@ -48,5 +73,7 @@ struct Info {
 }; // namespace Collision
 
 }; // namespace Sim
+
+typedef Sim::Collision::Info COLLISION_INFO;
 
 #endif

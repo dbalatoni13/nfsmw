@@ -119,6 +119,34 @@ inline void VU0_quattom4(const UMath::Vector4 &quat, UMath::Matrix4 &result) {
     result[3][3] = 1.0f;
 }
 
+inline void VU0_MATRIX4_transpose(const UMath::Matrix4 &m, UMath::Matrix4 &result) {
+    if (&m == &result) {
+        UMath::Matrix4 temp;
+        int i;
+        int j;
+        for (i = 0; i < 4 * 4; ++i) {
+            temp.GetElements()[i] = m.GetElements()[i];
+        }
+        for (i = 0; i < 4; ++i) {
+            for (j = 0; j < 4; ++j) {
+                result[i][j] = temp[j][i];
+            }
+        }
+    } else {
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
+                result[i][j] = m[j][i];
+            }
+        }
+    }
+}
+
+inline void VU0_MATRIX3x4dotprod(const UMath::Vector3 &a, const UMath::Matrix4 &b, UMath::Vector3 &r) {
+    r.x = VU0_v3dotprod(a, UMath::Vector4To3(b.v0));
+    r.y = VU0_v3dotprod(a, UMath::Vector4To3(b.v1));
+    r.z = VU0_v3dotprod(a, UMath::Vector4To3(b.v2));
+}
+
 inline float VU0_v3length(const struct UMath::Vector3 &a) {
     return VU0_sqrt(VU0_v3lengthsquare(a));
 }

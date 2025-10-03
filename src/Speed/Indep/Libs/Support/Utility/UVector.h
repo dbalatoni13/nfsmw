@@ -40,14 +40,18 @@ struct UVector3 : public UMath::Vector3 {
         z = fz;
     }
 
-    // TODO these shouldn't be member functions
-    const UVector3 &operator=(const UVector3 &From) {
+    float Magnitude() const {
+        return UMath::Length(*this);
+    }
+
+    const UVector3 &operator=(const Vector3 &From) {
         x = From.x;
         y = From.y;
         z = From.z;
         return *this;
     }
 
+    // TODO some of these shouldn't be member functions
     UVector3 &operator/=(const float scalar) {
         x /= scalar;
         y /= scalar;
@@ -71,14 +75,6 @@ struct UVector3 : public UMath::Vector3 {
         y -= v.y;
         z -= v.z;
         return *this;
-    }
-
-    UVector3 operator+(const UVector3 &v) {
-        UVector3 result;
-        result.x = x + v.x;
-        result.y = y + v.y;
-        result.z = z + v.z;
-        return result;
     }
 
     UVector3 operator+(const float b) {
@@ -136,6 +132,12 @@ inline UVector3 operator*(const UVector3 &v1, float scalar) {
     UMath::Vector3 result;
     UMath::Scale(v1, scalar, result);
     return UVector3(result);
+}
+
+inline UVector3 operator+(const UVector3 &v1, const UVector3 &v2) {
+    UMath::Vector3 result;
+    UMath::Add(v1, v2, result);
+    return result;
 }
 
 #endif

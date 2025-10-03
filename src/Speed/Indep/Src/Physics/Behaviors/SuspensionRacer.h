@@ -22,48 +22,6 @@
 // Credits: Brawltendo
 class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public IAttributeable, Debugable {
   public:
-    static Behavior *Construct(const BehaviorParams &params);
-
-    SuspensionRacer(const BehaviorParams &bp, const SuspensionParams &sp);
-    void CreateTires();
-    void OnTaskSimulate(float dT);
-    void DoDrifting(const Chassis::State &state);
-    void TuneWheelParams(Chassis::State &state);
-    void DoWheelForces(Chassis::State &state);
-    float CalculateMaxSteering(Chassis::State &state, ISteeringWheel::SteeringType steer_type);
-    float CalculateSteeringSpeed(Chassis::State &state);
-    void DoWallSteer(Chassis::State &state);
-    void DoDriveForces(Chassis::State &state);
-    float DoHumanSteering(Chassis::State &state);
-    float DoAISteering(Chassis::State &state);
-    void DoSteering(Chassis::State &state, UMath::Vector3 &right, UMath::Vector3 &left);
-    void DoAerobatics(Chassis::State &state);
-    float CalcYawControlLimit(float speed) const;
-
-    // Overrides
-    virtual ~SuspensionRacer();
-    virtual void OnCollision(const Sim::Collision::Info &cinfo);
-    virtual void OnBehaviorChange(const UCrc32 &mechanic);
-    virtual void OnAttributeChange(const Attrib::Collection *aspec, unsigned int attribkey);
-    virtual Meters GetRideHeight(unsigned int idx) const;
-    Radians GetWheelAngularVelocity(int index) const;
-    virtual void MatchSpeed(float speed);
-    virtual UMath::Vector3 GetWheelCenterPos(unsigned int i) const;
-    virtual void Reset();
-    virtual void OnDebugDraw();
-
-    BehaviorSpecsPtr<Attrib::Gen::tires> mTireInfo;         // offset 0x90, size 0x14
-    BehaviorSpecsPtr<Attrib::Gen::brakes> mBrakeInfo;       // offset 0xA4, size 0x14
-    BehaviorSpecsPtr<Attrib::Gen::chassis> mSuspensionInfo; // offset 0xB8, size 0x14
-    BehaviorSpecsPtr<Attrib::Gen::transmission> mTranyInfo; // offset 0xCC, size 0x14
-    IRigidBody *mRB;                                        // offset 0xE0, size 0x4
-    ICollisionBody *mCollisionBody;                         // offset 0xE4, size 0x4
-    ITransmission *mTransmission;                           // offset 0xE8, size 0x4
-    IHumanAI *mHumanAI;                                     // offset 0xEC, size 0x4
-    float mGameBreaker;                                     // offset 0xF0, size 0x4
-    unsigned int mNumWheelsOnGround;                        // offset 0xF4, size 0x4
-    float mLastGroundCollision;                             // offset 0xF8, size 0x4
-
     struct Drift {
         enum eState { D_OUT, D_ENTER, D_IN, D_EXIT } State; // offset 0x0, size 0x4
         float Value;                                        // offset 0x4, size 0x4
@@ -72,7 +30,7 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
             State = SuspensionRacer::Drift::D_OUT;
             Value = 0.0f;
         }
-    } mDrift; // offset 0xFC, size 0x8
+    };
 
     struct Burnout {
         void Update(const float dT, const float speedmph, const float max_slip, const int max_slip_wheel, const float yaw);
@@ -125,7 +83,7 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
         float mBurnOutTime;  // offset 0x4, size 0x4
         float mTraction;     // offset 0x8, size 0x4
         float mBurnOutAllow; // offset 0xC, size 0x4
-    } mBurnOut;              // offset 0x104, size 0x10
+    };
 
     struct Steering {
         float Previous;                       // offset 0x0, size 0x4
@@ -154,7 +112,7 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
             WallSideTurn = 0.0f;
             YawControl = 1.0f;
         }
-    } mSteering; // offset 0x114, size 0x98
+    };
 
     class Tire : public Wheel {
       public:
@@ -317,7 +275,7 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
         enum LastRotationSign { WAS_POSITIVE, WAS_ZERO, WAS_NEGATIVE } mLastSign; // offset 0x138, size 0x4
 
         float mDragReduction; // offset 0x13C, size 0x4
-    } *mTires[4];
+    };
 
     struct Differential {
         void CalcSplit(bool locked);
@@ -328,6 +286,38 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
         float factor;
         float torque_split[2];
     };
+
+    // Static functions
+    static Behavior *Construct(const BehaviorParams &params);
+
+    // Methods
+    SuspensionRacer(const BehaviorParams &bp, const SuspensionParams &sp);
+    void CreateTires();
+    void OnTaskSimulate(float dT);
+    void DoDrifting(const Chassis::State &state);
+    void TuneWheelParams(Chassis::State &state);
+    void DoWheelForces(Chassis::State &state);
+    float CalculateMaxSteering(Chassis::State &state, ISteeringWheel::SteeringType steer_type);
+    float CalculateSteeringSpeed(Chassis::State &state);
+    void DoWallSteer(Chassis::State &state);
+    void DoDriveForces(Chassis::State &state);
+    float DoHumanSteering(Chassis::State &state);
+    float DoAISteering(Chassis::State &state);
+    void DoSteering(Chassis::State &state, UMath::Vector3 &right, UMath::Vector3 &left);
+    void DoAerobatics(Chassis::State &state);
+    float CalcYawControlLimit(float speed) const;
+
+    // Overrides
+    override virtual ~SuspensionRacer();
+    override virtual void OnCollision(const COLLISION_INFO &cinfo);
+    override virtual void OnBehaviorChange(const UCrc32 &mechanic);
+    override virtual void OnAttributeChange(const Attrib::Collection *aspec, unsigned int attribkey);
+    override virtual Meters GetRideHeight(unsigned int idx) const;
+    override virtual Radians GetWheelAngularVelocity(int index) const;
+    override virtual void MatchSpeed(float speed);
+    override virtual UMath::Vector3 GetWheelCenterPos(unsigned int i) const;
+    override virtual void Reset();
+    override virtual void OnDebugDraw();
 
   public:
     bool RearWheelDrive() {
@@ -349,6 +339,23 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
     const Tire &GetWheel(unsigned int i) const {
         return *mTires[i];
     }
+
+  private:
+    BehaviorSpecsPtr<Attrib::Gen::tires> mTireInfo;         // offset 0x90, size 0x14
+    BehaviorSpecsPtr<Attrib::Gen::brakes> mBrakeInfo;       // offset 0xA4, size 0x14
+    BehaviorSpecsPtr<Attrib::Gen::chassis> mSuspensionInfo; // offset 0xB8, size 0x14
+    BehaviorSpecsPtr<Attrib::Gen::transmission> mTranyInfo; // offset 0xCC, size 0x14
+    IRigidBody *mRB;                                        // offset 0xE0, size 0x4
+    ICollisionBody *mCollisionBody;                         // offset 0xE4, size 0x4
+    ITransmission *mTransmission;                           // offset 0xE8, size 0x4
+    IHumanAI *mHumanAI;                                     // offset 0xEC, size 0x4
+    float mGameBreaker;                                     // offset 0xF0, size 0x4
+    unsigned int mNumWheelsOnGround;                        // offset 0xF4, size 0x4
+    float mLastGroundCollision;                             // offset 0xF8, size 0x4
+    Drift mDrift;                                           // offset 0xFC, size 0x8
+    Burnout mBurnOut;                                       // offset 0x104, size 0x10
+    Steering mSteering;                                     // offset 0x114, size 0x98
+    Tire *mTires[4];
 };
 
 float YawFrictionBoost(float yaw, float ebrake, float speed, float yawcontrol, float grade);

@@ -80,7 +80,7 @@ typedef unsigned char Bool;
 #define nullptr NULL
 #endif
 
-#if defined(__MWERKS__)
+#if __cplusplus < 201103L
 #ifndef override
 #define override
 #endif

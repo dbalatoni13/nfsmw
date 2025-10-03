@@ -21,6 +21,7 @@ namespace COM {
 
 class IUnknown;
 
+// total size: 0x10
 class Object {
     struct _IPair {
         void *handle;
@@ -49,7 +50,6 @@ class Object {
     };
 
   public:
-    // total size: 0x10
     _IList _mInterfaces; // offset 0x0, size 0x10
 
   protected:

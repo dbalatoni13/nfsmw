@@ -32,9 +32,12 @@ struct WCollisionBarrier {
 
 struct WCollisionBarrierListEntry {
     // total size: 0x28
-    WCollisionBarrier fB;                 // offset 0x0, size 0x20
-    const struct Collection *fSurfaceRef; // offset 0x20, size 0x4
-    float fDistanceToSq;                  // offset 0x24, size 0x4
+    WCollisionBarrier fB;                  // offset 0x0, size 0x20
+    const Attrib::Collection *fSurfaceRef; // offset 0x20, size 0x4
+    float fDistanceToSq;                   // offset 0x24, size 0x4
+
+    // TODO
+    WCollisionBarrierListEntry() {}
 };
 
 struct WCollisionObject : public CollisionObject {
@@ -43,18 +46,6 @@ struct WCollisionObject : public CollisionObject {
 
 struct WCollisionInstance : public CollisionInstance {
     // total size: 0x40
-};
-
-struct WorldCollisionInfo {
-    bVector4 fCollidePt;
-    bVector4 fNormal;
-    WCollisionBarrierListEntry fBle;
-    WCollisionObject *fObj;
-    float fDist;
-    unsigned char fAnimated;
-    unsigned char fType;
-    unsigned short fPad;
-    WCollisionInstance *fCInst;
 };
 
 #endif

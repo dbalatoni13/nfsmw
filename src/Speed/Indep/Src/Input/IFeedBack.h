@@ -7,6 +7,7 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
+#include "Speed/Indep/Src/Sim/Collision.h"
 
 class IFeedback : public UTL::COM::IUnknown {
   public:
@@ -31,7 +32,7 @@ class IFeedback : public UTL::COM::IUnknown {
     virtual void UpdateNOS(bool engaged, float NOSLevel);
     virtual void UpdateEngineBlown(bool blown);
     virtual void UpdateShifting(bool shifting);
-    virtual void ReportCollision(const struct COLLISION_INFO &cinfo, bool iamA);
+    virtual void ReportCollision(const COLLISION_INFO &cinfo, bool iamA);
 };
 
 #endif

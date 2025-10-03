@@ -904,9 +904,9 @@ void SuspensionRacer::Reset() {
     mDrift.Reset();
 }
 
-void SuspensionRacer::OnCollision(const Sim::Collision::Info &cinfo) {
+void SuspensionRacer::OnCollision(const COLLISION_INFO &cinfo) {
     // TODO fix this -1U
-    if (cinfo.type - 1U < Sim::Collision::Info::WORLD) {
+    if (cinfo.type - 1U < COLLISION_INFO::WORLD) {
         float impulse = !cinfo.objAImmobile ? cinfo.impulseA : 0.0f;
         if (cinfo.objB == GetOwner()->GetInstanceHandle()) {
             impulse = !cinfo.objBImmobile ? cinfo.impulseB : 0.0f;
@@ -916,10 +916,10 @@ void SuspensionRacer::OnCollision(const Sim::Collision::Info &cinfo) {
             mSteering.CollisionTimer = UMath::Max(damper, mSteering.CollisionTimer);
         }
     }
-    if (cinfo.type == Sim::Collision::Info::GROUND) {
+    if (cinfo.type == COLLISION_INFO::GROUND) {
         mLastGroundCollision = Sim::GetTime();
     }
-    if (cinfo.type == Sim::Collision::Info::WORLD) {
+    if (cinfo.type == COLLISION_INFO::WORLD) {
         if (UMath::Abs(cinfo.normal.y) < 0.1f && this->mCollisionBody && (UMath::LengthSquare(cinfo.closingVel) < 56.25f)) {
             const UMath::Vector3 &vFoward = mCollisionBody->GetForwardVector();
             const UMath::Vector3 &vRight = mCollisionBody->GetRightVector();

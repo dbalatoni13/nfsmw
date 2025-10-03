@@ -15,14 +15,15 @@ extern Attrib::StringKey BEHAVIOR_MECHANIC_INPUT;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_RIGIDBODY;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_DAMAGE;
 
+// total size: 0x10
 struct BehaviorParams {
-    // total size: 0x10
     const Sim::Param &fparams;    // offset 0x0, size 0x4
     struct PhysicsObject *fowner; // offset 0x4, size 0x4
     const UCrc32 &fSig;           // offset 0x8, size 0x4
     const UCrc32 &fMechanic;      // offset 0xC, size 0x4
 };
 
+// total size: 0x4C
 class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32> {
   public:
     void *operator new(std::size_t size) {
@@ -53,12 +54,14 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
         return mIOwner;
     }
 
-    const int GetPriority() {
+    virtual void Reset();
+
+    virtual const int GetPriority() const {
         return mPriority;
     }
 
-    virtual void Reset();
-    virtual const int GetPriority() const;
+    virtual void OnOwnerAttached(IAttachable *pOther);
+    virtual void OnOwnerDetached(IAttachable *pOther);
 
   protected:
     virtual void OnTaskSimulate(float dT);
@@ -72,7 +75,6 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
     }
 
   private:
-    // total size: 0x4C
     bool mPaused;                 // offset 0x30, size 0x1
     struct PhysicsObject *mOwner; // offset 0x34, size 0x4
     ISimable *mIOwner;            // offset 0x38, size 0x4

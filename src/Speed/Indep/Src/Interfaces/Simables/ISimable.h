@@ -82,9 +82,9 @@ class ISimable : public UTL::COM::IUnknown,
 
     virtual const Attrib::Instance &GetAttributes() const;
 
-    virtual const WWorldPos &GetWPos() const;
-
     virtual WWorldPos &GetWPos();
+
+    virtual const WWorldPos &GetWPos() const;
 
     virtual class IRigidBody *GetRigidBody();
 

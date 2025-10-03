@@ -21,11 +21,9 @@ class SimSurface : public Attrib::Gen::simsurface { /* Size=0x10 */
     SimSurface(const char *name);
     SimSurface(const Attrib::Key &key);
     SimSurface(const Attrib::RefSpec &spec);
-
     const SimSurface &operator=(const SimSurface &from);
     bool IsTypeOf(const SimSurface &surface) const;
     SimSurface GetParentSurface() const;
-    void DebugOverride();
 
     SimSurface(const SimSurface &from) : Attrib::Gen::simsurface(GetConstCollection(), 0, nullptr) {
         // TODO
@@ -39,6 +37,8 @@ class SimSurface : public Attrib::Gen::simsurface { /* Size=0x10 */
     ~SimSurface() {
         // TODO
     }
+
+    void DebugOverride() {}
 
   private:
     void Init(const SimSurface &from);

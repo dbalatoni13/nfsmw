@@ -27,7 +27,7 @@ class ICause : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<
         return (HINTERFACE)_IHandle;
     }
 
-    // virtual void OnCausedCollision(const Sim::Collision::Info &cinfo, ISimable *from, ISimable *to);
+    // virtual void OnCausedCollision(const COLLISION_INFO &cinfo, ISimable *from, ISimable *to);
 
     // virtual void OnCausedExplosion(struct IExplosion *, ISimable *);
 };

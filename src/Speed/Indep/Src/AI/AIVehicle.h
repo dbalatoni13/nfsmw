@@ -143,7 +143,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     virtual float GetLastSpawnTime();
     virtual const Attrib::Gen::aivehicle &GetAttributes() const;
     virtual float GetTopSpeed() const;
-    virtual void OnCollision(const Sim::Collision::Info &cinfo);
+    virtual void OnCollision(const COLLISION_INFO &cinfo);
     virtual void OnDebugDraw();
     virtual bool IsCurrentGoal(const UCrc32 &name);
     virtual UCrc32 &GetGoalName();

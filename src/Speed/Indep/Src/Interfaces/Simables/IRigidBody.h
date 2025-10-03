@@ -21,7 +21,6 @@ class IRigidBody : public UTL::COM::IUnknown, public UTL::Collections::Listable<
         return (HINTERFACE)_IHandle;
     }
 
-  public:
     virtual ISimable *GetOwner() const;
     virtual bool IsSimple() const;
     virtual int GetIndex() const;
@@ -49,16 +48,16 @@ class IRigidBody : public UTL::COM::IUnknown, public UTL::Collections::Listable<
     virtual void SetAngularVelocity(const UMath::Vector3 &vel);
     virtual void SetRadius(float radius);
     virtual void SetMass(float mass);
-    virtual void SetOrientation(const UMath::Matrix4 &orientMat);
     virtual void SetOrientation(const UMath::Vector4 &newOrientation);
+    virtual void SetOrientation(const UMath::Matrix4 &orientMat);
     virtual void ModifyXPos(float offset);
     virtual void ModifyYPos(float offset);
     virtual void ModifyZPos(float offset);
     virtual void Resolve(const UMath::Vector3 &force, const UMath::Vector3 &torque);
+    virtual void ResolveForce(const UMath::Vector3 &force);
+    virtual void ResolveTorque(const UMath::Vector3 &torque);
     virtual void ResolveForce(const UMath::Vector3 &force, const UMath::Vector3 &p);
     virtual void ResolveTorque(const UMath::Vector3 &f, const UMath::Vector3 &p);
-    virtual void ResolveTorque(const UMath::Vector3 &torque);
-    virtual void ResolveForce(const UMath::Vector3 &force);
     virtual void PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector3 &initPos);
     virtual void Accelerate(const UMath::Vector3 &a, float dT);
     virtual void ConvertLocalToWorld(UMath::Vector3 &val, bool translate) const;

@@ -125,14 +125,8 @@ class Attribute {
     void *mDataPointer;            // offset 0xC, size 0x4
 };
 
-struct Instance {
-    UTL::COM::IUnknown *mOwner;
-    const Collection *mCollection;
-    void *mLayoutPtr;
-    unsigned int mMsgPort;
-    unsigned short mFlags;
-    unsigned short mLocks;
-
+class Instance {
+  public:
     enum Flags { kDynamic = 1 };
 
     Instance(const Instance &src);
@@ -169,6 +163,14 @@ struct Instance {
     bool IsValid() const {
         return this->mCollection != nullptr;
     }
+
+  private:
+    UTL::COM::IUnknown *mOwner;
+    const Collection *mCollection;
+    void *mLayoutPtr;
+    unsigned int mMsgPort;
+    unsigned short mFlags;
+    unsigned short mLocks;
 };
 
 } // namespace Attrib

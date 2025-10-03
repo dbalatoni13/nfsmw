@@ -97,9 +97,13 @@ struct Matrix4 {
     static const Matrix4 kZero;
     static const Matrix4 kIdentity;
 
-    // float *GetElements() {}
+    float *GetElements() {
+        return &v0.x;
+    }
 
-    // const float *GetElements() const {}
+    const float *GetElements() const {
+        return &v0.x;
+    }
 
     const Vector4 &operator[](int index) const {
         return (&v0)[index];
@@ -112,6 +116,31 @@ struct Matrix4 {
 
 const Matrix4 Matrix4::kZero = {};
 const Matrix4 Matrix4::kIdentity = {{1.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.f}};
+
+inline Vector3 &Vector4To3(Vector4 &c4) {
+    return *reinterpret_cast<Vector3 *>(&c4);
+}
+
+inline const Vector3 &Vector4To3(const Vector4 &c4) {
+    return *reinterpret_cast<const Vector3 *>(&c4);
+}
+
+inline Vector2 Vector2Make(float x, float y) {
+    Vector2 c;
+    c.x = x;
+    c.y = y;
+    return c;
+}
+
+inline Vector4 Vector4Make(const Vector3 &c, float w) {
+    // Vector4 res = {c.x, c.y, c.z, w};
+    Vector4 res;
+    res.x = c.x;
+    res.y = c.y;
+    res.z = c.z;
+    res.w = w;
+    return res;
+}
 
 } // namespace UMath
 

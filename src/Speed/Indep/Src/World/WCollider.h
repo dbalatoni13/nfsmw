@@ -32,6 +32,12 @@ class WCollider : public UTL::Collections::Listable<WCollider, 100> {
     static void Destroy(WCollider *col);
 
     void Clear();
+    bool IsEmpty() const;
+    void Refresh(const UMath::Vector3 &pt, float radius, bool predictiveSizing);
+
+    WCollisionInstanceCacheList &GetInstanceList() {
+        return fInstanceCacheList;
+    }
 
     UMath::Vector3 fRequestedPosition;              // offset 0x4, size 0xC
     float fRequestedRadius;                         // offset 0x10, size 0x4
