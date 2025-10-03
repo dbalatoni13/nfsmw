@@ -75,7 +75,10 @@ class IUnknown {
     }
 
   protected:
-    IUnknown(Object *owner, void *handle) {}
+    IUnknown(Object *owner, void *handle) {
+        _mCOMObject = owner;
+        _mCOMObject->_mInterfaces.Add(handle, this);
+    }
 
     virtual ~IUnknown() {
         this->_mCOMObject->_mInterfaces.Remove(this);

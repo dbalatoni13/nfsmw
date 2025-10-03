@@ -63,4 +63,27 @@ enum ShiftPotential {
     SHIFT_POTENTIAL_NONE = 0,
 };
 
+enum eTireIdx {
+    // The front left wheel
+    TIRE_FL,
+    // The front right wheel
+    TIRE_FR,
+    // The number of wheels on the front axle
+    TIRE_MAX_FRONT = 2,
+    // The rear right wheel
+    TIRE_RR = 2,
+    // The rear left wheel
+    TIRE_RL,
+    // The total number of wheels
+    TIRE_MAX,
+};
+
+inline bool IsFront(unsigned int i) {
+    return i < 2;
+}
+
+inline bool IsRear(unsigned int i) {
+    return i > 1;
+}
+
 #endif

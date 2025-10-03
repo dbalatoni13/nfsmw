@@ -6,11 +6,9 @@
 #endif
 
 #include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 
 class UCrc32 {
-    // total size: 0x4
-    unsigned int mCRC; // offset 0x0, size 0x4
-
   public:
     static const UCrc32 kNull;
 
@@ -24,6 +22,8 @@ class UCrc32 {
 
     UCrc32(unsigned int crc) : mCRC(crc) {}
 
+    UCrc32(const Attrib::StringKey &key) : mCRC(key.GetHash32()) {}
+
     // const struct UCrc32 &operator=(const struct UCrc32 &from) {}
 
     // const struct UCrc32 &operator=(const char *from) {
@@ -32,12 +32,22 @@ class UCrc32 {
 
     // bool operator<(const struct UCrc32 &from) const {}
 
-    // unsigned int GetValue() const {}
+    unsigned int GetValue() const {
+        return mCRC;
+    }
 
-    // void SetValue(unsigned int crc) {}
+    void SetValue(unsigned int crc) {
+        mCRC = crc;
+    }
+
+  private:
+    // total size: 0x4
+    unsigned int mCRC; // offset 0x0, size 0x4
 };
 
-// inline bool operator==(const UCrc32 &a, const UCrc32 &b) {}
+inline bool operator==(const UCrc32 &a, const UCrc32 &b) {
+    return a.GetValue() == b.GetValue();
+}
 
 // inline bool operator!=(const UCrc32 &a, const UCrc32 &b) {}
 

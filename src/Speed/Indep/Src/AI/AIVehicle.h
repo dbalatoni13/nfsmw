@@ -12,6 +12,7 @@
 #include "Speed/Indep/Src/AI/AIMath.h"
 #include "Speed/Indep/Src/Debug/Debugable.h"
 #include "Speed/Indep/Src/Interfaces/IAttachable.h"
+#include "Speed/Indep/Src/Interfaces/IListener.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
@@ -142,9 +143,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     virtual float GetLastSpawnTime();
     virtual const Attrib::Gen::aivehicle &GetAttributes() const;
     virtual float GetTopSpeed() const;
-    // TODO
-    // virtual void OnCollision(const Sim::Collision::Info &cinfo);
-    virtual void OnCollision();
+    virtual void OnCollision(const Sim::Collision::Info &cinfo);
     virtual void OnDebugDraw();
     virtual bool IsCurrentGoal(const UCrc32 &name);
     virtual UCrc32 &GetGoalName();

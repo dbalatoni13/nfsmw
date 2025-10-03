@@ -15,6 +15,12 @@ class Collection {
     class Node *GetNode(unsigned int attributeKey, const Collection *&container);
     void *GetData(unsigned int attributeKey, unsigned int index);
 
+    // TODO this must be in AttribPrivate.h, why?
+    void AddRef() const {
+        // TODO what the hell?
+        const_cast<Collection *>(this)->mRefCount++;
+    }
+
   private:
     HashMap mTable;
     const Collection *mParent;

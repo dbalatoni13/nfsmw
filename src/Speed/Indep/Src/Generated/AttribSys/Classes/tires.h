@@ -7,6 +7,7 @@
 
 #include <cstddef>
 
+#include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
@@ -32,11 +33,27 @@ struct tires : Instance {
         Attrib::Free(ptr, bytes, "tires");
     }
 
+    tires(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
+        this->SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
     tires(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     ~tires() {}
+
+    void Change(const Collection *c) {
+        Instance::Change(c);
+    }
+
+    void Change(Key collectionkey) {
+        Change(FindCollection(ClassKey(), collectionkey));
+    }
+
+    static Key ClassKey() {
+        return 0xbd38d1ca;
+    }
 
     const float &YAW_CONTROL(unsigned int index) const {
         const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());

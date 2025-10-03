@@ -8,13 +8,21 @@
 #include "UMath.h"
 
 struct UVector3 : public UMath::Vector3 {
-    UVector3() {}
+    UVector3() {
+        Clear(*this);
+    }
 
     float &operator[](int index) {
         return (&x)[index];
     }
 
     UVector3(const Vector3 &From) {
+        x = From.x;
+        y = From.y;
+        z = From.z;
+    }
+
+    UVector3(const UMath::Vector4 &From) {
         x = From.x;
         y = From.y;
         z = From.z;
@@ -32,6 +40,7 @@ struct UVector3 : public UMath::Vector3 {
         z = fz;
     }
 
+    // TODO these shouldn't be member functions
     const UVector3 &operator=(const UVector3 &From) {
         x = From.x;
         y = From.y;

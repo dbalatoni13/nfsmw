@@ -5,6 +5,28 @@
 #pragma once
 #endif
 
+#include <cstddef>
+#include <types.h>
 
+char *gCreationPoint = nullptr;
+char *gDeletionPoint = nullptr;
+
+class Event {
+  public:
+    virtual ~Event();
+    virtual const char *GetEventName() {
+        return "";
+    }
+
+    void *operator new(size_t size);
+    void operator delete(void *ptr);
+
+    struct StaticData {
+        unsigned int fEventSize;
+    };
+
+  private:
+    unsigned int fEventSize;
+};
 
 #endif

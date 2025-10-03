@@ -37,4 +37,20 @@ class IInput : public UTL::COM::IUnknown {
     virtual bool IsAutomaticShift();
 };
 
+struct InputControls {
+    // total size: 0x28
+    float fBanking;          // offset 0x0, size 0x4
+    float fSteering;         // offset 0x4, size 0x4
+    float fSteeringVertical; // offset 0x8, size 0x4
+    float fStrafeVertical;   // offset 0xC, size 0x4
+    float fStrafeHorizontal; // offset 0x10, size 0x4
+    float fGas;              // offset 0x14, size 0x4
+    float fBrake;            // offset 0x18, size 0x4
+    float fHandBrake;        // offset 0x1C, size 0x4
+    bool fActionButton;      // offset 0x20, size 0x1
+    bool fNOS;               // offset 0x24, size 0x1
+
+    InputControls() {}
+};
+
 #endif
