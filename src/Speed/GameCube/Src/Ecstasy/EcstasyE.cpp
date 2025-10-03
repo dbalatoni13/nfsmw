@@ -3,16 +3,21 @@
 #include "EcstasyEx.hpp"
 #include "Speed/GameCube/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Ecstasy/EcstasyEx.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/World/Car.hpp"
 #include "Speed/Indep/Src/World/Sun.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "dolphin.h"
 #include "dolphin/gx/GXEnum.h"
 #include "dolphin/gx/GXFrameBuffer.h"
 #include "dolphin/gx/GXManage.h"
+#include "dolphin/mtx.h"
+#include "dolphin/os/OSReset.h"
 #include "dolphin/vi.h"
+#include "dolphin/vifuncs.h"
 
 enum VIDEO_MODE {
     NUM_VIDEO_MODES = 3,
@@ -67,6 +72,12 @@ OSFontHeader *eDEMOInitROMFont();
 void eDEMODeleteROMFont();
 static Bool KeepAlive();
 void eDiagnoseHang();
+void PlatformInitJoystick();
+int ActualReadJoystickData();
+void eProgressiveScan_EURGB60SetMode(int os_restarted /* r31 */, int tv_mode /* r4 */);
+void eNTSCInterlace_PALSetMode(int os_restarted /* r31 */, int tv_mode /* r4 */);
+void eEURGB60ModeCheck();
+void eInitContrastSurface();
 
 GXRenderModeObj *_rmode;                   // size: 0x4
 GXRenderModeObj _rmodeObj;                 // size: 0x3C
@@ -95,6 +106,7 @@ volatile unsigned int LastFrameCounterTick = 0;
 VIDEO_MODE eCurrentVideoMode;
 int ScreenWidth;
 int ScreenHeight;
+Mtx g_ScreenPositionMatrix;
 SlotPool *ActiveTextureSlotPool;
 
 Bool bEURGB60;                                                      // size: 0x1
@@ -781,23 +793,55 @@ void eDrawStartup(void) {
     GXInitTexObjLOD(&HeadlightClipTextureObj, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
 }
 
-void eExStartup(void) {
-    static Mtx g_m0;
-    static Mtx g_m1;
-    static Mtx g_m2;
+cSphereMap SphereMap;
+cSpecularMap SpecularMap;
 
-    cReflectMap::Init(&ReflectMap);
-    cQuarterSizeMap::Init(&QuarterSizeMap);
+cQuarterSizeMap QSizeI8_Z8;
+cQuarterSizeMap QSizeScratchPad;
+cQuarterSizeMap QSizeAccumulationI8;;
+
+void eExStartup(void) {
+    unsigned int iter_countA;
+    Mtx g_m0;
+    Mtx g_m1;
+
+    PlatformInitJoystick();
+
+    for (iter_countA = 0;; iter_countA++) {
+        if (ActualReadJoystickData() != 0 || iter_countA >= 0x1F4) break;
+    }
+
+    SpecularMap.Init();
+    QSizeI8_Z8.Init(1, 1, 5);
+    QSizeScratchPad.Init(0, 6, 4);
+    QSizeAccumulationI8.Init(0, 1, 7);
+
+    eInitContrastSurface();
+    eInitHorizonFogDisplayList();
+
     PSMTXScale(g_m1, 0.5f, -0.5f, 0.0f);
     PSMTXTrans(g_m0, 0.5f, 0.5f, 1.0f);
-    PSMTXConcat(g_m0, g_m1, g_m2);
+    PSMTXConcat(g_m0, g_m1, g_ScreenPositionMatrix);
+
     eDEMOInitROMFont();
-    if ((OSGetResetCode() == OS_RESETCODE_RESTART) && (OSGetProgressiveMode() != 0) && (VIGetDTVStatus() == 1)) {
-        eProgressiveScanSetMode(1);
+
+    if (OSGetResetCode() > 0x7FFFFFFF && OSGetProgressiveMode() != 0 && VIGetDTVStatus() == 1) {
+        eProgressiveScan_EURGB60SetMode(1, 0);
     } else {
-        __InitRenderMode();
-        eProgressiveScanModeCheck();
+        if (OSGetResetCode() > 0x7FFFFFFF && (VIGetTvFormat() == 1 || VIGetTvFormat() == 5)) {
+            if (OSGetEuRgb60Mode()) {
+                eProgressiveScan_EURGB60SetMode(1, 1);
+            } else {
+                eNTSCInterlace_PALSetMode(1, 1);
+            }
+        } else {
+            __InitRenderMode();
+            eProgressiveScanModeCheck();
+            eEURGB60ModeCheck();
+        }
     }
+
+    vsVtxAttrFmt(0);
     eDEMODeleteROMFont();
 }
 

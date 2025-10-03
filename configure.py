@@ -244,6 +244,7 @@ config.linker_version = "ProDG/3.9.3"
 config.extra_clang_flags = [
     "-std=gnu++98",
     "-DSN_TARGET_NGC",
+    "-D__SN__",
 ]
 
 

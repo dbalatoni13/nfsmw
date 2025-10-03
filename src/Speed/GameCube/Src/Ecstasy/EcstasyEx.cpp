@@ -1,20 +1,11 @@
 #include "./EcstasyEx.hpp"
 
 #include "Speed/GameCube/Src/Ecstasy/TextureInfoPlat.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/Src/Ecstasy/EcstasyE.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
-#include "dolphin/gx/GXCull.h"
-#include "dolphin/gx/GXDispList.h"
-#include "dolphin/gx/GXEnum.h"
-#include "dolphin/gx/GXFrameBuffer.h"
-#include "dolphin/gx/GXGeometry.h"
-#include "dolphin/gx/GXManage.h"
-#include "dolphin/gx/GXPixel.h"
-#include "dolphin/gx/GXStruct.h"
-#include "dolphin/gx/GXTev.h"
-#include "dolphin/gx/GXTexture.h"
-#include "dolphin/gx/GXVert.h"
-#include "dolphin/types.h"
+#include "dolphin.h"
 
 void eSetCulling(GXCullMode mode) {
     static GXCullMode prevMode = GX_CULL_NONE;
@@ -603,6 +594,293 @@ TextureInfo *cSphereMap::BuildSphereMap() {
 }
 
 char ENV_MAP_DISPLAY_LIST[20480];
+
+// TODO / EQUIVALENT
+void cSphereMap::genSphere(void **display_list, unsigned long *size, unsigned short tess, GXVtxFmt fmt) {
+    *display_list = ENV_MAP_DISPLAY_LIST;
+    
+    float gsPI = 3.1415927f; // f20
+    float r = 1.0f; // f19
+    float r1; // f26
+    float r2; // f25
+    float z1; // f29
+    float z2; // f28
+    float n1x; // f31
+    float n1y; // f1
+    float n1z; // f21
+    float n2x; // f31
+    float n2y; // f0
+    float n2z; // f24
+    float theta; // f30
+    float phi; // f30
+    unsigned short nlon = tess; // r25
+    unsigned short nlat = tess; // r27
+    int i; // r30
+    int j; // r31
+    unsigned long dl_sz = ((tess - 2) * (tess + 1) * 2 + tess + 1) * 0x18; // r24
+
+    GXBeginDisplayList(*display_list, *size);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_NRM, GX_DIRECT);
+    GXSetVtxAttrFmt(fmt, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(fmt, GX_VA_NRM, GX_NRM_XYZ, GX_F32, 0);
+
+    GXBegin(GX_TRIANGLEFAN, GX_VTXFMT7, tess + 2);
+
+    theta = gsPI / tess;
+    r2 = sinf(theta);
+    z2 = cosf(theta);
+
+    n1z = 1.0f;
+    n2z = z2 * 4 - r;
+
+    GXPosition3f32(0.0f, 0.0f, n1z);
+    GXNormal3f32(0.0f, 0.0f, n1z);
+
+    theta = 0.0f;
+    for (j = 0; j <= tess; j++) {
+        n2x = r2 * cosf(theta);
+        n2y = r2 * sinf(theta);
+
+        GXPosition3f32(n2x, n2y, z2);
+        GXNormal3f32(n2x * 2 * z2, n2y * 2 * z2, n2z);
+
+        theta = (gsPI * (float(j) * -2.0f)) / nlon;
+    }
+    GXEnd();
+
+    // ...
+
+    for (i = 0; i < tess; i++) {
+        theta = gsPI * float(i)     / nlat;
+        phi   = gsPI * float(i - 1) / nlat;
+        r1 = r * sinf(phi);
+        z1 = r * cosf(phi);
+        r2 = r * sinf(theta);
+        z2 = r * cosf(theta);
+
+        n1z = (z1 * 2) * z1 - 1.0f;
+        n2z = (z2 * 2) * z2 - 1.0f;
+
+        if (bAbs(z1) < 0.01f || bAbs(z2) < 0.01f) break;
+
+        GXBegin(GX_TRIANGLESTRIP, GX_VTXFMT7, (tess + 1) * 2);
+        phi = 0.0f;
+        for (j = 0; j <= tess; j++) {
+            n2x = r2 * cosf(phi);
+            n2y = r2 * sinf(phi);
+
+            GXPosition3f32(n2x, n2y, z2);
+            GXNormal3f32(n2x * 2 * z2, n2y * 2 * z2, n2z);
+
+            n1x = r1 * cosf(phi);
+            n1y = r1 * sinf(phi);
+
+            GXPosition3f32(n1x, n1y, z1);
+            GXNormal3f32(n1x * 2 * z1, n1y * 2 * z1, n1z);
+
+            phi = ((gsPI * 2) * j) / nlon;
+        }
+
+        GXEnd();
+    }
+
+    *size = GXEndDisplayList();
+    
+    if (*size > dl_sz) {
+        OSPanic("d:/mw/speed/gamecube/src/ecstasy/EcstasyEx.cpp", 1227, "Exiting");
+    }
+}
+
+void cSphereMap::clrSphere(void **display_list, unsigned long *size) {}
+
+static GXColor TweakSphereMapClr = { 0xC4, 0xC4, 0xC4, 0xFF };
+
+void cSphereMap::genSphereMap(GXTexObj **cubemap, GXTexObj *spheremap, void *dl, unsigned long dlsz) {
+    int i; // r27
+    GXColor color; // r1+0x184
+    unsigned short width;
+    unsigned short height;
+    GXTexFmt fmt; // r21
+    void *data; // r15
+    GXLightObj ClipLight; // r1+0x10
+    float p[4][4]; // r1+0x50
+    Mtx v; // r1+0x90
+    Mtx tm; // r1+0xC0
+    Mtx tc; // r1+0xF0
+    Mtx tmp; // r1+0x120
+    float camLoc_x = 0.0f; // f30
+    float camLoc_y = 0.0f;
+    float camLoc_z = 6.0f; // f31
+    float up_x = 0.0f;
+    float up_y = 1.0f; // f29
+    float up_z = 0.0f;
+    Point3d camLoc = {camLoc_x, camLoc_y, camLoc_z}; // r1+0x150
+    Vec up = { up_x, up_y, up_z }; // r1+0x160
+    Point3d objPt; // r1+0x170
+
+    if (!this->bInitialized) return;
+
+    width = GXGetTexObjWidth(spheremap);
+    height = GXGetTexObjHeight(spheremap);
+    fmt = GXGetTexObjFmt(spheremap);
+    data = GXGetTexObjData(spheremap);
+
+    C_MTXOrtho(p, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 100.0f);
+    GXSetProjection(p, GX_ORTHOGRAPHIC);
+    C_MTXLookAt(v, &camLoc, &up, &objPt);
+    GXLoadPosMtxImm(v, 0);
+
+    GXSetViewport(0.0f, 0.0f, width, height, 0.0f, 1.0f);
+    eSetScissor(0, 0, width, height);
+    GXSetTexCopySrc(0, 0, width, height);
+    GXSetTexCopyDst(width, height, fmt, GX_FALSE);
+    GXSetChanCtrl(GX_COLOR0A0, GX_TRUE, GX_SRC_REG, GX_SRC_REG, 1, GX_DF_NONE, GX_AF_SPEC);
+
+    color = TweakSphereMapClr;
+    GXInitLightColor(&ClipLight, color);
+    GXSetChanMatColor(GX_COLOR0A0, color);
+
+    GXSetChanAmbColor(GX_COLOR0A0, (GXColor){0, 0, 0, 0xFF });
+    GXInitLightAttnA(&ClipLight, 0.0f, 2.0f, 0.0f);
+    GXInitLightAttnK(&ClipLight, 0.0f, 1.0f, 0.0f);
+    GXInitLightPos(&ClipLight, 0.0f, 0.0f, -1.0f);
+    GXInitLightDir(&ClipLight, 0.0f, 0.0f, -1.0f);
+    GXLoadLightObjImm(&ClipLight, GX_LIGHT0);
+    GXSetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX3x4, GX_TG_NRM, 30);
+
+    switch (this->CubeTevMode) {
+        case 0:
+            GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+            GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+            GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_TEXA, GX_CA_RASA, GX_CA_ZERO);
+            break;
+        case 1: {
+            GXColor Kcolor0 = { 0x00, 0x00, 0x00, 0xFF };
+            GXSetTevKColor(GX_KCOLOR0, Kcolor0);
+            GXSetTevKColorSel(GX_TEVSTAGE0, GX_TEV_KCSEL_K0);
+            GXSetTevKAlphaSel(GX_TEVSTAGE0, GX_TEV_KASEL_K0_A);
+            GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+            GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+            GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_KONST);
+            GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetNumTevStages(1);
+            break;
+        } case 2:
+            GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
+            GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ONE);
+            GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_TEXA);
+            GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetNumTevStages(1);
+            break;
+        case 3:
+            GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+            GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ONE);
+            GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_RASA);
+            GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetNumTevStages(1);
+            break;
+        case 4:
+            GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+            GXSetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
+            GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ONE);
+            GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_TEXA, GX_CA_RASA, GX_CA_ZERO);
+            GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetNumTevStages(1);
+            break;
+        case 5:
+            GXSetNumTevStages(1);
+            GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD4, GX_TEXMAP0, GX_COLOR0);
+            GXSetTevKColor(GX_KCOLOR0, (GXColor){ 0, 0, 0, 0xFF });
+            GXSetTevKColorSel(GX_TEVSTAGE0, GX_TEV_KCSEL_K0);
+            GXSetTevKAlphaSel(GX_TEVSTAGE0, GX_TEV_KASEL_K0_A);
+            GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_COMP_R8_GT, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_RASC, GX_CC_TEXC, GX_CC_TEXC, GX_CC_TEXC);
+            GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_COMP_R8_GT, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+            GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_KONST, GX_CA_RASA, GX_CA_KONST, GX_CA_ZERO);
+            break;
+    }
+
+    GXSetNumTexGens(1);
+    GXSetNumChans(1);
+
+    C_MTXLightFrustum(tc, -1.07f, 1.07f, -1.07f, 1.07f, 1.0f, 0.5f, 0.5f, 0.5f, 0.5f);
+    GXSetZMode(GX_FALSE, GX_ALWAYS, GX_FALSE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_SET);
+
+    for (i = this->CubeFaceStart; i < this->CubeFaceEnd; i++) {
+        GXLoadTexObj(cubemap[i], GX_TEXMAP0);
+        PSMTXIdentity(tm);
+
+        if (this->angle2[i] != 0.0f) {
+            PSMTXRotRad(tmp, 0x79, MTXDegToRad(this->angle2[i]));
+            PSMTXConcat(tm, tmp, tm);
+        }
+
+        PSMTXRotRad(tmp, this->axis1[i], MTXDegToRad(this->angle2[i]));
+        PSMTXConcat(tm, tmp, tm);
+        PSMTXConcat(tc, tm, tm);
+        GXLoadTexMtxImm(tm, 30, GX_MTX3x4);
+        GXLoadNrmMtxImm(tm, 0);
+        GXCallDisplayList(dl, dlsz);
+    }
+
+    GXCopyTex(data, GX_TRUE);
+    GXPixModeSync();
+    __InitGXlite();
+}
+
+// STRIPPED
+cReflectMap::cReflectMap() {}
+// STRIPPED
+cReflectMap::~cReflectMap() {}
+// STRIPPED
+static void Init(cReflectMap *) {}
+// STRIPPED
+void cReflectMap::Destroy() {}
+
+cSpecularMap::cSpecularMap() {
+    this->SPEC_MAP_SIZE_X = 0x20;
+    this->SPEC_MAP_SIZE_Y = 0x20;
+}
+
+cSpecularMap::~cSpecularMap() {}
+
+void cSpecularMap::Init() {
+    for (int i = 0; i <= 1; i++) {
+        this->specBuffer[i].Init(0, 0, this->SPEC_MAP_SIZE_X, this->SPEC_MAP_SIZE_Y, 4, 8);
+    }
+}
+
+// STRIPPED (guess)
+void cSpecularMap::Destroy() {
+    for (int i = 0; i <= 1; i++) {
+        this->specBuffer[i].Destroy();
+    }
+}
+
+cQuarterSizeMap::cQuarterSizeMap() {
+    this->QUARTER_SIZE_X = 0x140;
+    this->QUARTER_SIZE_Y = 0xF0;
+}
+
+cQuarterSizeMap::~cQuarterSizeMap() {}
+
+void cQuarterSizeMap::Init(int create_depth_buffer, int texture_format, int buffer_function) {
+    this->quarterSizeBuffer.Init(0, 0, this->QUARTER_SIZE_X, this->QUARTER_SIZE_Y, texture_format, buffer_function);
+    
+    this->DepthBufferFlag = create_depth_buffer;
+    if (create_depth_buffer != 0) {
+        this->quarterSizeDepthBuffer.Init(0, 0, this->QUARTER_SIZE_X, this->QUARTER_SIZE_Y, 17, 6);
+    }
+}
 
 // end
 void epCalculateLocalDirectionalPOS16(unsigned int * colour_table0 /* r29 */, unsigned int * colour_table1 /* r22 */, int num_colour_entries /* r5 */, unsigned short * position_table_16 /* r30 */, int * normal_table /* r23 */, unsigned char * index_buffer /* r31 */, int vertex_description /* r7 */, int num_indicies /* r28 */, struct eLightMaterial * light_material /* r11 */, struct eLightContext * light_context /* r12 */);
