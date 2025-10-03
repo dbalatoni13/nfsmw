@@ -727,8 +727,10 @@ bool RigidBody::CanCollideWithWorld() const {
     const Volatile &data = *mData;
 
     if (data.GetStatus(0x40) && !mSpecs.NO_WORLD_COLLISIONS() && !IsSleeping()) {
-        // TODO diff
-        return mPrimitives.Size() != 0;
+        if (mPrimitives.Size() == 0) {
+            return false;
+        }
+        return true;
     }
     return false;
 }
@@ -784,19 +786,15 @@ void RigidBody::DoInstanceCollision3d(float dT) {
 }
 
 bool RigidBody::ShouldSleep() const {
-    bool bVar2;
-
     const Volatile &data = *mData;
     float sumVel = UMath::Length(data.linearVel) + (UMath::Length(data.angularVel) * data.radius);
-    if (sumVel < mSpecs.SLEEP_VELOCITY()) {
-        unsigned int uVar1 = GetNumContactPoints();
-        bVar2 = true;
-        if (uVar1 > 2)
-            goto LAB_80238ea0;
+    if (sumVel >= mSpecs.SLEEP_VELOCITY()) {
+        return false;
     }
-    bVar2 = false;
-LAB_80238ea0:
-    return bVar2;
+    if (GetNumContactPoints() > 2) {
+        return true;
+    }
+    return false;
 }
 
 void RigidBody::Accelerate(const UMath::Vector3 &a, float dT) {
@@ -821,13 +819,13 @@ bool RigidBody::CanCollideWithObjects() const {
     if (mPrimitives.Size() == 0) {
         return false;
     }
-    if (mSpecs.NO_OBJ_COLLISIONS() == 0) {
-        if (mData->state == 2) {
-            return false;
-        }
-        return true;
+    if (mSpecs.NO_OBJ_COLLISIONS() != 0) {
+        return false;
     }
-    return false;
+    if (mData->state == 2) {
+        return false;
+    }
+    return true;
 }
 
 void RigidBody::OnTaskSimulate(float dT) {}
