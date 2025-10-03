@@ -1,8 +1,0 @@
-#ifndef GAMECUBE_ECSTASY_ECSTASYE_H
-#define GAMECUBE_ECSTASY_ECSTASYE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#endif
