@@ -1,6 +1,7 @@
 #include "RigidBody.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/rigidbodyspecs.h"
 #include "Speed/Indep/Src/Generated/Events/ECollision.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
@@ -141,6 +142,13 @@ RigidBody::~RigidBody() {
 void RigidBody::Reset() {
     mWCollider->Clear();
     UpdateCollider();
+}
+
+void RigidBody::SetOrientation(const UMath::Vector4 &newOrientation) {
+    Volatile &data = *mData;
+    UMath::Copy(newOrientation, data.orientation);
+    UMath::QuaternionToMatrix4(data.orientation, data.bodyMatrix);
+    data.inertiaTensor.GetInverseWorldTensor(data.bodyMatrix, mInvWorldTensor);
 }
 
 bool RigidBody::DistributeMass() {
@@ -813,10 +821,106 @@ bool RigidBody::ResolveObjectCollision(RigidBody &objA, RigidBody &objB, const P
 
 bool RigidBody::ResolveWorldOBBCollision(const UMath::Vector3 &cn, const UMath::Vector3 &cp, COLLISION_INFO *collisionInfo,
                                          const Dynamics::Collision::Geometry *otherGeom, const UMath::Vector3 &linearVel, const SimSurface &rbsurface,
-                                         const SimSurface &obbsurface) {}
+                                         const SimSurface &obbsurface) {
+    const float otherMass = 1000000.0f;
+    Volatile &data = *mData;
+    Dynamics::Collision::Moment moA(this);
+    UMath::Vector3 inertia = Dynamics::Inertia::Box(0.083333336f, 2.0f * otherGeom->GetDimension().x, 2.0f * otherGeom->GetDimension().y,
+                                                    2.0f * otherGeom->GetDimension().z);
+    UMath::Vector3 cg = {};
+    UMath::Vector3 angularVel = {};
+    Dynamics::Collision::Moment moB(otherGeom->GetOrientation(), otherMass, inertia, cg, linearVel, angularVel, otherGeom->GetPosition());
+
+    Dynamics::Collision::Plane plane;
+    plane.friction = Dynamics::Collision::Friction(UMath::Min(mSpecs.OBJ_FRICTION(0), mSpecs.OBJ_FRICTION(1)), mSpecs.OBJ_FRICTION(0));
+    plane.normal = cn;
+    plane.point = UVector3(cp.x, cp.y, cp.z);
+    plane.friction *= obbsurface.WORLD_FRICTION();
+
+    UMath::Vector3 e;
+    UMath::Dot(plane.normal, data.bodyMatrix, e);
+    UMath::Scale(e, UMath::Vector4To3(mSpecs.WALL_ELASTICITY()), e);
+    moA.SetElasticity(UMath::Length(e));
+
+    ModifyCollision(obbsurface, plane, moA);
+
+    moA.MakeImmobile(false, 0.0f);
+    moB.MakeImmobile(true, 0.0f);
+
+    if (moA.React(moB, plane, 0x20)) {
+        float force = moA.GetForce().Magnitude();
+
+        collisionInfo->objAVel = data.linearVel;
+        collisionInfo->objBVel = linearVel;
+        collisionInfo->objAsurface = rbsurface.GetConstCollection();
+        collisionInfo->objA = GetOwner()->GetInstanceHandle();
+        collisionInfo->type = 2;
+        collisionInfo->objBsurface = obbsurface.GetConstCollection();
+        collisionInfo->normal = cn;
+        collisionInfo->position = cp;
+        collisionInfo->sliding = moA.GetFrictionState() == Dynamics::Collision::Friction::Dynamic;
+        collisionInfo->slidingVel = moA.GetSlidingVelocity();
+        collisionInfo->closingVel = moA.GetClosingVelocity();
+        collisionInfo->force = force;
+        collisionInfo->impulseA = force * moA.GetOOMass();
+        collisionInfo->impulseB = 0.0f;
+
+        UMath::Sub(cp, data.position, collisionInfo->armA);
+        ConvertWorldToLocal(collisionInfo->armA, 0);
+
+        data.angularVel = moA.GetAngularVelocity();
+        data.linearVel = moA.GetLinearVelocity();
+        data.state = 0;
+        data.Validate();
+        return true;
+    }
+    return false;
+}
 
 float RigidBody::ResolveWorldCollision(const UMath::Vector3 &cn, const UMath::Vector3 &cp, COLLISION_INFO *collisionInfo,
-                                       const Attrib::Collection *objSurface, const SimSurface &worldSurface, const struct UVector3 &worldVel) {}
+                                       const Attrib::Collection *objSurface, const SimSurface &worldSurface, const UVector3 &worldVel) {
+    Volatile &data = *mData;
+    const Attrib::Gen::rigidbodyspecs &specs = *mSpecs;
+    Dynamics::Collision::Moment mo(this);
+
+    Dynamics::Collision::Plane plane;
+    plane.friction = Dynamics::Collision::Friction(UMath::Min(specs.WALL_FRICTION(1), specs.WALL_FRICTION(0)), specs.WALL_FRICTION(0));
+    plane.normal = cn;
+    plane.point = cp;
+    plane.friction *= worldSurface.WORLD_FRICTION();
+
+    UMath::Vector3 e;
+    UMath::Dot(plane.normal, data.bodyMatrix, e);
+    UMath::Scale(e, UMath::Vector4To3(specs.WALL_ELASTICITY()), e);
+    mo.SetElasticity(UMath::Length(e));
+    ModifyCollision(worldSurface, plane, mo);
+    mo.SetLinearVelocity(mo.GetLinearVelocity() - worldVel);
+    if (mo.React(plane, 0x10)) {
+        float force = mo.GetForce().Magnitude();
+        if (collisionInfo) {
+            collisionInfo->normal = cn;
+            collisionInfo->position = cp;
+            collisionInfo->objA = GetOwner()->GetInstanceHandle();
+            collisionInfo->objAVel = data.linearVel;
+            collisionInfo->objAsurface = objSurface;
+            collisionInfo->type = 2;
+            collisionInfo->objBsurface = worldSurface.GetConstCollection();
+            collisionInfo->sliding = mo.GetFrictionState() == Dynamics::Collision::Friction::Dynamic;
+            collisionInfo->slidingVel = mo.GetSlidingVelocity();
+            collisionInfo->closingVel = mo.GetClosingVelocity();
+            collisionInfo->force = force;
+            collisionInfo->impulseA = force * mo.GetOOMass();
+            collisionInfo->impulseB = 0.0f;
+            UMath::Sub(cp, data.position, collisionInfo->armA);
+            ConvertWorldToLocal(collisionInfo->armA, 0);
+        }
+        data.angularVel = mo.GetAngularVelocity();
+        data.linearVel = mo.GetLinearVelocity() + worldVel;
+        data.Validate();
+        return force;
+    }
+    return 0.0f;
+}
 
 void RigidBody::OnObjectOverlap(RigidBody &objA, RigidBody &objB, float dT) {
     Volatile &dataA = *objA.mData;

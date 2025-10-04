@@ -273,6 +273,7 @@ class RigidBody : public Behavior,
     override virtual void SetMass(float newMass);
     override virtual void PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector3 &initPos);
     override virtual void SetOrientation(const UMath::Matrix4 &orientMat);
+    override virtual void SetOrientation(const UMath::Vector4 &newOrientation);
     override virtual void GetPointVelocity(const UMath::Vector3 &position, UMath::Vector3 &velocity) const;
     override virtual void ConvertLocalToWorld(UMath::Vector3 &val, bool translate) const;
     override virtual void ConvertWorldToLocal(UMath::Vector3 &val, bool translate) const;
@@ -417,7 +418,9 @@ class RigidBody : public Behavior,
 
     override virtual void SetRotation(const UMath::Matrix4 &mat) {
         UMath::Vector4 q;
-        // TODO Matrix4ToQuaternion
+        UMath::Matrix4ToQuaternion(mat, q);
+        SetOrientation(q);
+        mData->bodyMatrix = mat;
     }
 
     override virtual const UMath::Vector3 &GetPrincipalInertia() const {

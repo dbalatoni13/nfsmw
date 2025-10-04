@@ -85,14 +85,6 @@ struct UVector3 : public UMath::Vector3 {
         return v;
     }
 
-    UVector3 operator-(const UVector3 &b) {
-        UVector3 v;
-        v.x = this->x - b.x;
-        v.y = this->y - b.y;
-        v.z = this->z - b.z;
-        return v;
-    }
-
     UVector3 operator-(const float b) {
         UVector3 v;
         v.x = this->x - b;
@@ -137,6 +129,12 @@ inline UVector3 operator*(const UVector3 &v1, float scalar) {
 inline UVector3 operator+(const UVector3 &v1, const UVector3 &v2) {
     UMath::Vector3 result;
     UMath::Add(v1, v2, result);
+    return result;
+}
+
+inline UVector3 operator-(const UVector3 &v1, const UMath::Vector3 &b) {
+    UMath::Vector3 result;
+    UMath::Sub(v1, b, result);
     return result;
 }
 

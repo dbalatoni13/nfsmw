@@ -37,6 +37,10 @@ inline void Copy(const Matrix4 &a, Matrix4 &r) {
     VU0_MATRIX4Copy(a, r);
 }
 
+inline void Copy(const Vector4 &a, Vector4 &r) {
+    VU0_v4Copy(a, r);
+}
+
 inline void Transpose(const Matrix4 &m, Matrix4 &r) {
     VU0_MATRIX4_transpose(m, r);
 }
@@ -53,8 +57,16 @@ inline void RotateTranslate(const Vector4 &a, const Matrix4 &m, Vector4 &r) {
     VU0_MATRIX4_vect4mult(a, m, r);
 }
 
+inline void Init(Matrix4 &m, const float xx, const float yy, const float zz) {
+    VU0_MATRIX4Init(m, xx, yy, zz);
+}
+
 inline void Mult(const Vector4 &a, const Vector4 &b, Vector4 &r) {
     VU0_qmul(a, b, r);
+}
+
+inline void Mult(const Matrix4 &a, const Matrix4 &b, Matrix4 &r) {
+    VU0_MATRIX4_mult(a, b, r);
 }
 
 inline void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m) {
@@ -119,6 +131,10 @@ inline float Lengthxz(const Vector3 &a) {
 
 inline float LengthSquare(const Vector3 &a) {
     return VU0_v3lengthsquare(a);
+}
+
+inline void Matrix4ToQuaternion(const UMath::Matrix4 &m, Vector4 &q) {
+    VU0_m4toquat(m, q);
 }
 
 inline float Clamp(const float a, const float amin, const float amax) {

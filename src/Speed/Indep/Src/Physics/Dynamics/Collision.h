@@ -71,12 +71,24 @@ class Geometry {
     Geometry();
     void Set(const UMath::Matrix4 &orient, const UMath::Vector3 &position, const UMath::Vector3 &dimension, Shape shape, const UMath::Vector3 &delta);
 
+    const UMath::Vector3 &GetPosition() const {
+        return *reinterpret_cast<const UMath::Vector3 *>(&mPosition);
+    }
+
+    const UMath::Matrix4 &GetOrientation() const {
+        return *reinterpret_cast<const UMath::Matrix4 *>(&mNormal);
+    }
+
     const UMath::Vector3 &GetCollisionPoint() const {
         return *reinterpret_cast<const UMath::Vector3 *>(&mCollision_point);
     }
 
     const UMath::Vector3 &GetCollisionNormal() const {
         return *reinterpret_cast<const UMath::Vector3 *>(&mCollision_normal);
+    }
+
+    const UMath::Vector3 &GetDimension() const {
+        return *reinterpret_cast<const UMath::Vector3 *>(mDimension);
     }
 
     bool PenetratesOther() const {
@@ -152,6 +164,10 @@ class Moment {
 
     const UVector3 &GetLinearVelocity() const {
         return mLinearVelocity;
+    }
+
+    void SetLinearVelocity(const UVector3 &vel) {
+        mLinearVelocity = vel;
     }
 
     const UVector3 &GetAngularVelocity() const {
