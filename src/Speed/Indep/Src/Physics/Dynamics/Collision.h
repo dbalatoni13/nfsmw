@@ -158,8 +158,20 @@ class Moment {
         return mAngularVelocity;
     }
 
+    void SetPosition(const UMath::Vector3 &pos) {
+        mPosition = pos;
+    }
+
     void SetInertiaScale(const UMath::Vector3 &scale) {
         mInertialScale = scale;
+    }
+
+    bool IsImmobile() const {
+        return mImmobile;
+    }
+
+    float GetBreakingForce() {
+        return mBrakingForce;
     }
 
     void MakeImmobile(bool b, float force) {

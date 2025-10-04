@@ -147,8 +147,16 @@ inline void VU0_MATRIX3x4dotprod(const UMath::Vector3 &a, const UMath::Matrix4 &
     r.z = VU0_v3dotprod(a, UMath::Vector4To3(b.v2));
 }
 
+inline void VU0_MATRIX4Copy(const UMath::Matrix4 &a, UMath::Matrix4 &b) {
+    b = a;
+}
+
 inline float VU0_v3length(const struct UMath::Vector3 &a) {
     return VU0_sqrt(VU0_v3lengthsquare(a));
+}
+
+inline float VU0_v3lengthxz(const struct UMath::Vector3 &a) {
+    return VU0_sqrt(a.x * a.x + a.z * a.z);
 }
 
 #endif

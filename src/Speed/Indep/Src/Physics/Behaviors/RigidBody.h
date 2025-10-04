@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Libs/Support/Miscellaneous/SAP.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Debug/Debugable.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/rigidbodyspecs.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
@@ -62,45 +63,7 @@ class RigidBody : public Behavior,
                   public Debugable {
 
   public:
-    class Volatile {
-      public:
-        Volatile();
-
-        bool GetStatus(unsigned int uFind) const {
-            return status & uFind;
-        }
-
-        void SetStatus(unsigned int uAdd) {
-            status |= uAdd;
-        }
-
-        void RemoveStatus(unsigned int uRemove) {
-            status &= ~uRemove;
-        }
-
-        void Validate() {}
-
-        // total size: 0xB0
-        UMath::Vector4 orientation;              // offset 0x0, size 0x10
-        UMath::Vector3 position;                 // offset 0x10, size 0xC
-        unsigned short status;                   // offset 0x1C, size 0x2
-        unsigned short statusPrev;               // offset 0x1E, size 0x2
-        UMath::Vector3 linearVel;                // offset 0x20, size 0xC
-        float mass;                              // offset 0x2C, size 0x4
-        UMath::Vector3 angularVel;               // offset 0x30, size 0xC
-        float oom;                               // offset 0x3C, size 0x4
-        Dynamics::Inertia::Tensor inertiaTensor; // offset 0x40, size 0xC
-        float unused1;                           // offset 0x4C, size 0x4
-        UMath::Vector3 force;                    // offset 0x50, size 0xC
-        char leversInContact;                    // offset 0x5C, size 0x1
-        unsigned char state;                     // offset 0x5D, size 0x1
-        unsigned char index;                     // offset 0x5E, size 0x1
-        char unused2;                            // offset 0x5F, size 0x1
-        UMath::Vector3 torque;                   // offset 0x60, size 0xC
-        float radius;                            // offset 0x6C, size 0x4
-        UMath::Matrix4 bodyMatrix;               // offset 0x70, size 0x40
-    };
-
+    class Volatile;
     class Mesh : public bTNode<Mesh> {
       public:
         enum Flags {
@@ -184,7 +147,7 @@ class RigidBody : public Behavior,
             return mFlags;
         }
 
-        const Attrib::Collection *GetMaterial() {
+        const Attrib::Collection *GetMaterial() const {
             return mMaterial;
         }
 
@@ -250,6 +213,10 @@ class RigidBody : public Behavior,
     static bool ResolveObjectCollision(RigidBody &objA, RigidBody &objB, const Primitive &colliderA, const Primitive &colliderB,
                                        const UMath::Vector3 &collisionNormal, const UMath::Vector3 &collisionPoint, float overlap, bool APenetratesB);
     static void OnObjectOverlap(RigidBody &objA, RigidBody &objB, float dT);
+    static void PushSP(void *workspace);
+    static void PopSP();
+    static IRigidBody *Get(unsigned int index);
+    static unsigned int AssignSlot();
 
     // Methods
     RigidBody(const BehaviorParams &bp, const RBComplexParams &params);
@@ -275,7 +242,7 @@ class RigidBody : public Behavior,
     void DoDrag();
     void DoIntegration(const float dT);
     void ResolveGroundCollision(const CollisionPacket *bcp, const int numContacts);
-    void PushSP(void *workspace);
+    void UpdateGrid(int &overlapx, int &overlapz);
 
     // Overrides
     override virtual ~RigidBody();
@@ -296,10 +263,7 @@ class RigidBody : public Behavior,
     override virtual void DisableModeling();
     override virtual void EnableModeling();
     override virtual void SetAnimating(bool animating);
-
-    override virtual bool IsModeling() const {
-        // TODO
-    }
+    override virtual void Damp(float amount);
 
     // IRigidBody
     override virtual void SetPosition(const UMath::Vector3 &pos);
@@ -327,11 +291,6 @@ class RigidBody : public Behavior,
     override virtual bool AddCollisionMesh(UCrc32 name, const UMath::Vector4 *verts, unsigned int count, const struct SimSurface &material,
                                            CollisionGeometry::BoundFlags flags, bool persistant);
 
-    // ISimable
-    override virtual ISimable *GetOwner() const {
-        return IRigidBody::GetOwner();
-    }
-
     // IEntity
     override virtual bool IsImmobile() const;
 
@@ -342,10 +301,231 @@ class RigidBody : public Behavior,
     virtual void OnDebugDraw();
     virtual void OnBeginFrame(float dT);
     virtual void OnEndFrame(float dT);
-    virtual void ModifyCollision(const SimSurface &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment);
     virtual void ModifyCollision(const RigidBody &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment);
+    virtual void ModifyCollision(const SimSurface &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment);
 
-    virtual bool DoPenetration(const RigidBody &other) {}
+    // Inline virtuals
+    // ICollisionBody
+    override virtual bool IsModeling() const {
+        return mData->state != 2;
+    }
+
+    override virtual bool IsSleeping() const {
+        return mData->state == 1;
+    }
+
+    override virtual const UMath::Vector3 &GetWorldMomentScale() const {
+        return UMath::Vector4To3(mSpecs->WORLD_MOMENT_SCALE());
+    }
+
+    override virtual const UMath::Vector3 &GetGroundMomentScale() const {
+        return UMath::Vector4To3(mSpecs->GROUND_MOMENT_SCALE());
+    }
+
+    override virtual void SetCenterOfGravity(const UMath::Vector3 &cg) {
+        mCOG = cg;
+    }
+
+    override virtual const UMath::Vector3 &GetCenterOfGravity() const {
+        return mCOG;
+    }
+
+    override virtual bool HasHadCollision() const {
+        return mData->GetStatus(Volatile::HAS_HAD_OBJECT_COLLISION | Volatile::HAS_HAD_WORLD_COLLISION);
+    }
+
+    override virtual bool HasHadWorldCollision() const {
+        return mData->GetStatus(Volatile::HAS_HAD_WORLD_COLLISION);
+    }
+
+    override virtual bool HasHadObjectCollision() const {
+        return mData->GetStatus(Volatile::HAS_HAD_OBJECT_COLLISION);
+    }
+
+    override virtual bool IsAttachedToWorld() const {
+        return mData->GetStatus(Volatile::IS_ATTACHED_TO_WORLD);
+    }
+
+    override virtual bool IsAnchored() const {
+        return mData->GetStatus(Volatile::IS_ANCHORED);
+    }
+
+    override virtual void SetAnchored(bool b) {
+        if (b) {
+            mData->SetStatus(Volatile::IS_ANCHORED);
+        } else {
+            mData->RemoveStatus(Volatile::IS_ANCHORED);
+        }
+    }
+
+    override virtual const UMath::Vector3 &GetInertiaTensor() const {
+        return mData->inertiaTensor;
+    }
+
+    override virtual bool IsInGroundContact() const {
+        return mData->leversInContact != 0;
+    }
+
+    override virtual unsigned int GetNumContactPoints() const {
+        return mData->leversInContact;
+    }
+
+    override virtual const UMath::Vector4 &GetGroundNormal() const {
+        return mGroundNormal;
+    }
+
+    override virtual void SetForce(const UMath::Vector3 &v) {
+        mData->force = v;
+    }
+
+    override virtual const UMath::Vector3 &GetForce() const {
+        return mData->force;
+    }
+
+    override virtual const UMath::Vector3 &GetTorque() const {
+        return mData->torque;
+    }
+
+    override virtual void SetTorque(const UMath::Vector3 &v) {
+        mData->torque = v;
+    }
+
+    override virtual float GetGravity() const {
+        return mSpecs->GRAVITY();
+    }
+
+    override virtual const UMath::Vector3 &GetRightVector() const {
+        return UMath::ExtractAxis(mData->bodyMatrix, 0);
+    }
+
+    override virtual const UMath::Vector3 &GetUpVector() const {
+        return UMath::ExtractAxis(mData->bodyMatrix, 1);
+    }
+
+    override virtual const UMath::Vector3 &GetForwardVector() const {
+        return UMath::ExtractAxis(mData->bodyMatrix, 2);
+    }
+
+    override virtual const UMath::Matrix4 &GetMatrix4() const {
+        return mData->bodyMatrix;
+    }
+
+    // IEntity
+    override virtual const UMath::Matrix4 &GetRotation() const {
+        return mData->bodyMatrix;
+    }
+
+    override virtual void SetRotation(const UMath::Matrix4 &mat) {
+        UMath::Vector4 q;
+        // TODO Matrix4ToQuaternion
+    }
+
+    override virtual const UMath::Vector3 &GetPrincipalInertia() const {
+        return mData->inertiaTensor;
+    }
+
+    // IBoundable
+    override virtual const CollisionGeometry::Bounds *GetGeometryNode() const {
+        return mGeoms;
+    }
+
+    // IRigidBody
+    override virtual ISimable *GetOwner() const {
+        return Behavior::GetOwner();
+    }
+
+    override virtual bool IsSimple() const {
+        return false;
+    }
+
+    override virtual enum SimableType GetSimableType() const {
+        return mSimableType;
+    }
+
+    override virtual int GetIndex() const {
+        return mData->index;
+    }
+
+    override virtual float GetRadius() const {
+        return mData->radius;
+    }
+
+    override virtual float GetMass() const {
+        return mData->mass;
+    }
+
+    override virtual float GetOOMass() const {
+        return mData->oom;
+    }
+
+    override virtual const UMath::Vector3 &GetPosition() const {
+        return mData->position;
+    }
+
+    override virtual const UMath::Vector3 &GetLinearVelocity() const {
+        return mData->linearVel;
+    }
+
+    override virtual const UMath::Vector3 &GetAngularVelocity() const {
+        return mData->angularVel;
+    }
+
+    override virtual float GetSpeed() const {
+        return UMath::Length(mData->linearVel);
+    }
+
+    override virtual float GetSpeedXZ() const {
+        return UMath::Lengthxz(mData->linearVel);
+    }
+
+    override virtual void GetRightVector(UMath::Vector3 &vec) const {
+        vec = UMath::ExtractAxis(mData->bodyMatrix, 0);
+    }
+
+    override virtual void GetUpVector(UMath::Vector3 &vec) const {
+        vec = UMath::ExtractAxis(mData->bodyMatrix, 1);
+    }
+
+    override virtual void GetForwardVector(UMath::Vector3 &vec) const {
+        vec = UMath::ExtractAxis(mData->bodyMatrix, 2);
+    }
+
+    override virtual void GetMatrix4(UMath::Matrix4 &mat) const {
+        UMath::Copy(mData->bodyMatrix, mat);
+    }
+
+    override virtual const struct WCollider *GetWCollider() const {
+        return mWCollider;
+    }
+
+    override virtual void ModifyXPos(float offset) {
+        mData->position.x += offset;
+    }
+
+    override virtual void ModifyYPos(float offset) {
+        mData->position.y += offset;
+    }
+
+    override virtual void ModifyZPos(float offset) {
+        mData->position.z += offset;
+    }
+
+    override virtual const UMath::Vector4 &GetOrientation() const {
+        return mData->orientation;
+    }
+
+    override virtual void GetDimension(UMath::Vector3 &dim) const {
+        dim = mDimension;
+    }
+
+    override virtual UMath::Vector3 GetDimension() const {
+        return mDimension;
+    }
+
+    // Rest of the own virtuals
+    virtual bool DoPenetration(const RigidBody &other) {
+        return true;
+    }
 
     virtual bool ShouldSleep() const;
     virtual float ResolveWorldCollision(const UMath::Vector3 &cn, const UMath::Vector3 &cp, COLLISION_INFO *collisionInfo,
@@ -359,6 +539,53 @@ class RigidBody : public Behavior,
     bool IsAwake() const {
         return mData->state == 0;
     }
+
+    // declared here, so GetStatus doesn't inline in the overrides
+    class Volatile {
+      public:
+        enum StatusFlags {
+            IS_ATTACHED_TO_WORLD = 2,
+            HAS_HAD_WORLD_COLLISION = 4,
+            HAS_HAD_OBJECT_COLLISION = 8,
+            IS_ANCHORED = 0x80,
+        };
+        // TODO create enums for state
+        Volatile();
+
+        bool GetStatus(unsigned int uFind) const {
+            return status & uFind;
+        }
+
+        void SetStatus(unsigned int uAdd) {
+            status |= uAdd;
+        }
+
+        void RemoveStatus(unsigned int uRemove) {
+            status &= ~uRemove;
+        }
+
+        void Validate() {}
+
+        // total size: 0xB0
+        UMath::Vector4 orientation;              // offset 0x0, size 0x10
+        UMath::Vector3 position;                 // offset 0x10, size 0xC
+        unsigned short status;                   // offset 0x1C, size 0x2
+        unsigned short statusPrev;               // offset 0x1E, size 0x2
+        UMath::Vector3 linearVel;                // offset 0x20, size 0xC
+        float mass;                              // offset 0x2C, size 0x4
+        UMath::Vector3 angularVel;               // offset 0x30, size 0xC
+        float oom;                               // offset 0x3C, size 0x4
+        Dynamics::Inertia::Tensor inertiaTensor; // offset 0x40, size 0xC
+        float unused1;                           // offset 0x4C, size 0x4
+        UMath::Vector3 force;                    // offset 0x50, size 0xC
+        char leversInContact;                    // offset 0x5C, size 0x1
+        unsigned char state;                     // offset 0x5D, size 0x1
+        unsigned char index;                     // offset 0x5E, size 0x1
+        char unused2;                            // offset 0x5F, size 0x1
+        UMath::Vector3 torque;                   // offset 0x60, size 0xC
+        float radius;                            // offset 0x6C, size 0x4
+        UMath::Matrix4 bodyMatrix;               // offset 0x70, size 0x40
+    };
 
   private:
     static RigidBody *mMaps[128];

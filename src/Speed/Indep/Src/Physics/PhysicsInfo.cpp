@@ -124,40 +124,6 @@ float Physics::Info::InductionBoost(const engine &engine, const induction &induc
 
 // Credits: Brawltendo
 // TODO Not matching on GC yet
-float Physics::Info::WheelDiameter(const tires &tires, bool front) {
-    int axle = front ? 0 : 1;
-    // TODO INCH2METERS
-    return ((tires.ASPECT_RATIO().At(axle) * 0.01f) * tires.SECTION_WIDTH().At(axle)) * 0.002f + tires.RIM_SIZE().At(axle) * 0.0254f;
-}
-
-// Credits: Brawltendo
-// TODO Not matching on GC yet
-float Physics::Info::Speedometer(const Attrib::Gen::transmission &transmission, const Attrib::Gen::engine &engine, const Attrib::Gen::tires &tires,
-                                 float rpm, GearID gear, const Tunings *tunings) {
-    float speed = 0.0f;
-    float gear_ratio = transmission.GEAR_RATIO(gear);
-    float total_ratio = transmission.FINAL_GEAR() * gear_ratio;
-    float power_range = engine.RED_LINE() - engine.IDLE();
-    total_ratio = UMath::Abs(total_ratio);
-    if (total_ratio > 0.0f && power_range > 0.0f) {
-        float wheelrear = WheelDiameter(tires, false);
-        float wheelfront = WheelDiameter(tires, true);
-        float avg_wheel_radius = ((wheelrear * 0.5f) + (wheelfront * 0.5f)) * 0.5f;
-        float rpm_min = engine.IDLE();
-        float rpm_max = engine.RED_LINE();
-        float clutch_rpm = (((rpm - rpm_min) / total_ratio) / power_range) * rpm_max;
-        speed = RPM2RPS(avg_wheel_radius * clutch_rpm);
-    }
-    float limiter = MPH2MPS(engine.SPEED_LIMITER(0));
-    if (limiter > 0.0f) {
-        return UMath::Min(speed, limiter);
-    } else {
-        return speed;
-    }
-}
-
-// Credits: Brawltendo
-// TODO Not matching on GC yet
 float Physics::Info::Torque(const Attrib::Gen::engine &engine, float rpm) {
     float rpm_min = engine.IDLE();
     float rpm_max = engine.MAX_RPM();
@@ -175,6 +141,14 @@ float Physics::Info::Torque(const Attrib::Gen::engine &engine, float rpm) {
 }
 
 // Credits: Brawltendo
+// TODO Not matching on GC yet
+float Physics::Info::WheelDiameter(const tires &tires, bool front) {
+    int axle = front ? 0 : 1;
+    // TODO INCH2METERS
+    return ((tires.ASPECT_RATIO().At(axle) * 0.01f) * tires.SECTION_WIDTH().At(axle)) * 0.002f + tires.RIM_SIZE().At(axle) * 0.0254f;
+}
+
+// Credits: Brawltendo
 // TODO not matching on GC yet
 bool Physics::Info::ShiftPoints(const transmission &transmission, const engine &engine, const induction &induction, float *shift_up,
                                 float *shift_down, unsigned int numpts) {
@@ -189,7 +163,8 @@ bool Physics::Info::ShiftPoints(const transmission &transmission, const engine &
 
     float redline = engine.RED_LINE();
     int topgear = num_gear_ratios - 1;
-    for (int j = G_FIRST; j < topgear; ++j) {
+    int j;
+    for (j = G_FIRST; j < topgear; ++j) {
         float g1 = transmission.GEAR_RATIO(j);
         float g2 = transmission.GEAR_RATIO(j + 1);
         float rpm = (redline + engine.IDLE()) * 0.5f;
@@ -239,4 +214,30 @@ bool Physics::Info::ShiftPoints(const transmission &transmission, const engine &
 
     shift_up[topgear] = engine.RED_LINE();
     return true;
+}
+
+// Credits: Brawltendo
+// TODO Not matching on GC yet
+float Physics::Info::Speedometer(const Attrib::Gen::transmission &transmission, const Attrib::Gen::engine &engine, const Attrib::Gen::tires &tires,
+                                 float rpm, GearID gear, const Tunings *tunings) {
+    float speed = 0.0f;
+    float gear_ratio = transmission.GEAR_RATIO(gear);
+    float total_ratio = transmission.FINAL_GEAR() * gear_ratio;
+    float power_range = engine.RED_LINE() - engine.IDLE();
+    total_ratio = UMath::Abs(total_ratio);
+    if (total_ratio > 0.0f && power_range > 0.0f) {
+        float wheelrear = WheelDiameter(tires, false);
+        float wheelfront = WheelDiameter(tires, true);
+        float avg_wheel_radius = ((wheelrear * 0.5f) + (wheelfront * 0.5f)) * 0.5f;
+        float rpm_min = engine.IDLE();
+        float rpm_max = engine.RED_LINE();
+        float clutch_rpm = (((rpm - rpm_min) / total_ratio) / power_range) * rpm_max;
+        speed = RPM2RPS(avg_wheel_radius * clutch_rpm);
+    }
+    float limiter = MPH2MPS(engine.SPEED_LIMITER(0));
+    if (limiter > 0.0f) {
+        return UMath::Min(speed, limiter);
+    } else {
+        return speed;
+    }
 }

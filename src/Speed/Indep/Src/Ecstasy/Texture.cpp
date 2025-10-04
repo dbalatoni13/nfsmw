@@ -511,7 +511,7 @@ void UpdateTextureAnimations() {
             TextureAnimEntry *base_entry = texture_anim->TextureAnimTable; // r27
             TextureAnimEntry *current_entry = &base_entry[i];              // r31
             current_time = texture_anim->TimeBase == 1 ? real_time : world_time;
-            current_frame = fps * current_time;
+            current_frame = static_cast<int>(fps * current_time);
             current_frame -= (current_frame / num_frames) * num_frames;
 
             if (current_frame == texture_anim->CurrentFrame) {

@@ -1,11 +1,12 @@
 #ifndef SUPPORT_UTILITY_UMATH_H
 #define SUPPORT_UTILITY_UMATH_H
 
-#include <cmath>
-#include <cstring>
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
+
+#include <cmath>
+#include <cstring>
 
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "UTypes.h"
@@ -30,6 +31,10 @@ inline void Clear(Vector3 &r) {
     *reinterpret_cast<int *>(&r.x) = 0;
     *reinterpret_cast<int *>(&r.y) = 0;
     *reinterpret_cast<int *>(&r.z) = 0;
+}
+
+inline void Copy(const Matrix4 &a, Matrix4 &r) {
+    VU0_MATRIX4Copy(a, r);
 }
 
 inline void Transpose(const Matrix4 &m, Matrix4 &r) {
@@ -76,7 +81,7 @@ inline void ScaleAdd(const Vector3 &a, const float s, const Vector3 &b, Vector3 
     VU0_v3scaleadd(a, s, b, r);
 }
 
-inline void Sub(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &r) {
+inline void Sub(const Vector3 &a, const Vector3 &b, Vector3 &r) {
     VU0_v3sub(a, b, r);
 }
 
@@ -92,23 +97,27 @@ inline float Dot(const Vector3 &a, const Vector3 &b) {
     return VU0_v3dotprod(a, b);
 }
 
-inline void Dot(const UMath::Vector3 &a, const UMath::Matrix4 &b, Vector3 &r) {
+inline void Dot(const Vector3 &a, const Matrix4 &b, Vector3 &r) {
     VU0_MATRIX3x4dotprod(a, b, r);
 }
 
-inline void Cross(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &r) {
+inline void Cross(const Vector3 &a, const Vector3 &b, Vector3 &r) {
     VU0_v3crossprod(a, b, r);
 }
 
-inline void UnitCross(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &r) {
+inline void UnitCross(const Vector3 &a, const Vector3 &b, Vector3 &r) {
     VU0_v3unitcrossprod(a, b, r);
 }
 
-inline float Length(const UMath::Vector3 &a) {
+inline float Length(const Vector3 &a) {
     return VU0_v3length(a);
 }
 
-inline float LengthSquare(const UMath::Vector3 &a) {
+inline float Lengthxz(const Vector3 &a) {
+    return VU0_v3lengthxz(a);
+}
+
+inline float LengthSquare(const Vector3 &a) {
     return VU0_v3lengthsquare(a);
 }
 

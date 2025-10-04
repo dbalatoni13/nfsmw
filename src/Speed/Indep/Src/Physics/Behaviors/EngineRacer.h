@@ -36,39 +36,81 @@ class EngineRacer : protected VehicleBehavior,
                     public IRaceEngine,
                     public IEngineDamage {
   public:
-    virtual ~EngineRacer();
-    virtual void OnService();
-    virtual void Reset();
-    virtual void GetPriority();
-    virtual void OnOwnerAttached();
-    virtual void OnOwnerDetached();
-    virtual void OnTaskSimulate(float dT);
-    virtual void OnBehaviorChange(const UCrc32 &);
-    virtual void OnPause();
-    virtual void OnUnPause();
+    // Methods
+    EngineRacer(const BehaviorParams &bp);
+    ShiftPotential FindShiftPotential(GearID gear, float rpm) const;
+    float GetDifferentialAngularVelocity(bool locked) const;
+    float GetDriveWheelSlippage() const;
+    void SetDifferentialAngularVelocity(float w);
+    float CalcSpeedometer(float rpm, unsigned int gear) const;
+    void LimitFreeWheels(float w);
+    float GetBrakingTorque(float engine_torque, float rpm) const;
+    bool DoGearChange(GearID gear, bool automatic);
+    void AutoShift();
 
-    virtual bool IsEngineBraking() {
-        return mEngineBraking;
-    }
+    // Overrides
+    override virtual ~EngineRacer();
+    override virtual void OnService();
+    override virtual void Reset();
+    override virtual void GetPriority();
+    override virtual void OnOwnerAttached();
+    override virtual void OnOwnerDetached();
+    override virtual void OnTaskSimulate(float dT);
+    override virtual void OnBehaviorChange(const UCrc32 &);
+    override virtual void OnPause();
+    override virtual void OnUnPause();
 
-    virtual bool IsShiftingGear() {
-        return mGearShiftTimer > 0.0f;
-    }
+    // ITransmission
+    override virtual bool Shift(GearID gear);
+    override virtual float GetSpeedometer() const;
+    override virtual float GetMaxSpeedometer() const;
+    override virtual float GetShiftPoint(GearID from_gear, GearID to_gear) const;
 
-    virtual ShiftStatus OnGearChange(GearID gear);
+    // IRaceEngine
+    float GetPerfectLaunchRange(float &range);
 
-    virtual bool UseRevLimiter() const {
-        return true;
-    }
-
+    // Virtual methods
     virtual void DoECU();
     virtual float DoThrottle();
     virtual void DoInduction(const Physics::Tunings *tunings, float dT);
     virtual float DoNos(const Physics::Tunings *tunings, float dT, bool engaged);
     virtual void DoShifting(float dT);
 
-    EngineRacer(const BehaviorParams &bp);
+    override virtual ShiftStatus OnGearChange(GearID gear);
 
+    // Inline virtuals
+    override virtual bool IsEngineBraking() {
+        return mEngineBraking;
+    }
+
+    override virtual bool IsShiftingGear() {
+        return mGearShiftTimer > 0.0f;
+    }
+
+    override virtual bool UseRevLimiter() const {
+        return true;
+    }
+
+    // IEngine
+    virtual bool IsNOSEngaged() const {
+        return mNOSEngaged >= 1.0f;
+    }
+
+    virtual bool HasNOS() const {
+        return mNOSInfo.NOS_CAPACITY() > 0.0f && mNOSInfo.TORQUE_BOOST() > 0.0f;
+    }
+
+    virtual float GetNOSFlowRate() const {
+        return mNOSInfo.FLOW_RATE();
+    }
+
+    virtual void ChargeNOS(float charge) {
+        if (HasNOS()) {
+            mNOSCapacity = UMath::Clamp(mNOSCapacity + charge, 0.0f, 1.0f);
+        }
+    }
+
+    // Inlines
     unsigned int GetNumGearRatios() const {
         return mTrannyInfo.Num_GEAR_RATIO();
     }
@@ -89,10 +131,11 @@ class EngineRacer : protected VehicleBehavior,
         float ratio1 = mTrannyInfo.GEAR_RATIO(from);
         float ratio2 = mTrannyInfo.GEAR_RATIO(to);
 
-        if (ratio1 > 0.0f && ratio2 > FLOAT_EPSILON)
+        if (ratio1 > 0.0f && ratio2 > FLOAT_EPSILON) {
             return ratio1 / ratio2;
-        else
+        } else {
             return 0.0f;
+        }
     }
 
     float GetShiftDelay(unsigned int gear) const {
@@ -114,46 +157,6 @@ class EngineRacer : protected VehicleBehavior,
     float GetShiftDownRPM(int gear) const {
         return mShiftDownRPM[gear];
     }
-
-    ShiftPotential FindShiftPotential(GearID gear, float rpm) const;
-    float GetDifferentialAngularVelocity(bool locked) const;
-    float GetDriveWheelSlippage() const;
-    void SetDifferentialAngularVelocity(float w);
-    float CalcSpeedometer(float rpm, unsigned int gear) const;
-    void LimitFreeWheels(float w);
-    float GetBrakingTorque(float engine_torque, float rpm) const;
-    bool DoGearChange(GearID gear, bool automatic);
-    void AutoShift();
-
-    // ITransmission
-
-    bool Shift(GearID gear);
-    float GetSpeedometer() const;
-    float GetMaxSpeedometer() const;
-    float GetShiftPoint(GearID from_gear, GearID to_gear) const;
-
-    // IEngine
-    virtual bool IsNOSEngaged() const {
-        return mNOSEngaged >= 1.0f;
-    }
-
-    virtual bool HasNOS() const {
-        return mNOSInfo.NOS_CAPACITY() > 0.0f && mNOSInfo.TORQUE_BOOST() > 0.0f;
-    }
-
-    virtual float GetNOSFlowRate() const {
-        return mNOSInfo.FLOW_RATE();
-    }
-
-    virtual void ChargeNOS(float charge) {
-        if (HasNOS()) {
-            mNOSCapacity = UMath::Clamp(mNOSCapacity + charge, 0.0f, 1.0f);
-        }
-    }
-
-    // IRaceEngine
-
-    float GetPerfectLaunchRange(float &range);
 
   private:
     float mDriveTorque;

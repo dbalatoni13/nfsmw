@@ -39,7 +39,7 @@ int eView::GetPixelSize(float radius, float distance) {
     } else {
         pixel_size = 2.0f * this->H;
     }
-    return pixel_size;
+    return static_cast<int>(pixel_size);
 }
 
 int eView::GetPixelSize(const bVector3 *position, float radius) {
@@ -62,7 +62,7 @@ int eView::GetPixelSize(const bVector3 *position, float radius) {
             pixel_size = 2 * this->H;
         }
     }
-    return pixel_size;
+    return static_cast<int>(pixel_size);
 }
 
 // UNSOLVED
@@ -96,7 +96,7 @@ int eView::GetPixelSize(const bVector3 *bbox_min, const bVector3 *bbox_max) {
         }
         pixel_size = rad_y;
     }
-    return pixel_size;
+    return static_cast<int>(pixel_size);
 }
 
 void eView::BiasMatrixForZSorting(bMatrix4 *pL2W, float zBias) {
