@@ -17,11 +17,11 @@
 
 void luaS_freeall(lua_State *L) {
     lua_assert(G(L)->strt.nuse == 0);
-    luaM_freearray(L, G(L)->strt.hash, G(L)->strt.size, TString *);
+    luaM_freearray(L, G(L)->strt.hash, G(L)->strt.size, TString *, LUAALLOC_TSTRINGPTR);
 }
 
 void luaS_resize(lua_State *L, int newsize) {
-    GCObject **newhash = luaM_newvector(L, newsize, GCObject *);
+    GCObject **newhash = luaM_newvector(L, newsize, GCObject *, LUAALLOC_GCOBJECTPTR);
     stringtable *tb = &G(L)->strt;
     int i;
     for (i = 0; i < newsize; i++)
@@ -39,13 +39,13 @@ void luaS_resize(lua_State *L, int newsize) {
             p = next;
         }
     }
-    luaM_freearray(L, tb->hash, tb->size, TString *);
+    luaM_freearray(L, tb->hash, tb->size, TString *, LUAALLOC_GCOBJECTPTR);
     tb->size = newsize;
     tb->hash = newhash;
 }
 
 static TString *newlstr(lua_State *L, const char *str, size_t l, lu_hash h) {
-    TString *ts = cast(TString *, luaM_malloc(L, sizestring(l)));
+    TString *ts = cast(TString *, luaM_malloc(L, sizestring(l), LUAALLOC_TSTRINGPTR));
     stringtable *tb;
     ts->tsv.len = l;
     ts->tsv.hash = h;
@@ -81,7 +81,7 @@ TString *luaS_newlstr(lua_State *L, const char *str, size_t l) {
 
 Udata *luaS_newudata(lua_State *L, size_t s) {
     Udata *u;
-    u = cast(Udata *, luaM_malloc(L, sizeudata(s)));
+    u = cast(Udata *, luaM_malloc(L, sizeudata(s), LUAALLOC_UDATA));
     u->uv.marked = (1 << 1); /* is not finalized */
     u->uv.tt = LUA_TUSERDATA;
     u->uv.len = s;

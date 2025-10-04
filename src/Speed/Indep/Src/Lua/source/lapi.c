@@ -324,6 +324,20 @@ LUA_API void *lua_touserdata(lua_State *L, int idx) {
     }
 }
 
+LUA_API unsigned int lua_userdatalen(lua_State *L, int idx) {
+    TObject *o = luaA_indexAcceptable(L, idx);
+    if (o != NULL) {
+        if (o->tt != 2) {
+            if (o->tt == 7) {
+                return o->value.gc->u.uv.len;
+            }
+        } else {
+            return 4;
+        }
+    }
+    return 0;
+}
+
 LUA_API lua_State *lua_tothread(lua_State *L, int idx) {
     StkId o = luaA_indexAcceptable(L, idx);
     return (o == NULL || !ttisthread(o)) ? NULL : thvalue(o);

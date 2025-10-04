@@ -100,7 +100,7 @@ static TString *LoadString(LoadState *S) {
 
 static void LoadCode(LoadState *S, Proto *f) {
     int size = LoadInt(S);
-    f->code = luaM_newvector(S->L, size, Instruction);
+    f->code = luaM_newvector(S->L, size, Instruction, LUAALLOC_INSTRUCTION);
     f->sizecode = size;
     LoadVector(S, f->code, size, sizeof(*f->code));
 }
@@ -108,7 +108,7 @@ static void LoadCode(LoadState *S, Proto *f) {
 static void LoadLocals(LoadState *S, Proto *f) {
     int i, n;
     n = LoadInt(S);
-    f->locvars = luaM_newvector(S->L, n, LocVar);
+    f->locvars = luaM_newvector(S->L, n, LocVar, LUAALLOC_LOCVAR);
     f->sizelocvars = n;
     for (i = 0; i < n; i++) {
         f->locvars[i].varname = LoadString(S);
@@ -119,7 +119,7 @@ static void LoadLocals(LoadState *S, Proto *f) {
 
 static void LoadLines(LoadState *S, Proto *f) {
     int size = LoadInt(S);
-    f->lineinfo = luaM_newvector(S->L, size, int);
+    f->lineinfo = luaM_newvector(S->L, size, int, LUAALLOC_INT);
     f->sizelineinfo = size;
     LoadVector(S, f->lineinfo, size, sizeof(*f->lineinfo));
 }
@@ -129,7 +129,7 @@ static void LoadUpvalues(LoadState *S, Proto *f) {
     n = LoadInt(S);
     if (n != 0 && n != f->nups)
         luaG_runerror(S->L, "bad nupvalues in %s: read %d; expected %d", S->name, n, f->nups);
-    f->upvalues = luaM_newvector(S->L, n, TString *);
+    f->upvalues = luaM_newvector(S->L, n, TString *, LUAALLOC_TSTRINGPTR);
     f->sizeupvalues = n;
     for (i = 0; i < n; i++)
         f->upvalues[i] = LoadString(S);
@@ -140,7 +140,7 @@ static Proto *LoadFunction(LoadState *S, TString *p);
 static void LoadConstants(LoadState *S, Proto *f) {
     int i, n;
     n = LoadInt(S);
-    f->k = luaM_newvector(S->L, n, TObject);
+    f->k = luaM_newvector(S->L, n, TObject, LUAALLOC_TOBJECT);
     f->sizek = n;
     for (i = 0; i < n; i++) {
         TObject *o = &f->k[i];
@@ -161,7 +161,7 @@ static void LoadConstants(LoadState *S, Proto *f) {
         }
     }
     n = LoadInt(S);
-    f->p = luaM_newvector(S->L, n, Proto *);
+    f->p = luaM_newvector(S->L, n, Proto *, LUAALLOC_PROTOPTR);
     f->sizep = n;
     for (i = 0; i < n; i++)
         f->p[i] = LoadFunction(S, f->source);

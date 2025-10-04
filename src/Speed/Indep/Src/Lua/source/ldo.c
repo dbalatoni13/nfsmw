@@ -107,7 +107,7 @@ static void correctstack(lua_State *L, TObject *oldstack) {
 
 void luaD_reallocstack(lua_State *L, int newsize) {
     TObject *oldstack = L->stack;
-    luaM_reallocvector(L, L->stack, L->stacksize, newsize, TObject);
+    luaM_reallocvector(L, L->stack, L->stacksize, newsize, TObject, LUAALLOC_TOBJECT);
     L->stacksize = newsize;
     L->stack_last = L->stack + newsize - 1 - EXTRA_STACK;
     correctstack(L, oldstack);
@@ -115,7 +115,7 @@ void luaD_reallocstack(lua_State *L, int newsize) {
 
 void luaD_reallocCI(lua_State *L, int newsize) {
     CallInfo *oldci = L->base_ci;
-    luaM_reallocvector(L, L->base_ci, L->size_ci, newsize, CallInfo);
+    luaM_reallocvector(L, L->base_ci, L->size_ci, newsize, CallInfo, LUAALLOC_CALLINFO);
     L->size_ci = cast(unsigned short, newsize);
     L->ci = (L->ci - oldci) + L->base_ci;
     L->end_ci = L->base_ci + L->size_ci;

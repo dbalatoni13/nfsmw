@@ -44,7 +44,7 @@ static int default_panic(lua_State *L) {
 }
 
 static lua_State *mallocstate(lua_State *L) {
-    lu_byte *block = (lu_byte *)luaM_malloc(L, sizeof(lua_State) + EXTRASPACE);
+    lu_byte *block = (lu_byte *)luaM_malloc(L, sizeof(lua_State) + EXTRASPACE, LUAALLOC_STATE);
     if (block == NULL)
         return NULL;
     else {
@@ -54,15 +54,15 @@ static lua_State *mallocstate(lua_State *L) {
 }
 
 static void freestate(lua_State *L, lua_State *L1) {
-    luaM_free(L, cast(lu_byte *, L1) - EXTRASPACE, sizeof(lua_State) + EXTRASPACE);
+    luaM_free(L, cast(lu_byte *, L1) - EXTRASPACE, sizeof(lua_State) + EXTRASPACE, LUAALLOC_STATE);
 }
 
 static void stack_init(lua_State *L1, lua_State *L) {
-    L1->stack = luaM_newvector(L, BASIC_STACK_SIZE + EXTRA_STACK, TObject);
+    L1->stack = luaM_newvector(L, BASIC_STACK_SIZE + EXTRA_STACK, TObject, LUAALLOC_TOBJECT);
     L1->stacksize = BASIC_STACK_SIZE + EXTRA_STACK;
     L1->top = L1->stack;
     L1->stack_last = L1->stack + (L1->stacksize - EXTRA_STACK) - 1;
-    L1->base_ci = luaM_newvector(L, BASIC_CI_SIZE, CallInfo);
+    L1->base_ci = luaM_newvector(L, BASIC_CI_SIZE, CallInfo, LUAALLOC_CALLINFO);
     L1->ci = L1->base_ci;
     L1->ci->state = CI_C;   /*  not a Lua function */
     setnilvalue(L1->top++); /* `function' entry for this `ci' */
@@ -73,8 +73,8 @@ static void stack_init(lua_State *L1, lua_State *L) {
 }
 
 static void freestack(lua_State *L, lua_State *L1) {
-    luaM_freearray(L, L1->base_ci, L1->size_ci, CallInfo);
-    luaM_freearray(L, L1->stack, L1->stacksize, TObject);
+    luaM_freearray(L, L1->base_ci, L1->size_ci, CallInfo, LUAALLOC_CALLINFO);
+    luaM_freearray(L, L1->stack, L1->stacksize, TObject, LUAALLOC_TOBJECT);
 }
 
 /*
@@ -82,7 +82,7 @@ static void freestack(lua_State *L, lua_State *L1) {
 */
 static void f_luaopen(lua_State *L, void *ud) {
     /* create a new global state */
-    global_State *g = luaM_new(NULL, global_State);
+    global_State *g = luaM_new(NULL, global_State, LUAALLOC_GLOBALSTATE);
     UNUSED(ud);
     if (g == NULL)
         luaD_throw(L, LUA_ERRMEM);
@@ -146,7 +146,7 @@ static void close_state(lua_State *L) {
     freestack(L, L);
     if (G(L)) {
         lua_assert(G(L)->nblocks == sizeof(lua_State) + sizeof(global_State));
-        luaM_freelem(NULL, G(L));
+        luaM_freelem(NULL, G(L), LUAALLOC_GLOBALSTATE);
     }
     freestate(NULL, L);
 }

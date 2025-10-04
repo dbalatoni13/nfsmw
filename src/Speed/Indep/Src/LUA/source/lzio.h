@@ -35,7 +35,7 @@ char *luaZ_openspace(lua_State *L, Mbuffer *buff, size_t n);
 #define luaZ_sizebuffer(buff) ((buff)->buffsize)
 #define luaZ_buffer(buff) ((buff)->buffer)
 
-#define luaZ_resizebuffer(L, buff, size) (luaM_reallocvector(L, (buff)->buffer, (buff)->buffsize, size, char), (buff)->buffsize = size)
+#define luaZ_resizebuffer(L, buff, size) (luaM_reallocvector(L, (buff)->buffer, (buff)->buffsize, size, char, LUAALLOC_CHAR), (buff)->buffsize = size)
 
 #define luaZ_freebuffer(L, buff) luaZ_resizebuffer(L, buff, 0)
 

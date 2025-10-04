@@ -29,4 +29,10 @@ extern "C" {
 #include "Speed/Indep/Src/Lua/source/lzio.c"
 
 #include "Speed/Indep/Src/Lua/source/lib/lauxlib.c"
+
+#include "Speed/Indep/Src/Lua/source/llex.c"
+
+#include "Speed/Indep/Src/Lua/source/lparser.c"
+
+#include "Speed/Indep/Src/Lua/source/lgc.c"
 }

@@ -394,7 +394,6 @@ StkId luaV_execute(lua_State *L) {
     const Instruction *pc;
 callentry: /* entry point when calling new functions */
     if (L->hookmask & LUA_MASKCALL) {
-        L->ci->u.l.pc = &pc;
         luaD_callhook(L, LUA_HOOKCALL, -1);
     }
 retentry: /* entry point when returning to old functions */

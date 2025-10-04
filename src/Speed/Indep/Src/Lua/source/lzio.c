@@ -70,7 +70,7 @@ char *luaZ_openspace(lua_State *L, Mbuffer *buff, size_t n) {
     if (n > buff->buffsize) {
         if (n < LUA_MINBUFFER)
             n = LUA_MINBUFFER;
-        luaM_reallocvector(L, buff->buffer, buff->buffsize, n, char);
+        luaM_reallocvector(L, buff->buffer, buff->buffsize, n, char, LUAALLOC_CHAR);
         buff->buffsize = n;
     }
     return buff->buffer;

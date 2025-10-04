@@ -12,8 +12,6 @@
 #define luaC_checkGC(L)                                                                                                                              \
     {                                                                                                                                                \
         lua_assert(!(L->ci->state & CI_CALLING));                                                                                                    \
-        if (G(L)->nblocks >= G(L)->GCthreshold)                                                                                                      \
-            luaC_collectgarbage(L);                                                                                                                  \
     }
 
 size_t luaC_separateudata(lua_State *L);

@@ -21,7 +21,7 @@
 #define sizeLclosure(n) (cast(int, sizeof(LClosure)) + cast(int, sizeof(TObject *) * ((n) - 1)))
 
 Closure *luaF_newCclosure(lua_State *L, int nelems) {
-    Closure *c = cast(Closure *, luaM_malloc(L, sizeCclosure(nelems)));
+    Closure *c = cast(Closure *, luaM_malloc(L, sizeCclosure(nelems), LUAALLOC_CLOSURE));
     luaC_link(L, valtogco(c), LUA_TFUNCTION);
     c->c.isC = 1;
     c->c.nupvalues = cast(lu_byte, nelems);
@@ -29,7 +29,7 @@ Closure *luaF_newCclosure(lua_State *L, int nelems) {
 }
 
 Closure *luaF_newLclosure(lua_State *L, int nelems, TObject *e) {
-    Closure *c = cast(Closure *, luaM_malloc(L, sizeLclosure(nelems)));
+    Closure *c = cast(Closure *, luaM_malloc(L, sizeLclosure(nelems), LUAALLOC_CLOSURE));
     luaC_link(L, valtogco(c), LUA_TFUNCTION);
     c->l.isC = 0;
     c->l.g = *e;
@@ -46,7 +46,7 @@ UpVal *luaF_findupval(lua_State *L, StkId level) {
             return p;
         pp = &p->next;
     }
-    v = luaM_new(L, UpVal); /* not found: create a new one */
+    v = luaM_new(L, UpVal, LUAALLOC_UPVAL); /* not found: create a new one */
     v->tt = LUA_TUPVAL;
     v->marked = 1; /* open upvalues should not be collected */
     v->v = level;  /* current value lives in the stack */
@@ -66,7 +66,7 @@ void luaF_close(lua_State *L, StkId level) {
 }
 
 Proto *luaF_newproto(lua_State *L) {
-    Proto *f = luaM_new(L, Proto);
+    Proto *f = luaM_new(L, Proto, LUAALLOC_PROTO);
     luaC_link(L, valtogco(f), LUA_TPROTO);
     f->k = NULL;
     f->sizek = 0;
@@ -90,18 +90,18 @@ Proto *luaF_newproto(lua_State *L) {
 }
 
 void luaF_freeproto(lua_State *L, Proto *f) {
-    luaM_freearray(L, f->code, f->sizecode, Instruction);
-    luaM_freearray(L, f->p, f->sizep, Proto *);
-    luaM_freearray(L, f->k, f->sizek, TObject);
-    luaM_freearray(L, f->lineinfo, f->sizelineinfo, int);
-    luaM_freearray(L, f->locvars, f->sizelocvars, struct LocVar);
-    luaM_freearray(L, f->upvalues, f->sizeupvalues, TString *);
-    luaM_freelem(L, f);
+    luaM_freearray(L, f->code, f->sizecode, Instruction, LUAALLOC_INSTRUCTION);
+    luaM_freearray(L, f->p, f->sizep, Proto *, LUAALLOC_PROTOPTR);
+    luaM_freearray(L, f->k, f->sizek, TObject, LUAALLOC_TOBJECT);
+    luaM_freearray(L, f->lineinfo, f->sizelineinfo, int, LUAALLOC_INT);
+    luaM_freearray(L, f->locvars, f->sizelocvars, struct LocVar, LUAALLOC_LOCVAR);
+    luaM_freearray(L, f->upvalues, f->sizeupvalues, TString *, LUAALLOC_TSTRINGPTR);
+    luaM_freelem(L, f, LUAALLOC_PROTOPTR);
 }
 
 void luaF_freeclosure(lua_State *L, Closure *c) {
     int size = (c->c.isC) ? sizeCclosure(c->c.nupvalues) : sizeLclosure(c->l.nupvalues);
-    luaM_free(L, c, size);
+    luaM_free(L, c, size, LUAALLOC_CLOSURE);
 }
 
 /*

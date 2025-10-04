@@ -16,22 +16,8 @@
 #include "lobject.h"
 #include "lstate.h"
 
-/*
-** definition for realloc function. It must assure that l_realloc(NULL,
-** 0, x) allocates a new block (ANSI C assures that). (`os' is the old
-** block size; some allocators may use that.)
-*/
-#ifndef l_realloc
-#define l_realloc(b, os, s) realloc(b, s)
-#endif
-
-/*
-** definition for free function. (`os' is the old block size; some
-** allocators may use that.)
-*/
-#ifndef l_free
-#define l_free(b, os) free(b)
-#endif
+static LuaReallocFunc sRealloc = NULL;
+static LuaFreeFunc sFree = NULL;
 
 #define MINSIZEARRAY 4
 
@@ -46,26 +32,32 @@ void *luaM_growaux(lua_State *L, void *block, int *size, int size_elems, int lim
         else
             luaG_runerror(L, errormsg);
     }
-    newblock = luaM_realloc(L, block, cast(lu_mem, *size) * cast(lu_mem, size_elems), cast(lu_mem, newsize) * cast(lu_mem, size_elems));
+    newblock =
+        luaM_realloc(L, block, cast(lu_mem, *size) * cast(lu_mem, size_elems), cast(lu_mem, newsize) * cast(lu_mem, size_elems), LUAALLOC_INVALID);
     *size = newsize; /* update only when everything else is OK */
     return newblock;
+}
+
+void luaM_setallocator(LuaReallocFunc reallocFunc, LuaFreeFunc freeFunc) {
+    sRealloc = reallocFunc;
+    sFree = freeFunc;
 }
 
 /*
 ** generic allocation routine.
 */
-void *luaM_realloc(lua_State *L, void *block, lu_mem oldsize, lu_mem size) {
+void *luaM_realloc(lua_State *L, void *block, lu_mem oldsize, lu_mem size, LuaAllocType type) {
     lua_assert((oldsize == 0) == (block == NULL));
     if (size == 0) {
         if (block != NULL) {
-            l_free(block, oldsize);
+            sFree(L, block, oldsize, type);
             block = NULL;
         } else
             return NULL; /* avoid `nblocks' computations when oldsize==size==0 */
     } else if (size >= MAX_SIZET)
         luaG_runerror(L, "memory allocation error: block too big");
     else {
-        block = l_realloc(block, oldsize, size);
+        block = sRealloc(L, block, oldsize, size, type);
         if (block == NULL) {
             if (L)
                 luaD_throw(L, LUA_ERRMEM);
