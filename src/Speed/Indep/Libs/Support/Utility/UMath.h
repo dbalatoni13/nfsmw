@@ -45,8 +45,24 @@ inline void Transpose(const Matrix4 &m, Matrix4 &r) {
     VU0_MATRIX4_transpose(m, r);
 }
 
+inline void Transpose(const UMath::Vector4 &q, UMath::Vector4 &r) {
+    VU0_qtranspose(q, r);
+}
+
 inline const Vector3 &ExtractAxis(const Matrix4 &m, unsigned int row) {
     return *reinterpret_cast<const Vector3 *>(&m[row]);
+}
+
+inline void ExtractXAxis(const UMath::Vector4 &q, Vector3 &r) {
+    VU0_ExtractXAxis3FromQuat(q, r);
+}
+
+inline void ExtractYAxis(const UMath::Vector4 &q, Vector3 &r) {
+    VU0_ExtractYAxis3FromQuat(q, r);
+}
+
+inline void ExtractZAxis(const UMath::Vector4 &q, Vector3 &r) {
+    VU0_ExtractZAxis3FromQuat(q, r);
 }
 
 inline void RotateTranslate(const Vector3 &a, const Matrix4 &m, Vector3 &r) {
@@ -67,6 +83,10 @@ inline void Mult(const Vector4 &a, const Vector4 &b, Vector4 &r) {
 
 inline void Mult(const Matrix4 &a, const Matrix4 &b, Matrix4 &r) {
     VU0_MATRIX4_mult(a, b, r);
+}
+
+inline void Unit(const UMath::Vector4 &a, Vector4 &r) {
+    VU0_v4unit(a, r);
 }
 
 inline void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m) {
@@ -93,12 +113,20 @@ inline void ScaleAdd(const Vector3 &a, const float s, const Vector3 &b, Vector3 
     VU0_v3scaleadd(a, s, b, r);
 }
 
+inline void ScaleAdd(const Vector4 &a, const float s, const Vector4 &b, Vector4 &r) {
+    VU0_v4scaleadd(a, s, b, r);
+}
+
 inline void Sub(const Vector3 &a, const Vector3 &b, Vector3 &r) {
     VU0_v3sub(a, b, r);
 }
 
 inline void SetYRot(Matrix4 &r, float a) {
     VU0_MATRIX4setyrot(r, a);
+}
+
+inline void Rotate(const Vector3 &a, const Vector4 &q, Vector3 &r) {
+    VU0_v3quatrotate(q, a, r);
 }
 
 inline void Rotate(const Vector3 &a, const Matrix4 &m, Vector3 &r) {

@@ -8,7 +8,8 @@
 namespace Sim {
 
 float GetTime();
+float GetTimeStep();
 
-};
+}; // namespace Sim
 
 #endif

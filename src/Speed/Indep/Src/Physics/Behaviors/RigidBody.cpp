@@ -1129,14 +1129,14 @@ void RigidBody::UpdateGrid(int &overlapx, int &overlapz) {
 }
 
 IRigidBody *RigidBody::Get(unsigned int index) {
-    if (index < sizeof(mMaps) / sizeof(IRigidBody *) / 2) {
+    if (index < RIGID_BODY_MAX) {
         return mMaps[index];
     }
     return nullptr;
 }
 
 unsigned int RigidBody::AssignSlot() {
-    for (int i = 0; i < sizeof(mMaps) / sizeof(IRigidBody *) / 2; ++i) {
+    for (std::size_t i = 0; i < RIGID_BODY_MAX; ++i) {
         if (mMaps[i] == nullptr) {
             return i;
         }

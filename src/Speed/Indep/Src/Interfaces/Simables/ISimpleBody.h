@@ -23,8 +23,21 @@ class ISimpleBody : public UTL::COM::IUnknown, public UTL::Collections::Listable
     virtual bool CanCollideWithSRB() const;
     virtual bool CanCollideWithRB() const;
     virtual bool CanHitTrigger() const;
-    // virtual const SimCollisionMap *GetCollisionMap() const;
-    // virtual SimCollisionMap *GetCollisionMap();
+    virtual const struct SimCollisionMap *GetCollisionMap() const;
+    virtual struct SimCollisionMap *GetCollisionMap();
+};
+
+// total size: 0x18
+class SimCollisionMap {
+  public:
+    void Clear() {
+        for (int i = 0; i < 3; ++i) {
+            fBitMap[i] = 0;
+        }
+    }
+
+  private:
+    unsigned long long fBitMap[3]; // offset 0x0, size 0x18
 };
 
 #endif

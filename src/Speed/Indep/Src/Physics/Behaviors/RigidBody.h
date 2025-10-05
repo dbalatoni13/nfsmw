@@ -19,6 +19,8 @@
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 
+#define RIGID_BODY_MAX (64)
+
 // total size: 0x38
 struct RBComplexParams : public Sim::Param {
     RBComplexParams(const RBComplexParams &_ctor_arg)
@@ -591,11 +593,11 @@ class RigidBody : public Behavior,
     };
 
   private:
-    static RigidBody *mMaps[128];
+    static RigidBody *mMaps[RIGID_BODY_MAX];
     static std::size_t mCount;
     static bool mOnSP;
 
-    ScratchPtr<RigidBody::Volatile> mData;                // offset 0x88, size 0x4
+    ScratchPtr<Volatile> mData;                           // offset 0x88, size 0x4
     BehaviorSpecsPtr<Attrib::Gen::rigidbodyspecs> mSpecs; // offset 0x8C, size 0x14
     UMath::Matrix4 mInvWorldTensor;                       // offset 0xA0, size 0x40
     UMath::Vector4 mGroundNormal;                         // offset 0xE0, size 0x10
@@ -610,6 +612,8 @@ class RigidBody : public Behavior,
     PrimList mPrimitives;                                 // offset 0x120, size 0x10
     MeshList mMeshes;                                     // offset 0x130, size 0x10
 };
+
+extern bTList<RigidBody> TheRigidBodies;
 
 class RBGrid : public SAP::Grid<RigidBody> {
     // total size: 0x6C
