@@ -61,13 +61,9 @@ class EngineRacer : protected VehicleBehavior,
     override virtual void OnUnPause();
 
     // ITransmission
-    override virtual bool Shift(GearID gear);
     override virtual float GetSpeedometer() const;
     override virtual float GetMaxSpeedometer() const;
     override virtual float GetShiftPoint(GearID from_gear, GearID to_gear) const;
-
-    // IRaceEngine
-    float GetPerfectLaunchRange(float &range);
 
     // Virtual methods
     virtual void DoECU();
@@ -79,10 +75,31 @@ class EngineRacer : protected VehicleBehavior,
     override virtual ShiftStatus OnGearChange(GearID gear);
 
     // Inline virtuals
+    // IRaceEngine
+    // Credits: Brawltendo
+    override virtual float GetPerfectLaunchRange(float &range) {
+        // perfect launch only applies to first gear
+        if (mGear != G_FIRST) {
+            range = 0.0f;
+            return 0.0f;
+        } else {
+            range = (mEngineInfo.RED_LINE() - mEngineInfo.IDLE()) * 0.25f;
+            float upper_limit = mEngineInfo.RED_LINE() + 500.0f;
+            return UMath::Min(mPeakTorqueRPM + range, upper_limit) - range;
+        }
+    }
+
+    // EngineRacer
     override virtual bool IsEngineBraking() {
         return mEngineBraking;
     }
 
+    // ITransmission
+    override virtual bool Shift(GearID gear) {
+        return DoGearChange(gear, false);
+    }
+
+    // EngineRacer
     override virtual bool IsShiftingGear() {
         return mGearShiftTimer > 0.0f;
     }
