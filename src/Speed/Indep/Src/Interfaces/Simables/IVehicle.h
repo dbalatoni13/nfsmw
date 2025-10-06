@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/AI/AIVehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
+#include "Speed/Indep/Src/Physics/PhysicsTunings.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 
 enum eVehicleList {
@@ -125,10 +126,6 @@ enum DriverClass {
     DRIVER_TRAFFIC = 1,
     DRIVER_HUMAN = 0,
 };
-
-namespace Physics {
-struct Tunings;
-}; // namespace Physics
 
 class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, VEHICLE_MAX> {
   public:

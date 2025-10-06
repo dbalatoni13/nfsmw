@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/rigidbodyspecs.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 #include "Speed/Indep/Src/Main/ScratchPtr.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/Bounds.h"
@@ -210,42 +211,49 @@ class RigidBody : public Behavior,
 
     // Static functions
     static Behavior *Construct(const BehaviorParams &params);
+    static void PushSP(void *workspace);
+    static void PopSP();
+    static IRigidBody *Get(unsigned int index);
+
+  private:
     static bool Separate(RigidBody &objA, bool objAImmobile, RigidBody &objB, bool objBImmobile, const UMath::Vector3 &normal, UMath::Vector3 &point,
                          float overlap, bool APenetratesB);
     static bool ResolveObjectCollision(RigidBody &objA, RigidBody &objB, const Primitive &colliderA, const Primitive &colliderB,
                                        const UMath::Vector3 &collisionNormal, const UMath::Vector3 &collisionPoint, float overlap, bool APenetratesB);
     static void OnObjectOverlap(RigidBody &objA, RigidBody &objB, float dT);
-    static void PushSP(void *workspace);
-    static void PopSP();
-    static IRigidBody *Get(unsigned int index);
     static unsigned int AssignSlot();
 
+  public:
     // Methods
     RigidBody(const BehaviorParams &bp, const RBComplexParams &params);
     void InitRigidBodySystem();
     void ShutdownRigidBodySystem();
     void Detach();
-    void CreateGeometries();
-
-    bool ResolveWorldOBBCollision(const UMath::Vector3 &cn, const UMath::Vector3 &cp, COLLISION_INFO *collisionInfo,
-                                  const Dynamics::Collision::Geometry *otherGeom, const UMath::Vector3 &linearVel, const SimSurface &rbsurface,
-                                  const SimSurface &obbsurface);
     void UpdateCollider();
+
+  protected:
+    void DoIntegration(const float dT);
+    bool AddCollisionSphere(float radius, const UMath::Vector3 &offset, const struct SimSurface &material, unsigned int flags,
+                            const struct UCrc32 &name);
+    bool AddCollisionBox(const UMath::Vector3 &dim, const UMath::Vector3 &offset, const SimSurface &material, const UMath::Vector4 &orient,
+                         unsigned int flags, const UCrc32 &name);
+
+  private:
     void DoWorldCollisions(const float dT);
     void DoBarrierCollision(float dT);
     void DoInstanceCollision(float dT);
     void DoInstanceCollision2d(float dT);
     void DoInstanceCollision3d(float dT);
     void DoObbCollision(float dT);
-    bool AddCollisionSphere(float radius, const UMath::Vector3 &offset, const struct SimSurface &material, unsigned int flags,
-                            const struct UCrc32 &name);
-    bool AddCollisionBox(const UMath::Vector3 &dim, const UMath::Vector3 &offset, const SimSurface &material, const UMath::Vector4 &orient,
-                         unsigned int flags, const UCrc32 &name);
-    void DoDrag();
-    void DoIntegration(const float dT);
     void ResolveGroundCollision(const CollisionPacket *bcp, const int numContacts);
     void UpdateGrid(int &overlapx, int &overlapz);
+    void DoDrag();
+    bool ResolveWorldOBBCollision(const UMath::Vector3 &cn, const UMath::Vector3 &cp, COLLISION_INFO *collisionInfo,
+                                  const Dynamics::Collision::Geometry *otherGeom, const UMath::Vector3 &linearVel, const SimSurface &rbsurface,
+                                  const SimSurface &obbsurface);
+    void CreateGeometries();
 
+  public:
     // Overrides
     override virtual ~RigidBody();
 

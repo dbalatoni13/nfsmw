@@ -11,7 +11,6 @@
 #include "WCollisionTri.h"
 #include "dolphin/types.h"
 
-
 class WCollisionMgr {
   public:
     // total size: 0x58

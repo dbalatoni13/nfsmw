@@ -41,7 +41,7 @@ class ISuspension : public UTL::COM::IUnknown {
     virtual UMath::Vector4 *GetWheelRoadNormal(unsigned int wheelIndex) const;
     virtual void *GetWheelRoadSurface(unsigned int wheelIndex) const;
     virtual UMath::Vector3 *GetWheelVelocity(unsigned int wheelIndex) const;
-    virtual unsigned int GetNumWheelsOnGround() const;
+    virtual int GetNumWheelsOnGround() const;
     virtual Radians GetWheelAngularVelocity(unsigned int wheelIndex) const;
     virtual void SetWheelAngularVelocity(unsigned int wheelIndex, float av);
     virtual float GetWheelSteer(unsigned int wheelIndex) const;

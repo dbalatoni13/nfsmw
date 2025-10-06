@@ -136,6 +136,10 @@ void SimpleRigidBody::ResolveTorque(const UMath::Vector3 &torque) {}
 // TODO
 unsigned int SimpleRigidBody::GetTriggerFlags() const {}
 
+void SimpleRigidBody::Update(const float dT, void *workspace) {
+    // TODO really ugly output
+}
+
 IRigidBody *SimpleRigidBody::Get(unsigned int index) {
     if (index < SIMPLE_RIGID_BODY_MAX) {
         return mMaps[index];

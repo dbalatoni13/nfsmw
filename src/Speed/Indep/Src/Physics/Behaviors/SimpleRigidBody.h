@@ -69,6 +69,7 @@ class SimpleRigidBody : public Behavior, public IRigidBody, public ISimpleBody, 
     void ApplyFriction();
     void DoIntegration(const float dT);
     void RecalcOrientMat(UMath::Matrix4 &resultMat4) const;
+    void Update(const float dT, void *workspace);
 
     // Virtual methods
     virtual void OnDebugDraw();

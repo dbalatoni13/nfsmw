@@ -162,6 +162,14 @@ class Moment {
     bool React(Moment &other, const struct Joint &joint, int nSteps);
     bool React(const struct Joint &joint, int nSteps);
 
+    const Inertia::Tensor &GetInertia() const {
+        return mInertiaP;
+    }
+
+    const UMath::Vector3 &GetCG() const {
+        return mCG;
+    }
+
     const UVector3 &GetLinearVelocity() const {
         return mLinearVelocity;
     }
@@ -217,6 +225,10 @@ class Moment {
 
     Friction::State GetFrictionState() const {
         return mFrictionState;
+    }
+
+    float GetElasticity() const {
+        return mElasticity;
     }
 
     void SetElasticity(float e) {

@@ -71,20 +71,20 @@ class Attribute {
     }
 
   public:
-    Attribute(const Attrib::Attribute &src);
+    Attribute(const Attribute &src);
     Attribute();
     ~Attribute();
-    const Attrib::Attribute &operator=(const Attrib::Attribute &rhs);
-    bool operator==(const Attrib::Attribute &rhs) const;
-    bool operator!=(const Attrib::Attribute &rhs) const;
+    const Attribute &operator=(const Attribute &rhs);
+    bool operator==(const Attribute &rhs) const;
+    bool operator!=(const Attribute &rhs) const;
     bool IsValid() const;
     bool IsInherited() const;
     bool IsMutable() const;
     bool IsLocatable();
     Key GetKey() const;
     unsigned int GetType() const;
-    const Attrib::Instance *GetInstance() const;
-    const Attrib::Collection *GetCollection() const;
+    const Instance *GetInstance() const;
+    const Collection *GetCollection() const;
     unsigned int GetSize() const;
     unsigned int GetLength() const;
     bool SetLength(unsigned int);
@@ -116,13 +116,17 @@ class Attribute {
   private:
     void *GetInternalPointer(unsigned int index) const;
 
-    Attribute(const Instance &instance, const Attrib::Collection *collection, Attrib::Node *node);
+    Attribute(const Instance &instance, const Collection *collection, Node *node);
 
     // total size: 0x10
     const Instance *mInstance;     // offset 0x0, size 0x4
     const Collection *mCollection; // offset 0x4, size 0x4
     struct Node *mInternal;        // offset 0x8, size 0x4
     void *mDataPointer;            // offset 0xC, size 0x4
+};
+
+namespace Gen {
+class GenericAccessor;
 };
 
 class Instance {
@@ -156,12 +160,16 @@ class Instance {
 
     void SetDefaultLayout(unsigned int bytes) {
         if (this->mLayoutPtr == nullptr) {
-            this->mLayoutPtr = const_cast<void *>(Attrib::DefaultDataArea(bytes));
+            this->mLayoutPtr = const_cast<void *>(DefaultDataArea(bytes));
         }
     }
 
     bool IsValid() const {
         return this->mCollection != nullptr;
+    }
+
+    const Gen::GenericAccessor *operator->() const {
+        return reinterpret_cast<const Gen::GenericAccessor *>(this);
     }
 
   private:
@@ -171,6 +179,18 @@ class Instance {
     unsigned int mMsgPort;
     unsigned short mFlags;
     unsigned short mLocks;
+};
+
+template <typename t> class TAttrib : public Attribute {
+  public:
+    void operator delete(void *ptr, std::size_t bytes) {
+        Free(ptr, bytes, nullptr);
+    }
+
+    TAttrib(const Attribute &src) : Attribute(src) {}
+    ~TAttrib() {}
+
+    bool &Get(unsigned int index) const;
 };
 
 } // namespace Attrib

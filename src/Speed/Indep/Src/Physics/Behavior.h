@@ -14,6 +14,7 @@ extern Attrib::StringKey BEHAVIOR_MECHANIC_ENGINE;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_INPUT;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_RIGIDBODY;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_DAMAGE;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_SUSPENSION;
 
 // total size: 0x10
 struct BehaviorParams {
@@ -65,7 +66,9 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
 
   protected:
     virtual void OnTaskSimulate(float dT);
-    virtual void OnBehaviorChange(const UCrc32 &mechanic);
+
+    virtual void OnBehaviorChange(const UCrc32 &mechanic) {}
+
     virtual void OnPause();
     virtual void OnUnPause();
 
