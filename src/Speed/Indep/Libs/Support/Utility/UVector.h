@@ -51,73 +51,30 @@ struct UVector3 : public UMath::Vector3 {
         return *this;
     }
 
-    // TODO some of these shouldn't be member functions
-    UVector3 &operator/=(const float scalar) {
+    // unused
+    void operator/=(const float scalar) {
         x /= scalar;
         y /= scalar;
         z /= scalar;
-        return *this;
     }
 
     void operator*=(float scalar) {
         UMath::Scale(*this, scalar, *this);
     }
 
-    UVector3 &operator+=(const UVector3 &v) {
-        x += v.x;
-        y += v.y;
-        z += v.z;
-        return *this;
+    void operator*=(UMath::Matrix4 &m) {
+        UMath::Vector3 r;
+        UMath::Rotate(*this, m, r);
+        *this = r;
     }
 
-    UVector3 &operator-=(const UVector3 &v) {
-        x -= v.x;
-        y -= v.y;
-        z -= v.z;
-        return *this;
+    void operator+=(const UMath::Vector3 &v) {
+        UMath::Add(*this, v, *this);
     }
 
-    UVector3 operator+(const float b) {
-        UVector3 v;
-        v.x = this->x + b;
-        v.y = this->y + b;
-        v.z = this->z + b;
-        return v;
+    void operator-=(const UMath::Vector3 &v) {
+        UMath::Sub(*this, v, *this);
     }
-
-    UVector3 operator-(const float b) {
-        UVector3 v;
-        v.x = this->x - b;
-        v.y = this->y - b;
-        v.z = this->z - b;
-        return v;
-    }
-
-    UVector3 operator/(const UVector3 &b) {
-        UVector3 v;
-        v.x = this->x / b.x;
-        v.y = this->y / b.y;
-        v.z = this->z / b.z;
-        return v;
-    }
-
-    UVector3 operator/(const float b) {
-        UVector3 v;
-        v.x = this->x / b;
-        v.y = this->y / b;
-        v.z = this->z / b;
-        return v;
-    }
-
-    UVector3 operator=(const float b) {
-        UVector3 v;
-        v.x = b;
-        v.y = b;
-        v.z = b;
-        return v;
-    }
-
-    // UVector3 &UVector3::operator=(const struct Vector4 &b);
 };
 
 inline UVector3 operator*(const UVector3 &v1, float scalar) {

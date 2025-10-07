@@ -10,6 +10,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 
+// total size: 0xC
 class ICollisionBody : public UTL::COM::IUnknown, public UTL::Collections::Listable<ICollisionBody, 160> {
   public:
     ICollisionBody(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}

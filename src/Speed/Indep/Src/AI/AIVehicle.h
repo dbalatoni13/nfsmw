@@ -18,11 +18,6 @@
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.hpp"
 
-enum TaskMode {
-    TASK_FRAME_VARIABLE = 1,
-    TASK_FRAME_FIXED = 0,
-};
-
 class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable, public Debugable {
     // total size: 0x754
     WRoadNav *mDriveToNav;                   // offset 0x70, size 0x4
@@ -166,7 +161,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
 
     virtual const int GetPriority() const {}
 
-    AIVehicle(const BehaviorParams &bp, float update_rate, float stagger, TaskMode taskmode);
+    AIVehicle(const BehaviorParams &bp, float update_rate, float stagger, Sim::TaskMode taskmode);
     ~AIVehicle();
 
     virtual void Reset();

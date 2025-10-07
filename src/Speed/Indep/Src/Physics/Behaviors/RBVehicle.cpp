@@ -1,17 +1,23 @@
 #include "RBVehicle.h"
 #include "RigidBody.h"
+#include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/collisionreactions.h"
 #include "Speed/Indep/Src/Generated/AttribSys/GenericAccessor.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRBVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
+#include "dolphin/types.h"
 
 Behavior *RBVehicle::Construct(const BehaviorParams &params) {
-    const RBComplexParams sp(params.fparams.Fetch<RBComplexParams>(UCrc32(0xa6b47fac)));
-    return new RBVehicle(params, sp);
+    const RBComplexParams rp(params.fparams.Fetch<RBComplexParams>(UCrc32(0xa6b47fac)));
+    return new RBVehicle(params, rp);
 }
+
+RBVehicle::RBVehicle(const BehaviorParams &bp, const RBComplexParams &params)
+    : RigidBody(bp, params), IRBVehicle(nullptr), mSpecs((ISimable *)nullptr, 0), mPlayerReactions(0U, 0, (UTL::COM::IUnknown *)nullptr) {}
 
 unsigned int RBVehicle::GetNumContactPoints() const {
     unsigned int numpoints = RigidBody::GetNumContactPoints();

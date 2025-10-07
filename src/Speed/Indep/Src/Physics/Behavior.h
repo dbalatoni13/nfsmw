@@ -62,7 +62,10 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
     }
 
     virtual void OnOwnerAttached(IAttachable *pOther);
-    virtual void OnOwnerDetached(IAttachable *pOther);
+
+    virtual void OnOwnerDetached(IAttachable *pOther) {
+        // TODO right place?
+    }
 
   protected:
     virtual void OnTaskSimulate(float dT);

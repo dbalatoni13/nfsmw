@@ -23,11 +23,11 @@ class IInput : public UTL::COM::IUnknown {
     virtual class InputControls &GetControls();
     virtual float GetControlHandBrake();
     virtual bool GetControlActionButton();
+    virtual void SetControlSteering(float steer);
     virtual void SetControlGas(float gas);
     virtual void SetControlBrake(float brake);
     virtual void SetControlNOS(bool nos_on);
     virtual void SetControlHandBrake(float hbrake);
-    virtual void SetControlSteering(float steer);
     virtual void SetControlActionButton(bool hAction);
     virtual void SetControlSteeringVertical(float steer);
     virtual void SetControlBanking(float bank);

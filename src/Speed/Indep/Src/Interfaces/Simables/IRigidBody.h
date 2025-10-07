@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/World/WCollider.h"
 
+// total size: 0xC
 class IRigidBody : public UTL::COM::IUnknown, public UTL::Collections::Listable<IRigidBody, 160> {
   public:
     IRigidBody(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}

@@ -161,7 +161,7 @@ class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet
     virtual bool IsLoading() const = 0;
     virtual float GetOffscreenTime() = 0;
     virtual float GetOnScreenTime() = 0;
-    virtual void SetVehicleOnGround(const UMath::Vector3 &resetPos, const UMath::Vector3 &initialVec) = 0;
+    virtual bool SetVehicleOnGround(const UMath::Vector3 &resetPos, const UMath::Vector3 &initialVec) = 0;
     virtual void ForceStopOn(char forceStopBits) = 0;
     virtual void ForceStopOff(char forceStopBits) = 0;
     virtual bool GetForceStop() = 0;

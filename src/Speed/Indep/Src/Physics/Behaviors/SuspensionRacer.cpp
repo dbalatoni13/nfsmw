@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsTunings.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
@@ -1196,8 +1197,6 @@ void SuspensionRacer::TuneWheelParams(Chassis::State &state) {
     DoDrifting(state);
 }
 
-float ENABLE_ROLL_STOPS_THRESHOLD = 0.2f;
-
 // Credits: Brawltendo
 // UNSOLVED
 void SuspensionRacer::DoWheelForces(Chassis::State &state) {
@@ -1312,7 +1311,7 @@ void SuspensionRacer::DoWheelForces(Chassis::State &state) {
             wheel.SetBottomOutTime(time);
         }
 
-        if (newCompression > 0.0f && upness > ENABLE_ROLL_STOPS_THRESHOLD) {
+        if (newCompression > 0.0f && upness > VehicleSystem::ENABLE_ROLL_STOPS_THRESHOLD) {
             ++wheelsOnGround;
             const float diff = (newCompression - wheel.GetCompression());
             float rise = diff / dT;

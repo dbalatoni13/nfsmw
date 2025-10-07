@@ -94,6 +94,10 @@ class IBoundable : public UTL::COM::IUnknown {
                                   CollisionGeometry::BoundFlags flags, bool persistant);
 };
 
+const Attrib::Collection *Lookup(UCrc32 object_name_hash);
+bool CreateJoint(IBoundable *ifemale, struct UCrc32 femalenode_name, IBoundable *imale, UCrc32 malenode_name, UMath::Vector3 *out_female,
+                 UMath::Vector3 *out_male, unsigned int joint_flags);
+
 }; // namespace CollisionGeometry
 
 #endif

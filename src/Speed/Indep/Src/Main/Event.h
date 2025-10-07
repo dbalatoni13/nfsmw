@@ -22,7 +22,7 @@ class Event {
     void operator delete(void *ptr);
 
     struct StaticData {
-        unsigned int fEventSize;
+        unsigned int fEventID;
     };
 
   private:
