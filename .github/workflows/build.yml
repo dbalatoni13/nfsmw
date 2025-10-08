@@ -6,7 +6,11 @@ on:
 
 jobs:
   build:
-    runs-on: windows-2022
+    # This is a *private* build container.
+    # See docs/github_actions.md for more information.
+    container: ghcr.io/dbalatoni13/nfs-gc-build:main
+
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -26,23 +30,13 @@ jobs:
 
     # Copy the original files to the workspace
     - name: Prepare
-      shell: pwsh
-      env:
-        BUILD_REPO_TAG: "v1.0"
-        BUILD_REPO_AUTHOR: dbalatoni13
-        BUILD_REPO_NAME: nfs-gc-build
-      run: |
-        curl -L -H "Authorization: Bearer ${{ secrets.ORIG_FILES_TOKEN }}" `
-          "https://api.github.com/repos/${env:BUILD_REPO_AUTHOR}/${env:BUILD_REPO_NAME}/zipball/${env:BUILD_REPO_TAG}" `
-          --output orig.zip
-        Expand-Archive -Path orig.zip -DestinationPath .
-        $folders = Get-ChildItem -Directory | Where-Object { $_.Name -like "${env:BUILD_REPO_AUTHOR}-${env:BUILD_REPO_NAME}*" }
-        $path = Join-Path $folders[0].Name "orig/${{ matrix.version }}"
-        Copy-Item -Path $path -Destination orig -Recurse -Force
+      run: cp -R /orig .
+
     # Build the project
     - name: Build
       run: |
-        python configure.py --map --version ${{ matrix.version }}
+        python configure.py --map --version ${{ matrix.version }} \
+            --binutils /binutils --compilers /compilers
         ninja all_source progress build/${{ matrix.version }}/report.json
 
     # Upload map files
