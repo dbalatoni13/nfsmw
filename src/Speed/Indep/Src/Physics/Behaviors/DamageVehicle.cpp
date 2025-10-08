@@ -101,7 +101,7 @@ void DamageVehicle::SetShockForce(float f) {
 }
 
 void DamageVehicle::SetInShock(float scale) {
-    g if (mSpecs.SHOCK_TIME() <= 0.0f || scale <= 0.2f) {
+    if (mSpecs.SHOCK_TIME() <= 0.0f || scale <= 0.2f) {
         return;
     }
     mShockTimer = UMath::Min(UMath::Max(mShockTimer, scale), 1.0f);
