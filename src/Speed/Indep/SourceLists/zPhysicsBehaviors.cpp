@@ -10,6 +10,8 @@
 
 #include "Speed/Indep/Src/Physics/Behaviors/Effects.cpp"
 
+#include "Speed/Indep/Src/Physics/Behaviors/DamageVehicle.cpp"
+
 #include "Speed/Indep/Src/Physics/Behaviors/Chassis.cpp"
 
 #include "Speed/Indep/Src/Physics/Behaviors/SuspensionRacer.cpp"

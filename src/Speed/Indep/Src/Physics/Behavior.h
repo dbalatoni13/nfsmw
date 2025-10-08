@@ -13,6 +13,7 @@ extern Attrib::StringKey BEHAVIOR_MECHANIC_AI;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_ENGINE;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_INPUT;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_RIGIDBODY;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_DRAW;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_DAMAGE;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_SUSPENSION;
 

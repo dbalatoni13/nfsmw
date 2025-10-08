@@ -7,8 +7,29 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
+#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+
+// TODO move?
+struct EventDynamicData {
+    // total size: 0x64
+    UMath::Vector4 fPosition;        // offset 0x0, size 0x10
+    UMath::Vector4 fVector;          // offset 0x10, size 0x10
+    UMath::Vector4 fVelocity;        // offset 0x20, size 0x10
+    UMath::Vector4 fAngularVelocity; // offset 0x30, size 0x10
+    struct WTrigger *fTrigger;       // offset 0x40, size 0x4
+    int fTriggerStimulus;            // offset 0x44, size 0x4
+    unsigned int fhSimable;          // offset 0x48, size 0x4
+    unsigned int fhActivity;         // offset 0x4C, size 0x4
+    unsigned int fWorldID;           // offset 0x50, size 0x4
+    unsigned int fhModel;            // offset 0x54, size 0x4
+    unsigned int fEventSeqEngine;    // offset 0x58, size 0x4
+    unsigned int fEventSeqSystem;    // offset 0x5C, size 0x4
+    unsigned int fEventSeqState;     // offset 0x60, size 0x4
+};
 
 namespace EventSequencer {
+
+class System;
 
 class IContext : public UTL::COM::IUnknown {
   public:
@@ -19,6 +40,8 @@ class IContext : public UTL::COM::IUnknown {
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    virtual bool SetDynamicData(const System *system, EventDynamicData *data);
 };
 
 struct HENGINE__ {
@@ -27,8 +50,6 @@ struct HENGINE__ {
 };
 
 typedef HENGINE__ *HENGINE;
-
-class System;
 
 enum QueueMode {
     QUEUE_DISABLE = 0,

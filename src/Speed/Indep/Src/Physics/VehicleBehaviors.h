@@ -7,6 +7,7 @@
 
 #include "Behavior.h"
 
+// total size: 0x50
 class VehicleBehavior : public Behavior {
   public:
     virtual ~VehicleBehavior();
