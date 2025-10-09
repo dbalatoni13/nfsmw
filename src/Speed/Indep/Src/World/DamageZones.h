@@ -24,8 +24,12 @@ enum ID {
 // total size: 0x4
 struct Info {
     void Set(ID id, unsigned int level) {
-        // Value &= ~(7 << ((id * 3) & 0x3f)) | 6 << ((id * 3) & 0x3f);
-        Value &= ~(7 << (id * 3)) | (level & 7) << (id * 3);
+        Value &= ~(7 << (id * 3));
+        Value |= (level & 7) << (id * 3);
+    }
+
+    void Clear() {
+        Value = 0;
     }
 
     unsigned int Value; // offset 0x0, size 0x4

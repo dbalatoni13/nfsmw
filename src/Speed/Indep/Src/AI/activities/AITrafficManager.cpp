@@ -40,7 +40,7 @@ Sim::IActivity *AITrafficManager::Construct(Sim::Param params) {
 }
 
 eVehicleCacheResult AITrafficManager::OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const {
-    if (!this->IsAttached(removethis)) {
+    if (!IsAttached(removethis)) {
         return VCR_DONTCARE;
     }
 
@@ -78,7 +78,7 @@ void AITrafficManager::OnRemovedVehicleCache(IVehicle *ivehicle) {}
 void AITrafficManager::OnAttached(IAttachable *pOther) {
     IVehicle *ivehicle;
     if (pOther->QueryInterface(&ivehicle)) {
-        this->mVehicles.push_back(ivehicle);
+        mVehicles.push_back(ivehicle);
     }
     Sim::Activity::OnAttached(pOther);
 }
@@ -86,9 +86,9 @@ void AITrafficManager::OnAttached(IAttachable *pOther) {
 void AITrafficManager::OnDetached(IAttachable *pOther) {
     IVehicle *ivehicle;
     if (pOther->QueryInterface(&ivehicle)) {
-        std::list<IVehicle *>::iterator iter = std::find(this->mVehicles.begin(), this->mVehicles.end(), ivehicle);
-        if (iter != this->mVehicles.end()) {
-            this->mVehicles.erase(iter);
+        std::list<IVehicle *>::iterator iter = std::find(mVehicles.begin(), mVehicles.end(), ivehicle);
+        if (iter != mVehicles.end()) {
+            mVehicles.erase(iter);
         }
     }
     Sim::Activity::OnDetached(pOther);
@@ -103,9 +103,9 @@ struct TypeCounter {
     TypeCounter(Attrib::Key key, bool active_only) : Key(key), ActiveOnly(active_only), Count(0) {}
 
     void operator()(IVehicle *vehicle) {
-        if (!this->ActiveOnly || vehicle->IsActive()) {
-            if (vehicle->GetVehicleAttributes().GetCollection() == this->Key) {
-                this->Count++;
+        if (!ActiveOnly || vehicle->IsActive()) {
+            if (vehicle->GetVehicleAttributes().GetCollection() == Key) {
+                Count++;
             }
         }
     }
@@ -155,7 +155,7 @@ IVehicle *AITrafficManager::GetAvailableTrafficVehicle(Attrib::Key key, bool mak
     ISimable *isimable = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance(UCrc32("PVehicle"), Sim::Param(params));
     if (isimable) {
         // TODO hmm?
-        this->Detach(isimable);
+        Detach(isimable);
         IVehicle *ivehicle;
         if (isimable->QueryInterface(&ivehicle)) {
             ivehicle->GetAIVehiclePtr()->UnSpawn();
@@ -172,11 +172,11 @@ bool AITrafficManager::SpawnTraffic() {
         return false;
     }
 
-    if (!this->NeedsTraffic()) {
+    if (!NeedsTraffic()) {
         return false;
     }
 
-    if (!this->FindSpawnPoint(mNav)) {
+    if (!FindSpawnPoint(mNav)) {
         return false;
     }
 
@@ -239,10 +239,10 @@ bool AITrafficManager::NeedsTraffic() const {
 }
 
 void AITrafficManager::UpdateDebug() {
-    while (!this->mActionQ->IsEmpty()) {
-        ActionRef aRef = this->mActionQ->GetAction();
+    while (!mActionQ->IsEmpty()) {
+        ActionRef aRef = mActionQ->GetAction();
         aRef.ID();
-        this->mActionQ->PopAction();
+        mActionQ->PopAction();
     }
 }
 
@@ -256,16 +256,16 @@ static bool RandomSortTC(ITrafficCenter *c0, ITrafficCenter *c1) {
 }
 
 void AITrafficManager::SetTrafficPattern(unsigned int pattern_key) {
-    if (pattern_key == this->mPattern.GetCollection()) {
+    if (pattern_key == mPattern.GetCollection()) {
         return;
     }
-    this->mPattern = trafficpattern(Attrib::FindCollection(trafficpattern::ClassKey(), pattern_key), 0, nullptr);
-    bMemSet(this->mPatternTimer, 0, sizeof(this->mPatternTimer));
+    mPattern = trafficpattern(Attrib::FindCollection(trafficpattern::ClassKey(), pattern_key), 0, nullptr);
+    bMemSet(mPatternTimer, 0, sizeof(mPatternTimer));
 
-    unsigned int num_types = this->mPattern.Num_Vehicles();
+    unsigned int num_types = mPattern.Num_Vehicles();
     for (unsigned int i = 0; i < num_types && i < 10; i++) {
-        const TrafficPatternRecord &record = this->mPattern.Vehicles(i);
-        this->mPatternTimer[i] = record.Rate * bRandom(1.0f);
+        const TrafficPatternRecord &record = mPattern.Vehicles(i);
+        mPatternTimer[i] = record.Rate * bRandom(1.0f);
     }
 }
 
@@ -338,11 +338,11 @@ bool AITrafficManager::FindSpawnPoint(WRoadNav &nav) const {
         }
 
         nav.InitAtPoint(spawnpoint, direction, false, 1.0f);
-        if (!nav.IsValid() || !nav.CanTrafficSpawn() || !this->CheckRace(nav)) {
+        if (!nav.IsValid() || !nav.CanTrafficSpawn() || !CheckRace(nav)) {
             continue;
         }
         UMath::Vector3 nav_point = nav.GetPosition();
-        if (!this->FindCollisions(nav_point)) {
+        if (!FindCollisions(nav_point)) {
             return true;
         }
     }
@@ -449,8 +449,8 @@ void AITrafficManager::FlushAllTraffic(bool release) {
 
 bool AITrafficManager::OnTask(HSIMTASK htask, float dT) {
     ProfileNode profile_node("AITrafficManager::OnTask", 0);
-    if (htask == this->mTask) {
-        this->Update(dT);
+    if (htask == mTask) {
+        Update(dT);
         return true;
     }
     return false;

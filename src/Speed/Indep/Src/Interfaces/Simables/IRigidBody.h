@@ -14,13 +14,13 @@
 // total size: 0xC
 class IRigidBody : public UTL::COM::IUnknown, public UTL::Collections::Listable<IRigidBody, 160> {
   public:
-    IRigidBody(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IRigidBody() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IRigidBody(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IRigidBody() {}
 
     virtual ISimable *GetOwner() const = 0;
     virtual bool IsSimple() const = 0;

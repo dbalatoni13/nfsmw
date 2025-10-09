@@ -38,7 +38,7 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
         }
     }
 
-    Behavior(const BehaviorParams &params, unsigned int num_interfaces) : Sim::Object(num_interfaces) {}
+    Behavior(const BehaviorParams &params, unsigned int num_interfaces);
 
     const UCrc32 &GetMechanic() {
         return mMechanic;

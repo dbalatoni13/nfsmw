@@ -13,13 +13,13 @@
 // total size: 0xC
 class ICollisionBody : public UTL::COM::IUnknown, public UTL::Collections::Listable<ICollisionBody, 160> {
   public:
-    ICollisionBody(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~ICollisionBody() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    ICollisionBody(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~ICollisionBody() {}
 
   public:
     virtual const UMath::Vector3 &GetPosition() const = 0;

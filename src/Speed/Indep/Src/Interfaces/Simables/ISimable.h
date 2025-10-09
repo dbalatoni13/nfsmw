@@ -40,13 +40,13 @@ class ISimable : public UTL::COM::IUnknown,
                  public UTL::Collections::Instanceable<HSIMABLE, ISimable, 160>,
                  public UTL::COM::Factory<Sim::Param, ISimable, UCrc32> {
   public:
-    ISimable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~ISimable() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    ISimable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~ISimable() {}
 
     virtual SimableType GetSimableType() const = 0;
     virtual void Kill() = 0;

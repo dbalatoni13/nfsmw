@@ -1,8 +1,32 @@
 #include "SimpleRigidBody.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISimpleBody.h"
 #include "Speed/Indep/Src/Main/ScratchPtr.h"
+#include "Speed/Indep/Src/Physics/Behavior.h"
+#include "Speed/Indep/Src/Physics/PhysicsObject.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+
+SimpleRigidBody::SimpleRigidBody(const BehaviorParams &bp, const RBSimpleParams &params)
+    : Behavior(bp, 0), IRigidBody(bp.fowner), ISimpleBody(bp.fowner) {
+    TheSimpleBodies.AddTail(this);
+    // TODO
+    // MakeDebugable(eDebugableClass);
+
+    mData->index = AssignSlot();
+    mData->position = params.finitPos;
+    mData->linearVel = params.finitVel;
+    mData->angularVel = params.finitAngVel;
+    mData->radius = params.finitRadius;
+    mData->mass = params.finitMass;
+    mData->flags = 0;
+
+    mCollisionMap[mData->index].Clear();
+    mMaps[mData->index] = this;
+    mCount++;
+    UMath::Matrix4ToQuaternion(params.finitMat, mData->orientation);
+}
 
 SimpleRigidBody::~SimpleRigidBody() {
     TheSimpleBodies.Remove(this);

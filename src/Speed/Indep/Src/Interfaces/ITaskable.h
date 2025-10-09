@@ -25,13 +25,13 @@ enum TaskMode {
 
 struct ITaskable : public UTL::COM::IUnknown {
   public:
-    ITaskable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~ITaskable() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    ITaskable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~ITaskable() {}
 
     virtual bool OnTask(HSIMTASK htask, float dT) {}
 };

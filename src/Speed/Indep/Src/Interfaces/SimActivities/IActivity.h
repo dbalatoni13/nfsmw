@@ -24,13 +24,13 @@ namespace Sim {
 struct IActivity : public UTL::COM::IUnknown,
                    public UTL::COM::Factory<Param, IActivity, UCrc32>,
                    public UTL::Collections::Instanceable<HACTIVITY, IActivity, 40> {
-    IActivity(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IActivity() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IActivity(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IActivity() {}
 };
 
 }; // namespace Sim

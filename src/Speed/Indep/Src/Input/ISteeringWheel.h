@@ -16,13 +16,13 @@ class ISteeringWheel : public UTL::COM::IUnknown {
         kWiiRemote = 3,
     };
 
-    ISteeringWheel(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~ISteeringWheel() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    ISteeringWheel(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~ISteeringWheel() {}
 
     virtual void UpdateForces(struct IPlayer *player);
     virtual void ReadInput(float *inputBuffer);

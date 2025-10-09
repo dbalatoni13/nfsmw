@@ -25,13 +25,13 @@ class IModel : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<
     // total size: 0x4
     struct Enumerator {};
 
-    IModel(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IModel() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IModel(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IModel() {}
 
     virtual void OnProcessFrame(float dT);
     virtual UCrc32 GetPartName() const;

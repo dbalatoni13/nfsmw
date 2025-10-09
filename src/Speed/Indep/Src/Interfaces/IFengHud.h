@@ -11,13 +11,13 @@
 
 class IHud : public UTL::COM::IUnknown, public UTL::Collections::Listable<IHud, 2> {
   public:
-    IHud(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IHud() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IHud(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IHud() {}
 
     virtual void Update(IPlayer *player, float dT);
     virtual void Release();

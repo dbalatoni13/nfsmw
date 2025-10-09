@@ -11,13 +11,13 @@
 
 class IDamageable : public UTL::COM::IUnknown {
   public:
-    IDamageable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IDamageable() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IDamageable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IDamageable() {}
 
     virtual void SetInShock(float scale);
     virtual void SetShockForce(float f);
@@ -31,13 +31,13 @@ class IDamageable : public UTL::COM::IUnknown {
 
 class IDamageableVehicle : public UTL::COM::IUnknown {
   public:
-    IDamageableVehicle(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IDamageableVehicle() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IDamageableVehicle(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IDamageableVehicle() {}
 
     virtual bool IsLightDamaged(VehicleFX::ID idx) const;
     virtual void DamageLight(VehicleFX::ID idx, bool b);

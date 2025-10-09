@@ -12,13 +12,13 @@
 
 class IRBVehicle : public UTL::COM::IUnknown {
   public:
-    IRBVehicle(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IRBVehicle() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IRBVehicle(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IRBVehicle() {}
 
     virtual void SetCollisionMass(float mass);
     virtual void SetCollisionCOG(const UMath::Vector3 &cog);

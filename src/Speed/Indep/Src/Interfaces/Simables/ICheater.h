@@ -10,13 +10,13 @@
 // Credits: Brawltendo
 class ICheater : public UTL::COM::IUnknown {
   public:
-    ICheater(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~ICheater() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    ICheater(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~ICheater() {}
 
   public:
     virtual float GetCatchupCheat();

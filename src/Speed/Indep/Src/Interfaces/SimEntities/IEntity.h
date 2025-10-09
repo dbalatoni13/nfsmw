@@ -22,13 +22,13 @@ class IEntity : public UTL::COM::IUnknown,
                 public UTL::Collections::ListableSet<Sim::IEntity, 8, eEntityList, ENTITY_MAX>,
                 public UTL::COM::Factory<Sim::Param, Sim::IEntity, UCrc32> {
   public:
-    IEntity(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IEntity() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IEntity(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IEntity() {}
 };
 
 }; // namespace Sim

@@ -22,11 +22,11 @@ struct Packet;
 
 struct IServiceable : public UTL::COM::IUnknown {
   public:
-    IServiceable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IServiceable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
     virtual bool OnService(HSIMSERVICE hCon, Sim::Packet *pkt);

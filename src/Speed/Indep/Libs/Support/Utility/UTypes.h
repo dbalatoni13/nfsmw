@@ -21,8 +21,6 @@ struct Vector2 {
     }
 };
 
-const Vector2 Vector2::kZero = Vector2();
-
 struct Vector3 {
     // total size: 0xC
     float x; // offset 0x0, size 0x4
@@ -43,8 +41,6 @@ struct Vector3 {
         return (&x)[index];
     }
 };
-
-const Vector3 Vector3::kZero = {};
 
 struct Vector4 {
     // total size: 0x10
@@ -68,9 +64,6 @@ struct Vector4 {
         return (&x)[index];
     }
 };
-
-const Vector4 Vector4::kZero = {};
-const Vector4 Vector4::kIdentity = {0.0f, 0.0f, 0.0f, 1.f};
 
 struct Matrix3 {
     Vector3 v0, v1, v2;
@@ -113,9 +106,6 @@ struct Matrix4 {
         return (&v0)[index];
     }
 };
-
-const Matrix4 Matrix4::kZero = {};
-const Matrix4 Matrix4::kIdentity = {{1.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.f}};
 
 inline Vector3 &Vector4To3(Vector4 &c4) {
     return *reinterpret_cast<Vector3 *>(&c4);

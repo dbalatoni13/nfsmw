@@ -95,7 +95,7 @@ class RBVehicle : public RigidBody, public IRBVehicle {
     ISuspension *mSuspension;                             // offset 0x14C, size 0x4
     BehaviorSpecsPtr<Attrib::Gen::rigidbodyspecs> mSpecs; // offset 0x150, size 0x14
     float mDeadOnWheels;                                  // offset 0x164, size 0x4
-    Attrib::Collection *mGeoms;                           // offset 0x168, size 0x4
+    CollisionGeometry::Collection *mGeoms;                // offset 0x168, size 0x4
     unsigned int mFrame;                                  // offset 0x16C, size 0x4
     UMath::Vector3 mCollisionCOG;                         // offset 0x170, size 0xC
     float mCollisionMass;                                 // offset 0x17C, size 0x4

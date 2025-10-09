@@ -169,6 +169,8 @@ void RBTractor::PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector
     }
 }
 
+// RBTractor::RBTractor(const BehaviorParams &bp, const RBComplexParams &params) {}
+
 bool RBTractor::Pose() {
     if (!mTrailer || !mHitched) {
         return false;

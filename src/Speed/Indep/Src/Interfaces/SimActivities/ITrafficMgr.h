@@ -5,19 +5,17 @@
 #pragma once
 #endif
 
-#include "types.h"
-
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
 
 class ITrafficMgr : public UTL::COM::IUnknown, public UTL::Collections::Singleton<ITrafficMgr> {
-    ITrafficMgr(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    // virtual ~ITrafficMgr() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    ITrafficMgr(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~ITrafficMgr() {}
 };
 
 #endif

@@ -10,13 +10,13 @@
 // Credits: Brawltendo
 class IInput : public UTL::COM::IUnknown {
   public:
-    IInput(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IInput() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IInput(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IInput() {}
 
   public:
     virtual void ClearInput();

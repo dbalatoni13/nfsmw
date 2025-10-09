@@ -11,16 +11,16 @@
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 // Credit: Brawltendo
+// total size: 0x8
 class ISuspension : public UTL::COM::IUnknown {
-    // total size: 0x8
   public:
-    ISuspension(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~ISuspension() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    ISuspension(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~ISuspension() {}
 
   public:
     virtual float GetWheelTraction(unsigned int wheelIndex) const;

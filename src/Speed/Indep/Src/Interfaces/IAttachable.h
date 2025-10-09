@@ -16,13 +16,13 @@ struct _type_IAttachableList {
 };
 
 struct IAttachable : public UTL::COM::IUnknown {
-    IAttachable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IAttachable();
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IAttachable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IAttachable();
 
     virtual bool Attach(IUnknown *pOther);
 

@@ -11,13 +11,13 @@
 // Credit: Brawltendo
 class ITransmission : public UTL::COM::IUnknown {
   public:
-    ITransmission(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~ITransmission() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    ITransmission(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~ITransmission() {}
 
   public:
     virtual GearID GetGear() const;
@@ -35,13 +35,13 @@ class ITransmission : public UTL::COM::IUnknown {
 
 class IDragTransmission : public UTL::COM::IUnknown {
   public:
-    IDragTransmission(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IDragTransmission() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IDragTransmission(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IDragTransmission() {}
 
   public:
 };

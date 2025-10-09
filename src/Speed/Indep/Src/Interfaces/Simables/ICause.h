@@ -19,13 +19,13 @@ struct ISimable;
 
 class ICause : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<HCAUSE, ICause, 10> {
   public:
-    ICause(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~ICause() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    ICause(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~ICause() {}
 
     // virtual void OnCausedCollision(const COLLISION_INFO &cinfo, ISimable *from, ISimable *to);
 

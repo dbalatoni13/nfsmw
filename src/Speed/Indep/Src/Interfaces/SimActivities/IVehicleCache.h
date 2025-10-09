@@ -15,18 +15,17 @@ enum eVehicleCacheResult {
 };
 
 class IVehicleCache : public UTL::COM::IUnknown, public UTL::Collections::Listable<IVehicleCache, 18> {
-    // IVehicleCache() {}
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+    IVehicleCache(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   protected:
     virtual ~IVehicleCache() {}
 
   public:
-    IVehicleCache(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
     virtual void OnRemovedVehicleCache(IVehicle *ivehicle);
     virtual eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const;
 

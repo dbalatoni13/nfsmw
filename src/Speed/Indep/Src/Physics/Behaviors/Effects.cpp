@@ -7,6 +7,10 @@
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
 
+Effects::Effects(const struct BehaviorParams &bp) : Behavior(bp, 0) {
+    // TODO
+}
+
 Effects::~Effects() {
     Sim::Collision::RemoveListener(this);
     mScrape.Stop();

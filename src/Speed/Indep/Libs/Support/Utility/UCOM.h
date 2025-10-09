@@ -62,9 +62,9 @@ class Object {
     ~Object() {}
 };
 
+// total size: 0x8
 class IUnknown {
   public:
-    // total size: 0x8
     Object *_mCOMObject; // offset 0x0, size 0x4
 
     template <typename T> bool QueryInterface(T **out) {

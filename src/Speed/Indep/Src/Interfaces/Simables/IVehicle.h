@@ -129,11 +129,11 @@ enum DriverClass {
 
 class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, VEHICLE_MAX> {
   public:
-    IVehicle(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IVehicle(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
     virtual ~IVehicle() {}
     virtual const ISimable *GetSimable() const = 0;

@@ -11,13 +11,13 @@
 // Credits: Brawltendo
 class IInductable : public UTL::COM::IUnknown {
   public:
-    IInductable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IInductable() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IInductable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IInductable() {}
 
   public:
     virtual Physics::Info::eInductionType InductionType();

@@ -205,6 +205,7 @@ template <typename T> class AttributeStructPtr : public T {
         if (!T::IsValid()) {
             T::Change(0xeec2271a);
         }
+        T::IsValid();
     }
 
     ~AttributeStructPtr() {}

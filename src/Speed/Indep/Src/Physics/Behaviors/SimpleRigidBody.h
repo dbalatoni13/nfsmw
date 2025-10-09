@@ -64,7 +64,7 @@ class SimpleRigidBody : public Behavior, public IRigidBody, public ISimpleBody, 
     static unsigned int AssignSlot();
 
     // Methods
-    SimpleRigidBody(const BehaviorParams &bp /* r23 */, const RBSimpleParams &params);
+    SimpleRigidBody(const BehaviorParams &bp, const RBSimpleParams &params);
     float GetScalarVelocity() const;
     void ApplyFriction();
     void DoIntegration(const float dT);

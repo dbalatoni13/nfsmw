@@ -1,7 +1,6 @@
 #ifndef PHYSICS_BEHAVIORS_DAMAGEVEHICLE_H
 #define PHYSICS_BEHAVIORS_DAMAGEVEHICLE_H
 
-#include "Speed/Indep/Src/Sim/Collision.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -13,6 +12,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
+#include "Speed/Indep/Src/Sim/Collision.h"
 
 struct DamageParams : public Sim::Param {
     DamageParams(const DamageParams &_ctor_arg) : Sim::Param(_ctor_arg) {}
@@ -34,7 +34,7 @@ class DamageVehicle : public VehicleBehavior,
   public:
     static Behavior *Construct(const BehaviorParams &params);
 
-    DamageVehicle(const BehaviorParams &bp, const DamageParams &sp);
+    DamageVehicle(const BehaviorParams &bp, const DamageParams &dp);
     void ResetParts();
     const DamageScaleRecord &GetDamageRecord(DamageZone::ID zone) const;
 
@@ -57,6 +57,7 @@ class DamageVehicle : public VehicleBehavior,
     override virtual void Destroy();
     override virtual void SetShockForce(float f);
     override virtual void SetInShock(float scale);
+    override virtual void ResetDamage();
 
     // Virtual methods
     virtual void OnImpact(const UMath::Vector3 &arm, const UMath::Vector3 &normal, float force, float speed, const SimSurface &mysurface,

@@ -11,13 +11,13 @@
 // Credit: Brawltendo
 class ITiptronic : public UTL::COM::IUnknown {
   public:
-    ITiptronic(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~ITiptronic() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    ITiptronic(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~ITiptronic() {}
 
   public:
     virtual bool SportShift(GearID gear) {}

@@ -11,13 +11,13 @@
 
 class IBody : public UTL::COM::IUnknown {
   public:
-    IBody(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IBody() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IBody(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IBody() {}
 
     virtual void GetTransform(UMath::Matrix4 &) const;
     virtual void GetLinearVelocity(UMath::Vector3 &) const;

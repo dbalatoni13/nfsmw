@@ -90,6 +90,7 @@ void RigidBody::Primitive::Prepare(const Volatile &data) {
     UMath::Add(mPrevPosition, data.position, mPrevPosition);
 }
 
+// UNSOLVED
 bool RigidBody::Primitive::SetCollision(const Volatile &data, Dynamics::Collision::Geometry &obb) const {
     UMath::Vector3 position;
     UMath::Vector3 dP;

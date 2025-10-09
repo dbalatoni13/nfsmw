@@ -1,6 +1,10 @@
 #include "DamageVehicle.h"
 #include "Speed/Indep/Src/Generated/Events/EVehicleDestroyed.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IEngineDamage.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/Damagezones.h"
 
 Behavior *DamageVehicle::Construct(const BehaviorParams &params) {
@@ -89,6 +93,32 @@ void DamageVehicle::Destroy() {
         }
         mDamageTotal = 1.0f;
         new EVehicleDestroyed(GetOwner()->GetInstanceHandle());
+    }
+}
+
+void DamageVehicle::ResetDamage() {
+    ResetParts();
+    mLightDamage = 0;
+    mShockTimer = 0.0f;
+    mZoneDamage.Clear();
+    mDamageTotal = 0.0f;
+
+    EventSequencer::IEngine *es = GetOwner()->GetEventSequencer();
+    if (es) {
+        // RESET_DAMAGE
+        es->ProcessStimulus(0x98c52567, Sim::GetTime(), this, EventSequencer::QUEUE_ALLOW);
+    }
+    IEngineDamage *ienginedamage;
+    if (GetOwner()->QueryInterface(&ienginedamage)) {
+        ienginedamage->Repair();
+    }
+    IArticulatedVehicle *iarticulation;
+    if (GetOwner()->QueryInterface(&iarticulation)) {
+        IVehicle *itrailer = iarticulation->GetTrailer();
+        IDamageable *idamage;
+        if (itrailer && itrailer->QueryInterface(&idamage)) {
+            idamage->ResetDamage();
+        }
     }
 }
 

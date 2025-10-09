@@ -10,20 +10,20 @@
 
 class IRenderable : public UTL::COM::IUnknown {
   public:
-    IRenderable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IRenderable() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
 
-    virtual bool InView() const;
-    virtual bool IsRenderable() const;
-    virtual HMODEL GetModelHandle() const;
-    virtual const IModel *GetModel() const;
-    virtual IModel *GetModel();
-    virtual IModel *DistanecToView();
+    IRenderable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IRenderable() {}
+
+    virtual bool InView() const = 0;
+    virtual bool IsRenderable() const = 0;
+    virtual HMODEL GetModelHandle() const = 0;
+    virtual const IModel *GetModel() const = 0;
+    virtual IModel *GetModel() = 0;
+    virtual IModel *DistanceToView() = 0;
 };
 
 #endif

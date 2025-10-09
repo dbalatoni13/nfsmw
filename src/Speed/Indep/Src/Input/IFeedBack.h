@@ -11,13 +11,13 @@
 
 class IFeedback : public UTL::COM::IUnknown {
   public:
-    IFeedback(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IFeedback() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IFeedback(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IFeedback() {}
 
     virtual void PauseEffects();
     virtual void ResumeEffects();

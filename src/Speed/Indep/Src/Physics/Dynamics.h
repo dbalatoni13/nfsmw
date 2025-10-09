@@ -40,13 +40,13 @@ void Release(IEntity *rb0);
 
 class IDynamicsEntity : public UTL::COM::IUnknown, public Dynamics::IEntity {
   public:
-    IDynamicsEntity(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IDynamicsEntity() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IDynamicsEntity(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IDynamicsEntity() {}
 };
 
 #endif

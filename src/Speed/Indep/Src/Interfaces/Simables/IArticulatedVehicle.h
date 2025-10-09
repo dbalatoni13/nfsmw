@@ -10,11 +10,11 @@
 
 class IArticulatedVehicle : public UTL::COM::IUnknown {
   public:
-    IArticulatedVehicle(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IArticulatedVehicle(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
     virtual ~IArticulatedVehicle() {}
 

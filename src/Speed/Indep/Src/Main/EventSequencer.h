@@ -33,13 +33,13 @@ class System;
 
 class IContext : public UTL::COM::IUnknown {
   public:
-    IContext(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IContext() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IContext(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IContext() {}
 
     virtual bool SetDynamicData(const System *system, EventDynamicData *data);
 };
@@ -61,13 +61,13 @@ enum QueueMode {
 
 class IEngine : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<HENGINE, IEngine, 434> {
   public:
-    IEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IEngine() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IEngine() {}
 
     virtual void Release();
     virtual const char *Name() const;
