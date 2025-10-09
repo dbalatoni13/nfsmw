@@ -9,6 +9,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
 
 class ITrafficMgr : public UTL::COM::IUnknown, public UTL::Collections::Singleton<ITrafficMgr> {
+  public:
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
