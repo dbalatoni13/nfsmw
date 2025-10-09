@@ -1,6 +1,8 @@
 #ifndef PHYSICS_BEHAVIORS_DAMAGEVEHICLE_H
 #define PHYSICS_BEHAVIORS_DAMAGEVEHICLE_H
 
+#include "Speed/Indep/Src/Physics/PhysicsTypes.h"
+#include "Speed/Indep/Src/World/Damagezones.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -65,6 +67,15 @@ class DamageVehicle : public VehicleBehavior,
 
     virtual bool CanDamageVisuals() const {
         return true;
+    }
+
+    virtual bool IsLightDamaged(VehicleFX::ID idx) const {
+        return (mLightDamage & idx) != VehicleFX::LIGHT_NONE;
+    }
+
+    // Inline overrides
+    override virtual DamageZone::Info GetZoneDamage() const {
+        return mZoneDamage;
     }
 
   private:

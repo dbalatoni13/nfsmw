@@ -23,6 +23,14 @@ enum ID {
 
 // total size: 0x4
 struct Info {
+    Info() {
+        Value = 0;
+    }
+
+    Info(const Info &from) {
+        Value = from.Value;
+    }
+
     void Set(ID id, unsigned int level) {
         Value &= ~(7 << (id * 3));
         Value |= (level & 7) << (id * 3);
