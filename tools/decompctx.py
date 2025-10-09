@@ -23,6 +23,12 @@ include_dirs: List[str] = []  # Set with -I flag
 exclude_globs: List[str] = []  # Set with -x flag
 
 include_pattern = re.compile(r'^#\s*include\s*[<"](.+?)[>"]')
+stlport_cpp_c_pattern = re.compile(
+    r"^#\s*include\s*_STLP_NATIVE_(?:CPP_)?C_HEADER\((.+?)\)"
+)
+stlport_cpp_c_runtime_pattern = re.compile(
+    r"^#\s*include\s*_STLP_NATIVE_CPP_RUNTIME_HEADER\((.+?)\)"
+)
 guard_pattern = re.compile(r"^#\s*ifndef\s+(.*)$")
 once_pattern = re.compile(r"^#\s*pragma\s+once$")
 
@@ -76,34 +82,48 @@ def import_c_file(in_file: str) -> str:
 
 def process_file(in_file: str, lines: List[str]) -> str:
     out_text = ""
+    guard_found = False
     for idx, line in enumerate(lines):
-        if idx == 0:
+        if idx < 100 and not guard_found:
             guard_match = guard_pattern.match(line.strip())
             if guard_match:
                 if guard_match[1] in defines:
                     break
                 defines.add(guard_match[1])
+                guard_found = True
             else:
                 once_match = once_pattern.match(line.strip())
                 if once_match:
                     if in_file in defines:
                         break
                     defines.add(in_file)
+                    guard_found = True
             print("Processing file", in_file)
+
         include_match = include_pattern.match(line.strip())
+        stlport_c_match = stlport_cpp_c_pattern.match(line.strip())
+        # stlport_c_runtime_match = stlport_cpp_c_runtime_pattern.match(line.strip())
+        include_file_name = None
         if include_match and not include_match[1].endswith(".s"):
+            include_file_name = include_match[1]
+        elif stlport_c_match:
+            include_file_name = f"include/{stlport_c_match[1]}"
+        # elif stlport_c_runtime_match:
+        #     include_file_name = "include/{stlport_c_match[1]}"
+
+        if include_file_name:
             excluded = False
             for glob in exclude_globs:
-                if fnmatch.fnmatch(include_match[1], glob):
+                if fnmatch.fnmatch(include_file_name, glob):
                     excluded = True
                     break
 
-            out_text += f'/* "{in_file}" line {idx} "{include_match[1]}" */\n'
+            out_text += f'/* "{in_file}" line {idx} "{include_file_name}" */\n'
             if excluded:
                 out_text += "/* Skipped excluded file */\n"
             else:
-                out_text += import_h_file(include_match[1], os.path.dirname(in_file))
-            out_text += f'/* end "{include_match[1]}" */\n'
+                out_text += import_h_file(include_file_name, os.path.dirname(in_file))
+            out_text += f'/* end "{include_file_name}" */\n'
         else:
             out_text += line
 
