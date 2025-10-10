@@ -10,13 +10,13 @@
 
 class INIS : public UTL::COM::IUnknown, public UTL::Collections::Singleton<INIS> {
   public:
-    INIS(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~INIS() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    INIS(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~INIS() {}
 };
 
 #endif

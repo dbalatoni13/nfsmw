@@ -25,11 +25,11 @@ class IVehicleAI : public UTL::COM::IUnknown {
     virtual ~IVehicleAI();
 
   public:
-    IVehicleAI(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IVehicleAI(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
     virtual ISimable *GetSimable() const;
     virtual IVehicle *GetVehicle() const;
@@ -91,11 +91,11 @@ class ITrafficAI : public UTL::COM::IUnknown {
     virtual ~ITrafficAI();
 
   public:
-    ITrafficAI(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    ITrafficAI(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
     virtual void StartDriving(float speed);
 };
@@ -105,11 +105,11 @@ class IHumanAI : public UTL::COM::IUnknown {
     virtual ~IHumanAI();
 
   public:
-    IHumanAI(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IHumanAI(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
     virtual void ChangeDragLanes(bool left);
     virtual bool IsPlayerSteering();

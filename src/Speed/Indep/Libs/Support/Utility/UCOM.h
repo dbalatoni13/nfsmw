@@ -62,9 +62,9 @@ class Object {
     ~Object() {}
 };
 
+// total size: 0x8
 class IUnknown {
   public:
-    // total size: 0x8
     Object *_mCOMObject; // offset 0x0, size 0x4
 
     template <typename T> bool QueryInterface(T **out) {
@@ -85,8 +85,9 @@ class IUnknown {
     }
 };
 
+// UNSOLVED
 inline bool ComparePtr(const IUnknown *pUnk1, const IUnknown *pUnk2) {
-    return pUnk1 == pUnk2;
+    return pUnk1->_mCOMObject == pUnk2->_mCOMObject;
 }
 
 template <typename T, typename U, typename V> class Factory {

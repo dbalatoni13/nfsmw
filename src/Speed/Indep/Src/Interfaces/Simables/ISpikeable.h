@@ -11,13 +11,13 @@
 
 class ISpikeable : public UTL::COM::IUnknown, public UTL::Collections::Listable<ISpikeable, 10> {
   public:
-    ISpikeable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~ISpikeable() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    ISpikeable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~ISpikeable() {}
 
   public:
     virtual eTireDamage GetTireDamage(unsigned int wheelId) const;

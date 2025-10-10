@@ -40,83 +40,49 @@ class ISimable : public UTL::COM::IUnknown,
                  public UTL::Collections::Instanceable<HSIMABLE, ISimable, 160>,
                  public UTL::COM::Factory<Sim::Param, ISimable, UCrc32> {
   public:
-    ISimable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~ISimable() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
 
-    virtual SimableType GetSimableType() const;
+    ISimable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual void Kill();
+    virtual ~ISimable() {}
 
-    virtual bool Attach(UTL::COM::IUnknown *object);
-
-    virtual bool Detach(UTL::COM::IUnknown *object);
-
-    virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const;
-
-    virtual void AttachEntity(Sim::IEntity *e);
-
-    virtual void DetachEntity();
-
-    virtual struct IPlayer *GetPlayer() const;
-
-    virtual bool IsPlayer() const;
-
-    virtual bool IsOwnedByPlayer() const;
-
-    virtual Sim::IEntity *GetEntity() const;
-
-    virtual void DebugObject();
-
-    virtual HSIMABLE GetOwnerHandle() const;
-
-    virtual ISimable *GetOwner() const;
-
-    virtual bool IsOwnedBy(ISimable *queriedOwner) const;
-
-    virtual void SetOwnerObject(ISimable *pOwner);
-
-    virtual const Attrib::Instance &GetAttributes() const;
-
-    virtual WWorldPos &GetWPos();
-
-    virtual const WWorldPos &GetWPos() const;
-
-    virtual class IRigidBody *GetRigidBody();
-
-    virtual const class IRigidBody *GetRigidBody() const;
-
-    virtual bool IsRigidBodySimple() const;
-
-    virtual bool IsRigidBodyComplex() const;
-
-    virtual const UMath::Vector3 &GetPosition() const;
-
-    virtual void GetTransform(UMath::Matrix4 &matrix) const;
-
-    virtual void GetLinearVelocity(UMath::Vector3 &velocity) const;
-
-    virtual void GetAngularVelocity(UMath::Vector3 &velocity) const;
-
-    virtual unsigned int GetWorldID() const;
-
-    virtual EventSequencer::IEngine *GetEventSequencer();
-
-    virtual void ProcessStimulus(unsigned int stimulus);
-
-    virtual const IModel *GetModel() const;
-
-    virtual IModel *GetModel();
-
-    virtual void SetCausality(HCAUSE from, float time);
-
-    virtual HCAUSE GetCausality() const;
-
-    virtual float GetCausalityTime() const;
+    virtual SimableType GetSimableType() const = 0;
+    virtual void Kill() = 0;
+    virtual bool Attach(UTL::COM::IUnknown *object) = 0;
+    virtual bool Detach(UTL::COM::IUnknown *object) = 0;
+    virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const = 0;
+    virtual void AttachEntity(Sim::IEntity *e) = 0;
+    virtual void DetachEntity() = 0;
+    virtual struct IPlayer *GetPlayer() const = 0;
+    virtual bool IsPlayer() const = 0;
+    virtual bool IsOwnedByPlayer() const = 0;
+    virtual Sim::IEntity *GetEntity() const = 0;
+    virtual void DebugObject() = 0;
+    virtual HSIMABLE GetOwnerHandle() const = 0;
+    virtual ISimable *GetOwner() const = 0;
+    virtual bool IsOwnedBy(ISimable *queriedOwner) const = 0;
+    virtual void SetOwnerObject(ISimable *pOwner) = 0;
+    virtual const Attrib::Instance &GetAttributes() const = 0;
+    virtual WWorldPos &GetWPos() = 0;
+    virtual const WWorldPos &GetWPos() const = 0;
+    virtual class IRigidBody *GetRigidBody() = 0;
+    virtual const class IRigidBody *GetRigidBody() const = 0;
+    virtual bool IsRigidBodySimple() const = 0;
+    virtual bool IsRigidBodyComplex() const = 0;
+    virtual const UMath::Vector3 &GetPosition() const = 0;
+    virtual void GetTransform(UMath::Matrix4 &matrix) const = 0;
+    virtual void GetLinearVelocity(UMath::Vector3 &velocity) const = 0;
+    virtual void GetAngularVelocity(UMath::Vector3 &velocity) const = 0;
+    virtual unsigned int GetWorldID() const = 0;
+    virtual EventSequencer::IEngine *GetEventSequencer() = 0;
+    virtual void ProcessStimulus(unsigned int stimulus) = 0;
+    virtual const IModel *GetModel() const = 0;
+    virtual IModel *GetModel() = 0;
+    virtual void SetCausality(HCAUSE from, float time) = 0;
+    virtual HCAUSE GetCausality() const = 0;
+    virtual float GetCausalityTime() const = 0;
 };
 
 #endif

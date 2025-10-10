@@ -32,11 +32,15 @@ template <typename T, std::size_t U> class Listable {
     typedef bool (*ComparisonFunc)(pointer, pointer);
 
   protected:
-    Listable() {}
-
-    ~Listable() {}
+    Listable() {
+        _mTable.push_back((pointer)this);
+    }
 
     void Unlist() {}
+
+    ~Listable() {
+        Unlist();
+    }
 
   public:
     ForEachFunc ForEach(ForEachFunc f) {}

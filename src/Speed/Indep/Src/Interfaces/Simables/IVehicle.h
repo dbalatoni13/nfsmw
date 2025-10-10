@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/AI/AIVehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
+#include "Speed/Indep/Src/Physics/PhysicsTunings.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 
 enum eVehicleList {
@@ -126,17 +127,13 @@ enum DriverClass {
     DRIVER_HUMAN = 0,
 };
 
-namespace Physics {
-struct Tunings;
-}; // namespace Physics
-
 class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, VEHICLE_MAX> {
   public:
-    IVehicle(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IVehicle(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
     virtual ~IVehicle() {}
     virtual const ISimable *GetSimable() const = 0;
@@ -164,7 +161,7 @@ class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet
     virtual bool IsLoading() const = 0;
     virtual float GetOffscreenTime() = 0;
     virtual float GetOnScreenTime() = 0;
-    virtual void SetVehicleOnGround(const UMath::Vector3 &resetPos, const UMath::Vector3 &initialVec) = 0;
+    virtual bool SetVehicleOnGround(const UMath::Vector3 &resetPos, const UMath::Vector3 &initialVec) = 0;
     virtual void ForceStopOn(char forceStopBits) = 0;
     virtual void ForceStopOff(char forceStopBits) = 0;
     virtual bool GetForceStop() = 0;

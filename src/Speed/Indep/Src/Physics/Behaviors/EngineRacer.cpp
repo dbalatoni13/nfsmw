@@ -401,19 +401,6 @@ float EngineRacer::GetShiftPoint(GearID from_gear, GearID to_gear) const {
 }
 
 // Credits: Brawltendo
-float EngineRacer::GetPerfectLaunchRange(float &range) {
-    // perfect launch only applies to first gear
-    if (mGear != G_FIRST) {
-        range = 0.0f;
-        return 0.0f;
-    } else {
-        range = (mEngineInfo.RED_LINE() - mEngineInfo.IDLE()) * 0.25f;
-        float upper_limit = mEngineInfo.RED_LINE() + 500.0f;
-        return UMath::Min(mPeakTorqueRPM + range, upper_limit) - range;
-    }
-}
-
-// Credits: Brawltendo
 // TODO not matching on GC yet
 bool EngineRacer::DoGearChange(GearID gear, bool automatic) {
     // can't shift past top gear
@@ -444,11 +431,6 @@ bool EngineRacer::DoGearChange(GearID gear, bool automatic) {
     }
     // didn't shift
     return false;
-}
-
-// Credits: Brawltendo
-bool EngineRacer::Shift(GearID gear) {
-    return DoGearChange(gear, false);
 }
 
 // Credits: Brawltendo

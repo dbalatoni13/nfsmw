@@ -8,8 +8,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/simsurface.h"
 
-class SimSurface : public Attrib::Gen::simsurface { /* Size=0x10 */
-                                                    /* 0x0000: fields for Attrib::Gen::simsurface */
+class SimSurface : public Attrib::Gen::simsurface {
   public:
     static const Attrib::Collection *Lookup(const UCrc32 &);
     static void InitSystem();
@@ -21,13 +20,10 @@ class SimSurface : public Attrib::Gen::simsurface { /* Size=0x10 */
     SimSurface(const char *name);
     SimSurface(const Attrib::Key &key);
     SimSurface(const Attrib::RefSpec &spec);
-    const SimSurface &operator=(const SimSurface &from);
     bool IsTypeOf(const SimSurface &surface) const;
     SimSurface GetParentSurface() const;
 
-    SimSurface(const SimSurface &from) : Attrib::Gen::simsurface(GetConstCollection(), 0, nullptr) {
-        // TODO
-    }
+    SimSurface(const SimSurface &from) : Attrib::Gen::simsurface(from.GetConstCollection(), 0, nullptr) {}
 
     SimSurface() : Attrib::Gen::simsurface(GetConstCollection(), 0, nullptr) {
         // TODO
@@ -36,6 +32,10 @@ class SimSurface : public Attrib::Gen::simsurface { /* Size=0x10 */
 
     ~SimSurface() {
         // TODO
+    }
+
+    const SimSurface &operator=(const SimSurface &from) {
+        Change(from.GetConstCollection());
     }
 
     void DebugOverride() {}
@@ -48,5 +48,9 @@ class SimSurface : public Attrib::Gen::simsurface { /* Size=0x10 */
     static const Attrib::Collection *mNullSpec;
     static const Attrib::Collection *mOverride;
 };
+
+inline bool operator!=(const SimSurface &surfaceA, const SimSurface &surfaceB) {
+    return surfaceA.GetConstCollection() != surfaceB.GetConstCollection();
+}
 
 #endif

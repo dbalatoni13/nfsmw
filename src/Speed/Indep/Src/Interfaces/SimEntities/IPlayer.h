@@ -58,13 +58,13 @@ struct PlayerSettings {
 
 class IPlayer : public UTL::COM::IUnknown, public UTL::Collections::ListableSet<IPlayer, 8, ePlayerList, PLAYER_MAX> {
   public:
-    IPlayer(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IPlayer() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IPlayer(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IPlayer() {}
 
     virtual ISimable *GetSimable() const;
     virtual bool IsLocal() const;

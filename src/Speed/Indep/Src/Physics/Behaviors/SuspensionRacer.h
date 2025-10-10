@@ -1,7 +1,6 @@
 #ifndef PHYSICS_BEHAVIORS_SUSPENSIONRACER_H
 #define PHYSICS_BEHAVIORS_SUSPENSIONRACER_H
 
-#include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -15,6 +14,7 @@
 #include "Speed/Indep/Src/Interfaces/IAttributeable.h"
 #include "Speed/Indep/Src/Interfaces/IListener.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 #include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/Physics/Behaviors/Chassis.h"
 #include "Speed/Indep/Src/Physics/Wheel.h"

@@ -18,8 +18,10 @@ struct _type_UContainer {
 namespace UTL {
 namespace Collections {
 
+// total size: 0x8
 struct _KeyedNode {
-    // total size: 0x8
+    static _KeyedNode *Search(_KeyedNode *begin_iter, _KeyedNode *end_iter, uintptr_t handle);
+
     unsigned int Handle; // offset 0x0, size 0x4
     void *Ref;           // offset 0x4, size 0x4
 };
@@ -49,7 +51,7 @@ template <typename T> class Singleton {
     static T *mInstance;
 };
 
-template <typename HandleT, typename U, std::size_t Size> class Instanceable {
+template <typename Handle, typename T, std::size_t Size> class Instanceable {
     class _List : public FixedVector<_KeyedNode, Size, 16> {};
 
     unsigned int _mHandle;
@@ -60,8 +62,14 @@ template <typename HandleT, typename U, std::size_t Size> class Instanceable {
   public:
     Instanceable() {}
 
-    HandleT GetInstanceHandle() const {
-        return reinterpret_cast<HandleT>(_mHandle);
+    static T *FindInstance(Handle handle) {
+        _KeyedNode *node = _KeyedNode::Search(_mList.begin(), _mList.end(), (uintptr_t)handle);
+
+        return node ? reinterpret_cast<T *>(node->Ref) : nullptr;
+    }
+
+    Handle GetInstanceHandle() const {
+        return reinterpret_cast<Handle>(_mHandle);
     }
 };
 

@@ -7,12 +7,13 @@
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsTunings.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
-float ZeroDegreeTable[6] = {0.0f};
+const float ZeroDegreeTable[6] = {0.0f};
 float TwoDegreeTable[] = {0.0f, 1.2f, 2.3f, 3.0f, 3.0f, 2.8f};
 float FourDegreeTable[] = {0.0f, 1.7f, 3.2f, 4.3f, 5.1f, 5.2f};
 float SixDegreeTable[] = {0.0f, 1.8f, 3.5f, 4.9f, 5.8f, 6.1f};
@@ -404,6 +405,7 @@ void SuspensionRacer::DoSteering(Chassis::State &state, UMath::Vector3 &right, U
 }
 
 float BurnOutCancelSlipValue = 0.5f;
+float asd[] = {1.0f, 2.0f, 3.0f};
 float BurnOutYawCancel = 0.5f;
 float BurnOutAllowTime = 1.0f;
 float BurnOutMaxSpeed = 20.0f;
@@ -416,6 +418,9 @@ tGraph<float> BurnoutFrictionTable(BurnoutFrictionData, 6);
 // UNSOLVED
 void SuspensionRacer::Burnout::Update(const float dT, const float speedmph, const float max_slip, const int max_slip_wheel, const float yaw) {
     // continue burnout/fishtailing state and end when certain conditions are met
+    for (int i = 0; i < 3; i++) {
+        asd[i] = 2.0f;
+    }
     if (GetState()) {
         if (speedmph > 5.0f && UMath::Abs(ANGLE2RAD(yaw)) > BurnOutYawCancel) {
             Reset();
@@ -1196,8 +1201,6 @@ void SuspensionRacer::TuneWheelParams(Chassis::State &state) {
     DoDrifting(state);
 }
 
-float ENABLE_ROLL_STOPS_THRESHOLD = 0.2f;
-
 // Credits: Brawltendo
 // UNSOLVED
 void SuspensionRacer::DoWheelForces(Chassis::State &state) {
@@ -1312,7 +1315,7 @@ void SuspensionRacer::DoWheelForces(Chassis::State &state) {
             wheel.SetBottomOutTime(time);
         }
 
-        if (newCompression > 0.0f && upness > ENABLE_ROLL_STOPS_THRESHOLD) {
+        if (newCompression > 0.0f && upness > VehicleSystem::ENABLE_ROLL_STOPS_THRESHOLD) {
             ++wheelsOnGround;
             const float diff = (newCompression - wheel.GetCompression());
             float rise = diff / dT;

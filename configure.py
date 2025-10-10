@@ -145,9 +145,9 @@ if not config.non_matching:
 config.binutils_tag = "2.42-1"
 config.compilers_tag = "20250513"
 config.dtk_tag = "v1.6.2"
-config.objdiff_tag = "v2.7.1"
+config.objdiff_tag = "v3.3.0"
 config.sjiswrap_tag = "v1.2.0"
-config.wibo_tag = "0.6.11"
+config.wibo_tag = "1.0.0-alpha.1"
 
 # Project
 config.config_path = Path("config") / config.version / "config.yml"
@@ -223,12 +223,10 @@ cflags_game = [
     # # "-fcaller-saves",
     # # "-ffloat-store",
     # # "-funroll-all-loops",
+    "-DLUA_NUMBER=float",
 ]
 
-cflags_cmn = [
-    *cflags_game,
-    "-x c++"
-]
+cflags_cmn = [*cflags_game, "-x c++"]
 
 # Metrowerks library flags
 cflags_runtime = [*cflags_base]

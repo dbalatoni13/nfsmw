@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+
 namespace SAP {
 
 template <typename T> class Grid {
@@ -20,6 +22,18 @@ template <typename T> class Grid {
                 // TODO
             }
 
+            Node *GetHead() {
+                return mHead;
+            }
+
+            Node *GetTail() {
+                return mTail;
+            }
+
+            void SetPosition(float position) {
+                mPosition = position;
+            }
+
           private:
             Node *mHead;     // offset 0x0, size 0x4
             Node *mTail;     // offset 0x4, size 0x4
@@ -33,16 +47,39 @@ template <typename T> class Grid {
             // TODO
         }
 
+        bool Overlaps() {
+            return mMin.GetTail() != &mMax;
+        }
+
+        void SetPosition(float position, float radius) {
+            mMin.SetPosition(position - radius);
+            mMax.SetPosition(position + radius);
+        }
+
       private:
         Node mMin;      // offset 0x0, size 0x18
         Node mMax;      // offset 0x18, size 0x18
         Grid<T> &mGrid; // offset 0x30, size 0x4
     };
 
+    ~Grid();
+
     Grid(T &owner, const struct Vector3 &position, float radius) {
         // TODO
     }
-    ~Grid();
+
+    Axis &GetX() {
+        return mX;
+    }
+
+    Axis &GetZ() {
+        return mZ;
+    }
+
+    void SetPosition(const UMath::Vector3 &position, float radius) {
+        mX.SetPosition(position.x, radius);
+        mZ.SetPosition(position.z, radius);
+    }
 
   private:
     Axis mX;   // offset 0x0, size 0x34

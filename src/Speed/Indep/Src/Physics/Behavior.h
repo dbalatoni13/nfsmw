@@ -13,7 +13,9 @@ extern Attrib::StringKey BEHAVIOR_MECHANIC_AI;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_ENGINE;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_INPUT;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_RIGIDBODY;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_DRAW;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_DAMAGE;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_SUSPENSION;
 
 // total size: 0x10
 struct BehaviorParams {
@@ -36,7 +38,7 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
         }
     }
 
-    Behavior(const BehaviorParams &params, unsigned int num_interfaces) : Sim::Object(num_interfaces) {}
+    Behavior(const BehaviorParams &params, unsigned int num_interfaces);
 
     const UCrc32 &GetMechanic() {
         return mMechanic;
@@ -61,11 +63,16 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
     }
 
     virtual void OnOwnerAttached(IAttachable *pOther);
-    virtual void OnOwnerDetached(IAttachable *pOther);
+
+    virtual void OnOwnerDetached(IAttachable *pOther) {
+        // TODO right place?
+    }
 
   protected:
     virtual void OnTaskSimulate(float dT);
-    virtual void OnBehaviorChange(const UCrc32 &mechanic);
+
+    virtual void OnBehaviorChange(const UCrc32 &mechanic) {}
+
     virtual void OnPause();
     virtual void OnUnPause();
 

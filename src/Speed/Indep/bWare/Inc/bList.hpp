@@ -131,61 +131,143 @@ struct bList {
 };
 
 template <typename T> class bTList : public bList {
-    typedef int (*SortFuncT)(T *, T *);
-
   public:
+    typedef T value_type;
+    typedef value_type *pointer;
+    typedef const value_type *const_pointer;
+
+    typedef int (*SortFuncT)(pointer, pointer);
+
     bTList() {}
+
     ~bTList() {
         while (!this->IsEmpty()) {
             delete this->RemoveHead();
         }
     }
+
     T *EndOfList() {
         return (T *)bList::EndOfList();
     }
+
     T *GetHead() {
         return (T *)bList::GetHead();
     }
+
     T *GetTail() {
         return (T *)bList::GetTail();
     }
+
     T *GetNextCircular(bNode *node) {
         return (T *)bList::GetNextCircular(node);
     }
+
     T *GetPrevCircular(bNode *node) {
         return (T *)bList::GetPrevCircular(node);
     }
+
     T *AddHead(bNode *node) {
         return (T *)bList::AddHead(node);
     }
+
     T *AddTail(bNode *node) {
         return (T *)bList::AddTail(node);
     }
+
     T *AddBefore(bNode *insert_point, bNode *node) {
         return (T *)bList::AddBefore(insert_point, node);
     }
+
     T *AddAfter(bNode *insert_point, bNode *node) {
         return (T *)bList::AddAfter(insert_point, node);
     }
+
     T *Remove(bNode *node) {
         return (T *)bList::Remove(node);
     }
+
     T *RemoveHead() {
         return (T *)bList::RemoveHead();
     }
+
     T *RemoveTail() {
         return (T *)bList::RemoveTail();
     }
+
     T *AddSorted(SortFuncT check_flip) {
         // TODO
     }
+
     void Sort(SortFuncT check_flip) {
         bList::Sort((SortFunc)check_flip);
     }
+
     void DeleteAllElements() {
         while (!this->IsEmpty()) {
             delete this->RemoveHead();
         }
+    }
+
+    // total size: 0x8
+    class iterator {
+      private:
+        pointer _Ptr; // offset 0x0, size 0x4
+        bList *_Lst;  // offset 0x4, size 0x4
+
+        void validate() {}
+
+      public:
+        iterator() {}
+
+        iterator(pointer ptr, bList *list) {
+            _Ptr = ptr;
+            _Lst = list;
+        }
+
+        iterator &operator--() {
+            validate();
+            return _Ptr->GetPrev();
+        }
+
+        iterator &operator--(int) {
+            validate();
+            iterator tmp = _Ptr;
+            _Ptr = _Ptr->GetPrev();
+            return tmp;
+        }
+
+        iterator &operator++() {
+            validate();
+            return _Ptr->GetNext();
+        }
+
+        iterator &operator++(int) {
+            validate();
+            iterator tmp = _Ptr;
+            _Ptr = _Ptr->GetNext();
+            return tmp;
+        }
+
+        pointer &operator*() {
+            validate();
+            return _Ptr;
+        }
+
+        bool operator==(const iterator &rhs) {
+            return _Ptr == rhs._Ptr;
+        }
+
+        bool operator!=(const iterator &rhs) {
+            return _Ptr != rhs._Ptr;
+        }
+    };
+
+    iterator begin() {
+        return iterator(GetHead(), this);
+    }
+
+    iterator end() {
+        return iterator(EndOfList(), this);
     }
 };
 

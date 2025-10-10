@@ -21,13 +21,18 @@ float VU0_v3distancesquare(const UMath::Vector3 &p1, const UMath::Vector3 &p2);
 float VU0_v3distancesquarexz(const UMath::Vector3 &p1, const UMath::Vector3 &p2);
 void VU0_v3crossprod(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &dest);
 float VU0_v3lengthsquare(const UMath::Vector3 &a);
+void VU0_v4scaleadd(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result);
+float VU0_v4lengthsquare(const UMath::Vector4 &a);
+float VU0_v4lengthsquarexyz(const UMath::Vector4 &a);
 
 void VU0_v4subxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result);
 void VU0_v4scale(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &result);
 float VU0_v4distancesquarexyz(const UMath::Vector4 &p1, const UMath::Vector4 &p2);
 
+void VU0_v3quatrotate(const UMath::Vector4 &q, const UMath::Vector3 &v, UMath::Vector3 &result);
 void VU0_MATRIX3x4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 &m, UMath::Vector3 &result);
 
+void VU0_m4toquat(const UMath::Matrix4 &mat, UMath::Vector4 &result);
 void VU0_MATRIX4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 &m, UMath::Vector3 &result);
 void VU0_MATRIX4_vect4mult(const UMath::Vector4 &v, const UMath::Matrix4 &m, UMath::Vector4 &result);
 void VU0_MATRIX4setyrot(UMath::Matrix4 &dest, const float yangle);
@@ -68,8 +73,51 @@ inline float VU0_Sin(float x) {
     return sinf(x);
 }
 
+// TODO these should go into UVectorMathGC.hpp
 inline void VU0_v3unitcrossprod(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &dest) {
     // TODO
+}
+
+inline void VU0_ExtractXAxis3FromQuat(const UMath::Vector4 &quat, UMath::Vector3 &result) {
+    const float scale = 2.0f;
+    float yy = scale * (quat.y * quat.y);
+    float zz = scale * (quat.z * quat.z);
+    float xy = scale * (quat.x * quat.y);
+    float xz = scale * (quat.x * quat.z);
+    float yw = scale * (quat.y * quat.w);
+    float zw = scale * (quat.z * quat.w);
+
+    result.x = 1.0f - (yy + zz);
+    result.y = xy + zw;
+    result.z = xz - yw;
+}
+
+inline void VU0_ExtractYAxis3FromQuat(const UMath::Vector4 &quat, UMath::Vector3 &result) {
+    const float scale = 2.0f;
+    float xx = scale * (quat.x * quat.x);
+    float zz = scale * (quat.z * quat.z);
+    float xy = scale * (quat.x * quat.y);
+    float xw = scale * (quat.x * quat.w);
+    float yz = scale * (quat.y * quat.z);
+    float zw = scale * (quat.z * quat.w);
+
+    result.x = xy - zw;
+    result.y = 1.0f - (xx + zz);
+    result.z = yz + xw;
+}
+
+inline void VU0_ExtractZAxis3FromQuat(const UMath::Vector4 &quat, UMath::Vector3 &result) {
+    const float scale = 2.0f;
+    float xx = scale * (quat.x * quat.x);
+    float yy = scale * (quat.y * quat.y);
+    float xz = scale * (quat.x * quat.z);
+    float xw = scale * (quat.x * quat.w);
+    float yz = scale * (quat.y * quat.z);
+    float yw = scale * (quat.y * quat.w);
+
+    result.x = xz + yw;
+    result.y = yz - xw;
+    result.z = 1.0f - (xx + yy);
 }
 
 inline void VU0_qmul(const UMath::Vector4 &b, const UMath::Vector4 &a, UMath::Vector4 &dest) {
@@ -84,7 +132,7 @@ inline void VU0_qmul(const UMath::Vector4 &b, const UMath::Vector4 &a, UMath::Ve
 }
 
 inline void VU0_quattom4(const UMath::Vector4 &quat, UMath::Matrix4 &result) {
-    // TODO
+    // TODO UNSOLVED
     const float scale = 2.0f;
     float xx = quat.x * quat.x;
     float yy = quat.y * quat.y;
@@ -141,14 +189,70 @@ inline void VU0_MATRIX4_transpose(const UMath::Matrix4 &m, UMath::Matrix4 &resul
     }
 }
 
+inline void VU0_qtranspose(const UMath::Vector4 &a, UMath::Vector4 &result) {
+    result.x = -a.x;
+    result.y = -a.y;
+    result.z = -a.z;
+    result.w = a.w;
+}
+
 inline void VU0_MATRIX3x4dotprod(const UMath::Vector3 &a, const UMath::Matrix4 &b, UMath::Vector3 &r) {
     r.x = VU0_v3dotprod(a, UMath::Vector4To3(b.v0));
     r.y = VU0_v3dotprod(a, UMath::Vector4To3(b.v1));
     r.z = VU0_v3dotprod(a, UMath::Vector4To3(b.v2));
 }
 
+inline void VU0_MATRIX4Init(UMath::Matrix4 &dest, const float xx, const float yy, const float zz) {
+    dest[0][0] = xx;
+    dest[1][1] = yy;
+    dest[2][2] = zz;
+    dest[3][3] = 1.0f;
+
+    // TODO UNSOLVED
+    dest[0][1] = 0.0f;
+    dest[3][2] = 0.0f;
+    dest[3][1] = 0.0f;
+    dest[3][0] = 0.0f;
+    dest[2][3] = 0.0f;
+    dest[2][1] = 0.0f;
+    dest[2][0] = 0.0f;
+    dest[1][3] = 0.0f;
+    dest[1][2] = 0.0f;
+    dest[1][0] = 0.0f;
+    dest[0][3] = 0.0f;
+    dest[0][2] = 0.0f;
+}
+
+inline void VU0_MATRIX4_mult(const UMath::Matrix4 &m1, const UMath::Matrix4 &m2, UMath::Matrix4 &result) {
+    UMath::Matrix4 temp;
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            result[i][j] = m1[i][0] * m2[0][j] + m1[i][1] * m2[1][j] + m1[i][2] * m2[2][j] + m1[i][3] * m2[3][j];
+        }
+    }
+
+    result = temp;
+}
+
+inline void VU0_MATRIX4Copy(const UMath::Matrix4 &a, UMath::Matrix4 &b) {
+    b = a;
+}
+
+inline void VU0_v4Copy(const UMath::Vector4 &a, UMath::Vector4 &b) {
+    b = a;
+}
+
 inline float VU0_v3length(const struct UMath::Vector3 &a) {
     return VU0_sqrt(VU0_v3lengthsquare(a));
+}
+
+inline float VU0_v3lengthxz(const struct UMath::Vector3 &a) {
+    return VU0_sqrt(a.x * a.x + a.z * a.z);
+}
+
+inline void VU0_v4unit(const UMath::Vector4 &a, UMath::Vector4 &result) {
+    float rlen = VU0_rsqrt(VU0_v4lengthsquare(a));
+    VU0_v4scale(a, rlen, result);
 }
 
 #endif

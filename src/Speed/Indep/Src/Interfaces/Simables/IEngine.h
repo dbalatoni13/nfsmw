@@ -10,13 +10,13 @@
 // Credits: Brawltendo
 class IEngine : public UTL::COM::IUnknown {
   public:
-    IEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IEngine() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IEngine() {}
 
   public:
     virtual float GetRPM();
@@ -38,13 +38,13 @@ class IEngine : public UTL::COM::IUnknown {
 
 class IRaceEngine : public UTL::COM::IUnknown {
   public:
-    IRaceEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IRaceEngine() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IRaceEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IRaceEngine() {}
 
   public:
     virtual float GetPerfectLaunchRange(float &range);

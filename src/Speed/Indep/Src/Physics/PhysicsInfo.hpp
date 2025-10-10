@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engine.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/induction.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/nos.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/tires.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/transmission.h"
 
@@ -21,6 +22,19 @@ enum eInductionType {
     INDUCTION_SUPER_CHARGER = 2,
     INDUCTION_TURBO_CHARGER = 1,
     INDUCTION_NONE = 0,
+};
+
+struct Performance {
+    Performance(float topspeed, float handling, float accel) {
+        TopSpeed = topspeed;
+        Handling = handling;
+        Acceleration = accel;
+    }
+    void Default();
+
+    float TopSpeed;
+    float Handling;
+    float Acceleration;
 };
 
 float AerodynamicDownforce(const Attrib::Gen::chassis &chassis, const float speed);
@@ -37,23 +51,10 @@ float Speedometer(const Attrib::Gen::transmission &transmission, const Attrib::G
 float Torque(const Attrib::Gen::engine &engine, float rpm);
 bool ShiftPoints(const Attrib::Gen::transmission &transmission, const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction,
                  float *shift_up, float *shift_down, unsigned int numpts);
-
-struct Performance {
-    Performance(float topspeed, float handling, float accel) {
-        TopSpeed = topspeed;
-        Handling = handling;
-        Acceleration = accel;
-    }
-    void Default();
-
-    float TopSpeed;
-    float Handling;
-    float Acceleration;
-};
+bool HasRunflatTires(const Attrib::Gen::pvehicle &pvehicle);
+bool EstimatePerformance(Performance &perf);
 
 extern Performance PerformanceWeights[7];
-
-bool EstimatePerformance(Performance &perf);
 
 } // namespace Info
 } // namespace Physics

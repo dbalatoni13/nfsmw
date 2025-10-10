@@ -10,13 +10,13 @@
 // Credits: Brawltendo
 class IEngineDamage : public UTL::COM::IUnknown {
   public:
-    IEngineDamage(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IEngineDamage() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IEngineDamage(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IEngineDamage() {}
 
   public:
     virtual bool IsBlown();

@@ -71,12 +71,24 @@ class Geometry {
     Geometry();
     void Set(const UMath::Matrix4 &orient, const UMath::Vector3 &position, const UMath::Vector3 &dimension, Shape shape, const UMath::Vector3 &delta);
 
+    const UMath::Vector3 &GetPosition() const {
+        return *reinterpret_cast<const UMath::Vector3 *>(&mPosition);
+    }
+
+    const UMath::Matrix4 &GetOrientation() const {
+        return *reinterpret_cast<const UMath::Matrix4 *>(&mNormal);
+    }
+
     const UMath::Vector3 &GetCollisionPoint() const {
         return *reinterpret_cast<const UMath::Vector3 *>(&mCollision_point);
     }
 
     const UMath::Vector3 &GetCollisionNormal() const {
         return *reinterpret_cast<const UMath::Vector3 *>(&mCollision_normal);
+    }
+
+    const UMath::Vector3 &GetDimension() const {
+        return *reinterpret_cast<const UMath::Vector3 *>(mDimension);
     }
 
     bool PenetratesOther() const {
@@ -150,16 +162,40 @@ class Moment {
     bool React(Moment &other, const struct Joint &joint, int nSteps);
     bool React(const struct Joint &joint, int nSteps);
 
+    const Inertia::Tensor &GetInertia() const {
+        return mInertiaP;
+    }
+
+    const UMath::Vector3 &GetCG() const {
+        return mCG;
+    }
+
     const UVector3 &GetLinearVelocity() const {
         return mLinearVelocity;
+    }
+
+    void SetLinearVelocity(const UVector3 &vel) {
+        mLinearVelocity = vel;
     }
 
     const UVector3 &GetAngularVelocity() const {
         return mAngularVelocity;
     }
 
+    void SetPosition(const UMath::Vector3 &pos) {
+        mPosition = pos;
+    }
+
     void SetInertiaScale(const UMath::Vector3 &scale) {
         mInertialScale = scale;
+    }
+
+    bool IsImmobile() const {
+        return mImmobile;
+    }
+
+    float GetBreakingForce() {
+        return mBrakingForce;
     }
 
     void MakeImmobile(bool b, float force) {
@@ -189,6 +225,10 @@ class Moment {
 
     Friction::State GetFrictionState() const {
         return mFrictionState;
+    }
+
+    float GetElasticity() const {
+        return mElasticity;
     }
 
     void SetElasticity(float e) {

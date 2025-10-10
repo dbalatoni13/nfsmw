@@ -1,11 +1,12 @@
 #ifndef SUPPORT_UTILITY_UMATH_H
 #define SUPPORT_UTILITY_UMATH_H
 
-#include <cmath>
-#include <cstring>
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
+
+#include <cmath>
+#include <cstring>
 
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "UTypes.h"
@@ -32,12 +33,36 @@ inline void Clear(Vector3 &r) {
     *reinterpret_cast<int *>(&r.z) = 0;
 }
 
+inline void Copy(const Matrix4 &a, Matrix4 &r) {
+    VU0_MATRIX4Copy(a, r);
+}
+
+inline void Copy(const Vector4 &a, Vector4 &r) {
+    VU0_v4Copy(a, r);
+}
+
 inline void Transpose(const Matrix4 &m, Matrix4 &r) {
     VU0_MATRIX4_transpose(m, r);
 }
 
+inline void Transpose(const UMath::Vector4 &q, UMath::Vector4 &r) {
+    VU0_qtranspose(q, r);
+}
+
 inline const Vector3 &ExtractAxis(const Matrix4 &m, unsigned int row) {
     return *reinterpret_cast<const Vector3 *>(&m[row]);
+}
+
+inline void ExtractXAxis(const UMath::Vector4 &q, Vector3 &r) {
+    VU0_ExtractXAxis3FromQuat(q, r);
+}
+
+inline void ExtractYAxis(const UMath::Vector4 &q, Vector3 &r) {
+    VU0_ExtractYAxis3FromQuat(q, r);
+}
+
+inline void ExtractZAxis(const UMath::Vector4 &q, Vector3 &r) {
+    VU0_ExtractZAxis3FromQuat(q, r);
 }
 
 inline void RotateTranslate(const Vector3 &a, const Matrix4 &m, Vector3 &r) {
@@ -48,8 +73,20 @@ inline void RotateTranslate(const Vector4 &a, const Matrix4 &m, Vector4 &r) {
     VU0_MATRIX4_vect4mult(a, m, r);
 }
 
+inline void Init(Matrix4 &m, const float xx, const float yy, const float zz) {
+    VU0_MATRIX4Init(m, xx, yy, zz);
+}
+
 inline void Mult(const Vector4 &a, const Vector4 &b, Vector4 &r) {
     VU0_qmul(a, b, r);
+}
+
+inline void Mult(const Matrix4 &a, const Matrix4 &b, Matrix4 &r) {
+    VU0_MATRIX4_mult(a, b, r);
+}
+
+inline void Unit(const UMath::Vector4 &a, Vector4 &r) {
+    VU0_v4unit(a, r);
 }
 
 inline void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m) {
@@ -76,12 +113,20 @@ inline void ScaleAdd(const Vector3 &a, const float s, const Vector3 &b, Vector3 
     VU0_v3scaleadd(a, s, b, r);
 }
 
-inline void Sub(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &r) {
+inline void ScaleAdd(const Vector4 &a, const float s, const Vector4 &b, Vector4 &r) {
+    VU0_v4scaleadd(a, s, b, r);
+}
+
+inline void Sub(const Vector3 &a, const Vector3 &b, Vector3 &r) {
     VU0_v3sub(a, b, r);
 }
 
 inline void SetYRot(Matrix4 &r, float a) {
     VU0_MATRIX4setyrot(r, a);
+}
+
+inline void Rotate(const Vector3 &a, const Vector4 &q, Vector3 &r) {
+    VU0_v3quatrotate(q, a, r);
 }
 
 inline void Rotate(const Vector3 &a, const Matrix4 &m, Vector3 &r) {
@@ -92,24 +137,32 @@ inline float Dot(const Vector3 &a, const Vector3 &b) {
     return VU0_v3dotprod(a, b);
 }
 
-inline void Dot(const UMath::Vector3 &a, const UMath::Matrix4 &b, Vector3 &r) {
+inline void Dot(const Vector3 &a, const Matrix4 &b, Vector3 &r) {
     VU0_MATRIX3x4dotprod(a, b, r);
 }
 
-inline void Cross(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &r) {
+inline void Cross(const Vector3 &a, const Vector3 &b, Vector3 &r) {
     VU0_v3crossprod(a, b, r);
 }
 
-inline void UnitCross(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &r) {
+inline void UnitCross(const Vector3 &a, const Vector3 &b, Vector3 &r) {
     VU0_v3unitcrossprod(a, b, r);
 }
 
-inline float Length(const UMath::Vector3 &a) {
+inline float Length(const Vector3 &a) {
     return VU0_v3length(a);
 }
 
-inline float LengthSquare(const UMath::Vector3 &a) {
+inline float Lengthxz(const Vector3 &a) {
+    return VU0_v3lengthxz(a);
+}
+
+inline float LengthSquare(const Vector3 &a) {
     return VU0_v3lengthsquare(a);
+}
+
+inline void Matrix4ToQuaternion(const UMath::Matrix4 &m, Vector4 &q) {
+    VU0_m4toquat(m, q);
 }
 
 inline float Clamp(const float a, const float amin, const float amax) {

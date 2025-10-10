@@ -79,13 +79,13 @@ struct Bounds {
 
 class IBoundable : public UTL::COM::IUnknown {
   public:
-    IBoundable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, nullptr) {}
-
-    virtual ~IBoundable() {}
-
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
+
+    IBoundable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IBoundable() {}
 
     virtual const CollisionGeometry::Bounds *GetGeometryNode() const;
     virtual bool AddCollisionPrimitive(UCrc32 name, const UMath::Vector3 &dim, float radius, const UMath::Vector3 &offset, const SimSurface &material,
@@ -93,6 +93,10 @@ class IBoundable : public UTL::COM::IUnknown {
     virtual bool AddCollisionMesh(UCrc32 name, const UMath::Vector4 *verts, unsigned int count, const SimSurface &material,
                                   CollisionGeometry::BoundFlags flags, bool persistant);
 };
+
+const Attrib::Collection *Lookup(UCrc32 object_name_hash);
+bool CreateJoint(IBoundable *ifemale, struct UCrc32 femalenode_name, IBoundable *imale, UCrc32 malenode_name, UMath::Vector3 *out_female,
+                 UMath::Vector3 *out_male, unsigned int joint_flags);
 
 }; // namespace CollisionGeometry
 
