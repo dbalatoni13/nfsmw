@@ -88,7 +88,8 @@ struct cQuarterSizeMap {
     cQuarterSizeMap();
     virtual ~cQuarterSizeMap();
     void Init(int create_depth_buffer, int texture_format, int buffer_function);
-    
+    void Destroy();
+
     // total size: 0x50
     int QUARTER_SIZE_X;                                      // offset 0x0, size 0x4
     int QUARTER_SIZE_Y;                                      // offset 0x4, size 0x4
@@ -97,10 +98,24 @@ struct cQuarterSizeMap {
     cCaptureBuffer quarterSizeDepthBuffer;                   // offset 0x2C, size 0x20
 };
 struct cFullSizeMap {
+    cFullSizeMap();
+    virtual ~cFullSizeMap();
+    void Init();
+    void Destroy();
+
     // total size: 0x2C
     int FULL_SIZE_X;                                      // offset 0x0, size 0x4
     int FULL_SIZE_Y;                                      // offset 0x4, size 0x4
     cCaptureBuffer fullSizeBuffer;                        // offset 0x8, size 0x20
+};
+
+struct eFogParams {
+    // total size: 0x14
+    float Start; // offset 0x0, size 0x4
+    float End; // offset 0x4, size 0x4
+    float Intensity; // offset 0x8, size 0x4
+    float FalloffY; // offset 0xC, size 0x4
+    GXColor FogColor; // offset 0x10, size 0x4
 };
 
 #endif

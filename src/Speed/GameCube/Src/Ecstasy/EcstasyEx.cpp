@@ -1,11 +1,15 @@
 #include "./EcstasyEx.hpp"
 
 #include "Speed/GameCube/Src/Ecstasy/TextureInfoPlat.hpp"
+#include "Speed/Indep/Src/World/Scenery.hpp"
+#include "Speed/Indep/Src/World/WeatherMan.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Ecstasy/EcstasyE.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "dolphin.h"
+
+static float FogCurrentBrightness = 0.0f;
 
 void eSetCulling(GXCullMode mode) {
     static GXCullMode prevMode = GX_CULL_NONE;
@@ -879,6 +883,81 @@ void cQuarterSizeMap::Init(int create_depth_buffer, int texture_format, int buff
     this->DepthBufferFlag = create_depth_buffer;
     if (create_depth_buffer != 0) {
         this->quarterSizeDepthBuffer.Init(0, 0, this->QUARTER_SIZE_X, this->QUARTER_SIZE_Y, 17, 6);
+    }
+}
+
+// STRIPPED
+void cQuarterSizeMap::Destroy() {
+    this->quarterSizeBuffer.Destroy();
+
+    if (this->DepthBufferFlag) {
+        this->quarterSizeDepthBuffer.Destroy();
+    }
+}
+
+// STRIPPED
+cFullSizeMap::cFullSizeMap() {}
+// STRIPPED
+cFullSizeMap::~cFullSizeMap() {}
+// STRIPPED
+void cFullSizeMap::Init() {}
+// STRIPPED
+void cFullSizeMap::Destroy() {}
+
+// STRIPPED
+void eFinish() {}
+
+#include "dolphin/gx/GXPriv.h"
+
+static inline void write_bp_cmd(unsigned long cmd) {
+    GX_WRITE_U8(GX_LOAD_BP_REG);
+    GX_WRITE_U32(cmd);
+}
+
+eFogParams g_FogParams;
+// STRIPPED
+static const int DisableDistantFog = 0;
+static int FogEnableState = 0;
+// static const float FogStart;
+// static const float FogEnd;
+// static const float FogIntensityScale;
+// static const float FogBrightnessScale;
+static int prevFogDistance = -1;
+static int prevFogColour = -1;
+unsigned char fog_red = 0;
+unsigned char fog_green = 0;
+unsigned char fog_blue = 0;
+
+void eSetFogConstantZero() {
+    unsigned char fog_r = fog_red;
+    unsigned char fog_g = fog_green;
+    unsigned char fog_b = fog_blue;
+    int fog_colour = 0;
+
+    if (prevFogColour != fog_colour) {
+        write_bp_cmd((fog_b << 0) | (fog_g << 8) | (fog_r << 16) | (0xF2 << 24));
+
+        gx->bpSentNot = prevFogColour = fog_colour;
+    }
+}
+
+void eSetFogConstantColour() {
+    // Local variables
+    int fog_colour; // r12
+    unsigned char fog_r = g_FogParams.FogColor.r;
+    unsigned char fog_g = g_FogParams.FogColor.g;
+    unsigned char fog_b = g_FogParams.FogColor.b;
+
+    fog_colour = int((fog_r + fog_g + fog_b) * FogCurrentBrightness);
+    if (fog_colour != prevFogColour) {
+        prevFogColour = fog_colour;
+        
+        write_bp_cmd(((int(fog_r * FogCurrentBrightness) << 16) & 0xFF0000)
+                       | ((int(fog_g * FogCurrentBrightness) << 8)  & 0x00FF00)
+                       | ((int(fog_b * FogCurrentBrightness) << 0)  & 0x0000FF)
+                       | (0xF2 << 24)
+        );
+        gx->bpSentNot = 0;
     }
 }
 
