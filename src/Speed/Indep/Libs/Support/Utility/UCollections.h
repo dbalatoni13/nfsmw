@@ -22,8 +22,8 @@ namespace Collections {
 struct _KeyedNode {
     static _KeyedNode *Search(_KeyedNode *begin_iter, _KeyedNode *end_iter, uintptr_t handle);
 
-    unsigned int Handle; // offset 0x0, size 0x4
-    void *Ref;           // offset 0x4, size 0x4
+    uintptr_t Handle; // offset 0x0, size 0x4
+    void *Ref;        // offset 0x4, size 0x4
 };
 
 template <typename T, std::size_t Size> class _Storage : public FixedVector<T, Size, 16> {
@@ -63,9 +63,13 @@ template <typename Handle, typename T, std::size_t Size> class Instanceable {
     Instanceable() {}
 
     static T *FindInstance(Handle handle) {
-        _KeyedNode *node = _KeyedNode::Search(_mList.begin(), _mList.end(), (uintptr_t)handle);
-
-        return node ? reinterpret_cast<T *>(node->Ref) : nullptr;
+        if (handle) {
+            _KeyedNode *node = _KeyedNode::Search(_mList.begin(), _mList.end(), (uintptr_t)handle);
+            if (node) {
+                return reinterpret_cast<T *>(node->Ref);
+            }
+        }
+        return nullptr;
     }
 
     Handle GetInstanceHandle() const {

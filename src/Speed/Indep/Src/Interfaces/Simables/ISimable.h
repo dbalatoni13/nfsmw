@@ -25,15 +25,15 @@ typedef HSIMABLE__ *HSIMABLE;
 
 // TODO move?
 enum SimableType {
-    SIMABLE_FRAGMENT = 8,
-    SIMABLE_SENTRY = 7,
-    SIMABLE_NEWTON = 6,
-    SIMABLE_WEAPON = 5,
-    SIMABLE_HUMAN = 4,
-    SIMABLE_EXPLOSION = 3,
-    SIMABLE_SMACKABLE = 2,
-    SIMABLE_VEHICLE = 1,
     SIMABLE_INVALID = 0,
+    SIMABLE_VEHICLE = 1,
+    SIMABLE_SMACKABLE = 2,
+    SIMABLE_EXPLOSION = 3,
+    SIMABLE_HUMAN = 4,
+    SIMABLE_WEAPON = 5,
+    SIMABLE_NEWTON = 6,
+    SIMABLE_SENTRY = 7,
+    SIMABLE_FRAGMENT = 8,
 };
 
 class ISimable : public UTL::COM::IUnknown,
@@ -78,8 +78,8 @@ class ISimable : public UTL::COM::IUnknown,
     virtual unsigned int GetWorldID() const = 0;
     virtual EventSequencer::IEngine *GetEventSequencer() = 0;
     virtual void ProcessStimulus(unsigned int stimulus) = 0;
-    virtual const IModel *GetModel() const = 0;
     virtual IModel *GetModel() = 0;
+    virtual const IModel *GetModel() const = 0;
     virtual void SetCausality(HCAUSE from, float time) = 0;
     virtual HCAUSE GetCausality() const = 0;
     virtual float GetCausalityTime() const = 0;

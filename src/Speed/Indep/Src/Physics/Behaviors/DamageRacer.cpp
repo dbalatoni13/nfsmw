@@ -15,12 +15,6 @@ Behavior *DamageRacer::Construct(const BehaviorParams &params) {
     return new DamageRacer(params, dp);
 }
 
-DamageRacer::DamageRacer(const BehaviorParams &bp, const DamageParams &dp) : DamageVehicle(bp, dp), ISpikeable(bp.fowner) {
-    GetOwner()->QueryInterface(&mSuspension);
-    bMemSet(mBlowOutTimes, 0, sizeof(mBlowOutTimes));
-    bMemSet(mDamage, 0, sizeof(mDamage));
-}
-
 DamageRacer::~DamageRacer() {
     // TODO
 }
@@ -88,4 +82,17 @@ void DamageRacer::OnTaskSimulate(float dT) {
         }
     }
     Behavior::OnTaskSimulate(dT);
+}
+
+void DamageRacer::OnBehaviorChange(const UCrc32 &mechanic) {
+    DamageVehicle::OnBehaviorChange(mechanic);
+    if (mechanic == BEHAVIOR_MECHANIC_SUSPENSION) {
+        GetOwner()->QueryInterface(&mSuspension);
+    }
+}
+
+void DamageRacer::ResetDamage() {
+    DamageVehicle ::ResetDamage();
+    bMemSet(mBlowOutTimes, 0, sizeof(mBlowOutTimes));
+    bMemSet(mDamage, 0, sizeof(mDamage));
 }

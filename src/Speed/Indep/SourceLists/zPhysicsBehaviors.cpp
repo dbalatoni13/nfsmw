@@ -14,6 +14,12 @@
 
 #include "Speed/Indep/Src/Physics/Behaviors/DamageRacer.cpp"
 
+#include "Speed/Indep/Src/Physics/Behaviors/DamageDragster.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/DamageHeli.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/DamageCopCar.cpp"
+
 #include "Speed/Indep/Src/Physics/Behaviors/Chassis.cpp"
 
 #include "Speed/Indep/Src/Physics/Behaviors/SuspensionRacer.cpp"

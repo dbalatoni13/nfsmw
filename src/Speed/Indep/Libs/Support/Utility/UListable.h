@@ -62,6 +62,8 @@ template <typename T, std::size_t ListSize, typename Enum, std::size_t EnumMax> 
     typedef T value_type;
     typedef value_type *pointer;
     typedef const value_type *const_pointer;
+    typedef pointer iterator;
+    typedef const pointer *const_iterator;
 
     class List : public FixedVector<pointer, ListSize> {
       public:
@@ -75,18 +77,17 @@ template <typename T, std::size_t ListSize, typename Enum, std::size_t EnumMax> 
         // List &operator=(List &);
     };
 
-    typedef void (*ForEachFunc_t)(pointer);
+    typedef void (*ForEachFunc_t)(iterator);
 
     static int Count(Enum idx);
-
-    T *First(Enum idx);
-    T *Last(Enum idx);
+    static iterator First(Enum idx);
+    static iterator Last(Enum idx);
 
     ~ListableSet() {}
 
     void UnList() {}
 
-    T *Next(Enum idx) {}
+    iterator Next(Enum idx) {}
 
     ForEachFunc_t ForEach(Enum idx, ForEachFunc_t f) {}
 
@@ -102,9 +103,9 @@ template <typename T, std::size_t ListSize, typename Enum, std::size_t EnumMax> 
         // how to access _buckets without making it public?
         List _buckets[EnumMax];
 
-        void _add(T *, unsigned int);
+        void _add(iterator, unsigned int);
 
-        void _remove(T *, unsigned int);
+        void _remove(iterator, unsigned int);
 
         _ListSet();
         // _ListSet(_ListSet &);

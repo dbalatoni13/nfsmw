@@ -92,13 +92,8 @@ void RBTractor::OnOwnerDetached(IAttachable *pOther) {
     Behavior::OnOwnerDetached(pOther);
 }
 
-// UNSOLVED branching
 bool RBTractor::CanCollideWith(const RigidBody &other) const {
     if (mTrailer && mHitched) {
-        // TODO huh
-        if (&other == (RigidBody *)0xffffffb4) {
-            return false;
-        }
         if (ComparePtr(mTrailer, static_cast<const IRigidBody *>(&other))) {
             return false;
         }

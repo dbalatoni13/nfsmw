@@ -59,7 +59,7 @@ class Object : public UTL::COM::Object, public IServiceable, public ITaskable, p
 
     virtual bool OnService(HSIMSERVICE hCon, Sim::Packet *pkt);
 
-    virtual bool OnTask(HSIMTASK htask, float dT);
+    virtual bool OnTask(HSIMTASK htask, float dT) {}
 };
 
 }; // namespace Sim
