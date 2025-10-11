@@ -7,6 +7,7 @@
 
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/Src/World/WeatherMan.hpp"
 
 struct SceneryBoundingBox {
     // total size: 0x18
@@ -46,5 +47,7 @@ struct SceneryCullInfo {
     float H;                                  // offset 0xB4, size 0x4
     int PrecullerSectionNumber;               // offset 0xB8, size 0x4
 };
+
+extern RegionQuery RegionInfo;
 
 #endif
