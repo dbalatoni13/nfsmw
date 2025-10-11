@@ -6,29 +6,31 @@
 #endif
 
 #include "ActionData.h"
+#include "types.h"
 
+// total size: 0x4
 class ActionRef {
-    // total size: 0x4
-    ActionData *actiondata; // offset 0x0, size 0x4
-
   public:
     // void Print() const {}
 
     int ID() const {
-        return actiondata->ID();
+        return actiondata ? actiondata->ID() : 0;
     }
 
     float Data() const {
-        return actiondata->Data();
+        return actiondata ? actiondata->Data() : 0.0f;
     }
 
     int Slot() const {
-        return actiondata->Slot();
+        return actiondata ? actiondata->Slot() : 0;
     }
 
-    // bool IsNull() const {
-    //     return actiondata->IsNull();
-    // }
+    bool IsNull() const {
+        return actiondata != nullptr;
+    }
+
+  private:
+    ActionData *actiondata; // offset 0x0, size 0x4
 };
 
 #endif

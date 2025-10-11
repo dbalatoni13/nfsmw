@@ -65,27 +65,17 @@ void RBTractor::OnBehaviorChange(const UCrc32 &mechanic) {
 }
 
 eVehicleCacheResult RBTractor::OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const {
-    // TODO
+    return ComparePtr(removethis, mTrailer) ? VCR_WANT : VCR_DONTCARE;
 }
 
 void RBTractor::OnRemovedVehicleCache(IVehicle *ivehicle) {
-    // TODO huh?
-    if (!ivehicle || !mTrailer) {
-        if (!ivehicle) {
-            if (!mTrailer) {
-                mTrailer = nullptr;
-            }
-        }
-    } else {
-        if (!ComparePtr(ivehicle, mTrailer)) {
-            mTrailer = nullptr;
-        }
+    if (ComparePtr(ivehicle, mTrailer)) {
+        mTrailer = nullptr;
     }
 }
 
-// UNSOLVED
 void RBTractor::OnOwnerDetached(IAttachable *pOther) {
-    if (mTrailer && pOther && ComparePtr(pOther, mTrailer)) {
+    if (mTrailer && ComparePtr(pOther, mTrailer)) {
         mTrailer->GetSimable()->Kill();
         mTrailer = nullptr;
     }

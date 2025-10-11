@@ -143,4 +143,7 @@ struct Camera {
     float GetSimTimeMultiplier() {}
 };
 
+// TODO move?
+extern bool gCinematicMomementCamera;
+
 #endif

@@ -6,7 +6,6 @@
 #endif
 
 template <typename T, int U> class UCircularQueue {
-    // total size: 0x268
     int Size;      // offset 0x0, size 0x4
     int Head;      // offset 0x4, size 0x4
     int Tail;      // offset 0x8, size 0x4

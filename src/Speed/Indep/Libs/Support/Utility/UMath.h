@@ -27,7 +27,7 @@ inline float DistanceSquarexz(const Vector3 &a, const Vector3 &b) {
 }
 
 inline void Clear(Vector3 &r) {
-    // TODO fake match
+    // TODO fake match?
     *reinterpret_cast<int *>(&r.x) = 0;
     *reinterpret_cast<int *>(&r.y) = 0;
     *reinterpret_cast<int *>(&r.z) = 0;
@@ -163,6 +163,10 @@ inline float LengthSquare(const Vector3 &a) {
 
 inline void Matrix4ToQuaternion(const UMath::Matrix4 &m, Vector4 &q) {
     VU0_m4toquat(m, q);
+}
+
+inline int Clamp(const int a, const int amin, const int amax) {
+    return a < amin ? amin : (a > amax ? amax : a);
 }
 
 inline float Clamp(const float a, const float amin, const float amax) {

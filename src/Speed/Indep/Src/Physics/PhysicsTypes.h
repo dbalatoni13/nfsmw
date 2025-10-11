@@ -48,6 +48,14 @@ enum DriverStyle {
     STYLE_RACING = 0,
 };
 
+enum eTransmissionType {
+    NUM_TRANSMISSION_TYPES = 4,
+    TRANSMISSION_MANUAL_CLUTCH = 3,
+    TRANSMISSION_SPORT = 2,
+    TRANSMISSION_MANUAL = 1,
+    TRANSMISSION_AUTOMATIC = 0,
+};
+
 enum PhysicsMode {
     PHYSICS_MODE_EMULATED = 2,
     PHYSICS_MODE_SIMULATED = 1,

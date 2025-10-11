@@ -85,12 +85,11 @@ class IUnknown {
     }
 };
 
-// UNSOLVED
 inline bool ComparePtr(const IUnknown *pUnk1, const IUnknown *pUnk2) {
     if (pUnk1 && pUnk2) {
         return pUnk1->_mCOMObject == pUnk2->_mCOMObject;
     }
-    return false;
+    return !pUnk1 && !pUnk2;
 }
 
 template <typename T, typename U, typename V> class Factory {

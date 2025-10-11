@@ -11,7 +11,6 @@
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
 
-// TODO move
 struct HACTIVITY__ {
     // total size: 0x4
     int unused; // offset 0x0, size 0x4
@@ -21,9 +20,10 @@ typedef HACTIVITY__ *HACTIVITY;
 
 namespace Sim {
 
-struct IActivity : public UTL::COM::IUnknown,
-                   public UTL::COM::Factory<Param, IActivity, UCrc32>,
-                   public UTL::Collections::Instanceable<HACTIVITY, IActivity, 40> {
+class IActivity : public UTL::COM::IUnknown,
+                  public UTL::COM::Factory<Param, IActivity, UCrc32>,
+                  public UTL::Collections::Instanceable<HACTIVITY, IActivity, 40> {
+  public:
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }

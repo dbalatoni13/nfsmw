@@ -46,7 +46,6 @@ struct collisionreactions : Instance {
 
     ~collisionreactions() {}
 
-    // TODO is this needed?
     const collisionreactions &operator=(const collisionreactions &rhs) {
         Instance::operator=(rhs);
         return *this;

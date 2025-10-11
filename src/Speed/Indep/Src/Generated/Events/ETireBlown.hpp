@@ -19,6 +19,7 @@ class ETireBlown : public Event {
 
     ETireBlown(HSIMABLE phSimable, unsigned int pIndex);
 
+  private:
     HSIMABLE fhSimable;  // offset 0x8, size 0x4
     unsigned int fIndex; // offset 0xC, size 0x4
 };

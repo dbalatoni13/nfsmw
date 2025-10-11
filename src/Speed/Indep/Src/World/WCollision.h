@@ -25,8 +25,8 @@ struct WCollisionArticle {
     short fFlags;                      // offset 0xE, size 0x2
 };
 
+// total size: 0x20
 struct WCollisionBarrier {
-    // total size: 0x20
     bVector4 fPts[2]; // offset 0x0, size 0x20
 };
 

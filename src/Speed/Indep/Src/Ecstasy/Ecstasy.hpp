@@ -87,10 +87,10 @@ struct eView : public eViewPlatInterface {
     }
 
     CameraMover *GetCameraMover() {
-        if (this->CameraMoverList.IsEmpty()) {
-            return nullptr;
+        if (!this->CameraMoverList.IsEmpty()) {
+            return this->CameraMoverList.GetHead();
         }
-        return this->CameraMoverList.GetHead();
+        return nullptr;
     }
 };
 

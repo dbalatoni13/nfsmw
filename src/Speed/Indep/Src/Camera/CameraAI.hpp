@@ -5,6 +5,10 @@
 #pragma once
 #endif
 
+namespace CameraAI {
 
+void Reset();
+
+};
 
 #endif

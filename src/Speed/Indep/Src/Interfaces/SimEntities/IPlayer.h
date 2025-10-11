@@ -30,7 +30,30 @@ enum eControllerConfig {
     MAX_CONFIG = 4,
 };
 
-struct PlayerSettings {
+enum ePlayerSettingsCameras {
+    PSC_BUMPER,
+    PSC_HOOD,
+    PSC_CLOSE,
+    PSC_FAR,
+    PSC_SUPER_FAR,
+    PSC_DRIFT,
+    PSC_PURSUIT,
+    NUM_CAMERAS_IN_OPTIONS,
+    PSC_DEFAULT = 2,
+};
+
+enum eControllerAttribs {
+    CA_HUD = 0,
+    CA_DRIVING = 1,
+};
+
+class PlayerSettings {
+  public:
+    unsigned int GetControllerAttribs(eControllerAttribs type, bool wheel_connected) const;
+    void ScrollDriveCam(int dir);
+
+    // TODO private?
+  public:
     bool GaugesOn;
     bool PositionOn;
     bool LapInfoOn;
@@ -40,20 +63,10 @@ struct PlayerSettings {
     bool TransmissionPromptOn;
     bool DriveWithAnalog;
     eControllerConfig Config;
-    enum ePlayerSettingsCameras {
-        PSC_BUMPER,
-        PSC_HOOD,
-        PSC_CLOSE,
-        PSC_FAR,
-        PSC_SUPER_FAR,
-        PSC_DRIFT,
-        PSC_PURSUIT,
-        NUM_CAMERAS_IN_OPTIONS,
-        PSC_DEFAULT = 2,
-    } CurCam;
-    uint8_t SplitTimeType;
-    uint8_t Transmission;
-    uint8_t Handling;
+    ePlayerSettingsCameras CurCam;
+    unsigned char SplitTimeType;
+    unsigned char Transmission;
+    unsigned char Handling;
 };
 
 class IPlayer : public UTL::COM::IUnknown, public UTL::Collections::ListableSet<IPlayer, 8, ePlayerList, PLAYER_MAX> {
@@ -70,7 +83,7 @@ class IPlayer : public UTL::COM::IUnknown, public UTL::Collections::ListableSet<
     virtual bool IsLocal() const;
     virtual const UMath::Vector3 &GetPosition() const;
     virtual bool SetPosition(const UMath::Vector3 &position);
-    virtual struct PlayerSettings *GetSettings() const;
+    virtual PlayerSettings *GetSettings() const;
     virtual void SetSettings(int fe_index);
     virtual int GetSettingsIndex() const;
     virtual struct IHud *GetHud() const;

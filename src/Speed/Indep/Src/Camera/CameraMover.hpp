@@ -34,8 +34,14 @@ enum CameraMoverTypes {
     CM_NONE_TYPE = 0,
 };
 
+// total size: 0x80
+// TODO make it a class
 struct CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollisionHandler {
-    // total size: 0x80
+  public:
+    CameraMoverTypes GetType() {
+        return Type;
+    }
+
     CameraMoverTypes Type;       // offset 0xC, size 0x4
     int ViewID;                  // offset 0x10, size 0x4
     int Enabled;                 // offset 0x14, size 0x4
