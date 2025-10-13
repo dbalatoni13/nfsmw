@@ -1,11 +1,11 @@
 #ifndef INTERFACES_SIMABLES_ICAUSE_H
 #define INTERFACES_SIMABLES_ICAUSE_H
 
-#include "Speed/Indep/Src/Sim/Collision.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "IExplosion.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
 
@@ -28,7 +28,7 @@ class ICause : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<
 
     virtual ~ICause() {}
 
-    virtual void OnCausedCollision(const COLLISION_INFO &cinfo, ISimable *from, ISimable *to);
+    // virtual void OnCausedCollision(const COLLISION_INFO &cinfo, ISimable *from, ISimable *to);
     virtual void OnCausedExplosion(IExplosion *explosion, ISimable *to);
 };
 
