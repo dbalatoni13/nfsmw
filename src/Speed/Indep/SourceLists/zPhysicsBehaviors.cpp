@@ -26,4 +26,8 @@
 
 #include "Speed/Indep/Src/Physics/Behaviors/SuspensionRacer.cpp"
 
+#include "Speed/Indep/Src/Physics/Behaviors/SuspensionTraffic.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/SuspensionSimple.cpp"
+
 #include "Speed/Indep/Src/Physics/Behaviors/EngineRacer.cpp"

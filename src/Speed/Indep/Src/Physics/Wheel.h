@@ -30,6 +30,7 @@ class Wheel {
                         float dT, float wheel_radius, bool usecache, const void *collider, float vehicle_height);
     bool InitPosition(const IRigidBody &rb, float maxcompression);
     void Reset();
+    void UpdateTime(float dT);
 
     const UMath::Vector4 &GetNormal() const {
         return mNormal;
@@ -77,6 +78,10 @@ class Wheel {
 
     const UMath::Vector3 &GetVelocity() const {
         return mVelocity;
+    }
+
+    bool IsOnGround() const {
+        return mCompression > 0.0f;
     }
 
   protected:

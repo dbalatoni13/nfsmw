@@ -153,7 +153,7 @@ void EngineRacer::SetDifferentialAngularVelocity(float w) {
 // Credits: Brawltendo
 float EngineRacer::CalcSpeedometer(float rpm, unsigned int gear) const {
     Physics::Tunings *tunings = GetVehicle()->GetTunings();
-    return Physics::Info::Speedometer(mTrannyInfo, mEngineInfo, mTireInfo, rpm, (GearID)gear, tunings);
+    return Physics::Info::Speedometer(mTranyInfo, mEngineInfo, mTireInfo, rpm, (GearID)gear, tunings);
 }
 
 // Credits: Brawltendo
@@ -336,7 +336,7 @@ void EngineRacer::DoInduction(const Physics::Tunings *tunings, float dT) {
     if (IsGearChanging())
         desired_spool = 0.0f;
     // turbocharger can't start spooling up until the engine rpm is >= the boost threshold
-    if (type == Physics::Info::INDUCTION_TURBO_CHARGER && Physics::Info::InductionRPM(mEngineInfo, mInductionInfo, tunings) > rpm) {
+    if (type == Physics::Info::INDUCTION_TURBO_CHARGER && rpm < Physics::Info::InductionRPM(mEngineInfo, mInductionInfo, tunings)) {
         desired_spool = 0.0f;
     }
 
@@ -401,7 +401,6 @@ float EngineRacer::GetShiftPoint(GearID from_gear, GearID to_gear) const {
 }
 
 // Credits: Brawltendo
-// TODO not matching on GC yet
 bool EngineRacer::DoGearChange(GearID gear, bool automatic) {
     // can't shift past top gear
     if (gear > GetTopGear()) {
@@ -412,21 +411,19 @@ bool EngineRacer::DoGearChange(GearID gear, bool automatic) {
         return false;
     }
 
-    GearID previous = mGear;
+    GearID previous = (GearID)mGear;
     ShiftStatus status = OnGearChange(gear);
     // has shifted
     if (status != SHIFT_STATUS_NONE) {
         mShiftStatus = status;
         mShiftPotential = SHIFT_POTENTIAL_NONE;
         ISimable *owner = GetOwner();
-        // AI shifted
-        if (!owner->IsPlayer()) {
-            return true;
-        }
-
-        // dispatch shift event
-        new EPlayerShift(owner->GetInstanceHandle(), status, automatic, previous, gear);
         // player shifted
+        if (owner->IsPlayer()) {
+            // dispatch shift event
+            new EPlayerShift(owner->GetInstanceHandle(), status, automatic, previous, gear);
+        }
+        // AI shifted
         return true;
     }
     // didn't shift
