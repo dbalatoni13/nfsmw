@@ -30,4 +30,8 @@
 
 #include "Speed/Indep/Src/Physics/Behaviors/SuspensionSimple.cpp"
 
+#include "Speed/Indep/Src/Physics/Behaviors/SuspensionTrailer.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/SuspensionSpline.cpp"
+
 #include "Speed/Indep/Src/Physics/Behaviors/EngineRacer.cpp"

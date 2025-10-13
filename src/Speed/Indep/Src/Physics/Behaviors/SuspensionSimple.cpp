@@ -67,7 +67,7 @@ class SuspensionSimple : public Chassis, public Sim::Collision::IListener, publi
             mMaxSlip = 0.5f;
         }
 
-        float GetRadius() {
+        float GetRadius() const {
             return mRadius;
         }
 
@@ -330,10 +330,10 @@ void SuspensionSimple::DoDriveForces(State &state) {
     bool slip_tires = false;
     bool is_staging = state.flags & 1;
     if (is_staging || (state.gear < 4 && (state.gas_input > 0.5f))) {
-        slip_tires = 1;
+        slip_tires = true;
     }
     float traction_boost = state.nos_boost * state.shift_boost;
-    if (is_staging != 0) {
+    if (is_staging) {
         traction_boost *= 0.25f;
     }
     if (front_drive != 0.0f) {
@@ -346,7 +346,7 @@ void SuspensionSimple::DoDriveForces(State &state) {
             }
         };
     }
-    float rear_drive = (drive_torque * (1.0f - split));
+    float rear_drive = drive_torque * (1.0f - split);
     if (rear_drive != 0.0f) {
         for (unsigned int i = 2; i < 4; ++i) {
             Tire *tire = mTires[i];

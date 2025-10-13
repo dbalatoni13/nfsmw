@@ -19,21 +19,21 @@ class IEngine : public UTL::COM::IUnknown {
     virtual ~IEngine() {}
 
   public:
-    virtual float GetRPM();
-    virtual float GetRedline();
-    virtual float GetMaxRPM();
-    virtual float GetMinRPM();
-    virtual float GetPeakTorqueRPM();
+    virtual float GetRPM() const;
+    virtual float GetRedline() const;
+    virtual float GetMaxRPM() const;
+    virtual float GetMinRPM() const;
+    virtual float GetPeakTorqueRPM() const;
     virtual void MatchSpeed(float speed);
-    virtual float GetNOSCapacity();
+    virtual float GetNOSCapacity() const;
     virtual bool IsNOSEngaged() const;
     virtual float GetNOSFlowRate() const;
-    virtual float GetNOSBoost();
+    virtual float GetNOSBoost() const;
     virtual bool HasNOS() const;
     virtual void ChargeNOS(float charge);
-    virtual float GetMaxHorsePower();
-    virtual float GetMinHorsePower();
-    virtual float GetHorsePower();
+    virtual float GetMaxHorsePower() const;
+    virtual float GetMinHorsePower() const;
+    virtual float GetHorsePower() const;
 };
 
 class IRaceEngine : public UTL::COM::IUnknown {

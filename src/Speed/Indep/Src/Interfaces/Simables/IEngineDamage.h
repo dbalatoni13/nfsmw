@@ -20,7 +20,7 @@ class IEngineDamage : public UTL::COM::IUnknown {
 
   public:
     virtual bool IsBlown();
-    virtual void Blow();
+    virtual bool Blow();
     virtual void Sabotage(float time);
     virtual bool IsSabotaged();
     virtual void Repair();

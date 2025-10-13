@@ -73,6 +73,10 @@ inline float VU0_Sin(float x) {
     return sinf(x);
 }
 
+inline float VU0_Cos(float x) {
+    return cosf(x);
+}
+
 // TODO these should go into UVectorMathGC.hpp
 inline void VU0_v3unitcrossprod(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &dest) {
     // TODO

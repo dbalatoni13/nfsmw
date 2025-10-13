@@ -33,8 +33,9 @@ class IEntity {
 namespace Articulation {
 
 void Release(IEntity *rb0);
+bool IsJoined(const IEntity *rb);
 
-};
+}; // namespace Articulation
 
 }; // namespace Dynamics
 

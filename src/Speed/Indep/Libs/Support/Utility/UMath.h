@@ -215,6 +215,10 @@ inline float Atan2d(float o, float a) {
     return ANGLE2DEG(VU0_Atan2(o, a));
 }
 
+inline float Atan2a(const float o, const float a) {
+    return VU0_Atan2(o, a);
+}
+
 inline float Sqrt(const float f) {
     return VU0_sqrt(f);
 }
@@ -238,6 +242,10 @@ inline float Limit(const float a, const float l) {
 
 inline float Sina(const float a) {
     return VU0_Sin(a);
+}
+
+inline float Cosa(const float a) {
+    return VU0_Cos(a);
 }
 
 } // namespace UMath

@@ -98,6 +98,8 @@ class EngineRacer : protected VehicleBehavior,
     };
 
     // Methods
+    static Behavior *Construct(const BehaviorParams &params);
+
     EngineRacer(const BehaviorParams &bp);
     ShiftPotential FindShiftPotential(GearID gear, float rpm) const;
     float GetDifferentialAngularVelocity(bool locked) const;
@@ -112,15 +114,25 @@ class EngineRacer : protected VehicleBehavior,
     // Overrides
     override virtual ~EngineRacer();
 
+    // IEngine
+    override virtual float GetHorsePower() const;
+
     // Behavior
     override virtual void Reset();
     override virtual void OnTaskSimulate(float dT);
-    override virtual void OnBehaviorChange(const UCrc32 &);
+    override virtual void OnBehaviorChange(const UCrc32 &mechanic);
 
     // ITransmission
     override virtual float GetSpeedometer() const;
     override virtual float GetMaxSpeedometer() const;
     override virtual float GetShiftPoint(GearID from_gear, GearID to_gear) const;
+
+    // IAttributeable
+    override virtual void OnAttributeChange(const Attrib::Collection *collection, unsigned int attribkey);
+
+    // IEngineDamage
+    override virtual void Sabotage(float time);
+    override virtual bool Blow();
 
     // Inline virtuals
     // IRaceEngine

@@ -85,4 +85,8 @@ inline Nm FTLB2NM(const FtLbs _ftlb_) {
     return _ftlb_ * 1.3558f;
 }
 
+inline Hp NM2HP(const Nm _nm, const Rpm _rpm) {
+    return _nm * 0.7376f * _rpm * 0.00019040366f;
+}
+
 #endif

@@ -129,11 +129,11 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
         void UpdateFree(float dT);
         float UpdateLoaded(float lat_vel, float fwd_vel, float body_speed, float load, float dT);
 
-        bool IsOnGround() {
+        bool IsOnGround() const {
             return mCompression > 0.0f;
         }
 
-        bool IsSlipping() {
+        bool IsSlipping() const {
             return mTraction >= 1.0f;
         }
 
@@ -145,19 +145,19 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
             mEBrake = ebrake;
         }
 
-        float GetEBrake() {
+        float GetEBrake() const {
             return mEBrake;
         }
 
-        float GetRoadSpeed() {
+        float GetRoadSpeed() const {
             return mRoadSpeed;
         }
 
-        float GetRadius() {
+        float GetRadius() const {
             return mRadius;
         }
 
-        float GetAngularVelocity() {
+        float GetAngularVelocity() const {
             return mAV;
         }
 
@@ -165,11 +165,11 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
             return mLateralSpeed;
         }
 
-        float GetCurrentSlip() {
+        float GetCurrentSlip() const {
             return mSlip;
         }
 
-        float GetToleratedSlip() {
+        float GetToleratedSlip() const {
             // TODO
             // return mSlip;
         }
@@ -202,23 +202,23 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
             }
         }
 
-        float GetTotalTorque() {
+        float GetTotalTorque() const {
             return mDriveTorque + mBrakeTorque;
         }
 
-        float GetDriveTorque() {
+        float GetDriveTorque() const {
             return mDriveTorque;
         }
 
-        float GetLongitudeForce() {
+        float GetLongitudeForce() const {
             return mLongitudeForce;
         }
 
-        bool IsBrakeLocked() {
+        bool IsBrakeLocked() const {
             return mBrakeLocked;
         }
 
-        bool IsSteeringWheel() {
+        bool IsSteeringWheel() const {
             return mWheelIndex < 2;
         }
 

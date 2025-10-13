@@ -1,10 +1,52 @@
 #include "EngineRacer.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Src/Generated/Events/EEngineBlown.hpp"
 #include "Speed/Indep/Src/Generated/Events/EPlayerShift.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/Sim/UTil.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+
+Behavior *EngineRacer::Construct(const BehaviorParams &params) {
+    return new EngineRacer(params);
+}
+
+float EngineRacer::GetHorsePower() const {
+    float engine_torque = GetEngineTorque(mRPM);
+    return NM2HP(engine_torque * mThrottle, mRPM);
+}
+
+void EngineRacer::OnBehaviorChange(const UCrc32 &mechanic) {
+    if (mechanic == BEHAVIOR_MECHANIC_INPUT) {
+        GetOwner()->QueryInterface(&mIInput);
+    }
+    if (mechanic == BEHAVIOR_MECHANIC_SUSPENSION) {
+        GetOwner()->QueryInterface(&mSuspension);
+    }
+    if (mechanic == BEHAVIOR_MECHANIC_AI) {
+        GetOwner()->QueryInterface(&mCheater);
+    }
+}
+
+void EngineRacer::Sabotage(float time) {
+    if ((mSabotage <= 0.0f) && (time > FLOAT_EPSILON) && !IsBlown()) {
+        mSabotage = Sim::GetTime() + time;
+    }
+}
+
+bool EngineRacer::Blow() {
+    if (!mBlown) {
+        mBlown = true;
+        mSabotage = 0.0f;
+        new EEngineBlown(GetOwner()->GetInstanceHandle());
+        return true;
+    }
+    return false;
+}
+
+void EngineRacer::OnAttributeChange(const Attrib::Collection *collection, unsigned int attribkey) {}
 
 // Credits: Brawltendo
 // UNSOLVED
@@ -178,7 +220,6 @@ float EngineRacer::GetSpeedometer() const {
 }
 
 // Credits: Brawltendo
-// UNSOLVED
 void EngineRacer::LimitFreeWheels(float w) {
     unsigned int numwheels = mSuspension->GetNumWheels();
     for (unsigned int i = 0; i < numwheels; ++i) {
@@ -190,22 +231,13 @@ void EngineRacer::LimitFreeWheels(float w) {
                 continue;
 
             float ww = mSuspension->GetWheelAngularVelocity(i);
-            if (ww * w < 0.f)
+            if (ww * w < 0.0f)
                 ww = 0.0f;
             else if (ww > 0.0f) {
-                /* if (ww < w);
-                else
-                        ww = w; */
-                // ww = ww < w ? w : ww;
                 ww = UMath::Min(ww, w);
             } else if (ww < 0.0f) {
-                if (ww > w)
-                    ww = w;
-                // ww = ww > w ? w : ww;
-                // ww = UMath::Max(ww, w);
+                ww = UMath::Max(ww, w);
             }
-            /* else if ((ww > 0.0f && ww < w) || (ww < 0.0f && ww > w))
-                    ww = w; */
             mSuspension->SetWheelAngularVelocity(i, ww);
         }
     }
@@ -369,35 +401,29 @@ void EngineRacer::DoInduction(const Physics::Tunings *tunings, float dT) {
 }
 
 // Credits: Brawltendo
-// TODO not matching on GC yet
 float EngineRacer::DoThrottle() {
-    if (!IsBlown()) {
-        if (!mIInput) {
-            return 0.0f;
-        } else {
-            return mIInput->GetControls().fGas;
-        }
-    } else {
+    if (IsBlown() || !mIInput) {
         // cut the throttle when the engine is blown
         return 0.0f;
     }
+    return mIInput->GetControls().fGas;
 }
 
 // Credits: Brawltendo
-// TODO not matching on GC yet, branch merging
 float EngineRacer::GetShiftPoint(GearID from_gear, GearID to_gear) const {
-    if (from_gear < G_NEUTRAL || to_gear <= G_NEUTRAL) {
+    if (from_gear < G_NEUTRAL) {
+        return 0.0f;
+    }
+    if (to_gear <= G_NEUTRAL) {
         return 0.0f;
     }
     if (to_gear > from_gear) {
         return mShiftUpRPM[from_gear];
     }
-    if (to_gear >= from_gear) {
-        return 0.0f;
-
-    } else {
+    if (to_gear < from_gear) {
         return mShiftDownRPM[from_gear];
     }
+    return 0.0f;
 }
 
 // Credits: Brawltendo
