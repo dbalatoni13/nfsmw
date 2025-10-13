@@ -2,13 +2,13 @@ Need for Speed: Most Wanted (GC)
 [![Build Status]][actions] [![Code Progress]][progress] [![Data Progress]][progress] [![Discord Badge]][discord]
 =============
 
-[Build Status]: https://github.com/dbalatoni13/nsfmw/actions/workflows/build.yml/badge.svg
-[actions]: https://github.com/dbalatoni13/nfsug/actions/workflows/build.yml
-[Code Progress]: https://decomp.dev/dbalatoni13/nsfmw.svg?mode=shield&measure=code&label=Code
-[Data Progress]: https://decomp.dev/dbalatoni13/nsfmw.svg?mode=shield&measure=data&label=Data
+[Build Status]: https://github.com/dbalatoni13/nfsmw/actions/workflows/build.yml/badge.svg
+[actions]: https://github.com/dbalatoni13/nfsmw/actions/workflows/build.yml
+[Code Progress]: https://decomp.dev/dbalatoni13/nfsmw.svg?mode=shield&measure=code&label=Code
+[Data Progress]: https://decomp.dev/dbalatoni13/nfsmw.svg?mode=shield&measure=data&label=Data
 [progress]: https://decomp.dev/dbalatoni13/nfsmw
-[Discord Badge]: https://img.shields.io/discord/458389297192632330?color=%237289DA&logo=discord&logoColor=%23FFFFFF
-[discord]: https://discord.gg/sbYEXeMK
+[Discord Badge]: https://img.shields.io/discord/727908905392275526?color=%237289DA&logo=discord&logoColor=%23FFFFFF
+[discord]: https://discord.gg/hKx3FJJgrV
 
 A work-in-progress decompilation of the GameCube version of Need for Speed: Most Wanted.
 
