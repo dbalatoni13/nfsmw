@@ -10,6 +10,7 @@
 // Credit: Brawltendo
 namespace Attrib {
 
+// TODO this file probably doesn't exist
 class Node {
   public:
     enum Flags {
@@ -25,30 +26,39 @@ class Node {
     bool GetFlag(unsigned int mask) {
         return mFlags & mask;
     }
+
     bool RequiresRelease() {
         return GetFlag(Flag_RequiresRelease);
     }
+
     bool IsArray() {
         return GetFlag(Flag_IsArray);
     }
+
     bool IsInherited() {
         return GetFlag(Flag_IsInherited);
     }
+
     bool IsAccessor() {
         return GetFlag(Flag_IsAccessor);
     }
+
     bool IsLaidOut() {
         return GetFlag(Flag_IsLaidOut);
     }
+
     bool IsByValue() {
         return GetFlag(Flag_IsByValue);
     }
+
     bool IsLocatable() {
         return GetFlag(Flag_IsLocatable);
     }
+
     bool IsValid() {
         return IsLaidOut() || mPtr != this;
     }
+
     void *GetPointer(void *layoutptr) {
         if (IsByValue())
             return &mValue;
@@ -57,21 +67,26 @@ class Node {
         else
             return mPtr;
     }
+
     class Array *GetArray(void *layoutptr) {
         if (IsLaidOut())
             return (Array *)(uintptr_t(layoutptr) + uintptr_t(mArray));
         else
             return mArray;
     }
+
     unsigned int GetValue() {
         return mValue;
     }
+
     unsigned int *GetRefValue() {
         return &mValue;
     }
+
     unsigned int GetKey() {
         return IsValid() ? mKey : 0;
     }
+
     unsigned int MaxSearch() {
         return mMax;
     }

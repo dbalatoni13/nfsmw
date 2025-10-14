@@ -178,7 +178,7 @@ class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet
     virtual void GlareOn(int glare) = 0; // TODO "ID" enum
     virtual void GlareOff(int glare) = 0;
     virtual bool IsCollidingWithSoftBarrier() = 0;
-    virtual AIVehicle *GetAIVehiclePtr() = 0;
+    virtual IVehicleAI *GetAIVehiclePtr() = 0;
     virtual float GetSlipAngle() = 0;
     virtual UMath::Vector3 &GetLocalVelocity() = 0;
     virtual void ComputeHeading(UMath::Vector3 *v) = 0;

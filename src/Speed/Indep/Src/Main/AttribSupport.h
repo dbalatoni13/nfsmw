@@ -5,7 +5,7 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribCollection.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 namespace Attrib {
 

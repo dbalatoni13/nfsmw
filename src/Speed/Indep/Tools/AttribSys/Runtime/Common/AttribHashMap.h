@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include <cstddef>
 #include <types.h>
 
 #include "../AttribNode.h"
@@ -13,17 +14,24 @@
 namespace Attrib {
 
 // Rotates (v) by (amount) bits
+// TODO probably not in this namespace
 inline unsigned int RotateNTo32(unsigned int v, unsigned int amount) {
     return (v << amount) | (v >> (32 - amount));
 }
 
 class HashMap {
   public:
+    unsigned int FindIndex(unsigned int key);
+
+    std::size_t Size() const {
+        return mNumEntries;
+    }
+
     bool ValidIndex(unsigned int index) {
         return index < mTableSize && mTable[index].IsValid();
     }
-    unsigned int FindIndex(unsigned int key);
-    class Node *Find(unsigned int key) {
+
+    Node *Find(unsigned int key) {
         if (!key)
             return 0;
 
@@ -38,12 +46,14 @@ class HashMap {
     };
 
   private:
-    class Node *mTable;
-    unsigned int mTableSize;
-    unsigned int mNumEntries;
+    Node *mTable;
+    std::size_t mTableSize;
+    std::size_t mNumEntries;
     unsigned short mWorstCollision;
     unsigned short mKeyShift;
 };
+
+unsigned int ScanForValidKey(const HashMap &v, std::size_t index);
 
 } // namespace Attrib
 

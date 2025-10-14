@@ -166,7 +166,6 @@ IVehicle *AITrafficManager::GetAvailableTrafficVehicle(Attrib::Key key, bool mak
     return nullptr;
 }
 
-// TODO unsolved
 bool AITrafficManager::SpawnTraffic() {
     if (!mPattern.IsValid()) {
         return false;
@@ -195,12 +194,10 @@ bool AITrafficManager::SpawnTraffic() {
     }
 
     IVehicleAI *ivehicleAI = availableVehicle->GetAIVehiclePtr();
-    // TODO
     if (!ivehicleAI->ResetVehicleToRoadNav(&mNav)) {
         return false;
     }
 
-    // TODO
     ivehicleAI->SetSpawned();
     availableVehicle->Activate();
 
@@ -396,7 +393,6 @@ bool AITrafficManager::ValidateVehicle(IVehicle *ivehicle, float density) const 
 // TODO move
 static Table TrafficDensitySpawnRates;
 
-// UNSOLVED virtual stuff
 void AITrafficManager::Update(float dT) {
     UpdateDebug();
     float density = ComputeDensity();
@@ -418,7 +414,6 @@ void AITrafficManager::Update(float dT) {
     }
 }
 
-// UNSOLVED virtual stuff
 void AITrafficManager::FlushAllTraffic(bool release) {
     for (std::list<IVehicle *>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
         IVehicle *ivehicle = *iter;

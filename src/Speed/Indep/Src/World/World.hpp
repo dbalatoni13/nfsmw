@@ -7,7 +7,7 @@
 
 #include "Speed/Indep/Src/World/WCollider.h"
 #include "Speed/Indep/Src/World/WCollisionTri.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribCollection.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 class WWorldPos {
     // total size: 0x3C

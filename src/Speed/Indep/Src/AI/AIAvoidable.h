@@ -14,14 +14,16 @@ struct _type_AIAvoidableNeighbors {
     }
 };
 
-struct AIAvoidable {
-    // total size: 0x14
+// total size: 0x14
+class AIAvoidable {
+  public:
+    virtual ~AIAvoidable();
+    virtual bool OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep);
+
+  private:
     struct Grid *mGridNode;                                               // offset 0x0, size 0x4
     UTL::Std::list<AIAvoidable *, _type_AIAvoidableNeighbors> mNeighbors; // offset 0x4, size 0x8
     UTL::COM::IUnknown *mUnk;                                             // offset 0xC, size 0x4
-
-    virtual ~AIAvoidable();
-    virtual bool OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep);
 };
 
 #endif

@@ -51,8 +51,8 @@ class IVehicleAI : public UTL::COM::IUnknown {
     virtual WRoadNav *GetDriveToNav();
     virtual bool GetDrivableToDriveToNav();
     virtual void ResetDriveToNav(eLaneSelection lane_selection);
-    virtual bool ResetVehicleToRoadNav(short segInd, char laneInd, float timeStep);
     virtual bool ResetVehicleToRoadNav(WRoadNav *other_nav);
+    virtual bool ResetVehicleToRoadNav(short segInd, char laneInd, float timeStep);
     virtual bool ResetVehicleToRoadPos(const UMath::Vector3 &position, const UMath::Vector3 &forwardVector);
     virtual float GetPathDistanceRemaining();
     virtual struct AITarget *GetTarget() const;

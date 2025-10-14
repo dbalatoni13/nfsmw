@@ -5,7 +5,8 @@
 #pragma once
 #endif
 
-#include "AttribCollection.h"
+#include "AttribArray.h"
+#include "Common/AttribHashMap.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Misc/AttribAlloc.h"
 
@@ -17,11 +18,40 @@ typedef unsigned int Key;
 // const int kTypeHandlerCount = 7;
 // unsigned int kTypeHandlerIds[kTypeHandlerCount] = {0x2B936EB7u, 0xAA229CD7u, 0x341F03A0u, 0x600994C4u, 0x681D219Cu, 0x5FDE6463u, 0x57D382C9u};
 
-const void *DefaultDataArea(unsigned int bytes);
+const void *DefaultDataArea(std::size_t bytes);
+void AllocationAccounting(std::size_t bytes, bool add);
 
-inline void Free(void *ptr, unsigned int bytes, const char *name) {
+inline void Free(void *ptr, std::size_t bytes, const char *name) {
     AttribAlloc::Free(ptr, bytes, name);
 }
+
+class Instance;
+class Attribute;
+
+class Collection {
+  public:
+    class Node *GetNode(Key attributeKey, const Collection *&container) const;
+    Attribute Get(const Instance &instance, Key attributeKey) const;
+    void *GetData(Key attributeKey, std::size_t index) const;
+    std::size_t Count() const;
+    Key FirstKey(bool &inLayout) const;
+
+    // TODO this must be in AttribPrivate.h, why?
+    void AddRef() const {
+        // TODO what the hell?
+        const_cast<Collection *>(this)->mRefCount++;
+    }
+
+  private:
+    HashMap mTable;
+    const Collection *mParent;
+    class Class *mClass;
+    void *mLayout;
+    std::size_t mRefCount;
+    Key mKey;
+    class Vault *mSource;
+    const char *mNamePtr;
+};
 
 class RefSpec {
     // total size: 0xC
@@ -62,8 +92,6 @@ class RefSpec {
     }
 };
 
-struct Instance;
-
 class Attribute {
   protected:
     void *GetElementPointer(unsigned int index) const {
@@ -73,6 +101,7 @@ class Attribute {
   public:
     Attribute(const Attribute &src);
     Attribute();
+    Attribute(const Instance &instance, const Collection *collection, Node *node);
     ~Attribute();
     const Attribute &operator=(const Attribute &rhs);
     bool operator==(const Attribute &rhs) const;
@@ -115,8 +144,6 @@ class Attribute {
 
   private:
     void *GetInternalPointer(unsigned int index) const;
-
-    Attribute(const Instance &instance, const Collection *collection, Node *node);
 
     // total size: 0x10
     const Instance *mInstance;     // offset 0x0, size 0x4
@@ -179,6 +206,91 @@ class Instance {
     unsigned int mMsgPort;
     unsigned short mFlags;
     unsigned short mLocks;
+};
+
+class DatabasePrivate;
+class ClassPrivate;
+
+// total size: 0x10
+class Definition {
+  public:
+    enum Flags {
+        kIsNotSearchable = 8,
+        kIsBound = 4,
+        kInLayout = 2,
+        kArray = 1,
+    };
+
+    Definition(unsigned int k) {
+        mKey = k;
+    }
+
+    Key GetKey() const {
+        return mKey;
+    }
+
+    bool operator<(const Definition &rhs) const {
+        return mKey < rhs.mKey;
+    }
+
+  private:
+    Key mKey;                 // offset 0x0, size 0x4
+    unsigned int mType;       // offset 0x4, size 0x4
+    unsigned short mOffset;   // offset 0x8, size 0x2
+    unsigned short mSize;     // offset 0xA, size 0x2
+    unsigned short mMaxCount; // offset 0xC, size 0x2
+    unsigned char mFlags;     // offset 0xE, size 0x1
+    unsigned char mAlignment; // offset 0xF, size 0x1
+};
+
+// total size: 0xC
+class Class {
+  public:
+    class TablePolicy {};
+
+    Class(unsigned int k, ClassPrivate &privates);
+    ~Class();
+    const Definition *GetDefinition(Key key) const;
+    std::size_t GetNumDefinitions() const;
+    Key GetFirstDefinition() const;
+    Key GetNextDefinition(Key prev) const;
+    std::size_t GetNumCollections() const;
+    Key GetFirstCollection() const;
+    std::size_t GetTableNodeSize() const;
+    void CopyLayout(void *srcLayout, void *dstLayout) const;
+    void FreeLayout(void *layout) const;
+
+  private:
+    void operator delete(void *ptr, std::size_t bytes) {
+        AllocationAccounting(bytes, false);
+        Free(ptr, bytes, nullptr);
+    }
+
+    Key mKey;              // offset 0x0, size 0x4
+    std::size_t mRefCount; // offset 0x4, size 0x4
+  public:
+    // TODO how does Collection::Count access this without an inline?
+    ClassPrivate &mPrivates; // offset 0x8, size 0x4
+};
+
+// total size: 0x8
+class Database {
+  public:
+    bool AddClass(Class *c);
+    void RemoveClass(Class *c);
+
+    static Database &Get() {
+        return *sThis;
+    }
+
+    bool IsInitialized() {}
+
+  private:
+    Database(DatabasePrivate &privates);
+
+    static Attrib::Database *sThis;
+
+    DatabasePrivate &mPrivates; // offset 0x0, size 0x4
 };
 
 template <typename t> class TAttrib : public Attribute {

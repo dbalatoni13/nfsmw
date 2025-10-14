@@ -7,7 +7,7 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribCollection.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 namespace Sim {
 

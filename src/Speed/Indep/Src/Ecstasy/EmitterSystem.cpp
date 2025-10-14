@@ -7,7 +7,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/emittergroup.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribCollection.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"

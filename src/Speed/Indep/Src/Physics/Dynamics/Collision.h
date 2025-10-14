@@ -9,7 +9,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UVector.h"
 #include "Speed/Indep/Src/Physics/Dynamics.h"
 #include "Speed/Indep/Src/Physics/Dynamics/Inertia.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribCollection.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 struct CollisionSurface {

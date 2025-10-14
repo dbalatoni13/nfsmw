@@ -17,6 +17,8 @@ class ITrafficMgr : public UTL::COM::IUnknown, public UTL::Collections::Singleto
     ITrafficMgr(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
     virtual ~ITrafficMgr() {}
+
+    virtual void FlushAllTraffic(bool release);
 };
 
 #endif
