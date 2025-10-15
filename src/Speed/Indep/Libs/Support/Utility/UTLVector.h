@@ -108,9 +108,6 @@ template <typename T, unsigned int Alignment = 16> class Vector {
 
 template <typename T, std::size_t Size, unsigned int Alignment = 16> class FixedVector : public Vector<T, Alignment> {
   public:
-    typedef T value_type;
-    typedef value_type *pointer;
-
     FixedVector() {}
 
     virtual ~FixedVector() {}
