@@ -1,0 +1,20 @@
+<!-- Type 'XBRIGHTS.EXE <filename>' to see the rights for a specific file -->
+
+<Rights>
+    <Right Name="Sample Code" English="Unless otherwise set forth in your Xbox 360 Development Kit License, that\nagreement allows you to reproduce, modify, and make derivative works of the\nSample Code, only for incorporation into one or more Xbox 360 Software Titles.\n" Japanese=""/>
+    <Right Name="Source Code Version of Redistributable Code" English="Unless otherwise set forth in your Xbox 360 Development Kit License, that\nagreement allows you to use the Source Code Version of the Redistributable\nCode in source code form internally only, and only to create and maintain\none or more Xbox 360 Software Titles.\n" Japanese=""/>
+    <Right Name="Object Code Version of Redistributable Code" English="Unless otherwise set forth in your Xbox 360 Development Kit License, that\nagreement allows you to reproduce and incorporate the Object Code Version\nof Redistributable Code in object code form only in and as an inseparable\npart of the Xbox 360 Software Titles.\n" Japanese=""/>
+    <Right Name="Source Code Version of Tools" English="Unless otherwise set forth in your Xbox 360 Development Kit License, that\nagreement allows you to reproduce, modify, and make derivative works of the\nSource Code Version of Tools, but only for internal use, and only to create\nand maintain one or more Xbox 360 Software Titles.\n" Japanese=""/>
+    <Right Name="Object Code Version of Tools" English="Unless otherwise set forth in your Xbox 360 Development Kit License, that\nagreement allows you to use the Object Code Version of Tools internally\nonly for developing and testing Xbox 360 Software Titles.\n" Japanese=""/>
+    <Right Name="Third Party Code" English="Third Party Code may only be used in accordance with the license terms set\nforth in a third party license agreement that applies to such code, or in\naccordance with supplemental license terms provided by Microsoft that apply\nto such code.\n" Japanese=""/>
+    <File Name=".rights" Rights="Object Code Version of Tools"/>
+    <File Name="locking.h" Rights="Source Code Version of Redistributable Code"/>
+    <File Name="stat.h" Rights="Source Code Version of Redistributable Code"/>
+    <File Name="stat.inl" Rights="Source Code Version of Redistributable Code"/>
+    <File Name="timeb.h" Rights="Source Code Version of Redistributable Code"/>
+    <File Name="timeb.inl" Rights="Source Code Version of Redistributable Code"/>
+    <File Name="types.h" Rights="Source Code Version of Redistributable Code"/>
+    <File Name="utime.h" Rights="Source Code Version of Redistributable Code"/>
+    <File Name="utime.inl" Rights="Source Code Version of Redistributable Code"/>
+    <File Name="wstat.inl" Rights="Source Code Version of Redistributable Code"/>
+</Rights>

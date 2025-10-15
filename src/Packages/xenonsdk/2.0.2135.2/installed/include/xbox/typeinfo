@@ -1,0 +1,186 @@
+/***
+*typeinfo.h - Defines the type_info structure and exceptions used for RTTI
+*
+*	Copyright (c) Microsoft Corporation. All rights reserved.
+*	Modified January 1996 by P.J. Plauger
+*
+*Purpose:
+*       Defines the type_info structure and exceptions used for
+*       Runtime Type Identification.
+*
+*       [Public]
+*
+****/
+
+#if _MSC_VER > 1000
+#pragma once
+#endif
+
+#ifndef _TYPEINFO_
+#define _TYPEINFO_
+#ifndef RC_INVOKED
+#include <xstddef>
+
+#ifdef  _MSC_VER
+#pragma pack(push,_CRT_PACKING)
+#endif  /* _MSC_VER */
+
+ #ifndef __cplusplus
+  #error This header requires a C++ compiler ...
+ #endif
+
+ #if !defined(_WIN32)
+  #error ERROR: Only Win32 target supported!
+ #endif
+
+struct __type_info_node {
+    void *memPtr;
+    __type_info_node* next;
+};
+
+extern __type_info_node __type_info_root_node;
+
+class type_info {
+public:
+    _CRTIMP_PURE virtual ~type_info();
+    _CRTIMP bool __thiscall operator==(const type_info& rhs) const;
+    _CRTIMP bool __thiscall operator!=(const type_info& rhs) const;
+    _CRTIMP int __thiscall before(const type_info& rhs) const;
+    _CRTIMP const char* __thiscall name(__type_info_node* __ptype_info_node = &__type_info_root_node) const;
+    _CRTIMP const char* __thiscall raw_name() const;
+private:
+    void *_m_data;
+    char _m_d_name[1];
+    __CLR_OR_THIS_CALL type_info(const type_info& rhs);
+    type_info& __CLR_OR_THIS_CALL operator=(const type_info& rhs);
+    _CRTIMP static const char *__cdecl _Name_base(const type_info *,__type_info_node* __ptype_info_node);
+    _CRTIMP static void __cdecl _Type_info_dtor(type_info *);
+};
+
+// This include must occur below the definition of class type_info
+#include <exception>
+
+ #if _HAS_EXCEPTIONS
+
+ _STD_BEGIN
+
+using ::type_info;
+
+ _STD_END
+
+
+ _STD_BEGIN
+
+class _CRTIMP_PURE bad_cast : public exception {
+public:
+    __CLR_OR_THIS_CALL bad_cast(const char * _Message = "bad cast")
+        : exception(_Message)
+    {}
+    __CLR_OR_THIS_CALL bad_cast(const bad_cast &_That)
+        : exception(_That)
+    {}
+    virtual __CLR_OR_THIS_CALL ~bad_cast()
+    {}
+};
+
+class _CRTIMP_PURE bad_typeid : public exception {
+public:
+    __CLR_OR_THIS_CALL bad_typeid(const char * _Message = "bad typeid")
+        : exception(_Message)
+    {}
+    __CLR_OR_THIS_CALL bad_typeid(const bad_typeid &_That)
+        : exception(_That)
+    {}
+    virtual __CLR_OR_THIS_CALL ~bad_typeid()
+    {}
+
+};
+
+class _CRTIMP_PURE __non_rtti_object : public bad_typeid {
+public:
+    __CLR_OR_THIS_CALL __non_rtti_object(const char * _Message)
+        : bad_typeid(_Message)
+    {}
+    __CLR_OR_THIS_CALL __non_rtti_object(const __non_rtti_object &_That)
+        : bad_typeid(_That)
+    {}
+    virtual __CLR_OR_THIS_CALL ~__non_rtti_object()
+    {}
+};
+
+ _STD_END
+ 
+
+ #else
+
+ _STD_BEGIN
+ 
+		// CLASS bad_cast
+class _CRTIMP2 bad_cast
+	: public exception
+	{	// base of all bad cast exceptions
+public:
+	bad_cast(const char *_Message = "bad cast") _THROW0()
+		: exception(_Message)
+		{	// construct from message string
+		}
+
+	virtual ~bad_cast() _THROW0()
+		{	// destroy the object
+		}
+
+protected:
+	virtual void _Doraise() const
+		{	// perform class-specific exception handling
+		_RAISE(*this);
+		}
+	};
+
+		// CLASS bad_typeid
+class _CRTIMP2 bad_typeid
+	: public exception
+	{	// base of all bad typeid exceptions
+public:
+	bad_typeid(const char *_Message = "bad typeid") _THROW0()
+		: exception(_Message)
+		{	// construct from message string
+		}
+
+	virtual ~bad_typeid() _THROW0()
+		{	// destroy the object
+		}
+
+protected:
+	virtual void _Doraise() const
+		{	// perform class-specific exception handling
+		_RAISE(*this);
+		}
+	};
+
+class _CRTIMP2 __non_rtti_object
+	: public bad_typeid
+	{	// report a non RTTI object
+public:
+    __non_rtti_object(const char *_Message)
+		: bad_typeid(_Message)
+		{	// construct from message string
+		}
+	};
+ _STD_END
+ 
+ #endif /* _HAS_EXCEPTIONS */
+
+#endif /* RC_INVOKED */
+
+#ifdef  _MSC_VER
+#pragma pack(pop)
+#endif  /* _MSC_VER */
+
+#endif // _TYPEINFO_
+
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Modified January 1996 by P.J. Plauger
+ * Modified November 1998 by P.J. Plauger
+ * Consult your license regarding permissions and restrictions.
+ */
