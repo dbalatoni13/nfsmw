@@ -14,6 +14,6 @@ Sections:
 	.tls        type:data align:65536
 	.idata      type:data align:65536
 
-Speed/Indep/SourceLists/zAttribSys.cpp:
+Speed/Indep/SourceLists/zAI.cpp:
 	.pdata      start:0x820B9600 end:0x820BBB70
 	.text       start:0x820F0000 end:0x8214A870

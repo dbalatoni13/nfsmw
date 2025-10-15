@@ -14,9 +14,9 @@
 
 // TODO move?
 struct TireEffectRecord {
-    uint32_t TireCondition;
-    uint32_t EmitterClass;
-    uint32_t EmitterCollection;
+    unsigned int TireCondition;
+    unsigned int EmitterClass;
+    unsigned int EmitterCollection;
     float MinSpeed;
     float MaxSpeed;
 };

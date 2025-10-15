@@ -9,8 +9,9 @@
 
 #include <cstddef>
 
-typedef bool BOOL;
-typedef bool Bool;
+// TODO
+typedef int BOOL;
+typedef int Bool;
 
 #if !defined(__cplusplus) || __cplusplus < 201103L
 
@@ -34,6 +35,12 @@ typedef bool Bool;
 #define AT_ADDRESS(xyz)
 #endif
 
+#endif
+
+#include <cmath>
+
+#ifndef M_TWOPI
+#define M_TWOPI (2.0 * M_PI)
 #endif
 
 typedef unsigned int uintptr_t;

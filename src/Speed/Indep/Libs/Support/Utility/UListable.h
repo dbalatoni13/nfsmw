@@ -17,10 +17,14 @@ template <typename T, std::size_t U> class Listable {
   public:
     typedef T value_type;
     typedef value_type *pointer;
-    typedef const value_type *const_pointer;
+    typedef value_type const *const_pointer;
 
     class List : public FixedVector<pointer, U> {
       public:
+        typedef T value_type;
+        typedef value_type *pointer;
+        typedef value_type const *const_pointer;
+
         List(const List &);
         List();
         virtual ~List();
@@ -63,12 +67,12 @@ template <typename T, std::size_t ListSize, typename Enum, std::size_t EnumMax> 
     typedef value_type *pointer;
     typedef const value_type *const_pointer;
     typedef pointer iterator;
-    typedef const pointer *const_iterator;
+    typedef value_type const *const_iterator;
 
     class List : public FixedVector<pointer, ListSize> {
       public:
         typedef pointer *iterator;
-        typedef const pointer *const_iterator;
+        typedef value_type const *const_iterator;
 
         List(const List &);
         List();

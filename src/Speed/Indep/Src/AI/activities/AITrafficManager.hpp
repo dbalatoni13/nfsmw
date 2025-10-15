@@ -51,10 +51,11 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
     };
 
     struct PatternMap : public UTL::Std::vector<PatternKey, _type_AITrafficManager_PatternMap> {
+
         Attrib::Key Find(int bhash) const {
             PatternKey key = {bhash, 0};
-            PatternMap::const_iterator iter = std::lower_bound(this->begin(), this->end(), key);
-            if (iter != this->end() && iter->BHash == bhash) {
+            UTL::Std::vector<PatternKey, _type_AITrafficManager_PatternMap>::const_iterator iter = std::lower_bound(begin(), end(), key);
+            if (iter != end() && iter->BHash == bhash) {
                 return iter->CollectionKey;
             }
             return 0;

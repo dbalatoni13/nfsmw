@@ -9,7 +9,7 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "WCollision.h"
 #include "WCollisionTri.h"
-#include "dolphin/types.h"
+#include "types.h"
 
 class WCollisionMgr {
   public:

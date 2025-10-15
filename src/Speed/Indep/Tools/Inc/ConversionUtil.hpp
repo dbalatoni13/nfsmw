@@ -8,7 +8,7 @@
 #pragma once
 #endif
 
-#include <cmath>
+#include "types.h"
 
 // Credit: Brawltendo
 

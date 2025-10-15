@@ -7,6 +7,8 @@
 
 #ifdef TARGET_GC
 #include "Speed/GameCube/Src/Ecstasy/TextureInfoPlat.hpp"
+#elif defined(TARGET_X360)
+#include "Speed/Xenon/Src/Ecstasy/TextureInfoPlat.hpp"
 #endif
 
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"

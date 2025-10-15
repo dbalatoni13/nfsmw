@@ -86,7 +86,7 @@ void AITrafficManager::OnAttached(IAttachable *pOther) {
 void AITrafficManager::OnDetached(IAttachable *pOther) {
     IVehicle *ivehicle;
     if (pOther->QueryInterface(&ivehicle)) {
-        std::list<IVehicle *>::iterator iter = std::find(mVehicles.begin(), mVehicles.end(), ivehicle);
+        UTL::Std::list<IVehicle *, _type_TrafficList>::iterator iter = std::find(mVehicles.begin(), mVehicles.end(), ivehicle);
         if (iter != mVehicles.end()) {
             mVehicles.erase(iter);
         }
@@ -140,7 +140,7 @@ IVehicle *AITrafficManager::GetAvailableTrafficVehicle(Attrib::Key key, bool mak
         return nullptr;
     }
 
-    for (std::list<IVehicle *>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
+    for (UTL::Std::list<IVehicle *, _type_TrafficList>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
         IVehicle *ivehicle = *iter;
         if ((!ivehicle->IsActive() || ivehicle->IsLoading()) && ivehicle->GetVehicleKey() == key) {
             return ivehicle;
@@ -225,7 +225,7 @@ bool AITrafficManager::SpawnTraffic() {
 
 bool AITrafficManager::NeedsTraffic() const {
     int inactive_count = 0;
-    for (std::list<IVehicle *>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
+    for (UTL::Std::list<IVehicle *, _type_TrafficList>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
         IVehicle *ivehicle = *iter;
         if (!ivehicle->IsActive() && !ivehicle->IsLoading()) {
             inactive_count++;
@@ -296,7 +296,9 @@ bool AITrafficManager::FindCollisions(const UMath::Vector3 &spawnpoint) const {
     return false;
 }
 
-bool AITrafficManager::CheckRace(const WRoadNav &nav) const {}
+bool AITrafficManager::CheckRace(const WRoadNav &nav) const {
+    return true;
+}
 
 // UNSOLVED
 bool AITrafficManager::FindSpawnPoint(WRoadNav &nav) const {
@@ -388,7 +390,9 @@ bool AITrafficManager::ChoosePattern() {
     return mPattern.IsValid();
 }
 
-bool AITrafficManager::ValidateVehicle(IVehicle *ivehicle, float density) const {}
+bool AITrafficManager::ValidateVehicle(IVehicle *ivehicle, float density) const {
+    return true;
+}
 
 // TODO move
 static Table TrafficDensitySpawnRates;
@@ -406,7 +410,7 @@ void AITrafficManager::Update(float dT) {
         SpawnTraffic();
     }
 
-    for (std::list<IVehicle *>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
+    for (UTL::Std::list<IVehicle *, _type_TrafficList>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
         IVehicle *ivehicle = *iter;
         if (ivehicle->IsActive() && !ValidateVehicle(ivehicle, density)) {
             ivehicle->GetAIVehiclePtr()->UnSpawn();
@@ -415,7 +419,7 @@ void AITrafficManager::Update(float dT) {
 }
 
 void AITrafficManager::FlushAllTraffic(bool release) {
-    for (std::list<IVehicle *>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
+    for (UTL::Std::list<IVehicle *, _type_TrafficList>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
         IVehicle *ivehicle = *iter;
         if (release) {
             ISimable *isimable;

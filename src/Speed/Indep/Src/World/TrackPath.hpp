@@ -53,15 +53,15 @@ class TrackPathZone {
 class TrackPathManager {
     struct ZoneInfo {
         // total size: 0x4C
-        int32_t NumZones;
+        int NumZones;
         TrackPathZone *pFirstZone;
         TrackPathZone *pLastZone;
         bVector2 CachedBBoxMin;
         bVector2 CachedBBoxMax;
-        int32_t NumCachedZones;
-        int32_t NumCacheHits;
-        int32_t NumCacheRebuilds;
-        int32_t NumFullRebuilds;
+        int NumCachedZones;
+        int NumCacheHits;
+        int NumCacheRebuilds;
+        int NumFullRebuilds;
         TrackPathZone *CachedZones[8];
     };
 

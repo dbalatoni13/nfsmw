@@ -94,6 +94,14 @@ enum FILTER_ID {
     FILTER_OFF = 0,
 };
 
+enum EVIEWMODE {
+    EVIEWMODE_TWOV = 4,
+    EVIEWMODE_TWOH = 3,
+    EVIEWMODE_ONE_RVM = 2,
+    EVIEWMODE_ONE = 1,
+    EVIEWMODE_NONE = 0,
+};
+
 struct eTextureEntry {
     // total size: 0x8
     unsigned int NameHash;            // offset 0x0, size 0x4

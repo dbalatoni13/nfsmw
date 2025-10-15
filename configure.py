@@ -274,7 +274,10 @@ elif config.version in X360_VERSIONS:
     ]
 
     config.extra_clang_flags = [
-        "-std=gnu++98",
+        "-std=c++03",
+        "-D_WIN32",
+        "-D_WCHAR_T_DEFINED",
+        "-fms-extensions",
     ]
 
 cflags_cmn = [

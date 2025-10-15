@@ -40,6 +40,19 @@ template <typename T, typename Tag> struct Allocator {
             gFastMem.Free(p, n * sizeof(T), nullptr);
         }
     }
+
+    // TODO are these three right?
+    size_type max_size() const {
+        return static_cast<size_type>(-1) / sizeof(value_type);
+    }
+
+    void construct(pointer p, const_reference value) {
+        new ((void *)p) value_type(value); // placement new
+    }
+
+    void destroy(pointer p) {
+        p->~T();
+    }
 };
 
 }; // namespace Std
