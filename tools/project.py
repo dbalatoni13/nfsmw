@@ -469,10 +469,15 @@ def generate_build_ninja(
     python_lib = Path(os.path.relpath(__file__))
     python_lib_dir = python_lib.parent
     n.comment("The arguments passed to configure.py, for rerunning it.")
-    n.variable(
-        "configure_args", [f'""{arg}""' if " " in arg else arg for arg in sys.argv[1:]]
-    )
-    # for arg in sys.argv[1:] if arg.contains(' ') wrap in quotes else arg
+    if config.use_jeff:
+        n.variable(
+            "configure_args",
+            [f'""{arg}""' if " " in arg else arg for arg in sys.argv[1:]],
+        )
+        # for arg in sys.argv[1:] if arg.contains(' ') wrap in quotes else arg
+    else:
+        n.variable("configure_args", sys.argv[1:])
+
     n.variable("python", f'"{sys.executable}"')
     n.newline()
 
@@ -480,9 +485,10 @@ def generate_build_ninja(
     # Variables
     ###
     n.comment("Variables")
-    # n.variable("ldflags", make_flags_str(config.ldflags))
-    # if config.linker_version is None:
-    #     sys.exit("ProjectConfig.linker_version missing")
+    if not config.use_jeff:
+        n.variable("ldflags", make_flags_str(config.ldflags))
+        if config.linker_version is None:
+            sys.exit("ProjectConfig.linker_version missing")
     n.variable("toolchain_version", Path(config.linker_version))
     n.variable("objdiff_report_args", make_flags_str(config.progress_report_args))
     n.newline()
@@ -923,7 +929,7 @@ def generate_build_ninja(
                     preplf_map = map_path(preplf_path)
                     preplf_ldflags += f" -Map {serialize_path(preplf_map)}"
                     plf_map = map_path(plf_path)
-                    plf_ldflags += f" -map {serialize_path(plf_map)}"
+                    plf_ldflags += f" -Map {serialize_path(plf_map)}"
                 else:
                     preplf_map = None
                     plf_map = None
@@ -1022,11 +1028,11 @@ def generate_build_ninja(
             if config.use_jeff:
                 # Add MSVC build rule
                 build_rule = "msvc"
-                build_implcit = mwcc_implicit
+                build_implicit = mwcc_implicit
             else:
                 # Add ProDG build rule
                 build_rule = "prodg"
-                build_implcit = ngccc_implicit
+                build_implicit = ngccc_implicit
 
             lib_name = obj.options["lib"]
             variables = {
@@ -1041,7 +1047,7 @@ def generate_build_ninja(
                 rule=build_rule,
                 inputs=src_path,
                 variables=variables,
-                implicit=build_implcit,
+                implicit=build_implicit,
                 order_only="pre-compile",
             )
 
@@ -1337,6 +1343,7 @@ def generate_build_ninja(
         ]
         if not config.use_jeff:
             progress_implicit.append(ok_path)
+
         n.build(
             outputs="progress",
             rule="progress",
