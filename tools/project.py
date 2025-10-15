@@ -148,6 +148,7 @@ class ProjectConfig:
         self.binutils_path: Optional[Path] = None  # If None, download
         self.dtk_tag: Optional[str] = None  # Git tag
         self.dtk_path: Optional[Path] = None  # If None, download
+        self.use_jeff: bool = False
         self.compilers_tag: Optional[str] = None  # 1
         self.compilers_path: Optional[Path] = None  # If None, download
         self.wibo_tag: Optional[str] = None  # Git tag
@@ -235,7 +236,7 @@ class ProjectConfig:
             "tools_dir",
             "check_sha_path",
             "config_path",
-            "ldflags",
+            # "ldflags",
             "linker_version",
             "libs",
             "version",
@@ -541,13 +542,14 @@ def generate_build_ninja(
             },
         )
     elif config.dtk_tag:
-        dtk = build_tools_path / f"dtk{EXE}"
+        dtk_tool_name = "jeff" if config.use_jeff else "dtk"
+        dtk = build_tools_path / f"{dtk_tool_name}{EXE}"
         n.build(
             outputs=dtk,
             rule="download_tool",
             implicit=download_tool,
             variables={
-                "tool": "dtk",
+                "tool": dtk_tool_name,
                 "tag": config.dtk_tag,
             },
         )
@@ -1517,8 +1519,8 @@ def generate_build_ninja(
             n.default(link_outputs)
         elif config.progress:
             n.default("progress")
-        else:
-            n.default(ok_path)
+        # else:
+        #     n.default(ok_path)
     else:
         n.default(build_config_path)
 

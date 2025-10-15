@@ -33,6 +33,9 @@ VERSIONS = [
     "EUROPEGERMILESTONE",  # 1
 ]
 
+GC_VERSIONS = [VERSIONS[0]]
+X360_VERSIONS = [VERSIONS[1]]
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "mode",
@@ -145,7 +148,13 @@ if not config.non_matching:
 # Tool versions
 config.binutils_tag = "2.42-1"
 config.compilers_tag = "20250812"
-config.dtk_tag = "v0.1.1"
+
+if config.version in GC_VERSIONS:
+    config.dtk_tag = "v1.6.2"
+else:
+    config.dtk_tag = "v0.1.1"
+    config.use_jeff = True
+
 config.objdiff_tag = "v3.3.0"
 config.sjiswrap_tag = "v1.2.0"
 config.wibo_tag = "1.0.0-alpha.3"
@@ -153,92 +162,120 @@ config.wibo_tag = "1.0.0-alpha.3"
 # Project
 config.config_path = Path("config") / config.version / "config.yml"
 config.check_sha_path = Path("config") / config.version / "build.sha1"
-config.asflags = [
-    "-mgekko",
-    "--strip-local-absolute",
-    "-I include",
-    f"-I build/{config.version}/include",
-    f"--defsym BUILD_VERSION={version_num}",
-]
-ldscript_path = Path("config") / config.version / "ldscript.ld"
-config.ldflags = ["-T", str(ldscript_path)]
+
+if config.version in GC_VERSIONS:
+    config.asflags = [
+        "-mgekko",
+        "--strip-local-absolute",
+        "-I include",
+        f"-I build/{config.version}/include",
+        f"--defsym BUILD_VERSION={version_num}",
+    ]
+
+    ldscript_path = Path("config") / config.version / "ldscript.ld"
+    config.ldflags = ["-T", str(ldscript_path)]
+
+    config.scratch_preset_id = 176
 
 # Use for any additional files that should cause a re-configure when modified
 config.reconfig_deps = []
 
 # Optional numeric ID for decomp.me preset
 # Can be overridden in libraries or objects
-config.scratch_preset_id = 176
 
 # Base flags, common to most GC/Wii games.
 # Generally leave untouched, with overrides added below.
-cflags_base = [
-    "/nologo",
-    "/c",  # compile without linking
-    "/wd4996",  # get rid of string deprecation warnings for now
-    # "/GR", # RTTI
-    "/O1",
-    "/Oi",  # generate intrinsics
-    "/Zi",  # enable debug info, /Zd for line numbers only
-    "/EHsc",  # enable exception handling (and extern C notthrow?)
-    "/I src/Packages/xenonsdk/2.0.2135.2/installed/include/xbox",
-    "/I src",
-    "/DTARGET_X360",
-    "/D_USE_MATH_DEFINES",
-    f"/I build/{config.version}/include",
-    f"/DBUILD_VERSION={version_num}",
-    f"/DVERSION_{config.version}",
-    # "-gdwarf",
-    # # "-Wall",
-    # "-I src/Speed/Indep/Libs/Support/stlgc",
-    # "-I src/Speed/GameCube/Libs/stl/STLport-4.5/stlport",
-    # "-I src/Speed/GameCube/bWare/GameCube/bWare/GameCube/SN/include",
-    # "-I include",
-    # "-I src/Speed/GameCube/bWare/GameCube/dolphinsdk/include",
-    # "-I ./",
-    # "-I src",
-    # "-DTARGET_GC",
-    # "-DGEKKO",
-    # f"-I build/{config.version}/include",
-    # f"-DBUILD_VERSION={version_num}",
-    # f"-DVERSION_{config.version}",
-]
+if config.version in GC_VERSIONS:
+    config.linker_version = "ProDG/3.9.3"
 
-# Debug flags
-# if args.debug:
-# cflags_base.append("-DDEBUG=1")
-# else:
-# cflags_base.append("-DNDEBUG=1")
+    cflags_base = [
+        "-O1",
+        "-gdwarf",
+        # "-Wall",
+        "-I src/Speed/Indep/Libs/Support/stlgc",
+        "-I src/Speed/GameCube/Libs/stl/STLport-4.5/stlport",
+        "-I src/Speed/GameCube/bWare/GameCube/bWare/GameCube/SN/include",
+        "-I include",
+        "-I src/Speed/GameCube/bWare/GameCube/dolphinsdk/include",
+        "-I ./",
+        "-I src",
+        "-DTARGET_GC",
+        "-DGEKKO",
+        "-D_USE_MATH_DEFINES",
+        f"-I build/{config.version}/include",
+        f"-DBUILD_VERSION={version_num}",
+        f"-DVERSION_{config.version}",
+    ]
 
-cflags_game = [
-    *cflags_base,
-    # "-mps-nodf",
-    # # "-mfast-cast",
-    # "-G0",
-    # "-ffast-math",
-    # # "-fno-strength-reduce",
-    # "-fforce-addr",
-    # "-fcse-follow-jumps",
-    # "-fcse-skip-blocks",
-    # "-fforce-mem",
-    # "-fgcse",
-    # "-frerun-cse-after-loop",
-    # "-fschedule-insns",
-    # "-fschedule-insns2",
-    # "-fexpensive-optimizations",
-    # "-frerun-loop-opt",
-    # "-fmove-all-movables",
-    # # "-fno-defer-pop",
-    # # "-fno-function-cse",
-    # # "-fpeephole",
-    # # "-fregmove",
-    # # "-fno-thread-jumps",
-    # # "-freduce-all-givs",
-    # # # "-fcaller-saves",
-    # # # "-ffloat-store",
-    # # # "-funroll-all-loops",
-    # "-DLUA_NUMBER=float",
-]
+    # Debug flags
+    if args.debug:
+        cflags_base.append("-DDEBUG=1")
+    else:
+        cflags_base.append("-DNDEBUG=1")
+
+    cflags_game = [
+        *cflags_base,
+        "-mps-nodf",
+        # "-mfast-cast",
+        "-G0",
+        "-ffast-math",
+        # "-fno-strength-reduce",
+        "-fforce-addr",
+        "-fcse-follow-jumps",
+        "-fcse-skip-blocks",
+        "-fforce-mem",
+        "-fgcse",
+        "-frerun-cse-after-loop",
+        "-fschedule-insns",
+        "-fschedule-insns2",
+        "-fexpensive-optimizations",
+        "-frerun-loop-opt",
+        "-fmove-all-movables",
+        # "-fno-defer-pop",
+        # "-fno-function-cse",
+        # "-fpeephole",
+        # "-fregmove",
+        # "-fno-thread-jumps",
+        # "-freduce-all-givs",
+        # # "-fcaller-saves",
+        # # "-ffloat-store",
+        # # "-funroll-all-loops",
+        "-DLUA_NUMBER=float",
+    ]
+
+    config.extra_clang_flags = [
+        "-std=gnu++98",
+        "-DSN_TARGET_NGC",
+        "-D__SN__",
+    ]
+elif config.version in X360_VERSIONS:
+    config.linker_version = "X360/2.0.2135.3"
+
+    cflags_base = [
+        "/nologo",
+        "/c",  # compile without linking
+        "/wd4996",  # get rid of string deprecation warnings for now
+        # "/GR", # RTTI
+        "/O1",
+        "/Oi",  # generate intrinsics
+        "/Zi",  # enable debug info, /Zd for line numbers only
+        "/EHsc",  # enable exception handling (and extern C notthrow?)
+        "/I src/Packages/xenonsdk/2.0.2135.2/installed/include/xbox",
+        "/I src",
+        "/DTARGET_X360",
+        "/D_USE_MATH_DEFINES",
+        f"/I build/{config.version}/include",
+        f"/DBUILD_VERSION={version_num}",
+        f"/DVERSION_{config.version}",
+    ]
+
+    cflags_game = [
+        *cflags_base,
+    ]
+
+    config.extra_clang_flags = [
+        "-std=gnu++98",
+    ]
 
 cflags_cmn = [
     *cflags_game,
@@ -253,14 +290,6 @@ cflags_odemuexi = [*cflags_base]
 cflags_amcstub = [*cflags_base]
 
 cflags_libc = [*cflags_base]
-
-config.linker_version = "X360/2.0.2135.3"
-
-config.extra_clang_flags = [
-    "-std=gnu++98",
-    "-DSN_TARGET_NGC",
-    "-D__SN__",
-]
 
 
 # Helper function for Dolphin libraries
@@ -533,6 +562,730 @@ config.libs = [
         ],
     },
 ]
+
+if config.version in GC_VERSIONS:
+    config.libs.extend(
+        [
+            {
+                "lib": "libsn",
+                "toolchain_version": config.linker_version,
+                "cflags": cflags_runtime,
+                "host": False,
+                "progress_category": "libs",  # str | List[str]
+                "objects": [
+                    Object(NonMatching, "LibSN/crt0.s"),
+                    Object(NonMatching, "LibSN/cvtll.c"),
+                    Object(NonMatching, "LibSN/debug.c"),
+                    Object(NonMatching, "LibSN/dummy.c"),
+                    Object(NonMatching, "LibSN/fileserver.c"),
+                    Object(NonMatching, "LibSN/FSasync.c"),
+                    Object(NonMatching, "LibSN/inituser.c"),
+                    Object(NonMatching, "LibSN/ppcdown.c"),
+                    Object(NonMatching, "LibSN/prof.c"),
+                    Object(NonMatching, "LibSN/proview.c"),
+                    Object(NonMatching, "LibSN/sndvd.c"),
+                    Object(NonMatching, "LibSN/tealeaf.c"),
+                    Object(NonMatching, "LibSN/tors.c"),
+                ],
+            },
+            {
+                "lib": "misc",
+                "toolchain_version": config.linker_version,
+                "cflags": cflags_game,
+                "host": False,
+                "progress_category": "libs",  # str | List[str]
+                "objects": [
+                    Object(NonMatching, "crt2D1.tmp"),
+                    Object(NonMatching, "ppc2D2.tmp"),
+                    Object(NonMatching, "fil2D3.tmp"),
+                    Object(NonMatching, "pro2D4.tmp"),
+                    Object(NonMatching, "inituser.c"),
+                    Object(NonMatching, "pro2D9.tmp"),
+                    Object(NonMatching, "tea2Da.tmp"),
+                    Object(NonMatching, "FSasync.c"),
+                    Object(NonMatching, "sndvd.c"),
+                    Object(NonMatching, "atexit.c"),
+                    Object(NonMatching, "qsort.c"),
+                    Object(NonMatching, "sn_malloc.c"),
+                    Object(NonMatching, "allsrc.c"),
+                    Object(NonMatching, "audioplayer.cpp"),
+                    Object(NonMatching, "device_cmn.cpp"),
+                    Object(NonMatching, "rendercontext.cpp"),
+                    Object(NonMatching, "rendercontext_cmn.cpp"),
+                    Object(NonMatching, "state.cpp"),
+                    Object(NonMatching, "tar.cpp"),
+                    Object(NonMatching, "tevstage.cpp"),
+                    Object(NonMatching, "texturerc_cmn.cpp"),
+                    Object(NonMatching, "viewport.cpp"),
+                    Object(NonMatching, "viewport_cmn.cpp"),
+                    Object(NonMatching, "profiler_cmn.cpp"),
+                    Object(NonMatching, "singledraw.cpp"),
+                    Object(NonMatching, "base.cpp"),
+                    Object(NonMatching, "model.cpp"),
+                    Object(NonMatching, "rendermethod.cpp"),
+                    Object(NonMatching, "texturerc.cpp"),
+                    Object(NonMatching, "pcode.cpp"),
+                    Object(NonMatching, "locatbig.cpp"),
+                    Object(NonMatching, "filedev.cpp"),
+                    Object(NonMatching, "fixdmult.cpp"),
+                    Object(NonMatching, "gc_driver.cpp"),
+                    Object(NonMatching, "memvectors.cpp"),
+                    Object(NonMatching, "interfaceimp.cpp"),
+                    Object(NonMatching, "lib/cmn/locale.cpp"),
+                    Object(NonMatching, "inittmr.cpp"),
+                    Object(NonMatching, "initvblt.cpp"),
+                    Object(NonMatching, "mutex2.cpp"),
+                    Object(NonMatching, "printn3.cpp"),
+                    Object(NonMatching, "memcopy.cpp"),
+                    Object(NonMatching, "fontchar.cpp"),
+                    Object(NonMatching, "fontcreate.cpp"),
+                    Object(NonMatching, "fontdraw.cpp"),
+                    Object(NonMatching, "fontdrawf.cpp"),
+                    Object(NonMatching, "fontkern.cpp"),
+                    Object(NonMatching, "fontnull.cpp"),
+                    Object(NonMatching, "loccore.cpp"),
+                    Object(NonMatching, "ustrcpy.cpp"),
+                    Object(NonMatching, "creates.cpp"),
+                    Object(NonMatching, "shptype.cpp"),
+                    Object(NonMatching, "swizzlesize.cpp"),
+                    Object(NonMatching, "cluttype.cpp"),
+                    Object(NonMatching, "csis/dev/source/library/cmn/csis.cpp"),
+                    Object(NonMatching, "dummy.c"),
+                    Object(NonMatching, "prodg_fixes.cpp"),
+                    Object(NonMatching, "codec/cmn/refsize.cpp"),
+                ],
+            },
+            DolphinLib(
+                "ar",
+                [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ar/ar.c",
+                    ),
+                ],
+            ),
+            DolphinLib(
+                "arq",
+                [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/arq/arq.c",
+                    ),
+                ],
+            ),
+            DolphinLib(
+                "ax",
+                [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXAlloc.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXAux.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXCL.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AX.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXOut.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXSPB.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXVPB.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXProf.c",
+                    ),
+                ],
+            ),
+            DolphinLib(
+                "card",
+                [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDBios.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDBlock.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDDir.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDCheck.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDMount.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDFormat.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDCreate.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDRead.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDWrite.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDDelete.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDStat.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDUnlock.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDRdwr.c",
+                    ),
+                ],
+            ),
+            DolphinLib(
+                "dsp",
+                [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dsp/dsp.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dsp/dsp_task.c",
+                    ),
+                ],
+            ),
+            DolphinLib(
+                "os",
+                [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSFatal.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OS.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSAlarm.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSAlloc.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSArena.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSAudioSystem.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSCache.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSContext.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSError.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSFont.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSInterrupt.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSLink.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSMemory.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSReset.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSResetSW.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSRtc.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSSync.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSThread.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSTime.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSReboot.c",
+                    ),
+                    Object(
+                        Matching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/__ppc_eabi_init.cpp",
+                    ),
+                ],
+            ),
+            DolphinLib(
+                "db",
+                [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/db/db.c",
+                    ),
+                ],
+            ),
+            DolphinLib(
+                "mtx",
+                [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/mtx/mtx.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/mtx/mtx44.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/mtx/vec.c",
+                    ),
+                ],
+            ),
+            DolphinLib(
+                "dvd",
+                [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvdfs.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvd.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvdqueue.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvderror.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvdFatal.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/fstload.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvdlow.c",
+                    ),
+                ],
+            ),
+            DolphinLib(
+                "vi",
+                [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/vi/vi.c",
+                    ),
+                ],
+            ),
+            DolphinLib(
+                "pad",
+                [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/pad/Padclamp.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/pad/Pad.c",
+                    ),
+                ],
+            ),
+            DolphinLib(
+                "ai",
+                [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ai/ai.c",
+                    ),
+                ],
+            ),
+            DolphinLib(
+                "gx",
+                [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXInit.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXFrameBuf.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXAttr.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXFifo.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXMisc.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXDisplayList.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXLight.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXTexture.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXBump.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXTev.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXPixel.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXTransform.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXPerf.c",
+                    ),
+                ],
+            ),
+            DolphinLib(
+                "exi",
+                [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/exi/EXIBios.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/exi/EXIUart.c",
+                    ),
+                ],
+            ),
+            DolphinLib(
+                "si",
+                [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SIBios.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISamplingRate.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISteering.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISteeringXfer.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISteeringAuto.c",
+                    ),
+                ],
+            ),
+            DolphinLib(
+                "ip",
+                [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPSocket.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPPPPoE.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPPap.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPChap.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPLcp.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IP.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPIcmp.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPRoute.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPFrag.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPUdp.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPEther.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IFFifo.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPTcpTimeWait.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPTcp.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPTcpOutput.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPTcpTimer.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPTcpUser.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPDns.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPDhcp.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPZero.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPPPP.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPArp.c",
+                    ),
+                ],
+            ),
+            DolphinLib(
+                "net",
+                [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/net/eth.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/net/ethsec.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/net/md5.c",
+                    ),
+                ],
+            ),
+            {
+                "lib": "OdemuExi2",
+                "toolchain_version": config.linker_version,
+                "cflags": cflags_odemuexi,
+                "progress_category": "sdk",  # str | List[str]
+                "objects": [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/OdemuExi2/src/DebuggerDriver.c",
+                    ),
+                ],
+            },
+            {
+                "lib": "amcstubs",
+                "mw_version": config.linker_version,
+                "cflags": cflags_amcstub,
+                "host": False,
+                "progress_category": "sdk",  # str | List[str]
+                "objects": [
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/amcstubs/src/amcExi2/AmcExi.c",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/amcExi2/AmcExi2Comm.c",
+                    ),
+                ],
+            },
+            {
+                "lib": "libc",
+                "toolchain_version": config.linker_version,
+                "cflags": cflags_libc,
+                "progress_category": "libc",  # str | List[str]
+                "objects": [
+                    Object(NonMatching, "libc/vprintf.c"),
+                    Object(NonMatching, "libc/vsprintf.c"),
+                    Object(NonMatching, "libc/memcpy.c"),
+                    Object(NonMatching, "libc/memmove.c"),
+                    Object(NonMatching, "libc/memset.c"),
+                    Object(NonMatching, "libc/strcasecmp.c"),
+                    Object(NonMatching, "libc/strchr.c"),
+                    Object(NonMatching, "libc/strcmp.c"),
+                    Object(NonMatching, "libc/strcpy.c"),
+                    Object(NonMatching, "libc/strlen.c"),
+                    Object(NonMatching, "libc/strncmp.c"),
+                    Object(NonMatching, "libc/strncpy.c"),
+                    Object(NonMatching, "libc/vfprintf.c"),
+                    Object(NonMatching, "libc/impure.c"),
+                    Object(NonMatching, "libc/vfprintf_1.c"),
+                    Object(NonMatching, "libc/locale.c"),
+                    Object(NonMatching, "libc/_tolower.c"),
+                    Object(NonMatching, "libc/math_support.c"),
+                    Object(NonMatching, "libc/mbtowc_r.c"),
+                    Object(NonMatching, "libc/libgcc2.c"),
+                    Object(NonMatching, "libc/memchr.c"),
+                    Object(NonMatching, "libc/libgcc2_1.c"),
+                    Object(NonMatching, "libc/libgcc2_2.c"),
+                    Object(NonMatching, "libc/libgcc2_3.c"),
+                    Object(NonMatching, "libc/libgcc2_5.c"),
+                    Object(NonMatching, "libc/libgcc2_6.c"),
+                    Object(NonMatching, "libc/libgcc2_7.c"),
+                    Object(NonMatching, "libc/libgcc2_8.c"),
+                    Object(NonMatching, "libc/libgcc2_9.c"),
+                    Object(NonMatching, "libc/libgcc2_10.c"),
+                    Object(NonMatching, "libc/e_pow.c"),
+                    Object(NonMatching, "libc/e_sqrt.c"),
+                    Object(NonMatching, "libc/s_fabs.c"),
+                    Object(NonMatching, "libc/ef_pow.c"),
+                    Object(NonMatching, "libc/ef_sqrt.c"),
+                    Object(NonMatching, "libc/sf_cos.c"),
+                    Object(NonMatching, "libc/sf_fabs.c"),
+                    Object(NonMatching, "libc/sf_sin.c"),
+                    Object(NonMatching, "libc/s_scalbn.c"),
+                    Object(NonMatching, "libc/sf_scalbn.c"),
+                    Object(NonMatching, "libc/kf_cos.c"),
+                    Object(NonMatching, "libc/kf_sin.c"),
+                    Object(NonMatching, "libc/ef_rem_pio2.c"),
+                    Object(NonMatching, "libc/s_copysign.c"),
+                    Object(NonMatching, "libc/sf_copysign.c"),
+                    Object(NonMatching, "libc/kf_rem_pio2.c"),
+                    Object(NonMatching, "libc/sf_floor.c"),
+                    Object(NonMatching, "libc/e_acos.c"),
+                    Object(NonMatching, "libc/e_atan2.c"),
+                    Object(NonMatching, "libc/s_atan.c"),
+                    Object(NonMatching, "libc/ef_atan2.c"),
+                    Object(NonMatching, "libc/vfscanf.c"),
+                    Object(NonMatching, "libc/strtod2.c"),
+                    Object(NonMatching, "sn_buf.cpp"),
+                    Object(NonMatching, "libc/tolower.c"),
+                    Object(NonMatching, "libc/puts.c"),
+                    Object(NonMatching, "libc/atoi.c"),
+                    Object(NonMatching, "libc/bsearch.c"),
+                    Object(NonMatching, "libc/memcmp.c"),
+                    Object(NonMatching, "libc/strstr.c"),
+                    Object(NonMatching, "libc/strtol.c"),
+                    Object(NonMatching, "libc/fvwrite.c"),
+                    Object(NonMatching, "libc/wsetup.c"),
+                    Object(NonMatching, "libc/fflush.c"),
+                    Object(NonMatching, "libc/fopen.c"),
+                    Object(NonMatching, "libc/fwalk.c"),
+                    Object(NonMatching, "libc/makebuf.c"),
+                    Object(NonMatching, "libc/stdio.c"),
+                    Object(NonMatching, "libc/closer.c"),
+                    Object(NonMatching, "libc/fstatr.c"),
+                    Object(NonMatching, "libc/lseekr.c"),
+                    Object(NonMatching, "libc/readr.c"),
+                    Object(NonMatching, "libc/writer.c"),
+                    Object(NonMatching, "libc/s_sin.c"),
+                    Object(NonMatching, "libc/sf_atan.c"),
+                    Object(NonMatching, "libc/sf_tan.c"),
+                    Object(NonMatching, "libc/k_cos.c"),
+                    Object(NonMatching, "libc/k_sin.c"),
+                    Object(NonMatching, "libc/k_tan.c"),
+                    Object(NonMatching, "libc/e_rem_pio2.c"),
+                    Object(NonMatching, "libc/kf_tan.c"),
+                    Object(NonMatching, "libc/k_rem_pio2.c"),
+                    Object(NonMatching, "libc/s_floor.c"),
+                ],
+            },
+        ]
+    )
 
 
 # Optional callback to adjust link order. This can be used to add, remove, or reorder objects.
