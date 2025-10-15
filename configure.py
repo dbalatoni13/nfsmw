@@ -249,7 +249,7 @@ if config.version in GC_VERSIONS:
         "-D__SN__",
     ]
 elif config.version in X360_VERSIONS:
-    config.linker_version = "X360/2.0.2135.3"
+    config.linker_version = "X360/2.0.2135.2"
 
     cflags_base = [
         "/nologo",

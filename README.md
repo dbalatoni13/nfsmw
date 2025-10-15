@@ -1,4 +1,4 @@
-Need for Speed: Most Wanted (GC)
+Need for Speed: Most Wanted (GC and Xbox 360)
 [![Build Status]][actions] [![Code Progress]][progress] [![Data Progress]][progress] [![Discord Badge]][discord]
 =============
 
@@ -10,13 +10,14 @@ Need for Speed: Most Wanted (GC)
 [Discord Badge]: https://img.shields.io/discord/727908905392275526?color=%237289DA&logo=discord&logoColor=%23FFFFFF
 [discord]: https://discord.gg/hKx3FJJgrV
 
-A work-in-progress decompilation of the GameCube version of Need for Speed: Most Wanted.
+A work-in-progress decompilation of the GameCube and Xbox 360 versions of Need for Speed: Most Wanted.
 
 This repository does **not** contain any game assets or assembly whatsoever. An existing copy of the game is required.
 
 Supported versions:
 
-- `GOWE69`: Rev 0 (USA)
+- `GOWE69`: Rev 0 (GC USA)
+- `EUROPEGERMILESTONE`: Oct 21, 2005 prototype (Xbox 360 PAL)
 
 # Dependencies
 
@@ -61,7 +62,7 @@ sudo xattr -rd com.apple.quarantine '/Applications/Wine Crossover.app'
 - Clone the repository:
 
   ```sh
-  git clone https://github.com/my/repo.git
+  git clone https://github.com/dbalatoni13/nfsmw.git
   ```
 
 - Configure:
@@ -70,7 +71,7 @@ sudo xattr -rd com.apple.quarantine '/Applications/Wine Crossover.app'
   python configure.py
   ```
 
-  To use a version other than `GOWE69` (USA), specify it with `--version`.
+  To use a version other than `GOWE69` (USA), specify it with `--version`, for example `--version EUROPEGERMILESTONE`.
 
 - Build:
 
@@ -78,11 +79,15 @@ sudo xattr -rd com.apple.quarantine '/Applications/Wine Crossover.app'
   ninja
   ```
 
-- Extract `NFSMWRELEASE.elf`, copy it into `orig/GOWE69` and convert it into a DOL:
+- Extracting the binaries
 
-  ```sh
-  ./build/tools/dtk elf2dol ./orig/GOWE69/NFSMWRELEASE.elf ./orig/GOWE69/sys/main.dol
-  ```
+  - GC: Extract `NFSMWRELEASE.elf`, copy it into `orig/GOWE69` and convert it into a DOL using the following command:
+
+    ```sh
+    ./build/tools/dtk elf2dol ./orig/GOWE69/NFSMWRELEASE.elf ./orig/GOWE69/sys/main.dol
+    ```
+
+  - Xbox 360: simply `NfsMWEuropeGerMilestone.exe` to `NfsMWEuropeGerMilestone.xex` and copy it to `./orig/EUROPEGERMILESTONE/`
 
 # Diffing
 
