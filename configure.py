@@ -255,9 +255,11 @@ elif config.version in X360_VERSIONS:
         "/nologo",
         "/c",  # compile without linking
         "/wd4996",  # get rid of string deprecation warnings for now
-        # "/GR", # RTTI
-        "/O1",
-        "/Oi",  # generate intrinsics
+        # "/GR",  # RTTI
+        "/Og",
+        # "/Oi",  # maybe
+        # "/Oy",  # maybe
+        "/GF",
         "/Zi",  # enable debug info, /Zd for line numbers only
         "/EHsc",  # enable exception handling (and extern C notthrow?)
         "/I src/Packages/xenonsdk/2.0.2135.2/installed/include/xbox",
@@ -271,6 +273,7 @@ elif config.version in X360_VERSIONS:
 
     cflags_game = [
         *cflags_base,
+        "-DLUA_NUMBER=float",
     ]
 
     config.extra_clang_flags = [

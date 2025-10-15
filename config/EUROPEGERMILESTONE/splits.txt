@@ -17,3 +17,11 @@ Sections:
 Speed/Indep/SourceLists/zAI.cpp:
 	.pdata      start:0x820B9600 end:0x820BBB70
 	.text       start:0x820F0000 end:0x8214A870
+
+Speed/Indep/SourceLists/zMisc.cpp:
+	.pdata      start:0x820DC9C0 end:0x820DD0E8
+	.text       start:0x8266BCB8 end:0x82686318
+
+Speed/Indep/SourceLists/zLua.cpp:
+	.pdata      start:0x820CAB20 end:0x820CAE20
+	.text       start:0x82395150 end:0x823A0828
