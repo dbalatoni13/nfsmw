@@ -72,7 +72,7 @@ template <typename T, std::size_t ListSize, typename Enum, std::size_t EnumMax> 
     class List : public FixedVector<pointer, ListSize> {
       public:
         typedef pointer *iterator;
-        typedef value_type const *const_iterator;
+        typedef pointer const *const_iterator;
 
         List(const List &);
         List();

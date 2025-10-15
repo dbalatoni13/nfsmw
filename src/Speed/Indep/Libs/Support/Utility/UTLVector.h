@@ -12,9 +12,9 @@ template <typename T, unsigned int Alignment = 16> class Vector {
   public:
     typedef T value_type;
     typedef value_type *pointer;
-    typedef const value_type *const_pointer;
+    typedef const value_type *const_pointer; // TODO is it value_type const ?
     typedef value_type *iterator;
-    typedef const value_type *const_iterator;
+    typedef value_type const *const_iterator;
 
   public:
     void Init() {}
