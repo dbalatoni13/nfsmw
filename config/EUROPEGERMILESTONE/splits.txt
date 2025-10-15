@@ -1,0 +1,19 @@
+Sections:
+	.rdata      type:rodata align:65536
+	.pdata      type:rodata align:65536
+	.text       type:code align:65536
+	.no_bbt     type:code align:65536
+	.embsec_0   type:code align:65536
+	.embsec_1   type:code align:65536
+	.embsec_2   type:code align:65536
+	.embsec_3   type:code align:65536
+	.embsec_4   type:code align:65536
+	.embsec_5   type:code align:65536
+	.embsec_6   type:code align:65536
+	.data       type:data align:65536
+	.tls        type:data align:65536
+	.idata      type:data align:65536
+
+Speed/Indep/SourceLists/zAttribSys.cpp:
+	.pdata      start:0x820B9600 end:0x820BBB70
+	.text       start:0x820F0000 end:0x8214A870

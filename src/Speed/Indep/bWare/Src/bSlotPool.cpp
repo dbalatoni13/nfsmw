@@ -1,6 +1,6 @@
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "dolphin/types.h"
+#include "types.h"
 
 SlotPoolManager TheSlotPoolManager;
 

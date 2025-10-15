@@ -13,7 +13,12 @@ namespace UTL {
 namespace Std {
 template <typename T, typename Tag> struct Allocator {
     typedef T value_type;
+    typedef std::size_t size_type;
     typedef T *pointer;
+    typedef const T *const_pointer;
+    typedef value_type &reference;
+    typedef const value_type &const_reference;
+    typedef std::ptrdiff_t difference_type;
 
     template <typename U> struct rebind {
         typedef Allocator<U, Tag> other;

@@ -75,6 +75,7 @@ typedef unsigned char Bool;
 #define NULL 0
 #endif
 #endif
+
 #if !defined(__cplusplus) || __cplusplus < 201103L
 #ifndef nullptr
 #define nullptr NULL

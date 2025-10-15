@@ -4,7 +4,7 @@
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "dolphin/types.h"
+#include "types.h"
 
 #include <stdarg.h>
 

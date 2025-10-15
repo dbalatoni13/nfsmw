@@ -5,29 +5,29 @@
 unsigned int bDefaultSeed = 0x12345678;
 
 void bEndianSwap64(void *value) {
-    int64_t temp = *reinterpret_cast<int64_t *>(value);
-    *reinterpret_cast<uint8_t *>(value) = temp;
-    *(reinterpret_cast<uint8_t *>(value) + 1) = temp >> 8;
-    *(reinterpret_cast<uint8_t *>(value) + 2) = temp >> 16;
-    *(reinterpret_cast<uint8_t *>(value) + 3) = temp >> 24;
-    *(reinterpret_cast<uint8_t *>(value) + 4) = temp >> 32;
-    *(reinterpret_cast<uint8_t *>(value) + 5) = temp >> 40;
-    *(reinterpret_cast<uint8_t *>(value) + 6) = temp >> 48;
-    *(reinterpret_cast<uint8_t *>(value) + 7) = temp >> 56;
+    unsigned long long temp = *reinterpret_cast<unsigned long long *>(value);
+    *reinterpret_cast<unsigned char *>(value) = temp;
+    *(reinterpret_cast<unsigned char *>(value) + 1) = temp >> 8;
+    *(reinterpret_cast<unsigned char *>(value) + 2) = temp >> 16;
+    *(reinterpret_cast<unsigned char *>(value) + 3) = temp >> 24;
+    *(reinterpret_cast<unsigned char *>(value) + 4) = temp >> 32;
+    *(reinterpret_cast<unsigned char *>(value) + 5) = temp >> 40;
+    *(reinterpret_cast<unsigned char *>(value) + 6) = temp >> 48;
+    *(reinterpret_cast<unsigned char *>(value) + 7) = temp >> 56;
 }
 
 void bEndianSwap32(void *value) {
-    uint32_t temp = *reinterpret_cast<uint32_t *>(value);
-    *reinterpret_cast<uint8_t *>(value) = temp;
-    *(reinterpret_cast<uint8_t *>(value) + 1) = temp >> 8;
-    *(reinterpret_cast<uint8_t *>(value) + 2) = temp >> 16;
-    *(reinterpret_cast<uint8_t *>(value) + 3) = temp >> 24;
+    unsigned int temp = *reinterpret_cast<unsigned int *>(value);
+    *reinterpret_cast<unsigned char *>(value) = temp;
+    *(reinterpret_cast<unsigned char *>(value) + 1) = temp >> 8;
+    *(reinterpret_cast<unsigned char *>(value) + 2) = temp >> 16;
+    *(reinterpret_cast<unsigned char *>(value) + 3) = temp >> 24;
 }
 
 void bEndianSwap16(void *value) {
-    uint16_t temp = *reinterpret_cast<uint16_t *>(value);
-    *reinterpret_cast<uint8_t *>(value) = temp;
-    *(reinterpret_cast<uint8_t *>(value) + 1) = temp >> 8;
+    unsigned short temp = *reinterpret_cast<unsigned short *>(value);
+    *reinterpret_cast<unsigned char *>(value) = temp;
+    *(reinterpret_cast<unsigned char *>(value) + 1) = temp >> 8;
 }
 
 void bPlatEndianSwap(bVector2 *value) {
@@ -120,16 +120,16 @@ float bSin(unsigned short angle) {
 
     float result_sin = a;
     float a2 = a * a;
-    
+
     float a3 = a * a2;
     result_sin -= a3 * 0.16666667f;
-    
+
     float a5 = a3 * a2;
     result_sin += a5 * 0.008333334f;
-    
+
     float a7 = a5 * a2;
     result_sin -= a7 * 0.0001984127f;
-    
+
     float a9 = a7 * a2;
     result_sin += a9 * 0.0000027557319f;
 
@@ -314,6 +314,10 @@ void bMulMatrix(bVector3 *dest, const bMatrix4 *m, const bVector3 *v) {
 }
 
 bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m) {
+#ifdef TARGET_GC
     MTX44Transpose(*reinterpret_cast<const Mtx44 *>(m), *reinterpret_cast<Mtx44 *>(dest));
+#else
+// TODO
+#endif
     return dest;
 }

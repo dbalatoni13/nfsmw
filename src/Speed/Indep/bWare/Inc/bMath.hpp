@@ -7,8 +7,10 @@
 
 #include <math.h>
 
-#if TARGET_GC
+#ifdef TARGET_GC
 #include "dolphin/mtx44_ext.h"
+#elif defined(TARGET_X360)
+// TODO
 #else
 #error Choose a platform
 #endif
@@ -44,7 +46,7 @@ inline float bSqrt(float x) {
     float half = 0.5f;
     float one = 1.0f;
 
-#if TARGET_GC
+#ifdef TARGET_GC
     if (x > bSqrtEPS) {
         asm("frsqrte %0, %1" : "=f"(y0) : "f"(x));
         t0 = y0 * y0;
@@ -67,6 +69,8 @@ inline float bSqrt(float x) {
     } else {
         y0 = 0.0f;
     }
+#elif defined(TARGET_X360)
+// TODO
 #else
 #error Choose a platform
 #endif
@@ -81,8 +85,10 @@ inline int bMin(int a, int b) {
 inline float bMin(float a, float b) {
     float c = a - b;
     float d;
-#if TARGET_GC
+#ifdef TARGET_GC
     asm("fsel %0, %1, %2, %3" : "=f"(d) : "f"(c), "f"(b), "f"(a));
+#elif defined(TARGET_X360)
+// TODO
 #else
 #error Choose a platform
 #endif
@@ -96,8 +102,10 @@ inline int bMax(int a, int b) {
 inline float bMax(float a, float b) {
     float c = a - b;
     float d;
-#if TARGET_GC
+#ifdef TARGET_GC
     asm("fsel %0, %1, %2, %3" : "=f"(d) : "f"(c), "f"(a), "f"(b));
+#elif defined(TARGET_X360)
+// TODO
 #else
 #error Choose a platform
 #endif
@@ -113,9 +121,11 @@ inline int bAbs(int a) {
 
 inline float bAbs(float a) {
     float f_abs;
-#if TARGET_GC
+#ifdef TARGET_GC
     // We are sure they use asm, other options don't match
     asm("fabs %0, %1" : "=f"(f_abs) : "f"(a));
+#elif defined(TARGET_X360)
+// TODO
 #else
 #error Choose a platform
 #endif
@@ -734,8 +744,10 @@ struct bMatrix4 {
 };
 
 inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v) {
-#if TARGET_GC
+#ifdef TARGET_GC
     MTX44Copy(*reinterpret_cast<const Mtx44 *>(v), *reinterpret_cast<Mtx44 *>(dest));
+#elif defined(TARGET_X360)
+// TODO
 #else
 #error Choose a platform
 #endif
@@ -743,7 +755,13 @@ inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v) {
 }
 
 inline void bIdentity(bMatrix4 *a) {
+#ifdef TARGET_GC
     MTX44Identity(*reinterpret_cast<Mtx44 *>(a));
+#elif defined(TARGET_X360)
+// TODO
+#else
+#error Choose a platform
+#endif
 }
 
 inline void eIdentity(bMatrix4 *a) {

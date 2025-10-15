@@ -5,12 +5,10 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "dolphin/types.h"
+#include "types.h"
 
-#if TARGET_GC
+#ifdef TARGET_GX
 #include <dolphin.h>
-#else
-#error Choose platform
 #endif
 
 // TODO
@@ -256,6 +254,7 @@ int PlatformMemoryINIT() {
 }
 
 void bVirtualMemoryManager::Init() {
+#ifdef TARGET_GC
     this->bIsValid = false;
     this->mVirtualBaseAddr = 0x7e000000;
     this->mMRamBaseAddr = reinterpret_cast<uintptr_t>(OSGetArenaLo());
@@ -264,6 +263,9 @@ void bVirtualMemoryManager::Init() {
     this->mARamSize = 0x600000;
     this->mARamBaseAddr = end_of_audio_aram;
     VMInit(this->mMRamSize, end_of_audio_aram, this->mARamSize);
+#else
+// TODO
+#endif
 }
 
 void bVirtualMemoryManager::bVirtualMemoryManager::Alloc() {
@@ -445,18 +447,18 @@ void *bMemoryAllocator::Alloc(unsigned int size, const EA::TagValuePair &flags) 
 
     for (; p; p = p->mNext) {
         switch (p->mTag) {
-        case 0:
-        case 1:
-            break;
-        case 2:
-            allocation_params |= (p->mValue.mSize & 0x1ffc) << 6;
-            break;
-        case 3:
-            allocation_params |= (p->mValue.mSize & 0x1ffc) << 0x11;
-            break;
-        case 4:
-            allocation_params &= ~0x40;
-            break;
+            case 0:
+            case 1:
+                break;
+            case 2:
+                allocation_params |= (p->mValue.mSize & 0x1ffc) << 6;
+                break;
+            case 3:
+                allocation_params |= (p->mValue.mSize & 0x1ffc) << 0x11;
+                break;
+            case 4:
+                allocation_params &= ~0x40;
+                break;
         }
     }
     return bMalloc(size, allocation_params);

@@ -29,8 +29,8 @@ default_arguments: list[str] = [
     # Strip out left-over whitespace
     "--compress",
     # Put a newline before each line directive
-    "--line-directive",
-    "\n#line",
+    # "--line-directive",
+    # "\n#line",
 ]
 
 default_defines: dict[str, str] = {
