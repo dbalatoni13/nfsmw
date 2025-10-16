@@ -692,6 +692,10 @@ def generate_build_ninja(
         msvc_cmd = (
             "bash -lc 'set -o pipefail; " f"{msvc_cmd} | $python {transform_dep}'"
         )
+    msvc_implicit: List[Optional[Path]] = [
+        compilers_implicit or msvc,
+        wrapper_implicit,
+    ]
 
     # NGCCC
     ngccc = compiler_path / "ngccc.exe"
@@ -1029,7 +1033,7 @@ def generate_build_ninja(
             if config.use_jeff:
                 # Add MSVC build rule
                 build_rule = "msvc"
-                build_implicit = mwcc_implicit
+                build_implicit = msvc_implicit
             else:
                 # Add ProDG build rule
                 build_rule = "prodg"
