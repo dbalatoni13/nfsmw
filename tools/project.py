@@ -1015,11 +1015,12 @@ def generate_build_ninja(
                 # Ensure extra_cflags is a unique instance,
                 # and insert into there to avoid modifying shared sets of flags
                 extra_cflags = obj.options["extra_cflags"] = list(extra_cflags)
-                extra_cflags.insert(0, "-x")
-                if file_is_cpp(src_path):
-                    extra_cflags.insert(1, "c++")
-                else:
-                    extra_cflags.insert(1, "c")
+                if not config.use_jeff:
+                    extra_cflags.insert(0, "-x")
+                    if file_is_cpp(src_path):
+                        extra_cflags.insert(1, "c++")
+                    else:
+                        extra_cflags.insert(1, "c")
 
             all_cflags = cflags + extra_cflags
             cflags_str = make_flags_str(all_cflags)
