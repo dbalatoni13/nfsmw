@@ -17,3 +17,15 @@ void UBezierLite::Evaluate(const UMath::Matrix4 &fSplineMat, const float t, UMat
     UMath::RotateTranslate(tvec, matrix, position);
     position.w = 1.0f;
 }
+
+// STRIPPED
+float UBezierLite::EvaluateForY(const UMath::Matrix4 &fSplineMat, const float t) {}
+
+// STRIPPED
+void UBezierLite::EvaluateTangent(const UMath::Matrix4 &fSplineMat, const float t, UMath::Vector4 &tangent) {}
+
+// STRIPPED
+void SetQuatCompressionPrecision(unsigned int numbits) {}
+
+// STRIPPED
+void CompressQuaternion(const UMath::Vector4 &q, unsigned int *compressedQuat) {}
