@@ -147,7 +147,7 @@ if not config.non_matching:
 
 # Tool versions
 config.binutils_tag = "2.42-1"
-config.compilers_tag = "20250812"
+config.compilers_tag = "20251015"
 
 if config.version in GC_VERSIONS:
     config.dtk_tag = "v1.6.2"
@@ -157,7 +157,7 @@ else:
 
 config.objdiff_tag = "v3.3.0"
 config.sjiswrap_tag = "v1.2.0"
-config.wibo_tag = "1.0.0-alpha.3"
+config.wibo_tag = "1.0.0-alpha.4"
 
 # Project
 config.config_path = Path("config") / config.version / "config.yml"
@@ -260,7 +260,7 @@ elif config.version in X360_VERSIONS:
         # "/Oi",  # maybe
         # "/Oy",  # maybe
         "/GF",
-        "/Zi",  # enable debug info, /Zd for line numbers only
+        "/Zd",  # /Zi enables debug info, /Zd for line numbers only
         "/EHsc",  # enable exception handling (and extern C notthrow?)
         "/I src/Packages/xenonsdk/2.0.2135.2/installed/include/xbox",
         "/I src",
