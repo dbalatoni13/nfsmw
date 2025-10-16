@@ -175,13 +175,12 @@ if config.version in GC_VERSIONS:
     ldscript_path = Path("config") / config.version / "ldscript.ld"
     config.ldflags = ["-T", str(ldscript_path)]
 
+    # Optional numeric ID for decomp.me preset
+    # Can be overridden in libraries or objects
     config.scratch_preset_id = 176
 
 # Use for any additional files that should cause a re-configure when modified
 config.reconfig_deps = []
-
-# Optional numeric ID for decomp.me preset
-# Can be overridden in libraries or objects
 
 # Base flags, common to most GC/Wii games.
 # Generally leave untouched, with overrides added below.
@@ -249,7 +248,7 @@ if config.version in GC_VERSIONS:
         "-D__SN__",
     ]
 elif config.version in X360_VERSIONS:
-    config.linker_version = "X360/2.0.2135.2"
+    config.linker_version = "X360/14.00.2110"
 
     cflags_base = [
         "/nologo",
