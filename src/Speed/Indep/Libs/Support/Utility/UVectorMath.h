@@ -207,13 +207,12 @@ inline void VU0_MATRIX3x4dotprod(const UMath::Vector3 &a, const UMath::Matrix4 &
 }
 
 inline void VU0_MATRIX4Init(UMath::Matrix4 &dest, const float xx, const float yy, const float zz) {
-    dest[0][0] = xx;
-    dest[1][1] = yy;
     dest[2][2] = zz;
+    dest[1][1] = yy;
+    dest[0][0] = xx;
     dest[3][3] = 1.0f;
-
+    
     // TODO UNSOLVED
-    dest[0][1] = 0.0f;
     dest[3][2] = 0.0f;
     dest[3][1] = 0.0f;
     dest[3][0] = 0.0f;
@@ -225,6 +224,7 @@ inline void VU0_MATRIX4Init(UMath::Matrix4 &dest, const float xx, const float yy
     dest[1][0] = 0.0f;
     dest[0][3] = 0.0f;
     dest[0][2] = 0.0f;
+    dest[0][1] = 0.0f;
 }
 
 inline void VU0_MATRIX4_mult(const UMath::Matrix4 &m1, const UMath::Matrix4 &m2, UMath::Matrix4 &result) {
