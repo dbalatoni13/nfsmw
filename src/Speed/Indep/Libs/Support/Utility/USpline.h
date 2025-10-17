@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "UTypes.h"
 #include <list>
 
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
@@ -12,11 +13,14 @@
 class SplinePointList : public std::list<UMath::Vector4> {};
 
 class USpline {
+public:
     enum SplineType {
         OVERHAUSER_EXTRAPOLATED = 2,
         OVERHAUSER_LOOP = 1,
         OVERHAUSER_LINE = 0,
     };
+
+    static const UMath::Matrix4 &GetBasisMatrix(SplineType splineType);
 
     // total size: 0x6C
     UMath::Matrix4 fSplineMat;     // offset 0x0, size 0x40

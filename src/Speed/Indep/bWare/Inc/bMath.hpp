@@ -19,6 +19,7 @@ unsigned int bRandom(int range, unsigned int *seed);
 float bRandom(float range, unsigned int *seed);
 unsigned int bRandom(int range);
 float bRandom(float range);
+float bFMod(float a, float b);
 float bSin(unsigned short angle);
 float bSin(float angle);
 float bCos(unsigned short angle);
@@ -140,6 +141,14 @@ inline float bFloor(float a) {
     float t = bTruncate(a);
     if (t > a) {
         t -= 1.0f;
+    }
+    return t;
+}
+
+inline float bCeil(float a) {
+    float t = bTruncate(a);
+    if (t < a) {
+        t += 1.0f;
     }
     return t;
 }

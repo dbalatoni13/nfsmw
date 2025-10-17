@@ -1,0 +1,10 @@
+#ifndef SUPPORT_UTILITY_UBITPACK_H
+#define SUPPORT_UTILITY_UBITPACK_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+
+
+#endif
