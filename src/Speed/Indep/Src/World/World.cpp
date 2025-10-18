@@ -1,46 +1,44 @@
 #include "./World.hpp"
-#include "./Track.hpp"
-#include "./TrackStreamer.hpp"
 #include "./DebugVehicleSelection.h"
 #include "./DebugWorld.h"
+#include "./Track.hpp"
+#include "./TrackStreamer.hpp"
 #include "CarRender.hpp"
 #include "Clans.hpp"
 #include "RaceParameters.hpp"
 #include "Rain.hpp"
 #include "Scenery.hpp"
 #include "Skids.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
+#include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
+#include "Speed/Indep/Src/Gameplay/GManager.h"
+#include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
+#include "Speed/Indep/Src/Interfaces/SimModels/IModel.h"
+#include "Speed/Indep/Src/Interfaces/SimModels/ISceneryModel.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IExplosion.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
+#include "Speed/Indep/Src/Misc/Rumble.hpp"
 #include "Speed/Indep/Src/World/World.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "Speed/Indep/Libs/Support/Utility/UCollections.h"
-#include "Speed/Indep/Libs/Support/Utility/UListable.h"
-#include "Speed/Indep/Libs/Support/Utility/UTLVector.h"
-#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
-#include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
-#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
-#include "Speed/Indep/Src/Gameplay/GManager.h"
-#include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
-#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
-#include "Speed/Indep/Src/Interfaces/SimModels/IModel.h"
-#include "Speed/Indep/Src/Interfaces/SimModels/ISceneryModel.h"
-#include "Speed/Indep/Src/Misc/Rumble.hpp"
 #include "TrackInfo.hpp"
 #include "TrackPath.hpp"
-#include "dolphin/types.h"
+
+#include "types.h"
 
 float UglyTimestepHack = 0.016666668f;
 World *pCurrentWorld = nullptr;
 
-extern int WorldLoopCounter; // zMisc
+extern int WorldLoopCounter;                  // zMisc
 extern bVector3 *SkipFEOverrideStartPosition; // zMiscSmall
-extern TrackStreamer TheTrackStreamer; // zTrack
+extern TrackStreamer TheTrackStreamer;        // zTrack
 
 extern void ResetWorldAnimations(); // zAnim
-extern void ResetPropTimers(); // zPhysics
+extern void ResetPropTimers();      // zPhysics
 
 World::World() {
     pCurrentWorld = this;
@@ -68,7 +66,7 @@ World::World() {
 
 World::~World() {
     while (!this->CarList.IsEmpty()) {
-        delete this->CarList.Remove(this->CarList.GetHead());
+        delete this->CarList.GetHead()->Remove();
     }
     pCurrentWorld = nullptr;
 }
@@ -129,7 +127,6 @@ void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialV
     GRaceCustom *quickRace = GRaceDatabase::mObj->GetStartupRace();
 
     if (rotInitialVec == 0.0f) {
-        
     }
 
     if (quickRace) {
@@ -148,21 +145,16 @@ void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialV
 
 static void HideNonRaceSmackable(IModel *model) {
     ISceneryModel *scenery = (ISceneryModel *)model;
-    
+
     if (scenery->QueryInterface(&scenery)) {
         if (scenery->IsExcluded(4)) {
             model->ReleaseModel();
         }
     }
-
 }
 
 void World_RestoreProps() {
-    for (
-        IModel *const *m = UTL::Collections::Listable<IModel, 434>::GetList().begin();
-        m != UTL::Collections::Listable<IModel, 434>::GetList().end();
-        m++
-    ) {
+    for (IModel::List::const_iterator m = IModel::GetList().begin(); m != IModel::GetList().end(); m++) {
         IModel *model = *m;
         ISceneryModel *iscenery = (ISceneryModel *)model;
         if (iscenery->QueryInterface(&iscenery)) {
@@ -170,11 +162,7 @@ void World_RestoreProps() {
         }
     }
 
-    for (
-        IExplosion *const *m = UTL::Collections::Listable<IExplosion, 96>::GetList().begin();
-        m != UTL::Collections::Listable<IExplosion, 96>::GetList().end();
-        m++
-    ) {
+    for (IExplosion::List::const_iterator m = IExplosion::GetList().begin(); m != IExplosion::GetList().end(); m++) {
         IExplosion *explosion = *m;
         ISimable *isimable = (ISimable *)explosion;
         if (isimable->QueryInterface(&isimable)) {
@@ -183,7 +171,7 @@ void World_RestoreProps() {
     }
 
     if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing) {
-        UTL::Collections::Listable<IModel, 434>::ForEach(HideNonRaceSmackable);
+        IModel::ForEach(HideNonRaceSmackable);
     }
 
     GManager::Get().RestorePursuitBreakerIcons(-1);
@@ -194,7 +182,7 @@ void World_RestoreProps() {
 void World_Service() {
     UglyTimestepHack = 0.0f;
 
-    INIS *nis = UTL::Collections::Singleton<INIS>::Get();
+    INIS *nis = INIS::Get();
     if (nis != nullptr) {
         nis->ServiceLoads();
     }
