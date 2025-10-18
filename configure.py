@@ -254,6 +254,7 @@ elif config.version in X360_VERSIONS:
         "/nologo",
         "/c",  # compile without linking
         "/wd4996",  # get rid of string deprecation warnings for now
+        "/wd9035",  # get rid of compiler flag deprecation warnings
         # "/GR",  # RTTI
         "/Og",
         # "/Oi",  # maybe
