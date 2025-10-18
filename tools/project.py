@@ -765,7 +765,7 @@ def generate_build_ninja(
     n.newline()
 
     n.comment("MSVC build")
-    n.variable("msvc_deps_prefix", "Note: including file:")
+    # n.variable("msvc_deps_prefix", "Note: including file:")
     n.rule(
         name="msvc",
         command=msvc_cmd,
