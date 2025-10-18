@@ -10,6 +10,7 @@
 
 
 class ISceneryModel : public UTL::COM::IUnknown {
+public:
     // total size: 0x8
 
     static HINTERFACE _IHandle() {
