@@ -31,9 +31,9 @@ class Timer {};
 class Scheduler {
   public:
     void Synchronize(Timer to);
+    static Scheduler *fgScheduler;
 };
 extern Timer RealTimer;
-extern Scheduler *fgScheduler;
 
 extern bool twkDumpProfileMarks;
 ////
@@ -93,4 +93,3 @@ int MainThreadFunction(int argc, char** argv)
     
     return 0;
 }
-
