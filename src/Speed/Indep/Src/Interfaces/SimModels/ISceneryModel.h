@@ -9,7 +9,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 
 
-struct ISceneryModel : public UTL::COM::IUnknown {
+class ISceneryModel : public UTL::COM::IUnknown {
     // total size: 0x8
 
     static HINTERFACE _IHandle() {
