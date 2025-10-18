@@ -38,44 +38,59 @@ extern Scheduler *fgScheduler;
 extern bool twkDumpProfileMarks;
 ////
 
-int main(int argc, char *argv[]) {
-    unsigned int current_tick;
-    float milliseconds;
-    float temp_f30;
-    float temp_f31;
-
+#ifndef EA_PLATFORM_XENON
+int main(int argc, char** argv)
+#else
+int MainThreadFunction(int argc, char** argv)
+#endif
+{
+    #ifdef EA_PLATFORM_WINDOWS
+    // PC version wants there to only be one instance at a time
+    if (CheckProcessCount("speed.exe", 1)) // this function name is complete bs that I made up for now -Toru
+        _exit(0);
+    #endif
+    
     InitializeEverything(argc, argv);
+    
     WriteFreekerBaseAddressBeacon();
-    if (SkipFE != 0) {
+    
+    if (SkipFE)
         RaceStarter::StartSkipFERace();
-    } else {
+    else
         TheGameFlowManager.LoadFrontend();
-    }
+    
     frames_elapsed = 1;
+    
     loop_ticker = bGetTicker();
-    fgScheduler->Synchronize(RealTimer);
-    if ((int)ExitTheGameFlag == 0) {
-        temp_f30 = 0.0f;
-        temp_f31 = 0.25f;
-        while (ExitTheGameFlag == 0) {
-            current_tick = bGetTicker();
-            milliseconds = bGetTickerDifference(loop_ticker, current_tick);
-            if ((current_tick != (int)loop_ticker) && milliseconds <= temp_f30) {
-                loop_ticker = current_tick;
-            } else {
-                if (milliseconds > temp_f31) {
-                    const float minimum_time_step = 32000.0f;
-                    loop_ticker = current_tick;
-                    if (milliseconds > minimum_time_step) {
-                        milliseconds = minimum_time_step;
-                    }
-                    MainLoop(milliseconds);
-                    if (twkDumpProfileMarks != 0) {
-                        twkDumpProfileMarks = 0;
-                    }
-                }
-            }
+    Scheduler::fgScheduler->Synchronize(RealTimer);
+    
+    while ( !ExitTheGameFlag )
+    {
+        const float minumum_time_step = 0.25f;
+        
+        unsigned int current_tick = bGetTicker();
+        float milliseconds = bGetTickerDifference(loop_ticker, current_tick);
+        int milliseconds_fix;
+        
+        if (current_tick != loop_ticker && milliseconds <= 0.0f)
+        {
+            loop_ticker = current_tick;
+        }
+        else if ( milliseconds > minumum_time_step )
+        {
+            loop_ticker = current_tick;
+            if ( milliseconds > 32000.0f )
+                milliseconds = 32000.0f;
+            
+            milliseconds_fix = (int)(milliseconds * 65536.0f); // this is used on other platforms
+            
+            MainLoop(milliseconds);
+            
+            if ( twkDumpProfileMarks )
+                twkDumpProfileMarks = false;
         }
     }
+    
     return 0;
 }
+
