@@ -1,7 +1,6 @@
 #ifndef SUPPORT_UTILITY_ULISTABLE_H
 #define SUPPORT_UTILITY_ULISTABLE_H
 
-#include "stl/_algo.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -49,7 +48,7 @@ template <typename T, std::size_t U> class Listable {
 
   public:
     static ForEachFunc ForEach(ForEachFunc f) {
-        _STL::for_each(_mTable.begin(), _mTable.end(), f);
+        std::for_each(_mTable.begin(), _mTable.end(), f);
     }
 
     static const List &GetList() {
