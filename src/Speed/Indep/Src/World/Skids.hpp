@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
-
+void InitSkids(int max_skids);
+void CloseSkids();
 
 #endif
