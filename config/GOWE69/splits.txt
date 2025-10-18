@@ -196,20 +196,20 @@ Speed/Indep/SourceLists/zSpeech.cpp:
 	.text       start:0x8028A17C end:0x802B5C44
 	.ctors      start:0x803C8BD0 end:0x803C8BD4
 	.rodata     start:0x804074A4 end:0x8040DCC4
-	.data       start:0x80435970 end:0x80435FFC
+	.data       start:0x80435970 end:0x80435F48
 	.bss        start:0x80498974 end:0x8049A5A4
 
 Speed/Indep/SourceLists/zTrack.cpp:
 	.text       start:0x802B5C44 end:0x802C5544
 	.ctors      start:0x803C8BD4 end:0x803C8BD8
-	.data       start:0x80435FFC end:0x804374BC
+	.data       start:0x80435F48 end:0x80437248
 	.bss        start:0x8049A5A4 end:0x804A5E60
 
 Speed/Indep/SourceLists/zWorld.cpp:
 	.text       start:0x802C5544 end:0x802ECA00
 	.ctors      start:0x803C8BD8 end:0x803C8BDC
 	.rodata     start:0x8040DCC4 end:0x8040E370
-	.data       start:0x804374BC end:0x80438F80
+	.data       start:0x80437248 end:0x80438F80
 	.bss        start:0x804A5E60 end:0x804AA598
 
 Speed/Indep/SourceLists/zWorld2.cpp:

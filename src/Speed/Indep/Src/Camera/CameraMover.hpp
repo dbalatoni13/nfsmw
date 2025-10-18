@@ -58,4 +58,6 @@ struct CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollisio
     CameraMover();
 };
 
+void CameraMoverRestartRace();
+
 #endif

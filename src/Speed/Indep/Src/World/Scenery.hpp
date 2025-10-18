@@ -50,4 +50,7 @@ struct SceneryCullInfo {
 
 extern RegionQuery RegionInfo;
 
+void InitVisibleZones();
+void CloseVisibleZones();
+
 #endif

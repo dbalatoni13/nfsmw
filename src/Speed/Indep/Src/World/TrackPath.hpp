@@ -83,4 +83,6 @@ class TrackPathManager {
 
 extern TrackPathManager TheTrackPathManager;
 
+void TrackPathInitRemoteCaffeineConnection();
+
 #endif

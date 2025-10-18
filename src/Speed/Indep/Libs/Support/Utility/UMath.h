@@ -91,6 +91,10 @@ inline void Unit(const UMath::Vector4 &a, Vector4 &r) {
     VU0_v4unit(a, r);
 }
 
+inline void MultYRot(const UMath::Matrix4 &m, float a, UMath::Matrix4 &r) {
+    
+}
+
 inline void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m) {
     VU0_quattom4(q, m);
 }

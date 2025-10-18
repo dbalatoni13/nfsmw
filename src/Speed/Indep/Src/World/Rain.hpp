@@ -9,5 +9,6 @@
 
 int AmIinATunnel(eView *view, int CheckOverPass);
 int AmIinATunnelSlow(eView *view, int CheckOverPass);
+void SetRainBase();
 
 #endif

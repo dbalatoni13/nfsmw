@@ -1,6 +1,7 @@
 #ifndef GAMEPLAY_GMANAGER_H
 #define GAMEPLAY_GMANAGER_H
 
+#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -77,11 +78,14 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     bool mAllowMenuGates;           // offset 0x300, size 0x1
     unsigned int mRestartEventHash; // offset 0x304, size 0x4
 
+  public:
     static GManager *mObj;
 
-  public:
     GManager(const char *vaultPackName);
     void RefreshWorldParticleEffects();
+    void GetRespawnLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialVec);
+    void RestorePursuitBreakerIcons(int sectionID);
+    void NotifyWorldService();
 
     static GManager &Get() {
         return *mObj;

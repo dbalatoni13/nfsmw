@@ -47,7 +47,9 @@ template <typename T, std::size_t U> class Listable {
     }
 
   public:
-    ForEachFunc ForEach(ForEachFunc f) {}
+    static ForEachFunc ForEach(ForEachFunc f) {
+        std::for_each(_mTable.begin(), _mTable.end(), f);
+    }
 
     static const List &GetList() {
         return _mTable;

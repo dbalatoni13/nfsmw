@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
-
+void InitClans();
+void CloseClans();
 
 #endif
