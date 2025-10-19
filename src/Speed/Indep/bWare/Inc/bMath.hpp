@@ -11,6 +11,8 @@
 #include "dolphin/mtx44_ext.h"
 #elif defined(TARGET_X360)
 // TODO
+#elif defined(TARGET_PS2)
+// TODO
 #else
 #error Choose a platform
 #endif
@@ -72,6 +74,8 @@ inline float bSqrt(float x) {
     }
 #elif defined(TARGET_X360)
 // TODO
+#elif defined(TARGET_PS2)
+// TODO
 #else
 #error Choose a platform
 #endif
@@ -90,6 +94,8 @@ inline float bMin(float a, float b) {
     asm("fsel %0, %1, %2, %3" : "=f"(d) : "f"(c), "f"(b), "f"(a));
 #elif defined(TARGET_X360)
 // TODO
+#elif defined(TARGET_PS2)
+// TODO
 #else
 #error Choose a platform
 #endif
@@ -106,6 +112,8 @@ inline float bMax(float a, float b) {
 #ifdef TARGET_GC
     asm("fsel %0, %1, %2, %3" : "=f"(d) : "f"(c), "f"(a), "f"(b));
 #elif defined(TARGET_X360)
+// TODO
+#elif defined(TARGET_PS2)
 // TODO
 #else
 #error Choose a platform
@@ -126,6 +134,8 @@ inline float bAbs(float a) {
     // We are sure they use asm, other options don't match
     asm("fabs %0, %1" : "=f"(f_abs) : "f"(a));
 #elif defined(TARGET_X360)
+// TODO
+#elif defined(TARGET_PS2)
 // TODO
 #else
 #error Choose a platform
@@ -779,6 +789,8 @@ inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v) {
     MTX44Copy(*reinterpret_cast<const Mtx44 *>(v), *reinterpret_cast<Mtx44 *>(dest));
 #elif defined(TARGET_X360)
 // TODO
+#elif defined(TARGET_PS2)
+// TODO
 #else
 #error Choose a platform
 #endif
@@ -789,6 +801,8 @@ inline void bIdentity(bMatrix4 *a) {
 #ifdef TARGET_GC
     MTX44Identity(*reinterpret_cast<Mtx44 *>(a));
 #elif defined(TARGET_X360)
+// TODO
+#elif defined(TARGET_PS2)
 // TODO
 #else
 #error Choose a platform

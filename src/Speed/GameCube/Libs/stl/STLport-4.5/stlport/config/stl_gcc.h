@@ -1,6 +1,7 @@
 /* STLport configuration file
  * It is internal STLport header - DO NOT include it directly
  */
+// clang-format off
 
 #if defined(SN_TARGET_NGC)
 #	undef __GNUC__
@@ -384,6 +385,4 @@ typedef unsigned int wint_t;
 #   define _STLP_STATIC_TEMPLATE_DATA 1
 # endif
 
-
-
-
+// clang-format on
