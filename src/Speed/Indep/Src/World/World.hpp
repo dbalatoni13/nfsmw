@@ -71,6 +71,8 @@ enum eTimeOfDay {
     eTOD_ERROR = -1,
 };
 
+extern int g_tweakIsDriftRace;
+
 void ServiceSpaceNodes();
 void ResetWorldTime();
 eTimeOfDay GetCurrentTimeOfDay();

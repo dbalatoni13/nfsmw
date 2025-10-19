@@ -1,54 +1,75 @@
 #ifndef WORLD_RACEPARAMETERS_H
 #define WORLD_RACEPARAMETERS_H
 
+#include "CarInfo.hpp"
+#include "Speed/Indep/Src/Misc/Replay.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "./World.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
 enum eTrackDirection {
-    NUM_TRACK_DIRECTIONS = 2,
-    eDIRECTION_BACKWARD = 1,
-    eDIRECTION_FORWARD = 0,
+    eDIRECTION_FORWARD,
+    eDIRECTION_BACKWARD,
+    NUM_TRACK_DIRECTIONS,
 };
 enum eTrafficDensity {
-    NUM_TRAFFIC_DENSITIES = 4,
-    eTRAFFICDENSITY_HIGH = 3,
-    eTRAFFICDENSITY_MEDIUM = 2,
-    eTRAFFICDENSITY_LOW = 1,
-    eTRAFFICDENSITY_OFF = 0,
+    eTRAFFICDENSITY_OFF,
+    eTRAFFICDENSITY_LOW,
+    eTRAFFICDENSITY_MEDIUM,
+    eTRAFFICDENSITY_HIGH,
+    NUM_TRAFFIC_DENSITIES,
 };
 enum RaceTypes {
-    RACE_TYPE_GET_AWAY = 7,
-    RACE_TYPE_CAR_SHOW = 6,
-    RACE_TYPE_TOURNAMENT = 5,
-    RACE_TYPE_RACE_KNOCKOUT = 4,
-    RACE_TYPE_LAP_KNOCKOUT = 3,
-    RACE_TYPE_TIME_TRIAL = 2,
-    RACE_TYPE_SINGLE_RACE = 1,
-    RACE_TYPE_NONE = 0,
+    RACE_TYPE_NONE,
+    RACE_TYPE_SINGLE_RACE,
+    RACE_TYPE_TIME_TRIAL,
+    RACE_TYPE_LAP_KNOCKOUT,
+    RACE_TYPE_RACE_KNOCKOUT,
+    RACE_TYPE_TOURNAMENT,
+    RACE_TYPE_CAR_SHOW,
+    RACE_TYPE_GET_AWAY,
 };
 enum eHandlingMode {
-    HANDLING_MODE_EXTREME = 1,
-    HANDLING_MODE_CLASSIC = 0,
+    HANDLING_MODE_CLASSIC,
+    HANDLING_MODE_EXTREME,
 };
 enum eOpponentStrength {
-    NUM_OPPONENT_STRENGTHS = 3,
-    eOPPONENTSTRENGTH_HIGH = 2,
-    eOPPONENTSTRENGTH_MEDIUM = 1,
-    eOPPONENTSTRENGTH_LOW = 0,
+    eOPPONENTSTRENGTH_LOW,
+    eOPPONENTSTRENGTH_MEDIUM,
+    eOPPONENTSTRENGTH_HIGH,
+    NUM_OPPONENT_STRENGTHS,
 };
 enum eAIDifficultyModifier {
-    NUM_AI_DIFFICULTY_MODIFIERS = 3,
-    eAI_DIFFICULTY_MODIFIER_NORMAL = 2,
-    eAI_DIFFICULTY_MODIFIER_SOMEWHAT_EASY = 1,
-    eAI_DIFFICULTY_MODIFIER_EASY = 0,
+    eAI_DIFFICULTY_MODIFIER_EASY,
+    eAI_DIFFICULTY_MODIFIER_SOMEWHAT_EASY,
+    eAI_DIFFICULTY_MODIFIER_NORMAL,
+    NUM_AI_DIFFICULTY_MODIFIERS,
 };
 
-extern int g_tweakIsDriftRace;
-
 struct RaceParameters {
+    void InitWithDefaults();
+    void DoSnapshot(ReplaySnapshot *snapshot);
+    void AddDriverInfo(DriverInfo &driver_info);
+    void RemoveDriverInfo(int driver_number);
+    void SetDriverInfo(DriverInfo &driver_info);
+    DriverInfo *GetDriverInfo(int n);
+    DriverInfo *GetDriverInfoByDriverNumber(int nDriverNumber);
+    DriverInfo *GetDriverInfoByPlayerNumber(int player_number);
+    int GetDriverNumber(int player_number);
+    DriverInfo *EliminateDriver(int nDriverNumber, int nRank);
+    void ClearEliminatedDrivers();
+    int GetNumEliminated();
+    void ResetStartingPositions();
+    bool AreThereTooManyUniqueCarGeometries(RideInfo *ride_info);
+    void Print();
+
+    inline bool IsDriftRace() {
+        return ((this->bDriftRaceFlag) || (g_tweakIsDriftRace));
+    }
+
     // total size: 0xA0
     int TrackNumber; // offset 0x0, size 0x4
     eTrackDirection TrackDirection; // offset 0x4, size 0x4
@@ -87,10 +108,6 @@ struct RaceParameters {
     int NumDriverInfo; // offset 0x94, size 0x4
     Timer TimeTrialTime; // offset 0x98, size 0x4
     bool bCareerEventRace; // offset 0x9C, size 0x1
-
-    inline bool IsDriftRace() {
-        return ((this->bDriftRaceFlag) || (g_tweakIsDriftRace));
-    }
 };
 
 #endif

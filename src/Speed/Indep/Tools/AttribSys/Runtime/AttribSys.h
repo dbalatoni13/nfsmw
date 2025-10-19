@@ -278,6 +278,7 @@ class Database {
   public:
     bool AddClass(Class *c);
     void RemoveClass(Class *c);
+    Class *GetClass(unsigned int k);
 
     static Database &Get() {
         return *sThis;
