@@ -14,7 +14,7 @@ namespace Attrib {
 // TODO should this really be in AttribHashMap.h?
 class Array {
   public:
-    unsigned int GetPad();
+    unsigned int GetPad() const;
 
     // Returns the base location of this array's data
     unsigned char *BasePointer() {

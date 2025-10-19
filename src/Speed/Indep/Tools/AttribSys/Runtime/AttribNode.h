@@ -60,19 +60,21 @@ class Node {
     }
 
     void *GetPointer(void *layoutptr) {
-        if (IsByValue())
+        if (IsByValue()) {
             return &mValue;
-        else if (IsLaidOut())
+        } else if (IsLaidOut()) {
             return (void *)(uintptr_t(layoutptr) + uintptr_t(mPtr));
-        else
+        } else {
             return mPtr;
+        }
     }
 
     class Array *GetArray(void *layoutptr) {
-        if (IsLaidOut())
+        if (IsLaidOut()) {
             return (Array *)(uintptr_t(layoutptr) + uintptr_t(mArray));
-        else
+        } else {
             return mArray;
+        }
     }
 
     unsigned int GetValue() {
