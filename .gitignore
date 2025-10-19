@@ -38,4 +38,10 @@ symbols/
 decompiled.cpp
 
 tools/elftools
+
+# Xbox 360
 vc80.pdb
+
+# PS2
+undefined_funcs_auto.txt
+undefined_syms_auto.txt

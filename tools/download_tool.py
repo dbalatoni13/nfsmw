@@ -22,7 +22,7 @@ from typing import Callable, Dict
 from pathlib import Path
 
 
-def binutils_url(tag):
+def ppc_binutils_url(tag):
     uname = platform.uname()
     system = uname.system.lower()
     arch = uname.machine.lower()
@@ -33,6 +33,20 @@ def binutils_url(tag):
         arch = "x86_64"
 
     repo = "https://github.com/encounter/gc-wii-binutils"
+    return f"{repo}/releases/download/{tag}/{system}-{arch}.zip"
+
+
+def mips_binutils_url(tag):
+    uname = platform.uname()
+    system = uname.system.lower()
+    arch = uname.machine.lower()
+    if system == "darwin":
+        system = "macos"
+        arch = "universal"
+    elif arch == "amd64":
+        arch = "x86_64"
+
+    repo = "https://github.com/dbalatoni13/mips-binutils"
     return f"{repo}/releases/download/{tag}/{system}-{arch}.zip"
 
 
@@ -83,7 +97,8 @@ def wibo_url(tag: str) -> str:
 
 
 TOOLS: Dict[str, Callable[[str], str]] = {
-    "binutils": binutils_url,
+    "ppc_binutils": ppc_binutils_url,
+    "mips_binutils": mips_binutils_url,
     "compilers": compilers_url,
     "dtk": dtk_url,
     "jeff": dtk_url,
