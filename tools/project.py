@@ -797,8 +797,9 @@ def generate_build_ninja(
         mwcc_sjis_implicit.append(transform_dep)
         ngccc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
         ngccc_implicit.append(transform_dep)
-        ee_gcc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
-        ee_gcc_implicit.append(transform_dep)
+        # TODO readd when the dependency generation works
+        # ee_gcc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
+        # ee_gcc_implicit.append(transform_dep)
 
     n.comment("Link ELF file")
     n.rule(
