@@ -1,0 +1,199 @@
+# Splat config for SLES-53558-A124 (PS2)
+name: Need for Speed Most Wanted A124 PS2 Prototype
+sha1: d01ad0bca1f88e1261cfaba35fccdbb8fba38d80
+
+options:
+  basename: NSF.ELF
+  target_path: orig/SLES-53558-A124/NFS.ELF
+  elf_path: build/SLES-53558-A124/NFS.ELF
+  base_path: ../..
+  platform: ps2
+  compiler: EEGCC
+
+  # Output paths
+  asm_path: build/SLES-53558-A124/asm
+  src_path: src
+  build_path: build/SLES-53558-A124/obj
+
+  # Assembly options
+  generate_asm_macros_files: True
+  named_regs_for_c_funcs: False
+  find_file_boundaries: False
+  disasm_unknown: True
+
+  # Rodata options
+  rodata_string_guesser_level: 0 # improve string detection
+  suggestion_rodata_section_start: True
+  pair_rodata_to_text: False
+  migrate_rodata_to_functions: True
+
+  # Auto-generate undefined functions and symbols
+  create_undefined_funcs_auto: True
+  undefined_funcs_auto_path: config/SLES-53558-A124//undefined_funcs_auto.txt
+  create_undefined_syms_auto: True
+  undefined_syms_auto_path: config/SLES-53558-A124//undefined_syms_auto.txt
+
+  # Manually defined symvols
+  symbol_addrs_path: config/SLES-53558-A124/symbols.txt
+  ld_script_path: build/SLES-53558-A124/ldscript.ld
+
+  # ELF sections
+  section_order: [".text", ".vutext", ".noover", ".rodata", ".gcc_except_table", ".over", ".data", ".lit4", ".sdata", ".sbss", ".bss"]
+  auto_link_sections: [".rodata", ".data", ".lit4", ".sdata", ".sbss", ".bss"]
+
+  # Linker script options
+  subalign: 8
+
+  # TODO gp_value
+
+segments:
+  # - [0, databin, elf_header]
+
+  - name: main
+    type: code
+    start: 0x001000
+    vram: 0x100000
+    bss_size: 0x374dc
+    subsegments:
+    # - [0x1000, asmtu, Speed/Indep/SourceLists/zAI.cpp]
+    - [0x45728, asmtu, Speed/Indep/SourceLists/zAnim.cpp]
+    # - [0x50A78, asmtu, Speed/Indep/SourceLists/zAttribSys.cpp]
+    # - [0x5BE08, asmtu, Speed/Indep/SourceLists/zBWare.cpp]
+    - [0x65F70, asmtu, Speed/Indep/SourceLists/zCamera.cpp]
+    - [0x83EC4, asmtu, Speed/Indep/SourceLists/zComms.cpp]
+    - [0x83EC8, asmtu, Speed/Indep/SourceLists/zDebug.cpp]
+    - [0x878B0, asmtu, Speed/Indep/SourceLists/zDynamics.cpp]
+    - [0x8E320, asmtu, Speed/Indep/SourceLists/zEagl4Anim.cpp]
+    - [0xA7B60, asmtu, Speed/Indep/SourceLists/zEAXSound.cpp]
+    - [0xCC4F8, asmtu, Speed/Indep/SourceLists/zEAXSound2.cpp]
+    # - [0xF4F00, asmtu, Speed/Indep/SourceLists/zEcstasy.cpp]
+    - [0x12A778, asmtu, Speed/Indep/SourceLists/zFe.cpp]
+    - [0x185098, asmtu, Speed/Indep/SourceLists/zFe2.cpp]
+    - [0x1C50C8, asmtu, Speed/Indep/SourceLists/zFEng.cpp]
+    # - [0x1D8910, asmtu, Speed/Indep/SourceLists/zFoundation.cpp]
+    - [0x1E0538, asmtu, Speed/Indep/SourceLists/zGameModes.cpp]
+    - [0x1E0990, asmtu, Speed/Indep/SourceLists/zGameplay.cpp]
+    - [0x204800, asmtu, Speed/Indep/SourceLists/zLua.cpp]
+    - [0x21C228, asmtu, Speed/Indep/SourceLists/zMain.cpp]
+    # - [0x246EB8, asmtu, Speed/Indep/SourceLists/zMisc.cpp]
+    - [0x2641F8, asmtu, Speed/Indep/SourceLists/zMiscSmall.cpp]
+    - [0x2644A8, asmtu, Speed/Indep/SourceLists/zMission.cpp]
+    # - [0x2644D8, asmtu, Speed/Indep/SourceLists/zPhysics.cpp]
+    # - [0x2877C8, asmtu, Speed/Indep/SourceLists/zPhysicsBehaviors.cpp]
+    - [0x2BFEB8, asmtu, Speed/Indep/SourceLists/zPlatform.cpp]
+    - [0x2CC6E8, asmtu, Speed/Indep/SourceLists/zRender.cpp]
+    - [0x2CC7B0, asmtu, Speed/Indep/SourceLists/zSim.cpp]
+    - [0x2E5D00, asmtu, Speed/Indep/SourceLists/zSpeech.cpp]
+    - [0x310930, asmtu, Speed/Indep/SourceLists/zTrack.cpp]
+    # - [0x3234D0, asmtu, Speed/Indep/SourceLists/zWorld.cpp]
+    - [0x357EE8, asmtu, Speed/Indep/SourceLists/zWorld2.cpp]
+
+    - [0x439800, .rodata, Speed/Indep/SourceLists/zAI.cpp]
+    - [0x4401F8, .rodata, Speed/Indep/SourceLists/zAnim.cpp]
+    - [0x440540, .rodata, Speed/Indep/SourceLists/zAttribSys.cpp]
+    - [0x440B10, .rodata, Speed/Indep/SourceLists/zBWare.cpp]
+    - [0x441610, .rodata, Speed/Indep/SourceLists/zCamera.cpp]
+    - [0x4433b0, .rodata, Speed/Indep/SourceLists/zDebug.cpp]
+    - [0x443990, .rodata, Speed/Indep/SourceLists/zDynamics.cpp]
+    - [0x443ab0, .rodata, Speed/Indep/SourceLists/zEagl4Anim.cpp]
+    - [0x445380, .rodata, Speed/Indep/SourceLists/zEAXSound.cpp]
+    - [0x448D80, .rodata, Speed/Indep/SourceLists/zEAXSound2.cpp]
+    - [0x44D180, .rodata, Speed/Indep/SourceLists/zEcstasy.cpp]
+    - [0x44F6A0, .rodata, Speed/Indep/SourceLists/zFe.cpp]
+    - [0x45AE20, .rodata, Speed/Indep/SourceLists/zFe2.cpp]
+    - [0x461FF0, .rodata, Speed/Indep/SourceLists/zFEng.cpp]
+    - [0x463330, .rodata, Speed/Indep/SourceLists/zFoundation.cpp]
+    - [0x463d00, .rodata, Speed/Indep/SourceLists/zGameModes.cpp]
+    - [0x464130, .rodata, Speed/Indep/SourceLists/zGameplay.cpp]
+    - [0x4654a0, .rodata, Speed/Indep/SourceLists/zLua.cpp]
+    - [0x467de0, .rodata, Speed/Indep/SourceLists/zMain.cpp]
+    - [0x46D5A0, .rodata, Speed/Indep/SourceLists/zMisc.cpp]
+    - [0x470E60, .rodata, Speed/Indep/SourceLists/zMiscSmall.cpp]
+    - [0x470ff8, .rodata, Speed/Indep/SourceLists/zMission.cpp]
+    - [0x471080, .rodata, Speed/Indep/SourceLists/zPhysics.cpp]
+    - [0x474bc0, .rodata, Speed/Indep/SourceLists/zPhysicsBehaviors.cpp]
+    - [0x47BB60, .rodata, Speed/Indep/SourceLists/zPlatform.cpp]
+    - [0x47D030, .rodata, Speed/Indep/SourceLists/zRender.cpp]
+    - [0x47D4F0, .rodata, Speed/Indep/SourceLists/zSim.cpp]
+    - [0x47F9D0, .rodata, Speed/Indep/SourceLists/zSpeech.cpp]
+    - [0x483250, .rodata, Speed/Indep/SourceLists/zTrack.cpp]
+    - [0x483FF0, .rodata, Speed/Indep/SourceLists/zWorld.cpp]
+    - [0x488ac0, .rodata, Speed/Indep/SourceLists/zWorld2.cpp]
+
+    - [0x497580, asmtu, Speed/Indep/SourceLists/zOnline.cpp]
+    - [0x4b50c0, asmtu, Speed/Indep/SourceLists/zFeOverlay.cpp]
+
+    # TODO
+    - [0x4D7D50, .data, idk]
+
+    - [0x4daf00, .data, Speed/Indep/SourceLists/zAI.cpp]
+    - [0x4dc3b0, .data, Speed/Indep/SourceLists/zAnim.cpp]
+    - [0x4dcad0, .data, Speed/Indep/SourceLists/zAttribSys.cpp]
+    - [0x4dcb50, .data, Speed/Indep/SourceLists/zBWare.cpp]
+    - [0x4e0c40, .data, Speed/Indep/SourceLists/zCamera.cpp]
+    - [0x4e1de4, .data, Speed/Indep/SourceLists/zDebug.cpp]
+    - [0x4e1e20, .data, Speed/Indep/SourceLists/zDynamics.cpp]
+    - [0x4e1e50, .data, Speed/Indep/SourceLists/zEagl4Anim.cpp]
+    - [0x4e2440, .data, Speed/Indep/SourceLists/zEAXSound.cpp]
+    - [0x4e58b0, .data, Speed/Indep/SourceLists/zEAXSound2.cpp]
+    - [0x4e8f10, .data, Speed/Indep/SourceLists/zEcstasy.cpp]
+    - [0x511d90, .data, Speed/Indep/SourceLists/zFe.cpp]
+    - [0x5133b8, .data, Speed/Indep/SourceLists/zFe2.cpp]
+    - [0x515b98, .data, Speed/Indep/SourceLists/zFEng.cpp]
+    - [0x515db8, .data, Speed/Indep/SourceLists/zFoundation.cpp]
+    - [0x515ee8, .data, Speed/Indep/SourceLists/zGameModes.cpp]
+    - [0x515f98, .data, Speed/Indep/SourceLists/zGameplay.cpp]
+    - [0x516380, .data, Speed/Indep/SourceLists/zLua.cpp]
+    - [0x516610, .data, Speed/Indep/SourceLists/zMain.cpp]
+    - [0x518650, .data, Speed/Indep/SourceLists/zMisc.cpp]
+    - [0x519b58, .data, Speed/Indep/SourceLists/zMiscSmall.cpp]
+    - [0x519d2c, .data, Speed/Indep/SourceLists/zMission.cpp]
+    - [0x519d50, .data, Speed/Indep/SourceLists/zPhysics.cpp]
+    - [0x51e910, .data, Speed/Indep/SourceLists/zPhysicsBehaviors.cpp]
+    - [0x524ae0, .data, Speed/Indep/SourceLists/zPlatform.cpp]
+    - [0x52c540, .data, Speed/Indep/SourceLists/zRender.cpp]
+    - [0x52c5e8, .data, Speed/Indep/SourceLists/zSim.cpp]
+    - [0x52e728, .data, Speed/Indep/SourceLists/zSpeech.cpp]
+    - [0x5307e0, .data, Speed/Indep/SourceLists/zTrack.cpp]
+    - [0x544ad0, .data, Speed/Indep/SourceLists/zWorld.cpp]
+    - [0x54a990, .data, Speed/Indep/SourceLists/zWorld2.cpp]
+    - [0x54ae58, .data, Speed/Indep/SourceLists/zOnline.cpp]
+    - [0x54bb68, .data, Speed/Indep/SourceLists/zFeOverlay.cpp]
+
+    - [0x556000, .bss, Speed/Indep/SourceLists/zAI.cpp]
+    - [0x5561a8, .bss, Speed/Indep/SourceLists/zAnim.cpp]
+    - [0x556254, .bss, Speed/Indep/SourceLists/zAttribSys.cpp]
+    - [0x556270, .bss, Speed/Indep/SourceLists/zBWare.cpp]
+    - [0x556430, .bss, Speed/Indep/SourceLists/zCamera.cpp]
+    - [0x55673c, .bss, Speed/Indep/SourceLists/zDebug.cpp]
+    - [0x556748, .bss, Speed/Indep/SourceLists/zDynamics.cpp]
+    - [0x556758, .bss, Speed/Indep/SourceLists/zEagl4Anim.cpp]
+    - [0x556d60, .bss, Speed/Indep/SourceLists/zEAXSound.cpp]
+    - [0x556e68, .bss, Speed/Indep/SourceLists/zEAXSound2.cpp]
+    - [0x556f70, .bss, Speed/Indep/SourceLists/zEcstasy.cpp]
+    - [0x557250, .bss, Speed/Indep/SourceLists/zFe.cpp]
+    - [0x5577e0, .bss, Speed/Indep/SourceLists/zFe2.cpp]
+    - [0x557b30, .bss, Speed/Indep/SourceLists/zFEng.cpp]
+    - [0x557c48, .bss, Speed/Indep/SourceLists/zFoundation.cpp]
+    - [0x557db8, .bss, Speed/Indep/SourceLists/zGameModes.cpp]
+    - [0x557e30, .bss, Speed/Indep/SourceLists/zGameplay.cpp]
+    - [0x557f60, .bss, Speed/Indep/SourceLists/zLua.cpp]
+    - [0x5580c0, .bss, Speed/Indep/SourceLists/zMain.cpp]
+    - [0x55aab0, .bss, Speed/Indep/SourceLists/zMisc.cpp]
+    - [0x55b0e8, .bss, Speed/Indep/SourceLists/zMiscSmall.cpp]
+    - [0x55b0f0, .bss, Speed/Indep/SourceLists/zMission.cpp]
+    - [0x55b100, .bss, Speed/Indep/SourceLists/zPhysics.cpp]
+    - [0x55b540, .bss, Speed/Indep/SourceLists/zPhysicsBehaviors.cpp]
+    - [0x55d200, .bss, Speed/Indep/SourceLists/zPlatform.cpp]
+    - [0x55dab0, .bss, Speed/Indep/SourceLists/zRender.cpp]
+    - [0x55dba8, .bss, Speed/Indep/SourceLists/zSim.cpp]
+    - [0x55e510, .bss, Speed/Indep/SourceLists/zSpeech.cpp]
+    - [0x55e830, .bss, Speed/Indep/SourceLists/zTrack.cpp]
+    - [0x561580, .bss, Speed/Indep/SourceLists/zWorld.cpp]
+    - [0x564070, .bss, Speed/Indep/SourceLists/zWorld2.cpp]
+    - [0x5643e8, .bss, Speed/Indep/SourceLists/zOnline.cpp]
+    - [0x565e28, .bss, Speed/Indep/SourceLists/zFeOverlay.cpp]
+
+    - [0x566500, .bss, rest]
+    
+  - [0x68c4db]

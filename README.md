@@ -18,6 +18,7 @@ Supported versions:
 
 - `GOWE69`: Rev 0 (GC USA)
 - `EUROPEGERMILESTONE`: Oct 21, 2005 prototype (Xbox 360 PAL)
+- `SLES-53558-A124`: Sep 20, 2005 prototype (Alpha 124) (PS2)
 
 # Dependencies
 

@@ -21,6 +21,7 @@ from tools.project import (
     Object,
     ProgressCategory,
     ProjectConfig,
+    Platform,
     calculate_progress,
     generate_build,
     is_windows,
@@ -31,10 +32,8 @@ DEFAULT_VERSION = 0
 VERSIONS = [
     "GOWE69",  # 0
     "EUROPEGERMILESTONE",  # 1
+    "SLES-53558-A124",  # 2
 ]
-
-GC_VERSIONS = [VERSIONS[0]]
-X360_VERSIONS = [VERSIONS[1]]
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -146,14 +145,19 @@ if not config.non_matching:
     config.asm_dir = None
 
 # Tool versions
-config.binutils_tag = "2.42-1"
 config.compilers_tag = "20251015"
 
-if config.version in GC_VERSIONS:
+if version_num in [0]:
+    config.platform = Platform.GC_WII
     config.dtk_tag = "v1.6.2"
-else:
+    config.binutils_tag = "2.42-1"
+elif version_num in [1]:
+    config.platform = Platform.X360
     config.dtk_tag = "v0.1.1"
-    config.use_jeff = True
+    config.binutils_tag = "2.42-1"
+elif version_num in [2]:
+    config.platform = Platform.PS2
+    config.binutils_tag = "2.45"
 
 config.objdiff_tag = "v3.3.0"
 config.sjiswrap_tag = "v1.2.0"
@@ -163,7 +167,7 @@ config.wibo_tag = "1.0.0-alpha.4"
 config.config_path = Path("config") / config.version / "config.yml"
 config.check_sha_path = Path("config") / config.version / "build.sha1"
 
-if config.version in GC_VERSIONS:
+if config.platform == Platform.GC_WII:
     config.asflags = [
         "-mgekko",
         "--strip-local-absolute",
@@ -178,13 +182,29 @@ if config.version in GC_VERSIONS:
     # Optional numeric ID for decomp.me preset
     # Can be overridden in libraries or objects
     config.scratch_preset_id = 176
+elif config.platform == Platform.X360:
+    config.ldflags = []
+elif config.platform == Platform.PS2:
+    config.asflags = [
+        "-no-pad-sections",
+        "-EL",
+        "-march=5900",
+        "-mabi=eabi",
+        "-I include",
+    ]
+    ldscript_path = Path("build") / config.version / "ldscript.ld"
+    config.ldflags = [
+        "-EL",
+        "-T",
+        str(ldscript_path),
+    ]  # TODO what about undefined_syms_auto.txt?
 
 # Use for any additional files that should cause a re-configure when modified
 config.reconfig_deps = []
 
 # Base flags, common to most GC/Wii games.
 # Generally leave untouched, with overrides added below.
-if config.version in GC_VERSIONS:
+if config.platform == Platform.GC_WII:
     config.linker_version = "ProDG/3.9.3"
 
     cflags_base = [
@@ -247,7 +267,7 @@ if config.version in GC_VERSIONS:
         "-DSN_TARGET_NGC",
         "-D__SN__",
     ]
-elif config.version in X360_VERSIONS:
+elif config.platform == Platform.X360:
     config.linker_version = "X360/14.00.2110"
 
     cflags_base = [
@@ -281,6 +301,52 @@ elif config.version in X360_VERSIONS:
         "-D_WIN32",
         "-D_WCHAR_T_DEFINED",
         "-fms-extensions",
+    ]
+elif config.platform == Platform.PS2:
+    config.linker_version = "PS2/ee-gcc2.9-991111"
+
+    cflags_base = [
+        "-O2",
+        "-gdwarf",
+        # "-Wall",
+        "-I include",
+        "-I src",
+        "-DTARGET_PS2",
+        "-D_USE_MATH_DEFINES",
+        f"-I build/{config.version}/include",
+        f"-DBUILD_VERSION={version_num}",
+        # f"-DVERSION_{config.version}", # TODO it's broken because of the dash?
+    ]
+
+    # Debug flags
+    if args.debug:
+        cflags_base.append("-DDEBUG=1")
+    else:
+        cflags_base.append("-DNDEBUG=1")
+
+    cflags_game = [
+        *cflags_base,
+        "-G0",
+        "-ffast-math",
+        # "-fforce-addr",
+        # "-fcse-follow-jumps",
+        # "-fcse-skip-blocks",
+        # "-fforce-mem",
+        # "-fgcse",
+        # "-fno-strength-reduce",
+        # "-frerun-cse-after-loop",
+        "-fschedule-insns",
+        "-fschedule-insns2",
+        # "-fexpensive-optimizations",
+        # "-frerun-loop-opt",
+        "-fmove-all-movables",
+        "-DLUA_NUMBER=float",
+    ]
+
+    config.extra_clang_flags = [
+        "-std=gnu++98",
+        "-DSN_TARGET_PS2",
+        "-D__SN__",
     ]
 
 cflags_cmn = [
@@ -321,7 +387,8 @@ def MatchingFor(*versions):
     return config.version in versions
 
 
-config.warn_missing_config = True
+if config.platform != Platform.PS2:
+    config.warn_missing_config = True
 config.warn_missing_source = False
 config.libs = [
     {
@@ -569,7 +636,7 @@ config.libs = [
     },
 ]
 
-if config.version in GC_VERSIONS:
+if config.platform == Platform.GC_WII:
     config.libs.extend(
         [
             {
