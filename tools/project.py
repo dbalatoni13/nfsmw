@@ -1208,12 +1208,7 @@ def generate_build_ninja(
                     print(f"Missing configuration for {obj_name}")
                 if obj_path is not None:
                     link_step.add(Path(obj_path))
-                # TODO hack
-                if config.platform == Platform.PS2 and obj_name.endswith(".s"):
-                    obj_name = obj_name.removesuffix(".s") + ".cpp"
-                    obj = objects.get(obj_name)
-                else:
-                    return
+                return
 
             link_built_obj = obj.completed
             built_obj_path: Optional[Path] = None
@@ -1223,7 +1218,9 @@ def generate_build_ninja(
                     # Assemble target obj file for objdiff
                     # TODO this is really hacky
                     asm_path = Path(
-                        str(obj.src_obj_path.with_suffix(".s")).replace("src", "asm")
+                        str(
+                            obj.src_obj_path.with_suffix(Path(obj_name).suffix + ".s")
+                        ).replace("src", "asm")
                     )
                     obj_path = Path(str(obj.src_obj_path).replace("src", "obj"))
                     built_obj_path = asm_build(obj, asm_path, obj_path)
@@ -1250,6 +1247,7 @@ def generate_build_ninja(
                 link_built_obj = True
                 built_obj_path = asm_build(obj, obj.asm_path, obj.asm_obj_path)
 
+            # TODO PS2
             if link_built_obj and built_obj_path is not None:
                 # Use the source-built object
                 link_step.add(built_obj_path)

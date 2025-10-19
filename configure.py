@@ -307,7 +307,7 @@ elif config.platform == Platform.PS2:
 
     cflags_base = [
         "-O2",
-        "-gdwarf",
+        "-ggdb",
         # "-Wall",
         "-I include",
         "-I src",

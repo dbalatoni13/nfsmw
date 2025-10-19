@@ -88,6 +88,9 @@ segments:
     # - [0x3234D0, asmtu, Speed/Indep/SourceLists/zWorld.cpp]
     - [0x357EE8, asmtu, Speed/Indep/SourceLists/zWorld2.cpp]
 
+    # TODO functions
+    - [0x37D9B0, .data, idk]
+
     - [0x439800, .rodata, Speed/Indep/SourceLists/zAI.cpp]
     - [0x4401F8, .rodata, Speed/Indep/SourceLists/zAnim.cpp]
     - [0x440540, .rodata, Speed/Indep/SourceLists/zAttribSys.cpp]
