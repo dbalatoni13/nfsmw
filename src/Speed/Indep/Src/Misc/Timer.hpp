@@ -52,7 +52,9 @@ class Timer {
 
     Timer &operator-() {}
 
-    void ResetLow() {}
+    void ResetLow() {
+        this->PackedTime = 0;
+    }
 
     void ResetHigh() {}
 

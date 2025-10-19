@@ -60,4 +60,6 @@ struct bFunkServer : public bTNode<bFunkServer> {
     virtual int Service() {}
 };
 
+void bRefreshTweaker();
+
 #endif
