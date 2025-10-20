@@ -8,6 +8,7 @@
 #include "types.h"
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 
 struct HSIMSERVICE__ {
     // total size: 0x4
@@ -31,6 +32,8 @@ struct IServiceable : public UTL::COM::IUnknown {
   public:
     virtual bool OnService(HSIMSERVICE hCon, Sim::Packet *pkt);
 };
+
+void SetStream(UMath::Vector3 &location, bool blocking);
 
 }; // namespace Sim
 

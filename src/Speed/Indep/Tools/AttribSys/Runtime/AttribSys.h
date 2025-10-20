@@ -248,7 +248,7 @@ class Class {
   public:
     class TablePolicy {};
 
-    Class(unsigned int k, ClassPrivate &privates);
+    Class(Key k, ClassPrivate &privates);
     ~Class();
     const Definition *GetDefinition(Key key) const;
     std::size_t GetNumDefinitions() const;
@@ -256,6 +256,7 @@ class Class {
     Key GetNextDefinition(Key prev) const;
     std::size_t GetNumCollections() const;
     Key GetFirstCollection() const;
+    Key GetNextCollection(Key prev) const;
     std::size_t GetTableNodeSize() const;
     void CopyLayout(void *srcLayout, void *dstLayout) const;
     void FreeLayout(void *layout) const;

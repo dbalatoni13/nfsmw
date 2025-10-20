@@ -34,5 +34,7 @@ void bClose(bFile *f);
 int bFileSize(bFile *f);
 
 void *bGetFile(const char *filename, int *size, int allocation_params);
+int bFileExists(const char *f);
+int bFPrintf(bFile *file, const char *fmt, ...);
 void bFileFlushCachedFiles();
 #endif

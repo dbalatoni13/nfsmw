@@ -12,13 +12,14 @@
 struct DebugVehicleSelection : public UTL::COM::Object, public IVehicleCache {
 public:
     DebugVehicleSelection();
+    ~DebugVehicleSelection();
     
     void Init();
     void DeInit();
+    void Service();
     void InitSelectionList();
     bool SwitchPlayerVehicle(const char *attribname);
 
-    void Service();
 
     static DebugVehicleSelection &Get() {
         return *mThis;
@@ -26,11 +27,6 @@ public:
 
     static bool Exists() {
         return mThis != nullptr;
-    }
-
-    // NOT REAL, figure out how to remove this (and replace with bWare.hpp)
-    void *operator new(std::size_t size, const char *file, int line) {
-        return new char[0x38];
     }
 
 private:
