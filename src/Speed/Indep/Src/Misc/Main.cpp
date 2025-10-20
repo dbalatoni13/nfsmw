@@ -1,5 +1,6 @@
 // OUTSIDE ZMISC //
 
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 extern int ExitTheGameFlag;
 extern int frames_elapsed;
 extern int loop_ticker;
@@ -27,13 +28,12 @@ class GameFlowManager {
 };
 extern struct GameFlowManager TheGameFlowManager;
 
-class Timer {};
 class Scheduler {
   public:
     void Synchronize(Timer to);
     static Scheduler *fgScheduler;
 };
-extern Timer RealTimer;
+Timer RealTimer;
 
 extern bool twkDumpProfileMarks;
 ////

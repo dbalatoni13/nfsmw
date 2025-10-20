@@ -5,3 +5,5 @@
 #include "Speed/Indep/Src/World/RaceParameters.cpp"
 
 #include "Speed/Indep/Src/World/DebugVehicleSelection.cpp"
+
+#include "Speed/Indep/Src/World/DebugWorld.cpp"

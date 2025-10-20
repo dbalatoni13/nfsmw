@@ -76,6 +76,10 @@ public:
     bVector2 TrackMapZoomTopLeft; // offset 0x110, size 0x8
     float TrackMapZoomWidth; // offset 0x118, size 0x4
     char TrackMapStartZoomed; // offset 0x11C, size 0x1
+
+    const char *GetLoadedTrackInfo() {
+        return this->RegionName;
+    }
 };
 
 extern TrackInfo *LoadedTrackInfo;

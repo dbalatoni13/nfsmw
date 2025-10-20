@@ -105,6 +105,14 @@ inline eView *eGetView(int view_id, bool doAssert) {
     return &eViews[view_id];
 }
 
+inline void eSwizzleWorldVector(const bVector3 &inVec, bVector3 &outVec) {
+    bConvertFromBond(outVec, inVec);
+}
+
+inline void eUnSwizzleWorldVector(const bVector3 &inVec, bVector3 &outVec) {
+    bConvertToBond(outVec, inVec);
+}
+
 eRenderTarget *eGetRenderTarget(int render_target);
 void eUpdateViewMode(void);
 

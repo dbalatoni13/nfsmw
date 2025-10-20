@@ -735,6 +735,28 @@ inline bVector4 &bVector4::operator*=(float scale) {
 //     float x; // f0
 // }
 
+inline bVector3 &bConvertFromBond(bVector3 &dest, const bVector3 &v) {
+    float x = v.z;
+    float y = v.x;
+    float z = v.y;
+    dest.x = x;
+    dest.y = -y;
+    dest.z = z;
+
+    return dest;
+}
+
+inline bVector3 &bConvertToBond(bVector3 &dest, const bVector3 &v) {
+    float x = v.y;
+    float y = v.z;
+    float z = v.x;
+    dest.x = -x;
+    dest.y = y;
+    dest.z = z;
+
+    return dest;
+}
+
 struct bMatrix4 {
     // total size: 0x40
     bVector4 v0; // offset 0x0, size 0x10
