@@ -1,0 +1,4 @@
+
+void RegisterSFX() {}
+
+void RegisterStates() {}

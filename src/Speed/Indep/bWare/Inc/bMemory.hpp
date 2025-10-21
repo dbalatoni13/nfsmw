@@ -240,10 +240,13 @@ extern FastMem gFastMem;
 extern MemoryPool *MemoryPools[16];
 
 unsigned int GetVirtualMemoryAllocParams();
+void bInitMemoryPool(int pool_num, void *mem, int mem_size, const char *debug_name);
 int GetVirtualMemoryPoolNumber();
 int bGetMemoryPoolNum(const char *memory_pool_name);
+int bGetFreeMemoryPoolNum();
 int bLargestMalloc(int allocation_params);
 void bVerifyPoolIntegrity(int pool);
+void bMemoryPrintAllocationsByAddress(int pool_num, int from_allocation, int to_allocation);
 
 inline int bMemoryGetPoolNum(int allocation_params) {
     return MemoryPools[allocation_params & 0xf]->GetLargestFreeBlock() - 0x5c;

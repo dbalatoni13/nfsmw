@@ -198,6 +198,10 @@ template <typename T> class bTList : public bList {
         // TODO
     }
 
+    T *GetNode(int ordinal_number) {
+        return (T *)bList::GetNode(ordinal_number);
+    }
+
     void Sort(SortFuncT check_flip) {
         bList::Sort((SortFunc)check_flip);
     }

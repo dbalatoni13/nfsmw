@@ -5,6 +5,15 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
 
+struct AudioMemBase {
+  public:
+    virtual ~AudioMemBase() {}
+
+    void operator delete(void *ptr) {
+        gAudioMemoryManager.FreeMemory(ptr);
+    }
+};
 
 #endif
