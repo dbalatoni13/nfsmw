@@ -1,15 +1,16 @@
 #ifndef EAXSOUND_EAXSOUND_H
 #define EAXSOUND_EAXSOUND_H
 
-#include "Speed/Indep/Src/EAXSound/SFX_base.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
+#include "Speed/Indep/Src/EAXSound/SFX_base.hpp"
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
 #include "Speed/Indep/Src/Main/Event.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
+
 
 // yes that is the correct name for the file
 
