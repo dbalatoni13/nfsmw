@@ -115,15 +115,15 @@ template <typename T, std::size_t Size, unsigned int Alignment = 16> class Fixed
   protected:
     virtual std::size_t GetGrowSize(std::size_t minSize) const {}
 
-    virtual pointer AllocVectorSpace(std::size_t num, unsigned int alignment) {}
+    virtual typename Vector<T, Alignment>::pointer AllocVectorSpace(std::size_t num, unsigned int alignment) {}
 
-    virtual void FreeVectorSpace(pointer buffer, std::size_t) {}
+    virtual void FreeVectorSpace(typename Vector<T, Alignment>::pointer buffer, std::size_t) {}
 
     virtual std::size_t GetMaxCapacity() const {}
 
   private:
     // TODO speed considerations for 64 bit
-    int mVectorSpace[(sizeof(value_type) * Size) / sizeof(int)];
+    int mVectorSpace[(sizeof(typename Vector<T, Alignment>::value_type) * Size) / sizeof(int)];
 };
 
 }; // namespace UTL
