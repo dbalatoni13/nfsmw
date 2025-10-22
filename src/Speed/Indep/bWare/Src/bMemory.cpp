@@ -7,7 +7,7 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "types.h"
 
-#ifdef TARGET_GX
+#ifdef TARGET_GC
 #include <dolphin.h>
 #endif
 
