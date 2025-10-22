@@ -10,6 +10,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Src/Interfaces/IServiceable.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
+// #include "Speed/Indep/Src/Render/RenderConn.h"
 
 namespace Sim {
 
@@ -43,7 +44,14 @@ class Param {
     }
 };
 
-class Packet {};
+class Packet {
+public:
+    virtual unsigned int Compress(Packet *to) {}
+    virtual unsigned int Decompress(Packet *to) {}
+    Packet() {}
+    virtual ~Packet() {}
+    class Pkt_Smackable_Open *Cast() {}
+};
 
 // total size: 0x2C
 class Object : public UTL::COM::Object, public IServiceable, public ITaskable, public UTL::Collections::Countable<Object> {
