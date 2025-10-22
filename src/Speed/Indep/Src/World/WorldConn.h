@@ -18,6 +18,7 @@ class Reference {
 
 public:
     Reference(unsigned int);
+    ~Reference();
     void Set(unsigned int);
 
     const bMatrix4 *GetMatrix() const {

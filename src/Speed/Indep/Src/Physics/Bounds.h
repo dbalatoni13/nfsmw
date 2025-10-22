@@ -76,7 +76,9 @@ struct Bounds {
     UCrc32 fNameHash;           // offset 0x28, size 0x4
     Collection *fCollection;    // offset 0x2C, size 0x4
 
-    void GetPivot(UMath::Vector3 &to) const;
+    void GetPivot(UMath::Vector3 &to) const {
+        
+    }
 };
 
 class IBoundable : public UTL::COM::IUnknown {

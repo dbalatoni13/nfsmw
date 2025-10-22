@@ -4,8 +4,10 @@
 #include "Speed/Indep/Src/Physics/Bounds.h"
 #include "Speed/Indep/Src/Sim/SimServer.H"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
+#include "Speed/Indep/Src/World/WorldModel.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/Src/Render/RenderConn.h"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "WorldConn.h"
 #include "WorldModel.hpp"
 #include "dolphin/mtx/GeoTypes.h"
@@ -24,9 +26,23 @@ SmackableRenderConn::SmackableRenderConn(const Sim::ConnectionData &data /* r27 
     this->mHeirarchy = oc->mHeirarchy;
     this->mModelHash = oc->mModelHash;
     this->mRenderNode = oc->mRenderNode;
+    this->mModelHash = oc->mModelHash;
 
     const CollisionGeometry::Bounds *bounds = oc->mCollisionNode;
+    UMath::Vector3 pivot;
+    bounds->GetPivot(pivot);
 }
+
+SmackableRenderConn::~SmackableRenderConn() {
+    if (this->mModel) {
+        delete this->mModel;
+    }
+    this->mTarget.Set(0);
+    delete this;
+}
+
+SlotPool *SpaceNodeSlotPool;
+SlotPool *WorldModelSlotPool;
 
 // UNSOLVED, this function does some weird shit
 void SmackableRenderConn::Update(float dT) {
@@ -51,6 +67,28 @@ void SmackableRenderConn::Update(float dT) {
         }
 
         Sim::Pkt_Smackable_Service pkt = Sim::Pkt_Smackable_Service(inview, disttoview);
+
+        if (this->Service(&pkt)) {
+            if (this->mModel) {
+                delete this->mModel;
+            }
+            return;
+        }
+
+        if (!this->mModel) {
+            if (this->mHeirarchy && this->mRenderNode != 0) {
+                this->mModel = new WorldModel(this->mHeirarchy, this->mRenderNode, true);
+            } else {
+                this->mModel = new WorldModel(this->mModelHash.GetValue(), nullptr, true);
+            }
+        }
+        this->mModel->SetChildVisibility(0xFFFFFF);
+        if (&this->mRenderMatrix) {
+            this->mRenderMatrix.v2.z = 1;
+            if (this->mModelOffset.y != 0) {
+                
+            }
+        }
     }
 }
 
