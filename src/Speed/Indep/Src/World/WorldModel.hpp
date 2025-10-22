@@ -1,12 +1,18 @@
 #ifndef WORLD_WORLD_MODEL_H
 #define WORLD_WORLD_MODEL_H
 
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
+#include <cstring>
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/Src/Ecstasy/eModel.hpp"
+
+extern SlotPool *SpaceNodeSlotPool;
+extern SlotPool *WorldModelSlotPool;
 
 class WorldModel : public bTNode<WorldModel> {
     // total size: 0x88
@@ -30,6 +36,14 @@ class WorldModel : public bTNode<WorldModel> {
     unsigned int mLightMaterialSkinHash; // offset 0x84, size 0x4
 
 public:
+    WorldModel(unsigned int name_hash, bMatrix4 *matrix, bool add_lightning);
+    WorldModel(const ModelHeirarchy *heirarchy, unsigned int heirarchy_index, bool add_lightning);
+    ~WorldModel();
+
+    void *operator new(std::size_t size) {
+        return bOMalloc(WorldModelSlotPool);
+    }
+
     bool IsEnabled() {
         return this->mEnabled;
     }
@@ -44,6 +58,10 @@ public:
 
     unsigned int GetLastRenderFrame() const {
         return this->mLastRenderFrame;
+    }
+
+    void SetChildVisibility(unsigned int state) {
+        this->mChildVisibility = state;
     }
 };
 

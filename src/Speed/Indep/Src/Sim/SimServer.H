@@ -23,6 +23,7 @@ class Connection : public UTL::COM::Factory<const ConnectionData &, Connection, 
 
 public:
     Connection(const ConnectionData &);
+    ~Connection();
     void Close();
     bool Service(Packet *pkt);
 };

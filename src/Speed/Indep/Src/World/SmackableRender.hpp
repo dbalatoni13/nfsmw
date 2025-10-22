@@ -27,7 +27,7 @@ private:
     bHash32 mModelHash; // offset 0x18, size 0x4
     const ModelHeirarchy *mHeirarchy; // offset 0x1C, size 0x4
     WorldConn::Reference mTarget; // offset 0x20, size 0x10
-    WorldModel * mModel; // offset 0x30, size 0x4
+    WorldModel *mModel; // offset 0x30, size 0x4
     unsigned int mRenderNode; // offset 0x34, size 0x4
     bVector4 mModelOffset; // offset 0x38, size 0x10
     bMatrix4 mRenderMatrix; // offset 0x48, size 0x40
