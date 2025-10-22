@@ -767,6 +767,8 @@ inline bVector3 &bConvertToBond(bVector3 &dest, const bVector3 &v) {
     return dest;
 }
 
+inline struct bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v);
+
 struct bMatrix4 {
     // total size: 0x40
     bVector4 v0; // offset 0x0, size 0x10
@@ -777,7 +779,9 @@ struct bMatrix4 {
     bMatrix4() {}
 
     bMatrix4(const bMatrix4 &m);
-    bMatrix4 &operator=(const bMatrix4 &m);
+    bMatrix4 &operator=(const bMatrix4 &m) {
+        return *bCopy(this, &m);
+    }
 
     bVector4 &operator[](int index) {}
 
@@ -815,11 +819,6 @@ inline void eIdentity(bMatrix4 *a) {
 
 inline bMatrix4::bMatrix4(const bMatrix4 &m) {
     bCopy(this, &m);
-}
-
-inline bMatrix4 &bMatrix4::operator=(const bMatrix4 &m) {
-    bCopy(this, &m);
-    return *this;
 }
 
 // UNUSED

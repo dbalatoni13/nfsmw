@@ -12,5 +12,5 @@ Player *Player::GetPlayerByIndex(int number) {
 
 // STRIPPED
 int Player::GetNumPlayers() {
-    return nullptr;
+    return 0;
 }

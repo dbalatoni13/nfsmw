@@ -7,7 +7,7 @@
 
 class Player {
     // total size: 0x1
-
+public:
     Player *GetPlayerByNumber(int number);
     Player *GetPlayerByIndex(int number);
     int GetNumPlayers();
