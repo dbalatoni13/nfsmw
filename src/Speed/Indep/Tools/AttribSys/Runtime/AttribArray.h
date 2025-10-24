@@ -14,33 +14,38 @@ namespace Attrib {
 // TODO should this really be in AttribHashMap.h?
 class Array {
   public:
-    unsigned int GetPad() const;
-
     // Returns the base location of this array's data
-    unsigned char *BasePointer() {
-        return reinterpret_cast<unsigned char *>(&this[1]);
+    unsigned char *BasePointer() const {
+        return const_cast<unsigned char *>(data);
     }
 
-    void *Data(unsigned int byteindex) {
+    void *Data(unsigned int byteindex) const {
         unsigned char *base = BasePointer();
-        return &base[byteindex];
+        // TODO use base?
+        return (void *)(data + GetPad() + byteindex);
     }
 
     bool IsReferences() const {
-        // TODO or != 0?
         return mSize == 0;
     }
 
-    void *GetData(std::size_t index) {
+    void *GetData(std::size_t index) const {
         if (index < mCount) {
             if (IsReferences()) {
-                return Data(index * 4 + GetPad());
+                return *reinterpret_cast<void **>(Data(index * 4));
             } else {
-                return Data(index * mSize + GetPad());
+                return Data(index * mSize);
             }
         } else {
             return nullptr;
         }
+    }
+
+    unsigned int GetPad() const {
+        if ((mEncodedTypePad & 0x8000) == 0) {
+            return 0;
+        }
+        return 8;
     }
 
   private:
@@ -48,6 +53,7 @@ class Array {
     unsigned short mCount;
     unsigned short mSize;
     unsigned short mEncodedTypePad;
+    unsigned char data[];
 };
 
 } // namespace Attrib

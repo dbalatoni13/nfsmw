@@ -9,6 +9,7 @@
 #include "Common/AttribHashMap.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Misc/AttribAlloc.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/VecHashMap64.h"
 
 // Credit: Brawltendo
 namespace Attrib {
@@ -27,19 +28,112 @@ inline void Free(void *ptr, std::size_t bytes, const char *name) {
 
 class Instance;
 class Attribute;
+class Class;
+class DatabasePrivate;
+class ClassPrivate;
+class Collection;
+
+class ITypeHandler {};
+
+// total size: 0x14
+class TypeDesc {
+  public:
+    static ITypeHandler *Lookup(unsigned int t);
+
+    TypeDesc(unsigned int t) {
+        mType = t;
+        mName = nullptr;
+        mSize = 0;
+        mIndex = 0;
+        mHandler = Lookup(t);
+    }
+
+    bool operator<(const TypeDesc &rhs) const {
+        return mType < rhs.mType;
+    }
+
+  private:
+    unsigned int mType;     // offset 0x0, size 0x4
+    const char *mName;      // offset 0x4, size 0x4
+    unsigned int mSize;     // offset 0x8, size 0x4
+    unsigned int mIndex;    // offset 0xC, size 0x4
+    ITypeHandler *mHandler; // offset 0x10, size 0x4
+};
+
+// total size: 0x10
+class TypeDescPtrVec : public std::vector<const TypeDesc *> {};
+
+// total size: 0x10
+class TypeTable : public std::set<Attrib::TypeDesc> {};
+
+// total size: 0x8
+class CollectionList : public std::list<const Attrib::Collection *> {};
+
+// total size: 0x8
+class ClassList : public std::list<const Attrib::Class *> {};
+
+// total size: 0x8
+class Database {
+  public:
+    bool AddClass(Class *c);
+    void RemoveClass(Class *c);
+    Class *GetClass(unsigned int k);
+    void Delete(const Collection *c);
+    void Delete(const Class *c);
+    unsigned int GetNumIndexedTypes() const;
+    const TypeDesc &GetIndexedTypeDesc(unsigned short index) const;
+    const TypeDesc &GetTypeDesc(unsigned int t) const;
+
+    static Database &Get() {
+        return *sThis;
+    }
+
+    void operator delete(void *ptr, std::size_t bytes) {
+        AllocationAccounting(bytes, false);
+        Free(ptr, bytes, nullptr);
+    }
+
+    bool IsInitialized() {}
+
+  private:
+    Database(DatabasePrivate &privates);
+    virtual ~Database();
+
+    static Attrib::Database *sThis;
+
+    DatabasePrivate &mPrivates; // offset 0x0, size 0x4
+};
 
 class Collection {
   public:
+    ~Collection();
     class Node *GetNode(Key attributeKey, const Collection *&container) const;
     Attribute Get(const Instance &instance, Key attributeKey) const;
     void *GetData(Key attributeKey, std::size_t index) const;
     std::size_t Count() const;
     Key FirstKey(bool &inLayout) const;
+    void SetParent(Key parent);
+    void Delete() const;
+    Key NextKey(Key prev, bool &inLayout) const;
 
     // TODO this must be in AttribPrivate.h, why?
     void AddRef() const {
         // TODO what the hell?
         const_cast<Collection *>(this)->mRefCount++;
+    }
+
+    void Release() const {
+        if (mRefCount >= 2) {
+            const_cast<Collection *>(this)->mRefCount--;
+        } else {
+            // TODO huh
+            const_cast<Collection *>(this)->mRefCount = 0;
+            Database::Get().Delete(this);
+        }
+    }
+
+    bool IsReferenced() const {
+        return mRefCount > 0;
     }
 
   private:
@@ -152,6 +246,18 @@ class Attribute {
     void *mDataPointer;            // offset 0xC, size 0x4
 };
 
+// total size: 0xC
+class AttributeIterator {
+  public:
+    AttributeIterator(const Collection *c);
+    bool Advance();
+
+  private:
+    Key mCurrentKey;               // offset 0x0, size 0x4
+    const Collection *mCollection; // offset 0x4, size 0x4
+    bool mInLayout;                // offset 0x8, size 0x1
+};
+
 namespace Gen {
 class GenericAccessor;
 };
@@ -208,9 +314,6 @@ class Instance {
     unsigned short mLocks;
 };
 
-class DatabasePrivate;
-class ClassPrivate;
-
 // total size: 0x10
 class Definition {
   public:
@@ -260,6 +363,7 @@ class Class {
     std::size_t GetTableNodeSize() const;
     void CopyLayout(void *srcLayout, void *dstLayout) const;
     void FreeLayout(void *layout) const;
+    const Collection *GetCollection(Key key) const;
 
   private:
     void operator delete(void *ptr, std::size_t bytes) {
@@ -274,26 +378,8 @@ class Class {
     ClassPrivate &mPrivates; // offset 0x8, size 0x4
 };
 
-// total size: 0x8
-class Database {
-  public:
-    bool AddClass(Class *c);
-    void RemoveClass(Class *c);
-    Class *GetClass(unsigned int k);
-
-    static Database &Get() {
-        return *sThis;
-    }
-
-    bool IsInitialized() {}
-
-  private:
-    Database(DatabasePrivate &privates);
-
-    static Attrib::Database *sThis;
-
-    DatabasePrivate &mPrivates; // offset 0x0, size 0x4
-};
+// total size: 0x10
+class ClassTable : public VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16> {};
 
 template <typename t> class TAttrib : public Attribute {
   public:

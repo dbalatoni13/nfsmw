@@ -42,4 +42,36 @@ Key Collection::FirstKey(bool &inLayout) const {
     return k;
 }
 
+void Collection::SetParent(Key parent) {
+    if (mParent) {
+        mParent->Release();
+    }
+    if (mClass) {
+        mParent = mClass->GetCollection(parent);
+    } else {
+        mParent = nullptr;
+    }
+    if (mParent) {
+        mParent->AddRef();
+    }
+}
+
+void Collection::Delete() const {
+    delete this;
+}
+
+AttributeIterator::AttributeIterator(const Collection *c) {
+    mCurrentKey = 0;
+    mInLayout = false;
+    mCollection = c;
+    mCurrentKey = c->FirstKey(mInLayout);
+}
+
+bool AttributeIterator::Advance() {
+    if (mCurrentKey != 0) {
+        mCurrentKey = mCollection->NextKey(mCurrentKey, mInLayout);
+    }
+    return mCurrentKey != 0;
+}
+
 }; // namespace Attrib

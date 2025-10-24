@@ -37,6 +37,26 @@ class ClassPrivate : public Class {
     const char *mNamePtr;           // offset 0x38, size 0x4
 };
 
+// total size: 0x4C
+class DatabasePrivate : public Database {
+  public:
+    static void QueueForDelete(const Collection *obj, std::list<const Collection *> &bag) {
+        if (std::find(bag.begin(), bag.end(), obj) == bag.end()) {
+            bag.push_back(obj);
+        }
+    }
+
+    // TODO inline
+    DatabasePrivate(const struct DatabaseLoadData &loadData);
+
+    ClassTable mClasses;                // offset 0x8, size 0x10
+    unsigned int mNumCompiledTypes;     // offset 0x18, size 0x4
+    TypeDescPtrVec mCompiledTypes;      // offset 0x1C, size 0x10
+    TypeTable mTypes;                   // offset 0x2C, size 0x10
+    CollectionList mGarbageCollections; // offset 0x3C, size 0x8
+    ClassList mGarbageClasses;          // offset 0x44, size 0x8
+};
+
 // TODO move?
 Key ScanForValidKey(const ClassPrivate::CollectionHashMap &v, std::size_t index);
 
