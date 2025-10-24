@@ -266,6 +266,7 @@ if config.platform == Platform.GC_WII:
         "-std=gnu++98",
         "-DSN_TARGET_NGC",
         "-D__SN__",
+        "-DCLANGD_DAMNIT",  # used in cases where intellisense breaks
     ]
 elif config.platform == Platform.X360:
     config.linker_version = "X360/14.00.2110"

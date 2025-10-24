@@ -44,7 +44,9 @@
 #include <stl/_construct.h>
 #endif
 
+#ifndef CLANGD_DAMNIT
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
+#endif
 
 #ifndef __ALLOC
 #define __ALLOC __sgi_alloc
@@ -230,8 +232,11 @@ template <bool __threads, int __inst> class __node_alloc {
 #endif
     /* __n must be > 0      */
     static void *_STLP_CALL allocate(size_t __n) {
+#ifndef CLANGD_DAMNIT
         return gFastMem.Alloc(__n, "STL");
-        // return (__n > (size_t)_MAX_BYTES) ? __stl_new(__n) : _M_allocate(__n);
+#else
+        return (__n > (size_t)_MAX_BYTES) ? __stl_new(__n) : _M_allocate(__n);
+#endif
     }
     /* __p may not be 0 */
     static void _STLP_CALL deallocate(void *__p, size_t __n) {
