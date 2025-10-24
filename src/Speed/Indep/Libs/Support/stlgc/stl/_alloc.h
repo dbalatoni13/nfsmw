@@ -240,10 +240,14 @@ template <bool __threads, int __inst> class __node_alloc {
     }
     /* __p may not be 0 */
     static void _STLP_CALL deallocate(void *__p, size_t __n) {
+#ifndef CLANGD_DAMNIT
+        gFastMem.Free(__p, __n, "STL");
+#else
         if (__n > (size_t)_MAX_BYTES)
             __stl_delete(__p);
         else
             _M_deallocate(__p, __n);
+#endif
     }
 };
 

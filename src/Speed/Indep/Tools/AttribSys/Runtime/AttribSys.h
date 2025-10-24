@@ -80,9 +80,11 @@ class Database {
     Class *GetClass(unsigned int k);
     void Delete(const Collection *c);
     void Delete(const Class *c);
+    void CollectGarbage();
     unsigned int GetNumIndexedTypes() const;
     const TypeDesc &GetIndexedTypeDesc(unsigned short index) const;
     const TypeDesc &GetTypeDesc(unsigned int t) const;
+    void DumpContents(unsigned int classFilter) const;
 
     static Database &Get() {
         return *sThis;
@@ -93,7 +95,9 @@ class Database {
         Free(ptr, bytes, nullptr);
     }
 
-    bool IsInitialized() {}
+    bool IsInitialized() {
+        return sThis != nullptr;
+    }
 
   private:
     Database(DatabasePrivate &privates);
@@ -133,7 +137,7 @@ class Collection {
     }
 
     bool IsReferenced() const {
-        return mRefCount > 0;
+        return mRefCount != 0;
     }
 
   private:
@@ -353,6 +357,7 @@ class Class {
 
     Class(Key k, ClassPrivate &privates);
     ~Class();
+    void Delete() const;
     const Definition *GetDefinition(Key key) const;
     std::size_t GetNumDefinitions() const;
     Key GetFirstDefinition() const;
@@ -364,6 +369,10 @@ class Class {
     void CopyLayout(void *srcLayout, void *dstLayout) const;
     void FreeLayout(void *layout) const;
     const Collection *GetCollection(Key key) const;
+
+    bool IsReferenced() const {
+        return mRefCount > 0;
+    }
 
   private:
     void operator delete(void *ptr, std::size_t bytes) {

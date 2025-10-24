@@ -13,8 +13,8 @@ unsigned int StringHash32(const char *k);
 class StringKey {
   public:
     StringKey(const char *str) {
-        mHash64 = StringHash64("SPHERE");
-        mHash32 = StringHash32("SPHERE");
+        mHash64 = StringHash64(str);
+        mHash32 = StringHash32(str);
         mString = str;
     }
 

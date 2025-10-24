@@ -41,8 +41,42 @@ class ClassPrivate : public Class {
 class DatabasePrivate : public Database {
   public:
     static void QueueForDelete(const Collection *obj, std::list<const Collection *> &bag) {
+        obj->IsReferenced();
         if (std::find(bag.begin(), bag.end(), obj) == bag.end()) {
             bag.push_back(obj);
+        }
+    }
+
+    static void QueueForDelete(const Class *obj, std::list<const Class *> &bag) {
+        obj->IsReferenced();
+        if (std::find(bag.begin(), bag.end(), obj) == bag.end()) {
+            bag.push_back(obj);
+        }
+    }
+
+    static void CollectGarbageBag(std::list<const Collection *> &bag) {
+        std::list<const Collection *>::iterator iter = bag.begin();
+
+        while (iter != bag.end()) {
+            const Collection *obj = *iter;
+            if (!obj->IsReferenced()) {
+                obj->Delete();
+            }
+            bag.pop_front();
+            iter = bag.begin();
+        }
+    }
+
+    static void CollectGarbageBag(std::list<const Class *> &bag) {
+        std::list<const Class *>::iterator iter = bag.begin();
+
+        while (iter != bag.end()) {
+            const Class *obj = *iter;
+            if (!obj->IsReferenced()) {
+                obj->Delete();
+            }
+            bag.pop_front();
+            iter = bag.begin();
         }
     }
 

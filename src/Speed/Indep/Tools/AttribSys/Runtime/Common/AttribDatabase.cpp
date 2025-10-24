@@ -1,3 +1,4 @@
+#include "../AttribHash.h"
 #include "../AttribSys.h"
 #include "AttribPrivate.h"
 
@@ -30,6 +31,44 @@ const TypeDesc &Database::GetTypeDesc(unsigned int t) const {
 
 void Database::Delete(const Collection *c) {
     DatabasePrivate::QueueForDelete(c, mPrivates.mGarbageCollections);
+}
+
+void Database::Delete(const Class *c) {
+    DatabasePrivate::QueueForDelete(c, mPrivates.mGarbageClasses);
+}
+
+static bool gDatabaseSelfDestruct = false;
+
+void Database::CollectGarbage() {
+    while (mPrivates.mGarbageCollections.size() != 0 || mPrivates.mGarbageClasses.size() != 0) {
+        DatabasePrivate::CollectGarbageBag(mPrivates.mGarbageCollections);
+        DatabasePrivate::CollectGarbageBag(mPrivates.mGarbageClasses);
+    }
+    if (gDatabaseSelfDestruct) {
+        Get().DumpContents(0);
+        delete sThis;
+        sThis = nullptr;
+        gDatabaseSelfDestruct = false;
+    }
+}
+
+void Database::DumpContents(unsigned int classFilter) const {}
+
+void PrepareToAddStrings(unsigned int numstrings) {}
+
+Key StringToKey(const char *str);
+
+unsigned int RegisterString(const char *str) {
+    Key k = StringToKey(str);
+    return k;
+}
+
+const char *KeyToString(Key k) {
+    return nullptr;
+}
+
+Key StringToKey(const char *str) {
+    return StringHash32(str);
 }
 
 }; // namespace Attrib
