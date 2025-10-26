@@ -22,6 +22,10 @@ typedef unsigned int Key;
 const void *DefaultDataArea(std::size_t bytes);
 void AllocationAccounting(std::size_t bytes, bool add);
 
+inline void *Alloc(std::size_t bytes, const char *name) {
+    return AttribAlloc::Allocate(bytes, name);
+}
+
 inline void Free(void *ptr, std::size_t bytes, const char *name) {
     AttribAlloc::Free(ptr, bytes, name);
 }
@@ -29,6 +33,7 @@ inline void Free(void *ptr, std::size_t bytes, const char *name) {
 class Instance;
 class Attribute;
 class Class;
+class Definition;
 class DatabasePrivate;
 class ClassPrivate;
 class Collection;
@@ -64,13 +69,13 @@ class TypeDesc {
 class TypeDescPtrVec : public std::vector<const TypeDesc *> {};
 
 // total size: 0x10
-class TypeTable : public std::set<Attrib::TypeDesc> {};
+class TypeTable : public std::set<TypeDesc> {};
 
 // total size: 0x8
-class CollectionList : public std::list<const Attrib::Collection *> {};
+class CollectionList : public std::list<const Collection *> {};
 
 // total size: 0x8
-class ClassList : public std::list<const Attrib::Class *> {};
+class ClassList : public std::list<const Class *> {};
 
 // total size: 0x8
 class Database {
@@ -103,15 +108,64 @@ class Database {
     Database(DatabasePrivate &privates);
     virtual ~Database();
 
-    static Attrib::Database *sThis;
+    static Database *sThis;
 
     DatabasePrivate &mPrivates; // offset 0x0, size 0x4
 };
 
+// total size: 0xC
+class Class {
+  public:
+    class TablePolicy {};
+
+    Class(Key k, ClassPrivate &privates);
+    ~Class();
+    void Delete() const;
+    const Definition *GetDefinition(Key key) const;
+    std::size_t GetNumDefinitions() const;
+    Key GetFirstDefinition() const;
+    Key GetNextDefinition(Key prev) const;
+    std::size_t GetNumCollections() const;
+    Key GetFirstCollection() const;
+    Key GetNextCollection(Key prev) const;
+    std::size_t GetTableNodeSize() const;
+    void CopyLayout(void *srcLayout, void *dstLayout) const;
+    void FreeLayout(void *layout) const;
+    const Collection *GetCollection(Key key) const;
+
+    bool IsReferenced() const {
+        return mRefCount > 0;
+    }
+
+    Key GetKey() const {
+        return mKey;
+    }
+
+  private:
+    void operator delete(void *ptr, std::size_t bytes) {
+        AllocationAccounting(bytes, false);
+        Free(ptr, bytes, nullptr);
+    }
+
+    Key mKey;              // offset 0x0, size 0x4
+    std::size_t mRefCount; // offset 0x4, size 0x4
+  public:
+    // TODO how does Collection::Count access this without an inline?
+    ClassPrivate &mPrivates; // offset 0x8, size 0x4
+};
+
+// total size: 0x10
+class ClassTable : public VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16> {};
+
+// total size: 0x2C
 class Collection {
   public:
+    Collection(Class *aclass, const Collection *parent, Key k, unsigned int reserveSize);
+    Collection(const class CollectionLoadData &loadData, class Vault *v);
+    // Unused
+    Collection(const Collection &src, Key k);
     ~Collection();
-    class Node *GetNode(Key attributeKey, const Collection *&container) const;
+    Node *GetNode(Key attributeKey, const Collection *&container) const;
     Attribute Get(const Instance &instance, Key attributeKey) const;
     void *GetData(Key attributeKey, std::size_t index) const;
     std::size_t Count() const;
@@ -119,6 +173,14 @@ class Collection {
     void SetParent(Key parent);
     void Delete() const;
     Key NextKey(Key prev, bool &inLayout) const;
+    bool Contains(Key k) const;
+    bool AddAttribute(Key attributeKey, unsigned int count);
+    bool RemoveAttribute(Key attributeKey);
+
+    void *operator new(std::size_t bytes) {
+        AllocationAccounting(bytes, true);
+        return Alloc(bytes, nullptr);
+    }
 
     // TODO this must be in AttribPrivate.h, why?
     void AddRef() const {
@@ -136,8 +198,38 @@ class Collection {
         }
     }
 
+    const Collection *Parent() const {
+        return mParent;
+    }
+
+    Key GetParent() const {
+        if (mParent) {
+            return mParent->GetKey();
+        }
+        return 0;
+    }
+
     bool IsReferenced() const {
         return mRefCount != 0;
+    }
+
+    bool IsDynamic() const {
+        return !mSource;
+    }
+
+    Key GetClass() const {
+        if (mClass) {
+            return mClass->GetKey();
+        }
+        return 0;
+    }
+
+    void *GetLayout() const {
+        return mLayout;
+    }
+
+    Key GetKey() const {
+        return mKey;
     }
 
   private:
@@ -226,7 +318,7 @@ class Attribute {
         return this->mDataPointer;
     }
 
-    Attrib::Node *GetInternal() const {
+    Node *GetInternal() const {
         return this->mInternal;
     }
 
@@ -246,7 +338,7 @@ class Attribute {
     // total size: 0x10
     const Instance *mInstance;     // offset 0x0, size 0x4
     const Collection *mCollection; // offset 0x4, size 0x4
-    struct Node *mInternal;        // offset 0x8, size 0x4
+    Node *mInternal;               // offset 0x8, size 0x4
     void *mDataPointer;            // offset 0xC, size 0x4
 };
 
@@ -282,6 +374,19 @@ class Instance {
     const Instance &operator=(const Instance &rhs);
     Attribute Get(Key attributeKey) const;
     void Change(const Collection *collection);
+    bool Lookup(Key attributeKey, Attribute &attrib) const;
+    bool Contains(Key attributeKey) const;
+    unsigned int LocalAttribCount() const;
+    bool Add(Key attributeKey, unsigned int count);
+    bool Remove(Key attributeKey);
+    bool Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes);
+    bool ModifyInternal(Key classKey, Key dynamicCollectionKey, unsigned int reserve);
+    void Unmodify();
+
+    void operator delete(void *ptr, std::size_t bytes) {
+        AllocationAccounting(bytes, false);
+        Free(ptr, bytes, nullptr);
+    }
 
     void *GetLayoutPointer() const {
         return mLayoutPtr;
@@ -305,17 +410,31 @@ class Instance {
         return this->mCollection != nullptr;
     }
 
+    bool IsDynamic() const {
+        return mFlags & 1;
+    }
+
+    // TODO is this right in all cases?
+    Collection *GetDynamicCollection() const {
+        if (IsDynamic()) {
+            return const_cast<Collection *>(mCollection);
+        }
+        return nullptr;
+    }
+
+    AttributeIterator Iterator() const;
+
     const Gen::GenericAccessor *operator->() const {
         return reinterpret_cast<const Gen::GenericAccessor *>(this);
     }
 
   private:
-    UTL::COM::IUnknown *mOwner;
-    const Collection *mCollection;
-    void *mLayoutPtr;
-    unsigned int mMsgPort;
-    unsigned short mFlags;
-    unsigned short mLocks;
+    UTL::COM::IUnknown *mOwner;    // offset 0x0, size 0x4
+    const Collection *mCollection; // offset 0x4, size 0x4
+    void *mLayoutPtr;              // offset 0x8, size 0x4
+    unsigned int mMsgPort;         // offset 0xC, size 0x4
+    unsigned short mFlags;         // offset 0x10, size 0x2
+    unsigned short mLocks;         // offset 0x12, size 0x2
 };
 
 // total size: 0x10
@@ -349,46 +468,6 @@ class Definition {
     unsigned char mFlags;     // offset 0xE, size 0x1
     unsigned char mAlignment; // offset 0xF, size 0x1
 };
-
-// total size: 0xC
-class Class {
-  public:
-    class TablePolicy {};
-
-    Class(Key k, ClassPrivate &privates);
-    ~Class();
-    void Delete() const;
-    const Definition *GetDefinition(Key key) const;
-    std::size_t GetNumDefinitions() const;
-    Key GetFirstDefinition() const;
-    Key GetNextDefinition(Key prev) const;
-    std::size_t GetNumCollections() const;
-    Key GetFirstCollection() const;
-    Key GetNextCollection(Key prev) const;
-    std::size_t GetTableNodeSize() const;
-    void CopyLayout(void *srcLayout, void *dstLayout) const;
-    void FreeLayout(void *layout) const;
-    const Collection *GetCollection(Key key) const;
-
-    bool IsReferenced() const {
-        return mRefCount > 0;
-    }
-
-  private:
-    void operator delete(void *ptr, std::size_t bytes) {
-        AllocationAccounting(bytes, false);
-        Free(ptr, bytes, nullptr);
-    }
-
-    Key mKey;              // offset 0x0, size 0x4
-    std::size_t mRefCount; // offset 0x4, size 0x4
-  public:
-    // TODO how does Collection::Count access this without an inline?
-    ClassPrivate &mPrivates; // offset 0x8, size 0x4
-};
-
-// total size: 0x10
-class ClassTable : public VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16> {};
 
 template <typename t> class TAttrib : public Attribute {
   public:

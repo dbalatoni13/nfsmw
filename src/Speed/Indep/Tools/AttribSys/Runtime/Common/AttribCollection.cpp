@@ -1,5 +1,5 @@
-#include "AttribSys.h"
-#include "Common/AttribPrivate.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 
 namespace Attrib {
 
