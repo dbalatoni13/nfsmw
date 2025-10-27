@@ -29,6 +29,10 @@ class Array {
         return mSize == 0;
     }
 
+    std::size_t GetCount() const {
+        return mCount;
+    }
+
     void *GetData(std::size_t index) const {
         if (index < mCount) {
             if (IsReferences()) {

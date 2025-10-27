@@ -6,6 +6,7 @@
 #endif
 
 #include <cstddef>
+#include <types.h>
 
 class IAttribAllocator {
   public:
@@ -16,7 +17,11 @@ class IAttribAllocator {
 class AttribAlloc {
   public:
     static void *Allocate(std::size_t bytes, const char *name) {
-        return mAllocator->Allocate(bytes, name);
+        if (bytes != 0) {
+            return mAllocator->Allocate(bytes, name);
+        } else {
+            return nullptr;
+        }
     }
 
     static void Free(void *ptr, std::size_t bytes, const char *name) {

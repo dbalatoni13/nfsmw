@@ -1,4 +1,5 @@
 #include "Speed/Indep/Tools/AttribSys//Runtime//AttribSys.h"
+#include <cstdio>
 
 namespace Attrib {
 
@@ -185,6 +186,69 @@ void Instance::Unmodify() {
         collection->Release();
         mFlags &= ~1;
     }
+}
+
+Key Instance::GenerateUniqueKey(const char *name, bool registerName) const {
+    return GUKeyInternal(mCollection->GetClass(), name, registerName);
+}
+
+Key Instance::GUKeyInternal(Key classKey, const char *name, bool registerName) const {
+    static unsigned int gGUKindexer = 0;
+    char namebuffer[64];
+    Class *c;
+    Key k;
+
+    std::strlen(name);
+    c = Database::Get().GetClass(classKey);
+    do {
+        std::sprintf(namebuffer, "%s_%08x", name, gGUKindexer++);
+        k = StringToKey(namebuffer);
+        if (c->GetCollection(k)) {
+            k = 0;
+        }
+    } while (k == 0);
+    if (registerName) {
+        return RegisterString(namebuffer);
+    } else {
+        return k;
+    }
+}
+
+void Instance::Change(const Collection *collection) {
+    if (collection != mCollection) {
+        Unmodify();
+        if (mCollection) {
+            mCollection->Release();
+        }
+        mCollection = collection;
+
+        bool isDynamic = false;
+        if (collection) {
+            collection->AddRef();
+            mLayoutPtr = mCollection->GetLayout();
+            isDynamic = mCollection->IsDynamic();
+        }
+        if (isDynamic) {
+            this->mFlags |= 1;
+        } else {
+            this->mFlags &= ~1;
+        }
+    }
+}
+
+void Instance::Change(const RefSpec &refspec) {
+    Change(refspec.GetCollection());
+}
+
+void Instance::ChangeWithDefault(const RefSpec &refspec) {
+    Change(refspec.GetCollectionWithDefault());
+}
+
+const void *Instance::GetAttributePointer(Key attribkey, unsigned int index) const {
+    if (mCollection) {
+        return mCollection->GetData(attribkey, index);
+    }
+    return nullptr;
 }
 
 }; // namespace Attrib

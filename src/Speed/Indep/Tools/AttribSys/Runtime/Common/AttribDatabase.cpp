@@ -56,9 +56,7 @@ void Database::DumpContents(unsigned int classFilter) const {}
 
 void PrepareToAddStrings(unsigned int numstrings) {}
 
-Key StringToKey(const char *str);
-
-unsigned int RegisterString(const char *str) {
+Key RegisterString(const char *str) {
     Key k = StringToKey(str);
     return k;
 }

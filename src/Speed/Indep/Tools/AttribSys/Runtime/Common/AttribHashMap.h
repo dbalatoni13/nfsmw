@@ -5,10 +5,7 @@
 #pragma once
 #endif
 
-#include <cstddef>
-#include <types.h>
-
-#include "../AttribNode.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 // Credit: Brawltendo
 namespace Attrib {

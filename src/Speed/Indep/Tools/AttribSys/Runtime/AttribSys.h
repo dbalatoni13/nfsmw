@@ -6,7 +6,6 @@
 #endif
 
 #include "AttribArray.h"
-#include "Common/AttribHashMap.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Misc/AttribAlloc.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/VecHashMap64.h"
@@ -21,6 +20,8 @@ typedef unsigned int Key;
 
 const void *DefaultDataArea(std::size_t bytes);
 void AllocationAccounting(std::size_t bytes, bool add);
+Key RegisterString(const char *str);
+Key StringToKey(const char *str);
 
 inline void *Alloc(std::size_t bytes, const char *name) {
     return AttribAlloc::Allocate(bytes, name);
@@ -37,6 +38,7 @@ class Definition;
 class DatabasePrivate;
 class ClassPrivate;
 class Collection;
+class Vault;
 
 class ITypeHandler {};
 
@@ -51,6 +53,10 @@ class TypeDesc {
         mSize = 0;
         mIndex = 0;
         mHandler = Lookup(t);
+    }
+
+    unsigned int GetType() const {
+        return mType;
     }
 
     bool operator<(const TypeDesc &rhs) const {
@@ -113,6 +119,106 @@ class Database {
     DatabasePrivate &mPrivates; // offset 0x0, size 0x4
 };
 
+// Credit: Brawltendo
+class Node {
+  public:
+    enum Flags {
+        Flag_RequiresRelease = 1 << 0,
+        Flag_IsArray = 1 << 1,
+        Flag_IsInherited = 1 << 2,
+        Flag_IsAccessor = 1 << 3,
+        Flag_IsLaidOut = 1 << 4,
+        Flag_IsByValue = 1 << 5,
+        Flag_IsLocatable = 1 << 6,
+    };
+
+    bool GetFlag(unsigned int mask) {
+        return mFlags & mask;
+    }
+
+    bool RequiresRelease() {
+        return GetFlag(Flag_RequiresRelease);
+    }
+
+    bool IsArray() {
+        return GetFlag(Flag_IsArray);
+    }
+
+    bool IsInherited() {
+        return GetFlag(Flag_IsInherited);
+    }
+
+    bool IsAccessor() {
+        return GetFlag(Flag_IsAccessor);
+    }
+
+    bool IsLaidOut() {
+        return GetFlag(Flag_IsLaidOut);
+    }
+
+    bool IsByValue() {
+        return GetFlag(Flag_IsByValue);
+    }
+
+    bool IsLocatable() {
+        return GetFlag(Flag_IsLocatable);
+    }
+
+    bool IsValid() {
+        return IsLaidOut() || mPtr != this;
+    }
+
+    void *GetPointer(void *layoutptr) {
+        if (IsByValue()) {
+            return &mValue;
+        } else if (IsLaidOut()) {
+            return (void *)(uintptr_t(layoutptr) + uintptr_t(mPtr));
+        } else {
+            return mPtr;
+        }
+    }
+
+    class Array *GetArray(void *layoutptr) {
+        if (IsLaidOut()) {
+            return (Array *)(uintptr_t(layoutptr) + uintptr_t(mArray));
+        } else {
+            return mArray;
+        }
+    }
+
+    unsigned int GetValue() {
+        return mValue;
+    }
+
+    unsigned int *GetRefValue() {
+        return &mValue;
+    }
+
+    unsigned int GetKey() {
+        return IsValid() ? mKey : 0;
+    }
+
+    unsigned int MaxSearch() {
+        return mMax;
+    }
+
+    const TypeDesc &GetTypeDesc() const {
+        return Database::Get().GetTypeDesc(mTypeIndex);
+    }
+
+  private:
+    unsigned int mKey;
+    union {
+        void *mPtr;
+        class Array *mArray;
+        unsigned int mValue;
+        unsigned int mOffset;
+    };
+    unsigned short mTypeIndex;
+    unsigned char mMax;
+    unsigned char mFlags;
+};
+
 // total size: 0xC
 class Class {
   public:
@@ -132,6 +238,7 @@ class Class {
     void CopyLayout(void *srcLayout, void *dstLayout) const;
     void FreeLayout(void *layout) const;
     const Collection *GetCollection(Key key) const;
+    const Collection *GetCollectionWithDefault(Key key) const;
 
     bool IsReferenced() const {
         return mRefCount > 0;
@@ -157,99 +264,10 @@ class Class {
 // total size: 0x10
 class ClassTable : public VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16> {};
 
-// total size: 0x2C
-class Collection {
-  public:
-    Collection(Class *aclass, const Collection *parent, Key k, unsigned int reserveSize);
-    Collection(const class CollectionLoadData &loadData, class Vault *v);
-    // Unused
-    Collection(const Collection &src, Key k);
-    ~Collection();
-    Node *GetNode(Key attributeKey, const Collection *&container) const;
-    Attribute Get(const Instance &instance, Key attributeKey) const;
-    void *GetData(Key attributeKey, std::size_t index) const;
-    std::size_t Count() const;
-    Key FirstKey(bool &inLayout) const;
-    void SetParent(Key parent);
-    void Delete() const;
-    Key NextKey(Key prev, bool &inLayout) const;
-    bool Contains(Key k) const;
-    bool AddAttribute(Key attributeKey, unsigned int count);
-    bool RemoveAttribute(Key attributeKey);
-
-    void *operator new(std::size_t bytes) {
-        AllocationAccounting(bytes, true);
-        return Alloc(bytes, nullptr);
-    }
-
-    // TODO this must be in AttribPrivate.h, why?
-    void AddRef() const {
-        // TODO what the hell?
-        const_cast<Collection *>(this)->mRefCount++;
-    }
-
-    void Release() const {
-        if (mRefCount >= 2) {
-            const_cast<Collection *>(this)->mRefCount--;
-        } else {
-            // TODO huh
-            const_cast<Collection *>(this)->mRefCount = 0;
-            Database::Get().Delete(this);
-        }
-    }
-
-    const Collection *Parent() const {
-        return mParent;
-    }
-
-    Key GetParent() const {
-        if (mParent) {
-            return mParent->GetKey();
-        }
-        return 0;
-    }
-
-    bool IsReferenced() const {
-        return mRefCount != 0;
-    }
-
-    bool IsDynamic() const {
-        return !mSource;
-    }
-
-    Key GetClass() const {
-        if (mClass) {
-            return mClass->GetKey();
-        }
-        return 0;
-    }
-
-    void *GetLayout() const {
-        return mLayout;
-    }
-
-    Key GetKey() const {
-        return mKey;
-    }
-
-  private:
-    HashMap mTable;
-    const Collection *mParent;
-    class Class *mClass;
-    void *mLayout;
-    std::size_t mRefCount;
-    Key mKey;
-    class Vault *mSource;
-    const char *mNamePtr;
-};
-
+// total size: 0xC
 class RefSpec {
-    // total size: 0xC
-    Key mClassKey;                    // offset 0x0, size 0x4
-    Key mCollectionKey;               // offset 0x4, size 0x4
-    const Collection *mCollectionPtr; // offset 0x8, size 0x4
-
   public:
+    RefSpec(const RefSpec &src);
     void SetCollection(const Collection *collectionPtr);
     const Class *GetClass() const;
     const Collection *GetCollection() const;
@@ -280,6 +298,11 @@ class RefSpec {
     Key GetCollectionKey() const {
         return mCollectionKey;
     }
+
+  private:
+    Key mClassKey;                            // offset 0x0, size 0x4
+    Key mCollectionKey;                       // offset 0x4, size 0x4
+    mutable const Collection *mCollectionPtr; // offset 0x8, size 0x4
 };
 
 class Attribute {
@@ -309,6 +332,11 @@ class Attribute {
     bool SetLength(unsigned int);
     void SendChangeMsg() const;
     template <typename T> const T &Get(unsigned int index, T &result) const;
+
+    void operator delete(void *ptr, std::size_t bytes) {
+        AllocationAccounting(bytes, false);
+        Free(ptr, bytes, nullptr);
+    }
 
     Key GetCollectionKey() const {
         // TODO
@@ -370,10 +398,8 @@ class Instance {
     Key GetCollection() const;
     Key GetParent() const;
     void SetParent(unsigned int parent);
-    const void *GetAttributePointer(Key attribkey, unsigned int index) const;
     const Instance &operator=(const Instance &rhs);
     Attribute Get(Key attributeKey) const;
-    void Change(const Collection *collection);
     bool Lookup(Key attributeKey, Attribute &attrib) const;
     bool Contains(Key attributeKey) const;
     unsigned int LocalAttribCount() const;
@@ -382,6 +408,11 @@ class Instance {
     bool Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes);
     bool ModifyInternal(Key classKey, Key dynamicCollectionKey, unsigned int reserve);
     void Unmodify();
+    Key GenerateUniqueKey(const char *name, bool registerName) const;
+    void Change(const Collection *collection);
+    void Change(const RefSpec &refspec);
+    void ChangeWithDefault(const RefSpec &refspec);
+    const void *GetAttributePointer(Key attribkey, unsigned int index) const;
 
     void operator delete(void *ptr, std::size_t bytes) {
         AllocationAccounting(bytes, false);
@@ -422,19 +453,33 @@ class Instance {
         return nullptr;
     }
 
+    void Lock() const {
+        mLocks++;
+    }
+
+    void Unlock() const {
+        // TODO call LockReleased
+        mLocks--;
+    }
+
     AttributeIterator Iterator() const;
 
     const Gen::GenericAccessor *operator->() const {
         return reinterpret_cast<const Gen::GenericAccessor *>(this);
     }
 
+  protected:
+    Key GUKeyInternal(Key classKey, const char *name, bool registerName) const;
+
   private:
+    void LockReleased() const {}
+
     UTL::COM::IUnknown *mOwner;    // offset 0x0, size 0x4
     const Collection *mCollection; // offset 0x4, size 0x4
     void *mLayoutPtr;              // offset 0x8, size 0x4
     unsigned int mMsgPort;         // offset 0xC, size 0x4
     unsigned short mFlags;         // offset 0x10, size 0x2
-    unsigned short mLocks;         // offset 0x12, size 0x2
+    mutable unsigned short mLocks; // offset 0x12, size 0x2
 };
 
 // total size: 0x10
