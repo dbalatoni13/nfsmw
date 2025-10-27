@@ -23,8 +23,7 @@ template <typename Unk, typename T, typename U, bool Unk2, std::size_t Unk3> cla
     }
 
   private:
-    // TODO fix on xbox 360
-    VecHashMap::Node *mTable;          // offset 0x0, size 0x4
+    Node *mTable;                      // offset 0x0, size 0x4
     std::size_t mTableSize;            // offset 0x4, size 0x4
     std::size_t mNumEntries;           // offset 0x8, size 0x4
     unsigned int mFixedAlloc : 1;      // offset 0xC, size 0x4
