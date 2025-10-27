@@ -26,7 +26,7 @@ class AttribAlloc {
 
     static void Free(void *ptr, std::size_t bytes, const char *name) {
         // TODO is the check here or higher up in the chain?
-        if (ptr) {
+        if (ptr && bytes != 0) {
             mAllocator->Free(ptr, bytes, name);
         }
     }

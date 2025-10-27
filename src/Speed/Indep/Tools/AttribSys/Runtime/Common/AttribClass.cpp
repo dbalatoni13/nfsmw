@@ -69,11 +69,7 @@ void Class::CopyLayout(void *srcLayout, void *dstLayout) const {
 
 void Class::FreeLayout(void *layout) const {
     if (layout) {
-        // TODO the inlines are messed up
-        AllocationAccounting(mPrivates.mLayoutSize, false);
-        if (mPrivates.mLayoutSize != 0) {
-            Free(layout, mPrivates.mLayoutSize, nullptr);
-        }
+        Free(layout, mPrivates.mLayoutSize, nullptr);
     }
 }
 

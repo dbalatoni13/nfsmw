@@ -14,6 +14,10 @@ namespace Attrib {
 // TODO should this really be in AttribHashMap.h?
 class Array {
   public:
+    void *operator new(std::size_t, void *ptr) {
+        return ptr;
+    }
+
     // Returns the base location of this array's data
     unsigned char *BasePointer() const {
         return const_cast<unsigned char *>(data);

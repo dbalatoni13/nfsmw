@@ -24,10 +24,12 @@ Key RegisterString(const char *str);
 Key StringToKey(const char *str);
 
 inline void *Alloc(std::size_t bytes, const char *name) {
+    AllocationAccounting(bytes, true);
     return AttribAlloc::Allocate(bytes, name);
 }
 
 inline void Free(void *ptr, std::size_t bytes, const char *name) {
+    AllocationAccounting(bytes, false);
     AttribAlloc::Free(ptr, bytes, name);
 }
 
@@ -102,7 +104,6 @@ class Database {
     }
 
     void operator delete(void *ptr, std::size_t bytes) {
-        AllocationAccounting(bytes, false);
         Free(ptr, bytes, nullptr);
     }
 
@@ -132,43 +133,43 @@ class Node {
         Flag_IsLocatable = 1 << 6,
     };
 
-    bool GetFlag(unsigned int mask) {
+    bool GetFlag(unsigned int mask) const {
         return mFlags & mask;
     }
 
-    bool RequiresRelease() {
+    bool RequiresRelease() const {
         return GetFlag(Flag_RequiresRelease);
     }
 
-    bool IsArray() {
+    bool IsArray() const {
         return GetFlag(Flag_IsArray);
     }
 
-    bool IsInherited() {
+    bool IsInherited() const {
         return GetFlag(Flag_IsInherited);
     }
 
-    bool IsAccessor() {
+    bool IsAccessor() const {
         return GetFlag(Flag_IsAccessor);
     }
 
-    bool IsLaidOut() {
+    bool IsLaidOut() const {
         return GetFlag(Flag_IsLaidOut);
     }
 
-    bool IsByValue() {
+    bool IsByValue() const {
         return GetFlag(Flag_IsByValue);
     }
 
-    bool IsLocatable() {
+    bool IsLocatable() const {
         return GetFlag(Flag_IsLocatable);
     }
 
-    bool IsValid() {
+    bool IsValid() const {
         return IsLaidOut() || mPtr != this;
     }
 
-    void *GetPointer(void *layoutptr) {
+    void *GetPointer(void *layoutptr) const {
         if (IsByValue()) {
             return &mValue;
         } else if (IsLaidOut()) {
@@ -178,7 +179,7 @@ class Node {
         }
     }
 
-    class Array *GetArray(void *layoutptr) {
+    Array *GetArray(void *layoutptr) const {
         if (IsLaidOut()) {
             return (Array *)(uintptr_t(layoutptr) + uintptr_t(mArray));
         } else {
@@ -186,19 +187,21 @@ class Node {
         }
     }
 
-    unsigned int GetValue() {
-        return mValue;
+    std::size_t GetCount(void *layoutptr) const {
+        if (IsValid()) {
+            if (IsArray()) {
+                return GetArray(layoutptr)->GetCount();
+            }
+            return 1;
+        }
+        return 0;
     }
 
-    unsigned int *GetRefValue() {
-        return &mValue;
-    }
-
-    unsigned int GetKey() {
+    Key GetKey() const {
         return IsValid() ? mKey : 0;
     }
 
-    unsigned int MaxSearch() {
+    unsigned int MaxSearch() const {
         return mMax;
     }
 
@@ -207,11 +210,11 @@ class Node {
     }
 
   private:
-    unsigned int mKey;
+    Key mKey;
     union {
         void *mPtr;
         class Array *mArray;
-        unsigned int mValue;
+        mutable unsigned int mValue;
         unsigned int mOffset;
     };
     unsigned short mTypeIndex;
@@ -250,7 +253,6 @@ class Class {
 
   private:
     void operator delete(void *ptr, std::size_t bytes) {
-        AllocationAccounting(bytes, false);
         Free(ptr, bytes, nullptr);
     }
 
@@ -334,7 +336,6 @@ class Attribute {
     template <typename T> const T &Get(unsigned int index, T &result) const;
 
     void operator delete(void *ptr, std::size_t bytes) {
-        AllocationAccounting(bytes, false);
         Free(ptr, bytes, nullptr);
     }
 
@@ -415,7 +416,6 @@ class Instance {
     const void *GetAttributePointer(Key attribkey, unsigned int index) const;
 
     void operator delete(void *ptr, std::size_t bytes) {
-        AllocationAccounting(bytes, false);
         Free(ptr, bytes, nullptr);
     }
 

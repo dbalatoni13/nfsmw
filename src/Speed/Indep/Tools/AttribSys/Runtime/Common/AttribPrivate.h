@@ -32,7 +32,6 @@ class Collection {
     bool RemoveAttribute(Key attributeKey);
 
     void *operator new(std::size_t bytes) {
-        AllocationAccounting(bytes, true);
         return Alloc(bytes, nullptr);
     }
 

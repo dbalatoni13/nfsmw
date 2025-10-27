@@ -68,4 +68,18 @@ unsigned int Attribute::GetType() const {
     return 0;
 }
 
+const Collection *Attribute::GetCollection() const {
+    return mCollection;
+}
+
+unsigned int Attribute::GetLength() const {
+    bool bVar1;
+    Array *pAVar3;
+
+    if (mInternal) {
+        return mInternal->GetCount(mInstance->GetLayoutPointer());
+    }
+    return 0;
+}
+
 }; // namespace Attrib
