@@ -17,7 +17,6 @@ ExportManager::ExportManager(unsigned int reserve) {
     mExportPolicys = nullptr;
     mCount = 0;
     mReserve = reserve;
-    AllocationAccounting(reserve * sizeof(ExportPolicyPair), true);
     mExportPolicys = reinterpret_cast<ExportPolicyPair *>(Alloc(reserve * sizeof(ExportPolicyPair), nullptr));
 }
 

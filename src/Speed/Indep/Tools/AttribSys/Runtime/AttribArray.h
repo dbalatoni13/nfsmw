@@ -23,9 +23,13 @@ class Array {
         return const_cast<unsigned char *>(data);
     }
 
-    void *Data(unsigned int byteindex) const {
+    // TODO
+    void *Data(unsigned int byteindex, bool hack) const {
         unsigned char *base = BasePointer();
         // TODO use base?
+        if (hack) {
+            return (void *)(data + GetPad() + byteindex * 4);
+        }
         return (void *)(data + GetPad() + byteindex);
     }
 
@@ -40,9 +44,9 @@ class Array {
     void *GetData(std::size_t index) const {
         if (index < mCount) {
             if (IsReferences()) {
-                return *reinterpret_cast<void **>(Data(index * 4));
+                return *reinterpret_cast<void **>(Data(index, true));
             } else {
-                return Data(index * mSize);
+                return Data(index * mSize, false);
             }
         } else {
             return nullptr;
