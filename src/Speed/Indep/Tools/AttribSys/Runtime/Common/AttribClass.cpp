@@ -49,6 +49,10 @@ Key Class::GetNextDefinition(Key prev) const {
     return 0;
 }
 
+const Collection *Class::GetCollection(Key key) const {
+    return mPrivates.mCollections.Find(key);
+}
+
 std::size_t Class::GetNumCollections() const {
     return mPrivates.mCollections.Size();
 }

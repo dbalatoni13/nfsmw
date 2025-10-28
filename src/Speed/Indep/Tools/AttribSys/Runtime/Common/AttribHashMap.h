@@ -10,12 +10,6 @@
 // Credit: Brawltendo
 namespace Attrib {
 
-// Rotates (v) by (amount) bits
-// TODO probably not in this namespace
-inline unsigned int RotateNTo32(unsigned int v, unsigned int amount) {
-    return (v << amount) | (v >> (32 - amount));
-}
-
 class HashMap {
   public:
     unsigned int FindIndex(unsigned int key);

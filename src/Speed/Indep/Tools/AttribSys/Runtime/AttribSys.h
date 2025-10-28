@@ -23,6 +23,12 @@ void AllocationAccounting(std::size_t bytes, bool add);
 Key RegisterString(const char *str);
 Key StringToKey(const char *str);
 
+// Rotates (v) by (amount) bits
+// TODO probably not in this namespace
+inline unsigned int RotateNTo32(unsigned int v, unsigned int amount) {
+    return (v << amount) | (v >> (32 - amount));
+}
+
 inline void *Alloc(std::size_t bytes, const char *name) {
     AllocationAccounting(bytes, true);
     return AttribAlloc::Allocate(bytes, name);
@@ -201,10 +207,6 @@ class Node {
         return IsValid() ? mKey : 0;
     }
 
-    unsigned int MaxSearch() const {
-        return mMax;
-    }
-
     const TypeDesc &GetTypeDesc() const {
         return Database::Get().GetTypeDesc(mTypeIndex);
     }
@@ -225,7 +227,15 @@ class Node {
 // total size: 0xC
 class Class {
   public:
-    class TablePolicy {};
+    class TablePolicy {
+        static unsigned int KeyIndex(unsigned int k, unsigned int tableSize, unsigned int keyShift) {
+            return RotateNTo32(k, keyShift) % tableSize;
+        }
+
+        static unsigned int WrapIndex(unsigned int index, unsigned int tableSize, unsigned int keyShift) {
+            return RotateNTo32(index, keyShift) % tableSize;
+        }
+    };
 
     Class(Key k, ClassPrivate &privates);
     ~Class();
