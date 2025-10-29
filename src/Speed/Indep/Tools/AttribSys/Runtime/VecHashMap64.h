@@ -5,8 +5,7 @@
 #pragma once
 #endif
 
-#include <cstddef>
-#include <types.h>
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 // total size: 0x10
 template <typename KeyType, typename T, typename U, bool Unk2, std::size_t Unk3> class VecHashMap {
@@ -15,8 +14,7 @@ template <typename KeyType, typename T, typename U, bool Unk2, std::size_t Unk3>
     class Node {
       public:
         bool IsValid() const {
-            return mKey != mMax;
-            // return mKey != mPtr; // TODO
+            return (void *)mPtr != (void *)this;
         }
 
         T *Get() const {
@@ -33,7 +31,7 @@ template <typename KeyType, typename T, typename U, bool Unk2, std::size_t Unk3>
             return 0;
         }
 
-        unsigned int MaxSearch() const {
+        std::size_t MaxSearch() const {
             return mMax;
         }
 
@@ -44,33 +42,19 @@ template <typename KeyType, typename T, typename U, bool Unk2, std::size_t Unk3>
     };
 
     unsigned int FindIndex(unsigned int key) const {
-        unsigned short uVar1;
-        Node *pVVar2;
-        unsigned int uVar3;
-        Node *pVVar4;
-        unsigned int actualIndex;
-        Node *table;
-        unsigned int uVar7;
-
         if (mNumEntries == 0) {
             return mTableSize;
         }
-        table = mTable;
-        // TODO TablePolicy::KeyIndex(key, mTableSize, 0)
-        actualIndex = key % mTableSize;
+        Node *table = mTable;
+        unsigned int actualIndex = Attrib::Class::TablePolicy::KeyIndex(key, mTableSize, 0);
         unsigned int searchLen = 0;
         unsigned int maxSearchLen = table[actualIndex].MaxSearch();
-        for (searchLen = 0; searchLen < maxSearchLen; searchLen++) {
-            pVVar4 = table + actualIndex;
-            if (key == pVVar4->Key())
-                break;
-            actualIndex = (actualIndex + 1) % mTableSize;
+        while (searchLen < maxSearchLen && table[actualIndex].Key() != key) {
+            // TODO why is there a Node::IsValid call somewhere here?
+            actualIndex = Attrib::Class::TablePolicy::WrapIndex(actualIndex + 1, mTableSize, 0);
+            searchLen++;
         }
-        table += actualIndex;
-        if (key != table->Key()) {
-            return (unsigned int)mTableSize;
-        }
-        return actualIndex;
+        return table[actualIndex].Key() != key ? mTableSize : actualIndex;
     }
 
     bool ValidIndex(unsigned int index) const {
@@ -78,11 +62,11 @@ template <typename KeyType, typename T, typename U, bool Unk2, std::size_t Unk3>
     }
 
     T *Find(unsigned int key) const {
-        unsigned int index = FindIndex(key);
-        if (ValidIndex(index)) {
-            return mTable[index].Get();
+        if (key == 0) {
+            return nullptr;
         }
-        return 0;
+        unsigned int index = FindIndex(key);
+        return ValidIndex(index) ? mTable[index].Get() : nullptr;
     }
 
     std::size_t Size() const {

@@ -8,6 +8,10 @@ Database::Database(DatabasePrivate &privates) : mPrivates(privates) {}
 
 Database::~Database() {}
 
+Class *Database::GetClass(Key k) const {
+    return mPrivates.mClasses.Find(k);
+}
+
 unsigned int Database::GetNumIndexedTypes() const {
     return mPrivates.mNumCompiledTypes;
 }

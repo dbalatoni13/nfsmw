@@ -87,23 +87,31 @@ class Vault {
     void *GetExportData(unsigned int index) const;
     bool ExportsCleared() const;
 
+    bool Release() const {
+        mRefCount--;
+        if (mRefCount == 0) {
+            delete this;
+        }
+        return mRefCount == 0;
+    }
+
   private:
-    unsigned int mRefCount;        // offset 0x0, size 0x4
-    ExportManager &mExportMgr;     // offset 0x4, size 0x4
-    DependencyNode *mDependencies; // offset 0x8, size 0x4
-    DataBlock *mDepData;           // offset 0xC, size 0x4
-    unsigned int *mDepIDs;         // offset 0x10, size 0x4
-    unsigned int mNumDependencies; // offset 0x14, size 0x4
-    unsigned int mResolvedCount;   // offset 0x18, size 0x4
-    PointerNode *mPointers;        // offset 0x1C, size 0x4
-    unsigned char *mTransientData; // offset 0x20, size 0x4
-    ChunkBlock *mStrings;          // offset 0x24, size 0x4
-    ExportNode *mExports;          // offset 0x28, size 0x4
-    DataBlock *mExportData;        // offset 0x2C, size 0x4
-    unsigned int *mExportIDs;      // offset 0x30, size 0x4
-    unsigned int mNumExports;      // offset 0x34, size 0x4
-    bool mInited;                  // offset 0x38, size 0x1
-    bool mDeinited;                // offset 0x3C, size 0x1
+    mutable unsigned int mRefCount; // offset 0x0, size 0x4
+    ExportManager &mExportMgr;      // offset 0x4, size 0x4
+    DependencyNode *mDependencies;  // offset 0x8, size 0x4
+    DataBlock *mDepData;            // offset 0xC, size 0x4
+    unsigned int *mDepIDs;          // offset 0x10, size 0x4
+    unsigned int mNumDependencies;  // offset 0x14, size 0x4
+    unsigned int mResolvedCount;    // offset 0x18, size 0x4
+    PointerNode *mPointers;         // offset 0x1C, size 0x4
+    unsigned char *mTransientData;  // offset 0x20, size 0x4
+    ChunkBlock *mStrings;           // offset 0x24, size 0x4
+    ExportNode *mExports;           // offset 0x28, size 0x4
+    DataBlock *mExportData;         // offset 0x2C, size 0x4
+    unsigned int *mExportIDs;       // offset 0x30, size 0x4
+    unsigned int mNumExports;       // offset 0x34, size 0x4
+    bool mInited;                   // offset 0x38, size 0x1
+    bool mDeinited;                 // offset 0x3C, size 0x1
 };
 
 }; // namespace Attrib

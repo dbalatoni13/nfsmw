@@ -7,6 +7,8 @@
 
 #include "../VecHashMap64.h"
 #include "AttribHashMap.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribLoadAndGo.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 // Credit: Brawltendo
 namespace Attrib {
@@ -30,12 +32,17 @@ class Collection {
     bool Contains(Key k) const;
     bool AddAttribute(Key attributeKey, unsigned int count);
     bool RemoveAttribute(Key attributeKey);
+    void Clear();
+    void Clean();
 
     void *operator new(std::size_t bytes) {
         return Alloc(bytes, nullptr);
     }
 
-    // TODO this must be in AttribPrivate.h, why?
+    void operator delete(void *ptr, std::size_t bytes) {
+        Free(ptr, bytes, nullptr);
+    }
+
     void AddRef() const {
         mRefCount++;
     }
@@ -88,14 +95,14 @@ class Collection {
     }
 
   private:
-    HashMap mTable;
-    const Collection *mParent;
-    class Class *mClass;
-    void *mLayout;
-    mutable std::size_t mRefCount;
-    Key mKey;
-    Vault *mSource;
-    const char *mNamePtr;
+    HashMap mTable;                // offset 0x0, size 0x10
+    const Collection *mParent;     // offset 0x10, size 0x4
+    Class *mClass;                 // offset 0x14, size 0x4
+    void *mLayout;                 // offset 0x18, size 0x4
+    mutable std::size_t mRefCount; // offset 0x1C, size 0x4
+    Key mKey;                      // offset 0x20, size 0x4
+    Vault *mSource;                // offset 0x24, size 0x4
+    const char *mNamePtr;          // offset 0x28, size 0x4
 };
 
 class Private {
@@ -114,19 +121,34 @@ class Private {
 class ClassPrivate : public Class {
   public:
     // total size: 0x10
-    class CollectionHashMap : public VecHashMap<unsigned int, Attrib::Collection, Attrib::Class::TablePolicy, true, 40> {};
+    class CollectionHashMap : public VecHashMap<unsigned int, Attrib::Collection, Attrib::Class::TablePolicy, true, 40> {
+      public:
+        ~CollectionHashMap();
+    };
 
     // TODO this is inline
     ClassPrivate(const struct ClassLoadData &loadData, Vault *v);
+
+    void operator delete(void *ptr, std::size_t bytes) {
+        Free(ptr, bytes, nullptr);
+    }
+
+    ~ClassPrivate() {
+        mLayoutTable.ClearForRelease();
+        mSource->Release();
+    }
 
     HashMap mLayoutTable;           // offset 0xC, size 0x10
     CollectionHashMap mCollections; // offset 0x1C, size 0x10
     unsigned short mLayoutSize;     // offset 0x2C, size 0x2
     unsigned short mNumDefinitions; // offset 0x2E, size 0x2
     Definition *mDefinitions;       // offset 0x30, size 0x4
-    struct Vault *mSource;          // offset 0x34, size 0x4
+    Vault *mSource;                 // offset 0x34, size 0x4
     const char *mNamePtr;           // offset 0x38, size 0x4
 };
+
+// total size: 0x10
+class ClassTable : public VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16> {};
 
 // total size: 0x4C
 class DatabasePrivate : public Database {
@@ -181,9 +203,6 @@ class DatabasePrivate : public Database {
     CollectionList mGarbageCollections; // offset 0x3C, size 0x8
     ClassList mGarbageClasses;          // offset 0x44, size 0x8
 };
-
-// TODO move?
-Key ScanForValidKey(const ClassPrivate::CollectionHashMap &v, std::size_t index);
 
 } // namespace Attrib
 

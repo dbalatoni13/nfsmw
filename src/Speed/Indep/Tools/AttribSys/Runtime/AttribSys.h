@@ -5,10 +5,8 @@
 #pragma once
 #endif
 
-#include "AttribArray.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Misc/AttribAlloc.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/VecHashMap64.h"
 
 // Credit: Brawltendo
 namespace Attrib {
@@ -21,6 +19,7 @@ typedef unsigned int Key;
 const void *DefaultDataArea(std::size_t bytes);
 void AllocationAccounting(std::size_t bytes, bool add);
 Key RegisterString(const char *str);
+const char *KeyToString(Key k);
 Key StringToKey(const char *str);
 
 // Rotates (v) by (amount) bits
@@ -67,6 +66,14 @@ class TypeDesc {
         return mType;
     }
 
+    unsigned int GetSize() const {
+        return mSize;
+    }
+
+    unsigned int GetIndex() const {
+        return mIndex;
+    }
+
     bool operator<(const TypeDesc &rhs) const {
         return mType < rhs.mType;
     }
@@ -94,6 +101,7 @@ class ClassList : public std::list<const Class *> {};
 // total size: 0x8
 class Database {
   public:
+    Class *GetClass(Key k) const;
     bool AddClass(Class *c);
     void RemoveClass(Class *c);
     Class *GetClass(unsigned int k);
@@ -124,6 +132,79 @@ class Database {
     static Database *sThis;
 
     DatabasePrivate &mPrivates; // offset 0x0, size 0x4
+};
+
+class Array {
+  public:
+    static Array *CreateInPlace(void *ptr, unsigned int t, unsigned int count, unsigned int allocSize) {
+        const TypeDesc &desc = Database::Get().GetTypeDesc(t);
+        unsigned short typeIndex = desc.GetIndex();
+        unsigned int typesize = desc.GetSize();
+        bool align16 = typesize > 15;
+
+        return new (ptr) Array(typesize, count, allocSize, typeIndex, align16);
+    }
+
+    void *operator new(std::size_t, void *ptr) {
+        return ptr;
+    }
+
+    Array(unsigned int typesize, unsigned int count, unsigned int allocSize, unsigned int typeIndex, bool align16) {
+        // TODO this exists out of line
+    }
+
+    ~Array() {
+        // TODO this exists out of line
+    }
+
+    // Returns the base location of this array's data
+    unsigned char *BasePointer() const {
+        return const_cast<unsigned char *>(data);
+    }
+
+    // TODO
+    void *Data(unsigned int byteindex, bool hack) const {
+        unsigned char *base = BasePointer();
+        // TODO use base?
+        if (hack) {
+            return (void *)(data + GetPad() + byteindex * 4);
+        }
+        return (void *)(data + GetPad() + byteindex);
+    }
+
+    bool IsReferences() const {
+        return mSize == 0;
+    }
+
+    std::size_t GetCount() const {
+        return mCount;
+    }
+
+    void *GetData(std::size_t index) const {
+        if (index < mCount) {
+            if (IsReferences()) {
+                return *reinterpret_cast<void **>(Data(index, true));
+            } else {
+                return Data(index * mSize, false);
+            }
+        } else {
+            return nullptr;
+        }
+    }
+
+    unsigned int GetPad() const {
+        if ((mEncodedTypePad & 0x8000) == 0) {
+            return 0;
+        }
+        return 8;
+    }
+
+  private:
+    unsigned short mAlloc;
+    unsigned short mCount;
+    unsigned short mSize;
+    unsigned short mEncodedTypePad;
+    unsigned char data[];
 };
 
 // Credit: Brawltendo
@@ -203,6 +284,10 @@ class Node {
         return 0;
     }
 
+    unsigned int MaxSearch() const {
+        return mMax;
+    }
+
     Key GetKey() const {
         return IsValid() ? mKey : 0;
     }
@@ -215,7 +300,7 @@ class Node {
     Key mKey;
     union {
         void *mPtr;
-        class Array *mArray;
+        Array *mArray;
         mutable unsigned int mValue;
         unsigned int mOffset;
     };
@@ -228,18 +313,23 @@ class Node {
 class Class {
   public:
     class TablePolicy {
+      public:
         static unsigned int KeyIndex(unsigned int k, unsigned int tableSize, unsigned int keyShift) {
             return RotateNTo32(k, keyShift) % tableSize;
         }
 
         static unsigned int WrapIndex(unsigned int index, unsigned int tableSize, unsigned int keyShift) {
-            return RotateNTo32(index, keyShift) % tableSize;
+            return index % tableSize; // TODO
         }
     };
 
     Class(Key k, ClassPrivate &privates);
     ~Class();
     void Delete() const;
+    bool AddCollection(Collection *c);
+    bool RemoveCollection(Collection *c);
+    void *AllocLayout() const;
+    void *CloneLayout(void *srcLayout) const;
     const Definition *GetDefinition(Key key) const;
     std::size_t GetNumDefinitions() const;
     Key GetFirstDefinition() const;
@@ -257,8 +347,21 @@ class Class {
         return mRefCount > 0;
     }
 
+    void Release() const {
+        if (mRefCount >= 2) {
+            mRefCount--;
+        } else {
+            mRefCount = 0;
+            Database::Get().Delete(this);
+        }
+    }
+
     Key GetKey() const {
         return mKey;
+    }
+
+    void AddRef() const {
+        mRefCount++;
     }
 
   private:
@@ -266,15 +369,12 @@ class Class {
         Free(ptr, bytes, nullptr);
     }
 
-    Key mKey;              // offset 0x0, size 0x4
-    std::size_t mRefCount; // offset 0x4, size 0x4
+    Key mKey;                      // offset 0x0, size 0x4
+    mutable std::size_t mRefCount; // offset 0x4, size 0x4
   public:
     // TODO how does Collection::Count access this without an inline?
     ClassPrivate &mPrivates; // offset 0x8, size 0x4
 };
-
-// total size: 0x10
-class ClassTable : public VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16> {};
 
 // total size: 0xC
 class RefSpec {
@@ -496,18 +596,50 @@ class Instance {
 class Definition {
   public:
     enum Flags {
-        kIsNotSearchable = 8,
-        kIsBound = 4,
-        kInLayout = 2,
-        kArray = 1,
+        kArray = 1 << 0,
+        kInLayout = 1 << 1,
+        kIsBound = 1 << 2,
+        kIsNotSearchable = 1 << 3,
     };
 
     Definition(unsigned int k) {
         mKey = k;
     }
 
+    bool IsArray() const {
+        return GetFlag(kArray);
+    }
+
+    bool InLayout() const {
+        return GetFlag(kInLayout);
+    }
+
+    bool IsBound() const {
+        return GetFlag(kIsBound);
+    }
+
+    bool IsNotSearchable() const {
+        return GetFlag(kIsNotSearchable);
+    }
+
+    bool GetFlag(unsigned int f) const {
+        return mFlags & f;
+    }
+
     Key GetKey() const {
         return mKey;
+    }
+
+    unsigned int GetType() const {
+        return mType;
+    }
+
+    unsigned int GetOffset() const {
+        return mOffset;
+    }
+
+    unsigned int GetMaxCount() const {
+        return mMaxCount;
     }
 
     bool operator<(const Definition &rhs) const {
