@@ -21,6 +21,7 @@ float VU0_v3distancesquare(const UMath::Vector3 &p1, const UMath::Vector3 &p2);
 float VU0_v3distancesquarexz(const UMath::Vector3 &p1, const UMath::Vector3 &p2);
 void VU0_v3crossprod(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &dest);
 float VU0_v3lengthsquare(const UMath::Vector3 &a);
+void VU0_v3unit(const UMath::Vector3 &a, UMath::Vector3 &result);
 void VU0_v4scaleadd(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result);
 float VU0_v4lengthsquare(const UMath::Vector4 &a);
 float VU0_v4lengthsquarexyz(const UMath::Vector4 &a);
@@ -79,7 +80,8 @@ inline float VU0_Cos(float x) {
 
 // TODO these should go into UVectorMathGC.hpp
 inline void VU0_v3unitcrossprod(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &dest) {
-    // TODO
+    VU0_v3crossprod(a, b, dest);
+    VU0_v3unit(dest, dest);
 }
 
 inline void VU0_ExtractXAxis3FromQuat(const UMath::Vector4 &quat, UMath::Vector3 &result) {
@@ -126,43 +128,41 @@ inline void VU0_ExtractZAxis3FromQuat(const UMath::Vector4 &quat, UMath::Vector3
 
 inline void VU0_qmul(const UMath::Vector4 &b, const UMath::Vector4 &a, UMath::Vector4 &dest) {
     UMath::Vector4 result;
-    // TODO UNSOLVED
-    result.x = a.x * b.w + a.w * b.x + (a.y * b.z - a.z * b.y);
-    result.y = a.y * b.w + a.w * b.y + (a.z * b.x - a.x * b.z);
-    result.z = a.z * b.w + a.w * b.z + (a.x * b.y - a.y * b.x);
-    result.w = ((a.w * b.w - a.x * b.x) - a.y * b.y) - a.z * b.z;
+    result.x = a.y * b.z - a.z * b.y + a.w * b.x + a.x * b.w;
+    result.y = a.z * b.x - a.x * b.z + a.w * b.y + a.y * b.w;
+    result.z = a.x * b.y - a.y * b.x + a.w * b.z + a.z * b.w;
+    result.w = a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z;
 
     dest = result;
 }
 
 inline void VU0_quattom4(const UMath::Vector4 &quat, UMath::Matrix4 &result) {
-    // TODO UNSOLVED
     const float scale = 2.0f;
-    float xx = quat.x * quat.x;
-    float yy = quat.y * quat.y;
-    float zz = quat.z * quat.z;
+    float xx = quat.x * quat.x * scale;
+    float yy = quat.y * quat.y * scale;
+    float zz = quat.z * quat.z * scale;
 
-    float xy = quat.x * quat.y;
-    float xz = quat.x * quat.z;
-    float xw = quat.x * quat.w;
+    float xy = quat.x * quat.y * scale;
+    float xz = quat.x * quat.z * scale;
+    float xw = quat.x * quat.w * scale;
 
-    float yz = quat.y * quat.z;
-    float yw = quat.y * quat.w;
-    float zw = quat.z * quat.w;
+    float yz = quat.y * quat.z * scale;
+    float yw = quat.y * quat.w * scale;
+    float zw = quat.z * quat.w * scale;
 
-    result[0][0] = 1.0f - scale * (yy + zz);
-    result[0][1] = scale * (xy - zw);
-    result[0][2] = scale * (xz + yw);
+    result[0][0] = 1.0f - (yy + zz);
+    result[0][1] = (xy + zw);
+    result[0][2] = (xz - yw);
     result[0][3] = 0.0f;
 
-    result[1][0] = scale * (xy + zw);
-    result[1][1] = 1.0f - scale * (xx + zz);
-    result[1][2] = scale * (yz - xw);
+    result[1][0] = (xy - zw);
+    result[1][1] = 1.0f - (xx + zz);
+    result[1][2] = (yz + xw);
     result[1][3] = 0.0f;
 
-    result[2][0] = scale * (xz - yw);
-    result[2][1] = scale * (yz + xw);
-    result[2][2] = 1.0f - scale * (xx + yy);
+    result[2][0] = (xz + yw);
+    result[2][1] = (yz - xw);
+    result[2][2] = 1.0f - (xx + yy);
     result[2][3] = 0.0f;
 
     result[3][0] = 0.0f;
@@ -252,6 +252,11 @@ inline float VU0_v3length(const struct UMath::Vector3 &a) {
 
 inline float VU0_v3lengthxz(const struct UMath::Vector3 &a) {
     return VU0_sqrt(a.x * a.x + a.z * a.z);
+}
+
+inline void VU0_v3unit(const UMath::Vector3 &a, UMath::Vector3 &result) {
+    float rlen = VU0_rsqrt(VU0_v3lengthsquare(a));
+    VU0_v3scale(a, rlen, result);
 }
 
 inline void VU0_v4unit(const UMath::Vector4 &a, UMath::Vector4 &result) {

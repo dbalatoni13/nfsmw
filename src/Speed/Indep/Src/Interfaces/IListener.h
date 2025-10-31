@@ -17,6 +17,8 @@ class IListener {
     virtual void OnCollision(const Info &cinfo);
 };
 
+void AddListener(IListener *listener, HSIMABLE__ *participant, const char *who);
+void AddListener(IListener *listener, class UTL::COM::IUnknown *participant, const char *who);
 void RemoveListener(IListener *listener);
 
 } // namespace Collision

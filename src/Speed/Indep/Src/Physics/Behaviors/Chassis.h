@@ -84,10 +84,10 @@ class Chassis : public VehicleBehavior, public ISuspension {
     void ComputeState(float dT, State &state) const;
     void DoAerodynamics(const Chassis::State &state, float drag_pct, float aero_pct, float aero_front_z, float aero_rear_z,
                         const Physics::Tunings *tunings);
-    void DoJumpStabilizer(State &state);
+    void DoJumpStabilizer(const State &state);
 
     /* Overrides */
-    virtual ~Chassis();
+    // virtual ~Chassis();
     virtual Meters GuessCompression(unsigned int id, float downforce) const;
     virtual void OnBehaviorChange(const UCrc32 &mechanic);
     virtual float GetRenderMotion() const;

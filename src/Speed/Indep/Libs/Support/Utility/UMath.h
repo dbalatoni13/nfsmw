@@ -189,8 +189,7 @@ inline float Pow(const float f, const float e) {
 
 inline float Ramp(const float a, const float amin, const float amax) {
     float arange = amax - amin;
-
-    return VU0_floatmax(0.0f, VU0_floatmin((a - amin) / arange, 1.0f));
+    return arange > FLOAT_EPSILON ? VU0_floatmax(0.0f, VU0_floatmin((a - amin) / arange, 1.0f)) : 0.0f;
 }
 
 inline float Lerp(const float a, const float b, const float t) {
@@ -247,11 +246,11 @@ inline float Limit(const float a, const float l) {
 }
 
 inline float Sina(const float a) {
-    return VU0_Sin(a);
+    return VU0_Sin(a * (float)M_TWOPI);
 }
 
 inline float Cosa(const float a) {
-    return VU0_Cos(a);
+    return VU0_Cos(a * (float)M_TWOPI);
 }
 
 } // namespace UMath

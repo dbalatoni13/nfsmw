@@ -46,15 +46,15 @@ class PInput : public Behavior, public IInput {
     }
 
     override virtual bool IsLookBackButtonPressed() const {
-        // TODO
+        return false;
     }
 
     override virtual bool IsPullBackButtonPressed() const {
-        // TODO
+        return false;
     }
 
     override virtual bool IsAutomaticShift() const {
-        // TODO
+        return true;
     }
 
   private:
@@ -90,7 +90,9 @@ class InputPlayer : public PInput, public IInputPlayer {
     override virtual void FetchInput();
 
     // Virtual methods
-    virtual bool OnAction(const ActionRef &a) {}
+    virtual bool OnAction(const ActionRef &a) {
+		return true;
+	}
 
     // Inlines
     IVehicle *GetVehicle() const {

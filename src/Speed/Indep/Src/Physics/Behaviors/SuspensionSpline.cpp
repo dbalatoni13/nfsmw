@@ -174,13 +174,13 @@ void SuspensionSpline::OnBehaviorChange(const UCrc32 &mechanic) {
 
 void SuspensionSpline::RestoreState() {
     mInput->ClearInput();
-    // TODO
-    mBrakeLockRear = false;    // 0x108
-    mBrakeLockFront = false;   // 0x104
-    mConstraint = 60.0f;       // 0x10C
-    mNISSteeringWeight = 0.0f; // 0xF8
-    mBurnout = 0.0f;           // 0x100
-    mNISSteering = 0.0f;       // 0xF4
+
+    mBrakeLockFront = false;
+    mBrakeLockRear = false;
+    mConstraint = 60.0f;
+    mBurnout = 0.0f;
+    mNISSteering = 0.0f;
+    mNISSteeringWeight = 0.0f;
 
     INISCarEngine *iengine;
     if (GetOwner()->QueryInterface(&iengine)) {
@@ -243,40 +243,24 @@ void SuspensionSpline::Reset() {
 }
 
 void SuspensionSpline::DoSteering(State &state, UMath::Vector3 &right, UMath::Vector3 &left) {
-    // TODO
-    float fVar1;
-    float fVar2 = 0.0f;
-    float fVar3;
+    float steering = 0.0f;
     if (state.speed > 1.0f) {
-        fVar2 = state.local_vel.z;
-        if (fVar2 < 0.0f) {
-            fVar2 = -fVar2;
-        }
-        fVar2 = UMath::Atan2a(state.local_vel.x, fVar2);
+        steering = UMath::Atan2a(state.local_vel.x, UMath::Abs(state.local_vel.z));
+
         if (state.local_vel.z < 0.0f) {
-            fVar2 = -fVar2;
+            steering = -steering;
         }
     }
-    fVar3 = state.local_vel.z * 0.02f;
-    if (fVar3 < 0.0f) {
-        fVar3 = -fVar3;
-    }
-    fVar1 = mMaxSteering;
-    fVar3 = (1.0f - mNISSteeringWeight) * fVar2 * (1.0f - fVar3 * 0.8f) + mNISSteeringWeight * mNISSteering;
-    mSteering = fVar3;
-    fVar2 = fVar1;
-    if (fVar3 < fVar1) {
-        fVar2 = fVar3;
-    }
-    if (fVar2 < -fVar1) {
-        fVar2 = -fVar1;
-    }
-    mSteering = fVar2;
-    float ca = UMath::Cosa(mSteering * (float)M_TWOPI);
-    float sa = UMath::Sina(mSteering * (float)M_TWOPI);
-    right.x = sa;
-    right.y = 0.0f;
+
+    steering *= 1.0f - UMath::Abs(state.local_vel.z * 0.02f) * 0.8f;
+    mSteering = (1.0f - mNISSteeringWeight) * steering + mNISSteeringWeight * mNISSteering;
+    mSteering = UMath::Clamp(mSteering, -mMaxSteering, mMaxSteering);
+
+    float ca = UMath::Cosa(mSteering);
+    float sa = UMath::Sina(mSteering);
     right.z = ca;
+    right.y = 0.0f;
+    right.x = sa;
     UMath::Rotate(right, state.matrix, right);
     left = right;
 }

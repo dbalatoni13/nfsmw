@@ -55,6 +55,14 @@ class WWorldPos {
   public:
     bool Update(const UMath::Vector3 &pos, UMath::Vector4 &dest, bool usecache, const WCollider *collider, bool keep_valid);
 
+	void SetTolerance(float liftAmount) {
+		fYOffset = liftAmount;
+	}
+
+	const Attrib::Collection *GetSurface() const {
+		return fSurface;
+	}
+
   private:
     WCollisionTri fFace;                // offset 0x0, size 0x30
     unsigned int fFaceValid : 1;        // offset 0x30, size 0x4

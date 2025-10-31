@@ -51,27 +51,31 @@ void EngineRacer::OnAttributeChange(const Attrib::Collection *collection, unsign
 // Credits: Brawltendo
 // UNSOLVED
 float EngineRacer::GetBrakingTorque(float engine_torque, float rpm) const {
+    float torque;
     unsigned int numpts = mEngineInfo.Num_ENGINE_BRAKING();
     if (numpts > 1) {
         float rpm_min = mEngineInfo.IDLE();
         float rpm_max = mEngineInfo.MAX_RPM();
         float ratio;
-        // TODO
         unsigned int index =
             UTIL_InterprolateIndex(numpts - 1, UMath::Clamp(rpm, mEngineInfo.IDLE(), mEngineInfo.RED_LINE()), rpm_min, rpm_max, ratio);
 
         float base = mEngineInfo.ENGINE_BRAKING(index);
         unsigned int secondIndex = index + 1;
-        float step = mEngineInfo.ENGINE_BRAKING(UMath::Min(secondIndex, numpts - 1));
+        float step = mEngineInfo.ENGINE_BRAKING(UMath::Min(numpts - 1, secondIndex));
         float load_pct = (step - base) * ratio + base;
         return -engine_torque * UMath::Clamp(load_pct, 0.f, 1.f);
     } else {
         return -engine_torque * mEngineInfo.ENGINE_BRAKING(0);
     }
+
+    return torque;
 }
 
+static const bool Tweak_CoastShifting = true;
+static const float Tweak_CoastingPercent = 0.65f;
+
 // Credits: Brawltendo
-// TODO not matching on GC yet
 ShiftPotential EngineRacer::FindShiftPotential(GearID gear, float rpm) const {
     if (gear <= G_NEUTRAL)
         return SHIFT_POTENTIAL_NONE;
@@ -82,14 +86,16 @@ ShiftPotential EngineRacer::FindShiftPotential(GearID gear, float rpm) const {
 
     // is able to shift down
     if (gear != G_FIRST && lower_gear_ratio > 0.0f) {
-        float lower_gear_shift_up_rpm = GetShiftUpRPM(gear - 1);
-        lower_gear_shift_up_rpm = GetGearRatio(gear) * (lower_gear_shift_up_rpm / lower_gear_ratio) - 200.0f;
-        // the RPM to shift down is lowered when the throttle isn't pressed
-        float off_throttle_rpm = UMath::Lerp(UMath::Lerp(mEngineInfo.IDLE(), shift_down_rpm, 0.65f), shift_down_rpm, mThrottle);
-        shift_down_rpm = UMath::Min(lower_gear_shift_up_rpm, off_throttle_rpm);
+        float lower_gear_shift_up_rpm = ((GetShiftUpRPM(gear - 1) * GetGearRatio(gear)) / lower_gear_ratio) - 200.0f;
+        
+        if (Tweak_CoastShifting) {
+            // lower downshift RPM when coasting
+            float off_throttle_rpm = UMath::Lerp(mEngineInfo.IDLE(), shift_down_rpm, Tweak_CoastingPercent);
+            shift_down_rpm = UMath::Lerp(off_throttle_rpm, shift_down_rpm, mThrottle);
+            shift_down_rpm = UMath::Min(shift_down_rpm, lower_gear_shift_up_rpm);
+        }
     }
 
-    // shifting up
     if (rpm >= shift_up_rpm && gear < GetTopGear()) {
         return SHIFT_POTENTIAL_UP;
     }
@@ -100,18 +106,22 @@ ShiftPotential EngineRacer::FindShiftPotential(GearID gear, float rpm) const {
 }
 
 // Credits: Brawltendo
-// UNSOLVED
 ShiftStatus EngineRacer::OnGearChange(GearID gear) {
     if (gear >= GetNumGearRatios())
         return SHIFT_STATUS_NONE;
     // new gear can't be the same as the old one
-    if (gear == mGear || gear < G_REVERSE)
-        return SHIFT_STATUS_NONE;
+    if (gear != mGear && gear >= G_REVERSE) {
+        if (gear < mGear) {
+            mGearShiftTimer = GetShiftDelay(gear) * 0.25f;
+        } else {
+            mGearShiftTimer = GetShiftDelay(gear);
+        }
+        mGear = gear;
+        mClutch.Disengage();
+        return SHIFT_STATUS_NORMAL;
+    }
 
-    mGearShiftTimer = gear < mGear ? (GetShiftDelay(gear) * 0.25f) : GetShiftDelay(gear);
-    mGear = gear;
-    mClutch.Disengage();
-    return SHIFT_STATUS_NORMAL;
+    return SHIFT_STATUS_NONE;
 }
 
 // Credits: Brawltendo
@@ -231,13 +241,14 @@ void EngineRacer::LimitFreeWheels(float w) {
                 continue;
 
             float ww = mSuspension->GetWheelAngularVelocity(i);
-            if (ww * w < 0.0f)
+            if (ww * w < 0.0f) {
                 ww = 0.0f;
-            else if (ww > 0.0f) {
+            } else if (ww > 0.0f) {
                 ww = UMath::Min(ww, w);
             } else if (ww < 0.0f) {
                 ww = UMath::Max(ww, w);
             }
+
             mSuspension->SetWheelAngularVelocity(i, ww);
         }
     }
@@ -246,19 +257,21 @@ void EngineRacer::LimitFreeWheels(float w) {
 float SmoothRPMDecel[] = {2.5f, 15.0f};
 
 // Credits: Brawltendo
-// TODO not matching on GC yet
 float Engine_SmoothRPM(bool is_shifting, GearID gear, float dT, float old_rpm, float new_rpm, float engine_inertia) {
     bool fast_shifting = is_shifting && gear > G_FIRST || gear == G_NEUTRAL;
     // this ternary is dumb but that's what makes it match
     float max_rpm_decel = -SmoothRPMDecel[fast_shifting ? 1 : 0];
     float rpm = new_rpm;
-    float rpm_decel = max_rpm_decel / engine_inertia * 1000.0f;
-    if (dT > 0.0f && (new_rpm - old_rpm) / dT < rpm_decel) {
-        float newrpm = rpm_decel * dT + old_rpm;
-        if (!(newrpm < new_rpm)) {
-            rpm = newrpm;
+    float max_decel = max_rpm_decel * 1000.0f / engine_inertia;
+    if (dT > 0.0f && (rpm - old_rpm) / dT < max_decel) {
+        float newrpm = max_decel * dT + old_rpm;
+
+        if (newrpm < rpm) {
+            newrpm = rpm;
         }
+        rpm = newrpm;
     }
+
     return rpm * 0.55f + old_rpm * 0.45f;
 }
 
@@ -283,9 +296,11 @@ void EngineRacer::DoECU() {
 }
 
 bool Tweak_InfiniteNOS = false;
+static const float Tweak_MinSpeedForNosMPH = 10.0f;
+static const float Tweak_MaxNOSRechargeCheat = 2.0f;
+static const float Tweak_MaxNOSDischargeCheat = 0.5f;
 
 // Credits: Brawltendo
-// UNSOLVED
 float EngineRacer::DoNos(const Physics::Tunings *tunings, float dT, bool engaged) {
     if (!HasNOS())
         return 1.0f;
@@ -305,7 +320,7 @@ float EngineRacer::DoNos(const Physics::Tunings *tunings, float dT, bool engaged
 
     if (mGear < G_FIRST || mThrottle <= 0.0f || IsBlown())
         engaged = false;
-    if (speed_mph < 10.0f && !IsNOSEngaged() || speed_mph < 5.0f && IsNOSEngaged())
+    if (speed_mph < Tweak_MinSpeedForNosMPH && !IsNOSEngaged() || speed_mph < Tweak_MinSpeedForNosMPH * 0.5f && IsNOSEngaged())
         engaged = false;
 
     float nos_discharge = Physics::Info::NosCapacity(mNOSInfo, tunings);
@@ -319,7 +334,7 @@ float EngineRacer::DoNos(const Physics::Tunings *tunings, float dT, bool engaged
                 discharge = 0.0f;
             // GetCatchupCheat returns 0.0 for human racers, but AI racers get hax
             if (mCheater)
-                discharge *= UMath::Lerp(1.0f, 0.5f, mCheater->GetCatchupCheat());
+                discharge *= UMath::Lerp(1.0f, Tweak_MaxNOSDischargeCheat, mCheater->GetCatchupCheat());
             mNOSCapacity -= discharge;
             nos_torque_scale = Physics::Info::NosBoost(mNOSInfo, tunings);
             mNOSEngaged = 1.0f;
@@ -327,24 +342,21 @@ float EngineRacer::DoNos(const Physics::Tunings *tunings, float dT, bool engaged
             mNOSCapacity = UMath::Max(mNOSCapacity, 0.0f);
         } else if (mNOSEngaged > 0.0f && nos_disengage > 0.0f) {
             // nitrous can't start recharging until the disengage timer runs out
-            // it takes [NOS_DISENGAGE] seconds for it to reach zero
-
             mNOSEngaged -= dT / nos_disengage;
             mNOSEngaged = UMath::Max(mNOSEngaged, 0.0f);
+        } else if (mNOSCapacity < 1.0f && recharge_rate > 0.0f) {
+            float recharge = dT / recharge_rate;
+            // GetCatchupCheat returns 0.0 for human racers, but AI racers get hax
+            if (mCheater)
+                recharge *= UMath::Lerp(1.0f, Tweak_MaxNOSRechargeCheat, mCheater->GetCatchupCheat());
+            mNOSCapacity += recharge;
+            mNOSCapacity = UMath::Min(mNOSCapacity, 1.0f);
+            mNOSEngaged = 0.0f;
         } else {
-            if (mNOSCapacity < 1.0f && recharge_rate > 0.0f) {
-                float recharge = dT / recharge_rate;
-                // GetCatchupCheat returns 0.0 for human racers, but AI racers get hax
-                if (mCheater)
-                    recharge *= UMath::Lerp(1.0f, 2.0f, mCheater->GetCatchupCheat());
-                mNOSCapacity = UMath::Min(recharge + mNOSCapacity, 1.0f);
-            }
             mNOSEngaged = 0.0f;
         }
 
     } else {
-        // fallback in case someone sets the nitrous capacity <= 0.0 by uncapping tuning limits
-
         mNOSCapacity = 0.0f;
         mNOSEngaged = 0.0f;
     }
@@ -352,7 +364,6 @@ float EngineRacer::DoNos(const Physics::Tunings *tunings, float dT, bool engaged
 }
 
 // Credits: Brawltendo
-// TODO not matching on GC yet
 void EngineRacer::DoInduction(const Physics::Tunings *tunings, float dT) {
     Physics::Info::eInductionType type = Physics::Info::InductionType(mInductionInfo);
     if (type == Physics::Info::INDUCTION_NONE) {
@@ -407,11 +418,13 @@ float EngineRacer::DoThrottle() {
         return 0.0f;
     }
     return mIInput->GetControls().fGas;
+
+    return mIInput->GetControls().fGas;
 }
 
 // Credits: Brawltendo
 float EngineRacer::GetShiftPoint(GearID from_gear, GearID to_gear) const {
-    if (from_gear < G_NEUTRAL) {
+    if (from_gear <= G_REVERSE) {
         return 0.0f;
     }
     if (to_gear <= G_NEUTRAL) {
@@ -423,41 +436,38 @@ float EngineRacer::GetShiftPoint(GearID from_gear, GearID to_gear) const {
     if (to_gear < from_gear) {
         return mShiftDownRPM[from_gear];
     }
+    
     return 0.0f;
 }
 
 // Credits: Brawltendo
+// TODO matches but OnGearChange's vtable offset is incorrect
 bool EngineRacer::DoGearChange(GearID gear, bool automatic) {
-    // can't shift past top gear
     if (gear > GetTopGear()) {
         return false;
     }
-    // can't shift below reverse gear
     if (gear < G_REVERSE) {
         return false;
     }
 
     GearID previous = (GearID)mGear;
     ShiftStatus status = OnGearChange(gear);
-    // has shifted
     if (status != SHIFT_STATUS_NONE) {
         mShiftStatus = status;
         mShiftPotential = SHIFT_POTENTIAL_NONE;
         ISimable *owner = GetOwner();
-        // player shifted
+
         if (owner->IsPlayer()) {
             // dispatch shift event
             new EPlayerShift(owner->GetInstanceHandle(), status, automatic, previous, gear);
         }
-        // AI shifted
         return true;
     }
-    // didn't shift
+    
     return false;
 }
 
 // Credits: Brawltendo
-// TODO not matching on GC yet
 void EngineRacer::AutoShift() {
     if (mGear == G_REVERSE || mGearShiftTimer > 0.0f || GetVehicle()->IsStaging() || mSportShifting > 0.0f)
         return;
@@ -473,18 +483,16 @@ void EngineRacer::AutoShift() {
             int next_gear = mGear - 1;
             if (next_gear > G_FIRST) {
                 float current_rpm = RPS2RPM(mTransmissionVelocity);
-                float rpm = GetRatioChange(next_gear, mGear) * current_rpm;
-                do {
-                    if (FindShiftPotential((GearID)next_gear, rpm) != SHIFT_POTENTIAL_DOWN) {
-                        break;
-                    }
-                    rpm = GetRatioChange(--next_gear, mGear) * current_rpm;
-                } while (next_gear > G_FIRST);
+                float rpm = current_rpm * GetRatioChange(next_gear, mGear);
+                for (; next_gear > G_FIRST && FindShiftPotential((GearID)next_gear, rpm) == SHIFT_POTENTIAL_DOWN; ) {
+                    rpm = current_rpm * GetRatioChange(--next_gear, mGear);
+                }
             }
             DoGearChange((GearID)next_gear, true);
             break;
         }
-
+        case SHIFT_POTENTIAL_NONE:
+            break;
         case SHIFT_POTENTIAL_UP:
         case SHIFT_POTENTIAL_PERFECT:
         case SHIFT_POTENTIAL_MISS: {
@@ -499,7 +507,7 @@ void EngineRacer::AutoShift() {
         }
 
         default:
-            return;
+            break;
     }
 }
 
