@@ -27,7 +27,8 @@ class Wheel {
     Wheel(unsigned int flags);
     ~Wheel();
     bool UpdatePosition(const UMath::Vector3 &body_av, const UMath::Vector3 &body_lv, const UMath::Matrix4 &body_matrix, const UMath::Vector3 &cog,
-                        float dT, float wheel_radius, bool usecache, const void *collider, float vehicle_height);
+                        float dT, float wheel_radius, bool usecache, const WCollider *collider, float vehicle_height);
+    void UpdateSurface(const SimSurface &surface);
     bool InitPosition(const IRigidBody &rb, float maxcompression);
     void Reset();
     void UpdateTime(float dT);
@@ -56,8 +57,16 @@ class Wheel {
         mForce = f;
     }
 
+    void SetVelocity(const UMath::Vector3 &v) {
+        mVelocity = v;
+    }
+
     void IncAirTime(float dT) {
         mAirTime += dT;
+    }
+
+    void SetAirTime(float f) {
+        mAirTime = f;
     }
 
     const UMath::Vector3 &GetLocalArm() const {
@@ -68,12 +77,20 @@ class Wheel {
         mLocalArm = arm;
     }
 
+    const UMath::Vector3 &GetWorldArm() const {
+        return mWorldArm;
+    }
+
     float GetCompression() const {
         return mCompression;
     }
 
     void SetCompression(float c) {
         mCompression = UMath::Max(c, 0.0f);
+    }
+
+    const SimSurface &GetSurface() const {
+        return mSurface;
     }
 
     const UMath::Vector3 &GetVelocity() const {

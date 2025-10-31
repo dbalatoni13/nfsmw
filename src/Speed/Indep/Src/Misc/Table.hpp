@@ -1,6 +1,7 @@
 #ifndef MISC_TABLE_H
 #define MISC_TABLE_H
 
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -58,7 +59,11 @@ class AverageBase {
 
     static void operator delete(void *mem, std::size_t size, const char *name) {}
 
+    AverageBase(int size, int slots);
     virtual ~AverageBase() {}
+
+    void *Allocate(unsigned int size, const char *name);
+    void DeAllocate(void *ptr, unsigned int size, const char *name);
 
     bool FullySampled() {}
 
@@ -75,6 +80,11 @@ class AverageBase {
 
 class Average : public AverageBase {
   public:
+    Average();
+    Average(int slots);
+
+    void Init(int slots);
+    
     float GetValue() {
         return fAverage;
     }
@@ -94,6 +104,7 @@ class Average : public AverageBase {
 
 class AverageWindow : public Average {
   public:
+    AverageWindow(float f_timewindow, float f_frequency);
     ~AverageWindow();
 
     float GetOldestValue() {
@@ -151,32 +162,29 @@ template <typename T> class tGraph {
     // Credits: Brawltendo
     // UNSOLVED
     void GetValue(T *pValue, T x) {
-        const int length = NumEntries;
-
-        if (length > 1) {
+        if (NumEntries > 1) {
             if (x <= GraphData[0].x) {
-                *pValue = GraphData[0].y;
-            } else if (x >= GraphData[length - 1].x) {
-                *pValue = GraphData[length - 1].y;
+                bMemCpy(pValue, &GraphData[0].y, sizeof(float));
+            } else if (x >= GraphData[NumEntries - 1].x) {
+                bMemCpy(pValue, &GraphData[NumEntries - 1].y, sizeof(float));
             } else {
-                int i = 0;
-                const int maxInd = length - 1;
-                if (maxInd > 0) {
-                    GraphEntry<T> *p = GraphData;
-                    while (!(x >= p->x) || !(x < p[1].x)) {
-                        ++i;
-                        ++p;
-                        if (i >= maxInd) {
-                            return;
-                        }
+                for (int i = 0; i < NumEntries - 1; ++i) {
+                    if (x >= GraphData[i].x && x < GraphData[i + 1].x) {
+                        const T blend = (x - GraphData[i].x) / (GraphData[i + 1].x - GraphData[i].x);
+                        Blend(pValue, &GraphData[i + 1].y, &GraphData[i].y, blend);
+                        return;
                     }
-                    const T blend = (x - GraphData[i].x) / (GraphData[i + 1].x - GraphData[i].x);
-                    Blend(pValue, &GraphData[i + 1].y, &GraphData[i].y, blend);
                 }
             }
-        } else if (length > 0) {
-            *pValue = GraphData[0].y;
+        } else if (NumEntries > 0) {
+            bMemCpy(pValue, &GraphData[0].y, sizeof(float));
         }
+    }
+
+    float GetValue(T x) {
+        float ret;
+        GetValue(&ret, x);
+        return ret;
     }
 
   private:

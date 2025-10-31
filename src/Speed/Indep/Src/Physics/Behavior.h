@@ -56,6 +56,11 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
         return mIOwner;
     }
 
+    void EnableProfile(const char* name) {
+        Sim::Profile::Release(mProfile);
+        mProfile = Sim::Profile::Create();
+    }
+
     virtual void Reset();
 
     virtual const int GetPriority() const {
@@ -104,20 +109,18 @@ template <typename T> class BehaviorSpecsPtr : public AttributeStructPtr<T> {
 
     Attrib::Key LookupKey(const ISimable *owner, int index) {
         const Attrib::Instance &owneratr = owner->GetAttributes();
-        Attrib::Key classkey;
         if (!owneratr.IsValid()) {
             // "default"
-            classkey = 0xeec2271a;
-            return classkey;
+            return 0xeec2271a;
         }
-        Attrib::Attribute attrib = owneratr.Get(AttributeStructPtr<T>::GetClassKey());
+        
+        Attrib::Key classkey = AttributeStructPtr<T>::GetClassKey();
+        Attrib::Attribute attrib = owneratr.Get(classkey);
         Attrib::RefSpec refspec;
         if (attrib.Get(index, refspec)) {
-            classkey = refspec.GetCollectionKey();
-            return classkey;
+            return refspec.GetCollectionKey();
         } else {
-            classkey = owneratr.GetCollection();
-            return classkey;
+            return owneratr.GetCollection();
         }
     }
 };

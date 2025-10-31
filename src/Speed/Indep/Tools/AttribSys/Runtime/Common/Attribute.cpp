@@ -2,29 +2,29 @@
 
 namespace Attrib {
 
-Attribute::Attribute() {
-    mInstance = nullptr;
-    mCollection = nullptr;
-    mInternal = nullptr;
-    mDataPointer = nullptr;
+Attribute::Attribute()
+: mInstance(nullptr)
+, mCollection(nullptr)
+, mInternal(nullptr)
+, mDataPointer(nullptr) {
+	
 }
 
-Attribute::Attribute(const Attribute &src) {
-    mInstance = src.mInstance;
-    mCollection = src.mCollection;
-    mInternal = src.mInternal;
-    mDataPointer = src.mDataPointer;
+Attribute::Attribute(const Attribute &src)
+: mInstance(src.mInstance)
+, mCollection(src.mCollection)
+, mInternal(src.mInternal)
+, mDataPointer(src.mDataPointer) {
     if (mInstance) {
         mInstance->Lock();
     }
 }
 
-Attribute::Attribute(const Instance &instance, const Collection *collection, Node *node) {
-    mCollection = collection;
-    mDataPointer = nullptr;
-    mInstance = &instance;
-    mInternal = node;
-
+Attribute::Attribute(const Instance &instance, const Collection *collection, Node *node)
+: mInstance(&instance)
+, mCollection(collection)
+, mInternal(node)
+, mDataPointer(nullptr) {
     if (node && !node->IsArray()) {
         mDataPointer = node->GetPointer(instance.GetLayoutPointer());
     }

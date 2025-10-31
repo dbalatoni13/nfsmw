@@ -391,10 +391,11 @@ class RefSpec {
         Free(ptr, bytes, "RefSpec");
     }
 
-    RefSpec() {
-        mClassKey = 0;
-        mCollectionKey = 0;
-        mCollectionPtr = nullptr;
+    RefSpec() 
+    : mClassKey(0)
+    , mCollectionKey(0)
+    , mCollectionPtr(nullptr) {
+        
     }
 
     ~RefSpec() {
@@ -420,7 +421,10 @@ class RefSpec {
 class Attribute {
   protected:
     void *GetElementPointer(unsigned int index) const {
-        return &reinterpret_cast<int *>(mDataPointer)[index];
+        if (mDataPointer) {
+            return index == 0 ? mDataPointer : nullptr;
+        }
+        return GetInternalPointer(index);
     }
 
   public:
@@ -462,13 +466,14 @@ class Attribute {
     }
 
     bool Get(unsigned int index, RefSpec &result) {
-        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(mDataPointer ? GetElementPointer(index) : GetInternalPointer(index));
+        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(GetElementPointer(index));
+
         if (resultptr) {
             result = *resultptr;
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
   private:

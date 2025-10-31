@@ -103,22 +103,26 @@ class SuspensionTraffic : public Chassis {
     Tire *mTires[4];                                             // offset 0x100, size 0x10
 };
 
-// UNSOLVED
 SuspensionTraffic::Tire::Tire(float radius, int index, const Attrib::Gen::tires *specs, const Attrib::Gen::brakes *brakes)
-    : Wheel(0), mRadius(UMath::Max(radius, 0.1f)), mWheelIndex(index), mAxleIndex(index >> 1), mSpecs(specs), mBrakes(brakes) {
-    mSlipping = false;
-    mLateralSpeed = 0.0f;
-    mBrake = 0.0f;
-    mEBrake = 0.0f;
-    mAV = 0.0f;
-    mLoad = 0.0f;
-    mLateralForce = 0.0f;
-    mLongitudeForce = 0.0f;
-    mAppliedTorque = 0.0f;
-    mSlip = 0.0f;
-    mLastTorque = 0.0f;
-    mRoadSpeed = 0.0f;
-    mSlipAngle = 0.0f;
+    : Wheel(0)
+    , mRadius(UMath::Max(radius, 0.1f))
+    , mWheelIndex(index)
+    , mAxleIndex(index >> 1)
+    , mSpecs(specs)
+    , mBrakes(brakes)
+    , mSlipping(false)
+    , mLateralSpeed(0.0f)
+    , mBrake(0.0f)
+    , mEBrake(0.0f)
+    , mAV(0.0f)
+    , mLoad(0.0f)
+    , mLateralForce(0.0f)
+    , mLongitudeForce(0.0f)
+    , mAppliedTorque(0.0f)
+    , mSlip(0.0f)
+    , mLastTorque(0.0f)
+    , mRoadSpeed(0.0f)
+    , mSlipAngle(0.0f) {
 }
 
 void SuspensionTraffic::Tire::BeginFrame() {

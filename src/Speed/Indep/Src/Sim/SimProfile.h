@@ -16,6 +16,7 @@ namespace Sim {
 
 namespace Profile {
 
+inline HSIMPROFILE Create() { return 0; }
 inline void Release(HSIMPROFILE) {}
 
 }; // namespace Profile

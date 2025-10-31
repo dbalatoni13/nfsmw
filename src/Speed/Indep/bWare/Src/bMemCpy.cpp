@@ -1,6 +1,44 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 extern "C" {
+void bMemCpy(void *dest, const void *src, unsigned int numbytes) {
+    char *pdest = (char *)dest;
+    char *psrc = (char *)src;
+    int size = numbytes;
+    int alignment = (int)pdest | (int)psrc;
+    
+    if (!(alignment & 7)) {
+        for (; size > 15; ) {
+            size -= 16;
+            unsigned long long t0 = ((unsigned long long*)psrc)[0];
+            unsigned long long t1 = ((unsigned long long*)psrc)[1];
+            ((unsigned long long*)pdest)[0] = t0;
+            ((unsigned long long*)pdest)[1] = t1;
+            psrc += 16;
+            pdest += 16;
+        }
+    }
+    if (!(alignment & 3)) {
+        for (; size > 7; ) {
+            size -= 8;
+            unsigned int t0 = ((unsigned int*)psrc)[0];
+            unsigned int t1 = ((unsigned int*)psrc)[1];
+            ((unsigned int*)pdest)[0] = t0;
+            ((unsigned int*)pdest)[1] = t1;
+            psrc += 8;
+            pdest += 8;
+        }
+    }
+    for ( ; size; )
+    {
+        --size;
+        unsigned char t0 = *psrc;
+        *pdest = t0;
+        ++psrc;
+        ++pdest;
+    }
+}
+
 int bMemCmp(const void *s1, const void *s2, unsigned int numbytes) {
     if (numbytes == 0) {
         return 0;

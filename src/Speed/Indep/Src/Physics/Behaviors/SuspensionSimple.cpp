@@ -33,9 +33,8 @@ class SuspensionSimple : public Chassis, public Sim::Collision::IListener, publi
         void EndFrame(float dT);
         void UpdateFree(float dT);
 
-        // TODO
         void MatchSpeed(float speed) {
-            mEBrake = 0.0f;
+            mAV = speed / mRadius;
             mRoadSpeed = speed;
             mTraction = 1.0f;
             mBrakeLocked = false;
@@ -43,7 +42,7 @@ class SuspensionSimple : public Chassis, public Sim::Collision::IListener, publi
             mAngularAcc = 0.0f;
             mLastTorque = 0.0f;
             mBrake = 0.0f;
-            mAV = speed / mRadius;
+            mEBrake = 0.0f;
         }
 
         void Reset() {
@@ -165,16 +164,15 @@ class SuspensionSimple : public Chassis, public Sim::Collision::IListener, publi
     Tire *mTires[4];                                             // offset 0x134, size 0x10
 };
 
-// UNSOLVED order issue
 void SuspensionSimple::Tire::BeginFrame(float max_slip, float grip_scale, float traction_boost) {
     mMaxSlip = max_slip;
     mAppliedTorque = 0.0f;
-    mForce = UMath::Vector3::kZero;
-    mAllowSlip = 0;
-    mTractionBoost = traction_boost;
-    mGripBoost = grip_scale;
+    SetForce(UMath::Vector3::kZero);
     mLateralForce = 0.0f;
     mLongitudeForce = 0.0f;
+    mTractionBoost = traction_boost;
+    mGripBoost = grip_scale;
+    mAllowSlip = false;
 }
 
 void SuspensionSimple::Tire::EndFrame(float dT) {}
@@ -187,13 +185,13 @@ void SuspensionSimple::Tire::UpdateFree(float dT) {
     mLoad = 0.0f;
     mSlip = 0.0f;
     mSlipAngle = 0.0f;
-    // TODO
-    mBrakeLocked = mEBrake > 0.0f ? (mAxleIndex == 1) : false;
+
+    mBrakeLocked = mEBrake > 0.0f && mAxleIndex == 1;
     if (mBrakeLocked) {
         mAV = 0.0f;
     } else {
-        float angularacc = (mAppliedTorque / WheelMomentOfInertia);
-        mAV = angularacc * dT + mAV;
+        float angularacc = mAppliedTorque / WheelMomentOfInertia * dT;
+        mAV += angularacc;
     }
     mLateralForce = 0.0f;
     mLongitudeForce = 0.0f;
