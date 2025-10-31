@@ -73,7 +73,7 @@ template <typename KeyType, typename T, typename U, bool Unk2, std::size_t Unk3>
         return mNumEntries;
     }
 
-  private:
+  protected:
     Node *mTable;                      // offset 0x0, size 0x4
     std::size_t mTableSize;            // offset 0x4, size 0x4
     std::size_t mNumEntries;           // offset 0x8, size 0x4

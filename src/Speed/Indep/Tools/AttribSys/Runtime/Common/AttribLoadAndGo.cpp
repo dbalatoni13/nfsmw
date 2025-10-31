@@ -63,6 +63,15 @@ struct DataBlock {
         mGC = gc;
     }
 
+    void Clear(unsigned int id) {
+        if (Inited()) {
+            mGC->ReleaseData(id, mData, mSize);
+        }
+        mSize = 0;
+        mData = nullptr;
+        mGC = nullptr;
+    }
+
     void *mData;               // offset 0x0, size 0x4
     IGarbageCollector *mGC;    // offset 0x4, size 0x4
     unsigned int mPolicyIndex; // offset 0x8, size 0x4
@@ -124,6 +133,22 @@ void Vault::Clean() {
         if (policy) {
             policy->Clean(*this, mExportMgr.GetExportPolicyTypeByIndex(mExportData[i].mPolicyIndex), mExportIDs[i]);
         }
+    }
+}
+
+void Vault::Deinitialize() {
+    Clean();
+    std::size_t i = mNumExports;
+    while (i-- > 0) {
+        IExportPolicy *policy = mExportMgr.GetExportPolicyByIndex(mExportData[i].mPolicyIndex);
+        if (policy) {
+            policy->Deinitialize(*this, mExportMgr.GetExportPolicyTypeByIndex(mExportData[i].mPolicyIndex), mExportIDs[i]);
+        }
+    }
+    Database::Get().CollectGarbage();
+    mDeinited = true;
+    for (std::size_t d = 1; d < mNumDependencies; d++) {
+        mDepData[d].Clear(mDepIDs[d]);
     }
 }
 

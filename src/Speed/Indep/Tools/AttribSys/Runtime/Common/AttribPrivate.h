@@ -124,6 +124,21 @@ class ClassPrivate : public Class {
     class CollectionHashMap : public VecHashMap<unsigned int, Attrib::Collection, Attrib::Class::TablePolicy, true, 40> {
       public:
         ~CollectionHashMap();
+
+        unsigned int GetNextValidIndex(unsigned int startPoint) const {
+            unsigned int index = startPoint + 1;
+            for (; index < mTableSize && !mTable[index].IsValid(); index++) {
+            }
+            return index;
+        }
+
+        unsigned int GetKeyAtIndex(unsigned int index) const {
+            if (ValidIndex(index)) {
+                (void)ValidIndex(index);
+                return mTable[index].Key();
+            }
+            return 0;
+        }
     };
 
     // TODO this is inline
@@ -203,6 +218,12 @@ class DatabasePrivate : public Database {
     CollectionList mGarbageCollections; // offset 0x3C, size 0x8
     ClassList mGarbageClasses;          // offset 0x44, size 0x8
 };
+
+template <typename T> Key ScanForValidKey(const T &v, std::size_t index) {
+    index = v.GetNextValidIndex(index);
+    // (void)v.ValidIndex(index); // TODO how to get it to be here instead of GetKeyAtIndex?
+    return v.GetKeyAtIndex(index);
+}
 
 } // namespace Attrib
 

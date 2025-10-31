@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Misc/AttribAsset.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 namespace Attrib {
@@ -18,7 +19,7 @@ class IExportPolicy {
     virtual bool IsReferenced(const Vault &v, const unsigned int &id);
     // virtual void Clean();
     virtual void Clean(Vault &v, const unsigned int &type, const unsigned int &id);
-    virtual void Deinitialize(Vault &v, const unsigned int &id);
+    virtual void Deinitialize(Vault &v, const unsigned int &type, const unsigned int &id);
 };
 
 // total size: 0xC
@@ -71,11 +72,11 @@ struct PointerNode;
 // total size: 0x40
 class Vault {
   public:
-    Vault(ExportManager &mgr, unsigned int, void *data, std::size_t bytes, struct IGarbageCollector *gc);
+    Vault(ExportManager &mgr, unsigned int, void *data, std::size_t bytes, IGarbageCollector *gc);
     ~Vault();
     const unsigned int *GetDependencyList(unsigned int &count) const;
     bool IsAssetDependency(unsigned int index) const;
-    void ResolveDependency(unsigned int index, void *data, std::size_t bytes, struct IGarbageCollector *gc);
+    void ResolveDependency(unsigned int index, void *data, std::size_t bytes, IGarbageCollector *gc);
     bool HasUnresolvedDependency() const;
     void Initialize();
     void Clean();

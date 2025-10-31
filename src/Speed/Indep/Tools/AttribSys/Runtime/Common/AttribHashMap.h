@@ -94,6 +94,21 @@ class HashMap {
         return ValidIndex(index) ? &mTable[index] : nullptr;
     }
 
+    unsigned int GetNextValidIndex(unsigned int startPoint) const {
+        unsigned int index = startPoint + 1;
+        for (; index < mTableSize && !mTable[index].IsValid(); index++) {
+        }
+        return index;
+    }
+
+    unsigned int GetKeyAtIndex(unsigned int index) const {
+        if (ValidIndex(index)) {
+            (void)ValidIndex(index);
+            return mTable[index].GetKey();
+        }
+        return 0;
+    }
+
   private:
     Node *mTable;                   // offset 0x0, size 0x4
     std::size_t mTableSize;         // offset 0x4, size 0x4
@@ -101,8 +116,6 @@ class HashMap {
     unsigned short mWorstCollision; // offset 0xC, size 0x2
     unsigned short mKeyShift;       // offset 0xE, size 0x2
 };
-
-template <typename T> Key ScanForValidKey(const T &v, std::size_t index);
 
 } // namespace Attrib
 

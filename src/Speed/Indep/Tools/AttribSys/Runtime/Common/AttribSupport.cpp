@@ -40,7 +40,7 @@ Key GetCollectionKey(const Collection *c) {
     if (c) {
         return c->GetKey();
     }
-    return nullptr;
+    return 0;
 }
 
 const Collection *GetCollectionParent(const Collection *c) {
