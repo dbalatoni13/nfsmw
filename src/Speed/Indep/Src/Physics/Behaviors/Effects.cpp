@@ -86,7 +86,7 @@ bool Effects::DoHit(const SimSurface &othersurface, float impact, const UMath::V
         if (!effect) {
             return false;
         }
-        float intensity = (maximpact - minimpact > FLOAT_EPSILON) ? UMath::Ramp(impact, minimpact, maximpact) : 0.0f;
+        float intensity = UMath::Ramp(impact, minimpact, maximpact);
         if (intensity <= 0.0f) {
             return false;
         }
