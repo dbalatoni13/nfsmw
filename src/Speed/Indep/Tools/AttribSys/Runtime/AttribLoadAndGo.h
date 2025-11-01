@@ -13,15 +13,6 @@ namespace Attrib {
 Key StringToAssetID(const char *assetName);
 Key StringToTypeID(const char *typeName);
 
-class IExportPolicy {
-  public:
-    virtual void Initialize(Vault &v, const unsigned int &id, const char *name, void *data, std::size_t bytes);
-    virtual bool IsReferenced(const Vault &v, const unsigned int &id);
-    // virtual void Clean();
-    virtual void Clean(Vault &v, const unsigned int &type, const unsigned int &id);
-    virtual void Deinitialize(Vault &v, const unsigned int &type, const unsigned int &id);
-};
-
 // total size: 0xC
 class ExportManager {
   public:
@@ -58,6 +49,10 @@ class ExportManager {
     unsigned int GetExportPolicyTypeByIndex(unsigned int index) const;
     unsigned int GetExportPolicyIndex(unsigned int type) const;
 
+    void *operator new(std::size_t bytes) {
+        return Alloc(bytes, "Attrib::ExportManager");
+    }
+
     ExportPolicyPair *mExportPolicys; // offset 0x0, size 0x4
     unsigned int mReserve;            // offset 0x4, size 0x4
     std::size_t mCount;               // offset 0x8, size 0x4
@@ -87,6 +82,10 @@ class Vault {
     const unsigned int GetExportType(unsigned int index) const;
     void *GetExportData(unsigned int index) const;
     bool ExportsCleared() const;
+
+    void operator delete(void *ptr, std::size_t bytes) {
+        Free(ptr, bytes, "Attrib::Vault");
+    }
 
     bool Release() const {
         mRefCount--;

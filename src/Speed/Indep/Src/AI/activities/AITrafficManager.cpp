@@ -256,7 +256,7 @@ void AITrafficManager::SetTrafficPattern(unsigned int pattern_key) {
     if (pattern_key == mPattern.GetCollection()) {
         return;
     }
-    mPattern = trafficpattern(Attrib::FindCollection(trafficpattern::ClassKey(), pattern_key), 0, nullptr);
+    mPattern = trafficpattern(pattern_key, 0, nullptr);
     bMemSet(mPatternTimer, 0, sizeof(mPatternTimer));
 
     unsigned int num_types = mPattern.Num_Vehicles();

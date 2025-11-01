@@ -17,7 +17,7 @@ ExportManager::ExportManager(unsigned int reserve) {
     mExportPolicys = nullptr;
     mCount = 0;
     mReserve = reserve;
-    mExportPolicys = reinterpret_cast<ExportPolicyPair *>(Alloc(reserve * sizeof(ExportPolicyPair), nullptr));
+    mExportPolicys = reinterpret_cast<ExportPolicyPair *>(Alloc(reserve * sizeof(ExportPolicyPair), "Attrib::ExportPolicyPair"));
 }
 
 void ExportManager::AddExportPolicy(unsigned int type, IExportPolicy *policy) {
@@ -102,6 +102,15 @@ struct ExportNode : public ChunkBlock {
     unsigned int mCount; // offset 0x8, size 0x4
     ExportEntry exports[];
 };
+
+Vault::~Vault() {
+    if (mInited && !mDeinited) {
+        Deinitialize();
+    }
+    ExportsCleared();
+    Free(mDepData, (mNumDependencies + mNumExports) * sizeof(*mDepData), "Attrib::DataBlocks");
+    Free(mDepIDs, (mNumDependencies + mNumExports) * sizeof(*mDepIDs), "Attrib::AssetIDs");
+}
 
 const unsigned int *Vault::GetDependencyList(unsigned int &count) const {
     count = mNumDependencies - 1;

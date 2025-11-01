@@ -89,7 +89,7 @@ void *Class::AllocLayout() const {
     if (mPrivates.mLayoutSize == 0) {
         return nullptr;
     } else {
-        void *data = Attrib::Alloc(mPrivates.mLayoutSize, nullptr);
+        void *data = Attrib::Alloc(mPrivates.mLayoutSize, "Attrib::Class");
         memset(data, 0, mPrivates.mLayoutSize);
 
         Definition *defs = mPrivates.mDefinitions;
@@ -110,7 +110,7 @@ void *Class::CloneLayout(void *srcLayout) const {
     } else if (!srcLayout) {
         return AllocLayout();
     } else {
-        void *data = Alloc(mPrivates.mLayoutSize, nullptr);
+        void *data = Alloc(mPrivates.mLayoutSize, "Attrib::layout");
         CopyLayout(srcLayout, data);
         return data;
     }
@@ -124,7 +124,7 @@ void Class::CopyLayout(void *srcLayout, void *dstLayout) const {
 
 void Class::FreeLayout(void *layout) const {
     if (layout) {
-        Free(layout, mPrivates.mLayoutSize, nullptr);
+        Free(layout, mPrivates.mLayoutSize, "Attrib::layout");
     }
 }
 

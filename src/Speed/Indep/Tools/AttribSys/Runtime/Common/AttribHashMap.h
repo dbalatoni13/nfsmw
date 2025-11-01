@@ -10,6 +10,8 @@
 // Credit: Brawltendo
 namespace Attrib {
 
+unsigned int AdjustHashTableSize(unsigned int requiredSize);
+
 class HashMap {
   public:
     class HashMapTablePolicy {
@@ -22,8 +24,16 @@ class HashMap {
             return k % tableSize;
         }
 
+        static void *Alloc(std::size_t bytes) {
+            return Attrib::Alloc(bytes, "Attrib::HashMapTable");
+        }
+
         static void Free(void *ptr, std::size_t bytes) {
-            Attrib::Free(ptr, bytes, nullptr);
+            Attrib::Free(ptr, bytes, "Attrib::HashMapTable");
+        }
+
+        static unsigned int TableSize(unsigned int entries) {
+            return AdjustHashTableSize(entries);
         }
 
         static std::size_t GrowRequest(unsigned int currententries, bool collisionoverflow) {
@@ -33,7 +43,7 @@ class HashMap {
     };
 
     void operator delete(void *ptr, std::size_t bytes) {
-        Free(ptr, bytes, nullptr);
+        Free(ptr, bytes, "Attrib::HashMap");
     }
 
     HashMap(std::size_t reservationSize, unsigned int keyShift, bool exactFit) {
@@ -54,7 +64,28 @@ class HashMap {
     }
 
     void RebuildTable(std::size_t requestedCount) {
-        // TODO it exists out of line
+        if (requestedCount == 0) {
+            return;
+        }
+        unsigned int tableSize = HashMapTablePolicy::TableSize(requestedCount);
+        Node *oldTable = mTable;
+        unsigned int oldSize = mTableSize;
+        mTableSize = tableSize;
+        mNumEntries = 0;
+        mWorstCollision = 0;
+        mTable = new (HashMapTablePolicy::Alloc(mTableSize * sizeof(Node))) Node();
+        for (int i = 1; i < mTableSize; i++) {
+            new (&mTable[i]) Node();
+        }
+        if (oldTable) {
+            for (int i = 0; i < oldSize; i++) {
+                if (oldTable[i].IsValid()) {
+                    oldTable[i].ResetSearchLength(0);
+                    Transfer(oldTable[i]);
+                }
+            }
+            HashMapTablePolicy::Free(oldTable, oldSize * sizeof(Node));
+        }
     }
 
     void ClearForRelease() {
@@ -101,12 +132,72 @@ class HashMap {
         return index;
     }
 
+    Node *GetNodeAtIndex(unsigned int index) const {
+        // TODO
+        if (ValidIndex(index)) {
+            return &mTable[index];
+        }
+        return nullptr;
+    }
+
     unsigned int GetKeyAtIndex(unsigned int index) const {
         if (ValidIndex(index)) {
             (void)ValidIndex(index);
             return mTable[index].GetKey();
         }
         return 0;
+    }
+
+    void Transfer(Node &src) {
+        unsigned int searchLen = 0;
+        unsigned int targetIndex = HashMapTablePolicy::KeyIndex(src.GetKey(), mTableSize, mKeyShift);
+        unsigned int actualIndex = PreFlightAdd(src.GetKey(), targetIndex, searchLen);
+
+        mTable[actualIndex].Move(src);
+        PostFlightAdd(targetIndex, searchLen);
+    }
+
+    unsigned int PreFlightAdd(Key key, unsigned int targetIndex, unsigned int &searchLen) {
+        searchLen = 0;
+        while (mTable[targetIndex].IsValid()) {
+            if (mTable[targetIndex].GetKey() == key) {
+                return static_cast<unsigned int>(-1);
+            }
+            targetIndex = HashMapTablePolicy::WrapIndex(targetIndex + 1, mTableSize, 0);
+            searchLen++;
+        }
+        return targetIndex;
+    }
+
+    void PostFlightAdd(unsigned int targetIndex, unsigned int searchLen) {
+        mTable[targetIndex].SetSearchLength(searchLen);
+        if (searchLen > mWorstCollision) {
+            mWorstCollision = searchLen;
+        }
+        mNumEntries++;
+    }
+
+    void *Remove(Node *node, void *layoutptr, bool maintainTableInvariant) {
+        node->IsValid(); // useless but needed to match
+        Key key = node->GetKey();
+        void *result = node->GetPointer(layoutptr);
+        node->Invalidate();
+        mNumEntries--;
+
+        if (maintainTableInvariant) {
+            std::size_t actualIndex = HashMapTablePolicy::KeyIndex(key, mTableSize, mKeyShift);
+            std::size_t freedIndex = UpdateSearchLength(actualIndex, node - mTable);
+            while (freedIndex < mTableSize) {
+                freedIndex = UpdateSearchLength(freedIndex, freedIndex);
+            }
+        } else {
+            node->ResetSearchLength(0);
+        }
+        return result;
+    }
+
+    std::size_t UpdateSearchLength(std::size_t targetIndex, std::size_t freeIndex) {
+        // TODO it's out of line
     }
 
   private:

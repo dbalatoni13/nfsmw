@@ -13,11 +13,33 @@
 // Credit: Brawltendo
 namespace Attrib {
 
+// total size: 0x20
+class CollectionLoadData {
+  public:
+    // total size: 0xC
+    struct AttribEntry {
+        unsigned int mKey;         // offset 0x0, size 0x4
+        void *mData;               // offset 0x4, size 0x4
+        unsigned short mType;      // offset 0x8, size 0x2
+        unsigned char mNodeFlags;  // offset 0xA, size 0x1
+        unsigned char mEntryFlags; // offset 0xB, size 0x1
+    };
+
+    unsigned int mKey;           // offset 0x0, size 0x4
+    unsigned int mClass;         // offset 0x4, size 0x4
+    unsigned int mParent;        // offset 0x8, size 0x4
+    unsigned int mTableReserve;  // offset 0xC, size 0x4
+    unsigned int mTableKeyShift; // offset 0x10, size 0x4
+    unsigned int mNumEntries;    // offset 0x14, size 0x4
+    unsigned int mNumTypes;      // offset 0x18, size 0x4
+    void *mLayout;               // offset 0x1C, size 0x4
+};
+
 // total size: 0x2C
 class Collection {
   public:
     Collection(Class *aclass, const Collection *parent, Key k, unsigned int reserveSize);
-    Collection(const class CollectionLoadData &loadData, Vault *v);
+    Collection(const CollectionLoadData &loadData, Vault *v);
     // Unused
     Collection(const Collection &src, Key k);
     ~Collection();
@@ -27,20 +49,21 @@ class Collection {
     std::size_t Count() const;
     Key FirstKey(bool &inLayout) const;
     void SetParent(Key parent);
+    void FreeNodeData(bool isArray, void *data, bool requiresRelease, const TypeDesc &typeDesc);
     void Delete() const;
     Key NextKey(Key prev, bool &inLayout) const;
     bool Contains(Key k) const;
     bool AddAttribute(Key attributeKey, unsigned int count);
     bool RemoveAttribute(Key attributeKey);
     void Clear();
-    void Clean();
+    void Clean() const;
 
     void *operator new(std::size_t bytes) {
-        return Alloc(bytes, nullptr);
+        return Alloc(bytes, "Attrib::Collection");
     }
 
     void operator delete(void *ptr, std::size_t bytes) {
-        Free(ptr, bytes, nullptr);
+        Free(ptr, bytes, "Attrib::Collection");
     }
 
     void AddRef() const {
@@ -90,8 +113,16 @@ class Collection {
         return mLayout;
     }
 
+    std::size_t GetRefs() const {
+        return mRefCount;
+    }
+
     Key GetKey() const {
         return mKey;
+    }
+
+    void SetName(const char *nameptr) {
+        mNamePtr = nameptr;
     }
 
   private:
@@ -145,12 +176,16 @@ class ClassPrivate : public Class {
     ClassPrivate(const struct ClassLoadData &loadData, Vault *v);
 
     void operator delete(void *ptr, std::size_t bytes) {
-        Free(ptr, bytes, nullptr);
+        Free(ptr, bytes, "Attrib::ClassPrivate");
     }
 
     ~ClassPrivate() {
         mLayoutTable.ClearForRelease();
         mSource->Release();
+    }
+
+    std::size_t GetRefs() const {
+        return mRefCount;
     }
 
     HashMap mLayoutTable;           // offset 0xC, size 0x10
