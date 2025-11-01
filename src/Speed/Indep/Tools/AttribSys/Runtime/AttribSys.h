@@ -8,6 +8,8 @@
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Misc/AttribAlloc.h"
 
+#include <algorithm>
+
 // Credit: Brawltendo
 namespace Attrib {
 
@@ -45,9 +47,24 @@ class Definition;
 class DatabasePrivate;
 class ClassPrivate;
 class Collection;
+class ExportManager;
 class Vault;
 
-class ITypeHandler {};
+class ITypeHandler {
+  public:
+    virtual void *Retain(void *obj) = 0;
+    virtual void *Clone(void *obj) = 0;
+    virtual void Clean(void *obj) = 0;
+    virtual void Release(void *obj) = 0;
+};
+
+class IExportPolicy {
+  public:
+    virtual void Initialize(Vault &v, const unsigned int &type, const unsigned int &id, const char *name, void *data, std::size_t bytes);
+    virtual bool IsReferenced(const Vault &v, const unsigned int &type, const unsigned int &id);
+    virtual void Clean(Vault &v, const unsigned int &type, const unsigned int &id);
+    virtual void Deinitialize(Vault &v, const unsigned int &type, const unsigned int &id);
+};
 
 // total size: 0x14
 class TypeDesc {
@@ -72,6 +89,10 @@ class TypeDesc {
 
     unsigned int GetIndex() const {
         return mIndex;
+    }
+
+    ITypeHandler *GetHandler() const {
+        return mHandler;
     }
 
     bool operator<(const TypeDesc &rhs) const {
@@ -101,6 +122,8 @@ class ClassList : public std::list<const Class *> {};
 // total size: 0x8
 class Database {
   public:
+    static ExportManager &GetExportPolicies();
+
     Class *GetClass(Key k) const;
     bool AddClass(Class *c);
     void RemoveClass(Class *c);
@@ -118,7 +141,7 @@ class Database {
     }
 
     void operator delete(void *ptr, std::size_t bytes) {
-        Free(ptr, bytes, nullptr);
+        Free(ptr, bytes, "Attrib::Database");
     }
 
     bool IsInitialized() {
@@ -135,7 +158,77 @@ class Database {
 };
 
 class Array {
+#define Flag_AlignedAt16 (1 << 15)
   public:
+    // Returns the base location of this array's data
+    unsigned char *BasePointer() const {
+        return const_cast<unsigned char *>(data);
+    }
+
+    void *Data(std::size_t byteindex) const {
+        unsigned char *base = BasePointer(); // unused
+        return (void *)(data + GetPad() + byteindex);
+    }
+
+    bool IsReferences() const {
+        return mSize == 0;
+    }
+
+    unsigned short GetTypeIndex() const {
+        return mEncodedTypePad & 0x7fff;
+    }
+
+    const TypeDesc &GetTypeDesc() const {
+        return Database::Get().GetIndexedTypeDesc(GetTypeIndex());
+    }
+
+    std::size_t GetCount() const {
+        return mCount;
+    }
+
+    std::size_t GetElementSize() const {
+        if (IsReferences()) {
+            return sizeof(void *);
+        } else {
+            return mSize;
+        }
+    }
+
+    std::size_t GetAlloc() const {
+        return GetPad() + sizeof(*this) + mAlloc * GetElementSize();
+    }
+
+    std::size_t GetPad() const {
+        if (!(mEncodedTypePad & Flag_AlignedAt16)) {
+            return 0;
+        }
+        return sizeof(*this);
+    }
+
+    void *GetData(std::size_t index) const {
+        if (index < mCount) {
+            if (IsReferences()) {
+                return reinterpret_cast<void **>(Data(0))[index];
+            } else {
+                return Data(index * mSize);
+            }
+        } else {
+            return nullptr;
+        }
+    }
+
+    void SetData(std::size_t index, void *value) {
+        if (IsReferences()) {
+            ITypeHandler *typeHandler = GetTypeDesc().GetHandler();
+            typeHandler->Release(GetData(index));
+            reinterpret_cast<void **>(Data(0))[index] = typeHandler->Retain(value);
+        } else if (value) {
+            std::memcpy(GetData(index), value, mSize);
+        } else {
+            std::memset(GetData(index), 0, mSize);
+        }
+    }
+
     static Array *CreateInPlace(void *ptr, unsigned int t, unsigned int count, unsigned int allocSize) {
         const TypeDesc &desc = Database::Get().GetTypeDesc(t);
         unsigned short typeIndex = desc.GetIndex();
@@ -145,61 +238,46 @@ class Array {
         return new (ptr) Array(typesize, count, allocSize, typeIndex, align16);
     }
 
+    static void Destroy(Array *array) {
+        std::size_t allocSize = array->GetAlloc();
+        array->~Array();
+        Free(array, allocSize, "Attrib::Array");
+    }
+
+  private:
+    Array(std::size_t typesize, std::size_t count, std::size_t allocSize, std::size_t typeIndex, bool align16) {
+        mAlloc = allocSize;
+        mCount = count;
+        mSize = typesize;
+        mEncodedTypePad = typeIndex;
+        if (align16 && (typesize != 0)) {
+            mEncodedTypePad = typeIndex | Flag_AlignedAt16;
+        }
+        for (std::size_t i = 0; i < count; i++) {
+            SetData(i, nullptr);
+        }
+        if (IsReferences()) {
+            GetTypeDesc();
+        }
+    }
+
+    // TODO is this really overriden?
+    void operator delete(void *ptr) {}
+
+    ~Array() {
+        if (IsReferences()) {
+            ITypeHandler *typeHandler = GetTypeDesc().GetHandler();
+            void **ptrs = reinterpret_cast<void **>(Data(0));
+            for (std::size_t i = 0; i < mCount; i++) {
+                typeHandler->Release(ptrs[i]);
+            }
+        }
+    }
+
     void *operator new(std::size_t, void *ptr) {
         return ptr;
     }
 
-    Array(unsigned int typesize, unsigned int count, unsigned int allocSize, unsigned int typeIndex, bool align16) {
-        // TODO this exists out of line
-    }
-
-    ~Array() {
-        // TODO this exists out of line
-    }
-
-    // Returns the base location of this array's data
-    unsigned char *BasePointer() const {
-        return const_cast<unsigned char *>(data);
-    }
-
-    // TODO
-    void *Data(unsigned int byteindex, bool hack) const {
-        unsigned char *base = BasePointer();
-        // TODO use base?
-        if (hack) {
-            return (void *)(data + GetPad() + byteindex * 4);
-        }
-        return (void *)(data + GetPad() + byteindex);
-    }
-
-    bool IsReferences() const {
-        return mSize == 0;
-    }
-
-    std::size_t GetCount() const {
-        return mCount;
-    }
-
-    void *GetData(std::size_t index) const {
-        if (index < mCount) {
-            if (IsReferences()) {
-                return *reinterpret_cast<void **>(Data(index, true));
-            } else {
-                return Data(index * mSize, false);
-            }
-        } else {
-            return nullptr;
-        }
-    }
-
-    unsigned int GetPad() const {
-        if ((mEncodedTypePad & 0x8000) == 0) {
-            return 0;
-        }
-        return 8;
-    }
-
-  private:
     unsigned short mAlloc;
     unsigned short mCount;
     unsigned short mSize;
@@ -208,6 +286,7 @@ class Array {
 };
 
 // Credit: Brawltendo
+// total size: 0xC
 class Node {
   public:
     enum Flags {
@@ -219,6 +298,29 @@ class Node {
         Flag_IsByValue = 1 << 5,
         Flag_IsLocatable = 1 << 6,
     };
+
+    void *operator new(std::size_t, void *ptr) {
+        return ptr;
+    }
+
+    Node() {
+        mKey = 0;
+        mTypeIndex = 0;
+        mMax = 0;
+        mFlags = 0;
+        mPtr = this;
+    }
+
+    void Move(Node &src) {
+        mKey = src.mKey;
+        mTypeIndex = src.mTypeIndex;
+        mPtr = src.mPtr;
+        mFlags = src.mFlags;
+
+        src.mPtr = &src;
+        src.mFlags = 0;
+        src.mKey = 0;
+    }
 
     bool GetFlag(unsigned int mask) const {
         return mFlags & mask;
@@ -284,16 +386,29 @@ class Node {
         return 0;
     }
 
-    unsigned int MaxSearch() const {
-        return mMax;
-    }
-
     Key GetKey() const {
         return IsValid() ? mKey : 0;
     }
 
+    unsigned int MaxSearch() const {
+        return mMax;
+    }
+
+    void SetSearchLength(unsigned int searchLen) {
+        mMax = std::max(mMax, (unsigned char)searchLen);
+    }
+
+    void ResetSearchLength(unsigned int searchLen) {
+        mMax = searchLen;
+    }
+
     const TypeDesc &GetTypeDesc() const {
         return Database::Get().GetTypeDesc(mTypeIndex);
+    }
+
+    void Invalidate() {
+        mPtr = this;
+        mKey = 0;
     }
 
   private:
@@ -366,9 +481,10 @@ class Class {
 
   private:
     void operator delete(void *ptr, std::size_t bytes) {
-        Free(ptr, bytes, nullptr);
+        Free(ptr, bytes, "Attrib::Class");
     }
 
+  protected:
     Key mKey;                      // offset 0x0, size 0x4
     mutable std::size_t mRefCount; // offset 0x4, size 0x4
   public:
@@ -391,12 +507,7 @@ class RefSpec {
         Free(ptr, bytes, "RefSpec");
     }
 
-    RefSpec() 
-    : mClassKey(0)
-    , mCollectionKey(0)
-    , mCollectionPtr(nullptr) {
-        
-    }
+    RefSpec() : mClassKey(0), mCollectionKey(0), mCollectionPtr(nullptr) {}
 
     ~RefSpec() {
         if (mCollectionPtr) {
@@ -450,7 +561,7 @@ class Attribute {
     template <typename T> const T &Get(unsigned int index, T &result) const;
 
     void operator delete(void *ptr, std::size_t bytes) {
-        Free(ptr, bytes, nullptr);
+        Free(ptr, bytes, "Attrib::Attribute");
     }
 
     Key GetCollectionKey() const {
@@ -458,11 +569,11 @@ class Attribute {
     }
 
     const void *GetDataAddress() const {
-        return this->mDataPointer;
+        return mDataPointer;
     }
 
     Node *GetInternal() const {
-        return this->mInternal;
+        return mInternal;
     }
 
     bool Get(unsigned int index, RefSpec &result) {
@@ -491,6 +602,8 @@ class AttributeIterator {
   public:
     AttributeIterator(const Collection *c);
     bool Advance();
+
+    bool Valid() {}
 
   private:
     Key mCurrentKey;               // offset 0x0, size 0x4
@@ -531,7 +644,7 @@ class Instance {
     const void *GetAttributePointer(Key attribkey, unsigned int index) const;
 
     void operator delete(void *ptr, std::size_t bytes) {
-        Free(ptr, bytes, nullptr);
+        Free(ptr, bytes, "Attrib::Instance");
     }
 
     void *GetLayoutPointer() const {
@@ -547,13 +660,13 @@ class Instance {
     }
 
     void SetDefaultLayout(unsigned int bytes) {
-        if (this->mLayoutPtr == nullptr) {
-            this->mLayoutPtr = const_cast<void *>(DefaultDataArea(bytes));
+        if (mLayoutPtr == nullptr) {
+            mLayoutPtr = const_cast<void *>(DefaultDataArea(bytes));
         }
     }
 
     bool IsValid() const {
-        return this->mCollection != nullptr;
+        return mCollection != nullptr;
     }
 
     bool IsDynamic() const {
@@ -664,7 +777,7 @@ class Definition {
 template <typename t> class TAttrib : public Attribute {
   public:
     void operator delete(void *ptr, std::size_t bytes) {
-        Free(ptr, bytes, nullptr);
+        Free(ptr, bytes, "Attrib::TAttrib");
     }
 
     TAttrib(const Attribute &src) : Attribute(src) {}

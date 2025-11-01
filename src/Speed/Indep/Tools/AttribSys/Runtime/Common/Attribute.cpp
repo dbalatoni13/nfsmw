@@ -2,29 +2,17 @@
 
 namespace Attrib {
 
-Attribute::Attribute()
-: mInstance(nullptr)
-, mCollection(nullptr)
-, mInternal(nullptr)
-, mDataPointer(nullptr) {
-	
-}
+Attribute::Attribute() : mInstance(nullptr), mCollection(nullptr), mInternal(nullptr), mDataPointer(nullptr) {}
 
 Attribute::Attribute(const Attribute &src)
-: mInstance(src.mInstance)
-, mCollection(src.mCollection)
-, mInternal(src.mInternal)
-, mDataPointer(src.mDataPointer) {
+    : mInstance(src.mInstance), mCollection(src.mCollection), mInternal(src.mInternal), mDataPointer(src.mDataPointer) {
     if (mInstance) {
         mInstance->Lock();
     }
 }
 
 Attribute::Attribute(const Instance &instance, const Collection *collection, Node *node)
-: mInstance(&instance)
-, mCollection(collection)
-, mInternal(node)
-, mDataPointer(nullptr) {
+    : mInstance(&instance), mCollection(collection), mInternal(node), mDataPointer(nullptr) {
     if (node && !node->IsArray()) {
         mDataPointer = node->GetPointer(instance.GetLayoutPointer());
     }
@@ -73,13 +61,26 @@ const Collection *Attribute::GetCollection() const {
 }
 
 unsigned int Attribute::GetLength() const {
-    bool bVar1;
-    Array *pAVar3;
-
     if (mInternal) {
         return mInternal->GetCount(mInstance->GetLayoutPointer());
     }
     return 0;
+}
+
+void *Attribute::GetInternalPointer(unsigned int index) const {
+    if (!mInternal) {
+        return nullptr;
+    }
+
+    if (mInternal->IsArray()) {
+        return mInternal->GetArray(mInstance->GetLayoutPointer())->GetData(index);
+    } else {
+        if (index == 0) {
+            return mInternal->GetPointer(mInstance->GetLayoutPointer());
+        } else {
+            return nullptr;
+        }
+    }
 }
 
 }; // namespace Attrib

@@ -18,7 +18,13 @@ class AttribAlloc {
   public:
     static void *Allocate(std::size_t bytes, const char *name) {
         if (bytes != 0) {
-            return mAllocator->Allocate(bytes, name);
+            return mAllocator->Allocate(bytes,
+#if DEBUG
+                                        name
+#else
+                                        nullptr
+#endif
+            );
         } else {
             return nullptr;
         }
@@ -27,7 +33,13 @@ class AttribAlloc {
     static void Free(void *ptr, std::size_t bytes, const char *name) {
         // TODO is the check here or higher up in the chain?
         if (ptr && bytes != 0) {
-            mAllocator->Free(ptr, bytes, name);
+            mAllocator->Free(ptr, bytes,
+#if DEBUG
+                             name
+#else
+                             nullptr
+#endif
+            );
         }
     }
 
