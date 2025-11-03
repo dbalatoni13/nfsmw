@@ -76,13 +76,12 @@ float Physics::Info::InductionRPM(const engine &engine, const induction &inducti
 }
 
 // Credits: Brawltendo
-// UNSOLVED
 float Physics::Info::InductionBoost(const engine &engine, const induction &induction, float rpm, float spool, const Tunings *tunings, float *psi) {
     if (psi) {
         *psi = 0.0f;
     }
 
-    float spool_clamped = UMath::Clamp(spool, 0.0f, 1.0f);
+    spool = UMath::Clamp(spool, 0.0f, 1.0f);
     float rpm_min = engine.IDLE();
     float rpm_max = engine.RED_LINE();
     float induction_boost = 0.f;
@@ -93,37 +92,33 @@ float Physics::Info::InductionBoost(const engine &engine, const induction &induc
 
     if (high_boost > 0.0f || low_boost > 0.0f) {
         // tuning slider adjusts the induction boost bias
-        // -tuning will produce more boost in the low end, while +tuning produces more boost in the high end
+        // -tuning produces more low end boost, while +tuning produces more high end boost
         if (tunings) {
             float value = tunings->Value[Physics::Tunings::INDUCTION];
-            low_boost = low_boost - low_boost * value * 0.25f;
-            high_boost = (value * 0.25f + 1.0f) * high_boost;
+            low_boost  -= low_boost  * value * 0.25f;
+            high_boost += high_boost * value * 0.25f;
         }
 
         if (rpm >= spool_rpm) {
             float induction_ratio = UMath::Ramp(rpm, spool_rpm, rpm_max);
-            induction_boost = (1.0f - induction_ratio) * low_boost + induction_ratio * high_boost;
+            induction_boost = induction_ratio * high_boost + (1.0f - induction_ratio) * low_boost;
             if (psi) {
-                *psi = induction.PSI() * UMath::Ramp(induction_boost, 0.0f, UMath::Max(high_boost, low_boost)) * spool_clamped;
+                *psi = spool * induction.PSI() * UMath::Ramp(induction_boost, 0.0f, UMath::Max(high_boost, low_boost));
             }
         } else if (drag < 0.0f) {
-            // vacuum effect applies from the min RPM to the boost RPM
+            // apply vacuum effect when not in boost
             float drag_ratio = UMath::Ramp(rpm, rpm_min, spool_rpm);
             induction_boost = drag_ratio * drag;
             if (psi) {
-                *psi = -(induction.PSI() * UMath::Ramp(-induction_boost, 0.0f, UMath::Max(high_boost, low_boost)) * drag_ratio);
+                *psi = drag_ratio * -induction.PSI() * UMath::Ramp(-induction_boost, 0.0f, UMath::Max(high_boost, low_boost));
             }
         }
     }
-
-    // this has to be the dumbest non-match I've hit so far
-    // MSVC flips the multiplication order here (not that it matters functionally)
-    // no matter what I do, it will NOT do it the right way
-    return spool_clamped * induction_boost;
+    
+    return induction_boost * spool;
 }
 
 // Credits: Brawltendo
-// TODO Not matching on GC yet
 float Physics::Info::Torque(const Attrib::Gen::engine &engine, float rpm) {
     float rpm_min = engine.IDLE();
     float rpm_max = engine.MAX_RPM();
@@ -132,21 +127,26 @@ float Physics::Info::Torque(const Attrib::Gen::engine &engine, float rpm) {
     if (numpts > 1) {
         float ratio;
         unsigned int index = UTIL_InterprolateIndex(numpts - 1, rpm, rpm_min, rpm_max, ratio);
-        float torque = engine.TORQUE(index);
-        unsigned int secondIndex = UMath::Min(index + 1, numpts - 1);
-        return UMath::Lerp(torque, engine.TORQUE(secondIndex), ratio);
+        float power = engine.TORQUE(index);
+        unsigned int secondIndex = UMath::Min(numpts - 1, index + 1);
+        return UMath::Lerp(power, engine.TORQUE(secondIndex), ratio);
     }
 
     return 0.0f;
 }
 
 // Credits: Brawltendo
-// TODO Not matching on GC yet
 float Physics::Info::WheelDiameter(const tires &tires, bool front) {
     int axle = front ? 0 : 1;
-    // TODO INCH2METERS
-    return ((tires.ASPECT_RATIO().At(axle) * 0.01f) * tires.SECTION_WIDTH().At(axle)) * 0.002f + tires.RIM_SIZE().At(axle) * 0.0254f;
+    float diameter = INCH2METERS(tires.RIM_SIZE().At(axle));
+    return diameter + tires.SECTION_WIDTH().At(axle) * 0.001f * 2.0f * (tires.ASPECT_RATIO().At(axle) * 0.01f);
 }
+
+// float Physics::Info::MaxInductedTorque(const Attrib::Gen::pvehicle &pvehicle, float &atrpm, const Tunings *tunings) {
+// 	Attrib::Gen::engine engine(pvehicle.engine(), 0, NULL);
+// 	Attrib::Gen::induction induction(pvehicle.induction());
+// 	return MaxInductedTorque(engine, induction, atrpm, tunings);
+// }
 
 // Credits: Brawltendo
 // TODO not matching on GC yet
@@ -217,27 +217,24 @@ bool Physics::Info::ShiftPoints(const transmission &transmission, const engine &
 }
 
 // Credits: Brawltendo
-// TODO Not matching on GC yet
 float Physics::Info::Speedometer(const Attrib::Gen::transmission &transmission, const Attrib::Gen::engine &engine, const Attrib::Gen::tires &tires,
                                  float rpm, GearID gear, const Tunings *tunings) {
     float speed = 0.0f;
-    float gear_ratio = transmission.GEAR_RATIO(gear);
-    float total_ratio = transmission.FINAL_GEAR() * gear_ratio;
+    float gear_ratio = transmission.GEAR_RATIO(gear) * transmission.FINAL_GEAR();
     float power_range = engine.RED_LINE() - engine.IDLE();
-    total_ratio = UMath::Abs(total_ratio);
-    if (total_ratio > 0.0f && power_range > 0.0f) {
-        float wheelrear = WheelDiameter(tires, false);
-        float wheelfront = WheelDiameter(tires, true);
-        float avg_wheel_radius = ((wheelrear * 0.5f) + (wheelfront * 0.5f)) * 0.5f;
-        float rpm_min = engine.IDLE();
-        float rpm_max = engine.RED_LINE();
-        float clutch_rpm = (((rpm - rpm_min) / total_ratio) / power_range) * rpm_max;
-        speed = RPM2RPS(avg_wheel_radius * clutch_rpm);
+    gear_ratio = UMath::Abs(gear_ratio);
+    if (gear_ratio > 0.0f && power_range > 0.0f) {
+        float wheelrear = WheelDiameter(tires, false) * 0.5f;
+        float wheelfront = WheelDiameter(tires, true) * 0.5f;
+        float avg_wheel_radius = (wheelrear + wheelfront) * 0.5f;
+        float clutch_rpm = (rpm - engine.IDLE()) / gear_ratio / power_range * engine.RED_LINE();
+        speed = RPM2RPS(clutch_rpm) * avg_wheel_radius;
     }
+
     float limiter = MPH2MPS(engine.SPEED_LIMITER(0));
     if (limiter > 0.0f) {
-        return UMath::Min(speed, limiter);
-    } else {
-        return speed;
+        speed = UMath::Min(speed, limiter);
     }
+
+    return speed;
 }

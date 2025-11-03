@@ -86,6 +86,10 @@ struct pvehicle : Instance {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
+	pvehicle(const Instance &src) : Instance(src) {
+        this->SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
     ~pvehicle() {}
 
     void Change(const Collection *c) {

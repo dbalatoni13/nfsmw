@@ -42,7 +42,7 @@ class ISuspension : public UTL::COM::IUnknown {
     virtual const class SimSurface &GetWheelRoadSurface(unsigned int i) const;
     virtual const UMath::Vector3 &GetWheelVelocity(unsigned int i) const;
     virtual int GetNumWheelsOnGround() const;
-    virtual Radians GetWheelAngularVelocity(unsigned int wheelIndex) const;
+    virtual Radians GetWheelAngularVelocity(int index) const;
     virtual void SetWheelAngularVelocity(int wheel, float w);
     virtual float GetWheelSteer(unsigned int wheel) const;
     virtual float CalculateUndersteerFactor() const;
