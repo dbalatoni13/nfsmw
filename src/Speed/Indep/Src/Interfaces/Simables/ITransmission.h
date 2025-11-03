@@ -28,9 +28,9 @@ class ITransmission : public UTL::COM::IUnknown {
     virtual float GetSpeedometer() const;
     virtual float GetMaxSpeedometer() const;
     virtual float GetDriveTorque() const;
-    virtual float GetOptimalShiftRange(GearID to_gear) const;
     virtual float GetShiftPoint(GearID from_gear, GearID to_gear) const;
     virtual ShiftStatus GetShiftStatus() const;
+    virtual ShiftPotential GetShiftPotential() const;
 };
 
 class IDragTransmission : public UTL::COM::IUnknown {

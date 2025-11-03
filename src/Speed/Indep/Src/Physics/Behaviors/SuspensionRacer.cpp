@@ -877,9 +877,9 @@ SuspensionRacer::SuspensionRacer(const BehaviorParams &bp, const SuspensionParam
     GetOwner()->QueryInterface(&mTransmission);
     GetOwner()->QueryInterface(&mHumanAI);
     Sim::Collision::AddListener(this, GetOwner(), "SuspensionRacer");
-    // Register(this, 0);
-    // Register(this, 0);
-    // Register(this, 0);
+    // IAttributeable::Register(this, 0);
+    // IAttributeable::Register(this, 0);
+    // IAttributeable::Register(this, 0);
 
     for (int i = 0; i < 4; ++i) {
         mTires[i] = NULL;

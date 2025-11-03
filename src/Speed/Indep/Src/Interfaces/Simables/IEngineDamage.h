@@ -19,10 +19,10 @@ class IEngineDamage : public UTL::COM::IUnknown {
     virtual ~IEngineDamage() {}
 
   public:
-    virtual bool IsBlown();
+    virtual bool IsBlown() const;
     virtual bool Blow();
     virtual void Sabotage(float time);
-    virtual bool IsSabotaged();
+    virtual bool IsSabotaged() const;
     virtual void Repair();
 };
 

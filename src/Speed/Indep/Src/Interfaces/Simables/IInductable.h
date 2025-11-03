@@ -20,10 +20,10 @@ class IInductable : public UTL::COM::IUnknown {
     virtual ~IInductable() {}
 
   public:
-    virtual Physics::Info::eInductionType InductionType();
-    virtual float InductionSpool();
-    virtual float GetInductionPSI();
-    virtual float GetMaxInductionPSI();
+    virtual Physics::Info::eInductionType InductionType() const;
+    virtual float InductionSpool() const;
+    virtual float GetInductionPSI() const;
+    virtual float GetMaxInductionPSI() const;
 };
 
 #endif
