@@ -36,6 +36,21 @@ class IEngine : public UTL::COM::IUnknown {
     virtual float GetHorsePower() const;
 };
 
+class IDragEngine : public UTL::COM::IUnknown {
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+    IDragEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IDragEngine() {}
+
+  public:
+   virtual float GetOverRev() const;
+   virtual float GetHeat() const;
+};
+
 class IRaceEngine : public UTL::COM::IUnknown {
   public:
     static HINTERFACE _IHandle() {
