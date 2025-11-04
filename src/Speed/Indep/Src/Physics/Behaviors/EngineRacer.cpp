@@ -20,6 +20,8 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Generated/Events/EEngineBlown.hpp"
 #include "Speed/Indep/Src/Generated/Events/EPlayerShift.h"
+#include "Speed/Indep/Src/Generated/Events/EPerfectShift.h"
+#include "Speed/Indep/Src/Generated/Events/EMissShift.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
@@ -190,12 +192,7 @@ class EngineRacer : protected VehicleBehavior,
 
     // IEngineDamage
     override virtual bool IsBlown() const { return mBlown; }
-
-    override virtual void Repair() {
-        mBlown = false;
-        mSabotage = 0.0f;
-    }
-
+    override virtual void Repair() { mSabotage = 0.0f; mBlown = false; }
     override virtual bool IsSabotaged() const { return mSabotage > 0.0f; }
 
     // ITransmission
@@ -1106,8 +1103,7 @@ void EngineRacer::OnTaskSimulate(float dT) {
     mEngineBraking = total_engine_torque < 0.0f;
 
     if (mGear != G_NEUTRAL) {
-        switch (mClutch.GetState())
-        {
+        switch (mClutch.GetState()) {
             case Clutch::ENGAGED:
             {
                 mClutchRPMDiff = 0.0f;
@@ -1270,4 +1266,298 @@ float EngineRacer::GetShiftPoint(GearID from_gear, GearID to_gear) const {
     }
     
     return 0.0f;
+}
+
+
+
+// ----------------------------------------------------------------------------------------
+// EngineDragster
+// ----------------------------------------------------------------------------------------
+
+// total size: 0x1D8
+class EngineDragster : public EngineRacer,
+                    public IDragEngine,
+                    public IDragTransmission {
+  public:
+    // Methods
+    static Behavior *Construct(const BehaviorParams &params);
+
+    EngineDragster(const BehaviorParams &bp);
+    float CalcPotentialShiftBonus(float rpm, GearID gear, GearID nextgear) const;
+    void ComputeEngineHeat(float t);
+
+    // Overrides
+    override virtual ~EngineDragster() {}
+
+    // EngineRacer
+    override virtual ShiftStatus OnGearChange(GearID gear);
+    override virtual ShiftPotential UpdateShiftPotential(GearID gear, float rpm);
+    override virtual float GetEngineTorque(float rpm) const;
+
+    // Behavior
+    override virtual void Reset();
+    override virtual void OnTaskSimulate(float dT);
+    override virtual void OnBehaviorChange(const UCrc32 &mechanic);
+    
+    // IEngineDamage
+    override virtual void Repair();
+    override virtual bool Blow();
+
+    // Inline virtuals
+
+    // ITiptronic
+    // manumatic disabled because drag races are always in manual transmission mode
+    override virtual bool SportShift(GearID gear) { return false; }
+
+    // IDragTransmission
+    override virtual float GetShiftBoost() const {
+        if (!IsGearChanging() && mBoost > 0.0f) {
+            return UMath::Lerp(1.0f, 2.0f, mBoost / 3.0f * mPerfectShiftTime);
+        }
+        return 1.0f;
+    }
+
+    // IDragEngine
+    override virtual float GetOverRev() const { return mOverrev; }
+    override virtual float GetHeat() const { return UMath::Clamp(mHeat, 0.0f, 1.0f); }
+    
+    // EngineRacer
+    override virtual bool UseRevLimiter() const { return GetVehicle()->IsStaging() != false; }
+
+    // Inlines
+
+    float GetOptimalShiftRange(GearID to_gear) const {
+        return GetGearRatio(to_gear) * GetTransmissionData().OPTIMAL_SHIFT();
+    }
+
+  private:
+    float mPotentialBonus;     // offset 0x1C0, size 0x4
+    float mPerfectShiftTime;   // offset 0x1C4, size 0x4
+    float mBoost;              // offset 0x1C8, size 0x4
+    float mOverrev;            // offset 0x1CC, size 0x4
+    float mHeat;               // offset 0x1D0, size 0x4
+    ISuspension * mSuspension; // offset 0x1D4, size 0x4
+};
+
+EngineDragster::EngineDragster(const BehaviorParams &bp)
+: EngineRacer(bp)
+, IDragEngine(bp.fowner)
+, IDragTransmission(bp.fowner)
+, mPotentialBonus(0.0f)
+, mPerfectShiftTime(0.0f)
+, mBoost(0.0f)
+, mOverrev(0.0f)
+, mHeat(0.0f)
+, mSuspension(NULL) {
+    GetOwner()->QueryInterface(&mSuspension);
+}
+
+Behavior *EngineDragster::Construct(const BehaviorParams &params) {
+    return new EngineDragster(params);
+}
+
+void EngineDragster::Reset() {
+    EngineRacer::Reset();
+
+    mPotentialBonus = 0.0f;
+    mPerfectShiftTime = 0.0f;
+    mBoost = 0.0f;
+    mOverrev = 0.0f;
+}
+
+void EngineDragster::Repair() {
+    EngineRacer::Repair();
+    mHeat = 0.0f;
+}
+
+bool EngineDragster::Blow() {
+    if (EngineRacer::Blow()) {
+        mHeat = 1.0f;
+        return true;
+    }
+    
+    return false;
+}
+
+void EngineDragster::OnBehaviorChange(const UCrc32 &mechanic) {
+    EngineRacer::OnBehaviorChange(mechanic);
+
+    if (mechanic == BEHAVIOR_MECHANIC_SUSPENSION) {
+        GetOwner()->QueryInterface(&mSuspension);
+    }
+}
+
+float EngineDragster::GetEngineTorque(float rpm) const {
+    float result = EngineRacer::GetEngineTorque(rpm);
+    result *= GetShiftBoost();
+
+    if (mHeat > 0.0f && result > 0.0f && GetGear() > G_FIRST) {
+        float penalty = UMath::Ramp(mHeat, 0.0f, 0.6f);
+        result *= 1.0f - penalty * 0.75f;
+    }
+
+    return result;
+}
+
+void EngineDragster::OnTaskSimulate(float dT) {
+    mPotentialBonus = 0.0f;
+    EngineRacer::OnTaskSimulate(dT);
+    ComputeEngineHeat(dT);
+
+    if (mBoost > 0.0f && !IsGearChanging()) {
+        mPerfectShiftTime -= dT;
+        if (mPerfectShiftTime <= 0.0f) {
+            mPerfectShiftTime = 0.0f;
+            mBoost = 0.0f;
+        }
+    }
+
+    float red_line = GetRedline();
+    float max_rmp = GetMaxRPM();
+    float rpm = GetRPM();
+    if (rpm > red_line) {
+        float diff = max_rmp - red_line;
+        if (diff > 0.0f) {
+            mOverrev = UMath::Clamp((rpm - red_line) / diff, 0.0f, 1.0f);
+        }
+    } else {
+        mOverrev = 0.0f;
+    }
+}
+
+ShiftStatus EngineDragster::OnGearChange(GearID gear) {
+    if (gear == G_REVERSE) {
+        return SHIFT_STATUS_NONE;
+    }
+
+    if (GetVehicle()->IsStaging()) {
+        // at the starting line, only allow shifting into first gear or neutral
+        switch (gear) {
+            case G_FIRST:
+            case G_NEUTRAL:
+                return EngineRacer::OnGearChange(gear);
+            default:
+                return SHIFT_STATUS_NONE;
+        }
+    }
+
+    // AI vehicles don't receive shift bonuses and just shift normally
+    if (!GetOwner()->IsPlayer()) {
+        return EngineRacer::OnGearChange(gear);
+    }
+
+    GearID oldgear = GetGear();
+    ShiftPotential potential = GetShiftPotential();
+    mPerfectShiftTime = 0.0f;
+    mBoost = 0.0f;
+    ShiftStatus status = EngineRacer::OnGearChange(gear);
+    if (status != SHIFT_STATUS_NONE) {
+        if (gear > oldgear && oldgear > G_NEUTRAL) {
+            if (potential == SHIFT_POTENTIAL_PERFECT) {
+                mPerfectShiftTime = 3.0f;
+                mBoost = mPotentialBonus * 0.75f;
+                new EPerfectShift(GetOwner()->GetInstanceHandle(), mPotentialBonus);
+                return SHIFT_STATUS_PERFECT;
+            } else if (potential == SHIFT_POTENTIAL_MISS) {
+                new EMissShift(GetOwner()->GetInstanceHandle(), mPotentialBonus);
+                return SHIFT_STATUS_MISSED;
+            } else if (potential == SHIFT_POTENTIAL_GOOD) {
+                return SHIFT_STATUS_GOOD;
+            }
+        }
+    }
+
+    return status;
+}
+
+ShiftPotential EngineDragster::UpdateShiftPotential(GearID gear, float rpm) {
+    // AI vehicles don't receive shift bonuses and just shift normally
+    if (!GetOwner()->IsPlayer()) {
+        return EngineRacer::UpdateShiftPotential(gear, rpm);
+    }
+
+    rpm = GetRPM();
+    if (EngineRacer::UpdateShiftPotential(gear, rpm) == SHIFT_POTENTIAL_DOWN) {
+        return SHIFT_POTENTIAL_DOWN;
+    }
+    
+    if (GetVehicle()->IsStaging()) {
+        return SHIFT_POTENTIAL_NONE;
+    }
+    
+    int have_traction = 1;
+    if (gear == G_FIRST) {
+        for (int i = 0; i < 4; ++i) {
+            have_traction &= mSuspension->IsWheelOnGround(i) && mSuspension->GetWheelSlip(i) < 4.0f;
+        }
+    }
+
+    if (gear < GetTopGear() && gear > G_NEUTRAL && have_traction) {
+        GearID nextgear = (GearID)(gear + 1);
+        mPotentialBonus = CalcPotentialShiftBonus(rpm, gear, nextgear);
+        if (mPotentialBonus > 0.0f) {
+            return SHIFT_POTENTIAL_PERFECT;
+        } else if (mPotentialBonus < 0.0f) {
+            return SHIFT_POTENTIAL_MISS;
+        } else {
+            float good_shift = GetShiftUpRPM(gear) - GetOptimalShiftRange(nextgear) * 1.5f;
+            if (rpm > good_shift) {
+                return SHIFT_POTENTIAL_GOOD;
+            }
+        }
+    }
+
+    return SHIFT_POTENTIAL_NONE;
+}
+
+float EngineDragster::CalcPotentialShiftBonus(float rpm, GearID gear, GearID nextgear) const {
+    // AI vehicles don't receive shift bonuses
+    if (!GetOwner()->IsPlayer()
+    || gear >= nextgear
+    || gear == G_REVERSE
+    || nextgear <= G_NEUTRAL
+    || gear <= G_NEUTRAL
+    || nextgear > GetTopGear()) {
+        return 0.0f;
+    }
+
+    float redline = GetRedline();
+    if (rpm >= redline) {
+        return -1.0f;
+    }
+
+    float perfect_shift_point = GetShiftUpRPM(gear) - GetOptimalShiftRange(nextgear);
+    if (rpm >= perfect_shift_point) {
+        float bonus = UMath::Ramp(rpm, perfect_shift_point, redline);
+        return UMath::Lerp(1.0f, 0.5f, bonus);
+    }
+
+    return 0.0f;
+}
+
+void EngineDragster::ComputeEngineHeat(float t) {
+    if (GetVehicle()->IsStaging()) {
+        return;
+    }
+
+    if (GetVehicle()->GetDriverClass() != DRIVER_HUMAN) {
+        return;
+    }
+
+    IPlayer *player = GetOwner()->GetPlayer();
+    if (player && player->InGameBreaker()) {
+        return;
+    }
+
+    if (IsBlown()) {
+        return;
+    }
+
+    if (GetGear() != G_FIRST || mBoost <= 0.0f) {
+        float delta = mOverrev > 0.0f ? 0.45f : -0.1f;
+        mHeat = bMax(0.0f, delta * t + mHeat);
+        if (mHeat >= 1.0f && Blow()) {
+            mHeat = 1.0f;
+        }
+    }
 }
