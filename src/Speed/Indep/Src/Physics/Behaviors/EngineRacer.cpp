@@ -1274,6 +1274,20 @@ float EngineRacer::GetShiftPoint(GearID from_gear, GearID to_gear) const {
 // EngineDragster
 // ----------------------------------------------------------------------------------------
 
+static const float EngineHeatUpRedLine = 0.45f;
+static const float EngineHeatCoolDown = -0.1f;
+static const float EngineHeatBlownThreshold = 1.0f;
+static const float EngineHeatBlownFlag = 1.0f;
+static const float EngineHeatPenaltyThreshold = 0.6f;
+static const float EngineHeatTorquePenalty = 0.75f;
+static const float PerfectShiftSplit = 3.0f;
+static const float ShiftClutchPenalty = 0.0f;
+static const bool bUseReverseInDrag = false;
+static const float PerfectShiftBoost = 0.75f;
+static const float Tweak_GoodShiftRangeMult = 1.5f;
+static const bool Tweak_AllowAIPerfectShift = false;
+static const bool bNoEngineBlown = false;
+
 // total size: 0x1D8
 class EngineDragster : public EngineRacer,
                     public IDragEngine,
@@ -1312,7 +1326,7 @@ class EngineDragster : public EngineRacer,
     // IDragTransmission
     override virtual float GetShiftBoost() const {
         if (!IsGearChanging() && mBoost > 0.0f) {
-            return UMath::Lerp(1.0f, 2.0f, mBoost / 3.0f * mPerfectShiftTime);
+            return UMath::Lerp(1.0f, 2.0f, mBoost / PerfectShiftSplit * mPerfectShiftTime);
         }
         return 1.0f;
     }
@@ -1372,7 +1386,7 @@ void EngineDragster::Repair() {
 
 bool EngineDragster::Blow() {
     if (EngineRacer::Blow()) {
-        mHeat = 1.0f;
+        mHeat = EngineHeatBlownFlag;
         return true;
     }
     
@@ -1392,8 +1406,8 @@ float EngineDragster::GetEngineTorque(float rpm) const {
     result *= GetShiftBoost();
 
     if (mHeat > 0.0f && result > 0.0f && GetGear() > G_FIRST) {
-        float penalty = UMath::Ramp(mHeat, 0.0f, 0.6f);
-        result *= 1.0f - penalty * 0.75f;
+        float penalty = UMath::Ramp(mHeat, 0.0f, EngineHeatPenaltyThreshold);
+        result *= 1.0f - penalty * EngineHeatTorquePenalty;
     }
 
     return result;
@@ -1426,7 +1440,7 @@ void EngineDragster::OnTaskSimulate(float dT) {
 }
 
 ShiftStatus EngineDragster::OnGearChange(GearID gear) {
-    if (gear == G_REVERSE) {
+    if (!bUseReverseInDrag && gear == G_REVERSE) {
         return SHIFT_STATUS_NONE;
     }
 
@@ -1441,8 +1455,7 @@ ShiftStatus EngineDragster::OnGearChange(GearID gear) {
         }
     }
 
-    // AI vehicles don't receive shift bonuses and just shift normally
-    if (!GetOwner()->IsPlayer()) {
+    if (!Tweak_AllowAIPerfectShift && !GetOwner()->IsPlayer()) {
         return EngineRacer::OnGearChange(gear);
     }
 
@@ -1454,8 +1467,8 @@ ShiftStatus EngineDragster::OnGearChange(GearID gear) {
     if (status != SHIFT_STATUS_NONE) {
         if (gear > oldgear && oldgear > G_NEUTRAL) {
             if (potential == SHIFT_POTENTIAL_PERFECT) {
-                mPerfectShiftTime = 3.0f;
-                mBoost = mPotentialBonus * 0.75f;
+                mPerfectShiftTime = PerfectShiftSplit;
+                mBoost = mPotentialBonus * PerfectShiftBoost;
                 new EPerfectShift(GetOwner()->GetInstanceHandle(), mPotentialBonus);
                 return SHIFT_STATUS_PERFECT;
             } else if (potential == SHIFT_POTENTIAL_MISS) {
@@ -1471,8 +1484,7 @@ ShiftStatus EngineDragster::OnGearChange(GearID gear) {
 }
 
 ShiftPotential EngineDragster::UpdateShiftPotential(GearID gear, float rpm) {
-    // AI vehicles don't receive shift bonuses and just shift normally
-    if (!GetOwner()->IsPlayer()) {
+    if (!Tweak_AllowAIPerfectShift && !GetOwner()->IsPlayer()) {
         return EngineRacer::UpdateShiftPotential(gear, rpm);
     }
 
@@ -1500,7 +1512,7 @@ ShiftPotential EngineDragster::UpdateShiftPotential(GearID gear, float rpm) {
         } else if (mPotentialBonus < 0.0f) {
             return SHIFT_POTENTIAL_MISS;
         } else {
-            float good_shift = GetShiftUpRPM(gear) - GetOptimalShiftRange(nextgear) * 1.5f;
+            float good_shift = GetShiftUpRPM(gear) - GetOptimalShiftRange(nextgear) * Tweak_GoodShiftRangeMult;
             if (rpm > good_shift) {
                 return SHIFT_POTENTIAL_GOOD;
             }
@@ -1511,8 +1523,7 @@ ShiftPotential EngineDragster::UpdateShiftPotential(GearID gear, float rpm) {
 }
 
 float EngineDragster::CalcPotentialShiftBonus(float rpm, GearID gear, GearID nextgear) const {
-    // AI vehicles don't receive shift bonuses
-    if (!GetOwner()->IsPlayer()
+    if ((!Tweak_AllowAIPerfectShift && !GetOwner()->IsPlayer())
     || gear >= nextgear
     || gear == G_REVERSE
     || nextgear <= G_NEUTRAL
@@ -1554,10 +1565,10 @@ void EngineDragster::ComputeEngineHeat(float t) {
     }
 
     if (GetGear() != G_FIRST || mBoost <= 0.0f) {
-        float delta = mOverrev > 0.0f ? 0.45f : -0.1f;
+        float delta = mOverrev > 0.0f ? EngineHeatUpRedLine : EngineHeatCoolDown;
         mHeat = bMax(0.0f, delta * t + mHeat);
-        if (mHeat >= 1.0f && Blow()) {
-            mHeat = 1.0f;
+        if (mHeat >= EngineHeatBlownThreshold && Blow()) {
+            mHeat = EngineHeatBlownFlag;
         }
     }
 }
