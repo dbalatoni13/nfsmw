@@ -35,3 +35,7 @@
 #include "Speed/Indep/Src/Physics/Behaviors/SuspensionSpline.cpp"
 
 #include "Speed/Indep/Src/Physics/Behaviors/EngineRacer.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/EngineSpline.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/EngineTraffic.cpp"
