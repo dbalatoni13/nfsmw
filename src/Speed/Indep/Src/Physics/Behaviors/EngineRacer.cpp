@@ -188,7 +188,7 @@ class EngineRacer : protected VehicleBehavior,
     override virtual Physics::Info::eInductionType InductionType() const { return Physics::Info::InductionType(mInductionInfo); }
     override virtual float GetInductionPSI() const { return mPSI; }
     override virtual float InductionSpool() const { return mSpool; }
-    override virtual float GetMaxInductionPSI() const { return mInductionInfo.PSI();}
+    override virtual float GetMaxInductionPSI() const { return mInductionInfo.PSI(); }
 
     // IEngineDamage
     override virtual bool IsBlown() const { return mBlown; }
@@ -199,7 +199,7 @@ class EngineRacer : protected VehicleBehavior,
     override virtual float GetDriveTorque() const { return mDriveTorque; }
     override virtual GearID GetTopGear() const { return (GearID)(GetNumGearRatios() - 1); }
     override virtual GearID GetGear() const { return (GearID)mGear; }
-    override virtual bool IsGearChanging() const { return mGearShiftTimer > 0.0f;}
+    override virtual bool IsGearChanging() const { return mGearShiftTimer > 0.0f; }
 
     override virtual bool Shift(GearID gear) {
         return DoGearChange(gear, false);
