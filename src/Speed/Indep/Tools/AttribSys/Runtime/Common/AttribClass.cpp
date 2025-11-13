@@ -77,6 +77,8 @@ Key Class::GetNextCollection(Key prev) const {
     return 0;
 }
 
+void Class::SetTableBuffer(void *fixedAlloc, unsigned int bytes) {}
+
 std::size_t Class::GetTableNodeSize() const {
     return 12;
 }

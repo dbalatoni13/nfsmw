@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+#include <types.h>
+
 namespace Attrib {
 
 unsigned long long StringHash64(const char *k);
@@ -12,6 +14,12 @@ unsigned int StringHash32(const char *k);
 
 class StringKey {
   public:
+    StringKey() {
+        mHash64 = 0;
+        mHash32 = 0;
+        mString = "";
+    }
+
     StringKey(const char *str) {
         mHash64 = StringHash64(str);
         mHash32 = StringHash32(str);
@@ -39,6 +47,13 @@ class StringKey {
     unsigned long long mHash64; // offset 0x0, size 0x8
     unsigned int mHash32;       // offset 0x8, size 0x4
     const char *mString;        // offset 0xC, size 0x4
+};
+
+// total size: 0x4
+class StringKeyPtr {
+    static const StringKey gDefault;
+
+    const StringKey *mKey; // offset 0x0, size 0x4
 };
 
 } // namespace Attrib

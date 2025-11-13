@@ -119,6 +119,38 @@ void Collection::SetParent(Key parent) {
     }
 }
 
+bool Collection::RemoveAttribute(Key attributeKey) {
+    Node *node = mTable.Find(attributeKey);
+    if (node) {
+        bool isArray = node->IsArray();
+        bool releaseRequired = node->RequiresRelease();
+        const TypeDesc &typeDesc = node->GetTypeDesc();
+        void *data = mTable.Remove(node, mLayout, true);
+
+        if (node->IsLaidOut()) {
+            const Collection *container = nullptr;
+            Node *parentnode = GetNode(attributeKey, container);
+            if (parentnode) {
+                if (isArray) {
+                    *reinterpret_cast<Array *>(data) = *parentnode->GetArray(container->GetLayout());
+                } else {
+                    std::memcpy(data, parentnode->GetPointer(container->GetLayout()), typeDesc.GetSize());
+                }
+            } else {
+                if (isArray) {
+                    reinterpret_cast<Array *>(data)->SetCount(0);
+                } else {
+                    std::memset(data, 0, typeDesc.GetSize());
+                }
+            }
+        } else if (data) {
+            FreeNodeData(isArray, data, releaseRequired, typeDesc);
+        }
+        return true;
+    }
+    return false;
+}
+
 void Collection::Clear() {
     std::size_t index = mTable.GetNextValidIndex(-1);
     while (mTable.ValidIndex(index)) {

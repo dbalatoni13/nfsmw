@@ -14,7 +14,6 @@ const Collection *FindCollectionWithDefault(unsigned int classKey, unsigned int 
 unsigned int GetCollectionKey(const Collection *c);
 const Collection *GetCollectionParent(const Collection *c);
 unsigned int StringToLowerCaseKey(const char *str);
-unsigned int AdjustHashTableSize(unsigned int requiredSize);
 
 } // namespace Attrib
 

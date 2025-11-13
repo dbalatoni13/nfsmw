@@ -1,8 +1,12 @@
 #include <cstring>
 
+#include "../AttribHash.h"
 #include <types.h>
 
 namespace Attrib {
+
+// TODO move?
+const StringKey StringKeyPtr::gDefault = StringKey();
 
 static unsigned int hash32(const uint8_t *k, unsigned int length, unsigned int initval) {
     unsigned int len = length;

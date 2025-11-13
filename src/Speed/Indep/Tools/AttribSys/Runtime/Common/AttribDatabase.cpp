@@ -1,7 +1,8 @@
 #include "../AttribHash.h"
 #include "../AttribSys.h"
 #include "AttribPrivate.h"
-#include "dolphin/types.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribLoadAndGo.h"
+#include <types.h>
 
 namespace Attrib {
 
@@ -49,7 +50,13 @@ class ClassExportPolicy : public IExportPolicy {
     }
 
     // Inline overrides
-    override virtual void Initialize(Vault &v, const TypeID &type, const ExportID &id, const char *name, void *data, std::size_t bytes) {}
+    override virtual void Initialize(Vault &v, const TypeID &type, const ExportID &id, const char *name, void *data, std::size_t bytes) {
+        const ClassLoadData *loadData = reinterpret_cast<ClassLoadData *>(data);
+        if (!Database::Get().GetClass(loadData->mClass)) {
+            ClassPrivate *c = new ClassPrivate(*loadData, &v);
+            v.Export(id, c, 0);
+        }
+    }
 
     override virtual bool IsReferenced(const Vault &v, const TypeID &type, const ExportID &id) {
         std::size_t index = v.FindExportID(id);
@@ -124,12 +131,16 @@ class CollectionExportPolicy : public IExportPolicy {
 };
 
 Database *Database::sThis = nullptr;
-static unsigned int gDatabaseType;
+
+static unsigned int gDatabaseType = StringToTypeID("Attrib::DatabaseLoadData");
 static DatabaseExportPolicy *gDatabaseExportPolicy = nullptr;
-static unsigned int gClassType;
+
+static unsigned int gClassType = StringToTypeID("Attrib::ClassLoadData");
 static ClassExportPolicy *gClassExportPolicy = nullptr;
-static unsigned int gCollectionType;
+
+static unsigned int gCollectionType = StringToTypeID("Attrib::CollectionLoadData");
 static CollectionExportPolicy *gCollectionExportPolicy = nullptr;
+
 static ExportManager *gExportPolicies = nullptr;
 
 ExportManager &Database::GetExportPolicies() {

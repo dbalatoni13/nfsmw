@@ -1,6 +1,7 @@
 #ifndef ATTRIBSYS_ATTRIB_PRIVATE_H
 #define ATTRIBSYS_ATTRIB_PRIVATE_H
 
+#include "Speed/Indep/Src/Misc/AttribAlloc.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -148,12 +149,45 @@ class Private {
     unsigned char mData[8];
 };
 
+// total size: 0x1C
+class ClassLoadData {
+  public:
+    Key mClass;               // offset 0x0, size 0x4
+    Key mCollectionReserve;   // offset 0x4, size 0x4
+    Key mNumDefinitions;      // offset 0x8, size 0x4
+    Definition *mDefinitions; // offset 0xC, size 0x4
+    Key mLayoutSize;          // offset 0x10, size 0x4
+    Key mLayoutKeyShift;      // offset 0x14, size 0x4
+    Key mLayoutCount;         // offset 0x18, size 0x4
+};
+
 // total size: 0x3C
 class ClassPrivate : public Class {
   public:
+    ClassPrivate(const ClassLoadData &loadData, Vault *v)
+        : Class(loadData.mClass, *this), mLayoutTable(loadData.mLayoutCount, loadData.mLayoutKeyShift, true),
+          mCollections(loadData.mCollectionReserve), mLayoutSize(loadData.mLayoutSize), mNumDefinitions(loadData.mNumDefinitions),
+          mDefinitions(loadData.mDefinitions), mSource(v) {
+        mSource->AddRef();
+
+        for (std::size_t d = 0; d < mPrivates.mNumDefinitions; d++) {
+            Definition &def = mPrivates.mDefinitions[d];
+            if (def.InLayout() && !def.IsNotSearchable()) {
+                unsigned char flags = Node::Flag_IsLaidOut;
+                if (def.IsArray()) {
+                    flags |= Node::Flag_IsArray;
+                }
+                mPrivates.mLayoutTable.Add(def.GetKey(), def.GetType(), (void *)def.GetOffset(), false, flags, true, nullptr);
+            }
+        }
+        mNamePtr = nullptr;
+    }
+
     // total size: 0x10
     class CollectionHashMap : public VecHashMap<unsigned int, Attrib::Collection, Attrib::Class::TablePolicy, true, 40> {
       public:
+        CollectionHashMap(std::size_t reserve) : VecHashMap<unsigned int, Attrib::Collection, Attrib::Class::TablePolicy, true, 40>(reserve) {}
+
         ~CollectionHashMap();
 
         unsigned int GetNextValidIndex(unsigned int startPoint) const {
@@ -172,8 +206,9 @@ class ClassPrivate : public Class {
         }
     };
 
-    // TODO this is inline
-    ClassPrivate(const struct ClassLoadData &loadData, Vault *v);
+    void *operator new(std::size_t bytes) {
+        return Alloc(bytes, "Attrib::ClassPrivate");
+    }
 
     void operator delete(void *ptr, std::size_t bytes) {
         Free(ptr, bytes, "Attrib::ClassPrivate");
@@ -198,7 +233,11 @@ class ClassPrivate : public Class {
 };
 
 // total size: 0x10
-class ClassTable : public VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16> {};
+class ClassTable : public VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16> {
+  public:
+    // TODO capacity * ?
+    ClassTable(std::size_t capacity) : VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16>(capacity) {}
+};
 
 // total size: 0x4C
 class DatabasePrivate : public Database {
@@ -256,7 +295,7 @@ class DatabasePrivate : public Database {
 
 template <typename T> Key ScanForValidKey(const T &v, std::size_t index) {
     index = v.GetNextValidIndex(index);
-    // (void)v.ValidIndex(index); // TODO how to get it to be here instead of GetKeyAtIndex?
+    // (void)v.ValidIndex(index); // TODO how to get it to be here instead of in GetKeyAtIndex?
     return v.GetKeyAtIndex(index);
 }
 

@@ -23,6 +23,7 @@ void AllocationAccounting(std::size_t bytes, bool add);
 Key RegisterString(const char *str);
 const char *KeyToString(Key k);
 Key StringToKey(const char *str);
+std::size_t AdjustHashTableSize(std::size_t requiredSize);
 
 // Rotates (v) by (amount) bits
 // TODO probably not in this namespace
@@ -32,12 +33,26 @@ inline unsigned int RotateNTo32(unsigned int v, unsigned int amount) {
 
 inline void *Alloc(std::size_t bytes, const char *name) {
     AllocationAccounting(bytes, true);
-    return AttribAlloc::Allocate(bytes, name);
+    if (bytes != 0) {
+        return AttribAlloc::Allocate(bytes, name);
+    } else {
+        return nullptr;
+    }
 }
 
 inline void Free(void *ptr, std::size_t bytes, const char *name) {
     AllocationAccounting(bytes, false);
-    AttribAlloc::Free(ptr, bytes, name);
+    if (ptr && bytes != 0) {
+        AttribAlloc::Free(ptr, bytes, name);
+    }
+}
+
+inline void *TableAllocFunc(std::size_t bytes) {
+    return AttribAlloc::Allocate(bytes, "Attrib::CollectionHashMap");
+}
+
+inline void TableFreeFunc(void *ptr, std::size_t bytes) {
+    AttribAlloc::Free(ptr, bytes, "Attrib::CollectionHashMap");
 }
 
 class Instance;
@@ -71,13 +86,7 @@ class TypeDesc {
   public:
     static ITypeHandler *Lookup(unsigned int t);
 
-    TypeDesc(unsigned int t) {
-        mType = t;
-        mName = nullptr;
-        mSize = 0;
-        mIndex = 0;
-        mHandler = Lookup(t);
-    }
+    TypeDesc(unsigned int t) : mType(t), mName(nullptr), mSize(0), mIndex(0), mHandler(Lookup(t)) {}
 
     unsigned int GetType() const {
         return mType;
@@ -87,7 +96,7 @@ class TypeDesc {
         return mSize;
     }
 
-    unsigned int GetIndex() const {
+    unsigned short GetIndex() const {
         return mIndex;
     }
 
@@ -186,6 +195,20 @@ class Array {
         return mCount;
     }
 
+    bool SetCount(std::size_t newCount) {
+        if (newCount > mAlloc) {
+            return false;
+        } else {
+            if (IsReferences()) {
+                for (std::size_t i = mCount; i < newCount; i++) {
+                    SetData(i, nullptr);
+                }
+            }
+            mCount = newCount;
+            return true;
+        }
+    }
+
     std::size_t GetElementSize() const {
         if (IsReferences()) {
             return sizeof(void *);
@@ -196,6 +219,21 @@ class Array {
 
     std::size_t GetAlloc() const {
         return GetPad() + sizeof(*this) + mAlloc * GetElementSize();
+    }
+
+    const Array &operator=(const Array &rhs) {
+        for (unsigned int i = 0; i < mCount; i++) {
+            SetData(i, nullptr);
+        }
+
+        mAlloc = rhs.mAlloc;
+        mCount = rhs.mCount;
+        mSize = rhs.mSize;
+        mEncodedTypePad = rhs.mEncodedTypePad;
+
+        for (unsigned int i = 0; i < mCount; i++) {
+            SetData(i, rhs.GetData(i));
+        }
     }
 
     std::size_t GetPad() const {
@@ -303,12 +341,15 @@ class Node {
         return ptr;
     }
 
-    Node() {
-        mKey = 0;
-        mTypeIndex = 0;
-        mMax = 0;
-        mFlags = 0;
-        mPtr = this;
+    Node() : mKey(0), mTypeIndex(0), mMax(0), mFlags(0), mPtr(this) {}
+
+    Node(Key key, unsigned int type, void *ptr, bool ptrIsRaw, unsigned char flags, void *layoutptr)
+        : mKey(key), mPtr(ptr), mTypeIndex(Database::Get().GetTypeDesc(type).GetIndex()), mFlags(flags) {
+        if (ptrIsRaw) {
+            if (mFlags & Flag_IsLaidOut || mFlags & Flag_IsByValue) {
+                mPtr = (void *)((uintptr_t)ptr - (uintptr_t)layoutptr);
+            }
+        }
     }
 
     void Move(Node &src) {
@@ -390,20 +431,20 @@ class Node {
         return IsValid() ? mKey : 0;
     }
 
-    unsigned int MaxSearch() const {
+    std::size_t MaxSearch() const {
         return mMax;
     }
 
-    void SetSearchLength(unsigned int searchLen) {
+    void SetSearchLength(std::size_t searchLen) {
         mMax = std::max(mMax, (unsigned char)searchLen);
     }
 
-    void ResetSearchLength(unsigned int searchLen) {
+    void ResetSearchLength(std::size_t searchLen) {
         mMax = searchLen;
     }
 
     const TypeDesc &GetTypeDesc() const {
-        return Database::Get().GetTypeDesc(mTypeIndex);
+        return Database::Get().GetIndexedTypeDesc(mTypeIndex);
     }
 
     void Invalidate() {
@@ -436,6 +477,23 @@ class Class {
         static unsigned int WrapIndex(unsigned int index, unsigned int tableSize, unsigned int keyShift) {
             return index % tableSize; // TODO
         }
+
+        static std::size_t TableSize(std::size_t entries) {
+            return AdjustHashTableSize(entries);
+        }
+
+        static std::size_t GrowRequest(std::size_t currententries, bool collisionoverrun) {
+            // TODO handle collisionoverrun
+            return (((currententries * 0x14) >> 4) + 3) & 0x1FFFFFFC;
+        }
+
+        static void *Alloc(std::size_t bytes) {
+            return TableAllocFunc(bytes);
+        }
+
+        static void Free(void *ptr, std::size_t bytes) {
+            TableFreeFunc(ptr, bytes);
+        }
     };
 
     Class(Key k, ClassPrivate &privates);
@@ -452,6 +510,7 @@ class Class {
     std::size_t GetNumCollections() const;
     Key GetFirstCollection() const;
     Key GetNextCollection(Key prev) const;
+    void SetTableBuffer(void *fixedAlloc, unsigned int bytes);
     std::size_t GetTableNodeSize() const;
     void CopyLayout(void *srcLayout, void *dstLayout) const;
     void FreeLayout(void *layout) const;

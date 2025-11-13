@@ -95,6 +95,10 @@ class Vault {
         return mRefCount == 0;
     }
 
+    void AddRef() const {
+        mRefCount++;
+    }
+
   private:
     mutable unsigned int mRefCount; // offset 0x0, size 0x4
     ExportManager &mExportMgr;      // offset 0x4, size 0x4

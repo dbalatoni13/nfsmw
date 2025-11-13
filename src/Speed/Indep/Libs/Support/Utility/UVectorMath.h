@@ -211,7 +211,7 @@ inline void VU0_MATRIX4Init(UMath::Matrix4 &dest, const float xx, const float yy
     dest[1][1] = yy;
     dest[0][0] = xx;
     dest[3][3] = 1.0f;
-    
+
     // TODO UNSOLVED
     dest[3][2] = 0.0f;
     dest[3][1] = 0.0f;
@@ -263,5 +263,13 @@ inline void VU0_v4unit(const UMath::Vector4 &a, UMath::Vector4 &result) {
     float rlen = VU0_rsqrt(VU0_v4lengthsquare(a));
     VU0_v4scale(a, rlen, result);
 }
+
+inline float IntAsFloat(const int &i) {
+    return *reinterpret_cast<const float *>(&i);
+}
+
+// TODO where to put these? TODO only one of them uses IntAsFloat actually
+static const float kFloatScaleUp = IntAsFloat(0x7E800000);
+static const float kFloatScaleDown = IntAsFloat(0x80000000);
 
 #endif

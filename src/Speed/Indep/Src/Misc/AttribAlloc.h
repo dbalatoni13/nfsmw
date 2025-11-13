@@ -17,30 +17,23 @@ class IAttribAllocator {
 class AttribAlloc {
   public:
     static void *Allocate(std::size_t bytes, const char *name) {
-        if (bytes != 0) {
-            return mAllocator->Allocate(bytes,
+        return mAllocator->Allocate(bytes,
 #if DEBUG
-                                        name
+                                    name
 #else
-                                        nullptr
+                                    nullptr
 #endif
-            );
-        } else {
-            return nullptr;
-        }
+        );
     }
 
     static void Free(void *ptr, std::size_t bytes, const char *name) {
-        // TODO is the check here or higher up in the chain?
-        if (ptr && bytes != 0) {
-            mAllocator->Free(ptr, bytes,
+        mAllocator->Free(ptr, bytes,
 #if DEBUG
-                             name
+                         name
 #else
-                             nullptr
+                         nullptr
 #endif
-            );
-        }
+        );
     }
 
   private:

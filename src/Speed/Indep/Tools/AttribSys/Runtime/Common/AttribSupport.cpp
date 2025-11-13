@@ -62,8 +62,9 @@ unsigned int StringToLowerCaseKey(const char *str) {
     return StringToKey(temp);
 }
 
-unsigned int AdjustHashTableSize(unsigned int requiredSize) {
-    unsigned int result;
+std::size_t AdjustHashTableSize(std::size_t requiredSize) {
+    std::size_t result = requiredSize;
+    return result;
 }
 
 unsigned int Private::GetLength() const {
