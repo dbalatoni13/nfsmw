@@ -35,8 +35,11 @@ class HashMap {
         }
 
         static std::size_t GrowRequest(std::size_t currententries, bool collisionoverflow) {
-            // TODO handle collisionoverflow
-            return (((currententries * 0x14) >> 4) + 3) & 0x1FFFFFFC;
+            if (collisionoverflow) {
+                return (currententries * 20 / 16 + 3) & 0xFFFFFFFC;
+            } else {
+                return (currententries * 20 / 16 + 3) & 0x1FFFFFFC;
+            }
         }
     };
 
@@ -186,6 +189,10 @@ class HashMap {
             node->ResetSearchLength(0);
         }
         return result;
+    }
+
+    unsigned int CountSearchCacheLines(Key key, unsigned int lineSize) {
+        // TODO
     }
 
   private:

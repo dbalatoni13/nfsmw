@@ -77,7 +77,9 @@ Key Class::GetNextCollection(Key prev) const {
     return 0;
 }
 
-void Class::SetTableBuffer(void *fixedAlloc, unsigned int bytes) {}
+void Class::SetTableBuffer(void *fixedAlloc, std::size_t bytes) {
+    mPrivates.mCollections.SetTableBuffer(fixedAlloc, bytes);
+}
 
 std::size_t Class::GetTableNodeSize() const {
     return 12;
@@ -85,6 +87,14 @@ std::size_t Class::GetTableNodeSize() const {
 
 void Class::Delete() const {
     delete &mPrivates;
+}
+
+bool Class::AddCollection(Collection *c) {
+    return mPrivates.mCollections.Add(c->GetKey(), c);
+}
+
+bool Class::RemoveCollection(Collection *c) {
+    return mPrivates.mCollections.Remove(c->GetKey());
 }
 
 void *Class::AllocLayout() const {

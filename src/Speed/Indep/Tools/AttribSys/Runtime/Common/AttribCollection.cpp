@@ -40,6 +40,28 @@ Collection::~Collection() {
     }
 }
 
+Node *Collection::GetNode(Key attributeKey, const Collection *&container) const {
+    const Collection *c = this;
+    while (c) {
+        Node *node = c->mTable.Find(attributeKey);
+        if (node) {
+            container = c;
+            return node;
+        }
+        c = c->mParent;
+    }
+
+    if (mLayout) {
+        Node *node = mClass->mPrivates.mLayoutTable.Find(attributeKey);
+        if (node) {
+            container = this;
+            return node;
+        }
+    }
+    container = nullptr;
+    return nullptr;
+}
+
 Attribute Collection::Get(const Instance &instance, Key attributeKey) const {
     const Collection *c;
     Node *node = GetNode(attributeKey, c);

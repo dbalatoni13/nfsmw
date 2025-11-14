@@ -135,7 +135,7 @@ class Database {
 
     Class *GetClass(Key k) const;
     bool AddClass(Class *c);
-    void RemoveClass(Class *c);
+    void RemoveClass(const Class *c);
     Class *GetClass(unsigned int k);
     void Delete(const Collection *c);
     void Delete(const Class *c);
@@ -168,8 +168,7 @@ class Database {
 
 class Array {
 #define Flag_AlignedAt16 (1 << 15)
-  public:
-    // Returns the base location of this array's data
+  private: // Returns the base location of this array's data
     unsigned char *BasePointer() const {
         return const_cast<unsigned char *>(data);
     }
@@ -179,46 +178,9 @@ class Array {
         return (void *)(data + GetPad() + byteindex);
     }
 
-    bool IsReferences() const {
-        return mSize == 0;
-    }
-
-    unsigned short GetTypeIndex() const {
-        return mEncodedTypePad & 0x7fff;
-    }
-
-    const TypeDesc &GetTypeDesc() const {
-        return Database::Get().GetIndexedTypeDesc(GetTypeIndex());
-    }
-
-    std::size_t GetCount() const {
-        return mCount;
-    }
-
-    bool SetCount(std::size_t newCount) {
-        if (newCount > mAlloc) {
-            return false;
-        } else {
-            if (IsReferences()) {
-                for (std::size_t i = mCount; i < newCount; i++) {
-                    SetData(i, nullptr);
-                }
-            }
-            mCount = newCount;
-            return true;
-        }
-    }
-
-    std::size_t GetElementSize() const {
-        if (IsReferences()) {
-            return sizeof(void *);
-        } else {
-            return mSize;
-        }
-    }
-
-    std::size_t GetAlloc() const {
-        return GetPad() + sizeof(*this) + mAlloc * GetElementSize();
+  public:
+    void SetTypeIndex(unsigned short typeIndex) {
+        typeIndex = typeIndex;
     }
 
     const Array &operator=(const Array &rhs) {
@@ -236,11 +198,57 @@ class Array {
         }
     }
 
+    bool IsReferences() const {
+        return mSize == 0;
+    }
+
+    unsigned short GetTypeIndex() const {
+        return mEncodedTypePad & 0x7fff;
+    }
+
+    std::size_t GetTypeSize() const {
+        // TODO
+    }
+
+    std::size_t GetElementSize() const {
+        if (IsReferences()) {
+            return sizeof(void *);
+        } else {
+            return mSize;
+        }
+    }
+
+    std::size_t GetAlloc() const {
+        return GetPad() + sizeof(*this) + mAlloc * GetElementSize();
+    }
+
+    std::size_t GetCount() const {
+        return mCount;
+    }
+
     std::size_t GetPad() const {
         if (!(mEncodedTypePad & Flag_AlignedAt16)) {
             return 0;
         }
         return sizeof(*this);
+    }
+
+    const TypeDesc &GetTypeDesc() const {
+        return Database::Get().GetIndexedTypeDesc(GetTypeIndex());
+    }
+
+    bool SetCount(std::size_t newCount) {
+        if (newCount > mAlloc) {
+            return false;
+        } else {
+            if (IsReferences()) {
+                for (std::size_t i = mCount; i < newCount; i++) {
+                    SetData(i, nullptr);
+                }
+            }
+            mCount = newCount;
+            return true;
+        }
     }
 
     void *GetData(std::size_t index) const {
@@ -470,11 +478,11 @@ class Class {
   public:
     class TablePolicy {
       public:
-        static unsigned int KeyIndex(unsigned int k, unsigned int tableSize, unsigned int keyShift) {
+        static std::size_t KeyIndex(std::size_t k, std::size_t tableSize, unsigned int keyShift) {
             return RotateNTo32(k, keyShift) % tableSize;
         }
 
-        static unsigned int WrapIndex(unsigned int index, unsigned int tableSize, unsigned int keyShift) {
+        static std::size_t WrapIndex(std::size_t index, std::size_t tableSize, unsigned int keyShift) {
             return index % tableSize; // TODO
         }
 
@@ -483,8 +491,11 @@ class Class {
         }
 
         static std::size_t GrowRequest(std::size_t currententries, bool collisionoverrun) {
-            // TODO handle collisionoverrun
-            return (((currententries * 0x14) >> 4) + 3) & 0x1FFFFFFC;
+            if (collisionoverrun) {
+                return (currententries * 20 / 16 + 3) & 0xFFFFFFFC;
+            } else {
+                return (currententries * 20 / 16 + 3) & 0x1FFFFFFC;
+            }
         }
 
         static void *Alloc(std::size_t bytes) {
@@ -510,7 +521,7 @@ class Class {
     std::size_t GetNumCollections() const;
     Key GetFirstCollection() const;
     Key GetNextCollection(Key prev) const;
-    void SetTableBuffer(void *fixedAlloc, unsigned int bytes);
+    void SetTableBuffer(void *fixedAlloc, std::size_t bytes);
     std::size_t GetTableNodeSize() const;
     void CopyLayout(void *srcLayout, void *dstLayout) const;
     void FreeLayout(void *layout) const;
@@ -538,16 +549,17 @@ class Class {
         mRefCount++;
     }
 
-  private:
+    // TODO private? how?
     void operator delete(void *ptr, std::size_t bytes) {
         Free(ptr, bytes, "Attrib::Class");
     }
 
   protected:
+    // TODO private according to PS2 debug
     Key mKey;                      // offset 0x0, size 0x4
     mutable std::size_t mRefCount; // offset 0x4, size 0x4
   public:
-    // TODO how does Collection::Count access this without an inline?
+    // TODO how does Collection::Count access this without an inline? private according to PS2 debug
     ClassPrivate &mPrivates; // offset 0x8, size 0x4
 };
 

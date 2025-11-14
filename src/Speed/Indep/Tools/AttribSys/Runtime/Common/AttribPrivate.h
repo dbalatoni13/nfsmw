@@ -26,6 +26,10 @@ class CollectionLoadData {
         unsigned char mEntryFlags; // offset 0xB, size 0x1
     };
 
+    const unsigned int *GetTypes() const {}
+
+    const AttribEntry *GetEntries() const {}
+
     unsigned int mKey;           // offset 0x0, size 0x4
     unsigned int mClass;         // offset 0x4, size 0x4
     unsigned int mParent;        // offset 0x8, size 0x4
@@ -298,6 +302,9 @@ template <typename T> Key ScanForValidKey(const T &v, std::size_t index) {
     // (void)v.ValidIndex(index); // TODO how to get it to be here instead of in GetKeyAtIndex?
     return v.GetKeyAtIndex(index);
 }
+
+// TODO WHERE IS THIS??
+ClassPrivate::CollectionHashMap::~CollectionHashMap() {}
 
 } // namespace Attrib
 

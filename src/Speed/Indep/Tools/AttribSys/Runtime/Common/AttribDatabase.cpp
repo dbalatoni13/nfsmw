@@ -209,6 +209,14 @@ void Database::CollectGarbage() {
     }
 }
 
+bool Database::AddClass(Class *c) {
+    return mPrivates.mClasses.Add(c->GetKey(), c);
+}
+
+void Database::RemoveClass(const Class *c) {
+    mPrivates.mClasses.Remove(c->GetKey());
+}
+
 void Database::DumpContents(unsigned int classFilter) const {}
 
 void PrepareToAddStrings(unsigned int numstrings) {}
