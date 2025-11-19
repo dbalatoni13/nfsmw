@@ -136,7 +136,6 @@ class Database {
     Class *GetClass(Key k) const;
     bool AddClass(Class *c);
     void RemoveClass(const Class *c);
-    Class *GetClass(unsigned int k);
     void Delete(const Collection *c);
     void Delete(const Class *c);
     void CollectGarbage();
@@ -180,7 +179,7 @@ class Array {
 
   public:
     void SetTypeIndex(unsigned short typeIndex) {
-        typeIndex = typeIndex;
+        mEncodedTypePad = typeIndex | (mEncodedTypePad & 0x8000);
     }
 
     const Array &operator=(const Array &rhs) {
@@ -275,13 +274,29 @@ class Array {
         }
     }
 
-    static Array *CreateInPlace(void *ptr, unsigned int t, unsigned int count, unsigned int allocSize) {
+    static Array *CreateInPlace(void *ptr, unsigned int t, std::size_t count, std::size_t allocSize) {
         const TypeDesc &desc = Database::Get().GetTypeDesc(t);
         unsigned short typeIndex = desc.GetIndex();
         unsigned int typesize = desc.GetSize();
         bool align16 = typesize > 15;
 
         return new (ptr) Array(typesize, count, allocSize, typeIndex, align16);
+    }
+
+    static Array *Create(unsigned int t, std::size_t count) {
+        const TypeDesc &desc = Database::Get().GetTypeDesc(t);
+        unsigned short typeIndex = desc.GetIndex();
+        unsigned int typesize = desc.GetSize();
+        bool align16 = typesize > 15;
+        std::size_t actualtypesize = typesize;
+        if (typesize == 0) {
+            actualtypesize = 4;
+        }
+        unsigned int overhead = align16 ? 16 : 8;
+        std::size_t allocSize = (((overhead + (actualtypesize * count) + 63) & ~63) - overhead) / actualtypesize;
+        std::size_t allocBytes = overhead + allocSize * actualtypesize;
+
+        return new (Alloc(allocBytes, "Attrib::Array")) Array(typesize, count, allocSize, typeIndex, align16);
     }
 
     static void Destroy(Array *array) {
@@ -353,10 +368,8 @@ class Node {
 
     Node(Key key, unsigned int type, void *ptr, bool ptrIsRaw, unsigned char flags, void *layoutptr)
         : mKey(key), mPtr(ptr), mTypeIndex(Database::Get().GetTypeDesc(type).GetIndex()), mFlags(flags) {
-        if (ptrIsRaw) {
-            if (mFlags & Flag_IsLaidOut || mFlags & Flag_IsByValue) {
-                mPtr = (void *)((uintptr_t)ptr - (uintptr_t)layoutptr);
-            }
+        if (ptrIsRaw && IsLaidOut()) {
+            mPtr = (void *)((uintptr_t)ptr - (uintptr_t)layoutptr);
         }
     }
 
@@ -825,6 +838,10 @@ class Definition {
 
     unsigned int GetOffset() const {
         return mOffset;
+    }
+
+    unsigned int GetSize() const {
+        return mSize;
     }
 
     unsigned int GetMaxCount() const {

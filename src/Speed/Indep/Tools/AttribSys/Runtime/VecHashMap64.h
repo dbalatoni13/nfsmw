@@ -17,7 +17,7 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
             return place;
         }
 
-        Node() : mKey(0), mPtr((T *)this), mMax(0) {}
+        Node() : mKey(0), mPtr(reinterpret_cast<T *>(this)), mMax(0) {}
 
         Node(KeyType key, T *ptr) : mKey(key), mPtr(ptr) {}
 
@@ -26,7 +26,7 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
             mPtr = src.mPtr;
 
             src.mKey = 0;
-            src.mPtr = (T *)&src;
+            src.mPtr = reinterpret_cast<T *>(&src);
         }
 
         bool IsValid() const {

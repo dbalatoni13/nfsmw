@@ -26,9 +26,13 @@ class CollectionLoadData {
         unsigned char mEntryFlags; // offset 0xB, size 0x1
     };
 
-    const unsigned int *GetTypes() const {}
+    const unsigned int *GetTypes() const {
+        return mTypes;
+    }
 
-    const AttribEntry *GetEntries() const {}
+    const AttribEntry *GetEntries() const {
+        return reinterpret_cast<const AttribEntry *>(&GetTypes()[mNumTypes]);
+    }
 
     unsigned int mKey;           // offset 0x0, size 0x4
     unsigned int mClass;         // offset 0x4, size 0x4
@@ -38,6 +42,7 @@ class CollectionLoadData {
     unsigned int mNumEntries;    // offset 0x14, size 0x4
     unsigned int mNumTypes;      // offset 0x18, size 0x4
     void *mLayout;               // offset 0x1C, size 0x4
+    unsigned int mTypes[];       // TODO check whether this field is generated in the PS2 debug info
 };
 
 // total size: 0x2C
@@ -58,7 +63,7 @@ class Collection {
     void Delete() const;
     Key NextKey(Key prev, bool &inLayout) const;
     bool Contains(Key k) const;
-    bool AddAttribute(Key attributeKey, unsigned int count);
+    bool AddAttribute(Key attributeKey, std::size_t count);
     bool RemoveAttribute(Key attributeKey);
     void Clear();
     void Clean() const;

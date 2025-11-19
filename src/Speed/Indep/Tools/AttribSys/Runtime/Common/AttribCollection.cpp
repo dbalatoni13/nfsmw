@@ -26,6 +26,62 @@ Collection::Collection(Class *aclass, const Collection *parent, Key k, unsigned 
     mNamePtr = nullptr;
 }
 
+static unsigned int gSearchCacheLines = 0;
+static unsigned int gTotalAttribNodes = 0;
+static unsigned int gByValueBytes = 0;
+
+Collection::Collection(const CollectionLoadData &loadData, Vault *v) : mTable(loadData.mTableReserve, loadData.mTableKeyShift, true) {
+    mParent = nullptr;
+    mClass = Database::Get().GetClass(loadData.mClass);
+    mLayout = loadData.mLayout;
+    mRefCount = 1;
+    mKey = loadData.mKey;
+    mSource = v;
+    mNamePtr = KeyToString(loadData.mKey);
+    mSource->AddRef();
+    mClass->AddCollection(this);
+    mClass->AddRef();
+
+    if (loadData.mParent != 0) {
+        mParent = mClass->GetCollection(loadData.mParent);
+        KeyToString(loadData.mParent);
+        KeyToString(loadData.mKey);
+        KeyToString(loadData.mClass);
+        KeyToString(mParent->mClass->GetKey());
+        KeyToString(mClass->GetKey());
+        mParent->AddRef();
+    }
+
+    bool success;
+    const unsigned int *typeList = loadData.GetTypes();
+    const CollectionLoadData::AttribEntry *entries = loadData.GetEntries();
+
+    for (std::size_t i = 0; i < loadData.mNumEntries; i++) {
+        const CollectionLoadData::AttribEntry &entry = entries[i];
+        if (entry.mNodeFlags & Node::Flag_IsByValue) {
+            unsigned int bytes = Database::Get().GetTypeDesc(typeList[entry.mType]).GetSize();
+            if (bytes <= 4) {
+                gByValueBytes += bytes;
+            }
+        }
+        mTable.Add(entry.mKey, typeList[entry.mType], entry.mData, false, entry.mNodeFlags, true, mLayout);
+        gSearchCacheLines += mTable.CountSearchCacheLines(entry.mKey, 7);
+        gTotalAttribNodes++;
+    }
+
+    bool inLayout;
+    unsigned int k;
+    for (k = FirstKey(inLayout); k != 0; k = NextKey(k, inLayout)) {
+        const Collection *container = nullptr;
+        Node *node = GetNode(k, container);
+        if (this == container) {
+            if (node && node->IsArray()) {
+                node->GetArray(mLayout)->SetTypeIndex(node->GetTypeDesc().GetIndex());
+            }
+        }
+    }
+}
+
 Collection::~Collection() {
     mClass->RemoveCollection(this);
     mClass->Release();
@@ -141,6 +197,43 @@ void Collection::SetParent(Key parent) {
     }
 }
 
+bool Collection::AddAttribute(Key attributeKey, std::size_t count) {
+    if (Contains(attributeKey)) {
+        return false;
+    }
+    bool result = false;
+    unsigned char flags = 0;
+    const Attrib::Definition *d = mClass->GetDefinition(attributeKey);
+    if (d) {
+        d->InLayout();
+        if (d->IsArray()) {
+            flags = Node::Flag_RequiresRelease | Node::Flag_IsArray;
+            Attrib::Array *array = Array::Create(d->GetType(), count);
+            result = mTable.Add(attributeKey, d->GetType(), array, true, flags, false, mLayout);
+            if (!result && (flags & Node::Flag_RequiresRelease)) {
+                Array::Destroy(array);
+            }
+        } else {
+            void *dst;
+            if (d->GetSize() < 5) {
+                dst = nullptr;
+                flags = Node::Flag_IsByValue;
+            } else {
+                dst = Alloc(d->GetSize(), "Attrib::attribute_data");
+                flags |= Node::Flag_RequiresRelease;
+            }
+            if (dst) {
+                memset(dst, 0, d->GetSize());
+            }
+            result = mTable.Add(attributeKey, d->GetType(), dst, true, flags, false, mLayout);
+            if (!result && (flags & Node::Flag_RequiresRelease)) {
+                Free(dst, d->GetSize(), "Attrib::attribute_data");
+            }
+        }
+    }
+    return result;
+}
+
 bool Collection::RemoveAttribute(Key attributeKey) {
     Node *node = mTable.Find(attributeKey);
     if (node) {
@@ -232,5 +325,4 @@ bool AttributeIterator::Advance() {
     }
     return mCurrentKey != 0;
 }
-
 }; // namespace Attrib
