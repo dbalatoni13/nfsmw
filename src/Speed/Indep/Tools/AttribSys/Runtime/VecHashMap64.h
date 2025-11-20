@@ -161,6 +161,10 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
         return ValidIndex(index) ? mTable[index].Get() : nullptr;
     }
 
+    void Reserve(std::size_t reservationSize) {
+        RebuildTable(reservationSize);
+    }
+
     void SetTableBuffer(void *fixedAlloc, std::size_t bytes) {
         std::size_t capacity = bytes / sizeof(Node);
         Node *oldTable = mTable;

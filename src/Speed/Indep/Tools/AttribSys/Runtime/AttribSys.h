@@ -156,6 +156,8 @@ class Database {
         return sThis != nullptr;
     }
 
+    friend class DatabaseExportPolicy;
+
   private:
     Database(DatabasePrivate &privates);
     virtual ~Database();

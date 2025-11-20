@@ -248,6 +248,18 @@ class ClassTable : public VecHashMap<unsigned int, Class, Class::TablePolicy, fa
     ClassTable(std::size_t capacity) : VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16>(capacity) {}
 };
 
+class DatabaseLoadData {
+  public:
+    const unsigned int *GetTypeSizes() const {
+        // TODO
+    }
+
+    unsigned int mNumClasses;      // offset 0x0, size 0x4
+    unsigned int mDefaultDataSize; // offset 0x4, size 0x4
+    unsigned int mNumTypes;        // offset 0x8, size 0x4
+    const char *mTypenames;        // offset 0xC, size 0x4
+};
+
 // total size: 0x4C
 class DatabasePrivate : public Database {
   public:
@@ -291,8 +303,12 @@ class DatabasePrivate : public Database {
         }
     }
 
+    void *operator new(std::size_t bytes) {
+        return Alloc(bytes, nullptr);
+    }
+
     // TODO inline
-    DatabasePrivate(const struct DatabaseLoadData &loadData);
+    DatabasePrivate(const DatabaseLoadData &loadData);
 
     ClassTable mClasses;                // offset 0x8, size 0x10
     unsigned int mNumCompiledTypes;     // offset 0x18, size 0x4

@@ -19,7 +19,12 @@ class DatabaseExportPolicy : public IExportPolicy {
     }
 
     // Inline overrides
-    override virtual void Initialize(Vault &v, const TypeID &type, const ExportID &id, const char *name, void *data, std::size_t bytes) {}
+    override virtual void Initialize(Vault &v, const TypeID &type, const ExportID &id, const char *name, void *data, std::size_t bytes) {
+        const DatabaseLoadData *loadData = reinterpret_cast<const DatabaseLoadData *>(data);
+        Database::sThis = new DatabasePrivate(*loadData);
+        v.AddRef();
+        // v.Export()
+    }
 
     override virtual bool IsReferenced(const Vault &v, const TypeID &type, const ExportID &id) {
         std::size_t index = v.FindExportID(id);
