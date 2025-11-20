@@ -723,13 +723,13 @@ def generate_build_ninja(
     ]
 
     # NGCCC
-    ee_gcc = compiler_path / "ngccc.exe"
+    ngccc = compiler_path / "ngccc.exe"
     if is_windows():
-        ngccc_cmd = f'cmd /c "set SN_NGC_PATH={os.path.abspath(compiler_path)}&& {ee_gcc} $cflags -MMD -c -o $out $in"'
+        ngccc_cmd = f'cmd /c "set SN_NGC_PATH={os.path.abspath(compiler_path)}&& {ngccc} $cflags -MMD -c -o $out $in"'
     else:
-        ngccc_cmd = f"env SN_NGC_PATH={os.path.abspath(compiler_path)} {wrapper_cmd}{ee_gcc} $cflags -MMD -c -o $out $in"
+        ngccc_cmd = f"env SN_NGC_PATH={os.path.abspath(compiler_path)} {wrapper_cmd}{ngccc} $cflags -MMD -c -o $out $in"
     ngccc_implicit: List[Optional[Path]] = [
-        compilers_implicit or ee_gcc,
+        compilers_implicit or ngccc,
         wrapper_implicit,
     ]
 

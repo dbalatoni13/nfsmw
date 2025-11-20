@@ -161,7 +161,7 @@ elif version_num in [2]:
 
 config.objdiff_tag = "v3.3.0"
 config.sjiswrap_tag = "v1.2.0"
-config.wibo_tag = "1.0.0-alpha.4"
+config.wibo_tag = "1.0.0-beta.5"
 
 # Project
 config.config_path = Path("config") / config.version / "config.yml"
