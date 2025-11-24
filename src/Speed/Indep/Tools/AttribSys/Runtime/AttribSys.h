@@ -85,8 +85,14 @@ class IExportPolicy {
 class TypeDesc {
   public:
     static ITypeHandler *Lookup(unsigned int t);
+    static unsigned int NameToType(const char *name);
+
+    TypeDesc() : mType(0), mName(""), mSize(0), mIndex(0), mHandler(nullptr) {}
 
     TypeDesc(unsigned int t) : mType(t), mName(nullptr), mSize(0), mIndex(0), mHandler(Lookup(t)) {}
+
+    TypeDesc(const char *name, std::size_t size, std::size_t index)
+        : mType(NameToType(name)), mName(name), mSize(size), mIndex(index), mHandler(Lookup(mType)) {}
 
     unsigned int GetType() const {
         return mType;
@@ -156,6 +162,7 @@ class Database {
         return sThis != nullptr;
     }
 
+    friend class DatabasePrivate;
     friend class DatabaseExportPolicy;
 
   private:
@@ -498,7 +505,7 @@ class Class {
         }
 
         static std::size_t WrapIndex(std::size_t index, std::size_t tableSize, unsigned int keyShift) {
-            return index % tableSize; // TODO
+            return index % tableSize;
         }
 
         static std::size_t TableSize(std::size_t entries) {
@@ -569,13 +576,13 @@ class Class {
         Free(ptr, bytes, "Attrib::Class");
     }
 
-  protected:
-    // TODO private according to PS2 debug
+    friend class Collection;
+    friend class ClassPrivate;
+
+  private:
     Key mKey;                      // offset 0x0, size 0x4
     mutable std::size_t mRefCount; // offset 0x4, size 0x4
-  public:
-    // TODO how does Collection::Count access this without an inline? private according to PS2 debug
-    ClassPrivate &mPrivates; // offset 0x8, size 0x4
+    ClassPrivate &mPrivates;       // offset 0x8, size 0x4
 };
 
 // total size: 0xC

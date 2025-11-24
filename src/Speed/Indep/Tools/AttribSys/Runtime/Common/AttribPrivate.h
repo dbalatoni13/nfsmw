@@ -1,7 +1,6 @@
 #ifndef ATTRIBSYS_ATTRIB_PRIVATE_H
 #define ATTRIBSYS_ATTRIB_PRIVATE_H
 
-#include "Speed/Indep/Src/Misc/AttribAlloc.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -246,18 +245,23 @@ class ClassTable : public VecHashMap<unsigned int, Class, Class::TablePolicy, fa
   public:
     // TODO capacity * ?
     ClassTable(std::size_t capacity) : VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16>(capacity) {}
+
+    void operator delete(void *ptr, std::size_t bytes) {
+        Free(ptr, bytes, "Attrib::ClassTable");
+    }
 };
 
 class DatabaseLoadData {
   public:
     const unsigned int *GetTypeSizes() const {
-        // TODO
+        return typeSizes;
     }
 
     unsigned int mNumClasses;      // offset 0x0, size 0x4
     unsigned int mDefaultDataSize; // offset 0x4, size 0x4
     unsigned int mNumTypes;        // offset 0x8, size 0x4
     const char *mTypenames;        // offset 0xC, size 0x4
+    unsigned int typeSizes[];
 };
 
 // total size: 0x4C
@@ -307,11 +311,35 @@ class DatabasePrivate : public Database {
         return Alloc(bytes, nullptr);
     }
 
-    // TODO inline
-    DatabasePrivate(const DatabaseLoadData &loadData);
+    void operator delete(void *ptr, std::size_t bytes) {
+        Free(ptr, bytes, nullptr);
+    }
+
+    DatabasePrivate(const DatabaseLoadData &loadData) : Database(*this), mClasses(loadData.mNumClasses) {
+        mClasses.Reserve(loadData.mNumClasses);
+        mNumCompiledTypes = loadData.mNumTypes + 1;
+        mCompiledTypes.reserve(mNumCompiledTypes);
+        DefaultDataArea(loadData.mDefaultDataSize);
+        mCompiledTypes.push_back(&*mTypes.insert(TypeDesc()).first);
+
+        const unsigned int *sizes = loadData.GetTypeSizes();
+        const char *name = loadData.mTypenames;
+
+        for (unsigned int i = 0; i < loadData.mNumTypes; i++) {
+            TypeTable::iterator iter = mTypes.insert(TypeDesc(name, sizes[i], mCompiledTypes.size())).first;
+            mCompiledTypes.push_back(&*iter);
+            name += std::strlen(name) + 1;
+        }
+    }
+
+    ~DatabasePrivate() {
+        mClasses.Size();
+        mTypes.clear();
+        mCompiledTypes.clear();
+    }
 
     ClassTable mClasses;                // offset 0x8, size 0x10
-    unsigned int mNumCompiledTypes;     // offset 0x18, size 0x4
+    std::size_t mNumCompiledTypes;      // offset 0x18, size 0x4
     TypeDescPtrVec mCompiledTypes;      // offset 0x1C, size 0x10
     TypeTable mTypes;                   // offset 0x2C, size 0x10
     CollectionList mGarbageCollections; // offset 0x3C, size 0x8
@@ -323,9 +351,6 @@ template <typename T> Key ScanForValidKey(const T &v, std::size_t index) {
     // (void)v.ValidIndex(index); // TODO how to get it to be here instead of in GetKeyAtIndex?
     return v.GetKeyAtIndex(index);
 }
-
-// TODO WHERE IS THIS??
-ClassPrivate::CollectionHashMap::~CollectionHashMap() {}
 
 } // namespace Attrib
 

@@ -23,7 +23,7 @@ class DatabaseExportPolicy : public IExportPolicy {
         const DatabaseLoadData *loadData = reinterpret_cast<const DatabaseLoadData *>(data);
         Database::sThis = new DatabasePrivate(*loadData);
         v.AddRef();
-        // v.Export()
+        v.Export(id, Database::sThis, 0);
     }
 
     override virtual bool IsReferenced(const Vault &v, const TypeID &type, const ExportID &id) {
