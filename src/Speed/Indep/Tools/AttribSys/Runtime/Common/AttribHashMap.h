@@ -126,7 +126,6 @@ class HashMap {
         unsigned int searchLen = 0;
         unsigned int maxSearchLen = table[actualIndex].MaxSearch();
         while (searchLen < maxSearchLen && table[actualIndex].GetKey() != key) {
-            // TODO why is there a Node::IsValid call somewhere here? it's there sometimes and sometimes not
             if (table[actualIndex].IsValid()) {
             }
             actualIndex = HashMapTablePolicy::WrapIndex(actualIndex + 1, mTableSize, 0);

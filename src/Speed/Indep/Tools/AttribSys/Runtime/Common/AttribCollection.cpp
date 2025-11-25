@@ -284,7 +284,49 @@ void Collection::Clear() {
     }
 }
 
-void Collection::Clean() const {}
+void Collection::Clean() const {
+    AttributeIterator iterator(this);
+    if (iterator.Valid()) {
+        do {
+            const Collection *container = this;
+            Node *node = GetNode(iterator.GetKey(), container);
+            if (container == this) {
+                node->IsValid();
+                ITypeHandler *handler = node->GetTypeDesc().GetHandler();
+                if (handler) {
+                    if (node->IsArray()) {
+                        Array *array = node->GetArray(mLayout);
+                        for (unsigned int i = 0; i < array->GetCount(); i++) {
+                            handler->Clean(array->GetData(i));
+                        }
+                    } else {
+                        handler->Clean(node->GetPointer(mLayout));
+                    }
+                }
+            }
+        } while (iterator.Advance());
+    }
+    if (mLayout) {
+        Definition *defs = mClass->mPrivates.mDefinitions;
+        unsigned int count = mClass->mPrivates.mNumDefinitions;
+        for (unsigned int d = 0; d < count; d++) {
+            if (defs[d].IsNotSearchable()) {
+                ITypeHandler *handler = Database::Get().GetTypeDesc(defs[d].GetType()).GetHandler();
+                if (handler) {
+                    void *dataptr = (char *)mLayout + defs[d].GetOffset();
+                    if (defs[d].IsArray()) {
+                        Array *array = reinterpret_cast<Array *>(dataptr);
+                        for (unsigned int i = 0; i < array->GetCount(); i++) {
+                            handler->Clean(array->GetData(i));
+                        }
+                    } else {
+                        handler->Clean(dataptr);
+                    }
+                }
+            }
+        }
+    }
+}
 
 void Collection::FreeNodeData(bool isArray, void *data, bool requiresRelease, const TypeDesc &typeDesc) {
     ITypeHandler *handler = typeDesc.GetHandler();

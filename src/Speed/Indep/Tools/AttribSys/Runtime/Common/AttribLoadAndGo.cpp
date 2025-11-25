@@ -1,4 +1,5 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribLoadAndGo.h"
+#include "Speed/Indep/Src/Misc/AttribAsset.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 #include <algorithm>
@@ -53,6 +54,8 @@ unsigned int ExportManager::GetExportPolicyIndex(unsigned int type) const {
 
 // total size: 0x10
 struct DataBlock {
+    DataBlock() : mData(nullptr), mSize(0), mGC(nullptr), mPolicyIndex(-1) {}
+
     bool Inited() const {
         return mData != nullptr;
     }
@@ -72,6 +75,10 @@ struct DataBlock {
         mGC = nullptr;
     }
 
+    void *operator new(std::size_t, void *ptr) {
+        return ptr;
+    }
+
     void *mData;               // offset 0x0, size 0x4
     IGarbageCollector *mGC;    // offset 0x4, size 0x4
     unsigned int mPolicyIndex; // offset 0x8, size 0x4
@@ -89,19 +96,116 @@ struct ExportEntry {
 
 // total size: 0x8
 struct ChunkBlock {
+    char *Data() {
+        return reinterpret_cast<char *>(&this[1]);
+    }
+
+    ChunkBlock *Next() {
+        // TODO
+    }
+
     unsigned int mType; // offset 0x0, size 0x4
     unsigned int mSize; // offset 0x4, size 0x4
 };
 
 // total size: 0xC
-struct ExportNode : public ChunkBlock {
-    ExportEntry *GetExports() {
-        return exports;
+struct DependencyNode : public ChunkBlock {
+    unsigned int *GetAssetIDs() {
+        return reinterpret_cast<unsigned int *>(&this[1]);
     }
 
     unsigned int mCount; // offset 0x8, size 0x4
-    ExportEntry exports[];
 };
+
+// total size: 0xC
+struct PtrRef {
+    unsigned int mFixupOffset; // offset 0x0, size 0x4
+    unsigned short mPtrType;   // offset 0x4, size 0x2
+    unsigned short mIndex;     // offset 0x6, size 0x2
+    union {
+        unsigned int mExportID; // offset 0x0, size 0x4
+        unsigned int mOffset;   // offset 0x0, size 0x4
+    }; // offset 0x8, size 0x4
+};
+
+// total size: 0x8
+struct PointerNode : public ChunkBlock {
+    PtrRef *GetPointers() {
+        return reinterpret_cast<PtrRef *>(&this[1]);
+    }
+};
+
+// total size: 0xC
+struct ExportNode : public ChunkBlock {
+    ExportEntry *GetExports() {
+        return reinterpret_cast<ExportEntry *>(&this[1]);
+    }
+
+    const char *GetNames(unsigned int numExports) {
+        return reinterpret_cast<const char *>(&GetExports()[numExports]);
+    }
+
+    unsigned int mCount; // offset 0x8, size 0x4
+};
+
+Vault::Vault(ExportManager &mgr, unsigned int, void *data, std::size_t bytes, IGarbageCollector *gc)
+    : mRefCount(1), mExportMgr(mgr), mDeinited(false), mDependencies(nullptr), mDepData(nullptr), mResolvedCount(0), mPointers(nullptr),
+      mTransientData(nullptr), mStrings(nullptr), mExports(nullptr), mNumExports(0), mInited(false) {
+    ChunkBlock *chunk = reinterpret_cast<ChunkBlock *>(data);
+    ChunkBlock *endofdata = reinterpret_cast<ChunkBlock *>((uintptr_t)data + bytes);
+
+    // TODO magic
+    while (chunk < endofdata) {
+        switch (chunk->mType) {
+            case 0x4461744e:
+                break;
+            case 0x4465704e:
+                mDependencies = reinterpret_cast<DependencyNode *>(chunk);
+                break;
+            case 0x5074724e:
+                mPointers = reinterpret_cast<PointerNode *>(chunk);
+                break;
+            case 0x4578704e:
+                mExports = reinterpret_cast<ExportNode *>(chunk);
+                break;
+            case 0x5374724e:
+                mStrings = chunk;
+                break;
+        }
+        chunk = reinterpret_cast<ChunkBlock *>((uintptr_t)chunk + chunk->mSize);
+    }
+    {
+        const char *str = mStrings->Data();
+        const char *end = &reinterpret_cast<char *>(mStrings)[mStrings->mSize];
+        unsigned int stringcount = 0;
+        while (str < end) {
+            stringcount++;
+            str = &str[strlen(str) + 1];
+        }
+        PrepareToAddStrings(stringcount);
+        str = mStrings->Data();
+        while (str < end) {
+            RegisterString(str);
+            str = &str[strlen(str) + 1];
+        }
+    }
+    mTransientData = reinterpret_cast<unsigned char *>(data);
+    mNumDependencies = mDependencies->mCount;
+    mNumExports = mExports->mCount;
+    mDepData = reinterpret_cast<DataBlock *>(Alloc((mNumDependencies + mNumExports) * sizeof(DataBlock), "Attrib::DataBlocks"));
+    mExportData = &mDepData[mNumDependencies];
+
+    for (unsigned int i = 0; i < mNumDependencies + mNumExports; i++) {
+        new (&mDepData[i]) DataBlock();
+    }
+    mDepIDs = reinterpret_cast<unsigned int *>(Alloc((mNumDependencies + mNumExports) * sizeof(*mDepIDs), "Attrib::AssetIDs"));
+    mExportIDs = &mDepIDs[mNumDependencies];
+    for (unsigned int i = 0; i < mNumDependencies; i++) {
+        mDepIDs[i] = mDependencies->GetAssetIDs()[i];
+    }
+    mDepData->Set(data, bytes, gc);
+    mResolvedCount++;
+}
 
 Vault::~Vault() {
     if (mInited && !mDeinited) {
@@ -133,6 +237,66 @@ void Vault::ResolveDependency(unsigned int index, void *data, std::size_t bytes,
 
 bool Vault::HasUnresolvedDependency() const {
     return mResolvedCount < mNumDependencies;
+}
+
+void Vault::Initialize() {
+    char *fixuptarget = nullptr;
+    unsigned int fixupsize;
+    unsigned int depcount;
+    bool endOfPtrs = false;
+
+    HasUnresolvedDependency();
+    const PtrRef *ptr = mPointers->GetPointers();
+    do {
+        char **targetptr = reinterpret_cast<char **>(&fixuptarget[ptr->mFixupOffset]);
+
+        switch (ptr->mPtrType) {
+            case 0:
+            default:
+                endOfPtrs = true;
+                break;
+            case 1:
+                *targetptr = nullptr;
+                break;
+            case 2:
+                fixuptarget = reinterpret_cast<char *>(mDepData[ptr->mIndex].mData);
+                break;
+            case 3:
+                *targetptr = &reinterpret_cast<char *>(mDepData[ptr->mIndex].mData)[ptr->mOffset];
+                break;
+            case 4: {
+                Vault *depVault = reinterpret_cast<Vault *>(mDepData[ptr->mIndex].mData);
+                unsigned int exportIndex = depVault->FindExportID(ptr->mExportID);
+                if (exportIndex != -1) {
+                    *targetptr = reinterpret_cast<char *>(depVault->GetExportData(exportIndex));
+                } else {
+                    *targetptr = nullptr;
+                }
+                break;
+            };
+            case 5:
+                *targetptr = const_cast<char *>(KeyToString(StringToKey(&mStrings->Data()[ptr->mOffset])));
+                break;
+        }
+        ptr++;
+    } while (!endOfPtrs);
+
+    ExportEntry *exportTable = mExports->GetExports();
+    const char *exportNames = mExports->GetNames(mNumExports);
+    mExports = nullptr;
+    for (unsigned int i = 0; i < mNumExports; i++) {
+        mExportData[i].mPolicyIndex = mExportMgr.GetExportPolicyIndex(exportTable[i].mType);
+        IExportPolicy *policy = mExportMgr.GetExportPolicyByIndex(mExportData[i].mPolicyIndex);
+        if (policy) {
+            mExportIDs[i] = exportTable[i].mID;
+            policy->Initialize(*this, exportTable[i].mType, exportTable[i].mID, &exportNames[exportTable[i].mNameOffset],
+                               &mTransientData[exportTable[i].mDataOffset], exportTable[i].mDataBytes);
+        }
+    }
+    mDepData->Clear(mDepIDs[0]);
+    mDependencies = nullptr;
+    mPointers = nullptr;
+    mInited = true;
 }
 
 void Vault::Clean() {

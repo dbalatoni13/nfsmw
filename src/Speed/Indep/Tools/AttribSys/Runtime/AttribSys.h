@@ -24,6 +24,7 @@ Key RegisterString(const char *str);
 const char *KeyToString(Key k);
 Key StringToKey(const char *str);
 std::size_t AdjustHashTableSize(std::size_t requiredSize);
+void PrepareToAddStrings(unsigned int numstrings);
 
 // Rotates (v) by (amount) bits
 // TODO probably not in this namespace
@@ -696,7 +697,13 @@ class AttributeIterator {
     AttributeIterator(const Collection *c);
     bool Advance();
 
-    bool Valid() {}
+    bool Valid() {
+        return mCurrentKey != 0;
+    }
+
+    Key GetKey() const {
+        return mCurrentKey;
+    }
 
   private:
     Key mCurrentKey;               // offset 0x0, size 0x4

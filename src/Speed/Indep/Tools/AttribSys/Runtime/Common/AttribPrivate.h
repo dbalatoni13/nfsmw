@@ -243,7 +243,6 @@ class ClassPrivate : public Class {
 // total size: 0x10
 class ClassTable : public VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16> {
   public:
-    // TODO capacity * ?
     ClassTable(std::size_t capacity) : VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16>(capacity) {}
 
     void operator delete(void *ptr, std::size_t bytes) {
@@ -308,11 +307,11 @@ class DatabasePrivate : public Database {
     }
 
     void *operator new(std::size_t bytes) {
-        return Alloc(bytes, nullptr);
+        return Alloc(bytes, "Attrib::DatabasePrivate");
     }
 
     void operator delete(void *ptr, std::size_t bytes) {
-        Free(ptr, bytes, nullptr);
+        Free(ptr, bytes, "Attrib::DatabasePrivate");
     }
 
     DatabasePrivate(const DatabaseLoadData &loadData) : Database(*this), mClasses(loadData.mNumClasses) {
