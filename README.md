@@ -1,4 +1,4 @@
-Need for Speed: Most Wanted (GC and Xbox 360)
+Need for Speed: Most Wanted Decompilation
 [![Build Status]][actions] [![Code Progress]][progress] [![Data Progress]][progress] [![Discord Badge]][discord]
 =============
 
@@ -10,7 +10,7 @@ Need for Speed: Most Wanted (GC and Xbox 360)
 [Discord Badge]: https://img.shields.io/discord/727908905392275526?color=%237289DA&logo=discord&logoColor=%23FFFFFF
 [discord]: https://discord.gg/hKx3FJJgrV
 
-A work-in-progress decompilation of the GameCube and Xbox 360 versions of Need for Speed: Most Wanted.
+A work-in-progress decompilation of the GameCube, Xbox 360 and PS2 versions of Need for Speed: Most Wanted.
 
 This repository does **not** contain any game assets or assembly whatsoever. An existing copy of the game is required.
 
@@ -66,6 +66,12 @@ sudo xattr -rd com.apple.quarantine '/Applications/Wine Crossover.app'
   git clone https://github.com/dbalatoni13/nfsmw.git
   ```
 
+- Install dependencies (PS2 only)
+
+  ```sh
+  python -m pip install requirements.txt
+  ```
+
 - Configure:
 
   ```sh
@@ -88,7 +94,9 @@ sudo xattr -rd com.apple.quarantine '/Applications/Wine Crossover.app'
     ./build/tools/dtk elf2dol ./orig/GOWE69/NFSMWRELEASE.elf ./orig/GOWE69/sys/main.dol
     ```
 
-  - Xbox 360: simply `NfsMWEuropeGerMilestone.exe` to `NfsMWEuropeGerMilestone.xex` and copy it to `./orig/EUROPEGERMILESTONE/`
+  - Xbox 360: simply rename `NfsMWEuropeGerMilestone.exe` to `NfsMWEuropeGerMilestone.xex` and copy it to `./orig/EUROPEGERMILESTONE/`
+
+  - PS2: Copy `NSF.ELF` to `./orig/SLES-53558-A124/`
 
 # Diffing
 
