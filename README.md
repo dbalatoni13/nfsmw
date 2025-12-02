@@ -69,7 +69,7 @@ sudo xattr -rd com.apple.quarantine '/Applications/Wine Crossover.app'
 - Install dependencies (PS2 only)
 
   ```sh
-  python -m pip install requirements.txt
+  python -m pip install -r requirements.txt
   ```
 
 - Configure:
