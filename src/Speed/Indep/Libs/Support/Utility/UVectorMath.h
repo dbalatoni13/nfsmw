@@ -22,12 +22,15 @@ float VU0_v3distancesquarexz(const UMath::Vector3 &p1, const UMath::Vector3 &p2)
 void VU0_v3crossprod(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &dest);
 float VU0_v3lengthsquare(const UMath::Vector3 &a);
 void VU0_v3unit(const UMath::Vector3 &a, UMath::Vector3 &result);
+
 void VU0_v4scaleadd(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result);
+void VU0_v4scaleaddxyz(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result);
 float VU0_v4lengthsquare(const UMath::Vector4 &a);
 float VU0_v4lengthsquarexyz(const UMath::Vector4 &a);
-
 void VU0_v4subxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result);
+float VU0_v4dotprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b);
 void VU0_v4scale(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &result);
+void VU0_v4scalexyz(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &result);
 float VU0_v4distancesquarexyz(const UMath::Vector4 &p1, const UMath::Vector4 &p2);
 
 void VU0_v3quatrotate(const UMath::Vector4 &q, const UMath::Vector3 &v, UMath::Vector3 &result);
@@ -254,6 +257,10 @@ inline float VU0_v3lengthxz(const struct UMath::Vector3 &a) {
     return VU0_sqrt(a.x * a.x + a.z * a.z);
 }
 
+inline float VU0_v4lengthxyz(const UMath::Vector4 &a) {
+    return VU0_sqrt(VU0_v4lengthsquarexyz(a));
+}
+
 inline void VU0_v3unit(const UMath::Vector3 &a, UMath::Vector3 &result) {
     float rlen = VU0_rsqrt(VU0_v3lengthsquare(a));
     VU0_v3scale(a, rlen, result);
@@ -262,6 +269,11 @@ inline void VU0_v3unit(const UMath::Vector3 &a, UMath::Vector3 &result) {
 inline void VU0_v4unit(const UMath::Vector4 &a, UMath::Vector4 &result) {
     float rlen = VU0_rsqrt(VU0_v4lengthsquare(a));
     VU0_v4scale(a, rlen, result);
+}
+
+inline void VU0_v4unitxyz(const UMath::Vector4 &a, UMath::Vector4 &result) {
+    float rlen = VU0_rsqrt(VU0_v4lengthsquarexyz(a));
+    VU0_v4scalexyz(a, rlen, result);
 }
 
 inline float IntAsFloat(const int &i) {

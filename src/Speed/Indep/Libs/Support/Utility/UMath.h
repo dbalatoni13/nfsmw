@@ -91,8 +91,12 @@ inline void Unit(const UMath::Vector4 &a, Vector4 &r) {
     VU0_v4unit(a, r);
 }
 
+inline void Unitxyz(const UMath::Vector4 &a, Vector4 &r) {
+    VU0_v4unitxyz(a, r);
+}
+
 inline void MultYRot(const UMath::Matrix4 &m, float a, UMath::Matrix4 &r) {
-    
+    // TODO
 }
 
 inline void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m) {
@@ -123,8 +127,16 @@ inline void ScaleAdd(const Vector4 &a, const float s, const Vector4 &b, Vector4 
     VU0_v4scaleadd(a, s, b, r);
 }
 
+inline void ScaleAddxyz(const UMath::Vector4 &a, const float s, const UMath::Vector4 &b, Vector4 &r) {
+    VU0_v4scaleaddxyz(a, s, b, r);
+}
+
 inline void Sub(const Vector3 &a, const Vector3 &b, Vector3 &r) {
     VU0_v3sub(a, b, r);
+}
+
+inline void Subxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, Vector4 &r) {
+    VU0_v4subxyz(a, b, r);
 }
 
 inline void SetYRot(Matrix4 &r, float a) {
@@ -147,6 +159,10 @@ inline void Dot(const Vector3 &a, const Matrix4 &b, Vector3 &r) {
     VU0_MATRIX3x4dotprod(a, b, r);
 }
 
+inline float Dotxyz(const UMath::Vector4 &a, const UMath::Vector4 &b) {
+    return VU0_v4dotprodxyz(a, b);
+}
+
 inline void Cross(const Vector3 &a, const Vector3 &b, Vector3 &r) {
     VU0_v3crossprod(a, b, r);
 }
@@ -161,6 +177,10 @@ inline float Length(const Vector3 &a) {
 
 inline float Lengthxz(const Vector3 &a) {
     return VU0_v3lengthxz(a);
+}
+
+inline float Lengthxyz(const UMath::Vector4 &a) {
+    return VU0_v4lengthxyz(a);
 }
 
 inline float LengthSquare(const Vector3 &a) {

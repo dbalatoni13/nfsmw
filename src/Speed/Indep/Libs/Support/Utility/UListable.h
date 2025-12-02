@@ -124,8 +124,13 @@ template <typename T> class Countable {
     static int _mCount;
 
   protected:
-    Countable() {}
-    ~Countable() {}
+    Countable() {
+        _mCount++;
+    }
+
+    ~Countable() {
+        _mCount--;
+    }
 
   public:
     static int Count() {

@@ -415,4 +415,10 @@ TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash);
 int eLoadSolidListPlatChunks(bChunk *chunk);
 float GetSunIntensity(eView *view);
 
+extern unsigned int eFrameCounter;
+
+inline unsigned int eGetFrameCounter() {
+    return eFrameCounter;
+}
+
 #endif

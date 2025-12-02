@@ -20,7 +20,7 @@ template <typename T, unsigned int Alignment = 16> class Vector {
     void Init() {}
 
     Vector() {
-        this->Init();
+        Init();
     }
 
     virtual ~Vector() {}

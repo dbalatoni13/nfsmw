@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/bWare/Inc/bList.hpp"
+
 struct HSIMPROFILE__ {
     // total size: 0x4
     int unused; // offset 0x0, size 0x4
@@ -16,8 +18,24 @@ namespace Sim {
 
 namespace Profile {
 
-inline HSIMPROFILE Create() { return 0; }
+inline HSIMPROFILE Create() {
+    return nullptr;
+}
+
 inline void Release(HSIMPROFILE) {}
+
+// total size: 0xC
+class Scope : public bTNode<Scope> {
+  public:
+    void operator delete(void *ptr) {}
+
+    Scope(HSIMPROFILE prof) {}
+
+    ~Scope() {}
+
+  private:
+    void *_mPrivate; // offset 0x8, size 0x4
+};
 
 }; // namespace Profile
 

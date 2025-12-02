@@ -19,11 +19,12 @@ typedef HSIMTASK__ *HSIMTASK;
 namespace Sim {
 
 enum TaskMode {
-    TASK_FRAME_VARIABLE = 1,
     TASK_FRAME_FIXED = 0,
+    TASK_FRAME_VARIABLE = 1,
 };
 
-struct ITaskable : public UTL::COM::IUnknown {
+// total size: 0x8
+class ITaskable : public UTL::COM::IUnknown {
   public:
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
@@ -33,7 +34,7 @@ struct ITaskable : public UTL::COM::IUnknown {
 
     virtual ~ITaskable() {}
 
-    virtual bool OnTask(HSIMTASK htask, float dT) {}
+    virtual bool OnTask(HSIMTASK htask, float dT);
 };
 
 }; // namespace Sim

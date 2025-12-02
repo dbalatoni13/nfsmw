@@ -7,6 +7,7 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
+#include "Speed/Indep/Src/Sim/SimObject.h"
 #include "Speed/Indep/Src/Sim/SimProfile.h"
 
 extern Attrib::StringKey BEHAVIOR_MECHANIC_AI;
@@ -56,7 +57,7 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
         return mIOwner;
     }
 
-    void EnableProfile(const char* name) {
+    void EnableProfile(const char *name) {
         Sim::Profile::Release(mProfile);
         mProfile = Sim::Profile::Create();
     }
@@ -113,7 +114,7 @@ template <typename T> class BehaviorSpecsPtr : public AttributeStructPtr<T> {
             // "default"
             return 0xeec2271a;
         }
-        
+
         Attrib::Key classkey = AttributeStructPtr<T>::GetClassKey();
         Attrib::Attribute attrib = owneratr.Get(classkey);
         Attrib::RefSpec refspec;

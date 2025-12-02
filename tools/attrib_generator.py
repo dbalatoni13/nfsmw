@@ -87,7 +87,7 @@ def get_layout_getter(field):
 
     if "Array" in field["Flags"]:
         out += f"""const {type} &{field_name}(unsigned int index) const {{
-            const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());
+            const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(GetLayoutPointer());
             if (index < lp->_Array_{field_name}.GetLength()) {{
             return lp->{field_name}[index];
         }} else {{
@@ -96,20 +96,20 @@ def get_layout_getter(field):
         }}
 
         unsigned int Num_{field_name}() const {{
-            return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->_Array_{field_name}.GetLength();
+            return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->_Array_{field_name}.GetLength();
         }}
         
         """
     else:
         if type_name == "EA::Reflection::Text":
             out += f"""const char*{field_name}() const {{
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->{field_name};
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->{field_name};
 }}
 
 """
         else:
             out += f"""const {type} &{field_name}() const {{
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->{field_name};
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->{field_name};
 }}
 
 """
@@ -124,7 +124,7 @@ def get_non_layout_getter(field, hash):
     type = type_replacement.get(type_name, type_name)
 
     out += f"""const {type} &{field_name}(unsigned int index) const {{
-        const {type} *resultptr = reinterpret_cast<const {type} *>(this->GetAttributePointer({hash}, index));
+        const {type} *resultptr = reinterpret_cast<const {type} *>(GetAttributePointer({hash}, index));
         if (!resultptr) {{
             resultptr = reinterpret_cast<const {type} *>(DefaultDataArea(sizeof({type})));
         }}
@@ -135,7 +135,7 @@ def get_non_layout_getter(field, hash):
 
     if "Array" in field["Flags"]:
         out += f"""unsigned int Num_{field_name}() const {{
-            return this->Get({hash}).GetLength();
+            return Get({hash}).GetLength();
         }}
 
 """
@@ -177,11 +177,11 @@ def process_file(filename, strings_file, outdirectory):
 
 {name}(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {{
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }}
 
 {name}(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {{
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }}
 
 ~{name}() {{}}
