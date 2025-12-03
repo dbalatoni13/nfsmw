@@ -44,8 +44,13 @@ template <typename T> class Singleton {
     }
 
   protected:
-    Singleton() {}
-    ~Singleton() {}
+    Singleton() {
+        mInstance = reinterpret_cast<T *>(this);
+    }
+
+    ~Singleton() {
+        mInstance = nullptr;
+    }
 
   private:
     static T *mInstance;

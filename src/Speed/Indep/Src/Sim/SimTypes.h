@@ -59,6 +59,12 @@ enum State {
     STATE_IDLE = 4,
 };
 
+enum eUserMode {
+    USER_SINGLE = 0,
+    USER_SPLIT_SCREEN = 1,
+    USER_ONLINE = 2,
+};
+
 }; // namespace Sim
 
 // total size: 0x18

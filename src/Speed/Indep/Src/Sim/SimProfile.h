@@ -22,6 +22,8 @@ inline HSIMPROFILE Create() {
     return nullptr;
 }
 
+inline void Capture() {}
+
 inline void Release(HSIMPROFILE) {}
 
 inline void Init() {}

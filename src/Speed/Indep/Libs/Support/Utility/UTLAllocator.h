@@ -28,12 +28,8 @@ template <typename T, typename Tag> struct Allocator {
     ~Allocator() {}
     template <typename U> Allocator(const Allocator<U, Tag> &) {}
 
-    // TODO UNSOLVED?
     pointer allocate(std::size_t n) {
-        if (n != 0) {
-            return reinterpret_cast<pointer>(gFastMem.Alloc(n * sizeof(T), nullptr));
-        }
-        return nullptr;
+        return n != 0 ? reinterpret_cast<pointer>(gFastMem.Alloc(n * sizeof(T), nullptr)) : nullptr;
     }
 
     void deallocate(pointer p, std::size_t n) {

@@ -10,6 +10,7 @@ class SimRandom {
   public:
     SimRandom();
     ~SimRandom();
+    void Reset();
 
   private:
     unsigned int fastRandom;   // offset 0x0, size 0x4

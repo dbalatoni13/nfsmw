@@ -35,7 +35,6 @@ World *pCurrentWorld = nullptr;
 
 extern int WorldLoopCounter;                  // zMisc
 extern bVector3 *SkipFEOverrideStartPosition; // zMiscSmall
-extern TrackStreamer TheTrackStreamer;        // zTrack
 
 extern void ResetWorldAnimations(); // zAnim
 extern void ResetPropTimers();      // zPhysics

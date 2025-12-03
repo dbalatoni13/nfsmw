@@ -116,6 +116,7 @@ struct System {
 };
 
 void UpdateDelta(float deltaTime);
+void Reset(float externalTime);
 
 }; // namespace EventSequencer
 

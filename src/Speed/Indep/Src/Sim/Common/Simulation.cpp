@@ -1,5 +1,4 @@
-#include "../Simulation.h"
-#include "../SimSubSystem.h"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
@@ -16,16 +15,21 @@
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
+#include "Speed/Indep/Src/Main/EventSequencer.h"
 #include "Speed/Indep/Src/Main/Scheduler.h"
 #include "Speed/Indep/Src/Math/SimRandom.h"
+#include "Speed/Indep/Src/Misc/Platform.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Physics/Behaviors/RigidBody.h"
 #include "Speed/Indep/Src/Physics/Behaviors/SimpleRigidBody.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/SimProfile.h"
+#include "Speed/Indep/Src/Sim/SimSubSystem.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
+#include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/Src/World/WGridManagedDynamicElem.h"
 #include "Speed/Indep/Src/World/WTrigger.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 #include <algorithm>
 #include <vector>
@@ -61,6 +65,7 @@ static float mTime;
 static void *mWorkspace = nullptr;
 static void *mStackFrame = nullptr;
 static SimSystem *mSystem;
+static eUserMode mUserMode = USER_SINGLE;
 
 void InitTimers() {
     mFrameTime = 0.0f;
@@ -112,6 +117,25 @@ struct CDispatcher : public UTL::Collections::Singleton<CDispatcher> {
         HSIMABLE Participant;           // offset 0x0, size 0x4
         Collision::IListener *Listener; // offset 0x4, size 0x4
     };
+
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
+    void operator delete(void *mem, std::size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+
+    CDispatcher() {
+        mParticpants.reserve(160); // TODO magic
+        mList.reserve(256);        // TODO magic
+    }
+
+    ~CDispatcher() {}
+
+    void Profile() {}
 
     void Respond(HSIMABLE participant, const COLLISION_INFO &cinfo) {
         Node pair(participant, nullptr, nullptr);
@@ -351,20 +375,29 @@ class SimSystem : public UTL::COM::Object, public ITaskable {
     void RemoveTask(HSIMTASK hTask, ITaskable *handler);
     void Start(const UCrc32 objclass);
 
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
+    float GetTimeStep() const {
+        return mTimeStep;
+    }
+
+    float GetSpeed() const {
+        return mSpeed;
+    }
+
     State GetState() {
         return mState;
     }
 
     // Overrides
-    // IUnknown
-    override virtual ~SimSystem();
-
     // ITaskable
     override virtual bool OnTask(HSIMTASK htask, float dT);
 
   private:
     static void DoFetchInput(IInputPlayer *o) {
-        // TODO
+        return o->FetchInput();
     }
 
     void CollectGarbage();
@@ -714,10 +747,117 @@ void Update() {
 
 void Update() {
     if (Internal::mSystem) {
-        if (!Internal::mStackFrame) {
-            Update();
+        if (Internal::mStackFrame) {
+            bDoWithStack((void *)Internal::Update, Internal::mStackFrame, 0, 0);
         } else {
-            // bDoWithStack(Update, Internal::mStackFrame, 0, 0);
+            Internal::Update();
+        }
+    }
+}
+
+const float GetFrameTimeElapsed() {
+    if (Internal::mSystem) {
+        return Internal::mFrameTime;
+    }
+    return 0.0f;
+}
+
+float GetTimeStep(void) {
+    if (Internal::mSystem) {
+        return Internal::mSystem->GetTimeStep();
+    }
+    return 0.0f;
+}
+
+float GetSpeed() {
+    if (Internal::mSystem) {
+        return Internal::mSystem->GetSpeed();
+    }
+    return 0.0f;
+}
+
+float GetTime() {
+    return Internal::mTime;
+}
+
+void Shutdown() {
+    Profile::Shutdown();
+    if (Internal::mSystem) {
+        delete Internal::mSystem;
+        Internal::mSystem = nullptr;
+    }
+    GetRandom().Reset();
+    delete Internal::CDispatcher::Get();
+    Internal::mTime = 0.0f;
+}
+
+eUserMode GetUserMode() {
+    return Internal::mUserMode;
+}
+
+namespace Internal {
+
+void CheckHeap() {}
+
+}; // namespace Internal
+
+// UNSOLVED, stack problems, but it's functionally matching
+void Init(const UCrc32 activity, eUserMode mode) {
+    Internal::CheckHeap();
+    Internal::InitTimers();
+    new Internal::CDispatcher(); // the instance pointer is saved automatically
+    Internal::mUserMode = mode;
+    Profile::Init(); // in which line is this?
+    GetRandom().Reset();
+    Internal::mSystem = new SimSystem();
+    Internal::mSystem->Start(UCrc32(activity));
+    EventSequencer::Reset(Internal::mTime);
+}
+
+bool CanSpawnSimpleRigidBody(const UMath::Vector3 &position, bool highPriority) {}
+
+void StartProfile() {
+    Profile::Capture();
+    if (Internal::CDispatcher::Exists()) {
+        Internal::CDispatcher::Get()->Profile();
+    }
+    Internal::mProfileTime = 0;
+    Internal::mCallCount = 0;
+}
+
+void Suspend() {
+    if (Internal::mSystem) {
+        Internal::mSystem->PauseInput(true);
+    }
+}
+
+HSIMTASK AddTask(const UCrc32 &schedule, float rate, ITaskable *handler, float start_offset, TaskMode mode) {
+    return Internal::mSystem->AddTask(schedule, rate, handler, start_offset, mode);
+}
+
+void RemoveTask(HSIMTASK hTask, ITaskable *handler) {
+    Internal::mSystem->RemoveTask(hTask, handler);
+}
+
+void ModifyTask(HSIMTASK hTask, float rate) {
+    Internal::mSystem->ModifyTask(hTask, rate);
+}
+
+void SetStream(const UMath::Vector3 &location, bool blocking) {
+    if (Internal::mSystem) {
+        bVector3 streamLoc;
+        bConvertFromBond(streamLoc, location);
+        TheTrackStreamer.ClearStreamingPositions();
+        TheTrackStreamer.SetStreamingPosition(0, &streamLoc);
+        if (blocking) {
+            Internal::mSystem->PauseInput(true);
+            TheTrackStreamer.ServiceNonGameState();
+            TheTrackStreamer.BlockUntilLoadingComplete();
+            TheTrackStreamer.SetStreamingPosition(0, &streamLoc);
+            TheTrackStreamer.ServiceGameState();
+        } else {
+            TheTrackStreamer.ServiceGameState();
+            TheTrackStreamer.ServiceNonGameState();
         }
     }
 }
