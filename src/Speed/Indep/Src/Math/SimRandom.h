@@ -5,6 +5,17 @@
 #pragma once
 #endif
 
+// total size: 0x10
+class SimRandom {
+  public:
+    SimRandom();
+    ~SimRandom();
 
+  private:
+    unsigned int fastRandom;   // offset 0x0, size 0x4
+    unsigned int randtemp;     // offset 0x4, size 0x4
+    unsigned int randSeed;     // offset 0x8, size 0x4
+    unsigned int numRandCalls; // offset 0xC, size 0x4
+};
 
 #endif

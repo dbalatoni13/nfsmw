@@ -17,11 +17,13 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Main/Scheduler.h"
+#include "Speed/Indep/Src/Math/SimRandom.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Physics/Behaviors/RigidBody.h"
 #include "Speed/Indep/Src/Physics/Behaviors/SimpleRigidBody.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/SimProfile.h"
+#include "Speed/Indep/Src/Sim/SimTypes.h"
 #include "Speed/Indep/Src/World/WGridManagedDynamicElem.h"
 #include "Speed/Indep/Src/World/WTrigger.h"
 
@@ -40,6 +42,8 @@ struct _type_CollisionParticipant {
     }
 };
 
+class SimSystem;
+
 namespace Sim {
 
 void ProfileTask(HSIMTASK htask, const char *name);
@@ -56,7 +60,7 @@ static float mFrameTime = 0.0f;
 static float mTime;
 static void *mWorkspace = nullptr;
 static void *mStackFrame = nullptr;
-static class SimSystem *mSystem;
+static SimSystem *mSystem;
 
 void InitTimers() {
     mFrameTime = 0.0f;
@@ -346,6 +350,10 @@ class SimSystem : public UTL::COM::Object, public ITaskable {
     HSIMTASK AddTask(const UCrc32 &schedule, float rate, ITaskable *handler, float start_offset, TaskMode mode);
     void RemoveTask(HSIMTASK hTask, ITaskable *handler);
     void Start(const UCrc32 objclass);
+
+    State GetState() {
+        return mState;
+    }
 
     // Overrides
     // IUnknown
@@ -678,4 +686,40 @@ void Respond(const Info &cinfo) {
 }
 
 }; // namespace Collision
+
+SimRandom &GetRandom() {
+    static SimRandom r;
+
+    return r;
+}
+
+bool Exists() {
+    return Internal::mSystem != nullptr;
+}
+
+const State GetState() {
+    if (Internal::mSystem) {
+        return Internal::mSystem->GetState();
+    }
+    return STATE_NONE;
+}
+
+namespace Internal {
+
+void Update() {
+    mSystem->UpdateFrame();
+}
+
+}; // namespace Internal
+
+void Update() {
+    if (Internal::mSystem) {
+        if (!Internal::mStackFrame) {
+            Update();
+        } else {
+            bDoWithStack(Update, Internal::mStackFrame, 0, 0);
+        }
+    }
+}
+
 }; // namespace Sim
