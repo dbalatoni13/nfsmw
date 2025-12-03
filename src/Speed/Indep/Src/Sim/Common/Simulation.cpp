@@ -717,7 +717,7 @@ void Update() {
         if (!Internal::mStackFrame) {
             Update();
         } else {
-            bDoWithStack(Update, Internal::mStackFrame, 0, 0);
+            // bDoWithStack(Update, Internal::mStackFrame, 0, 0);
         }
     }
 }
