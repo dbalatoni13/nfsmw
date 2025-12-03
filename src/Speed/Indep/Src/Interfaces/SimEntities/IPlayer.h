@@ -13,10 +13,10 @@
 
 // TODO move?
 enum ePlayerList {
-    PLAYER_MAX = 3,
-    PLAYER_REMOTE = 2,
-    PLAYER_LOCAL = 1,
     PLAYER_ALL = 0,
+    PLAYER_LOCAL = 1,
+    PLAYER_REMOTE = 2,
+    PLAYER_MAX = 3,
 };
 
 enum eControllerConfig {

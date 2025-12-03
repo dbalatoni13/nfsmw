@@ -432,8 +432,8 @@ struct EmitterLibrary {
 };
 
 // TODO right place?
+// total size: 0x30
 struct WorldFXTrigger : public bTNode<WorldFXTrigger> {
-    // total size: 0x30
     EmitterLibrary *mLib;        // offset 0x8, size 0x4
     float mTriggerRadius;        // offset 0xC, size 0x4
     bVector3 mWorldPos;          // offset 0x10, size 0x10

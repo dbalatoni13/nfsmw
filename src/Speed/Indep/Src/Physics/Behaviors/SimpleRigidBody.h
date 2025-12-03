@@ -60,6 +60,7 @@ class SimpleRigidBody : public Behavior, public IRigidBody, public ISimpleBody, 
 
     // Static functions
     static Behavior *Construct(const struct BehaviorParams &params);
+    static void Update(const float dT, void *workspace);
     static IRigidBody *Get(unsigned int index);
     static unsigned int AssignSlot();
 
@@ -69,7 +70,6 @@ class SimpleRigidBody : public Behavior, public IRigidBody, public ISimpleBody, 
     void ApplyFriction();
     void DoIntegration(const float dT);
     void RecalcOrientMat(UMath::Matrix4 &resultMat4) const;
-    void Update(const float dT, void *workspace);
 
     // Virtual methods
     virtual void OnDebugDraw();

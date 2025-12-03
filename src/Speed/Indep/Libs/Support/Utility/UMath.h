@@ -20,6 +20,10 @@ void BuildRotate(Matrix4 &m, float r, float x, float y, float z);
 
 float Ceil(const float x);
 
+inline float Distance(const Vector3 &a, const Vector3 &b) {
+    return VU0_v3distance(a, b);
+}
+
 inline float DistanceSquare(const Vector3 &a, const Vector3 &b) {
     return VU0_v3distancesquare(a, b);
 }

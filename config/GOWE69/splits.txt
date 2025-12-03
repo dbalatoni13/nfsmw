@@ -178,7 +178,7 @@ Speed/Indep/SourceLists/zPhysicsBehaviors.cpp:
 Speed/Indep/SourceLists/zPlatform.cpp:
 	.text       start:0x8026B4F4 end:0x802727B8
 	.ctors      start:0x803C8BC4 end:0x803C8BC8
-	.rodata     start:0x80403B1C end:0x804074A4
+	.rodata     start:0x80403B1C end:0x804043B0
 	.data       start:0x8041F7F4 end:0x80435814
 	.bss        start:0x8048BD18 end:0x80496A20
 
@@ -190,6 +190,7 @@ Speed/Indep/SourceLists/zRender.cpp:
 Speed/Indep/SourceLists/zSim.cpp:
 	.text       start:0x802728EC end:0x8028A17C
 	.ctors      start:0x803C8BCC end:0x803C8BD0
+	.rodata     start:0x804043B0 end:0x804074A4
 	.data       start:0x80435814 end:0x80435970
 	.bss        start:0x80496A28 end:0x80498974
 

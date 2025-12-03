@@ -20,7 +20,7 @@
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 
-#define RIGID_BODY_MAX (64)
+#define RIGID_BODY_MAX (64U)
 
 // total size: 0x38
 struct RBComplexParams : public Sim::Param {
@@ -211,6 +211,7 @@ class RigidBody : public Behavior,
 
     // Static functions
     static Behavior *Construct(const BehaviorParams &params);
+    static void Update(const float dT);
     static void PushSP(void *workspace);
     static void PopSP();
     static IRigidBody *Get(unsigned int index);

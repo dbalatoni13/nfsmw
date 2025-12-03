@@ -94,8 +94,8 @@ class IEngine : public UTL::COM::IUnknown, public UTL::Collections::Instanceable
     virtual void SetVerbose(bool verbose);
 };
 
+// total size: 0x40
 struct System {
-    // total size: 0x40
     enum {
         kQueueLength = 4,
     };
@@ -114,6 +114,8 @@ struct System {
     float mQueueDuration;                 // offset 0x2C, size 0x4
     unsigned int mQueuedStimuli[4];       // offset 0x30, size 0x10
 };
+
+void UpdateDelta(float deltaTime);
 
 }; // namespace EventSequencer
 

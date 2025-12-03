@@ -7,15 +7,14 @@
 
 #include "AIAvoidable.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
-#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/AI/AIAvoidable.h"
 #include "Speed/Indep/Src/AI/AIMath.h"
 #include "Speed/Indep/Src/Debug/Debugable.h"
 #include "Speed/Indep/Src/Interfaces/IAttachable.h"
-#include "Speed/Indep/Src/Interfaces/IListener.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
+#include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.hpp"
 
 class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable, public Debugable {

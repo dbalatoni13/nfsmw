@@ -20,8 +20,8 @@
 
 extern eView eViews[22];
 
+// total size: 0x68
 struct eView : public eViewPlatInterface {
-    // total size: 0x68
     EVIEW_ID ID;                                    // offset 0x4, size 0x4
     char Active;                                    // offset 0x8, size 0x1
     char LetterBox;                                 // offset 0x9, size 0x1

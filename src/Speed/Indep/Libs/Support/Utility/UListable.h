@@ -86,19 +86,22 @@ template <typename T, std::size_t ListSize, typename Enum, std::size_t EnumMax> 
     static iterator First(Enum idx);
     static iterator Last(Enum idx);
 
+    static ForEachFunc_t ForEach(Enum idx, ForEachFunc_t f) {
+        List &l = _mLists._buckets[idx];
+        std::for_each(l.begin(), l.end(), f);
+    }
+
+    static const List &GetList(Enum idx) {
+        return _mLists._buckets[idx];
+    }
+
     ~ListableSet() {}
 
     void UnList() {}
 
     iterator Next(Enum idx) {}
 
-    ForEachFunc_t ForEach(Enum idx, ForEachFunc_t f) {}
-
     void AddToList(Enum to) {}
-
-    static const List &GetList(Enum idx) {
-        return _mLists._buckets[idx];
-    }
 
   private:
     class _ListSet {

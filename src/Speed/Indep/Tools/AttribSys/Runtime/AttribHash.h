@@ -42,6 +42,10 @@ class StringKey {
         return mHash32;
     }
 
+    bool IsValid() const {
+        return mString != nullptr;
+    }
+
   private:
     // total size: 0x10
     unsigned long long mHash64; // offset 0x0, size 0x8

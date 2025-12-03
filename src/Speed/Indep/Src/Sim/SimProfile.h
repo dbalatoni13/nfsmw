@@ -24,6 +24,14 @@ inline HSIMPROFILE Create() {
 
 inline void Release(HSIMPROFILE) {}
 
+inline void Init() {}
+
+inline void Shutdown() {}
+
+inline void Begin() {}
+
+inline void End() {}
+
 // total size: 0xC
 class Scope : public bTNode<Scope> {
   public:

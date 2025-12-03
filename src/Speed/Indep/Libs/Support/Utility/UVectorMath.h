@@ -81,6 +81,12 @@ inline float VU0_Cos(float x) {
     return cosf(x);
 }
 
+inline float VU0_v3distance(const UMath::Vector3 &p1, const UMath::Vector3 &p2) {
+    UMath::Vector3 temp;
+    VU0_v3sub(p1, p2, temp);
+    return VU0_sqrt(VU0_v3lengthsquare(temp));
+}
+
 // TODO these should go into UVectorMathGC.hpp
 inline void VU0_v3unitcrossprod(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &dest) {
     VU0_v3crossprod(a, b, dest);

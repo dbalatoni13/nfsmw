@@ -26,6 +26,7 @@ class ActionQueue : public UTL::Collections::Listable<ActionQueue, 20> {
     const ActionRef GetAction();
     void PopAction();
     void Flush();
+    bool IsEnabled() const;
     void Enable(bool b);
     void SetPort(int port);
     void SetConfig(unsigned int config, const char *queue_name);
@@ -54,7 +55,9 @@ class ActionQueue : public UTL::Collections::Listable<ActionQueue, 20> {
 
     // Timer ActivationTime() const {}
 
-    // unsigned int GetConfig() const {}
+    unsigned int GetConfig() const {
+        return mConfig;
+    }
 
   private:
     UCircularQueue<ActionData, 50> fQueue; // offset 0x4, size 0x268

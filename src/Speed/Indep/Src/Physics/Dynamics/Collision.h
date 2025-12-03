@@ -30,8 +30,9 @@ struct CollisionObject {
     bMatrix4 fMat;                     // offset 0x30, size 0x40
 };
 
+// TODO move to CARP?
+// total size: 0x40
 struct CollisionInstance {
-    // total size: 0x40
     bVector4 fInvMatRow0Width;                         // offset 0x0, size 0x10
     unsigned short fIterStamp;                         // offset 0x10, size 0x2
     unsigned short fFlags;                             // offset 0x12, size 0x2
@@ -115,9 +116,9 @@ class Geometry {
 // total size: 0x8
 struct Friction {
     enum State {
-        Dynamic = 2,
-        Static = 1,
         None = 0,
+        Static = 1,
+        Dynamic = 2,
     };
 
     Friction() {

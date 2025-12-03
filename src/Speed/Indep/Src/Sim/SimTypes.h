@@ -19,6 +19,8 @@ class Param {
     unsigned int pad;  // offset 0xC, size 0x4
 
   public:
+    Param() : mType(UCrc32()), mName(UCrc32()), mData(nullptr) {}
+
     Param(const Param &from) : mType(UCrc32(from.mType)), mName(UCrc32(from.mName)), mData(from.mData) {}
 
     template <typename T> Param(UCrc32 name, T *addr) : mName(name), mData(addr) {}
@@ -58,5 +60,22 @@ enum State {
 };
 
 }; // namespace Sim
+
+// total size: 0x18
+class SimCollisionMap {
+  public:
+    class IRigidBody *GetRB(int rbIndex) const;
+    class IRigidBody *GetSRB(int srbIndex) const;
+    class IRigidBody *GetOrderedBody(int index) const;
+
+    void Clear() {
+        for (unsigned int i = 0; i < 3; ++i) {
+            fBitMap[i] = 0;
+        }
+    }
+
+  private:
+    unsigned long long fBitMap[3]; // offset 0x0, size 0x18
+};
 
 #endif

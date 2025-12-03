@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Src/Interfaces/IListener.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
@@ -69,6 +70,10 @@ struct Info {
     UMath::Vector3 slidingVel;             // offset 0x70, size 0xC
     const Attrib::Collection *objBsurface; // offset 0x7C, size 0x4
 };
+
+void AddListener(IListener *listener, HSIMABLE participant, const char *who);
+void AddListener(IListener *listener, class UTL::COM::IUnknown *participant, const char *who);
+void RemoveListener(IListener *listener);
 
 }; // namespace Collision
 
