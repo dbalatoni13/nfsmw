@@ -1,0 +1,250 @@
+SmokeableSpawners / WorldBounds = 0x00034027,
+
+VisibleSectionUserInfo = 0x00034099,
+ScenerySectionHeader = 0x00034101,
+SceneryInfos = 0x00034102,
+SceneryInstances = 0x00034103,
+SceneryTreeNodes = 0x00034105,
+SceneryOverrideHooks = 0x00034106,
+PrecullerInfos / SceneryOverride = 0x00034107,
+SceneryOverrideInfos / SceneryGroup = 0x00034108,
+SceneryBarrierGroups = 0x00034109,
+ModelHierarchy = 0x0003410C,
+TrackStreamingSections = 0x00034110,
+TrackStreamingInfos = 0x00034111,
+TrackStreamingBarriers = 0x00034112,
+TrackStreamingDiscBundle = 0x00034113,
+
+TrackPositionMarkers = 0x00034146,
+TrackPathZones = 0x0003414A,
+TrackPathBarriers = 0x0003414D,
+
+VisibleSectionManageInfo = 0x00034151,
+VisibleSectionBoundaries = 0x00034152,
+DrivableScenerySections = 0x00034153,
+LoadingSections = 0x00034155,
+ElevationPolygons = 0x00034156,
+VisibleSectionOverlays = 0x00034158,
+HeliSheetManager = 0x00034159,
+
+TrackObjectBounds = 0x00034191,
+
+TrackInfos = 0x00034201,
+SunInfos = 0x00034202,
+
+GenericRegions / Weatherman = 0x00034250,
+
+EventTriggerPackHeader = 0x00036001,
+EventTriggerNodes = 0x00036002,
+EventTriggerEntries = 0x00036003,
+
+WorldAnimEntities = 0x00037080,
+WorldAnimInstances = 0x00037090,
+CarPartsAnimHeader = 0x00037100,
+WorldAnimTreeMarkers = 0x00037110,
+WorldAnimEventDirs = 0x00037140,
+WorldAnimCtrl = 0x00037150,
+
+ParameterMapLayerHeader = 0x0003B602,
+ParameterMapLayerFields = 0x0003B603,
+ParameterMapIDK1 = 0x0003B604,
+ParameterMapIDK2 = 0x0003B605,
+ParameterMapQuad8s = 0x0003B607,
+ParameterMapQuad16s = 0x0003B608,
+
+UppleUWorld = 0x0003B800,
+WCollisionAssets = 0x0003B801,
+WGridMaker = 0x0003B802,
+
+EventHandler / NISScript = 0x0003B811,
+
+CollisionBody = 0x0003B901,
+
+EmitterSystem = 0x0003BC00,
+
+MeshContainerHeader (SolidListInfo) = 0x00134002,
+MeshContainerKeys = 0x00134003,
+MeshContainerOffsets = 0x00134004,
+SolidInfo (SolidListObjHead) = 0x00134011,
+SolidTextures (Texture hashes) = 0x00134012,
+SolidShaders (LightMaterials) = 0x00134013,
+
+MeshNormalSmoother = 0x00134017,
+MeshSmoothVertices = 0x00134018,
+MeshSmoothVertexPlats = 0x00134019,
+SolidMarkers = 0x0013401A,
+
+MeshInfoHeader (SolidMeshDescriptor) = 0x00134900,
+MeshVertexBuffer = 0x00134B01,
+MeshShaderInfos (SolidObjectShadingGroups) = 0x00134B02,
+MeshPolygons (SolidMeshFaces) = 0x00134B03,
+
+MeshVltMaterials = 0x00134C02,
+
+LightSourcePackHeader = 0x00135001,
+LightAABBNodes = 0x00135002,
+LightSources = 0x00135003,
+
+LightFlarePackHeader = 0x00135101,
+LightFlare = 0x00135102,
+
+LightMaterials = 0x00135200,
+
+EAGLSkeletons = 0x00E34009,
+EAGLAnimations = 0x00E34010,
+
+TextureAnimPackHeader = 0x30300101,
+TextureAnimEntry = 0x30300102,
+TextureAnimFrames = 0x30300103,
+
+TexturePackInfoHeader = 0x33310001,
+TexturePackInfoKeys (Hashes) = 0x33310002,
+TexturePackInfoEntries = 0x33310003,
+TexturePackInfoTextures = 0x33310004,
+TexturePackInfoComps = 0x33310005,
+TexturePackAnimNames = 0x33312001,
+TexturePackAnimFrames = 0x33312002,
+TexturePackDataHeader = 0x33320001,
+TexturePackDataArray = 0x33320002,
+TexturePackDataUnknown = 0x33320003,
+
+ScenerySection = 0x80034100,
+ModelHierarchyTree = 0x8003410B,
+TrackPathManager = 0x80034147,
+VisibleSectionManager = 0x80034150,
+
+EventTriggerPack / EmitterTriggers = 0x80036000,
+
+QuickSplines = 0x8003B000,
+
+ParameterMaps = 0x8003B600,
+ParameterMapLayer = 0x8003B601,
+
+EventSystem / EventSequence = 0x8003B810,
+
+CollisionVolumes / DBCarBounds = 0x8003B900,
+
+GeometryPack = 0x80134000,
+MeshContainerInfo = 0x80134001,
+MeshContainerEmpty = 0x80134008,
+SolidPack = 0x80134010,
+MeshInfoContainer = 0x80134100,
+
+LightSourcesPack = 0x80135000,
+LightFlaresPack = 0x80135100,
+
+TextureAnimPack = 0xB0300100,
+
+TexturePack = 0xB3300000,
+TexturePackInfo = 0xB3310000,
+TexturePackBinary = 0xB3312000,
+TexturePackAnim = 0xB3312004,
+TexturePackData = 0xB3320000,
+
+JDLZ (Compressed Chunk) = 0x5a4c444a
+ICETracks = 0x0003B210
+ICEShakeTracks = 0x0003B211
+NisScene = 0x80037020
+
+FEngFont = 0x00030201
+FEngFiles = 0x00030203
+FNGCompress = 0x00030210
+PresetRides = 0x00030220
+MagazinesFrontend = 0x00030230
+MagazinesShowcase = 0x00030231
+WideDecals = 0x00030240
+PresetSkins = 0x00030250
+Smokeables = 0x00034026
+CarTypeInfos = 0x00034600
+CarSkins = 0x00034601
+DBCarParts_Header = 0x00034603
+DBCarParts_Array = 0x00034604
+DBCarParts_Attribs = 0x00034605
+DBCarParts_Strings = 0x00034606
+SlotTypes = 0x00034607
+CarInfoAnimHookup = 0x00034608
+CarInfoAnimHideup = 0x00034609
+DBCarParts_Structs = 0x0003460A
+DBCarParts_Models = 0x0003460B
+DBCarParts_Offsets = 0x0003460C
+DBCarParts_Custom = 0x0003460D
+GCareer_Upgrade = 0x00034A01
+GCareer_Races_Old = 0x00034A02
+StyleMomentsInfo = 0x00034A07
+StylePartitions = 0x00034A08
+GCareer_Stars = 0x00034A09
+GCareer_Styles = 0x00034A0A
+GCareer_Races = 0x00034A11
+GCareer_Shops = 0x00034A12
+GCareer_Brands = 0x00034A14
+GCareer_PartPerf = 0x00034A15
+GCareer_Showcases = 0x00034A16
+GCareer_Messages = 0x00034A17
+GCareer_Stages = 0x00034A18
+GCareer_Sponsors = 0x00034A19
+GCareer_PerfTun = 0x00034A1A
+GCareer_Challenges = 0x00034A1B
+GCareer_PartUnlock = 0x00034A1C
+GCareer_Strings = 0x00034A1D
+GCareer_BankTrigs = 0x00034A1E
+GCareer_CarUnlocks = 0x00034A1F
+DifficultyInfo = 0x00034B00
+AcidEffects = 0x00035020
+AcidEmitters = 0x00035021
+Stream37220 = 0x00037220
+Stream37240 = 0x00037240
+Stream37250 = 0x00037250
+Stream37260 = 0x00037260
+Stream37270 = 0x00037270
+STRBlocks = 0x00039000
+LangFont = 0x00039001
+Subtitles = 0x00039010
+MovieCatalog = 0x00039020
+CompTPKBlock = 0x0003A100
+ICECatalog = 0x0003B200
+TPKSettings = 0x0003BD00
+Vinyl_Header = 0x0003CE01
+Vinyl_PointerTable = 0x0003CE02
+Vinyl_PathEntry = 0x0003CE04
+Vinyl_PathData = 0x0003CE05
+Vinyl_PathPoint = 0x0003CE06
+Vinyl_FillEffect = 0x0003CE07
+Vinyl_StrokeEffect = 0x0003CE08
+Vinyl_DropShadow = 0x0003CE09
+Vinyl_InnerGlow = 0x0003CE0A
+Vinyl_ShadowEffect = 0x0003CE0B
+Vinyl_Gradient = 0x0003CE0C
+VinylDataHeader = 0x0003CE0E
+VinylCarEntries = 0x0003CE0F
+VinylFloatMatrix = 0x0003CE10
+VinylVectorEntries = 0x0003CE11
+SkinRegionDB = 0x0003CE12
+VinylMetaData = 0x0003CE13
+FX = 0x000B5846
+DDSTexture = 0x30300200
+ColorCube = 0x30300201
+PCAWater0 = 0x30300300
+ABKC = 0x434B4241
+LOCH = 0x48434F4C
+VPAK = 0x4B415056
+MOIR = 0x52494F4D
+MEMO = 0x53219999
+LZCompressed = 0x55441122
+MVhd = 0x6468564D
+Gnsu = 0x75736E47
+DBCarParts = 0x80034602
+GCareer_Old = 0x80034A00
+GCareer = 0x80034A10
+GLimitations = 0x80034A30
+AnimDirectory = 0x80037050
+IceCameraPart0 = 0x8003B200
+IceCameraPart1 = 0x8003B201
+IceCameraPart2 = 0x8003B202
+IceCameraPart3 = 0x8003B203
+IceCameraPart4 = 0x8003B204
+IceSettings = 0x8003B209
+SoundStichs = 0x8003B500
+VinylSystem = 0x8003CE00
+Vinyl_PathSet = 0x8003CE03
+VinylDataTable = 0x8003CE0D
+PCAWeights = 0xB0300300
