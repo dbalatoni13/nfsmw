@@ -195,4 +195,23 @@ struct ePositionMarker {
     void EndianSwap() {}
 };
 
+class eViewPlatInfo;
+
+// total size: 0x4
+class eViewPlatInterface {
+    eViewPlatInfo *PlatInfo; // offset 0x0, size 0x4
+
+  public:
+    eViewPlatInfo *GetPlatInfo() {
+        return PlatInfo;
+    }
+    void SetPlatInfo(eViewPlatInfo *info) {
+        PlatInfo = info;
+    }
+
+    static eViewPlatInfo *GimmeMyViewPlatInfo(int view_id);
+    eVisibleState GetVisibleStateGB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
+    eVisibleState GetVisibleStateSB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
+};
+
 #endif

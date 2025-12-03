@@ -1,7 +1,6 @@
-#include "./Ecstasy.hpp"
-
+#include "EcstasyE.hpp"
+#include "Ecstasy.hpp"
 #include "EcstasyEx.hpp"
-#include "Speed/GameCube/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/EcstasyEx.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
@@ -11,19 +10,12 @@
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "dolphin.h"
-#include "dolphin/gx/GXEnum.h"
-#include "dolphin/gx/GXFrameBuffer.h"
-#include "dolphin/gx/GXManage.h"
-#include "dolphin/mtx.h"
-#include "dolphin/os/OSReset.h"
-#include "dolphin/vi.h"
-#include "dolphin/vifuncs.h"
 
 enum VIDEO_MODE {
-    NUM_VIDEO_MODES = 3,
-    MODE_NTSC = 2,
-    MODE_PAL60 = 1,
     MODE_PAL = 0,
+    MODE_PAL60 = 1,
+    MODE_NTSC = 2,
+    NUM_VIDEO_MODES = 3,
 };
 
 // TODO put these in correct headers
@@ -545,25 +537,25 @@ void eInitGX() {
 
 void __InitRenderMode() {
     switch (VIGetTvFormat()) {
-    case 0:
-        if (bEProgressive) {
-            _rmode = &GXNtsc480Prog;
-        } else {
-            _rmode = &GXNtsc480IntDf;
-        }
-        break;
-    case 1:
-        _rmode = &PalNFS01IntDfScale;
-        break;
-    case 5:
-        _rmode = &GXEurgb60Hz480IntDf;
-        break;
-    case 2:
-        _rmode = &GXMpal480IntDf;
-        break;
-    default:
-        OSPanic("src/ecstasy/EcstasyE.cpp", 0x1281, "Init: invalid TV format\n");
-        break;
+        case 0:
+            if (bEProgressive) {
+                _rmode = &GXNtsc480Prog;
+            } else {
+                _rmode = &GXNtsc480IntDf;
+            }
+            break;
+        case 1:
+            _rmode = &PalNFS01IntDfScale;
+            break;
+        case 5:
+            _rmode = &GXEurgb60Hz480IntDf;
+            break;
+        case 2:
+            _rmode = &GXMpal480IntDf;
+            break;
+        default:
+            OSPanic("src/ecstasy/EcstasyE.cpp", 0x1281, "Init: invalid TV format\n");
+            break;
     }
     efbxfbRatio = static_cast<float>(efbHcrt) / xfbHcrt;
     GXAdjustForOverscan(_rmode, &_rmodeObj, 0, 0x10);
@@ -798,7 +790,8 @@ cSpecularMap SpecularMap;
 
 cQuarterSizeMap QSizeI8_Z8;
 cQuarterSizeMap QSizeScratchPad;
-cQuarterSizeMap QSizeAccumulationI8;;
+cQuarterSizeMap QSizeAccumulationI8;
+;
 
 void eExStartup(void) {
     unsigned int iter_countA;
@@ -808,7 +801,8 @@ void eExStartup(void) {
     PlatformInitJoystick();
 
     for (iter_countA = 0;; iter_countA++) {
-        if (ActualReadJoystickData() != 0 || iter_countA >= 0x1F4) break;
+        if (ActualReadJoystickData() != 0 || iter_countA >= 0x1F4)
+            break;
     }
 
     SpecularMap.Init();

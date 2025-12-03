@@ -5,7 +5,10 @@
 #pragma once
 #endif
 
-#include "Speed/GameCube/Src/Ecstasy/eViewPlat.hpp"
+#include "EcstasyData.hpp"
+
+class eView;
+class eRenderTarget;
 
 int eInitEnginePlat();
 void epInitViews();
@@ -18,7 +21,5 @@ void SetParticleSystemStats(int num_particles, int max_num_particles, int num_pa
 void eWaitUntilRenderingDone();
 
 void eSetScissor(int xOrig, int yOrig, int wd, int ht);
-
-void __InitGXlite(void);
 
 #endif

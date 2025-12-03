@@ -1,12 +1,13 @@
 #include "./EcstasyEx.hpp"
+#include "./EcstasyE.hpp"
 
-#include "Speed/GameCube/Src/Ecstasy/TextureInfoPlat.hpp"
+#include "Speed/Indep/Src/Ecstasy/EcstasyE.hpp"
+#include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/World/Scenery.hpp"
 #include "Speed/Indep/Src/World/WeatherMan.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "Speed/Indep/Src/Ecstasy/EcstasyE.hpp"
-#include "Speed/Indep/Src/Ecstasy/Texture.hpp"
+#include "TextureInfoPlat.hpp"
 #include "dolphin.h"
 
 static float FogCurrentBrightness = 0.0f;
@@ -21,7 +22,9 @@ void eSetCulling(GXCullMode mode) {
 }
 
 // STRIPPED
-bool IsZBufferEnabled(bool &write_enabled) { return false; }
+bool IsZBufferEnabled(bool &write_enabled) {
+    return false;
+}
 
 Bool prevTest = 1;
 Bool prevWrite = 1;
@@ -68,7 +71,9 @@ static unsigned char _alphaOn = 0;
 static unsigned char _alphaRef = 0x28;
 
 // STRIPPED
-bool IsAlphaTestOn() { return false; }
+bool IsAlphaTestOn() {
+    return false;
+}
 
 static void _alphaTestFunc() {
     if (_alphaOn != 0) {
@@ -91,15 +96,21 @@ void eSetAlphaTest(unsigned char bOn) {
 }
 
 // STRIPPED
-const char *GetBlendModeName() { return ""; }
+const char *GetBlendModeName() {
+    return "";
+}
 
 // STRIPPED
-const char *GetSrcBlendFactorName() { return ""; }
+const char *GetSrcBlendFactorName() {
+    return "";
+}
 
 // STRIPPED
-const char * GetDstBlendFactorName() { return ""; }
+const char *GetDstBlendFactorName() {
+    return "";
+}
 
-extern void eSetFogState(struct TextureInfo * texture_info /* r3 */, enum _GXBlendMode mode /* r4 */);
+extern void eSetFogState(struct TextureInfo *texture_info /* r3 */, enum _GXBlendMode mode /* r4 */);
 
 GXBlendMode prevMode = GX_BM_NONE;
 GXBlendFactor prevSrc = GX_BL_ONE;
@@ -162,7 +173,7 @@ void eSetBlendMode(TextureInfo *texture_info, unsigned char opt) {
             srcFactor = GX_BL_SRCALPHA;
             dstFactor = GX_BL_INVSRCALPHA;
             break;
-        
+
         default:
             mode = GX_BM_NONE;
             srcFactor = GX_BL_ONE;
@@ -196,7 +207,7 @@ void eSetBlendModeSrcInvSrc() {
     prevMode = GX_BM_BLEND;
     prevSrc = GX_BL_SRCALPHA;
     prevDst = GX_BL_INVSRCALPHA;
-    
+
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
 }
 
@@ -328,19 +339,19 @@ char HORIZON_FOG_GRID_DISPLAY_LIST[768];
 float HORIZON_FOG_GRID_POS_ARRAY[384];
 unsigned int HORIZON_FOG_GRID_CLR_ARRAY[224];
 float HORIZON_FOG_GRID_UVS_ARRAY[256];
-void * DLHorizonFogGrid;
+void *DLHorizonFogGrid;
 unsigned long DLHorizonFogGridSize;
 unsigned char HorizonCurrentPOS;
 unsigned char HorizonCurrentCLR;
 unsigned char HorizonCurrentUVS;
 
 int AddHorizonFogEntryPOS(float posX, float posY, float posZ) {
-    float* data_pos = &HORIZON_FOG_GRID_POS_ARRAY[HorizonCurrentPOS * 3];
+    float *data_pos = &HORIZON_FOG_GRID_POS_ARRAY[HorizonCurrentPOS * 3];
     int foundPOS = 0;
     int bufPOS_IDX = -1;
     unsigned int size_of_entry = 0xDF;
     unsigned int data_stride = 3;
-    
+
     for (int i = 0; i < HorizonCurrentPOS; i++) {
         if ((HORIZON_FOG_GRID_POS_ARRAY[i * data_stride] == posX) && (HORIZON_FOG_GRID_POS_ARRAY[i * data_stride + 1] == posY)) {
             bufPOS_IDX = i;
@@ -352,7 +363,7 @@ int AddHorizonFogEntryPOS(float posX, float posY, float posZ) {
         *data_pos++ = posX;
         *data_pos++ = posY;
         *data_pos++ = posZ;
-        
+
         bufPOS_IDX = HorizonCurrentPOS;
         if (HorizonCurrentPOS <= size_of_entry) {
             HorizonCurrentPOS++;
@@ -379,12 +390,12 @@ int AddHorizonFogEntryCLR(unsigned int clr) {
 }
 
 int AddHorizonFogEntryUVS(float uvX, float uvY) {
-    float* data_uvs = &HORIZON_FOG_GRID_UVS_ARRAY[HorizonCurrentUVS * 2];
+    float *data_uvs = &HORIZON_FOG_GRID_UVS_ARRAY[HorizonCurrentUVS * 2];
     int foundUVS = 0;
     int bufUVS_IDX = -1;
     unsigned int size_of_entry = 0xDF;
     unsigned int data_stride = 2;
-    
+
     for (int i = 0; i < HorizonCurrentUVS; i++) {
         if ((HORIZON_FOG_GRID_UVS_ARRAY[i * data_stride] == uvX) && (HORIZON_FOG_GRID_UVS_ARRAY[i * data_stride + 1] == uvY)) {
             bufUVS_IDX = i;
@@ -395,7 +406,7 @@ int AddHorizonFogEntryUVS(float uvX, float uvY) {
     if (foundUVS == 0) {
         *data_uvs++ = uvX;
         *data_uvs++ = uvY;
-        
+
         bufUVS_IDX = HorizonCurrentUVS;
         if (HorizonCurrentUVS <= size_of_entry) {
             HorizonCurrentUVS++;
@@ -408,39 +419,39 @@ int AddHorizonFogEntryUVS(float uvX, float uvY) {
 void GenerateHorizonFogDisplayList(void **display_list, unsigned long *size, GXVtxFmt vertex_format) {
     unsigned long dl_sz;
     unsigned long grid_color; // r30
-    int current_index; // r24
-    int verts_per_strip; // r15
-    int color_base; // r21
-    int color_mul; // r22
-    int pos_index; // r29
+    int current_index;        // r24
+    int verts_per_strip;      // r15
+    int color_base;           // r21
+    int color_mul;            // r22
+    int pos_index;            // r29
     int clr_index;
     int uvs_index;
     float grid_pointX; // f28
     float grid_pointY; // f30
-    float tex_coordX; // f26
-    float tex_coordY; // f29
-    int multiple; // r0
-    
+    float tex_coordX;  // f26
+    float tex_coordY;  // f29
+    int multiple;      // r0
+
     *display_list = HORIZON_FOG_GRID_DISPLAY_LIST;
 
     float vertex_spacingX = 42.666668f; // f20
     float vertex_spacingY = 68.571434f; // f22
-    float uv_spacingX = 0.06666667; // f21
-    float uv_spacingY = 0.14285715; // f23
-    
+    float uv_spacingX = 0.06666667;     // f21
+    float uv_spacingY = 0.14285715;     // f23
+
     current_index = 0;
     verts_per_strip = 0x20;
     color_base = 10;
     color_mul = 0xF5;
 
     GXBeginDisplayList(*display_list, 0xC00);
-    
+
     GXClearVtxDesc();
     GXSetVtxDesc(GX_VA_POS, GX_INDEX8);
     GXSetVtxDesc(GX_VA_CLR0, GX_INDEX8);
     GXSetVtxDesc(GX_VA_TEX0, GX_INDEX8);
 
-    GXSetArray(GX_VA_POS,  HORIZON_FOG_GRID_POS_ARRAY, 0xC);
+    GXSetArray(GX_VA_POS, HORIZON_FOG_GRID_POS_ARRAY, 0xC);
     GXSetArray(GX_VA_CLR0, HORIZON_FOG_GRID_CLR_ARRAY, 0x4);
     GXSetArray(GX_VA_TEX0, HORIZON_FOG_GRID_UVS_ARRAY, 0x8);
 
@@ -460,7 +471,7 @@ void GenerateHorizonFogDisplayList(void **display_list, unsigned long *size, GXV
             pos_index = AddHorizonFogEntryPOS(grid_pointX, grid_pointY, 0.0f);
             clr_index = AddHorizonFogEntryCLR(grid_color);
             uvs_index = AddHorizonFogEntryUVS(tex_coordX, tex_coordY);
-            
+
             GXPosition1x8(pos_index);
             GXColor1x8(current_index++);
             GXTexCoord1x8(uvs_index);
@@ -537,10 +548,10 @@ cSphereMap::~cSphereMap() {
 void cSphereMap::Init(int face_front, int face_right, int face_back, int face_left, int face_up, int face_down) {
     this->cubeBuffer[0].Init(0, 0, face_front, face_front, 5, 1);
     this->cubeBuffer[1].Init(0, 0, face_right, face_right, 5, 1);
-    this->cubeBuffer[2].Init(0, 0, face_back,  face_back,  5, 1);
-    this->cubeBuffer[3].Init(0, 0, face_left,  face_left,  5, 1);
-    this->cubeBuffer[4].Init(0, 0, face_up,    face_up,    5, 1);
-    this->cubeBuffer[5].Init(0, 0, face_down,  face_down , 5, 1);
+    this->cubeBuffer[2].Init(0, 0, face_back, face_back, 5, 1);
+    this->cubeBuffer[3].Init(0, 0, face_left, face_left, 5, 1);
+    this->cubeBuffer[4].Init(0, 0, face_up, face_up, 5, 1);
+    this->cubeBuffer[5].Init(0, 0, face_down, face_down, 5, 1);
 
     this->cubeTex[0] = (GXTexObj *)this->cubeBuffer[1].pCaptureTexture->GetPlatInfo()->ImageInfos.obj.dummy;
     this->cubeTex[1] = (GXTexObj *)this->cubeBuffer[0].pCaptureTexture->GetPlatInfo()->ImageInfos.obj.dummy;
@@ -555,7 +566,7 @@ void cSphereMap::Init(int face_front, int face_right, int face_back, int face_le
     this->sphereTexture = eCreateTextureInfo();
     this->sphereTexture->AlphaUsageType = 0;
     this->sphereTexture->AlphaBlendType = 0;
-    this->sphereTexture->Width  = this->SPHERE_MAP_SIZE_X;
+    this->sphereTexture->Width = this->SPHERE_MAP_SIZE_X;
     this->sphereTexture->Height = this->SPHERE_MAP_SIZE_Y;
     this->sphereTexture->NumMipMapLevels = 0;
     this->sphereTexture->ImageData = this->sphereTexturePixels;
@@ -563,12 +574,13 @@ void cSphereMap::Init(int face_front, int face_right, int face_back, int face_le
     this->sphereTexture->TilableUV = 0;
     this->sphereTexture->GetPlatInfo()->Format = 4;
     this->sphereTexture->GetPlatInfo()->SetImage(this->sphereTexture);
-    
+
     this->bInitialized = 1;
 }
 
 void cSphereMap::Destroy() {
-    if (!this->bInitialized) return;
+    if (!this->bInitialized)
+        return;
     this->bInitialized = 0;
 
     if (this->sphereTexture) {
@@ -579,7 +591,7 @@ void cSphereMap::Destroy() {
         bFree(this->sphereTexturePixels);
         this->sphereTexturePixels = nullptr;
     }
-    
+
     this->clrSphere(&this->DLSphere, &this->DLSphereSz);
 
     for (int i = 0; i < 6; i++) {
@@ -590,11 +602,13 @@ void cSphereMap::Destroy() {
 
 TextureInfo *cSphereMap::BuildSphereMap() {
     if (this->bInitialized) {
-        this->genSphereMap(&this->cubeTex[0], (GXTexObj *)this->sphereTexture->GetPlatInfo()->ImageInfos.obj.dummy, (void *)this->DLSphere, this->DLSphereSz);
+        this->genSphereMap(&this->cubeTex[0], (GXTexObj *)this->sphereTexture->GetPlatInfo()->ImageInfos.obj.dummy, (void *)this->DLSphere,
+                           this->DLSphereSz);
         return this->sphereTexture;
     }
-    
-    if (!this->bInitialized) return nullptr;
+
+    if (!this->bInitialized)
+        return nullptr;
 }
 
 char ENV_MAP_DISPLAY_LIST[20480];
@@ -602,25 +616,25 @@ char ENV_MAP_DISPLAY_LIST[20480];
 // TODO / EQUIVALENT
 void cSphereMap::genSphere(void **display_list, unsigned long *size, unsigned short tess, GXVtxFmt fmt) {
     *display_list = ENV_MAP_DISPLAY_LIST;
-    
-    float gsPI = 3.1415927f; // f20
-    float r = 1.0f; // f19
-    float r1; // f26
-    float r2; // f25
-    float z1; // f29
-    float z2; // f28
-    float n1x; // f31
-    float n1y; // f1
-    float n1z; // f21
-    float n2x; // f31
-    float n2y; // f0
-    float n2z; // f24
-    float theta; // f30
-    float phi; // f30
-    unsigned short nlon = tess; // r25
-    unsigned short nlat = tess; // r27
-    int i; // r30
-    int j; // r31
+
+    float gsPI = 3.1415927f;                                               // f20
+    float r = 1.0f;                                                        // f19
+    float r1;                                                              // f26
+    float r2;                                                              // f25
+    float z1;                                                              // f29
+    float z2;                                                              // f28
+    float n1x;                                                             // f31
+    float n1y;                                                             // f1
+    float n1z;                                                             // f21
+    float n2x;                                                             // f31
+    float n2y;                                                             // f0
+    float n2z;                                                             // f24
+    float theta;                                                           // f30
+    float phi;                                                             // f30
+    unsigned short nlon = tess;                                            // r25
+    unsigned short nlat = tess;                                            // r27
+    int i;                                                                 // r30
+    int j;                                                                 // r31
     unsigned long dl_sz = ((tess - 2) * (tess + 1) * 2 + tess + 1) * 0x18; // r24
 
     GXBeginDisplayList(*display_list, *size);
@@ -657,8 +671,8 @@ void cSphereMap::genSphere(void **display_list, unsigned long *size, unsigned sh
     // ...
 
     for (i = 0; i < tess; i++) {
-        theta = gsPI * float(i)     / nlat;
-        phi   = gsPI * float(i - 1) / nlat;
+        theta = gsPI * float(i) / nlat;
+        phi = gsPI * float(i - 1) / nlat;
         r1 = r * sinf(phi);
         z1 = r * cosf(phi);
         r2 = r * sinf(theta);
@@ -667,7 +681,8 @@ void cSphereMap::genSphere(void **display_list, unsigned long *size, unsigned sh
         n1z = (z1 * 2) * z1 - 1.0f;
         n2z = (z2 * 2) * z2 - 1.0f;
 
-        if (bAbs(z1) < 0.01f || bAbs(z2) < 0.01f) break;
+        if (bAbs(z1) < 0.01f || bAbs(z2) < 0.01f)
+            break;
 
         GXBegin(GX_TRIANGLESTRIP, GX_VTXFMT7, (tess + 1) * 2);
         phi = 0.0f;
@@ -691,7 +706,7 @@ void cSphereMap::genSphere(void **display_list, unsigned long *size, unsigned sh
     }
 
     *size = GXEndDisplayList();
-    
+
     if (*size > dl_sz) {
         OSPanic("d:/mw/speed/gamecube/src/ecstasy/EcstasyEx.cpp", 1227, "Exiting");
     }
@@ -699,21 +714,21 @@ void cSphereMap::genSphere(void **display_list, unsigned long *size, unsigned sh
 
 void cSphereMap::clrSphere(void **display_list, unsigned long *size) {}
 
-static GXColor TweakSphereMapClr = { 0xC4, 0xC4, 0xC4, 0xFF };
+static GXColor TweakSphereMapClr = {0xC4, 0xC4, 0xC4, 0xFF};
 
 void cSphereMap::genSphereMap(GXTexObj **cubemap, GXTexObj *spheremap, void *dl, unsigned long dlsz) {
-    int i; // r27
+    int i;         // r27
     GXColor color; // r1+0x184
     unsigned short width;
     unsigned short height;
-    GXTexFmt fmt; // r21
-    void *data; // r15
-    GXLightObj ClipLight; // r1+0x10
-    float p[4][4]; // r1+0x50
-    Mtx v; // r1+0x90
-    Mtx tm; // r1+0xC0
-    Mtx tc; // r1+0xF0
-    Mtx tmp; // r1+0x120
+    GXTexFmt fmt;          // r21
+    void *data;            // r15
+    GXLightObj ClipLight;  // r1+0x10
+    float p[4][4];         // r1+0x50
+    Mtx v;                 // r1+0x90
+    Mtx tm;                // r1+0xC0
+    Mtx tc;                // r1+0xF0
+    Mtx tmp;               // r1+0x120
     float camLoc_x = 0.0f; // f30
     float camLoc_y = 0.0f;
     float camLoc_z = 6.0f; // f31
@@ -721,10 +736,11 @@ void cSphereMap::genSphereMap(GXTexObj **cubemap, GXTexObj *spheremap, void *dl,
     float up_y = 1.0f; // f29
     float up_z = 0.0f;
     Point3d camLoc = {camLoc_x, camLoc_y, camLoc_z}; // r1+0x150
-    Vec up = { up_x, up_y, up_z }; // r1+0x160
-    Point3d objPt; // r1+0x170
+    Vec up = {up_x, up_y, up_z};                     // r1+0x160
+    Point3d objPt;                                   // r1+0x170
 
-    if (!this->bInitialized) return;
+    if (!this->bInitialized)
+        return;
 
     width = GXGetTexObjWidth(spheremap);
     height = GXGetTexObjHeight(spheremap);
@@ -746,7 +762,7 @@ void cSphereMap::genSphereMap(GXTexObj **cubemap, GXTexObj *spheremap, void *dl,
     GXInitLightColor(&ClipLight, color);
     GXSetChanMatColor(GX_COLOR0A0, color);
 
-    GXSetChanAmbColor(GX_COLOR0A0, (GXColor){0, 0, 0, 0xFF });
+    GXSetChanAmbColor(GX_COLOR0A0, (GXColor){0, 0, 0, 0xFF});
     GXInitLightAttnA(&ClipLight, 0.0f, 2.0f, 0.0f);
     GXInitLightAttnK(&ClipLight, 0.0f, 1.0f, 0.0f);
     GXInitLightPos(&ClipLight, 0.0f, 0.0f, -1.0f);
@@ -763,7 +779,7 @@ void cSphereMap::genSphereMap(GXTexObj **cubemap, GXTexObj *spheremap, void *dl,
             GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_TEXA, GX_CA_RASA, GX_CA_ZERO);
             break;
         case 1: {
-            GXColor Kcolor0 = { 0x00, 0x00, 0x00, 0xFF };
+            GXColor Kcolor0 = {0x00, 0x00, 0x00, 0xFF};
             GXSetTevKColor(GX_KCOLOR0, Kcolor0);
             GXSetTevKColorSel(GX_TEVSTAGE0, GX_TEV_KCSEL_K0);
             GXSetTevKAlphaSel(GX_TEVSTAGE0, GX_TEV_KASEL_K0_A);
@@ -774,7 +790,8 @@ void cSphereMap::genSphereMap(GXTexObj **cubemap, GXTexObj *spheremap, void *dl,
             GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
             GXSetNumTevStages(1);
             break;
-        } case 2:
+        }
+        case 2:
             GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
             GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ONE);
             GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
@@ -802,7 +819,7 @@ void cSphereMap::genSphereMap(GXTexObj **cubemap, GXTexObj *spheremap, void *dl,
         case 5:
             GXSetNumTevStages(1);
             GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD4, GX_TEXMAP0, GX_COLOR0);
-            GXSetTevKColor(GX_KCOLOR0, (GXColor){ 0, 0, 0, 0xFF });
+            GXSetTevKColor(GX_KCOLOR0, (GXColor){0, 0, 0, 0xFF});
             GXSetTevKColorSel(GX_TEVSTAGE0, GX_TEV_KCSEL_K0);
             GXSetTevKAlphaSel(GX_TEVSTAGE0, GX_TEV_KASEL_K0_A);
             GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_COMP_R8_GT, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
@@ -879,7 +896,7 @@ cQuarterSizeMap::~cQuarterSizeMap() {}
 
 void cQuarterSizeMap::Init(int create_depth_buffer, int texture_format, int buffer_function) {
     this->quarterSizeBuffer.Init(0, 0, this->QUARTER_SIZE_X, this->QUARTER_SIZE_Y, texture_format, buffer_function);
-    
+
     this->DepthBufferFlag = create_depth_buffer;
     if (create_depth_buffer != 0) {
         this->quarterSizeDepthBuffer.Init(0, 0, this->QUARTER_SIZE_X, this->QUARTER_SIZE_Y, 17, 6);
@@ -951,15 +968,15 @@ void eSetFogConstantColour() {
     fog_colour = int((fog_r + fog_g + fog_b) * FogCurrentBrightness);
     if (fog_colour != prevFogColour) {
         prevFogColour = fog_colour;
-        
-        write_bp_cmd(((int(fog_r * FogCurrentBrightness) << 16) & 0xFF0000)
-                       | ((int(fog_g * FogCurrentBrightness) << 8)  & 0x00FF00)
-                       | ((int(fog_b * FogCurrentBrightness) << 0)  & 0x0000FF)
-                       | (0xF2 << 24)
-        );
+
+        write_bp_cmd(((int(fog_r * FogCurrentBrightness) << 16) & 0xFF0000) | ((int(fog_g * FogCurrentBrightness) << 8) & 0x00FF00) |
+                     ((int(fog_b * FogCurrentBrightness) << 0) & 0x0000FF) | (0xF2 << 24));
         gx->bpSentNot = 0;
     }
 }
 
 // end
-void epCalculateLocalDirectionalPOS16(unsigned int * colour_table0 /* r29 */, unsigned int * colour_table1 /* r22 */, int num_colour_entries /* r5 */, unsigned short * position_table_16 /* r30 */, int * normal_table /* r23 */, unsigned char * index_buffer /* r31 */, int vertex_description /* r7 */, int num_indicies /* r28 */, struct eLightMaterial * light_material /* r11 */, struct eLightContext * light_context /* r12 */);
+void epCalculateLocalDirectionalPOS16(unsigned int *colour_table0 /* r29 */, unsigned int *colour_table1 /* r22 */, int num_colour_entries /* r5 */,
+                                      unsigned short *position_table_16 /* r30 */, int *normal_table /* r23 */, unsigned char *index_buffer /* r31 */,
+                                      int vertex_description /* r7 */, int num_indicies /* r28 */, struct eLightMaterial *light_material /* r11 */,
+                                      struct eLightContext *light_context /* r12 */);

@@ -5,15 +5,11 @@
 #pragma once
 #endif
 
-#ifdef TARGET_GC
-#include "Speed/GameCube/Src/Ecstasy/eViewPlat.hpp"
-#elif defined(TARGET_X360)
-#include "Speed/Xenon/Src/Ecstasy/eViewPlat.hpp"
-#endif
-
 #include "EcstasyData.hpp"
+#include "EcstasyE.hpp"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
+#include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "eModel.hpp"
