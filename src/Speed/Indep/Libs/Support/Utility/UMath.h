@@ -143,6 +143,10 @@ inline void Subxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, Vector4 &r)
     VU0_v4subxyz(a, b, r);
 }
 
+inline void Addxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, Vector4 &r) {
+    VU0_v4addxyz(a, b, r);
+}
+
 inline void SetYRot(Matrix4 &r, float a) {
     VU0_MATRIX4setyrot(r, a);
 }
