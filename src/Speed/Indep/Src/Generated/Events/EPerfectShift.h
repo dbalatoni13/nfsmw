@@ -21,7 +21,7 @@ class EPerfectShift : public Event {
 
     virtual ~EPerfectShift();
 
-    const char *GetEventName() {
+    override virtual const char *GetEventName() {
         return "EPerfectShift";
     }
 

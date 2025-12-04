@@ -25,7 +25,7 @@ class EPlayerShift : public Event {
 
     virtual ~EPlayerShift();
 
-    const char *GetEventName() {
+    override virtual const char *GetEventName() {
         return "EPlayerShift";
     }
 

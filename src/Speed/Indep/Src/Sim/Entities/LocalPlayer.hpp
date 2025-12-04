@@ -1,10 +1,12 @@
 #ifndef SIM_ENTITIES_LOCALPLAYER_H
 #define SIM_ENTITIES_LOCALPLAYER_H
 
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Frontend/HUD/FEPkg_Hud.hpp"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IActivity.h"
@@ -15,11 +17,84 @@
 class LocalPlayer : public Sim::Entity, public IPlayer, public Sim::Collision::IListener {
   public:
     LocalPlayer(Sim::Param params);
-    void ReleaseHud();
 
+  protected:
+    void ReleaseHud();
+    void SetGameBreaker(bool on);
+    bool CanDoGameBreaker();
+
+  public:
     // Overrides
     // IPlayer
+    override virtual void SetRenderPort(int renderport) {
+        mRenderPort = renderport;
+    }
+
+    override virtual int GetRenderPort() const {
+        return mRenderPort;
+    }
+
     override virtual PlayerSettings *GetSettings() const;
+
+    override virtual int GetSettingsIndex() const {
+        return mSettingIndex;
+    }
+
+    override virtual void SetSettings(int fe_index) {
+        mSettingIndex = fe_index;
+    }
+
+    override virtual IHud *GetHud() const {
+        return mHud;
+    }
+
+    override virtual void SetHud(ePlayerHudType ht);
+    override virtual void SetControllerPort(int port);
+
+    override virtual int GetControllerPort() const {
+        return mControllerPort;
+    }
+
+    override virtual IFeedback *GetFFB();
+    override virtual ISteeringWheel *GetSteeringDevice();
+
+    // IEntity
+    override virtual ISimable *GetSimable() const {
+        return Entity::GetSimable();
+    }
+
+    override virtual bool IsLocal() const {
+        return true;
+    }
+
+    override virtual const UMath::Vector3 &GetPosition() const {
+        return Sim::Entity::GetPosition();
+    }
+
+    override virtual bool SetPosition(const UMath::Vector3 &position) {
+        return Sim::Entity::SetPosition(position);
+    }
+
+    // IAttachable
+    override virtual void OnAttached(IAttachable *pOther);
+    override virtual void OnDetached(IAttachable *pOther);
+
+    // IPlayer
+    override virtual bool InGameBreaker() const {
+        return mInGameBreaker;
+    }
+
+    override virtual bool CanRechargeNOS() const;
+    override virtual void ResetGameBreaker(bool full);
+
+    override virtual void ChargeGameBreaker(float amount) {
+        mGameBreakerCharge = UMath::Clamp(mGameBreakerCharge + amount, 0.0f, 1.0f);
+    }
+
+    override virtual bool ToggleGameBreaker();
+
+    // IListener
+    override virtual void OnCollision(const COLLISION_INFO &cinfo);
 
   private:
     IFeedback *mFFB;                 // offset 0x60, size 0x4

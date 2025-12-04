@@ -5,24 +5,27 @@
 #pragma once
 #endif
 
-#include "SimTypes.h"
+#include "SimObject.h"
 #include "Speed/Indep/Src/Interfaces/IAttachable.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IActivity.h"
 
 namespace Sim {
 
+// total size: 0x4C
 struct Activity : public Sim::Object, public UTL::Collections::GarbageNode<Sim::Activity, 40>, public IActivity, public IAttachable {
-    // total size: 0x4C
     struct Attachments *mAttachments; // offset 0x48, size 0x4
 
     Activity(unsigned int num_interfaces);
     virtual ~Activity();
     void DetachAll();
-    virtual void Release();
 
-    virtual void OnAttached(IAttachable *pOther) {}
+    // IActivity
+    override virtual void Release();
 
-    virtual void OnDetached(IAttachable *pOther) {}
+    // IAttachable
+    override virtual void OnAttached(IAttachable *pOther) {}
+
+    override virtual void OnDetached(IAttachable *pOther) {}
 };
 
 }; // namespace Sim

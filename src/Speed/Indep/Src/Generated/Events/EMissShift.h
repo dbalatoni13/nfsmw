@@ -21,7 +21,7 @@ class EMissShift : public Event {
 
     virtual ~EMissShift();
 
-    const char *GetEventName() {
+    override virtual const char *GetEventName() {
         return "EMissShift";
     }
 

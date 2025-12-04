@@ -14,6 +14,7 @@ enum eVehicleCacheResult {
     VCR_WANT = 0,
 };
 
+// total size: 0xC
 class IVehicleCache : public UTL::COM::IUnknown, public UTL::Collections::Listable<IVehicleCache, 18> {
   public:
     static HINTERFACE _IHandle() {

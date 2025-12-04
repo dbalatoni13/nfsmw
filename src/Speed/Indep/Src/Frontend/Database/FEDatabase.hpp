@@ -80,6 +80,7 @@ class GameplaySettings {
     float HighlightCam;                 // offset 0x1C, size 0x4
 };
 
+// total size: 0x2C
 class PlayerSettings {
   public:
     unsigned int GetControllerAttribs(eControllerAttribs type, bool wheel_connected) const;
@@ -166,11 +167,18 @@ struct JukeboxEntry {
 };
 
 // total size: 0x9CF4
-struct UserProfile {
-    char m_aProfileName[32];                    // offset 0x0, size 0x20
-    bool m_bNamed;                              // offset 0x20, size 0x1
-    OptionsSettings TheOptionsSettings;         // offset 0x24, size 0xC0
-    CareerSettings TheCareerSettings;           // offset 0xE4, size 0x27C
+class UserProfile {
+  public:
+    OptionsSettings *GetOptions() {
+        return &TheOptionsSettings;
+    }
+
+  private:
+    char m_aProfileName[32];            // offset 0x0, size 0x20
+    bool m_bNamed;                      // offset 0x20, size 0x1
+    OptionsSettings TheOptionsSettings; // offset 0x24, size 0xC0
+    CareerSettings TheCareerSettings;   // offset 0xE4, size 0x27C
+  public:
     JukeboxEntry Playlist[30];                  // offset 0x360, size 0xF0
     FEPlayerCarDB PlayersCarStable;             // offset 0x450, size 0x8CC8
     bool CareerModeHasBeenCompletedAtLeastOnce; // offset 0x9118, size 0x1
@@ -206,20 +214,29 @@ struct FEKeyboardSettings {
 
 // total size: 0xA28
 class cFrontendDatabase {
-    unsigned char iNumPlayers;                       // offset 0x0, size 0x1
-    bool bComingFromBoot;                            // offset 0x4, size 0x1
-    bool bSavedProfileForMP;                         // offset 0x8, size 0x1
-    bool bProfileLoaded;                             // offset 0xC, size 0x1
-    bool bIsOptionsDirty;                            // offset 0x10, size 0x1
-    bool bAutoSaveOverwriteConfirmed;                // offset 0x14, size 0x1
-    unsigned int iDefaultStableHash;                 // offset 0x18, size 0x4
-    signed char PlayerJoyports[2];                   // offset 0x1C, size 0x2
-    UserProfile *CurrentUserProfiles[2];             // offset 0x20, size 0x8
-    GRace::Type RaceMode;                            // offset 0x28, size 0x4
-    RaceSettings TheQuickRaceSettings[11];           // offset 0x2C, size 0x18C
-    char *m_pCarStableBackup;                        // offset 0x1B8, size 0x4
-    char *m_pDBBackup;                               // offset 0x1BC, size 0x4
-    unsigned int FEGameMode;                         // offset 0x1C0, size 0x4
+  public:
+    PlayerSettings *GetPlayerSettings(int player) {
+        return &CurrentUserProfiles[0]->GetOptions()->ThePlayerSettings[player];
+    }
+
+    unsigned char iNumPlayers;           // offset 0x0, size 0x1
+    bool bComingFromBoot;                // offset 0x4, size 0x1
+    bool bSavedProfileForMP;             // offset 0x8, size 0x1
+    bool bProfileLoaded;                 // offset 0xC, size 0x1
+    bool bIsOptionsDirty;                // offset 0x10, size 0x1
+    bool bAutoSaveOverwriteConfirmed;    // offset 0x14, size 0x1
+    unsigned int iDefaultStableHash;     // offset 0x18, size 0x4
+    signed char PlayerJoyports[2];       // offset 0x1C, size 0x2
+    UserProfile *CurrentUserProfiles[2]; // offset 0x20, size 0x8
+    GRace::Type RaceMode;                // offset 0x28, size 0x4
+  private:
+    RaceSettings TheQuickRaceSettings[11]; // offset 0x2C, size 0x18C
+  public:
+    char *m_pCarStableBackup; // offset 0x1B8, size 0x4
+    char *m_pDBBackup;        // offset 0x1BC, size 0x4
+  private:
+    unsigned int FEGameMode; // offset 0x1C0, size 0x4
+  public:
     eLoadSaveGame LoadSaveGame;                      // offset 0x1C4, size 0x4
     FEKeyboardSettings mFEKeyboardSettings;          // offset 0x1C8, size 0x14C
     int iCurPauseSubOptionType;                      // offset 0x314, size 0x4

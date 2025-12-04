@@ -20,8 +20,17 @@ enum ResourceFileType {
     RESOURCE_FILE_NONE = 0,
 };
 
-struct ResourceFile : public bTNode<ResourceFile> {
-    // total size: 0x50
+// total size: 0x50
+class ResourceFile : public bTNode<ResourceFile> {
+  public:
+    void *GetMemory() {
+        return this->pFirstChunk;
+    }
+
+    void SetAllocationParams(int allocation_params, const char *debug_name);
+    void BeginLoading(void (*callback)(void *), void *callback_param);
+
+  private:
     bool mEnableFreeMemory;                           // offset 0x8, size 0x1
     enum ResourceFileType Type;                       // offset 0xC, size 0x4
     int Flags;                                        // offset 0x10, size 0x4
@@ -40,13 +49,6 @@ struct ResourceFile : public bTNode<ResourceFile> {
     struct LoadedHotFileEntry *pLoadedHotFileEntries; // offset 0x44, size 0x4
     int NumLoadedHotFileEntries;                      // offset 0x48, size 0x4
     int HotFileNumber;                                // offset 0x4C, size 0x4
-
-    void *GetMemory() {
-        return this->pFirstChunk;
-    }
-
-    void SetAllocationParams(int allocation_params, const char *debug_name);
-    void BeginLoading(void (*callback)(void *), void *callback_param);
 };
 
 void EndianSwapChunkHeader(bChunk *chunk);

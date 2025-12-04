@@ -155,7 +155,7 @@ IVehicle *AITrafficManager::GetAvailableTrafficVehicle(Attrib::Key key, bool mak
     ISimable *isimable = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance(UCrc32("PVehicle"), Sim::Param(params));
     if (isimable) {
         // TODO hmm?
-        Detach(isimable);
+        // Detach(isimable);
         IVehicle *ivehicle;
         if (isimable->QueryInterface(&ivehicle)) {
             ivehicle->GetAIVehiclePtr()->UnSpawn();
