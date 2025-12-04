@@ -84,22 +84,22 @@ bool OBB::CheckOBBOverlap(OBB *other) {
     return true;
 }
 
-bool OBB::BoxVsBox(OBB *obbA, OBB *obbB, OBB *result) {
+bool OBB::BoxVsBox(OBB *a, OBB *b, OBB *result) {
     UMath::Vector4 rel_position;
     UMath::Vector4 a_normal;
     UMath::Vector4 *b_extent;
     UMath::Vector4 collision_point;
     float projected_interval;
     float b_projected_interval;
-    OBB *a = obbA;
-    OBB *b = obbB;
+    OBB *obbA = a;
+    OBB *obbB = b;
 
     result->penetration_depth = -100000.0f;
 
     for (int cycle = 0; cycle < 2; cycle++) {
         if (cycle == 1) {
-            a = obbB;
-            b = obbA;
+            obbA = b;
+            obbB = a;
         }
 
         for (int a_lp = 0; a_lp < 3; a_lp++) {
@@ -110,10 +110,10 @@ bool OBB::BoxVsBox(OBB *obbA, OBB *obbB, OBB *result) {
                 a_normal_index = (a_lp ^ 2) == 0;
             }
 
-            a_normal = a->normal[a_normal_index];
-            collision_point = b->position;
+            a_normal = obbA->normal[a_normal_index];
+            collision_point = obbB->position;
 
-            VU0_v4subxyz(a->position, b->position, rel_position);
+            VU0_v4subxyz(obbA->position, obbB->position, rel_position);
             projected_interval = VU0_v4dotprodxyz(rel_position, a_normal);
 
             if (projected_interval < 0.0f) {
@@ -124,9 +124,9 @@ bool OBB::BoxVsBox(OBB *obbA, OBB *obbB, OBB *result) {
                 a_normal.z = -a_normal.z;
             }
 
-            projected_interval = projected_interval - a->dimension[a_normal_index];
+            projected_interval = projected_interval - obbA->dimension[a_normal_index];
 
-            b_extent = b->extent;
+            b_extent = obbB->extent;
             for (int b_normal_index = 0; b_normal_index < 3; b_normal_index++) {
                 b_projected_interval = VU0_v3dotprod(UMath::Vector4To3(a_normal), UMath::Vector4To3(*b_extent));
                 float abs_val = fabsf(b_projected_interval);
