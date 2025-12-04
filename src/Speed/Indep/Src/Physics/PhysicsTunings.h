@@ -7,6 +7,13 @@
 
 namespace Physics {
 
+enum eCustomTuningType {
+    CTT_SETTING_1 = 0,
+    CTT_SETTING_2 = 1,
+    CTT_SETTING_3 = 2,
+    NUM_CUSTOM_TUNINGS = 3,
+};
+
 struct Tunings {
     enum Path {
         STEERING = 0,

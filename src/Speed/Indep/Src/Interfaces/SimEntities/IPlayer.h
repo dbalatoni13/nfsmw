@@ -7,6 +7,7 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Input/IFeedBack.h"
 #include "Speed/Indep/Src/Input/ISteeringWheel.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
@@ -17,56 +18,6 @@ enum ePlayerList {
     PLAYER_LOCAL = 1,
     PLAYER_REMOTE = 2,
     PLAYER_MAX = 3,
-};
-
-enum eControllerConfig {
-    CC_CONFIG_1,
-    CC_CONFIG_2,
-    CC_CONFIG_3,
-    CC_CONFIG_4,
-    CC_CONFIG_5,
-    NUM_CONTROLLER_CONFIGS,
-    MIN_CONFIG = 0,
-    MAX_CONFIG = 4,
-};
-
-enum ePlayerSettingsCameras {
-    PSC_BUMPER,
-    PSC_HOOD,
-    PSC_CLOSE,
-    PSC_FAR,
-    PSC_SUPER_FAR,
-    PSC_DRIFT,
-    PSC_PURSUIT,
-    NUM_CAMERAS_IN_OPTIONS,
-    PSC_DEFAULT = 2,
-};
-
-enum eControllerAttribs {
-    CA_HUD = 0,
-    CA_DRIVING = 1,
-};
-
-class PlayerSettings {
-  public:
-    unsigned int GetControllerAttribs(eControllerAttribs type, bool wheel_connected) const;
-    void ScrollDriveCam(int dir);
-
-    // TODO private?
-  public:
-    bool GaugesOn;
-    bool PositionOn;
-    bool LapInfoOn;
-    bool ScoreOn;
-    bool Rumble;
-    bool LeaderboardOn;
-    bool TransmissionPromptOn;
-    bool DriveWithAnalog;
-    eControllerConfig Config;
-    ePlayerSettingsCameras CurCam;
-    unsigned char SplitTimeType;
-    unsigned char Transmission;
-    unsigned char Handling;
 };
 
 class IPlayer : public UTL::COM::IUnknown, public UTL::Collections::ListableSet<IPlayer, 8, ePlayerList, PLAYER_MAX> {

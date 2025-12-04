@@ -781,6 +781,8 @@ class Instance {
         return nullptr;
     }
 
+    const Attrib::Collection *GetParentCollection() const {}
+
     void Lock() const {
         mLocks++;
     }

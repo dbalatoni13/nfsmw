@@ -5,8 +5,8 @@
 #pragma once
 #endif
 
+// total size: 0x4
 class Timer {
-    // total size: 0x4
     int PackedTime; // offset 0x0, size 0x4
 
   public:

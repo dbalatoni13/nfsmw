@@ -234,6 +234,10 @@ class SimpleRigidBody : public Behavior, public IRigidBody, public ISimpleBody, 
     override virtual void Debug() {}
 
     // Inlines
+    static unsigned int GetCount() {
+        return mCount;
+    }
+
     bool CheckAnyFlags(unsigned int flagsToCheck) const {
         return mData->flags & flagsToCheck;
     }

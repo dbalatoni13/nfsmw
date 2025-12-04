@@ -94,6 +94,10 @@ struct simsurface : Instance {
         return 0xfb111fef;
     }
 
+    const Instance &GetBase() {
+        // return *mCollection;
+    }
+
     const FFBWaveRecord &FFB_SKID(unsigned int index) const {
         const FFBWaveRecord *resultptr = reinterpret_cast<const FFBWaveRecord *>(this->GetAttributePointer(0x0c149044, index));
         if (!resultptr) {

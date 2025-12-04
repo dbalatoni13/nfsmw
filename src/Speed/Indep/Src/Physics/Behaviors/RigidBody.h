@@ -550,6 +550,10 @@ class RigidBody : public Behavior,
     virtual bool CanCollideWithObjects() const;
 
     // Inline functions
+    static unsigned int GetCount() {
+        return mCount;
+    }
+
     bool IsAwake() const {
         return mData->state == 0;
     }

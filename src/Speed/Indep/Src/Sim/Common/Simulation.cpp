@@ -13,6 +13,8 @@
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IActivity.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IDisposable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Main/EventSequencer.h"
@@ -30,6 +32,7 @@
 #include "Speed/Indep/Src/World/WGridManagedDynamicElem.h"
 #include "Speed/Indep/Src/World/WTrigger.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "dolphin/types.h"
 
 #include <algorithm>
 #include <vector>
@@ -814,7 +817,52 @@ void Init(const UCrc32 activity, eUserMode mode) {
     EventSequencer::Reset(Internal::mTime);
 }
 
-bool CanSpawnSimpleRigidBody(const UMath::Vector3 &position, bool highPriority) {}
+bool CanSpawnRigidBody(const UMath::Vector3 &position, bool highPriority) {
+    unsigned int spawnLimit = highPriority ? 64 : 52;
+
+    if (RigidBody::GetCount() > spawnLimit) {
+        float closestDist = 0.0f;
+        ISimable *result = nullptr;
+        for (IDisposable::List::const_iterator iter = IDisposable::GetList().begin(); iter != IDisposable::GetList().end(); ++iter) {
+            IDisposable *idispose = *iter;
+            ISimable *isimable;
+            ICollisionBody *irbc;
+            if (!idispose->IsRequired() && idispose->QueryInterface(&isimable) && isimable->QueryInterface(&irbc)) {
+                IRigidBody &rigidBody = *isimable->GetRigidBody();
+                if (irbc->IsSleeping()) {
+                    const UMath::Vector3 &pos = rigidBody.GetPosition();
+                    float dist = V3DistanceSquared(pos, position);
+                    if (dist > closestDist) {
+                        closestDist = dist;
+                        result = isimable;
+                    }
+                }
+            }
+        }
+        if (result) {
+            result->Kill();
+        }
+    }
+    return RigidBody::GetCount() < spawnLimit;
+}
+
+bool CanSpawnSimpleRigidBody(const UMath::Vector3 &position, bool highPriority) {
+    const int kLowPrioLimit = 72;
+    const unsigned int spawnLimit = highPriority ? 96 : kLowPrioLimit;
+
+    volatile int overflow = SimpleRigidBody::GetCount() - kLowPrioLimit;
+    if (overflow >= 0) {
+        for (IDisposable::List::const_iterator iter = IDisposable::GetList().begin(); iter != IDisposable::GetList().end() && overflow >= 0; ++iter) {
+            IDisposable *idispose = *iter;
+            ISimable *isimable;
+            if (idispose->IsRequired() && idispose->QueryInterface(&isimable) && isimable->IsRigidBodySimple()) {
+                isimable->Kill();
+                overflow--;
+            }
+        }
+    }
+    return SimpleRigidBody::GetCount() < spawnLimit;
+}
 
 void StartProfile() {
     Profile::Capture();
@@ -829,18 +877,6 @@ void Suspend() {
     if (Internal::mSystem) {
         Internal::mSystem->PauseInput(true);
     }
-}
-
-HSIMTASK AddTask(const UCrc32 &schedule, float rate, ITaskable *handler, float start_offset, TaskMode mode) {
-    return Internal::mSystem->AddTask(schedule, rate, handler, start_offset, mode);
-}
-
-void RemoveTask(HSIMTASK hTask, ITaskable *handler) {
-    Internal::mSystem->RemoveTask(hTask, handler);
-}
-
-void ModifyTask(HSIMTASK hTask, float rate) {
-    Internal::mSystem->ModifyTask(hTask, rate);
 }
 
 void SetStream(const UMath::Vector3 &location, bool blocking) {
@@ -860,6 +896,32 @@ void SetStream(const UMath::Vector3 &location, bool blocking) {
             TheTrackStreamer.ServiceNonGameState();
         }
     }
+}
+
+HSIMTASK AddTask(const UCrc32 &schedule, float rate, ITaskable *handler, float start_offset, TaskMode mode) {
+    return Internal::mSystem->AddTask(schedule, rate, handler, start_offset, mode);
+}
+
+void RemoveTask(HSIMTASK hTask, ITaskable *handler) {
+    Internal::mSystem->RemoveTask(hTask, handler);
+}
+
+void ModifyTask(HSIMTASK hTask, float rate) {
+    Internal::mSystem->ModifyTask(hTask, rate);
+}
+
+float DistanceToCamera(const UMath::Vector3 &v) {
+    if (Internal::mSystem) {
+        return Internal::mSystem->DistanceToCamera(v);
+    } else {
+        return 0.0f;
+    }
+}
+
+void ProfileTask(HSIMTASK htask, const char *name) {}
+
+unsigned int GetTick() {
+    return Internal::mTick;
 }
 
 }; // namespace Sim

@@ -10,7 +10,7 @@
 
 class SimSurface : public Attrib::Gen::simsurface {
   public:
-    static const Attrib::Collection *Lookup(const UCrc32 &);
+    static const Attrib::Collection *Lookup(const UCrc32 &namehash);
     static void InitSystem();
     static void UpdateSystem();
 
