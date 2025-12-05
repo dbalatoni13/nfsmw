@@ -11,6 +11,14 @@
       "program": "${file}",
       "console": "integratedTerminal",
       "args": ["symbols\\info.yml", "symbols\\Classes"]
+    },
+    {
+      "name": "Debug Event yaml generator",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "args": ["symbols\\mw_dwarfdump.nothpp", "symbols\\events_generated.yml"]
     }
   ]
 }

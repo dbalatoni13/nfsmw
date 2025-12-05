@@ -6,7 +6,6 @@
 #endif
 
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
-#include <set>
 
 // total size: 0x8
 struct FireOnExitRec {
