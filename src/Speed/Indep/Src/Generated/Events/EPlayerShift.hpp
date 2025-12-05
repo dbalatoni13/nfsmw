@@ -9,32 +9,34 @@
 #include "Speed/Indep/Src/Main/Event.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 
+// total size: 0x1c
 class EPlayerShift : public Event {
   public:
+    // total size: 0x18
     struct StaticData : public Event::StaticData {
-        HSIMABLE fhSimable;
-        ShiftStatus fStatus;
-        bool fAutomatic;
-        GearID fFrom;
-        GearID fTo;
+        HSIMABLE fhSimable; // offset: 0x4, size 0x4
+        ShiftStatus fStatus; // offset: 0x8, size 0x4
+        bool fAutomatic; // offset: 0xc, size 0x1
+        GearID fFrom; // offset: 0x10, size 0x4
+        GearID fTo; // offset: 0x14, size 0x4
     };
 
-    enum { kEventID = 1171244884 };
+    // enum { kEventID = 0 };
 
     EPlayerShift(HSIMABLE phSimable, ShiftStatus pStatus, bool pAutomatic, GearID pFrom, GearID pTo);
 
-    virtual ~EPlayerShift();
+    override virtual ~EPlayerShift();
 
     override virtual const char *GetEventName() {
         return "EPlayerShift";
     }
 
   private:
-    HSIMABLE fhSimable;
-    ShiftStatus fStatus;
-    bool fAutomatic;
-    GearID fFrom;
-    GearID fTo;
+    HSIMABLE fhSimable; // offset: 0x8, size 0x4
+    ShiftStatus fStatus; // offset: 0xc, size 0x4
+    bool fAutomatic; // offset: 0x10, size 0x1
+    GearID fFrom; // offset: 0x14, size 0x4
+    GearID fTo; // offset: 0x18, size 0x4
 };
 
 void EPlayerShift_MakeEvent_Callback(const void *staticData);

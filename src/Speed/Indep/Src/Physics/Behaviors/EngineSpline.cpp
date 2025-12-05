@@ -1,37 +1,34 @@
-#include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
-#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engine.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/induction.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/nos.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/tires.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/transmission.h"
+#include "Speed/Indep/Src/Generated/Events/EEngineBlown.hpp"
+#include "Speed/Indep/Src/Generated/Events/EMissShift.hpp"
+#include "Speed/Indep/Src/Generated/Events/EPerfectShift.hpp"
+#include "Speed/Indep/Src/Generated/Events/EPlayerShift.hpp"
 #include "Speed/Indep/Src/Interfaces/IAttributeable.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
-#include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 #include "Speed/Indep/Src/Interfaces/Simables/INISCarControl.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
-#include "Speed/Indep/Src/Physics/PhysicsTypes.h"
-#include "Speed/Indep/Src/Misc/Table.hpp"
-#include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
-#include "Speed/Indep/Libs/Support/Utility/UMath.h"
-#include "Speed/Indep/Src/Generated/Events/EEngineBlown.hpp"
-#include "Speed/Indep/Src/Generated/Events/EPlayerShift.h"
-#include "Speed/Indep/Src/Generated/Events/EPerfectShift.h"
-#include "Speed/Indep/Src/Generated/Events/EMissShift.h"
-#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Misc/Table.hpp"
+#include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
+#include "Speed/Indep/Src/Physics/PhysicsTypes.h"
+#include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/Sim/UTil.h"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+
 // total size: 0x164
-class EngineSpline : protected VehicleBehavior,
-                    protected ITransmission,
-                    protected IEngine,
-                    public IAttributeable,
-                    public INISCarEngine {
+class EngineSpline : protected VehicleBehavior, protected ITransmission, protected IEngine, public IAttributeable, public INISCarEngine {
   public:
     // Methods
     static Behavior *Construct(const BehaviorParams &params);
@@ -73,44 +70,92 @@ class EngineSpline : protected VehicleBehavior,
 
     // Inline virtuals
 
-    override virtual float GetDriveTorque() const { return 0.0f; }
+    override virtual float GetDriveTorque() const {
+        return 0.0f;
+    }
 
     // IEngine
-    override virtual float GetMaxHorsePower() const { return mMaxHP; }
-    override virtual float GetMinHorsePower() const { return FTLB2NM(Physics::Info::Torque(mEngineInfo, mEngineInfo.IDLE()) * mEngineInfo.IDLE()); }
-    override virtual float GetRPM() const { return mRPM; }
-    override virtual float GetMaxRPM() const { return mEngineInfo.MAX_RPM(); }
-    override virtual float GetPeakTorqueRPM() const { return mMaxTorqueRPM; }
-    override virtual float GetRedline() const { return mEngineInfo.RED_LINE(); }
-    override virtual float GetMinRPM() const { return mEngineInfo.IDLE(); }
-    override virtual float GetNOSCapacity() const { return mNOSCapacity; }
-    override virtual bool IsNOSEngaged() const { return mNitro; }
-    override virtual bool HasNOS() const { return mNOSInfo.NOS_CAPACITY() > 0.0f; }
-    override virtual float GetNOSFlowRate() const { return mNOSInfo.FLOW_RATE(); }
-    override virtual void ChargeNOS(float charge) { mNOSCapacity = UMath::Clamp(mNOSCapacity + charge, 0.0f, 1.0f); }
-    override virtual float GetNOSBoost() const { return 1.0f; }
+    override virtual float GetMaxHorsePower() const {
+        return mMaxHP;
+    }
+    override virtual float GetMinHorsePower() const {
+        return FTLB2NM(Physics::Info::Torque(mEngineInfo, mEngineInfo.IDLE()) * mEngineInfo.IDLE());
+    }
+    override virtual float GetRPM() const {
+        return mRPM;
+    }
+    override virtual float GetMaxRPM() const {
+        return mEngineInfo.MAX_RPM();
+    }
+    override virtual float GetPeakTorqueRPM() const {
+        return mMaxTorqueRPM;
+    }
+    override virtual float GetRedline() const {
+        return mEngineInfo.RED_LINE();
+    }
+    override virtual float GetMinRPM() const {
+        return mEngineInfo.IDLE();
+    }
+    override virtual float GetNOSCapacity() const {
+        return mNOSCapacity;
+    }
+    override virtual bool IsNOSEngaged() const {
+        return mNitro;
+    }
+    override virtual bool HasNOS() const {
+        return mNOSInfo.NOS_CAPACITY() > 0.0f;
+    }
+    override virtual float GetNOSFlowRate() const {
+        return mNOSInfo.FLOW_RATE();
+    }
+    override virtual void ChargeNOS(float charge) {
+        mNOSCapacity = UMath::Clamp(mNOSCapacity + charge, 0.0f, 1.0f);
+    }
+    override virtual float GetNOSBoost() const {
+        return 1.0f;
+    }
 
-    virtual bool IsEngineBraking() { return mEngineBraking; }
-    virtual bool IsShiftingGear() { return mGearShiftTimer > 0.0f; }
-    override virtual bool IsReversing() const { return mGear == G_REVERSE; }
+    virtual bool IsEngineBraking() {
+        return mEngineBraking;
+    }
+    virtual bool IsShiftingGear() {
+        return mGearShiftTimer > 0.0f;
+    }
+    override virtual bool IsReversing() const {
+        return mGear == G_REVERSE;
+    }
 
     // ITransmission
-    override virtual GearID GetTopGear() const { return (GearID)(GetNumGearRatios() - 1); }
-    override virtual GearID GetGear() const { return (GearID)mGear; }
-    override virtual bool IsGearChanging() const { return mGearShiftTimer > 0.0f; }
+    override virtual GearID GetTopGear() const {
+        return (GearID)(GetNumGearRatios() - 1);
+    }
+    override virtual GearID GetGear() const {
+        return (GearID)mGear;
+    }
+    override virtual bool IsGearChanging() const {
+        return mGearShiftTimer > 0.0f;
+    }
 
-    override virtual ShiftStatus GetShiftStatus() const { return SHIFT_STATUS_NORMAL; }
-    virtual ShiftPotential GetShiftPotential(GearID gear, float rpm) const { return SHIFT_POTENTIAL_NONE; }
-    override virtual ShiftPotential GetShiftPotential() const { return SHIFT_POTENTIAL_NONE; }
+    override virtual ShiftStatus GetShiftStatus() const {
+        return SHIFT_STATUS_NORMAL;
+    }
+    virtual ShiftPotential GetShiftPotential(GearID gear, float rpm) const {
+        return SHIFT_POTENTIAL_NONE;
+    }
+    override virtual ShiftPotential GetShiftPotential() const {
+        return SHIFT_POTENTIAL_NONE;
+    }
 
     // INISCarEngine
-    override virtual void SetNitro(bool b) { mNitro = b; }
+    override virtual void SetNitro(bool b) {
+        mNitro = b;
+    }
     override virtual void SetNeutralRev(bool b, float throttle, float speed) {
         mNeutralRev = b;
         mNeutralRevRPM = (mEngineInfo.RED_LINE() - mEngineInfo.IDLE()) * throttle + mEngineInfo.IDLE();
         mNeutralRevSpeed = speed;
     }
-    
+
     // Inlines
     unsigned int GetNumGearRatios() const {
         return mTranyInfo.Num_GEAR_RATIO();
@@ -172,29 +217,10 @@ Behavior *EngineSpline::Construct(const BehaviorParams &params) {
 }
 
 EngineSpline::EngineSpline(const BehaviorParams &bp)
-: VehicleBehavior(bp, 0)
-, ITransmission(bp.fowner)
-, IEngine(bp.fowner)
-, INISCarEngine(bp.fowner)
-, mGear(G_NEUTRAL)
-, mDesiredGear(G_NEUTRAL)
-, mGearShiftTimer(0.0f)
-, mThrottle(0.0f)
-, mAngularVelocity(0.0f)
-, mEngineBraking(false)
-, mIInput(NULL)
-, mSuspension(NULL)
-, mEngineInfo(this, 0)
-, mTranyInfo(this, 0)
-, mTireInfo(this, 0)
-, mInductionInfo(this, 0)
-, mNOSInfo(this, 0)
-, mRPM(0.0f)
-, mNeutralRev(false)
-, mNeutralRevRPM(0.0f)
-, mNeutralRevSpeed(0.0f)
-, mNitro(false)
-, mNOSCapacity(0.0f) {
+    : VehicleBehavior(bp, 0), ITransmission(bp.fowner), IEngine(bp.fowner), INISCarEngine(bp.fowner), mGear(G_NEUTRAL), mDesiredGear(G_NEUTRAL),
+      mGearShiftTimer(0.0f), mThrottle(0.0f), mAngularVelocity(0.0f), mEngineBraking(false), mIInput(NULL), mSuspension(NULL), mEngineInfo(this, 0),
+      mTranyInfo(this, 0), mTireInfo(this, 0), mInductionInfo(this, 0), mNOSInfo(this, 0), mRPM(0.0f), mNeutralRev(false), mNeutralRevRPM(0.0f),
+      mNeutralRevSpeed(0.0f), mNitro(false), mNOSCapacity(0.0f) {
     // IAttributeable::Register(this, 0);
     // IAttributeable::Register(this, 0);
     EnableProfile("EngineSpline");
@@ -298,7 +324,7 @@ void EngineSpline::MatchSpeed(float speed) {
             }
         }
     }
-    
+
     float total_gear_ratio = GetGearRatio(mGear) * GetFinalGear();
     float power_range = (max_w - min_w) / max_w;
     mAngularVelocity = differential_w * total_gear_ratio * power_range + min_w;
@@ -337,14 +363,14 @@ void EngineSpline::AutoShift() {
 
         if (mGear <= G_FIRST) {
             shift_down_rpm = mThrottle < 0.2f ? mEngineInfo->IDLE() + 100.0f : 0.0f;
-        } 
+        }
 
         if (rpm >= shift_up_rpm && mGear < GetTopGear()) {
             int have_traction = 1;
             for (int i = 0; i < 4; ++i) {
                 have_traction &= mSuspension->IsWheelOnGround(i) && mSuspension->GetWheelSlip(i) < 4.f;
             }
-            
+
             if (have_traction) {
                 Shift((GearID)(mGear + 1));
             }
@@ -451,7 +477,7 @@ void EngineSpline::OnTaskSimulate(float dT) {
                 mGearShiftTimer = 0.0f;
             }
         }
-        
+
         float max_w = RPM2RPS(mEngineInfo->RED_LINE());
         float min_w = RPM2RPS(mEngineInfo->IDLE());
         float engine_inertia = Physics::Info::EngineInertia(mEngineInfo, mGear != G_NEUTRAL);
@@ -462,19 +488,12 @@ void EngineSpline::OnTaskSimulate(float dT) {
         mEngineBraking = av < mAngularVelocity;
         av = UMath::Clamp(av, min_w, max_w);
         mAngularVelocity = av;
-        mRPM = Engine_SmoothRPM(
-                IsShiftingGear(),
-                GetGear(),
-                dT,
-                mRPM,
-                RPS2RPM(mAngularVelocity),
-                engine_inertia);
+        mRPM = Engine_SmoothRPM(IsShiftingGear(), GetGear(), dT, mRPM, RPS2RPM(mAngularVelocity), engine_inertia);
         mThrottle = UMath::Clamp((mAngularVelocity - min_w) / (max_w - min_w), 0.0f, 1.0f);
     }
-    
+
     mIInput->SetControlGas(mThrottle);
 }
-
 
 float EngineSpline::GetShiftPoint(GearID from_gear, GearID to_gear) const {
     if (from_gear <= G_REVERSE) {
@@ -489,6 +508,6 @@ float EngineSpline::GetShiftPoint(GearID from_gear, GearID to_gear) const {
     if (to_gear < from_gear) {
         return mShiftDownRPM[from_gear];
     }
-    
+
     return 0.0f;
 }

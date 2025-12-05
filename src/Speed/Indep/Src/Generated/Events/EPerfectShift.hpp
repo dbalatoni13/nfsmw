@@ -8,26 +8,28 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Main/Event.h"
 
+// total size: 0x10
 class EPerfectShift : public Event {
   public:
+    // total size: 0xc
     struct StaticData : public Event::StaticData {
-        HSIMABLE fhSimable;
-        float fBonus;
+        HSIMABLE fhSimable; // offset: 0x4, size 0x4
+        float fBonus; // offset: 0x8, size 0x4
     };
 
-    enum { kEventID = 1171244884 };
+    // enum { kEventID = 0 };
 
     EPerfectShift(HSIMABLE phSimable, float pBonus);
 
-    virtual ~EPerfectShift();
+    override virtual ~EPerfectShift();
 
     override virtual const char *GetEventName() {
         return "EPerfectShift";
     }
 
   private:
-    HSIMABLE fhSimable;
-    float fBonus;
+    HSIMABLE fhSimable; // offset: 0x8, size 0x4
+    float fBonus; // offset: 0xc, size 0x4
 };
 
 void EPerfectShift_MakeEvent_Callback(const void *staticData);

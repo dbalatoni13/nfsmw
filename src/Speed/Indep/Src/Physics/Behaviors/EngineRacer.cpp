@@ -1,11 +1,15 @@
-#include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
-#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engine.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/induction.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/nos.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/tires.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/transmission.h"
+#include "Speed/Indep/Src/Generated/Events/EEngineBlown.hpp"
+#include "Speed/Indep/Src/Generated/Events/EMissShift.hpp"
+#include "Speed/Indep/Src/Generated/Events/EPerfectShift.hpp"
+#include "Speed/Indep/Src/Generated/Events/EPlayerShift.hpp"
 #include "Speed/Indep/Src/Interfaces/IAttributeable.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICheater.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEngineDamage.h"
@@ -14,19 +18,15 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITiptronic.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
-#include "Speed/Indep/Src/Physics/PhysicsTypes.h"
-#include "Speed/Indep/Src/Misc/Table.hpp"
-#include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
-#include "Speed/Indep/Libs/Support/Utility/UMath.h"
-#include "Speed/Indep/Src/Generated/Events/EEngineBlown.hpp"
-#include "Speed/Indep/Src/Generated/Events/EPlayerShift.h"
-#include "Speed/Indep/Src/Generated/Events/EPerfectShift.h"
-#include "Speed/Indep/Src/Generated/Events/EMissShift.h"
-#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Misc/Table.hpp"
+#include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
+#include "Speed/Indep/Src/Physics/PhysicsTypes.h"
+#include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/Sim/UTil.h"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 // total size: 0x1B0
@@ -75,11 +75,11 @@ class EngineRacer : protected VehicleBehavior,
         float Update(float dT) {
             if (mTime > 0.0f) {
                 mTime -= dT;
-                if (mTime <= 0.0f && mState == ENGAGING ) {
+                if (mTime <= 0.0f && mState == ENGAGING) {
                     mState = ENGAGED;
                 }
             }
-            
+
             switch (mState) {
                 case DISENGAGED:
                     return 0.25f;
@@ -140,7 +140,7 @@ class EngineRacer : protected VehicleBehavior,
 
     // ITiptronic
     override virtual bool SportShift(GearID gear);
-    
+
     // IEngineDamage
     override virtual void Sabotage(float time);
     override virtual bool Blow();
@@ -161,18 +161,42 @@ class EngineRacer : protected VehicleBehavior,
     }
 
     // IEngine
-    override virtual float GetMaxHorsePower() const { return mMaxHP; }
-    override virtual float GetMinHorsePower() const { return FTLB2NM(Physics::Info::Torque(mEngineInfo, mEngineInfo.IDLE()) * mEngineInfo.IDLE()); }
-    override virtual float GetRPM() const { return mRPM; }
-    override virtual float GetMaxRPM() const { return mEngineInfo.MAX_RPM(); }
-    override virtual float GetPeakTorqueRPM() const { return mPeakTorqueRPM; }
-    override virtual float GetRedline() const { return mEngineInfo.RED_LINE(); }
-    override virtual float GetMinRPM() const { return mEngineInfo.IDLE(); }
-    override virtual float GetNOSCapacity() const { return mNOSCapacity; }
-    override virtual float GetNOSBoost() const { return mNOSBoost; }
-    override virtual bool IsNOSEngaged() const { return mNOSEngaged >= 1.0f; }
-    override virtual bool HasNOS() const { return mNOSInfo.NOS_CAPACITY() > 0.0f && mNOSInfo.TORQUE_BOOST() > 0.0f; }
-    override virtual float GetNOSFlowRate() const { return mNOSInfo.FLOW_RATE(); }
+    override virtual float GetMaxHorsePower() const {
+        return mMaxHP;
+    }
+    override virtual float GetMinHorsePower() const {
+        return FTLB2NM(Physics::Info::Torque(mEngineInfo, mEngineInfo.IDLE()) * mEngineInfo.IDLE());
+    }
+    override virtual float GetRPM() const {
+        return mRPM;
+    }
+    override virtual float GetMaxRPM() const {
+        return mEngineInfo.MAX_RPM();
+    }
+    override virtual float GetPeakTorqueRPM() const {
+        return mPeakTorqueRPM;
+    }
+    override virtual float GetRedline() const {
+        return mEngineInfo.RED_LINE();
+    }
+    override virtual float GetMinRPM() const {
+        return mEngineInfo.IDLE();
+    }
+    override virtual float GetNOSCapacity() const {
+        return mNOSCapacity;
+    }
+    override virtual float GetNOSBoost() const {
+        return mNOSBoost;
+    }
+    override virtual bool IsNOSEngaged() const {
+        return mNOSEngaged >= 1.0f;
+    }
+    override virtual bool HasNOS() const {
+        return mNOSInfo.NOS_CAPACITY() > 0.0f && mNOSInfo.TORQUE_BOOST() > 0.0f;
+    }
+    override virtual float GetNOSFlowRate() const {
+        return mNOSInfo.FLOW_RATE();
+    }
 
     override virtual void ChargeNOS(float charge) {
         if (HasNOS()) {
@@ -180,35 +204,70 @@ class EngineRacer : protected VehicleBehavior,
         }
     }
 
-    virtual bool IsEngineBraking() { return mEngineBraking; }
-    virtual bool IsShiftingGear() { return mGearShiftTimer > 0.0f; }
-    override virtual bool IsReversing() const { return mGear == G_REVERSE; }
+    virtual bool IsEngineBraking() {
+        return mEngineBraking;
+    }
+    virtual bool IsShiftingGear() {
+        return mGearShiftTimer > 0.0f;
+    }
+    override virtual bool IsReversing() const {
+        return mGear == G_REVERSE;
+    }
 
     // IInductable
-    override virtual Physics::Info::eInductionType InductionType() const { return Physics::Info::InductionType(mInductionInfo); }
-    override virtual float GetInductionPSI() const { return mPSI; }
-    override virtual float InductionSpool() const { return mSpool; }
-    override virtual float GetMaxInductionPSI() const { return mInductionInfo.PSI(); }
+    override virtual Physics::Info::eInductionType InductionType() const {
+        return Physics::Info::InductionType(mInductionInfo);
+    }
+    override virtual float GetInductionPSI() const {
+        return mPSI;
+    }
+    override virtual float InductionSpool() const {
+        return mSpool;
+    }
+    override virtual float GetMaxInductionPSI() const {
+        return mInductionInfo.PSI();
+    }
 
     // IEngineDamage
-    override virtual bool IsBlown() const { return mBlown; }
-    override virtual void Repair() { mSabotage = 0.0f; mBlown = false; }
-    override virtual bool IsSabotaged() const { return mSabotage > 0.0f; }
+    override virtual bool IsBlown() const {
+        return mBlown;
+    }
+    override virtual void Repair() {
+        mSabotage = 0.0f;
+        mBlown = false;
+    }
+    override virtual bool IsSabotaged() const {
+        return mSabotage > 0.0f;
+    }
 
     // ITransmission
-    override virtual float GetDriveTorque() const { return mDriveTorque; }
-    override virtual GearID GetTopGear() const { return (GearID)(GetNumGearRatios() - 1); }
-    override virtual GearID GetGear() const { return (GearID)mGear; }
-    override virtual bool IsGearChanging() const { return mGearShiftTimer > 0.0f; }
+    override virtual float GetDriveTorque() const {
+        return mDriveTorque;
+    }
+    override virtual GearID GetTopGear() const {
+        return (GearID)(GetNumGearRatios() - 1);
+    }
+    override virtual GearID GetGear() const {
+        return (GearID)mGear;
+    }
+    override virtual bool IsGearChanging() const {
+        return mGearShiftTimer > 0.0f;
+    }
 
     override virtual bool Shift(GearID gear) {
         return DoGearChange(gear, false);
     }
-    override virtual ShiftStatus GetShiftStatus() const { return mShiftStatus; }
-    override virtual ShiftPotential GetShiftPotential() const { return mShiftPotential; }
+    override virtual ShiftStatus GetShiftStatus() const {
+        return mShiftStatus;
+    }
+    override virtual ShiftPotential GetShiftPotential() const {
+        return mShiftPotential;
+    }
 
     virtual ShiftStatus OnGearChange(GearID gear);
-    virtual bool UseRevLimiter() const { return true; }
+    virtual bool UseRevLimiter() const {
+        return true;
+    }
     virtual void DoECU();
     virtual float DoThrottle();
     virtual void DoInduction(const Physics::Tunings *tunings, float dT);
@@ -216,7 +275,7 @@ class EngineRacer : protected VehicleBehavior,
     virtual void DoShifting(float dT);
     virtual ShiftPotential UpdateShiftPotential(GearID gear, float rpm);
     virtual float GetEngineTorque(float rpm) const;
-    
+
     // Inlines
     unsigned int GetNumGearRatios() const {
         return mTranyInfo.Num_GEAR_RATIO();
@@ -312,45 +371,12 @@ Behavior *EngineRacer::Construct(const BehaviorParams &params) {
 }
 
 EngineRacer::EngineRacer(const BehaviorParams &bp)
-: VehicleBehavior(bp, 0)
-, ITransmission(bp.fowner)
-, IEngine(bp.fowner)
-, IInductable(bp.fowner)
-, ITiptronic(bp.fowner)
-, IRaceEngine(bp.fowner)
-, IEngineDamage(bp.fowner)
-, mDriveTorque(0.0f)
-, mGear(G_NEUTRAL)
-, mGearShiftTimer(0.0f)
-, mThrottle(0.0f)
-, mSpool(0.0f)
-, mPSI(0.0f)
-, mInductionBoost(0.0f)
-, mAngularVelocity(0.0f)
-, mAngularAcceleration(0.0f)
-, mTransmissionVelocity(0.0f)
-, mNOSCapacity(1.0f)
-, mNOSBoost(1.0f)
-, mNOSEngaged(0.0f)
-, mClutchRPMDiff(0.0f)
-, mEngineBraking(false)
-, mSportShifting(0.0f)
-, mIInput(NULL)
-, mSuspension(NULL)
-, mNOSInfo(this, 0)
-, mInductionInfo(this, 0)
-, mEngineInfo(this, 0)
-, mTranyInfo(this, 0)
-, mTireInfo(this, 0)
-, mRPM(0.0f)
-, mShiftStatus(SHIFT_STATUS_NONE)
-, mShiftPotential(SHIFT_POTENTIAL_NONE)
-, mPeakTorque(0.0f)
-, mPeakTorqueRPM(0.0f)
-, mMaxHP(0.0f)
-, mClutch()
-, mBlown(false)
-, mSabotage(0.0f) {
+    : VehicleBehavior(bp, 0), ITransmission(bp.fowner), IEngine(bp.fowner), IInductable(bp.fowner), ITiptronic(bp.fowner), IRaceEngine(bp.fowner),
+      IEngineDamage(bp.fowner), mDriveTorque(0.0f), mGear(G_NEUTRAL), mGearShiftTimer(0.0f), mThrottle(0.0f), mSpool(0.0f), mPSI(0.0f),
+      mInductionBoost(0.0f), mAngularVelocity(0.0f), mAngularAcceleration(0.0f), mTransmissionVelocity(0.0f), mNOSCapacity(1.0f), mNOSBoost(1.0f),
+      mNOSEngaged(0.0f), mClutchRPMDiff(0.0f), mEngineBraking(false), mSportShifting(0.0f), mIInput(NULL), mSuspension(NULL), mNOSInfo(this, 0),
+      mInductionInfo(this, 0), mEngineInfo(this, 0), mTranyInfo(this, 0), mTireInfo(this, 0), mRPM(0.0f), mShiftStatus(SHIFT_STATUS_NONE),
+      mShiftPotential(SHIFT_POTENTIAL_NONE), mPeakTorque(0.0f), mPeakTorqueRPM(0.0f), mMaxHP(0.0f), mClutch(), mBlown(false), mSabotage(0.0f) {
     // IAttributeable::Register(this, 0);
     // IAttributeable::Register(this, 0);
     EnableProfile("EngineRacer");
@@ -472,7 +498,7 @@ float EngineRacer::GuessRPM(float speed, GearID atgear) const {
     if (avg_wheel_radius <= 0.0f) {
         return mEngineInfo.IDLE();
     }
-    
+
     float differential_w = UMath::Abs(speed) / avg_wheel_radius;
     float max_w = RPM2RPS(mEngineInfo.RED_LINE());
     float min_w = RPM2RPS(mEngineInfo.IDLE());
@@ -525,7 +551,6 @@ void EngineRacer::CalcShiftPoints() {
     mMaxHP = Physics::Info::MaxInductedPower(pvehicle, NULL);
 }
 
-
 // Credits: Brawltendo
 void EngineRacer::AutoShift() {
     if (mGear == G_REVERSE || mGearShiftTimer > 0.0f || GetVehicle()->IsStaging() || mSportShifting > 0.0f)
@@ -543,7 +568,7 @@ void EngineRacer::AutoShift() {
             if (next_gear > G_FIRST) {
                 float current_rpm = RPS2RPM(mTransmissionVelocity);
                 float rpm = current_rpm * GetRatioChange(next_gear, mGear);
-                for (; next_gear > G_FIRST && FindShiftPotential((GearID)next_gear, rpm) == SHIFT_POTENTIAL_DOWN; ) {
+                for (; next_gear > G_FIRST && FindShiftPotential((GearID)next_gear, rpm) == SHIFT_POTENTIAL_DOWN;) {
                     rpm = current_rpm * GetRatioChange(--next_gear, mGear);
                 }
             }
@@ -585,7 +610,7 @@ ShiftPotential EngineRacer::FindShiftPotential(GearID gear, float rpm) const {
     // is able to shift down
     if (gear != G_FIRST && lower_gear_ratio > 0.0f) {
         float lower_gear_shift_up_rpm = ((GetShiftUpRPM(gear - 1) * GetGearRatio(gear)) / lower_gear_ratio) - 200.0f;
-        
+
         if (Tweak_CoastShifting) {
             // lower downshift RPM when coasting
             float off_throttle_rpm = UMath::Lerp(mEngineInfo.IDLE(), shift_down_rpm, Tweak_CoastingPercent);
@@ -667,7 +692,7 @@ bool EngineRacer::DoGearChange(GearID gear, bool automatic) {
         }
         return true;
     }
-    
+
     return false;
 }
 
@@ -996,10 +1021,7 @@ static const float Tweak_ClutchEngageTime = 0.25f;
 static const float Tweak_1stGearClutchEngageTime = 0.05f;
 static const float Tweak_CheaterTorqueBoost = 0.5f;
 float ClutchStiffness = 20.0f;
-GraphEntry<float> ClutchPlayData[] =
-{
-    {-10.f, 1.f}, {-7.5f, 0.96f}, {-3.5f, 0.925f}, {-0.3f, 0.875f}, {-0.05f, 0.f}
-};
+GraphEntry<float> ClutchPlayData[] = {{-10.f, 1.f}, {-7.5f, 0.96f}, {-3.5f, 0.925f}, {-0.3f, 0.875f}, {-0.05f, 0.f}};
 tGraph<float> ClutchPlayTable(ClutchPlayData, 5);
 static const bool Tweak_PrintShiftPotentials = false;
 static const float Tweak_IdleClutchRPM = 800.0f;
@@ -1083,8 +1105,8 @@ void EngineRacer::OnTaskSimulate(float dT) {
         float perfect_launch = GetVehicle()->GetPerfectLaunch();
         if (perfect_launch > 0.0f && mThrottle > 0.0f) {
             // force the engine to operate at peak torque during a perfect launch
-            mThrottle      = 1.0f;
-            engine_torque  = mPeakTorque * mNOSBoost;
+            mThrottle = 1.0f;
+            engine_torque = mPeakTorque * mNOSBoost;
             braking_torque = 0.0f;
         }
     }
@@ -1096,23 +1118,21 @@ void EngineRacer::OnTaskSimulate(float dT) {
     if (mGear != G_NEUTRAL && mClutch.GetState() == Clutch::ENGAGED && braking_torque * axle_w * gear_direction > overrev_torque) {
         braking_torque = -braking_torque;
     }
-    
+
     float total_engine_torque = engine_torque * mThrottle + braking_torque * (1.0f - mThrottle);
     float drive_torque = 0.0f;
-    float road_torque  = overrev_torque;
+    float road_torque = overrev_torque;
     mEngineBraking = total_engine_torque < 0.0f;
 
     if (mGear != G_NEUTRAL) {
         switch (mClutch.GetState()) {
-            case Clutch::ENGAGED:
-            {
+            case Clutch::ENGAGED: {
                 mClutchRPMDiff = 0.0f;
-                drive_torque   = total_engine_torque;
-                road_torque    -= total_engine_torque * wheel_ratio;
+                drive_torque = total_engine_torque;
+                road_torque -= total_engine_torque * wheel_ratio;
                 break;
             }
-            case Clutch::ENGAGING:
-            {
+            case Clutch::ENGAGING: {
                 float diff = mAngularVelocity - mTransmissionVelocity;
                 if (diff > ClutchLimiter) {
                     diff = ClutchLimiter;
@@ -1121,24 +1141,20 @@ void EngineRacer::OnTaskSimulate(float dT) {
                 }
 
                 float stiffness = ClutchStiffness;
-                float rpmdiff   = RPS2RPM(mTransmissionVelocity - mAngularVelocity);
+                float rpmdiff = RPS2RPM(mTransmissionVelocity - mAngularVelocity);
                 float clutchingtorque;
-                if (mClutchRPMDiff != 0.0f 
-                &&  rpmdiff * mClutchRPMDiff < 0.0f 
-                &&  bAbs(rpmdiff) > Tweak_SeizeRPM
-                &&  bAbs(mClutchRPMDiff) > Tweak_SeizeRPM)
-                {
+                if (mClutchRPMDiff != 0.0f && rpmdiff * mClutchRPMDiff < 0.0f && bAbs(rpmdiff) > Tweak_SeizeRPM &&
+                    bAbs(mClutchRPMDiff) > Tweak_SeizeRPM) {
                     stiffness *= 0.5f;
                 }
 
-                mClutchRPMDiff  = rpmdiff;
+                mClutchRPMDiff = rpmdiff;
                 clutchingtorque = diff * stiffness * clutch_ratio;
-                drive_torque    += clutchingtorque;
-                road_torque     -= clutchingtorque * wheel_ratio;
+                drive_torque += clutchingtorque;
+                road_torque -= clutchingtorque * wheel_ratio;
                 break;
             }
-            case Clutch::DISENGAGED:
-            {
+            case Clutch::DISENGAGED: {
                 mClutchRPMDiff = 0.0f;
                 break;
             }
@@ -1149,7 +1165,7 @@ void EngineRacer::OnTaskSimulate(float dT) {
 
     if (mGear != G_NEUTRAL) {
         if (mClutch.GetState() == Clutch::ENGAGED) {
-            float ae   = (total_engine_torque + road_torque) / engine_inertia;
+            float ae = (total_engine_torque + road_torque) / engine_inertia;
             float diff = ae - trans_acceleration;
             float wheel_response = 0.1f;
             float response = 1.0f / engine_inertia;
@@ -1165,32 +1181,32 @@ void EngineRacer::OnTaskSimulate(float dT) {
             }
 
             response1 = diff / response;
-            drive_torque  += UMath::Min(response1, 0.0f);
-            road_torque   -= response1 * wheel_ratio;
+            drive_torque += UMath::Min(response1, 0.0f);
+            road_torque -= response1 * wheel_ratio;
         }
     }
 
     if (mGear != G_NEUTRAL) {
         if (mClutch.GetState() == Clutch::ENGAGED && num_wheels_onground > 0) {
-            float slip  = GetDriveWheelSlippage();
+            float slip = GetDriveWheelSlippage();
             float delta = mTransmissionVelocity - mAngularVelocity;
             if (mThrottle > 0.2f && slip * gear_direction > 0.1f && mGear <= G_FIRST && delta < 0.0f) {
                 mTransmissionVelocity = mAngularVelocity;
                 SetDifferentialAngularVelocity(mAngularVelocity / total_gear_ratio);
             } else {
-                float max_torque     = bAbs(total_engine_torque);
+                float max_torque = bAbs(total_engine_torque);
                 float counter_torque = -max_torque;
                 road_torque += bClamp(delta * ClutchStiffness, counter_torque, max_torque);
             }
         }
 
         if (mGear == G_FIRST || mGear == G_REVERSE) {
-            float etorque     = total_engine_torque;
-            float rtorque     = road_torque;
+            float etorque = total_engine_torque;
+            float rtorque = road_torque;
             float torque_diff = total_engine_torque + road_torque;
             if (rtorque < etorque && torque_diff < 0.f) {
                 float clutch_play_coeff = ClutchPlayTable.GetValue(torque_diff * 1000.f);
-                float clutch_torque     = clutch_play_coeff * torque_diff;
+                float clutch_torque = clutch_play_coeff * torque_diff;
                 road_torque += clutch_torque * mTranyInfo.CLUTCH_SLIP();
             }
         }
@@ -1208,11 +1224,8 @@ void EngineRacer::OnTaskSimulate(float dT) {
         }
     }
 
-    if (mGear != G_NEUTRAL 
-    &&  mThrottle > 0.0f 
-    &&  mGear <= G_FIRST 
-    &&  mClutch.GetState() == Clutch::ENGAGED
-    &&  road_torque * total_engine_torque < 0.0f) {
+    if (mGear != G_NEUTRAL && mThrottle > 0.0f && mGear <= G_FIRST && mClutch.GetState() == Clutch::ENGAGED &&
+        road_torque * total_engine_torque < 0.0f) {
         float clutch_slip = mTranyInfo.CLUTCH_SLIP() * mThrottle;
         float power_ratio = 1.0f - mThrottle * UMath::Ramp(rpm, mEngineInfo.IDLE(), mPeakTorqueRPM);
         clutch_slip *= power_ratio;
@@ -1229,7 +1242,8 @@ void EngineRacer::OnTaskSimulate(float dT) {
     }
 
     if (mTransmissionVelocity > max_w && total_gear_ratio != 0.f) {
-        if (drive_torque * total_gear_ratio > 0.f)  drive_torque = 0.f;
+        if (drive_torque * total_gear_ratio > 0.f)
+            drive_torque = 0.f;
         mTransmissionVelocity = max_w;
         SetDifferentialAngularVelocity(max_w / total_gear_ratio);
     }
@@ -1240,9 +1254,9 @@ void EngineRacer::OnTaskSimulate(float dT) {
     }
 
     mDriveTorque = drive_torque * total_gear_ratio * GetGearEfficiency(mGear);
-    mRPM = Engine_SmoothRPM(IsShiftingGear() || mClutch.GetState() == Clutch::DISENGAGED, 
-                            GetGear(), dT, mRPM, RPS2RPM(mAngularVelocity), engine_inertia);
-    
+    mRPM = Engine_SmoothRPM(IsShiftingGear() || mClutch.GetState() == Clutch::DISENGAGED, GetGear(), dT, mRPM, RPS2RPM(mAngularVelocity),
+                            engine_inertia);
+
     if (mClutch.GetState() || GetVehicle()->IsStaging()) {
         mShiftPotential = SHIFT_POTENTIAL_NONE;
     } else {
@@ -1264,11 +1278,9 @@ float EngineRacer::GetShiftPoint(GearID from_gear, GearID to_gear) const {
     if (to_gear < from_gear) {
         return mShiftDownRPM[from_gear];
     }
-    
+
     return 0.0f;
 }
-
-
 
 // ----------------------------------------------------------------------------------------
 // EngineDragster
@@ -1289,9 +1301,7 @@ static const bool Tweak_AllowAIPerfectShift = false;
 static const bool bNoEngineBlown = false;
 
 // total size: 0x1D8
-class EngineDragster : public EngineRacer,
-                    public IDragEngine,
-                    public IDragTransmission {
+class EngineDragster : public EngineRacer, public IDragEngine, public IDragTransmission {
   public:
     // Methods
     static Behavior *Construct(const BehaviorParams &params);
@@ -1312,7 +1322,7 @@ class EngineDragster : public EngineRacer,
     override virtual void Reset();
     override virtual void OnTaskSimulate(float dT);
     override virtual void OnBehaviorChange(const UCrc32 &mechanic);
-    
+
     // IEngineDamage
     override virtual void Repair();
     override virtual bool Blow();
@@ -1321,7 +1331,9 @@ class EngineDragster : public EngineRacer,
 
     // ITiptronic
     // manumatic disabled because drag races are always in manual transmission mode
-    override virtual bool SportShift(GearID gear) { return false; }
+    override virtual bool SportShift(GearID gear) {
+        return false;
+    }
 
     // IDragTransmission
     override virtual float GetShiftBoost() const {
@@ -1332,11 +1344,17 @@ class EngineDragster : public EngineRacer,
     }
 
     // IDragEngine
-    override virtual float GetOverRev() const { return mOverrev; }
-    override virtual float GetHeat() const { return UMath::Clamp(mHeat, 0.0f, 1.0f); }
-    
+    override virtual float GetOverRev() const {
+        return mOverrev;
+    }
+    override virtual float GetHeat() const {
+        return UMath::Clamp(mHeat, 0.0f, 1.0f);
+    }
+
     // EngineRacer
-    override virtual bool UseRevLimiter() const { return GetVehicle()->IsStaging() != false; }
+    override virtual bool UseRevLimiter() const {
+        return GetVehicle()->IsStaging() != false;
+    }
 
     // Inlines
 
@@ -1345,24 +1363,17 @@ class EngineDragster : public EngineRacer,
     }
 
   private:
-    float mPotentialBonus;     // offset 0x1C0, size 0x4
-    float mPerfectShiftTime;   // offset 0x1C4, size 0x4
-    float mBoost;              // offset 0x1C8, size 0x4
-    float mOverrev;            // offset 0x1CC, size 0x4
-    float mHeat;               // offset 0x1D0, size 0x4
-    ISuspension * mSuspension; // offset 0x1D4, size 0x4
+    float mPotentialBonus;    // offset 0x1C0, size 0x4
+    float mPerfectShiftTime;  // offset 0x1C4, size 0x4
+    float mBoost;             // offset 0x1C8, size 0x4
+    float mOverrev;           // offset 0x1CC, size 0x4
+    float mHeat;              // offset 0x1D0, size 0x4
+    ISuspension *mSuspension; // offset 0x1D4, size 0x4
 };
 
 EngineDragster::EngineDragster(const BehaviorParams &bp)
-: EngineRacer(bp)
-, IDragEngine(bp.fowner)
-, IDragTransmission(bp.fowner)
-, mPotentialBonus(0.0f)
-, mPerfectShiftTime(0.0f)
-, mBoost(0.0f)
-, mOverrev(0.0f)
-, mHeat(0.0f)
-, mSuspension(NULL) {
+    : EngineRacer(bp), IDragEngine(bp.fowner), IDragTransmission(bp.fowner), mPotentialBonus(0.0f), mPerfectShiftTime(0.0f), mBoost(0.0f),
+      mOverrev(0.0f), mHeat(0.0f), mSuspension(NULL) {
     GetOwner()->QueryInterface(&mSuspension);
 }
 
@@ -1389,7 +1400,7 @@ bool EngineDragster::Blow() {
         mHeat = EngineHeatBlownFlag;
         return true;
     }
-    
+
     return false;
 }
 
@@ -1492,11 +1503,11 @@ ShiftPotential EngineDragster::UpdateShiftPotential(GearID gear, float rpm) {
     if (EngineRacer::UpdateShiftPotential(gear, rpm) == SHIFT_POTENTIAL_DOWN) {
         return SHIFT_POTENTIAL_DOWN;
     }
-    
+
     if (GetVehicle()->IsStaging()) {
         return SHIFT_POTENTIAL_NONE;
     }
-    
+
     int have_traction = 1;
     if (gear == G_FIRST) {
         for (int i = 0; i < 4; ++i) {
@@ -1523,12 +1534,8 @@ ShiftPotential EngineDragster::UpdateShiftPotential(GearID gear, float rpm) {
 }
 
 float EngineDragster::CalcPotentialShiftBonus(float rpm, GearID gear, GearID nextgear) const {
-    if ((!Tweak_AllowAIPerfectShift && !GetOwner()->IsPlayer())
-    || gear >= nextgear
-    || gear == G_REVERSE
-    || nextgear <= G_NEUTRAL
-    || gear <= G_NEUTRAL
-    || nextgear > GetTopGear()) {
+    if ((!Tweak_AllowAIPerfectShift && !GetOwner()->IsPlayer()) || gear >= nextgear || gear == G_REVERSE || nextgear <= G_NEUTRAL ||
+        gear <= G_NEUTRAL || nextgear > GetTopGear()) {
         return 0.0f;
     }
 

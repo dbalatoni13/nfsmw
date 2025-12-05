@@ -1,41 +1,39 @@
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UVector.h"
-#include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
-#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engine.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/induction.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/nos.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/tires.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/transmission.h"
+#include "Speed/Indep/Src/Generated/Events/EEngineBlown.hpp"
+#include "Speed/Indep/Src/Generated/Events/EMissShift.hpp"
+#include "Speed/Indep/Src/Generated/Events/EPerfectShift.hpp"
+#include "Speed/Indep/Src/Generated/Events/EPlayerShift.hpp"
 #include "Speed/Indep/Src/Interfaces/IAttributeable.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICheater.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEngineDamage.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IInductable.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITiptronic.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
-#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
-#include "Speed/Indep/Src/Physics/PhysicsTypes.h"
-#include "Speed/Indep/Src/Misc/Table.hpp"
-#include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
-#include "Speed/Indep/Libs/Support/Utility/UMath.h"
-#include "Speed/Indep/Src/Generated/Events/EEngineBlown.hpp"
-#include "Speed/Indep/Src/Generated/Events/EPlayerShift.h"
-#include "Speed/Indep/Src/Generated/Events/EPerfectShift.h"
-#include "Speed/Indep/Src/Generated/Events/EMissShift.h"
-#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Misc/Table.hpp"
+#include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
+#include "Speed/Indep/Src/Physics/PhysicsTypes.h"
+#include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/Sim/UTil.h"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+
 // total size: 0x124
-class EngineTraffic : protected VehicleBehavior,
-                    protected ITransmission,
-                    protected IEngine,
-                    public IAttributeable {
+class EngineTraffic : protected VehicleBehavior, protected ITransmission, protected IEngine, public IAttributeable {
   public:
     // Methods
     static Behavior *Construct(const BehaviorParams &params);
@@ -74,38 +72,88 @@ class EngineTraffic : protected VehicleBehavior,
     // Inline virtuals
 
     // IEngine
-    override virtual float GetMinHorsePower() const { return FTLB2NM(Physics::Info::Torque(mEngineInfo, mEngineInfo.IDLE()) * mEngineInfo.IDLE()); }
-    override virtual float GetRPM() const { return mRPM; }
-    override virtual float GetMaxRPM() const { return mEngineInfo.MAX_RPM(); }
-    override virtual float GetPeakTorqueRPM() const { return mPeakTorqueRPM; }
-    override virtual float GetRedline() const { return mEngineInfo.RED_LINE(); }
-    override virtual float GetMinRPM() const { return mEngineInfo.IDLE(); }
-    override virtual float GetNOSCapacity() const { return 0.0f; }
-    override virtual bool IsNOSEngaged() const { return false; }
-    override virtual bool HasNOS() const { return false; }
-    override virtual float GetNOSFlowRate() const { return 0.0f; }
-    override virtual void ChargeNOS(float charge) { }
-    override virtual float GetNOSBoost() const { return 1.0f; }
+    override virtual float GetMinHorsePower() const {
+        return FTLB2NM(Physics::Info::Torque(mEngineInfo, mEngineInfo.IDLE()) * mEngineInfo.IDLE());
+    }
+    override virtual float GetRPM() const {
+        return mRPM;
+    }
+    override virtual float GetMaxRPM() const {
+        return mEngineInfo.MAX_RPM();
+    }
+    override virtual float GetPeakTorqueRPM() const {
+        return mPeakTorqueRPM;
+    }
+    override virtual float GetRedline() const {
+        return mEngineInfo.RED_LINE();
+    }
+    override virtual float GetMinRPM() const {
+        return mEngineInfo.IDLE();
+    }
+    override virtual float GetNOSCapacity() const {
+        return 0.0f;
+    }
+    override virtual bool IsNOSEngaged() const {
+        return false;
+    }
+    override virtual bool HasNOS() const {
+        return false;
+    }
+    override virtual float GetNOSFlowRate() const {
+        return 0.0f;
+    }
+    override virtual void ChargeNOS(float charge) {}
+    override virtual float GetNOSBoost() const {
+        return 1.0f;
+    }
 
-    virtual bool IsEngineBraking() { return mEngineBraking; }
-    virtual bool IsShiftingGear() { return mGearShiftTimer > 0.0f; }
-    override virtual bool IsReversing() const { return mGear == G_REVERSE; }
+    virtual bool IsEngineBraking() {
+        return mEngineBraking;
+    }
+    virtual bool IsShiftingGear() {
+        return mGearShiftTimer > 0.0f;
+    }
+    override virtual bool IsReversing() const {
+        return mGear == G_REVERSE;
+    }
 
-    virtual Physics::Info::eInductionType InductionType() const { return Physics::Info::INDUCTION_NONE; }
-    virtual float GetInductionPSI() const { return 0.0f; }
-    virtual float InductionSpool() const { return 0.0f; }
-    virtual float GetMaxInductionPSI() const { return 0.0f; }
+    virtual Physics::Info::eInductionType InductionType() const {
+        return Physics::Info::INDUCTION_NONE;
+    }
+    virtual float GetInductionPSI() const {
+        return 0.0f;
+    }
+    virtual float InductionSpool() const {
+        return 0.0f;
+    }
+    virtual float GetMaxInductionPSI() const {
+        return 0.0f;
+    }
 
     // ITransmission
-    override virtual float GetDriveTorque() const { return mDriveTorque; }
-    override virtual GearID GetTopGear() const { return (GearID)(GetNumGearRatios() - 1); }
-    override virtual GearID GetGear() const { return (GearID)mGear; }
-    override virtual bool IsGearChanging() const { return mGearShiftTimer > 0.0f; }
+    override virtual float GetDriveTorque() const {
+        return mDriveTorque;
+    }
+    override virtual GearID GetTopGear() const {
+        return (GearID)(GetNumGearRatios() - 1);
+    }
+    override virtual GearID GetGear() const {
+        return (GearID)mGear;
+    }
+    override virtual bool IsGearChanging() const {
+        return mGearShiftTimer > 0.0f;
+    }
 
-    override virtual ShiftStatus GetShiftStatus() const { return SHIFT_STATUS_NORMAL; }
-    virtual ShiftPotential GetShiftPotential(GearID gear, float rpm) const { return SHIFT_POTENTIAL_NONE; }
-    override virtual ShiftPotential GetShiftPotential() const { return SHIFT_POTENTIAL_NONE; }
-    
+    override virtual ShiftStatus GetShiftStatus() const {
+        return SHIFT_STATUS_NORMAL;
+    }
+    virtual ShiftPotential GetShiftPotential(GearID gear, float rpm) const {
+        return SHIFT_POTENTIAL_NONE;
+    }
+    override virtual ShiftPotential GetShiftPotential() const {
+        return SHIFT_POTENTIAL_NONE;
+    }
+
     // Inlines
     unsigned int GetNumGearRatios() const {
         return mTranyInfo.Num_GEAR_RATIO();
@@ -153,8 +201,8 @@ class EngineTraffic : protected VehicleBehavior,
     float mAngularVelocity;                                 // offset 0xC4, size 0x4
     float mClutchVelocity;                                  // offset 0xC8, size 0x4
     bool mEngineBraking;                                    // offset 0xCC, size 0x1
-    IInput * mIInput;                                       // offset 0xD0, size 0x4
-    ISuspension * mSuspension;                              // offset 0xD4, size 0x4
+    IInput *mIInput;                                        // offset 0xD0, size 0x4
+    ISuspension *mSuspension;                               // offset 0xD4, size 0x4
     BehaviorSpecsPtr<Attrib::Gen::engine> mEngineInfo;      // offset 0xD8, size 0x14
     BehaviorSpecsPtr<Attrib::Gen::transmission> mTranyInfo; // offset 0xEC, size 0x14
     BehaviorSpecsPtr<Attrib::Gen::tires> mTireInfo;         // offset 0x100, size 0x14
@@ -169,25 +217,9 @@ Behavior *EngineTraffic::Construct(const BehaviorParams &params) {
 }
 
 EngineTraffic::EngineTraffic(const BehaviorParams &bp)
-: VehicleBehavior(bp, 0)
-, ITransmission(bp.fowner)
-, IEngine(bp.fowner)
-, mDriveTorque(0.0f)
-, mGear(G_NEUTRAL)
-, mGearShiftTimer(0.0f)
-, mThrottle(0.0f)
-, mAngularVelocity(0.0f)
-, mClutchVelocity(0.0f)
-, mEngineBraking(false)
-, mIInput(NULL)
-, mSuspension(NULL)
-, mEngineInfo(this, 0)
-, mTranyInfo(this, 0)
-, mTireInfo(this, 0)
-, mRPM(0.0f)
-, mPeakTorque(0.0f)
-, mPeakTorqueRPM(0.0f)
-, mMaxHP(0.0f) {
+    : VehicleBehavior(bp, 0), ITransmission(bp.fowner), IEngine(bp.fowner), mDriveTorque(0.0f), mGear(G_NEUTRAL), mGearShiftTimer(0.0f),
+      mThrottle(0.0f), mAngularVelocity(0.0f), mClutchVelocity(0.0f), mEngineBraking(false), mIInput(NULL), mSuspension(NULL), mEngineInfo(this, 0),
+      mTranyInfo(this, 0), mTireInfo(this, 0), mRPM(0.0f), mPeakTorque(0.0f), mPeakTorqueRPM(0.0f), mMaxHP(0.0f) {
     // IAttributeable::Register(this, 0);
     // IAttributeable::Register(this, 0);
     EnableProfile("EngineTraffic");
@@ -202,7 +234,9 @@ EngineTraffic::~EngineTraffic() {
     IAttributeable::UnRegister(this);
 }
 
-float EngineTraffic::GetMaxHorsePower() const { return mMaxHP; }
+float EngineTraffic::GetMaxHorsePower() const {
+    return mMaxHP;
+}
 
 float EngineTraffic::GetHorsePower() const {
     float engine_torque = GetTorquePoint(mRPM);
@@ -255,10 +289,10 @@ void EngineTraffic::MatchSpeed(float speed) {
         mGearShiftTimer = 0.0f;
         mGear = G_FIRST;
         mAngularVelocity = RPM2RPS(mEngineInfo->IDLE());
-        mClutchVelocity  = mAngularVelocity;
+        mClutchVelocity = mAngularVelocity;
         return;
     }
-    
+
     if (speed < 0.0f) {
         mGearShiftTimer = 0.0f;
         mGear = G_REVERSE;
@@ -274,11 +308,11 @@ void EngineTraffic::MatchSpeed(float speed) {
             }
         }
     }
-    
+
     float total_gear_ratio = GetGearRatio(mGear) * rear_end;
     float power_range = (max_w - min_w) / max_w;
     mAngularVelocity = differential_w * total_gear_ratio * power_range + min_w;
-    mClutchVelocity  = mAngularVelocity;
+    mClutchVelocity = mAngularVelocity;
     mRPM = RPS2RPM(mAngularVelocity);
 }
 
@@ -302,8 +336,7 @@ float EngineTraffic::GetBrakingTorque(float engine_torque, float rpm) const {
 }
 
 void EngineTraffic::CalcShiftPoints() {
-    bool shift_points_calced = Physics::Info::ShiftPoints(mTranyInfo, mEngineInfo,
-                                                          Attrib::Gen::induction((Attrib::Collection *)NULL, 0, NULL),
+    bool shift_points_calced = Physics::Info::ShiftPoints(mTranyInfo, mEngineInfo, Attrib::Gen::induction((Attrib::Collection *)NULL, 0, NULL),
                                                           mShiftUpRPM, mShiftDownRPM, 10);
 
     Attrib::Gen::pvehicle pvehicle(GetOwner()->GetAttributes());
@@ -333,7 +366,7 @@ void EngineTraffic::AutoShift() {
 
         if (mGear <= G_FIRST) {
             shift_down_rpm = mThrottle < 0.2f ? mEngineInfo->IDLE() + 100.0f : 0.0f;
-        } 
+        }
 
         if (rpm >= shift_up_rpm && mGear < GetTopGear()) {
             Shift((GearID)(mGear + 1));
@@ -420,7 +453,7 @@ void EngineTraffic::OnTaskSimulate(float dT) {
     float torque_total = 0.0f;
     float gear_direction = mGear == G_REVERSE ? -1.0f : 1.0f;
     float total_gear_ratio = GetGearRatio(mGear) * GetFinalGear() * gear_direction;
-    
+
     float converter_ratio = 1.0f;
     float torque_converter = mTranyInfo.TORQUE_CONVERTER();
     if (torque_converter > 0.0f) {
@@ -452,8 +485,8 @@ void EngineTraffic::OnTaskSimulate(float dT) {
         clutch_ratio = 0.0f;
     } else {
         float rpm = RPS2RPM(mAngularVelocity);
-        float counter_torque; // unused, from debug info
-        float engine_torque = GetTorquePoint(rpm);  // unused, from debug info
+        float counter_torque;                      // unused, from debug info
+        float engine_torque = GetTorquePoint(rpm); // unused, from debug info
         float drive_torque = engine_torque;
         float breaking_torque = GetBrakingTorque(drive_torque, rpm); // yes it's misspelled here despite being correct above
         if (differential_w * total_gear_ratio < 0.0f) {
@@ -515,6 +548,6 @@ float EngineTraffic::GetShiftPoint(GearID from_gear, GearID to_gear) const {
     if (to_gear < from_gear) {
         return mShiftDownRPM[from_gear];
     }
-    
+
     return 0.0f;
 }

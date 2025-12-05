@@ -1,5 +1,5 @@
-#ifndef GENERATED_EVENTS_ECOLLISION_H
-#define GENERATED_EVENTS_ECOLLISION_H
+#ifndef EVENTS_ECOLLISION_H
+#define EVENTS_ECOLLISION_H
 
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
@@ -11,9 +11,18 @@
 // total size: 0x88
 class ECollision : public Event {
   public:
+    // enum { kEventID = 0 };
+
     ECollision(COLLISION_INFO pInfo);
 
-    COLLISION_INFO fInfo; // offset 0x8, size 0x80
+    override virtual ~ECollision();
+
+    override virtual const char *GetEventName() {
+        return "ECollision";
+    }
+
+  private:
+    COLLISION_INFO fInfo; // offset: 0xc, size 0x80
 };
 
 #endif
