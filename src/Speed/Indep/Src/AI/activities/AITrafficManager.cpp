@@ -406,7 +406,7 @@ void AITrafficManager::Update(float dT) {
         SpawnTraffic();
     }
 
-    for (std::list<IVehicle *>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
+    for (UTL::Std::list<IVehicle *, _type_TrafficList>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
         IVehicle *ivehicle = *iter;
         if (ivehicle->IsActive() && !ValidateVehicle(ivehicle, density)) {
             ivehicle->GetAIVehiclePtr()->UnSpawn();
@@ -415,7 +415,7 @@ void AITrafficManager::Update(float dT) {
 }
 
 void AITrafficManager::FlushAllTraffic(bool release) {
-    for (std::list<IVehicle *>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
+    for (UTL::Std::list<IVehicle *, _type_TrafficList>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
         IVehicle *ivehicle = *iter;
         if (release) {
             ISimable *isimable;
