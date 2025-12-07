@@ -125,6 +125,7 @@ Unfortunately the vtables can't (currently?) be loaded from the GC ELF into Ghid
 ### Use Deprecated Demangler
 
 For Gamecube binaries the standard demangler doesn't work and you have to use the deprecated version.
+For PS2 binaries the deprecated version gives nicer results.
 
 1. From the Ghidra project window, double-click the program file to open it in the CodeBrowser.
 2. In the CodeBrowser, navigate to Analysis > Auto Analyze... (or press Shift + F12).
