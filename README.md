@@ -122,6 +122,15 @@ To get a proper Ghidra output, you should either install the necessary extension
 
 Unfortunately the vtables can't (currently?) be loaded from the GC ELF into Ghidra, so you'll have to copy them over from the PS2 ELF and adjust the corresponding classes. Nested classes have the same problem and solution.
 
+### Use Deprecated Demangler
+
+For Gamecube binaries the standard demangler doesn't work and you have to use the deprecated version.
+
+1. From the Ghidra project window, double-click the program file to open it in the CodeBrowser.
+2. In the CodeBrowser, navigate to Analysis > Auto Analyze... (or press Shift + F12).
+3. In the Auto Analysis options window, find the "Demangler GNU" analyzer in the list and select it.
+4. In the options area (usually on the right side of the window), locate the option named "Use Deprecated Demangler".
+
 ## symbols/mw_dwarfdump.nothpp
 
 This is the dwarf dump of the whole GC version of the game. The `.nothpp` extension is to make sure that the IDE doesn't parse it on weak laptops. This should be your main source of information. It even shows which inlines a function calls. Namespaces only show up in generics. For regular functions and variables you can search `symbols.txt` for the right name.
