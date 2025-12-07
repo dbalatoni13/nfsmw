@@ -1,10 +1,21 @@
 #include "LocalPlayer.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FEPkg_Hud.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Generated/Events/EPursuitBreaker.hpp"
 #include "Speed/Indep/Src/Interfaces/IAttachable.h"
+#include "Speed/Indep/Src/Interfaces/IFengHud.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/IGameState.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Misc/Profiler.hpp"
+#include "Speed/Indep/Src/Sim/SimTypes.h"
+#include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/World/TrackPath.hpp"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 void LocalPlayer::ReleaseHud() {
@@ -64,11 +75,30 @@ void LocalPlayer::OnDetached(IAttachable *pOther) {
 }
 
 void LocalPlayer::SetGameBreaker(bool on) {
-
     if (on != mInGameBreaker) {
         new EPursuitBreaker(on ? 1 : 0);
         mInGameBreaker = on;
     }
+}
+
+// UNSOLVED branching and virtual function offset
+bool LocalPlayer::CanDoGameBreaker() {
+    if (Sim::GetUserMode() != Sim::USER_SINGLE) {
+        return false;
+    }
+    ISimable *isimable = GetSimable(); // TODO
+    IVehicle *ivehicle;
+    if (!isimable || !INIS::Exists() || !isimable->QueryInterface(&ivehicle)) {
+        return false;
+    }
+    float speed_mph = MPS2MPH(ivehicle->GetSpeedometer());
+    if (speed_mph < 30.0f) {
+        return false;
+    }
+    if (!ivehicle->IsAnimating() && !ivehicle->IsStaging() && !ivehicle->IsLoading()) {
+        return true;
+    }
+    return false;
 }
 
 bool LocalPlayer::ToggleGameBreaker() {
@@ -88,3 +118,84 @@ bool LocalPlayer::ToggleGameBreaker() {
 bool LocalPlayer::CanRechargeNOS() const {
     return mInGameBreaker == 0;
 }
+
+void LocalPlayer::ResetGameBreaker(bool full) {
+    mGameBreakerCharge = full ? 1.0f : 0.0f;
+    SetGameBreaker(false);
+}
+
+// UNSOLVED
+void LocalPlayer::UpdateNeighbourhood() {
+    bVector3 v;
+    bConvertFromBond(v, GetPosition()); // TODO virtual offset
+    TrackPathZone *zone = TheTrackPathManager.FindZone(reinterpret_cast<bVector2 *>(&v), TRACK_PATH_ZONE_NEIGHBOURHOOD, nullptr);
+    unsigned int neighbourhood_hash = 0;
+    if (zone) {
+        neighbourhood_hash = zone->GetData(0);
+    }
+    if (neighbourhood_hash != mNeighbourhoodHash) {
+        if (mHud) {
+            IGenericMessage *igenericmessage;
+            if (mHud->QueryInterface(&igenericmessage) && neighbourhood_hash != 0) {
+                char *stringToUse = GetTranslatedString(neighbourhood_hash);
+                // TODO hash
+                igenericmessage->RequestGenericMessage(stringToUse, false, 0xa19bb14c, 0, 0, GenericMessage_Priority_5);
+            }
+        }
+        mNeighbourhoodHash = neighbourhood_hash;
+    }
+}
+
+// UNSOLVED virtual offset
+bool LocalPlayer::CanDoFFB() const {
+    PlayerSettings *settings = GetSettings();
+    if (!settings || !settings->Rumble || !bRumbleEnabled) {
+        return false;
+    }
+    Sim::IStateManager *state_manager = UTL::COM::QueryInterface<Sim::IStateManager>(IGameState::Get());
+    if (!state_manager || state_manager->ShouldPauseInput()) {
+        return false;
+    }
+    ISimable *myobject = GetSimable(); // TODO virtual offset
+    IHumanAI *ai;
+    IVehicle *vehicle;
+    if (myobject && myobject->QueryInterface(&ai)) {
+        if (ai->GetAiControl()) {
+            return false;
+        }
+        if (myobject->QueryInterface(&vehicle)) {
+            return vehicle->IsAnimating() == 0;
+        }
+    }
+    return false;
+}
+
+bool LocalPlayer::OnTask(HSIMTASK htask, float dT) {
+    ProfileNode profile_node("TODO", 0);
+
+    if (htask == mHudTask) {
+        float dT_real = 0.0f;
+        float sim_speed = Sim::GetSpeed();
+        if (sim_speed > FLOAT_EPSILON) {
+            dT_real = dT / sim_speed;
+        }
+        UpdateHud(dT);
+        DoGameBreaker(dT, dT_real);
+        DoFFB();
+        return true;
+    } else {
+        // is this at the right place?
+        Sim::Object::OnTask(htask, dT);
+        return false;
+    }
+}
+
+IFeedback *LocalPlayer::GetFFB() {
+    return mFFB;
+}
+
+ISteeringWheel *LocalPlayer::GetSteeringDevice() {
+    return mWheelDevice;
+}
+
+void LocalPlayer::SetControllerPort(int port) {}

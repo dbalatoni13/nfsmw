@@ -1,11 +1,11 @@
 #ifndef SIM_ENTITIES_LOCALPLAYER_H
 #define SIM_ENTITIES_LOCALPLAYER_H
 
-#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Frontend/HUD/FEPkg_Hud.hpp"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
@@ -18,12 +18,6 @@ class LocalPlayer : public Sim::Entity, public IPlayer, public Sim::Collision::I
   public:
     LocalPlayer(Sim::Param params);
 
-  protected:
-    void ReleaseHud();
-    void SetGameBreaker(bool on);
-    bool CanDoGameBreaker();
-
-  public:
     // Overrides
     // IPlayer
     override virtual void SetRenderPort(int renderport) {
@@ -60,7 +54,7 @@ class LocalPlayer : public Sim::Entity, public IPlayer, public Sim::Collision::I
 
     // IEntity
     override virtual ISimable *GetSimable() const {
-        return Entity::GetSimable();
+        return Sim::Entity::GetSimable();
     }
 
     override virtual bool IsLocal() const {
@@ -96,7 +90,22 @@ class LocalPlayer : public Sim::Entity, public IPlayer, public Sim::Collision::I
     // IListener
     override virtual void OnCollision(const COLLISION_INFO &cinfo);
 
+  protected:
+    // ITaskable
+    override virtual bool OnTask(HSIMTASK htask, float dT);
+
+    void ReleaseHud();
+    void UpdateHud(float dT);
+    void DoGameBreaker(float dT, float dT_real);
+    void SetGameBreaker(bool on);
+    bool CanDoGameBreaker();
+    void DoFFB();
+    void DoRadar(bool inPursuit, bool isCoolingDown);
+    void UpdateNeighbourhood();
+
   private:
+    bool CanDoFFB() const;
+
     IFeedback *mFFB;                 // offset 0x60, size 0x4
     ISteeringWheel *mWheelDevice;    // offset 0x64, size 0x4
     int mRenderPort;                 // offset 0x68, size 0x4

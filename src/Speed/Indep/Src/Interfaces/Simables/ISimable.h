@@ -8,7 +8,6 @@
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
 #include "Speed/Indep/Src/Interfaces/IAttachable.h"
-#include "Speed/Indep/Src/Interfaces/SimEntities/IEntity.h"
 #include "Speed/Indep/Src/Interfaces/SimModels/IModel.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICause.h"
 #include "Speed/Indep/Src/Main/EventSequencer.h"
@@ -34,6 +33,10 @@ enum SimableType {
     SIMABLE_NEWTON = 6,
     SIMABLE_SENTRY = 7,
     SIMABLE_FRAGMENT = 8,
+};
+
+namespace Sim {
+class IEntity;
 };
 
 class ISimable : public UTL::COM::IUnknown,

@@ -5,8 +5,8 @@
 #pragma once
 #endif
 
+// total size: 0x4
 struct CAnimChooser {
-    // total size: 0x4
     enum eType {
         MaxTypes = 5,
         Moment = 4,

@@ -73,4 +73,6 @@ inline bool bIsDigit(char c) {
     return c >= '0' && c <= '9';
 }
 
+extern BOOL bRumbleEnabled;
+
 #endif

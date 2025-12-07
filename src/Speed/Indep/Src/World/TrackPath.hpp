@@ -26,9 +26,9 @@ enum eTrackPathZoneType {
     TRACK_PATH_ZONE_RESET = 0,
 };
 
+// total size: 0x244
 class TrackPathZone {
   public:
-    // total size: 0x244
     eTrackPathZoneType Type; // offset 0x0, size 0x4
     bVector2 Position;       // offset 0x4, size 0x8
     bVector2 Direction;      // offset 0xC, size 0x8
@@ -48,6 +48,10 @@ class TrackPathZone {
     void GetOpposite(bVector2 *in0, bVector2 *in1, bVector2 *opp0, bVector2 *opp1);
     bool GetIntercept(bVector2 &InterceptPoint, const bVector2 *Start, const bVector2 *Direction);
     bool IsPointInside(const bVector2 *point);
+
+    int GetData(int index) {
+        return Data[index];
+    }
 };
 
 class TrackPathManager {

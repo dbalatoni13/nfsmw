@@ -41,7 +41,9 @@ class IStateManager : public UTL::COM::IUnknown {
 };
 
 float GetTime();
+float GetSpeed();
 float GetTimeStep();
+eUserMode GetUserMode();
 
 }; // namespace Sim
 

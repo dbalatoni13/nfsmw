@@ -93,6 +93,15 @@ class IUnknown {
     }
 };
 
+template <typename T> inline T *QueryInterface(IUnknown *pUnk) {
+    T *ptr = nullptr;
+    if (pUnk) {
+        pUnk->QueryInterface(&ptr);
+    }
+
+    return ptr;
+}
+
 inline bool ComparePtr(const IUnknown *pUnk1, const IUnknown *pUnk2) {
     if (pUnk1 && pUnk2) {
         return pUnk1->_mCOMObject == pUnk2->_mCOMObject;

@@ -29,7 +29,6 @@ class Entity : public Object, public UTL::Collections::GarbageNode<Sim::Entity, 
     virtual ISimable *GetSimable() const {
         return mSimable;
     }
-
     // Own
     virtual void Kill();
 

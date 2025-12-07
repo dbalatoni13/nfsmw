@@ -115,7 +115,7 @@ def generate_header_for_event(event: dict) -> str:
             offset = f["Offset"]
             tname = safe_type(f["TypeName"])
             out.append(
-                f"        {tname} {f['Name']}; // offset: {hex(offset + 4)}, size {hex(f['Size'])}"
+                f"        {tname} {f['Name']}; // offset {hex(offset + 4)}, size {hex(f['Size'])}"
             )
         out.append("    };")
         out.append("")
@@ -156,7 +156,7 @@ def generate_header_for_event(event: dict) -> str:
     for f in static_fields:
         offset = f["Offset"]
         out.append(
-            f"    {safe_type(f['TypeName'])} {f['Name']}; // offset: {hex(offset + 8)}, size {hex(f['Size'])}"
+            f"    {safe_type(f['TypeName'])} {f['Name']}; // offset {hex(offset + 8)}, size {hex(f['Size'])}"
         )
 
     # Private ExtraData fields appended at the end
@@ -166,7 +166,7 @@ def generate_header_for_event(event: dict) -> str:
         for f in extra_fields:
             offset = f["Offset"]
             out.append(
-                f"    {safe_type(f['TypeName'])} {f['Name']}; // offset: {hex(offset + 8)}, size {hex(f['Size'])}"
+                f"    {safe_type(f['TypeName'])} {f['Name']}; // offset {hex(offset + 8)}, size {hex(f['Size'])}"
             )
 
     out.append("};")
