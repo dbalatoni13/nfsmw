@@ -9,6 +9,7 @@
 #include <cstddef>
 
 #include "UTLVector.h"
+#include <types.h>
 
 namespace UTL {
 namespace Collections {
@@ -25,7 +26,7 @@ template <typename T, std::size_t U> class Listable {
         typedef value_type *pointer;
         typedef value_type const *const_pointer;
 
-        List(const List &);
+        // List(const List &);
         List();
         virtual ~List();
 
@@ -73,13 +74,39 @@ template <typename T, std::size_t ListSize, typename Enum, std::size_t EnumMax> 
 
     class List : public FixedVector<pointer, ListSize> {
       public:
-        List(const List &);
+        // List(const List &);
         List();
         virtual ~List();
 
         // List &operator=(List &);
     };
 
+  private:
+    class _ListSet {
+      public:
+        _ListSet();
+        // _ListSet(_ListSet &);
+        ~_ListSet();
+
+        // _ListSet &operator=(const _ListSet &);
+
+        friend class ListableSet;
+
+      private:
+        void _add(iterator t, std::size_t idx) {}
+
+        void _remove(iterator t, std::size_t idx) {
+            List &bucket = _buckets[idx];
+            typename List::iterator newend = std::remove(bucket.begin(), bucket.end(), t);
+            if (newend != bucket.end()) {
+                bucket.erase(newend, bucket.end());
+            }
+        }
+
+        List _buckets[EnumMax];
+    };
+
+  public:
     typedef void (*ForEachFunc_t)(iterator);
 
     static int Count(Enum idx);
@@ -95,31 +122,22 @@ template <typename T, std::size_t ListSize, typename Enum, std::size_t EnumMax> 
         return _mLists._buckets[idx];
     }
 
-    ~ListableSet() {}
+    // UNSOLVED
+    void UnList() {
+        for (std::size_t i = 0; i < EnumMax; i++) {
+            _mLists._remove(static_cast<iterator>(this), i);
+        }
+    }
 
-    void UnList() {}
+    ~ListableSet() {
+        UnList();
+    }
 
     iterator Next(Enum idx) {}
 
     void AddToList(Enum to) {}
 
   private:
-    class _ListSet {
-      public:
-        // how to access _buckets without making it public?
-        List _buckets[EnumMax];
-
-        void _add(iterator, unsigned int);
-
-        void _remove(iterator, unsigned int);
-
-        _ListSet();
-        // _ListSet(_ListSet &);
-        ~_ListSet();
-
-        // _ListSet &operator=(const _ListSet &);
-    };
-
     static _ListSet _mLists;
 };
 

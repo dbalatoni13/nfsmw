@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include <cstddef>
 
 namespace UTL {
@@ -84,16 +85,40 @@ template <typename T, unsigned int Alignment = 16> class Vector {
 
     void clear() {}
 
-    std::size_t indexof(pointer pos) {}
+    std::size_t indexof(pointer pos) {
+        std::size_t index = pos - mBegin;
+        return index;
+    }
 
-    pointer erase(iterator begIt, iterator endIt) {}
+    // UNSOLVED, called for example in LocalPlayer::~LocalPlayer
+    pointer erase(iterator begIt, iterator endIt) {
+        std::size_t iPos = indexof(begIt);
+        std::size_t num = endIt - begIt;
+        for (iterator it = begIt; it != endIt; ++it) {
+            value_type &obj = *it;
+            obj.~T();
+        }
+
+        for (std::size_t ii = 0; ii < size() - (iPos + num); ++ii) {
+            std::size_t dest = num + ii;
+            std::size_t src = iPos + num + ii;
+
+            if (&mBegin[dest]) {
+                new (&mBegin[dest]) T(mBegin[src]);
+            }
+        }
+        mSize = size() - num;
+        return end();
+    }
 
   protected:
     virtual pointer AllocVectorSpace(std::size_t num, unsigned int alignment) {}
 
     virtual void FreeVectorSpace(pointer buffer, std::size_t num) {}
 
-    virtual std::size_t GetGrowSize(std::size_t minSize) const {}
+    virtual std::size_t GetGrowSize(std::size_t minSize) const {
+        return UMath::Max(minSize, mCapacity + ((mCapacity + 1) >> 1)); // TODO is this right?
+    }
 
     virtual std::size_t GetMaxCapacity() const {}
 

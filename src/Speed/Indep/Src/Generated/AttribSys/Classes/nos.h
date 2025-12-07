@@ -48,7 +48,7 @@ struct nos : Instance {
     }
 
     static Key ClassKey() {
-        return 0x77790508;
+        return 0xb1669f64;
     }
 
     const float &NOS_DISENGAGE() const {

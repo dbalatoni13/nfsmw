@@ -18,6 +18,16 @@ class LocalPlayer : public Sim::Entity, public IPlayer, public Sim::Collision::I
   public:
     LocalPlayer(Sim::Param params);
 
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
+    void operator delete(void *mem, std::size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+
     // Overrides
     // IPlayer
     override virtual void SetRenderPort(int renderport) {
@@ -93,6 +103,9 @@ class LocalPlayer : public Sim::Entity, public IPlayer, public Sim::Collision::I
   protected:
     // ITaskable
     override virtual bool OnTask(HSIMTASK htask, float dT);
+
+    // IUnknown
+    ~LocalPlayer();
 
     void ReleaseHud();
     void UpdateHud(float dT);

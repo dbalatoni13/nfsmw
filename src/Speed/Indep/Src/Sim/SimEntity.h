@@ -17,6 +17,10 @@ class Entity : public Object, public UTL::Collections::GarbageNode<Sim::Entity, 
   public:
     Entity();
 
+    // Virtual methods
+    // IUnknown
+    ~Entity();
+
     // IEntity
     virtual void AttachPhysics(ISimable *object);
     virtual void DetachPhysics();
@@ -42,7 +46,7 @@ class Entity : public Object, public UTL::Collections::GarbageNode<Sim::Entity, 
 
     override virtual void OnDetached(IAttachable *pOther);
 
-    override virtual const std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const {}
+    override virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const {}
 
   private:
     ISimable *mSimable;        // offset 0x48, size 0x4

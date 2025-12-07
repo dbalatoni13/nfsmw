@@ -39,7 +39,7 @@ class IActivity : public UTL::COM::IUnknown,
     virtual void Release();
     virtual bool Attach(IUnknown *object);
     virtual bool Detach(IUnknown *object);
-    virtual const std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const;
+    virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const;
 };
 
 }; // namespace Sim

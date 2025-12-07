@@ -45,7 +45,7 @@ template <typename T> class Singleton {
 
   protected:
     Singleton() {
-        mInstance = reinterpret_cast<T *>(this);
+        mInstance = static_cast<T *>(this);
     }
 
     ~Singleton() {
@@ -69,9 +69,9 @@ template <typename Handle, typename T, std::size_t Size> class Instanceable {
 
     static T *FindInstance(Handle handle) {
         if (handle) {
-            _KeyedNode *node = _KeyedNode::Search(_mList.begin(), _mList.end(), (uintptr_t)handle);
+            _KeyedNode *node = _KeyedNode::Search(_mList.begin(), _mList.end(), reinterpret_cast<uintptr_t>(handle));
             if (node) {
-                return reinterpret_cast<T *>(node->Ref);
+                return static_cast<T *>(node->Ref);
             }
         }
         return nullptr;

@@ -240,6 +240,12 @@ inline unsigned int Max(const unsigned int a, const unsigned int b) {
     return a < b ? b : a;
 }
 
+#ifdef CLANGD_DAMNIT
+inline std::size_t Max(const std::size_t a, const std::size_t b) {
+    return a < b ? b : a;
+}
+#endif
+
 inline float Atan2d(float o, float a) {
     return ANGLE2DEG(VU0_Atan2(o, a));
 }

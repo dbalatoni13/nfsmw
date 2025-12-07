@@ -5,10 +5,14 @@
 #include "Speed/Indep/Src/Frontend/HUD/FEPkg_Hud.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Generated/Events/EPursuitBreaker.hpp"
+#include "Speed/Indep/Src/Input/IFeedBack.h"
+#include "Speed/Indep/Src/Input/IOModule.h"
+#include "Speed/Indep/Src/Input/ISteeringWheel.h"
 #include "Speed/Indep/Src/Interfaces/IAttachable.h"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IGameState.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IEntity.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
@@ -74,6 +78,22 @@ void LocalPlayer::OnDetached(IAttachable *pOther) {
     Sim::Entity::OnDetached(pOther);
 }
 
+LocalPlayer::~LocalPlayer() {
+    if (mFFB) {
+        mFFB->ResetEffects();
+        mFFB = nullptr;
+    }
+    SetGameBreaker(false);
+    if (mHudTask) {
+        Sim::Object::RemoveTask(mHudTask);
+    }
+    ReleaseHud();
+    if (mSpeech) {
+        mSpeech->Release();
+    }
+    Sim::Collision::RemoveListener(this);
+}
+
 void LocalPlayer::SetGameBreaker(bool on) {
     if (on != mInGameBreaker) {
         new EPursuitBreaker(on ? 1 : 0);
@@ -81,12 +101,12 @@ void LocalPlayer::SetGameBreaker(bool on) {
     }
 }
 
-// UNSOLVED branching and virtual function offset
+// UNSOLVED
 bool LocalPlayer::CanDoGameBreaker() {
     if (Sim::GetUserMode() != Sim::USER_SINGLE) {
         return false;
     }
-    ISimable *isimable = GetSimable(); // TODO
+    ISimable *isimable = static_cast<IEntity *>(this)->GetSimable();
     IVehicle *ivehicle;
     if (!isimable || !INIS::Exists() || !isimable->QueryInterface(&ivehicle)) {
         return false;
@@ -127,7 +147,7 @@ void LocalPlayer::ResetGameBreaker(bool full) {
 // UNSOLVED
 void LocalPlayer::UpdateNeighbourhood() {
     bVector3 v;
-    bConvertFromBond(v, GetPosition()); // TODO virtual offset
+    bConvertFromBond(v, static_cast<IEntity *>(this)->GetPosition());
     TrackPathZone *zone = TheTrackPathManager.FindZone(reinterpret_cast<bVector2 *>(&v), TRACK_PATH_ZONE_NEIGHBOURHOOD, nullptr);
     unsigned int neighbourhood_hash = 0;
     if (zone) {
@@ -146,7 +166,6 @@ void LocalPlayer::UpdateNeighbourhood() {
     }
 }
 
-// UNSOLVED virtual offset
 bool LocalPlayer::CanDoFFB() const {
     PlayerSettings *settings = GetSettings();
     if (!settings || !settings->Rumble || !bRumbleEnabled) {
@@ -156,7 +175,7 @@ bool LocalPlayer::CanDoFFB() const {
     if (!state_manager || state_manager->ShouldPauseInput()) {
         return false;
     }
-    ISimable *myobject = GetSimable(); // TODO virtual offset
+    ISimable *myobject = static_cast<const IEntity *>(this)->GetSimable();
     IHumanAI *ai;
     IVehicle *vehicle;
     if (myobject && myobject->QueryInterface(&ai)) {
@@ -184,7 +203,7 @@ bool LocalPlayer::OnTask(HSIMTASK htask, float dT) {
         DoFFB();
         return true;
     } else {
-        // is this at the right place?
+        // TODO is this at the right place?
         Sim::Object::OnTask(htask, dT);
         return false;
     }
@@ -198,4 +217,38 @@ ISteeringWheel *LocalPlayer::GetSteeringDevice() {
     return mWheelDevice;
 }
 
-void LocalPlayer::SetControllerPort(int port) {}
+void LocalPlayer::SetControllerPort(int port) {
+    if (port != mControllerPort) {
+        mControllerPort = port;
+        if (mFFB) {
+            mFFB->ResetEffects();
+            mFFB = nullptr;
+        }
+        mWheelDevice = nullptr;
+        if (mControllerPort >= 0) {
+            InputDevice *device = IOModule::GetIOModule().GetDevice(mControllerPort);
+            if (device) {
+                mFFB = UTL::COM::QueryInterface<IFeedback>(device->GetInterfaces());
+                mWheelDevice = UTL::COM::QueryInterface<ISteeringWheel>(device->GetSecondaryDevice());
+            }
+        }
+        if (mFFB) {
+            mFFB->ResetEffects();
+        }
+    }
+}
+
+void LocalPlayer::OnCollision(const COLLISION_INFO &cinfo) {
+    ISimable *bodyA = ISimable::FindInstance(cinfo.objA);
+    if (!bodyA) {
+        return;
+    }
+    ISimable *bodyB;
+    if (cinfo.type == COLLISION_INFO::OBJECT) {
+        bodyB = ISimable::FindInstance(cinfo.objB);
+    }
+    PlayerSettings *settings = GetSettings();
+    if (mFFB && settings && settings->Rumble && bRumbleEnabled) {
+        mFFB->ReportCollision(cinfo, UTL::COM::ComparePtr(bodyA, static_cast<IEntity *>(this)->GetSimable()));
+    }
+}

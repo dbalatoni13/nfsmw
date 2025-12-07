@@ -11,6 +11,8 @@
 // total size: 0x50
 class IOModule {
   public:
+    static IOModule &GetIOModule();
+
     InputDevice *GetDevice(int i) {
         return fDevices[i];
     }

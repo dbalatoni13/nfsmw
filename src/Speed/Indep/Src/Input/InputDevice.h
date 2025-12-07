@@ -26,6 +26,11 @@ class DeviceScalar {
 // total size: 0x2C
 class InputDevice : public UTL::COM::Object, public UTL::COM::Factory<int, InputDevice, UCrc32> {
   public:
+    InputDevice(int deviceIndex);
+
+    // Virtual functions
+    override virtual ~InputDevice();
+
     virtual bool IsConnected() {}
 
     virtual bool IsWheel() {}
@@ -45,12 +50,13 @@ class InputDevice : public UTL::COM::Object, public UTL::COM::Factory<int, Input
     virtual float *SaveCurrentState();
     virtual void RestoreToState(float *currentState);
 
+  protected:
+    DeviceScalar *fDeviceScalar; // offset 0x14, size 0x4
+    float *fPrevValues;          // offset 0x18, size 0x4
+    float *fCurrentValues;       // offset 0x1C, size 0x4
   private:
-    struct DeviceScalar *fDeviceScalar; // offset 0x14, size 0x4
-    float *fPrevValues;                 // offset 0x18, size 0x4
-    float *fCurrentValues;              // offset 0x1C, size 0x4
-    int fDeviceIndex;                   // offset 0x20, size 0x4
-    float fControllerCurve;             // offset 0x24, size 0x4
+    int fDeviceIndex;       // offset 0x20, size 0x4
+    float fControllerCurve; // offset 0x24, size 0x4
 };
 
 #endif

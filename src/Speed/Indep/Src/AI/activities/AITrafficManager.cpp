@@ -26,9 +26,6 @@ extern BOOL SkipFEDisableTraffic; // size: 0x4
 extern BOOL SkipFE;               // size: 0x4
 
 using namespace Attrib::Gen;
-using UTL::Collections::Listable;
-using UTL::Collections::ListableSet;
-using UTL::Collections::Singleton;
 
 // AITrafficManager::AITrafficManager(Sim::Param params) {}
 
@@ -54,11 +51,11 @@ eVehicleCacheResult AITrafficManager::OnQueryVehicleCache(const IVehicle *remove
         return VCR_DONTCARE;
     }
 
-    if (ComparePtr(whosasking, Singleton<INIS>::Get())) {
+    if (ComparePtr(whosasking, INIS::Get())) {
         return removethis->IsActive() ? VCR_WANT : VCR_DONTCARE;
     }
 
-    if (ComparePtr(whosasking, Singleton<ICopMgr>::Get())) {
+    if (ComparePtr(whosasking, ICopMgr::Get())) {
         return removethis->IsActive() ? VCR_WANT : VCR_DONTCARE;
     }
 
@@ -134,7 +131,7 @@ Attrib::Key AITrafficManager::NextSpawn() {
     return key;
 }
 
-// UNSOLVED have to use TypeName and fix the virtual stuff
+// UNSOLVED have to use TypeName
 IVehicle *AITrafficManager::GetAvailableTrafficVehicle(Attrib::Key key, bool makenew) {
     if (key == 0) {
         return nullptr;
@@ -154,8 +151,7 @@ IVehicle *AITrafficManager::GetAvailableTrafficVehicle(Attrib::Key key, bool mak
     VehicleParams params(this, DRIVER_TRAFFIC, key, initialVec, initialPos, 0, nullptr, 0);
     ISimable *isimable = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance(UCrc32("PVehicle"), Sim::Param(params));
     if (isimable) {
-        // TODO hmm?
-        // Detach(isimable);
+        static_cast<IActivity *>(this)->Attach(isimable);
         IVehicle *ivehicle;
         if (isimable->QueryInterface(&ivehicle)) {
             ivehicle->GetAIVehiclePtr()->UnSpawn();
@@ -410,7 +406,7 @@ void AITrafficManager::Update(float dT) {
         SpawnTraffic();
     }
 
-    for (UTL::Std::list<IVehicle *, _type_TrafficList>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
+    for (std::list<IVehicle *>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
         IVehicle *ivehicle = *iter;
         if (ivehicle->IsActive() && !ValidateVehicle(ivehicle, density)) {
             ivehicle->GetAIVehiclePtr()->UnSpawn();
@@ -419,17 +415,15 @@ void AITrafficManager::Update(float dT) {
 }
 
 void AITrafficManager::FlushAllTraffic(bool release) {
-    for (UTL::Std::list<IVehicle *, _type_TrafficList>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
+    for (std::list<IVehicle *>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
         IVehicle *ivehicle = *iter;
         if (release) {
             ISimable *isimable;
             if (ivehicle->QueryInterface(&isimable)) {
                 isimable->Kill();
             }
-        } else {
-            if (ivehicle->IsActive()) {
-                ivehicle->GetAIVehiclePtr()->UnSpawn();
-            }
+        } else if (ivehicle->IsActive()) {
+            ivehicle->GetAIVehiclePtr()->UnSpawn();
         }
     }
 
