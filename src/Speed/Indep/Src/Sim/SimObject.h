@@ -16,6 +16,10 @@ namespace Sim {
 // total size: 0x2C
 class Object : public UTL::COM::Object, public IServiceable, public ITaskable, public UTL::Collections::Countable<Object> {
   public:
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
     void operator delete(void *mem, std::size_t size) {
         if (mem) {
             gFastMem.Free(mem, size, nullptr);

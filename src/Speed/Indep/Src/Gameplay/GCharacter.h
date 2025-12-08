@@ -25,7 +25,7 @@ class GCharacter : public GRuntimeInstance, public UTL::COM::Object, public IAtt
     UMath::Vector3 mTargetPos;          // offset 0x60, size 0xC
     IVehicle *mVehicle;                 // offset 0x6C, size 0x4
     UMath::Vector3 mTargetDir;          // offset 0x70, size 0xC
-    Attachments *mAttachments;          // offset 0x7C, size 0x4
+    Sim::Attachments *mAttachments;     // offset 0x7C, size 0x4
 };
 
 struct _type_ID_GCharacterList {

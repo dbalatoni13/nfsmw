@@ -24,6 +24,8 @@ namespace Collections {
 struct _KeyedNode {
     static _KeyedNode *Search(_KeyedNode *begin_iter, _KeyedNode *end_iter, uintptr_t handle);
 
+    _KeyedNode(uintptr_t handle, void *refrence) : Handle(handle), Ref(refrence) {}
+
     uintptr_t Handle; // offset 0x0, size 0x4
     void *Ref;        // offset 0x4, size 0x4
 };
@@ -60,7 +62,10 @@ template <typename T> class Singleton {
 
 template <typename Handle, typename T, std::size_t Size> class Instanceable {
   public:
-    Instanceable() {}
+    Instanceable() {
+        _mHandle = ++_mHNext;
+        _mList.push_back(_KeyedNode(_mHandle, static_cast<T *>(this)));
+    }
 
     ~Instanceable() {
         _KeyedNode *node = _KeyedNode::Search(_mList.begin(), _mList.end(), reinterpret_cast<uintptr_t>(_mHandle));
@@ -115,7 +120,10 @@ template <typename T, std::size_t Size> class GarbageNode {
         friend class GarbageNode;
 
       private:
-        // void _Add(T *ptr) {}
+        void _Add(T *ptr) {
+            _mClean.push_back(_Node(ptr));
+            _mCount++;
+        }
 
         /**
          * @brief Finds a node based on its pointer and removes it from both the clean container and the dirty one.
@@ -174,7 +182,10 @@ template <typename T, std::size_t Size> class GarbageNode {
     }
 
   protected:
-    GarbageNode() {}
+    GarbageNode() {
+        _mDirty = false;
+        _mCollector._Add(_This());
+    }
 
     ~GarbageNode() {
         _mCollector._Remove(_This());

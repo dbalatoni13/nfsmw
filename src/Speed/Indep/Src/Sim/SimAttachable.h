@@ -7,6 +7,8 @@
 
 #include "Speed/Indep/Src/Interfaces/IAttachable.h"
 
+namespace Sim {
+
 // total size: 0x10
 class Attachments {
   public:
@@ -14,6 +16,10 @@ class Attachments {
     virtual ~Attachments();
 
     // Inlines
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
     Attachments(IAttachable *pOwner) {
         mOwner = pOwner;
     }
@@ -26,5 +32,7 @@ class Attachments {
     UTL::Std::list<IAttachable *, _type_IAttachableList> mList; // offset 0x0, size 0x8
     IAttachable *mOwner;                                        // offset 0x8, size 0x4
 };
+
+}; // namespace Sim
 
 #endif

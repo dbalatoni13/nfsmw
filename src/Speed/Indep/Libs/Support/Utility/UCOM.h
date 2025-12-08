@@ -114,6 +114,8 @@ template <typename T, typename U, typename V> class Factory {
   public:
     static U *CreateInstance(V, T);
 
+    Factory() {}
+
     ~Factory() {}
 };
 

@@ -53,7 +53,7 @@ class PhysicsObject : public Sim::Object,
     unsigned int mWorldID;                                                    // offset 0x8C, size 0x4
     UTL::Std::map<unsigned int, Behavior *, _type_ID_POMechanics> mMechanics; // offset 0x90, size 0x10
     Behaviors mBehaviors;                                                     // offset 0xA0, size 0x8
-    Attachments *mAttachments;                                                // offset 0xA8, size 0x4
+    Sim::Attachments *mAttachments;                                           // offset 0xA8, size 0x4
 };
 
 #endif
