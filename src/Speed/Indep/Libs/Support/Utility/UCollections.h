@@ -68,7 +68,7 @@ template <typename Handle, typename T, std::size_t Size> class Instanceable {
     }
 
     ~Instanceable() {
-        _KeyedNode *node = _KeyedNode::Search(_mList.begin(), _mList.end(), reinterpret_cast<uintptr_t>(_mHandle));
+        _KeyedNode *node = _KeyedNode::Search(_mList.begin(), _mList.end(), _mHandle);
         _mList.erase(node);
     }
 
@@ -89,10 +89,10 @@ template <typename Handle, typename T, std::size_t Size> class Instanceable {
   private:
     class _List : public FixedVector<_KeyedNode, Size, 16> {};
 
-    static unsigned int _mHNext;
+    static uintptr_t _mHNext;
     static _List _mList;
 
-    unsigned int _mHandle; // offset 0x0, size 0x4
+    uintptr_t _mHandle; // offset 0x0, size 0x4
 };
 
 template <typename T, std::size_t Size> class GarbageNode {

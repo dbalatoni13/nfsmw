@@ -54,7 +54,7 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
 
         Attrib::Key Find(int bhash) const {
             PatternKey key = {bhash, 0};
-            std::vector<PatternKey>::const_iterator iter = std::lower_bound(begin(), end(), key);
+            UTL::Std::vector<PatternKey, _type_AITrafficManager_PatternMap>::const_iterator iter = std::lower_bound(begin(), end(), key);
             if (iter != end() && iter->BHash == bhash) {
                 return iter->CollectionKey;
             }
