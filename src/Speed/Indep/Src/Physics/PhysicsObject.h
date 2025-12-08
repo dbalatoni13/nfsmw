@@ -8,6 +8,7 @@
 #include "Speed/Indep/Src/Interfaces/IBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
+#include "Speed/Indep/Src/Sim/SimAttachable.h"
 
 struct _type_ID_POMechanics {
     const char *name() {

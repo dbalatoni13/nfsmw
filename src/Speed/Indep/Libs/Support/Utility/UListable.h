@@ -124,7 +124,6 @@ template <typename T, std::size_t ListSize, typename Enum, std::size_t EnumMax> 
         return _mLists._buckets[idx];
     }
 
-    // UNSOLVED
     void UnList() {
         for (std::size_t i = 0; i < EnumMax; i++) {
             _mLists._remove(static_cast<iterator>(this), i);

@@ -5,8 +5,6 @@
 #pragma once
 #endif
 
-#include "types.h"
-
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 
 struct _type_IAttachableList {
@@ -22,7 +20,7 @@ struct IAttachable : public UTL::COM::IUnknown {
 
     IAttachable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~IAttachable();
+    virtual ~IAttachable() {}
 
     virtual bool Attach(IUnknown *pOther);
 
@@ -31,28 +29,6 @@ struct IAttachable : public UTL::COM::IUnknown {
     virtual bool IsAttached(const IUnknown *pOther) const;
 
     virtual void OnAttached(IAttachable *pOther);
-};
-
-struct Attachments {
-    // total size: 0x10
-    UTL::Std::list<IAttachable *, _type_IAttachableList> mList; // offset 0x0, size 0x8
-    IAttachable *mOwner;                                        // offset 0x8, size 0x4
-
-    void *operator new(std::size_t size) {}
-
-    void *operator new(std::size_t size, void *ptr) {}
-
-    void operator delete(void *mem, void *ptr) {}
-
-    void operator delete(void *mem, std::size_t size, const char *name) {}
-
-    Attachments(IAttachable *pOwner) {
-        mOwner = pOwner;
-    }
-
-    const UTL::Std::list<IAttachable *, _type_IAttachableList> &GetList() const {
-        return mList;
-    }
 };
 
 #endif

@@ -8,6 +8,7 @@
 #include "GRuntimeInstance.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Sim/SimAttachable.h"
 
 // total size: 0x80
 class GCharacter : public GRuntimeInstance, public UTL::COM::Object, public IAttachable {

@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "SimAttachable.h"
 #include "Speed/Indep/Src/Interfaces/IAttachable.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IEntity.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"

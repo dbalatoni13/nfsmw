@@ -90,8 +90,7 @@ template <typename T, unsigned int Alignment = 16> class Vector {
         return index;
     }
 
-    // UNSOLVED, called for example in LocalPlayer::~LocalPlayer
-    pointer erase(iterator begIt, iterator endIt) {
+    iterator erase(iterator begIt, iterator endIt) {
         std::size_t iPos = indexof(begIt);
         std::size_t num = endIt - begIt;
         for (iterator it = begIt; it != endIt; ++it) {
@@ -100,15 +99,20 @@ template <typename T, unsigned int Alignment = 16> class Vector {
         }
 
         for (std::size_t ii = 0; ii < size() - (iPos + num); ++ii) {
-            std::size_t dest = num + ii;
             std::size_t src = iPos + num + ii;
+            std::size_t dest = iPos + ii;
 
-            if (&mBegin[dest]) {
-                new (&mBegin[dest]) T(mBegin[src]);
-            }
+            new (&mBegin[dest]) T(mBegin[src]);
         }
         mSize = size() - num;
         return end();
+    }
+
+    iterator erase(iterator pos) {
+        if (pos == pos + 1) {
+            return nullptr;
+        }
+        return erase(pos, pos + 1);
     }
 
   protected:

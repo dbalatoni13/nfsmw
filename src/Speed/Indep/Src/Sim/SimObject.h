@@ -15,8 +15,12 @@ namespace Sim {
 
 // total size: 0x2C
 class Object : public UTL::COM::Object, public IServiceable, public ITaskable, public UTL::Collections::Countable<Object> {
-    unsigned int mTaskCount;    // offset 0x24, size 0x4
-    unsigned int mServiceCount; // offset 0x28, size 0x4
+  public:
+    void operator delete(void *mem, std::size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
 
   protected:
     Object(unsigned int num_interfaces);
@@ -28,6 +32,10 @@ class Object : public UTL::COM::Object, public IServiceable, public ITaskable, p
     virtual bool OnService(HSIMSERVICE hCon, Sim::Packet *pkt);
 
     virtual bool OnTask(HSIMTASK htask, float dT) {}
+
+  private:
+    unsigned int mTaskCount;    // offset 0x24, size 0x4
+    unsigned int mServiceCount; // offset 0x28, size 0x4
 };
 
 }; // namespace Sim

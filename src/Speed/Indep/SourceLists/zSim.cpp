@@ -7,3 +7,5 @@
 #include "Speed/Indep/Src/Sim/Common/SimSurface.cpp"
 
 #include "Speed/Indep/Src/Sim/Entities/LocalPlayer.cpp"
+
+#include "Speed/Indep/Src/Sim/Common/SimActivity.cpp"
