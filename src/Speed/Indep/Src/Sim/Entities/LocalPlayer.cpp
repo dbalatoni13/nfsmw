@@ -4,23 +4,61 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FEPkg_Hud.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/simsurface.h"
 #include "Speed/Indep/Src/Generated/Events/EPursuitBreaker.hpp"
 #include "Speed/Indep/Src/Input/IFeedBack.h"
 #include "Speed/Indep/Src/Input/IOModule.h"
 #include "Speed/Indep/Src/Input/ISteeringWheel.h"
 #include "Speed/Indep/Src/Interfaces/IAttachable.h"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
+#include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IGameState.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IEntity.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IEngineDamage.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISpikeable.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
+#include "Speed/Indep/Src/Physics/PhysicsTypes.h"
+#include "Speed/Indep/Src/Sim/SimEntity.h"
+#include "Speed/Indep/Src/Sim/SimSurface.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/TrackPath.hpp"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+
+LocalPlayer::LocalPlayer(Sim::Param params)
+    : IPlayer(this),            //
+      mSettingIndex(-1),        //
+      mName(""),                //
+      mGameBreakerCharge(1.0f), //
+      mFFB(nullptr),            //
+      mWheelDevice(nullptr),    //
+      mRenderPort(-1),          //
+      mControllerPort(-1),      //
+      mNeighbourhoodHash(0),    //
+      mHud(nullptr),            //
+      mHudTask(nullptr),        //
+      mSpeech(nullptr),         //
+      mInGameBreaker(false),    //
+      mLastPursuit(nullptr) {
+    IEntity::AddToList(ENTITY_PLAYERS);
+    IPlayer::AddToList(PLAYER_LOCAL);
+    IPlayer::AddToList(PLAYER_ALL);
+    mSpeech = UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance(UCrc32("SoundAI"), Sim::Param());
+    if (mSpeech) {
+        Attach(mSpeech);
+    }
+    mHudTask = AddTask(UCrc32("WorldUpdate"), 1.0f, 0.0f, Sim::TASK_FRAME_VARIABLE);
+    Sim::ProfileTask(mHudTask, "Hud");
+}
 
 void LocalPlayer::ReleaseHud() {
     if (mHud) {
@@ -144,6 +182,41 @@ void LocalPlayer::ResetGameBreaker(bool full) {
     SetGameBreaker(false);
 }
 
+// TODO move
+extern float Tweak_GameBreakerRechargeTime;
+extern float Tweak_GameBreakerRechargeSpeed;
+extern bool Tweak_InfiniteRaceBreaker;
+extern int bRumbleEnabled;
+
+void LocalPlayer::DoGameBreaker(float dT, float dT_real) {
+    if (!CanDoGameBreaker()) {
+        SetGameBreaker(false);
+        return;
+    }
+    ISimable *isimable = static_cast<Entity *>(this)->GetSimable();
+    IVehicle *ivehicle;
+    if (!isimable || !isimable->QueryInterface(&ivehicle)) {
+        SetGameBreaker(false);
+        return;
+    }
+
+    float speed_mph = MPS2MPH(ivehicle->GetSpeedometer());
+    if (mInGameBreaker) {
+        if (!Tweak_InfiniteRaceBreaker) {
+            mGameBreakerCharge = mGameBreakerCharge - dT_real * 0.1f;
+            mGameBreakerCharge = UMath::Max(mGameBreakerCharge, 0.0f);
+        }
+    } else {
+        if (speed_mph > Tweak_GameBreakerRechargeSpeed) {
+            mGameBreakerCharge = mGameBreakerCharge + dT / Tweak_GameBreakerRechargeTime;
+            mGameBreakerCharge = UMath::Min(mGameBreakerCharge, 1.0f);
+        }
+    }
+    if (mGameBreakerCharge <= 0.0f) {
+        SetGameBreaker(false);
+    }
+}
+
 // UNSOLVED
 void LocalPlayer::UpdateNeighbourhood() {
     bVector3 v;
@@ -187,6 +260,76 @@ bool LocalPlayer::CanDoFFB() const {
         }
     }
     return false;
+}
+
+void LocalPlayer::DoFFB() {
+    if (!mFFB) {
+        return;
+    }
+    if (!CanDoFFB()) {
+        mFFB->PauseEffects();
+        return;
+    }
+    if (mWheelDevice && mWheelDevice->IsConnected()) {
+        mWheelDevice->UpdateForces(this);
+        return;
+    }
+
+    ISimable *isimable = static_cast<IEntity *>(this)->GetSimable();
+
+    IInput *iinput;
+    IVehicle *ivehicle;
+    ISuspension *isuspension;
+    IEngine *iengine;
+    ITransmission *itransmission;
+
+    if (!isimable || !isimable->QueryInterface(&iinput) || !isimable->QueryInterface(&ivehicle) || !isimable->QueryInterface(&isuspension) ||
+        !isimable->QueryInterface(&iengine) || !isimable->QueryInterface(&itransmission)) {
+        return;
+    }
+    mFFB->ResumeEffects();
+    mFFB->BeginUpdate();
+    for (unsigned int i = 0; i < isuspension->GetNumWheels(); i++) {
+        ISpikeable *ispikeable;
+        bool blown = isimable->QueryInterface(&ispikeable) && ispikeable->GetTireDamage(i);
+
+        // TODO hash
+        const SimSurface &surface = isuspension->IsWheelOnGround(i) ? (blown ? SimSurface(0xd929e923) : isuspension->GetWheelRoadSurface(i))
+                                                                    : (SimSurface(SimSurface::kNull));
+
+        float slip = UMath::Abs(isuspension->GetWheelSlip(i));
+        float skid = UMath::Abs(isuspension->GetWheelSkid(i));
+        bool front = IsFront(i);
+        mFFB->UpdateTireSlip(front, surface, slip);
+        mFFB->UpdateTireSkid(front, surface, skid);
+        mFFB->UpdateRoadNoise(front, surface, ivehicle->GetAbsoluteSpeed());
+    }
+
+    float throttle = iinput->GetControls().fGas;
+    float minrpm = iengine->GetMinRPM();
+    float rpm = iengine->GetRPM();
+    float range = iengine->GetRedline() - minrpm;
+    float powerband = 0.0f;
+    float overrev = 0.0f;
+    if (range > 0.0f) {
+        powerband = UMath::Clamp((rpm - minrpm) / range, 0.0f, 1.0f);
+    }
+    mFFB->UpdateRPM(powerband, overrev, throttle);
+    mFFB->UpdateShiftPotential(itransmission->GetShiftPotential());
+
+    if (iengine->HasNOS()) {
+        mFFB->UpdateNOS(iengine->IsNOSEngaged(), iengine->GetNOSCapacity());
+    }
+
+    IEngineDamage *ienginedamage;
+    isimable->QueryInterface(&ienginedamage);
+    if (ienginedamage) {
+        mFFB->UpdateEngineBlown(ienginedamage->IsBlown() || ienginedamage->IsSabotaged());
+    } else {
+        mFFB->UpdateShifting(itransmission->IsGearChanging() && (ivehicle->GetSpeed() > 0.1f));
+    }
+
+    mFFB->EndUpdate();
 }
 
 bool LocalPlayer::OnTask(HSIMTASK htask, float dT) {

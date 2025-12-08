@@ -64,7 +64,7 @@ struct GRacerInfo {
 
 struct _type_ID_GRaceStatusTriggerList {
     const char *name() {
-        return "GRaceStatusTriggerList";
+        return "ID_GRaceStatusTriggerList";
     }
 };
 
@@ -148,10 +148,10 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
 struct GRaceParameters {
     // total size: 0x14
-    struct GRaceIndexData * mIndex; // offset 0x0, size 0x4
-    struct gameplay * mRaceRecord; // offset 0x4, size 0x4
-    struct GVault * mParentVault; // offset 0x8, size 0x4
-    struct GVault * mChildVault; // offset 0xC, size 0x4
+    struct GRaceIndexData *mIndex; // offset 0x0, size 0x4
+    struct gameplay *mRaceRecord;  // offset 0x4, size 0x4
+    struct GVault *mParentVault;   // offset 0x8, size 0x4
+    struct GVault *mChildVault;    // offset 0xC, size 0x4
 
     void GetStartPosition(UMath::Vector3 &pos) const;
     void GetStartDirection(UMath::Vector3 &dir) const;
@@ -159,11 +159,11 @@ struct GRaceParameters {
 
 struct GRaceCustom : public GRaceParameters {
     // total size: 0x28
-    struct GActivity * mRaceActivity; // offset 0x14, size 0x4
-    unsigned int mNumOpponents; // offset 0x18, size 0x4
-    bool mReversed; // offset 0x1C, size 0x1
-    bool mFreedByOwner; // offset 0x20, size 0x1
-    int mHeatLevel; // offset 0x24, size 0x4
+    struct GActivity *mRaceActivity; // offset 0x14, size 0x4
+    unsigned int mNumOpponents;      // offset 0x18, size 0x4
+    bool mReversed;                  // offset 0x1C, size 0x1
+    bool mFreedByOwner;              // offset 0x20, size 0x1
+    int mHeatLevel;                  // offset 0x24, size 0x4
 };
 
 #endif

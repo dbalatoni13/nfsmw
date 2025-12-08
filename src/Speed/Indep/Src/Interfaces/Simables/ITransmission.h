@@ -44,7 +44,7 @@ class IDragTransmission : public UTL::COM::IUnknown {
     virtual ~IDragTransmission() {}
 
   public:
-  	virtual float GetShiftBoost() const;
+    virtual float GetShiftBoost() const;
 };
 
 #endif

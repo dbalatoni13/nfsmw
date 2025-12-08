@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
 
 namespace Sim {
@@ -44,6 +45,7 @@ float GetTime();
 float GetSpeed();
 float GetTimeStep();
 eUserMode GetUserMode();
+void ProfileTask(HSIMTASK htask, const char *name);
 
 }; // namespace Sim
 

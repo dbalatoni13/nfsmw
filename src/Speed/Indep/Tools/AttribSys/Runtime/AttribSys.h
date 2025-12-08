@@ -880,6 +880,14 @@ class Definition {
     unsigned char mAlignment; // offset 0xF, size 0x1
 };
 
+// TODO where is this in the file?
+// total size: 0x8
+class Blob {
+  private:
+    unsigned int mSize; // offset 0x0, size 0x4
+    const void *mData;  // offset 0x4, size 0x4
+};
+
 template <typename t> class TAttrib : public Attribute {
   public:
     void operator delete(void *ptr, std::size_t bytes) {

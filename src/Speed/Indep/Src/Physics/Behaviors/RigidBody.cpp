@@ -826,8 +826,8 @@ bool RigidBody::ResolveWorldOBBCollision(const UMath::Vector3 &cn, const UMath::
     const float otherMass = 1000000.0f;
     Volatile &data = *mData;
     Dynamics::Collision::Moment moA(this);
-    UMath::Vector3 inertia = Dynamics::Inertia::Box(0.083333336f, 2.0f * otherGeom->GetDimension().x, 2.0f * otherGeom->GetDimension().y,
-                                                    2.0f * otherGeom->GetDimension().z);
+    UMath::Vector3 inertia =
+        Dynamics::Inertia::Box(1000000.0f, 2 * otherGeom->GetDimension().x, 2 * otherGeom->GetDimension().y, 2 * otherGeom->GetDimension().z);
     UMath::Vector3 cg = {};
     UMath::Vector3 angularVel = {};
     Dynamics::Collision::Moment moB(otherGeom->GetOrientation(), otherMass, inertia, cg, linearVel, angularVel, otherGeom->GetPosition());

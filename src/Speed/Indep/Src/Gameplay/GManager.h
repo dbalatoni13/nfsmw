@@ -1,48 +1,57 @@
 #ifndef GAMEPLAY_GMANAGER_H
 #define GAMEPLAY_GMANAGER_H
 
-#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "GCharacter.h"
+#include "GSpeedTrap.h"
+#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
 #include "Speed/Indep/Src/Misc/bFile.hpp"
 
+struct _type_ID_StockCarMap {
+    const char *name() {
+        return "ID_StockCarMap";
+    }
+};
+
 class GManager : public UTL::COM::Object, public IVehicleCache {
     // total size: 0x308
-    const char *mVaultPackFileName;                 // offset 0x1C, size 0x4
-    bFile *mVaultPackFile;                          // offset 0x20, size 0x4
-    unsigned int mVaultCount;                       // offset 0x24, size 0x4
-    struct GVault *mVaults;                         // offset 0x28, size 0x4
-    const char *mVaultNameStrings;                  // offset 0x2C, size 0x4
-    struct AttribVaultPackImage *mLoadingPackImage; // offset 0x30, size 0x4
-    unsigned int mBinSlotSize;                      // offset 0x34, size 0x4
-    unsigned char *mStreamedBinSlots;               // offset 0x38, size 0x4
-    struct GVault *mBinVaultInSlot[1];              // offset 0x3C, size 0x4
-    unsigned int mRaceSlotSize;                     // offset 0x40, size 0x4
-    unsigned char *mStreamedRaceSlots;              // offset 0x44, size 0x4
-    struct GVault *mRaceVaultInSlot[1];             // offset 0x48, size 0x4
-    unsigned char *mTempLoadData;                   // offset 0x4C, size 0x4
-    int mTransientPoolNumber;                       // offset 0x50, size 0x4
-    void *mTransientPoolMemory;                     // offset 0x54, size 0x4
-    struct Class *mGameplayClass;                   // offset 0x58, size 0x4
-    struct Class *mMilestoneClass;                  // offset 0x5C, size 0x4
-    unsigned int mAttributeKeyShiftTo24;            // offset 0x60, size 0x4
-    unsigned int mCollectionKeyShiftTo32;           // offset 0x64, size 0x4
-    unsigned int mMaxObjects;                       // offset 0x68, size 0x4
-    void *mClassTempBuffer;                         // offset 0x6C, size 0x4
-    unsigned int mInstanceHashTableSize;            // offset 0x70, size 0x4
-    unsigned int mInstanceHashTableMask;            // offset 0x74, size 0x4
-    unsigned int mWorstHashCollision;               // offset 0x78, size 0x4
-    struct HashEntry *mKeyToInstanceMap;            // offset 0x7C, size 0x4
-    // struct vector<GCharacter *, _type_ID_GCharacterList> mActiveCharacters;                    // offset 0x80, size 0x10
-    // struct map<unsigned int, ISimable *, _type_ID_StockCarMap> mStockCars;                     // offset 0x90, size 0x10
+    const char *mVaultPackFileName;                                                   // offset 0x1C, size 0x4
+    bFile *mVaultPackFile;                                                            // offset 0x20, size 0x4
+    unsigned int mVaultCount;                                                         // offset 0x24, size 0x4
+    struct GVault *mVaults;                                                           // offset 0x28, size 0x4
+    const char *mVaultNameStrings;                                                    // offset 0x2C, size 0x4
+    struct AttribVaultPackImage *mLoadingPackImage;                                   // offset 0x30, size 0x4
+    unsigned int mBinSlotSize;                                                        // offset 0x34, size 0x4
+    unsigned char *mStreamedBinSlots;                                                 // offset 0x38, size 0x4
+    struct GVault *mBinVaultInSlot[1];                                                // offset 0x3C, size 0x4
+    unsigned int mRaceSlotSize;                                                       // offset 0x40, size 0x4
+    unsigned char *mStreamedRaceSlots;                                                // offset 0x44, size 0x4
+    struct GVault *mRaceVaultInSlot[1];                                               // offset 0x48, size 0x4
+    unsigned char *mTempLoadData;                                                     // offset 0x4C, size 0x4
+    int mTransientPoolNumber;                                                         // offset 0x50, size 0x4
+    void *mTransientPoolMemory;                                                       // offset 0x54, size 0x4
+    struct Class *mGameplayClass;                                                     // offset 0x58, size 0x4
+    struct Class *mMilestoneClass;                                                    // offset 0x5C, size 0x4
+    unsigned int mAttributeKeyShiftTo24;                                              // offset 0x60, size 0x4
+    unsigned int mCollectionKeyShiftTo32;                                             // offset 0x64, size 0x4
+    unsigned int mMaxObjects;                                                         // offset 0x68, size 0x4
+    void *mClassTempBuffer;                                                           // offset 0x6C, size 0x4
+    unsigned int mInstanceHashTableSize;                                              // offset 0x70, size 0x4
+    unsigned int mInstanceHashTableMask;                                              // offset 0x74, size 0x4
+    unsigned int mWorstHashCollision;                                                 // offset 0x78, size 0x4
+    struct HashEntry *mKeyToInstanceMap;                                              // offset 0x7C, size 0x4
+    struct UTL::Std::vector<GCharacter *, _type_ID_GCharacterList> mActiveCharacters; // offset 0x80, size 0x10
+    struct UTL::Std::map<unsigned int, ISimable *, _type_ID_StockCarMap> mStockCars;  // offset 0x90, size 0x10
+    // TODO
     // struct map<unsigned int, MilestoneTypeInfo, _type_ID_MilestoneInfoMap> mMilestoneTypeInfo; // offset 0xA0, size 0x10
     unsigned int mNumMilestones;                    // offset 0xB0, size 0x4
     struct GMilestone *mMilestones;                 // offset 0xB4, size 0x4
     unsigned int mNumSpeedTraps;                    // offset 0xB8, size 0x4
-    struct GSpeedTrap *mSpeedTraps;                 // offset 0xBC, size 0x4
+    GSpeedTrap *mSpeedTraps;                        // offset 0xBC, size 0x4
     unsigned int mNumBountySpawnPoints;             // offset 0xC0, size 0x4
     unsigned int mBountySpawnPoint[20];             // offset 0xC4, size 0x50
     unsigned int mFreeRoamStartMarker;              // offset 0x114, size 0x4

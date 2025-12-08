@@ -5,10 +5,6 @@
 #pragma once
 #endif
 
-inline float INCH2METERS(const float _inches_) {
-    return _inches_ * 0.0254f;
-}
-
 namespace EA {
 namespace Reflection {
 

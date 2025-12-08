@@ -94,10 +94,12 @@ enum eInvulnerablitiy {
     INVULNERABLE_NONE = 0,
 };
 
+// TODO Physics::Wheels::IsFront
 inline bool IsFront(unsigned int i) {
     return i < 2;
 }
 
+// Physics::Wheels::IsRear
 inline bool IsRear(unsigned int i) {
     return i > 1;
 }

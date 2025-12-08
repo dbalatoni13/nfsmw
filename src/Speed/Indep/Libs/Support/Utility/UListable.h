@@ -93,7 +93,9 @@ template <typename T, std::size_t ListSize, typename Enum, std::size_t EnumMax> 
         friend class ListableSet;
 
       private:
-        void _add(iterator t, std::size_t idx) {}
+        void _add(iterator t, std::size_t idx) {
+            _buckets[idx].push_back(t);
+        }
 
         void _remove(iterator t, std::size_t idx) {
             List &bucket = _buckets[idx];
@@ -135,7 +137,9 @@ template <typename T, std::size_t ListSize, typename Enum, std::size_t EnumMax> 
 
     iterator Next(Enum idx) {}
 
-    void AddToList(Enum to) {}
+    void AddToList(Enum to) {
+        _mLists._add(static_cast<iterator>(this), to);
+    }
 
   private:
     static _ListSet _mLists;

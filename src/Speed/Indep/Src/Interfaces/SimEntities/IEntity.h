@@ -12,11 +12,11 @@
 #include "Speed/Indep/Src/Sim/SimTypes.h"
 
 enum eEntityList {
-    ENTITY_MAX = 4,
-    ENTITY_COPS = 3,
-    ENTITY_AI = 2,
-    ENTITY_PLAYERS = 1,
     ENTITY_ALL = 0,
+    ENTITY_PLAYERS = 1,
+    ENTITY_AI = 2,
+    ENTITY_COPS = 3,
+    ENTITY_MAX = 4,
 };
 
 namespace Sim {
