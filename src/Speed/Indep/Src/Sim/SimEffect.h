@@ -6,7 +6,9 @@
 #endif
 
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Src/Interfaces/IServiceable.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
+#include "Speed/Indep/Src/World/WorldTypes.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 namespace Sim {
@@ -14,14 +16,15 @@ namespace Sim {
 // total size: 0x5C
 class Effect : public UTL::COM::Object, public bTNode<Sim::Effect>, public IServiceable {
   public:
-    static void Fire(const Attrib::Collection *effect, const UMath::Vector3 &position, const UMath::Vector3 &magnitude, unsigned int owner,
-                     const Attrib::Collection *participant, const Attrib::Collection *context, unsigned int actee);
+    static void Fire(const Attrib::Collection *effect, const UMath::Vector3 &position, const UMath::Vector3 &magnitude, WUID owner,
+                     const Attrib::Collection *participant, const Attrib::Collection *context, WUID actee);
 
     // TODO does this constructor exist?
     Effect();
+    Effect(WUID owner, const Attrib::Collection *participant);
     void Stop();
     void Set(const Attrib::Collection *effect, const UMath::Vector3 &position, const UMath::Vector3 &magnitude, const Attrib::Collection *context,
-             bool relative, unsigned int actee);
+             bool relative, WUID actee);
     void Fire(const bMatrix4 *worldmatrix, unsigned int emitterkey, float emitter_intensity, const bVector3 *inherit_velocity) const;
 
     bool IsPaused() {
@@ -34,7 +37,7 @@ class Effect : public UTL::COM::Object, public bTNode<Sim::Effect>, public IServ
 
     // Overrides
     // IUnknown
-    // override virtual ~Effect();
+    override virtual ~Effect();
 
     // IServiceable
     override virtual bool OnService(HSIMSERVICE hCon, Packet *pkt);

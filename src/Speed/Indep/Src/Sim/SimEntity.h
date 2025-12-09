@@ -18,20 +18,26 @@ class Entity : public Object, public UTL::Collections::GarbageNode<Sim::Entity, 
   public:
     Entity();
 
+    void operator delete(void *mem, std::size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+
     // Virtual methods
     // IUnknown
-    ~Entity();
+    override virtual ~Entity();
 
     // IEntity
-    virtual void AttachPhysics(ISimable *object);
-    virtual void DetachPhysics();
+    override virtual void AttachPhysics(ISimable *object);
+    override virtual void DetachPhysics();
 
     // Own
     virtual const UMath::Vector3 &GetPosition() const;
     virtual bool SetPosition(const UMath::Vector3 &position) const;
 
     // IEntity
-    virtual ISimable *GetSimable() const {
+    override virtual ISimable *GetSimable() const {
         return mSimable;
     }
     // Own

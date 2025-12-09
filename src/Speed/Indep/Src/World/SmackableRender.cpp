@@ -2,11 +2,11 @@
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/Src/Physics/Bounds.h"
-#include "Speed/Indep/Src/Sim/SimServer.H"
-#include "Speed/Indep/Src/Sim/SimTypes.h"
+#include "Speed/Indep/Src/Render/RenderConn.h"
+#include "Speed/Indep/Src/Sim/SimConn.h"
+#include "Speed/Indep/Src/Sim/SimServer.h"
 #include "Speed/Indep/Src/World/WorldModel.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
-#include "Speed/Indep/Src/Render/RenderConn.h"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "WorldConn.h"
 #include "WorldModel.hpp"
@@ -15,12 +15,10 @@
 
 // UNSOLVED, i hate constructors
 SmackableRenderConn::SmackableRenderConn(const Sim::ConnectionData &data /* r27 */)
-    : Sim::Connection(data), mTarget(0), mModelHash((unsigned int)0), mLOD(0),
-    mModelOffset(bVector4(0.0f, 0.0f, 0.0f, 0.0f))
-{
-    this->mList.AddTail((bNode *)this);
+    : Sim::Connection(data), mTarget(0), mModelHash((unsigned int)0), mLOD(0), mModelOffset(bVector4(0.0f, 0.0f, 0.0f, 0.0f)) {
+    this->mList.AddTail(this);
 
-    Sim::Pkt_Smackable_Open *oc = data.pkt->Cast();
+    Sim::Pkt_Smackable_Open *oc = Sim::Packet::Cast<Sim::Pkt_Smackable_Open>(data.pkt);
     this->mTarget.Set(oc->mModelHash.GetValue());
 
     this->mHeirarchy = oc->mHeirarchy;
@@ -49,10 +47,7 @@ void SmackableRenderConn::Update(float dT) {
     if (*(const bMatrix4 **)(&this->mTarget + 1)) {
         bVector4 tmp;
 
-        PSMTX44Copy(
-            *reinterpret_cast<const Mtx44 *>(this->mTarget.GetMatrix()),
-            *reinterpret_cast<Mtx44 *>(&this->mRenderMatrix)
-        );
+        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(this->mTarget.GetMatrix()), *reinterpret_cast<Mtx44 *>(&this->mRenderMatrix));
         eMulVector(&tmp, this->mTarget.GetMatrix(), &this->mModelOffset);
 
         this->mRenderMatrix.v3 += tmp;
@@ -86,7 +81,6 @@ void SmackableRenderConn::Update(float dT) {
         if (&this->mRenderMatrix) {
             this->mRenderMatrix.v2.z = 1;
             if (this->mModelOffset.y != 0) {
-                
             }
         }
     }
@@ -98,13 +92,9 @@ void SmackableRenderConn::UpdateAll(float dT) {
     }
 }
 
-void SmackableRender_Init() {
+void SmackableRender_Init() {}
 
-}
-
-void SmackableRender_Shutdown() {
-    
-}
+void SmackableRender_Shutdown() {}
 
 void SmackableRender_Service(float dT) {
     SmackableRenderConn::UpdateAll(dT);

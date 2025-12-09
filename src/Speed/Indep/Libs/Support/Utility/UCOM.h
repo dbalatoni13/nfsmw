@@ -57,7 +57,7 @@ class Object {
         return gFastMem.Alloc(size, nullptr);
     }
 
-    Object(unsigned int icount) : _mInterfaces(icount) {}
+    Object(std::size_t icount) : _mInterfaces(icount) {}
 
     ~Object() {}
 };
@@ -65,8 +65,6 @@ class Object {
 // total size: 0x8
 class IUnknown {
   public:
-    Object *_mCOMObject; // offset 0x0, size 0x4
-
     template <typename T> bool QueryInterface(T **out) {
         HINTERFACE handle = T::_IHandle();
 
@@ -82,6 +80,8 @@ class IUnknown {
         return *out != nullptr;
     }
 
+    friend bool ComparePtr(const IUnknown *pUnk1, const IUnknown *pUnk2);
+
   protected:
     IUnknown(Object *owner, void *handle) {
         _mCOMObject = owner;
@@ -89,8 +89,11 @@ class IUnknown {
     }
 
     virtual ~IUnknown() {
-        this->_mCOMObject->_mInterfaces.Remove(this);
+        _mCOMObject->_mInterfaces.Remove(this);
     }
+
+  private:
+    Object *_mCOMObject; // offset 0x0, size 0x4
 };
 
 template <typename T> inline T *QueryInterface(IUnknown *pUnk) {

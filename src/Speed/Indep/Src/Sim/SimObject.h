@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "SimServer.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
@@ -27,15 +28,27 @@ class Object : public UTL::COM::Object, public IServiceable, public ITaskable, p
     }
 
   protected:
-    Object(unsigned int num_interfaces);
+    Object(std::size_t num_interfaces);
     HSIMTASK AddTask(const UCrc32 &schedule, float rate, float start_offset, TaskMode mode);
+    void ModifyTask(HSIMTASK htask, float rate);
     void RemoveTask(HSIMTASK htask);
+    HSIMSERVICE OpenService(UCrc32 server, Packet *pkt);
+    void CloseService(HSIMSERVICE hservice);
+    ConnStatus CheckService(HSIMSERVICE hservice) const;
 
+    // Virtual functions
+    // IUnknown
     virtual ~Object();
 
-    virtual bool OnService(HSIMSERVICE hCon, Sim::Packet *pkt);
+    // IServiceable
+    virtual bool OnService(HSIMSERVICE hCon, Sim::Packet *pkt) {
+        return false;
+    }
 
-    virtual bool OnTask(HSIMTASK htask, float dT) {}
+    // ITaskable
+    virtual bool OnTask(HSIMTASK htask, float dT) {
+        return false;
+    }
 
   private:
     unsigned int mTaskCount;    // offset 0x24, size 0x4

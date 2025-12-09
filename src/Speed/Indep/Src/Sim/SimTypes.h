@@ -6,8 +6,7 @@
 #endif
 
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
-#include "Speed/Indep/Src/Interfaces/IServiceable.h"
-// #include "Speed/Indep/Src/Render/RenderConn.h"
+#include "Speed/Indep/bWare/Inc/bDebug.hpp"
 
 namespace Sim {
 
@@ -41,15 +40,6 @@ class Param {
         const Param *p = Find<T>(UCrc32(name));
         return *reinterpret_cast<const T *>(p->mData);
     }
-};
-
-class Packet {
-  public:
-    virtual unsigned int Compress(Packet *to) {}
-    virtual unsigned int Decompress(Packet *to) {}
-    Packet() {}
-    virtual ~Packet() {}
-    class Pkt_Smackable_Open *Cast() {}
 };
 
 enum State {

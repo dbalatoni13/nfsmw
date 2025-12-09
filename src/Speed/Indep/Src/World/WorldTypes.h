@@ -5,6 +5,6 @@
 #pragma once
 #endif
 
-
+typedef unsigned int WUID;
 
 #endif

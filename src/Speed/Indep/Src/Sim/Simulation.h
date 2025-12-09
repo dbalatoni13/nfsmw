@@ -46,6 +46,9 @@ float GetSpeed();
 float GetTimeStep();
 eUserMode GetUserMode();
 void ProfileTask(HSIMTASK htask, const char *name);
+HSIMTASK AddTask(const UCrc32 &schedule, float rate, ITaskable *handler, float start_offset, TaskMode mode);
+void RemoveTask(HSIMTASK hTask, ITaskable *handler);
+void ModifyTask(HSIMTASK hTask, float rate);
 
 }; // namespace Sim
 

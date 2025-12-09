@@ -12,6 +12,9 @@ namespace Sim {
 // total size: 0x10
 class Attachments {
   public:
+    bool Attach(UTL::COM::IUnknown *object);
+    bool Detach(UTL::COM::IUnknown *object);
+
     // Virtual functions
     virtual ~Attachments();
 
