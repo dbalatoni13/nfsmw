@@ -12,23 +12,23 @@ class ERequestEventInfoDialog : public Event {
   public:
     // total size: 0xc
     struct StaticData : public Event::StaticData {
-        int fJoyPort; // offset: 0x4, size 0x4
-        GRuntimeInstance * fRaceActivity; // offset: 0x8, size 0x4
+        int fJoyPort;                    // offset: 0x4, size 0x4
+        GRuntimeInstance *fRaceActivity; // offset: 0x8, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    ERequestEventInfoDialog(int pJoyPort, GRuntimeInstance * pRaceActivity);
+    ERequestEventInfoDialog(int pJoyPort, GRuntimeInstance *pRaceActivity);
 
-    override virtual ~ERequestEventInfoDialog();
+    ~ERequestEventInfoDialog() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ERequestEventInfoDialog";
     }
 
   private:
-    int fJoyPort; // offset: 0x8, size 0x4
-    GRuntimeInstance * fRaceActivity; // offset: 0xc, size 0x4
+    int fJoyPort;                    // offset: 0x8, size 0x4
+    GRuntimeInstance *fRaceActivity; // offset: 0xc, size 0x4
 };
 
 void ERequestEventInfoDialog_MakeEvent_Callback(const void *staticData);

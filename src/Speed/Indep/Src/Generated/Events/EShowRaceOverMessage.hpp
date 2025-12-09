@@ -12,21 +12,21 @@ class EShowRaceOverMessage : public Event {
   public:
     // total size: 0x8
     struct StaticData : public Event::StaticData {
-        IPlayer * fPlayer; // offset: 0x4, size 0x4
+        IPlayer *fPlayer; // offset: 0x4, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    EShowRaceOverMessage(IPlayer * pPlayer);
+    EShowRaceOverMessage(IPlayer *pPlayer);
 
-    override virtual ~EShowRaceOverMessage();
+    ~EShowRaceOverMessage() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EShowRaceOverMessage";
     }
 
   private:
-    IPlayer * fPlayer; // offset: 0x8, size 0x4
+    IPlayer *fPlayer; // offset: 0x8, size 0x4
 };
 
 void EShowRaceOverMessage_MakeEvent_Callback(const void *staticData);

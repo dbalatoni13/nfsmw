@@ -12,21 +12,21 @@ class EPlayEndNIS : public Event {
   public:
     // total size: 0x8
     struct StaticData : public Event::StaticData {
-        const char * fSceneName; // offset: 0x4, size 0x4
+        const char *fSceneName; // offset: 0x4, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    EPlayEndNIS(const char * pSceneName);
+    EPlayEndNIS(const char *pSceneName);
 
-    override virtual ~EPlayEndNIS();
+    ~EPlayEndNIS() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EPlayEndNIS";
     }
 
   private:
-    const char * fSceneName; // offset: 0x8, size 0x4
+    const char *fSceneName; // offset: 0x8, size 0x4
 };
 
 void EPlayEndNIS_MakeEvent_Callback(const void *staticData);

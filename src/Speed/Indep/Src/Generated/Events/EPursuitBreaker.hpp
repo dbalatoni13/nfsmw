@@ -19,9 +19,9 @@ class EPursuitBreaker : public Event {
 
     EPursuitBreaker(int pBegin);
 
-    override virtual ~EPursuitBreaker();
+    ~EPursuitBreaker() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EPursuitBreaker";
     }
 

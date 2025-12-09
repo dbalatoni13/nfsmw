@@ -12,23 +12,23 @@ class ENISHideCharacter : public Event {
   public:
     // total size: 0xc
     struct StaticData : public Event::StaticData {
-        const char * fAnimModelName; // offset: 0x4, size 0x4
-        int fAnimShow; // offset: 0x8, size 0x4
+        const char *fAnimModelName; // offset: 0x4, size 0x4
+        int fAnimShow;              // offset: 0x8, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    ENISHideCharacter(const char * pAnimModelName, int pAnimShow);
+    ENISHideCharacter(const char *pAnimModelName, int pAnimShow);
 
-    override virtual ~ENISHideCharacter();
+    ~ENISHideCharacter() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISHideCharacter";
     }
 
   private:
-    const char * fAnimModelName; // offset: 0x8, size 0x4
-    int fAnimShow; // offset: 0xc, size 0x4
+    const char *fAnimModelName; // offset: 0x8, size 0x4
+    int fAnimShow;              // offset: 0xc, size 0x4
 };
 
 void ENISHideCharacter_MakeEvent_Callback(const void *staticData);

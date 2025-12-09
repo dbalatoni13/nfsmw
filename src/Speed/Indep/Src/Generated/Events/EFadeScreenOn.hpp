@@ -19,9 +19,9 @@ class EFadeScreenOn : public Event {
 
     EFadeScreenOn(bool pLoadingBarOnly);
 
-    override virtual ~EFadeScreenOn();
+    ~EFadeScreenOn() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EFadeScreenOn";
     }
 

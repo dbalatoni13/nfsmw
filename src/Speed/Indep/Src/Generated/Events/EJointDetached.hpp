@@ -20,9 +20,9 @@ class EJointDetached : public Event {
 
     EJointDetached(HSIMABLE phObject);
 
-    override virtual ~EJointDetached();
+    ~EJointDetached() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EJointDetached";
     }
 

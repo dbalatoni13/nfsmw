@@ -11,16 +11,15 @@
 class EGPSFinished : public Event {
   public:
     // total size: 0x4
-    struct StaticData : public Event::StaticData {
-    };
+    struct StaticData : public Event::StaticData {};
 
     // enum { kEventID = 0 };
 
     EGPSFinished();
 
-    override virtual ~EGPSFinished();
+    ~EGPSFinished() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EGPSFinished";
     }
 };

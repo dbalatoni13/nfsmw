@@ -20,9 +20,9 @@ class EDynamicRegion : public Event {
 
     EDynamicRegion(int pOn, UMath::Vector4 pPosition, UMath::Vector4 pVector, UMath::Vector4 pVelocity, unsigned int phSimable);
 
-    override virtual ~EDynamicRegion();
+    ~EDynamicRegion() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EDynamicRegion";
     }
 
@@ -30,9 +30,9 @@ class EDynamicRegion : public Event {
     int fOn; // offset: 0x8, size 0x4
 
     UMath::Vector4 fPosition; // offset: 0x10, size 0x10
-    UMath::Vector4 fVector; // offset: 0x20, size 0x10
+    UMath::Vector4 fVector;   // offset: 0x20, size 0x10
     UMath::Vector4 fVelocity; // offset: 0x30, size 0x10
-    unsigned int fhSimable; // offset: 0x40, size 0x4
+    unsigned int fhSimable;   // offset: 0x40, size 0x4
 };
 
 void EDynamicRegion_MakeEvent_Callback(const void *staticData);

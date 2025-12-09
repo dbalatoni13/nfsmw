@@ -12,7 +12,7 @@ class EAIEngineRev : public Event {
   public:
     // total size: 0xc
     struct StaticData : public Event::StaticData {
-        unsigned int fCarID; // offset: 0x4, size 0x4
+        unsigned int fCarID;      // offset: 0x4, size 0x4
         unsigned int fPatterPlay; // offset: 0x8, size 0x4
     };
 
@@ -20,14 +20,14 @@ class EAIEngineRev : public Event {
 
     EAIEngineRev(unsigned int pCarID, unsigned int pPatterPlay, unsigned int phSimable);
 
-    override virtual ~EAIEngineRev();
+    ~EAIEngineRev() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EAIEngineRev";
     }
 
   private:
-    unsigned int fCarID; // offset: 0x8, size 0x4
+    unsigned int fCarID;      // offset: 0x8, size 0x4
     unsigned int fPatterPlay; // offset: 0xc, size 0x4
 
     unsigned int fhSimable; // offset: 0xc, size 0x4

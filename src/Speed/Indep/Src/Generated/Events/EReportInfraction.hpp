@@ -19,9 +19,9 @@ class EReportInfraction : public Event {
 
     EReportInfraction(InfractionType pInfraction);
 
-    override virtual ~EReportInfraction();
+    ~EReportInfraction() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EReportInfraction";
     }
 

@@ -19,9 +19,9 @@ class EShowSMS : public Event {
 
     EShowSMS(int pShowMsg);
 
-    override virtual ~EShowSMS();
+    ~EShowSMS() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EShowSMS";
     }
 

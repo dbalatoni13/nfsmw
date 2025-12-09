@@ -19,9 +19,9 @@ class ENISConstraint : public Event {
 
     ENISConstraint(float pDegrees, unsigned int phSimable);
 
-    override virtual ~ENISConstraint();
+    ~ENISConstraint() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISConstraint";
     }
 

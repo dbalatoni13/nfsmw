@@ -12,21 +12,21 @@ class EReportMilestoneAtStake : public Event {
   public:
     // total size: 0x8
     struct StaticData : public Event::StaticData {
-        GMilestone * fMilestonePtr; // offset: 0x4, size 0x4
+        GMilestone *fMilestonePtr; // offset: 0x4, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    EReportMilestoneAtStake(GMilestone * pMilestonePtr);
+    EReportMilestoneAtStake(GMilestone *pMilestonePtr);
 
-    override virtual ~EReportMilestoneAtStake();
+    ~EReportMilestoneAtStake() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EReportMilestoneAtStake";
     }
 
   private:
-    GMilestone * fMilestonePtr; // offset: 0x8, size 0x4
+    GMilestone *fMilestonePtr; // offset: 0x8, size 0x4
 };
 
 void EReportMilestoneAtStake_MakeEvent_Callback(const void *staticData);

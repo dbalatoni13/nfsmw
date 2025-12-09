@@ -11,22 +11,21 @@
 class EKillObject : public Event {
   public:
     // total size: 0x4
-    struct StaticData : public Event::StaticData {
-    };
+    struct StaticData : public Event::StaticData {};
 
     // enum { kEventID = 0 };
 
     EKillObject(unsigned int phSimable, unsigned int phModel);
 
-    override virtual ~EKillObject();
+    ~EKillObject() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EKillObject";
     }
 
   private:
     unsigned int fhSimable; // offset: 0xc, size 0x4
-    unsigned int fhModel; // offset: 0x10, size 0x4
+    unsigned int fhModel;   // offset: 0x10, size 0x4
 };
 
 void EKillObject_MakeEvent_Callback(const void *staticData);

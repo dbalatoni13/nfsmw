@@ -12,21 +12,21 @@ class EReloadGame : public Event {
   public:
     // total size: 0x8
     struct StaticData : public Event::StaticData {
-        GRuntimeInstance * fRestartRace; // offset: 0x4, size 0x4
+        GRuntimeInstance *fRestartRace; // offset: 0x4, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    EReloadGame(GRuntimeInstance * pRestartRace);
+    EReloadGame(GRuntimeInstance *pRestartRace);
 
-    override virtual ~EReloadGame();
+    ~EReloadGame() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EReloadGame";
     }
 
   private:
-    GRuntimeInstance * fRestartRace; // offset: 0x8, size 0x4
+    GRuntimeInstance *fRestartRace; // offset: 0x8, size 0x4
 };
 
 void EReloadGame_MakeEvent_Callback(const void *staticData);

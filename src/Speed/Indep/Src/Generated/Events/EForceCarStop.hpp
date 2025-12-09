@@ -19,9 +19,9 @@ class EForceCarStop : public Event {
 
     EForceCarStop(int pStopInstantly, unsigned int phSimable);
 
-    override virtual ~EForceCarStop();
+    ~EForceCarStop() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EForceCarStop";
     }
 

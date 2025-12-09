@@ -88,7 +88,7 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
 
     // Virtual methods
     // IUnknown
-    override virtual ~CameraMover();
+    ~CameraMover() override;
 
     virtual void Update(float dT);
     virtual void Render(eView *view);
@@ -114,7 +114,7 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
     virtual void ResetState() {}
 
     // ICollisionHandler
-    override virtual bool OnWCollide(const WCollisionMgr::WorldCollisionInfo &cInfo, const UMath::Vector3 &cPoint, void *userdata);
+    bool OnWCollide(const WCollisionMgr::WorldCollisionInfo &cInfo, const UMath::Vector3 &cPoint, void *userdata) override;
 
     virtual void Enable();
     virtual void Disable();

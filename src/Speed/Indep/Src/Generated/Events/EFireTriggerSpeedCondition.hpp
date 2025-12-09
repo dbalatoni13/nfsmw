@@ -12,24 +12,24 @@ class EFireTriggerSpeedCondition : public Event {
   public:
     // total size: 0x10
     struct StaticData : public Event::StaticData {
-        Trigger * fTrigger; // offset: 0x4, size 0x4
-        float fSpeed; // offset: 0x8, size 0x4
+        Trigger *fTrigger;        // offset: 0x4, size 0x4
+        float fSpeed;             // offset: 0x8, size 0x4
         int fTriggerIfSpeedBelow; // offset: 0xc, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    EFireTriggerSpeedCondition(Trigger * pTrigger, float pSpeed, int pTriggerIfSpeedBelow, unsigned int phSimable);
+    EFireTriggerSpeedCondition(Trigger *pTrigger, float pSpeed, int pTriggerIfSpeedBelow, unsigned int phSimable);
 
-    override virtual ~EFireTriggerSpeedCondition();
+    ~EFireTriggerSpeedCondition() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EFireTriggerSpeedCondition";
     }
 
   private:
-    Trigger * fTrigger; // offset: 0x8, size 0x4
-    float fSpeed; // offset: 0xc, size 0x4
+    Trigger *fTrigger;        // offset: 0x8, size 0x4
+    float fSpeed;             // offset: 0xc, size 0x4
     int fTriggerIfSpeedBelow; // offset: 0x10, size 0x4
 
     unsigned int fhSimable; // offset: 0x18, size 0x4

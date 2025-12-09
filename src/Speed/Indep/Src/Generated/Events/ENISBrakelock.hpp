@@ -13,22 +13,22 @@ class ENISBrakelock : public Event {
     // total size: 0xc
     struct StaticData : public Event::StaticData {
         unsigned int fFront; // offset: 0x4, size 0x4
-        unsigned int fRear; // offset: 0x8, size 0x4
+        unsigned int fRear;  // offset: 0x8, size 0x4
     };
 
     // enum { kEventID = 0 };
 
     ENISBrakelock(unsigned int pFront, unsigned int pRear, unsigned int phSimable);
 
-    override virtual ~ENISBrakelock();
+    ~ENISBrakelock() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISBrakelock";
     }
 
   private:
     unsigned int fFront; // offset: 0x8, size 0x4
-    unsigned int fRear; // offset: 0xc, size 0x4
+    unsigned int fRear;  // offset: 0xc, size 0x4
 
     unsigned int fhSimable; // offset: 0x14, size 0x4
 };

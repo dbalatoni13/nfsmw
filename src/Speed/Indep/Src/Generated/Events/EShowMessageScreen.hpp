@@ -19,9 +19,9 @@ class EShowMessageScreen : public Event {
 
     EShowMessageScreen(unsigned int pID);
 
-    override virtual ~EShowMessageScreen();
+    ~EShowMessageScreen() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EShowMessageScreen";
     }
 

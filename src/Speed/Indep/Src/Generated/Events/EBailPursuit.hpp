@@ -12,7 +12,7 @@ class EBailPursuit : public Event {
   public:
     // total size: 0xc
     struct StaticData : public Event::StaticData {
-        int fPlayAudio; // offset: 0x4, size 0x4
+        int fPlayAudio;    // offset: 0x4, size 0x4
         int fDisperseCops; // offset: 0x8, size 0x4
     };
 
@@ -20,14 +20,14 @@ class EBailPursuit : public Event {
 
     EBailPursuit(int pPlayAudio, int pDisperseCops);
 
-    override virtual ~EBailPursuit();
+    ~EBailPursuit() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EBailPursuit";
     }
 
   private:
-    int fPlayAudio; // offset: 0x8, size 0x4
+    int fPlayAudio;    // offset: 0x8, size 0x4
     int fDisperseCops; // offset: 0xc, size 0x4
 };
 

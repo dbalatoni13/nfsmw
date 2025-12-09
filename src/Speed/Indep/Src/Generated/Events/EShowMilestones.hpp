@@ -19,9 +19,9 @@ class EShowMilestones : public Event {
 
     EShowMilestones(int pEnterSafehouseOnExit);
 
-    override virtual ~EShowMilestones();
+    ~EShowMilestones() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EShowMilestones";
     }
 

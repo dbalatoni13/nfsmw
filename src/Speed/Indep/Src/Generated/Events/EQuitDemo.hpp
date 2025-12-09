@@ -19,9 +19,9 @@ class EQuitDemo : public Event {
 
     EQuitDemo(DemoDiscEndReason pEndDemoReason);
 
-    override virtual ~EQuitDemo();
+    ~EQuitDemo() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EQuitDemo";
     }
 

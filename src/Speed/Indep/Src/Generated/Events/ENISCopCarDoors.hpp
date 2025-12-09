@@ -12,27 +12,27 @@ class ENISCopCarDoors : public Event {
   public:
     // total size: 0x14
     struct StaticData : public Event::StaticData {
-        int fCarDoor; // offset: 0x4, size 0x4
-        float fCarDoorPos; // offset: 0x8, size 0x4
+        int fCarDoor;             // offset: 0x4, size 0x4
+        float fCarDoorPos;        // offset: 0x8, size 0x4
         float fCarDoorAnimLength; // offset: 0xc, size 0x4
-        float fCarDoorEndPos; // offset: 0x10, size 0x4
+        float fCarDoorEndPos;     // offset: 0x10, size 0x4
     };
 
     // enum { kEventID = 0 };
 
     ENISCopCarDoors(int pCarDoor, float pCarDoorPos, float pCarDoorAnimLength, float pCarDoorEndPos);
 
-    override virtual ~ENISCopCarDoors();
+    ~ENISCopCarDoors() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISCopCarDoors";
     }
 
   private:
-    int fCarDoor; // offset: 0x8, size 0x4
-    float fCarDoorPos; // offset: 0xc, size 0x4
+    int fCarDoor;             // offset: 0x8, size 0x4
+    float fCarDoorPos;        // offset: 0xc, size 0x4
     float fCarDoorAnimLength; // offset: 0x10, size 0x4
-    float fCarDoorEndPos; // offset: 0x14, size 0x4
+    float fCarDoorEndPos;     // offset: 0x14, size 0x4
 };
 
 void ENISCopCarDoors_MakeEvent_Callback(const void *staticData);

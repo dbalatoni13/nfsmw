@@ -19,9 +19,9 @@ class EAddSMS : public Event {
 
     EAddSMS(int pNumber);
 
-    override virtual ~EAddSMS();
+    ~EAddSMS() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EAddSMS";
     }
 

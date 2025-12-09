@@ -20,9 +20,9 @@ class EStopObjectEffect : public Event {
 
     EStopObjectEffect(UCrc32 pID, unsigned int phModel);
 
-    override virtual ~EStopObjectEffect();
+    ~EStopObjectEffect() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EStopObjectEffect";
     }
 

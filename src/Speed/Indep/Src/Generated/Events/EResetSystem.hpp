@@ -20,9 +20,9 @@ class EResetSystem : public Event {
 
     EResetSystem(UCrc32 pSystemName, unsigned int pEventSeqEngine, unsigned int pEventSeqSystem);
 
-    override virtual ~EResetSystem();
+    ~EResetSystem() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EResetSystem";
     }
 

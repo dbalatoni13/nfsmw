@@ -19,9 +19,9 @@ class EAwardUpgrade : public Event {
 
     EAwardUpgrade(unsigned int pUpgradeKey);
 
-    override virtual ~EAwardUpgrade();
+    ~EAwardUpgrade() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EAwardUpgrade";
     }
 

@@ -19,9 +19,9 @@ class ELoadingScreenOn : public Event {
 
     ELoadingScreenOn(LoadingScreenTypes pLoadingType);
 
-    override virtual ~ELoadingScreenOn();
+    ~ELoadingScreenOn() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ELoadingScreenOn";
     }
 

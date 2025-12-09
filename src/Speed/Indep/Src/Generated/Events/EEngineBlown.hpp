@@ -20,9 +20,9 @@ class EEngineBlown : public Event {
 
     EEngineBlown(HSIMABLE phSimable);
 
-    override virtual ~EEngineBlown();
+    ~EEngineBlown() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EEngineBlown";
     }
 

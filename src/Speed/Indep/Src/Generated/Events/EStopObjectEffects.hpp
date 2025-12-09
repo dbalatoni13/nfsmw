@@ -11,16 +11,15 @@
 class EStopObjectEffects : public Event {
   public:
     // total size: 0x4
-    struct StaticData : public Event::StaticData {
-    };
+    struct StaticData : public Event::StaticData {};
 
     // enum { kEventID = 0 };
 
     EStopObjectEffects(unsigned int phModel);
 
-    override virtual ~EStopObjectEffects();
+    ~EStopObjectEffects() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EStopObjectEffects";
     }
 

@@ -13,29 +13,30 @@ class ESpawnSmackable : public Event {
   public:
     // total size: 0x28
     struct StaticData : public Event::StaticData {
-        UMath::Vector3 fPosition; // offset: 0x4, size 0xc
-        HMODEL fScenery; // offset: 0x10, size 0x4
+        UMath::Vector3 fPosition;    // offset: 0x4, size 0xc
+        HMODEL fScenery;             // offset: 0x10, size 0x4
         UMath::Vector4 fOrientation; // offset: 0x14, size 0x10
-        bool fVirginSpawn; // offset: 0x24, size 0x1
+        bool fVirginSpawn;           // offset: 0x24, size 0x1
     };
 
     // enum { kEventID = 0 };
 
-    ESpawnSmackable(UMath::Vector3 pPosition, HMODEL pScenery, UMath::Vector4 pOrientation, bool pVirginSpawn, WTrigger * pTrigger, unsigned int phSimable);
+    ESpawnSmackable(UMath::Vector3 pPosition, HMODEL pScenery, UMath::Vector4 pOrientation, bool pVirginSpawn, WTrigger *pTrigger,
+                    unsigned int phSimable);
 
-    override virtual ~ESpawnSmackable();
+    ~ESpawnSmackable() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ESpawnSmackable";
     }
 
   private:
-    UMath::Vector3 fPosition; // offset: 0x8, size 0xc
-    HMODEL fScenery; // offset: 0x14, size 0x4
+    UMath::Vector3 fPosition;    // offset: 0x8, size 0xc
+    HMODEL fScenery;             // offset: 0x14, size 0x4
     UMath::Vector4 fOrientation; // offset: 0x18, size 0x10
-    bool fVirginSpawn; // offset: 0x28, size 0x1
+    bool fVirginSpawn;           // offset: 0x28, size 0x1
 
-    WTrigger * fTrigger; // offset: 0x30, size 0x4
+    WTrigger *fTrigger;     // offset: 0x30, size 0x4
     unsigned int fhSimable; // offset: 0x34, size 0x4
 };
 

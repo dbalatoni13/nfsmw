@@ -12,27 +12,27 @@ class EDebugScreenMessage : public Event {
   public:
     // total size: 0x14
     struct StaticData : public Event::StaticData {
-        const char * fDebugMsg; // offset: 0x4, size 0x4
-        float fDuration; // offset: 0x8, size 0x4
-        int fX; // offset: 0xc, size 0x4
-        int fY; // offset: 0x10, size 0x4
+        const char *fDebugMsg; // offset: 0x4, size 0x4
+        float fDuration;       // offset: 0x8, size 0x4
+        int fX;                // offset: 0xc, size 0x4
+        int fY;                // offset: 0x10, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    EDebugScreenMessage(const char * pDebugMsg, float pDuration, int pX, int pY);
+    EDebugScreenMessage(const char *pDebugMsg, float pDuration, int pX, int pY);
 
-    override virtual ~EDebugScreenMessage();
+    ~EDebugScreenMessage() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EDebugScreenMessage";
     }
 
   private:
-    const char * fDebugMsg; // offset: 0x8, size 0x4
-    float fDuration; // offset: 0xc, size 0x4
-    int fX; // offset: 0x10, size 0x4
-    int fY; // offset: 0x14, size 0x4
+    const char *fDebugMsg; // offset: 0x8, size 0x4
+    float fDuration;       // offset: 0xc, size 0x4
+    int fX;                // offset: 0x10, size 0x4
+    int fY;                // offset: 0x14, size 0x4
 };
 
 void EDebugScreenMessage_MakeEvent_Callback(const void *staticData);

@@ -19,9 +19,9 @@ class ERaceSheetOn : public Event {
 
     ERaceSheetOn(int pRivalFlow);
 
-    override virtual ~ERaceSheetOn();
+    ~ERaceSheetOn() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ERaceSheetOn";
     }
 

@@ -19,9 +19,9 @@ class ENISDetail : public Event {
 
     ENISDetail(int pSceneryDetail);
 
-    override virtual ~ENISDetail();
+    ~ENISDetail() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISDetail";
     }
 

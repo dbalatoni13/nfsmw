@@ -11,16 +11,15 @@
 class ENISCarDamageReset : public Event {
   public:
     // total size: 0x4
-    struct StaticData : public Event::StaticData {
-    };
+    struct StaticData : public Event::StaticData {};
 
     // enum { kEventID = 0 };
 
     ENISCarDamageReset(unsigned int phSimable);
 
-    override virtual ~ENISCarDamageReset();
+    ~ENISCarDamageReset() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISCarDamageReset";
     }
 

@@ -14,22 +14,22 @@ class EPerfectLaunch : public Event {
     // total size: 0xc
     struct StaticData : public Event::StaticData {
         HSIMABLE fhSimable; // offset: 0x4, size 0x4
-        float fBonus; // offset: 0x8, size 0x4
+        float fBonus;       // offset: 0x8, size 0x4
     };
 
     // enum { kEventID = 0 };
 
     EPerfectLaunch(HSIMABLE phSimable, float pBonus);
 
-    override virtual ~EPerfectLaunch();
+    ~EPerfectLaunch() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EPerfectLaunch";
     }
 
   private:
     HSIMABLE fhSimable; // offset: 0x8, size 0x4
-    float fBonus; // offset: 0xc, size 0x4
+    float fBonus;       // offset: 0xc, size 0x4
 };
 
 void EPerfectLaunch_MakeEvent_Callback(const void *staticData);

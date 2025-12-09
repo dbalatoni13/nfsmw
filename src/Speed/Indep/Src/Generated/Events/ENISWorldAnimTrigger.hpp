@@ -12,27 +12,27 @@ class ENISWorldAnimTrigger : public Event {
   public:
     // total size: 0x14
     struct StaticData : public Event::StaticData {
-        const char * fAnimTreeName; // offset: 0x4, size 0x4
-        float fTimeSet; // offset: 0x8, size 0x4
-        int fAnimPause; // offset: 0xc, size 0x4
-        int fAnimHide; // offset: 0x10, size 0x4
+        const char *fAnimTreeName; // offset: 0x4, size 0x4
+        float fTimeSet;            // offset: 0x8, size 0x4
+        int fAnimPause;            // offset: 0xc, size 0x4
+        int fAnimHide;             // offset: 0x10, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    ENISWorldAnimTrigger(const char * pAnimTreeName, float pTimeSet, int pAnimPause, int pAnimHide);
+    ENISWorldAnimTrigger(const char *pAnimTreeName, float pTimeSet, int pAnimPause, int pAnimHide);
 
-    override virtual ~ENISWorldAnimTrigger();
+    ~ENISWorldAnimTrigger() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISWorldAnimTrigger";
     }
 
   private:
-    const char * fAnimTreeName; // offset: 0x8, size 0x4
-    float fTimeSet; // offset: 0xc, size 0x4
-    int fAnimPause; // offset: 0x10, size 0x4
-    int fAnimHide; // offset: 0x14, size 0x4
+    const char *fAnimTreeName; // offset: 0x8, size 0x4
+    float fTimeSet;            // offset: 0xc, size 0x4
+    int fAnimPause;            // offset: 0x10, size 0x4
+    int fAnimHide;             // offset: 0x14, size 0x4
 };
 
 void ENISWorldAnimTrigger_MakeEvent_Callback(const void *staticData);

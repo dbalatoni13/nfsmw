@@ -19,9 +19,9 @@ class ENISFakeFar : public Event {
 
     ENISFakeFar(float pFakeFar);
 
-    override virtual ~ENISFakeFar();
+    ~ENISFakeFar() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISFakeFar";
     }
 

@@ -20,9 +20,9 @@ class EVehicleDestroyed : public Event {
 
     EVehicleDestroyed(HSIMABLE phSimable);
 
-    override virtual ~EVehicleDestroyed();
+    ~EVehicleDestroyed() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EVehicleDestroyed";
     }
 

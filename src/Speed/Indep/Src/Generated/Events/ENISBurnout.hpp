@@ -19,9 +19,9 @@ class ENISBurnout : public Event {
 
     ENISBurnout(float pSpeed, unsigned int phSimable);
 
-    override virtual ~ENISBurnout();
+    ~ENISBurnout() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISBurnout";
     }
 

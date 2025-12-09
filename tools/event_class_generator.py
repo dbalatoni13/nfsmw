@@ -142,9 +142,9 @@ def generate_header_for_event(event: dict) -> str:
     out.append(f"    {name}({param_list});" if param_list else f"    {name}();")
     out.append("")
 
-    out.append(f"    override virtual ~{name}();")
+    out.append(f"    ~{name}() override;")
     out.append("")
-    out.append("    override virtual const char *GetEventName() {")
+    out.append("    const char *GetEventName() override {")
     out.append(f'        return "{name}";')
     out.append("    }")
 

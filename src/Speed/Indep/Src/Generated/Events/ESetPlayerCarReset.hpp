@@ -12,23 +12,23 @@ class ESetPlayerCarReset : public Event {
   public:
     // total size: 0xc
     struct StaticData : public Event::StaticData {
-        int fUseTrigger; // offset: 0x4, size 0x4
-        Trigger * fTrigger; // offset: 0x8, size 0x4
+        int fUseTrigger;   // offset: 0x4, size 0x4
+        Trigger *fTrigger; // offset: 0x8, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    ESetPlayerCarReset(int pUseTrigger, Trigger * pTrigger);
+    ESetPlayerCarReset(int pUseTrigger, Trigger *pTrigger);
 
-    override virtual ~ESetPlayerCarReset();
+    ~ESetPlayerCarReset() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ESetPlayerCarReset";
     }
 
   private:
-    int fUseTrigger; // offset: 0x8, size 0x4
-    Trigger * fTrigger; // offset: 0xc, size 0x4
+    int fUseTrigger;   // offset: 0x8, size 0x4
+    Trigger *fTrigger; // offset: 0xc, size 0x4
 };
 
 void ESetPlayerCarReset_MakeEvent_Callback(const void *staticData);

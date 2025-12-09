@@ -19,9 +19,9 @@ class ENISMotionBlur : public Event {
 
     ENISMotionBlur(int pEnableMotionBlur);
 
-    override virtual ~ENISMotionBlur();
+    ~ENISMotionBlur() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISMotionBlur";
     }
 

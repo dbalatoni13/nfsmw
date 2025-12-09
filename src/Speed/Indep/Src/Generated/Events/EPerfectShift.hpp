@@ -14,22 +14,22 @@ class EPerfectShift : public Event {
     // total size: 0xc
     struct StaticData : public Event::StaticData {
         HSIMABLE fhSimable; // offset: 0x4, size 0x4
-        float fBonus; // offset: 0x8, size 0x4
+        float fBonus;       // offset: 0x8, size 0x4
     };
 
     // enum { kEventID = 0 };
 
     EPerfectShift(HSIMABLE phSimable, float pBonus);
 
-    override virtual ~EPerfectShift();
+    ~EPerfectShift() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EPerfectShift";
     }
 
   private:
     HSIMABLE fhSimable; // offset: 0x8, size 0x4
-    float fBonus; // offset: 0xc, size 0x4
+    float fBonus;       // offset: 0xc, size 0x4
 };
 
 void EPerfectShift_MakeEvent_Callback(const void *staticData);

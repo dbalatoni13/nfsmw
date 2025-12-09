@@ -12,7 +12,7 @@ class ENISSteering : public Event {
   public:
     // total size: 0xc
     struct StaticData : public Event::StaticData {
-        float fDegrees; // offset: 0x4, size 0x4
+        float fDegrees;     // offset: 0x4, size 0x4
         float fBlendWeight; // offset: 0x8, size 0x4
     };
 
@@ -20,14 +20,14 @@ class ENISSteering : public Event {
 
     ENISSteering(float pDegrees, float pBlendWeight, unsigned int phSimable);
 
-    override virtual ~ENISSteering();
+    ~ENISSteering() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISSteering";
     }
 
   private:
-    float fDegrees; // offset: 0x8, size 0x4
+    float fDegrees;     // offset: 0x8, size 0x4
     float fBlendWeight; // offset: 0xc, size 0x4
 
     unsigned int fhSimable; // offset: 0x14, size 0x4

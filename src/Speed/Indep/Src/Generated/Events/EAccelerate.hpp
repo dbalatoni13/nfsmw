@@ -15,18 +15,19 @@ class EAccelerate : public Event {
         float fAccelerationX; // offset: 0x4, size 0x4
         float fAccelerationY; // offset: 0x8, size 0x4
         float fAccelerationZ; // offset: 0xc, size 0x4
-        int fLocalToObject; // offset: 0x10, size 0x4
-        int fLocalToTrigger; // offset: 0x14, size 0x4
-        int fPALOnly; // offset: 0x18, size 0x4
+        int fLocalToObject;   // offset: 0x10, size 0x4
+        int fLocalToTrigger;  // offset: 0x14, size 0x4
+        int fPALOnly;         // offset: 0x18, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    EAccelerate(float pAccelerationX, float pAccelerationY, float pAccelerationZ, int pLocalToObject, int pLocalToTrigger, int pPALOnly, unsigned int phSimable, WTrigger * pTrigger);
+    EAccelerate(float pAccelerationX, float pAccelerationY, float pAccelerationZ, int pLocalToObject, int pLocalToTrigger, int pPALOnly,
+                unsigned int phSimable, WTrigger *pTrigger);
 
-    override virtual ~EAccelerate();
+    ~EAccelerate() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EAccelerate";
     }
 
@@ -34,12 +35,12 @@ class EAccelerate : public Event {
     float fAccelerationX; // offset: 0x8, size 0x4
     float fAccelerationY; // offset: 0xc, size 0x4
     float fAccelerationZ; // offset: 0x10, size 0x4
-    int fLocalToObject; // offset: 0x14, size 0x4
-    int fLocalToTrigger; // offset: 0x18, size 0x4
-    int fPALOnly; // offset: 0x1c, size 0x4
+    int fLocalToObject;   // offset: 0x14, size 0x4
+    int fLocalToTrigger;  // offset: 0x18, size 0x4
+    int fPALOnly;         // offset: 0x1c, size 0x4
 
     unsigned int fhSimable; // offset: 0x24, size 0x4
-    WTrigger * fTrigger; // offset: 0x28, size 0x4
+    WTrigger *fTrigger;     // offset: 0x28, size 0x4
 };
 
 void EAccelerate_MakeEvent_Callback(const void *staticData);

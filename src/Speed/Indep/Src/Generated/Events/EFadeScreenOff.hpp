@@ -19,9 +19,9 @@ class EFadeScreenOff : public Event {
 
     EFadeScreenOff(int pDurationScript);
 
-    override virtual ~EFadeScreenOff();
+    ~EFadeScreenOff() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EFadeScreenOff";
     }
 

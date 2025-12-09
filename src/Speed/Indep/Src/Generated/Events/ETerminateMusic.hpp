@@ -11,16 +11,15 @@
 class ETerminateMusic : public Event {
   public:
     // total size: 0x4
-    struct StaticData : public Event::StaticData {
-    };
+    struct StaticData : public Event::StaticData {};
 
     // enum { kEventID = 0 };
 
     ETerminateMusic();
 
-    override virtual ~ETerminateMusic();
+    ~ETerminateMusic() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ETerminateMusic";
     }
 };

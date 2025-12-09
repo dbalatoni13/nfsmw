@@ -12,23 +12,23 @@ class ENISOverlayMessage : public Event {
   public:
     // total size: 0xc
     struct StaticData : public Event::StaticData {
-        const char * fOverlayName; // offset: 0x4, size 0x4
-        const char * fOverlayMessage; // offset: 0x8, size 0x4
+        const char *fOverlayName;    // offset: 0x4, size 0x4
+        const char *fOverlayMessage; // offset: 0x8, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    ENISOverlayMessage(const char * pOverlayName, const char * pOverlayMessage);
+    ENISOverlayMessage(const char *pOverlayName, const char *pOverlayMessage);
 
-    override virtual ~ENISOverlayMessage();
+    ~ENISOverlayMessage() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISOverlayMessage";
     }
 
   private:
-    const char * fOverlayName; // offset: 0x8, size 0x4
-    const char * fOverlayMessage; // offset: 0xc, size 0x4
+    const char *fOverlayName;    // offset: 0x8, size 0x4
+    const char *fOverlayMessage; // offset: 0xc, size 0x4
 };
 
 void ENISOverlayMessage_MakeEvent_Callback(const void *staticData);

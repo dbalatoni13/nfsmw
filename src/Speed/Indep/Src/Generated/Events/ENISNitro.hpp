@@ -19,9 +19,9 @@ class ENISNitro : public Event {
 
     ENISNitro(unsigned int pOn, unsigned int phSimable);
 
-    override virtual ~ENISNitro();
+    ~ENISNitro() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISNitro";
     }
 

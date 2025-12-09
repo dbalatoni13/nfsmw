@@ -11,16 +11,15 @@
 class ESetPlayerCollisionCache : public Event {
   public:
     // total size: 0x4
-    struct StaticData : public Event::StaticData {
-    };
+    struct StaticData : public Event::StaticData {};
 
     // enum { kEventID = 0 };
 
     ESetPlayerCollisionCache(int pTriggerStimulus);
 
-    override virtual ~ESetPlayerCollisionCache();
+    ~ESetPlayerCollisionCache() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ESetPlayerCollisionCache";
     }
 

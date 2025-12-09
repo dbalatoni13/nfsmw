@@ -11,16 +11,15 @@
 class EBecomePursuitCar : public Event {
   public:
     // total size: 0x4
-    struct StaticData : public Event::StaticData {
-    };
+    struct StaticData : public Event::StaticData {};
 
     // enum { kEventID = 0 };
 
     EBecomePursuitCar(unsigned int phSimable);
 
-    override virtual ~EBecomePursuitCar();
+    ~EBecomePursuitCar() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EBecomePursuitCar";
     }
 

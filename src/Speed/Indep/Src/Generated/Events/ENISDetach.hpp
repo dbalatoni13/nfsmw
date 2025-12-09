@@ -19,9 +19,9 @@ class ENISDetach : public Event {
 
     ENISDetach(float pSpeed, unsigned int phSimable);
 
-    override virtual ~ENISDetach();
+    ~ENISDetach() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISDetach";
     }
 

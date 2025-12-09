@@ -13,22 +13,22 @@ class ETips : public Event {
     // total size: 0xc
     struct StaticData : public Event::StaticData {
         int fPlayerIndex; // offset: 0x4, size 0x4
-        int fTipNum; // offset: 0x8, size 0x4
+        int fTipNum;      // offset: 0x8, size 0x4
     };
 
     // enum { kEventID = 0 };
 
     ETips(int pPlayerIndex, int pTipNum);
 
-    override virtual ~ETips();
+    ~ETips() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ETips";
     }
 
   private:
     int fPlayerIndex; // offset: 0x8, size 0x4
-    int fTipNum; // offset: 0xc, size 0x4
+    int fTipNum;      // offset: 0xc, size 0x4
 };
 
 void ETips_MakeEvent_Callback(const void *staticData);

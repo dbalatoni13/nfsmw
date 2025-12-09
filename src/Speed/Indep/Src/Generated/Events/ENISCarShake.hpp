@@ -13,26 +13,26 @@ class ENISCarShake : public Event {
     // total size: 0x14
     struct StaticData : public Event::StaticData {
         float fShake; // offset: 0x4, size 0x4
-        float fRate; // offset: 0x8, size 0x4
-        float fRamp; // offset: 0xc, size 0x4
-        float fTime; // offset: 0x10, size 0x4
+        float fRate;  // offset: 0x8, size 0x4
+        float fRamp;  // offset: 0xc, size 0x4
+        float fTime;  // offset: 0x10, size 0x4
     };
 
     // enum { kEventID = 0 };
 
     ENISCarShake(float pShake, float pRate, float pRamp, float pTime, unsigned int phSimable);
 
-    override virtual ~ENISCarShake();
+    ~ENISCarShake() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISCarShake";
     }
 
   private:
     float fShake; // offset: 0x8, size 0x4
-    float fRate; // offset: 0xc, size 0x4
-    float fRamp; // offset: 0x10, size 0x4
-    float fTime; // offset: 0x14, size 0x4
+    float fRate;  // offset: 0xc, size 0x4
+    float fRamp;  // offset: 0x10, size 0x4
+    float fTime;  // offset: 0x14, size 0x4
 
     unsigned int fhSimable; // offset: 0x1c, size 0x4
 };

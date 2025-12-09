@@ -20,9 +20,9 @@ class EHidePart : public Event {
 
     EHidePart(UCrc32 pPartName, unsigned int phModel);
 
-    override virtual ~EHidePart();
+    ~EHidePart() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EHidePart";
     }
 

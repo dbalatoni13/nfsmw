@@ -12,21 +12,21 @@ class EEnableTrigger : public Event {
   public:
     // total size: 0x8
     struct StaticData : public Event::StaticData {
-        Trigger * fTrigger; // offset: 0x4, size 0x4
+        Trigger *fTrigger; // offset: 0x4, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    EEnableTrigger(Trigger * pTrigger);
+    EEnableTrigger(Trigger *pTrigger);
 
-    override virtual ~EEnableTrigger();
+    ~EEnableTrigger() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EEnableTrigger";
     }
 
   private:
-    Trigger * fTrigger; // offset: 0x8, size 0x4
+    Trigger *fTrigger; // offset: 0x8, size 0x4
 };
 
 void EEnableTrigger_MakeEvent_Callback(const void *staticData);

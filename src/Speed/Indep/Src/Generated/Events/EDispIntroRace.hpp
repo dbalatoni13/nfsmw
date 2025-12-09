@@ -11,16 +11,15 @@
 class EDispIntroRace : public Event {
   public:
     // total size: 0x4
-    struct StaticData : public Event::StaticData {
-    };
+    struct StaticData : public Event::StaticData {};
 
     // enum { kEventID = 0 };
 
     EDispIntroRace();
 
-    override virtual ~EDispIntroRace();
+    ~EDispIntroRace() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EDispIntroRace";
     }
 };

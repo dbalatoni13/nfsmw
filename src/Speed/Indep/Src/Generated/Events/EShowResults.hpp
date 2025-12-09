@@ -20,9 +20,9 @@ class EShowResults : public Event {
 
     EShowResults(FERESULTTYPE pResultType, bool pCalledWhileDriving);
 
-    override virtual ~EShowResults();
+    ~EShowResults() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EShowResults";
     }
 

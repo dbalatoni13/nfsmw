@@ -19,9 +19,9 @@ class ENISReattach : public Event {
 
     ENISReattach(int pRepairDamage, unsigned int phSimable);
 
-    override virtual ~ENISReattach();
+    ~ENISReattach() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISReattach";
     }
 

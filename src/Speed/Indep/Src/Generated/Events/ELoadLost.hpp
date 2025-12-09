@@ -11,16 +11,15 @@
 class ELoadLost : public Event {
   public:
     // total size: 0x4
-    struct StaticData : public Event::StaticData {
-    };
+    struct StaticData : public Event::StaticData {};
 
     // enum { kEventID = 0 };
 
     ELoadLost(unsigned int phSimable);
 
-    override virtual ~ELoadLost();
+    ~ELoadLost() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ELoadLost";
     }
 

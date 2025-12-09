@@ -12,21 +12,21 @@ class ERandomEventList : public Event {
   public:
     // total size: 0x8
     struct StaticData : public Event::StaticData {
-        EventList * fEventList; // offset: 0x4, size 0x4
+        EventList *fEventList; // offset: 0x4, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    ERandomEventList(EventList * pEventList);
+    ERandomEventList(EventList *pEventList);
 
-    override virtual ~ERandomEventList();
+    ~ERandomEventList() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ERandomEventList";
     }
 
   private:
-    EventList * fEventList; // offset: 0x8, size 0x4
+    EventList *fEventList; // offset: 0x8, size 0x4
 };
 
 void ERandomEventList_MakeEvent_Callback(const void *staticData);

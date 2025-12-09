@@ -15,9 +15,9 @@ class ECollision : public Event {
 
     ECollision(COLLISION_INFO pInfo);
 
-    override virtual ~ECollision();
+    ~ECollision() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ECollision";
     }
 

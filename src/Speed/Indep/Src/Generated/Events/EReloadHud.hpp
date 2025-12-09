@@ -11,16 +11,15 @@
 class EReloadHud : public Event {
   public:
     // total size: 0x4
-    struct StaticData : public Event::StaticData {
-    };
+    struct StaticData : public Event::StaticData {};
 
     // enum { kEventID = 0 };
 
     EReloadHud();
 
-    override virtual ~EReloadHud();
+    ~EReloadHud() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EReloadHud";
     }
 };

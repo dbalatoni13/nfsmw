@@ -19,9 +19,9 @@ class ENISRain : public Event {
 
     ENISRain(float pRainIntensity);
 
-    override virtual ~ENISRain();
+    ~ENISRain() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISRain";
     }
 

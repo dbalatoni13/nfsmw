@@ -19,9 +19,9 @@ class EEnableModeling : public Event {
 
     EEnableModeling(int pEnable, unsigned int phSimable);
 
-    override virtual ~EEnableModeling();
+    ~EEnableModeling() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EEnableModeling";
     }
 

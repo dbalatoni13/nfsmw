@@ -11,16 +11,15 @@
 class EWakeObject : public Event {
   public:
     // total size: 0x4
-    struct StaticData : public Event::StaticData {
-    };
+    struct StaticData : public Event::StaticData {};
 
     // enum { kEventID = 0 };
 
     EWakeObject(unsigned int phModel);
 
-    override virtual ~EWakeObject();
+    ~EWakeObject() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EWakeObject";
     }
 

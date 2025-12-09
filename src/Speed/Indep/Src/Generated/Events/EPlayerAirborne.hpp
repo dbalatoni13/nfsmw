@@ -20,9 +20,9 @@ class EPlayerAirborne : public Event {
 
     EPlayerAirborne(HSIMABLE phSimable);
 
-    override virtual ~EPlayerAirborne();
+    ~EPlayerAirborne() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EPlayerAirborne";
     }
 

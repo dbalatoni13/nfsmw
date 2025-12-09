@@ -20,9 +20,9 @@ class ESimulate : public Event {
 
     ESimulate(UTL::COM::IUnknown *pSim);
 
-    override virtual ~ESimulate();
+    ~ESimulate() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ESimulate";
     }
 

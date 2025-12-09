@@ -12,23 +12,23 @@ class EEnableCollisionElement : public Event {
   public:
     // total size: 0xc
     struct StaticData : public Event::StaticData {
-        int fEnable; // offset: 0x4, size 0x4
-        CollisionObject * fColElement; // offset: 0x8, size 0x4
+        int fEnable;                  // offset: 0x4, size 0x4
+        CollisionObject *fColElement; // offset: 0x8, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    EEnableCollisionElement(int pEnable, CollisionObject * pColElement);
+    EEnableCollisionElement(int pEnable, CollisionObject *pColElement);
 
-    override virtual ~EEnableCollisionElement();
+    ~EEnableCollisionElement() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EEnableCollisionElement";
     }
 
   private:
-    int fEnable; // offset: 0x8, size 0x4
-    CollisionObject * fColElement; // offset: 0xc, size 0x4
+    int fEnable;                  // offset: 0x8, size 0x4
+    CollisionObject *fColElement; // offset: 0xc, size 0x4
 };
 
 void EEnableCollisionElement_MakeEvent_Callback(const void *staticData);

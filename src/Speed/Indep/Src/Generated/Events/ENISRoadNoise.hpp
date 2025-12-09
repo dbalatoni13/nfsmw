@@ -19,9 +19,9 @@ class ENISRoadNoise : public Event {
 
     ENISRoadNoise(int pDisableRoadNoise);
 
-    override virtual ~ENISRoadNoise();
+    ~ENISRoadNoise() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISRoadNoise";
     }
 

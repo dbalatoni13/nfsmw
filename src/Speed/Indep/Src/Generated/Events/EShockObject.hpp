@@ -19,9 +19,9 @@ class EShockObject : public Event {
 
     EShockObject(float pAmount, unsigned int phSimable);
 
-    override virtual ~EShockObject();
+    ~EShockObject() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EShockObject";
     }
 

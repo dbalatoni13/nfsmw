@@ -19,9 +19,9 @@ class ENISFreeze : public Event {
 
     ENISFreeze(int pFreezeAnimation);
 
-    override virtual ~ENISFreeze();
+    ~ENISFreeze() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISFreeze";
     }
 

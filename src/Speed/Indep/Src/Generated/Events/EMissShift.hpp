@@ -14,22 +14,22 @@ class EMissShift : public Event {
     // total size: 0xc
     struct StaticData : public Event::StaticData {
         HSIMABLE fhSimable; // offset: 0x4, size 0x4
-        float fBonus; // offset: 0x8, size 0x4
+        float fBonus;       // offset: 0x8, size 0x4
     };
 
     // enum { kEventID = 0 };
 
     EMissShift(HSIMABLE phSimable, float pBonus);
 
-    override virtual ~EMissShift();
+    ~EMissShift() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EMissShift";
     }
 
   private:
     HSIMABLE fhSimable; // offset: 0x8, size 0x4
-    float fBonus; // offset: 0xc, size 0x4
+    float fBonus;       // offset: 0xc, size 0x4
 };
 
 void EMissShift_MakeEvent_Callback(const void *staticData);

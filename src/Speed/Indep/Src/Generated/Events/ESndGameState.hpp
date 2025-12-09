@@ -12,7 +12,7 @@ class ESndGameState : public Event {
   public:
     // total size: 0xc
     struct StaticData : public Event::StaticData {
-        int fState; // offset: 0x4, size 0x4
+        int fState;      // offset: 0x4, size 0x4
         bool fTurningOn; // offset: 0x8, size 0x1
     };
 
@@ -20,14 +20,14 @@ class ESndGameState : public Event {
 
     ESndGameState(int pState, bool pTurningOn);
 
-    override virtual ~ESndGameState();
+    ~ESndGameState() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ESndGameState";
     }
 
   private:
-    int fState; // offset: 0x8, size 0x4
+    int fState;      // offset: 0x8, size 0x4
     bool fTurningOn; // offset: 0xc, size 0x1
 };
 

@@ -19,9 +19,9 @@ class EEnterBin : public Event {
 
     EEnterBin(int pBinIndex);
 
-    override virtual ~EEnterBin();
+    ~EEnterBin() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EEnterBin";
     }
 

@@ -19,9 +19,9 @@ class EAudioSmackableTest : public Event {
 
     EAudioSmackableTest(float pTestRadius);
 
-    override virtual ~EAudioSmackableTest();
+    ~EAudioSmackableTest() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EAudioSmackableTest";
     }
 

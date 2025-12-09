@@ -19,9 +19,9 @@ class ENISScreenFlash : public Event {
 
     ENISScreenFlash(float pLength);
 
-    override virtual ~ENISScreenFlash();
+    ~ENISScreenFlash() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISScreenFlash";
     }
 

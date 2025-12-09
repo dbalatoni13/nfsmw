@@ -12,8 +12,8 @@ class ENISPixelate : public Event {
   public:
     // total size: 0x10
     struct StaticData : public Event::StaticData {
-        int fEnable; // offset: 0x4, size 0x4
-        float fWidth; // offset: 0x8, size 0x4
+        int fEnable;   // offset: 0x4, size 0x4
+        float fWidth;  // offset: 0x8, size 0x4
         float fHeight; // offset: 0xc, size 0x4
     };
 
@@ -21,15 +21,15 @@ class ENISPixelate : public Event {
 
     ENISPixelate(int pEnable, float pWidth, float pHeight);
 
-    override virtual ~ENISPixelate();
+    ~ENISPixelate() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISPixelate";
     }
 
   private:
-    int fEnable; // offset: 0x8, size 0x4
-    float fWidth; // offset: 0xc, size 0x4
+    int fEnable;   // offset: 0x8, size 0x4
+    float fWidth;  // offset: 0xc, size 0x4
     float fHeight; // offset: 0x10, size 0x4
 };
 

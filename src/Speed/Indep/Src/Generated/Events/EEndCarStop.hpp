@@ -19,9 +19,9 @@ class EEndCarStop : public Event {
 
     EEndCarStop(int pDontRetestInput, unsigned int phSimable);
 
-    override virtual ~EEndCarStop();
+    ~EEndCarStop() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EEndCarStop";
     }
 

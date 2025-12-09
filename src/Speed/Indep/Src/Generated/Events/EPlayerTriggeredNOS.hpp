@@ -20,9 +20,9 @@ class EPlayerTriggeredNOS : public Event {
 
     EPlayerTriggeredNOS(HSIMABLE phSimable);
 
-    override virtual ~EPlayerTriggeredNOS();
+    ~EPlayerTriggeredNOS() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EPlayerTriggeredNOS";
     }
 

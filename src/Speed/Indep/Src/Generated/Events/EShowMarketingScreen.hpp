@@ -19,9 +19,9 @@ class EShowMarketingScreen : public Event {
 
     EShowMarketingScreen(int pShowFor);
 
-    override virtual ~EShowMarketingScreen();
+    ~EShowMarketingScreen() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EShowMarketingScreen";
     }
 

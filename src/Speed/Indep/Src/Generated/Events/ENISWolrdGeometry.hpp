@@ -12,23 +12,23 @@ class ENISWolrdGeometry : public Event {
   public:
     // total size: 0xc
     struct StaticData : public Event::StaticData {
-        const char * fSceneryGroupName; // offset: 0x4, size 0x4
-        int fEnable; // offset: 0x8, size 0x4
+        const char *fSceneryGroupName; // offset: 0x4, size 0x4
+        int fEnable;                   // offset: 0x8, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    ENISWolrdGeometry(const char * pSceneryGroupName, int pEnable);
+    ENISWolrdGeometry(const char *pSceneryGroupName, int pEnable);
 
-    override virtual ~ENISWolrdGeometry();
+    ~ENISWolrdGeometry() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISWolrdGeometry";
     }
 
   private:
-    const char * fSceneryGroupName; // offset: 0x8, size 0x4
-    int fEnable; // offset: 0xc, size 0x4
+    const char *fSceneryGroupName; // offset: 0x8, size 0x4
+    int fEnable;                   // offset: 0xc, size 0x4
 };
 
 void ENISWolrdGeometry_MakeEvent_Callback(const void *staticData);

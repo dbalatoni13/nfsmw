@@ -12,7 +12,7 @@ class ESetSimRate : public Event {
   public:
     // total size: 0xc
     struct StaticData : public Event::StaticData {
-        float fSpeed; // offset: 0x4, size 0x4
+        float fSpeed;              // offset: 0x4, size 0x4
         float fTransitionStepSize; // offset: 0x8, size 0x4
     };
 
@@ -20,14 +20,14 @@ class ESetSimRate : public Event {
 
     ESetSimRate(float pSpeed, float pTransitionStepSize);
 
-    override virtual ~ESetSimRate();
+    ~ESetSimRate() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ESetSimRate";
     }
 
   private:
-    float fSpeed; // offset: 0x8, size 0x4
+    float fSpeed;              // offset: 0x8, size 0x4
     float fTransitionStepSize; // offset: 0xc, size 0x4
 };
 

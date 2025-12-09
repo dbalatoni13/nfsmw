@@ -12,21 +12,21 @@ class EExitEngagableTrigger : public Event {
   public:
     // total size: 0x8
     struct StaticData : public Event::StaticData {
-        GRuntimeInstance * fRaceActivity; // offset: 0x4, size 0x4
+        GRuntimeInstance *fRaceActivity; // offset: 0x4, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    EExitEngagableTrigger(GRuntimeInstance * pRaceActivity);
+    EExitEngagableTrigger(GRuntimeInstance *pRaceActivity);
 
-    override virtual ~EExitEngagableTrigger();
+    ~EExitEngagableTrigger() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EExitEngagableTrigger";
     }
 
   private:
-    GRuntimeInstance * fRaceActivity; // offset: 0x8, size 0x4
+    GRuntimeInstance *fRaceActivity; // offset: 0x8, size 0x4
 };
 
 void EExitEngagableTrigger_MakeEvent_Callback(const void *staticData);

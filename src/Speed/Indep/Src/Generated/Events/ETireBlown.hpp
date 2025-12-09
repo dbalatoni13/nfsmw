@@ -13,7 +13,7 @@ class ETireBlown : public Event {
   public:
     // total size: 0xc
     struct StaticData : public Event::StaticData {
-        HSIMABLE fhSimable; // offset: 0x4, size 0x4
+        HSIMABLE fhSimable;  // offset: 0x4, size 0x4
         unsigned int fIndex; // offset: 0x8, size 0x4
     };
 
@@ -21,14 +21,14 @@ class ETireBlown : public Event {
 
     ETireBlown(HSIMABLE phSimable, unsigned int pIndex);
 
-    override virtual ~ETireBlown();
+    ~ETireBlown() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ETireBlown";
     }
 
   private:
-    HSIMABLE fhSimable; // offset: 0x8, size 0x4
+    HSIMABLE fhSimable;  // offset: 0x8, size 0x4
     unsigned int fIndex; // offset: 0xc, size 0x4
 };
 

@@ -11,16 +11,15 @@
 class EWorldMapOn : public Event {
   public:
     // total size: 0x4
-    struct StaticData : public Event::StaticData {
-    };
+    struct StaticData : public Event::StaticData {};
 
     // enum { kEventID = 0 };
 
     EWorldMapOn();
 
-    override virtual ~EWorldMapOn();
+    ~EWorldMapOn() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EWorldMapOn";
     }
 };

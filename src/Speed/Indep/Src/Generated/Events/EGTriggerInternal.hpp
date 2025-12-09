@@ -19,9 +19,9 @@ class EGTriggerInternal : public Event {
 
     EGTriggerInternal(unsigned int pTriggerKey, unsigned int phSimable, int pTriggerStimulus);
 
-    override virtual ~EGTriggerInternal();
+    ~EGTriggerInternal() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EGTriggerInternal";
     }
 
@@ -29,7 +29,7 @@ class EGTriggerInternal : public Event {
     unsigned int fTriggerKey; // offset: 0x8, size 0x4
 
     unsigned int fhSimable; // offset: 0xc, size 0x4
-    int fTriggerStimulus; // offset: 0x10, size 0x4
+    int fTriggerStimulus;   // offset: 0x10, size 0x4
 };
 
 void EGTriggerInternal_MakeEvent_Callback(const void *staticData);

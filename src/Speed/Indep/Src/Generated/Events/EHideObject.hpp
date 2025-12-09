@@ -11,16 +11,15 @@
 class EHideObject : public Event {
   public:
     // total size: 0x4
-    struct StaticData : public Event::StaticData {
-    };
+    struct StaticData : public Event::StaticData {};
 
     // enum { kEventID = 0 };
 
     EHideObject(unsigned int phModel);
 
-    override virtual ~EHideObject();
+    ~EHideObject() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EHideObject";
     }
 

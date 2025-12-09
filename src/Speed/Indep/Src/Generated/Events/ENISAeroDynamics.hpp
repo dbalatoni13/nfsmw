@@ -19,9 +19,9 @@ class ENISAeroDynamics : public Event {
 
     ENISAeroDynamics(float pAerodynamics);
 
-    override virtual ~ENISAeroDynamics();
+    ~ENISAeroDynamics() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISAeroDynamics";
     }
 

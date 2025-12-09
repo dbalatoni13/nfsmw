@@ -12,22 +12,22 @@ class EShowTimeExtension : public Event {
   public:
     // total size: 0xc
     struct StaticData : public Event::StaticData {
-        IPlayer * fPlayer; // offset: 0x4, size 0x4
+        IPlayer *fPlayer;  // offset: 0x4, size 0x4
         float fTimeToShow; // offset: 0x8, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    EShowTimeExtension(IPlayer * pPlayer, float pTimeToShow);
+    EShowTimeExtension(IPlayer *pPlayer, float pTimeToShow);
 
-    override virtual ~EShowTimeExtension();
+    ~EShowTimeExtension() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EShowTimeExtension";
     }
 
   private:
-    IPlayer * fPlayer; // offset: 0x8, size 0x4
+    IPlayer *fPlayer;  // offset: 0x8, size 0x4
     float fTimeToShow; // offset: 0xc, size 0x4
 };
 

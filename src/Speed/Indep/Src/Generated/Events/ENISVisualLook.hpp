@@ -13,10 +13,10 @@ class ENISVisualLook : public Event {
     // total size: 0x1c
     struct StaticData : public Event::StaticData {
         float fDesaturation; // offset: 0x4, size 0x4
-        float fColourBloom; // offset: 0x8, size 0x4
+        float fColourBloom;  // offset: 0x8, size 0x4
         float fBleachFactor; // offset: 0xc, size 0x4
-        int fUseHDR; // offset: 0x10, size 0x4
-        float fFacingScale; // offset: 0x14, size 0x4
+        int fUseHDR;         // offset: 0x10, size 0x4
+        float fFacingScale;  // offset: 0x14, size 0x4
         float fGrazingScale; // offset: 0x18, size 0x4
     };
 
@@ -24,18 +24,18 @@ class ENISVisualLook : public Event {
 
     ENISVisualLook(float pDesaturation, float pColourBloom, float pBleachFactor, int pUseHDR, float pFacingScale, float pGrazingScale);
 
-    override virtual ~ENISVisualLook();
+    ~ENISVisualLook() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISVisualLook";
     }
 
   private:
     float fDesaturation; // offset: 0x8, size 0x4
-    float fColourBloom; // offset: 0xc, size 0x4
+    float fColourBloom;  // offset: 0xc, size 0x4
     float fBleachFactor; // offset: 0x10, size 0x4
-    int fUseHDR; // offset: 0x14, size 0x4
-    float fFacingScale; // offset: 0x18, size 0x4
+    int fUseHDR;         // offset: 0x14, size 0x4
+    float fFacingScale;  // offset: 0x18, size 0x4
     float fGrazingScale; // offset: 0x1c, size 0x4
 };
 

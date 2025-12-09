@@ -15,16 +15,16 @@ class ENISNukeSmack : public Event {
         float fPositionX; // offset: 0x4, size 0x4
         float fPositionY; // offset: 0x8, size 0x4
         float fPositionZ; // offset: 0xc, size 0x4
-        float fRadius; // offset: 0x10, size 0x4
+        float fRadius;    // offset: 0x10, size 0x4
     };
 
     // enum { kEventID = 0 };
 
     ENISNukeSmack(float pPositionX, float pPositionY, float pPositionZ, float pRadius);
 
-    override virtual ~ENISNukeSmack();
+    ~ENISNukeSmack() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISNukeSmack";
     }
 
@@ -32,7 +32,7 @@ class ENISNukeSmack : public Event {
     float fPositionX; // offset: 0x8, size 0x4
     float fPositionY; // offset: 0xc, size 0x4
     float fPositionZ; // offset: 0x10, size 0x4
-    float fRadius; // offset: 0x14, size 0x4
+    float fRadius;    // offset: 0x14, size 0x4
 };
 
 void ENISNukeSmack_MakeEvent_Callback(const void *staticData);

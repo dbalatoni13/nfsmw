@@ -13,22 +13,22 @@ class EChangeState : public Event {
     // total size: 0xc
     struct StaticData : public Event::StaticData {
         unsigned int fActivityKey; // offset: 0x4, size 0x4
-        unsigned int fStateKey; // offset: 0x8, size 0x4
+        unsigned int fStateKey;    // offset: 0x8, size 0x4
     };
 
     // enum { kEventID = 0 };
 
     EChangeState(unsigned int pActivityKey, unsigned int pStateKey);
 
-    override virtual ~EChangeState();
+    ~EChangeState() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EChangeState";
     }
 
   private:
     unsigned int fActivityKey; // offset: 0x8, size 0x4
-    unsigned int fStateKey; // offset: 0xc, size 0x4
+    unsigned int fStateKey;    // offset: 0xc, size 0x4
 };
 
 void EChangeState_MakeEvent_Callback(const void *staticData);

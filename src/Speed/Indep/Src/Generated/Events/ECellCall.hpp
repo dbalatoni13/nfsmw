@@ -19,9 +19,9 @@ class ECellCall : public Event {
 
     ECellCall(int pID);
 
-    override virtual ~ECellCall();
+    ~ECellCall() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ECellCall";
     }
 

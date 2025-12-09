@@ -11,16 +11,15 @@
 class EDDaySpeech : public Event {
   public:
     // total size: 0x4
-    struct StaticData : public Event::StaticData {
-    };
+    struct StaticData : public Event::StaticData {};
 
     // enum { kEventID = 0 };
 
     EDDaySpeech();
 
-    override virtual ~EDDaySpeech();
+    ~EDDaySpeech() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EDDaySpeech";
     }
 };

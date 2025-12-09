@@ -20,9 +20,9 @@ class ENISCarRoll : public Event {
 
     ENISCarRoll(float pRoll, float pTime, unsigned int phSimable);
 
-    override virtual ~ENISCarRoll();
+    ~ENISCarRoll() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISCarRoll";
     }
 

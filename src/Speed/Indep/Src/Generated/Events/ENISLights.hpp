@@ -12,7 +12,7 @@ class ENISLights : public Event {
   public:
     // total size: 0xc
     struct StaticData : public Event::StaticData {
-        unsigned int fCopLights; // offset: 0x4, size 0x4
+        unsigned int fCopLights;  // offset: 0x4, size 0x4
         unsigned int fHeadLights; // offset: 0x8, size 0x4
     };
 
@@ -20,14 +20,14 @@ class ENISLights : public Event {
 
     ENISLights(unsigned int pCopLights, unsigned int pHeadLights, unsigned int phSimable);
 
-    override virtual ~ENISLights();
+    ~ENISLights() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISLights";
     }
 
   private:
-    unsigned int fCopLights; // offset: 0x8, size 0x4
+    unsigned int fCopLights;  // offset: 0x8, size 0x4
     unsigned int fHeadLights; // offset: 0xc, size 0x4
 
     unsigned int fhSimable; // offset: 0x14, size 0x4

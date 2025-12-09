@@ -12,21 +12,21 @@ class EPlayRaceMovie : public Event {
   public:
     // total size: 0x8
     struct StaticData : public Event::StaticData {
-        const char * fMovieName; // offset: 0x4, size 0x4
+        const char *fMovieName; // offset: 0x4, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    EPlayRaceMovie(const char * pMovieName);
+    EPlayRaceMovie(const char *pMovieName);
 
-    override virtual ~EPlayRaceMovie();
+    ~EPlayRaceMovie() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EPlayRaceMovie";
     }
 
   private:
-    const char * fMovieName; // offset: 0x8, size 0x4
+    const char *fMovieName; // offset: 0x8, size 0x4
 };
 
 void EPlayRaceMovie_MakeEvent_Callback(const void *staticData);

@@ -19,9 +19,9 @@ class ESetCopAutoSpawnMode : public Event {
 
     ESetCopAutoSpawnMode(int pAutoSpawn);
 
-    override virtual ~ESetCopAutoSpawnMode();
+    ~ESetCopAutoSpawnMode() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ESetCopAutoSpawnMode";
     }
 

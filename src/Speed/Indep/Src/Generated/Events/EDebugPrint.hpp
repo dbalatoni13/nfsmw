@@ -12,21 +12,21 @@ class EDebugPrint : public Event {
   public:
     // total size: 0x8
     struct StaticData : public Event::StaticData {
-        const char * fDebugMsg; // offset: 0x4, size 0x4
+        const char *fDebugMsg; // offset: 0x4, size 0x4
     };
 
     // enum { kEventID = 0 };
 
-    EDebugPrint(const char * pDebugMsg);
+    EDebugPrint(const char *pDebugMsg);
 
-    override virtual ~EDebugPrint();
+    ~EDebugPrint() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EDebugPrint";
     }
 
   private:
-    const char * fDebugMsg; // offset: 0x8, size 0x4
+    const char *fDebugMsg; // offset: 0x8, size 0x4
 };
 
 void EDebugPrint_MakeEvent_Callback(const void *staticData);

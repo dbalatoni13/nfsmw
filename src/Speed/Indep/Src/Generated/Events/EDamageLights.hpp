@@ -20,9 +20,9 @@ class EDamageLights : public Event {
 
     EDamageLights(UCrc32 pName, unsigned int phSimable);
 
-    override virtual ~EDamageLights();
+    ~EDamageLights() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "EDamageLights";
     }
 

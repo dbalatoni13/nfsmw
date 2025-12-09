@@ -13,24 +13,24 @@ class ENISNeutralRev : public Event {
     // total size: 0x10
     struct StaticData : public Event::StaticData {
         unsigned int fOn; // offset: 0x4, size 0x4
-        float fThrottle; // offset: 0x8, size 0x4
-        float fSpeed; // offset: 0xc, size 0x4
+        float fThrottle;  // offset: 0x8, size 0x4
+        float fSpeed;     // offset: 0xc, size 0x4
     };
 
     // enum { kEventID = 0 };
 
     ENISNeutralRev(unsigned int pOn, float pThrottle, float pSpeed, unsigned int phSimable);
 
-    override virtual ~ENISNeutralRev();
+    ~ENISNeutralRev() override;
 
-    override virtual const char *GetEventName() {
+    const char *GetEventName() override {
         return "ENISNeutralRev";
     }
 
   private:
     unsigned int fOn; // offset: 0x8, size 0x4
-    float fThrottle; // offset: 0xc, size 0x4
-    float fSpeed; // offset: 0x10, size 0x4
+    float fThrottle;  // offset: 0xc, size 0x4
+    float fSpeed;     // offset: 0x10, size 0x4
 
     unsigned int fhSimable; // offset: 0x18, size 0x4
 };
