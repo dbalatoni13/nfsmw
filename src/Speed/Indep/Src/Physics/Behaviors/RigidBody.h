@@ -298,10 +298,10 @@ class RigidBody : public Behavior,
     unsigned int GetTriggerFlags() const override;
 
     // IBoundable
-    override virtual bool AddCollisionPrimitive(UCrc32 name, const UMath::Vector3 &dim, float radius, const UMath::Vector3 &offset,
-                                                const SimSurface &material, const UMath::Vector4 &orient, CollisionGeometry::BoundFlags boundflags);
-    override virtual bool AddCollisionMesh(UCrc32 name, const UMath::Vector4 *verts, unsigned int count, const struct SimSurface &material,
-                                           CollisionGeometry::BoundFlags flags, bool persistant);
+    bool AddCollisionPrimitive(UCrc32 name, const UMath::Vector3 &dim, float radius, const UMath::Vector3 &offset, const SimSurface &material,
+                               const UMath::Vector4 &orient, CollisionGeometry::BoundFlags boundflags) override;
+    bool AddCollisionMesh(UCrc32 name, const UMath::Vector4 *verts, unsigned int count, const struct SimSurface &material,
+                          CollisionGeometry::BoundFlags flags, bool persistant) override;
 
     // IEntity
     bool IsImmobile() const override;

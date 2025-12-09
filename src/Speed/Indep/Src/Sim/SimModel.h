@@ -116,8 +116,8 @@ class Model : public Sim::Object,
         return false;
     }
 
-    override virtual void PlayEffect(UCrc32 identifire, const Attrib::Collection *effect, const UMath::Vector3 &position,
-                                     const UMath::Vector3 &magnitude, bool tracking);
+    void PlayEffect(UCrc32 identifire, const Attrib::Collection *effect, const UMath::Vector3 &position, const UMath::Vector3 &magnitude,
+                    bool tracking) override;
     void StopEffect(UCrc32 identifire) override;
     void StopEffects() override;
 

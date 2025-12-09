@@ -19,10 +19,8 @@ class RBCop : public RBVehicle {
     ~RBCop() override;
 
     // RigidBody
-    override virtual void ModifyCollision(const struct RigidBody &other, const Dynamics::Collision::Plane &plane,
-                                          Dynamics::Collision::Moment &myMoment);
-    override virtual void ModifyCollision(const struct SimSurface &other, const Dynamics::Collision::Plane &plane,
-                                          Dynamics::Collision::Moment &myMoment);
+    void ModifyCollision(const struct RigidBody &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) override;
+    void ModifyCollision(const struct SimSurface &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) override;
 };
 
 #endif
