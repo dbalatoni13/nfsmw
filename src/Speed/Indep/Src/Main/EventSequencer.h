@@ -7,6 +7,7 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
+#include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 
 // TODO move?
@@ -18,10 +19,10 @@ struct EventDynamicData {
     UMath::Vector4 fAngularVelocity; // offset 0x30, size 0x10
     struct WTrigger *fTrigger;       // offset 0x40, size 0x4
     int fTriggerStimulus;            // offset 0x44, size 0x4
-    unsigned int fhSimable;          // offset 0x48, size 0x4
-    unsigned int fhActivity;         // offset 0x4C, size 0x4
+    uintptr_t fhSimable;             // offset 0x48, size 0x4
+    uintptr_t fhActivity;            // offset 0x4C, size 0x4
     unsigned int fWorldID;           // offset 0x50, size 0x4
-    unsigned int fhModel;            // offset 0x54, size 0x4
+    uintptr_t fhModel;               // offset 0x54, size 0x4
     unsigned int fEventSeqEngine;    // offset 0x58, size 0x4
     unsigned int fEventSeqSystem;    // offset 0x5C, size 0x4
     unsigned int fEventSeqState;     // offset 0x60, size 0x4
@@ -117,6 +118,7 @@ struct System {
 
 void UpdateDelta(float deltaTime);
 void Reset(float externalTime);
+IEngine *Create(UTL::COM::Object *baseObject, IContext *context, UCrc32 name, float externalTime, float rate);
 
 }; // namespace EventSequencer
 

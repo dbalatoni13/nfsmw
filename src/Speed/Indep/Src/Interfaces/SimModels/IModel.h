@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ICause.h"
 #include "Speed/Indep/Src/Main/EventSequencer.h"
 #include "Speed/Indep/Src/Physics/Bounds.h"
+#include "Speed/Indep/Src/World/WorldTypes.h"
 
 struct HMODEL__ {
     // total size: 0x4
@@ -34,7 +35,7 @@ class IModel : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<
 
     virtual void OnProcessFrame(float dT);
     virtual UCrc32 GetPartName() const;
-    virtual unsigned int GetWorldID() const;
+    virtual WUID GetWorldID() const;
     virtual void SetCausality(HCAUSE from, float time);
     virtual HCAUSE GetCausality() const;
     virtual float GetCausalityTime() const;
@@ -49,7 +50,7 @@ class IModel : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<
     virtual void GetTransform(UMath::Matrix4 &matrix) const;
     virtual const CollisionGeometry::Bounds *GetCollisionGeometry() const;
     virtual const Attrib::Instance &GetAttributes() const;
-    virtual IModel::Enumerator *EnumerateChildren(IModel::Enumerator *enumerator) const;
+    virtual Enumerator *EnumerateChildren(Enumerator *enumerator) const;
     virtual IModel *GetChildModel(UCrc32 name) const;
     virtual IModel *GetRootModel() const;
     virtual bool IsRootModel() const;

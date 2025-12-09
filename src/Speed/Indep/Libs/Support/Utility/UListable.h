@@ -41,7 +41,12 @@ template <typename T, std::size_t U> class Listable {
         _mTable.push_back((pointer)this);
     }
 
-    void Unlist() {}
+    void Unlist() {
+        typename List::iterator newend = std::remove(_mTable.begin(), _mTable.end(), static_cast<T *>(this));
+        if (newend != _mTable.end()) {
+            _mTable.erase(newend, _mTable.end());
+        }
+    }
 
     ~Listable() {
         Unlist();

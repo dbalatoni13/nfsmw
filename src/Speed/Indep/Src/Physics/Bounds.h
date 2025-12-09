@@ -61,8 +61,8 @@ struct Collection : public BoundsHeader {
     bool AddTo(IBoundable *irbc, const Bounds *root, const SimSurface &defsurface, bool parsechildren) const;
 };
 
+// total size: 0x30
 struct Bounds {
-    // total size: 0x30
     _Q4c fOrientation;          // offset 0x0, size 0x8
     _V3c fPosition;             // offset 0x8, size 0x6
     unsigned short fFlags;      // offset 0xE, size 0x2
@@ -76,9 +76,7 @@ struct Bounds {
     UCrc32 fNameHash;           // offset 0x28, size 0x4
     Collection *fCollection;    // offset 0x2C, size 0x4
 
-    void GetPivot(UMath::Vector3 &to) const {
-        
-    }
+    void GetPivot(UMath::Vector3 &to) const {}
 };
 
 class IBoundable : public UTL::COM::IUnknown {

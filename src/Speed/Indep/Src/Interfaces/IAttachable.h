@@ -27,6 +27,7 @@ struct IAttachable : public UTL::COM::IUnknown {
     virtual bool IsAttached(const IUnknown *pOther) const;
     virtual void OnAttached(IAttachable *pOther);
     virtual void OnDetached(IAttachable *pOther);
+    virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const;
 };
 
 #endif
