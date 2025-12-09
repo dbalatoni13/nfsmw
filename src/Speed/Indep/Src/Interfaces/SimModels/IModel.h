@@ -23,7 +23,9 @@ typedef HMODEL__ *HMODEL;
 class IModel : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<HMODEL, IModel, 434>, public UTL::Collections::Listable<IModel, 434> {
   public:
     // total size: 0x4
-    struct Enumerator {};
+    struct Enumerator {
+        virtual bool OnModel(IModel *model);
+    };
 
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;

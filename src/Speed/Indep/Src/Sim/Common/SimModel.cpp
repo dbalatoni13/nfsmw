@@ -1,8 +1,13 @@
 #include "../SimModel.h"
+#include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/Interfaces/IAttachable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Main/EventSequencer.h"
+#include "Speed/Indep/Src/Sim/SimAttachable.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "dolphin/types.h"
 
 namespace Sim {
 
@@ -113,8 +118,181 @@ WUID Model::GetWorldID() const {
 
 void Model::EndSimulation() {
     if (mSimable) {
-        // OnEndSimulation();
+        Detach(mSimable);
         mSimable = nullptr;
+    }
+}
+
+void Model::EndDraw() {
+    if (mService) {
+        CloseService(mService);
+        mService = nullptr;
+        OnEndDraw();
+        mInView = false;
+        mDistanceToView = 0.0f;
+    }
+}
+
+// UNSOLVED stack size
+bool Model::Attach(IUnknown *pOther) {
+    if (!mAttachments) {
+        mAttachments = new Attachments(this);
+    }
+    return mAttachments->Attach(pOther);
+}
+
+bool Model::Detach(IUnknown *pOther) {
+    if (mAttachments) {
+        return mAttachments->Detach(pOther);
+    } else {
+        return false;
+    }
+}
+
+bool Model::IsAttached(const IUnknown *pOther) const {
+    if (mAttachments) {
+        return mAttachments->IsAttached(pOther);
+    } else {
+        return false;
+    }
+}
+
+const UTL::Std::list<IAttachable *, _type_IAttachableList> *Model::GetAttachments() const {
+    if (mAttachments) {
+        return &mAttachments->GetList();
+    } else {
+        return nullptr;
+    }
+}
+
+void Model::OnAttached(IAttachable *pOther) {
+    ISimable *isimable;
+    if (!mSimable && pOther->QueryInterface(&isimable)) {
+        mSimable = isimable;
+        OnBeginSimulation();
+    }
+    IModel *imodel;
+    if (!pOther->QueryInterface(&imodel) || imodel->GetParentModel() != this) {
+        return;
+    }
+    if (mGeometry && mChildren.capacity() < mGeometry->fNumChildren) {
+        mChildren.reserve(mGeometry->fNumChildren);
+    }
+
+    mChildren.push_back(imodel);
+}
+
+void Model::OnDetached(IAttachable *pOther) {
+    if (UTL::COM::ComparePtr(pOther, mSimable)) {
+        OnEndSimulation();
+        mSimable = nullptr;
+    }
+
+    if (UTL::COM::ComparePtr(pOther, mParent)) {
+        ReleaseModel();
+        mParent = nullptr;
+    }
+
+    for (UTL::Std::vector<IModel *, _type_SimModelChildren>::iterator iter = mChildren.begin(); iter != mChildren.end(); iter++) {
+        IModel *imodel = *iter;
+        if (UTL::COM::ComparePtr(imodel, pOther)) {
+            mChildren.erase(iter);
+            break;
+        }
+    }
+}
+
+void Model::ReleaseModel() {
+    ReleaseChildModels();
+    EndDraw();
+    EndSimulation();
+    ReleaseGC();
+}
+
+bool Model::OnService(HSIMSERVICE hCon, Packet *pkt) {
+    if (hCon == mService && !IsDirty()) {
+        return OnDraw(pkt);
+    } else {
+        return false;
+    }
+}
+
+void Model::ReleaseChildModels() {
+    UTL::Std::vector<IModel *, _type_SimModelChildren> children = mChildren;
+    for (UTL::Std::vector<IModel *, _type_SimModelChildren>::iterator iter = children.begin(); iter != children.end(); iter++) {
+        IModel *imodel = *iter;
+        imodel->ReleaseModel();
+    }
+
+    mChildren.clear();
+}
+
+IModel *Model::GetChildModel(UCrc32 name) const {
+    if (name == UCrc32::kNull) {
+        return nullptr;
+    }
+
+    for (UTL::Std::vector<IModel *, _type_SimModelChildren>::const_iterator iter = mChildren.begin(); iter != mChildren.end(); iter++) {
+        IModel *imodel = *iter;
+        if (imodel->GetPartName() == name) {
+            return imodel;
+        }
+    }
+    return nullptr;
+}
+
+IModel::Enumerator *Model::EnumerateChildren(IModel::Enumerator *enumerator) const {
+    for (UTL::Std::vector<IModel *, _type_SimModelChildren>::const_iterator iter = mChildren.begin(); iter != mChildren.end(); iter++) {
+        IModel *imodel = *iter;
+        if (!enumerator->OnModel(imodel)) {
+            break;
+        }
+    }
+    return enumerator;
+}
+
+bool Model::IsHidden() const {
+    return mService == nullptr;
+}
+
+void Model::HideModel() {
+    EndDraw();
+    EndSimulation();
+}
+
+void Model::PlayEffect(UCrc32 identifire, const Attrib::Collection *effect, const UMath::Vector3 &position, const UMath::Vector3 &magnitude,
+                       bool tracking) {
+    if (identifire == UCrc32::kNull) {
+        return;
+    }
+    Model::Effect *modeleffect = nullptr;
+    for (Model::Effect *e = mEffects.GetHead(); e != mEffects.EndOfList(); e = static_cast<Model::Effect *>(e->GetNext())) {
+        Model::Effect *me = e;
+        if (me->Identifire == identifire) {
+            modeleffect = me;
+            break;
+        }
+    }
+    if (!modeleffect) {
+        modeleffect = ::new ("SimModel", 0) Model::Effect(UCrc32(identifire), GetWorldID(), GetAttributes().GetConstCollection());
+
+        mEffects.AddTail(modeleffect);
+    }
+    modeleffect->Set(effect, position, magnitude, nullptr, tracking, 0);
+}
+
+void Model::StopEffects() {
+    mEffects.DeleteAllElements();
+}
+
+void Model::StopEffect(UCrc32 identifire) {
+    for (Model::Effect *e = mEffects.GetHead(); e != mEffects.EndOfList(); e = static_cast<Model::Effect *>(e->GetNext())) {
+        Model::Effect *me = e;
+        if (me->Identifire == identifire) {
+            mEffects.Remove(me);
+            delete me;
+            break;
+        }
     }
 }
 

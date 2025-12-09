@@ -17,7 +17,6 @@ class Attachments {
     bool IsAttached(const UTL::COM::IUnknown *object) const;
     void DetachAll();
 
-    // Virtual functions
     virtual ~Attachments();
 
     // Inlines

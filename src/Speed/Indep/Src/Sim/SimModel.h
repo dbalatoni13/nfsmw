@@ -28,9 +28,9 @@ class Model : public Sim::Object,
               public UTL::Collections::GarbageNode<Model, 434> {
   public:
     // total size: 0x60
-    class Effect : public Sim::Effect {
-      public:
-      private:
+    struct Effect : public Sim::Effect {
+        Effect(UCrc32 id, WUID owner, const Attrib::Collection *parent) : Sim::Effect(owner, parent), Identifire(id) {}
+
         const UCrc32 Identifire; // offset 0x5C, size 0x4
     };
 
@@ -155,7 +155,7 @@ class Model : public Sim::Object,
 
     virtual void OnBeginDraw() {}
 
-    virtual bool OnDraw() {}
+    virtual bool OnDraw(Packet *service);
 
     virtual void OnEndDraw() {}
 

@@ -33,14 +33,14 @@ class IEntity : public UTL::COM::IUnknown,
 
     virtual ~IEntity() {}
 
-    virtual void AttachPhysics();
+    virtual void AttachPhysics(ISimable *object);
     virtual void DetachPhysics();
     virtual ISimable *GetSimable() const;
     virtual const UMath::Vector3 &GetPosition() const;
-    virtual bool SetPosition();
+    virtual bool SetPosition(UMath::Vector3 &position);
     virtual void Kill();
-    virtual bool Attach();
-    virtual bool Detach();
+    virtual bool Attach(IUnknown *object);
+    virtual bool Detach(IUnknown *object);
     virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const;
 };
 

@@ -64,14 +64,13 @@ void Entity::AttachPhysics(ISimable *object) {
     if (!object) {
         DetachPhysics();
     } else {
-        static_cast<IEntity *>(this)->Attach();
+        Attach(mSimable);
     }
 }
 
-// UNSOLVED
 void Entity::DetachPhysics() {
     if (mSimable) {
-        static_cast<IEntity *>(this)->Detach();
+        Detach(mSimable);
         mSimable = nullptr;
     }
 }
