@@ -30,32 +30,32 @@ class LocalPlayer : public Sim::Entity, public IPlayer, public Sim::Collision::I
 
     // Overrides
     // IPlayer
-    override virtual void SetRenderPort(int renderport) {
+    void SetRenderPort(int renderport) override {
         mRenderPort = renderport;
     }
 
-    override virtual int GetRenderPort() const {
+    int GetRenderPort() const override {
         return mRenderPort;
     }
 
     PlayerSettings *GetSettings() const override;
 
-    override virtual int GetSettingsIndex() const {
+    int GetSettingsIndex() const override {
         return mSettingIndex;
     }
 
-    override virtual void SetSettings(int fe_index) {
+    void SetSettings(int fe_index) override {
         mSettingIndex = fe_index;
     }
 
-    override virtual IHud *GetHud() const {
+    IHud *GetHud() const override {
         return mHud;
     }
 
     void SetHud(ePlayerHudType ht) override;
     void SetControllerPort(int port) override;
 
-    override virtual int GetControllerPort() const {
+    int GetControllerPort() const override {
         return mControllerPort;
     }
 
@@ -63,19 +63,19 @@ class LocalPlayer : public Sim::Entity, public IPlayer, public Sim::Collision::I
     ISteeringWheel *GetSteeringDevice() override;
 
     // IEntity
-    override virtual ISimable *GetSimable() const {
+    ISimable *GetSimable() const override {
         return Sim::Entity::GetSimable();
     }
 
-    override virtual bool IsLocal() const {
+    bool IsLocal() const override {
         return true;
     }
 
-    override virtual const UMath::Vector3 &GetPosition() const {
+    const UMath::Vector3 &GetPosition() const override {
         return Sim::Entity::GetPosition();
     }
 
-    override virtual bool SetPosition(const UMath::Vector3 &position) {
+    bool SetPosition(const UMath::Vector3 &position) override {
         return Sim::Entity::SetPosition(position);
     }
 
@@ -84,14 +84,14 @@ class LocalPlayer : public Sim::Entity, public IPlayer, public Sim::Collision::I
     void OnDetached(IAttachable *pOther) override;
 
     // IPlayer
-    override virtual bool InGameBreaker() const {
+    bool InGameBreaker() const override {
         return mInGameBreaker;
     }
 
     bool CanRechargeNOS() const override;
     void ResetGameBreaker(bool full) override;
 
-    override virtual void ChargeGameBreaker(float amount) {
+    void ChargeGameBreaker(float amount) override {
         mGameBreakerCharge = UMath::Clamp(mGameBreakerCharge + amount, 0.0f, 1.0f);
     }
 

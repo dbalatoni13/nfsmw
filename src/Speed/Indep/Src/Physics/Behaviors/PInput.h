@@ -37,23 +37,23 @@ class PInput : public Behavior, public IInput {
         mControls.fStrafeHorizontal = steer;
     }
 
-    override virtual void SetControlBanking(float bank) {
+    void SetControlBanking(float bank) override {
         mControls.fBanking = bank;
     }
 
-    override virtual float GetControlBanking() {
+    float GetControlBanking() override {
         return mControls.fBanking;
     }
 
-    override virtual bool IsLookBackButtonPressed() const {
+    bool IsLookBackButtonPressed() const override {
         return false;
     }
 
-    override virtual bool IsPullBackButtonPressed() const {
+    bool IsPullBackButtonPressed() const override {
         return false;
     }
 
-    override virtual bool IsAutomaticShift() const {
+    bool IsAutomaticShift() const override {
         return true;
     }
 

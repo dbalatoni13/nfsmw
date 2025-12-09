@@ -69,48 +69,48 @@ class EngineSpline : protected VehicleBehavior, protected ITransmission, protect
 
     // Inline virtuals
 
-    override virtual float GetDriveTorque() const {
+    float GetDriveTorque() const override {
         return 0.0f;
     }
 
     // IEngine
-    override virtual float GetMaxHorsePower() const {
+    float GetMaxHorsePower() const override {
         return mMaxHP;
     }
-    override virtual float GetMinHorsePower() const {
+    float GetMinHorsePower() const override {
         return FTLB2NM(Physics::Info::Torque(mEngineInfo, mEngineInfo.IDLE()) * mEngineInfo.IDLE());
     }
-    override virtual float GetRPM() const {
+    float GetRPM() const override {
         return mRPM;
     }
-    override virtual float GetMaxRPM() const {
+    float GetMaxRPM() const override {
         return mEngineInfo.MAX_RPM();
     }
-    override virtual float GetPeakTorqueRPM() const {
+    float GetPeakTorqueRPM() const override {
         return mMaxTorqueRPM;
     }
-    override virtual float GetRedline() const {
+    float GetRedline() const override {
         return mEngineInfo.RED_LINE();
     }
-    override virtual float GetMinRPM() const {
+    float GetMinRPM() const override {
         return mEngineInfo.IDLE();
     }
-    override virtual float GetNOSCapacity() const {
+    float GetNOSCapacity() const override {
         return mNOSCapacity;
     }
-    override virtual bool IsNOSEngaged() const {
+    bool IsNOSEngaged() const override {
         return mNitro;
     }
-    override virtual bool HasNOS() const {
+    bool HasNOS() const override {
         return mNOSInfo.NOS_CAPACITY() > 0.0f;
     }
-    override virtual float GetNOSFlowRate() const {
+    float GetNOSFlowRate() const override {
         return mNOSInfo.FLOW_RATE();
     }
-    override virtual void ChargeNOS(float charge) {
+    void ChargeNOS(float charge) override {
         mNOSCapacity = UMath::Clamp(mNOSCapacity + charge, 0.0f, 1.0f);
     }
-    override virtual float GetNOSBoost() const {
+    float GetNOSBoost() const override {
         return 1.0f;
     }
 
@@ -120,36 +120,36 @@ class EngineSpline : protected VehicleBehavior, protected ITransmission, protect
     virtual bool IsShiftingGear() {
         return mGearShiftTimer > 0.0f;
     }
-    override virtual bool IsReversing() const {
+    bool IsReversing() const override {
         return mGear == G_REVERSE;
     }
 
     // ITransmission
-    override virtual GearID GetTopGear() const {
+    GearID GetTopGear() const override {
         return (GearID)(GetNumGearRatios() - 1);
     }
-    override virtual GearID GetGear() const {
+    GearID GetGear() const override {
         return (GearID)mGear;
     }
-    override virtual bool IsGearChanging() const {
+    bool IsGearChanging() const override {
         return mGearShiftTimer > 0.0f;
     }
 
-    override virtual ShiftStatus GetShiftStatus() const {
+    ShiftStatus GetShiftStatus() const override {
         return SHIFT_STATUS_NORMAL;
     }
     virtual ShiftPotential GetShiftPotential(GearID gear, float rpm) const {
         return SHIFT_POTENTIAL_NONE;
     }
-    override virtual ShiftPotential GetShiftPotential() const {
+    ShiftPotential GetShiftPotential() const override {
         return SHIFT_POTENTIAL_NONE;
     }
 
     // INISCarEngine
-    override virtual void SetNitro(bool b) {
+    void SetNitro(bool b) override {
         mNitro = b;
     }
-    override virtual void SetNeutralRev(bool b, float throttle, float speed) {
+    void SetNeutralRev(bool b, float throttle, float speed) override {
         mNeutralRev = b;
         mNeutralRevRPM = (mEngineInfo.RED_LINE() - mEngineInfo.IDLE()) * throttle + mEngineInfo.IDLE();
         mNeutralRevSpeed = speed;

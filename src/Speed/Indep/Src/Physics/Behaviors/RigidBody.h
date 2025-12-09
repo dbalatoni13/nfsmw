@@ -318,51 +318,51 @@ class RigidBody : public Behavior,
 
     // Inline virtuals
     // ICollisionBody
-    override virtual bool IsModeling() const {
+    bool IsModeling() const override {
         return mData->state != 2;
     }
 
-    override virtual bool IsSleeping() const {
+    bool IsSleeping() const override {
         return mData->state == 1;
     }
 
-    override virtual const UMath::Vector3 &GetWorldMomentScale() const {
+    const UMath::Vector3 &GetWorldMomentScale() const override {
         return UMath::Vector4To3(mSpecs->WORLD_MOMENT_SCALE());
     }
 
-    override virtual const UMath::Vector3 &GetGroundMomentScale() const {
+    const UMath::Vector3 &GetGroundMomentScale() const override {
         return UMath::Vector4To3(mSpecs->GROUND_MOMENT_SCALE());
     }
 
-    override virtual void SetCenterOfGravity(const UMath::Vector3 &cg) {
+    void SetCenterOfGravity(const UMath::Vector3 &cg) override {
         mCOG = cg;
     }
 
-    override virtual const UMath::Vector3 &GetCenterOfGravity() const {
+    const UMath::Vector3 &GetCenterOfGravity() const override {
         return mCOG;
     }
 
-    override virtual bool HasHadCollision() const {
+    bool HasHadCollision() const override {
         return mData->GetStatus(Volatile::HAS_HAD_OBJECT_COLLISION | Volatile::HAS_HAD_WORLD_COLLISION);
     }
 
-    override virtual bool HasHadWorldCollision() const {
+    bool HasHadWorldCollision() const override {
         return mData->GetStatus(Volatile::HAS_HAD_WORLD_COLLISION);
     }
 
-    override virtual bool HasHadObjectCollision() const {
+    bool HasHadObjectCollision() const override {
         return mData->GetStatus(Volatile::HAS_HAD_OBJECT_COLLISION);
     }
 
-    override virtual bool IsAttachedToWorld() const {
+    bool IsAttachedToWorld() const override {
         return mData->GetStatus(Volatile::IS_ATTACHED_TO_WORLD);
     }
 
-    override virtual bool IsAnchored() const {
+    bool IsAnchored() const override {
         return mData->GetStatus(Volatile::IS_ANCHORED);
     }
 
-    override virtual void SetAnchored(bool b) {
+    void SetAnchored(bool b) override {
         if (b) {
             mData->SetStatus(Volatile::IS_ANCHORED);
         } else {
@@ -370,169 +370,169 @@ class RigidBody : public Behavior,
         }
     }
 
-    override virtual const UMath::Vector3 &GetInertiaTensor() const {
+    const UMath::Vector3 &GetInertiaTensor() const override {
         return mData->inertiaTensor;
     }
 
-    override virtual bool IsInGroundContact() const {
+    bool IsInGroundContact() const override {
         return mData->leversInContact != 0;
     }
 
-    override virtual unsigned int GetNumContactPoints() const {
+    unsigned int GetNumContactPoints() const override {
         return mData->leversInContact;
     }
 
-    override virtual const UMath::Vector4 &GetGroundNormal() const {
+    const UMath::Vector4 &GetGroundNormal() const override {
         return mGroundNormal;
     }
 
-    override virtual void SetForce(const UMath::Vector3 &v) {
+    void SetForce(const UMath::Vector3 &v) override {
         mData->force = v;
     }
 
-    override virtual const UMath::Vector3 &GetForce() const {
+    const UMath::Vector3 &GetForce() const override {
         return mData->force;
     }
 
-    override virtual const UMath::Vector3 &GetTorque() const {
+    const UMath::Vector3 &GetTorque() const override {
         return mData->torque;
     }
 
-    override virtual void SetTorque(const UMath::Vector3 &v) {
+    void SetTorque(const UMath::Vector3 &v) override {
         mData->torque = v;
     }
 
-    override virtual float GetGravity() const {
+    float GetGravity() const override {
         return mSpecs->GRAVITY();
     }
 
-    override virtual const UMath::Vector3 &GetRightVector() const {
+    const UMath::Vector3 &GetRightVector() const override {
         return UMath::ExtractAxis(mData->bodyMatrix, 0);
     }
 
-    override virtual const UMath::Vector3 &GetUpVector() const {
+    const UMath::Vector3 &GetUpVector() const override {
         return UMath::ExtractAxis(mData->bodyMatrix, 1);
     }
 
-    override virtual const UMath::Vector3 &GetForwardVector() const {
+    const UMath::Vector3 &GetForwardVector() const override {
         return UMath::ExtractAxis(mData->bodyMatrix, 2);
     }
 
-    override virtual const UMath::Matrix4 &GetMatrix4() const {
+    const UMath::Matrix4 &GetMatrix4() const override {
         return mData->bodyMatrix;
     }
 
     // IEntity
-    override virtual const UMath::Matrix4 &GetRotation() const {
+    const UMath::Matrix4 &GetRotation() const override {
         return mData->bodyMatrix;
     }
 
-    override virtual void SetRotation(const UMath::Matrix4 &mat) {
+    void SetRotation(const UMath::Matrix4 &mat) override {
         UMath::Vector4 q;
         UMath::Matrix4ToQuaternion(mat, q);
         SetOrientation(q);
         mData->bodyMatrix = mat;
     }
 
-    override virtual const UMath::Vector3 &GetPrincipalInertia() const {
+    const UMath::Vector3 &GetPrincipalInertia() const override {
         return mData->inertiaTensor;
     }
 
     // IBoundable
-    override virtual const CollisionGeometry::Bounds *GetGeometryNode() const {
+    const CollisionGeometry::Bounds *GetGeometryNode() const override {
         return mGeoms;
     }
 
     // IRigidBody
-    override virtual ISimable *GetOwner() const {
+    ISimable *GetOwner() const override {
         return Behavior::GetOwner();
     }
 
-    override virtual bool IsSimple() const {
+    bool IsSimple() const override {
         return false;
     }
 
-    override virtual enum SimableType GetSimableType() const {
+    enum SimableType GetSimableType() const override {
         return mSimableType;
     }
 
-    override virtual int GetIndex() const {
+    int GetIndex() const override {
         return mData->index;
     }
 
-    override virtual float GetRadius() const {
+    float GetRadius() const override {
         return mData->radius;
     }
 
-    override virtual float GetMass() const {
+    float GetMass() const override {
         return mData->mass;
     }
 
-    override virtual float GetOOMass() const {
+    float GetOOMass() const override {
         return mData->oom;
     }
 
-    override virtual const UMath::Vector3 &GetPosition() const {
+    const UMath::Vector3 &GetPosition() const override {
         return mData->position;
     }
 
-    override virtual const UMath::Vector3 &GetLinearVelocity() const {
+    const UMath::Vector3 &GetLinearVelocity() const override {
         return mData->linearVel;
     }
 
-    override virtual const UMath::Vector3 &GetAngularVelocity() const {
+    const UMath::Vector3 &GetAngularVelocity() const override {
         return mData->angularVel;
     }
 
-    override virtual float GetSpeed() const {
+    float GetSpeed() const override {
         return UMath::Length(mData->linearVel);
     }
 
-    override virtual float GetSpeedXZ() const {
+    float GetSpeedXZ() const override {
         return UMath::Lengthxz(mData->linearVel);
     }
 
-    override virtual void GetRightVector(UMath::Vector3 &vec) const {
+    void GetRightVector(UMath::Vector3 &vec) const override {
         vec = UMath::ExtractAxis(mData->bodyMatrix, 0);
     }
 
-    override virtual void GetUpVector(UMath::Vector3 &vec) const {
+    void GetUpVector(UMath::Vector3 &vec) const override {
         vec = UMath::ExtractAxis(mData->bodyMatrix, 1);
     }
 
-    override virtual void GetForwardVector(UMath::Vector3 &vec) const {
+    void GetForwardVector(UMath::Vector3 &vec) const override {
         vec = UMath::ExtractAxis(mData->bodyMatrix, 2);
     }
 
-    override virtual void GetMatrix4(UMath::Matrix4 &mat) const {
+    void GetMatrix4(UMath::Matrix4 &mat) const override {
         UMath::Copy(mData->bodyMatrix, mat);
     }
 
-    override virtual const struct WCollider *GetWCollider() const {
+    const struct WCollider *GetWCollider() const override {
         return mWCollider;
     }
 
-    override virtual void ModifyXPos(float offset) {
+    void ModifyXPos(float offset) override {
         mData->position.x += offset;
     }
 
-    override virtual void ModifyYPos(float offset) {
+    void ModifyYPos(float offset) override {
         mData->position.y += offset;
     }
 
-    override virtual void ModifyZPos(float offset) {
+    void ModifyZPos(float offset) override {
         mData->position.z += offset;
     }
 
-    override virtual const UMath::Vector4 &GetOrientation() const {
+    const UMath::Vector4 &GetOrientation() const override {
         return mData->orientation;
     }
 
-    override virtual void GetDimension(UMath::Vector3 &dim) const {
+    void GetDimension(UMath::Vector3 &dim) const override {
         dim = mDimension;
     }
 
-    override virtual UMath::Vector3 GetDimension() const {
+    UMath::Vector3 GetDimension() const override {
         return mDimension;
     }
 

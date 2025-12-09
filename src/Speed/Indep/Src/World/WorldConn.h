@@ -46,7 +46,7 @@ class Pkt_Effect_Send : public Sim::Packet {
 
     // Virtual functions
     // Packet
-    override virtual ~Pkt_Effect_Send() {}
+    ~Pkt_Effect_Send() override {}
 
     UMath::Vector3 mPosition;                   // offset 0x4, size 0xC
     WUID mOwner;                                // offset 0x10, size 0x4
@@ -74,7 +74,7 @@ class Pkt_Effect_Service : public Sim::Packet {
 
     // Virtual functions
     // Packet
-    override virtual ~Pkt_Effect_Service() {}
+    ~Pkt_Effect_Service() override {}
 
   private:
     UMath::Vector3 mPosition;  // offset 0x4, size 0xC

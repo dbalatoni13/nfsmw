@@ -26,9 +26,9 @@ class Activity : public Sim::Object, public UTL::Collections::GarbageNode<Sim::A
     void Release() override;
 
     // IAttachable
-    override virtual void OnAttached(IAttachable *pOther) {}
+    void OnAttached(IAttachable *pOther) override {}
 
-    override virtual void OnDetached(IAttachable *pOther) {}
+    void OnDetached(IAttachable *pOther) override {}
 
   private:
     Attachments *mAttachments; // offset 0x48, size 0x4

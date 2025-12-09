@@ -47,16 +47,16 @@ class RBTractor : public RBVehicle, public IArticulatedVehicle, public IVehicleC
 
     // Inline overrides
     // IArticulatedVehicle
-    override virtual IVehicle *GetTrailer() const {
+    IVehicle *GetTrailer() const override {
         return mTrailer;
     }
 
-    override virtual bool IsHitched() const {
+    bool IsHitched() const override {
         return mHitched;
     }
 
     // IVehicleCache
-    override virtual const char *GetCacheName() const {
+    const char *GetCacheName() const override {
         return "RBTractor";
     }
 

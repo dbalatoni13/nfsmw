@@ -42,24 +42,24 @@ class DamageVehicle : public VehicleBehavior,
 
     // Overrides
     // IUnknown
-     ~DamageVehicle() override;
+    ~DamageVehicle() override;
 
     // Behavior
-     void OnBehaviorChange(const UCrc32 &mechanic) override;
-     void OnTaskSimulate(float dT) override;
-     void Reset() override;
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
+    void OnTaskSimulate(float dT) override;
+    void Reset() override;
 
     // IListener
-     void OnCollision(const COLLISION_INFO &cinfo) override;
+    void OnCollision(const COLLISION_INFO &cinfo) override;
 
     // IContext
-     bool SetDynamicData(const EventSequencer::System *system, EventDynamicData *data) override;
+    bool SetDynamicData(const EventSequencer::System *system, EventDynamicData *data) override;
 
     // IDamageable
-     void Destroy() override;
-     void SetShockForce(float f) override;
-     void SetInShock(float scale) override;
-     void ResetDamage() override;
+    void Destroy() override;
+    void SetShockForce(float f) override;
+    void SetInShock(float scale) override;
+    void ResetDamage() override;
 
     // Virtual methods
     virtual void OnImpact(const UMath::Vector3 &arm, const UMath::Vector3 &normal, float force, float speed, const SimSurface &mysurface,
@@ -74,7 +74,7 @@ class DamageVehicle : public VehicleBehavior,
     }
 
     // Inline overrides
-    override virtual DamageZone::Info GetZoneDamage() const {
+    DamageZone::Info GetZoneDamage() const override {
         return mZoneDamage;
     }
 

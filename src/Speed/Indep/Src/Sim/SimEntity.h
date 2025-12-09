@@ -37,7 +37,7 @@ class Entity : public Object, public UTL::Collections::GarbageNode<Sim::Entity, 
     virtual bool SetPosition(const UMath::Vector3 &position) const;
 
     // IEntity
-    override virtual ISimable *GetSimable() const {
+    ISimable *GetSimable() const override {
         return mSimable;
     }
     // Own
@@ -47,15 +47,15 @@ class Entity : public Object, public UTL::Collections::GarbageNode<Sim::Entity, 
     bool Attach(IUnknown *object) override;
     bool Detach(IUnknown *object) override;
 
-    override virtual bool IsAttached(const IUnknown *pOther) const {
+    bool IsAttached(const IUnknown *pOther) const override {
         return mAttachments->IsAttached(pOther);
     }
 
-    override virtual void OnAttached(IAttachable *pOther) {}
+    void OnAttached(IAttachable *pOther) override {}
 
     void OnDetached(IAttachable *pOther) override;
 
-    override virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const {
+    const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const override {
         return &mAttachments->GetList();
     }
 

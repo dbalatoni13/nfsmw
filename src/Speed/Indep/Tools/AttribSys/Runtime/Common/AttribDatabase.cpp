@@ -19,14 +19,14 @@ class DatabaseExportPolicy : public IExportPolicy {
     }
 
     // Inline overrides
-    override virtual void Initialize(Vault &v, const TypeID &type, const ExportID &id, const char *name, void *data, std::size_t bytes) {
+    void Initialize(Vault &v, const TypeID &type, const ExportID &id, const char *name, void *data, std::size_t bytes) override {
         const DatabaseLoadData *loadData = reinterpret_cast<const DatabaseLoadData *>(data);
         Database::sThis = new DatabasePrivate(*loadData);
         v.AddRef();
         v.Export(id, Database::sThis, 0);
     }
 
-    override virtual bool IsReferenced(const Vault &v, const TypeID &type, const ExportID &id) {
+    bool IsReferenced(const Vault &v, const TypeID &type, const ExportID &id) override {
         std::size_t index = v.FindExportID(id);
         DatabasePrivate *db = reinterpret_cast<DatabasePrivate *>(v.GetExportType(index));
         if (db) {
@@ -36,9 +36,9 @@ class DatabaseExportPolicy : public IExportPolicy {
         }
     }
 
-    override virtual void Clean(Vault &v, const TypeID &type, const ExportID &id) {}
+    void Clean(Vault &v, const TypeID &type, const ExportID &id) override {}
 
-    override virtual void Deinitialize(Vault &v, const TypeID &type, const ExportID &id) {
+    void Deinitialize(Vault &v, const TypeID &type, const ExportID &id) override {
         Database::Get().CollectGarbage();
         v.Export(id, nullptr, 0);
         v.ExportsCleared();
@@ -55,7 +55,7 @@ class ClassExportPolicy : public IExportPolicy {
     }
 
     // Inline overrides
-    override virtual void Initialize(Vault &v, const TypeID &type, const ExportID &id, const char *name, void *data, std::size_t bytes) {
+    void Initialize(Vault &v, const TypeID &type, const ExportID &id, const char *name, void *data, std::size_t bytes) override {
         const ClassLoadData *loadData = reinterpret_cast<ClassLoadData *>(data);
         if (!Database::Get().GetClass(loadData->mClass)) {
             ClassPrivate *c = new ClassPrivate(*loadData, &v);
@@ -63,7 +63,7 @@ class ClassExportPolicy : public IExportPolicy {
         }
     }
 
-    override virtual bool IsReferenced(const Vault &v, const TypeID &type, const ExportID &id) {
+    bool IsReferenced(const Vault &v, const TypeID &type, const ExportID &id) override {
         std::size_t index = v.FindExportID(id);
         ClassPrivate *c = reinterpret_cast<ClassPrivate *>(v.GetExportData(index));
         if (c) {
@@ -73,9 +73,9 @@ class ClassExportPolicy : public IExportPolicy {
         }
     }
 
-    override virtual void Clean(Vault &v, const TypeID &type, const ExportID &id) {}
+    void Clean(Vault &v, const TypeID &type, const ExportID &id) override {}
 
-    override virtual void Deinitialize(Vault &v, const TypeID &type, const ExportID &id) {
+    void Deinitialize(Vault &v, const TypeID &type, const ExportID &id) override {
         std::size_t index = v.FindExportID(id);
         Class *c = reinterpret_cast<Class *>(v.GetExportData(index));
         if (c) {
@@ -93,7 +93,7 @@ class CollectionExportPolicy : public IExportPolicy {
     }
 
     // Inline overrides
-    override virtual void Initialize(Vault &v, const TypeID &type, const ExportID &id, const char *name, void *data, std::size_t bytes) {
+    void Initialize(Vault &v, const TypeID &type, const ExportID &id, const char *name, void *data, std::size_t bytes) override {
         const CollectionLoadData *loadData = reinterpret_cast<CollectionLoadData *>(data);
 
         Attrib::Class *container = Database::Get().GetClass(loadData->mClass);
@@ -107,7 +107,7 @@ class CollectionExportPolicy : public IExportPolicy {
         }
     }
 
-    override virtual bool IsReferenced(const Vault &v, const TypeID &type, const ExportID &id) {
+    bool IsReferenced(const Vault &v, const TypeID &type, const ExportID &id) override {
         std::size_t index = v.FindExportID(id);
         Collection *c = reinterpret_cast<Collection *>(v.GetExportData(index));
         if (c) {
@@ -117,7 +117,7 @@ class CollectionExportPolicy : public IExportPolicy {
         }
     }
 
-    override virtual void Clean(Vault &v, const TypeID &type, const ExportID &id) {
+    void Clean(Vault &v, const TypeID &type, const ExportID &id) override {
         std::size_t index = v.FindExportID(id);
         Collection *c = reinterpret_cast<Collection *>(v.GetExportData(index));
         if (c) {
@@ -125,7 +125,7 @@ class CollectionExportPolicy : public IExportPolicy {
         }
     }
 
-    override virtual void Deinitialize(Vault &v, const TypeID &type, const ExportID &id) {
+    void Deinitialize(Vault &v, const TypeID &type, const ExportID &id) override {
         std::size_t index = v.FindExportID(id);
         Collection *c = reinterpret_cast<Collection *>(v.GetExportData(index));
         if (c) {

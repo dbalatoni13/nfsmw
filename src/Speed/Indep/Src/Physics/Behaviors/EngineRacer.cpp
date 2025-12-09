@@ -148,7 +148,7 @@ class EngineRacer : protected VehicleBehavior,
     // Inline virtuals
     // IRaceEngine
     // Credits: Brawltendo
-    override virtual float GetPerfectLaunchRange(float &range) {
+    float GetPerfectLaunchRange(float &range) override {
         // perfect launch only applies to first gear
         if (mGear != G_FIRST) {
             range = 0.0f;
@@ -161,44 +161,44 @@ class EngineRacer : protected VehicleBehavior,
     }
 
     // IEngine
-    override virtual float GetMaxHorsePower() const {
+    float GetMaxHorsePower() const override {
         return mMaxHP;
     }
-    override virtual float GetMinHorsePower() const {
+    float GetMinHorsePower() const override {
         return FTLB2NM(Physics::Info::Torque(mEngineInfo, mEngineInfo.IDLE()) * mEngineInfo.IDLE());
     }
-    override virtual float GetRPM() const {
+    float GetRPM() const override {
         return mRPM;
     }
-    override virtual float GetMaxRPM() const {
+    float GetMaxRPM() const override {
         return mEngineInfo.MAX_RPM();
     }
-    override virtual float GetPeakTorqueRPM() const {
+    float GetPeakTorqueRPM() const override {
         return mPeakTorqueRPM;
     }
-    override virtual float GetRedline() const {
+    float GetRedline() const override {
         return mEngineInfo.RED_LINE();
     }
-    override virtual float GetMinRPM() const {
+    float GetMinRPM() const override {
         return mEngineInfo.IDLE();
     }
-    override virtual float GetNOSCapacity() const {
+    float GetNOSCapacity() const override {
         return mNOSCapacity;
     }
-    override virtual float GetNOSBoost() const {
+    float GetNOSBoost() const override {
         return mNOSBoost;
     }
-    override virtual bool IsNOSEngaged() const {
+    bool IsNOSEngaged() const override {
         return mNOSEngaged >= 1.0f;
     }
-    override virtual bool HasNOS() const {
+    bool HasNOS() const override {
         return mNOSInfo.NOS_CAPACITY() > 0.0f && mNOSInfo.TORQUE_BOOST() > 0.0f;
     }
-    override virtual float GetNOSFlowRate() const {
+    float GetNOSFlowRate() const override {
         return mNOSInfo.FLOW_RATE();
     }
 
-    override virtual void ChargeNOS(float charge) {
+    void ChargeNOS(float charge) override {
         if (HasNOS()) {
             mNOSCapacity = UMath::Clamp(mNOSCapacity + charge, 0.0f, 1.0f);
         }
@@ -210,57 +210,57 @@ class EngineRacer : protected VehicleBehavior,
     virtual bool IsShiftingGear() {
         return mGearShiftTimer > 0.0f;
     }
-    override virtual bool IsReversing() const {
+    bool IsReversing() const override {
         return mGear == G_REVERSE;
     }
 
     // IInductable
-    override virtual Physics::Info::eInductionType InductionType() const {
+    Physics::Info::eInductionType InductionType() const override {
         return Physics::Info::InductionType(mInductionInfo);
     }
-    override virtual float GetInductionPSI() const {
+    float GetInductionPSI() const override {
         return mPSI;
     }
-    override virtual float InductionSpool() const {
+    float InductionSpool() const override {
         return mSpool;
     }
-    override virtual float GetMaxInductionPSI() const {
+    float GetMaxInductionPSI() const override {
         return mInductionInfo.PSI();
     }
 
     // IEngineDamage
-    override virtual bool IsBlown() const {
+    bool IsBlown() const override {
         return mBlown;
     }
-    override virtual void Repair() {
+    void Repair() override {
         mSabotage = 0.0f;
         mBlown = false;
     }
-    override virtual bool IsSabotaged() const {
+    bool IsSabotaged() const override {
         return mSabotage > 0.0f;
     }
 
     // ITransmission
-    override virtual float GetDriveTorque() const {
+    float GetDriveTorque() const override {
         return mDriveTorque;
     }
-    override virtual GearID GetTopGear() const {
+    GearID GetTopGear() const override {
         return (GearID)(GetNumGearRatios() - 1);
     }
-    override virtual GearID GetGear() const {
+    GearID GetGear() const override {
         return (GearID)mGear;
     }
-    override virtual bool IsGearChanging() const {
+    bool IsGearChanging() const override {
         return mGearShiftTimer > 0.0f;
     }
 
-    override virtual bool Shift(GearID gear) {
+    bool Shift(GearID gear) override {
         return DoGearChange(gear, false);
     }
-    override virtual ShiftStatus GetShiftStatus() const {
+    ShiftStatus GetShiftStatus() const override {
         return mShiftStatus;
     }
-    override virtual ShiftPotential GetShiftPotential() const {
+    ShiftPotential GetShiftPotential() const override {
         return mShiftPotential;
     }
 
@@ -1311,7 +1311,7 @@ class EngineDragster : public EngineRacer, public IDragEngine, public IDragTrans
     void ComputeEngineHeat(float t);
 
     // Overrides
-    override virtual ~EngineDragster() {}
+    ~EngineDragster() override {}
 
     // EngineRacer
     ShiftStatus OnGearChange(GearID gear) override;
@@ -1331,12 +1331,12 @@ class EngineDragster : public EngineRacer, public IDragEngine, public IDragTrans
 
     // ITiptronic
     // manumatic disabled because drag races are always in manual transmission mode
-    override virtual bool SportShift(GearID gear) {
+    bool SportShift(GearID gear) override {
         return false;
     }
 
     // IDragTransmission
-    override virtual float GetShiftBoost() const {
+    float GetShiftBoost() const override {
         if (!IsGearChanging() && mBoost > 0.0f) {
             return UMath::Lerp(1.0f, 2.0f, mBoost / PerfectShiftSplit * mPerfectShiftTime);
         }
@@ -1344,15 +1344,15 @@ class EngineDragster : public EngineRacer, public IDragEngine, public IDragTrans
     }
 
     // IDragEngine
-    override virtual float GetOverRev() const {
+    float GetOverRev() const override {
         return mOverrev;
     }
-    override virtual float GetHeat() const {
+    float GetHeat() const override {
         return UMath::Clamp(mHeat, 0.0f, 1.0f);
     }
 
     // EngineRacer
-    override virtual bool UseRevLimiter() const {
+    bool UseRevLimiter() const override {
         return GetVehicle()->IsStaging() != false;
     }
 

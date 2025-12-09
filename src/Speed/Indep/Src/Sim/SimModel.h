@@ -55,32 +55,32 @@ class Model : public Sim::Object,
     void GetLinearVelocity(UMath::Vector3 &velocity) const override;
     void GetAngularVelocity(UMath::Vector3 &velocity) const override;
 
-    override virtual IModel *SpawnModel(UCrc32 rendernode, UCrc32 collisionnode, UCrc32 attributes) {
+    IModel *SpawnModel(UCrc32 rendernode, UCrc32 collisionnode, UCrc32 attributes) override {
         return nullptr;
     }
 
     // IEngine
-    override virtual EventSequencer::IEngine *GetEventSequencer() {
+    EventSequencer::IEngine *GetEventSequencer() override {
         return mSequencer;
     }
 
     // IModel
-    override virtual bool InView() const {
+    bool InView() const override {
         return mInView;
     }
 
-    override virtual float DistanceToView() const {
+    float DistanceToView() const override {
         return mDistanceToView;
     }
 
-    override virtual UCrc32 GetPartName() const {
+    UCrc32 GetPartName() const override {
         return UCrc32(mNodeName);
     }
 
     bool IsHidden() const override;
     IModel *GetChildModel(UCrc32 name) const override;
 
-    override virtual IModel *GetRootModel() const {
+    IModel *GetRootModel() const override {
         if (mRoot) {
             return mRoot;
         } else {
@@ -88,7 +88,7 @@ class Model : public Sim::Object,
         }
     }
 
-    override virtual IModel *GetParentModel() const {
+    IModel *GetParentModel() const override {
         return mParent;
     }
 
@@ -96,23 +96,23 @@ class Model : public Sim::Object,
     const CollisionGeometry::Bounds *GetCollisionGeometry() const override;
     void ReleaseModel() override;
 
-    override virtual ISimable *GetSimable() const {
+    ISimable *GetSimable() const override {
         return mSimable;
     }
 
     void ReleaseChildModels() override;
 
-    override virtual bool IsRootModel() const {
+    bool IsRootModel() const override {
         return mIsRoot;
     }
 
     void HideModel() override;
 
-    override virtual void HidePart(const UCrc32 &nodename) {}
+    void HidePart(const UCrc32 &nodename) override {}
 
-    override virtual void ShowPart(const UCrc32 &nodename) {}
+    void ShowPart(const UCrc32 &nodename) override {}
 
-    override virtual bool IsPartVisible(const UCrc32 &nodename) const {
+    bool IsPartVisible(const UCrc32 &nodename) const override {
         return false;
     }
 
@@ -121,16 +121,16 @@ class Model : public Sim::Object,
     void StopEffect(UCrc32 identifire) override;
     void StopEffects() override;
 
-    override virtual void SetCausality(HCAUSE from, float time) {
+    void SetCausality(HCAUSE from, float time) override {
         mCausality = from;
         mCauseTime = time;
     }
 
-    override virtual HCAUSE GetCausality() const {
+    HCAUSE GetCausality() const override {
         return mCausality;
     }
 
-    override virtual float GetCausalityTime() const {
+    float GetCausalityTime() const override {
         return mCauseTime;
     }
 

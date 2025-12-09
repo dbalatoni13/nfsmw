@@ -47,37 +47,37 @@ class RBVehicle : public RigidBody, public IRBVehicle {
 
     // Inline virtuals
     // IRBVehicle
-    override virtual void SetCollisionMass(float mass) {
+    void SetCollisionMass(float mass) override {
         mCollisionMass = mass;
     }
 
-    override virtual void SetCollisionCOG(const UMath::Vector3 &cog) {
+    void SetCollisionCOG(const UMath::Vector3 &cog) override {
         mCollisionCOG = cog;
     }
 
-    override virtual void SetPlayerReactions(const Attrib::Gen::collisionreactions &reactions) {
+    void SetPlayerReactions(const Attrib::Gen::collisionreactions &reactions) override {
         mPlayerReactions = reactions;
     }
 
-    override virtual const Attrib::Gen::collisionreactions &GetPlayerReactions() const {
+    const Attrib::Gen::collisionreactions &GetPlayerReactions() const override {
         return mPlayerReactions;
     }
 
-    override virtual void EnableObjectCollisions(bool enable) {
+    void EnableObjectCollisions(bool enable) override {
         mObjectCollisionsEnabled = enable;
     }
 
-    override virtual void SetInvulnerability(eInvulnerablitiy state, float time) {
+    void SetInvulnerability(eInvulnerablitiy state, float time) override {
         mInvulnerableTimer = time;
         mInvulnerableState = state;
     }
 
-    override virtual eInvulnerablitiy GetInvulnerability() const {
+    eInvulnerablitiy GetInvulnerability() const override {
         return mInvulnerableState;
     }
 
     // RigidBody
-    override virtual bool DoPenetration(const RigidBody &other) {
+    bool DoPenetration(const RigidBody &other) override {
         if (mInvulnerableState != INVULNERABLE_NONE) {
             mLastPenetration = Sim::GetTime();
             return false;
