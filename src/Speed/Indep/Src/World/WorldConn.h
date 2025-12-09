@@ -82,6 +82,27 @@ class Pkt_Effect_Service : public Sim::Packet {
     UMath::Vector3 mMagnitude; // offset 0x14, size 0xC
 };
 
+// total size: 0x18
+class Pkt_Effect_Open : public Sim::Packet {
+  public:
+    Pkt_Effect_Open(const Attrib::Collection *effect_group, WUID owner, const Attrib::Collection *owner_attrib, const Attrib::Collection *context,
+                    WUID actee)
+        : mEffectGroup(effect_group),     //
+          mOwner(owner),                  //
+          mOwnerAttributes(owner_attrib), //
+          mContext(context),              //
+          mActee(actee) {}
+
+    ~Pkt_Effect_Open() {}
+
+  private:
+    const Attrib::Collection *mEffectGroup;     // offset 0x4, size 0x4
+    unsigned int mOwner;                        // offset 0x8, size 0x4
+    const Attrib::Collection *mOwnerAttributes; // offset 0xC, size 0x4
+    const Attrib::Collection *mContext;         // offset 0x10, size 0x4
+    unsigned int mActee;                        // offset 0x14, size 0x4
+};
+
 } // namespace WorldConn
 
 #endif

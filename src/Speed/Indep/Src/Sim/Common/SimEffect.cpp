@@ -2,6 +2,7 @@
 #include "../SimServer.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/World/WorldConn.h"
+#include "Speed/Indep/Src/World/WorldTypes.h"
 
 namespace Sim {
 
@@ -36,6 +37,39 @@ void Effect::Stop() {
     }
 }
 
-// bool Effect::OnService(HSIMSERVICE hCon, Packet *pkt) {}
+bool Effect::OnService(HSIMSERVICE hCon, Packet *pkt) {
+    if (hCon == mService && !mPaused) {
+        WorldConn::Pkt_Effect_Service *pe = reinterpret_cast<WorldConn::Pkt_Effect_Service *>(pkt);
+        pe->SetPosition(mPosition);
+        pe->SetMagnitude(mMagnitude);
+        pe->SetTracking(mTracking);
+        return true;
+    }
+    return false;
+}
+
+void Effect::Set(const Attrib::Collection *effect, const UMath::Vector3 &position, const UMath::Vector3 &magnitude, const Attrib::Collection *context,
+                 bool relative, WUID actee) {
+    if (relative && !WUID_IsValid(mOwner)) {
+        relative = false;
+    }
+    if (!effect) {
+        Stop();
+    } else {
+        if (mService && (effect != mEffect || (context != mContext) || (actee != mActee))) {
+            Stop();
+        }
+        mPosition = position;
+        mMagnitude = magnitude;
+        mTracking = relative;
+        mEffect = effect;
+        mContext = context;
+        mActee = actee;
+        if (!mService) {
+            WorldConn::Pkt_Effect_Open pkt(effect, mOwner, mParticipant, context, actee);
+            mService = Sim::OpenService(UCrc32(0x998c21c0), this, &pkt); // TODO hash
+        }
+    }
+}
 
 }; // namespace Sim

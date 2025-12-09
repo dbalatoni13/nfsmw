@@ -47,13 +47,17 @@ class Entity : public Object, public UTL::Collections::GarbageNode<Sim::Entity, 
     override virtual bool Attach(IUnknown *object);
     override virtual bool Detach(IUnknown *object);
 
-    override virtual bool IsAttached(const IUnknown *pOther) const {}
+    override virtual bool IsAttached(const IUnknown *pOther) const {
+        return mAttachments->IsAttached(pOther);
+    }
 
     override virtual void OnAttached(IAttachable *pOther) {}
 
     override virtual void OnDetached(IAttachable *pOther);
 
-    override virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const {}
+    override virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const {
+        return &mAttachments->GetList();
+    }
 
   private:
     ISimable *mSimable;        // offset 0x48, size 0x4

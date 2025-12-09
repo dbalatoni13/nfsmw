@@ -7,4 +7,8 @@
 
 typedef unsigned int WUID;
 
+inline bool WUID_IsValid(WUID id) {
+    return id != 0;
+}
+
 #endif

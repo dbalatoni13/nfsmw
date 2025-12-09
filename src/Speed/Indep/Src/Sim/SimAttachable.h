@@ -14,6 +14,7 @@ class Attachments {
   public:
     bool Attach(UTL::COM::IUnknown *object);
     bool Detach(UTL::COM::IUnknown *object);
+    bool IsAttached(const UTL::COM::IUnknown *object) const;
 
     // Virtual functions
     virtual ~Attachments();
