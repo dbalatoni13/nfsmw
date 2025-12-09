@@ -15,6 +15,7 @@ class Attachments {
     bool Attach(UTL::COM::IUnknown *object);
     bool Detach(UTL::COM::IUnknown *object);
     bool IsAttached(const UTL::COM::IUnknown *object) const;
+    void DetachAll();
 
     // Virtual functions
     virtual ~Attachments();
@@ -22,6 +23,12 @@ class Attachments {
     // Inlines
     void *operator new(std::size_t size) {
         return gFastMem.Alloc(size, nullptr);
+    }
+
+    void operator delete(void *mem, std::size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
     }
 
     Attachments(IAttachable *pOwner) {

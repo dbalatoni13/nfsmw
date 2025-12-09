@@ -23,12 +23,10 @@ struct IAttachable : public UTL::COM::IUnknown {
     virtual ~IAttachable() {}
 
     virtual bool Attach(IUnknown *pOther);
-
     virtual bool Detach(IUnknown *pOther);
-
     virtual bool IsAttached(const IUnknown *pOther) const;
-
     virtual void OnAttached(IAttachable *pOther);
+    virtual void OnDetached(IAttachable *pOther);
 };
 
 #endif
