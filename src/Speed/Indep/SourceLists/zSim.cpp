@@ -15,3 +15,5 @@
 #include "Speed/Indep/Src/Sim/Common/SimEntity.cpp"
 
 #include "Speed/Indep/Src/Sim/Common/SimEffect.cpp"
+
+#include "Speed/Indep/Src/Sim/Common/SimServer.cpp"

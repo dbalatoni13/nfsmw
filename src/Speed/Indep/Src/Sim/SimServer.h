@@ -7,6 +7,7 @@
 
 #include "./SimConn.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
+#include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Src/Interfaces/IServiceable.h"
 
 namespace Sim {
@@ -24,12 +25,27 @@ struct ConnectionData {
     UCrc32 server;        // offset 0x8, size 0x4
 };
 
-class Connection : public UTL::COM::Factory<const ConnectionData &, Connection, UCrc32> {
+class Connection : public UTL::COM::Factory<const ConnectionData &, Connection, UCrc32>, public UTL::Collections::Countable<Sim::Connection> {
   public:
     Connection(const ConnectionData &);
-    ~Connection();
+    ConnStatus DoStatusCheck();
     void Close();
     bool Service(Packet *pkt);
+
+    void operator delete(void *mem, std::size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+
+  protected:
+    Connection();
+
+    // Virtual functions
+    virtual ~Connection();
+
+    virtual void OnClose() = 0;
+    virtual ConnStatus OnStatusCheck() = 0;
 
   private:
     IServiceable *mClient;

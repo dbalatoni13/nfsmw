@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/UCrc.h"
+
 namespace Sim {
 
 class Packet {
@@ -14,6 +16,7 @@ class Packet {
     }
 
     // Virtual functions
+    virtual UCrc32 ConnectionClass();
     virtual unsigned int Compress(Packet *to);
     virtual unsigned int Decompress(Packet *to);
     virtual unsigned int Type();
