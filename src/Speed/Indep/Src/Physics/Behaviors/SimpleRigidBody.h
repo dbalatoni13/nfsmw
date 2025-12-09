@@ -76,23 +76,23 @@ class SimpleRigidBody : public Behavior, public IRigidBody, public ISimpleBody, 
 
     // Overrides
     // IRigidBody
-    override virtual ~SimpleRigidBody();
-    override virtual ISimable *GetOwner() const;
-    override virtual void GetForwardVector(UMath::Vector3 &vec) const;
-    override virtual void GetRightVector(UMath::Vector3 &vec) const;
-    override virtual void GetUpVector(UMath::Vector3 &vec) const;
-    override virtual void SetOrientation(const UMath::Matrix4 &orientMat);
-    override virtual void SetOrientation(const UMath::Vector4 &orientation);
-    override virtual void Accelerate(const UMath::Vector3 &a, float dT);
-    override virtual void GetPointVelocity(const UMath::Vector3 &worldPt, UMath::Vector3 &pv) const;
-    override virtual void PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector3 &initPos);
-    override virtual void ConvertLocalToWorld(UMath::Vector3 &val, bool translate) const;
-    override virtual void ConvertWorldToLocal(UMath::Vector3 &val, bool translate) const;
-    override virtual void Resolve(const UMath::Vector3 &force, const UMath::Vector3 &torque);
-    override virtual void ResolveForce(const UMath::Vector3 &force);
-    override virtual void ResolveForce(const UMath::Vector3 &, const UMath::Vector3 &);
-    override virtual void ResolveTorque(const UMath::Vector3 &torque);
-    override virtual unsigned int GetTriggerFlags() const;
+    ~SimpleRigidBody() override;
+    ISimable *GetOwner() const override;
+    void GetForwardVector(UMath::Vector3 &vec) const override;
+    void GetRightVector(UMath::Vector3 &vec) const override;
+    void GetUpVector(UMath::Vector3 &vec) const override;
+    void SetOrientation(const UMath::Matrix4 &orientMat) override;
+    void SetOrientation(const UMath::Vector4 &orientation) override;
+    void Accelerate(const UMath::Vector3 &a, float dT) override;
+    void GetPointVelocity(const UMath::Vector3 &worldPt, UMath::Vector3 &pv) const override;
+    void PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector3 &initPos) override;
+    void ConvertLocalToWorld(UMath::Vector3 &val, bool translate) const override;
+    void ConvertWorldToLocal(UMath::Vector3 &val, bool translate) const override;
+    void Resolve(const UMath::Vector3 &force, const UMath::Vector3 &torque) override;
+    void ResolveForce(const UMath::Vector3 &force) override;
+    void ResolveForce(const UMath::Vector3 &, const UMath::Vector3 &) override;
+    void ResolveTorque(const UMath::Vector3 &torque) override;
+    unsigned int GetTriggerFlags() const override;
 
     // Inline virtuals
     // Behavior

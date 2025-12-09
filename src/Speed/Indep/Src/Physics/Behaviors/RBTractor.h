@@ -21,26 +21,26 @@ class RBTractor : public RBVehicle, public IArticulatedVehicle, public IVehicleC
 
     // Overrides
     // IUnknown
-    override virtual ~RBTractor();
+    ~RBTractor() override;
 
     // IRigidBody
-    override virtual void PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector3 &initPos);
+    void PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector3 &initPos) override;
 
     // RigidBody
-    override virtual void ModifyCollision(const RigidBody &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment);
-    override virtual bool CanCollideWith(const struct RigidBody &other) const;
+    void ModifyCollision(const RigidBody &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) override;
+    bool CanCollideWith(const struct RigidBody &other) const override;
 
     // Behavior
-    override virtual void OnBehaviorChange(const UCrc32 &mechanic);
-    override virtual void OnOwnerDetached(IAttachable *pOther);
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
+    void OnOwnerDetached(IAttachable *pOther) override;
 
     // IVehicleCache
-    override virtual eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const;
-    override virtual void OnRemovedVehicleCache(IVehicle *ivehicle);
+    eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override;
+    void OnRemovedVehicleCache(IVehicle *ivehicle) override;
 
     // IArticulatedVehicle
-    override virtual void SetHitch(bool hitched);
-    override virtual bool Pose();
+    void SetHitch(bool hitched) override;
+    bool Pose() override;
 
     // ITaskable
     override bool OnTask(HSIMTASK htask, float dT);
@@ -79,7 +79,7 @@ class RBTrailer : public RBVehicle {
 
     // Overrides
     // RigidBody
-    override virtual void ModifyCollision(const RigidBody &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment);
+    void ModifyCollision(const RigidBody &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) override;
 };
 
 #endif

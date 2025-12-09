@@ -42,24 +42,24 @@ class DamageVehicle : public VehicleBehavior,
 
     // Overrides
     // IUnknown
-    override virtual ~DamageVehicle();
+     ~DamageVehicle() override;
 
     // Behavior
-    override virtual void OnBehaviorChange(const UCrc32 &mechanic);
-    override virtual void OnTaskSimulate(float dT);
-    override virtual void Reset();
+     void OnBehaviorChange(const UCrc32 &mechanic) override;
+     void OnTaskSimulate(float dT) override;
+     void Reset() override;
 
     // IListener
-    override virtual void OnCollision(const COLLISION_INFO &cinfo);
+     void OnCollision(const COLLISION_INFO &cinfo) override;
 
     // IContext
-    override virtual bool SetDynamicData(const EventSequencer::System *system, EventDynamicData *data);
+     bool SetDynamicData(const EventSequencer::System *system, EventDynamicData *data) override;
 
     // IDamageable
-    override virtual void Destroy();
-    override virtual void SetShockForce(float f);
-    override virtual void SetInShock(float scale);
-    override virtual void ResetDamage();
+     void Destroy() override;
+     void SetShockForce(float f) override;
+     void SetInShock(float scale) override;
+     void ResetDamage() override;
 
     // Virtual methods
     virtual void OnImpact(const UMath::Vector3 &arm, const UMath::Vector3 &normal, float force, float speed, const SimSurface &mysurface,

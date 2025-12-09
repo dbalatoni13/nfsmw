@@ -396,7 +396,7 @@ class SimSystem : public UTL::COM::Object, public ITaskable {
 
     // Overrides
     // ITaskable
-    override virtual bool OnTask(HSIMTASK htask, float dT);
+    bool OnTask(HSIMTASK htask, float dT) override;
 
   private:
     static void DoFetchInput(IInputPlayer *o) {

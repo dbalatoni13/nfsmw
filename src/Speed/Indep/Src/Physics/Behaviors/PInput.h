@@ -19,14 +19,14 @@ class PInput : public Behavior, public IInput {
 
     // Overrides
     // IUnknown
-    override virtual ~PInput();
+    ~PInput() override;
 
     // Behavior
-    override virtual void OnTaskSimulate(float dT);
-    override virtual void Reset();
+    void OnTaskSimulate(float dT) override;
+    void Reset() override;
 
     // IInput
-    override virtual void ClearInput();
+    void ClearInput() override;
 
     // Virtual methods
     virtual void SetControlStrafeVertical(float steer) {
@@ -73,26 +73,26 @@ class InputPlayer : public PInput, public IInputPlayer {
 
     // Overrides
     // IUnknown
-    override virtual ~InputPlayer();
+    ~InputPlayer() override;
 
     // Behavior
-    override virtual void OnBehaviorChange(const UCrc32 &mechanic);
-    override virtual void Reset();
-    override virtual void OnTaskSimulate(float dT);
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
+    void Reset() override;
+    void OnTaskSimulate(float dT) override;
 
     // IInput
-    override virtual void ClearInput();
-    override virtual bool IsAutomaticShift() const;
+    void ClearInput() override;
+    bool IsAutomaticShift() const override;
 
     // IInputPlayer
-    override virtual void FlushInput();
-    override virtual void BlockInput(bool block);
-    override virtual void FetchInput();
+    void FlushInput() override;
+    void BlockInput(bool block) override;
+    void FetchInput() override;
 
     // Virtual methods
     virtual bool OnAction(const ActionRef &a) {
-		return true;
-	}
+        return true;
+    }
 
     // Inlines
     IVehicle *GetVehicle() const {
@@ -122,10 +122,10 @@ class InputPlayerDrag : public InputPlayer {
 
     // Overrides
     // IInputPlayer
-    override virtual void FetchInput();
+    void FetchInput() override;
 
     // InputPlayer
-    override virtual bool OnAction(const ActionRef &a);
+    bool OnAction(const ActionRef &a) override;
 };
 
 // total size: 0x7C

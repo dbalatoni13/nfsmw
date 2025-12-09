@@ -74,16 +74,16 @@ class SuspensionTraffic : public Chassis {
 
     // Overrides
     // IUnknown
-    override virtual ~SuspensionTraffic();
+    ~SuspensionTraffic() override;
 
     // Behavior
-    override virtual void OnBehaviorChange(const UCrc32 &mechanic);
-    override virtual void OnTaskSimulate(float dT);
-    override virtual void Reset();
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
+    void OnTaskSimulate(float dT) override;
+    void Reset() override;
 
     // ISuspension
-    override virtual UMath::Vector3 GetWheelCenterPos(unsigned int i) const;
-    override virtual void MatchSpeed(float speed);
+    UMath::Vector3 GetWheelCenterPos(unsigned int i) const override;
+    void MatchSpeed(float speed) override;
 
     Tire &GetWheel(unsigned int i) {
         return *mTires[i];

@@ -38,22 +38,22 @@ class Model : public Sim::Object,
 
     // Virtual functions
     // IUnknown
-    override virtual ~Model();
+    ~Model() override;
 
     // IContext
-    override virtual bool SetDynamicData(const EventSequencer::System *system, EventDynamicData *data);
+    bool SetDynamicData(const EventSequencer::System *system, EventDynamicData *data) override;
 
     // IAttachable
-    override virtual bool Attach(IUnknown *pOther);
-    override virtual bool Detach(IUnknown *pOther);
-    override virtual bool IsAttached(const IUnknown *pOther) const;
-    override virtual void OnAttached(IAttachable *pOther);
-    override virtual void OnDetached(IAttachable *pOther);
-    override virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const;
+    bool Attach(IUnknown *pOther) override;
+    bool Detach(IUnknown *pOther) override;
+    bool IsAttached(const IUnknown *pOther) const override;
+    void OnAttached(IAttachable *pOther) override;
+    void OnDetached(IAttachable *pOther) override;
+    const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const override;
 
     // IModel
-    override virtual void GetLinearVelocity(UMath::Vector3 &velocity) const;
-    override virtual void GetAngularVelocity(UMath::Vector3 &velocity) const;
+    void GetLinearVelocity(UMath::Vector3 &velocity) const override;
+    void GetAngularVelocity(UMath::Vector3 &velocity) const override;
 
     override virtual IModel *SpawnModel(UCrc32 rendernode, UCrc32 collisionnode, UCrc32 attributes) {
         return nullptr;
@@ -77,8 +77,8 @@ class Model : public Sim::Object,
         return UCrc32(mNodeName);
     }
 
-    override virtual bool IsHidden() const;
-    override virtual IModel *GetChildModel(UCrc32 name) const;
+    bool IsHidden() const override;
+    IModel *GetChildModel(UCrc32 name) const override;
 
     override virtual IModel *GetRootModel() const {
         if (mRoot) {
@@ -92,21 +92,21 @@ class Model : public Sim::Object,
         return mParent;
     }
 
-    override virtual WUID GetWorldID() const;
-    override virtual const CollisionGeometry::Bounds *GetCollisionGeometry() const;
-    override virtual void ReleaseModel();
+    WUID GetWorldID() const override;
+    const CollisionGeometry::Bounds *GetCollisionGeometry() const override;
+    void ReleaseModel() override;
 
     override virtual ISimable *GetSimable() const {
         return mSimable;
     }
 
-    override virtual void ReleaseChildModels();
+    void ReleaseChildModels() override;
 
     override virtual bool IsRootModel() const {
         return mIsRoot;
     }
 
-    override virtual void HideModel();
+    void HideModel() override;
 
     override virtual void HidePart(const UCrc32 &nodename) {}
 
@@ -118,8 +118,8 @@ class Model : public Sim::Object,
 
     override virtual void PlayEffect(UCrc32 identifire, const Attrib::Collection *effect, const UMath::Vector3 &position,
                                      const UMath::Vector3 &magnitude, bool tracking);
-    override virtual void StopEffect(UCrc32 identifire);
-    override virtual void StopEffects();
+    void StopEffect(UCrc32 identifire) override;
+    void StopEffects() override;
 
     override virtual void SetCausality(HCAUSE from, float time) {
         mCausality = from;
@@ -134,7 +134,7 @@ class Model : public Sim::Object,
         return mCauseTime;
     }
 
-    override virtual Enumerator *EnumerateChildren(IModel::Enumerator *enumerator) const;
+    Enumerator *EnumerateChildren(IModel::Enumerator *enumerator) const override;
 
   protected:
     void StartSequencer(UCrc32 name);

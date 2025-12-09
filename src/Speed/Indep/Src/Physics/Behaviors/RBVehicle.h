@@ -22,28 +22,28 @@ class RBVehicle : public RigidBody, public IRBVehicle {
 
   public:
     // Overrides
-    override virtual ~RBVehicle();
+    ~RBVehicle() override;
 
     // ICollisionBody
-    override virtual unsigned int GetNumContactPoints() const;
-    override virtual bool IsInGroundContact() const;
+    unsigned int GetNumContactPoints() const override;
+    bool IsInGroundContact() const override;
 
     // RigidBody
-    override virtual bool CanCollideWith(const RigidBody &other) const;
-    override virtual void OnBeginFrame(float dT);
-    override virtual bool ShouldSleep() const;
-    override virtual void ModifyCollision(const RigidBody &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment);
-    override virtual void ModifyCollision(const SimSurface &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment);
-    override virtual bool CanCollideWithGround() const;
-    override virtual bool CanCollideWithWorld() const;
+    bool CanCollideWith(const RigidBody &other) const override;
+    void OnBeginFrame(float dT) override;
+    bool ShouldSleep() const override;
+    void ModifyCollision(const RigidBody &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) override;
+    void ModifyCollision(const SimSurface &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) override;
+    bool CanCollideWithGround() const override;
+    bool CanCollideWithWorld() const override;
 
     // Behavior
-    override virtual void OnTaskSimulate(float dT);
-    override virtual void OnBehaviorChange(const UCrc32 &mechanic);
+    void OnTaskSimulate(float dT) override;
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
 
     // IRigidBody
-    override virtual void PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector3 &initPos);
-    override virtual unsigned int GetTriggerFlags() const;
+    void PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector3 &initPos) override;
+    unsigned int GetTriggerFlags() const override;
 
     // Inline virtuals
     // IRBVehicle

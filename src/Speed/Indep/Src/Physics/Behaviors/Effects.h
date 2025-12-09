@@ -95,16 +95,16 @@ class Effects : public Behavior, public Sim::Collision::IListener {
 
     // Overrides
     // IUnknown
-    override virtual ~Effects();
+    ~Effects() override;
 
     // Behavior
-    override virtual void Reset();
-    override virtual void OnPause();
-    override virtual void OnTaskSimulate(float dT);
-    override virtual void OnBehaviorChange(const UCrc32 &mechanic);
+    void Reset() override;
+    void OnPause() override;
+    void OnTaskSimulate(float dT) override;
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
 
     // IListener
-    override virtual void OnCollision(const COLLISION_INFO &cinfo);
+    void OnCollision(const COLLISION_INFO &cinfo) override;
 
     // Virtual methods
     override virtual void OnScrapeWorld(const SimSurface &othersurface, const UMath::Vector3 &position, const UMath::Vector3 &velocity,
@@ -141,7 +141,7 @@ class EffectsCar : public EffectsVehicle {
 
     // Overrides
     // Behavior
-    override virtual void OnBehaviorChange(const UCrc32 &mechanic);
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
 
     // Effects
     override virtual void OnHitGround(const SimSurface &othersurface, float impulse, const UMath::Vector3 &position, const UMath::Vector3 &velocity,
@@ -166,7 +166,7 @@ class EffectsSmackable : public Effects {
 
     // Overrides
     // IListener
-    override virtual void OnCollision(const COLLISION_INFO &cinfo);
+    void OnCollision(const COLLISION_INFO &cinfo) override;
 };
 
 // total size: 0xF4

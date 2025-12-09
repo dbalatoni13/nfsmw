@@ -18,10 +18,10 @@ class DamageDragster : public DamageRacer {
 
     // Overrides
     // IUnknown
-    override virtual ~DamageDragster();
+    ~DamageDragster() override;
 
     // IListener
-    override virtual void OnCollision(const COLLISION_INFO &cinfo);
+    void OnCollision(const COLLISION_INFO &cinfo) override;
 };
 
 #endif

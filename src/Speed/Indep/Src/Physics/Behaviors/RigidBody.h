@@ -256,46 +256,46 @@ class RigidBody : public Behavior,
 
   public:
     // Overrides
-    override virtual ~RigidBody();
+    ~RigidBody() override;
 
     //  Behavior
-    override virtual void Reset();
-    override virtual void OnTaskSimulate(float dT);
+    void Reset() override;
+    void OnTaskSimulate(float dT) override;
 
     // ICollisionBody
-    override virtual bool DistributeMass();
-    override virtual void EnableCollisionGeometries(UCrc32 name, bool enable);
-    override virtual void AttachedToWorld(bool b, float detachforce);
-    override virtual void SetInertiaTensor(const UMath::Vector3 &moment);
-    override virtual float GetOrientToGround() const;
-    override virtual void DisableTriggering();
-    override virtual bool IsTriggering() const;
-    override virtual void EnableTriggering();
-    override virtual void DisableModeling();
-    override virtual void EnableModeling();
-    override virtual void SetAnimating(bool animating);
-    override virtual void Damp(float amount);
+    bool DistributeMass() override;
+    void EnableCollisionGeometries(UCrc32 name, bool enable) override;
+    void AttachedToWorld(bool b, float detachforce) override;
+    void SetInertiaTensor(const UMath::Vector3 &moment) override;
+    float GetOrientToGround() const override;
+    void DisableTriggering() override;
+    bool IsTriggering() const override;
+    void EnableTriggering() override;
+    void DisableModeling() override;
+    void EnableModeling() override;
+    void SetAnimating(bool animating) override;
+    void Damp(float amount) override;
 
     // IRigidBody
-    override virtual void SetPosition(const UMath::Vector3 &pos);
-    override virtual void SetLinearVelocity(const UMath::Vector3 &vel);
-    override virtual void SetAngularVelocity(const UMath::Vector3 &vel);
-    override virtual void SetRadius(float radius);
-    override virtual void SetMass(float newMass);
-    override virtual void PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector3 &initPos);
-    override virtual void SetOrientation(const UMath::Matrix4 &orientMat);
-    override virtual void SetOrientation(const UMath::Vector4 &newOrientation);
-    override virtual void GetPointVelocity(const UMath::Vector3 &position, UMath::Vector3 &velocity) const;
-    override virtual void ConvertLocalToWorld(UMath::Vector3 &val, bool translate) const;
-    override virtual void ConvertWorldToLocal(UMath::Vector3 &val, bool translate) const;
-    override virtual void Resolve(const UMath::Vector3 &force, const UMath::Vector3 &torque);
-    override virtual void ResolveTorque(const UMath::Vector3 &torque);
-    override virtual void ResolveForce(const UMath::Vector3 &force);
-    override virtual void ResolveTorque(const UMath::Vector3 &force, const UMath::Vector3 &p);
-    override virtual void ResolveForce(const UMath::Vector3 &force, const UMath::Vector3 &p);
-    override virtual void Debug();
-    override virtual void Accelerate(const UMath::Vector3 &a, float dT);
-    override virtual unsigned int GetTriggerFlags() const;
+    void SetPosition(const UMath::Vector3 &pos) override;
+    void SetLinearVelocity(const UMath::Vector3 &vel) override;
+    void SetAngularVelocity(const UMath::Vector3 &vel) override;
+    void SetRadius(float radius) override;
+    void SetMass(float newMass) override;
+    void PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector3 &initPos) override;
+    void SetOrientation(const UMath::Matrix4 &orientMat) override;
+    void SetOrientation(const UMath::Vector4 &newOrientation) override;
+    void GetPointVelocity(const UMath::Vector3 &position, UMath::Vector3 &velocity) const override;
+    void ConvertLocalToWorld(UMath::Vector3 &val, bool translate) const override;
+    void ConvertWorldToLocal(UMath::Vector3 &val, bool translate) const override;
+    void Resolve(const UMath::Vector3 &force, const UMath::Vector3 &torque) override;
+    void ResolveTorque(const UMath::Vector3 &torque) override;
+    void ResolveForce(const UMath::Vector3 &force) override;
+    void ResolveTorque(const UMath::Vector3 &force, const UMath::Vector3 &p) override;
+    void ResolveForce(const UMath::Vector3 &force, const UMath::Vector3 &p) override;
+    void Debug() override;
+    void Accelerate(const UMath::Vector3 &a, float dT) override;
+    unsigned int GetTriggerFlags() const override;
 
     // IBoundable
     override virtual bool AddCollisionPrimitive(UCrc32 name, const UMath::Vector3 &dim, float radius, const UMath::Vector3 &offset,
@@ -304,7 +304,7 @@ class RigidBody : public Behavior,
                                            CollisionGeometry::BoundFlags flags, bool persistant);
 
     // IEntity
-    override virtual bool IsImmobile() const;
+    bool IsImmobile() const override;
 
     // ICollisionHandler
     override bool OnWCollide(const WCollisionMgr::WorldCollisionInfo &cInfo, const UMath::Vector3 &cPoint, void *userdata);

@@ -16,7 +16,7 @@ class RBCop : public RBVehicle {
 
     // Overrides
     // IUnknown
-    override virtual ~RBCop();
+    ~RBCop() override;
 
     // RigidBody
     override virtual void ModifyCollision(const struct RigidBody &other, const Dynamics::Collision::Plane &plane,

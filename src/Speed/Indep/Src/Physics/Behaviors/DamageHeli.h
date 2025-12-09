@@ -17,11 +17,11 @@ class DamageHeli : public DamageVehicle {
 
     // Overrides
     // IUnknown
-    override virtual ~DamageHeli();
+    ~DamageHeli() override;
 
     // Behavior
-    override virtual void Reset();
-    override virtual void OnTaskSimulate(float dT);
+    void Reset() override;
+    void OnTaskSimulate(float dT) override;
 
   private:
     int mAutoDestruct; // offset 0xB8, size 0x4

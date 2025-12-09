@@ -18,26 +18,26 @@ class DamageRacer : public DamageVehicle, public ISpikeable {
 
     // Overrides
     // IUnknown
-    override virtual ~DamageRacer();
+    ~DamageRacer() override;
 
     // ISpikeable
-    override virtual eTireDamage GetTireDamage(unsigned int wheelId) const;
-    override virtual unsigned int GetNumBlowouts() const;
-    override virtual void Puncture(unsigned int wheelId);
+    eTireDamage GetTireDamage(unsigned int wheelId) const override;
+    unsigned int GetNumBlowouts() const override;
+    void Puncture(unsigned int wheelId) override;
 
     // IDamageableVehicle
-    override virtual bool IsLightDamaged(VehicleFX::ID idx) const;
+    bool IsLightDamaged(VehicleFX::ID idx) const override;
 
     // DamageVehicle
-    override virtual bool CanDamageVisuals() const;
+    bool CanDamageVisuals() const override;
 
     // Behavior
-    override virtual void OnTaskSimulate(float dT);
-    override virtual void OnBehaviorChange(const UCrc32 &mechanic);
+    void OnTaskSimulate(float dT) override;
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
 
     // IDamageable
-    override virtual DamageZone::Info GetZoneDamage() const;
-    override virtual void ResetDamage();
+    DamageZone::Info GetZoneDamage() const override;
+    void ResetDamage() override;
 
   private:
     ISuspension *mSuspension; // offset 0xC4, size 0x4

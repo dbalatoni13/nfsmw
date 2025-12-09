@@ -38,7 +38,7 @@ class LocalPlayer : public Sim::Entity, public IPlayer, public Sim::Collision::I
         return mRenderPort;
     }
 
-    override virtual PlayerSettings *GetSettings() const;
+    PlayerSettings *GetSettings() const override;
 
     override virtual int GetSettingsIndex() const {
         return mSettingIndex;
@@ -52,15 +52,15 @@ class LocalPlayer : public Sim::Entity, public IPlayer, public Sim::Collision::I
         return mHud;
     }
 
-    override virtual void SetHud(ePlayerHudType ht);
-    override virtual void SetControllerPort(int port);
+    void SetHud(ePlayerHudType ht) override;
+    void SetControllerPort(int port) override;
 
     override virtual int GetControllerPort() const {
         return mControllerPort;
     }
 
-    override virtual IFeedback *GetFFB();
-    override virtual ISteeringWheel *GetSteeringDevice();
+    IFeedback *GetFFB() override;
+    ISteeringWheel *GetSteeringDevice() override;
 
     // IEntity
     override virtual ISimable *GetSimable() const {
@@ -80,29 +80,29 @@ class LocalPlayer : public Sim::Entity, public IPlayer, public Sim::Collision::I
     }
 
     // IAttachable
-    override virtual void OnAttached(IAttachable *pOther);
-    override virtual void OnDetached(IAttachable *pOther);
+    void OnAttached(IAttachable *pOther) override;
+    void OnDetached(IAttachable *pOther) override;
 
     // IPlayer
     override virtual bool InGameBreaker() const {
         return mInGameBreaker;
     }
 
-    override virtual bool CanRechargeNOS() const;
-    override virtual void ResetGameBreaker(bool full);
+    bool CanRechargeNOS() const override;
+    void ResetGameBreaker(bool full) override;
 
     override virtual void ChargeGameBreaker(float amount) {
         mGameBreakerCharge = UMath::Clamp(mGameBreakerCharge + amount, 0.0f, 1.0f);
     }
 
-    override virtual bool ToggleGameBreaker();
+    bool ToggleGameBreaker() override;
 
     // IListener
-    override virtual void OnCollision(const COLLISION_INFO &cinfo);
+    void OnCollision(const COLLISION_INFO &cinfo) override;
 
   protected:
     // ITaskable
-    override virtual bool OnTask(HSIMTASK htask, float dT);
+    bool OnTask(HSIMTASK htask, float dT) override;
 
     // IUnknown
     ~LocalPlayer();

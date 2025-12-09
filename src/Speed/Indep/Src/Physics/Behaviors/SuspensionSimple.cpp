@@ -121,17 +121,17 @@ class SuspensionSimple : public Chassis, public Sim::Collision::IListener, publi
 
     // Overrides
     // IUnknown
-    override virtual ~SuspensionSimple();
+    ~SuspensionSimple() override;
 
     // IAttributeable
-    override virtual void OnAttributeChange(const Attrib::Collection *aspec, unsigned int attribkey);
+    void OnAttributeChange(const Attrib::Collection *aspec, unsigned int attribkey) override;
 
     // ISuspension
-    override virtual void MatchSpeed(float speed);
-    override virtual UMath::Vector3 GetWheelCenterPos(unsigned int i) const;
+    void MatchSpeed(float speed) override;
+    UMath::Vector3 GetWheelCenterPos(unsigned int i) const override;
 
     // Behavior
-    override virtual void Reset();
+    void Reset() override;
 
     // IListener
     virtual void OnCollision(const COLLISION_INFO &cinfo);

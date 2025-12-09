@@ -37,10 +37,10 @@ class Effect : public UTL::COM::Object, public bTNode<Sim::Effect>, public IServ
 
     // Overrides
     // IUnknown
-    override virtual ~Effect();
+    ~Effect() override;
 
     // IServiceable
-    override virtual bool OnService(HSIMSERVICE hCon, Packet *pkt);
+    bool OnService(HSIMSERVICE hCon, Packet *pkt) override;
 
   private:
     UMath::Vector3 mPosition;               // offset 0x20, size 0xC

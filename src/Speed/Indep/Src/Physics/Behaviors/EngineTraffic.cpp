@@ -31,7 +31,6 @@
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-
 // total size: 0x124
 class EngineTraffic : protected VehicleBehavior, protected ITransmission, protected IEngine, public IAttributeable {
   public:
@@ -48,26 +47,26 @@ class EngineTraffic : protected VehicleBehavior, protected ITransmission, protec
     void DoShifting(float dT);
 
     // Overrides
-    override virtual ~EngineTraffic();
+    ~EngineTraffic() override;
 
     // IEngine
-    override virtual void MatchSpeed(float speed);
-    override virtual float GetMaxHorsePower() const;
-    override virtual float GetHorsePower() const;
+    void MatchSpeed(float speed) override;
+    float GetMaxHorsePower() const override;
+    float GetHorsePower() const override;
 
     // Behavior
-    override virtual void Reset();
-    override virtual void OnTaskSimulate(float dT);
-    override virtual void OnBehaviorChange(const UCrc32 &mechanic);
+    void Reset() override;
+    void OnTaskSimulate(float dT) override;
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
 
     // ITransmission
-    override virtual bool Shift(GearID gear);
-    override virtual float GetSpeedometer() const;
-    override virtual float GetMaxSpeedometer() const;
-    override virtual float GetShiftPoint(GearID from_gear, GearID to_gear) const;
+    bool Shift(GearID gear) override;
+    float GetSpeedometer() const override;
+    float GetMaxSpeedometer() const override;
+    float GetShiftPoint(GearID from_gear, GearID to_gear) const override;
 
     // IAttributeable
-    override virtual void OnAttributeChange(const Attrib::Collection *collection, unsigned int attribkey);
+    void OnAttributeChange(const Attrib::Collection *collection, unsigned int attribkey) override;
 
     // Inline virtuals
 

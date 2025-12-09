@@ -199,8 +199,6 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
         float mDragReduction; // offset 0x13C, size 0x4
     };
 
-        
-
     // Static functions
     static Behavior *Construct(const BehaviorParams &params);
 
@@ -222,17 +220,17 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
     float CalcYawControlLimit(float speed) const;
 
     // Overrides
-    override virtual ~SuspensionRacer();
-    override virtual void OnCollision(const COLLISION_INFO &cinfo);
-    override virtual void OnBehaviorChange(const UCrc32 &mechanic);
-    override virtual void OnAttributeChange(const Attrib::Collection *aspec, unsigned int attribkey);
-    override virtual Meters GetRideHeight(unsigned int idx) const;
-    override virtual Radians GetWheelAngularVelocity(int index) const;
-    override virtual void MatchSpeed(float speed);
-    override virtual UMath::Vector3 GetWheelCenterPos(unsigned int i) const;
-    override virtual void Reset();
-    override virtual void OnDebugDraw();
-    
+    ~SuspensionRacer() override;
+    void OnCollision(const COLLISION_INFO &cinfo) override;
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
+    void OnAttributeChange(const Attrib::Collection *aspec, unsigned int attribkey) override;
+    Meters GetRideHeight(unsigned int idx) const override;
+    Radians GetWheelAngularVelocity(int index) const override;
+    void MatchSpeed(float speed) override;
+    UMath::Vector3 GetWheelCenterPos(unsigned int i) const override;
+    void Reset() override;
+    void OnDebugDraw() override;
+
     override float GetWheelTraction(unsigned int index) const {
         return mTires[index]->GetTraction();
     }
@@ -296,12 +294,8 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
     }
 
   public:
-      struct Drift {
-        Drift() 
-        : State(D_OUT)
-        , Value(0.0f) {
-
-        }
+    struct Drift {
+        Drift() : State(D_OUT), Value(0.0f) {}
 
         enum eState { D_OUT, D_ENTER, D_IN, D_EXIT } State; // offset 0x0, size 0x4
         float Value;                                        // offset 0x4, size 0x4
@@ -313,13 +307,7 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
     };
 
     struct Burnout {
-        Burnout() 
-        : mState(0)
-        , mBurnOutTime(0.0f)
-        , mTraction(1.0f)
-        , mBurnOutAllow(0.0f) {
-
-        }
+        Burnout() : mState(0), mBurnOutTime(0.0f), mTraction(1.0f), mBurnOutAllow(0.0f) {}
 
         void Update(const float dT, const float speedmph, const float max_slip, const int max_slip_wheel, const float yaw);
 
@@ -374,9 +362,7 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
     };
 
     struct Steering {
-        Steering() 
-        : InputAverage(0.55f, 60.0f) 
-        , InputSpeedCoeffAverage(0.15f, 60.0f) {
+        Steering() : InputAverage(0.55f, 60.0f), InputSpeedCoeffAverage(0.15f, 60.0f) {
             Reset();
         }
 
@@ -407,7 +393,7 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
             YawControl = 1.0f;
         }
     };
-    
+
     struct Differential {
         void CalcSplit(bool locked);
 
@@ -534,41 +520,12 @@ static const float HardTurnTightenSpeed = 0.0f;
 static const float Tweak_GameBreakerMaxSteer = 60.0f;
 static const float Tweak_TuningSteering_Ratio = 0.2f;
 
-
 SuspensionRacer::Tire::Tire(float radius, int index, const Attrib::Gen::tires *specs, const Attrib::Gen::brakes *brakes)
-: Wheel(1)
-, mRadius(UMath::Max(radius, 0.1f))
-, mWheelIndex(index)
-, mAxleIndex(index >> 1)
-, mSpecs(specs)
-, mBrakes(brakes)
-, mBrake(0.0f)
-, mEBrake(0.0f)
-, mAV(0.0f)
-, mLoad(0.0f)
-, mLateralForce(0.0f)
-, mLongitudeForce(0.0f)
-, mDriveTorque(0.0f)
-, mBrakeTorque(0.0f)
-, mLateralBoost(1.0f)
-, mTractionBoost(1.0f)
-, mSlip(0.0f)
-, mLastTorque(0.0f)
-, mRoadSpeed(0.0f)
-, mAngularAcc(0.0f)
-, mTraction(1.0f)
-, mBottomOutTime(0.0f)
-, mSlipAngle(0.0f)
-, mTractionCircle(UMath::Vector2Make(1.0f, 1.0f))
-, mMaxSlip(0.5f)
-, mGripBoost(1.0f)
-, mDriftFriction(1.0f)
-, mLateralSpeed(0.0f)
-, mBrakeLocked(false)
-, mLastSign(SuspensionRacer::Tire::WAS_ZERO)
-, mDragReduction(0.0f) {
-    
-}
+    : Wheel(1), mRadius(UMath::Max(radius, 0.1f)), mWheelIndex(index), mAxleIndex(index >> 1), mSpecs(specs), mBrakes(brakes), mBrake(0.0f),
+      mEBrake(0.0f), mAV(0.0f), mLoad(0.0f), mLateralForce(0.0f), mLongitudeForce(0.0f), mDriveTorque(0.0f), mBrakeTorque(0.0f), mLateralBoost(1.0f),
+      mTractionBoost(1.0f), mSlip(0.0f), mLastTorque(0.0f), mRoadSpeed(0.0f), mAngularAcc(0.0f), mTraction(1.0f), mBottomOutTime(0.0f),
+      mSlipAngle(0.0f), mTractionCircle(UMath::Vector2Make(1.0f, 1.0f)), mMaxSlip(0.5f), mGripBoost(1.0f), mDriftFriction(1.0f), mLateralSpeed(0.0f),
+      mBrakeLocked(false), mLastSign(SuspensionRacer::Tire::WAS_ZERO), mDragReduction(0.0f) {}
 
 void SuspensionRacer::Tire::BeginFrame(float max_slip, float grip_boost, float traction_boost, float drag_reduction) {
     mMaxSlip = max_slip;
@@ -596,22 +553,20 @@ Newtons SuspensionRacer::Tire::ComputeLateralForce(float load, float slip_angle)
     load *= LoadFactor;
 
     if (slip_angle_table > 5) {
-    #ifdef TARGET_WIN32
+#ifdef TARGET_WIN32
         // PC version uses a DRM protected variable in the calculation here
-    #else
-        return (mSpecs->GRIP_SCALE().At(mAxleIndex) * NewCorneringScale) * mGripBoost
-             * GripFactor * LoadSensitivityTable[6]->GetValue(load);
-    #endif
+#else
+        return (mSpecs->GRIP_SCALE().At(mAxleIndex) * NewCorneringScale) * mGripBoost * GripFactor * LoadSensitivityTable[6]->GetValue(load);
+#endif
     } else {
         float low = LoadSensitivityTable[slip_angle_table]->GetValue(load);
         float high = LoadSensitivityTable[slip_angle_table + 1]->GetValue(load);
-    #ifdef TARGET_WIN32
+#ifdef TARGET_WIN32
         // PC version uses a DRM protected variable in the calculation here
-    #else
-        return (mSpecs->GRIP_SCALE().At(mAxleIndex) * NewCorneringScale) * mGripBoost
-             * GripFactor * (extra * (high - low) + low);
-    #endif
-    }	
+#else
+        return (mSpecs->GRIP_SCALE().At(mAxleIndex) * NewCorneringScale) * mGripBoost * GripFactor * (extra * (high - low) + low);
+#endif
+    }
 }
 
 // Credits: Brawltendo
@@ -638,15 +593,15 @@ float EBrakingTorque = 10.0f;
 
 // Credits: Brawltendo
 void SuspensionRacer::Tire::CheckForBrakeLock(float ground_force) {
-    const float brake_spec  = mBrakes->BRAKE_LOCK().At(mAxleIndex) * FTLB2NM(mBrakes->BRAKES().At(mAxleIndex)) * BrakingTorque;
+    const float brake_spec = mBrakes->BRAKE_LOCK().At(mAxleIndex) * FTLB2NM(mBrakes->BRAKES().At(mAxleIndex)) * BrakingTorque;
     const float ebrake_spec = FTLB2NM(mBrakes->EBRAKE()) * EBrakingTorque;
     static float StaticToDynamicBrakeForceRatio = 1.2f;
     static float BrakeLockAngularVelocityFactor = 100.0f;
-    
-    float bt  = mBrake * brake_spec;
+
+    float bt = mBrake * brake_spec;
     float ebt = mEBrake * ebrake_spec;
     float available_torque = (bt + ebt) * StaticToDynamicBrakeForceRatio;
-    
+
     if (available_torque > ground_force * GetRadius() + UMath::Abs(mAV) * BrakeLockAngularVelocityFactor) {
         if (available_torque > 1.0f) {
             mBrakeLocked = true;
@@ -694,9 +649,9 @@ void SuspensionRacer::Tire::UpdateFree(float dT) {
         mAngularAcc = 0.0f;
         mAV = 0.0f;
     } else {
-        const float brake_spec  = FTLB2NM(mBrakes->BRAKES().At(mAxleIndex)) * BrakingTorque;
+        const float brake_spec = FTLB2NM(mBrakes->BRAKES().At(mAxleIndex)) * BrakingTorque;
         const float ebrake_spec = FTLB2NM(mBrakes->EBRAKE()) * EBrakingTorque;
-        float bt  = mBrake  * brake_spec;
+        float bt = mBrake * brake_spec;
         float ebt = mEBrake * ebrake_spec;
         ApplyBrakeTorque(mAV > 0.0f ? -bt : bt);
         ApplyBrakeTorque(mAV > 0.0f ? -ebt : ebt);
@@ -715,28 +670,27 @@ static const float InvTireForceEllipseRatio = 1.0 / TireForceEllipseRatio;
 
 // Credits: Brawltendo
 float SuspensionRacer::Tire::UpdateLoaded(float lat_vel, float fwd_vel, float body_speed, float load, float dT) {
-    const float brake_spec       = FTLB2NM(mBrakes->BRAKES().At(mAxleIndex)) * BrakingTorque;
-    const float ebrake_spec      = FTLB2NM(mBrakes->EBRAKE()) * EBrakingTorque;
+    const float brake_spec = FTLB2NM(mBrakes->BRAKES().At(mAxleIndex)) * BrakingTorque;
+    const float ebrake_spec = FTLB2NM(mBrakes->EBRAKE()) * EBrakingTorque;
     const float dynamicgrip_spec = mSpecs->DYNAMIC_GRIP().At(mAxleIndex);
-    const float staticgrip_spec  = mSpecs->STATIC_GRIP().At(mAxleIndex);
+    const float staticgrip_spec = mSpecs->STATIC_GRIP().At(mAxleIndex);
     // free rolling wheel
     if (mLoad <= 0.0f && !mBrakeLocked) {
         mAV = fwd_vel / mRadius;
     }
-    
+
     float fwd_acc = (fwd_vel - mRoadSpeed) / dT;
-    
+
     mRoadSpeed = fwd_vel;
     mLoad = UMath::Max(load, 0.0f);
     mLateralSpeed = lat_vel;
 
-    float bt  = mBrake  * brake_spec;
+    float bt = mBrake * brake_spec;
     float ebt = mEBrake * ebrake_spec;
     float abs_fwd = UMath::Abs(fwd_vel);
-    if (abs_fwd < 1.0f)
-    {
+    if (abs_fwd < 1.0f) {
         // when car is nearly stopped, apply brake torque using forward velocity and wheel load
-        bt  = -mBrake  * load * fwd_vel / mRadius;
+        bt = -mBrake * load * fwd_vel / mRadius;
         ebt = -mEBrake * load * fwd_vel / mRadius;
 
         ApplyDriveTorque(-GetDriveTorque() * mEBrake);
@@ -794,12 +748,12 @@ float SuspensionRacer::Tire::UpdateLoaded(float lat_vel, float fwd_vel, float bo
         mLongitudeForce *= TireForceEllipseRatio;
     }
 
-    mLateralForce   *= mTractionCircle.x;
+    mLateralForce *= mTractionCircle.x;
     mLongitudeForce *= mTractionCircle.y;
 
     float len_force = UMath::Sqrt(mLateralForce * mLateralForce + mLongitudeForce * mLongitudeForce);
     float max_force = mLoad * staticgrip_spec * mTractionBoost * mDriftFriction;
-    
+
     max_force *= pilot_factor;
 
     mTraction = 1.0f;
@@ -808,7 +762,7 @@ float SuspensionRacer::Tire::UpdateLoaded(float lat_vel, float fwd_vel, float bo
     if (len_force > max_force && len_force > 0.001f) {
         float ratio = max_force / len_force;
         mTraction = ratio;
-        mLateralForce   *= ratio;
+        mLateralForce *= ratio;
         mLongitudeForce *= ratio;
         max_slip = (ratio * ratio) * max_slip;
     } else if (use_ellipse) {
@@ -838,8 +792,7 @@ float SuspensionRacer::Tire::UpdateLoaded(float lat_vel, float fwd_vel, float bo
             mLastTorque = torque;
             float rolling_resistance = RollingFriction * mSurface.ROLLING_RESISTANCE();
             float effective_torque = torque - mAV * rolling_resistance;
-            mAngularAcc = (effective_torque / WheelMomentOfInertia)
-                         - (mTraction * mSlip) / (mRadius * dT);
+            mAngularAcc = (effective_torque / WheelMomentOfInertia) - (mTraction * mSlip) / (mRadius * dT);
         }
 
         mAngularAcc = UMath::Lerp(mAngularAcc, fwd_acc / mRadius, mTraction);
@@ -856,20 +809,9 @@ Behavior *SuspensionRacer::Construct(const BehaviorParams &params) {
     return new SuspensionRacer(params, sp);
 }
 
-SuspensionRacer::SuspensionRacer(const BehaviorParams &bp, const SuspensionParams &sp) 
-: Chassis(bp)
-, mTireInfo(this, 0)
-, mBrakeInfo(this, 0)
-, mSuspensionInfo(this, 0)
-, mTranyInfo(this, 0)
-, mRB(NULL)
-, mCollisionBody(NULL)
-, mGameBreaker(0.0f)
-, mNumWheelsOnGround(0)
-, mLastGroundCollision(0.0f)
-, mDrift()
-, mBurnOut()
-, mSteering() {
+SuspensionRacer::SuspensionRacer(const BehaviorParams &bp, const SuspensionParams &sp)
+    : Chassis(bp), mTireInfo(this, 0), mBrakeInfo(this, 0), mSuspensionInfo(this, 0), mTranyInfo(this, 0), mRB(NULL), mCollisionBody(NULL),
+      mGameBreaker(0.0f), mNumWheelsOnGround(0), mLastGroundCollision(0.0f), mDrift(), mBurnOut(), mSteering() {
     EnableProfile("SuspensionRacer");
     MakeDebugable(DBG_PHYSICS_RACERS);
     GetOwner()->QueryInterface(&mRB);
@@ -1107,7 +1049,8 @@ void SuspensionRacer::OnCollision(const COLLISION_INFO &cinfo) {
         if (UMath::Abs(cinfo.normal.y) < 0.1f && this->mCollisionBody && (UMath::LengthSquare(cinfo.closingVel) < Tweak_WallSteerClosingSpeed)) {
             const UMath::Vector3 &vFoward = mCollisionBody->GetForwardVector();
             const UMath::Vector3 &vRight = mCollisionBody->GetRightVector();
-            if ((mSteering.WallNoseTurn == 0.0f) && UMath::LengthSquare(cinfo.objAVel) < Tweak_WallSteerBodySpeed && UMath::Dot(cinfo.normal, vFoward) <= 0.0f) {
+            if ((mSteering.WallNoseTurn == 0.0f) && UMath::LengthSquare(cinfo.objAVel) < Tweak_WallSteerBodySpeed &&
+                UMath::Dot(cinfo.normal, vFoward) <= 0.0f) {
                 UMath::Vector3 rpos;
                 UMath::Sub(cinfo.position, mRB->GetPosition(), rpos);
                 float dirdot = UMath::Dot(rpos, vFoward);
@@ -1460,31 +1403,32 @@ void SuspensionRacer::DoDrifting(const Chassis::State &state) {
 
     if (mDrift.State > SuspensionRacer::Drift::D_ENTER) {
         float avg_steer = mSteering.InputAverage.GetValue();
-        if ((state.local_angular_vel.y * state.slipangle) < 0.0f && UMath::Abs(state.slipangle) <= 0.25f && state.speed > MPH2MPS(Tweak_MinDriftSpeedMPH) &&
-            (avg_steer * state.slipangle) <= 0.0f && UMath::Abs(state.slipangle) > DEG2ANGLE(Tweak_DriftSlipAngle)) {
+        if ((state.local_angular_vel.y * state.slipangle) < 0.0f && UMath::Abs(state.slipangle) <= 0.25f &&
+            state.speed > MPH2MPS(Tweak_MinDriftSpeedMPH) && (avg_steer * state.slipangle) <= 0.0f &&
+            UMath::Abs(state.slipangle) > DEG2ANGLE(Tweak_DriftSlipAngle)) {
             mDrift.State = SuspensionRacer::Drift::D_IN;
-        } else if (state.gas_input * state.steer_input * state.slipangle > DEG2ANGLE(Tweak_DriftSlipAngle) && state.speed > MPH2MPS(Tweak_MinDriftSpeedMPH)) {
+        } else if (state.gas_input * state.steer_input * state.slipangle > DEG2ANGLE(Tweak_DriftSlipAngle) &&
+                   state.speed > MPH2MPS(Tweak_MinDriftSpeedMPH)) {
             mDrift.State = SuspensionRacer::Drift::D_IN;
         } else if (state.gas_input * UMath::Abs(state.slipangle) > DEG2ANGLE(Tweak_DriftSlipAngle)) {
             mDrift.State = SuspensionRacer::Drift::D_ENTER;
         } else {
             mDrift.State = SuspensionRacer::Drift::D_EXIT;
         }
-    } else if (state.speed > MPH2MPS(Tweak_DriftEnterSpeed)
-           && (state.ebrake_input > 0.5f || UMath::Abs(state.slipangle) > DEG2ANGLE(Tweak_DriftSlipAngle))) {
+    } else if (state.speed > MPH2MPS(Tweak_DriftEnterSpeed) &&
+               (state.ebrake_input > 0.5f || UMath::Abs(state.slipangle) > DEG2ANGLE(Tweak_DriftSlipAngle))) {
         mDrift.State = SuspensionRacer::Drift::D_ENTER;
     }
 
     if (mDrift.Value <= 0.0f)
-            return;
-        {
+        return;
+    {
         float yaw = ANGLE2RAD(state.slipangle);
         float ang_vel = state.local_angular_vel.y;
 
         // charge speedbreaker if not in use and drifting is detected
-        if (mGameBreaker <= 0.0f && state.speed > MPH2MPS(Tweak_GameBreakerDriftRechargeMinSpeed)
-        && UMath::Abs(yaw) > DEG2RAD(Tweak_GameBreakerDriftRechargeYaw))
-        {
+        if (mGameBreaker <= 0.0f && state.speed > MPH2MPS(Tweak_GameBreakerDriftRechargeMinSpeed) &&
+            UMath::Abs(yaw) > DEG2RAD(Tweak_GameBreakerDriftRechargeYaw)) {
             IPlayer *player = GetOwner()->GetPlayer();
             if (player) {
                 player->ChargeGameBreaker(state.time * Tweak_GameBreakerDriftRechargePerSec * mDrift.Value);
@@ -1710,18 +1654,18 @@ void SuspensionRacer::DoDriveForces(Chassis::State &state) {
             float lat_slip = 0.0f;
 
             float traction_control[2] = {1.0f, 1.0f};
-            float traction_boost[2]   = {1.0f, 1.0f};
+            float traction_boost[2] = {1.0f, 1.0f};
             diff.factor = mTranyInfo.DIFFERENTIAL(axle);
 
             for (unsigned int i = 0; i < 2; ++i) {
                 unsigned int tire = axle * 2 + i;
                 diff.angular_vel[i] = mTires[tire]->GetAngularVelocity();
                 diff.has_traction[i] = mTires[tire]->IsOnGround();
-                
-                fwd_slip += center_diff.torque_split[axle] * mTires[tire]->GetCurrentSlip()  * 0.5f;
+
+                fwd_slip += center_diff.torque_split[axle] * mTires[tire]->GetCurrentSlip() * 0.5f;
                 lat_slip += center_diff.torque_split[axle] * mTires[tire]->GetLateralSpeed() * 0.5f;
             }
-            
+
             bool locked_diff = false;
             if ((mBurnOut.GetState() & 1) != 0) {
                 traction_boost[1] = mBurnOut.GetTraction();
@@ -1783,10 +1727,10 @@ void SuspensionRacer::DoWheelForces(Chassis::State &state) {
     float maxDelta = 0.0f;
 
     const UMath::Vector3 &vFwd = state.GetForwardVector();
-    const UMath::Vector3 &vUp  = state.GetUpVector();
-    
+    const UMath::Vector3 &vUp = state.GetUpVector();
+
     const float mass = state.mass;
-    
+
     float ride_extra = 0.0f;
     const Physics::Tunings *tunings = GetVehicle()->GetTunings();
     if (tunings) {
@@ -1805,15 +1749,15 @@ void SuspensionRacer::DoWheelForces(Chassis::State &state) {
     float progression[2];
 
     for (unsigned int i = 0; i < 2; ++i) {
-        shock_specs[i]      = LBIN2NM(mSuspensionInfo.SHOCK_STIFFNESS().At(i));
-        shock_ext_specs[i]  = LBIN2NM(mSuspensionInfo.SHOCK_EXT_STIFFNESS().At(i));
-        shock_valving[i]    = INCH2METERS(mSuspensionInfo.SHOCK_VALVING().At(i));
+        shock_specs[i] = LBIN2NM(mSuspensionInfo.SHOCK_STIFFNESS().At(i));
+        shock_ext_specs[i] = LBIN2NM(mSuspensionInfo.SHOCK_EXT_STIFFNESS().At(i));
+        shock_valving[i] = INCH2METERS(mSuspensionInfo.SHOCK_VALVING().At(i));
         shock_digression[i] = 1.0f - mSuspensionInfo.SHOCK_DIGRESSION().At(i);
-        spring_specs[i]     = LBIN2NM(mSuspensionInfo.SPRING_STIFFNESS().At(i));
-        sway_specs[i]       = LBIN2NM(mSuspensionInfo.SWAYBAR_STIFFNESS().At(i));
-        travel_specs[i]     = INCH2METERS(mSuspensionInfo.TRAVEL().At(i));
+        spring_specs[i] = LBIN2NM(mSuspensionInfo.SPRING_STIFFNESS().At(i));
+        sway_specs[i] = LBIN2NM(mSuspensionInfo.SWAYBAR_STIFFNESS().At(i));
+        travel_specs[i] = INCH2METERS(mSuspensionInfo.TRAVEL().At(i));
         rideheight_specs[i] = INCH2METERS(mSuspensionInfo.RIDE_HEIGHT().At(i) + ride_extra);
-        progression[i]      = mSuspensionInfo.SPRING_PROGRESSION().At(i);
+        progression[i] = mSuspensionInfo.SPRING_PROGRESSION().At(i);
     }
 
     float sway_stiffness[4];
@@ -1827,7 +1771,7 @@ void SuspensionRacer::DoWheelForces(Chassis::State &state) {
     steering_normals[1] = UMath::Vector4Make(steerR, 1.0f);
     steering_normals[2] = UMath::Vector4Make(vFwd, 1.0f);
     steering_normals[3] = UMath::Vector4Make(vFwd, 1.0f);
-    
+
     bool resolve = false;
     for (unsigned int i = 0; i < 4; ++i) {
         int axle = i / 2;
@@ -1881,11 +1825,11 @@ void SuspensionRacer::DoWheelForces(Chassis::State &state) {
             if (damp > mSuspensionInfo.SHOCK_BLOWOUT() * 9.81f * mass) {
                 damp = 0.0f;
             }
-            
+
             float springForce = UMath::Max(damp + spring + sway_stiffness[i], 0.0f);
 
             UVector3 verticalForce(vUp * springForce);
-            
+
             UVector3 driveForce;
             UVector3 lateralForce;
             UVector3 c;
@@ -1901,13 +1845,13 @@ void SuspensionRacer::DoWheelForces(Chassis::State &state) {
             float traction_force = wheel.UpdateLoaded(xspeed, zspeed, state.speed, load, state.time);
             float max_traction = UMath::Abs(xspeed / dT * (0.25f * mass));
             lateralForce = lateralNormal * UMath::Clamp(traction_force, -max_traction, max_traction);
-            
+
             UMath::Vector3 force;
             UMath::UnitCross(lateralNormal, groundNormal, driveForce);
             UMath::Scale(driveForce, wheel.GetLongitudeForce(), driveForce);
             UMath::Add(lateralForce, driveForce, force);
             UMath::Add(force, verticalForce, force);
-            
+
             wheel.SetForce(force);
             resolve = true;
         } else {

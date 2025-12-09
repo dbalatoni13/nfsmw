@@ -23,7 +23,7 @@ class Activity : public Sim::Object, public UTL::Collections::GarbageNode<Sim::A
     virtual ~Activity();
 
     // IActivity
-    override virtual void Release();
+    void Release() override;
 
     // IAttachable
     override virtual void OnAttached(IAttachable *pOther) {}

@@ -26,11 +26,11 @@ class Entity : public Object, public UTL::Collections::GarbageNode<Sim::Entity, 
 
     // Virtual methods
     // IUnknown
-    override virtual ~Entity();
+    ~Entity() override;
 
     // IEntity
-    override virtual void AttachPhysics(ISimable *object);
-    override virtual void DetachPhysics();
+    void AttachPhysics(ISimable *object) override;
+    void DetachPhysics() override;
 
     // Own
     virtual const UMath::Vector3 &GetPosition() const;
@@ -44,8 +44,8 @@ class Entity : public Object, public UTL::Collections::GarbageNode<Sim::Entity, 
     virtual void Kill();
 
     // IAttachable
-    override virtual bool Attach(IUnknown *object);
-    override virtual bool Detach(IUnknown *object);
+    bool Attach(IUnknown *object) override;
+    bool Detach(IUnknown *object) override;
 
     override virtual bool IsAttached(const IUnknown *pOther) const {
         return mAttachments->IsAttached(pOther);
@@ -53,7 +53,7 @@ class Entity : public Object, public UTL::Collections::GarbageNode<Sim::Entity, 
 
     override virtual void OnAttached(IAttachable *pOther) {}
 
-    override virtual void OnDetached(IAttachable *pOther);
+    void OnDetached(IAttachable *pOther) override;
 
     override virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const {
         return &mAttachments->GetList();

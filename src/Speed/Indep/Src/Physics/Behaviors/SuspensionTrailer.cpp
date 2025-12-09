@@ -68,16 +68,16 @@ class SuspensionTrailer : public Chassis {
 
     // Overrides
     // IUnknown
-    override virtual ~SuspensionTrailer();
+    ~SuspensionTrailer() override;
 
     // Behavior
-    override virtual void OnBehaviorChange(const UCrc32 &mechanic);
-    override virtual void OnTaskSimulate(float dT);
-    override virtual void Reset();
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
+    void OnTaskSimulate(float dT) override;
+    void Reset() override;
 
     // ISuspension
-    override virtual void MatchSpeed(float speed);
-    override virtual UMath::Vector3 GetWheelCenterPos(unsigned int i) const;
+    void MatchSpeed(float speed) override;
+    UMath::Vector3 GetWheelCenterPos(unsigned int i) const override;
 
     Tire &GetWheel(unsigned int i) {
         return *mTires[i];

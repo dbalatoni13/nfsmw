@@ -18,13 +18,13 @@ class DamageCopCar : public DamageVehicle {
 
     // Overrides
     // IUnknown
-    override virtual ~DamageCopCar();
+    ~DamageCopCar() override;
 
     // IDamageable
-    override virtual void ResetDamage();
+    void ResetDamage() override;
 
     // ITaskable
-    override virtual bool OnTask(HSIMTASK htask, float dT);
+    bool OnTask(HSIMTASK htask, float dT) override;
 
     // DamageVehicle
     override virtual void OnImpact(const UMath::Vector3 &arm, const UMath::Vector3 &normal, float force, float speed, const SimSurface &mysurface,

@@ -119,31 +119,31 @@ class EngineRacer : protected VehicleBehavior,
     void AutoShift();
 
     // Overrides
-    override virtual ~EngineRacer();
+    ~EngineRacer() override;
 
     // IEngine
-    override virtual void MatchSpeed(float speed);
-    override virtual float GetHorsePower() const;
+    void MatchSpeed(float speed) override;
+    float GetHorsePower() const override;
 
     // Behavior
-    override virtual void Reset();
-    override virtual void OnTaskSimulate(float dT);
-    override virtual void OnBehaviorChange(const UCrc32 &mechanic);
+    void Reset() override;
+    void OnTaskSimulate(float dT) override;
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
 
     // ITransmission
-    override virtual float GetSpeedometer() const;
-    override virtual float GetMaxSpeedometer() const;
-    override virtual float GetShiftPoint(GearID from_gear, GearID to_gear) const;
+    float GetSpeedometer() const override;
+    float GetMaxSpeedometer() const override;
+    float GetShiftPoint(GearID from_gear, GearID to_gear) const override;
 
     // IAttributeable
-    override virtual void OnAttributeChange(const Attrib::Collection *collection, unsigned int attribkey);
+    void OnAttributeChange(const Attrib::Collection *collection, unsigned int attribkey) override;
 
     // ITiptronic
-    override virtual bool SportShift(GearID gear);
+    bool SportShift(GearID gear) override;
 
     // IEngineDamage
-    override virtual void Sabotage(float time);
-    override virtual bool Blow();
+    void Sabotage(float time) override;
+    bool Blow() override;
 
     // Inline virtuals
     // IRaceEngine
@@ -1314,18 +1314,18 @@ class EngineDragster : public EngineRacer, public IDragEngine, public IDragTrans
     override virtual ~EngineDragster() {}
 
     // EngineRacer
-    override virtual ShiftStatus OnGearChange(GearID gear);
-    override virtual ShiftPotential UpdateShiftPotential(GearID gear, float rpm);
-    override virtual float GetEngineTorque(float rpm) const;
+    ShiftStatus OnGearChange(GearID gear) override;
+    ShiftPotential UpdateShiftPotential(GearID gear, float rpm) override;
+    float GetEngineTorque(float rpm) const override;
 
     // Behavior
-    override virtual void Reset();
-    override virtual void OnTaskSimulate(float dT);
-    override virtual void OnBehaviorChange(const UCrc32 &mechanic);
+    void Reset() override;
+    void OnTaskSimulate(float dT) override;
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
 
     // IEngineDamage
-    override virtual void Repair();
-    override virtual bool Blow();
+    void Repair() override;
+    bool Blow() override;
 
     // Inline virtuals
 

@@ -73,18 +73,18 @@ class SuspensionSpline : public Chassis, public INISCarControl {
 
     // Overrides
     // IUnknown
-    override virtual ~SuspensionSpline();
+    ~SuspensionSpline() override;
 
     // ISuspension
-    override virtual void MatchSpeed(float speed);
-    override virtual UMath::Vector3 GetWheelCenterPos(unsigned int i) const;
+    void MatchSpeed(float speed) override;
+    UMath::Vector3 GetWheelCenterPos(unsigned int i) const override;
 
     // Behavior
-    override virtual void Reset();
-    override virtual void OnBehaviorChange(const UCrc32 &mechanic);
+    void Reset() override;
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
 
     // INISCarControl
-    override virtual void RestoreState();
+    void RestoreState() override;
 
     Tire &GetWheel(unsigned int i) {
         return *mTires[i];
