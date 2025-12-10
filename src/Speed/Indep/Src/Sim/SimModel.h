@@ -31,6 +31,10 @@ class Model : public Sim::Object,
     struct Effect : public Sim::Effect {
         Effect(UCrc32 id, WUID owner, const Attrib::Collection *parent) : Sim::Effect(owner, parent), Identifire(id) {}
 
+        ~Effect() {
+            Stop();
+        }
+
         const UCrc32 Identifire; // offset 0x5C, size 0x4
     };
 
@@ -160,7 +164,7 @@ class Model : public Sim::Object,
     virtual void OnEndDraw() {}
 
     // IServiceable
-    virtual bool OnService(HSIMSERVICE hCon, Packet *pkt);
+    bool OnService(HSIMSERVICE hCon, Packet *pkt) override;
 
   private:
     IModel *mParent;                                              // offset 0x50, size 0x4

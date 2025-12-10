@@ -1,15 +1,15 @@
 #ifndef GAMEPLAY_GRACE_STATUS_H
 #define GAMEPLAY_GRACE_STATUS_H
 
-#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
 #include "GRace.h"
 #include "GTimer.h"
-#include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Ecstasy/EmitterSystem.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
 #include "Speed/Indep/Src/Interfaces/Simables/isimable.h"
 
@@ -68,6 +68,7 @@ struct _type_ID_GRaceStatusTriggerList {
     }
 };
 
+// total size: 0x46AC
 class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
   public:
     enum PlayMode {
@@ -76,7 +77,6 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
     };
 
   private:
-    // total size: 0x46AC
     GRacerInfo mRacerInfo[16];                                                         // offset 0x1C, size 0x1A80
     int mRacerCount;                                                                   // offset 0x1A9C, size 0x4
     bool mIsLoading;                                                                   // offset 0x1AA0, size 0x1
@@ -146,19 +146,33 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
     }
 };
 
-struct GRaceParameters {
-    // total size: 0x14
-    struct GRaceIndexData *mIndex; // offset 0x0, size 0x4
-    struct gameplay *mRaceRecord;  // offset 0x4, size 0x4
-    struct GVault *mParentVault;   // offset 0x8, size 0x4
-    struct GVault *mChildVault;    // offset 0xC, size 0x4
-
+// total size: 0x14
+class GRaceParameters {
+  public:
+    const Attrib::Gen::gameplay *GetGameplayObj() const;
     void GetStartPosition(UMath::Vector3 &pos) const;
     void GetStartDirection(UMath::Vector3 &dir) const;
+    bool GetIsLoopingRace() const;
+    GRace::Type GetRaceType() const;
+
+  protected:
+    struct GRaceIndexData *mIndex;      // offset 0x0, size 0x4
+    Attrib::Gen::gameplay *mRaceRecord; // offset 0x4, size 0x4
+    struct GVault *mParentVault;        // offset 0x8, size 0x4
+    struct GVault *mChildVault;         // offset 0xC, size 0x4
 };
 
-struct GRaceCustom : public GRaceParameters {
-    // total size: 0x28
+// total size: 0x28
+class GRaceCustom : public GRaceParameters {
+  public:
+    void SetReversed(bool isReverseDir);
+    void SetTrafficDensity(int density);
+    void SetNumOpponents(int numOpponents);
+    void SetDifficulty(GRace::Difficulty difficulty);
+    void SetCopsEnabled(bool copsEnabled);
+    void SetNumLaps(int numLaps);
+
+  private:
     struct GActivity *mRaceActivity; // offset 0x14, size 0x4
     unsigned int mNumOpponents;      // offset 0x18, size 0x4
     bool mReversed;                  // offset 0x1C, size 0x1

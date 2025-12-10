@@ -194,8 +194,6 @@ struct CDispatcher : public UTL::Collections::Singleton<CDispatcher> {
 
 }; // namespace Sim
 
-using namespace Sim;
-
 class SimTask : public UTL::Collections::Countable<SimTask> {
   public:
     enum eFlags {
@@ -205,7 +203,7 @@ class SimTask : public UTL::Collections::Countable<SimTask> {
 
     static void UpdateAll(float dT_sim, float dT_render);
 
-    SimTask(unsigned int priority, float rate, ITaskable *handler, float start_offset, TaskMode mode);
+    SimTask(unsigned int priority, float rate, Sim::ITaskable *handler, float start_offset, Sim::TaskMode mode);
     ~SimTask();
     void Run(float dT_sim, float dT_render);
 
@@ -238,8 +236,8 @@ class SimTask : public UTL::Collections::Countable<SimTask> {
         return mFlags & DirtyFlag;
     }
 
-    TaskMode GetMode() const {
-        return static_cast<TaskMode>(mFlags & 0xF);
+    Sim::TaskMode GetMode() const {
+        return static_cast<Sim::TaskMode>(mFlags & 0xF);
     }
 
     HSIMTASK GetInstanceHandle() const {
@@ -257,20 +255,20 @@ class SimTask : public UTL::Collections::Countable<SimTask> {
     static unsigned int mNextHandle;
     static SimTask *mRoot;
 
-    float mRate;            // offset 0x4, size 0x4
-    ITaskable *mHandler;    // offset 0x8, size 0x4
-    float mUpdate;          // offset 0xC, size 0x4
-    unsigned int mPriority; // offset 0x10, size 0x4
-    SimTask *mHead;         // offset 0x14, size 0x4
-    SimTask *mTail;         // offset 0x18, size 0x4
-    unsigned int mFlags;    // offset 0x1C, size 0x4
-    float mTimeBank;        // offset 0x20, size 0x4
-    HSIMTASK mHandle;       // offset 0x24, size 0x4
-    HSIMPROFILE mProfile;   // offset 0x28, size 0x4
+    float mRate;              // offset 0x4, size 0x4
+    Sim::ITaskable *mHandler; // offset 0x8, size 0x4
+    float mUpdate;            // offset 0xC, size 0x4
+    unsigned int mPriority;   // offset 0x10, size 0x4
+    SimTask *mHead;           // offset 0x14, size 0x4
+    SimTask *mTail;           // offset 0x18, size 0x4
+    unsigned int mFlags;      // offset 0x1C, size 0x4
+    float mTimeBank;          // offset 0x20, size 0x4
+    HSIMTASK mHandle;         // offset 0x24, size 0x4
+    HSIMPROFILE mProfile;     // offset 0x28, size 0x4
 };
 
 // UNSOLVED
-SimTask::SimTask(unsigned int priority, float rate, ITaskable *handler, float start_offset, TaskMode mode)
+SimTask::SimTask(unsigned int priority, float rate, Sim::ITaskable *handler, float start_offset, Sim::TaskMode mode)
     : mRate(UMath::Min(rate, 1.0f)), mHandle((HSIMTASK)SimTask::mNextHandle), mHandler(handler), mUpdate(-start_offset), mPriority(priority),
       mFlags(mode & ModeFlags), mTimeBank(0.0f), mHead(nullptr), mTail(nullptr), mProfile(nullptr) {
     SimTask::mNextHandle++;
@@ -319,7 +317,7 @@ void SimTask::UnLink() {
 }
 
 SimTask::~SimTask() {
-    Profile::Release(mProfile);
+    Sim::Profile::Release(mProfile);
     UnLink();
 }
 
@@ -329,18 +327,18 @@ void SimTask::Run(float dT_sim, float dT_render) {
         return;
     }
     ProfileNode profile_node("TODO", 1);
-    TaskMode mode = GetMode();
+    Sim::TaskMode mode = GetMode();
 
-    if (mode == TASK_FRAME_FIXED) {
+    if (mode == Sim::TASK_FRAME_FIXED) {
         mUpdate += mRate;
         if (mUpdate < 1.0f) {
             return;
         }
-        Profile::Scope profile(mProfile);
+        Sim::Profile::Scope profile(mProfile);
         bool handled = mHandler->OnTask(GetInstanceHandle(), dT_sim / mRate);
         mUpdate -= 1.0f;
     } else {
-        if (mode != TASK_FRAME_VARIABLE || dT_render <= 0.0f) {
+        if (mode != Sim::TASK_FRAME_VARIABLE || dT_render <= 0.0f) {
             return;
         }
         mUpdate += mRate;
@@ -348,7 +346,7 @@ void SimTask::Run(float dT_sim, float dT_render) {
         if (mUpdate < 1.0f) {
             return;
         }
-        Profile::Scope profile(mProfile);
+        Sim::Profile::Scope profile(mProfile);
         bool handled = mHandler->OnTask(GetInstanceHandle(), mUpdate);
         mTimeBank = 0.0f;
         mUpdate -= 1.0f;
@@ -365,16 +363,16 @@ void SimTask::UpdateAll(float dT_sim, float dT_render) {
 }
 
 // total size: 0x90
-class SimSystem : public UTL::COM::Object, public ITaskable {
+class SimSystem : public UTL::COM::Object, public Sim::ITaskable {
   public:
     SimSystem();
     float DistanceToCamera(const UMath::Vector3 &v) const;
     void RunAllTasks(float frame_time);
     void UpdateFrame();
     void PauseInput(bool bPaused);
-    void SetState(State newstate);
+    void SetState(Sim::State newstate);
     void ModifyTask(HSIMTASK hTask, float rate);
-    HSIMTASK AddTask(const UCrc32 &schedule, float rate, ITaskable *handler, float start_offset, TaskMode mode);
+    HSIMTASK AddTask(const UCrc32 &schedule, float rate, ITaskable *handler, float start_offset, Sim::TaskMode mode);
     void RemoveTask(HSIMTASK hTask, ITaskable *handler);
     void Start(const UCrc32 objclass);
 
@@ -390,7 +388,7 @@ class SimSystem : public UTL::COM::Object, public ITaskable {
         return mSpeed;
     }
 
-    State GetState() {
+    Sim::State GetState() {
         return mState;
     }
 
@@ -411,9 +409,9 @@ class SimSystem : public UTL::COM::Object, public ITaskable {
     float mTargetSpeed;               // offset 0x20, size 0x4
     float mSpeed;                     // offset 0x24, size 0x4
     int mEvent;                       // offset 0x28, size 0x4
-    State mState;                     // offset 0x2C, size 0x4
+    Sim::State mState;                // offset 0x2C, size 0x4
     ESimulate::StaticData mEventData; // offset 0x30, size 0x8
-    IActivity *mKernel;               // offset 0x38, size 0x4
+    Sim::IActivity *mKernel;          // offset 0x38, size 0x4
     bool mInputPaused;                // offset 0x3C, size 0x1
     HSIMTASK mWorldUpdate;            // offset 0x40, size 0x4
     HSIMTASK mSimStart;               // offset 0x44, size 0x4
@@ -429,14 +427,14 @@ SimSystem::SimSystem()
     : UTL::COM::Object(3),                           //
       ITaskable(this),                               //
       mScheduleStep(Scheduler::Get().GetTimeStep()), //
-      mState(STATE_NONE),                            //
+      mState(Sim::STATE_NONE),                       //
       mKernel(nullptr),                              //
       mTargetSpeed(1.0f),                            //
       mSpeed(1.0f),                                  //
       mEvent(-1),                                    //
       mInputPaused(false),                           //
       mAttribs(0xeec2271a, 0, nullptr),              // "default"
-      mTasksProfile(Profile::Create()) {
+      mTasksProfile(Sim::Profile::Create()) {
     mCameras[0] = mCameras[1] = UMath::Vector4::kZero;
     mCameraTargets[0] = mCameraTargets[1] = 0;
     mTimeStep = mScheduleStep;
@@ -446,18 +444,18 @@ SimSystem::SimSystem()
 
     unsigned int c = mAttribs.Num_SimSubSystems();
     for (unsigned int i = 0; i < c; i++) {
-        SubSystem::Init(UCrc32(mAttribs.SimSubSystems(i)));
+        Sim::SubSystem::Init(UCrc32(mAttribs.SimSubSystems(i)));
     }
 
-    mSimStart = SimSystem::AddTask(UCrc32("SimStart"), 1.0f, this, 0.0f, TASK_FRAME_FIXED);
-    mWorldUpdate = AddTask(UCrc32("WorldUpdate"), 1.0f, this, 0.0f, TASK_FRAME_FIXED);
-    mSimFrameEnd = AddTask(UCrc32("SimEnd"), 1.0f, this, 0.0f, TASK_FRAME_VARIABLE); // bug, this should be "SimFrameEnd"
-    mSimEnd = AddTask(UCrc32("SimEnd"), 1.0f, this, 0.0f, TASK_FRAME_FIXED);
+    mSimStart = SimSystem::AddTask(UCrc32("SimStart"), 1.0f, this, 0.0f, Sim::TASK_FRAME_FIXED);
+    mWorldUpdate = AddTask(UCrc32("WorldUpdate"), 1.0f, this, 0.0f, Sim::TASK_FRAME_FIXED);
+    mSimFrameEnd = AddTask(UCrc32("SimEnd"), 1.0f, this, 0.0f, Sim::TASK_FRAME_VARIABLE); // bug, this should be "SimFrameEnd"
+    mSimEnd = AddTask(UCrc32("SimEnd"), 1.0f, this, 0.0f, Sim::TASK_FRAME_FIXED);
 
-    ProfileTask(mSimStart, "SimStart");
-    ProfileTask(mWorldUpdate, "WorldUpdate");
-    ProfileTask(mSimFrameEnd, "SimFrameEnd");
-    ProfileTask(mSimEnd, "SimEnd");
+    Sim::ProfileTask(mSimStart, "SimStart");
+    Sim::ProfileTask(mWorldUpdate, "WorldUpdate");
+    Sim::ProfileTask(mSimFrameEnd, "SimFrameEnd");
+    Sim::ProfileTask(mSimEnd, "SimEnd");
 }
 
 float SimSystem::DistanceToCamera(const UMath::Vector3 &v) const {
@@ -503,8 +501,8 @@ bool SimSystem::OnTask(HSIMTASK htask, float dT) {
 
     if (htask == mSimStart) {
         FetchCameras();
-        SimpleRigidBody::Update(dT, Internal::mWorkspace);
-        RigidBody::PushSP(Internal::mWorkspace);
+        SimpleRigidBody::Update(dT, Sim::Internal::mWorkspace);
+        RigidBody::PushSP(Sim::Internal::mWorkspace);
         RigidBody::Update(dT);
         AITarget::TrackAll();
     } else if (htask == mWorldUpdate) {
@@ -532,7 +530,7 @@ bool SimSystem::OnTask(HSIMTASK htask, float dT) {
 
 void SimSystem::RunAllTasks(float frame_time) {
     ProfileNode profile_node;
-    Profile::Scope scope(mTasksProfile);
+    Sim::Profile::Scope scope(mTasksProfile);
 
     SimTask::UpdateAll(mTimeStep, frame_time);
 }
@@ -542,45 +540,45 @@ void SimSystem::UpdateFrame() {
 
     CollectGarbage();
     if (mKernel) {
-        ITimeManager *timeMgr;
+        Sim::ITimeManager *timeMgr;
         if (mKernel->QueryInterface(&timeMgr)) {
             mSpeed = timeMgr->OnManageTime(mScheduleStep, mSpeed);
         }
 
-        IStateManager *statemgr;
+        Sim::IStateManager *statemgr;
         if (mKernel->QueryInterface(&statemgr)) {
             SetState(statemgr->OnManageState(mState));
             PauseInput(statemgr->ShouldPauseInput());
         }
     } else {
-        mState = STATE_NONE;
+        mState = Sim::STATE_NONE;
         mSpeed = 1.0f;
     }
     const unsigned int current_render_frame = eGetFrameCounter();
     mTimeStep = mScheduleStep * mSpeed;
 
-    if ((mState != STATE_ACTIVE) || (mTimeStep <= FLOAT_EPSILON)) {
-        Internal::mFrameTime = 0.0f;
-        Internal::mRenderFrame = current_render_frame;
+    if ((mState != Sim::STATE_ACTIVE) || (mTimeStep <= FLOAT_EPSILON)) {
+        Sim::Internal::mFrameTime = 0.0f;
+        Sim::Internal::mRenderFrame = current_render_frame;
         return;
     }
-    Profile::Begin();
+    Sim::Profile::Begin();
 
     int start_ticks = bGetTicker();
-    Internal::mTime += mTimeStep;
-    Internal::mTick++;
+    Sim::Internal::mTime += mTimeStep;
+    Sim::Internal::mTick++;
     float render_step = 0.0f;
-    if (Internal::mRenderFrame != current_render_frame) {
-        render_step = Internal::mFrameTime;
-        Internal::mFrameTime = 0.0f;
-        Internal::mRenderFrame = current_render_frame;
+    if (Sim::Internal::mRenderFrame != current_render_frame) {
+        render_step = Sim::Internal::mFrameTime;
+        Sim::Internal::mFrameTime = 0.0f;
+        Sim::Internal::mRenderFrame = current_render_frame;
     }
-    Internal::mFrameTime += mTimeStep;
+    Sim::Internal::mFrameTime += mTimeStep;
     RunAllTasks(render_step);
-    Internal::mProfileTime += bGetTickerDifference(start_ticks);
-    Internal::mCallCount++;
+    Sim::Internal::mProfileTime += bGetTickerDifference(start_ticks);
+    Sim::Internal::mCallCount++;
 
-    Profile::End();
+    Sim::Profile::End();
 }
 
 static void PauseFFB(IPlayer *player) {
@@ -623,7 +621,7 @@ void SimSystem::PauseInput(bool bPaused) {
     IPlayer::ForEach(PLAYER_LOCAL, ClearInput);
 }
 
-void SimSystem::SetState(State newstate) {
+void SimSystem::SetState(Sim::State newstate) {
     if (newstate != mState) {
         mState = newstate;
     }
@@ -635,7 +633,7 @@ void SimSystem::ModifyTask(HSIMTASK hTask, float rate) {
 }
 
 // UNSOLVED, but should be functionally matching
-HSIMTASK SimSystem::AddTask(const UCrc32 &schedule, float rate, ITaskable *handler, float start_offset, TaskMode mode) {
+HSIMTASK SimSystem::AddTask(const UCrc32 &schedule, float rate, ITaskable *handler, float start_offset, Sim::TaskMode mode) {
     rate = UMath::Min(rate, 1.0f);
     start_offset = UMath::Max(start_offset, 0.0f);
 
@@ -660,7 +658,7 @@ void SimSystem::RemoveTask(HSIMTASK hTask, ITaskable *handler) {
 }
 
 void SimSystem::Start(const UCrc32 objclass) {
-    mKernel = UTL::COM::Factory<Param, IActivity, UCrc32>::CreateInstance(UCrc32(objclass), Param());
+    mKernel = UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance(UCrc32(objclass), Sim::Param());
 }
 
 IRigidBody *SimCollisionMap::GetRB(int rbIndex) const {

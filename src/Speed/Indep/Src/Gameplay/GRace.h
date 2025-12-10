@@ -7,6 +7,13 @@
 
 namespace GRace {
 
+enum Difficulty {
+    kRaceDifficulty_Easy = 0,
+    kRaceDifficulty_Medium = 1,
+    kRaceDifficulty_Hard = 2,
+    kRaceDifficulty_NumDifficulties = 3,
+};
+
 enum Context {
     kRaceContext_QuickRace = 0,
     kRaceContext_TimeTrial = 1,

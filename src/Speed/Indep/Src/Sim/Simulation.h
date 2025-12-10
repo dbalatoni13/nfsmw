@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
 
@@ -44,7 +45,9 @@ class IStateManager : public UTL::COM::IUnknown {
 float GetTime();
 float GetSpeed();
 float GetTimeStep();
+const State GetState();
 eUserMode GetUserMode();
+void SetStream(UMath::Vector3 &location, bool blocking);
 void ProfileTask(HSIMTASK htask, const char *name);
 HSIMTASK AddTask(const UCrc32 &schedule, float rate, ITaskable *handler, float start_offset, TaskMode mode);
 void RemoveTask(HSIMTASK hTask, ITaskable *handler);

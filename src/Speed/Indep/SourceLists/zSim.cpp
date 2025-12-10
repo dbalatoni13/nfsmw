@@ -21,3 +21,5 @@
 #include "Speed/Indep/Src/Sim/Common/SimTypes.cpp"
 
 #include "Speed/Indep/Src/Sim/Common/SimModel.cpp"
+
+#include "Speed/Indep/Src/Sim/Activities/QuickGame.cpp"

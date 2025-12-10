@@ -99,7 +99,7 @@ struct StreamingPositionEntry {
 
 // total size: 0x34
 class TSMemoryNode : public bTNode<TSMemoryNode> {
-  private:
+  public:
     int Address;        // offset 0x8, size 0x4
     int Size;           // offset 0xC, size 0x4
     bool Allocated;     // offset 0x10, size 0x1
@@ -144,6 +144,11 @@ class TrackStreamer {
     void SetStreamingPosition(int position_number, const bVector3 *position);
     void ClearStreamingPositions();
     void BlockUntilLoadingComplete();
+
+    // Inlines
+    void DisableZoneSwitching() {
+        ZoneSwitchingDisabled = true;
+    }
 
   private:
     TrackStreamingSection *pTrackStreamingSections;       // offset 0x0, size 0x4

@@ -123,7 +123,7 @@ void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialV
         rotInitialVec = 0.63f;
     }
 
-    GRaceCustom *quickRace = GRaceDatabase::mObj->GetStartupRace();
+    GRaceCustom *quickRace = GRaceDatabase::Get().GetStartupRace();
 
     if (rotInitialVec == 0.0f) {
     }

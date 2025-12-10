@@ -15,7 +15,7 @@ struct TrafficTeleporter { // ion even know
 };
 
 class World {
-public:
+  public:
     World();
     ~World();
 
@@ -24,27 +24,27 @@ public:
     // there's a lot more, but they aren't used
     // too bad!
 
-private:
+  private:
     // total size: 0xE8
-    bTList<Car> CarList; // offset 0x0, size 0x8
-    int TotalNumCars; // offset 0x8, size 0x4
-    int AICarPos; // offset 0xC, size 0x4
-    int CopCarPos; // offset 0x10, size 0x4
-    int TrafficCarPos; // offset 0x14, size 0x4
-    int ParkedCarPos; // offset 0x18, size 0x4
-    Car *CarTable[10]; // offset 0x1C, size 0x28
-    bVector3 PlayerPositions[6]; // offset 0x44, size 0x60
-    float PlayerDATs[6]; // offset 0xA4, size 0x18
-    unsigned int WorldRandomSeed; // offset 0xBC, size 0x4
-    float fTimeToRemainPaused; // offset 0xC0, size 0x4
-    int OnlinePauseWorld; // offset 0xC4, size 0x4
-    float PreviousTimeToWaste; // offset 0xC8, size 0x4
-    float fTimeScale; // offset 0xCC, size 0x4
-    float fTimeScaleTimer; // offset 0xD0, size 0x4
-    void (* TimeScaleCallback)(int); // offset 0xD4, size 0x4
-    int TimeScaleCallbackParam; // offset 0xD8, size 0x4
-    TrafficTeleporter *Teleporter; // offset 0xDC, size 0x4
-    unsigned int CollisionPredictionID; // offset 0xE0, size 0x4
+    bTList<Car> CarList;                 // offset 0x0, size 0x8
+    int TotalNumCars;                    // offset 0x8, size 0x4
+    int AICarPos;                        // offset 0xC, size 0x4
+    int CopCarPos;                       // offset 0x10, size 0x4
+    int TrafficCarPos;                   // offset 0x14, size 0x4
+    int ParkedCarPos;                    // offset 0x18, size 0x4
+    Car *CarTable[10];                   // offset 0x1C, size 0x28
+    bVector3 PlayerPositions[6];         // offset 0x44, size 0x60
+    float PlayerDATs[6];                 // offset 0xA4, size 0x18
+    unsigned int WorldRandomSeed;        // offset 0xBC, size 0x4
+    float fTimeToRemainPaused;           // offset 0xC0, size 0x4
+    int OnlinePauseWorld;                // offset 0xC4, size 0x4
+    float PreviousTimeToWaste;           // offset 0xC8, size 0x4
+    float fTimeScale;                    // offset 0xCC, size 0x4
+    float fTimeScaleTimer;               // offset 0xD0, size 0x4
+    void (*TimeScaleCallback)(int);      // offset 0xD4, size 0x4
+    int TimeScaleCallbackParam;          // offset 0xD8, size 0x4
+    TrafficTeleporter *Teleporter;       // offset 0xDC, size 0x4
+    unsigned int CollisionPredictionID;  // offset 0xE0, size 0x4
     unsigned int PotentialDriveTargetID; // offset 0xE4, size 0x4
 };
 
@@ -55,13 +55,13 @@ class WWorldPos {
   public:
     bool Update(const UMath::Vector3 &pos, UMath::Vector4 &dest, bool usecache, const WCollider *collider, bool keep_valid);
 
-	void SetTolerance(float liftAmount) {
-		fYOffset = liftAmount;
-	}
+    void SetTolerance(float liftAmount) {
+        fYOffset = liftAmount;
+    }
 
-	const Attrib::Collection *GetSurface() const {
-		return fSurface;
-	}
+    const Attrib::Collection *GetSurface() const {
+        return fSurface;
+    }
 
   private:
     WCollisionTri fFace;                // offset 0x0, size 0x30
@@ -84,5 +84,6 @@ extern int g_tweakIsDriftRace;
 void ServiceSpaceNodes();
 void ResetWorldTime();
 eTimeOfDay GetCurrentTimeOfDay();
+void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialVec);
 
 #endif

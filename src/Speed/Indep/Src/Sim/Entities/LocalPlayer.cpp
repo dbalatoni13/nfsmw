@@ -346,7 +346,6 @@ bool LocalPlayer::OnTask(HSIMTASK htask, float dT) {
         DoFFB();
         return true;
     } else {
-        // TODO is this at the right place?
         Sim::Object::OnTask(htask, dT);
         return false;
     }

@@ -37,7 +37,7 @@ class Effect : public UTL::COM::Object, public bTNode<Sim::Effect>, public IServ
 
     // Overrides
     // IUnknown
-    ~Effect() override;
+    // virtual ~Effect() override;
 
     // IServiceable
     bool OnService(HSIMSERVICE hCon, Packet *pkt) override;

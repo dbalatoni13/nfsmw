@@ -17,8 +17,30 @@ struct _type_ID_StockCarMap {
     }
 };
 
+// total size: 0x308
 class GManager : public UTL::COM::Object, public IVehicleCache {
-    // total size: 0x308
+  public:
+    static GManager *mObj;
+
+    GManager(const char *vaultPackName);
+    void RefreshWorldParticleEffects();
+    void GetRespawnLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialVec);
+    void RestorePursuitBreakerIcons(int sectionID);
+    void NotifyWorldService();
+
+    static GManager &Get() {
+        return *mObj;
+    }
+
+    static bool Exists() {
+        return mObj != nullptr;
+    }
+
+    bool GetIsWarping() const {
+        return mWarping;
+    }
+
+  private:
     const char *mVaultPackFileName;                                                   // offset 0x1C, size 0x4
     bFile *mVaultPackFile;                                                            // offset 0x20, size 0x4
     unsigned int mVaultCount;                                                         // offset 0x24, size 0x4
@@ -34,8 +56,8 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     unsigned char *mTempLoadData;                                                     // offset 0x4C, size 0x4
     int mTransientPoolNumber;                                                         // offset 0x50, size 0x4
     void *mTransientPoolMemory;                                                       // offset 0x54, size 0x4
-    struct Class *mGameplayClass;                                                     // offset 0x58, size 0x4
-    struct Class *mMilestoneClass;                                                    // offset 0x5C, size 0x4
+    Attrib::Class *mGameplayClass;                                                    // offset 0x58, size 0x4
+    Attrib::Class *mMilestoneClass;                                                   // offset 0x5C, size 0x4
     unsigned int mAttributeKeyShiftTo24;                                              // offset 0x60, size 0x4
     unsigned int mCollectionKeyShiftTo32;                                             // offset 0x64, size 0x4
     unsigned int mMaxObjects;                                                         // offset 0x68, size 0x4
@@ -86,23 +108,6 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     bool mAllowEngageSafehouse;     // offset 0x2FC, size 0x1
     bool mAllowMenuGates;           // offset 0x300, size 0x1
     unsigned int mRestartEventHash; // offset 0x304, size 0x4
-
-  public:
-    static GManager *mObj;
-
-    GManager(const char *vaultPackName);
-    void RefreshWorldParticleEffects();
-    void GetRespawnLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialVec);
-    void RestorePursuitBreakerIcons(int sectionID);
-    void NotifyWorldService();
-
-    static GManager &Get() {
-        return *mObj;
-    }
-
-    static bool Exists() {
-        return mObj != nullptr;
-    }
 };
 
 #endif
