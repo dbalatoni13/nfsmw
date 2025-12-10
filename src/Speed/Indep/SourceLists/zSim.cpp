@@ -23,3 +23,7 @@
 #include "Speed/Indep/Src/Sim/Common/SimModel.cpp"
 
 #include "Speed/Indep/Src/Sim/Activities/QuickGame.cpp"
+
+#include "Speed/Indep/Src/Sim/Activities/CareerGame.cpp"
+
+#include "Speed/Indep/Src/Sim/Activities/NISActivity.cpp"

@@ -8,9 +8,9 @@
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
 #include "Speed/Indep/Src/EAXSound/SFX_base.hpp"
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/audiosystem.h"
 #include "Speed/Indep/Src/Main/Event.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
-
 
 // yes that is the correct name for the file
 
@@ -81,7 +81,8 @@ enum eAemsStreamBanks {
 
 bool g_EAXIsPaused(void);
 
-struct EAXSound : public AudioMemBase {
+// total size: 0xBC
+class EAXSound : public AudioMemBase {
   public:
     EAXSound(void);
     virtual ~EAXSound(void);
@@ -94,7 +95,6 @@ struct EAXSound : public AudioMemBase {
     void StopSND11();
 
   private:
-    // total size: 0xBC
     int ncompiletest;                            // offset 0x4, size 0x4
     int m_nCopAIStateParam;                      // offset 0x8, size 0x4
     bool bPlayCameraSnapShot;                    // offset 0xC, size 0x1
@@ -124,20 +124,20 @@ struct EAXSound : public AudioMemBase {
     struct EAXFrontEnd *m_pFESnd;                // offset 0x6C, size 0x4
     struct EAXCommon *m_pCmnSnd;                 // offset 0x70, size 0x4
     struct NFSLiveLink *m_pNFSLiveLink;          // offset 0x74, size 0x4
-    enum e3DPlayerMix m_ePlayerMixMode;          // offset 0x78, size 0x4
+    e3DPlayerMix m_ePlayerMixMode;               // offset 0x78, size 0x4
     int m_nStereoUpgradeLevel;                   // offset 0x7C, size 0x4
     int m_nGameMode;                             // offset 0x80, size 0x4
-    enum eSndGameMode m_eSndGameMode;            // offset 0x84, size 0x4
-    enum eSndGameMode m_prevSndGameMode;         // offset 0x88, size 0x4
+    eSndGameMode m_eSndGameMode;                 // offset 0x84, size 0x4
+    eSndGameMode m_prevSndGameMode;              // offset 0x88, size 0x4
     int m_nNumCarsInGame;                        // offset 0x8C, size 0x4
     struct EAXSND8Wrapper *m_pEAXSND8Wrapper;    // offset 0x90, size 0x4
     struct EAXS_StreamManager *m_pStreamManager; // offset 0x94, size 0x4
     struct NFSMixMaster *m_pNFSMixMaster;        // offset 0x98, size 0x4
     cSTICH_PlayBack *m_pSTICH_Playback;          // offset 0x9C, size 0x4
-    enum eAemsStreamBanks m_eSpeechLoadBank;     // offset 0xA0, size 0x4
+    eAemsStreamBanks m_eSpeechLoadBank;          // offset 0xA0, size 0x4
     int m_nSpeechLoadBankIndex;                  // offset 0xA4, size 0x4
-    struct audiosystem *mAttributes;             // offset 0xA8, size 0x4
-    struct audiosystem *mLocalAttr;              // offset 0xAC, size 0x4
+    Attrib::Gen::audiosystem *mAttributes;       // offset 0xA8, size 0x4
+    Attrib::Gen::audiosystem *mLocalAttr;        // offset 0xAC, size 0x4
     Hermes::HHANDLER mmsgMRestartRace;           // offset 0xB0, size 0x4
     int mEventID;                                // offset 0xB4, size 0x4
     Event::StaticData mData;                     // offset 0xB8, size 0x4

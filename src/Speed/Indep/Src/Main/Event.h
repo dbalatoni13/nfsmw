@@ -8,25 +8,25 @@
 #include <cstddef>
 #include <types.h>
 
-char *gCreationPoint = nullptr;
-char *gDeletionPoint = nullptr;
+extern char *gCreationPoint;
+extern char *gDeletionPoint;
 
 class Event {
   public:
-    virtual ~Event();
-    virtual const char *GetEventName() {
-        return "";
-    }
-
-    void *operator new(size_t size);
-    void operator delete(void *ptr);
-
     struct StaticData {
         unsigned int fEventID;
     };
 
-  private:
-    unsigned int fEventSize;
+    void *operator new(size_t size);
+    void operator delete(void *ptr, std::size_t size);
+
+    virtual ~Event() {}
+
+    virtual const char *GetEventName();
+
+    Event(std::size_t size) : fEventSize(size) {}
+
+    std::size_t fEventSize;
 };
 
 #endif

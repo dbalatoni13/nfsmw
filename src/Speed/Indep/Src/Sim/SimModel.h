@@ -31,9 +31,7 @@ class Model : public Sim::Object,
     struct Effect : public Sim::Effect {
         Effect(UCrc32 id, WUID owner, const Attrib::Collection *parent) : Sim::Effect(owner, parent), Identifire(id) {}
 
-        ~Effect() {
-            Stop();
-        }
+        ~Effect() {}
 
         const UCrc32 Identifire; // offset 0x5C, size 0x4
     };
