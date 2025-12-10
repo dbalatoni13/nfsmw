@@ -144,9 +144,7 @@ def generate_header_for_event(event: dict) -> str:
 
     out.append(f"    ~{name}() override;")
     out.append("")
-    out.append("    const char *GetEventName() override {")
-    out.append(f'        return "{name}";')
-    out.append("    }")
+    out.append("    const char *GetEventName() override;")
 
     if static_fields or extra_fields:
         out.append("")

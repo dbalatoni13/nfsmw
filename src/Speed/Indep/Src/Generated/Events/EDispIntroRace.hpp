@@ -19,9 +19,7 @@ class EDispIntroRace : public Event {
 
     ~EDispIntroRace() override;
 
-    const char *GetEventName() override {
-        return "EDispIntroRace";
-    }
+    const char *GetEventName() override;
 };
 
 void EDispIntroRace_MakeEvent_Callback(const void *staticData);

@@ -29,9 +29,7 @@ class EFireRandomTrigger : public Event {
 
     ~EFireRandomTrigger() override;
 
-    const char *GetEventName() override {
-        return "EFireRandomTrigger";
-    }
+    const char *GetEventName() override;
 
   private:
     Trigger *fTrigger1; // offset: 0x8, size 0x4

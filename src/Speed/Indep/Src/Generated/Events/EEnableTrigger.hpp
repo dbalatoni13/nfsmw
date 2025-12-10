@@ -21,9 +21,7 @@ class EEnableTrigger : public Event {
 
     ~EEnableTrigger() override;
 
-    const char *GetEventName() override {
-        return "EEnableTrigger";
-    }
+    const char *GetEventName() override;
 
   private:
     Trigger *fTrigger; // offset: 0x8, size 0x4

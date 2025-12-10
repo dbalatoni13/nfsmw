@@ -22,9 +22,7 @@ class ENISBrakelock : public Event {
 
     ~ENISBrakelock() override;
 
-    const char *GetEventName() override {
-        return "ENISBrakelock";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fFront; // offset: 0x8, size 0x4

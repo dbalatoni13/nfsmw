@@ -19,9 +19,7 @@ class EShowRaceCountdown : public Event {
 
     ~EShowRaceCountdown() override;
 
-    const char *GetEventName() override {
-        return "EShowRaceCountdown";
-    }
+    const char *GetEventName() override;
 };
 
 void EShowRaceCountdown_MakeEvent_Callback(const void *staticData);

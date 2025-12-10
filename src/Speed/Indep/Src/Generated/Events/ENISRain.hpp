@@ -21,9 +21,7 @@ class ENISRain : public Event {
 
     ~ENISRain() override;
 
-    const char *GetEventName() override {
-        return "ENISRain";
-    }
+    const char *GetEventName() override;
 
   private:
     float fRainIntensity; // offset: 0x8, size 0x4

@@ -21,9 +21,7 @@ class ENISReattach : public Event {
 
     ~ENISReattach() override;
 
-    const char *GetEventName() override {
-        return "ENISReattach";
-    }
+    const char *GetEventName() override;
 
   private:
     int fRepairDamage; // offset: 0x8, size 0x4

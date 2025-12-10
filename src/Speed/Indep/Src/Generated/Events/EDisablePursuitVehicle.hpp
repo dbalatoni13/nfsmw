@@ -19,9 +19,7 @@ class EDisablePursuitVehicle : public Event {
 
     ~EDisablePursuitVehicle() override;
 
-    const char *GetEventName() override {
-        return "EDisablePursuitVehicle";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fhSimable; // offset: 0xc, size 0x4

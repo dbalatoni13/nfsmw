@@ -21,9 +21,7 @@ class EEnterBin : public Event {
 
     ~EEnterBin() override;
 
-    const char *GetEventName() override {
-        return "EEnterBin";
-    }
+    const char *GetEventName() override;
 
   private:
     int fBinIndex; // offset: 0x8, size 0x4

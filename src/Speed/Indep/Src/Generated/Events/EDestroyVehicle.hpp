@@ -19,9 +19,7 @@ class EDestroyVehicle : public Event {
 
     ~EDestroyVehicle() override;
 
-    const char *GetEventName() override {
-        return "EDestroyVehicle";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fhSimable; // offset: 0xc, size 0x4

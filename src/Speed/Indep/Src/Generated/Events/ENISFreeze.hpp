@@ -21,9 +21,7 @@ class ENISFreeze : public Event {
 
     ~ENISFreeze() override;
 
-    const char *GetEventName() override {
-        return "ENISFreeze";
-    }
+    const char *GetEventName() override;
 
   private:
     int fFreezeAnimation; // offset: 0x8, size 0x4

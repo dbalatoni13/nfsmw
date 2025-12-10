@@ -22,9 +22,7 @@ class ERandomExplosion : public Event {
 
     ~ERandomExplosion() override;
 
-    const char *GetEventName() override {
-        return "ERandomExplosion";
-    }
+    const char *GetEventName() override;
 
   private:
     int fClass; // offset: 0x8, size 0x4

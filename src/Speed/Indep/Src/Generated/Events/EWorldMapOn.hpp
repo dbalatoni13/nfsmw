@@ -19,9 +19,7 @@ class EWorldMapOn : public Event {
 
     ~EWorldMapOn() override;
 
-    const char *GetEventName() override {
-        return "EWorldMapOn";
-    }
+    const char *GetEventName() override;
 };
 
 void EWorldMapOn_MakeEvent_Callback(const void *staticData);

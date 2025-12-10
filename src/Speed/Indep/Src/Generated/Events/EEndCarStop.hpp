@@ -21,9 +21,7 @@ class EEndCarStop : public Event {
 
     ~EEndCarStop() override;
 
-    const char *GetEventName() override {
-        return "EEndCarStop";
-    }
+    const char *GetEventName() override;
 
   private:
     int fDontRetestInput; // offset: 0x8, size 0x4

@@ -21,9 +21,7 @@ class ECellCall : public Event {
 
     ~ECellCall() override;
 
-    const char *GetEventName() override {
-        return "ECellCall";
-    }
+    const char *GetEventName() override;
 
   private:
     int fID; // offset: 0x8, size 0x4

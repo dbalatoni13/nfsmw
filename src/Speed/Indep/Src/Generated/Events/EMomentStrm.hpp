@@ -24,9 +24,7 @@ class EMomentStrm : public Event {
 
     ~EMomentStrm() override;
 
-    const char *GetEventName() override {
-        return "EMomentStrm";
-    }
+    const char *GetEventName() override;
 
   private:
     const char *fAttribStrm; // offset: 0x8, size 0x4

@@ -21,9 +21,7 @@ class EAudioSmackableTest : public Event {
 
     ~EAudioSmackableTest() override;
 
-    const char *GetEventName() override {
-        return "EAudioSmackableTest";
-    }
+    const char *GetEventName() override;
 
   private:
     float fTestRadius; // offset: 0x8, size 0x4

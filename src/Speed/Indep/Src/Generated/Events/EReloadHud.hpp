@@ -19,9 +19,7 @@ class EReloadHud : public Event {
 
     ~EReloadHud() override;
 
-    const char *GetEventName() override {
-        return "EReloadHud";
-    }
+    const char *GetEventName() override;
 };
 
 void EReloadHud_MakeEvent_Callback(const void *staticData);

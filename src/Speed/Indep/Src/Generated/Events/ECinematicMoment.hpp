@@ -23,9 +23,7 @@ class ECinematicMoment : public Event {
 
     ~ECinematicMoment() override;
 
-    const char *GetEventName() override {
-        return "ECinematicMoment";
-    }
+    const char *GetEventName() override;
 
   private:
     const char *fGenericGroupName; // offset: 0x8, size 0x4

@@ -23,9 +23,7 @@ class EDeliverMessage : public Event {
 
     ~EDeliverMessage() override;
 
-    const char *GetEventName() override {
-        return "EDeliverMessage";
-    }
+    const char *GetEventName() override;
 
   private:
     Message *fMessage; // offset: 0x8, size 0x4

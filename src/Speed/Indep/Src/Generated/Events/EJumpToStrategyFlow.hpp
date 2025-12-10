@@ -19,9 +19,7 @@ class EJumpToStrategyFlow : public Event {
 
     ~EJumpToStrategyFlow() override;
 
-    const char *GetEventName() override {
-        return "EJumpToStrategyFlow";
-    }
+    const char *GetEventName() override;
 };
 
 void EJumpToStrategyFlow_MakeEvent_Callback(const void *staticData);

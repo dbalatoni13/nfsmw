@@ -19,9 +19,7 @@ class EResetPlayerCar : public Event {
 
     ~EResetPlayerCar() override;
 
-    const char *GetEventName() override {
-        return "EResetPlayerCar";
-    }
+    const char *GetEventName() override;
 };
 
 void EResetPlayerCar_MakeEvent_Callback(const void *staticData);

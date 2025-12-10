@@ -21,9 +21,7 @@ class ENISFakeFar : public Event {
 
     ~ENISFakeFar() override;
 
-    const char *GetEventName() override {
-        return "ENISFakeFar";
-    }
+    const char *GetEventName() override;
 
   private:
     float fFakeFar; // offset: 0x8, size 0x4

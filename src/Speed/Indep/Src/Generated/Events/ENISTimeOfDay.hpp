@@ -24,9 +24,7 @@ class ENISTimeOfDay : public Event {
 
     ~ENISTimeOfDay() override;
 
-    const char *GetEventName() override {
-        return "ENISTimeOfDay";
-    }
+    const char *GetEventName() override;
 
   private:
     float fTimeOfDay;         // offset: 0x8, size 0x4

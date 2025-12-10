@@ -28,9 +28,7 @@ class EPlayRaceNIS : public Event {
 
     ~EPlayRaceNIS() override;
 
-    const char *GetEventName() override {
-        return "EPlayRaceNIS";
-    }
+    const char *GetEventName() override;
 
   private:
     GMarker *fStartMarker;  // offset: 0x8, size 0x4

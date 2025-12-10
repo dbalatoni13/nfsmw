@@ -22,9 +22,7 @@ class ESndGameState : public Event {
 
     ~ESndGameState() override;
 
-    const char *GetEventName() override {
-        return "ESndGameState";
-    }
+    const char *GetEventName() override;
 
   private:
     int fState;      // offset: 0x8, size 0x4

@@ -22,9 +22,7 @@ class ESimulate : public Event {
 
     ~ESimulate() override;
 
-    const char *GetEventName() override {
-        return "ESimulate";
-    }
+    const char *GetEventName() override;
 
   private:
     UTL::COM::IUnknown *fSim; // offset: 0x8, size 0x4

@@ -35,9 +35,7 @@ class ESpawnFragment : public Event {
 
     ~ESpawnFragment() override;
 
-    const char *GetEventName() override {
-        return "ESpawnFragment";
-    }
+    const char *GetEventName() override;
 
   private:
     UCrc32 fPartName;               // offset: 0x8, size 0x4

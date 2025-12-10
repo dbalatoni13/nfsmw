@@ -21,9 +21,7 @@ class ENISAeroDynamics : public Event {
 
     ~ENISAeroDynamics() override;
 
-    const char *GetEventName() override {
-        return "ENISAeroDynamics";
-    }
+    const char *GetEventName() override;
 
   private:
     float fAerodynamics; // offset: 0x8, size 0x4

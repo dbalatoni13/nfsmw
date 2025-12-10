@@ -21,9 +21,7 @@ class ENISBurnout : public Event {
 
     ~ENISBurnout() override;
 
-    const char *GetEventName() override {
-        return "ENISBurnout";
-    }
+    const char *GetEventName() override;
 
   private:
     float fSpeed; // offset: 0x8, size 0x4

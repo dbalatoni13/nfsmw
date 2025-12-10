@@ -21,9 +21,7 @@ class ENISNitro : public Event {
 
     ~ENISNitro() override;
 
-    const char *GetEventName() override {
-        return "ENISNitro";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fOn; // offset: 0x8, size 0x4

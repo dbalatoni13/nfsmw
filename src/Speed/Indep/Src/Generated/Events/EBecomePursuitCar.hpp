@@ -19,9 +19,7 @@ class EBecomePursuitCar : public Event {
 
     ~EBecomePursuitCar() override;
 
-    const char *GetEventName() override {
-        return "EBecomePursuitCar";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fhSimable; // offset: 0xc, size 0x4

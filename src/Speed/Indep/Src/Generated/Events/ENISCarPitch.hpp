@@ -22,9 +22,7 @@ class ENISCarPitch : public Event {
 
     ~ENISCarPitch() override;
 
-    const char *GetEventName() override {
-        return "ENISCarPitch";
-    }
+    const char *GetEventName() override;
 
   private:
     float fPitch; // offset: 0x8, size 0x4

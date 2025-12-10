@@ -21,9 +21,7 @@ class EGTriggerInternal : public Event {
 
     ~EGTriggerInternal() override;
 
-    const char *GetEventName() override {
-        return "EGTriggerInternal";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fTriggerKey; // offset: 0x8, size 0x4

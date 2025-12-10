@@ -29,9 +29,7 @@ class EPlayObjectEffect : public Event {
 
     ~EPlayObjectEffect() override;
 
-    const char *GetEventName() override {
-        return "EPlayObjectEffect";
-    }
+    const char *GetEventName() override;
 
   private:
     const char *fEffect;            // offset: 0x8, size 0x4

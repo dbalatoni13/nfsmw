@@ -21,9 +21,7 @@ class ENISMotionBlur : public Event {
 
     ~ENISMotionBlur() override;
 
-    const char *GetEventName() override {
-        return "ENISMotionBlur";
-    }
+    const char *GetEventName() override;
 
   private:
     int fEnableMotionBlur; // offset: 0x8, size 0x4

@@ -21,9 +21,7 @@ class EKnockoutRacer : public Event {
 
     ~EKnockoutRacer() override;
 
-    const char *GetEventName() override {
-        return "EKnockoutRacer";
-    }
+    const char *GetEventName() override;
 
   private:
     GRacerInfo *fRacer; // offset: 0x8, size 0x4

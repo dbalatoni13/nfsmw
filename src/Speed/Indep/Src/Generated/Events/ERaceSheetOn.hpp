@@ -21,9 +21,7 @@ class ERaceSheetOn : public Event {
 
     ~ERaceSheetOn() override;
 
-    const char *GetEventName() override {
-        return "ERaceSheetOn";
-    }
+    const char *GetEventName() override;
 
   private:
     int fRivalFlow; // offset: 0x8, size 0x4

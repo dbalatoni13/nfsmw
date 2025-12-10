@@ -22,9 +22,7 @@ class EShowTimeExtension : public Event {
 
     ~EShowTimeExtension() override;
 
-    const char *GetEventName() override {
-        return "EShowTimeExtension";
-    }
+    const char *GetEventName() override;
 
   private:
     IPlayer *fPlayer;  // offset: 0x8, size 0x4

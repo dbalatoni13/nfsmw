@@ -21,9 +21,7 @@ class EDebugPrint : public Event {
 
     ~EDebugPrint() override;
 
-    const char *GetEventName() override {
-        return "EDebugPrint";
-    }
+    const char *GetEventName() override;
 
   private:
     const char *fDebugMsg; // offset: 0x8, size 0x4

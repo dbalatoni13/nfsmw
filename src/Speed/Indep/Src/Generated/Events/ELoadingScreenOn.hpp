@@ -21,9 +21,7 @@ class ELoadingScreenOn : public Event {
 
     ~ELoadingScreenOn() override;
 
-    const char *GetEventName() override {
-        return "ELoadingScreenOn";
-    }
+    const char *GetEventName() override;
 
   private:
     LoadingScreenTypes fLoadingType; // offset: 0x8, size 0x4

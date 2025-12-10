@@ -21,9 +21,7 @@ class ERandomEventList : public Event {
 
     ~ERandomEventList() override;
 
-    const char *GetEventName() override {
-        return "ERandomEventList";
-    }
+    const char *GetEventName() override;
 
   private:
     EventList *fEventList; // offset: 0x8, size 0x4

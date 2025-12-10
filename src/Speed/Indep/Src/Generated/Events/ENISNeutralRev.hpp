@@ -23,9 +23,7 @@ class ENISNeutralRev : public Event {
 
     ~ENISNeutralRev() override;
 
-    const char *GetEventName() override {
-        return "ENISNeutralRev";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fOn; // offset: 0x8, size 0x4

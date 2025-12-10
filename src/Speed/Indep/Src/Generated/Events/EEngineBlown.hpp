@@ -22,9 +22,7 @@ class EEngineBlown : public Event {
 
     ~EEngineBlown() override;
 
-    const char *GetEventName() override {
-        return "EEngineBlown";
-    }
+    const char *GetEventName() override;
 
   private:
     HSIMABLE fhSimable; // offset: 0x8, size 0x4

@@ -21,9 +21,7 @@ class EAwardUpgrade : public Event {
 
     ~EAwardUpgrade() override;
 
-    const char *GetEventName() override {
-        return "EAwardUpgrade";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fUpgradeKey; // offset: 0x8, size 0x4

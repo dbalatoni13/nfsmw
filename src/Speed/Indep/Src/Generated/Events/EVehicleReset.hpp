@@ -24,9 +24,7 @@ class EVehicleReset : public Event {
 
     ~EVehicleReset() override;
 
-    const char *GetEventName() override {
-        return "EVehicleReset";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fhSimable; // offset: 0x8, size 0x4

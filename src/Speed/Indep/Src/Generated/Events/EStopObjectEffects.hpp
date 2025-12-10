@@ -19,9 +19,7 @@ class EStopObjectEffects : public Event {
 
     ~EStopObjectEffects() override;
 
-    const char *GetEventName() override {
-        return "EStopObjectEffects";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fhModel; // offset: 0xc, size 0x4

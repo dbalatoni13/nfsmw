@@ -22,9 +22,7 @@ class EAIEngineRev : public Event {
 
     ~EAIEngineRev() override;
 
-    const char *GetEventName() override {
-        return "EAIEngineRev";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fCarID;      // offset: 0x8, size 0x4

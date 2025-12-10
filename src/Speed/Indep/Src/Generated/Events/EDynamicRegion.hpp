@@ -22,9 +22,7 @@ class EDynamicRegion : public Event {
 
     ~EDynamicRegion() override;
 
-    const char *GetEventName() override {
-        return "EDynamicRegion";
-    }
+    const char *GetEventName() override;
 
   private:
     int fOn; // offset: 0x8, size 0x4

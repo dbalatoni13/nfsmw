@@ -22,9 +22,7 @@ class ENISCarRoll : public Event {
 
     ~ENISCarRoll() override;
 
-    const char *GetEventName() override {
-        return "ENISCarRoll";
-    }
+    const char *GetEventName() override;
 
   private:
     float fRoll; // offset: 0x8, size 0x4

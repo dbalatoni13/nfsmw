@@ -22,9 +22,7 @@ class ESetPlayerCarReset : public Event {
 
     ~ESetPlayerCarReset() override;
 
-    const char *GetEventName() override {
-        return "ESetPlayerCarReset";
-    }
+    const char *GetEventName() override;
 
   private:
     int fUseTrigger;   // offset: 0x8, size 0x4

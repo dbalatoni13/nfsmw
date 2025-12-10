@@ -22,9 +22,7 @@ class EStopObjectEffect : public Event {
 
     ~EStopObjectEffect() override;
 
-    const char *GetEventName() override {
-        return "EStopObjectEffect";
-    }
+    const char *GetEventName() override;
 
   private:
     UCrc32 fID; // offset: 0x8, size 0x4

@@ -21,9 +21,7 @@ class ESetCopAutoSpawnMode : public Event {
 
     ~ESetCopAutoSpawnMode() override;
 
-    const char *GetEventName() override {
-        return "ESetCopAutoSpawnMode";
-    }
+    const char *GetEventName() override;
 
   private:
     int fAutoSpawn; // offset: 0x8, size 0x4

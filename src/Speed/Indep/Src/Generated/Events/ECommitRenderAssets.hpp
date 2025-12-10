@@ -19,9 +19,7 @@ class ECommitRenderAssets : public Event {
 
     ~ECommitRenderAssets() override;
 
-    const char *GetEventName() override {
-        return "ECommitRenderAssets";
-    }
+    const char *GetEventName() override;
 };
 
 void ECommitRenderAssets_MakeEvent_Callback(const void *staticData);

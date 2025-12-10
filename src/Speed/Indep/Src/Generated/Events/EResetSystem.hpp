@@ -22,9 +22,7 @@ class EResetSystem : public Event {
 
     ~EResetSystem() override;
 
-    const char *GetEventName() override {
-        return "EResetSystem";
-    }
+    const char *GetEventName() override;
 
   private:
     UCrc32 fSystemName; // offset: 0x8, size 0x4

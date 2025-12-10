@@ -22,9 +22,7 @@ class EEnableCollisionElement : public Event {
 
     ~EEnableCollisionElement() override;
 
-    const char *GetEventName() override {
-        return "EEnableCollisionElement";
-    }
+    const char *GetEventName() override;
 
   private:
     int fEnable;                  // offset: 0x8, size 0x4

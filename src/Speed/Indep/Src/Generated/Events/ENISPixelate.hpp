@@ -23,9 +23,7 @@ class ENISPixelate : public Event {
 
     ~ENISPixelate() override;
 
-    const char *GetEventName() override {
-        return "ENISPixelate";
-    }
+    const char *GetEventName() override;
 
   private:
     int fEnable;   // offset: 0x8, size 0x4

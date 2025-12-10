@@ -24,9 +24,7 @@ class EProcessStimulus : public Event {
 
     ~EProcessStimulus() override;
 
-    const char *GetEventName() override {
-        return "EProcessStimulus";
-    }
+    const char *GetEventName() override;
 
   private:
     UCrc32 fSystemName; // offset: 0x8, size 0x4

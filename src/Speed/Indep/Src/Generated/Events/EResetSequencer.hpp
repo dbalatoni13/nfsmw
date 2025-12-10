@@ -19,9 +19,7 @@ class EResetSequencer : public Event {
 
     ~EResetSequencer() override;
 
-    const char *GetEventName() override {
-        return "EResetSequencer";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fEventSeqEngine; // offset: 0xc, size 0x4

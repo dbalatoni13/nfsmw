@@ -22,9 +22,7 @@ class EQuitToFE : public Event {
 
     ~EQuitToFE() override;
 
-    const char *GetEventName() override {
-        return "EQuitToFE";
-    }
+    const char *GetEventName() override;
 
   private:
     eGarageType fGarageType;      // offset: 0x8, size 0x4

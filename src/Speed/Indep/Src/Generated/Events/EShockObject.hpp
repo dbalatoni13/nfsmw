@@ -21,9 +21,7 @@ class EShockObject : public Event {
 
     ~EShockObject() override;
 
-    const char *GetEventName() override {
-        return "EShockObject";
-    }
+    const char *GetEventName() override;
 
   private:
     float fAmount; // offset: 0x8, size 0x4

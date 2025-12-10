@@ -21,9 +21,7 @@ class EShowMilestones : public Event {
 
     ~EShowMilestones() override;
 
-    const char *GetEventName() override {
-        return "EShowMilestones";
-    }
+    const char *GetEventName() override;
 
   private:
     int fEnterSafehouseOnExit; // offset: 0x8, size 0x4

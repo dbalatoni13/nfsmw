@@ -23,9 +23,7 @@ class EBreakerStopCops : public Event {
 
     ~EBreakerStopCops() override;
 
-    const char *GetEventName() override {
-        return "EBreakerStopCops";
-    }
+    const char *GetEventName() override;
 
   private:
     float fEventRadius; // offset: 0x8, size 0x4

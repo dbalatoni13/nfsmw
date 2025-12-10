@@ -21,9 +21,7 @@ class ENISRoadNoise : public Event {
 
     ~ENISRoadNoise() override;
 
-    const char *GetEventName() override {
-        return "ENISRoadNoise";
-    }
+    const char *GetEventName() override;
 
   private:
     int fDisableRoadNoise; // offset: 0x8, size 0x4

@@ -23,9 +23,7 @@ class EPause : public Event {
 
     ~EPause() override;
 
-    const char *GetEventName() override {
-        return "EPause";
-    }
+    const char *GetEventName() override;
 
   private:
     int fPlayerIndex;        // offset: 0x8, size 0x4

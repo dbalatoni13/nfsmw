@@ -23,9 +23,7 @@ class EFireTriggerSpeedCondition : public Event {
 
     ~EFireTriggerSpeedCondition() override;
 
-    const char *GetEventName() override {
-        return "EFireTriggerSpeedCondition";
-    }
+    const char *GetEventName() override;
 
   private:
     Trigger *fTrigger;        // offset: 0x8, size 0x4

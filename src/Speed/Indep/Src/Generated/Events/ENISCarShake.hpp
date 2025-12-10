@@ -24,9 +24,7 @@ class ENISCarShake : public Event {
 
     ~ENISCarShake() override;
 
-    const char *GetEventName() override {
-        return "ENISCarShake";
-    }
+    const char *GetEventName() override;
 
   private:
     float fShake; // offset: 0x8, size 0x4

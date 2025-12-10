@@ -19,9 +19,7 @@ class ESetPlayerCollisionCache : public Event {
 
     ~ESetPlayerCollisionCache() override;
 
-    const char *GetEventName() override {
-        return "ESetPlayerCollisionCache";
-    }
+    const char *GetEventName() override;
 
   private:
     int fTriggerStimulus; // offset: 0xc, size 0x4

@@ -21,9 +21,7 @@ class ETriggerMomentNIS : public Event {
 
     ~ETriggerMomentNIS() override;
 
-    const char *GetEventName() override {
-        return "ETriggerMomentNIS";
-    }
+    const char *GetEventName() override;
 
   private:
     const char *fSceneName; // offset: 0x8, size 0x4

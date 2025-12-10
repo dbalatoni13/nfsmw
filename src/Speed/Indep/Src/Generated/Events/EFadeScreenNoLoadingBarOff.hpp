@@ -19,9 +19,7 @@ class EFadeScreenNoLoadingBarOff : public Event {
 
     ~EFadeScreenNoLoadingBarOff() override;
 
-    const char *GetEventName() override {
-        return "EFadeScreenNoLoadingBarOff";
-    }
+    const char *GetEventName() override;
 };
 
 void EFadeScreenNoLoadingBarOff_MakeEvent_Callback(const void *staticData);

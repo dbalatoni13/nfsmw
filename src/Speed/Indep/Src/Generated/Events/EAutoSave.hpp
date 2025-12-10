@@ -19,9 +19,7 @@ class EAutoSave : public Event {
 
     ~EAutoSave() override;
 
-    const char *GetEventName() override {
-        return "EAutoSave";
-    }
+    const char *GetEventName() override;
 };
 
 void EAutoSave_MakeEvent_Callback(const void *staticData);

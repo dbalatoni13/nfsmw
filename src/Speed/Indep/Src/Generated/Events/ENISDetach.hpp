@@ -21,9 +21,7 @@ class ENISDetach : public Event {
 
     ~ENISDetach() override;
 
-    const char *GetEventName() override {
-        return "ENISDetach";
-    }
+    const char *GetEventName() override;
 
   private:
     float fSpeed; // offset: 0x8, size 0x4

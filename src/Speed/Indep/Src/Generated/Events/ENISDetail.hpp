@@ -21,9 +21,7 @@ class ENISDetail : public Event {
 
     ~ENISDetail() override;
 
-    const char *GetEventName() override {
-        return "ENISDetail";
-    }
+    const char *GetEventName() override;
 
   private:
     int fSceneryDetail; // offset: 0x8, size 0x4

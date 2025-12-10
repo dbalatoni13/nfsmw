@@ -21,9 +21,7 @@ class EExitEngagableTrigger : public Event {
 
     ~EExitEngagableTrigger() override;
 
-    const char *GetEventName() override {
-        return "EExitEngagableTrigger";
-    }
+    const char *GetEventName() override;
 
   private:
     GRuntimeInstance *fRaceActivity; // offset: 0x8, size 0x4

@@ -24,9 +24,7 @@ class ENISWorldAnimTrigger : public Event {
 
     ~ENISWorldAnimTrigger() override;
 
-    const char *GetEventName() override {
-        return "ENISWorldAnimTrigger";
-    }
+    const char *GetEventName() override;
 
   private:
     const char *fAnimTreeName; // offset: 0x8, size 0x4

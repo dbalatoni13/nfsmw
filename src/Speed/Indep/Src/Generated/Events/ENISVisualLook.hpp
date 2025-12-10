@@ -26,9 +26,7 @@ class ENISVisualLook : public Event {
 
     ~ENISVisualLook() override;
 
-    const char *GetEventName() override {
-        return "ENISVisualLook";
-    }
+    const char *GetEventName() override;
 
   private:
     float fDesaturation; // offset: 0x8, size 0x4

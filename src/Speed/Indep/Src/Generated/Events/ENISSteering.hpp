@@ -22,9 +22,7 @@ class ENISSteering : public Event {
 
     ~ENISSteering() override;
 
-    const char *GetEventName() override {
-        return "ENISSteering";
-    }
+    const char *GetEventName() override;
 
   private:
     float fDegrees;     // offset: 0x8, size 0x4

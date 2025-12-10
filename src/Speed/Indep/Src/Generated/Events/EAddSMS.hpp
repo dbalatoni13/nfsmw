@@ -21,9 +21,7 @@ class EAddSMS : public Event {
 
     ~EAddSMS() override;
 
-    const char *GetEventName() override {
-        return "EAddSMS";
-    }
+    const char *GetEventName() override;
 
   private:
     int fNumber; // offset: 0x8, size 0x4

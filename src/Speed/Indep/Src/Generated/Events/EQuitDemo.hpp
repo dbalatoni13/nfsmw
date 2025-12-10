@@ -21,9 +21,7 @@ class EQuitDemo : public Event {
 
     ~EQuitDemo() override;
 
-    const char *GetEventName() override {
-        return "EQuitDemo";
-    }
+    const char *GetEventName() override;
 
   private:
     DemoDiscEndReason fEndDemoReason; // offset: 0x8, size 0x4

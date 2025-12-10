@@ -21,9 +21,7 @@ class EDisableTrigger : public Event {
 
     ~EDisableTrigger() override;
 
-    const char *GetEventName() override {
-        return "EDisableTrigger";
-    }
+    const char *GetEventName() override;
 
   private:
     Trigger *fTrigger; // offset: 0x8, size 0x4

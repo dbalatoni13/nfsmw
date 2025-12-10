@@ -25,9 +25,7 @@ class EScheduleEventUpdate : public Event {
 
     ~EScheduleEventUpdate() override;
 
-    const char *GetEventName() override {
-        return "EScheduleEventUpdate";
-    }
+    const char *GetEventName() override;
 
   private:
     void *fStaticData;       // offset: 0x8, size 0x4

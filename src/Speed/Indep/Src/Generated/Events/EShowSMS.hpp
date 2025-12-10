@@ -21,9 +21,7 @@ class EShowSMS : public Event {
 
     ~EShowSMS() override;
 
-    const char *GetEventName() override {
-        return "EShowSMS";
-    }
+    const char *GetEventName() override;
 
   private:
     int fShowMsg; // offset: 0x8, size 0x4

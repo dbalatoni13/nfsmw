@@ -19,9 +19,7 @@ class EKillObject : public Event {
 
     ~EKillObject() override;
 
-    const char *GetEventName() override {
-        return "EKillObject";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fhSimable; // offset: 0xc, size 0x4

@@ -22,9 +22,7 @@ class ENISOverlayMessage : public Event {
 
     ~ENISOverlayMessage() override;
 
-    const char *GetEventName() override {
-        return "ENISOverlayMessage";
-    }
+    const char *GetEventName() override;
 
   private:
     const char *fOverlayName;    // offset: 0x8, size 0x4

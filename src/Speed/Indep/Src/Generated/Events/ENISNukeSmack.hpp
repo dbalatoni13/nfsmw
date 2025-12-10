@@ -24,9 +24,7 @@ class ENISNukeSmack : public Event {
 
     ~ENISNukeSmack() override;
 
-    const char *GetEventName() override {
-        return "ENISNukeSmack";
-    }
+    const char *GetEventName() override;
 
   private:
     float fPositionX; // offset: 0x8, size 0x4

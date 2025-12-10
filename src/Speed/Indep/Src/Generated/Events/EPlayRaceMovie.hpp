@@ -21,9 +21,7 @@ class EPlayRaceMovie : public Event {
 
     ~EPlayRaceMovie() override;
 
-    const char *GetEventName() override {
-        return "EPlayRaceMovie";
-    }
+    const char *GetEventName() override;
 
   private:
     const char *fMovieName; // offset: 0x8, size 0x4

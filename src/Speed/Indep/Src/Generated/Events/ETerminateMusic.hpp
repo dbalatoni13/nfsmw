@@ -19,9 +19,7 @@ class ETerminateMusic : public Event {
 
     ~ETerminateMusic() override;
 
-    const char *GetEventName() override {
-        return "ETerminateMusic";
-    }
+    const char *GetEventName() override;
 };
 
 void ETerminateMusic_MakeEvent_Callback(const void *staticData);

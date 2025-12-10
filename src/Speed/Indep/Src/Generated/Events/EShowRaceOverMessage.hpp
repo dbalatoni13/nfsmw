@@ -21,9 +21,7 @@ class EShowRaceOverMessage : public Event {
 
     ~EShowRaceOverMessage() override;
 
-    const char *GetEventName() override {
-        return "EShowRaceOverMessage";
-    }
+    const char *GetEventName() override;
 
   private:
     IPlayer *fPlayer; // offset: 0x8, size 0x4

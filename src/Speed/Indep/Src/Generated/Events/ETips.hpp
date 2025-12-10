@@ -22,9 +22,7 @@ class ETips : public Event {
 
     ~ETips() override;
 
-    const char *GetEventName() override {
-        return "ETips";
-    }
+    const char *GetEventName() override;
 
   private:
     int fPlayerIndex; // offset: 0x8, size 0x4

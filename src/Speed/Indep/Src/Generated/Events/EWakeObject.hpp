@@ -19,9 +19,7 @@ class EWakeObject : public Event {
 
     ~EWakeObject() override;
 
-    const char *GetEventName() override {
-        return "EWakeObject";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fhModel; // offset: 0xc, size 0x4

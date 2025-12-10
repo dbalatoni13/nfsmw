@@ -19,9 +19,7 @@ class EResetProps : public Event {
 
     ~EResetProps() override;
 
-    const char *GetEventName() override {
-        return "EResetProps";
-    }
+    const char *GetEventName() override;
 };
 
 void EResetProps_MakeEvent_Callback(const void *staticData);

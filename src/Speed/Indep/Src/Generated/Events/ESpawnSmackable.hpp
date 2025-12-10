@@ -26,9 +26,7 @@ class ESpawnSmackable : public Event {
 
     ~ESpawnSmackable() override;
 
-    const char *GetEventName() override {
-        return "ESpawnSmackable";
-    }
+    const char *GetEventName() override;
 
   private:
     UMath::Vector3 fPosition;    // offset: 0x8, size 0xc

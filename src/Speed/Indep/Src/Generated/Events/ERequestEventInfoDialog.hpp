@@ -22,9 +22,7 @@ class ERequestEventInfoDialog : public Event {
 
     ~ERequestEventInfoDialog() override;
 
-    const char *GetEventName() override {
-        return "ERequestEventInfoDialog";
-    }
+    const char *GetEventName() override;
 
   private:
     int fJoyPort;                    // offset: 0x8, size 0x4

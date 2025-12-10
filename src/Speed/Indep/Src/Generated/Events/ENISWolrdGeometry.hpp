@@ -22,9 +22,7 @@ class ENISWolrdGeometry : public Event {
 
     ~ENISWolrdGeometry() override;
 
-    const char *GetEventName() override {
-        return "ENISWolrdGeometry";
-    }
+    const char *GetEventName() override;
 
   private:
     const char *fSceneryGroupName; // offset: 0x8, size 0x4

@@ -22,9 +22,7 @@ class EShowResults : public Event {
 
     ~EShowResults() override;
 
-    const char *GetEventName() override {
-        return "EShowResults";
-    }
+    const char *GetEventName() override;
 
   private:
     FERESULTTYPE fResultType; // offset: 0x8, size 0x4

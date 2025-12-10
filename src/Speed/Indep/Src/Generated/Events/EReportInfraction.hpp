@@ -21,9 +21,7 @@ class EReportInfraction : public Event {
 
     ~EReportInfraction() override;
 
-    const char *GetEventName() override {
-        return "EReportInfraction";
-    }
+    const char *GetEventName() override;
 
   private:
     InfractionType fInfraction; // offset: 0x8, size 0x4

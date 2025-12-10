@@ -19,9 +19,7 @@ class ENISStopEffects : public Event {
 
     ~ENISStopEffects() override;
 
-    const char *GetEventName() override {
-        return "ENISStopEffects";
-    }
+    const char *GetEventName() override;
 };
 
 void ENISStopEffects_MakeEvent_Callback(const void *staticData);

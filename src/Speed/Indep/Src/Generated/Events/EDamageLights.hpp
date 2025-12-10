@@ -22,9 +22,7 @@ class EDamageLights : public Event {
 
     ~EDamageLights() override;
 
-    const char *GetEventName() override {
-        return "EDamageLights";
-    }
+    const char *GetEventName() override;
 
   private:
     UCrc32 fName; // offset: 0x8, size 0x4

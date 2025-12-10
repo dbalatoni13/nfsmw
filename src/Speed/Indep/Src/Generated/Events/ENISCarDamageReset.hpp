@@ -19,9 +19,7 @@ class ENISCarDamageReset : public Event {
 
     ~ENISCarDamageReset() override;
 
-    const char *GetEventName() override {
-        return "ENISCarDamageReset";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fhSimable; // offset: 0xc, size 0x4

@@ -19,9 +19,7 @@ class ELoadLost : public Event {
 
     ~ELoadLost() override;
 
-    const char *GetEventName() override {
-        return "ELoadLost";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fhSimable; // offset: 0xc, size 0x4

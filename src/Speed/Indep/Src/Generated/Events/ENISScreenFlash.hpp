@@ -21,9 +21,7 @@ class ENISScreenFlash : public Event {
 
     ~ENISScreenFlash() override;
 
-    const char *GetEventName() override {
-        return "ENISScreenFlash";
-    }
+    const char *GetEventName() override;
 
   private:
     float fLength; // offset: 0x8, size 0x4

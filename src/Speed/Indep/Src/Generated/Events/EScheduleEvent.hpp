@@ -22,9 +22,7 @@ class EScheduleEvent : public Event {
 
     ~EScheduleEvent() override;
 
-    const char *GetEventName() override {
-        return "EScheduleEvent";
-    }
+    const char *GetEventName() override;
 
   private:
     EventList *fEventList; // offset: 0x8, size 0x4

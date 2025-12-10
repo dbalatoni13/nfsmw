@@ -22,9 +22,7 @@ class EBailPursuit : public Event {
 
     ~EBailPursuit() override;
 
-    const char *GetEventName() override {
-        return "EBailPursuit";
-    }
+    const char *GetEventName() override;
 
   private:
     int fPlayAudio;    // offset: 0x8, size 0x4

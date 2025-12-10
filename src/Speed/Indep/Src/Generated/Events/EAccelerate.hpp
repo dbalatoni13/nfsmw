@@ -27,9 +27,7 @@ class EAccelerate : public Event {
 
     ~EAccelerate() override;
 
-    const char *GetEventName() override {
-        return "EAccelerate";
-    }
+    const char *GetEventName() override;
 
   private:
     float fAccelerationX; // offset: 0x8, size 0x4

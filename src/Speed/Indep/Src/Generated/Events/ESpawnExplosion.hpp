@@ -31,9 +31,7 @@ class ESpawnExplosion : public Event {
 
     ~ESpawnExplosion() override;
 
-    const char *GetEventName() override {
-        return "ESpawnExplosion";
-    }
+    const char *GetEventName() override;
 
   private:
     UCrc32 fPosition;                // offset: 0x8, size 0x4

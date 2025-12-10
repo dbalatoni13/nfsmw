@@ -22,9 +22,7 @@ class EPlayerAirborne : public Event {
 
     ~EPlayerAirborne() override;
 
-    const char *GetEventName() override {
-        return "EPlayerAirborne";
-    }
+    const char *GetEventName() override;
 
   private:
     HSIMABLE fhSimable; // offset: 0x8, size 0x4

@@ -22,9 +22,7 @@ class ENISHideCharacter : public Event {
 
     ~ENISHideCharacter() override;
 
-    const char *GetEventName() override {
-        return "ENISHideCharacter";
-    }
+    const char *GetEventName() override;
 
   private:
     const char *fAnimModelName; // offset: 0x8, size 0x4

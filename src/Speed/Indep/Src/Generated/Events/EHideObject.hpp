@@ -19,9 +19,7 @@ class EHideObject : public Event {
 
     ~EHideObject() override;
 
-    const char *GetEventName() override {
-        return "EHideObject";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fhModel; // offset: 0xc, size 0x4

@@ -21,9 +21,7 @@ class EReportMilestoneAtStake : public Event {
 
     ~EReportMilestoneAtStake() override;
 
-    const char *GetEventName() override {
-        return "EReportMilestoneAtStake";
-    }
+    const char *GetEventName() override;
 
   private:
     GMilestone *fMilestonePtr; // offset: 0x8, size 0x4

@@ -22,9 +22,7 @@ class ETuneVehicle : public Event {
 
     ~ETuneVehicle() override;
 
-    const char *GetEventName() override {
-        return "ETuneVehicle";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fPlayer;           // offset: 0x8, size 0x4

@@ -21,9 +21,7 @@ class EEnableModeling : public Event {
 
     ~EEnableModeling() override;
 
-    const char *GetEventName() override {
-        return "EEnableModeling";
-    }
+    const char *GetEventName() override;
 
   private:
     int fEnable; // offset: 0x8, size 0x4

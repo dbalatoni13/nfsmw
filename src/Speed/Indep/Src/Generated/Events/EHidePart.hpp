@@ -22,9 +22,7 @@ class EHidePart : public Event {
 
     ~EHidePart() override;
 
-    const char *GetEventName() override {
-        return "EHidePart";
-    }
+    const char *GetEventName() override;
 
   private:
     UCrc32 fPartName; // offset: 0x8, size 0x4

@@ -21,9 +21,7 @@ class EReloadGame : public Event {
 
     ~EReloadGame() override;
 
-    const char *GetEventName() override {
-        return "EReloadGame";
-    }
+    const char *GetEventName() override;
 
   private:
     GRuntimeInstance *fRestartRace; // offset: 0x8, size 0x4

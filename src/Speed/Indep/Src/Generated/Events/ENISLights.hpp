@@ -22,9 +22,7 @@ class ENISLights : public Event {
 
     ~ENISLights() override;
 
-    const char *GetEventName() override {
-        return "ENISLights";
-    }
+    const char *GetEventName() override;
 
   private:
     unsigned int fCopLights;  // offset: 0x8, size 0x4

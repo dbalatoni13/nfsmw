@@ -19,9 +19,7 @@ class E911Call : public Event {
 
     ~E911Call() override;
 
-    const char *GetEventName() override {
-        return "E911Call";
-    }
+    const char *GetEventName() override;
 };
 
 void E911Call_MakeEvent_Callback(const void *staticData);

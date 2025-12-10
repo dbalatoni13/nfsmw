@@ -21,9 +21,7 @@ class EHideRaceOverMessage : public Event {
 
     ~EHideRaceOverMessage() override;
 
-    const char *GetEventName() override {
-        return "EHideRaceOverMessage";
-    }
+    const char *GetEventName() override;
 
   private:
     IPlayer *fPlayer; // offset: 0x8, size 0x4

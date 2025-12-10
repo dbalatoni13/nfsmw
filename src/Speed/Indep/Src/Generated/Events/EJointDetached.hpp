@@ -22,9 +22,7 @@ class EJointDetached : public Event {
 
     ~EJointDetached() override;
 
-    const char *GetEventName() override {
-        return "EJointDetached";
-    }
+    const char *GetEventName() override;
 
   private:
     HSIMABLE fhObject; // offset: 0x8, size 0x4

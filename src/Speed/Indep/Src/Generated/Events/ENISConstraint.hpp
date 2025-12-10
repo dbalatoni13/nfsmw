@@ -21,9 +21,7 @@ class ENISConstraint : public Event {
 
     ~ENISConstraint() override;
 
-    const char *GetEventName() override {
-        return "ENISConstraint";
-    }
+    const char *GetEventName() override;
 
   private:
     float fDegrees; // offset: 0x8, size 0x4
