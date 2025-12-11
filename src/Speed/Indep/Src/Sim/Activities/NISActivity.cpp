@@ -1,6 +1,12 @@
 #include "Speed/Indep/Src/Animation/AnimChooser.hpp"
+#include "Speed/Indep/Src/Animation/AnimScene.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Generated/Events/EPlayEndNIS.hpp"
+#include "Speed/Indep/Src/Generated/Events/ESndGameState.hpp"
+#include "Speed/Indep/Src/Generated/Messages/MNISComplete.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyMovieFinished.h"
 #include "Speed/Indep/Src/Input/ActionQueue.h"
+#include "Speed/Indep/Src/Interfaces/IAttachable.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
@@ -8,6 +14,9 @@
 #include "Speed/Indep/Src/Misc/Hermes.h"
 #include "Speed/Indep/Src/Sim/SimActivity.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/World/Scenery.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
 // total size: 0x8
 class NISCar {
@@ -34,6 +43,7 @@ NISCar::~NISCar() {
     }
 }
 
+// TODO is this really in here? probably not and it's a bug in debug_lines.txt
 // total size: 0x438
 struct NISActivity : public Sim::Activity, public INIS, public EventSequencer::IContext, public IVehicleCache {
   public:
@@ -49,9 +59,58 @@ struct NISActivity : public Sim::Activity, public INIS, public EventSequencer::I
     };
 
     NISActivity();
-    void OnMovieComplete(const MNotifyMovieFinished &message);
+
+    // Virtual functions
+    // IUnknown
+    ~NISActivity() override;
+
+    void Load(CAnimChooser::eType nisType, const char *scene, int cameratrack, bool PlayAsSoonAsLoaded) override;
+    void AddCar(UCrc32 channel, IVehicle *vehicle) const override;
+    IVehicle *GetCar(UCrc32 channelname) const override;
+    void StartLocation(const UMath::Vector3 &position, float direction) override;
+    void StartLocationInRenderCoords(const bVector3 &position, unsigned short direction) override;
+    const UMath::Vector3 GetStartLocation() override;
+    const UMath::Vector3 GetStartCameraLocation() override;
+    CAnimChooser::eType GetType() override;
+    void SetPreMovie(const char *movieName) override;
+    void SetPostMovie(const char *movieName) override;
+    void ResetEvents(float SetTime) override;
+    void StartEvents() override;
+    void FireEventTag(const char *tagName) override;
+    void ServiceLoads() override;
+    ICEScene *GetScene() const override;
+    CAnimScene *GetAnimScene() const override;
+    bool IsLoaded() const override;
+    bool IsPlaying() const override;
+    bool InMovie() const override;
+    void StartPlayingNow() override;
+    void Pause() override;
+    void UnPause() override;
+
+    // IActivity
+    void Release() override;
+
+    // IContext
+    bool SetDynamicData(const EventSequencer::System *system, EventDynamicData *data) override;
+
+    eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override;
+    void OnRemovedVehicleCache(IVehicle *ivehicle) override;
+
+    // ITaskable
+    bool OnTask(HSIMTASK task, float dT) override;
+
+    // IAttachable
+    void OnDetached(IAttachable *pOther) override;
+
+    // INIS
+    bool SkipOverNIS() override;
+    bool IsWorldMomement() const override;
 
   private:
+    void OnMovieComplete(const MNotifyMovieFinished &message);
+    void Unload();
+    void RemoveCar(IVehicle *vehicle);
+
     HSIMTASK mUpdate;                                         // offset 0x6C, size 0x4
     float mNISElapsedTime;                                    // offset 0x70, size 0x4
     ActionQueue mActionQ;                                     // offset 0x74, size 0x294
@@ -76,7 +135,7 @@ struct NISActivity : public Sim::Activity, public INIS, public EventSequencer::I
     bool mRunningThroughICE;                                  // offset 0x3F0, size 0x1
     int mLoadAttemptCount;                                    // offset 0x3F4, size 0x4
     int mSuspensionSettle;                                    // offset 0x3F8, size 0x4
-    struct CAnimMomentScene *mMomentScene;                    // offset 0x3FC, size 0x4
+    CAnimMomentScene *mMomentScene;                           // offset 0x3FC, size 0x4
     bool mUsingFEngOverlay;                                   // offset 0x400, size 0x1
     bool mCareerNIS;                                          // offset 0x404, size 0x1
     bool mDDayNIS;                                            // offset 0x408, size 0x1
@@ -101,29 +160,30 @@ NISActivity::NISActivity()
       mNISElapsedTime(0.0f),          //
       mActionQ(true),                 //
       mState(NISACTIVITY_NONE),       //
-      mMsgMovieComplete(Hermes::Handler::Create<MNotifyMovieFinished, NISActivity, NISActivity>(this, &NISActivity::OnMovieComplete,
-                                                                                                UCrc32(0x20d60dbf), 0)), // TODO magic
-      mNISType(CAnimChooser::Intro),                                                                                     //
-      mSceneHash(0),                                                                                                     //
-      mSequencerID(),                                                                                                    //
-      mAnimScene(nullptr),                                                                                               //
-      mAnimHandle(0),                                                                                                    //
-      mCameraTrackNumber(0),                                                                                             //
-      mDefault_MaxTicksPerTimestep(4.0f),                                                                                //
-      mSequencer(nullptr),                                                                                               //
-      mRunningThroughICE(false),                                                                                         //
-      mLoadAttemptCount(0),                                                                                              //
-      mSuspensionSettle(0),                                                                                              //
-      mMomentScene(nullptr),                                                                                             //
-      mUsingFEngOverlay(false),                                                                                          //
-      mCareerNIS(false),                                                                                                 //
-      mDDayNIS(false),                                                                                                   //
-      mBlackListNIS(false),                                                                                              //
-      mNonSkipableNIS(false),                                                                                            //
-      mNISSkipped(false),                                                                                                //
-      mNISNoSkipTime(0.0f),                                                                                              //
-      mPause(false),                                                                                                     //
-      loadStartTime(0.0f),                                                                                               //
+                                      // TODO magic
+      mMsgMovieComplete(
+          Hermes::Handler::Create<MNotifyMovieFinished, NISActivity, NISActivity>(this, &NISActivity::OnMovieComplete, UCrc32(0x20d60dbf), 0)),
+      mNISType(CAnimChooser::Intro),      //
+      mSceneHash(0),                      //
+      mSequencerID(),                     //
+      mAnimScene(nullptr),                //
+      mAnimHandle(0),                     //
+      mCameraTrackNumber(0),              //
+      mDefault_MaxTicksPerTimestep(4.0f), //
+      mSequencer(nullptr),                //
+      mRunningThroughICE(false),          //
+      mLoadAttemptCount(0),               //
+      mSuspensionSettle(0),               //
+      mMomentScene(nullptr),              //
+      mUsingFEngOverlay(false),           //
+      mCareerNIS(false),                  //
+      mDDayNIS(false),                    //
+      mBlackListNIS(false),               //
+      mNonSkipableNIS(false),             //
+      mNISSkipped(false),                 //
+      mNISNoSkipTime(0.0f),               //
+      mPause(false),                      //
+      loadStartTime(0.0f),                //
       mStartPlayingNow(true) {
     mPreMovie[0] = '\0';
     mPostMovie[0] = '\0';
@@ -132,4 +192,54 @@ NISActivity::NISActivity()
     mUpdate = AddTask(UCrc32("WorldUpdate"), 1.0f, 0.0f, Sim::TASK_FRAME_FIXED);
     Sim::ProfileTask(mUpdate, "NIS");
     mIsPrecipitationEnable = PrecipitationEnable;
+}
+
+NISActivity::~NISActivity() {
+    Hermes::Handler::Destroy(mMsgMovieComplete);
+    RemoveTask(mUpdate);
+    Unload();
+    g_pEAXSound->NISFinished();
+
+    if (bStringHash("IntroNisFlyInDD") == mSceneHash) {
+        SetSoundControlState(false, SNDSTATE_NIS_321, "DDAY flying");
+    }
+
+    for (int i = 0; i < 8; i++) {
+        char channelName[32];
+        bSPrintf(channelName, "cop%d", i + 1);
+        IVehicle *copCar = GetCar(UCrc32(channelName));
+        if (copCar) {
+            RemoveCar(copCar);
+            ISimable *iSim;
+            if (copCar->QueryInterface(&iSim)) {
+                iSim->Kill();
+            }
+        }
+    }
+
+    for (UTL::Std::map<UCrc32, NISCar *, _type_map>::iterator i = mVehicleTable.begin(); i != mVehicleTable.end(); i++) {
+        NISCar *car = i->second;
+        if (car->mIVehiclePtr) {
+            car->mIVehiclePtr->SetAnimating(false);
+        }
+        if (car) {
+            delete car;
+        }
+    }
+
+    mVehicleTable.clear();
+
+    if (mMomentScene) {
+        delete mMomentScene;
+        mMomentScene = nullptr;
+    }
+
+    ForceAllSceneryDetailLevels = SCENERY_DETAIL_NONE;
+
+    new ESndGameState(4, false);
+    if (mNISSkipped != 0) {
+        new EPlayEndNIS(mSkipToNIS);
+    } else {
+        MNISComplete(nullptr).Post(UCrc32(0x20d60dbf));
+    }
 }

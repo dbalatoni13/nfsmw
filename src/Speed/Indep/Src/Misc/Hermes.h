@@ -61,23 +61,23 @@ typedef _h_HHANDLER__ *HHANDLER;
 class Handler {
   public:
     // total size: 0xC
-    template <typename T, typename U, typename V> struct MemberHandler {
-        void (U::*Handler)(const T &); // offset 0x0, size 0x8
-        U *that;                       // offset 0x8, size 0x4
+    template <typename MessageT, typename Class, typename Override> struct MemberHandler {
+        void (Class::*Handler)(const MessageT &); // offset 0x0, size 0x8
+        Class *that;                              // offset 0x8, size 0x4
 
         static void Call(const Message *msg, Hermes::Handler *handler) {}
     };
 
-    template <typename T> struct StaticHandler {
+    template <typename MessageT> struct StaticHandler {
         static void Call(const Message *msg, Hermes::Handler *handler) {
-            StaticHandler<T> *pstatichandler;
+            StaticHandler<MessageT> *pstatichandler;
         }
     };
 
-    template <typename MessageT, typename Class, typename V>
+    template <typename MessageT, typename Class, typename Override>
     static HHANDLER Create(Class *that, void (Class::*handler)(const MessageT &), UCrc32 port, unsigned int id) {
         Handler h;
-        MemberHandler<MessageT, Class, V> *pmemberhandler = reinterpret_cast<MemberHandler<MessageT, Class, V> *>(h.Buffer);
+        MemberHandler<MessageT, Class, Override> *pmemberhandler = reinterpret_cast<MemberHandler<MessageT, Class, Override> *>(h.Buffer);
         pmemberhandler->Handler = handler;
         pmemberhandler->that = that;
 
@@ -100,6 +100,8 @@ class Handler {
 
         return h._AddToPort(UCrc32(port));
     }
+
+    static void Destroy(HHANDLER key);
 
     Handler() {
         bMemSet(this, 0, sizeof(*this));

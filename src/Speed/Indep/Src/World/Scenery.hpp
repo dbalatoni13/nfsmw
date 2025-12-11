@@ -6,8 +6,17 @@
 #endif
 
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
-#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/Src/World/WeatherMan.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
+
+enum SceneryDetailLevel {
+    SCENERY_DETAIL_NONE = -1,
+    SCENERY_DETAIL_HIGH = 0,
+    SCENERY_DETAIL_MEDIUM = 1,
+    SCENERY_DETAIL_LOW = 2,
+    SCENERY_DETAIL_REFLECTION = 3,
+    NUM_SCENERY_DETAIL_LEVELS = 4,
+};
 
 struct SceneryBoundingBox {
     // total size: 0x18
@@ -52,5 +61,7 @@ extern RegionQuery RegionInfo;
 
 void InitVisibleZones();
 void CloseVisibleZones();
+
+extern SceneryDetailLevel ForceAllSceneryDetailLevels;
 
 #endif

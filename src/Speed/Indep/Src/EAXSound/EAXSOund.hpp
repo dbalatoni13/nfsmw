@@ -14,11 +14,6 @@
 
 // yes that is the correct name for the file
 
-extern int eDisableFixUpTables;
-extern int eDirtySolids;
-extern int eDirtyTextures;
-extern int eDirtyAnimations;
-
 enum eSNDPAUSE_REASON {
     eSNDPAUSE_SMS_MESSAGE = 11,
     eSNDPAUSE_PHOTOFINISH = 10,
@@ -34,6 +29,7 @@ enum eSNDPAUSE_REASON {
     eSNDPAUSE_PAUSEMENU = 0,
     ePAUSE_ERROR = -1,
 };
+
 enum eEAXGameState {
     EAXGS_EXIT_FE = 11,
     EAXGS_EXIT_GAME = 10,
@@ -48,10 +44,12 @@ enum eEAXGameState {
     EAXGS_FRONTEND = 1,
     EAXGS_INITIALIZING = 0,
 };
+
 enum e3DPlayerMix {
     EAXS3D_TWO_PLAYER_MIX = 1,
     EAXS3D_SINGLE_PLAYER_MIX = 0,
 };
+
 enum eSndGameMode {
     SND_PURSUITBREAKER = 10,
     SND_LOADING_SCREEN = 9,
@@ -79,7 +77,27 @@ enum eAemsStreamBanks {
     EAX_AEMS_MUSIC_UG0_S = 0,
 };
 
-bool g_EAXIsPaused(void);
+enum eSNDCTLSTATE {
+    MAX_SNDCTL_STATES = 18,
+    SNDSTATE_SYSTEM_HUD = 17,
+    SNDSTATE_ERROR = 16,
+    SNDSTATE_FADEOUT = 15,
+    SNDSTATE_MINILOAD = 14,
+    SNDSTATE_GAMESTARTRACE = 13,
+    SNDSTATE_STOP_MUSIC = 12,
+    SNDSTATE_FMV = 11,
+    SNDSTATE_NIS_ARREST = 10,
+    SNDSTATE_NIS_BLK = 9,
+    SNDSTATE_NIS_321 = 8,
+    SNDSTATE_NIS_INTRO = 7,
+    SNDSTATE_NIS_STORY = 6,
+    SNDSTATE_FE_SMS_MESSAGE = 5,
+    SNDSTATE_FE_UPSCREEN = 4,
+    SNDSTATE_FE = 3,
+    SNDSTATE_INGAME = 2,
+    SNDSTATE_PAUSE = 1,
+    SNDSTATE_OFF = 0,
+};
 
 // total size: 0xBC
 class EAXSound : public AudioMemBase {
@@ -93,6 +111,8 @@ class EAXSound : public AudioMemBase {
 
     void StartSND11();
     void StopSND11();
+
+    void NISFinished();
 
   private:
     int ncompiletest;                            // offset 0x4, size 0x4
@@ -142,5 +162,17 @@ class EAXSound : public AudioMemBase {
     int mEventID;                                // offset 0xB4, size 0x4
     Event::StaticData mData;                     // offset 0xB8, size 0x4
 };
+
+bool g_EAXIsPaused(void);
+
+void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
+
+extern EAXSound *g_pEAXSound;
+
+// TODO move these to Ecstasy
+extern int eDisableFixUpTables;
+extern int eDirtySolids;
+extern int eDirtyTextures;
+extern int eDirtyAnimations;
 
 #endif
