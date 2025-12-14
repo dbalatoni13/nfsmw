@@ -827,6 +827,8 @@ inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector4 
 
 inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector3 *position) {}
 
+void bMulMatrix(bMatrix4 *dest, const bMatrix4 *a, const bMatrix4 *b);
+
 struct bQuaternion {
     // total size: 0x10
     float x; // offset 0x0, size 0x4

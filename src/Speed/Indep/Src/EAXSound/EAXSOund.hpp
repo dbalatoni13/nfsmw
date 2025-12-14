@@ -112,6 +112,8 @@ class EAXSound : public AudioMemBase {
     void StartSND11();
     void StopSND11();
 
+    void QueueNISStream(unsigned int anim_id, int camera_track_number, void (*setmstimecb)(unsigned int, int));
+    bool IsNISStreamQueued();
     void NISFinished();
 
   private:
@@ -132,7 +134,7 @@ class EAXSound : public AudioMemBase {
     void *m_pMemoryPoolMem;                      // offset 0x3C, size 0x4
     int m_memoryPoolSize;                        // offset 0x40, size 0x4
     int m_numMemoryAllocations;                  // offset 0x44, size 0x4
-    enum eSNDPAUSE_REASON m_LastPauseReason;     // offset 0x48, size 0x4
+    eSNDPAUSE_REASON m_LastPauseReason;          // offset 0x48, size 0x4
     int m_transStartTime;                        // offset 0x4C, size 0x4
     int m_startingLoopVolume;                    // offset 0x50, size 0x4
     bool m_bAudioIsPaused;                       // offset 0x54, size 0x1

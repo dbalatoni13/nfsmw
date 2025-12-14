@@ -23,4 +23,6 @@ class FEMinList {
     FEMinNode *tail; // offset 0x8, size 0x4
 };
 
+unsigned long FEHashUpper(const char *String);
+
 #endif

@@ -7,6 +7,7 @@
 
 #include "Speed/Indep/Src/Physics/PhysicsTunings.h"
 #include "Speed/Indep/Src/Physics/PhysicsUpgrades.hpp"
+#include "Speed/Indep/Src/World/CarInfo.hpp"
 
 // total size: 0x14
 struct FECarRecord {
@@ -76,6 +77,10 @@ class FEPlayerCarDB {
   public:
     // total size: 0x4
     class MyCallback {};
+
+    void BuildRideForPlayer(unsigned int car, int player, RideInfo *ride);
+    FECarRecord *GetCarRecordByHandle(unsigned int handle);
+    FECustomizationRecord *GetCustomizationRecordByHandle(unsigned char handle);
 
   private:
     FECarRecord CarTable[200];                        // offset 0x0, size 0xFA0

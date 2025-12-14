@@ -219,6 +219,10 @@ class cFrontendDatabase {
         return &CurrentUserProfiles[0]->GetOptions()->ThePlayerSettings[player];
     }
 
+    FEPlayerCarDB *GetPlayerCarStable(int player) {
+        return &CurrentUserProfiles[player]->PlayersCarStable;
+    }
+
     unsigned char iNumPlayers;           // offset 0x0, size 0x1
     bool bComingFromBoot;                // offset 0x4, size 0x1
     bool bSavedProfileForMP;             // offset 0x8, size 0x1

@@ -210,6 +210,7 @@ if config.platform == Platform.GC_WII:
     cflags_base = [
         "-O1",
         "-gdwarf",
+        # "-Wa,-L",
         # "-Wall",
         "-I src/Speed/Indep/Libs/Support/stlgc",
         "-I src/Speed/GameCube/Libs/stl/STLport-4.5/stlport",

@@ -61,11 +61,14 @@ typedef _h_HHANDLER__ *HHANDLER;
 class Handler {
   public:
     // total size: 0xC
-    template <typename MessageT, typename Class, typename Override> struct MemberHandler {
+    template <typename MessageT, typename Class, typename V> struct MemberHandler {
         void (Class::*Handler)(const MessageT &); // offset 0x0, size 0x8
         Class *that;                              // offset 0x8, size 0x4
 
-        static void Call(const Message *msg, Hermes::Handler *handler) {}
+        static void Call(const Message *msg, Hermes::Handler *handler) {
+            MemberHandler<MessageT, Class, V> *pmemberhandler = reinterpret_cast<MemberHandler<MessageT, Class, V> *>(handler);
+            (pmemberhandler->that->*(pmemberhandler->Handler))(*static_cast<const MessageT *>(msg));
+        }
     };
 
     template <typename MessageT> struct StaticHandler {
@@ -74,10 +77,10 @@ class Handler {
         }
     };
 
-    template <typename MessageT, typename Class, typename Override>
+    template <typename MessageT, typename Class, typename V>
     static HHANDLER Create(Class *that, void (Class::*handler)(const MessageT &), UCrc32 port, unsigned int id) {
         Handler h;
-        MemberHandler<MessageT, Class, Override> *pmemberhandler = reinterpret_cast<MemberHandler<MessageT, Class, Override> *>(h.Buffer);
+        MemberHandler<MessageT, Class, V> *pmemberhandler = reinterpret_cast<MemberHandler<MessageT, Class, V> *>(&h);
         pmemberhandler->Handler = handler;
         pmemberhandler->that = that;
 
@@ -91,7 +94,7 @@ class Handler {
 
     template <typename MessageT> static HHANDLER Create(void (*handler)(const MessageT &), UCrc32 port, unsigned int id) {
         Handler h;
-        StaticHandler<MessageT> *pstatichandler = reinterpret_cast<StaticHandler<MessageT> *>(h.Buffer);
+        StaticHandler<MessageT> *pstatichandler = reinterpret_cast<StaticHandler<MessageT> *>(&h);
 
         h.CallFn = pstatichandler->Call;
         h.mKind = MessageT::_GetKind();

@@ -100,6 +100,8 @@ struct System {
     enum {
         kQueueLength = 4,
     };
+    unsigned int ID() const;
+
     // TODO it's EventSequencer::Engine
     struct Engine *mEngine;               // offset 0x0, size 0x4
     const struct EventSeqSystem *mSystem; // offset 0x4, size 0x4

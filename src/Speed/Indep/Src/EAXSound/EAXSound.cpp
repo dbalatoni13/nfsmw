@@ -1,6 +1,7 @@
 #include "./EAXSOund.hpp"
 #include "Speed/Indep/Src/Misc/Config.h"
 
+// TODO look at dwarf
 void EAXSound::START_321Countdown() {
     if (IsSoundEnabled && IsAudioStreamingEnabled) {
         SFX_Base *obj = GetSFXBase_Object(0x40010010);
@@ -41,7 +42,7 @@ EAXSound::EAXSound() {
     bPlayCameraSnapShot = false;
     mmsgMRestartRace = nullptr;
     m_bPause_MainFNG = false;
-    mData.fEventID = 0xF2D10992;
+    mData.fEventID = 0xF2D10992; // TODO magic
     mEventID = 0;
 }
 

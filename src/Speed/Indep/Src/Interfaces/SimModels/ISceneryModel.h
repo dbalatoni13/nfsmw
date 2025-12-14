@@ -8,11 +8,9 @@
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 
-
+// total size: 0x8
 class ISceneryModel : public UTL::COM::IUnknown {
-public:
-    // total size: 0x8
-
+  public:
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }

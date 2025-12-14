@@ -23,31 +23,40 @@ class INIS : public UTL::COM::IUnknown, public UTL::Collections::Singleton<INIS>
 
     INIS(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~INIS() {}
-    virtual ICEScene *GetScene() const;
-    virtual CAnimScene *GetAnimScene() const;
-    virtual void AddCar(UCrc32 channel, IVehicle *vehicle) const;
-    virtual IVehicle *GetCar(UCrc32 channelname) const;
+    ~INIS() override {}
+
+    virtual void AddCar(UCrc32 channel, IVehicle *vehicle);
+    virtual IVehicle *GetCar(UCrc32 channelname);
     virtual void StartLocation(const UMath::Vector3 &position, float direction);
     virtual void StartLocationInRenderCoords(const bVector3 &position, unsigned short direction);
-    virtual const UMath::Vector3 GetStartLocation();
-    virtual const UMath::Vector3 GetStartCameraLocation();
+    virtual const UMath::Vector3 *GetStartLocation();
+    virtual const UMath::Vector3 *GetStartCameraLocation();
     virtual void SetPreMovie(const char *movieName);
     virtual void SetPostMovie(const char *movieName);
-    virtual void Load(CAnimChooser::eType nisType, const char *scene, int cameratrack, bool PlayAsSoonAsLoaded);
-    virtual void StartEvents();
-    virtual void FireEventTag(const char *tagName);
-    virtual void Pause();
-    virtual void UnPause();
-    virtual void ResetEvents(float SetTime);
-    virtual void ServiceLoads();
-    virtual bool SkipOverNIS();
 
     virtual CAnimChooser::eType GetType() {}
+
+    virtual void Load(CAnimChooser::eType nisType, const char *scene, int cameratrack, bool PlayAsSoonAsLoaded);
+    virtual bool SkipOverNIS();
+    virtual void Pause();
+    virtual void UnPause();
+
     virtual bool IsLoaded() const {}
+
     virtual bool IsPlaying() const {}
+
     virtual bool InMovie() const {}
+
+    virtual void ServiceLoads();
+    virtual ICEScene *GetScene() const;
+    virtual CAnimScene *GetAnimScene() const;
+    virtual void Release();
+    virtual void StartEvents();
+    virtual void FireEventTag(const char *tagName);
+    virtual void ResetEvents(float SetTime);
+
     virtual void StartPlayingNow() {}
+
     virtual bool IsWorldMomement() const {}
 };
 

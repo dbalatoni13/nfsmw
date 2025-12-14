@@ -1,6 +1,17 @@
+#include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Animation/AnimChooser.hpp"
+#include "Speed/Indep/Src/Animation/AnimLocator.hpp"
+#include "Speed/Indep/Src/Animation/AnimPlayer.hpp"
 #include "Speed/Indep/Src/Animation/AnimScene.hpp"
+#include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/FEng/FEList.h"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 #include "Speed/Indep/Src/Generated/Events/EPlayEndNIS.hpp"
 #include "Speed/Indep/Src/Generated/Events/ESndGameState.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNISComplete.h"
@@ -10,10 +21,14 @@
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
+#include "Speed/Indep/Src/Interfaces/SimModels/IPlaceableScenery.h"
+#include "Speed/Indep/Src/Interfaces/SimModels/ISceneryModel.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
 #include "Speed/Indep/Src/Sim/SimActivity.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/World/CarLoader.hpp"
 #include "Speed/Indep/Src/World/Scenery.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
@@ -23,6 +38,10 @@ class NISCar {
   public:
     NISCar(UCrc32 channel, IVehicle *vehicle);
     ~NISCar();
+
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
 
     void operator delete(void *mem, std::size_t size) {
         if (mem) {
@@ -45,7 +64,7 @@ NISCar::~NISCar() {
 
 // TODO is this really in here? probably not and it's a bug in debug_lines.txt
 // total size: 0x438
-struct NISActivity : public Sim::Activity, public INIS, public EventSequencer::IContext, public IVehicleCache {
+class NISActivity : public Sim::Activity, public INIS, public EventSequencer::IContext, public IVehicleCache {
   public:
     enum NISACTIVITY_STATE {
         NISACTIVITY_NONE = 0,
@@ -58,6 +77,8 @@ struct NISActivity : public Sim::Activity, public INIS, public EventSequencer::I
         NISACTIVITY_COMPLETE = 7,
     };
 
+    static void NISStreamTimeCallback(unsigned int animid, int mselapsed);
+
     NISActivity();
 
     // Virtual functions
@@ -65,12 +86,12 @@ struct NISActivity : public Sim::Activity, public INIS, public EventSequencer::I
     ~NISActivity() override;
 
     void Load(CAnimChooser::eType nisType, const char *scene, int cameratrack, bool PlayAsSoonAsLoaded) override;
-    void AddCar(UCrc32 channel, IVehicle *vehicle) const override;
-    IVehicle *GetCar(UCrc32 channelname) const override;
+    void AddCar(UCrc32 channel, IVehicle *vehicle) override;
+    IVehicle *GetCar(UCrc32 channelname) override;
     void StartLocation(const UMath::Vector3 &position, float direction) override;
     void StartLocationInRenderCoords(const bVector3 &position, unsigned short direction) override;
-    const UMath::Vector3 GetStartLocation() override;
-    const UMath::Vector3 GetStartCameraLocation() override;
+    const UMath::Vector3 *GetStartLocation() override;
+    const UMath::Vector3 *GetStartCameraLocation() override;
     CAnimChooser::eType GetType() override;
     void SetPreMovie(const char *movieName) override;
     void SetPostMovie(const char *movieName) override;
@@ -86,8 +107,6 @@ struct NISActivity : public Sim::Activity, public INIS, public EventSequencer::I
     void StartPlayingNow() override;
     void Pause() override;
     void UnPause() override;
-
-    // IActivity
     void Release() override;
 
     // IContext
@@ -110,6 +129,13 @@ struct NISActivity : public Sim::Activity, public INIS, public EventSequencer::I
     void OnMovieComplete(const MNotifyMovieFinished &message);
     void Unload();
     void RemoveCar(IVehicle *vehicle);
+    bool GetNISStartLocation(UMath::Vector3 &position);
+    void UpdatePreloading();
+    void UpdateLoading();
+    bool IsAudioStreamQueued();
+    bool IsCarListLoaded();
+
+    static int mElapsedmsAudioTime;
 
     HSIMTASK mUpdate;                                         // offset 0x6C, size 0x4
     float mNISElapsedTime;                                    // offset 0x70, size 0x4
@@ -237,9 +263,335 @@ NISActivity::~NISActivity() {
     ForceAllSceneryDetailLevels = SCENERY_DETAIL_NONE;
 
     new ESndGameState(4, false);
-    if (mNISSkipped != 0) {
+    if (mNISSkipped) {
         new EPlayEndNIS(mSkipToNIS);
     } else {
-        MNISComplete(nullptr).Post(UCrc32(0x20d60dbf));
+        MNISComplete(nullptr).Post(UCrc32(0x20d60dbf)); // magic
+    }
+}
+
+ICEScene *NISActivity::GetScene() const {
+    if (mMomentScene) {
+        return mMomentScene;
+    } else {
+        return GetAnimScene();
+    }
+}
+
+CAnimScene *NISActivity::GetAnimScene() const {
+    if (IsLoaded() && mAnimHandle) {
+        return TheAnimPlayer.FindAnimScene(mAnimHandle);
+    }
+    return nullptr;
+}
+
+void NISActivity::OnDetached(IAttachable *pOther) {
+    IVehicle *ivehicle;
+    if (pOther->QueryInterface(&ivehicle)) {
+        RemoveCar(ivehicle);
+    }
+}
+
+eVehicleCacheResult NISActivity::OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const {
+    for (UTL::Std::map<UCrc32, NISCar *, _type_map>::const_iterator i = mVehicleTable.begin(); i != mVehicleTable.end(); i++) {
+        const NISCar *car = (*i).second;
+        if (UTL::COM::ComparePtr(removethis, car->mIVehiclePtr)) {
+            return VCR_WANT;
+        }
+    }
+    return VCR_DONTCARE;
+}
+
+void NISActivity::OnRemovedVehicleCache(IVehicle *ivehicle) {}
+
+void NISActivity::RemoveCar(IVehicle *vehicle) {
+    for (UTL::Std::map<UCrc32, NISCar *, _type_map>::iterator i = mVehicleTable.begin(); i != mVehicleTable.end(); i++) {
+        const NISCar *car = (*i).second;
+        if (UTL::COM::ComparePtr(vehicle, car->mIVehiclePtr)) {
+            mVehicleTable.erase(i);
+            vehicle->SetAnimating(false);
+            delete car;
+            break;
+        }
+    }
+}
+
+void NISActivity::AddCar(UCrc32 channel, IVehicle *vehicle) {
+    if (!static_cast<IActivity *>(this)->Attach(vehicle)) {
+        return;
+    }
+    vehicle->SetAnimating(true);
+    vehicle->SetSpeed(0.0f);
+
+    UTL::Std::map<UCrc32, NISCar *, _type_map>::iterator iter = mVehicleTable.find(channel);
+    if (iter != mVehicleTable.end()) {
+        NISCar *car = (*iter).second;
+        delete car;
+    }
+    mVehicleTable[channel] = new NISCar(UCrc32(channel), vehicle);
+}
+
+IVehicle *NISActivity::GetCar(UCrc32 channelname) {
+    IVehicle *car = nullptr;
+    UTL::Std::map<UCrc32, NISCar *, _type_map>::iterator iter = mVehicleTable.find(channelname);
+    if (iter != mVehicleTable.end()) {
+        NISCar *nisCar = (*iter).second;
+        car = nisCar->mIVehiclePtr;
+    }
+    return car;
+}
+
+void NISActivity::StartLocation(const UMath::Vector3 &position, float direction) {
+    mStartLocation = position;
+    eSwizzleWorldVector(position, mNISPosition);
+    mNISDirection = direction;
+    unsigned short bang = direction * 65536.0f;
+    CAnimLocator::SetAnimOriginPosition(mNISPosition, bang);
+}
+
+void NISActivity::StartLocationInRenderCoords(const bVector3 &position, unsigned short direction) {
+    mNISPosition = position;
+    eUnSwizzleWorldVector(position, *reinterpret_cast<bVector3 *>(&mStartLocation));
+    mNISDirection = direction / 65536.0f;
+    CAnimLocator::SetAnimOriginPosition(position, direction);
+}
+
+const UMath::Vector3 *NISActivity::GetStartLocation() {
+    return &mStartLocation;
+}
+
+const UMath::Vector3 *NISActivity::GetStartCameraLocation() {
+    if (mLoadAttemptCount == 0) {
+        bool foundPos = false;
+        UMath::Vector3 NIS_Position;
+        if (GetNISStartLocation(NIS_Position)) {
+            foundPos = true;
+            mStartCameraLocation = NIS_Position;
+        }
+        if (!foundPos) {
+            mStartCameraLocation = mStartLocation;
+        }
+    }
+    return &mStartCameraLocation;
+}
+
+void NISActivity::SetPreMovie(const char *movieName) {
+    mPreMovie[0] = '\0';
+    if (movieName && bStrLen(movieName) > 0) {
+        bSafeStrCpy(mPreMovie, movieName, sizeof(mPreMovie));
+    }
+}
+
+void NISActivity::SetPostMovie(const char *movieName) {
+    mPostMovie[0] = '\0';
+    if (movieName && bStrLen(movieName) > 0) {
+        bSafeStrCpy(mPostMovie, movieName, sizeof(mPostMovie));
+    }
+}
+
+bool NISActivity::GetNISStartLocation(UMath::Vector3 &position) {
+    if (mSceneHash != 0) {
+        ICEData *iceData = TheICEManager.GetCameraData(mSceneHash, mCameraTrackNumber);
+        if (!iceData) {
+            return false;
+        } else {
+            ICE::Vector3 w_eye;
+            if (iceData->nSpaceEye == 1) {
+                iceData->GetEye(0, &w_eye);
+            } else {
+                if (iceData->nSpaceEye != 3) {
+                    return false;
+                }
+                ICE::Vector3 v_eye;
+                bMatrix4 scene_rotation_matrix;
+                bMatrix4 scene_translation_matrix;
+                bMatrix4 scene_transform_matrix;
+                iceData->GetEye(0, &v_eye);
+                CAnimLocator::GetInitialAnimMatricies(&scene_rotation_matrix, &scene_translation_matrix, true);
+                bMulMatrix(&scene_transform_matrix, &scene_translation_matrix, &scene_rotation_matrix);
+                ICE::MulVector(&w_eye, reinterpret_cast<ICE::Matrix4 *>(&scene_transform_matrix), &v_eye);
+            }
+            position.x = -w_eye.y;
+            position.y = w_eye.z;
+            position.z = w_eye.x;
+            return true;
+        }
+    }
+    return false;
+}
+
+void NISActivity::Unload() {
+    if (mSequencer) {
+        mSequencer->Release();
+        mSequencer = nullptr;
+    }
+    if (mAnimHandle != 0) {
+        TheAnimPlayer.Stop(mAnimHandle, true);
+        mAnimHandle = 0;
+    }
+    if (mSceneHash != 0) {
+        TheAnimPlayer.Unload(mSceneHash);
+    }
+}
+
+FECustomizationRecord *GetCustomCar(char *rideName) {
+    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
+    unsigned int car = FEHashUpper(rideName);
+
+    RideInfo rideInfo;
+    stable->BuildRideForPlayer(car, 0, &rideInfo);
+    FECarRecord *carRecord = stable->GetCarRecordByHandle(car);
+    FECustomizationRecord *customizationRecord = stable->GetCustomizationRecordByHandle(carRecord->Customization);
+
+    return customizationRecord;
+}
+
+bool NISActivity::SetDynamicData(const EventSequencer::System *system, EventDynamicData *data) {
+    UTL::Std::map<UCrc32, NISCar *, _type_map>::iterator iter = mVehicleTable.find(UCrc32(system->ID()));
+
+    if (iter != mVehicleTable.end()) {
+        NISCar *car = (*iter).second;
+        IVehicle *ivehicle = car->mIVehiclePtr;
+        IContext *icontext;
+        if (ivehicle && ivehicle->QueryInterface(&icontext)) {
+            return icontext->SetDynamicData(system, data);
+        }
+    } else {
+        // TODO magic
+        if (system->ID() == 0x8da18577) {
+            data->fhActivity = reinterpret_cast<uintptr_t>(GetInstanceHandle());
+            return true;
+        }
+    }
+    return false;
+}
+
+void NISActivity::UpdatePreloading() {
+    if (mSceneHash != 0) {
+        bool LockTrackStreamer = mNISType == CAnimChooser::Arrest;
+        if (TheAnimPlayer.Load(mSceneHash, mCameraTrackNumber, LockTrackStreamer)) {
+            g_pEAXSound->QueueNISStream(mSceneHash, mCameraTrackNumber, NISActivity::NISStreamTimeCallback);
+            if (g_pNISRevMgr) {
+                g_pNISRevMgr->OpenNISRevData(mSceneHash);
+            }
+            mState = NISACTIVITY_LOADING;
+            return;
+        }
+    }
+    mState = NISACTIVITY_COMPLETE;
+}
+
+void NISActivity::NISStreamTimeCallback(unsigned int animid, int mselapsed) {
+    mElapsedmsAudioTime = mselapsed;
+}
+
+bool NISActivity::IsAudioStreamQueued() {
+    return g_pEAXSound->IsNISStreamQueued();
+}
+
+static bool IsValidModelToNuke(const IModel *model) {
+    if (!model) {
+        return false;
+    }
+    if (UTL::COM::Is<ISceneryModel>(model) || UTL::COM::Is<IPlaceableScenery>(model)) {
+        return true;
+    }
+    if (!model->IsRootModel()) {
+        const IModel *root = model->GetRootModel();
+        if (root) {
+            if (UTL::COM::Is<ISceneryModel>(root)) {
+                return true;
+            }
+            if (UTL::COM::Is<IVehicle>(root->GetSimable())) {
+                return true;
+            }
+            if (UTL::COM::Is<IPlaceableScenery>(root)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+void NIS_NukeSmackablesWithinRange(const UMath::Vector3 &position, float radius) {
+    float radiusSquared = radius * radius;
+    for (IModel::List::const_iterator iter = IModel::GetList().begin(); iter != IModel::GetList().end(); iter++) {
+        IModel *model = *iter;
+        if (IsValidModelToNuke(model)) {
+            UMath::Matrix4 transform;
+            model->GetTransform(transform);
+
+            float dist = UMath::DistanceSquare(position, UMath::Vector4To3(transform.v3));
+            if (dist < radiusSquared) {
+                model->HideModel();
+                model->ReleaseModel();
+            }
+        }
+    }
+}
+
+bool NISActivity::IsCarListLoaded() {
+    if (TheCarLoader.IsLoadingInProgress()) {
+        return false;
+    }
+    bool loaded = true;
+
+    for (UTL::Std::map<UCrc32, NISCar *, _type_map>::iterator i = mVehicleTable.begin(); i != mVehicleTable.end(); i++) {
+        NISCar *car = (*i).second;
+        if (car && car->mIVehiclePtr) {
+            IRenderable *iRenderableCar;
+            if (car->mIVehiclePtr->QueryInterface(&iRenderableCar) && !iRenderableCar->IsRenderable()) {
+                loaded = false;
+                break;
+            }
+        }
+    }
+
+    return loaded;
+}
+
+void NISActivity::OnMovieComplete(const MNotifyMovieFinished &message) {
+    if (mState == NISACTIVITY_PRE_MOVIE) {
+        mState = NISACTIVITY_CREATING;
+        UpdatePreloading();
+    } else if (mState == NISACTIVITY_POST_MOVIE) {
+        mState = NISACTIVITY_COMPLETE;
+        Release();
+    }
+}
+
+void NISActivity::StartEvents() {
+    if (mSequencer) {
+        mSequencer->Reset(Sim::GetTime());
+        // TODO magic
+        mSequencer->ProcessStimulus(0xa6a56ea1, Sim::GetTime(), nullptr, EventSequencer::QUEUE_ALLOW);
+    }
+}
+
+void NISActivity::FireEventTag(const char *tagName) {
+    if (mSequencer) {
+        mSequencer->FireEventTag(stringhash(tagName), nullptr);
+    }
+}
+
+void NISActivity::Pause() {
+    mPause = true;
+}
+
+void NISActivity::UnPause() {
+    mPause = false;
+}
+
+void NISActivity::ServiceLoads() {
+    switch (mState) {
+        case NISACTIVITY_CREATING:
+            UpdatePreloading();
+            break;
+        case NISACTIVITY_LOADING:
+        case NISACTIVITY_READY_TO_PLAY:
+            UpdateLoading();
+            break;
+        default:
+            break;
     }
 }

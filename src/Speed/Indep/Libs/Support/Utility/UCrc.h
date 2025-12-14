@@ -53,7 +53,9 @@ class UCrc32 {
     //     UCrc32 tmp;
     // }
 
-    // bool operator<(const struct UCrc32 &from) const {}
+    bool operator<(const UCrc32 &from) const {
+        return mCRC < from.mCRC;
+    }
 
     unsigned int GetValue() const {
         return mCRC;
