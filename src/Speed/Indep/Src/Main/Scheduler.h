@@ -26,6 +26,7 @@ class TaskList : public UTL::Std::list<TaskRecord, _type_list> {};
 class Schedule {
   public:
     int AddTask(int tag, Event::StaticData *staticData, unsigned short priority, bool deterministic, int tickDelay, int repeat);
+    bool RemoveTask(int handle);
 
   private:
     int fNumBuckets;               // offset 0x0, size 0x4

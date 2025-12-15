@@ -117,8 +117,12 @@ template <typename T, std::size_t Size> class GarbageNode {
 
         Collector() {}
 
+        // TODO match dwarf
         void Collect() {
-            _mClean.erase(std::remove_if(_mClean.begin(), _mClean.end(), _Node::is_dead), _mClean.end());
+            typename _Storage<_Node, Size>::iterator iter = std::remove_if(_mClean.begin(), _mClean.end(), _Node::is_dead);
+            if (iter != _mClean.end()) {
+                _mClean.erase(iter, _mClean.end());
+            }
             volatile std::size_t size = _mDirty.size();
             while (size != 0) {
                 _Node *iter = _mDirty.begin();
@@ -128,13 +132,22 @@ template <typename T, std::size_t Size> class GarbageNode {
 
                 size = _mDirty.size();
             }
-            _mClean.erase(std::remove_if(_mClean.begin(), _mClean.end(), _Node::is_dead), _mClean.end());
+            iter = std::remove_if(_mClean.begin(), _mClean.end(), _Node::is_dead);
+            if (iter != _mClean.end()) {
+                _mClean.erase(iter, _mClean.end());
+            }
         }
 
         void Shutdown() {
             Collect();
 
-            _mDirty.clear();
+            for (typename _Storage<_Node, Size>::iterator iter = _mClean.begin(); iter != _mClean.end(); ++iter) {
+                if (iter->refcount != 0) {
+                    _mDirty.push_back(*iter);
+                }
+            }
+
+            _mClean.clear();
 
             Collect();
         }

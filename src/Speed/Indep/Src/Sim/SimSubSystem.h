@@ -26,6 +26,18 @@ class SubSystem {
         }
     }
 
+    static void Shutdown(const UCrc32 &sig) {
+        SubSystem *s;
+        for (s = mHead; s != nullptr; s = s->mNext) {
+            if (s->mSig == sig && s->mRestore) {
+                s->ValidateHeap(true, false);
+                s->mRestore();
+                s->ValidateHeap(false, false);
+                break;
+            }
+        }
+    }
+
   private:
     static SubSystem *mHead;
 

@@ -8,7 +8,7 @@
 // total size: 0xC
 class AISpawnManager {
   public:
-    ~AISpawnManager();
+    virtual ~AISpawnManager();
 
   private:
     float mMinSpawnDist; // offset 0x0, size 0x4

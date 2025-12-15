@@ -71,8 +71,6 @@ template <typename T, unsigned int Alignment = 16> class Vector {
         }
     }
 
-    void pop_back() {}
-
     void push_back(value_type const &val) {
         if (size() >= capacity()) {
             reserve(GetGrowSize(size() + 1));
@@ -81,9 +79,28 @@ template <typename T, unsigned int Alignment = 16> class Vector {
         mSize++;
     }
 
-    void make_empty() {}
+    void pop_back() {
+        mSize = size() - 1;
+    }
 
-    void clear() {}
+    void make_empty() {
+        int num = size();
+        for (int ii = 0; ii < num; ii++) {
+            pop_back();
+        }
+
+        if (mBegin) {
+            FreeVectorSpace(mBegin, mCapacity);
+            mBegin = nullptr;
+            mCapacity = 0;
+            mSize = 0;
+        }
+    }
+
+    void clear() {
+        make_empty();
+        Init();
+    }
 
     std::size_t indexof(pointer pos) {
         std::size_t index = pos - mBegin;
@@ -91,10 +108,6 @@ template <typename T, unsigned int Alignment = 16> class Vector {
     }
 
     iterator erase(iterator begIt, iterator endIt) {
-        // TODO is this right? it was necessary to avoid some if (iter != end()) checks in callers
-        if (begIt == mBegin + mSize) {
-            return mBegin + mSize;
-        }
         std::size_t iPos = indexof(begIt);
         std::size_t num = endIt - begIt;
         for (iterator it = begIt; it != endIt; ++it) {
@@ -143,7 +156,10 @@ template <typename T, std::size_t Size, unsigned int Alignment = 16> class Fixed
   public:
     FixedVector() {}
 
-    ~FixedVector() override {}
+    ~FixedVector() override {
+        // clang is being annoying
+        Vector<T, Alignment>::clear();
+    }
 
   protected:
     virtual std::size_t GetGrowSize(std::size_t minSize) const {}

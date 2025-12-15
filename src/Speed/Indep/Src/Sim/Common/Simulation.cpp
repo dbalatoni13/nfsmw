@@ -237,13 +237,10 @@ class SimTask : public UTL::Collections::Countable<SimTask> {
     }
 
     static void Shutdown() {
-        // TODO
         SimTask *p = mRoot;
         while (p) {
             SimTask *next = p->mTail;
-            if (p->IsDirty()) {
-                delete p;
-            }
+            delete p;
             p = next;
         }
     }
@@ -515,7 +512,10 @@ SimSystem::~SimSystem() {
 
     SimTask::Shutdown();
 
-    Scheduler::Get();
+    for (int i = mAttribs.Num_SimSubSystems() - 1; i >= 0; i--) {
+        Sim::SubSystem::Shutdown(UCrc32(mAttribs.SimSubSystems(i)));
+    }
+    Scheduler::Get().fSchedule_SimRate->RemoveTask(mEvent);
 }
 
 float SimSystem::DistanceToCamera(const UMath::Vector3 &v) const {
