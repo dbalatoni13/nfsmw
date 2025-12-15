@@ -107,13 +107,29 @@ template <typename T, std::size_t Size> class GarbageNode {
                 return n.myptr == myptr;
             }
 
+            static bool is_dead(const _Node &h) {
+                return h.refcount == 0;
+            }
+
             T *myptr;     // offset 0x0, size 0x4
             int refcount; // offset 0x4, size 0x4
         };
 
         Collector() {}
 
-        // void Collect() {}
+        void Collect() {
+            _mClean.erase(std::remove_if(_mClean.begin(), _mClean.end(), _Node::is_dead), _mClean.end());
+            volatile std::size_t size = _mDirty.size();
+            while (size != 0) {
+                _Node *iter = _mDirty.begin();
+                T *pObj = iter->myptr;
+                _mDirty.erase(iter);
+                delete pObj;
+
+                size = _mDirty.size();
+            }
+            _mClean.erase(std::remove_if(_mClean.begin(), _mClean.end(), _Node::is_dead), _mClean.end());
+        }
 
         // void Shutdown() {}
 

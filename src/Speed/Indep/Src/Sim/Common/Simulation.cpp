@@ -24,7 +24,11 @@
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Physics/Behaviors/RigidBody.h"
 #include "Speed/Indep/Src/Physics/Behaviors/SimpleRigidBody.h"
+#include "Speed/Indep/Src/Physics/PhysicsObject.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
+#include "Speed/Indep/Src/Sim/SimActivity.h"
+#include "Speed/Indep/Src/Sim/SimEntity.h"
+#include "Speed/Indep/Src/Sim/SimModel.h"
 #include "Speed/Indep/Src/Sim/SimProfile.h"
 #include "Speed/Indep/Src/Sim/SimSubSystem.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
@@ -232,20 +236,31 @@ class SimTask : public UTL::Collections::Countable<SimTask> {
         mRate = r;
     }
 
-    bool IsDirty() const {
-        return mFlags & DirtyFlag;
-    }
-
-    Sim::TaskMode GetMode() const {
-        return static_cast<Sim::TaskMode>(mFlags & 0xF);
+    static void Collect() {
+        SimTask *p = mRoot;
+        while (p) {
+            SimTask *next = p->mTail;
+            if (p->IsDirty()) {
+                delete p;
+            }
+            p = next;
+        }
     }
 
     HSIMTASK GetInstanceHandle() const {
         return mHandle;
     }
 
+    bool IsDirty() const {
+        return mFlags & DirtyFlag;
+    }
+
     void Release() {
         mFlags |= DirtyFlag;
+    }
+
+    Sim::TaskMode GetMode() const {
+        return static_cast<Sim::TaskMode>(mFlags & 0xF);
     }
 
   private:
@@ -524,9 +539,16 @@ bool SimSystem::OnTask(HSIMTASK htask, float dT) {
     return true;
 }
 
-// void SimSystem::CollectGarbage() {
-//     ProfileNode profile_node;
-// }
+void SimSystem::CollectGarbage() {
+    ProfileNode profile_node("TODO", 0);
+
+    PhysicsObject::GetGC().Collect();
+    Sim::Activity::GetGC().Collect();
+    Sim::Model::GetGC().Collect();
+    Sim::Entity::GetGC().Collect();
+
+    SimTask::Collect();
+}
 
 void SimSystem::RunAllTasks(float frame_time) {
     ProfileNode profile_node;

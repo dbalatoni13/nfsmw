@@ -91,6 +91,10 @@ template <typename T, unsigned int Alignment = 16> class Vector {
     }
 
     iterator erase(iterator begIt, iterator endIt) {
+        // TODO is this right? it was necessary to avoid some if (iter != end()) checks in callers
+        if (begIt == mBegin + mSize) {
+            return mBegin + mSize;
+        }
         std::size_t iPos = indexof(begIt);
         std::size_t num = endIt - begIt;
         for (iterator it = begIt; it != endIt; ++it) {
