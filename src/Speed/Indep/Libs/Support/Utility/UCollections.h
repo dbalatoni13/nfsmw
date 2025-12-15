@@ -34,7 +34,7 @@ template <typename T, std::size_t Size> class _Storage : public FixedVector<T, S
   public:
     _Storage() {}
 
-    ~_Storage() {}
+    ~_Storage() override {}
 };
 
 template <typename T> class Singleton {
@@ -131,7 +131,13 @@ template <typename T, std::size_t Size> class GarbageNode {
             _mClean.erase(std::remove_if(_mClean.begin(), _mClean.end(), _Node::is_dead), _mClean.end());
         }
 
-        // void Shutdown() {}
+        void Shutdown() {
+            Collect();
+
+            _mDirty.clear();
+
+            Collect();
+        }
 
         friend class GarbageNode;
 

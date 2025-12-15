@@ -143,7 +143,7 @@ template <typename T, std::size_t Size, unsigned int Alignment = 16> class Fixed
   public:
     FixedVector() {}
 
-    virtual ~FixedVector() {}
+    ~FixedVector() override {}
 
   protected:
     virtual std::size_t GetGrowSize(std::size_t minSize) const {}

@@ -236,6 +236,18 @@ class SimTask : public UTL::Collections::Countable<SimTask> {
         mRate = r;
     }
 
+    static void Shutdown() {
+        // TODO
+        SimTask *p = mRoot;
+        while (p) {
+            SimTask *next = p->mTail;
+            if (p->IsDirty()) {
+                delete p;
+            }
+            p = next;
+        }
+    }
+
     static void Collect() {
         SimTask *p = mRoot;
         while (p) {
@@ -395,6 +407,12 @@ class SimSystem : public UTL::COM::Object, public Sim::ITaskable {
         return gFastMem.Alloc(size, nullptr);
     }
 
+    void operator delete(void *mem, std::size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+
     float GetTimeStep() const {
         return mTimeStep;
     }
@@ -408,6 +426,9 @@ class SimSystem : public UTL::COM::Object, public Sim::ITaskable {
     }
 
     // Overrides
+    // IUnknown
+    ~SimSystem() override;
+
     // ITaskable
     bool OnTask(HSIMTASK htask, float dT) override;
 
@@ -471,6 +492,30 @@ SimSystem::SimSystem()
     Sim::ProfileTask(mWorldUpdate, "WorldUpdate");
     Sim::ProfileTask(mSimFrameEnd, "SimFrameEnd");
     Sim::ProfileTask(mSimEnd, "SimEnd");
+}
+
+SimSystem::~SimSystem() {
+    if (mKernel) {
+        mKernel->Release();
+        mKernel = nullptr;
+    }
+
+    RemoveTask(mSimStart, this);
+    RemoveTask(mWorldUpdate, this);
+    RemoveTask(mSimEnd, this);
+    RemoveTask(mSimFrameEnd, this);
+    CollectGarbage();
+
+    Sim::Profile::Release(mTasksProfile);
+
+    Sim::Activity::GetGC().Shutdown();
+    Sim::Entity::GetGC().Shutdown();
+    PhysicsObject::GetGC().Shutdown();
+    Sim::Model::GetGC().Shutdown();
+
+    SimTask::Shutdown();
+
+    Scheduler::Get();
 }
 
 float SimSystem::DistanceToCamera(const UMath::Vector3 &v) const {

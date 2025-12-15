@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cstddef>
 
+#include "Speed/Indep/Libs/Support/Utility/UCollections.h"
 #include "UTLVector.h"
 #include <types.h>
 
@@ -77,11 +78,11 @@ template <typename T, std::size_t ListSize, typename Enum, std::size_t EnumMax> 
     typedef pointer iterator;
     typedef value_type const *const_iterator;
 
-    class List : public FixedVector<pointer, ListSize> {
+    class List : public _Storage<pointer, ListSize> {
       public:
         // List(const List &);
         List();
-        virtual ~List();
+        ~List() override {}
 
         // List &operator=(List &);
     };
