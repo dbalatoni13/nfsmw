@@ -68,6 +68,8 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
         MaxPlayStatus = 3,
     };
 
+    void UpdateTime(float time_step);
+
     // Virtual functions
     // ICEScene
     // TODO are all of these really overridden?

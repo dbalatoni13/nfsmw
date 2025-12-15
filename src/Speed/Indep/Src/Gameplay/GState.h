@@ -5,6 +5,12 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Gameplay/GRuntimeInstance.h"
 
+// total size: 0x28
+class GState : public GRuntimeInstance {
+  public:
+    GState(const Attrib::Key &stateKey);
+};
 
 #endif

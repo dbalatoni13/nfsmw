@@ -27,3 +27,5 @@
 #include "Speed/Indep/Src/Sim/Activities/CareerGame.cpp"
 
 #include "Speed/Indep/Src/Sim/Activities/NISActivity.cpp"
+
+#include "Speed/Indep/Src/Sim/Activities/GameplayActivity.cpp"

@@ -10,7 +10,7 @@
 // total size: 0x28
 class GRuntimeInstance : public Attrib::Gen::gameplay {
   public:
-    GRuntimeInstance(const unsigned int &key, GameplayObjType type);
+    GRuntimeInstance(const Attrib::Key &key, GameplayObjType type);
 
   private:
     unsigned short mFlags;                // offset 0x14, size 0x2

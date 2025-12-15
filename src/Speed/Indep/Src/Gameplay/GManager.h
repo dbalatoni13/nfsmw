@@ -23,6 +23,10 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     static GManager *mObj;
 
     GManager(const char *vaultPackName);
+    void PreBeginGameplay();
+    void BeginGameplay();
+    void EndGameplay();
+    void Update(float dT);
     void RefreshWorldParticleEffects();
     void GetRespawnLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialVec);
     void RestorePursuitBreakerIcons(int sectionID);

@@ -21,6 +21,7 @@
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/SimModels/IPlaceableScenery.h"
 #include "Speed/Indep/Src/Interfaces/SimModels/ISceneryModel.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
@@ -29,6 +30,7 @@
 #include "Speed/Indep/Src/Sim/SimActivity.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/CarLoader.hpp"
+#include "Speed/Indep/Src/World/OnlineManager.hpp"
 #include "Speed/Indep/Src/World/Scenery.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
@@ -132,8 +134,11 @@ class NISActivity : public Sim::Activity, public INIS, public EventSequencer::IC
     bool GetNISStartLocation(UMath::Vector3 &position);
     void UpdatePreloading();
     void UpdateLoading();
+    void Play();
+    void UpdatePlaying(float dT);
     bool IsAudioStreamQueued();
     bool IsCarListLoaded();
+    void JoyHandle(IPlayer *player);
 
     static int mElapsedmsAudioTime;
 
@@ -594,4 +599,61 @@ void NISActivity::ServiceLoads() {
         default:
             break;
     }
+}
+
+void NISActivity::JoyHandle(IPlayer *player) {
+    bool wheel_connected = false;
+    if (player->GetSteeringDevice() && player->GetSteeringDevice()->IsConnected()) {
+        wheel_connected = true;
+    }
+    mActionQ.SetPort(player->GetControllerPort());
+    mActionQ.SetConfig(player->GetSettings()->GetControllerAttribs(CA_HUD, wheel_connected), "FEngHud");
+
+    while (!mActionQ.IsEmpty()) {
+        ActionRef aRef = mActionQ.GetAction();
+        // TODO magic
+        if (aRef.ID() == 50 && !TheOnlineManager.IsOnlineRace() && INIS::Get()) {
+            INIS::Get()->SkipOverNIS();
+        }
+
+        mActionQ.PopAction();
+    }
+}
+
+// TODO move
+extern bool Tweak_FullSpeedMode;
+
+bool NISActivity::OnTask(HSIMTASK task, float dT) {
+    if (task != mUpdate) {
+        Sim::Object::OnTask(task, dT);
+    } else {
+        JoyHandle(IPlayer::First(PLAYER_LOCAL));
+        switch (mState) {
+            case NISACTIVITY_READY_TO_PLAY:
+                if (mStartPlayingNow && !mPause && mSuspensionSettle >= 31) {
+                    Play();
+                } else {
+                    mSuspensionSettle++;
+                    if (mAnimScene) {
+                        mAnimScene->UpdateTime(0.0f);
+                    }
+                }
+                break;
+            case NISACTIVITY_PLAYING:
+                UpdatePlaying(dT);
+                break;
+            case NISACTIVITY_COMPLETE:
+                Tweak_FullSpeedMode = false;
+                Release();
+                break;
+            default:
+            case NISACTIVITY_CREATING:
+            case NISACTIVITY_LOADING:
+            case NISACTIVITY_PRE_MOVIE:
+            case NISACTIVITY_POST_MOVIE:
+                break;
+        }
+        return true;
+    }
+    return false;
 }

@@ -76,6 +76,9 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         kPlayMode_Racing = 1,
     };
 
+    static void Init();
+    static void Shutdown();
+
   private:
     GRacerInfo mRacerInfo[16];                                                         // offset 0x1C, size 0x1A80
     int mRacerCount;                                                                   // offset 0x1A9C, size 0x4
