@@ -140,16 +140,16 @@ Speed/Indep/SourceLists/zLua.cpp:
 Speed/Indep/SourceLists/zMain.cpp:
 	.text       start:0x801D3B44 end:0x801FAB64
 	.ctors      start:0x803C8BAC end:0x803C8BB0
-	.rodata     start:0x803F3EB8 end:0x803F6638
-	.data       start:0x8041D7EC end:0x8041E598
-	.bss        start:0x80474024 end:0x8047FEA4
+	.rodata     start:0x803F3EB8 end:0x803F48D4
+	.data       start:0x8041D7EC end:0x8041E508
+	.bss        start:0x80474024 end:0x8047F91C
 
 Speed/Indep/SourceLists/zMisc.cpp:
 	.text       start:0x801FAB64 end:0x8020DEA0
 	.ctors      start:0x803C8BB0 end:0x803C8BB4
-	.rodata     start:0x803F6638 end:0x803F9804
-	.data       start:0x8041E598 end:0x8041EFE8
-	.bss        start:0x8047FEA4 end:0x804801A4
+	.rodata     start:0x803F48D4 end:0x803F9804
+	.data       start:0x8041E508 end:0x8041EFE8
+	.bss        start:0x8047F91C end:0x804801A4
 
 Speed/Indep/SourceLists/zMiscSmall.cpp:
 	.text       start:0x8020DEA0 end:0x8020DF1C

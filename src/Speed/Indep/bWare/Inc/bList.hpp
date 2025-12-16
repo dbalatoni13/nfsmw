@@ -275,16 +275,23 @@ template <typename T> class bTList : public bList {
     }
 };
 
-struct bPNode : public bTNode<bPNode> {
-    // total size: 0xC
-    void *Object; // offset 0x8, size 0x4
+// total size: 0xC
+class bPNode : public bTNode<bPNode> {
+  public:
+    static void *Malloc();
+    static void Free(void *ptr);
 
     bPNode(void *object) {
         this->Object = object;
     }
 
-    static void *Malloc();
-    static void Free(void *ptr);
+    bPNode *GetObject() {
+        return reinterpret_cast<bPNode *>(Object);
+    }
+
+    void *GetpObject() {
+        return Object;
+    }
 
     void *operator new(size_t size) {
         return Malloc();
@@ -293,6 +300,9 @@ struct bPNode : public bTNode<bPNode> {
     void operator delete(void *ptr) {
         Free(ptr);
     }
+
+  private:
+    void *Object; // offset 0x8, size 0x4
 };
 
 template <typename T> class bPList : public bTList<bPNode> {
@@ -300,15 +310,20 @@ template <typename T> class bPList : public bTList<bPNode> {
     bPNode *AddHead(T *object) {
         return (bPNode *)bList::AddHead(new bPNode(object));
     }
+
     bPNode *AddTail(T *object) {
         return (bPNode *)bList::AddTail(new bPNode(object));
     }
+
     void Remove(bNode *node) {
         bList::Remove(node);
+        delete node;
     }
+
     void RemoveHead() {
         delete reinterpret_cast<bPNode *>(bList::RemoveHead());
     }
+
     void RemoveTail() {
         bList::RemoveTail();
     }

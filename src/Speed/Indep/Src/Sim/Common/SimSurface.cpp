@@ -3,7 +3,10 @@
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
-static Attrib::Class *TheSurfaceClass;
+static Attrib::Class *TheSurfaceClass = nullptr;
+
+const Attrib::Collection *SimSurface::mUnknown = nullptr;
+const Attrib::Collection *SimSurface::mNullSpec = nullptr;
 
 const Attrib::Collection *SimSurface::Lookup(const UCrc32 &namehash) {
     const Attrib::Collection *collection = TheSurfaceClass->GetCollection(namehash.GetValue());

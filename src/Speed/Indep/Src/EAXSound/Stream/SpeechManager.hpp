@@ -5,6 +5,18 @@
 #pragma once
 #endif
 
+#include "SpeechModule.hpp"
 
+namespace Speech {
+
+class Manager {
+  public:
+    static Module *GetSpeechModule(int nindex);
+    static void ClearPlayback();
+
+  private:
+};
+
+}; // namespace Speech
 
 #endif

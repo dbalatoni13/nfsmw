@@ -5,11 +5,11 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #if TARGET_GC
 #include "Speed/GameCube/Src/Ecstasy/eLightPlat.hpp"
 #endif
 
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 

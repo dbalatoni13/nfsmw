@@ -22,3 +22,9 @@ block_relocations:
 - target: .text:0x80134010
 - target: .text:0x80134100
 - target: .text:0x80134000
+
+- source: .text:0x801fb140
+  end: .text:0x801fb14c
+
+- source: .text:0x801fb2e4
+  end: .text:0x801fb2f0

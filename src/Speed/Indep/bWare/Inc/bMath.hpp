@@ -509,6 +509,8 @@ struct bVector4 {
 
     bVector4 &operator=(const bVector4 &v);
 
+    bVector4 operator-(const bVector4 &v);
+
     bVector4 &operator-=(const bVector4 &v) {}
 
     bVector4 &operator+=(const bVector4 &v) {}
@@ -524,22 +526,6 @@ struct bVector4 {
     const float &operator[](int index) const {}
 
     bVector4 operator+(const bVector4 &v) {
-        bVector4 *pv;
-        float x1;
-        float y1;
-        float z1;
-        float w1;
-        float x2;
-        float y2;
-        float z2;
-        float w2;
-        float _x;
-        float _y;
-        float _z;
-        float _w;
-    }
-
-    bVector4 operator-(const bVector4 &v) {
         bVector4 *pv;
         float x1;
         float y1;
@@ -738,6 +724,26 @@ inline bVector4 &bVector4::operator*=(float scale) {
     return *this;
 }
 
+inline bVector4 bVector4::operator-(const bVector4 &v) {
+    bVector4 *pv;
+    float x1 = x;
+    float y1 = y;
+    float z1 = z;
+    float w1 = w;
+
+    float x2 = v.x;
+    float y2 = v.y;
+    float z2 = v.z;
+    float w2 = v.w;
+
+    float _x = x1 - x2;
+    float _y = y1 - y2;
+    float _z = z1 - z2;
+    float _w = w1 - w2;
+
+    return bVector4(_x, _y, _z, _w);
+}
+
 // inline bVector4 &bConvertToBond(bVector4 &dest, const struct bVector4 &v) {
 //     float w; // f13
 //     float z; // f9
@@ -828,6 +834,8 @@ inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector4 
 inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector3 *position) {}
 
 void bMulMatrix(bMatrix4 *dest, const bMatrix4 *a, const bMatrix4 *b);
+
+bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m);
 
 struct bQuaternion {
     // total size: 0x10

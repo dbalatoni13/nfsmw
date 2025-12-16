@@ -38,10 +38,11 @@ struct SampleQueueItem {
     struct cStichWrapper *pStitch;  // offset 0x4, size 0x4
 };
 
-struct cSTICH_PlayBack : public AudioMemBase {
+// total size: 0x1C
+class cSTICH_PlayBack : public AudioMemBase {
   public:
     cSTICH_PlayBack();
-    virtual ~cSTICH_PlayBack();
+    ~cSTICH_PlayBack() override;
 
     bool AddStich(STICH_TYPE, SND_Stich &);
     SND_Stich &GetStich(STICH_TYPE StichType, int Index);
@@ -58,7 +59,6 @@ struct cSTICH_PlayBack : public AudioMemBase {
     static int Prune(STICH_TYPE type, int priority, int num_to_clear);
 
   private:
-    // total size: 0x1C
     struct bPList<SND_Stich> StichList[3]; // offset 0x4, size 0x18
 
     static SlotPool *mSampleRefSlotPool;

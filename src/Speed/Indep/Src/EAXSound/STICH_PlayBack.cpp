@@ -6,10 +6,12 @@
 
 cSTICH_PlayBack::cSTICH_PlayBack() {
     mSampleRefSlotPool = bNewSlotPool(32, 129, "SampleWrapper SlotPool", AudioMemoryPool);
-    // compiler complains if i try to |=
-    mSampleRefSlotPool->Flags = SlotPoolFlags(mSampleRefSlotPool->Flags | SLOTPOOL_FLAG_OVERFLOW_IF_FULL | SLOTPOOL_FLAG_WARN_IF_OVERFLOW);
+    mSampleRefSlotPool->SetFlag(SLOTPOOL_FLAG_OVERFLOW_IF_FULL);
+    mSampleRefSlotPool->SetFlag(SLOTPOOL_FLAG_WARN_IF_OVERFLOW);
+
     mStitchSlotPool = bNewSlotPool(108, 45, "Stitch SlotPool", AudioMemoryPool);
-    mStitchSlotPool->Flags = SlotPoolFlags(mStitchSlotPool->Flags | SLOTPOOL_FLAG_OVERFLOW_IF_FULL | SLOTPOOL_FLAG_WARN_IF_OVERFLOW);
+    mStitchSlotPool->SetFlag(SLOTPOOL_FLAG_OVERFLOW_IF_FULL);
+    mStitchSlotPool->SetFlag(SLOTPOOL_FLAG_WARN_IF_OVERFLOW);
 }
 
 cSTICH_PlayBack::~cSTICH_PlayBack() {
@@ -25,6 +27,7 @@ void cSTICH_PlayBack::QueueSampleRequest(struct SampleQueueItem &samplereq) {}
 
 void cSTICH_PlayBack::RemoveFromList(struct SampleQueueItem sampleitem) {}
 
+// UNSOLVED
 int cSTICH_PlayBack::Prune(STICH_TYPE type, int priority, int num_to_clear) {
     if (num_to_clear == 0)
         return 0;
@@ -39,8 +42,7 @@ bool cSTICH_PlayBack::AddStich(STICH_TYPE StichType, SND_Stich &NewStichData) {
 }
 
 SND_Stich &cSTICH_PlayBack::GetStich(STICH_TYPE StichType, int Index) {
-    bPNode *node = GetStichList(StichType).GetNode(Index);
-    return *reinterpret_cast<SND_Stich *>(node->Object); // i hate this too
+    return *reinterpret_cast<SND_Stich *>(GetStichList(StichType).GetNode(Index)->GetpObject());
 }
 
 void cSTICH_PlayBack::Update(float t) {}

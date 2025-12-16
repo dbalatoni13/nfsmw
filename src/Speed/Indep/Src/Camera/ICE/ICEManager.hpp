@@ -54,7 +54,10 @@ class ICEManager {
     void Resolve();
     ICEData *GetCameraData(unsigned int scene_hash, int camTrack);
 
-    bool IsEditorOn() {}
+    bool IsEditorOn() {
+        // TODO maybe negated?
+        return nState >= 1;
+    }
 
   private:
     ICEGroup *pNisCameras;              // offset 0x0, size 0x4
@@ -89,5 +92,7 @@ class ICEManager {
 };
 
 extern ICEManager TheICEManager;
+
+void ICECompleteEventTags();
 
 #endif

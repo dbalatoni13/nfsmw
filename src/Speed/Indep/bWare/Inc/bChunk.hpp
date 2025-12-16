@@ -9,8 +9,8 @@
 
 #define BCHUNK_NESTED_FLAG 0x80000000
 
+// total size: 0x8
 class bChunk {
-    // total size: 0x8
     unsigned int ID; // offset 0x0, size 0x4
     int Size;        // offset 0x4, size 0x4
 

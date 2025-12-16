@@ -69,6 +69,7 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
     };
 
     void UpdateTime(float time_step);
+    void JumpToEnd();
 
     // Virtual functions
     // ICEScene

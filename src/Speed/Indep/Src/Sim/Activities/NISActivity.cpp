@@ -7,11 +7,14 @@
 #include "Speed/Indep/Src/Animation/AnimScene.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
+#include "Speed/Indep/Src/EAXSound/Stream/SpeechModule.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
+#include "Speed/Indep/Src/Generated/Events/EFadeScreenOn.hpp"
 #include "Speed/Indep/Src/Generated/Events/EPlayEndNIS.hpp"
 #include "Speed/Indep/Src/Generated/Events/ESndGameState.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNISComplete.h"
@@ -654,6 +657,39 @@ bool NISActivity::OnTask(HSIMTASK task, float dT) {
                 break;
         }
         return true;
+    }
+    return false;
+}
+
+// TODO move
+extern int SkipMovies;
+
+bool NISActivity::SkipOverNIS() {
+    if (!TheICEManager.IsEditorOn()) {
+        if ((!mNonSkipableNIS || SkipMovies) && mState == NISACTIVITY_PLAYING && mNISType != CAnimChooser::Arrest &&
+            mNISType != CAnimChooser::Ending) {
+            if (mSkipToNIS[0] != 0) {
+                if (mNISElapsedTime > mNISNoSkipTime) {
+                    return false;
+                }
+                mNISSkipped = true;
+            }
+            if (mSequencer) {
+                mSequencer->Complete(Sim::GetTime(), true, nullptr);
+            }
+            mState = NISACTIVITY_COMPLETE;
+            Speech::Manager::ClearPlayback();
+            Speech::Module *cop_speech = Speech::Manager::GetSpeechModule(1);
+            if (cop_speech) {
+                cop_speech->ReleaseResource();
+            }
+            ICECompleteEventTags();
+            if (mAnimScene) {
+                mAnimScene->JumpToEnd();
+            }
+            new EFadeScreenOn(false);
+            return true;
+        }
     }
     return false;
 }

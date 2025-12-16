@@ -182,10 +182,13 @@ void LocalPlayer::ResetGameBreaker(bool full) {
     SetGameBreaker(false);
 }
 
+float Tweak_GameBreakerRechargeTime = 25.0f;
+float Tweak_GameBreakerRechargeSpeed = 100.0f;
+bool Tweak_InfiniteRaceBreaker = false;
+// static const float Tweak_GameBreakerMinimumSpeedMPH; // TODO
+float Tweak_GameBreakerCollisionMass = 2.0f;
+
 // TODO move
-extern float Tweak_GameBreakerRechargeTime;
-extern float Tweak_GameBreakerRechargeSpeed;
-extern bool Tweak_InfiniteRaceBreaker;
 extern int bRumbleEnabled;
 
 void LocalPlayer::DoGameBreaker(float dT, float dT_real) {
