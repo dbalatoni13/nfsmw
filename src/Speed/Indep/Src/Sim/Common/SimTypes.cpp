@@ -1,5 +1,6 @@
 #include "../SimAttachable.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Src/Interfaces/IAttachable.h"
 
 #include <algorithm>
 
@@ -21,7 +22,7 @@ bool Attachments::Attach(UTL::COM::IUnknown *object) {
         return false;
     }
 
-    UTL::Std::list<IAttachable *, _type_IAttachableList>::iterator iter = std::find(mList.begin(), mList.end(), iother);
+    IAttachable::List::iterator iter = std::find(mList.begin(), mList.end(), iother);
     // Make sure it's not in the list yet
     if (iter != mList.end()) {
         return false;
@@ -46,7 +47,7 @@ bool Attachments::Detach(UTL::COM::IUnknown *object) {
         return false;
     }
 
-    UTL::Std::list<IAttachable *, _type_IAttachableList>::iterator iter = std::find(mList.begin(), mList.end(), iother);
+    IAttachable::List::iterator iter = std::find(mList.begin(), mList.end(), iother);
     if (iter == mList.end()) {
         return false;
     }
@@ -64,7 +65,7 @@ bool Attachments::Detach(UTL::COM::IUnknown *object) {
 }
 
 bool Attachments::IsAttached(const UTL::COM::IUnknown *object) const {
-    UTL::Std::list<IAttachable *, _type_IAttachableList>::const_iterator iter = mList.begin();
+    IAttachable::List::const_iterator iter = mList.begin();
     for (; iter != mList.end(); iter++) {
         const IAttachable *ia = *iter;
         if (UTL::COM::ComparePtr(object, ia)) {
@@ -76,7 +77,7 @@ bool Attachments::IsAttached(const UTL::COM::IUnknown *object) const {
 
 void Attachments::DetachAll() {
     while (!mList.empty()) {
-        UTL::Std::list<IAttachable *, _type_IAttachableList>::iterator iter = mList.begin();
+        IAttachable::List::iterator iter = mList.begin();
         bool result = Detach(*iter);
     }
 }

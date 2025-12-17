@@ -138,6 +138,8 @@ class Model : public Sim::Object,
 
     Enumerator *EnumerateChildren(IModel::Enumerator *enumerator) const override;
 
+    typedef UTL::Std::vector<IModel *, _type_SimModelChildren> Children;
+
   protected:
     void StartSequencer(UCrc32 name);
     void ReleaseSequencer();
@@ -165,21 +167,21 @@ class Model : public Sim::Object,
     bool OnService(HSIMSERVICE hCon, Packet *pkt) override;
 
   private:
-    IModel *mParent;                                              // offset 0x50, size 0x4
-    IModel *mRoot;                                                // offset 0x54, size 0x4
-    UCrc32 mNodeName;                                             // offset 0x58, size 0x4
-    const CollisionGeometry::Bounds *mGeometry;                   // offset 0x5C, size 0x4
-    ISimable *mSimable;                                           // offset 0x60, size 0x4
-    Attachments *mAttachments;                                    // offset 0x64, size 0x4
-    float mDistanceToView;                                        // offset 0x68, size 0x4
-    bool mInView;                                                 // offset 0x6C, size 0x1
-    const bool mIsRoot;                                           // offset 0x70, size 0x1
-    EventSequencer::IEngine *mSequencer;                          // offset 0x74, size 0x4
-    UTL::Std::vector<IModel *, _type_SimModelChildren> mChildren; // offset 0x78, size 0x10
-    HSIMSERVICE mService;                                         // offset 0x88, size 0x4
-    HCAUSE mCausality;                                            // offset 0x8C, size 0x4
-    float mCauseTime;                                             // offset 0x90, size 0x4
-    bTList<Model::Effect> mEffects;                               // offset 0x94, size 0x8
+    IModel *mParent;                            // offset 0x50, size 0x4
+    IModel *mRoot;                              // offset 0x54, size 0x4
+    UCrc32 mNodeName;                           // offset 0x58, size 0x4
+    const CollisionGeometry::Bounds *mGeometry; // offset 0x5C, size 0x4
+    ISimable *mSimable;                         // offset 0x60, size 0x4
+    Attachments *mAttachments;                  // offset 0x64, size 0x4
+    float mDistanceToView;                      // offset 0x68, size 0x4
+    bool mInView;                               // offset 0x6C, size 0x1
+    const bool mIsRoot;                         // offset 0x70, size 0x1
+    EventSequencer::IEngine *mSequencer;        // offset 0x74, size 0x4
+    Children mChildren;                         // offset 0x78, size 0x10
+    HSIMSERVICE mService;                       // offset 0x88, size 0x4
+    HCAUSE mCausality;                          // offset 0x8C, size 0x4
+    float mCauseTime;                           // offset 0x90, size 0x4
+    bTList<Model::Effect> mEffects;             // offset 0x94, size 0x8
 };
 
 }; // namespace Sim

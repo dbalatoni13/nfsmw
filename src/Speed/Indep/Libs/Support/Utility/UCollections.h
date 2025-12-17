@@ -119,7 +119,7 @@ template <typename T, std::size_t Size> class GarbageNode {
 
         // TODO match dwarf
         void Collect() {
-            typename _Storage<_Node, Size>::iterator iter = std::remove_if(_mClean.begin(), _mClean.end(), _Node::is_dead);
+            typename _NodeList::iterator iter = std::remove_if(_mClean.begin(), _mClean.end(), _Node::is_dead);
             if (iter != _mClean.end()) {
                 _mClean.erase(iter, _mClean.end());
             }
@@ -141,7 +141,7 @@ template <typename T, std::size_t Size> class GarbageNode {
         void Shutdown() {
             Collect();
 
-            for (typename _Storage<_Node, Size>::iterator iter = _mClean.begin(); iter != _mClean.end(); ++iter) {
+            for (typename _NodeList::iterator iter = _mClean.begin(); iter != _mClean.end(); ++iter) {
                 if (iter->refcount != 0) {
                     _mDirty.push_back(*iter);
                 }
@@ -168,7 +168,7 @@ template <typename T, std::size_t Size> class GarbageNode {
          * @return false
          */
         void _Remove(T *ptr) {
-            typename _Storage<_Node, Size>::iterator iter = std::remove(_mClean.begin(), _mClean.end(), _Node(ptr));
+            typename _NodeList::iterator iter = std::remove(_mClean.begin(), _mClean.end(), _Node(ptr));
             if (iter != _mClean.end()) {
                 _mClean.erase(iter, _mClean.end());
             }
@@ -188,7 +188,7 @@ template <typename T, std::size_t Size> class GarbageNode {
          * @return false otherwise
          */
         bool _Release(T *ptr) {
-            for (typename _Storage<_Node, Size>::iterator iter = _mClean.begin(); iter != _mClean.end(); ++iter) {
+            for (typename _NodeList::iterator iter = _mClean.begin(); iter != _mClean.end(); ++iter) {
                 if (iter->refcount != 0 && iter->myptr == ptr) {
                     iter->refcount = 0;
                     _mDirty.push_back(_Node(ptr));
@@ -198,9 +198,11 @@ template <typename T, std::size_t Size> class GarbageNode {
             return false;
         }
 
-        _Storage<_Node, Size> _mDirty; // offset 0x0, size 0x150
-        _Storage<_Node, Size> _mClean; // offset 0x150, size 0x150
-        unsigned int _mCount;          // offset 0x2A0, size 0x4
+        typedef _Storage<_Node, Size> _NodeList;
+
+        _NodeList _mDirty;    // offset 0x0, size 0x150
+        _NodeList _mClean;    // offset 0x150, size 0x150
+        unsigned int _mCount; // offset 0x2A0, size 0x4
     };
 
     bool ReleaseGC() {

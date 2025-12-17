@@ -474,7 +474,9 @@ struct EmitterPackHeader {
     int NumEmitterGroups; // offset 0xC, size 0x4
 };
 
+// total size: 0x3AC
 class EmitterSystem {
+  public:
     struct LibEntry {
         unsigned int Key;
         EmitterLibrary *Lib;
@@ -484,26 +486,6 @@ class EmitterSystem {
         }
     };
 
-    static TexturePageRange *mTextureRanges;
-    static int mNumTextureRanges;
-
-    // total size: 0x3AC
-    int mTotalNumParticles;                                                               // offset 0x0, size 0x4
-    int mParticleListCounts[66];                                                          // offset 0x4, size 0x108
-    bPList<Emitter> mParticleLists[66];                                                   // offset 0x10C, size 0x210
-    bVector3 mInterestPoints[2];                                                          // offset 0x31C, size 0x20
-    bVector3 mInterestVectors[2];                                                         // offset 0x33C, size 0x20
-    UTL::Std::map<unsigned int, EmitterDataAttribWrapper *, _type_map> mEmitterDataMap;   // offset 0x35C, size 0x10
-    UTL::Std::map<unsigned int, EmitterGroupAttribWrapper *, _type_map> mEmitterGroupMap; // offset 0x36C, size 0x10
-    bTList<EmitterGroup> mEmitterGroups;                                                  // offset 0x37C, size 0x8
-    bTList<WorldFXTrigger> mWorldTriggers;                                                // offset 0x384, size 0x8
-    int mNumTriggers;                                                                     // offset 0x38C, size 0x4
-    TextureInfo *mCurrentTexture;                                                         // offset 0x390, size 0x4
-    unsigned int mNumEmitterGroups;                                                       // offset 0x394, size 0x4
-    unsigned int mNumEmitters;                                                            // offset 0x398, size 0x4
-    UTL::Std::vector<EmitterSystem::LibEntry, _type_vector> mLibs;                        // offset 0x39C, size 0x10
-
-  public:
     static BOOL Loader(bChunk *bchunk);
     static BOOL Unloader(bChunk *bchunk);
     static int TexturePageLoader(bChunk *bchunk);
@@ -563,6 +545,29 @@ class EmitterSystem {
         trig->Remove();
         this->mNumTriggers--;
     }
+
+    typedef struct UTL::Std::map<unsigned int, EmitterDataAttribWrapper *, _type_map> EmitterDataMap;
+    typedef struct UTL::Std::map<unsigned int, EmitterGroupAttribWrapper *, _type_map> EmitterGroupMap;
+    typedef struct UTL::Std::vector<EmitterSystem::LibEntry, _type_vector> LibList;
+
+  private:
+    static TexturePageRange *mTextureRanges;
+    static int mNumTextureRanges;
+
+    int mTotalNumParticles;                // offset 0x0, size 0x4
+    int mParticleListCounts[66];           // offset 0x4, size 0x108
+    bPList<Emitter> mParticleLists[66];    // offset 0x10C, size 0x210
+    bVector3 mInterestPoints[2];           // offset 0x31C, size 0x20
+    bVector3 mInterestVectors[2];          // offset 0x33C, size 0x20
+    EmitterDataMap mEmitterDataMap;        // offset 0x35C, size 0x10
+    EmitterGroupMap mEmitterGroupMap;      // offset 0x36C, size 0x10
+    bTList<EmitterGroup> mEmitterGroups;   // offset 0x37C, size 0x8
+    bTList<WorldFXTrigger> mWorldTriggers; // offset 0x384, size 0x8
+    int mNumTriggers;                      // offset 0x38C, size 0x4
+    TextureInfo *mCurrentTexture;          // offset 0x390, size 0x4
+    unsigned int mNumEmitterGroups;        // offset 0x394, size 0x4
+    unsigned int mNumEmitters;             // offset 0x398, size 0x4
+    LibList mLibs;                         // offset 0x39C, size 0x10
 };
 
 #endif

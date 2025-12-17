@@ -193,7 +193,7 @@ void Model::OnDetached(IAttachable *pOther) {
         mParent = nullptr;
     }
 
-    for (UTL::Std::vector<IModel *, _type_SimModelChildren>::iterator iter = mChildren.begin(); iter != mChildren.end(); iter++) {
+    for (Children::iterator iter = mChildren.begin(); iter != mChildren.end(); iter++) {
         IModel *imodel = *iter;
         if (UTL::COM::ComparePtr(imodel, pOther)) {
             mChildren.erase(iter);
@@ -219,7 +219,7 @@ bool Model::OnService(HSIMSERVICE hCon, Packet *pkt) {
 
 void Model::ReleaseChildModels() {
     UTL::Std::vector<IModel *, _type_SimModelChildren> children = mChildren;
-    for (UTL::Std::vector<IModel *, _type_SimModelChildren>::iterator iter = children.begin(); iter != children.end(); iter++) {
+    for (Children::iterator iter = children.begin(); iter != children.end(); iter++) {
         IModel *imodel = *iter;
         imodel->ReleaseModel();
     }
@@ -232,7 +232,7 @@ IModel *Model::GetChildModel(UCrc32 name) const {
         return nullptr;
     }
 
-    for (UTL::Std::vector<IModel *, _type_SimModelChildren>::const_iterator iter = mChildren.begin(); iter != mChildren.end(); iter++) {
+    for (Children::const_iterator iter = mChildren.begin(); iter != mChildren.end(); iter++) {
         IModel *imodel = *iter;
         if (imodel->GetPartName() == name) {
             return imodel;
@@ -242,7 +242,7 @@ IModel *Model::GetChildModel(UCrc32 name) const {
 }
 
 IModel::Enumerator *Model::EnumerateChildren(IModel::Enumerator *enumerator) const {
-    for (UTL::Std::vector<IModel *, _type_SimModelChildren>::const_iterator iter = mChildren.begin(); iter != mChildren.end(); iter++) {
+    for (Children::const_iterator iter = mChildren.begin(); iter != mChildren.end(); iter++) {
         IModel *imodel = *iter;
         if (!enumerator->OnModel(imodel)) {
             break;

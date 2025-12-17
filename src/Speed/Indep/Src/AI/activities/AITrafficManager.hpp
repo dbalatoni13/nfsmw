@@ -54,13 +54,15 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
 
         Attrib::Key Find(int bhash) const {
             PatternKey key = {bhash, 0};
-            UTL::Std::vector<PatternKey, _type_AITrafficManager_PatternMap>::const_iterator iter = std::lower_bound(begin(), end(), key);
+            const_iterator iter = std::lower_bound(begin(), end(), key);
             if (iter != end() && iter->BHash == bhash) {
                 return iter->CollectionKey;
             }
             return 0;
         }
     };
+
+    typedef UTL::Std::list<IVehicle *, _type_TrafficList> TrafficList;
 
     static Sim::IActivity *Construct(Sim::Param params);
 
@@ -94,17 +96,17 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
     virtual void OnDebugDraw();
 
   private:
-    HSIMTASK mTask;                                          // offset 0x68, size 0x4
-    unsigned int mSpawnIdx;                                  // offset 0x6C, size 0x4
-    float mPatternTimer[10];                                 // offset 0x70, size 0x28
-    float mNewInstanceTimer;                                 // offset 0x98, size 0x4
-    UTL::Std::list<IVehicle *, _type_TrafficList> mVehicles; // offset 0x9C, size 0x8
-    ActionQueue *mActionQ;                                   // offset 0xA4, size 0x4
-    eTrafficDensity mDensity;                                // offset 0xA8, size 0x4
-    PatternMap mPatternMap;                                  // offset 0xAC, size 0x10
-    WRoadNav mNav;                                           // offset 0xBC, size 0x2F0
-    float mOncommingChance;                                  // offset 0x3AC, size 0x4
-    Attrib::Gen::trafficpattern mPattern;                    // offset 0x3B0, size 0x14
+    HSIMTASK mTask;                       // offset 0x68, size 0x4
+    unsigned int mSpawnIdx;               // offset 0x6C, size 0x4
+    float mPatternTimer[10];              // offset 0x70, size 0x28
+    float mNewInstanceTimer;              // offset 0x98, size 0x4
+    TrafficList mVehicles;                // offset 0x9C, size 0x8
+    ActionQueue *mActionQ;                // offset 0xA4, size 0x4
+    eTrafficDensity mDensity;             // offset 0xA8, size 0x4
+    PatternMap mPatternMap;               // offset 0xAC, size 0x10
+    WRoadNav mNav;                        // offset 0xBC, size 0x2F0
+    float mOncommingChance;               // offset 0x3AC, size 0x4
+    Attrib::Gen::trafficpattern mPattern; // offset 0x3B0, size 0x14
 };
 
 #endif

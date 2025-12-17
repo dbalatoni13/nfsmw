@@ -82,6 +82,8 @@ class NISActivity : public Sim::Activity, public INIS, public EventSequencer::IC
         NISACTIVITY_COMPLETE = 7,
     };
 
+    typedef struct UTL::Std::map<UCrc32, NISCar *, _type_map> CarList;
+
     static void NISStreamTimeCallback(unsigned int animid, int mselapsed);
 
     NISActivity();
@@ -145,42 +147,42 @@ class NISActivity : public Sim::Activity, public INIS, public EventSequencer::IC
 
     static int mElapsedmsAudioTime;
 
-    HSIMTASK mUpdate;                                         // offset 0x6C, size 0x4
-    float mNISElapsedTime;                                    // offset 0x70, size 0x4
-    ActionQueue mActionQ;                                     // offset 0x74, size 0x294
-    NISACTIVITY_STATE mState;                                 // offset 0x308, size 0x4
-    Hermes::HHANDLER mMsgMovieComplete;                       // offset 0x30C, size 0x4
-    CAnimChooser::eType mNISType;                             // offset 0x310, size 0x4
-    bVector3 mNISPosition;                                    // offset 0x314, size 0x10
-    float mNISDirection;                                      // offset 0x324, size 0x4
-    char mPreMovie[64];                                       // offset 0x328, size 0x40
-    char mPostMovie[64];                                      // offset 0x368, size 0x40
-    unsigned int mSceneHash;                                  // offset 0x3A8, size 0x4
-    UCrc32 mSequencerID;                                      // offset 0x3AC, size 0x4
-    CAnimScene *mAnimScene;                                   // offset 0x3B0, size 0x4
-    int mAnimHandle;                                          // offset 0x3B4, size 0x4
-    int mCameraTrackNumber;                                   // offset 0x3B8, size 0x4
-    float mDefault_MaxTicksPerTimestep;                       // offset 0x3BC, size 0x4
-    UTL::Std::map<UCrc32, NISCar *, _type_map> mVehicleTable; // offset 0x3C0, size 0x10
-    EventSequencer::IEngine *mSequencer;                      // offset 0x3D0, size 0x4
-    UMath::Vector3 mStartLocation;                            // offset 0x3D4, size 0xC
-    UMath::Vector3 mStartCameraLocation;                      // offset 0x3E0, size 0xC
-    bool mStartPlayingNow;                                    // offset 0x3EC, size 0x1
-    bool mRunningThroughICE;                                  // offset 0x3F0, size 0x1
-    int mLoadAttemptCount;                                    // offset 0x3F4, size 0x4
-    int mSuspensionSettle;                                    // offset 0x3F8, size 0x4
-    CAnimMomentScene *mMomentScene;                           // offset 0x3FC, size 0x4
-    bool mUsingFEngOverlay;                                   // offset 0x400, size 0x1
-    bool mCareerNIS;                                          // offset 0x404, size 0x1
-    bool mDDayNIS;                                            // offset 0x408, size 0x1
-    bool mBlackListNIS;                                       // offset 0x40C, size 0x1
-    bool mNonSkipableNIS;                                     // offset 0x410, size 0x1
-    char mSkipToNIS[16];                                      // offset 0x414, size 0x10
-    bool mNISSkipped;                                         // offset 0x424, size 0x1
-    float mNISNoSkipTime;                                     // offset 0x428, size 0x4
-    int mIsPrecipitationEnable;                               // offset 0x42C, size 0x4
-    bool mPause;                                              // offset 0x430, size 0x1
-    float loadStartTime;                                      // offset 0x434, size 0x4
+    HSIMTASK mUpdate;                    // offset 0x6C, size 0x4
+    float mNISElapsedTime;               // offset 0x70, size 0x4
+    ActionQueue mActionQ;                // offset 0x74, size 0x294
+    NISACTIVITY_STATE mState;            // offset 0x308, size 0x4
+    Hermes::HHANDLER mMsgMovieComplete;  // offset 0x30C, size 0x4
+    CAnimChooser::eType mNISType;        // offset 0x310, size 0x4
+    bVector3 mNISPosition;               // offset 0x314, size 0x10
+    float mNISDirection;                 // offset 0x324, size 0x4
+    char mPreMovie[64];                  // offset 0x328, size 0x40
+    char mPostMovie[64];                 // offset 0x368, size 0x40
+    unsigned int mSceneHash;             // offset 0x3A8, size 0x4
+    UCrc32 mSequencerID;                 // offset 0x3AC, size 0x4
+    CAnimScene *mAnimScene;              // offset 0x3B0, size 0x4
+    int mAnimHandle;                     // offset 0x3B4, size 0x4
+    int mCameraTrackNumber;              // offset 0x3B8, size 0x4
+    float mDefault_MaxTicksPerTimestep;  // offset 0x3BC, size 0x4
+    CarList mVehicleTable;               // offset 0x3C0, size 0x10
+    EventSequencer::IEngine *mSequencer; // offset 0x3D0, size 0x4
+    UMath::Vector3 mStartLocation;       // offset 0x3D4, size 0xC
+    UMath::Vector3 mStartCameraLocation; // offset 0x3E0, size 0xC
+    bool mStartPlayingNow;               // offset 0x3EC, size 0x1
+    bool mRunningThroughICE;             // offset 0x3F0, size 0x1
+    int mLoadAttemptCount;               // offset 0x3F4, size 0x4
+    int mSuspensionSettle;               // offset 0x3F8, size 0x4
+    CAnimMomentScene *mMomentScene;      // offset 0x3FC, size 0x4
+    bool mUsingFEngOverlay;              // offset 0x400, size 0x1
+    bool mCareerNIS;                     // offset 0x404, size 0x1
+    bool mDDayNIS;                       // offset 0x408, size 0x1
+    bool mBlackListNIS;                  // offset 0x40C, size 0x1
+    bool mNonSkipableNIS;                // offset 0x410, size 0x1
+    char mSkipToNIS[16];                 // offset 0x414, size 0x10
+    bool mNISSkipped;                    // offset 0x424, size 0x1
+    float mNISNoSkipTime;                // offset 0x428, size 0x4
+    int mIsPrecipitationEnable;          // offset 0x42C, size 0x4
+    bool mPause;                         // offset 0x430, size 0x1
+    float loadStartTime;                 // offset 0x434, size 0x4
 };
 
 extern int PrecipitationEnable;
@@ -251,7 +253,7 @@ NISActivity::~NISActivity() {
         }
     }
 
-    for (UTL::Std::map<UCrc32, NISCar *, _type_map>::iterator i = mVehicleTable.begin(); i != mVehicleTable.end(); i++) {
+    for (CarList::iterator i = mVehicleTable.begin(); i != mVehicleTable.end(); i++) {
         NISCar *car = i->second;
         if (car->mIVehiclePtr) {
             car->mIVehiclePtr->SetAnimating(false);
@@ -301,7 +303,7 @@ void NISActivity::OnDetached(IAttachable *pOther) {
 }
 
 eVehicleCacheResult NISActivity::OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const {
-    for (UTL::Std::map<UCrc32, NISCar *, _type_map>::const_iterator i = mVehicleTable.begin(); i != mVehicleTable.end(); i++) {
+    for (CarList::const_iterator i = mVehicleTable.begin(); i != mVehicleTable.end(); i++) {
         const NISCar *car = (*i).second;
         if (UTL::COM::ComparePtr(removethis, car->mIVehiclePtr)) {
             return VCR_WANT;
@@ -313,7 +315,7 @@ eVehicleCacheResult NISActivity::OnQueryVehicleCache(const IVehicle *removethis,
 void NISActivity::OnRemovedVehicleCache(IVehicle *ivehicle) {}
 
 void NISActivity::RemoveCar(IVehicle *vehicle) {
-    for (UTL::Std::map<UCrc32, NISCar *, _type_map>::iterator i = mVehicleTable.begin(); i != mVehicleTable.end(); i++) {
+    for (CarList::iterator i = mVehicleTable.begin(); i != mVehicleTable.end(); i++) {
         const NISCar *car = (*i).second;
         if (UTL::COM::ComparePtr(vehicle, car->mIVehiclePtr)) {
             mVehicleTable.erase(i);
@@ -331,7 +333,7 @@ void NISActivity::AddCar(UCrc32 channel, IVehicle *vehicle) {
     vehicle->SetAnimating(true);
     vehicle->SetSpeed(0.0f);
 
-    UTL::Std::map<UCrc32, NISCar *, _type_map>::iterator iter = mVehicleTable.find(channel);
+    CarList::iterator iter = mVehicleTable.find(channel);
     if (iter != mVehicleTable.end()) {
         NISCar *car = (*iter).second;
         delete car;
@@ -341,7 +343,7 @@ void NISActivity::AddCar(UCrc32 channel, IVehicle *vehicle) {
 
 IVehicle *NISActivity::GetCar(UCrc32 channelname) {
     IVehicle *car = nullptr;
-    UTL::Std::map<UCrc32, NISCar *, _type_map>::iterator iter = mVehicleTable.find(channelname);
+    CarList::iterator iter = mVehicleTable.find(channelname);
     if (iter != mVehicleTable.end()) {
         NISCar *nisCar = (*iter).second;
         car = nisCar->mIVehiclePtr;
@@ -455,7 +457,7 @@ FECustomizationRecord *GetCustomCar(char *rideName) {
 }
 
 bool NISActivity::SetDynamicData(const EventSequencer::System *system, EventDynamicData *data) {
-    UTL::Std::map<UCrc32, NISCar *, _type_map>::iterator iter = mVehicleTable.find(UCrc32(system->ID()));
+    CarList::iterator iter = mVehicleTable.find(UCrc32(system->ID()));
 
     if (iter != mVehicleTable.end()) {
         NISCar *car = (*iter).second;
@@ -544,7 +546,7 @@ bool NISActivity::IsCarListLoaded() {
     }
     bool loaded = true;
 
-    for (UTL::Std::map<UCrc32, NISCar *, _type_map>::iterator i = mVehicleTable.begin(); i != mVehicleTable.end(); i++) {
+    for (CarList::iterator i = mVehicleTable.begin(); i != mVehicleTable.end(); i++) {
         NISCar *car = (*i).second;
         if (car && car->mIVehiclePtr) {
             IRenderable *iRenderableCar;

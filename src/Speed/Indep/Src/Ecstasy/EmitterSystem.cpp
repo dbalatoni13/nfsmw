@@ -203,7 +203,7 @@ void InitEmitterGroupSlotPool() {
 }
 
 void EmitterSystem::ServiceWorldEffects() {
-    for (std::vector<LibEntry>::iterator it = this->mLibs.begin(); it != this->mLibs.end(); it++) {
+    for (LibList::iterator it = this->mLibs.begin(); it != this->mLibs.end(); it++) {
         EmitterLibrary *lib = it->Lib;
         if ((lib->SectionNumber != 0) && (lib->SectionNumber != 0xa28)) {
             const Attrib::Collection *spec = Attrib::FindCollection(0xaba86e60, lib->GroupKey);
@@ -234,7 +234,7 @@ void EmitterSystem::RefreshWorldEffects() {
         trig->mState = 1;
         trig->mLastEnd = 0.0f;
     }
-    for (std::vector<LibEntry>::iterator it = this->mLibs.begin(); it != this->mLibs.end(); it++) {
+    for (LibList::iterator it = this->mLibs.begin(); it != this->mLibs.end(); it++) {
         EmitterLibrary *lib = it->Lib;
         if (!lib->mGroup && (lib->SectionNumber != 0)) {
             EmitterGroup *emgroup = gEmitterSystem.CreateEmitterGroup(lib->GroupKey, 0x8000000);
@@ -1237,7 +1237,7 @@ void EmitterSystem::Init() {
 
 EmitterDataAttribWrapper *EmitterSystem::GetEmitterData(const Attrib::Collection *spec) {
     unsigned int key = Attrib::GetCollectionKey(spec);
-    std::map<unsigned int, EmitterDataAttribWrapper *>::iterator iter = this->mEmitterDataMap.find(key);
+    EmitterDataMap::iterator iter = this->mEmitterDataMap.find(key);
     if (iter != this->mEmitterDataMap.end()) {
         return iter->second;
     }
@@ -1248,7 +1248,7 @@ EmitterDataAttribWrapper *EmitterSystem::GetEmitterData(const Attrib::Collection
 
 EmitterGroupAttribWrapper *EmitterSystem::GetEmitterGroup(const Attrib::Collection *spec) {
     unsigned int key = Attrib::GetCollectionKey(spec);
-    std::map<unsigned int, EmitterGroupAttribWrapper *>::iterator iter = this->mEmitterGroupMap.find(key);
+    EmitterGroupMap::iterator iter = this->mEmitterGroupMap.find(key);
     if (iter != this->mEmitterGroupMap.end()) {
         return iter->second;
     }

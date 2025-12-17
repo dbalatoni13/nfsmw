@@ -146,7 +146,7 @@ struct CDispatcher : public UTL::Collections::Singleton<CDispatcher> {
 
     void Respond(HSIMABLE participant, const COLLISION_INFO &cinfo) {
         Node pair(participant, nullptr, nullptr);
-        std::vector<Node>::iterator iter = std::lower_bound(mList.begin(), mList.end(), pair);
+        List::iterator iter = std::lower_bound(mList.begin(), mList.end(), pair);
         for (; iter != mList.end(); ++iter) {
             Node &node = *iter;
             if (node.Participant != participant) {
@@ -157,12 +157,12 @@ struct CDispatcher : public UTL::Collections::Singleton<CDispatcher> {
     }
 
     bool FindListener(Collision::IListener *listener, HSIMABLE participant) const {
-        std::vector<Node>::const_iterator iter = std::find_if(mList.begin(), mList.end(), Finder(participant, listener));
+        List::const_iterator iter = std::find_if(mList.begin(), mList.end(), Finder(participant, listener));
         return iter != mList.end();
     }
 
     void AddListener(Collision::IListener *listener, HSIMABLE participant, const char *who) {
-        std::vector<HSIMABLE>::iterator piter = std::lower_bound(mParticpants.begin(), mParticpants.end(), participant);
+        Participants::iterator piter = std::lower_bound(mParticpants.begin(), mParticpants.end(), participant);
         if (!FindListener(listener, participant)) {
             Node pair(participant, listener, who);
             mList.insert(std::upper_bound(mList.begin(), mList.end(), pair), pair);
@@ -170,17 +170,17 @@ struct CDispatcher : public UTL::Collections::Singleton<CDispatcher> {
     }
 
     void RemoveListener(Collision::IListener *listener, HSIMABLE participant) {
-        std::vector<Node>::iterator newend = std::remove_if(mList.begin(), mList.end(), Finder(participant, listener));
+        List::iterator newend = std::remove_if(mList.begin(), mList.end(), Finder(participant, listener));
         if (newend != mList.end()) {
             mList.erase(newend, mList.end());
         }
     }
 
     void RemoveParticipant(HSIMABLE participant) {
-        std::vector<HSIMABLE>::iterator piter = std::lower_bound(mParticpants.begin(), mParticpants.end(), participant);
+        Participants::iterator piter = std::lower_bound(mParticpants.begin(), mParticpants.end(), participant);
         mParticpants.erase(piter);
 
-        std::vector<Node>::iterator newend = std::remove_if(mList.begin(), mList.end(), Finder(participant, nullptr));
+        List::iterator newend = std::remove_if(mList.begin(), mList.end(), Finder(participant, nullptr));
         if (newend != mList.end()) {
             mList.erase(newend, mList.end());
         }
@@ -190,8 +190,11 @@ struct CDispatcher : public UTL::Collections::Singleton<CDispatcher> {
         mParticpants.insert(std::upper_bound(mParticpants.begin(), mParticpants.end(), participant), participant);
     }
 
-    UTL::Std::vector<HSIMABLE, _type_CollisionParticipant> mParticpants; // offset 0x4, size 0x10
-    UTL::Std::vector<Node, _type_CollisionListener> mList;               // offset 0x14, size 0x10
+    typedef UTL::Std::vector<Node, _type_CollisionListener> List;
+    typedef UTL::Std::vector<HSIMABLE, _type_CollisionParticipant> Participants;
+
+    Participants mParticpants; // offset 0x4, size 0x10
+    List mList;                // offset 0x14, size 0x10
 };
 
 }; // namespace Internal

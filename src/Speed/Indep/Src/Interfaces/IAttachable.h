@@ -14,6 +14,8 @@ struct _type_IAttachableList {
 };
 
 struct IAttachable : public UTL::COM::IUnknown {
+    typedef UTL::Std::list<IAttachable *, _type_IAttachableList> List;
+
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
@@ -27,7 +29,7 @@ struct IAttachable : public UTL::COM::IUnknown {
     virtual bool IsAttached(const IUnknown *pOther) const;
     virtual void OnAttached(IAttachable *pOther);
     virtual void OnDetached(IAttachable *pOther);
-    virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const;
+    virtual const List *GetAttachments() const;
 };
 
 #endif

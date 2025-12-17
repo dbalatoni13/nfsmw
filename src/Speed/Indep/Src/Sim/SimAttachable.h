@@ -39,8 +39,8 @@ class Attachments {
     }
 
   private:
-    UTL::Std::list<IAttachable *, _type_IAttachableList> mList; // offset 0x0, size 0x8
-    IAttachable *mOwner;                                        // offset 0x8, size 0x4
+    IAttachable::List mList; // offset 0x0, size 0x8
+    IAttachable *mOwner;     // offset 0x8, size 0x4
 };
 
 }; // namespace Sim
