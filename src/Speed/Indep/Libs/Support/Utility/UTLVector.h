@@ -13,9 +13,15 @@ template <typename T, unsigned int Alignment = 16> class Vector {
   public:
     typedef T value_type;
     typedef value_type *pointer;
-    typedef const value_type *const_pointer; // TODO is it value_type const ?
+    typedef value_type &reference;
     typedef value_type *iterator;
-    typedef value_type const *const_iterator;
+    typedef value_type *reverse_iterator;
+    typedef const value_type *const_pointer;
+    typedef const value_type &const_reference;
+    typedef const value_type *const_iterator;
+    typedef const value_type *const_reverse_iterator;
+    typedef std::size_t size_type;
+    typedef std::ptrdiff_t difference_type;
 
   public:
     void Init() {}
@@ -160,6 +166,8 @@ template <typename T, std::size_t Size, unsigned int Alignment = 16> class Fixed
         // clang is being annoying
         Vector<T, Alignment>::clear();
     }
+
+    // TODO also put the typedefs here according to the dwarf?
 
   protected:
     virtual std::size_t GetGrowSize(std::size_t minSize) const {}
