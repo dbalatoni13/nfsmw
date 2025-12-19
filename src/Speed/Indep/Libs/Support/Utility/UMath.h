@@ -1,6 +1,7 @@
 #ifndef SUPPORT_UTILITY_UMATH_H
 #define SUPPORT_UTILITY_UMATH_H
 
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -9,7 +10,7 @@
 #include <cstring>
 
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
-#include "UEALibs.hpp"
+// #include "UEALibs.hpp"
 #include "UTypes.h"
 #include "UVectorMath.h"
 
@@ -100,6 +101,8 @@ inline void Unitxyz(const UMath::Vector4 &a, Vector4 &r) {
     VU0_v4unitxyz(a, r);
 }
 
+// UEALibs not working???
+void MATRIX4_multyrot(const UMath::Matrix4 *m4, float ybangle, UMath::Matrix4 *resultm);
 inline void MultYRot(const UMath::Matrix4 &m, float a, UMath::Matrix4 &r) {
     r = m;
     MATRIX4_multyrot(&r, a, &r);
