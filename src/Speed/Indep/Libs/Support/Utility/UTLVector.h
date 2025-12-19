@@ -139,7 +139,8 @@ template <typename T, unsigned int Alignment = 16> class Vector {
     }
 
   protected:
-    virtual pointer AllocVectorSpace(std::size_t num, unsigned int alignment) {}
+    // Unfinished
+    virtual pointer AllocVectorSpace(std::size_t num, unsigned int alignment) { return nullptr; }
 
     virtual void FreeVectorSpace(pointer buffer, std::size_t num) {}
 
@@ -147,7 +148,8 @@ template <typename T, unsigned int Alignment = 16> class Vector {
         return UMath::Max(minSize, mCapacity + ((mCapacity + 1) >> 1)); // TODO is this right?
     }
 
-    virtual std::size_t GetMaxCapacity() const {}
+    // Unfinished
+    virtual std::size_t GetMaxCapacity() const { return 0; }
 
     virtual void OnGrowRequest(std::size_t newSize) {}
 
@@ -170,13 +172,16 @@ template <typename T, std::size_t Size, unsigned int Alignment = 16> class Fixed
     // TODO also put the typedefs here according to the dwarf?
 
   protected:
-    virtual std::size_t GetGrowSize(std::size_t minSize) const {}
+    // Unfinished
+    virtual std::size_t GetGrowSize(std::size_t minSize) const { return 0; }
 
-    virtual typename Vector<T, Alignment>::pointer AllocVectorSpace(std::size_t num, unsigned int alignment) {}
+    // Unfinished
+    virtual typename Vector<T, Alignment>::pointer AllocVectorSpace(std::size_t num, unsigned int alignment) { return nullptr; }
 
     virtual void FreeVectorSpace(typename Vector<T, Alignment>::pointer buffer, std::size_t) {}
 
-    virtual std::size_t GetMaxCapacity() const {}
+    // Unfinished
+    virtual std::size_t GetMaxCapacity() const { return 0; }
 
   private:
     // TODO speed considerations for 64 bit
