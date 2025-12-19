@@ -70,5 +70,14 @@ bool DebugVehicleSelection::SwitchPlayerVehicle(const char *attribName) {
     if (!oldcar) return false;
 
     UMath::Matrix4 transform;
+    oldcar->GetTransform(transform);
+    // Attrib::StringToKey(attribName);
     // VehicleParams params = VehicleParams::VehicleParams();
+
+    // ISimable *icar = UTL::Collections::ListableSet<IPlayer, 8, ePlayerList, 3>::First(PLAYER_LOCAL)->GetSimable();
+
+    // oldcar->Attach(icar);
+    oldcar->Kill();
+
+    return true;
 }
