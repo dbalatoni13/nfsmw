@@ -84,7 +84,7 @@ void World::ResetTimeScale() {
 
 // UNSOLVED
 void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialVec) {
-    const char *regionName = LoadedTrackInfo->RegionName;
+    const char *regionName = LoadedTrackInfo->GetLoadedTrackInfo();
     float rotInitialVec = 0.0f;
 
     if (strcasecmp(regionName, "L2RA") == 0) {
@@ -92,7 +92,11 @@ void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialV
         startLoc.y = 151.0f;
         startLoc.z = 1767.0f;
         rotInitialVec = 0.15f;
-    } else if (strcasecmp(regionName, "L2RB") == 0 || strcasecmp(regionName, "L2RC") == 0) {
+    } else if (strcasecmp(regionName, "L2RB") == 0) {
+        startLoc.x = 0.0f;
+        startLoc.y = 21.0f;
+        startLoc.z = 0.0f;
+    } else if (strcasecmp(regionName, "L2RC") == 0) {
         startLoc.x = 0.0f;
         startLoc.y = 21.0f;
         startLoc.z = 0.0f;
@@ -123,6 +127,8 @@ void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialV
         startLoc.z = 1767.0f;
         rotInitialVec = 0.63f;
     }
+
+    initialVec = UMath::Vector3Make(0.0f, 0.0f, 1.0f);
 
     if (rotInitialVec != 0.0f) {
         UMath::Matrix4 rotMat;

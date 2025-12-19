@@ -122,6 +122,16 @@ inline Vector2 Vector2Make(float x, float y) {
     return c;
 }
 
+inline UMath::Vector3 Vector3Make(float x, float y, float z) {
+    Vector3 c;
+
+    c.x = x;
+    c.y = y;
+    c.z = z;
+
+    return c;
+}
+
 inline Vector4 Vector4Make(const Vector3 &c, float w) {
     // Vector4 res = {c.x, c.y, c.z, w};
     Vector4 res;
