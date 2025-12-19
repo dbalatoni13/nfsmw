@@ -14,6 +14,10 @@ class SubSystem {
   public:
     void ValidateHeap(bool before, bool initializing);
 
+    SubSystem(const char *name, void (* initcb)(), void (* restorecb)()) {
+        
+    }
+
     static void Init(const UCrc32 &sig) {
         SubSystem *s;
         for (s = mHead; s != nullptr; s = s->mNext) {
