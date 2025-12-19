@@ -39,8 +39,8 @@ SmackableRenderConn::~SmackableRenderConn() {
     delete this;
 }
 
-SlotPool *SpaceNodeSlotPool;
-SlotPool *WorldModelSlotPool;
+SlotPool *SpaceNodeSlotPool = nullptr;
+SlotPool *WorldModelSlotPool = nullptr;
 
 // UNSOLVED, this function does some weird shit
 void SmackableRenderConn::Update(float dT) {

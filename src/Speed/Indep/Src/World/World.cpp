@@ -9,6 +9,7 @@
 #include "Rain.hpp"
 #include "Scenery.hpp"
 #include "Skids.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
@@ -21,6 +22,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IExplosion.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Misc/Rumble.hpp"
+#include "Speed/Indep/Src/Sim/SimSubSystem.h"
 #include "Speed/Indep/Src/World/World.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
@@ -29,6 +31,12 @@
 #include "TrackPath.hpp"
 
 #include "types.h"
+
+static void World_Init();
+
+// BSS Class Init
+bVector3 ZeroVector = bVector3(0, 0, 0);
+Sim::SubSystem _Physics_System_World = Sim::SubSystem(nullptr, World_Init, nullptr);
 
 float UglyTimestepHack = 0.016666668f;
 World *pCurrentWorld = nullptr;
@@ -54,13 +62,6 @@ World::World() {
     this->PreviousTimeToWaste = 0.0f;
     bMemSet(this->PlayerPositions, 0x0, 0x60);
     bMemSet(this->PlayerDATs, 0x0, 0x18);
-
-    // // Range: 0x802C5564 -> 0x802C5564
-    // inline struct bVector3 * bVector3::bVector3(struct bVector3 * const this, struct bVector3 * const this) {}
-    // // Range: 0x802C5570 -> 0x802C5570
-    // inline void World::ResetCollisionPredictionID(struct World * const this, struct World * const this /* r31 */) {}
-    // // Range: 0x802C5570 -> 0x802C5570
-    // inline void World::ResetPotentialDriveTargetID(struct World * const this, struct World * const this /* r31 */) {}
 }
 
 World::~World() {
@@ -123,10 +124,14 @@ void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialV
         rotInitialVec = 0.63f;
     }
 
-    GRaceCustom *quickRace = GRaceDatabase::Get().GetStartupRace();
+    if (rotInitialVec != 0.0f) {
+        UMath::Matrix4 rotMat;
 
-    if (rotInitialVec == 0.0f) {
+        UMath::MultYRot(UMath::Matrix4::kIdentity, rotInitialVec, rotMat);
+        UMath::Rotate(initialVec, rotMat, initialVec);
     }
+
+    GRaceCustom *quickRace = GRaceDatabase::Get().GetStartupRace();
 
     if (quickRace) {
         quickRace->GetStartPosition(startLoc);
@@ -198,7 +203,7 @@ void World_Service() {
 }
 
 RaceParameters TheRaceParameters;
-int g_tweakIsDriftRace;
+int g_tweakIsDriftRace = nullptr;
 
 static void World_Init() {
     ResetWorldTime();
