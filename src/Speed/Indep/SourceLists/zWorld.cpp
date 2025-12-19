@@ -9,3 +9,5 @@
 #include "Speed/Indep/Src/World/DebugWorld.cpp"
 
 #include "Speed/Indep/Src/World/SmackableRender.cpp"
+
+#include "Speed/Indep/Src/World/CarRender.cpp"
