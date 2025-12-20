@@ -312,6 +312,13 @@ elif config.platform == Platform.PS2:
         "-O2",
         "-ggdb",
         # "-Wall",
+        "-I src/Speed/Indep/Libs/Support/stlps2",
+        "-I src/Speed/PSX2/Libs/stl/gpp",
+        "-I src/Speed/PSX2/bWare/src/ee/include",
+        "-I src/Speed/PSX2/bWare/src/ee/gcc/ee/include",
+        "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111/include",
+        "-I src/Speed/PSX2/bWare/src/ee/gcc/ee",
+        "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111",
         "-I include",
         "-I src",
         "-DTARGET_PS2",
@@ -352,7 +359,6 @@ elif config.platform == Platform.PS2:
     config.extra_clang_flags = [
         "-std=gnu++98",
         "-DSN_TARGET_PS2",
-        "-D__SN__",
     ]
 
 cflags_cmn = [
