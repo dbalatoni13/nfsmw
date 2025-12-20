@@ -296,7 +296,7 @@ elif config.platform == Platform.X360:
 
     cflags_game = [
         *cflags_base,
-        "-DLUA_NUMBER=float",
+        "/DLUA_NUMBER=float",
     ]
 
     config.extra_clang_flags = [
@@ -337,13 +337,15 @@ elif config.platform == Platform.PS2:
         # "-fcse-skip-blocks",
         # "-fforce-mem",
         # "-fgcse",
-        # "-fno-strength-reduce",
+        # "-fstrength-reduce",
         # "-frerun-cse-after-loop",
-        "-fschedule-insns",
-        "-fschedule-insns2",
+        # "-fschedule-insns",
+        # "-fschedule-insns2",
         # "-fexpensive-optimizations",
         # "-frerun-loop-opt",
-        "-fmove-all-movables",
+        # "-fmove-all-movables",
+        # "-fregmove",
+        # "-fcaller-saves",
         "-DLUA_NUMBER=float",
     ]
 

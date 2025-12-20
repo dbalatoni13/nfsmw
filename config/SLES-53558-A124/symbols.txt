@@ -10751,6 +10751,7 @@ lua_getstack = 0x30dd48; // type:func
 luaF_getlocalname = 0x30ff70; // type:func
 luaO_chunkid = 0x3106d8; // type:func
 lua_getinfo = 0x30e158; // type:func
+luaG_symbexec = 0x30e368; // type:func
 luaG_runerror = 0x30edc8; // type:func
 luaG_checkcode = 0x30e7f8; // type:func
 luaG_typeerror = 0x30eab8; // type:func

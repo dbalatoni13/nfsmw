@@ -43,12 +43,20 @@ typedef int ls_hash;
 
 /* an unsigned integer big enough to count the total memory used by Lua; */
 /* it should be at least as large as size_t */
+#ifdef TARGET_PS2
+typedef unsigned int lu_mem;
+#else
 typedef unsigned long lu_mem;
+#endif
 
 #define MAX_LUMEM ULONG_MAX
 
 /* an integer big enough to count the number of strings in use */
+#ifdef TARGET_PS2
+typedef int ls_nstr;
+#else
 typedef long ls_nstr;
+#endif
 
 /* chars used as small naturals (so that `char' is reserved for characters) */
 typedef unsigned char lu_byte;
@@ -102,7 +110,11 @@ typedef LUA_UACNUMBER l_uacNumber;
 ** type for virtual-machine instructions
 ** must be an unsigned with (at least) 4 bytes (see details in lopcodes.h)
 */
+#ifdef TARGET_PS2
+typedef unsigned int Instruction;
+#else
 typedef unsigned long Instruction;
+#endif
 
 /* maximum depth for calls (unsigned short) */
 #ifndef LUA_MAXCALLS
