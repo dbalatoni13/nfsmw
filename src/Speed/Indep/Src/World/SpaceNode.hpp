@@ -11,6 +11,14 @@
 class SpaceNode : public bTNode<SpaceNode> {
 public:
     void SetDirty();
+
+    void SetLocalMatrix(bMatrix4 *matrix) {
+        PSMTX44Copy(
+            *reinterpret_cast<const Mtx44 *>(matrix),
+            *reinterpret_cast<Mtx44 *>(&this->LocalMatrix)
+        );
+        this->SetDirty();
+    }
     
     // Members
     bTList<SpaceNode> ChildrenList; // offset 0x8, size 0x8

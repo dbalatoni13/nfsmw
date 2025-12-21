@@ -1,6 +1,7 @@
 #ifndef WORLD_WORLD_MODEL_H
 #define WORLD_WORLD_MODEL_H
 
+#include "dolphin/types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -46,6 +47,22 @@ class WorldModel : public bTNode<WorldModel> {
         this->mChildVisibility = state;
     }
 
+    void SetMatrix(bMatrix4 *matrix) {
+        if (matrix != nullptr) {
+            this->mEnabled = true;
+            if (this->pSpaceNode) {
+                this->pSpaceNode->SetLocalMatrix(matrix);
+            } else {
+                PSMTX44Copy(
+                    *reinterpret_cast<const Mtx44 *>(matrix),
+                    *reinterpret_cast<Mtx44 *>(&this->mMatrix)
+                );
+            }
+        } else {
+            this->mEnabled = false;
+        }
+    }
+
 private:
     // total size: 0x88
     eModel *pModel;                          // offset 0x8, size 0x4
@@ -64,10 +81,8 @@ private:
     bool mAddLighting;                       // offset 0x34, size 0x1
     unsigned char mDamageLevel;              // offset 0x38, size 0x1
     unsigned char mCastsShadow;              // offset 0x39, size 0x1
-public:
     SpaceNode *pSpaceNode;            // offset 0x3C, size 0x4
     bMatrix4 mMatrix;                        // offset 0x40, size 0x40
-private:
     eLightMaterial *mLightMaterial;          // offset 0x80, size 0x4
     unsigned int mLightMaterialSkinHash;     // offset 0x84, size 0x4
 };
