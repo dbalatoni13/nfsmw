@@ -19,6 +19,9 @@ class Reference {
     Reference(unsigned int);
     ~Reference();
     void Set(unsigned int);
+    bool IsValid() const {
+      return this->mMatrix != nullptr;
+    }
 
     const bMatrix4 *GetMatrix() const {
         return mMatrix;

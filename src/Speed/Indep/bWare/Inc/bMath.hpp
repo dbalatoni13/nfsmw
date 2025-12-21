@@ -513,7 +513,7 @@ struct bVector4 {
 
     bVector4 &operator-=(const bVector4 &v) {}
 
-    bVector4 &operator+=(const bVector4 &v) {}
+    inline bVector4 &operator+=(const bVector4 &v);
 
     bVector4 &operator*=(float scale);
 
@@ -595,14 +595,25 @@ inline bVector4 *bCopy(bVector4 *dest, const bVector3 *v, float w) {
 }
 
 inline bVector4 *bAdd(bVector4 *dest, const bVector4 *v1, const bVector4 *v2) {
-    float x1;
-    float y1;
-    float z1;
-    float w1;
-    float x2;
-    float y2;
-    float z2;
-    float w2;
+    float x1 = v1->x;
+    float y1 = v1->y;
+    float z1 = v1->z;
+    float w1 = v1->w;
+    float x2 = v2->x;
+    float y2 = v2->y;
+    float z2 = v2->z;
+    float w2 = v2->w;
+
+    dest->x = x1 + x2;
+    dest->y = y1 + y2;
+    dest->z = z1 + z2;
+    dest->w = w1 + w2;
+}
+
+inline bVector4 &bVector4::operator+=(const bVector4 &v)  {
+    bAdd(this, this, &v);
+
+    return *this;
 }
 
 inline bVector4 *bSub(bVector4 *dest, const bVector4 *v1, const bVector4 *v2) {

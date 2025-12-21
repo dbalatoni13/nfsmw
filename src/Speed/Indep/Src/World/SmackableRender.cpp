@@ -18,7 +18,7 @@ SmackableRenderConn::SmackableRenderConn(const Sim::ConnectionData &data /* r27 
     : Sim::Connection(data), mTarget(0), mModelHash((unsigned int)0), mLOD(0), mModelOffset(bVector4(0.0f, 0.0f, 0.0f, 0.0f)) {
     this->mList.AddTail(this);
 
-    Sim::Pkt_Smackable_Open *oc = Sim::Packet::Cast<Sim::Pkt_Smackable_Open>(data.pkt);
+    RenderConn::Pkt_Smackable_Open *oc = Sim::Packet::Cast<RenderConn::Pkt_Smackable_Open>(data.pkt);
     this->mTarget.Set(oc->mModelHash.GetValue());
 
     this->mHeirarchy = oc->mHeirarchy;
@@ -39,12 +39,12 @@ SmackableRenderConn::~SmackableRenderConn() {
     delete this;
 }
 
-SlotPool *SpaceNodeSlotPool = nullptr;
-SlotPool *WorldModelSlotPool = nullptr;
+SlotPool *SpaceNodeSlotPool = nullptr; // move elsewhere
+SlotPool *WorldModelSlotPool = nullptr; // move elsewhere
 
 // UNSOLVED, this function does some weird shit
 void SmackableRenderConn::Update(float dT) {
-    if (*(const bMatrix4 **)(&this->mTarget + 1)) {
+    if (this->mTarget.IsValid()) {
         bVector4 tmp;
 
         this->mRenderMatrix = *this->mTarget.GetMatrix();
@@ -55,13 +55,14 @@ void SmackableRenderConn::Update(float dT) {
         float disttoview = 0.0f;
         bool inview = false;
         if (this->mModel && this->mModel->IsEnabled()) {
-            float disttoview = this->mModel->DistanceToGameView();
+            disttoview = this->mModel->DistanceToGameView();
+            
             if (this->mModel->GetLastVisibleFrame() >= this->mModel->GetLastRenderFrame() && this->mModel->GetLastRenderFrame() != 0) {
                 inview = true;
             }
         }
 
-        Sim::Pkt_Smackable_Service pkt = Sim::Pkt_Smackable_Service(inview, disttoview);
+        RenderConn::Pkt_Smackable_Service pkt = RenderConn::Pkt_Smackable_Service(inview, disttoview);
 
         if (this->Service(&pkt)) {
             if (this->mModel) {
@@ -77,13 +78,29 @@ void SmackableRenderConn::Update(float dT) {
                 this->mModel = new WorldModel(this->mModelHash.GetValue(), nullptr, true);
             }
         }
-        this->mModel->SetChildVisibility(0xFFFFFF);
-        if (&this->mRenderMatrix) {
-            this->mRenderMatrix.v2.z = 1;
-            if (this->mModelOffset.y != 0) {
+
+        this->mModel->SetChildVisibility(pkt.mChildVisibility);
+        
+        if (&this->mRenderMatrix != nullptr) {
+            this->mModel->mEnabled = true;
+            if (this->mModel->pSpaceNode) {
+                PSMTX44Copy(
+                    *reinterpret_cast<const Mtx44 *>(&this->mRenderMatrix),
+                    *reinterpret_cast<Mtx44 *>(&this->mModel->pSpaceNode->LocalMatrix)
+                );
+                this->mModel->pSpaceNode->SetDirty();
+            } else {
+                PSMTX44Copy(
+                    *reinterpret_cast<const Mtx44 *>(&this->mRenderMatrix),
+                    *reinterpret_cast<Mtx44 *>(&this->mModel->mMatrix)
+                );
             }
+        } else {
+            this->mModel->mEnabled = false;
         }
     }
+
+
 }
 
 void SmackableRenderConn::UpdateAll(float dT) {
@@ -99,3 +116,6 @@ void SmackableRender_Shutdown() {}
 void SmackableRender_Service(float dT) {
     SmackableRenderConn::UpdateAll(dT);
 }
+
+bTList<SmackableRenderConn> SmackableRenderConn::mList;
+// Prototype _SmackableRenderConn;

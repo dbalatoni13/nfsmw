@@ -17,6 +17,9 @@
 #include <types.h>
 #include <cstddef>
 
+DebugVehicleSelection *DebugVehicleSelection::mThis = nullptr;
+bool DebugVehicleSelection::mOnOff = false;
+
 void DebugVehicleSelection::Init() {
     if (!this->mThis) {
         this->mThis = ::new (__FILE__, __LINE__) DebugVehicleSelection();
