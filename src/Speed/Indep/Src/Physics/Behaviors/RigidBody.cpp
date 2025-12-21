@@ -12,7 +12,8 @@
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/WCollisionTri.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "dolphin/types.h"
+
+#include <types.h>
 
 static char RBGrid_Memory[6912]; // size: 0x1B00, address: 0x8048A1A8
 

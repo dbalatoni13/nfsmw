@@ -89,7 +89,7 @@ passthrough_defines: list[str] = [
     # My declares:
     "_USE_MATH_DEFINES",
     "GEKKO",
-    "TARGET_GC",
+    "EA_PLATFORM_GAMECUBE",
 ]
 
 src_dir = "src"

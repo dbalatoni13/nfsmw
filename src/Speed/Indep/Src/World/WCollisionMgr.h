@@ -31,7 +31,7 @@ class WCollisionMgr {
             fNormal = UMath::Vector4::kIdentity;
             // fBle.fB = WCollisionBarrier();
             // TODO maybe this is in WCollisionBarrierListEntry's constructor?
-            std::memset(&fBle.fB, 0, sizeof(fBle.fB));
+            memset(&fBle.fB, 0, sizeof(fBle.fB));
             fDist = 0.0f;
             fBle.fSurfaceRef = nullptr;
             fBle.fDistanceToSq = 0.0f;

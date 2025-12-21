@@ -5,7 +5,7 @@
 #pragma once
 #endif
 
-#include "dolphin/types.h"
+#include <types.h>
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 struct DebugWorld {

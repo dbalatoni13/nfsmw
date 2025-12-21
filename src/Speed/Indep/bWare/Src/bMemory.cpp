@@ -5,9 +5,10 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "types.h"
 
-#ifdef TARGET_GC
+#include <types.h>
+
+#ifdef EA_PLATFORM_GAMECUBE
 #include <dolphin.h>
 #endif
 

@@ -130,7 +130,7 @@ void *Class::CloneLayout(void *srcLayout) const {
 
 void Class::CopyLayout(void *srcLayout, void *dstLayout) const {
     if (mPrivates.mLayoutSize != 0) {
-        std::memcpy(dstLayout, srcLayout, mPrivates.mLayoutSize);
+        memcpy(dstLayout, srcLayout, mPrivates.mLayoutSize);
     }
 }
 

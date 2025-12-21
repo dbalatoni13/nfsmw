@@ -17,7 +17,7 @@ cflags_base = [
     "-I" "src/Speed/GameCube/bWare/GameCube/dolphinsdk/include",
     "-I" "./",
     "-I" "src",
-    "-DTARGET_GC",
+    "-DEA_PLATFORM_GAMECUBE",
     "-DGEKKO",
     "-D_USE_MATH_DEFINES",
     # "-mps-nodf",

@@ -6,8 +6,9 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
-#include "dolphin/types.h"
 #include "eLight.hpp"
+
+#include <types.h>
 
 int eUnloadSolidListPlatChunks(bChunk *chunk);
 eSolidIndexEntry *GetSolidIndexEntry(eSolidListHeader *list_header, unsigned int name_hash);

@@ -4,4 +4,6 @@
 #ifndef __CSTDDEF__
 #define __CSTDDEF__
 #include <stddef.h>
+
+namespace std { using ::size_t; };
 #endif

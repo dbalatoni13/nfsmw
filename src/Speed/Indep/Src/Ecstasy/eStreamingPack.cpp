@@ -1,20 +1,20 @@
 #include "./eStreamingPack.hpp"
 #include "./EcstasyE.hpp"
+#include "Speed/Indep/Src/Misc/LZCompress.hpp"
+#include "Speed/Indep/Src/Misc/Profiler.hpp"
+#include "Speed/Indep/Src/Misc/QueuedFile.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
+#include "Speed/Indep/Src/Misc/bFile.hpp"
+#include "Speed/Indep/Src/World/CarLoader.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
-#include "Speed/Indep/Src/Misc/bFile.hpp"
-#include "Speed/Indep/Src/Misc/LZCompress.hpp"
-#include "Speed/Indep/Src/Misc/Profiler.hpp"
-#include "Speed/Indep/Src/Misc/QueuedFile.hpp"
-#include "Speed/Indep/Src/World/CarLoader.hpp"
-#include "dolphin/types.h"
 
+#include <types.h>
 
 int AllowCompressedStreamingTexturesInThisPoolNum; // size: 0x4, address: 0x8041A5E4
 SlotPool *eStreamingPackSlotPool;
@@ -186,11 +186,8 @@ int eStreamPackLoader::GetMemoryEntries(unsigned int *name_hash_table /* r27 */,
 eStreamingPack *eStreamPackLoader::GetLoadedStreamingPack(const char *filename) {
     eStreamingPack *streaming_pack;
 
-    for (
-        streaming_pack = this->LoadedStreamingPackList.GetHead();
-        streaming_pack != this->LoadedStreamingPackList.EndOfList();
-        streaming_pack = streaming_pack->GetNext())
-    {
+    for (streaming_pack = this->LoadedStreamingPackList.GetHead(); streaming_pack != this->LoadedStreamingPackList.EndOfList();
+         streaming_pack = streaming_pack->GetNext()) {
         if (!bStrCmp(filename, streaming_pack->Filename)) {
             streaming_pack->Remove();
             this->LoadedStreamingPackList.AddHead(streaming_pack);
@@ -204,11 +201,8 @@ eStreamingPack *eStreamPackLoader::GetLoadedStreamingPack(const char *filename) 
 eStreamingPack *eStreamPackLoader::GetLoadedStreamingPack(unsigned int name_hash) {
     eStreamingPack *streaming_pack;
 
-    for (
-        streaming_pack = this->LoadedStreamingPackList.GetHead();
-        streaming_pack != this->LoadedStreamingPackList.EndOfList();
-        streaming_pack = streaming_pack->GetNext())
-    {
+    for (streaming_pack = this->LoadedStreamingPackList.GetHead(); streaming_pack != this->LoadedStreamingPackList.EndOfList();
+         streaming_pack = streaming_pack->GetNext()) {
         if (this->GetStreamingEntry(name_hash, streaming_pack)) {
             streaming_pack->Remove();
             this->LoadedStreamingPackList.AddHead(streaming_pack);
@@ -223,11 +217,12 @@ eStreamingEntry *eStreamPackLoader::GetStreamingEntry(unsigned int name_hash, eS
     if (!streaming_pack->DisabledFlag) {
         int num_entries = streaming_pack->StreamingEntryNumEntries;
         if (streaming_pack->StreamingEntryTable) {
-        eStreamingEntry *streaming_entry = (eStreamingEntry *)ScanHashTableKey32(name_hash, streaming_pack->StreamingEntryTable, num_entries, 0x0, 0x18);
-        if (streaming_entry) {
-            return streaming_entry;
+            eStreamingEntry *streaming_entry =
+                (eStreamingEntry *)ScanHashTableKey32(name_hash, streaming_pack->StreamingEntryTable, num_entries, 0x0, 0x18);
+            if (streaming_entry) {
+                return streaming_entry;
+            }
         }
-    }
     }
     return nullptr;
 }
@@ -235,11 +230,8 @@ eStreamingEntry *eStreamPackLoader::GetStreamingEntry(unsigned int name_hash, eS
 eStreamingEntry *eStreamPackLoader::GetStreamingEntry(unsigned int name_hash) {
     eStreamingPack *streaming_pack;
 
-    for (
-        streaming_pack = this->LoadedStreamingPackList.GetHead();
-        streaming_pack != this->LoadedStreamingPackList.EndOfList();
-        streaming_pack = streaming_pack->GetNext())
-    {
+    for (streaming_pack = this->LoadedStreamingPackList.GetHead(); streaming_pack != this->LoadedStreamingPackList.EndOfList();
+         streaming_pack = streaming_pack->GetNext()) {
         eStreamingEntry *streaming_entry = this->GetStreamingEntry(name_hash, streaming_pack);
         if (streaming_entry) {
             return streaming_entry;
@@ -256,7 +248,8 @@ bChunk *eStreamPackLoader::GetAlignedChunkDataPtr(unsigned char *chunk_data) {
 
 eStreamingPackLoadTable *eStreamPackLoader::GetStreamPackLoadingTable() {
     for (int i = 0; i < 0x40; i++) {
-        if (QueuedLoadingTables[i].Locked != 0) continue;
+        if (QueuedLoadingTables[i].Locked != 0)
+            continue;
 
         QueuedLoadingTables[i].StreamPackLoader = this;
         QueuedLoadingTables[i].Locked = 1;
@@ -283,7 +276,7 @@ void eStreamPackLoader::InternalLoadedStreamingEntryCallback(void *callback_para
         } else {
             bChunk *loaded_chunks = stream_pack_loader->GetAlignedChunkDataPtr(streaming_entry->ChunkData);
             if (streaming_entry->Flags & 1) {
-                LZHeader * lz_header;
+                LZHeader *lz_header;
                 char malloc_name[128];
                 int uncompressed_size;
                 int malloc_size;
@@ -301,7 +294,7 @@ void eStreamPackLoader::InternalLoadedStreamingEntryCallback(void *callback_para
                 bPlatEndianSwap((unsigned int *)loaded_chunks + 3);
 
                 bSPrintf(malloc_name, "%s", streaming_pack->Filename);
-                
+
                 malloc_size = streaming_entry->UncompressedSize + stream_pack_loader->RequiredChunkAlignment;
                 memory_pool_num = loading_table->MemoryPoolNum;
                 if (memory_pool_num != 0) {
@@ -343,10 +336,12 @@ void eStreamPackLoader::InternalLoadedStreamingEntryCallback(void *callback_para
     }
 }
 
-void eStreamPackLoader::InternalLoadStreamingEntry(eStreamingPackLoadTable *loading_table, eStreamingPack *streaming_pack, eStreamingEntry *streaming_entry) {
+void eStreamPackLoader::InternalLoadStreamingEntry(eStreamingPackLoadTable *loading_table, eStreamingPack *streaming_pack,
+                                                   eStreamingEntry *streaming_entry) {
     unsigned int name_hash = streaming_entry->NameHash;
 
-    if (!loading_table || !streaming_pack || !streaming_entry) return;
+    if (!loading_table || !streaming_pack || !streaming_entry)
+        return;
 
     if (streaming_entry->RefCount != 0) {
         streaming_entry->RefCount++;
@@ -359,8 +354,7 @@ void eStreamPackLoader::InternalLoadStreamingEntry(eStreamingPackLoadTable *load
     } else {
         char malloc_name[128];
 
-        bSPrintf(malloc_name, "%s%s", streaming_pack->Filename,
-            (streaming_entry->Flags & 0x1) ? " - Compressed" : "");
+        bSPrintf(malloc_name, "%s%s", streaming_pack->Filename, (streaming_entry->Flags & 0x1) ? " - Compressed" : "");
 
         int malloc_size = streaming_entry->ChunkByteSize + this->RequiredChunkAlignment;
         int allocation_params = 0x2000;
@@ -388,16 +382,8 @@ void eStreamPackLoader::InternalLoadStreamingEntry(eStreamingPackLoadTable *load
         }
         streaming_entry->Flags |= 0x10;
         bChunk *aligned_chunk_data = this->GetAlignedChunkDataPtr(streaming_entry->ChunkData);
-        AddQueuedFile2(
-            aligned_chunk_data,
-            streaming_pack->Filename,
-            streaming_entry->ChunkByteOffset,
-            streaming_entry->ChunkByteSize,
-            eStreamPackLoader::InternalLoadedStreamingEntryCallback,
-            streaming_entry, 
-            loading_table,
-            nullptr
-        );
+        AddQueuedFile2(aligned_chunk_data, streaming_pack->Filename, streaming_entry->ChunkByteOffset, streaming_entry->ChunkByteSize,
+                       eStreamPackLoader::InternalLoadedStreamingEntryCallback, streaming_entry, loading_table, nullptr);
     }
 
     streaming_pack->NumLoadedStreamingEntries++;
@@ -409,17 +395,17 @@ int eStreamPackLoaderSortLoadEntries(eStreamPackLoadEntryInfo *a, eStreamPackLoa
     if (b->StreamingPack < a->StreamingPack) {
         return 0;
     }
-    
+
     if (b->StreamingPack == a->StreamingPack) {
         if (b->FileOffset < a->FileOffset) {
             return 0;
         }
     }
-    
+
     return 1;
 }
 
-extern void SetDelayedResourceCallback(void (*)(void*), void*);
+extern void SetDelayedResourceCallback(void (*)(void *), void *);
 
 // FIXME
 //  name_hash_table /* r20 */
@@ -427,16 +413,18 @@ extern void SetDelayedResourceCallback(void (*)(void*), void*);
 //  callback        /* r21 */
 //  param0          /* r19 */
 //  memory_pool_num /* r31 */
-void eStreamPackLoader::LoadStreamingEntry(unsigned int * name_hash_table, int num_hashes, void (* callback)(void *), void * param0, int memory_pool_num) {
+void eStreamPackLoader::LoadStreamingEntry(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0,
+                                           int memory_pool_num) {
     ProfileNode profile_node;
     eStreamingPackLoadTable *loading_table = this->GetStreamPackLoadingTable(); // r26
-    bTList<eStreamPackLoadEntryInfo> load_info_list; // r1+0x8
-    eStreamPackLoadEntryInfo *load_info_table; // r25
-    int num_load_entries; // r23
-    unsigned int smallest_file_offset; // r28
+    bTList<eStreamPackLoadEntryInfo> load_info_list;                            // r1+0x8
+    eStreamPackLoadEntryInfo *load_info_table;                                  // r25
+    int num_load_entries;                                                       // r23
+    unsigned int smallest_file_offset;                                          // r28
     int mem_required;
 
-    if (!loading_table) return;
+    if (!loading_table)
+        return;
 
     smallest_file_offset = 0x7FFF0000;
 
@@ -490,7 +478,8 @@ void eStreamPackLoader::LoadStreamingEntry(unsigned int * name_hash_table, int n
 }
 
 // STRIPPED
-void eStreamPackLoader::LoadStreamingEntry(unsigned int name_hash /* r1+0x8 */, void (* callback)(void *) /* r5 */, void * param0 /* r0 */, int memory_pool_num /* r8 */) {}
+void eStreamPackLoader::LoadStreamingEntry(unsigned int name_hash /* r1+0x8 */, void (*callback)(void *) /* r5 */, void *param0 /* r0 */,
+                                           int memory_pool_num /* r8 */) {}
 
 void eStreamPackLoader::InternalUnloadStreamingEntry(eStreamingPack *streaming_pack, eStreamingEntry *streaming_entry) {
     if ((streaming_entry->Flags & 0x20) == 0) {
@@ -508,17 +497,21 @@ int eStreamPackLoader::IsLoaded(unsigned int name_hash) {}
 
 void eStreamPackLoader::UnloadStreamingEntry(unsigned int name_hash, eStreamingPack *streaming_pack) {
 
-    if (name_hash == 0) return;
+    if (name_hash == 0)
+        return;
 
     if (streaming_pack == nullptr) {
         streaming_pack = this->GetLoadedStreamingPack(name_hash);
-        if (streaming_pack == nullptr) return;
+        if (streaming_pack == nullptr)
+            return;
     }
 
     eStreamingEntry *streaming_entry = this->GetStreamingEntry(name_hash, streaming_pack);
-    if (streaming_entry == nullptr) return;
+    if (streaming_entry == nullptr)
+        return;
 
-    if (--streaming_entry->RefCount != 0) return;
+    if (--streaming_entry->RefCount != 0)
+        return;
 
     eWaitUntilRenderingDone();
 
@@ -534,20 +527,22 @@ void eStreamPackLoader::UnloadStreamingEntry(unsigned int *name_hash_table, int 
     for (int i = 0; i < num_hashes; i++) {
         this->UnloadStreamingEntry(name_hash_table[i], nullptr);
     }
-    
+
     ProfileNode profile_node;
 }
 
 void eStreamPackLoader::UnloadAllStreamingEntries(const char *filename) {
     eStreamingPack *streaming_pack = this->GetLoadedStreamingPack(filename);
 
-    if (!streaming_pack) return;
+    if (!streaming_pack)
+        return;
 
     eStreamingEntry *streaming_entry = streaming_pack->StreamingEntryTable;
     int num_entries = streaming_pack->StreamingEntryNumEntries;
 
     for (int i = 0; i < num_entries; i++, streaming_entry++) {
-        if (streaming_entry->ChunkData == nullptr) continue;
+        if (streaming_entry->ChunkData == nullptr)
+            continue;
 
         streaming_entry->RefCount = 1;
         this->UnloadStreamingEntry(streaming_entry->NameHash, streaming_pack);
@@ -596,7 +591,8 @@ int eStreamPackLoader::TestLoadStreamingEntry(unsigned int *name_hash_table, int
 
     for (int pass = 0; pass <= 2; pass++) {
         unsigned int prev_name_hash = 0x10;
-        for (eStreamPackLoadEntryInfo *load_info = load_info_list.GetHead(); load_info != load_info_list.EndOfList(); load_info = load_info->GetNext()) {
+        for (eStreamPackLoadEntryInfo *load_info = load_info_list.GetHead(); load_info != load_info_list.EndOfList();
+             load_info = load_info->GetNext()) {
             eStreamingEntry *streaming_entry = load_info->StreamingEntry;
             unsigned int name_hash = streaming_entry->NameHash;
 
@@ -609,9 +605,9 @@ int eStreamPackLoader::TestLoadStreamingEntry(unsigned int *name_hash_table, int
                         char malloc_name[128];
                         int malloc_size;
                         int allocation_params;
-                        
+
                         bSPrintf(malloc_name, "%s%s", streaming_pack->Filename, (name_hash & 1) ? " - Compressed" : "");
-                        
+
                         allocation_params = 0x2000;
                         malloc_size = streaming_entry->ChunkByteSize + this->RequiredChunkAlignment;
 
@@ -628,14 +624,14 @@ int eStreamPackLoader::TestLoadStreamingEntry(unsigned int *name_hash_table, int
                         }
                         amount_not_alloc += malloc_size;
                         break;
-                    
-                    } case 1: {
+                    }
+                    case 1: {
                         char malloc_name[128];
                         int malloc_size;
                         int allocation_params;
 
                         bSPrintf(malloc_name, "%s", streaming_pack->Filename);
-                        
+
                         allocation_params = 0x2000;
                         malloc_size = streaming_entry->ChunkByteSize + this->RequiredChunkAlignment;
 
@@ -659,7 +655,8 @@ int eStreamPackLoader::TestLoadStreamingEntry(unsigned int *name_hash_table, int
                             bFree(compressed_data);
                         }
                         break;
-                    } case 2:
+                    }
+                    case 2:
                         if (error_if_out_in_main_pool && streaming_entry->ChunkData) {
                             bFree(streaming_entry->ChunkData);
                         }
@@ -670,15 +667,13 @@ int eStreamPackLoader::TestLoadStreamingEntry(unsigned int *name_hash_table, int
     }
 
     // TODO
-    
+
     bFree(load_info_table);
 }
 
 bool eStreamPackLoader::DefragmentAllocation(void *allocation) {
-    for (eStreamingPack *streaming_pack = this->LoadedStreamingPackList.GetHead();
-         streaming_pack != this->LoadedStreamingPackList.EndOfList();
-         streaming_pack = streaming_pack->GetNext())
-    {
+    for (eStreamingPack *streaming_pack = this->LoadedStreamingPackList.GetHead(); streaming_pack != this->LoadedStreamingPackList.EndOfList();
+         streaming_pack = streaming_pack->GetNext()) {
         for (int i = 0; i < streaming_pack->StreamingEntryNumEntries; i++) {
             eStreamingEntry *streaming_entry = &streaming_pack->StreamingEntryTable[i];
             if (streaming_entry->ChunkData == allocation) {
@@ -711,7 +706,8 @@ void eStreamPackLoader::WaitForLoadingToFinish(const char *filename) {
     }
 }
 
-eStreamingPack *eStreamPackLoader::CreateStreamingPack(const char *filename, void (*callback_function)(void *), void *callback_param, int memory_pool_num) {
+eStreamingPack *eStreamPackLoader::CreateStreamingPack(const char *filename, void (*callback_function)(void *), void *callback_param,
+                                                       int memory_pool_num) {
     eStreamingPack *streaming_pack = this->GetLoadedStreamingPack(filename);
 
     if (streaming_pack) {
@@ -720,11 +716,13 @@ eStreamingPack *eStreamPackLoader::CreateStreamingPack(const char *filename, voi
     }
 
     bFile *file = bOpen(filename, 1, 1);
-    if (!file) return nullptr;
+    if (!file)
+        return nullptr;
 
     int file_size = bFileSize(file);
     bClose(file);
-    if (file_size <= 0x40) return nullptr;
+    if (file_size <= 0x40)
+        return nullptr;
 
     eStreamingPackHeaderLoadingInfo *loading_info = (eStreamingPackHeaderLoadingInfo *)bMalloc(0x10, 0x40);
     bMemSet(loading_info, 0x0, 0x10);
@@ -745,16 +743,8 @@ eStreamingPack *eStreamPackLoader::CreateStreamingPack(const char *filename, voi
     if (file_size > 0x8000) {
         amount_to_load = 0x8000;
         streaming_pack->HeaderChunks = (bChunk *)bMalloc(amount_to_load, 0x2040);
-        AddQueuedFile2(
-            streaming_pack->HeaderChunks,
-            streaming_pack->Filename,
-            0,
-            loading_info->HeaderChunksSize,
-            eStreamPackLoader::InternalLoadingHeaderPhase1Callback,
-            (void *)this,
-            (void *)streaming_pack,
-            nullptr
-        );
+        AddQueuedFile2(streaming_pack->HeaderChunks, streaming_pack->Filename, 0, loading_info->HeaderChunksSize,
+                       eStreamPackLoader::InternalLoadingHeaderPhase1Callback, (void *)this, (void *)streaming_pack, nullptr);
     }
 
     return streaming_pack;
@@ -778,7 +768,7 @@ void eStreamPackLoader::InternalLoadingHeaderPhase1Callback(void *callback_param
     stream_pack_loader->LoadingHeaderPhase1Callback(&user_load_info);
 
     bSPrintf(malloc_name, "%s: StrmHdrChks", streaming_pack->Filename);
-    
+
     next_load_amount = user_load_info.NextLoadAmount;
     next_load_position = user_load_info.NextLoadPosition;
     streaming_pack->HeaderSize = next_load_amount;
@@ -786,19 +776,20 @@ void eStreamPackLoader::InternalLoadingHeaderPhase1Callback(void *callback_param
     if (streaming_pack->HeaderMemoryPoolNum != 0 && bLargestMalloc(streaming_pack->HeaderMemoryPoolNum) > next_load_amount) {
         allocation_params = (streaming_pack->HeaderMemoryPoolNum & 0xF) | 0x2040;
     }
-    
+
     bChunk *perm_header_chunks = (bChunk *)bMalloc(next_load_amount, allocation_params);
     bChunk *temp_header_chunks = streaming_pack->HeaderChunks;
 
     if (next_load_position + next_load_amount <= loading_info->HeaderChunksSize) {
-        bMemCpy(perm_header_chunks, &((char*)temp_header_chunks)[next_load_position], next_load_amount);
+        bMemCpy(perm_header_chunks, &((char *)temp_header_chunks)[next_load_position], next_load_amount);
         loading_info->HeaderChunksMemCopied = 1; // ^^^ hack?
     }
     bFree(temp_header_chunks);
-    
+
     streaming_pack->HeaderChunks = perm_header_chunks;
     if (loading_info->HeaderChunksMemCopied == 0) {
-        AddQueuedFile2(perm_header_chunks, streaming_pack->Filename, next_load_position, next_load_amount, eStreamPackLoader::InternalLoadingHeaderPhase2Callback, stream_pack_loader, streaming_pack, nullptr);
+        AddQueuedFile2(perm_header_chunks, streaming_pack->Filename, next_load_position, next_load_amount,
+                       eStreamPackLoader::InternalLoadingHeaderPhase2Callback, stream_pack_loader, streaming_pack, nullptr);
     }
 
     if (loading_info->HeaderChunksMemCopied != 0) {
@@ -828,7 +819,8 @@ void eStreamPackLoader::InternalLoadingHeaderPhase2Callback(void *callback_param
 
     if (user_load_info.LoadResourceFileAmount != 0) {
         loading_info = (eStreamingPackHeaderLoadingInfo *)(&user_load_info) + 1;
-        streaming_pack->pResourceFile = CreateResourceFile(streaming_pack->Filename, RESOURCE_FILE_CAR, 0x0, user_load_info.LoadResourceFilePosition, user_load_info.LoadResourceFileAmount);
+        streaming_pack->pResourceFile = CreateResourceFile(streaming_pack->Filename, RESOURCE_FILE_CAR, 0x0, user_load_info.LoadResourceFilePosition,
+                                                           user_load_info.LoadResourceFileAmount);
 
         char malloc_name[1024];
         int allocation_params = 0x2000;
@@ -865,8 +857,10 @@ void eStreamPackLoader::InternalLoadingHeaderPhase3Callback(void *callback_param
 int eStreamPackLoader::DeleteStreamingPack(const char *filename) {
     eStreamingPack *streaming_pack = GetLoadedStreamingPack(filename);
 
-    if (!streaming_pack) return 0;
-    if (--streaming_pack->RefCount != 0) return 1;
+    if (!streaming_pack)
+        return 0;
+    if (--streaming_pack->RefCount != 0)
+        return 1;
 
     streaming_pack->DisabledFlag = 0;
 

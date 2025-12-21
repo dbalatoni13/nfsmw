@@ -5,10 +5,12 @@
 #pragma once
 #endif
 
-#ifdef TARGET_GC
+#ifdef EA_PLATFORM_GAMECUBE
 #include "Speed/GameCube/Src/Ecstasy/TextureInfoPlat.hpp"
-#elif defined(TARGET_X360)
+#elif defined(EA_PLATFORM_XENON)
 #include "Speed/Xenon/Src/Ecstasy/TextureInfoPlat.hpp"
+#elif defined(EA_PLATFORM_PLAYSTATION2)
+#include "Speed/PSX2/Src/Ecstasy/TextureInfoPlat.hpp"
 #endif
 
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"

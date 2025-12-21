@@ -11,7 +11,8 @@
 #include "WorldConn.h"
 #include "WorldModel.hpp"
 #include "dolphin/mtx/GeoTypes.h"
-#include "dolphin/types.h"
+
+#include <types.h>
 
 // UNSOLVED, i hate constructors
 SmackableRenderConn::SmackableRenderConn(const Sim::ConnectionData &data /* r27 */)

@@ -1,5 +1,6 @@
 #include "./Player.hpp"
-#include "dolphin/types.h"
+
+#include <types.h>
 
 // STRIPPED
 Player *Player::GetPlayerByNumber(int number) {

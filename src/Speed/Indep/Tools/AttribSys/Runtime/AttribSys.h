@@ -179,12 +179,12 @@ class Array {
 #define Flag_AlignedAt16 (1 << 15)
   private: // Returns the base location of this array's data
     unsigned char *BasePointer() const {
-        return const_cast<unsigned char *>(data);
+        return (unsigned char *)(&this[1]);
     }
 
     void *Data(std::size_t byteindex) const {
         unsigned char *base = BasePointer(); // unused
-        return (void *)(data + GetPad() + byteindex);
+        return (void *)((unsigned char *)(&this[1]) + GetPad() + byteindex);
     }
 
   public:
@@ -278,9 +278,9 @@ class Array {
             typeHandler->Release(GetData(index));
             reinterpret_cast<void **>(Data(0))[index] = typeHandler->Retain(value);
         } else if (value) {
-            std::memcpy(GetData(index), value, mSize);
+            memcpy(GetData(index), value, mSize);
         } else {
-            std::memset(GetData(index), 0, mSize);
+            memset(GetData(index), 0, mSize);
         }
     }
 
@@ -353,7 +353,6 @@ class Array {
     unsigned short mCount;
     unsigned short mSize;
     unsigned short mEncodedTypePad;
-    unsigned char data[];
 };
 
 // Credit: Brawltendo

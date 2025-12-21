@@ -1,6 +1,6 @@
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 
-#ifdef TARGET_GC
+#ifdef EA_PLATFORM_GAMECUBE
 #include <dolphin.h>
 #endif
 
@@ -33,14 +33,14 @@ bool HandleUserPutString(int terminal_channel, const char *s) {
 
 void bReleasePutString(char terminal_channel, const char *s) {
     if (EnableReleasePrintf && !HandleUserPutString(terminal_channel, s)) {
-#ifdef TARGET_GC
+#ifdef EA_PLATFORM_GAMECUBE
         OSReport(s);
 #endif
     }
 }
 
 void bBreak() {
-#ifdef TARGET_GC
+#ifdef EA_PLATFORM_GAMECUBE
     OSPanic("", 0, "");
 #endif
 }
@@ -61,7 +61,7 @@ int bGetFixTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
 void bInitTicker(float min_wraparound_time) {}
 
 unsigned int bGetTicker() {
-#ifdef TARGET_GC
+#ifdef EA_PLATFORM_GAMECUBE
     return OSGetTick();
 #endif
 }
@@ -73,7 +73,7 @@ float bGetTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
     } else {
         start_ticks = end_ticks - start_ticks;
     }
-#ifdef TARGET_GC
+#ifdef EA_PLATFORM_GAMECUBE
     return OSTicksToMicroseconds(start_ticks) * 0.001f;
 #endif
 }

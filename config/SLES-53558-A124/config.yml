@@ -55,7 +55,7 @@ segments:
     vram: 0x100000
     bss_size: 0x374dc
     subsegments:
-    # - [0x1000, asmtu, Speed/Indep/SourceLists/zAI.cpp]
+    - [0x1000, asmtu, Speed/Indep/SourceLists/zAI.cpp]
     # - [0x45728, asmtu, Speed/Indep/SourceLists/zAnim.cpp]
     # - [0x50A78, asmtu, Speed/Indep/SourceLists/zAttribSys.cpp]
     # - [0x5BE08, asmtu, Speed/Indep/SourceLists/zBWare.cpp]

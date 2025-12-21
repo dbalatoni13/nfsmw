@@ -1,11 +1,11 @@
 #ifndef _TYPES_H_
 #define _TYPES_H_
 
-#ifdef TARGET_GC
+#ifdef EA_PLATFORM_GAMECUBE
 
 #include "dolphin/types.h"
 
-#elif TARGET_X360
+#elif defined(EA_PLATFORM_XENON) || defined(EA_PLATFORM_PLAYSTATION2)
 
 #include <cstddef>
 

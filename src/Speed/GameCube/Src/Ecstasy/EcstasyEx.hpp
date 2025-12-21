@@ -1,13 +1,13 @@
 #ifndef GAMECUBE_ECSTASY_ECSTASY_EX_H
 #define GAMECUBE_ECSTASY_ECSTASY_EX_H
 
-#include "dolphin/gx/GXEnum.h"
-#include "dolphin/gx/GXStruct.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
+#include "dolphin/gx/GXEnum.h"
+#include "dolphin/gx/GXStruct.h"
 #include <dolphin.h>
 
 struct cCaptureBuffer {

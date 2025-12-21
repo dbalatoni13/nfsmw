@@ -5,7 +5,7 @@
 #pragma once
 #endif
 
-#include "dolphin/types.h"
+#include <types.h>
 
 // total size: 0x4
 template <typename T> class ScratchPtr {

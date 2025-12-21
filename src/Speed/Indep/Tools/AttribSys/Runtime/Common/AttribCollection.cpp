@@ -249,13 +249,13 @@ bool Collection::RemoveAttribute(Key attributeKey) {
                 if (isArray) {
                     *reinterpret_cast<Array *>(data) = *parentnode->GetArray(container->GetLayout());
                 } else {
-                    std::memcpy(data, parentnode->GetPointer(container->GetLayout()), typeDesc.GetSize());
+                    memcpy(data, parentnode->GetPointer(container->GetLayout()), typeDesc.GetSize());
                 }
             } else {
                 if (isArray) {
                     reinterpret_cast<Array *>(data)->SetCount(0);
                 } else {
-                    std::memset(data, 0, typeDesc.GetSize());
+                    memset(data, 0, typeDesc.GetSize());
                 }
             }
         } else if (data) {

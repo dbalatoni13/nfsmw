@@ -12,7 +12,8 @@
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
-#include "dolphin/types.h"
+
+#include <types.h>
 
 Behavior *RBVehicle::Construct(const BehaviorParams &params) {
     const RBComplexParams rp(params.fparams.Fetch<RBComplexParams>(UCrc32(0xa6b47fac)));

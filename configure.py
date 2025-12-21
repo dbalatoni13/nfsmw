@@ -219,7 +219,6 @@ if config.platform == Platform.GC_WII:
         "-I src/Speed/GameCube/bWare/GameCube/dolphinsdk/include",
         "-I ./",
         "-I src",
-        "-DTARGET_GC",
         "-DEA_PLATFORM_GAMECUBE",
         "-DGEKKO",
         "-D_USE_MATH_DEFINES",
@@ -286,7 +285,6 @@ elif config.platform == Platform.X360:
         "/EHsc",  # enable exception handling (and extern C notthrow?)
         "/I src/Packages/xenonsdk/2.0.2135.2/installed/include/xbox",
         "/I src",
-        "/DTARGET_X360",
         "/DEA_PLATFORM_XENON",
         "/D_USE_MATH_DEFINES",
         f"/I build/{config.version}/include",
@@ -319,11 +317,9 @@ elif config.platform == Platform.PS2:
         "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111/include",
         "-I src/Speed/PSX2/bWare/src/ee/gcc/ee",
         "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111",
-        "-I include",
         "-I src",
-        "-DTARGET_PS2",
         "-DEA_PLATFORM_PLAYSTATION2",
-        "-D_USE_MATH_DEFINES",
+        "-D_NOTHREADS",  # TODO is this necessary?
         f"-I build/{config.version}/include",
         f"-DBUILD_VERSION={version_num}",
         # f"-DVERSION_{config.version}", # TODO it's broken because of the dash?
@@ -358,7 +354,6 @@ elif config.platform == Platform.PS2:
 
     config.extra_clang_flags = [
         "-std=gnu++98",
-        "-DSN_TARGET_PS2",
     ]
 
 cflags_cmn = [

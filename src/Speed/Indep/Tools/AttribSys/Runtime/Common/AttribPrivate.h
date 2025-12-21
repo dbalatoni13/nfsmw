@@ -26,7 +26,7 @@ class CollectionLoadData {
     };
 
     const unsigned int *GetTypes() const {
-        return mTypes;
+        return (unsigned int *)&this[1];
     }
 
     const AttribEntry *GetEntries() const {
@@ -41,7 +41,6 @@ class CollectionLoadData {
     unsigned int mNumEntries;    // offset 0x14, size 0x4
     unsigned int mNumTypes;      // offset 0x18, size 0x4
     void *mLayout;               // offset 0x1C, size 0x4
-    unsigned int mTypes[];       // TODO check whether this field is generated in the PS2 debug info
 };
 
 // total size: 0x2C
@@ -253,14 +252,13 @@ class ClassTable : public VecHashMap<unsigned int, Class, Class::TablePolicy, fa
 class DatabaseLoadData {
   public:
     const unsigned int *GetTypeSizes() const {
-        return typeSizes;
+        return (const unsigned int *)(&this[1]);
     }
 
     unsigned int mNumClasses;      // offset 0x0, size 0x4
     unsigned int mDefaultDataSize; // offset 0x4, size 0x4
     unsigned int mNumTypes;        // offset 0x8, size 0x4
     const char *mTypenames;        // offset 0xC, size 0x4
-    unsigned int typeSizes[];
 };
 
 // total size: 0x4C

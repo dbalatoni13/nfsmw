@@ -1,6 +1,7 @@
 #include <cstdio>
 #include "./UGroup.hpp"
-#include "dolphin/types.h"
+
+#include <types.h>
 
 void UDataGroupEncodeTag(unsigned int tag, bool indexed, char *str) {
     unsigned int type;

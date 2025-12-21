@@ -13,7 +13,8 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/bFunk.hpp"
-#include "dolphin/types.h"
+
+#include <types.h>
 #include <cstddef>
 
 void DebugVehicleSelection::Init() {

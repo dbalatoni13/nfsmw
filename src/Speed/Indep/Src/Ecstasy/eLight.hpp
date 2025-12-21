@@ -5,7 +5,7 @@
 #pragma once
 #endif
 
-#if TARGET_GC
+#if EA_PLATFORM_GAMECUBE
 #include "Speed/GameCube/Src/Ecstasy/eLightPlat.hpp"
 #endif
 

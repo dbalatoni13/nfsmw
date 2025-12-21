@@ -314,7 +314,7 @@ void bMulMatrix(bVector3 *dest, const bMatrix4 *m, const bVector3 *v) {
 }
 
 bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m) {
-#ifdef TARGET_GC
+#ifdef EA_PLATFORM_GAMECUBE
     MTX44Transpose(*reinterpret_cast<const Mtx44 *>(m), *reinterpret_cast<Mtx44 *>(dest));
 #else
 // TODO

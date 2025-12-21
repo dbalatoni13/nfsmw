@@ -36,7 +36,8 @@
 #include "Speed/Indep/Src/World/WGridManagedDynamicElem.h"
 #include "Speed/Indep/Src/World/WTrigger.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
-#include "dolphin/types.h"
+
+#include <types.h>
 
 #include <algorithm>
 #include <vector>

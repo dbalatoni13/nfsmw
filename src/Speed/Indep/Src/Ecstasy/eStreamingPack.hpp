@@ -1,9 +1,6 @@
 #ifndef ECSTASY_ESTREAMING_PACK_H
 #define ECSTASY_ESTREAMING_PACK_H
 
-#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
-#include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "dolphin/types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -12,6 +9,10 @@
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
+
+#include <types.h>
 #include <cstddef>
 
 struct eStreamingEntry {

@@ -7,7 +7,8 @@
 #include "Speed/Indep/Src/Sim/SimAttachable.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "dolphin/types.h"
+
+#include <types.h>
 
 namespace Sim {
 
