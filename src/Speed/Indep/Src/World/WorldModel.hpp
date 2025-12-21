@@ -1,7 +1,6 @@
 #ifndef WORLD_WORLD_MODEL_H
 #define WORLD_WORLD_MODEL_H
 
-#include "dolphin/types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -53,10 +52,7 @@ class WorldModel : public bTNode<WorldModel> {
             if (this->pSpaceNode) {
                 this->pSpaceNode->SetLocalMatrix(matrix);
             } else {
-                PSMTX44Copy(
-                    *reinterpret_cast<const Mtx44 *>(matrix),
-                    *reinterpret_cast<Mtx44 *>(&this->mMatrix)
-                );
+                this->mMatrix = *matrix;
             }
         } else {
             this->mEnabled = false;

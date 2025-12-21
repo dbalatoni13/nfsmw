@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "types.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
@@ -13,10 +14,7 @@ public:
     void SetDirty();
 
     void SetLocalMatrix(bMatrix4 *matrix) {
-        PSMTX44Copy(
-            *reinterpret_cast<const Mtx44 *>(matrix),
-            *reinterpret_cast<Mtx44 *>(&this->LocalMatrix)
-        );
+        this->LocalMatrix = *matrix;
         this->SetDirty();
     }
     
