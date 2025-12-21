@@ -5,11 +5,7 @@
 #pragma once
 #endif
 
-#if defined(EA_PLATFORM_XENON) || defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_WINDOWS)
-#define ONLINE_SUPPORT (1)
-#else
-#define ONLINE_SUPPORT (0)
-#endif
+#include <types.h>
 
 class OnlineManager {
   public:

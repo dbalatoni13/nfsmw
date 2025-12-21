@@ -31,7 +31,11 @@ class IPlayer : public UTL::COM::IUnknown, public UTL::Collections::ListableSet<
     virtual ~IPlayer() {}
 
     virtual ISimable *GetSimable() const;
+
+#ifndef EA_BUILD_A124
     virtual bool IsLocal() const;
+#endif
+
     virtual const UMath::Vector3 &GetPosition() const;
     virtual bool SetPosition(const UMath::Vector3 &position);
     virtual PlayerSettings *GetSettings() const;

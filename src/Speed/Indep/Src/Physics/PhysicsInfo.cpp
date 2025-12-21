@@ -95,7 +95,7 @@ float Physics::Info::InductionBoost(const engine &engine, const induction &induc
         // -tuning produces more low end boost, while +tuning produces more high end boost
         if (tunings) {
             float value = tunings->Value[Physics::Tunings::INDUCTION];
-            low_boost  -= low_boost  * value * 0.25f;
+            low_boost -= low_boost * value * 0.25f;
             high_boost += high_boost * value * 0.25f;
         }
 
@@ -114,7 +114,7 @@ float Physics::Info::InductionBoost(const engine &engine, const induction &induc
             }
         }
     }
-    
+
     return induction_boost * spool;
 }
 
@@ -217,8 +217,8 @@ bool Physics::Info::ShiftPoints(const transmission &transmission, const engine &
 }
 
 // Credits: Brawltendo
-float Physics::Info::Speedometer(const Attrib::Gen::transmission &transmission, const Attrib::Gen::engine &engine, const Attrib::Gen::tires &tires,
-                                 float rpm, GearID gear, const Tunings *tunings) {
+Mps Physics::Info::Speedometer(const Attrib::Gen::transmission &transmission, const Attrib::Gen::engine &engine, const Attrib::Gen::tires &tires,
+                               Rpm rpm, GearID gear, const Tunings *tunings) {
     float speed = 0.0f;
     float gear_ratio = transmission.GEAR_RATIO(gear) * transmission.FINAL_GEAR();
     float power_range = engine.RED_LINE() - engine.IDLE();

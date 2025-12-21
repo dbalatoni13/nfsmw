@@ -1,6 +1,7 @@
 #ifndef PHYSICS_BEHAVIORS_RIGIDBODY_H
 #define PHYSICS_BEHAVIORS_RIGIDBODY_H
 
+#include "types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -595,7 +596,7 @@ class RigidBody : public Behavior,
         float oom;                               // offset 0x3C, size 0x4
         Dynamics::Inertia::Tensor inertiaTensor; // offset 0x40, size 0xC
         float unused1;                           // offset 0x4C, size 0x4
-        UMath::Vector3 force;                    // offset 0x50, size 0xC
+        ALIGN_PS2(16) UMath::Vector3 force;      // offset 0x50, size 0xC
         char leversInContact;                    // offset 0x5C, size 0x1
         unsigned char state;                     // offset 0x5D, size 0x1
         unsigned char index;                     // offset 0x5E, size 0x1
@@ -606,10 +607,6 @@ class RigidBody : public Behavior,
     };
 
   private:
-    static RigidBody *mMaps[RIGID_BODY_MAX];
-    static std::size_t mCount;
-    static bool mOnSP;
-
     ScratchPtr<Volatile> mData;                           // offset 0x88, size 0x4
     BehaviorSpecsPtr<Attrib::Gen::rigidbodyspecs> mSpecs; // offset 0x8C, size 0x14
     UMath::Matrix4 mInvWorldTensor;                       // offset 0xA0, size 0x40
@@ -624,6 +621,10 @@ class RigidBody : public Behavior,
     float mDetachForce;                                   // offset 0x11C, size 0x4
     PrimList mPrimitives;                                 // offset 0x120, size 0x10
     MeshList mMeshes;                                     // offset 0x130, size 0x10
+
+    static RigidBody *mMaps[RIGID_BODY_MAX];
+    static std::size_t mCount;
+    static bool mOnSP;
 };
 
 extern bTList<RigidBody> TheRigidBodies;

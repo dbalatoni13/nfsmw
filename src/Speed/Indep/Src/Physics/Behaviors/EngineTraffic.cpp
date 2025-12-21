@@ -71,8 +71,8 @@ class EngineTraffic : protected VehicleBehavior, protected ITransmission, protec
     // Inline virtuals
 
     // IEngine
-    float GetMinHorsePower() const override {
-        return FTLB2NM(Physics::Info::Torque(mEngineInfo, mEngineInfo.IDLE()) * mEngineInfo.IDLE());
+    Hp GetMinHorsePower() const override {
+        return FTLB2HP(Physics::Info::Torque(mEngineInfo, mEngineInfo.IDLE()) * mEngineInfo.IDLE(), 1.0f);
     }
     float GetRPM() const override {
         return mRPM;
@@ -310,7 +310,7 @@ void EngineTraffic::MatchSpeed(float speed) {
 
     float total_gear_ratio = GetGearRatio(mGear) * rear_end;
     float power_range = (max_w - min_w) / max_w;
-    mAngularVelocity = differential_w * total_gear_ratio * power_range + min_w;
+    mAngularVelocity = min_w + differential_w * total_gear_ratio * power_range;
     mClutchVelocity = mAngularVelocity;
     mRPM = RPS2RPM(mAngularVelocity);
 }

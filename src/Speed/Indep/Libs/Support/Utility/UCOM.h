@@ -1,6 +1,7 @@
 #ifndef SUPPORT_UTILITY_UCOM_H
 #define SUPPORT_UTILITY_UCOM_H
 
+#include "types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -63,8 +64,7 @@ class Object {
 };
 
 // total size: 0x8
-
-class IUnknown {
+class ALIGN_PS2(16) IUnknown {
   public:
     template <typename T> bool QueryInterface(T **out) {
         HINTERFACE handle = T::_IHandle();

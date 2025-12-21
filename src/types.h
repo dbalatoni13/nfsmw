@@ -15,6 +15,10 @@ typedef long long int64;
 typedef unsigned long long uint64;
 typedef unsigned int type_operator_new;
 
+#define ALIGN_PS2(num)
+
+#define ONLINE_SUPPORT (0)
+
 #elif defined(EA_PLATFORM_XENON)
 
 #include <cstddef>
@@ -40,6 +44,8 @@ typedef int Bool;
 #ifndef ATTRIBUTE_ALIGN
 #define ATTRIBUTE_ALIGN(num) __declspec(align(num))
 #endif
+
+#define ALIGN_PS2(num)
 
 #ifndef AT_ADDRESS
 #define AT_ADDRESS(xyz)
@@ -68,6 +74,8 @@ typedef long int int64_t;
 typedef long unsigned int uint64_t;
 typedef int8_t bool8_t;
 
+#define ONLINE_SUPPORT (1)
+
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 #include <cstddef>
 
@@ -92,6 +100,8 @@ typedef bool Bool;
 #ifndef ATTRIBUTE_ALIGN
 #define ATTRIBUTE_ALIGN(num) __attribute__((aligned(num)))
 #endif
+
+#define ALIGN_PS2(num) ATTRIBUTE_ALIGN(num)
 
 #ifndef AT_ADDRESS
 #define AT_ADDRESS(xyz)
@@ -125,6 +135,8 @@ typedef uint64_t uintmax_t;
 typedef char char8_t;
 // typedef __wchar_t char16_t; // TODO
 typedef uint32_t char32_t;
+
+#define ONLINE_SUPPORT (1)
 
 #endif
 

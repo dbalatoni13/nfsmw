@@ -88,7 +88,7 @@ class DamageVehicle : public VehicleBehavior,
     IRigidBody *mRB;                                   // offset 0x94, size 0x4
     IRenderable *mRenderable;                          // offset 0x98, size 0x4
     DamageZone::Info mZoneDamage;                      // offset 0x9C, size 0x4
-    UMath::Vector3 mLastImpactSpeed;                   // offset 0xA0, size 0xC
+    ALIGN_PS2(16) UMath::Vector3 mLastImpactSpeed;     // offset 0xA0, size 0xC
     UTL::Std::list<UCrc32, _type_list> mBrokenParts;   // offset 0xAC, size 0x8
     unsigned int mLightDamage;                         // offset 0xB4, size 0x4
 };

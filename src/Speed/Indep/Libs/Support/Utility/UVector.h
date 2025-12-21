@@ -1,13 +1,15 @@
 #ifndef SUPPORT_UTILITY_UVECTOR_H
 #define SUPPORT_UTILITY_UVECTOR_H
 
+#include "types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
 #include "UMath.h"
 
-struct UVector3 : public UMath::Vector3 {
+// TODO class
+struct ALIGN_PS2(16) UVector3 : public UMath::Vector3 {
     UVector3() {
         Clear(*this);
     }

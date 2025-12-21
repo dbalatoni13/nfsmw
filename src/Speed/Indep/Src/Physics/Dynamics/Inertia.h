@@ -1,11 +1,11 @@
 #ifndef PHYSICS_DYNAMICS_INERTIA_H
 #define PHYSICS_DYNAMICS_INERTIA_H
 
-#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UVector.h"
 
 namespace Dynamics {

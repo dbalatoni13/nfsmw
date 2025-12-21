@@ -97,7 +97,7 @@ class RBVehicle : public RigidBody, public IRBVehicle {
     float mDeadOnWheels;                                  // offset 0x164, size 0x4
     CollisionGeometry::Collection *mGeoms;                // offset 0x168, size 0x4
     unsigned int mFrame;                                  // offset 0x16C, size 0x4
-    UMath::Vector3 mCollisionCOG;                         // offset 0x170, size 0xC
+    ALIGN_PS2(16) UMath::Vector3 mCollisionCOG;           // offset 0x170, size 0xC
     float mCollisionMass;                                 // offset 0x17C, size 0x4
     bool mObjectCollisionsEnabled;                        // offset 0x180, size 0x1
     eInvulnerablitiy mInvulnerableState;                  // offset 0x184, size 0x4

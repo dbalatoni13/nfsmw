@@ -66,11 +66,11 @@ inline float INCH2METERS(const float _inches_) {
 }
 
 inline Rpm RPS2RPM(const float _rps_) {
-    return _rps_ * 9.5492964f;
+    return _rps_ * 9.549296f; // TODO problems on PS2
 }
 
 inline float RPM2RPS(const Rpm _rpm_) {
-    return _rpm_ / 9.5492964f;
+    return _rpm_ / 9.5492958f; // TODO problems on PS2
 }
 
 inline Nm LBIN2NM(const float _lbin_) {
@@ -83,6 +83,10 @@ inline float NM2LBIN(const Nm _nm_) {
 
 inline Nm FTLB2NM(const FtLbs _ftlb_) {
     return _ftlb_ * 1.3558f;
+}
+
+inline float FTLB2HP(const float _ftlb, const float _rpm) {
+    return (_ftlb * _rpm) / 5252.0f;
 }
 
 inline Hp NM2HP(const Nm _nm, const Rpm _rpm) {

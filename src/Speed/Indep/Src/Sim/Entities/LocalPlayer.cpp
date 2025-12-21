@@ -47,8 +47,12 @@ LocalPlayer::LocalPlayer(Sim::Param params)
       mHud(nullptr),            //
       mHudTask(nullptr),        //
       mSpeech(nullptr),         //
-      mInGameBreaker(false),    //
-      mLastPursuit(nullptr) {
+      mInGameBreaker(false)
+#ifndef EA_PLATFORM_PLAYSTATION2
+      ,
+      mLastPursuit(nullptr)
+#endif
+{
     IEntity::AddToList(ENTITY_PLAYERS);
     IPlayer::AddToList(PLAYER_LOCAL);
     IPlayer::AddToList(PLAYER_ALL);

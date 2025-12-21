@@ -6,6 +6,7 @@
 #endif
 
 #include <math.h>
+#include <types.h>
 
 #ifdef EA_PLATFORM_GAMECUBE
 #include "dolphin/mtx44_ext.h"

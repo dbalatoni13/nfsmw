@@ -30,11 +30,13 @@ struct chassis : Instance {
         float WHEEL_BASE;             // offset 0x54, size 0x4
         float SHOCK_BLOWOUT;          // offset 0x58, size 0x4
         float AERO_CG;                // offset 0x5c, size 0x4
-        float RENDER_MOTION;          // offset 0x60, size 0x4
-        float FRONT_AXLE;             // offset 0x64, size 0x4
-        float AERO_COEFFICIENT;       // offset 0x68, size 0x4
-        float FRONT_WEIGHT_BIAS;      // offset 0x6c, size 0x4
-        float DRAG_COEFFICIENT;       // offset 0x70, size 0x4
+#ifndef EA_BUILD_A124
+        float RENDER_MOTION; // offset 0x60, size 0x4
+#endif
+        float FRONT_AXLE;        // offset 0x64, size 0x4
+        float AERO_COEFFICIENT;  // offset 0x68, size 0x4
+        float FRONT_WEIGHT_BIAS; // offset 0x6c, size 0x4
+        float DRAG_COEFFICIENT;  // offset 0x70, size 0x4
     };
 
     void operator delete(void *ptr, size_t bytes) {
@@ -121,7 +123,10 @@ struct chassis : Instance {
     }
 
     const float &RENDER_MOTION() const {
+        // TODO
+#ifndef EA_BUILD_A124
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->RENDER_MOTION;
+#endif
     }
 
     const float &FRONT_AXLE() const {

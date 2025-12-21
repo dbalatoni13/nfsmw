@@ -131,7 +131,9 @@ class LocalPlayer : public Sim::Entity, public IPlayer, public Sim::Collision::I
     Sim::IActivity *mSpeech;         // offset 0x84, size 0x4
     bool mInGameBreaker;             // offset 0x88, size 0x1
     float mGameBreakerCharge;        // offset 0x8C, size 0x4
-    HACTIVITY mLastPursuit;          // offset 0x90, size 0x4
+#ifndef EA_PLATFORM_PLAYSTATION2
+    HACTIVITY mLastPursuit; // offset 0x90, size 0x4
+#endif
 };
 
 #endif

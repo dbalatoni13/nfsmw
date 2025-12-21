@@ -7,6 +7,8 @@
 
 #include "UTypes.h"
 
+#include <cmath>
+
 float VU0_Atan2(const float opposite, const float adjacent);
 float VU0_sqrt(const float a);
 float VU0_rsqrt(const float a);
@@ -41,12 +43,20 @@ void VU0_MATRIX4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 &m, UMa
 void VU0_MATRIX4_vect4mult(const UMath::Vector4 &v, const UMath::Matrix4 &m, UMath::Vector4 &result);
 void VU0_MATRIX4setyrot(UMath::Matrix4 &dest, const float yangle);
 
+// TODO
 inline float VU0_fabs(const float a) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    // float result = fabsf(a);
+    float result;
+    asm("abs.s %0, %1" : "=f"(result) : "f"(a));
+    return result;
+#else
     if (a < 0.0f) {
         return -a;
     }
     return a;
     // return a < 0.0f ? -a : a;
+#endif
 }
 
 inline float VU0_Pow(float x, float e) {
@@ -54,17 +64,30 @@ inline float VU0_Pow(float x, float e) {
 }
 
 inline float VU0_floatmin(const float a, const float b) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    float result;
+    asm("min.s %0, %1, %2" : "=f"(result) : "f"(a), "f"(b));
+    return result;
+#else
     if (a < b)
         return a;
     else
         return b;
+#endif
 }
 
+// TODO
 inline float VU0_floatmax(const float a, const float b) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    float result;
+    asm("max.s %0, %1, %2" : "=f"(result) : "f"(a), "f"(b));
+    return result;
+#else
     if (a > b)
         return a;
     else
         return b;
+#endif
 }
 
 inline void VU0_v3negate(UMath::Vector3 &result) {

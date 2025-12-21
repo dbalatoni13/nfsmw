@@ -164,8 +164,8 @@ class EngineRacer : protected VehicleBehavior,
     float GetMaxHorsePower() const override {
         return mMaxHP;
     }
-    float GetMinHorsePower() const override {
-        return FTLB2NM(Physics::Info::Torque(mEngineInfo, mEngineInfo.IDLE()) * mEngineInfo.IDLE());
+    Hp GetMinHorsePower() const override {
+        return FTLB2HP(Physics::Info::Torque(mEngineInfo, mEngineInfo.IDLE()) * mEngineInfo.IDLE(), 1.0f);
     }
     float GetRPM() const override {
         return mRPM;
@@ -1363,6 +1363,9 @@ class EngineDragster : public EngineRacer, public IDragEngine, public IDragTrans
     }
 
   private:
+#ifdef EA_BUILD_A124
+    float mShiftBonus;
+#endif
     float mPotentialBonus;    // offset 0x1C0, size 0x4
     float mPerfectShiftTime;  // offset 0x1C4, size 0x4
     float mBoost;             // offset 0x1C8, size 0x4

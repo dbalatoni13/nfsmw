@@ -32,7 +32,7 @@ class IEngine : public UTL::COM::IUnknown {
     virtual bool HasNOS() const;
     virtual void ChargeNOS(float charge);
     virtual float GetMaxHorsePower() const;
-    virtual float GetMinHorsePower() const;
+    virtual Hp GetMinHorsePower() const;
     virtual float GetHorsePower() const;
 };
 
@@ -47,8 +47,8 @@ class IDragEngine : public UTL::COM::IUnknown {
     virtual ~IDragEngine() {}
 
   public:
-   virtual float GetOverRev() const;
-   virtual float GetHeat() const;
+    virtual float GetOverRev() const;
+    virtual float GetHeat() const;
 };
 
 class IRaceEngine : public UTL::COM::IUnknown {

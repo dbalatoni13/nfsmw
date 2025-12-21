@@ -9,6 +9,12 @@
 #include "Speed/Indep/Src/Gameplay/GRace.h"
 #include "VehicleDB.hpp"
 
+#include <types.h>
+
+#if ONLINE_SUPPORT
+#include "Speed/Indep/Src/Online/OnlineCfg.hpp"
+#endif
+
 enum eControllerConfig {
     CC_CONFIG_1,
     CC_CONFIG_2,
@@ -187,18 +193,21 @@ class UserProfile {
 
 // total size: 0x24
 struct RaceSettings {
-    unsigned int EventHash;         // offset 0x0, size 0x4
-    unsigned char NumLaps;          // offset 0x4, size 0x1
-    unsigned char TrackDirection;   // offset 0x5, size 0x1
-    bool IsLapKO;                   // offset 0x8, size 0x1
-    unsigned char NumOpponents;     // offset 0xC, size 0x1
-    unsigned char AISkill;          // offset 0xD, size 0x1
-    unsigned char CopDensity;       // offset 0xE, size 0x1
-    unsigned char TrafficDensity;   // offset 0xF, size 0x1
-    bool CatchUp;                   // offset 0x10, size 0x1
-    bool CopsOn;                    // offset 0x14, size 0x1
-    unsigned char RegionFilterBits; // offset 0x18, size 0x1
-    unsigned int SelectedCar[2];    // offset 0x1C, size 0x8
+    uint32 EventHash;            // offset 0x0, size 0x4
+    uint8 NumLaps;               // offset 0x4, size 0x1
+    uint8 TrackDirection;        // offset 0x5, size 0x1
+    bool IsLapKO;                // offset 0x8, size 0x1
+    uint8 NumOpponents;          // offset 0xC, size 0x1
+    uint8 AISkill;               // offset 0xD, size 0x1
+    uint8 CopDensity;            // offset 0xE, size 0x1
+    uint8 TrafficDensity;        // offset 0xF, size 0x1
+    bool CatchUp;                // offset 0x10, size 0x1
+    bool CopsOn;                 // offset 0x14, size 0x1
+    uint8 RegionFilterBits;      // offset 0x18, size 0x1
+    unsigned int SelectedCar[2]; // offset 0x1C, size 0x8
+#ifdef EA_PLATFORM_PLAYSTATION2
+    int CarSelectFilterBits[2];
+#endif
 };
 
 // total size: 0x14C
@@ -223,12 +232,14 @@ class cFrontendDatabase {
         return &CurrentUserProfiles[player]->PlayersCarStable;
     }
 
-    unsigned char iNumPlayers;           // offset 0x0, size 0x1
-    bool bComingFromBoot;                // offset 0x4, size 0x1
-    bool bSavedProfileForMP;             // offset 0x8, size 0x1
-    bool bProfileLoaded;                 // offset 0xC, size 0x1
-    bool bIsOptionsDirty;                // offset 0x10, size 0x1
-    bool bAutoSaveOverwriteConfirmed;    // offset 0x14, size 0x1
+    unsigned char iNumPlayers; // offset 0x0, size 0x1
+    bool bComingFromBoot;      // offset 0x4, size 0x1
+    bool bSavedProfileForMP;   // offset 0x8, size 0x1
+    bool bProfileLoaded;       // offset 0xC, size 0x1
+    bool bIsOptionsDirty;      // offset 0x10, size 0x1
+#ifndef EA_PLATFORM_PLAYSTATION2
+    bool bAutoSaveOverwriteConfirmed; // offset 0x14, size 0x1
+#endif
     unsigned int iDefaultStableHash;     // offset 0x18, size 0x4
     signed char PlayerJoyports[2];       // offset 0x1C, size 0x2
     UserProfile *CurrentUserProfiles[2]; // offset 0x20, size 0x8
@@ -241,7 +252,11 @@ class cFrontendDatabase {
   private:
     unsigned int FEGameMode; // offset 0x1C0, size 0x4
   public:
-    eLoadSaveGame LoadSaveGame;                      // offset 0x1C4, size 0x4
+    eLoadSaveGame LoadSaveGame; // offset 0x1C4, size 0x4
+#if ONLINE_SUPPORT
+    cOnlineSettings OnlineSettings;
+    OnlineCreateUserSettings mOnlineCreateUserSettings;
+#endif
     FEKeyboardSettings mFEKeyboardSettings;          // offset 0x1C8, size 0x14C
     int iCurPauseSubOptionType;                      // offset 0x314, size 0x4
     int iCurPauseOptionType;                         // offset 0x318, size 0x4

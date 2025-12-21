@@ -14,6 +14,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/tires.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/transmission.h"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 namespace Physics {
 namespace Info {
@@ -50,15 +51,15 @@ float InductionBoost(const Attrib::Gen::engine &engine, const Attrib::Gen::induc
 float Torque(const Attrib::Gen::engine &engine, float rpm);
 float WheelDiameter(const Attrib::Gen::tires &tires, bool front);
 float MaxInductedPower(const Attrib::Gen::pvehicle &pvehicle, const Tunings *tunings);
-float AvgInductedTorque(const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction, const Attrib::Gen::transmission &transmission, 
-					 bool from_peak, const Tunings *tunings);
-float MaxInductedTorque(const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction, float &atrpm, const Tunings *tunings);
-float AvgInductedTorque(const Attrib::Gen::pvehicle &pvehicle, bool from_peak);
-float MaxInductedTorque(const Attrib::Gen::pvehicle &pvehicle, float &atrpm, const Tunings *tunings);
+FtLbs AvgInductedTorque(const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction, const Attrib::Gen::transmission &transmission,
+                        bool from_peak, const Tunings *tunings);
+FtLbs MaxInductedTorque(const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction, float &atrpm, const Tunings *tunings);
+FtLbs AvgInductedTorque(const Attrib::Gen::pvehicle &pvehicle, bool from_peak);
+FtLbs MaxInductedTorque(const Attrib::Gen::pvehicle &pvehicle, Rpm &atrpm, const Tunings *tunings);
 bool ShiftPoints(const Attrib::Gen::transmission &transmission, const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction,
                  float *shift_up, float *shift_down, unsigned int numpts);
-float Speedometer(const Attrib::Gen::transmission &transmission, const Attrib::Gen::engine &engine, const Attrib::Gen::tires &tires, float rpm,
-                 GearID gear, const Tunings *tunings);
+Mps Speedometer(const Attrib::Gen::transmission &transmission, const Attrib::Gen::engine &engine, const Attrib::Gen::tires &tires, Rpm rpm,
+                GearID gear, const Tunings *tunings);
 bool EstimatePerformance(Performance &perf);
 
 extern Performance PerformanceWeights[7];

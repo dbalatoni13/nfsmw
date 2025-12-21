@@ -77,8 +77,8 @@ class EngineSpline : protected VehicleBehavior, protected ITransmission, protect
     float GetMaxHorsePower() const override {
         return mMaxHP;
     }
-    float GetMinHorsePower() const override {
-        return FTLB2NM(Physics::Info::Torque(mEngineInfo, mEngineInfo.IDLE()) * mEngineInfo.IDLE());
+    Hp GetMinHorsePower() const override {
+        return FTLB2HP(Physics::Info::Torque(mEngineInfo, mEngineInfo.IDLE()) * mEngineInfo.IDLE(), 1.0f);
     }
     float GetRPM() const override {
         return mRPM;
@@ -151,7 +151,7 @@ class EngineSpline : protected VehicleBehavior, protected ITransmission, protect
     }
     void SetNeutralRev(bool b, float throttle, float speed) override {
         mNeutralRev = b;
-        mNeutralRevRPM = (mEngineInfo.RED_LINE() - mEngineInfo.IDLE()) * throttle + mEngineInfo.IDLE();
+        mNeutralRevRPM = mEngineInfo.IDLE() + (mEngineInfo.RED_LINE() - mEngineInfo.IDLE()) * throttle;
         mNeutralRevSpeed = speed;
     }
 
@@ -326,7 +326,7 @@ void EngineSpline::MatchSpeed(float speed) {
 
     float total_gear_ratio = GetGearRatio(mGear) * GetFinalGear();
     float power_range = (max_w - min_w) / max_w;
-    mAngularVelocity = differential_w * total_gear_ratio * power_range + min_w;
+    mAngularVelocity = min_w + differential_w * total_gear_ratio * power_range;
 }
 
 void EngineSpline::CalcShiftPoints() {

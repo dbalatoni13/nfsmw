@@ -319,6 +319,7 @@ elif config.platform == Platform.PS2:
         "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111",
         "-I src",
         "-DEA_PLATFORM_PLAYSTATION2",
+        "-DEA_BUILD_A124",
         "-D_NOTHREADS",  # TODO is this necessary?
         f"-I build/{config.version}/include",
         f"-DBUILD_VERSION={version_num}",

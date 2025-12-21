@@ -660,6 +660,7 @@ static void PauseFFB(IPlayer *player) {
     }
 }
 
+#ifndef EA_BUILD_A124
 static void ClearInput(IPlayer *player) {
     if (player && player->IsLocal()) {
         ISimable *isimable = player->GetSimable();
@@ -670,6 +671,7 @@ static void ClearInput(IPlayer *player) {
         }
     }
 }
+#endif
 
 void SimSystem::PauseInput(bool bPaused) {
     if (mInputPaused == bPaused) {
@@ -689,7 +691,9 @@ void SimSystem::PauseInput(bool bPaused) {
             aq->Enable(!bPaused);
         }
     }
+#ifndef EA_BUILD_A124
     IPlayer::ForEach(PLAYER_LOCAL, ClearInput);
+#endif
 }
 
 void SimSystem::SetState(Sim::State newstate) {
