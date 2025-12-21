@@ -15,6 +15,7 @@
 #include "Speed/Indep/Src/Sim/SimActivity.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.hpp"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 #include "algorithm"
 
@@ -71,12 +72,12 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
     virtual void OnRemovedVehicleCache(IVehicle *ivehicle);
     virtual void OnAttached(IAttachable *pOther);
     virtual void OnDetached(IAttachable *pOther);
-    unsigned int NextSpawn();
+    Attrib::Key NextSpawn();
     IVehicle *GetAvailableTrafficVehicle(Attrib::Key key, bool makenew);
     bool SpawnTraffic();
     bool NeedsTraffic() const;
     void UpdateDebug();
-    void SetTrafficPattern(unsigned int pattern_key);
+    void SetTrafficPattern(Attrib::Key pattern_key);
     bool FindCollisions(const UMath::Vector3 &spawnpoint) const;
     bool CheckRace(const WRoadNav &nav) const;
     bool FindSpawnPoint(WRoadNav &nav) const;

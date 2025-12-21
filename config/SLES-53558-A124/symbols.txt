@@ -2151,6 +2151,9 @@ Service__11bFunkServer = 0x164f58; // type:func
 _$_Q32EA9Allocator10IAllocator = 0x164e98; // type:func
 _$_8SlotPool = 0x164f30; // type:func
 _$_t6bTNode1Z8SlotPool = 0x164f68; // type:func
+
+// TODO rodata, data, bss
+
 ///////////////////////////////////////////////////////////////////
 // d:\p4_apex1666_d1001856\mw\speed\psx2\obj\mweuropemilestone\sourcelists\zcamera.cpp.obj
 ///////////////////////////////////////////////////////////////////

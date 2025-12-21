@@ -248,7 +248,7 @@ static bool RandomSortTC(ITrafficCenter *c0, ITrafficCenter *c1) {
     return c1 < c0;
 }
 
-void AITrafficManager::SetTrafficPattern(unsigned int pattern_key) {
+void AITrafficManager::SetTrafficPattern(Attrib::Key pattern_key) {
     if (pattern_key == mPattern.GetCollection()) {
         return;
     }

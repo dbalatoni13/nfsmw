@@ -61,5 +61,7 @@ struct bFunkServer : public bTNode<bFunkServer> {
 };
 
 void bRefreshTweaker();
+void bFunkCallASync(const char *server_name, int function_num, const void *data, int size);
+int bFunkCallSync(const char *server_name, int function_num, const void *data, int size, void *return_data, int max_return_size);
 
 #endif

@@ -24,6 +24,8 @@ int bGetFixTickerDifference(unsigned int start_ticks, unsigned int end_ticks);
 float bGetTickerDifference(unsigned int start_ticks, unsigned int end_ticks);
 unsigned int bGetTicker();
 void bBreak();
+int bDisableInterrupts();
+void bRestoreInterrupts(int previous_state);
 
 extern int EnableReleasePrintf;
 

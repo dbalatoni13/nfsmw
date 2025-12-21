@@ -1,17 +1,38 @@
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/bWare/Inc/bFunk.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include <types.h>
 
 #ifdef EA_PLATFORM_GAMECUBE
 #include <dolphin.h>
+#elif defined(EA_PLATFORM_PLAYSTATION2)
+#include "Speed/PSX2/bWare/Src/ee/include/eekernel.h"
 #endif
 
 void bInitTicker(float min_wraparound_time);
+void bFigureOutPSX2Platform();
 
-BOOL EnableReleasePrintf = false;
+int EnableReleasePrintf = false;
 bool (*UserPutStringFunction)(int, const char *) = nullptr;
 bool InUserPutStringFunction = false;
 
+#ifdef EA_PLATFORM_PLAYSTATION2
+static int NextNewFileCheckerID = 1;
+int NewFileCheckResult = 0;
+// void (*SendPacketFunction)(/* parameters unknown */);
+// void (*ServiceMonitorFunction)(/* parameters unknown */);
+// bList bFunkServerList;
+int bSonyToolConnected = false;
+int bSuperBenderConnected = false;
+float bCodeineVersion = 0.0f;
+#endif
+
 void bWareInit(void) {
     bInitTicker(60000.0f);
+#if defined(EA_PLATFORM_PLAYSTATION2)
+    bFigureOutPSX2Platform();
+#endif
 }
 
 void bSetUserPutStringFunction(bool (*function)(int, const char *)) {
@@ -31,10 +52,36 @@ bool HandleUserPutString(int terminal_channel, const char *s) {
     return result;
 }
 
+void bSendStringToCodeine(int terminal_channel, const char *s) {
+    int len = bStrLen(s);
+    int num_sent = 0;
+    while (num_sent < len) {
+        char packet_buffer[128];
+        int num_to_send = len;
+        if (num_to_send > 126) {
+            num_to_send = 126;
+        }
+        packet_buffer[0] = (char)terminal_channel;
+        bMemCpy(packet_buffer + 1, s + num_sent, num_to_send);
+        num_sent += num_to_send;
+        packet_buffer[num_to_send + 1] = '\0';
+        bFunkCallASync("CODEINE", 6, packet_buffer, num_to_send + 2);
+        num_to_send = len - num_sent;
+    }
+}
+
 void bReleasePutString(char terminal_channel, const char *s) {
     if (EnableReleasePrintf && !HandleUserPutString(terminal_channel, s)) {
 #ifdef EA_PLATFORM_GAMECUBE
         OSReport(s);
+#elif defined(EA_PLATFORM_PLAYSTATION2)
+        if (bCodeineVersion > 0.0f) {
+            bSendStringToCodeine(terminal_channel, s);
+        } else {
+            int state = bDisableInterrupts();
+            scePrintf("%s", s);
+            bRestoreInterrupts(state);
+        }
 #endif
     }
 }
@@ -42,6 +89,8 @@ void bReleasePutString(char terminal_channel, const char *s) {
 void bBreak() {
 #ifdef EA_PLATFORM_GAMECUBE
     OSPanic("", 0, "");
+#elif defined(EA_PLATFORM_PLAYSTATION2)
+    asm("break 0, 1");
 #endif
 }
 
@@ -59,6 +108,19 @@ int bGetFixTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
 }
 
 void bInitTicker(float min_wraparound_time) {}
+
+#if defined(EA_PLATFORM_PLAYSTATION2)
+void bFigureOutPSX2Platform() {
+    bSonyToolConnected = false;
+    if (GetMemorySize() > 0x4000000) {
+        bSonyToolConnected = true;
+    }
+}
+#endif
+
+int bDisableInterrupts() {}
+
+void bRestoreInterrupts(int previous_state) {}
 
 unsigned int bGetTicker() {
 #ifdef EA_PLATFORM_GAMECUBE

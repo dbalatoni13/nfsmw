@@ -529,7 +529,7 @@ cSphereMap::cSphereMap() {
     this->sphereTexturePixels = nullptr;
     this->bInitialized = 0;
     this->DLSphere = nullptr;
-    this->DLSphereSz = nullptr;
+    this->DLSphereSz = 0;
     this->SPHERE_MAP_SIZE_X = 0x80;
     this->SPHERE_MAP_SIZE_Y = 0x80;
     this->SPHERE_MAP_FMT = GX_TF_RGB565;

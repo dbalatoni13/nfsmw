@@ -811,7 +811,7 @@ EmitterGroup *EmitterSystem::CreateEmitterGroup(const Attrib::StringKey &group_n
     return nullptr;
 }
 
-EmitterGroup *EmitterSystem::CreateEmitterGroup(const unsigned int &group_key, unsigned int creation_context_flags) {
+EmitterGroup *EmitterSystem::CreateEmitterGroup(const Attrib::Key &group_key, unsigned int creation_context_flags) {
     if (!EnableParticleSystem) {
         return nullptr;
     }
@@ -1091,7 +1091,7 @@ void EmitterSystem::UpdateParticles(float dt) {
     }
 }
 
-EmitterLibrary *EmitterSystem::FindLibrary(unsigned int key) {
+EmitterLibrary *EmitterSystem::FindLibrary(Attrib::Key key) {
     LibEntry e;
     e.Key = key;
     e.Lib = nullptr;

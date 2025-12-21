@@ -335,6 +335,7 @@ elif config.platform == Platform.PS2:
         *cflags_base,
         "-G0",
         "-ffast-math",
+        "-fno-exceptions",
         # "-fforce-addr",
         # "-fcse-follow-jumps",
         # "-fcse-skip-blocks",

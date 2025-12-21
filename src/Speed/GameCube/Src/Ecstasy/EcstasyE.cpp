@@ -165,9 +165,9 @@ int DrawWireframe = 0;
 cReflectMap ReflectMap;
 cQuarterSizeMap QuarterSizeMap;
 
-void cb_PreRetrace(uint32_t param) {}
+void cb_PreRetrace(unsigned long param) {}
 
-void cb_PostRetrace(uint32_t param) {
+void cb_PostRetrace(unsigned long param) {
     LastFrameCounterTick = bGetTicker();
     FrameCounter++;
 }
