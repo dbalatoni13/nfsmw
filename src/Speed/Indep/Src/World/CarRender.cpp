@@ -3,7 +3,6 @@
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
-#include "dolphin/types.h"
 
 float culldiv = 12000.0f;
 static const CarFXPosInfo FXMarkerNameHashMappings[28] = {
