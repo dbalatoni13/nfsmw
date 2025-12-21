@@ -5,6 +5,11 @@
 #pragma once
 #endif
 
+struct eLightMaterialPlatInterface {
+    void CreatePlatInfo();
+    void UpdatePlatInfo();
+};
 
+void elInitPlat();
 
 #endif

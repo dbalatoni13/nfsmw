@@ -1,6 +1,5 @@
 #include "./Ecstasy.hpp"
 #include "EcstasyData.hpp"
-#include "Speed/GameCube/Src/Ecstasy/eViewPlat.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"

@@ -5,9 +5,14 @@
 #pragma once
 #endif
 
-#if EA_PLATFORM_GAMECUBE
+#ifdef EA_PLATFORM_GAMECUBE
 #include "Speed/GameCube/Src/Ecstasy/eLightPlat.hpp"
+#elif defined(EA_PLATFORM_XENON)
+#include "Speed/Xenon/Src/Ecstasy/eLightPlat.hpp"
+#elif defined(EA_PLATFORM_PLAYSTATION2)
+#include "Speed/PSX2/Src/Ecstasy/eLightPlat.hpp"
 #endif
+
 
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"

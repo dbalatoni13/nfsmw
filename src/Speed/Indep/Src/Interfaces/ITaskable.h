@@ -30,10 +30,17 @@ class ITaskable : public UTL::COM::IUnknown {
         return (HINTERFACE)_IHandle;
     }
 
-    ITaskable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
+  protected:
     virtual ~ITaskable() {}
 
+    ITaskable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+  private:
+    ITaskable();
+    ITaskable(const ITaskable &);
+    ITaskable &operator=(const ITaskable &);
+
+  public:
     virtual bool OnTask(HSIMTASK htask, float dT);
 };
 

@@ -56,10 +56,7 @@ typedef long long int64;
 typedef unsigned long long uint64;
 typedef unsigned int type_operator_new;
 
-#endif
-
 #elif defined(EA_PLATFORM_PLAYSTATION2)
-
 #include <cstddef>
 
 // TODO or is the first one unsigned char?
@@ -81,7 +78,7 @@ typedef bool Bool;
 #endif
 
 #ifndef ATTRIBUTE_ALIGN
-#define ATTRIBUTE_ALIGN(num) __declspec(align(num))
+#define ATTRIBUTE_ALIGN(num) __attribute__((aligned(num)))
 #endif
 
 #ifndef AT_ADDRESS
@@ -127,3 +124,7 @@ typedef uint32_t char32_t;
 
 typedef unsigned int uintptr_t;
 typedef int intptr_t;
+
+#define REFRESH_RATE (60.0f)
+
+#endif // _TYPES_H_

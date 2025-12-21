@@ -5,8 +5,8 @@
 #pragma once
 #endif
 
-#include "src\Speed\Indep\bWare\Inc\bList.hpp"
-#include "src\Speed\Indep\Src\Ecstasy\Ecstasy.hpp"
+#include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 
 // maybe place somewhere else
 struct GenericRegion : public bTNode<GenericRegion> {

@@ -55,18 +55,21 @@ bool HandleUserPutString(int terminal_channel, const char *s) {
 void bSendStringToCodeine(int terminal_channel, const char *s) {
     int len = bStrLen(s);
     int num_sent = 0;
-    while (num_sent < len) {
+    if (len > 0) {
         char packet_buffer[128];
         int num_to_send = len;
-        if (num_to_send > 126) {
-            num_to_send = 126;
+
+        while (num_sent < len) {
+            if (num_to_send > 126) {
+                num_to_send = 126;
+            }
+            packet_buffer[0] = (char)terminal_channel;
+            bMemCpy(&packet_buffer[1], &s[num_sent], num_to_send);
+            num_sent += num_to_send;
+            packet_buffer[num_to_send + 1] = '\0';
+            bFunkCallASync("CODEINE", 6, packet_buffer, num_to_send + 2);
+            num_to_send = len - num_sent;
         }
-        packet_buffer[0] = (char)terminal_channel;
-        bMemCpy(packet_buffer + 1, s + num_sent, num_to_send);
-        num_sent += num_to_send;
-        packet_buffer[num_to_send + 1] = '\0';
-        bFunkCallASync("CODEINE", 6, packet_buffer, num_to_send + 2);
-        num_to_send = len - num_sent;
     }
 }
 

@@ -16,6 +16,7 @@
 
 #include "Speed/Indep/Src/Ecstasy/DefragFixer.cpp"
 
+#ifdef EA_PLATFORM_GAMECUBE
 #include "Speed/GameCube/Src/Ecstasy/EcstasyE.cpp"
 
 #include "Speed/GameCube/Src/Ecstasy/EcstasyEx.cpp"
@@ -25,5 +26,6 @@
 #include "Speed/GameCube/Src/Ecstasy/eStrip.cpp"
 
 #include "Speed/GameCube/Src/Ecstasy/eSolidPlat.cpp"
+#endif
 
 #include "Speed/Indep/Src/Ecstasy/EmitterSystem.cpp"

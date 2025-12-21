@@ -1,6 +1,5 @@
 #include "Texture.hpp"
 #include "Ecstasy.hpp"
-#include "Speed/GameCube/Src/Ecstasy/TextureInfoPlat.hpp"
 #include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
@@ -14,7 +13,13 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
-#include "version.h"
+#ifdef EA_PLATFORM_GAMECUBE
+#include "Speed/GameCube/Src/Ecstasy/TextureInfoPlat.hpp"
+#elif defined(EA_PLATFORM_XENON)
+#include "Speed/Xenon/Src/Ecstasy/TextureInfoPlat.hpp"
+#elif defined(EA_PLATFORM_PLAYSTATION2)
+#include "Speed/PSX2/Src/Ecstasy/TextureInfoPlat.hpp"
+#endif
 
 TextureInfo *DefaultTextureInfo;
 SlotPool *TexturePackSlotPool;

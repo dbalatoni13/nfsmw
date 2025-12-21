@@ -10,7 +10,6 @@
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "WorldConn.h"
 #include "WorldModel.hpp"
-#include "dolphin/mtx/GeoTypes.h"
 
 #include <types.h>
 
@@ -48,7 +47,7 @@ void SmackableRenderConn::Update(float dT) {
     if (*(const bMatrix4 **)(&this->mTarget + 1)) {
         bVector4 tmp;
 
-        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(this->mTarget.GetMatrix()), *reinterpret_cast<Mtx44 *>(&this->mRenderMatrix));
+        this->mRenderMatrix = *this->mTarget.GetMatrix();
         eMulVector(&tmp, this->mTarget.GetMatrix(), &this->mModelOffset);
 
         this->mRenderMatrix.v3 += tmp;
@@ -88,7 +87,7 @@ void SmackableRenderConn::Update(float dT) {
 }
 
 void SmackableRenderConn::UpdateAll(float dT) {
-    for (SmackableRenderConn *w = SmackableRenderConn::mList.GetHead(); w != SmackableRenderConn::mList.GetHead(); w = w->GetNext()) {
+    for (SmackableRenderConn *w = mList.GetHead(); w != mList.GetHead(); w = w->GetNext()) {
         w->Update(dT);
     }
 }
