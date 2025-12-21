@@ -209,7 +209,6 @@ void World_Service() {
 }
 
 RaceParameters TheRaceParameters;
-int g_tweakIsDriftRace = nullptr;
 
 static void World_Init() {
     ResetWorldTime();

@@ -15,3 +15,8 @@ Player *Player::GetPlayerByIndex(int number) {
 int Player::GetNumPlayers() {
     return 0;
 }
+
+int g_tweakIsBurnout = 0;
+int g_tweakIsDriftRace = 0;
+int g_tweakIsDragRace = 0;
+int g_tweakIsShortTrackRace = 0;

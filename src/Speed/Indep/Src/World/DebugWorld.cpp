@@ -13,6 +13,9 @@
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+DebugWorld *DebugWorld::mThis = nullptr;
+bool DebugWorld::mOnOff = false;
+
 void DebugWorld::Init() {
     if (!this->mThis) {
         this->mThis = ::new (__FILE__, __LINE__) DebugWorld();
