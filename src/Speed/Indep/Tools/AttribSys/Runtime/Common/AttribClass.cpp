@@ -61,7 +61,7 @@ const Collection *Class::GetCollectionWithDefault(Key key) const {
     return result;
 }
 
-std::size_t Class::GetNumCollections() const {
+unsigned int Class::GetNumCollections() const {
     return mPrivates.mCollections.Size();
 }
 
@@ -81,7 +81,7 @@ void Class::SetTableBuffer(void *fixedAlloc, std::size_t bytes) {
     mPrivates.mCollections.SetTableBuffer(fixedAlloc, bytes);
 }
 
-std::size_t Class::GetTableNodeSize() const {
+unsigned int Class::GetTableNodeSize() const {
     return 12;
 }
 

@@ -128,7 +128,7 @@ Attribute Collection::Get(const Instance &instance, Key attributeKey) const {
     }
 }
 
-void *Collection::GetData(Key attributeKey, std::size_t index) const {
+void *Collection::GetData(Key attributeKey, unsigned int index) const {
     const Collection *c;
     Node *node = GetNode(attributeKey, c);
     if (node) {
@@ -197,7 +197,7 @@ void Collection::SetParent(Key parent) {
     }
 }
 
-bool Collection::AddAttribute(Key attributeKey, std::size_t count) {
+bool Collection::AddAttribute(Key attributeKey, unsigned int count) {
     if (Contains(attributeKey)) {
         return false;
     }

@@ -124,7 +124,7 @@ static unsigned int hash32(const uint8_t *k, unsigned int length, unsigned int i
 
 unsigned int StringHash32(const char *k) {
     if (k && *k != '\0') {
-        return hash32((const unsigned char *)k, std::strlen(k), 0xabcdef00);
+        return hash32((const unsigned char *)k, strlen(k), 0xabcdef00);
     } else {
         return 0;
     }

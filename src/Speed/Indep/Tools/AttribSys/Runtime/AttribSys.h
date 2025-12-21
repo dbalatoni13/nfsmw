@@ -13,7 +13,9 @@
 // Credit: Brawltendo
 namespace Attrib {
 
-typedef unsigned int Key;
+typedef uint32_t HashInt;
+typedef HashInt Key;
+typedef HashInt Type;
 
 // const int kTypeHandlerCount = 7;
 // unsigned int kTypeHandlerIds[kTypeHandlerCount] = {0x2B936EB7u, 0xAA229CD7u, 0x341F03A0u, 0x600994C4u, 0x681D219Cu, 0x5FDE6463u, 0x57D382C9u};
@@ -76,17 +78,17 @@ class ITypeHandler {
 
 class IExportPolicy {
   public:
-    virtual void Initialize(Vault &v, const unsigned int &type, const unsigned int &id, const char *name, void *data, std::size_t bytes);
-    virtual bool IsReferenced(const Vault &v, const unsigned int &type, const unsigned int &id);
-    virtual void Clean(Vault &v, const unsigned int &type, const unsigned int &id);
-    virtual void Deinitialize(Vault &v, const unsigned int &type, const unsigned int &id);
+    virtual void Initialize(Vault &v, const Type &type, const unsigned int &id, const char *name, void *data, std::size_t bytes);
+    virtual bool IsReferenced(const Vault &v, const Type &type, const unsigned int &id);
+    virtual void Clean(Vault &v, const Type &type, const unsigned int &id);
+    virtual void Deinitialize(Vault &v, const Type &type, const unsigned int &id);
 };
 
 // total size: 0x14
 class TypeDesc {
   public:
-    static ITypeHandler *Lookup(unsigned int t);
-    static unsigned int NameToType(const char *name);
+    static ITypeHandler *Lookup(Type t);
+    static Type NameToType(const char *name);
 
     TypeDesc() : mType(0), mName(""), mSize(0), mIndex(0), mHandler(nullptr) {}
 
@@ -95,7 +97,7 @@ class TypeDesc {
     TypeDesc(const char *name, std::size_t size, std::size_t index)
         : mType(NameToType(name)), mName(name), mSize(size), mIndex(index), mHandler(Lookup(mType)) {}
 
-    unsigned int GetType() const {
+    Type GetType() const {
         return mType;
     }
 
@@ -116,7 +118,7 @@ class TypeDesc {
     }
 
   private:
-    unsigned int mType;     // offset 0x0, size 0x4
+    Type mType;             // offset 0x0, size 0x4
     const char *mName;      // offset 0x4, size 0x4
     unsigned int mSize;     // offset 0x8, size 0x4
     unsigned int mIndex;    // offset 0xC, size 0x4
@@ -147,9 +149,9 @@ class Database {
     void Delete(const Class *c);
     void CollectGarbage();
     unsigned int GetNumIndexedTypes() const;
-    const TypeDesc &GetIndexedTypeDesc(unsigned short index) const;
-    const TypeDesc &GetTypeDesc(unsigned int t) const;
-    void DumpContents(unsigned int classFilter) const;
+    const TypeDesc &GetIndexedTypeDesc(uint16_t index) const;
+    const TypeDesc &GetTypeDesc(Type t) const;
+    void DumpContents(Key classFilter) const;
 
     static Database &Get() {
         return *sThis;
@@ -182,13 +184,13 @@ class Array {
         return (unsigned char *)(&this[1]);
     }
 
-    void *Data(std::size_t byteindex) const {
+    void *Data(unsigned int byteindex) const {
         unsigned char *base = BasePointer(); // unused
         return (void *)((unsigned char *)(&this[1]) + GetPad() + byteindex);
     }
 
   public:
-    void SetTypeIndex(unsigned short typeIndex) {
+    void SetTypeIndex(uint16_t typeIndex) {
         mEncodedTypePad = typeIndex | (mEncodedTypePad & 0x8000);
     }
 
@@ -246,12 +248,12 @@ class Array {
         return Database::Get().GetIndexedTypeDesc(GetTypeIndex());
     }
 
-    bool SetCount(std::size_t newCount) {
+    bool SetCount(unsigned int newCount) {
         if (newCount > mAlloc) {
             return false;
         } else {
             if (IsReferences()) {
-                for (std::size_t i = mCount; i < newCount; i++) {
+                for (unsigned int i = mCount; i < newCount; i++) {
                     SetData(i, nullptr);
                 }
             }
@@ -260,7 +262,7 @@ class Array {
         }
     }
 
-    void *GetData(std::size_t index) const {
+    void *GetData(unsigned int index) const {
         if (index < mCount) {
             if (IsReferences()) {
                 return reinterpret_cast<void **>(Data(0))[index];
@@ -272,7 +274,7 @@ class Array {
         }
     }
 
-    void SetData(std::size_t index, void *value) {
+    void SetData(unsigned int index, void *value) {
         if (IsReferences()) {
             ITypeHandler *typeHandler = GetTypeDesc().GetHandler();
             typeHandler->Release(GetData(index));
@@ -349,10 +351,10 @@ class Array {
         return ptr;
     }
 
-    unsigned short mAlloc;
-    unsigned short mCount;
-    unsigned short mSize;
-    unsigned short mEncodedTypePad;
+    uint16_t mAlloc;
+    uint16_t mCount;
+    uint16_t mSize;
+    uint16_t mEncodedTypePad;
 };
 
 // Credit: Brawltendo
@@ -490,9 +492,9 @@ class Node {
         mutable unsigned int mValue;
         unsigned int mOffset;
     };
-    unsigned short mTypeIndex;
-    unsigned char mMax;
-    unsigned char mFlags;
+    uint16_t mTypeIndex;
+    uint8_t mMax;
+    uint8_t mFlags;
 };
 
 // total size: 0xC
@@ -540,11 +542,11 @@ class Class {
     std::size_t GetNumDefinitions() const;
     Key GetFirstDefinition() const;
     Key GetNextDefinition(Key prev) const;
-    std::size_t GetNumCollections() const;
+    unsigned int GetNumCollections() const;
     Key GetFirstCollection() const;
     Key GetNextCollection(Key prev) const;
     void SetTableBuffer(void *fixedAlloc, std::size_t bytes);
-    std::size_t GetTableNodeSize() const;
+    unsigned int GetTableNodeSize() const;
     void CopyLayout(void *srcLayout, void *dstLayout) const;
     void FreeLayout(void *layout) const;
     const Collection *GetCollection(Key key) const;
@@ -580,9 +582,9 @@ class Class {
     friend class ClassPrivate;
 
   private:
-    Key mKey;                      // offset 0x0, size 0x4
-    mutable std::size_t mRefCount; // offset 0x4, size 0x4
-    ClassPrivate &mPrivates;       // offset 0x8, size 0x4
+    Key mKey;                   // offset 0x0, size 0x4
+    mutable uint32_t mRefCount; // offset 0x4, size 0x4
+    ClassPrivate &mPrivates;    // offset 0x8, size 0x4
 };
 
 // total size: 0xC
@@ -644,13 +646,14 @@ class Attribute {
     bool IsMutable() const;
     bool IsLocatable();
     Key GetKey() const;
-    unsigned int GetType() const;
+    Type GetType() const;
     const Instance *GetInstance() const;
     const Collection *GetCollection() const;
     unsigned int GetSize() const;
     unsigned int GetLength() const;
     bool SetLength(unsigned int);
     void SendChangeMsg() const;
+    // TODO
     template <typename T> const T &Get(unsigned int index, T &result) const;
 
     void operator delete(void *ptr, std::size_t bytes) {
@@ -719,13 +722,13 @@ class Instance {
     enum Flags { kDynamic = 1 };
 
     Instance(const Instance &src);
-    Instance(const struct Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner);
-    Instance(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner);
+    Instance(const struct Collection *collection, uint32_t msgPort, UTL::COM::IUnknown *owner);
+    Instance(const RefSpec &refspec, uint32_t msgPort, UTL::COM::IUnknown *owner);
     ~Instance();
     Key GetClass() const;
     Key GetCollection() const;
     Key GetParent() const;
-    void SetParent(unsigned int parent);
+    void SetParent(Key parent);
     const Instance &operator=(const Instance &rhs);
     Attribute Get(Key attributeKey) const;
     bool Lookup(Key attributeKey, Attribute &attrib) const;
@@ -806,9 +809,9 @@ class Instance {
     UTL::COM::IUnknown *mOwner;    // offset 0x0, size 0x4
     const Collection *mCollection; // offset 0x4, size 0x4
     void *mLayoutPtr;              // offset 0x8, size 0x4
-    unsigned int mMsgPort;         // offset 0xC, size 0x4
-    unsigned short mFlags;         // offset 0x10, size 0x2
-    mutable unsigned short mLocks; // offset 0x12, size 0x2
+    uint32_t mMsgPort;             // offset 0xC, size 0x4
+    uint16_t mFlags;               // offset 0x10, size 0x2
+    mutable uint16_t mLocks;       // offset 0x12, size 0x2
 };
 
 // total size: 0x10
@@ -870,21 +873,21 @@ class Definition {
     }
 
   private:
-    Key mKey;                 // offset 0x0, size 0x4
-    unsigned int mType;       // offset 0x4, size 0x4
-    unsigned short mOffset;   // offset 0x8, size 0x2
-    unsigned short mSize;     // offset 0xA, size 0x2
-    unsigned short mMaxCount; // offset 0xC, size 0x2
-    unsigned char mFlags;     // offset 0xE, size 0x1
-    unsigned char mAlignment; // offset 0xF, size 0x1
+    Key mKey;           // offset 0x0, size 0x4
+    Type mType;         // offset 0x4, size 0x4
+    uint16_t mOffset;   // offset 0x8, size 0x2
+    uint16_t mSize;     // offset 0xA, size 0x2
+    uint16_t mMaxCount; // offset 0xC, size 0x2
+    uint8_t mFlags;     // offset 0xE, size 0x1
+    uint8_t mAlignment; // offset 0xF, size 0x1
 };
 
 // TODO where is this in the file?
 // total size: 0x8
 class Blob {
   private:
-    unsigned int mSize; // offset 0x0, size 0x4
-    const void *mData;  // offset 0x4, size 0x4
+    uint32_t mSize;    // offset 0x0, size 0x4
+    const void *mData; // offset 0x4, size 0x4
 };
 
 template <typename t> class TAttrib : public Attribute {
@@ -929,7 +932,7 @@ template <typename T> class AttributeStructPtr : public T {
     }
 
   private:
-    static unsigned int mAttributeClass;
+    static Attrib::Key mAttributeClass;
 };
 
 #endif

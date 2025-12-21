@@ -7,7 +7,7 @@ inline void AddInstance() {}
 
 inline void RmvInstance() {}
 
-Instance::Instance(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) {
+Instance::Instance(const Collection *collection, uint32_t msgPort, UTL::COM::IUnknown *owner) {
     mOwner = owner;
     mCollection = collection;
     mLayoutPtr = nullptr;
@@ -25,7 +25,7 @@ Instance::Instance(const Collection *collection, unsigned int msgPort, UTL::COM:
     }
 }
 
-Instance::Instance(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) {
+Instance::Instance(const RefSpec &refspec, uint32_t msgPort, UTL::COM::IUnknown *owner) {
     mOwner = owner;
     mCollection = refspec.GetCollection();
     mLayoutPtr = nullptr;

@@ -18,11 +18,11 @@ class CollectionLoadData {
   public:
     // total size: 0xC
     struct AttribEntry {
-        unsigned int mKey;         // offset 0x0, size 0x4
-        void *mData;               // offset 0x4, size 0x4
-        unsigned short mType;      // offset 0x8, size 0x2
-        unsigned char mNodeFlags;  // offset 0xA, size 0x1
-        unsigned char mEntryFlags; // offset 0xB, size 0x1
+        Key mKey;            // offset 0x0, size 0x4
+        void *mData;         // offset 0x4, size 0x4
+        uint16_t mType;      // offset 0x8, size 0x2
+        uint8_t mNodeFlags;  // offset 0xA, size 0x1
+        uint8_t mEntryFlags; // offset 0xB, size 0x1
     };
 
     const unsigned int *GetTypes() const {
@@ -33,14 +33,14 @@ class CollectionLoadData {
         return reinterpret_cast<const AttribEntry *>(&GetTypes()[mNumTypes]);
     }
 
-    unsigned int mKey;           // offset 0x0, size 0x4
-    unsigned int mClass;         // offset 0x4, size 0x4
-    unsigned int mParent;        // offset 0x8, size 0x4
-    unsigned int mTableReserve;  // offset 0xC, size 0x4
-    unsigned int mTableKeyShift; // offset 0x10, size 0x4
-    unsigned int mNumEntries;    // offset 0x14, size 0x4
-    unsigned int mNumTypes;      // offset 0x18, size 0x4
-    void *mLayout;               // offset 0x1C, size 0x4
+    Key mKey;                // offset 0x0, size 0x4
+    Key mClass;              // offset 0x4, size 0x4
+    Key mParent;             // offset 0x8, size 0x4
+    uint32_t mTableReserve;  // offset 0xC, size 0x4
+    uint32_t mTableKeyShift; // offset 0x10, size 0x4
+    uint32_t mNumEntries;    // offset 0x14, size 0x4
+    uint32_t mNumTypes;      // offset 0x18, size 0x4
+    void *mLayout;           // offset 0x1C, size 0x4
 };
 
 // total size: 0x2C
@@ -53,7 +53,7 @@ class Collection {
     ~Collection();
     Node *GetNode(Key attributeKey, const Collection *&container) const;
     Attribute Get(const Instance &instance, Key attributeKey) const;
-    void *GetData(Key attributeKey, std::size_t index) const;
+    void *GetData(Key attributeKey, unsigned int index) const;
     std::size_t Count() const;
     Key FirstKey(bool &inLayout) const;
     void SetParent(Key parent);
@@ -61,7 +61,7 @@ class Collection {
     void Delete() const;
     Key NextKey(Key prev, bool &inLayout) const;
     bool Contains(Key k) const;
-    bool AddAttribute(Key attributeKey, std::size_t count);
+    bool AddAttribute(Key attributeKey, unsigned int count);
     bool RemoveAttribute(Key attributeKey);
     void Clear();
     void Clean() const;
@@ -134,14 +134,14 @@ class Collection {
     }
 
   private:
-    HashMap mTable;                // offset 0x0, size 0x10
-    const Collection *mParent;     // offset 0x10, size 0x4
-    Class *mClass;                 // offset 0x14, size 0x4
-    void *mLayout;                 // offset 0x18, size 0x4
-    mutable std::size_t mRefCount; // offset 0x1C, size 0x4
-    Key mKey;                      // offset 0x20, size 0x4
-    Vault *mSource;                // offset 0x24, size 0x4
-    const char *mNamePtr;          // offset 0x28, size 0x4
+    HashMap mTable;                 // offset 0x0, size 0x10
+    const Collection *mParent;      // offset 0x10, size 0x4
+    Class *mClass;                  // offset 0x14, size 0x4
+    void *mLayout;                  // offset 0x18, size 0x4
+    mutable unsigned int mRefCount; // offset 0x1C, size 0x4
+    Key mKey;                       // offset 0x20, size 0x4
+    Vault *mSource;                 // offset 0x24, size 0x4
+    const char *mNamePtr;           // offset 0x28, size 0x4
 };
 
 class Private {
@@ -159,13 +159,13 @@ class Private {
 // total size: 0x1C
 class ClassLoadData {
   public:
-    Key mClass;               // offset 0x0, size 0x4
-    Key mCollectionReserve;   // offset 0x4, size 0x4
-    Key mNumDefinitions;      // offset 0x8, size 0x4
-    Definition *mDefinitions; // offset 0xC, size 0x4
-    Key mLayoutSize;          // offset 0x10, size 0x4
-    Key mLayoutKeyShift;      // offset 0x14, size 0x4
-    Key mLayoutCount;         // offset 0x18, size 0x4
+    Key mClass;                  // offset 0x0, size 0x4
+    uint32_t mCollectionReserve; // offset 0x4, size 0x4
+    uint32_t mNumDefinitions;    // offset 0x8, size 0x4
+    Definition *mDefinitions;    // offset 0xC, size 0x4
+    uint32_t mLayoutSize;        // offset 0x10, size 0x4
+    uint32_t mLayoutKeyShift;    // offset 0x14, size 0x4
+    uint32_t mLayoutCount;       // offset 0x18, size 0x4
 };
 
 // total size: 0x3C
@@ -232,8 +232,8 @@ class ClassPrivate : public Class {
 
     HashMap mLayoutTable;           // offset 0xC, size 0x10
     CollectionHashMap mCollections; // offset 0x1C, size 0x10
-    unsigned short mLayoutSize;     // offset 0x2C, size 0x2
-    unsigned short mNumDefinitions; // offset 0x2E, size 0x2
+    uint16_t mLayoutSize;           // offset 0x2C, size 0x2
+    uint16_t mNumDefinitions;       // offset 0x2E, size 0x2
     Definition *mDefinitions;       // offset 0x30, size 0x4
     Vault *mSource;                 // offset 0x34, size 0x4
     const char *mNamePtr;           // offset 0x38, size 0x4
@@ -255,10 +255,10 @@ class DatabaseLoadData {
         return (const unsigned int *)(&this[1]);
     }
 
-    unsigned int mNumClasses;      // offset 0x0, size 0x4
-    unsigned int mDefaultDataSize; // offset 0x4, size 0x4
-    unsigned int mNumTypes;        // offset 0x8, size 0x4
-    const char *mTypenames;        // offset 0xC, size 0x4
+    uint32_t mNumClasses;      // offset 0x0, size 0x4
+    uint32_t mDefaultDataSize; // offset 0x4, size 0x4
+    uint32_t mNumTypes;        // offset 0x8, size 0x4
+    const char *mTypenames;    // offset 0xC, size 0x4
 };
 
 // total size: 0x4C
@@ -325,7 +325,7 @@ class DatabasePrivate : public Database {
         for (unsigned int i = 0; i < loadData.mNumTypes; i++) {
             TypeTable::iterator iter = mTypes.insert(TypeDesc(name, sizes[i], mCompiledTypes.size())).first;
             mCompiledTypes.push_back(&*iter);
-            name += std::strlen(name) + 1;
+            name += strlen(name) + 1;
         }
     }
 
@@ -336,14 +336,14 @@ class DatabasePrivate : public Database {
     }
 
     ClassTable mClasses;                // offset 0x8, size 0x10
-    std::size_t mNumCompiledTypes;      // offset 0x18, size 0x4
+    unsigned int mNumCompiledTypes;     // offset 0x18, size 0x4
     TypeDescPtrVec mCompiledTypes;      // offset 0x1C, size 0x10
     TypeTable mTypes;                   // offset 0x2C, size 0x10
     CollectionList mGarbageCollections; // offset 0x3C, size 0x8
     ClassList mGarbageClasses;          // offset 0x44, size 0x8
 };
 
-template <typename T> Key ScanForValidKey(const T &v, std::size_t index) {
+template <typename T> Key ScanForValidKey(const T &v, unsigned int index) {
     index = v.GetNextValidIndex(index);
     // (void)v.ValidIndex(index); // TODO how to get it to be here instead of in GetKeyAtIndex?
     return v.GetKeyAtIndex(index);

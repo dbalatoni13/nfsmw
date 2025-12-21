@@ -57,7 +57,7 @@ segments:
     subsegments:
     - [0x1000, asmtu, Speed/Indep/SourceLists/zAI.cpp]
     # - [0x45728, asmtu, Speed/Indep/SourceLists/zAnim.cpp]
-    # - [0x50A78, asmtu, Speed/Indep/SourceLists/zAttribSys.cpp]
+    - [0x50A78, asmtu, Speed/Indep/SourceLists/zAttribSys.cpp]
     # - [0x5BE08, asmtu, Speed/Indep/SourceLists/zBWare.cpp]
     # - [0x65F70, asmtu, Speed/Indep/SourceLists/zCamera.cpp]
     # - [0x83EC4, asmtu, Speed/Indep/SourceLists/zComms.cpp]

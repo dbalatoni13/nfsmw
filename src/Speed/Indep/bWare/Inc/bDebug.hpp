@@ -25,6 +25,6 @@ float bGetTickerDifference(unsigned int start_ticks, unsigned int end_ticks);
 unsigned int bGetTicker();
 void bBreak();
 
-extern BOOL EnableReleasePrintf;
+extern int EnableReleasePrintf;
 
 #endif
