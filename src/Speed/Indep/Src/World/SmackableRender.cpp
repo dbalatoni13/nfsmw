@@ -10,7 +10,6 @@
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "WorldConn.h"
 #include "WorldModel.hpp"
-#include "dolphin/types.h"
 
 #include <types.h>
 
