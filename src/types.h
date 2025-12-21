@@ -56,6 +56,18 @@ typedef long long int64;
 typedef unsigned long long uint64;
 typedef unsigned int type_operator_new;
 
+typedef signed char int8_t;
+typedef short int int16_t;
+typedef int int32_t;
+typedef unsigned char uint8_t;
+typedef short unsigned int uint16_t;
+typedef unsigned int uint32_t;
+typedef float float_t;
+typedef double double_t;
+typedef long int int64_t;
+typedef long unsigned int uint64_t;
+typedef int8_t bool8_t;
+
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 #include <cstddef>
 
@@ -106,8 +118,8 @@ typedef double double_t;
 typedef long int int64_t;
 typedef long unsigned int uint64_t;
 typedef int8_t bool8_t;
-typedef int32_t intptr_t;
-typedef uint32_t uintptr_t;
+// typedef int32_t intptr_t;
+// typedef uint32_t uintptr_t;
 typedef int64_t intmax_t;
 typedef uint64_t uintmax_t;
 typedef char char8_t;

@@ -1,3 +1,4 @@
+sortedcontainers
 splat64[mips]>=0.36.0,<1.0.0
 spimdisasm>=1.36.1,<2.0.0
 rabbitizer==1.13.0

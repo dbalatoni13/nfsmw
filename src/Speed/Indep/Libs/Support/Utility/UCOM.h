@@ -62,15 +62,9 @@ class Object {
     ~Object() {}
 };
 
-#ifdef EA_PLATFORM_PLAYSTATION2
-#define IUNKNOWN_ALIGNMENT 16
-#else
-#define IUNKNOWN_ALIGNMENT 8
-#endif
-
 // total size: 0x8
 
-class ATTRIBUTE_ALIGN(IUNKNOWN_ALIGNMENT) IUnknown {
+class IUnknown {
   public:
     template <typename T> bool QueryInterface(T **out) {
         HINTERFACE handle = T::_IHandle();
@@ -102,8 +96,6 @@ class ATTRIBUTE_ALIGN(IUNKNOWN_ALIGNMENT) IUnknown {
   private:
     Object *_mCOMObject; // offset 0x0, size 0x4
 };
-
-#undef IUNKNOWN_ALIGNMENT
 
 template <typename T> inline T *QueryInterface(IUnknown *pUnk) {
     T *ptr = nullptr;
