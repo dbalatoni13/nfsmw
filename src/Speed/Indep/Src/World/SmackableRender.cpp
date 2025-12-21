@@ -10,6 +10,7 @@
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "WorldConn.h"
 #include "WorldModel.hpp"
+#include "dolphin/types.h"
 
 #include <types.h>
 
@@ -51,6 +52,7 @@ void SmackableRenderConn::Update(float dT) {
         eMulVector(&tmp, this->mTarget.GetMatrix(), &this->mModelOffset);
 
         this->mRenderMatrix.v3 += tmp;
+        this->mRenderMatrix.v3.w = 1.0f;
 
         float disttoview = 0.0f;
         bool inview = false;
@@ -64,43 +66,24 @@ void SmackableRenderConn::Update(float dT) {
 
         RenderConn::Pkt_Smackable_Service pkt = RenderConn::Pkt_Smackable_Service(inview, disttoview);
 
-        if (this->Service(&pkt)) {
-            if (this->mModel) {
+        if (!this->Service(&pkt)) {
+            if (this->mModel != nullptr) {
                 delete this->mModel;
-            }
-            return;
-        }
-
-        if (!this->mModel) {
-            if (this->mHeirarchy && this->mRenderNode != 0) {
-                this->mModel = new WorldModel(this->mHeirarchy, this->mRenderNode, true);
-            } else {
-                this->mModel = new WorldModel(this->mModelHash.GetValue(), nullptr, true);
-            }
-        }
-
-        this->mModel->SetChildVisibility(pkt.mChildVisibility);
-        
-        if (&this->mRenderMatrix != nullptr) {
-            this->mModel->mEnabled = true;
-            if (this->mModel->pSpaceNode) {
-                PSMTX44Copy(
-                    *reinterpret_cast<const Mtx44 *>(&this->mRenderMatrix),
-                    *reinterpret_cast<Mtx44 *>(&this->mModel->pSpaceNode->LocalMatrix)
-                );
-                this->mModel->pSpaceNode->SetDirty();
-            } else {
-                PSMTX44Copy(
-                    *reinterpret_cast<const Mtx44 *>(&this->mRenderMatrix),
-                    *reinterpret_cast<Mtx44 *>(&this->mModel->mMatrix)
-                );
+                this->mModel = nullptr;
             }
         } else {
-            this->mModel->mEnabled = false;
+            if (!this->mModel) {
+                if (this->mHeirarchy && this->mRenderNode != 0) {
+                    this->mModel = new WorldModel(this->mHeirarchy, this->mRenderNode, true);
+                } else {
+                    this->mModel = new WorldModel(this->mModelHash.GetValue(), nullptr, true);
+                }
+            }
+
+            this->mModel->SetChildVisibility(pkt.mChildVisibility);
+            this->mModel->SetMatrix(&this->mRenderMatrix);
         }
     }
-
-
 }
 
 void SmackableRenderConn::UpdateAll(float dT) {
