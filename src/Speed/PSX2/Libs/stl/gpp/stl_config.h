@@ -161,7 +161,7 @@
 #     define __STL_MEMBER_TEMPLATE_CLASSES
 #     define __STL_EXPLICIT_FUNCTION_TMPL_ARGS
 #     define __STL_HAS_NAMESPACES
-#     define __STL_NO_NAMESPACES
+//#     define __STL_NO_NAMESPACES
 #     define __SGI_STL_USE_AUTO_PTR_CONVERSIONS
 #   endif
     /* glibc pre 2.0 is very buggy. We have to disable thread for it.
