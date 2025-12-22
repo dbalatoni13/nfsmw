@@ -329,4 +329,25 @@ template <typename T> class bPList : public bTList<bPNode> {
     }
 };
 
+template <typename T> class bSList {
+    // Functions
+    bSList() {}
+
+    int IsEmpty() {}
+
+    T *RemoveHead() {}
+
+    ~bSList() {}
+
+    T *GetHead() {}
+
+    T *EndOfList() {}
+
+    T *AddTail(T *node) {}
+
+    // Members
+    T *Head; // offset 0x0, size 0x4
+    T *Tail; // offset 0x4, size 0x4
+};
+
 #endif
