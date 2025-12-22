@@ -9,30 +9,30 @@
 
 // TODO this stuff may or may not go here.
 enum CarUsageType {
-    CAR_USAGE_TYPE_UNIVERSAL = 4,
-    CAR_USAGE_TYPE_WHEELS = 3,
-    CAR_USAGE_TYPE_TRAFFIC = 2,
-    CAR_USAGE_TYPE_COP = 1,
-    CAR_USAGE_TYPE_RACING = 0,
+    CAR_USAGE_TYPE_RACING,
+    CAR_USAGE_TYPE_COP,
+    CAR_USAGE_TYPE_TRAFFIC,
+    CAR_USAGE_TYPE_WHEELS,
+    CAR_USAGE_TYPE_UNIVERSAL,
 };
 enum CARPART_LOD {
-    CARPART_LOD_NUM = 5,
-    CARPART_LOD_E = 4,
-    CARPART_LOD_D = 3,
-    CARPART_LOD_C = 2,
-    CARPART_LOD_B = 1,
-    CARPART_LOD_A = 0,
-    CARPART_LOD_OFF = -1,
+    CARPART_LOD_OFF,
+    CARPART_LOD_A,
+    CARPART_LOD_B,
+    CARPART_LOD_C,
+    CARPART_LOD_D,
+    CARPART_LOD_E,
+    CARPART_LOD_NUM,
 };
 enum CarRenderUsage {
-    CarRenderUsage_Invalid = 7,
-    carRenderUsage_NISCar = 6,
-    CarRenderUsage_AIHeli = 5,
-    CarRenderUsage_AITraffic = 4,
-    CarRenderUsage_AICop = 3,
-    CarRenderUsage_AIRacer = 2,
-    CarRenderUsage_RemotePlayer = 1,
-    CarRenderUsage_Player = 0,
+    CarRenderUsage_Player,
+    CarRenderUsage_RemotePlayer,
+    CarRenderUsage_AIRacer,
+    CarRenderUsage_AICop,
+    CarRenderUsage_AITraffic,
+    CarRenderUsage_AIHeli,
+    carRenderUsage_NISCar,
+    CarRenderUsage_Invalid,
 };
 
 // total size: 0x310
@@ -76,13 +76,13 @@ class RideInfo {
 };
 
 enum DriverTypeEnum {
-    DRIVER_TYPE_SUPER_COP = 6,
-    DRIVER_TYPE_COP = 5,
-    DRIVER_TYPE_PARKED_CAR = 4,
-    DRIVER_TYPE_TRAFFIC_CAR = 3,
-    DRIVER_TYPE_AI_RACER = 2,
-    DRIVER_TYPE_PLAYER = 1,
-    DRIVER_TYPE_NONE = 0,
+    DRIVER_TYPE_NONE,
+    DRIVER_TYPE_PLAYER,
+    DRIVER_TYPE_AI_RACER,
+    DRIVER_TYPE_TRAFFIC_CAR,
+    DRIVER_TYPE_PARKED_CAR,
+    DRIVER_TYPE_COP,
+    DRIVER_TYPE_SUPER_COP,
 };
 
 // total size: 0x34C

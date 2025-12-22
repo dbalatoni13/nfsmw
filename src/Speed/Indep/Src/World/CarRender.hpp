@@ -1,19 +1,20 @@
 #ifndef WORLD_CARRENDER_H
 #define WORLD_CARRENDER_H
 
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+#include "./CarInfo.hpp"
+#include "Interfaces/IVehicleDamageBehaviour.h"
+#include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/eLight.hpp"
 #include "Speed/Indep/Src/Ecstasy/eModel.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/ecar.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#include "./CarInfo.hpp"
-#include "Speed/Indep/bWare/Inc/bList.hpp"
-#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 /////// NOT IN THIS FILE ///////
 class ePointSprite3D {
@@ -159,6 +160,60 @@ typedef struct tagCarEffectParam {
 } CarEffectParam;
 
 
+class CarEmitterPosition : public bSNode<CarEmitterPosition> {
+public:
+    // Functions
+    static void * operator new(size_t size) {}
+
+    static void operator delete(void *ptr) {}
+
+    CarEmitterPosition(ePositionMarker *position_marker) {}
+
+    CarEmitterPosition(float x, float y, float z) {}
+
+    // Members
+    float X; // offset 0x4, size 0x4
+    float Y; // offset 0x8, size 0x4
+    float Z; // offset 0xC, size 0x4
+    ePositionMarker *PositionMarker; // offset 0x10, size 0x4
+};
+
+class UsedCarTextureInfo {
+    // Members
+    unsigned int TexturesToLoadPerm[87]; // offset 0x0, size 0x15C
+    unsigned int TexturesToLoadTemp[87]; // offset 0x15C, size 0x15C
+    int NumTexturesToLoadPerm; // offset 0x2B8, size 0x4
+    int NumTexturesToLoadTemp; // offset 0x2BC, size 0x4
+    unsigned int MappedSkinHash; // offset 0x2C0, size 0x4
+    unsigned int MappedSkinBHash; // offset 0x2C4, size 0x4
+    unsigned int MappedGlobalHash; // offset 0x2C8, size 0x4
+    unsigned int MappedWheelHash; // offset 0x2CC, size 0x4
+    unsigned int MappedSpinnerHash; // offset 0x2D0, size 0x4
+    unsigned int MappedBadging; // offset 0x2D4, size 0x4
+    unsigned int MappedSpoilerHash; // offset 0x2D8, size 0x4
+    unsigned int MappedRoofScoopHash; // offset 0x2DC, size 0x4
+    unsigned int MappedDashSkinHash; // offset 0x2E0, size 0x4
+    unsigned int MappedLightHash[11]; // offset 0x2E4, size 0x2C
+    unsigned int MappedTireHash; // offset 0x310, size 0x4
+    unsigned int MappedRimHash; // offset 0x314, size 0x4
+    unsigned int MappedRimBlurHash; // offset 0x318, size 0x4
+    unsigned int MappedLicensePlateHash; // offset 0x31C, size 0x4
+    unsigned int ReplaceSkinHash; // offset 0x320, size 0x4
+    unsigned int ReplaceSkinBHash; // offset 0x324, size 0x4
+    unsigned int ReplaceGlobalHash; // offset 0x328, size 0x4
+    unsigned int ReplaceWheelHash; // offset 0x32C, size 0x4
+    unsigned int ReplaceSpinnerHash; // offset 0x330, size 0x4
+    unsigned int ReplaceSpoilerHash; // offset 0x334, size 0x4
+    unsigned int ReplaceRoofScoopHash; // offset 0x338, size 0x4
+    unsigned int ReplaceDashSkinHash; // offset 0x33C, size 0x4
+    unsigned int ReplaceHeadlightHash[3]; // offset 0x340, size 0xC
+    unsigned int ReplaceHeadlightGlassHash[3]; // offset 0x34C, size 0xC
+    unsigned int ReplaceBrakelightHash[3]; // offset 0x358, size 0xC
+    unsigned int ReplaceBrakelightGlassHash[3]; // offset 0x364, size 0xC
+    unsigned int ReplaceReverselightHash[3]; // offset 0x370, size 0xC
+    unsigned int ShadowHash; // offset 0x37C, size 0x4
+};
+
 class CarPartModel {
     // Functions
     CarPartModel() {}
@@ -185,83 +240,83 @@ class CarRenderInfo {
 public:
     // Inner declarations
     enum CarReplacementTexID {
-        REPLACETEX_DECAL_NUM = 26,
-        REPLACETEX_DECAL_END = 72,
+        REPLACETEX_CARSKIN,
+        REPLACETEX_CARSKINB,
+        REPLACETEX_GLOBALSKIN,
+        REPLACETEX_CARBONSKIN,
+        REPLACETEX_GLOBALCARBONSKIN,
+        REPLACETEX_BADGING,
+        REPLACETEX_WHEEL,
+        REPLACETEX_SPINNER,
+        REPLACETEX_SPOILER,
+        REPLACETEX_ROOF_SCOOP,
+        REPLACETEX_DASHSKIN,
+        REPLACETEX_DRIVER,
+        REPLACETEX_TIRE,
+        REPLACETEX_WINDOW_FRONT,
+        REPLACETEX_WINDOW_REAR,
+        REPLACETEX_WINDOW_LEFT_FRONT,
+        REPLACETEX_WINDOW_LEFT_REAR,
+        REPLACETEX_WINDOW_RIGHT_FRONT,
+        REPLACETEX_WINDOW_RIGHT_REAR,
+        REPLACETEX_WINDOW_REAR_DEFOST,
+        REPLACETEX_WINDOW2_FRONT,
+        REPLACETEX_WINDOW2_REAR,
+        REPLACETEX_WINDOW2_LEFT_FRONT,
+        REPLACETEX_WINDOW2_LEFT_REAR,
+        REPLACETEX_WINDOW2_RIGHT_FRONT,
+        REPLACETEX_WINDOW2_RIGHT_REAR,
+        REPLACETEX_WINDOW2_REAR_DEFOST,
+        REPLACETEX_HEADLIGHT_LEFT,
+        REPLACETEX_HEADLIGHT_RIGHT,
+        REPLACETEX_BRAKELIGHT_LEFT,
+        REPLACETEX_BRAKELIGHT_RIGHT,
+        REPLACETEX_BRAKELIGHT_CENTRE,
+        REPLACETEX_HEADLIGHT_GLASS_LEFT,
+        REPLACETEX_HEADLIGHT_GLASS_RIGHT,
+        REPLACETEX_BRAKELIGHT_GLASS_LEFT,
+        REPLACETEX_BRAKELIGHT_GLASS_RIGHT,
+        REPLACETEX_BRAKELIGHT_GLASS_CENTRE,
+        REPLACETEX_OLD_HEADLIGHT_LEFT,
+        REPLACETEX_OLD_HEADLIGHT_RIGHT,
+        REPLACETEX_OLD_BRAKELIGHT_LEFT,
+        REPLACETEX_OLD_BRAKELIGHT_RIGHT,
+        REPLACETEX_OLD_BRAKELIGHT_CENTRE,
+        REPLACETEX_OLD_HEADLIGHT_GLASS_LEFT,
+        REPLACETEX_OLD_HEADLIGHT_GLASS_RIGHT,
+        REPLACETEX_OLD_BRAKELIGHT_GLASS_LEFT,
+        REPLACETEX_OLD_BRAKELIGHT_GLASS_RIGHT,
+        REPLACETEX_OLD_BRAKELIGHT_GLASS_CENTRE,
+        REPLACETEX_BOTTOM_DECAL,
+        REPLACETEX_FRONT_BUMPER_DECAL,
+        REPLACETEX_FRONT_DECAL,
+        REPLACETEX_GTWING_DECAL,
+        REPLACETEX_HOOD_DECAL,
+        REPLACETEX_LEFT_BRAKELIGHT_DECAL,
+        REPLACETEX_LEFT_DOOR_DECAL,
+        REPLACETEX_LEFT_FENDER_DECAL,
+        REPLACETEX_LEFT_QUARTER_DECAL,
+        REPLACETEX_LEFT_SIDE_MIRROR_DECAL,
+        REPLACETEX_LEFT_SKIRT_DECAL,
+        REPLACETEX_REAR_BUMPER_DECAL,
+        REPLACETEX_REAR_DECAL,
+        REPLACETEX_RIGHT_BRAKELIGHT_DECAL,
+        REPLACETEX_RIGHT_DOOR_DECAL,
+        REPLACETEX_RIGHT_FENDER_DECAL,
+        REPLACETEX_RIGHT_QUARTER_DECAL,
+        REPLACETEX_RIGHT_SIDE_MIRROR_DECAL,
+        REPLACETEX_RIGHT_SKIRT_DECAL,
+        REPLACETEX_TOP_DECAL,
+        REPLACETEX_FRONT_WINDOW_DECAL,
+        REPLACETEX_REAR_WINDOW_DECAL,
+        REPLACETEX_LEFT_FRONT_WINDOW_DECAL,
+        REPLACETEX_LEFT_REAR_WINDOW_DECAL,
+        REPLACETEX_RIGHT_FRONT_WINDOW_DECAL,
+        REPLACETEX_RIGHT_REAR_WINDOW_DECAL,
         REPLACETEX_DECAL_START = 47,
+        REPLACETEX_DECAL_END = 72,
+        REPLACETEX_DECAL_NUM = 26,
         REPLACETEX_NUM = 73,
-        REPLACETEX_RIGHT_REAR_WINDOW_DECAL = 72,
-        REPLACETEX_RIGHT_FRONT_WINDOW_DECAL = 71,
-        REPLACETEX_LEFT_REAR_WINDOW_DECAL = 70,
-        REPLACETEX_LEFT_FRONT_WINDOW_DECAL = 69,
-        REPLACETEX_REAR_WINDOW_DECAL = 68,
-        REPLACETEX_FRONT_WINDOW_DECAL = 67,
-        REPLACETEX_TOP_DECAL = 66,
-        REPLACETEX_RIGHT_SKIRT_DECAL = 65,
-        REPLACETEX_RIGHT_SIDE_MIRROR_DECAL = 64,
-        REPLACETEX_RIGHT_QUARTER_DECAL = 63,
-        REPLACETEX_RIGHT_FENDER_DECAL = 62,
-        REPLACETEX_RIGHT_DOOR_DECAL = 61,
-        REPLACETEX_RIGHT_BRAKELIGHT_DECAL = 60,
-        REPLACETEX_REAR_DECAL = 59,
-        REPLACETEX_REAR_BUMPER_DECAL = 58,
-        REPLACETEX_LEFT_SKIRT_DECAL = 57,
-        REPLACETEX_LEFT_SIDE_MIRROR_DECAL = 56,
-        REPLACETEX_LEFT_QUARTER_DECAL = 55,
-        REPLACETEX_LEFT_FENDER_DECAL = 54,
-        REPLACETEX_LEFT_DOOR_DECAL = 53,
-        REPLACETEX_LEFT_BRAKELIGHT_DECAL = 52,
-        REPLACETEX_HOOD_DECAL = 51,
-        REPLACETEX_GTWING_DECAL = 50,
-        REPLACETEX_FRONT_DECAL = 49,
-        REPLACETEX_FRONT_BUMPER_DECAL = 48,
-        REPLACETEX_BOTTOM_DECAL = 47,
-        REPLACETEX_OLD_BRAKELIGHT_GLASS_CENTRE = 46,
-        REPLACETEX_OLD_BRAKELIGHT_GLASS_RIGHT = 45,
-        REPLACETEX_OLD_BRAKELIGHT_GLASS_LEFT = 44,
-        REPLACETEX_OLD_HEADLIGHT_GLASS_RIGHT = 43,
-        REPLACETEX_OLD_HEADLIGHT_GLASS_LEFT = 42,
-        REPLACETEX_OLD_BRAKELIGHT_CENTRE = 41,
-        REPLACETEX_OLD_BRAKELIGHT_RIGHT = 40,
-        REPLACETEX_OLD_BRAKELIGHT_LEFT = 39,
-        REPLACETEX_OLD_HEADLIGHT_RIGHT = 38,
-        REPLACETEX_OLD_HEADLIGHT_LEFT = 37,
-        REPLACETEX_BRAKELIGHT_GLASS_CENTRE = 36,
-        REPLACETEX_BRAKELIGHT_GLASS_RIGHT = 35,
-        REPLACETEX_BRAKELIGHT_GLASS_LEFT = 34,
-        REPLACETEX_HEADLIGHT_GLASS_RIGHT = 33,
-        REPLACETEX_HEADLIGHT_GLASS_LEFT = 32,
-        REPLACETEX_BRAKELIGHT_CENTRE = 31,
-        REPLACETEX_BRAKELIGHT_RIGHT = 30,
-        REPLACETEX_BRAKELIGHT_LEFT = 29,
-        REPLACETEX_HEADLIGHT_RIGHT = 28,
-        REPLACETEX_HEADLIGHT_LEFT = 27,
-        REPLACETEX_WINDOW2_REAR_DEFOST = 26,
-        REPLACETEX_WINDOW2_RIGHT_REAR = 25,
-        REPLACETEX_WINDOW2_RIGHT_FRONT = 24,
-        REPLACETEX_WINDOW2_LEFT_REAR = 23,
-        REPLACETEX_WINDOW2_LEFT_FRONT = 22,
-        REPLACETEX_WINDOW2_REAR = 21,
-        REPLACETEX_WINDOW2_FRONT = 20,
-        REPLACETEX_WINDOW_REAR_DEFOST = 19,
-        REPLACETEX_WINDOW_RIGHT_REAR = 18,
-        REPLACETEX_WINDOW_RIGHT_FRONT = 17,
-        REPLACETEX_WINDOW_LEFT_REAR = 16,
-        REPLACETEX_WINDOW_LEFT_FRONT = 15,
-        REPLACETEX_WINDOW_REAR = 14,
-        REPLACETEX_WINDOW_FRONT = 13,
-        REPLACETEX_TIRE = 12,
-        REPLACETEX_DRIVER = 11,
-        REPLACETEX_DASHSKIN = 10,
-        REPLACETEX_ROOF_SCOOP = 9,
-        REPLACETEX_SPOILER = 8,
-        REPLACETEX_SPINNER = 7,
-        REPLACETEX_WHEEL = 6,
-        REPLACETEX_BADGING = 5,
-        REPLACETEX_GLOBALCARBONSKIN = 4,
-        REPLACETEX_CARBONSKIN = 3,
-        REPLACETEX_GLOBALSKIN = 2,
-        REPLACETEX_CARSKINB = 1,
-        REPLACETEX_CARSKIN = 0,
     };
 
     // Functions
@@ -379,7 +434,7 @@ public:
     bVector3 mVelocity; // offset 0x4, size 0x10
     bVector3 mAngularVelocity; // offset 0x14, size 0x10
     bVector3 mAcceleration; // offset 0x24, size 0x10
-    // IVehiclePartDamageBehaviour *mDamageBehaviour; // offset 0x34, size 0x4
+    IVehiclePartDamageBehaviour *mDamageBehaviour; // offset 0x34, size 0x4
     const WCollider *mWCollider; // offset 0x38, size 0x4
     WWorldPos mWorldPos; // offset 0x3C, size 0x3C
     RideInfo *pRideInfo; // offset 0x78, size 0x4
@@ -411,13 +466,13 @@ public:
     float WheelRadiusScales[4]; // offset 0x134, size 0x10
     float WheelBrakeMarkerY[2]; // offset 0x144, size 0x8
     bool mEmitterPositionsInitialized; // offset 0x14C, size 0x1
-    // bSList<CarEmitterPosition> EmitterPositionList[28]; // offset 0x150, size 0xE0
+    bSList<CarEmitterPosition> EmitterPositionList[28]; // offset 0x150, size 0xE0
     eReplacementTextureTable MasterReplacementTextureTable[73]; // offset 0x230, size 0x36C
     eReplacementTextureTable CarbonReplacementTextureTable[73]; // offset 0x59C, size 0x36C
     eReplacementTextureTable DecalReplacementTextureTable[48]; // offset 0x908, size 0x240
     eReplacementTextureTable BrakeLeftReplacementTextureTable[2]; // offset 0xB48, size 0x18
     eReplacementTextureTable BrakeRightReplacementTextureTable[2]; // offset 0xB60, size 0x18
-    // CarPartModel mCarPartModels[5][1][76]; // offset 0xB78, size 0x5F0
+    CarPartModel mCarPartModels[5][1][76]; // offset 0xB78, size 0x5F0
     int SpecialFX; // offset 0x1168, size 0x4
     float mCar_elevation; // offset 0x116C, size 0x4
     int NOSstate; // offset 0x1170, size 0x4
@@ -433,12 +488,12 @@ public:
     int AAdraw_solid; // offset 0x127C, size 0x4
     int AAdraw_alpha; // offset 0x1280, size 0x4
     int AAdraw_shadows; // offset 0x1284, size 0x4
-    // UsedCarTextureInfo mUsedTextureInfos; // offset 0x1288, size 0x380
+    UsedCarTextureInfo mUsedTextureInfos; // offset 0x1288, size 0x380
     unsigned int mOnLights; // offset 0x1608, size 0x4
     unsigned int mBrokenLights; // offset 0x160C, size 0x4
-    enum CARPART_LOD mMinLodLevel; // offset 0x1610, size 0x4
-    enum CARPART_LOD mMaxLodLevel; // offset 0x1614, size 0x4
-    enum CARPART_LOD mMinReflectionLodLevel; // offset 0x1618, size 0x4
+    CARPART_LOD mMinLodLevel; // offset 0x1610, size 0x4
+    CARPART_LOD mMaxLodLevel; // offset 0x1614, size 0x4
+    CARPART_LOD mMinReflectionLodLevel; // offset 0x1618, size 0x4
     CarPartCuller TheCarPartCuller; // offset 0x161C, size 0x134
     Sim::Collision::Info mDamageZoneInfo; // offset 0x1750, size 0x4
     float mDeltaTime; // offset 0x1754, size 0x4

@@ -1,5 +1,6 @@
 #include "./CarRender.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Src/Ecstasy/EcstasyE.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/Src/Ecstasy/eModel.hpp"
@@ -289,11 +290,52 @@ bool FrontEndRenderingCar::LookupWheelPosition(unsigned int index, bVector4 *pos
     if (this->RenderInfo != nullptr && position != nullptr) {
         this->RenderInfo->GetAttributes().TireOffsets(*reinterpret_cast<UMath::Vector4 *>(position), index);
         
-        position->z += this->RenderInfo->GetAttributes().FECompressions(index);
+        position->z += this->RenderInfo->GetAttributes().FECompressions(index / 2);
         position->w = 1.0f;
 
         return true;
     } else {
         return false;
     }
+}
+
+bool FrontEndRenderingCar::LookupWheelRadius(unsigned int index /* r4 */, float & radius /* r5 */) {
+    if (this->RenderInfo == nullptr) return false;
+    
+    UMath::Vector4 pos;
+    this->RenderInfo->GetAttributes().TireOffsets(pos, index);
+    radius = pos.w;
+
+    return true;
+}
+
+void FrontEndRenderingCar::ReInit(struct RideInfo * ride_info /* r31 */) {
+    if (this->RenderInfo != nullptr) {
+        CarRenderInfo *info;
+
+        delete this->RenderInfo;
+        this->RenderInfo = nullptr;
+    }
+
+    if (ride_info != nullptr) {
+
+        this->mRideInfo = *ride_info;
+        this->RenderInfo = ::new (__FILE__, __LINE__) CarRenderInfo(&this->mRideInfo);
+    }
+}
+
+FrontEndRenderingCar::~FrontEndRenderingCar() {
+    eWaitUntilRenderingDone();
+
+    if (this->RenderInfo != nullptr) {
+        delete this->RenderInfo;
+        this->RenderInfo = nullptr;
+    }
+
+    if (this->OverrideModel != nullptr) {
+        delete this->OverrideModel;
+        this->OverrideModel = nullptr;
+    }
+
+    this->Remove();
 }
