@@ -181,6 +181,11 @@ struct ecar : Instance {
         }
     }
 
+    bool TireOffsets(UMath::Vector4 &result, unsigned int index) const {
+        const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());
+        result = lp->TireOffsets[index];
+    }
+
     unsigned int Num_TireOffsets() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->_Array_TireOffsets.GetLength();
     }
