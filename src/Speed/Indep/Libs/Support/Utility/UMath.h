@@ -1,13 +1,11 @@
 #ifndef SUPPORT_UTILITY_UMATH_H
 #define SUPPORT_UTILITY_UMATH_H
 
-#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
 #include <cmath>
-#include <cstring>
 
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 // #include "UEALibs.hpp"
@@ -35,10 +33,14 @@ inline float DistanceSquarexz(const Vector3 &a, const Vector3 &b) {
 }
 
 inline void Clear(Vector3 &r) {
-    // TODO fake match?
-    *reinterpret_cast<int *>(&r.x) = 0;
-    *reinterpret_cast<int *>(&r.y) = 0;
-    *reinterpret_cast<int *>(&r.z) = 0;
+#ifdef EA_PLATFORM_PLAYSTATION2
+    *reinterpret_cast<uint64 *>(&r.x) = 0;
+    *reinterpret_cast<uint32 *>(&r.z) = 0;
+#else
+    *reinterpret_cast<uint32 *>(&r.x) = 0;
+    *reinterpret_cast<uint32 *>(&r.y) = 0;
+    *reinterpret_cast<uint32 *>(&r.z) = 0;
+#endif
 }
 
 inline void Copy(const Matrix4 &a, Matrix4 &r) {

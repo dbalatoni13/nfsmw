@@ -1014,7 +1014,7 @@ void SuspensionRacer::Reset() {
         wheel.Reset();
         if (wheel.InitPosition(rigidBody, wheel.GetRadius())) {
             float upness = UMath::Clamp(UMath::Dot(UMath::Vector4To3(wheel.GetNormal()), vUp), 0.0f, 1.0f);
-            float newCompression = GetRideHeight(i) * upness + wheel.GetNormal().w;
+            float newCompression = wheel.GetNormal().w + GetRideHeight(i) * upness;
             if (newCompression < 0.0f) {
                 newCompression = 0.0f;
             }
@@ -1344,7 +1344,7 @@ float SuspensionRacer::CalcYawControlLimit(float speed) const {
             unsigned int index2 = UMath::Min(numunits - 1, index1 + 1);
             float a = mTireInfo.YAW_CONTROL(index1);
             float b = mTireInfo.YAW_CONTROL(index2);
-            return (b - a) * ratio + a;
+            return a + (b - a) * ratio;
         }
     }
     return mTireInfo.YAW_CONTROL(0);

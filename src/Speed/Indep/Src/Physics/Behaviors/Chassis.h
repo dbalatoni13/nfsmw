@@ -33,17 +33,21 @@ class Chassis : public VehicleBehavior, public ISuspension {
         UMath::Vector3 cog;               // offset 0x70, size 0xC
         float ebrake_input;               // offset 0x7C, size 0x4
         UMath::Vector3 dimension;         // offset 0x80, size 0xC
-        float steer_input;                // offset 0x8C, size 0x4
+        Angle steer_input;                // offset 0x8C, size 0x4
         UMath::Vector3 local_angular_vel; // offset 0x90, size 0xC
-        float slipangle;                  // offset 0x9C, size 0x4
+        Angle slipangle;                  // offset 0x9C, size 0x4
         UMath::Vector3 inertia;           // offset 0xA0, size 0xC
         float mass;                       // offset 0xAC, size 0x4
         UMath::Vector3 world_cog;         // offset 0xB0, size 0xC
         float speed;                      // offset 0xBC, size 0x4
         float time;                       // offset 0xC0, size 0x4
         int flags;                        // offset 0xC4, size 0x4
-        short driver_style;               // offset 0xC8, size 0x2
-        short driver_class;               // offset 0xCA, size 0x2
+#ifdef EA_BUILD_A124
+        int driver_style;
+#else
+        short driver_style; // offset 0xC8, size 0x2
+        short driver_class; // offset 0xCA, size 0x2
+#endif
         short gear;                       // offset 0xCC, size 0x2
         short blown_tires;                // offset 0xCE, size 0x2
         float nos_boost;                  // offset 0xD0, size 0x4

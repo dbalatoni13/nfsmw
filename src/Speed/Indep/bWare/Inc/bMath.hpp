@@ -281,7 +281,7 @@ inline float bDot(const bVector2 *v1, const bVector2 *v2) {
     return v1->x * v2->x + v1->y * v2->y;
 }
 
-struct bVector3 {
+struct ALIGN_PS2(16) bVector3 {
     // total size: 0x10
     float x;   // offset 0x0, size 0x4
     float y;   // offset 0x4, size 0x4
@@ -611,7 +611,7 @@ inline bVector4 *bAdd(bVector4 *dest, const bVector4 *v1, const bVector4 *v2) {
     dest->w = w1 + w2;
 }
 
-inline bVector4 &bVector4::operator+=(const bVector4 &v)  {
+inline bVector4 &bVector4::operator+=(const bVector4 &v) {
     bAdd(this, this, &v);
 
     return *this;

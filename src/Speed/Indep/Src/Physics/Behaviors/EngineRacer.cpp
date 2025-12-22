@@ -535,7 +535,7 @@ float EngineRacer::GetBrakingTorque(float engine_torque, float rpm) const {
         float base = mEngineInfo.ENGINE_BRAKING(index);
         unsigned int secondIndex = index + 1;
         float step = mEngineInfo.ENGINE_BRAKING(UMath::Min(numpts - 1, secondIndex));
-        float load_pct = (step - base) * ratio + base;
+        float load_pct = base + (step - base) * ratio;
         return -torque * UMath::Clamp(load_pct, 0.f, 1.f);
     } else {
         return -torque * mEngineInfo.ENGINE_BRAKING(0);

@@ -37,6 +37,7 @@
 #include "Speed/Indep/Src/World/Scenery.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
+#include "types.h"
 
 // total size: 0x8
 class NISCar {
@@ -145,44 +146,48 @@ class NISActivity : public Sim::Activity, public INIS, public EventSequencer::IC
     bool IsCarListLoaded();
     void JoyHandle(IPlayer *player);
 
-    static int mElapsedmsAudioTime;
+    HSIMTASK mUpdate;                                  // offset 0x6C, size 0x4
+    float mNISElapsedTime;                             // offset 0x70, size 0x4
+    ActionQueue mActionQ;                              // offset 0x74, size 0x294
+    NISACTIVITY_STATE mState;                          // offset 0x308, size 0x4
+    Hermes::HHANDLER mMsgMovieComplete;                // offset 0x30C, size 0x4
+    CAnimChooser::eType mNISType;                      // offset 0x310, size 0x4
+    bVector3 mNISPosition;                             // offset 0x314, size 0x10
+    float mNISDirection;                               // offset 0x324, size 0x4
+    char mPreMovie[64];                                // offset 0x328, size 0x40
+    char mPostMovie[64];                               // offset 0x368, size 0x40
+    unsigned int mSceneHash;                           // offset 0x3A8, size 0x4
+    UCrc32 mSequencerID;                               // offset 0x3AC, size 0x4
+    CAnimScene *mAnimScene;                            // offset 0x3B0, size 0x4
+    int mAnimHandle;                                   // offset 0x3B4, size 0x4
+    int mCameraTrackNumber;                            // offset 0x3B8, size 0x4
+    float mDefault_MaxTicksPerTimestep;                // offset 0x3BC, size 0x4
+    CarList mVehicleTable;                             // offset 0x3C0, size 0x10
+    EventSequencer::IEngine *mSequencer;               // offset 0x3D0, size 0x4
+    ALIGN_PS2(16) UMath::Vector3 mStartLocation;       // offset 0x3D4, size 0xC
+    ALIGN_PS2(16) UMath::Vector3 mStartCameraLocation; // offset 0x3E0, size 0xC
+    bool mStartPlayingNow;                             // offset 0x3EC, size 0x1
+    bool mRunningThroughICE;                           // offset 0x3F0, size 0x1
+    int mLoadAttemptCount;                             // offset 0x3F4, size 0x4
+    int mSuspensionSettle;                             // offset 0x3F8, size 0x4
+    CAnimMomentScene *mMomentScene;                    // offset 0x3FC, size 0x4
+    bool mUsingFEngOverlay;                            // offset 0x400, size 0x1
+    bool mCareerNIS;                                   // offset 0x404, size 0x1
+    bool mDDayNIS;                                     // offset 0x408, size 0x1
+#ifndef EA_BUILD_A124
+    bool mBlackListNIS;   // offset 0x40C, size 0x1
+    bool mNonSkipableNIS; // offset 0x410, size 0x1
+    char mSkipToNIS[16];  // offset 0x414, size 0x10
+    bool mNISSkipped;     // offset 0x424, size 0x1
+    float mNISNoSkipTime; // offset 0x428, size 0x4
+#else
+    bool mDDayNISSkipped;
+#endif
+    int mIsPrecipitationEnable; // offset 0x42C, size 0x4
+    bool mPause;                // offset 0x430, size 0x1
+    float loadStartTime;        // offset 0x434, size 0x4
 
-    HSIMTASK mUpdate;                    // offset 0x6C, size 0x4
-    float mNISElapsedTime;               // offset 0x70, size 0x4
-    ActionQueue mActionQ;                // offset 0x74, size 0x294
-    NISACTIVITY_STATE mState;            // offset 0x308, size 0x4
-    Hermes::HHANDLER mMsgMovieComplete;  // offset 0x30C, size 0x4
-    CAnimChooser::eType mNISType;        // offset 0x310, size 0x4
-    bVector3 mNISPosition;               // offset 0x314, size 0x10
-    float mNISDirection;                 // offset 0x324, size 0x4
-    char mPreMovie[64];                  // offset 0x328, size 0x40
-    char mPostMovie[64];                 // offset 0x368, size 0x40
-    unsigned int mSceneHash;             // offset 0x3A8, size 0x4
-    UCrc32 mSequencerID;                 // offset 0x3AC, size 0x4
-    CAnimScene *mAnimScene;              // offset 0x3B0, size 0x4
-    int mAnimHandle;                     // offset 0x3B4, size 0x4
-    int mCameraTrackNumber;              // offset 0x3B8, size 0x4
-    float mDefault_MaxTicksPerTimestep;  // offset 0x3BC, size 0x4
-    CarList mVehicleTable;               // offset 0x3C0, size 0x10
-    EventSequencer::IEngine *mSequencer; // offset 0x3D0, size 0x4
-    UMath::Vector3 mStartLocation;       // offset 0x3D4, size 0xC
-    UMath::Vector3 mStartCameraLocation; // offset 0x3E0, size 0xC
-    bool mStartPlayingNow;               // offset 0x3EC, size 0x1
-    bool mRunningThroughICE;             // offset 0x3F0, size 0x1
-    int mLoadAttemptCount;               // offset 0x3F4, size 0x4
-    int mSuspensionSettle;               // offset 0x3F8, size 0x4
-    CAnimMomentScene *mMomentScene;      // offset 0x3FC, size 0x4
-    bool mUsingFEngOverlay;              // offset 0x400, size 0x1
-    bool mCareerNIS;                     // offset 0x404, size 0x1
-    bool mDDayNIS;                       // offset 0x408, size 0x1
-    bool mBlackListNIS;                  // offset 0x40C, size 0x1
-    bool mNonSkipableNIS;                // offset 0x410, size 0x1
-    char mSkipToNIS[16];                 // offset 0x414, size 0x10
-    bool mNISSkipped;                    // offset 0x424, size 0x1
-    float mNISNoSkipTime;                // offset 0x428, size 0x4
-    int mIsPrecipitationEnable;          // offset 0x42C, size 0x4
-    bool mPause;                         // offset 0x430, size 0x1
-    float loadStartTime;                 // offset 0x434, size 0x4
+    static int mElapsedmsAudioTime;
 };
 
 extern int PrecipitationEnable;
@@ -214,16 +219,20 @@ NISActivity::NISActivity()
       mUsingFEngOverlay(false),           //
       mCareerNIS(false),                  //
       mDDayNIS(false),                    //
-      mBlackListNIS(false),               //
-      mNonSkipableNIS(false),             //
-      mNISSkipped(false),                 //
-      mNISNoSkipTime(0.0f),               //
-      mPause(false),                      //
-      loadStartTime(0.0f),                //
+#ifndef EA_BUILD_A124
+      mBlackListNIS(false),   //
+      mNonSkipableNIS(false), //
+      mNISSkipped(false),     //
+      mNISNoSkipTime(0.0f),   //
+#endif
+      mPause(false),       //
+      loadStartTime(0.0f), //
       mStartPlayingNow(true) {
     mPreMovie[0] = '\0';
     mPostMovie[0] = '\0';
+#ifndef EA_BUILD_A124
     mSkipToNIS[0] = '\0';
+#endif
 
     mUpdate = AddTask(UCrc32("WorldUpdate"), 1.0f, 0.0f, Sim::TASK_FRAME_FIXED);
     Sim::ProfileTask(mUpdate, "NIS");
@@ -273,11 +282,15 @@ NISActivity::~NISActivity() {
     ForceAllSceneryDetailLevels = SCENERY_DETAIL_NONE;
 
     new ESndGameState(4, false);
+#ifndef EA_BUILD_A124
     if (mNISSkipped) {
         new EPlayEndNIS(mSkipToNIS);
     } else {
         MNISComplete(nullptr).Post(UCrc32(0x20d60dbf)); // magic
     }
+#else
+    // TODO PS2
+#endif
 }
 
 ICEScene *NISActivity::GetScene() const {
@@ -668,6 +681,7 @@ extern int SkipMovies;
 
 bool NISActivity::SkipOverNIS() {
     if (!TheICEManager.IsEditorOn()) {
+#ifndef EA_BUILD_A124
         if ((!mNonSkipableNIS || SkipMovies) && mState == NISACTIVITY_PLAYING && mNISType != CAnimChooser::Arrest &&
             mNISType != CAnimChooser::Ending) {
             if (mSkipToNIS[0] != 0) {
@@ -676,6 +690,10 @@ bool NISActivity::SkipOverNIS() {
                 }
                 mNISSkipped = true;
             }
+#else
+        if (true) {
+            // TODO PS2
+#endif
             if (mSequencer) {
                 mSequencer->Complete(Sim::GetTime(), true, nullptr);
             }

@@ -14,13 +14,8 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
-Chassis::Chassis(const BehaviorParams &bp) 
-: VehicleBehavior(bp, 0)
-, ISuspension(bp.fowner)
-, mAttributes(this, 0)
-, mJumpTime(0.0f)
-, mJumpAlititude(0.0f)
-, mTireHeat(0.0f) {
+Chassis::Chassis(const BehaviorParams &bp)
+    : VehicleBehavior(bp, 0), ISuspension(bp.fowner), mAttributes(this, 0), mJumpTime(0.0f), mJumpAlititude(0.0f), mTireHeat(0.0f) {
     GetOwner()->QueryInterface(&mRBComplex);
     GetOwner()->QueryInterface(&mInput);
     GetOwner()->QueryInterface(&mEngine);
@@ -163,7 +158,7 @@ Chassis::SleepState Chassis::DoSleep(const Chassis::State &state) {
             UMath::Vector3 t = mRBComplex->GetTorque();
             irb->ConvertWorldToLocal(f, false);
             irb->ConvertWorldToLocal(t, false);
-            
+
             v.x *= state.speed;
             w.y *= state.speed;
             f.x = -f.x * (1.0f - state.speed);
@@ -231,7 +226,8 @@ void Chassis::ComputeAckerman(const float steering, const Chassis::State &state,
     float ca, sa;
     // calculate forward vector for front wheels
     UMath::Vector3 r;
-    ca = cosf(steer0); sa = sinf(steer0);
+    ca = cosf(steer0);
+    sa = sinf(steer0);
     r.z = ca;
     r.x = sa;
     r.y = 0.0f;
@@ -239,7 +235,8 @@ void Chassis::ComputeAckerman(const float steering, const Chassis::State &state,
     *right = UMath::Vector4Make(r, steer0);
 
     UMath::Vector3 l;
-    ca = cosf(steer1); sa = sinf(steer1);
+    ca = cosf(steer1);
+    sa = sinf(steer1);
     l.z = ca;
     l.x = sa;
     l.y = 0.0f;
@@ -300,12 +297,14 @@ void Chassis::ComputeState(float dT, Chassis::State &state) const {
     state.ground_effect = GetNumWheelsOnGround() * 0.25f;
     state.mass = irb->GetMass();
     state.driver_style = GetVehicle()->GetDriverStyle();
+#ifndef EA_BUILD_A124
     state.driver_class = GetVehicle()->GetDriverClass();
+#endif
 
     if (GetVehicle()->IsStaging()) {
         state.flags |= State::IS_STAGING;
     }
-    
+
     if (mEngine) {
         state.nos_boost = mEngine->GetNOSBoost();
     } else {
@@ -461,12 +460,12 @@ void Chassis::DoJumpStabilizer(const Chassis::State &state) {
     if (!nTouching) {
         mJumpTime += state.time;
         mJumpAlititude = UMath::Max(mJumpAlititude, altitude);
-        
+
         if (bDoLandingGravity) {
             float accel = fExtraLandingGravity;
             // apply more downforce when the car has been airborne for a long time
-            if (mJumpTime > fLandingGravityMinTime && ground_dot > fLandingGravityUpThreshold
-            && mJumpAlititude > fLandingGravityMinAltitude && state.linear_vel.y < 0.0f && altitude < fLandingGravityMaxAltitude) {
+            if (mJumpTime > fLandingGravityMinTime && ground_dot > fLandingGravityUpThreshold && mJumpAlititude > fLandingGravityMinAltitude &&
+                state.linear_vel.y < 0.0f && altitude < fLandingGravityMaxAltitude) {
                 float alt_ratio = 1.0f - UMath::Ramp(altitude, 0.0f, fLandingGravityMaxAltitude);
                 float speed_ratio = UMath::Ramp(state.speed, 0.0f, fLandingGravitySpeed);
                 accel += alt_ratio * 10.0f * speed_ratio;
@@ -485,7 +484,7 @@ void Chassis::DoJumpStabilizer(const Chassis::State &state) {
         float speed_ramp = UMath::Ramp(state.speed, 0.0f, fStabilizerSpeed);
         float avelmag = UMath::Length(state.local_angular_vel);
         float damping = speed_ramp * JumpStabilization.GetValue(avelmag);
-        
+
         UMath::Vector3 damping_moment;
         UMath::Scale(state.local_angular_vel, state.inertia, damping_moment);
         UMath::Scale(damping_moment, -damping, damping_moment);
@@ -495,9 +494,8 @@ void Chassis::DoJumpStabilizer(const Chassis::State &state) {
         resolve = true;
     }
 
-    if (bActiveStabilizer && nTouching == 0 
-    && ground_normal.y > 0.9f && state.GetUpVector().y > 0.1f
-    && ground_dot > 0.8f && altitude > FLOAT_EPSILON) {
+    if (bActiveStabilizer && nTouching == 0 && ground_normal.y > 0.9f && state.GetUpVector().y > 0.1f && ground_dot > 0.8f &&
+        altitude > FLOAT_EPSILON) {
         float altitude_ramp = 1.0f - UMath::Ramp(altitude, 0.0f, fStablizationAltitude);
         float speed_ramp = UMath::Ramp(state.speed, 0.0f, fStabilizerSpeed);
 

@@ -483,7 +483,7 @@ void EngineSpline::OnTaskSimulate(float dT) {
         float total_gear_ratio = GetGearRatio(mGear) * GetFinalGear();
         float gear_direction = mGear == G_REVERSE ? -1.0f : 1.0f; // unused, from debug info
         float power_range = (max_w - min_w) / max_w;
-        float av = UMath::Abs(differential_w) * total_gear_ratio * power_range + min_w;
+        float av = min_w + UMath::Abs(differential_w) * total_gear_ratio * power_range;
         mEngineBraking = av < mAngularVelocity;
         av = UMath::Clamp(av, min_w, max_w);
         mAngularVelocity = av;

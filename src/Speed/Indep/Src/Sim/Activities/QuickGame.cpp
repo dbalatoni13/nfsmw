@@ -29,7 +29,9 @@ QuickGame::QuickGame(Sim::Param params)
       mActionQ(nullptr),                     //
       mState(RACESTATE_LOADING_WORLD) {
     mUpdateTask = AddTask(UCrc32("WorldUpdate"), 1.0f, 0.0f, Sim::TASK_FRAME_FIXED);
+#ifndef EA_BUILD_A124
     Sim::ProfileTask(mUpdateTask, "QuickGame");
+#endif
     World_DEBUGStartLocation(mStartLocation, mStartDirection);
 
     bool foundIntroNIS = false;

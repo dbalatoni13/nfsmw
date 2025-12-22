@@ -175,10 +175,10 @@ void SuspensionSpline::OnBehaviorChange(const UCrc32 &mechanic) {
 void SuspensionSpline::RestoreState() {
     mInput->ClearInput();
 
+    mBurnout = 0.0f;
     mBrakeLockFront = false;
     mBrakeLockRear = false;
     mConstraint = 60.0f;
-    mBurnout = 0.0f;
     mNISSteering = 0.0f;
     mNISSteeringWeight = 0.0f;
 
@@ -228,7 +228,7 @@ void SuspensionSpline::Reset() {
         if (wheel.InitPosition(rigidBody, wheel.GetRadius())) {
             const UMath::Vector3 &groundNormal = UMath::Vector4To3(wheel.GetNormal());
             float upness = UMath::Clamp(UMath::Dot(groundNormal, vUp), 0.0f, 1.0f);
-            float newCompression = GetRideHeight(i) * upness + (wheel.GetNormal()).w;
+            float newCompression = wheel.GetNormal().w + GetRideHeight(i) * upness;
             if (newCompression < 0.0f) {
                 newCompression = 0.0f;
             }
