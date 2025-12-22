@@ -11,7 +11,6 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
-#include "dolphin/types.h"
 
 float culldiv = 12000.0f;
 static const CarFXPosInfo FXMarkerNameHashMappings[28] = {
