@@ -107,7 +107,7 @@ void *bOMalloc(SlotPool *slot_pool);
 void bFree(SlotPool *slot_pool, void *p);
 void bFree(SlotPool *slot_pool, void *first_slot, void *last_slot);
 
-extern struct SlotPool *ePolySlotPool;
+extern SlotPool *ePolySlotPool;
 
 extern unsigned char *CurrentBufferStart;
 extern unsigned char *CurrentBufferPos;

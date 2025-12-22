@@ -8,6 +8,9 @@
 #include "EcstasyData.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
+
+extern SlotPool *eModelSlotPool;
 
 struct eModel : public bTNode<eModel> {
     // total size: 0x18
@@ -29,6 +32,18 @@ struct eModel : public bTNode<eModel> {
     void ReplaceLightMaterial(unsigned int old_name_hash, eLightMaterial *new_light_material);
     ePositionMarker *GetPostionMarker(ePositionMarker *prev_marker);
     ePositionMarker *GetPostionMarker(unsigned int namehash);
+
+    static void * operator new(size_t size) {}
+
+    void operator delete(void * ptr) {
+        bFree(eModelSlotPool, ptr);
+    }
+
+    eModel() {}
+
+    ~eModel() {
+        this->UnInit();
+    }
 
     eSolid *GetMovedSolid() {} // TODO
 

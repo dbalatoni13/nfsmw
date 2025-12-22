@@ -329,6 +329,14 @@ template <typename T> class bPList : public bTList<bPNode> {
     }
 };
 
+template <typename T> class bSNode {
+    // Functions
+    T *GetNext() {}
+
+    // Members
+    T *Next;
+};
+
 template <typename T> class bSList {
     // Functions
     bSList() {}

@@ -5,6 +5,11 @@
 #pragma once
 #endif
 
+struct IVehiclePartDamageBehaviour {
+    // Functions
+    IVehiclePartDamageBehaviour() {}
 
+    virtual ~IVehiclePartDamageBehaviour() {}
+};
 
 #endif
