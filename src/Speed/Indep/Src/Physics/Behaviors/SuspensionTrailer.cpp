@@ -110,9 +110,9 @@ void SuspensionTrailer::Tire::BeginFrame() {
 void SuspensionTrailer::Tire::EndFrame(float dT) {}
 
 void SuspensionTrailer::Tire::UpdateFree(float dT) {
-    mSlipping = false;
     mLoad = 0.0f;
     mSlip = 0.0f;
+    mSlipping = false;
     if (mEBrake > 0.0f || mBrake > 0.0f) {
         mAV = 0.0f;
     }

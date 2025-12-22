@@ -14,6 +14,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/Wheel.h"
+#include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 // total size: 0x144

@@ -12,6 +12,8 @@
 
 // Credit: Brawltendo
 
+typedef float Angle;
+
 typedef float Rpm;
 typedef float Mps;
 typedef float Mps2;

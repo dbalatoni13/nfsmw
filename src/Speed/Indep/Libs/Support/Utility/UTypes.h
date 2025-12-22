@@ -132,8 +132,8 @@ inline UMath::Vector3 Vector3Make(float x, float y, float z) {
     return c;
 }
 
+// TODO PS2
 inline Vector4 Vector4Make(const Vector3 &c, float w) {
-    // Vector4 res = {c.x, c.y, c.z, w};
     Vector4 res;
     res.x = c.x;
     res.y = c.y;
