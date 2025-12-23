@@ -340,9 +340,6 @@ template <typename T> class bSNode {
 template <typename T> class bSList {
   public:
     // Functions
-    bSList() {}
-
-    int IsEmpty() {}
 
     T *RemoveHead() {}
 
