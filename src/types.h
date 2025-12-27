@@ -74,6 +74,14 @@ typedef long int int64_t;
 typedef long unsigned int uint64_t;
 typedef int8_t bool8_t;
 
+// TODO
+typedef unsigned int u32;
+typedef int i32;
+typedef short unsigned int u16;
+typedef short int i16;
+typedef unsigned char u8;
+typedef signed char i8;
+
 #define ONLINE_SUPPORT (1)
 
 #elif defined(EA_PLATFORM_PLAYSTATION2)
@@ -135,6 +143,13 @@ typedef uint64_t uintmax_t;
 typedef char char8_t;
 // typedef __wchar_t char16_t; // TODO
 typedef uint32_t char32_t;
+
+typedef unsigned int u32;
+typedef int i32;
+typedef short unsigned int u16;
+typedef short int i16;
+typedef unsigned char u8;
+typedef signed char i8;
 
 #define ONLINE_SUPPORT (1)
 
