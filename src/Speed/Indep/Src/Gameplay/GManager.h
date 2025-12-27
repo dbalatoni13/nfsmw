@@ -20,9 +20,10 @@ struct _type_ID_StockCarMap {
 // total size: 0x308
 class GManager : public UTL::COM::Object, public IVehicleCache {
   public:
-    static GManager *mObj;
+    static void Init(const char *vaultPackName);
 
     GManager(const char *vaultPackName);
+    void InitializeRaceStreaming();
     void PreBeginGameplay();
     void BeginGameplay();
     void EndGameplay();
@@ -45,6 +46,8 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     }
 
   private:
+    static GManager *mObj;
+
     const char *mVaultPackFileName;                                                   // offset 0x1C, size 0x4
     bFile *mVaultPackFile;                                                            // offset 0x20, size 0x4
     unsigned int mVaultCount;                                                         // offset 0x24, size 0x4

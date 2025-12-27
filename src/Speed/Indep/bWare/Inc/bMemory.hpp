@@ -204,8 +204,8 @@ struct AllocDesc {
     unsigned int mHigh;  // offset 0xC, size 0x4
 };
 
+// total size: 0x32C
 struct FastMem {
-    // total size: 0x32C
     FreeBlock *mFreeLists[64];   // offset 0x0, size 0x100
     const char *mName;           // offset 0x100, size 0x4
     unsigned int mExpansionSize; // offset 0x104, size 0x4
@@ -233,9 +233,15 @@ struct FastMem {
     bool AssignToFree(std::size_t bytes);
     bool CreateBlock(std::size_t listIndex);
     void DumpRecord();
+
+    static inline void Lock();
 };
 
 extern FastMem gFastMem;
+
+inline void FastMem::Lock() {
+    gFastMem.mLocks++;
+}
 
 extern MemoryPool *MemoryPools[16];
 
@@ -243,6 +249,8 @@ unsigned int GetVirtualMemoryAllocParams();
 void bInitMemoryPool(int pool_num, void *mem, int mem_size, const char *debug_name);
 int GetVirtualMemoryPoolNumber();
 int bGetMemoryPoolNum(const char *memory_pool_name);
+void bReserveMemoryPool(int pool_num);
+void bMemoryCreatePersistentPool(int size);
 int bGetFreeMemoryPoolNum();
 int bLargestMalloc(int allocation_params);
 void bVerifyPoolIntegrity(int pool);

@@ -486,8 +486,9 @@ class EmitterSystem {
         }
     };
 
-    static BOOL Loader(bChunk *bchunk);
-    static BOOL Unloader(bChunk *bchunk);
+    static void Init();
+    static int32 Loader(bChunk *bchunk);
+    static int32 Unloader(bChunk *bchunk);
     static int32 TexturePageLoader(bChunk *bchunk);
     static int32 TexturePageUnloader(bChunk *bchunk);
     static void SetTexturePageRanges(int32 num_ranges, TexturePageRange *ranges);
@@ -511,7 +512,6 @@ class EmitterSystem {
     void AddLibrary(EmitterLibrary *lib);
     void RemoveLibrary(EmitterLibrary *lib);
     void Render(eView *view);
-    void Init();
     EmitterDataAttribWrapper *GetEmitterData(const Attrib::Collection *spec);
     EmitterGroupAttribWrapper *GetEmitterGroup(const Attrib::Collection *spec);
     bool IsCloseEnough(const bVector3 *group_pos, float farclip, int32 frustrum, float cos_angle_fov) const;

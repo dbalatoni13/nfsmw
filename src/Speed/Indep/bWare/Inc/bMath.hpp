@@ -18,10 +18,13 @@
 #error Choose a platform
 #endif
 
+extern unsigned int bDefaultSeed;
+
 unsigned int bRandom(int range, unsigned int *seed);
 float bRandom(float range, unsigned int *seed);
 unsigned int bRandom(int range);
 float bRandom(float range);
+void bSetRandomSeed(unsigned int value, unsigned int *seed);
 float bFMod(float a, float b);
 float bSin(unsigned short angle);
 float bSin(float angle);
@@ -29,6 +32,8 @@ float bCos(unsigned short angle);
 void bSinCos(float *presult_sin, float *presult_cos, unsigned short angle);
 unsigned short bASin(float x);
 unsigned short bATan(float x, float y);
+
+void bMathTimingTest();
 
 inline unsigned short bACos(float x) {
     return 16384 - bASin(x);

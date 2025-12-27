@@ -119,6 +119,7 @@ struct System {
 };
 
 void UpdateDelta(float deltaTime);
+void Init(float externalTime);
 void Reset(float externalTime);
 IEngine *Create(UTL::COM::Object *baseObject, IContext *context, UCrc32 name, float externalTime, float rate);
 

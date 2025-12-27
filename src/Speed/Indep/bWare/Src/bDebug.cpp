@@ -10,7 +10,6 @@
 #include "Speed/PSX2/bWare/Src/ee/include/eekernel.h"
 #endif
 
-void bInitTicker(float min_wraparound_time);
 void bFigureOutPSX2Platform();
 
 int EnableReleasePrintf = false;

@@ -5,6 +5,6 @@
 #pragma once
 #endif
 
-
+void InitMemoryCard();
 
 #endif

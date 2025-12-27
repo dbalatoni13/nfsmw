@@ -1,7 +1,6 @@
 #ifndef MISC_HERMES_H
 #define MISC_HERMES_H
 
-#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -9,6 +8,10 @@
 #include <cstddef>
 
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
+#include "Speed/Indep/Src/Misc/AttribAlloc.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/VecHashMap64.h"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 namespace Hermes {
 
@@ -129,6 +132,71 @@ class Handler {
     HHANDLER mKey;                              // offset 0x18, size 0x4
     unsigned int mID;                           // offset 0x1C, size 0x4
     bool mNoFilter;                             // offset 0x20, size 0x1
+};
+
+class PortMessage {
+  public:
+    typedef UTL::Std::vector<Hermes::Handler, _type_vector> Handlers;
+
+    // static void *operator new(unsigned int size, void *ptr) {}
+
+    // static void operator delete(void *mem, void *ptr) {}
+
+    // static void *operator new(unsigned int size) {}
+
+    // static void operator delete(void *mem, unsigned int size) {}
+
+    // static void *operator new(unsigned int size, const char *name) {}
+
+    // static void operator delete(void *mem, const char *name) {}
+
+    // static void operator delete(void *mem, unsigned int size, const char *name) {}
+
+    PortMessage() {}
+
+    ~PortMessage() {}
+
+    bool IsEmpty() {}
+
+  private:
+    Handlers mHandlers; // offset 0x0, size 0x10
+};
+
+// total size: 0x10
+struct PortKey {
+    uint64_t key;    // offset 0x0, size 0x8
+    PortMessage *pm; // offset 0x8, size 0x4
+};
+
+inline void *DefaultTableAllocFunc(size_t bytes) {
+    AttribAlloc::Allocate(bytes, "TODO");
+}
+
+inline void *DefaultTableFreeFunc(void *ptr, size_t bytes) {
+    AttribAlloc::Free(ptr, bytes, "TODO");
+}
+
+// total size: 0x20
+class System {
+  public:
+    typedef VecHashMap64<PortMessage, TablePolicy_Fixed<DefaultTableAllocFunc, DefaultTableFreeFunc>, false, 16> PortMessageMap;
+    typedef UTL::Std::map<HHANDLER, PortKey, _type_map> PortKeyMap;
+
+    static void Init();
+
+    static System &Get() {
+        return *mObj;
+    }
+
+  private:
+    System() {}
+
+    ~System() {}
+
+    static System *mObj; // size: 0x4
+
+    PortMessageMap mPortMessageMap; // offset 0x0, size 0x10
+    PortKeyMap mPortKeyMap;         // offset 0x10, size 0x10
 };
 
 }; // namespace Hermes

@@ -18,17 +18,10 @@ enum GameFlowState {
     GAMEFLOW_STATE_NONE = 0,
 };
 
-struct GameFlowManager {
-    // total size: 0x24
-    void (*pSingleFunction)(int);       // offset 0x0, size 0x4
-    int SingleFunctionParam;            // offset 0x4, size 0x4
-    const char *pSingleFunctionName;    // offset 0x8, size 0x4
-    void (*pLoopingFunction)();         // offset 0xC, size 0x4
-    const char *pLoopingFunctionName;   // offset 0x10, size 0x4
-    bool WaitingForCallback;            // offset 0x14, size 0x1
-    const char *pCallbackName;          // offset 0x18, size 0x4
-    int CallbackPhase;                  // offset 0x1C, size 0x4
-    GameFlowState CurrentGameFlowState; // offset 0x20, size 0x4
+// total size: 0x24
+class GameFlowManager {
+  public:
+    void LoadFrontend();
 
     ~GameFlowManager() {}
 
@@ -49,6 +42,17 @@ struct GameFlowManager {
     bool IsLoading() {
         return this->GetState() == GAMEFLOW_STATE_LOADING_REGION || this->GetState() == GAMEFLOW_STATE_LOADING_TRACK;
     }
+
+  private:
+    void (*pSingleFunction)(int);       // offset 0x0, size 0x4
+    int SingleFunctionParam;            // offset 0x4, size 0x4
+    const char *pSingleFunctionName;    // offset 0x8, size 0x4
+    void (*pLoopingFunction)();         // offset 0xC, size 0x4
+    const char *pLoopingFunctionName;   // offset 0x10, size 0x4
+    bool WaitingForCallback;            // offset 0x14, size 0x1
+    const char *pCallbackName;          // offset 0x18, size 0x4
+    int CallbackPhase;                  // offset 0x1C, size 0x4
+    GameFlowState CurrentGameFlowState; // offset 0x20, size 0x4
 };
 
 extern GameFlowManager TheGameFlowManager; // size: 0x24
@@ -60,5 +64,16 @@ inline bool IsGameFlowInFrontEnd() {
 inline bool IsGameFlowInGame() {
     return TheGameFlowManager.IsInGame();
 }
+
+inline void ResetCapturedLoadingTimes() {}
+
+inline void CaptureLoadingTime(const char *name) {}
+
+inline void PrintCapturedLoadingTime(const char *from_name, const char *display_name) {}
+
+void LoadGlobalAChunks();
+void LoadGlobalChunks();
+void BootLoadingScreen();
+void UnloadFrontEndVault();
 
 #endif

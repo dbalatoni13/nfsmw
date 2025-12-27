@@ -5,6 +5,10 @@
 #pragma once
 #endif
 
+namespace BuildRegion {
 
+bool IsAmerica();
+
+}; // namespace BuildRegion
 
 #endif

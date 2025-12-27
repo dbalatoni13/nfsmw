@@ -220,6 +220,7 @@ if config.platform == Platform.GC_WII:
         "-I ./",
         "-I src",
         "-DEA_PLATFORM_GAMECUBE",
+        "-DEA_REGION_AMERICA",
         "-DGEKKO",
         "-D_USE_MATH_DEFINES",
         f"-I build/{config.version}/include",

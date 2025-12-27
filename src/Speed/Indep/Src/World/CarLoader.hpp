@@ -151,6 +151,8 @@ class CarLoader {
 };
 
 void *MoveDefragmentAllocation(void *allocation);
+void InitCarLoader();
+void CloseCarLoader();
 
 extern CarLoader TheCarLoader;
 

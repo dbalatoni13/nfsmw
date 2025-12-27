@@ -268,4 +268,6 @@ class cFrontendDatabase {
 
 extern cFrontendDatabase *FEDatabase;
 
+void InitFrontendDatabase();
+
 #endif

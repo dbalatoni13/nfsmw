@@ -11,18 +11,20 @@
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Physics/PVehicle.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
-#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/bFunk.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-#include <types.h>
+
 #include <cstddef>
+#include <types.h>
+
 
 DebugVehicleSelection *DebugVehicleSelection::mThis = nullptr;
 bool DebugVehicleSelection::mOnOff = false;
 
 void DebugVehicleSelection::Init() {
-    if (!this->mThis) {
-        this->mThis = ::new (__FILE__, __LINE__) DebugVehicleSelection();
+    if (!mThis) {
+        mThis = ::new (__FILE__, __LINE__) DebugVehicleSelection();
     }
 }
 
@@ -68,10 +70,12 @@ void DebugVehicleSelection::InitSelectionList() {
 
 bool DebugVehicleSelection::SwitchPlayerVehicle(const char *attribName) {
     IPlayer *iplayer = UTL::Collections::ListableSet<IPlayer, 8, ePlayerList, 3>::First(PLAYER_LOCAL);
-    if (!iplayer) return false;
+    if (!iplayer)
+        return false;
 
     ISimable *oldcar = iplayer->GetSimable();
-    if (!oldcar) return false;
+    if (!oldcar)
+        return false;
 
     UMath::Matrix4 transform;
     oldcar->GetTransform(transform);

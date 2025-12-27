@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
-
+void InitAnimCtrls();
+void CloseAnimCtrls();
 
 #endif

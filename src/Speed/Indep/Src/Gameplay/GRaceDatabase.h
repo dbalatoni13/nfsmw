@@ -27,6 +27,8 @@ class GRaceDatabase {
         kUnlocked_Online = 1 << 4,
     };
 
+    static void Init();
+
     GRaceCustom *GetStartupRace();
     void SetStartupRace(GRaceCustom *custom, Context context);
     void FreeCustomRace(GRaceCustom *custom);
