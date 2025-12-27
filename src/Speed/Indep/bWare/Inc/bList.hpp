@@ -330,8 +330,10 @@ template <typename T> class bPList : public bTList<bPNode> {
 };
 
 template <typename T> class bSNode {
-    // Functions
-    T *GetNext() {}
+  public:
+    T *GetNext() {
+        return Next;
+    }
 
   private:
     T *Next;
@@ -340,14 +342,21 @@ template <typename T> class bSNode {
 template <typename T> class bSList {
   public:
     // Functions
+    bSList() {}
+
+    int IsEmpty() {}
 
     T *RemoveHead() {}
 
     ~bSList() {}
 
-    T *GetHead() {}
+    T *GetHead() {
+        return Head;
+    }
 
-    T *EndOfList() {}
+    T *EndOfList() {
+        return (T *)this;
+    }
 
     T *AddTail(T *node) {}
 

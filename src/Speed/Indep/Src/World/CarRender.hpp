@@ -221,7 +221,7 @@ class CarPartModel {
 
     struct eModel *GetModel() {}
 
-    void SetModel(struct eModel *model) {}
+    void SetModel(eModel *model) {}
 
     bool IsLodMissing() const {}
 
