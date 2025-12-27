@@ -333,11 +333,12 @@ template <typename T> class bSNode {
     // Functions
     T *GetNext() {}
 
-    // Members
+  private:
     T *Next;
 };
 
 template <typename T> class bSList {
+  public:
     // Functions
     bSList() {}
 
@@ -353,9 +354,11 @@ template <typename T> class bSList {
 
     T *AddTail(T *node) {}
 
-    // Members
+  private:
     T *Head; // offset 0x0, size 0x4
     T *Tail; // offset 0x4, size 0x4
 };
+
+void bPListInit(int num_expected_bpnodes);
 
 #endif

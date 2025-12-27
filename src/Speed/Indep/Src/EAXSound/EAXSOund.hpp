@@ -165,6 +165,8 @@ class EAXSound : public AudioMemBase {
     Event::StaticData mData;                     // offset 0xB8, size 0x4
 };
 
+void InitializeSoundDriver();
+
 bool g_EAXIsPaused(void);
 
 void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);

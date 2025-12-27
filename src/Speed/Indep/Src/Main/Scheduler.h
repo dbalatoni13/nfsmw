@@ -48,6 +48,8 @@ class Scheduler {
     };
 
   public:
+    static void Init(float timestep);
+
     Scheduler(float timestep);
     void Synchronize(Timer to);
 

@@ -51,6 +51,7 @@ struct ICEShakeTrack : public bTNode<ICEShakeTrack> {
 // total size: 0x80
 class ICEManager {
   public:
+    void Init();
     void Resolve();
     ICEData *GetCameraData(unsigned int scene_hash, int camTrack);
 

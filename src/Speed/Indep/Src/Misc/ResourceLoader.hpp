@@ -51,6 +51,8 @@ class ResourceFile : public bTNode<ResourceFile> {
     int HotFileNumber;                                // offset 0x4C, size 0x4
 };
 
+void InitResourceLoader();
+
 void EndianSwapChunkHeader(bChunk *chunk);
 void EndianSwapChunkHeadersRecursive(bChunk *chunks, int sizeof_chunks);
 void EndianSwapChunkHeadersRecursive(bChunk *first_chunk, bChunk *last_chunk);

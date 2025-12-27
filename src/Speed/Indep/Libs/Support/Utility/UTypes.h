@@ -142,6 +142,8 @@ inline Vector4 Vector4Make(const Vector3 &c, float w) {
     return res;
 }
 
+typedef Vector4 Quaternion;
+
 } // namespace UMath
 
 #endif

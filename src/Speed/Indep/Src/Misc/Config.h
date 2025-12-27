@@ -13,4 +13,6 @@ extern bool ShutJosieUp;
 extern bool IsMemcardEnabled;
 extern bool IsAutoSaveEnabled;
 
+void InitConfig();
+
 #endif

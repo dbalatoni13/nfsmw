@@ -9,6 +9,8 @@
 
 class OnlineManager {
   public:
+    void Initialize(int argc, char **argv) {}
+
     bool IsOnlineRace() {
 #if !ONLINE_SUPPORT
         return false;

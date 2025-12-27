@@ -13,9 +13,45 @@ class IOModule {
   public:
     static IOModule &GetIOModule();
 
+    bool EnableUpdating(bool enable);
+
+    IOModule();
+
+    bool CheckUnplugged();
+
+    bool MultitapConnected();
+
+    void PollDevices();
+
+    void Update();
+
+    void CreateDevices();
+
+    void SetAttributeData();
+
+    void ReleaseDevices();
+
+    void UpdateAllDevices();
+
+    bool HaveAnyDevicesChanged();
+
+    void Initialize();
+
+    void Release();
+
+    bool IsActiveDevice(int port);
+
+    ~IOModule() {}
+
+    // bool IsUnplugged(int port) {}
+
+    // int GetNumDevices() {}
+
     InputDevice *GetDevice(int i) {
         return fDevices[i];
     }
+
+    // Timer GetLastTimeAnyInputRecieved() {}
 
   private:
     bool fUpdateEnabled;         // offset 0x0, size 0x1

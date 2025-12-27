@@ -13,53 +13,55 @@
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
 #include "Speed/Indep/Src/Interfaces/Simables/isimable.h"
 
+#include <types.h>
+
 struct GRacerInfo {
     // total size: 0x1A8
-    HSIMABLE mhSimable;                    // offset 0x0, size 0x4
-    struct GCharacter *mGameCharacter;     // offset 0x4, size 0x4
-    const char *mName;                     // offset 0x8, size 0x4
-    int mIndex;                            // offset 0xC, size 0x4
-    int mRanking;                          // offset 0x10, size 0x4
-    int mAiRanking;                        // offset 0x14, size 0x4
-    float mPctRaceComplete;                // offset 0x18, size 0x4
-    bool mKnockedOut;                      // offset 0x1C, size 0x1
-    bool mTotalled;                        // offset 0x20, size 0x1
-    bool mEngineBlown;                     // offset 0x24, size 0x1
-    bool mBusted;                          // offset 0x28, size 0x1
-    bool mChallengeComplete;               // offset 0x2C, size 0x1
-    bool mFinishedRacing;                  // offset 0x30, size 0x1
-    bool mCameraDetached;                  // offset 0x34, size 0x1
-    float mPctLapComplete;                 // offset 0x38, size 0x4
-    int mLapsCompleted;                    // offset 0x3C, size 0x4
-    int mCheckpointsHitThisLap;            // offset 0x40, size 0x4
-    int mTollboothsCrossed;                // offset 0x44, size 0x4
-    float mTimeRemainingToBooth[16];       // offset 0x48, size 0x40
-    int mSpeedTrapsCrossed;                // offset 0x88, size 0x4
-    float mSpeedTrapSpeed[16];             // offset 0x8C, size 0x40
-    int mSpeedTrapPosition[16];            // offset 0xCC, size 0x40
-    float mDistToNextCheckpoint;           // offset 0x10C, size 0x4
-    float mDistanceDriven;                 // offset 0x110, size 0x4
-    float mTopSpeed;                       // offset 0x114, size 0x4
-    float mFinishingSpeed;                 // offset 0x118, size 0x4
-    float mPoundsNOSUsed;                  // offset 0x11C, size 0x4
-    float mTimeCrossedLastCheck;           // offset 0x120, size 0x4
-    float mTotalUpdateTime;                // offset 0x124, size 0x4
-    int mNumPerfectShifts;                 // offset 0x128, size 0x4
-    int mNumTrafficCarsHit;                // offset 0x12C, size 0x4
-    float mSpeedBreakerTime;               // offset 0x130, size 0x4
-    float mPointTotal;                     // offset 0x134, size 0x4
-    float mZeroToSixtyTime;                // offset 0x138, size 0x4
-    float mQuarterMileTime;                // offset 0x13C, size 0x4
-    float mSplitTimes[4];                  // offset 0x140, size 0x10
-    int mSplitRankings[4];                 // offset 0x150, size 0x10
-    GTimer mRaceTimer;                     // offset 0x160, size 0xC
-    GTimer mLapTimer;                      // offset 0x16C, size 0xC
-    GTimer mCheckTimer;                    // offset 0x178, size 0xC
-    struct UMath::Vector3 mSavedPosition;  // offset 0x184, size 0xC
-    float mSavedHeatLevel;                 // offset 0x190, size 0x4
-    struct UMath::Vector3 mSavedDirection; // offset 0x194, size 0xC
-    float mSavedSpeed;                     // offset 0x1A0, size 0x4
-    bool mDNF;                             // offset 0x1A4, size 0x1
+    HSIMABLE mhSimable;                           // offset 0x0, size 0x4
+    struct GCharacter *mGameCharacter;            // offset 0x4, size 0x4
+    const char *mName;                            // offset 0x8, size 0x4
+    int mIndex;                                   // offset 0xC, size 0x4
+    int mRanking;                                 // offset 0x10, size 0x4
+    int mAiRanking;                               // offset 0x14, size 0x4
+    float mPctRaceComplete;                       // offset 0x18, size 0x4
+    bool mKnockedOut;                             // offset 0x1C, size 0x1
+    bool mTotalled;                               // offset 0x20, size 0x1
+    bool mEngineBlown;                            // offset 0x24, size 0x1
+    bool mBusted;                                 // offset 0x28, size 0x1
+    bool mChallengeComplete;                      // offset 0x2C, size 0x1
+    bool mFinishedRacing;                         // offset 0x30, size 0x1
+    bool mCameraDetached;                         // offset 0x34, size 0x1
+    float mPctLapComplete;                        // offset 0x38, size 0x4
+    int mLapsCompleted;                           // offset 0x3C, size 0x4
+    int mCheckpointsHitThisLap;                   // offset 0x40, size 0x4
+    int mTollboothsCrossed;                       // offset 0x44, size 0x4
+    float mTimeRemainingToBooth[16];              // offset 0x48, size 0x40
+    int mSpeedTrapsCrossed;                       // offset 0x88, size 0x4
+    float mSpeedTrapSpeed[16];                    // offset 0x8C, size 0x40
+    int mSpeedTrapPosition[16];                   // offset 0xCC, size 0x40
+    float mDistToNextCheckpoint;                  // offset 0x10C, size 0x4
+    float mDistanceDriven;                        // offset 0x110, size 0x4
+    float mTopSpeed;                              // offset 0x114, size 0x4
+    float mFinishingSpeed;                        // offset 0x118, size 0x4
+    float mPoundsNOSUsed;                         // offset 0x11C, size 0x4
+    float mTimeCrossedLastCheck;                  // offset 0x120, size 0x4
+    float mTotalUpdateTime;                       // offset 0x124, size 0x4
+    int mNumPerfectShifts;                        // offset 0x128, size 0x4
+    int mNumTrafficCarsHit;                       // offset 0x12C, size 0x4
+    float mSpeedBreakerTime;                      // offset 0x130, size 0x4
+    float mPointTotal;                            // offset 0x134, size 0x4
+    float mZeroToSixtyTime;                       // offset 0x138, size 0x4
+    float mQuarterMileTime;                       // offset 0x13C, size 0x4
+    float mSplitTimes[4];                         // offset 0x140, size 0x10
+    int mSplitRankings[4];                        // offset 0x150, size 0x10
+    GTimer mRaceTimer;                            // offset 0x160, size 0xC
+    GTimer mLapTimer;                             // offset 0x16C, size 0xC
+    GTimer mCheckTimer;                           // offset 0x178, size 0xC
+    ALIGN_PS2(16) UMath::Vector3 mSavedPosition;  // offset 0x184, size 0xC
+    float mSavedHeatLevel;                        // offset 0x190, size 0x4
+    ALIGN_PS2(16) UMath::Vector3 mSavedDirection; // offset 0x194, size 0xC
+    float mSavedSpeed;                            // offset 0x1A0, size 0x4
+    bool mDNF;                                    // offset 0x1A4, size 0x1
 };
 
 struct _type_ID_GRaceStatusTriggerList {

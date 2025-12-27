@@ -38,6 +38,8 @@ struct Performance {
     float Acceleration;
 };
 
+void Init();
+
 float AerodynamicDownforce(const Attrib::Gen::chassis &chassis, const float speed);
 float EngineInertia(const Attrib::Gen::engine &engine, const bool loaded);
 eInductionType InductionType(const Attrib::Gen::induction &induction);

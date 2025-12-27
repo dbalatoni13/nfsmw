@@ -311,4 +311,8 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
     unsigned int mWorstCollision : 31; // offset 0xC, size 0x4
 };
 
+template <void *(AllocFunc)(size_t), void *(FreeFunc)(void *, size_t)> class TablePolicy_Fixed {};
+
+template <typename T, typename Policy, bool Unk2, std::size_t Unk3> class VecHashMap64 {};
+
 #endif

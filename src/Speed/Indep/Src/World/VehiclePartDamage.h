@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
-
+void InitVehicleDamage();
+void CloseVehicleDamage();
 
 #endif

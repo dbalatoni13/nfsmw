@@ -491,7 +491,7 @@ void TextureAnimPack::InitAnims() {
 void UpdateTextureAnimations() {
     // ProfileNode profile_node;
 
-    if ((TheGameFlowManager.CurrentGameFlowState != GAMEFLOW_STATE_IN_FRONTEND) && (WorldTimeElapsed == 0.0f)) {
+    if (!IsGameFlowInFrontEnd() && (WorldTimeElapsed == 0.0f)) {
         return;
     }
 
@@ -531,7 +531,7 @@ void UpdateTextureAnimations() {
         }
     }
 
-    // TODO ProfileNode and IsInFrontEnd stuff
+    // TODO ProfileNode
 }
 
 void TextureLoadedStreamingEntryCallback(bChunk *chunk, eStreamingEntry *streaming_entry, eStreamingPack *streaming_pack) {

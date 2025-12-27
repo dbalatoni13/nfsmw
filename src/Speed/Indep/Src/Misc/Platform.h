@@ -7,6 +7,8 @@
 
 // TODO I just made this up to store declarations for Platform.cpp
 
+void InitPlatform();
+void InitDisplaySystem();
 int bDoWithStack(void *function, void *stack_pointer, int arg1, int arg2);
 
 #endif

@@ -7,6 +7,8 @@
 
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+void eMathInit(void);
+
 void eCopyMatrix(bMatrix4 *dest, bMatrix4 *src);
 void eMulMatrix(bMatrix4 *ab, bMatrix4 *a, bMatrix4 *b);
 void eMulVector(bVector4 *vm, const bMatrix4 *m, const bVector4 *v);

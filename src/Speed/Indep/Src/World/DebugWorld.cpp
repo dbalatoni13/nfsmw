@@ -17,8 +17,8 @@ DebugWorld *DebugWorld::mThis = nullptr;
 bool DebugWorld::mOnOff = false;
 
 void DebugWorld::Init() {
-    if (!this->mThis) {
-        this->mThis = ::new (__FILE__, __LINE__) DebugWorld();
+    if (!mThis) {
+        mThis = ::new (__FILE__, __LINE__) DebugWorld();
     }
 }
 
