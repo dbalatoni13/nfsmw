@@ -20,7 +20,7 @@ class Wheel {
         gFastMem.Free(mem, size, nullptr);
     }
 
-    Wheel() {
+    Wheel() : mWorldPos(0.0f) {
         // TODO
     }
 
