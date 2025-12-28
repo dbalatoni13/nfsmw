@@ -54,7 +54,7 @@ template <typename T, std::size_t U> class Listable {
     }
 
   public:
-    static ForEachFunc ForEach(ForEachFunc f) {
+    static void ForEach(ForEachFunc f) {
         std::for_each(_mTable.begin(), _mTable.end(), f);
     }
 
@@ -121,7 +121,7 @@ template <typename T, std::size_t ListSize, typename Enum, std::size_t EnumMax> 
     static iterator First(Enum idx);
     static iterator Last(Enum idx);
 
-    static ForEachFunc_t ForEach(Enum idx, ForEachFunc_t f) {
+    static void ForEach(Enum idx, ForEachFunc_t f) {
         List &l = _mLists._buckets[idx];
         std::for_each(l.begin(), l.end(), f);
     }

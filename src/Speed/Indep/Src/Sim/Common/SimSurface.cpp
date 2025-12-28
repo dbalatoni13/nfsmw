@@ -29,9 +29,9 @@ SimSurface::SimSurface(const Attrib::Collection *spec) : Attrib::Gen::simsurface
 }
 
 // UNSOLVED, confusing
-SimSurface SimSurface::GetParentSurface() const {
-    const Attrib::Collection *collection;
-}
+// SimSurface SimSurface::GetParentSurface() const {
+//     const Attrib::Collection *collection;
+// }
 
 void SimSurface::UpdateSystem() {}
 

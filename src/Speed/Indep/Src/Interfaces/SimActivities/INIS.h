@@ -34,18 +34,30 @@ class INIS : public UTL::COM::IUnknown, public UTL::Collections::Singleton<INIS>
     virtual void SetPreMovie(const char *movieName);
     virtual void SetPostMovie(const char *movieName);
 
-    virtual CAnimChooser::eType GetType() {}
+    virtual CAnimChooser::eType GetType() {
+        // TODO
+        return CAnimChooser::Intro;
+    }
 
     virtual void Load(CAnimChooser::eType nisType, const char *scene, int cameratrack, bool PlayAsSoonAsLoaded);
     virtual bool SkipOverNIS();
     virtual void Pause();
     virtual void UnPause();
 
-    virtual bool IsLoaded() const {}
+    virtual bool IsLoaded() const {
+        // TODO
+        return false;
+    }
 
-    virtual bool IsPlaying() const {}
+    virtual bool IsPlaying() const {
+        // TODO
+        return false;
+    }
 
-    virtual bool InMovie() const {}
+    virtual bool InMovie() const {
+        // TODO
+        return false;
+    }
 
     virtual void ServiceLoads();
     virtual ICEScene *GetScene() const;
@@ -57,7 +69,10 @@ class INIS : public UTL::COM::IUnknown, public UTL::Collections::Singleton<INIS>
 
     virtual void StartPlayingNow() {}
 
-    virtual bool IsWorldMomement() const {}
+    virtual bool IsWorldMomement() const {
+        // TODO
+        return false;
+    }
 };
 
 #endif

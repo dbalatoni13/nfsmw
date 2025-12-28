@@ -86,10 +86,12 @@ bool OBB::CheckOBBOverlap(OBB *other) {
 
 bool OBB::BoxVsBox(OBB *a, OBB *b, OBB *result) {
     // TODO
+    return false;
 }
 
 bool OBB::SphereVsBox(OBB *a, OBB *b, OBB *result) {
     // TODO
+    return false;
 }
 
 bool OBB::SphereVsSphere(OBB *a, OBB *b, OBB *result) {

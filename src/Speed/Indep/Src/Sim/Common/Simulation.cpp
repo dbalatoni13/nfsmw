@@ -574,7 +574,7 @@ bool SimSystem::OnTask(HSIMTASK htask, float dT) {
         WGridManagedDynamicElem::UpdateElems();
         EventSequencer::UpdateDelta(dT);
         IInputPlayer::ForEach(DoFetchInput);
-        SimSurface::SimSurface::UpdateSystem();
+        SimSurface::UpdateSystem();
     } else if (htask == mSimFrameEnd) {
         for (IModel::List::const_iterator iter = IModel::GetList().begin(); iter != IModel::GetList().end(); ++iter) {
             IModel *model = *iter;

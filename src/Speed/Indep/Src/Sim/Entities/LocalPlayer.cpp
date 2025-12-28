@@ -48,7 +48,7 @@ LocalPlayer::LocalPlayer(Sim::Param params)
       mHudTask(nullptr),        //
       mSpeech(nullptr),         //
       mInGameBreaker(false)
-#ifndef EA_PLATFORM_PLAYSTATION2
+#ifndef EA_BUILD_A124
       ,
       mLastPursuit(nullptr)
 #endif

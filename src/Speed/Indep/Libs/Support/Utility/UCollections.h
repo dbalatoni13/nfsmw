@@ -208,6 +208,7 @@ template <typename T, std::size_t Size> class GarbageNode {
     bool ReleaseGC() {
         _mDirty = true;
         _mCollector._Release(_This());
+        return true; // TODO
     }
 
     bool IsDirty() {

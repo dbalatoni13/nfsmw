@@ -279,9 +279,13 @@ elif config.platform == Platform.X360:
         "/wd4996",  # get rid of string deprecation warnings for now
         # "/GR",  # RTTI
         "/Og",
+        # "/Os", # no
+        "/Ob2",
         # "/Oi",  # maybe
         # "/Oy",  # maybe
-        "/GF",
+        # "/Ox",  # maybe
+        "/GF",  # Eliminate Duplicate Strings
+        # "/Gy",  # maybe?
         "/Zd",  # /Zi enables debug info, /Zd for line numbers only
         "/EHsc",  # enable exception handling (and extern C notthrow?)
         "/I src/Packages/xenonsdk/2.0.2135.2/installed/include/xbox",

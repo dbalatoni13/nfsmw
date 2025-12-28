@@ -19,9 +19,13 @@ Speed/Indep/SourceLists/zAI.cpp:
 	.text       start:0x820F0000 end:0x8214A870
 
 Speed/Indep/SourceLists/zMisc.cpp:
-	.pdata      start:0x820DC9C0 end:0x820DD0E8
-	.text       start:0x8266BCB8 end:0x82686318
+	.pdata      start:0x820CD1C8 end:0x820CE290
+	.text       start:0x823DAE48 end:0x82403E78
 
 Speed/Indep/SourceLists/zLua.cpp:
 	.pdata      start:0x820CAB20 end:0x820CAE20
 	.text       start:0x82395150 end:0x823A0828
+
+Speed/Indep/SourceLists/zSim.cpp:
+	.pdata      start:0x820D21C0 end:0x820D2D08
+	.text       start:0x8249A6C0 end:0x824B4D38
