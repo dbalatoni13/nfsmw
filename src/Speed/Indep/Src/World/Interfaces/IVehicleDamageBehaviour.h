@@ -37,12 +37,12 @@ public:
     ~VehiclePartDamageBehaviour() override;
 
     // Overrides: IVehiclePartDamageBehaviour
-    void Init();
+    virtual void Init();
 
-    void InitAnimationPivot(unsigned int slotId, const char * markerName);
+    virtual void InitAnimationPivot(unsigned int slotId, const char * markerName);
 
     // Overrides: IVehiclePartDamageBehaviour
-    void Reset();
+    virtual void Reset();
 
     struct ePositionMarker * FindPositionMarker(const char * findPivotName);
 
@@ -53,19 +53,19 @@ public:
     void ManageGlassDamage();
 
     // Overrides: IVehiclePartDamageBehaviour
-    struct bMatrix4 * GetPartMatrix(unsigned int slotId);
+    virtual struct bMatrix4 * GetPartMatrix(unsigned int slotId);
 
     // Overrides: IVehiclePartDamageBehaviour
-    bool IsPartHidden(unsigned int slotId);
+    virtual bool IsPartHidden(unsigned int slotId);
 
     // Overrides: IVehiclePartDamageBehaviour
-    void HidePart(unsigned int slotId);
+    virtual void HidePart(unsigned int slotId);
 
     // Overrides: IVehiclePartDamageBehaviour
-    void Pose(struct bMatrix4 * worldMatrix);
+    virtual void Pose(struct bMatrix4 * worldMatrix);
 
     // Overrides: IVehiclePartDamageBehaviour
-    void Update(struct bMatrix4 * worldMatrix);
+    virtual void Update(struct bMatrix4 * worldMatrix);
 
     void ManageHoodAnimation();
 
@@ -78,10 +78,10 @@ public:
     void AnimatePart(unsigned int slotId, const bVector3 & rotation, struct bMatrix4 * worldMatrix);
 
     // Overrides: IVehiclePartDamageBehaviour
-    void DamageVehicle(const struct Info & damageInfo);
+    virtual void DamageVehicle(const struct Info & damageInfo);
 
     // Overrides: IVehiclePartDamageBehaviour
-    void UnitTest();
+    virtual void UnitTest();
 
 private:
     // Static members
