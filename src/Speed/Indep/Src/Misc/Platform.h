@@ -9,6 +9,8 @@
 
 void InitPlatform();
 void InitDisplaySystem();
+void ServicePlatform();
 int bDoWithStack(void *function, void *stack_pointer, int arg1, int arg2);
+void EnableInterrupts();
 
 #endif

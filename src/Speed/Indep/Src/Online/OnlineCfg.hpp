@@ -34,6 +34,8 @@ struct OnlineRaceParameters { // 0xc
     /* 0x8 */ bool IsLapKO;
 };
 
+// TODO
+namespace TODO {
 enum eOnlineState {
     OLS_NETWORK_UNINITIALIZED = 0,
     OLS_CONNECTED_TO_ISP = 1,
@@ -42,6 +44,7 @@ enum eOnlineState {
     OLS_LOBBY_REQUEST_PENDING = 3,
     OLS_LOBBY_SEND_RACE_RESULTS_WAIT = 4,
     OLS_LOBBY_SENT_RACE_RESULTS = 5
+};
 };
 
 // total size: 0x114
@@ -77,8 +80,8 @@ struct cOnlineSettings {
 
   private:
     /* 0x080 */ OnlineRaceParameters TheOnlineRaceSettings;
-    /* 0x08c */ eOnlineState onlineState;
-    /* 0x090 */ eOnlineState lastState;
+    /* 0x08c */ TODO::eOnlineState onlineState;
+    /* 0x090 */ TODO::eOnlineState lastState;
     /* 0x094 */ bool inErrorState;
     /* 0x098 */ char NetworkUserName[20];
     /* 0x0ac */ char NetworkPersona[20];
@@ -94,9 +97,9 @@ struct cOnlineSettings {
     cOnlineSettings();
     void Default();
     void RestoreDefaultSettings();
-    eOnlineState SetState();
-    eOnlineState GetState();
-    eOnlineState GetLastState();
+    TODO::eOnlineState SetState();
+    TODO::eOnlineState GetState();
+    TODO::eOnlineState GetLastState();
     void SetErrorState();
     bool IsInErrorState();
     OnlineRaceParameters *GetRaceSettings();

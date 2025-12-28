@@ -7,8 +7,9 @@
 
 namespace CameraAI {
 
+void Update(float dT);
 void Reset();
 
-};
+}; // namespace CameraAI
 
 #endif

@@ -51,6 +51,7 @@ class Scheduler {
     static void Init(float timestep);
 
     Scheduler(float timestep);
+    float Run(bool full_speed);
     void Synchronize(Timer to);
 
     static Scheduler &Get() {

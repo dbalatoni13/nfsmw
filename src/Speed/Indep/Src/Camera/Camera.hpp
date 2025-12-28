@@ -28,16 +28,10 @@ struct CameraParams {
     unsigned short DummyAngle;  // offset 0xD0, size 0x2
 };
 
-struct Camera {
-    // total size: 0x290
-    CameraParams CurrentKey;  // offset 0x0, size 0xD4
-    CameraParams PreviousKey; // offset 0xD4, size 0xD4
-    CameraParams VelocityKey; // offset 0x1A8, size 0xD4
-    bool bClearVelocity;      // offset 0x27C, size 0x1
-    float ElapsedTime;        // offset 0x280, size 0x4
-    int LastUpdateTime;       // offset 0x284, size 0x4
-    int LastDisparateTime;    // offset 0x288, size 0x4
-    int RenderDash;           // offset 0x28C, size 0x4
+// total size: 0x290
+class Camera {
+  public:
+    static void UpdateAll(float dT);
 
     bMatrix4 *GetCameraMatrix() {
         return &this->CurrentKey.Matrix;
@@ -141,6 +135,16 @@ struct Camera {
     void SetSimTimeMultiplier(float multiplier) {}
 
     float GetSimTimeMultiplier() {}
+
+  private:
+    CameraParams CurrentKey;  // offset 0x0, size 0xD4
+    CameraParams PreviousKey; // offset 0xD4, size 0xD4
+    CameraParams VelocityKey; // offset 0x1A8, size 0xD4
+    bool bClearVelocity;      // offset 0x27C, size 0x1
+    float ElapsedTime;        // offset 0x280, size 0x4
+    int LastUpdateTime;       // offset 0x284, size 0x4
+    int LastDisparateTime;    // offset 0x288, size 0x4
+    int RenderDash;           // offset 0x28C, size 0x4
 };
 
 // TODO move?

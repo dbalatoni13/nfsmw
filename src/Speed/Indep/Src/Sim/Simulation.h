@@ -42,10 +42,15 @@ class IStateManager : public UTL::COM::IUnknown {
     virtual bool ShouldPauseInput();
 };
 
+bool Exists();
+void StartProfile();
+void Suspend();
 float GetTime();
+unsigned int GetTick();
 float GetSpeed();
 float GetTimeStep();
 const State GetState();
+const float GetFrameTimeElapsed();
 eUserMode GetUserMode();
 void SetStream(UMath::Vector3 &location, bool blocking);
 void ProfileTask(HSIMTASK htask, const char *name);

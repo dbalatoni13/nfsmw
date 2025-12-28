@@ -108,6 +108,8 @@ class Pkt_Effect_Open : public Sim::Packet {
     unsigned int mActee;                        // offset 0x14, size 0x4
 };
 
+void UpdateServices(float dT);
+
 } // namespace WorldConn
 
 #endif

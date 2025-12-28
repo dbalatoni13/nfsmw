@@ -58,10 +58,10 @@ struct SceneryCullInfo {
 };
 
 extern RegionQuery RegionInfo;
+extern SceneryDetailLevel ForceAllSceneryDetailLevels;
 
 void InitVisibleZones();
 void CloseVisibleZones();
-
-extern SceneryDetailLevel ForceAllSceneryDetailLevels;
+void ServicePreculler();
 
 #endif

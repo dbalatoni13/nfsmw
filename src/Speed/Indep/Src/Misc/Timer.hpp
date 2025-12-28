@@ -78,4 +78,9 @@ extern float WorldTimeElapsed;
 extern int RealTimeFrames;
 extern Timer WorldTimer;
 
+void PrepareRealTimestep(float video_time_elapsed);
+void PrepareWorldTimestep(float elapsed_time);
+void AdvanceRealTime();
+void AdvanceWorldTime();
+
 #endif

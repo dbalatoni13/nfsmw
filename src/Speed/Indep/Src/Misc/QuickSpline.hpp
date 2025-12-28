@@ -21,8 +21,29 @@ enum QuickSplineBasisType {
 // total size: 0x2C
 class QuickSpline {
   public:
+    QuickSpline(QuickSplineEndPointType endpoint_type, QuickSplineBasisType basis_type, int max_control_points);
+    QuickSpline(QuickSplineEndPointType endpoint_type, QuickSplineBasisType basis_type, bVector4 *control_point_buffer, int num_buffer_entries);
+    ~QuickSpline();
+    void Init(QuickSplineEndPointType endpoint_type, QuickSplineBasisType basis_type);
+    void DoSnapshot(struct ReplaySnapshot *snapshot, int num_fields);
+    void SetNumControlPoints(int num_control_points);
+    void EvaluateSpline(bVector4 *point, float t, int deriv, const bVector4 *control_points);
+    float ClampParam(float param);
+    void GenerateExtrapolatedControlPoints(bVector4 *extrapolated_control_points, int control_point_num);
+    bVector4 *GetPoint(bVector4 *point, float param, int deriv);
+    int FindClosestControlPoint(const bVector3 &point, int start_point_number);
+    int FindClosestControlPoint(const bVector3 &point);
+    float FindClosestParam(const bVector3 &point, float initial_param, float error_tolerance, int use_euans_hack);
+    float FindClosestLateralOffset(const bVector3 &point, float initial_param, float *closest_param, float error_tolerance, int use_euans_hack);
+    float GetParam(float f_distance);
+    void CalibrateLength(int num_steps);
     void MemoryImageLoad(bVector4 *control_point_buffer);
+    void MemoryImageUnload();
     bool HasKink();
+    void PlotToCaffeine();
+    void EmptyCaffeineLayer();
+    void MakeControlPointsEquiDistant();
+    void ZeroAllZValues();
 
     unsigned int GetHash() {
         return nHash;

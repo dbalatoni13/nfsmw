@@ -5,4 +5,10 @@
 #pragma once
 #endif
 
+namespace SoundConn {
+
+void UpdateServices(float dT);
+
+};
+
 #endif

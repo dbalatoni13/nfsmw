@@ -84,6 +84,7 @@ extern int g_tweakIsDriftRace;
 void ServiceSpaceNodes();
 void ResetWorldTime();
 eTimeOfDay GetCurrentTimeOfDay();
+void World_Service();
 void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialVec);
 
 #endif

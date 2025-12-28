@@ -52,6 +52,25 @@ void InitBasisMatricies() {
     BasisMatrixInitDone = true;
 }
 
+// Stripped
+QuickSpline::QuickSpline(QuickSplineEndPointType endpoint_type, QuickSplineBasisType basis_type, int max_control_points) {}
+
+// Stripped
+QuickSpline::QuickSpline(QuickSplineEndPointType endpoint_type, QuickSplineBasisType basis_type, bVector4 *control_point_buffer,
+                         int num_buffer_entries) {}
+
+// Stripped
+QuickSpline::~QuickSpline() {}
+
+// Stripped
+void QuickSpline::Init(QuickSplineEndPointType endpoint_type, QuickSplineBasisType basis_type) {}
+
+// Stripped
+void QuickSpline::DoSnapshot(struct ReplaySnapshot *snapshot, int num_fields) {}
+
+// Stripped
+void QuickSpline::SetNumControlPoints(int num_control_points) {}
+
 void QuickSpline::FixupEndpoints() {
     int num_control_points = NumControlPoints;
     if (num_control_points == 0) {
@@ -90,6 +109,50 @@ void QuickSpline::FixupEndpoints() {
     }
 }
 
+// Stripped
+void QuickSpline::EvaluateSpline(bVector4 *point, float t, int deriv, const bVector4 *control_points) {}
+
+// Stripped
+float QuickSpline::ClampParam(float param) {
+    return 0.0f;
+}
+
+// Stripped
+void QuickSpline::GenerateExtrapolatedControlPoints(bVector4 *extrapolated_control_points, int control_point_num) {}
+
+// Stripped
+bVector4 *QuickSpline::GetPoint(bVector4 *point, float param, int deriv) {
+    return nullptr;
+}
+
+// Stripped
+int QuickSpline::FindClosestControlPoint(const bVector3 &point, int start_point_number) {
+    return 0;
+}
+
+// Stripped
+int QuickSpline::FindClosestControlPoint(const bVector3 &point) {
+    return 0;
+}
+
+// Stripped
+float QuickSpline::FindClosestParam(const bVector3 &point, float initial_param, float error_tolerance, int use_euans_hack) {
+    return 0.0f;
+}
+
+// Stripped
+float QuickSpline::FindClosestLateralOffset(const bVector3 &point, float initial_param, float *closest_param, float error_tolerance,
+                                            int use_euans_hack) {
+    return 0.0f;
+}
+
+// Stripped
+float QuickSpline::GetParam(float f_distance) {
+    return 0.0f;
+}
+
+void QuickSpline::CalibrateLength(int num_steps) {}
+
 void QuickSpline::MemoryImageLoad(bVector4 *control_point_buffer) {
     pControlPoints = &control_point_buffer[1];
     ControlPointsDirty = false;
@@ -100,6 +163,9 @@ void QuickSpline::MemoryImageLoad(bVector4 *control_point_buffer) {
     }
     InitBasisMatricies();
 }
+
+// Stripped
+void QuickSpline::MemoryImageUnload() {}
 
 bool QuickSpline::HasKink() {
     if (ControlPointsDirty) {
@@ -122,6 +188,18 @@ bool QuickSpline::HasKink() {
 
     return b_ret;
 }
+
+// Stripped
+void QuickSpline::PlotToCaffeine() {}
+
+// Stripped
+void QuickSpline::EmptyCaffeineLayer() {}
+
+// Stripped
+void QuickSpline::MakeControlPointsEquiDistant() {}
+
+// Stripped
+void QuickSpline::ZeroAllZValues() {}
 
 BOOL LoaderQuickSpline(bChunk *pChunk) {
     if (pChunk->GetID() == BCHUNK_QUICK_SPLINES) {

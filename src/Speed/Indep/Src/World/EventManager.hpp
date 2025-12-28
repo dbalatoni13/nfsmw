@@ -6,5 +6,6 @@
 #endif
 
 void emEventManagerInit();
+void emProcessAllEvents();
 
 #endif

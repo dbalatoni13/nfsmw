@@ -87,8 +87,7 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
     }
 
     // Virtual methods
-    // IUnknown
-    ~CameraMover() override;
+    virtual ~CameraMover();
 
     virtual void Update(float dT);
     virtual void Render(eView *view);

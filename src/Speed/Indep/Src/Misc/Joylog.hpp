@@ -148,5 +148,6 @@ class Joylog {
 };
 
 void InitJoylog();
+void ServiceJoylog();
 
 #endif

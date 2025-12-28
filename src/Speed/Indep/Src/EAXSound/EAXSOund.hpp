@@ -105,6 +105,8 @@ class EAXSound : public AudioMemBase {
     EAXSound(void);
     virtual ~EAXSound(void);
 
+    void Update(float t);
+
     void START_321Countdown();
 
     SFX_Base *GetSFXBase_Object(int nID);

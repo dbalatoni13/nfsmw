@@ -376,6 +376,7 @@ void eInitTextures();
 void UpdateTextureAnimations();
 TextureInfo *GetTextureInfo(unsigned int name_hash, BOOL return_default_texture_if_not_found, BOOL include_unloaded_textures);
 TextureInfo *FixupTextureInfo(TextureInfo *texture_info, unsigned int name_hash, TexturePack *texture_pack, bool loading);
+void MaybePrintUnusedTextures();
 
 TextureInfo *eCreateTextureInfo();
 void eDestroyTextureInfo(TextureInfo *texture_info);

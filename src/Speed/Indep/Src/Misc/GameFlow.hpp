@@ -22,6 +22,8 @@ enum GameFlowState {
 class GameFlowManager {
   public:
     void LoadFrontend();
+    void Service();
+    void CheckForDemoDiscTimeout();
 
     ~GameFlowManager() {}
 
@@ -75,5 +77,7 @@ void LoadGlobalAChunks();
 void LoadGlobalChunks();
 void BootLoadingScreen();
 void UnloadFrontEndVault();
+void MaybeDoMemoryProfile();
+void HandleTrackStreamerLoadingBar();
 
 #endif
