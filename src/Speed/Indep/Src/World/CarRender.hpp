@@ -432,7 +432,7 @@ class CarRenderInfo {
     bVector3 mVelocity;                                            // offset 0x4, size 0x10
     bVector3 mAngularVelocity;                                     // offset 0x14, size 0x10
     bVector3 mAcceleration;                                        // offset 0x24, size 0x10
-    IVehiclePartDamageBehaviour *mDamageBehaviour;                 // offset 0x34, size 0x4
+    VehiclePartDamageBehaviour *mDamageBehaviour;                 // offset 0x34, size 0x4
     const WCollider *mWCollider;                                   // offset 0x38, size 0x4
     WWorldPos mWorldPos;                                           // offset 0x3C, size 0x3C
     RideInfo *pRideInfo;                                           // offset 0x78, size 0x4
@@ -493,13 +493,13 @@ class CarRenderInfo {
     CARPART_LOD mMaxLodLevel;                                      // offset 0x1614, size 0x4
     CARPART_LOD mMinReflectionLodLevel;                            // offset 0x1618, size 0x4
     CarPartCuller TheCarPartCuller;                                // offset 0x161C, size 0x134
-    Sim::Collision::Info mDamageZoneInfo;                          // offset 0x1750, size 0x4
+    COLLISION_INFO *mDamageZoneInfo;                               // offset 0x1750, size 0x4
     float mDeltaTime;                                              // offset 0x1754, size 0x4
     float mRadius;                                                 // offset 0x1758, size 0x4
     Attrib::Gen::ecar mAttributes;                                 // offset 0x175C, size 0x14
     bool mFlashing;                                                // offset 0x1770, size 0x1
     float mFlashInterval;                                          // offset 0x1774, size 0x4
-    Sim::Collision::Info mDamageInfoCache;                         // offset 0x1778, size 0x4
+    COLLISION_INFO *mDamageInfoCache;                              // offset 0x1778, size 0x4
     bool mWheelWobbleEnabled[4];                                   // offset 0x177C, size 0x4
     bool mMirrorLeftWheels;                                        // offset 0x178C, size 0x1
 };
