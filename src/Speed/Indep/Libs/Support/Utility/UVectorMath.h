@@ -32,6 +32,7 @@ void VU0_v3unit(const UMath::Vector3 &a, UMath::Vector3 &result);
 
 void VU0_v4scaleadd(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result);
 void VU0_v4scaleaddxyz(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result);
+void VU0_v4addxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result);
 float VU0_v4lengthsquare(const UMath::Vector4 &a);
 float VU0_v4lengthsquarexyz(const UMath::Vector4 &a);
 void VU0_v4subxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result);
