@@ -1,6 +1,7 @@
 #ifndef WORLD_WORLD_H
 #define WORLD_WORLD_H
 
+#include "dolphin/types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -54,6 +55,14 @@ class WWorldPos {
     // total size: 0x3C
   public:
     bool Update(const UMath::Vector3 &pos, UMath::Vector4 &dest, bool usecache, const WCollider *collider, bool keep_valid);
+
+    WWorldPos(float yOffset) {
+        this->fFaceValid = 0;
+        this->fMissCount = 0;
+        this->fUsageCount = 0;
+        this->fYOffset = yOffset;
+        this->fSurface = nullptr;
+    }
 
     void SetTolerance(float liftAmount) {
         fYOffset = liftAmount;

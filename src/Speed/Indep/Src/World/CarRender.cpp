@@ -1,12 +1,20 @@
 #include "./CarRender.hpp"
+#include "Interfaces/IVehicleDamageBehaviour.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Src/Ecstasy/DefragFixer.hpp"
+#include "Speed/Indep/Src/Ecstasy/EcstasyData.hpp"
 #include "Speed/Indep/Src/Ecstasy/EcstasyE.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/Src/Ecstasy/eModel.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/ecar.h"
+#include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
+#include "Speed/Indep/Src/World/World.hpp"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
@@ -46,7 +54,7 @@ static const CarFXPosInfo FXMarkerNameHashMappings[28] = {
 
 SlotPool *CarEmitterPositionSlotPool = nullptr;
 const int MAX_CAR_PART_MODELS = 250;
-SlotPool *CarPartModelPool;
+SlotPool *CarPartModelPool = nullptr;
 
 bool GetNumCarEffectMarkerHashes(CarEffectPosition fx_pos, int &count_out) {
     bool position_marker_based_fxpos = false;
@@ -337,4 +345,137 @@ FrontEndRenderingCar::~FrontEndRenderingCar() {
     }
 
     this->Remove();
+}
+
+float NISCopCarDoorOpenAmount[4];
+bMatrix4 NISCopCarDoorOpenMarkers[4];
+bMatrix4 NISCopCarDoorClosedMarkers[4];
+
+// UNSOLVED, to preserve my sanity
+CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
+    : mDamageBehaviour(nullptr), mWorldPos(0.025f),
+    mAttributes(Attrib::FindCollection(this->GetAttributes().ClassKey(), 0xeec2271a), 0, nullptr)
+{
+    // ...
+    
+    { //?
+        eModel *front_wheel_model = this->mCarPartModels[this->mMinLodLevel][0][1].GetModel();
+        eModel *rear_wheel_model  = this->mCarPartModels[this->mMinLodLevel][0][2].GetModel();
+
+        ePositionMarker *front_position_marker;
+        if (front_wheel_model != nullptr) {
+            front_position_marker = front_wheel_model->GetPostionMarker(0xa4ccd4ac);
+        } else {
+            front_position_marker = nullptr;
+        }
+        
+        ePositionMarker *rear_position_marker;
+        if (rear_wheel_model != nullptr) {
+            rear_position_marker = rear_wheel_model->GetPostionMarker(0xb2e13a0d);
+        } else {
+            rear_position_marker = nullptr;
+        }
+
+        if (front_position_marker != nullptr && rear_position_marker == nullptr) {
+            rear_position_marker = front_position_marker;
+        }
+
+        if (front_position_marker != nullptr) {
+            this->WheelBrakeMarkerY[0] = front_position_marker->Matrix.v3.y;
+        } else {
+            this->WheelBrakeMarkerY[0] = 0.0f;
+        }
+        if (rear_position_marker != nullptr) {
+            this->WheelBrakeMarkerY[1] = rear_position_marker->Matrix.v3.y;
+        } else {
+            this->WheelBrakeMarkerY[1] = 0.0f;
+        }
+    }
+    
+    if (IsNISCopCar(this->pRideInfo->Type)) {
+        for (int i = 0; i < 4; i++) {
+            NISCopCarDoorOpenAmount[i] = 0;
+            eIdentity(&NISCopCarDoorOpenMarkers[i]);
+            eIdentity(&NISCopCarDoorClosedMarkers[i]);
+        }
+        
+        eModel *base_model = this->mCarPartModels[this->mMinLodLevel][0][1].GetModel();
+        if (base_model != nullptr) {
+            unsigned int open_string_hashes[4] = { 0xF91BCA96, 0x8DE14C29, 0x60989ECA, 0xD0F2CD17 };
+            unsigned int closed_string_hashes[4] = { 0x58A2A425, 0x8FE91DD8, 0x05C907D9, 0x7B3CD206 };
+
+            for (int i = 0; i < 4; i++) {
+                ePositionMarker *open_marker = base_model->GetPostionMarker(open_string_hashes[i]);
+                ePositionMarker *closed_marker = base_model->GetPostionMarker(closed_string_hashes[i]);
+
+                if (open_marker == nullptr || closed_marker == nullptr) continue;
+
+                open_marker->Matrix = NISCopCarDoorOpenMarkers[i];
+                closed_marker->Matrix = NISCopCarDoorClosedMarkers[i];
+            }
+        }
+    }
+
+    if (
+        this->pRideInfo->Type == CARTYPE_COPMIDSIZE    ||
+        this->pRideInfo->Type == CARTYPE_COPSUV        ||
+        this->pRideInfo->Type == CARTYPE_COPSPORT      ||
+        this->pRideInfo->Type == CARTYPE_COPGHOST      ||
+        this->pRideInfo->Type == CARTYPE_COPGTO        ||
+        this->pRideInfo->Type == CARTYPE_COPSUVL       ||
+        this->pRideInfo->Type == CARTYPE_COPGTOGHOST   ||
+        this->pRideInfo->Type == CARTYPE_COPSPORTHENCH ||
+        this->pRideInfo->Type == CARTYPE_COPSPORTGHOST
+    ) {
+        this->mDamageBehaviour = ::new (__FILE__, __LINE__) VehiclePartDamageBehaviour(this);
+    }
+
+    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_FRONT, bStringHash("WINDOW_FRONT"), 0xa155545);
+    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_REAR, bStringHash("WINDOW_FRONT"), 0xa155545);
+    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_LEFT_FRONT, bStringHash("WINDOW_FRONT"), 0xa155545);
+    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_LEFT_REAR, bStringHash("WINDOW_FRONT"), 0xa155545);
+    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_RIGHT_FRONT, bStringHash("WINDOW_FRONT"), 0xa155545);
+    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_RIGHT_REAR, bStringHash("WINDOW_FRONT"), 0xa155545);
+    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_REAR_DEFOST, bStringHash("REAR_DEFROSTER"), 0xa155545);
+}
+
+// UNSOLVED
+CarRenderInfo::~CarRenderInfo() {
+    for (int model_index = 0; model_index < 0x4C; model_index++) {
+        for (int model_number = 0; model_index < 1; model_index++) {
+            for (int model_lod = this->mMinLodLevel; model_lod <= this->mMaxLodLevel; model_lod++) {
+                eModel *model = this->mCarPartModels[model_lod][model_number][model_index].GetModel();
+                if (model == nullptr) break;
+                if (model->GetNameHash() == 0) break;
+
+                model->UnInit();
+                CarPartModelPool->Free(model);
+                this->mCarPartModels[model_lod][model_number][model_index].SetModel(nullptr);
+                this->mCarPartModels[model_lod][model_number][model_index].Clear();
+            }
+        }
+    }
+}
+
+void CarRenderInfo::Init() {
+    if (this->mDamageBehaviour != nullptr) {
+        this->mDamageBehaviour->Reset();
+    }
+
+    this->mDamageInfoCache->Clear();
+    this->mDamageInfoCache = nullptr;
+}
+
+void CarRenderInfo::Refresh() {
+    this->SpoilerPositionMarker   = reinterpret_cast<ePositionMarker *>(gDefragFixer.Fix(this->SpoilerPositionMarker  ));
+    this->SpoilerPositionMarker2  = reinterpret_cast<ePositionMarker *>(gDefragFixer.Fix(this->SpoilerPositionMarker2 ));
+    this->RoofScoopPositionMarker = reinterpret_cast<ePositionMarker *>(gDefragFixer.Fix(this->RoofScoopPositionMarker));
+
+    for (int fxpos = 0; fxpos < 0x1C; fxpos++) {
+        for (CarEmitterPosition *empos = this->EmitterPositionList[fxpos].GetHead(); empos != this->EmitterPositionList[fxpos].EndOfList(); empos = empos->GetNext()) {
+            if (empos->PositionMarker != nullptr) {
+                empos->PositionMarker = reinterpret_cast<ePositionMarker *>(gDefragFixer.Fix(empos->PositionMarker));
+            }
+        };
+    }
 }
