@@ -134,7 +134,23 @@ inline float VU0_v3dotprod(const UMath::Vector3 &a, const UMath::Vector3 &b) {
     return result;
 }
 
-inline float VU0_v3distancesquare(const UMath::Vector3 &p1, const UMath::Vector3 &p2) {}
+inline float VU0_v3distancesquare(const UMath::Vector3 &p1, const UMath::Vector3 &p2) {
+    u_long128 _t0;
+    float result;
+    asm __volatile__("lui %3, 0x3f80\n"
+                     "lqc2 vf1, %1\n"
+                     "lqc2 vf2, %2\n"
+                     "vsub vf1, vf1, vf2\n"
+                     "qmtc2.ni %3, vf3\n"
+                     "vmul vf2, vf1, vf1\n"
+                     "vmulax ACC, vf1, vf1x\n"
+                     "vmadday ACC, vf3, vf2y\n"
+                     "vmaddz vf2, vf3, vf2z\n"
+                     "qmfc2.ni %0, vf2\n"
+                     : "=r"(result)
+                     : "o"(p1), "o"(p2), "r"(_t0));
+    return result;
+}
 
 inline float VU0_v3distancesquarexz(const UMath::Vector3 &p1, const UMath::Vector3 &p2) {}
 
@@ -215,6 +231,57 @@ inline void VU0_MATRIX4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 
                      : "=o"(result)
                      : "o"(v), "r"(&m));
 }
+
+#elif defined(EA_PLATFORM_XENON)
+
+// inline float VU0_sqrt(const float a) {}
+
+// inline void VU0_v3add(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &result) {}
+
+// inline void VU0_v3scale(const UMath::Vector3 &a, const float scaleby, UMath::Vector3 &result) {}
+
+// inline void VU0_v3scale(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &result) {}
+
+// inline void VU0_v3scaleadd(const UMath::Vector3 &a, const float scaleby, const UMath::Vector3 &b, UMath::Vector3 &result) {}
+
+// inline void VU0_v3sub(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &result) {}
+
+// inline float VU0_v3dotprod(const UMath::Vector3 &a, const UMath::Vector3 &b) {}
+
+inline float VU0_v3distancesquare(const UMath::Vector3 &p1, const UMath::Vector3 &p2) {
+    return (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) + (p1.z - p2.z) * (p1.z - p2.z);
+}
+
+// inline float VU0_v3distancesquarexz(const UMath::Vector3 &p1, const UMath::Vector3 &p2) {}
+
+// inline void VU0_v3crossprod(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &dest) {}
+
+// inline float VU0_v3lengthsquare(const UMath::Vector3 &a) {}
+
+// inline void VU0_v3unit(const UMath::Vector3 &a, UMath::Vector3 &result) {}
+
+// inline void VU0_v4scaleadd(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result) {}
+
+// inline void VU0_v4scaleaddxyz(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result) {}
+
+// inline float VU0_v4lengthsquare(const UMath::Vector4 &a) {}
+
+// inline float VU0_v4lengthsquarexyz(const UMath::Vector4 &a) {}
+
+// inline void VU0_v4subxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result) {}
+
+// inline float VU0_v4dotprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b) {}
+
+// inline void VU0_v4scale(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &result) {}
+
+// inline void VU0_v4scalexyz(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &result) {}
+
+// inline float VU0_v4distancesquarexyz(const UMath::Vector4 &p1, const UMath::Vector4 &p2) {}
+
+// inline void VU0_MATRIX3x4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 &m, UMath::Vector3 &result) {}
+
+// inline void VU0_MATRIX4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 &m, UMath::Vector3 &result) {}
+
 #else
 
 inline float VU0_Sin(float x) {

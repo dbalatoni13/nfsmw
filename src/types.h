@@ -26,7 +26,7 @@ typedef unsigned int type_operator_new;
 
 // TODO
 typedef int BOOL;
-typedef int Bool;
+typedef bool Bool;
 
 #if !defined(__cplusplus) || __cplusplus < 201103L
 
@@ -54,35 +54,34 @@ typedef int Bool;
 #endif
 
 // TODO
-typedef char int8;
+typedef signed char int8;
+typedef __int16 int16;
+typedef signed int int32;
+typedef signed __int64 int64;
 typedef unsigned char uint8;
-typedef short int16;
-typedef unsigned short uint16;
-typedef int int32;
+typedef unsigned __int16 uint16;
 typedef unsigned int uint32;
-typedef long long int64;
-typedef unsigned long long uint64;
+typedef unsigned __int64 uint64;
 typedef unsigned int type_operator_new;
 
 typedef signed char int8_t;
-typedef short int int16_t;
-typedef int int32_t;
+typedef __int16 int16_t;
+typedef signed int int32_t;
+typedef signed __int64 int64_t;
 typedef unsigned char uint8_t;
-typedef short unsigned int uint16_t;
+typedef unsigned __int16 uint16_t;
 typedef unsigned int uint32_t;
+typedef unsigned __int64 uint64_t;
 typedef float float_t;
 typedef double double_t;
-typedef long int int64_t;
-typedef long unsigned int uint64_t;
-typedef int8_t bool8_t;
 
 // TODO
 typedef unsigned int u32;
 typedef int i32;
-typedef short unsigned int u16;
-typedef short int i16;
-typedef unsigned char u8;
-typedef signed char i8;
+typedef unsigned __int16 u16;
+typedef __int16 i16;
+typedef unsigned __int8 u8;
+// typedef signed char i8;
 
 #define ONLINE_SUPPORT (1)
 

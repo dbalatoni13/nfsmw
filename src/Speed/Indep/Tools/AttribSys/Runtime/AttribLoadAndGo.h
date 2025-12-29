@@ -32,6 +32,7 @@ class ExportManager {
         const ExportPolicyPair &operator=(const ExportPolicyPair &rhs) {
             mType = rhs.mType;
             mPolicy = rhs.mPolicy;
+            return *this;
         }
 
         bool operator<(const ExportPolicyPair &rhs) const {

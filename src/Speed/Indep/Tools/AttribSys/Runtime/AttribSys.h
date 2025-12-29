@@ -34,7 +34,13 @@ inline unsigned int RotateNTo32(unsigned int v, unsigned int amount) {
     return (v << amount) | (v >> (32 - amount));
 }
 
-inline void *Alloc(std::size_t bytes, const char *name) {
+// TODO why no inline?
+#ifdef EA_PLATFORM_XENON
+__declspec(noinline)
+#else
+inline
+#endif
+void *Alloc(std::size_t bytes, const char *name) {
     AllocationAccounting(bytes, true);
     if (bytes != 0) {
         return AttribAlloc::Allocate(bytes, name);
@@ -207,6 +213,8 @@ class Array {
         for (unsigned int i = 0; i < mCount; i++) {
             SetData(i, rhs.GetData(i));
         }
+
+        return *this;
     }
 
     bool IsReferences() const {

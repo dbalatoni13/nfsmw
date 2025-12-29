@@ -202,7 +202,7 @@ void Database::Delete(const Class *c) {
 }
 
 void Database::CollectGarbage() {
-    while (mPrivates.mGarbageCollections.size() != 0 || mPrivates.mGarbageClasses.size() != 0) {
+    while (mPrivates.mGarbageCollections.size() > 0 || mPrivates.mGarbageClasses.size() > 0) {
         DatabasePrivate::CollectGarbageBag(mPrivates.mGarbageCollections);
         DatabasePrivate::CollectGarbageBag(mPrivates.mGarbageClasses);
     }

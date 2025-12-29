@@ -61,15 +61,15 @@ Sim::IActivity *GameplayActivity::Construct(Sim::Param params) {
 bool GameplayActivity::OnTask(HSIMTASK task, float dT) {
     ProfileNode profile_node("TODO", 0);
 
-    if (task != mUpdateTask) {
-        Object::OnTask(task, dT);
-    } else {
+    if (task == mUpdateTask) {
         float simTime = Sim::GetTime();
         float simTimeStep = Sim::GetTimeStep();
         // TODO magic
         MNotifySimTick(simTime, simTimeStep).Post(UCrc32(0x20d60dbf));
         GManager::Get().Update(dT);
         return true;
+    } else {
+        Object::OnTask(task, dT);
     }
     return false;
 }

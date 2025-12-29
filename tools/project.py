@@ -712,7 +712,7 @@ def generate_build_ninja(
 
     # MSVC
     msvc = compiler_path / "cl.exe"
-    msvc_cmd = f"{wrapper_cmd}{msvc} $cflags /showIncludes /Fo$out $in"
+    msvc_cmd = f"{wrapper_cmd}{msvc} $cflags /Fo$out $in"
     if transform_dep is not None:
         msvc_cmd = (
             "bash -lc 'set -o pipefail; " f"{msvc_cmd} | $python {transform_dep}'"

@@ -287,6 +287,7 @@ elif config.platform == Platform.X360:
         "/GF",  # Eliminate Duplicate Strings
         # "/Gy",  # maybe?
         "/Zd",  # /Zi enables debug info, /Zd for line numbers only
+        "/Yd",  # embed debug info into the obj file instead of pdb
         "/EHsc",  # enable exception handling (and extern C notthrow?)
         "/I src/Packages/xenonsdk/2.0.2135.2/installed/include/xbox",
         "/I src",
