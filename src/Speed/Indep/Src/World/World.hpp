@@ -55,6 +55,14 @@ class WWorldPos {
   public:
     bool Update(const UMath::Vector3 &pos, UMath::Vector4 &dest, bool usecache, const WCollider *collider, bool keep_valid);
 
+    WWorldPos(float yOffset) {
+        this->fFaceValid = 0;
+        this->fMissCount = 0;
+        this->fUsageCount = 0;
+        this->fYOffset = yOffset;
+        this->fSurface = nullptr;
+    }
+
     void SetTolerance(float liftAmount) {
         fYOffset = liftAmount;
     }

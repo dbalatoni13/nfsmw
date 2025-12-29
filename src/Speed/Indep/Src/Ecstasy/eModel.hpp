@@ -45,6 +45,10 @@ struct eModel : public bTNode<eModel> {
         this->UnInit();
     }
 
+    unsigned int GetNameHash() {
+        return NameHash;
+    }
+
     eSolid *GetMovedSolid() {} // TODO
 
     eSolid *GetSolid() {
