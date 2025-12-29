@@ -29,7 +29,7 @@ class InputDevice : public UTL::COM::Object, public UTL::COM::Factory<int, Input
     InputDevice(int deviceIndex);
 
     // Virtual functions
-    ~InputDevice() override;
+    virtual ~InputDevice();
 
     virtual bool IsConnected() {}
 

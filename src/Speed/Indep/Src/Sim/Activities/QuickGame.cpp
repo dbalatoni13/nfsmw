@@ -161,14 +161,18 @@ void QuickGame::OnBeginState() {
 // bool QuickGame::CanSimulate() {}
 
 Sim::State QuickGame::OnManageState(Sim::State state) {
-    if ((state == Sim::STATE_NONE || state == Sim::STATE_INITIALIZING) && mState < RACESTATE_READY) {
+    if ((state == Sim::STATE_INITIALIZING || state == Sim::STATE_NONE) && mState < RACESTATE_READY) {
         if (IsStateDone()) {
             mState = static_cast<eState>(mState + 1);
             OnBeginState();
         }
         return Sim::STATE_INITIALIZING;
     } else {
-        return !CanSimulate() ? Sim::STATE_IDLE : Sim::STATE_ACTIVE;
+        if (CanSimulate()) {
+            return Sim::STATE_ACTIVE;
+        } else {
+            return Sim::STATE_IDLE;
+        }
     }
 }
 

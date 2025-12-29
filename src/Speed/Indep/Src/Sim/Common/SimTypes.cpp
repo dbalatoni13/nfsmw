@@ -28,7 +28,7 @@ bool Attachments::Attach(UTL::COM::IUnknown *object) {
         return false;
     }
 
-    // Why don't we just push in the if check so we don't have to erase if it fails?
+    // Why don't we just push inside the if check so we don't have to erase if it fails?
     mList.push_back(iother);
 
     if (iother->IsAttached(mOwner) || iother->Attach(mOwner)) {

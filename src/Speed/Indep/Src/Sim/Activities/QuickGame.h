@@ -1,6 +1,7 @@
 #ifndef SIM_ACTIVITIES_QUICKGAME_H
 #define SIM_ACTIVITIES_QUICKGAME_H
 
+#include "types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -66,13 +67,13 @@ class QuickGame : public Sim::Activity, public Sim::ITimeManager, Sim::IStateMan
     bool CanSimulate();
     void HandleSkipFEOptions();
 
-    HSIMTASK mUpdateTask;           // offset 0x74, size 0x4
-    bool mTestingSplitscreen;       // offset 0x78, size 0x1
-    bool mInGameBreaker;            // offset 0x7C, size 0x1
-    UMath::Vector3 mStartLocation;  // offset 0x80, size 0xC
-    UMath::Vector3 mStartDirection; // offset 0x8C, size 0xC
-    eState mState;                  // offset 0x98, size 0x4
-    ActionQueue *mActionQ;          // offset 0x9C, size 0x4
+    HSIMTASK mUpdateTask;                           // offset 0x74, size 0x4
+    bool mTestingSplitscreen;                       // offset 0x78, size 0x1
+    bool mInGameBreaker;                            // offset 0x7C, size 0x1
+    ALIGN_XENON(16) UMath::Vector3 mStartLocation;  // offset 0x80, size 0xC
+    ALIGN_XENON(16) UMath::Vector3 mStartDirection; // offset 0x8C, size 0xC
+    eState mState;                                  // offset 0x98, size 0x4
+    ActionQueue *mActionQ;                          // offset 0x9C, size 0x4
 };
 
 #endif
