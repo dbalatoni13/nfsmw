@@ -230,7 +230,7 @@ bool bSetMemoryPoolDebugTracing(int pool_num, bool on_off) {
     bool previous;
 
     if (!on_off) {
-        void *dummy = bMALLOC(0x10, "", 0, (pool_num & 0xf) | 0x40);
+        void *dummy = bMalloc(0x10, "TODO", __LINE__, (pool_num & 0xf) | 0x40);
 
         previous = MemoryPools[pool_num]->SetDebugTracing(false);
         bFree(dummy);
@@ -484,7 +484,7 @@ int bMemoryAllocator::Release() {
 
 void bMemoryCreatePersistentPool(int size) {
     bMemoryPersistentPoolNumber = bGetFreeMemoryPoolNum();
-    void *mem = bMALLOC(size, "", 0, 0);
+    void *mem = bMalloc(size, "TODO", __LINE__, 0);
     bInitMemoryPool(bMemoryPersistentPoolNumber, mem, size, "Persistent Pool");
     TheMemoryPersistentAllocator.SetMemoryPool(bMemoryPersistentPoolNumber);
 }

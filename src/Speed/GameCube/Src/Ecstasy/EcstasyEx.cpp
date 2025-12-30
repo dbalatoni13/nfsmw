@@ -271,21 +271,21 @@ void cCaptureBuffer::Init(int x0, int y0, int w, int h, int format, int buffer_f
         case 6:
         case 0x16:
             size = w * h * 4;
-            this->pCapturePixels = (char *)bMalloc(size, 0x800);
+            this->pCapturePixels = (char *)bMalloc(size, "TODO", __LINE__, 0x800);
             break;
 
         case 3:
         case 4:
         case 5:
             size = w * h * 2;
-            this->pCapturePixels = (char *)bMalloc(size, 0x800);
+            this->pCapturePixels = (char *)bMalloc(size, "TODO", __LINE__, 0x800);
             break;
 
         case 1:
         case 0x11:
         case 0x27:
             size = w * h;
-            this->pCapturePixels = (char *)bMalloc(size, 0x800);
+            this->pCapturePixels = (char *)bMalloc(size, "TODO", __LINE__, 0x800);
             break;
     }
 
@@ -561,7 +561,7 @@ void cSphereMap::Init(int face_front, int face_right, int face_back, int face_le
     this->cubeTex[5] = (GXTexObj *)this->cubeBuffer[5].pCaptureTexture->GetPlatInfo()->ImageInfos.obj.dummy;
 
     this->genSphere(&this->DLSphere, &this->DLSphereSz, this->SPHERE_MAP_TESS, GX_VTXFMT7);
-    this->sphereTexturePixels = (char *)bMalloc(this->SPHERE_MAP_SIZE_X * this->SPHERE_MAP_SIZE_Y * 2, 0x800);
+    this->sphereTexturePixels = (char *)bMalloc(this->SPHERE_MAP_SIZE_X * this->SPHERE_MAP_SIZE_Y * 2, "TODO", __LINE__, 0x800);
 
     this->sphereTexture = eCreateTextureInfo();
     this->sphereTexture->AlphaUsageType = 0;

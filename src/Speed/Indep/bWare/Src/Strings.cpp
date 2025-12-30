@@ -57,7 +57,7 @@ void bSharedStringPool::Init(int size) {
     int table_size_bytes = table_size << 3;
 
     this->Mutex.Create();
-    bSharedString *string = static_cast<bSharedString *>(bMALLOC(table_size_bytes, "", 0, 0));
+    bSharedString *string = static_cast<bSharedString *>(bMalloc(table_size_bytes, "TODO", __LINE__, 0));
     this->StringTableSize = table_size;
     this->StringTableSizeBytes = table_size_bytes;
     this->StringTable = string;

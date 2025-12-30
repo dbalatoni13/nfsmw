@@ -209,6 +209,8 @@ bool IsTempChunk(bChunk *chunk) {
     return false;
 }
 
+int SplitPermTempChunks(bool split_temp, bChunk *source_chunks, int source_chunks_size, uint8 *dest_buffer, int dest_position, int depth) {}
+
 void ClobberPermChunks(bChunk *source_chunks, int source_chunks_size) {
     bChunk *source_chunk = source_chunks;
     bChunk *last_source_chunk = GetLastChunk(source_chunk, source_chunks_size);
@@ -225,6 +227,33 @@ void ClobberPermChunks(bChunk *source_chunks, int source_chunks_size) {
             source_chunk->ID = 0;
         }
         source_chunk = next_source_chunk;
+    }
+}
+
+bool LoadTempPermChunks(bChunk **ppchunks, int *psizeof_chunks, int allocation_params, const char *debug_name) {
+    bChunk *chunks = *ppchunks;
+    int sizeof_chunks = *psizeof_chunks;
+    if (!chunks || sizeof_chunks == 0) {
+        return false;
+    }
+    int sizeof_perm_chunks = SplitPermTempChunks(false, chunks, sizeof_chunks, nullptr, 0, 0);
+    int sizeof_temp_chunks = sizeof_chunks;
+    if (SplitPermTempChunks(true, chunks, sizeof_chunks, nullptr, 0, 0) == 0) {
+        LoadChunks(chunks, sizeof_chunks, debug_name);
+        return false;
+    } else {
+        bChunk *perm_chunks = (bChunk *)bMalloc(sizeof_perm_chunks, "TODO", __LINE__, allocation_params);
+        bChunk *temp_chunks = chunks;
+
+        SplitPermTempChunks(false, temp_chunks, sizeof_chunks, reinterpret_cast<uint8 *>(perm_chunks), 0, 0);
+        ClobberPermChunks(temp_chunks, sizeof_chunks);
+        LoadChunks(temp_chunks, sizeof_chunks, debug_name);
+        LoadChunks(perm_chunks, sizeof_perm_chunks, debug_name);
+        UnloadChunks(temp_chunks, sizeof_chunks, debug_name);
+        bFree(temp_chunks);
+        *psizeof_chunks = sizeof_perm_chunks;
+        *ppchunks = perm_chunks;
+        return true;
     }
 }
 

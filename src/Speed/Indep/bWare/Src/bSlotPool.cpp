@@ -38,7 +38,7 @@ int bCountTotalSlots(SlotPool *slot_pool) {
 
 SlotPool *SlotPool::NewSlotPool(int slot_size, int num_slots, const char *debug_name, int memory_pool) {
     SlotPool *slot_pool =
-        reinterpret_cast<SlotPool *>(bMALLOC(slot_size * num_slots + (sizeof(SlotPool) - sizeof(SlotPoolEntry)), "", 0, memory_pool));
+        reinterpret_cast<SlotPool *>(bMalloc(slot_size * num_slots + (sizeof(SlotPool) - sizeof(SlotPoolEntry)), "TODO", __LINE__, memory_pool));
     if (slot_pool) {
         slot_pool->SlotSize = slot_size;
         slot_pool->MemoryPool = memory_pool;
@@ -128,7 +128,7 @@ void *SlotPool::GetSlot(int slot_number) {
 }
 
 void *SlotPool::GetAllocatedSlot(int n) {
-    char *allocated_table = static_cast<char *>(bMALLOC(TotalNumSlots, "0", 0, 0));
+    char *allocated_table = static_cast<char *>(bMalloc(TotalNumSlots, "TODO", __LINE__, 0));
     bMemSet(allocated_table, 1, TotalNumSlots);
     for (SlotPoolEntry *slot = FreeSlots; slot; slot = slot->Next) {
         int slot_number = GetSlotNumber(slot);

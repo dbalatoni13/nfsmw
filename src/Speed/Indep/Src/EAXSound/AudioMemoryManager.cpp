@@ -11,7 +11,7 @@ AudioMemoryManager::AudioMemoryManager()
 void AudioMemoryManager::InitMemoryPool(eAUDMEMPOOLTYPE etype, int size) {
     if (etype == AUD_MAIN_MEM_POOL) {
         m_memoryPoolSize = size;
-        m_pMemoryPoolMem = bMalloc(size, 0x2000);
+        m_pMemoryPoolMem = bMalloc(size, "TODO", __LINE__, 0x2000);
         AudioMemoryPool = bGetFreeMemoryPoolNum();
         bInitMemoryPool(AudioMemoryPool, m_pMemoryPoolMem, m_memoryPoolSize, "Audio Memory Pool");
     }
@@ -20,16 +20,16 @@ void AudioMemoryManager::InitMemoryPool(eAUDMEMPOOLTYPE etype, int size) {
 void *AudioMemoryManager::AllocateMemory(int size, const char *debug_name, bool FromTop) {
     if (size <= bLargestMalloc(AudioMemoryPool)) {
         if (!FromTop) {
-            return bMalloc(size, AudioMemoryPool & 0xF | 0x1000);
+            return bMalloc(size, "TODO", __LINE__, AudioMemoryPool & 0xF | 0x1000);
         } else {
-            return bMalloc(size, AudioMemoryPool & 0xF | 0x1040);
+            return bMalloc(size, "TODO", __LINE__, AudioMemoryPool & 0xF | 0x1040);
         }
     } else {
         bMemoryPrintAllocationsByAddress(AudioMemoryPool, 0, 2147483647);
         if (!FromTop) {
-            return bMalloc(size, 0x1000);
+            return bMalloc(size, "TODO", __LINE__, 0x1000);
         } else {
-            return bMalloc(size, 0x1040);
+            return bMalloc(size, "TODO", __LINE__, 0x1040);
         }
     }
 }

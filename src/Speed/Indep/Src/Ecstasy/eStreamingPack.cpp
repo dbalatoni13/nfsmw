@@ -30,7 +30,7 @@ void InitStreamingPacks() {
 // STRIPPED
 void CloseStreamingPacks() {}
 
-void PrintStreamingPackMemoryWarning(const char *malloc_name /* r3 */, int malloc_size /* r4 */, int memory_pool_num /* r5 */) {
+void PrintStreamingPackMemoryWarning(const char *malloc_name, int malloc_size, int memory_pool_num) {
     int language_pool_num; // probably used for EU release
 
     bGetMemoryPoolNum("LanguageMemoryPool");
@@ -89,8 +89,7 @@ void *ScanHashTableKey32(unsigned int key_value, void *table_start, int table_le
 void *ScanHashTableKey16(unsigned short key_value /* r8 */, void *table_start /* r4 */, int table_length /* r5 */, int entry_key_offset /* r6 */,
                          int entry_size /* r7 */);
 
-void *ScanHashTableKey8(unsigned char key_value /* r8 */, void *table_start /* r4 */, int table_length /* r5 */, int entry_key_offset /* r6 */,
-                        int entry_size /* r7 */) {
+void *ScanHashTableKey8(unsigned char key_value, void *table_start, int table_length, int entry_key_offset, int entry_size) {
     unsigned char *table_base;
     int low_index;
     int high_index;
@@ -151,11 +150,11 @@ int eStreamingPack::GetHeaderMemoryEntries(void **memory_entries, int num_memory
 }
 
 eStreamPackLoader::eStreamPackLoader(int required_chunk_alignment,
-                                     void (*loaded_streaming_entry_callback)(struct bChunk *, struct eStreamingEntry *, struct eStreamingPack *),
-                                     void (*unloaded_streaming_entry_callback)(struct bChunk *, struct eStreamingEntry *, struct eStreamingPack *),
-                                     void (*loading_header_phase1_callback)(struct eStreamingPackHeaderLoadingInfoPhase1 *),
-                                     void (*loading_header_phase2_callback)(struct eStreamingPackHeaderLoadingInfoPhase2 *),
-                                     void (*unloading_header_callback)(struct eStreamingPack *)) {
+                                     void (*loaded_streaming_entry_callback)(bChunk *, eStreamingEntry *, eStreamingPack *),
+                                     void (*unloaded_streaming_entry_callback)(bChunk *, eStreamingEntry *, eStreamingPack *),
+                                     void (*loading_header_phase1_callback)(eStreamingPackHeaderLoadingInfoPhase1 *),
+                                     void (*loading_header_phase2_callback)(eStreamingPackHeaderLoadingInfoPhase2 *),
+                                     void (*unloading_header_callback)(eStreamingPack *)) {
     this->PrintLoading = 0;
     this->NumLoadedStreamingPacks = 0;
     this->NumLoadedStreamingEntries = 0;
@@ -168,8 +167,7 @@ eStreamPackLoader::eStreamPackLoader(int required_chunk_alignment,
     this->UnloadingHeaderCallback = unloading_header_callback;
 }
 
-int eStreamPackLoader::GetMemoryEntries(unsigned int *name_hash_table /* r27 */, int num_hashes /* r29 */, void **memory_entries /* r28 */,
-                                        int num_memory_entries /* r31 */) {
+int eStreamPackLoader::GetMemoryEntries(unsigned int *name_hash_table, int num_hashes, void **memory_entries, int num_memory_entries) {
     for (int n = 0; n < num_hashes; n++) {
         unsigned int name_hash = name_hash_table[n];
         if (name_hash != 0) {
@@ -243,7 +241,7 @@ eStreamingEntry *eStreamPackLoader::GetStreamingEntry(unsigned int name_hash) {
 
 bChunk *eStreamPackLoader::GetAlignedChunkDataPtr(unsigned char *chunk_data) {
     int byte_alignment = this->RequiredChunkAlignment - 1;
-    return (bChunk *)((size_t)(chunk_data + byte_alignment) & ~(size_t)byte_alignment);
+    return (bChunk *)((uintptr_t)(chunk_data + byte_alignment) & ~(uintptr_t)byte_alignment);
 }
 
 eStreamingPackLoadTable *eStreamPackLoader::GetStreamPackLoadingTable() {
@@ -276,27 +274,21 @@ void eStreamPackLoader::InternalLoadedStreamingEntryCallback(void *callback_para
         } else {
             bChunk *loaded_chunks = stream_pack_loader->GetAlignedChunkDataPtr(streaming_entry->ChunkData);
             if (streaming_entry->Flags & 1) {
-                LZHeader *lz_header;
+                LZHeader *lz_header = reinterpret_cast<LZHeader *>(loaded_chunks);
+
+                bPlatEndianSwap(&lz_header->ID);
+                bPlatEndianSwap(&lz_header->Version);
+                bPlatEndianSwap(&lz_header->Flags);
+                bPlatEndianSwap(&lz_header->UncompressedSize);
+                bPlatEndianSwap(&lz_header->CompressedSize);
+
                 char malloc_name[128];
-                int uncompressed_size;
-                int malloc_size;
-                int memory_pool_num;
-                int allocation_params = 0x2000;
-                unsigned char *uncompressed_data;
-                unsigned char *compressed_data;
-                unsigned char *base_loaded_data;
-                int actual_decompressed_size;
-
-                bPlatEndianSwap((unsigned int *)loaded_chunks);
-                bPlatEndianSwap((unsigned short *)loaded_chunks + 3);
-                bPlatEndianSwap((unsigned char *)loaded_chunks); // extra call
-                bPlatEndianSwap((unsigned int *)loaded_chunks + 2);
-                bPlatEndianSwap((unsigned int *)loaded_chunks + 3);
-
                 bSPrintf(malloc_name, "%s", streaming_pack->Filename);
 
-                malloc_size = streaming_entry->UncompressedSize + stream_pack_loader->RequiredChunkAlignment;
-                memory_pool_num = loading_table->MemoryPoolNum;
+                int uncompressed_size = streaming_entry->UncompressedSize;
+                int malloc_size = uncompressed_size + stream_pack_loader->RequiredChunkAlignment;
+                int memory_pool_num = loading_table->MemoryPoolNum;
+                int allocation_params = 0x2000;
                 if (memory_pool_num != 0) {
                     if (bLargestMalloc(memory_pool_num) > malloc_size) {
                         allocation_params |= (memory_pool_num & 0xF);
@@ -304,13 +296,14 @@ void eStreamPackLoader::InternalLoadedStreamingEntryCallback(void *callback_para
                         PrintStreamingPackMemoryWarning(malloc_name, malloc_size, memory_pool_num);
                     }
                 }
-                compressed_data = (unsigned char *)loaded_chunks;
-                uncompressed_data = (unsigned char *)bMALLOC(malloc_size, __FILE__, __LINE__, allocation_params);
-                base_loaded_data = streaming_entry->ChunkData;
+                uint8 *uncompressed_data = (uint8 *)bMalloc(malloc_size, "TODO", __LINE__, allocation_params);
+                uint8 *compressed_data = (uint8 *)loaded_chunks;
+                uint8 *base_loaded_data = streaming_entry->ChunkData;
                 streaming_entry->ChunkData = uncompressed_data;
+
                 loaded_chunks = stream_pack_loader->GetAlignedChunkDataPtr(streaming_entry->ChunkData);
                 // what?
-                LZDecompress(compressed_data, (unsigned char *)loaded_chunks);
+                int32 actual_decompressed_size = LZDecompress(compressed_data, (uint8 *)loaded_chunks);
                 bFree(base_loaded_data);
             }
 
@@ -374,7 +367,7 @@ void eStreamPackLoader::InternalLoadStreamingEntry(eStreamingPackLoadTable *load
             }
         }
 
-        streaming_entry->ChunkData = (unsigned char *)bMALLOC(malloc_size, __FILE__, __LINE__, allocation_params);
+        streaming_entry->ChunkData = (unsigned char *)bMalloc(malloc_size, "TODO", __LINE__, allocation_params);
         streaming_entry->RefCount++;
         streaming_pack->NumLoadsPending++;
         if (loading_table) {
@@ -432,7 +425,7 @@ void eStreamPackLoader::LoadStreamingEntry(unsigned int *name_hash_table, int nu
     loading_table->Callback = callback;
     loading_table->Param = param0;
 
-    load_info_table = (eStreamPackLoadEntryInfo *)bMalloc(num_hashes * 0x14, 0x40);
+    load_info_table = (eStreamPackLoadEntryInfo *)bMalloc(num_hashes * sizeof(eStreamPackLoadEntryInfo), "TODO", __LINE__, 0x40);
     num_load_entries = 0;
     smallest_file_offset |= 0xFFFF;
 
@@ -569,7 +562,8 @@ int eStreamPackLoader::TestLoadStreamingEntry(unsigned int *name_hash_table, int
     int amount_not_alloc = 0;
     int amount_not_alloc_main_mem = 0;
     bTList<eStreamPackLoadEntryInfo> load_info_list;
-    eStreamPackLoadEntryInfo *load_info_table = (eStreamPackLoadEntryInfo *)bMalloc(num_hashes * 0x14, 0x40);
+    eStreamPackLoadEntryInfo *load_info_table =
+        (eStreamPackLoadEntryInfo *)bMalloc(num_hashes * sizeof(eStreamPackLoadEntryInfo), "TODO", __LINE__, 0x40);
     int num_load_entries = 0;
 
     for (int i = 0; i < num_hashes; i++) {
@@ -618,7 +612,7 @@ int eStreamPackLoader::TestLoadStreamingEntry(unsigned int *name_hash_table, int
                         }
 
                         if (bLargestMalloc(allocation_params) > malloc_size) {
-                            streaming_entry->ChunkData = (unsigned char *)bMalloc(malloc_size, allocation_params);
+                            streaming_entry->ChunkData = (unsigned char *)bMalloc(malloc_size, "TODO", __LINE__, allocation_params);
                         } else if ((allocation_params & 0xF) == 0) {
                             amount_not_alloc_main_mem += malloc_size;
                         }
@@ -643,7 +637,7 @@ int eStreamPackLoader::TestLoadStreamingEntry(unsigned int *name_hash_table, int
                         // streaming_entry->ChunkData = num_hashes;
 
                         if (bLargestMalloc(allocation_params) > malloc_size) {
-                            streaming_entry->ChunkData = (unsigned char *)bMalloc(malloc_size, allocation_params);
+                            streaming_entry->ChunkData = (unsigned char *)bMalloc(malloc_size, "TODO", __LINE__, allocation_params);
                         } else {
                             amount_not_alloc += malloc_size;
                             if ((allocation_params & 0xF) == 0) {
@@ -724,8 +718,9 @@ eStreamingPack *eStreamPackLoader::CreateStreamingPack(const char *filename, voi
     if (file_size <= 0x40)
         return nullptr;
 
-    eStreamingPackHeaderLoadingInfo *loading_info = (eStreamingPackHeaderLoadingInfo *)bMalloc(0x10, 0x40);
-    bMemSet(loading_info, 0x0, 0x10);
+    eStreamingPackHeaderLoadingInfo *loading_info =
+        (eStreamingPackHeaderLoadingInfo *)bMalloc(sizeof(eStreamingPackHeaderLoadingInfo), "TODO", __LINE__, 0x40);
+    bMemSet(loading_info, 0x0, sizeof(eStreamingPackHeaderLoadingInfo));
 
     loading_info->LoadingDoneCallback = callback_function;
     loading_info->LoadingDoneCallbackParam = callback_param;
@@ -742,7 +737,7 @@ eStreamingPack *eStreamPackLoader::CreateStreamingPack(const char *filename, voi
     int amount_to_load;
     if (file_size > 0x8000) {
         amount_to_load = 0x8000;
-        streaming_pack->HeaderChunks = (bChunk *)bMalloc(amount_to_load, 0x2040);
+        streaming_pack->HeaderChunks = (bChunk *)bMalloc(amount_to_load, "TODO", __LINE__, 0x2040);
         AddQueuedFile2(streaming_pack->HeaderChunks, streaming_pack->Filename, 0, loading_info->HeaderChunksSize,
                        eStreamPackLoader::InternalLoadingHeaderPhase1Callback, (void *)this, (void *)streaming_pack, nullptr);
     }
@@ -755,45 +750,42 @@ void eStreamPackLoader::InternalLoadingHeaderPhase1Callback(void *callback_param
     eStreamingPack *streaming_pack = (eStreamingPack *)callback_param2;
     eStreamingPackHeaderLoadingInfo *loading_info = streaming_pack->LoadingInfo;
     eStreamingPackHeaderLoadingInfoPhase1 user_load_info;
-    bMemSet(&user_load_info, 0x0, 0x10);
-
-    char malloc_name[256];
-    int next_load_position;
-    int next_load_amount;
-    int allocation_params = 0x2000;
+    bMemSet(&user_load_info, 0, sizeof(eStreamingPackHeaderLoadingInfoPhase1));
 
     user_load_info.Filename = streaming_pack->Filename;
     user_load_info.TempHeaderChunks = streaming_pack->HeaderChunks;
 
     stream_pack_loader->LoadingHeaderPhase1Callback(&user_load_info);
 
+    char malloc_name[256];
     bSPrintf(malloc_name, "%s: StrmHdrChks", streaming_pack->Filename);
 
-    next_load_amount = user_load_info.NextLoadAmount;
-    next_load_position = user_load_info.NextLoadPosition;
+    int next_load_position = user_load_info.NextLoadPosition;
+    int next_load_amount = user_load_info.NextLoadAmount;
     streaming_pack->HeaderSize = next_load_amount;
 
+    int allocation_params = 0x2000;
     if (streaming_pack->HeaderMemoryPoolNum != 0 && bLargestMalloc(streaming_pack->HeaderMemoryPoolNum) > next_load_amount) {
         allocation_params = (streaming_pack->HeaderMemoryPoolNum & 0xF) | 0x2040;
     }
 
-    bChunk *perm_header_chunks = (bChunk *)bMalloc(next_load_amount, allocation_params);
+    bChunk *perm_header_chunks = (bChunk *)bMalloc(next_load_amount, "TODO", __LINE__, allocation_params);
     bChunk *temp_header_chunks = streaming_pack->HeaderChunks;
 
     if (next_load_position + next_load_amount <= loading_info->HeaderChunksSize) {
-        bMemCpy(perm_header_chunks, &((char *)temp_header_chunks)[next_load_position], next_load_amount);
-        loading_info->HeaderChunksMemCopied = 1; // ^^^ hack?
+        bMemCpy(perm_header_chunks, reinterpret_cast<void *>((uintptr_t)temp_header_chunks + next_load_position), next_load_amount);
+        loading_info->HeaderChunksMemCopied = 1;
     }
     bFree(temp_header_chunks);
 
     streaming_pack->HeaderChunks = perm_header_chunks;
     if (loading_info->HeaderChunksMemCopied == 0) {
-        AddQueuedFile2(perm_header_chunks, streaming_pack->Filename, next_load_position, next_load_amount,
-                       eStreamPackLoader::InternalLoadingHeaderPhase2Callback, stream_pack_loader, streaming_pack, nullptr);
+        AddQueuedFile2(perm_header_chunks, streaming_pack->Filename, next_load_position, next_load_amount, InternalLoadingHeaderPhase2Callback,
+                       stream_pack_loader, streaming_pack, nullptr);
     }
 
     if (loading_info->HeaderChunksMemCopied != 0) {
-        eStreamPackLoader::InternalLoadingHeaderPhase2Callback(stream_pack_loader, 0x0, streaming_pack);
+        InternalLoadingHeaderPhase2Callback(stream_pack_loader, 0, streaming_pack);
     }
 }
 
@@ -803,7 +795,7 @@ void eStreamPackLoader::InternalLoadingHeaderPhase2Callback(void *callback_param
     eStreamingPack *streaming_pack = (eStreamingPack *)callback_param2;
     eStreamingPackHeaderLoadingInfo *loading_info = streaming_pack->LoadingInfo;
     eStreamingPackHeaderLoadingInfoPhase2 user_load_info;
-    bMemSet(&user_load_info, 0x0, 0x28);
+    bMemSet(&user_load_info, 0, sizeof(eStreamingPackHeaderLoadingInfoPhase2));
 
     user_load_info.Filename = streaming_pack->Filename;
     user_load_info.HeaderChunks = streaming_pack->HeaderChunks;
@@ -817,25 +809,30 @@ void eStreamPackLoader::InternalLoadingHeaderPhase2Callback(void *callback_param
     streaming_pack->SolidListHeader = user_load_info.SolidListHeader;
     streaming_pack->pTexturePackHeader = user_load_info.pTexturePackHeader;
 
+    // TODO
+    // for (int n = 0; n < 10; n++) {
+    //     eStreamingEntry *entry;
+    //     eStreamingPack *other_pack;
+    // }
+
     if (user_load_info.LoadResourceFileAmount != 0) {
-        loading_info = (eStreamingPackHeaderLoadingInfo *)(&user_load_info) + 1;
         streaming_pack->pResourceFile = CreateResourceFile(streaming_pack->Filename, RESOURCE_FILE_CAR, 0x0, user_load_info.LoadResourceFilePosition,
                                                            user_load_info.LoadResourceFileAmount);
 
         char malloc_name[1024];
-        int allocation_params = 0x2000;
         bSPrintf(malloc_name, "%s: StrmHdrRes", streaming_pack->Filename);
 
+        int allocation_params = 0x2000;
         if (streaming_pack->HeaderMemoryPoolNum != 0 && bLargestMalloc(streaming_pack->HeaderMemoryPoolNum) > user_load_info.LoadResourceFileAmount) {
             allocation_params = (streaming_pack->HeaderMemoryPoolNum & 0xF) | 0x2040;
         }
 
         streaming_pack->pResourceFile->SetAllocationParams(allocation_params, malloc_name);
-        streaming_pack->pResourceFile->BeginLoading(eStreamPackLoader::InternalLoadingHeaderPhase3Callback, streaming_pack);
+        streaming_pack->pResourceFile->BeginLoading(InternalLoadingHeaderPhase3Callback, streaming_pack);
     }
 
     if (streaming_pack->pResourceFile == nullptr) {
-        eStreamPackLoader::InternalLoadingHeaderPhase3Callback(streaming_pack);
+        InternalLoadingHeaderPhase3Callback(streaming_pack);
     }
 }
 
