@@ -2,6 +2,7 @@
 #include "Ecstasy.hpp"
 #include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/Src/Misc/SpeedChunks.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/World/VisibleSection.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"

@@ -10,11 +10,7 @@
 #define BCHUNK_NESTED_FLAG 0x80000000
 
 // total size: 0x8
-class bChunk {
-    unsigned int ID; // offset 0x0, size 0x4
-    int Size;        // offset 0x4, size 0x4
-
-  public:
+struct bChunk {
     bChunk() {}
 
     bChunk(unsigned int id, int size) {
@@ -73,10 +69,15 @@ class bChunk {
         return this->GetLastChunk();
     }
 
-    bChunk *GetLastChunk(struct bChunk *first_chunk, int sizeof_binary) {}
+    unsigned int ID; // offset 0x0, size 0x4
+    int Size;        // offset 0x4, size 0x4
 };
 
-typedef int (*bChunkLoaderFunction)(struct bChunk *);
+inline bChunk *GetLastChunk(bChunk *first_chunk, int sizeof_binary) {
+    return reinterpret_cast<bChunk *>(reinterpret_cast<char *>(first_chunk) + sizeof_binary);
+}
+
+typedef int (*bChunkLoaderFunction)(bChunk *);
 
 class bChunkLoader {
     // total size: 0x10
@@ -95,7 +96,7 @@ class bChunkLoader {
         return id + (id >> 6) + (id >> 0xc) & 0x3f;
     }
 
-    bChunkLoader(unsigned int id, int (*loader)(bChunk *), int (*unloader)(bChunk *));
+    bChunkLoader(unsigned int id, bChunkLoaderFunction loader, bChunkLoaderFunction unloader);
 
     bChunkLoaderFunction GetLoaderFunction() {
         return this->LoaderFunction;

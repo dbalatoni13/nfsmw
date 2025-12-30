@@ -15,9 +15,6 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Texture.hpp"
 
-#define BCHUNK_TPK_SETTINGS 0x0003BD00
-#define BCHUNK_EMITTER_SYSTEM 0x0003BC00
-
 struct smVector3 {
     // total size: 0x8
     char x;            // offset 0x0, size 0x1

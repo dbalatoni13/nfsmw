@@ -26,6 +26,7 @@ extern "C" {
 void bMemCpy(void *dest, const void *src, unsigned int numbytes);
 void bMemSet(void *dest, unsigned char pattern, unsigned int size);
 int bMemCmp(const void *s1, const void *s2, unsigned int numbytes);
+void bOverlappedMemCpy(void *dest, const void *src, unsigned int numbytes);
 }
 
 inline void *operator new(size_t size, const char *file, int line) {

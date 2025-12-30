@@ -2,13 +2,12 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "SpeedChunks.hpp"
 
 BOOL BasisMatrixInitDone = false;
 
 bMatrix4 OverhauserBasisMatricies[3];
 bPList<QuickSpline> LoadedSplineList;
-
-#define BCHUNK_QUICK_SPLINES 0x8003B000
 
 void InitBasisMatricies() {
     if (BasisMatrixInitDone) {

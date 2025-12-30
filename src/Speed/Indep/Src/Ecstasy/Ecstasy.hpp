@@ -411,6 +411,7 @@ TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash);
 int eLoadSolidListPlatChunks(bChunk *chunk);
 float GetSunIntensity(eView *view);
 int eInitEngine();
+void eFixUpTables();
 
 extern unsigned int eFrameCounter;
 

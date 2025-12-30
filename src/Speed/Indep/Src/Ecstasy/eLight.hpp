@@ -13,17 +13,9 @@
 #include "Speed/PSX2/Src/Ecstasy/eLightPlat.hpp"
 #endif
 
-
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
-
-#define BCHUNK_LIGHT_MATERIALS 0x00135200
-#define BCHUNK_LIGHT_FLARE_PACK_HEADER 0x00135101
-#define BCHUNK_LIGHT_SOURCE_PACK_HEADER 0x00135001
-
-#define BCHUNK_LIGHT_SOURCES_PACK 0x80135000
-#define BCHUNK_LIGHT_FLARES_PACK 0x80135100
 
 enum eLightReflexionType {
     REF_FAST = 2,
@@ -207,5 +199,6 @@ eLightFlare *eGetNextLightFlareInPool(unsigned int XcludeViewIDs);
 int eRenderLightFlare(eView *view, eLightFlare *light_flare, bMatrix4 *local_world, float intensity_scale, enum eLightReflexionType ReflexionAction,
                       flareType destinationType, float RefelectionOverride, unsigned int ColourOverRide, float sizescale);
 eLightMaterial *elGetLightMaterial(unsigned int name_hash);
+void eLightUpdateTextures();
 
 #endif

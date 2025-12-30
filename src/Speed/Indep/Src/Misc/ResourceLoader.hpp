@@ -9,15 +9,30 @@
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
 enum ResourceFileType {
-    RESOURCE_FILE_REPLAY = 8,
-    RESOURCE_FILE_LANGUAGE = 7,
-    RESOURCE_FILE_CAR = 6,
-    RESOURCE_FILE_NIS = 5,
-    RESOURCE_FILE_TRACK = 4,
-    RESOURCE_FILE_INGAME = 3,
-    RESOURCE_FILE_FRONTEND = 2,
-    RESOURCE_FILE_GLOBAL = 1,
     RESOURCE_FILE_NONE = 0,
+    RESOURCE_FILE_GLOBAL = 1,
+    RESOURCE_FILE_FRONTEND = 2,
+    RESOURCE_FILE_INGAME = 3,
+    RESOURCE_FILE_TRACK = 4,
+    RESOURCE_FILE_NIS = 5,
+    RESOURCE_FILE_CAR = 6,
+    RESOURCE_FILE_LANGUAGE = 7,
+    RESOURCE_FILE_REPLAY = 8,
+};
+
+enum ResourceFileFlags {
+    RESOURCE_FILE_FLAG_HOTCHUNKABLE = 1,
+    RESOURCE_FILE_FLAG_USE_TEMPORARY_MEMORY = 2,
+    RESOURCE_FILE_FLAG_FREE_AFTER_LOADING = 4,
+    RESOURCE_FILE_FLAG_LZCOMPRESSED = 8,
+};
+
+// total size: 0x10
+struct LoadedHotFileEntry {
+    bChunk *pChunk;        // offset 0x0, size 0x4
+    int OriginalSize;      // offset 0x4, size 0x4
+    int MaxSize;           // offset 0x8, size 0x4
+    unsigned int Checksum; // offset 0xC, size 0x4
 };
 
 // total size: 0x50
@@ -32,7 +47,7 @@ class ResourceFile : public bTNode<ResourceFile> {
 
   private:
     bool mEnableFreeMemory;                           // offset 0x8, size 0x1
-    enum ResourceFileType Type;                       // offset 0xC, size 0x4
+    ResourceFileType Type;                            // offset 0xC, size 0x4
     int Flags;                                        // offset 0x10, size 0x4
     int FileOffset;                                   // offset 0x14, size 0x4
     int FileSize;                                     // offset 0x18, size 0x4
@@ -44,7 +59,7 @@ class ResourceFile : public bTNode<ResourceFile> {
     int LoadingFinishedFlag;                          // offset 0x30, size 0x4
     void (*Callback)(void *);                         // offset 0x34, size 0x4
     void *CallbackParam;                              // offset 0x38, size 0x4
-    struct bChunk *pFirstChunk;                       // offset 0x3C, size 0x4
+    bChunk *pFirstChunk;                              // offset 0x3C, size 0x4
     int SizeofChunks;                                 // offset 0x40, size 0x4
     struct LoadedHotFileEntry *pLoadedHotFileEntries; // offset 0x44, size 0x4
     int NumLoadedHotFileEntries;                      // offset 0x48, size 0x4

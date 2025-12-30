@@ -5,8 +5,6 @@
 #pragma once
 #endif
 
-#define BCHUNK_SUN_INFOS 0x00034202
-
 enum SUN_TEXTURE {
     NUM_SUN_TEXTURES = 5,
     SUNTEX_RING = 4,

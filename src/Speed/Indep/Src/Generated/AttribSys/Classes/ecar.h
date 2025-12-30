@@ -26,6 +26,7 @@ namespace Gen {
 struct ecar : Instance {
     struct _LayoutStruct {
         Private _Array_TireOffsets;              // offset 0x0, size 0x8
+        char _Pad_TireOffsets[8];                // offset 0x10, size 0x8
         UMath::Vector4 TireOffsets[4];           // offset 0x8, size 0x40
         Private _Array_TireSkidWidthKitScale;    // offset 0x50, size 0x8
         UMath::Vector2 TireSkidWidthKitScale[7]; // offset 0x58, size 0x38
