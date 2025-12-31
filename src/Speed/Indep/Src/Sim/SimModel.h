@@ -33,7 +33,7 @@ class Model : public Sim::Object,
 
         ~Effect() {}
 
-        const UCrc32 Identifire; // offset 0x5C, size 0x4
+        ALIGN_XENON(16) const UCrc32 Identifire; // offset 0x5C, size 0x4
     };
 
     Model(IModel *parent, const CollisionGeometry::Bounds *geometry, UCrc32 nodename, std::size_t numinterfaces);

@@ -38,32 +38,79 @@ struct LoadedHotFileEntry {
 // total size: 0x50
 class ResourceFile : public bTNode<ResourceFile> {
   public:
+    static void FileTransferCallback(void *param, int error_status);
+
+    ResourceFile(const char *filename, ResourceFileType type, int flags, int file_offset, int file_size);
+    ~ResourceFile();
+
+    void SetAllocationParams(int allocation_params, const char *debug_name);
+    void AllocateMemory(bool loading_compressed_file);
+    bool IsFreeMemoryEnabled();
+    void SetFreeMemoryEnabled(bool enable);
+    void FreeMemory();
+    void BeginLoading(void (*callback)(void *), void *callback_param);
+    void ManualUnload();
+    void ManualReload(bChunk *new_chunks);
+    void LoadResourceIfFileTransferFinished();
+    int GetSize(int chunk_id, int *pnum_chunks);
+
     void *GetMemory() {
         return this->pFirstChunk;
     }
 
-    void SetAllocationParams(int allocation_params, const char *debug_name);
-    void BeginLoading(void (*callback)(void *), void *callback_param);
+    // static void *operator new(unsigned int size) {}
+
+    // static void operator delete(void *ptr) {}
+
+    // void AssignMemory(void *mem, int allocation_params, const char *debug_name) {}
+
+    // int GetAddress() {}
+
+    // void BeginLoading(ASYNCFILE_CALLBACK *callback, int callback_param) {}
+
+    // void BeginLoading() {}
+
+    // int IsFinishedLoading() {}
+
+    // void CallCallback() {}
+
+    // const char *GetFilename() {}
+
+    // const char *GetHotFilename() {}
+
+    // ResourceFileType GetType() {}
+
+    // void ChangeFilenameForHotChunking(const char *filename) {}
+
+    // void SetHotFileNumber(int number) {}
+
+    // int GetHotFileNumber() {}
+
+    // int IsHotChunkable() {}
+
+    // bChunk *GetFirstChunk() {}
+
+    // int GetSizeofChunks() {}
 
   private:
-    bool mEnableFreeMemory;                           // offset 0x8, size 0x1
-    ResourceFileType Type;                            // offset 0xC, size 0x4
-    int Flags;                                        // offset 0x10, size 0x4
-    int FileOffset;                                   // offset 0x14, size 0x4
-    int FileSize;                                     // offset 0x18, size 0x4
-    const char *Filename;                             // offset 0x1C, size 0x4
-    const char *HotFilename;                          // offset 0x20, size 0x4
-    const char *AllocationName;                       // offset 0x24, size 0x4
-    int AllocationParams;                             // offset 0x28, size 0x4
-    int FileTransfersInProgress;                      // offset 0x2C, size 0x4
-    int LoadingFinishedFlag;                          // offset 0x30, size 0x4
-    void (*Callback)(void *);                         // offset 0x34, size 0x4
-    void *CallbackParam;                              // offset 0x38, size 0x4
-    bChunk *pFirstChunk;                              // offset 0x3C, size 0x4
-    int SizeofChunks;                                 // offset 0x40, size 0x4
-    struct LoadedHotFileEntry *pLoadedHotFileEntries; // offset 0x44, size 0x4
-    int NumLoadedHotFileEntries;                      // offset 0x48, size 0x4
-    int HotFileNumber;                                // offset 0x4C, size 0x4
+    bool mEnableFreeMemory;                    // offset 0x8, size 0x1
+    ResourceFileType Type;                     // offset 0xC, size 0x4
+    int Flags;                                 // offset 0x10, size 0x4
+    int FileOffset;                            // offset 0x14, size 0x4
+    int FileSize;                              // offset 0x18, size 0x4
+    const char *Filename;                      // offset 0x1C, size 0x4
+    const char *HotFilename;                   // offset 0x20, size 0x4
+    const char *AllocationName;                // offset 0x24, size 0x4
+    int AllocationParams;                      // offset 0x28, size 0x4
+    int FileTransfersInProgress;               // offset 0x2C, size 0x4
+    int LoadingFinishedFlag;                   // offset 0x30, size 0x4
+    void (*Callback)(void *);                  // offset 0x34, size 0x4
+    void *CallbackParam;                       // offset 0x38, size 0x4
+    bChunk *pFirstChunk;                       // offset 0x3C, size 0x4
+    int SizeofChunks;                          // offset 0x40, size 0x4
+    LoadedHotFileEntry *pLoadedHotFileEntries; // offset 0x44, size 0x4
+    int NumLoadedHotFileEntries;               // offset 0x48, size 0x4
+    int HotFileNumber;                         // offset 0x4C, size 0x4
 };
 
 void InitResourceLoader();

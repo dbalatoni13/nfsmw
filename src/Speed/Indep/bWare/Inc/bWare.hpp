@@ -6,6 +6,7 @@
 #endif
 
 #include "bMath.hpp"
+#include "bMemory.hpp"
 #include "bSlotPool.hpp"
 
 #if DEBUG
@@ -31,11 +32,19 @@ void bOverlappedMemCpy(void *dest, const void *src, unsigned int numbytes);
 }
 
 inline void *operator new(size_t size, const char *file, int line) {
+#if DEBUG
+    return bWareMalloc(size, file, line, 0);
+#else
     return new char[size];
+#endif
 }
 
 inline void *operator new[](size_t size, const char *file, int line) {
+#if DEBUG
+    return bWareMalloc(size, file, line, 0);
+#else
     return new char[size];
+#endif
 }
 
 void bEndianSwap64(void *value);

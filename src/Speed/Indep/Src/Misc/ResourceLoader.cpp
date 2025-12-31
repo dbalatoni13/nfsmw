@@ -1,6 +1,8 @@
 #include "ResourceLoader.hpp"
 #include "Speed/Indep/Src/Ecstasy/eLight.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
+#include "Speed/Indep/Src/Misc/bFile.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
@@ -209,7 +211,52 @@ bool IsTempChunk(bChunk *chunk) {
     return false;
 }
 
-int SplitPermTempChunks(bool split_temp, bChunk *source_chunks, int source_chunks_size, uint8 *dest_buffer, int dest_position, int depth) {}
+int SplitPermTempChunks(bool split_temp, bChunk *source_chunks, int source_chunks_size, uint8 *dest_buffer, int dest_position, int depth) {
+    depth++;
+    if (depth > 10) {
+        bBreak();
+    }
+    const int alignment_amount = 0x80;
+    const int alignment_mask = alignment_amount - 1;
+
+    for (bChunk *source_chunk = source_chunks; source_chunk < GetLastChunk(source_chunks, source_chunks_size);
+         source_chunk = source_chunk->GetNext()) {
+        bool is_temp_chunk = IsTempChunk(source_chunk);
+        if (is_temp_chunk == split_temp) {
+            intptr_t source_position = reinterpret_cast<intptr_t>(source_chunk);
+            int pad_size = source_position - dest_position & alignment_mask;
+            if ((pad_size != 0) && (pad_size < 9)) {
+                pad_size += alignment_amount;
+            }
+            if (dest_buffer && pad_size != 0) {
+                bChunk *dest_chunk = reinterpret_cast<bChunk *>(dest_buffer + dest_position);
+                dest_chunk->ID = 0;
+                dest_chunk->Size = pad_size - sizeof(bChunk);
+                bMemSet(&dest_chunk[1], 0x11, pad_size - sizeof(bChunk));
+            }
+            dest_position += pad_size;
+        }
+        if (source_chunk->IsNestedChunk() && !is_temp_chunk) {
+            int new_dest_position = SplitPermTempChunks(split_temp, source_chunk->GetFirstChunk(), source_chunk->GetSize(), dest_buffer,
+                                                        dest_position + sizeof(bChunk), depth);
+            if (new_dest_position != dest_position + sizeof(bChunk)) {
+                if (dest_buffer) {
+                    bChunk *dest_chunk = reinterpret_cast<bChunk *>(dest_buffer + dest_position);
+                    dest_chunk->ID = source_chunk->ID;
+                    dest_chunk->Size = new_dest_position - dest_position - sizeof(bChunk);
+                }
+                dest_position = new_dest_position;
+            }
+        } else if (is_temp_chunk == split_temp) {
+            if (dest_buffer) {
+                bChunk *dest_chunk = reinterpret_cast<bChunk *>(dest_buffer + dest_position);
+                bMemCpy(dest_chunk, source_chunk, source_chunk->GetSize() + sizeof(bChunk));
+            }
+            dest_position += 8 + source_chunk->GetSize();
+        }
+    }
+    return dest_position;
+}
 
 void ClobberPermChunks(bChunk *source_chunks, int source_chunks_size) {
     bChunk *source_chunk = source_chunks;
@@ -269,4 +316,48 @@ void PostLoadFixup() {
         }
         eFixUpTables();
     }
+}
+
+// STRIPPED
+void HotChunksPostLoadFixup() {}
+
+SlotPool *ResourceFileSlotPool;
+
+void InitResourceLoader() {
+    ResourceFileSlotPool = bNewSlotPool(80, 80, "ResourceFileSlotPool", 0);
+}
+
+// STRIPPED
+void CloseResourceLoader() {}
+
+ResourceFile::ResourceFile(const char *filename, ResourceFileType type, int flags, int file_offset, int file_size) {
+    Flags = flags;
+    FileOffset = file_offset;
+    FileSize = file_size;
+    mEnableFreeMemory = true;
+    Type = type;
+    Filename = bAllocateSharedString(filename);
+    HotFilename = nullptr;
+    FileTransfersInProgress = 0;
+    LoadingFinishedFlag = 0;
+    HotFileNumber = 0;
+    pLoadedHotFileEntries = nullptr;
+    NumLoadedHotFileEntries = 0;
+    Callback = nullptr;
+    CallbackParam = nullptr;
+    SetAllocationParams(0x2000, filename);
+    HotFilename = nullptr;
+    SizeofChunks = bFileSize(Filename);
+    if (SizeofChunks < 0) {
+        SizeofChunks = 0;
+    }
+    if (SizeofChunks != 0 && FileSize != 0) {
+        SizeofChunks = FileSize;
+    }
+    pFirstChunk = nullptr;
+}
+
+void ResourceFile::SetAllocationParams(int allocation_params, const char *debug_name) {
+    AllocationParams = allocation_params;
+    AllocationName = bAllocateSharedString(debug_name);
 }

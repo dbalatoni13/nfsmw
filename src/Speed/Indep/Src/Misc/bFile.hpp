@@ -32,6 +32,7 @@ struct bFile : public bTNode<bFile> {
 bFile *bOpen(const char *filename, int open_mode, int warn_if_cant_open);
 void bClose(bFile *f);
 int bFileSize(bFile *f);
+int bFileSize(const char *filename);
 
 void *bGetFile(const char *filename, int *size, int allocation_params);
 int bFileExists(const char *f);

@@ -39,7 +39,7 @@ def apply(game_version: str):
 
         new_symbol = symbol_mappings.get(old_symbol)
 
-        if new_symbol is None:
+        if new_symbol is None or "gprlr" in new_symbol:
             continue
 
         tokens[0] = new_symbol

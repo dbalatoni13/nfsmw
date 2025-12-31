@@ -301,6 +301,7 @@ elif config.platform == Platform.X360:
     cflags_game = [
         *cflags_base,
         "/DLUA_NUMBER=float",
+        "/DDEBUG",
     ]
 
     config.extra_clang_flags = [
