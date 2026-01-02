@@ -107,6 +107,9 @@ static void Main_MyAssert(const char *format, ...) {}
 
 int InitializeEverythingTicks = 0;
 
+void InitScreenPrintf();
+void DebugMenuInit();
+
 void InitializeEverything(int argc, char **argv) {
     ResetCapturedLoadingTimes();
     CaptureLoadingTime("InitializeEverything");

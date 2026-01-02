@@ -20,7 +20,7 @@ class ITiptronic : public UTL::COM::IUnknown {
     virtual ~ITiptronic() {}
 
   public:
-    virtual bool SportShift(GearID gear) {}
+    virtual bool SportShift(GearID gear);
 };
 
 #endif

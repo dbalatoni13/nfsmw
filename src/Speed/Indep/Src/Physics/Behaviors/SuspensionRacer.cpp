@@ -46,11 +46,11 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
             return mTraction >= 1.0f;
         }
 
-        float SetBrake(float brake) {
+        void SetBrake(float brake) {
             mBrake = brake;
         }
 
-        float SetEBrake(float ebrake) {
+        void SetEBrake(float ebrake) {
             mEBrake = ebrake;
         }
 

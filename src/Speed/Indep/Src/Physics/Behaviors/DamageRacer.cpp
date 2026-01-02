@@ -69,6 +69,7 @@ DamageZone::Info DamageRacer::GetZoneDamage() const {
 
 bool DamageRacer::CanDamageVisuals() const {
     // TODO
+    return true;
 }
 
 void DamageRacer::OnTaskSimulate(float dT) {

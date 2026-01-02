@@ -286,8 +286,7 @@ elif config.platform == Platform.X360:
         # "/Ox",  # maybe
         "/GF",  # Eliminate Duplicate Strings
         # "/Gy",  # maybe?
-        "/Zd",  # /Zi enables debug info, /Zd for line numbers only
-        "/Yd",  # embed debug info into the obj file instead of pdb
+        "/Z7",  # /Zi enables debug info (pdb), /Zd for line numbers only (pdb), /Z7 generates debug info per obj file
         "/EHsc",  # enable exception handling (and extern C notthrow?)
         "/I src/Packages/xenonsdk/2.0.2135.2/installed/include/xbox",
         "/I src",
@@ -315,7 +314,7 @@ elif config.platform == Platform.PS2:
 
     cflags_base = [
         "-O2",
-        "-ggdb",
+        "-g2",
         # "-Wall",
         "-I src/Speed/Indep/Libs/Support/stlps2",
         "-I src/Speed/PSX2/Libs/stl/gpp",

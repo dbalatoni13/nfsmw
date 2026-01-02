@@ -158,7 +158,9 @@ void SimpleRigidBody::ResolveForce(const UMath::Vector3 &force, const UMath::Vec
 void SimpleRigidBody::ResolveTorque(const UMath::Vector3 &torque) {}
 
 // TODO
-unsigned int SimpleRigidBody::GetTriggerFlags() const {}
+unsigned int SimpleRigidBody::GetTriggerFlags() const {
+    return 0;
+}
 
 void SimpleRigidBody::Update(const float dT, void *workspace) {
     // TODO really ugly output

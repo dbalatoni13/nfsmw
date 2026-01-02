@@ -30,6 +30,10 @@ Speed/Indep/SourceLists/zLua.cpp:
 	.pdata      start:0x820CAB20 end:0x820CAE20
 	.text       start:0x82395150 end:0x823A0828
 
+Speed/Indep/SourceLists/zPhysicsBehaviors.cpp:
+	.pdata      start:0x820CFA78 end:0x820D05D0
+	.text       start:0x82432B88 end:0x8244F5D0
+
 Speed/Indep/SourceLists/zSim.cpp:
 	.pdata      start:0x820D21C0 end:0x820D2D08
 	.text       start:0x8249A6C0 end:0x824B4D38

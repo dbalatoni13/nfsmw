@@ -36,6 +36,7 @@ class SimSurface : public Attrib::Gen::simsurface {
 
     const SimSurface &operator=(const SimSurface &from) {
         Change(from.GetConstCollection());
+        return *this;
     }
 
     void DebugOverride() {}
