@@ -158,11 +158,11 @@ class RigidBody : public Behavior,
       private:
         // total size: 0x4C
         const UMath::Vector4 mOrientation;                 // offset 0x8, size 0x10
-        const UMath::Vector3 mDimension;                   // offset 0x18, size 0xC
+        ALIGN_XENON(16) const UMath::Vector3 mDimension;   // offset 0x18, size 0xC
         const Dynamics::Collision::Geometry::Shape mShape; // offset 0x24, size 0x4
-        const UMath::Vector3 mOffset;                      // offset 0x28, size 0xC
+        ALIGN_XENON(16) const UMath::Vector3 mOffset;      // offset 0x28, size 0xC
         const UCrc32 mName;                                // offset 0x34, size 0x4
-        UMath::Vector3 mPrevPosition;                      // offset 0x38, size 0xC
+        ALIGN_XENON(16) UMath::Vector3 mPrevPosition;      // offset 0x38, size 0xC
         unsigned int mFlags;                               // offset 0x44, size 0x4
         const Attrib::Collection *mMaterial;               // offset 0x48, size 0x4
     };
@@ -586,41 +586,41 @@ class RigidBody : public Behavior,
         void Validate() {}
 
         // total size: 0xB0
-        UMath::Vector4 orientation;              // offset 0x0, size 0x10
-        UMath::Vector3 position;                 // offset 0x10, size 0xC
-        unsigned short status;                   // offset 0x1C, size 0x2
-        unsigned short statusPrev;               // offset 0x1E, size 0x2
-        UMath::Vector3 linearVel;                // offset 0x20, size 0xC
-        float mass;                              // offset 0x2C, size 0x4
-        UMath::Vector3 angularVel;               // offset 0x30, size 0xC
-        float oom;                               // offset 0x3C, size 0x4
-        Dynamics::Inertia::Tensor inertiaTensor; // offset 0x40, size 0xC
-        float unused1;                           // offset 0x4C, size 0x4
-        ALIGN_PS2(16) UMath::Vector3 force;      // offset 0x50, size 0xC
-        char leversInContact;                    // offset 0x5C, size 0x1
-        unsigned char state;                     // offset 0x5D, size 0x1
-        unsigned char index;                     // offset 0x5E, size 0x1
-        char unused2;                            // offset 0x5F, size 0x1
-        UMath::Vector3 torque;                   // offset 0x60, size 0xC
-        float radius;                            // offset 0x6C, size 0x4
-        UMath::Matrix4 bodyMatrix;               // offset 0x70, size 0x40
+        UMath::Vector4 orientation;                                            // offset 0x0, size 0x10
+        ALIGN_PS2(16) ALIGN_XENON(16) UMath::Vector3 position;                 // offset 0x10, size 0xC
+        unsigned short status;                                                 // offset 0x1C, size 0x2
+        unsigned short statusPrev;                                             // offset 0x1E, size 0x2
+        ALIGN_PS2(16) ALIGN_XENON(16) UMath::Vector3 linearVel;                // offset 0x20, size 0xC
+        float mass;                                                            // offset 0x2C, size 0x4
+        ALIGN_PS2(16) ALIGN_XENON(16) UMath::Vector3 angularVel;               // offset 0x30, size 0xC
+        float oom;                                                             // offset 0x3C, size 0x4
+        ALIGN_PS2(16) ALIGN_XENON(16) Dynamics::Inertia::Tensor inertiaTensor; // offset 0x40, size 0xC
+        ALIGN_XENON(16) float unused1;                                         // offset 0x4C, size 0x4
+        ALIGN_PS2(16) ALIGN_XENON(16) UMath::Vector3 force;                    // offset 0x50, size 0xC
+        char leversInContact;                                                  // offset 0x5C, size 0x1
+        unsigned char state;                                                   // offset 0x5D, size 0x1
+        unsigned char index;                                                   // offset 0x5E, size 0x1
+        char unused2;                                                          // offset 0x5F, size 0x1
+        ALIGN_PS2(16) ALIGN_XENON(16) UMath::Vector3 torque;                   // offset 0x60, size 0xC
+        float radius;                                                          // offset 0x6C, size 0x4
+        ALIGN_PS2(16) ALIGN_XENON(16) UMath::Matrix4 bodyMatrix;               // offset 0x70, size 0x40
     };
 
   private:
-    ScratchPtr<Volatile> mData;                           // offset 0x88, size 0x4
-    BehaviorSpecsPtr<Attrib::Gen::rigidbodyspecs> mSpecs; // offset 0x8C, size 0x14
-    UMath::Matrix4 mInvWorldTensor;                       // offset 0xA0, size 0x40
-    UMath::Vector4 mGroundNormal;                         // offset 0xE0, size 0x10
-    UMath::Vector3 mDimension;                            // offset 0xF0, size 0xC
-    WCollider *mWCollider;                                // offset 0xFC, size 0x4
-    UMath::Vector3 mCOG;                                  // offset 0x100, size 0xC
-    const CollisionGeometry::Bounds *mGeoms;              // offset 0x10C, size 0x4
-    RBGrid *mGrid;                                        // offset 0x110, size 0x4
-    unsigned int mCollisionMask;                          // offset 0x114, size 0x4
-    SimableType mSimableType;                             // offset 0x118, size 0x4
-    float mDetachForce;                                   // offset 0x11C, size 0x4
-    PrimList mPrimitives;                                 // offset 0x120, size 0x10
-    MeshList mMeshes;                                     // offset 0x130, size 0x10
+    ScratchPtr<Volatile> mData;                              // offset 0x88, size 0x4
+    BehaviorSpecsPtr<Attrib::Gen::rigidbodyspecs> mSpecs;    // offset 0x8C, size 0x14
+    UMath::Matrix4 mInvWorldTensor;                          // offset 0xA0, size 0x40
+    UMath::Vector4 mGroundNormal;                            // offset 0xE0, size 0x10
+    ALIGN_PS2(16) ALIGN_XENON(16) UMath::Vector3 mDimension; // offset 0xF0, size 0xC
+    WCollider *mWCollider;                                   // offset 0xFC, size 0x4
+    ALIGN_PS2(16) ALIGN_XENON(16) UMath::Vector3 mCOG;       // offset 0x100, size 0xC
+    const CollisionGeometry::Bounds *mGeoms;                 // offset 0x10C, size 0x4
+    RBGrid *mGrid;                                           // offset 0x110, size 0x4
+    unsigned int mCollisionMask;                             // offset 0x114, size 0x4
+    SimableType mSimableType;                                // offset 0x118, size 0x4
+    float mDetachForce;                                      // offset 0x11C, size 0x4
+    PrimList mPrimitives;                                    // offset 0x120, size 0x10
+    MeshList mMeshes;                                        // offset 0x130, size 0x10
 
     static RigidBody *mMaps[RIGID_BODY_MAX];
     static std::size_t mCount;

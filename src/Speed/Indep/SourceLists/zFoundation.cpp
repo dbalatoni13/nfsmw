@@ -8,4 +8,6 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UMath.cpp"
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.cpp"
+
 #include "Speed/Indep/Libs/Support/Utility/UVectorMath.cpp"

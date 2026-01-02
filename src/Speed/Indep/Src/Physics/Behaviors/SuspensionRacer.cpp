@@ -830,7 +830,6 @@ SuspensionRacer::SuspensionRacer(const BehaviorParams &bp, const SuspensionParam
 }
 
 SuspensionRacer::~SuspensionRacer() {
-
     Sim::Collision::RemoveListener(this);
     for (int i = 0; i < 4; ++i) {
         delete mTires[i];

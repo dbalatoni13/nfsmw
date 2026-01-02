@@ -1,13 +1,13 @@
 #ifndef SUPPORT_UTILITY_UCOM_H
 #define SUPPORT_UTILITY_UCOM_H
 
-#include "types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
-#include "Speed/Indep/bWare/Inc/bMemory.hpp"
+#include "types.h"
 
 typedef void *HINTERFACE;
 

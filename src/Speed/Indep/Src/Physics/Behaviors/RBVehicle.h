@@ -91,19 +91,19 @@ class RBVehicle : public RigidBody, public IRBVehicle {
     }
 
   private:
-    IVehicle *mVehicle;                                   // offset 0x148, size 0x4
-    ISuspension *mSuspension;                             // offset 0x14C, size 0x4
-    BehaviorSpecsPtr<Attrib::Gen::rigidbodyspecs> mSpecs; // offset 0x150, size 0x14
-    float mDeadOnWheels;                                  // offset 0x164, size 0x4
-    CollisionGeometry::Collection *mGeoms;                // offset 0x168, size 0x4
-    unsigned int mFrame;                                  // offset 0x16C, size 0x4
-    ALIGN_PS2(16) UMath::Vector3 mCollisionCOG;           // offset 0x170, size 0xC
-    float mCollisionMass;                                 // offset 0x17C, size 0x4
-    bool mObjectCollisionsEnabled;                        // offset 0x180, size 0x1
-    eInvulnerablitiy mInvulnerableState;                  // offset 0x184, size 0x4
-    float mInvulnerableTimer;                             // offset 0x188, size 0x4
-    float mLastPenetration;                               // offset 0x18C, size 0x4
-    Attrib::Gen::collisionreactions mPlayerReactions;     // offset 0x190, size 0x14
+    IVehicle *mVehicle;                                         // offset 0x148, size 0x4
+    ISuspension *mSuspension;                                   // offset 0x14C, size 0x4
+    BehaviorSpecsPtr<Attrib::Gen::rigidbodyspecs> mSpecs;       // offset 0x150, size 0x14
+    float mDeadOnWheels;                                        // offset 0x164, size 0x4
+    CollisionGeometry::Collection *mGeoms;                      // offset 0x168, size 0x4
+    unsigned int mFrame;                                        // offset 0x16C, size 0x4
+    ALIGN_PS2(16) ALIGN_XENON(16) UMath::Vector3 mCollisionCOG; // offset 0x170, size 0xC
+    float mCollisionMass;                                       // offset 0x17C, size 0x4
+    bool mObjectCollisionsEnabled;                              // offset 0x180, size 0x1
+    eInvulnerablitiy mInvulnerableState;                        // offset 0x184, size 0x4
+    float mInvulnerableTimer;                                   // offset 0x188, size 0x4
+    float mLastPenetration;                                     // offset 0x18C, size 0x4
+    Attrib::Gen::collisionreactions mPlayerReactions;           // offset 0x190, size 0x14
 };
 
 #endif

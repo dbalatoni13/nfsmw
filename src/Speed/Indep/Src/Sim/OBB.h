@@ -5,8 +5,9 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
-#include "Speed/Indep/bWare/Inc/bMemory.hpp"
+
 
 #include <cstddef>
 

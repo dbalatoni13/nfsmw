@@ -7,6 +7,10 @@
 
 #include <cmath>
 
+#ifdef EA_PLATFORM_XENON
+#include <ppcintrinsics.h>
+#endif
+
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 // #include "UEALibs.hpp"
 #include "UTypes.h"
@@ -25,7 +29,11 @@ inline float Distance(const Vector3 &a, const Vector3 &b) {
 }
 
 inline float DistanceSquare(const Vector3 &a, const Vector3 &b) {
+#ifdef EA_PLATFORM_XENON
+    return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
+#else
     return VU0_v3distancesquare(a, b);
+#endif
 }
 
 inline float DistanceSquarexz(const Vector3 &a, const Vector3 &b) {
@@ -51,11 +59,15 @@ inline void Copy(const Vector4 &a, Vector4 &r) {
     VU0_v4Copy(a, r);
 }
 
+#ifdef EA_PLATFORM_XENON
+void Transpose(const Matrix4 &m, Matrix4 &r);
+#else
 inline void Transpose(const Matrix4 &m, Matrix4 &r) {
     VU0_MATRIX4_transpose(m, r);
 }
+#endif
 
-inline void Transpose(const UMath::Vector4 &q, UMath::Vector4 &r) {
+inline void Transpose(const Vector4 &q, Vector4 &r) {
     VU0_qtranspose(q, r);
 }
 
@@ -63,15 +75,15 @@ inline const Vector3 &ExtractAxis(const Matrix4 &m, unsigned int row) {
     return *reinterpret_cast<const Vector3 *>(&m[row]);
 }
 
-inline void ExtractXAxis(const UMath::Vector4 &q, Vector3 &r) {
+inline void ExtractXAxis(const Vector4 &q, Vector3 &r) {
     VU0_ExtractXAxis3FromQuat(q, r);
 }
 
-inline void ExtractYAxis(const UMath::Vector4 &q, Vector3 &r) {
+inline void ExtractYAxis(const Vector4 &q, Vector3 &r) {
     VU0_ExtractYAxis3FromQuat(q, r);
 }
 
-inline void ExtractZAxis(const UMath::Vector4 &q, Vector3 &r) {
+inline void ExtractZAxis(const Vector4 &q, Vector3 &r) {
     VU0_ExtractZAxis3FromQuat(q, r);
 }
 
@@ -87,43 +99,69 @@ inline void Init(Matrix4 &m, const float xx, const float yy, const float zz) {
     VU0_MATRIX4Init(m, xx, yy, zz);
 }
 
+#if EA_PLATFORM_XENON
+void Mult(const Vector4 &a, const Vector4 &b, Vector4 &r);
+#else
 inline void Mult(const Vector4 &a, const Vector4 &b, Vector4 &r) {
     VU0_qmul(a, b, r);
 }
+#endif
 
 inline void Mult(const Matrix4 &a, const Matrix4 &b, Matrix4 &r) {
     VU0_MATRIX4_mult(a, b, r);
 }
 
-inline void Unit(const UMath::Vector4 &a, Vector4 &r) {
+inline void Unit(const Vector4 &a, Vector4 &r) {
     VU0_v4unit(a, r);
 }
 
-inline void Unitxyz(const UMath::Vector4 &a, Vector4 &r) {
+inline void Unitxyz(const Vector4 &a, Vector4 &r) {
     VU0_v4unitxyz(a, r);
 }
 
 // UEALibs not working???
-void MATRIX4_multyrot(const UMath::Matrix4 *m4, float ybangle, UMath::Matrix4 *resultm);
-inline void MultYRot(const UMath::Matrix4 &m, float a, UMath::Matrix4 &r) {
+void MATRIX4_multyrot(const Matrix4 *m4, float ybangle, Matrix4 *resultm);
+inline void MultYRot(const Matrix4 &m, float a, Matrix4 &r) {
     r = m;
     MATRIX4_multyrot(&r, a, &r);
 }
 
+#ifdef EA_PLATFORM_XENON
+void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m);
+#else
 inline void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m) {
     VU0_quattom4(q, m);
 }
+#endif
 
 inline void Add(const Vector3 &a, const Vector3 &b, Vector3 &r) {
+#ifdef EA_PLATFORM_XENON
+    r.x = a.x + b.x;
+    r.y = a.y + b.y;
+    r.z = a.z + b.z;
+#else
     VU0_v3add(a, b, r);
+#endif
 }
 
 inline void Scale(const Vector3 &a, const Vector3 &b, Vector3 &r) {
+#ifdef EA_PLATFORM_XENON
+    r.x = a.x * b.x;
+    r.y = a.y * b.y;
+    r.z = a.z * b.z;
+#else
     VU0_v3scale(a, b, r);
+#endif
 }
 
 inline void Scale(const Vector3 &a, const float s, Vector3 &r) {
+#ifdef EA_PLATFORM_XENON
+    r.x = a.x * s;
+    r.y = a.y * s;
+    r.z = a.z * s;
+#else
     VU0_v3scale(a, s, r);
+#endif
 }
 
 inline void Scale(const Vector4 &a, const float s, Vector4 &r) {
@@ -131,22 +169,34 @@ inline void Scale(const Vector4 &a, const float s, Vector4 &r) {
 }
 
 inline void ScaleAdd(const Vector3 &a, const float s, const Vector3 &b, Vector3 &r) {
+#ifdef EA_PLATFORM_XENON
+    r.x = a.x + b.x * s;
+    r.y = a.y + b.y * s;
+    r.z = a.z + b.z * s;
+#else
     VU0_v3scaleadd(a, s, b, r);
+#endif
 }
 
 inline void ScaleAdd(const Vector4 &a, const float s, const Vector4 &b, Vector4 &r) {
     VU0_v4scaleadd(a, s, b, r);
 }
 
-inline void ScaleAddxyz(const UMath::Vector4 &a, const float s, const UMath::Vector4 &b, Vector4 &r) {
+inline void ScaleAddxyz(const Vector4 &a, const float s, const Vector4 &b, Vector4 &r) {
     VU0_v4scaleaddxyz(a, s, b, r);
 }
 
 inline void Sub(const Vector3 &a, const Vector3 &b, Vector3 &r) {
+#ifdef EA_PLATFORM_XENON
+    r.x = a.x - b.x;
+    r.y = a.y - b.y;
+    r.z = a.z - b.z;
+#else
     VU0_v3sub(a, b, r);
+#endif
 }
 
-inline void Subxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, Vector4 &r) {
+inline void Subxyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
     VU0_v4subxyz(a, b, r);
 }
 
@@ -154,51 +204,107 @@ inline void SetYRot(Matrix4 &r, float a) {
     VU0_MATRIX4setyrot(r, a);
 }
 
+#ifdef EA_PLATFORM_XENON
+void Rotate(const Vector3 &a, const Vector4 &q, Vector3 &r);
+#else
 inline void Rotate(const Vector3 &a, const Vector4 &q, Vector3 &r) {
     VU0_v3quatrotate(q, a, r);
 }
+#endif
 
 inline void Rotate(const Vector3 &a, const Matrix4 &m, Vector3 &r) {
+#ifdef EA_PLATFORM_XENON
+    Vector3 temp = a;
+
+    r.x = m.v0.x * temp.x + m.v1.x * temp.y + m.v2.x * temp.z;
+    r.y = m.v0.y * temp.x + m.v1.y * temp.y + m.v2.y * temp.z;
+    r.z = m.v0.z * temp.x + m.v1.z * temp.y + m.v2.z * temp.z;
+#else
     VU0_MATRIX3x4_vect3mult(a, m, r);
+#endif
 }
 
 inline float Dot(const Vector3 &a, const Vector3 &b) {
+#ifdef EA_PLATFORM_XENON
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+#else
     return VU0_v3dotprod(a, b);
+#endif
 }
 
 inline void Dot(const Vector3 &a, const Matrix4 &b, Vector3 &r) {
+#ifdef EA_PLATFORM_XENON
+    r.x = Dot(a, UMath::Vector4To3(b.v0));
+    r.y = Dot(a, UMath::Vector4To3(b.v1));
+    r.z = Dot(a, UMath::Vector4To3(b.v2));
+#else
     VU0_MATRIX3x4dotprod(a, b, r);
+#endif
 }
 
-inline float Dotxyz(const UMath::Vector4 &a, const UMath::Vector4 &b) {
+inline float Dotxyz(const Vector4 &a, const Vector4 &b) {
     return VU0_v4dotprodxyz(a, b);
 }
 
 inline void Cross(const Vector3 &a, const Vector3 &b, Vector3 &r) {
+#ifdef EA_PLATFORM_XENON
+    r.x = a.y * b.z - a.z * b.y;
+    r.y = a.z * b.x - a.x * b.z;
+    r.z = a.x * b.y - a.y * b.x;
+#else
     VU0_v3crossprod(a, b, r);
+#endif
 }
 
+#ifdef EA_PLATFORM_XENON
+void UnitCross(const Vector3 &a, const Vector3 &b, Vector3 &r);
+#else
 inline void UnitCross(const Vector3 &a, const Vector3 &b, Vector3 &r) {
     VU0_v3unitcrossprod(a, b, r);
 }
-
-inline float Length(const Vector3 &a) {
-    return VU0_v3length(a);
-}
+#endif
 
 inline float Lengthxz(const Vector3 &a) {
     return VU0_v3lengthxz(a);
 }
 
-inline float Lengthxyz(const UMath::Vector4 &a) {
+inline float Lengthxyz(const Vector4 &a) {
     return VU0_v4lengthxyz(a);
 }
 
 inline float LengthSquare(const Vector3 &a) {
+#ifdef EA_PLATFORM_XENON
+    return a.x * a.x + a.y * a.y + a.z * a.z;
+#else
     return VU0_v3lengthsquare(a);
+#endif
 }
 
-inline void Matrix4ToQuaternion(const UMath::Matrix4 &m, Vector4 &q) {
+inline float Atan2d(float o, float a) {
+    return ANGLE2DEG(VU0_Atan2(o, a));
+}
+
+inline float Atan2a(const float o, const float a) {
+    return VU0_Atan2(o, a);
+}
+
+inline float Sqrt(const float f) {
+#ifdef EA_PLATFORM_XENON
+    return __fsqrts(f);
+#else
+    return VU0_sqrt(f);
+#endif
+}
+
+inline float Length(const Vector3 &a) {
+#ifdef EA_PLATFORM_XENON
+    return Sqrt(LengthSquare(a));
+#else
+    return VU0_v3length(a);
+#endif
+}
+
+inline void Matrix4ToQuaternion(const Matrix4 &m, Vector4 &q) {
     VU0_m4toquat(m, q);
 }
 
@@ -253,18 +359,6 @@ inline std::size_t Max(const std::size_t a, const std::size_t b) {
 }
 #endif
 
-inline float Atan2d(float o, float a) {
-    return ANGLE2DEG(VU0_Atan2(o, a));
-}
-
-inline float Atan2a(const float o, const float a) {
-    return VU0_Atan2(o, a);
-}
-
-inline float Sqrt(const float f) {
-    return VU0_sqrt(f);
-}
-
 // Credits: Brawltendo
 // Limits the input value to the range [a,l]
 inline float Limit(const float a, const float l) {
@@ -273,10 +367,10 @@ inline float Limit(const float a, const float l) {
         retval = a;
     } else {
         if (a > 0.f) {
-            retval = UMath::Min(a, l);
+            retval = Min(a, l);
 
         } else {
-            retval = UMath::Max(a, l);
+            retval = Max(a, l);
         }
     }
     return retval;

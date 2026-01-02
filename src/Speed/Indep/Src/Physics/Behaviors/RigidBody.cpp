@@ -86,6 +86,7 @@ void RigidBody::Primitive::Enable(bool enable) {
     }
 }
 
+// TODO why is the offset of bodyMatrix wrong on Xenon?
 void RigidBody::Primitive::Prepare(const Volatile &data) {
     UMath::Rotate(GetOffset(), data.bodyMatrix, mPrevPosition);
     UMath::Add(mPrevPosition, data.position, mPrevPosition);

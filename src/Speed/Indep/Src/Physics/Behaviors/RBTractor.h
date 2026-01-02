@@ -62,13 +62,13 @@ class RBTractor : public RBVehicle, public IArticulatedVehicle, public IVehicleC
     }
 
   private:
-    IVehicle *mTrailer;                            // offset 0x1B8, size 0x4
-    IInput *mIInput;                               // offset 0x1BC, size 0x4
-    HSIMTASK mTrailerTask;                         // offset 0x1C0, size 0x4
-    bool mHitched;                                 // offset 0x1C4, size 0x1
-    ALIGN_PS2(16) UMath::Vector3 m5thWheel;        // offset 0x1C8, size 0xC
-    ALIGN_PS2(16) UMath::Vector3 mTrailer5thWheel; // offset 0x1D4, size 0xC
-    float mDetachTimer;                            // offset 0x1E0, size 0x4
+    IVehicle *mTrailer;                                            // offset 0x1B8, size 0x4
+    IInput *mIInput;                                               // offset 0x1BC, size 0x4
+    HSIMTASK mTrailerTask;                                         // offset 0x1C0, size 0x4
+    bool mHitched;                                                 // offset 0x1C4, size 0x1
+    ALIGN_PS2(16) ALIGN_XENON(16) UMath::Vector3 m5thWheel;        // offset 0x1C8, size 0xC
+    ALIGN_PS2(16) ALIGN_XENON(16) UMath::Vector3 mTrailer5thWheel; // offset 0x1D4, size 0xC
+    float mDetachTimer;                                            // offset 0x1E0, size 0x4
 };
 
 // total size: 0x1A4

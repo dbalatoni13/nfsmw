@@ -23,25 +23,25 @@
 class Chassis : public VehicleBehavior, public ISuspension {
   public:
     struct State {
-        UMath::Matrix4 matrix;            // offset 0x0, size 0x40
-        UMath::Vector3 local_vel;         // offset 0x40, size 0xC
-        float gas_input;                  // offset 0x4C, size 0x4
-        UMath::Vector3 linear_vel;        // offset 0x50, size 0xC
-        float brake_input;                // offset 0x5C, size 0x4
-        UMath::Vector3 angular_vel;       // offset 0x60, size 0xC
-        float ground_effect;              // offset 0x6C, size 0x4
-        UMath::Vector3 cog;               // offset 0x70, size 0xC
-        float ebrake_input;               // offset 0x7C, size 0x4
-        UMath::Vector3 dimension;         // offset 0x80, size 0xC
-        Angle steer_input;                // offset 0x8C, size 0x4
-        UMath::Vector3 local_angular_vel; // offset 0x90, size 0xC
-        Angle slipangle;                  // offset 0x9C, size 0x4
-        UMath::Vector3 inertia;           // offset 0xA0, size 0xC
-        float mass;                       // offset 0xAC, size 0x4
-        UMath::Vector3 world_cog;         // offset 0xB0, size 0xC
-        float speed;                      // offset 0xBC, size 0x4
-        float time;                       // offset 0xC0, size 0x4
-        int flags;                        // offset 0xC4, size 0x4
+        UMath::Matrix4 matrix;                            // offset 0x0, size 0x40
+        ALIGN_XENON(16) UMath::Vector3 local_vel;         // offset 0x40, size 0xC
+        float gas_input;                                  // offset 0x4C, size 0x4
+        ALIGN_XENON(16) UMath::Vector3 linear_vel;        // offset 0x50, size 0xC
+        float brake_input;                                // offset 0x5C, size 0x4
+        ALIGN_XENON(16) UMath::Vector3 angular_vel;       // offset 0x60, size 0xC
+        float ground_effect;                              // offset 0x6C, size 0x4
+        ALIGN_XENON(16) UMath::Vector3 cog;               // offset 0x70, size 0xC
+        float ebrake_input;                               // offset 0x7C, size 0x4
+        ALIGN_XENON(16) UMath::Vector3 dimension;         // offset 0x80, size 0xC
+        Angle steer_input;                                // offset 0x8C, size 0x4
+        ALIGN_XENON(16) UMath::Vector3 local_angular_vel; // offset 0x90, size 0xC
+        Angle slipangle;                                  // offset 0x9C, size 0x4
+        ALIGN_XENON(16) UMath::Vector3 inertia;           // offset 0xA0, size 0xC
+        float mass;                                       // offset 0xAC, size 0x4
+        ALIGN_XENON(16) UMath::Vector3 world_cog;         // offset 0xB0, size 0xC
+        float speed;                                      // offset 0xBC, size 0x4
+        float time;                                       // offset 0xC0, size 0x4
+        int flags;                                        // offset 0xC4, size 0x4
 #ifdef EA_BUILD_A124
         int driver_style;
 #else

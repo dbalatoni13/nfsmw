@@ -31,8 +31,8 @@ Speed/Indep/SourceLists/zLua.cpp:
 	.text       start:0x82395150 end:0x823A0828
 
 Speed/Indep/SourceLists/zPhysicsBehaviors.cpp:
-	.pdata      start:0x820CFA78 end:0x820D05D0
-	.text       start:0x82432B88 end:0x8244F5D0
+	.pdata      start:0x820CFC78 end:0x820D06A8
+	.text       start:0x82435280 end:0x82453C70
 
 Speed/Indep/SourceLists/zSim.cpp:
 	.pdata      start:0x820D21C0 end:0x820D2D08

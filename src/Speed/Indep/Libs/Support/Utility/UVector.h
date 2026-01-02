@@ -9,7 +9,7 @@
 #include "UMath.h"
 
 // TODO class
-struct ALIGN_PS2(16) UVector3 : public UMath::Vector3 {
+struct ALIGN_PS2(16) ALIGN_XENON(16) UVector3 : public UMath::Vector3 {
     UVector3() {
         Clear(*this);
     }

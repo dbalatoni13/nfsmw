@@ -244,9 +244,9 @@ bool RBVehicle::CanCollideWithWorld() const {
             return false;
         }
     }
-    if (!GetOwner()->IsPlayer()) {
-        return RigidBody::CanCollideWithWorld();
-    } else {
+    if (GetOwner()->IsPlayer()) {
         return true;
+    } else {
+        return RigidBody::CanCollideWithWorld();
     }
 }
