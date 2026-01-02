@@ -368,7 +368,7 @@ void NISActivity::StartLocation(const UMath::Vector3 &position, float direction)
     mStartLocation = position;
     eSwizzleWorldVector(position, mNISPosition);
     mNISDirection = direction;
-    unsigned short bang = direction * 65536.0f;
+    unsigned short bang = static_cast<unsigned short>(direction * 65536.0f);
     CAnimLocator::SetAnimOriginPosition(mNISPosition, bang);
 }
 

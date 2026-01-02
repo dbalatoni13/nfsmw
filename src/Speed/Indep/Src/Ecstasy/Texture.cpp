@@ -270,7 +270,7 @@ void TexturePack::AttachTextureInfo(TextureInfo *texture_info, TextureInfoPlatIn
     texture_info->ImageData = nullptr;
     texture_info->PaletteData = nullptr;
     texture_info->SetPlatInfo(plat_info);
-    if (texture_info->NameHash == BinHash<'D', 'E', 'F', 'A', 'U', 'L', 'T', 'A', 'L', 'P', 'H', 'A'>::value) {
+    if (texture_info->NameHash == BINHASH(DEFAULTALPHA)) {
         DefaultTextureInfo = texture_info;
     }
     eDirtyTextures = 1;

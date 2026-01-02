@@ -23,7 +23,7 @@ int UnloaderLights(bChunk *bchunk) {
         eLightMaterial *light_material = reinterpret_cast<eLightMaterial *>(bchunk->GetData());
         if (light_material->Version == 3) {
             light_material->Remove();
-            if (light_material->NameHash == BinHash<'D', 'E', 'F', 'A', 'U', 'L', 'T'>::value) {
+            if (light_material->NameHash == BINHASH(DEFAULT)) {
                 DefaultLightMaterial = &DefaultLightMaterialData;
             }
         }

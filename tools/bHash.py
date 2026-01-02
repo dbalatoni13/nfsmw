@@ -9,7 +9,7 @@ def bHash(string: str):
     result = c_uint32(0xFFFFFFFF)
 
     for c in string:
-        result = c_uint32(result.value << 5 + ord(c))
+        result = c_uint32(result.value * 33 + ord(c))
 
     return result.value
 

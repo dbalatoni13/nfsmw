@@ -36,6 +36,7 @@ compile_commands.json
 /*.d
 
 symbols/
+src/Speed/Indep/Src/Generated/Hashes
 decompiled.cpp
 
 tools/elftools

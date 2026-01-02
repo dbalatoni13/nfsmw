@@ -1339,7 +1339,7 @@ float SuspensionRacer::CalcYawControlLimit(float speed) const {
         unsigned int numunits = mTireInfo.Num_YAW_CONTROL();
         if (numunits > 1) {
             float ratio = (numunits - 1) * percent;
-            unsigned int index1 = ratio;
+            unsigned int index1 = static_cast<unsigned int>(ratio);
             ratio -= index1;
             unsigned int index2 = UMath::Min(numunits - 1, index1 + 1);
             float a = mTireInfo.YAW_CONTROL(index1);

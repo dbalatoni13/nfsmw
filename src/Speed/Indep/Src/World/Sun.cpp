@@ -97,11 +97,11 @@ int UnloaderSun(bChunk *chunk) {
 
 void SunTrackLoader(void) {
     SetCurrentSunInfo();
-    SunTextures[0] = GetTextureInfo(BinHash<'S', 'U', 'N', 'C', 'E', 'N', 'T', 'E', 'R'>::value, 1, 0);
-    SunTextures[1] = GetTextureInfo(BinHash<'S', 'U', 'N', 'H', 'A', 'L', 'O'>::value, 1, 0);
-    SunTextures[2] = GetTextureInfo(BinHash<'S', 'U', 'N', 'M', 'A', 'J', 'O', 'R', 'R', 'A', 'Y', 'S'>::value, 1, 0);
-    SunTextures[3] = GetTextureInfo(BinHash<'S', 'U', 'N', 'M', 'I', 'N', 'O', 'R', 'R', 'A', 'Y', 'S'>::value, 1, 0);
-    SunTextures[4] = GetTextureInfo(BinHash<'S', 'U', 'N', 'R', 'I', 'N', 'G'>::value, 1, 0);
+    SunTextures[0] = GetTextureInfo(BINHASH(SUNCENTER), 1, 0);
+    SunTextures[1] = GetTextureInfo(BINHASH(SUNHALO), 1, 0);
+    SunTextures[2] = GetTextureInfo(BINHASH(SUNMAJORRAYS), 1, 0);
+    SunTextures[3] = GetTextureInfo(BINHASH(SUNMINORRAYS), 1, 0);
+    SunTextures[4] = GetTextureInfo(BINHASH(SUNRING), 1, 0);
 }
 
 void SunTrackUnloader(void) {

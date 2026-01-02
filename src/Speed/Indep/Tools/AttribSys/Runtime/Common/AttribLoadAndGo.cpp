@@ -54,7 +54,7 @@ unsigned int ExportManager::GetExportPolicyIndex(unsigned int type) const {
 
 // total size: 0x10
 struct DataBlock {
-    DataBlock() : mData(nullptr), mSize(0), mGC(nullptr), mPolicyIndex(-1) {}
+    DataBlock() : mData(nullptr), mSize(0), mGC(nullptr), mPolicyIndex(static_cast<unsigned int>(-1)) {}
 
     bool Inited() const {
         return mData != nullptr;

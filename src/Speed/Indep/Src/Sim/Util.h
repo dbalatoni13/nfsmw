@@ -12,7 +12,7 @@ inline unsigned int UTIL_InterprolateIndex(unsigned int last_index, float value,
     float value_range = limit_max - limit_min;
     float value_offset = value - limit_min;
     ratio = last_index * value_offset / value_range;
-    unsigned int index1 = ratio;
+    unsigned int index1 = static_cast<unsigned int>(ratio);
     ratio -= index1;
     return index1;
 }
