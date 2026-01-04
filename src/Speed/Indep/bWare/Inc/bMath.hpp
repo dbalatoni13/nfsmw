@@ -11,7 +11,7 @@
 #ifdef EA_PLATFORM_GAMECUBE
 #include "dolphin/mtx44_ext.h"
 #elif defined(EA_PLATFORM_XENON)
-// TODO
+#include <ppcintrinsics.h>
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 // TODO
 #else
@@ -94,18 +94,15 @@ inline int bMin(int a, int b) {
 }
 
 inline float bMin(float a, float b) {
+#ifdef EA_PLATFORM_GAMECUBE
     float c = a - b;
     float d;
-#ifdef EA_PLATFORM_GAMECUBE
     asm("fsel %0, %1, %2, %3" : "=f"(d) : "f"(c), "f"(b), "f"(a));
-#elif defined(EA_PLATFORM_XENON)
-// TODO
-#elif defined(EA_PLATFORM_PLAYSTATION2)
-// TODO
-#else
-#error Choose a platform
-#endif
     return d;
+#elif defined(EA_PLATFORM_PLAYSTATION2)
+#else
+    return a > b ? b : a;
+#endif
 }
 
 inline int bMax(int a, int b) {
@@ -113,18 +110,15 @@ inline int bMax(int a, int b) {
 }
 
 inline float bMax(float a, float b) {
+#ifdef EA_PLATFORM_GAMECUBE
     float c = a - b;
     float d;
-#ifdef EA_PLATFORM_GAMECUBE
     asm("fsel %0, %1, %2, %3" : "=f"(d) : "f"(c), "f"(a), "f"(b));
-#elif defined(EA_PLATFORM_XENON)
-// TODO
-#elif defined(EA_PLATFORM_PLAYSTATION2)
-// TODO
-#else
-#error Choose a platform
-#endif
     return d;
+#elif defined(EA_PLATFORM_PLAYSTATION2)
+#else
+    return a > b ? a : b;
+#endif
 }
 
 inline int bAbs(int a) {
@@ -135,18 +129,16 @@ inline int bAbs(int a) {
 }
 
 inline float bAbs(float a) {
-    float f_abs;
 #ifdef EA_PLATFORM_GAMECUBE
+    float f_abs;
     // We are sure they use asm, other options don't match
     asm("fabs %0, %1" : "=f"(f_abs) : "f"(a));
-#elif defined(EA_PLATFORM_XENON)
-// TODO
+    return f_abs;
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 // TODO
 #else
-#error Choose a platform
+    return fabsf(a);
 #endif
-    return f_abs;
 }
 
 inline float bTruncate(float a) {

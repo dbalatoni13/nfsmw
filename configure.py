@@ -281,7 +281,7 @@ elif config.platform == Platform.X360:
         "/Og",
         # "/Os", # no
         "/Ob2",
-        # "/Oi",  # maybe
+        "/Oi",  # maybe
         # "/Oy",  # maybe
         # "/Ox",  # maybe
         "/GF",  # Eliminate Duplicate Strings
