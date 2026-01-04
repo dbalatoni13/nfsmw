@@ -496,10 +496,9 @@ def generate_build_ninja(
     # Variables
     ###
     n.comment("Variables")
-    if config.platform != Platform.X360:
-        n.variable("ldflags", make_flags_str(config.ldflags))
-        if config.linker_version is None:
-            sys.exit("ProjectConfig.linker_version missing")
+    n.variable("ldflags", make_flags_str(config.ldflags))
+    if config.linker_version is None:
+        sys.exit("ProjectConfig.linker_version missing")
     n.variable("toolchain_version", Path(config.linker_version))
     n.variable("objdiff_report_args", make_flags_str(config.progress_report_args))
     n.newline()
@@ -754,7 +753,7 @@ def generate_build_ninja(
     gnu_as_implicit = None
     ld_cmd = None
     ld_implicit = None
-    if config.platform != Platform.PS2:
+    if config.platform == Platform.GC_WII:
         # NGCLD
         ngcld = compiler_path / "ngcld.exe"
         ld_cmd = f"{wrapper_cmd}{ngcld} $ldflags -o $out @$out.rsp"
@@ -772,6 +771,25 @@ def generate_build_ninja(
         # As a workaround for https://github.com/encounter/dtk-template/issues/51
         # include macros.inc directly as an implicit dependency
         gnu_as_implicit.append(build_path / "include" / "macros.inc")
+    elif config.platform == Platform.X360:
+        # MSVC linker
+        msvc_link = compiler_path / "link.exe"
+        ld_cmd = f"{wrapper_cmd}{msvc_link} $ldflags /OUT:$out @$out.rsp"
+        ld_implicit: List[Optional[Path]] = [
+            compilers_implicit or msvc_link,
+            wrapper_implicit,
+        ]
+
+        # TODO xbox 360 asm
+        # gnu_as = binutils / f"powerpc-eabi-as{EXE}"
+        # gnu_as_cmd = (
+        #     f"{CHAIN}{gnu_as} $asflags -o $out $in -MD $out.d"
+        #     + f" && {dtk} elf fixup $out $out"
+        # )
+        # gnu_as_implicit = [binutils_implicit or gnu_as, dtk]
+        # # As a workaround for https://github.com/encounter/dtk-template/issues/51
+        # # include macros.inc directly as an implicit dependency
+        # gnu_as_implicit.append(build_path / "include" / "macros.inc")
     else:
         # GNU linker
         gnu_ld = binutils / f"mips-linux-gnu-ld{EXE}"
@@ -964,7 +982,10 @@ def generate_build_ninja(
 
         def output(self) -> Path:
             if self.module_id == 0:
-                return build_path / f"{self.name}.dol"
+                return (
+                    build_path
+                    / f"{self.name}{'.exe' if config.platform == Platform.X360 else '.dol'}"
+                )
             else:
                 return build_path / self.name / f"{self.name}.rel"
 
@@ -977,21 +998,24 @@ def generate_build_ninja(
         def write(self, n: ninja_syntax.Writer) -> None:
             n.comment(f"Link {self.name}")
             if self.module_id == 0:
-                elf_path = build_path / f"{self.name}.elf"
+                elf_path = (
+                    build_path
+                    / f"{self.name}{'.exe' if config.platform == Platform.X360 else '.elf'}"
+                )
                 elf_ldflags = "$ldflags"
                 if config.generate_map:
                     elf_map = map_path(elf_path)
                     elf_ldflags += f" -Map {serialize_path(elf_map)}"
                 else:
                     elf_map = None
+                link_implicit = [*ld_implicit]
+                if config.platform == Platform.GC_WII:
+                    link_implicit.append(self.ldscript)
                 n.build(
                     outputs=elf_path,
                     rule="link",
                     inputs=self.inputs,
-                    implicit=[
-                        self.ldscript,
-                        *ld_implicit,
-                    ],
+                    implicit=link_implicit,
                     implicit_outputs=elf_map,
                     variables={"ldflags": elf_ldflags},
                     order_only="post-compile",
@@ -1023,11 +1047,14 @@ def generate_build_ninja(
                     variables={"ldflags": preplf_ldflags},
                     order_only="post-compile",
                 )
+                link_implicit = [*ld_implicit, preplf_path]
+                if config.platform == Platform.GC_WII:
+                    link_implicit.append(self.ldscript)
                 n.build(
                     outputs=plf_path,
                     rule="link",
                     inputs=self.inputs,
-                    implicit=[self.ldscript, preplf_path, *ld_implicit],
+                    implicit=link_implicit,
                     implicit_outputs=plf_map,
                     variables={"ldflags": plf_ldflags},
                     order_only="post-compile",
@@ -1259,7 +1286,9 @@ def generate_build_ninja(
         # Add DOL link step
         link_step = LinkStep(build_config)
         for unit in build_config["units"]:
-            add_unit(unit, link_step)
+            # TODO xbox 360 temporary hack
+            if "embsec" not in unit["name"] and "no_bbt" not in unit["name"]:
+                add_unit(unit, link_step)
         link_steps.append(link_step)
 
         if config.build_rels:
@@ -1423,6 +1452,22 @@ def generate_build_ninja(
                 order_only="post-build",
             )
             n.newline()
+        elif config.platform == Platform.X360:
+            # TODO
+            n.comment("Check hash")
+            ok_path = build_path / "ok"
+            n.rule(
+                name="check",
+                command=f"python tools/fake_ok.py {ok_path}",
+                description="CHECK $in",
+            )
+            n.build(
+                outputs=ok_path,
+                rule="check",
+                implicit=[dtk, *link_outputs],
+                order_only="post-build",
+            )
+            n.newline()
 
         ###
         # Calculate progress
@@ -1439,7 +1484,7 @@ def generate_build_ninja(
             report_path,
         ]
         # TODO PS2
-        if config.platform == Platform.GC_WII:
+        if config.platform == Platform.GC_WII or config.platform == Platform.X360:
             progress_implicit.append(ok_path)
 
         n.build(

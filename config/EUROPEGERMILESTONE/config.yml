@@ -7,3 +7,8 @@ splits: config/EUROPEGERMILESTONE/splits.txt
 # See config.example.yml for a list.
 mw_comment_version: 11
 quick_analysis: true
+
+block_relocations:
+# TODO is this needed?
+- source: .data:0x8293D6F0
+  end: .data:0x829422F0

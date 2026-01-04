@@ -37,3 +37,14 @@ Speed/Indep/SourceLists/zPhysicsBehaviors.cpp:
 Speed/Indep/SourceLists/zSim.cpp:
 	.pdata      start:0x820D21C0 end:0x820D2D08
 	.text       start:0x8249A6C0 end:0x824B4D38
+
+Speed/Xenon/link_fix.cpp:
+	.pdata      start:0x820E7160 end:0x820E7168
+	.embsec_6   start:0x82911A00 end:0x82913BA0
+
+Speed/Xenon/link_fix2.cpp:
+	.pdata      start:0x820D2D08 end:0x820E6F28
+	.text       start:0x824B4D38 end:0x828F6194
+
+Speed/Xenon/link_fix3.cpp:
+	.rdata      start:0x82000BE0 end:0x82000BE4

@@ -183,7 +183,15 @@ if config.platform == Platform.GC_WII:
     # Can be overridden in libraries or objects
     config.scratch_preset_id = 176
 elif config.platform == Platform.X360:
-    config.ldflags = []
+    config.ldflags = [
+        "/NODEFAULTLIB",
+        "/MACHINE:PPCBE",
+        "/XEX:NO",
+        f"/PDB:./build/{config.version}/default.pdb",
+        f"/DEBUG",
+        # f"/LTCG",
+        f"/VERBOSE",
+    ]
 elif config.platform == Platform.PS2:
     config.asflags = [
         "-no-pad-sections",
@@ -281,9 +289,11 @@ elif config.platform == Platform.X360:
         "/Og",
         # "/Os", # no
         "/Ob2",
-        "/Oi",  # maybe
+        "/Oi",
         # "/Oy",  # maybe
         # "/Ox",  # maybe
+        # "/Ou",  # enable prescheduling
+        "/Oz",  # enable inline asm scheduling
         "/GF",  # Eliminate Duplicate Strings
         # "/Gy",  # maybe?
         # "/Z7",  # /Zi enables debug info (pdb), /Zd for line numbers only (pdb), /Z7 generates debug info per obj file
@@ -1382,6 +1392,20 @@ if config.platform == Platform.GC_WII:
                 ],
             },
         ]
+    )
+
+if config.platform == Platform.X360:
+    config.libs.append(
+        {
+            "lib": "Game",
+            "toolchain_version": config.linker_version,
+            "cflags": cflags_game,
+            "host": False,
+            "progress_category": "sdk",  # str | List[str]
+            "objects": [
+                Object(Matching, "Speed/Xenon/link_fix.cpp"),
+            ],
+        }
     )
 
 # Custom build step for hashing
