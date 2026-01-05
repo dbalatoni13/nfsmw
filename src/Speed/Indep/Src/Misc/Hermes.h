@@ -152,6 +152,11 @@ class PortMessage {
 
     // static void operator delete(void *mem, unsigned int size, const char *name) {}
 
+    void RegisterHandler(Handler &handler);
+    void UnregisterHandler(HHANDLER key);
+    void SetIDFilter(HHANDLER key, bool enabled);
+    void HandleMessage(Message *msg);
+
     PortMessage() {}
 
     ~PortMessage() {}

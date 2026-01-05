@@ -1,12 +1,11 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribLoadAndGo.h"
-#include "Speed/Indep/Src/Misc/AttribAsset.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 #include <algorithm>
 
 namespace Attrib {
 
-Key StringToAssetID(const char *assetName) {
+AssetID StringToAssetID(const char *assetName) {
     return StringToKey(assetName);
 }
 

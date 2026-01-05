@@ -12,3 +12,4 @@ class LZHeader {
 };
 
 int32 LZDecompress(uint8 *pSrc, uint8 *pDst);
+int LZValidHeader(LZHeader *header);

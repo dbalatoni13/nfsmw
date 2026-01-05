@@ -144,6 +144,8 @@ class TrackStreamer {
     void SetStreamingPosition(int position_number, const bVector3 *position);
     void ClearStreamingPositions();
     void BlockUntilLoadingComplete();
+    void *AllocateUserMemory(int size, const char *debug_name, int offset);
+    void FreeUserMemory(void *mem);
 
     // Inlines
     void DisableZoneSwitching() {

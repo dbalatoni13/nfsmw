@@ -61,6 +61,12 @@
 
 #define BCHUNK_DIFFICULTY_INFO 0x00034B00
 
+#define BCHUNK_W_COLLISION_ASSETS 0x0003B801
+
+#define BCHUNK_COLOUR_CUBE 0x00017006
+
+#define BCHUNK_FENG_FONT 0x00030201
+
 const char *GetChunkName(int bchunk_id);
 
 #endif

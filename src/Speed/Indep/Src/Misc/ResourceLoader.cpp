@@ -1,10 +1,16 @@
 #include "ResourceLoader.hpp"
+#include "LZCompress.hpp"
+#include "Platform.h"
+#include "QueuedFile.hpp"
 #include "Speed/Indep/Src/Ecstasy/eLight.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Misc/bFile.hpp"
+#include "Speed/Indep/Src/World/TrackStreamer.hpp"
+#include "Speed/Indep/Src/World/WCollisionAssets.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "SpeedChunks.hpp"
 
@@ -360,4 +366,376 @@ ResourceFile::ResourceFile(const char *filename, ResourceFileType type, int flag
 void ResourceFile::SetAllocationParams(int allocation_params, const char *debug_name) {
     AllocationParams = allocation_params;
     AllocationName = bAllocateSharedString(debug_name);
+}
+
+void ResourceFile::AllocateMemory(bool loading_compressed_file) {
+    if (SizeofChunks == 0) {
+        return;
+    }
+    // TODO magic flags
+    int allocation_params = AllocationParams;
+    if (Flags & 2) {
+        allocation_params |= 0x40;
+    }
+    int pool_num = bMemoryGetPoolNum(allocation_params);
+    if (loading_compressed_file) {
+        allocation_params |= 0x40;
+        if (pool_num != 0) {
+            pool_num = 0;
+            allocation_params &= ~0xF;
+        }
+    }
+    if (pool_num != 0 && SizeofChunks > bLargestMalloc(allocation_params)) {
+        allocation_params &= ~0xF;
+    }
+    pFirstChunk = reinterpret_cast<bChunk *>(bMalloc(SizeofChunks, AllocationName, 0, allocation_params));
+}
+
+// STRIPPED
+bool ResourceFile::IsFreeMemoryEnabled() {
+    return false;
+}
+
+// STRIPPED
+void ResourceFile::SetFreeMemoryEnabled(bool enable) {}
+
+void ResourceFile::FreeMemory() {
+    if (mEnableFreeMemory && pFirstChunk) {
+        bFree(pFirstChunk);
+        pFirstChunk = nullptr;
+    }
+}
+
+int NumResourcesBeingLoaded;
+
+void ResourceFile::BeginLoading(void (*callback)(void *), void *callback_param) {
+    Callback = callback;
+    CallbackParam = callback_param;
+    NumResourcesBeingLoaded++;
+    if (!GetMemory()) {
+        bool loading_compressed_file = (Flags >> 3) & 1;
+        AllocateMemory(loading_compressed_file);
+    }
+    if (SizeofChunks != 0) {
+        FileTransfersInProgress++;
+        AddQueuedFile(pFirstChunk, Filename, FileOffset, SizeofChunks, FileTransferCallback, this, nullptr);
+    }
+}
+
+void ResourceFile::ManualUnload() {
+    UnloadChunks(pFirstChunk, SizeofChunks, GetFilename());
+    pFirstChunk = nullptr;
+}
+
+void ResourceFile::ManualReload(bChunk *new_chunks) {
+    pFirstChunk = new_chunks;
+    LoadChunks(new_chunks, SizeofChunks, GetFilename());
+}
+
+ResourceFile::~ResourceFile() {
+    if (pFirstChunk) {
+        UnloadChunks(pFirstChunk, this->SizeofChunks, GetFilename());
+        FreeMemory();
+    }
+    bFreeSharedString(Filename);
+    bFreeSharedString(HotFilename);
+    bFreeSharedString(AllocationName);
+}
+
+void ResourceFile::LoadResourceIfFileTransferFinished() {
+    if (LoadingFinishedFlag || FileTransfersInProgress) {
+        return;
+    }
+    if (Flags & 8) {
+        LZHeader *header = reinterpret_cast<LZHeader *>(pFirstChunk);
+        if (header) {
+            bPlatEndianSwap(&header->ID);
+            bPlatEndianSwap(&header->Flags);
+            bPlatEndianSwap(&header->UncompressedSize);
+            bPlatEndianSwap(&header->CompressedSize);
+            if (LZValidHeader(header)) {
+                uint8 *compressed_data = reinterpret_cast<uint8 *>(pFirstChunk);
+                SizeofChunks = header->UncompressedSize;
+                pFirstChunk = nullptr;
+                if (SizeofChunks != 0) {
+                    AllocateMemory(false);
+                    LZDecompress(compressed_data, reinterpret_cast<uint8 *>(pFirstChunk));
+                }
+                bFree(compressed_data);
+            }
+            goto block_8;
+        }
+    } else {
+    block_8:
+        if (pFirstChunk) {
+            EndianSwapChunkHeadersRecursive(pFirstChunk, SizeofChunks);
+        }
+    }
+    LoadTempPermChunks(&pFirstChunk, &SizeofChunks, AllocationParams, AllocationName);
+    if (Flags & 4) {
+        if (pFirstChunk) {
+            FreeMemory();
+        }
+        SizeofChunks = 0;
+    }
+    LoadingFinishedFlag = 1;
+}
+
+void ResourceFile::FileTransferCallback(void *param, int error_status) {
+    reinterpret_cast<ResourceFile *>(param)->FileTransfersInProgress--;
+}
+
+// STRIPPED
+int ResourceFile::GetSize(int chunk_id, int *pnum_chunks) {
+    return 0;
+}
+
+bTList<ResourceFile> ResourceFileList;
+
+ResourceFile *CreateResourceFile(const char *filename, ResourceFileType type, int flags, int flag_offset, int file_size) {
+    ResourceFile *r = new ResourceFile(filename, type, flags, flag_offset, file_size);
+    ResourceFileList.AddTail(r);
+    return r;
+}
+
+ResourceFile *LoadResourceFile(const char *filename, enum ResourceFileType type, int flags, void (*callback)(void *), void *callback_param,
+                               int file_offset, int file_size) {
+    ResourceFile *r = CreateResourceFile(filename, type, flags, file_offset, file_size);
+    r->BeginLoading(callback, callback_param);
+    return r;
+}
+
+void UnloadResourceFile(ResourceFile *resource_file) {
+    if (!resource_file) {
+        return;
+    }
+    while (!resource_file->IsFinishedLoading()) {
+        ServiceResourceLoading();
+    }
+    ResourceFileList.Remove(resource_file);
+    delete resource_file;
+}
+
+// total size: 0x8
+struct DelayedResourceCallback {
+    void (*pCallback)(void *); // offset 0x0, size 0x4
+    void *Param;               // offset 0x4, size 0x4
+};
+
+int NumDelayedResourceCallbacks;
+DelayedResourceCallback DelayedResourceCallbacks[8];
+
+int ServiceResourceLoading() {
+    ProfileNode profile_node("TODO", 0);
+
+    while (NumDelayedResourceCallbacks != 0) {
+        ProfileNode profile_node("TODO2", 0);
+        // TODO registers instead of stack
+        DelayedResourceCallback drc = DelayedResourceCallbacks[0];
+        // drc.pCallback = DelayedResourceCallbacks[0].pCallback;
+        // drc.Param = DelayedResourceCallbacks[0].Param;
+        if (NumDelayedResourceCallbacks > 1) {
+            bOverlappedMemCpy(&DelayedResourceCallbacks[0], &DelayedResourceCallbacks[1],
+                              NumDelayedResourceCallbacks * sizeof(DelayedResourceCallback));
+        }
+        NumDelayedResourceCallbacks--;
+        drc.pCallback(drc.Param);
+    }
+    ServiceQueuedFiles();
+    if (NumResourcesBeingLoaded != 0) {
+        for (ResourceFile *resource_file = ResourceFileList.GetHead(); resource_file != ResourceFileList.EndOfList();
+             resource_file = resource_file->GetNext()) {
+            if (!resource_file->IsFinishedLoading()) {
+                resource_file->LoadResourceIfFileTransferFinished();
+                if (resource_file->IsFinishedLoading()) {
+                    NumResourcesBeingLoaded--;
+                    resource_file->CallCallback();
+                }
+                return NumResourcesBeingLoaded;
+            }
+        }
+    }
+    return false;
+}
+
+int IsResourceLoadingComplete() {
+    return NumResourcesBeingLoaded == 0;
+}
+
+void WaitForResourceLoadingComplete() {
+    ServiceResourceLoading();
+    while (!IsResourceLoadingComplete()) {
+        DVDErrorTask(nullptr, 0);
+        bThreadYield(8);
+        ServiceResourceLoading();
+    }
+}
+
+void SetDelayedResourceCallback(void (*callback)(void *), void *param) {
+    DelayedResourceCallback *drc = &DelayedResourceCallbacks[NumDelayedResourceCallbacks];
+    drc->pCallback = callback;
+    drc->Param = param;
+    NumDelayedResourceCallbacks++;
+}
+
+// STRIPPED
+ResourceFile *FindResourceFile(const char *filename) {
+    return nullptr;
+}
+
+ResourceFile *FindResourceFile(ResourceFileType type) {
+    for (ResourceFile *resource_file = ResourceFileList.GetTail(); resource_file != ResourceFileList.EndOfList();
+         resource_file = resource_file->GetPrev()) {
+        if (resource_file->GetType() == type) {
+            return resource_file;
+        }
+    }
+    return nullptr;
+}
+
+int CurrentlyHotChunking;
+
+bool IsCurrentlyHotChunking() {
+    return CurrentlyHotChunking;
+}
+
+int LoaderWCollisionPack(bChunk *chunk) {
+    if (chunk->GetID() == BCHUNK_W_COLLISION_ASSETS) {
+        WCollisionAssets::Get().LoadCollisionPack(chunk);
+        return true;
+    }
+    return false;
+}
+
+int UnloaderWCollisionPack(bChunk *chunk) {
+    if (chunk->GetID() == BCHUNK_W_COLLISION_ASSETS) {
+        WCollisionAssets::Get().UnLoadCollisionPack(chunk);
+        return true;
+    }
+    return false;
+}
+
+int LoaderColourCube(bChunk *chunk) {
+    return chunk->GetID() == BCHUNK_COLOUR_CUBE;
+}
+
+int UnloaderColourCube(bChunk *chunk) {
+    return chunk->GetID() == BCHUNK_FENG_FONT;
+}
+
+// total size: 0x4C
+struct VMFile {
+    VMFile();
+
+    bool mInit;          // offset 0x0, size 0x1
+    char mFilename[48];  // offset 0x4, size 0x30
+    bool mCompressed;    // offset 0x34, size 0x1
+    int mSize;           // offset 0x38, size 0x4
+    int mSizeOfChunks;   // offset 0x3C, size 0x4
+    void *mMainMemAddr;  // offset 0x40, size 0x4
+    void *mVirtMemAddr;  // offset 0x44, size 0x4
+    bool mUsedTrackPool; // offset 0x48, size 0x1
+};
+
+VMFile::VMFile() {
+    mInit = false;
+    mCompressed = false;
+    mSize = 0;
+    mSizeOfChunks = 0;
+    mVirtMemAddr = nullptr;
+    mUsedTrackPool = false;
+    bMemSet(mFilename, 0, sizeof(mFilename));
+}
+
+VMFile queued_vm_files[5];
+
+VMFile *GetVMFile() {
+    for (int i = 0; i < 5; i++) {
+        if (!queued_vm_files[i].mInit) {
+            return &queued_vm_files[i];
+        }
+    }
+    return nullptr;
+}
+
+// UNSOLVED regswap
+void MoveFileIntoVirtualMemoryThenLoadChunks(int param, int err) {
+    VMFile *vm_file = reinterpret_cast<VMFile *>(param);
+    if (!vm_file->mInit) {
+        return;
+    }
+    void *old_memory = vm_file->mMainMemAddr;
+    int vm_file_size = vm_file->mSize;
+    unsigned int sizeofchunks = vm_file_size;
+    if (vm_file->mCompressed != 0) {
+        LZHeader *header = reinterpret_cast<LZHeader *>(old_memory);
+        bPlatEndianSwap(&header->ID);
+        bPlatEndianSwap(&header->Flags);
+        bPlatEndianSwap(&header->UncompressedSize);
+        bPlatEndianSwap(&header->CompressedSize);
+        if (LZValidHeader(header)) {
+            sizeofchunks = header->UncompressedSize;
+            uint8 *compressed_data = (uint8_t *)old_memory;
+            old_memory = nullptr;
+            if (sizeofchunks != 0) {
+                int allocation_params = GetVirtualMemoryAllocParams();
+                void *realloc = bMalloc(sizeofchunks, "TODO2", 0, allocation_params);
+                old_memory = realloc;
+                LZDecompress(compressed_data, (uint8 *)old_memory);
+            }
+            bFree(compressed_data);
+        }
+    }
+    void *new_mem = bMalloc(sizeofchunks, "TODO", 0, GetVirtualMemoryAllocParams());
+    bMemCpy(new_mem, old_memory, sizeofchunks);
+    vm_file->mVirtMemAddr = new_mem;
+    if (vm_file->mUsedTrackPool) {
+        TheTrackStreamer.FreeUserMemory(old_memory);
+    } else {
+        bFree(old_memory);
+    }
+    if (new_mem) {
+        EndianSwapChunkHeadersRecursive((bChunk *)new_mem, sizeofchunks);
+    }
+    LoadChunks((bChunk *)new_mem, sizeofchunks, vm_file->mFilename);
+    vm_file->mSizeOfChunks = sizeofchunks;
+}
+
+void UnloadFileFromVirtualMemory(VMFile *vm_file) {
+    UnloadChunks((bChunk *)vm_file->mVirtMemAddr, vm_file->mSizeOfChunks, vm_file->mFilename);
+    bFree(vm_file->mVirtMemAddr);
+    vm_file->mFilename[0] = '\0';
+    vm_file->mSize = 0;
+    vm_file->mCompressed = false;
+    vm_file->mMainMemAddr = nullptr;
+    vm_file->mInit = false;
+    vm_file->mUsedTrackPool = false;
+    vm_file->mVirtMemAddr = nullptr;
+    vm_file->mSizeOfChunks = 0;
+}
+
+VMFile *LoadFileIntoVirtualMemory(const char *filename, bool compressed, bool use_trackstreampool_as_temp) {
+    VMFile *vm_file = GetVMFile();
+    if (!vm_file) {
+        return nullptr;
+    }
+
+    vm_file->mInit = true;
+    bStrNCpy(vm_file->mFilename, filename, sizeof(vm_file->mFilename));
+    char temp_name[128];
+    bSPrintf(temp_name, "TEMP[%s]", filename);
+    int vm_file_size = GetQueuedFileSize(filename);
+    void *memory_file;
+    if (use_trackstreampool_as_temp) {
+        memory_file = TheTrackStreamer.AllocateUserMemory(vm_file_size, temp_name, 0);
+    } else {
+        memory_file = bMalloc(vm_file_size, "TODO", 0, 0x2040);
+    }
+    vm_file->mCompressed = compressed;
+    vm_file->mUsedTrackPool = use_trackstreampool_as_temp;
+    vm_file->mSize = vm_file_size;
+    vm_file->mMainMemAddr = memory_file;
+    AddQueuedFile(memory_file, filename, 0, vm_file_size, MoveFileIntoVirtualMemoryThenLoadChunks, reinterpret_cast<int>(vm_file), nullptr);
+
+    return vm_file;
 }

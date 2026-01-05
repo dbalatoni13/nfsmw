@@ -7,6 +7,7 @@
 
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
 enum ResourceFileType {
     RESOURCE_FILE_NONE = 0,
@@ -35,10 +36,20 @@ struct LoadedHotFileEntry {
     unsigned int Checksum; // offset 0xC, size 0x4
 };
 
+extern SlotPool *ResourceFileSlotPool;
+
 // total size: 0x50
 class ResourceFile : public bTNode<ResourceFile> {
   public:
     static void FileTransferCallback(void *param, int error_status);
+
+    void *operator new(size_t size) {
+        return bOMalloc(ResourceFileSlotPool);
+    }
+
+    void operator delete(void *ptr) {
+        bFree(ResourceFileSlotPool, ptr);
+    }
 
     ResourceFile(const char *filename, ResourceFileType type, int flags, int file_offset, int file_size);
     ~ResourceFile();
@@ -55,7 +66,7 @@ class ResourceFile : public bTNode<ResourceFile> {
     int GetSize(int chunk_id, int *pnum_chunks);
 
     void *GetMemory() {
-        return this->pFirstChunk;
+        return pFirstChunk;
     }
 
     // static void *operator new(unsigned int size) {}
@@ -70,15 +81,25 @@ class ResourceFile : public bTNode<ResourceFile> {
 
     // void BeginLoading() {}
 
-    // int IsFinishedLoading() {}
+    int IsFinishedLoading() {
+        return LoadingFinishedFlag;
+    }
 
-    // void CallCallback() {}
+    void CallCallback() {
+        if (Callback) {
+            Callback(CallbackParam);
+        }
+    }
 
-    // const char *GetFilename() {}
+    const char *GetFilename() {
+        return Filename;
+    }
 
     // const char *GetHotFilename() {}
 
-    // ResourceFileType GetType() {}
+    ResourceFileType GetType() {
+        return Type;
+    }
 
     // void ChangeFilenameForHotChunking(const char *filename) {}
 

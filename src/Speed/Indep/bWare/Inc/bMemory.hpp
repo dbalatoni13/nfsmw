@@ -221,7 +221,7 @@ int bCountFreeMemory(int pool);
 void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
 
 inline int bMemoryGetPoolNum(int allocation_params) {
-    return MemoryPools[allocation_params & 0xf]->GetLargestFreeBlock() - 0x5c;
+    return allocation_params & 0xf;
 }
 
 inline int bMemoryGetAlignment(int allocation_params) {

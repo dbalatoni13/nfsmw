@@ -388,7 +388,7 @@ int bLargestMalloc(int allocation_params) {
             return 0;
         }
     }
-    int pool = bMemoryGetPoolNum(allocation_params);
+    int pool = MemoryPools[bMemoryGetPoolNum(allocation_params)]->GetLargestFreeBlock() - 0x5c;
     int alignment = bMemoryGetAlignment(allocation_params);
     int largest_malloc = pool - alignment;
     if (largest_malloc < 0) {

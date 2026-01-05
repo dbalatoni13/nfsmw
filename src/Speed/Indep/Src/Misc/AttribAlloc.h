@@ -16,6 +16,8 @@ class IAttribAllocator {
 
 class AttribAlloc {
   public:
+    static IAttribAllocator *OverrideAllocator(IAttribAllocator *newAllocator);
+
     static void *Allocate(std::size_t bytes, const char *name) {
         return mAllocator->Allocate(bytes,
 #if DEBUG

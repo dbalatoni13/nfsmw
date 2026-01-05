@@ -10,7 +10,7 @@
 
 namespace Attrib {
 
-Key StringToAssetID(const char *assetName);
+AssetID StringToAssetID(const char *assetName);
 Key StringToTypeID(const char *typeName);
 
 // total size: 0xC
@@ -83,6 +83,10 @@ class Vault {
     const unsigned int GetExportType(unsigned int index) const;
     void *GetExportData(unsigned int index) const;
     bool ExportsCleared() const;
+
+    void *operator new(std::size_t bytes) {
+        return Alloc(bytes, "Attrib::Vault");
+    }
 
     void operator delete(void *ptr, std::size_t bytes) {
         Free(ptr, bytes, "Attrib::Vault");

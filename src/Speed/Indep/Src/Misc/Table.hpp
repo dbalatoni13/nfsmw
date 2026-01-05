@@ -84,7 +84,7 @@ class Average : public AverageBase {
     Average(int slots);
 
     void Init(int slots);
-    
+
     float GetValue() {
         return fAverage;
     }
@@ -142,8 +142,8 @@ class Graph {
     float GetValue(float x);
 
   private:
-    struct bVector2 *Points; // offset 0x0, size 0x4
-    int NumPoints;           // offset 0x4, size 0x4
+    bVector2 *Points; // offset 0x0, size 0x4
+    int NumPoints;    // offset 0x4, size 0x4
 };
 
 template <typename T> struct GraphEntry {
