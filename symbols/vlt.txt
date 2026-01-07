@@ -3251,6 +3251,7 @@
 0x6114d1a5 - DecelDeltaRPMThreshold
 0x313385dc - DecelPitchOffset
 0x4e19bac5 - DEF
+0xeec2271a - default
 0x851874eb - default_car
 0xdb28617d - default_car_demo_exotic
 0x4d42ad7f - default_car_demo_muscle

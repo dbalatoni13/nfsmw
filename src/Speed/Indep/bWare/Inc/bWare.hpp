@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Strings.hpp"
 #include "bMath.hpp"
 #include "bMemory.hpp"
 #include "bSlotPool.hpp"
@@ -82,6 +83,22 @@ inline void bPlatEndianSwap(float *value) {
 
 inline bool bIsDigit(char c) {
     return c >= '0' && c <= '9';
+}
+
+inline bool bStrEqual(const char *s1, const char *s2) {
+    return bStrICmp(s1, s2) == 0;
+}
+
+#ifdef DEBUG
+extern float bCodeineVersion;
+#endif
+
+inline int bIsCodeineConnected() {
+#ifdef DEBUG
+    return bCodeineVersion > 0.0f;
+#else
+    return false;
+#endif
 }
 
 #endif

@@ -53,13 +53,13 @@ struct JoylogBuffer {
 
     void PrintNearbyJoylogEntries(int error_pos);
 
-    char *GetFilename() {}
+    // char *GetFilename() {}
 
-    int GetTotalSize() {}
+    // int GetTotalSize() {}
 
-    int IsMoreData() {}
+    // int IsMoreData() {}
 
-    int GetPosition() {}
+    // int GetPosition() {}
 
     void SetPosition(int position) {}
 
@@ -126,13 +126,13 @@ class Joylog {
 
     static int IsReplaying();
 
-    static float GetData(JoylogChannel channel_number) {}
+    // static float GetData(JoylogChannel channel_number) {}
 
     static void AddData(float data, JoylogChannel channel_number) {}
 
     static void RewindReadAheadBuffer() {}
 
-    static unsigned int IsJuiceReplay() {}
+    // static unsigned int IsJuiceReplay() {}
 
     static void SetJuiceReplay(int val) {}
 
@@ -145,6 +145,14 @@ class Joylog {
     static int32 ReadAheadBufferPos;       // size: 0x4
     static uint8 *ReadAheadBuffer;         // size: 0x4
     static int JuiceReplayFlag;            // size: 0x4
+};
+
+// total size: 0xC
+struct JoylogChannelInfo {
+    JoylogChannel ChannelNumber; // offset 0x0, size 0x4
+    char *Name;                  // offset 0x4, size 0x4
+    char YieldRepeatCount;       // offset 0x8, size 0x1
+    char ReadAheadOnly;          // offset 0x9, size 0x1
 };
 
 void InitJoylog();

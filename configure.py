@@ -343,10 +343,11 @@ elif config.platform == Platform.PS2:
     ]
 
     # Debug flags
-    if args.debug:
-        cflags_base.append("-DDEBUG=1")
-    else:
-        cflags_base.append("-DNDEBUG=1")
+    # TODO
+    # if args.debug:
+    cflags_base.append("-DDEBUG=1")
+    # else:
+    #     cflags_base.append("-DNDEBUG=1")
 
     cflags_game = [
         *cflags_base,

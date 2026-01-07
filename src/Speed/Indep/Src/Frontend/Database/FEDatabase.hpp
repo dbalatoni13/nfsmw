@@ -232,6 +232,10 @@ class cFrontendDatabase {
         return &CurrentUserProfiles[player]->PlayersCarStable;
     }
 
+    bool IsSplitScreenMode() {
+        return FEGameMode & 4;
+    }
+
     unsigned char iNumPlayers; // offset 0x0, size 0x1
     bool bComingFromBoot;      // offset 0x4, size 0x1
     bool bSavedProfileForMP;   // offset 0x8, size 0x1

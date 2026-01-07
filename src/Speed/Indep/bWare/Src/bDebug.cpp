@@ -24,6 +24,9 @@ int NewFileCheckResult = 0;
 // bList bFunkServerList;
 int bSonyToolConnected = false;
 int bSuperBenderConnected = false;
+#endif
+
+#ifdef DEBUG
 float bCodeineVersion = 0.0f;
 #endif
 
@@ -77,7 +80,7 @@ void bReleasePutString(char terminal_channel, const char *s) {
 #ifdef EA_PLATFORM_GAMECUBE
         OSReport(s);
 #elif defined(EA_PLATFORM_PLAYSTATION2)
-        if (bCodeineVersion > 0.0f) {
+        if (bIsCodeineConnected()) {
             bSendStringToCodeine(terminal_channel, s);
         } else {
             int state = bDisableInterrupts();

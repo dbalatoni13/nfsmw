@@ -10,7 +10,6 @@
 #include <set>
 #include <vector>
 
-
 #include "UTLAllocator.h"
 
 struct _type_vector {
@@ -40,7 +39,16 @@ struct _type_set {
 namespace UTL {
 namespace Std {
 
-template <typename T, typename Tag> struct vector : public std::vector<T, UTL::Std::Allocator<T, Tag> > {};
+template <typename T, typename Tag> struct vector : public std::vector<T, UTL::Std::Allocator<T, Tag> > {
+    void push_back(const typename std::vector<T, UTL::Std::Allocator<T, Tag> >::value_type &_Val) {
+        std::vector<T, UTL::Std::Allocator<T, Tag> >::push_back(_Val);
+    }
+
+    typename std::vector<T, UTL::Std::Allocator<T, Tag> >::reference operator[](size_t _Pos) {
+        return *(std::vector<T, UTL::Std::Allocator<T, Tag> >::begin() + _Pos);
+    }
+};
+
 template <typename T, typename Tag> struct list : public std::list<T, UTL::Std::Allocator<T, Tag> > {};
 template <typename Key, typename T, typename Tag> struct map : public std::map<Key, T, std::less<Key>, UTL::Std::Allocator<T, Tag> > {};
 template <typename T, typename Tag> struct set : public std::set<T, std::less<T>, UTL::Std::Allocator<T, Tag> > {};

@@ -42,7 +42,7 @@ class GameFlowManager {
     }
 
     bool IsLoading() {
-        return this->GetState() == GAMEFLOW_STATE_LOADING_REGION || this->GetState() == GAMEFLOW_STATE_LOADING_TRACK;
+        return GetState() == GAMEFLOW_STATE_LOADING_REGION || GetState() == GAMEFLOW_STATE_LOADING_TRACK;
     }
 
   private:

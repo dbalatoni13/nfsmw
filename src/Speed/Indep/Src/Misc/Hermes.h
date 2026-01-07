@@ -1,6 +1,7 @@
 #ifndef MISC_HERMES_H
 #define MISC_HERMES_H
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -98,7 +99,7 @@ class Handler {
         h.mKey = reinterpret_cast<HHANDLER>(mKeyNext++);
         h.mID = id;
 
-        return h._AddToPort(UCrc32(port));
+        return h._AddToPort(port);
     }
 
     template <typename MessageT> static HHANDLER Create(void (*handler)(const MessageT &), UCrc32 port, unsigned int id) {
@@ -110,19 +111,33 @@ class Handler {
         h.mKey = reinterpret_cast<HHANDLER>(mKeyNext++);
         h.mID = id;
 
-        return h._AddToPort(UCrc32(port));
+        return h._AddToPort(port);
     }
 
     static void Destroy(HHANDLER key);
+    static void SetIDFilter(HHANDLER key, bool enabled);
 
     Handler() {
         bMemSet(this, 0, sizeof(*this));
     }
 
+    Handler(const Handler &src) {
+        bMemCpy(this, &src, sizeof(*this));
+    }
+
+    // TODO
+    friend class PortMessage;
+
   private:
     HHANDLER _AddToPort(UCrc32 port);
 
-    void Call(const Message *msg) {}
+    void Call(const Message *msg) {
+        if (msg->GetKind() == mKind) {
+            if (msg->GetID() == mID || mNoFilter) {
+                CallFn(msg, this);
+            }
+        }
+    }
 
     static unsigned int mKeyNext;
 
@@ -144,9 +159,15 @@ class PortMessage {
 
     // static void *operator new(unsigned int size) {}
 
-    // static void operator delete(void *mem, unsigned int size) {}
+    static void operator delete(void *mem, size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr); // TODO
+        }
+    }
 
-    // static void *operator new(unsigned int size, const char *name) {}
+    static void *operator new(size_t size, const char *name) {
+        return gFastMem.Alloc(size, nullptr); // TODO
+    }
 
     // static void operator delete(void *mem, const char *name) {}
 
@@ -157,11 +178,15 @@ class PortMessage {
     void SetIDFilter(HHANDLER key, bool enabled);
     void HandleMessage(Message *msg);
 
-    PortMessage() {}
+    PortMessage() {
+        mHandlers.reserve(8);
+    }
 
     ~PortMessage() {}
 
-    bool IsEmpty() {}
+    bool IsEmpty() {
+        return mHandlers.size() == 0;
+    }
 
   private:
     Handlers mHandlers; // offset 0x0, size 0x10
@@ -174,10 +199,10 @@ struct PortKey {
 };
 
 inline void *DefaultTableAllocFunc(size_t bytes) {
-    AttribAlloc::Allocate(bytes, "TODO");
+    return AttribAlloc::Allocate(bytes, "TODO");
 }
 
-inline void *DefaultTableFreeFunc(void *ptr, size_t bytes) {
+inline void DefaultTableFreeFunc(void *ptr, size_t bytes) {
     AttribAlloc::Free(ptr, bytes, "TODO");
 }
 
@@ -193,8 +218,14 @@ class System {
         return *mObj;
     }
 
+    uint64_t CreateKey(UCrc32 port, UCrc32 messageID);
+    void AddPortMessage(uint64_t key, PortMessage *pm);
+    void RemovePortMessage(uint64_t key);
+    PortMessage *FindPortMessage(uint64_t key);
+    System::PortKeyMap &GetPortKeyMap();
+
   private:
-    System() {}
+    System() : mPortMessageMap(384) {}
 
     ~System() {}
 

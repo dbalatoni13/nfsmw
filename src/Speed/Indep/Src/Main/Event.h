@@ -8,6 +8,8 @@
 #include <cstddef>
 #include <types.h>
 
+#include "Speed/Indep/Src/Misc/Hermes.h"
+
 extern char *gCreationPoint;
 extern char *gDeletionPoint;
 
@@ -54,7 +56,7 @@ class EventManager {
 
     static const char *EmbedField(Event *event, const char *ptr);
 
-    static struct Message *EmbedField(Event *event, struct Message *ptr);
+    static Hermes::Message *EmbedField(Event *event, Hermes::Message *ptr);
 
     // static inline Event *GetCurrentEvent() {}
 

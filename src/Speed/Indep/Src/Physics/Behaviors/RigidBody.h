@@ -90,7 +90,7 @@ class RigidBody : public Behavior,
         }
 
         UCrc32 GetName() const {
-            return UCrc32(mName);
+            return mName;
         }
 
       private:
@@ -128,8 +128,8 @@ class RigidBody : public Behavior,
 
         Primitive(const UMath::Vector3 &dim, const UMath::Vector3 &offset, const SimSurface &material, Dynamics::Collision::Geometry::Shape shape,
                   const UMath::Vector4 &orient, unsigned int flags, const UCrc32 &name)
-            : mOrientation(orient), mDimension(dim), mShape(shape), mOffset(offset), mName(UCrc32(name)), mPrevPosition(UMath::Vector3::kZero),
-              mFlags(flags), mMaterial(material.GetConstCollection()) {}
+            : mOrientation(orient), mDimension(dim), mShape(shape), mOffset(offset), mName(name), mPrevPosition(UMath::Vector3::kZero), mFlags(flags),
+              mMaterial(material.GetConstCollection()) {}
 
         const UMath::Vector3 &GetDimension() const {
             return mDimension;

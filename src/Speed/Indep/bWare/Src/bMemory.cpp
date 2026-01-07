@@ -462,7 +462,7 @@ void *bMemoryAllocator::Alloc(unsigned int size, const EA::TagValuePair &flags) 
                 break;
         }
     }
-    return bMalloc(size, allocation_params);
+    return bMalloc(size, "TODO", __LINE__, allocation_params);
 }
 
 void bMemoryAllocator::Free(void *pBlock, unsigned int size) {

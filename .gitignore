@@ -38,6 +38,7 @@ compile_commands.json
 symbols/
 src/Speed/Indep/Src/Generated/Hashes
 decompiled.cpp
+decompiled_ps2.cpp
 
 tools/elftools
 

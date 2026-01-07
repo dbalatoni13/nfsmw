@@ -47,6 +47,7 @@ int bStrToLong(const char *s);
 float bStrToFloat(const char *s);
 int bStrLen(const char *s);
 char *bStrCpy(char *to, const char *from);
+int bMatchNameWithWildcard(const char *wild, const char *string);
 
 inline char bToUpper(char c) {
     if (c >= 'a' && c <= 'z') {

@@ -30,7 +30,7 @@ RigidBody::Volatile::Volatile() {}
 
 // UNSOLVED but functionally matching
 RigidBody::Mesh::Mesh(const SimSurface &material, const UMath::Vector4 *verts, unsigned int count, UCrc32 name, bool persistant)
-    : mVerts(nullptr), mNumVertices(count), mFlags(0), mMaterial(material.GetConstCollection()), mName(UCrc32(name)) {
+    : mVerts(nullptr), mNumVertices(count), mFlags(0), mMaterial(material.GetConstCollection()), mName(name) {
     if (persistant) {
         mVerts = const_cast<UMath::Vector4 *>(verts);
     } else {
@@ -55,7 +55,7 @@ void RigidBody::Mesh::Enable(bool enable) {
 }
 
 bool RigidBody::MeshList::Create(const SimSurface &material, const UMath::Vector4 *verts, unsigned int count, UCrc32 name, bool persistant) {
-    Mesh *mesh = new Mesh(material, verts, count, UCrc32(name), persistant);
+    Mesh *mesh = new Mesh(material, verts, count, name, persistant);
     AddTail(mesh);
     mVertCount += count;
     mSize++;
@@ -272,7 +272,7 @@ bool RigidBody::AddCollisionPrimitive(UCrc32 name, const UMath::Vector3 &dim, fl
 
 bool RigidBody::AddCollisionMesh(UCrc32 name, const UMath::Vector4 *verts, unsigned int count, const struct SimSurface &material,
                                  CollisionGeometry::BoundFlags flags, bool persistant) {
-    return mMeshes.Create(material, verts, count, UCrc32(name), persistant);
+    return mMeshes.Create(material, verts, count, name, persistant);
 }
 
 void RigidBody::CreateGeometries() {

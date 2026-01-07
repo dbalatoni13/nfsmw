@@ -65,7 +65,7 @@ QuickSpline::~QuickSpline() {}
 void QuickSpline::Init(QuickSplineEndPointType endpoint_type, QuickSplineBasisType basis_type) {}
 
 // Stripped
-void QuickSpline::DoSnapshot(struct ReplaySnapshot *snapshot, int num_fields) {}
+void QuickSpline::DoSnapshot(ReplaySnapshot *snapshot, int num_fields) {}
 
 // Stripped
 void QuickSpline::SetNumControlPoints(int num_control_points) {}

@@ -733,7 +733,7 @@ void SimSystem::RemoveTask(HSIMTASK hTask, ITaskable *handler) {
 }
 
 void SimSystem::Start(const UCrc32 objclass) {
-    mKernel = UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance(UCrc32(objclass), Sim::Param());
+    mKernel = UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance(objclass, Sim::Param());
 }
 
 IRigidBody *SimCollisionMap::GetRB(int rbIndex) const {
@@ -886,7 +886,7 @@ void Init(const UCrc32 activity, eUserMode mode) {
     Profile::Init(); // in which line is this?
     GetRandom().Reset();
     Internal::mSystem = new SimSystem();
-    Internal::mSystem->Start(UCrc32(activity));
+    Internal::mSystem->Start(activity);
     EventSequencer::Reset(Internal::mTime);
 }
 

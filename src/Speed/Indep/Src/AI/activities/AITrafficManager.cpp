@@ -4,18 +4,25 @@
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/trafficpattern.h"
 #include "Speed/Indep/Src/Generated/Messages/MSetTrafficSpeed.h"
+#include "Speed/Indep/Src/Input/ActionQueue.h"
 #include "Speed/Indep/Src/Input/ActionRef.h"
+#include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficCenter.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficMgr.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/Physics/PVehicle.h"
+#include "Speed/Indep/Src/Sim/SimActivity.h"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/TrackPath.hpp"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 #include <algorithm>
@@ -27,7 +34,55 @@ extern BOOL SkipFE;               // size: 0x4
 
 using namespace Attrib::Gen;
 
-// AITrafficManager::AITrafficManager(Sim::Param params) {}
+// Functionally matching
+// https://decomp.me/scratch/qvQEg
+AITrafficManager::AITrafficManager(Sim::Param params)
+    : Sim::Activity(2),       //
+      ITrafficMgr(this),      //
+      IVehicleCache(this),    //
+      mSpawnIdx(0),           //
+      mOncommingChance(0.5f), //
+      mVehicles(),            //
+      mPatternMap(),          //
+      mNewInstanceTimer(0),   //
+      mNav(),                 //
+      mPattern((Attrib::Collection *)nullptr, 0, nullptr) {
+    MakeDebugable(DBG_AI);
+    bMemSet(mPatternTimer, 0, sizeof(mPatternTimer));
+    // default
+    SetTrafficPattern(0xeec2271a);
+    mVehicles.clear();
+    mTask = AddTask(UCrc32("AITrafficManager"), 0.5f, 0.5f, Sim::TASK_FRAME_VARIABLE);
+    Sim::ProfileTask(mTask, "AITrafficManager");
+    mActionQ = new ActionQueue(0, 0x98c7a2f5, "AITrafficManager", false);
+    // trafficpattern
+    const Attrib::Class *patternclass = Attrib::Database::Get().GetClass(0x20d08342);
+    if (patternclass) {
+        mPatternMap.clear();
+        mPatternMap.reserve(patternclass->GetNumCollections());
+        Attrib::Key cKey = patternclass->GetFirstCollection();
+
+        while (cKey != 0) {
+            Attrib::Gen::trafficpattern pattern(cKey, 0, nullptr);
+            const char *name = pattern.CollectionName();
+
+            PatternKey key;
+            key.BHash = bStringHash(name);
+            key.CollectionKey = cKey;
+            mPatternMap.insert(std::upper_bound(mPatternMap.begin(), mPatternMap.end(), key), key);
+
+            cKey = patternclass->GetNextCollection(cKey);
+        }
+    }
+}
+
+AITrafficManager::~AITrafficManager() {
+    RemoveTask(mTask);
+    if (mActionQ) {
+        delete mActionQ;
+        mActionQ = nullptr;
+    }
+}
 
 Sim::IActivity *AITrafficManager::Construct(Sim::Param params) {
     if (SkipFE && SkipFEDisableTraffic) {
@@ -83,7 +138,7 @@ void AITrafficManager::OnAttached(IAttachable *pOther) {
 void AITrafficManager::OnDetached(IAttachable *pOther) {
     IVehicle *ivehicle;
     if (pOther->QueryInterface(&ivehicle)) {
-        UTL::Std::list<IVehicle *, _type_TrafficList>::iterator iter = std::find(mVehicles.begin(), mVehicles.end(), ivehicle);
+        TrafficList::iterator iter = std::find(mVehicles.begin(), mVehicles.end(), ivehicle);
         if (iter != mVehicles.end()) {
             mVehicles.erase(iter);
         }
@@ -137,7 +192,7 @@ IVehicle *AITrafficManager::GetAvailableTrafficVehicle(Attrib::Key key, bool mak
         return nullptr;
     }
 
-    for (UTL::Std::list<IVehicle *, _type_TrafficList>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
+    for (TrafficList::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
         IVehicle *ivehicle = *iter;
         if ((!ivehicle->IsActive() || ivehicle->IsLoading()) && ivehicle->GetVehicleKey() == key) {
             return ivehicle;
@@ -149,7 +204,7 @@ IVehicle *AITrafficManager::GetAvailableTrafficVehicle(Attrib::Key key, bool mak
     UMath::Vector3 initialVec = {0.0f, 0.0f, 1.0f};
     UMath::Vector3 initialPos = {0.0f, 0.0f, 0.0f};
     VehicleParams params(this, DRIVER_TRAFFIC, key, initialVec, initialPos, 0, nullptr, 0);
-    ISimable *isimable = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance(UCrc32("PVehicle"), Sim::Param(params));
+    ISimable *isimable = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance(UCrc32("PVehicle"), params);
     if (isimable) {
         static_cast<IActivity *>(this)->Attach(isimable);
         IVehicle *ivehicle;
@@ -221,7 +276,7 @@ bool AITrafficManager::SpawnTraffic() {
 
 bool AITrafficManager::NeedsTraffic() const {
     int inactive_count = 0;
-    for (UTL::Std::list<IVehicle *, _type_TrafficList>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
+    for (TrafficList::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
         IVehicle *ivehicle = *iter;
         if (!ivehicle->IsActive() && !ivehicle->IsLoading()) {
             inactive_count++;
@@ -239,7 +294,7 @@ void AITrafficManager::UpdateDebug() {
     }
 }
 
-static bool RandomSortTCDir;
+static bool RandomSortTCDir = false;
 
 static bool RandomSortTC(ITrafficCenter *c0, ITrafficCenter *c1) {
     if (RandomSortTCDir) {
@@ -296,7 +351,6 @@ bool AITrafficManager::CheckRace(const WRoadNav &nav) const {
     return true;
 }
 
-// UNSOLVED
 bool AITrafficManager::FindSpawnPoint(WRoadNav &nav) const {
     RandomSortTCDir = !RandomSortTCDir;
     ITrafficCenter::Sort(RandomSortTC);
@@ -313,22 +367,22 @@ bool AITrafficManager::FindSpawnPoint(WRoadNav &nav) const {
         const UMath::Vector3 &position = UMath::Vector4To3(basis.v3);
 
         UMath::Vector3 direction = UMath::Vector4To3(basis.v2);
-        float angle = DEG2ANGLE(bRandom(2.0f) - 1.0f);
+        // float angle = DEG2ANGLE((bRandom(2.0f) - 1.0f) * 45.0f);
+        float angle = (bRandom(2.0f) - 1.0f) * 0.125f; // TODO
         UMath::Matrix4 rotation;
         UMath::SetYRot(rotation, angle);
         UMath::Rotate(direction, rotation, direction);
 
-        float offset = bRandom(2.0f);
-        float camera_speed = UMath::Max(0.0f, UMath::Dot(velocity, direction));
+        float offset = (bRandom(2.0f) - 1.0f) * 50.0f;
+        float camera_speed = UMath::Dot(velocity, direction);
+        float time_offset = offset + 200.0f + UMath::Max(camera_speed, 0.0f);
+        // float distance = time_offset; // TODO
         UMath::Vector3 spawnpoint;
-        // TODO
-        UMath::ScaleAdd(position, (offset - 1.0f) * 50.0f + 200.0f + camera_speed, velocity, spawnpoint);
+        UMath::ScaleAdd(direction, time_offset, position, spawnpoint);
 
-        float t = UMath::Ramp(camera_speed, 0.0f, 100.0f);
-        float oncomming_chance = bRandom(1.0f);
-        // TODO
-        camera_speed = UMath::Lerp(1.0f, 1.5f, t);
-        if (oncomming_chance <= camera_speed) {
+        float t = UMath::Ramp(camera_speed, 0.0f, 50.0f);
+        float oncomming_chance = UMath::Lerp(1.0f, 0.5f, t);
+        if (bRandom(1.0f) <= oncomming_chance) {
             UMath::Negate(direction);
         }
 
@@ -348,6 +402,13 @@ bool AITrafficManager::FindSpawnPoint(WRoadNav &nav) const {
 bool AITrafficManager::ChoosePattern() {
     mOncommingChance = 0.5f;
 
+    // huh
+    if (mPatternMap.size() < 0) {
+        int pattern_idx = mPatternMap.size() + 1;
+        PatternKey &key = mPatternMap[pattern_idx];
+        return mPattern.IsValid();
+    }
+
     if (GRaceStatus::Exists()) {
         GRaceStatus &race = GRaceStatus::Get();
         if (race.GetPlayMode() == GRaceStatus::kPlayMode_Racing) {
@@ -359,6 +420,7 @@ bool AITrafficManager::ChoosePattern() {
         }
     }
     UMath::Vector3 pattern_center = UMath::Vector3::kZero;
+
     float count = 0.0f;
 
     for (ITrafficCenter::List::const_iterator iter = ITrafficCenter::GetList().begin(); iter != ITrafficCenter::GetList().end(); ++iter) {
@@ -406,7 +468,7 @@ void AITrafficManager::Update(float dT) {
         SpawnTraffic();
     }
 
-    for (UTL::Std::list<IVehicle *, _type_TrafficList>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
+    for (TrafficList::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
         IVehicle *ivehicle = *iter;
         if (ivehicle->IsActive() && !ValidateVehicle(ivehicle, density)) {
             ivehicle->GetAIVehiclePtr()->UnSpawn();
@@ -415,7 +477,7 @@ void AITrafficManager::Update(float dT) {
 }
 
 void AITrafficManager::FlushAllTraffic(bool release) {
-    for (UTL::Std::list<IVehicle *, _type_TrafficList>::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
+    for (TrafficList::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
         IVehicle *ivehicle = *iter;
         if (release) {
             ISimable *isimable;

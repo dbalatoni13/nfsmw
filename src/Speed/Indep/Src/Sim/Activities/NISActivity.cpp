@@ -351,7 +351,7 @@ void NISActivity::AddCar(UCrc32 channel, IVehicle *vehicle) {
         NISCar *car = (*iter).second;
         delete car;
     }
-    mVehicleTable[channel] = new NISCar(UCrc32(channel), vehicle);
+    mVehicleTable[channel] = new NISCar(channel, vehicle);
 }
 
 IVehicle *NISActivity::GetCar(UCrc32 channelname) {

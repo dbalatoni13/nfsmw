@@ -310,6 +310,7 @@ struct ALIGN_PS2(16) bVector3 {
 };
 
 bVector3 *bNormalize(bVector3 *dest, const bVector3 *v);
+bVector3 *bNormalize(bVector3 *dest, const bVector3 *v, float length);
 bVector3 *bScaleAdd(bVector3 *dest, const bVector3 *v1, const bVector3 *v2, float scale);
 
 inline bVector3 *bFill(bVector3 *dest, float x, float y, float z) {

@@ -16,7 +16,31 @@ class ICopMgr : public UTL::COM::IUnknown, public UTL::Collections::Singleton<IC
 
     ICopMgr(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~ICopMgr() {}
+  protected:
+    ~ICopMgr() override {}
+
+  public:
+    virtual void ResetCopsForRestart(bool release);
+    virtual void PursuitIsEvaded(struct IPursuit *ipursuit);
+    virtual bool IsCopRequestPending();
+    virtual bool IsCopSpawnPending() const;
+    virtual void SpawnCop(UMath::Vector3 &InitialPos, UMath::Vector3 &InitialVec, const char *VehicleName, bool InPursuit, bool RoadBlock);
+    virtual bool PlayerPursuitHasCop() const;
+    virtual bool CanPursueRacers();
+    virtual bool IsPlayerPursuitActive();
+    virtual void LockoutCops(bool lockout);
+    virtual void NoNewPursuitsOrCops();
+    virtual void PursueAtHeatLevel(int minHeatLevel);
+    // TODO fix the positions of these three
+    virtual float GetLockoutTimeRemaining() const;
+    virtual bool VehicleSpawningEnabled(bool isdespawn);
+    virtual void SetAllBustedTimersToZero();
+
+    void EnableCops() {}
+
+    void DisableCops() {}
+
+    bool AreCopsEnabled() {}
 };
 
 #endif

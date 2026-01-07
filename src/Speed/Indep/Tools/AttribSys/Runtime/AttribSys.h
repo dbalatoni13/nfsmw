@@ -34,6 +34,10 @@ inline unsigned int RotateNTo32(unsigned int v, unsigned int amount) {
     return (v << amount) | (v >> (32 - amount));
 }
 
+inline unsigned int RotateNTo32(unsigned long long v, unsigned int amount) {
+    return (v << amount) | (v >> (64 - amount));
+}
+
 // TODO why no inline?
 #ifdef EA_PLATFORM_XENON
 __declspec(noinline)

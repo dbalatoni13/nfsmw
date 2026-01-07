@@ -95,7 +95,7 @@ bool Model::SetDynamicData(const EventSequencer::System *system, EventDynamicDat
 
 void Model::StartSequencer(UCrc32 name) {
     if (!mSequencer && name.GetValue() != 0) {
-        mSequencer = Create(this, this, UCrc32(name), GetTime(), 1.0f);
+        mSequencer = Create(this, this, name, GetTime(), 1.0f);
     }
 }
 
@@ -108,7 +108,7 @@ void Model::ReleaseSequencer() {
 
 void Model::BeginDraw(UCrc32 service, Packet *what) {
     if (!mService) {
-        mService = OpenService(UCrc32(service), what);
+        mService = OpenService(service, what);
         OnBeginDraw();
     }
 }
@@ -275,7 +275,7 @@ void Model::PlayEffect(UCrc32 identifire, const Attrib::Collection *effect, cons
         }
     }
     if (!modeleffect) {
-        modeleffect = ::new ("SimModel", 0) Model::Effect(UCrc32(identifire), GetWorldID(), GetAttributes().GetConstCollection());
+        modeleffect = ::new ("SimModel", 0) Model::Effect(identifire, GetWorldID(), GetAttributes().GetConstCollection());
 
         mEffects.AddTail(modeleffect);
     }

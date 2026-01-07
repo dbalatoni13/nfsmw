@@ -26,3 +26,7 @@ AICopManager::~AICopManager() {
         mSpeech->Release();
     }
 }
+
+Sim::IActivity *AICopManager::Construct(Sim::Param params) {
+    return new AICopManager(Sim::Param(params));
+}

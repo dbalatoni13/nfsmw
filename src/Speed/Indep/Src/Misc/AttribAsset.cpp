@@ -30,11 +30,16 @@ bool RemoveDepFile(const char *filename) {
 }
 
 class FileGarbageCollector : public Attrib::IGarbageCollector {
-    void ReleaseData(unsigned int id, void *data, size_t bytes) override {}
+    void ReleaseData(unsigned int id, void *data, size_t bytes) override {
+        FileMap::iterator iter = gFiles.find(id);
+        (*iter).second.mRefCount--;
+    }
 };
 
 class VaultGarbageCollector : public Attrib::IGarbageCollector {
-    void ReleaseData(unsigned int id, void *data, size_t bytes) override {}
+    void ReleaseData(unsigned int id, void *data, size_t bytes) override {
+        reinterpret_cast<Attrib::Vault *>(data)->Release();
+    }
 };
 
 static FileGarbageCollector gFileCollector;

@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/AI/AIVehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
+#include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsTunings.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 
@@ -188,7 +189,7 @@ class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet
     virtual struct FECustomizationRecord *GetCustomizations() = 0;
     virtual Physics::Tunings *GetTunings() = 0;
     virtual void SetTunings(const Physics::Tunings &tunings) = 0;
-    virtual bool GetPerformance(struct Performance &performance) = 0;
+    virtual bool GetPerformance(Physics::Info::Performance &performance) = 0;
     virtual const char *GetCacheName() = 0;
 };
 

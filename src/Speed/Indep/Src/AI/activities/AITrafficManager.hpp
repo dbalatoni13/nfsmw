@@ -52,9 +52,10 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
     };
 
     struct PatternMap : public UTL::Std::vector<PatternKey, _type_AITrafficManager_PatternMap> {
-
         Attrib::Key Find(int bhash) const {
-            PatternKey key = {bhash, 0};
+            PatternKey key;
+            key.BHash = bhash;
+            key.CollectionKey = 0;
             const_iterator iter = std::lower_bound(begin(), end(), key);
             if (iter != end() && iter->BHash == bhash) {
                 return iter->CollectionKey;
@@ -68,10 +69,6 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
     static Sim::IActivity *Construct(Sim::Param params);
 
     AITrafficManager(Sim::Param params);
-    virtual eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const;
-    virtual void OnRemovedVehicleCache(IVehicle *ivehicle);
-    virtual void OnAttached(IAttachable *pOther);
-    virtual void OnDetached(IAttachable *pOther);
     Attrib::Key NextSpawn();
     IVehicle *GetAvailableTrafficVehicle(Attrib::Key key, bool makenew);
     bool SpawnTraffic();
@@ -87,11 +84,22 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
     void Update(float dT);
 
     // Overrides
-    // ITrafficMgr
-    virtual void FlushAllTraffic(bool release);
+    // IUnknown
+    ~AITrafficManager() override;
 
     // ITaskable
-    virtual bool OnTask(HSIMTASK htask, float dT);
+    bool OnTask(HSIMTASK htask, float dT) override;
+
+    // IVehicleCache
+    eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override;
+    void OnRemovedVehicleCache(IVehicle *ivehicle) override;
+
+    // ITrafficMgr
+    void FlushAllTraffic(bool release) override;
+
+    // IAttachable
+    void OnAttached(IAttachable *pOther) override;
+    void OnDetached(IAttachable *pOther) override;
 
     // Virtual methods
     virtual void OnDebugDraw();

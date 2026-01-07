@@ -82,5 +82,6 @@ void PrepareRealTimestep(float video_time_elapsed);
 void PrepareWorldTimestep(float elapsed_time);
 void AdvanceRealTime();
 void AdvanceWorldTime();
+float GetDebugRealTime();
 
 #endif

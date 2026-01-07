@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Replay.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
@@ -25,7 +26,7 @@ class QuickSpline {
     QuickSpline(QuickSplineEndPointType endpoint_type, QuickSplineBasisType basis_type, bVector4 *control_point_buffer, int num_buffer_entries);
     ~QuickSpline();
     void Init(QuickSplineEndPointType endpoint_type, QuickSplineBasisType basis_type);
-    void DoSnapshot(struct ReplaySnapshot *snapshot, int num_fields);
+    void DoSnapshot(ReplaySnapshot *snapshot, int num_fields);
     void SetNumControlPoints(int num_control_points);
     void EvaluateSpline(bVector4 *point, float t, int deriv, const bVector4 *control_points);
     float ClampParam(float param);

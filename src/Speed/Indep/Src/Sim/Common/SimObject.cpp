@@ -39,7 +39,7 @@ ConnStatus Object::CheckService(HSIMSERVICE hservice) const {
 }
 
 HSIMSERVICE Object::OpenService(UCrc32 server, Packet *pkt) {
-    HSIMSERVICE hservice = Sim::OpenService(UCrc32(server), this, pkt);
+    HSIMSERVICE hservice = Sim::OpenService(server, this, pkt);
     if (hservice) {
         mServiceCount++;
     }

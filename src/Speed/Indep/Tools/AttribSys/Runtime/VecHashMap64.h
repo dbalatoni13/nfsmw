@@ -311,8 +311,36 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
     unsigned int mWorstCollision : 31; // offset 0xC, size 0x4
 };
 
-template <void *(AllocFunc)(size_t), void *(FreeFunc)(void *, size_t)> class TablePolicy_Fixed {};
+template <void *(AllocFunc)(size_t), void(FreeFunc)(void *, size_t)> class TablePolicy_Fixed {
+  public:
+    static std::size_t KeyIndex(unsigned long long k, std::size_t tableSize, unsigned int keyShift) {
+        return Attrib::RotateNTo32(k, keyShift) % tableSize;
+    }
 
-template <typename T, typename Policy, bool Unk2, std::size_t Unk3> class VecHashMap64 {};
+    static std::size_t WrapIndex(std::size_t index, std::size_t tableSize, unsigned int keyShift) {
+        return index % tableSize;
+    }
+
+    static std::size_t TableSize(std::size_t entries) {
+        return entries;
+    }
+
+    static std::size_t GrowRequest(std::size_t currententries, bool collisionoverrun) {
+        return currententries;
+    }
+
+    static void *Alloc(std::size_t bytes) {
+        return AllocFunc(bytes);
+    }
+
+    static void Free(void *ptr, std::size_t bytes) {
+        FreeFunc(ptr, bytes);
+    }
+};
+
+template <typename T, typename Policy, bool Unk2, std::size_t Unk3> class VecHashMap64 : public VecHashMap<uint64_t, T, Policy, Unk2, Unk3> {
+  public:
+    VecHashMap64(std::size_t reservationSize) : VecHashMap<uint64_t, T, Policy, Unk2, Unk3>(reservationSize) {}
+};
 
 #endif

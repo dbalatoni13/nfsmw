@@ -1,6 +1,7 @@
 #ifndef INPUT_ACTION_QUEUE_H
 #define INPUT_ACTION_QUEUE_H
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -19,7 +20,12 @@ class ActionQueue : public UTL::Collections::Listable<ActionQueue, 20> {
         AQS_ENABLED = 1,
     };
 
+    void *operator new(size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
     ActionQueue(bool required);
+    ActionQueue(int port, unsigned int config, const char *queue_name, bool required);
     ~ActionQueue();
 
     bool IsEmpty();

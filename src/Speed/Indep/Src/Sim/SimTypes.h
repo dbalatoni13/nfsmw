@@ -20,9 +20,9 @@ class Param {
   public:
     Param() : mType(UCrc32()), mName(UCrc32()), mData(nullptr) {}
 
-    Param(const Param &from) : mType(UCrc32(from.mType)), mName(UCrc32(from.mName)), mData(from.mData) {}
+    Param(const Param &from) : mType(from.mType), mName(from.mName), mData(from.mData) {}
 
-    template <typename T> Param(UCrc32 name, T *addr) : mName(name), mData(addr) {}
+    template <typename T> Param(UCrc32 name, const T *addr) : mType(addr->TypeName()), mName(name), mData(addr) {}
 
     template <typename T> const Param *Find(UCrc32 name) const {
         UCrc32 type = T::TypeName();
@@ -37,7 +37,7 @@ class Param {
     }
 
     template <typename T> const T &Fetch(UCrc32 name) const {
-        const Param *p = Find<T>(UCrc32(name));
+        const Param *p = Find<T>(name);
         return *reinterpret_cast<const T *>(p->mData);
     }
 };

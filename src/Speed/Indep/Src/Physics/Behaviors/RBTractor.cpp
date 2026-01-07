@@ -21,8 +21,7 @@ void RBTractor::SetHitch(bool hitched) {
             const Attrib::Collection *tractor_col = CollisionGeometry::Lookup(UCrc32(GetVehicle()->GetVehicleAttributes().MODEL()));
             const Attrib::Collection *trailer_col = CollisionGeometry::Lookup(UCrc32(mTrailer->GetVehicleAttributes().MODEL()));
 
-            mHitched =
-                CollisionGeometry::CreateJoint(this, UCrc32(name5thwheel), ibounds_trailer, UCrc32(name5thwheel), &m5thWheel, &mTrailer5thWheel, 0);
+            mHitched = CollisionGeometry::CreateJoint(this, name5thwheel, ibounds_trailer, name5thwheel, &m5thWheel, &mTrailer5thWheel, 0);
             if (mHitched) {
                 Pose();
             }

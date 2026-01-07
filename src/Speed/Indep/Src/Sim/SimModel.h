@@ -76,7 +76,7 @@ class Model : public Sim::Object,
     }
 
     UCrc32 GetPartName() const override {
-        return UCrc32(mNodeName);
+        return mNodeName;
     }
 
     bool IsHidden() const override;

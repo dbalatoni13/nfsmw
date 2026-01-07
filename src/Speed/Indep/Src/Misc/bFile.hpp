@@ -31,9 +31,11 @@ struct bFile : public bTNode<bFile> {
 
 bFile *bOpen(const char *filename, int open_mode, int warn_if_cant_open);
 void bClose(bFile *f);
+void bRead(struct bFile *f, void *buf, int numbytes);
+void bSeek(struct bFile *f, int position, int mode);
 int bFileSize(bFile *f);
 int bFileSize(const char *filename);
-
+void bAppendToFile(const char *filename, void *buf, int num_bytes);
 void *bGetFile(const char *filename, int *size, int allocation_params);
 int bFileExists(const char *f);
 int bFPrintf(bFile *file, const char *fmt, ...);
