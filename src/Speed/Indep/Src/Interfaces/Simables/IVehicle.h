@@ -8,7 +8,6 @@
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
-#include "Speed/Indep/Src/AI/AIVehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
@@ -153,7 +152,7 @@ class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet
     virtual PhysicsMode GetPhysicsMode() const = 0;
     virtual CarType GetModelType() = 0;
     virtual bool IsSpooled() = 0;
-    virtual const UCrc32 GetVehicleClass() = 0;
+    virtual const UCrc32 &GetVehicleClass() = 0;
     virtual Attrib::Gen::pvehicle &GetVehicleAttributes() = 0;
     virtual const char *GetVehicleName() = 0;
     virtual unsigned int GetVehicleKey() = 0;
@@ -179,7 +178,7 @@ class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet
     virtual void GlareOn(int glare) = 0; // TODO "ID" enum
     virtual void GlareOff(int glare) = 0;
     virtual bool IsCollidingWithSoftBarrier() = 0;
-    virtual IVehicleAI *GetAIVehiclePtr() = 0;
+    virtual class IVehicleAI *GetAIVehiclePtr() = 0;
     virtual float GetSlipAngle() = 0;
     virtual UMath::Vector3 &GetLocalVelocity() = 0;
     virtual void ComputeHeading(UMath::Vector3 *v) = 0;

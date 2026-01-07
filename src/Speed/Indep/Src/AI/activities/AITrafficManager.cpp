@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/AI/activities/AITrafficManager.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Src/AI/AIVehicle.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/trafficpattern.h"

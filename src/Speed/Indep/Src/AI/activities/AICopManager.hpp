@@ -13,6 +13,7 @@
 #include "Speed/Indep/Src/Input/ActionQueue.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
 #include "Speed/Indep/Src/Sim/SimActivity.h"
 
@@ -83,7 +84,7 @@ class AICopManager : public Sim::Activity, public AISpawnManager, public ICopMgr
     bool CreateRoadBlock(IPursuit *ipursuit, int cop_count, IVehicle *ivehicle_chopper, IVehicle::List *suvList);
     void RemoveActiveCopVehicle(IVehicle *ivehicle);
     void UpdatePatrols();
-    bool GetHeavySupportVehicles(struct GroundSupportRequest *gsr);
+    bool GetHeavySupportVehicles(GroundSupportRequest *gsr);
     bool StartHeavySupport(IPursuit *ipursuit, GroundSupportRequest *gsr);
     bool GetLeaderSupportVehicles(GroundSupportRequest *gsr);
     bool StartLeaderSupport(IPursuit *ipursuit, GroundSupportRequest *gsr);

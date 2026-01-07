@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Src/Input/ActionQueue.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
