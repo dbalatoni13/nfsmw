@@ -18,12 +18,27 @@ class Activity : public Sim::Object, public UTL::Collections::GarbageNode<Sim::A
     Activity(unsigned int num_interfaces);
     void DetachAll();
 
-    // Virtual methods
+    // Virtual overrides
     // IUnknown
-    virtual ~Activity();
+    ~Activity() override;
 
     // IActivity
     void Release() override;
+    bool Attach(IUnknown *object) override {
+        if (mAttachments) {
+            mAttachments->Attach(object);
+            return true;
+        }
+        return false;
+    }
+
+    bool Detach(IUnknown *object) override {
+        if (mAttachments) {
+            mAttachments->Detach(object);
+            return true;
+        }
+        return false;
+    }
 
     // IAttachable
     void OnAttached(IAttachable *pOther) override {}

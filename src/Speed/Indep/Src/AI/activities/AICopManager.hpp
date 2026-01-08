@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Src/AI/Common/AISpawnManager.hpp"
+#include "Speed/Indep/Src/Debug/Debugable.h"
 #include "Speed/Indep/Src/Generated/Messages/MBreakerStopCops.h"
 #include "Speed/Indep/Src/Generated/Messages/MForcePursuitStart.h"
 #include "Speed/Indep/Src/Generated/Messages/MSetCopAutoSpawnMode.h"
@@ -40,7 +41,14 @@ class AICopManager : public Sim::Activity, public AISpawnManager, public ICopMgr
   public:
     // total size: 0x40
     struct SpawnCopRequest {
-        SpawnCopRequest(const UMath::Vector3 &ip, const UMath::Vector3 &iv, const char *vn, bool inp, bool inr) {}
+        SpawnCopRequest(const UMath::Vector3 &ip, const UMath::Vector3 &iv, const char *vn, bool inp, bool inr)
+            : InitialPos(ip), //
+              InitialVec(iv), //
+              InPursuit(inp), //
+              InRoadBlock(inr) {
+
+            bStrCpy(VehicleName, vn);
+        }
 
         UMath::Vector3 InitialPos; // offset 0x0, size 0xC
         UMath::Vector3 InitialVec; // offset 0xC, size 0xC
@@ -51,7 +59,10 @@ class AICopManager : public Sim::Activity, public AISpawnManager, public ICopMgr
 
     // total size: 0x14
     struct BreakerZone {
-        BreakerZone(const UMath::Vector3 &p, float r, float e) {}
+        BreakerZone(const UMath::Vector3 &p, float r, float e)
+            : position(p), //
+              endtime(e),  //
+              radius(r) {}
 
         UMath::Vector3 position; // offset 0x0, size 0xC
         float endtime;           // offset 0xC, size 0x4

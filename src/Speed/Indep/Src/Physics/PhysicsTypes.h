@@ -57,9 +57,9 @@ enum eTransmissionType {
 };
 
 enum PhysicsMode {
-    PHYSICS_MODE_EMULATED = 2,
-    PHYSICS_MODE_SIMULATED = 1,
     PHYSICS_MODE_INACTIVE = 0,
+    PHYSICS_MODE_SIMULATED = 1,
+    PHYSICS_MODE_EMULATED = 2,
 };
 
 enum ShiftPotential {

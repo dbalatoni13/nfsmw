@@ -301,6 +301,10 @@ inline float VU0_v3distance(const UMath::Vector3 &p1, const UMath::Vector3 &p2) 
     return VU0_sqrt(VU0_v3lengthsquare(temp));
 }
 
+inline float VU0_v3distancexz(const UMath::Vector3 &p1, const UMath::Vector3 &p2) {
+    return VU0_sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.z - p1.z) * (p2.z - p1.z));
+}
+
 // TODO these should go into UVectorMathGC.hpp
 inline void VU0_v3unitcrossprod(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &dest) {
 #ifdef EA_PLATFORM_PLAYSTATION2

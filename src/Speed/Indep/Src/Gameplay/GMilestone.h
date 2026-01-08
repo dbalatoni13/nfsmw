@@ -5,6 +5,13 @@
 #pragma once
 #endif
 
+struct MilestoneTypeInfo {
+    unsigned int mTypeKey; // offset 0x0, size 0x4
+    float mLastKnownValue; // offset 0x4, size 0x4
+    float mBestValue;      // offset 0x8, size 0x4
+    unsigned int mFlags;   // offset 0xC, size 0x4
+};
+
 // total size: 0x14
 class GMilestone {
   private:

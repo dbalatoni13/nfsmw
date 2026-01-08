@@ -11,6 +11,8 @@
 // total size: 0xC
 class ICopMgr : public UTL::COM::IUnknown, public UTL::Collections::Singleton<ICopMgr> {
   public:
+    static int mDisableCops;
+
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
@@ -21,6 +23,7 @@ class ICopMgr : public UTL::COM::IUnknown, public UTL::Collections::Singleton<IC
     ~ICopMgr() override {}
 
   public:
+    virtual bool VehicleSpawningEnabled(bool isdespawn);
     virtual void ResetCopsForRestart(bool release);
     virtual void PursuitIsEvaded(struct IPursuit *ipursuit);
     virtual bool IsCopRequestPending();
@@ -31,10 +34,9 @@ class ICopMgr : public UTL::COM::IUnknown, public UTL::Collections::Singleton<IC
     virtual bool IsPlayerPursuitActive();
     virtual void LockoutCops(bool lockout);
     virtual void NoNewPursuitsOrCops();
+    virtual float GetLockoutTimeRemaining() const; // maybe higher up and maybe it's SetAllBusted...
     virtual void PursueAtHeatLevel(int minHeatLevel);
-    // TODO fix the positions of these three
-    virtual float GetLockoutTimeRemaining() const;
-    virtual bool VehicleSpawningEnabled(bool isdespawn);
+    // TODO fix the positions of this
     virtual void SetAllBustedTimersToZero();
 
     void EnableCops() {}

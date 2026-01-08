@@ -34,7 +34,10 @@ class Message {
     void Post(UCrc32 port);
     void Deliver();
 
-    void Send(UCrc32 port) {}
+    void Send(UCrc32 port) {
+        mPort = port;
+        Deliver();
+    }
 
     std::size_t GetSize() const {
         return mSize;

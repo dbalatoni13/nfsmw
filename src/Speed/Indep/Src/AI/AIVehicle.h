@@ -15,7 +15,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
-#include "Speed/Indep/Src/World/WRoadNetwork.hpp"
+#include "Speed/Indep/Src/World/WRoadNetwork.h"
 
 class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable, public Debugable {
     // total size: 0x754

@@ -5,4 +5,7 @@
 #pragma once
 #endif
 
+bool IsValidPursuitCarName(const char *name);
+const char *GetRandomValidCopCar();
+
 #endif

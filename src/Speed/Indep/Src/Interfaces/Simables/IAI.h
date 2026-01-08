@@ -7,13 +7,15 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/AI/AIAvoidable.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/aivehicle.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitescalation.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitlevels.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitsupport.h"
 #include "Speed/Indep/Src/Interfaces/SimModels/IPlaceableScenery.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
-#include "Speed/Indep/Src/World/WRoadNetwork.hpp"
+#include "Speed/Indep/Src/World/WRoadNetwork.h"
 
 // TODO move
 enum eLaneSelection {
@@ -303,9 +305,8 @@ class IPursuit : public UTL::COM::IUnknown, public UTL::Collections::Listable<IP
     virtual void EndPursuitEnteringSafehouse();
     virtual bool GetEnterSafehouseOnDone();
     virtual void LockInPursuitAttribs();
-    virtual Attrib::Gen::pursuitlevels *GetPursuitLevelAttrib() const;
-    // TODO figure out where this is
     virtual void SetBustedTimerToZero();
+    virtual Attrib::Gen::pursuitlevels *GetPursuitLevelAttrib() const;
 };
 
 // TODO where?
@@ -364,6 +365,46 @@ class IPursuitAI : public UTL::COM::IUnknown {
     virtual void SetSupportGoal(UCrc32 sg);
     virtual void SetWithinEngagementRadius();
     virtual bool WasWithinEngagementRadius() const;
+};
+
+class IPerpetrator : public UTL::COM::IUnknown {
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+    IPerpetrator(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+  protected:
+    ~IPerpetrator() override {}
+
+  public:
+    static const int MaxiumumHeat;
+
+    // Virtual methods
+    virtual float GetHeat() const;
+    virtual void SetHeat(float heat);
+    virtual Attrib::Gen::pursuitescalation *GetPursuitEscalationAttrib();
+    virtual Attrib::Gen::pursuitlevels *GetPursuitLevelAttrib();
+    virtual Attrib::Gen::pursuitsupport *GetPursuitSupportAttrib();
+    virtual void AddCostToState(int cost);
+    virtual int GetCostToState() const;
+    virtual void SetCostToState(int cts);
+    virtual bool IsRacing() const;
+    virtual bool IsBeingPursued() const;
+    virtual bool IsHiddenFromCars() const;
+    virtual bool IsHiddenFromHelicopters() const;
+    virtual bool IsPartiallyHidden(float &HowHidden) const;
+    virtual void AddToPendingRepPointsFromCopDestruction(int amount);
+    virtual void AddToPendingRepPointsNormal(int amount);
+    virtual int GetPendingRepPointsNormal() const;
+    virtual int GetPendingRepPointsFromCopDestruction() const;
+    virtual void ClearPendingRepPoints();
+    virtual void SetRacerInfo(GRacerInfo *info);
+    virtual GRacerInfo *GetRacerInfo() const;
+    virtual float GetLastTrafficHitTime() const;
+    virtual void Set911CallTime(float time);
+    virtual float Get911CallTime() const;
 };
 
 #endif

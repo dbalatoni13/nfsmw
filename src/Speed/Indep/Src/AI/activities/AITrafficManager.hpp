@@ -14,7 +14,7 @@
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
 #include "Speed/Indep/Src/Sim/SimActivity.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
-#include "Speed/Indep/Src/World/WRoadNetwork.hpp"
+#include "Speed/Indep/Src/World/WRoadNetwork.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 #include "algorithm"

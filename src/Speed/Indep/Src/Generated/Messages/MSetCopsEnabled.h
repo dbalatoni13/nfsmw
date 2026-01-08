@@ -22,6 +22,10 @@ class MSetCopsEnabled : public Hermes::Message {
 
     MSetCopsEnabled(bool _CopsEnabled) : Hermes::Message(_GetKind(), _GetSize(), 0), fCopsEnabled(_CopsEnabled) {}
 
+    bool GetCopsEnabled() const {
+        return fCopsEnabled;
+    }
+
   private:
     bool fCopsEnabled; // offset 0x10, size 0x1
 };

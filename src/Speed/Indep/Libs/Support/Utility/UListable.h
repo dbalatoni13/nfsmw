@@ -81,7 +81,7 @@ template <typename T, std::size_t ListSize, typename Enum, std::size_t EnumMax> 
     class List : public _Storage<pointer, ListSize> {
       public:
         // List(const List &);
-        List();
+        List() {}
         ~List() override {}
 
         // List &operator=(List &);

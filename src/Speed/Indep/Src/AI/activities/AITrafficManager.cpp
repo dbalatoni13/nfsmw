@@ -169,7 +169,7 @@ Attrib::Key AITrafficManager::NextSpawn() {
     if (num_types == 0) {
         return 0;
     }
-    unsigned int max_types = UMath::Min(num_types, 10);
+    unsigned int max_types = UMath::Min(num_types, 10U);
     Attrib::Key key = 0;
     for (unsigned int i = 0; i < max_types && key == 0; i++, mSpawnIdx++) {
         mSpawnIdx %= max_types;
@@ -178,7 +178,7 @@ Attrib::Key AITrafficManager::NextSpawn() {
             TypeCounter t = std::for_each(mVehicles.begin(), mVehicles.end(), TypeCounter(record.Vehicle.GetCollectionKey(), true));
             if (t.Count < record.MaxInstances || record.MaxInstances == 0) {
                 unsigned int max_traffic = mVehicles.size() + 10 - IVehicle::Count(VEHICLE_ALL);
-                if (record.Percent == 0 || t.Count < UMath::Max(1, max_traffic * record.Percent / 100)) {
+                if (record.Percent == 0 || t.Count < UMath::Max(1U, max_traffic * record.Percent / 100)) {
                     key = record.Vehicle.GetCollectionKey();
                 }
             }
@@ -187,7 +187,6 @@ Attrib::Key AITrafficManager::NextSpawn() {
     return key;
 }
 
-// UNSOLVED have to use TypeName
 IVehicle *AITrafficManager::GetAvailableTrafficVehicle(Attrib::Key key, bool makenew) {
     if (key == 0) {
         return nullptr;

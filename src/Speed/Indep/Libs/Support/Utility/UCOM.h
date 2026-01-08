@@ -106,6 +106,14 @@ template <typename T> inline T *QueryInterface(IUnknown *pUnk) {
     return ptr;
 }
 
+/**
+ * @brief Checks if two COM pointers are equal
+ *
+ * @param pUnk1 first pointer
+ * @param pUnk2 second pointer
+ * @return true if both pointers are either nullptr or if their corresponding objects are the same
+ * @return false otherwise
+ */
 inline bool ComparePtr(const IUnknown *pUnk1, const IUnknown *pUnk2) {
     if (pUnk1 && pUnk2) {
         return pUnk1->_mCOMObject == pUnk2->_mCOMObject;

@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
@@ -15,6 +16,26 @@
 class AITarget : public bTNode<AITarget> {
   public:
     static void TrackAll();
+
+    ISimable *GetSimable() {
+        return mTargetSimable;
+    }
+
+    const UMath::Vector3 &GetPosition() const {
+        return mTargetPosition;
+    }
+
+    void GetForwardVector(UMath::Vector3 &dir) const {
+        dir = mTargetDirection;
+    }
+
+    bool QueryInterface(IPerpetrator **out) {
+        if (mTargetSimable) {
+            return mTargetSimable->QueryInterface(out);
+        }
+        *out = nullptr;
+        return false;
+    }
 
   private:
     ISimable *mOwner;                              // offset 0x8, size 0x4

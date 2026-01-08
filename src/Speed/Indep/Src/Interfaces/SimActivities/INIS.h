@@ -66,13 +66,8 @@ class INIS : public UTL::COM::IUnknown, public UTL::Collections::Singleton<INIS>
     virtual void StartEvents();
     virtual void FireEventTag(const char *tagName);
     virtual void ResetEvents(float SetTime);
-
-    virtual void StartPlayingNow() {}
-
-    virtual bool IsWorldMomement() const {
-        // TODO
-        return false;
-    }
+    virtual void StartPlayingNow();
+    virtual bool IsWorldMomement() const;
 };
 
 #endif

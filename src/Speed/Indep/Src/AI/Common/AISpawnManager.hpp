@@ -26,6 +26,7 @@ class AISpawnManager {
 
     void RefreshSpawnData();
 
+    // Virtual methods
     virtual ~AISpawnManager();
 
     // Static members

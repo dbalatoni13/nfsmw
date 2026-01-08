@@ -74,7 +74,9 @@ inline bool operator==(const UCrc32 &a, const UCrc32 &b) {
     return a.GetValue() == b.GetValue();
 }
 
-// inline bool operator!=(const UCrc32 &a, const UCrc32 &b) {}
+inline bool operator!=(const UCrc32 &a, const UCrc32 &b) {
+    return a.GetValue() != b.GetValue();
+}
 
 // inline bool operator==(const UCrc32 &a, const char *b) {}
 

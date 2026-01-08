@@ -27,16 +27,19 @@ template <typename T, unsigned int Alignment = 16> class Vector {
     void Init() {}
 
     Vector() {
+        mBegin = nullptr;
+        mCapacity = 0;
+        mSize = 0;
         Init();
     }
 
     virtual ~Vector() {}
 
-    std::size_t capacity() const {
+    size_type capacity() const {
         return mCapacity;
     }
 
-    std::size_t size() const {
+    size_type size() const {
         return mSize;
     }
 
@@ -56,7 +59,19 @@ template <typename T, unsigned int Alignment = 16> class Vector {
         return mBegin + mSize;
     }
 
-    void reserve(std::size_t num) {
+    void push_back(value_type const &val) {
+        if (size() >= capacity()) {
+            reserve(GetGrowSize(size() + 1));
+        }
+        new (&mBegin[size()]) T(val);
+        mSize++;
+    }
+
+    void pop_back() {
+        mSize = size() - 1;
+    }
+
+    void reserve(size_type num) {
         if (num > capacity()) {
             OnGrowRequest(num);
             pointer oldBuffer = mBegin;
@@ -75,18 +90,6 @@ template <typename T, unsigned int Alignment = 16> class Vector {
                 }
             }
         }
-    }
-
-    void push_back(value_type const &val) {
-        if (size() >= capacity()) {
-            reserve(GetGrowSize(size() + 1));
-        }
-        new (&mBegin[size()]) T(val);
-        mSize++;
-    }
-
-    void pop_back() {
-        mSize = size() - 1;
     }
 
     void make_empty() {
@@ -108,22 +111,22 @@ template <typename T, unsigned int Alignment = 16> class Vector {
         Init();
     }
 
-    std::size_t indexof(pointer pos) {
-        std::size_t index = pos - mBegin;
+    size_type indexof(pointer pos) {
+        size_type index = pos - mBegin;
         return index;
     }
 
     iterator erase(iterator begIt, iterator endIt) {
-        std::size_t iPos = indexof(begIt);
-        std::size_t num = endIt - begIt;
+        size_type iPos = indexof(begIt);
+        size_type num = endIt - begIt;
         for (iterator it = begIt; it != endIt; ++it) {
             value_type &obj = *it;
             obj.~T();
         }
 
-        for (std::size_t ii = 0; ii < size() - (iPos + num); ++ii) {
-            std::size_t src = iPos + num + ii;
-            std::size_t dest = iPos + ii;
+        for (size_type ii = 0; ii < size() - (iPos + num); ++ii) {
+            size_type src = iPos + num + ii;
+            size_type dest = iPos + ii;
 
             new (&mBegin[dest]) T(mBegin[src]);
         }
@@ -140,24 +143,28 @@ template <typename T, unsigned int Alignment = 16> class Vector {
 
   protected:
     // Unfinished
-    virtual pointer AllocVectorSpace(std::size_t num, unsigned int alignment) { return nullptr; }
+    virtual pointer AllocVectorSpace(size_type num, unsigned int alignment) {
+        return nullptr;
+    }
 
-    virtual void FreeVectorSpace(pointer buffer, std::size_t num) {}
+    virtual void FreeVectorSpace(pointer buffer, size_type num) {}
 
-    virtual std::size_t GetGrowSize(std::size_t minSize) const {
+    virtual size_type GetGrowSize(size_type minSize) const {
         return UMath::Max(minSize, mCapacity + ((mCapacity + 1) >> 1)); // TODO is this right?
     }
 
     // Unfinished
-    virtual std::size_t GetMaxCapacity() const { return 0; }
+    virtual size_type GetMaxCapacity() const {
+        return 0;
+    }
 
-    virtual void OnGrowRequest(std::size_t newSize) {}
+    virtual void OnGrowRequest(size_type newSize) {}
 
   private:
     // total size: 0x10
-    pointer mBegin;        // offset 0x0, size 0x4
-    std::size_t mCapacity; // offset 0x4, size 0x4
-    std::size_t mSize;     // offset 0x8, size 0x4
+    pointer mBegin;      // offset 0x0, size 0x4
+    size_type mCapacity; // offset 0x4, size 0x4
+    size_type mSize;     // offset 0x8, size 0x4
 };
 
 template <typename T, std::size_t Size, unsigned int Alignment = 16> class FixedVector : public Vector<T, Alignment> {
@@ -173,15 +180,21 @@ template <typename T, std::size_t Size, unsigned int Alignment = 16> class Fixed
 
   protected:
     // Unfinished
-    virtual std::size_t GetGrowSize(std::size_t minSize) const { return 0; }
+    virtual std::size_t GetGrowSize(std::size_t minSize) const {
+        return 0;
+    }
 
     // Unfinished
-    virtual typename Vector<T, Alignment>::pointer AllocVectorSpace(std::size_t num, unsigned int alignment) { return nullptr; }
+    virtual typename Vector<T, Alignment>::pointer AllocVectorSpace(std::size_t num, unsigned int alignment) {
+        return nullptr;
+    }
 
     virtual void FreeVectorSpace(typename Vector<T, Alignment>::pointer buffer, std::size_t) {}
 
     // Unfinished
-    virtual std::size_t GetMaxCapacity() const { return 0; }
+    virtual std::size_t GetMaxCapacity() const {
+        return 0;
+    }
 
   private:
     // TODO speed considerations for 64 bit

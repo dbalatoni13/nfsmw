@@ -28,6 +28,10 @@ inline float Distance(const Vector3 &a, const Vector3 &b) {
     return VU0_v3distance(a, b);
 }
 
+inline float Distancexz(const Vector3 &a, const Vector3 &b) {
+    return VU0_v3distancexz(a, b);
+}
+
 inline float DistanceSquare(const Vector3 &a, const Vector3 &b) {
 #ifdef EA_PLATFORM_XENON
     return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
@@ -161,6 +165,16 @@ inline void Scale(const Vector3 &a, const float s, Vector3 &r) {
     r.z = a.z * s;
 #else
     VU0_v3scale(a, s, r);
+#endif
+}
+
+inline void Scale(Vector3 &r, const float s) {
+#ifdef EA_PLATFORM_XENON
+    r.x *= s;
+    r.y *= s;
+    r.z *= s;
+#else
+    VU0_v3scale(r, s, r);
 #endif
 }
 
@@ -345,6 +359,13 @@ inline float Max(const float a, const float b) {
     return VU0_floatmax(a, b);
 }
 
+inline unsigned int Min(const int a, const int b) {
+    return a > b ? b : a;
+}
+
+inline unsigned int Max(const int a, const int b) {
+    return a < b ? b : a;
+}
 inline unsigned int Min(const unsigned int a, const unsigned int b) {
     return a > b ? b : a;
 }

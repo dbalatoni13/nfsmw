@@ -22,6 +22,10 @@ class MForcePursuitStart : public Hermes::Message {
 
     MForcePursuitStart(int _MinHeatLevel) : Hermes::Message(_GetKind(), _GetSize(), 0), fMinHeatLevel(_MinHeatLevel) {}
 
+    int GetMinHeatLevel() const {
+        return fMinHeatLevel;
+    }
+
   private:
     int fMinHeatLevel; // offset 0x10, size 0x4
 };

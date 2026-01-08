@@ -118,13 +118,13 @@ enum CarType {
 };
 
 enum DriverClass {
-    DRIVER_REMOTE = 6,
-    DRIVER_NIS = 5,
-    DRIVER_NONE = 4,
-    DRIVER_RACER = 3,
-    DRIVER_COP = 2,
-    DRIVER_TRAFFIC = 1,
     DRIVER_HUMAN = 0,
+    DRIVER_TRAFFIC = 1,
+    DRIVER_COP = 2,
+    DRIVER_RACER = 3,
+    DRIVER_NONE = 4,
+    DRIVER_NIS = 5,
+    DRIVER_REMOTE = 6,
 };
 
 class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, VEHICLE_MAX> {

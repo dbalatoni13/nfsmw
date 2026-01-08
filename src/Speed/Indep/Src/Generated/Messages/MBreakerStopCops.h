@@ -24,6 +24,18 @@ class MBreakerStopCops : public Hermes::Message {
     MBreakerStopCops(UMath::Vector3 _InitialPos, float _Duration, float _Radius)
         : Hermes::Message(_GetKind(), _GetSize(), 0), fInitialPos(_InitialPos), fDuration(_Duration), fRadius(_Radius) {}
 
+    UMath::Vector3 GetInitialPos() const {
+        return fInitialPos;
+    }
+
+    float GetDuration() const {
+        return fDuration;
+    }
+
+    float GetRadius() const {
+        return fRadius;
+    }
+
   private:
     UMath::Vector3 fInitialPos; // offset 0x10, size 0xC
     float fDuration;            // offset 0x1C, size 0x4
