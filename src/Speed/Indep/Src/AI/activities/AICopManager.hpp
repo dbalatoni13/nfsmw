@@ -91,7 +91,6 @@ class AICopManager : public Sim::Activity, public AISpawnManager, public ICopMgr
     void SpawnVehicleBehindTarget(IPursuit *ipursuit, IVehicle *availableCopCar);
     bool SpawnCopCarNow(IPursuit *ipursuit);
     bool SpawnPursuitHelicopter(IPursuit *ipursuit);
-    // TODO is IVehicle::List correct?
     bool CreateRoadBlock(IPursuit *ipursuit, int cop_count, IVehicle *ivehicle_chopper, IVehicle::List *suvList);
     void RemoveActiveCopVehicle(IVehicle *ivehicle);
     void UpdatePatrols();

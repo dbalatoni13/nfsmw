@@ -56,11 +56,11 @@ inline float ANGLE2RAD(const float _arc_) {
 }
 
 inline float DEG2RAD(const float _deg_) {
-    return _deg_ * (180.f / (float)M_PI);
+    return _deg_ * ((float)M_PI / 180.f);
 }
 
 inline float RAD2DEG(const float _rad_) {
-    return _rad_ * ((float)M_PI / 180.f);
+    return _rad_ * (180.f / (float)M_PI);
 }
 
 inline float INCH2METERS(const float _inches_) {

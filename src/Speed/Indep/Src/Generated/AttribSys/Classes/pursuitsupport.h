@@ -36,18 +36,18 @@ enum LeaderSupportStrategy {
 // total size: 0xC
 struct AirSupport {
     // Members
-    enum AirSupportStrategy HeliStrategy; // offset 0x0, size 0x4
-    unsigned int Chance;                  // offset 0x4, size 0x4
-    float Duration;                       // offset 0x8, size 0x4
+    AirSupportStrategy HeliStrategy; // offset 0x0, size 0x4
+    unsigned int Chance;             // offset 0x4, size 0x4
+    float Duration;                  // offset 0x8, size 0x4
 };
 
 // total size: 0x10
 struct HeavySupport {
     // Members
-    enum HeavySupportStrategy HeavyStrategy; // offset 0x0, size 0x4
-    unsigned int Chance;                     // offset 0x4, size 0x4
-    float Duration;                          // offset 0x8, size 0x4
-    unsigned int ChanceBigSUV;               // offset 0xC, size 0x4
+    HeavySupportStrategy HeavyStrategy; // offset 0x0, size 0x4
+    unsigned int Chance;                // offset 0x4, size 0x4
+    float Duration;                     // offset 0x8, size 0x4
+    unsigned int ChanceBigSUV;          // offset 0xC, size 0x4
 };
 
 // total size: 0x14

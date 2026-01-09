@@ -5,6 +5,6 @@
 #pragma once
 #endif
 
-
+bool HeliVehicleActive();
 
 #endif

@@ -8,6 +8,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
+#include "Speed/Indep/Src/Math/SimRandom.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
 
 namespace Sim {
@@ -46,6 +47,7 @@ bool Exists();
 void StartProfile();
 void Suspend();
 float GetTime();
+SimRandom &GetRandom();
 unsigned int GetTick();
 float GetSpeed();
 float GetTimeStep();

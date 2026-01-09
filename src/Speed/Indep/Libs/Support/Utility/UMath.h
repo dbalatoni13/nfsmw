@@ -182,6 +182,10 @@ inline void Scale(const Vector4 &a, const float s, Vector4 &r) {
     VU0_v4scale(a, s, r);
 }
 
+inline void Scale(Vector4 &r, const float s) {
+    VU0_v4scale(r, s, r);
+}
+
 inline void ScaleAdd(const Vector3 &a, const float s, const Vector3 &b, Vector3 &r) {
 #ifdef EA_PLATFORM_XENON
     r.x = a.x + b.x * s;
@@ -277,6 +281,14 @@ inline void UnitCross(const Vector3 &a, const Vector3 &b, Vector3 &r) {
     VU0_v3unitcrossprod(a, b, r);
 }
 #endif
+
+inline float Normalize(Vector3 &r) {
+    float m = VU0_v3length(r);
+    if (m != 0.0f) {
+        VU0_v3scale(r, 1.0f / m, r);
+    }
+    return m;
+}
 
 inline float Lengthxz(const Vector3 &a) {
     return VU0_v3lengthxz(a);
@@ -403,6 +415,14 @@ inline float Sina(const float a) {
 
 inline float Cosa(const float a) {
     return VU0_Cos(a * (float)M_TWOPI);
+}
+
+inline float Sinr(const float a) {
+    return VU0_Sin(RAD2ANGLE(a));
+}
+
+inline float Cosr(const float a) {
+    return VU0_Cos(RAD2ANGLE(a));
 }
 
 } // namespace UMath
