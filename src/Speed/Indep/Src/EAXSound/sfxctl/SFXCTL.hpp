@@ -15,11 +15,11 @@ struct SFXCTL : public SndBase {
     /* 0x24 */ eAemsUpgradeLevel m_UGL;
 
     SFXCTL();
-    virtual ~SFXCTL();
-    virtual TypeInfo *GetTypeInfo();
-    virtual char *GetTypeName();
-    virtual void InitSFX();
-    virtual void UpdateParams();
+    ~SFXCTL() override;
+    TypeInfo *GetTypeInfo() override;
+    char *GetTypeName() const override;
+    void InitSFX() override;
+    void UpdateParams() override;
 
     float GetPhysTRQ();
     float GetPhysRPM();

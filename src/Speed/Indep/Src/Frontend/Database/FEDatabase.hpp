@@ -1,12 +1,14 @@
 #ifndef FRONTEND_DATABASE_FEDATABASE_H
 #define FRONTEND_DATABASE_FEDATABASE_H
 
+#include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
 #include "RaceDB.hpp"
 #include "Speed/Indep/Src/Gameplay/GRace.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "VehicleDB.hpp"
 
 #include <types.h>
@@ -156,13 +158,18 @@ struct SMSMessage {
 // total size: 0x27C
 class CareerSettings {
   public:
-    unsigned int CurrentCar;     // offset 0x0, size 0x4
-    unsigned int SpecialFlags;   // offset 0x4, size 0x4
-    unsigned char CurrentBin;    // offset 0x8, size 0x1
-    unsigned int CurrentCash;    // offset 0xC, size 0x4
-    short AdaptiveDifficulty;    // offset 0x10, size 0x2
+    uint32 GetCurrentCar() {
+        return CurrentCar;
+    }
+
+  private:
+    uint32 CurrentCar;           // offset 0x0, size 0x4
+    uint32 SpecialFlags;         // offset 0x4, size 0x4
+    uint8 CurrentBin;            // offset 0x8, size 0x1
+    uint32 CurrentCash;          // offset 0xC, size 0x4
+    int16 AdaptiveDifficulty;    // offset 0x10, size 0x2
     SMSMessage SMSMessages[150]; // offset 0x12, size 0x258
-    unsigned short SMSSortOrder; // offset 0x26A, size 0x2
+    uint16 SMSSortOrder;         // offset 0x26A, size 0x2
     char CaseFileName[16];       // offset 0x26C, size 0x10
 };
 
@@ -175,8 +182,29 @@ struct JukeboxEntry {
 // total size: 0x9CF4
 class UserProfile {
   public:
+    void SetProfileName(const char *pName, bool isP1);
+    const char *GetProfileName();
+    bool IsProfileNamed();
+    void Default(int player_number, bool commit_default);
+    // void CommitHighScoresPreRace(enum eHighScoresRaceTypes race_type, int is_split_screen);
+    // void CommitHighScoresPostRace(enum eHighScoresRaceTypes race_type, int track, int direction, int laps, int is_split_screen,
+    //                               struct FinishedRaceStatsEntry *stats);
+    void CommitHighScoresPauseQuit();
+    void CommitPursuitInfo(IPursuit *iPursuit, unsigned int car_FEKey, unsigned int bounty, unsigned int num_infractions);
+    void IncInfration(GInfractionManager::InfractionType infrat, unsigned int car);
+    void CommitServeInfractions(unsigned int car);
+    void WriteProfileHash(void *bufferToHash, void *bufferToWrite, int bytes, void *maxptr);
+    bool VerifyProfileHash(void *bufferToHash, void *bufferHash, int bytes);
+    void SaveToBuffer(void *buffer, int size);
+    bool LoadFromBuffer(void *buffer, int size, bool commit_changes, int player_id);
+    int GetSaveBufferSize(bool bExcludeGameplay);
+
     OptionsSettings *GetOptions() {
         return &TheOptionsSettings;
+    }
+
+    CareerSettings *GetCareer() {
+        return &TheCareerSettings;
     }
 
   private:

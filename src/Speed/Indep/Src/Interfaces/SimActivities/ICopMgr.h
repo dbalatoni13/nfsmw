@@ -25,6 +25,7 @@ class ICopMgr : public UTL::COM::IUnknown, public UTL::Collections::Singleton<IC
   public:
     virtual bool VehicleSpawningEnabled(bool isdespawn);
     virtual void ResetCopsForRestart(bool release);
+    virtual float GetLockoutTimeRemaining() const; // maybe 1 higher and maybe this is SetAllBusted's place
     virtual void PursuitIsEvaded(struct IPursuit *ipursuit);
     virtual bool IsCopRequestPending();
     virtual bool IsCopSpawnPending() const;
@@ -34,16 +35,14 @@ class ICopMgr : public UTL::COM::IUnknown, public UTL::Collections::Singleton<IC
     virtual bool IsPlayerPursuitActive();
     virtual void LockoutCops(bool lockout);
     virtual void NoNewPursuitsOrCops();
-    virtual float GetLockoutTimeRemaining() const; // maybe higher up and maybe it's SetAllBusted...
     virtual void PursueAtHeatLevel(int minHeatLevel);
-    // TODO fix the positions of this
-    virtual void SetAllBustedTimersToZero();
+    virtual void SetAllBustedTimersToZero(); // TODO fix the position of this
 
-    void EnableCops() {}
+    static void EnableCops() {}
 
-    void DisableCops() {}
+    static void DisableCops() {}
 
-    bool AreCopsEnabled() {}
+    static bool AreCopsEnabled() {}
 };
 
 #endif

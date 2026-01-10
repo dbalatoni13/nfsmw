@@ -40,12 +40,20 @@ namespace UTL {
 namespace Std {
 
 template <typename T, typename Tag> struct vector : public std::vector<T, UTL::Std::Allocator<T, Tag> > {
-    void push_back(const typename std::vector<T, UTL::Std::Allocator<T, Tag> >::value_type &_Val) {
-        std::vector<T, UTL::Std::Allocator<T, Tag> >::push_back(_Val);
+  private:
+    typedef std::vector<T, UTL::Std::Allocator<T, Tag> > _Base;
+
+  public:
+    void push_back(const typename _Base::value_type &_Val) {
+        _Base::push_back(_Val);
     }
 
-    typename std::vector<T, UTL::Std::Allocator<T, Tag> >::reference operator[](size_t _Pos) {
-        return *(std::vector<T, UTL::Std::Allocator<T, Tag> >::begin() + _Pos);
+    typename _Base::iterator insert(typename _Base::iterator _Where, typename _Base::const_reference _Val) {
+        return _Base::insert(_Where, _Val);
+    }
+
+    typename _Base::reference operator[](typename _Base::size_type _Pos) {
+        return *(_Base::begin() + _Pos);
     }
 };
 

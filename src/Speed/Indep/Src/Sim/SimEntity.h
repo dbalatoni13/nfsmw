@@ -34,7 +34,7 @@ class Entity : public Object, public UTL::Collections::GarbageNode<Sim::Entity, 
 
     // Own
     virtual const UMath::Vector3 &GetPosition() const;
-    virtual bool SetPosition(const UMath::Vector3 &position) const;
+    virtual bool SetPosition(const UMath::Vector3 &position) const; // the const here is likely a bug
 
     // IEntity
     ISimable *GetSimable() const override {

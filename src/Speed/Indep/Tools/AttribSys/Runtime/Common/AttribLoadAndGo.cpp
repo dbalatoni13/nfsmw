@@ -39,7 +39,7 @@ unsigned int ExportManager::GetExportPolicyTypeByIndex(unsigned int index) const
     if (index < mCount) {
         return mExportPolicys[index].mType;
     }
-    return nullptr;
+    return 0;
 }
 
 unsigned int ExportManager::GetExportPolicyIndex(unsigned int type) const {

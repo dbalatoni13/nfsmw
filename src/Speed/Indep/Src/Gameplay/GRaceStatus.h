@@ -70,6 +70,25 @@ struct _type_ID_GRaceStatusTriggerList {
     }
 };
 
+// total size: 0x14
+class GRaceParameters {
+  public:
+    const Attrib::Gen::gameplay *GetGameplayObj() const;
+    void GetStartPosition(UMath::Vector3 &pos) const;
+    void GetStartDirection(UMath::Vector3 &dir) const;
+    bool GetIsLoopingRace() const;
+    GRace::Type GetRaceType() const;
+    bool GetIsChallengeSeriesRace() const;
+    int GetNumOpponents() const;
+    bool GetIsPursuitRace() const;
+
+  protected:
+    struct GRaceIndexData *mIndex;      // offset 0x0, size 0x4
+    Attrib::Gen::gameplay *mRaceRecord; // offset 0x4, size 0x4
+    struct GVault *mParentVault;        // offset 0x8, size 0x4
+    struct GVault *mChildVault;         // offset 0xC, size 0x4
+};
+
 // total size: 0x46AC
 class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
   public:
@@ -78,18 +97,50 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         kPlayMode_Racing = 1,
     };
 
+    typedef UTL::Std::vector<struct GTrigger *, _type_ID_GRaceStatusTriggerList> TriggerList;
+
     static void Init();
     static void Shutdown();
 
-    typedef UTL::Std::vector<struct GTrigger *, _type_ID_GRaceStatusTriggerList> TriggerList;
+    GRaceStatus();
+
+    GRaceParameters *GetRaceParameters() const {
+        return mRaceParms;
+    }
+
+    static GRaceStatus &Get() {
+        return *fObj;
+    }
+
+    static bool Exists() {
+        return fObj != nullptr;
+    }
+
+    GRace::Type GetRaceType() const {
+        return mRaceParms ? mRaceParms->GetRaceType() : GRace::kRaceType_None;
+    }
+
+    static bool IsChallengeRace() {
+        return Exists() && Get().GetRaceType() == GRace::kRaceType_Challenge;
+    }
+
+    PlayMode GetPlayMode() {
+        return mPlayMode;
+    }
+
+    unsigned int GetTrafficPattern() const {
+        return mTrafficPattern;
+    }
 
   private:
+    static struct GRaceStatus *fObj;
+
     GRacerInfo mRacerInfo[16];           // offset 0x1C, size 0x1A80
     int mRacerCount;                     // offset 0x1A9C, size 0x4
     bool mIsLoading;                     // offset 0x1AA0, size 0x1
     PlayMode mPlayMode;                  // offset 0x1AA4, size 0x4
     GRace::Context mRaceContext;         // offset 0x1AA8, size 0x4
-    struct GRaceParameters *mRaceParms;  // offset 0x1AAC, size 0x4
+    GRaceParameters *mRaceParms;         // offset 0x1AAC, size 0x4
     struct GRaceBin *mRaceBin;           // offset 0x1AB0, size 0x4
     GTimer mRaceMasterTimer;             // offset 0x1AB4, size 0xC
     bool mPlayerPursuitInCooldown;       // offset 0x1AC0, size 0x1
@@ -130,43 +181,6 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
     int mTrafficDensity;                 // offset 0x46A0, size 0x4
     unsigned int mTrafficPattern;        // offset 0x46A4, size 0x4
     bool mHasBeenWon;                    // offset 0x46A8, size 0x1
-
-    static struct GRaceStatus *fObj;
-
-    GRaceStatus();
-
-  public:
-    static GRaceStatus &Get() {
-        return *fObj;
-    }
-
-    static bool Exists() {
-        return fObj != nullptr;
-    }
-
-    PlayMode GetPlayMode() {
-        return mPlayMode;
-    }
-
-    unsigned int GetTrafficPattern() const {
-        return mTrafficPattern;
-    }
-};
-
-// total size: 0x14
-class GRaceParameters {
-  public:
-    const Attrib::Gen::gameplay *GetGameplayObj() const;
-    void GetStartPosition(UMath::Vector3 &pos) const;
-    void GetStartDirection(UMath::Vector3 &dir) const;
-    bool GetIsLoopingRace() const;
-    GRace::Type GetRaceType() const;
-
-  protected:
-    struct GRaceIndexData *mIndex;      // offset 0x0, size 0x4
-    Attrib::Gen::gameplay *mRaceRecord; // offset 0x4, size 0x4
-    struct GVault *mParentVault;        // offset 0x8, size 0x4
-    struct GVault *mChildVault;         // offset 0xC, size 0x4
 };
 
 // total size: 0x28

@@ -1,6 +1,7 @@
 #ifndef AI_AITARGET_H
 #define AI_AITARGET_H
 
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -16,6 +17,17 @@
 class AITarget : public bTNode<AITarget> {
   public:
     static void TrackAll();
+    static bool CanAquire(const ISimable *who);
+
+    void Clear();
+    void Aquire(ISimable *target);
+    void Aquire(const UMath::Vector3 &position);
+    void Aquire(const UMath::Vector3 &position, const UMath::Vector3 &direction);
+    void Aquire(const AITarget *aitarget);
+    bool IsTarget(const AITarget *aitarget) const;
+    float GetSpeed() const;
+    const UMath::Vector3 &GetLinearVelocity() const;
+    void TrackInternal();
 
     ISimable *GetSimable() {
         return mTargetSimable;
@@ -29,7 +41,27 @@ class AITarget : public bTNode<AITarget> {
         dir = mTargetDirection;
     }
 
+    bool IsValid() const {
+        return mValid;
+    }
+
     bool QueryInterface(IPerpetrator **out) {
+        if (mTargetSimable) {
+            return mTargetSimable->QueryInterface(out);
+        }
+        *out = nullptr;
+        return false;
+    }
+
+    bool QueryInterface(IVehicle **out) {
+        if (mTargetSimable) {
+            return mTargetSimable->QueryInterface(out);
+        }
+        *out = nullptr;
+        return false;
+    }
+
+    bool QueryInterface(IAttachable **out) {
         if (mTargetSimable) {
             return mTargetSimable->QueryInterface(out);
         }

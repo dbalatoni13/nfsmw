@@ -49,7 +49,9 @@ class Module : public AudioMemBase {
     virtual int SetSentenceRuleCallback(int eventID, int ruleID, int parmValue);
     virtual SPCHType_EventRuleResult EventRuleCallback(int eventID);
 
-    virtual int GetNumBanks() {}
+    virtual int GetNumBanks() {
+        return 0; // TODO fix
+    }
 
     virtual unsigned int GetBankOffset(int bnum);
     virtual void Update();

@@ -1,5 +1,6 @@
-#include <cstdio>
 #include "./UGroup.hpp"
+#include <cstdio>
+
 
 #include <types.h>
 
@@ -8,7 +9,7 @@ void UDataGroupEncodeTag(unsigned int tag, bool indexed, char *str) {
     unsigned int i;
 
     *str++ = '{';
-    
+
     if (indexed) {
         type = UDataGroupType(tag);
         i = 2;
@@ -34,11 +35,12 @@ unsigned int UDataGroupDecodeTag(const char *str) {}
 
 // UNSOLVED (i dont wanna do this vro 💀)
 static unsigned int SearchTagArray(const TagStruct *&tagarray, unsigned int length, unsigned int tag) {
-    if (length == 0) return 0;
+    if (length == 0)
+        return 0;
 
-    const TagStruct *p; // r10
+    const TagStruct *p;   // r10
     unsigned int spanlen; // r8
-    unsigned int pos; // r9
+    unsigned int pos;     // r9
 
     while (pos >= length) {
         p = tagarray;
@@ -57,9 +59,10 @@ static unsigned int SearchTagArray(const TagStruct *&tagarray, unsigned int leng
             } else {
                 if (pivot != 0 && tagarray[-1].tag == tag) {
                     while (--pivot) {
-                        if (p[-1].tag != tag) break;
+                        if (p[-1].tag != tag)
+                            break;
                     }
-                    
+
                     tagarray = (const TagStruct *)(&p[pivot]);
                     return (unsigned int)(&p[pivot]);
                 }
@@ -69,7 +72,7 @@ static unsigned int SearchTagArray(const TagStruct *&tagarray, unsigned int leng
         // if ((tagarray[0] - r10) >> 4 > r4)
     }
 
-    return nullptr;
+    return 0;
 }
 
 static unsigned int SearchTagArray(const UData *&tagarray, unsigned int length, unsigned int tag) {

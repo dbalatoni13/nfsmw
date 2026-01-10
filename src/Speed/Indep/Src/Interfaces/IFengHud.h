@@ -7,7 +7,6 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
-#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 
 class IHud : public UTL::COM::IUnknown, public UTL::Collections::Listable<IHud, 2> {
   public:
@@ -19,7 +18,7 @@ class IHud : public UTL::COM::IUnknown, public UTL::Collections::Listable<IHud, 
 
     virtual ~IHud() {}
 
-    virtual void Update(IPlayer *player, float dT);
+    virtual void Update(class IPlayer *player, float dT);
     virtual void Release();
     virtual void HideAll();
     virtual bool AreResourcesLoaded();
@@ -48,8 +47,10 @@ class IGenericMessage : public UTL::COM::IUnknown {
 
     IGenericMessage(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
+  protected:
     virtual ~IGenericMessage() {}
 
+  public:
     virtual bool RequestGenericMessage(const char *string, bool singleFrame, unsigned int fengHash, unsigned int iconTextureHash,
                                        unsigned int iconFengHash, GenericMessage_Priority priority);
     virtual void RequestGenericMessageZoomOut(unsigned int fengHash);

@@ -184,6 +184,10 @@ def process_file(filename, strings_file, outdirectory):
     SetDefaultLayout(sizeof(_LayoutStruct));
 }}
 
+{name}(const {name} &src) : Instance(src) {{
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}}
+
 ~{name}() {{}}
 
 void Change(const Collection *c) {{

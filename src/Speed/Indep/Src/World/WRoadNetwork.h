@@ -12,6 +12,8 @@
 
 #include "types.h"
 
+extern class WRoadNetwork *fgRoadNetwork;
+
 // total size: 0x1
 class WRoadNetwork : public Debugable {
   public:
@@ -29,9 +31,11 @@ class WRoadNetwork : public Debugable {
 
     // static inline void operator delete(void *mem, unsigned int size, const char *name) {}
 
-    static WRoadNetwork &Get() {}
+    static WRoadNetwork &Get() {
+        return *fgRoadNetwork;
+    }
 
-    static unsigned int GetTotalMemoryUsage() {}
+    // static unsigned int GetTotalMemoryUsage() {}
 
     WRoadNetwork() {}
 

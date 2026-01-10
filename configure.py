@@ -220,6 +220,9 @@ if config.platform == Platform.GC_WII:
         "-gdwarf",
         # "-Wa,-L",
         # "-Wall",
+        # "-Wreturn-type", # enable at some point
+        "-Wno-ctor-dtor-privacy",  # because of AttribSys for example
+        "-Woverloaded-virtual",
         "-I src/Speed/Indep/Libs/Support/stlgc",
         "-I src/Speed/GameCube/Libs/stl/STLport-4.5/stlport",
         "-I src/Speed/GameCube/bWare/GameCube/bWare/GameCube/SN/include",
@@ -285,6 +288,7 @@ elif config.platform == Platform.X360:
         "/nologo",
         "/c",  # compile without linking
         "/wd4996",  # get rid of string deprecation warnings for now
+        "/wd4355",  # gets rid of the warning 'this' used in base member initializer
         # "/GR",  # RTTI
         "/Og",
         # "/Os", # no

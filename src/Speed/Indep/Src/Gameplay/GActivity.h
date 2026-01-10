@@ -21,6 +21,8 @@ struct _type_ID_StateToVectors {
     };
 };
 
+typedef UTL::Std::map<GState *, UTL::Std::vector<GHandler *, _type_ID_GHandlerVector>, _type_ID_StateToVectors> StateToHandlers;
+
 // total size: 0x48
 class GActivity : public GRuntimeInstance {
   public:
@@ -34,11 +36,11 @@ class GActivity : public GRuntimeInstance {
     GActivity(const Attrib::Key &activityKey);
 
   private:
-    GState *mCurrentState;                                                                                                  // offset 0x28, size 0x4
-    GState *mRegisteredHandlersState;                                                                                       // offset 0x2C, size 0x4
-    UTL::Std::map<GState *, UTL::Std::vector<GHandler *, _type_ID_GHandlerVector>, _type_ID_StateToVectors> mStateHandlers; // offset 0x30, size 0x10
-    bool mRunning;                                                                                                          // offset 0x40, size 0x1
-    bool mVarsInLuaVM;                                                                                                      // offset 0x44, size 0x1
+    GState *mCurrentState;            // offset 0x28, size 0x4
+    GState *mRegisteredHandlersState; // offset 0x2C, size 0x4
+    StateToHandlers mStateHandlers;   // offset 0x30, size 0x10
+    bool mRunning;                    // offset 0x40, size 0x1
+    bool mVarsInLuaVM;                // offset 0x44, size 0x1
 };
 
 #endif

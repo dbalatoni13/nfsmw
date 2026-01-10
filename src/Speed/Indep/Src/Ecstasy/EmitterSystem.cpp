@@ -1096,29 +1096,28 @@ EmitterLibrary *EmitterSystem::FindLibrary(Attrib::Key key) {
     LibEntry e;
     e.Key = key;
     e.Lib = nullptr;
-    LibEntry *iter = std::lower_bound(this->mLibs.begin(), this->mLibs.end(), e);
-    if (iter != this->mLibs.end() && iter->Key == key) {
+    LibEntry *iter = std::lower_bound(mLibs.begin(), mLibs.end(), e);
+    if (iter != mLibs.end() && iter->Key == key) {
         return iter->Lib;
     }
     return nullptr;
 }
 
-// UNSOLVED diff in Allocator::allocate
 void EmitterSystem::AddLibrary(EmitterLibrary *lib) {
     LibEntry e;
     e.Key = lib->GroupKey;
     e.Lib = lib;
-    this->mLibs.insert(std::upper_bound(this->mLibs.begin(), this->mLibs.end(), e), e);
+    mLibs.insert(std::upper_bound(mLibs.begin(), mLibs.end(), e), e);
 }
 
 void EmitterSystem::RemoveLibrary(EmitterLibrary *lib) {
     LibEntry e;
     e.Key = lib->GroupKey;
     e.Lib = lib;
-    LibEntry *iter = std::lower_bound(this->mLibs.begin(), this->mLibs.end(), e);
-    while (iter != this->mLibs.end() && iter->Key == e.Key) {
+    LibEntry *iter = std::lower_bound(mLibs.begin(), mLibs.end(), e);
+    while (iter != mLibs.end() && iter->Key == e.Key) {
         if (iter->Lib == lib) {
-            this->mLibs.erase(iter);
+            mLibs.erase(iter);
             break;
         }
         iter++;
@@ -1127,12 +1126,12 @@ void EmitterSystem::RemoveLibrary(EmitterLibrary *lib) {
 
 // UNSOLVED Allocator::allocate or _STLP_alloc_proxy's constructor causes the diff
 EmitterSystem::EmitterSystem() {
-    this->mNumEmitterGroups = 0;
-    this->mNumEmitters = 0;
-    this->mCurrentTexture = nullptr;
-    this->mLibs.reserve(400);
-    this->mTotalNumParticles = 0;
-    bMemSet(this->mParticleListCounts, 0, sizeof(this->mParticleListCounts));
+    mNumEmitterGroups = 0;
+    mNumEmitters = 0;
+    mCurrentTexture = nullptr;
+    mLibs.reserve(400);
+    mTotalNumParticles = 0;
+    bMemSet(mParticleListCounts, 0, sizeof(mParticleListCounts));
 }
 
 // UNSOLVED

@@ -29,11 +29,11 @@ class GInfractionManager {
 
     void PursuitStarted();
 
-    void ReportInfraction(enum InfractionType infraction);
+    void ReportInfraction(InfractionType infraction);
 
     unsigned int GetNumInfractions();
 
-    bool DidInfractionOccur(enum InfractionType infraction);
+    bool DidInfractionOccur(InfractionType infraction);
 
     static GInfractionManager &Get() {
         return *mObj;
@@ -65,7 +65,9 @@ class GInfractionManager {
 
     // float GetRacingSpeedLimit() {}
 
-    // unsigned int GetInfractions() {}
+    unsigned int GetInfractions() {
+        return mInfractions;
+    }
 
   private:
     static GInfractionManager *mObj; // size: 0x4

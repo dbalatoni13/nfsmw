@@ -115,6 +115,10 @@ inline void Mult(const Matrix4 &a, const Matrix4 &b, Matrix4 &r) {
     VU0_MATRIX4_mult(a, b, r);
 }
 
+inline void Unit(const Vector3 &a, Vector3 &r) {
+    VU0_v3unit(a, r);
+}
+
 inline void Unit(const Vector4 &a, Vector4 &r) {
     VU0_v4unit(a, r);
 }
@@ -418,11 +422,11 @@ inline float Cosa(const float a) {
 }
 
 inline float Sinr(const float a) {
-    return VU0_Sin(RAD2ANGLE(a));
+    return VU0_Sin(RAD2ANGLE(a) * (float)M_TWOPI);
 }
 
 inline float Cosr(const float a) {
-    return VU0_Cos(RAD2ANGLE(a));
+    return VU0_Cos(RAD2ANGLE(a) * (float)M_TWOPI);
 }
 
 } // namespace UMath

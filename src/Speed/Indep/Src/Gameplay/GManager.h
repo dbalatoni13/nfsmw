@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "GActivity.h"
 #include "GCharacter.h"
 #include "GMilestone.h"
 #include "GSpeedTrap.h"
@@ -44,11 +45,18 @@ struct _type_ID_ObjectStateMap {
     }
 };
 
+struct _type_ID_AttribKeyList {
+    const char *name() {
+        return "ID_ObjectStateMap";
+    }
+};
+
 typedef UTL::Std::vector<GCharacter *, _type_ID_GCharacterList> GCharacterList;
 typedef UTL::Std::map<unsigned int, MilestoneTypeInfo, _type_ID_MilestoneInfoMap> MilestoneInfoMap;
 typedef UTL::Std::map<unsigned int, ISimable *, _type_ID_StockCarMap> StockCarMap;
 typedef UTL::Std::map<unsigned int, ObjectStateBlockHeader *, _type_ID_ObjectStateMap> ObjectStateMap;
 typedef UTL::Std::list<int, _type_ID_PendingSMSList> PendingSMSList;
+typedef UTL::Std::list<unsigned int, _type_ID_AttribKeyList> AttribKeyList;
 
 // total size: 0x308
 class GManager : public UTL::COM::Object, public IVehicleCache {
@@ -77,7 +85,6 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
 
     static void Init(const char *vaultPackName);
 
-    GManager(const char *vaultPackName);
     void InitializeRaceStreaming();
     void PreBeginGameplay();
     void BeginGameplay();
@@ -87,6 +94,110 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     void GetRespawnLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialVec);
     void RestorePursuitBreakerIcons(int sectionID);
     void NotifyWorldService();
+
+    void TrackValue(const char *valueName, float value);
+    void IncValue(const char *valueName);
+    float GetValue(const char *valueName);
+
+    void RegisterInstance(GRuntimeInstance *instance);
+    void UnregisterInstance(GRuntimeInstance *instance);
+    GRuntimeInstance *FindInstance(Attrib::Key key) const;
+    void ConnectRuntimeInstances();
+
+    void ConnectInstanceReferences(GRuntimeInstance *runtimeInstance, const Attrib::Gen::gameplay &collection);
+
+    void ConnectChildren(GRuntimeInstance *runtimeInstance);
+    unsigned int GetStrippedNameKey(const char *name);
+
+    void StartActivities();
+    void StartWorldActivities(bool startFreeRoamOnly);
+    void StartBinActivity(struct GRaceBin *raceBin);
+    void SuspendAllBinActivities();
+    void SuspendAllActivities();
+
+    void StartRaceFromInGame(unsigned int raceHash);
+    bool CalcMapCoordsForMarker(unsigned int markerKey, bVector2 &outPos, float &outRotDeg);
+    bool WarpToMarker(unsigned int markerKey, bool startPursuit);
+    bool GetHidingSpotFound(unsigned int index);
+    void SetHidingSpotFound(unsigned int index, bool found);
+    void NotifyPursuitStarted();
+    void NotifyPursuitEnded(bool evaded);
+    void EnableBinSpeedTraps(unsigned int binNumber);
+    void RefreshSpeedTrapIcons();
+    void GatherInstanceKeys(Attrib::Gen::gameplay &collection, AttribKeyList &list, unsigned int templateKey);
+    void FindBountySpawnPoints();
+    unsigned int GetNumBountySpawnMarkers() const;
+    unsigned int GetBountySpawnMarker(unsigned int index) const;
+    void ServicePendingCharacters();
+    void UnspawnUselessCharacters();
+    unsigned int GetRespawnMarker();
+    int GetBountySpawnMarkerTag(unsigned int index) const;
+    void RefreshZoneIcons();
+    static bool AddIconForTrackMarker(struct TrackPositionMarker *marker, unsigned int tag);
+    void RefreshTrackMarkerIcons();
+    void RefreshEngageTriggerIcons();
+    void HidePursuitBreakerIcon(const UMath::Vector3 &pos, float radius);
+
+    // struct GIcon *AllocIcon(enum Type iconType, const UMath::Vector3 &pos, float rotDeg, bool disposable);
+    // void FreeDisposableIcons(enum Type iconType);
+    void FreeIcon(struct GIcon *icon);
+    void FreeIconAt(unsigned int index);
+    int GatherVisibleIcons(struct GIcon **iconArray, IPlayer *player);
+    bool GetIsIconVisible(struct GIcon *icon);
+    void SpawnAllLoadedSectionIcons();
+    void SpawnSectionIcons(int section);
+    void UnspawnSectionIcons(int section);
+    void UnspawnAllIcons();
+    void FreeAllIcons();
+
+    unsigned int GetNumMilestones();
+    GMilestone *GetMilestone(unsigned int index);
+    GMilestone *GetFirstMilestone(bool availOnly, unsigned int binNumber);
+    GMilestone *GetNextMilestone(GMilestone *current, bool availOnly, unsigned int binNumber);
+    void AllocateMilestones();
+    void ReleaseMilestones();
+    void ResetMilestoneTrackingInfo();
+    void LoadMilestoneInfo(MilestoneTypeInfo *savedInfo, unsigned int count);
+    unsigned int SaveMilestoneInfo(MilestoneTypeInfo *dest);
+    void EnableBinMilestones(unsigned int binNumber);
+    void ResetMilestones();
+    unsigned int SaveMilestones(GMilestone *dest);
+    void LoadMilestones(GMilestone *src, unsigned int count);
+
+    unsigned int GetNumSpeedTraps();
+    GSpeedTrap *GetSpeedTrap(unsigned int index);
+    GSpeedTrap *GetFirstSpeedTrap(bool activeOnly, unsigned int binNumber);
+    GSpeedTrap *GetNextSpeedTrap(GSpeedTrap *current, bool activeOnly, unsigned int binNumber);
+    void AllocateSpeedTraps();
+    void ReleaseSpeedTraps();
+    void ResetSpeedTraps();
+    unsigned int SaveSpeedTraps(GSpeedTrap *dest);
+    void LoadSpeedTraps(GSpeedTrap *src, unsigned int count);
+
+    void RecursivePreloadCharacterCars(GRuntimeInstance *instance, bool forcePreload);
+    void PreloadStockCarsForActivity(GActivity *activity);
+    void ReserveStockCar(const char *carName);
+    bool StockCarsLoaded();
+    void ClearStockCars();
+    struct ISimable *GetStockCar(const char *carName);
+    struct ISimable *GetRandomEmergencyStockCar();
+    void ReleaseStockCar(struct ISimable *stockCar);
+
+    bool SetTimer(const char *name, float interval);
+    void KillTimer(const char *name);
+    void ResetTimers();
+    void UpdateTimers(float dT);
+    unsigned int SaveTimerInfo(struct SavedTimerInfo *saveInfo);
+    void LoadTimerInfo(struct SavedTimerInfo *saveInfo, unsigned int count);
+
+    unsigned int SaveSMSInfo(int *saveInfo);
+    void LoadSMSInfo(int *loadInfo, unsigned int count);
+    bool GetHasPendingSMS() const;
+    bool CanPlaySMS() const;
+    void AddSMS(int smsID);
+    void DispatchSMSMessage(int smsID);
+    void UpdatePendingSMS();
+    int PushSMSToInbox();
 
     static GManager &Get() {
         return *mObj;
@@ -104,7 +215,13 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
         return mStartFreeRoamPursuit;
     }
 
+    void TrackValue(const char *valueName, int value) {
+        TrackValue(valueName, static_cast<float>(value));
+    }
+
   private:
+    GManager(const char *vaultPackName);
+
     static GManager *mObj;
 
     const char *mVaultPackFileName;                 // offset 0x1C, size 0x4

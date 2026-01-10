@@ -33,7 +33,7 @@ struct SndBase : public AudioMemBase {
     static float m_fDeltaTime;
 
     SndBase();
-    virtual ~SndBase();
+    ~SndBase() override;
     virtual TypeInfo *GetTypeInfo(void) const;
     virtual char *GetTypeName() const;
     virtual int GetController(int Index) {

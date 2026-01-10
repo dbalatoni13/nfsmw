@@ -7,7 +7,7 @@
 
 #include <cstddef>
 
-#include "Speed/Indep/bWare/Inc/bMemory.hpp"
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 
 namespace UTL {
 namespace Std {

@@ -10,6 +10,7 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Input/IFeedBack.h"
 #include "Speed/Indep/Src/Input/ISteeringWheel.h"
+#include "Speed/Indep/Src/Interfaces/IFengHud.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 
 // TODO move?
@@ -41,7 +42,7 @@ class IPlayer : public UTL::COM::IUnknown, public UTL::Collections::ListableSet<
     virtual PlayerSettings *GetSettings() const;
     virtual void SetSettings(int fe_index);
     virtual int GetSettingsIndex() const;
-    virtual struct IHud *GetHud() const;
+    virtual IHud *GetHud() const;
     virtual void SetHud() const; // TODO fix params
     virtual void SetRenderPort(int renderport);
     virtual int GetRenderPort() const;

@@ -92,6 +92,10 @@ struct pursuitlevels : Instance {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
+    pursuitlevels(const pursuitlevels &src) : Instance(src) {
+        this->SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
     ~pursuitlevels() {}
 
     void Change(const Collection *c) {
@@ -106,8 +110,9 @@ struct pursuitlevels : Instance {
         return 0x551e22b3;
     }
 
-    const float &TimeInactiveFor911(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x06cb70d5, index));
+    // huh, no index?
+    const float &TimeInactiveFor911() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x06cb70d5, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -146,8 +151,8 @@ struct pursuitlevels : Instance {
         return *resultptr;
     }
 
-    const int &NumPatrolCars(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x24f7a1bc, index));
+    const int &NumPatrolCars() const {
+        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x24f7a1bc, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }

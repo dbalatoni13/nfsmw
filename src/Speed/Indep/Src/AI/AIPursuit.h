@@ -5,7 +5,10 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitlevels.h"
+
 bool IsValidPursuitCarName(const char *name);
 const char *GetRandomValidCopCar();
+Attrib::Gen::pursuitlevels *GetGlobalPursuitLevelAttrib();
 
 #endif

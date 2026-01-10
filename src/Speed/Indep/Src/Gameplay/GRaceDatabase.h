@@ -39,6 +39,10 @@ class GRaceDatabase {
         return *mObj;
     }
 
+    static bool Exists() {
+        return mObj != nullptr;
+    }
+
     GRaceParameters *GetRaceFromName(const char *name) {
         return GetRaceFromHash(Attrib::StringHash32(name));
     }
@@ -51,7 +55,7 @@ class GRaceDatabase {
     struct GRaceCustom *mRaceCustom[4];      // offset 0x10, size 0x10
     unsigned int mBinCount;                  // offset 0x20, size 0x4
     struct GRaceBin *mBins;                  // offset 0x24, size 0x4
-    struct Class *mGameplayClass;            // offset 0x28, size 0x4
+    Attrib::Class *mGameplayClass;           // offset 0x28, size 0x4
     struct GRaceCustom *mStartupRace;        // offset 0x2C, size 0x4
     Context mStartupRaceContext;             // offset 0x30, size 0x4
     unsigned int mNumInitialUnlocks;         // offset 0x34, size 0x4
