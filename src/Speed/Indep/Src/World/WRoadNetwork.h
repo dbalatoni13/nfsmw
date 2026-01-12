@@ -174,6 +174,7 @@ class WRoadNav {
     bool IsPointInCookieTrail(const UMath::Vector3 &position_3d, float margin);
     bool IsSegmentInCookieTrail(int segment_number, bool use_whole_path);
     bool IsSegmentInPath(int segment_number);
+    void PullOver();
 
     bool IsValid() {
         return fValid;
@@ -205,6 +206,14 @@ class WRoadNav {
 
     void SetNavType(ENavType type) {
         fNavType = type;
+    }
+
+    void SetLaneType(ELaneType type) {
+        fLaneType = type;
+    }
+
+    int IsOccludedByAvoidable() const {
+        return bCookieTrail ? nAvoidableOcclusion : 0;
     }
 
   private:                                           // total size: 0x2F0

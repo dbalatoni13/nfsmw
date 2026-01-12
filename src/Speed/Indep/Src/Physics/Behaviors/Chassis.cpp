@@ -179,16 +179,16 @@ Chassis::SleepState Chassis::DoSleep(const Chassis::State &state) {
 }
 
 void Chassis::OnBehaviorChange(const UCrc32 &mechanic) {
-    if (mechanic == UCrc32(BEHAVIOR_MECHANIC_ENGINE)) {
+    if (mechanic == BEHAVIOR_MECHANIC_ENGINE) {
         GetOwner()->QueryInterface(&mTransmission);
         GetOwner()->QueryInterface(&mEngine);
         GetOwner()->QueryInterface(&mDragTrany);
         GetOwner()->QueryInterface(&mEngineDamage);
-    } else if (mechanic == UCrc32(BEHAVIOR_MECHANIC_INPUT)) {
+    } else if (mechanic == BEHAVIOR_MECHANIC_INPUT) {
         GetOwner()->QueryInterface(&mInput);
-    } else if (mechanic == UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY)) {
+    } else if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {
         GetOwner()->QueryInterface(&mRBComplex);
-    } else if (mechanic == UCrc32(BEHAVIOR_MECHANIC_DAMAGE)) {
+    } else if (mechanic == BEHAVIOR_MECHANIC_DAMAGE) {
         GetOwner()->QueryInterface(&mSpikeDamage);
     }
 }

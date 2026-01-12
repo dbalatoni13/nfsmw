@@ -19,9 +19,9 @@
 
 // TODO move
 enum eLaneSelection {
-    SELECT_VALID_LANE = 2,
-    SELECT_CURRENT_LANE = 1,
     SELECT_CENTER_LANE = 0,
+    SELECT_CURRENT_LANE = 1,
+    SELECT_VALID_LANE = 2,
 };
 
 struct IVehicle;
@@ -92,8 +92,8 @@ class IVehicleAI : public UTL::COM::IUnknown {
     virtual ISimable *GetSimable() const;
     virtual IVehicle *GetVehicle() const;
     virtual const struct AISplinePath *GetSplinePath();
-    virtual void SetReverse(float time);
-    virtual bool GetReverse();
+    virtual void SetReverseOverride(float time);
+    virtual bool GetReverseOverride();
     virtual unsigned int GetDriveFlags() const;
     virtual void ClearDriveFlags();
     virtual void DoReverse();

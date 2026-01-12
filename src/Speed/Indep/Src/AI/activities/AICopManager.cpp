@@ -153,7 +153,7 @@ AICopManager::~AICopManager() {
 }
 
 Sim::IActivity *AICopManager::Construct(Sim::Param params) {
-    return new AICopManager(Sim::Param(params));
+    return new AICopManager(params);
 }
 
 bool AICopManager::IsPendingSupportVehicle(IVehicle *ivehicle) const {
@@ -1163,7 +1163,7 @@ void AICopManager::CommitPursuitDetails(IPursuit *ipursuit) {
     AITarget *target = ipursuit->GetTarget();
     if (target) {
         ISimable *simable = target->GetSimable();
-        if (simable != 0) {
+        if (simable) {
             IPlayer *iplayer = simable->GetPlayer();
             if (iplayer) {
                 int plrIndex = iplayer->GetSettingsIndex();
@@ -1212,7 +1212,7 @@ bool AICopManager::IsCopRequestPending() {
     if (!VehicleSpawningEnabled(false)) {
         return false;
     }
-    if (!mSpawnRequests.empty() || mIPursuitWithLatchedRoadblockReq != 0) {
+    if (!mSpawnRequests.empty() || mIPursuitWithLatchedRoadblockReq) {
         return true;
     }
 
@@ -1299,7 +1299,7 @@ void AICopManager::UpdatePursuits() {
 
             bool bAllowStatsToAccumulate = false;
             if (!GRaceStatus::Exists() || GRaceStatus::Get().GetPlayMode() != GRaceStatus::kPlayMode_Racing ||
-                (GRaceStatus::Get().GetRaceParameters() != 0 && GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace())) {
+                (GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace())) {
                 bAllowStatsToAccumulate = true;
             }
 
@@ -1697,8 +1697,8 @@ void AICopManager::ResetCopsForRestart(bool release) {
 void AICopManager::LockoutCops(bool lockout) {
     if (lockout == true) {
         mLockoutTimer = 60.0f;
-        if (mSpeech != 0 && (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming ||
-                             GRaceDatabase::Exists() && !GRaceDatabase::Get().GetStartupRace())) {
+        if (mSpeech && (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming ||
+                        GRaceDatabase::Exists() && !GRaceDatabase::Get().GetStartupRace())) {
             SoundAI *speech = SoundAI::Get();
             Attrib::Gen::pursuitlevels pl(speech->GetPursuitSpecs());
             if (pl.IsValid()) {

@@ -62,6 +62,8 @@ template <typename T> class Grid {
         Grid<T> &mGrid; // offset 0x30, size 0x4
     };
 
+    typedef typename Axis::Node Node;
+
     ~Grid();
 
     Grid(T &owner, const struct Vector3 &position, float radius) {
@@ -80,6 +82,9 @@ template <typename T> class Grid {
         mX.SetPosition(position.x, radius);
         mZ.SetPosition(position.z, radius);
     }
+
+    static Node *mRootX;
+    static Node *mRootZ;
 
   private:
     Axis mX;   // offset 0x0, size 0x34

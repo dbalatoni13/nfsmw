@@ -391,7 +391,7 @@ inline unsigned int Max(const unsigned int a, const unsigned int b) {
 }
 
 #ifdef CLANGD_DAMNIT
-inline std::size_t Max(const std::size_t a, const std::size_t b) {
+inline size_t Max(const size_t a, const size_t b) {
     return a < b ? b : a;
 }
 #endif

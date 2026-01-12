@@ -171,7 +171,11 @@ def process_file(filename, strings_file, outdirectory):
 
             out += "};\n\n"
 
-            out += f"""void operator delete(void *ptr, size_t bytes) {{
+            out += f"""void *operator new(size_t bytes) {{
+    Attrib::Alloc(bytes, "{name}");
+}}
+            
+void operator delete(void *ptr, size_t bytes) {{
     Attrib::Free(ptr, bytes, "{name}");
 }}
 

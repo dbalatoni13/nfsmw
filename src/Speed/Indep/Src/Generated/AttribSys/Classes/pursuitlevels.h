@@ -79,6 +79,10 @@ struct pursuitlevels : Instance {
         float SearchModeRoadblockRadius;   // offset 0xc0, size 0x4
     };
 
+    void *operator new(size_t bytes) {
+        return Attrib::Alloc(bytes, "pursuitlevels");
+    }
+
     void operator delete(void *ptr, size_t bytes) {
         Attrib::Free(ptr, bytes, "pursuitlevels");
     }
