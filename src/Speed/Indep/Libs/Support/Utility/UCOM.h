@@ -11,11 +11,7 @@
 
 typedef void *HINTERFACE;
 
-struct _type_UComObject {
-    const char *name() {
-        return "UComObject";
-    }
-};
+DECLARE_VECTOR_TYPE(UComObject);
 
 namespace UTL {
 namespace COM {

@@ -10,17 +10,8 @@
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Sim/SimAttachable.h"
 
-struct _type_ID_POMechanics {
-    const char *name() {
-        return "ID_POMechanics";
-    };
-};
-
-struct _type_ID_POBehaviors {
-    const char *name() {
-        return "ID_POBehaviors";
-    };
-};
+DECLARE_VECTOR_TYPE(ID_POMechanics);
+DECLARE_VECTOR_TYPE(ID_POBehaviors);
 
 class PhysicsObject : public Sim::Object,
                       public ISimable,

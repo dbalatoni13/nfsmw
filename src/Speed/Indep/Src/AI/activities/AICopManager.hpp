@@ -18,23 +18,9 @@
 #include "Speed/Indep/Src/Misc/Hermes.h"
 #include "Speed/Indep/Src/Sim/SimActivity.h"
 
-struct _type_AICopManagerSpawnRequests {
-    const char *name() {
-        return "AICopManagerSpawnRequests";
-    };
-};
-
-struct _type_AICopManagerPursuits {
-    const char *name() {
-        return "AICopManagerPursuits";
-    };
-};
-
-struct _type_AICopManagerRoadBlocks {
-    const char *name() {
-        return "AICopManagerRoadBlocks";
-    };
-};
+DECLARE_VECTOR_TYPE(AICopManagerSpawnRequests);
+DECLARE_VECTOR_TYPE(AICopManagerPursuits);
+DECLARE_VECTOR_TYPE(AICopManagerRoadBlocks);
 
 // total size: 0x130
 class AICopManager : public Sim::Activity, public AISpawnManager, public ICopMgr, public IVehicleCache, public Debugable {
@@ -113,12 +99,16 @@ class AICopManager : public Sim::Activity, public AISpawnManager, public ICopMgr
     ~AICopManager() override;
 
     // IVehicleCache
-    // const char *GetCacheName() const override {}
+    const char *GetCacheName() const override {
+        return "AICopManager";
+    }
     eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override;
     void OnRemovedVehicleCache(IVehicle *ivehicle) override;
 
     // ICopMgr
-    // float GetLockoutTimeRemaining() const override {}
+    float GetLockoutTimeRemaining() const override {
+        return mLockoutTimer;
+    }
     bool VehicleSpawningEnabled(bool isdespawn) override;
     void SpawnCop(UMath::Vector3 &InitialPos, UMath::Vector3 &InitialVec, const char *VehicleName, bool InPursuit, bool RoadBlock) override;
     bool IsCopSpawnPending() const override;

@@ -8,6 +8,7 @@
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 // total size: 0x48
 class AIActionTraffic : public AIAction, public Debugable, public Sim::Collision::IListener {
@@ -146,6 +147,13 @@ void AIActionTraffic::OnAccident(HSIMABLE hobject, const UMath::Vector3 &speed, 
     }
 }
 
+void AIActionTraffic::OnCollision(const COLLISION_INFO &cinfo) {
+    if (GetVehicle()->GetDriverClass() != DRIVER_COP && cinfo.type == COLLISION_INFO::OBJECT) {
+        OnAccident(cinfo.objA, cinfo.closingVel, cinfo.position);
+        OnAccident(cinfo.objB, cinfo.closingVel, cinfo.position);
+    }
+}
+
 bool AIActionTraffic::IsFinished() {
     if (GetAI() && GetAI()->GetPursuit()) {
         if (GetAI()->GetPursuit()->IsPerpInSight()) {
@@ -192,9 +200,14 @@ void AIActionTraffic::BeginAction(float dT) {
 
 void AIActionTraffic::FinishAction(float dT) {}
 
+bool AIActionTraffic::ShouldPullOver(const UMath::Vector3 &my_position, WRoadNav *road_nav) {
+    return false;
+}
+
 void AIActionTraffic::Update(float dT) {
     WRoadNav *road_nav = GetAI()->GetDriveToNav();
     IRigidBody *irb = GetOwner()->GetRigidBody();
+
     float current_speed = irb->GetSpeed();
     float t = UMath::Ramp(current_speed, 0.0f, 25.0f);
     if (road_nav->IsOccludedByAvoidable() != 0) {
@@ -203,6 +216,7 @@ void AIActionTraffic::Update(float dT) {
     float lookAheadDistance = UMath::Lerp(10.0f, 30.0f, t);
     lookAheadDistance += current_speed * dT;
     lookAheadDistance += irb->GetRadius();
+
     bool do_driving = true;
 
     switch (nPullOverState) {
@@ -280,3 +294,11 @@ void AIActionTraffic::Update(float dT) {
 }
 
 void AIActionTraffic::OnDebugDraw() {}
+
+void AIActionTraffic::MessageSetSpeed(const MSetTrafficSpeed &message) {
+    if (GetVehicle() && message.GetID() == GetVehicle()->GetSimable()->GetWorldID()) {
+        mTargetSpeedDefault = MPH2MPS(message.GetSpeedDefault());
+        mTargetSpeedHighway = MPH2MPS(message.GetSpeedHighway());
+        mFixedSpeed = message.GetFixSpeed() != 0;
+    }
+}

@@ -8,18 +8,18 @@
 // total size: 0x4
 struct CAnimChooser {
     enum eType {
-        MaxTypes = 5,
-        Moment = 4,
-        World = 3,
-        Ending = 2,
-        Arrest = 1,
         Intro = 0,
+        Arrest = 1,
+        Ending = 2,
+        World = 3,
+        Moment = 4,
+        MaxTypes = 5,
     };
     enum eTrackDirection {
-        MaxTrackDirections = 3,
-        BackwardDir = 2,
-        ForwardDir = 1,
         NoDir = 0,
+        ForwardDir = 1,
+        BackwardDir = 2,
+        MaxTrackDirections = 3,
     };
 };
 

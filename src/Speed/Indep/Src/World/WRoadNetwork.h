@@ -188,6 +188,10 @@ class WRoadNav {
         return fForwardVector;
     }
 
+    const NavCookie &GetCurrentCookie() {
+        return mCurrentCookie;
+    }
+
     void SetRaceFilter(bool b) {
         bRaceFilter = b && WRoadNetwork::Get().IsRaceFilterValid();
     }

@@ -5,17 +5,12 @@
 #pragma once
 #endif
 
-#include "types.h"
-
 #include "Speed/Indep/Libs/Support/Utility/UTLVector.h"
+#include "UStandard.h"
 
 #include <algorithm>
 
-struct _type_UContainer {
-    const char *name() {
-        return "UContainer";
-    }
-};
+DECLARE_VECTOR_TYPE(UContainer);
 
 namespace UTL {
 namespace Collections {

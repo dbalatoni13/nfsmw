@@ -1,11 +1,11 @@
 #ifndef AI_AIACTION_H
 #define AI_AIACTION_H
 
-#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Sim/SimObject.h"
@@ -84,6 +84,18 @@ struct AIAction : public Sim::Object, public UTL::COM::Factory<AIActionParams *,
     IVehicle *mVehicle;            // offset 0x3C, size 0x4
     IVehicleAI *mAI;               // offset 0x40, size 0x4
     float mScore;                  // offset 0x44, size 0x4
+};
+
+// total size: 0x4
+class performance_limiter {
+  public:
+    void init(float speed);
+    void update(float speed, float maxspeed, float maxaccel, float dt);
+
+    inline float get_speed_limit() {}
+
+  private:
+    float speed_limit; // offset 0x0, size 0x4
 };
 
 #endif

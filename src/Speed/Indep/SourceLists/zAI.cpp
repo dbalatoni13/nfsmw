@@ -11,3 +11,5 @@
 #include "Speed/Indep/Src/AI/Actions/AIActionGetUnstuck.cpp"
 
 #include "Speed/Indep/Src/AI/Actions/AIActionTraffic.cpp"
+
+#include "Speed/Indep/Src/AI/Actions/AIActionPursuitOffRoad.cpp"

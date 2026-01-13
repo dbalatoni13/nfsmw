@@ -19,30 +19,18 @@ struct copPair {
     struct EAXCop *cop; // offset 0x4, size 0x4
 };
 
-struct _type_copMap {
-    const char *name() {
-        return "copMap";
-    }
-};
+DECLARE_VECTOR_TYPE(copMap);
 
 class copMap : public UTL::Std::vector<copPair, _type_copMap> {
   public:
     copMap(int size) {}
 };
 
-struct _type_copList {
-    const char *name() {
-        return "copList";
-    }
-};
+DECLARE_VECTOR_TYPE(copList);
 
 class copList : public UTL::Std::vector<EAXCop *, _type_copList>, public AudioMemBase {};
 
-struct _type_voiceIDs {
-    const char *name() {
-        return "voiceIDs";
-    }
-};
+DECLARE_VECTOR_TYPE(voiceIDs);
 
 struct voiceIDs : public UTL::Std::vector<int, _type_voiceIDs> {};
 

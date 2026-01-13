@@ -12,11 +12,7 @@
 #include "Speed/Indep/Src/Interfaces/SimModels/IModel.h"
 #include "Speed/Indep/Src/Sim/SimEffect.h"
 
-struct _type_SimModelChildren {
-    const char *name() {
-        return "SimModelChildren";
-    }
-};
+DECLARE_VECTOR_TYPE(SimModelChildren);
 
 namespace Sim {
 

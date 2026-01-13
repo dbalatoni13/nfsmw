@@ -254,6 +254,10 @@ inline float Dot(const Vector3 &a, const Vector3 &b) {
 #endif
 }
 
+inline float Dot(const Vector2 &a, const Vector2 &b) {
+    return a.x * b.x + a.y * b.y;
+}
+
 inline void Dot(const Vector3 &a, const Matrix4 &b, Vector3 &r) {
 #ifdef EA_PLATFORM_XENON
     r.x = Dot(a, UMath::Vector4To3(b.v0));

@@ -8,17 +8,8 @@
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/Lua/source/lua.h"
 
-struct _type_LuaLargeFreeBlock {
-    const char *name() {
-        return "LuaLargeFreeBlock";
-    };
-};
-
-struct _type_LuaEmergencyAlloc {
-    const char *name() {
-        return "LuaEmergencyAlloc";
-    };
-};
+DECLARE_VECTOR_TYPE(LuaLargeFreeBlock);
+DECLARE_VECTOR_TYPE(LuaEmergencyAlloc);
 
 // total size: 0x7C
 class LuaRuntime {

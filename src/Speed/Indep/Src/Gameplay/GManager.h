@@ -14,23 +14,9 @@
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
 #include "Speed/Indep/Src/Misc/bFile.hpp"
 
-struct _type_ID_StockCarMap {
-    const char *name() {
-        return "ID_StockCarMap";
-    }
-};
-
-struct _type_ID_MilestoneInfoMap {
-    const char *name() {
-        return "ID_MilestoneInfoMap";
-    }
-};
-
-struct _type_ID_PendingSMSList {
-    const char *name() {
-        return "ID_PendingSMSList";
-    }
-};
+DECLARE_VECTOR_TYPE(ID_StockCarMap);
+DECLARE_VECTOR_TYPE(ID_MilestoneInfoMap);
+DECLARE_VECTOR_TYPE(ID_PendingSMSList);
 
 // total size: 0x8
 struct ObjectStateBlockHeader {
@@ -39,17 +25,8 @@ struct ObjectStateBlockHeader {
     unsigned int mSize; // offset 0x4, size 0x4
 };
 
-struct _type_ID_ObjectStateMap {
-    const char *name() {
-        return "ID_ObjectStateMap";
-    }
-};
-
-struct _type_ID_AttribKeyList {
-    const char *name() {
-        return "ID_ObjectStateMap";
-    }
-};
+DECLARE_VECTOR_TYPE(ID_ObjectStateMap);
+DECLARE_VECTOR_TYPE(ID_AttribKeyList);
 
 typedef UTL::Std::vector<GCharacter *, _type_ID_GCharacterList> GCharacterList;
 typedef UTL::Std::map<unsigned int, MilestoneTypeInfo, _type_ID_MilestoneInfoMap> MilestoneInfoMap;

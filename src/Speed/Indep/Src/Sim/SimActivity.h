@@ -26,16 +26,14 @@ class Activity : public Sim::Object, public UTL::Collections::GarbageNode<Sim::A
     void Release() override;
     bool Attach(IUnknown *object) override {
         if (mAttachments) {
-            mAttachments->Attach(object);
-            return true;
+            return mAttachments->Attach(object);
         }
         return false;
     }
 
     bool Detach(IUnknown *object) override {
         if (mAttachments) {
-            mAttachments->Detach(object);
-            return true;
+            return mAttachments->Detach(object);
         }
         return false;
     }

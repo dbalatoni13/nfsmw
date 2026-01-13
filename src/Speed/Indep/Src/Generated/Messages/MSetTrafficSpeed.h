@@ -28,17 +28,29 @@ class MSetTrafficSpeed : public Hermes::Message {
 
     ~MSetTrafficSpeed() {}
 
-    // float GetSpeedDefault() const {}
+    float GetSpeedDefault() const {
+        return fSpeedDefault;
+    }
 
-    // void SetSpeedDefault(float _SpeedDefault) {}
+    void SetSpeedDefault(float _SpeedDefault) {
+        fSpeedDefault = _SpeedDefault;
+    }
 
-    // float GetSpeedHighway() const {}
+    float GetSpeedHighway() const {
+        return fSpeedHighway;
+    }
 
-    // void SetSpeedHighway(float _SpeedHighway) {}
+    void SetSpeedHighway(float _SpeedHighway) {
+        fSpeedHighway = _SpeedHighway;
+    }
 
-    // unsigned int GetFixSpeed() const {}
+    unsigned int GetFixSpeed() const {
+        return fFixSpeed;
+    }
 
-    // void SetFixSpeed(unsigned int _FixSpeed) {}
+    void SetFixSpeed(unsigned int _FixSpeed) {
+        fFixSpeed = _FixSpeed;
+    }
 
     // int PostMessage_LuaBinding(struct lua_State *luaState) {
     //     // Local variables

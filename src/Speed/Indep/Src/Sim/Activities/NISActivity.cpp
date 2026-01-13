@@ -87,6 +87,14 @@ class NISActivity : public Sim::Activity, public INIS, public EventSequencer::IC
 
     static void NISStreamTimeCallback(unsigned int animid, int mselapsed);
 
+    static Sim::IActivity *Construct(Sim::Param params) {
+        INIS *nis = INIS::Get();
+        if (nis) {
+            return nullptr;
+        }
+        return new NISActivity();
+    }
+
     NISActivity();
 
     // Virtual functions
@@ -100,7 +108,11 @@ class NISActivity : public Sim::Activity, public INIS, public EventSequencer::IC
     void StartLocationInRenderCoords(const bVector3 &position, unsigned short direction) override;
     const UMath::Vector3 *GetStartLocation() override;
     const UMath::Vector3 *GetStartCameraLocation() override;
-    CAnimChooser::eType GetType() override;
+
+    CAnimChooser::eType GetType() override {
+        return mNISType;
+    }
+
     void SetPreMovie(const char *movieName) override;
     void SetPostMovie(const char *movieName) override;
     void ResetEvents(float SetTime) override;
@@ -109,16 +121,36 @@ class NISActivity : public Sim::Activity, public INIS, public EventSequencer::IC
     void ServiceLoads() override;
     ICEScene *GetScene() const override;
     CAnimScene *GetAnimScene() const override;
-    bool IsLoaded() const override;
-    bool IsPlaying() const override;
-    bool InMovie() const override;
-    void StartPlayingNow() override;
+
+    bool IsLoaded() const override {
+        return mState > NISACTIVITY_LOADING;
+    }
+
+    bool IsPlaying() const override {
+        return mState == NISACTIVITY_PLAYING;
+    }
+
+    bool InMovie() const override {
+        return mState == NISACTIVITY_PRE_MOVIE || mState == NISACTIVITY_POST_MOVIE;
+    }
+
+    void StartPlayingNow() override {
+        if (IsLoaded() && !mStartPlayingNow) {
+            mStartPlayingNow = true;
+        }
+    }
+
     void Pause() override;
     void UnPause() override;
     void Release() override;
 
     // IContext
     bool SetDynamicData(const EventSequencer::System *system, EventDynamicData *data) override;
+
+    // IVehicleCache
+    const char *GetCacheName() const override {
+        return "NISActivity";
+    }
 
     eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override;
     void OnRemovedVehicleCache(IVehicle *ivehicle) override;
@@ -131,7 +163,10 @@ class NISActivity : public Sim::Activity, public INIS, public EventSequencer::IC
 
     // INIS
     bool SkipOverNIS() override;
-    bool IsWorldMomement() const override;
+
+    bool IsWorldMomement() const override {
+        return mNISType == CAnimChooser::Moment;
+    }
 
   private:
     void OnMovieComplete(const MNotifyMovieFinished &message);

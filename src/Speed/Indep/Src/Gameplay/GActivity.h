@@ -9,17 +9,8 @@
 #include "GState.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 
-struct _type_ID_GHandlerVector {
-    const char *name() {
-        return "ID_GHandlerVector";
-    };
-};
-
-struct _type_ID_StateToVectors {
-    const char *name() {
-        return "ID_StateToVectors";
-    };
-};
+DECLARE_VECTOR_TYPE(ID_GHandlerVector);
+DECLARE_VECTOR_TYPE(ID_StateToVectors);
 
 typedef UTL::Std::map<GState *, UTL::Std::vector<GHandler *, _type_ID_GHandlerVector>, _type_ID_StateToVectors> StateToHandlers;
 

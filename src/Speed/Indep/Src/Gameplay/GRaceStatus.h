@@ -64,11 +64,7 @@ struct GRacerInfo {
     bool mDNF;                                    // offset 0x1A4, size 0x1
 };
 
-struct _type_ID_GRaceStatusTriggerList {
-    const char *name() {
-        return "ID_GRaceStatusTriggerList";
-    }
-};
+DECLARE_VECTOR_TYPE(ID_GRaceStatusTriggerList);
 
 // total size: 0x14
 class GRaceParameters {

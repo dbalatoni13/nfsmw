@@ -12,29 +12,19 @@
 
 #include "UTLAllocator.h"
 
-struct _type_vector {
-    const char *name() {
-        return "vector";
-    };
+// clang-format off
+#define DECLARE_VECTOR_TYPE(Type)\
+struct _type_##Type { \
+    const char* name() {\
+        return #Type; \
+    }\
 };
+// clang-format on
 
-struct _type_list {
-    const char *name() {
-        return "list";
-    }
-};
-
-struct _type_map {
-    const char *name() {
-        return "map";
-    };
-};
-
-struct _type_set {
-    const char *name() {
-        return "set";
-    }
-};
+DECLARE_VECTOR_TYPE(vector);
+DECLARE_VECTOR_TYPE(list);
+DECLARE_VECTOR_TYPE(map);
+DECLARE_VECTOR_TYPE(set);
 
 namespace UTL {
 namespace Std {

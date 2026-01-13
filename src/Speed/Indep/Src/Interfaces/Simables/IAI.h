@@ -26,17 +26,8 @@ enum eLaneSelection {
 
 struct IVehicle;
 
-struct _type_IRoadBlockVehicles {
-    const char *name() {
-        return "IRoadBlockVehicles";
-    }
-};
-
-struct _type_IRoadBlockSmackables {
-    const char *name() {
-        return "IRoadBlockSmackables";
-    }
-};
+DECLARE_VECTOR_TYPE(IRoadBlockVehicles);
+DECLARE_VECTOR_TYPE(IRoadBlockSmackables);
 
 struct IPursuit;
 

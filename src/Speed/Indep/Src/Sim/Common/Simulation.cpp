@@ -42,17 +42,8 @@
 #include <algorithm>
 #include <vector>
 
-struct _type_CollisionListener {
-    const char *name() {
-        return "CollisionListener";
-    }
-};
-
-struct _type_CollisionParticipant {
-    const char *name() {
-        return "CollisionParticipant";
-    }
-};
+DECLARE_VECTOR_TYPE(CollisionListener);
+DECLARE_VECTOR_TYPE(CollisionParticipant);
 
 class SimSystem;
 

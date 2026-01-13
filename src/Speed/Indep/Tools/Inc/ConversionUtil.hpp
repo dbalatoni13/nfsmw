@@ -92,7 +92,11 @@ inline float FTLB2HP(const float _ftlb, const float _rpm) {
 }
 
 inline Hp NM2HP(const Nm _nm, const Rpm _rpm) {
-    return _nm * 0.7376f * _rpm * 0.00019040366f;
+    return _nm * 0.7376f * _rpm / 5252.0f;
+}
+
+inline Mps KPH2MPS(Kph x) {
+    return x / 3.6f;
 }
 
 #endif

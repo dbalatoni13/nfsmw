@@ -28,10 +28,6 @@ class GCharacter : public GRuntimeInstance, public UTL::COM::Object, public IAtt
     Sim::Attachments *mAttachments;     // offset 0x7C, size 0x4
 };
 
-struct _type_ID_GCharacterList {
-    const char *name() {
-        return "ID_GCharacterList";
-    }
-};
+DECLARE_VECTOR_TYPE(ID_GCharacterList);
 
 #endif

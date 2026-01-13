@@ -9,17 +9,8 @@
 #include "Speed/Indep/Src/Gameplay/GActivity.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
 
-struct _type_ID_LuaActivityList {
-    const char *name() {
-        return "ID_LuaActivityList";
-    };
-};
-
-struct _type_ID_LuaMessageSubscriberMap {
-    const char *name() {
-        return "ID_LuaMessageSubscriberMap";
-    };
-};
+DECLARE_VECTOR_TYPE(ID_LuaActivityList);
+DECLARE_VECTOR_TYPE(ID_LuaMessageSubscriberMap);
 
 // total size: 0x20
 class LuaPostOffice {

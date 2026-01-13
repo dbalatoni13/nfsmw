@@ -16,11 +16,7 @@
 
 namespace Hermes {
 
-struct _type_ID_HermesHandlerVector {
-    const char *name() {
-        return "ID_HermesHandlerVector";
-    };
-};
+DECLARE_VECTOR_TYPE(ID_HermesHandlerVector);
 
 // total size: 0x10
 class Message {

@@ -27,17 +27,8 @@ enum eTrafficDensity {
     eTRAFFICDENSITY_OFF = 0,
 };
 
-struct _type_TrafficList {
-    const char *name() {
-        return "TrafficList";
-    }
-};
-
-struct _type_AITrafficManager_PatternMap {
-    const char *name() {
-        return "AITrafficManager::PatternMap";
-    }
-};
+DECLARE_VECTOR_TYPE(TrafficList);
+DECLARE_VECTOR_TYPE(AITrafficManager_PatternMap);
 
 // total size: 0x3C4
 class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehicleCache, public Debugable {

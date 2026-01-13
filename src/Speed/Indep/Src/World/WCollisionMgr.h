@@ -5,11 +5,10 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Libs/Support/Utility/UTLVector.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "WCollision.h"
 #include "WCollisionTri.h"
-#include "types.h"
 
 class WCollisionMgr {
   public:
@@ -51,13 +50,41 @@ class WCollisionMgr {
         virtual bool OnWCollide(const WorldCollisionInfo &cInfo, const bVector3 &cPoint, void *userdata);
     };
 
-    unsigned int fSurfaceExclusionMask; // offset 0x0, size 0x4
-    unsigned int fPrimitiveMask;        // offset 0x4, size 0x4
+    typedef UTL::Vector<unsigned int, 16> NodeIndexList;
+    // typedef FastVector<unsigned int, 16> FastNodeIndexList;
+    // typedef FastVector<unsigned int, 16> LocalNodeIndexList;
 
+    bool FindFaceInTriStrip(const UMath::Vector3 &pt, const struct WCollisionStripSphere *sp, const struct WCollisionStrip *strip,
+                            WCollisionTri &retFace);
+    bool FindFaceInTriStrip(const UMath::Matrix4 &vectorMat, const UMath::Vector3 &pt, const WCollisionStripSphere *sp, const WCollisionStrip *strip,
+                            float &faceY, WCollisionTri &retFace);
+    bool FindFaceInCInst(const UMath::Vector3 &pt, const WCollisionInstance &cInst, WCollisionTri &retFace, float &retDist);
+    bool FindFaceInCInst(const UMath::Matrix4 &vectorMat, const UMath::Vector3 &endPt, const WCollisionInstance &cInst, WCollisionTri &retFace,
+                         float &retDist);
+    bool GetWorldHeightAtPoint(const UMath::Vector3 &pt, float &height, UMath::Vector3 *normal);
     bool GetWorldHeightAtPointRigorous(const UMath::Vector3 &pt, float &height, UMath::Vector3 *normal);
+    int CheckHitWorld(const UMath::Vector4 *inputSeg, WorldCollisionInfo &cInfo, unsigned int primMask);
+    bool GetWorldNormal(const WCollisionInstanceCacheList *instList, const WCollisionBarrierList *barrierList, const UMath::Vector4 *seg,
+                        WorldCollisionInfo &cInfo);
+    void ClosestCollisionInfo(const UMath::Vector4 *seg, const WorldCollisionInfo &c1, const WorldCollisionInfo &c2, WorldCollisionInfo &result);
+    void GetInstanceListGuts(const NodeIndexList &nodeInds, WCollisionInstanceCacheList &instList, const UMath::Vector3 &inPt, float radius,
+                             bool cylinderTest);
+    void GetInstanceList(WCollisionInstanceCacheList &instList, const UMath::Vector3 &pt, float radius, bool cylinderTest);
+    void GetInstanceListGuts(const NodeIndexList &nodeInds, WCollisionInstanceCacheList &instList, const UMath::Vector4 *seg);
+    void GetInstanceList(WCollisionInstanceCacheList &instList, const UMath::Vector4 *seg);
+    void GetObjectListGuts(const NodeIndexList &nodeInds, WCollisionObjectList &obbObjectList, const UMath::Vector3 &pt, float radius);
+    void GetObjectList(WCollisionObjectList &obbObjectList, const UMath::Vector4 *seg);
+    void GetObjectList(WCollisionObjectList &obbObjectList, const UMath::Vector3 &pt, float radius);
+    void BuildGeomFromWorldObb(const WCollisionObject &object, float dt, Dynamics::Collision::Geometry &geom, UMath::Vector3 &vel, WSurface &surface);
     bool Collide(Dynamics::Collision::Geometry *geom, const WCollisionBarrierList *barrierList, ICollisionHandler *results, void *userdata,
                  bool force_single_sided);
     bool Collide(Dynamics::Collision::Geometry *geom, const WCollisionInstanceCacheList *instanceList, ICollisionHandler *results, void *userdata);
+    bool GetClosestIntersectingBarrier(const WCollisionBarrierList &barrierList, const UMath::Vector4 *testSegment, WorldCollisionInfo &cInfo);
+    bool GetBarrierNormal(const WCollisionInstanceCacheList &instList, const UMath::Vector4 *testSegment, WorldCollisionInfo &cInfo);
+    void GetBarrierList(WCollisionBarrierList &barrierList, const WCollisionInstanceCacheList &instList, const UMath::Vector3 &pos, float radius);
+    void GetBarrierList(WCollisionBarrierList &barrierList, const UMath::Vector3 &pos, float radius);
+    bool GetBarrierNormal(const WCollisionBarrierList &barrierList, const UMath::Vector4 *testSegment, WorldCollisionInfo &cInfo);
+    void GetTriList(const WCollisionInstanceCacheList &instList, const UMath::Vector3 &pt, float radius, WCollisionTriList &triList);
 
     WCollisionMgr(unsigned int surfaceExclMask, unsigned int primitiveExclMask) {
         this->fSurfaceExclusionMask = surfaceExclMask;
@@ -65,6 +92,12 @@ class WCollisionMgr {
     }
 
     ~WCollisionMgr() {}
+
+  private:
+    static unsigned short fIterCount;
+
+    unsigned int fSurfaceExclusionMask; // offset 0x0, size 0x4
+    unsigned int fPrimitiveMask;        // offset 0x4, size 0x4
 };
 
 #endif
