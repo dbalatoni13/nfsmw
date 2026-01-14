@@ -279,8 +279,11 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSMutex.c:
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSReboot.c:
 	.text       start:0x803268D8 end:0x80326948
 
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/pad/PadClamp.c:
+	.text       start:0x80330468 end:0x80331A64
+
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/pad/Pad.c:
-	.text       start:0x80330468 end:0x80332134
+	.text       start:0x80331A64 end:0x80332134
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ai.c:
 	.text       start:0x80332134 end:0x80332A18
@@ -366,21 +369,21 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SIBios.c:
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISamplingRate.c:
 	.text       start:0x803452A8 end:0x803453B0
 
-snd/source/library/cmn/SNDI_findprime.c:
+Packages/snd/source/library/cmn/SNDI_findprime.c:
 	.text       start:0x80372DD4 end:0x80372ED0
 
-snd/source/library/cmn/sbpatinf.c:
+Packages/snd/source/library/cmn/sbpatinf.c:
 	.text       start:0x803A30AC end:0x803A3190
 
-snd/source/library/cmn/sgetpvol.c:
+Packages/snd/source/library/cmn/sgetpvol.c:
 	.text       start:0x803A3190 end:0x803A3224
 	.rodata     start:0x80415154 end:0x80415160
 
-snd/source/library/cmn/sstgetpv.c:
+Packages/snd/source/library/cmn/sstgetpv.c:
 	.text       start:0x803A3224 end:0x803A32BC
 	.rodata     start:0x80415160 end:0x8041516C
 
-snd/source/library/cmn/stimerem.c:
+Packages/snd/source/library/cmn/stimerem.c:
 	.text       start:0x803A32BC end:0x803A3398
 
 LibSN/crt0.s:

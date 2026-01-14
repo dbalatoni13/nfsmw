@@ -2,7 +2,7 @@
 
 int SNDI_cheapsqrt(int val) {
     int i = 0;
-    int done; 
+    int done;
     int temp;
     done = i != 0;
 
@@ -10,8 +10,10 @@ int SNDI_cheapsqrt(int val) {
         temp = i * i;
         i++;
 
-        if (temp == val) return i - 1;
-        if (temp >  val) return i - 2;
+        if (temp == val)
+            return i - 1;
+        if (temp > val)
+            return i - 2;
     }
     return 0;
 }
@@ -21,7 +23,7 @@ int SNDI_findprime(int samplerate, int delay) {
     int prime;
     int upper;
     int done;
-    
+
     delay *= samplerate;
     prime = delay / 1000;
 
@@ -34,20 +36,20 @@ int SNDI_findprime(int samplerate, int delay) {
     while (!done) {
         upper = SNDI_cheapsqrt(prime) + 1;
         i = 2;
-    
+
         while (i <= upper) {
             if (prime % i == 0) {
                 prime++;
                 break;
             }
-    
+
             if (i == upper) {
                 return prime;
             }
-    
+
             i++;
         }
     }
-    
+
     return 0;
 }
