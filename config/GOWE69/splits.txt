@@ -233,9 +233,138 @@ Speed/Indep/SourceLists/zFeOverlay.cpp:
 	.bss        start:0x804AAA90 end:0x804B4DE8
 
 asd2:
-	.text       start:0x8030EB08 end:0x80372DD4
+	.text       start:0x8030EB08 end:0x8031F4C0
 	.ctors      start:0x803C8BE8 end:0x803C8C20
 	.dtors      start:0x803C8C44 end:0x803C8C5C
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/PPCArch.c:
+	.text       start:0x8031F4C0 end:0x8031F5D8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OS.c:
+	.text       start:0x80321810 end:0x803222DC
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSAlarm.c:
+	.text       start:0x803222DC end:0x80322A14
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSAlloc.c:
+	.text       start:0x80322A14 end:0x80322C9C
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSArena.c:
+	.text       start:0x80322C9C end:0x80322CE8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSAudioSystem.c:
+	.text       start:0x80322CE8 end:0x80322F7C
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSCache.c:
+	.text       start:0x80322F7C end:0x803233E0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSContext.c:
+	.text       start:0x803233E0 end:0x80323C50
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSError.c:
+	.text       start:0x80323C50 end:0x803242FC
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSInterrupt.c:
+	.text       start:0x80325B30 end:0x8032639C
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSLink.c:
+	.text       start:0x8032639C end:0x803263B4
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSMemory.c:
+	.text       start:0x803263B4 end:0x8032668C
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSMutex.c:
+	.text       start:0x8032668C end:0x803268D8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSReboot.c:
+	.text       start:0x803268D8 end:0x80326948
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/pad/Pad.c:
+	.text       start:0x80330468 end:0x80332134
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/ai.c:
+	.text       start:0x80332134 end:0x80332A18
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/ar/ar.c:
+	.text       start:0x80332A18 end:0x80332CFC
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CardMount.c:
+	.text       start:0x803344F0 end:0x80334F48
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CardBios.c:
+	.text       start:0x80334FF4 end:0x8033667C
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CardUnlock.c:
+	.text       start:0x80336698 end:0x803378F8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CardRdwr.c:
+	.text       start:0x803378F8 end:0x80337B88
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CardBlock.c:
+	.text       start:0x80337B88 end:0x80337F8C
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CardDir.c:
+	.text       start:0x80337F8C end:0x803381F0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CardCheck.c:
+	.text       start:0x803381F0 end:0x80339158
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CardOpen.c:
+	.text       start:0x80339158 end:0x80339B88
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXInit.c:
+	.text       start:0x80339B88 end:0x8033AF14
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXFifo.c:
+	.text       start:0x8033AF14 end:0x8033B6C0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXAttr.c:
+	.text       start:0x8033B6C0 end:0x8033CA74
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXMisc.c:
+	.text       start:0x8033CA74 end:0x8033D228
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXGeometry.c:
+	.text       start:0x8033D228 end:0x8033D548
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXFrameBuf.c:
+	.text       start:0x8033D548 end:0x8033DFF0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXLight.c:
+	.text       start:0x8033DFF0 end:0x8033E510
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXTexture.c:
+	.text       start:0x8033E510 end:0x8033F588
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXBump.c:
+	.text       start:0x8033F588 end:0x8033FAA8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXTev.c:
+	.text       start:0x8033FAA8 end:0x80340104
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXPixel.c:
+	.text       start:0x80340104 end:0x8034073C
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXDisplayList.c:
+	.text       start:0x8034073C end:0x8034093C
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXTransform.c:
+	.text       start:0x8034093C end:0x80340E88
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXPerf.c:
+	.text       start:0x80340E88 end:0x80341AB4
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/exi/EXIBios.c:
+	.text       start:0x80341AB4 end:0x80343490
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/exi/EXIUart.c:
+	.text       start:0x80343490 end:0x80343A48
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SIBios.c:
+	.text       start:0x80343A48 end:0x803452A8
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISamplingRate.c:
+	.text       start:0x803452A8 end:0x803453B0
 
 snd/source/library/cmn/SNDI_findprime.c:
 	.text       start:0x80372DD4 end:0x80372ED0
