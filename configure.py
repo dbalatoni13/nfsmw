@@ -159,7 +159,7 @@ elif version_num in [2]:
     config.platform = Platform.PS2
     config.binutils_tag = "2.45"
 
-config.objdiff_tag = "v3.3.0"
+config.objdiff_tag = "v3.5.1"
 config.sjiswrap_tag = "v1.2.0"
 config.wibo_tag = "1.0.0"
 
