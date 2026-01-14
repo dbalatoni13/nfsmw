@@ -214,7 +214,7 @@ void AIActionPursuitOffRoad::UpdateRoadAffinity(UMath::Vector3 &affinity) {
 
 void AIActionPursuitOffRoad::UpdateSeparation(UMath::Vector3 &separation) {
     const AvoidableList &avoidList = mIVehicleAI->GetAvoidableList();
-    VehicleSeperation(separation, mIVehicle, avoidList, 2.7f, 5.3f);
+    AISteer::VehicleSeperation(separation, mIVehicle, avoidList, 2.7f, 5.3f);
 }
 
 void AIActionPursuitOffRoad::UpdateAvoidWalls(UMath::Vector3 &avoid) {

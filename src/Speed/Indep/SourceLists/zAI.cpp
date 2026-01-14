@@ -17,3 +17,5 @@
 #include "Speed/Indep/Src/AI/Actions/AIActionHeliPursuit.cpp"
 
 #include "Speed/Indep/Src/AI/Actions/AIActionHeliExit.cpp"
+
+#include "Speed/Indep/Src/AI/Actions/AIActionHeadOnRam.cpp"

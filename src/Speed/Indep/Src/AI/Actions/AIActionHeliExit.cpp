@@ -108,16 +108,13 @@ void AIActionHeliExit::BeginAction(float dT) {
 }
 
 void AIActionHeliExit::Update(float dT) {
-    IRigidBody *player_rigid_body;
-    UMath::Vector3 playerPosition;
-    UMath::Vector3 myPosition;
+    mExitTime += dT;
+
+    IRigidBody *player_rigid_body = IPlayer::First(PLAYER_LOCAL)->GetSimable()->GetRigidBody();
+    UMath::Vector3 playerPosition = player_rigid_body->GetPosition();
+    UMath::Vector3 myPosition = mIRigidBody->GetPosition();
+
     UMath::Vector3 direction;
-
-    mExitTime = mExitTime + dT;
-
-    player_rigid_body = IPlayer::First(PLAYER_LOCAL)->GetSimable()->GetRigidBody();
-    playerPosition = player_rigid_body->GetPosition();
-    myPosition = mIRigidBody->GetPosition();
     player_rigid_body->GetForwardVector(direction);
 
     float flySpeed = 100.0f;
