@@ -1024,6 +1024,7 @@ void RigidBody::DoInstanceCollision(float dT) {
     }
 }
 
+// https://decomp.me/scratch/5wVo7
 void RigidBody::DoInstanceCollision3d(float dT) {
     Volatile &data = *mData;
     WCollisionMgr::WorldCollisionInfo cInfo;

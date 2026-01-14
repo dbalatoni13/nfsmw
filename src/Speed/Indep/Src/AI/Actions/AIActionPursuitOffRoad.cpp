@@ -218,48 +218,37 @@ void AIActionPursuitOffRoad::UpdateSeparation(UMath::Vector3 &separation) {
 }
 
 void AIActionPursuitOffRoad::UpdateAvoidWalls(UMath::Vector3 &avoid) {
-    UMath::Vector3 velocity;
-    float speed;
-    UMath::Vector3 position;
-    float length;
-    UMath::Vector3 target;
-    UMath::Vector4 posToDest[2];
-    WCollisionMgr::WorldCollisionInfo cinfo;
-    UMath::Vector3 collidepoint;
-    UMath::Vector3 collidenormal;
-    float collidedist;
-    float collidetime;
-    float collidedot;
-    float strength;
+    UMath::Vector3 velocity = mIRigidBody->GetLinearVelocity();
+    float speed = Length(velocity);
+    UMath::Vector3 position = mIRigidBody->GetPosition();
 
-    velocity = this->mIRigidBody->GetLinearVelocity();
-    speed = Length(velocity);
-    position = this->mIRigidBody->GetPosition();
-
-    if (speed >= 2.0f) {
-        length = speed + 10.0f;
-        length = bMin(length, 80.0f);
-        ScaleAdd(velocity, length / speed, position, target);
-
-        posToDest[0] = Vector4Make(position, 1.0f);
-        posToDest[1] = Vector4Make(target, 1.0f);
-
-        WCollisionMgr collisionmgr(0, 3);
-        // if (collisionmgr.CheckHitWorld(posToDest[0], &cinfo, 2)) {
-        //     collidepoint = Vector4To3(cinfo.fCollidePt);
-        //     collidenormal = Vector4To3(cinfo.fNormal);
-
-        //     collidedist = UMath::Distance(collidepoint, position);
-        //     collidetime = collidedist / speed;
-        //     collidedot = UMath::Dot(velocity, collidenormal);
-        //     collidedot = collidedot / speed;
-
-        //     if (collidedot < 0.0f) {
-        //         strength = (collidedot * collidedot * KPH2MPS(10.0f)) / (collidetime * collidetime);
-        //         Scale(collidenormal, strength, avoid);
-        //     }
-        // }
+    if (speed < 2.0f) {
+        return;
     }
+    float length = bMin(speed + 10.0f, 80.0f);
+    UMath::Vector3 target;
+    UMath::ScaleAdd(velocity, length / speed, position, target);
+
+    UMath::Vector4 posToDest[2];
+    posToDest[0] = UMath::Vector4Make(position, 1.0f);
+    posToDest[1] = UMath::Vector4Make(target, 1.0f);
+
+    WCollisionMgr::WorldCollisionInfo cinfo;
+    if (!WCollisionMgr(0, 3).CheckHitWorld(posToDest, cinfo, 2)) {
+        return;
+    }
+    UMath::Vector3 collidepoint = Vector4To3(cinfo.fCollidePt);
+    UMath::Vector3 collidenormal = Vector4To3(cinfo.fNormal);
+
+    float collidedist = UMath::Distance(collidepoint, position);
+    float collidetime = collidedist / speed;
+    float collidedot = UMath::Dot(velocity, collidenormal) / speed;
+
+    if (collidedot >= 0.0f) {
+        return;
+    }
+    float strength = (collidedot * collidedot * KPH2MPS(10.0f)) / (collidetime * collidetime);
+    Scale(collidenormal, strength, avoid);
 }
 
 void AIActionPursuitOffRoad::OnDebugDraw() {}

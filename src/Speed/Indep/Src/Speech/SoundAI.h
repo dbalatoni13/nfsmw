@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "EAXAirSupport.h"
 #include "Speed/Indep/Src/EAXSound/EAXSoundTypes.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/speechtune.h"
 #include "Speed/Indep/Src/Generated/Messages/MUnspawnCop.h"
@@ -24,7 +25,7 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     struct CarHeading {
         // Members
         unsigned int direction; // offset 0x0, size 0x4
-        // RoadNames roadID;       // offset 0x4, size 0x4
+        RoadNames roadID;       // offset 0x4, size 0x4
     };
     enum PursuitState {
         kActive = 0,
@@ -55,8 +56,8 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     // total size: 0x8
     struct HeatCutoffs {
         // Members
-        float value; // offset 0x0, size 0x4
-        // Type_heat_level heat_level; // offset 0x4, size 0x4
+        float value;                // offset 0x0, size 0x4
+        Type_heat_level heat_level; // offset 0x4, size 0x4
     };
     enum MachineState {
         kPursuitFlow = 1,
@@ -116,10 +117,10 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     void MessageTireBlown(const struct MGamePlayMoment &message);
     void OnVehicleAdded(IVehicle *ivehicle);
     void OnVehicleRemoved(IVehicle *ivehicle);
-    struct EAXCop *GetCopInRB();
-    struct EAXCop *GetRandomActiveCop(int type, bool reqLOS);
-    struct EAXCop *GetRandomCop(int type);
-    static IActivity *Construct(Sim::Param params);
+    EAXCop *GetCopInRB();
+    EAXCop *GetRandomActiveCop(int type, bool reqLOS);
+    EAXCop *GetRandomCop(int type);
+    Sim::IActivity *Construct(Sim::Param params);
     IRoadBlock *GetRoadblock();
     bool IsMusicActive();
     void DealWithDeadAir();
@@ -134,20 +135,20 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     void Force911State();
     void SyncCarsToActors();
     void SyncFormations();
-    struct EAXCop *FindFurthestCop(bool includeHeli);
-    struct EAXCop *FindClosestCop(bool enforceLOS, bool includeHeli);
+    EAXCop *FindFurthestCop(bool includeHeli);
+    EAXCop *FindClosestCop(bool enforceLOS, bool includeHeli);
     void RemoveCop(HSIMABLE seeya);
     void AddNewHeli(IVehicle *heli);
-    struct EAXCop *SpawnCop();
+    EAXCop *SpawnCop();
     int GetBattalionFromRoadID(int roadID);
     int GetBattalionFromKey(unsigned int theKey);
     void AddNewCop(IVehicle *newcop);
-    bool MakeLeader(struct EAXCop *newprim);
+    bool MakeLeader(EAXCop *newprim);
     // int GetCallsign(Type_speaker_battalion battalion);
     // void RandomizeCallsign(struct voiceIDs &cs, Type_speaker_call_sign_id start, Type_speaker_call_sign_id finish);
     int GetVoice(int type);
-    struct EAXCop *GetCop(int speaker);
-    void RandomBailoutDeny(struct EAXCop *wimp);
+    EAXCop *GetCop(int speaker);
+    void RandomBailoutDeny(EAXCop *wimp);
     unsigned int CalcPlayerDirection(bool force_set);
     void ForceGlobalVoiceChange();
     unsigned char GetCustomized(IVehicle *vehicle, CarCustomizations &custrec);
@@ -184,9 +185,11 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     // const struct copMap &GetActors() {}
 
-    // struct EAXCop *GetLeader() {}
+    // EAXCop *GetLeader() {}
 
-    // struct EAXAirSupport *GetHeli() {}
+    EAXAirSupport *GetHeli() {
+        return mHeli;
+    }
 
     // struct EAXDispatch *GetDispatch() {}
 
@@ -196,7 +199,7 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     // const int GetHeat() {}
 
-    // struct EAXCop *GetLatestCop() {}
+    // EAXCop *GetLatestCop() {}
 
     // const struct copList &GetCopsInFormation() {}
 
@@ -308,12 +311,12 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     Speech::copMap mActors;                   // offset 0x60, size 0x10
     Speech::VoiceUsage mUsage;                // offset 0x70, size 0x70
     struct EAXDispatch *mDispatch;            // offset 0xE0, size 0x4
-    struct EAXCop *mLeader;                   // offset 0xE4, size 0x4
-    struct EAXAirSupport *mHeli;              // offset 0xE8, size 0x4
+    EAXCop *mLeader;                          // offset 0xE4, size 0x4
+    EAXAirSupport *mHeli;                     // offset 0xE8, size 0x4
     Speech::copList mCopsInFormation;         // offset 0xEC, size 0x14
     float mDeadAir;                           // offset 0x100, size 0x4
-    struct EAXCop *mLastCopInFormation;       // offset 0x104, size 0x4
-    struct EAXCop *mLatestCop;                // offset 0x108, size 0x4
+    EAXCop *mLastCopInFormation;              // offset 0x104, size 0x4
+    EAXCop *mLatestCop;                       // offset 0x108, size 0x4
     int mPlayerHeat;                          // offset 0x10C, size 0x4
     float mPlayerSpeed;                       // offset 0x110, size 0x4
     UMath::Vector3 mPlayerPos;                // offset 0x114, size 0xC

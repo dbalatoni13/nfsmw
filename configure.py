@@ -314,7 +314,7 @@ elif config.platform == Platform.X360:
     cflags_game = [
         *cflags_base,
         "/DLUA_NUMBER=float",
-        "/DDEBUG",
+        "/DMILESTONE_OPT",
     ]
 
     config.extra_clang_flags = [
@@ -349,7 +349,7 @@ elif config.platform == Platform.PS2:
     # Debug flags
     # TODO
     # if args.debug:
-    cflags_base.append("-DDEBUG=1")
+    # cflags_base.append("-DDEBUG=1")
     # else:
     #     cflags_base.append("-DNDEBUG=1")
 
@@ -382,6 +382,7 @@ elif config.platform == Platform.PS2:
         # "-fregmove",
         # "-fcaller-saves",
         "-DLUA_NUMBER=float",
+        "-DMILESTONE_OPT",
     ]
 
     config.extra_clang_flags = [

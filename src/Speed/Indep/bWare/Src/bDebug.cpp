@@ -26,7 +26,7 @@ int bSonyToolConnected = false;
 int bSuperBenderConnected = false;
 #endif
 
-#ifdef DEBUG
+#ifdef MILESTONE_OPT
 float bCodeineVersion = 0.0f;
 #endif
 

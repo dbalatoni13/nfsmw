@@ -31,11 +31,12 @@ class WCollisionMgr {
             // fBle.fB = WCollisionBarrier();
             // TODO maybe this is in WCollisionBarrierListEntry's constructor?
             memset(&fBle.fB, 0, sizeof(fBle.fB));
-            fDist = 0.0f;
             fBle.fSurfaceRef = nullptr;
             fBle.fDistanceToSq = 0.0f;
+            fDist = 0.0f;
             fObj = nullptr;
             fAnimated = false;
+            fType = 0;
             fPad = 0;
             fCInst = nullptr;
         }

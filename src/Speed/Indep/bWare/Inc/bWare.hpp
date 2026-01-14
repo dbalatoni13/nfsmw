@@ -10,7 +10,7 @@
 #include "bMemory.hpp"
 #include "bSlotPool.hpp"
 
-#if DEBUG
+#if MILESTONE_OPT
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
 #else
 void *bMalloc(int size, int allocation_params);
@@ -33,7 +33,7 @@ void bOverlappedMemCpy(void *dest, const void *src, unsigned int numbytes);
 }
 
 inline void *operator new(size_t size, const char *file, int line) {
-#if DEBUG
+#if MILESTONE_OPT
     return bWareMalloc(size, file, line, 0);
 #else
     return new char[size];
@@ -41,7 +41,7 @@ inline void *operator new(size_t size, const char *file, int line) {
 }
 
 inline void *operator new[](size_t size, const char *file, int line) {
-#if DEBUG
+#if MILESTONE_OPT
     return bWareMalloc(size, file, line, 0);
 #else
     return new char[size];
@@ -89,12 +89,12 @@ inline bool bStrEqual(const char *s1, const char *s2) {
     return bStrICmp(s1, s2) == 0;
 }
 
-#ifdef DEBUG
+#ifdef MILESTONE_OPT
 extern float bCodeineVersion;
 #endif
 
 inline int bIsCodeineConnected() {
-#ifdef DEBUG
+#ifdef MILESTONE_OPT
     return bCodeineVersion > 0.0f;
 #else
     return false;

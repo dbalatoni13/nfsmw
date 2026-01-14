@@ -10,7 +10,7 @@
 
 #include "Speed/Indep/Src/Misc/AttribAlloc.cpp"
 
-#ifdef DEBUG
+#ifdef MILESTONE_OPT
 #include "Speed/Indep/Src/Misc/TestHooks/JuiceHooks/MWExtension.cpp"
 
 #include "Speed/Indep/Src/Misc/TestHooks/JuiceHooks/MWScripting.cpp"

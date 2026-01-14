@@ -6,7 +6,7 @@
 #include "bFile.hpp"
 #include <cstring>
 
-#ifdef DEBUG
+#ifdef MILESTONE_OPT
 int EnableJoylog = true;
 #else
 int EnableJoylog = false;

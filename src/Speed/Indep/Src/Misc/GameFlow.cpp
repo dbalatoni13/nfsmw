@@ -34,7 +34,7 @@ Sim::eUserMode CalculateSimMode() {
 
 // TODO
 void GetBuildVersionName(char *build_version_name) {
-#ifdef DEBUG
+#ifdef MILESTONE_OPT
     bStrCpy(build_version_name, "Milestone");
 #else
     bStrCpy(build_version_name, "Release");

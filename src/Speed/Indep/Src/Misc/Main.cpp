@@ -166,7 +166,7 @@ void InitializeEverything(int argc, char **argv) {
     Scheduler::Init(0.016666668f);
     WWorld::Init();
     EventSequencer::Init(0.0f);
-#ifdef DEBUG
+#ifdef MILESTONE_OPT
     InitScreenPrintf();
     DebugMenuInit();
 #endif

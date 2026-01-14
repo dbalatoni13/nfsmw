@@ -20,7 +20,7 @@ class AttribAlloc {
 
     static void *Allocate(std::size_t bytes, const char *name) {
         return mAllocator->Allocate(bytes,
-#if DEBUG
+#ifdef MILESTONE_OPT
                                     name
 #else
                                     nullptr
@@ -30,7 +30,7 @@ class AttribAlloc {
 
     static void Free(void *ptr, std::size_t bytes, const char *name) {
         mAllocator->Free(ptr, bytes,
-#if DEBUG
+#ifdef MILESTONE_OPT
                          name
 #else
                          nullptr

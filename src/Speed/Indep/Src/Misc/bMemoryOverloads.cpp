@@ -3,7 +3,7 @@
 #include <cstddef>
 
 void *operator new(size_t size) {
-#if DEBUG
+#ifdef MILESTONE_OPT
     // TODO
     return bWareMalloc(size, nullptr, 0, 0);
 #else
@@ -12,7 +12,7 @@ void *operator new(size_t size) {
 }
 
 void *operator new[](size_t size) {
-#if DEBUG
+#ifdef MILESTONE_OPT
     // TODO
     return bWareMalloc(size, nullptr, 0, 0);
 #else

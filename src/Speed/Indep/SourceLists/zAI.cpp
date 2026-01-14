@@ -13,3 +13,7 @@
 #include "Speed/Indep/Src/AI/Actions/AIActionTraffic.cpp"
 
 #include "Speed/Indep/Src/AI/Actions/AIActionPursuitOffRoad.cpp"
+
+#include "Speed/Indep/Src/AI/Actions/AIActionHeliPursuit.cpp"
+
+#include "Speed/Indep/Src/AI/Actions/AIActionHeliExit.cpp"

@@ -20,6 +20,22 @@
 
 namespace UMath {
 
+inline float Sina(const float a) {
+    return VU0_Sin(a * (float)M_TWOPI);
+}
+
+inline float Cosa(const float a) {
+    return VU0_Cos(a * (float)M_TWOPI);
+}
+
+inline float Sinr(const float a) {
+    return VU0_Sin(RAD2ANGLE(a) * (float)M_TWOPI);
+}
+
+inline float Cosr(const float a) {
+    return VU0_Cos(RAD2ANGLE(a) * (float)M_TWOPI);
+}
+
 void BuildRotate(Matrix4 &m, float r, float x, float y, float z);
 
 float Ceil(const float x);
@@ -234,6 +250,15 @@ inline void Rotate(const Vector3 &a, const Vector4 &q, Vector3 &r) {
 }
 #endif
 
+inline void RotateInXZ(const float a, const Vector3 &src, Vector3 &out) {
+    float xp = src.x * Cosa(a) - src.z * Sina(a);
+    float zp = src.x * Sina(a) + src.z * Cosa(a);
+
+    out.x = xp;
+    out.y = src.y;
+    out.z = zp;
+}
+
 inline void Rotate(const Vector3 &a, const Matrix4 &m, Vector3 &r) {
 #ifdef EA_PLATFORM_XENON
     Vector3 temp = a;
@@ -415,22 +440,6 @@ inline float Limit(const float a, const float l) {
         }
     }
     return retval;
-}
-
-inline float Sina(const float a) {
-    return VU0_Sin(a * (float)M_TWOPI);
-}
-
-inline float Cosa(const float a) {
-    return VU0_Cos(a * (float)M_TWOPI);
-}
-
-inline float Sinr(const float a) {
-    return VU0_Sin(RAD2ANGLE(a) * (float)M_TWOPI);
-}
-
-inline float Cosr(const float a) {
-    return VU0_Cos(RAD2ANGLE(a) * (float)M_TWOPI);
 }
 
 } // namespace UMath
