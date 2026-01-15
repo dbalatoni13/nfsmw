@@ -39,3 +39,5 @@
 #include "Speed/Indep/Src/Physics/Behaviors/EngineSpline.cpp"
 
 #include "Speed/Indep/Src/Physics/Behaviors/EngineTraffic.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/SoundHeli.cpp"

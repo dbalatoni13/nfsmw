@@ -10,9 +10,7 @@
 // total size: 0x50
 class VehicleBehavior : public Behavior {
   public:
-    virtual ~VehicleBehavior() {
-		
-	}
+    virtual ~VehicleBehavior() {}
 
     VehicleBehavior(const BehaviorParams &bp, unsigned int num_interfaces);
 
