@@ -15,8 +15,7 @@ typedef long long int64;
 typedef unsigned long long uint64;
 typedef unsigned int type_operator_new;
 
-#define ALIGN_PS2(num)
-#define ALIGN_XENON(num)
+#define ALIGN_16
 
 #define ONLINE_SUPPORT (0)
 
@@ -46,8 +45,7 @@ typedef bool Bool;
 #define ATTRIBUTE_ALIGN(num) __declspec(align(num))
 #endif
 
-#define ALIGN_PS2(num)
-#define ALIGN_XENON(num) ATTRIBUTE_ALIGN(16)
+#define ALIGN_16 ATTRIBUTE_ALIGN(16)
 
 #ifndef AT_ADDRESS
 #define AT_ADDRESS(xyz)
@@ -110,8 +108,7 @@ typedef bool Bool;
 #define ATTRIBUTE_ALIGN(num) __attribute__((aligned(num)))
 #endif
 
-#define ALIGN_PS2(num) ATTRIBUTE_ALIGN(num)
-#define ALIGN_XENON(num)
+#define ALIGN_16 ATTRIBUTE_ALIGN(16)
 
 #ifndef AT_ADDRESS
 #define AT_ADDRESS(xyz)

@@ -79,18 +79,18 @@ class DamageVehicle : public VehicleBehavior,
     }
 
   private:
-    float mShockTimer;                                             // offset 0x6C, size 0x4
-    int fTempInvincibilityTimer;                                   // offset 0x70, size 0x4
-    BehaviorSpecsPtr<Attrib::Gen::damagespecs> mSpecs;             // offset 0x74, size 0x14
-    float mOffScreenTimer;                                         // offset 0x88, size 0x4
-    float mDamageTotal;                                            // offset 0x8C, size 0x4
-    ICollisionBody *mIRBComplex;                                   // offset 0x90, size 0x4
-    IRigidBody *mRB;                                               // offset 0x94, size 0x4
-    IRenderable *mRenderable;                                      // offset 0x98, size 0x4
-    DamageZone::Info mZoneDamage;                                  // offset 0x9C, size 0x4
-    ALIGN_PS2(16) ALIGN_XENON(16) UMath::Vector3 mLastImpactSpeed; // offset 0xA0, size 0xC
-    UTL::Std::list<UCrc32, _type_list> mBrokenParts;               // offset 0xAC, size 0x8
-    unsigned int mLightDamage;                                     // offset 0xB4, size 0x4
+    float mShockTimer;                                 // offset 0x6C, size 0x4
+    int fTempInvincibilityTimer;                       // offset 0x70, size 0x4
+    BehaviorSpecsPtr<Attrib::Gen::damagespecs> mSpecs; // offset 0x74, size 0x14
+    float mOffScreenTimer;                             // offset 0x88, size 0x4
+    float mDamageTotal;                                // offset 0x8C, size 0x4
+    ICollisionBody *mIRBComplex;                       // offset 0x90, size 0x4
+    IRigidBody *mRB;                                   // offset 0x94, size 0x4
+    IRenderable *mRenderable;                          // offset 0x98, size 0x4
+    DamageZone::Info mZoneDamage;                      // offset 0x9C, size 0x4
+    ALIGN_16 UMath::Vector3 mLastImpactSpeed;          // offset 0xA0, size 0xC
+    UTL::Std::list<UCrc32, _type_list> mBrokenParts;   // offset 0xAC, size 0x8
+    unsigned int mLightDamage;                         // offset 0xB4, size 0x4
 };
 
 #endif

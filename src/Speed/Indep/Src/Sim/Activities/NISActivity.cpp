@@ -181,34 +181,34 @@ class NISActivity : public Sim::Activity, public INIS, public EventSequencer::IC
     bool IsCarListLoaded();
     void JoyHandle(IPlayer *player);
 
-    HSIMTASK mUpdate;                                                  // offset 0x6C, size 0x4
-    float mNISElapsedTime;                                             // offset 0x70, size 0x4
-    ActionQueue mActionQ;                                              // offset 0x74, size 0x294
-    NISACTIVITY_STATE mState;                                          // offset 0x308, size 0x4
-    Hermes::HHANDLER mMsgMovieComplete;                                // offset 0x30C, size 0x4
-    CAnimChooser::eType mNISType;                                      // offset 0x310, size 0x4
-    bVector3 mNISPosition;                                             // offset 0x314, size 0x10
-    float mNISDirection;                                               // offset 0x324, size 0x4
-    char mPreMovie[64];                                                // offset 0x328, size 0x40
-    char mPostMovie[64];                                               // offset 0x368, size 0x40
-    unsigned int mSceneHash;                                           // offset 0x3A8, size 0x4
-    UCrc32 mSequencerID;                                               // offset 0x3AC, size 0x4
-    CAnimScene *mAnimScene;                                            // offset 0x3B0, size 0x4
-    int mAnimHandle;                                                   // offset 0x3B4, size 0x4
-    int mCameraTrackNumber;                                            // offset 0x3B8, size 0x4
-    float mDefault_MaxTicksPerTimestep;                                // offset 0x3BC, size 0x4
-    CarList mVehicleTable;                                             // offset 0x3C0, size 0x10
-    EventSequencer::IEngine *mSequencer;                               // offset 0x3D0, size 0x4
-    ALIGN_PS2(16) ALIGN_XENON(16) UMath::Vector3 mStartLocation;       // offset 0x3D4, size 0xC
-    ALIGN_PS2(16) ALIGN_XENON(16) UMath::Vector3 mStartCameraLocation; // offset 0x3E0, size 0xC
-    bool mStartPlayingNow;                                             // offset 0x3EC, size 0x1
-    bool mRunningThroughICE;                                           // offset 0x3F0, size 0x1
-    int mLoadAttemptCount;                                             // offset 0x3F4, size 0x4
-    int mSuspensionSettle;                                             // offset 0x3F8, size 0x4
-    CAnimMomentScene *mMomentScene;                                    // offset 0x3FC, size 0x4
-    bool mUsingFEngOverlay;                                            // offset 0x400, size 0x1
-    bool mCareerNIS;                                                   // offset 0x404, size 0x1
-    bool mDDayNIS;                                                     // offset 0x408, size 0x1
+    HSIMTASK mUpdate;                             // offset 0x6C, size 0x4
+    float mNISElapsedTime;                        // offset 0x70, size 0x4
+    ActionQueue mActionQ;                         // offset 0x74, size 0x294
+    NISACTIVITY_STATE mState;                     // offset 0x308, size 0x4
+    Hermes::HHANDLER mMsgMovieComplete;           // offset 0x30C, size 0x4
+    CAnimChooser::eType mNISType;                 // offset 0x310, size 0x4
+    bVector3 mNISPosition;                        // offset 0x314, size 0x10
+    float mNISDirection;                          // offset 0x324, size 0x4
+    char mPreMovie[64];                           // offset 0x328, size 0x40
+    char mPostMovie[64];                          // offset 0x368, size 0x40
+    unsigned int mSceneHash;                      // offset 0x3A8, size 0x4
+    UCrc32 mSequencerID;                          // offset 0x3AC, size 0x4
+    CAnimScene *mAnimScene;                       // offset 0x3B0, size 0x4
+    int mAnimHandle;                              // offset 0x3B4, size 0x4
+    int mCameraTrackNumber;                       // offset 0x3B8, size 0x4
+    float mDefault_MaxTicksPerTimestep;           // offset 0x3BC, size 0x4
+    CarList mVehicleTable;                        // offset 0x3C0, size 0x10
+    EventSequencer::IEngine *mSequencer;          // offset 0x3D0, size 0x4
+    ALIGN_16 UMath::Vector3 mStartLocation;       // offset 0x3D4, size 0xC
+    ALIGN_16 UMath::Vector3 mStartCameraLocation; // offset 0x3E0, size 0xC
+    bool mStartPlayingNow;                        // offset 0x3EC, size 0x1
+    bool mRunningThroughICE;                      // offset 0x3F0, size 0x1
+    int mLoadAttemptCount;                        // offset 0x3F4, size 0x4
+    int mSuspensionSettle;                        // offset 0x3F8, size 0x4
+    CAnimMomentScene *mMomentScene;               // offset 0x3FC, size 0x4
+    bool mUsingFEngOverlay;                       // offset 0x400, size 0x1
+    bool mCareerNIS;                              // offset 0x404, size 0x1
+    bool mDDayNIS;                                // offset 0x408, size 0x1
 #ifndef EA_BUILD_A124
     bool mBlackListNIS;   // offset 0x40C, size 0x1
     bool mNonSkipableNIS; // offset 0x410, size 0x1

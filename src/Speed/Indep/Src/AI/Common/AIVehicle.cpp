@@ -104,3 +104,32 @@ AIVehicle::AIVehicle(const BehaviorParams &bp, float update_rate, float stagger,
 
     const char *layer_name = GetCaffeineLayerName(GetVehicle()->GetDriverClass());
 }
+
+AIVehicle::~AIVehicle() {
+    delete mDriveToNav;
+    delete mTarget;
+    delete mCollNav;
+    delete mCurrentGoal;
+    if (mThinkTask) {
+        RemoveTask(mThinkTask);
+    }
+    delete mAttributes;
+}
+
+void AIVehicle::ResetInternals() {
+    GetOwner()->QueryInterface(&mITransmission);
+    GetOwner()->QueryInterface(&mISuspension);
+    GetOwner()->QueryInterface(&mIEngine);
+    GetOwner()->QueryInterface(&mIInput);
+    ClearGoal();
+    mDestSegment = -1;
+    mReverseOverrideTimer = 0.0f;
+    mReverseOverrideSteer = 0.0f;
+    mCanRespawn = false;
+    mDrivableToNav = false;
+    mLastSpawnTime = 0.0f;
+    mReverseOverrideDirection = false;
+    mDrivableToTargetPos = false;
+    mReversingSpeed = false;
+    mSteeringBehind = false;
+}

@@ -1,6 +1,7 @@
 #ifndef AI_AIVEHICLE_H
 #define AI_AIVEHICLE_H
 
+#include "types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -163,7 +164,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
 
     // float GetPercentRaceComplete() const override {}
 
-    // struct IEngine *GetEngine() const {}
+    // EventSequencer::IEngine *GetEngine() const {}
 
     // ITransmission *GetTransmission() const {}
 
@@ -209,51 +210,51 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     // Behavior
     void OnBehaviorChange(const UCrc32 &mechanic) override;
 
-    WRoadNav *mDriveToNav;          // offset 0x70, size 0x4
-    UMath::Vector3 mDirToNav;       // offset 0x74, size 0xC
-    bool mDrivableToNav;            // offset 0x80, size 0x1
-    float mDriveSpeed;              // offset 0x84, size 0x4
-    UMath::Vector3 mDest;           // offset 0x88, size 0xC
-    float mReverseOverrideTimer;    // offset 0x94, size 0x4
-    float mReverseOverrideSteer;    // offset 0x98, size 0x4
-    bool mReverseOverrideDirection; // offset 0x9C, size 0x1
-    AITarget *mTarget;              // offset 0xA0, size 0x4
-    short mDestSegment;             // offset 0xA4, size 0x2
-    bool mDrivableToTargetPos;      // offset 0xA8, size 0x1
-    bool mReversingSpeed;           // offset 0xAC, size 0x1
-    bool mSteeringBehind;           // offset 0xB0, size 0x1
+    WRoadNav *mDriveToNav;             // offset 0x70, size 0x4
+    ALIGN_16 UMath::Vector3 mDirToNav; // offset 0x74, size 0xC
+    bool mDrivableToNav;               // offset 0x80, size 0x1
+    float mDriveSpeed;                 // offset 0x84, size 0x4
+    ALIGN_16 UMath::Vector3 mDest;     // offset 0x88, size 0xC
+    float mReverseOverrideTimer;       // offset 0x94, size 0x4
+    float mReverseOverrideSteer;       // offset 0x98, size 0x4
+    bool mReverseOverrideDirection;    // offset 0x9C, size 0x1
+    AITarget *mTarget;                 // offset 0xA0, size 0x4
+    short mDestSegment;                // offset 0xA4, size 0x2
+    bool mDrivableToTargetPos;         // offset 0xA8, size 0x1
+    bool mReversingSpeed;              // offset 0xAC, size 0x1
+    bool mSteeringBehind;              // offset 0xB0, size 0x1
 
   private:
-    HSIMTASK mThinkTask;                     // offset 0xB4, size 0x4
-    float mLastSpawnTime;                    // offset 0xB8, size 0x4
-    bool mCanRespawn;                        // offset 0xBC, size 0x1
-    AIGoal *mCurrentGoal;                    // offset 0xC0, size 0x4
-    IPursuit *mPursuit;                      // offset 0xC4, size 0x4
-    IRoadBlock *mRoadBlock;                  // offset 0xC8, size 0x4
-    UCrc32 mGoalName;                        // offset 0xCC, size 0x4
-    float mAvoidableRadius;                  // offset 0xD0, size 0x4
-    unsigned int mDriveFlags;                // offset 0xD4, size 0x4
-    ICollisionBody *mCollisionBody;          // offset 0xD8, size 0x4
-    ITransmission *mITransmission;           // offset 0xDC, size 0x4
-    ISuspension *mISuspension;               // offset 0xE0, size 0x4
-    struct IEngine *mIEngine;                // offset 0xE4, size 0x4
-    IInput *mIInput;                         // offset 0xE8, size 0x4
-    WRoadNav *mCollNav;                      // offset 0xEC, size 0x4
-    Attrib::Gen::aivehicle *mAttributes;     // offset 0xF0, size 0x4
-    AI::Math::FloatSpring mDampedAngularVel; // offset 0xF4, size 0x10
-    AI::Math::FloatSpring mDampedAngle;      // offset 0x104, size 0x10
-    float mRoadUpdateTimer;                  // offset 0x114, size 0x4
-    float mRoadIncrementTimer;               // offset 0x118, size 0x4
-    float mSeekAheadTimer;                   // offset 0x11C, size 0x4
-    UMath::Vector3 mSeekAheadPosition;       // offset 0x120, size 0xC
-    UMath::Vector3 mFarFutureDirection;      // offset 0x12C, size 0xC
-    UMath::Vector3 mFarFuturePosition;       // offset 0x138, size 0xC
-    short mLastFutureSegment;                // offset 0x144, size 0x2
-    short mLastFutureNodeInd;                // offset 0x146, size 0x2
-    WRoadNav mCurrentRoad;                   // offset 0x148, size 0x2F0
-    WRoadNav mFutureRoad;                    // offset 0x438, size 0x2F0
-    float mAccelData[10];                    // offset 0x728, size 0x28
-    Mps mTopSpeed;                           // offset 0x750, size 0x4
+    HSIMTASK mThinkTask;                         // offset 0xB4, size 0x4
+    float mLastSpawnTime;                        // offset 0xB8, size 0x4
+    bool mCanRespawn;                            // offset 0xBC, size 0x1
+    AIGoal *mCurrentGoal;                        // offset 0xC0, size 0x4
+    IPursuit *mPursuit;                          // offset 0xC4, size 0x4
+    IRoadBlock *mRoadBlock;                      // offset 0xC8, size 0x4
+    UCrc32 mGoalName;                            // offset 0xCC, size 0x4
+    float mAvoidableRadius;                      // offset 0xD0, size 0x4
+    unsigned int mDriveFlags;                    // offset 0xD4, size 0x4
+    ICollisionBody *mCollisionBody;              // offset 0xD8, size 0x4
+    ITransmission *mITransmission;               // offset 0xDC, size 0x4
+    ISuspension *mISuspension;                   // offset 0xE0, size 0x4
+    EventSequencer::IEngine *mIEngine;           // offset 0xE4, size 0x4
+    IInput *mIInput;                             // offset 0xE8, size 0x4
+    WRoadNav *mCollNav;                          // offset 0xEC, size 0x4
+    Attrib::Gen::aivehicle *mAttributes;         // offset 0xF0, size 0x4
+    AI::Math::FloatSpring mDampedAngularVel;     // offset 0xF4, size 0x10
+    AI::Math::FloatSpring mDampedAngle;          // offset 0x104, size 0x10
+    float mRoadUpdateTimer;                      // offset 0x114, size 0x4
+    float mRoadIncrementTimer;                   // offset 0x118, size 0x4
+    float mSeekAheadTimer;                       // offset 0x11C, size 0x4
+    ALIGN_16 UMath::Vector3 mSeekAheadPosition;  // offset 0x120, size 0xC
+    ALIGN_16 UMath::Vector3 mFarFutureDirection; // offset 0x12C, size 0xC
+    ALIGN_16 UMath::Vector3 mFarFuturePosition;  // offset 0x138, size 0xC
+    short mLastFutureSegment;                    // offset 0x144, size 0x2
+    short mLastFutureNodeInd;                    // offset 0x146, size 0x2
+    WRoadNav mCurrentRoad;                       // offset 0x148, size 0x2F0
+    WRoadNav mFutureRoad;                        // offset 0x438, size 0x2F0
+    float mAccelData[10];                        // offset 0x728, size 0x28
+    Mps mTopSpeed;                               // offset 0x750, size 0x4
 };
 
 #endif

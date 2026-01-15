@@ -43,7 +43,7 @@ struct Vector3 {
     }
 };
 
-struct ALIGN_PS2(16) ALIGN_XENON(16) Vector4 {
+struct ALIGN_16 Vector4 {
     // total size: 0x10
     float x; // offset 0x0, size 0x4
     float y; // offset 0x4, size 0x4
@@ -85,7 +85,7 @@ struct Matrix3 {
     }
 };
 
-struct ALIGN_PS2(16) ALIGN_XENON(16) Matrix4 {
+struct ALIGN_16 Matrix4 {
     Vector4 v0, v1, v2, v3;
 
     static const Matrix4 kZero;

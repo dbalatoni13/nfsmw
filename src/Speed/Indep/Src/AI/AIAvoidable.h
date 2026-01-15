@@ -16,7 +16,7 @@ DECLARE_VECTOR_TYPE(AIAvoidableNeighbors);
 typedef UTL::Std::list<struct AIAvoidable *, _type_AIAvoidableNeighbors> AvoidableList;
 
 // total size: 0x14
-class AIAvoidable {
+class ALIGN_16 AIAvoidable {
   public:
     // total size: 0x6C
     struct Grid : public SAP::Grid<AIAvoidable> {

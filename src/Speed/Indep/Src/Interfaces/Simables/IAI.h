@@ -71,7 +71,7 @@ class IRoadBlock : public UTL::COM::IUnknown, public UTL::Collections::Listable<
 
 class IVehicleAI : public UTL::COM::IUnknown {
   protected:
-    virtual ~IVehicleAI();
+    virtual ~IVehicleAI() {}
 
   public:
     static HINTERFACE _IHandle() {

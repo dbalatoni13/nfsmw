@@ -46,17 +46,17 @@ class Effect : public UTL::COM::Object, public bTNode<Sim::Effect>, public IServ
     bool OnService(HSIMSERVICE hCon, Packet *pkt) override;
 
   private:
-    ALIGN_XENON(16) UMath::Vector3 mPosition;  // offset 0x20, size 0xC
-    float mTime;                               // offset 0x2C, size 0x4
-    ALIGN_XENON(16) UMath::Vector3 mMagnitude; // offset 0x30, size 0xC
-    HSIMSERVICE mService;                      // offset 0x3C, size 0x4
-    const Attrib::Collection *mParticipant;    // offset 0x40, size 0x4
-    const Attrib::Collection *mContext;        // offset 0x44, size 0x4
-    const Attrib::Collection *mEffect;         // offset 0x48, size 0x4
-    bool mPaused;                              // offset 0x4C, size 0x1
-    bool mTracking;                            // offset 0x50, size 0x1
-    unsigned int mOwner;                       // offset 0x54, size 0x4
-    unsigned int mActee;                       // offset 0x58, size 0x4
+    ALIGN_16 UMath::Vector3 mPosition;      // offset 0x20, size 0xC
+    float mTime;                            // offset 0x2C, size 0x4
+    ALIGN_16 UMath::Vector3 mMagnitude;     // offset 0x30, size 0xC
+    HSIMSERVICE mService;                   // offset 0x3C, size 0x4
+    const Attrib::Collection *mParticipant; // offset 0x40, size 0x4
+    const Attrib::Collection *mContext;     // offset 0x44, size 0x4
+    const Attrib::Collection *mEffect;      // offset 0x48, size 0x4
+    bool mPaused;                           // offset 0x4C, size 0x1
+    bool mTracking;                         // offset 0x50, size 0x1
+    unsigned int mOwner;                    // offset 0x54, size 0x4
+    unsigned int mActee;                    // offset 0x58, size 0x4
 };
 
 }; // namespace Sim

@@ -53,9 +53,9 @@ class Pkt_Effect_Send : public Sim::Packet {
     // Packet
     ~Pkt_Effect_Send() override {}
 
-    ALIGN_PS2(16) UMath::Vector3 mPosition;     // offset 0x4, size 0xC
+    ALIGN_16 UMath::Vector3 mPosition;          // offset 0x4, size 0xC
     WUID mOwner;                                // offset 0x10, size 0x4
-    ALIGN_PS2(16) UMath::Vector3 mMagnitude;    // offset 0x14, size 0xC
+    ALIGN_16 UMath::Vector3 mMagnitude;         // offset 0x14, size 0xC
     const Attrib::Collection *mEffectGroup;     // offset 0x20, size 0x4
     const Attrib::Collection *mOwnerAttributes; // offset 0x24, size 0x4
     const Attrib::Collection *mContext;         // offset 0x28, size 0x4
@@ -82,9 +82,9 @@ class Pkt_Effect_Service : public Sim::Packet {
     ~Pkt_Effect_Service() override {}
 
   private:
-    ALIGN_PS2(16) ALIGN_XENON(16) UMath::Vector3 mPosition;  // offset 0x4, size 0xC
-    bool mTracking;                                          // offset 0x10, size 0x1
-    ALIGN_PS2(16) ALIGN_XENON(16) UMath::Vector3 mMagnitude; // offset 0x14, size 0xC
+    ALIGN_16 UMath::Vector3 mPosition;  // offset 0x4, size 0xC
+    bool mTracking;                     // offset 0x10, size 0x1
+    ALIGN_16 UMath::Vector3 mMagnitude; // offset 0x14, size 0xC
 };
 
 // total size: 0x18
