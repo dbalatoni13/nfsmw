@@ -711,7 +711,7 @@ def generate_build_ninja(
 
     # MSVC
     msvc = compiler_path / "cl.exe"
-    msvc_cmd = f"{wrapper_cmd}{msvc} $cflags /Fo$out $in"
+    msvc_cmd = f"{wrapper_cmd}{msvc} $cflags /showIncludes /Fo$out $in"
     if transform_dep is not None:
         msvc_cmd = (
             "bash -lc 'set -o pipefail; " f"{msvc_cmd} | $python {transform_dep}'"
@@ -724,7 +724,7 @@ def generate_build_ninja(
     # NGCCC
     ngccc = compiler_path / "ngccc.exe"
     if is_windows():
-        ngccc_cmd = f'cmd /c "set SN_NGC_PATH={os.path.abspath(compiler_path)}&& {ngccc} $cflags -MMD -c -o $out $in"'
+        ngccc_cmd = f"{CHAIN}set SN_NGC_PATH={os.path.abspath(compiler_path)}&& {ngccc} $cflags -MMD -c -o $out $in"
     else:
         ngccc_cmd = f"env SN_NGC_PATH={os.path.abspath(compiler_path)} {wrapper_cmd}{ngccc} $cflags -MMD -c -o $out $in"
     ngccc_implicit: List[Optional[Path]] = [
@@ -734,12 +734,11 @@ def generate_build_ninja(
 
     # EE-GCC
     ee_gcc = compiler_path / "bin" / "ee-gcc.exe"
-    strip = binutils / "mips-linux-gnu-strip"
-    # TODO strip
-    # ee_gcc_cmd = (
-    #     f"{ee_gcc} $cflags -MMD -c -o $out $in && {strip}{EXE} $out -N dummy-symbol-name"
-    # )
-    ee_gcc_cmd = f"{wrapper_cmd}{ee_gcc} $cflags -MMD -c -o $out $in"
+    # Workaround because otherwise the dependency files are all placed into the root folder
+    if is_windows():
+        ee_gcc_cmd = f"{CHAIN}set DEPENDENCIES_OUTPUT=$basefile.d&& {ee_gcc} $cflags -c -o $out $in"
+    else:
+        ee_gcc_cmd = f"env DEPENDENCIES_OUTPUT=$basefile.d {wrapper_cmd}{ee_gcc} $cflags -c -o $out $in"
     ee_gcc_implicit: List[Optional[Path]] = [
         compilers_implicit or ee_gcc,
         binutils,
@@ -815,9 +814,8 @@ def generate_build_ninja(
         mwcc_sjis_implicit.append(transform_dep)
         ngccc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
         ngccc_implicit.append(transform_dep)
-        # TODO readd when the dependency generation works
-        # ee_gcc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
-        # ee_gcc_implicit.append(transform_dep)
+        ee_gcc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
+        ee_gcc_implicit.append(transform_dep)
 
     n.comment("Link ELF file")
     n.rule(
@@ -849,7 +847,7 @@ def generate_build_ninja(
     n.newline()
 
     n.comment("MSVC build")
-    # n.variable("msvc_deps_prefix", "Note: including file:")
+    n.variable("msvc_deps_prefix", "Note: including file:")
     n.rule(
         name="msvc",
         command=msvc_cmd,
