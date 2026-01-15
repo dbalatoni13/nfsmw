@@ -100,6 +100,9 @@ class IVehicleAI : public UTL::COM::IUnknown {
     virtual WRoadNav *GetDriveToNav();
     virtual bool GetDrivableToDriveToNav();
     virtual void ResetDriveToNav(eLaneSelection lane_selection);
+#ifdef EA_BUILD_A124
+    virtual void ResetDriveToNav(UMath::Vector3 &target);
+#endif
     virtual bool ResetVehicleToRoadNav(WRoadNav *other_nav);
     virtual bool ResetVehicleToRoadNav(short segInd, char laneInd, float timeStep);
     virtual bool ResetVehicleToRoadPos(const UMath::Vector3 &position, const UMath::Vector3 &forwardVector);

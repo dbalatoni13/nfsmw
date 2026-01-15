@@ -62,23 +62,23 @@ class AIActionHeliPursuit : public AIAction, public Debugable, public Sim::Colli
     WRoadNav *GetPursuitNav() {}
 
   private:
-    IVehicleAI *mIVehicleAI;         // offset 0x50, size 0x4
-    IVehicle *mIVehicle;             // offset 0x54, size 0x4
-    IRigidBody *mIRigidBody;         // offset 0x58, size 0x4
-    IAIHelicopter *mIAIHelicopter;   // offset 0x5C, size 0x4
-    IPursuitAI *mIPursuitAI;         // offset 0x60, size 0x4
-    float mPursuitTime;              // offset 0x64, size 0x4
-    float mSkidKnockTimer;           // offset 0x68, size 0x4
-    float mPathTime;                 // offset 0x6C, size 0x4
-    bool mBuildingPath;              // offset 0x70, size 0x1
-    float mSearchPatternAngle;       // offset 0x74, size 0x4
-    UMath::Vector3 mSearchDestPoint; // offset 0x78, size 0xC
-    IRigidBody *mPlayerRigidBody;    // offset 0x84, size 0x4
-    UMath::Vector3 mPlayerPosition;  // offset 0x88, size 0xC
-    UMath::Vector3 mSkidHitOffset;   // offset 0x94, size 0xC
-    int mCollisionAbort;             // offset 0xA0, size 0x4
-    float mPlayerSpeed;              // offset 0xA4, size 0x4
-    kPursuitMode mPursuitMode;       // offset 0xA8, size 0x4
+    IVehicleAI *mIVehicleAI;                  // offset 0x50, size 0x4
+    IVehicle *mIVehicle;                      // offset 0x54, size 0x4
+    IRigidBody *mIRigidBody;                  // offset 0x58, size 0x4
+    IAIHelicopter *mIAIHelicopter;            // offset 0x5C, size 0x4
+    IPursuitAI *mIPursuitAI;                  // offset 0x60, size 0x4
+    float mPursuitTime;                       // offset 0x64, size 0x4
+    float mSkidKnockTimer;                    // offset 0x68, size 0x4
+    float mPathTime;                          // offset 0x6C, size 0x4
+    bool mBuildingPath;                       // offset 0x70, size 0x1
+    float mSearchPatternAngle;                // offset 0x74, size 0x4
+    ALIGN_16 UMath::Vector3 mSearchDestPoint; // offset 0x78, size 0xC
+    IRigidBody *mPlayerRigidBody;             // offset 0x84, size 0x4
+    ALIGN_16 UMath::Vector3 mPlayerPosition;  // offset 0x88, size 0xC
+    ALIGN_16 UMath::Vector3 mSkidHitOffset;   // offset 0x94, size 0xC
+    int mCollisionAbort;                      // offset 0xA0, size 0x4
+    float mPlayerSpeed;                       // offset 0xA4, size 0x4
+    kPursuitMode mPursuitMode;                // offset 0xA8, size 0x4
 };
 
 AIActionHeliPursuit::AIActionHeliPursuit(AIActionParams *params, float score)

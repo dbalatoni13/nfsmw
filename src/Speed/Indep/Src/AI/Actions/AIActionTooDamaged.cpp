@@ -76,7 +76,7 @@ void AIActionTooDamaged::Update(float dT) {
     mIInput->SetControlHandBrake(0.0f);
 
     if (!mIVehicle->InShock() && GetActionParams().mOwner->GetRigidBody()->GetSpeedXZ() >= 2.5f) {
-        mIInput->SetControlBrake(1.625f);
+        mIInput->SetControlBrake(0.25f);
     }
 }
 

@@ -259,7 +259,7 @@ bool AICopManager::VehicleSpawningEnabled(bool isdespawn) {
 }
 
 IVehicle *AICopManager::GetAvailableCopVehicleByClass(UCrc32 vehicleClass, bool bValidOnesOnly) {
-    if (!VehicleSpawningEnabled(false)) {
+    if (!AICopManager::VehicleSpawningEnabled(false)) {
         return nullptr;
     }
     IPerpetrator *perp = nullptr;
@@ -301,7 +301,7 @@ IVehicle *AICopManager::GetAvailableCopVehicleByClass(UCrc32 vehicleClass, bool 
 }
 
 IVehicle *AICopManager::GetAvailableCopVehicleByName(const char *name) {
-    if (!VehicleSpawningEnabled(false)) {
+    if (!AICopManager::VehicleSpawningEnabled(false)) {
         return nullptr;
     }
     if (!name) {
@@ -1096,30 +1096,29 @@ bool AICopManager::StartLeaderSupport(IPursuit *ipursuit, GroundSupportRequest *
 
 void AICopManager::UpdateSupportCops(IPursuit *ipursuit) {
     GroundSupportRequest *gsr = ipursuit->RequestGroundSupport();
-    if (gsr == nullptr || gsr->mSupportRequestStatus != GroundSupportRequest::PENDING) {
-        return;
-    }
-    if (gsr->mHeavySupport) {
-        if (GetHeavySupportVehicles(gsr) == true) {
-            if (gsr->mHeavySupport->HeavyStrategy == HEAVY_ROADBLOCK) {
-                if (!ipursuit->GetRoadBlock()) {
-                    if (CreateRoadBlock(ipursuit, 4, nullptr, &gsr->mIVehicleList)) {
-                        gsr->mSupportRequestStatus = GroundSupportRequest::ACTIVE;
-                        gsr->mSupportTimer = gsr->mHeavySupport->Duration;
-                        MReqRoadBlock(1).Send("Created");
-                    } else {
-                        MReqRoadBlock(0).Send("Created");
+    if (gsr && gsr->mSupportRequestStatus == GroundSupportRequest::PENDING) {
+        if (gsr->mHeavySupport) {
+            if (GetHeavySupportVehicles(gsr) == true) {
+                if (gsr->mHeavySupport->HeavyStrategy == HEAVY_ROADBLOCK) {
+                    if (!ipursuit->GetRoadBlock()) {
+                        if (CreateRoadBlock(ipursuit, 4, nullptr, &gsr->mIVehicleList)) {
+                            gsr->mSupportRequestStatus = GroundSupportRequest::ACTIVE;
+                            gsr->mSupportTimer = gsr->mHeavySupport->Duration;
+                            MReqRoadBlock(1).Send("Created");
+                        } else {
+                            MReqRoadBlock(0).Send("Created");
+                        }
                     }
+                } else if (StartHeavySupport(ipursuit, gsr) != true) {
+                    MReqBackup(16).Send("ReqDenied");
                 }
-            } else if (StartHeavySupport(ipursuit, gsr) != true) {
-                MReqBackup(16).Send("ReqDenied");
             }
-        }
-    } else if (GetLeaderSupportVehicles(gsr) == true) {
-        if (StartLeaderSupport(ipursuit, gsr) != true) {
-            MReqBackup(64).Send("ReqDenied");
-        } else {
-            MReqBackup(64).Send("Request");
+        } else if (GetLeaderSupportVehicles(gsr) == true) {
+            if (StartLeaderSupport(ipursuit, gsr) != true) {
+                MReqBackup(64).Send("ReqDenied");
+            } else {
+                MReqBackup(64).Send("Request");
+            }
         }
     }
 }
@@ -1547,7 +1546,6 @@ void AICopManager::UpdateCopPriorities(int numActiveCopCars) {
 }
 
 void AICopManager::PursueAtHeatLevel(int minHeatLevel) {
-
     IPlayer *player = const_cast<IPlayer *>(*IPlayer::GetList(PLAYER_LOCAL).begin());
     if (player) {
         bool alreadyPursued = false;

@@ -101,8 +101,8 @@ inline void VU0_v3scale(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath:
 
 inline void VU0_v3scaleadd(const UMath::Vector3 &a, const float scaleby, const UMath::Vector3 &b, UMath::Vector3 &result) {
     asm __volatile__("lqc2 vf1, %1\n"
-                     "lqc2 vf2, %0\n"
-                     "lqc2 vf3, %3\n"
+                     "lqc2 vf2, %3\n"
+                     "lqc2 vf3, %0\n"
                      "qmtc2.ni %2, vf4\n"
                      "vmulx vf3, vf1, vf4x\n"
                      "vadd vf3, vf2, vf3\n"
@@ -197,7 +197,14 @@ inline void VU0_v4subxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath
 
 inline float VU0_v4dotprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b) {}
 
-inline void VU0_v4scale(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &result) {}
+inline void VU0_v4scale(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &result) {
+    asm __volatile__("lqc2 vf1, %1\n"
+                     "qmtc2.ni %2, vf2\n"
+                     "vmulx vf3, vf1, vf2x\n"
+                     "sqc2 vf3, %0"
+                     : "=o"(result)
+                     : "o"(a), "r"(scaleby));
+}
 
 inline void VU0_v4scalexyz(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &result) {}
 
@@ -296,13 +303,54 @@ inline void VU0_v3negate(UMath::Vector3 &result) {
 }
 
 inline float VU0_v3distance(const UMath::Vector3 &p1, const UMath::Vector3 &p2) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    float result;
+    u_long128 _t0;
+    asm __volatile__("lui %3, 0x3f80\n"
+                     "lqc2 vf1, %1\n"
+                     "lqc2 vf2, %2\n"
+                     "vsub vf1, vf1, vf2\n"
+                     "qmtc2.ni %3, vf3\n"
+                     "vmul vf2, vf1, vf1\n"
+                     "vmulax ACC, vf1, vf1x\n"
+                     "vmadday ACC, vf3, vf2y\n"
+                     "vmaddz vf2, vf3, vf2z\n"
+                     "vsqrt Q, vf2x\n"
+                     "vwaitq\n"
+                     "vaddq vf3, vf0, Q\n"
+                     "qmfc2.ni %0, vf3"
+                     : "=r"(result)
+                     : "o"(p1), "o"(p2), "r"(_t0));
+    return result;
+#else
     UMath::Vector3 temp;
     VU0_v3sub(p1, p2, temp);
     return VU0_sqrt(VU0_v3lengthsquare(temp));
+#endif
 }
 
 inline float VU0_v3distancexz(const UMath::Vector3 &p1, const UMath::Vector3 &p2) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    float result;
+    u_long128 _t0;
+    asm __volatile__("lui %3, 0x3f80\n"
+                     "lqc2 vf1, %2\n"
+                     "lqc2 vf2, %1\n"
+                     "vsub vf1, vf1, vf2\n"
+                     "qmtc2.ni %3, vf3\n"
+                     "vmul vf2, vf1, vf1\n"
+                     "vmulax ACC, vf1, vf1x\n"
+                     "vmaddz vf2, vf3, vf2z\n"
+                     "vsqrt Q, vf2x\n"
+                     "vwaitq\n"
+                     "vaddq vf3, vf0, Q\n"
+                     "qmfc2.ni %0, vf3"
+                     : "=r"(result)
+                     : "o"(p1), "o"(p2), "r"(_t0));
+    return result;
+#else
     return VU0_sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.z - p1.z) * (p2.z - p1.z));
+#endif
 }
 
 // TODO these should go into UVectorMathGC.hpp
@@ -573,8 +621,26 @@ inline float VU0_v4lengthxyz(const UMath::Vector4 &a) {
 }
 
 inline void VU0_v3unit(const UMath::Vector3 &a, UMath::Vector3 &result) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    u_long128 _t0;
+    asm __volatile__("lui %2, 0x3f80\n"
+                     "lqc2 vf1, %1\n"
+                     "lqc2 vf2, %1\n"
+                     "vmul vf2, vf1, vf1\n"
+                     "qmtc2.ni %2, vf3\n"
+                     "vmulax ACC, vf1, vf1x\n"
+                     "vmadday ACC, vf3, vf2y\n"
+                     "vmaddz vf2, vf3, vf2z\n"
+                     "vrsqrt Q, vf0w, vf2x\n"
+                     "vwaitq\n"
+                     "vmulq vf2, vf1, Q\n"
+                     "sqc2 vf2, %0"
+                     : "=o"(result)
+                     : "o"(a), "r"(_t0));
+#else
     float rlen = VU0_rsqrt(VU0_v3lengthsquare(a));
     VU0_v3scale(a, rlen, result);
+#endif
 }
 
 inline void VU0_v4unit(const UMath::Vector4 &a, UMath::Vector4 &result) {

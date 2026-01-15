@@ -41,15 +41,15 @@ class AIActionHeliExit : public AIAction, public Debugable {
     // WRoadNav *GetPursuitNav() {}
 
   private:
-    IVehicleAI *mIVehicleAI;       // offset 0x4C, size 0x4
-    IVehicle *mIVehicle;           // offset 0x50, size 0x4
-    IRigidBody *mIRigidBody;       // offset 0x54, size 0x4
-    IAIHelicopter *mIAIHelicopter; // offset 0x58, size 0x4
-    IPursuitAI *mIPursuitAI;       // offset 0x5C, size 0x4
-    float mExitTime;               // offset 0x60, size 0x4
-    bool mBuildingPath;            // offset 0x64, size 0x1
-    UMath::Vector3 mSeekPosition;  // offset 0x68, size 0xC
-    kExitMode mExitMode;           // offset 0x74, size 0x4
+    IVehicleAI *mIVehicleAI;               // offset 0x4C, size 0x4
+    IVehicle *mIVehicle;                   // offset 0x50, size 0x4
+    IRigidBody *mIRigidBody;               // offset 0x54, size 0x4
+    IAIHelicopter *mIAIHelicopter;         // offset 0x58, size 0x4
+    IPursuitAI *mIPursuitAI;               // offset 0x5C, size 0x4
+    float mExitTime;                       // offset 0x60, size 0x4
+    bool mBuildingPath;                    // offset 0x64, size 0x1
+    ALIGN_16 UMath::Vector3 mSeekPosition; // offset 0x68, size 0xC
+    kExitMode mExitMode;                   // offset 0x74, size 0x4
 };
 
 AIActionHeliExit::AIActionHeliExit(AIActionParams *params, float score)
@@ -96,8 +96,8 @@ bool AIActionHeliExit::IsFinished() {
 }
 
 void AIActionHeliExit::FinishAction(float dT) {
-    mExitMode = kSeekUp;
     mExitTime = 0.0f;
+    mExitMode = kSeekUp;
 }
 
 void AIActionHeliExit::BeginAction(float dT) {

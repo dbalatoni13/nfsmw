@@ -72,7 +72,7 @@ void AIActionHeadOnRam::OnBehaviorChange(const UCrc32 &mechanic) {
 }
 
 AIAction *AIActionHeadOnRam::Construct(AIActionParams *params) {
-    return new AIActionHeadOnRam(params, 0.0f);
+    return new AIActionHeadOnRam(params, 0.1f);
 }
 
 bool AIActionHeadOnRam::CanBeAttempted(float dT) {

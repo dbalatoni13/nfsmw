@@ -171,7 +171,7 @@ Attrib::Key AITrafficManager::NextSpawn() {
     }
     unsigned int max_types = UMath::Min(num_types, 10U);
     Attrib::Key key = 0;
-    for (unsigned int i = 0; i < max_types && key == 0; i++, mSpawnIdx++) {
+    for (unsigned int i = 0; i < max_types && key == 0; mSpawnIdx++, i++) {
         mSpawnIdx %= max_types;
         const TrafficPatternRecord &record = mPattern.Vehicles(mSpawnIdx);
         if (mPatternTimer[mSpawnIdx] > record.Rate && record.Rate > 0.0f) {
@@ -328,7 +328,7 @@ bool AITrafficManager::FindCollisions(const UMath::Vector3 &spawnpoint) const {
         UMath::Vector3 velocity;
         ITrafficCenter *center = *iter;
         if (center->GetTrafficBasis(basis, velocity)) {
-            float distsq = DistanceSquarexz(Vector4To3(basis.v3), spawnpoint);
+            float distsq = UMath::DistanceSquarexz(UMath::Vector4To3(basis.v3), spawnpoint);
             if (distsq < 22500.0f) {
                 return true;
             }
@@ -338,7 +338,7 @@ bool AITrafficManager::FindCollisions(const UMath::Vector3 &spawnpoint) const {
     for (IVehicle::List::const_iterator iter = vehicles.begin(); iter != vehicles.end(); iter++) {
         IVehicle *vehicle = *iter;
         if (vehicle->IsActive()) {
-            float distsq = DistanceSquarexz(vehicle->GetPosition(), spawnpoint);
+            float distsq = UMath::DistanceSquarexz(vehicle->GetPosition(), spawnpoint);
             if (distsq < 400.0f) {
                 return true;
             }
@@ -404,7 +404,7 @@ bool AITrafficManager::ChoosePattern() {
 
     // huh
     if (mPatternMap.size() < 0) {
-        int pattern_idx = mPatternMap.size() + 1;
+        int pattern_idx = mPatternMap.size() - 1;
         PatternKey &key = mPatternMap[pattern_idx];
         return mPattern.IsValid();
     }
