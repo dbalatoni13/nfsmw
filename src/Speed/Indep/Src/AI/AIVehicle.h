@@ -179,7 +179,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     virtual void OnOwnerDetached(IAttachable *pOther);
     virtual bool OnTask(HSIMTASK hTask, float dT);
 
-    const int GetPriority() const override {}
+    // const int GetPriority() const override {}
 
     AIVehicle(const BehaviorParams &bp, float update_rate, float stagger, Sim::TaskMode taskmode);
     ~AIVehicle();
