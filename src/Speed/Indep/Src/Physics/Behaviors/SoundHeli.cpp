@@ -16,7 +16,9 @@ class SoundHeli : public VehicleBehavior, public IAudible {
     ~SoundHeli() override;
 
     // IAudible
-    bool IsAudible() const override {}
+    bool IsAudible() const override {
+        return CheckService(mSoundService) == Sim::CONNSTATUS_READY;
+    }
 
     // Behavior
     void Reset() override {}
