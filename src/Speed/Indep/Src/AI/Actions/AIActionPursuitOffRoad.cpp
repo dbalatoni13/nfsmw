@@ -139,22 +139,29 @@ bool AIActionPursuitOffRoad::ShouldDoIt() {
         distancelimit += UMath::Distance(targetPosition, targetvehicleai->GetCurrentRoad()->GetPosition());
     }
 
-    if (distanceToTarget <= distancelimit) {
-        if (UMath::Distance(target->GetLinearVelocity(), mIRigidBody->GetLinearVelocity()) <= KPH2MPS(140.0f)) {
-            if (mIVehicleAI->GetDrivableToTargetPos() && mIVehicleAI->GetDrivableToDriveToNav()) {
-                return true;
-            }
-        }
+    if (distanceToTarget > distancelimit) {
+        return false;
     }
-
-    return false;
+    if (UMath::Distance(target->GetLinearVelocity(), mIRigidBody->GetLinearVelocity()) > KPH2MPS(140.0f)) {
+        return false;
+    }
+    if (!mIVehicleAI->GetDrivableToTargetPos()) {
+        return false;
+    }
+    if (!mIVehicleAI->GetDrivableToDriveToNav()) {
+        return false;
+    }
+    return true;
 }
 
 bool AIActionPursuitOffRoad::CanBeAttempted(float dT) {
-    if (!mIVehicleAI || !mIPursuitAI || !mITransmission || !mIRigidBody) {
-        return false;
-    }
-    if (!mIPursuitAI->GetChicken() && ShouldDoIt()) {
+    if (mIVehicleAI && mIPursuitAI && mITransmission && mIRigidBody) {
+        if (mIPursuitAI->GetChicken()) {
+            return false;
+        }
+        if (!ShouldDoIt()) {
+            return false;
+        }
         return true;
     }
     return false;

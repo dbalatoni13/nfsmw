@@ -1,6 +1,7 @@
 #ifndef AI_AITARGET_H
 #define AI_AITARGET_H
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
@@ -19,6 +20,11 @@ class AITarget : public bTNode<AITarget> {
     static void TrackAll();
     static bool CanAquire(const ISimable *who);
 
+    void *operator new(size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
+    AITarget(ISimable *owner);
     void Clear();
     void Aquire(ISimable *target);
     void Aquire(const UMath::Vector3 &position);
@@ -28,6 +34,8 @@ class AITarget : public bTNode<AITarget> {
     float GetSpeed() const;
     const UMath::Vector3 &GetLinearVelocity() const;
     void TrackInternal();
+
+    virtual ~AITarget();
 
     ISimable *GetSimable() {
         return mTargetSimable;
@@ -45,23 +53,7 @@ class AITarget : public bTNode<AITarget> {
         return mValid;
     }
 
-    bool QueryInterface(IPerpetrator **out) {
-        if (mTargetSimable) {
-            return mTargetSimable->QueryInterface(out);
-        }
-        *out = nullptr;
-        return false;
-    }
-
-    bool QueryInterface(IVehicle **out) {
-        if (mTargetSimable) {
-            return mTargetSimable->QueryInterface(out);
-        }
-        *out = nullptr;
-        return false;
-    }
-
-    bool QueryInterface(IAttachable **out) {
+    template <typename T> bool QueryInterface(T **out) {
         if (mTargetSimable) {
             return mTargetSimable->QueryInterface(out);
         }

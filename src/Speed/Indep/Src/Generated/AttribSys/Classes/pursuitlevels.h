@@ -171,8 +171,8 @@ struct pursuitlevels : Instance {
         return *resultptr;
     }
 
-    const float &CollapseAggression(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x594e1492, index));
+    const float &CollapseAggression() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x594e1492, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }

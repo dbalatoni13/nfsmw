@@ -125,9 +125,12 @@ template <typename T> inline bool Is(const IUnknown *pUnk) {
 }
 
 template <typename T, typename U, typename V> class Factory {
+    typedef U _PRODUCT;
+    typedef V _PRODUCT_SIGNATURE;
+    typedef T _BUILD_PARAMETERS;
 
   public:
-    static U *CreateInstance(V, T);
+    static _PRODUCT *CreateInstance(_PRODUCT_SIGNATURE, _BUILD_PARAMETERS);
 
     Factory() {}
 

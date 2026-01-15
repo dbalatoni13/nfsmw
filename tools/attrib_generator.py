@@ -172,7 +172,7 @@ def process_file(filename, strings_file, outdirectory):
             out += "};\n\n"
 
             out += f"""void *operator new(size_t bytes) {{
-    Attrib::Alloc(bytes, "{name}");
+    return Attrib::Alloc(bytes, "{name}");
 }}
             
 void operator delete(void *ptr, size_t bytes) {{
@@ -189,6 +189,10 @@ void operator delete(void *ptr, size_t bytes) {{
 }}
 
 {name}(const {name} &src) : Instance(src) {{
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}}
+
+{name}(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {{
     SetDefaultLayout(sizeof(_LayoutStruct));
 }}
 

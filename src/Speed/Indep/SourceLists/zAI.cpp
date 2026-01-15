@@ -19,3 +19,7 @@
 #include "Speed/Indep/Src/AI/Actions/AIActionHeliExit.cpp"
 
 #include "Speed/Indep/Src/AI/Actions/AIActionHeadOnRam.cpp"
+
+#include "Speed/Indep/Src/AI/Actions/AIActionRam.cpp"
+
+#include "Speed/Indep/Src/AI/Common/AIVehicle.cpp"

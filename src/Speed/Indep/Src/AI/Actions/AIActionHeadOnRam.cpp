@@ -1,4 +1,5 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/AI/AIAction.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/AI/Common/AISteer.hpp"
@@ -100,6 +101,26 @@ void AIActionHeadOnRam::BeginAction(float dT) {
 }
 
 void AIActionHeadOnRam::FinishAction(float dT) {}
+
+void AIActionHeadOnRam::GetSeekPosition(UMath::Vector3 &seekPosition) {
+    AITarget *target = mIVehicleAI->GetTarget();
+    UMath::Vector3 targetPosition = target->GetPosition();
+    UMath::Vector3 targetVelocity = target->GetLinearVelocity();
+    UMath::Vector3 targetForward;
+    if (target->GetSpeed() < KPH2MPS(5.0f)) {
+        target->GetForwardVector(targetForward);
+    } else {
+        targetForward = targetVelocity;
+    }
+    UMath::Normalize(targetForward);
+    UMath::Vector3 targetSide = UMath::Vector3Make(targetForward.z, 0.0f, -targetForward.x);
+    UMath::Normalize(targetSide);
+
+    UMath::Vector3 offset = mIPursuitAI->GetInPositionOffset();
+    UMath::Scale(targetForward, offset.z, seekPosition);
+    UMath::ScaleAdd(targetSide, offset.x, seekPosition, seekPosition);
+    UMath::Add(seekPosition, targetPosition, seekPosition);
+}
 
 float AIActionHeadOnRam::GetDesiredSpeed(UMath::Vector3 &seekPosition) {
     float desiredSpeed = 0.0f;

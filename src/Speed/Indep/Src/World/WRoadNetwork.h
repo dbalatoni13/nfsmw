@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/USpline.h"
 #include "Speed/Indep/Src/Debug/Debugable.h"
@@ -134,6 +135,10 @@ class WRoadNav {
         kLaneMax = 0x0008,
     };
 
+    void *operator new(size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
     WRoadNav();
     virtual ~WRoadNav();
     void SetCookieTrail(CookieTrail<NavCookie, 32> *p_cookies);
@@ -141,7 +146,7 @@ class WRoadNav {
     void ClearCookieTrail();
     void ResetCookieTrail();
     void MaybeAllocatePathSegments();
-    // void WRoadNav::SetPathType(EPathType type);
+    void SetPathType(EPathType type);
     void Reset();
     bool IsPathSegment(unsigned short path_segment) const;
     bool OnPath() const;
@@ -153,7 +158,6 @@ class WRoadNav {
     void Reverse();
     void InitAtPoint(const UMath::Vector3 &pos, const UMath::Vector3 &dir, bool forceCenterLane, float dirWeight);
     bool CanTrafficSpawn();
-    void SetPathType(EPathType type);
     void IncNavPosition(float dist, const UMath::Vector3 &to, float max_lookahead);
     void PrivateIncNavPosition(float dist, const UMath::Vector3 &to);
     int ClosestCookieAhead(const UMath::Vector3 &position, NavCookie *interpolated_cookie);
@@ -175,6 +179,7 @@ class WRoadNav {
     bool IsSegmentInCookieTrail(int segment_number, bool use_whole_path);
     bool IsSegmentInPath(int segment_number);
     void PullOver();
+    void SetVehicle(class AIVehicle *ai_vehicle);
 
     bool IsValid() {
         return fValid;
@@ -214,6 +219,10 @@ class WRoadNav {
 
     void SetLaneType(ELaneType type) {
         fLaneType = type;
+    }
+
+    void SetDecisionFilter(bool b) {
+        bDecisionFilter = b;
     }
 
     int IsOccludedByAvoidable() const {

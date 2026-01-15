@@ -18,7 +18,24 @@ struct AIActionParams {
 };
 
 // total size: 0x48
-struct AIAction : public Sim::Object, public UTL::COM::Factory<AIActionParams *, AIAction, UCrc32> {
+class AIAction : public Sim::Object, public UTL::COM::Factory<AIActionParams *, AIAction, UCrc32> {
+  public:
+    struct List : public UTL::Std::list<AIAction *, _type_list> {
+        // void *operator new(size_t size, void *ptr) {}
+
+        // void operator delete(void *mem, void *ptr) {}
+
+        // void *operator new(size_t size) {}
+
+        // void operator delete(void *mem, size_t size) {}
+
+        // void *operator new(size_t size, const char *name) {}
+
+        // void operator delete(void *mem, const char *name) {}
+
+        // void operator delete(void *mem, size_t size, const char *name) {}
+    };
+
     AIAction(AIActionParams *params, float score);
     ~AIAction() override {}
 
@@ -92,7 +109,9 @@ class performance_limiter {
     void init(float speed);
     void update(float speed, float maxspeed, float maxaccel, float dt);
 
-    inline float get_speed_limit() {}
+    float get_speed_limit() {
+        return speed_limit;
+    }
 
   private:
     float speed_limit; // offset 0x0, size 0x4

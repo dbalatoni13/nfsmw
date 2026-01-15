@@ -63,6 +63,7 @@ bool ShiftPoints(const Attrib::Gen::transmission &transmission, const Attrib::Ge
 Mps Speedometer(const Attrib::Gen::transmission &transmission, const Attrib::Gen::engine &engine, const Attrib::Gen::tires &tires, Rpm rpm,
                 GearID gear, const Tunings *tunings);
 bool EstimatePerformance(Performance &perf);
+bool ComputeAccelerationTable(const Attrib::Gen::pvehicle &pvehicle, float &top_speed, float *table, int num_entries);
 
 extern Performance PerformanceWeights[7];
 

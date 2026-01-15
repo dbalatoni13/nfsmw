@@ -86,7 +86,7 @@ struct pvehicle : Instance {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
-	pvehicle(const Instance &src) : Instance(src) {
+    pvehicle(const Instance &src) : Instance(src) {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
@@ -102,6 +102,14 @@ struct pvehicle : Instance {
 
     static Key ClassKey() {
         return 0x4a97ec8f;
+    }
+
+    const RefSpec &aivehicle() const {
+        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(GetAttributePointer(0x22515733, 0));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const RefSpec *>(DefaultDataArea(sizeof(RefSpec)));
+        }
+        return *resultptr;
     }
 
     const UMath::Vector4 &TENSOR_SCALE() const {
