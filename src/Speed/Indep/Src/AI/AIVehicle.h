@@ -175,9 +175,9 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     virtual void OnDriving(float dT);
 
     // Behavior
-    virtual void OnOwnerAttached(IAttachable *pOther);
-    virtual void OnOwnerDetached(IAttachable *pOther);
-    virtual bool OnTask(HSIMTASK hTask, float dT);
+    void OnOwnerAttached(IAttachable *pOther) override;
+    void OnOwnerDetached(IAttachable *pOther) override;
+    bool OnTask(HSIMTASK hTask, float dT) override;
 
     // const int GetPriority() const override {}
 
