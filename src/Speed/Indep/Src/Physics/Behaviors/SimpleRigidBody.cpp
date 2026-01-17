@@ -11,8 +11,7 @@
 SimpleRigidBody::SimpleRigidBody(const BehaviorParams &bp, const RBSimpleParams &params)
     : Behavior(bp, 0), IRigidBody(bp.fowner), ISimpleBody(bp.fowner) {
     TheSimpleBodies.AddTail(this);
-    // TODO
-    // MakeDebugable(eDebugableClass);
+    MakeDebugable(DBG_RIGIDBODY);
 
     mData->index = AssignSlot();
     mData->position = params.finitPos;
@@ -31,8 +30,8 @@ SimpleRigidBody::SimpleRigidBody(const BehaviorParams &bp, const RBSimpleParams 
 SimpleRigidBody::~SimpleRigidBody() {
     TheSimpleBodies.Remove(this);
     mCollisionMap[mData->index].Clear();
-    mCount--;
     mMaps[mData->index] = nullptr;
+    mCount--;
 }
 
 Behavior *SimpleRigidBody::Construct(const struct BehaviorParams &params) {

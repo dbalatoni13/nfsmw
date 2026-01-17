@@ -75,6 +75,10 @@ inline void Copy(const Matrix4 &a, Matrix4 &r) {
     VU0_MATRIX4Copy(a, r);
 }
 
+inline void Set(Matrix4 &m, unsigned int row, const Vector4 &a) {
+    VU0_v4Copy(a, m[row]);
+}
+
 inline void Copy(const Vector4 &a, Vector4 &r) {
     VU0_v4Copy(a, r);
 }

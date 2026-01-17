@@ -376,7 +376,7 @@ inline void VU0_v3unitcrossprod(const UMath::Vector3 &a, const UMath::Vector3 &b
                      : "o"(a), "o"(b), "r"(_t0));
 #else
     VU0_v3crossprod(a, b, dest);
-// VU0_v3unit(dest, dest); // TODO
+    VU0_v3unit(dest, dest);
 #endif
 }
 

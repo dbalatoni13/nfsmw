@@ -30,7 +30,11 @@ RigidBody::Volatile::Volatile() {}
 
 // UNSOLVED but functionally matching
 RigidBody::Mesh::Mesh(const SimSurface &material, const UMath::Vector4 *verts, unsigned int count, UCrc32 name, bool persistant)
-    : mVerts(nullptr), mNumVertices(count), mFlags(0), mMaterial(material.GetConstCollection()), mName(name) {
+    : mVerts(nullptr),                          //
+      mNumVertices(count),                      //
+      mFlags(0),                                //
+      mMaterial(material.GetConstCollection()), //
+      mName(name) {
     if (persistant) {
         mVerts = const_cast<UMath::Vector4 *>(verts);
     } else {
@@ -123,14 +127,13 @@ void RBGrid::Remove(RBGrid *grid) {
     }
 }
 
-// UNSOLVED
 RigidBody::~RigidBody() {
     if (mGrid) {
         RBGrid::Remove(mGrid);
+        mGrid = nullptr;
     }
-    mGrid = nullptr;
-    mCount--;
     mMaps[mData->index] = nullptr;
+    mCount--;
     if (mWCollider) {
         WCollider::Destroy(mWCollider);
     }
@@ -139,12 +142,19 @@ RigidBody::~RigidBody() {
     mPrimitives.DeleteAllElements();
     Dynamics::Articulation::Release(this);
     TheRigidBodies.Remove(this);
-    // TODO come back to this after we decomped Listable<>Unlist or the inlines it calls
 }
 
 void RigidBody::Reset() {
     mWCollider->Clear();
     UpdateCollider();
+}
+
+void RigidBody::SetOrientation(const UMath::Matrix4 &orientMat) {
+    Volatile &data = *mData;
+    UMath::Matrix4ToQuaternion(orientMat, data.orientation);
+    UMath::Copy(orientMat, data.bodyMatrix);
+    UMath::Set(data.bodyMatrix, 3, UMath::Vector4::kIdentity);
+    data.inertiaTensor.GetInverseWorldTensor(data.bodyMatrix, mInvWorldTensor);
 }
 
 void RigidBody::SetOrientation(const UMath::Vector4 &newOrientation) {

@@ -57,8 +57,8 @@ class IRigidBody : public UTL::COM::IUnknown, public UTL::Collections::Listable<
     virtual void Resolve(const UMath::Vector3 &force, const UMath::Vector3 &torque) = 0;
     virtual void ResolveForce(const UMath::Vector3 &force) = 0;
     virtual void ResolveTorque(const UMath::Vector3 &torque) = 0;
-    virtual void ResolveForce(const UMath::Vector3 &force, const UMath::Vector3 &p) = 0;
     virtual void ResolveTorque(const UMath::Vector3 &f, const UMath::Vector3 &p) = 0;
+    virtual void ResolveForce(const UMath::Vector3 &force, const UMath::Vector3 &p) = 0;
     virtual void PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector3 &initPos) = 0;
     virtual void Accelerate(const UMath::Vector3 &a, float dT) = 0;
     virtual void ConvertLocalToWorld(UMath::Vector3 &val, bool translate) const = 0;

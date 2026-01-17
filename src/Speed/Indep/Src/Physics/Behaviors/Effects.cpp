@@ -13,7 +13,6 @@ Effects::Effects(const struct BehaviorParams &bp) : Behavior(bp, 0) {
 
 Effects::~Effects() {
     Sim::Collision::RemoveListener(this);
-    mScrape.Stop();
 }
 
 void Effects::Reset() {

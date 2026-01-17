@@ -133,14 +133,13 @@ void RBTractor::UpdateTrailer(float dT) {
 }
 
 bool RBTractor::OnTask(HSIMTASK htask, float dT) {
-    Sim::ITaskable::OnTask(htask, dT);
-
     if (htask == mTrailerTask) {
         if (mTrailer && mTrailer->IsActive()) {
             UpdateTrailer(dT);
         }
         return true;
     } else {
+        Sim::Object::OnTask(htask, dT);
         return false;
     }
 }
