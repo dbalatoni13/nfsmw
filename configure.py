@@ -153,7 +153,7 @@ if version_num in [0]:
     config.binutils_tag = "2.42-1"
 elif version_num in [1]:
     config.platform = Platform.X360
-    config.dtk_tag = "v0.1.1"
+    config.dtk_tag = "v0.1.2"
     config.binutils_tag = "2.42-1"
 elif version_num in [2]:
     config.platform = Platform.PS2
@@ -187,10 +187,9 @@ elif config.platform == Platform.X360:
         "/NODEFAULTLIB",
         "/MACHINE:PPCBE",
         "/XEX:NO",
-        f"/PDB:./build/{config.version}/default.pdb",
+        f"/PDB:./build/{config.version}/{config.version}.pdb",
         f"/DEBUG",
-        # f"/LTCG",
-        f"/VERBOSE",
+        f"/LTCG",
     ]
 elif config.platform == Platform.PS2:
     config.asflags = [
@@ -290,6 +289,7 @@ elif config.platform == Platform.X360:
         "/c",  # compile without linking
         "/wd4996",  # get rid of string deprecation warnings for now
         "/wd4355",  # gets rid of the warning 'this' used in base member initializer
+        # "/GL",  # enable LTCG
         # "/GR",  # RTTI
         "/Og",
         # "/Os", # no
@@ -432,6 +432,7 @@ def MatchingFor(*versions):
 
 if config.platform != Platform.PS2:
     config.warn_missing_config = True
+
 config.warn_missing_source = False
 config.libs = [
     {
@@ -1416,7 +1417,7 @@ if config.platform == Platform.X360:
             "host": False,
             "progress_category": "sdk",  # str | List[str]
             "objects": [
-                Object(Matching, "Speed/Xenon/link_fix.cpp"),
+                Object(NonMatching, "Speed/Xenon/link_fix.cpp"),
             ],
         }
     )

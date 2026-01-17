@@ -1284,9 +1284,7 @@ def generate_build_ninja(
         # Add DOL link step
         link_step = LinkStep(build_config)
         for unit in build_config["units"]:
-            # TODO xbox 360 temporary hack
-            if "embsec" not in unit["name"] and "no_bbt" not in unit["name"]:
-                add_unit(unit, link_step)
+            add_unit(unit, link_step)
         link_steps.append(link_step)
 
         if config.build_rels:
@@ -1327,12 +1325,10 @@ def generate_build_ninja(
         ###
         # Link
         ###
-        # TODO: add this functionality back when you have a few objs together you can work with (X360)
-        if config.platform != Platform.X360:
-            for step in link_steps:
-                step.write(n)
-                link_outputs.append(step.output())
-            n.newline()
+        for step in link_steps:
+            step.write(n)
+            link_outputs.append(step.output())
+        n.newline()
 
         # Add all build steps needed after linking and before GC/Wii native format generation
         write_custom_step("post-link", "post-compile")
