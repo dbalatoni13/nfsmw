@@ -13,9 +13,9 @@
 class AIGoal : public UTL::COM::Factory<ISimable *, AIGoal, UCrc32> {
   public:
     virtual ~AIGoal();
-    virtual void OnBehaviorChange(const UCrc32 &mechanic);
     virtual void ChooseAction(float dT);
     virtual void Update(float dT);
+    virtual void OnBehaviorChange(const UCrc32 &mechanic);
 
     // void *operator new(size_t size, void *ptr) {}
 

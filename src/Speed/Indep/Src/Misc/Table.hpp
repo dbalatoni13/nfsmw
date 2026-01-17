@@ -9,9 +9,25 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include <cstddef>
 
+// total size: 0x10
 class TableBase {
+  public:
+    TableBase(int num, float min, float max) {
+        NumEntries = num;
+        SetMinMax(min, max);
+    }
+
+    void SetMinMax(float fMin, float fMax) {
+        MinArg = fMin;
+        MaxArg = fMax;
+        CalcIndexMultiplier();
+    }
+
+    void CalcIndexMultiplier() {
+        IndexMultiplier = (NumEntries - 1) / (MaxArg - MinArg);
+    }
+
   protected:
-    // total size: 0x10
     int NumEntries;        // offset 0x0, size 0x4
     float MinArg;          // offset 0x4, size 0x4
     float MaxArg;          // offset 0x8, size 0x4
@@ -19,20 +35,17 @@ class TableBase {
 };
 
 class Table : public TableBase {
-
   public:
     float GetValue(float arg);
     float InverseLookup(float value);
 
-    Table() {}
-
-    Table(const float *table, int num, float min, float max) {}
+    Table(const float *table, int num, float min, float max) : TableBase(num, min, max), pTable(table) {}
 
     const float *GetData() const {}
 
     void SetData(const float *data, int num) {}
 
-  protected:
+  private:
     // total size: 0x14
     const float *pTable; // offset 0x10, size 0x4
 };

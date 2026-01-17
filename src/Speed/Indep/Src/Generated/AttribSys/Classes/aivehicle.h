@@ -27,6 +27,14 @@ enum Type_subject_battalion {
 
 };
 
+// total size: 0x10
+struct AICollisionReactionRecord {
+    // AICollisionReactionRecord &operator=(const AICollisionReactionRecord &_ctor_arg) {}
+
+    uint32 Goal;              // offset 0x0, size 0x4
+    Attrib::RefSpec Reaction; // offset 0x4, size 0xC
+};
+
 namespace Attrib {
 namespace Gen {
 
@@ -76,20 +84,20 @@ struct aivehicle : Instance {
         return 0x22515733;
     }
 
-    // const AICollisionReactionRecord &PlayerCollisions(unsigned int index) const {
-    //     const AICollisionReactionRecord *resultptr = reinterpret_cast<const AICollisionReactionRecord *>(GetAttributePointer(0x489212da, index));
-    //     if (!resultptr) {
-    //         resultptr = reinterpret_cast<const AICollisionReactionRecord *>(DefaultDataArea(sizeof(AICollisionReactionRecord)));
-    //     }
-    //     return *resultptr;
-    // }
+    const AICollisionReactionRecord &PlayerCollisions(unsigned int index) const {
+        const AICollisionReactionRecord *resultptr = reinterpret_cast<const AICollisionReactionRecord *>(GetAttributePointer(0x489212da, index));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const AICollisionReactionRecord *>(DefaultDataArea(sizeof(AICollisionReactionRecord)));
+        }
+        return *resultptr;
+    }
 
     unsigned int Num_PlayerCollisions() const {
         return Get(0x489212da).GetLength();
     }
 
-    const RefSpec &PlayerCollisionsDefault(unsigned int index) const {
-        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(GetAttributePointer(0x75a2bcd7, index));
+    const RefSpec &PlayerCollisionsDefault() const {
+        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(GetAttributePointer(0x75a2bcd7, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const RefSpec *>(DefaultDataArea(sizeof(RefSpec)));
         }

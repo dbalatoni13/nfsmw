@@ -68,7 +68,7 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
         return mPriority;
     }
 
-    virtual void OnOwnerAttached(IAttachable *pOther);
+    virtual void OnOwnerAttached(IAttachable *pOther) {}
 
     virtual void OnOwnerDetached(IAttachable *pOther) {
         // TODO right place?

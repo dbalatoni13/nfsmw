@@ -59,6 +59,10 @@ struct collisionreactions : Instance {
         Change(FindCollection(ClassKey(), collectionkey));
     }
 
+    void Change(const RefSpec &refspec) {
+        Instance::Change(refspec);
+    }
+
     static Key ClassKey() {
         return 0xb32682f1;
     }

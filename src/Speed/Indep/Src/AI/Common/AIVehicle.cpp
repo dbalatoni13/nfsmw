@@ -1,15 +1,26 @@
 #include "Speed/Indep/Src/AI/AIVehicle.h"
+#include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Src/AI/AIGoal.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/aivehicle.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/collisionreactions.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRBVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Misc/Profiler.hpp"
+#include "Speed/Indep/Src/Misc/Table.hpp"
+#include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
+#include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/World/OnlineManager.hpp"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 const char *GetCaffeineLayerName(int driver_class);
@@ -133,3 +144,420 @@ void AIVehicle::ResetInternals() {
     mReverseOverrideSteer = 0.0f;
     mSteeringBehind = false;
 }
+
+void AIVehicle::OnTaskSimulate(float dT) {
+    if (GetVehicle()->IsActive() && mDriveFlags != 0) {
+        OnDriving(dT);
+    }
+}
+
+bool AIVehicle::OnClearCausality(float start_time) {
+    return Sim::GetTime() - start_time > 2.0f;
+}
+
+float AIVehicle::GetAcceleration(float at) const {
+    if (mTopSpeed > 0.0f) {
+        Table table(mAccelData, 10, 0.0f, mTopSpeed);
+        return table.GetValue(UMath::Abs(at));
+    } else {
+        return 0.0f;
+    }
+}
+
+bool AIVehicle::OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) {
+    if (mAvoidableRadius > 0.0f && GetVehicle()->IsActive()) {
+        IRigidBody *rb = GetOwner()->GetRigidBody();
+        if (rb) {
+            sweep = UMath::Max(mAvoidableRadius, 2.0f * rb->GetSpeed());
+            pos = rb->GetPosition();
+            return true;
+        }
+    }
+    return false;
+}
+
+void AIVehicle::DoNOS() {
+    bool wantnos = false;
+    bool isnos = GetInput()->GetControls().fNOS;
+    float myspeed = GetVehicle()->GetSpeed();
+    float desiredspeed = GetDriveSpeed();
+
+    if (desiredspeed > (isnos ? KPH2MPS(90.0f) : KPH2MPS(120.0f))) {
+        if (myspeed > (isnos ? KPH2MPS(50.0f) : KPH2MPS(80.0f))) {
+            if ((desiredspeed - myspeed) > (isnos ? KPH2MPS(10.0f) : KPH2MPS(60.0f))) {
+                IRigidBody *ibody;
+                if (GetVehicle()->QueryInterface(&ibody)) {
+                    UMath::Vector3 driveoff = UVector3(GetDriveTarget()) - GetVehicle()->GetPosition();
+                    float drivelength = UMath::Length(driveoff);
+                    float align = UMath::Dot(driveoff, ibody->GetLinearVelocity());
+                    drivelength = UMath::Length(driveoff);
+
+                    if (align > (isnos ? drivelength * 0.8f * myspeed : drivelength * 0.95f * myspeed)) {
+                        wantnos = true;
+                    }
+                }
+            }
+        }
+    }
+    GetInput()->SetControlNOS(wantnos);
+}
+
+bool AIVehicle::OnTask(HSIMTASK hTask, float dT) {
+    ProfileNode profile_node("TODO", 0);
+    if (hTask == mThinkTask) {
+        if (IsPaused() || TheOnlineManager.GetState() == OLS_RACE_END) {
+            return true;
+        }
+        ClearDriveFlags();
+        if (GetVehicle()->IsActive()) {
+            Update(dT);
+        }
+        HCAUSE hcause = GetOwner()->GetCausality();
+        if (hcause) {
+            float start_time = GetOwner()->GetCausalityTime();
+            if (OnClearCausality(start_time)) {
+                GetOwner()->SetCausality(nullptr, 0.0f);
+            }
+        }
+        return true;
+    } else {
+        Sim::Object::OnTask(hTask, dT);
+        return false;
+    }
+}
+
+void AIVehicle::OnOwnerAttached(IAttachable *pOther) {
+    IPursuit *ipursuit;
+    if (!mPursuit && pOther->QueryInterface(&ipursuit)) {
+        mPursuit = ipursuit;
+    }
+    IRoadBlock *iroadblock;
+    if (!mRoadBlock && pOther->QueryInterface(&iroadblock)) {
+        mRoadBlock = iroadblock;
+    }
+    Behavior::OnOwnerAttached(pOther);
+}
+
+void AIVehicle::OnOwnerDetached(IAttachable *pOther) {
+    if (UTL::COM::ComparePtr(pOther, mPursuit)) {
+        mPursuit = nullptr;
+    }
+    if (UTL::COM::ComparePtr(pOther, mRoadBlock)) {
+        mRoadBlock = nullptr;
+    }
+    Behavior::OnOwnerDetached(pOther);
+}
+
+void AIVehicle::OnBehaviorChange(const UCrc32 &mechanic) {
+    if (mechanic == BEHAVIOR_MECHANIC_ENGINE) {
+        GetOwner()->QueryInterface(&mIEngine);
+        GetOwner()->QueryInterface(&mITransmission);
+    }
+    if (mechanic == BEHAVIOR_MECHANIC_SUSPENSION) {
+        GetOwner()->QueryInterface(&mISuspension);
+    }
+    if (mechanic == BEHAVIOR_MECHANIC_INPUT) {
+        GetOwner()->QueryInterface(&mIInput);
+    }
+    if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {
+        GetOwner()->QueryInterface(&mCollisionBody);
+    }
+    if (mCurrentGoal) {
+        mCurrentGoal->OnBehaviorChange(mechanic);
+    }
+    Behavior::OnBehaviorChange(mechanic);
+}
+
+void AIVehicle::ClearGoal() {
+    if (mCurrentGoal) {
+        delete mCurrentGoal;
+        mCurrentGoal = nullptr;
+    }
+    mGoalName = UCrc32::kNull;
+}
+
+void AIVehicle::SetGoal(const UCrc32 &name) {
+    if (mGoalName == name) {
+        return;
+    }
+    delete mCurrentGoal;
+    mGoalName = name;
+    mCurrentGoal = UTL::COM::Factory<ISimable *, AIGoal, UCrc32>::CreateInstance(name, GetOwner());
+    DriverClass driverclass = GetVehicle()->GetDriverClass();
+    // TODO, this means the first 4
+    if (driverclass - 1U < 3) {
+        IRBVehicle *ivehiclebody;
+        if (GetOwner()->QueryInterface(&ivehiclebody)) {
+            const Attrib::Gen::aivehicle &attributes = GetAttributes();
+            unsigned int num_reactions = attributes.Num_PlayerCollisions();
+            bool found = false;
+            Attrib::Gen::collisionreactions reactions((Attrib::Collection *)nullptr, 0, nullptr);
+
+            for (size_t i = 0; i < num_reactions; i++) {
+                const AICollisionReactionRecord &record = attributes.PlayerCollisions(i);
+                if (record.Goal == mGoalName.GetValue()) {
+                    reactions.Change(record.Reaction);
+                    found = true;
+                    break;
+                }
+            }
+            if (!reactions.IsValid()) {
+                reactions.Change(attributes.PlayerCollisionsDefault());
+            }
+            ivehiclebody->SetPlayerReactions(reactions);
+        }
+    }
+}
+
+void AIVehicle::Update(float dT) {
+    IRigidBody *rb = GetOwner()->GetRigidBody();
+    UMath::Vector3 vfwd;
+    rb->GetForwardVector(vfwd);
+
+    float yaw = UMath::Atan2r(vfwd.x, vfwd.z);
+    mDampedAngularVel.Integrate(rb->GetAngularVelocity().y, dT);
+    if ((yaw < -1.5707964f && mDampedAngle.GetPosition() > 1.5707964f) || (yaw > 1.5707964f && mDampedAngle.GetPosition() < -1.5707964f)) {
+        mDampedAngle.SetPosition(yaw);
+    } else {
+        mDampedAngle.Integrate(yaw, dT);
+    }
+
+    UpdateSimplePhysics(dT);
+}
+
+void AIVehicle::ResetDriveToNav(eLaneSelection lane_selection) {
+    bool force_center_lane = lane_selection == SELECT_CENTER_LANE;
+    UMath::Vector3 forwardVector;
+    GetVehicle()->ComputeHeading(&forwardVector);
+
+    IRigidBody *irb = GetSimable()->GetRigidBody();
+
+    const float dir_weight = 1.0f;
+    WRoadNav *road_nav = GetDriveToNav();
+    road_nav->InitAtPoint(irb->GetPosition(), forwardVector, force_center_lane, dir_weight);
+    road_nav->CancelPathFinding();
+
+    if (lane_selection == SELECT_VALID_LANE) {
+        road_nav->SnapToSelectableLane();
+    }
+    UpdateRoadNavInfo();
+}
+
+bool AIVehicle::ResetVehicleToRoadNav(WRoadNav *other_nav) {
+    WRoadNav *road_nav = GetDriveToNav();
+    road_nav->InitFromOtherNav(other_nav, false);
+    bool success = GetVehicle()->SetVehicleOnGround(road_nav->GetPosition(), road_nav->GetForwardVector());
+
+    UpdateRoadNavInfo();
+    return success;
+}
+
+bool AIVehicle::ResetVehicleToRoadNav(short segInd, char laneInd, float timeStep) {
+    WRoadNav *pdrivetonav = GetDriveToNav();
+    pdrivetonav->InitAtSegment(segInd, laneInd, timeStep);
+    bool success = GetVehicle()->SetVehicleOnGround(pdrivetonav->GetPosition(), pdrivetonav->GetForwardVector());
+
+    UpdateRoadNavInfo();
+    return success;
+}
+
+bool AIVehicle::ResetVehicleToRoadPos(const UMath::Vector3 &position, const UMath::Vector3 &forwardVector) {
+    const float dir_weight = 1.0f;
+    const bool force_centre_lane = false;
+
+    GetDriveToNav()->InitAtPoint(position, forwardVector, force_centre_lane, dir_weight);
+    bool success = GetVehicle()->SetVehicleOnGround(position, forwardVector);
+
+    UpdateRoadNavInfo();
+    return success;
+}
+
+void AIVehicle::UpdateRoadNavInfo() {
+    WRoadNav *pdrivetonav = GetDriveToNav();
+
+    if (!pdrivetonav->IsValid()) {
+        return;
+    }
+
+    UMath::Vector3 position;
+    UMath::ScaleAdd(mCollisionBody->GetLinearVelocity(), 0.65f, mCollisionBody->GetPosition(), position);
+    mDrivableToNav = !WorldCollision(position, pdrivetonav->GetPosition());
+    UMath::Sub(pdrivetonav->GetPosition(), mCollisionBody->GetPosition(), mDirToNav);
+    UMath::Unit(mDirToNav, mDirToNav);
+}
+
+void AIVehicle::OnReverse(float dT) {
+    if (!(mDriveFlags & 4) || GetReverseOverride() || !mITransmission) {
+        return;
+    }
+    bool wasReversing = mITransmission->IsReversing();
+
+    if (!wasReversing) {
+        if (GetVehicle()->GetSpeed() >= 15.0f) {
+            mReversingSpeed = false;
+            return;
+        }
+    }
+
+    mReversingSpeed = true;
+
+    UMath::Vector3 dirVector;
+    UMath::Sub(mDest, mCollisionBody->GetPosition(), dirVector);
+    UMath::Unit(dirVector, dirVector);
+
+    const UMath::Vector3 &forwardVector = GetForwardVector();
+    float facingDot = UMath::Dot(forwardVector, dirVector);
+
+    if (mITransmission->IsReversing() && facingDot > 0.0f) {
+        mITransmission->Shift(G_FIRST);
+    } else {
+        if (!mITransmission->IsReversing() && facingDot < -0.707f) {
+            mITransmission->Shift(G_REVERSE);
+        }
+    }
+}
+
+float AIVehicle::GetOverSteerCorrection(float steer) {
+    // TODO the dwarf suggests something much more complicated
+    return 0.0f;
+}
+
+void AIVehicle::OnSteering(float dT) {
+    if ((mDriveFlags & 1) == 0 || !GetInput()) {
+        return;
+    }
+
+    GetInput()->SetControlSteering(0.0f);
+    GetInput()->SetControlSteeringVertical(0.0f);
+
+    float currentSpeed = GetSimable()->GetRigidBody()->GetSpeedXZ();
+
+    if (mDriveSpeed != 0.0f || currentSpeed >= 1.0f) {
+        if (GetVehicle()->GetDriverClass() == 1) {
+            WRoadNav *road_nav = GetDriveToNav();
+            road_nav->UpdateOccludedPosition(true);
+            SetDriveTarget(road_nav->GetOccludedPosition());
+        }
+
+        UMath::Vector3 dirVector;
+        UMath::Sub(mDest, GetPosition(), dirVector);
+        dirVector.y = 0.0f;
+        UMath::Unit(dirVector, dirVector);
+
+        UMath::Vector3 forwardVector;
+        forwardVector = GetForwardVector();
+        forwardVector.y = 0.0f;
+        UMath::Unit(forwardVector, forwardVector);
+
+        UMath::Vector3 steerProd;
+        UMath::Cross(forwardVector, dirVector, steerProd);
+        steerProd.y = UMath::Clamp(steerProd.y, -1.0f, 1.0f);
+        float steer = asinf(steerProd.y);
+
+        steer /= ANGLE2RAD(GetSuspension()->GetMaxSteering());
+        float steerCorrection = GetOverSteerCorrection(steer);
+
+        mSteeringBehind = false;
+        if (mITransmission && mITransmission->IsReversing()) {
+            steer = -steer;
+        } else {
+            if (UMath::Dot(dirVector, forwardVector) < -0.2f) {
+                steer = (steer < 0.0f) ? -1.0f : 1.0f;
+                mSteeringBehind = true;
+            } else {
+                if (GetInput()->GetControls().fHandBrake == 0.0f) {
+                    steer += steerCorrection;
+                }
+            }
+        }
+
+        steer = UMath::Clamp(steer, -1.0f, 1.0f);
+        GetInput()->SetControlSteering(steer);
+    }
+}
+
+void AIVehicle::OnDriving(float dT) {
+    OnReverse(dT);
+    OnSteering(dT);
+    OnGasBrake(dT);
+}
+
+float AIVehicle::GetPathDistanceRemaining() {
+    float distance = 0.0f;
+    WRoadNav *road_nav = GetDriveToNav();
+    if (road_nav) {
+        const UMath::Vector3 &car_position = GetSimable()->GetRigidBody()->GetPosition();
+        float path_distance_remaining = road_nav->GetPathDistanceRemaining();
+
+        if (path_distance_remaining == 0.0f) {
+            AITarget *target = GetTarget();
+            if (target->IsValid()) {
+                const UMath::Vector3 &target_position = target->GetPosition();
+                if (road_nav->IsPointInCookieTrail(target_position, 30.0f)) {
+                    UMath::Vector3 target_direction;
+                    UMath::Unit(target->GetDirection(), target_direction);
+
+                    UMath::Vector3 car_to_target = UVector3(target_position) - car_position;
+                    distance = bMax(0.0f, UMath::Dot(car_to_target, target_direction));
+                }
+            }
+        } else {
+            UMath::Vector3 nav_forward;
+            UMath::Unit(road_nav->GetForwardVector(), nav_forward);
+
+            UMath::Vector3 car_to_nav = UVector3(road_nav->GetPosition()) - car_position;
+            distance = UMath::Dot(car_to_nav, nav_forward) + path_distance_remaining;
+        }
+    }
+
+    return distance;
+}
+
+void AIVehicle::ClearReverseOverride() {
+    mSteeringBehind = false;
+    mReversingSpeed = false;
+    mReverseOverrideTimer = 0.0f;
+}
+
+inline void AIVehicle::SetReverseOverride(float time) {
+    if (mITransmission) {
+        mReverseOverrideTimer = time;
+        if (mITransmission->IsReversing()) {
+            mITransmission->Shift(G_FIRST);
+        } else {
+            mITransmission->Shift(G_REVERSE);
+        }
+    }
+}
+
+void AIVehicle::UpdateReverseOverride(float dT) {
+    if (mReverseOverrideTimer > 0.0f && (mReverseOverrideTimer -= dT) <= 0.0f) {
+        mReverseOverrideTimer = 0.0f;
+        mSteeringBehind = false;
+        if (mITransmission && mITransmission->IsReversing()) {
+            mITransmission->Shift(G_FIRST);
+        }
+    }
+}
+
+float AIVehicle::GetLookAhead() {
+    IRigidBody *irigidbody = GetSimable()->GetRigidBody();
+
+    UMath::Vector3 dimension;
+    irigidbody->GetDimension(dimension);
+
+    float currentSpeed = irigidbody->GetSpeedXZ();
+    float lookAhead = UMath::Min(15.0f, UMath::Max(dimension.z + 7.5f, currentSpeed * 0.5f));
+
+    return lookAhead;
+}
+
+void AIVehicle::UpdateTargeting() {
+    if (!mTarget->IsValid()) {
+        return;
+    }
+    ProfileNode profile_node("TODO", 0);
+    mDrivableToTargetPos = !WorldCollision(GetPosition(), mTarget->GetPosition());
+}
+
+void AIVehicle::OnCollision(const COLLISION_INFO &cinfo) {}

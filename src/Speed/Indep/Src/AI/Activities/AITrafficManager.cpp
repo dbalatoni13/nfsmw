@@ -452,8 +452,9 @@ bool AITrafficManager::ValidateVehicle(IVehicle *ivehicle, float density) const 
     return true;
 }
 
-// TODO move
-static Table TrafficDensitySpawnRates;
+// TODO move?
+static const float Tweak_TrafficDensitySpawnRates[11] = {0.0f, 0.05f, 0.1f, 0.125f, 0.2f, 0.4f, 0.6f, 1.0f, 3.0f, 5.0f, 8.0f};
+static Table TrafficDensitySpawnRates(Tweak_TrafficDensitySpawnRates, 11, 0.0f, 1.0f);
 
 void AITrafficManager::Update(float dT) {
     UpdateDebug();

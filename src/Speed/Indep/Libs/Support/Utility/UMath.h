@@ -347,6 +347,10 @@ inline float Atan2a(const float o, const float a) {
     return VU0_Atan2(o, a);
 }
 
+inline float Atan2r(const float o, const float a) {
+    return ANGLE2RAD(VU0_Atan2(o, a));
+}
+
 inline float Sqrt(const float f) {
 #ifdef EA_PLATFORM_XENON
     return __fsqrts(f);

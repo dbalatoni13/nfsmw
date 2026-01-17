@@ -145,6 +145,11 @@ class WRoadNav {
     void SetCookieTrail(bool b);
     void ClearCookieTrail();
     void ResetCookieTrail();
+    int ClosestCookieAhead(const UMath::Vector3 &position, NavCookie *interpolated_cookie);
+    int ClosestCookieAhead(const UMath::Vector3 &position, NavCookie *cookies, int num_cookies, NavCookie *interpolated_cookie);
+    bool CookieCutter(NavCookie &cookie, const UMath::Vector3 &centre, float projection, bool pass_left, unsigned int cut_flags);
+    float CookieTrailCurvature(const UMath::Vector3 &car_position, const UMath::Vector3 &car_velocity);
+
     void MaybeAllocatePathSegments();
     void SetPathType(EPathType type);
     void Reset();
@@ -152,17 +157,21 @@ class WRoadNav {
     bool OnPath() const;
     float GetSegmentCentreShift(int segment_number, int which_node);
     short GetNextOffset(const UMath::Vector3 &to, float &nextLaneOffset, char &nodeInd, bool &useOldStartPos);
+
     void SnapToSelectableLane();
     float SnapToSelectableLane(float input_offset);
     float SnapToSelectableLane(float input_offset, int segment_no, char node_index);
-    void Reverse();
+
     void InitAtPoint(const UMath::Vector3 &pos, const UMath::Vector3 &dir, bool forceCenterLane, float dirWeight);
+    void InitFromOtherNav(WRoadNav *other_nav, bool flip_direction);
+    void InitAtSegment(short segInd, char laneInd, float timeStep);
+    void InitAtSegment(short segInd, float timeStep, const UMath::Vector3 &pos, const UMath::Vector3 &dir, bool forceCenterLane);
+    void InitAtSegment(short segInd, const UMath::Vector3 &pos, const UMath::Vector3 &dir, bool forceCenterLane);
+
     bool CanTrafficSpawn();
+    void Reverse();
     void IncNavPosition(float dist, const UMath::Vector3 &to, float max_lookahead);
     void PrivateIncNavPosition(float dist, const UMath::Vector3 &to);
-    int ClosestCookieAhead(const UMath::Vector3 &position, NavCookie *interpolated_cookie);
-    int ClosestCookieAhead(const UMath::Vector3 &position, NavCookie *cookies, int num_cookies, NavCookie *interpolated_cookie);
-    bool CookieCutter(NavCookie &cookie, const UMath::Vector3 &centre, float projection, bool pass_left, unsigned int cut_flags);
     void ClampCookieCentres(NavCookie *cookies, int num_cookies);
     bool IsWrongWay() const;
     bool IsOnShortcut();
@@ -174,12 +183,12 @@ class WRoadNav {
     bool FindPathNow(const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, char *shortcut_allowed);
     bool FindingPath();
     float GetPathDistanceRemaining();
-    float CookieTrailCurvature(const UMath::Vector3 &car_position, const UMath::Vector3 &car_velocity);
     bool IsPointInCookieTrail(const UMath::Vector3 &position_3d, float margin);
     bool IsSegmentInCookieTrail(int segment_number, bool use_whole_path);
     bool IsSegmentInPath(int segment_number);
     void PullOver();
     void SetVehicle(class AIVehicle *ai_vehicle);
+    void UpdateOccludedPosition(bool occlude_avoidables);
 
     bool IsValid() {
         return fValid;
@@ -227,6 +236,14 @@ class WRoadNav {
 
     int IsOccludedByAvoidable() const {
         return bCookieTrail ? nAvoidableOcclusion : 0;
+    }
+
+    const UMath::Vector3 &GetOccludedPosition() const {
+        return IsOccluded() ? fOccludedPosition : fPosition;
+    }
+
+    bool IsOccluded() const {
+        return bOccludedFromBehind;
     }
 
   private:                                      // total size: 0x2F0

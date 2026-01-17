@@ -45,6 +45,10 @@ class AITarget : public bTNode<AITarget> {
         return mTargetPosition;
     }
 
+    const UMath::Vector3 &GetDirection() const {
+        return mTargetDirection;
+    }
+
     void GetForwardVector(UMath::Vector3 &dir) const {
         dir = mTargetDirection;
     }

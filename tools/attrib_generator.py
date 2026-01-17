@@ -206,6 +206,10 @@ void Change(Key collectionkey) {{
     Change(FindCollection(ClassKey(), collectionkey));
 }}
 
+void Change(const RefSpec &refspec) {{
+    Instance::Change(refspec);
+}}
+
 static Key ClassKey() {{
     return {strToHash[name]};
 }}

@@ -14,6 +14,26 @@ class FloatSpring {
   public:
     FloatSpring(float spring_k, float damper_k) : mX(0.0f), mV(0.0f), mC(spring_k), mD(damper_k) {}
 
+    float GetPosition() const {
+        return mX;
+    }
+
+    void SetPosition(float x) {
+        mX = x;
+        mV = 0.0f;
+    }
+
+    float Integrate(float newvalue, float dT) {
+        float v = mV;
+        float dX = (-v * mD * dT);
+        dX += (newvalue - mX) * mC * dT + v;
+
+        mV = dX;
+        mX += dX * dT;
+
+        return dX;
+    }
+
   private:
     float mX;       // offset 0x0, size 0x4
     float mV;       // offset 0x4, size 0x4

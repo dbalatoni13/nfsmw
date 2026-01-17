@@ -1,6 +1,7 @@
 #ifndef AI_AIVEHICLE_H
 #define AI_AIVEHICLE_H
 
+#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
@@ -31,9 +32,19 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     float GetOverSteerCorrection(float steer);
     const UMath::Vector3 &GetAngularVelocity() const;
     const UMath::Vector3 &GetLinearVelocity() const;
-    const UMath::Vector3 &GetPosition() const;
-    const UMath::Matrix4 &GetOrientation() const;
-    const UMath::Vector3 &GetForwardVector() const;
+
+    const UMath::Vector3 &GetPosition() const {
+        return mCollisionBody->GetPosition();
+    }
+
+    const UMath::Matrix4 &GetOrientation() const {
+        return mCollisionBody->GetMatrix4();
+    }
+
+    const UMath::Vector3 &GetForwardVector() const {
+        return UMath::Vector4To3(GetOrientation().v2);
+    }
+
     const UMath::Vector3 &GetUpVector() const;
     const UMath::Vector3 &GetRightVector() const;
 
@@ -48,7 +59,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     }
 
     // Behavior
-    void OnTaskSimulate(float) override;
+    void OnTaskSimulate(float dT) override;
 
     // IVehicleAI
     ISimable *GetSimable() const override {
@@ -57,6 +68,10 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
 
     IVehicle *GetVehicle() const override {
         return VehicleBehavior::GetVehicle();
+    }
+
+    ISuspension *GetSuspension() const {
+        return mISuspension;
     }
 
     virtual void Update(float dT);
@@ -93,19 +108,29 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
         return mDriveFlags;
     }
 
-    void ClearDriveFlags() override {}
+    void ClearDriveFlags() override {
+        mDriveFlags = 0;
+    }
 
-    void DoReverse() override {}
+    void DoReverse() override {
+        mDriveFlags |= 4;
+    }
 
-    void DoSteering() override {}
+    void DoSteering() override {
+        mDriveFlags |= 1;
+    }
 
-    void DoGasBrake() override {}
+    void DoGasBrake() override {
+        mDriveFlags |= 2;
+    }
 
-    void DoDriving(unsigned int flags) override {}
+    void DoDriving(unsigned int flags) override {
+        mDriveFlags = flags;
+    }
 
     float GetPathDistanceRemaining() override;
 
-    void SetReverseOverride(float time) override {}
+    void SetReverseOverride(float time) override;
 
     bool GetReverseOverride() override {
         return mReverseOverrideTimer > 0.0f;
@@ -138,6 +163,8 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     float GetTopSpeed() const override {
         return mTopSpeed;
     }
+
+    float GetAcceleration(float at) const override;
 
     virtual void OnCollision(const COLLISION_INFO &cinfo);
     virtual void OnDebugDraw();
@@ -172,6 +199,9 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
 
   protected:
     virtual bool OnClearCausality(float start_time);
+    virtual void OnReverse(float dT);
+    virtual void OnSteering(float dT);
+    virtual void OnGasBrake(float dT);
     virtual void OnDriving(float dT);
 
     // Behavior
@@ -185,7 +215,9 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     ~AIVehicle();
 
     // Behavior
-    void Reset() override {}
+    void Reset() override {
+        ResetDriveToNav(SELECT_CURRENT_LANE);
+    }
 
     virtual void ResetInternals();
     void ClearGoal();
@@ -198,17 +230,24 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     bool WorldCollision(const UMath::Vector3 &pos, const UMath::Vector3 &dest);
     bool BarriersInPath(bool reverse);
 
-    // virtual bool IsTetheredToTarget(UTL::COM::IUnknown *object) {}
+    virtual bool IsTetheredToTarget(UTL::COM::IUnknown *object) {
+        return false;
+    }
 
     void UpdateSimplePhysics(float dT);
-    virtual bool IsSimplePhysicsActive();
+    bool IsSimplePhysicsActive();
 
     // IVehicleAI
     void EnableSimplePhysics() override;
     void DisableSimplePhysics() override;
+    void DoNOS() override;
 
     // Behavior
     void OnBehaviorChange(const UCrc32 &mechanic) override;
+
+    IInput *GetInput() const {
+        return mIInput;
+    }
 
     WRoadNav *mDriveToNav;             // offset 0x70, size 0x4
     ALIGN_16 UMath::Vector3 mDirToNav; // offset 0x74, size 0xC
