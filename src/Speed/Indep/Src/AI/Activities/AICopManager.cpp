@@ -259,7 +259,7 @@ bool AICopManager::VehicleSpawningEnabled(bool isdespawn) {
 }
 
 IVehicle *AICopManager::GetAvailableCopVehicleByClass(UCrc32 vehicleClass, bool bValidOnesOnly) {
-    if (!AICopManager::VehicleSpawningEnabled(false)) {
+    if (!VehicleSpawningEnabled(false)) {
         return nullptr;
     }
     IPerpetrator *perp = nullptr;
@@ -301,7 +301,7 @@ IVehicle *AICopManager::GetAvailableCopVehicleByClass(UCrc32 vehicleClass, bool 
 }
 
 IVehicle *AICopManager::GetAvailableCopVehicleByName(const char *name) {
-    if (!AICopManager::VehicleSpawningEnabled(false)) {
+    if (!VehicleSpawningEnabled(false)) {
         return nullptr;
     }
     if (!name) {
