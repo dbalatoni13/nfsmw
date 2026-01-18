@@ -109,7 +109,11 @@ class AICopManager : public Sim::Activity, public AISpawnManager, public ICopMgr
     float GetLockoutTimeRemaining() const override {
         return mLockoutTimer;
     }
+#ifdef EA_BUILD_A124
+    bool VehicleSpawningEnabled(bool isdespawn);
+#else
     bool VehicleSpawningEnabled(bool isdespawn) override;
+#endif
     void SpawnCop(UMath::Vector3 &InitialPos, UMath::Vector3 &InitialVec, const char *VehicleName, bool InPursuit, bool RoadBlock) override;
     bool IsCopSpawnPending() const override;
     void SetAllBustedTimersToZero() override;

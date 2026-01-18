@@ -7,4 +7,6 @@
 
 bool HeliVehicleActive();
 
+extern class AIVehicleHelicopter *gHeliVehicle;
+
 #endif

@@ -2,13 +2,18 @@
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/AI/AIGoal.h"
+#include "Speed/Indep/Src/AI/AIMath.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
+#include "Speed/Indep/Src/AI/AIVehicleHelicopter.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/aivehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/collisionreactions.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRBVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/Physics/Behavior.h"
@@ -476,6 +481,76 @@ void AIVehicle::OnSteering(float dT) {
     }
 }
 
+// UNSOLVED
+void AIVehicle::OnGasBrake(float dT) {
+    if ((mDriveFlags & 2) == 0 || !GetInput()) {
+        return;
+    }
+
+    bool reversing = false;
+    GetInput()->SetControlGas(0.0f);
+    GetInput()->SetControlBrake(0.0f);
+    GetInput()->SetControlHandBrake(0.0f);
+    GetInput()->SetControlSteeringVertical(0.0f);
+
+    if (mITransmission) {
+        if (mITransmission->IsReversing()) {
+            reversing = true;
+        }
+
+        if (mITransmission && GetVehicle()->GetDriverClass() == DRIVER_TRAFFIC) {
+            bool in_shock = GetVehicle()->InShock();
+            GearID drive_gear = reversing ? G_REVERSE : G_FIRST;
+            bool in_neutral = mITransmission->GetGear() == G_NEUTRAL;
+
+            // TODO
+            if (in_neutral && !in_shock || in_shock) {
+                mITransmission->Shift(in_shock ? G_NEUTRAL : drive_gear);
+            }
+
+            if (in_shock) {
+                return;
+            }
+        }
+    }
+
+    float currentSpeed = GetVehicle()->GetSpeed();
+    float desiredSpeed = mDriveSpeed;
+    float steer;
+
+    if (!mReversingSpeed && mSteeringBehind) {
+        GetInput()->SetControlGas(1.0f);
+        GetInput()->SetControlHandBrake(1.0f);
+        return;
+    }
+    GetInput()->GetControls();
+    if (desiredSpeed < 0.5f) {
+        GetInput()->SetControlBrake(1.0f);
+        return;
+    }
+    if (reversing) {
+        if (currentSpeed > 1.0f) {
+            GetInput()->SetControlBrake(1.0f);
+        } else {
+            GetInput()->SetControlGas(1.0f);
+        }
+        return;
+    }
+    if (currentSpeed < -1.0f) {
+        GetInput()->SetControlBrake(1.0f);
+        return;
+    }
+
+    if (desiredSpeed < currentSpeed) {
+        if (UMath::Abs(desiredSpeed - currentSpeed) > 2.5f || desiredSpeed < 5.0f) {
+            GetInput()->SetControlBrake(1.0f);
+        }
+        return;
+    }
+
+    GetInput()->SetControlGas(1.0f);
+}
+
 void AIVehicle::OnDriving(float dT) {
     OnReverse(dT);
     OnSteering(dT);
@@ -561,3 +636,112 @@ void AIVehicle::UpdateTargeting() {
 }
 
 void AIVehicle::OnCollision(const COLLISION_INFO &cinfo) {}
+
+WRoadNav *AIVehicle::GetCollNav(const UMath::Vector3 &forwardVector, float predictTime) {
+    mCollNav->SetNavType(WRoadNav::kTypeDirection);
+
+    if (predictTime > 0.0f) {
+        UMath::Matrix4 orientMat = GetOrientation();
+        UMath::Vector3 predictionresult;
+
+        AI::Math::PredictPosition(predictTime, GetPosition(), orientMat, GetLinearVelocity(), GetAngularVelocity(), predictionresult);
+        mCollNav->InitAtPoint(predictionresult, forwardVector, false, 0.0f);
+    } else {
+        mCollNav->InitAtPoint(mCollisionBody->GetPosition(), forwardVector, false, 0.0f);
+    }
+
+    return mCollNav;
+}
+
+void AIVehicle::SetSpawned() {
+    ResetInternals();
+    IDamageable *idamage;
+    if (GetSimable()->QueryInterface(&idamage)) {
+        idamage->ResetDamage();
+    }
+    EventSequencer::IEngine *ievents = GetOwner()->GetEventSequencer();
+    if (ievents) {
+        ievents->Reset(Sim::GetTime());
+    }
+    IArticulatedVehicle *iarticulation;
+    if (GetOwner()->QueryInterface(&iarticulation)) {
+        IVehicle *itrailer = iarticulation->GetTrailer();
+        IVehicleAI *iai;
+        if (itrailer && itrailer->QueryInterface(&iai)) {
+            iai->SetSpawned();
+        }
+    }
+    IAIHelicopter *ih;
+    if (GetOwner()->QueryInterface(&ih)) {
+        ih->SetFuelFull();
+    }
+    mCanRespawn = false;
+}
+
+void AIVehicle::UnSpawn() {
+    IAIHelicopter *ih;
+    if (GetOwner()->QueryInterface(&ih)) {
+        gHeliVehicle = nullptr;
+    }
+    if (IsSimplePhysicsActive()) {
+        DisableSimplePhysics();
+    }
+    ClearGoal();
+    GetVehicle()->Deactivate();
+
+    IPursuitAI *ipai;
+    if (GetOwner()->QueryInterface(&ipai)) {
+        ipai->SetSupportGoal((const char *)nullptr);
+    }
+}
+
+bool AIVehicle::CanRespawn(bool respawnAvailable) {
+    if (!respawnAvailable) {
+        mCanRespawn = true;
+    }
+    bool rv = false;
+    if (mCanRespawn) {
+        rv = mLastSpawnTime > 8.0f;
+    }
+    if (!rv && respawnAvailable && mLastSpawnTime > 10.0f) {
+        rv = true;
+    }
+    return rv;
+}
+
+void AIVehicle::EnableSimplePhysics() {
+    if (IsSimplePhysicsActive()) {
+        return;
+    }
+    IVehicle *vehicle = GetVehicle();
+    vehicle->SetPhysicsMode(PHYSICS_MODE_EMULATED);
+}
+
+void AIVehicle::DisableSimplePhysics() {
+    if (!IsSimplePhysicsActive()) {
+        return;
+    }
+    IVehicle *vehicle = GetVehicle();
+    if (vehicle->GetPhysicsMode() == PHYSICS_MODE_EMULATED) {
+        vehicle->SetPhysicsMode(PHYSICS_MODE_SIMULATED);
+    }
+
+    UMath::Vector3 forward;
+    IRigidBody *irigidbody = GetSimable()->GetRigidBody();
+    UMath::Vector3 angular_velocity = irigidbody->GetAngularVelocity();
+    irigidbody->GetForwardVector(forward);
+    float speed = irigidbody->GetSpeed();
+
+    vehicle->SetVehicleOnGround(irigidbody->GetPosition(), forward);
+    irigidbody->SetAngularVelocity(angular_velocity);
+    vehicle->SetSpeed(speed);
+
+    IRBVehicle *rigid_body_vehicle;
+    if (GetOwner()->QueryInterface(&rigid_body_vehicle)) {
+        rigid_body_vehicle->SetInvulnerability(INVULNERABLE_FROM_PHYSICS_SWITCH, 1.0f);
+    }
+}
+
+bool AIVehicle::IsSimplePhysicsActive() {
+    return GetVehicle()->GetPhysicsMode() == PHYSICS_MODE_EMULATED;
+}

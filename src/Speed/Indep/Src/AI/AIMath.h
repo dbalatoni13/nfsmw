@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
+
 namespace AI {
 
 namespace Math {
@@ -40,6 +42,15 @@ class FloatSpring {
     const float mC; // offset 0x8, size 0x4
     const float mD; // offset 0xC, size 0x4
 };
+
+void PredictPosition(float predictTime, const UMath::Vector3 &position, const UMath::Vector3 &vfwd, float yaw, const UMath::Vector3 &linearVelocity,
+                     const float angularVelocity, UMath::Vector3 &result);
+
+inline void PredictPosition(float dT, const UMath::Vector3 &position, const UMath::Matrix4 &mat, const UMath::Vector3 &linearVelocity,
+                            const UMath::Vector3 &angularVelocity, UMath::Vector3 &result) {
+    float yaw = UMath::Atan2r(mat.v2.x, mat.v2.z);
+    PredictPosition(dT, position, UMath::Vector4To3(mat.v2), yaw, linearVelocity, angularVelocity.y, result);
+}
 
 }; // namespace Math
 

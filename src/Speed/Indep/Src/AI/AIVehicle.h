@@ -30,8 +30,14 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     static Behavior *Construct(const BehaviorParams &bp);
 
     float GetOverSteerCorrection(float steer);
-    const UMath::Vector3 &GetAngularVelocity() const;
-    const UMath::Vector3 &GetLinearVelocity() const;
+
+    const UMath::Vector3 &GetAngularVelocity() const {
+        return mCollisionBody->GetAngularVelocity();
+    }
+
+    const UMath::Vector3 &GetLinearVelocity() const {
+        return mCollisionBody->GetLinearVelocity();
+    }
 
     const UMath::Vector3 &GetPosition() const {
         return mCollisionBody->GetPosition();
@@ -93,6 +99,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     bool GetDrivableToDriveToNav() override;
     float GetDriveSpeed() const override;
     void SetDriveSpeed(float driveSpeed) override;
+    WRoadNav *GetCollNav(const UMath::Vector3 &forwardVector, float predictTime) override;
 
     const UMath::Vector3 &GetDriveTarget() const override {
         return mDest;
