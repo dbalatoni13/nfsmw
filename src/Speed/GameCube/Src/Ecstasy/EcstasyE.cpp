@@ -380,6 +380,7 @@ eView *GetPlayerView(int nPlayerNumber) {
 TextureInfo *pTextureInfoRadialBlur;
 int VifTime;
 
+// TODO not a thing in this game
 void RadialBlurOn(eView *view) {
     if (!pRaceCoordinator || (pRaceCoordinator->unk_00 != 8)) {
         view->pBlendMask = pTextureInfoRadialBlur;
