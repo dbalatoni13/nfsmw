@@ -433,4 +433,37 @@ class IAIHelicopter : public UTL::COM::IUnknown {
     virtual float GetDustStormIntensity();
 };
 
+struct RacePreparationInfo {
+    enum eFlags {
+        RESET_DAMAGE = 1,
+    };
+
+    RacePreparationInfo() {}
+
+    UMath::Vector3 Position;  // offset 0x0, size 0xC
+    float Speed;              // offset 0xC, size 0x4
+    UMath::Vector3 Direction; // offset 0x10, size 0xC
+    float HeatLevel;          // offset 0x1C, size 0x4
+    unsigned int Flags;       // offset 0x20, size 0x4
+};
+
+class IRacer : public UTL::COM::IUnknown {
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+    IRacer(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+  protected:
+    ~IRacer() override {}
+
+  public:
+    // Virtual methods
+    // TODO fix order
+    virtual void StartRace(DriverStyle style);
+    virtual void QuitRace() override;
+    virtual void PrepareForRace(const RacePreparationInfo &rpi);
+};
+
 #endif

@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/AI/AIMath.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/AI/AIVehicleHelicopter.h"
+#include "Speed/Indep/Src/Debug/Debugable.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/aivehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/collisionreactions.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
@@ -28,7 +29,35 @@
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-const char *GetCaffeineLayerName(int driver_class);
+const char *GetCaffeineLayerName(int driver_class) {
+    switch (driver_class) {
+        case DRIVER_COP:
+            return "CopCars";
+        case DRIVER_HUMAN:
+            return "PlayerCars";
+        case DRIVER_RACER:
+            return "RacingCars";
+        default:
+            return "TrafficCars";
+    }
+}
+
+AIVehicleEmpty::AIVehicleEmpty(const BehaviorParams &bp) : AIVehicle(bp, 1.0f, 0.0f, Sim::TASK_FRAME_VARIABLE) {}
+
+Behavior *AIVehicleEmpty::Construct(const BehaviorParams &bp) {
+    return new AIVehicleEmpty(bp);
+}
+
+AIVehicleHuman::AIVehicleHuman(const BehaviorParams &bp) : AIVehicleRacecar(bp), IHumanAI(bp.fowner) {
+    MakeDebugable(DBG_AI);
+    fMomentRadius = 0.0f;
+    bAiControl = false;
+    mWrongWay = false;
+}
+
+Behavior *AIVehicleHuman::Construct(const BehaviorParams &bp) {
+    return new AIVehicleHuman(bp);
+}
 
 Behavior *AIVehicle::Construct(const BehaviorParams &bp) {
     return new AIVehicle(bp, 1.0f, 0.0f, Sim::TASK_FRAME_VARIABLE);

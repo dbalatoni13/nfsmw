@@ -1,8 +1,6 @@
 #ifndef AI_AIVEHICLE_H
 #define AI_AIVEHICLE_H
 
-#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
-#include "types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -10,12 +8,14 @@
 #include "AIAvoidable.h"
 #include "AIGoal.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
+#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/AI/AIAvoidable.h"
 #include "Speed/Indep/Src/AI/AIMath.h"
 #include "Speed/Indep/Src/Debug/Debugable.h"
 #include "Speed/Indep/Src/Interfaces/IAttachable.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ICheater.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
@@ -23,6 +23,7 @@
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
+#include "types.h"
 
 // total size: 0x754
 class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable, public Debugable {
@@ -301,6 +302,252 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     WRoadNav mFutureRoad;                        // offset 0x438, size 0x2F0
     float mAccelData[10];                        // offset 0x728, size 0x28
     Mps mTopSpeed;                               // offset 0x750, size 0x4
+};
+
+class AIVehicleEmpty : public AIVehicle {
+  public:
+    static Behavior *Construct(const BehaviorParams &bp);
+
+    AIVehicleEmpty(const BehaviorParams &bp);
+};
+
+class AIVehiclePid : public AIVehicle {
+  public:
+    typedef AIVehicle Base;
+
+    AIVehiclePid(const BehaviorParams &bp, float update_rate, float stagger, Sim::TaskMode taskmode);
+
+    // Virtual overrides
+    // IUnknown
+    ~AIVehiclePid() override;
+
+    // Behavior
+    void Reset() override;
+
+    // AIVehicle
+    void OnGasBrake(float dT) override;
+    void OnSteering(float dT) override;
+
+  private:
+    struct PidError *pBodyError;                                  // offset 0x754, size 0x4
+    struct PidError *pHeadingError;                               // offset 0x758, size 0x4
+    struct PidError *pVelocityError;                              // offset 0x75C, size 0x4
+    struct AdaptivePIDControllerComplicated *pSteeringController; // offset 0x760, size 0x4
+    struct AdaptivePIDControllerSimple *pThrottleBrakeController; // offset 0x764, size 0x4
+    float mThrottleBrake;                                         // offset 0x768, size 0x4
+    float mPrevDesiredSpeed;                                      // offset 0x76C, size 0x4
+};
+
+class AIPerpVehicle : public AIVehiclePid, public IPerpetrator, public ICause, public ICheater {
+  public:
+    typedef AIVehiclePid Base;
+
+    AIPerpVehicle(const BehaviorParams &bp);
+    void ComputeSkill();
+
+    // Virtual overrides
+    // IUnknown
+    ~AIPerpVehicle() override;
+
+    // Overrides: IPerpetrator
+    void SetRacerInfo(GRacerInfo *info) override;
+
+    // Overrides: AIVehicle
+    void Update(float dT) override;
+
+    // Overrides: IPerpetrator
+    void Set911CallTime(float time) override;
+
+    // Overrides: Behavior
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
+
+    // Overrides: IPerpetrator
+    bool IsPartiallyHidden(float &HowHidden) const override;
+
+    // Overrides: IPerpetrator
+    void SetCostToState(int cts) override;
+
+    // Overrides: IPerpetrator
+    int GetCostToState() const override;
+
+    // Overrides: IPerpetrator
+    void SetHeat(float heat) override;
+
+    // Overrides: IVehicleAI
+    float GetSkill() const override;
+
+    // Overrides: ICheater
+    float GetCatchupCheat() const override;
+
+    // Overrides: IPerpetrator
+    float GetHeat() const override;
+
+    // Overrides: IPerpetrator
+    void AddCostToState(int cost) override;
+
+    // Overrides: IPerpetrator
+    void AddToPendingRepPointsNormal(int amount) override;
+
+    // Overrides: IPerpetrator
+    void AddToPendingRepPointsFromCopDestruction(int amount) override;
+
+    // Overrides: IPerpetrator
+    bool IsRacing() const override;
+
+    // Overrides: IVehicleAI
+    float GetPercentRaceComplete() const override;
+
+    // Overrides: IPerpetrator
+    bool IsBeingPursued() const override;
+
+    // Overrides: ICause
+    void OnCausedExplosion(IExplosion *explosion, ISimable *to) override;
+
+    // Overrides: AIVehicle
+    bool OnClearCausality(float start_time) override;
+
+    // Overrides: ICause
+    void OnCausedCollision(const COLLISION_INFO &cinfo, ISimable *from, ISimable *to) override;
+
+    // Overrides: IPerpetrator
+    float GetLastTrafficHitTime() const override;
+
+    // Overrides: IPerpetrator
+    // bool IsHiddenFromCars() const override {}
+
+    // Overrides: IPerpetrator
+    // bool IsHiddenFromHelicopters() const override {}
+
+    // Overrides: IPerpetrator
+    // int GetPendingRepPointsNormal() const override {}
+
+    // Overrides: IPerpetrator
+    // int GetPendingRepPointsFromCopDestruction() const override {}
+
+    // Overrides: IPerpetrator
+    // void ClearPendingRepPoints() override {}
+
+    // Overrides: IPerpetrator
+    // GRacerInfo *GetRacerInfo() const override {}
+
+    // Overrides: IPerpetrator
+    // float GetShortcutSkill() const override {}
+
+    // Overrides: IPerpetrator
+    // float Get911CallTime() const override {}
+
+    // bool IsOnLegalRoad() {}
+
+  private:
+    static float mStagger; // size: 0x4, address: 0x8041536C
+
+    float mHeat;                                              // offset 0x78C, size 0x4
+    int mCostToState;                                         // offset 0x790, size 0x4
+    int mPendingRepPointsNormal;                              // offset 0x794, size 0x4
+    int mPendingRepPointsFromCopDestruction;                  // offset 0x798, size 0x4
+    bool mHiddenFromCars;                                     // offset 0x79C, size 0x1
+    bool mHiddenFromHelicopters;                              // offset 0x7A0, size 0x1
+    bool mWasInRaceEventLastHeatUpdate;                       // offset 0x7A4, size 0x1
+    float mHiddenZoneTimer;                                   // offset 0x7A8, size 0x4
+    float mHiddenZoneLatchTime;                               // offset 0x7AC, size 0x4
+    bool mWasInZoneLastUpdate;                                // offset 0x7B0, size 0x1
+    int mPursuitZoneCheck;                                    // offset 0x7B4, size 0x4
+    Attrib::Gen::pursuitlevels *mPursuitLevelAttrib;          // offset 0x7B8, size 0x4
+    Attrib::Gen::pursuitsupport *mPursuitSupportAttrib;       // offset 0x7BC, size 0x4
+    Attrib::Gen::pursuitescalation *mPursuitEscalationAttrib; // offset 0x7C0, size 0x4
+    GRacerInfo *pRacerInfo;                                   // offset 0x7C4, size 0x4
+    float fBaseSkill;                                         // offset 0x7C8, size 0x4
+    float fGlueSkill;                                         // offset 0x7CC, size 0x4
+    struct PidError *pGlueError;                              // offset 0x7D0, size 0x4
+    float fGlueTimer;                                         // offset 0x7D4, size 0x4
+    float fGlueOutput;                                        // offset 0x7D8, size 0x4
+    float LastTrafficHitTime;                                 // offset 0x7DC, size 0x4
+    float m911CallTimer;                                      // offset 0x7E0, size 0x4
+};
+
+class AIVehicleRacecar : public AIPerpVehicle, public IRacer {
+  public:
+    AIVehicleRacecar(const BehaviorParams &bp);
+
+    // Overrides: IUnknown
+    ~AIVehicleRacecar() override;
+
+    // Overrides: IRacer
+    void StartRace(DriverStyle style) override;
+
+    // Overrides: IRacer
+    void QuitRace() override;
+
+    // Overrides: IRacer
+    void PrepareForRace(const RacePreparationInfo &rpi) override;
+
+    static Behavior *Construct(const BehaviorParams &bp);
+
+    bool ShouldDoSimplePhysics() const;
+
+    // Overrides: AIVehicle
+    void Update(float dT) override;
+};
+
+class AIVehicleHuman : public AIVehicleRacecar, public IHumanAI {
+  public:
+    AIVehicleHuman(const BehaviorParams &bp);
+
+    static Behavior *Construct(const BehaviorParams &bp);
+
+    // Overrides: IUnknown
+    ~AIVehicleHuman() override;
+
+    void UpdateWrongWay();
+
+    // Overrides: IHumanAI
+    void SetAiControl(bool ai_control) override;
+
+    bool IsDragRacing();
+
+    bool IsDragSteering();
+
+    // Overrides: IHumanAI
+    void ChangeDragLanes(bool left) override;
+
+    // Overrides: AIVehicle
+    void OnDebugDraw() override;
+
+    // Overrides: AIVehicle
+    void Update(float dT) override;
+
+    // Overrides: IHumanAI
+    // bool IsPlayerSteering() override {}
+
+    // Overrides: IHumanAI
+    // bool GetAiControl() override {}
+
+    // Overrides: IHumanAI
+    void SetWorldMoment(const UMath::Vector3 &position, float radius) override {}
+
+    // Overrides: IHumanAI
+    // const UMath::Vector3 &GetWorldMomentPosition() override {}
+
+    // Overrides: IHumanAI
+    // float GetWorldMomentRadius() override {}
+
+    // Overrides: IHumanAI
+    void ClearWorldMoment() override {}
+
+    // Overrides: IVehicleAI
+    // float GetSkill() const override {}
+
+    // Overrides: IHumanAI
+    // bool IsFacingWrongWay() const override {}
+
+    // Overrides: ICheater
+    // float GetCatchupCheat() const override {}
+
+  private:
+    bool bAiControl;                // offset 0x7F4, size 0x1
+    UMath::Vector3 vMomentPosition; // offset 0x7F8, size 0xC
+    float fMomentRadius;            // offset 0x804, size 0x4
+    bool mWrongWay;                 // offset 0x808, size 0x1
 };
 
 #endif
