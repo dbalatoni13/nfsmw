@@ -9,8 +9,8 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
+// total size: 0x810
 template <typename T, std::size_t U> class CookieTrail {
-    // total size: 0x810
     int mCount;          // offset 0x0, size 0x4
     int mLast;           // offset 0x4, size 0x4
     const int mCapacity; // offset 0x8, size 0x4
@@ -18,11 +18,12 @@ template <typename T, std::size_t U> class CookieTrail {
     T mData[U];          // offset 0x10, size 0x800
 
   public:
-    CookieTrail() {}
+    CookieTrail() : mCount(0), mLast(-1), mCapacity(U) {}
 };
 
+// TODO move?
+// total size: 0x40
 struct NavCookie {
-    // total size: 0x40
     UMath::Vector2 Left;               // offset 0x0, size 0x8
     UMath::Vector2 Right;              // offset 0x8, size 0x8
     UMath::Vector2 Forward;            // offset 0x10, size 0x8

@@ -12,7 +12,9 @@
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/aivehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/collisionreactions.h"
+#include "Speed/Indep/Src/Generated/Events/EEnableAIPhysics.hpp"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
@@ -136,7 +138,158 @@ void AIVehicleHuman::SetAiControl(bool ai_control) {
     if (bAiControl != ai_control) {
         ClearGoal();
         SetGoal("AIGoalRacer");
-        // new EEnabled
+        bAiControl = ai_control;
+        new EEnableAIPhysics(reinterpret_cast<uintptr_t>(GetOwner()->GetInstanceHandle()), GetVehicle()->GetSpeed(), ai_control ? 1 : 0);
+    }
+}
+
+bool AIVehicleHuman::IsDragRacing() {
+    return GetVehicle()->GetDriverStyle() == STYLE_DRAG;
+}
+
+bool AIVehicleHuman::IsDragSteering() {
+    if (!IsDragRacing()) {
+        return false;
+    }
+    if (GetVehicle()->GetSpeed() < 1.0f) {
+        return false;
+    }
+    IPlayer *player = GetOwner()->GetPlayer();
+    if (player && player->InGameBreaker()) {
+        return false;
+    }
+    return mWrongWay == false;
+}
+
+void AIVehicleHuman::ChangeDragLanes(bool left) {
+    if (!IsDragSteering()) {
+        return;
+    }
+    WRoadNav *road_nav = GetDriveToNav();
+    if (!road_nav) {
+        return;
+    }
+    road_nav->ChangeDragLanes(left ? -1 : 1);
+}
+
+void AIVehicleHuman::OnDebugDraw() {}
+
+bool bToggleAiControl;
+
+float aHumanNavLookAheadData[2] = {50.0f, 60.0f};
+Table HumanNavLookAheadTable(aHumanNavLookAheadData, 2, 0.0f, 100.0f);
+float aHumanDragNavLookAheadData[2] = {8.0f, 40.0f};
+Table HumanDragNavLookAheadTable(aHumanDragNavLookAheadData, 2, 0.0f, 100.0f);
+
+void AIVehicleHuman::Update(float dT) {
+    ProfileNode profile_node("TODO", 0);
+
+    if (bToggleAiControl) {
+        SetAiControl(!GetAiControl());
+        bToggleAiControl = false;
+    }
+
+    UpdateWrongWay();
+
+    if (GetAiControl()) {
+        InputControls controls = GetInput()->GetControls();
+        AIVehicle::Update(dT);
+        return;
+    }
+
+    AIVehicle::Update(dT);
+
+    UMath::Vector3 car_forward_vector;
+    GetVehicle()->ComputeHeading(&car_forward_vector);
+
+    IRigidBody *rigid_body = GetSimable()->GetRigidBody();
+    float current_speed = rigid_body->GetSpeed();
+    Table &nav_look_ahead_table = IsDragRacing() ? HumanDragNavLookAheadTable : HumanNavLookAheadTable;
+
+    bool reset_nav = false;
+    WRoadNav *road_nav = GetDriveToNav();
+    if (road_nav->GetNavType() == WRoadNav::kTypeNone) {
+        reset_nav = true;
+    } else {
+        float look_ahead_distance = nav_look_ahead_table.GetValue(current_speed);
+        float distance_to_nav = UMath::Distance(road_nav->GetPosition(), rigid_body->GetPosition());
+
+        if (distance_to_nav < look_ahead_distance) {
+            if (road_nav->HitDeadEnd() == 0) {
+                road_nav->IncNavPosition(look_ahead_distance - distance_to_nav, car_forward_vector, look_ahead_distance);
+            }
+        } else if (distance_to_nav > 70.0f) {
+            reset_nav = true;
+        }
+
+        road_nav->UpdateOccludedPosition(!IsDragRacing());
+    }
+
+    if (!reset_nav) {
+        float old_out_of_bounds = road_nav->GetOutOfBounds();
+        if (old_out_of_bounds > 2.0f) {
+            WRoadNavWithCookies nav;
+            nav.SetNavType(WRoadNav::kTypeDirection);
+            nav.SetPathType(road_nav->GetPathType());
+            nav.SetLaneType(road_nav->GetLaneType());
+            nav.SetRaceFilter(road_nav->GetRaceFilter());
+            nav.SetTrafficFilter(road_nav->GetTrafficFilter());
+            nav.SetDecisionFilter(road_nav->GetDecisionFilter());
+
+            nav.InitAtPoint(rigid_body->GetPosition(), car_forward_vector, false, 1.0f);
+
+            if (nav.IsValid()) {
+                if (!nav.GetSegment()->IsDecision()) {
+                    int segment_number = nav.GetSegmentInd();
+                    if (!road_nav->IsSegmentInCookieTrail(segment_number, false) && !road_nav->IsSegmentInPath(segment_number)) {
+                        const bool occlude_avoidables = false;
+                        nav.UpdateOccludedPosition(occlude_avoidables);
+                        float new_out_of_bounds = nav.GetOutOfBounds();
+                        if (new_out_of_bounds < old_out_of_bounds) {
+                            reset_nav = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (reset_nav) {
+        ResetDriveToNav(SELECT_VALID_LANE);
+        road_nav->SetNavType(WRoadNav::kTypeDirection);
+        float look_ahead = nav_look_ahead_table.GetValue(current_speed);
+        road_nav->IncNavPosition(look_ahead, car_forward_vector, 0.0f);
+        road_nav->UpdateOccludedPosition(true);
+    }
+
+    if (GRaceStatus::Exists()) {
+        if ((GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming || GRaceStatus::Get().GetActivelyRacing()) &&
+            road_nav->GetNavType() != WRoadNav::kTypePath && !road_nav->FindingPath() && road_nav->IsValid()) {
+            AITarget *target = GetTarget();
+            if (target->IsValid()) {
+                road_nav->FindPath(&target->GetPosition(), &target->GetDirection(), nullptr);
+            }
+        }
+    }
+
+    if (IsDragRacing()) {
+        road_nav->SetLaneType(WRoadNav::kLaneDrag);
+        if (IsDragSteering()) {
+            DoSteering();
+            SetDriveTarget(road_nav->GetPosition());
+        } else {
+            road_nav->DetermineDragLane();
+        }
+    } else {
+        road_nav->SetLaneType(WRoadNav::kLaneRacing);
+    }
+
+    if (GetPursuit() && GetPursuit()->IsPerpInSight() && GetPursuit()->IsPlayerPursuit()) {
+        if (!IsOnLegalRoad()) {
+            if (GetPursuit()->GetMinDistanceToTarget() < 25.0f) {
+                GInfractionManager::Get().ReportDrivingOffRoadWay();
+            }
+        }
     }
 }
 

@@ -1,13 +1,14 @@
 #ifndef MISC_TABLE_H
 #define MISC_TABLE_H
 
-#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include <cstddef>
+
 
 // total size: 0x10
 class TableBase {

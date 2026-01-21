@@ -142,6 +142,12 @@ class WRoadNav {
         return gFastMem.Alloc(size, nullptr);
     }
 
+    void operator delete(void *mem, size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+
     WRoadNav();
     virtual ~WRoadNav();
     void SetCookieTrail(CookieTrail<NavCookie, 32> *p_cookies);
@@ -192,6 +198,7 @@ class WRoadNav {
     void PullOver();
     void SetVehicle(class AIVehicle *ai_vehicle);
     void UpdateOccludedPosition(bool occlude_avoidables);
+    void ChangeDragLanes(int left_right);
 
     bool IsValid() {
         return fValid;
@@ -209,8 +216,16 @@ class WRoadNav {
         return mCurrentCookie;
     }
 
+    bool GetRaceFilter() const {
+        return bRaceFilter && WRoadNetwork::Get().IsRaceFilterValid();
+    }
+
     void SetRaceFilter(bool b) {
         bRaceFilter = b && WRoadNetwork::Get().IsRaceFilterValid();
+    }
+
+    bool GetTrafficFilter() const {
+        return bTrafficFilter;
     }
 
     void SetTrafficFilter(bool b) {
@@ -225,12 +240,28 @@ class WRoadNav {
         bCopFilter = b;
     }
 
+    EPathType GetPathType() const {
+        return fPathType;
+    }
+
+    ENavType GetNavType() const {
+        return fNavType;
+    }
+
     void SetNavType(ENavType type) {
         fNavType = type;
     }
 
+    ELaneType GetLaneType() const {
+        return fLaneType;
+    }
+
     void SetLaneType(ELaneType type) {
         fLaneType = type;
+    }
+
+    bool GetDecisionFilter() {
+        return bDecisionFilter;
     }
 
     void SetDecisionFilter(bool b) {
@@ -251,6 +282,22 @@ class WRoadNav {
 
     const WRoadSegment *GetSegment() const {
         return WRoadNetwork::Get().GetSegment(fSegmentInd);
+    }
+
+    short GetSegmentInd() const {
+        return fSegmentInd;
+    }
+
+    char HitDeadEnd() const {
+        return fDeadEnd;
+    }
+
+    float GetOutOfBounds() {
+        return mOutOfBounds;
+    }
+
+    void DetermineDragLane() {
+        ChangeDragLanes(0);
     }
 
   private:                                      // total size: 0x2F0
@@ -314,6 +361,22 @@ class WRoadNav {
     float fPathGoalParam;                       // offset 0x2E0, size 0x4
     int nPathSegments;                          // offset 0x2E4, size 0x4
     unsigned short *pPathSegments;              // offset 0x2E8, size 0x4
+};
+
+// total size: 0xB00
+class WRoadNavWithCookies : public WRoadNav {
+  public:
+    WRoadNavWithCookies() {
+        SetCookieTrail(&mCookieTrail);
+    }
+
+    // Overrides: WRoadNav
+    ~WRoadNavWithCookies() override {
+        SetCookieTrail((CookieTrail<NavCookie, 32> *)nullptr);
+    }
+
+  private:
+    CookieTrail<NavCookie, 32> mCookieTrail; // offset 0x2F0, size 0x810
 };
 
 // TODO right place?

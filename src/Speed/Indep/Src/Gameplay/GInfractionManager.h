@@ -57,7 +57,9 @@ class GInfractionManager {
 
     // void ReportDamageToProperty() {}
 
-    // void ReportDrivingOffRoadWay() {}
+    void ReportDrivingOffRoadWay() {
+        ReportInfraction(kInfraction_OffRoad);
+    }
 
     // float GetRecklessSpeedThreshold() {}
 

@@ -44,8 +44,8 @@ struct AxlePair {
 };
 
 enum DriverStyle {
-    STYLE_DRAG = 1,
     STYLE_RACING = 0,
+    STYLE_DRAG = 1,
 };
 
 enum eTransmissionType {

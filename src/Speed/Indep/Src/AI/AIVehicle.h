@@ -436,7 +436,9 @@ class AIPerpVehicle : public AIVehiclePid, public IPerpetrator, public ICause, p
     // Overrides: IPerpetrator
     // float Get911CallTime() const override {}
 
-    // bool IsOnLegalRoad() {}
+    bool IsOnLegalRoad() {
+        return GetCurrentRoad()->IsOnLegalRoad();
+    }
 
   private:
     static float mStagger; // size: 0x4, address: 0x8041536C
@@ -465,6 +467,7 @@ class AIPerpVehicle : public AIVehiclePid, public IPerpetrator, public ICause, p
     float m911CallTimer;                                      // offset 0x7E0, size 0x4
 };
 
+// total size: 0x7EC
 class AIVehicleRacecar : public AIPerpVehicle, public IRacer {
   public:
     AIVehicleRacecar(const BehaviorParams &bp);
@@ -489,6 +492,7 @@ class AIVehicleRacecar : public AIPerpVehicle, public IRacer {
     void Update(float dT) override;
 };
 
+// total size: 0x80C
 class AIVehicleHuman : public AIVehicleRacecar, public IHumanAI {
   public:
     AIVehicleHuman(const BehaviorParams &bp);

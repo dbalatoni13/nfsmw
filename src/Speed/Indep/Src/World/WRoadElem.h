@@ -156,7 +156,9 @@ struct WRoadIntersection {
 
 // total size: 0x16
 struct WRoadSegment {
-    // bool IsDecision() const {}
+    bool IsDecision() const {
+        return fFlags & 1;
+    }
 
     // bool IsEntrance() const {}
 

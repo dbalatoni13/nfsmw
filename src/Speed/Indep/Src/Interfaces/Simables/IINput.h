@@ -8,8 +8,8 @@
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 
+// total size: 0x28
 struct InputControls {
-    // total size: 0x28
     float fBanking;          // offset 0x0, size 0x4
     float fSteering;         // offset 0x4, size 0x4
     float fSteeringVertical; // offset 0x8, size 0x4
