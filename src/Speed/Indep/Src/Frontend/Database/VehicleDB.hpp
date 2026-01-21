@@ -1,11 +1,11 @@
 #ifndef FRONTEND_DATABASE_VEHICLEDB_H
 #define FRONTEND_DATABASE_VEHICLEDB_H
 
-#include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
 #include "Speed/Indep/Src/Physics/PhysicsTunings.h"
 #include "Speed/Indep/Src/Physics/PhysicsUpgrades.hpp"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
@@ -64,11 +64,43 @@ struct FEInfractionsData {
 // total size: 0x38
 class FECareerRecord {
   public:
-    void CommitPursuitCarData(unsigned int infractions, unsigned int accumulated_bounty, bool pursuit_evaded);
-
     unsigned int GetBounty() const {
         return Bounty;
     }
+
+    // unsigned int GetNumEvadedPursuits() const {}
+
+    // unsigned int GetNumBustedPursuits() const {}
+
+    // int GetTimesBusted() {}
+
+    // const FEInfractionsData &GetInfractions(bool get_unserved) const {}
+
+    // void TweakBounty(unsigned int bounty) {}
+
+    FECareerRecord() {}
+
+    void Default();
+    void SetVehicleHeat(float h);
+    float GetVehicleHeat();
+    void AdjustHeatOnEventWin();
+    void AdjustHeatOnMilestoneComplete();
+    void AdjustHeatOnEvadePursuit();
+    void AdjustHeatOnDecalApplied(float extraAdjust);
+    void AdjustHeatOnPaintApplied(float extraAdjust);
+    void AdjustHeatOnVinylApplied(float extraAdjust);
+    void AdjustHeatOnBodyKitApplied(float extraAdjust);
+    void AdjustHeatOnHoodApplied(float extraAdjust);
+    void AdjustHeatOnNumbersApplied(float extraAdjust);
+    void AdjustHeatOnRimApplied(float extraAdjust);
+    void AdjustHeatOnRimPaintApplied(float extraAdjust);
+    void AdjustHeatOnRoofScoopApplied(float extraAdjust);
+    void AdjustHeatOnSpoilerApplied(float extraAdjust);
+    void AdjustHeatOnWindowTintApplied(float extraAdjust);
+    void CommitPursuitCarData(unsigned int infractions, unsigned int accumulated_bounty, bool pursuit_evaded);
+    void WaiveIncractions(unsigned int infractions);
+    void ServeAllIncractions();
+    // unsigned int GetNumInfraction(InfractionType type, bool get_unserved) const;
 
     unsigned char Handle;         // offset 0x0, size 0x1
     FEImpoundData TheImpoundData; // offset 0x2, size 0x8

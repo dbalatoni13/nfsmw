@@ -1,12 +1,12 @@
 #ifndef FRONTEND_DATABASE_FEDATABASE_H
 #define FRONTEND_DATABASE_FEDATABASE_H
 
-#include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
 #include "RaceDB.hpp"
+#include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
 #include "Speed/Indep/Src/Gameplay/GRace.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "VehicleDB.hpp"
@@ -221,6 +221,10 @@ class UserProfile {
 
 // total size: 0x24
 struct RaceSettings {
+    unsigned int GetSelectedCar(int player_num) {
+        return SelectedCar[player_num];
+    }
+
     uint32 EventHash;            // offset 0x0, size 0x4
     uint8 NumLaps;               // offset 0x4, size 0x1
     uint8 TrackDirection;        // offset 0x5, size 0x1
@@ -233,7 +237,7 @@ struct RaceSettings {
     bool CopsOn;                 // offset 0x14, size 0x1
     uint8 RegionFilterBits;      // offset 0x18, size 0x1
     unsigned int SelectedCar[2]; // offset 0x1C, size 0x8
-#ifdef EA_PLATFORM_PLAYSTATION2
+#ifdef EA_BUILD_A124
     int CarSelectFilterBits[2];
 #endif
 };
@@ -252,6 +256,8 @@ struct FEKeyboardSettings {
 // total size: 0xA28
 class cFrontendDatabase {
   public:
+    RaceSettings *GetQuickRaceSettings(GRace::Type type);
+
     PlayerSettings *GetPlayerSettings(int player) {
         return &CurrentUserProfiles[0]->GetOptions()->ThePlayerSettings[player];
     }
@@ -260,8 +266,16 @@ class cFrontendDatabase {
         return &CurrentUserProfiles[player]->PlayersCarStable;
     }
 
+    CareerSettings *GetCareerSettings() {
+        return CurrentUserProfiles[0]->GetCareer();
+    }
+
     bool IsSplitScreenMode() {
         return FEGameMode & 4;
+    }
+
+    bool IsCareerMode() {
+        return FEGameMode & 1;
     }
 
     unsigned char iNumPlayers; // offset 0x0, size 0x1
@@ -269,7 +283,7 @@ class cFrontendDatabase {
     bool bSavedProfileForMP;   // offset 0x8, size 0x1
     bool bProfileLoaded;       // offset 0xC, size 0x1
     bool bIsOptionsDirty;      // offset 0x10, size 0x1
-#ifndef EA_PLATFORM_PLAYSTATION2
+#ifndef EA_BUILD_A124
     bool bAutoSaveOverwriteConfirmed; // offset 0x14, size 0x1
 #endif
     unsigned int iDefaultStableHash;     // offset 0x18, size 0x4

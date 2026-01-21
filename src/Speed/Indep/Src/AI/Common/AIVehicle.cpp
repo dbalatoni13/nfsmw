@@ -6,6 +6,10 @@
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/AI/AIVehicleHelicopter.h"
 #include "Speed/Indep/Src/Debug/Debugable.h"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
+#include "Speed/Indep/Src/Gameplay/GRace.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/aivehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/collisionreactions.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
@@ -25,6 +29,7 @@
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
+#include "Speed/Indep/Src/World/WRoadElem.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
@@ -57,6 +62,82 @@ AIVehicleHuman::AIVehicleHuman(const BehaviorParams &bp) : AIVehicleRacecar(bp),
 
 Behavior *AIVehicleHuman::Construct(const BehaviorParams &bp) {
     return new AIVehicleHuman(bp);
+}
+
+AIVehicleHuman::~AIVehicleHuman() {
+    int player_num = 0;
+    IPerpetrator *ip;
+    if (GetSimable()->QueryInterface(&ip)) {
+        float Heat = ip->GetHeat();
+        if (Heat > 5.0f) {
+            Heat = 5.0f;
+        }
+        unsigned int player_car = FEDatabase->GetQuickRaceSettings(GRace::kRaceType_NumTypes)->GetSelectedCar(player_num);
+        if (FEDatabase->IsCareerMode()) {
+            UserProfile *prof = FEDatabase->CurrentUserProfiles[player_num];
+            CareerSettings *career = FEDatabase->GetCareerSettings();
+            career->GetCurrentCar();
+            prof->GetCareer();
+            if ((uintptr_t)prof != 0xffffff1c) {
+                FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(player_num);
+                if (stable) {
+                    FECarRecord *fe_car = stable->GetCarByIndex(career->GetCurrentCar());
+                    if (fe_car) {
+                        FECareerRecord *fe_career = stable->GetCareerRecordByHandle(fe_car->CareerHandle);
+                        if (fe_career) {
+                            fe_career->SetVehicleHeat(Heat);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void AIVehicleHuman::UpdateWrongWay() {
+    mWrongWay = false;
+    IVehicle *vehicle = GetVehicle();
+    if (vehicle->GetPhysicsMode() != PHYSICS_MODE_SIMULATED || vehicle->IsAnimating() || vehicle->IsStaging()) {
+        return;
+    }
+    if (!GRaceStatus::Exists()) {
+        return;
+    }
+    if (GRaceStatus::Get().GetPlayMode() != GRaceStatus::kPlayMode_Racing || !GRaceStatus::Get().GetActivelyRacing()) {
+        return;
+    }
+    WRoadNav *road_nav = GetDriveToNav();
+    if (!road_nav) {
+        return;
+    }
+    UMath::Vector3 drive_dir;
+    vehicle->ComputeHeading(&drive_dir);
+
+    WRoadNav nav;
+    nav.SetNavType(WRoadNav::kTypeDirection);
+    nav.SetPathType(WRoadNav::kPathPlayer);
+    nav.SetLaneType(WRoadNav::kLaneRacing);
+    nav.SetRaceFilter(true);
+    nav.SetTrafficFilter(false);
+    nav.SetDecisionFilter(false);
+    nav.InitAtPoint(vehicle->GetPosition(), drive_dir, false, 1.0f);
+    if (nav.IsValid()) {
+        const WRoadSegment *seg = nav.GetSegment();
+        if (seg && seg->IsInRace()) {
+            UMath::Vector3 fwd = nav.GetForwardVector();
+            if (UMath::Dot(fwd, drive_dir) < 0.0f) {
+                mWrongWay = true;
+            }
+        }
+    }
+}
+
+void AIVehicleHuman::SetAiControl(bool ai_control) {
+    if (bAiControl != ai_control) {
+        ClearGoal();
+        SetGoal("AIGoalRacer");
+        // new EEnabled
+    }
 }
 
 Behavior *AIVehicle::Construct(const BehaviorParams &bp) {

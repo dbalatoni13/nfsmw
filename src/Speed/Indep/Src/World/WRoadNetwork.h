@@ -10,6 +10,7 @@
 #include "Speed/Indep/Libs/Support/Utility/USpline.h"
 #include "Speed/Indep/Src/Debug/Debugable.h"
 #include "Speed/Indep/Src/Misc/CookieTrail.h"
+#include "WRoadElem.h"
 
 #include "types.h"
 
@@ -52,19 +53,21 @@ class WRoadNetwork : public Debugable {
 
     // bool HasValidTrafficRoads() {}
 
-    // const struct WRoadNode *GetNode(int index) {}
+    // const WRoadNode *GetNode(int index) {}
 
-    // const struct WRoad *GetRoad(int index) {}
+    // const WRoad *GetRoad(int index) {}
 
-    // const struct WRoadProfile *GetProfile(int index) {}
+    // const WRoadProfile *GetProfile(int index) {}
 
-    // const struct WRoadSegment *GetSegment(int index) {}
+    const WRoadSegment *GetSegment(int index) {
+        return &fSegments[index];
+    }
 
-    // const struct WRoad *GetSegmentRoad(int segment_index) {}
+    // const WRoad *GetSegmentRoad(int segment_index) {}
 
-    // struct WRoad *GetRoadNonConst(int index) {}
+    // WRoad *GetRoadNonConst(int index) {}
 
-    // struct WRoadSegment *GetSegmentNonConst(int index) {}
+    // WRoadSegment *GetSegmentNonConst(int index) {}
 
     // unsigned int GetNumRoads() {}
 
@@ -79,17 +82,17 @@ class WRoadNetwork : public Debugable {
     // unsigned long GetSegmentStamp() {}
 
   private:
-    static struct WRoad *fRoads;                     // size: 0x4, address: 0x80438FDC
-    static struct WRoadNode *fNodes;                 // size: 0x4, address: 0x80438FD0
-    static struct WRoadProfile *fProfiles;           // size: 0x4, address: 0x80438FCC
-    static struct WRoadSegment *fSegments;           // size: 0x4, address: 0x80438FD4
-    static struct WRoadIntersection *fIntersections; // size: 0x4, address: 0xFFFFFFFF
-    static unsigned int fNumRoads;                   // size: 0x4, address: 0x804FFF0C
-    static unsigned int fNumNodes;                   // size: 0x4, address: 0x804FFF10
-    static unsigned int fNumProfiles;                // size: 0x4, address: 0x804FFF14
-    static unsigned int fNumSegments;                // size: 0x4, address: 0x804FFEF8
-    static unsigned int fNumIntersections;           // size: 0x4, address: 0x804FFF18
-    // static WRoadProfile fInvalidProfile;             // size: 0x40, address: 0x804F4248
+    static WRoad *fRoads;                         // size: 0x4, address: 0x80438FDC
+    static WRoadNode *fNodes;                     // size: 0x4, address: 0x80438FD0
+    static WRoadProfile *fProfiles;               // size: 0x4, address: 0x80438FCC
+    static WRoadSegment *fSegments;               // size: 0x4, address: 0x80438FD4
+    static WRoadIntersection *fIntersections;     // size: 0x4, address: 0xFFFFFFFF
+    static unsigned int fNumRoads;                // size: 0x4, address: 0x804FFF0C
+    static unsigned int fNumNodes;                // size: 0x4, address: 0x804FFF10
+    static unsigned int fNumProfiles;             // size: 0x4, address: 0x804FFF14
+    static unsigned int fNumSegments;             // size: 0x4, address: 0x804FFEF8
+    static unsigned int fNumIntersections;        // size: 0x4, address: 0x804FFF18
+    static WRoadProfile fInvalidProfile;          // size: 0x40, address: 0x804F4248
     static bool fValid;                           // size: 0x1, address: 0x804FFF1C
     static bool fValidRaceFilter;                 // size: 0x1, address: 0x804FFEF4
     static bool fValidTrafficRoads;               // size: 0x1, address: 0x804FFF00
@@ -244,6 +247,10 @@ class WRoadNav {
 
     bool IsOccluded() const {
         return bOccludedFromBehind;
+    }
+
+    const WRoadSegment *GetSegment() const {
+        return WRoadNetwork::Get().GetSegment(fSegmentInd);
     }
 
   private:                                      // total size: 0x2F0

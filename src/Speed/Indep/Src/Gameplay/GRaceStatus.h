@@ -132,6 +132,10 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         return mTrafficPattern;
     }
 
+    bool GetActivelyRacing() const {
+        return mActivelyRacing;
+    }
+
   private:
     static struct GRaceStatus *fObj;
 

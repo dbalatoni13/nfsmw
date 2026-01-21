@@ -19,6 +19,14 @@
       "program": "${file}",
       "console": "integratedTerminal",
       "args": ["symbols\\mw_dwarfdump.nothpp", "symbols\\events_generated.yml"]
+    },
+    {
+      "name": "Debug message yaml generator",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "args": ["symbols\\mw_dwarfdump.nothpp", "symbols\\messages_generated.yml"]
     }
   ]
 }

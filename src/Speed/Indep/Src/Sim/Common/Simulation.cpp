@@ -472,13 +472,13 @@ SimSystem::SimSystem()
 
     unsigned int c = mAttribs.Num_SimSubSystems();
     for (unsigned int i = 0; i < c; i++) {
-        Sim::SubSystem::Init(UCrc32(mAttribs.SimSubSystems(i)));
+        Sim::SubSystem::Init(mAttribs.SimSubSystems(i));
     }
 
-    mSimStart = SimSystem::AddTask(UCrc32("SimStart"), 1.0f, this, 0.0f, Sim::TASK_FRAME_FIXED);
-    mWorldUpdate = AddTask(UCrc32("WorldUpdate"), 1.0f, this, 0.0f, Sim::TASK_FRAME_FIXED);
-    mSimFrameEnd = AddTask(UCrc32("SimEnd"), 1.0f, this, 0.0f, Sim::TASK_FRAME_VARIABLE); // bug, this should be "SimFrameEnd"
-    mSimEnd = AddTask(UCrc32("SimEnd"), 1.0f, this, 0.0f, Sim::TASK_FRAME_FIXED);
+    mSimStart = SimSystem::AddTask("SimStart", 1.0f, this, 0.0f, Sim::TASK_FRAME_FIXED);
+    mWorldUpdate = AddTask("WorldUpdate", 1.0f, this, 0.0f, Sim::TASK_FRAME_FIXED);
+    mSimFrameEnd = AddTask("SimEnd", 1.0f, this, 0.0f, Sim::TASK_FRAME_VARIABLE); // bug, this should be "SimFrameEnd"
+    mSimEnd = AddTask("SimEnd", 1.0f, this, 0.0f, Sim::TASK_FRAME_FIXED);
 
     Sim::ProfileTask(mSimStart, "SimStart");
     Sim::ProfileTask(mWorldUpdate, "WorldUpdate");
@@ -508,7 +508,7 @@ SimSystem::~SimSystem() {
     SimTask::Shutdown();
 
     for (int i = mAttribs.Num_SimSubSystems() - 1; i >= 0; i--) {
-        Sim::SubSystem::Shutdown(UCrc32(mAttribs.SimSubSystems(i)));
+        Sim::SubSystem::Shutdown(mAttribs.SimSubSystems(i));
     }
     Scheduler::Get().fSchedule_SimRate->RemoveTask(mEvent);
 }
