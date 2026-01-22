@@ -81,6 +81,7 @@ class GRaceParameters {
     bool GetIsChallengeSeriesRace() const;
     int GetNumOpponents() const;
     bool GetIsPursuitRace() const;
+    bool HasFinishLine() const;
 
   protected:
     struct GRaceIndexData *mIndex;      // offset 0x0, size 0x4

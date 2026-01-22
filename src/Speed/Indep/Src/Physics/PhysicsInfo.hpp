@@ -26,6 +26,10 @@ enum eInductionType {
 };
 
 struct Performance {
+    Performance() {
+        Default();
+    }
+
     Performance(float topspeed, float handling, float accel) {
         TopSpeed = topspeed;
         Handling = handling;

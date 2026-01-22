@@ -1,12 +1,12 @@
 #ifndef AI_AIAVOIDABLE_H
 #define AI_AIAVOIDABLE_H
 
-#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
 #include "Speed/Indep/Libs/Support/Miscellaneous/SAP.h"
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
@@ -71,7 +71,7 @@ class ALIGN_16 AIAvoidable {
   private:
     static AvoidableList mAll;
 
-    struct Grid *mGridNode;   // offset 0x0, size 0x4
+    Grid *mGridNode;          // offset 0x0, size 0x4
     Neighbors mNeighbors;     // offset 0x4, size 0x8
     UTL::COM::IUnknown *mUnk; // offset 0xC, size 0x4
 };

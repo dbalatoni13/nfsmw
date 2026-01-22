@@ -1008,3 +1008,25 @@ void AIVehicle::DisableSimplePhysics() {
 bool AIVehicle::IsSimplePhysicsActive() {
     return GetVehicle()->GetPhysicsMode() == PHYSICS_MODE_EMULATED;
 }
+
+WRoadNav *AIVehicle::GetCurrentRoad() {
+    UpdateRoads();
+    return &mCurrentRoad;
+}
+
+WRoadNav *AIVehicle::GetFutureRoad() {
+    UpdateRoads();
+    return &mFutureRoad;
+}
+
+const UMath::Vector3 &AIVehicle::GetFarFuturePosition() {
+    UpdateRoads();
+    return mFarFuturePosition;
+}
+
+const UMath::Vector3 &AIVehicle::GetFarFutureDirection() {
+    UpdateRoads();
+    return mFarFutureDirection;
+}
+
+void AIVehicle::OnDebugDraw() {}

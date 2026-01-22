@@ -22,4 +22,18 @@
 
 #include "Speed/Indep/Src/AI/Actions/AIActionRam.cpp"
 
+#include "Speed/Indep/Src/AI/Actions/AIActionStopShort.cpp"
+
+#include "Speed/Indep/Src/AI/Actions/AIActionSpline.cpp"
+
+#include "Speed/Indep/Src/AI/Actions/AIActionStrafe.cpp"
+
+#include "Speed/Indep/Src/AI/Actions/AIActionAirborne.cpp"
+
+#include "Speed/Indep/Src/AI/Actions/AIActionJackKnife.cpp"
+
+#include "Speed/Indep/Src/AI/Actions/AIActionStaticRoadBlock.cpp"
+
+#include "Speed/Indep/Src/AI/Actions/AIActionRace.cpp"
+
 #include "Speed/Indep/Src/AI/Common/AIVehicle.cpp"

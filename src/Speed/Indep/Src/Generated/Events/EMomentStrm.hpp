@@ -19,8 +19,8 @@ class EMomentStrm : public Event {
 
     // enum { kEventID = 0 };
 
-    EMomentStrm(const char *pAttribStrm, unsigned int pAttribKey, UMath::Vector4 pPosition, UMath::Vector4 pVector, UMath::Vector4 pVelocity,
-                unsigned int phSimable);
+    EMomentStrm(UMath::Vector4 pPosition, UMath::Vector4 pVector, UMath::Vector4 pVelocity, uintptr_t phSimable, const char *pAttribStrm,
+                unsigned int pAttribKey);
 
     ~EMomentStrm() override;
 
@@ -33,7 +33,7 @@ class EMomentStrm : public Event {
     UMath::Vector4 fPosition; // offset: 0xc, size 0x10
     UMath::Vector4 fVector;   // offset: 0x1c, size 0x10
     UMath::Vector4 fVelocity; // offset: 0x2c, size 0x10
-    unsigned int fhSimable;   // offset: 0x3c, size 0x4
+    uintptr_t fhSimable;      // offset: 0x3c, size 0x4
 };
 
 void EMomentStrm_MakeEvent_Callback(const void *staticData);

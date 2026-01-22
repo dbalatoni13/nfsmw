@@ -43,6 +43,9 @@ class FloatSpring {
     const float mD; // offset 0xC, size 0x4
 };
 
+float AngleTo(const UMath::Vector3 &p0, const UMath::Vector3 &n0, const UMath::Vector3 &p1);
+float TimeToImpactXZ(const UMath::Vector3 &pos0, const UMath::Vector3 &vel0, const float rad0, const UMath::Vector3 &pos1, const UMath::Vector3 &vel1,
+                     const float rad1);
 void PredictPosition(float predictTime, const UMath::Vector3 &position, const UMath::Vector3 &vfwd, float yaw, const UMath::Vector3 &linearVelocity,
                      const float angularVelocity, UMath::Vector3 &result);
 

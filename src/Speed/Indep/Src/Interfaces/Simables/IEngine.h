@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 // Credits: Brawltendo
 class IEngine : public UTL::COM::IUnknown {

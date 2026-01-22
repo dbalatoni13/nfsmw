@@ -13,7 +13,7 @@
 // total size: 0x48
 class AIActionRam : public AIAction, public Debugable {
   public:
-    static AIAction *Construct(struct AIActionParams *params);
+    static AIAction *Construct(AIActionParams *params);
 
     AIActionRam(AIActionParams *params, float score);
     bool ShouldDoIt();

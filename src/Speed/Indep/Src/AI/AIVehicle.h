@@ -31,6 +31,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     static Behavior *Construct(const BehaviorParams &bp);
 
     float GetOverSteerCorrection(float steer);
+    void UpdateRoads();
 
     const UMath::Vector3 &GetAngularVelocity() const {
         return mCollisionBody->GetAngularVelocity();
@@ -101,6 +102,10 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     float GetDriveSpeed() const override;
     void SetDriveSpeed(float driveSpeed) override;
     WRoadNav *GetCollNav(const UMath::Vector3 &forwardVector, float predictTime) override;
+    WRoadNav *GetCurrentRoad() override;
+    WRoadNav *GetFutureRoad() override;
+    const UMath::Vector3 &GetFarFuturePosition() override;
+    const UMath::Vector3 &GetFarFutureDirection() override;
 
     const UMath::Vector3 &GetDriveTarget() const override {
         return mDest;
@@ -309,6 +314,14 @@ class AIVehicleEmpty : public AIVehicle {
     static Behavior *Construct(const BehaviorParams &bp);
 
     AIVehicleEmpty(const BehaviorParams &bp);
+
+    // Overrides: AIVehicle
+    void Update(float dT) override {
+        AIVehicle::UpdateReverseOverride(dT);
+    }
+
+    // Overrides: AIVehicle
+    void OnDebugDraw() override {}
 };
 
 class AIVehiclePid : public AIVehicle {
@@ -521,22 +534,39 @@ class AIVehicleHuman : public AIVehicleRacecar, public IHumanAI {
     void Update(float dT) override;
 
     // Overrides: IHumanAI
-    // bool IsPlayerSteering() override {}
+    bool IsPlayerSteering() override {
+        if (bAiControl) {
+            return false;
+        } else {
+            return IsDragSteering() == false;
+        }
+    }
 
     // Overrides: IHumanAI
-    // bool GetAiControl() override {}
+    bool GetAiControl() override {
+        return bAiControl;
+    }
 
     // Overrides: IHumanAI
-    void SetWorldMoment(const UMath::Vector3 &position, float radius) override {}
+    void SetWorldMoment(const UMath::Vector3 &position, float radius) override {
+        vMomentPosition = position;
+        fMomentRadius = radius;
+    }
 
     // Overrides: IHumanAI
-    // const UMath::Vector3 &GetWorldMomentPosition() override {}
+    const UMath::Vector3 &GetWorldMomentPosition() override {
+        return vMomentPosition;
+    }
 
     // Overrides: IHumanAI
-    // float GetWorldMomentRadius() override {}
+    float GetWorldMomentRadius() override {
+        return fMomentRadius;
+    }
 
     // Overrides: IHumanAI
-    void ClearWorldMoment() override {}
+    void ClearWorldMoment() override {
+        fMomentRadius = 0.0f;
+    }
 
     // Overrides: IVehicleAI
     // float GetSkill() const override {}

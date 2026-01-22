@@ -349,7 +349,22 @@ bool AITrafficManager::FindCollisions(const UMath::Vector3 &spawnpoint) const {
 }
 
 bool AITrafficManager::CheckRace(const WRoadNav &nav) const {
-    return true;
+    if (!GRaceStatus::Exists()) {
+        return true;
+    }
+    GRaceStatus &race = GRaceStatus::Get();
+    if (race.GetPlayMode() != GRaceStatus::kPlayMode_Racing) {
+        return true;
+    }
+    GRaceParameters *params = race.GetRaceParameters();
+    if (!params || !params->HasFinishLine()) {
+        return true;
+    }
+    const WRoadSegment *seg = nav.GetSegment();
+    if (seg && seg->IsInRace()) {
+        return true;
+    }
+    return false;
 }
 
 bool AITrafficManager::FindSpawnPoint(WRoadNav &nav) const {
@@ -452,6 +467,8 @@ bool AITrafficManager::ChoosePattern() {
 bool AITrafficManager::ValidateVehicle(IVehicle *ivehicle, float density) const {
     return true;
 }
+
+// float AITrafficManager::ComputeDensity() const {}
 
 // TODO move?
 static const float Tweak_TrafficDensitySpawnRates[11] = {0.0f, 0.05f, 0.1f, 0.125f, 0.2f, 0.4f, 0.6f, 1.0f, 3.0f, 5.0f, 8.0f};
