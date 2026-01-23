@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+#include "types.h"
+
 namespace GRace {
 
 enum Difficulty {
@@ -15,11 +17,13 @@ enum Difficulty {
 };
 
 enum Context {
-    kRaceContext_QuickRace = 0,
-    kRaceContext_TimeTrial = 1,
-    kRaceContext_Online = 2,
-    kRaceContext_Career = 3,
-    kRaceContext_Count = 4,
+    kRaceContext_QuickRace,
+    kRaceContext_TimeTrial,
+#if ONLINE_SUPPORT
+    kRaceContext_Online,
+#endif
+    kRaceContext_Career,
+    kRaceContext_Count,
 };
 
 enum Type {

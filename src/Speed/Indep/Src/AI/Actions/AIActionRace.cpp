@@ -240,8 +240,10 @@ struct GripTor {
 
     void operator()(IVehicle *vehicle) {
         GripTor g(vehicle);
-        StartGrip = UMath::Min(StartGrip, g.StartGrip);
-        EndGrip = UMath::Min(EndGrip, g.EndGrip);
+        if (g.Valid) {
+            StartGrip = UMath::Min(g.StartGrip, StartGrip);
+            EndGrip = UMath::Min(g.EndGrip, EndGrip);
+        }
     }
 
     float StartGrip; // offset 0x0, size 0x4
@@ -270,6 +272,10 @@ struct NosTor {
 // total size: 0x4
 struct SpeedTor {
     SpeedTor(IVehicle *vehicle) {
+        Speed = 0.0f;
+        if (!vehicle) {
+            return;
+        }
         IVehicleAI *ai;
         if (vehicle->QueryInterface(&ai)) {
             Speed = ai->GetTopSpeed();
@@ -279,7 +285,9 @@ struct SpeedTor {
     void operator()(IVehicle *vehicle) {
         SpeedTor s(vehicle);
 
-        Speed = UMath::Min(Speed, s.Speed);
+        if (s.Speed > 0.0f) {
+            Speed = UMath::Min(s.Speed, Speed);
+        }
     }
 
     float Speed; // offset 0x0, size 0x4
@@ -295,7 +303,7 @@ struct PerformaTor {
         Physics::Info::Performance p;
         if (vehicle->GetPerformance(p)) {
             Performance.Maximize(p);
-            Valid = true; // TODO maybe one line above?
+            Valid = true;
         }
     }
 
@@ -352,7 +360,7 @@ void AIActionRace::ComputePotentials() {
     SpeedTor my_speed(GetVehicle());
     SpeedTor lowest_speed = IVehicle::ForEach(VEHICLE_PLAYERS, my_speed);
 
-    mTopSpeed = UMath::Lerp(my_speed.Speed, lowest_speed.Speed, mPerformanceBias.TopSpeed);
+    mTopSpeed = UMath::Lerp(lowest_speed.Speed, my_speed.Speed, mPerformanceBias.TopSpeed);
 }
 
 void AIActionRace::Update(float dT) {}
