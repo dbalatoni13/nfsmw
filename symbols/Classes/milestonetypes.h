@@ -18,21 +18,33 @@ namespace Gen {
 
 struct milestonetypes : Instance {
 struct _LayoutStruct {
-char CollectionName[4]; // offset 0x0, size 0x4
+const char *CollectionName; // offset 0x0, size 0x4
 int MilestoneType; // offset 0x4, size 0x4
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "milestonetypes");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "milestonetypes");
 }
 
 milestonetypes(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 milestonetypes(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+milestonetypes(const milestonetypes &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+milestonetypes(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~milestonetypes() {}
@@ -45,24 +57,28 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0xe4c3d904;
 }
 
 const char*CollectionName() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->CollectionName;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->CollectionName;
 }
 
-const bool &ResetWhenPursuitStarts(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xab4a196f, index));
+const bool &ResetWhenPursuitStarts() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xab4a196f, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const int &LocalizationTag(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xdb89ab5c, index));
+const int &LocalizationTag() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xdb89ab5c, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
@@ -70,7 +86,7 @@ const int &LocalizationTag(unsigned int index) const {
     }
         
 const int &MilestoneType() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MilestoneType;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MilestoneType;
 }
 
 };

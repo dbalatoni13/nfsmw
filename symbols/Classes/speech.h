@@ -18,7 +18,7 @@ namespace Gen {
 
 struct speech : Instance {
 struct _LayoutStruct {
-char CollectionName[4]; // offset 0x0, size 0x4
+const char *CollectionName; // offset 0x0, size 0x4
 SPCHType_1_EventID SpeechID; // offset 0x4, size 0x4
 float BackTime; // offset 0x8, size 0x4
 float expiry; // offset 0xc, size 0x4
@@ -28,17 +28,29 @@ short priority; // offset 0x18, size 0x2
 bool DoNotDropout; // offset 0x1a, size 0x1
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "speech");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "speech");
 }
 
 speech(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 speech(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+speech(const speech &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+speech(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~speech() {}
@@ -51,28 +63,32 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0xc593dd47;
 }
 
-const float &MinPlayerSpeed(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x0994e624, index));
+const float &MinPlayerSpeed() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x0994e624, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const bool &RadioChirp(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x2976b959, index));
+const bool &RadioChirp() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x2976b959, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const bool &RedundancyCheckIsGlobal(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x3db0e0e9, index));
+const bool &RedundancyCheckIsGlobal() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x3db0e0e9, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
@@ -80,7 +96,7 @@ const bool &RedundancyCheckIsGlobal(unsigned int index) const {
     }
         
 const RefSpec &RecallList(unsigned int index) const {
-        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(this->GetAttributePointer(0x4710d6d5, index));
+        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(GetAttributePointer(0x4710d6d5, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const RefSpec *>(DefaultDataArea(sizeof(RefSpec)));
         }
@@ -88,67 +104,67 @@ const RefSpec &RecallList(unsigned int index) const {
     }
         
 unsigned int Num_RecallList() const {
-            return this->Get(0x4710d6d5).GetLength();
+            return Get(0x4710d6d5).GetLength();
         }
 
-const bool &OnScreenOnly(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x4b331604, index));
+const bool &OnScreenOnly() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x4b331604, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const bool &Pan(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x4d663bfc, index));
+const bool &Pan() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x4d663bfc, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const char &MinHeat(unsigned int index) const {
-        const char *resultptr = reinterpret_cast<const char *>(this->GetAttributePointer(0x69603485, index));
+const char &MinHeat() const {
+        const char *resultptr = reinterpret_cast<const char *>(GetAttributePointer(0x69603485, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const char *>(DefaultDataArea(sizeof(char)));
         }
         return *resultptr;
     }
         
-const char &MaxHeat(unsigned int index) const {
-        const char *resultptr = reinterpret_cast<const char *>(this->GetAttributePointer(0x77f20778, index));
+const char &MaxHeat() const {
+        const char *resultptr = reinterpret_cast<const char *>(GetAttributePointer(0x77f20778, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const char *>(DefaultDataArea(sizeof(char)));
         }
         return *resultptr;
     }
         
-const float &DeadAir(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x793293dd, index));
+const float &DeadAir() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x793293dd, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const int &MaxPlayback(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x7e18c2f8, index));
+const int &MaxPlayback() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x7e18c2f8, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const bool &Interruptable(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x87930ed2, index));
+const bool &Interruptable() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x87930ed2, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const bool &cache_SysInit(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x8b5d5c9b, index));
+const bool &cache_SysInit() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x8b5d5c9b, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
@@ -156,27 +172,27 @@ const bool &cache_SysInit(unsigned int index) const {
     }
         
 const char*CollectionName() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->CollectionName;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->CollectionName;
 }
 
-const bool &interrupt(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xaecbb4ad, index));
+const bool &interrupt() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xaecbb4ad, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const bool &cache_OnCreate(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xb6f42d73, index));
+const bool &cache_OnCreate() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xb6f42d73, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const float &MaxPlayerSpeed(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xb9befde0, index));
+const float &MaxPlayerSpeed() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xb9befde0, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -184,7 +200,7 @@ const float &MaxPlayerSpeed(unsigned int index) const {
     }
         
 const RefSpec &DepFollow(unsigned int index) const {
-        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(this->GetAttributePointer(0xc8c5d475, index));
+        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(GetAttributePointer(0xc8c5d475, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const RefSpec *>(DefaultDataArea(sizeof(RefSpec)));
         }
@@ -192,35 +208,35 @@ const RefSpec &DepFollow(unsigned int index) const {
     }
         
 unsigned int Num_DepFollow() const {
-            return this->Get(0xc8c5d475).GetLength();
+            return Get(0xc8c5d475).GetLength();
         }
 
-const float &EnforceDeadAir(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xdb3bd2f3, index));
+const float &EnforceDeadAir() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xdb3bd2f3, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const bool &reqLOS(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xe0241fc1, index));
+const bool &reqLOS() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xe0241fc1, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const unsigned char &Clarity(unsigned int index) const {
-        const unsigned char *resultptr = reinterpret_cast<const unsigned char *>(this->GetAttributePointer(0xfe3254ea, index));
+const unsigned char &Clarity() const {
+        const unsigned char *resultptr = reinterpret_cast<const unsigned char *>(GetAttributePointer(0xfe3254ea, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const unsigned char *>(DefaultDataArea(sizeof(unsigned char)));
         }
         return *resultptr;
     }
         
-const float &InitDelay(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xffbdad32, index));
+const float &InitDelay() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xffbdad32, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -228,31 +244,31 @@ const float &InitDelay(unsigned int index) const {
     }
         
 const SPCHType_1_EventID &SpeechID() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SpeechID;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SpeechID;
 }
 
 const float &BackTime() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->BackTime;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->BackTime;
 }
 
 const float &expiry() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->expiry;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->expiry;
 }
 
 const float &CullingRange() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->CullingRange;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->CullingRange;
 }
 
 const float &Interval() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Interval;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Interval;
 }
 
 const short &priority() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->priority;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->priority;
 }
 
 const bool &DoNotDropout() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->DoNotDropout;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->DoNotDropout;
 }
 
 };

@@ -43,17 +43,29 @@ float parallaxHeight; // offset 0x84, size 0x4
 unsigned char PunchThroughAlphaRef; // offset 0x88, size 0x1
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "lightmaterials");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "lightmaterials");
 }
 
 lightmaterials(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 lightmaterials(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+lightmaterials(const lightmaterials &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+lightmaterials(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~lightmaterials() {}
@@ -66,116 +78,120 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0xd32a743f;
 }
 
-const Attrib::StringKey &opacityMap(unsigned int index) const {
-        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(this->GetAttributePointer(0x15fa3308, index));
+const Attrib::StringKey &opacityMap() const {
+        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(GetAttributePointer(0x15fa3308, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const Attrib::StringKey *>(DefaultDataArea(sizeof(Attrib::StringKey)));
         }
         return *resultptr;
     }
         
-const Attrib::StringKey &refractionMap(unsigned int index) const {
-        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(this->GetAttributePointer(0x1dafcfc0, index));
+const Attrib::StringKey &refractionMap() const {
+        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(GetAttributePointer(0x1dafcfc0, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const Attrib::StringKey *>(DefaultDataArea(sizeof(Attrib::StringKey)));
         }
         return *resultptr;
     }
         
-const Attrib::StringKey &specularColourMap(unsigned int index) const {
-        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(this->GetAttributePointer(0x2569fd5b, index));
+const Attrib::StringKey &specularColourMap() const {
+        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(GetAttributePointer(0x2569fd5b, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const Attrib::StringKey *>(DefaultDataArea(sizeof(Attrib::StringKey)));
         }
         return *resultptr;
     }
         
-const bool &useVertexColour(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x2de05384, index));
+const bool &useVertexColour() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x2de05384, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const float &NoiseSpace(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x3a417eae, index));
+const float &NoiseSpace() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x3a417eae, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &Brightness(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x42ff3188, index));
+const float &Brightness() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x42ff3188, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &Ambient(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x483b6e25, index));
+const float &Ambient() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x483b6e25, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const Attrib::StringKey &glossMap(unsigned int index) const {
-        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(this->GetAttributePointer(0x5439f9c7, index));
+const Attrib::StringKey &glossMap() const {
+        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(GetAttributePointer(0x5439f9c7, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const Attrib::StringKey *>(DefaultDataArea(sizeof(Attrib::StringKey)));
         }
         return *resultptr;
     }
         
-const Attrib::StringKey &reflectionMap(unsigned int index) const {
-        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(this->GetAttributePointer(0x95c10731, index));
+const Attrib::StringKey &reflectionMap() const {
+        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(GetAttributePointer(0x95c10731, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const Attrib::StringKey *>(DefaultDataArea(sizeof(Attrib::StringKey)));
         }
         return *resultptr;
     }
         
-const float &Smoothness(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xb94011a2, index));
+const float &Smoothness() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xb94011a2, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const RefSpec &shaderspec(unsigned int index) const {
-        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(this->GetAttributePointer(0xcb31c94d, index));
+const RefSpec &shaderspec() const {
+        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(GetAttributePointer(0xcb31c94d, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const RefSpec *>(DefaultDataArea(sizeof(RefSpec)));
         }
         return *resultptr;
     }
         
-const float &LightingCone(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xe0985f58, index));
+const float &LightingCone() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xe0985f58, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const Attrib::StringKey &illuminationMap(unsigned int index) const {
-        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(this->GetAttributePointer(0xf3d46f50, index));
+const Attrib::StringKey &illuminationMap() const {
+        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(GetAttributePointer(0xf3d46f50, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const Attrib::StringKey *>(DefaultDataArea(sizeof(Attrib::StringKey)));
         }
         return *resultptr;
     }
         
-const Attrib::StringKey &filterColourMap(unsigned int index) const {
-        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(this->GetAttributePointer(0xfd165dc3, index));
+const Attrib::StringKey &filterColourMap() const {
+        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(GetAttributePointer(0xfd165dc3, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const Attrib::StringKey *>(DefaultDataArea(sizeof(Attrib::StringKey)));
         }
@@ -183,95 +199,95 @@ const Attrib::StringKey &filterColourMap(unsigned int index) const {
     }
         
 const UMath::Vector4 &GrassColour() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->GrassColour;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->GrassColour;
 }
 
 const UMath::Vector4 &diffuseColour() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->diffuseColour;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->diffuseColour;
 }
 
 const UMath::Vector4 &specularColour() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->specularColour;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->specularColour;
 }
 
 const Attrib::StringKey &shader() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->shader;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->shader;
 }
 
 const float &GrassGamma() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->GrassGamma;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->GrassGamma;
 }
 
 const float &specularFacing() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->specularFacing;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->specularFacing;
 }
 
 const float &LODRamp() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->LODRamp;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->LODRamp;
 }
 
 const float &Scruff() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Scruff;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Scruff;
 }
 
 const float &LowNoiseSpace() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->LowNoiseSpace;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->LowNoiseSpace;
 }
 
 const float &NoiseMipMapBias() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->NoiseMipMapBias;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->NoiseMipMapBias;
 }
 
 const float &LODStart() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->LODStart;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->LODStart;
 }
 
 const float &diffuseFacing() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->diffuseFacing;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->diffuseFacing;
 }
 
 const float &LowNoiseIntensity() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->LowNoiseIntensity;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->LowNoiseIntensity;
 }
 
 const float &MaxShells() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MaxShells;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MaxShells;
 }
 
 const float &specularPower() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->specularPower;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->specularPower;
 }
 
 const float &DiffuseMipMapBias() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->DiffuseMipMapBias;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->DiffuseMipMapBias;
 }
 
 const float &GrassHeight() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->GrassHeight;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->GrassHeight;
 }
 
 const float &diffusePower() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->diffusePower;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->diffusePower;
 }
 
 const float &DiffuseSpace() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->DiffuseSpace;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->DiffuseSpace;
 }
 
 const float &specularGrazing() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->specularGrazing;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->specularGrazing;
 }
 
 const float &diffuseGrazing() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->diffuseGrazing;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->diffuseGrazing;
 }
 
 const float &parallaxHeight() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->parallaxHeight;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->parallaxHeight;
 }
 
 const unsigned char &PunchThroughAlphaRef() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->PunchThroughAlphaRef;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->PunchThroughAlphaRef;
 }
 
 };

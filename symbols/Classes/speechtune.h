@@ -60,17 +60,29 @@ char HighIntensityMark; // offset 0xb0, size 0x1
 char MinContigFramesFor180; // offset 0xb1, size 0x1
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "speechtune");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "speechtune");
 }
 
 speechtune(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 speechtune(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+speechtune(const speechtune &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+speechtune(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~speechtune() {}
@@ -83,12 +95,16 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0xbc683501;
 }
 
-const UMath::Vector2 &CacheDisplayCoords(unsigned int index) const {
-        const UMath::Vector2 *resultptr = reinterpret_cast<const UMath::Vector2 *>(this->GetAttributePointer(0x3e02ef95, index));
+const UMath::Vector2 &CacheDisplayCoords() const {
+        const UMath::Vector2 *resultptr = reinterpret_cast<const UMath::Vector2 *>(GetAttributePointer(0x3e02ef95, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const UMath::Vector2 *>(DefaultDataArea(sizeof(UMath::Vector2)));
         }
@@ -96,7 +112,7 @@ const UMath::Vector2 &CacheDisplayCoords(unsigned int index) const {
     }
         
 const float &PlayerSmashSpeedRange(unsigned int index) const {
-            const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());
+            const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(GetLayoutPointer());
             if (index < lp->_Array_PlayerSmashSpeedRange.GetLength()) {
             return lp->PlayerSmashSpeedRange[index];
         } else {
@@ -105,11 +121,11 @@ const float &PlayerSmashSpeedRange(unsigned int index) const {
         }
 
         unsigned int Num_PlayerSmashSpeedRange() const {
-            return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->_Array_PlayerSmashSpeedRange.GetLength();
+            return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->_Array_PlayerSmashSpeedRange.GetLength();
         }
         
         const float &PursuitInactivityTimer(unsigned int index) const {
-            const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());
+            const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(GetLayoutPointer());
             if (index < lp->_Array_PursuitInactivityTimer.GetLength()) {
             return lp->PursuitInactivityTimer[index];
         } else {
@@ -118,151 +134,151 @@ const float &PlayerSmashSpeedRange(unsigned int index) const {
         }
 
         unsigned int Num_PursuitInactivityTimer() const {
-            return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->_Array_PursuitInactivityTimer.GetLength();
+            return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->_Array_PursuitInactivityTimer.GetLength();
         }
         
         const UMath::Vector2 &SpeechDropoffRamp() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SpeechDropoffRamp;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SpeechDropoffRamp;
 }
 
 const float &OutcomeFailSpeed() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->OutcomeFailSpeed;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->OutcomeFailSpeed;
 }
 
 const float &MinIntensitySideswipe() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MinIntensitySideswipe;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MinIntensitySideswipe;
 }
 
 const float &SpeedDiffForBlowby() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SpeedDiffForBlowby;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SpeedDiffForBlowby;
 }
 
 const float &BlowbyInterval() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->BlowbyInterval;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->BlowbyInterval;
 }
 
 const float &HangTimeForCommentary() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->HangTimeForCommentary;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->HangTimeForCommentary;
 }
 
 const float &BURemindTime() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->BURemindTime;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->BURemindTime;
 }
 
 const float &AIRacerProximity() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->AIRacerProximity;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->AIRacerProximity;
 }
 
 const float &MinIntensityCopSmash() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MinIntensityCopSmash;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MinIntensityCopSmash;
 }
 
 const float &MaxRangeFor180() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MaxRangeFor180;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MaxRangeFor180;
 }
 
 const float &MaxRangeForPrimaryBranch() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MaxRangeForPrimaryBranch;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MaxRangeForPrimaryBranch;
 }
 
 const float &MinIntensityTrafficSmash() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MinIntensityTrafficSmash;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MinIntensityTrafficSmash;
 }
 
 const float &MinPursuitDurationForBailouts() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MinPursuitDurationForBailouts;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MinPursuitDurationForBailouts;
 }
 
 const float &FlipTimeForCommentary() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->FlipTimeForCommentary;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->FlipTimeForCommentary;
 }
 
 const float &PriorityWeight() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->PriorityWeight;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->PriorityWeight;
 }
 
 const float &OutcomeTrackTime() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->OutcomeTrackTime;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->OutcomeTrackTime;
 }
 
 const float &RangeForSpotterBranch() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->RangeForSpotterBranch;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->RangeForSpotterBranch;
 }
 
 const float &RBOutcomeTimer() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->RBOutcomeTimer;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->RBOutcomeTimer;
 }
 
 const float &SpeedThreshFlyFlipIntensity() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SpeedThreshFlyFlipIntensity;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SpeedThreshFlyFlipIntensity;
 }
 
 const float &PursuitInitDelay() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->PursuitInitDelay;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->PursuitInitDelay;
 }
 
 const float &TimeWaitForSpotterReply() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->TimeWaitForSpotterReply;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->TimeWaitForSpotterReply;
 }
 
 const float &TimeConsideredLostNoLOS() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->TimeConsideredLostNoLOS;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->TimeConsideredLostNoLOS;
 }
 
 const float &RBPostOutcomeResetTime() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->RBPostOutcomeResetTime;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->RBPostOutcomeResetTime;
 }
 
 const float &MinHeightAirborne() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MinHeightAirborne;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MinHeightAirborne;
 }
 
 const int &MinHavocForSuspectBehavior() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MinHavocForSuspectBehavior;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MinHavocForSuspectBehavior;
 }
 
 const float &MinSpeedConsideredStopped() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MinSpeedConsideredStopped;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MinSpeedConsideredStopped;
 }
 
 const float &MinTimeConsideredStopped() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MinTimeConsideredStopped;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MinTimeConsideredStopped;
 }
 
 const float &PursuitDurationHighIntensity() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->PursuitDurationHighIntensity;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->PursuitDurationHighIntensity;
 }
 
 const float &CrashSlowdownPct() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->CrashSlowdownPct;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->CrashSlowdownPct;
 }
 
 const float &MinHealthForCommentary() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MinHealthForCommentary;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MinHealthForCommentary;
 }
 
 const float &CollisionMinClosingVelSq() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->CollisionMinClosingVelSq;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->CollisionMinClosingVelSq;
 }
 
 const float &MaxTimeFor180() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MaxTimeFor180;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MaxTimeFor180;
 }
 
 const float &SuspectOutrunRange() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SuspectOutrunRange;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SuspectOutrunRange;
 }
 
 const float &NoLOSCommentaryTime() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->NoLOSCommentaryTime;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->NoLOSCommentaryTime;
 }
 
 const char &HighIntensityMark() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->HighIntensityMark;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->HighIntensityMark;
 }
 
 const char &MinContigFramesFor180() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MinContigFramesFor180;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MinContigFramesFor180;
 }
 
 };

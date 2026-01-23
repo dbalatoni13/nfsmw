@@ -25,16 +25,28 @@ struct nos : Instance {
         float RECHARGE_MIN_SPEED; // offset 0x1c, size 0x4
     };
 
+    void *operator new(size_t bytes) {
+        return Attrib::Alloc(bytes, "nos");
+    }
+
     void operator delete(void *ptr, size_t bytes) {
         Attrib::Free(ptr, bytes, "nos");
     }
 
     nos(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-        this->SetDefaultLayout(sizeof(_LayoutStruct));
+        SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     nos(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-        this->SetDefaultLayout(sizeof(_LayoutStruct));
+        SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
+    nos(const nos &src) : Instance(src) {
+        SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
+    nos(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+        SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     ~nos() {}
@@ -45,6 +57,10 @@ struct nos : Instance {
 
     void Change(Key collectionkey) {
         Change(FindCollection(ClassKey(), collectionkey));
+    }
+
+    void Change(const RefSpec &refspec) {
+        Instance::Change(refspec);
     }
 
     static Key ClassKey() {

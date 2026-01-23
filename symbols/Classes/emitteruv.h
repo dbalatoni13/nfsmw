@@ -24,17 +24,29 @@ float EndU; // offset 0x8, size 0x4
 float StartV; // offset 0xc, size 0x4
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "emitteruv");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "emitteruv");
 }
 
 emitteruv(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 emitteruv(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+emitteruv(const emitteruv &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+emitteruv(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~emitteruv() {}
@@ -47,24 +59,28 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0xe4983a7d;
 }
 
 const float &EndV() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->EndV;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->EndV;
 }
 
 const float &StartU() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->StartU;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->StartU;
 }
 
 const float &EndU() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->EndU;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->EndU;
 }
 
 const float &StartV() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->StartV;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->StartV;
 }
 
 };

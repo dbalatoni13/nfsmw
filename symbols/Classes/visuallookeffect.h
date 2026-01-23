@@ -25,17 +25,29 @@ float magnitude; // offset 0x48, size 0x4
 float heattrigger; // offset 0x4c, size 0x4
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "visuallookeffect");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "visuallookeffect");
 }
 
 visuallookeffect(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 visuallookeffect(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+visuallookeffect(const visuallookeffect &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+visuallookeffect(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~visuallookeffect() {}
@@ -48,24 +60,28 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0x6ab2d241;
 }
 
 const Attrib::Types::Matrix &graph() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->graph;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->graph;
 }
 
-const float &radialblur_uvoffset(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x8bc39288, index));
+const float &radialblur_uvoffset() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x8bc39288, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &radialblur_scale(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xd0b003f4, index));
+const float &radialblur_scale() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xd0b003f4, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -73,19 +89,19 @@ const float &radialblur_scale(unsigned int index) const {
     }
         
 const float &_testvalue() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->_testvalue;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->_testvalue;
 }
 
 const float &length() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->length;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->length;
 }
 
 const float &magnitude() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->magnitude;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->magnitude;
 }
 
 const float &heattrigger() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->heattrigger;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->heattrigger;
 }
 
 };

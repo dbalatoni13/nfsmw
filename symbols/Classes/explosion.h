@@ -26,17 +26,29 @@ float forceMultiplier; // offset 0x18, size 0x4
 float damageMultiplier; // offset 0x1c, size 0x4
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "explosion");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "explosion");
 }
 
 explosion(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 explosion(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+explosion(const explosion &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+explosion(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~explosion() {}
@@ -49,32 +61,36 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0x6434f1fb;
 }
 
 const RefSpec &BaseMaterial() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->BaseMaterial;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->BaseMaterial;
 }
 
 const float &triggerThreshold() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->triggerThreshold;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->triggerThreshold;
 }
 
 const float &explosionForceLimit() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->explosionForceLimit;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->explosionForceLimit;
 }
 
 const float &fallOffUnit() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->fallOffUnit;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->fallOffUnit;
 }
 
 const float &forceMultiplier() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->forceMultiplier;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->forceMultiplier;
 }
 
 const float &damageMultiplier() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->damageMultiplier;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->damageMultiplier;
 }
 
 };

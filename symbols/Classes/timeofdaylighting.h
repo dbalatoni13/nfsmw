@@ -30,17 +30,29 @@ float EnvSkyBrightness; // offset 0x5c, size 0x4
 float CarSpecScale; // offset 0x60, size 0x4
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "timeofdaylighting");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "timeofdaylighting");
 }
 
 timeofdaylighting(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 timeofdaylighting(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+timeofdaylighting(const timeofdaylighting &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+timeofdaylighting(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~timeofdaylighting() {}
@@ -53,28 +65,32 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0x399ed882;
 }
 
-const float &FogInLightScatter(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x00756239, index));
+const float &FogInLightScatter() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x00756239, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const UMath::Vector4 &FogSkyColour(unsigned int index) const {
-        const UMath::Vector4 *resultptr = reinterpret_cast<const UMath::Vector4 *>(this->GetAttributePointer(0x1d76ea96, index));
+const UMath::Vector4 &FogSkyColour() const {
+        const UMath::Vector4 *resultptr = reinterpret_cast<const UMath::Vector4 *>(GetAttributePointer(0x1d76ea96, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const UMath::Vector4 *>(DefaultDataArea(sizeof(UMath::Vector4)));
         }
         return *resultptr;
     }
         
-const float &FogSunFalloff(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x2ef8a8bf, index));
+const float &FogSunFalloff() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x2ef8a8bf, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -82,43 +98,43 @@ const float &FogSunFalloff(unsigned int index) const {
     }
         
 const UMath::Vector4 &SpecularColour() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SpecularColour;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SpecularColour;
 }
 
 const UMath::Vector4 &DiffuseColour() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->DiffuseColour;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->DiffuseColour;
 }
 
 const UMath::Vector4 &AmbientColour() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->AmbientColour;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->AmbientColour;
 }
 
 const UMath::Vector4 &FogHazeColour() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->FogHazeColour;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->FogHazeColour;
 }
 
 const UMath::Vector4 &FixedFunctionSkyColor() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->FixedFunctionSkyColor;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->FixedFunctionSkyColor;
 }
 
 const float &FogDistanceScale() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->FogDistanceScale;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->FogDistanceScale;
 }
 
 const float &FogHazeColourScale() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->FogHazeColourScale;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->FogHazeColourScale;
 }
 
 const float &FogSkyColourScale() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->FogSkyColourScale;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->FogSkyColourScale;
 }
 
 const float &EnvSkyBrightness() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->EnvSkyBrightness;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->EnvSkyBrightness;
 }
 
 const float &CarSpecScale() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->CarSpecScale;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->CarSpecScale;
 }
 
 };

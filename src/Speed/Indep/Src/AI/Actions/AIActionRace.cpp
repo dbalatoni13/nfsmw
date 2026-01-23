@@ -1,11 +1,15 @@
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/AI/AIAction.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/Debug/Debugable.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/rigidbodyspecs.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICheater.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
+#include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 
@@ -201,9 +205,155 @@ void AIActionRace::BeginAction(float dT) {
     }
 }
 
-void AIActionRace::FinishAction(float dT) {}
+void AIActionRace::FinishAction(float dT) {
+    WRoadNav *road_nav = GetAI()->GetDriveToNav();
+    if (road_nav) {
+        road_nav->SetLaneType(WRoadNav::kLaneRacing);
+    }
+    if (mResetTask) {
+        RemoveTask(mResetTask);
+        mResetTask = nullptr;
+    }
+}
 
-void AIActionRace::ComputePotentials() {}
+// total size: 0xC
+struct GripTor {
+    GripTor(IVehicle *vehicle) {
+        StartGrip = 0.0f;
+        EndGrip = 0.0f;
+        Valid = false;
+
+        IVehicleAI *ai;
+        if (vehicle->QueryInterface(&ai)) {
+            Attrib::Gen::pvehicle pvehicle(vehicle->GetVehicleAttributes());
+            Attrib::Gen::chassis chassis(pvehicle.chassis(0), 0, nullptr);
+            Attrib::Gen::tires tires(pvehicle.tires(0), 0, nullptr);
+            Attrib::Gen::rigidbodyspecs rigidbodyspecs(pvehicle.rigidbodyspecs(), 0, nullptr);
+
+            float gravity = rigidbodyspecs.GRAVITY();
+            StartGrip = UMath::Min(tires.STATIC_GRIP().Front, tires.STATIC_GRIP().Rear);
+            float down = -Physics::Info::AerodynamicDownforce(chassis, ai->GetTopSpeed()) / pvehicle.MASS() + gravity;
+            EndGrip = StartGrip * down / gravity;
+            Valid = true;
+        }
+    }
+
+    void operator()(IVehicle *vehicle) {
+        GripTor g(vehicle);
+        StartGrip = UMath::Min(StartGrip, g.StartGrip);
+        EndGrip = UMath::Min(EndGrip, g.EndGrip);
+    }
+
+    float StartGrip; // offset 0x0, size 0x4
+    float EndGrip;   // offset 0x4, size 0x4
+    bool Valid;      // offset 0x8, size 0x1
+};
+
+// total size: 0x8
+struct NosTor {
+    NosTor(IVehicle *vehicle) {
+        Attrib::Gen::nos nos(vehicle->GetVehicleAttributes().nos(0), 0, nullptr);
+        Boost = UMath::Max(Physics::Info::NosBoost(nos, vehicle->GetTunings()) - 1.0f, 0.0f);
+        Capacity = Physics::Info::NosCapacity(nos, vehicle->GetTunings());
+    }
+
+    void operator()(IVehicle *vehicle) {
+        NosTor n(vehicle);
+        Boost = UMath::Min(Boost, n.Boost);
+        Capacity = UMath::Min(Capacity, n.Capacity);
+    }
+
+    float Boost;    // offset 0x0, size 0x4
+    float Capacity; // offset 0x4, size 0x4
+};
+
+// total size: 0x4
+struct SpeedTor {
+    SpeedTor(IVehicle *vehicle) {
+        IVehicleAI *ai;
+        if (vehicle->QueryInterface(&ai)) {
+            Speed = ai->GetTopSpeed();
+        }
+    }
+
+    void operator()(IVehicle *vehicle) {
+        SpeedTor s(vehicle);
+
+        Speed = UMath::Min(Speed, s.Speed);
+    }
+
+    float Speed; // offset 0x0, size 0x4
+};
+
+// total size: 0x10
+struct PerformaTor {
+    PerformaTor() {
+        Valid = false;
+    }
+
+    void operator()(IVehicle *vehicle) {
+        Physics::Info::Performance p;
+        if (vehicle->GetPerformance(p)) {
+            Performance.Maximize(p);
+            Valid = true; // TODO maybe one line above?
+        }
+    }
+
+    Physics::Info::Performance Performance; // offset 0x0, size 0xC
+    bool Valid;                             // offset 0xC, size 0x1
+};
+
+void AIActionRace::ComputePotentials() {
+    if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
+        float min_perf = 0.0f;
+
+        if (mPerpetrator) {
+            GRacerInfo *racer_info = mPerpetrator->GetRacerInfo();
+            if (racer_info && racer_info->GetGameCharacter()) {
+                min_perf = racer_info->GetGameCharacter()->MinimumAIPerformance();
+            }
+        }
+
+        PerformaTor max_player = IVehicle::ForEach(VEHICLE_PLAYERS, PerformaTor());
+
+        if (max_player.Valid) {
+            mPerformanceBias.Acceleration = UMath::Ramp(min_perf, max_player.Performance.Acceleration, 1.0f);
+            mPerformanceBias.Handling = UMath::Ramp(min_perf, max_player.Performance.Handling, 1.0f);
+            mPerformanceBias.TopSpeed = UMath::Ramp(min_perf, max_player.Performance.TopSpeed, 1.0f);
+        }
+    } else {
+        mPerformanceBias.Default();
+    }
+
+    GripTor my_grip(GetVehicle());
+    GripTor lowest_grip = IVehicle::ForEach(VEHICLE_PLAYERS, my_grip);
+
+    mStartGrip = UMath::Lerp(lowest_grip.StartGrip, my_grip.StartGrip, mPerformanceBias.Handling);
+    mEndGrip = UMath::Lerp(lowest_grip.EndGrip, my_grip.EndGrip, mPerformanceBias.Handling);
+
+    NosTor my_nos(GetVehicle());
+    NosTor lowest_nos = IVehicle::ForEach(VEHICLE_PLAYERS, my_nos);
+
+    mNosCapability = UMath::Lerp(lowest_nos.Boost, my_nos.Boost, mPerformanceBias.Acceleration);
+
+    if (bIsPursuitMode || bIsFleeMode) {
+        mUsableNOS = 1.0f;
+        mBottleTime = my_nos.Capacity;
+    } else {
+        if (my_nos.Capacity > FLOAT_EPSILON && mNosCapability > 0.0f) {
+            mUsableNOS = (lowest_nos.Capacity / my_nos.Capacity) * (mNosCapability / my_nos.Boost);
+            mBottleTime = my_nos.Capacity;
+        } else {
+            mUsableNOS = 0.0f;
+            mBottleTime = 0.0f;
+        }
+    }
+
+    SpeedTor my_speed(GetVehicle());
+    SpeedTor lowest_speed = IVehicle::ForEach(VEHICLE_PLAYERS, my_speed);
+
+    mTopSpeed = UMath::Lerp(my_speed.Speed, lowest_speed.Speed, mPerformanceBias.TopSpeed);
+}
 
 void AIActionRace::Update(float dT) {}
 

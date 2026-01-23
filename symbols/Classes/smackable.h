@@ -19,24 +19,36 @@ namespace Gen {
 struct smackable : Instance {
 struct _LayoutStruct {
 Attrib::StringKey EventSequencer; // offset 0x0, size 0x10
-char CollectionName[4]; // offset 0x10, size 0x4
+const char *CollectionName; // offset 0x10, size 0x4
 float MASS; // offset 0x14, size 0x4
 float DETACH_FORCE; // offset 0x18, size 0x4
 bool NO_CAR_EFFECT; // offset 0x1c, size 0x1
 bool IsWooshable; // offset 0x1d, size 0x1
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "smackable");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "smackable");
 }
 
 smackable(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 smackable(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+smackable(const smackable &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+smackable(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~smackable() {}
@@ -49,12 +61,16 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0xce70d7db;
 }
 
 const EffectLinkageRecord &OnHitObject(unsigned int index) const {
-        const EffectLinkageRecord *resultptr = reinterpret_cast<const EffectLinkageRecord *>(this->GetAttributePointer(0x18915735, index));
+        const EffectLinkageRecord *resultptr = reinterpret_cast<const EffectLinkageRecord *>(GetAttributePointer(0x18915735, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EffectLinkageRecord *>(DefaultDataArea(sizeof(EffectLinkageRecord)));
         }
@@ -62,11 +78,11 @@ const EffectLinkageRecord &OnHitObject(unsigned int index) const {
     }
         
 unsigned int Num_OnHitObject() const {
-            return this->Get(0x18915735).GetLength();
+            return Get(0x18915735).GetLength();
         }
 
-const float &ExplosionEffect(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x360552da, index));
+const float &ExplosionEffect() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x360552da, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -74,7 +90,7 @@ const float &ExplosionEffect(unsigned int index) const {
     }
         
 const float &DROPOUT(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x44f1273b, index));
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x44f1273b, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -82,11 +98,11 @@ const float &DROPOUT(unsigned int index) const {
     }
         
 unsigned int Num_DROPOUT() const {
-            return this->Get(0x44f1273b).GetLength();
+            return Get(0x44f1273b).GetLength();
         }
 
-const bool &start_sequencer(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x5739788b, index));
+const bool &start_sequencer() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x5739788b, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
@@ -94,27 +110,27 @@ const bool &start_sequencer(unsigned int index) const {
     }
         
 const Attrib::StringKey &EventSequencer() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->EventSequencer;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->EventSequencer;
 }
 
-const float &RESPAWN_TIME(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x5f84f834, index));
+const float &RESPAWN_TIME() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x5f84f834, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const unsigned int &COST_TO_STATE(unsigned int index) const {
-        const unsigned int *resultptr = reinterpret_cast<const unsigned int *>(this->GetAttributePointer(0x6db7d192, index));
+const unsigned int &COST_TO_STATE() const {
+        const unsigned int *resultptr = reinterpret_cast<const unsigned int *>(GetAttributePointer(0x6db7d192, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const unsigned int *>(DefaultDataArea(sizeof(unsigned int)));
         }
         return *resultptr;
     }
         
-const bool &AI_AVOIDABLE(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x6e4de905, index));
+const bool &AI_AVOIDABLE() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x6e4de905, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
@@ -122,7 +138,7 @@ const bool &AI_AVOIDABLE(unsigned int index) const {
     }
         
 const EffectLinkageRecord &OnScrapeWorld(unsigned int index) const {
-        const EffectLinkageRecord *resultptr = reinterpret_cast<const EffectLinkageRecord *>(this->GetAttributePointer(0x7100960c, index));
+        const EffectLinkageRecord *resultptr = reinterpret_cast<const EffectLinkageRecord *>(GetAttributePointer(0x7100960c, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EffectLinkageRecord *>(DefaultDataArea(sizeof(EffectLinkageRecord)));
         }
@@ -130,51 +146,51 @@ const EffectLinkageRecord &OnScrapeWorld(unsigned int index) const {
     }
         
 unsigned int Num_OnScrapeWorld() const {
-            return this->Get(0x7100960c).GetLength();
+            return Get(0x7100960c).GetLength();
         }
 
-const bool &no_trigger(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x73c58cbf, index));
+const bool &no_trigger() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x73c58cbf, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const RefSpec &rigidbodyspecs(unsigned int index) const {
-        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(this->GetAttributePointer(0x7c90bb38, index));
+const RefSpec &rigidbodyspecs() const {
+        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(GetAttributePointer(0x7c90bb38, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const RefSpec *>(DefaultDataArea(sizeof(RefSpec)));
         }
         return *resultptr;
     }
         
-const eDRIVE_BY_TYPE &WooshType(unsigned int index) const {
-        const eDRIVE_BY_TYPE *resultptr = reinterpret_cast<const eDRIVE_BY_TYPE *>(this->GetAttributePointer(0x7e744600, index));
+const eDRIVE_BY_TYPE &WooshType() const {
+        const eDRIVE_BY_TYPE *resultptr = reinterpret_cast<const eDRIVE_BY_TYPE *>(GetAttributePointer(0x7e744600, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const eDRIVE_BY_TYPE *>(DefaultDataArea(sizeof(eDRIVE_BY_TYPE)));
         }
         return *resultptr;
     }
         
-const float &AUTO_SIMPLIFY(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xb5c0dac8, index));
+const float &AUTO_SIMPLIFY() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xb5c0dac8, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const bool &ALLOW_OFF_WORLD(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xbee139f1, index));
+const bool &ALLOW_OFF_WORLD() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xbee139f1, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const float &KILL_OFF_SCREEN(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xc141f7f8, index));
+const float &KILL_OFF_SCREEN() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xc141f7f8, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -182,7 +198,7 @@ const float &KILL_OFF_SCREEN(unsigned int index) const {
     }
         
 const EffectLinkageRecord &OnDetached(unsigned int index) const {
-        const EffectLinkageRecord *resultptr = reinterpret_cast<const EffectLinkageRecord *>(this->GetAttributePointer(0xd177bdaa, index));
+        const EffectLinkageRecord *resultptr = reinterpret_cast<const EffectLinkageRecord *>(GetAttributePointer(0xd177bdaa, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EffectLinkageRecord *>(DefaultDataArea(sizeof(EffectLinkageRecord)));
         }
@@ -190,11 +206,11 @@ const EffectLinkageRecord &OnDetached(unsigned int index) const {
     }
         
 unsigned int Num_OnDetached() const {
-            return this->Get(0xd177bdaa).GetLength();
+            return Get(0xd177bdaa).GetLength();
         }
 
-const int &CAN_SIMPLIFY(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xd1d3909a, index));
+const int &CAN_SIMPLIFY() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xd1d3909a, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
@@ -202,7 +218,7 @@ const int &CAN_SIMPLIFY(unsigned int index) const {
     }
         
 const EffectLinkageRecord &OnHitGround(unsigned int index) const {
-        const EffectLinkageRecord *resultptr = reinterpret_cast<const EffectLinkageRecord *>(this->GetAttributePointer(0xd9c6cdfd, index));
+        const EffectLinkageRecord *resultptr = reinterpret_cast<const EffectLinkageRecord *>(GetAttributePointer(0xd9c6cdfd, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EffectLinkageRecord *>(DefaultDataArea(sizeof(EffectLinkageRecord)));
         }
@@ -210,11 +226,11 @@ const EffectLinkageRecord &OnHitGround(unsigned int index) const {
     }
         
 unsigned int Num_OnHitGround() const {
-            return this->Get(0xd9c6cdfd).GetLength();
+            return Get(0xd9c6cdfd).GetLength();
         }
 
 const Attrib::StringKey &BEHAVIORS(unsigned int index) const {
-        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(this->GetAttributePointer(0xda5f19f9, index));
+        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(GetAttributePointer(0xda5f19f9, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const Attrib::StringKey *>(DefaultDataArea(sizeof(Attrib::StringKey)));
         }
@@ -222,11 +238,11 @@ const Attrib::StringKey &BEHAVIORS(unsigned int index) const {
     }
         
 unsigned int Num_BEHAVIORS() const {
-            return this->Get(0xda5f19f9).GetLength();
+            return Get(0xda5f19f9).GetLength();
         }
 
 const EffectLinkageRecord &OnScrapeObject(unsigned int index) const {
-        const EffectLinkageRecord *resultptr = reinterpret_cast<const EffectLinkageRecord *>(this->GetAttributePointer(0xdacb1c11, index));
+        const EffectLinkageRecord *resultptr = reinterpret_cast<const EffectLinkageRecord *>(GetAttributePointer(0xdacb1c11, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EffectLinkageRecord *>(DefaultDataArea(sizeof(EffectLinkageRecord)));
         }
@@ -234,11 +250,11 @@ const EffectLinkageRecord &OnScrapeObject(unsigned int index) const {
     }
         
 unsigned int Num_OnScrapeObject() const {
-            return this->Get(0xdacb1c11).GetLength();
+            return Get(0xdacb1c11).GetLength();
         }
 
 const EffectLinkageRecord &OnScrapeGround(unsigned int index) const {
-        const EffectLinkageRecord *resultptr = reinterpret_cast<const EffectLinkageRecord *>(this->GetAttributePointer(0xdb823931, index));
+        const EffectLinkageRecord *resultptr = reinterpret_cast<const EffectLinkageRecord *>(GetAttributePointer(0xdb823931, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EffectLinkageRecord *>(DefaultDataArea(sizeof(EffectLinkageRecord)));
         }
@@ -246,11 +262,11 @@ const EffectLinkageRecord &OnScrapeGround(unsigned int index) const {
     }
         
 unsigned int Num_OnScrapeGround() const {
-            return this->Get(0xdb823931).GetLength();
+            return Get(0xdb823931).GetLength();
         }
 
 const EffectLinkageRecord &OnHitWorld(unsigned int index) const {
-        const EffectLinkageRecord *resultptr = reinterpret_cast<const EffectLinkageRecord *>(this->GetAttributePointer(0xe3167336, index));
+        const EffectLinkageRecord *resultptr = reinterpret_cast<const EffectLinkageRecord *>(GetAttributePointer(0xe3167336, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EffectLinkageRecord *>(DefaultDataArea(sizeof(EffectLinkageRecord)));
         }
@@ -258,27 +274,27 @@ const EffectLinkageRecord &OnHitWorld(unsigned int index) const {
     }
         
 unsigned int Num_OnHitWorld() const {
-            return this->Get(0xe3167336).GetLength();
+            return Get(0xe3167336).GetLength();
         }
 
-const bool &CAMERA_AVOIDABLE(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xe9d83d0c, index));
+const bool &CAMERA_AVOIDABLE() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xe9d83d0c, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const bool &SimplePhysics(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xee0011e3, index));
+const bool &SimplePhysics() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xee0011e3, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const UMath::Vector3 &MOMENT(unsigned int index) const {
-        const UMath::Vector3 *resultptr = reinterpret_cast<const UMath::Vector3 *>(this->GetAttributePointer(0xfb19212f, index));
+const UMath::Vector3 &MOMENT() const {
+        const UMath::Vector3 *resultptr = reinterpret_cast<const UMath::Vector3 *>(GetAttributePointer(0xfb19212f, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const UMath::Vector3 *>(DefaultDataArea(sizeof(UMath::Vector3)));
         }
@@ -286,23 +302,23 @@ const UMath::Vector3 &MOMENT(unsigned int index) const {
     }
         
 const char*CollectionName() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->CollectionName;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->CollectionName;
 }
 
 const float &MASS() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MASS;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MASS;
 }
 
 const float &DETACH_FORCE() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->DETACH_FORCE;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->DETACH_FORCE;
 }
 
 const bool &NO_CAR_EFFECT() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->NO_CAR_EFFECT;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->NO_CAR_EFFECT;
 }
 
 const bool &IsWooshable() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->IsWooshable;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->IsWooshable;
 }
 
 };

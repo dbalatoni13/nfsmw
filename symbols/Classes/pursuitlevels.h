@@ -51,17 +51,29 @@ float SirenScreamPeriod; // offset 0xbc, size 0x4
 float SearchModeRoadblockRadius; // offset 0xc0, size 0x4
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "pursuitlevels");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "pursuitlevels");
 }
 
 pursuitlevels(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 pursuitlevels(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+pursuitlevels(const pursuitlevels &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+pursuitlevels(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~pursuitlevels() {}
@@ -74,76 +86,80 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0x551e22b3;
 }
 
-const float &TimeInactiveFor911(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x06cb70d5, index));
+const float &TimeInactiveFor911() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x06cb70d5, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const int &MaxCopsCollapsing(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x0c77d463, index));
+const int &MaxCopsCollapsing() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x0c77d463, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const float &Lifetime911(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x0e823327, index));
+const float &Lifetime911() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x0e823327, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &SpeedReactionTime(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x0f575b64, index));
+const float &SpeedReactionTime() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x0f575b64, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const int &CollapseInnerRadius(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x1e0af662, index));
+const int &CollapseInnerRadius() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x1e0af662, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const int &NumPatrolCars(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x24f7a1bc, index));
+const int &NumPatrolCars() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x24f7a1bc, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const float &SearchModeHeliSpawnChance(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x3f11fbfc, index));
+const float &SearchModeHeliSpawnChance() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x3f11fbfc, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &CollapseAggression(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x594e1492, index));
+const float &CollapseAggression() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x594e1492, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &roadblockspikechance(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x5a318af6, index));
+const float &roadblockspikechance() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x5a318af6, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -151,7 +167,7 @@ const float &roadblockspikechance(unsigned int index) const {
     }
         
 const CopFormationRecord &CopFormations(unsigned int index) const {
-        const CopFormationRecord *resultptr = reinterpret_cast<const CopFormationRecord *>(this->GetAttributePointer(0x5c2a7972, index));
+        const CopFormationRecord *resultptr = reinterpret_cast<const CopFormationRecord *>(GetAttributePointer(0x5c2a7972, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const CopFormationRecord *>(DefaultDataArea(sizeof(CopFormationRecord)));
         }
@@ -159,51 +175,51 @@ const CopFormationRecord &CopFormations(unsigned int index) const {
     }
         
 unsigned int Num_CopFormations() const {
-            return this->Get(0x5c2a7972).GetLength();
+            return Get(0x5c2a7972).GetLength();
         }
 
-const float &RollingBlockDuration(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x5c9f5f55, index));
+const float &RollingBlockDuration() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x5c9f5f55, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &BoxinTightness(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x67a15750, index));
+const float &BoxinTightness() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x67a15750, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const char &NumCiviHitsFor911(unsigned int index) const {
-        const char *resultptr = reinterpret_cast<const char *>(this->GetAttributePointer(0x6e590f57, index));
+const char &NumCiviHitsFor911() const {
+        const char *resultptr = reinterpret_cast<const char *>(GetAttributePointer(0x6e590f57, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const char *>(DefaultDataArea(sizeof(char)));
         }
         return *resultptr;
     }
         
-const float &StaggerFormationTime(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x7648c884, index));
+const float &StaggerFormationTime() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x7648c884, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &BustSpeed(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x769e8d9e, index));
+const float &BustSpeed() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x769e8d9e, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &HiddenZoneTimeMultiplier(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x7fcee250, index));
+const float &HiddenZoneTimeMultiplier() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x7fcee250, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -211,7 +227,7 @@ const float &HiddenZoneTimeMultiplier(unsigned int index) const {
     }
         
 const float &ScaleEscalationPerBucket(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x80deb840, index));
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x80deb840, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -219,19 +235,19 @@ const float &ScaleEscalationPerBucket(unsigned int index) const {
     }
         
 unsigned int Num_ScaleEscalationPerBucket() const {
-            return this->Get(0x80deb840).GetLength();
+            return Get(0x80deb840).GetLength();
         }
 
-const float &BoxinDuration(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x858b1097, index));
+const float &BoxinDuration() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x858b1097, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &MeterDeadZoneBustedDistance(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x8ce3219f, index));
+const float &MeterDeadZoneBustedDistance() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x8ce3219f, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -239,7 +255,7 @@ const float &MeterDeadZoneBustedDistance(unsigned int index) const {
     }
         
 const unsigned int &formations(unsigned int index) const {
-        const unsigned int *resultptr = reinterpret_cast<const unsigned int *>(this->GetAttributePointer(0x92f3d64e, index));
+        const unsigned int *resultptr = reinterpret_cast<const unsigned int *>(GetAttributePointer(0x92f3d64e, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const unsigned int *>(DefaultDataArea(sizeof(unsigned int)));
         }
@@ -247,27 +263,27 @@ const unsigned int &formations(unsigned int index) const {
     }
         
 unsigned int Num_formations() const {
-            return this->Get(0x92f3d64e).GetLength();
+            return Get(0x92f3d64e).GetLength();
         }
 
-const float &CollapseOuterRadius(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x947542f2, index));
+const float &CollapseOuterRadius() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x947542f2, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &TimeBetweenFirstFourSpawn(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x9bf0f433, index));
+const float &TimeBetweenFirstFourSpawn() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x9bf0f433, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const int &CTSFor911(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xa00de933, index));
+const int &CTSFor911() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xa00de933, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
@@ -275,7 +291,7 @@ const int &CTSFor911(unsigned int index) const {
     }
         
 const CopCountRecord &cops(unsigned int index) const {
-            const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());
+            const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(GetLayoutPointer());
             if (index < lp->_Array_cops.GetLength()) {
             return lp->cops[index];
         } else {
@@ -284,35 +300,35 @@ const CopCountRecord &cops(unsigned int index) const {
         }
 
         unsigned int Num_cops() const {
-            return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->_Array_cops.GetLength();
+            return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->_Array_cops.GetLength();
         }
         
-        const float &DestroyCopBonusTime(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xbef78612, index));
+        const float &DestroyCopBonusTime() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xbef78612, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &RollingBlockTightness(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xc146fc03, index));
+const float &RollingBlockTightness() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xc146fc03, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &CollapseSpeed(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xdb66950c, index));
+const float &CollapseSpeed() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xdb66950c, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &MeterDeadZoneEvadeDist(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xeda0e29c, index));
+const float &MeterDeadZoneEvadeDist() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xeda0e29c, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -320,119 +336,119 @@ const float &MeterDeadZoneEvadeDist(unsigned int index) const {
     }
         
 const float &heliLOSdistance() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->heliLOSdistance;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->heliLOSdistance;
 }
 
 const float &roadblockhelichance() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->roadblockhelichance;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->roadblockhelichance;
 }
 
 const float &SirenMaxYelpTime() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SirenMaxYelpTime;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SirenMaxYelpTime;
 }
 
 const float &roadblockprobability() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->roadblockprobability;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->roadblockprobability;
 }
 
 const float &MilestoneCompleteHeatAdjust() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MilestoneCompleteHeatAdjust;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MilestoneCompleteHeatAdjust;
 }
 
 const float &SirenMaxScreamTime() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SirenMaxScreamTime;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SirenMaxScreamTime;
 }
 
 const float &SearchModeRoadblockChance() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SearchModeRoadblockChance;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SearchModeRoadblockChance;
 }
 
 const float &HeliFuelTime() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->HeliFuelTime;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->HeliFuelTime;
 }
 
 const int &FullEngagementCopCount() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->FullEngagementCopCount;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->FullEngagementCopCount;
 }
 
 const float &TimeBetweenHeliActive() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->TimeBetweenHeliActive;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->TimeBetweenHeliActive;
 }
 
 const float &TimePerHeatLevel() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->TimePerHeatLevel;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->TimePerHeatLevel;
 }
 
 const float &SirenWailPeriod() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SirenWailPeriod;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SirenWailPeriod;
 }
 
 const float &TimeBetweenCopSpawn() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->TimeBetweenCopSpawn;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->TimeBetweenCopSpawn;
 }
 
 const float &EventWinHeatAdjust() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->EventWinHeatAdjust;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->EventWinHeatAdjust;
 }
 
 const int &RepPointsPerMinute() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->RepPointsPerMinute;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->RepPointsPerMinute;
 }
 
 const float &SearchModeCityMPH() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SearchModeCityMPH;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SearchModeCityMPH;
 }
 
 const float &evadetimeout() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->evadetimeout;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->evadetimeout;
 }
 
 const float &SearchModeHwyMPH() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SearchModeHwyMPH;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SearchModeHwyMPH;
 }
 
 const float &FullEngagementRadius() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->FullEngagementRadius;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->FullEngagementRadius;
 }
 
 const int &NumCopsToTriggerBackup() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->NumCopsToTriggerBackup;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->NumCopsToTriggerBackup;
 }
 
 const float &BackupCallTimer() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->BackupCallTimer;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->BackupCallTimer;
 }
 
 const float &SirenInitVariation() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SirenInitVariation;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SirenInitVariation;
 }
 
 const float &EvadeSuccessHeatAdjust() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->EvadeSuccessHeatAdjust;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->EvadeSuccessHeatAdjust;
 }
 
 const float &SirenInitMinPeriod() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SirenInitMinPeriod;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SirenInitMinPeriod;
 }
 
 const float &frontLOSdistance() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->frontLOSdistance;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->frontLOSdistance;
 }
 
 const float &TimeToHideInZone() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->TimeToHideInZone;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->TimeToHideInZone;
 }
 
 const float &rearLOSdistance() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->rearLOSdistance;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->rearLOSdistance;
 }
 
 const float &SirenScreamPeriod() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SirenScreamPeriod;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SirenScreamPeriod;
 }
 
 const float &SearchModeRoadblockRadius() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SearchModeRoadblockRadius;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SearchModeRoadblockRadius;
 }
 
 };

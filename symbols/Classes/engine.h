@@ -30,17 +30,29 @@ float RED_LINE; // offset 0x58, size 0x4
 float IDLE; // offset 0x5c, size 0x4
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "engine");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "engine");
 }
 
 engine(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 engine(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+engine(const engine &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+engine(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~engine() {}
@@ -53,12 +65,16 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0xf1f5fbc7;
 }
 
 const float &TORQUE(unsigned int index) const {
-            const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());
+            const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(GetLayoutPointer());
             if (index < lp->_Array_TORQUE.GetLength()) {
             return lp->TORQUE[index];
         } else {
@@ -67,11 +83,11 @@ const float &TORQUE(unsigned int index) const {
         }
 
         unsigned int Num_TORQUE() const {
-            return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->_Array_TORQUE.GetLength();
+            return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->_Array_TORQUE.GetLength();
         }
         
         const float &SPEED_LIMITER(unsigned int index) const {
-            const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());
+            const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(GetLayoutPointer());
             if (index < lp->_Array_SPEED_LIMITER.GetLength()) {
             return lp->SPEED_LIMITER[index];
         } else {
@@ -80,11 +96,11 @@ const float &TORQUE(unsigned int index) const {
         }
 
         unsigned int Num_SPEED_LIMITER() const {
-            return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->_Array_SPEED_LIMITER.GetLength();
+            return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->_Array_SPEED_LIMITER.GetLength();
         }
         
         const float &ENGINE_BRAKING(unsigned int index) const {
-            const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());
+            const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(GetLayoutPointer());
             if (index < lp->_Array_ENGINE_BRAKING.GetLength()) {
             return lp->ENGINE_BRAKING[index];
         } else {
@@ -93,23 +109,23 @@ const float &TORQUE(unsigned int index) const {
         }
 
         unsigned int Num_ENGINE_BRAKING() const {
-            return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->_Array_ENGINE_BRAKING.GetLength();
+            return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->_Array_ENGINE_BRAKING.GetLength();
         }
         
         const float &FLYWHEEL_MASS() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->FLYWHEEL_MASS;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->FLYWHEEL_MASS;
 }
 
 const float &MAX_RPM() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MAX_RPM;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MAX_RPM;
 }
 
 const float &RED_LINE() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->RED_LINE;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->RED_LINE;
 }
 
 const float &IDLE() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->IDLE;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->IDLE;
 }
 
 };

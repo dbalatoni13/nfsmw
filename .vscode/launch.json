@@ -10,7 +10,7 @@
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal",
-      "args": ["symbols\\info.yml", "symbols\\Classes"]
+      "args": ["symbols\\info.yml", "symbols\\vlt.txt", "symbols\\Classes"]
     },
     {
       "name": "Debug Event yaml generator",

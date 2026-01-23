@@ -7,6 +7,7 @@
 
 #include "PhysicsTunings.h"
 #include "PhysicsTypes.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/chassis.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engine.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/induction.h"
@@ -35,7 +36,18 @@ struct Performance {
         Handling = handling;
         Acceleration = accel;
     }
-    void Default();
+
+    void Default() {
+        TopSpeed = 0.0f;
+        Handling = 0.0f;
+        Acceleration = 0.0f;
+    }
+
+    void Maximize(const Performance &other) {
+        TopSpeed = UMath::Max(TopSpeed, other.TopSpeed);
+        Handling = UMath::Max(Handling, other.Handling);
+        Acceleration = UMath::Max(Acceleration, other.Acceleration);
+    }
 
     float TopSpeed;
     float Handling;

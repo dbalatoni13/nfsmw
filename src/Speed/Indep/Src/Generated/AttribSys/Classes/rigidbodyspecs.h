@@ -52,11 +52,19 @@ struct rigidbodyspecs : Instance {
 
     rigidbodyspecs(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-        this->SetDefaultLayout(sizeof(_LayoutStruct));
+        SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     rigidbodyspecs(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-        this->SetDefaultLayout(sizeof(_LayoutStruct));
+        SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
+    rigidbodyspecs(const rigidbodyspecs &src) : Instance(src) {
+        SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
+    rigidbodyspecs(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+        SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     ~rigidbodyspecs() {}
@@ -67,6 +75,10 @@ struct rigidbodyspecs : Instance {
 
     void Change(Key collectionkey) {
         Change(FindCollection(ClassKey(), collectionkey));
+    }
+
+    void Change(const RefSpec &refspec) {
+        Instance::Change(refspec);
     }
 
     static Key ClassKey() {

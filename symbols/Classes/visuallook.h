@@ -28,17 +28,29 @@ float DetailMapIntensity; // offset 0xd8, size 0x4
 float BlackBloomIntensity; // offset 0xdc, size 0x4
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "visuallook");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "visuallook");
 }
 
 visuallook(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 visuallook(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+visuallook(const visuallook &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+visuallook(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~visuallook() {}
@@ -51,40 +63,44 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0x339f7d3d;
 }
 
 const Attrib::Types::Matrix &DetailMapCurve() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->DetailMapCurve;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->DetailMapCurve;
 }
 
 const Attrib::Types::Matrix &BlackBloomCurve() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->BlackBloomCurve;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->BlackBloomCurve;
 }
 
 const Attrib::Types::Matrix &ColourBloomCurve() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->ColourBloomCurve;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->ColourBloomCurve;
 }
 
 const UMath::Vector4 &ColourBloomTint() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->ColourBloomTint;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->ColourBloomTint;
 }
 
 const float &ColourBloomIntensity() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->ColourBloomIntensity;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->ColourBloomIntensity;
 }
 
 const float &Desaturation() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Desaturation;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Desaturation;
 }
 
 const float &DetailMapIntensity() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->DetailMapIntensity;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->DetailMapIntensity;
 }
 
 const float &BlackBloomIntensity() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->BlackBloomIntensity;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->BlackBloomIntensity;
 }
 
 };

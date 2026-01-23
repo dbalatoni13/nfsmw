@@ -39,17 +39,29 @@ unsigned int LFO_RPM_Freq; // offset 0x50, size 0x4
 unsigned int LFO_Vol_Decay_Time; // offset 0x54, size 0x4
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "shiftpattern");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "shiftpattern");
 }
 
 shiftpattern(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 shiftpattern(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+shiftpattern(const shiftpattern &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+shiftpattern(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~shiftpattern() {}
@@ -62,20 +74,24 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0xdb01b754;
 }
 
-const unsigned int &Down_Engaging_Fall_RPM(unsigned int index) const {
-        const unsigned int *resultptr = reinterpret_cast<const unsigned int *>(this->GetAttributePointer(0x3e1a0db6, index));
+const unsigned int &Down_Engaging_Fall_RPM() const {
+        const unsigned int *resultptr = reinterpret_cast<const unsigned int *>(GetAttributePointer(0x3e1a0db6, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const unsigned int *>(DefaultDataArea(sizeof(unsigned int)));
         }
         return *resultptr;
     }
         
-const Attrib::Types::Matrix &Up_Engage_Curve(unsigned int index) const {
-        const Attrib::Types::Matrix *resultptr = reinterpret_cast<const Attrib::Types::Matrix *>(this->GetAttributePointer(0x68da6275, index));
+const Attrib::Types::Matrix &Up_Engage_Curve() const {
+        const Attrib::Types::Matrix *resultptr = reinterpret_cast<const Attrib::Types::Matrix *>(GetAttributePointer(0x68da6275, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const Attrib::Types::Matrix *>(DefaultDataArea(sizeof(Attrib::Types::Matrix)));
         }
@@ -83,11 +99,11 @@ const Attrib::Types::Matrix &Up_Engage_Curve(unsigned int index) const {
     }
         
 const Attrib::StringKey &BankName() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->BankName;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->BankName;
 }
 
-const stShiftPair &Up_Engage(unsigned int index) const {
-        const stShiftPair *resultptr = reinterpret_cast<const stShiftPair *>(this->GetAttributePointer(0xcb89b8c8, index));
+const stShiftPair &Up_Engage() const {
+        const stShiftPair *resultptr = reinterpret_cast<const stShiftPair *>(GetAttributePointer(0xcb89b8c8, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const stShiftPair *>(DefaultDataArea(sizeof(stShiftPair)));
         }
@@ -95,7 +111,7 @@ const stShiftPair &Up_Engage(unsigned int index) const {
     }
         
 const Attrib::Types::Matrix &Up_DisengageFall_Curve(unsigned int index) const {
-        const Attrib::Types::Matrix *resultptr = reinterpret_cast<const Attrib::Types::Matrix *>(this->GetAttributePointer(0xf040e6b0, index));
+        const Attrib::Types::Matrix *resultptr = reinterpret_cast<const Attrib::Types::Matrix *>(GetAttributePointer(0xf040e6b0, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const Attrib::Types::Matrix *>(DefaultDataArea(sizeof(Attrib::Types::Matrix)));
         }
@@ -103,11 +119,11 @@ const Attrib::Types::Matrix &Up_DisengageFall_Curve(unsigned int index) const {
     }
         
 unsigned int Num_Up_DisengageFall_Curve() const {
-            return this->Get(0xf040e6b0).GetLength();
+            return Get(0xf040e6b0).GetLength();
         }
 
 const stShiftPair &Up_DisengageFall(unsigned int index) const {
-        const stShiftPair *resultptr = reinterpret_cast<const stShiftPair *>(this->GetAttributePointer(0xf2d90101, index));
+        const stShiftPair *resultptr = reinterpret_cast<const stShiftPair *>(GetAttributePointer(0xf2d90101, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const stShiftPair *>(DefaultDataArea(sizeof(stShiftPair)));
         }
@@ -115,79 +131,79 @@ const stShiftPair &Up_DisengageFall(unsigned int index) const {
     }
         
 unsigned int Num_Up_DisengageFall() const {
-            return this->Get(0xf2d90101).GetLength();
+            return Get(0xf2d90101).GetLength();
         }
 
 const float &Down_Shift_Sound_Delay() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Down_Shift_Sound_Delay;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Down_Shift_Sound_Delay;
 }
 
 const float &Up_Engaging_Attack_Vol() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Up_Engaging_Attack_Vol;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Up_Engaging_Attack_Vol;
 }
 
 const unsigned int &LFO_RPM_Amp() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->LFO_RPM_Amp;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->LFO_RPM_Amp;
 }
 
 const unsigned int &LFO_Vol_Amp() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->LFO_Vol_Amp;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->LFO_Vol_Amp;
 }
 
 const unsigned int &Down_Engaging_Rise_T() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Down_Engaging_Rise_T;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Down_Engaging_Rise_T;
 }
 
 const unsigned int &Up_Engaging_Attack_T() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Up_Engaging_Attack_T;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Up_Engaging_Attack_T;
 }
 
 const unsigned int &LFO_RPM_Decay_Time() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->LFO_RPM_Decay_Time;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->LFO_RPM_Decay_Time;
 }
 
 const float &Down_Reattach_Scale() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Down_Reattach_Scale;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Down_Reattach_Scale;
 }
 
 const unsigned int &Down_Engaging_Fall_T() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Down_Engaging_Fall_T;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Down_Engaging_Fall_T;
 }
 
 const float &Up_Shift_Sound_Delay() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Up_Shift_Sound_Delay;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Up_Shift_Sound_Delay;
 }
 
 const unsigned int &Up_Vol_Shift() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Up_Vol_Shift;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Up_Vol_Shift;
 }
 
 const unsigned int &Down_Disengage_Fall_T() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Down_Disengage_Fall_T;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Down_Disengage_Fall_T;
 }
 
 const unsigned int &LFO_Vol_Freq() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->LFO_Vol_Freq;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->LFO_Vol_Freq;
 }
 
 const unsigned int &Down_Disengage_Fall_RPM() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Down_Disengage_Fall_RPM;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Down_Disengage_Fall_RPM;
 }
 
 const unsigned int &Down_Vol_Shift() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Down_Vol_Shift;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Down_Vol_Shift;
 }
 
 const unsigned int &Down_Engaging_Rise_RPM() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Down_Engaging_Rise_RPM;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Down_Engaging_Rise_RPM;
 }
 
 const unsigned int &LFO_RPM_Freq() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->LFO_RPM_Freq;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->LFO_RPM_Freq;
 }
 
 const unsigned int &LFO_Vol_Decay_Time() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->LFO_Vol_Decay_Time;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->LFO_Vol_Decay_Time;
 }
 
 };

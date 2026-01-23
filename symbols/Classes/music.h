@@ -24,17 +24,29 @@ Attrib::StringKey Album; // offset 0x20, size 0x10
 PathEventEnum PathEvent; // offset 0x30, size 0x4
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "music");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "music");
 }
 
 music(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 music(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+music(const music &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+music(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~music() {}
@@ -47,16 +59,20 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0x565465f8;
 }
 
 const Attrib::StringKey &Artist() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Artist;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Artist;
 }
 
-const Attrib::StringKey &DefPlay(unsigned int index) const {
-        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(this->GetAttributePointer(0x58f80e5e, index));
+const Attrib::StringKey &DefPlay() const {
+        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(GetAttributePointer(0x58f80e5e, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const Attrib::StringKey *>(DefaultDataArea(sizeof(Attrib::StringKey)));
         }
@@ -64,15 +80,15 @@ const Attrib::StringKey &DefPlay(unsigned int index) const {
     }
         
 const Attrib::StringKey &SongName() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SongName;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SongName;
 }
 
 const Attrib::StringKey &Album() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Album;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Album;
 }
 
 const PathEventEnum &PathEvent() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->PathEvent;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->PathEvent;
 }
 
 };

@@ -17,20 +17,29 @@ namespace Attrib {
 namespace Gen {
 
 struct presetride : Instance {
-struct _LayoutStruct {
-};
-
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "presetride");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "presetride");
 }
 
 presetride(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    
 }
 
 presetride(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    
+}
+
+presetride(const presetride &src) : Instance(src) {
+    
+}
+
+presetride(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    
 }
 
 ~presetride() {}
@@ -43,60 +52,64 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0x27e73952;
 }
 
-const int &transmission(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x07a7a3e5, index));
+const int &transmission() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x07a7a3e5, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const int &brakes(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x36350867, index));
+const int &brakes() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x36350867, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const int &chassis(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xafa210f0, index));
+const int &chassis() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xafa210f0, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const int &nos(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xb1669f64, index));
+const int &nos() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xb1669f64, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const int &tires(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xbd38d1ca, index));
+const int &tires() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xbd38d1ca, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const int &induction(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xc92a0142, index));
+const int &induction() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xc92a0142, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const int &engine(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xf1f5fbc7, index));
+const int &engine() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xf1f5fbc7, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }

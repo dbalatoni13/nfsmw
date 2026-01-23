@@ -17,20 +17,29 @@ namespace Attrib {
 namespace Gen {
 
 struct junkman : Instance {
-struct _LayoutStruct {
-};
-
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "junkman");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "junkman");
 }
 
 junkman(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    
 }
 
 junkman(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    
+}
+
+junkman(const junkman &src) : Instance(src) {
+    
+}
+
+junkman(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    
 }
 
 ~junkman() {}
@@ -43,12 +52,16 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0x171737e9;
 }
 
 const JunkmanMod &transmission_package(unsigned int index) const {
-        const JunkmanMod *resultptr = reinterpret_cast<const JunkmanMod *>(this->GetAttributePointer(0x25ae629a, index));
+        const JunkmanMod *resultptr = reinterpret_cast<const JunkmanMod *>(GetAttributePointer(0x25ae629a, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const JunkmanMod *>(DefaultDataArea(sizeof(JunkmanMod)));
         }
@@ -56,11 +69,11 @@ const JunkmanMod &transmission_package(unsigned int index) const {
     }
         
 unsigned int Num_transmission_package() const {
-            return this->Get(0x25ae629a).GetLength();
+            return Get(0x25ae629a).GetLength();
         }
 
 const JunkmanMod &nos_package(unsigned int index) const {
-        const JunkmanMod *resultptr = reinterpret_cast<const JunkmanMod *>(this->GetAttributePointer(0x452d2634, index));
+        const JunkmanMod *resultptr = reinterpret_cast<const JunkmanMod *>(GetAttributePointer(0x452d2634, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const JunkmanMod *>(DefaultDataArea(sizeof(JunkmanMod)));
         }
@@ -68,11 +81,11 @@ const JunkmanMod &nos_package(unsigned int index) const {
     }
         
 unsigned int Num_nos_package() const {
-            return this->Get(0x452d2634).GetLength();
+            return Get(0x452d2634).GetLength();
         }
 
 const JunkmanMod &brakes_package(unsigned int index) const {
-        const JunkmanMod *resultptr = reinterpret_cast<const JunkmanMod *>(this->GetAttributePointer(0x56c63b6f, index));
+        const JunkmanMod *resultptr = reinterpret_cast<const JunkmanMod *>(GetAttributePointer(0x56c63b6f, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const JunkmanMod *>(DefaultDataArea(sizeof(JunkmanMod)));
         }
@@ -80,11 +93,11 @@ const JunkmanMod &brakes_package(unsigned int index) const {
     }
         
 unsigned int Num_brakes_package() const {
-            return this->Get(0x56c63b6f).GetLength();
+            return Get(0x56c63b6f).GetLength();
         }
 
 const JunkmanMod &induction_package(unsigned int index) const {
-        const JunkmanMod *resultptr = reinterpret_cast<const JunkmanMod *>(this->GetAttributePointer(0x7546359e, index));
+        const JunkmanMod *resultptr = reinterpret_cast<const JunkmanMod *>(GetAttributePointer(0x7546359e, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const JunkmanMod *>(DefaultDataArea(sizeof(JunkmanMod)));
         }
@@ -92,11 +105,11 @@ const JunkmanMod &induction_package(unsigned int index) const {
     }
         
 unsigned int Num_induction_package() const {
-            return this->Get(0x7546359e).GetLength();
+            return Get(0x7546359e).GetLength();
         }
 
 const JunkmanMod &engine_package(unsigned int index) const {
-        const JunkmanMod *resultptr = reinterpret_cast<const JunkmanMod *>(this->GetAttributePointer(0x9206efd2, index));
+        const JunkmanMod *resultptr = reinterpret_cast<const JunkmanMod *>(GetAttributePointer(0x9206efd2, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const JunkmanMod *>(DefaultDataArea(sizeof(JunkmanMod)));
         }
@@ -104,11 +117,11 @@ const JunkmanMod &engine_package(unsigned int index) const {
     }
         
 unsigned int Num_engine_package() const {
-            return this->Get(0x9206efd2).GetLength();
+            return Get(0x9206efd2).GetLength();
         }
 
 const JunkmanMod &chassis_package(unsigned int index) const {
-        const JunkmanMod *resultptr = reinterpret_cast<const JunkmanMod *>(this->GetAttributePointer(0xb6495c9e, index));
+        const JunkmanMod *resultptr = reinterpret_cast<const JunkmanMod *>(GetAttributePointer(0xb6495c9e, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const JunkmanMod *>(DefaultDataArea(sizeof(JunkmanMod)));
         }
@@ -116,11 +129,11 @@ const JunkmanMod &chassis_package(unsigned int index) const {
     }
         
 unsigned int Num_chassis_package() const {
-            return this->Get(0xb6495c9e).GetLength();
+            return Get(0xb6495c9e).GetLength();
         }
 
 const JunkmanMod &tires_package(unsigned int index) const {
-        const JunkmanMod *resultptr = reinterpret_cast<const JunkmanMod *>(this->GetAttributePointer(0xc5860f58, index));
+        const JunkmanMod *resultptr = reinterpret_cast<const JunkmanMod *>(GetAttributePointer(0xc5860f58, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const JunkmanMod *>(DefaultDataArea(sizeof(JunkmanMod)));
         }
@@ -128,7 +141,7 @@ const JunkmanMod &tires_package(unsigned int index) const {
     }
         
 unsigned int Num_tires_package() const {
-            return this->Get(0xc5860f58).GetLength();
+            return Get(0xc5860f58).GetLength();
         }
 
 };

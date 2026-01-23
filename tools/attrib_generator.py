@@ -66,7 +66,7 @@ def get_layout_struct_field(field):
         out += f" // offset {hex(offset)}, size {hex(8)}\n"
 
     if type_name == "EA::Reflection::Text":
-        out += f"char {field_name}[{size}];"
+        out += f"const char *{field_name};"
     else:
         type = type_replacement.get(type_name, type_name)
         out += f"{type} {field_name}{'' if count == 1 else f'[{count}]'};"
@@ -122,9 +122,10 @@ def get_non_layout_getter(field, hash):
     field_name = field["Name"]
     type_name = field["TypeName"]
     type = type_replacement.get(type_name, type_name)
+    is_array = "Array" in field["Flags"]
 
-    out += f"""const {type} &{field_name}(unsigned int index) const {{
-        const {type} *resultptr = reinterpret_cast<const {type} *>(GetAttributePointer({hash}, index));
+    out += f"""const {type} &{field_name}({"unsigned int index" if is_array else ""}) const {{
+        const {type} *resultptr = reinterpret_cast<const {type} *>(GetAttributePointer({hash}{", index" if is_array else ", 0"}));
         if (!resultptr) {{
             resultptr = reinterpret_cast<const {type} *>(DefaultDataArea(sizeof({type})));
         }}
@@ -133,7 +134,7 @@ def get_non_layout_getter(field, hash):
         
 """
 
-    if "Array" in field["Flags"]:
+    if is_array:
         out += f"""unsigned int Num_{field_name}() const {{
             return Get({hash}).GetLength();
         }}
@@ -155,11 +156,16 @@ def process_file(filename, strings_file, outdirectory):
         data = yaml.safe_load(f)
         for clazz in data["Classes"]:
             name: str = clazz["Name"]
+            has_layout_struct = clazz["LayoutSize"] > 0
+            constructor_body = (
+                "SetDefaultLayout(sizeof(_LayoutStruct));" if has_layout_struct else ""
+            )
             out = f"#ifndef ATTRIBSYS_CLASSES_{name.upper()}_H\n#define ATTRIBSYS_CLASSES_{name.upper()}_H\n\n"
             out += FILE_PROLOGUE
 
             out += f"struct {name} : Instance {{\n"
-            out += "struct _LayoutStruct {\n"
+            if has_layout_struct:
+                out += "struct _LayoutStruct {\n"
 
             fields = sorted(clazz["Fields"], key=sort_by_offset)
 
@@ -169,7 +175,8 @@ def process_file(filename, strings_file, outdirectory):
 
                 out += get_layout_struct_field(field)
 
-            out += "};\n\n"
+            if has_layout_struct:
+                out += "};\n\n"
 
             out += f"""void *operator new(size_t bytes) {{
     return Attrib::Alloc(bytes, "{name}");
@@ -181,19 +188,23 @@ void operator delete(void *ptr, size_t bytes) {{
 
 {name}(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {{
-    SetDefaultLayout(sizeof(_LayoutStruct));
+    {constructor_body}
 }}
 
 {name}(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {{
-    SetDefaultLayout(sizeof(_LayoutStruct));
+    {constructor_body}
+}}
+
+{name}(const Instance &src) : Instance(src) {{
+    {constructor_body}
 }}
 
 {name}(const {name} &src) : Instance(src) {{
-    SetDefaultLayout(sizeof(_LayoutStruct));
+    {constructor_body}
 }}
 
 {name}(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {{
-    SetDefaultLayout(sizeof(_LayoutStruct));
+    {constructor_body}
 }}
 
 ~{name}() {{}}

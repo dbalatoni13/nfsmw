@@ -44,17 +44,29 @@ float SAME_ALIGN_SCALE; // offset 0x64, size 0x4
 bool SCALE_STEERING; // offset 0x68, size 0x1
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "chopperspecs");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "chopperspecs");
 }
 
 chopperspecs(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 chopperspecs(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+chopperspecs(const chopperspecs &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+chopperspecs(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~chopperspecs() {}
@@ -67,104 +79,108 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0x5d898ee7;
 }
 
 const UMath::Vector4 &AIR_RESISTANCE_SCALE() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->AIR_RESISTANCE_SCALE;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->AIR_RESISTANCE_SCALE;
 }
 
 const float &YAW_STRENGTH_FRONT() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->YAW_STRENGTH_FRONT;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->YAW_STRENGTH_FRONT;
 }
 
 const float &YAW_DAMP() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->YAW_DAMP;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->YAW_DAMP;
 }
 
 const float &YAW_LIMIT_FRONT() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->YAW_LIMIT_FRONT;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->YAW_LIMIT_FRONT;
 }
 
 const float &PITCH_ALIGN_SCALE() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->PITCH_ALIGN_SCALE;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->PITCH_ALIGN_SCALE;
 }
 
 const float &AIR_RESISTANCE() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->AIR_RESISTANCE;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->AIR_RESISTANCE;
 }
 
 const float &PITCH_STOP_SPEED() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->PITCH_STOP_SPEED;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->PITCH_STOP_SPEED;
 }
 
 const float &YAW_BOOST_LIMIT() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->YAW_BOOST_LIMIT;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->YAW_BOOST_LIMIT;
 }
 
 const float &ROLL_SPEED_MIN() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->ROLL_SPEED_MIN;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->ROLL_SPEED_MIN;
 }
 
 const float &ROLL_SLOW_DOWN_RATE() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->ROLL_SLOW_DOWN_RATE;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->ROLL_SLOW_DOWN_RATE;
 }
 
 const float &ROLL_START_SPEED() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->ROLL_START_SPEED;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->ROLL_START_SPEED;
 }
 
 const float &PITCH_ANG() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->PITCH_ANG;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->PITCH_ANG;
 }
 
 const float &YAW_STRENGTH_REAR() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->YAW_STRENGTH_REAR;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->YAW_STRENGTH_REAR;
 }
 
 const float &ROLL_ANG() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->ROLL_ANG;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->ROLL_ANG;
 }
 
 const float &MAX_SPEED_MPS() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->MAX_SPEED_MPS;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->MAX_SPEED_MPS;
 }
 
 const float &STRAFE_SCALEY() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->STRAFE_SCALEY;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->STRAFE_SCALEY;
 }
 
 const float &STRAFE_SCALEX() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->STRAFE_SCALEX;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->STRAFE_SCALEX;
 }
 
 const float &YAW_LIMIT_REAR() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->YAW_LIMIT_REAR;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->YAW_LIMIT_REAR;
 }
 
 const float &TURN_BOOST_SPEED() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->TURN_BOOST_SPEED;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->TURN_BOOST_SPEED;
 }
 
 const float &PITCH_SLOW_DOWN_RATE() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->PITCH_SLOW_DOWN_RATE;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->PITCH_SLOW_DOWN_RATE;
 }
 
 const float &DRIVE_SPEED() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->DRIVE_SPEED;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->DRIVE_SPEED;
 }
 
 const float &ROLL_ALIGN_SCALE() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->ROLL_ALIGN_SCALE;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->ROLL_ALIGN_SCALE;
 }
 
 const float &SAME_ALIGN_SCALE() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SAME_ALIGN_SCALE;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SAME_ALIGN_SCALE;
 }
 
 const bool &SCALE_STEERING() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->SCALE_STEERING;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->SCALE_STEERING;
 }
 
 };

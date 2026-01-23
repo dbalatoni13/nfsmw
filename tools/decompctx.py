@@ -27,7 +27,7 @@ binary_literal_pattern = re.compile(r"\b(0b[01]+)\b")
 # region Defaults
 default_arguments: list[str] = [
     # Strip out left-over whitespace
-    "--compress",
+    # "--compress",
     # Put a newline before each line directive
     # "--line-directive",
     # "\n#line",

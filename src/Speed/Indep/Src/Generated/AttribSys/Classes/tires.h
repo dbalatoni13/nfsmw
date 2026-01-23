@@ -34,11 +34,19 @@ struct tires : Instance {
     }
 
     tires(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-        this->SetDefaultLayout(sizeof(_LayoutStruct));
+        SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     tires(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-        this->SetDefaultLayout(sizeof(_LayoutStruct));
+        SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
+    tires(const tires &src) : Instance(src) {
+        SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
+    tires(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+        SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     ~tires() {}
@@ -49,6 +57,10 @@ struct tires : Instance {
 
     void Change(Key collectionkey) {
         Change(FindCollection(ClassKey(), collectionkey));
+    }
+
+    void Change(const RefSpec &refspec) {
+        Instance::Change(refspec);
     }
 
     static Key ClassKey() {

@@ -17,20 +17,29 @@ namespace Attrib {
 namespace Gen {
 
 struct visualrgbtweaker : Instance {
-struct _LayoutStruct {
-};
-
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "visualrgbtweaker");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "visualrgbtweaker");
 }
 
 visualrgbtweaker(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    
 }
 
 visualrgbtweaker(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    
+}
+
+visualrgbtweaker(const visualrgbtweaker &src) : Instance(src) {
+    
+}
+
+visualrgbtweaker(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    
 }
 
 ~visualrgbtweaker() {}
@@ -43,28 +52,32 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0xaf1837ca;
 }
 
-const Attrib::Types::Matrix &blue(unsigned int index) const {
-        const Attrib::Types::Matrix *resultptr = reinterpret_cast<const Attrib::Types::Matrix *>(this->GetAttributePointer(0x1c641189, index));
+const Attrib::Types::Matrix &blue() const {
+        const Attrib::Types::Matrix *resultptr = reinterpret_cast<const Attrib::Types::Matrix *>(GetAttributePointer(0x1c641189, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const Attrib::Types::Matrix *>(DefaultDataArea(sizeof(Attrib::Types::Matrix)));
         }
         return *resultptr;
     }
         
-const Attrib::Types::Matrix &green(unsigned int index) const {
-        const Attrib::Types::Matrix *resultptr = reinterpret_cast<const Attrib::Types::Matrix *>(this->GetAttributePointer(0x3ffd271c, index));
+const Attrib::Types::Matrix &green() const {
+        const Attrib::Types::Matrix *resultptr = reinterpret_cast<const Attrib::Types::Matrix *>(GetAttributePointer(0x3ffd271c, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const Attrib::Types::Matrix *>(DefaultDataArea(sizeof(Attrib::Types::Matrix)));
         }
         return *resultptr;
     }
         
-const Attrib::Types::Matrix &red(unsigned int index) const {
-        const Attrib::Types::Matrix *resultptr = reinterpret_cast<const Attrib::Types::Matrix *>(this->GetAttributePointer(0x5cd90211, index));
+const Attrib::Types::Matrix &red() const {
+        const Attrib::Types::Matrix *resultptr = reinterpret_cast<const Attrib::Types::Matrix *>(GetAttributePointer(0x5cd90211, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const Attrib::Types::Matrix *>(DefaultDataArea(sizeof(Attrib::Types::Matrix)));
         }

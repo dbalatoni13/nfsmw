@@ -1326,8 +1326,8 @@ struct gameplay : Instance {
         return *resultptr;
     }
 
-    const float &MinimumAIPerformance(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xb1ece070, index));
+    const float &MinimumAIPerformance() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xb1ece070, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }

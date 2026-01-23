@@ -39,17 +39,29 @@ char zSprite; // offset 0x92, size 0x1
 char zContrail; // offset 0x93, size 0x1
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "fuelcell_emitter");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "fuelcell_emitter");
 }
 
 fuelcell_emitter(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 fuelcell_emitter(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+fuelcell_emitter(const fuelcell_emitter &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+fuelcell_emitter(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~fuelcell_emitter() {}
@@ -62,84 +74,88 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0xb267a856;
 }
 
 const UMath::Vector4 &VolumeCenter() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->VolumeCenter;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->VolumeCenter;
 }
 
 const UMath::Vector4 &VelocityDelta() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->VelocityDelta;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->VelocityDelta;
 }
 
 const UMath::Vector4 &VolumeExtent() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->VolumeExtent;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->VolumeExtent;
 }
 
 const UMath::Vector4 &VelocityInherit() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->VelocityInherit;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->VelocityInherit;
 }
 
 const UMath::Vector4 &VelocityStart() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->VelocityStart;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->VelocityStart;
 }
 
 const UMath::Vector4 &Colour1() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Colour1;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Colour1;
 }
 
 const RefSpec &emitteruv() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->emitteruv;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->emitteruv;
 }
 
 const float &Life() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Life;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Life;
 }
 
 const float &NumParticlesVariance() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->NumParticlesVariance;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->NumParticlesVariance;
 }
 
 const float &GravityStart() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->GravityStart;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->GravityStart;
 }
 
 const float &HeightStart() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->HeightStart;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->HeightStart;
 }
 
 const float &GravityDelta() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->GravityDelta;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->GravityDelta;
 }
 
 const float &LengthStart() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->LengthStart;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->LengthStart;
 }
 
 const float &LengthDelta() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->LengthDelta;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->LengthDelta;
 }
 
 const float &LifeVariance() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->LifeVariance;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->LifeVariance;
 }
 
 const float &NumParticles() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->NumParticles;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->NumParticles;
 }
 
 const short &Spin() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Spin;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Spin;
 }
 
 const char &zSprite() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->zSprite;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->zSprite;
 }
 
 const char &zContrail() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->zContrail;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->zContrail;
 }
 
 };

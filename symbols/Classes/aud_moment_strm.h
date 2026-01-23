@@ -24,17 +24,29 @@ eVOL_MOMENT VolSlot; // offset 0x8, size 0x4
 char strmpriority; // offset 0xc, size 0x1
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "aud_moment_strm");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "aud_moment_strm");
 }
 
 aud_moment_strm(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 aud_moment_strm(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+aud_moment_strm(const aud_moment_strm &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+aud_moment_strm(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~aud_moment_strm() {}
@@ -47,20 +59,24 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0xd2410816;
 }
 
-const bool &CanInterupt(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xb34fc11d, index));
+const bool &CanInterupt() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xb34fc11d, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const bool &IsPositioned(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xc4e7f7c2, index));
+const bool &IsPositioned() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xc4e7f7c2, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
@@ -68,19 +84,19 @@ const bool &IsPositioned(unsigned int index) const {
     }
         
 const Csis::Type_SoundFX_Type &stream() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->stream;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->stream;
 }
 
 const Csis::Type_SoundFX_Param &param() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->param;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->param;
 }
 
 const eVOL_MOMENT &VolSlot() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->VolSlot;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->VolSlot;
 }
 
 const char &strmpriority() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->strmpriority;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->strmpriority;
 }
 
 };

@@ -18,21 +18,33 @@ namespace Gen {
 
 struct gameplay : Instance {
 struct _LayoutStruct {
-char CollectionName[4]; // offset 0x0, size 0x4
+const char *CollectionName; // offset 0x0, size 0x4
 unsigned int message_id; // offset 0x4, size 0x4
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "gameplay");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "gameplay");
 }
 
 gameplay(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 gameplay(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+gameplay(const gameplay &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+gameplay(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~gameplay() {}
@@ -45,44 +57,48 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0x5cea9d46;
 }
 
-const float &GoalAddPrevBest(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x006ec903, index));
+const float &GoalAddPrevBest() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x006ec903, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &TargetBronze(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x00df8eb4, index));
+const float &TargetBronze() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x00df8eb4, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const int &PursuitLevel(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x0261ae99, index));
+const int &PursuitLevel() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x0261ae99, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &PostRaceScreenTexture(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0x038a3b53, index));
+const EA::Reflection::Text &PostRaceScreenTexture() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0x038a3b53, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &MiniMapItem(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x051e90ca, index));
+const GCollectionKey &MiniMapItem() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x051e90ca, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -90,7 +106,7 @@ const GCollectionKey &MiniMapItem(unsigned int index) const {
     }
         
 const GCollectionKey &CashRewards(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x0550fbc2, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x0550fbc2, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -98,35 +114,35 @@ const GCollectionKey &CashRewards(unsigned int index) const {
     }
         
 unsigned int Num_CashRewards() const {
-            return this->Get(0x0550fbc2).GetLength();
+            return Get(0x0550fbc2).GetLength();
         }
 
-const EA::Reflection::Text &RewardMarkerType(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0x06a077d5, index));
+const EA::Reflection::Text &RewardMarkerType() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0x06a077d5, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const bool &MilestoneBiggerIsBetter(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x0896d043, index));
+const bool &MilestoneBiggerIsBetter() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x0896d043, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const float &InitialSpeed(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x0a91596d, index));
+const float &InitialSpeed() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x0a91596d, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const bool &FilterModePassAll(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x0d038cfa, index));
+const bool &FilterModePassAll() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x0d038cfa, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
@@ -134,7 +150,7 @@ const bool &FilterModePassAll(unsigned int index) const {
     }
         
 const float &InternalRaceIndex(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x0d4c1055, index));
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x0d4c1055, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -142,43 +158,43 @@ const float &InternalRaceIndex(unsigned int index) const {
     }
         
 unsigned int Num_InternalRaceIndex() const {
-            return this->Get(0x0d4c1055).GetLength();
+            return Get(0x0d4c1055).GetLength();
         }
 
-const EA::Reflection::Text &UpgradeType(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0x0e0113fe, index));
+const EA::Reflection::Text &UpgradeType() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0x0e0113fe, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &OutroNISMarker(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x0e265c88, index));
+const GCollectionKey &OutroNISMarker() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x0e265c88, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const bool &SharedCheckpoints(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x0e34a1f3, index));
+const bool &SharedCheckpoints() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x0e34a1f3, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const bool &ScriptedCopsInRace(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x0e47fe63, index));
+const bool &ScriptedCopsInRace() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x0e47fe63, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const int &NumLaps(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x0ebdc165, index));
+const int &NumLaps() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x0ebdc165, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
@@ -186,7 +202,7 @@ const int &NumLaps(unsigned int index) const {
     }
         
 const GCollectionKey &TargetActivities(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x0f37d221, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x0f37d221, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -194,27 +210,27 @@ const GCollectionKey &TargetActivities(unsigned int index) const {
     }
         
 unsigned int Num_TargetActivities() const {
-            return this->Get(0x0f37d221).GetLength();
+            return Get(0x0f37d221).GetLength();
         }
 
-const EA::Reflection::Text &EventIconType(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0x0f6bcde1, index));
+const EA::Reflection::Text &EventIconType() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0x0f6bcde1, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &disengagetrigger(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x106285c0, index));
+const GCollectionKey &disengagetrigger() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x106285c0, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const bool &CatchUp(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x10db04e6, index));
+const bool &CatchUp() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x10db04e6, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
@@ -222,7 +238,7 @@ const bool &CatchUp(unsigned int index) const {
     }
         
 const EA::Reflection::Text &RoadList(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0x13b11b40, index));
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0x13b11b40, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
@@ -230,75 +246,75 @@ const EA::Reflection::Text &RoadList(unsigned int index) const {
     }
         
 unsigned int Num_RoadList() const {
-            return this->Get(0x13b11b40).GetLength();
+            return Get(0x13b11b40).GetLength();
         }
 
-const float &ShortcutMaxChance(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x16faba11, index));
+const float &ShortcutMaxChance() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x16faba11, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const int &KnockoutsPerLap(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x181462da, index));
+const int &KnockoutsPerLap() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x181462da, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const float &ScaleOpenWorldHeat(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x1823b89e, index));
+const float &ScaleOpenWorldHeat() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x1823b89e, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &target(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x1a7d2859, index));
+const GCollectionKey &target() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x1a7d2859, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const bool &OpenWorldSpeedTrap(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x1bb16f14, index));
+const bool &OpenWorldSpeedTrap() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x1bb16f14, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const bool &ChallengeSeriesRace(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x1c650104, index));
+const bool &ChallengeSeriesRace() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x1c650104, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const int &BossReputation(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x1d33241a, index));
+const int &BossReputation() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x1d33241a, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const float &DelayTime(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x20259346, index));
+const float &DelayTime() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x20259346, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &RespawnMarker(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x2241f4cd, index));
+const GCollectionKey &RespawnMarker() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x2241f4cd, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -306,7 +322,7 @@ const GCollectionKey &RespawnMarker(unsigned int index) const {
     }
         
 const GCollectionKey &transitionlist(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x25621dc5, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x25621dc5, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -314,51 +330,51 @@ const GCollectionKey &transitionlist(unsigned int index) const {
     }
         
 unsigned int Num_transitionlist() const {
-            return this->Get(0x25621dc5).GetLength();
+            return Get(0x25621dc5).GetLength();
         }
 
-const int &OvertimePenaltyPerSec(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x26fd42b0, index));
+const int &OvertimePenaltyPerSec() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x26fd42b0, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &TargetActivity(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x277566f3, index));
+const GCollectionKey &TargetActivity() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x277566f3, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const bool &AutoActivateGPS(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x29b9c312, index));
+const bool &AutoActivateGPS() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x29b9c312, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const bool &CheckpointsVisible(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x2ad67092, index));
+const bool &CheckpointsVisible() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x2ad67092, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const bool &PursuitRace(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x2b1f54f6, index));
+const bool &PursuitRace() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x2b1f54f6, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const float &ResetTime(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x2c44ff10, index));
+const float &ResetTime() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x2c44ff10, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -366,7 +382,7 @@ const float &ResetTime(unsigned int index) const {
     }
         
 const GCollectionKey &Checkpoint(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x34aae3fc, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x34aae3fc, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -374,211 +390,211 @@ const GCollectionKey &Checkpoint(unsigned int index) const {
     }
         
 unsigned int Num_Checkpoint() const {
-            return this->Get(0x34aae3fc).GetLength();
+            return Get(0x34aae3fc).GetLength();
         }
 
-const int &IntroCameraTrack(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x36bbeee9, index));
+const int &IntroCameraTrack() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x36bbeee9, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const bool &CopsInRace(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x3918e889, index));
+const bool &CopsInRace() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x3918e889, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const float &FlareSpacing(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x394abbc6, index));
+const float &FlareSpacing() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x394abbc6, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const bool &AvailableOnline(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x39509746, index));
+const bool &AvailableOnline() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x39509746, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const float &Radius(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x39bf8002, index));
+const float &Radius() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x39bf8002, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &InitialPlayerSpeed(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x3a0e4b19, index));
+const float &InitialPlayerSpeed() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x3a0e4b19, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const int &SkillLevel(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x3b798aa2, index));
+const int &SkillLevel() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x3b798aa2, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const float &GoalHard(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x3b9bbfc2, index));
+const float &GoalHard() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x3b9bbfc2, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const int &MedalBonusBronze(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x3bb31211, index));
+const int &MedalBonusBronze() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x3bb31211, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &UpgradePartID(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0x3c2fdaab, index));
+const EA::Reflection::Text &UpgradePartID() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0x3c2fdaab, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &Name(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0x3e225ec1, index));
+const EA::Reflection::Text &Name() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0x3e225ec1, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const bool &DoCountdown(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x3e33da0f, index));
+const bool &DoCountdown() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x3e33da0f, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const bool &Template(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x3e9156ca, index));
+const bool &Template() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x3e9156ca, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const float &IconModelFloatHeight(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x4037d3c5, index));
+const float &IconModelFloatHeight() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x4037d3c5, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const UMath::Vector2 &layoutpos(unsigned int index) const {
-        const UMath::Vector2 *resultptr = reinterpret_cast<const UMath::Vector2 *>(this->GetAttributePointer(0x4075ec46, index));
+const UMath::Vector2 &layoutpos() const {
+        const UMath::Vector2 *resultptr = reinterpret_cast<const UMath::Vector2 *>(GetAttributePointer(0x4075ec46, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const UMath::Vector2 *>(DefaultDataArea(sizeof(UMath::Vector2)));
         }
         return *resultptr;
     }
         
-const bool &NoPostRaceScreen(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x40f9929f, index));
+const bool &NoPostRaceScreen() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x40f9929f, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &PresetRide(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0x416a8409, index));
+const EA::Reflection::Text &PresetRide() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0x416a8409, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const bool &IsEpicPursuitRace(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x4393f69b, index));
+const bool &IsEpicPursuitRace() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x4393f69b, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const float &CatchUpIntegral(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x4545ab74, index));
+const float &CatchUpIntegral() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x4545ab74, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const bool &UseWorldHeat(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x45f2ad6c, index));
+const bool &UseWorldHeat() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x45f2ad6c, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const int &BustedLives(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x462f2e36, index));
+const int &BustedLives() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x462f2e36, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const int &Reputation(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x477ec5aa, index));
+const int &Reputation() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x477ec5aa, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &parentstate(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x4acc6d63, index));
+const GCollectionKey &parentstate() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x4acc6d63, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const bool &NISShell(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x4c17fe41, index));
+const bool &NISShell() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x4c17fe41, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const float &ThreshholdValue(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x4e90219d, index));
+const float &ThreshholdValue() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x4e90219d, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &ShortcutMinChance(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x4efb950a, index));
+const float &ShortcutMinChance() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x4efb950a, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -586,7 +602,7 @@ const float &ShortcutMinChance(unsigned int index) const {
     }
         
 const GCollectionKey &RewardsForWinner(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x50104d90, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x50104d90, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -594,51 +610,51 @@ const GCollectionKey &RewardsForWinner(unsigned int index) const {
     }
         
 unsigned int Num_RewardsForWinner() const {
-            return this->Get(0x50104d90).GetLength();
+            return Get(0x50104d90).GetLength();
         }
 
-const float &CatchUpDerivative(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x515aa4e4, index));
+const float &CatchUpDerivative() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x515aa4e4, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &TargetSilver(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x51ce16b7, index));
+const float &TargetSilver() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x51ce16b7, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &CameraModelMarker(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x52dc742c, index));
+const GCollectionKey &CameraModelMarker() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x52dc742c, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const int &IntroMessageID(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x5468366d, index));
+const int &IntroMessageID() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x5468366d, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const float &ChanceOfRain(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x547486ae, index));
+const float &ChanceOfRain() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x547486ae, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &OutroNIS(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0x54932966, index));
+const EA::Reflection::Text &OutroNIS() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0x54932966, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
@@ -646,7 +662,7 @@ const EA::Reflection::Text &OutroNIS(unsigned int index) const {
     }
         
 const Attrib::Blob &FilterBlocks(unsigned int index) const {
-        const Attrib::Blob *resultptr = reinterpret_cast<const Attrib::Blob *>(this->GetAttributePointer(0x56e1436d, index));
+        const Attrib::Blob *resultptr = reinterpret_cast<const Attrib::Blob *>(GetAttributePointer(0x56e1436d, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const Attrib::Blob *>(DefaultDataArea(sizeof(Attrib::Blob)));
         }
@@ -654,11 +670,11 @@ const Attrib::Blob &FilterBlocks(unsigned int index) const {
     }
         
 unsigned int Num_FilterBlocks() const {
-            return this->Get(0x56e1436d).GetLength();
+            return Get(0x56e1436d).GetLength();
         }
 
-const float &Width(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x5816c1fc, index));
+const float &Width() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x5816c1fc, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -666,7 +682,7 @@ const float &Width(unsigned int index) const {
     }
         
 const GCollectionKey &Opponents(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x5839fa1a, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x5839fa1a, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -674,11 +690,11 @@ const GCollectionKey &Opponents(unsigned int index) const {
     }
         
 unsigned int Num_Opponents() const {
-            return this->Get(0x5839fa1a).GetLength();
+            return Get(0x5839fa1a).GetLength();
         }
 
 const GCollectionKey &RaceTriggers(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x58dc14c0, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x58dc14c0, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -686,91 +702,91 @@ const GCollectionKey &RaceTriggers(unsigned int index) const {
     }
         
 unsigned int Num_RaceTriggers() const {
-            return this->Get(0x58dc14c0).GetLength();
+            return Get(0x58dc14c0).GetLength();
         }
 
-const EA::Reflection::Text &QuickRaceNIS(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0x5987fb25, index));
+const EA::Reflection::Text &QuickRaceNIS() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0x5987fb25, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const float &Rotation(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x5a6a57c6, index));
+const float &Rotation() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x5a6a57c6, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const int &ForceTrafficDensity(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x5e161bba, index));
+const int &ForceTrafficDensity() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x5e161bba, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const bool &RankPlayersByPoints(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x5ec1880f, index));
+const bool &RankPlayersByPoints() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x5ec1880f, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &ParticleEffect(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0x5ef34802, index));
+const EA::Reflection::Text &ParticleEffect() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0x5ef34802, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &SpeedTrapTrigger(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x5f95c3a0, index));
+const GCollectionKey &SpeedTrapTrigger() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x5f95c3a0, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &MasterCheckpoint(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x609febe8, index));
+const GCollectionKey &MasterCheckpoint() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x609febe8, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &FinishCamera(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0x62dfc259, index));
+const EA::Reflection::Text &FinishCamera() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0x62dfc259, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &TrafficPattern(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0x6319b692, index));
+const EA::Reflection::Text &TrafficPattern() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0x6319b692, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const bool &CollectorsEditionRace(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x637584fe, index));
+const bool &CollectorsEditionRace() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x637584fe, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &PostRaceActivity(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x64273c71, index));
+const GCollectionKey &PostRaceActivity() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x64273c71, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -778,7 +794,7 @@ const GCollectionKey &PostRaceActivity(unsigned int index) const {
     }
         
 const GCollectionKey &ZoneList(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x64893da8, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x64893da8, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -786,51 +802,51 @@ const GCollectionKey &ZoneList(unsigned int index) const {
     }
         
 unsigned int Num_ZoneList() const {
-            return this->Get(0x64893da8).GetLength();
+            return Get(0x64893da8).GetLength();
         }
 
-const float &IconModelSpinRate(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x697332e8, index));
+const float &IconModelSpinRate() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x697332e8, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const int &SMSCellChallenge(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x6a4cd2d4, index));
+const int &SMSCellChallenge() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x6a4cd2d4, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const bool &IsLoopingRace(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x6a9a6f5b, index));
+const bool &IsLoopingRace() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x6a9a6f5b, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const bool &Directional(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x6b37e124, index));
+const bool &Directional() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x6b37e124, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const bool &ResetsPlayer(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x6ccd5819, index));
+const bool &ResetsPlayer() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x6ccd5819, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const int &BinIndex(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x6ce23062, index));
+const int &BinIndex() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x6ce23062, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
@@ -838,7 +854,7 @@ const int &BinIndex(unsigned int index) const {
     }
         
 const GCollectionKey &SpeedTrapsRequired(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x6d7e73c9, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x6d7e73c9, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -846,99 +862,99 @@ const GCollectionKey &SpeedTrapsRequired(unsigned int index) const {
     }
         
 unsigned int Num_SpeedTrapsRequired() const {
-            return this->Get(0x6d7e73c9).GetLength();
+            return Get(0x6d7e73c9).GetLength();
         }
 
-const UMath::Vector3 &Dimensions(unsigned int index) const {
-        const UMath::Vector3 *resultptr = reinterpret_cast<const UMath::Vector3 *>(this->GetAttributePointer(0x6d9e21ad, index));
+const UMath::Vector3 &Dimensions() const {
+        const UMath::Vector3 *resultptr = reinterpret_cast<const UMath::Vector3 *>(GetAttributePointer(0x6d9e21ad, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const UMath::Vector3 *>(DefaultDataArea(sizeof(UMath::Vector3)));
         }
         return *resultptr;
     }
         
-const int &RequiredChallenges(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x6dd4b98b, index));
+const int &RequiredChallenges() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x6dd4b98b, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &MilestoneName(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0x704f72e8, index));
+const EA::Reflection::Text &MilestoneName() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0x704f72e8, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const int &OutroCameraTrack(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x7054ff5b, index));
+const int &OutroCameraTrack() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x7054ff5b, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &scriptname(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0x7148ae82, index));
+const EA::Reflection::Text &scriptname() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0x7148ae82, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const float &TargetGold(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x728e43ff, index));
+const float &TargetGold() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x728e43ff, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const int &ProgressionLevel(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x740e9b4a, index));
+const int &ProgressionLevel() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x740e9b4a, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const float &TimeLimit(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x7585f041, index));
+const float &TimeLimit() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x7585f041, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const int &MedalBonusSilver(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x767b00a9, index));
+const int &MedalBonusSilver() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x767b00a9, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const float &KnockoutTime(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x777ece27, index));
+const float &KnockoutTime() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x777ece27, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &TrafficCharacter(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x797d9654, index));
+const GCollectionKey &TrafficCharacter() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x797d9654, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const bool &IsBoss(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x79c5d68d, index));
+const bool &IsBoss() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x79c5d68d, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
@@ -946,7 +962,7 @@ const bool &IsBoss(unsigned int index) const {
     }
         
 const GCollectionKey &Shortcuts(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x7b6d296e, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x7b6d296e, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -954,27 +970,27 @@ const GCollectionKey &Shortcuts(unsigned int index) const {
     }
         
 unsigned int Num_Shortcuts() const {
-            return this->Get(0x7b6d296e).GetLength();
+            return Get(0x7b6d296e).GetLength();
         }
 
-const float &RaceLength(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x7c11c52e, index));
+const float &RaceLength() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x7c11c52e, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &racefinishReverse(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x7c7cf20f, index));
+const GCollectionKey &racefinishReverse() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x7c7cf20f, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &CatchUpSkill(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0x8069b5a9, index));
+const EA::Reflection::Text &CatchUpSkill() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0x8069b5a9, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
@@ -982,7 +998,7 @@ const EA::Reflection::Text &CatchUpSkill(unsigned int index) const {
     }
         
 const GCollectionKey &SpeedTrapList(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x822179d1, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x822179d1, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -990,83 +1006,83 @@ const GCollectionKey &SpeedTrapList(unsigned int index) const {
     }
         
 unsigned int Num_SpeedTrapList() const {
-            return this->Get(0x822179d1).GetLength();
+            return Get(0x822179d1).GetLength();
         }
 
-const float &StartTime(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x839602ab, index));
+const float &StartTime() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x839602ab, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &GoalEasy(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x8445af47, index));
+const float &GoalEasy() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x8445af47, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &handler_owner(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x857fe432, index));
+const GCollectionKey &handler_owner() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x857fe432, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const bool &AutoStart(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x883c65e3, index));
+const bool &AutoStart() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x883c65e3, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const int &DifficultyLevel(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x88a7e3be, index));
+const int &DifficultyLevel() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x88a7e3be, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const bool &DDayRace(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x8cb01abf, index));
+const bool &DDayRace() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x8cb01abf, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const int &Bounty(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x8e1904c7, index));
+const int &Bounty() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x8e1904c7, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const float &BaseOpenWorldHeat(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x8f186ac4, index));
+const float &BaseOpenWorldHeat() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x8f186ac4, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &TargetMarker(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x8fc356fb, index));
+const GCollectionKey &TargetMarker() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x8fc356fb, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const int &NumRacesRequired(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0x90a22a3f, index));
+const int &NumRacesRequired() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0x90a22a3f, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
@@ -1074,7 +1090,7 @@ const int &NumRacesRequired(unsigned int index) const {
     }
         
 const GCollectionKey &Children(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x916e0e78, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x916e0e78, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -1082,35 +1098,35 @@ const GCollectionKey &Children(unsigned int index) const {
     }
         
 unsigned int Num_Children() const {
-            return this->Get(0x916e0e78).GetLength();
+            return Get(0x916e0e78).GetLength();
         }
 
-const GCollectionKey &stateref(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x918c796e, index));
+const GCollectionKey &stateref() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x918c796e, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &gameplayvault(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0x93fd9fda, index));
+const EA::Reflection::Text &gameplayvault() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0x93fd9fda, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const bool &ForcePreload(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x9652af0f, index));
+const bool &ForcePreload() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x9652af0f, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const Attrib::Blob &bytecode(unsigned int index) const {
-        const Attrib::Blob *resultptr = reinterpret_cast<const Attrib::Blob *>(this->GetAttributePointer(0x9a4a020a, index));
+const Attrib::Blob &bytecode() const {
+        const Attrib::Blob *resultptr = reinterpret_cast<const Attrib::Blob *>(GetAttributePointer(0x9a4a020a, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const Attrib::Blob *>(DefaultDataArea(sizeof(Attrib::Blob)));
         }
@@ -1118,7 +1134,7 @@ const Attrib::Blob &bytecode(unsigned int index) const {
     }
         
 const GCollectionKey &CannedPath(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x9c19e56f, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x9c19e56f, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -1126,39 +1142,39 @@ const GCollectionKey &CannedPath(unsigned int index) const {
     }
         
 unsigned int Num_CannedPath() const {
-            return this->Get(0x9c19e56f).GetLength();
+            return Get(0x9c19e56f).GetLength();
         }
 
 const char*CollectionName() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->CollectionName;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->CollectionName;
 }
 
-const float &TOD(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x9dff3c3d, index));
+const float &TOD() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x9dff3c3d, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const bool &RankPlayersByDistance(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x9e7a18ce, index));
+const bool &RankPlayersByDistance() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x9e7a18ce, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const bool &CatchUpOverride(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0x9eb17c1e, index));
+const bool &CatchUpOverride() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x9eb17c1e, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const UMath::Vector3 &Position(unsigned int index) const {
-        const UMath::Vector3 *resultptr = reinterpret_cast<const UMath::Vector3 *>(this->GetAttributePointer(0x9f743a0e, index));
+const UMath::Vector3 &Position() const {
+        const UMath::Vector3 *resultptr = reinterpret_cast<const UMath::Vector3 *>(GetAttributePointer(0x9f743a0e, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const UMath::Vector3 *>(DefaultDataArea(sizeof(UMath::Vector3)));
         }
@@ -1166,7 +1182,7 @@ const UMath::Vector3 &Position(unsigned int index) const {
     }
         
 const GCollectionKey &RaceList(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x9f914008, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0x9f914008, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -1174,51 +1190,51 @@ const GCollectionKey &RaceList(unsigned int index) const {
     }
         
 unsigned int Num_RaceList() const {
-            return this->Get(0x9f914008).GetLength();
+            return Get(0x9f914008).GetLength();
         }
 
-const GCollectionKey &templateref(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xa0697302, index));
+const GCollectionKey &templateref() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xa0697302, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const float &MaxPursuitRep(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xa07ae814, index));
+const float &MaxPursuitRep() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xa07ae814, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const bool &AllowInvisibleSpawn(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xa1009a23, index));
+const bool &AllowInvisibleSpawn() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xa1009a23, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &CatchUpSpread(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0xa18a07ba, index));
+const EA::Reflection::Text &CatchUpSpread() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0xa18a07ba, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const bool &NeverInQuickRace(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xa4e6fcfd, index));
+const bool &NeverInQuickRace() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xa4e6fcfd, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &sender(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xa590a98b, index));
+const GCollectionKey &sender() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xa590a98b, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -1226,7 +1242,7 @@ const GCollectionKey &sender(unsigned int index) const {
     }
         
 const GCollectionKey &ExcludedCharacters(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xa5c5d25b, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xa5c5d25b, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -1234,35 +1250,35 @@ const GCollectionKey &ExcludedCharacters(unsigned int index) const {
     }
         
 unsigned int Num_ExcludedCharacters() const {
-            return this->Get(0xa5c5d25b).GetLength();
+            return Get(0xa5c5d25b).GetLength();
         }
 
-const GCollectionKey &Boss(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xa5f39dc7, index));
+const GCollectionKey &Boss() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xa5f39dc7, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &IconModelName(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0xa62cb4f0, index));
+const EA::Reflection::Text &IconModelName() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0xa62cb4f0, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &EventID(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0xa78403ec, index));
+const EA::Reflection::Text &EventID() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0xa78403ec, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &DebugJumpPoint(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xa7e9e456, index));
+const GCollectionKey &DebugJumpPoint() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xa7e9e456, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -1270,7 +1286,7 @@ const GCollectionKey &DebugJumpPoint(unsigned int index) const {
     }
         
 const GCollectionKey &WorldRaces(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xa7ef40ef, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xa7ef40ef, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -1278,67 +1294,67 @@ const GCollectionKey &WorldRaces(unsigned int index) const {
     }
         
 unsigned int Num_WorldRaces() const {
-            return this->Get(0xa7ef40ef).GetLength();
+            return Get(0xa7ef40ef).GetLength();
         }
 
-const bool &FreeRoamOnly(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xaa0135e9, index));
+const bool &FreeRoamOnly() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xaa0135e9, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const int &TokenValue(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xaa10914c, index));
+const int &TokenValue() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xaa10914c, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const float &CashReward(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xab0179f4, index));
+const float &CashReward() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xab0179f4, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &racefinish(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xb0a24adc, index));
+const GCollectionKey &racefinish() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xb0a24adc, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const float &MinimumAIPerformance(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xb1ece070, index));
+const float &MinimumAIPerformance() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xb1ece070, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const bool &FireOnExit(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xb2ac32c7, index));
+const bool &FireOnExit() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xb2ac32c7, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const bool &AvailableQR(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xb39ed8c3, index));
+const bool &AvailableQR() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xb39ed8c3, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const float &IconModelBounceRate(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xb4985085, index));
+const float &IconModelBounceRate() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xb4985085, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -1346,7 +1362,7 @@ const float &IconModelBounceRate(unsigned int index) const {
     }
         
 const GCollectionKey &JumpRaces(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xb671abb6, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xb671abb6, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -1354,19 +1370,19 @@ const GCollectionKey &JumpRaces(unsigned int index) const {
     }
         
 unsigned int Num_JumpRaces() const {
-            return this->Get(0xb671abb6).GetLength();
+            return Get(0xb671abb6).GetLength();
         }
 
-const EA::Reflection::Text &OutroMovie(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0xb70268c0, index));
+const EA::Reflection::Text &OutroMovie() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0xb70268c0, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const bool &RollingStart(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xb809d19c, index));
+const bool &RollingStart() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xb809d19c, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
@@ -1374,7 +1390,7 @@ const bool &RollingStart(unsigned int index) const {
     }
         
 const GCollectionKey &BaselineUnlocks(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xbaf89280, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xbaf89280, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -1382,171 +1398,171 @@ const GCollectionKey &BaselineUnlocks(unsigned int index) const {
     }
         
 unsigned int Num_BaselineUnlocks() const {
-            return this->Get(0xbaf89280).GetLength();
+            return Get(0xbaf89280).GetLength();
         }
 
-const int &SMSRivalChallenge(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xbb30c804, index));
+const int &SMSRivalChallenge() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xbb30c804, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &MilestoneChallenge(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xbcd98737, index));
+const GCollectionKey &MilestoneChallenge() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xbcd98737, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &RacerName(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0xbeab64c5, index));
+const EA::Reflection::Text &RacerName() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0xbeab64c5, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &PlayerCarType(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0xc0eeb909, index));
+const EA::Reflection::Text &PlayerCarType() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0xc0eeb909, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &EntryActivity(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xc27dfda8, index));
+const GCollectionKey &EntryActivity() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xc27dfda8, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const int &OutroMessageID(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xc36e3532, index));
+const int &OutroMessageID() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xc36e3532, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const float &ThreshholdSpeed(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xc3710777, index));
+const float &ThreshholdSpeed() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xc3710777, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &UpgradePartName(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0xc385f75d, index));
+const EA::Reflection::Text &UpgradePartName() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0xc385f75d, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const bool &QuickRaceUnlocked(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xc4db4e71, index));
+const bool &QuickRaceUnlocked() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xc4db4e71, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const float &RingTime(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xc516e9c2, index));
+const float &RingTime() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xc516e9c2, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &distance(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xc5857615, index));
+const float &distance() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xc5857615, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const int &TrafficLevel(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xc64bc341, index));
+const int &TrafficLevel() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xc64bc341, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &CellChallengeRace(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xc686cd34, index));
+const GCollectionKey &CellChallengeRace() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xc686cd34, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &GateActivity(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xc795b8d4, index));
+const GCollectionKey &GateActivity() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xc795b8d4, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &Region(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0xcb01e454, index));
+const EA::Reflection::Text &Region() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0xcb01e454, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &SpeedTrapCamera(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0xcbd7adf9, index));
+const EA::Reflection::Text &SpeedTrapCamera() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0xcbd7adf9, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const bool &IconModelScale(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xcd41cd40, index));
+const bool &IconModelScale() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xcd41cd40, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const bool &OneShot(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xce4261ac, index));
+const bool &OneShot() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xce4261ac, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const int &UpgradeLevel(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xd267facc, index));
+const int &UpgradeLevel() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xd267facc, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const int &RequiredBounty(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xd3657d92, index));
+const int &RequiredBounty() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xd3657d92, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const int &nitrouslevel(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xd4797aa8, index));
+const int &nitrouslevel() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xd4797aa8, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
@@ -1554,7 +1570,7 @@ const int &nitrouslevel(unsigned int index) const {
     }
         
 const GCollectionKey &BossRaces(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xd5a174aa, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xd5a174aa, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -1562,99 +1578,99 @@ const GCollectionKey &BossRaces(unsigned int index) const {
     }
         
 unsigned int Num_BossRaces() const {
-            return this->Get(0xd5a174aa).GetLength();
+            return Get(0xd5a174aa).GetLength();
         }
 
-const EA::Reflection::Text &AutoSpawnTriggerType(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0xd5c7e9c3, index));
+const EA::Reflection::Text &AutoSpawnTriggerType() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0xd5c7e9c3, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const float &IconModelBounceAmp(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xd5f4eda2, index));
+const float &IconModelBounceAmp() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xd5f4eda2, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const int &RequiredRacesWon(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xd617fedc, index));
+const int &RequiredRacesWon() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xd617fedc, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &CopSpawnType(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0xd686d61e, index));
+const EA::Reflection::Text &CopSpawnType() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0xd686d61e, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const float &CashValue(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xd8baa07b, index));
+const float &CashValue() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xd8baa07b, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const int &LocalizationTag(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xdb89ab5c, index));
+const int &LocalizationTag() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xdb89ab5c, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const int &CopDensity(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xdbc08d32, index));
+const int &CopDensity() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xdbc08d32, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &RestartActivity(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xdc44bd08, index));
+const GCollectionKey &RestartActivity() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xdc44bd08, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &SpawnPoint(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xddf411f5, index));
+const GCollectionKey &SpawnPoint() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xddf411f5, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &IntroNIS(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0xdec18d3e, index));
+const EA::Reflection::Text &IntroNIS() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0xdec18d3e, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const float &StartPercent(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xe0d01505, index));
+const float &StartPercent() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xe0d01505, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &MaxCarRep(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xe10fb7a3, index));
+const float &MaxCarRep() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xe10fb7a3, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -1662,7 +1678,7 @@ const float &MaxCarRep(unsigned int index) const {
     }
         
 const EA::Reflection::Text &Barriers(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0xe244f26b, index));
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0xe244f26b, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
@@ -1670,75 +1686,75 @@ const EA::Reflection::Text &Barriers(unsigned int index) const {
     }
         
 unsigned int Num_Barriers() const {
-            return this->Get(0xe244f26b).GetLength();
+            return Get(0xe244f26b).GetLength();
         }
 
-const int &EntryCellCallID(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xe2d26232, index));
+const int &EntryCellCallID() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xe2d26232, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const int &ForceHeatLevel(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xe4211f4f, index));
+const int &ForceHeatLevel() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xe4211f4f, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &racestart(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xe43b2ccc, index));
+const GCollectionKey &racestart() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xe43b2ccc, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const bool &Persistent(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xe4542e9b, index));
+const bool &Persistent() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xe4542e9b, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &actionscript(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xe62083d0, index));
+const GCollectionKey &actionscript() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xe62083d0, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
         return *resultptr;
     }
         
-const float &MaxOpenWorldHeat(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xe8c24416, index));
+const float &MaxOpenWorldHeat() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xe8c24416, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const bool &InitiallyUnlocked(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xea855eaf, index));
+const bool &InitiallyUnlocked() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xea855eaf, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const bool &DoPhotofinish(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xede6017e, index));
+const bool &DoPhotofinish() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xede6017e, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &engagetrigger(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xf05931ab, index));
+const GCollectionKey &engagetrigger() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xf05931ab, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -1746,7 +1762,7 @@ const GCollectionKey &engagetrigger(unsigned int index) const {
     }
         
 const GCollectionKey &CopSpawnPoints(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xf124b151, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xf124b151, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -1754,11 +1770,11 @@ const GCollectionKey &CopSpawnPoints(unsigned int index) const {
     }
         
 unsigned int Num_CopSpawnPoints() const {
-            return this->Get(0xf124b151).GetLength();
+            return Get(0xf124b151).GetLength();
         }
 
-const bool &IsMarkerRace(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xf2fe50d7, index));
+const bool &IsMarkerRace() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xf2fe50d7, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
@@ -1766,7 +1782,7 @@ const bool &IsMarkerRace(unsigned int index) const {
     }
         
 const GCollectionKey &BarrierExemptions(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xf380286b, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xf380286b, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -1774,75 +1790,75 @@ const GCollectionKey &BarrierExemptions(unsigned int index) const {
     }
         
 unsigned int Num_BarrierExemptions() const {
-            return this->Get(0xf380286b).GetLength();
+            return Get(0xf380286b).GetLength();
         }
 
-const EA::Reflection::Text &ZoneType(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0xf3ea3201, index));
+const EA::Reflection::Text &ZoneType() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0xf3ea3201, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const int &TimeBonus(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xf52cc30e, index));
+const int &TimeBonus() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xf52cc30e, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &IntroMovie(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0xf572ede8, index));
+const EA::Reflection::Text &IntroMovie() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0xf572ede8, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const float &MaxHeatLevel(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xf5a03629, index));
+const float &MaxHeatLevel() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xf5a03629, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const int &MedalBonusGold(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xf5e43987, index));
+const int &MedalBonusGold() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xf5e43987, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
         return *resultptr;
     }
         
-const EA::Reflection::Text &CarType(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0xf833c06f, index));
+const EA::Reflection::Text &CarType() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0xf833c06f, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const float &RivalBestTime(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xf9120d73, index));
+const float &RivalBestTime() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xf9120d73, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &PlayerCarPerformance(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xfb42c0b9, index));
+const float &PlayerCarPerformance() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xfb42c0b9, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &ForceStartPosition(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xfb84be75, index));
+const GCollectionKey &ForceStartPosition() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xfb84be75, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -1850,7 +1866,7 @@ const GCollectionKey &ForceStartPosition(unsigned int index) const {
     }
         
 const GCollectionKey &UnlockRaces(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xfc8995c8, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xfc8995c8, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -1858,19 +1874,19 @@ const GCollectionKey &UnlockRaces(unsigned int index) const {
     }
         
 unsigned int Num_UnlockRaces() const {
-            return this->Get(0xfc8995c8).GetLength();
+            return Get(0xfc8995c8).GetLength();
         }
 
-const EA::Reflection::Text &CarTypeLowMem(unsigned int index) const {
-        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(this->GetAttributePointer(0xfd3cf790, index));
+const EA::Reflection::Text &CarTypeLowMem() const {
+        const EA::Reflection::Text *resultptr = reinterpret_cast<const EA::Reflection::Text *>(GetAttributePointer(0xfd3cf790, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const EA::Reflection::Text *>(DefaultDataArea(sizeof(EA::Reflection::Text)));
         }
         return *resultptr;
     }
         
-const GCollectionKey &racestartReverse(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xfd945479, index));
+const GCollectionKey &racestartReverse() const {
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xfd945479, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -1878,7 +1894,7 @@ const GCollectionKey &racestartReverse(unsigned int index) const {
     }
         
 const GCollectionKey &RandomSpawnTriggers(unsigned int index) const {
-        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0xfdfe1c3e, index));
+        const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(GetAttributePointer(0xfdfe1c3e, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
         }
@@ -1886,19 +1902,19 @@ const GCollectionKey &RandomSpawnTriggers(unsigned int index) const {
     }
         
 unsigned int Num_RandomSpawnTriggers() const {
-            return this->Get(0xfdfe1c3e).GetLength();
+            return Get(0xfdfe1c3e).GetLength();
         }
 
-const bool &BossRace(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xff5ee5d6, index));
+const bool &BossRace() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0xff5ee5d6, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }
         return *resultptr;
     }
         
-const int &ReputationRequired(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xffd69c94, index));
+const int &ReputationRequired() const {
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xffd69c94, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
@@ -1906,7 +1922,7 @@ const int &ReputationRequired(unsigned int index) const {
     }
         
 const unsigned int &message_id() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->message_id;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->message_id;
 }
 
 };

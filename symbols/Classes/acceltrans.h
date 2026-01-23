@@ -24,17 +24,29 @@ unsigned int AccelFromIdle_PEAK_RPM; // offset 0x8, size 0x4
 float AccelFromIdle_PEAK_VOL; // offset 0xc, size 0x4
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "acceltrans");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "acceltrans");
 }
 
 acceltrans(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 acceltrans(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+acceltrans(const acceltrans &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+acceltrans(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~acceltrans() {}
@@ -47,12 +59,16 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0xff77f451;
 }
 
-const unsigned int &AccelFromIdle_INTERUPT_T(unsigned int index) const {
-        const unsigned int *resultptr = reinterpret_cast<const unsigned int *>(this->GetAttributePointer(0x49fb8ce5, index));
+const unsigned int &AccelFromIdle_INTERUPT_T() const {
+        const unsigned int *resultptr = reinterpret_cast<const unsigned int *>(GetAttributePointer(0x49fb8ce5, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const unsigned int *>(DefaultDataArea(sizeof(unsigned int)));
         }
@@ -60,19 +76,19 @@ const unsigned int &AccelFromIdle_INTERUPT_T(unsigned int index) const {
     }
         
 const unsigned int &AccelFromIdle_PEAK_T() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->AccelFromIdle_PEAK_T;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->AccelFromIdle_PEAK_T;
 }
 
 const unsigned int &AccelFromIdle_RESUME_T() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->AccelFromIdle_RESUME_T;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->AccelFromIdle_RESUME_T;
 }
 
 const unsigned int &AccelFromIdle_PEAK_RPM() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->AccelFromIdle_PEAK_RPM;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->AccelFromIdle_PEAK_RPM;
 }
 
 const float &AccelFromIdle_PEAK_VOL() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->AccelFromIdle_PEAK_VOL;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->AccelFromIdle_PEAK_VOL;
 }
 
 };

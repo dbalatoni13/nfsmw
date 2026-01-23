@@ -25,17 +25,29 @@ unsigned int Vol_Blowoff1; // offset 0x18, size 0x4
 unsigned int Vol_Blowoff2; // offset 0x1c, size 0x4
 };
 
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "turbosfx");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "turbosfx");
 }
 
 turbosfx(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 turbosfx(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+turbosfx(const turbosfx &src) : Instance(src) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
+}
+
+turbosfx(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    SetDefaultLayout(sizeof(_LayoutStruct));
 }
 
 ~turbosfx() {}
@@ -48,16 +60,20 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0x55624a85;
 }
 
 const Attrib::StringKey &BankName() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->BankName;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->BankName;
 }
 
-const float &Leak_Rate(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xfdf3bc20, index));
+const float &Leak_Rate() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xfdf3bc20, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -65,19 +81,19 @@ const float &Leak_Rate(unsigned int index) const {
     }
         
 const unsigned int &Vol_Spool() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Vol_Spool;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Vol_Spool;
 }
 
 const float &ChargeTime() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->ChargeTime;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->ChargeTime;
 }
 
 const unsigned int &Vol_Blowoff1() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Vol_Blowoff1;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Vol_Blowoff1;
 }
 
 const unsigned int &Vol_Blowoff2() const {
-    return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->Vol_Blowoff2;
+    return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->Vol_Blowoff2;
 }
 
 };

@@ -45,11 +45,19 @@ struct chassis : Instance {
 
     chassis(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-        this->SetDefaultLayout(sizeof(_LayoutStruct));
+        SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     chassis(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-        this->SetDefaultLayout(sizeof(_LayoutStruct));
+        SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
+    chassis(const chassis &src) : Instance(src) {
+        SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
+    chassis(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+        SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     ~chassis() {}
@@ -60,6 +68,10 @@ struct chassis : Instance {
 
     void Change(Key collectionkey) {
         Change(FindCollection(ClassKey(), collectionkey));
+    }
+
+    void Change(const RefSpec &refspec) {
+        Instance::Change(refspec);
     }
 
     static Key ClassKey() {

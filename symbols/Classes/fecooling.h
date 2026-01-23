@@ -17,20 +17,29 @@ namespace Attrib {
 namespace Gen {
 
 struct fecooling : Instance {
-struct _LayoutStruct {
-};
-
+void *operator new(size_t bytes) {
+    return Attrib::Alloc(bytes, "fecooling");
+}
+            
 void operator delete(void *ptr, size_t bytes) {
     Attrib::Free(ptr, bytes, "fecooling");
 }
 
 fecooling(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
     : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    
 }
 
 fecooling(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-    this->SetDefaultLayout(sizeof(_LayoutStruct));
+    
+}
+
+fecooling(const fecooling &src) : Instance(src) {
+    
+}
+
+fecooling(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+    
 }
 
 ~fecooling() {}
@@ -43,92 +52,96 @@ void Change(Key collectionkey) {
     Change(FindCollection(ClassKey(), collectionkey));
 }
 
+void Change(const RefSpec &refspec) {
+    Instance::Change(refspec);
+}
+
 static Key ClassKey() {
     return 0x5d417978;
 }
 
-const float &NewPaint(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x072ca287, index));
+const float &NewPaint() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x072ca287, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &NewDecal(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x1f71a77c, index));
+const float &NewDecal() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x1f71a77c, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &NewRim(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x4192719a, index));
+const float &NewRim() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x4192719a, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &NewWindowTint(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x550807a7, index));
+const float &NewWindowTint() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x550807a7, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &NewVinyl(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x55b9418b, index));
+const float &NewVinyl() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x55b9418b, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &NewHood(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x678a0c91, index));
+const float &NewHood() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x678a0c91, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &NewRimPaint(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xa27de5ff, index));
+const float &NewRimPaint() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xa27de5ff, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &NewNumbers(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xa9ef0056, index));
+const float &NewNumbers() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xa9ef0056, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &NewBodyKit(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xe52d0fb6, index));
+const float &NewBodyKit() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xe52d0fb6, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &NewSpoiler(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xe5d29656, index));
+const float &NewSpoiler() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xe5d29656, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
         
-const float &NewRoofScoop(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xf8be97ef, index));
+const float &NewRoofScoop() const {
+        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xf8be97ef, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
