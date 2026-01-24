@@ -654,6 +654,37 @@ void AIActionRace::CheckOffPath(float dT) {
     }
 }
 
+float AIActionRace::UpdateNavPos(float lookAheadDistance, const UMath::Vector3 &direction) {
+    if (GetAI()->GetDriveToNav()->HitDeadEnd()) {
+        return 0.0f;
+    }
+    WRoadNav *road_nav = GetAI()->GetDriveToNav();
+    UMath::Vector3 navPos = road_nav->GetPosition();
+    UMath::Vector3 carPosition = mIRigidBody->GetPosition();
+    UMath::Vector3 carToNav = UVector3(navPos) - carPosition;
+    float nav_distance = UMath::Length(carToNav);
+    UMath::Vector3 navForwardVector = road_nav->GetForwardVector();
+    UMath::Normalize(navForwardVector);
+
+    const UMath::Vector3 &N = carToNav;
+    const UMath::Vector3 &F = navForwardVector;
+    float a = F.x * F.x + F.z * F.z;
+    float b = 2 * (N.x * F.x + N.z * F.z);
+    float c = N.x * N.x + N.z * N.z - lookAheadDistance * lookAheadDistance;
+
+    float square_term = b * b - 4 * a * c;
+    float denominator = 2 * a;
+    if ((square_term >= 0.0f) && (denominator > 1e-05f)) {
+        float inc_distance = (-b + bSqrt(square_term)) / denominator;
+        if (inc_distance > 0.0f) {
+            road_nav->IncNavPosition(inc_distance, direction, lookAheadDistance);
+        }
+    }
+
+    road_nav->UpdateOccludedPosition(true);
+    return nav_distance;
+}
+
 void AIActionRace::Update(float dT) {}
 
 void AIActionRace::OnDebugDraw() {}

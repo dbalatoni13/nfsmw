@@ -1,6 +1,7 @@
 #ifndef MISC_TABLE_H
 #define MISC_TABLE_H
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -8,7 +9,6 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include <cstddef>
-
 
 // total size: 0x10
 class TableBase {
@@ -96,6 +96,7 @@ class Average : public AverageBase {
   public:
     Average();
     Average(int slots);
+    ~Average();
 
     void Init(int slots);
 
@@ -204,6 +205,55 @@ template <typename T> class tGraph {
   private:
     GraphEntry<T> *GraphData; // offset 0x0, size 0x4
     int NumEntries;           // offset 0x4, size 0x4
+};
+
+// total size: 0x84
+struct PidError {
+    // void *operator new(unsigned int size, void *ptr) {}
+
+    // void operator delete(void *mem, void *ptr) {}
+
+    // void *operator new(unsigned int size) {}
+
+    void operator delete(void *mem, size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+
+    void *operator new(size_t size, const char *name) {
+        return gFastMem.Alloc(size, name);
+    }
+
+    // void operator delete(void *mem, const char *name) {}
+
+    // void operator delete(void *mem, unsigned int size, const char *name) {}
+
+    PidError(int nIntegralTerms, int nDerivativeTerms, float f_frequency)
+        : aTimes(nIntegralTerms),        //
+          aIntegral(nIntegralTerms),     //
+          aDerivative(nDerivativeTerms), //
+          fFrequency(1.0f),              //
+          fCurrentError(0.0f),           //
+          fPreviousError(0.0f) {}
+
+    ~PidError() {}
+
+    // float GetError() {}
+
+    // float GetErrorIntegral() {}
+
+    // float GetErrorDerivative() {}
+
+    // float GetErrorInstaneousDerivative() {}
+
+  private:
+    Average aTimes;       // offset 0x0, size 0x28
+    Average aIntegral;    // offset 0x28, size 0x28
+    Average aDerivative;  // offset 0x50, size 0x28
+    float fFrequency;     // offset 0x78, size 0x4
+    float fCurrentError;  // offset 0x7C, size 0x4
+    float fPreviousError; // offset 0x80, size 0x4
 };
 
 #endif

@@ -162,11 +162,17 @@ struct WRoadSegment {
 
     // bool IsEntrance() const {}
 
-    // bool CopsXorTraffic() const {}
+    bool CopsXorTraffic() const {
+        return fFlags & (1 << 5);
+    }
 
-    // bool IsTrafficAllowed() const {}
+    bool IsTrafficAllowed() const {
+        return !(fFlags & 2);
+    }
 
-    // bool ShouldCopsConsider() const {}
+    bool ShouldCopsConsider() const {
+        return IsTrafficAllowed() ^ CopsXorTraffic();
+    }
 
     // bool RaceRouteForward() const {}
 

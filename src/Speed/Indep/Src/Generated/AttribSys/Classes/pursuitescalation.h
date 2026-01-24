@@ -16,20 +16,18 @@ namespace Attrib {
 namespace Gen {
 
 struct pursuitescalation : Instance {
-    struct _LayoutStruct {};
+    void *operator new(size_t bytes) {
+        return Attrib::Alloc(bytes, "pursuitescalation");
+    }
 
     void operator delete(void *ptr, size_t bytes) {
         Attrib::Free(ptr, bytes, "pursuitescalation");
     }
 
     pursuitescalation(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
-        : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-        this->SetDefaultLayout(sizeof(_LayoutStruct));
-    }
+        : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {}
 
-    pursuitescalation(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-        this->SetDefaultLayout(sizeof(_LayoutStruct));
-    }
+    pursuitescalation(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {}
 
     ~pursuitescalation() {}
 

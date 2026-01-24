@@ -20,6 +20,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
+#include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
@@ -106,6 +107,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     WRoadNav *GetFutureRoad() override;
     const UMath::Vector3 &GetFarFuturePosition() override;
     const UMath::Vector3 &GetFarFutureDirection() override;
+    const UMath::Vector3 &GetSeekAheadPosition() override;
 
     const UMath::Vector3 &GetDriveTarget() const override {
         return mDest;
@@ -342,9 +344,9 @@ class AIVehiclePid : public AIVehicle {
     void OnSteering(float dT) override;
 
   private:
-    struct PidError *pBodyError;                                  // offset 0x754, size 0x4
-    struct PidError *pHeadingError;                               // offset 0x758, size 0x4
-    struct PidError *pVelocityError;                              // offset 0x75C, size 0x4
+    PidError *pBodyError;                                         // offset 0x754, size 0x4
+    PidError *pHeadingError;                                      // offset 0x758, size 0x4
+    PidError *pVelocityError;                                     // offset 0x75C, size 0x4
     struct AdaptivePIDControllerComplicated *pSteeringController; // offset 0x760, size 0x4
     struct AdaptivePIDControllerSimple *pThrottleBrakeController; // offset 0x764, size 0x4
     float mThrottleBrake;                                         // offset 0x768, size 0x4
@@ -473,7 +475,7 @@ class AIPerpVehicle : public AIVehiclePid, public IPerpetrator, public ICause, p
     GRacerInfo *pRacerInfo;                                   // offset 0x7C4, size 0x4
     float fBaseSkill;                                         // offset 0x7C8, size 0x4
     float fGlueSkill;                                         // offset 0x7CC, size 0x4
-    struct PidError *pGlueError;                              // offset 0x7D0, size 0x4
+    PidError *pGlueError;                                     // offset 0x7D0, size 0x4
     float fGlueTimer;                                         // offset 0x7D4, size 0x4
     float fGlueOutput;                                        // offset 0x7D8, size 0x4
     float LastTrafficHitTime;                                 // offset 0x7DC, size 0x4

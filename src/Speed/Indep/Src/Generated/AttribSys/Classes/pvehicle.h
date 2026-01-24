@@ -74,6 +74,10 @@ struct pvehicle : Instance {
         unsigned char TrafficEngType;   // offset 0x4d, size 0x1
     };
 
+    void *operator new(size_t bytes) {
+        return Attrib::Alloc(bytes, "pvehicle");
+    }
+
     void operator delete(void *ptr, size_t bytes) {
         Attrib::Free(ptr, bytes, "pvehicle");
     }

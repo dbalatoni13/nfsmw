@@ -17,12 +17,13 @@
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ICause.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ICheater.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRBVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
-#include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
@@ -1029,4 +1030,89 @@ const UMath::Vector3 &AIVehicle::GetFarFutureDirection() {
     return mFarFutureDirection;
 }
 
+const UMath::Vector3 &AIVehicle::GetSeekAheadPosition() {
+    UpdateRoads();
+
+    float timeSinceThink = Sim::GetTime() - mSeekAheadTimer;
+    if (timeSinceThink > 0.33f) {
+        IPerpetrator *iperp;
+        bool bRaceRouteOnly = false;
+
+        if (GetOwner()->QueryInterface(&iperp) && iperp->IsRacing()) {
+            bRaceRouteOnly = true;
+        }
+
+        WRoadNav nav;
+        nav.InitFromOtherNav(GetCurrentRoad(), false);
+
+        nav.SetRaceFilter(bRaceRouteOnly);
+        nav.SetLaneType(WRoadNav::kLaneCop);
+        nav.SetCopFilter(!bRaceRouteOnly && mCurrentRoad.GetSegment()->ShouldCopsConsider());
+        nav.SetPathType(WRoadNav::kPathCop);
+        nav.SetNavType(WRoadNav::kTypeDirection);
+
+        if (nav.IsValid()) {
+            const float kSeekAheadTime = 7.8f;
+            const float kSeekAheadOffset = 0.4f;
+            mSeekAheadTimer = Sim::GetTime();
+            float seekaheadtime = kSeekAheadTime;
+            if (mPursuit && mPursuit->GetIsAJerk()) {
+                seekaheadtime *= kSeekAheadOffset;
+            }
+
+            UMath::Vector3 velocity;
+            GetSimable()->GetLinearVelocity(velocity);
+            float speed = UMath::Length(velocity);
+            float inc_distance = UMath::Min(500.0f, speed * seekaheadtime + 8.0f);
+
+            nav.IncNavPosition(inc_distance, UMath::Vector3::kZero, 0.0f);
+            mSeekAheadPosition = nav.GetPosition();
+        }
+    }
+    return mSeekAheadPosition;
+}
+
 void AIVehicle::OnDebugDraw() {}
+
+AIPerpVehicle::AIPerpVehicle(const BehaviorParams &bp)
+    : AIVehiclePid(bp, 0.5f, mStagger, Sim::TASK_FRAME_FIXED), //
+      IPerpetrator(bp.fowner),                                 //
+      ICause(bp.fowner),                                       //
+      ICheater(bp.fowner),                                     //
+      LastTrafficHitTime(-1.0f),                               //
+      mHeat(0.0f),                                             //
+      mCostToState(0),                                         //
+      mPendingRepPointsNormal(0),                              //
+      mPendingRepPointsFromCopDestruction(0),                  //
+      mHiddenFromCars(false),                                  //
+      mHiddenFromHelicopters(false),                           //
+      mWasInRaceEventLastHeatUpdate(false),                    //
+      mHiddenZoneTimer(0.0f),                                  //
+      mWasInZoneLastUpdate(false),                             //
+      mPursuitZoneCheck(0),                                    //
+      pRacerInfo(nullptr),                                     //
+      fBaseSkill(0.5f),                                        //
+      fGlueSkill(0.0f),                                        //
+      fGlueOutput(0.0f),                                       //
+      m911CallTimer(0.0f) {
+    mStagger += 0.5f;
+    if (mStagger > 1.0f) {
+        mStagger = 0.0f;
+    }
+    // default
+    mPursuitEscalationAttrib = new Attrib::Gen::pursuitescalation(0xeec2271a, 0, nullptr);
+    mPursuitLevelAttrib = nullptr;
+    mPursuitSupportAttrib = nullptr;
+    SetHeat(1.0f);
+    GetOwner()->SetCausality(GetInstanceHandle(), 0.0f);
+    mHiddenZoneLatchTime = 0.05f;
+    pGlueError = new (nullptr) PidError(10, 5, 1.0f); // TODO name
+    fGlueTimer = bRandom(1.0f);
+}
+
+AIPerpVehicle::~AIPerpVehicle() override {
+    delete mPursuitLevelAttrib;
+    delete mPursuitSupportAttrib;
+    delete mPursuitEscalationAttrib;
+    delete pGlueError;
+}
