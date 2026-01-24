@@ -25,7 +25,7 @@ struct _KeyedNode {
     void *Ref;        // offset 0x4, size 0x4
 };
 
-template <typename T, std::size_t Size> class _Storage : public FixedVector<T, Size, 16> {
+template <typename T, int Size> class _Storage : public FixedVector<T, Size, 16> {
   public:
     _Storage() {}
 
@@ -55,7 +55,7 @@ template <typename T> class Singleton {
     static T *mInstance;
 };
 
-template <typename Handle, typename T, std::size_t Size> class Instanceable {
+template <typename Handle, typename T, int Size> class Instanceable {
   public:
     Instanceable() {
         _mHandle = ++_mHNext;
@@ -90,7 +90,7 @@ template <typename Handle, typename T, std::size_t Size> class Instanceable {
     uintptr_t _mHandle; // offset 0x0, size 0x4
 };
 
-template <typename T, std::size_t Size> class GarbageNode {
+template <typename T, int Size> class GarbageNode {
   public:
     class Collector {
       public:

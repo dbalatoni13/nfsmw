@@ -70,7 +70,7 @@ template <typename T, int U> class Listable {
     static List _mTable;
 };
 
-template <typename T, std::size_t ListSize, typename Enum, std::size_t EnumMax> class ListableSet {
+template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class ListableSet {
   public:
     typedef T value_type;
     typedef value_type *pointer;
@@ -115,15 +115,13 @@ template <typename T, std::size_t ListSize, typename Enum, std::size_t EnumMax> 
     };
 
   public:
-    typedef void (*ForEachFunc_t)(iterator);
-
     static int Count(Enum idx);
     static iterator First(Enum idx);
     static iterator Last(Enum idx);
 
-    static void ForEach(Enum idx, ForEachFunc_t f) {
+    template <typename Functor> static Functor ForEach(Enum idx, Functor f) {
         List &l = _mLists._buckets[idx];
-        std::for_each(l.begin(), l.end(), f);
+        return std::for_each(l.begin(), l.end(), f);
     }
 
     static const List &GetList(Enum idx) {
