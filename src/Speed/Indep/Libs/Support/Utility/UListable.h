@@ -15,7 +15,7 @@
 namespace UTL {
 namespace Collections {
 
-template <typename T, std::size_t U> class Listable {
+template <typename T, int U> class Listable {
   public:
     typedef T value_type;
     typedef value_type *pointer;

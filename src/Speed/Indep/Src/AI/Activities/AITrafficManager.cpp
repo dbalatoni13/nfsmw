@@ -50,6 +50,7 @@ AITrafficManager::AITrafficManager(Sim::Param params)
       mPattern((Attrib::Collection *)nullptr, 0, nullptr) {
     MakeDebugable(DBG_AI);
     bMemSet(mPatternTimer, 0, sizeof(mPatternTimer));
+    mNewInstanceTimer = 0;
     // default
     SetTrafficPattern(0xeec2271a);
     mVehicles.clear();
