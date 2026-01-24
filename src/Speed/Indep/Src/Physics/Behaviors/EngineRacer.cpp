@@ -776,7 +776,7 @@ void EngineRacer::SetDifferentialAngularVelocity(float w) {
 
 // Credits: Brawltendo
 float EngineRacer::CalcSpeedometer(float rpm, unsigned int gear) const {
-    Physics::Tunings *tunings = GetVehicle()->GetTunings();
+    const Physics::Tunings *tunings = GetVehicle()->GetTunings();
     return Physics::Info::Speedometer(mTranyInfo, mEngineInfo, mTireInfo, rpm, (GearID)gear, tunings);
 }
 
@@ -1045,7 +1045,7 @@ void EngineRacer::OnTaskSimulate(float dT) {
         return;
     }
 
-    Physics::Tunings *tunings = GetVehicle()->GetTunings();
+    const Physics::Tunings *tunings = GetVehicle()->GetTunings();
     bool is_staging = GetVehicle()->IsStaging();
     mThrottle = DoThrottle();
     mNOSBoost = DoNos(tunings, dT, iinput->GetControls().fNOS);

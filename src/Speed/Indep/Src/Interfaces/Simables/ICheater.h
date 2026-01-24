@@ -18,8 +18,7 @@ class ICheater : public UTL::COM::IUnknown {
 
     virtual ~ICheater() {}
 
-  public:
-    virtual float GetCatchupCheat();
+    virtual float GetCatchupCheat() const;
 };
 
 #endif
