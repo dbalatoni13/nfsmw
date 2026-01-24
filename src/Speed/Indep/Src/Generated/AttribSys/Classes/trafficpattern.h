@@ -22,9 +22,16 @@ struct TrafficPatternRecord {
 namespace Attrib {
 namespace Gen {
 
+// total size: 0x14
 struct trafficpattern : Instance {
+    typedef const char *TypeOf_CollectionName;
+    typedef float TypeOf_SpawnTime;
+    typedef float TypeOf_SpeedHighway;
+    typedef float TypeOf_SpeedStreet;
+    typedef struct TrafficPatternRecord TypeOf_Vehicles;
+
     struct _LayoutStruct {
-        char CollectionName[4]; // offset 0x0, size 0x4
+        TypeOf_CollectionName CollectionName; // offset 0x0, size 0x4
     };
 
     const trafficpattern &operator=(const Instance &rhs);
@@ -85,7 +92,7 @@ struct trafficpattern : Instance {
         return this->Get(0x94e3c795).GetLength();
     }
 
-    const char *CollectionName() const {
+    const TypeOf_CollectionName &CollectionName() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->CollectionName;
     }
 
@@ -97,10 +104,10 @@ struct trafficpattern : Instance {
         return *resultptr;
     }
 
-    const float &SpawnTime(unsigned int index) const {
+    const TypeOf_SpawnTime &SpawnTime(unsigned int index) const {
         const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xbf2fdb5c, index));
         if (!resultptr) {
-            resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
+            resultptr = reinterpret_cast<const TypeOf_SpawnTime *>(DefaultDataArea(sizeof(TypeOf_SpawnTime)));
         }
         return *resultptr;
     }
