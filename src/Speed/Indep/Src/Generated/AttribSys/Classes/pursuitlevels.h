@@ -100,6 +100,10 @@ struct pursuitlevels : Instance {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
+    pursuitlevels(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+        SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
     ~pursuitlevels() {}
 
     void Change(const Collection *c) {

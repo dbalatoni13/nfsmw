@@ -195,6 +195,10 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
 
     void SetGoal(const UCrc32 &name);
 
+    AIGoal *GetGoal() const {
+        return mCurrentGoal;
+    }
+
     // IVehicleAI
     // bool IsCurrentAction(const UCrc32 &name) override {}
 
@@ -237,7 +241,9 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     virtual void ResetInternals();
     void ClearGoal();
 
-    void UpdateSpawnTimer(float dT) {}
+    void UpdateSpawnTimer(float dT) {
+        mLastSpawnTime += dT;
+    }
 
     void UpdateRoadNavInfo();
     void UpdateReverseOverride(float dT);

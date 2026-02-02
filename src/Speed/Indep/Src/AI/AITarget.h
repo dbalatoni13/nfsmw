@@ -2,6 +2,7 @@
 #define AI_AITARGET_H
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+#include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
@@ -57,12 +58,24 @@ class AITarget : public bTNode<AITarget> {
         return mValid;
     }
 
+    float GetDistTo() const {
+        return mDistTo;
+    }
+
+    const UMath::Vector3 &GetDirTo() const {
+        return mDirTo;
+    }
+
     template <typename T> bool QueryInterface(T **out) {
         if (mTargetSimable) {
             return mTargetSimable->QueryInterface(out);
         }
         *out = nullptr;
         return false;
+    }
+
+    bool IsTarget(const UTL::COM::IUnknown *object) const {
+        return UTL::COM::ComparePtr(mTargetSimable, object);
     }
 
   private:

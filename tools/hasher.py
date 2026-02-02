@@ -12,6 +12,7 @@ import argparse
 from ctypes import c_uint32
 from pathlib import Path
 import re
+from StringHash32 import StringHash32
 
 HEADER_PREFIX = """#ifndef HEADER_NAME_H
 #define HEADER_NAME_H
@@ -23,7 +24,8 @@ HEADER_PREFIX = """#ifndef HEADER_NAME_H
 """
 
 include_pattern = re.compile(r'\s*#\s*include "([^"]+)"')
-hash_pattern = re.compile(r"BINHASH\(([^)]+)\)")
+binhash_pattern = re.compile(r"BINHASH\(([^)]+)\)")
+vlthash_pattern = re.compile(r"VLTHASH\(([^)]+)\)")
 
 
 def bHash(string: str):
@@ -42,25 +44,36 @@ def generate_header(in_file: Path) -> str:
     out_text = ""
 
     header_name = (
-        "GENERATED_BINHASH_"
+        "GENERATED_HASH_"
         + in_file.name.split(".")[0].replace("/", "_").replace(".", "_").upper()
     )
 
     out_text = HEADER_PREFIX.replace("HEADER_NAME", header_name)
 
-    strings: list[str] = []
+    binhash_strings: list[str] = []
+    vlthash_strings: list[str] = []
 
     sourcelist_content = in_file.read_text(encoding="UTF-8")
     for file_match in include_pattern.finditer(sourcelist_content):
         source_file_path = Path("src") / file_match.group(1)
         source_file_content = source_file_path.read_text(encoding="UTF-8")
-        for hash_match in hash_pattern.finditer(source_file_content):
+        # TODO headers
+        for hash_match in binhash_pattern.finditer(source_file_content):
             # spaces are encoded as $$ because macro names can't contain spaces
-            strings.append(hash_match.group(1))
+            binhash_strings.append(hash_match.group(1))
+        for hash_match in vlthash_pattern.finditer(source_file_content):
+            # spaces are encoded as $$ because macro names can't contain spaces
+            vlthash_strings.append(hash_match.group(1))
 
-    for string in strings:
+    for string in binhash_strings:
         normalized = string.replace("$$", " ")
         out_text += f"#define BINHASH_{string} ({hex(bHash(normalized))})\n"
+
+    out_text += "\n"
+
+    for string in vlthash_strings:
+        normalized = string.replace("$$", " ")
+        out_text += f"#define VLTHASH_{string} ({hex(StringHash32(normalized))})\n"
 
     out_text += "\n"
     out_text += "#endif"

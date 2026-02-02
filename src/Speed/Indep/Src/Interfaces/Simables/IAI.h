@@ -327,8 +327,8 @@ class IPursuitAI : public UTL::COM::IUnknown {
     virtual void StartPatrol();
     virtual void StartRoadBlock();
     virtual void StartFlee();
-    virtual void SetInPursuit(bool inPursuit) {}
-    virtual bool GetInPursuit() {}
+    virtual void SetInPursuit(bool inPursuit);
+    virtual bool GetInPursuit();
     virtual void StartPursuit(AITarget *target, ISimable *itargetSimable);
     virtual void DoInPositionGoal();
     virtual void EndPursuit();

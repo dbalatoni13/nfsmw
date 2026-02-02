@@ -35,6 +35,7 @@
 #include "Speed/Indep/Src/World/WRoadElem.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 const char *GetCaffeineLayerName(int driver_class) {
@@ -1110,9 +1111,164 @@ AIPerpVehicle::AIPerpVehicle(const BehaviorParams &bp)
     fGlueTimer = bRandom(1.0f);
 }
 
-AIPerpVehicle::~AIPerpVehicle() override {
+AIPerpVehicle::~AIPerpVehicle() {
     delete mPursuitLevelAttrib;
     delete mPursuitSupportAttrib;
     delete mPursuitEscalationAttrib;
     delete pGlueError;
+}
+
+void AIPerpVehicle::SetRacerInfo(GRacerInfo *info) {
+    pRacerInfo = info;
+    ComputeSkill();
+}
+
+void AIPerpVehicle::Set911CallTime(float time) {
+    m911CallTimer = bMax(time, m911CallTimer);
+}
+
+void AIPerpVehicle::OnBehaviorChange(const UCrc32 &mechanic) {
+    AIVehicle::OnBehaviorChange(mechanic);
+}
+
+bool AIPerpVehicle::IsPartiallyHidden(float &HowHidden) const {
+    if (mHiddenZoneTimer > 0.07f) {
+        HowHidden = UMath::Min(1.0f, mHiddenZoneTimer / mHiddenZoneLatchTime);
+        return true;
+    }
+    HowHidden = 0.0f;
+    return false;
+}
+
+void AIPerpVehicle::SetCostToState(int cts) {
+    mCostToState = cts;
+}
+
+int AIPerpVehicle::GetCostToState() const {
+    return mCostToState;
+}
+
+void AIPerpVehicle::SetHeat(float heat) {
+    int current = static_cast<int>(mHeat);
+    int now = static_cast<int>(heat);
+    bool useRaceHeatNow = false;
+
+    if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing &&
+        (!GRaceStatus::Get().GetRaceParameters() || !GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace())) {
+        useRaceHeatNow = true;
+    }
+
+    bool raceEventStatusChanged = useRaceHeatNow != mWasInRaceEventLastHeatUpdate;
+    mWasInRaceEventLastHeatUpdate = useRaceHeatNow;
+
+    if (now != current || raceEventStatusChanged) {
+        delete mPursuitLevelAttrib;
+        mPursuitLevelAttrib = nullptr;
+
+        delete mPursuitSupportAttrib;
+        mPursuitSupportAttrib = nullptr;
+    }
+
+    if (!mPursuitLevelAttrib) {
+        int idx = now - 1;
+
+        if (useRaceHeatNow) {
+            mPursuitLevelAttrib = new Attrib::Gen::pursuitlevels(mPursuitEscalationAttrib->racetable(idx), 0, nullptr);
+            mPursuitSupportAttrib = new Attrib::Gen::pursuitsupport(mPursuitEscalationAttrib->supportracetable(idx), 0, nullptr);
+        } else {
+            mPursuitLevelAttrib = new Attrib::Gen::pursuitlevels(mPursuitEscalationAttrib->heattable(idx), 0, nullptr);
+            mPursuitSupportAttrib = new Attrib::Gen::pursuitsupport(mPursuitEscalationAttrib->supporttable(idx), 0, nullptr);
+        }
+    }
+
+    mHeat = heat;
+}
+
+float AIPerpVehicle::GetSkill() const {
+    return bClamp(fBaseSkill + fGlueSkill, 0.0f, 1.0f);
+}
+
+static const float Tweak_CatchupCheatSkill[3] = {0.5f, 0.5f, 0.5f};
+Table CatchupCheatTable(Tweak_CatchupCheatSkill, 3, 0.0f, 1.0f);
+
+float AIPerpVehicle::GetCatchupCheat() const {
+    return UMath::Clamp(fBaseSkill + fGlueSkill - 1.0f, 0.0f, 1.0f) * CatchupCheatTable.GetValue(fBaseSkill);
+}
+
+float AIPerpVehicle::GetHeat() const {
+    return mHeat;
+}
+
+void AIPerpVehicle::AddCostToState(int cost) {
+    if (!GRaceStatus::Exists()) {
+        return;
+    }
+    IPursuit *ip = GetPursuit();
+    if (ip) {
+        bool challengeRace = false;
+        GRaceParameters *parms = GRaceStatus::Get().GetRaceParameters();
+        if (parms) {
+            challengeRace = parms->GetRaceType() == GRace::kRaceType_Challenge;
+        }
+        if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career || challengeRace) {
+            mCostToState += cost;
+            ip->NotifyPropertyDamaged(cost);
+        }
+    }
+}
+
+void AIPerpVehicle::AddToPendingRepPointsNormal(int amount) {
+    if (GRaceStatus::Exists()) {
+        if (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming || GRaceStatus::IsChallengeRace()) {
+            mPendingRepPointsNormal += amount;
+        }
+    }
+}
+
+void AIPerpVehicle::AddToPendingRepPointsFromCopDestruction(int amount) {
+    if (GRaceStatus::Exists()) {
+        if (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming || GRaceStatus::IsChallengeRace()) {
+            mPendingRepPointsFromCopDestruction += amount;
+        }
+    }
+}
+
+bool AIPerpVehicle::IsRacing() const {
+    if (GetRacerInfo() && GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing) {
+        AITarget *target = GetTarget();
+        return target && target->IsValid();
+    }
+    return false;
+}
+
+float AIPerpVehicle::GetPercentRaceComplete() const {
+    if (pRacerInfo) {
+        return pRacerInfo->GetPctRaceComplete();
+    }
+    return 0.0f;
+}
+
+bool AIPerpVehicle::IsBeingPursued() const {
+    ISimable *mysimobj = GetSimable();
+    const IPursuit::List &Pursuits = IPursuit::GetList();
+
+    for (IPursuit::List::const_iterator Pusuit_iter = Pursuits.begin(); Pusuit_iter != Pursuits.end(); ++Pusuit_iter) {
+        IPursuit *curpursuit = *Pusuit_iter;
+        AITarget *curtarget = curpursuit->GetTarget();
+        if (curtarget) {
+            const ISimable *simobj = curtarget->GetSimable();
+            if (simobj == mysimobj) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool AIPerpVehicle::OnClearCausality(float start_time) {
+    return false;
+}
+
+float AIPerpVehicle::GetLastTrafficHitTime() const {
+    return LastTrafficHitTime;
 }

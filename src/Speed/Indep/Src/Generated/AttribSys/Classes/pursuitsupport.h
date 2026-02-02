@@ -64,20 +64,20 @@ namespace Attrib {
 namespace Gen {
 
 struct pursuitsupport : Instance {
-    struct _LayoutStruct {};
+    void *operator new(size_t bytes) {
+        return Attrib::Alloc(bytes, "pursuitsupport");
+    }
 
     void operator delete(void *ptr, size_t bytes) {
         Attrib::Free(ptr, bytes, "pursuitsupport");
     }
 
     pursuitsupport(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
-        : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-        this->SetDefaultLayout(sizeof(_LayoutStruct));
-    }
+        : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {}
 
-    pursuitsupport(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-        this->SetDefaultLayout(sizeof(_LayoutStruct));
-    }
+    pursuitsupport(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {}
+
+    pursuitsupport(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {}
 
     ~pursuitsupport() {}
 
