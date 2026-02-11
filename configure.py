@@ -239,6 +239,15 @@ if config.platform == Platform.GC_WII:
         f"-DVERSION_{config.version}",
     ]
 
+    config.context_defines = [
+        "EA_PLATFORM_GAMECUBE",
+        "EA_REGION_AMERICA",
+        "GEKKO",
+        "_USE_MATH_DEFINES",
+        "__SN__",
+        "SN_TARGET_NGC",
+    ]
+
     # Debug flags
     if args.debug:
         cflags_base.append("-DDEBUG=1")
@@ -313,6 +322,13 @@ elif config.platform == Platform.X360:
         f"/DVERSION_{config.version}",
     ]
 
+    config.context_defines = [
+        "EA_PLATFORM_XENON",
+        "EA_REGION_GERMANY",
+        "_USE_MATH_DEFINES",
+        "_WIN32",
+    ]
+
     cflags_game = [
         *cflags_base,
         "/DLUA_NUMBER=float",
@@ -347,6 +363,13 @@ elif config.platform == Platform.PS2:
         f"-I build/{config.version}/include",
         f"-DBUILD_VERSION={version_num}",
         # f"-DVERSION_{config.version}", # TODO it's broken because of the dash?
+    ]
+
+    config.context_defines = [
+        "EA_PLATFORM_PLAYSTATION2",
+        "EA_REGION_AMERICA",
+        "EA_BUILD_A124",
+        "_NOTHREADS",
     ]
 
     # Debug flags

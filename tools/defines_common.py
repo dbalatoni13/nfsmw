@@ -5,13 +5,5 @@ VERSIONS = [
 ]
 
 # Include paths
-cflags_includes = [
-    # C/C++ stdlib
-    "-i src/Speed/Indep/Libs/Support/stlgc",
-    "-i src/Speed/GameCube/Libs/stl/STLport-4.5/stlport",
-    "-i src/Speed/GameCube/bWare/GameCube/bWare/GameCube/SN/include",
-    "-i include",
-    "-i src/Speed/GameCube/bWare/GameCube/dolphinsdk/include",
-    "-i ./",
-    "-i src",
-]
+# We don't need it because project.py passes them
+cflags_includes = []

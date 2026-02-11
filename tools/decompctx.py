@@ -29,8 +29,8 @@ default_arguments: list[str] = [
     # Strip out left-over whitespace
     # "--compress",
     # Put a newline before each line directive
-    # "--line-directive",
-    # "\n#line",
+    "--line-directive",
+    "\n#line",
 ]
 
 default_defines: dict[str, str] = {
@@ -86,10 +86,6 @@ passthrough_defines: list[str] = [
     # STLport
     # Namespaces are excluded when __cplusplus is undefined, but because we
     # pass it through, pcpp never executes the define for _STLP_HAS_NO_NAMESPACES
-    # My declares:
-    "_USE_MATH_DEFINES",
-    "GEKKO",
-    "EA_PLATFORM_GAMECUBE",
 ]
 
 src_dir = "src"
