@@ -321,7 +321,7 @@ class IPursuitAI : public UTL::COM::IUnknown {
     IPursuitAI(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   protected:
-    ~IPursuitAI() override;
+    ~IPursuitAI() override {}
 
   public:
     virtual void StartPatrol();

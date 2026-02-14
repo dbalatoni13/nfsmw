@@ -22,6 +22,7 @@ void VU0_v3add(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 
 void VU0_v3scale(const UMath::Vector3 &a, const float scaleby, UMath::Vector3 &result);
 void VU0_v3scale(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &result);
 void VU0_v3scaleadd(const UMath::Vector3 &a, const float scaleby, const UMath::Vector3 &b, UMath::Vector3 &result);
+void VU0_v3addscale(const UMath::Vector3 &a, const UMath::Vector3 &b, const float scaleby /* f1 */, UMath::Vector3 &result);
 void VU0_v3sub(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &result);
 float VU0_v3dotprod(const UMath::Vector3 &a, const UMath::Vector3 &b);
 float VU0_v3distancesquare(const UMath::Vector3 &p1, const UMath::Vector3 &p2);

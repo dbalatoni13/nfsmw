@@ -7,10 +7,10 @@
 
 // total size: 0x4
 class Timer {
-    int PackedTime; // offset 0x0, size 0x4
-
   public:
-    Timer() {}
+    Timer() {
+        this->PackedTime = 0;
+    }
 
     Timer(float seconds) {
         this->PackedTime = static_cast<int>(seconds * 4000);
@@ -24,7 +24,10 @@ class Timer {
 
     int operator!=(const Timer &t) const {}
 
-    Timer &operator=(const Timer &t) {}
+    Timer &operator=(const Timer &t) {
+        this->PackedTime = t.PackedTime;
+        return *this;
+    }
 
     int operator>(const Timer &t) const {
         return this->PackedTime > t.PackedTime;
@@ -68,9 +71,14 @@ class Timer {
         return this->PackedTime / 4000.0f;
     }
 
-    int GetPackedTime() {}
+    int GetPackedTime() {
+        return this->PackedTime;
+    }
 
     void SetPackedTime(int packed_time) {}
+
+  private:
+    int PackedTime; // offset 0x0, size 0x4
 };
 
 extern int WorldTimeFrames;

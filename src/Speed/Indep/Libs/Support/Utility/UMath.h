@@ -228,6 +228,13 @@ inline void ScaleAddxyz(const Vector4 &a, const float s, const Vector4 &b, Vecto
     VU0_v4scaleaddxyz(a, s, b, r);
 }
 
+inline void AddScale(const Vector3 &a, const Vector3 &b, const float s, Vector3 &r) {
+#ifdef EA_PLATFORM_XENON
+#else
+    VU0_v3addscale(a, b, s, r);
+#endif
+}
+
 inline void Sub(const Vector3 &a, const Vector3 &b, Vector3 &r) {
 #ifdef EA_PLATFORM_XENON
     r.x = a.x - b.x;

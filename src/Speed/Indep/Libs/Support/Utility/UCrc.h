@@ -49,9 +49,11 @@ class UCrc32 {
         return *this;
     }
 
-    // const  UCrc32 &operator=(const char *from) {
-    //     UCrc32 tmp;
-    // }
+    const UCrc32 &operator=(const char *from) {
+        UCrc32 tmp(from);
+        mCRC = tmp.mCRC;
+        return *this;
+    }
 
     bool operator<(const UCrc32 &from) const {
         return mCRC < from.mCRC;
@@ -78,12 +80,20 @@ inline bool operator!=(const UCrc32 &a, const UCrc32 &b) {
     return a.GetValue() != b.GetValue();
 }
 
-// inline bool operator==(const UCrc32 &a, const char *b) {}
+inline bool operator==(const UCrc32 &a, const char *b) {
+    return a == UCrc32(b);
+}
 
-// inline bool operator!=(const UCrc32 &a, const char *b) {}
+inline bool operator!=(const UCrc32 &a, const char *b) {
+    return a != UCrc32(b);
+}
 
-// inline bool operator==(const char *a, const UCrc32 &b) {}
+inline bool operator==(const char *a, const UCrc32 &b) {
+    return UCrc32(a) == b;
+}
 
-// inline bool operator!=(const char *a, const UCrc32 &b) {}
+inline bool operator!=(const char *a, const UCrc32 &b) {
+    return UCrc32(a) != b;
+}
 
 #endif
