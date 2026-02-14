@@ -17,7 +17,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 
-// TODO move
+// TODO move?
 enum eLaneSelection {
     SELECT_CENTER_LANE = 0,
     SELECT_CURRENT_LANE = 1,
@@ -33,7 +33,7 @@ struct IPursuit;
 
 class IRoadBlock : public UTL::COM::IUnknown, public UTL::Collections::Listable<IRoadBlock, 8> {
   protected:
-    virtual ~IRoadBlock();
+    ~IRoadBlock() override;
 
   public:
     static HINTERFACE _IHandle() {
@@ -71,7 +71,7 @@ class IRoadBlock : public UTL::COM::IUnknown, public UTL::Collections::Listable<
 
 class IVehicleAI : public UTL::COM::IUnknown {
   protected:
-    virtual ~IVehicleAI() {}
+    ~IVehicleAI() override {}
 
   public:
     static HINTERFACE _IHandle() {
@@ -147,7 +147,7 @@ class ITrafficAI : public UTL::COM::IUnknown {
     ITrafficAI(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   protected:
-    virtual ~ITrafficAI();
+    ~ITrafficAI() override {}
 
   public:
     virtual void StartDriving(float speed);

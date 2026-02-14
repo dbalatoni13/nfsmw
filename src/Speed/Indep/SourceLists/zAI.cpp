@@ -39,3 +39,7 @@
 #include "Speed/Indep/Src/AI/Common/AIVehicle.cpp"
 
 #include "Speed/Indep/Src/AI/Common/AIVehicleCopCar.cpp"
+
+#include "Speed/Indep/Src/AI/Common/AIVehicleRacecar.cpp"
+
+#include "Speed/Indep/Src/AI/Common/AIVehicleTraffic.cpp"

@@ -164,7 +164,7 @@ class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet
     virtual bool SetVehicleOnGround(const UMath::Vector3 &resetPos, const UMath::Vector3 &initialVec) = 0;
     virtual void ForceStopOn(char forceStopBits) = 0;
     virtual void ForceStopOff(char forceStopBits) = 0;
-    virtual bool GetForceStop() = 0;
+    virtual char GetForceStop() = 0;
     virtual bool InShock() const = 0;
     virtual bool IsDestroyed() const = 0;
     virtual void Activate() = 0;

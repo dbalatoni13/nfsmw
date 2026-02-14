@@ -7,6 +7,7 @@
 
 #include "AIAvoidable.h"
 #include "AIGoal.h"
+#include "AdaptivePIDController.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/AI/AIAvoidable.h"
@@ -212,7 +213,9 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
 
     // EventSequencer::IEngine *GetEngine() const {}
 
-    // ITransmission *GetTransmission() const {}
+    ITransmission *GetTransmission() const {
+        return mITransmission;
+    }
 
     // IChassis *GetSuspension() const;
 
@@ -350,13 +353,13 @@ class AIVehiclePid : public AIVehicle {
     void OnSteering(float dT) override;
 
   private:
-    PidError *pBodyError;                                         // offset 0x754, size 0x4
-    PidError *pHeadingError;                                      // offset 0x758, size 0x4
-    PidError *pVelocityError;                                     // offset 0x75C, size 0x4
-    struct AdaptivePIDControllerComplicated *pSteeringController; // offset 0x760, size 0x4
-    struct AdaptivePIDControllerSimple *pThrottleBrakeController; // offset 0x764, size 0x4
-    float mThrottleBrake;                                         // offset 0x768, size 0x4
-    float mPrevDesiredSpeed;                                      // offset 0x76C, size 0x4
+    PidError *pBodyError;                                  // offset 0x754, size 0x4
+    PidError *pHeadingError;                               // offset 0x758, size 0x4
+    PidError *pVelocityError;                              // offset 0x75C, size 0x4
+    AdaptivePIDControllerComplicated *pSteeringController; // offset 0x760, size 0x4
+    AdaptivePIDControllerSimple *pThrottleBrakeController; // offset 0x764, size 0x4
+    float mThrottleBrake;                                  // offset 0x768, size 0x4
+    float mPrevDesiredSpeed;                               // offset 0x76C, size 0x4
 };
 
 class AIPerpVehicle : public AIVehiclePid, public IPerpetrator, public ICause, public ICheater {

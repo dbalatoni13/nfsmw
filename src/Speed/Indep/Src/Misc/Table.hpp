@@ -1,11 +1,12 @@
 #ifndef MISC_TABLE_H
 #define MISC_TABLE_H
 
-#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+#include "Speed/Indep/Src/Misc/Replay.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include <cstddef>
@@ -79,9 +80,11 @@ class AverageBase {
     void *Allocate(unsigned int size, const char *name);
     void DeAllocate(void *ptr, unsigned int size, const char *name);
 
-    bool FullySampled() {}
+    // bool FullySampled() {}
 
-    unsigned char GetNumSamples() {}
+    unsigned char GetNumSamples() {
+        return nSamples;
+    }
 
     virtual void Recalculate() {}
 
@@ -213,7 +216,9 @@ struct PidError {
 
     // void operator delete(void *mem, void *ptr) {}
 
-    // void *operator new(unsigned int size) {}
+    void *operator new(size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
 
     void operator delete(void *mem, size_t size) {
         if (mem) {
@@ -233,17 +238,32 @@ struct PidError {
         : aTimes(nIntegralTerms),        //
           aIntegral(nIntegralTerms),     //
           aDerivative(nDerivativeTerms), //
-          fFrequency(1.0f),              //
+          fFrequency(f_frequency),       //
           fCurrentError(0.0f),           //
           fPreviousError(0.0f) {}
 
     ~PidError() {}
 
+    void Record(float fError, float fTime, bool bZeroDerivative, bool bZeroIntegral);
+    void DoSnapshot(ReplaySnapshot *snapshot);
+    void Reset(float fCalibrate);
+    void ResetIntegral(float fCalibrate);
+    void ResetDerivative(float fCalibrate);
+
     // float GetError() {}
 
-    // float GetErrorIntegral() {}
+    float GetErrorIntegral() {
+        int n_samples = aIntegral.GetNumSamples();
+        if (n_samples != 0) {
+            return (aIntegral.GetTotal() * (float)(int)aIntegral.GetNumSamples()) / (fFrequency * aTimes.GetTotal());
+        } else {
+            return 0.0f;
+        }
+    }
 
-    // float GetErrorDerivative() {}
+    float GetErrorDerivative() {
+        return aDerivative.GetValue();
+    }
 
     // float GetErrorInstaneousDerivative() {}
 
