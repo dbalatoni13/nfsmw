@@ -58,7 +58,9 @@ class ALIGN_16 AIAvoidable {
     virtual ~AIAvoidable();
     virtual bool OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep);
 
-    // const Neighbors &GetAvoidableNeighbors() {}
+    const Neighbors &GetAvoidableNeighbors() {
+        return mNeighbors;
+    }
 
     // void SetAvoidableObject(UTL::COM::IUnknown *pUnk) {}
 

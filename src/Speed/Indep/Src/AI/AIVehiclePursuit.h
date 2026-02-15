@@ -54,76 +54,124 @@ class AIVehiclePursuit : public AIVehiclePid, public IPursuitAI {
     virtual void UpdateSiren(float dT);
 
     // Overrides: IPursuitAI
-    void SetInPursuit(bool inPursuit) override {}
+    void SetInPursuit(bool inPursuit) override {
+        mInPursuit = inPursuit;
+    }
 
     // Overrides: IPursuitAI
-    // bool GetInPursuit() override {}
+    bool GetInPursuit() override {
+        return mInPursuit;
+    }
 
     // Overrides: IPursuitAI
-    void SetInFormation(bool inFormation) override {}
+    void SetInFormation(bool inFormation) override {
+        mInFormation = inFormation;
+    }
 
     // Overrides: IPursuitAI
-    // bool GetInFormation() override {}
+    bool GetInFormation() override {
+        return mInFormation;
+    }
 
     // Overrides: IPursuitAI
-    void SetInPosition(bool inPosition) override {}
+    void SetInPosition(bool inPosition) override {
+        mInPosition = inPosition;
+    }
 
     // Overrides: IPursuitAI
-    // bool GetInPosition() override {}
+    bool GetInPosition() override {
+        return mInPosition;
+    }
 
     // Overrides: IPursuitAI
-    void SetPursuitOffset(const UMath::Vector3 &offset) override {}
+    void SetPursuitOffset(const UMath::Vector3 &offset) override {
+        mPursuitOffset = offset;
+    }
 
     // Overrides: IPursuitAI
-    // const UMath::Vector3 &GetPursuitOffset() const override {}
+    const UMath::Vector3 &GetPursuitOffset() const override {
+        return mPursuitOffset;
+    }
 
     // Overrides: IPursuitAI
-    void SetInPositionOffset(const UMath::Vector3 &offset) override {}
+    void SetInPositionOffset(const UMath::Vector3 &offset) override {
+        mInPositionOffset = offset;
+    }
 
     // Overrides: IPursuitAI
-    // const UMath::Vector3 &GetInPositionOffset() const override {}
+    const UMath::Vector3 &GetInPositionOffset() const override {
+        return mInPositionOffset;
+    }
 
     // Overrides: IPursuitAI
-    void SetInPositionGoal(const UCrc32 &ipg) override {}
+    void SetInPositionGoal(const UCrc32 &ipg) override {
+        mInPositionGoal = ipg;
+    }
 
     // Overrides: IPursuitAI
-    // const UCrc32 &GetInPositionGoal() const override {}
+    const UCrc32 &GetInPositionGoal() const override {
+        return mInPositionGoal;
+    }
 
     // Overrides: IPursuitAI
-    void SetBreaker(bool breaker) override {}
+    void SetBreaker(bool breaker) override {
+        mBreaker = breaker;
+    }
 
     // Overrides: IPursuitAI
-    // bool GetBreaker() override {}
+    bool GetBreaker() override {
+        return mBreaker;
+    }
 
     // Overrides: IPursuitAI
-    void SetChicken(bool chicken) override {}
+    void SetChicken(bool chicken) override {
+        mChicken = chicken;
+    }
 
     // Overrides: IPursuitAI
-    // bool GetChicken() override {}
+    bool GetChicken() override {
+        return mChicken;
+    }
 
     // Overrides: IPursuitAI
-    void SetDamagedByPerp(bool damaged) override {}
+    void SetDamagedByPerp(bool damaged) override {
+        mDamagedByPerp = damaged;
+    }
 
     // Overrides: IPursuitAI
-    // bool GetDamagedByPerp() override {}
+    bool GetDamagedByPerp() override {
+        return mDamagedByPerp;
+    }
 
     // Overrides: IPursuitAI
-    // SirenState GetSirenState() const override {}
+    SirenState GetSirenState() const override {
+        return mSirenState;
+    }
 
     // Overrides: IPursuitAI
-    // float GetTimeSinceTargetSeen() const override {}
+    float GetTimeSinceTargetSeen() const override {
+        return mTimeSinceTargetSeen;
+    }
 
     // Overrides: IPursuitAI
-    void ZeroTimeSinceTargetSeen() override {}
+    void ZeroTimeSinceTargetSeen() override {
+        mTimeSinceTargetSeen = 0.0f;
+    }
 
     // Overrides: IPursuitAI
-    // const UCrc32 &GetSupportGoal() const override {}
+    const UCrc32 &GetSupportGoal() const override {
+        return mSupportGoal;
+    }
 
     // Overrides: IPursuitAI
-    void SetWithinEngagementRadius() override {}
+    void SetWithinEngagementRadius() override {
+        mWithinEngagementRadius = true;
+    }
 
     // Overrides: IPursuitAI
-    // bool WasWithinEngagementRadius() const override {}
+    bool WasWithinEngagementRadius() const override {
+        return mWithinEngagementRadius;
+    }
 
   private:
     static float mStagger; // size: 0x4, address: 0x8041540C

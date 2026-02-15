@@ -47,3 +47,5 @@
 #include "Speed/Indep/Src/AI/Common/AIVehiclePursuit.cpp"
 
 #include "Speed/Indep/Src/AI/Common/AIVehicleHelicopter.cpp"
+
+#include "Speed/Indep/Src/AI/Common/AdaptivePIDController.cpp"

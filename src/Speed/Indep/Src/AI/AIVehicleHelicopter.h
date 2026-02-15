@@ -54,39 +54,63 @@ class AIVehicleHelicopter : public AIVehiclePursuit, public IAIHelicopter {
     void OnDriving(float dT) override;
 
     // Overrides: IAIHelicopter
-    // float GetDesiredHeightOverDest() const override {}
+    float GetDesiredHeightOverDest() const override {
+        return mHeight;
+    }
 
     // Overrides: IAIHelicopter
-    void SetDesiredHeightOverDest(const float height) override {}
+    void SetDesiredHeightOverDest(const float height) override {
+        mHeight = height;
+    }
 
     // Overrides: IAIHelicopter
-    void SetLookAtPosition(UMath::Vector3 la) override {}
+    void SetLookAtPosition(UMath::Vector3 la) override {
+        mLookAtPosition = la;
+    }
 
     // Overrides: IAIHelicopter
-    UMath::Vector3 GetLookAtPosition() const override {}
+    UMath::Vector3 GetLookAtPosition() const override {
+        return mLookAtPosition;
+    }
 
     // Overrides: IAIHelicopter
-    bool StrafeToDestIsSet() const override {}
+    bool StrafeToDestIsSet() const override {
+        return mStrafeToDest;
+    }
 
     // Overrides: IAIHelicopter
-    void SetStrafeToDest(bool strafe) override {}
+    void SetStrafeToDest(bool strafe) override {
+        mStrafeToDest = strafe;
+    }
 
-    virtual const HeliSheetCoordinate &GetHeliSheetCoord() const {}
-
-    // Overrides: IAIHelicopter
-    // float GetFuelTimeRemaining() override {}
-
-    // Overrides: IAIHelicopter
-    void SetShadowScale(float s) override {}
+    virtual const HeliSheetCoordinate &GetHeliSheetCoord() const {
+        return mHeliSheetCoord;
+    }
 
     // Overrides: IAIHelicopter
-    // float GetShadowScale() override {}
+    float GetFuelTimeRemaining() override {
+        return mHeliFuelTimeRemaining;
+    }
 
     // Overrides: IAIHelicopter
-    void SetDustStormIntensity(float d) override {}
+    void SetShadowScale(float s) override {
+        mShadowScale = s;
+    }
 
     // Overrides: IAIHelicopter
-    // float GetDustStormIntensity() override {}
+    float GetShadowScale() override {
+        return mShadowScale;
+    }
+
+    // Overrides: IAIHelicopter
+    void SetDustStormIntensity(float d) override {
+        mDustStormIntensity = d;
+    }
+
+    // Overrides: IAIHelicopter
+    float GetDustStormIntensity() override {
+        return mDustStormIntensity;
+    }
 
   private:
     UMath::Vector3 mDestinationVelocity;          // offset 0x7D8, size 0xC

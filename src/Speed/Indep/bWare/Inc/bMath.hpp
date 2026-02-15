@@ -200,6 +200,10 @@ inline float bAngToRad(short angle) {}
 
 inline float bAngToDeg(short angle) {}
 
+inline int bEqual(float a, float b, float epsilon) {
+    return bAbs(a - b) <= epsilon;
+}
+
 struct bVector2 {
     // total size: 0x8
     float x; // offset 0x0, size 0x4

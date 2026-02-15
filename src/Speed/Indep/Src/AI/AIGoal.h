@@ -31,9 +31,21 @@ class AIGoal : public UTL::COM::Factory<ISimable *, AIGoal, UCrc32> {
 
     // void operator delete(void *mem, size_t size, const char *name) {}
 
-    // UCrc32 GetActionName() {}
+    UCrc32 GetActionName() {
+        if (mCurrentAction) {
+            return mCurrentAction->GetActionName();
+        } else {
+            return (const char *)nullptr;
+        }
+    }
 
-    // bool IsCurrentAction(const UCrc32 name) {}
+    bool IsCurrentAction(const UCrc32 name) {
+        if (mCurrentAction) {
+            return name == mCurrentAction->GetActionName();
+        } else {
+            return false;
+        }
+    }
 
   protected:
     AIGoal(ISimable *isimable);

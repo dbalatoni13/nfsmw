@@ -60,19 +60,25 @@ template <typename T> class tTable : public TableBase {
 
 class AverageBase {
   public:
-    static void *operator new(std::size_t size, void *ptr) {}
+    // void *operator new(std::size_t size, void *ptr) {}
 
-    static void operator delete(void *mem, void *ptr) {}
+    // void operator delete(void *mem, void *ptr) {}
 
-    static void *operator new(std::size_t size) {}
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
 
-    static void operator delete(void *mem, std::size_t size) {}
+    void operator delete(void *mem, std::size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
 
-    static void *operator new(std::size_t size, const char *name) {}
+    // void *operator new(std::size_t size, const char *name) {}
 
-    static void operator delete(void *mem, const char *name) {}
+    // void operator delete(void *mem, const char *name) {}
 
-    static void operator delete(void *mem, std::size_t size, const char *name) {}
+    // void operator delete(void *mem, std::size_t size, const char *name) {}
 
     AverageBase(int size, int slots);
     virtual ~AverageBase() {}
@@ -250,7 +256,9 @@ struct PidError {
     void ResetIntegral(float fCalibrate);
     void ResetDerivative(float fCalibrate);
 
-    // float GetError() {}
+    float GetError() {
+        return fCurrentError;
+    }
 
     float GetErrorIntegral() {
         int n_samples = aIntegral.GetNumSamples();
