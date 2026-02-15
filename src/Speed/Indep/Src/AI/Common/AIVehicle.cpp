@@ -457,7 +457,7 @@ void AIVehicle::DoNOS() {
             if ((desiredspeed - myspeed) > (isnos ? KPH2MPS(10.0f) : KPH2MPS(60.0f))) {
                 IRigidBody *ibody;
                 if (GetVehicle()->QueryInterface(&ibody)) {
-                    UMath::Vector3 driveoff = UVector3(GetDriveTarget()) - GetVehicle()->GetPosition();
+                    UMath::Vector3 driveoff = GetDriveTarget() - GetVehicle()->GetPosition();
                     float drivelength = UMath::Length(driveoff);
                     float align = UMath::Dot(driveoff, ibody->GetLinearVelocity());
                     drivelength = UMath::Length(driveoff);
@@ -837,7 +837,7 @@ float AIVehicle::GetPathDistanceRemaining() {
                     UMath::Vector3 target_direction;
                     UMath::Unit(target->GetDirection(), target_direction);
 
-                    UMath::Vector3 car_to_target = UVector3(target_position) - car_position;
+                    UMath::Vector3 car_to_target = target_position - car_position;
                     distance = bMax(0.0f, UMath::Dot(car_to_target, target_direction));
                 }
             }
@@ -845,7 +845,7 @@ float AIVehicle::GetPathDistanceRemaining() {
             UMath::Vector3 nav_forward;
             UMath::Unit(road_nav->GetForwardVector(), nav_forward);
 
-            UMath::Vector3 car_to_nav = UVector3(road_nav->GetPosition()) - car_position;
+            UMath::Vector3 car_to_nav = road_nav->GetPosition() - car_position;
             distance = UMath::Dot(car_to_nav, nav_forward) + path_distance_remaining;
         }
     }

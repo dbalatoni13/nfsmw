@@ -49,3 +49,7 @@
 #include "Speed/Indep/Src/AI/Common/AIVehicleHelicopter.cpp"
 
 #include "Speed/Indep/Src/AI/Common/AdaptivePIDController.cpp"
+
+#include "Speed/Indep/Src/AI/Common/AITarget.cpp"
+
+#include "Speed/Indep/Src/AI/Common/AISteer.cpp"

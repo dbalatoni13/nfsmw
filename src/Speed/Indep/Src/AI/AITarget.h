@@ -1,16 +1,16 @@
 #ifndef AI_AITARGET_H
 #define AI_AITARGET_H
 
-#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
-#include "Speed/Indep/Libs/Support/Utility/UCOM.h"
-#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+#include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
 #include <types.h>
@@ -18,11 +18,20 @@
 // total size: 0x40
 class AITarget : public bTNode<AITarget> {
   public:
-    static void TrackAll();
     static bool CanAquire(const ISimable *who);
+    static void Register(ISimable *who);
+    static void UnRegister(ISimable *who);
+    static void Track(const ISimable *who);
+    static void TrackAll();
 
     void *operator new(size_t size) {
         return gFastMem.Alloc(size, nullptr);
+    }
+
+    void operator delete(void *mem, size_t size) {
+        if (mem) {
+            return gFastMem.Free(mem, size, nullptr);
+        }
     }
 
     AITarget(ISimable *owner);
@@ -38,7 +47,7 @@ class AITarget : public bTNode<AITarget> {
 
     virtual ~AITarget();
 
-    ISimable *GetSimable() {
+    ISimable *GetSimable() const {
         return mTargetSimable;
     }
 
@@ -56,6 +65,10 @@ class AITarget : public bTNode<AITarget> {
 
     bool IsValid() const {
         return mValid;
+    }
+
+    bool IsSimable() const {
+        return mTargetSimable != nullptr;
     }
 
     float GetDistTo() const {

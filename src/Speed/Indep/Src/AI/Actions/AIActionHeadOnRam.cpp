@@ -1,13 +1,14 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/AI/AIAction.h"
+#include "Speed/Indep/Src/AI/AISteer.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
-#include "Speed/Indep/Src/AI/Common/AISteer.hpp"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+
 
 // total size: 0x48
 class AIActionHeadOnRam : public AIAction, public Debugable {

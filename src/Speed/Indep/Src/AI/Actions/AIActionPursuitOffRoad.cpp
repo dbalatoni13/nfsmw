@@ -1,12 +1,13 @@
 #include "Speed/Indep/Src/AI/AIAction.h"
+#include "Speed/Indep/Src/AI/AISteer.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
-#include "Speed/Indep/Src/AI/Common/AISteer.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+
 
 // TODO are these two maybe in AIAction.h?
 // total size: 0x1

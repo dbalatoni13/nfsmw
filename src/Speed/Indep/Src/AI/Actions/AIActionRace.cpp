@@ -661,7 +661,7 @@ float AIActionRace::UpdateNavPos(float lookAheadDistance, const UMath::Vector3 &
     WRoadNav *road_nav = GetAI()->GetDriveToNav();
     UMath::Vector3 navPos = road_nav->GetPosition();
     UMath::Vector3 carPosition = mIRigidBody->GetPosition();
-    UMath::Vector3 carToNav = UVector3(navPos) - carPosition;
+    UMath::Vector3 carToNav = navPos - carPosition;
     float nav_distance = UMath::Length(carToNav);
     UMath::Vector3 navForwardVector = road_nav->GetForwardVector();
     UMath::Normalize(navForwardVector);

@@ -1,8 +1,8 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/AI/AIAction.h"
+#include "Speed/Indep/Src/AI/AISteer.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
-#include "Speed/Indep/Src/AI/Common/AISteer.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
@@ -137,13 +137,13 @@ void AIActionRam::GetSeekPosition(UMath::Vector3 &seekPosition, bool avoid) {
     UMath::Normalize(targetSide);
 
     UMath::Vector3 offset = mIPursuitAI->GetInPositionOffset();
-    UMath::Vector3 metotarget = UVector3(targetPosition) - myPosition;
+    UMath::Vector3 metotarget = targetPosition - myPosition;
     UMath::Vector3 targettoseek;
 
     UMath::Scale(targetForward, offset.z, targettoseek);
     UMath::ScaleAdd(targetSide, offset.x, targettoseek, targettoseek);
 
-    UMath::Vector3 metoseek = UVector3(metotarget) + UVector3(targettoseek);
+    UMath::Vector3 metoseek = metotarget + UVector3(targettoseek);
 
     float targettoseekradius = UMath::Lengthxz(targettoseek);
     float metotargetradius = UMath::Lengthxz(metotarget);
@@ -161,8 +161,8 @@ void AIActionRam::GetSeekPosition(UMath::Vector3 &seekPosition, bool avoid) {
     UMath::Vector3 targettotangent = UMath::Vector3Make(-metotarget.z, 0.0f, metotarget.x);
     UMath::Scale(targettotangent, targettoseekradius * 2.1f / UMath::Length(targettotangent), targettotangent);
 
-    UMath::Vector3 drive1 = UVector3(metotarget) + UVector3(targettotangent);
-    UMath::Vector3 drive2 = UVector3(metotarget) - targettotangent;
+    UMath::Vector3 drive1 = metotarget + UVector3(targettotangent);
+    UMath::Vector3 drive2 = metotarget - targettotangent;
 
     UMath::Scale(drive1, metoseekradius / UMath::Length(drive1));
     UMath::Scale(drive2, metoseekradius / UMath::Length(drive2));

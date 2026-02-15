@@ -288,6 +288,7 @@ if config.platform == Platform.GC_WII:
         "-std=gnu++98",
         "-DSN_TARGET_NGC",
         "-D__SN__",
+        "-D_STLP_VENDOR_EXCEPT_STD=std",
         "-DCLANGD_DAMNIT",  # used in cases where intellisense breaks
     ]
 elif config.platform == Platform.X360:

@@ -14,10 +14,6 @@ struct ALIGN_16 UVector3 : public UMath::Vector3 {
         Clear(*this);
     }
 
-    float &operator[](int index) {
-        return (&x)[index];
-    }
-
     UVector3(const Vector3 &From) {
         x = From.x;
         y = From.y;

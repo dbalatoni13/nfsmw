@@ -5,7 +5,7 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/Src/AI/Common/AISpawnManager.hpp"
+#include "Speed/Indep/Src/AI/AISpawnManager.h"
 #include "Speed/Indep/Src/Debug/Debugable.h"
 #include "Speed/Indep/Src/Generated/Messages/MBreakerStopCops.h"
 #include "Speed/Indep/Src/Generated/Messages/MForcePursuitStart.h"

@@ -1,5 +1,5 @@
-#ifndef AI_COMMON_AISTEER_H
-#define AI_COMMON_AISTEER_H
+#ifndef AI_AISTEER_H
+#define AI_AISTEER_H
 
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
