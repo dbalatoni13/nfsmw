@@ -334,6 +334,11 @@ inline float Normalize(Vector3 &r) {
     return m;
 }
 
+inline void Direction(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &r) {
+    VU0_v3sub(a, b, r);
+    VU0_v3unit(r, r);
+}
+
 inline float Lengthxz(const Vector3 &a) {
     return VU0_v3lengthxz(a);
 }

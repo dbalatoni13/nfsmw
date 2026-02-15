@@ -10,7 +10,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/ecar.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
-#include "Speed/Indep/Src/World/World.hpp"
+#include "Speed/Indep/Src/World/WWorldPos.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
 class eView;

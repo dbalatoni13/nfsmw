@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 struct CameraParams {
@@ -41,13 +42,13 @@ class Camera {
         return this->RenderDash;
     }
 
-    float GetFocalDistance() {}
+    // float GetFocalDistance() {}
 
-    float GetDepthOfField() {}
+    // float GetDepthOfField() {}
 
-    unsigned short GetFieldOfView() {}
+    // unsigned short GetFieldOfView() {}
 
-    bMatrix4 *GetWorldToCameraMatrix() {}
+    // bMatrix4 *GetWorldToCameraMatrix() {}
 
     bVector3 *GetPosition() {
         return &this->CurrentKey.Position;
@@ -57,32 +58,34 @@ class Camera {
         return &this->CurrentKey.Direction;
     }
 
-    bVector3 *GetTarget() {}
+    // bVector3 *GetTarget() {}
 
-    unsigned short GetFov() {}
+    // unsigned short GetFov() {}
 
     bVector3 GetPositionSimSpace() {
-        // Local variables
-        bVector3 vec;
+        bVector3 vec(CurrentKey.Position);
+        eUnSwizzleWorldVector(vec, vec);
+
+        return vec;
     }
 
-    bVector3 *GetPreviousPosition() {}
+    // bVector3 *GetPreviousPosition() {}
 
-    bVector3 *GetPreviousDirection() {}
+    // bVector3 *GetPreviousDirection() {}
 
-    bVector3 *GetPreviousTarget() {}
+    // bVector3 *GetPreviousTarget() {}
 
-    unsigned short GetPreviousFov() {}
+    // unsigned short GetPreviousFov() {}
 
-    bVector3 *GetVelocityPosition() {}
+    // bVector3 *GetVelocityPosition() {}
 
-    bVector3 *GetVelocityDirection() {}
+    // bVector3 *GetVelocityDirection() {}
 
-    bVector3 *GetVelocityTarget() {}
+    // bVector3 *GetVelocityTarget() {}
 
-    unsigned short GetVelocityFov() {}
+    // unsigned short GetVelocityFov() {}
 
-    unsigned int GetLastDisparateTime() {}
+    // unsigned int GetLastDisparateTime() {}
 
     void ClearVelocity() {}
 
@@ -124,17 +127,17 @@ class Camera {
 
     void SetFarZ(float far_z) {}
 
-    float GetNearZ() {}
+    // float GetNearZ() {}
 
-    float GetFarZ() {}
+    // float GetFarZ() {}
 
     void SetLetterBox(float LB_h) {}
 
-    float GetLetterBox() {}
+    // float GetLetterBox() {}
 
     void SetSimTimeMultiplier(float multiplier) {}
 
-    float GetSimTimeMultiplier() {}
+    // float GetSimTimeMultiplier() {}
 
   private:
     CameraParams CurrentKey;  // offset 0x0, size 0xD4

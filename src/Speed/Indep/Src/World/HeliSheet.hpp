@@ -15,9 +15,13 @@ class HeliSheetCoordinate {
         this->VertexValid = false;
     }
 
+    float GetElevation(const bVector2 &point, bVector3 *NormalOut, bool *ppoint_valid);
+
     void SetPreviousElevation(float elevation) {}
 
-    // const bVector3 &GetVertex(unsigned int n) {}
+    const bVector3 &GetVertex(unsigned int n) {
+        return this->Vertex[n];
+    }
 
   private:
     float PreviousElevation; // offset 0x0, size 0x4

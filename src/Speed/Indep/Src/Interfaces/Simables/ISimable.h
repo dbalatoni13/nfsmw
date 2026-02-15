@@ -12,7 +12,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ICause.h"
 #include "Speed/Indep/Src/Main/EventSequencer.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
-#include "Speed/Indep/Src/World/World.hpp"
+#include "Speed/Indep/Src/World/WWorldPos.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 struct HSIMABLE__ {

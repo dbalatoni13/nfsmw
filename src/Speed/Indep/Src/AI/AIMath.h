@@ -55,6 +55,10 @@ inline void PredictPosition(float dT, const UMath::Vector3 &position, const UMat
     PredictPosition(dT, position, UMath::Vector4To3(mat.v2), yaw, linearVelocity, angularVelocity.y, result);
 }
 
+// TODO this should be marked as inline, why doesn't it inline though?
+bool SegmentSphereIntersect(const UMath::Vector3 &p0, const UMath::Vector3 &p1, const UMath::Vector3 &cen, const float radius,
+                            UMath::Vector3 &IntersectPoint);
+
 }; // namespace Math
 
 }; // namespace AI
