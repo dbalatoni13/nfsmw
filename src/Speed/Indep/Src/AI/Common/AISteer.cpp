@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/AI/AISteer.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Src/AI/AIAvoidable.h"
 #include "Speed/Indep/Src/Interfaces/IBody.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
@@ -243,7 +244,23 @@ void Seperation(UMath::Vector3 &separation, IBody *my_body, IBody *target_body, 
     }
 }
 
-void VehicleSeperation(UMath::Vector3 &separation, IVehicle *myvehicle, const AvoidableList &avoidList, float absolute, float relative) {}
+void VehicleSeperation(UMath::Vector3 &separation, IVehicle *myvehicle, const AvoidableList &avoidList, float absolute, float relative) {
+    IBody *my_body;
+    if (myvehicle->QueryInterface(&my_body)) {
+        for (AvoidableList::const_iterator iter = avoidList.begin(); iter != avoidList.end(); ++iter) {
+            AIAvoidable *av = *iter;
+            IBody *target_body;
+            if (av->QueryInterface(&target_body)) {
+                IVehicle *iv;
+                if (av->QueryInterface(&iv)) {
+                    UMath::Vector3 vseparation = UMath::Vector3::kZero;
+                    Seperation(vseparation, my_body, target_body, absolute, relative);
+                    UMath::Add(separation, vseparation, separation);
+                }
+            }
+        }
+    }
+}
 
 // STRIPPED
 void Alignment(UMath::Vector3 &result, const UMath::Vector3 &otherForward) {}
@@ -260,6 +277,15 @@ void Alignment(UMath::Vector3 &result, const UMath::Vector3 &myForward, const Av
 // STRIPPED
 void Cohesion(UMath::Vector3 &result, const UMath::Vector3 &myPos, const AvoidableList &irbList) {}
 
-float GetDesiredSpeedToTarget(float distToTarget, float targetSpeed) {}
+// Functionally matching
+float GetDesiredSpeedToTarget(float distToTarget, float targetSpeed) {
+    float desiredSpeed;
+    if (distToTarget < 0.0f) {
+        desiredSpeed = UMath::Max(distToTarget * 0.5f + targetSpeed, MPH2MPS(10.0f));
+    } else {
+        desiredSpeed = UMath::Min(distToTarget * 0.5f + targetSpeed, UMath::Max(MPH2MPS(25.0f), targetSpeed * 1.2f));
+    }
+    return desiredSpeed;
+}
 
 }; // namespace AISteer

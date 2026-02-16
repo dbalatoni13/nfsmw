@@ -62,7 +62,7 @@ struct SuspensionParams : public Sim::Param {
     SuspensionParams() : Sim::Param(TypeName(), static_cast<SuspensionParams *>(nullptr)) {}
 
     static UCrc32 TypeName() {
-        static UCrc32 value = UCrc32("SuspensionParams");
+        static UCrc32 value = "SuspensionParams";
         return value;
     }
 };

@@ -27,7 +27,7 @@ void RBTractor::SetHitch(bool hitched) {
             }
         }
         if (!mTrailerTask) {
-            mTrailerTask = AddTask(UCrc32("Physics"), 0.1f, 0.0f, Sim::TASK_FRAME_FIXED);
+            mTrailerTask = AddTask("Physics", 0.1f, 0.0f, Sim::TASK_FRAME_FIXED);
         }
     } else {
         if (mHitched && mTrailer) {

@@ -269,7 +269,7 @@ NISActivity::NISActivity()
     mSkipToNIS[0] = '\0';
 #endif
 
-    mUpdate = AddTask(UCrc32("WorldUpdate"), 1.0f, 0.0f, Sim::TASK_FRAME_FIXED);
+    mUpdate = AddTask("WorldUpdate", 1.0f, 0.0f, Sim::TASK_FRAME_FIXED);
     Sim::ProfileTask(mUpdate, "NIS");
     mIsPrecipitationEnable = PrecipitationEnable;
 }

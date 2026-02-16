@@ -34,7 +34,7 @@ struct VehicleParams : public Sim::Param {
           Flags(flags) {}
 
     static UCrc32 TypeName() {
-        static UCrc32 value = UCrc32("VehicleParams");
+        static UCrc32 value = "VehicleParams";
         return value;
     }
 };

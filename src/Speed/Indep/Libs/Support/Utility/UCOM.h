@@ -125,16 +125,52 @@ template <typename T> inline bool Is(const IUnknown *pUnk) {
 }
 
 template <typename T, typename U, typename V> class Factory {
-    typedef U _PRODUCT;
+    typedef U *_PRODUCT;
     typedef V _PRODUCT_SIGNATURE;
     typedef T _BUILD_PARAMETERS;
 
   public:
-    static _PRODUCT *CreateInstance(_PRODUCT_SIGNATURE, _BUILD_PARAMETERS);
+    // total size: 0xC
+    struct Prototype {
+        typedef _PRODUCT (*_CONSTRUCTOR)(_BUILD_PARAMETERS);
+
+        friend class Factory;
+
+        Prototype(const _PRODUCT_SIGNATURE &classsig, _CONSTRUCTOR constructor) {
+            mSignature = classsig;
+            mConstructor = constructor;
+        }
+
+        static const Prototype *GetHead() {
+            return mHead;
+        }
+
+        const Prototype *GetNext() const {
+            return mTail;
+        }
+
+      private:
+        static Prototype *mHead; // size: 0x4
+
+        _PRODUCT_SIGNATURE mSignature; // offset 0x0, size 0x4
+        _CONSTRUCTOR mConstructor;     // offset 0x4, size 0x4
+        Prototype *mTail;              // offset 0x8, size 0x4
+    };
 
     Factory() {}
 
     ~Factory() {}
+
+    static _PRODUCT CreateInstance(_PRODUCT_SIGNATURE sig, _BUILD_PARAMETERS params);
+    // TODO
+    //  {
+    //     for (const Prototype *f = Prototype::GetHead(); f != nullptr; f = f->GetNext()) {
+    //         if (f->mSignature == sig) {
+    //             return f->mConstructor(params);
+    //         }
+    //     }
+    //     return nullptr;
+    // }
 };
 
 } // namespace COM

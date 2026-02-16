@@ -64,11 +64,13 @@ class ALIGN_16 AIAvoidable {
 
     // void SetAvoidableObject(UTL::COM::IUnknown *pUnk) {}
 
-    // bool QueryInterface(struct IBody **out) {}
-
-    // bool QueryInterface(IVehicle **out) {}
-
-    // bool QueryInterface(IRigidBody **out) {}
+    template <typename T> bool QueryInterface(T **out) {
+        if (mUnk) {
+            return mUnk->QueryInterface(out);
+        }
+        *out = nullptr;
+        return false;
+    }
 
   private:
     static AvoidableList mAll;

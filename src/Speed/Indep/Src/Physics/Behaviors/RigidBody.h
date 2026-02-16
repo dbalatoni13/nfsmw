@@ -38,7 +38,7 @@ struct RBComplexParams : public Sim::Param {
           fCollisionMask(collision_mask) {}
 
     static UCrc32 TypeName() {
-        static UCrc32 value = UCrc32("RBComplexParams");
+        static UCrc32 value = "RBComplexParams";
         return value;
     }
 

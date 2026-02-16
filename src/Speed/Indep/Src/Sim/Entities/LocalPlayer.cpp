@@ -57,11 +57,11 @@ LocalPlayer::LocalPlayer(Sim::Param params)
     IEntity::AddToList(ENTITY_PLAYERS);
     IPlayer::AddToList(PLAYER_LOCAL);
     IPlayer::AddToList(PLAYER_ALL);
-    mSpeech = UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance(UCrc32("SoundAI"), Sim::Param());
+    mSpeech = UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance("SoundAI", Sim::Param());
     if (mSpeech) {
         Attach(mSpeech);
     }
-    mHudTask = AddTask(UCrc32("WorldUpdate"), 1.0f, 0.0f, Sim::TASK_FRAME_VARIABLE);
+    mHudTask = AddTask("WorldUpdate", 1.0f, 0.0f, Sim::TASK_FRAME_VARIABLE);
     Sim::ProfileTask(mHudTask, "Hud");
 }
 

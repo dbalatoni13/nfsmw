@@ -179,7 +179,7 @@ void AIActionRace::BeginAction(float dT) {
     IPursuitAI *ipv;
     GetAI()->QueryInterface(&ipv);
 
-    bIsFleeMode = GetAI()->GetGoalName() == UCrc32("AIGoalFleePursuit");
+    bIsFleeMode = GetAI()->GetGoalName() == "AIGoalFleePursuit";
 
     // TODO
     if (!bIsFleeMode) {

@@ -28,7 +28,7 @@ struct RBSimpleParams : public Sim::Param {
           finitMat(initMat), finitRadius(initRadius), finitMass(initMass) {}
 
     static UCrc32 TypeName() {
-        static UCrc32 value = UCrc32("RBSimpleParams");
+        static UCrc32 value = "RBSimpleParams";
         return value;
     }
 

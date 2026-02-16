@@ -21,9 +21,15 @@ class AIGoal : public UTL::COM::Factory<ISimable *, AIGoal, UCrc32> {
 
     // void operator delete(void *mem, void *ptr) {}
 
-    // void *operator new(size_t size) {}
+    void *operator new(size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
 
-    // void operator delete(void *mem, size_t size) {}
+    void operator delete(void *mem, size_t size) {
+        if (mem) {
+            return gFastMem.Free(mem, size, nullptr);
+        }
+    }
 
     // void *operator new(size_t size, const char *name) {}
 

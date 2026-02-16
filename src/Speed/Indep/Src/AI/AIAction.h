@@ -27,7 +27,11 @@ class AIAction : public Sim::Object, public UTL::COM::Factory<AIActionParams *, 
 
         // void *operator new(size_t size) {}
 
-        // void operator delete(void *mem, size_t size) {}
+        void operator delete(void *mem, size_t size) {
+            if (mem) {
+                return gFastMem.Free(mem, size, nullptr);
+            }
+        }
 
         // void *operator new(size_t size, const char *name) {}
 
@@ -71,6 +75,7 @@ class AIAction : public Sim::Object, public UTL::COM::Factory<AIActionParams *, 
 
     void SetActionName(const char *name) {
         mActionNameString = name;
+        mActionNameCrc = name;
     }
 
     UCrc32 GetActionName() {
@@ -91,7 +96,7 @@ class AIAction : public Sim::Object, public UTL::COM::Factory<AIActionParams *, 
 
   protected:
     virtual bool ShouldRestartWhenFinished() {
-        return false; // TODO
+        return false;
     }
 
   private:

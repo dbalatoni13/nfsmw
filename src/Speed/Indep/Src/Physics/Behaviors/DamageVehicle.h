@@ -22,7 +22,7 @@ struct DamageParams : public Sim::Param {
     DamageParams() : Sim::Param(TypeName(), static_cast<DamageParams *>(nullptr)) {}
 
     static UCrc32 TypeName() {
-        static UCrc32 value = UCrc32("DamageParams");
+        static UCrc32 value = "DamageParams";
         return value;
     }
 };

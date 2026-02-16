@@ -15,7 +15,7 @@ Behavior *DamageCopCar::Construct(const BehaviorParams &params) {
 
 DamageCopCar::DamageCopCar(const BehaviorParams &bp, const DamageParams &dp) : DamageVehicle(bp, dp) {
     mFlippedOver = 0.0f;
-    mThinkTask = AddTask(UCrc32("Physics"), 0.1f, 0.0f, Sim::TASK_FRAME_VARIABLE);
+    mThinkTask = AddTask("Physics", 0.1f, 0.0f, Sim::TASK_FRAME_VARIABLE);
 }
 
 DamageCopCar::~DamageCopCar() {

@@ -53,3 +53,7 @@
 #include "Speed/Indep/Src/AI/Common/AITarget.cpp"
 
 #include "Speed/Indep/Src/AI/Common/AISteer.cpp"
+
+#include "Speed/Indep/Src/AI/Common/AIAction.cpp"
+
+#include "Speed/Indep/Src/AI/Common/AIGoal.cpp"

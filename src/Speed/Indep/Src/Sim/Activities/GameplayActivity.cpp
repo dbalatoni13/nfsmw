@@ -29,7 +29,7 @@ class GameplayActivity : public Sim::Activity {
 };
 
 GameplayActivity::GameplayActivity(Sim::Param params) : Sim::Activity(0) {
-    mUpdateTask = AddTask(UCrc32("GameplayActivity"), 1.0f, 0.0f, Sim::TASK_FRAME_FIXED);
+    mUpdateTask = AddTask("GameplayActivity", 1.0f, 0.0f, Sim::TASK_FRAME_FIXED);
     Sim::ProfileTask(mUpdateTask, "GameplayActivity");
 
     GManager::Get().PreBeginGameplay();

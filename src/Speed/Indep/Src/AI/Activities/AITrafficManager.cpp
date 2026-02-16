@@ -54,7 +54,7 @@ AITrafficManager::AITrafficManager(Sim::Param params)
     // default
     SetTrafficPattern(0xeec2271a);
     mVehicles.clear();
-    mTask = AddTask(UCrc32("AITrafficManager"), 0.5f, 0.5f, Sim::TASK_FRAME_VARIABLE);
+    mTask = AddTask("AITrafficManager", 0.5f, 0.5f, Sim::TASK_FRAME_VARIABLE);
     Sim::ProfileTask(mTask, "AITrafficManager");
     mActionQ = new ActionQueue(0, 0x98c7a2f5, "AITrafficManager", false);
     // trafficpattern
@@ -205,7 +205,7 @@ IVehicle *AITrafficManager::GetAvailableTrafficVehicle(Attrib::Key key, bool mak
     UMath::Vector3 initialVec = {0.0f, 0.0f, 1.0f};
     UMath::Vector3 initialPos = {0.0f, 0.0f, 0.0f};
     VehicleParams params(this, DRIVER_TRAFFIC, key, initialVec, initialPos, 0, nullptr, 0);
-    ISimable *isimable = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance(UCrc32("PVehicle"), params);
+    ISimable *isimable = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance("PVehicle", params);
     if (isimable) {
         static_cast<IActivity *>(this)->Attach(isimable);
         IVehicle *ivehicle;
@@ -261,7 +261,7 @@ bool AITrafficManager::SpawnTraffic() {
 
     MSetTrafficSpeed ai_msg(mPattern.SpeedStreet(0), mPattern.SpeedHighway(0), false);
     ai_msg.SetID(availableVehicle->GetSimable()->GetWorldID());
-    ai_msg.Post(UCrc32("AIAction"));
+    ai_msg.Post("AIAction");
 
     Attrib::Key vehicle_key = availableVehicle->GetVehicleKey();
     unsigned int num_types = mPattern.Num_Vehicles();
