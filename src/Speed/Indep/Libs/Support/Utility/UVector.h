@@ -81,6 +81,12 @@ inline UVector3 operator*(const UVector3 &v1, float scalar) {
     return UVector3(result);
 }
 
+inline UVector3 operator*(float scalar, const UVector3 &v1) {
+    UMath::Vector3 result;
+    UMath::Scale(v1, scalar, result);
+    return UVector3(result);
+}
+
 inline UVector3 operator+(const UVector3 &v1, const UVector3 &v2) {
     UMath::Vector3 result;
     UMath::Add(v1, v2, result);

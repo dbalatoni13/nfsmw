@@ -2,6 +2,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Interfaces/IBody.h"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 namespace AISteer {
 
@@ -64,6 +65,7 @@ void Ram(UMath::Vector3 &result, const UMath::Vector3 &myPos, float mySpeed, con
 
     UMath::Vector3 intersect;
     UMath::ScaleAdd(targetVelocity, t, targetPos, intersect);
+
     UMath::Vector3 off = intersect - myPos;
     float offlen = UMath::Length(off);
     if (offlen > 1e-5f) {
@@ -83,19 +85,163 @@ void Avoid(UMath::Vector3 &result, const UMath::Vector3 &myPos, const UMath::Vec
 }; // namespace AISteer
 
 void LineSegSeperation(UMath::Vector3 &result, const UMath::Vector3 &h1, const UMath::Vector3 &t1, const UMath::Vector3 &h2,
-                       const UMath::Vector3 &t2) {}
+                       const UMath::Vector3 &t2) {
+    UMath::Vector3 u = t1 - h1;
+    UMath::Vector3 v = t2 - h2;
+    UMath::Vector3 w = h1 - h2;
+
+    float a = UMath::Dot(u, u);
+    float b = UMath::Dot(u, v);
+    float c = UMath::Dot(v, v);
+    float d = UMath::Dot(u, w);
+    float e = UMath::Dot(v, w);
+
+    float D = a * c - b * b;
+    const float small_number = 1e-20f;
+
+    float sN;
+    float sD = D;
+    float tN;
+    float tD = D;
+
+    if (D < small_number) {
+        sN = 0.0f;
+        tN = e;
+        sD = 1.0f;
+        tD = c;
+    } else {
+        sN = b * e - c * d;
+        tN = a * e - b * d;
+        if (sN < 0.0f) {
+            sN = 0.0f;
+            tN = e;
+            tD = c;
+        } else if (sN > D) {
+            sN = D;
+            tN = e + b;
+            tD = c;
+        }
+    }
+
+    if (tN < 0.0f) {
+        tN = 0.0f;
+        if (-d < 0.0f) {
+            sN = 0.0f;
+        } else if (-d > a) {
+            sN = sD;
+        } else {
+            sN = -d;
+            sD = a;
+        }
+    } else if (tN > tD) {
+        tN = tD;
+        if (b - d < 0.0f) {
+            sN = 0.0f;
+        } else if (b - d > a) {
+            sN = sD;
+        } else {
+            sN = b - d;
+            sD = a;
+        }
+    }
+
+    float sc = UMath::Abs(sN) >= small_number ? sN / sD : 0.0f;
+    float tc = UMath::Abs(tN) >= small_number ? tN / tD : 0.0f;
+
+    result = (w + sc * u) - (tc * v);
+}
 
 namespace AISteer {
 
 void Separation(UMath::Vector3 &result, const UMath::Vector3 &myHead, const UMath::Vector3 &myTail, float myRadius, const UMath::Vector3 &otherHead,
-                const UMath::Vector3 &otherTail, float otherRadius) {}
+                const UMath::Vector3 &otherTail, float otherRadius) {
+    UMath::Vector3 seperation;
+    LineSegSeperation(seperation, myHead, myTail, otherHead, otherTail);
+    float d2 = UMath::Dot(seperation, seperation);
+    float r2 = (myRadius + otherRadius) * (myRadius + otherRadius);
+
+    UMath::ScaleAdd(seperation, r2 / UMath::Max(d2 * bSqrt(d2), 0.1f), result, result);
+}
 
 // STRIPPED
 void Separation(UMath::Vector3 &result, const UMath::Vector3 &myPos, float myRadius, const UMath::Vector3 &otherPos) {}
 
-void SetupCapsule(const IBody *body, UMath::Vector3 &head, UMath::Vector3 &tail, float &radius) {}
+void SetupCapsule(const IBody *body, UMath::Vector3 &head, UMath::Vector3 &tail, float &radius) {
+    UMath::Vector3 axis;
+    UMath::Vector3 position;
+    UMath::Vector3 dimension;
+    UMath::Matrix4 matrix;
 
-void Seperation(UMath::Vector3 &separation, IBody *my_body, IBody *target_body, float absolute, float relative) {}
+    body->GetDimension(dimension);
+    body->GetTransform(matrix);
+    position = UMath::Vector4To3(matrix.v3);
+
+    float width = dimension.x;
+    float length = dimension.z;
+    if (length > width) {
+        axis = UMath::Vector4To3(matrix.v2);
+    } else {
+        axis = UMath::Vector4To3(matrix.v0);
+    }
+
+    float a = UMath::Min(length, width);
+    float b = UMath::Max(length, width);
+    float c = a * a / b;
+    float d = b - c;
+
+    UMath::ScaleAdd(axis, d, position, head);
+    UMath::ScaleAdd(axis, -d, position, tail);
+    radius = UMath::Sqrt(c * c + a * a);
+}
+
+void Seperation(UMath::Vector3 &separation, IBody *my_body, IBody *target_body, float absolute, float relative) {
+    float my_radius;
+    UMath::Vector3 my_head;
+    UMath::Vector3 my_tail;
+    SetupCapsule(my_body, my_head, my_tail, my_radius);
+
+    float target_radius;
+    UMath::Vector3 target_head;
+    UMath::Vector3 target_tail;
+    SetupCapsule(target_body, target_head, target_tail, target_radius);
+
+    Separation(separation, my_head, my_tail, my_radius, target_head, target_tail, target_radius);
+
+    UMath::Vector3 target_velocity;
+    target_body->GetLinearVelocity(target_velocity);
+
+    UMath::Vector3 my_velocity;
+    my_body->GetLinearVelocity(my_velocity);
+
+    UMath::Vector3 my_position;
+    UMath::Scale(my_head + UVector3(my_tail), 0.5f, my_position);
+
+    UMath::Vector3 target_position;
+    UMath::Scale(target_head + UVector3(target_tail), 0.5f, target_position);
+
+    float scale = absolute;
+    float denom = UMath::LengthSquare(my_velocity - target_velocity);
+    if (denom > 1e-5f || denom < -1e5f) {
+        float closest_time = -UMath::Dot(my_position - target_position, my_velocity - target_velocity) / denom;
+        if (closest_time > 0.05f) {
+            UMath::Vector3 my_closest;
+            UMath::ScaleAdd(my_velocity, closest_time, my_position, my_closest);
+            UMath::Vector3 target_closest;
+            UMath::ScaleAdd(target_velocity, closest_time, target_position, target_closest);
+
+            float closest_distance = UMath::LengthSquare(my_closest - target_closest);
+            float denom = closest_distance * 0.5f + closest_time;
+            float cscale = denom * denom;
+
+            scale += relative / cscale;
+        }
+    }
+
+    float seperation_length = UMath::Length(separation);
+    if (seperation_length > 1e-5f) {
+        UMath::Scale(separation, UMath::Min(scale, KPH2MPS(160.0f) / seperation_length), separation);
+    }
+}
 
 void VehicleSeperation(UMath::Vector3 &separation, IVehicle *myvehicle, const AvoidableList &avoidList, float absolute, float relative) {}
 
