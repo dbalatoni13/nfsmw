@@ -285,9 +285,13 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
     };
     // total size: 0x8
     struct CopContingent {
-        CopContingent(UCrc32 t) : mType(t) {}
+        CopContingent(UCrc32 t)
+            : mType(t), //
+              mCount(1) {}
 
-        CopContingent(const CopContingent &_ctor_arg) : mType(_ctor_arg.mType) {}
+        CopContingent(const CopContingent &_ctor_arg)
+            : mType(_ctor_arg.mType), //
+              mCount(_ctor_arg.mCount) {}
 
         UCrc32 mType;        // offset 0x0, size 0x4
         unsigned int mCount; // offset 0x4, size 0x4
@@ -340,7 +344,7 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
     void LockInPursuitAttribs() override;
 
     // Overrides: IPursuit
-    unsigned int CalcTotalCostToState() const override;
+    uint32 CalcTotalCostToState() const override;
 
     // Overrides: IPursuit
     void AddVehicleToContingent(IVehicle *ivehicle) override;

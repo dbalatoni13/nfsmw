@@ -1,5 +1,9 @@
 #include "Speed/Indep/Src/AI/AIPursuit.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
+#include "Speed/Indep/Src/Camera/CameraAI.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_PostRace.hpp"
+#include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
+#include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRace.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitlevels.h"
@@ -7,6 +11,7 @@
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 
 PursuitFormation::PursuitFormation()
@@ -415,4 +420,141 @@ Attrib::Gen::pursuitlevels *AIPursuit::GetPursuitLevelAttrib() const {
         plevels = nullptr;
     }
     return plevels;
+}
+
+Attrib::Gen::pursuitsupport *AIPursuit::GetPursuitSupportAttrib() const {
+    Attrib::Gen::pursuitsupport *ps = nullptr;
+    IPerpetrator *perp;
+    if (GetTarget()) {
+        if (GetTarget()->QueryInterface(&perp)) {
+            ps = perp->GetPursuitSupportAttrib();
+        }
+    } else {
+        ps = nullptr;
+    }
+    return ps;
+}
+
+void AIPursuit::LockInPursuitAttribs() {
+    Attrib::Gen::pursuitlevels *ps = GetPursuitLevelAttrib();
+    if (ps) {
+        mNumCopsRequiredToEvade = ps->FullEngagementCopCount();
+        mNumCopsToTriggerBackupTime = ps->NumCopsToTriggerBackup();
+        mCoolDownTimeRequired = ps->evadetimeout();
+        mNumFullyEngagedCopsEvaded = 0;
+    }
+}
+
+uint32 AIPursuit::CalcTotalCostToState() const {
+    uint32 total = mCopsDestroyed * 5000;
+    total += mNumHeliSpawns * 2000;
+    total += mNumRoadblocksDeployed * 500;
+    total += mNumCopsDamaged * 250;
+    total += mNumTrafficCarsHit * 500;
+    total += mNumSpikeStripsDeployed * 250;
+    total += mNumHeliSpikeStripsDeployed * 225;
+    total += mNumCopCarsDeployed * 250;
+    total += mNumSupportVehiclesDeployed * 450;
+    total += mPropertyDamageValue;
+
+    return total;
+}
+
+void AIPursuit::AddVehicleToContingent(IVehicle *ivehicle) {
+    UCrc32 hash = ivehicle->GetVehicleName();
+    for (ContingentVector::iterator i = mCopContingent.begin();; ++i) {
+        if (i == mCopContingent.end()) {
+            mCopContingent.push_back(CopContingent(hash));
+            break;
+        } else if (i->mType == hash) {
+            i->mCount++;
+            break;
+        }
+    }
+}
+
+void AIPursuit::OnAttached(IAttachable *pOther) {
+    IVehicle *ivehicle;
+    if (pOther->QueryInterface(&ivehicle)) {
+        IPursuitAI *ipv;
+        IPerpetrator *iperp;
+        if (ivehicle->QueryInterface(&iperp)) {
+            mTarget->Aquire(ivehicle->GetSimable());
+            mJerkLagPosition = mTarget->GetPosition();
+
+            if (IsPlayerPursuit()) {
+                CameraAI::MaybeDoPursuitCam(ivehicle);
+                PostRacePursuitScreen::GetPursuitData().ClearData();
+                GInfractionManager::Get().PursuitStarted();
+                GManager::Get().NotifyPursuitStarted();
+            }
+
+            float heat = iperp->GetHeat();
+            if (heat < mBaseHeat) {
+                heat = mBaseHeat;
+            }
+            iperp->SetHeat(heat);
+            iperp->ClearPendingRepPoints();
+        } else if (ivehicle->QueryInterface(&ipv)) {
+            mIVehicleList.push_back(ivehicle);
+
+            Attrib::Gen::pursuitlevels *plevels = GetPursuitLevelAttrib();
+            if (plevels) {
+                if (mTotalCopsInvolved < 3 && mPursuitStatus != PS_COOL_DOWN) {
+                    mSpawnCopTimer = plevels->TimeBetweenFirstFourSpawn();
+                } else {
+                    mSpawnCopTimer = plevels->TimeBetweenCopSpawn();
+                    if (mNumCopsNeeded > 2) {
+                        if (mFastSpawnNext) {
+                            mFastSpawnNext = false;
+                            mSpawnCopTimer = 0.2f;
+                        } else {
+                            mFastSpawnNext = true;
+                        }
+                    }
+                }
+            } else {
+                mSpawnCopTimer = 0.0f;
+            }
+            mTotalCopsInvolved++;
+
+            const UCrc32 crossName = "copcross";
+            const UCrc32 suv = "copsuv";
+            const UCrc32 suvl = "copsuvl";
+            const UCrc32 hench = "copsporthench";
+            const UCrc32 vname = ivehicle->GetVehicleName();
+
+            if (vname == suv || vname == suvl || vname == crossName || vname == hench) {
+                mNumSupportVehiclesDeployed++;
+                if (vname == crossName) {
+                    mCrossState = CROSS_SPAWNED;
+                }
+            } else {
+                if (ivehicle->GetVehicleClass() == VehicleClass::CHOPPER) {
+                    mForceHeliSpawnNext = false;
+                    mNumHeliSpawns++;
+                } else {
+                    mNumCopCarsDeployed++;
+                }
+            }
+            GManager::Get().TrackValue("total_cops_in_pursuit", mTotalCopsInvolved);
+
+            IPerpetrator *iperp;
+            if (mTarget->QueryInterface(&iperp) && mRepPointsPerMinute == 0) {
+                int perpHeat = iperp->GetHeat();
+                if (plevels) {
+                    mRepPointsPerMinute = plevels->RepPointsPerMinute();
+                }
+            }
+
+            ipv->StartPursuit(mTarget, nullptr);
+            if (IsSupportVehicle(ivehicle)) {
+                ipv->StartSupportGoal();
+                mNumSupportVehiclesActive++;
+            }
+            AddVehicleToContingent(ivehicle);
+        }
+    }
+    TrackVehicleCounts();
+    Activity::OnAttached(pOther);
 }

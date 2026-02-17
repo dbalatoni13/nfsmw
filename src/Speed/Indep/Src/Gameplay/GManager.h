@@ -8,6 +8,7 @@
 #include "GActivity.h"
 #include "GCharacter.h"
 #include "GMilestone.h"
+#include "GRaceDatabase.h"
 #include "GSpeedTrap.h"
 #include "GTimer.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
@@ -88,7 +89,7 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
 
     void StartActivities();
     void StartWorldActivities(bool startFreeRoamOnly);
-    void StartBinActivity(struct GRaceBin *raceBin);
+    void StartBinActivity(GRaceBin *raceBin);
     void SuspendAllBinActivities();
     void SuspendAllActivities();
 
