@@ -64,6 +64,10 @@ float AICopManager::mCopMaxSpawnDist = 400.0f;
 
 AICopManager *TheOneCopManager = nullptr;
 
+// UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _AIPursuit("AIPursuit", AIPursuit::Construct);
+// UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _AIRoadBlock("AIRoadBlock", AIRoadBlock::Construct);
+UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _AICopManager("AICopManager", AICopManager::Construct);
+
 // Just an inflated stack
 AICopManager::AICopManager(Sim::Param params)
     : Sim::Activity(2),                                   //

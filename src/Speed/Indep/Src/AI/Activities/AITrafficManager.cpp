@@ -33,7 +33,7 @@ extern BOOL SkipFETrafficDensity; // size: 0x4
 extern BOOL SkipFEDisableTraffic; // size: 0x4
 extern BOOL SkipFE;               // size: 0x4
 
-using namespace Attrib::Gen;
+UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _AITrafficManager("AITrafficManager", AITrafficManager::Construct);
 
 // Functionally matching
 // https://decomp.me/scratch/qvQEg
@@ -308,7 +308,7 @@ void AITrafficManager::SetTrafficPattern(Attrib::Key pattern_key) {
     if (pattern_key == mPattern.GetCollection()) {
         return;
     }
-    mPattern = trafficpattern(pattern_key, 0, nullptr);
+    mPattern = Attrib::Gen::trafficpattern(pattern_key, 0, nullptr);
     bMemSet(mPatternTimer, 0, sizeof(mPatternTimer));
 
     unsigned int num_types = mPattern.Num_Vehicles();

@@ -203,16 +203,16 @@ struct pursuitlevels : Instance {
         return this->Get(0x5c2a7972).GetLength();
     }
 
-    const float &RollingBlockDuration(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x5c9f5f55, index));
+    const float &RollingBlockDuration() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x5c9f5f55, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
 
-    const float &BoxinTightness(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x67a15750, index));
+    const float &BoxinTightness() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x67a15750, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -263,8 +263,8 @@ struct pursuitlevels : Instance {
         return this->Get(0x80deb840).GetLength();
     }
 
-    const float &BoxinDuration(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x858b1097, index));
+    const float &BoxinDuration() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x858b1097, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -291,24 +291,24 @@ struct pursuitlevels : Instance {
         return this->Get(0x92f3d64e).GetLength();
     }
 
-    const float &CollapseOuterRadius(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x947542f2, index));
+    const float &CollapseOuterRadius() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x947542f2, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
 
-    const float &TimeBetweenFirstFourSpawn(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x9bf0f433, index));
+    const float &TimeBetweenFirstFourSpawn() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x9bf0f433, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
 
-    const int &CTSFor911(unsigned int index) const {
-        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xa00de933, index));
+    const int &CTSFor911() const {
+        const int *resultptr = reinterpret_cast<const int *>(this->GetAttributePointer(0xa00de933, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
@@ -328,32 +328,32 @@ struct pursuitlevels : Instance {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->_Array_cops.GetLength();
     }
 
-    const float &DestroyCopBonusTime(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xbef78612, index));
+    const float &DestroyCopBonusTime() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xbef78612, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
 
-    const float &RollingBlockTightness(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xc146fc03, index));
+    const float &RollingBlockTightness() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xc146fc03, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
 
-    const float &CollapseSpeed(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xdb66950c, index));
+    const float &CollapseSpeed() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xdb66950c, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
 
-    const float &MeterDeadZoneEvadeDist(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xeda0e29c, index));
+    const float &MeterDeadZoneEvadeDist() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xeda0e29c, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
