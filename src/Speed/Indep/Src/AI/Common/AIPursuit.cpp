@@ -274,3 +274,5 @@ void GroundSupportRequest::Update(float dT) {
         }
     }
 }
+
+AIPursuit::~AIPursuit() {}

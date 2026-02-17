@@ -457,163 +457,275 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
     void UpdateJerk(float dt);
 
     // Overrides: IPursuit
-    int GetNumCops() const override {}
+    int GetNumCops() const override {
+        return mIVehicleList.size();
+    }
 
     // Overrides: IPursuit
-    bool IsPerpBusted() const override {}
+    bool IsPerpBusted() const override {
+        return mIsPerpBusted;
+    }
 
     // Overrides: IPursuit
-    bool AddVehicle(IVehicle *vehicle) override {}
+    bool AddVehicle(IVehicle *vehicle) override {
+        bool result = Attach(vehicle);
+        return result;
+    }
 
     // Overrides: IPursuit
-    bool RemoveVehicle(IVehicle *vehicle) override {}
+    bool RemoveVehicle(IVehicle *vehicle) override {
+        bool result = Detach(vehicle);
+        return result;
+    }
 
     // Overrides: IPursuit
-    float GetPursuitDuration() const override {}
+    float GetPursuitDuration() const override {
+        return mTotalPursuitTime;
+    }
 
     // Overrides: IPursuit
-    float GetEvadeLevel() const override {}
+    float GetEvadeLevel() const override {
+        return mEvadeLevel;
+    }
 
     // Overrides: IPursuit
-    float GetCoolDownTimeRemaining() const override {}
+    float GetCoolDownTimeRemaining() const override {
+        return mCoolDownTimeRemaining;
+    }
 
     // Overrides: IPursuit
-    float GetCoolDownTimeRequired() const override {}
+    float GetCoolDownTimeRequired() const override {
+        return mCoolDownTimeRequired - 7.0f;
+    }
 
     // Overrides: IPursuit
-    float GetBackupETA() const override {}
+    float GetBackupETA() const override {
+        return mBackupCountdownTimer;
+    }
 
     // Overrides: IPursuit
-    bool IsPerpInSight() const override {}
+    bool IsPerpInSight() const override {
+        return mIsPerpInSight;
+    }
 
     // Overrides: IPursuit
-    bool IsPursuitBailed() const override {}
+    bool IsPursuitBailed() const override {
+        return mIsPursuitBailed;
+    }
 
     // Overrides: IPursuit
-    bool IsCollapseActive() const override {}
+    bool IsCollapseActive() const override {
+        return mCollapseActive;
+    }
 
     // Overrides: IPursuit
-    bool AttemptingToReAquire() const override {}
+    bool AttemptingToReAquire() const override {
+        return !mIsPerpInSight && !mIsPerpBusted ? !mIsPursuitBailed : false;
+    }
 
     // Overrides: IPursuit
-    const UMath::Vector3 &GetLastKnownLocation() const override {}
+    const UMath::Vector3 &GetLastKnownLocation() const override {
+        return mLastKnownLocation;
+    }
 
     // Overrides: IPursuit
-    IRoadBlock *GetRoadBlock() const override {}
+    IRoadBlock *GetRoadBlock() const override {
+        return mRoadBlock;
+    }
 
     // Overrides: IPursuit
-    IVehicle *GetNearestCopInRoadblock(float *distance) override {}
+    IVehicle *GetNearestCopInRoadblock(float *distance) override {
+        if (distance) {
+            *distance = mDistanceToNearestCopInRoadblock;
+        }
+        return mNearestCopInRoadblock;
+    }
 
     // Overrides: IPursuit
-    int GetNumCopsDestroyed() const override {}
+    int GetNumCopsDestroyed() const override {
+        return mCopsDestroyed;
+    }
 
     // Overrides: IPursuit
-    int GetNumCopsDamaged() const override {}
+    int GetNumCopsDamaged() const override {
+        return mNumCopsDamaged;
+    }
 
     // Overrides: IPursuit
-    int GetTotalNumCopsInvolved() const override {}
+    int GetTotalNumCopsInvolved() const override {
+        return mTotalCopsInvolved;
+    }
 
     // Overrides: IPursuit
-    int GetNumCopsFullyEngaged() const override {}
+    int GetNumCopsFullyEngaged() const override {
+        return mNumCopsFullyEngaged;
+    }
 
     // Overrides: IPursuit
-    void NotifyRoadblockDodged() override {}
+    void NotifyRoadblockDodged() override {
+        mNumRoadblocksDodged++;
+    }
 
     // Overrides: IPursuit
-    void NotifyRoadblockDeployed() override {}
+    void NotifyRoadblockDeployed() override {
+        mNumRoadblocksDeployed++;
+    }
 
     // Overrides: IPursuit
-    void NotifyPropertyDamaged(int cost) override {}
+    void NotifyPropertyDamaged(int cost) override {
+        mPropertyDamageValue += cost;
+        mPropertyDamageCount++;
+    }
 
     // Overrides: IPursuit
-    void NotifyTrafficCarHit() override {}
+    void NotifyTrafficCarHit() override {
+        mNumTrafficCarsHit++;
+    }
 
     // Overrides: IPursuit
-    void NotifySpikeStripsDodged(int num) override {}
+    void NotifySpikeStripsDodged(int num) override {
+        mNumSpikeStripsDodged += num;
+    }
 
     // Overrides: IPursuit
-    void NotifySpikeStripDeployed() override {}
+    void NotifySpikeStripDeployed() override {
+        mNumSpikeStripsDeployed++;
+    }
 
     // Overrides: IPursuit
-    void NotifyHeliSpikeStripDeployed(int num) override {}
+    void NotifyHeliSpikeStripDeployed(int num) override {
+        mNumHeliSpikeStripsDeployed += num;
+    }
 
     // Overrides: IPursuit
-    void NotifyCopCarDeployed() override {}
+    void NotifyCopCarDeployed() override {
+        mNumCopCarsDeployed++;
+    }
 
     // Overrides: IPursuit
-    void NotifySupportVehicleDeployed() override {}
+    void NotifySupportVehicleDeployed() override {
+        mNumSupportVehiclesDeployed++;
+    }
 
     // Overrides: IPursuit
-    int GetNumRoadblocksDodged() const override {}
+    int GetNumRoadblocksDodged() const override {
+        return mNumRoadblocksDodged;
+    }
 
     // Overrides: IPursuit
-    int GetNumRoadblocksDeployed() const override {}
+    int GetNumRoadblocksDeployed() const override {
+        return mNumRoadblocksDeployed;
+    }
 
     // Overrides: IPursuit
-    int GetValueOfPropertyDamaged() const override {}
+    int GetValueOfPropertyDamaged() const override {
+        return mPropertyDamageValue;
+    }
 
     // Overrides: IPursuit
-    int GetNumPropertyDamaged() const override {}
+    int GetNumPropertyDamaged() const override {
+        return mPropertyDamageCount;
+    }
 
     // Overrides: IPursuit
-    int GetNumTrafficCarsHit() const override {}
+    int GetNumTrafficCarsHit() const override {
+        return mNumTrafficCarsHit;
+    }
 
     // Overrides: IPursuit
-    int GetNumSpikeStripsDodged() const override {}
+    int GetNumSpikeStripsDodged() const override {
+        return mNumSpikeStripsDodged;
+    }
 
     // Overrides: IPursuit
-    int GetNumSpikeStripsDeployed() const override {}
+    int GetNumSpikeStripsDeployed() const override {
+        return mNumSpikeStripsDeployed;
+    }
 
     // Overrides: IPursuit
-    int GetNumHeliSpikeStripDeployed() const override {}
+    int GetNumHeliSpikeStripDeployed() const override {
+        return mNumHeliSpikeStripsDeployed;
+    }
 
     // Overrides: IPursuit
-    int GetNumCopCarsDeployed() const override {}
+    int GetNumCopCarsDeployed() const override {
+        return mNumCopCarsDeployed;
+    }
 
     // Overrides: IPursuit
-    int GetNumSupportVehiclesDeployed() const override {}
+    int GetNumSupportVehiclesDeployed() const override {
+        return mNumSupportVehiclesDeployed;
+    }
 
     // Overrides: IPursuit
-    enum ePursuitStatus GetPursuitStatus() const override {}
+    ePursuitStatus GetPursuitStatus() const override {
+        return mPursuitStatus;
+    }
 
     // Overrides: IPursuit
-    float GetTimeToBackupSpawned() const override {}
+    float GetTimeToBackupSpawned() const override {
+        return mBackupCountdownTimer;
+    }
 
     // Overrides: IPursuit
-    bool PendingRoadBlockRequest() const override {}
+    bool PendingRoadBlockRequest() const override {
+        return mNextRoadblockRequest;
+    }
 
     // Overrides: IPursuit
-    int GetNumHeliSpawns() const override {}
+    int GetNumHeliSpawns() const override {
+        return mNumHeliSpawns;
+    }
 
     // Overrides: IPursuit
-    int GetCopDestroyedBonusMultiplier() const override {}
+    int GetCopDestroyedBonusMultiplier() const override {
+        return mCopDestroyedBonusMultiplier;
+    }
 
     // Overrides: IPursuit
-    int GetMostRecentCopDestroyedRepPoints() const override {}
+    int GetMostRecentCopDestroyedRepPoints() const override {
+        return mMostRecentCopDestroyedRepPoints;
+    }
 
     // Overrides: IPursuit
-    UCrc32 GetMostRecentCopDestroyedType() const override {}
+    UCrc32 GetMostRecentCopDestroyedType() const override {
+        return mMostRecentCopDestroyedType;
+    }
 
     // Overrides: IPursuit
-    int GetNumCopsInWave() const override {}
+    int GetNumCopsInWave() const override {
+        return mNumCopsRequiredToEvade;
+    }
 
     // Overrides: IPursuit
-    int GetNumCopsRemainingInWave() const override {}
+    int GetNumCopsRemainingInWave() const override {
+        return UMath::Max(mNumCopsRequiredToEvade - mNumFullyEngagedCopsEvaded, 1);
+    }
 
     // Overrides: IPursuit
-    bool PursuitMeterCanShowBusted() const override {}
+    bool PursuitMeterCanShowBusted() const override {
+        return !mCoolDownMeterDisplayed || mPursuitMeterModeTimer > 2.5f;
+    }
 
     // Overrides: IPursuit
-    bool GetIsAJerk() const override {}
+    bool GetIsAJerk() const override {
+        return mIsAJerk;
+    }
 
     // Overrides: IPursuit
-    float GetMinDistanceToTarget() const override {}
+    float GetMinDistanceToTarget() const override {
+        return mMinDistanceToTarget;
+    }
 
     // Overrides: IPursuit
-    void SetBustedTimerToZero() override {}
+    void SetBustedTimerToZero() override {
+        mBustedTimer = 0.0f;
+    }
 
     // Overrides: IPursuit
-    bool GetEnterSafehouseOnDone() override {}
+    bool GetEnterSafehouseOnDone() override {
+        return mEnterSafehouseOnDestruct;
+    }
 
   private:
     HSIMTASK mSimulateTask;                     // offset 0x5C, size 0x4
