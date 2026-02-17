@@ -113,11 +113,17 @@ class PursuitFormation {
 
     virtual void Update(float dT, IPursuit *pursuit) {}
 
-    virtual float GetFinisherTolerance() {}
+    virtual float GetFinisherTolerance() {
+        return 1.0f;
+    }
 
-    virtual float GetFinisherTime() {}
+    virtual float GetFinisherTime() {
+        return 2.0f;
+    }
 
-    virtual float GetTimeToFinisher() {}
+    virtual float GetTimeToFinisher() {
+        return 4.0f;
+    }
 
     void SetMaxCops(unsigned int m) {
         mMaxCops = m;

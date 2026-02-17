@@ -15,14 +15,14 @@
 namespace Csis {
 
 enum Type_subject_battalion {
-    Type_subject_battalion_All_Units = 128,
-    Type_subject_battalion_Air_Support = 64,
-    Type_subject_battalion_Rhino_Units = 32,
-    Type_subject_battalion_Super_Pursuit = 16,
-    Type_subject_battalion_Alpine = 8,
-    Type_subject_battalion_City = 4,
-    Type_subject_battalion_Coastal = 2,
     Type_subject_battalion_Rosewood = 1,
+    Type_subject_battalion_Coastal = 2,
+    Type_subject_battalion_City = 4,
+    Type_subject_battalion_Alpine = 8,
+    Type_subject_battalion_Super_Pursuit = 16,
+    Type_subject_battalion_Rhino_Units = 32,
+    Type_subject_battalion_Air_Support = 64,
+    Type_subject_battalion_All_Units = 128,
 };
 
 };

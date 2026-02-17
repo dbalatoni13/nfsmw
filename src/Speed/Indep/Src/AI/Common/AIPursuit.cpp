@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/AI/AIPursuit.h"
+#include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/Camera/CameraAI.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_PostRace.hpp"
@@ -9,10 +10,13 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitlevels.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitsupport.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+
+#include <algorithm>
 
 PursuitFormation::PursuitFormation()
     : mMinFinisherCops(1), //
@@ -557,4 +561,112 @@ void AIPursuit::OnAttached(IAttachable *pOther) {
     }
     TrackVehicleCounts();
     Activity::OnAttached(pOther);
+}
+
+void AIPursuit::OnDetached(IAttachable *pOther) {
+    IVehicle *ivehicle;
+
+    if (UTL::COM::ComparePtr(pOther, mRoadBlock)) {
+        mRoadBlock = nullptr;
+    } else {
+        if (GetTarget()->IsValid() && UTL::COM::ComparePtr(GetTarget()->GetSimable(), pOther)) {
+            ISimable *defaultsimable = IPlayer::First(PLAYER_LOCAL)->GetSimable();
+
+            for (IVehicle::List::iterator i = mIVehicleList.begin(); i != mIVehicleList.end(); ++i) {
+                IVehicle *ivehicle = *i;
+                ivehicle->GetAIVehiclePtr()->GetTarget()->Aquire(defaultsimable);
+            }
+            mTarget->Clear();
+        } else if (pOther->QueryInterface(&ivehicle)) {
+            const UCrc32 crossName = "copcross";
+            bool isCross = ivehicle->GetVehicleName() == crossName;
+
+            if (ivehicle->IsDestroyed()) {
+                IncNumCopsDestroyed(ivehicle);
+                if (isCross) {
+                    mCrossState = CROSS_DISABLED;
+                }
+            } else if (isCross) {
+                mCrossState = CROSS_AVAILABLE;
+            }
+
+            IAIHelicopter *aih;
+            if (ivehicle->QueryInterface(&aih)) {
+                Attrib::Gen::pursuitlevels *plevels = GetPursuitLevelAttrib();
+                if (plevels) {
+                    mSpawnHeliTimer = plevels->TimeBetweenHeliActive();
+                }
+            }
+
+            IVehicle::List::iterator iter = std::find(mIVehicleList.begin(), mIVehicleList.end(), ivehicle);
+            if (iter != mIVehicleList.end()) {
+                bool bIsSupport = IsSupportVehicle(ivehicle);
+                if (bIsSupport) {
+                    mNumSupportVehiclesActive--;
+                    if (mNumSupportVehiclesActive == 0) {
+                        mGroundSupportRequest.Reset();
+                    }
+                }
+                mIVehicleList.erase(iter);
+
+                IPursuitAI *ipv;
+                if (ivehicle->QueryInterface(&ipv)) {
+                    if (ipv->WasWithinEngagementRadius() && !bIsSupport && mAllowStatsToAccumulate) {
+                        mNumFullyEngagedCopsEvaded++;
+                    }
+                    ipv->EndPursuit();
+                }
+
+                UCrc32 hash = ivehicle->GetVehicleName();
+                for (ContingentVector::iterator i = mCopContingent.begin();; i++) {
+                    if (i->mType == hash) {
+                        i->mCount--;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    TrackVehicleCounts();
+}
+
+void AIPursuit::IncNumCopsDestroyed(IVehicle *ivehicle) {
+    if (!mAllowStatsToAccumulate) {
+        return;
+    }
+    IVehicleAI *ivai = ivehicle->GetAIVehiclePtr();
+    if (ivai) {
+        mMostRecentCopDestroyedRepPoints = ivai->GetAttributes().RepPointsForDestroying(mCurrentPursuitLevel);
+        mMostRecentCopDestroyedType = ivehicle->GetVehicleName();
+
+        int multiplier = 1;
+        if (mCopDestroyedBonusTimer > 0.0f) {
+            if (mCopDestroyedBonusMultiplier < 3) {
+                mCopDestroyedBonusMultiplier++;
+            }
+            multiplier = mCopDestroyedBonusMultiplier;
+        } else {
+            mCopDestroyedBonusTimer = 0.0f;
+            mCopDestroyedBonusMultiplier = 1;
+        }
+        int repForDestruction = mMostRecentCopDestroyedRepPoints * multiplier;
+
+        Attrib::Gen::pursuitlevels *plevel = GetPursuitLevelAttrib();
+        if (plevel) {
+            mCopDestroyedBonusTimer = plevel->DestroyCopBonusTime();
+        }
+        IPerpetrator *iperp;
+        if (mTarget->QueryInterface(&iperp)) {
+            iperp->AddToPendingRepPointsFromCopDestruction(repForDestruction);
+        }
+    }
+
+    if (mRoadBlock) {
+        if (mRoadBlock->IsComprisedOf(ivehicle->GetSimable()->GetOwnerHandle())) {
+            mRoadBlock->IncNumCopsDestroyed();
+        }
+    }
+    mCopsDestroyed++;
+    GManager::Get().TrackValue("cops_destroyed_in_pursuit", mCopsDestroyed);
 }
