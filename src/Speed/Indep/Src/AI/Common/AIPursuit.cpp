@@ -1,9 +1,13 @@
 #include "Speed/Indep/Src/AI/AIPursuit.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
+#include "Speed/Indep/Src/Gameplay/GRace.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitlevels.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitsupport.h"
+#include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 
 PursuitFormation::PursuitFormation()
     : mMinFinisherCops(1), //
@@ -275,4 +279,140 @@ void GroundSupportRequest::Update(float dT) {
     }
 }
 
-AIPursuit::~AIPursuit() {}
+AIPursuit::AIPursuit(Sim::Param params)
+    : Sim::Activity(1),                  //
+      IPursuit(this),                    //
+      mCoolDownTimeRequired(60.0f),      //
+      mTarget(nullptr),                  //
+      mFormation(nullptr),               //
+      mRoadBlock(nullptr),               //
+      mTimeSinceSetupSpeech(0.0f),       //
+      mBustedTimer(0.0f),                //
+      mBustedIncrement(0.0f),            //
+      mBustedHUDTime(0.0f),              //
+      mIsPerpBusted(false),              //
+      mIsPursuitBailed(false),           //
+      mMostRecentCopDestroyedType(),     //
+      mEvadeLevel(0.0f),                 //
+      mCoolDownTimeRemaining(0.0f),      //
+      mPercentOfContingentEngaged(0.0f), //
+      mNumCopsFullyEngaged(0),           //
+      mPursuitMeter(0.0f),               //
+      mIsPerpInSight(true),              //
+      mHiddenZoneTime(0.0f),             //
+      mRepPointsPerMinute(0),            //
+      mTotalCopsInvolved(0),             //
+      mCopsDestroyed(0),                 //
+      mNumCopsRequiredToEvade(0),        //
+      mNumCopsToTriggerBackupTime(0),    //
+      mNumFullyEngagedCopsEvaded(0),     //
+      mNumHeliSpawns(0),                 //
+      mNumRoadblocksDodged(0),           //
+      mNumRoadblocksDeployed(0),         //
+      mNumCopsDamaged(0),                //
+      mNumCopsNeeded(0),                 //
+      mCrossState(CROSS_AVAILABLE),      //
+      mNumTrafficCarsHit(0),             //
+      mNumSpikeStripsDodged(0),          //
+      mFastSpawnNext(false),             //
+      mPropertyDamageValue(0),           //
+      mPropertyDamageCount(0),           //
+      mNumSpikeStripsDeployed(0),        //
+      mNumHeliSpikeStripsDeployed(0),    //
+      mNumCopCarsDeployed(0),            //
+      mNumSupportVehiclesDeployed(0),    //
+      mNumSupportVehiclesActive(0),      //
+      mNextRoadblockRequest(false),      //
+      mGroundSupportRequest(),           //
+      mTimeSinceAnyCopSawPerp(-5.0f),    //
+      mEnterSafehouseOnDestruct(false),  //
+      mPursuitStatus(PS_INITIAL_CHASE),  //
+      mBackupCountdownTimer(0.0f) {
+    mSimulateTask = AddTask("AIPursuit", 0.25f, 0.0f, Sim::TASK_FRAME_VARIABLE);
+    mBustedTimerTask = AddTask("AIPursuit", 1.0f, 0.0f, Sim::TASK_FRAME_VARIABLE);
+    Sim::ProfileTask(mSimulateTask, "AIPursuit");
+
+    mIVehicleList.clear();
+    mIVehicleList.reserve(10);
+
+    mNearestCopInRoadblock = nullptr;
+    mRoadBlockTimer = 0.0f;
+    mDistanceToNearestCopInRoadblock = 0.0f;
+    mTarget = new AITarget(nullptr);
+    mTarget->Clear();
+
+    mInFormationTimer = 0.0f;
+    mTotalPursuitTime = 0.0f;
+    mBreakerTimer = -1.0f;
+    mCollapseActive = false;
+    mFormationAttemptCount = 0;
+
+    mLastKnownLocation = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
+    mCopContingent.reserve(5);
+
+    // TODO later after we have more Gameplay stuff decomped
+    // flipped in ghidra
+    if (GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
+        if (GRaceStatus::IsFinalEpicPursuit()) {
+            mBaseHeat = 6.0f;
+            mMaximumHeat = 6.0f;
+        } else {
+        }
+
+    } else {
+    }
+
+    mCurrentPursuitLevel = 0;
+    mActiveFormationTime = 0.0f;
+    mActiveFormation = STAGGER_FOLLOW;
+    InitFormation(0);
+    mSpawnCopTimer = 0.0f;
+    mDoTestForHeliSearch = false;
+    mSpawnHeliTimer = 10.0f;
+    mForceHeliSpawnNext = false;
+    mCopDestroyedBonusTimer = 0.0f;
+    mMostRecentCopDestroyedRepPoints = 0;
+    mCopDestroyedBonusMultiplier = 1;
+    mSupportCheckTimer = 10.0f;
+    mMostRecentCopDestroyedType = (const char *)nullptr;
+    mCoolDownMeterDisplayed = false;
+    mPursuitMeterModeTimer = 0.0f;
+    mSupportPriorityCheckDone = false;
+    mGroundSupportRequest.Reset();
+
+    mJerkLagPosition = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
+    mJerkLagDistance = 1000.0f;
+
+    mNumRBCopsAdded = 0;
+    mMinDistanceToTarget = 100000.0f;
+    mIsAJerk = false;
+}
+
+AIPursuit::~AIPursuit() {
+    DetachAll();
+    RemoveTask(mSimulateTask);
+    RemoveTask(mBustedTimerTask);
+
+    delete mFormation;
+    delete mTarget;
+
+    // TODO is this in the destructor of GroundSupportRequest?
+    mGroundSupportRequest.Reset();
+}
+
+Sim::IActivity *AIPursuit::Construct(Sim::Param params) {
+    return new AIPursuit(params);
+}
+
+Attrib::Gen::pursuitlevels *AIPursuit::GetPursuitLevelAttrib() const {
+    Attrib::Gen::pursuitlevels *plevels = nullptr;
+    IPerpetrator *perp;
+    if (GetTarget()) {
+        if (GetTarget()->QueryInterface(&perp)) {
+            plevels = perp->GetPursuitLevelAttrib();
+        }
+    } else {
+        plevels = nullptr;
+    }
+    return plevels;
+}

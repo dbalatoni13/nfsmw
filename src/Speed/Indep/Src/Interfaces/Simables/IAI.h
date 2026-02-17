@@ -194,7 +194,11 @@ struct GroundSupportRequest {
         ACTIVE = 2,
     };
 
-    GroundSupportRequest() {}
+    GroundSupportRequest()
+        : mHeavySupport(nullptr),  //
+          mLeaderSupport(nullptr), //
+          mSupportTimer(0.0f),     //
+          mSupportRequestStatus(NOT_ACTIVE) {}
 
     ~GroundSupportRequest() {}
 
@@ -218,7 +222,7 @@ class IPursuit : public UTL::COM::IUnknown, public UTL::Collections::Listable<IP
     IPursuit(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   protected:
-    ~IPursuit() override;
+    ~IPursuit() override {}
 
   public:
     virtual bool IsTarget(AITarget *aitarget) const;
