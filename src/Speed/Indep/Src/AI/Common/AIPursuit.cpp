@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/AI/AIPursuit.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/Camera/CameraAI.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_PostRace.hpp"
@@ -669,4 +670,235 @@ void AIPursuit::IncNumCopsDestroyed(IVehicle *ivehicle) {
     }
     mCopsDestroyed++;
     GManager::Get().TrackValue("cops_destroyed_in_pursuit", mCopsDestroyed);
+}
+
+void AIPursuit::TrackVehicleCounts() {
+    int copCarCount = 0;
+    int chopperCount = 0;
+
+    for (IVehicle::List::const_iterator vehicleIter = mIVehicleList.begin(); vehicleIter != mIVehicleList.end(); ++vehicleIter) {
+        IVehicle *ivehicle = *vehicleIter;
+        bool bIsChopper = ivehicle->GetVehicleClass() == VehicleClass::CHOPPER;
+        if (bIsChopper) {
+            chopperCount++;
+        } else {
+            copCarCount++;
+        }
+    }
+    if (GManager::Exists() && mAllowStatsToAccumulate) {
+        GManager::Get().TrackValue("cops_in_pursuit", copCarCount);
+        GManager::Get().TrackValue("helis_in_pursuit", chopperCount);
+    }
+}
+
+FormationType AIPursuit::GetFormationType() const {
+    return mActiveFormation;
+}
+
+void AIPursuit::InitFormation(int numCops) {
+    delete mFormation;
+
+    switch (mActiveFormation) {
+        case PIT:
+            mFormation = new PitFormation(numCops);
+            break;
+        case BOX_IN:
+            mFormation = new BoxInFormation(numCops, this);
+            break;
+        case ROLLING_BLOCK:
+            mFormation = new RollingBlockFormation(numCops, this);
+            break;
+        case FOLLOW:
+            mFormation = new FollowFormation(numCops);
+            break;
+        case HERD:
+            mFormation = new HerdFormation(numCops);
+            break;
+        case HELI_PURSUIT:
+            mFormation = new FollowFormation(numCops);
+            break;
+        case STAGGER_FOLLOW:
+            mFormation = new StaggerFollowFormation(numCops);
+            break;
+        default:
+            break;
+    }
+}
+
+void AIPursuit::EndCurrentFormation() {
+    mActiveFormationTime = 0.0f;
+    mBreakerTimer = -1.0f;
+}
+
+void AIPursuit::AssignCopOffset(int cop, Pursuers &assignCopList, const UMath::Vector3 &pursuitOffset, const UMath::Vector3 &inPositionOffset,
+                                const UCrc32 &ipg, bool information) {
+    int numCops = assignCopList.size();
+    if (cop < numCops) {
+        IPursuitAI *ipv = assignCopList[cop];
+        ipv->SetInPositionOffset(inPositionOffset);
+        ipv->SetPursuitOffset(pursuitOffset);
+        ipv->SetInFormation(information);
+        ipv->SetInPositionGoal(ipg);
+    }
+}
+
+void AIPursuit::AssignChopperGoal(IPursuitAI *pursuitChopper) {
+    if (IsAttemptingRoadBlock())
+        return;
+
+    IVehicleAI *via;
+    pursuitChopper->QueryInterface(&via);
+
+    if (via->IsCurrentGoal("AIGoalHeliExit") == false) {
+        pursuitChopper->SetInPositionGoal("AIGoalHeliPursuit");
+        pursuitChopper->SetInFormation(true);
+        if (!via->IsCurrentGoal(pursuitChopper->GetInPositionGoal())) {
+            pursuitChopper->DoInPositionGoal();
+        }
+    }
+}
+
+DECLARE_CONTAINER_TYPE(AIPursuitEvenOutOffsetsSourceOffsets);
+
+// Functionally matching I think, usual vector stack problem
+void AIPursuit::EvenOutOffsets(Vector3List &copRelativePositions, FormationTargetList &formationOffsets) {
+    typedef UTL::Std::vector<PursuitFormation::TargetOffsetList::const_iterator, _type_AIPursuitEvenOutOffsetsSourceOffsets> SourceVector;
+
+    const PursuitFormation::TargetOffsetList &offsetList = mFormation->GetTargetOffsets();
+
+    SourceVector source_offsets;
+    source_offsets.reserve(offsetList.size());
+
+    for (PursuitFormation::TargetOffsetList::const_iterator i = offsetList.begin(); i != offsetList.end(); ++i) {
+        source_offsets.push_back(i);
+    }
+
+    while (copRelativePositions.size() > formationOffsets.size() && formationOffsets.size() < mFormation->GetMaxCops()) {
+        int bestPriority = 0;
+        float bestDistance = 0.0f;
+        PursuitFormation::TargetOffsetList::const_iterator *bestOffset = source_offsets.end();
+
+        for (PursuitFormation::TargetOffsetList::const_iterator *i = source_offsets.begin(); i != source_offsets.end(); ++i) {
+            const PursuitFormation::TargetOffset *offset = *i;
+            if (offset && (bestOffset == source_offsets.end() || offset->mMinTargets <= bestPriority)) {
+                UMath::Vector3 offsetPosition = offset->mOffset;
+                float combined_distance = 0.0f;
+
+                for (Vector3List::const_iterator c = copRelativePositions.begin(); c != copRelativePositions.end(); ++c) {
+                    UMath::Vector3 copPosition = *c;
+                    combined_distance += UMath::Distance(copPosition, offsetPosition);
+                }
+
+                if (bestOffset == source_offsets.end() || combined_distance <= bestDistance) {
+                    bestOffset = i;
+                    bestDistance = combined_distance;
+                    bestPriority = (*bestOffset)->mMinTargets;
+                }
+            }
+        }
+
+        if (bestOffset == source_offsets.end())
+            break;
+
+        formationOffsets.push_back(FormationTarget((*bestOffset)->mOffset, (*bestOffset)->mInPositionOffset, (*bestOffset)->mInPositionGoal));
+        *bestOffset = 0;
+    }
+}
+
+DECLARE_CONTAINER_TYPE(AIPursuitAssignClosestOffsetsDistances);
+DECLARE_CONTAINER_TYPE(AIPursuitAssignClosestOffsetsMaximums);
+
+// Functionally matching ig? dwarf is matching, usual stack problem due to vectors and some issues with the loops
+void AIPursuit::AssignClosestOffsets(Vector3List &copRelativePositions, Pursuers &assignCopList, FormationTargetList &formationOffsets,
+                                     bool information) {
+    int numRows = copRelativePositions.size();
+    int numCols = formationOffsets.size();
+
+    UTL::Std::vector<float, _type_AIPursuitAssignClosestOffsetsDistances> copOffsetDistance;
+    UTL::Std::vector<float, _type_AIPursuitAssignClosestOffsetsMaximums> copOffsetMaximums;
+
+    copOffsetDistance.reserve(numRows * numCols);
+    copOffsetMaximums.reserve(numRows);
+
+    for (int i = 0; i < numRows; ++i) {
+        UMath::Vector3 copPosition = copRelativePositions[i];
+        const float zScale = 0.25f;
+        copPosition.z *= zScale;
+
+        float maxDistance = 0.0f;
+        for (int j = 0; j < numCols; ++j) {
+            UMath::Vector3 offsetPosition = formationOffsets[j].Offset;
+            offsetPosition.z *= zScale;
+
+            float distance = UMath::Distancexz(copPosition, offsetPosition);
+            copOffsetDistance.push_back(distance);
+
+            maxDistance = UMath::Max(distance, maxDistance);
+        }
+        copOffsetMaximums.push_back(maxDistance);
+    }
+
+    const float INDEX_ASSIGNED = -1.0f;
+    int copsToAssignOffsets = formationOffsets.size();
+    do {
+        int currentCop = -1;
+        int currentOffset;
+        float furthestDistance = 0.0f;
+
+        for (int i = 0; i < numRows; ++i) {
+            float distance = copOffsetMaximums[i];
+            if (distance != INDEX_ASSIGNED && distance > furthestDistance) {
+                furthestDistance = distance;
+                currentCop = i;
+            }
+        }
+        if (currentCop < 0) {
+            continue;
+        }
+
+        currentOffset = -1;
+        // TODO issue with this loop
+        for (int j = 0; j < numCols; ++j) {
+            float distance = copOffsetDistance[currentCop * numCols + j];
+            if (distance != INDEX_ASSIGNED && distance == furthestDistance) {
+                currentOffset = j;
+                break;
+            }
+        }
+        if (currentOffset < 0) {
+            continue;
+        }
+
+        currentCop = -1;
+        float closestDistance = 100000.0f;
+        for (int i = 0; i < numRows; ++i) {
+            float distance = copOffsetDistance[i * numCols + currentOffset];
+            if (distance != INDEX_ASSIGNED && copOffsetMaximums[i] != INDEX_ASSIGNED && distance < closestDistance) {
+                closestDistance = distance;
+                currentCop = i;
+            }
+        }
+        if (currentCop < 0) {
+            continue;
+        }
+
+        AssignCopOffset(currentCop, assignCopList, formationOffsets[currentOffset].Offset, formationOffsets[currentOffset].InPositionOffset,
+                        formationOffsets[currentOffset].Goal, information);
+        copOffsetMaximums[currentCop] = INDEX_ASSIGNED;
+        for (int i = 0; i < numRows; ++i) {
+            copOffsetDistance[i * numCols + currentOffset] = INDEX_ASSIGNED;
+
+            if (copOffsetMaximums[i] < 0.0f) {
+                continue;
+            }
+
+            float maxDistance = 0.0f;
+            for (int j = 0; j < numCols; ++j) {
+                float distance = copOffsetDistance[i * numCols + j];
+
+                maxDistance = UMath::Max(distance, maxDistance);
+            }
+            copOffsetMaximums[i] = maxDistance;
+        }
+    } while (--copsToAssignOffsets > 0);
 }

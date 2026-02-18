@@ -11,7 +11,7 @@
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/Sim/SimActivity.h"
 
-DECLARE_VECTOR_TYPE(PursuitFormationTargetOffsetList);
+DECLARE_CONTAINER_TYPE(PursuitFormationTargetOffsetList);
 
 // total size: 0x20
 class PursuitFormation {
@@ -260,10 +260,10 @@ struct CopAndAngle {
     float distance;  // offset 0x8, size 0x4
 };
 
-DECLARE_VECTOR_TYPE(AIPursuers);
-DECLARE_VECTOR_TYPE(AIVector3List);
-DECLARE_VECTOR_TYPE(AIFormationTargetList);
-DECLARE_VECTOR_TYPE(AICopContingent);
+DECLARE_CONTAINER_TYPE(AIPursuers);
+DECLARE_CONTAINER_TYPE(AIVector3List);
+DECLARE_CONTAINER_TYPE(AIFormationTargetList);
+DECLARE_CONTAINER_TYPE(AICopContingent);
 
 // total size: 0x248
 class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {

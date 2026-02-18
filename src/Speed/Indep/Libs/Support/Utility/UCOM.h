@@ -11,7 +11,7 @@
 
 typedef void *HINTERFACE;
 
-DECLARE_VECTOR_TYPE(UComObject);
+DECLARE_CONTAINER_TYPE(UComObject);
 
 namespace UTL {
 namespace COM {

@@ -12,7 +12,7 @@
 #include "Speed/Indep/Src/Interfaces/SimModels/IModel.h"
 #include "Speed/Indep/Src/Sim/SimEffect.h"
 
-DECLARE_VECTOR_TYPE(SimModelChildren);
+DECLARE_CONTAINER_TYPE(SimModelChildren);
 
 namespace Sim {
 

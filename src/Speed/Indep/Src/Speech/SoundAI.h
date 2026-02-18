@@ -16,7 +16,7 @@
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/SimActivity.h"
 
-DECLARE_VECTOR_TYPE(IVehiclePtrs);
+DECLARE_CONTAINER_TYPE(IVehiclePtrs);
 
 // total size: 0x260
 class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public UTL::Collections::Singleton<SoundAI> {

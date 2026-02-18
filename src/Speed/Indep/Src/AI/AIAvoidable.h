@@ -11,7 +11,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 
-DECLARE_VECTOR_TYPE(AIAvoidableNeighbors);
+DECLARE_CONTAINER_TYPE(AIAvoidableNeighbors);
 
 typedef UTL::Std::list<struct AIAvoidable *, _type_AIAvoidableNeighbors> AvoidableList;
 

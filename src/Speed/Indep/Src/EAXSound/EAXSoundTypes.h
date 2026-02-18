@@ -19,18 +19,18 @@ struct copPair {
     struct EAXCop *cop; // offset 0x4, size 0x4
 };
 
-DECLARE_VECTOR_TYPE(copMap);
+DECLARE_CONTAINER_TYPE(copMap);
 
 class copMap : public UTL::Std::vector<copPair, _type_copMap> {
   public:
     copMap(int size) {}
 };
 
-DECLARE_VECTOR_TYPE(copList);
+DECLARE_CONTAINER_TYPE(copList);
 
 class copList : public UTL::Std::vector<EAXCop *, _type_copList>, public AudioMemBase {};
 
-DECLARE_VECTOR_TYPE(voiceIDs);
+DECLARE_CONTAINER_TYPE(voiceIDs);
 
 struct voiceIDs : public UTL::Std::vector<int, _type_voiceIDs> {};
 

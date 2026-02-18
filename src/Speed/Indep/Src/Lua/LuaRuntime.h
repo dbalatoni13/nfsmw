@@ -8,8 +8,8 @@
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/Lua/source/lua.h"
 
-DECLARE_VECTOR_TYPE(LuaLargeFreeBlock);
-DECLARE_VECTOR_TYPE(LuaEmergencyAlloc);
+DECLARE_CONTAINER_TYPE(LuaLargeFreeBlock);
+DECLARE_CONTAINER_TYPE(LuaEmergencyAlloc);
 
 // total size: 0x7C
 class LuaRuntime {

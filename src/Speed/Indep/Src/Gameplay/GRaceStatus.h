@@ -81,7 +81,7 @@ struct GRacerInfo {
 #endif
 };
 
-DECLARE_VECTOR_TYPE(ID_GRaceStatusTriggerList);
+DECLARE_CONTAINER_TYPE(ID_GRaceStatusTriggerList);
 
 // total size: 0x14
 class GRaceParameters {

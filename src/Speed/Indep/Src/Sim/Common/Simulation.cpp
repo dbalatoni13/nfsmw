@@ -43,8 +43,8 @@
 #include <algorithm>
 #include <vector>
 
-DECLARE_VECTOR_TYPE(CollisionListener);
-DECLARE_VECTOR_TYPE(CollisionParticipant);
+DECLARE_CONTAINER_TYPE(CollisionListener);
+DECLARE_CONTAINER_TYPE(CollisionParticipant);
 
 class SimSystem;
 

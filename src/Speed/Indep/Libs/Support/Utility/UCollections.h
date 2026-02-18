@@ -10,7 +10,7 @@
 
 #include <algorithm>
 
-DECLARE_VECTOR_TYPE(UContainer);
+DECLARE_CONTAINER_TYPE(UContainer);
 
 namespace UTL {
 namespace Collections {

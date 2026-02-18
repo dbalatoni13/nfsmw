@@ -10,8 +10,8 @@
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Sim/SimAttachable.h"
 
-DECLARE_VECTOR_TYPE(ID_POMechanics);
-DECLARE_VECTOR_TYPE(ID_POBehaviors);
+DECLARE_CONTAINER_TYPE(ID_POMechanics);
+DECLARE_CONTAINER_TYPE(ID_POBehaviors);
 
 // total size: 0xAC
 class PhysicsObject : public Sim::Object,

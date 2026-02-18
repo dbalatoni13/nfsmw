@@ -9,8 +9,8 @@
 #include "Speed/Indep/Src/Gameplay/GActivity.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
 
-DECLARE_VECTOR_TYPE(ID_LuaActivityList);
-DECLARE_VECTOR_TYPE(ID_LuaMessageSubscriberMap);
+DECLARE_CONTAINER_TYPE(ID_LuaActivityList);
+DECLARE_CONTAINER_TYPE(ID_LuaMessageSubscriberMap);
 
 // total size: 0x20
 class LuaPostOffice {

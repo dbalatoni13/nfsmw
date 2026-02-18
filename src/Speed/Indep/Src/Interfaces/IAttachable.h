@@ -7,7 +7,7 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 
-DECLARE_VECTOR_TYPE(IAttachableList);
+DECLARE_CONTAINER_TYPE(IAttachableList);
 
 struct IAttachable : public UTL::COM::IUnknown {
     typedef UTL::Std::list<IAttachable *, _type_IAttachableList> List;

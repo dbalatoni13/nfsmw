@@ -18,9 +18,9 @@
 #include "Speed/Indep/Src/Misc/Hermes.h"
 #include "Speed/Indep/Src/Sim/SimActivity.h"
 
-DECLARE_VECTOR_TYPE(AICopManagerSpawnRequests);
-DECLARE_VECTOR_TYPE(AICopManagerPursuits);
-DECLARE_VECTOR_TYPE(AICopManagerRoadBlocks);
+DECLARE_CONTAINER_TYPE(AICopManagerSpawnRequests);
+DECLARE_CONTAINER_TYPE(AICopManagerPursuits);
+DECLARE_CONTAINER_TYPE(AICopManagerRoadBlocks);
 
 // total size: 0x130
 class AICopManager : public Sim::Activity, public AISpawnManager, public ICopMgr, public IVehicleCache, public Debugable {

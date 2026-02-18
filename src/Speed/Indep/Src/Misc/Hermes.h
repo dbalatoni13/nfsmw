@@ -16,7 +16,7 @@
 
 namespace Hermes {
 
-DECLARE_VECTOR_TYPE(ID_HermesHandlerVector);
+DECLARE_CONTAINER_TYPE(ID_HermesHandlerVector);
 
 // total size: 0x10
 class Message {

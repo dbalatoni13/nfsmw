@@ -13,7 +13,7 @@
 #include "UTLAllocator.h"
 
 // clang-format off
-#define DECLARE_VECTOR_TYPE(Type)\
+#define DECLARE_CONTAINER_TYPE(Type)\
 struct _type_##Type { \
     const char* name() {\
         return #Type; \
@@ -21,10 +21,10 @@ struct _type_##Type { \
 };
 // clang-format on
 
-DECLARE_VECTOR_TYPE(vector);
-DECLARE_VECTOR_TYPE(list);
-DECLARE_VECTOR_TYPE(map);
-DECLARE_VECTOR_TYPE(set);
+DECLARE_CONTAINER_TYPE(vector);
+DECLARE_CONTAINER_TYPE(list);
+DECLARE_CONTAINER_TYPE(map);
+DECLARE_CONTAINER_TYPE(set);
 
 namespace UTL {
 namespace Std {

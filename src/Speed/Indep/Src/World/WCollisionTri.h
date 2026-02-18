@@ -20,8 +20,8 @@ struct WCollisionTri {
     unsigned short PAD;                   // offset 0x2E, size 0x2
 };
 
-DECLARE_VECTOR_TYPE(WCollisionWarnVector);
-DECLARE_VECTOR_TYPE(WCollisionVector);
+DECLARE_CONTAINER_TYPE(WCollisionWarnVector);
+DECLARE_CONTAINER_TYPE(WCollisionVector);
 
 // TODO move these?
 template <typename T, std::size_t N> class WCollisionWarnVector : public UTL::Std::vector<T, _type_WCollisionWarnVector> {};

@@ -26,8 +26,8 @@ enum eLaneSelection {
 
 struct IVehicle;
 
-DECLARE_VECTOR_TYPE(IRoadBlockVehicles);
-DECLARE_VECTOR_TYPE(IRoadBlockSmackables);
+DECLARE_CONTAINER_TYPE(IRoadBlockVehicles);
+DECLARE_CONTAINER_TYPE(IRoadBlockSmackables);
 
 struct IPursuit;
 

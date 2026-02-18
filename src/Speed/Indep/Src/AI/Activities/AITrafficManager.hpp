@@ -27,8 +27,8 @@ enum eTrafficDensity {
     eTRAFFICDENSITY_OFF = 0,
 };
 
-DECLARE_VECTOR_TYPE(TrafficList);
-DECLARE_VECTOR_TYPE(AITrafficManager_PatternMap);
+DECLARE_CONTAINER_TYPE(TrafficList);
+DECLARE_CONTAINER_TYPE(AITrafficManager_PatternMap);
 
 // total size: 0x3C4
 class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehicleCache, public Debugable {
