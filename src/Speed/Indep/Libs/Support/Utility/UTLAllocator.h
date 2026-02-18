@@ -12,21 +12,25 @@
 namespace UTL {
 namespace Std {
 template <typename T, typename Tag> struct Allocator {
-    typedef T value_type;
     typedef std::size_t size_type;
+    typedef std::ptrdiff_t difference_type;
     typedef T *pointer;
     typedef const T *const_pointer;
-    typedef value_type &reference;
-    typedef const value_type &const_reference;
-    typedef std::ptrdiff_t difference_type;
+    typedef T &reference;
+    typedef const T &const_reference;
+    typedef T value_type;
 
     template <typename U> struct rebind {
         typedef Allocator<U, Tag> other;
     };
 
     Allocator() {}
+
     ~Allocator() {}
+
     template <typename U> Allocator(const Allocator<U, Tag> &) {}
+
+    Allocator(const Allocator<T, Tag> &) {}
 
     pointer allocate(std::size_t n) {
         return n != 0 ? reinterpret_cast<pointer>(gFastMem.Alloc(n * sizeof(T), nullptr)) : nullptr;

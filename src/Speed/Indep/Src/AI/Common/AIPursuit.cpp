@@ -760,7 +760,7 @@ void AIPursuit::AssignChopperGoal(IPursuitAI *pursuitChopper) {
 
 DECLARE_CONTAINER_TYPE(AIPursuitEvenOutOffsetsSourceOffsets);
 
-// Functionally matching I think, usual vector stack problem
+// Functionally matching I think
 void AIPursuit::EvenOutOffsets(Vector3List &copRelativePositions, FormationTargetList &formationOffsets) {
     typedef UTL::Std::vector<PursuitFormation::TargetOffsetList::const_iterator, _type_AIPursuitEvenOutOffsetsSourceOffsets> SourceVector;
 
@@ -808,7 +808,7 @@ void AIPursuit::EvenOutOffsets(Vector3List &copRelativePositions, FormationTarge
 DECLARE_CONTAINER_TYPE(AIPursuitAssignClosestOffsetsDistances);
 DECLARE_CONTAINER_TYPE(AIPursuitAssignClosestOffsetsMaximums);
 
-// Functionally matching ig? dwarf is matching, usual stack problem due to vectors and some issues with the loops
+// Functionally matching ig? dwarf is matching, some issues with a loop
 void AIPursuit::AssignClosestOffsets(Vector3List &copRelativePositions, Pursuers &assignCopList, FormationTargetList &formationOffsets,
                                      bool information) {
     int numRows = copRelativePositions.size();
@@ -830,7 +830,7 @@ void AIPursuit::AssignClosestOffsets(Vector3List &copRelativePositions, Pursuers
             UMath::Vector3 offsetPosition = formationOffsets[j].Offset;
             offsetPosition.z *= zScale;
 
-            float distance = UMath::Distancexz(copPosition, offsetPosition);
+            float distance = UMath::Distancexz(offsetPosition, copPosition);
             copOffsetDistance.push_back(distance);
 
             maxDistance = UMath::Max(distance, maxDistance);
