@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/AI/AIPursuit.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/Camera/CameraAI.hpp"
@@ -16,8 +17,12 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 #include <algorithm>
+#include <cmath>
+#include <cstdlib>
 
 PursuitFormation::PursuitFormation()
     : mMinFinisherCops(1), //
@@ -901,4 +906,165 @@ void AIPursuit::AssignClosestOffsets(Vector3List &copRelativePositions, Pursuers
             copOffsetMaximums[i] = maxDistance;
         }
     } while (--copsToAssignOffsets > 0);
+}
+
+static int CopAndAngleSortPredicate(const void *l, const void *r) {
+    if (reinterpret_cast<const CopAndAngle *>(l)->angle <= reinterpret_cast<const CopAndAngle *>(r)->angle) {
+        return -1;
+    } else {
+        return 1;
+    }
+}
+
+static int CopAndAngleDistanceSortPredicate(const void *l, const void *r) {
+    if (reinterpret_cast<const CopAndAngle *>(l)->distance <= reinterpret_cast<const CopAndAngle *>(r)->distance) {
+        return -1;
+    } else {
+        return 1;
+    }
+}
+
+DECLARE_CONTAINER_TYPE(AIPursuitSetupCollapseCopAngles);
+
+// UNSOLVED
+inline float cheap_atan_like_function(float f, float s) {
+    if (f > 0.0f) {
+        if (s > 0.0f) {
+            if (f > s) {
+                return s / f;
+            } else {
+                return 2.0f - f / s;
+            }
+        } else {
+            // TODO
+            if (f > -s) {
+                return -2.0f - f / s;
+            } else {
+                return s / f;
+            }
+        }
+    } else {
+        if (s > 0.0f) {
+            if (-f > s) {
+                return s / f + 4.0f;
+            } else {
+                return 2.0f - f / s;
+            }
+        } else {
+            if (-f > -s) {
+                return s / f + -4.0f;
+            } else {
+                return -2.0f - f / s;
+            }
+        }
+    }
+}
+
+// Functionally matching
+bool AIPursuit::SetupCollapse(const Pursuers &cops, int max_inner, float inner_radius, float outer_radius) {
+    typedef UTL::Std::vector<CopAndAngle, _type_AIPursuitSetupCollapseCopAngles> CopAngleVector;
+
+    inner_radius = bMax(3.0f, inner_radius);
+    outer_radius = bMax(inner_radius + 1.0f, outer_radius);
+
+    CopAngleVector copangles; // r1+0x8
+    copangles.reserve(cops.size());
+
+    AITarget *target = GetTarget(); // r30
+
+    UMath::Vector3 front; // r1+0x20
+    if (target->GetSpeed() < KPH2MPS(5.0f)) {
+        target->GetForwardVector(front);
+    } else {
+        front = target->GetLinearVelocity();
+    }
+    UMath::Normalize(front);
+
+    UMath::Vector3 side; // r1+0x30
+    side = UMath::Vector3Make(front.z, 0.0f, -front.x);
+    UMath::Normalize(side);
+
+    UMath::Vector3 pos = target->GetPosition(); // r1+0x40
+
+    UCrc32 fleegoal("AIGoalFleePursuit");
+
+    Pursuers::const_iterator pursuitIter; // r28
+    for (pursuitIter = cops.begin(); pursuitIter != cops.end(); ++pursuitIter) {
+        IVehicleAI *iai;
+        IPursuitAI *ipv = *pursuitIter;
+        if (!ipv->QueryInterface(&iai)) {
+            continue;
+        }
+        UMath::Vector3 off;
+        if (UMath::Distance(iai->GetVehicle()->GetPosition(), mTarget->GetPosition()) > 60.0f) {
+            continue;
+        }
+        if (!iai->GetDrivableToTargetPos()) {
+            continue;
+        }
+        if (ipv->GetSupportGoal() != UCrc32::kNull || iai->GetGoalName() == fleegoal) {
+            continue;
+        }
+        if (iai->GetVehicle()->GetVehicleClass() == VehicleClass::CHOPPER) {
+            continue;
+        }
+        UMath::Sub(iai->GetVehicle()->GetPosition(), pos, off);
+        float d = UMath::Length(off);
+        float f = UMath::Dot(front, off);
+        float s = UMath::Dot(side, off);
+        float angle = cheap_atan_like_function(f, s);
+
+        copangles.push_back(CopAndAngle(ipv, angle, d));
+    }
+
+    if (copangles.size() == 0) {
+        return false;
+    }
+
+    int inneroffset = 0;             // r31
+    int numinner = copangles.size(); // r29
+    if ((int)copangles.size() > max_inner) {
+        qsort(&copangles[0], copangles.size(), sizeof(CopAndAngle), CopAndAngleDistanceSortPredicate);
+        inneroffset = copangles.size() - max_inner;
+        numinner = max_inner;
+        AssignCopsInCircle(&copangles[0], inneroffset, outer_radius, front, side);
+    }
+    AssignCopsInCircle(&copangles[inneroffset], numinner, inner_radius, front, side);
+
+    return true;
+}
+
+static const UCrc32 kPullOverGoal = "AIGoalPullOver";
+
+void AIPursuit::AssignCopsInCircle(CopAndAngle *copangles, int num, float radius, const UMath::Vector3 &front, const UMath::Vector3 &side) {
+    qsort(copangles, num, sizeof(CopAndAngle), CopAndAngleSortPredicate);
+
+    int frontmostCop = 0;
+    float smallestAngle = 4.0f;
+    float step;
+
+    for (int i = 0; i < num; i++) {
+        float a = UMath::Abs(copangles[i].angle);
+
+        if (a < smallestAngle) {
+            frontmostCop = i;
+            smallestAngle = a;
+        }
+    }
+
+    // TODO weird
+    for (int i = 0; i < num; i++) {
+        float angle = i * (6.283185f / num); // TODO different M_TWOPI constant...
+        float c = UMath::Cosr(angle);
+        float s = UMath::Sinr(angle);
+        unsigned int index = (i + frontmostCop) % num;
+
+        copangles[index].cop->SetInPositionOffset(UMath::Vector3Make(s * radius, 0.0f, c * radius));
+        copangles[index].cop->SetInPositionGoal(kPullOverGoal);
+        copangles[index].cop->DoInPositionGoal();
+    }
+}
+
+bool AIPursuit::IsPlayerPursuit() const {
+    return GetTarget() && GetTarget()->GetSimable() && GetTarget()->GetSimable()->GetPlayer();
 }
