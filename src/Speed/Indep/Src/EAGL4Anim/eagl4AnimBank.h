@@ -28,25 +28,27 @@ class AnimBank {
         return mNumAnims;
     }
 
-    const AttributeDictionary *GetAttributeDictionary() const {}
+    // const AttributeDictionary *GetAttributeDictionary() const {}
 
-    CsisDictionary *GetCsisDictionary() const {}
+    // CsisDictionary *GetCsisDictionary() const {}
 
     void SetBankStat(BankStat *bankStat) {}
 
-    AnimMemoryMap *GetAnim(int i) const {}
+    AnimMemoryMap *GetAnim(int i) const {
+        return mAnims[i];
+    }
 
-    const char *GetAnimName(int i) const {}
+    // const char *GetAnimName(int i) const {}
 
-    AnimMemoryMap *GetAnim(const char *name) {}
+    // AnimMemoryMap *GetAnim(const char *name) {}
 
-    static FnAnim *NewFnAnimByType(AnimTypeId::Type type) {}
+    // static FnAnim *NewFnAnimByType(AnimTypeId::Type type) {}
 
     static void DeleteFnAnim(FnAnim *fnAnim) {}
 
-    static void Conor(void *ptr, EAGL4::DynamicLoader *loader, const char *pSymbolName);
+    static void Constructor(void *ptr, EAGL4::DynamicLoader *loader, const char *pSymbolName);
 
-    static void Deor(void *ptr);
+    static void Destructor(void *ptr);
 
     int GetAnimIndex(const char *name);
 
@@ -99,7 +101,7 @@ class BankStat {
 
     bool IsTracking(AnimBank *ab, const char *name) const;
 
-    struct AnimStat *GetAnimStat(AnimMemoryMap *a);
+    AnimStat *GetAnimStat(AnimMemoryMap *a);
 
     void Dump() const;
 
@@ -108,12 +110,12 @@ class BankStat {
     void Reset();
 
   private:
-    char *mBankFileName;         // offset 0x0, size 0x4
-    int mNumLoads;               // offset 0x4, size 0x4
-    int mNumAnims;               // offset 0x8, size 0x4
-    int mNumAnimNameLookUps;     // offset 0xC, size 0x4
-    struct AnimStat *mAnimStats; // offset 0x10, size 0x4
-    struct AnimBank *mBank;      // offset 0x14, size 0x4
+    char *mBankFileName;     // offset 0x0, size 0x4
+    int mNumLoads;           // offset 0x4, size 0x4
+    int mNumAnims;           // offset 0x8, size 0x4
+    int mNumAnimNameLookUps; // offset 0xC, size 0x4
+    AnimStat *mAnimStats;    // offset 0x10, size 0x4
+    AnimBank *mBank;         // offset 0x14, size 0x4
 };
 
 }; // namespace EAGL4Anim

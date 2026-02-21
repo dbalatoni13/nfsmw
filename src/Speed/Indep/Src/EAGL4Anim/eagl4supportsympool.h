@@ -5,49 +5,7 @@
 #pragma once
 #endif
 
-// TODO where to put this?
-typedef void *(*DynamicUserCallback)(const char *, bool &);
-
-// TODO where are these 2 placed?
-// total size: 0x4
-struct SymbolEntry {
-    // void *operator new(size_t size) {}
-
-    // void *operator new(size_t size, const char *msg) {}
-
-    // void operator delete(void *ptr, size_t size) {}
-
-    // void *operator new[](size_t size) {}
-
-    // void *operator new[](size_t size, const char *msg) {}
-
-    // void operator delete[](void *ptr, size_t size) {}
-
-    // void *operator new(size_t, void *ptr) {}
-
-    void *Address; // offset 0x0, size 0x4
-};
-
-// total size: 0xC
-struct FunctionEntry {
-    // void *operator new(size_t size) {}
-
-    // void *operator new(size_t size, const char *msg) {}
-
-    // void operator delete(void *ptr, size_t size) {}
-
-    // void *operator new[](size_t size) {}
-
-    // void *operator new[](size_t size, const char *msg) {}
-
-    // void operator delete[](void *ptr, size_t size) {}
-
-    // void *operator new(size_t, void *ptr) {}
-
-    DynamicUserCallback Address; // offset 0x0, size 0x4
-    FunctionEntry *Prev;         // offset 0x4, size 0x4
-    FunctionEntry *Next;         // offset 0x8, size 0x4
-};
+#include "eagl4supportdef.h"
 
 namespace EAGL4 {
 
@@ -109,11 +67,11 @@ class SymbolPool {
     // int GetSize() const {}
 
   private:
-    unsigned int mTableSize;        // offset 0x0, size 0x4
-    unsigned int mTableLength;      // offset 0x4, size 0x4
-    SymbolEntry **mpSymbolTable;    // offset 0x8, size 0x4
-    unsigned int mSymbolTableCRC32; // offset 0xC, size 0x4
-    FunctionEntry *mpFunctions;     // offset 0x10, size 0x4
+    unsigned int mTableSize;                    // offset 0x0, size 0x4
+    unsigned int mTableLength;                  // offset 0x4, size 0x4
+    EAGL4Internal::SymbolEntry **mpSymbolTable; // offset 0x8, size 0x4
+    unsigned int mSymbolTableCRC32;             // offset 0xC, size 0x4
+    EAGL4Internal::FunctionEntry *mpFunctions;  // offset 0x10, size 0x4
 };
 
 }; // namespace EAGL4

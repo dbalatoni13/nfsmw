@@ -7,7 +7,12 @@
 
 #include "eagl4supportsympool.h"
 
-typedef void (*Constructor)(void *, class DynamicLoader *, const char *);
+// TODO
+namespace EAGL4 {
+class DynamicLoader;
+}
+
+typedef void (*Constructor)(void *, class EAGL4::DynamicLoader *, const char *);
 typedef void (*Destructor)(void *);
 
 // TODO the namespaces of these are wrong
@@ -27,7 +32,9 @@ struct RuntimeAllocDestructorEntry {
 
     // void *operator new(size_t size, const char *msg) {}
 
-    // void operator delete(void *ptr, size_t size) {}
+    void operator delete(void *ptr, size_t size) {
+        EAGL4Internal::EAGL4Free(ptr, size);
+    }
 
     // void *operator new[](size_t size) {}
 
@@ -37,7 +44,10 @@ struct RuntimeAllocDestructorEntry {
 
     // void *operator new(size_t, void *ptr) {}
 
-    inline RuntimeAllocDestructorEntry(RuntimeAllocDestructor d, void *data, int auxData) {}
+    RuntimeAllocDestructorEntry(RuntimeAllocDestructor d, void *data, int auxData)
+        : d(d),       //
+          data(data), //
+          auxData(auxData) {}
 
     RuntimeAllocDestructor d;          // offset 0x0, size 0x4
     void *data;                        // offset 0x4, size 0x4
