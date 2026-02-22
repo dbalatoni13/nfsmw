@@ -1,5 +1,12 @@
 #include "eagl4AnimBank.h"
+#include "CompoundChannel.h"
+#include "FnPoseAnim.h"
+#include "FnStatelessF3.h"
+#include "FnStatelessQ.h"
 #include "MemoryPoolManager.h"
+#include "PoseAnim.h"
+#include "StatelessF3.h"
+#include "StatelessQ.h"
 #include <cstring>
 
 namespace EAGL4Anim {
@@ -25,16 +32,43 @@ int AnimBank::GetAnimIndex(const char *name) {
 
         if (r > 0) {
             s = m + 1;
-        } else if (r >= 0) {
-            return m;
-        } else {
+        } else if (r < 0) {
             e = m - 1;
+        } else {
+            return m;
         }
     }
 
     return -1;
 }
 
-FnAnimMemoryMap *AnimBank::NewFnAnim(AnimMemoryMap *animMem) {}
+FnAnimMemoryMap *AnimBank::NewFnAnim(int i) const {
+    return NewFnAnim(mAnims[i]);
+}
+
+// TODO do this when we figure out how all inlines work
+// FnAnimMemoryMap *AnimBank::NewFnAnim(AnimMemoryMap *animMem) {
+//     switch (animMem->GetType().GetType()) {
+//         case AnimTypeId::ANIM_STATELESSQ:
+//             StatelessQ *statelessQ;
+//             FnStatelessQ *fnStatelessQ;
+//             break;
+//         case AnimTypeId::ANIM_STATELESSF3:
+//             StatelessF3 *statelessF3;
+//             FnStatelessF3 *fnStatelessF3;
+//             break;
+//         case AnimTypeId::ANIM_POSEANIM:
+//             PoseAnim *poseAnim;
+//             FnPoseAnim *fnPoseAnim;
+//             break;
+//         case AnimTypeId::ANIM_COMPOUND:
+//             void *block;
+//             FnCompoundChannel *fnComp;
+//             break;
+
+//         default:
+//             return nullptr;
+//     }
+// }
 
 }; // namespace EAGL4Anim

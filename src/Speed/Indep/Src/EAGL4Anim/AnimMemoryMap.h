@@ -18,7 +18,7 @@ class AnimMemoryMap {
     ~AnimMemoryMap() {}
 
     AnimTypeId GetType() const {
-        return mAnimTypeId.GetType();
+        return mAnimTypeId;
     }
 
     void SetType(AnimTypeId t) {
@@ -37,7 +37,7 @@ class AnimMemoryMap {
 
     static void InitAnimMemoryMap() {}
 
-  private:
+  protected:
     AnimTypeId mAnimTypeId;         // offset 0x0, size 0x2
     unsigned short mTargetCheckSum; // offset 0x2, size 0x2
 };

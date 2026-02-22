@@ -28,7 +28,7 @@ class FnAnimMemoryMap : public FnAnim {
     unsigned short GetTargetCheckSum() const override;
 
   protected:
-    struct AnimMemoryMap *mpAnim; // offset 0xC, size 0x4
+    AnimMemoryMap *mpAnim; // offset 0xC, size 0x4
 };
 
 }; // namespace EAGL4Anim

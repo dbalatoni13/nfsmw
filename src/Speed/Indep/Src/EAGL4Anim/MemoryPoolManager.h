@@ -45,7 +45,9 @@ class MemoryPoolManager {
 
     // static void *NewBlock(unsigned int size) {}
 
-    static void DeleteBlock(void *p) {}
+    static void DeleteBlock(void *p) {
+        gMemoryManager->DeleteBlockAux(p);
+    }
 
     // static void *NewBlockByIdx(unsigned short idx) {}
 
@@ -55,7 +57,9 @@ class MemoryPoolManager {
 
     // static FnAnimMemoryMap *NewFnAnim(AnimMemoryMap *anim) {}
 
-    static void DeleteFnAnim(FnAnim *fnAnim) {}
+    static void DeleteFnAnim(FnAnim *fnAnim) {
+        gMemoryManager->DeleteFnAnimAux(fnAnim);
+    }
 
     static void InitAnimMemoryMap(AnimMemoryMap *anim) {
         gMemoryManager->InitAnimMemoryMapAux(anim);
