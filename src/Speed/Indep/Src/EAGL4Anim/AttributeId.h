@@ -19,11 +19,9 @@ class AttributeId {
 
     AttributeId() {}
 
-    AttributeId(unsigned short id) {
-        mId = id;
-    }
+    AttributeId(unsigned short id) : mId(id) {}
 
-    AttributeId(ID id) {}
+    AttributeId(ID id) : mId(id) {}
 
     AttributeId(unsigned char prefix, unsigned char id) {}
 

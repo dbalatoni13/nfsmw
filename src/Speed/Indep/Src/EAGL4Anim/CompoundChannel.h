@@ -1,6 +1,8 @@
 #ifndef EAGL4ANIM_COMPOUNDCHANNEL_H
 #define EAGL4ANIM_COMPOUNDCHANNEL_H
 
+#include "MemoryPoolManager.h"
+#include "Speed/Indep/Src/EAGL4Anim/FnAnim.h"
 #include "Speed/Indep/Src/EAGL4Anim/eagl4supportdef.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
@@ -121,7 +123,9 @@ class FnCompoundChannel : public FnAnimMemoryMap {
     // Overrides: FnAnim
     unsigned short GetTargetCheckSum() const override {}
 
-    CompoundChannel *GetCompoundChannel() {}
+    CompoundChannel *GetCompoundChannel() {
+        return reinterpret_cast<CompoundChannel *>(mpAnim);
+    }
 
     const CompoundChannel *GetCompoundChannel() const {}
 
@@ -132,7 +136,14 @@ class FnCompoundChannel : public FnAnimMemoryMap {
     const AttributeBlock *GetAttributes() const override {}
 
   protected:
-    void InitSubChannels() {}
+    void InitSubChannels() {
+        CompoundChannel *cchannel = reinterpret_cast<CompoundChannel *>(mpAnim);
+        mChannels = reinterpret_cast<FnAnim **>(MemoryPoolManager::NewBlock(cchannel->GetNumChannels() * sizeof(*mChannels)));
+
+        for (int i = cchannel->GetNumChannels() - 1; i >= 0; i--) {
+            mChannels[i] = reinterpret_cast<FnAnim *>(MemoryPoolManager::NewFnAnim(cchannel->GetChannels()[i]));
+        }
+    }
 
   private:
     FnAnim **mChannels; // offset 0x10, size 0x4

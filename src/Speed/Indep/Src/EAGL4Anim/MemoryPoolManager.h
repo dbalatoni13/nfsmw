@@ -43,7 +43,9 @@ class MemoryPoolManager {
 
     // static unsigned int GetFreePoolSize() {}
 
-    // static void *NewBlock(unsigned int size) {}
+    static void *NewBlock(size_t size) {
+        return gMemoryManager->NewBlockAux(size);
+    }
 
     static void DeleteBlock(void *p) {
         gMemoryManager->DeleteBlockAux(p);
@@ -53,9 +55,13 @@ class MemoryPoolManager {
 
     static void DeleteBlockByIdx(unsigned short idx, void *ptr) {}
 
-    // static FnAnim *NewFnAnim(AnimTypeId::Type animTypeId) {}
+    static FnAnim *NewFnAnim(AnimTypeId::Type animTypeId) {
+        return gMemoryManager->NewFnAnimAux(animTypeId);
+    }
 
-    // static FnAnimMemoryMap *NewFnAnim(AnimMemoryMap *anim) {}
+    static FnAnimMemoryMap *NewFnAnim(AnimMemoryMap *anim) {
+        return gMemoryManager->NewFnAnimAux(anim);
+    }
 
     static void DeleteFnAnim(FnAnim *fnAnim) {
         gMemoryManager->DeleteFnAnimAux(fnAnim);
@@ -67,7 +73,9 @@ class MemoryPoolManager {
 
     static void ResetPool() {}
 
-    static void SetMemoryPoolManager(MemoryPoolManager &manager) {}
+    static void SetMemoryPoolManager(MemoryPoolManager &manager) {
+        gMemoryManager = &manager;
+    }
 
     static void AllocateIdxBlock(unsigned short idx);
 
@@ -77,7 +85,7 @@ class MemoryPoolManager {
     virtual void CleanupAux();
     virtual unsigned int GetMemoryPoolUsageAux();
     virtual unsigned int GetFreePoolSizeAux();
-    virtual void *NewBlockAux(unsigned int size);
+    virtual void *NewBlockAux(size_t size);
     virtual void DeleteBlockAux(void *ptr);
     virtual void *NewBlockByIdxAux(unsigned short idx);
     virtual void DeleteBlockByIdxAux(unsigned short idx, void *ptr);

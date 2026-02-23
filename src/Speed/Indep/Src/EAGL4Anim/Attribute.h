@@ -93,6 +93,7 @@ class AttributeMetaData {
     AttributeId mId;          // offset 0xA, size 0x2
 };
 
+// TODO 64 bit x64 x86_x64
 // total size: 0xC
 class AttributeBlock {
   public:
@@ -100,21 +101,85 @@ class AttributeBlock {
         return mNumAttributes;
     }
 
-    // bool GetAttribute(AttributeId id, float &result) const {}
+    bool GetAttribute(AttributeId id, float &result) const {
+        void *r;
+        if (GetAttribute(id, r)) {
+            result = static_cast<float>(reinterpret_cast<uintptr_t>(r));
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-    // bool GetAttribute(AttributeId id, unsigned short &result) const {}
+    bool GetAttribute(AttributeId id, unsigned short &result) const {
+        void *r;
+        if (GetAttribute(id, r)) {
+            result = static_cast<unsigned short>((reinterpret_cast<uintptr_t>(r) & 0xFFFF0000) >> 16);
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-    // bool GetAttribute(AttributeId id, short &result) const {}
+    bool GetAttribute(AttributeId id, short &result) const {
+        void *r;
+        if (GetAttribute(id, r)) {
+            result = static_cast<short>((reinterpret_cast<uintptr_t>(r) & 0xFFFF0000) >> 16);
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-    // bool GetAttribute(AttributeId id, int &result) const {}
+    bool GetAttribute(AttributeId id, int &result) const {
+        void *r;
+        if (GetAttribute(id, r)) {
+            result = static_cast<int>(reinterpret_cast<uintptr_t>(r));
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-    // bool GetAttribute(AttributeId id, unsigned int &result) const {}
+    bool GetAttribute(AttributeId id, unsigned int &result) const {
+        void *r;
+        if (GetAttribute(id, r)) {
+            result = static_cast<unsigned int>(reinterpret_cast<uintptr_t>(r));
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-    // bool GetAttribute(AttributeId id, char &result) const {}
+    bool GetAttribute(AttributeId id, char &result) const {
+        void *r;
+        if (GetAttribute(id, r)) {
+            result = static_cast<char>((reinterpret_cast<uintptr_t>(r) & 0xFF000000) >> 24);
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-    // bool GetAttribute(AttributeId id, unsigned char &result) const {}
+    bool GetAttribute(AttributeId id, unsigned char &result) const {
+        void *r;
+        if (GetAttribute(id, r)) {
+            result = static_cast<unsigned char>((reinterpret_cast<uintptr_t>(r) & 0xFF000000) >> 24);
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-    // bool GetAttribute(AttributeId id, char *&result) const {}
+    bool GetAttribute(AttributeId id, char *&result) const {
+        void *r;
+        if (GetAttribute(id, r)) {
+            result = reinterpret_cast<char *>(r);
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     // int GetAttributeByteSize(AttributeId id) const {}
 

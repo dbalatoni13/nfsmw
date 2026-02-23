@@ -7,8 +7,10 @@
 
 #include "AnimStat.h"
 #include "AnimTypeId.h"
+#include "Attribute.h"
 #include "AttributeId.h"
 #include "BoneMask.h"
+#include "EventHandler.h"
 
 #include <types.h>
 
@@ -18,6 +20,12 @@ class MatchPhaseInput;
 class PhaseChan;
 class PhaseValue;
 class PosePaletteBank;
+
+struct State {};
+
+struct StateTest {
+    virtual bool Pass(const State *) const;
+};
 
 // total size: 0x4
 struct FnAnimSuper {
@@ -36,7 +44,7 @@ class FnAnim : FnAnimSuper {
 
     // AnimTypeId::Type GetType() const {}
 
-    // virtual unsigned short GetTargetCheckSum() const {}
+    virtual unsigned short GetTargetCheckSum() const {}
 
     virtual void UseFPS(bool u) {}
 
@@ -52,35 +60,28 @@ class FnAnim : FnAnimSuper {
 
     virtual bool EvalVel2D(float currentTime, float *velocity) {}
 
-    virtual bool EvalEvent(float previousTime, float currentTime, struct EventHandler **eventHandlers, void *extraData) {}
+    virtual bool EvalEvent(float previousTime, float currentTime, EventHandler **eventHandlers, void *extraData) {}
 
     virtual bool EvalWeights(float currentTime, float *weights) {}
 
-    virtual bool EvalState(float currentTime, struct State *s) {}
+    virtual bool EvalState(float currentTime, State *s) {}
 
     virtual bool EvalPose(float currentTime, const PosePaletteBank *paletteBank, float *sqt) {}
 
-    virtual bool FindTime(const struct StateTest &test, float startTime, float &resultTime) {}
+    virtual bool FindTime(const StateTest &test, float startTime, float &resultTime) {}
 
     virtual const PhaseChan *GetPhaseChan() {}
 
-    bool GetAttribute(AttributeId id, float &result) const {}
+    virtual const AttributeBlock *GetAttributes() const;
 
-    bool GetAttribute(AttributeId id, unsigned short &result) const {}
-
-    bool GetAttribute(AttributeId id, short &result) const {}
-
-    bool GetAttribute(AttributeId id, int &result) const {}
-
-    bool GetAttribute(AttributeId id, unsigned int &result) const {}
-
-    bool GetAttribute(AttributeId id, char &result) const {}
-
-    bool GetAttribute(AttributeId id, unsigned char &result) const {}
-
-    bool GetAttribute(AttributeId id, char *&result) const {}
-
-    bool GetAttribute(AttributeId id, void *&result) const {}
+    template <typename T> bool GetAttribute(AttributeId id, T &result) const {
+        const AttributeBlock *attribBlock = GetAttributes();
+        if (attribBlock) {
+            return attribBlock->GetAttribute(id, result);
+        } else {
+            return false;
+        }
+    }
 
     AnimStat *mStat; // offset 0x4, size 0x4
 
