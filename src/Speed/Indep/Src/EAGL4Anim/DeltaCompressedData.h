@@ -33,11 +33,17 @@ class DeltaCompressedData {
         mNumQuantBits = numBits;
     }
 
-    const unsigned char *GetDataBlock() const {}
+    const unsigned char *GetDataBlock() const {
+        return reinterpret_cast<const unsigned char *>(&this[1]);
+    }
 
-    unsigned char *GetDataBlock() {}
+    unsigned char *GetDataBlock() {
+        return reinterpret_cast<unsigned char *>(&this[1]);
+    }
 
-    int GetDeltaDataOffset() const {}
+    int GetDeltaDataOffset() const {
+        return mNumDofs * sizeof(DofInfo);
+    }
 
     int GetFrameStride() const {}
 

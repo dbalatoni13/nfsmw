@@ -466,6 +466,60 @@ bool FnKeyQuatChan::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask
     return true;
 }
 
+bool FnKeyQuatChan::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneMask) {
+    if (boneMask != mBoneMask) {
+        mBoneMask = boneMask;
+        mPrevKey = -1;
+    }
+
+    KeyQuatChan *keyChan = reinterpret_cast<KeyQuatChan *>(mpAnim);
+    int numKeys = keyChan->GetNumKeys();
+    DeltaCompressedData *deltaData = keyChan->GetDeltaData();
+    unsigned short numDofs = deltaData->GetNumDofs();
+    unsigned short *keyTimes = keyChan->GetKeyTimes();
+    unsigned short *dofIndices = keyChan->GetDofIndices();
+
+    int idof;
+    int iquat;
+    int boneIdx;
+    if (mDofMask == nullptr && numDofs != 0) {
+        mDofMask = reinterpret_cast<unsigned short *>(MemoryPoolManager::NewBlock(numDofs * sizeof(*mDofMask)));
+        for (iquat = 0, idof = 0; iquat < numDofs; idof++, iquat += 4) {
+            boneIdx = (dofIndices[idof] / 0xC) & 0xFF; // TODO magic
+            if (boneMask->GetBone(boneIdx)) {
+                mDofMask[mNumDofs++] = idof;
+            }
+        }
+    }
+
+    int lowKey = FindLowerKey(currTime);
+    EvalToPrevValues(lowKey, 4, mNumDofs, mDofMask);
+    int lowKeyTime;
+    if (lowKey == 0) {
+        lowKeyTime = 0;
+    } else {
+        lowKeyTime = keyTimes[lowKey - 1];
+    };
+
+    if (lowKeyTime == currTime || (lowKey == numKeys - 1 && currTime > keyTimes[numKeys - 2]) || (lowKey == 0 && currTime < 0.0f)) {
+        for (idof = 0; idof < mNumDofs; idof++) {
+            *reinterpret_cast<UMath::Vector4 *>(&sqt[dofIndices[mDofMask[idof]]]) =
+                *reinterpret_cast<UMath::Vector4 *>(&mPrevValues[mDofMask[idof] * 4]);
+        }
+    } else {
+        float t = (currTime - lowKeyTime) / (keyTimes[lowKey] - lowKeyTime);
+        UMath::Vector4 ceilQuat;
+        for (idof = 0; idof < mNumDofs; idof++) {
+            deltaData->DecompressValues(mDofMask[idof] * 4, 4, lowKey, lowKey + 1, &mPrevValues[mDofMask[idof] * 4],
+                                        reinterpret_cast<float *>(&ceilQuat));
+
+            float *blendValue = &sqt[dofIndices[mDofMask[idof]]];
+            FastQuatBlendF4(t, &mPrevValues[mDofMask[idof] * 4], reinterpret_cast<float *>(&ceilQuat), blendValue);
+        }
+    }
+    return true;
+}
+
 // TODO move
 float qt0[7];
 
