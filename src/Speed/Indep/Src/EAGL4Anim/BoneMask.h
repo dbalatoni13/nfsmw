@@ -11,14 +11,16 @@ namespace EAGL4Anim {
 
 // total size: 0x20
 class BoneMask {
-  private:
+  public:
     BoneMask(bool allOn);
 
     BoneMask(const BoneMask &bm);
 
     void SetAll(bool on);
 
-    // bool GetBone(int boneIdx) const {}
+    bool GetBone(int boneIdx) const {
+        return (mMask[(boneIdx >> 5) & 0x7] & (1 << (boneIdx & 0x1F))) != 0; // TODO magic
+    }
 
     void SetBone(int boneIdx, bool on);
 
@@ -38,7 +40,7 @@ class BoneMask {
 
     bool operator==(const BoneMask &m) const;
 
-    // Members
+  private:
     unsigned int mMask[8]; // offset 0x0, size 0x20
 };
 

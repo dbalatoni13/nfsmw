@@ -6,6 +6,8 @@
 
 #include "Speed/Indep/Src/EAGL4Anim/CsisEventChannel.cpp"
 
+#include "Speed/Indep/Src/EAGL4Anim/DeltaChan.cpp"
+
 #include "Speed/Indep/Src/EAGL4Anim/eagl4supportbase.cpp"
 
 #include "Speed/Indep/Src/EAGL4Anim/eagl4supportconspool.cpp"

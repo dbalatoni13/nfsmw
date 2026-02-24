@@ -86,9 +86,6 @@ class FnCompoundChannel : public FnAnimMemoryMap {
     void SetAnimMemoryMap(AnimMemoryMap *anim) override;
 
     // Overrides: FnAnim
-    void Eval(float previousTime, float currentTime, float *dofs) override {}
-
-    // Overrides: FnAnim
     bool EvalEvent(float previousTime, float currentTime, EventHandler **eventHandlers, void *extraData) override;
 
     // Overrides: FnAnim
@@ -121,19 +118,35 @@ class FnCompoundChannel : public FnAnimMemoryMap {
     unsigned char GetFPS() const;
 
     // Overrides: FnAnim
-    unsigned short GetTargetCheckSum() const override {}
+    unsigned short GetTargetCheckSum() const override {
+        return mpAnim->GetTargetCheckSum();
+    }
 
     CompoundChannel *GetCompoundChannel() {
         return reinterpret_cast<CompoundChannel *>(mpAnim);
     }
 
-    const CompoundChannel *GetCompoundChannel() const {}
+    const CompoundChannel *GetCompoundChannel() const {
+        return reinterpret_cast<const CompoundChannel *>(mpAnim);
+    }
 
     // Overrides: FnAnim
-    bool GetLength(float &timeLength) const override {}
+    bool GetLength(float &timeLength) const override {
+        const CompoundChannel *cchannel = GetCompoundChannel();
+
+        timeLength = static_cast<float>(cchannel->GetNumFrames());
+        if (mUseFPS) {
+            timeLength /= static_cast<float>(mFPS);
+        }
+        return true;
+    }
 
     // Overrides: FnAnim
-    const AttributeBlock *GetAttributes() const override {}
+    const AttributeBlock *GetAttributes() const override {
+        CompoundChannel *cchannel = reinterpret_cast<CompoundChannel *>(mpAnim);
+
+        return cchannel->GetAttributeBlock();
+    }
 
   protected:
     void InitSubChannels() {
@@ -142,6 +155,25 @@ class FnCompoundChannel : public FnAnimMemoryMap {
 
         for (int i = cchannel->GetNumChannels() - 1; i >= 0; i--) {
             mChannels[i] = reinterpret_cast<FnAnim *>(MemoryPoolManager::NewFnAnim(cchannel->GetChannels()[i]));
+        }
+    }
+
+  public:
+    // Overrides: FnAnim
+    void Eval(float previousTime, float currentTime, float *dofs) override {
+        const CompoundChannel *cchannel = GetCompoundChannel();
+
+        if (!mChannels) {
+            InitSubChannels();
+        }
+
+        if (mUseFPS) {
+            previousTime *= mFPS;
+            currentTime *= mFPS;
+        }
+
+        for (int i = cchannel->GetNumChannels() - 1; i >= 0; i--) {
+            mChannels[i]->Eval(previousTime, currentTime, dofs);
         }
     }
 
