@@ -17,6 +17,22 @@ inline float FastSqrt(float x) {
     return sqrtf(x);
 }
 
+inline int AlignSize16(int size) {
+    return (size + 15) & ~15;
+}
+
+inline int AlignSize8(int size) {
+    return (size + 7) & ~7;
+}
+
+inline int AlignSize4(int size) {
+    return (size + 3) & ~3;
+}
+
+inline int AlignSize2(int size) {
+    return (size + 1) & ~1;
+}
+
 // inline float DegToRad(float deg) {}
 
 inline void FastQuatBlendF4(float w, const float *d0, const float *d1, float *out) {

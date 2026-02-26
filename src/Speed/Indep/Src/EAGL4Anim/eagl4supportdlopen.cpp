@@ -156,17 +156,17 @@ DynamicLoader::Symbol DynamicLoader::GetSymbol(int i) const {
     HashPointer *h = reinterpret_cast<HashPointer *>(handle);
     if (!h) {
         // r.name = nullptr;
-        // r.type = nullptr;
+        r.type = nullptr;
         // r.data = nullptr;
-        // r.isInternalRef = false;
+        r.isInternalRef = false;
         return r;
     }
     ELF32_Sym *s = h->symtab;
     if (i < 0 || i >= h->symbols_num) {
-        r.name = nullptr;
-        // r.type = nullptr;
+        // r.name = nullptr;
+        r.type = nullptr;
         // r.data = nullptr;
-        // r.isInternalRef = false;
+        r.isInternalRef = false;
         return r;
     }
     r.name = &h->strtab[s[i].st_name];
@@ -182,11 +182,54 @@ DynamicLoader::Symbol DynamicLoader::GetSymbol(int i) const {
     int iIndex = s[i].st_shndx;
     if (s[i].st_other == 1) {
         r.data = reinterpret_cast<void *>(s[i].st_value);
-    } else if (iIndex != 0 && iIndex < h->e->e_shnum) {
+    } else if (iIndex > 0 && iIndex < h->e->e_shnum) {
         r.data = reinterpret_cast<void *>(h->sections[iIndex].sh_offset + s[i].st_value);
     }
 
     return r;
+}
+
+}; // namespace EAGL4
+
+static void *dlsym(void *handle, const char *name) {
+    EAGL4::HashPointer *h = reinterpret_cast<EAGL4::HashPointer *>(handle);
+    EAGL4::ELF32_Sym *s = h->symtab;
+    unsigned long j = h->hash[EAGL4::elfhash(name)];
+
+    while (j != -1) {
+        if (h->isOriginal[j] && strcmp(name, &h->strtab[s[j].st_name]) == 0) {
+            int iIndex = s[j].st_shndx;
+            if (iIndex > 0 && iIndex < h->e->e_shnum) {
+                return reinterpret_cast<void *>(h->sections[iIndex].sh_offset + s[j].st_value);
+            }
+        }
+        j = h->chain[j];
+    }
+    return nullptr;
+}
+
+namespace EAGL4 {
+
+bool DynamicLoader::GetNextSymbol(const char *type, int &iIndex, Symbol &result) const {
+    for (; iIndex < GetCount(); iIndex++) {
+        Symbol s = GetSymbol(iIndex);
+        if (strcmp(type, s.type) == 0) {
+            result = s;
+            iIndex++;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool DynamicLoader::GetNextAddr(const char *type, int &iIndex, void *&addr) const {
+    Symbol s;
+    if (GetNextSymbol(type, iIndex, s)) {
+        addr = s.data;
+        return true;
+    } else {
+        return false;
+    }
 }
 
 }; // namespace EAGL4

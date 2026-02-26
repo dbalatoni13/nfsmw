@@ -5,7 +5,7 @@ set extra=%3
 set extra2=%4
 python .\tools\decompctx2.py %ctx% --m2c
 @REM python ..\m2c\m2c.py -t mipsee-gcc-c++ --unk-underscore --no-casts --knr %extra% %extra2% --context ctx.cpp %asm_file% > decompiled_ps2.cpp
-python ..\m2c\m2c.py -t ppc-gcc-c++ --unk-underscore --no-casts --knr %extra% %extra2% --context ctx.cpp %asm_file% > decompiled.cpp
+python ..\m2c\m2c.py -t ppc-gcc-c++ --unk-underscore --knr %extra% %extra2% --context ctx.cpp %asm_file% > decompiled.cpp
 
 @REM python ..\m2c\m2c.py -t ppc-mwcc-c --unk-underscore --no-casts --knr %extra% %extra2% --context ctx.c %asm_file% > decompiled.c
 

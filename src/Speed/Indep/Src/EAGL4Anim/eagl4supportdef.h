@@ -6,6 +6,7 @@
 #endif
 
 #include <cstddef>
+#include <cstring>
 
 typedef void *(*DynamicUserCallback)(const char *, bool &);
 
@@ -33,7 +34,9 @@ struct SymbolEntry {
 
     // void operator delete[](void *ptr, size_t size) {}
 
-    // void *operator new(size_t, void *ptr) {}
+    void *operator new(size_t, void *ptr) {
+        return EAGL4Internal::EAGL4Malloc(strlen(reinterpret_cast<char *>(ptr)) + 5, "EAGL4::SymbolEntry");
+    }
 
     void *Address; // offset 0x0, size 0x4
 };

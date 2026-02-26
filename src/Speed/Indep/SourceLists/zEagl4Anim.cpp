@@ -15,3 +15,11 @@
 #include "Speed/Indep/Src/EAGL4Anim/eagl4supportconspool.cpp"
 
 #include "Speed/Indep/Src/EAGL4Anim/eagl4supportdlopen.cpp"
+
+#include "Speed/Indep/Src/EAGL4Anim/eagl4supportsympool.cpp"
+
+#include "Speed/Indep/Src/EAGL4Anim/FnAnim.cpp"
+
+#include "Speed/Indep/Src/EAGL4Anim/FnAnimMemoryMap.cpp"
+
+#include "Speed/Indep/Src/EAGL4Anim/FnDeltaF1.cpp"

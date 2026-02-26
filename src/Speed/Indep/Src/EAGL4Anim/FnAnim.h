@@ -37,40 +37,68 @@ struct FnAnimSuper {
 // total size: 0xC
 class FnAnim : FnAnimSuper {
   public:
-    FnAnim() {}
+    FnAnim() : mStat(nullptr) {}
 
     // Overrides: FnAnimSuper
     ~FnAnim() override {}
 
     // AnimTypeId::Type GetType() const {}
 
-    virtual unsigned short GetTargetCheckSum() const {}
+    static bool IsReverseDeltaSumEnabled() {
+        return gReverseDeltaSumEnabled;
+    }
+
+    virtual unsigned short GetTargetCheckSum() const {
+        return 0;
+    }
 
     virtual void UseFPS(bool u) {}
 
     virtual void Eval(float previousTime, float currentTime, float *dofs) {}
 
-    virtual bool GetLength(float &timeLength) const {}
+    virtual bool GetLength(float &timeLength) const {
+        return false;
+    }
 
-    virtual bool FindMatchTime(const MatchPhaseInput &input, float &time) const {}
+    virtual bool FindMatchTime(const MatchPhaseInput &input, float &time) const {
+        return false;
+    }
 
-    virtual bool EvalSQT(float currentTime, float *sqt, const BoneMask *boneMask) {}
+    virtual bool EvalSQT(float currentTime, float *sqt, const BoneMask *boneMask) {
+        return false;
+    }
 
-    virtual bool EvalPhase(float currentTime, PhaseValue &phase) {}
+    virtual bool EvalPhase(float currentTime, PhaseValue &phase) {
+        return false;
+    }
 
-    virtual bool EvalVel2D(float currentTime, float *velocity) {}
+    virtual bool EvalVel2D(float currentTime, float *velocity) {
+        return false;
+    }
 
-    virtual bool EvalEvent(float previousTime, float currentTime, EventHandler **eventHandlers, void *extraData) {}
+    virtual bool EvalEvent(float previousTime, float currentTime, EventHandler **eventHandlers, void *extraData) {
+        return false;
+    }
 
-    virtual bool EvalWeights(float currentTime, float *weights) {}
+    virtual bool EvalWeights(float currentTime, float *weights) {
+        return false;
+    }
 
-    virtual bool EvalState(float currentTime, State *s) {}
+    virtual bool EvalState(float currentTime, State *s) {
+        return false;
+    }
 
-    virtual bool EvalPose(float currentTime, const PosePaletteBank *paletteBank, float *sqt) {}
+    virtual bool EvalPose(float currentTime, const PosePaletteBank *paletteBank, float *sqt) {
+        return false;
+    }
 
-    virtual bool FindTime(const StateTest &test, float startTime, float &resultTime) {}
+    virtual bool FindTime(const StateTest &test, float startTime, float &resultTime) {
+        return false;
+    }
 
-    virtual const PhaseChan *GetPhaseChan() {}
+    virtual const PhaseChan *GetPhaseChan() {
+        return nullptr;
+    }
 
     virtual const AttributeBlock *GetAttributes() const;
 

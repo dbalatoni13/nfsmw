@@ -60,13 +60,13 @@ Speed/Indep/SourceLists/zDebug.cpp:
 Speed/Indep/SourceLists/zDynamics.cpp:
 	.text       start:0x80083680 end:0x8008A7B0
 	.ctors      start:0x803C8B7C end:0x803C8B80
-	.rodata     start:0x803D3F50 end:0x803D5E28
+	.rodata     start:0x803D3F50 end:0x803D4480
 	.bss        start:0x8045B108 end:0x8045B110
 
 Speed/Indep/SourceLists/zEagl4Anim.cpp:
 	.text       start:0x8008A7B0 end:0x800A6128
 	.ctors      start:0x803C8B80 end:0x803C8B84
-	.rodata     start:0x803D5E28 end:0x803D8A6C
+	.rodata     start:0x803D4480 end:0x803D8A6C
 	.data       start:0x80417108 end:0x80417634
 	.bss        start:0x8045B110 end:0x8045B268
 

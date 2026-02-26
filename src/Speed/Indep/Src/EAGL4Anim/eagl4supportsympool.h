@@ -7,6 +7,8 @@
 
 #include "eagl4supportdef.h"
 
+#include "types.h"
+
 namespace EAGL4 {
 
 // total size: 0x14
