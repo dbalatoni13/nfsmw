@@ -389,7 +389,7 @@ bool FnKeyLerpChan::EvalSQTMask(float currTime, float *sqt, const BoneMask *bone
     if (mDofMask == nullptr && numDofs != 0) {
         mDofMask = reinterpret_cast<unsigned short *>(MemoryPoolManager::NewBlock(numDofs * sizeof(*mDofMask)));
         for (idof = 0; idof < numDofs; idof++) {
-            boneIdx = (dofIndices[idof] / 0xC) & 0xFF; // TODO magic
+            boneIdx = (dofIndices[idof] / 0xC) & 0xFF; // TODO magic, 0xC might be the sizeof DofInfo
             if (boneMask->GetBone(boneIdx)) {
                 mDofMask[mNumDofs++] = idof;
             }

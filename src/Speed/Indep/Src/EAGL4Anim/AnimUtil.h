@@ -5,7 +5,9 @@
 #pragma once
 #endif
 
+#include "types.h"
 #include <cmath>
+
 
 namespace EAGL4Anim {
 
@@ -17,19 +19,19 @@ inline float FastSqrt(float x) {
     return sqrtf(x);
 }
 
-inline int AlignSize16(int size) {
+inline intptr_t AlignSize16(intptr_t size) {
     return (size + 15) & ~15;
 }
 
-inline int AlignSize8(int size) {
+inline intptr_t AlignSize8(intptr_t size) {
     return (size + 7) & ~7;
 }
 
-inline int AlignSize4(int size) {
+inline intptr_t AlignSize4(intptr_t size) {
     return (size + 3) & ~3;
 }
 
-inline int AlignSize2(int size) {
+inline intptr_t AlignSize2(intptr_t size) {
     return (size + 1) & ~1;
 }
 

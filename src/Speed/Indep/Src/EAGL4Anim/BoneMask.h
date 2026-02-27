@@ -19,7 +19,8 @@ class BoneMask {
     void SetAll(bool on);
 
     bool GetBone(int boneIdx) const {
-        return (mMask[(boneIdx >> 5) & 0x7] & (1 << (boneIdx & 0x1F))) != 0; // TODO magic
+        // TODO magic
+        return (mMask[boneIdx >> 5] & (1 << (boneIdx & 0x1F))) != 0;
     }
 
     void SetBone(int boneIdx, bool on);

@@ -63,7 +63,7 @@ struct DeltaF1 : public AnimMemoryMap {
     }
 
     unsigned int GetBinLengthModMask() const {
-        unsigned int result = 0x7FFFFFFF >> (0x1F - mBinLengthPower);
+        unsigned int result = 0x7FFFFFFFU >> (0x1F - mBinLengthPower);
         return result;
     }
 
@@ -72,7 +72,6 @@ struct DeltaF1 : public AnimMemoryMap {
     }
 
     int GetFrameDeltaSize() const {
-        // TODO
         return mNumBones;
     }
 
@@ -81,13 +80,12 @@ struct DeltaF1 : public AnimMemoryMap {
     }
 
     int GetBinSize() const {
-        // TODO
         return AlignSize2((mNumBones * 2) + (GetBinLength() * GetFrameDeltaSize()));
     }
 
     void GetArrays(DofInfo *&dofInfo, unsigned char *&binStart) {}
 
-    int GetFrameStride() const {}
+    // int GetFrameStride() const {}
 
     DofInfo *GetDofInfo() {
         unsigned char *memBytes = reinterpret_cast<unsigned char *>(&this[1]);
@@ -95,20 +93,24 @@ struct DeltaF1 : public AnimMemoryMap {
     }
 
     unsigned char *GetBin(int binIdx) {
-        // TODO
         const int bs = GetBinSize();
-        unsigned char *memPos = reinterpret_cast<unsigned char *>(GetDofInfo());
-        return &memPos[bs * binIdx];
+        unsigned char *memPos = &reinterpret_cast<unsigned char *>(GetDofInfo())[mNumBones * sizeof(DofInfo)];
+        return &memPos[binIdx * bs]; // TODO swapping this causes problems somewhere else
+    }
+
+    // TODO
+    unsigned char *GetBinHack(int binIdx) {
+        const int bs = GetBinSize();
+        unsigned char *memPos = &reinterpret_cast<unsigned char *>(GetDofInfo())[mNumBones * sizeof(DofInfo)];
+        return &memPos[bs * binIdx]; // TODO swapping this causes problems somewhere else
     }
 
     unsigned short *GetPhysical(unsigned char *binData) {
-        // TODO
-        // return reinterpret_cast<unsigned short *>(binData[mNumBones * 12]);
         return reinterpret_cast<unsigned short *>(binData);
     }
 
     unsigned char *GetDelta(unsigned char *binData, int frameIdx) {
-        return &binData[mNumBones * 2 + frameIdx * GetFrameDeltaSize()];
+        return &(&binData[mNumBones * 2])[frameIdx * GetFrameDeltaSize()];
     }
 
     float UnQuantizePhysical(const DeltaF1MinRange &dofInfo, unsigned short physFrame) const {
@@ -122,27 +124,23 @@ struct DeltaF1 : public AnimMemoryMap {
     unsigned short *GetConstBoneIdx() {
         // TODO
         const int binSize = GetBinSize();
-        int numBins = (mNumFrames - 1) >> GetBinLengthPower();
-        unsigned char *s = GetBin(numBins);
-        int r = (mNumFrames - 1) & GetBinLengthModMask();
+        int numBins = mNumFrames >> GetBinLengthPower(); // r8
+        // get to the end of the bins
+        unsigned char *s = GetBinHack(numBins);     // r11
+        int r = mNumFrames & GetBinLengthModMask(); // r31
 
         if (r > 0) {
-            s += (r - 1) * mNumBones + mNumBones * 2;
-            // TODO 64 bit support
-            s = (unsigned char *)AlignSize2((int)s);
+            s = reinterpret_cast<unsigned char *>(AlignSize2((intptr_t)s + mNumBones * 2 + (r - 1) * GetFrameDeltaSize()));
         }
-
         if (mNumBones == 0) {
-            // TODO 64 bit support
-            s = (unsigned char *)AlignSize2((int)s);
+            s = reinterpret_cast<unsigned char *>(AlignSize2((intptr_t)s));
         }
 
-        return (unsigned short *)s;
+        return reinterpret_cast<unsigned short *>(s);
     }
 
     float *GetConstPhysical() {
-        // TODO 64 bit support
-        return reinterpret_cast<float *>(AlignSize4(reinterpret_cast<int>(&GetConstBoneIdx()[mNumConstBones])));
+        return reinterpret_cast<float *>(AlignSize4(reinterpret_cast<intptr_t>(&GetConstBoneIdx()[mNumConstBones])));
     }
 
     unsigned short *mDofIdxs;      // offset 0x4, size 0x4
