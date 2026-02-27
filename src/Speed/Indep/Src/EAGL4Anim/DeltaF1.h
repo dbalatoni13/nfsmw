@@ -1,12 +1,12 @@
 #ifndef EAGL4ANIM_DELTAF1_H
 #define EAGL4ANIM_DELTAF1_H
 
-#include "AnimUtil.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
 #include "AnimMemoryMap.h"
+#include "AnimUtil.h"
 
 namespace EAGL4Anim {
 
@@ -28,7 +28,13 @@ struct DeltaF1 : public AnimMemoryMap {
         unsigned short mQuantRange; // offset 0xA, size 0x2
     };
 
-    static int ComputeSize(int numBones, int numConst, int numFrames, int binLen, bool useKeyFrames) {}
+    static int ComputeSize(int numBones, int numConst, int numFrames, int binLen, bool useKeyFrames) {
+        int size;
+        int deltaSize;
+        int binSize;
+        int numBins;
+        int leftOver;
+    }
 
     unsigned short GetNumFrames() const {
         return mNumFrames;

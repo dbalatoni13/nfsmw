@@ -21,6 +21,7 @@ void FnDeltaF1::Eval(float prevTime, float currTime, float *evalBuffer) {
 }
 
 // Should be functionally matching, just regswaps
+// https://decomp.me/scratch/74TZv
 bool FnDeltaF1::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
     if (!mPrevValues) {
         InitBuffersAsRequired();
@@ -157,7 +158,6 @@ bool FnDeltaF1::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
 
     if (lerpReqd && floorKey < deltaF->mNumFrames - 1) {
         int ceilBinIdx = ceilKey >> binLenPower;
-        // TODO use ceil?
         float ceil;
         binData = deltaF->GetBin(ceilBinIdx);
         binPhys = deltaF->GetPhysical(binData);
@@ -176,7 +176,8 @@ bool FnDeltaF1::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
                 int ceilDeltaIdx = floorDeltaIdx;
                 binDelta = deltaF->GetDelta(binData, ceilDeltaIdx);
                 for (int ibone = 0; ibone < deltaF->GetNumBones(); ibone++) {
-                    mNextValues[ibone] = mPrevValues[ibone] + deltaF->UnQuantizeDelta(mMinRangesf[ibone], binDelta[ibone]);
+                    ceil = deltaF->UnQuantizeDelta(mMinRangesf[ibone], binDelta[ibone]);
+                    mNextValues[ibone] = mPrevValues[ibone] + ceil;
                     sqt[*dofIndices] = mPrevValues[ibone] + (mNextValues[ibone] - mPrevValues[ibone]) * scale;
                     dofIndices++;
                 }
@@ -263,9 +264,8 @@ bool FnDeltaF1::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneMask
     unsigned short *dofIdxs = deltaF->GetDofIndices();
     unsigned char boneIdxs[80]; // r1+0x8
     int idof;                   // r12
-    // TODO is GetNumBones() in the global scope this way?
     for (idof = 0; idof < deltaF->GetNumBones(); idof++) {
-        boneIdxs[idof] = (dofIdxs[idof] / sizeof(DeltaF1::DofInfo)) & 0xFF;
+        boneIdxs[idof] = (dofIdxs[idof] / 0xC) & 0xFF;
     }
 
     bool preventReverse = false; // r0
@@ -344,7 +344,6 @@ bool FnDeltaF1::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneMask
 
     if (lerpReqd && floorKey < deltaF->mNumFrames - 1) {
         int ceilBinIdx = ceilKey >> binLenPower;
-        // TODO use ceil?
         float ceil;
         binData = deltaF->GetBin(ceilBinIdx);
         binPhys = deltaF->GetPhysical(binData);
@@ -369,7 +368,8 @@ bool FnDeltaF1::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneMask
                 binDelta = deltaF->GetDelta(binData, ceilDeltaIdx);
                 for (int ibone = 0; ibone < deltaF->GetNumBones(); ibone++) {
                     if (boneMask->GetBone(boneIdxs[ibone])) {
-                        mNextValues[ibone] = mPrevValues[ibone] + deltaF->UnQuantizeDelta(mMinRangesf[ibone], binDelta[ibone]);
+                        ceil = deltaF->UnQuantizeDelta(mMinRangesf[ibone], binDelta[ibone]);
+                        mNextValues[ibone] = mPrevValues[ibone] + ceil;
                         sqt[*dofIndices] = mPrevValues[ibone] + (mNextValues[ibone] - mPrevValues[ibone]) * scale;
                     }
                     dofIndices++;
@@ -392,7 +392,7 @@ bool FnDeltaF1::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneMask
 
         for (int ibone = 0; ibone < deltaF->mNumConstBones; ibone++) {
             dofIndex = *constBoneIdxs++;
-            boneIndex = dofIndex / sizeof(DeltaF1::DofInfo);
+            boneIndex = dofIndex / 0xC;
             if (boneMask->GetBone(boneIndex)) {
                 sqt[dofIndex] = *constPhys;
                 constPhys++;

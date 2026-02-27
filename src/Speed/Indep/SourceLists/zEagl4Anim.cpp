@@ -23,3 +23,5 @@
 #include "Speed/Indep/Src/EAGL4Anim/FnAnimMemoryMap.cpp"
 
 #include "Speed/Indep/Src/EAGL4Anim/FnDeltaF1.cpp"
+
+#include "Speed/Indep/Src/EAGL4Anim/FnDeltaF3.cpp"

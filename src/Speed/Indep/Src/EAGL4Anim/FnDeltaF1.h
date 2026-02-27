@@ -9,7 +9,7 @@
 #include "DeltaF1.h"
 #include "FnAnimMemoryMap.h"
 #include "MemoryPoolManager.h"
-#include "Speed/Indep/Src/EAGL4Anim/eagl4supportdef.h"
+#include "eagl4supportdef.h"
 
 namespace EAGL4Anim {
 
