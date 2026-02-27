@@ -201,7 +201,7 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
             searchLen++;
             actualIndex = Policy::WrapIndex(actualIndex + 1, tableSize, 0);
         }
-        if (&mTable[actualIndex]) {
+        if (actualIndex * sizeof(Node) + (uintptr_t)mTable) {
             new (&mTable[actualIndex]) Node(key, ptr);
         }
         mTable[targetIndex].SetSearchLength(searchLen);
@@ -267,7 +267,7 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
     void CopyFromOldTable(Node *oldTable, std::size_t oldSize, bool needFree) {
         for (std::size_t i = 0; i < mTableSize; i++) {
             // TODO UNSOLVED
-            if (&mTable[i]) {
+            if (i * sizeof(Node) + (uintptr_t)mTable) {
                 new (&mTable[i]) Node();
             }
         }
