@@ -230,7 +230,7 @@ class Array {
     }
 
     std::size_t GetTypeSize() const {
-        // TODO
+        return mSize;
     }
 
     std::size_t GetElementSize() const {

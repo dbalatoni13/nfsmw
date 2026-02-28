@@ -61,7 +61,7 @@ struct DeltaF1 : public AnimMemoryMap {
     }
 
     unsigned int GetBinLength() const {
-        return (1 << mBinLengthPower) - 1;
+        return 1 << mBinLengthPower;
     }
 
     unsigned char GetBinLengthPower() const {
@@ -69,7 +69,7 @@ struct DeltaF1 : public AnimMemoryMap {
     }
 
     unsigned int GetBinLengthModMask() const {
-        unsigned int result = 0x7FFFFFFFU >> (0x1F - mBinLengthPower);
+        unsigned int result = 0x7FFFFFFFU >> (31 - mBinLengthPower);
         return result;
     }
 
@@ -86,7 +86,7 @@ struct DeltaF1 : public AnimMemoryMap {
     }
 
     int GetBinSize() const {
-        return AlignSize2((mNumBones * 2) + (GetBinLength() * GetFrameDeltaSize()));
+        return AlignSize2((mNumBones * 2) + ((GetBinLength() - 1) * GetFrameDeltaSize()));
     }
 
     void GetArrays(DofInfo *&dofInfo, unsigned char *&binStart) {}
@@ -102,13 +102,6 @@ struct DeltaF1 : public AnimMemoryMap {
         const int bs = GetBinSize();
         unsigned char *memPos = &reinterpret_cast<unsigned char *>(GetDofInfo())[mNumBones * sizeof(DofInfo)];
         return &memPos[binIdx * bs]; // TODO swapping this causes problems somewhere else
-    }
-
-    // TODO
-    unsigned char *GetBinHack(int binIdx) {
-        const int bs = GetBinSize();
-        unsigned char *memPos = &reinterpret_cast<unsigned char *>(GetDofInfo())[mNumBones * sizeof(DofInfo)];
-        return &memPos[bs * binIdx]; // TODO swapping this causes problems somewhere else
     }
 
     unsigned short *GetPhysical(unsigned char *binData) {
@@ -128,12 +121,11 @@ struct DeltaF1 : public AnimMemoryMap {
     }
 
     unsigned short *GetConstBoneIdx() {
-        // TODO
         const int binSize = GetBinSize();
         int numBins = mNumFrames >> GetBinLengthPower(); // r8
         // get to the end of the bins
-        unsigned char *s = GetBinHack(numBins);     // r11
-        int r = mNumFrames & GetBinLengthModMask(); // r31
+        unsigned char *s = &GetBin(0)[binSize * numBins]; // r11
+        int r = mNumFrames & GetBinLengthModMask();       // r31
 
         if (r > 0) {
             s = reinterpret_cast<unsigned char *>(AlignSize2((intptr_t)s + mNumBones * 2 + (r - 1) * GetFrameDeltaSize()));

@@ -1,18 +1,18 @@
 #ifndef EAGL4ANIM_COMPOUNDCHANNEL_H
 #define EAGL4ANIM_COMPOUNDCHANNEL_H
 
-#include "MemoryPoolManager.h"
-#include "Speed/Indep/Src/EAGL4Anim/FnAnim.h"
-#include "Speed/Indep/Src/EAGL4Anim/eagl4supportdef.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
 #include "AnimMemoryMap.h"
 #include "BoneMask.h"
+#include "FnAnim.h"
 #include "FnAnimMemoryMap.h"
+#include "MemoryPoolManager.h"
 #include "PhaseChan.h"
 #include "PosePalette.h"
+#include "eagl4supportdef.h"
 
 namespace EAGL4Anim {
 

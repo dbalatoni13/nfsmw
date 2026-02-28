@@ -82,8 +82,8 @@ void FnDeltaLerpChan::Eval(float prevTime, float currTime, float *evalBuffer) {
 bool FnDeltaLerpChan::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
     if (!boneMask) {
         if (mBoneMask) {
-            mBoneMask = nullptr;
             mPrevFrame = -1;
+            mBoneMask = nullptr;
         }
         int floorFrame = FloatToInt(currTime);
         int ceilFrame = floorFrame + 1;
@@ -126,7 +126,7 @@ bool FnDeltaLerpChan::EvalSQTMask(float currTime, float *sqt, const BoneMask *bo
     if (mDofMask == nullptr && numDofs != 0) {
         mDofMask = reinterpret_cast<unsigned short *>(MemoryPoolManager::NewBlock(numDofs * sizeof(*mDofMask)));
         for (idof = 0; idof < numDofs; idof++) {
-            boneIdx = (dofIndices[idof] / 0xC) & 0xFF; // TODO magic
+            boneIdx = (dofIndices[idof] / 0xCu) & 0xFF; // TODO magic
             if (boneMask->GetBone(boneIdx)) {
                 mDofMask[mNumDofs++] = idof;
             }
@@ -174,7 +174,7 @@ void FnDeltaQuatChan::Eval(float prevTime, float currTime, float *evalBuffer) {
     int iquat;
 
     if (currTime == static_cast<float>(floorFrame) || ceilFrame >= numFrames) {
-        for (idof = 0, iquat = 0; iquat < numDofs; idof++, iquat += 4) {
+        for (iquat = 0, idof = 0; iquat < numDofs; iquat += 4, idof++) {
             *reinterpret_cast<UMath::Vector4 *>(&evalBuffer[dofIndices[idof]]) = *reinterpret_cast<UMath::Vector4 *>(&mPrevValues[iquat]);
         }
     } else {
@@ -186,8 +186,8 @@ void FnDeltaQuatChan::Eval(float prevTime, float currTime, float *evalBuffer) {
 bool FnDeltaQuatChan::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
     if (!boneMask) {
         if (mBoneMask) {
-            mBoneMask = nullptr;
             mPrevFrame = -1;
+            mBoneMask = nullptr;
         }
 
         DeltaChan *deltaChan = reinterpret_cast<DeltaChan *>(mpAnim);
@@ -204,7 +204,7 @@ bool FnDeltaQuatChan::EvalSQT(float currTime, float *sqt, const BoneMask *boneMa
         EvalToPrevValues(floorFrame);
 
         if (currTime == static_cast<float>(floorFrame) || ceilFrame >= numFrames) {
-            for (iquat = 0, idof = 0; iquat < numDofs; idof++, iquat += 4) {
+            for (iquat = 0, idof = 0; iquat < numDofs; iquat += 4, idof++) {
                 *reinterpret_cast<UMath::Vector4 *>(&sqt[dofIndices[idof]]) = *reinterpret_cast<UMath::Vector4 *>(&mPrevValues[iquat]);
             }
         } else {
@@ -235,8 +235,8 @@ bool FnDeltaQuatChan::EvalSQTMask(float currTime, float *sqt, const BoneMask *bo
     int boneIdx;
     if (mDofMask == nullptr && numDofs != 0) {
         mDofMask = reinterpret_cast<unsigned short *>(MemoryPoolManager::NewBlock(numDofs * sizeof(*mDofMask)));
-        for (iquat = 0, idof = 0; iquat < numDofs; idof++, iquat += 4) {
-            boneIdx = (dofIndices[idof] / 0xC) & 0xFF; // TODO magic
+        for (iquat = 0, idof = 0; iquat < numDofs; iquat += 4, idof++) {
+            boneIdx = (dofIndices[idof] / 0xCu) & 0xFF; // TODO magic
             if (boneMask->GetBone(boneIdx)) {
                 mDofMask[mNumDofs++] = idof;
             }
@@ -337,8 +337,8 @@ void FnKeyLerpChan::Eval(float prevTime, float currTime, float *evalBuffer) {
 bool FnKeyLerpChan::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
     if (!boneMask) {
         if (mBoneMask) {
-            mBoneMask = nullptr;
             mPrevKey = -1;
+            mBoneMask = nullptr;
         }
         int lowKey = FindLowerKey(currTime);
         EvalToPrevValues(lowKey);
@@ -389,7 +389,7 @@ bool FnKeyLerpChan::EvalSQTMask(float currTime, float *sqt, const BoneMask *bone
     if (mDofMask == nullptr && numDofs != 0) {
         mDofMask = reinterpret_cast<unsigned short *>(MemoryPoolManager::NewBlock(numDofs * sizeof(*mDofMask)));
         for (idof = 0; idof < numDofs; idof++) {
-            boneIdx = (dofIndices[idof] / 0xC) & 0xFF; // TODO magic, 0xC might be the sizeof DofInfo
+            boneIdx = (dofIndices[idof] / 0xCu) & 0xFF; // TODO magic
             if (boneMask->GetBone(boneIdx)) {
                 mDofMask[mNumDofs++] = idof;
             }
@@ -422,8 +422,8 @@ void FnKeyQuatChan::Eval(float prevTime, float currTime, float *evalBuffer) {
 bool FnKeyQuatChan::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
     if (!boneMask) {
         if (mBoneMask) {
-            mBoneMask = nullptr;
             mPrevKey = -1;
+            mBoneMask = nullptr;
         }
 
         KeyQuatChan *keyChan = reinterpret_cast<KeyQuatChan *>(mpAnim);
@@ -447,13 +447,13 @@ bool FnKeyQuatChan::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask
         };
 
         if (lowKeyTime == currTime || (lowKey == numKeys - 1 && currTime > keyTimes[numKeys - 2]) || (lowKey == 0 && currTime < 0.0f)) {
-            for (iquat = 0, idof = 0; iquat < numDofs; idof++, iquat += 4) {
+            for (iquat = 0, idof = 0; iquat < numDofs; iquat += 4, idof++) {
                 *reinterpret_cast<UMath::Vector4 *>(&sqt[dofIndices[idof]]) = *reinterpret_cast<UMath::Vector4 *>(&mPrevValues[iquat]);
             }
         } else {
             float t = (currTime - lowKeyTime) / (keyTimes[lowKey] - lowKeyTime);
             UMath::Vector4 ceilQuat;
-            for (iquat = 0, idof = 0; iquat < numDofs; idof++, iquat += 4) {
+            for (iquat = 0, idof = 0; iquat < numDofs; iquat += 4, idof++) {
                 deltaData->DecompressValues(iquat, 4, lowKey, lowKey + 1, &mPrevValues[iquat], reinterpret_cast<float *>(&ceilQuat));
 
                 float *blendValue = &sqt[dofIndices[idof]];
@@ -484,8 +484,8 @@ bool FnKeyQuatChan::EvalSQTMask(float currTime, float *sqt, const BoneMask *bone
     int boneIdx;
     if (mDofMask == nullptr && numDofs != 0) {
         mDofMask = reinterpret_cast<unsigned short *>(MemoryPoolManager::NewBlock(numDofs * sizeof(*mDofMask)));
-        for (iquat = 0, idof = 0; iquat < numDofs; idof++, iquat += 4) {
-            boneIdx = (dofIndices[idof] / 0xC) & 0xFF; // TODO magic
+        for (iquat = 0, idof = 0; iquat < numDofs; iquat += 4, idof++) {
+            boneIdx = (dofIndices[idof] / 0xCu) & 0xFF; // TODO magic
             if (boneMask->GetBone(boneIdx)) {
                 mDofMask[mNumDofs++] = idof;
             }

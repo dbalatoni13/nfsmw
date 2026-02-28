@@ -16,7 +16,6 @@ void FnDeltaF3::Eval(float prevTime, float currTime, float *evalBuffer) {
     EvalSQT(currTime, evalBuffer, nullptr);
 }
 
-// https://decomp.me/scratch/YWiFo
 bool FnDeltaF3::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
     if (!mPrevValues) {
         InitBuffersAsRequired();
@@ -25,38 +24,36 @@ bool FnDeltaF3::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
         return EvalSQTMask(currTime, sqt, boneMask);
     }
     if (mBoneMask) {
-        mBoneMask = nullptr;
         mPrevKey = -1;
         mNextKey = -1;
+        mBoneMask = nullptr;
     }
 
-    DeltaF3 *deltaF = reinterpret_cast<DeltaF3 *>(mpAnim); // r30
-    int floorTime = FloatToInt(currTime);                  // r26
-    int floorKey;                                          // r29
+    DeltaF3 *deltaF = reinterpret_cast<DeltaF3 *>(mpAnim);
+    int floorTime = FloatToInt(currTime);
+    int floorKey;
     if (!deltaF->mTimes) {
-        if (floorTime >= 0) {
+        if (floorTime < 0) {
+            floorKey = 0;
+        } else {
             if (floorTime >= deltaF->mNumFrames) {
                 floorKey = deltaF->mNumFrames - 1;
             } else {
                 floorKey = floorTime;
             }
-        } else {
-            floorKey = 0;
         }
     } else if (floorTime < deltaF->mTimes[0]) {
         floorKey = 0;
     } else {
-        int timeIndex; // r11
-        if (mPrevKey <= 0) {
+        int timeIndex;
+        if (mPrevKey < 1) {
             timeIndex = 0;
         } else {
             timeIndex = mPrevKey - 1;
         }
         if (deltaF->mTimes[timeIndex] <= floorTime) {
-            if (timeIndex < deltaF->mNumFrames - 2 && deltaF->mTimes[timeIndex + 1] <= floorTime) {
-                while (timeIndex < deltaF->mNumFrames - 2 && deltaF->mTimes[timeIndex + 1] <= floorTime) {
-                    timeIndex++;
-                }
+            while (timeIndex < deltaF->mNumFrames - 2 && deltaF->mTimes[timeIndex + 1] <= floorTime) {
+                timeIndex++;
             }
         } else {
             while (timeIndex > 0 && deltaF->mTimes[timeIndex] > floorTime) {
@@ -67,43 +64,32 @@ bool FnDeltaF3::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
         floorKey = timeIndex + 1;
     }
     unsigned int binLenPower = deltaF->GetBinLengthPower();
-    unsigned int binLenModMask = deltaF->GetBinLengthModMask(); // r7 // TODO
+    unsigned int binLenModMask = deltaF->GetBinLengthModMask();
 
-    int floorBinIdx = floorKey >> binLenPower;    // r21
-    int floorDeltaIdx = floorKey & binLenModMask; // r28
-    // TODO
-    int prevBinIdx = mPrevKey >> binLenPower; // r8 and r22?
-    // TODO
-    int prevDeltaIdx;                                     // r10
-    unsigned char *binData = deltaF->GetBin(floorBinIdx); // r12
+    int floorBinIdx = floorKey >> binLenPower;
+    int floorDeltaIdx = floorKey & binLenModMask;
+    int prevBinIdx = mPrevKey >> binLenPower;
+    int prevDeltaIdx;
+    unsigned char *binData = deltaF->GetBin(floorBinIdx);
     unsigned short *binPhys = deltaF->GetPhysical(binData);
-    unsigned char *binDelta; // r6
+    unsigned char *binDelta;
     int frameSize = deltaF->GetFrameDeltaSize();
-    UMath::Vector3 delta; // r1+0x8 TODO F3
+    UMath::Vector3 delta;
 
-    bool preventReverse = false; // r0
-    if (floorKey < mPrevKey) {
-        preventReverse = IsReverseDeltaSumEnabled() == false;
-    }
-    // TODO this shouldn't show a register in the dump
-    // I'm pretty sure this variable is the culprit of the regswaps
-    int ceilKey;
+    bool preventReverse = floorKey < mPrevKey && !IsReverseDeltaSumEnabled();
     if (floorKey == mNextKey) {
         UMath::Vector4 *tempBuf = mPrevValues;
         mPrevValues = mNextValues;
         mNextValues = tempBuf;
         prevDeltaIdx = floorDeltaIdx;
-        ceilKey = floorKey + 1;
+        mPrevKey = mNextKey;
         mNextKey = -1;
-        mPrevKey = floorKey;
     } else if (mPrevKey == -1 || floorBinIdx != prevBinIdx || floorDeltaIdx == 0 || preventReverse) {
         for (int idof = 0; idof < deltaF->GetNumBones(); idof++) {
             deltaF->UnQuantizePhysical(mMinRangesf[idof], &binPhys[idof * 3], *reinterpret_cast<UMath::Vector3 *>(&mPrevValues[idof]));
         }
-        ceilKey = floorKey + 1;
         prevDeltaIdx = 0;
     } else {
-        ceilKey = floorKey + 1;
         prevDeltaIdx = mPrevKey & binLenModMask;
     }
 
@@ -132,6 +118,7 @@ bool FnDeltaF3::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
     }
     mPrevKey = floorKey;
 
+    int ceilKey = floorKey + 1;
     float scale = 1.0f;
     bool lerpReqd;
     if (!deltaF->mTimes) {
@@ -139,24 +126,22 @@ bool FnDeltaF3::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
         if (lerpReqd) {
             scale = currTime - floorTime;
         }
-    } else if (ceilKey == 0) {
+    } else if (floorKey == 0) {
         lerpReqd = currTime != 0.0f;
         if (lerpReqd) {
-            float ceilKeyTime = static_cast<float>(deltaF->mTimes[ceilKey]);
+            float ceilKeyTime = static_cast<float>(deltaF->mTimes[floorKey]);
             scale = currTime / ceilKeyTime;
         }
     } else {
-        // TODO why floorKey - 1 and not floorKey?
         float floorKeyTime = deltaF->mTimes[floorKey - 1];
         lerpReqd = currTime != floorKeyTime;
         if (lerpReqd) {
-            // TODO why floorKey here and not ceilKey?
             float ceilKeyTime = static_cast<float>(deltaF->mTimes[floorKey]);
             scale = (currTime - floorKeyTime) / (ceilKeyTime - floorKeyTime);
         }
     }
 
-    unsigned short *dofIndices = deltaF->GetDofIndices(); // r3
+    unsigned short *dofIndices = deltaF->GetDofIndices();
 
     if (lerpReqd && floorKey < deltaF->mNumFrames - 1) {
         int ceilBinIdx = ceilKey >> binLenPower;
@@ -165,19 +150,18 @@ bool FnDeltaF3::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
         binPhys = deltaF->GetPhysical(binData);
         if (ceilKey == mNextKey) {
             for (int ibone = 0; ibone < deltaF->GetNumBones(); ibone++) {
-                sqt[dofIndices[0]] = mPrevValues[ibone].x + (mNextValues[ibone].x - mPrevValues[ibone].x) * scale;
-                sqt[dofIndices[1]] = mPrevValues[ibone].y + (mNextValues[ibone].y - mPrevValues[ibone].y) * scale;
-                sqt[dofIndices[2]] = mPrevValues[ibone].z + (mNextValues[ibone].z - mPrevValues[ibone].z) * scale;
+                sqt[*dofIndices + 0] = mPrevValues[ibone].x + (mNextValues[ibone].x - mPrevValues[ibone].x) * scale;
+                sqt[*dofIndices + 1] = mPrevValues[ibone].y + (mNextValues[ibone].y - mPrevValues[ibone].y) * scale;
+                sqt[*dofIndices + 2] = mPrevValues[ibone].z + (mNextValues[ibone].z - mPrevValues[ibone].z) * scale;
                 dofIndices++;
             }
         } else {
             if (ceilBinIdx != floorBinIdx) {
-                for (int ibone = 0; ibone < deltaF->GetNumBones(); ibone++, dofIndices++) {
-                    // TODO * 3 for binPhys?
-                    deltaF->UnQuantizePhysical(mMinRangesf[ibone], &binPhys[ibone], *reinterpret_cast<UMath::Vector3 *>(&mNextValues[ibone]));
-                    sqt[dofIndices[0]] = mPrevValues[ibone].x + (mNextValues[ibone].x - mPrevValues[ibone].x) * scale;
-                    sqt[dofIndices[1]] = mPrevValues[ibone].y + (mNextValues[ibone].y - mPrevValues[ibone].y) * scale;
-                    sqt[dofIndices[2]] = mPrevValues[ibone].z + (mNextValues[ibone].z - mPrevValues[ibone].z) * scale;
+                for (int ibone = 0; ibone < deltaF->GetNumBones(); binPhys += 3, ibone++, dofIndices++) {
+                    deltaF->UnQuantizePhysical(mMinRangesf[ibone], binPhys, *reinterpret_cast<UMath::Vector3 *>(&mNextValues[ibone]));
+                    sqt[*dofIndices + 0] = mPrevValues[ibone].x + (mNextValues[ibone].x - mPrevValues[ibone].x) * scale;
+                    sqt[*dofIndices + 1] = mPrevValues[ibone].y + (mNextValues[ibone].y - mPrevValues[ibone].y) * scale;
+                    sqt[*dofIndices + 2] = mPrevValues[ibone].z + (mNextValues[ibone].z - mPrevValues[ibone].z) * scale;
                 }
             } else {
                 int ceilDeltaIdx = floorDeltaIdx;
@@ -188,10 +172,9 @@ bool FnDeltaF3::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
                     mNextValues[ibone].y = mPrevValues[ibone].y + ceil.y;
                     mNextValues[ibone].z = mPrevValues[ibone].z + ceil.z;
 
-                    // TODO DIFF
-                    sqt[dofIndices[0]] = mPrevValues[ibone].x + (mNextValues[ibone].x - mPrevValues[ibone].x) * scale;
-                    sqt[dofIndices[1]] = mPrevValues[ibone].y + (mNextValues[ibone].y - mPrevValues[ibone].y) * scale;
-                    sqt[dofIndices[2]] = mPrevValues[ibone].z + (mNextValues[ibone].z - mPrevValues[ibone].z) * scale;
+                    sqt[*dofIndices + 0] = mPrevValues[ibone].x + (mNextValues[ibone].x - mPrevValues[ibone].x) * scale;
+                    sqt[*dofIndices + 1] = mPrevValues[ibone].y + (mNextValues[ibone].y - mPrevValues[ibone].y) * scale;
+                    sqt[*dofIndices + 2] = mPrevValues[ibone].z + (mNextValues[ibone].z - mPrevValues[ibone].z) * scale;
                     dofIndices++;
                 }
             }
@@ -203,58 +186,53 @@ bool FnDeltaF3::EvalSQT(float currTime, float *sqt, const BoneMask *boneMask) {
         }
     }
     if (deltaF->mNumConstBones != 0) {
-        unsigned short *constBoneIdxs = deltaF->GetConstBoneIdx(); // r6
-        float *constPhys = deltaF->GetConstPhysical();             // r11
-        int index;                                                 // r9
+        unsigned short *constBoneIdxs = deltaF->GetConstBoneIdx();
+        float *constPhys = deltaF->GetConstPhysical();
+        int index;
 
         for (int ibone = 0; ibone < deltaF->mNumConstBones; ibone++) {
-            index = *constBoneIdxs;
+            index = *constBoneIdxs++;
             sqt[index++] = *constPhys++;
             sqt[index++] = *constPhys++;
-            sqt[index++] = *constPhys++;
-
-            constBoneIdxs++;
+            sqt[index] = *constPhys++;
         }
     }
 
     return true;
 }
 
-// https://decomp.me/scratch/HzB0K
 bool FnDeltaF3::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneMask) {
     if (boneMask != mBoneMask) {
-        mBoneMask = boneMask;
         mPrevKey = -1;
         mNextKey = -1;
+        mBoneMask = boneMask;
     }
 
-    DeltaF3 *deltaF = reinterpret_cast<DeltaF3 *>(mpAnim); // r30
-    int floorTime = FloatToInt(currTime);                  // r26
-    int floorKey;                                          // r29
+    DeltaF3 *deltaF = reinterpret_cast<DeltaF3 *>(mpAnim);
+    int floorTime = FloatToInt(currTime);
+    int floorKey;
     if (!deltaF->mTimes) {
-        if (floorTime >= 0) {
+        if (floorTime < 0) {
+            floorKey = 0;
+        } else {
             if (floorTime >= deltaF->mNumFrames) {
                 floorKey = deltaF->mNumFrames - 1;
             } else {
                 floorKey = floorTime;
             }
-        } else {
-            floorKey = 0;
         }
     } else if (floorTime < deltaF->mTimes[0]) {
         floorKey = 0;
     } else {
-        int timeIndex; // r11
-        if (mPrevKey <= 0) {
+        int timeIndex;
+        if (mPrevKey < 1) {
             timeIndex = 0;
         } else {
             timeIndex = mPrevKey - 1;
         }
         if (deltaF->mTimes[timeIndex] <= floorTime) {
-            if (timeIndex < deltaF->mNumFrames - 2 && deltaF->mTimes[timeIndex + 1] <= floorTime) {
-                while (timeIndex < deltaF->mNumFrames - 2 && deltaF->mTimes[timeIndex + 1] <= floorTime) {
-                    timeIndex++;
-                }
+            while (timeIndex < deltaF->mNumFrames - 2 && deltaF->mTimes[timeIndex + 1] <= floorTime) {
+                timeIndex++;
             }
         } else {
             while (timeIndex > 0 && deltaF->mTimes[timeIndex] > floorTime) {
@@ -265,52 +243,41 @@ bool FnDeltaF3::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneMask
         floorKey = timeIndex + 1;
     }
     unsigned int binLenPower = deltaF->GetBinLengthPower();
-    unsigned int binLenModMask = deltaF->GetBinLengthModMask(); // r7 // TODO
+    unsigned int binLenModMask = deltaF->GetBinLengthModMask();
 
-    int floorBinIdx = floorKey >> binLenPower;    // r21
-    int floorDeltaIdx = floorKey & binLenModMask; // r28
-    // TODO
-    int prevBinIdx = mPrevKey >> binLenPower; // r8 and r22?
-    // TODO
-    int prevDeltaIdx;                                     // r10
-    unsigned char *binData = deltaF->GetBin(floorBinIdx); // r12
+    int floorBinIdx = floorKey >> binLenPower;
+    int floorDeltaIdx = floorKey & binLenModMask;
+    int prevBinIdx = mPrevKey >> binLenPower;
+    int prevDeltaIdx;
+    unsigned char *binData = deltaF->GetBin(floorBinIdx);
     unsigned short *binPhys = deltaF->GetPhysical(binData);
-    unsigned char *binDelta; // r6
+    unsigned char *binDelta;
     int frameSize = deltaF->GetFrameDeltaSize();
-    UMath::Vector3 delta; // r1+0x8 TODO F3
+    UMath::Vector3 delta;
 
     unsigned short *dofIdxs = deltaF->GetDofIndices();
-    unsigned char boneIdxs[80]; // r1+0x8
-    int idof;                   // r12
+    unsigned char boneIdxs[80];
+    int idof;
     for (idof = 0; idof < deltaF->GetNumBones(); idof++) {
-        boneIdxs[idof] = (dofIdxs[idof] / 0xC);
+        boneIdxs[idof] = static_cast<unsigned char>(dofIdxs[idof] / 0xCu);
     }
 
-    bool preventReverse = false; // r0
-    if (floorKey < mPrevKey) {
-        preventReverse = IsReverseDeltaSumEnabled() == false;
-    }
-    // TODO this shouldn't show a register in the dump
-    // I'm pretty sure this variable is the culprit of the regswaps
-    int ceilKey;
+    bool preventReverse = floorKey < mPrevKey && !IsReverseDeltaSumEnabled();
     if (floorKey == mNextKey) {
         UMath::Vector4 *tempBuf = mPrevValues;
         mPrevValues = mNextValues;
         mNextValues = tempBuf;
         prevDeltaIdx = floorDeltaIdx;
-        ceilKey = floorKey + 1;
+        mPrevKey = mNextKey;
         mNextKey = -1;
-        mPrevKey = floorKey;
     } else if (mPrevKey == -1 || floorBinIdx != prevBinIdx || preventReverse) {
         for (idof = 0; idof < deltaF->GetNumBones(); idof++) {
             if (boneMask->GetBone(boneIdxs[idof])) {
                 deltaF->UnQuantizePhysical(mMinRangesf[idof], &binPhys[idof * 3], *reinterpret_cast<UMath::Vector3 *>(&mPrevValues[idof]));
             }
         }
-        ceilKey = floorKey + 1;
         prevDeltaIdx = 0;
     } else {
-        ceilKey = floorKey + 1;
         prevDeltaIdx = mPrevKey & binLenModMask;
     }
 
@@ -343,6 +310,7 @@ bool FnDeltaF3::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneMask
     }
     mPrevKey = floorKey;
 
+    int ceilKey = floorKey + 1;
     float scale = 1.0f;
     bool lerpReqd;
     if (!deltaF->mTimes) {
@@ -350,24 +318,22 @@ bool FnDeltaF3::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneMask
         if (lerpReqd) {
             scale = currTime - floorTime;
         }
-    } else if (ceilKey == 0) {
+    } else if (floorKey == 0) {
         lerpReqd = currTime != 0.0f;
         if (lerpReqd) {
-            float ceilKeyTime = static_cast<float>(deltaF->mTimes[ceilKey]);
+            float ceilKeyTime = static_cast<float>(deltaF->mTimes[floorKey]);
             scale = currTime / ceilKeyTime;
         }
     } else {
-        // TODO why floorKey - 1 and not floorKey?
         float floorKeyTime = deltaF->mTimes[floorKey - 1];
         lerpReqd = currTime != floorKeyTime;
         if (lerpReqd) {
-            // TODO why floorKey here and not ceilKey?
             float ceilKeyTime = static_cast<float>(deltaF->mTimes[floorKey]);
             scale = (currTime - floorKeyTime) / (ceilKeyTime - floorKeyTime);
         }
     }
 
-    unsigned short *dofIndices = deltaF->GetDofIndices(); // r3
+    unsigned short *dofIndices = deltaF->GetDofIndices();
 
     if (lerpReqd && floorKey < deltaF->mNumFrames - 1) {
         int ceilBinIdx = ceilKey >> binLenPower;
@@ -377,21 +343,21 @@ bool FnDeltaF3::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneMask
         if (ceilKey == mNextKey) {
             for (int ibone = 0; ibone < deltaF->GetNumBones(); ibone++) {
                 if (boneMask->GetBone(boneIdxs[ibone])) {
-                    sqt[dofIndices[0]] = mPrevValues[ibone].x + (mNextValues[ibone].x - mPrevValues[ibone].x) * scale;
-                    sqt[dofIndices[1]] = mPrevValues[ibone].y + (mNextValues[ibone].y - mPrevValues[ibone].y) * scale;
-                    sqt[dofIndices[2]] = mPrevValues[ibone].z + (mNextValues[ibone].z - mPrevValues[ibone].z) * scale;
+                    sqt[*dofIndices] = mPrevValues[ibone].x + (mNextValues[ibone].x - mPrevValues[ibone].x) * scale;
+                    sqt[*dofIndices + 1] = mPrevValues[ibone].y + (mNextValues[ibone].y - mPrevValues[ibone].y) * scale;
+                    sqt[*dofIndices + 2] = mPrevValues[ibone].z + (mNextValues[ibone].z - mPrevValues[ibone].z) * scale;
                 }
                 dofIndices++;
             }
         } else {
             if (ceilBinIdx != floorBinIdx) {
-                for (int ibone = 0; ibone < deltaF->GetNumBones(); ibone++, dofIndices++) {
-                    // TODO * 3 for binPhys?
+                for (int ibone = 0; ibone < deltaF->GetNumBones(); dofIndices++, binPhys += 3, ibone++) {
                     if (boneMask->GetBone(boneIdxs[ibone])) {
-                        deltaF->UnQuantizePhysical(mMinRangesf[ibone], &binPhys[ibone], *reinterpret_cast<UMath::Vector3 *>(&mNextValues[ibone]));
-                        sqt[dofIndices[0]] = mPrevValues[ibone].x + (mNextValues[ibone].x - mPrevValues[ibone].x) * scale;
-                        sqt[dofIndices[1]] = mPrevValues[ibone].y + (mNextValues[ibone].y - mPrevValues[ibone].y) * scale;
-                        sqt[dofIndices[2]] = mPrevValues[ibone].z + (mNextValues[ibone].z - mPrevValues[ibone].z) * scale;
+                        deltaF->UnQuantizePhysical(mMinRangesf[ibone], binPhys, *reinterpret_cast<UMath::Vector3 *>(&mNextValues[ibone]));
+                        mNextKey = ceilKey;
+                        sqt[*dofIndices] = mPrevValues[ibone].x + (mNextValues[ibone].x - mPrevValues[ibone].x) * scale;
+                        sqt[*dofIndices + 1] = mPrevValues[ibone].y + (mNextValues[ibone].y - mPrevValues[ibone].y) * scale;
+                        sqt[*dofIndices + 2] = mPrevValues[ibone].z + (mNextValues[ibone].z - mPrevValues[ibone].z) * scale;
                     }
                 }
             } else {
@@ -400,19 +366,18 @@ bool FnDeltaF3::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneMask
                 for (int ibone = 0; ibone < deltaF->GetNumBones(); ibone++) {
                     if (boneMask->GetBone(boneIdxs[ibone])) {
                         deltaF->UnQuantizeDelta(mMinRangesf[ibone], binDelta, ibone, ceil);
+                        mNextKey = ceilKey;
                         mNextValues[ibone].x = mPrevValues[ibone].x + ceil.x;
                         mNextValues[ibone].y = mPrevValues[ibone].y + ceil.y;
                         mNextValues[ibone].z = mPrevValues[ibone].z + ceil.z;
 
-                        // TODO DIFF
-                        sqt[dofIndices[0]] = mPrevValues[ibone].x + (mNextValues[ibone].x - mPrevValues[ibone].x) * scale;
-                        sqt[dofIndices[1]] = mPrevValues[ibone].y + (mNextValues[ibone].y - mPrevValues[ibone].y) * scale;
-                        sqt[dofIndices[2]] = mPrevValues[ibone].z + (mNextValues[ibone].z - mPrevValues[ibone].z) * scale;
+                        sqt[*dofIndices] = mPrevValues[ibone].x + ceil.x * scale;
+                        sqt[*dofIndices + 1] = mPrevValues[ibone].y + ceil.y * scale;
+                        sqt[*dofIndices + 2] = mPrevValues[ibone].z + ceil.z * scale;
                     }
                     dofIndices++;
                 }
             }
-            mNextKey = ceilKey;
         }
     } else {
         for (int ibone = 0; ibone < deltaF->GetNumBones(); ibone++) {
@@ -422,11 +387,11 @@ bool FnDeltaF3::EvalSQTMask(float currTime, float *sqt, const BoneMask *boneMask
         }
     }
     if (deltaF->mNumConstBones != 0) {
-        unsigned short *constBoneIdxs = deltaF->GetConstBoneIdx(); // r3
-        float *constPhys = deltaF->GetConstPhysical();             // r8
-        unsigned short dofIndex;                                   // r10
+        unsigned short *constBoneIdxs = deltaF->GetConstBoneIdx();
+        float *constPhys = deltaF->GetConstPhysical();
+        unsigned short dofIndex;
         unsigned short boneIndex;
-        int ibone; // r5
+        int ibone;
 
         for (ibone = 0; ibone < deltaF->mNumConstBones; ibone++) {
             dofIndex = *constBoneIdxs++;
