@@ -168,7 +168,7 @@ class IHumanAI : public UTL::COM::IUnknown {
   public:
     virtual void ChangeDragLanes(bool left);
     virtual bool IsPlayerSteering();
-    virtual bool GetAiControl() const;
+    virtual bool GetAiControl();
     virtual void SetAiControl(bool ai_control);
     virtual void SetWorldMoment(const UMath::Vector3 &position, float radius);
     virtual const UMath::Vector3 &GetWorldMomentPosition();

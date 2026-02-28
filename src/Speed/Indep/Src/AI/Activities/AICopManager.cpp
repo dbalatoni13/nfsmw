@@ -120,10 +120,7 @@ AICopManager::AICopManager(Sim::Param params)
         mMaxActiveCopHelicopters = UMath::Min(mMaxCopHelicopters, SkipFEHelicopter);
     }
 
-    ICopMgr::mDisableCops = false;
-    if (SkipFE && SkipFEDisableCops) {
-        ICopMgr::mDisableCops = true;
-    }
+    ICopMgr::mDisableCops = SkipFE && SkipFEDisableCops;
 
     mActionQ = new ActionQueue(0, 0x98c7a2f5, "AICopManager", false); // TODO magic
     mAttributes = nullptr;

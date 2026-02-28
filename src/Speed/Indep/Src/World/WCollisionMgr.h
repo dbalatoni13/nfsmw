@@ -24,22 +24,15 @@ class WCollisionMgr {
         unsigned short fPad;              // offset 0x52, size 0x2
         const WCollisionInstance *fCInst; // offset 0x54, size 0x4
 
-        // UNSOLVED
-        WorldCollisionInfo() {
-            fCollidePt = UMath::Vector4::kIdentity;
-            fNormal = UMath::Vector4::kIdentity;
-            // fBle.fB = WCollisionBarrier();
-            // TODO maybe this is in WCollisionBarrierListEntry's constructor?
-            memset(&fBle.fB, 0, sizeof(fBle.fB));
-            fBle.fSurfaceRef = nullptr;
-            fBle.fDistanceToSq = 0.0f;
-            fDist = 0.0f;
-            fObj = nullptr;
-            fAnimated = false;
-            fType = 0;
-            fPad = 0;
-            fCInst = nullptr;
-        }
+        WorldCollisionInfo()
+            : fCollidePt(UMath::Vector4::kIdentity), //
+              fNormal(UMath::Vector4::kIdentity),    //
+              fDist(0.0f),                           //
+              fObj(nullptr),                         //
+              fAnimated(false),                      //
+              fType(0),                              //
+              fPad(0),                               //
+              fCInst(nullptr) {}
 
         bool HitSomething() const {}
     };

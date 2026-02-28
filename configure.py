@@ -214,6 +214,7 @@ config.reconfig_deps = []
 if config.platform == Platform.GC_WII:
     config.linker_version = "ProDG/3.9.3"
 
+    # TODO move some of these to the game flags
     cflags_base = [
         "-O1",
         "-gdwarf",

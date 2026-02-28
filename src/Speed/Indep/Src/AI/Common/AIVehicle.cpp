@@ -404,14 +404,14 @@ void AIVehicle::ResetInternals() {
     GetOwner()->QueryInterface(&mIInput);
     ClearGoal();
     mLastSpawnTime = 0.0f;
-    mDestSegment = -1;
     mCanRespawn = false;
     mDrivableToNav = false;
     mReverseOverrideTimer = 0.0f;
+    mReverseOverrideSteer = 0.0f;
     mReverseOverrideDirection = false;
     mDrivableToTargetPos = false;
+    mDestSegment = -1;
     mReversingSpeed = false;
-    mReverseOverrideSteer = 0.0f;
     mSteeringBehind = false;
 }
 

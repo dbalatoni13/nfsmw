@@ -8,7 +8,6 @@
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
-
 // TODO are these two maybe in AIAction.h?
 // total size: 0x1
 class speed_delay_traits {
@@ -233,7 +232,7 @@ void AIActionPursuitOffRoad::UpdateAvoidWalls(UMath::Vector3 &avoid) {
     if (speed < 2.0f) {
         return;
     }
-    float length = bMin(speed + 10.0f, 80.0f);
+    float length = bMin(80.0f, speed + 10.0f);
     UMath::Vector3 target;
     UMath::ScaleAdd(velocity, length / speed, position, target);
 

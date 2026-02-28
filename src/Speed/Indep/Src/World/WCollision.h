@@ -28,7 +28,7 @@ struct WCollisionArticle {
 
 // total size: 0x20
 struct WCollisionBarrier {
-    bVector4 fPts[2]; // offset 0x0, size 0x20
+    UMath::Vector4 fPts[2]; // offset 0x0, size 0x20
 };
 
 // total size: 0x28
@@ -37,12 +37,10 @@ struct WCollisionBarrierListEntry {
     const Attrib::Collection *fSurfaceRef; // offset 0x20, size 0x4
     float fDistanceToSq;                   // offset 0x24, size 0x4
 
-    // TODO
-    WCollisionBarrierListEntry() {
-        // memset((void *)&fB, 0, sizeof(fB));
-        // fSurfaceRef = nullptr;
-        // fDistanceToSq = 0.0f;
-    }
+    WCollisionBarrierListEntry()
+        : fB(),                 //
+          fSurfaceRef(nullptr), //
+          fDistanceToSq(0.0f) {}
 };
 
 struct WCollisionObject : public CollisionObject {
