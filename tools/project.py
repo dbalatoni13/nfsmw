@@ -1111,6 +1111,10 @@ def generate_build_ninja(
 
             cflags = obj.options["cflags"]
             extra_cflags = obj.options["extra_cflags"]
+            toolchain_version: str = obj.options["toolchain_version"]
+            is_mwcc: bool = toolchain_version.startswith(
+                "GC"
+            ) or toolchain_version.startswith("Wii")
 
             def is_lang_flag(flag):
                 return flag.startswith("-lang") or flag in ("/TP", "/TC", "/Tp", "/Tc")
@@ -1124,11 +1128,17 @@ def generate_build_ninja(
                 # and insert into there to avoid modifying shared sets of flags
                 extra_cflags = obj.options["extra_cflags"] = list(extra_cflags)
                 if config.platform != Platform.X360:
-                    extra_cflags.insert(0, "-x")
-                    if file_is_cpp(src_path):
-                        extra_cflags.insert(1, "c++")
+                    if is_mwcc:
+                        if file_is_cpp(src_path):
+                            extra_cflags.insert(0, "-lang=c++")
+                        else:
+                            extra_cflags.insert(0, "-lang=c")
                     else:
-                        extra_cflags.insert(1, "c")
+                        extra_cflags.insert(0, "-x")
+                        if file_is_cpp(src_path):
+                            extra_cflags.insert(1, "c++")
+                        else:
+                            extra_cflags.insert(1, "c")
                 else:
                     if file_is_cpp(src_path):
                         extra_cflags.insert(0, "/TP")
@@ -1137,12 +1147,16 @@ def generate_build_ninja(
 
             all_cflags = cflags + extra_cflags
             cflags_str = make_flags_str(all_cflags)
-            used_compiler_versions.add(obj.options["toolchain_version"])
+            used_compiler_versions.add(toolchain_version)
 
             if config.platform == Platform.GC_WII:
                 # Add ProDG build rule
-                build_rule = "prodg"
-                build_implicit = ngccc_implicit
+                if is_mwcc:
+                    build_rule = "mwcc"
+                    build_implicit = mwcc_implicit
+                else:
+                    build_rule = "prodg"
+                    build_implicit = ngccc_implicit
             elif config.platform == Platform.X360:
                 # Add MSVC build rule
                 build_rule = "msvc"

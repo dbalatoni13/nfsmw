@@ -214,8 +214,32 @@ config.reconfig_deps = []
 if config.platform == Platform.GC_WII:
     config.linker_version = "ProDG/3.9.3"
 
+    cflags_base_mwcc = [
+        "-nodefaults",
+        "-proc gekko",
+        "-align powerpc",
+        "-enum int",
+        "-fp hardware",
+        "-Cpp_exceptions off",
+        # "-W all",
+        "-O4,p",
+        "-inline auto",
+        '-pragma "cats off"',
+        '-pragma "warn_notinlined off"',
+        "-maxerrors 1",
+        "-nosyspath",
+        "-RTTI off",
+        "-fp_contract on",
+        "-str reuse",
+        "-i include",
+        "-i src/Speed/GameCube/bWare/GameCube/dolphinsdk/include",
+        f"-i build/{config.version}/include",
+        "-multibyte",
+        f"-DVERSION={version_num}",
+    ]
+
     # TODO move some of these to the game flags
-    cflags_base = [
+    cflags_base_prodg = [
         "-O1",
         "-gdwarf",
         # "-Wa,-L",
@@ -251,12 +275,12 @@ if config.platform == Platform.GC_WII:
 
     # Debug flags
     if args.debug:
-        cflags_base.append("-DDEBUG=1")
+        cflags_base_prodg.append("-DDEBUG=1")
     else:
-        cflags_base.append("-DNDEBUG=1")
+        cflags_base_prodg.append("-DNDEBUG=1")
 
     cflags_game = [
-        *cflags_base,
+        *cflags_base_prodg,
         "-mps-nodf",
         # "-mfast-cast",
         "-G0",
@@ -295,7 +319,7 @@ if config.platform == Platform.GC_WII:
 elif config.platform == Platform.X360:
     config.linker_version = "X360/14.00.2110"
 
-    cflags_base = [
+    cflags_base_prodg = [
         "/nologo",
         "/c",  # compile without linking
         "/wd4996",  # get rid of string deprecation warnings for now
@@ -332,7 +356,7 @@ elif config.platform == Platform.X360:
     ]
 
     cflags_game = [
-        *cflags_base,
+        *cflags_base_prodg,
         "/DLUA_NUMBER=float",
         "/DMILESTONE_OPT",
     ]
@@ -346,7 +370,7 @@ elif config.platform == Platform.X360:
 elif config.platform == Platform.PS2:
     config.linker_version = "PS2/ee-gcc2.9-991111"
 
-    cflags_base = [
+    cflags_base_prodg = [
         "-O2",
         "-g2",
         # "-Wall",
@@ -382,7 +406,7 @@ elif config.platform == Platform.PS2:
     #     cflags_base.append("-DNDEBUG=1")
 
     cflags_game = [
-        *cflags_base,
+        *cflags_base_prodg,
         "-G0",
         "-ffast-math",
         "-fno-exceptions",
@@ -422,22 +446,24 @@ cflags_cmn = [
     #    "-x c++"
 ]
 
+cflags_libc = [*cflags_base_prodg]
+
+cflags_dolphin = [*cflags_base_mwcc]
+
 # Metrowerks library flags
-cflags_runtime = [*cflags_base]
+cflags_runtime = [*cflags_base_mwcc]
 
-cflags_odemuexi = [*cflags_base]
+cflags_odemuexi = [*cflags_base_mwcc]
 
-cflags_amcstub = [*cflags_base]
-
-cflags_libc = [*cflags_base]
+cflags_amcstub = [*cflags_base_mwcc]
 
 
 # Helper function for Dolphin libraries
 def DolphinLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
-        "toolchain_version": "ProDG/3.9.3",
-        "cflags": cflags_base,
+        "toolchain_version": "GC/1.2.5n",
+        "cflags": cflags_dolphin,
         "progress_category": "sdk",
         "objects": objects,
     }
@@ -1010,7 +1036,7 @@ if config.platform == Platform.GC_WII:
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSReboot.c",
                     ),
                     Object(
-                        Matching,
+                        NonMatching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/__ppc_eabi_init.cpp",
                     ),
                 ],
