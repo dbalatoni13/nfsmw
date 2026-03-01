@@ -212,6 +212,7 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
         return true;
     }
 
+    // TODO might this be faulty?
     std::size_t UpdateSearchLength(std::size_t targetIndex, std::size_t freeIndex) {
         if (targetIndex == freeIndex && mTable[targetIndex].MaxSearch() == 0) {
             targetIndex = Policy::WrapIndex(targetIndex + mTableSize - mWorstCollision, mTableSize, 0);
@@ -235,7 +236,7 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
         // useless but necessary to match, TODO probably some debug stuff going on
         if (mTable[freeIndex].IsValid()) {
         }
-        if (freeIndex != worstIndex) {
+        if (mTable[freeIndex].IsValid() && freeIndex != worstIndex) {
             mTable[freeIndex].Move(mTable[worstIndex]);
         }
         if (mTable[worstIndex].IsValid()) {

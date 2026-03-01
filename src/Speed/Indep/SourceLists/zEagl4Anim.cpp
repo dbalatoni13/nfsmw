@@ -2,6 +2,8 @@
 
 #include "Speed/Indep/Src/EAGL4Anim/Attribute.cpp"
 
+#include "Speed/Indep/Src/EAGL4Anim/AttributeDictionary.cpp"
+
 #include "Speed/Indep/Src/EAGL4Anim/CompoundChannel.cpp"
 
 #include "Speed/Indep/Src/EAGL4Anim/CsisEventChannel.cpp"

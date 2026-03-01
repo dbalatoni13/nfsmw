@@ -7,6 +7,23 @@
 
 namespace EAGL4 {
 
+SymbolPool DynamicLoader::gSymbolPool;
+ConstructorPool DynamicLoader::gConsPool;
+RuntimeAllocConstructorPool DynamicLoader::gRuntimeAllocConsPool;
+
+// const char DynamicLoader::ModelType[];
+// const char DynamicLoader::BBoxType[];
+// const char DynamicLoader::TARType[];
+// const char DynamicLoader::ShapeType[];
+const char DynamicLoader::AnimBankType[] = "AnimationBank";
+// const char DynamicLoader::BoneType[];
+const char DynamicLoader::SkeletonType[] = "Skeleton";
+// const char DynamicLoader::MorphType[];
+// const char DynamicLoader::VersionType[];
+// const char DynamicLoader::AnimClipSetType[];
+// const char DynamicLoader::AnimIdType[];
+// const char DynamicLoader::PosePaletteBankType[];
+
 static long unsigned int elfhash(const char *name) {
     long unsigned int h = 0; // r3
     long unsigned int g;     // r9

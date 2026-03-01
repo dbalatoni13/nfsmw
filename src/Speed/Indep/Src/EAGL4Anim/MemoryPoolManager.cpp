@@ -32,6 +32,22 @@
 
 namespace EAGL4Anim {
 
+MemoryPoolManager *MemoryPoolManager::gDefaultMemoryManager = nullptr;
+MemoryPoolManager *MemoryPoolManager::gMemoryManager = nullptr;
+unsigned short MemoryPoolManager::gFreeListSize[] = {
+    0x14, 0x18, 0x14, 0x1C, 0x2C, 0x14, 0xA0, 0x20, 0x80, 0x5C, 0x24, 0x24, 0x24,
+    0x24, 0x1C, 0x1C, 0x14, 0x30, 0x40, 0x30, 0x30, 0x30, 0x18, 0x18, 0x18,
+};
+
+// TODO why is there MatrixMultiply here?
+
+char *MemoryPoolManager::gMemoryPool = nullptr;
+char *MemoryPoolManager::gMemoryPoolFree = nullptr;
+size_t MemoryPoolManager::gMemoryPoolSize = 0;
+unsigned short MemoryPoolManager::gMaxIdx = 0;
+char *MemoryPoolManager::gFreeList[] = {};
+char *MemoryPoolManager::gSizeFreeList[] = {};
+
 unsigned int MemoryPoolManager::GetMemoryPoolUsageAux() {
     return gMemoryPoolFree - gMemoryPool;
 }

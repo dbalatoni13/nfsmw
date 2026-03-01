@@ -7,6 +7,7 @@
 #include "PoseAnim.h"
 #include "StatelessF3.h"
 #include "StatelessQ.h"
+
 #include <cstring>
 
 namespace EAGL4Anim {

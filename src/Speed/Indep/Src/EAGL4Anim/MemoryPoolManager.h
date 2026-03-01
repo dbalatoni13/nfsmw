@@ -111,7 +111,7 @@ class MemoryPoolManager {
     static MemoryPoolManager *gMemoryManager;        // size: 0x4, address: 0x80417128
     static char *gMemoryPool;                        // size: 0x4, address: 0x80417168
     static char *gMemoryPoolFree;                    // size: 0x4, address: 0x8041716C
-    static unsigned int gMemoryPoolSize;             // size: 0x4, address: 0x80417170
+    static size_t gMemoryPoolSize;                   // size: 0x4, address: 0x80417170
     static unsigned short gMaxIdx;                   // size: 0x2, address: 0x80417174
     static unsigned short gFreeListSize[];           // size: 0x0, address: 0x8041712C
     static char *gFreeList[26];                      // size: 0x68, address: 0x80417178

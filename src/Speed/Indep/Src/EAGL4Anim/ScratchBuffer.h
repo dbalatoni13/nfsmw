@@ -7,6 +7,8 @@
 
 #include "types.h"
 
+namespace EAGL4Anim {
+
 // total size: 0xC
 class ScratchBuffer {
   public:
@@ -43,5 +45,12 @@ class ScratchBuffer {
     unsigned int mSize; // offset 0x4, size 0x4
     int mRefCount;      // offset 0x8, size 0x4
 };
+
+class ScratchBufferHelper {
+  private:
+    static ScratchBuffer mScratchBuffers[3]; // size: 0x24
+};
+
+}; // namespace EAGL4Anim
 
 #endif
