@@ -15,30 +15,44 @@ namespace EAGL4Anim {
 // total size: 0x8
 class FnDefaultAnimBank : public FnAnimBank {
   public:
-    FnDefaultAnimBank() {}
+    FnDefaultAnimBank() : mpAnimBank(nullptr) {}
 
     virtual ~FnDefaultAnimBank() {}
 
     // Overrides: FnAnimBank
-    void Init(AnimBank *bank) override {}
+    void Init(AnimBank *bank) override {
+        mpAnimBank = bank;
+    }
 
     // Overrides: FnAnimBank
-    int GetNumAnims() const override {}
+    int GetNumAnims() const override {
+        return mpAnimBank->GetNumAnims();
+    }
 
     // Overrides: FnAnimBank
-    AnimMemoryMap *GetAnim(int i) override {}
+    AnimMemoryMap *GetAnim(int i) override {
+        return mpAnimBank->GetAnim(i);
+    }
 
     // Overrides: FnAnimBank
-    const char *GetAnimName(int i) const override {}
+    const char *GetAnimName(int i) const override {
+        return mpAnimBank->GetAnimName(i);
+    }
 
     // Overrides: FnAnimBank
-    AnimMemoryMap *GetAnim(const char *name) override {}
+    AnimMemoryMap *GetAnim(const char *name) override {
+        return mpAnimBank->GetAnim(name);
+    }
 
     // Overrides: FnAnimBank
-    int GetAnimIndex(const char *name) override {}
+    int GetAnimIndex(const char *name) override {
+        return mpAnimBank->GetAnimIndex(name);
+    }
 
     // Overrides: FnAnimBank
-    const AttributeDictionary *GetAttributeDictionary() const override {}
+    const AttributeDictionary *GetAttributeDictionary() const override {
+        return mpAnimBank->GetAttributeDictionary();
+    }
 
   private:
     AnimBank *mpAnimBank; // offset 0x4, size 0x4

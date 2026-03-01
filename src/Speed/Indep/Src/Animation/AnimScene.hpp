@@ -29,7 +29,6 @@ class CAnimEntityData : public bTNode<CAnimEntityData> {
 
 // total size: 0x1C
 class CAnimSceneData : public bTNode<CAnimSceneData> {
-
   private:
     bChunk *mChunk;                              // offset 0x8, size 0x4
     struct NisScene *mNisScene;                  // offset 0xC, size 0x4
@@ -59,7 +58,6 @@ class IAnimEntity {
 
 // total size: 0x110
 class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
-
   public:
     enum ePlayStatus {
         Stopped = 0,
@@ -93,7 +91,7 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
     int mHandle;                                  // offset 0xC, size 0x4
     CAnimSceneData *mAnimSceneData;               // offset 0x10, size 0x4
     bPList<IAnimEntity> mInstancedAnimEntityList; // offset 0x14, size 0x8
-    enum ePlayStatus mPlayStatus;                 // offset 0x1C, size 0x4
+    ePlayStatus mPlayStatus;                      // offset 0x1C, size 0x4
     float mTimeElapsed;                           // offset 0x20, size 0x4
     float mTimeDelta;                             // offset 0x24, size 0x4
     float mTimeStart;                             // offset 0x28, size 0x4
@@ -105,7 +103,7 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
     bMatrix4 mSceneRotationMatrix;                // offset 0x44, size 0x40
     bMatrix4 mSceneTranslationMatrix;             // offset 0x84, size 0x40
     bMatrix4 mSceneTransformMatrix;               // offset 0xC4, size 0x40
-    struct SpaceNode *mSpaceNode;                 // offset 0x104, size 0x4
+    SpaceNode *mSpaceNode;                        // offset 0x104, size 0x4
     int mAnimCandidateType;                       // offset 0x108, size 0x4
     int mAnimCandidateIndex;                      // offset 0x10C, size 0x4
 };

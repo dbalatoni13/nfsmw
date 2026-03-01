@@ -19,17 +19,17 @@ prodg_fixes.cpp:
 Speed/Indep/SourceLists/zAI.cpp:
 	.text       start:0x800034A0 end:0x80045E3C
 	.ctors      start:0x803C8B64 end:0x803C8B68
-	.rodata     start:0x803C8C60 end:0x803D0710
-	.data       start:0x80415180 end:0x804156F4
-	.bss        start:0x80456560 end:0x804575C0
+	.rodata     start:0x803C8C60 end:0x803CF348
+	.data       start:0x80415180 end:0x804154C0
+	.bss        start:0x80456560 end:0x80457588
 	.sdata      start:0x804FEDC0 end:0x804FEDD0
 
 Speed/Indep/SourceLists/zAnim.cpp:
 	.text       start:0x80045E3C end:0x80050370
 	.ctors      start:0x803C8B68 end:0x803C8B6C
-	.rodata     start:0x803D0710 end:0x803D0980
-	.data       start:0x804156F4 end:0x804158D8
-	.bss        start:0x804575C0 end:0x80457778
+	.rodata     start:0x803CF348 end:0x803D0980
+	.data       start:0x804154C0 end:0x804158D8
+	.bss        start:0x80457588 end:0x80457778
 
 Speed/Indep/SourceLists/zAttribSys.cpp:
 	.text       start:0x80050370 end:0x8005C1F8

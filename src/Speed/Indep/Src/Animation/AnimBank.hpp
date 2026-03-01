@@ -9,6 +9,7 @@
 #include "Speed/Indep/Src/EAGL4Anim/FnDefaultAnimBank.h"
 #include "Speed/Indep/Src/EAGL4Anim/eagl4AnimBank.h"
 #include "Speed/Indep/Src/EAGL4Anim/eagl4FnAnimBank.h"
+#include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
 // total size: 0x38
@@ -46,6 +47,26 @@ class CAnimBank : public bTNode<CAnimBank> {
     int m_numAnimEnumList;                        // offset 0x28, size 0x4
     EAGL4Anim::AnimMemoryMap **m_pAnimEnumList;   // offset 0x2C, size 0x4
     bool m_purge;                                 // offset 0x30, size 0x1
+};
+
+// total size: 0x3C
+class CNFSAnimBank : public CAnimBank {
+  public:
+    void *operator new(size_t size, const char *debug_name);
+
+    void operator delete(void *ptr);
+
+    CNFSAnimBank(bChunk *chunk);
+
+    // Overrides: CAnimBank
+    ~CNFSAnimBank() override;
+
+    bChunk *GetChunk() {
+        return Chunk;
+    }
+
+  protected:
+    bChunk *Chunk; // offset 0x38, size 0x4
 };
 
 #endif

@@ -9,7 +9,6 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include <types.h>
 
-
 class SpaceNode : public bTNode<SpaceNode> {
   public:
     void SetDirty();
@@ -19,7 +18,7 @@ class SpaceNode : public bTNode<SpaceNode> {
         this->SetDirty();
     }
 
-    // Members
+  private:
     bTList<SpaceNode> ChildrenList;   // offset 0x8, size 0x8
     bMatrix4 WorldMatrix;             // offset 0x10, size 0x40
     bMatrix4 LocalMatrix;             // offset 0x50, size 0x40

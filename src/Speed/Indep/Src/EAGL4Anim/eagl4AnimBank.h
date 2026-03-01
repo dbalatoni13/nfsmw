@@ -28,19 +28,34 @@ class AnimBank {
         return mNumAnims;
     }
 
-    // const AttributeDictionary *GetAttributeDictionary() const {}
+    const AttributeDictionary *GetAttributeDictionary() const {
+        return mAttributeDictionary;
+    }
 
-    // CsisDictionary *GetCsisDictionary() const {}
+    CsisDictionary *GetCsisDictionary() const {
+        return mCsisDictionary;
+    }
 
-    void SetBankStat(BankStat *bankStat) {}
+    void SetBankStat(BankStat *bankStat) {
+        mStat = bankStat;
+    }
 
     AnimMemoryMap *GetAnim(int i) const {
         return mAnims[i];
     }
 
-    // const char *GetAnimName(int i) const {}
+    const char *GetAnimName(int i) const {
+        return mNames[i];
+    }
 
-    // AnimMemoryMap *GetAnim(const char *name) {}
+    AnimMemoryMap *GetAnim(const char *name) {
+        int index = GetAnimIndex(name);
+        if (index == -1) {
+            return nullptr;
+        } else {
+            return mAnims[index];
+        }
+    }
 
     // static FnAnim *NewFnAnimByType(AnimTypeId::Type type) {}
 
