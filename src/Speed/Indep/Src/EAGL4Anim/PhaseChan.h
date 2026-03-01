@@ -93,9 +93,15 @@ class FnPhaseChan : public FnAnimMemoryMap {
 
     // void operator delete[](void *ptr, size_t size) {}
 
-    // void *operator new(size_t, void *ptr) {}
+    void *operator new(size_t, void *ptr) {
+        return ptr;
+    }
 
-    FnPhaseChan() {}
+    FnPhaseChan()
+        : mSampleRate(1), //
+          mIdx(0) {
+        mType = AnimTypeId::ANIM_PHASE;
+    }
 
     // Overrides: FnAnimSuper
     ~FnPhaseChan() override {}

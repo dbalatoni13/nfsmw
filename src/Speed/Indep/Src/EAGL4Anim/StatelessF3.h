@@ -37,9 +37,13 @@ struct StatelessF3 : public AnimMemoryMap {
 
     void UnQuantize(const DofInfo &dofInfo, const short *frameBuf, UMath::Vector3 &result) const {}
 
-    static int GetFnOffset() {}
+    static int GetFnOffset() {
+        return 24;
+    }
 
-    void *GetFnLocation() {}
+    void *GetFnLocation() {
+        return reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(this) - GetFnOffset());
+    }
 
     static void InitAnimMemoryMap(AnimMemoryMap *anim);
 

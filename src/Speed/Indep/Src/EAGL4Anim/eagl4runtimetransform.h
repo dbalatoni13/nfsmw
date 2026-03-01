@@ -9,8 +9,10 @@
 
 #include <types.h>
 
+namespace EAGL4 {
+
 // total size: 0x40
-struct Transform {
+struct ATTRIBUTE_ALIGN(32) Transform {
     enum Axis {
         X_AXIS = 0,
         Y_AXIS = 4,
@@ -134,5 +136,7 @@ struct Transform {
 
     UMath::Matrix4 m; // offset 0x0, size 0x40
 };
+
+}; // namespace EAGL4
 
 #endif

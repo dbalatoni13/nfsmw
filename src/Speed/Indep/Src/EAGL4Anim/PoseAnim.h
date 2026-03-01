@@ -15,9 +15,13 @@ struct PoseAnim : public AnimMemoryMap {
 
     int GetNumFrames() const {}
 
-    static int GetFnOffset() {}
+    static int GetFnOffset() {
+        return 16;
+    }
 
-    void *GetFnLocation() {}
+    void *GetFnLocation() {
+        return reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(this) - GetFnOffset());
+    }
 
     static void InitAnimMemoryMap(AnimMemoryMap *anim);
 

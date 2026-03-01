@@ -5,6 +5,62 @@
 #pragma once
 #endif
 
+#include "FnAnimMemoryMap.h"
+#include "RawPoseChannel.h"
 
+namespace EAGL4Anim {
+
+// total size: 0x14
+class FnRawPoseChannel : public FnAnimMemoryMap {
+  public:
+    FnRawPoseChannel() : mInterp(true) {
+        mType = AnimTypeId::ANIM_RAWPOSE;
+    }
+
+    // Overrides: FnAnimSuper
+    ~FnRawPoseChannel() override {}
+
+    // void *operator new(size_t size) {}
+
+    // void *operator new(size_t size, const char *msg) {}
+
+    // void operator delete(void *ptr, size_t size) {}
+
+    // void *operator new[](size_t size) {}
+
+    // void *operator new[](size_t size, const char *msg) {}
+
+    // void operator delete[](void *ptr, size_t size) {}
+
+    void *operator new(size_t, void *ptr) {
+        return ptr;
+    }
+
+    RawPoseChannel *GetRawPoseChannel() {}
+
+    const RawPoseChannel *GetRawPoseChannel() const {}
+
+    void SetInterp(bool state) {}
+
+    bool IsInterp() const {}
+
+    // Overrides: FnAnim
+    bool GetLength(float &l) const override {}
+
+    int GetNumFrames() const {}
+
+    int GetNumBones() const {}
+
+    // Overrides: FnAnim
+    void Eval(float, float currentTime, float *outputPose) override;
+
+    // Overrides: FnAnim
+    bool EvalSQT(float currentTime, float *outputPose, const BoneMask *boneMask) override;
+
+  private:
+    bool mInterp; // offset 0x10, size 0x1
+};
+
+}; // namespace EAGL4Anim
 
 #endif

@@ -29,9 +29,13 @@ struct StatelessQ : public AnimMemoryMap {
 
     static float Uncompress2Float(unsigned short val) {}
 
-    static int GetFnOffset() {}
+    static int GetFnOffset() {
+        return 24;
+    }
 
-    void *GetFnLocation() {}
+    void *GetFnLocation() {
+        return reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(this) - GetFnOffset());
+    }
 
     static void InitAnimMemoryMap(AnimMemoryMap *anim);
 

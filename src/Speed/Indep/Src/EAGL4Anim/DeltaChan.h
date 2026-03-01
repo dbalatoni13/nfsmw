@@ -80,14 +80,11 @@ class FnDeltaChan : public FnAnimMemoryMap {
 
     // void operator delete[](void *ptr, size_t size) {}
 
-    // void *operator new(size_t, void *ptr) {}
+    void *operator new(size_t, void *ptr) {
+        return ptr;
+    }
 
-    FnDeltaChan()
-        : mPrevFrame(-1),       //
-          mBoneMask(nullptr),   //
-          mPrevValues(nullptr), //
-          mNumDofs(0),          //
-          mDofMask(nullptr) {}
+    FnDeltaChan();
 
     // Overrides: FnAnim
     bool GetLength(float &timeLength) const override {
@@ -131,9 +128,13 @@ class FnDeltaLerpChan : public FnDeltaChan {
 
     // void operator delete[](void *ptr, size_t size) {}
 
-    // void *operator new(size_t, void *ptr) {}
+    void *operator new(size_t, void *ptr) {
+        return ptr;
+    }
 
-    FnDeltaLerpChan() {}
+    FnDeltaLerpChan() {
+        mType = AnimTypeId::ANIM_DELTALERP;
+    }
 
     // Overrides: FnAnimSuper
     ~FnDeltaLerpChan() override {}
@@ -171,9 +172,13 @@ class FnDeltaQuatChan : public FnDeltaChan {
 
     // void operator delete[](void *ptr, size_t size) {}
 
-    // void *operator new(size_t, void *ptr) {}
+    void *operator new(size_t, void *ptr) {
+        return ptr;
+    }
 
-    FnDeltaQuatChan() {}
+    FnDeltaQuatChan() {
+        mType = AnimTypeId::ANIM_DELTAQUAT;
+    }
 
     // Overrides: FnAnimSuper
     ~FnDeltaQuatChan() override {}
@@ -266,9 +271,16 @@ class FnKeyDeltaChan : public FnAnimMemoryMap {
 
     // void operator delete[](void *ptr, size_t size) {}
 
-    // void *operator new(size_t, void *ptr) {}
+    void *operator new(size_t, void *ptr) {
+        return ptr;
+    }
 
-    FnKeyDeltaChan() {}
+    FnKeyDeltaChan()
+        : mPrevKey(-1),         //
+          mPrevValues(nullptr), //
+          mNumDofs(0),          //
+          mDofMask(nullptr),    //
+          mBoneMask(nullptr) {}
 
     // Overrides: FnAnimSuper
     ~FnKeyDeltaChan() override;
@@ -277,7 +289,13 @@ class FnKeyDeltaChan : public FnAnimMemoryMap {
     void SetAnimMemoryMap(AnimMemoryMap *anim) override;
 
     // Overrides: FnAnim
-    bool GetLength(float &timeLength) const override {}
+    bool GetLength(float &timeLength) const override {
+        KeyDeltaChan *keyChan = reinterpret_cast<KeyDeltaChan *>(mpAnim);
+        int numKeys = keyChan->GetNumKeys();
+        timeLength = static_cast<float>(keyChan->GetKeyTimes()[numKeys - 2] + 1);
+
+        return true;
+    }
 
   protected:
     void EvalToPrevValues(int key);
@@ -330,9 +348,13 @@ class FnKeyLerpChan : public FnKeyDeltaChan {
 
     // void operator delete[](void *ptr, size_t size) {}
 
-    // void *operator new(size_t, void *ptr) {}
+    void *operator new(size_t, void *ptr) {
+        return ptr;
+    }
 
-    FnKeyLerpChan() {}
+    FnKeyLerpChan() {
+        mType = AnimTypeId::ANIM_KEYLERP;
+    }
 
     // Overrides: FnAnimSuper
     ~FnKeyLerpChan() override {}
@@ -364,9 +386,13 @@ class FnKeyQuatChan : public FnKeyDeltaChan {
 
     // void operator delete[](void *ptr, size_t size) {}
 
-    // void *operator new(size_t, void *ptr) {}
+    void *operator new(size_t, void *ptr) {
+        return ptr;
+    }
 
-    FnKeyQuatChan() {}
+    FnKeyQuatChan() {
+        mType = AnimTypeId::ANIM_KEYQUAT;
+    }
 
     // Overrides: FnAnimSuper
     ~FnKeyQuatChan() override {}
@@ -400,6 +426,14 @@ class KeyQuatChan : public KeyDeltaChan {
 
     // void *operator new(size_t, void *ptr) {}
 };
+
+// huh
+inline FnDeltaChan::FnDeltaChan()
+    : mPrevFrame(-1),       //
+      mBoneMask(nullptr),   //
+      mPrevValues(nullptr), //
+      mNumDofs(0),          //
+      mDofMask(nullptr) {}
 
 }; // namespace EAGL4Anim
 

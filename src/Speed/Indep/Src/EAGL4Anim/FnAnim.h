@@ -42,7 +42,9 @@ class FnAnim : FnAnimSuper {
     // Overrides: FnAnimSuper
     ~FnAnim() override {}
 
-    // AnimTypeId::Type GetType() const {}
+    AnimTypeId::Type GetType() const {
+        return mType;
+    }
 
     static bool IsReverseDeltaSumEnabled() {
         return gReverseDeltaSumEnabled;

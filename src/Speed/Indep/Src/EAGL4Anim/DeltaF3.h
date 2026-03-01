@@ -37,7 +37,11 @@ struct DeltaF3 : public AnimMemoryMap {
     }
 
     unsigned short GetNumFrames() const {
-        return mNumFrames;
+        if (!mTimes) {
+            return mNumFrames;
+        } else {
+            return mTimes[mNumFrames - 2] + 1;
+        }
     }
 
     void SetNumFrames(unsigned short numFrames) {
@@ -86,7 +90,6 @@ struct DeltaF3 : public AnimMemoryMap {
     }
 
     int GetBinSize() const {
-        // TODO
         return AlignSize2((mNumBones * 6) + ((GetBinLength() - 1) * GetFrameDeltaSize()));
     }
 
@@ -102,7 +105,7 @@ struct DeltaF3 : public AnimMemoryMap {
     unsigned char *GetBin(int binIdx) {
         const int bs = GetBinSize();
         unsigned char *memPos = &reinterpret_cast<unsigned char *>(GetDofInfo())[mNumBones * sizeof(DofInfo)];
-        return &memPos[binIdx * bs]; // TODO swapping this causes problems somewhere else
+        return &memPos[binIdx * bs];
     }
 
     unsigned short *GetPhysical(unsigned char *binData) {
@@ -128,10 +131,10 @@ struct DeltaF3 : public AnimMemoryMap {
 
     unsigned short *GetConstBoneIdx() {
         const int binSize = GetBinSize();
-        int numBins = mNumFrames >> GetBinLengthPower(); // r8
+        int numBins = mNumFrames >> GetBinLengthPower();
         // get to the end of the bins
-        unsigned char *s = &GetBin(0)[binSize * numBins]; // r11
-        int r = mNumFrames & GetBinLengthModMask();       // r31
+        unsigned char *s = &GetBin(0)[binSize * numBins];
+        int r = mNumFrames & GetBinLengthModMask();
 
         if (r > 0) {
             s = reinterpret_cast<unsigned char *>(AlignSize2((intptr_t)s + mNumBones * 6 + (r - 1) * GetFrameDeltaSize()));

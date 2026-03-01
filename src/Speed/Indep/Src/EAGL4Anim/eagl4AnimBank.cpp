@@ -46,29 +46,43 @@ FnAnimMemoryMap *AnimBank::NewFnAnim(int i) const {
     return NewFnAnim(mAnims[i]);
 }
 
-// TODO do this when we figure out how all inlines work
-// FnAnimMemoryMap *AnimBank::NewFnAnim(AnimMemoryMap *animMem) {
-//     switch (animMem->GetType().GetType()) {
-//         case AnimTypeId::ANIM_STATELESSQ:
-//             StatelessQ *statelessQ;
-//             FnStatelessQ *fnStatelessQ;
-//             break;
-//         case AnimTypeId::ANIM_STATELESSF3:
-//             StatelessF3 *statelessF3;
-//             FnStatelessF3 *fnStatelessF3;
-//             break;
-//         case AnimTypeId::ANIM_POSEANIM:
-//             PoseAnim *poseAnim;
-//             FnPoseAnim *fnPoseAnim;
-//             break;
-//         case AnimTypeId::ANIM_COMPOUND:
-//             void *block;
-//             FnCompoundChannel *fnComp;
-//             break;
+FnAnimMemoryMap *AnimBank::NewFnAnim(AnimMemoryMap *animMem) {
+    StatelessQ *statelessQ;
+    FnStatelessQ *fnStatelessQ;
 
-//         default:
-//             return nullptr;
-//     }
-// }
+    StatelessF3 *statelessF3;
+    FnStatelessF3 *fnStatelessF3;
+
+    PoseAnim *poseAnim;
+    FnPoseAnim *fnPoseAnim;
+
+    void *block;
+    FnCompoundChannel *fnComp;
+
+    switch (animMem->GetType().GetType()) {
+        case AnimTypeId::ANIM_STATELESSQ:
+            statelessQ = reinterpret_cast<StatelessQ *>(animMem);
+            fnStatelessQ = reinterpret_cast<FnStatelessQ *>(statelessQ->GetFnLocation());
+            fnStatelessQ->SetAnimMemoryMap(animMem);
+            return fnStatelessQ;
+        case AnimTypeId::ANIM_STATELESSF3:
+            statelessF3 = reinterpret_cast<StatelessF3 *>(animMem);
+            fnStatelessF3 = reinterpret_cast<FnStatelessF3 *>(statelessF3->GetFnLocation());
+            fnStatelessF3->SetAnimMemoryMap(animMem);
+            return fnStatelessF3;
+        case AnimTypeId::ANIM_POSEANIM:
+            poseAnim = reinterpret_cast<PoseAnim *>(animMem);
+            fnPoseAnim = reinterpret_cast<FnPoseAnim *>(poseAnim->GetFnLocation());
+            fnPoseAnim->SetAnimMemoryMap(animMem);
+            return fnPoseAnim;
+        case AnimTypeId::ANIM_COMPOUND:
+            block = MemoryPoolManager::NewBlockByIdx(AnimTypeId::ANIM_COMPOUND);
+            fnComp = new (block) FnCompoundChannel();
+            fnComp->SetAnimMemoryMap(animMem);
+            return fnComp;
+        default:
+            return nullptr;
+    }
+}
 
 }; // namespace EAGL4Anim

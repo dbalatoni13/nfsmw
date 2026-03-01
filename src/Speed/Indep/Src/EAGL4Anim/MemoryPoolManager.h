@@ -1,6 +1,7 @@
 #ifndef EAGL4ANIM_MEMORYPOOLMANAGER_H
 #define EAGL4ANIM_MEMORYPOOLMANAGER_H
 
+#include "Speed/Indep/Src/EAGL4Anim/eagl4supportdef.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -17,7 +18,9 @@ class MemoryPoolManager {
 
     // void *operator new(size_t size, const char *msg) {}
 
-    // void operator delete(void *ptr, size_t size) {}
+    void operator delete(void *ptr, size_t size) {
+        EAGL4Internal::EAGL4Free(ptr, size);
+    }
 
     // void *operator new[](size_t size) {}
 
@@ -39,7 +42,9 @@ class MemoryPoolManager {
 
     static void Cleanup() {}
 
-    // static unsigned int GetMemoryPoolUsage() {}
+    static unsigned int GetMemoryPoolUsage() {
+        return gMemoryManager->GetMemoryPoolUsageAux();
+    }
 
     // static unsigned int GetFreePoolSize() {}
 
@@ -51,9 +56,13 @@ class MemoryPoolManager {
         gMemoryManager->DeleteBlockAux(p);
     }
 
-    // static void *NewBlockByIdx(unsigned short idx) {}
+    static void *NewBlockByIdx(unsigned short idx) {
+        return gMemoryManager->NewBlockByIdxAux(idx);
+    }
 
-    static void DeleteBlockByIdx(unsigned short idx, void *ptr) {}
+    static void DeleteBlockByIdx(unsigned short idx, void *ptr) {
+        gMemoryManager->DeleteBlockByIdxAux(idx, ptr);
+    }
 
     static FnAnim *NewFnAnim(AnimTypeId::Type animTypeId) {
         return gMemoryManager->NewFnAnimAux(animTypeId);
@@ -71,7 +80,9 @@ class MemoryPoolManager {
         gMemoryManager->InitAnimMemoryMapAux(anim);
     }
 
-    static void ResetPool() {}
+    static void ResetPool() {
+        gMemoryManager->ResetPoolAux();
+    }
 
     static void SetMemoryPoolManager(MemoryPoolManager &manager) {
         gMemoryManager = &manager;

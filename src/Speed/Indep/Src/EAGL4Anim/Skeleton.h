@@ -13,25 +13,26 @@ namespace EAGL4Anim {
 
 // total size: 0x10
 class Skeleton : public SkeletonData {
-    void GetOrthoScale(int boneId, Transform &orthoScalingMatrix) const {}
+  public:
+    void GetOrthoScale(int boneId, EAGL4::Transform &orthoScalingMatrix) const {}
 
-    void RestoreOrthoScale(int boneId, const Transform &orthoScalingMatrix) {}
+    void RestoreOrthoScale(int boneId, const EAGL4::Transform &orthoScalingMatrix) {}
 
     static int ComputePoseBufferLength(int numBones) {}
 
     int GetPoseBufferLength() const {}
 
-    void PoseLocal(float *pose, Transform *outputLocal) {}
+    void PoseLocal(float *pose, EAGL4::Transform *outputLocal) {}
 
-    void Pose(float *pose, Transform *outputWorld) {}
+    void Pose(float *pose, EAGL4::Transform *outputWorld) {}
 
-    void Pose(Transform *local, Transform *outputWorld) {}
+    void Pose(EAGL4::Transform *local, EAGL4::Transform *outputWorld) {}
 
-    void PoseSkin(float *pose, Transform *output) {}
+    void PoseSkin(float *pose, EAGL4::Transform *output) {}
 
-    void PoseSkin(Transform *skelWorldPose, Transform *output) {}
+    void PoseSkin(EAGL4::Transform *skelWorldPose, EAGL4::Transform *output) {}
 
-    void PoseLocalToSkin(Transform *skelLocalPose, Transform *output, BoneMask *mask) {}
+    void PoseLocalToSkin(EAGL4::Transform *skelLocalPose, EAGL4::Transform *output, BoneMask *mask) {}
 
     void BuildBoneMask(int boneIdx, bool subtree, BoneMask &bm, int rootBoneIdx) const;
 
@@ -49,33 +50,33 @@ class Skeleton : public SkeletonData {
 
     void MirrorPose(int beginBoneIdx, int endBoneIdx, float *pose, float *mirrorPose, bool local);
 
-    void PoseSQTToLocal(float *pose, Transform *output, BoneMask *mask);
+    void PoseSQTToLocal(float *pose, EAGL4::Transform *output, BoneMask *mask);
 
-    void PoseLocalToGlobal(Transform *local, Transform *output, BoneMask *mask);
+    void PoseLocalToGlobal(EAGL4::Transform *local, EAGL4::Transform *output, BoneMask *mask);
 
-    void PoseSQTToGlobal(float *pose, Transform *output, BoneMask *mask);
+    void PoseSQTToGlobal(float *pose, EAGL4::Transform *output, BoneMask *mask);
 
-    void PoseSQTToSkin(float *pose, Transform *output, BoneMask *mask);
+    void PoseSQTToSkin(float *pose, EAGL4::Transform *output, BoneMask *mask);
 
-    void PoseGlobalToSkin(Transform *skelPose, Transform *output, BoneMask *mask);
+    void PoseGlobalToSkin(EAGL4::Transform *skelPose, EAGL4::Transform *output, BoneMask *mask);
 
     void GetStillPose(float *pose, const BoneMask *mask) const;
 
     void GetStillPose(int boneIdx, float *pose) const;
 
-    void OrthoScaleBone(int boneId, const Transform &orthoScalingMatrix);
+    void OrthoScaleBone(int boneId, const EAGL4::Transform &orthoScalingMatrix);
 
     void GetStillTrans(float *trans);
 
-    void PoseTrans(float *trans, Transform *output);
+    void PoseTrans(float *trans, EAGL4::Transform *output);
 
-    void PoseBoneSQTToGlobal(int boneIdx, float *pose, Transform &boneWorld);
+    void PoseBoneSQTToGlobal(int boneIdx, float *pose, EAGL4::Transform &boneWorld);
 
-    void PoseQTToGlobal(int beginBoneIdx, int endBoneIdx, float *pose, Transform *output);
+    void PoseQTToGlobal(int beginBoneIdx, int endBoneIdx, float *pose, EAGL4::Transform *output);
 
-    void PoseTToGlobal(int beginBoneIdx, int endBoneIdx, float *pose, Transform *output);
+    void PoseTToGlobal(int beginBoneIdx, int endBoneIdx, float *pose, EAGL4::Transform *output);
 
-    void PoseQTToSkin(int beginBoneIdx, int endBoneIdx, float *pose, Transform *output);
+    void PoseQTToSkin(int beginBoneIdx, int endBoneIdx, float *pose, EAGL4::Transform *output);
 };
 
 }; // namespace EAGL4Anim

@@ -61,7 +61,12 @@ struct CompoundChannel : public AnimMemoryMap {
 // total size: 0x1C
 class FnCompoundChannel : public FnAnimMemoryMap {
   public:
-    FnCompoundChannel() {}
+    FnCompoundChannel()
+        : mFPS(0),            //
+          mChannels(nullptr), //
+          mUseFPS(false) {
+        mType = AnimTypeId::ANIM_COMPOUND;
+    }
 
     // void *operator new(size_t size) {}
 
@@ -77,7 +82,9 @@ class FnCompoundChannel : public FnAnimMemoryMap {
 
     // void operator delete[](void *ptr, size_t size) {}
 
-    // void *operator new(size_t, void *ptr) {}
+    void *operator new(size_t, void *ptr) {
+        return ptr;
+    }
 
     // Overrides: FnAnimSuper
     ~FnCompoundChannel() override;

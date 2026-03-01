@@ -30,7 +30,9 @@ class FnDeltaF1 : public FnAnimMemoryMap {
 
     // void operator delete[](void *ptr, size_t size) {}
 
-    // void *operator new(size_t, void *ptr) {}
+    void *operator new(size_t, void *ptr) {
+        return ptr;
+    }
 
     FnDeltaF1();
 
@@ -51,17 +53,10 @@ class FnDeltaF1 : public FnAnimMemoryMap {
     }
 
     // Overrides: FnAnim
-    // TODO without temporary r0
     bool GetLength(float &timeLength) const override {
         DeltaF1 *deltaF = reinterpret_cast<DeltaF1 *>(mpAnim);
 
-        unsigned int r0;
-        if (!deltaF->mTimes) {
-            r0 = deltaF->GetNumFrames();
-        } else {
-            r0 = deltaF->mTimes[deltaF->mNumFrames - 2] + 1;
-        }
-        timeLength = static_cast<float>(static_cast<unsigned short>(r0));
+        timeLength = static_cast<float>(deltaF->GetNumFrames());
         return true;
     }
 

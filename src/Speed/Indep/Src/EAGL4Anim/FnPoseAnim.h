@@ -25,7 +25,9 @@ class FnPoseAnim : public FnAnimMemoryMap {
 
     // void operator delete[](void *ptr, size_t size) {}
 
-    // void *operator new(size_t, void *ptr) {}
+    void *operator new(size_t, void *ptr) {
+        return ptr;
+    }
 
     // Overrides: FnAnimSuper
     ~FnPoseAnim() override {}
