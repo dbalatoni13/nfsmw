@@ -316,6 +316,26 @@ if config.platform == Platform.GC_WII:
         "-D_STLP_VENDOR_EXCEPT_STD=std",
         "-DCLANGD_DAMNIT",  # used in cases where intellisense breaks
     ]
+
+    cflags_dolphin = [*cflags_base_mwcc]
+
+    # Metrowerks library flags
+    cflags_runtime = [*cflags_base_mwcc]
+
+    cflags_odemuexi = [*cflags_base_mwcc]
+
+    cflags_amcstub = [*cflags_base_mwcc]
+
+    # Helper function for Dolphin libraries
+    def DolphinLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
+        return {
+            "lib": lib_name,
+            "toolchain_version": "GC/1.2.5n",
+            "cflags": cflags_dolphin,
+            "progress_category": "sdk",
+            "objects": objects,
+        }
+
 elif config.platform == Platform.X360:
     config.linker_version = "X360/14.00.2110"
 
@@ -447,27 +467,6 @@ cflags_cmn = [
 ]
 
 cflags_libc = [*cflags_base_prodg]
-
-cflags_dolphin = [*cflags_base_mwcc]
-
-# Metrowerks library flags
-cflags_runtime = [*cflags_base_mwcc]
-
-cflags_odemuexi = [*cflags_base_mwcc]
-
-cflags_amcstub = [*cflags_base_mwcc]
-
-
-# Helper function for Dolphin libraries
-def DolphinLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
-    return {
-        "lib": lib_name,
-        "toolchain_version": "GC/1.2.5n",
-        "cflags": cflags_dolphin,
-        "progress_category": "sdk",
-        "objects": objects,
-    }
-
 
 Matching = True  # Object matches and should be linked
 NonMatching = False  # Object does not match and should not be linked
