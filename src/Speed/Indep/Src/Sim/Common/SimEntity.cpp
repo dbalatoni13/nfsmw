@@ -6,7 +6,7 @@
 
 namespace Sim {
 
-// UNSOLVED seems to be the same problem as in Sim::Activity
+// UNSOLVED
 Entity::Entity()
     : Object(4),         //
       IEntity(this),     //
@@ -18,9 +18,7 @@ Entity::Entity()
 
 Entity::~Entity() {
     DetachPhysics();
-    if (mAttachments) {
-        delete mAttachments;
-    }
+    delete mAttachments;
 }
 
 void Entity::Kill() {
@@ -59,12 +57,11 @@ const UMath::Vector3 &Entity::GetPosition() const {
     }
 }
 
-// UNSOLVED
 void Entity::AttachPhysics(ISimable *object) {
     if (!object) {
         DetachPhysics();
     } else {
-        Attach(mSimable);
+        Attach(object);
     }
 }
 

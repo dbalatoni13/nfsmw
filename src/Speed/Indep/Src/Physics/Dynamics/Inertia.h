@@ -41,9 +41,9 @@ class Box : public Tensor {
         float y2 = height * height;
         float z2 = length * length;
 
-        x = (y2 + z2) * 0.083333336f;
-        y = (x2 + z2) * 0.083333336f;
-        z = (x2 + y2) * 0.083333336f;
+        x = (y2 + z2) / 1.2f;
+        y = (x2 + z2) / 1.2f;
+        z = (x2 + y2) / 1.2f;
 
         *this *= mass;
     }

@@ -71,8 +71,8 @@ class RigidBody : public Behavior,
     class Mesh : public bTNode<Mesh> {
       public:
         enum Flags {
-            FREEABLE = 2,
             DISABLED = 1,
+            FREEABLE = 2,
         };
 
         Mesh(const SimSurface &material, const UMath::Vector4 *verts, unsigned int count, UCrc32 name, bool persistant);
