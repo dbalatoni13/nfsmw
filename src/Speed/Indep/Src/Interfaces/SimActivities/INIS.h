@@ -70,4 +70,17 @@ class INIS : public UTL::COM::IUnknown, public UTL::Collections::Singleton<INIS>
     virtual bool IsWorldMomement() const;
 };
 
+class INISLISTENER : public UTL::COM::IUnknown {
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+    INISLISTENER(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    ~INISLISTENER() override {}
+
+    virtual void ArrestLevel(int level);
+};
+
 #endif

@@ -28,3 +28,9 @@ block_relocations:
 
 - source: .text:0x801fb2e4
   end: .text:0x801fb2f0
+
+- source: .text:0x80047b70
+  end: .text:0x80047b7c
+
+- source: .text:0x80047c1c
+  end: .text:0x80047c28

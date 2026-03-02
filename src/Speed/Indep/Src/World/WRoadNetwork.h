@@ -208,6 +208,14 @@ class WRoadNav {
         return fPosition;
     }
 
+    const UMath::Vector3 &GetRightPosition() const {
+        return fRightPosition;
+    }
+
+    const UMath::Vector3 &GetLeftPosition() const {
+        return fLeftPosition;
+    }
+
     UMath::Vector3 &GetForwardVector() {
         return fForwardVector;
     }

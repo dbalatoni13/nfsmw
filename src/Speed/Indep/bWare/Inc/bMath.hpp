@@ -848,8 +848,10 @@ inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector4 
 inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector3 *position) {}
 
 void bMulMatrix(bMatrix4 *dest, const bMatrix4 *a, const bMatrix4 *b);
+void bMulMatrix(bVector3 *dest, const bMatrix4 *a, const bVector3 *b);
 
 bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m);
+void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src);
 
 struct bQuaternion {
     // total size: 0x10

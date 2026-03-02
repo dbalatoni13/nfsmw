@@ -1,6 +1,7 @@
 #ifndef ECSTASY_ECSTASY_H
 #define ECSTASY_ECSTASY_H
 
+#include "Texture.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -379,19 +380,30 @@ struct eReplacementTextureTable {
     unsigned int hNewNameHash; // offset 0x4, size 0x4
     TextureInfo *pTextureInfo; // offset 0x8, size 0x4
 
-    eReplacementTextureTable() {}
+    eReplacementTextureTable()
+        : hOldNameHash(0), //
+          hNewNameHash(0), //
+          pTextureInfo(reinterpret_cast<TextureInfo *>(-1)) {}
 
     void InvalidateTexture() {
         this->pTextureInfo = reinterpret_cast<TextureInfo *>(-1);
     }
 
-    unsigned int GetNewNameHash() {}
+    unsigned int GetNewNameHash() {
+        return hNewNameHash;
+    }
 
-    unsigned int GetOldNameHash() {}
+    unsigned int GetOldNameHash() {
+        return hOldNameHash;
+    }
 
-    void SetOldNameHash(unsigned int name_hash) {}
+    void SetOldNameHash(unsigned int name_hash) {
+        hOldNameHash = name_hash;
+    }
 
-    void SetNewNameHash(unsigned int name_hash) {}
+    void SetNewNameHash(unsigned int name_hash) {
+        hNewNameHash = name_hash;
+    }
 
     void SetExplicit(unsigned int name_hash, TextureInfo *pRepTextureInfo) {}
 

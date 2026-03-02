@@ -5,18 +5,119 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Misc/Replay.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+
 #include <types.h>
 
 class SpaceNode : public bTNode<SpaceNode> {
   public:
-    void SetDirty();
+    // void *operator new(unsigned int size) {}
+
+    // void operator delete(void *ptr) {}
+
+    void SetNameHash(unsigned int name_hash) {
+        NameHash = name_hash;
+    }
+
+    const char *GetName() {
+        return Name;
+    }
+
+    unsigned int GetNameHash() {
+        return NameHash;
+    }
+
+    SpaceNode *GetParent() {
+        return Parent;
+    }
+
+    bMatrix4 *GetWorldMatrix() {
+        if (Dirty) {
+            Update();
+        }
+        return &WorldMatrix;
+    }
+
+    bVector3 *GetWorldVelocity() {
+        if (Dirty) {
+            Update();
+        }
+        return &WorldVelocity;
+    }
+
+    bVector3 *GetWorldAngularVelocity() {
+        if (Dirty) {
+            Update();
+        }
+        return &WorldAngularVelocity;
+    }
+
+    bMatrix4 *GetLocalMatrix() {
+        return &LocalMatrix;
+    }
+
+    bVector3 *GetLocalVelocity() {
+        return &LocalVelocity;
+    }
+
+    bVector3 *GetLocalAngularVelocity() {
+        return &LocalAngularVelocity;
+    }
+
+    bMatrix4 *GetBlendingMatrices() {
+        return BlendingMatrices;
+    }
 
     void SetLocalMatrix(bMatrix4 *matrix) {
-        this->LocalMatrix = *matrix;
-        this->SetDirty();
+        LocalMatrix = *matrix;
+        SetDirty();
     }
+
+    void SetLocalVelocity(bVector3 *velocity) {
+        LocalVelocity = *velocity;
+    }
+
+    void SetBlendingMatrices(bMatrix4 *matrix) {
+        BlendingMatrices = matrix;
+    }
+
+    void SetDirty() {
+        if (!Dirty) {
+            ReallySetDirty();
+        }
+    }
+
+    SpaceNode(SpaceNode *parent);
+
+    virtual ~SpaceNode();
+
+    void DoSnapshot(ReplaySnapshot *snapshot);
+
+    void SetName(const char *name);
+
+    void SetParent(SpaceNode *new_parent);
+
+    void RemoveFromParent();
+
+    void AddChild(SpaceNode *child);
+
+    void RemoveChild(SpaceNode *child);
+
+    void RemoveAllChildren();
+
+    void Lock();
+
+    void Unlock();
+
+    void ReallySetDirty();
+
+    void Update();
+
+    void SetWorldMatrix(bMatrix4 *matrix);
+
+    void SetWorldVelocity(bVector3 *velocity);
 
   private:
     bTList<SpaceNode> ChildrenList;   // offset 0x8, size 0x8
@@ -37,5 +138,7 @@ class SpaceNode : public bTNode<SpaceNode> {
 
 void InitSpaceNodes();
 void CloseSpaceNodes();
+SpaceNode *CreateSpaceNode(SpaceNode *parent);
+void DeleteSpaceNode(SpaceNode *space_node);
 
 #endif

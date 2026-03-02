@@ -2,6 +2,7 @@
 #include "AnimInternal.hpp"
 #include "Speed/Indep/Src/EAGL4Anim/FnDefaultAnimBank.h"
 #include "Speed/Indep/Src/EAGL4Anim/eagl4AnimBank.h"
+#include "Speed/Indep/Src/Misc/SpeedChunks.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
@@ -156,4 +157,34 @@ int GetAnimFromBankByNamehash(unsigned int namehash, EAGL4Anim::AnimBank **animB
         }
     }
     return false;
+}
+
+int LoaderEAGLAnimations(bChunk *chunk) {
+    if (chunk->GetID() == BCHUNK_EAGL_ANIMATIONS) {
+        if (chunk->GetAlignedSize(16) > 0) {
+            CNFSAnimBank *anim_bank = new ("NFS CNFSAnimBank") CNFSAnimBank(chunk);
+
+            anim_bank->Initialize(chunk->GetAlignedData(16), chunk->GetAlignedSize(16));
+            g_loadedAnimBankList.AddTail(anim_bank);
+        }
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int UnloaderEAGLAnimations(bChunk *chunk) {
+    if (chunk->GetID() == BCHUNK_EAGL_ANIMATIONS) {
+        for (CAnimBank *anim_bank = g_loadedAnimBankList.GetHead(); anim_bank != g_loadedAnimBankList.EndOfList(); anim_bank = anim_bank->GetNext()) {
+            if (static_cast<CNFSAnimBank *>(anim_bank)->GetChunk() == chunk) {
+                anim_bank->Cleanup();
+                g_loadedAnimBankList.Remove(anim_bank);
+                delete anim_bank;
+                break;
+            }
+        }
+        return 1;
+    } else {
+        return 0;
+    }
 }

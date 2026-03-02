@@ -5,9 +5,8 @@
 #pragma once
 #endif
 
+#include "AnimEntity.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEAnimScene.hpp"
-#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
-#include "Speed/Indep/Src/World/WorldModel.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -40,20 +39,6 @@ class CAnimProperty : public bTNode<CAnimProperty> {
   private:
     eAnimProperty mType; // offset 0x8, size 0x4
     int mEnabled;        // offset 0xC, size 0x4
-};
-
-class IAnimEntity {
-  public:
-    virtual ~IAnimEntity();
-
-    virtual bool Init(void *init_data, struct SpaceNode *parent_space_node);
-    virtual void Purge();
-    virtual unsigned int GetInstanceNameHash();
-    virtual SpaceNode *GetSpaceNode();
-    virtual void SetTime(float time);
-    virtual void UpdateTimeStep(float time_step);
-    virtual void RenderEffects(eView *view, int is_reflection);
-    virtual WorldModel *GetWorldModel();
 };
 
 // total size: 0x110
