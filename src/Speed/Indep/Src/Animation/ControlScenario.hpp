@@ -5,6 +5,16 @@
 #pragma once
 #endif
 
+#include "AnimEntity_WorldEntity.hpp"
 
+// total size: 0x4
+class IControlScenario {
+  public:
+    IControlScenario() {}
+
+    virtual ~IControlScenario() {}
+
+    void HandleEventMessage(CWorldAnimEntityTree *entity_tree, unsigned int wa_msg, void *data);
+};
 
 #endif

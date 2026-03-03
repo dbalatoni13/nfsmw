@@ -45,3 +45,17 @@ bool CPropAnimEntity::Init(void *init_data, SpaceNode *parent_space_node) {
 
     return true;
 }
+
+void CPropAnimEntity::Purge() {
+    if (mWorldModel) {
+        delete mWorldModel;
+        mWorldModel = nullptr;
+    }
+    if (mSpaceNode) {
+        DeleteSpaceNode(this->mSpaceNode);
+    }
+}
+
+void CPropAnimEntity::SetTime(float time) {}
+
+void CPropAnimEntity::UpdateTimeStep(float time_step) {}

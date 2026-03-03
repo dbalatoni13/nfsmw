@@ -77,6 +77,8 @@ inline void bPlatEndianSwap(unsigned short *value) {
 
 inline void bPlatEndianSwap(unsigned char *value) {}
 
+inline void bPlatEndianSwap(signed char *value) {}
+
 inline void bPlatEndianSwap(float *value) {
     bEndianSwap32(value);
 }
