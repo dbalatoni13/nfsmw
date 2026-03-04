@@ -1349,10 +1349,12 @@ def generate_build_ninja(
         ###
         # Link
         ###
-        for step in link_steps:
-            step.write(n)
-            link_outputs.append(step.output())
-        n.newline()
+        # TODO
+        if config.platform != Platform.X360:
+            for step in link_steps:
+                step.write(n)
+                link_outputs.append(step.output())
+            n.newline()
 
         # Add all build steps needed after linking and before GC/Wii native format generation
         write_custom_step("post-link", "post-compile")

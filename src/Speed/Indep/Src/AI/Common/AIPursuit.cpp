@@ -766,6 +766,7 @@ void AIPursuit::AssignChopperGoal(IPursuitAI *pursuitChopper) {
 DECLARE_CONTAINER_TYPE(AIPursuitEvenOutOffsetsSourceOffsets);
 
 // Functionally matching I think
+#ifndef EA_PLATFORM_XENON
 void AIPursuit::EvenOutOffsets(Vector3List &copRelativePositions, FormationTargetList &formationOffsets) {
     typedef UTL::Std::vector<PursuitFormation::TargetOffsetList::const_iterator, _type_AIPursuitEvenOutOffsetsSourceOffsets> SourceVector;
 
@@ -784,9 +785,9 @@ void AIPursuit::EvenOutOffsets(Vector3List &copRelativePositions, FormationTarge
         PursuitFormation::TargetOffsetList::const_iterator *bestOffset = source_offsets.end();
 
         for (PursuitFormation::TargetOffsetList::const_iterator *i = source_offsets.begin(); i != source_offsets.end(); ++i) {
-            const PursuitFormation::TargetOffset *offset = *i;
-            if (offset && (bestOffset == source_offsets.end() || offset->mMinTargets <= bestPriority)) {
-                UMath::Vector3 offsetPosition = offset->mOffset;
+            // TODO does this .end belong here?
+            if (*i && (bestOffset == source_offsets.end() || (*i)->mMinTargets <= bestPriority)) {
+                UMath::Vector3 offsetPosition = (*i)->mOffset;
                 float combined_distance = 0.0f;
 
                 for (Vector3List::const_iterator c = copRelativePositions.begin(); c != copRelativePositions.end(); ++c) {
@@ -802,13 +803,16 @@ void AIPursuit::EvenOutOffsets(Vector3List &copRelativePositions, FormationTarge
             }
         }
 
+        // TODO
         if (bestOffset == source_offsets.end())
             break;
 
         formationOffsets.push_back(FormationTarget((*bestOffset)->mOffset, (*bestOffset)->mInPositionOffset, (*bestOffset)->mInPositionGoal));
+        // TODO how on xenon? it's const..
         *bestOffset = 0;
     }
 }
+#endif
 
 DECLARE_CONTAINER_TYPE(AIPursuitAssignClosestOffsetsDistances);
 DECLARE_CONTAINER_TYPE(AIPursuitAssignClosestOffsetsMaximums);
