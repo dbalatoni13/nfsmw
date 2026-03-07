@@ -8,7 +8,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
 
-// total size: 0x20
+// total size: 0x18
 class MNotifyPlayerRep : public Hermes::Message {
   public:
     static std::size_t _GetSize() {
@@ -22,6 +22,24 @@ class MNotifyPlayerRep : public Hermes::Message {
     }
 
     MNotifyPlayerRep(HSIMABLE _Racer, int _RepPoints) : Hermes::Message(_GetKind(), _GetSize(), 0), fRacer(_Racer), fRepPoints(_RepPoints) {}
+
+    ~MNotifyPlayerRep() {}
+
+    HSIMABLE GetRacer() const {
+        return fRacer;
+    }
+
+    void SetRacer(HSIMABLE _Racer) {
+        fRacer = _Racer;
+    }
+
+    int GetRepPoints() const {
+        return fRepPoints;
+    }
+
+    void SetRepPoints(int _RepPoints) {
+        fRepPoints = _RepPoints;
+    }
 
   private:
     HSIMABLE fRacer; // offset 0x10, size 0x4

@@ -34,7 +34,7 @@ class MPerpBusted : public Hermes::Message {
     }
 
   private:
-    HSIMABLE fPerpetrator; // offset 0x18, size 0x4
+    HSIMABLE fPerpetrator; // offset 0x10, size 0x4
 };
 
 #endif

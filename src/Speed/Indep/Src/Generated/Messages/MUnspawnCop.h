@@ -23,6 +23,24 @@ class MUnspawnCop : public Hermes::Message {
 
     MUnspawnCop(HSIMABLE _CopHandle, int _Param) : Hermes::Message(_GetKind(), _GetSize(), 0), fCopHandle(_CopHandle), fParam(_Param) {}
 
+    ~MUnspawnCop() {}
+
+    HSIMABLE GetCopHandle() const {
+        return fCopHandle;
+    }
+
+    void SetCopHandle(HSIMABLE _CopHandle) {
+        fCopHandle = _CopHandle;
+    }
+
+    int GetParam() const {
+        return fParam;
+    }
+
+    void SetParam(int _Param) {
+        fParam = _Param;
+    }
+
   private:
     HSIMABLE fCopHandle; // offset 0x10, size 0x4
     int fParam;          // offset 0x14, size 0x4

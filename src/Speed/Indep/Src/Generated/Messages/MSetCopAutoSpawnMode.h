@@ -22,6 +22,16 @@ class MSetCopAutoSpawnMode : public Hermes::Message {
 
     MSetCopAutoSpawnMode(bool _AutoSpawnMode) : Hermes::Message(_GetKind(), _GetSize(), 0), fAutoSpawnMode(_AutoSpawnMode) {}
 
+    ~MSetCopAutoSpawnMode() {}
+
+    bool GetAutoSpawnMode() const {
+        return fAutoSpawnMode;
+    }
+
+    void SetAutoSpawnMode(bool _AutoSpawnMode) {
+        fAutoSpawnMode = _AutoSpawnMode;
+    }
+
   private:
     bool fAutoSpawnMode; // offset 0x10, size 0x1
 };

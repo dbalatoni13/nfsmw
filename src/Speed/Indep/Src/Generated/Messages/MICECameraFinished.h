@@ -5,6 +5,24 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Misc/Hermes.h"
 
+// total size: 0x10
+class MICECameraFinished : public Hermes::Message {
+  public:
+    static std::size_t _GetSize() {
+        return sizeof(MICECameraFinished);
+    }
+
+    static UCrc32 _GetKind() {
+        static UCrc32 k("MICECameraFinished");
+
+        return k;
+    }
+
+    MICECameraFinished() : Hermes::Message(_GetKind(), _GetSize(), 0) {}
+
+    ~MICECameraFinished() {}
+};
 
 #endif

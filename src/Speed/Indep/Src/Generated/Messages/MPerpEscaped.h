@@ -23,6 +23,16 @@ class MPerpEscaped : public Hermes::Message {
 
     MPerpEscaped(HSIMABLE _Perpetrator) : Hermes::Message(_GetKind(), _GetSize(), 0), fPerpetrator(_Perpetrator) {}
 
+    ~MPerpEscaped() {}
+
+    HSIMABLE GetPerpetrator() const {
+        return fPerpetrator;
+    }
+
+    void SetPerpetrator(HSIMABLE _Perpetrator) {
+        fPerpetrator = _Perpetrator;
+    }
+
   private:
     HSIMABLE fPerpetrator; // offset 0x10, size 0x4
 };

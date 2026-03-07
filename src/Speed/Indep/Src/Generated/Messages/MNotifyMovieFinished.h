@@ -7,6 +7,7 @@
 
 #include "Speed/Indep/Src/Misc/Hermes.h"
 
+// total size: 0x10
 class MNotifyMovieFinished : public Hermes::Message {
   public:
     static std::size_t _GetSize() {
@@ -19,7 +20,9 @@ class MNotifyMovieFinished : public Hermes::Message {
         return k;
     }
 
-    MNotifyMovieFinished() {}
+    MNotifyMovieFinished() : Hermes::Message(_GetKind(), _GetSize(), 0) {}
+
+    ~MNotifyMovieFinished() {}
 };
 
 #endif
