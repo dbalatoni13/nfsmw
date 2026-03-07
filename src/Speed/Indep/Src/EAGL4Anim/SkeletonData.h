@@ -23,21 +23,33 @@ class SkeletonData : public AnimationTarget {
 
     void SetCoreSkelCheckSum(unsigned short cs) {}
 
-    int GetNumBones() const {}
+    int GetNumBones() const {
+        return mNumBones;
+    }
 
     int GetSize() const {}
 
     static int ComputeSize(int numBones) {}
 
-    void SetNumBones(int n) {}
+    void SetNumBones(int n) {
+        mNumBones = n;
+    }
 
-    BoneData *GetBoneData() {}
+    BoneData *GetBoneData() {
+        return reinterpret_cast<BoneData *>(&this[1]);
+    }
 
-    const BoneData *GetBoneData() const {}
+    const BoneData *GetBoneData() const {
+        return reinterpret_cast<const BoneData *>(&this[1]);
+    }
 
-    BoneData &GetBoneData(int i) {}
+    BoneData &GetBoneData(int i) {
+        return reinterpret_cast<BoneData *>(&this[1])[i];
+    }
 
-    const BoneData &GetBoneData(int i) const {}
+    const BoneData &GetBoneData(int i) const {
+        return reinterpret_cast<const BoneData *>(&this[1])[i];
+    }
 
     const BoneData *GetParentBoneData(const BoneData *b) const {}
 

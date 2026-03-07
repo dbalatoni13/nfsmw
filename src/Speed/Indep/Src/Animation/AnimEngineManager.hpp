@@ -5,6 +5,18 @@
 #pragma once
 #endif
 
+// total size: 0x1
+class CAnimEngineManager {
+  public:
+    CAnimEngineManager();
+
+    ~CAnimEngineManager();
+
+    static void Init();
+
+    static void Purge();
+};
+
 void InitNFSAnimEngine();
 
 #endif

@@ -31,6 +31,8 @@ class PursuitFormation {
             mInPositionOffset = _ctor_arg.mInPositionOffset;
             mMinTargets = _ctor_arg.mMinTargets;
             mInPositionGoal = _ctor_arg.mInPositionGoal;
+
+            return *this;
         }
 
         TargetOffset(const TargetOffset &_ctor_arg)

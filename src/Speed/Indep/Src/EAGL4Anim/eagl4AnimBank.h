@@ -1,6 +1,7 @@
 #ifndef EAGL4ANIM_EAGL4ANIMBANK_H
 #define EAGL4ANIM_EAGL4ANIMBANK_H
 
+#include "Speed/Indep/Src/EAGL4Anim/MemoryPoolManager.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -59,7 +60,9 @@ class AnimBank {
 
     // static FnAnim *NewFnAnimByType(AnimTypeId::Type type) {}
 
-    static void DeleteFnAnim(FnAnim *fnAnim) {}
+    static void DeleteFnAnim(FnAnim *fnAnim) {
+        MemoryPoolManager::DeleteFnAnim(fnAnim);
+    }
 
     static void Constructor(void *ptr, EAGL4::DynamicLoader *loader, const char *pSymbolName);
 

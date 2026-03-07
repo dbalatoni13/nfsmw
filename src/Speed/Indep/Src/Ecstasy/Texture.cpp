@@ -667,8 +667,8 @@ float TextureInfo::GetScroll(float time, float speed, int scroll_type, float tim
 
 void MaybePrintUnusedTextures() {}
 
-TextureInfo *GetTextureInfo(unsigned int name_hash /* r30 */, BOOL return_default_texture_if_not_found /* r27 */,
-                            BOOL include_unloaded_textures /* r5 */) {
+TextureInfo *GetTextureInfo(unsigned int name_hash /* r30 */, int return_default_texture_if_not_found /* r27 */,
+                            int include_unloaded_textures /* r5 */) {
     if (name_hash != 0) {
         TextureInfo *texture_info = GetTextureInfoCache(name_hash);
         if (texture_info) {

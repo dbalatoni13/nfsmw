@@ -848,8 +848,10 @@ inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector4 
 inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector3 *position) {}
 
 void bMulMatrix(bMatrix4 *dest, const bMatrix4 *a, const bMatrix4 *b);
+void bMulMatrix(bVector3 *dest, const bMatrix4 *a, const bVector3 *b);
 
 bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m);
+void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src);
 
 struct bQuaternion {
     // total size: 0x10
@@ -868,6 +870,29 @@ struct bQuaternion {
     }
 
     bQuaternion &Slerp(bQuaternion &r, const bQuaternion &target, float t) const;
+};
+
+class bBitTable {
+  public:
+    // bBitTable() {}
+
+    // bBitTable(void *mem, int num_bits) {}
+
+    // void Init(void *mem, int num_bits) {}
+
+    // void ClearTable() {}
+
+    // void Set(int bit) {}
+
+    // void Clear(int bit) {}
+
+    int IsSet(int bit) {
+        return Bits[bit >> 3] & (1 << (bit & 7));
+    }
+
+  private:
+    int NumBits; // offset 0x0, size 0x4
+    uint8 *Bits; // offset 0x4, size 0x4
 };
 
 void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float u4);

@@ -5,6 +5,65 @@
 #pragma once
 #endif
 
+#include "AnimEntity.hpp"
 
+// total size: 0x60
+typedef struct {
+    unsigned int mTypeID;                 // offset 0x0, size 0x4
+    unsigned int mThisInstanceNameHash;   // offset 0x4, size 0x4
+    unsigned int mParentInstanceNameHash; // offset 0x8, size 0x4
+    unsigned int mPlayFlags;              // offset 0xC, size 0x4
+    struct bMatrix4 mLocalMatrix;         // offset 0x10, size 0x40
+    unsigned int mLODNameHash[4];         // offset 0x50, size 0x10
+} PropAnimEntityInfo;
+
+// total size: 0x18
+class CPropAnimEntity : public IAnimEntity {
+  public:
+    static void EndianSwapEntityData(void *data, int size);
+
+    CPropAnimEntity();
+
+    // Overrides: IAnimEntity
+    ~CPropAnimEntity() override;
+
+    // Overrides: IAnimEntity
+    bool Init(void *init_data, SpaceNode *parent_space_node) override;
+
+    // Overrides: IAnimEntity
+    void Purge() override;
+
+    virtual unsigned int GetTypeID() {
+        return mTypeID;
+    }
+
+    // Overrides: IAnimEntity
+    unsigned int GetInstanceNameHash() override {
+        return mThisInstanceNameHash;
+    }
+
+    // Overrides: IAnimEntity
+    SpaceNode *GetSpaceNode() override {
+        return mSpaceNode;
+    }
+
+    // Overrides: IAnimEntity
+    void SetTime(float time) override;
+
+    // Overrides: IAnimEntity
+    void UpdateTimeStep(float time_step) override;
+
+    // Overrides: IAnimEntity
+    WorldModel *GetWorldModel() override {
+        return mWorldModel;
+    }
+
+  private:
+    uint32 mTypeID;               // offset 0x4, size 0x4
+    uint32 mThisInstanceNameHash; // offset 0x8, size 0x4
+    SpaceNode *mSpaceNode;        // offset 0xC, size 0x4
+    WorldModel *mWorldModel;      // offset 0x10, size 0x4
+    bool mKeepOnGround;           // offset 0x14, size 0x1
+};
 
 #endif

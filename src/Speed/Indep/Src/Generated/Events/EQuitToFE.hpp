@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Main/Event.h"
 
 // total size: 0x10

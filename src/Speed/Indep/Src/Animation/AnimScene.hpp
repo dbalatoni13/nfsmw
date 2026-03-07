@@ -5,9 +5,9 @@
 #pragma once
 #endif
 
+#include "AnimCtrl.hpp"
+#include "AnimEntity.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEAnimScene.hpp"
-#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
-#include "Speed/Indep/Src/World/WorldModel.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -42,20 +42,6 @@ class CAnimProperty : public bTNode<CAnimProperty> {
     int mEnabled;        // offset 0xC, size 0x4
 };
 
-class IAnimEntity {
-  public:
-    virtual ~IAnimEntity();
-
-    virtual bool Init(void *init_data, struct SpaceNode *parent_space_node);
-    virtual void Purge();
-    virtual unsigned int GetInstanceNameHash();
-    virtual SpaceNode *GetSpaceNode();
-    virtual void SetTime(float time);
-    virtual void UpdateTimeStep(float time_step);
-    virtual void RenderEffects(eView *view, int is_reflection);
-    virtual WorldModel *GetWorldModel();
-};
-
 // total size: 0x110
 class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
   public:
@@ -66,8 +52,97 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
         MaxPlayStatus = 3,
     };
 
-    void UpdateTime(float time_step);
+    int GetHandle();
+
+    unsigned int GetAnimID();
+
+    int GetSceneType();
+
+    void GetSceneName(char *ret_name);
+
+    const char *GetAnimDescription();
+
+    bool SetPropertyEnabled(eAnimProperty property_id, bool enable);
+
+    bool IsPropertyEnabled(eAnimProperty property_id);
+
+    bool IsBoundToGame();
+
+    bool BindToGame();
+
+    bool UnBindToGame();
+
+    void ChangePlayStatus(ePlayStatus new_status);
+
+    bool Cue();
+
+    bool Play();
+
+    bool Stop();
+
+    bool IsCued();
+
+    bool IsStopped();
+
+    bool IsPaused();
+
+    void ResetTime();
+
     void JumpToEnd();
+
+    void GetTime(float &time);
+
+    void UpdateTime(float time_step);
+
+    void RenderEffects(eView *view, int is_reflection);
+
+    void AddProperty(eAnimProperty property_id, bool enabled);
+
+    void RemoveProperties();
+
+    CAnimProperty *FindProperty(eAnimProperty property_id);
+
+    bool Init();
+
+    bool Purge();
+
+    void ForceCarToAnimCarPosition(struct Car *car, int car_num);
+
+    void ForcePlayerToAnimCarPosition(int player_num, int car_num);
+
+    void ClearCarAnimStates();
+
+    void InitCarAnimStatesFromStartingPositions();
+
+    void InitCarAnimStatesFromNIS();
+
+    int FindCurrentWorldCarIndex(struct Car *car);
+
+    void SetCarAnimationPositions();
+
+    void CreateCarAnimationControllers();
+
+    void ClearCarAnimationControllers();
+
+    void AnimatedCars_SetMainAndWheels(int current_car, CAnimCtrl *main_anim_ctrl, float time_step);
+
+    void AnimatedCars_ResetToBeginning();
+
+    void AnimatedCars_ClearLastPose();
+
+    void AnimatedCars_SetTime(float time);
+
+    void AnimatedCars_Update(float time_step);
+
+    void AnimatedCars_Bind();
+
+    void AnimatedCars_UnBind();
+
+    IAnimEntity *GetAnimEntityWithModelName(const char *name);
+
+    void CreateAnimEntities();
+
+    void ClearAnimEntities();
 
     // Virtual functions
     // ICEScene
