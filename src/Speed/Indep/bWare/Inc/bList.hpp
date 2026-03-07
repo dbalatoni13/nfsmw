@@ -123,10 +123,15 @@ struct bList {
     }
     bNode *RemoveTail();            // TODO
     int GetNodeNumber(bNode *node); // TODO
+
     int IsInList(bNode *node) {
         return this->TraversebList(node);
     }
-    int CountElements();                   // TODO
+
+    int CountElements() {
+        return TraversebList(nullptr);
+    }
+
     bNode *AddSorted(SortFunc check_flip); // TODO
 };
 
@@ -145,6 +150,8 @@ template <typename T> class bTList : public bList {
             delete this->RemoveHead();
         }
     }
+
+    T *AddSorted(SortFuncT check_flip, T *node);
 
     T *EndOfList() {
         return (T *)bList::EndOfList();

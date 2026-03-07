@@ -118,5 +118,6 @@ class WorldAnimInstanceDirectory {
 };
 
 extern WorldAnimInstanceDirectory TheWorldAnimInstanceDirectory;
+extern bool DisableWorldAnimations;
 
 #endif

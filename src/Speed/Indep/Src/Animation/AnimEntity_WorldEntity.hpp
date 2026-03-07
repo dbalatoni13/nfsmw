@@ -118,7 +118,6 @@ class CWorldAnimEntityTree : public bTNode<CWorldAnimEntityTree> {
 
     float GetAnimLengthInSeconds();
 
-  private:
     uint32 tree_name_hash;                                     // offset 0x8, size 0x4
     CWorldAnimEntity *root_entity;                             // offset 0xC, size 0x4
     bPList<CWorldAnimEntity> instantiated_world_anim_entities; // offset 0x10, size 0x8
@@ -131,7 +130,6 @@ class CWorldAnimEntityTree : public bTNode<CWorldAnimEntityTree> {
 // total size: 0x58
 struct WorldAnimEntityTreeInfo : public bTNode<WorldAnimEntityTreeInfo> {
     void *operator new(size_t size, const char *debug_name);
-
     void operator delete(void *ptr);
 
     WorldAnimEntityTreeInfo() {}
@@ -144,6 +142,15 @@ struct WorldAnimEntityTreeInfo : public bTNode<WorldAnimEntityTreeInfo> {
     uint32 tree_name_hash;                                       // offset 0x8, size 0x4
     bPList<WorldAnimEntityInfo> loaded_world_anim_entity_chunks; // offset 0xC, size 0x8
     WorldAnimNamedRange named_ranges[4];                         // offset 0x14, size 0x40
+};
+
+// total size: 0x50
+struct WorldAnimEntityTreeMarker {
+    unsigned int anim_tree_name_hash;    // offset 0x0, size 0x4
+    unsigned int pad0;                   // offset 0x4, size 0x4
+    unsigned int pad1;                   // offset 0x8, size 0x4
+    unsigned int pad2;                   // offset 0xC, size 0x4
+    WorldAnimNamedRange named_ranges[4]; // offset 0x10, size 0x40
 };
 
 #endif

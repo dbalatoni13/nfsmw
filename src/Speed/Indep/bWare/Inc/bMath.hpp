@@ -872,6 +872,29 @@ struct bQuaternion {
     bQuaternion &Slerp(bQuaternion &r, const bQuaternion &target, float t) const;
 };
 
+class bBitTable {
+  public:
+    // bBitTable() {}
+
+    // bBitTable(void *mem, int num_bits) {}
+
+    // void Init(void *mem, int num_bits) {}
+
+    // void ClearTable() {}
+
+    // void Set(int bit) {}
+
+    // void Clear(int bit) {}
+
+    int IsSet(int bit) {
+        return Bits[bit >> 3] & (1 << (bit & 7));
+    }
+
+  private:
+    int NumBits; // offset 0x0, size 0x4
+    uint8 *Bits; // offset 0x4, size 0x4
+};
+
 void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float u4);
 void hermite_parameter(bVector4 *dest, const bMatrix4 *b, float t);
 

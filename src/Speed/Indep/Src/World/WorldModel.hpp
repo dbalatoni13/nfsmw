@@ -45,6 +45,10 @@ class WorldModel : public bTNode<WorldModel> {
         return this->mEnabled;
     }
 
+    void SetEnabledFlag(bool f) {
+        this->mEnabled = f;
+    }
+
     float DistanceToGameView() const {
         return this->mDistanceToGameView;
     }
@@ -103,7 +107,7 @@ class WorldModel : public bTNode<WorldModel> {
     unsigned int mLastRenderFrame;    // offset 0x20, size 0x4
     float mDistanceToGameView;        // offset 0x24, size 0x4
   public:
-    bool mEnabled; // offset 0x28, size 0x1
+    bool mEnabled; // offset 0x28, size 0x1 TODO
   private:
     bool mRenderInSplitScreen;           // offset 0x2C, size 0x1
     bool mInvisibleInside;               // offset 0x30, size 0x1

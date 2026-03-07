@@ -22,6 +22,8 @@
 
 #include "Speed/Indep/Src/Animation/AnimInternal.cpp"
 
+#include "Speed/Indep/Src/Animation/AnimLocator.cpp"
+
 #include "Speed/Indep/Src/Animation/AnimPlayer.cpp"
 
 #include "Speed/Indep/Src/Animation/AnimPart.cpp"

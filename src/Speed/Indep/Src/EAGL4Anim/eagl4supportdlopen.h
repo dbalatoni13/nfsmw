@@ -1,6 +1,7 @@
 #ifndef EAGL4ANIM_EAGL4SUPPORTDLOPEN_H
 #define EAGL4ANIM_EAGL4SUPPORTDLOPEN_H
 
+#include "Speed/Indep/Src/EAGL4Anim/eagl4supportdef.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -34,7 +35,10 @@ class DynamicLoader {
 
     // void *operator new(size_t size) {}
 
-    // void *operator new(size_t size, const char *msg) {}
+    void *operator new(size_t size, const char *msg) {
+        // TODO
+        return EAGL4Internal::EAGL4Malloc(size, nullptr);
+    }
 
     void operator delete(void *ptr, size_t size) {
         EAGL4Internal::EAGL4Free(ptr, size);

@@ -1,6 +1,7 @@
 #ifndef EAGL4ANIM_EAGL4RUNTIMETRANSFORM_H
 #define EAGL4ANIM_EAGL4RUNTIMETRANSFORM_H
 
+#include "Speed/Indep/Src/EAGL4Anim/eagl4supportdef.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -28,9 +29,14 @@ struct ATTRIBUTE_ALIGN(32) Transform {
 
     // void *operator new[](size_t size) {}
 
-    // void *operator new[](size_t size, const char *msg) {}
+    void *operator new[](size_t size, const char *msg) {
+        // TODO msg
+        return EAGL4Internal::EAGL4Malloc(size, nullptr);
+    }
 
-    // void operator delete[](void *ptr, size_t size) {}
+    void operator delete[](void *ptr, size_t size) {
+        EAGL4Internal::EAGL4Free(ptr, size);
+    }
 
     // void *operator new(size_t, void *ptr) {}
 

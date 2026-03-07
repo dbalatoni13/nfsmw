@@ -32,12 +32,6 @@ struct DiscBundleSection {
     DiscBundleSectionMember Members[32]; // offset 0x14, size 0x100
 };
 
-struct bBitTable {
-    // total size: 0x8
-    int NumBits;         // offset 0x0, size 0x4
-    unsigned char *Bits; // offset 0x4, size 0x4
-};
-
 // total size: 0x5C
 struct TrackStreamingSection {
     enum eStatus {
@@ -125,6 +119,19 @@ class TSMemoryPool {
     MemoryPoolOverrideInfo OverrideInfo; // offset 0x2734, size 0x20
 };
 
+struct TrackStreamingInfo {
+    int FileSize[2]; // offset 0x0, size 0x8
+};
+
+// total size: 0x10
+struct TrackStreamingBarrier {
+    // void EndianSwap() {}
+
+    // bool Intersects(const bVector2 *pointa, const bVector2 *pointb) {}
+
+    bVector2 Points[2]; // offset 0x0, size 0x10
+};
+
 // total size: 0x888
 class TrackStreamer {
   public:
@@ -147,9 +154,12 @@ class TrackStreamer {
     void *AllocateUserMemory(int size, const char *debug_name, int offset);
     void FreeUserMemory(void *mem);
 
-    // Inlines
     void DisableZoneSwitching() {
         ZoneSwitchingDisabled = true;
+    }
+
+    int IsSectionVisible(int section_number) {
+        return CurrentVisibleSectionTable.IsSet(section_number);
     }
 
   private:
@@ -157,9 +167,9 @@ class TrackStreamer {
     int NumTrackStreamingSections;                        // offset 0x4, size 0x4
     DiscBundleSection *pDiscBundleSections;               // offset 0x8, size 0x4
     DiscBundleSection *pLastDiscBundleSection;            // offset 0xC, size 0x4
-    struct TrackStreamingInfo *pInfo;                     // offset 0x10, size 0x4
+    TrackStreamingInfo *pInfo;                            // offset 0x10, size 0x4
     int NumBarriers;                                      // offset 0x14, size 0x4
-    struct TrackStreamingBarrier *pBarriers;              // offset 0x18, size 0x4
+    TrackStreamingBarrier *pBarriers;                     // offset 0x18, size 0x4
     int NumSectionsLoaded;                                // offset 0x1C, size 0x4
     int NumSectionsLoading;                               // offset 0x20, size 0x4
     int NumSectionsActivated;                             // offset 0x24, size 0x4
