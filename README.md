@@ -183,7 +183,7 @@ This file contains bChunk chunk IDs.
 
   ```
   ./build/tools/dtk dwarf dump ./orig/NFSMWRELEASE.ELF -o ./symbols/mw_dwarfdump.nothpp
-  python .\tools\split_dwarf_info.py .\symbols\mw_dwarfdump.nothpp .\symbols\Dwarf
+  python ./tools/split_dwarf_info.py ./symbols/mw_dwarfdump.nothpp ./symbols/Dwarf
   ```
 
 - Set up the project and Ghidra as described above (take the Ghidra repo from the decomp.dev server, you'll have to request access).
