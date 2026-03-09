@@ -171,7 +171,7 @@ def generate_header_for_message(message: dict) -> str:
         for f in fields:
             offset = f["Offset"]
             out.append(
-                f"    {safe_type(f['TypeName'])} {f['Name']}; // offset {hex(offset + 8)}, size {hex(f['Size'])}"
+                f"    {safe_type(f['TypeName'])} {f['Name']}; // offset {hex(offset)}, size {hex(f['Size'])}"
             )
 
     out.append("};")
@@ -191,7 +191,7 @@ def process_file(filename: str, outdirectory: str):
 
     for message in data.get("Messages", []):
         header = generate_header_for_message(message)
-        out_path = os.path.join(outdirectory, f"{message['Name']}.hpp")
+        out_path = os.path.join(outdirectory, f"{message['Name']}.h")
         with open(out_path, "w", newline="\n") as f:
             f.write(header)
         print("Wrote", out_path)

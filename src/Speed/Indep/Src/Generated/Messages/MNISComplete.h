@@ -22,6 +22,16 @@ class MNISComplete : public Hermes::Message {
 
     MNISComplete(const char *_NISName) : Hermes::Message(_GetKind(), _GetSize(), 0), fNISName(_NISName) {}
 
+    ~MNISComplete() {}
+
+    const char *GetNISName() const {
+        return fNISName;
+    }
+
+    void SetNISName(const char *_NISName) {
+        fNISName = _NISName;
+    }
+
   private:
     const char *fNISName; // offset 0x10, size 0x4
 };

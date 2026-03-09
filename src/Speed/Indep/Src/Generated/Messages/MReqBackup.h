@@ -22,8 +22,14 @@ class MReqBackup : public Hermes::Message {
 
     MReqBackup(int _BackupType) : Hermes::Message(_GetKind(), _GetSize(), 0), fBackupType(_BackupType) {}
 
+    ~MReqBackup() {}
+
     int GetBackupType() const {
         return fBackupType;
+    }
+
+    void SetBackupType(int _BackupType) {
+        fBackupType = _BackupType;
     }
 
   private:

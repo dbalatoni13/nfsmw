@@ -22,6 +22,16 @@ class MReqRoadBlock : public Hermes::Message {
 
     MReqRoadBlock(int _Data) : Hermes::Message(_GetKind(), _GetSize(), 0), fData(_Data) {}
 
+    ~MReqRoadBlock() {}
+
+    int GetData() const {
+        return fData;
+    }
+
+    void SetData(int _Data) {
+        fData = _Data;
+    }
+
   private:
     int fData; // offset 0x10, size 0x4
 };

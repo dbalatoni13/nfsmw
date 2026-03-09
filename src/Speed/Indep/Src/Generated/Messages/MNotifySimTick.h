@@ -24,6 +24,22 @@ class MNotifySimTick : public Hermes::Message {
 
     ~MNotifySimTick() {}
 
+    float GetSimTime() const {
+        return fSimTime;
+    }
+
+    void SetSimTime(float _SimTime) {
+        fSimTime = _SimTime;
+    }
+
+    float GetTimeStep() const {
+        return fTimeStep;
+    }
+
+    void SetTimeStep(float _TimeStep) {
+        fTimeStep = _TimeStep;
+    }
+
   private:
     float fSimTime;  // offset 0x10, size 0x4
     float fTimeStep; // offset 0x14, size 0x4
