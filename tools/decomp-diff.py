@@ -32,8 +32,8 @@ def run_objdiff(unit: str) -> Dict[str, Any]:
         [
             OBJDIFF_CLI,
             "diff",
-            # "-c",
-            # "functionRelocDiffs=data_value",
+            "-c",
+            "functionRelocDiffs=none",
             "-u",
             unit,
             "-o",

@@ -44,6 +44,135 @@ re_global_decl = re.compile(r"^(?:[\w\s:<>*&]+?)\b\w+\s*;")
 STRIPPED_ADDR = "0XFFFFFFFF"
 
 # ---------------------------------------------------------------------------
+# UMath namespace fixups
+# ---------------------------------------------------------------------------
+
+# Struct/type names to qualify with UMath::
+UMATH_STRUCTS = [
+    "Vector3",
+    "Vector4",
+    "Matrix4",
+]
+
+# Full function signatures to find and replace with UMath:: qualifier.
+# Each entry is (find, replace) using exact signature prefixes from the header.
+UMATH_FUNCTIONS = [
+    (
+        "inline struct UMath::Vector3 &Vector4To3(",
+        "inline struct UMath::Vector3 &UMath::Vector4To3(",
+    ),
+    (
+        "inline const struct UMath::Vector3 &Vector4To3(",
+        "inline const struct UMath::Vector3 &UMath::Vector4To3(",
+    ),
+    (
+        "inline struct UMath::Vector2 Vector2Make(",
+        "inline struct UMath::Vector2 UMath::Vector2Make(",
+    ),
+    (
+        "inline struct UMath::Vector3 Vector3Make(",
+        "inline struct UMath::Vector3 UMath::Vector3Make(",
+    ),
+    (
+        "inline struct UMath::Vector4 Vector4Make(",
+        "inline struct UMath::Vector4 UMath::Vector4Make(",
+    ),
+    ("inline float Sina(", "inline float UMath::Sina("),
+    ("inline float Cosa(", "inline float UMath::Cosa("),
+    ("inline float Sinr(", "inline float UMath::Sinr("),
+    ("inline float Cosr(", "inline float UMath::Cosr("),
+    ("void BuildRotate(", "void UMath::BuildRotate("),
+    ("float Ceil(", "float UMath::Ceil("),
+    ("inline float Distance(", "inline float UMath::Distance("),
+    ("inline float Distancexz(", "inline float UMath::Distancexz("),
+    ("inline float DistanceSquare(", "inline float UMath::DistanceSquare("),
+    ("inline float DistanceSquarexz(", "inline float UMath::DistanceSquarexz("),
+    ("inline void Clear(", "inline void UMath::Clear("),
+    ("inline void Copy(", "inline void UMath::Copy("),
+    ("inline void Set(", "inline void UMath::Set("),
+    ("inline void Transpose(", "inline void UMath::Transpose("),
+    ("void Transpose(", "void UMath::Transpose("),
+    (
+        "inline const struct UMath::Vector3 &ExtractAxis(",
+        "inline const struct UMath::Vector3 &UMath::ExtractAxis(",
+    ),
+    ("inline void ExtractXAxis(", "inline void UMath::ExtractXAxis("),
+    ("inline void ExtractYAxis(", "inline void UMath::ExtractYAxis("),
+    ("inline void ExtractZAxis(", "inline void UMath::ExtractZAxis("),
+    ("inline void RotateTranslate(", "inline void UMath::RotateTranslate("),
+    ("inline void Init(", "inline void UMath::Init("),
+    ("inline void Mult(", "inline void UMath::Mult("),
+    ("void Mult(", "void UMath::Mult("),
+    ("inline void Unit(", "inline void UMath::Unit("),
+    ("inline void Unitxyz(", "inline void UMath::Unitxyz("),
+    ("inline void MultYRot(", "inline void UMath::MultYRot("),
+    ("inline void QuaternionToMatrix4(", "inline void UMath::QuaternionToMatrix4("),
+    ("void QuaternionToMatrix4(", "void UMath::QuaternionToMatrix4("),
+    ("inline void Add(", "inline void UMath::Add("),
+    ("inline void Scale(", "inline void UMath::Scale("),
+    ("inline void ScaleAdd(", "inline void UMath::ScaleAdd("),
+    ("inline void ScaleAddxyz(", "inline void UMath::ScaleAddxyz("),
+    ("inline void AddScale(", "inline void UMath::AddScale("),
+    ("inline void Sub(", "inline void UMath::Sub("),
+    ("inline void Subxyz(", "inline void UMath::Subxyz("),
+    ("inline void SetYRot(", "inline void UMath::SetYRot("),
+    ("inline void Rotate(", "inline void UMath::Rotate("),
+    ("void Rotate(", "void UMath::Rotate("),
+    ("inline void RotateInXZ(", "inline void UMath::RotateInXZ("),
+    ("inline float Dot(", "inline float UMath::Dot("),
+    ("inline void Dot(", "inline void UMath::Dot("),
+    ("inline float Dotxyz(", "inline float UMath::Dotxyz("),
+    ("inline void Cross(", "inline void UMath::Cross("),
+    ("inline void UnitCross(", "inline void UMath::UnitCross("),
+    ("void UnitCross(", "void UMath::UnitCross("),
+    ("inline float Normalize(", "inline float UMath::Normalize("),
+    ("inline void Direction(", "inline void UMath::Direction("),
+    ("inline float Lengthxz(", "inline float UMath::Lengthxz("),
+    ("inline float Lengthxyz(", "inline float UMath::Lengthxyz("),
+    ("inline float LengthSquare(", "inline float UMath::LengthSquare("),
+    ("inline float Atan2d(", "inline float UMath::Atan2d("),
+    ("inline float Atan2a(", "inline float UMath::Atan2a("),
+    ("inline float Atan2r(", "inline float UMath::Atan2r("),
+    ("inline float Sqrt(", "inline float UMath::Sqrt("),
+    ("inline float Length(", "inline float UMath::Length("),
+    ("inline void Matrix4ToQuaternion(", "inline void UMath::Matrix4ToQuaternion("),
+    ("inline int Clamp(", "inline int UMath::Clamp("),
+    ("inline float Clamp(", "inline float UMath::Clamp("),
+    ("inline float Abs(", "inline float UMath::Abs("),
+    ("inline float Pow(", "inline float UMath::Pow("),
+    ("inline float Ramp(", "inline float UMath::Ramp("),
+    ("inline float Lerp(", "inline float UMath::Lerp("),
+    ("inline void Negate(", "inline void UMath::Negate("),
+    ("inline float Min(", "inline float UMath::Min("),
+    ("inline float Max(", "inline float UMath::Max("),
+    ("inline unsigned int Min(", "inline unsigned int UMath::Min("),
+    ("inline unsigned int Max(", "inline unsigned int UMath::Max("),
+    ("inline float Limit(", "inline float UMath::Limit("),
+]
+
+
+def apply_umath_fixups(text: str) -> str:
+    """
+    Apply UMath:: namespace qualifications to struct names and function
+    definitions that belong to the UMath namespace.
+    """
+    # Qualify struct names: 'struct Foo' -> 'struct UMath::Foo'
+    # Only when not already qualified.
+    for name in UMATH_STRUCTS:
+        text = re.sub(
+            rf"\bstruct\s+(?!UMath::){re.escape(name)}\b",
+            f"struct UMath::{name}",
+            text,
+        )
+
+    # Qualify function definitions using exact full signature prefixes.
+    for find, replace in UMATH_FUNCTIONS:
+        text = text.replace(find, replace)
+
+    return text
+
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
@@ -274,6 +403,11 @@ def main() -> None:
     enums = deduplicate_blocks(extract_enum_blocks(lines), re_enum_name)
     funcs = extract_function_blocks(lines, exclude_stripped=args.no_stripped)
     line_decls = extract_globals_and_typedefs(lines)
+
+    # Apply UMath:: namespace fixups to all collected output
+    structs = [apply_umath_fixups(b) for b in structs]
+    funcs = [apply_umath_fixups(b) for b in funcs]
+    line_decls = [apply_umath_fixups(s) for s in line_decls]
 
     write_file(
         os.path.join(args.output_folder, "globals.nothpp"),
