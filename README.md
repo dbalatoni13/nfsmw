@@ -87,7 +87,7 @@ sudo xattr -rd com.apple.quarantine '/Applications/Wine Crossover.app'
   ```
 
 - Extracting the binaries
-  - GC: Extract `NFSMWRELEASE.elf`, copy it into `orig/GOWE69` and convert it into a DOL using the following command:
+  - GC: Extract `NFSMWRELEASE.ELF`, copy it into `orig/GOWE69` and convert it into a DOL using the following command:
 
     ```sh
     ./build/tools/dtk elf2dol ./orig/GOWE69/NFSMWRELEASE.elf ./orig/GOWE69/sys/main.dol
@@ -137,6 +137,10 @@ For PS2 binaries the deprecated version gives nicer results.
 
 ## symbols/mw_dwarfdump.nothpp
 
+```
+./build/tools/dtk dwarf dump ./orig/NFSMWRELEASE.ELF -o ./symbols/mw_dwarfdump.nothpp
+```
+
 This is the dwarf dump of the whole GC version of the game. The `.nothpp` extension is to make sure that the IDE doesn't parse it on weak laptops. This should be your main source of information. It even shows which inlines a function calls. Namespaces only show up in generics. For regular functions and variables you can search `symbols.txt` for the right name.
 
 ## symbols/PS2
@@ -174,6 +178,13 @@ This file contains bChunk chunk IDs.
 # Guide for AI contributions
 
 ## Setup
+
+- Run
+
+  ```
+  ./build/tools/dtk dwarf dump ./orig/NFSMWRELEASE.ELF -o ./symbols/mw_dwarfdump.nothpp
+  python .\tools\split_dwarf_info.py .\symbols\mw_dwarfdump.nothpp .\symbols\Dwarf
+  ```
 
 - Set up the project and Ghidra as described above (take the Ghidra repo from the decomp.dev server, you'll have to request access).
 
