@@ -149,7 +149,7 @@ config.compilers_tag = "20251015"
 
 if version_num in [0]:
     config.platform = Platform.GC_WII
-    config.dtk_tag = "v1.6.2"
+    config.dtk_tag = "v1.8.3"
     config.binutils_tag = "2.42-1"
 elif version_num in [1]:
     config.platform = Platform.X360
@@ -159,7 +159,7 @@ elif version_num in [2]:
     config.platform = Platform.PS2
     config.binutils_tag = "2.45"
 
-config.objdiff_tag = "v3.6.1"
+config.objdiff_tag = "v3.7.0"
 config.sjiswrap_tag = "v1.2.0"
 config.wibo_tag = "1.0.0"
 

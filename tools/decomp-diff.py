@@ -23,7 +23,7 @@ from typing import Any, Dict, List, Optional, Tuple
 script_dir = os.path.dirname(os.path.realpath(__file__))
 root_dir = os.path.abspath(os.path.join(script_dir, ".."))
 
-OBJDIFF_CLI = os.environ.get("OBJDIFF_CLI", "/usr/bin/objdiff-cli")
+OBJDIFF_CLI = os.path.join(root_dir, "build", "tools", "objdiff-cli")
 
 
 def run_objdiff(unit: str) -> Dict[str, Any]:
@@ -261,8 +261,7 @@ def build_diff(data: Dict[str, Any], symbol_name: str, args) -> None:
             left_sym = sym
             ts = sym.get("target_symbol")
             if ts is not None and ts < len(right_syms):
-                # TODO why is this necessary for NFSMW? is it consistent?
-                right_sym = right_syms[ts - 2]
+                right_sym = right_syms[ts]
             break
 
     # If not found in left, try right
