@@ -8,7 +8,7 @@ description: Ghidra CLI tool reference
 The project contains two programs:
 
 - `mw/GOWE69/NFSMWRELEASE.ELF` — Original GameCube ELF (default). Types and symbols loaded from the DWARF.
-- `mw/SLES-53558/NFS.ELF` — Alpha 124 build (PS2). Virtual function calls show up correctly.
+- `mw/SLES-53558/NFS.ELF` — Alpha 124 build (PS2). Virtual function calls and the return value of `_Find` show up correctly.
 
 Switch between them with `ghidra program open --project NeedForSpeed --program <name>`.
 
