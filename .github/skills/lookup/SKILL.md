@@ -28,11 +28,11 @@ This is your main reference for decompiling code. It contains:
 Use this for everything: function bodies, struct layouts, enums, globals, typedefs.
 
 ```bash
-python lookup.py ./symbols/Dwarf struct AITarget
-python lookup.py ./symbols/Dwarf function 0x801DE9AC
-python lookup.py ./symbols/Dwarf enum EPerfectLaunch::State
-python lookup.py ./symbols/Dwarf global TheAnimCandidateData
-python lookup.py ./symbols/Dwarf typedef HHANDLER
+python tools/lookup.py ./symbols/Dwarf struct AITarget
+python tools/lookup.py ./symbols/Dwarf function 0x801DE9AC
+python tools/lookup.py ./symbols/Dwarf enum EPerfectLaunch::State
+python tools/lookup.py ./symbols/Dwarf global TheAnimCandidateData
+python tools/lookup.py ./symbols/Dwarf typedef HHANDLER
 ```
 
 ### 2. `./symbols/PS2/PS2_types.nothpp` — PS2 dump (single-file mode)
@@ -51,7 +51,7 @@ Use this as a secondary reference for two specific purposes:
 **d) The correct declaration order of functions inside a struct/class.**
 
 ```bash
-python lookup.py --file ./symbols/PS2/PS2_types.nothpp struct RollingBlockFormation
+python tools/lookup.py --file ./symbols/PS2/PS2_types.nothpp struct RollingBlockFormation
 ```
 
 Always check the PS2 dump for every non-trivial type you write, even if the Dwarf dump already has it.
@@ -62,10 +62,10 @@ Always check the PS2 dump for every non-trivial type you write, even if the Dwar
 
 ```bash
 # Folder mode (primary — Dwarf dump)
-python lookup.py <folder> <kind> <query>
+python tools/lookup.py <folder> <kind> <query>
 
 # Single-file mode (PS2 dump or any combined file)
-python lookup.py --file <path> <kind> <query>
+python tools/lookup.py --file <path> <kind> <query>
 ```
 
 Valid kinds: `struct`, `enum`, `function`, `global`, `typedef`
@@ -79,8 +79,8 @@ Valid kinds: `struct`, `enum`, `function`, `global`, `typedef`
 Look up a type's field layout. Always do this before writing any code that accesses struct members.
 
 ```bash
-python lookup.py ./symbols/Dwarf struct AITarget
-python lookup.py --file ./symbols/PS2/PS2_types.nothpp struct AITarget
+python tools/lookup.py ./symbols/Dwarf struct AITarget
+python tools/lookup.py --file ./symbols/PS2/PS2_types.nothpp struct AITarget
 ```
 
 Output includes field names, types, byte offsets, and sizes. When a struct appears multiple times with different members (e.g. a forward declaration vs full definition), all variants are printed separated by a blank line — use the one that you determine to be the correct one.
@@ -91,10 +91,10 @@ Look up an enum's values. Use this when you encounter an integer that is clearly
 
 ```bash
 # Top-level enum
-python lookup.py ./symbols/Dwarf enum ELaunchType
+python tools/lookup.py ./symbols/Dwarf enum ELaunchType
 
 # Enum nested inside a struct — use StructName::EnumName
-python lookup.py ./symbols/Dwarf enum AIGoal::State
+python tools/lookup.py ./symbols/Dwarf enum AIGoal::State
 ```
 
 ### function
@@ -102,7 +102,7 @@ python lookup.py ./symbols/Dwarf enum AIGoal::State
 Look up a function's decompiled body by its **start or end address**.
 
 ```bash
-python lookup.py ./symbols/Dwarf function 0x801DE9AC
+python tools/lookup.py ./symbols/Dwarf function 0x801DE9AC
 ```
 
 The address can match either the start or end of the `// Range:` annotation. Case-insensitive.
@@ -112,7 +112,7 @@ The address can match either the start or end of the `// Range:` annotation. Cas
 Look up a global variable declaration by name.
 
 ```bash
-python lookup.py ./symbols/Dwarf global TheAnimCandidateData
+python tools/lookup.py ./symbols/Dwarf global TheAnimCandidateData
 ```
 
 ### typedef
@@ -120,7 +120,7 @@ python lookup.py ./symbols/Dwarf global TheAnimCandidateData
 Look up a typedef by its alias name.
 
 ```bash
-python lookup.py ./symbols/Dwarf typedef HHANDLER
+python tools/lookup.py ./symbols/Dwarf typedef HHANDLER
 ```
 
 ---
