@@ -9,7 +9,7 @@ per-unit and per-category matching statistics.
 Usage:
   python tools/decomp-status.py
   python tools/decomp-status.py --category game
-  python tools/decomp-status.py --unit main/MetroidPrime/CIOWinManager
+  python tools/decomp-status.py --unit main/Speed/Indep/SourceLists/zAnim
   python tools/decomp-status.py --json
 """
 

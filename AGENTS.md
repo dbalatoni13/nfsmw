@@ -49,10 +49,10 @@ See `tools/skills/line_lookup/SKILL.md` for the full workflow.
 Overview mode lists all symbols in a translation unit with match status:
 
 ```sh
-python scripts/decomp-diff.py -u main/MetroidPrime/CIOWinManager
-python scripts/decomp-diff.py -u main/MetroidPrime/CIOWinManager -s nonmatching -t function
-python scripts/decomp-diff.py -u main/MetroidPrime/CIOWinManager -s missing -t function
-python scripts/decomp-diff.py -u main/MetroidPrime/CIOWinManager --search RemoveIOWin
+python scripts/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim
+python scripts/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s nonmatching -t function
+python scripts/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s missing -t function
+python scripts/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim --search RemoveIOWin
 ```
 
 Filters: `-t function,object` (type), `-s missing|matching|nonmatching|extra` (status),
@@ -61,8 +61,8 @@ Filters: `-t function,object` (type), `-s missing|matching|nonmatching|extra` (s
 Diff mode shows side-by-side instruction comparison:
 
 ```sh
-python scripts/decomp-diff.py -u main/MetroidPrime/CIOWinManager -d DistributeOneMessage
-python scripts/decomp-diff.py -u main/MetroidPrime/CIOWinManager -d FindIOWin -C 5
+python scripts/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d DistributeOneMessage
+python scripts/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin -C 5
 ```
 
 Mismatched args are wrapped in `{}`. Matching runs are collapsed (control with `-C <n>` context lines, `--no-collapse`). Left = original, right = decomp.
@@ -72,7 +72,7 @@ Mismatched args are wrapped in `{}`. Matching runs are collapsed (control with `
 ```sh
 python scripts/decomp-status.py                    # all categories
 python scripts/decomp-status.py --category game    # filter to game code
-python scripts/decomp-status.py --unit main/MetroidPrime/CIOWinManager
+python scripts/decomp-status.py --unit main/Speed/Indep/SourceLists/zAnim
 python scripts/decomp-status.py --json             # machine-readable
 ```
 
@@ -81,8 +81,8 @@ python scripts/decomp-status.py --json             # machine-readable
 Gathers source code, objdiff diff, Ghidra decompile, and debug map info:
 
 ```sh
-python scripts/decomp-context.py -u main/MetroidPrime/CEntity -f AcceptScriptMsg
-python scripts/decomp-context.py -u main/MetroidPrime/CIOWinManager -f FindIOWin --no-source
+python scripts/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f AcceptScriptMsg
+python scripts/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --no-source
 ```
 
 Flags: `--no-source`, `--no-ghidra` to skip sections.

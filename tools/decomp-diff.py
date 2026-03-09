@@ -8,9 +8,9 @@ Two modes:
   Diff (-d):          Show side-by-side instruction diff for a function
 
 Usage:
-  python tools/decomp-diff.py -u main/MetroidPrime/CIOWinManager
-  python tools/decomp-diff.py -u main/MetroidPrime/CIOWinManager -s nonmatching
-  python tools/decomp-diff.py -u main/MetroidPrime/CIOWinManager -d DistributeOneMessage
+  python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim
+  python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s nonmatching
+  python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d __9CAnimBank
 """
 
 import argparse

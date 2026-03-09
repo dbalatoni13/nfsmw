@@ -87,7 +87,6 @@ sudo xattr -rd com.apple.quarantine '/Applications/Wine Crossover.app'
   ```
 
 - Extracting the binaries
-
   - GC: Extract `NFSMWRELEASE.elf`, copy it into `orig/GOWE69` and convert it into a DOL using the following command:
 
     ```sh
@@ -114,7 +113,11 @@ Select an object from the left sidebar to begin diffing. Changes to the project 
 
 To get a proper Ghidra output, you should either install the necessary extensions or ask me for access to the shared Ghidra project on [decomp.dev](https://ghidra.decomp.dev/).
 
-[Recommended Ghidra build](https://rootcubed.dev/ghidra_builds/)
+### Ghidra server
+
+[Recommended Ghidra build](https://github.com/RootCubed/ghidra-ci/releases/download/2025-04-25/ghidra_11.4_DEV_20250425.zip)
+
+### Manual setup
 
 [Dwarf1 extension to properly load the GC debug info into Ghidra](https://github.com/emoose/ghidra-dwarf1)
 
@@ -122,7 +125,7 @@ To get a proper Ghidra output, you should either install the necessary extension
 
 Unfortunately the vtables can't (currently?) be loaded from the GC ELF into Ghidra, so you'll have to copy them over from the PS2 ELF and adjust the corresponding classes. Nested classes have the same problem and solution.
 
-### Use Deprecated Demangler
+#### Use Deprecated Demangler
 
 For Gamecube binaries the standard demangler doesn't work and you have to use the deprecated version.
 For PS2 binaries the deprecated version gives nicer results.
@@ -164,9 +167,46 @@ This file contains the hashes used in AttribSys.
 
 This file contains hashes used in different parts of the game. We are currently using a template solution to calculate the hash at compile time. But as you can see in the file, this is quite verbose, we'll want to find a better solution.
 
-## symbols/bhhunks.txt
+## symbols/bchunks.txt
 
 This file contains bChunk chunk IDs.
+
+# Guide for AI contributions
+
+## Setup
+
+- Set up the project and Ghidra as described above (take the Ghidra repo from the decomp.dev server, you'll have to request access).
+
+- In Ghidra, checkout `mw/GOWE69/NFSMWRELEASE.ELF` and `mw/SLES-53558/NFS.ELF.fixed` and copy them both into the root of the project. Rename `NFS.ELF.fixed` to `NFS.ELF`.
+
+- Download [ghidra-cli](https://github.com/akiselev/ghidra-cli) and put it into your path.
+
+- Tell ghidra-cli your Ghidra installation's path
+
+  ```
+  ghidra config set ghidra_install_dir <YOUR_PATH>/ghidra_11.4_DEV_20250425/ghidra_11.4_DEV
+  ```
+
+- Tell ghidra-cli the path to the Ghidra project
+
+  ```
+  ghidra config set ghidra_project_dir <PATH>
+  ```
+
+- Set NeedForSpeed as the default project
+
+  ```
+  ghidra config set default_project NeedForSpeed
+  ```
+
+- Set the GC version as the default program
+  ```
+  ghidra config set default_program NFSMWRELEASE.ELF
+  ```
+
+## Workflow
+
+Just tell your favourite clanker to reference `AGENTS.md` to decompile a translation unit of your choice, for example `main/Speed/Indep/SourceLists/zEAXSound`.
 
 # Contributors
 

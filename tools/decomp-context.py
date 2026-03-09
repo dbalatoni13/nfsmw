@@ -7,8 +7,8 @@ Collects some things an agent needs to work on matching a function: objdiff stat
 Source code and dwarf info should be queried from the lookup script instead.
 
 Usage:
-  python scripts/decomp-context.py -u main/MetroidPrime/CEntity -f AcceptScriptMsg
-  python scripts/decomp-context.py -u main/MetroidPrime/CIOWinManager -f DistributeOneMessage --no-ghidra
+  python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f __9CAnimBank
+  python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f __9CAnimBank --no-ghidra
 """
 
 import argparse
@@ -25,8 +25,10 @@ root_dir = os.path.abspath(os.path.join(script_dir, ".."))
 OBJDIFF_CLI = os.path.join(root_dir, "build", "tools", "objdiff-cli")
 OBJDIFF_JSON = os.path.join(root_dir, "objdiff.json")
 DTK = os.path.join(root_dir, "build", "tools", "dtk")
-SYMBOLS_FILE = os.path.join(root_dir, "config", "GOWE69", "symbols.txt")
-GHIDRA_PROJECT = "mw/GOWE69/NFSMWRELEASE.ELF"
+GC_SYMBOLS_FILE = os.path.join(root_dir, "config", "GOWE69", "symbols.txt")
+PS2_SYMBOLS_FILE = os.path.join(root_dir, "config", "SLES-53558-A124", "symbols.txt")
+GC_GHIDRA_PROGRAM = "NFSMWRELEASE.ELF"
+PS2_GHIDRA_PROGRAM = "NFS.ELF"
 
 
 def load_project_config() -> Dict[str, Any]:
@@ -93,14 +95,14 @@ def find_symbol_in_diff(
     return None, None
 
 
-def lookup_symbol_address(mangled_name: str) -> Optional[str]:
+def lookup_symbol_address(file: str, mangled_name: str) -> Optional[str]:
     """Look up a symbol's address from symbols.txt."""
-    if not os.path.exists(SYMBOLS_FILE):
+    if not os.path.exists(file):
         return None
     pattern = re.compile(
-        r"^" + re.escape(mangled_name) + r"\s*=\s*\.(\w+):0x([0-9A-Fa-f]+)"
+        r"^" + re.escape(mangled_name) + r"\s*=\s*(?:\.(\w+):)?0x([0-9A-Fa-f]+)"
     )
-    with open(SYMBOLS_FILE) as f:
+    with open(file) as f:
         for line in f:
             m = pattern.match(line.strip())
             if m:
@@ -108,33 +110,33 @@ def lookup_symbol_address(mangled_name: str) -> Optional[str]:
     return None
 
 
-def search_symbols_file(name: str) -> List[Tuple[str, str, str]]:
+def search_symbols_file(file: str, name: str) -> List[Tuple[str, str, str]]:
     """Search symbols.txt for entries matching a name. Returns [(mangled, section, address)]."""
-    if not os.path.exists(SYMBOLS_FILE):
+    if not os.path.exists(file):
         return []
     results = []
     pattern = name.lower()
-    with open(SYMBOLS_FILE) as f:
+    with open(file) as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith("//"):
                 continue
             if pattern in line.lower():
-                m = re.match(r"^(\S+)\s*=\s*\.(\w+):0x([0-9A-Fa-f]+)", line)
+                m = re.match(r"^(\S+)\s*=\s*(?:\.(\w+):)?0x([0-9A-Fa-f]+)", line)
                 if m:
                     results.append((m.group(1), m.group(2), m.group(3)))
     return results
 
 
-def ghidra_decompile(address: str) -> Optional[str]:
+def ghidra_decompile(address: str, program: str) -> Optional[str]:
     """Decompile a function at the given address using Ghidra CLI."""
     try:
         result = subprocess.run(
             [
                 "ghidra",
                 "decompile",
-                "--project",
-                GHIDRA_PROJECT,
+                "--program",
+                program,
                 f"0x{address}",
                 "--json",
             ],
@@ -175,6 +177,34 @@ def print_section(title: str, content: str) -> None:
     print(f"  {title}")
     print(f"{'='*60}")
     print(content)
+
+
+def print_ghidra_decompilation(
+    version_name: str,
+    symbols_file: str,
+    program: str,
+    function: str,
+    mangled_function: str,
+):
+    # Try to find address from symbols.txt
+    addr = lookup_symbol_address(symbols_file, mangled_function)
+
+    if not addr:
+        # Try searching symbols.txt
+        matches = search_symbols_file(symbols_file, function)
+        if matches:
+            # Pick the first function match
+            addr = matches[0][2]
+            mangled_function = matches[0][0]
+
+    if addr:
+        decomp = ghidra_decompile(addr, program)
+        if decomp:
+            print_section(f"{version_name}: Ghidra Decompile (0x{addr})", decomp)
+        else:
+            print(f"\nGhidra decompile failed for 0x{addr}")
+    else:
+        print(f"\nCould not find address for {mangled_function} in symbols.txt")
 
 
 def main():
@@ -288,25 +318,16 @@ def main():
         sym = left_sym or right_sym
         mangled = sym.get("name", "")
 
-        # Try to find address from symbols.txt
-        addr = lookup_symbol_address(mangled)
-
-        if not addr:
-            # Try searching symbols.txt
-            matches = search_symbols_file(args.function)
-            if matches:
-                # Pick the first function match
-                addr = matches[0][2]
-                mangled = matches[0][0]
-
-        if addr:
-            decomp = ghidra_decompile(addr)
-            if decomp:
-                print_section(f"Ghidra Decompile (0x{addr})", decomp)
-            else:
-                print(f"\nGhidra decompile failed for 0x{addr}")
-        else:
-            print(f"\nCould not find address for {mangled} in symbols.txt")
+        print_ghidra_decompilation(
+            "GOWE69", GC_SYMBOLS_FILE, GC_GHIDRA_PROGRAM, args.function, mangled
+        )
+        print_ghidra_decompilation(
+            "SLES-53558-A124",
+            PS2_SYMBOLS_FILE,
+            PS2_GHIDRA_PROGRAM,
+            args.function,
+            mangled,
+        )
 
 
 if __name__ == "__main__":
