@@ -33,7 +33,7 @@ Get the start address of the function you're decompiling from your disassembler 
 ### 2. Run the lookup
 
 ```bash
-python line_lookup.py <mapfile> <address>
+python tools/line_lookup.py <mapfile> <address>
 ```
 
 This returns 50 entries before and 50 entries after the closest match. If the address isn't in the file exactly, the script finds the nearest one and reports the offset.
@@ -96,8 +96,7 @@ The tight line-number clustering (`GRaceStatus.h` lines 353/354/362, `MNotifyMil
 
 ## Script Reference
 
-**Location:** wherever it was saved (e.g. `/home/claude/line_lookup.py`)  
-**Usage:** `python line_lookup.py <mapfile> <address>`  
+**Usage:** `python tools/line_lookup.py <mapfile> <address>`  
 **Address format:** hex, with or without `0x` prefix
 
 The script:

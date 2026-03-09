@@ -4,11 +4,11 @@ Address lookup tool: given a hex address, finds the closest entry in a map file
 and returns 50 lines before and 50 lines after it.
 
 Usage:
-    python line_lookup.py <mapfile> <address>
+    python tools/line_lookup.py <mapfile> <address>
 
 Example:
-    python line_lookup.py debug_lines.txt 0x801AE820
-    python line_lookup.py debug_lines.txt 801AE820
+    python tools/line_lookup.py debug_lines.txt 0x801AE820
+    python tools/line_lookup.py debug_lines.txt 801AE820
 """
 
 import sys

@@ -10,17 +10,17 @@ Enums:   supports 'EnumName' for top-level enums, or 'StructName::EnumName' for
          enums nested inside a struct.
 
 Folder mode (default):
-    python lookup.py <folder> struct   <StructName>
-    python lookup.py <folder> enum     <EnumName>
-    python lookup.py <folder> enum     <StructName::EnumName>
-    python lookup.py <folder> function <FunctionAddress>
-    python lookup.py <folder> function "<DemangledFunctionName>"
-    python lookup.py <folder> global   <GlobalName>
-    python lookup.py <folder> typedef  <TypedefName>
+    python tools/lookup.py <folder> struct   <StructName>
+    python tools/lookup.py <folder> enum     <EnumName>
+    python tools/lookup.py <folder> enum     <StructName::EnumName>
+    python tools/lookup.py <folder> function <FunctionAddress>
+    python tools/lookup.py <folder> function "<DemangledFunctionName>"
+    python tools/lookup.py <folder> global   <GlobalName>
+    python tools/lookup.py <folder> typedef  <TypedefName>
 
 Single-file mode (--file):
-    python lookup.py --file <path> struct   <StructName>
-    python lookup.py --file <path> function <FunctionAddress>
+    python tools/lookup.py --file <path> struct   <StructName>
+    python tools/lookup.py --file <path> function <FunctionAddress>
     ...  (all kinds searched in the one file)
 """
 
