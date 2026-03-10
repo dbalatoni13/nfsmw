@@ -24,18 +24,23 @@ static Sim::SubSystem _Physics_System_SceneryModel("SceneryModel", SceneryModel_
 int SceneryModel::mSceneryCount = 0;
 
 SmokeableSection *SmokeableSectionQ::FindOrAdd(int section_id) {
+    SmokeableSection *section = nullptr;
     for (int i = 0; i < mQueue.size(); i++) {
         SmokeableSection &this_section = mQueue[i];
         if (this_section.SectionID == section_id) {
             SmokeableSection new_section(this_section);
             mQueue.dequeue();
             mQueue.enqueue(new_section);
-            return &mQueue.head();
+            section = &mQueue.head();
+            break;
         }
     }
-    SmokeableSection new_section(section_id);
-    mQueue.enqueue(new_section);
-    return &mQueue.head();
+    if (section == nullptr) {
+        SmokeableSection new_section(section_id);
+        mQueue.enqueue(new_section);
+        section = &mQueue.head();
+    }
+    return section;
 }
 
 SmokeableSection *SmokeableSectionQ::Find(int section_id) {
