@@ -52,6 +52,27 @@ CAnimPlayer::~CAnimPlayer() {
     }
 }
 
+bool CAnimPlayer::IsLoaded(unsigned int anim_id) {
+    if (gAnimLoader_InProgress) {
+        return false;
+    }
+    CAnimSceneData *scene_data = CAnimSceneData::FindAnimSceneData(anim_id);
+    if (scene_data != nullptr) {
+        m_audioQueued = false;
+        return true;
+    }
+    return false;
+}
+
+int CAnimPlayer::CreateAnimInstance(unsigned int anim_id, int camera_track_number, int anim_candidate_type, int anim_candidate_index) {
+    CAnimSceneData *anim_scene_data = CAnimSceneData::FindAnimSceneData(anim_id);
+    int result = 0;
+    if (anim_scene_data != nullptr) {
+        result = CreateAnimScene(anim_scene_data, camera_track_number, anim_candidate_type, anim_candidate_index);
+    }
+    return result;
+}
+
 void AnimLoader_Init() {
     gAnimLoader_InProgress = true;
     gAnimLoader_CurSharedFilePosition = 0;
@@ -208,6 +229,15 @@ void CAnimPlayer::DestroyAnimScene(int anim_handle) {
 
 void CAnimPlayer::DeleteAnimInstance(int anim_handle) {
     DestroyAnimScene(anim_handle);
+}
+
+int CAnimPlayer::CreateAndPlayAnim(unsigned int anim_id, int camera_track_number, int anim_candidate_type, int anim_candidate_index) {
+    int anim_handle = CreateAnimInstance(anim_id, camera_track_number, anim_candidate_type, anim_candidate_index);
+    if (anim_handle == 0) {
+        return 0;
+    }
+    Play(anim_handle);
+    return anim_handle;
 }
 
 int CAnimPlayer::CreateAnimScene(CAnimSceneData *anim_scene_data, int camera_track_number, int anim_candidate_type, int anim_candidate_index) {

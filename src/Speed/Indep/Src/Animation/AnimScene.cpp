@@ -1,7 +1,9 @@
 #include "AnimScene.hpp"
 #include "AnimEntity_BasicCharacter.hpp"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/World/SpaceNode.hpp"
 #include "Speed/Indep/Src/World/VisibleSection.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 class IVehicle;
 
@@ -22,6 +24,7 @@ struct CAnimSceneDataLayout {
     bNode node;
     bChunk *mChunk;
     NisScene *mNisScene;
+    bTList<CAnimEntityData> mAnimEntityDataList;
 };
 
 struct CAnimEntityDataLayout {
@@ -32,6 +35,7 @@ struct CAnimEntityDataLayout {
 };
 
 struct CarAnimationState {
+    CarAnimationState();
     CAnimCtrl *AnimCtrl;   // offset 0x0
     IVehicle *mIVehicle;   // offset 0x4
     int HaveLastCarPosition; // offset 0x8
@@ -43,6 +47,21 @@ extern CarAnimationState gCarAnimationStates[16];
 bTList<CAnimSceneData> g_loadedAnimSceneDataList;
 int mHandleCounter = 0;
 extern bool mIsRaceStart;
+
+CarAnimationState::CarAnimationState() {
+    AnimCtrl = nullptr;
+    HaveLastCarPosition = 0;
+    CarIndex = -1;
+}
+
+void ResetCarAnimState(IVehicle *vehicle) {
+    for (int i = 0; i <= 15; i++) {
+        if (gCarAnimationStates[i].CarIndex >= 0 && gCarAnimationStates[i].mIVehicle == vehicle) {
+            gCarAnimationStates[i].HaveLastCarPosition = 0;
+            return;
+        }
+    }
+}
 
 CAnimSceneData::CAnimSceneData(bChunk *chunk)
     : mChunk(chunk),            //
@@ -300,12 +319,56 @@ bool CAnimScene::IsPropertyEnabled(eAnimProperty property_id) {
     return anim_property->IsEnabled();
 }
 
+bool CAnimScene::BindToGame() {
+    if (!mIsBoundToGame) {
+        mControllingCamera = true;
+        NisScene *scene_info = reinterpret_cast< CAnimSceneDataLayout * >(mAnimSceneData)->mNisScene;
+        mTimeStart = static_cast< float >(scene_info->StartFrame) * (1.0f / 30.0f);
+        mTimeTotalLength = static_cast< float >(scene_info->VanishFrame) * (1.0f / 30.0f);
+        AnimatedCars_Bind();
+        mIsBoundToGame = true;
+    }
+    return true;
+}
+
+bool CAnimScene::UnBindToGame() {
+    if (mIsBoundToGame) {
+        if (IsControllingCamera()) {
+            mControllingCamera = false;
+        }
+        AnimatedCars_UnBind();
+        mIsBoundToGame = false;
+    }
+    return true;
+}
+
 void CAnimScene::ResetTime() {
     SetTime(mTimeStart);
 }
 
 void CAnimScene::JumpToEnd() {
     SetTime(mTimeTotalLength);
+}
+
+void CAnimScene::SetTime(float time) {
+    bPNode *node = mInstancedAnimEntityList.GetTail();
+    while (node != mInstancedAnimEntityList.EndOfList()) {
+        IAnimEntity *iae = reinterpret_cast< IAnimEntity * >(node->GetObject());
+        iae->SetTime(time);
+        node = node->GetPrev();
+    }
+    AnimatedCars_SetTime(time);
+    mTimeElapsed = time;
+    mTimeDelta = 0.0f;
+}
+
+void CAnimScene::RenderEffects(eView *view, int is_reflection) {
+    bPNode *node = mInstancedAnimEntityList.GetTail();
+    while (node != mInstancedAnimEntityList.EndOfList()) {
+        IAnimEntity *iae = reinterpret_cast< IAnimEntity * >(node->GetObject());
+        iae->RenderEffects(view, is_reflection);
+        node = node->GetPrev();
+    }
 }
 
 void CAnimScene::AddProperty(eAnimProperty property_id, bool enabled) {
@@ -414,6 +477,65 @@ void CAnimScene::ClearCarAnimStates() {
 void CAnimScene::AnimatedCars_ClearLastPose() {
     for (int i = 0; i <= 15; i++) {
         gCarAnimationStates[i].HaveLastCarPosition = 0;
+    }
+}
+
+IAnimEntity *CAnimScene::GetAnimEntityWithModelName(const char *name) {
+    unsigned int hashID = bStringHash(name);
+    bPNode *node = mInstancedAnimEntityList.GetTail();
+    while (node != mInstancedAnimEntityList.EndOfList()) {
+        IAnimEntity *iae = reinterpret_cast< IAnimEntity * >(node->GetObject());
+        if (iae->GetWorldModel() != nullptr) {
+            eModel *model = iae->GetWorldModel()->GetModel();
+            if (model->GetNameHash() == hashID) {
+                return iae;
+            }
+        }
+        node = node->GetPrev();
+    }
+    return nullptr;
+}
+
+void CAnimScene::CreateAnimEntities() {
+    CAnimSceneDataLayout *data_layout = reinterpret_cast< CAnimSceneDataLayout * >(mAnimSceneData);
+    bTList<CAnimEntityData> *aed_list = &data_layout->mAnimEntityDataList;
+    CAnimEntityData *anim_entity_data = aed_list->GetHead();
+
+    while (anim_entity_data != aed_list->EndOfList()) {
+        CAnimEntityDataLayout *entity_data = reinterpret_cast< CAnimEntityDataLayout * >(anim_entity_data);
+        int type = entity_data->mType;
+        void *data = entity_data->mData;
+
+        IAnimEntity *iae = CAnimEntityFactory::CreateAnimEntity(type);
+        if (iae->Init(data, mSpaceNode)) {
+            mInstancedAnimEntityList.AddTail(iae);
+        } else {
+            iae->Purge();
+            delete iae;
+        }
+        anim_entity_data = anim_entity_data->GetNext();
+    }
+}
+
+void CAnimScene::ClearAnimEntities() {
+    bPNode *node = mInstancedAnimEntityList.GetTail();
+    while (node != mInstancedAnimEntityList.EndOfList()) {
+        IAnimEntity *iae = reinterpret_cast< IAnimEntity * >(node->GetObject());
+        iae->Purge();
+        delete iae;
+        node = node->GetPrev();
+    }
+    while (!mInstancedAnimEntityList.IsEmpty()) {
+        mInstancedAnimEntityList.RemoveTail();
+    }
+}
+
+void RenderAnimSceneEffects(eView *view, int exc_flag) {
+    if (INIS::Get() != nullptr) {
+        CAnimScene *scene = INIS::Get()->GetAnimScene();
+        if (scene != nullptr) {
+            scene->RenderEffects(view, exc_flag & 0x800);
+        }
     }
 }
 
