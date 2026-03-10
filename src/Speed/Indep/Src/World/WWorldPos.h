@@ -44,7 +44,7 @@ class WWorldPos {
 
     // bool OffEdge() const {}
 
-    // bool OnValidFace() const {}
+    bool OnValidFace() { return true; }
 
     void ForceFaceValidity() {}
 

@@ -27,6 +27,10 @@ struct ICEGroup {
         return Handle;
     }
 
+    int GetNumTracks() {
+        return NumTracks;
+    }
+
     unsigned int Handle;               // offset 0x0, size 0x4
     int Context;                       // offset 0x4, size 0x4
     int NumTracks;                     // offset 0x8, size 0x4

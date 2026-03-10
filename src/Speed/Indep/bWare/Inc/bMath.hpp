@@ -846,7 +846,13 @@ inline bMatrix4 &bMatrix4::operator=(const bMatrix4 &m) {
 // UNUSED
 inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector4 *position) {}
 
-inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector3 *position) {}
+inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector3 *position) {
+    dest->v0 = v->v0;
+    dest->v1 = v->v1;
+    dest->v2 = v->v2;
+    bCopy(&dest->v3, position, 1.0f);
+    return dest;
+}
 
 void bMulMatrix(bMatrix4 *dest, const bMatrix4 *a, const bMatrix4 *b);
 void bMulMatrix(bVector4 *dest, const bMatrix4 *a, const bVector4 *b);

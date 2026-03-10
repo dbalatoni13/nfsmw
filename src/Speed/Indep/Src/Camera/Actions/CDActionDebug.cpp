@@ -41,7 +41,8 @@ CDActionDebug::CDActionDebug(CameraAI::Director *director)
         dir.z = 1.0f;
     }
 
-    mMover = new DebugWorldCameraMover(static_cast<int>(director->GetViewID()), &pos, &dir, static_cast<JoystickPort>(static_cast<int>(director->GetViewID())));
+        int viewId = static_cast<int>(director->GetViewID());
+    mMover = new DebugWorldCameraMover(viewId, &pos, &dir, static_cast<JoystickPort>(viewId));
 }
 
 CDActionDebug::~CDActionDebug() {

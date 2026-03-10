@@ -529,9 +529,70 @@ bool ICEManager::ChooseCameraPlaybackTrack() {
     return false;
 }
 
-int ChooseGoodSceneCameraTrackIndex(unsigned int scene_hash, const ICE::Matrix4 *scene_origin) {
-    // TODO
-    return 0;
+int ICEManager::ChooseGoodSceneCameraTrackIndex(unsigned int scene_hash, const ICE::Matrix4 *scene_origin) {
+    bMatrix4 mCarToWorld;
+    int bestTrack = 0;
+
+    ICEGetPlayerCarTransform(reinterpret_cast<ICE::Matrix4 *>(&mCarToWorld));
+
+    for (int i = 0; i < nNisCameras; i++) {
+        if (scene_hash == pNisCameras[i].Handle) {
+            ICEGroup *group = &pNisCameras[i];
+            int numTracks = group->GetNumTracks();
+
+            if (numTracks < 2) {
+                break;
+            }
+
+            float bestDot = -1.0f;
+
+            for (int k = 0; k < numTracks; k++) {
+                ICETrack *track = group->GetTrack(k);
+
+                if (track->GetNumKeys() > 0) {
+                    ICEData *key = track->GetKey(0);
+                    int n = key->bSmooth != 0 ? 1 : 0;
+                    ICEData *data = key + n;
+
+                    bVector3 v_eye;
+                    data->GetEye(n, reinterpret_cast<ICE::Vector3 *>(&v_eye));
+
+                    if (data->nSpaceEye == 2) {
+                        bAdd(&v_eye, &v_eye, reinterpret_cast<const bVector3 *>(&mCarToWorld.v3));
+                    } else if (data->nSpaceEye == 0) {
+                        eMulVector(&v_eye, &mCarToWorld, &v_eye);
+                    } else if (data->nSpaceEye == 3) {
+                        eMulVector(&v_eye, reinterpret_cast<const bMatrix4 *>(scene_origin), &v_eye);
+                    }
+
+                    bVector3 v_look;
+                    data->GetLook(n, reinterpret_cast<ICE::Vector3 *>(&v_look));
+
+                    if (data->nSpaceLook == 2) {
+                        bAdd(&v_look, &v_look, reinterpret_cast<const bVector3 *>(&mCarToWorld.v3));
+                    } else if (data->nSpaceLook == 0) {
+                        eMulVector(&v_look, &mCarToWorld, &v_look);
+                    } else if (data->nSpaceLook == 3) {
+                        eMulVector(&v_look, reinterpret_cast<const bMatrix4 *>(scene_origin), &v_look);
+                    }
+
+                    bVector3 vCamDir;
+                    bSub(&vCamDir, &v_eye, &v_look);
+                    bNormalize(&vCamDir, &vCamDir);
+
+                    bVector3 *pCarDir = reinterpret_cast<bVector3 *>(&mCarToWorld.v0);
+                    float dot = bDot(&vCamDir, pCarDir);
+
+                    if (bestDot < dot) {
+                        bestTrack = k;
+                        bestDot = dot;
+                    }
+                }
+            }
+        }
+    }
+
+    return bestTrack;
 }
 
 void ICEManager::GetSlope(ICE::Vector3 *eye, ICE::Vector3 *look, float *fov, float *dutch, ICEData *data, int key, ICETrack *track) {
