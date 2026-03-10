@@ -43,7 +43,7 @@ struct Package {
         Junkman = 0;
     }
 
-    Package() { Default(); }
+    Package() {}
 };
 
 float GetPercent(const Attrib::Gen::pvehicle &vehicle, Type type);

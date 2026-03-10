@@ -87,7 +87,7 @@ void PVehicle::CommitBehaviorOverrides() {
 }
 
 void PVehicle::Reset() {
-    PhysicsObject::Reset();
+    mBehaviors.Reset();
     mTimeInAir = 0.0f;
     mWheelsOnGround = 0;
     mBrakeTime = 0.0f;
@@ -111,10 +111,14 @@ void PVehicle::Deactivate() { SetPhysicsMode(PHYSICS_MODE_INACTIVE); }
 
 void PVehicle::Kill() {
     PhysicsObject::Kill();
-    UCrc32 mechanic(BEHAVIOR_MECHANIC_DRAW);
-    ReleaseBehavior(mechanic);
-    mechanic = UCrc32(BEHAVIOR_MECHANIC_AUDIO);
-    ReleaseBehavior(mechanic);
+    {
+        UCrc32 mechanic(BEHAVIOR_MECHANIC_DRAW);
+        ReleaseBehavior(mechanic);
+    }
+    {
+        UCrc32 mechanic(BEHAVIOR_MECHANIC_AUDIO);
+        ReleaseBehavior(mechanic);
+    }
     mResources.Invalidate();
 }
 
