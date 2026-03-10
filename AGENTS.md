@@ -23,8 +23,7 @@ config/GOWE69/         Symbol addresses, section splits
   symbols.txt          Mangled symbol names -> addresses
   splits.txt           Memory layout / section boundaries
 orig/                  Original game files
-tools/                 Build system and other scripts
-  skills/              Agent tooling (see below)
+tools/                 Build system, agent tooling and other scripts
 objdiff.json           Generated build/diff configuration
 ```
 
