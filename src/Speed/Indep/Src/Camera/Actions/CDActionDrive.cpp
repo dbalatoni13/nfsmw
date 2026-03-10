@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/Camera/Actions/CDActionDrive.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MJumpCut.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 
 static float kCinematicMomementSeconds;
 
@@ -39,8 +40,26 @@ const IAttachable::List *CDActionDrive::GetAttachments() const {
 }
 
 CameraAI::Action *CDActionDrive::Construct(CameraAI::Director *director) {
-    // TODO
-    return nullptr;
+    IPlayer *player = nullptr;
+    {
+        const UTL::Vector<IPlayer *, 16> &list = IPlayer::GetList(PLAYER_LOCAL);
+        for (IPlayer *const *iter = list.begin(); iter != list.end(); ++iter) {
+            IPlayer *ip = *iter;
+            if (ip->GetRenderPort() == director->GetViewID()) {
+                player = ip;
+                break;
+            }
+        }
+    }
+    if (!player) return nullptr;
+    if (!player->GetSettings()) return nullptr;
+    ISimable *isimable = player->GetSimable();
+    if (!isimable) return nullptr;
+    {
+        unsigned int world_id = isimable->GetWorldID();
+        if (!world_id) return nullptr;
+        return new ((const char *)nullptr) CDActionDrive(director, player);
+    }
 }
 
 CDActionDrive::CDActionDrive(CameraAI::Director *director, IPlayer *player)

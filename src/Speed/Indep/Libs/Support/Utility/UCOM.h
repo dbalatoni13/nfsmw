@@ -54,6 +54,10 @@ class Object {
         return gFastMem.Alloc(size, nullptr);
     }
 
+    void *operator new(std::size_t size, const char *name) {
+        return gFastMem.Alloc(size, name);
+    }
+
     Object(std::size_t icount) : _mInterfaces(icount) {}
 
     ~Object() {}

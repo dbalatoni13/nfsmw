@@ -1,5 +1,10 @@
 #include "Speed/Indep/Src/Camera/Actions/CDActionIce.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
+#include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+
+extern ICEManager TheICEManager;
+extern int Tweak_ForceICEReplay;
 #include "Speed/Indep/Src/Camera/ICE/ICEMover.hpp"
 
 static UTL::COM::Factory<CameraAI::Director *, CameraAI::Action, UCrc32>::Prototype _CDActionIce("ICE", CDActionIce::Construct);
@@ -37,8 +42,28 @@ const IAttachable::List *CDActionIce::GetAttachments() const {
 }
 
 CameraAI::Action *CDActionIce::Construct(CameraAI::Director *director) {
-    // TODO
-    return nullptr;
+    IPlayer *player = nullptr;
+    {
+        const UTL::Vector<IPlayer *, 16> &list = IPlayer::GetList(PLAYER_LOCAL);
+        for (IPlayer *const *iter = list.begin(); iter != list.end(); ++iter) {
+            IPlayer *ip = *iter;
+            if (ip->GetRenderPort() == director->GetViewID()) {
+                player = ip;
+                break;
+            }
+        }
+    }
+    if (!player) return nullptr;
+    if (!player->GetSettings()) return nullptr;
+    ISimable *isimable = player->GetSimable();
+    if (!isimable) return nullptr;
+    {
+        unsigned int world_id = isimable->GetWorldID();
+        if (!world_id) return nullptr;
+        bool have_a_track = TheICEManager.ChooseCameraPlaybackTrack();
+        if (!have_a_track && !Tweak_ForceICEReplay) return nullptr;
+        return new ((const char *)nullptr) CDActionIce(director, player);
+    }
 }
 
 CDActionIce::CDActionIce(CameraAI::Director *director, IPlayer *player)

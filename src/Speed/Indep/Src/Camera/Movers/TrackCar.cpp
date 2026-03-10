@@ -56,9 +56,10 @@ static void FixWorldHeight(UMath::Vector3 *point, int type) {
     }
 
     UMath::Vector3 test;
-    float ground_elevation = 0.0f;
+    float ground_elevation;
 
     test = *point;
+    ground_elevation = 0.0f;
     test.y += 4.0f;
 
     WCollisionMgr collision_mgr(0, 3);

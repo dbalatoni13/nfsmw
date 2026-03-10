@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/Camera/Actions/CDActionTrackCar.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 
 static UTL::COM::Factory<CameraAI::Director *, CameraAI::Action, UCrc32>::Prototype _CDActionTrackCar("TRACKCAR", CDActionTrackCar::Construct);
 
@@ -29,8 +30,26 @@ const IAttachable::List *CDActionTrackCar::GetAttachments() const {
 }
 
 CameraAI::Action *CDActionTrackCar::Construct(CameraAI::Director *director) {
-    // TODO
-    return nullptr;
+    IPlayer *player = nullptr;
+    {
+        const UTL::Vector<IPlayer *, 16> &list = IPlayer::GetList(PLAYER_LOCAL);
+        for (IPlayer *const *iter = list.begin(); iter != list.end(); ++iter) {
+            IPlayer *ip = *iter;
+            if (ip->GetRenderPort() == director->GetViewID()) {
+                player = ip;
+                break;
+            }
+        }
+    }
+    if (!player) return nullptr;
+    if (!player->GetSettings()) return nullptr;
+    ISimable *isimable = player->GetSimable();
+    if (!isimable) return nullptr;
+    {
+        unsigned int world_id = isimable->GetWorldID();
+        if (!world_id) return nullptr;
+        return new ((const char *)nullptr) CDActionTrackCar(director, player);
+    }
 }
 
 CDActionTrackCar::CDActionTrackCar(CameraAI::Director *director, IPlayer *player)

@@ -26,8 +26,10 @@ void CDActionDebugWatchCar::AquireTarget() {
 }
 
 CameraAI::Action *CDActionDebugWatchCar::Construct(CameraAI::Director *director) {
-    // TODO
-    return nullptr;
+    if (!director->GetAction()) {
+        return nullptr;
+    }
+    return new CDActionDebugWatchCar(director);
 }
 
 CDActionDebugWatchCar::CDActionDebugWatchCar(CameraAI::Director *director)

@@ -16,14 +16,32 @@ Attrib::StringKey CDActionDebug::GetNext() const {
 }
 
 CameraAI::Action *CDActionDebug::Construct(CameraAI::Director *director) {
-    // TODO
-    return nullptr;
+    return new ("CDActionDebug") CDActionDebug(director);
 }
 
 CDActionDebug::CDActionDebug(CameraAI::Director *director)
     : CameraAI::Action(), //
-      mActionQ(false) {
-    // TODO
+      mActionQ(1, 0x98c7a2f5, "DebugWorld", false) {
+    mDone = false;
+    mPrev = director->GetAction()->GetName();
+
+    CameraMover *m = director->GetMover();
+    bVector3 pos;
+    bVector3 dir;
+
+    if (m != nullptr) {
+        pos = m->GetCamera()->GetPosition();
+        dir = m->GetCamera()->GetDirection();
+    } else {
+        pos.x = 0.0f;
+        pos.y = 0.0f;
+        pos.z = 0.0f;
+        dir.x = 0.0f;
+        dir.y = 0.0f;
+        dir.z = 1.0f;
+    }
+
+    mMover = new DebugWorldCameraMover(static_cast<int>(director->GetViewID()), &pos, &dir, static_cast<JoystickPort>(director->GetViewID()));
 }
 
 CDActionDebug::~CDActionDebug() {

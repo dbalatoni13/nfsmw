@@ -23,6 +23,26 @@ namespace CameraAI {
 struct Action : public UTL::COM::Object, public UTL::COM::Factory<class Director *, Action, UCrc32> {
     Action() : UTL::COM::Object(0) {}
 
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
+    void operator delete(void *mem, std::size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+
+    void *operator new(std::size_t size, const char *name) {
+        return gFastMem.Alloc(size, name);
+    }
+
+    void operator delete(void *mem, const char *name) {
+        if (mem) {
+            gFastMem.Free(mem, 0, name);
+        }
+    }
+
     virtual ~Action() {}
 
     virtual void Update(float dT) {}
