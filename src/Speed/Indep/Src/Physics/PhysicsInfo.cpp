@@ -246,6 +246,37 @@ Mps Physics::Info::Speedometer(const Attrib::Gen::transmission &transmission, co
     return speed;
 }
 
+float Physics::Info::MaxInductedTorque(const engine &eng, const induction &ind, float &atrpm, const Tunings *tunings) {
+    unsigned int num_torque = eng.Num_TORQUE();
+    float torque = 0.0f;
+
+    if (num_torque < 2) {
+        atrpm = eng.IDLE();
+    } else {
+        atrpm = eng.IDLE();
+        float rpm = eng.IDLE();
+        float delta_rpm = (eng.MAX_RPM() - eng.IDLE()) / static_cast<float>(num_torque - 1);
+
+        for (unsigned int i = 0; i < eng.Num_TORQUE(); i++) {
+            float pt_torque = eng.TORQUE(i) * (InductionBoost(eng, ind, rpm, 1.0f, tunings, nullptr) + 1.0f);
+            if (pt_torque > torque) {
+                atrpm = rpm;
+                torque = pt_torque;
+            }
+            rpm += delta_rpm;
+        }
+
+        atrpm = UMath::Clamp(atrpm, eng.IDLE(), eng.RED_LINE());
+    }
+    return torque;
+}
+
+float Physics::Info::MaxInductedTorque(const pvehicle &pvehicle, float &atrpm, const Tunings *tunings) {
+    const engine eng(pvehicle.engine(0), 0, nullptr);
+    const induction ind(pvehicle.induction(0), 0, nullptr);
+    return MaxInductedTorque(eng, ind, atrpm, tunings);
+}
+
 float Physics::Info::MaxTorque(const engine &eng, float &atrpm) {
     float torque = 0.0f;
     int max_pt = 0;
