@@ -238,9 +238,9 @@ void FEngGetTopLeft(FEObject* object, float& x, float& y) {
             if (pFont != nullptr) {
                 FEString* pStr = static_cast<FEString*>(object);
                 const short* characters = nullptr;
+                int label_hash = pStr->GetLabelHash();
                 if (!(object->Flags & 2)) {
                     short localized_string_buffer[1024];
-                    int label_hash = pStr->GetLabelHash();
                     if (GetLocalizedWideString(localized_string_buffer, 0x800, label_hash)) {
                         characters = localized_string_buffer;
                     }
@@ -325,9 +325,9 @@ void FEngGetBottomRight(FEObject* object, float& x, float& y) {
             if (pFont != nullptr) {
                 FEString* pStr = static_cast<FEString*>(object);
                 const short* characters = nullptr;
+                int label_hash = pStr->GetLabelHash();
                 if (!(object->Flags & 2)) {
                     short localized_string_buffer[1024];
-                    int label_hash = pStr->GetLabelHash();
                     if (GetLocalizedWideString(localized_string_buffer, 0x800, label_hash)) {
                         characters = localized_string_buffer;
                     }
@@ -401,9 +401,9 @@ void FEngGetCenter(FEObject* object, float& x, float& y) {
             if (pFont != nullptr) {
                 FEString* pStr = static_cast<FEString*>(object);
                 const short* characters = nullptr;
+                int label_hash = pStr->GetLabelHash();
                 if (!(object->Flags & 2)) {
                     short localized_string_buffer[1024];
-                    int label_hash = pStr->GetLabelHash();
                     if (GetLocalizedWideString(localized_string_buffer, 0x800, label_hash)) {
                         characters = localized_string_buffer;
                     }
