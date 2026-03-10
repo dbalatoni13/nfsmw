@@ -1,0 +1,74 @@
+#include "uiRepSheetRivalBio.hpp"
+
+#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRivalFlow.hpp"
+#include "Speed/Indep/Src/Generated/Events/EEnterBin.hpp"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
+
+struct FEObject;
+
+FEImage* FEngFindImage(const char* pkg_name, int hash);
+void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned int lang_hash);
+unsigned int FEngHashString(const char* format, ...);
+void FEPrintf(const char* pkg_name, unsigned int hash, const char* format, ...);
+const char* GetLocalizedString(unsigned int hash);
+
+extern unsigned int iCurrentViewBin;
+
+uiRepSheetRivalBio::uiRepSheetRivalBio(ScreenConstructorData* sd)
+    : MenuScreen(sd)
+    , RivalStreamer(sd->PackageFilename, sd->Arg != 0) {
+    bIsInGame = sd->Arg != 0;
+    if ((FEDatabase->GetGameMode() & 0x20000) == 0) {
+        cFEng::Get()->QueuePackageMessage(0xaf922178, PackageFilename, nullptr);
+    } else {
+        if (FEDatabase->GetCareerSettings()->CurrentBin == 16) {
+            new EEnterBin(FEDatabase->GetCareerSettings()->CurrentBin - 1);
+        }
+        iCurrentViewBin = FEDatabase->GetCareerSettings()->CurrentBin;
+        cFEng::Get()->QueuePackageMessage(0xb21a45f, PackageFilename, nullptr);
+    }
+    Setup();
+}
+
+void uiRepSheetRivalBio::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) {
+    if (msg == 0x406415e3) {
+        if ((FEDatabase->GetGameMode() & 0x20000) != 0) {
+            if (uiRepSheetRivalFlow::Get()->GetStage() == -1) {
+                uiRepSheetRivalFlow::Get()->StartFlow(5);
+            } else {
+                uiRepSheetRivalFlow::Get()->Next();
+            }
+        }
+    } else if (msg == 0x911ab364) {
+        if ((FEDatabase->GetGameMode() & 0x20000) == 0) {
+            if (!bIsInGame) {
+                cFEng::Get()->QueuePackageSwitch("BL_MAIN", 0, 0, false);
+            } else {
+                cFEng::Get()->QueuePackageSwitch("IG_BL_MAIN", 1, 0, false);
+            }
+        }
+    }
+}
+
+void uiRepSheetRivalBio::RefreshHeader() {
+    unsigned int hash = FEngHashString("BL_NAME_%d", iCurrentViewBin);
+    FEngSetLanguageHash(PackageFilename, 0x7ac3d0c9, hash);
+    hash = FEngHashString("BL_RIDE_%d", iCurrentViewBin);
+    FEngSetLanguageHash(PackageFilename, 0xb1f2748d, hash);
+    hash = FEngHashString("BL_BIO_1_%d", iCurrentViewBin);
+    FEngSetLanguageHash(PackageFilename, 0x27e1d6d8, hash);
+    hash = FEngHashString("BL_BIO_2_%d", iCurrentViewBin);
+    FEngSetLanguageHash(PackageFilename, 0xcb5bf41a, hash);
+    hash = FEngHashString("BL_BIO_3_%d", iCurrentViewBin);
+    FEngSetLanguageHash(PackageFilename, 0xa6f07bf3, hash);
+}
+
+void uiRepSheetRivalBio::Setup() {
+    pRivalImg = FEngFindImage(PackageFilename, 0xc1f62308);
+    pTagImg = FEngFindImage(PackageFilename, 0xf5a2a087);
+    pBGImg = FEngFindImage(PackageFilename, 0x2cbe1dd0);
+    RivalStreamer.Init(iCurrentViewBin, pRivalImg, pTagImg, pBGImg);
+    RefreshHeader();
+}
