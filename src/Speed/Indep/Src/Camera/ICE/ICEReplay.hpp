@@ -10,17 +10,17 @@ struct ICETrack;
 
 struct ICEReplayCategory {
     float GetScore(ICEAnchor *car) {
-        if (ScoreFunction == 0) {
-            return 0.0f;
+        if (ScoreFunction != 0) {
+            return ScoreFunction(car);
         }
-        return ScoreFunction(car);
+        return 0.0f;
     }
 
     bool GetMirror(ICEAnchor *car) {
-        if (MirrorFunction == 0) {
-            return false;
+        if (MirrorFunction != 0) {
+            return MirrorFunction(car);
         }
-        return MirrorFunction(car);
+        return false;
     }
 
     const char *pCategoryName;

@@ -35,7 +35,36 @@ CameraAI::Action *CDActionDebugWatchCar::Construct(CameraAI::Director *director)
 CDActionDebugWatchCar::CDActionDebugWatchCar(CameraAI::Director *director)
     : CameraAI::Action(), //
       IDebugWatchCar(this) {
-    // TODO
+    mTarget = WorldConn::Reference(0);
+    mhSimable = nullptr;
+    mPrev = director->GetAction()->GetName();
+
+    CameraMover *m = director->GetMover();
+    bVector3 pos;
+    bVector3 dir;
+
+    if (m != nullptr) {
+        pos = *m->GetCamera()->GetPosition();
+        dir = *m->GetCamera()->GetDirection();
+    } else {
+        pos.x = 0.0f;
+        pos.y = 0.0f;
+        pos.z = 0.0f;
+        dir.x = 0.0f;
+        dir.y = 0.0f;
+        dir.z = 1.0f;
+    }
+
+    mAnchor = new CameraAnchor(0);
+
+    AquireTarget();
+
+    if (mTarget.IsValid()) {
+        bMatrix4 mat(*mTarget.GetMatrix());
+        mAnchor->Update(0.0f, mat, *mTarget.GetVelocity(), *mTarget.GetAcceleration());
+    }
+
+    mMover = new TrackCarCameraMover(static_cast<int>(director->GetViewID()), mAnchor, true);
 }
 
 CDActionDebugWatchCar::~CDActionDebugWatchCar() {

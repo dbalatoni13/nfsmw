@@ -551,28 +551,30 @@ int ICEManager::ChooseGoodSceneCameraTrackIndex(unsigned int scene_hash, const I
 
                 if (track->GetNumKeys() > 0) {
                     ICEData *key = track->GetKey(0);
-                    int n = key->bSmooth != 0 ? 1 : 0;
-                    ICEData *data = key + n;
+                    int n = 0;
+                    if (key->bSmooth != 0) {
+                        n = 1;
+                    }
 
                     bVector3 v_eye;
-                    data->GetEye(n, reinterpret_cast<ICE::Vector3 *>(&v_eye));
+                    key[n].GetEye(n, reinterpret_cast<ICE::Vector3 *>(&v_eye));
 
-                    if (data->nSpaceEye == 2) {
+                    if (key[n].nSpaceEye == 2) {
                         bAdd(&v_eye, &v_eye, reinterpret_cast<const bVector3 *>(&mCarToWorld.v3));
-                    } else if (data->nSpaceEye == 0) {
+                    } else if (key[n].nSpaceEye == 0) {
                         eMulVector(&v_eye, &mCarToWorld, &v_eye);
-                    } else if (data->nSpaceEye == 3) {
+                    } else if (key[n].nSpaceEye == 3) {
                         eMulVector(&v_eye, reinterpret_cast<const bMatrix4 *>(scene_origin), &v_eye);
                     }
 
                     bVector3 v_look;
-                    data->GetLook(n, reinterpret_cast<ICE::Vector3 *>(&v_look));
+                    key[n].GetLook(n, reinterpret_cast<ICE::Vector3 *>(&v_look));
 
-                    if (data->nSpaceLook == 2) {
+                    if (key[n].nSpaceLook == 2) {
                         bAdd(&v_look, &v_look, reinterpret_cast<const bVector3 *>(&mCarToWorld.v3));
-                    } else if (data->nSpaceLook == 0) {
+                    } else if (key[n].nSpaceLook == 0) {
                         eMulVector(&v_look, &mCarToWorld, &v_look);
-                    } else if (data->nSpaceLook == 3) {
+                    } else if (key[n].nSpaceLook == 3) {
                         eMulVector(&v_look, reinterpret_cast<const bMatrix4 *>(scene_origin), &v_look);
                     }
 

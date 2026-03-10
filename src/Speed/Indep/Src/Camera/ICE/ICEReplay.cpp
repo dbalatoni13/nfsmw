@@ -305,11 +305,11 @@ ICETrack *ChooseGoodCamera(ICEAnchor *p_car, ICEGroup *p_replay_cameras, int num
                 score += 0.1f;
             }
 
-            if (score < 0.1f) {
-                scores[group_number] = 0.0f;
-            } else {
+            if (score >= 0.1f) {
                 total_score += score;
                 scores[group_number] = score;
+            } else {
+                scores[group_number] = 0.0f;
             }
         }
 
@@ -339,6 +339,7 @@ ICETrack *ChooseGoodCamera(ICEAnchor *p_car, ICEGroup *p_replay_cameras, int num
                             ICEData *camera_data = track->GetKey(0);
 
                             if (camera_data != 0 && camera_data->nType != 0) {
+                                char sTrack[16];
                                 ICEReplayCategory *category = ICE::GetReplayCategory(group->GetHandle());
                                 bMirrorICEData = category->GetMirror(p_car);
 

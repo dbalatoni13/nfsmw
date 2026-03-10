@@ -253,6 +253,7 @@ class CameraAnchor {
 
     void Update(float dT, const bMatrix4 &matrix, const bVector3 &velocity, const bVector3 &forward);
     void SetModel(int model);
+    void SetZoom(float z) { mZoom = z; }
     POV *GetPov(int pov_type);
 
   private:
