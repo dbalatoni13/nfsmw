@@ -177,11 +177,11 @@ void FEngSetRotationZ(FEObject* obj, float angle_degrees) {
         bMatrix4 b;
         bIdentity(&b);
         float cosVal = bCos(rad_angle);
-        b.v0.x = cosVal;
         b.v1.y = cosVal;
+        b.v0.x = cosVal;
         float sinVal = bSin(rad_angle);
-        b.v1.x = -sinVal;
         b.v0.y = sinVal;
+        b.v1.x = -sinVal;
         bQuaternion q;
         bMatrixToQuaternion(q, b);
         FEQuaternion feq;
