@@ -100,7 +100,21 @@ class TypeDesc {
     static ITypeHandler *Lookup(Type t);
     static Type NameToType(const char *name);
 
+    void *operator new(std::size_t bytes) {
+        return Alloc(bytes, "Attrib::TypeDesc");
+    }
+
+    void operator delete(void *ptr, std::size_t bytes) {
+        Free(ptr, bytes, "Attrib::TypeDesc");
+    }
+
+    void *operator new(std::size_t, void *ptr) {
+        return ptr;
+    }
+
     TypeDesc() : mType(0), mName(""), mSize(0), mIndex(0), mHandler(nullptr) {}
+
+    TypeDesc(const TypeDesc &src) : mType(src.mType), mName(src.mName), mSize(src.mSize), mIndex(src.mIndex), mHandler(src.mHandler) {}
 
     TypeDesc(unsigned int t) : mType(t), mName(nullptr), mSize(0), mIndex(0), mHandler(Lookup(t)) {}
 
@@ -109,6 +123,10 @@ class TypeDesc {
 
     Type GetType() const {
         return mType;
+    }
+
+    const char *GetName() const {
+        return mName;
     }
 
     unsigned int GetSize() const {

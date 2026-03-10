@@ -234,7 +234,10 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
             Policy::KeyIndex(mTable[worstIndex].Key(), mTableSize, 0);
         }
 
-        if (freeIndex != worstIndex && mTable[freeIndex].IsValid()) {
+        if (mTable[freeIndex].IsValid()) {
+        }
+
+        if (freeIndex != worstIndex) {
             mTable[freeIndex].Move(mTable[worstIndex]);
         }
         if (mTable[worstIndex].IsValid()) {

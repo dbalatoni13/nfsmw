@@ -239,3 +239,7 @@ TU: <translation-unit-name> | Function: <FunctionName>
 ### NamedRodataForInlinedAllocatorStrings
 TU: zAttribSys | Function: DatabaseExportPolicy::Initialize
 When an inlined allocator path must reference a specific rodata symbol, replace a repeated string literal with a named `static const char[]` so the compiler preserves the expected rodata label and relocation pattern.
+
+### ExplicitInlineSpecialMembersForSTLElements
+TU: zAttribSys | Function: _STL::_Rb_tree<Attrib::TypeDesc, ...>::_M_insert
+If an STL node insertion path refuses to match, check whether the element type is missing explicit inline special members that the original source exposed. Adding the Dwarf-backed `operator new`, `operator delete`, placement `new`, copy constructor, and tiny accessors to `TypeDesc` made the tree node creation/insertion path match exactly.

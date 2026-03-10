@@ -207,7 +207,7 @@ class HashMap {
         if (currline != 0) {
             prevline = currline;
         }
-        for (; searchLen < maxSearchLen; searchLen++) {
+        while (searchLen < maxSearchLen) {
             if (table[actualIndex].GetKey() == key) {
                 return result;
             }
@@ -217,6 +217,7 @@ class HashMap {
                 prevline = currline;
                 result++;
             }
+            searchLen++;
         }
 
         return result;

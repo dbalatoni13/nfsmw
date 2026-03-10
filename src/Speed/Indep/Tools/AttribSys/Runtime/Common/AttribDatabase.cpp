@@ -1,6 +1,7 @@
 #include "../AttribHash.h"
 #include "../AttribSys.h"
 #include "AttribPrivate.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribLoadAndGo.h"
 #include <types.h>
 
