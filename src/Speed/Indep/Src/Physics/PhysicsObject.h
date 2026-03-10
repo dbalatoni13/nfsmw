@@ -119,7 +119,7 @@ class PhysicsObject : public Sim::Object,
     Behavior *FindBehavior(const UCrc32 &mechanic);
     void DetachAll();
     void ReleaseBehaviors();
-    void Reset();
+    virtual void Reset();
 
   protected:
     Behavior *LoadBehavior(const UCrc32 &mechanic, const UCrc32 &behavior, Sim::Param params);

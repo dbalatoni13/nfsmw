@@ -325,3 +325,9 @@ unsigned int Physics::Info::NumFowardGears(const pvehicle &pvehicle) {
     const transmission trans(pvehicle.transmission(0), 0, nullptr);
     return NumFowardGears(trans);
 }
+
+bool Physics::Info::HasPerformanceRatings(const pvehicle &pvehicle) {
+    float base_handling = pvehicle.HandlingRating(0);
+    float top_handling = pvehicle.HandlingRating(1);
+    return base_handling < top_handling && 0.0f < top_handling;
+}
