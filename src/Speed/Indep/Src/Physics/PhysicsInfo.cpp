@@ -40,12 +40,11 @@ Physics::Info::eInductionType Physics::Info::InductionType(const induction &indu
 
 bool Physics::Info::HasNos(const pvehicle &pvehicle) {
     const nos n(pvehicle.nos(0), 0, nullptr);
+    bool result = false;
     if (n.TORQUE_BOOST() > 0.0f) {
-        if (n.NOS_CAPACITY() > 0.0f) {
-            return true;
-        }
+        result = n.NOS_CAPACITY() > 0.0f;
     }
-    return false;
+    return result;
 }
 
 bool Physics::Info::HasRunflatTires(const pvehicle &pvehicle) {
