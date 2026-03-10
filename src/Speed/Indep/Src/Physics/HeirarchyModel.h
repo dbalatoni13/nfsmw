@@ -43,6 +43,7 @@ class HeirarchyModel : public Sim::Model, public IBody, public ITriggerableModel
     void OnProcessFrame(float dT) override;
     virtual bool OnUpdateAvoidable();
     bool OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep);
+    void OnEndSimulation() override;
 
     void DisableTrigger();
     void SetTrigger(const UMath::Matrix4 &matrix, bool enable);

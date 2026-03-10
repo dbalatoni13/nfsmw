@@ -58,6 +58,8 @@ class SceneryModel : public HeirarchyModel, public ISceneryModel {
     SmokeableSpawner *mSpawner;
 
     static int mSceneryCount;
+
+    friend class SmokeableSpawner;
 };
 
 #endif
