@@ -15,6 +15,8 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
+#include "Speed/Indep/Src/Sim/SimSurface.h"
+#include "Speed/Indep/Src/World/WCollisionMgr.h"
 
 extern Attrib::StringKey BEHAVIOR_MECHANIC_AI;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_AUDIO;
@@ -453,4 +455,30 @@ void PVehicle::ComputeHeading(UMath::Vector3 *v) {
     UMath::Scale(forward, forward_blend, forward);
     UMath::ScaleAdd(velocity, velocity_blend, forward, forward);
     UMath::Unit(forward, *v);
+}
+
+void PVehicle::CheckOffWorld() {
+    UCrc32 susp(BEHAVIOR_MECHANIC_SUSPENSION);
+    if (IsBehaviorActive(susp)) {
+        if (static_cast<ISimable *>(this)->GetWPos().GetSurface() != SimSurface::kNull.GetConstCollection()) {
+            mOffWorld = false;
+        } else {
+            if (mSuspension == nullptr) {
+                mOffWorld = true;
+            } else {
+                unsigned int invalid_tires = 0;
+                for (unsigned int i = 0; i < mSuspension->GetNumWheels(); i++) {
+                    if (mSuspension->GetWheelRoadSurface(i).GetConstCollection() == SimSurface::kNull.GetConstCollection()) {
+                        invalid_tires++;
+                    }
+                }
+                mOffWorld = !(invalid_tires < 2);
+            }
+        }
+    } else {
+        float worldHeight = 0.0f;
+        WCollisionMgr mgr(0, 3);
+        const UMath::Vector3 &pos = static_cast<ISimable *>(this)->GetPosition();
+        mOffWorld = !mgr.GetWorldHeightAtPointRigorous(pos, worldHeight, nullptr);
+    }
 }
