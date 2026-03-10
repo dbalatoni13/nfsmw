@@ -409,8 +409,8 @@ void FEngGetCenter(FEObject* object, float& x, float& y) {
                 }
                 float width = size.x * pFont->GetTextWidth(characters, 0);
                 float height = size.y * pFont->GetTextHeight(characters, pStr->Leading, 0, 0, false);
-                x = width * 0.5f + pos.x + pFont->CalculateXOffset(pStr->Format, width);
-                y = height * 0.5f + pos.y + pFont->CalculateYOffset(pStr->Format, height);
+                x = pFont->CalculateXOffset(pStr->Format, width) + pos.x + width * 0.5f;
+                y = pFont->CalculateYOffset(pStr->Format, height) + pos.y + height * 0.5f;
             }
             break;
         }
@@ -423,8 +423,8 @@ void FEngGetCenter(FEObject* object, float& x, float& y) {
         case FE_Group:
         case FE_CodeList:
         default:
-            x = size.x * 0.5f + pos.x;
-            y = size.y * 0.5f + pos.y;
+            x = pos.x;
+            y = pos.y;
             break;
     }
 }
@@ -445,8 +445,8 @@ void FEngSetCenter(FEObject* object, float x, float y) {
                 FEVector3& size = data->Size;
                 float width = size.x * pFont->GetTextWidth(pStr->GetString(), 0);
                 float height = size.y * pFont->GetTextHeight(pStr->GetString(), pStr->Leading, 0, 0, false);
-                pos.x = x - (width * 0.5f + pFont->CalculateXOffset(pStr->Format, width));
-                pos.y = y - (height * 0.5f + pFont->CalculateYOffset(pStr->Format, height));
+                pos.x = x - (pFont->CalculateXOffset(pStr->Format, width) + width * 0.5f);
+                pos.y = y - (pFont->CalculateYOffset(pStr->Format, height) + height * 0.5f);
             }
             break;
         }
@@ -459,8 +459,8 @@ void FEngSetCenter(FEObject* object, float x, float y) {
         case FE_Group:
         case FE_CodeList:
         default:
-            pos.x = x - data->Size.x * 0.5f;
-            pos.y = y - data->Size.y * 0.5f;
+            pos.x = x;
+            pos.y = y;
             break;
     }
 
