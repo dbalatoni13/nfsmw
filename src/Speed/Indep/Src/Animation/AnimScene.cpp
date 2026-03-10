@@ -3,9 +3,14 @@
 #include "AnimEntity_BasicCharacter.hpp"
 #include "AnimLocator.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
+#include "Speed/Indep/Src/Interfaces/Simables/INISCarControl.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/World/SpaceNode.hpp"
 #include "Speed/Indep/Src/World/VisibleSection.hpp"
+#include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
 class IVehicle;
 
@@ -49,6 +54,18 @@ extern CarAnimationState gCarAnimationStates[16];
 extern AnimDirectory *TheAnimDirectory;
 extern int bEnableNisTextDisplay;
 extern int mIsRaceStart;
+extern unsigned int skel_ROOT_hash;
+extern int AnimCfg_DebugOutput;
+extern char Car_Name[16][16];
+extern float NISCopCarDoorOpenAmount[4];
+extern float gCopCarDoorAnim_CurrentTime[4];
+extern float gCopCarDoorAnim_AnimLength[4];
+extern float gCopCarDoorAnim_Delta[4];
+extern float gCopCarDoorAnim_StartPos[4];
+
+bMatrix4 &bConvertToBond(bMatrix4 &dest, const bMatrix4 &v);
+CAnimSkeleton *GetSkeletonFromList(unsigned int namehash);
+void DumpAnimBanks();
 
 bTList<CAnimSceneData> g_loadedAnimSceneDataList;
 int mHandleCounter = 0;
@@ -66,6 +83,42 @@ void ResetCarAnimState(IVehicle *vehicle) {
             return;
         }
     }
+}
+
+void StartCopDoorAnim(int door, float startPos, float AnimLength, float endPos) {
+    if (static_cast< unsigned int >(door) > 3) {
+        return;
+    }
+    gCopCarDoorAnim_CurrentTime[door] = 0.0f;
+    if (AnimLength > 0.0f) {
+        gCopCarDoorAnim_AnimLength[door] = AnimLength;
+        gCopCarDoorAnim_Delta[door] = endPos - startPos;
+        gCopCarDoorAnim_StartPos[door] = startPos;
+    } else {
+        gCopCarDoorAnim_AnimLength[door] = 0.0f;
+    }
+    NISCopCarDoorOpenAmount[door] = startPos;
+}
+
+void UpdateCopDoorPositions(float time) {
+    int door = 0;
+    do {
+        float animLength = gCopCarDoorAnim_AnimLength[door];
+        if (animLength != 0.0f) {
+            float currentTime = gCopCarDoorAnim_CurrentTime[door] + time;
+            gCopCarDoorAnim_CurrentTime[door] = currentTime;
+            if (currentTime <= 0.0f) {
+                NISCopCarDoorOpenAmount[door] = gCopCarDoorAnim_StartPos[door];
+            } else if (currentTime < animLength) {
+                float ratio = currentTime / animLength;
+                NISCopCarDoorOpenAmount[door] = ratio * gCopCarDoorAnim_Delta[door] + gCopCarDoorAnim_StartPos[door];
+            } else {
+                gCopCarDoorAnim_AnimLength[door] = 0.0f;
+                NISCopCarDoorOpenAmount[door] = gCopCarDoorAnim_StartPos[door] + gCopCarDoorAnim_Delta[door];
+            }
+        }
+        door = door + 1;
+    } while (door < 4);
 }
 
 CAnimSceneData::CAnimSceneData(bChunk *chunk)
@@ -563,10 +616,277 @@ void CAnimScene::ClearCarAnimStates() {
     }
 }
 
+void CAnimScene::InitCarAnimStatesFromStartingPositions() {
+    if (mAnimCandidateType != 4) {
+        int i = 0;
+        do {
+            char channelName[32];
+            bSPrintf(channelName, "car%d", i + 1);
+            IVehicle *NISCar = INIS::Get()->GetCar(UCrc32(channelName));
+            if (NISCar != nullptr) {
+                gCarAnimationStates[i].CarIndex = i;
+                gCarAnimationStates[i].mIVehicle = NISCar;
+                NISCar->Deactivate();
+            }
+            i = i + 1;
+        } while (i < 8);
+    }
+}
+
+void CAnimScene::InitCarAnimStatesFromNIS() {
+    {
+        int i = 0;
+        do {
+            char channelName[32];
+            bSPrintf(channelName, "car%d", i + 1);
+            IVehicle *NISCar = INIS::Get()->GetCar(UCrc32(channelName));
+            if (NISCar != nullptr) {
+                gCarAnimationStates[i].CarIndex = i;
+                gCarAnimationStates[i].mIVehicle = NISCar;
+                NISCar->Deactivate();
+            }
+            i = i + 1;
+        } while (i < 8);
+    }
+
+    IVehicle *copCar = INIS::Get()->GetCar(UCrc32("cop1"));
+    if (copCar != nullptr) {
+        gCarAnimationStates[8].CarIndex = 8;
+        gCarAnimationStates[8].mIVehicle = copCar;
+    }
+
+    {
+        int i = 1;
+        do {
+            char channelName[24];
+            bSPrintf(channelName, "cop%d", i + 1);
+            IVehicle *copVehicle = INIS::Get()->GetCar(UCrc32(channelName));
+            int carIndex = i + 8;
+            if (copVehicle != nullptr) {
+                gCarAnimationStates[carIndex].CarIndex = carIndex;
+                gCarAnimationStates[carIndex].mIVehicle = copVehicle;
+            }
+            i = i + 1;
+        } while (i < 8);
+    }
+}
+
+void CAnimScene::SetCarAnimationPositions() {
+    ClearCarAnimStates();
+    int sceneType = reinterpret_cast< CAnimSceneDataLayout * >(mAnimSceneData)->mNisScene->SceneType;
+    if (sceneType == 3) {
+        InitCarAnimStatesFromStartingPositions();
+        ForcePlayerToAnimCarPosition(0, 1);
+    } else if (sceneType == 0) {
+        InitCarAnimStatesFromStartingPositions();
+    } else if (sceneType != 1 && (sceneType == 2 || sceneType == 4)) {
+        InitCarAnimStatesFromNIS();
+    }
+}
+
+void CAnimScene::CreateCarAnimationControllers() {
+    if (reinterpret_cast< CAnimSceneDataLayout * >(mAnimSceneData)->mNisScene->HaveCarAnimation == 0) {
+        return;
+    }
+
+    CAnimSkeleton *skel = GetSkeletonFromList(skel_ROOT_hash);
+    if (skel == nullptr) {
+        return;
+    }
+
+    {
+        int i = 0;
+        do {
+            if (gCarAnimationStates[i].CarIndex != -1) {
+                char nameToHash[34];
+                char *baseCarName = Car_Name[i];
+                NisScene *scene = reinterpret_cast< CAnimSceneDataLayout * >(mAnimSceneData)->mNisScene;
+                bSPrintf(nameToHash, "%s%s", scene->mSceneName, baseCarName);
+                unsigned int name_hash = bStringHash(nameToHash);
+                scene = reinterpret_cast< CAnimSceneDataLayout * >(mAnimSceneData)->mNisScene;
+                bSPrintf(nameToHash, "%s%s_t", scene->mSceneName, baseCarName);
+                unsigned int name_hash_t = bStringHash(nameToHash);
+                scene = reinterpret_cast< CAnimSceneDataLayout * >(mAnimSceneData)->mNisScene;
+                bSPrintf(nameToHash, "%s%s_q", scene->mSceneName, baseCarName);
+                unsigned int name_hash_q = bStringHash(nameToHash);
+
+                if (name_hash != 0 && name_hash_t != 0 && name_hash_q != 0) {
+                    CAnimCtrl *new_anim_ctrl = new ("Car CAnimCtrl") CAnimCtrl();
+                    new_anim_ctrl->SetNameHash(name_hash);
+                    new_anim_ctrl->SetTimeScale(0.5f);
+                    new_anim_ctrl->SetFlags(new_anim_ctrl->GetFlags() | 8);
+                    new_anim_ctrl->GetAnimPart()->Init(skel);
+                    new_anim_ctrl->CreateFnAnimFromNamehash(name_hash_t, 0);
+                    new_anim_ctrl->CreateFnAnimFromNamehash(name_hash_q, 1);
+                    if (new_anim_ctrl->GetAllocated() != 0) {
+                        gCarAnimationStates[i].AnimCtrl = new_anim_ctrl;
+                        gCarAnimationStates[i].mIVehicle->Activate();
+                    } else {
+                        if (AnimCfg_DebugOutput != 0) {
+                            DumpAnimBanks();
+                        }
+                        new_anim_ctrl->Purge();
+                        new_anim_ctrl->Cleanup();
+                        delete new_anim_ctrl;
+                        gCarAnimationStates[i].AnimCtrl = nullptr;
+                    }
+                }
+            }
+            i = i + 1;
+        } while (i < 16);
+    }
+
+    AddProperty(eAnimProp_ControlRaceCars, true);
+}
+
+void CAnimScene::ClearCarAnimationControllers() {
+    int i = 0;
+    do {
+        if (gCarAnimationStates[i].AnimCtrl != nullptr) {
+            gCarAnimationStates[i].AnimCtrl->GetAnimPart()->Purge();
+            gCarAnimationStates[i].AnimCtrl->Cleanup();
+            if (gCarAnimationStates[i].AnimCtrl != nullptr) {
+                delete gCarAnimationStates[i].AnimCtrl;
+            }
+            gCarAnimationStates[i].AnimCtrl = nullptr;
+        }
+        gCarAnimationStates[i].HaveLastCarPosition = 0;
+        gCarAnimationStates[i].CarIndex = -1;
+        i = i + 1;
+    } while (i < 16);
+}
+
+void CAnimScene::AnimatedCars_SetMainAndWheels(int current_car, CAnimCtrl *main_anim_ctrl, float time_step) {
+    bMatrix4 animated_car_matrix(reinterpret_cast< bMatrix4 * >(main_anim_ctrl->GetAnimPart()->GetGlobalMatrices())[1]);
+    bMatrix4 AI_Space_Matrix;
+    bMulMatrix(&animated_car_matrix, &mSceneRotationMatrix, &animated_car_matrix);
+    bMulMatrix(&animated_car_matrix, &mSceneTranslationMatrix, &animated_car_matrix);
+    bConvertToBond(animated_car_matrix, animated_car_matrix);
+
+    WCollisionMgr collisionMgr(0, 3);
+    float ground_elevation = 0.0f;
+    bool point_valid = collisionMgr.GetWorldHeightAtPointRigorous(
+        *reinterpret_cast< UMath::Vector3 * >(&animated_car_matrix.v3), ground_elevation, nullptr);
+
+    if (point_valid) {
+        animated_car_matrix.v3.y = ground_elevation + 5.0f;
+    }
+
+    int haveLastPos = gCarAnimationStates[current_car].HaveLastCarPosition;
+    bool initial = haveLastPos == 0;
+    INISCarControl *iniscar;
+    if (gCarAnimationStates[current_car].mIVehicle->QueryInterface(&iniscar)) {
+        if (!iniscar->SetNISPosition(
+                reinterpret_cast< UMath::Matrix4 & >(animated_car_matrix),
+                initial, time_step)) {
+            gCarAnimationStates[current_car].HaveLastCarPosition = -1;
+        }
+    }
+    gCarAnimationStates[current_car].HaveLastCarPosition++;
+}
+
+void CAnimScene::AnimatedCars_ResetToBeginning() {
+    AnimatedCars_ClearLastPose();
+    int current_car = 0;
+    do {
+        CAnimCtrl *main_anim_ctrl = gCarAnimationStates[current_car].AnimCtrl;
+        if (main_anim_ctrl != nullptr) {
+            main_anim_ctrl->SetEvalTime(0.0f);
+        }
+        current_car = current_car + 1;
+    } while (current_car < 16);
+    AnimatedCars_Update(0.0f);
+}
+
 void CAnimScene::AnimatedCars_ClearLastPose() {
     for (int i = 0; i <= 15; i++) {
         gCarAnimationStates[i].HaveLastCarPosition = 0;
     }
+}
+
+void CAnimScene::AnimatedCars_SetTime(float time) {
+    int current_car = 0;
+    do {
+        CAnimCtrl *main_anim_ctrl = gCarAnimationStates[current_car].AnimCtrl;
+        gCarAnimationStates[current_car].HaveLastCarPosition = 0;
+        if (main_anim_ctrl != nullptr) {
+            main_anim_ctrl->SetEvalTime(0.0f);
+            main_anim_ctrl->AdvanceAnimTime(0.0f);
+            main_anim_ctrl->UpdateAnimPose(true);
+        }
+        current_car = current_car + 1;
+    } while (current_car < 16);
+    AnimatedCars_Update(time);
+}
+
+void CAnimScene::AnimatedCars_Update(float time_step) {
+    if (!IsPropertyEnabled(eAnimProp_ControlRaceCars)) {
+        return;
+    }
+
+    if (IsPropertyEnabled(eAnimProp_UnBindRaceCars) && mTimeElapsed > mTimeTotalLength) {
+        AnimatedCars_UnBind();
+        return;
+    }
+
+    int current_car = 0;
+    do {
+        CAnimCtrl *main_anim_ctrl = gCarAnimationStates[current_car].AnimCtrl;
+        if (main_anim_ctrl != nullptr && gCarAnimationStates[current_car].CarIndex >= 0) {
+            main_anim_ctrl->AdvanceAnimTime(time_step);
+            main_anim_ctrl->UpdateAnimPose(true);
+            AnimatedCars_SetMainAndWheels(current_car, main_anim_ctrl, time_step);
+        }
+        current_car = current_car + 1;
+    } while (current_car < 16);
+}
+
+void CAnimScene::AnimatedCars_Bind() {
+    if (!IsPropertyEnabled(eAnimProp_ControlRaceCars)) {
+        return;
+    }
+
+    int i = 0;
+    do {
+        if (gCarAnimationStates[i].CarIndex >= 0) {
+            gCarAnimationStates[i].mIVehicle->SetSpeed(0.0f);
+
+            IRigidBody *irb;
+            if (gCarAnimationStates[i].mIVehicle->QueryInterface(&irb)) {
+                UMath::Vector3 zeroVec;
+                UMath::Vector3 *pZero = &zeroVec;
+                memset(pZero, 0, 0xc);
+                irb->SetLinearVelocity(*pZero);
+                irb->SetAngularVelocity(*pZero);
+            }
+
+            IInput *pInput;
+            if (gCarAnimationStates[i].mIVehicle->QueryInterface(&pInput)) {
+                pInput->SetControlHandBrake(1.0f);
+                pInput->SetControlGas(0.0f);
+                pInput->SetControlBrake(1.0f);
+            }
+        }
+        i = i + 1;
+    } while (i < 16);
+}
+
+void CAnimScene::AnimatedCars_UnBind() {
+    if (IsPropertyEnabled(eAnimProp_ControlRaceCars)) {
+        SetPropertyEnabled(eAnimProp_ControlRaceCars, false);
+    }
+
+    int i = 0;
+    do {
+        int car_index = gCarAnimationStates[i].CarIndex;
+        if (car_index >= 0) {
+            gCarAnimationStates[i].mIVehicle->SetAnimating(false);
+            if (i > 7) {
+                gCarAnimationStates[i].mIVehicle->Deactivate();
+            }
+        }
+        i = i + 1;
+    } while (i < 16);
 }
 
 IAnimEntity *CAnimScene::GetAnimEntityWithModelName(const char *name) {
