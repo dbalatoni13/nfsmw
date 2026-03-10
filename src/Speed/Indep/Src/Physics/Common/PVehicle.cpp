@@ -319,8 +319,11 @@ void PVehicle::SetBehaviorOverride(UCrc32 mechanic, UCrc32 behavior) {
 }
 
 void PVehicle::RemoveBehaviorOverride(UCrc32 mechanic) {
-    mBehaviorOverrides.erase(mechanic);
-    mOverrideDirty = true;
+    UTL::Std::map<UCrc32, UCrc32, _type_ID_PVehicleChangeReq>::iterator it = mBehaviorOverrides.find(mechanic);
+    if (it != mBehaviorOverrides.end()) {
+        mBehaviorOverrides.erase(it);
+        mOverrideDirty = true;
+    }
 }
 
 

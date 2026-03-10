@@ -137,7 +137,7 @@ void SceneryModel::InitScene() {
     }
 
     if (enable_sequencer) {
-        UCrc32 name(GetAttributes().GetConstCollection()->GetKey());
+        UCrc32 name(EventSequencer().GetHash32());
         Sim::Model::StartSequencer(name);
     }
 
