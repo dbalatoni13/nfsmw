@@ -376,14 +376,12 @@ void SmokeableSpawner::OnMoved() {
 
 void SmokeableSpawner::OnLoad(unsigned int exclude_flags, bool ignore) {
     if ((exclude_flags & mExcludeFlags) == 0) {
-        if (!ignore) {
-            ShowInstance();
-            const Attrib::Collection *collection = FindAttributes(UCrc32(mAttributes));
-            if (collection != nullptr) {
-                mSimModel = SceneryModel::Construct(this, collection, false);
-            } else {
-                mSimModel = nullptr;
-            }
+        ShowInstance();
+        const Attrib::Collection *collection = FindAttributes(UCrc32(mAttributes));
+        if (collection != nullptr) {
+            mSimModel = SceneryModel::Construct(this, collection, ignore);
+        } else {
+            mSimModel = nullptr;
         }
     }
     if (mSimModel == nullptr) {
@@ -392,36 +390,34 @@ void SmokeableSpawner::OnLoad(unsigned int exclude_flags, bool ignore) {
 }
 
 int SmokeableSpawnerPack::Loader(bChunk *chunk) {
-    if (chunk->GetID() != 0x34027) {
-        return 0;
-    }
-
-    SmokeableSpawnerPack *spawner_pack = reinterpret_cast< SmokeableSpawnerPack * >(chunk->GetAlignedData(16));
-    if (!AreChunksBeingMoved()) {
-        spawner_pack->EndianSwap();
-        if (Sim::Exists()) {
-            unsigned int exclude_flags = static_cast< unsigned int >(Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN);
-            if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing) {
-                exclude_flags |= 4;
+    if (chunk->GetID() == 0x34027) {
+        SmokeableSpawnerPack *spawner_pack = reinterpret_cast< SmokeableSpawnerPack * >(chunk->GetAlignedData(16));
+        if (!AreChunksBeingMoved()) {
+            spawner_pack->EndianSwap();
+            if (Sim::Exists()) {
+                unsigned int exclude_flags = static_cast< unsigned int >(Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN);
+                if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing) {
+                    exclude_flags |= 4;
+                }
+                spawner_pack->OnLoad(exclude_flags);
             }
-            spawner_pack->OnLoad(exclude_flags);
+        } else {
+            spawner_pack->OnMoved();
         }
-    } else {
-        spawner_pack->OnMoved();
+        return 1;
     }
-    return 1;
+    return 0;
 }
 
 int SmokeableSpawnerPack::Unloader(bChunk *chunk) {
-    if (chunk->GetID() != 0x34027) {
-        return 0;
+    if (chunk->GetID() == 0x34027) {
+        if (!AreChunksBeingMoved() && Sim::Exists()) {
+            SmokeableSpawnerPack *pack = reinterpret_cast< SmokeableSpawnerPack * >(chunk->GetAlignedData(16));
+            pack->OnUnload();
+        }
+        return 1;
     }
-
-    if (!AreChunksBeingMoved() && Sim::Exists()) {
-        SmokeableSpawnerPack *pack = reinterpret_cast< SmokeableSpawnerPack * >(chunk->GetAlignedData(16));
-        pack->OnUnload();
-    }
-    return 1;
+    return 0;
 }
 
 bChunkLoader SmokeableSpawnerPack::mLoader(0x34027, SmokeableSpawnerPack::Loader, SmokeableSpawnerPack::Unloader);
