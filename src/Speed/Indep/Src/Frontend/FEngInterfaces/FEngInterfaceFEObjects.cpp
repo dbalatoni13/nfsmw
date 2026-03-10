@@ -150,8 +150,9 @@ bool FEngIsScriptSet(const char* pkg_name, unsigned int obj_hash, unsigned int s
 
 bool FEngIsScriptSet(FEObject* obj, unsigned int script_hash) {
     if (obj == nullptr) return false;
-    if (obj->pCurrentScript == nullptr) return false;
-    if (obj->pCurrentScript->ID != script_hash) return false;
+    FEScript* script = obj->pCurrentScript;
+    if (script == nullptr) return false;
+    if (script->ID != script_hash) return false;
     return true;
 }
 
@@ -256,9 +257,6 @@ void FEngGetTopLeft(FEObject* object, float& x, float& y) {
             }
             break;
         }
-        case FE_Model:
-        case FE_List:
-        case FE_CodeList:
         default:
             x = pos.x;
             y = pos.y;
@@ -400,13 +398,6 @@ void FEngGetCenter(FEObject* object, float& x, float& y) {
     FEVector3 size(data->Size);
 
     switch (object->Type) {
-        case FE_Image:
-        case FE_Movie:
-        case FE_ColoredImage:
-        case FE_MultiImage:
-            x = size.x * 0.5f + pos.x;
-            y = size.y * 0.5f + pos.y;
-            break;
         case FE_String: {
             FEngFont* pFont = FindFont(object->Handle);
             if (pFont != nullptr) {
@@ -431,13 +422,17 @@ void FEngGetCenter(FEObject* object, float& x, float& y) {
             }
             break;
         }
+        case FE_Image:
+        case FE_Movie:
+        case FE_ColoredImage:
+        case FE_MultiImage:
         case FE_Model:
         case FE_List:
         case FE_Group:
         case FE_CodeList:
         default:
-            x = pos.x;
-            y = pos.y;
+            x = size.x * 0.5f + pos.x;
+            y = size.y * 0.5f + pos.y;
             break;
     }
 }
@@ -469,16 +464,13 @@ void FEngSetCenter(FEObject* object, float x, float y) {
         case FE_Movie:
         case FE_ColoredImage:
         case FE_MultiImage:
-            pos.x = x - data->Size.x * 0.5f;
-            pos.y = y - data->Size.y * 0.5f;
-            break;
         case FE_Model:
         case FE_List:
         case FE_Group:
         case FE_CodeList:
         default:
-            pos.x = x;
-            pos.y = y;
+            pos.x = x - data->Size.x * 0.5f;
+            pos.y = y - data->Size.y * 0.5f;
             break;
     }
 
@@ -548,10 +540,8 @@ void FEngSetScaleX(FEObject* object, float x) {
             break;
         }
         case FE_String:
-        case FE_Model:
-        case FE_List:
         case FE_Group:
-        case FE_CodeList:
+            break;
         default:
             break;
     }
@@ -583,10 +573,8 @@ void FEngSetScaleY(FEObject* object, float y) {
             break;
         }
         case FE_String:
-        case FE_Model:
-        case FE_List:
         case FE_Group:
-        case FE_CodeList:
+            break;
         default:
             break;
     }

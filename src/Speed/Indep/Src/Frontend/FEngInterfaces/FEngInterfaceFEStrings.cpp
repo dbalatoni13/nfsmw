@@ -128,25 +128,25 @@ int FEPrintf(const char* pkg_name, int object_hash, const char* fmt, ...) {
         return -1;
     }
 
-    if (obj->Type == FE_Group) {
-        va_list arg_list;
-        va_start(arg_list, fmt);
-        int nchars = bVSPrintf(FEPrintf_Buffer, fmt, arg_list);
-        va_end(arg_list);
-        FEngGroupFEPrintf DoPrintf;
-        DoPrintf.string = FEPrintf_Buffer;
-        FEPackage* pkg = cFEng::Get()->FindPackage(pkg_name);
-        pkg->ForAllChildren(static_cast<FEGroup*>(obj), DoPrintf);
+    if (obj->Type != FE_Group) {
+        if (obj->Type != FE_String) {
+            va_end(argList);
+            return -1;
+        }
+
+        int nchars = DoFEngPrintf(static_cast<FEString*>(obj), fmt, argList);
+        va_end(argList);
         return nchars;
     }
 
-    if (obj->Type != FE_String) {
-        va_end(argList);
-        return -1;
-    }
-
-    int nchars = DoFEngPrintf(static_cast<FEString*>(obj), fmt, argList);
-    va_end(argList);
+    va_list arg_list;
+    va_start(arg_list, fmt);
+    int nchars = bVSPrintf(FEPrintf_Buffer, fmt, arg_list);
+    va_end(arg_list);
+    FEngGroupFEPrintf DoPrintf;
+    DoPrintf.string = FEPrintf_Buffer;
+    FEPackage* pkg = cFEng::Get()->FindPackage(pkg_name);
+    pkg->ForAllChildren(static_cast<FEGroup*>(obj), DoPrintf);
     return nchars;
 }
 
@@ -159,25 +159,25 @@ int FEPrintf(const char* pkg_name, FEObject* obj, const char* fmt, ...) {
 
     va_start(argList, fmt);
 
-    if (obj->Type == FE_Group) {
-        va_list arg_list;
-        va_start(arg_list, fmt);
-        int nchars = bVSPrintf(FEPrintf_Buffer, fmt, arg_list);
-        va_end(arg_list);
-        FEngGroupFEPrintf DoPrintf;
-        DoPrintf.string = FEPrintf_Buffer;
-        FEPackage* pkg = cFEng::Get()->FindPackage(pkg_name);
-        pkg->ForAllChildren(static_cast<FEGroup*>(obj), DoPrintf);
+    if (obj->Type != FE_Group) {
+        if (obj->Type != FE_String) {
+            va_end(argList);
+            return -1;
+        }
+
+        int nchars = DoFEngPrintf(static_cast<FEString*>(obj), fmt, argList);
+        va_end(argList);
         return nchars;
     }
 
-    if (obj->Type != FE_String) {
-        va_end(argList);
-        return -1;
-    }
-
-    int nchars = DoFEngPrintf(static_cast<FEString*>(obj), fmt, argList);
-    va_end(argList);
+    va_list arg_list;
+    va_start(arg_list, fmt);
+    int nchars = bVSPrintf(FEPrintf_Buffer, fmt, arg_list);
+    va_end(arg_list);
+    FEngGroupFEPrintf DoPrintf;
+    DoPrintf.string = FEPrintf_Buffer;
+    FEPackage* pkg = cFEng::Get()->FindPackage(pkg_name);
+    pkg->ForAllChildren(static_cast<FEGroup*>(obj), DoPrintf);
     return nchars;
 }
 
