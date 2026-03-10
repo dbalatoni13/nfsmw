@@ -33,6 +33,10 @@ struct induction : Instance {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
+    induction(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+        this->SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
     induction(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }

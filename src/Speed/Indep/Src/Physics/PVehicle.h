@@ -12,6 +12,7 @@
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IExplodeable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 #include "Speed/Indep/Src/Main/EventSequencer.h"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"

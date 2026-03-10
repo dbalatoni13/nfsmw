@@ -81,6 +81,20 @@ Mps Speedometer(const Attrib::Gen::transmission &transmission, const Attrib::Gen
 bool EstimatePerformance(Performance &perf);
 eInductionType InductionType(const Attrib::Gen::pvehicle &pvehicle);
 float WheelDiameter(const Attrib::Gen::pvehicle &pvehicle, bool front);
+float Redline(const Attrib::Gen::engine &engine);
+float Redline(const Attrib::Gen::pvehicle &pvehicle);
+unsigned int NumFowardGears(const Attrib::Gen::transmission &transmission);
+unsigned int NumFowardGears(const Attrib::Gen::pvehicle &pvehicle);
+float MaxInductedPower(const Attrib::Gen::pvehicle &pvehicle, const Tunings *tunings);
+float AvgInductedTorque(const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction,
+                        const Attrib::Gen::transmission &transmission, bool loaded, const Tunings *tunings);
+float MaxInductedTorque(const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction,
+                        float &atrpm, const Tunings *tunings);
+float MaxInductedTorque(const Attrib::Gen::pvehicle &pvehicle, float &atrpm, const Tunings *tunings);
+float MaxTorque(const Attrib::Gen::engine &engine, float &atrpm);
+void Init();
+bool FindPerformanceCandidates(const Performance &target, const Performance &tolerance,
+                               UTL::Std::list<unsigned int, _type_list> &candidates);
 bool HasPerformanceRatings(const Attrib::Gen::pvehicle &pvehicle);
 bool EstimatePerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &perf);
 bool ComputePerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &perf);

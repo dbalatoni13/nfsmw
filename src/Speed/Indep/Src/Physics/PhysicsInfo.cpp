@@ -6,12 +6,10 @@
 
 using namespace Attrib::Gen;
 
-// Credits: Brawltendo
 float Physics::Info::AerodynamicDownforce(const chassis &chassis, const float speed) {
     return speed * 2 * chassis.AERO_COEFFICIENT() * 1000.0f;
 }
 
-// Credits: Brawltendo
 float Physics::Info::EngineInertia(const engine &engine, const bool loaded) {
     float scale;
     if (loaded)
@@ -21,7 +19,11 @@ float Physics::Info::EngineInertia(const engine &engine, const bool loaded) {
     return scale * (engine.FLYWHEEL_MASS() * 0.025f + 0.25f);
 }
 
-// Credits: Brawltendo
+Physics::Info::eInductionType Physics::Info::InductionType(const pvehicle &pvehicle) {
+    const induction ind(pvehicle.induction(0), 0, nullptr);
+    return InductionType(ind);
+}
+
 Physics::Info::eInductionType Physics::Info::InductionType(const induction &induction) {
     if (induction.HIGH_BOOST() > 0.0f || induction.LOW_BOOST() > 0.0f) {
         // turbochargers don't produce significant boost until above the boost threshold (the lowest engine RPM at which it will spool up)
@@ -36,7 +38,20 @@ Physics::Info::eInductionType Physics::Info::InductionType(const induction &indu
     }
 }
 
-// Credits: Brawltendo
+bool Physics::Info::HasNos(const pvehicle &pvehicle) {
+    const nos n(pvehicle.nos(0), 0, nullptr);
+    if (n.TORQUE_BOOST() > 0.0f) {
+        if (n.NOS_CAPACITY() > 0.0f) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Physics::Info::HasRunflatTires(const pvehicle &pvehicle) {
+    return false;
+}
+
 float Physics::Info::NosBoost(const nos &nos, const Tunings *tunings) {
     float torque_scale = 1.0f;
     float boost = nos.TORQUE_BOOST();
@@ -46,7 +61,6 @@ float Physics::Info::NosBoost(const nos &nos, const Tunings *tunings) {
     return boost + torque_scale;
 }
 
-// Credits: Brawltendo
 float Physics::Info::NosCapacity(const nos &nos, const Tunings *tunings) {
     float capacity = nos.NOS_CAPACITY();
     if (tunings) {
@@ -55,7 +69,6 @@ float Physics::Info::NosCapacity(const nos &nos, const Tunings *tunings) {
     return capacity;
 }
 
-// Credits: Brawltendo
 float Physics::Info::InductionRPM(const engine &engine, const induction &induction, const Tunings *tunings) {
     float spool = induction.SPOOL();
 
@@ -75,7 +88,6 @@ float Physics::Info::InductionRPM(const engine &engine, const induction &inducti
     return spool * (engine.RED_LINE() - engine.IDLE()) + engine.IDLE();
 }
 
-// Credits: Brawltendo
 float Physics::Info::InductionBoost(const engine &engine, const induction &induction, float rpm, float spool, const Tunings *tunings, float *psi) {
     if (psi) {
         *psi = 0.0f;
@@ -118,7 +130,6 @@ float Physics::Info::InductionBoost(const engine &engine, const induction &induc
     return induction_boost * spool;
 }
 
-// Credits: Brawltendo
 float Physics::Info::Torque(const Attrib::Gen::engine &engine, float rpm) {
     float rpm_min = engine.IDLE();
     float rpm_max = engine.MAX_RPM();
@@ -135,20 +146,17 @@ float Physics::Info::Torque(const Attrib::Gen::engine &engine, float rpm) {
     return 0.0f;
 }
 
-// Credits: Brawltendo
 float Physics::Info::WheelDiameter(const tires &tires, bool front) {
     int axle = front ? 0 : 1;
     float diameter = INCH2METERS(tires.RIM_SIZE().At(axle));
     return diameter + tires.SECTION_WIDTH().At(axle) * 0.001f * 2.0f * (tires.ASPECT_RATIO().At(axle) * 0.01f);
 }
 
-// float Physics::Info::MaxInductedTorque(const Attrib::Gen::pvehicle &pvehicle, float &atrpm, const Tunings *tunings) {
-// 	Attrib::Gen::engine engine(pvehicle.engine(), 0, NULL);
-// 	Attrib::Gen::induction induction(pvehicle.induction());
-// 	return MaxInductedTorque(engine, induction, atrpm, tunings);
-// }
+float Physics::Info::WheelDiameter(const pvehicle &pvehicle, bool front) {
+    const tires t(pvehicle.tires(0), 0, nullptr);
+    return WheelDiameter(t, front);
+}
 
-// Credits: Brawltendo
 // TODO not matching on GC yet
 bool Physics::Info::ShiftPoints(const transmission &transmission, const engine &engine, const induction &induction, float *shift_up,
                                 float *shift_down, unsigned int numpts) {
@@ -216,7 +224,6 @@ bool Physics::Info::ShiftPoints(const transmission &transmission, const engine &
     return true;
 }
 
-// Credits: Brawltendo
 Mps Physics::Info::Speedometer(const Attrib::Gen::transmission &transmission, const Attrib::Gen::engine &engine, const Attrib::Gen::tires &tires,
                                Rpm rpm, GearID gear, const Tunings *tunings) {
     float speed = 0.0f;
@@ -237,4 +244,26 @@ Mps Physics::Info::Speedometer(const Attrib::Gen::transmission &transmission, co
     }
 
     return speed;
+}
+
+float Physics::Info::Redline(const engine &engine) {
+    return engine.RED_LINE();
+}
+
+float Physics::Info::Redline(const pvehicle &pvehicle) {
+    const engine eng(pvehicle.engine(0), 0, nullptr);
+    return Redline(eng);
+}
+
+unsigned int Physics::Info::NumFowardGears(const transmission &transmission) {
+    unsigned int num_ratios = transmission.Num_GEAR_RATIO();
+    if (num_ratios < 3) {
+        return 0;
+    }
+    return num_ratios - 2;
+}
+
+unsigned int Physics::Info::NumFowardGears(const pvehicle &pvehicle) {
+    const transmission trans(pvehicle.transmission(0), 0, nullptr);
+    return NumFowardGears(trans);
 }
