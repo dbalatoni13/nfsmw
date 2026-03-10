@@ -113,9 +113,12 @@ static int DoFEngPrintf(FEString* text, const char* fmt, va_list argList) {
 int FEPrintf(FEString* text, const char* fmt, ...) {
     va_list argList;
     va_start(argList, fmt);
-    int nchars = DoFEngPrintf(text, fmt, argList);
-    va_end(argList);
-    return nchars;
+    if (text != nullptr) {
+        if (text->string != nullptr) {
+            return DoFEngPrintf(text, fmt, argList);
+        }
+    }
+    return 0;
 }
 
 int FEPrintf(const char* pkg_name, int object_hash, const char* fmt, ...) {
@@ -152,12 +155,11 @@ int FEPrintf(const char* pkg_name, int object_hash, const char* fmt, ...) {
 
 int FEPrintf(const char* pkg_name, FEObject* obj, const char* fmt, ...) {
     va_list argList;
+    va_start(argList, fmt);
 
     if (obj == nullptr) {
         return -1;
     }
-
-    va_start(argList, fmt);
 
     if (obj->Type != FE_Group) {
         if (obj->Type != FE_String) {
