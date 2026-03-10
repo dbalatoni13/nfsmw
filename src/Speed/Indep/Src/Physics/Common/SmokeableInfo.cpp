@@ -149,9 +149,10 @@ bool SceneryModel::GetSceneryTransform(UMath::Matrix4 &matrix) const {
         bounds->GetPivot(pivot);
         UMath::QuaternionToMatrix4(mSpawner->GetOrientation(), matrix);
         UMath::Rotate(pivot, matrix, UMath::Vector4To3(matrix.v3));
-        UMath::Addxyz(matrix.v3, mSpawner->GetPosition(), matrix.v3);
+        VU0_v4addxyz(matrix.v3, mSpawner->GetPosition(), matrix.v3);
+        return true;
     }
-    return bounds != nullptr;
+    return false;
 }
 
 void SceneryModel::OnEndSimulation() {
