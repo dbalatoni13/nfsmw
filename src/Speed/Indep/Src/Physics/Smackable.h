@@ -69,7 +69,7 @@ class Smackable : public PhysicsObject,
     }
 
     static ISimable *Construct(Sim::Param params);
-    static bool SimplifySort(Smackable *lhs, Smackable *rhs);
+    static bool SimplifySort(const Smackable *lhs, const Smackable *rhs);
     static bool TrySimplify();
 
     Smackable(const UMath::Matrix4 &matrix, const Attrib::Gen::smackable &attributes,
@@ -83,7 +83,7 @@ class Smackable : public PhysicsObject,
     HMODEL GetModelHandle() const override;
     const IModel *GetModel() const override;
     IModel *GetModel() override;
-    float DistanceToView() override;
+    float DistanceToView() const override;
     void OnCollision(const Sim::Collision::Info &cinfo) override;
     bool OnExplosion(const UMath::Vector3 &normal, const UMath::Vector3 &position, float dT, IExplosion *explosion) override;
     bool SetDynamicData(const EventSequencer::System *system, EventDynamicData *data) override;

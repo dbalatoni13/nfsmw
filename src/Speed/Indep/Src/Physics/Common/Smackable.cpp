@@ -330,7 +330,7 @@ HMODEL Smackable::GetModelHandle() const {
 const IModel *Smackable::GetModel() const { return mModel; }
 IModel *Smackable::GetModel() { return mModel; }
 
-float Smackable::DistanceToView() {
+float Smackable::DistanceToView() const {
     if (mModel == nullptr) {
         return 0.0f;
     }
@@ -553,7 +553,10 @@ Smackable::Manager::~Manager() {}
 
 bool Smackable::Manager::OnTask(HSIMTASK htask, float dT) {
     UTL::Collections::Listable< Smackable, 160 >::Sort(Smackable::SimplifySort);
-    return Sim::Object::OnTask(htask, dT);
+    if (static_cast< unsigned int >(Smackable_RigidCount) > 0xa) {
+        TrySimplify();
+    }
+    return true;
 }
 
 Behavior *RBSmackable::Construct(const BehaviorParams &parms) {
@@ -629,8 +632,14 @@ bool SmackableAvoidable::OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) {
     return mModel->OnUpdateAvoidable(pos, sweep);
 }
 
-bool Smackable::SimplifySort(Smackable *lhs, Smackable *rhs) {
-    return lhs->mSimplifyWeight < rhs->mSimplifyWeight;
+bool Smackable::SimplifySort(const Smackable *lhs, const Smackable *rhs) {
+    if (lhs->mSimplifyWeight > rhs->mSimplifyWeight) {
+        return true;
+    }
+    if (lhs->mSimplifyWeight < rhs->mSimplifyWeight) {
+        return false;
+    }
+    return lhs->mOwner < rhs->mOwner;
 }
 
 bool Smackable::IsRequired() const { return false; }

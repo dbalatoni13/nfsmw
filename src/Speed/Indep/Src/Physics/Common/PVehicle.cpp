@@ -2,6 +2,8 @@
 
 #include "Speed/Indep/Src/FE/FECustomizationRecord.h"
 #include "Speed/Indep/Src/Generated/Events/EPerfectLaunch.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IAudible.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEffects.h"
@@ -11,6 +13,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 
+extern Attrib::StringKey BEHAVIOR_MECHANIC_AI;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_AUDIO;
 
 const ISimable *PVehicle::GetSimable() const { return static_cast<const ISimable *>(this); }
@@ -262,3 +265,58 @@ float PVehicle::GetPerfectLaunch() const {
     }
     return 0.5f;
 }
+
+bool PVehicle::IsLoading() const {
+    if (mRenderable != nullptr && !mRenderable->IsRenderable()) {
+        return true;
+    }
+    if (mAudible != nullptr && !mAudible->IsAudible()) {
+        return true;
+    }
+    if (mArticulation != nullptr) {
+        IVehicle *trailer = mArticulation->GetTrailer();
+        if (trailer != nullptr) {
+            return trailer->IsLoading();
+        }
+    }
+    return false;
+}
+
+void PVehicle::ReloadBehaviors() {
+    UMath::Vector3 pos;
+    UMath::Matrix4 mat;
+    IRigidBody *rb;
+    GetSimable()->QueryInterface(&rb);
+    const UMath::Vector3 &rbpos = rb->GetPosition();
+    pos.x = rbpos.x;
+    pos.y = rbpos.y;
+    pos.z = rbpos.z;
+    GetSimable()->QueryInterface(&rb);
+    rb->GetMatrix4(mat);
+    LoadBehaviors(pos, mat);
+}
+
+void PVehicle::SetAnimating(bool animate) {
+    if (static_cast< unsigned int >(animate) != static_cast< unsigned int >(mAnimating)) {
+        mBehaviorOverrides.clear();
+        mAnimating = animate;
+        ReloadBehaviors();
+        UCrc32 mechanic(BEHAVIOR_MECHANIC_AI);
+        PauseBehavior(mechanic, animate);
+        if (mCollisionBody != nullptr) {
+            mCollisionBody->SetAnimating(mAnimating);
+        }
+    }
+}
+
+void PVehicle::SetBehaviorOverride(UCrc32 mechanic, UCrc32 behavior) {
+    mBehaviorOverrides[mechanic] = behavior;
+    mOverrideDirty = true;
+}
+
+void PVehicle::RemoveBehaviorOverride(UCrc32 mechanic) {
+    mBehaviorOverrides.erase(mechanic);
+    mOverrideDirty = true;
+}
+
+

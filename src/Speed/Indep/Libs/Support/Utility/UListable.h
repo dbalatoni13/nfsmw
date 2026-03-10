@@ -35,7 +35,7 @@ template <typename T, int U> class Listable {
     };
 
     typedef void (*ForEachFunc)(pointer);
-    typedef bool (*ComparisonFunc)(pointer, pointer);
+    typedef bool (*ComparisonFunc)(const_pointer, const_pointer);
 
   protected:
     Listable() {
