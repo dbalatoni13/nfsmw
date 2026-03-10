@@ -111,6 +111,9 @@ struct SceneryOverrideInfo {
     void DisableRendering() {
         SetExcludeFlags(0x8000, 0x8000);
     }
+
+    void AssignOverrides();
+    void AssignOverrides(ScenerySectionHeader *section_header);
 };
 
 SceneryOverrideInfo *GetSceneryOverrideInfo(int index);
