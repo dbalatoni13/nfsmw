@@ -344,7 +344,7 @@ bHash32 SmokeableSpawner::GetRenderMesh() const {
             }
         }
     }
-    return bHash32(0u);
+    return bHash32(0x0C7395A8u);
 }
 
 void SmokeableSpawner::ShowInstance() const {
@@ -426,7 +426,8 @@ int SmokeableSpawnerPack::Unloader(bChunk *chunk) {
 bChunkLoader SmokeableSpawnerPack::mLoader(0x34027, SmokeableSpawnerPack::Loader, SmokeableSpawnerPack::Unloader);
 
 bool SceneryModel::IsHidden() const {
-    return !mInstanceVisible && Sim::Model::IsHidden();
+    bool visible = mInstanceVisible || !Sim::Model::IsHidden();
+    return !visible;
 }
 
 bool SceneryModel::IsExcluded(unsigned int scenery_exclusion_flag) const {
