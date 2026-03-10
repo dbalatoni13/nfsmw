@@ -248,10 +248,10 @@ void FEngGetTopLeft(FEObject* object, float& x, float& y) {
                 if (characters == nullptr) {
                     characters = pStr->GetString();
                 }
-                float width = pFont->GetTextWidth(characters, object->Flags);
-                float height = pFont->GetTextHeight(characters, pStr->Leading, object->Flags, pStr->MaxWidth, (pStr->Format >> 4) & 1);
-                x = pos.x + pFont->CalculateXOffset(pStr->Format, size.x * width);
-                y = pos.y + pFont->CalculateYOffset(pStr->Format, size.y * height);
+                float width = size.x * pFont->GetTextWidth(characters, object->Flags);
+                float height = size.y * pFont->GetTextHeight(characters, pStr->Leading, object->Flags, pStr->MaxWidth, (pStr->Format >> 4) & 1);
+                x = pos.x + pFont->CalculateXOffset(pStr->Format, width);
+                y = pos.y + pFont->CalculateYOffset(pStr->Format, height);
             }
             break;
         }
@@ -283,10 +283,10 @@ void FEngSetTopLeft(FEObject* object, float x, float y) {
             FEngFont* pFont = FindFont(object->Handle);
             if (pFont != nullptr) {
                 FEString* pStr = static_cast<FEString*>(object);
-                float width = pFont->GetTextWidth(pStr->GetString(), 0);
-                float height = pFont->GetTextHeight(pStr->GetString(), pStr->Leading, 0, 0, false);
-                pos.x = x - pFont->CalculateXOffset(pStr->Format, size.x * width);
-                pos.y = y - pFont->CalculateYOffset(pStr->Format, size.y * height);
+                float width = size.x * pFont->GetTextWidth(pStr->GetString(), 0);
+                float height = size.y * pFont->GetTextHeight(pStr->GetString(), pStr->Leading, 0, 0, false);
+                pos.x = x - pFont->CalculateXOffset(pStr->Format, width);
+                pos.y = y - pFont->CalculateYOffset(pStr->Format, height);
             }
             break;
         }
@@ -335,12 +335,10 @@ void FEngGetBottomRight(FEObject* object, float& x, float& y) {
                 if (characters == nullptr) {
                     characters = pStr->GetString();
                 }
-                float width = pFont->GetTextWidth(characters, 0);
-                float scaledWidth = size.x * width;
-                float height = pFont->GetTextHeight(characters, pStr->Leading, 0, 0, false);
-                float scaledHeight = size.y * height;
-                x = pos.x + pFont->CalculateXOffset(pStr->Format, scaledWidth) + scaledWidth;
-                y = pos.y + pFont->CalculateYOffset(pStr->Format, scaledHeight) + scaledHeight;
+                float width = size.x * pFont->GetTextWidth(characters, 0);
+                float height = size.y * pFont->GetTextHeight(characters, pStr->Leading, 0, 0, false);
+                x = pos.x + pFont->CalculateXOffset(pStr->Format, width) + width;
+                y = pos.y + pFont->CalculateYOffset(pStr->Format, height) + height;
             }
             break;
         }
@@ -411,12 +409,10 @@ void FEngGetCenter(FEObject* object, float& x, float& y) {
                 if (characters == nullptr) {
                     characters = pStr->GetString();
                 }
-                float width = pFont->GetTextWidth(characters, 0);
-                float height = pFont->GetTextHeight(characters, pStr->Leading, 0, 0, false);
-                float scaledWidth = size.x * width;
-                float scaledHeight = size.y * height;
-                x = scaledWidth * 0.5f + pos.x + pFont->CalculateXOffset(pStr->Format, scaledWidth);
-                y = scaledHeight * 0.5f + pos.y + pFont->CalculateYOffset(pStr->Format, scaledHeight);
+                float width = size.x * pFont->GetTextWidth(characters, 0);
+                float height = size.y * pFont->GetTextHeight(characters, pStr->Leading, 0, 0, false);
+                x = width * 0.5f + pos.x + pFont->CalculateXOffset(pStr->Format, width);
+                y = height * 0.5f + pos.y + pFont->CalculateYOffset(pStr->Format, height);
             }
             break;
         }
@@ -449,12 +445,10 @@ void FEngSetCenter(FEObject* object, float x, float y) {
             if (pFont != nullptr) {
                 FEString* pStr = static_cast<FEString*>(object);
                 FEVector3& size = data->Size;
-                float width = pFont->GetTextWidth(pStr->GetString(), 0);
-                float scaledWidth = size.x * width;
-                float height = pFont->GetTextHeight(pStr->GetString(), pStr->Leading, 0, 0, false);
-                float scaledHeight = size.y * height;
-                pos.x = x - (scaledWidth * 0.5f + pFont->CalculateXOffset(pStr->Format, scaledWidth));
-                pos.y = y - (scaledHeight * 0.5f + pFont->CalculateYOffset(pStr->Format, scaledHeight));
+                float width = size.x * pFont->GetTextWidth(pStr->GetString(), 0);
+                float height = size.y * pFont->GetTextHeight(pStr->GetString(), pStr->Leading, 0, 0, false);
+                pos.x = x - (width * 0.5f + pFont->CalculateXOffset(pStr->Format, width));
+                pos.y = y - (height * 0.5f + pFont->CalculateYOffset(pStr->Format, height));
             }
             break;
         }
