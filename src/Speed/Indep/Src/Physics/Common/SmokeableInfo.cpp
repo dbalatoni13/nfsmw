@@ -293,12 +293,12 @@ void SmokeableSpawner::EndianSwap() {
     bEndianSwap32(&mPosition.y);
     bEndianSwap32(&mPosition.z);
     bEndianSwap32(&mPosition.w);
-    bEndianSwap32(&mModel);
-    bEndianSwap32(&mCollisionName);
-    bEndianSwap32(&mAttributes);
-    bEndianSwap32(&mSceneryOverrideInfoNumber);
-    bEndianSwap32(&mUniqueID);
-    bEndianSwap32(&mExcludeFlags);
+    bPlatEndianSwap(&mModel);
+    bPlatEndianSwap(&mCollisionName);
+    bPlatEndianSwap(&mAttributes);
+    bPlatEndianSwap(&mSceneryOverrideInfoNumber);
+    bPlatEndianSwap(&mUniqueID);
+    bPlatEndianSwap(&mExcludeFlags);
 }
 
 void SmokeableSpawner::OnUnload() {
