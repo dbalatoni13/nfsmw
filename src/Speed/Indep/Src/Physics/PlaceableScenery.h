@@ -32,7 +32,7 @@ class PlaceableScenery : public HeirarchyModel, public IPlaceableScenery {
 
     // IModel
     void ReleaseModel() override;
-    bool OnRemoveOffScreen(float time);
+    bool OnRemoveOffScreen(float time) override;
 };
 
 #endif

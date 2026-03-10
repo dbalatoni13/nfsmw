@@ -276,7 +276,7 @@ void PVehicle::Launch() {
 }
 
 float PVehicle::GetPerfectLaunch() const {
-    if (!IsStaging() && mPerfectLaunch.IsSet()) {
+    if (!IsStaging() && 0.5f < mPerfectLaunch.Time) {
         return mPerfectLaunch.Amount;
     }
     return 0.5f;

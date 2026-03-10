@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/smackable.h"
 #include "Speed/Indep/Src/Interfaces/IBody.h"
 #include "Speed/Indep/Src/Interfaces/SimModels/ITriggerableModel.h"
@@ -16,14 +17,22 @@ struct SmackableAvoidable;
 
 class HeirarchyModel : public Sim::Model, public IBody, public ITriggerableModel, public Attrib::Gen::smackable {
   public:
+    void *operator new(std::size_t size) { return gFastMem.Alloc(size, nullptr); }
+    void operator delete(void *mem, std::size_t size) {
+        if (mem) { gFastMem.Free(mem, size, nullptr); }
+    }
+
     HeirarchyModel(bHash32 rendermesh, const CollisionGeometry::Bounds *geometry, UCrc32 nodename,
-                   IModel *parent, const Attrib::Collection *attribs, const ModelHeirarchy *heirarchy,
-                   unsigned int child_index, bool hidden);
+                   HeirarchyModel *parent, const Attrib::Collection *attribs, const ModelHeirarchy *heirarchy,
+                   unsigned int child_index, bool visible);
 
     ~HeirarchyModel() override;
 
     void OnBeginDraw() override;
-    bool OnRemoveOffScreen(float time);
+    void OnEndDraw() override;
+    bool OnDraw(Sim::Packet *service) override;
+    void OnBeginSimulation() override;
+    void OnEndSimulation() override;
 
     void GetTransform(UMath::Matrix4 &matrix) const override;
     void GetLinearVelocity(UMath::Vector3 &velocity) const override;
@@ -41,14 +50,13 @@ class HeirarchyModel : public Sim::Model, public IBody, public ITriggerableModel
     void PlaceTrigger(const UMath::Matrix4 &mat, bool retrigger) override;
 
     void OnProcessFrame(float dT) override;
-    virtual bool OnUpdateAvoidable();
-    bool OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep);
-    void OnEndSimulation() override;
+    virtual bool OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep);
+    virtual bool OnRemoveOffScreen(float time);
 
+    int FindHeirarchyChild(const UCrc32 &nodename) const;
     void DisableTrigger();
     void SetTrigger(const UMath::Matrix4 &matrix, bool enable);
     void RemoveTrigger();
-    void SetAvoidable(const UMath::Matrix4 &matrix, bool enable);
     void SetCameraAvoidable(bool enable);
 
     SmackableTrigger *GetTrigger() {

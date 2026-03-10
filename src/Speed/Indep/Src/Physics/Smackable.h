@@ -166,7 +166,7 @@ class SmackableAvoidable : public AIAvoidable {
         if (mem) { gFastMem.Free(mem, size, nullptr); }
     }
     SmackableAvoidable(HeirarchyModel *model);
-    virtual ~SmackableAvoidable() {}
+    virtual ~SmackableAvoidable();
     bool OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) override;
 
   private:
