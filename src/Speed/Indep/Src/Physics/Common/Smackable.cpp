@@ -321,20 +321,21 @@ bool Smackable::InView() const {
 bool Smackable::IsRenderable() const { return mModel != nullptr; }
 
 HMODEL Smackable::GetModelHandle() const {
-    if (mModel == nullptr) {
-        return nullptr;
+    HMODEL result = nullptr;
+    if (mModel != nullptr) {
+        result = mModel->GetInstanceHandle();
     }
-    return mModel->GetInstanceHandle();
+    return result;
 }
 
 const IModel *Smackable::GetModel() const { return mModel; }
 IModel *Smackable::GetModel() { return mModel; }
 
 float Smackable::DistanceToView() const {
-    if (mModel == nullptr) {
-        return 0.0f;
+    if (mModel != nullptr) {
+        return mModel->DistanceToView();
     }
-    return mModel->DistanceToView();
+    return 0.0f;
 }
 
 void Smackable::Kill() {
@@ -645,4 +646,4 @@ bool Smackable::SimplifySort(const Smackable *lhs, const Smackable *rhs) {
 bool Smackable::IsRequired() const { return false; }
 void Smackable::HidePart(const UCrc32 &name) {}
 void Smackable::ShowPart(const UCrc32 &name) {}
-bool Smackable::IsPartVisible(const UCrc32 &name) const { return false; }
+bool Smackable::IsPartVisible(const UCrc32 &name) const { return true; }

@@ -113,11 +113,13 @@ void SceneryModel::GetTransform(UMath::Matrix4 &matrix) const {
 void SceneryModel::InitScene() {
     UMath::Matrix4 scenery_matrix;
 
-    Sim::Model::ReleaseModel();
+    ReleaseChildModels();
+    StopEffects();
     Sim::Model::EndDraw();
     Sim::Model::EndSimulation();
     Sim::Model::ReleaseSequencer();
     EndOverride();
+    SetCausality(0, 0.0f);
 
     if (GetSceneryTransform(scenery_matrix)) {
         SetTrigger(scenery_matrix, true);
@@ -197,8 +199,8 @@ void SceneryModel::RestoreScene() {
 void SceneryModel::ReleaseModel() {
     Sim::Model::EndDraw();
     Sim::Model::EndSimulation();
-    Sim::Model::ReleaseModel();
-    DisableTrigger();
+    StopEffects();
+    HeirarchyModel::DisableTrigger();
 }
 
 void SceneryModel::InitSystem() {

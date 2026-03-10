@@ -251,7 +251,7 @@ void PVehicle::Launch() {
         if (mDriverClass == DRIVER_HUMAN) {
             if (mPerfectLaunch.Amount > 0.0f) {
                 mPerfectLaunch.Set(10.0f);
-                new EPerfectLaunch(GetOwnerHandle(), mPerfectLaunch.Amount);
+                new EPerfectLaunch(ISimable::GetInstanceHandle(), mPerfectLaunch.Amount);
             }
         } else {
             mPerfectLaunch.Clear();
