@@ -298,14 +298,8 @@ bool PVehicle::IsLoading() const {
 void PVehicle::ReloadBehaviors() {
     UMath::Vector3 pos;
     UMath::Matrix4 mat;
-    IRigidBody *rb;
-    static_cast<ISimable *>(this)->QueryInterface(&rb);
-    const UMath::Vector3 &rbpos = rb->GetPosition();
-    pos.x = rbpos.x;
-    pos.y = rbpos.y;
-    pos.z = rbpos.z;
-    static_cast<ISimable *>(this)->QueryInterface(&rb);
-    rb->GetMatrix4(mat);
+    pos = static_cast<ISimable *>(this)->GetRigidBody()->GetPosition();
+    static_cast<ISimable *>(this)->GetRigidBody()->GetMatrix4(mat);
     LoadBehaviors(pos, mat);
 }
 
