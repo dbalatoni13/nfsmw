@@ -65,6 +65,6 @@ SmackableTrigger::~SmackableTrigger() {
     mTrigger->fEvents = nullptr;
     WCollisionAssets::Get().RemoveTrigger(mTrigger);
     delete mTrigger;
-    mEventData = nullptr;
     mTrigger = nullptr;
+    mEventData = nullptr;
 }
