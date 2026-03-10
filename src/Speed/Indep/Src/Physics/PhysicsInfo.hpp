@@ -17,6 +17,8 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/transmission.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
+class _type_list;
+
 namespace Physics {
 namespace Info {
 

@@ -246,6 +246,33 @@ Mps Physics::Info::Speedometer(const Attrib::Gen::transmission &transmission, co
     return speed;
 }
 
+float Physics::Info::MaxTorque(const engine &eng, float &atrpm) {
+    float torque = 0.0f;
+    int max_pt = 0;
+    unsigned int num_torque = eng.Num_TORQUE();
+
+    if (num_torque == 0) {
+        atrpm = torque;
+    } else {
+        for (unsigned int i = 0; i < eng.Num_TORQUE(); i++) {
+            float pt_torque = eng.TORQUE(i);
+            if (pt_torque > torque) {
+                max_pt = i;
+                torque = pt_torque;
+            }
+        }
+
+        atrpm = eng.IDLE();
+        if (num_torque > 1) {
+            float rpm_ratio = static_cast<float>(max_pt) / static_cast<float>(num_torque - 1);
+            atrpm = rpm_ratio * (eng.MAX_RPM() - eng.IDLE()) + atrpm;
+        }
+
+        atrpm = UMath::Clamp(atrpm, eng.IDLE(), eng.RED_LINE());
+    }
+    return torque;
+}
+
 float Physics::Info::Redline(const engine &engine) {
     return engine.RED_LINE();
 }
