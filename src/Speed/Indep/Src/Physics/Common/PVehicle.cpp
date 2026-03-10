@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/Src/FE/FECustomizationRecord.h"
 #include "Speed/Indep/Src/Generated/Events/EPerfectLaunch.hpp"
+#include "Speed/Indep/Src/Generated/Events/EPlayerAirborne.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAudible.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
@@ -480,5 +481,92 @@ void PVehicle::CheckOffWorld() {
         WCollisionMgr mgr(0, 3);
         const UMath::Vector3 &pos = static_cast<ISimable *>(this)->GetPosition();
         mOffWorld = !mgr.GetWorldHeightAtPointRigorous(pos, worldHeight, nullptr);
+    }
+}
+
+void PVehicle::OnTaskSimulate(float dT) {
+    UCrc32 mechDraw(BEHAVIOR_MECHANIC_DRAW);
+    bool visible = false;
+    if (IsBehaviorActive(mechDraw) && mRenderable != nullptr && mRenderable->IsRenderable()) {
+        visible = true;
+    }
+    if (visible) {
+            mOffScreenTime = mOffScreenTime + dT;
+            mOnScreenTime = 0.0f;
+        } else {
+            mOffScreenTime = 0.0f;
+            mOnScreenTime = mOnScreenTime + dT;
+        }
+    } else {
+        mOnScreenTime = 0.0f;
+        mOffScreenTime = 0.0f;
+    }
+    CommitBehaviorOverrides();
+    DoDebug(dT);
+    if (mCollisionBody != nullptr) {
+        if (mCollisionBody->IsModeling() == mIsModeling) {
+            mIsModeling = mCollisionBody->IsModeling();
+        } else {
+            mIsModeling = mCollisionBody->IsModeling();
+            if (!mIsModeling) {
+                OnDisableModeling();
+            } else {
+                OnEnableModeling();
+            }
+        }
+    }
+    if (mPhysicsMode != PHYSICS_MODE_INACTIVE) {
+        UpdateLocalVelocities();
+        CheckOffWorld();
+    }
+    if (mPhysicsMode != PHYSICS_MODE_SIMULATED) {
+        if (mPhysicsMode == PHYSICS_MODE_EMULATED) {
+            mTimeInAir = 0.0f;
+            if (mSuspension == nullptr) {
+                mWheelsOnGround = 0;
+            } else {
+                mWheelsOnGround = mSuspension->GetNumWheels();
+            }
+            mSpeedometer = mAbsSpeed;
+            return;
+        }
+        mWheelsOnGround = 0;
+        mSpeedometer = 0.0f;
+        mTimeInAir = 0.0f;
+        return;
+    }
+    UCrc32 mechSusp(BEHAVIOR_MECHANIC_SUSPENSION);
+    bool sleeping = false;
+    if (mCollisionBody->IsSleeping() && IsStaging()) {
+        sleeping = true;
+    }
+    PauseBehavior(mechSusp, sleeping);
+    if (mTranny == nullptr) {
+        mSpeedometer = mAbsSpeed;
+    } else if (!mTranny->IsGearChanging()) {
+        mSpeedometer = mTranny->GetSpeedometer();
+    }
+    unsigned int num_onground;
+    if (mSuspension == nullptr) {
+        mTimeInAir = mTimeInAir + dT;
+    } else {
+        num_onground = mSuspension->GetNumWheelsOnGround();
+        if (num_onground == 0 && mWheelsOnGround != 0 && mDriverClass == DRIVER_HUMAN) {
+            new EPlayerAirborne(ISimable::GetInstanceHandle());
+        }
+        mWheelsOnGround = num_onground;
+        if (mSuspension != nullptr && num_onground != 0) {
+            mTimeInAir = 0.0f;
+        } else {
+            mTimeInAir = mTimeInAir + dT;
+        }
+    }
+    if (IsStaging()) {
+        DoStaging(dT);
+    } else {
+        mPerfectLaunch.Tick(dT);
+        if (!mPerfectLaunch.IsSet()) {
+            mPerfectLaunch.Clear();
+        }
     }
 }

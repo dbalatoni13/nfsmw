@@ -415,7 +415,7 @@ bool Smackable::CanRetrigger() const {
     if (mCollisionBody == nullptr) {
         return false;
     }
-    const WWorldPos &wpos = const_cast< Smackable * >(this)->GetWPos();
+    const WWorldPos &wpos = GetWPos();
     if (!wpos.OnValidFace()) {
         return false;
     }
