@@ -5,7 +5,9 @@
 #pragma once
 #endif
 
+#include <cstddef>
 #include "./CarInfo.hpp"
+#include "./DamageZones.h"
 #include "Interfaces/IVehicleDamageBehaviour.h"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/eLight.hpp"
@@ -378,13 +380,13 @@ class CarRenderInfo {
 
     void Refresh();
 
-    void SetPlayerDamage(const Sim::Collision::Info &damageInfo);
+    void SetPlayerDamage(const DamageZone::Info &damageInfo);
 
     void SetCarDamageState(bool on, unsigned int startID, unsigned int endID);
 
     void SetCarGlassDamageState(bool on, CarReplacementTexID replacementId, unsigned int undamageHash, unsigned int damageHash);
 
-    void SetDamageInfo(const Sim::Collision::Info &damageInfo);
+    void SetDamageInfo(const DamageZone::Info &damageInfo);
 
     unsigned int FindCarPart(int slotId);
 
@@ -502,13 +504,13 @@ class CarRenderInfo {
     CARPART_LOD mMaxLodLevel;                                      // offset 0x1614, size 0x4
     CARPART_LOD mMinReflectionLodLevel;                            // offset 0x1618, size 0x4
     CarPartCuller TheCarPartCuller;                                // offset 0x161C, size 0x134
-    COLLISION_INFO *mDamageZoneInfo;                               // offset 0x1750, size 0x4
+    DamageZone::Info mDamageZoneInfo;                               // offset 0x1750, size 0x4
     float mDeltaTime;                                              // offset 0x1754, size 0x4
     float mRadius;                                                 // offset 0x1758, size 0x4
     Attrib::Gen::ecar mAttributes;                                 // offset 0x175C, size 0x14
     bool mFlashing;                                                // offset 0x1770, size 0x1
     float mFlashInterval;                                          // offset 0x1774, size 0x4
-    COLLISION_INFO *mDamageInfoCache;                              // offset 0x1778, size 0x4
+    DamageZone::Info mDamageInfoCache;                              // offset 0x1778, size 0x4
     bool mWheelWobbleEnabled[4];                                   // offset 0x177C, size 0x4
     bool mMirrorLeftWheels;                                        // offset 0x178C, size 0x1
 };
