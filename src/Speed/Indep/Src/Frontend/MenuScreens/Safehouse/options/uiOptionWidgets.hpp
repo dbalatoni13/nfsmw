@@ -10,49 +10,56 @@
 
 // 0x5C
 struct OMAudio : public IconOption {
-    OMAudio(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash);
+    OMAudio(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
+        : IconOption(tex_hash, name_hash, desc_hash) {}
     ~OMAudio() override;
     void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
 };
 
 // 0x5C
 struct OMVideo : public IconOption {
-    OMVideo(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash);
+    OMVideo(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
+        : IconOption(tex_hash, name_hash, desc_hash) {}
     ~OMVideo() override;
     void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
 };
 
 // 0x5C
 struct OMGameplay : public IconOption {
-    OMGameplay(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash);
+    OMGameplay(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
+        : IconOption(tex_hash, name_hash, desc_hash) {}
     ~OMGameplay() override;
     void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
 };
 
 // 0x5C
 struct OMPlayer : public IconOption {
-    OMPlayer(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash);
+    OMPlayer(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
+        : IconOption(tex_hash, name_hash, desc_hash) {}
     ~OMPlayer() override;
     void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
 };
 
 // 0x5C
 struct OMController : public IconOption {
-    OMController(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash);
+    OMController(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
+        : IconOption(tex_hash, name_hash, desc_hash) {}
     ~OMController() override;
     void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
 };
 
 // 0x5C
 struct OMEATrax : public IconOption {
-    OMEATrax(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash);
+    OMEATrax(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
+        : IconOption(tex_hash, name_hash, desc_hash) {}
     ~OMEATrax() override;
     void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
 };
 
 // 0x5C
 struct OMCredits : public IconOption {
-    OMCredits(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash);
+    OMCredits(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
+        : IconOption(tex_hash, name_hash, desc_hash) {}
     ~OMCredits() override;
     void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
 };

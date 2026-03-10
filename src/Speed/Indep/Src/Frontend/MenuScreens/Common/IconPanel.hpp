@@ -32,7 +32,7 @@ struct IconPanel {
     bool bReactToInput;         // offset 0x30, size 0x1
 
     IconPanel(const char* pkg_name, const char* master, const char* fe_button, const char* scroll_region, bool wrap);
-    virtual ~IconPanel();
+    virtual ~IconPanel() {}
 
     virtual FEImage* AddOption(IconOption* option);
     virtual void Act(unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2);

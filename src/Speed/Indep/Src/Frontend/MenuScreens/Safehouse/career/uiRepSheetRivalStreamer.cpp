@@ -15,7 +15,8 @@ void eUnloadStreamingTexture(unsigned int* textures, int count);
 void eLoadStreamingTexturePack(const char* name, void (*callback)(void*), void* param, int flags);
 void eUnloadStreamingTexturePack(const char* name);
 void eWaitForStreamingTexturePackLoading(const char* name);
-void GetTextureInfo(unsigned int hash, int, int);
+struct TextureInfo;
+TextureInfo* GetTextureInfo(unsigned int hash, int, int);
 
 extern bool gTrackMapStreamFETextureLoading;
 

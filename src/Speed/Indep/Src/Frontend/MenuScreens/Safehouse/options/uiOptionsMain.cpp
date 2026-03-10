@@ -39,19 +39,16 @@ void UIOptionsMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsig
     if (msg == 0x911AB364) {
         FEDatabase->ClearGameMode(eFE_GAME_MODE_OPTIONS);
         StorePrevNotification(msg, pobj, param1, param2);
-        if (!mCalledFromPauseMenu) {
-            if (!FEDatabase->IsOnlineMode() && !FEDatabase->IsLANMode()) {
-                return;
-            }
-            const unsigned long FEObj_leavescreen = 0x587C018B;
-            cFEng::Get()->QueuePackageMessage(FEObj_leavescreen, GetPackageName(), 0);
+        if (mCalledFromPauseMenu) {
+            FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
             return;
         }
-        FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
+        if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
+            const unsigned long FEObj_leavescreen = 0x587C018B;
+            cFEng::Get()->QueuePackageMessage(FEObj_leavescreen, GetPackageName(), 0);
+        }
         return;
-    }
-
-    if (msg == 0x0C407210) {
+    } else if (msg == 0x0C407210) {
         if (FEngIsScriptRunning(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34)) {
             return;
         }
@@ -63,15 +60,15 @@ void UIOptionsMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsig
             return;
         }
         if (PrevButtonMessage == 0x911AB364) {
-            if (!mCalledFromPauseMenu) {
-                if (!FEDatabase->IsLANMode() && !FEDatabase->IsOnlineMode()) {
-                    ExitOptions("MainMenu.fng");
-                    return;
-                }
-                ExitOptions(gOnlineMainMenu);
+            if (mCalledFromPauseMenu) {
+                cFEng::Get()->QueuePackageSwitch("Pause_Main.fng", 0, 0, 0);
                 return;
             }
-            cFEng::Get()->QueuePackageSwitch("Pause_Main.fng", 0, 0, 0);
+            if (FEDatabase->IsLANMode() || FEDatabase->IsOnlineMode()) {
+                ExitOptions(gOnlineMainMenu);
+            } else {
+                ExitOptions("MainMenu.fng");
+            }
             return;
         }
         if (PrevButtonMessage == 0x0C407210) {
@@ -146,10 +143,10 @@ void UIOptionsMain::Setup() {
 }
 
 void UIOptionsMain::ExitOptions(const char* nextPackage) {
-    if (!FEDatabase->IsOptionsDirty() || !IsMemcardEnabled) {
-        cFEng::Get()->QueuePackageSwitch(nextPackage, 0, 0, false);
-    } else {
+    if (FEDatabase->IsOptionsDirty() && IsMemcardEnabled) {
         MemcardEnter(GetPackageName(), nextPackage, 0x400B3, 0, 0, 0, 0);
+    } else {
+        cFEng::Get()->QueuePackageSwitch(nextPackage, 0, 0, false);
     }
 }
 

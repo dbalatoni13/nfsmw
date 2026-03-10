@@ -154,7 +154,7 @@ class MenuScreen {
 
     // virtual enum eMenuSoundTriggers NotifySoundMessage(unsigned long msg, enum eMenuSoundTriggers maybe) {}
 
-    const char *GetPackageName() {}
+    const char *GetPackageName() { return PackageFilename; }
 
     // FEPackage *GetPackage() {}
 

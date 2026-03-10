@@ -44,13 +44,7 @@ inline unsigned long FEString::GetLabelHash() {
     return LabelHash;
 }
 
-struct ObjectVisibilitySetter : public FEObjectCallback {
-    bool Visible; // offset 0x4, size 0x1
-
-    inline ObjectVisibilitySetter(bool visible) : Visible(visible) {}
-    inline ~ObjectVisibilitySetter() override {}
-    bool Callback(FEObject* obj) override;
-};
+#include "Speed/Indep/Src/Frontend/FEObjectCallbacks.hpp"
 
 FEObject* FEngFindObject(const char* pkg_name, unsigned int obj_hash) {
     if (pkg_name != nullptr) {
