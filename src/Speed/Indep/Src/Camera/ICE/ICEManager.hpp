@@ -10,6 +10,10 @@
 
 struct ICEGroup {
     // total size: 0x14
+    void FlushAllocatedTracks();
+    struct ICETrack *GetTrack(int n);
+    struct ICETrack *GetTrack(char *s);
+
     unsigned int Handle;               // offset 0x0, size 0x4
     int Context;                       // offset 0x4, size 0x4
     int NumTracks;                     // offset 0x8, size 0x4
@@ -18,6 +22,12 @@ struct ICEGroup {
 
 // total size: 0x19F0
 struct ICETrack : public bTNode<ICETrack> {
+    void PlatEndianSwap();
+    int GetContext();
+    int GetKeyNumber(float f_param);
+    float GetParameter();
+    struct ICEData *GetCameraData(float *p_start, float *p_end, float *p_current);
+
     ICEGroup *Group;  // offset 0x8, size 0x4
     float Start;      // offset 0xC, size 0x4
     float Length;     // offset 0x10, size 0x4
@@ -29,18 +39,26 @@ struct ICETrack : public bTNode<ICETrack> {
 
 // total size: 0xC
 struct ICEShakeGroup {
+    void FlushAllocatedTracks();
+    struct ICEShakeTrack *GetTrack(int n);
+
     int NumTracks;                                 // offset 0x0, size 0x4
     struct bTList<struct ICEShakeTrack> TrackList; // offset 0x4, size 0x8
 };
 
 // total size: 0x18
 struct ICEShakeData {
+    void InitData();
+    void PlatEndianSwap();
+
     float q[3]; // offset 0x0, size 0xC
     float p[3]; // offset 0xC, size 0xC
 };
 
 // total size: 0xB60
 struct ICEShakeTrack : public bTNode<ICEShakeTrack> {
+    void PlatEndianSwap();
+
     ICEShakeGroup *Group;   // offset 0x8, size 0x4
     short NumKeys;          // offset 0xC, size 0x2
     char Allocated;         // offset 0xE, size 0x1
@@ -51,16 +69,36 @@ struct ICEShakeTrack : public bTNode<ICEShakeTrack> {
 // total size: 0x80
 class ICEManager {
   public:
+    ICEManager();
+
     void Init();
     void Resolve();
     ICEData *GetCameraData(unsigned int scene_hash, int camTrack);
+    ICEShakeTrack *GetShakeTrack(unsigned int shake_type);
+    int GetCameraIndex(float f_param, ICETrack *track);
+    float GetParameter();
+    float GetTimerSeconds();
+    bool RefreshCameraSplines();
+    void Update();
+    int GetNumSceneCameraTrack(unsigned int scene_hash);
+    void ChooseReplayCamera();
 
     bool IsEditorOn() {
         // TODO maybe negated?
         return nState >= 1;
     }
 
+    void FixAnimElevation(ICE::Vector3 *position);
+
   private:
+    float GetParameter(int i, ICETrack *track);
+    float GetIntervalSize(ICEData *data, ICETrack *track);
+    ICETrack *ChooseGenericCamera();
+    ICEGroup *GetNisCameraGroup(unsigned int scene_hash);
+    ICEGroup *GetFmvCameraGroup(unsigned int scene_hash);
+    ICEGroup *GetReplayCameraGroup(unsigned int category_hash);
+    ICEGroup *GetGenericCameraGroup(unsigned int name_hash);
+
     ICEGroup *pNisCameras;              // offset 0x0, size 0x4
     ICEGroup *pFmvCameras;              // offset 0x4, size 0x4
     ICEGroup *pReplayCameras;           // offset 0x8, size 0x4

@@ -1,0 +1,6 @@
+#include "Speed/Indep/Src/Camera/Camera.cpp"
+#include "Speed/Indep/Src/Camera/CameraMover.cpp"
+#include "Speed/Indep/Src/Camera/ICE/ICEData.cpp"
+#include "Speed/Indep/Src/Camera/ICE/ICEMover.cpp"
+#include "Speed/Indep/Src/Camera/ICE/ICEReplay.cpp"
+#include "Speed/Indep/Src/Camera/ICE/ICEManager.cpp"

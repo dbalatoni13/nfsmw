@@ -1,0 +1,1557 @@
+#include "CameraMover.hpp"
+#include "CameraAI.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/Src/Misc/Table.hpp"
+#include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
+#include "Speed/Indep/Src/World/CarInfo.hpp"
+#include "Speed/Indep/Src/World/TrackStreamer.hpp"
+#include "Speed/Indep/bWare/Inc/bFunk.hpp"
+
+extern int WeHaveCheckedIfJR2ServerExists;
+extern int DisablePrecullerCounter;
+extern int JR2ServerExists;
+extern int LastUpdateTimeCaffeine;
+extern int LastUpdateTimeJR2;
+extern int RealTime;
+extern int DisableCommunication;
+extern int TrackStreamerRemoteCaffeinating;
+extern int bStreamingPositionFromICE;
+extern Timer RealTimer;
+extern bool TrackCopCameraMover_IdleSim;
+
+bool OutsidePovType(int pov_type);
+bool RenderCarPovType(int pov_type, bool look_back);
+bool RenderCarPovTypeRaw(int pov_type, int look_back) __asm__("RenderCarPovType__Fib");
+void espSetCameraPositionFix(const struct LongVector *eye, const struct LongVector *target);
+int bFunkDoesServerExist(const char *server_name);
+
+extern bVector4 CameraNoiseHandheldFrequency;
+extern bVector4 CameraNoiseHandheldAmplitude;
+extern bVector4 CameraNoiseChopperFrequency;
+extern bVector4 CameraNoiseChopperAmplitude;
+extern bVector4 CameraNoiseSpeedFrequency;
+extern bVector4 CameraNoiseSpeedAmplitude;
+extern bVector4 CameraNoiseTerrainFrequency;
+extern bVector4 CameraNoiseTerrainAmplitude;
+extern bVector4 CameraNoiseSpeedData[5];
+extern float CameraAccelerationCurve[5];
+extern bVector2 CameraSpeedHugData[5];
+extern Graph gDriftSpeed;
+extern CarTypeInfo *GetCarTypeInfoFromHash(unsigned int car_type_hash);
+extern float RVMnearz;
+extern float RVMfarz;
+extern bVector3 RVMOffsetInCar;
+extern float TrackCarIsoZoomDistance[3];
+extern float TrackCarLookOffsetX[3];
+extern float TrackCarLookOffsetY[3];
+extern float TrackCarLookOffsetZ[3];
+void ApplyCameraShake(int nViewID, bMatrix4 *pMatrix);
+void HideEverySingleHud();
+void SplineSeek(tCubic1D *p, float time, float fDClamp, float fDDClamp) __asm__("SplineSeek__6cPointP8tCubic1Dfff");
+namespace CameraAI {
+void MaybeKillJumpCam(unsigned int id);
+void MaybeKillPursuitCam(unsigned int id);
+}
+
+struct LongVector {
+    int x;
+    int y;
+    int z;
+};
+
+static void MakeLongVector(LongVector *dest, const bVector3 *src, float scale) {
+    dest->x = static_cast<int>(src->x * scale);
+    dest->y = static_cast<int>(src->y * scale);
+    dest->z = static_cast<int>(src->z * scale);
+}
+
+static float SampleFloatTable(const float *data, int count, float value, float min_value, float max_value) {
+    if (count <= 0) {
+        return 0.0f;
+    }
+    if (value <= min_value) {
+        return data[0];
+    }
+    if (value >= max_value) {
+        return data[count - 1];
+    }
+
+    {
+        float scaled = (value - min_value) * (static_cast<float>(count - 1) / (max_value - min_value));
+        int index = static_cast<int>(bFloor(scaled));
+        float blend = scaled - static_cast<float>(index);
+
+        if (index < 0) {
+            index = 0;
+        }
+        if (index >= count - 1) {
+            index = count - 2;
+        }
+
+        return data[index] + (data[index + 1] - data[index]) * blend;
+    }
+}
+
+static bVector2 SampleVector2Table(const bVector2 *data, int count, float value, float min_value, float max_value) {
+    if (count <= 0) {
+        return bVector2(0.0f, 0.0f);
+    }
+    if (value <= min_value) {
+        return data[0];
+    }
+    if (value >= max_value) {
+        return data[count - 1];
+    }
+
+    {
+        float scaled = (value - min_value) * (static_cast<float>(count - 1) / (max_value - min_value));
+        int index = static_cast<int>(bFloor(scaled));
+        float blend = scaled - static_cast<float>(index);
+        bVector2 sample;
+
+        if (index < 0) {
+            index = 0;
+        }
+        if (index >= count - 1) {
+            index = count - 2;
+        }
+
+        sample.x = data[index].x + (data[index + 1].x - data[index].x) * blend;
+        sample.y = data[index].y + (data[index + 1].y - data[index].y) * blend;
+        return sample;
+    }
+}
+
+bool OutsidePovType(int pov_type) {
+    return (static_cast<unsigned int>(pov_type - 2) < 3) || pov_type == 6 || pov_type == 5;
+}
+
+bool RenderCarPovType(int pov_type, bool look_back) {
+    return (static_cast<unsigned int>(pov_type - 2) < 3) || (pov_type == 1 && !look_back) || pov_type == 6 || pov_type == 5;
+}
+
+static void ResetCubic1DState(tCubic1D *cubic) {
+    cubic->Val = cubic->ValDesired;
+    cubic->dVal = cubic->dValDesired;
+    cubic->state = 0;
+}
+
+static void ResetCubic3DState(tCubic3D *cubic) {
+    ResetCubic1DState(&cubic->x);
+    ResetCubic1DState(&cubic->y);
+    ResetCubic1DState(&cubic->z);
+}
+
+CameraAnchor::CameraAnchor(int model)
+    : mVelMag(0.0f), //
+      mTopSpeed(0.0f), //
+      mModel(0), //
+      mWorldID(0), //
+      mSurface(), //
+      mCollisionDamping(0.0f), //
+      mDrift(0.0f), //
+      mGroundCollision(0.0f), //
+      mObjectCollision(0.0f), //
+      mIsNosEngaged(false), //
+      mIsBrakeEngaged(false), //
+      mIsDragRace(false), //
+      mIsOverRev(false), //
+      mIsTouchingGround(false), //
+      mIsVehicleDestroyed(false), //
+      mIsGearChanging(false), //
+      mIsCloseToRoadBlock(false), //
+      mZoom(1.0f), //
+      mModelAttributes(Attrib::FindCollection(Attrib::Gen::ecar::ClassKey(), 0xeec2271a), 0, nullptr), //
+      mCameraInfoAttributes(Attrib::FindCollection(Attrib::Gen::camerainfo::ClassKey(), 0xeec2271a), 0, nullptr) {
+    mVelocity.x = 0.0f;
+    mVelocity.y = 0.0f;
+    mVelocity.z = 0.0f;
+    mGeomPos.x = 0.0f;
+    mGeomPos.y = 0.0f;
+    mGeomPos.z = 0.0f;
+    mDimension.x = 0.0f;
+    mDimension.y = 0.0f;
+    mDimension.z = 0.0f;
+    mAccel.x = 0.0f;
+    mAccel.y = 0.0f;
+    mAccel.z = 0.0f;
+    mPOV.Type = 3;
+    mPOV.Angle = bDegToAng(mCameraInfoAttributes.ANGLE(0));
+    mPOV.Lag = mCameraInfoAttributes.LAG(0);
+    mPOV.Height = mCameraInfoAttributes.HEIGHT(0);
+    mPOV.LatOffset = mCameraInfoAttributes.LATOFFSET(0);
+    mPOV.Fov = bDegToAng(mCameraInfoAttributes.FOV(0));
+    mPOV.Stiffness = mCameraInfoAttributes.STIFFNESS(0);
+    mPOV.AllowTilting = mCameraInfoAttributes.TILTING(0);
+    SetModel(model);
+    bIdentity(&mGeomRot);
+}
+
+CameraAnchor::~CameraAnchor() {}
+
+void CameraAnchor::SetModel(int model) {
+    if (mModel != model) {
+        const char *model_name = "";
+        CarTypeInfo *info = GetCarTypeInfoFromHash(model);
+
+        if (info != nullptr) {
+            model_name = info->CarTypeName;
+        }
+
+        mModel = model;
+        mModelAttributes.Change(Attrib::FindCollectionWithDefault(Attrib::Gen::ecar::ClassKey(), Attrib::StringToLowerCaseKey(model_name)));
+    }
+}
+
+POV *CameraAnchor::GetPov(int pov_type) {
+    Attrib::Key attrib_key;
+
+    mPOV.Type = static_cast<short>(pov_type);
+
+    switch (pov_type) {
+        case 0:
+            attrib_key = 0x585517f3;
+            break;
+        case 1:
+            attrib_key = 0xd74c1435;
+            break;
+        case 2:
+            attrib_key = 0x0c2da793;
+            break;
+        case 3:
+            attrib_key = 0xccf03cb3;
+            break;
+        case 4:
+            attrib_key = 0x10204a90;
+            break;
+        case 5:
+            attrib_key = 0x4b675dc8;
+            break;
+        case 6:
+            attrib_key = 0xd76a6fad;
+            break;
+        default:
+            mPOV.Type = 3;
+            mCameraInfoAttributes.Change(Attrib::FindCollection(Attrib::Gen::camerainfo::ClassKey(), 0xeec2271a));
+            attrib_key = 0;
+            break;
+    }
+
+    if (attrib_key != 0) {
+        const Attrib::RefSpec *refspec = reinterpret_cast<const Attrib::RefSpec *>(mModelAttributes.GetAttributePointer(attrib_key, 0));
+
+        if (refspec == nullptr) {
+            refspec = reinterpret_cast<const Attrib::RefSpec *>(Attrib::DefaultDataArea(sizeof(Attrib::RefSpec)));
+        }
+
+        mCameraInfoAttributes.ChangeWithDefault(*refspec);
+    }
+
+    {
+        float zoom = bMax(1.0f, mZoom);
+        unsigned int index = eGetCurrentViewMode() == 3;
+
+        mPOV.Angle = bDegToAng(mCameraInfoAttributes.ANGLE(index));
+        mPOV.Lag = mCameraInfoAttributes.LAG(index) / zoom;
+        mPOV.Height = mCameraInfoAttributes.HEIGHT(index);
+        mPOV.LatOffset = mCameraInfoAttributes.LATOFFSET(index);
+        mPOV.Fov = bDegToAng(mCameraInfoAttributes.FOV(index) * zoom);
+        mPOV.Stiffness = mCameraInfoAttributes.STIFFNESS(index);
+        mPOV.AllowTilting = static_cast<short>(mCameraInfoAttributes.TILTING(index));
+    }
+
+    return &mPOV;
+}
+
+void CameraAnchor::Update(float dT, const bMatrix4 &matrix, const bVector3 &velocity, const bVector3 &forward) {
+    float old_vel_mag = mVelMag;
+    float dist = bDistBetween(&mGeomPos, reinterpret_cast<const bVector3 *>(&matrix.v3));
+    float vel_mag_sq;
+
+    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(&matrix), *reinterpret_cast<Mtx44 *>(&mGeomRot));
+    mAccel.x = 0.0f;
+    mAccel.y = 0.0f;
+    mAccel.z = 0.0f;
+
+    mGeomPos.x = matrix.v3.x;
+    mGeomPos.y = matrix.v3.y;
+    mGeomPos.z = matrix.v3.z;
+    mVelocity = velocity;
+
+    vel_mag_sq = forward.x * forward.x + forward.y * forward.y + forward.z * forward.z;
+    if (vel_mag_sq > 0.0f) {
+        mVelMag = bSqrt(vel_mag_sq);
+    } else {
+        mVelMag = 0.0f;
+    }
+
+    if (dT > 0.0f && dist / dT < 200.0f) {
+        bVector3 accel_local;
+
+        accel_local.x = (mVelMag - old_vel_mag) / dT;
+        accel_local.y = 0.0f;
+        accel_local.z = 0.0f;
+        bMulMatrix(&mAccel, &mGeomRot, &accel_local);
+    } else {
+        mAccel.x = 0.0f;
+        mAccel.y = 0.0f;
+        mAccel.z = 0.0f;
+    }
+}
+
+void RenderCameraMovers(eView *view) {
+    CameraMover *head = view->CameraMoverList.GetHead();
+    int no_camera_mover = head == view->CameraMoverList.EndOfList();
+    CameraMover *camera_mover = nullptr;
+
+    if (!no_camera_mover) {
+        camera_mover = head;
+    }
+    if (camera_mover != nullptr) {
+        camera_mover = nullptr;
+        if (!no_camera_mover) {
+            camera_mover = head;
+        }
+        camera_mover->Render(view);
+    }
+}
+
+void CameraMoverRestartRace() {
+    WeHaveCheckedIfJR2ServerExists = 0;
+    CameraAI::Reset();
+
+    for (int view_id = 1; view_id < 4; view_id++) {
+        eView *view = eGetView(view_id, false);
+
+        if (view == nullptr) {
+            continue;
+        }
+
+        CameraMover *camera_mover = view->GetCameraMover();
+        if (camera_mover) {
+            camera_mover->ResetState();
+        }
+    }
+}
+
+Camera *GetCurrentCamera() {
+    Camera *camera = 0;
+
+    if (&eViews[1] != 0) {
+        camera = eViews[1].pCamera;
+    }
+
+    if (camera != 0) {
+        return camera;
+    }
+
+    return 0;
+}
+
+void UpdateCameraMovers(float dT) {
+    static bool sHavePrevPosition = false;
+    static bVector3 sPrevPosition;
+
+    for (int view_id = 0; view_id < 22; view_id++) {
+        eView *view = eGetView(view_id, false);
+        CameraMover *camera_mover = view->GetCameraMover();
+
+        if (camera_mover != nullptr) {
+            camera_mover->Update(dT);
+        }
+    }
+
+    if (WeHaveCheckedIfJR2ServerExists == 0) {
+        JR2ServerExists = bFunkDoesServerExist("JR2Server");
+        WeHaveCheckedIfJR2ServerExists = 1;
+    }
+
+    {
+        eView *view = eGetView(1, false);
+        Camera *camera = view->GetCamera();
+
+        if (JR2ServerExists != 0 && camera != nullptr) {
+            if (bAbs(RealTime - LastUpdateTimeJR2) > 0x10) {
+                LastUpdateTimeJR2 = RealTime;
+                camera->CommunicateWithJollyRancher(const_cast<char *>("Player1Camera"));
+            }
+        }
+
+        if (TrackStreamerRemoteCaffeinating != 0 && DisableCommunication == 0 && camera != nullptr) {
+            if (bAbs(RealTime - LastUpdateTimeCaffeine) > 0x10) {
+                LongVector eye;
+                LongVector target;
+                bVector3 scaled_velocity = *camera->GetVelocityPosition();
+                bVector3 look = *camera->GetPosition() - scaled_velocity;
+
+                LastUpdateTimeCaffeine = RealTime;
+                scaled_velocity.x *= 0.01f;
+                scaled_velocity.y *= 0.01f;
+                scaled_velocity.z *= 0.01f;
+
+                MakeLongVector(&eye, camera->GetPosition(), 100.0f);
+                MakeLongVector(&target, &look, 100.0f);
+                espSetCameraPositionFix(&eye, &target);
+
+                if (!sHavePrevPosition) {
+                    sPrevPosition = *camera->GetPosition();
+                    sHavePrevPosition = true;
+                }
+
+                if (bDistBetween(&sPrevPosition, camera->GetPosition()) > 0.1f) {
+                    sPrevPosition = *camera->GetPosition();
+                }
+            }
+        }
+    }
+
+    {
+        bool set_any_positions = false;
+
+        for (int view_id = 1; view_id < 3; view_id++) {
+            eView *view = eGetView(view_id, false);
+
+            if (view->Active != 0) {
+                Camera *camera = view->GetCamera();
+                CameraMover *camera_mover = view->GetCameraMover();
+
+                if (camera != nullptr && camera_mover != nullptr) {
+                    bVector3 pos = *camera->GetPosition();
+
+                    if (!set_any_positions) {
+                        TheTrackStreamer.ClearStreamingPositions();
+                        set_any_positions = true;
+                    }
+
+                    if (bStreamingPositionFromICE != 0) {
+                        if (INIS::Exists() && INIS::Get()->GetStartLocation() != nullptr) {
+                            bConvertFromBond(pos, *reinterpret_cast<const bVector3 *>(INIS::Get()->GetStartLocation()));
+                        }
+                    } else {
+                        IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+
+                        if (player != nullptr && player->GetSimable() != nullptr && player->GetSimable()->GetRigidBody() != nullptr) {
+                            IRigidBody *body = player->GetSimable()->GetRigidBody();
+
+                            bConvertFromBond(pos, reinterpret_cast<const bVector3 &>(body->GetPosition()));
+                        }
+                    }
+
+                    TheTrackStreamer.SetStreamingPosition(view_id - 1, &pos);
+                }
+            }
+        }
+    }
+}
+
+bool DoesCameraTypeDisablePreculler(CameraMoverTypes type) {
+    if (type == CM_DEBUG_WORLD) {
+        return true;
+    }
+    return type == CM_TRACK_CAR;
+}
+
+CameraMover::CameraMover(int view_id, CameraMoverTypes type)
+    : mWPos(0.025f) {
+    mCollider = WCollider::Create(0, WCollider::kColliderShape_Sphere, 0x1C, 0);
+    Type = type;
+    RenderDash = 0;
+    ViewID = view_id;
+    Enabled = 0;
+    pView = nullptr;
+    pCamera = nullptr;
+    fAccumulatedClearance = 0.0f;
+    fAccumulatedAdjust = 0.0f;
+    fSavedAdjust = 0.0f;
+    vSavedForward.z = 0.0f;
+    vSavedForward.x = 0.0f;
+    vSavedForward.y = 0.0f;
+    if (view_id == -1) {
+    } else {
+        pView = eGetView(view_id, false);
+        pCamera = pView->GetCamera();
+        pCamera->SetFarZ(12000.0f);
+        RenderDash = pCamera->GetRenderDash();
+        Enable();
+    }
+
+    if (DoesCameraTypeDisablePreculler(Type)) {
+        DisablePrecullerCounter++;
+    }
+}
+
+CameraMover::~CameraMover() {
+    WCollider::Destroy(mCollider);
+    if (DoesCameraTypeDisablePreculler(Type)) {
+        DisablePrecullerCounter--;
+    }
+    Disable();
+}
+
+void CameraMover::Update(float dT) {}
+
+void CameraMover::Render(eView *view) {}
+
+CameraAnchor *CameraMover::GetAnchor() {
+    return nullptr;
+}
+
+bool CameraMover::OutsidePOV() {
+    return true;
+}
+
+bool CameraMover::RenderCarPOV() {
+    return true;
+}
+
+void CameraMover::Enable() {
+    if (Enabled == 0) {
+        Enabled = 1;
+        if (Camera::StopUpdating == 0) {
+            pCamera->SetRenderDash(RenderDash);
+        }
+        pView->AttachCameraMover(this);
+        pCamera->SetNearZ(0.5f);
+    }
+}
+
+void CameraMover::Disable() {
+    if (Enabled != 0) {
+        Enabled = 0;
+        RenderDash = pCamera->GetRenderDash();
+        pView->UnattachCameraMover(this);
+    }
+}
+
+bool CameraMover::OnWCollide(const WCollisionMgr::WorldCollisionInfo &cInfo, const UMath::Vector3 &cPoint, void *userdata) {
+    if (userdata) {
+        bVector3 vPoint;
+        eSwizzleWorldVector(cPoint, vPoint);
+    }
+    return true;
+}
+
+bool CameraMover::IsSomethingInBetween(const UMath::Vector4 &start, const UMath::Vector4 &end) {
+    UMath::Vector4 seg[2];
+    WCollisionMgr::WorldCollisionInfo cInfo;
+    WCollisionMgr collision_mgr(0, 3);
+
+    seg[0] = start;
+    seg[1] = end;
+    seg[0].y += 0.1f;
+    seg[1].y += 0.1f;
+    return collision_mgr.CheckHitWorld(seg, cInfo, 3) != 0;
+}
+
+bool CameraMover::IsSomethingInBetween(const bVector3 *start, const bVector3 *end) {
+    bVector3 bond_start;
+    bVector3 bond_end;
+    UMath::Vector4 world_start;
+    UMath::Vector4 world_end;
+
+    bConvertToBond(bond_start, *start);
+    bConvertToBond(bond_end, *end);
+    world_start.x = bond_start.x;
+    world_start.y = bond_start.y;
+    world_start.z = bond_start.z;
+    world_start.w = 1.0f;
+    world_end.x = bond_end.x;
+    world_end.y = bond_end.y;
+    world_end.z = bond_end.z;
+    world_end.w = 1.0f;
+    return IsSomethingInBetween(world_start, world_end);
+}
+
+float CameraMover::MinDistToWall() {
+    return 0.7f;
+}
+
+unsigned short CameraMover::GetLookbackAngle() {
+    return 0;
+}
+
+void CameraMover::ResetState() {}
+
+unsigned int CameraMover::GetAnchorID() {
+    CameraAnchor *anchor = GetAnchor();
+    if (anchor) {
+        return anchor->GetWorldID();
+    }
+    return 0;
+}
+
+int CameraMover::IsHoodCamera() {
+    return false;
+}
+
+bVector3 *CameraMover::GetTarget() {
+    return pCamera->GetTarget();
+}
+
+void CameraMover::HandheldNoise(bMatrix4 *world_to_camera, float f_scale, bool useWorldTimer) {
+    if (f_scale <= 0.0f) {
+        return;
+    }
+
+    bVector4 v_frequency = CameraNoiseHandheldFrequency;
+    bVector4 v_magnitude = CameraNoiseHandheldAmplitude;
+
+    v_magnitude.x *= f_scale;
+    v_magnitude.y *= f_scale;
+    v_magnitude.z *= f_scale;
+    v_magnitude.w *= f_scale;
+
+    pCamera->SetNoiseFrequency1(&v_frequency);
+    pCamera->SetNoiseAmplitude1(&v_magnitude);
+    pCamera->ApplyNoise(world_to_camera, useWorldTimer ? WorldTimer.GetSeconds() : RealTimer.GetSeconds(), 1.0f);
+}
+
+void CameraMover::ChopperNoise(bMatrix4 *world_to_camera, float f_scale, bool useWorldTimer) {
+    if (f_scale <= 0.0f) {
+        return;
+    }
+
+    const IVehicle::List &vehicles = IVehicle::GetList(VEHICLE_ALL);
+
+    for (IVehicle::List::const_iterator iter = vehicles.begin(); iter != vehicles.end(); ++iter) {
+        IVehicle *vehicle = *iter;
+
+        if (vehicle != nullptr && vehicle->GetVehicleClass() == VehicleClass::CHOPPER) {
+            bVector3 bpos;
+            bVector3 dir;
+            float distance;
+
+            eSwizzleWorldVector(vehicle->GetPosition(), bpos);
+            bSub(&dir, &bpos, pCamera->GetPosition());
+            dir.z = 0.0f;
+            distance = bLength(&dir);
+
+            if (distance < 100.0f) {
+                float intensity = f_scale * (1.0f - distance * 0.01f);
+                bVector4 v_frequency;
+                bVector4 v_magnitude;
+                float time;
+
+                bScale(&v_frequency, &CameraNoiseChopperFrequency, intensity);
+                bScale(&v_magnitude, &CameraNoiseChopperAmplitude, intensity);
+                pCamera->SetNoiseFrequency1(&v_frequency);
+                pCamera->SetNoiseAmplitude1(&v_magnitude);
+                time = useWorldTimer ? WorldTimer.GetSeconds() : RealTimer.GetSeconds();
+                pCamera->ApplyNoise(world_to_camera, time, 1.0f);
+            }
+        }
+    }
+}
+
+void CameraMover::TerrainVelocityNoise(bMatrix4 *world_to_camera, CameraAnchor *car, float speed_scale, float terrain_scale) {
+    if (car == nullptr) {
+        return;
+    }
+
+    float speed_amount = speed_scale * car->GetVelMag();
+    float terrain_amount = terrain_scale * car->GetSurface().CAMERA_NOISE(0);
+    float terrain_mix = car->GetSurface().CAMERA_NOISE(1);
+    bVector3 accel = *car->GetAccel();
+    const bMatrix4 *matrix = car->GetMatrix();
+    float accel_forward = accel.x * matrix->v0.x + accel.y * matrix->v1.x + accel.z * matrix->v2.x;
+    bVector4 speed_frequency = CameraNoiseSpeedFrequency;
+    bVector4 speed_amplitude = CameraNoiseSpeedAmplitude;
+    bVector4 terrain_frequency = CameraNoiseTerrainFrequency;
+    bVector4 terrain_amplitude = CameraNoiseTerrainAmplitude;
+
+    if (speed_amount > 0.0f) {
+        int speed_index = bClamp(static_cast<int>(speed_amount * 0.05f), 0, 4);
+        bVector4 speed_sample = CameraNoiseSpeedData[speed_index];
+
+        terrain_amount += bAbs(accel_forward) * 0.25f;
+        speed_amount = speed_sample.x * speed_scale + bAbs(accel_forward) * 0.5f;
+    }
+
+    if (car->IsDragRace()) {
+        speed_amount *= 0.75f;
+    }
+
+    if (car->IsOverRev()) {
+        speed_amount += 1.0f;
+        terrain_amount *= 0.5f;
+    }
+
+    if (car->IsNosEngaged() && car->GetVelMag() > 1.0f) {
+        speed_amount = 1.5f;
+        terrain_amount = 1.0f;
+    }
+
+    if (car->IsBrakeEngaged() && car->GetVelMag() > 1.0f) {
+        speed_amount = 1.5f;
+        terrain_amount = 0.0f;
+    }
+
+    if (!RenderCarPOV()) {
+        speed_amount *= 0.5f;
+        terrain_amount *= 0.5f;
+    }
+
+    terrain_amount *= terrain_mix;
+    bScale(&speed_frequency, &speed_frequency, terrain_amount);
+    bScale(&speed_amplitude, &speed_amplitude, speed_amount);
+    bScale(&terrain_frequency, &terrain_frequency, terrain_mix);
+    bScale(&terrain_amplitude, &terrain_amplitude, terrain_scale * terrain_amount);
+
+    pCamera->SetNoiseFrequency1(&speed_frequency);
+    pCamera->SetNoiseAmplitude1(&speed_amplitude);
+    pCamera->SetNoiseFrequency2(&terrain_frequency);
+    pCamera->SetNoiseAmplitude2(&terrain_amplitude);
+    pCamera->ApplyNoise(world_to_camera, WorldTimer.GetSeconds(), 1.0f);
+}
+
+void CameraMover::ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *look, unsigned short bank) {
+    bMatrix4 axis_rotation;
+    bVector3 axis;
+    bVector3 new_up(0.0f, 0.0f, 1.0f);
+
+    bSub(&axis, look, eye);
+    bNormalize(&axis, &axis);
+    eCreateAxisRotationMatrix(&axis_rotation, axis, bank);
+    eMulVector(up, &axis_rotation, &new_up);
+}
+
+void CameraMover::IsoProjectionMatrix(bMatrix4 *pMatrix, bVector3 *pEye, bVector3 *pLook, bVector2 *pProjection) {
+    bVector3 vUp(-pMatrix->v0.y, -pMatrix->v1.y, -pMatrix->v2.y);
+    bMatrix4 mWorldToCamera;
+    bMatrix4 mCameraToWorld;
+    bVector3 vNewLookCameraSpace;
+    bVector3 vNewLookWorldSpace;
+
+    eCreateLookAtMatrix(&mWorldToCamera, *pEye, *pLook, vUp);
+    eInvertTransformationMatrix(&mCameraToWorld, &mWorldToCamera);
+    eMulVector(&vNewLookCameraSpace, &mWorldToCamera, pLook);
+    vNewLookCameraSpace.x -= vNewLookCameraSpace.z * pProjection->x;
+    vNewLookCameraSpace.y -= vNewLookCameraSpace.z * pProjection->y;
+    eMulVector(&vNewLookWorldSpace, &mCameraToWorld, &vNewLookCameraSpace);
+    eCreateLookAtMatrix(pMatrix, *pEye, vNewLookWorldSpace, vUp);
+}
+
+double CameraMover::AdjustHeightAroundCar(const bVector3 *car_pos, bVector3 *pEye, bVector3 *pForward) {
+    double adjust = 0.0;
+    float min_height = car_pos->z + 1.0f;
+
+    if (pEye->z < min_height) {
+        adjust = min_height - pEye->z;
+        pEye->z = min_height;
+    }
+
+    if (pForward != nullptr && pForward->z < 0.5f) {
+        pForward->z = 0.5f;
+    }
+
+    return adjust;
+}
+
+int CameraMover::MinGapCars(bMatrix4 *pMatrix, bVector3 *pLook, bVector3 *pForward) {
+    bMatrix4 inv_matrix;
+    bVector3 projection;
+    int adjusted = 0;
+    int iterations = 0;
+    double height_adjust;
+
+    eInvertTransformationMatrix(&inv_matrix, pMatrix);
+    do {
+        height_adjust = AdjustHeightAroundCar(reinterpret_cast<const bVector3 *>(&pMatrix->v3), pLook, pForward);
+        if (height_adjust <= 0.0) {
+            break;
+        }
+
+        adjusted = 1;
+        iterations++;
+        pLook->z += static_cast<float>(height_adjust);
+    } while (iterations < 16);
+
+    vSavedForward = *pForward;
+    fSavedAdjust = pLook->z;
+    eMulVector(&projection, pMatrix, pForward);
+
+    if (projection.z > 0.0f) {
+        bVector2 iso(projection.x / projection.z, projection.y / projection.z);
+        IsoProjectionMatrix(pMatrix, pLook, pForward, &iso);
+    } else {
+        adjusted = 0;
+    }
+
+    return adjusted;
+}
+
+int CameraMover::MinGapTopology(bMatrix4 *pMatrix, bVector3 *pLook) {
+    bMatrix4 inv_matrix;
+    bVector3 eye;
+    bVector3 look_camera_space;
+
+    eInvertTransformationMatrix(&inv_matrix, pMatrix);
+    eye.x = pMatrix->v3.x;
+    eye.y = pMatrix->v3.y;
+    eye.z = pMatrix->v3.z;
+
+    if (eye.z < pLook->z + 0.5f) {
+        eye.z = pLook->z + 0.5f;
+    }
+
+    eMulVector(&look_camera_space, pMatrix, pLook);
+    if (look_camera_space.z <= 0.0f) {
+        return 0;
+    }
+
+    {
+        bVector2 projection(look_camera_space.x / look_camera_space.z, look_camera_space.y / look_camera_space.z);
+        IsoProjectionMatrix(pMatrix, &eye, pLook, &projection);
+    }
+
+    return 1;
+}
+
+void CameraMover::FovCubicInit(tCubic1D *cubic) {
+    float fov = static_cast<float>(pCamera->GetFov()) + static_cast<float>(pCamera->GetVelocityFov()) * (1.0f / 30.0f);
+    float fov_velocity = static_cast<float>(pCamera->GetVelocityFov()) * cubic->duration;
+
+    cubic->SetVal(fov);
+    cubic->SetdVal(fov_velocity);
+}
+
+void CameraMover::EyeCubicInit(tCubic3D *eye, bMatrix4 *matrix, bVector3 *target) {
+    bVector3 value;
+    bVector4 dval;
+    bScaleAdd(&value, pCamera->GetPosition(), pCamera->GetVelocityPosition(), 1.0f / 30.0f);
+
+    if (matrix != nullptr) {
+        bMulMatrix(&value, matrix, &value);
+    }
+
+    eye->SetVal(&value);
+
+    dval.x = pCamera->GetVelocityPosition()->x;
+    dval.y = pCamera->GetVelocityPosition()->y;
+    dval.z = pCamera->GetVelocityPosition()->z;
+
+    if (target != nullptr) {
+        dval.x -= target->x;
+        dval.y -= target->y;
+        dval.z -= target->z;
+    }
+
+    dval.x *= eye->x.duration;
+    dval.y *= eye->x.duration;
+    dval.z *= eye->x.duration;
+    dval.w = 0.0f;
+
+    if (matrix != nullptr) {
+        bMulMatrix(&dval, matrix, &dval);
+    }
+
+    eye->SetdVal(reinterpret_cast<bVector3 *>(&dval));
+}
+
+void CameraMover::LookCubicInit(tCubic3D *look, bMatrix4 *matrix, bVector3 *target) {
+    bVector3 value;
+    bVector4 dval;
+    bScaleAdd(&value, pCamera->GetTarget(), pCamera->GetVelocityTarget(), 1.0f / 30.0f);
+
+    if (matrix != nullptr) {
+        bMulMatrix(&value, matrix, &value);
+    }
+
+    look->SetVal(&value);
+
+    dval.x = pCamera->GetVelocityTarget()->x;
+    dval.y = pCamera->GetVelocityTarget()->y;
+    dval.z = pCamera->GetVelocityTarget()->z;
+
+    if (target != nullptr) {
+        dval.x -= target->x;
+        dval.y -= target->y;
+        dval.z -= target->z;
+    }
+
+    dval.x *= look->x.duration;
+    dval.y *= look->x.duration;
+    dval.z *= look->x.duration;
+    dval.w = 0.0f;
+
+    if (matrix != nullptr) {
+        bMulMatrix(&dval, matrix, &dval);
+    }
+
+    look->SetdVal(reinterpret_cast<bVector3 *>(&dval));
+}
+
+void CameraMover::SetEyeLook(tCubic3D *eye, tCubic3D *look, tCubic1D *fov, bMatrix4 *matrix, bVector3 *target) {
+    FovCubicInit(fov);
+    EyeCubicInit(eye, matrix, target);
+    LookCubicInit(look, matrix, target);
+}
+
+CameraAnchor *CubicCameraMover::GetAnchor() {
+    return pCar;
+}
+
+CubicCameraMover::CubicCameraMover(int nView, CameraAnchor *p_car, int pov_type, bool disable_lag, bool look_back, bool perfect_focus, bool snap_next)
+    : CameraMover(nView, CM_DRIVE_CUBIC),
+      pCar(p_car),
+      pFov(new tCubic1D(1, 1.0f)),
+      pEye(new tCubic3D(1, 1.0f)),
+      pLook(new tCubic3D(1, 1.0f)),
+      pForward(new tCubic3D(1, 1.0f)),
+      pUp(new tCubic3D(1, 1.0f)),
+      nPovType(pov_type),
+      nPovTypeUsed(pov_type),
+      bAccelLag(!disable_lag),
+      bLookBack(look_back),
+      bSnapNext(snap_next),
+      bPerfectFocus(perfect_focus),
+      bFirstTime(1),
+      tLastGrounded(WorldTimer.GetPackedTime() - 8000),
+      tLastUnderVehicle(WorldTimer.GetPackedTime() - 0x1900),
+      tLastGearChange(WorldTimer.GetPackedTime() - 6000),
+      fIgnoreSetSnapNextTimer(0.0f),
+      vSavedEye(),
+      vCameraImpcat(),
+      vCameraImpcatTimer(),
+      pAvgAccel(nullptr) {
+    vSavedEye.x = 0.0f;
+    vSavedEye.y = 0.0f;
+    vSavedEye.z = 0.0f;
+    vCameraImpcat.x = 0.0f;
+    vCameraImpcat.y = 0.0f;
+    vCameraImpcatTimer.x = 0.0f;
+    vCameraImpcatTimer.y = 0.0f;
+
+    if (pCar != nullptr) {
+        POV *pov = pCar->GetPov(pov_type);
+        bMatrix4 matrix;
+
+        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(pCar->GetMatrix()), *reinterpret_cast<Mtx44 *>(&matrix));
+        SetEyeLook(pEye, pLook, pFov, &matrix, pCar->GetGeomPos());
+
+        pForward->x.SetVal(0.0f);
+        pForward->y.SetVal(0.0f);
+        pForward->z.SetVal(1.0f);
+        pForward->x.SetValDesired(0.0f);
+        pForward->y.SetValDesired(0.0f);
+        pForward->z.SetValDesired(1.0f);
+
+        pUp->x.SetVal(0.0f);
+        pUp->y.SetVal(0.0f);
+        pUp->z.SetVal(1.0f);
+        pUp->x.SetValDesired(0.0f);
+        pUp->y.SetValDesired(0.0f);
+        pUp->z.SetValDesired(1.0f);
+
+        if (pov != nullptr && Camera::StopUpdating == 0) {
+            GetCamera()->SetFieldOfView(pov->Fov);
+            GetCamera()->SetTargetDistance(bDistBetween(pCar->GetGeomPos(), GetCamera()->GetPosition()));
+        }
+    }
+
+    if (bSnapNext) {
+        pEye->Snap();
+        pLook->Snap();
+        pForward->Snap();
+        pUp->Snap();
+        pFov->Snap();
+    }
+}
+
+void CubicCameraMover::SetLookBack(bool b) {
+    bLookBack = b;
+}
+
+void CubicCameraMover::SetDisableLag(bool disable) {
+    bAccelLag = !disable;
+}
+
+bool CubicCameraMover::OutsidePOV() {
+    return OutsidePovType(nPovTypeUsed);
+}
+
+bool CubicCameraMover::RenderCarPOV() {
+    return RenderCarPovTypeRaw(nPovTypeUsed, bLookBack);
+}
+
+float CubicCameraMover::MinDistToWall() {
+    return 0.7f;
+}
+
+bool CubicCameraMover::HighliteMode() {
+    return false;
+}
+
+void CubicCameraMover::SetSnapNext() {
+    if (fIgnoreSetSnapNextTimer > 0.0f) {
+        return;
+    }
+    bSnapNext = 1;
+}
+
+unsigned short CubicCameraMover::GetLookbackAngle() {
+    if (bLookBack == 0) {
+        return 0;
+    }
+    return 0x8000;
+}
+
+int CubicCameraMover::IsHoodCamera() {
+    int is_hood_camera = 0;
+
+    if (nPovTypeUsed == 1) {
+        is_hood_camera = !bLookBack;
+    }
+    return is_hood_camera;
+}
+
+void CubicCameraMover::SetForward(POV *pov, bool snap) {
+    if (pCar == nullptr) {
+        return;
+    }
+
+    if (pov == nullptr || !OutsidePovType(pov->Type)) {
+        pForward->SetValDesired(reinterpret_cast<const bVector3 *>(&pCar->GetMatrix()->v0));
+    } else {
+        bVector3 forward = *pCar->GetVelocity();
+        const bVector3 *car_forward = reinterpret_cast<const bVector3 *>(&pCar->GetMatrix()->v0);
+        float drift_speed = gDriftSpeed.GetValue(pCar->GetVelMag());
+
+        if (bDot(&forward, car_forward) < 0.0f) {
+            bScaleAdd(&forward, &forward, car_forward, bDot(&forward, car_forward) * 0.25f);
+        }
+
+        bNormalize(&forward, &forward);
+        forward.x *= drift_speed;
+        forward.y *= drift_speed;
+        forward.z *= drift_speed;
+        bScaleAdd(&forward, &forward, car_forward, 1.0f - drift_speed);
+        pForward->SetValDesired(&forward);
+    }
+
+    if (snap) {
+        pForward->Snap();
+    }
+}
+
+void CubicCameraMover::CameraAccelCurve(bVector3 *pAccel) {
+    if (pCar == nullptr) {
+        pAccel->x = 0.0f;
+        pAccel->y = 0.0f;
+        pAccel->z = 0.0f;
+        return;
+    }
+
+    pAccel->x = SampleFloatTable(CameraAccelerationCurve, 5, pCar->GetAccel()->x, -2.0f, 2.0f) * 4.0f;
+    pAccel->y = SampleFloatTable(CameraAccelerationCurve, 5, pCar->GetAccel()->y, -2.0f, 2.0f) * 4.0f;
+    pAccel->z = SampleFloatTable(CameraAccelerationCurve, 5, pCar->GetAccel()->z, -2.0f, 2.0f) * 4.0f;
+}
+
+void CubicCameraMover::CameraSpeedHug(bVector3 *pForward) {
+    if (pCar == nullptr) {
+        return;
+    }
+
+    if (pCar->GetTopSpeed() > 0.0f) {
+        bVector2 hug = SampleVector2Table(CameraSpeedHugData, 5, pCar->GetVelMag(), 0.0f, pCar->GetTopSpeed());
+
+        pForward->x *= hug.x;
+        pForward->z *= hug.y;
+    }
+}
+
+void CubicCameraMover::MakeSpace(bMatrix4 *pMatrix) {
+    if (!RenderCarPOV()) {
+        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(pCar->GetMatrix()), *reinterpret_cast<Mtx44 *>(pMatrix));
+
+        if (pCar->GetMatrix()->v0.z < 0.5f) {
+            pMatrix->v1.x = -pMatrix->v1.x;
+            pMatrix->v1.y = -pMatrix->v1.y;
+            pMatrix->v1.z = -pMatrix->v1.z;
+            pMatrix->v1.w = -pMatrix->v1.w;
+            pMatrix->v2.x = -pMatrix->v2.x;
+            pMatrix->v2.y = -pMatrix->v2.y;
+            pMatrix->v2.z = -pMatrix->v2.z;
+            pMatrix->v2.w = -pMatrix->v2.w;
+        }
+    } else {
+        bIdentity(pMatrix);
+
+        {
+            bVector3 forward;
+            bVector3 right;
+            bVector3 up;
+
+            pForward->GetVal(&forward);
+            bNormalize(reinterpret_cast<bVector3 *>(&pMatrix->v0), &forward);
+            right = bCross(*reinterpret_cast<const bVector3 *>(&pMatrix->v2), *reinterpret_cast<const bVector3 *>(&pMatrix->v0));
+            up = bCross(*reinterpret_cast<const bVector3 *>(&pMatrix->v0), right);
+            pMatrix->v1.x = right.x;
+            pMatrix->v1.y = right.y;
+            pMatrix->v1.z = right.z;
+            pMatrix->v2.x = up.x;
+            pMatrix->v2.y = up.y;
+            pMatrix->v2.z = up.z;
+        }
+
+        pMatrix->v3.x = pCar->GetGeomPos()->x;
+        pMatrix->v3.y = pCar->GetGeomPos()->y;
+        pMatrix->v3.z = pCar->GetGeomPos()->z;
+        pMatrix->v3.w = 1.0f;
+    }
+}
+
+CubicCameraMover::~CubicCameraMover() {
+    delete pUp;
+    delete pFov;
+    delete pEye;
+    delete pLook;
+    delete pForward;
+    delete reinterpret_cast<AverageBase *>(pAvgAccel);
+}
+
+void CubicCameraMover::SetPovType(int pov_type) {
+    if (pov_type != nPovTypeUsed) {
+        bool reset = !OutsidePovType(nPovTypeUsed) || !OutsidePovType(pov_type);
+
+        bSnapNext = bSnapNext || reset;
+        nPovType = pov_type;
+    }
+}
+
+void CubicCameraMover::ResetState() {
+    ResetCubic3DState(pUp);
+    ResetCubic1DState(pFov);
+    ResetCubic3DState(pEye);
+    ResetCubic3DState(pLook);
+    ResetCubic3DState(pForward);
+    GetCamera()->ClearVelocity();
+    vSavedEye.x = 0.0f;
+    vSavedEye.y = 0.0f;
+    vSavedEye.z = 0.0f;
+    fIgnoreSetSnapNextTimer = 0.0f;
+}
+
+Bezier::Bezier()
+    : pControlPoints(nullptr) {
+    mBasis.v0.x = 1.0f;
+    mBasis.v0.y = -3.0f;
+    mBasis.v0.z = 3.0f;
+    mBasis.v0.w = -1.0f;
+    mBasis.v1.x = 0.0f;
+    mBasis.v1.y = 3.0f;
+    mBasis.v1.z = -6.0f;
+    mBasis.v1.w = 3.0f;
+    mBasis.v2.x = 0.0f;
+    mBasis.v2.y = 0.0f;
+    mBasis.v2.z = 3.0f;
+    mBasis.v2.w = -3.0f;
+    mBasis.v3.x = 0.0f;
+    mBasis.v3.y = 0.0f;
+    mBasis.v3.z = 0.0f;
+    mBasis.v3.w = 1.0f;
+}
+
+void Bezier::GetPoint(bVector3 *pPoint, float parameter) {
+    if (pControlPoints != nullptr) {
+        bVector4 v;
+        bVector4 basis;
+        float t = 1.0f - parameter;
+        float t2 = t * t;
+
+        basis.x = t * t2;
+        basis.y = t2;
+        basis.z = t;
+        basis.w = 1.0f;
+
+        bMulMatrix(&v, &mBasis, &basis);
+        bMulMatrix(reinterpret_cast<bVector4 *>(pPoint), pControlPoints, &v);
+    }
+}
+
+RearViewMirrorCameraMover::RearViewMirrorCameraMover(int view_id, CameraAnchor *car)
+    : CameraMover(view_id, CM_REAR_VIEW_MIRROR),
+      pCar(car) {
+    if (Camera::StopUpdating == 0) {
+        GetCamera()->SetRenderDash(0);
+    }
+}
+
+RearViewMirrorCameraMover::~RearViewMirrorCameraMover() {}
+
+void RearViewMirrorCameraMover::Update(float dT) {
+    if (*reinterpret_cast<int *>(reinterpret_cast<char *>(FEDatabase) + 0x5c) != 0) {
+        bMatrix4 identity;
+        bMatrix4 car_matrix;
+        bMatrix4 mirror_matrix;
+        bMatrix4 camera_matrix;
+        bVector3 eye;
+
+        bIdentity(&identity);
+        eye.x = -pCar->GetGeomPos()->x;
+        eye.y = -pCar->GetGeomPos()->y;
+        eye.z = -pCar->GetGeomPos()->z;
+        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(pCar->GetMatrix()), *reinterpret_cast<Mtx44 *>(&car_matrix));
+        bTransposeMatrix(&mirror_matrix, &car_matrix);
+        eRotateX(&mirror_matrix, &mirror_matrix, 0x4000);
+        eRotateY(&mirror_matrix, &mirror_matrix, 0x4000);
+        eRotateZ(&mirror_matrix, &mirror_matrix, 0);
+        eMulMatrix(&camera_matrix, &identity, &mirror_matrix);
+        camera_matrix.v3.x += RVMOffsetInCar.x;
+        camera_matrix.v3.y += RVMOffsetInCar.y;
+        camera_matrix.v3.z += RVMOffsetInCar.z;
+        if (Camera::StopUpdating == 0) {
+            GetCamera()->SetFieldOfView(20000);
+        }
+        GetCamera()->SetNearZ(RVMnearz);
+        GetCamera()->SetFarZ(RVMfarz);
+        ApplyCameraShake(0, &camera_matrix);
+        GetCamera()->SetCameraMatrix(camera_matrix, dT);
+    }
+}
+
+TrackCarCameraMover::TrackCarCameraMover(int nView, CameraAnchor *pCar, bool focus_effects)
+    : CameraMover(nView, CM_TRACK_CAR),
+      CarToFollow(pCar),
+      FocalDistCubic(1, 1.0f),
+      FocusEffects(focus_effects),
+      CameraType(0) {
+    Init();
+}
+
+void TrackCarCameraMover::Init() {
+    bVector3 offset;
+
+    CameraType = 0;
+    Eye = *CarToFollow->GetGeomPos();
+    Look = *CarToFollow->GetGeomPos();
+
+    Eye.z += TrackCarIsoZoomDistance[CameraType];
+    offset.x = TrackCarLookOffsetX[CameraType];
+    offset.y = TrackCarLookOffsetY[CameraType];
+    offset.z = TrackCarLookOffsetZ[CameraType];
+    eMulVector(&offset, CarToFollow->GetMatrix(), &offset);
+
+    Look.x += offset.x;
+    Look.y += offset.y;
+    Look.z += offset.z;
+    FocalDistCubic.Val = 0.0f;
+    FocalDistCubic.ValDesired = 0.0f;
+    FocalDistCubic.dVal = 0.0f;
+    FocalDistCubic.dValDesired = 0.0f;
+    GetCamera()->ClearVelocity();
+
+    if (Camera::StopUpdating == 0) {
+        GetCamera()->SetTargetDistance(bDistBetween(&Eye, CarToFollow->GetGeomPos()));
+    }
+}
+
+TrackCarCameraMover::~TrackCarCameraMover() {
+    GetCamera()->SetSimTimeMultiplier(1.0f);
+    if (Camera::StopUpdating == 0) {
+        GetCamera()->SetFocalDistance(0.0f);
+    }
+    if (Camera::StopUpdating == 0) {
+        GetCamera()->SetDepthOfField(0.0f);
+    }
+    GetCamera()->ClearVelocity();
+}
+
+void TrackCarCameraMover::Update(float dT) {
+    if (!TheGameFlowManager.IsPaused()) {
+        bVector3 world_up(0.0f, 0.0f, 1.0f);
+        bVector3 to_car;
+        bVector3 offset;
+        bMatrix4 camera_matrix;
+        float dist;
+        float inv_dist;
+        float focal_distance;
+
+        GetCamera()->SetSimTimeMultiplier(1.0f);
+
+        to_car.x = Eye.x - CarToFollow->GetGeomPos()->x;
+        to_car.y = Eye.y - CarToFollow->GetGeomPos()->y;
+        to_car.z = Eye.z - CarToFollow->GetGeomPos()->z;
+        dist = bLength(&to_car);
+
+        if (dist > 0.0f) {
+            unsigned short fov = bATan(dist, TrackCarIsoZoomDistance[CameraType]);
+            unsigned int fov_limit = bMax(800, static_cast<int>((fov & 0x7fff) << 1));
+
+            if (fov_limit > 0x332c) {
+                fov_limit = 0x332c;
+            }
+            if (Camera::StopUpdating == 0 && (fov & 0x7fff) != 0) {
+                GetCamera()->SetFieldOfView(static_cast<unsigned short>(fov_limit));
+            }
+        }
+
+        Look = *CarToFollow->GetGeomPos();
+        inv_dist = dist > 1.0f ? 1.0f / dist : 1.0f;
+        to_car.x *= inv_dist;
+        to_car.y *= inv_dist;
+        to_car.z *= inv_dist;
+        world_up = bCross(to_car, world_up);
+
+        offset.x = TrackCarLookOffsetX[CameraType];
+        offset.y = TrackCarLookOffsetY[CameraType];
+        offset.z = TrackCarLookOffsetZ[CameraType];
+        eMulVector(&offset, CarToFollow->GetMatrix(), &offset);
+
+        Look.x += offset.x;
+        Look.y += offset.y;
+        Look.z += offset.z;
+
+        eCreateLookAtMatrix(&camera_matrix, Eye, Look, world_up);
+        focal_distance = bDistBetween(CarToFollow->GetGeomPos(), &Eye);
+        if (Camera::StopUpdating == 0) {
+            GetCamera()->SetTargetDistance(focal_distance);
+        }
+
+        FocalDistCubic.dVal = FocalDistCubic.Val * 0.1f;
+        SplineSeek(&FocalDistCubic, dT, 0.0f, 0.0f);
+        focal_distance = bMax(1.0f, focal_distance + FocalDistCubic.Val);
+
+        if (FocusEffects) {
+            if (Camera::StopUpdating == 0) {
+                GetCamera()->SetFocalDistance(focal_distance + FocalDistCubic.Val);
+            }
+            if (Camera::StopUpdating == 0) {
+                GetCamera()->SetDepthOfField(2.0f);
+            }
+        }
+
+        GetCamera()->SetCameraMatrix(camera_matrix, dT);
+        if (IsSomethingInBetween(GetCamera()->GetPosition(), CarToFollow->GetGeomPos())) {
+            CameraAI::MaybeKillJumpCam(CarToFollow->GetWorldID());
+        }
+    }
+}
+
+TrackCopCameraMover::TrackCopCameraMover(int nView, CameraAnchor *pCar, bool focus_effects)
+    : CameraMover(nView, CM_TRACK_COP),
+      CarToFollow(pCar),
+      FocalDistCubic(1, 1.0f),
+      FocusEffects(focus_effects),
+      bRenderCarPOV(true) {
+    ZoomSplineParam = 0.0f;
+    EyeSplineParam = 0.0f;
+    LookSplineParam = 0.0f;
+    Init();
+}
+
+TrackCopCameraMover::~TrackCopCameraMover() {
+    TrackCopCameraMover_IdleSim = false;
+    GetCamera()->SetSimTimeMultiplier(1.0f);
+    if (Camera::StopUpdating == 0) {
+        GetCamera()->SetFocalDistance(0.0f);
+    }
+    if (Camera::StopUpdating == 0) {
+        GetCamera()->SetDepthOfField(0.0f);
+    }
+    GetCamera()->ClearVelocity();
+}
+
+bool TrackCopCameraMover::FindPursuitVehiclePosition(bVector3 *pPosition) {
+    bool found = false;
+    float best_distance = 10000.0f;
+    const IVehicle::List &vehicles = IVehicle::GetList(VEHICLE_ALL);
+
+    for (IVehicle::List::const_iterator iter = vehicles.begin(); iter != vehicles.end(); ++iter) {
+        IVehicle *vehicle = *iter;
+
+        if (vehicle != nullptr && vehicle->GetVehicleClass() == VehicleClass::CAR) {
+            bVector3 render_position;
+            float distance;
+
+            eSwizzleWorldVector(vehicle->GetPosition(), render_position);
+            if (IsSomethingInBetween(GetCamera()->GetPosition(), &render_position)) {
+                continue;
+            }
+
+            distance = bDistBetween(CarToFollow->GetGeomPos(), &render_position);
+            if (distance < best_distance) {
+                *pPosition = render_position;
+                best_distance = distance;
+                found = true;
+            }
+        }
+    }
+
+    return found;
+}
+
+void TrackCopCameraMover::Init() {
+    bVector3 pursuit_position;
+    bVector3 eye = *GetCamera()->GetPosition();
+    bVector3 look = *GetCamera()->GetTarget();
+    float fov = static_cast<float>(GetCamera()->GetFieldOfView());
+
+    TrackCopCameraMover_IdleSim = true;
+    HideEverySingleHud();
+    bRenderCarPOV = true;
+
+    ZoomVerts.v0.x = fov;
+    ZoomVerts.v0.y = 0.0f;
+    ZoomVerts.v0.z = 0.0f;
+    ZoomVerts.v0.w = 1.0f;
+    ZoomVerts.v1 = ZoomVerts.v0;
+    ZoomVerts.v2 = ZoomVerts.v0;
+    ZoomVerts.v3 = ZoomVerts.v0;
+
+    EyeVerts.v0.x = eye.x;
+    EyeVerts.v0.y = eye.y;
+    EyeVerts.v0.z = eye.z;
+    EyeVerts.v0.w = 1.0f;
+    EyeVerts.v1 = EyeVerts.v0;
+    EyeVerts.v2 = EyeVerts.v0;
+    EyeVerts.v3 = EyeVerts.v0;
+
+    LookVerts.v0.x = look.x;
+    LookVerts.v0.y = look.y;
+    LookVerts.v0.z = look.z;
+    LookVerts.v0.w = 1.0f;
+    LookVerts.v1 = LookVerts.v0;
+    LookVerts.v2 = LookVerts.v0;
+    LookVerts.v3 = LookVerts.v0;
+
+    if (FindPursuitVehiclePosition(&pursuit_position)) {
+        bVector3 chase_eye = pursuit_position;
+        bVector3 chase_look = *CarToFollow->GetGeomPos();
+
+        chase_eye.z += 2.0f;
+        EyeVerts.v1.x = chase_eye.x;
+        EyeVerts.v1.y = chase_eye.y;
+        EyeVerts.v1.z = chase_eye.z;
+        EyeVerts.v2 = EyeVerts.v1;
+        EyeVerts.v3 = EyeVerts.v1;
+
+        LookVerts.v1.x = chase_look.x;
+        LookVerts.v1.y = chase_look.y;
+        LookVerts.v1.z = chase_look.z;
+        LookVerts.v2 = LookVerts.v1;
+        LookVerts.v3 = LookVerts.v1;
+
+        ZoomVerts.v1.x = fov;
+        ZoomVerts.v2.x = fov;
+        ZoomVerts.v3.x = fov;
+        bRenderCarPOV = false;
+    } else {
+        CameraAI::MaybeKillPursuitCam(CarToFollow->GetWorldID());
+    }
+
+    EyeSpline.SetControlPoints(&EyeVerts);
+    LookSpline.SetControlPoints(&LookVerts);
+    ZoomSpline.SetControlPoints(&ZoomVerts);
+    EyeSplineParam = 0.0f;
+    LookSplineParam = 0.0f;
+    ZoomSplineParam = 0.0f;
+    FocalDistCubic.Val = 0.0f;
+    FocalDistCubic.ValDesired = 0.0f;
+    FocalDistCubic.dVal = 0.0f;
+    FocalDistCubic.dValDesired = 0.0f;
+
+    if (FocusEffects == 0 && Camera::StopUpdating == 0) {
+        GetCamera()->SetFocalDistance(0.0f);
+        GetCamera()->SetDepthOfField(0.0f);
+    }
+}
+
+void TrackCopCameraMover::Update(float dT) {
+    if (FEManager::Get() == nullptr || !FEManager::ShouldPauseSimulation(true)) {
+        bVector3 world_up(0.0f, 0.0f, 1.0f);
+        bVector3 look;
+        bVector3 eye;
+        bVector3 offset;
+        bMatrix4 camera_matrix;
+        float focal_distance;
+
+        EyeSplineParam += dT * 0.25f;
+        if (EyeSplineParam > 1.0f) {
+            EyeSplineParam = 1.0f;
+        }
+        EyeSpline.GetPoint(&eye, EyeSplineParam);
+
+        LookSplineParam += dT * 0.25f;
+        if (LookSplineParam > 1.0f) {
+            LookSplineParam = 1.0f;
+        }
+        LookSpline.GetPoint(&look, LookSplineParam);
+
+        ZoomSplineParam += dT * 0.25f;
+        if (ZoomSplineParam > 1.0f) {
+            ZoomSplineParam = 1.0f;
+        }
+        ZoomSpline.GetPoint(reinterpret_cast<bVector3 *>(&offset), ZoomSplineParam);
+
+        if (Camera::StopUpdating == 0) {
+            GetCamera()->SetFieldOfView(static_cast<unsigned short>(bDegToAng(offset.x)));
+        }
+
+        offset.x = 0.0f;
+        offset.y = 0.0f;
+        offset.z = 0.0f;
+        eMulVector(&offset, CarToFollow->GetMatrix(), &offset);
+        look.x += offset.x;
+        look.y += offset.y;
+        look.z += offset.z;
+
+        eCreateLookAtMatrix(&camera_matrix, eye, look, world_up);
+        focal_distance = bDistBetween(CarToFollow->GetGeomPos(), &eye);
+        if (Camera::StopUpdating == 0) {
+            GetCamera()->SetTargetDistance(focal_distance);
+        }
+
+        FocalDistCubic.dVal = FocalDistCubic.Val * 0.1f;
+        SplineSeek(&FocalDistCubic, dT, 0.0f, 0.0f);
+        focal_distance = bMax(1.0f, focal_distance + FocalDistCubic.Val);
+
+        if (FocusEffects) {
+            if (Camera::StopUpdating == 0) {
+                GetCamera()->SetFocalDistance(focal_distance + FocalDistCubic.Val);
+            }
+            if (Camera::StopUpdating == 0) {
+                GetCamera()->SetDepthOfField(2.0f);
+            }
+        }
+
+        GetCamera()->SetCameraMatrix(camera_matrix, dT);
+    }
+}
+
+CameraAnchor *RearViewMirrorCameraMover::GetAnchor() {
+    return pCar;
+}
+
+CameraAnchor *TrackCarCameraMover::GetAnchor() {
+    return CarToFollow;
+}
+
+bVector3 *TrackCarCameraMover::GetTarget() {
+    CameraAnchor *car = CarToFollow;
+    if (car != nullptr) {
+        return car->GetGeomPos();
+    }
+    return GetCamera()->GetTarget();
+}
+
+CameraAnchor *TrackCopCameraMover::GetAnchor() {
+    return CarToFollow;
+}
+
+bool TrackCopCameraMover::RenderCarPOV() {
+    return bRenderCarPOV;
+}
+
+bVector3 *TrackCopCameraMover::GetTarget() {
+    CameraAnchor *car = CarToFollow;
+    if (car != nullptr) {
+        return car->GetGeomPos();
+    }
+    return GetCamera()->GetTarget();
+}

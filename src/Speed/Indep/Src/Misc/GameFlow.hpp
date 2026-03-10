@@ -45,6 +45,8 @@ class GameFlowManager {
         return GetState() == GAMEFLOW_STATE_LOADING_REGION || GetState() == GAMEFLOW_STATE_LOADING_TRACK;
     }
 
+    bool IsPaused();
+
   private:
     void (*pSingleFunction)(int);       // offset 0x0, size 0x4
     int SingleFunctionParam;            // offset 0x4, size 0x4

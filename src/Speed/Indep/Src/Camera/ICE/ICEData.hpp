@@ -9,7 +9,10 @@
 
 // total size: 0x84
 struct ICEData {
+    void InitData();
+    void PlatEndianSwap();
     void GetEye(int i, ICE::Vector3 *p);
+    void GetLook(int i, ICE::Vector3 *p);
 
     unsigned char nType;              // offset 0x0, size 0x1
     unsigned char bSmooth;            // offset 0x1, size 0x1
@@ -35,6 +38,7 @@ struct ICEData {
     float fFocalDistance[2];          // offset 0x74, size 0x8
     unsigned char fAperture[2];       // offset 0x7C, size 0x2
     unsigned char fLetterbox[2];      // offset 0x7E, size 0x2
+    unsigned char fSimSpeed[2];       // offset 0x80, size 0x2
 };
 
 #endif
