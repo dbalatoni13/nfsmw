@@ -7,6 +7,12 @@
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/Scenery.hpp"
 
+inline void bPlatEndianSwap(UCrc32 *c) {
+    unsigned int val = c->GetValue();
+    ::bPlatEndianSwap(&val);
+    *c = UCrc32(val);
+}
+
 void ResetPropTimers();
 
 SmokeableSectionQ TheSmokeableSections;
@@ -235,9 +241,13 @@ void SmokeableSpawnerPack::OnUnload() {
 }
 
 void SmokeableSpawnerPack::EndianSwap() {
-    bPlatEndianSwap(&ScenerySectionNumber);
-    bPlatEndianSwap(&FirstSmokeableSpawnerID);
-    bPlatEndianSwap(&NumSmokeableSpawners);
+    if (EndianSwapped) {
+        return;
+    }
+    EndianSwapped = 1;
+    bEndianSwap16(&ScenerySectionNumber);
+    bEndianSwap16(&FirstSmokeableSpawnerID);
+    bEndianSwap16(&NumSmokeableSpawners);
     for (int n = 0; n < NumSmokeableSpawners; n++) {
         SmokeableSpawners[n].EndianSwap();
     }
@@ -279,11 +289,17 @@ void SmokeableSpawner::Init() {
 }
 
 void SmokeableSpawner::EndianSwap() {
-    bPlatEndianSwap(reinterpret_cast< bVector4 * >(&mOrientation));
-    bPlatEndianSwap(reinterpret_cast< bVector4 * >(&mPosition));
-    bPlatEndianSwap(reinterpret_cast< unsigned int * >(&mCollisionName));
-    bPlatEndianSwap(reinterpret_cast< unsigned int * >(&mModel));
-    bPlatEndianSwap(reinterpret_cast< unsigned int * >(&mAttributes));
+    bEndianSwap32(&mOrientation.x);
+    bEndianSwap32(&mOrientation.y);
+    bEndianSwap32(&mOrientation.z);
+    bEndianSwap32(&mOrientation.w);
+    bEndianSwap32(&mPosition.x);
+    bEndianSwap32(&mPosition.y);
+    bEndianSwap32(&mPosition.z);
+    bEndianSwap32(&mPosition.w);
+    bPlatEndianSwap(&mModel);
+    bPlatEndianSwap(&mCollisionName);
+    bPlatEndianSwap(&mAttributes);
     bPlatEndianSwap(&mSceneryOverrideInfoNumber);
     bPlatEndianSwap(&mUniqueID);
     bPlatEndianSwap(&mExcludeFlags);

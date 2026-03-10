@@ -96,11 +96,13 @@ PhysicsObject::~PhysicsObject() {
 }
 
 void PhysicsObject::GetTransform(UMath::Matrix4 &matrix) const {
-    if (mRigidBody != nullptr) {
-        mRigidBody->GetMatrix4(matrix);
-        matrix.v3 = UMath::Vector4Make(mRigidBody->GetPosition(), 1.0f);
-    } else {
+    if (mRigidBody == nullptr) {
         UMath::Copy(UMath::Matrix4::kIdentity, matrix);
+    } else {
+        UMath::Matrix4 mat;
+        mRigidBody->GetMatrix4(mat);
+        UMath::Copy(mat, matrix);
+        matrix.v3 = UMath::Vector4Make(mRigidBody->GetPosition(), 1.0f);
     }
 }
 
@@ -366,8 +368,7 @@ Behavior *PhysicsObject::LoadBehavior(const UCrc32 &mechanic, const UCrc32 &beha
 
 bool PhysicsObject::Attach(UTL::COM::IUnknown *object) {
     if (mAttachments != nullptr) {
-        if (UTL::COM::ComparePtr(mEntity, object)) {
-        } else {
+        if (!UTL::COM::ComparePtr(mEntity, object)) {
             Sim::IEntity *e = nullptr;
             if (object != nullptr) {
                 object->QueryInterface(&e);
@@ -398,14 +399,18 @@ void PhysicsObject::DetachAll() {
 }
 
 bool PhysicsObject::Detach(UTL::COM::IUnknown *object) {
-    if (mAttachments == nullptr) {
-        return false;
+    if (mAttachments) {
+        Sim::IEntity *e = nullptr;
+        if (object != nullptr) {
+            object->QueryInterface(&e);
+        }
+        if (e != nullptr && e == mEntity) {
+            mEntity = nullptr;
+            mPlayer = nullptr;
+        }
+        return mAttachments->Detach(object);
     }
-    if (UTL::COM::ComparePtr(mEntity, object)) {
-        mEntity = nullptr;
-        mPlayer = nullptr;
-    }
-    return mAttachments->Detach(object);
+    return false;
 }
 
 void PhysicsObject::DetachEntity() {
@@ -425,8 +430,9 @@ void PhysicsObject::AttachEntity(Sim::IEntity *e) {
 }
 
 void PhysicsObject::ProcessStimulus(unsigned int stimulus) {
-    if (GetEventSequencer() != nullptr) {
-        GetEventSequencer()->ProcessStimulus(stimulus, Sim::GetTime(), nullptr, EventSequencer::QUEUE);
+    EventSequencer::IEngine *engine = GetEventSequencer();
+    if (engine != nullptr) {
+        engine->ProcessStimulus(stimulus, Sim::GetTime(), nullptr, EventSequencer::QUEUE_ALLOW);
     }
 }
 
@@ -490,11 +496,10 @@ IRigidBody *PhysicsObject::GetRigidBody() {
 }
 
 const UMath::Vector3 &PhysicsObject::GetPosition() const {
-    if (mRigidBody == nullptr) {
-        return UMath::Vector3::kZero;
-    } else {
+    if (mRigidBody != nullptr) {
         return mRigidBody->GetPosition();
     }
+    return UMath::Vector3::kZero;
 }
 
 unsigned int PhysicsObject::GetWorldID() const {
@@ -509,11 +514,10 @@ bool PhysicsObject::IsAttached(const UTL::COM::IUnknown *pOther) const {
 }
 
 const UTL::Std::list<IAttachable *, _type_IAttachableList> *PhysicsObject::GetAttachments() const {
-    if (mAttachments == nullptr) {
-        return nullptr;
-    } else {
+    if (mAttachments != nullptr) {
         return &mAttachments->GetList();
     }
+    return nullptr;
 }
 
 void PhysicsObject::Behaviors::Reset() {
