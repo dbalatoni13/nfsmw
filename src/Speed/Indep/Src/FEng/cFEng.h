@@ -22,6 +22,8 @@ struct cFEng {
     void QueuePackageMessage(unsigned int msg, const char* pkg_name, FEObject* obj);
 
     void QueuePackageSwitch(const char* pkg_name, int arg, unsigned long param, bool b);
+    void QueuePackagePush(const char* pPackageName, int pArg, unsigned long ControlMask, bool pSuppressSimPause);
+    void QueuePackagePop(int numPackagesToPop);
 };
 
 #endif

@@ -18,6 +18,10 @@ struct FEMultiImage;
 struct MilestoneDatum : public ArrayDatum {
     GMilestone* my_milestone; // offset 0x24, size 0x4
 
+    MilestoneDatum()
+        : ArrayDatum(0, 0) //
+        , my_milestone(nullptr) {}
+
     MilestoneDatum(unsigned int hash, unsigned int desc, GMilestone* milestone)
         : ArrayDatum(hash, desc) //
         , my_milestone(milestone) {}
@@ -32,6 +36,10 @@ struct MilestoneDatum : public ArrayDatum {
 // total size: 0x2C
 struct SpeedTrapDatum : public MilestoneDatum {
     GSpeedTrap* my_speedtrap; // offset 0x28, size 0x4
+
+    SpeedTrapDatum()
+        : MilestoneDatum() //
+        , my_speedtrap(nullptr) {}
 
     SpeedTrapDatum(unsigned int hash, unsigned int desc, GSpeedTrap* speedtrap)
         : MilestoneDatum(hash, desc, nullptr) //

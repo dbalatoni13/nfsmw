@@ -18,7 +18,7 @@ void FEngSetTextureHash(FEImage* image, unsigned int hash);
 void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned int lang_hash);
 void FEPrintf(const char* pkg_name, unsigned int hash, const char* format, ...);
 unsigned int FEngHashString(const char* format, ...);
-unsigned int FEngGetLastButton(const char* pkg_name);
+unsigned char FEngGetLastButton(const char* pkg_name);
 void FEngSetRotationZ(FEObject* obj, float rot);
 void FEngSetPosition(FEObject* obj, float x, float y);
 const char* GetLocalizedString(unsigned int hash);
@@ -72,9 +72,9 @@ void WorldMap::ScrollZoom(eScrollDir dir) {
 
 float WorldMap::GetZoomFactor(eWorldMapZoomLevels level) {
     switch (level) {
-    case ZOOM_1X: return 1.0f;
-    case ZOOM_2X: return 2.0f;
-    case ZOOM_4X: return 4.0f;
+    case WMZ_LEVEL_1: return 1.0f;
+    case WMZ_LEVEL_2: return 2.0f;
+    case WMZ_LEVEL_4: return 4.0f;
     default: return 1.0f;
     }
 }
@@ -91,11 +91,13 @@ void WorldMap::ClearItems() {
     }
 }
 
-void WorldMap::ClampToMapBounds(float& x, float& y) {
-    if (x < MapTopLeft.x) x = MapTopLeft.x;
-    if (x > MapTopLeft.x + MapSize.x) x = MapTopLeft.x + MapSize.x;
-    if (y < MapTopLeft.y) y = MapTopLeft.y;
-    if (y > MapTopLeft.y + MapSize.y) y = MapTopLeft.y + MapSize.y;
+bool WorldMap::ClampToMapBounds(float& x, float& y) {
+    bool clamped = false;
+    if (x < MapTopLeft.x) { x = MapTopLeft.x; clamped = true; }
+    if (x > MapTopLeft.x + MapSize.x) { x = MapTopLeft.x + MapSize.x; clamped = true; }
+    if (y < MapTopLeft.y) { y = MapTopLeft.y; clamped = true; }
+    if (y > MapTopLeft.y + MapSize.y) { y = MapTopLeft.y + MapSize.y; clamped = true; }
+    return clamped;
 }
 
 void WorldMap::UpdateAnalogInput() {
@@ -107,7 +109,8 @@ void WorldMap::UpdateCursor(bool snap) {
 void WorldMap::MoveCursor(float dx, float dy) {
 }
 
-void WorldMap::SnapCursor() {
+bool WorldMap::SnapCursor() {
+    return false;
 }
 
 void WorldMap::PanToCursor(float speed) {
@@ -135,7 +138,7 @@ void WorldMap::AddRoadBlocks() {
 void WorldMap::AddIcon(eWorldMapItemType type, unsigned int hash, GIcon* icon) {
 }
 
-void WorldMap::AddIcons(GIcon::Type type) {
+void WorldMap::AddIcons(Type type) {
 }
 
 void WorldMap::SetupNavigation() {
@@ -150,7 +153,8 @@ void WorldMap::SetupPursuit() {
 void WorldMap::ConvertPos(bVector2& pos) {
 }
 
-void WorldMap::ConvertRot(bVector2& rot) {
+float WorldMap::ConvertRot(bVector2& rot) {
+    return 0.0f;
 }
 
 void WorldMap::DrawItemType() {

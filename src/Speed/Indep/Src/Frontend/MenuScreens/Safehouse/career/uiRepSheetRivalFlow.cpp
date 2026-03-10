@@ -48,7 +48,7 @@ void uiRepSheetRivalFlow::Next() {
         break;
     }
     case 3:
-        if (MemoryCard::ShouldDoAutoSave()) {
+        if (MemoryCard::ShouldDoAutoSave(false)) {
             MemcardEnter();
         } else {
             Next();

@@ -9,7 +9,7 @@
 #include "Speed/Indep/Src/Misc/Config.h"
 
 void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned int language);
-int FEngGetLastButton(const char* pkg_name);
+unsigned char FEngGetLastButton(const char* pkg_name);
 void FEngSetScript(const char* pkg_name, unsigned int obj_hash, unsigned int script_hash,
                    bool start_at_beginning);
 bool FEngIsScriptRunning(const char* pkg_name, unsigned int obj_hash, unsigned int script_hash);

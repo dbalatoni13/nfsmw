@@ -17,6 +17,10 @@ struct FEMultiImage;
 struct RaceDatum : public ArrayDatum {
     GRaceParameters* race; // offset 0x24, size 0x4
 
+    RaceDatum()
+        : ArrayDatum(0, 0) //
+        , race(nullptr) {}
+
     RaceDatum(unsigned int hash, unsigned int desc, GRaceParameters* race)
         : ArrayDatum(hash, desc) //
         , race(race) {}

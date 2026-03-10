@@ -105,6 +105,14 @@ class ArrayDatum : public bTNode<ArrayDatum> {
         checked = b;
     }
 
+    ArrayDatum(uint32 hash, uint32 desc)
+        : hash(hash) //
+        , desc(desc) //
+        , enabled(true) //
+        , greyedOut(false) //
+        , locked(false) //
+        , checked(false) {}
+
     virtual ~ArrayDatum() {}
 
     virtual void NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 param2) {}
