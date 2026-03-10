@@ -17,6 +17,27 @@
 #include "Speed/Indep/Src/Online/OnlineCfg.hpp"
 #endif
 
+enum eFEGameModes {
+    eFE_GAME_MODE_NONE = 0,
+    eFE_GAME_MODE_CAREER = 1,
+    eFE_GAME_MODE_CHALLENGE = 2,
+    eFE_GAME_MODE_QUICK_RACE = 4,
+    eFE_GAME_MODE_ONLINE = 8,
+    eFE_GAME_MODE_OPTIONS = 16,
+    eFE_GAME_MODE_CUSTOMIZE = 32,
+    eFE_GAME_MODE_LAN = 64,
+    eFE_GAME_MODE_PROFILE_MANAGER = 128,
+    eFE_GAME_MODE_CAREER_MANAGER = 256,
+    eFE_GAME_MODE_RAP_SHEET = 512,
+    eFE_GAME_MODE_MODE_SELECT = 1024,
+    eFE_GAME_TRAILERS = 2048,
+    eFE_GAME_MODE_CAR_LOT = 32768,
+    eFE_GAME_MODE_SAFEHOUSE = 65536,
+    eFE_GAME_MODE_POST_RIVAL = 131072,
+    eFE_GAME_MODE_BEAT_GAME = 262144,
+    eFE_GAME_MODE_ALL = -1,
+};
+
 enum eControllerConfig {
     CC_CONFIG_1,
     CC_CONFIG_2,
@@ -253,6 +274,18 @@ struct FEKeyboardSettings {
     char Title[156];         // offset 0xB0, size 0x9C
 };
 
+// total size: 0x6
+struct GameCompletionStats {
+    GameCompletionStats();
+
+    unsigned char m_nOverall;                // offset 0x0, size 0x1
+    unsigned char m_nCareer;                 // offset 0x1, size 0x1
+    unsigned char m_nRapSheetRankings;       // offset 0x2, size 0x1
+    unsigned char m_nChallenge;              // offset 0x3, size 0x1
+    unsigned char m_nTotalChallengeRaces;    // offset 0x4, size 0x1
+    unsigned char m_nCompletedChallengeRaces;// offset 0x5, size 0x1
+};
+
 // total size: 0xA28
 class cFrontendDatabase {
   public:
@@ -276,6 +309,120 @@ class cFrontendDatabase {
 
     bool IsCareerMode() {
         return FEGameMode & 1;
+    }
+
+    bool IsChallengeMode() {
+        return FEGameMode & 2;
+    }
+
+    bool IsQuickRaceMode() {
+        return FEGameMode & 4;
+    }
+
+    bool IsOnlineMode() {
+        return FEGameMode & 8;
+    }
+
+    bool IsOptionsMode() {
+        return FEGameMode & 16;
+    }
+
+    bool IsCustomizeMode() {
+        return FEGameMode & 32;
+    }
+
+    bool IsLANMode() {
+        return FEGameMode & 64;
+    }
+
+    bool IsProfileManagerMode() {
+        return FEGameMode & 128;
+    }
+
+    bool IsCareerManagerMode() {
+        return FEGameMode & 256;
+    }
+
+    bool IsRapSheetMode() {
+        return FEGameMode & 512;
+    }
+
+    bool IsModeSelectMode() {
+        return FEGameMode & 1024;
+    }
+
+    bool IsCarLotMode() {
+        return FEGameMode & 32768;
+    }
+
+    bool IsSafehouseMode() {
+        return FEGameMode & 65536;
+    }
+
+    bool IsPostRivalMode() {
+        return FEGameMode & 131072;
+    }
+
+    bool IsBeatGameMode() {
+        return FEGameMode & 262144;
+    }
+
+    void SetGameMode(eFEGameModes mode) {
+        FEGameMode = FEGameMode | static_cast<unsigned int>(mode);
+    }
+
+    void ClearGameMode(eFEGameModes mode) {
+        FEGameMode = FEGameMode & ~static_cast<unsigned int>(mode);
+    }
+
+    void ResetGameMode() {
+        FEGameMode = 0;
+    }
+
+    unsigned int GetGameMode() {
+        return FEGameMode;
+    }
+
+    bool IsOptionsDirty() {
+        return bIsOptionsDirty;
+    }
+
+    void SetOptionsDirty(bool dirty) {
+        bIsOptionsDirty = dirty;
+    }
+
+    void SetPlayersJoystickPort(int player, signed char port) {
+        PlayerJoyports[player] = port;
+    }
+
+    signed char GetPlayersJoystickPort(int player) {
+        return PlayerJoyports[player];
+    }
+
+    UserProfile* GetMultiplayerProfile(int player) {
+        return CurrentUserProfiles[player];
+    }
+
+    OptionsSettings* GetOptionsSettings() {
+        return CurrentUserProfiles[0]->GetOptions();
+    }
+
+    AudioSettings* GetAudioSettings() {
+        return &CurrentUserProfiles[0]->GetOptions()->TheAudioSettings;
+    }
+
+    VideoSettings* GetVideoSettings() {
+        return &CurrentUserProfiles[0]->GetOptions()->TheVideoSettings;
+    }
+
+    GameplaySettings* GetGameplaySettings() {
+        return &CurrentUserProfiles[0]->GetOptions()->TheGameplaySettings;
+    }
+
+    void GetGameCompletionStats(GameCompletionStats* stats);
+
+    bool MatchesGameMode(unsigned int mode) {
+        return FEGameMode & mode;
     }
 
     unsigned char iNumPlayers; // offset 0x0, size 0x1

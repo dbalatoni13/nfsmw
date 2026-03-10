@@ -38,7 +38,7 @@ public:
     virtual void UnHighlight();
     float GetMax();
     float GetMin();
-    float GetValue();
+    float GetValue() { return fCurValue; }
     float GetPrevValue();
     float GetBaseWidth();
     float GetBaseHeight();

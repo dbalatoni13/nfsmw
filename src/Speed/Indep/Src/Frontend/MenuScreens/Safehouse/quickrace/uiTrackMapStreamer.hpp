@@ -5,6 +5,136 @@
 #pragma once
 #endif
 
+#include <types.h>
 
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
+
+struct GRaceParameters;
+struct FEMultiImage;
+
+// total size: 0x2C
+struct tCubic1D {
+    float Val;           // offset 0x0, size 0x4
+    float dVal;          // offset 0x4, size 0x4
+    float ValDesired;    // offset 0x8, size 0x4
+    float dValDesired;   // offset 0xC, size 0x4
+    float Coeff[4];      // offset 0x10, size 0x10
+    float time;          // offset 0x20, size 0x4
+    float duration;      // offset 0x24, size 0x4
+    short state;         // offset 0x28, size 0x2
+    short flags;         // offset 0x2A, size 0x2
+
+    tCubic1D(short type, float dur);
+
+    void Snap();
+    void SetVal(const float v);
+    void SetdVal(float v);
+    void SetValDesired(float v);
+    void SetdValDesired(float v);
+    void SetDuration(const float t);
+    void SetState(short s);
+    void SetFlags(short f);
+    float GetVal();
+    float GetdVal();
+    float GetddVal();
+    int HasArrived();
+    void PathdValDesired(float v);
+    void MakeCoeffs();
+    float GetVal(float t);
+    float GetdVal(float t);
+    float GetddVal(float t);
+    float GetValDesired();
+    float GetdValDesired();
+    float GetDerivative(float t);
+    float GetSecondDerivative(float t);
+    void ClampDerivative(float fMag);
+    void ClampSecondDerivative(float fMag);
+    void Update(float fSeconds, float fDClamp, float fDDClamp);
+};
+
+// total size: 0x58
+struct tCubic2D {
+    tCubic1D x; // offset 0x0, size 0x2C
+    tCubic1D y; // offset 0x2C, size 0x2C
+
+    tCubic2D(short type, float dur);
+    tCubic2D(short type, bVector2* pDuration);
+
+    int HasArrived();
+    void Snap();
+    void SetVal(const float vx, const float vy);
+    void SetdVal(float vx, float vy);
+    void SetValDesired(float vx, float vy);
+    void SetdValDesired(float vx, float vy);
+    void SetDuration(const float t);
+    void SetDuration(const float tx, const float ty);
+    void SetState(short s);
+    void SetFlags(short s);
+    void PathdValDesired(float x2, float y2);
+    void PathdValDesired(bVector2* v);
+    void MakeCoeffs();
+
+    void SetVal(const bVector2* pV);
+    void SetdVal(bVector2* pV);
+    void SetValDesired(bVector2* pV);
+    void SetdValDesired(bVector2* pV);
+    void SetDuration(const bVector2* pV);
+    void GetVal(bVector2* pV);
+    void GetdVal(bVector2* pV);
+    void GetddVal(bVector2* pV);
+    void GetVal(bVector2* pV, float t);
+    void GetdVal(bVector2* pV, float t);
+    void GetddVal(bVector2* pV, float t);
+    void GetValDesired(bVector2* pV);
+    void GetdValDesired(bVector2* pV);
+    void Update(float fSeconds, float fDClamp, float fDDClamp);
+};
+
+// total size: 0xDC
+struct UITrackMapStreamer {
+    bool bMapPackLoaded;          // offset 0x0, size 0x1
+    bool bMakeSpaceInPoolComplete; // offset 0x4, size 0x1
+    bool bLoadingMap;             // offset 0x8, size 0x1
+    bool bUseTrackStreamerMem;    // offset 0xC, size 0x1
+    int MemPoolNum;               // offset 0x10, size 0x4
+    GRaceParameters* pCurrentTrack; // offset 0x14, size 0x4
+    FEMultiImage* TrackMap;       // offset 0x18, size 0x4
+    unsigned int MapHash;         // offset 0x1C, size 0x4
+    int RegionUnlock;             // offset 0x20, size 0x4
+    tCubic2D ZoomCubic;           // offset 0x24, size 0x58
+    tCubic2D PanCubic;            // offset 0x7C, size 0x58
+    bool bUsingTrackForAnim;      // offset 0xD4, size 0x1
+    // vtable at 0xD8
+
+    static void MakeSpaceInPoolCallbackBridge(int param);
+
+    UITrackMapStreamer();
+    virtual ~UITrackMapStreamer();
+
+    void MakeSpaceInPoolCallback();
+    void Init(GRaceParameters* track, FEMultiImage* map, int unused, int region_unlock);
+    void UpdateAnimation();
+    bool IsZooming();
+    float GetZoomFactor();
+    void GetPan(bVector2& pan);
+    void ZoomTo(const bVector2& factor);
+    void PanTo(const bVector2& pos);
+    void ZoomToTrack();
+    void PanToTrack();
+    void SetZoom(const bVector2& factor);
+    void SetPan(const bVector2& pos);
+    void SetZoomSpeed(float sec);
+    void SetPanSpeed(float sec);
+    void ResetZoom(bool use_track);
+    void ResetPan(bool use_track);
+    void SetMapPackLoaded();
+    void SetMapLoaded(unsigned int texture);
+
+    static void MapLoadCallback(unsigned int texture);
+    static void MapPackLoadCallback(unsigned int screenPtr);
+    void UpdateMap();
+    void CalcBoundsForRace(bVector2& top_left, bVector2& bottom_right);
+    unsigned int CalcMapTextureHash();
+};
 
 #endif

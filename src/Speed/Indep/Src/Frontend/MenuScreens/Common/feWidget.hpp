@@ -33,8 +33,8 @@ public:
     virtual void Position();
     virtual void Show();
     virtual void Hide();
-    virtual void Enable();
-    virtual void Disable();
+    virtual void Enable() { bEnabled = true; }
+    virtual void Disable() { bEnabled = false; }
     virtual void SetFocus(const char* parent_pkg);
     virtual void UnsetFocus();
     virtual void SetPos(bVector2& pos);
@@ -49,9 +49,9 @@ public:
     void GetSize(bVector2& size);
     float GetWidth();
     float GetHeight();
-    void SetTopLeft(bVector2& top_left);
-    void SetTopLeftX(float x);
-    void SetTopLeftY(float y);
+    void SetTopLeft(bVector2& top_left) { vTopLeft = top_left; }
+    void SetTopLeftX(float x) { vTopLeft.x = x; }
+    void SetTopLeftY(float y) { vTopLeft.y = y; }
     void SetSize(bVector2& size);
     void SetWidth(float width);
     void SetHeight(float height);
@@ -91,8 +91,8 @@ public:
     void SetPosX(float x) override;
     void SetPosY(float y) override;
 
-    FEString* GetTitleObject();
-    FEString* GetDataObject();
+    FEString* GetTitleObject() { return pTitle; }
+    FEString* GetDataObject() { return pData; }
     void SetTitleObject(FEString* string);
     void SetDataObject(FEString* string);
     void GetDataPos(bVector2& pos);
@@ -138,11 +138,16 @@ public:
     void UnsetFocus() override;
     virtual void BlinkArrows(unsigned int data);
 
-    FEImage* GetLeftImage();
-    FEImage* GetRightImage();
+    FEImage* GetLeftImage() { return pLeftImage; }
+    FEImage* GetRightImage() { return pRightImage; }
     void SetLeftImage(FEImage* img);
     void SetRightImage(FEImage* img);
-    bool Update(unsigned int msg);
+    bool Update(unsigned int msg) {
+        bMovedLastUpdate = true;
+        BlinkArrows(msg);
+        Draw();
+        return true;
+    }
     unsigned int GetEnableScript();
     unsigned int GetDisableScript();
     void SetEnableScript(unsigned int script);
@@ -152,7 +157,7 @@ public:
 
 // 0xA4
 struct FESliderWidget : public FEToggleWidget {
-private:
+protected:
     cSlider Slider;     // 0x64
     float fVertOffset;  // 0xA0
 
@@ -172,12 +177,14 @@ public:
 
     void SetDataObject(FEString* string);
     void InitSliderObjects(const char* pkg_name, const char* name);
-    void SetSliderValues(float min, float max, float inc, float cur);
-    float GetValue();
-    void SetValue(float val);
-    void Increment();
-    void Decrement();
-    void DrawSlider();
+    void SetSliderValues(float min, float max, float inc, float cur) {
+        Slider.InitValues(min, max, inc, cur, 160.0f);
+    }
+    float GetValue() { return Slider.GetValue(); }
+    void SetValue(float val) { Slider.SetValue(val); }
+    void Increment() { Slider.Increment(); }
+    void Decrement() { Slider.Decrement(); }
+    void DrawSlider() { Slider.Draw(); }
     void ToggleSlider(bool on);
     void UpdateSlider(unsigned int msg);
     float GetVertOffset();

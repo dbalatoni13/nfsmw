@@ -17,6 +17,11 @@ struct cFEng {
     FEPackage* FindPackage(const char* pPackageName);
 
     void QueueGameMessagePkg(unsigned int pMessage, FEPackage* topkg);
+    void QueueGameMessage(unsigned int pMessage, const char* pPackageName, unsigned int controlMask);
+
+    void QueuePackageMessage(unsigned int msg, const char* pkg_name, FEObject* obj);
+
+    void QueuePackageSwitch(const char* pkg_name, int arg, unsigned long param, bool b);
 };
 
 #endif
