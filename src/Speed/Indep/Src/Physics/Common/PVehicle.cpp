@@ -399,3 +399,21 @@ void PVehicle::SetSpeed(float speed) {
 }
 
 
+void PVehicle::UpdateLocalVelocities() {
+    IRigidBody *rigidbody = static_cast<ISimable *>(this)->GetRigidBody();
+    if (rigidbody == nullptr || mCollisionBody == nullptr) {
+        UMath::Clear(mLocalVel);
+        mAbsSpeed = 0.0f;
+        mSlipAngle = 0.0f;
+        mSpeed = 0.0f;
+    } else {
+        mLocalVel = rigidbody->GetLinearVelocity();
+        rigidbody->ConvertWorldToLocal(mLocalVel, false);
+        mSlipAngle = UMath::Atan2a(mLocalVel.x, UMath::Abs(mLocalVel.z));
+        mSpeed = rigidbody->GetSpeed();
+        if (UMath::Dot(mCollisionBody->GetForwardVector(), rigidbody->GetLinearVelocity()) < 0.0f) {
+            mSpeed = -mSpeed;
+        }
+        mAbsSpeed = UMath::Abs(mSpeed);
+    }
+}

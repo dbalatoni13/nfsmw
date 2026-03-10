@@ -494,11 +494,10 @@ IRigidBody *PhysicsObject::GetRigidBody() {
 }
 
 const UMath::Vector3 &PhysicsObject::GetPosition() const {
-    IRigidBody *rb = mRigidBody;
-    if (rb == nullptr) {
+    if (mRigidBody == nullptr) {
         return UMath::Vector3::kZero;
     }
-    return rb->GetPosition();
+    return mRigidBody->GetPosition();
 }
 
 unsigned int PhysicsObject::GetWorldID() const {
