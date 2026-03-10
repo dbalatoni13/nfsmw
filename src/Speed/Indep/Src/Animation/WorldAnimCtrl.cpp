@@ -140,8 +140,8 @@ void CWorldAnimCtrl::SetEvalTime(float time) {
 }
 
 float CWorldAnimCtrl::GetAnimLengthInSeconds() {
-    float num = m_animLength * 0.033333335f;
     float denom = m_timeScale * m_f_speed_modifier;
+    float num = m_animLength * 0.033333335f;
     return num / denom;
 }
 

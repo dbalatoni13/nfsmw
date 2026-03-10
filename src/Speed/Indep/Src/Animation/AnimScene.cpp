@@ -479,8 +479,8 @@ void CAnimScene::AddProperty(eAnimProperty property_id, bool enabled) {
         bNode *tail = mAnimPropertyList.HeadNode.Prev;
         tail->Next = anim_property;
         mAnimPropertyList.HeadNode.Prev = anim_property;
-        anim_property->Next = &mAnimPropertyList.HeadNode;
         anim_property->Prev = tail;
+        anim_property->Next = &mAnimPropertyList.HeadNode;
     }
 }
 
@@ -656,8 +656,7 @@ void CAnimScene::InitCarAnimStatesFromNIS() {
     }
 
     {
-        int i = 1;
-        do {
+        for (int i = 1; i < 8; i++) {
             char channelName[24];
             bSPrintf(channelName, "cop%d", i + 1);
             IVehicle *copVehicle = INIS::Get()->GetCar(UCrc32(channelName));
@@ -666,8 +665,7 @@ void CAnimScene::InitCarAnimStatesFromNIS() {
                 gCarAnimationStates[carIndex].CarIndex = carIndex;
                 gCarAnimationStates[carIndex].mIVehicle = copVehicle;
             }
-            i = i + 1;
-        } while (i < 8);
+        }
     }
 }
 
@@ -763,8 +761,8 @@ void CAnimScene::AnimatedCars_SetMainAndWheels(int current_car, CAnimCtrl *main_
     bMulMatrix(&animated_car_matrix, &mSceneTranslationMatrix, &animated_car_matrix);
     bConvertToBond(animated_car_matrix, animated_car_matrix);
 
-    WCollisionMgr collisionMgr(0, 3);
     float ground_elevation = 0.0f;
+    WCollisionMgr collisionMgr(0, 3);
     bool point_valid = collisionMgr.GetWorldHeightAtPointRigorous(
         *reinterpret_cast< UMath::Vector3 * >(&animated_car_matrix.v3), ground_elevation, nullptr);
 

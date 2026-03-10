@@ -55,7 +55,7 @@ int UnloaderAnimSceneData(bChunk *chunk);
 class CAnimProperty : public bTNode<CAnimProperty> {
   public:
     CAnimProperty(eAnimProperty type, bool enabled);
-    ~CAnimProperty();
+    virtual ~CAnimProperty();
     eAnimProperty GetType();
     void SetEnabled(bool enabled);
     bool IsEnabled();
