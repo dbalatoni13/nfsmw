@@ -151,11 +151,16 @@ class TrackStreamer {
     void SetStreamingPosition(int position_number, const bVector3 *position);
     void ClearStreamingPositions();
     void BlockUntilLoadingComplete();
+    void MakeSpaceInPool(int size, bool force);
     void *AllocateUserMemory(int size, const char *debug_name, int offset);
     void FreeUserMemory(void *mem);
 
     void DisableZoneSwitching() {
         ZoneSwitchingDisabled = true;
+    }
+
+    void EnableZoneSwitching() {
+        ZoneSwitchingDisabled = false;
     }
 
     int IsSectionVisible(int section_number) {

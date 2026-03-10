@@ -1,5 +1,7 @@
 #include "AnimScene.hpp"
+#include "AnimDirectory.hpp"
 #include "AnimEntity_BasicCharacter.hpp"
+#include "AnimLocator.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/World/SpaceNode.hpp"
 #include "Speed/Indep/Src/World/VisibleSection.hpp"
@@ -44,9 +46,12 @@ struct CarAnimationState {
 
 extern CarAnimationState gCarAnimationStates[16];
 
+extern AnimDirectory *TheAnimDirectory;
+extern int bEnableNisTextDisplay;
+extern bool mIsRaceStart;
+
 bTList<CAnimSceneData> g_loadedAnimSceneDataList;
 int mHandleCounter = 0;
-extern bool mIsRaceStart;
 
 CarAnimationState::CarAnimationState() {
     AnimCtrl = nullptr;
@@ -266,6 +271,11 @@ int CAnimScene::GetSceneType() {
     return reinterpret_cast< CAnimSceneDataLayout * >(mAnimSceneData)->mNisScene->SceneType;
 }
 
+void CAnimScene::GetSceneName(char *ret_name) {
+    unsigned int scene_hash = GetSceneHash();
+    TheAnimDirectory->GetNameOfSceneHash(scene_hash, ret_name);
+}
+
 int CAnimScene::GetCameraTrackNumber() {
     return mCameraTrackNumber;
 }
@@ -362,6 +372,43 @@ void CAnimScene::SetTime(float time) {
     mTimeDelta = 0.0f;
 }
 
+void CAnimScene::UpdateTime(float time_step) {
+    if (!IsPlaying()) {
+        if (IsPaused()) {
+            AnimatedCars_Update(0.0f);
+        }
+        return;
+    }
+
+    if (bEnableNisTextDisplay) {
+        char scene_name[16];
+        GetSceneName(scene_name);
+    }
+
+    bPNode *node = mInstancedAnimEntityList.GetTail();
+    while (node != mInstancedAnimEntityList.EndOfList()) {
+        IAnimEntity *iae = reinterpret_cast< IAnimEntity * >(node->GetObject());
+        iae->UpdateTimeStep(mTimeDelta);
+        node = node->GetPrev();
+    }
+
+    int scene_type = reinterpret_cast< CAnimSceneDataLayout * >(mAnimSceneData)->mNisScene->SceneType;
+    if (scene_type == 0) {
+        if (GetTimeElapsed() > GetTimeTotalLength()) {
+            if (IsControllingCamera()) {
+                mControllingCamera = false;
+            }
+        }
+    } else if (scene_type == 2 || scene_type == 4) {
+        if (GetTimeElapsed() > GetTimeTotalLength()) {
+            IsControllingCamera();
+        }
+    }
+
+    mTimeElapsed += mTimeDelta;
+    mTimeDelta = time_step;
+}
+
 void CAnimScene::RenderEffects(eView *view, int is_reflection) {
     bPNode *node = mInstancedAnimEntityList.GetTail();
     while (node != mInstancedAnimEntityList.EndOfList()) {
@@ -453,6 +500,52 @@ void CAnimScene::ChangePlayStatus(ePlayStatus new_status) {
         }
     }
     mPlayStatus = new_status;
+}
+
+bool CAnimScene::Init() {
+    NisScene *scene_info = reinterpret_cast< CAnimSceneDataLayout * >(mAnimSceneData)->mNisScene;
+    bool is_race = false;
+    if (scene_info->SceneType == 0) {
+        is_race = true;
+    }
+    mIsRaceStart = is_race;
+    bool find_start_line = false;
+    if (scene_info->SceneType == 0 || scene_info->SceneType == 3 || scene_info->SceneType == 2) {
+        find_start_line = true;
+    }
+
+    bMatrix4 scene_translation_matrix;
+    bMatrix4 scene_rotation_matrix;
+    CAnimLocator::GetInitialAnimMatricies(&scene_rotation_matrix, &scene_translation_matrix, find_start_line);
+    mSceneRotationMatrix = scene_rotation_matrix;
+    mSceneTranslationMatrix = scene_translation_matrix;
+    bMatrix4 scene_transform_matrix;
+    bMulMatrix(&scene_transform_matrix, &scene_translation_matrix, &scene_rotation_matrix);
+    mSceneTransformMatrix = scene_transform_matrix;
+
+    SpaceNode *space_node = CreateSpaceNode(nullptr);
+    mSpaceNode = space_node;
+    space_node->SetLocalMatrix(&scene_transform_matrix);
+
+    ClearCarAnimationControllers();
+    SetCarAnimationPositions();
+    CreateCarAnimationControllers();
+    CreateAnimEntities();
+
+    if (scene_info->SceneType == 0 || scene_info->SceneType == 3) {
+        AddProperty(eAnimProp_ControlRaceCountdown, true);
+        AddProperty(eAnimProp_UnBindRaceCars, true);
+    }
+
+    BindToGame();
+    AnimatedCars_ResetToBeginning();
+    InitCharacterEffects();
+
+    NisScene *nis_scene = reinterpret_cast< CAnimSceneDataLayout * >(mAnimSceneData)->mNisScene;
+    if (nis_scene->SeeulatorOverlayName[0] != '\0') {
+        TheVisibleSectionManager.ActivateOverlay(nis_scene->SeeulatorOverlayName);
+    }
+    return true;
 }
 
 bool CAnimScene::Purge() {

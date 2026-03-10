@@ -124,6 +124,10 @@ class CarLoader {
         return LoadingInProgress;
     }
 
+    bool MakeSpaceInPool(int size);
+    void *AllocateUserMemory(int size, const char *debug_name);
+    void FreeUserMemory(void *mem);
+
   private:
     void (*pCallback)(unsigned int);                 // offset 0x0, size 0x4
     unsigned int Param;                              // offset 0x4, size 0x4

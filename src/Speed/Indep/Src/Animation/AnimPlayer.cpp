@@ -2,6 +2,8 @@
 #include "AnimDirectory.hpp"
 #include "WorldAnimInstanceDirectory.hpp"
 #include "Speed/Indep/Src/Misc/bFile.hpp"
+#include "Speed/Indep/Src/World/CarLoader.hpp"
+#include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 struct CAnimMarker {
@@ -9,8 +11,14 @@ struct CAnimMarker {
 };
 
 extern AnimDirectory *TheAnimDirectory;
-int AnimLoader_NextStep();
+void AnimLoader_NextStep();
 extern int AnimCfg_DisableWorldAnimations;
+
+enum eNISMemoryPool {
+    Main = 0,
+    TrackStream = 1,
+    CarPool = 2,
+};
 
 struct AnimDirectoryLayout {
     unsigned int mAnimSceneCount;
@@ -24,7 +32,17 @@ struct CAnimSceneNodeLayout {
     int mHandle;
 };
 
-struct CAnimResourceFileProxy;
+struct CAnimResourceFileProxy : public bTNode<CAnimResourceFileProxy> {
+    ResourceFile *mResourceFile; // offset 0x8
+    void *mMemPointer;          // offset 0xC
+    eNISMemoryPool mMemoryPool;     // offset 0x10
+
+    CAnimResourceFileProxy(ResourceFile *res_file_ptr, void *mem_ptr, eNISMemoryPool mem_pool_used)
+        : mResourceFile(res_file_ptr), //
+          mMemPointer(mem_ptr),        //
+          mMemoryPool(mem_pool_used) {}
+};
+
 extern bTList<CAnimResourceFileProxy> gAnimLoader_ResourceFileList;
 extern AnimSceneLoadInfo gAnimLoader_Info;
 static bool gAnimLoader_InProgress;
@@ -32,6 +50,9 @@ static int gAnimLoader_CurSharedFilePosition;
 static int gAnimLoader_CurSceneFilePosition;
 static void *gAnimLoader_MemPointer;
 static void *gAnimLoader_MovingPointer;
+static eNISMemoryPool gAnimLoader_UsingMemoryPool;
+extern int gAnimCfg_Small_NIS_Size;
+extern int CarLoaderMemoryPoolNumber;
 void UpdateCopDoorPositions(float time_step);
 
 bool CAnimSettings::mDebugPrintEnabled = false;
@@ -114,6 +135,133 @@ int AnimLoader_SizeNeeded() {
 
 void AnimLoader_Callback(int param_1) {
     AnimLoader_NextStep();
+}
+
+void AnimLoader_LoadResourceFile(const char *filename) {
+    int file_size = bFileSize(filename);
+    ResourceFile *res_file = CreateResourceFile(filename, RESOURCE_FILE_NIS, 0, 0, file_size);
+    res_file->AssignMemory(gAnimLoader_MovingPointer, 0, filename);
+    res_file->BeginLoading(reinterpret_cast< void (*)(void *) >(AnimLoader_Callback), nullptr);
+    CAnimResourceFileProxy *proxy =
+        new CAnimResourceFileProxy(res_file, gAnimLoader_MovingPointer, gAnimLoader_UsingMemoryPool);
+    gAnimLoader_ResourceFileList.AddTail(proxy);
+    AnimLoader_IncrementAndAlignUp(reinterpret_cast< int & >(gAnimLoader_MovingPointer), file_size);
+}
+
+void AnimLoader_NextStep() {
+    if (gAnimLoader_InProgress) {
+        if (gAnimLoader_CurSharedFilePosition < static_cast< int >(gAnimLoader_Info.mSharedFileCount)) {
+            AnimLoader_LoadResourceFile(
+                TheAnimDirectory->GetFileName(gAnimLoader_CurSharedFilePosition + gAnimLoader_Info.mSharedFileStartIndex));
+            gAnimLoader_CurSharedFilePosition++;
+        } else if (gAnimLoader_CurSceneFilePosition < static_cast< int >(gAnimLoader_Info.mSceneFileCount)) {
+            AnimLoader_LoadResourceFile(
+                TheAnimDirectory->GetFileName(gAnimLoader_CurSceneFilePosition + gAnimLoader_Info.mSceneFileStartIndex));
+            gAnimLoader_CurSceneFilePosition++;
+        } else {
+            gAnimLoader_InProgress = false;
+        }
+    }
+}
+
+bool CAnimPlayer::Load(unsigned int anim_id, int camera_track_number, bool DisableZoneSwitching) {
+    if (gAnimLoader_InProgress) {
+        return false;
+    }
+
+    CAnimSceneData *scene_data = CAnimSceneData::FindAnimSceneData(anim_id);
+    if (scene_data != nullptr) {
+        return false;
+    }
+
+    if (TheAnimDirectory == nullptr) {
+        return false;
+    }
+
+    unsigned int scene_count = TheAnimDirectory->GetSceneCount();
+    bool scene_found = false;
+    unsigned int scene_slot = 0;
+    bool loading_has_begun = false;
+
+    if (scene_slot < scene_count) {
+        do {
+            AnimSceneLoadInfo info;
+            TheAnimDirectory->GetSceneLoadInfo(scene_slot, info);
+            if (info.mAnimSceneHash == anim_id) {
+                scene_found = true;
+                gAnimLoader_Info = info;
+                break;
+            }
+            scene_slot++;
+        } while (scene_slot < scene_count);
+    }
+
+    if (!scene_found) {
+        return loading_has_begun;
+    }
+
+    int size_needed = AnimLoader_SizeNeeded();
+    if (size_needed >= 0xDBBA1) {
+        gAnimLoader_MemPointer = nullptr;
+    } else if (size_needed > gAnimCfg_Small_NIS_Size) {
+        TheTrackStreamer.BlockUntilLoadingComplete();
+        TheTrackStreamer.MakeSpaceInPool(size_needed, true);
+        gAnimLoader_MemPointer = TheTrackStreamer.AllocateUserMemory(size_needed, "NISMemory", 0);
+        gAnimLoader_UsingMemoryPool = CarPool;
+        if (gAnimLoader_MemPointer == nullptr) {
+            TheCarLoader.MakeSpaceInPool(size_needed);
+            gAnimLoader_MemPointer = bMalloc(size_needed, CarLoaderMemoryPoolNumber & 0xF | 0x2000);
+            gAnimLoader_UsingMemoryPool = TrackStream;
+        }
+    } else {
+        gAnimLoader_UsingMemoryPool = Main;
+        gAnimLoader_MemPointer = bMalloc(size_needed, 0x2000);
+    }
+
+    if (gAnimLoader_MemPointer != nullptr) {
+        AnimLoader_Init();
+        loading_has_begun = true;
+        AnimLoader_NextStep();
+    }
+    return loading_has_begun;
+}
+
+bool CAnimPlayer::Unload(unsigned int anim_id) {
+    if (gAnimLoader_InProgress) {
+        return false;
+    }
+
+    TheTrackStreamer.EnableZoneSwitching();
+    CAnimSceneData *scene_data = CAnimSceneData::FindAnimSceneData(anim_id);
+
+    if (scene_data != nullptr) {
+        CAnimResourceFileProxy *proxy = gAnimLoader_ResourceFileList.GetHead();
+        while (proxy != gAnimLoader_ResourceFileList.EndOfList()) {
+            CAnimResourceFileProxy *next_proxy = proxy->GetNext();
+            if (proxy->mResourceFile != nullptr) {
+                UnloadResourceFile(proxy->mResourceFile);
+                if (proxy->mMemoryPool == TrackStream) {
+                    void *mem = proxy->mResourceFile->GetMemory();
+                    if (mem != nullptr) {
+                        TheTrackStreamer.FreeUserMemory(mem);
+                    }
+                } else if (proxy->mMemoryPool == CarPool) {
+                    void *mem = proxy->mResourceFile->GetMemory();
+                    if (mem != nullptr) {
+                        bFree(mem);
+                    }
+                } else {
+                    bFree(proxy->mResourceFile->GetMemory());
+                }
+                gAnimLoader_ResourceFileList.Remove(proxy);
+                delete proxy;
+                return true;
+            }
+            proxy = next_proxy;
+        }
+    }
+
+    return false;
 }
 
 void CAnimPlayer::InitWorldAnimScene() {
