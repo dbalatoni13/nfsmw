@@ -4,6 +4,9 @@
 float PredictAverageAir(float fSeconds, float *pHighest, float *pLongest, bool b_grounded_abort);
 float GetRecentCurvature();
 
+static float sPredictedAir;
+static float sRecentCurvature;
+
 static float ReplayNosScore(ICEAnchor *p_car) {
     float ret = 0.0f;
 
@@ -166,3 +169,11 @@ void ClearRecentlyUsed() {
 }
 
 } // namespace ICEReplay
+
+float PredictAverageAir(float fSeconds, float *pHighest, float *pLongest, bool b_grounded_abort) {
+    return sPredictedAir;
+}
+
+float GetRecentCurvature() {
+    return sRecentCurvature;
+}
