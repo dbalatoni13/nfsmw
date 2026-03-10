@@ -3,6 +3,8 @@
 #include "Speed/Indep/Src/World/SpaceNode.hpp"
 #include "Speed/Indep/Src/World/VisibleSection.hpp"
 
+class IVehicle;
+
 struct NisScene {
     unsigned int mSceneNameHash;
     char mSceneName[16];
@@ -28,6 +30,15 @@ struct CAnimEntityDataLayout {
     void *mData;
     int mSize;
 };
+
+struct CarAnimationState {
+    CAnimCtrl *AnimCtrl;   // offset 0x0
+    IVehicle *mIVehicle;   // offset 0x4
+    int HaveLastCarPosition; // offset 0x8
+    int CarIndex;          // offset 0xC
+};
+
+extern CarAnimationState gCarAnimationStates[16];
 
 bTList<CAnimSceneData> g_loadedAnimSceneDataList;
 int mHandleCounter = 0;
@@ -390,4 +401,46 @@ bool CAnimScene::Purge() {
         TheVisibleSectionManager.UnactivateOverlay();
     }
     return true;
+}
+
+void CAnimScene::ForcePlayerToAnimCarPosition(int player_num, int car_num) {}
+
+void CAnimScene::ClearCarAnimStates() {
+    for (int i = 0; i <= 15; i++) {
+        gCarAnimationStates[i].CarIndex = -1;
+    }
+}
+
+void CAnimScene::AnimatedCars_ClearLastPose() {
+    for (int i = 0; i <= 15; i++) {
+        gCarAnimationStates[i].HaveLastCarPosition = 0;
+    }
+}
+
+float CAnimScene::GetTimeElapsed() {
+    return mTimeElapsed;
+}
+
+float CAnimScene::GetTimeStart() {
+    return mTimeStart;
+}
+
+float CAnimScene::GetTimeTotalLength() {
+    return mTimeTotalLength;
+}
+
+bool CAnimScene::IsControllingCamera() {
+    return mControllingCamera;
+}
+
+bool CAnimScene::IsCameraFixingElevation() {
+    return true;
+}
+
+bMatrix4 &CAnimScene::GetSceneRotationMatrix() {
+    return mSceneRotationMatrix;
+}
+
+bMatrix4 &CAnimScene::GetSceneTransformMatrix() {
+    return mSceneTransformMatrix;
 }

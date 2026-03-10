@@ -54,17 +54,17 @@ CAnimPlayer::~CAnimPlayer() {
 
 void AnimLoader_Init() {
     gAnimLoader_InProgress = true;
-    gAnimLoader_MovingPointer = gAnimLoader_MemPointer;
     gAnimLoader_CurSharedFilePosition = 0;
     gAnimLoader_CurSceneFilePosition = 0;
+    gAnimLoader_MovingPointer = gAnimLoader_MemPointer;
 }
 
-void AnimLoader_IncrementAndAlignUp(int &pos, int size) {
-    unsigned int value = pos + size;
-
-    pos = value;
-    if ((value & 0xF) != 0) {
-        pos = (value + 0x10) - (value & 0xF);
+void AnimLoader_IncrementAndAlignUp(int &ref, int size) {
+    ref += size;
+    int remainder = ref & 0xF;
+    if (remainder != 0) {
+        int temp = ref + 0x10;
+        ref = temp - remainder;
     }
 }
 

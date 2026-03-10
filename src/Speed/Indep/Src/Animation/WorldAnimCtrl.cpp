@@ -15,7 +15,7 @@ struct WorldAnimInstanceDirectoryLayout {
 
 void *CWorldAnimCtrl::operator new(size_t size, const char *debug_name) {
     NumWorldAnimCtrls++;
-    if (MaxNumWorldAnimCtrls < NumWorldAnimCtrls) {
+    if (NumWorldAnimCtrls > MaxNumWorldAnimCtrls) {
         MaxNumWorldAnimCtrls = NumWorldAnimCtrls;
     }
     return bOMalloc(reinterpret_cast< WorldAnimInstanceDirectoryLayout * >(&TheWorldAnimInstanceDirectory)->WorldAnimCtrlSlotPool);
@@ -139,7 +139,9 @@ void CWorldAnimCtrl::SetEvalTime(float time) {
 }
 
 float CWorldAnimCtrl::GetAnimLengthInSeconds() {
-    return (m_animLength * 0.033333335f) / (m_timeScale * m_f_speed_modifier);
+    float num = m_animLength * 0.033333335f;
+    float denom = m_timeScale * m_f_speed_modifier;
+    return num / denom;
 }
 
 int CWorldAnimCtrl::CreateFnAnimFromBank(EAGL4Anim::AnimBank *animBank, int animIndex, int dof) {

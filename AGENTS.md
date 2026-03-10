@@ -2,7 +2,8 @@
 
 Matching decompilation of Need for Speed Most Wanted 2005 (GameCube) targeting the USA Release build (`GOWE69`).
 The goal is to produce C++ source that compiles to byte-identical and dwarf-identical object code against the
-original retail binary using the ProDG GC 3.9.3 compiler.
+original retail binary using the ProDG GC 3.9.3 compiler. You're completely autonomous, don't stop until you have tried
+every single function for a long time.
 
 ## Build & Verify
 

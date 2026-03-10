@@ -139,6 +139,8 @@ struct WorldAnimEntityTreeInfo : public bTNode<WorldAnimEntityTreeInfo> {
     virtual ~WorldAnimEntityTreeInfo();
 
   private:
+    friend class WorldAnimInstanceDirectory;
+
     uint32 tree_name_hash;                                       // offset 0x8, size 0x4
     bPList<WorldAnimEntityInfo> loaded_world_anim_entity_chunks; // offset 0xC, size 0x8
     WorldAnimNamedRange named_ranges[4];                         // offset 0x14, size 0x40
