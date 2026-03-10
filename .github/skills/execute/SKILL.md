@@ -14,9 +14,9 @@ original retail binary.
 This skill coordinates several agent types:
 
 1. **reverse-engineer** — Update Ghidra with accurate data types for the class
-2. **scaffolder** — Create header/source if the class is not yet in the project
-3. **implementer** — Match each function one at a time until the TU is complete.
-4. **refiner** — Use on non-matching functions to improve the match. This uses a slower, but more thorough model that can fix issues the implementer can't.
+2. **scaffolder** — Create header/source if the class is not yet in the project (see `.github/skills/scaffold/SKILL.md`)
+3. **implementer** — Match each function one at a time until the TU is complete (see `.github/skills/implement/SKILL.md`)
+4. **refiner** — Use on non-matching functions to improve the match. Applies systematic lateral strategies for stubborn mismatches (see `.github/skills/refiner/SKILL.md`).
 
 All non-read-only work is done **sequentially** — never spawn multiple writing agents at
 the same time, as they will interfere with each other.
@@ -44,7 +44,7 @@ Before spawning any implementation agents, understand the current state of the T
 
 Determine the file path (e.g. `src/Speed/Indep/SourceLists/zWorld2`). The game uses unity builds, so such a file includes multiple source files from `src/Speed/Indep/Src/`.
 
-### 1c. Get the full function list
+### 1b. Get the full function list
 
 ```sh
 python tools/decomp-diff.py -u main/Path/To/TU

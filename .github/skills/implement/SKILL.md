@@ -34,12 +34,14 @@ Reference the skill for the usage. It gives info based on the virtual address of
 
 ### 1e. Assembly reference
 
-If these doesn't provide enough detail, check the generated assembly:
+If these don't provide enough detail, check the generated assembly. Use the Read tool
+to open the relevant `.s` file (prefer this over dumping the whole file):
 
-```sh
-# Look at the target disassembly
-cat build/GOWE69/asm/Path/To/TU.s
 ```
+build/GOWE69/asm/Path/To/TU.s
+```
+
+Search for the function label (mangled name) to navigate directly to its section.
 
 ### 1f. Related functions
 
