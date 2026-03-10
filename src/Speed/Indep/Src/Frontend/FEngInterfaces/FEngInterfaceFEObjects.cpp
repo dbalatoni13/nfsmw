@@ -207,9 +207,7 @@ void FEngSetMultiImageBottomRightUVs(FEMultiImage* image, FEVector2& bottomRight
         FEVector2 currTopLeftUVs;
         FEVector2 currBottomRightUVs;
         image->GetUVs(textureNumber, currTopLeftUVs, currBottomRightUVs);
-        FEVector2 topLeft(currTopLeftUVs);
-        FEVector2 bottomRight(bottomRightUVs);
-        image->SetUVs(textureNumber, topLeft, bottomRight);
+        image->SetUVs(textureNumber, currTopLeftUVs, bottomRightUVs);
         image->Flags |= 0x400000;
     }
 }
@@ -692,9 +690,9 @@ void FixInvertedRect(FERect& rect) {
         rect.right = tmp;
     }
     if (rect.top > rect.bottom) {
-        float tmp = rect.bottom;
-        rect.bottom = rect.top;
-        rect.top = tmp;
+        float tmp = rect.top;
+        rect.top = rect.bottom;
+        rect.bottom = tmp;
     }
 }
 
