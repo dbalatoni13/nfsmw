@@ -363,13 +363,13 @@ bool Smackable::Dropout() {
     if (mDropOutTimerMax <= 0.0f) {
         return false;
     }
-    if (mCollisionBody->IsAttachedToWorld()) {
-        return false;
+    if (!mCollisionBody->IsAttachedToWorld()) {
+        mCollisionBody->DisableModeling();
+        mCollisionBody->DisableTriggering();
+        mDropTimer = mDropOutTimerMax;
+        return true;
     }
-    mCollisionBody->DisableModeling();
-    mCollisionBody->DisableTriggering();
-    mDropTimer = mDropOutTimerMax;
-    return true;
+    return false;
 }
 
 bool Smackable::ValidateWorld() {
@@ -382,7 +382,8 @@ bool Smackable::ValidateWorld() {
     float height = wpos.HeightAtPoint(pos);
     IRigidBody *irb = GetRigidBody();
     float radius = irb->GetRadius();
-    return height <= pos.y + radius;
+    float limit = pos.y + radius;
+    return !(height > limit);
 }
 
 bool Smackable::ShouldDie() {
@@ -455,7 +456,7 @@ void Smackable::ProcessDeath(float dT) {
 }
 
 bool Smackable::ProcessDropout(float dT) {
-    if (mDropOutTimerMax <= 0.0f || mDropTimer <= 0.0f) {
+    if (!(mDropOutTimerMax > 0.0f) || !(mDropTimer > 0.0f)) {
         return false;
     }
     IRigidBody *irb = GetRigidBody();
@@ -528,7 +529,7 @@ void Smackable::Manage(float dT) {
 
 void Smackable::OnTaskSimulate(float dT) {
     mAge += dT;
-    if (mCollisionBody != nullptr && mAutoSimplify > 0.0f && mAutoSimplify < mAge) {
+    if (mCollisionBody != nullptr && mAutoSimplify > 0.0f && mAge > mAutoSimplify) {
         Simplify();
     }
     mDroppingOut = ProcessDropout(dT);

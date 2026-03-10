@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEffects.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
@@ -139,7 +140,7 @@ void PVehicle::ForceStopOff(char forceStopBits) {
 
 void PVehicle::OnDisableModeling() {
     IEffects *ieff;
-    if (IVehicle::QueryInterface(&ieff)) {
+    if (static_cast< ISimable * >(this)->QueryInterface(&ieff)) {
         ieff->Purge();
     }
 }
@@ -221,4 +222,43 @@ bool PVehicle::OnTask(HSIMTASK htask, float dT) {
         return true;
     }
     return PhysicsObject::OnTask(htask, dT);
+}
+
+void PVehicle::SetStaging(bool staging) {
+    if (static_cast< unsigned int >(staging) != static_cast< unsigned int >(mStaging)) {
+        mStaging = staging;
+        if (staging) {
+            mCollisionBody->EnableCollisionGeometries(UCrc32(0U), false);
+        }
+    }
+}
+
+void PVehicle::SetDriverStyle(DriverStyle style) {
+    if (mDriverStyle != style) {
+        mDriverStyle = style;
+        ReloadBehaviors();
+        if (mDriverStyle == STYLE_RACING && mEngine != nullptr) {
+            mEngine->MatchSpeed(mLocalVel.z);
+        }
+    }
+}
+
+void PVehicle::Launch() {
+    if (mSequencer != nullptr && mPerfectLaunch.IsSet()) {
+        if (mDriverClass == DRIVER_HUMAN) {
+            if (mPerfectLaunch.Amount > 0.0f) {
+                mPerfectLaunch.Set(10.0f);
+                new EPerfectLaunch(GetOwnerHandle(), mPerfectLaunch.Amount);
+            }
+        } else {
+            mPerfectLaunch.Clear();
+        }
+    }
+}
+
+float PVehicle::GetPerfectLaunch() const {
+    if (mRigidBody == nullptr && mPerfectLaunch.Time > 0.5f) {
+        return mPerfectLaunch.Amount;
+    }
+    return 0.5f;
 }

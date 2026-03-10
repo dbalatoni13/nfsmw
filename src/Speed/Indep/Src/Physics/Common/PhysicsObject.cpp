@@ -96,13 +96,11 @@ PhysicsObject::~PhysicsObject() {
 }
 
 void PhysicsObject::GetTransform(UMath::Matrix4 &matrix) const {
-    if (mRigidBody == nullptr) {
-        UMath::Copy(UMath::Matrix4::kIdentity, matrix);
-    } else {
-        UMath::Matrix4 mat;
-        mRigidBody->GetMatrix4(mat);
-        UMath::Copy(mat, matrix);
+    if (mRigidBody != nullptr) {
+        mRigidBody->GetMatrix4(matrix);
         matrix.v3 = UMath::Vector4Make(mRigidBody->GetPosition(), 1.0f);
+    } else {
+        UMath::Copy(UMath::Matrix4::kIdentity, matrix);
     }
 }
 

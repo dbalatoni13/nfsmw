@@ -50,15 +50,15 @@ SmokeableSection *SmokeableSectionQ::Find(int section_id) {
 
 SceneryModel::SceneryModel(SmokeableSpawner *spawner, const CollisionGeometry::Bounds *geometry,
                            const Attrib::Collection *attribs, bool hidden)
-    : HeirarchyModel(spawner->GetRenderMesh(), geometry, UCrc32(0u), nullptr, attribs, //
+    : HeirarchyModel(spawner->GetRenderMesh(), geometry, UCrc32(0x9756DF79u), nullptr, attribs, //
                      spawner->GetRenderHeirarchy(), 0, false) //
     , ISceneryModel(this) {
     mInstanceVisible = true;
     mSpawner = spawner;
-    if (hidden) {
-        StartOverride();
-    } else {
+    if (!hidden) {
         InitScene();
+    } else {
+        StartOverride();
     }
     mSceneryCount++;
 }
