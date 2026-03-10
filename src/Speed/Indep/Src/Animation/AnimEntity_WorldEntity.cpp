@@ -96,6 +96,109 @@ uint32 GetAnimChannelHash(uint32 anim_hash, uint32 dof) {
     }
 }
 
+bool CWorldAnimEntity::Init(void *init_data, SpaceNode *parent_space_node) {
+    unsigned int play_flags = 0;
+
+    Purge();
+
+    WorldAnimEntityInfo *info = static_cast<WorldAnimEntityInfo *>(init_data);
+    mEntityInfo = info;
+    mTypeID = info->mTypeID;
+    mThisInstanceNameHash = info->mThisInstanceNameHash;
+    mParentInstanceNameHash = info->mParentInstanceNameHash;
+
+    SpaceNode *space_node = CreateSpaceNode(nullptr);
+    mSpaceNode = space_node;
+    space_node->SetParent(parent_space_node);
+    mSpaceNode->SetNameHash(mThisInstanceNameHash);
+    mSpaceNode->SetLocalMatrix(&info->mLocalMatrix);
+
+    if (info->mModelHash != 0 && info->mAnimTreeHash != info->mThisInstanceNameHash) {
+        unsigned int lods[4];
+        lods[0] = info->mModelHash;
+        lods[1] = info->mLODB;
+        lods[2] = 0;
+        lods[3] = info->mLODZ;
+        WorldModel *model = new WorldModel(mSpaceNode, lods, false);
+        mWorldModel = model;
+    } else {
+        mWorldModel = nullptr;
+    }
+
+    mAnimCtrl = new ("CWorldAnimCtrl") CWorldAnimCtrl();
+    mAnimCtrl->SetNameHash(mSpaceNode->GetNameHash());
+    mAnimCtrl->SetTimeScale(info->instance_data->speed);
+    if (mAnimCtrl->GetTimeScale() == 0.0f) {
+        mAnimCtrl->SetTimeScale(1.0f);
+    }
+
+    CWorldAnimCtrl *ctrl = mAnimCtrl;
+    ctrl->SetMasterDelayTime(info->instance_data->master_delay);
+    ctrl->SetFlags(0x80);
+    ctrl = mAnimCtrl;
+    ctrl->SetLocalDelayTime(info->instance_data->loop_delay);
+    ctrl->SetFlags(0x100);
+
+    CAnimPart *anim_part = mAnimCtrl->GetAnimPart();
+    unsigned int skel_hash = bStringHash("ROOT");
+    CAnimSkeleton *skel = GetSkeletonFromList(skel_hash);
+    play_flags = info->instance_data->play_flags;
+    anim_part->Init(skel);
+
+    if (play_flags == 0) {
+        mAnimCtrl->SetFlags(0x28);
+    } else {
+        mAnimCtrl->SetFlags(play_flags);
+    }
+
+    if (info->mAnimContentFlags & 1) {
+        unsigned int TransAnimNameHash = GetAnimChannelHash(info->mAnimNameHash, 0);
+        mAnimCtrl->CreateFnAnimFromNamehash(TransAnimNameHash, 0);
+    }
+    if (info->mAnimContentFlags & 2) {
+        unsigned int QuatsAnimNameHash = GetAnimChannelHash(info->mAnimNameHash, 1);
+        mAnimCtrl->CreateFnAnimFromNamehash(QuatsAnimNameHash, 1);
+    }
+    if (info->mAnimContentFlags & 4) {
+        unsigned int ScaleAnimNameHash = GetAnimChannelHash(info->mAnimNameHash, 2);
+        mAnimCtrl->CreateFnAnimFromNamehash(ScaleAnimNameHash, 2);
+    }
+
+    if (mAnimCtrl->GetAllocated() == 0 || skel == nullptr) {
+        mAnimCtrl->GetAnimPart()->Purge();
+        mAnimCtrl->Cleanup();
+        if (mAnimCtrl != nullptr) {
+            delete mAnimCtrl;
+        }
+        mAnimCtrl = nullptr;
+    }
+
+    if (mAnimCtrl != nullptr) {
+        if (info->instance_data->play_flags & 0x40) {
+            mAnimCtrl->SetLoopRange(info->instance_data->begin_range, info->instance_data->end_range);
+        }
+        if (info->instance_data->play_flags & 0x200) {
+            unsigned int seed = 0x69babe69;
+            float anim_len_sec = mAnimCtrl->GetAnimLengthInSeconds();
+            float rand_delay = bRandom(anim_len_sec * 0.5f, &seed);
+            CWorldAnimCtrl *ctrl = mAnimCtrl;
+            ctrl->SetLocalDelayTime(rand_delay);
+            ctrl->SetFlags(0x100);
+        }
+        if (info->instance_data->play_flags & 0x400) {
+            unsigned int seed = 0x69babe69;
+            float rand_start = bRandom(mAnimCtrl->GetAnimLength(), &seed);
+            mAnimCtrl->SetEvalTime(rand_start);
+        }
+        if (info->instance_data->start_trigger_hash != 0 || info->instance_data->stop_trigger_hash != 0) {
+            mAnimCtrl->ClearFlags(0x8);
+            mAnimCtrl->SetFlags(0x810);
+        }
+    }
+
+    return true;
+}
+
 void CWorldAnimEntity::Purge() {
     if (mAnimCtrl) {
         mAnimCtrl->GetAnimPart()->Purge();
