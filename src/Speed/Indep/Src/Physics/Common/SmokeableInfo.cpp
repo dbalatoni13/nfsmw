@@ -1,0 +1,434 @@
+#include "Speed/Indep/Src/Physics/SceneryModel.h"
+#include "Speed/Indep/Src/Physics/SmokeableInfo.hpp"
+
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
+#include "Speed/Indep/Src/Sim/SimSubSystem.h"
+#include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/World/Scenery.hpp"
+
+void ResetPropTimers();
+
+SmokeableSectionQ TheSmokeableSections;
+
+static void SceneryModel_InitSystem() {
+    SceneryModel::InitSystem();
+}
+
+static void SceneryModel_RestoreSystem() {
+    SceneryModel::RestoreSystem();
+}
+
+static Sim::SubSystem _Physics_System_SceneryModel("SceneryModel", SceneryModel_InitSystem, SceneryModel_RestoreSystem);
+int SceneryModel::mSceneryCount = 0;
+
+SmokeableSection *SmokeableSectionQ::FindOrAdd(int section_id) {
+    for (int i = 0; i < mQueue.size(); i++) {
+        SmokeableSection &this_section = mQueue[i];
+        if (this_section.SectionID == section_id) {
+            SmokeableSection new_section(this_section);
+            mQueue.dequeue();
+            mQueue.enqueue(new_section);
+            return &mQueue.head();
+        }
+    }
+    SmokeableSection new_section(section_id);
+    mQueue.enqueue(new_section);
+    return &mQueue.head();
+}
+
+SmokeableSection *SmokeableSectionQ::Find(int section_id) {
+    for (int i = 0; i < mQueue.size(); i++) {
+        SmokeableSection &this_section = mQueue[i];
+        if (this_section.SectionID == section_id) {
+            return &this_section;
+        }
+    }
+    return nullptr;
+}
+
+SceneryModel::SceneryModel(SmokeableSpawner *spawner, const CollisionGeometry::Bounds *geometry,
+                           const Attrib::Collection *attribs, bool hidden)
+    : HeirarchyModel(spawner->GetRenderMesh(), geometry, UCrc32(0u), nullptr, attribs, //
+                     spawner->GetRenderHeirarchy(), 0, false) //
+    , ISceneryModel(this) {
+    mInstanceVisible = true;
+    mSpawner = spawner;
+    if (hidden) {
+        StartOverride();
+    } else {
+        InitScene();
+    }
+    mSceneryCount++;
+}
+
+SceneryModel::~SceneryModel() {
+    if (mSpawner != nullptr) {
+        mSpawner->mSimModel = nullptr;
+        ShowInstance(true);
+    }
+    mSceneryCount--;
+}
+
+void SceneryModel::ShowInstance(bool show) {
+    if (mSpawner != nullptr && show != mInstanceVisible) {
+        if (show) {
+            mSpawner->ShowInstance();
+        } else {
+            mSpawner->HideInstance();
+        }
+        mInstanceVisible = show;
+    }
+}
+
+void SceneryModel::OnBeginDraw() {
+    HeirarchyModel::OnBeginDraw();
+    StartOverride();
+}
+
+void SceneryModel::HideModel() {
+    Sim::Model::HideModel();
+    StartOverride();
+}
+
+void SceneryModel::EndOverride() {
+    ShowInstance(true);
+}
+
+void SceneryModel::StartOverride() {
+    ShowInstance(false);
+}
+
+void SceneryModel::GetTransform(UMath::Matrix4 &matrix) const {
+    if (!mInstanceVisible) {
+        HeirarchyModel::GetTransform(matrix);
+    } else {
+        if (!GetSceneryTransform(matrix)) {
+            matrix = UMath::Matrix4::kIdentity;
+        }
+    }
+}
+
+void SceneryModel::InitScene() {
+    UMath::Matrix4 scenery_matrix;
+
+    Sim::Model::ReleaseModel();
+    Sim::Model::EndDraw();
+    Sim::Model::EndSimulation();
+    Sim::Model::ReleaseSequencer();
+    EndOverride();
+
+    if (GetSceneryTransform(scenery_matrix)) {
+        SetTrigger(scenery_matrix, true);
+    } else {
+        RemoveTrigger();
+    }
+
+    bool enable_sequencer = start_sequencer();
+
+    if (no_trigger()) {
+        if (mTrigger != nullptr) {
+            mTrigger->Disable();
+        }
+        enable_sequencer = true;
+    }
+
+    if (enable_sequencer) {
+        UCrc32 name(EventSequencer().GetHash32());
+        StartSequencer(name);
+    }
+
+    SetCameraAvoidable(true);
+}
+
+bool SceneryModel::GetSceneryTransform(UMath::Matrix4 &matrix) const {
+    const CollisionGeometry::Bounds *bounds = GetCollisionGeometry();
+    if (bounds != nullptr) {
+        UMath::Vector3 pivot;
+        bounds->GetPivot(pivot);
+        UMath::QuaternionToMatrix4(mSpawner->GetOrientation(), matrix);
+        UMath::Rotate(pivot, matrix, UMath::Vector4To3(matrix.v3));
+        UMath::Addxyz(matrix.v3, mSpawner->GetPosition(), matrix.v3);
+    }
+    return bounds != nullptr;
+}
+
+void SceneryModel::OnEndSimulation() {
+    HeirarchyModel::OnEndSimulation();
+}
+
+SceneryModel *SceneryModel::Construct(SmokeableSpawner *data, const Attrib::Collection *attributes, bool hidden) {
+    if (static_cast< unsigned int >(mSceneryCount) < 256) {
+        const CollisionGeometry::Collection *col = CollisionGeometry::Lookup(data->GetCollisionName());
+        if (col != nullptr) {
+            const CollisionGeometry::Bounds *bounds = col->GetRoot();
+            if (bounds != nullptr) {
+                if (attributes == nullptr) {
+                    return nullptr;
+                }
+                bounds = col->GetRoot();
+                if (bounds != nullptr) {
+                    UMath::Vector3 dimension;
+                    bounds->GetHalfDimensions(dimension);
+                    if (UMath::LengthSquare(dimension) > 0.0f) {
+                        return new SceneryModel(data, bounds, attributes, hidden);
+                    }
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
+void SceneryModel::WakeUp() {
+    SmackableTrigger *trigger = GetTrigger();
+    if (trigger != nullptr && !IsRendering() && !IsSimulating()) {
+        trigger->Fire();
+        trigger->Disable();
+    }
+}
+
+void SceneryModel::RestoreScene() {
+    InitScene();
+}
+
+void SceneryModel::ReleaseModel() {
+    Sim::Model::EndDraw();
+    Sim::Model::EndSimulation();
+    Sim::Model::ReleaseModel();
+    DisableTrigger();
+}
+
+void SceneryModel::InitSystem() {
+    ResetPropTimers();
+}
+
+void SceneryModel::RestoreSystem() {
+    ResetPropTimers();
+}
+
+void ResetPropTimers() {
+    TheSmokeableSections.Reset();
+}
+
+static const Attrib::Class *TheSmackableClass;
+
+void SmokeableSpawnerPack::OnUnload() {
+    int n = 0;
+    SmokeableSection *section = TheSmokeableSections.FindOrAdd(static_cast< int >(ScenerySectionNumber));
+    section->LastLoadTime = Sim::GetTime();
+
+    if (NumSmokeableSpawners > 0) {
+        do {
+            SmokeableSpawner *spawner = &SmokeableSpawners[n];
+            if (static_cast< unsigned int >(n) < 256) {
+                if (spawner->IsInstanceVisible()) {
+                    section->Rebuilds.Clear(static_cast< unsigned int >(n));
+                } else {
+                    section->Rebuilds.Set(static_cast< unsigned int >(n));
+                }
+            }
+            spawner->OnUnload();
+            n++;
+        } while (n < NumSmokeableSpawners);
+    }
+}
+
+void SmokeableSpawnerPack::EndianSwap() {
+    bPlatEndianSwap(&ScenerySectionNumber);
+    bPlatEndianSwap(&FirstSmokeableSpawnerID);
+    bPlatEndianSwap(&NumSmokeableSpawners);
+    for (int n = 0; n < NumSmokeableSpawners; n++) {
+        SmokeableSpawners[n].EndianSwap();
+    }
+}
+
+void SmokeableSpawnerPack::OnMoved() {
+    for (int n = 0; n < NumSmokeableSpawners; n++) {
+        SmokeableSpawners[n].OnMoved();
+    }
+}
+
+void SmokeableSpawnerPack::OnLoad(unsigned int exclude_flags) {
+    SmokeableSection *section = TheSmokeableSections.Find(static_cast< int >(ScenerySectionNumber));
+
+    if (!GRaceStatus::Exists() || !GRaceStatus::Get().GetActivelyRacing()) {
+        if (section != nullptr) {
+            if (section->LastLoadTime + 180.0f < Sim::GetTime()) {
+                section->Rebuilds.Clear();
+                section = nullptr;
+            }
+        }
+    }
+
+    for (int n = 0; n < NumSmokeableSpawners; n++) {
+        bool ignore = false;
+        if (section != nullptr && static_cast< unsigned int >(n) < 256 && section->Rebuilds.Test(static_cast< unsigned int >(n))) {
+            ignore = true;
+        }
+        SmokeableSpawners[n].OnLoad(exclude_flags, ignore);
+    }
+}
+
+const Attrib::Collection *SmokeableSpawner::FindAttributes(UCrc32 name) {
+    return TheSmackableClass->GetCollection(name.GetValue());
+}
+
+void SmokeableSpawner::Init() {
+    TheSmackableClass = Attrib::Database::Get().GetClass(Attrib::Gen::smackable::ClassKey());
+}
+
+void SmokeableSpawner::EndianSwap() {
+    bPlatEndianSwap(reinterpret_cast< bVector4 * >(&mOrientation));
+    bPlatEndianSwap(reinterpret_cast< bVector4 * >(&mPosition));
+    bPlatEndianSwap(reinterpret_cast< unsigned int * >(&mCollisionName));
+    bPlatEndianSwap(reinterpret_cast< unsigned int * >(&mModel));
+    bPlatEndianSwap(reinterpret_cast< unsigned int * >(&mAttributes));
+    bPlatEndianSwap(&mSceneryOverrideInfoNumber);
+    bPlatEndianSwap(&mUniqueID);
+    bPlatEndianSwap(&mExcludeFlags);
+}
+
+void SmokeableSpawner::OnUnload() {
+    if (mSimModel != nullptr) {
+        delete mSimModel;
+        mSimModel = nullptr;
+    }
+}
+
+const ModelHeirarchy *SmokeableSpawner::GetRenderHeirarchy() const {
+    SceneryOverrideInfo *info = GetSceneryOverrideInfo(mSceneryOverrideInfoNumber);
+    if (info != nullptr) {
+        ScenerySectionHeader *section_header = GetScenerySectionHeader(static_cast< int >(info->SectionNumber));
+        if (section_header != nullptr) {
+            SceneryInstance *scenery_instance = section_header->GetSceneryInstance(static_cast< int >(info->InstanceNumber));
+            if (scenery_instance != nullptr) {
+                SceneryInfo *sinfo = section_header->GetSceneryInfo(scenery_instance);
+                if (sinfo != nullptr) {
+                    return sinfo->mHeirarchy;
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
+bHash32 SmokeableSpawner::GetRenderMesh() const {
+    SceneryOverrideInfo *soi = GetSceneryOverrideInfo(mSceneryOverrideInfoNumber);
+    if (soi != nullptr) {
+        ScenerySectionHeader *section_header = GetScenerySectionHeader(static_cast< int >(soi->SectionNumber));
+        if (section_header != nullptr) {
+            SceneryInstance *scenery_instance = section_header->GetSceneryInstance(static_cast< int >(soi->InstanceNumber));
+            if (scenery_instance != nullptr) {
+                SceneryInfo *scenery_info = section_header->GetSceneryInfo(scenery_instance);
+                if (scenery_info != nullptr) {
+                    for (int i = 0; i < 4; i++) {
+                        if (scenery_info->NameHash[i] != 0) {
+                            return bHash32(scenery_info->NameHash[i]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return bHash32(0u);
+}
+
+void SmokeableSpawner::ShowInstance() const {
+    SceneryOverrideInfo *info = GetSceneryOverrideInfo(mSceneryOverrideInfoNumber);
+    if (info != nullptr) {
+        info->EnableRendering();
+    }
+}
+
+bool SmokeableSpawner::IsInstanceVisible() const {
+    SceneryOverrideInfo *info = GetSceneryOverrideInfo(mSceneryOverrideInfoNumber);
+    if (info != nullptr) {
+        return (info->ExcludeFlags & 0x8000) == 0;
+    }
+    return false;
+}
+
+void SmokeableSpawner::HideInstance() const {
+    SceneryOverrideInfo *info = GetSceneryOverrideInfo(mSceneryOverrideInfoNumber);
+    if (info != nullptr) {
+        info->DisableRendering();
+    }
+}
+
+void SmokeableSpawner::OnMoved() {
+    if (mSimModel != nullptr) {
+        mSimModel->mSpawner = this;
+    }
+}
+
+void SmokeableSpawner::OnLoad(unsigned int exclude_flags, bool ignore) {
+    if ((exclude_flags & mExcludeFlags) == 0) {
+        if (!ignore) {
+            ShowInstance();
+            const Attrib::Collection *collection = FindAttributes(UCrc32(mAttributes));
+            if (collection != nullptr) {
+                mSimModel = SceneryModel::Construct(this, collection, false);
+            } else {
+                mSimModel = nullptr;
+            }
+        }
+    }
+    if (mSimModel == nullptr) {
+        HideInstance();
+    }
+}
+
+int SmokeableSpawnerPack::Loader(bChunk *chunk) {
+    if (chunk->GetID() != 0x34027) {
+        return 0;
+    }
+
+    SmokeableSpawnerPack *spawner_pack = reinterpret_cast< SmokeableSpawnerPack * >(chunk->GetAlignedData(16));
+    if (!AreChunksBeingMoved()) {
+        spawner_pack->EndianSwap();
+        if (Sim::Exists()) {
+            unsigned int exclude_flags = static_cast< unsigned int >(Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN);
+            if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing) {
+                exclude_flags |= 4;
+            }
+            spawner_pack->OnLoad(exclude_flags);
+        }
+    } else {
+        spawner_pack->OnMoved();
+    }
+    return 1;
+}
+
+int SmokeableSpawnerPack::Unloader(bChunk *chunk) {
+    if (chunk->GetID() != 0x34027) {
+        return 0;
+    }
+
+    if (!AreChunksBeingMoved() && Sim::Exists()) {
+        SmokeableSpawnerPack *pack = reinterpret_cast< SmokeableSpawnerPack * >(chunk->GetAlignedData(16));
+        pack->OnUnload();
+    }
+    return 1;
+}
+
+bChunkLoader SmokeableSpawnerPack::mLoader(0x34027, SmokeableSpawnerPack::Loader, SmokeableSpawnerPack::Unloader);
+
+bool SceneryModel::IsHidden() const {
+    return !mInstanceVisible && Sim::Model::IsHidden();
+}
+
+bool SceneryModel::IsExcluded(unsigned int scenery_exclusion_flag) const {
+    unsigned int flags = 0;
+    if (mSpawner != nullptr) {
+        flags = mSpawner->GetExcludeFlags();
+    }
+    return (flags & scenery_exclusion_flag) != 0;
+}
+
+unsigned int SceneryModel::GetSpawnerID() const {
+    if (mSpawner != nullptr) {
+        return mSpawner->GetUniqueID();
+    }
+    return 0xFFFFFFFF;
+}

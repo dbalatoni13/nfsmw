@@ -102,6 +102,7 @@ struct System {
         kQueueLength = 4,
     };
     unsigned int ID() const;
+    bool ProcessStimulus(unsigned int stimulus, float externalTime, IContext *context, QueueMode mode);
 
     // TODO it's EventSequencer::Engine
     struct Engine *mEngine;               // offset 0x0, size 0x4
