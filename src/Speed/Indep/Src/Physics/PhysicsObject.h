@@ -24,7 +24,37 @@ class PhysicsObject : public Sim::Object,
     typedef UTL::Std::map<unsigned int, Behavior *, _type_ID_POMechanics> Mechanics;
 
     struct Behaviors : protected UTL::Std::list<Behavior *, _type_ID_POBehaviors> {
+        typedef UTL::Std::list<Behavior *, _type_ID_POBehaviors> _Base;
+        using _Base::begin;
+        using _Base::end;
+        using _Base::const_iterator;
+        using _Base::iterator;
+
         // total size: 0x8
+        void Add(Behavior *beh);
+        void Remove(Behavior *beh);
+        void Reset();
+
+        void OnAttach(IAttachable *iother) {
+            for (const_iterator iter = begin(); iter != end(); ++iter) {
+                (*iter)->OnOwnerAttached(iother);
+            }
+        }
+
+        void OnDetach(IAttachable *iother) {
+            for (const_iterator iter = begin(); iter != end(); ++iter) {
+                (*iter)->OnOwnerDetached(iother);
+            }
+        }
+
+        void Simulate(float dT) {
+            for (const_iterator iter = begin(); iter != end(); ++iter) {
+                Behavior *beh = *iter;
+                if (!beh->IsPaused()) {
+                    beh->OnTaskSimulate(dT);
+                }
+            }
+        }
     };
 
     PhysicsObject(const Attrib::Instance &attribs, SimableType objType, WUID wuid, unsigned int num_interfaces);
@@ -70,8 +100,30 @@ class PhysicsObject : public Sim::Object,
     virtual HCAUSE GetCausality() const override;
     virtual float GetCausalityTime() const override;
 
+    // IAttachable overrides
+    virtual void OnAttached(IAttachable *pOther) override;
+    virtual void OnDetached(IAttachable *pOther) override;
+    virtual bool IsAttached(const UTL::COM::IUnknown *pOther) const override;
+
+    // IBody overrides
+    virtual void GetDimension(UMath::Vector3 &dim) const override;
+
+    // Sim::Object overrides
+    virtual bool OnService(HSIMSERVICE hCon, Sim::Packet *pkt) override;
+    virtual bool OnTask(HSIMTASK htask, float dT) override;
+
+    // Other public methods
+    bool IsBehaviorActive(const UCrc32 &mechanic) const;
+    void PauseBehavior(const UCrc32 &mechanic, bool pause);
+    bool ResetBehavior(const UCrc32 &mechanic);
+    Behavior *FindBehavior(const UCrc32 &mechanic);
+    void DetachAll();
+    void ReleaseBehaviors();
+    void Reset();
+
   protected:
     Behavior *LoadBehavior(const UCrc32 &mechanic, const UCrc32 &behavior, Sim::Param params);
+    void ReleaseBehavior(const UCrc32 &mechanic);
     virtual void OnTaskSimulate(float dT);
     virtual void OnBehaviorChange(const UCrc32 &mechanic);
 

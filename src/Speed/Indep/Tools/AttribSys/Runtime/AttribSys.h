@@ -676,6 +676,14 @@ class Attribute {
     // TODO
     template <typename T> const T &Get(unsigned int index, T &result) const;
 
+    template <typename T> const T &Get(unsigned int index) const {
+        const T *resultptr = reinterpret_cast<const T *>(GetElementPointer(index));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const T *>(DefaultDataArea(sizeof(T)));
+        }
+        return *resultptr;
+    }
+
     template <typename T> bool Set(unsigned int index, const T &input) {
         T *resultptr = reinterpret_cast<T *>(GetElementPointer(index));
         if (resultptr) {

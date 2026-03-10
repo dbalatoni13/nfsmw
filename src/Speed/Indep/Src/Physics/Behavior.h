@@ -28,6 +28,8 @@ struct BehaviorParams {
 
 // total size: 0x4C
 class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32> {
+    friend class PhysicsObject;
+
   public:
     void *operator new(std::size_t size) {
         return gFastMem.Alloc(size, nullptr);
@@ -76,18 +78,17 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
         // TODO right place?
     }
 
-  protected:
     virtual void OnTaskSimulate(float dT);
-
     virtual void OnBehaviorChange(const UCrc32 &mechanic) {}
-
-    virtual void OnPause();
-    virtual void OnUnPause();
 
     virtual ~Behavior() {
         // TODO
         Sim::Profile::Release(nullptr);
     }
+
+  protected:
+    virtual void OnPause();
+    virtual void OnUnPause();
 
   private:
     bool mPaused;                 // offset 0x30, size 0x1

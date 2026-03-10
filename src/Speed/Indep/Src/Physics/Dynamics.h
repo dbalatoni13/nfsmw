@@ -32,6 +32,22 @@ class IEntity {
 
 namespace Articulation {
 
+struct HJOINT__;
+
+enum eJointFlags {
+    JF_IMMOBILE_FEMALE = 2,
+    JF_IMMOBILE_MALE = 1,
+    JF_NONE = 0,
+};
+
+enum eConstraint {
+    CONICAL = 2,
+    HYPERBOLIC = 1,
+    PRISMATIC = 0,
+};
+
+HJOINT__ *Create(IEntity *female, const UMath::Vector3 &female_lever, IEntity *male, const UMath::Vector3 &male_lever, eJointFlags flags);
+void Constrain(HJOINT__ *hjoint, IEntity *entity, const UMath::Matrix4 &mat, float theta1, float theta2, const UMath::Vector3 &post_vec, eConstraint type);
 void Release(IEntity *rb0);
 bool IsJoined(const IEntity *rb);
 

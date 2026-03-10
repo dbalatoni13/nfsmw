@@ -164,7 +164,7 @@ class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet
     virtual ~IVehicle() {}
     virtual const ISimable *GetSimable() const = 0;
     virtual ISimable *GetSimable() = 0;
-    virtual UMath::Vector3 &GetPosition() const = 0;
+    virtual const UMath::Vector3 &GetPosition() const = 0;
     virtual void SetBehaviorOverride(UCrc32 mechanic, UCrc32 behavior) = 0;
     virtual void RemoveBehaviorOverride(UCrc32 mechanic) = 0;
     virtual void CommitBehaviorOverrides() = 0;
@@ -206,7 +206,7 @@ class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet
     virtual bool IsCollidingWithSoftBarrier() = 0;
     virtual class IVehicleAI *GetAIVehiclePtr() const = 0;
     virtual float GetSlipAngle() const = 0;
-    virtual UMath::Vector3 &GetLocalVelocity() const = 0;
+    virtual const UMath::Vector3 &GetLocalVelocity() const = 0;
     virtual void ComputeHeading(UMath::Vector3 *v) = 0;
     virtual bool IsAnimating() const = 0;
     virtual void SetAnimating(bool animate) = 0;

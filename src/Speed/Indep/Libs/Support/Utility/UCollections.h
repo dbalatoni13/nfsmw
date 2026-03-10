@@ -241,6 +241,20 @@ template <typename T, typename Tag> class Container {
         ~Elements();
     };
 
+    void AddElement(T *e) {
+        _mElements.push_back(e);
+    }
+
+    void RemoveElement(T *e) {
+        for (typename Elements::iterator it = _mElements.begin(); it != _mElements.end(); ++it) {
+            if (*it == e) {
+                _mElements.erase(it);
+                delete e;
+                break;
+            }
+        }
+    }
+
   private:
     Elements _mElements;
 };

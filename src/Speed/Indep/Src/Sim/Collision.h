@@ -77,6 +77,10 @@ void AddListener(IListener *listener, HSIMABLE participant, const char *who);
 void AddListener(IListener *listener, class UTL::COM::IUnknown *participant, const char *who);
 void RemoveListener(IListener *listener, const UTL::COM::IUnknown *participant);
 void RemoveListener(IListener *listener);
+void AddParticipant(HSIMABLE participant);
+void RemoveParticipant(HSIMABLE participant);
+void AddParticipant(HSIMABLE participant);
+void RemoveParticipant(HSIMABLE participant);
 
 }; // namespace Collision
 
