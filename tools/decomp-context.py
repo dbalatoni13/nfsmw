@@ -15,6 +15,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from typing import Any, Dict, List, Optional, Tuple
@@ -130,10 +131,14 @@ def search_symbols_file(file: str, name: str) -> List[Tuple[str, str, str]]:
 
 def ghidra_decompile(address: str, program: str) -> Optional[str]:
     """Decompile a function at the given address using Ghidra CLI."""
+    ghidra_cmd = shutil.which("ghidra-cli") or shutil.which("ghidra")
+    if ghidra_cmd is None:
+        return None
+
     try:
         result = subprocess.run(
             [
-                "ghidra",
+                ghidra_cmd,
                 "decompile",
                 "--program",
                 program,
@@ -173,9 +178,9 @@ def tu_name_from_unit(unit: Dict[str, Any]) -> str:
 
 def print_section(title: str, content: str) -> None:
     """Print a labeled section."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"  {title}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(content)
 
 
