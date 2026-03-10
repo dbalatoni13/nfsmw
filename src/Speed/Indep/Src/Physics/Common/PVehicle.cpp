@@ -240,7 +240,7 @@ void PVehicle::SetStaging(bool staging) {
     if (static_cast< unsigned int >(staging) != static_cast< unsigned int >(mStaging)) {
         mStaging = staging;
         if (staging) {
-            mCollisionBody->EnableCollisionGeometries(UCrc32(0U), false);
+            SetSpeed(0.0f);
         }
     }
 }
