@@ -314,8 +314,11 @@ void PVehicle::SetAnimating(bool animate) {
 }
 
 void PVehicle::SetBehaviorOverride(UCrc32 mechanic, UCrc32 behavior) {
-    mBehaviorOverrides[mechanic] = behavior;
-    mOverrideDirty = true;
+    Behavior *beh = FindBehavior(mechanic);
+    if (beh == nullptr || beh->GetSignature() != behavior) {
+        mBehaviorOverrides[mechanic] = behavior;
+        mOverrideDirty = true;
+    }
 }
 
 void PVehicle::RemoveBehaviorOverride(UCrc32 mechanic) {

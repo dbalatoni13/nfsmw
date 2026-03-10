@@ -374,19 +374,19 @@ bool Smackable::Dropout() {
 }
 
 bool Smackable::ValidateWorld() {
-    bool result = false;
     const UMath::Vector3 &pos = static_cast< ISimable * >(this)->GetPosition();
     WWorldPos &wpos = static_cast< ISimable * >(this)->GetWPos();
     wpos.FindClosestFace(pos, true);
-    if (wpos.OnValidFace()) {
-        float height = wpos.HeightAtPoint(pos);
-        IRigidBody *irb = GetRigidBody();
-        float radius = irb->GetRadius();
-        if (height <= pos.y + radius) {
-            result = true;
-        }
+    if (!wpos.OnValidFace()) {
+        return false;
     }
-    return result;
+    float height = wpos.HeightAtPoint(pos);
+    IRigidBody *irb = GetRigidBody();
+    float radius = irb->GetRadius();
+    if (height <= pos.y + radius) {
+        return true;
+    }
+    return false;
 }
 
 bool Smackable::ShouldDie() {
