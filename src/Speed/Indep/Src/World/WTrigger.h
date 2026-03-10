@@ -8,6 +8,11 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 
+namespace CARP {
+struct EventStaticData;
+struct EventList;
+}
+
 struct EventList;
 struct EventStaticData;
 
@@ -30,7 +35,11 @@ struct Trigger {
 
 // total size: 0x40
 struct WTrigger : public Trigger {
+    WTrigger();
     ~WTrigger();
+    bool HasEvent(unsigned int eventID, const CARP::EventStaticData** foundEvent) const;
+    bool TestDirection(const UMath::Vector3& vec) const;
+    void UpdateBox(const UMath::Matrix4& boxMat, const UMath::Vector3& center);
     bool UpdatePos(const UMath::Vector3 &newPos, unsigned int triggerInd);
 
     static void operator delete(void *mem, unsigned int size);

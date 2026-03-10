@@ -6,6 +6,66 @@
 
 void VU0_v4crossprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r);
 
+WCollider::WCollider(eColliderShape colliderShape, unsigned int typeMask, unsigned int exclusionMask)
+    : fRequestedPosition(UMath::Vector3::kZero),     //
+      fRequestedRadius(0.0f),                        //
+      fLastRequestedPosition(UMath::Vector3::kZero), //
+      fLastRequestedRadius(0.0f),                    //
+      fPosition(UMath::Vector3::kZero),              //
+      fRadius(0.0f),                                 //
+      fLastRefreshedPosition(UMath::Vector3::kZero), //
+      fRegionInitialized(false),                     //
+      fColliderShape(colliderShape),                 //
+      fTypeMask(typeMask),                           //
+      fRefCount(0),                                  //
+      fWorldID(0),                                   //
+      fExclusionFlags(exclusionMask) {
+    ReserveLists(typeMask);
+}
+
+WCollider::~WCollider() {
+    Clear();
+}
+
+WCollider *WCollider::Get(unsigned int wuid) {
+    if (wuid == 0) {
+        return nullptr;
+    }
+
+    UTL::Std::map<unsigned int, WCollider *, _type_map>::iterator iter = fWuidMap.find(wuid);
+    if (iter != fWuidMap.end()) {
+        return iter->second;
+    }
+
+    return nullptr;
+}
+
+WCollider *WCollider::Create(unsigned int wuid, eColliderShape shape, unsigned int typeCheckMask, unsigned int exclusionMask) {
+    WCollider *col = Get(wuid);
+    if (col == nullptr) {
+        col = new WCollider(shape, typeCheckMask, exclusionMask);
+        col->fWorldID = wuid;
+        col->AddRef();
+        if (wuid != 0) {
+            fWuidMap[wuid] = col;
+        }
+    } else {
+        col->AddRef();
+    }
+    return col;
+}
+
+void WCollider::Destroy(WCollider *col) {
+    col->RemoveRef();
+    if (col->fRefCount == 0) {
+        UTL::Std::map<unsigned int, WCollider *, _type_map>::iterator iter = fWuidMap.find(col->fWorldID);
+        if (iter != fWuidMap.end()) {
+            fWuidMap.erase(iter);
+        }
+        delete col;
+    }
+}
+
 static void CalcNewRegionSizeFromRequested(bool useLastData, const UMath::Vector3 &reqPos, float reqRad, const UMath::Vector3 &oldPos,
                                            float oldRad, const UMath::Vector3 &lastPos, UMath::Vector3 &pos, float &rad) {
     float vel = UMath::Distance(reqPos, lastPos);
