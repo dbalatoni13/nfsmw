@@ -2,6 +2,7 @@
 #include "AnimBank.hpp"
 #include "WorldAnimInstanceDirectory.hpp"
 #include "Speed/Indep/Src/EAGL4Anim/MemoryPoolManager.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 static int NumWorldAnimCtrls;
 static int MaxNumWorldAnimCtrls;
@@ -153,6 +154,173 @@ int CWorldAnimCtrl::CreateFnAnimFromBank(EAGL4Anim::AnimBank *animBank, int anim
         m_isAllocated = 1;
     }
     return created;
+}
+
+int CWorldAnimCtrl::AdvanceAnimTime(float timestep) {
+    int result_anim_is_done = 0;
+
+    float effective_time_scale = GetEffectiveTimeScale();
+    float ets30 = effective_time_scale * 30.0f;
+    float this_time_step = timestep * ets30;
+    float this_master_delay_elapsed = MasterDelayElapsed * ets30;
+    float this_master_delay_len = m_masterDelayTime * 30.0f;
+    float this_local_delay_elapsed = LocalDelayElapsed * ets30;
+    float this_local_delay_len = m_localDelayTime * 30.0f;
+
+    float range_len;
+    if (m_flags & 0x40) {
+        range_len = GetLoopRangeScaledEnd() - GetLoopRangeScaledStart();
+    } else {
+        range_len = m_animLength;
+    }
+
+    float begin_of_anim;
+    if (m_flags & 0x40) {
+        begin_of_anim = GetLoopRangeScaledStart();
+    } else {
+        begin_of_anim = 0.0f;
+    }
+
+    float end_of_anim;
+    if (m_flags & 0x40) {
+        end_of_anim = GetLoopRangeScaledEnd();
+    } else {
+        end_of_anim = m_animLength;
+    }
+
+    bool triggered = (m_flags >> 11) & 1;
+    bool linear = (m_flags >> 3) & 1;
+    bool loop = false;
+    if (m_flags & 0x20) {
+        loop = !triggered;
+    }
+    bool pingpong = (m_flags >> 4) & 1;
+
+    if (linear) {
+        if (pingpong) {
+            ClearFlags(0x10);
+            pingpong = false;
+        }
+    } else if (!pingpong) {
+        SetFlags(8);
+        linear = true;
+    }
+
+    bool delay_world_start = false;
+    if ((m_flags & 0x80) && this_master_delay_elapsed < this_master_delay_len) {
+        delay_world_start = m_evalTime < end_of_anim;
+    }
+
+    bool delay_loop_start = false;
+    if ((m_flags & 0x100) && this_local_delay_elapsed < this_local_delay_len) {
+        delay_loop_start = m_evalTime < end_of_anim;
+    }
+
+    float new_evaltime = m_evalTime;
+
+    if (PlayState != eACPS_PLAYING) {
+        return 0;
+    }
+
+    if (delay_world_start) {
+        float new_timestep = this_master_delay_elapsed + this_time_step;
+        if (new_timestep > this_master_delay_len) {
+            new_evaltime += bFMod(new_timestep, this_master_delay_len);
+        }
+        MasterDelayElapsed = (new_timestep / effective_time_scale) * 0.033333335f;
+    } else if (delay_loop_start) {
+        float new_timestep = this_local_delay_elapsed + this_time_step;
+        if (new_timestep > this_local_delay_len) {
+            new_evaltime += bFMod(new_timestep, this_local_delay_len);
+        }
+        LocalDelayElapsed = (new_timestep / effective_time_scale) * 0.033333335f;
+    } else if (linear) {
+        if (m_flags & 0x1000) {
+            new_evaltime -= this_time_step;
+            if (new_evaltime < begin_of_anim) {
+                if (loop) {
+                    new_evaltime = new_evaltime + range_len;
+                    LocalDelayElapsed = 0.0f;
+                } else {
+                    new_evaltime = begin_of_anim;
+                    result_anim_is_done = 1;
+                }
+            }
+        } else {
+            new_evaltime += this_time_step;
+            if (new_evaltime > end_of_anim) {
+                if (loop) {
+                    new_evaltime = new_evaltime - range_len;
+                    LocalDelayElapsed = 0.0f;
+                } else {
+                    new_evaltime = end_of_anim;
+                    result_anim_is_done = 1;
+                }
+            }
+        }
+    } else if (pingpong) {
+        switch (PlayDirection) {
+            case eACPD_ERROR:
+                break;
+            case eACPD_FWD:
+                new_evaltime += this_time_step;
+                if (new_evaltime > end_of_anim) {
+                    if (triggered) {
+                        PlayState = eACPS_PAUSED;
+                    }
+                    PlayDirection = eACPD_REV;
+                    new_evaltime = end_of_anim - (new_evaltime - end_of_anim);
+                }
+                break;
+            case eACPD_REV:
+                new_evaltime -= this_time_step;
+                if (new_evaltime < begin_of_anim) {
+                    if (triggered) {
+                        PlayState = eACPS_PAUSED;
+                    }
+                    PlayDirection = eACPD_FWD;
+                    new_evaltime = begin_of_anim;
+                    LocalDelayElapsed = 0.0f;
+                }
+                break;
+        }
+    }
+
+    m_evalTime = new_evaltime;
+    return result_anim_is_done;
+}
+
+int CWorldAnimCtrl::UpdateAnimPose() {
+    EAGL4Anim::Skeleton *world_skel = m_animPart.GetSkeleton()->GetEAGLSkeleton();
+    float *sqtBuffer = m_animPart.GetSQTptr();
+    EAGL4::Transform *skinningMatrices = m_animPart.GetGlobalMatrices();
+    float eval_time = GetEvalTime();
+
+    if (GetFnAnim(1) != nullptr) {
+        GetFnAnim(1)->EvalSQT(eval_time, sqtBuffer, nullptr);
+    }
+    if (GetFnAnim(2) != nullptr) {
+        GetFnAnim(2)->EvalSQT(eval_time, sqtBuffer, nullptr);
+    }
+    if (GetFnAnim(0) != nullptr) {
+        GetFnAnim(0)->EvalSQT(eval_time, sqtBuffer, nullptr);
+    }
+
+    world_skel->PoseSQTToGlobal(sqtBuffer, skinningMatrices, nullptr);
+
+    if (m_flags & 1) {
+        EAGL4Anim::Skeleton *pSkeleton = m_animPart.GetSkeleton()->GetEAGLSkeleton();
+        int number_of_bones = pSkeleton->GetNumBones();
+        bMatrix4 *blended_matrices = reinterpret_cast<bMatrix4 *>(m_animPart.GetGlobalMatrices());
+
+        for (int bone_index = 0; bone_index < number_of_bones; bone_index++) {
+            EAGL4Anim::BoneData *bone_data = &pSkeleton->GetBoneData(bone_index);
+            bMulMatrix(&blended_matrices[bone_index], &blended_matrices[bone_index],
+                reinterpret_cast<bMatrix4 *>(&bone_data->mInvBaseMatrix));
+        }
+    }
+
+    return 0;
 }
 
 int CWorldAnimCtrl::CreateFnAnimFromNamehash(unsigned int namehash, int dof) {

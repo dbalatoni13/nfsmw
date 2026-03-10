@@ -161,7 +161,9 @@ class CWorldAnimCtrl : public bTNode<CWorldAnimCtrl> {
         m_timeScale = time;
     }
 
-    float GetEffectiveTimeScale() {}
+    float GetEffectiveTimeScale() {
+        return m_timeScale * m_f_speed_modifier;
+    }
 
     float GetMasterDelayTime() {
         return m_masterDelayTime;
