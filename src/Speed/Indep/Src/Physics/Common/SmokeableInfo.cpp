@@ -137,8 +137,7 @@ void SceneryModel::InitScene() {
     }
 
     if (enable_sequencer) {
-        UCrc32 name(EventSequencer().GetHash32());
-        Sim::Model::StartSequencer(name);
+        Sim::Model::StartSequencer(UCrc32(EventSequencer().GetHash32()));
     }
 
     SetCameraAvoidable(true);
