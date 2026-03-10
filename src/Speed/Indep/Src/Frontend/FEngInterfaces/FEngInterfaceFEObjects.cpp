@@ -735,13 +735,13 @@ bool FEngGet2DExtentsForMouse(FEObject* pObject, FERect& Rect, FEVector2 offset)
                         if (ChildRect.left < Rect.left) {
                             Rect.left = ChildRect.left;
                         }
-                        if (Rect.right < ChildRect.right) {
+                        if (ChildRect.right > Rect.right) {
                             Rect.right = ChildRect.right;
                         }
                         if (ChildRect.top < Rect.top) {
                             Rect.top = ChildRect.top;
                         }
-                        if (Rect.bottom < ChildRect.bottom) {
+                        if (ChildRect.bottom > Rect.bottom) {
                             Rect.bottom = ChildRect.bottom;
                         }
                     }
