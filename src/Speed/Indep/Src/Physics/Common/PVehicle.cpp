@@ -437,3 +437,20 @@ void PVehicle::DoStaging(float dT) {
         }
     }
 }
+
+void PVehicle::ComputeHeading(UMath::Vector3 *v) {
+    UMath::Vector3 forward;
+    UMath::Vector3 velocity;
+    IRigidBody *rigid_body = static_cast<ISimable *>(this)->GetRigidBody();
+    float speed = rigid_body->GetSpeed();
+    rigid_body->GetForwardVector(forward);
+    velocity = rigid_body->GetLinearVelocity();
+    if (speed > 0.01f) {
+        UMath::Unit(velocity, velocity);
+    }
+    float velocity_blend = UMath::Clamp(speed, 0.0f, 1.0f);
+    float forward_blend = 1.0f - velocity_blend;
+    UMath::Scale(forward, forward_blend, forward);
+    UMath::ScaleAdd(velocity, velocity_blend, forward, forward);
+    UMath::Unit(forward, *v);
+}
