@@ -217,7 +217,9 @@ class Camera {
         CurrentKey.FarZ = far_z;
     }
 
-    // float GetNearZ() {}
+    float GetNearZ() {
+        return CurrentKey.NearZ;
+    }
 
     // float GetFarZ() {}
 

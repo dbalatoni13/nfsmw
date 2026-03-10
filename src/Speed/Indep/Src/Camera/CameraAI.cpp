@@ -13,21 +13,7 @@
 
 #include <types.h>
 
-DECLARE_CONTAINER_TYPE(CameraAIAvoidables);
-
-struct Avoidables : public _STL::list<IBody *, UTL::Std::Allocator<IBody *, _type_CameraAIAvoidables> > {
-    void *operator new(std::size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
-
-    void operator delete(void *mem, std::size_t size) {
-        if (mem) {
-            gFastMem.Free(mem, size, nullptr);
-        }
-    }
-};
-
-static Avoidables *TheAvoidables;
+extern Avoidables *TheAvoidables;
 
 static float kJumpTimeMultiplier = 2.0f;
 static float kEndJumpThreshold = 0.0f;

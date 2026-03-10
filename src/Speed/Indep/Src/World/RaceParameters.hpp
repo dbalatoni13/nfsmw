@@ -76,6 +76,10 @@ struct RaceParameters {
         return ((this->bDriftRaceFlag) || (g_tweakIsDriftRace));
     }
 
+    inline bool IsBurnout() {
+        return ((this->bBurnoutFlag) || (g_tweakIsBurnout));
+    }
+
     int TrackNumber;                            // offset 0x0, size 0x4
     eTrackDirection TrackDirection;             // offset 0x4, size 0x4
     eTrafficDensity TrafficDensity;             // offset 0x8, size 0x4

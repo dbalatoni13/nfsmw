@@ -149,6 +149,10 @@ class ICEManager {
         return nState == 0;
     }
 
+    int GetState() {
+        return nState;
+    }
+
     ICETrack *GetPlaybackTrack() {
         return pPlaybackTrack;
     }

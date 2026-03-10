@@ -16,6 +16,7 @@
 
 class eView;
 class tCubic3D;
+class ActionQueue;
 template <class T> class tAverage;
 
 struct tCubic1D {
@@ -73,6 +74,8 @@ struct tCubic1D {
         flags = f;
     }
 
+    void Update(float fSeconds, float fDClamp, float fDDClamp);
+
     void Snap() {
         Val = ValDesired;
         dVal = dValDesired;
@@ -120,6 +123,20 @@ struct tCubic3D {
         y.Snap();
         z.Snap();
     }
+
+    void SetDuration(const float t) {
+        x.SetDuration(t);
+        y.SetDuration(t);
+        z.SetDuration(t);
+    }
+
+    void SetDuration(const float tx, const float ty, const float tz) {
+        x.SetDuration(tx);
+        y.SetDuration(ty);
+        z.SetDuration(tz);
+    }
+
+    void Update(float fSeconds, float fDClamp, float fDDClamp);
 };
 
 struct Bezier {
@@ -166,6 +183,10 @@ class CameraAnchor {
         return &mGeomPos;
     }
 
+    bVector3 *GetGeometryPosition() {
+        return &mGeomPos;
+    }
+
     const bVector3 *GetVelocity() const {
         return &mVelocity;
     }
@@ -208,6 +229,26 @@ class CameraAnchor {
 
     unsigned int GetWorldID() const {
         return mWorldID;
+    }
+
+    bool IsTouchingGround() const {
+        return mIsTouchingGround;
+    }
+
+    bool IsGearChanging() const {
+        return mIsGearChanging;
+    }
+
+    float GetCollisionDamping() const {
+        return mCollisionDamping;
+    }
+
+    float GetDrift() const {
+        return mDrift;
+    }
+
+    bVector3 *GetUpVector() {
+        return reinterpret_cast<bVector3 *>(&mGeomRot.v1);
     }
 
     void Update(float dT, const bMatrix4 &matrix, const bVector3 &velocity, const bVector3 &forward);
@@ -305,6 +346,8 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
     double AdjustHeightAroundCar(const bVector3 *car_pos, bVector3 *pEye, bVector3 *pForward);
     int MinGapCars(bMatrix4 *pMatrix, bVector3 *pLook, bVector3 *pForward);
     int MinGapTopology(bMatrix4 *pMatrix, bVector3 *pLook);
+    bool EnforceMinGapToWalls(WCollider *collider, bVector3 *pCarPos, bVector3 *pCameraPos, bVector4 *pAdjust);
+    bVector3 *DutchAroundCar(bVector3 *pPos, bVector3 *pVelocity);
     void FovCubicInit(tCubic1D *cubic);
     void EyeCubicInit(tCubic3D *eye, bMatrix4 *matrix, bVector3 *target);
     void LookCubicInit(tCubic3D *look, bMatrix4 *matrix, bVector3 *target);
@@ -330,6 +373,35 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
 
 void CameraMoverRestartRace();
 
+// total size: 0xB0
+struct CubicPovData {
+    float fEyeDuration;       // offset 0x0, size 0x4
+    float fLookDuration;      // offset 0x4, size 0x4
+    float fFovDuration;       // offset 0x8, size 0x4
+    float fUpDuration;        // offset 0xC, size 0x4
+    bVector3 vUpAccel;        // offset 0x10, size 0x10
+    bVector3 vUpAccelMin;     // offset 0x20, size 0x10
+    bVector3 vUpAccelMax;     // offset 0x30, size 0x10
+    bVector3 vEyeAccel;       // offset 0x40, size 0x10
+    bVector3 vEyeAccelMin;    // offset 0x50, size 0x10
+    bVector3 vEyeAccelMax;    // offset 0x60, size 0x10
+    bVector3 vLookAccel;      // offset 0x70, size 0x10
+    bVector3 vLookAccelMin;   // offset 0x80, size 0x10
+    bVector3 vLookAccelMax;   // offset 0x90, size 0x10
+    bVector3 vForwardDuration; // offset 0xA0, size 0x10
+
+    bVector3 *GetUpAccel() { return &vUpAccel; }
+    bVector3 *GetUpAccelMin() { return &vUpAccelMin; }
+    bVector3 *GetUpAccelMax() { return &vUpAccelMax; }
+    bVector3 *GetEyeAccel() { return &vEyeAccel; }
+    bVector3 *GetEyeAccelMin() { return &vEyeAccelMin; }
+    bVector3 *GetEyeAccelMax() { return &vEyeAccelMax; }
+    bVector3 *GetLookAccel() { return &vLookAccel; }
+    bVector3 *GetLookAccelMin() { return &vLookAccelMin; }
+    bVector3 *GetLookAccelMax() { return &vLookAccelMax; }
+    bVector3 *GetForwardDuration() { return &vForwardDuration; }
+};
+
 class CubicCameraMover : public CameraMover {
   public:
     CubicCameraMover(int nView, CameraAnchor *pCar, int pov_type, bool disable_lag, bool look_back, bool perfect_focus, bool snap_next);
@@ -353,6 +425,8 @@ class CubicCameraMover : public CameraMover {
     void MakeSpace(bMatrix4 *pMatrix);
     void CameraAccelCurve(bVector3 *pAccel);
     void CameraSpeedHug(bVector3 *pForward);
+    bool IsUnderVehicle();
+    void SetDesired(bMatrix4 *pCarToWorld, POV *pov, CubicPovData *pov_data, bool bSnapForward);
 
   private:
     CameraAnchor *pCar;                // offset 0x80, size 0x4
@@ -437,6 +511,61 @@ class TrackCopCameraMover : public CameraMover {
 
     bool FindPursuitVehiclePosition(bVector3 *pPosition);
     void Init();
+};
+
+enum JoystickPort {
+    JOYSTICK_PORT_NONE = -1,
+    JOYSTICK_PORT1 = 0,
+    JOYSTICK_PORT2 = 1,
+    JOYSTICK_PORT3 = 2,
+    JOYSTICK_PORT4 = 3,
+    JOYSTICK_PORT_ALL = 4,
+};
+
+class DebugWorldCameraMover : public CameraMover {
+  public:
+    DebugWorldCameraMover(int view_id, const bVector3 *start_position, const bVector3 *start_direction, JoystickPort jp);
+    ~DebugWorldCameraMover() override;
+
+    void JoyHandler();
+    void Update(float dT) override;
+
+    static void SetEye(const bVector3 &eye) {
+        Eye = eye;
+    }
+
+    static void SetLook(const bVector3 &look) {
+        Look = look;
+    }
+
+    static const bVector3 &GetLook() {
+        return Look;
+    }
+
+    static const bVector3 &GetEye() {
+        return Eye;
+    }
+
+    static bVector3 Eye;
+    static bVector3 Look;
+    static bVector3 Up;
+    static float TurboSpeed;
+    static float SuperTurboSpeed;
+    static int TurboOn;
+    static int SuperTurboOn;
+
+  private:
+    float HeightInc;        // offset 0x80, size 0x4
+    float ForwardInc;       // offset 0x84, size 0x4
+    float ForwardAnalogInc; // offset 0x88, size 0x4
+    float StrafeInc;        // offset 0x8C, size 0x4
+    short TurnHInc;         // offset 0x90, size 0x2
+    short TurnVInc;         // offset 0x92, size 0x2
+    float RoadNetworkXInc;  // offset 0x94, size 0x4
+    float RoadNetworkYInc;  // offset 0x98, size 0x4
+    JoystickPort JoyPort;   // offset 0x9C, size 0x4
+    float PrevNearZ;        // offset 0xA0, size 0x4
+    ActionQueue *mActionQ;  // offset 0xA4, size 0x4
 };
 
 #endif

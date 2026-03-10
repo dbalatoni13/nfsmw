@@ -108,6 +108,10 @@ inline void eUnSwizzleWorldVector(const bVector3 &inVec, bVector3 &outVec) {
     bConvertToBond(outVec, inVec);
 }
 
+inline void eSwizzleWorldMatrix(const bMatrix4 &inMat, bMatrix4 &outMat) {
+    bConvertFromBond(outMat, inMat);
+}
+
 eRenderTarget *eGetRenderTarget(int render_target);
 void eUpdateViewMode(void);
 

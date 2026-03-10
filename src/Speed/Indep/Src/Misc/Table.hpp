@@ -29,6 +29,14 @@ class TableBase {
         IndexMultiplier = (NumEntries - 1) / (MaxArg - MinArg);
     }
 
+    int GetNumEntries() const {
+        return NumEntries;
+    }
+
+    float GetIndex(float f) const {
+        return (f - MinArg) * IndexMultiplier;
+    }
+
   protected:
     int NumEntries;        // offset 0x0, size 0x4
     float MinArg;          // offset 0x4, size 0x4
@@ -56,6 +64,26 @@ template <typename T> class tTable : public TableBase {
     T *pTable;
 
   public:
+    tTable(T *table, int num, float min, float max) : TableBase(num, min, max), pTable(table) {}
+
+    void Blend(T *dest, T *a, T *b, float blend_a);
+
+    void GetValue(T *p, float arg) {
+        int entries = GetNumEntries();
+        float normarg = GetIndex(arg);
+        int index = static_cast<int>(normarg);
+        if (index < 0) {
+            bMemCpy(p, &pTable[0], sizeof(T));
+        } else if (index < entries - 1) {
+            float blend = normarg - bFloor(normarg);
+            if (normarg < blend) {
+                blend = blend - 1.0f;
+            }
+            Blend(p, &pTable[index + 1], &pTable[index], blend);
+        } else {
+            bMemCpy(p, &pTable[entries - 1], sizeof(T));
+        }
+    }
 };
 
 class AverageBase {
@@ -94,11 +122,33 @@ class AverageBase {
 
     virtual void Recalculate() {}
 
-  protected:
     unsigned char nSize;
     unsigned char nSlots;
     unsigned char nSamples;
     unsigned char nCurrentSlot;
+};
+
+template <class T> class tAverage : public AverageBase {
+  public:
+    tAverage(int nSlots) : AverageBase(sizeof(T), nSlots) {
+        pData = static_cast<T *>(AverageBase::Allocate(sizeof(T) * nSlots, nullptr));
+    }
+
+    virtual ~tAverage() {
+        AverageBase::DeAllocate(pData, sizeof(T) * nSlots, nullptr);
+    }
+
+    T *GetValue() {
+        return &Average;
+    }
+
+    void Record(T *pValue);
+
+    virtual void Recalculate();
+
+    T *pData;     // offset 0x8, size 0x4
+    T Total;      // offset 0xC
+    T Average;    // offset varies
 };
 
 class Average : public AverageBase {

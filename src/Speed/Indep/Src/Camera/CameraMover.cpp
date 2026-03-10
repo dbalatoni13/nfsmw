@@ -2,6 +2,7 @@
 #include "CameraAI.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Interfaces/IBody.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
@@ -11,6 +12,22 @@
 #include "Speed/Indep/Src/World/CarInfo.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/bWare/Inc/bFunk.hpp"
+
+DECLARE_CONTAINER_TYPE(CameraAIAvoidables);
+
+struct Avoidables : public _STL::list<IBody *, UTL::Std::Allocator<IBody *, _type_CameraAIAvoidables> > {
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
+    void operator delete(void *mem, std::size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+};
+
+Avoidables *TheAvoidables;
 
 extern int WeHaveCheckedIfJR2ServerExists;
 extern int DisablePrecullerCounter;
@@ -571,6 +588,82 @@ float CameraMover::MinDistToWall() {
     return 0.7f;
 }
 
+bool CameraMover::EnforceMinGapToWalls(WCollider *collider, bVector3 *pCarPos, bVector3 *pCameraPos, bVector4 *pAdjust) {
+    bool bViolates = false;
+    bVector3 vAdjust(0.0f, 0.0f, 0.0f);
+
+    {
+        float fovScale = bClamp(bAngToDeg(pCamera->GetFieldOfView()) * (1.0f / 180.0f) * 2.0f, 0.0f, 1.0f);
+
+        bVector3 camDir = *pCarPos - *pCameraPos;
+        float camDist = bLength(&camDir);
+
+        if (camDist >= 0.1f) {
+            bVector3 camVec = bNormalize(camDir);
+            bVector3 upVec(0.0f, 1.0f, 0.0f);
+            bVector3 leftVec;
+            bCross(&leftVec, &upVec, &camVec);
+
+            const int kProbeSize = 2;
+            bVector3 camVecProbe[2];
+
+            float sideMargin = fovScale * camDist * 0.5f * 0.85f;
+            bScaleAdd(&camVecProbe[0], &camDir, &leftVec, sideMargin);
+            bScaleAdd(&camVecProbe[1], &camDir, &leftVec, -sideMargin);
+
+            float clearance = 0.0f;
+            for (int i = 0; i < kProbeSize; ++i) {
+                bVector3 probeVec;
+                bNormalize(&probeVec, &camVecProbe[i]);
+
+                bVector3 vCameraPosBackClearance;
+                bScaleAdd(&vCameraPosBackClearance, pCameraPos, &probeVec, -0.5f);
+
+                UMath::Vector4 camSeg[2];
+                eUnSwizzleWorldVector(*pCarPos, reinterpret_cast<bVector3 &>(camSeg[0]));
+                eUnSwizzleWorldVector(vCameraPosBackClearance, reinterpret_cast<bVector3 &>(camSeg[1]));
+                camSeg[0].w = 0.0f;
+                camSeg[1].w = 0.0f;
+
+                WCollisionMgr::WorldCollisionInfo cInfo;
+                WCollisionMgr collision_mgr(0, 3);
+
+                if (collision_mgr.CheckHitWorld(camSeg, cInfo, 2)) {
+                    bViolates = true;
+                    bVector3 collisionPt;
+                    bVector3 collisionNorm;
+                    eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(cInfo.fCollidePt), collisionPt);
+                    eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(cInfo.fNormal), collisionNorm);
+
+                    float dot = camDir.x * collisionNorm.x + camDir.y * collisionNorm.y + camDir.z * collisionNorm.z;
+                    float normalFactor = (1.0f - bAbs(dot)) * 2.0f + 1.0f;
+                    float oldDist = bDistBetween(pCarPos, &vCameraPosBackClearance);
+                    float newDist = bDistBetween(pCarPos, &collisionPt);
+                    float newClearance = (oldDist - newDist) * normalFactor;
+                    if (clearance < newClearance) {
+                        clearance = newClearance;
+                    }
+                }
+            }
+
+            float fSmoothed = (fAccumulatedClearance + clearance) * 0.5f;
+            fAccumulatedClearance = fAccumulatedClearance + (clearance - fSmoothed);
+            if (0.0f < fSmoothed) {
+                vAdjust.x = camVec.x * fSmoothed;
+                vAdjust.y = camVec.y * fSmoothed;
+                vAdjust.z = camVec.z * fSmoothed;
+            }
+
+            pAdjust->w = 0.0f;
+            pAdjust->x = vAdjust.x;
+            pAdjust->y = vAdjust.y;
+            pAdjust->z = vAdjust.z;
+        }
+    }
+
+    return bViolates;
+}
+
 unsigned short CameraMover::GetLookbackAngle() {
     return 0;
 }
@@ -750,6 +843,66 @@ double CameraMover::AdjustHeightAroundCar(const bVector3 *car_pos, bVector3 *pEy
     }
 
     return adjust;
+}
+
+bVector3 *CameraMover::DutchAroundCar(bVector3 *pCarPos, bVector3 *pCarVelocity) {
+    static bVector3 ret(0.0f, 0.0f, 0.0f);
+
+    ret.x = 0.0f;
+    ret.y = 0.0f;
+    ret.z = 0.0f;
+
+    {
+        _STL::list<IBody *, UTL::Std::Allocator<IBody *, _type_CameraAIAvoidables> >::const_iterator iter;
+
+        for (iter = TheAvoidables->begin(); iter != TheAvoidables->end(); ++iter) {
+            IBody *car = *iter;
+            UMath::Matrix4 umatrix;
+            bMatrix4 matrix;
+
+            car->GetTransform(umatrix);
+            eSwizzleWorldMatrix(reinterpret_cast<const bMatrix4 &>(umatrix), matrix);
+
+            const bVector3 *car_position = reinterpret_cast<const bVector3 *>(&matrix.v3);
+            bVector3 eye_to_car;
+            bSub(&eye_to_car, car_position, pCarPos);
+            float gap_squared = bDot(&eye_to_car, &eye_to_car);
+
+            if (gap_squared > 100.0f && gap_squared < 10000.0f) {
+                bVector3 unitEyeVelocity;
+                bNormalize(&eye_to_car, &eye_to_car);
+                bNormalize(&unitEyeVelocity, pCarVelocity);
+
+                float dot = bDot(&eye_to_car, &unitEyeVelocity);
+
+                if (dot > 0.5f) {
+                    float gap_factor = bClamp(1000.0f / gap_squared, 0.0f, 1.0f);
+
+                    UMath::Vector3 uvelocity;
+                    car->GetLinearVelocity(uvelocity);
+                    bVector3 velocity;
+                    eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(uvelocity), velocity);
+
+                    float vel_diff = bDistBetween(pCarVelocity, &velocity) - 5.0f;
+                    float vel_factor = bClamp(vel_diff * 0.1f, 0.0f, 1.0f);
+
+                    bVector3 unitVelocity;
+                    bNormalize(&unitVelocity, &velocity);
+                    bNormalize(&unitEyeVelocity, pCarVelocity);
+
+                    float vel_dot = bDot(&unitEyeVelocity, &unitVelocity);
+                    float dot_factor = 0.0f;
+                    if (vel_dot < 0.0f) {
+                        dot_factor = -vel_dot;
+                    }
+
+                    bScaleAdd(&ret, &ret, &eye_to_car, gap_factor * (vel_factor + dot_factor));
+                }
+            }
+        }
+    }
+
+    return &ret;
 }
 
 int CameraMover::MinGapCars(bMatrix4 *pMatrix, bVector3 *pLook, bVector3 *pForward) {

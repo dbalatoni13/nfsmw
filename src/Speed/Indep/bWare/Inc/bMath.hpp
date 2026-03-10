@@ -316,6 +316,7 @@ struct ALIGN_16 bVector3 {
 bVector3 *bNormalize(bVector3 *dest, const bVector3 *v);
 bVector3 *bNormalize(bVector3 *dest, const bVector3 *v, float length);
 bVector3 *bScaleAdd(bVector3 *dest, const bVector3 *v1, const bVector3 *v2, float scale);
+bVector3 *bCross(bVector3 *dest, const bVector3 *v1, const bVector3 *v2);
 
 inline bVector3 *bFill(bVector3 *dest, float x, float y, float z) {
     dest->x = x;
@@ -853,6 +854,7 @@ void bMulMatrix(bVector3 *dest, const bMatrix4 *a, const bVector3 *b);
 
 bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m);
 void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src);
+void bConvertFromBond(bMatrix4 &dest, const bMatrix4 &m);
 
 struct bQuaternion {
     // total size: 0x10
