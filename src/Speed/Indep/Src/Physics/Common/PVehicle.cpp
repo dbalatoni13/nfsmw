@@ -338,4 +338,52 @@ void PVehicle::RemoveBehaviorOverride(UCrc32 mechanic) {
     }
 }
 
+void PVehicle::OnBehaviorChange(const UCrc32 &mechanic) {
+    PhysicsObject::OnBehaviorChange(mechanic);
+    unsigned int crc = mechanic.GetValue();
+    if (crc == UCrc32(BEHAVIOR_MECHANIC_AI).GetValue()) {
+        GetSimable()->QueryInterface(&mAI);
+    } else if (crc == UCrc32(BEHAVIOR_MECHANIC_INPUT).GetValue()) {
+        GetSimable()->QueryInterface(&mInput);
+    } else if (crc == UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY).GetValue()) {
+        GetSimable()->QueryInterface(&mCollisionBody);
+        if (mCollisionBody != nullptr) {
+            mCollisionBody->SetAnimating(mAnimating);
+        }
+        GetSimable()->QueryInterface(&mArticulation);
+    } else if (crc == UCrc32(BEHAVIOR_MECHANIC_DRAW).GetValue()) {
+        GetSimable()->QueryInterface(&mRenderable);
+    } else if (crc == UCrc32(BEHAVIOR_MECHANIC_AUDIO).GetValue()) {
+        GetSimable()->QueryInterface(&mAudible);
+    } else if (crc == UCrc32(BEHAVIOR_MECHANIC_SUSPENSION).GetValue()) {
+        GetSimable()->QueryInterface(&mSuspension);
+        if (mSuspension == nullptr) {
+            return;
+        }
+        if (mCollisionBody == nullptr) {
+            return;
+        }
+        const UMath::Vector3 &fwd = mCollisionBody->GetForwardVector();
+        const UMath::Vector3 &vel = mRigidBody->GetLinearVelocity();
+        float speed = UMath::Dot(fwd, vel);
+        mSuspension->MatchSpeed(speed);
+    } else if (crc == UCrc32(BEHAVIOR_MECHANIC_ENGINE).GetValue()) {
+        GetSimable()->QueryInterface(&mTranny);
+        GetSimable()->QueryInterface(&mEngine);
+        if (mEngine == nullptr) {
+            return;
+        }
+        mEngine->ChargeNOS(mStartingNOS - mEngine->GetNOSCapacity());
+        if (mCollisionBody == nullptr) {
+            return;
+        }
+        const UMath::Vector3 &fwd = mCollisionBody->GetForwardVector();
+        const UMath::Vector3 &vel = mRigidBody->GetLinearVelocity();
+        float speed = UMath::Dot(fwd, vel);
+        mEngine->MatchSpeed(speed);
+    } else if (crc == UCrc32(BEHAVIOR_MECHANIC_DAMAGE).GetValue()) {
+        GetSimable()->QueryInterface(&mDamage);
+    }
+}
+
 
