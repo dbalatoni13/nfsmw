@@ -63,13 +63,13 @@ EventSequencer::IEngine *PVehicle::GetEventSequencer() { return mSequencer; }
 
 char PVehicle::GetForceStop() { return mForceStop; }
 
-bool PVehicle::IsGlareOn(ID glare) const { return (mGlareState & glare) != 0; }
+bool PVehicle::IsGlareOn(VehicleFX::ID glare) { return (mGlareState & glare) != 0; }
 
 bool PVehicle::IsActive() const { return mPhysicsMode != PHYSICS_MODE_INACTIVE; }
 
-void PVehicle::GlareOn(ID glare) { mGlareState |= glare; }
+void PVehicle::GlareOn(VehicleFX::ID glare) { mGlareState |= glare; }
 
-void PVehicle::GlareOff(ID glare) { mGlareState &= ~glare; }
+void PVehicle::GlareOff(VehicleFX::ID glare) { mGlareState &= ~glare; }
 
 void PVehicle::DebugObject() { PhysicsObject::DebugObject(); }
 

@@ -143,9 +143,9 @@ class PVehicle : public PhysicsObject,
     virtual float GetSpeedometer() const override;
     virtual float GetSpeed() const override;
     virtual void SetSpeed(float speed) override;
-    virtual void GlareOn(ID glare) override;
-    virtual void GlareOff(ID glare) override;
-    virtual bool IsGlareOn(ID glare) const override;
+    virtual void GlareOn(VehicleFX::ID glare) override;
+    virtual void GlareOff(VehicleFX::ID glare) override;
+    virtual bool IsGlareOn(VehicleFX::ID glare) override;
     virtual bool IsCollidingWithSoftBarrier() override;
     virtual bool IsAnimating() const override;
     virtual void SetAnimating(bool animate) override;
