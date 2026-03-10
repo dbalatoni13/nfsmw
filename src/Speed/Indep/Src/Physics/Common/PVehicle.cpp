@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/Physics/PVehicle.h"
 
 #include "Speed/Indep/Src/FE/FECustomizationRecord.h"
+#include "Speed/Indep/Src/Generated/Events/EPerfectLaunch.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEffects.h"
