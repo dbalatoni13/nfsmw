@@ -163,6 +163,8 @@ class VisibleSectionManager {
     unsigned int EnabledGroups[256];                                   // offset 0x6430, size 0x40
 
   public:
+    void ActivateOverlay(const char *overlay_name);
+    void UnactivateOverlay();
     void UnallocateUserInfo(int section_number);
     DrivableScenerySection *FindDrivableSection(const bVector2 *point);
     DrivableScenerySection *FindDrivableSection(int section_number /* r4 */);

@@ -75,6 +75,8 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
         MaxPlayStatus = 3,
     };
 
+    CAnimScene(CAnimSceneData *anim_scene_data, int camera_track_number, int anim_candidate_type, int anim_candidate_index);
+
     int GenerateHandle();
     int GetHandle();
 

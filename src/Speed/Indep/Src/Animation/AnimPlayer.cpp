@@ -209,3 +209,20 @@ void CAnimPlayer::DestroyAnimScene(int anim_handle) {
 void CAnimPlayer::DeleteAnimInstance(int anim_handle) {
     DestroyAnimScene(anim_handle);
 }
+
+int CAnimPlayer::CreateAnimScene(CAnimSceneData *anim_scene_data, int camera_track_number, int anim_candidate_type, int anim_candidate_index) {
+    CAnimScene *scene = new CAnimScene(anim_scene_data, camera_track_number, anim_candidate_type, anim_candidate_index);
+    bool initialized = scene->Init();
+    bNode *scene_node = reinterpret_cast< bNode * >(reinterpret_cast< char * >(scene) + 4);
+
+    if (initialized) {
+        bNode *tail = mInstancedAnimSceneList.HeadNode.Prev;
+        tail->Next = scene_node;
+        mInstancedAnimSceneList.HeadNode.Prev = scene_node;
+        scene_node->Next = reinterpret_cast< bNode * >(this);
+        scene_node->Prev = tail;
+        return scene->GetHandle();
+    }
+
+    return 0;
+}

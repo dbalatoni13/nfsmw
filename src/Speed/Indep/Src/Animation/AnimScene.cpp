@@ -1,4 +1,7 @@
 #include "AnimScene.hpp"
+#include "AnimEntity_BasicCharacter.hpp"
+#include "Speed/Indep/Src/World/SpaceNode.hpp"
+#include "Speed/Indep/Src/World/VisibleSection.hpp"
 
 struct NisScene {
     unsigned int mSceneNameHash;
@@ -28,6 +31,7 @@ struct CAnimEntityDataLayout {
 
 bTList<CAnimSceneData> g_loadedAnimSceneDataList;
 int mHandleCounter = 0;
+extern bool mIsRaceStart;
 
 CAnimSceneData::CAnimSceneData(bChunk *chunk)
     : mChunk(chunk),            //
@@ -179,6 +183,39 @@ int CAnimScene::GetHandle() {
     return mHandle;
 }
 
+CAnimScene::CAnimScene(CAnimSceneData *anim_scene_data, int camera_track_number, int anim_candidate_type, int anim_candidate_index)
+    : mHandle(0),                            //
+      mAnimSceneData(anim_scene_data),       //
+      mPlayStatus(Stopped),                  //
+      mTimeElapsed(0.0f),                    //
+      mTimeDelta(0.0f),                      //
+      mTimeStart(0.0f),                      //
+      mTimeTotalLength(0.0f),                //
+      mIsBoundToGame(false),                 //
+      mCameraTrackNumber(camera_track_number), //
+      mControllingCamera(false),             //
+      mSpaceNode(nullptr),                   //
+      mAnimCandidateType(anim_candidate_type), //
+      mAnimCandidateIndex(anim_candidate_index) {
+    mInstancedAnimEntityList.HeadNode.Next = &mInstancedAnimEntityList.HeadNode;
+    mInstancedAnimEntityList.HeadNode.Prev = &mInstancedAnimEntityList.HeadNode;
+    mAnimPropertyList.HeadNode.Next = &mAnimPropertyList.HeadNode;
+    mAnimPropertyList.HeadNode.Prev = &mAnimPropertyList.HeadNode;
+    mHandle = GenerateHandle();
+    bIdentity(&mSceneRotationMatrix);
+    bIdentity(&mSceneTranslationMatrix);
+    bIdentity(&mSceneTransformMatrix);
+}
+
+CAnimScene::~CAnimScene() {
+    while (mAnimPropertyList.HeadNode.Next != &mAnimPropertyList.HeadNode) {
+        delete mAnimPropertyList.RemoveHead();
+    }
+    while (mInstancedAnimEntityList.HeadNode.Next != &mInstancedAnimEntityList.HeadNode) {
+        mInstancedAnimEntityList.RemoveHead();
+    }
+}
+
 int CAnimScene::GenerateHandle() {
     mHandleCounter++;
     if (mHandleCounter > 0xFFFF) {
@@ -286,4 +323,71 @@ CAnimProperty *CAnimScene::FindProperty(eAnimProperty property_id) {
         anim_property = anim_property->GetNext();
     }
     return anim_property;
+}
+
+void CAnimScene::ChangePlayStatus(ePlayStatus new_status) {
+    ePlayStatus current_status = mPlayStatus;
+
+    if (current_status == Paused) {
+        if (new_status == Paused) {
+            return;
+        }
+        if (new_status < Playing) {
+            if (new_status != Stopped) {
+                return;
+            }
+            mPlayStatus = Stopped;
+            UnBindToGame();
+            ResetTime();
+            return;
+        }
+        if (new_status != Playing) {
+            return;
+        }
+    } else if (current_status < Playing) {
+        if (current_status != Stopped) {
+            return;
+        }
+        if (new_status < Stopped) {
+            return;
+        }
+        if (new_status < Playing) {
+            return;
+        }
+        if (new_status != Playing) {
+            return;
+        }
+        ResetTime();
+        BindToGame();
+        mPlayStatus = new_status;
+        return;
+    } else {
+        if (current_status != Playing) {
+            return;
+        }
+        if (new_status != Paused) {
+            if (new_status > Paused) {
+                return;
+            }
+            if (new_status != Stopped) {
+                return;
+            }
+            mPlayStatus = Stopped;
+            UnBindToGame();
+            ResetTime();
+            return;
+        }
+    }
+    mPlayStatus = new_status;
+}
+
+bool CAnimScene::Purge() {
+    ClearAnimEntities();
+    ClearCarAnimationControllers();
+    DeleteSpaceNode(mSpaceNode);
+    CloseCharacterEffects();
+    if (reinterpret_cast< CAnimSceneDataLayout * >(mAnimSceneData)->mNisScene->SeeulatorOverlayName[0] != '\0') {
+        TheVisibleSectionManager.UnactivateOverlay();
+    }
+    return true;
 }
