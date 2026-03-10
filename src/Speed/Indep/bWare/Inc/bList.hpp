@@ -64,6 +64,9 @@ template <typename T> struct bTNode : public bNode {
     T *GetPrev() {
         return (T *)bNode::GetPrev();
     }
+    T *AddBefore(T *insert_point) {
+        return (T *)bNode::AddBefore(insert_point);
+    }
     T *AddAfter(T *insert_point) {
         return (T *)bNode::AddAfter(insert_point);
     }
@@ -283,6 +286,18 @@ template <typename T> class bTList : public bList {
         return iterator(EndOfList(), this);
     }
 };
+
+template <typename T>
+T *bTList<T>::AddSorted(typename bTList<T>::SortFuncT check_flip, T *node) {
+    T *insert_point = GetHead();
+    while (insert_point != EndOfList()) {
+        if (check_flip(node, insert_point) == 0) {
+            return node->AddBefore(insert_point);
+        }
+        insert_point = insert_point->GetNext();
+    }
+    return AddTail(node);
+}
 
 // total size: 0xC
 class bPNode : public bTNode<bPNode> {

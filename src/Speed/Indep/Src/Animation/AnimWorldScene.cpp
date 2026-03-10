@@ -1,10 +1,14 @@
 #include "AnimWorldScene.hpp"
 #include "AnimPlayer.hpp"
 #include "WorldAnimInstanceDirectory.hpp"
+#include "Speed/Indep/Src/World/RaceParameters.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 extern int AnimCfg_DisableWorldAnimations;
 extern bool DisableWorldAnimations;
+extern bool PrintWorldAnimationStuff;
+extern RaceParameters TheRaceParameters;
 
 CAnimWorldScene::CAnimWorldScene()
     : mHandle(0) {
@@ -31,6 +35,137 @@ CAnimWorldScene::~CAnimWorldScene() {
     while (!mInstancedAnimTreeList.IsEmpty()) {
         delete mInstancedAnimTreeList.RemoveHead();
     }
+}
+
+CWorldAnimEntityTree *CAnimWorldScene::InstantiateAnimTree(WorldAnimInstance *instance) {
+    if (AnimCfg_DisableWorldAnimations || DisableWorldAnimations) {
+        return nullptr;
+    }
+
+    unsigned int track_num_val = instance->track_num;
+    if (track_num_val != 0) {
+        int min1 = (track_num_val >> 8) & 0xFF;
+        int max1 = track_num_val & 0xFF;
+        int min2 = track_num_val >> 24;
+        int max2 = (track_num_val >> 16) & 0xFF;
+        int tracknum = TheRaceParameters.TrackNumber % 100;
+        if (tracknum < min1 || tracknum > max1) {
+            if (tracknum < min2 || tracknum > max2) {
+                return nullptr;
+            }
+        }
+    }
+
+    WorldAnimEntityTreeInfo *treeinfo =
+        TheWorldAnimInstanceDirectory.GetAnimTreeInfo(instance->anim_tree_name_hash);
+    bMatrix4 *instance_mat = &instance->instance_matrix;
+    if (treeinfo == nullptr) {
+        return nullptr;
+    }
+
+    unsigned int begin_range = 0xFFFFFFFF;
+    unsigned int end_range = 0xFFFFFFFF;
+
+    if (instance->named_range_hash != 0) {
+        for (int i = 0; i < 4; i++) {
+            WorldAnimNamedRange *range_array = treeinfo->named_ranges;
+            WorldAnimNamedRange &namedrange = range_array[i];
+            if (namedrange.name_hash == instance->named_range_hash) {
+                unsigned int range = namedrange.range;
+                begin_range = range >> 16;
+                end_range = range & 0xFFFF;
+            }
+        }
+        if (PrintWorldAnimationStuff) {
+            if (begin_range == 0xFFFFFFFF || end_range == 0xFFFFFFFF) {
+                for (int i = 0; i < 4; i++) {
+                }
+            }
+        }
+    }
+
+    CWorldAnimEntityTree *new_tree = new ("CWorldAnimEntityTree") CWorldAnimEntityTree();
+    unsigned int tree_name_hash = treeinfo->tree_name_hash;
+    new_tree->mInstanceData = instance;
+    new_tree->tree_name_hash = tree_name_hash;
+    new_tree->mControlScenarioType = eCST_ERROR;
+
+    int num_entities = treeinfo->loaded_world_anim_entity_chunks.CountElements();
+    CWorldAnimEntity **arr_of_ptrs =
+        new ("CWorldAnimEntity*", 0) CWorldAnimEntity *[num_entities];
+    bMemSet(arr_of_ptrs, 0, num_entities * static_cast< int >(sizeof(CWorldAnimEntity *)));
+
+    if (instance->play_flags & 0x400) {
+        bRandom(1.0f);
+    }
+    if (instance->play_flags & 0x200) {
+        bRandom(1.0f);
+    }
+
+    CWorldAnimEntity *root_entity = nullptr;
+    int ix = 0;
+
+    for (bPNode *node = treeinfo->loaded_world_anim_entity_chunks.GetHead();
+         node != treeinfo->loaded_world_anim_entity_chunks.EndOfList(); node = node->GetNext()) {
+        WorldAnimEntityInfo *entinfo =
+            reinterpret_cast< WorldAnimEntityInfo * >(node->GetObject());
+        SpaceNode *parent_space_node = nullptr;
+
+        if (entinfo->mParentIndex != -1) {
+            CWorldAnimEntity *parent = arr_of_ptrs[entinfo->mParentIndex];
+            SpaceNode *spacenode = parent->GetSpaceNode();
+            parent_space_node = arr_of_ptrs[entinfo->mParentIndex]->GetSpaceNode();
+        }
+
+        CWorldAnimEntity *new_entity_instantiation =
+            new ("CWorldAnimEntity") CWorldAnimEntity();
+        arr_of_ptrs[ix] = new_entity_instantiation;
+        new_entity_instantiation->mAnimTree = new_tree;
+
+        WorldAnimEntityInfo override_info;
+        bMemCpy(&override_info, entinfo, sizeof(WorldAnimEntityInfo));
+        ix++;
+
+        if (instance->named_range_hash != 0) {
+            instance->play_flags |= 0x40;
+        }
+        override_info.mLODB = instance->lodb_hash;
+        override_info.mLODZ = instance->lodz_hash;
+
+        uint32 start_trigger = instance->start_trigger_hash;
+        override_info.instance_data = instance;
+        new_tree->start_trigger_hash = start_trigger;
+        new_tree->stop_trigger_hash = instance->stop_trigger_hash;
+
+        if (start_trigger != 0) {
+            new_tree->mControlScenarioType = eCST_TriggerZone;
+        } else if (instance->track_dir != 0) {
+            new_tree->mControlScenarioType = eCST_FwdRevTrack;
+        }
+
+        new_entity_instantiation->Init(&override_info, parent_space_node);
+
+        if (entinfo->mThisInstanceNameHash == treeinfo->tree_name_hash) {
+            root_entity = new_entity_instantiation;
+            SpaceNode *space = root_entity->GetSpaceNode();
+            space->SetLocalMatrix(instance_mat);
+        }
+
+        new_tree->instantiated_world_anim_entities.AddTail(new_entity_instantiation);
+
+        if (instance->start_trigger_hash == 0 && instance->track_dir == 0) {
+            new_entity_instantiation->Play();
+        }
+    }
+
+    new_tree->root_entity = root_entity;
+    mInstancedAnimTreeList.AddTail(new_tree);
+
+    if (arr_of_ptrs != nullptr) {
+        delete[] arr_of_ptrs;
+    }
+
+    return new_tree;
 }
 
 void CAnimWorldScene::UpdateTime(float time_step) {

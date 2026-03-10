@@ -85,6 +85,7 @@ class CWorldAnimEntity : public IAnimEntity {
     }
 
   private:
+    friend class CAnimWorldScene;
     uint32 mTypeID;                   // offset 0x4, size 0x4
     uint32 mThisInstanceNameHash;     // offset 0x8, size 0x4
     SpaceNode *mSpaceNode;            // offset 0xC, size 0x4
@@ -140,6 +141,7 @@ struct WorldAnimEntityTreeInfo : public bTNode<WorldAnimEntityTreeInfo> {
 
   private:
     friend class WorldAnimInstanceDirectory;
+    friend class CAnimWorldScene;
 
     uint32 tree_name_hash;                                       // offset 0x8, size 0x4
     bPList<WorldAnimEntityInfo> loaded_world_anim_entity_chunks; // offset 0xC, size 0x8
