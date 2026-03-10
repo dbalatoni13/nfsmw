@@ -29,14 +29,37 @@ class CAnimEntityData : public bTNode<CAnimEntityData> {
 
 // total size: 0x1C
 class CAnimSceneData : public bTNode<CAnimSceneData> {
+  public:
+    CAnimSceneData(bChunk *chunk);
+    ~CAnimSceneData();
+
+    static CAnimSceneData *FindAnimSceneData(unsigned int scene_name_hash);
+
+    void EndianSwapHeaderData();
+    void InitHeaderData(void *data, int size);
+    void AddEntityData(void *data, int size);
+
+    int GetSceneInfo();
+
   private:
     bChunk *mChunk;                              // offset 0x8, size 0x4
     struct NisScene *mNisScene;                  // offset 0xC, size 0x4
     bTList<CAnimEntityData> mAnimEntityDataList; // offset 0x10, size 0x8
 };
 
+CAnimSceneData *CreateAnimSceneData(bChunk *nested_chunk, bChunk *sub_chunk);
+int LoaderAnimSceneData(bChunk *chunk);
+int UnloaderAnimSceneData(bChunk *chunk);
+
 // total size: 0x14
 class CAnimProperty : public bTNode<CAnimProperty> {
+  public:
+    CAnimProperty(eAnimProperty type, bool enabled);
+    ~CAnimProperty();
+    eAnimProperty GetType();
+    void SetEnabled(bool enabled);
+    bool IsEnabled();
+
   private:
     eAnimProperty mType; // offset 0x8, size 0x4
     int mEnabled;        // offset 0xC, size 0x4
@@ -52,6 +75,7 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
         MaxPlayStatus = 3,
     };
 
+    int GenerateHandle();
     int GetHandle();
 
     unsigned int GetAnimID();

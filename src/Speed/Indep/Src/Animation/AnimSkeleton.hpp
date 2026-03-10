@@ -60,4 +60,6 @@ class CAnimSkeleton : public bTNode<CAnimSkeleton> {
     EAGL4Anim::Skeleton *m_pSkeleton;   // offset 0x24, size 0x4
 };
 
+CAnimSkeleton *GetSkeletonFromList(unsigned int namehash);
+
 #endif
