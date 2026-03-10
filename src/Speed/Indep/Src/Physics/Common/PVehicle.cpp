@@ -417,3 +417,23 @@ void PVehicle::UpdateLocalVelocities() {
         mAbsSpeed = UMath::Abs(mSpeed);
     }
 }
+
+void PVehicle::DoStaging(float dT) {
+    if (!mPerfectLaunch.IsSet()) {
+        mPerfectLaunch.Amount = 0.0f;
+        if (mEngine != nullptr) {
+            IRaceEngine *raceEngine;
+            if (mEngine->QueryInterface(&raceEngine)) {
+                float range = 0.0f;
+                float peak_rpm = raceEngine->GetPerfectLaunchRange(range);
+                if (range > 0.0f && peak_rpm > 0.0f) {
+                    float rpm = mEngine->GetRPM();
+                    float dist = rpm - peak_rpm;
+                    if (dist < range && dist > 0.0f) {
+                        mPerfectLaunch.Amount = (dist / range) * 0.5f + 0.5f;
+                    }
+                }
+            }
+        }
+    }
+}
