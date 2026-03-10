@@ -764,14 +764,13 @@ bool FEngGet2DExtentsForMouse(FEObject* pObject, FERect& Rect, FEVector2 offset)
         return false;
     }
 
-    float tlx, tly, brx, bry;
-    FEngGetTopLeft(pObject, tlx, tly);
-    FEngGetBottomRight(pObject, brx, bry);
+    FEngGetTopLeft(pObject, Rect.left, Rect.top);
+    FEngGetBottomRight(pObject, Rect.right, Rect.bottom);
 
-    Rect.left = tlx + offset.x;
-    Rect.top = tly + offset.y;
-    Rect.right = brx + offset.x;
-    Rect.bottom = bry + offset.y;
+    Rect.left += offset.x;
+    Rect.right += offset.x;
+    Rect.top += offset.y;
+    Rect.bottom += offset.y;
 
     return true;
 }
