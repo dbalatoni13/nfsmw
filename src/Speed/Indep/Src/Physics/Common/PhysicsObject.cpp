@@ -514,11 +514,10 @@ bool PhysicsObject::IsAttached(const UTL::COM::IUnknown *pOther) const {
 }
 
 const UTL::Std::list<IAttachable *, _type_IAttachableList> *PhysicsObject::GetAttachments() const {
-    Attachments *att = mAttachments;
-    if (att == nullptr) {
-        return nullptr;
+    if (mAttachments != nullptr) {
+        return &mAttachments->GetList();
     }
-    return &att->GetList();
+    return nullptr;
 }
 
 void PhysicsObject::Behaviors::Reset() {
