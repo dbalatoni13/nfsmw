@@ -4,7 +4,9 @@
 #include "Speed/Indep/Src/Animation/AnimDirectory.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 extern Timer RealTimer;
@@ -12,6 +14,9 @@ extern AnimDirectory *TheAnimDirectory;
 
 struct ICEAnchor;
 ICEAnchor *GetICEAnchor();
+
+static float GetGroundElevation(const ICE::Vector3 *position);
+static void ICEGetPlayerCarTransform(ICE::Matrix4 *matrix);
 
 namespace ICEReplay {
 ICETrack *ChooseGoodCamera(ICEAnchor *p_car, ICEGroup *p_replay_cameras, int num_replay_cameras);
@@ -409,6 +414,148 @@ void ICEManager::ChooseReplayCamera() {
     }
 }
 
+float ICEManager::GetAnimElevationFixup(ICE::Vector3 *position) {
+    float elevation = GetGroundElevation(position);
+    if (elevation != 0.0f) {
+        return fAnimElevation - elevation;
+    }
+    return 0.0f;
+}
+
+void ICEManager::FixAnimElevation(ICE::Vector3 *position) {
+    // TODO
+}
+
+void ICEManager::SetGenericCameraToPlay(const char *group_name, const char *track_name) {
+    nPlayGenericGroupHash = Attrib::StringHash32(group_name);
+    bStrNCpy(nPlayGenericTrackName, track_name, 14);
+}
+
+ICEData *ICEManager::GetCameraData(unsigned int scene_hash, int camTrack) {
+    ICEGroup *group = GetNisCameraGroup(scene_hash);
+    if (group != 0) {
+        char name[14];
+        bSPrintf(name, "cam%d", camTrack);
+        pPlaybackTrack = group->GetTrack(name);
+        if (pPlaybackTrack != 0) {
+            return pPlaybackTrack->GetCameraData(0, 0, 0);
+        }
+    }
+    return 0;
+}
+
+ICEData *ICEManager::GetCameraData(ICETrack **p_track, float *p_start, float *p_end) {
+    if (p_track != 0) {
+        *p_track = pPlaybackTrack;
+    }
+    if (pPlaybackTrack != 0) {
+        return pPlaybackTrack->GetCameraData(p_start, p_end, 0);
+    }
+    return 0;
+}
+
+ICEData *ICEManager::GetNeighbour(ICEData *data, int key, ICETrack *track) {
+    int camera = track->GetKeyNumber(data);
+    camera += key;
+    return track->GetKey(camera);
+}
+
+ICEGroup *ICEManager::GetCameraGroup(ICEContext context, unsigned int handle) {
+    int num_groups = 0;
+    ICEGroup *groups = 0;
+
+    switch (context) {
+    case eDCE_NIS:
+        num_groups = nNisCameras;
+        groups = pNisCameras;
+        break;
+    case eDCE_FMV:
+        num_groups = nFmvCameras;
+        groups = pFmvCameras;
+        break;
+    case eDCE_REPLAY:
+        num_groups = nReplayCameras;
+        groups = pReplayCameras;
+        break;
+    case eDCE_GENERIC:
+        num_groups = nGenericCameras;
+        groups = pGenericCameras;
+        break;
+    default:
+        break;
+    }
+
+    for (int i = 0; i < num_groups; i++) {
+        ICEGroup *group = &groups[i];
+        if (group->GetHandle() == handle) {
+            return group;
+        }
+    }
+    return 0;
+}
+
+ICEGroup *ICEManager::AddCameraGroup(ICEContext context, unsigned int handle) {
+    // TODO
+    return 0;
+}
+
+void ICEManager::LoadCameraSet(bChunk *chunk) {
+    // TODO
+}
+
+void ICEManager::UnloadCameraSet(bChunk *chunk) {
+    // TODO
+}
+
+void ICEManager::LoadCameraShakes(bChunk *chunk) {
+    // TODO
+}
+
+void ICEManager::UnloadCameraShakes(bChunk *chunk) {
+    // TODO
+}
+
+void ICEManager::Init() {
+    // TODO
+}
+
+void ICEManager::Resolve() {
+    // TODO
+}
+
+bool ICEManager::ChooseCameraPlaybackTrack() {
+    // TODO
+    return false;
+}
+
+int ChooseGoodSceneCameraTrackIndex(unsigned int scene_hash, const ICE::Matrix4 *scene_origin) {
+    // TODO
+    return 0;
+}
+
+void ICEManager::GetSlope(ICE::Vector3 *eye, ICE::Vector3 *look, float *fov, float *dutch, ICEData *data, int key, ICETrack *track) {
+    // TODO
+}
+
+static float GetGroundElevation(const ICE::Vector3 *position) {
+    // TODO
+    return 0.0f;
+}
+
+static void ICEGetPlayerCarTransform(ICE::Matrix4 *matrix) {
+    // TODO
+}
+
+int LoaderICECameras(bChunk *pChunk) {
+    // TODO
+    return 0;
+}
+
+int UnloaderICECameras(bChunk *pChunk) {
+    // TODO
+    return 0;
+}
+
 namespace ICE {
 
 ICEScene *FindAnimScene() {
@@ -431,4 +578,43 @@ unsigned int GetSceneCount() {
     return directory->GetSceneCount();
 }
 
+unsigned int GetSceneHash(unsigned int slot) {
+    if (TheAnimDirectory == 0 || TheAnimDirectory->GetSceneCount() <= slot) {
+        return 0;
+    }
+    AnimSceneLoadInfo info;
+    TheAnimDirectory->GetSceneLoadInfo(slot, info);
+    return info.mAnimSceneHash;
+}
+
+void GetNameOfSceneHash(unsigned int hash, char *name) {
+    *name = 0;
+    if (TheAnimDirectory != 0) {
+        TheAnimDirectory->GetNameOfSceneHash(hash, name);
+    }
+}
+
+void FireEventTag(int key) {
+    INIS *nis = INIS::Get();
+    if (nis != 0) {
+        char tagName[64];
+        bSPrintf(tagName, "key_%d", key);
+        nis->FireEventTag(tagName);
+    }
+}
+
 } // namespace ICE
+
+void ICECompleteEventTags() {
+    ICETrack *p_track = 0;
+    float fParameter0;
+    float fParameter1;
+    TheICEManager.GetCameraData(&p_track, &fParameter0, &fParameter1);
+    int key = TheICEManager.GetCameraIndex((fParameter0 + fParameter1) * 0.5f, p_track);
+    if (p_track != 0) {
+        int keyCount = p_track->GetNumKeys();
+        while (++key < keyCount) {
+            ICE::FireEventTag(key);
+        }
+    }
+}

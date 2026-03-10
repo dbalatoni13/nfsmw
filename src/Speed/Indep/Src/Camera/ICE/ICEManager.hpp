@@ -8,11 +8,24 @@
 #include "Speed/Indep/Src/Camera/ICE/ICEData.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
+enum ICEContext {
+    eDCE_NIS = 0,
+    eDCE_FMV = 1,
+    eDCE_REPLAY = 2,
+    eDCE_GENERIC = 3,
+    eDCE_NUM_CONTEXTS = 4,
+    eDCE_NOCONTEXT = 4,
+};
+
 struct ICEGroup {
     // total size: 0x14
     void FlushAllocatedTracks();
     struct ICETrack *GetTrack(int n);
     struct ICETrack *GetTrack(char *s);
+
+    unsigned int GetHandle() {
+        return Handle;
+    }
 
     unsigned int Handle;               // offset 0x0, size 0x4
     int Context;                       // offset 0x4, size 0x4
@@ -25,8 +38,52 @@ struct ICETrack : public bTNode<ICETrack> {
     void PlatEndianSwap();
     int GetContext();
     int GetKeyNumber(float f_param);
+    int GetKeyNumber(ICEData *data);
     float GetParameter();
     struct ICEData *GetCameraData(float *p_start, float *p_end, float *p_current);
+
+    int GetNumKeys() {
+        return NumKeys;
+    }
+
+    ICEData *GetKey(int n) {
+        int clamped = n;
+        if (clamped < 0) clamped = 0;
+        if (clamped >= NumKeys) clamped = NumKeys - 1;
+        return &Keys[clamped];
+    }
+
+    char *GetName() {
+        return Name;
+    }
+
+    ICEGroup *GetGroup() {
+        return Group;
+    }
+
+    float GetStart() {
+        return Start;
+    }
+
+    float GetLength() {
+        return Length;
+    }
+
+    bool IsAllocated() {
+        return Allocated != 0;
+    }
+
+    void SetGroup(ICEGroup *g) {
+        Group = g;
+    }
+
+    void SetStart(float s) {
+        Start = s;
+    }
+
+    void SetLength(float l) {
+        Length = l;
+    }
 
     ICEGroup *Group;  // offset 0x8, size 0x4
     float Start;      // offset 0xC, size 0x4
@@ -88,7 +145,58 @@ class ICEManager {
         return nState >= 1;
     }
 
+    bool IsEditorOff() {
+        return nState == 0;
+    }
+
+    ICETrack *GetPlaybackTrack() {
+        return pPlaybackTrack;
+    }
+
+    void SetSmoothExit(bool smooth) {
+        bSmoothExit = smooth;
+    }
+
+    bool IsSmoothExit() {
+        return bSmoothExit;
+    }
+
+    void SetUseRealTime(bool val) {
+        bUseRealTime = val;
+    }
+
+    float IsUsingRealTime() {
+        return bUseRealTime;
+    }
+
+    float GetParameterLength() {
+        return fParameterLength;
+    }
+
+    bool IsGenericCameraPlaying() {
+        return nPlayGenericGroupHash != 0;
+    }
+
+    float GetAnimElevationFixup(ICE::Vector3 *position);
+    void SetupAnimElevation();
     void FixAnimElevation(ICE::Vector3 *position);
+
+    int ChooseGoodSceneCameraTrackIndex(unsigned int scene_hash, const ICE::Matrix4 *scene_origin);
+    void SetGenericCameraToPlay(const char *group_name, const char *track_name);
+    ICEGroup *GetCurrentGroup();
+    unsigned int GetRelativeShakeType(unsigned int shake_type, int inc);
+    char *GetShakeTypeName(unsigned int shake_type);
+    ICETrack *GetCurrentTrack();
+    bool ChooseCameraPlaybackTrack();
+    ICEData *GetCameraData(ICETrack **p_track, float *p_start, float *p_end);
+    ICEData *GetNeighbour(ICEData *data, int key, ICETrack *track);
+    void GetSlope(ICE::Vector3 *eye, ICE::Vector3 *look, float *fov, float *dutch, ICEData *data, int key, ICETrack *track);
+    ICEGroup *AddCameraGroup(ICEContext context, unsigned int handle);
+    ICEGroup *GetCameraGroup(ICEContext context, unsigned int handle);
+    void LoadCameraSet(bChunk *chunk);
+    void UnloadCameraSet(bChunk *chunk);
+    void LoadCameraShakes(bChunk *chunk);
+    void UnloadCameraShakes(bChunk *chunk);
 
   private:
     float GetParameter(int i, ICETrack *track);

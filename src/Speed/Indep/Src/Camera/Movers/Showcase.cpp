@@ -7,7 +7,7 @@ void ShowcaseCameraMover::ResetState() {
 }
 
 ShowcaseCameraMover::ShowcaseCameraMover(int nView, CameraAnchor *p_car, bool flipSide)
-    : CameraMover(nView) {
+    : CameraMover(nView, CM_SHOWCASE) {
     // TODO
 }
 

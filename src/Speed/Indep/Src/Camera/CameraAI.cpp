@@ -2,6 +2,9 @@
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
+#include "Speed/Indep/Src/Generated/Messages/MICECameraFinished.h"
+#include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
 #include "Speed/Indep/Src/Interfaces/IBody.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
@@ -122,11 +125,27 @@ void CameraAI::Director::SelectAction() {
 }
 
 void CameraAI::Director::TotaledStart() {
-    // TODO
+    mDesiredMode = Attrib::StringKey("TOTALED");
+    mJumpTime = 0.0f;
+    SetAction(mDesiredMode);
 }
 
 void CameraAI::Director::PursuitStart() {
-    // TODO
+    if (mPursuitStartTime <= 0.0f) {
+        UMath::Vector4 position = UMath::Vector4::kZero;
+        UMath::Vector4 vector = UMath::Vector4::kZero;
+        UMath::Vector4 velocity = UMath::Vector4::kZero;
+        MGamePlayMoment msg(position, vector, velocity, 0,
+                            Attrib::StringHash32("pursuit"));
+        msg.Deliver();
+
+        MMiscSound snd(1);
+        snd.SetID(Attrib::StringHash32("play"));
+        snd.Deliver();
+
+        mPursuitStartTime = 5.0f;
+        mCinematicSlowdownSeconds = 3.0f;
+    }
 }
 
 // --- Free functions ---

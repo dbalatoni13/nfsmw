@@ -14,7 +14,7 @@ void SelectCarCameraMover::SetZoomSpeed(float f) {
     RadiusSpeed = f;
 }
 
-SelectCarCameraMover::SelectCarCameraMover(int view_id) : CameraMover(view_id) {
+SelectCarCameraMover::SelectCarCameraMover(int view_id) : CameraMover(view_id, CM_SELECT_CAR) {
     // TODO
 }
 
