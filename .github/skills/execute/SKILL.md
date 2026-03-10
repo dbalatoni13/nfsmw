@@ -70,8 +70,8 @@ After scaffolding, rebuild and re-check the function list:
 
 ```sh
 ninja
-python scripts/decomp-diff.py -u main/Path/To/TU -s nonmatching -t function
-python scripts/decomp-diff.py -u main/Path/To/TU -s missing -t function
+python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching -t function
+python tools/decomp-diff.py -u main/Path/To/TU -s missing -t function
 ```
 
 ### 3c. Implement each function sequentially
@@ -124,7 +124,7 @@ Remind agents in their prompts:
 After every few functions, re-run the full status check:
 
 ```sh
-python scripts/decomp-diff.py -u main/Path/To/TU
+python tools/decomp-diff.py -u main/Path/To/TU
 ```
 
 Review progress and decide whether to:
@@ -139,10 +139,10 @@ When all functions have been attempted:
 
 ```sh
 # Full status
-python scripts/decomp-diff.py -u main/Path/To/TU
+python tools/decomp-diff.py -u main/Path/To/TU
 
 # Check for any remaining mismatches
-python scripts/decomp-diff.py -u main/Path/To/TU -s nonmatching
+python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching
 
 # Verify no regressions
 ninja changes
