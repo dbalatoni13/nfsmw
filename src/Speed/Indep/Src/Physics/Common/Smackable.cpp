@@ -556,7 +556,7 @@ EventSequencer::IEngine *Smackable::GetEventSequencer() {
 }
 
 Smackable::Manager::Manager(float rate) : Sim::Activity(0) {
-    AddTask("Smackable", rate, 0.0f, Sim::TASK_FRAME_FIXED);
+    mManageTask = AddTask("Smackable", rate, 0.0f, Sim::TASK_FRAME_FIXED);
 }
 
 Smackable::Manager::~Manager() {

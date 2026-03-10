@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/Src/FE/FECustomizationRecord.h"
 #include "Speed/Indep/Src/Generated/Events/EPerfectLaunch.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAudible.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
@@ -11,10 +12,18 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 
 extern Attrib::StringKey BEHAVIOR_MECHANIC_AI;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_AUDIO;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_DAMAGE;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_DRAW;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_ENGINE;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_INPUT;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_RIGIDBODY;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_SUSPENSION;
 
 const ISimable *PVehicle::GetSimable() const { return static_cast<const ISimable *>(this); }
 
