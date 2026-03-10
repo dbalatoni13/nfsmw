@@ -127,6 +127,31 @@ enum DriverClass {
     DRIVER_REMOTE = 6,
 };
 
+// TODO move?
+enum ID {
+    LIGHT_NONE = 0,
+    LIGHT_LHEAD = 1,
+    LIGHT_RHEAD = 2,
+    LIGHT_CHEAD = 4,
+    LIGHT_LBRAKE = 8,
+    LIGHT_RBRAKE = 16,
+    LIGHT_CBRAKE = 32,
+    LIGHT_LREVERSE = 64,
+    LIGHT_RREVERSE = 128,
+    LIGHT_LRSIGNAL = 256,
+    LIGHT_RRSIGNAL = 512,
+    LIGHT_LFSIGNAL = 1024,
+    LIGHT_RFSIGNAL = 2048,
+    LIGHT_COPRED = 4096,
+    LIGHT_COPBLUE = 8192,
+    LIGHT_COPWHITE = 16384,
+    LIGHT_COPS = 28672,
+    LIGHT_LSIGNAL = 1280,
+    LIGHT_RSIGNAL = 2560,
+    LIGHT_HEADLIGHTS = 7,
+    LIGHT_REVERSE = 192,
+    LIGHT_BRAKELIGHTS = 56,
+};
 
 class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, VEHICLE_MAX> {
   public:
@@ -175,9 +200,9 @@ class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet
     virtual float GetSpeed() const = 0;
     virtual void SetSpeed(float speed) = 0;
     virtual float GetAbsoluteSpeed() const = 0;
-    virtual bool IsGlareOn(VehicleFX::ID glare) const = 0;
-    virtual void GlareOn(VehicleFX::ID glare) = 0;
-    virtual void GlareOff(VehicleFX::ID glare) = 0;
+    virtual bool IsGlareOn(ID glare) const = 0;
+    virtual void GlareOn(ID glare) = 0;
+    virtual void GlareOff(ID glare) = 0;
     virtual bool IsCollidingWithSoftBarrier() = 0;
     virtual class IVehicleAI *GetAIVehiclePtr() const = 0;
     virtual float GetSlipAngle() const = 0;
