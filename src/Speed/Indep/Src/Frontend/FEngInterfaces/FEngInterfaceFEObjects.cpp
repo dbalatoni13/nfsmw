@@ -230,8 +230,8 @@ void FEngGetTopLeft(FEObject* object, float& x, float& y) {
         case FE_Movie:
         case FE_ColoredImage:
         case FE_MultiImage:
-            x = pos.x - size.x * 0.0f;
-            y = pos.y - size.y * 0.0f;
+            x = pos.x - size.x * 0.5f;
+            y = pos.y - size.y * 0.5f;
             break;
         case FE_String: {
             FEngFont* pFont = FindFont(object->Handle);
@@ -276,8 +276,8 @@ void FEngSetTopLeft(FEObject* object, float x, float y) {
         case FE_Movie:
         case FE_ColoredImage:
         case FE_MultiImage:
-            pos.x = x;
-            pos.y = y;
+            pos.x = x + size.x * 0.5f;
+            pos.y = y + size.y * 0.5f;
             break;
         case FE_String: {
             FEngFont* pFont = FindFont(object->Handle);
@@ -317,8 +317,8 @@ void FEngGetBottomRight(FEObject* object, float& x, float& y) {
         case FE_Movie:
         case FE_ColoredImage:
         case FE_MultiImage:
-            x = size.x * 1.0f + pos.x;
-            y = size.y * 1.0f + pos.y;
+            x = size.x * 0.5f + pos.x;
+            y = size.y * 0.5f + pos.y;
             break;
         case FE_String: {
             FEngFont* pFont = FindFont(object->Handle);
@@ -369,8 +369,8 @@ void FEngSetBottomRight(FEObject* object, float x, float y) {
         case FE_Movie:
         case FE_ColoredImage:
         case FE_MultiImage:
-            pos.x = x - size.x * 1.0f;
-            pos.y = y - size.y * 1.0f;
+            pos.x = x - size.x * 0.5f;
+            pos.y = y - size.y * 0.5f;
             break;
         case FE_String:
         case FE_Model:
