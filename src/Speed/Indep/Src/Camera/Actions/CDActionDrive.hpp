@@ -9,11 +9,9 @@
 #include "Speed/Indep/Src/Interfaces/IAttachable.h"
 #include "Speed/Indep/Src/Interfaces/IListener.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficCenter.h"
+#include "Speed/Indep/Src/Misc/Hermes.h"
 #include "Speed/Indep/Src/Sim/SimAttachable.h"
 #include "Speed/Indep/Src/World/WorldConn.h"
-
-struct _h_HHANDLER__;
-typedef _h_HHANDLER__ *HHANDLER;
 
 class MJumpCut;
 
@@ -60,7 +58,7 @@ class CDActionDrive : public CameraAI::Action, public IAttachable, public Sim::C
     float mCinematicMomementTimer;      // offset 0x70, size 0x4
     bool mCinematicMomementTimerInc;    // offset 0x74, size 0x1
     int mGear;                          // offset 0x78, size 0x4
-    HHANDLER mMsgJumpCut;               // offset 0x7C, size 0x4
+    Hermes::HHANDLER mMsgJumpCut;               // offset 0x7C, size 0x4
 };
 
 #endif

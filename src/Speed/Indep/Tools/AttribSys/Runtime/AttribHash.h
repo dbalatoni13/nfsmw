@@ -46,6 +46,13 @@ class StringKey {
         return mString != nullptr;
     }
 
+    bool IsEmpty() const {
+        if (mString == nullptr) {
+            return true;
+        }
+        return *mString == '\0';
+    }
+
   private:
     // total size: 0x10
     unsigned long long mHash64; // offset 0x0, size 0x8

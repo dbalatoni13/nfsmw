@@ -203,6 +203,10 @@ class CameraAnchor {
         return mVelMag;
     }
 
+    float GetVelocityMagnitude() const {
+        return mVelMag;
+    }
+
     float GetTopSpeed() const {
         return mTopSpeed;
     }
@@ -237,6 +241,10 @@ class CameraAnchor {
 
     bool IsGearChanging() const {
         return mIsGearChanging;
+    }
+
+    bool IsCloseToRoadBlock() const {
+        return mIsCloseToRoadBlock;
     }
 
     float GetCollisionDamping() const {

@@ -70,7 +70,20 @@ CDActionDrive::CDActionDrive(CameraAI::Director *director, IPlayer *player)
 }
 
 CDActionDrive::~CDActionDrive() {
-    // TODO
+    if (mMsgJumpCut) {
+        Hermes::Handler::Destroy(mMsgJumpCut);
+    }
+    if (mPlayer) {
+        mAttachments->Detach(mPlayer);
+    }
+    if (mVehicle) {
+        mAttachments->Detach(mVehicle);
+    }
+    delete mRearViewMirrorMover;
+    delete mMover;
+    delete mAnchor;
+    delete mAttachments;
+    Sim::Collision::RemoveListener(static_cast<Sim::Collision::IListener *>(this));
 }
 
 void CDActionDrive::Reset() {

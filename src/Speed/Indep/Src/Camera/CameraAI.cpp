@@ -113,11 +113,121 @@ void CameraAI::Director::Update(float dT) {
 }
 
 void CameraAI::Director::SetAction(Attrib::StringKey desiredMode) {
-    // TODO
+    mDesiredMode = desiredMode;
+    if (mAction != nullptr) {
+        Attrib::StringKey key = mAction->GetNext();
+        if (!key.IsEmpty()) {
+            mDesiredMode = key;
+        }
+        if (mAction != nullptr) {
+            if (mAction->GetName() == mDesiredMode) {
+                return;
+            }
+        }
+    }
+    if (!mDesiredMode.IsEmpty()) {
+        Action *action = Action::CreateInstance(UCrc32(mDesiredMode), this);
+        if (action != nullptr) {
+            ReleaseAction();
+            mAction = action;
+            SetNewSndCamAction(mDesiredMode, mViewID);
+        }
+    }
 }
 
 void CameraAI::Director::SelectAction() {
-    // TODO
+    if (TheICEManager.IsEditorOff()) {
+        bool isICEPlaying = false;
+
+        if (mJumpTime < 0.0f) {
+            mJumpTime = 0.0f;
+            mDesiredMode = Attrib::StringKey("DRIVE");
+            mIsCinematicMomement = true;
+        }
+
+        if (mPursuitStartTime < 0.0f) {
+            mPursuitStartTime = 0.0f;
+            mDesiredMode = Attrib::StringKey("DRIVE");
+            mIsCinematicMomement = true;
+        }
+
+        if (mPursuitStartTime > 0.0f && mPursuitStartTime < kJumpDuration) {
+            mDesiredMode = Attrib::StringKey("TRACK_COP");
+        }
+
+        if (!gGameBreakerCamera) {
+            eView *view = eGetView(static_cast<int>(mViewID), false);
+            CameraMover *cm = view->GetCameraMover();
+            if (cm != nullptr && cm->GetType() == CM_DRIVE_CUBIC) {
+                CameraAnchor *anchor = cm->GetAnchor();
+                if (anchor != nullptr) {
+                    if (AreMomentCamerasEnabled() &&
+                        (anchor->GetVelocityMagnitude() > kJumpSpeedHigh ||
+                         (anchor->GetVelocityMagnitude() > kJumpSpeedLow && anchor->IsTouchingGround())) &&
+                        anchor->IsCloseToRoadBlock()) {
+                        mDesiredMode = Attrib::StringKey("JUMP");
+                        mJumpTime = kJumpDuration;
+                        UMath::Vector4 position = UMath::Vector4::kZero;
+                        UMath::Vector4 vector = UMath::Vector4::kZero;
+                        UMath::Vector4 velocity = UMath::Vector4::kZero;
+                        MGamePlayMoment msg(position, vector, velocity, 0,
+                                            Attrib::StringHash32("jump"));
+                        msg.Deliver();
+                    }
+                }
+            }
+        }
+
+        INIS *nis = UTL::Collections::Singleton<INIS>::Get();
+        if (nis != nullptr) {
+            if (nis->IsPlaying()) {
+                ICEScene *scene = nis->GetScene();
+                if (scene != nullptr) {
+                    isICEPlaying = scene->IsControllingCamera();
+                    mIsCinematicMomement = nis->IsWorldMomement();
+                }
+            }
+        }
+
+        if (isICEPlaying || TheICEManager.IsGenericCameraPlaying()) {
+            mDesiredMode = Attrib::StringKey("ICE");
+            mPursuitStartTime = 0.0f;
+            mJumpTime = 0.0f;
+        } else {
+            if (mAction != nullptr && mAction->GetName() == Attrib::StringKey("ICE")) {
+                TheICEManager.SetUseRealTime(false);
+                mDesiredMode = Attrib::StringKey("DRIVE");
+                INIS *nis2 = UTL::Collections::Singleton<INIS>::Get();
+                if (nis2 != nullptr) {
+                    nis2->FireEventTag("CameraFinished");
+                }
+                MICECameraFinished finishedMsg;
+                finishedMsg.Post(UCrc32(0x20d60dbf));
+            }
+        }
+    }
+
+    if (mAction != nullptr) {
+        Attrib::StringKey key = mAction->GetNext();
+        if (!key.IsEmpty()) {
+            mDesiredMode = key;
+        }
+        if (mAction != nullptr) {
+            if (mAction->GetName() == mDesiredMode) {
+                return;
+            }
+        }
+    }
+    if (!mDesiredMode.IsEmpty()) {
+        Action *action = Action::CreateInstance(UCrc32(mDesiredMode), this);
+        if (action != nullptr) {
+            mIsCinematicMomement = false;
+            mCinematicSlowdownSeconds = 0.0f;
+            ReleaseAction();
+            mAction = action;
+            SetNewSndCamAction(mDesiredMode, mViewID);
+        }
+    }
 }
 
 void CameraAI::Director::TotaledStart() {

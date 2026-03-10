@@ -83,6 +83,12 @@ inline void Copy(const Vector4 &a, Vector4 &r) {
     VU0_v4Copy(a, r);
 }
 
+inline void Copy(const Vector3 &a, Vector3 &r) {
+    r.x = a.x;
+    r.y = a.y;
+    r.z = a.z;
+}
+
 #ifdef EA_PLATFORM_XENON
 void Transpose(const Matrix4 &m, Matrix4 &r);
 #else
