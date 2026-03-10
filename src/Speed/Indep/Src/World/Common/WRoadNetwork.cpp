@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+#include "Speed/Indep/Libs/Support/Utility/UVector.h"
 #include "Speed/Indep/Src/World/WPathFinder.h"
 
 static const int drivable_lanes[8] = {
@@ -196,24 +197,20 @@ void WRoadNetwork::GetSegmentEndPoints(const WRoadSegment &segment, UMath::Vecto
 }
 
 void WRoadNetwork::GetSegmentForwardVector(const WRoadSegment &segment, UMath::Vector3 &forwardVector) {
-    WRoadNetwork &roadNetwork = Get();
-    UMath::Vector3 start;
-    UMath::Vector3 end;
-    roadNetwork.GetSegmentEndPoints(segment, start, end);
-    forwardVector.x = end.x - start.x;
-    forwardVector.y = end.y - start.y;
-    forwardVector.z = end.z - start.z;
-    UMath::Normalize(forwardVector);
+    const WRoadNode *nodes[2];
+    GetSegmentNodes(segment, nodes);
+    UMath::Vector3 v = UVector3(nodes[1]->fPosition) - nodes[0]->fPosition;
+    UMath::Unit(v, forwardVector);
 }
 
 void WRoadNetwork::GetPointOnSegment(const WRoadSegment &segment, float d, UMath::Vector3 &point) {
+    WRoadNetwork &roadNetwork = Get();
     if (d > 1.0f) {
         d = 1.0f;
     }
     if (d < 0.0f) {
         d = 0.0f;
     }
-    WRoadNetwork &roadNetwork = Get();
     UMath::Vector3 start;
     UMath::Vector3 end;
     roadNetwork.GetSegmentEndPoints(segment, start, end);
@@ -235,10 +232,9 @@ bool WRoadNetwork::GetSegmentProfiles(const WRoadSegment &segment, const WRoadPr
     const WRoadNode *node[2];
     node[0] = roadNetwork.GetNode(segment.fNodeIndex[0]);
     node[1] = roadNetwork.GetNode(segment.fNodeIndex[1]);
-    if (node[0] == nullptr || node[1] == nullptr) {
-        return false;
-    }
-    if (node[0]->fProfileIndex < 0 || node[1]->fProfileIndex < 0) {
+    if (node[0] == nullptr || node[1] == nullptr || node[0]->fProfileIndex < 0 || node[1]->fProfileIndex < 0) {
+        profile[0] = &fInvalidProfile;
+        profile[1] = &fInvalidProfile;
         return false;
     }
     profile[0] = roadNetwork.GetProfile(node[0]->fProfileIndex);
@@ -247,33 +243,28 @@ bool WRoadNetwork::GetSegmentProfiles(const WRoadSegment &segment, const WRoadPr
 }
 
 int WRoadNetwork::GetSegmentNumTrafficLanes(const WRoadSegment &segment) {
-    const WRoadProfile *profile[2];
-    if (!GetSegmentProfiles(segment, profile)) {
-        return 0;
-    }
-    int numTrafficLanes0 = 0;
-    for (int i = 0; i < profile[0]->fNumZones; i++) {
-        if (profile[0]->GetLaneType(i, false) == 1) {
-            numTrafficLanes0++;
+    WRoadNetwork &roadNetwork = Get();
+    const WRoadProfile *profilePtr[2];
+    int numTrafficLanes[2];
+    numTrafficLanes[0] = 0;
+    numTrafficLanes[1] = 0;
+    roadNetwork.GetSegmentProfiles(segment, profilePtr);
+    for (int i = 0; i < profilePtr[0]->fNumZones; i++) {
+        if (profilePtr[0]->GetLaneType(i, false) == 1) {
+            numTrafficLanes[0]++;
         }
     }
-    int numTrafficLanes1 = 0;
-    for (int i = 0; i < profile[1]->fNumZones; i++) {
-        if (profile[1]->GetLaneType(i, false) == 1) {
-            numTrafficLanes1++;
+    for (int i = 0; i < profilePtr[1]->fNumZones; i++) {
+        if (profilePtr[1]->GetLaneType(i, false) == 1) {
+            numTrafficLanes[1]++;
         }
     }
-    if (numTrafficLanes1 > numTrafficLanes0) {
-        return numTrafficLanes1;
-    }
-    return numTrafficLanes0;
+    return UMath::Max(numTrafficLanes[0], numTrafficLanes[1]);
 }
 
 int WRoadNetwork::GetSegmentTrafficLaneInd(const WRoadSegment &segment, int lane_count) {
     const WRoadProfile *profile[2];
-    if (!GetSegmentProfiles(segment, profile)) {
-        return 0;
-    }
+    Get().GetSegmentProfiles(segment, profile);
     for (int i = 0; i < profile[0]->fNumZones; i++) {
         if (profile[0]->GetLaneType(i, false) == 1) {
             lane_count--;
@@ -288,10 +279,10 @@ int WRoadNetwork::GetSegmentTrafficLaneInd(const WRoadSegment &segment, int lane
 void WRoadNetwork::FlagSegmentRaceDirection(int FirstSegIndex, int SecondSegIndex) {
     WRoadSegment *FirstSeg = GetSegmentNonConst(FirstSegIndex);
     WRoadSegment *SecondSeg = GetSegmentNonConst(SecondSegIndex);
-    if (FirstSeg->fNodeIndex[1] == SecondSeg->fNodeIndex[0] || FirstSeg->fNodeIndex[1] == SecondSeg->fNodeIndex[1]) {
-        FirstSeg->SetRaceRouteForward(true);
-    } else {
+    if (FirstSeg->fNodeIndex[0] == SecondSeg->fNodeIndex[0] || FirstSeg->fNodeIndex[0] == SecondSeg->fNodeIndex[1]) {
         FirstSeg->SetRaceRouteForward(false);
+    } else {
+        FirstSeg->SetRaceRouteForward(true);
     }
     if (SecondSeg->fNodeIndex[0] == FirstSeg->fNodeIndex[0] || SecondSeg->fNodeIndex[0] == FirstSeg->fNodeIndex[1]) {
         SecondSeg->SetRaceRouteForward(true);

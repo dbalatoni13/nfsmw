@@ -42,8 +42,10 @@ struct WRoadNode {
 // total size: 0x4
 struct WRoadLane {
     int GetType() const {
-        return static_cast<int>((nBits >> 0) & 0xF);
+        return GetBits(0, 4);
     }
+
+    unsigned int GetBits(int n_offset, int n_bits) const;
 
     unsigned int nBits; // offset 0x0, size 0x4
 };
