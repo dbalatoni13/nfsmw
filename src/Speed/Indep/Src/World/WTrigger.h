@@ -13,8 +13,8 @@ struct EventStaticData;
 struct EventList;
 }
 
-struct EventList;
-struct EventStaticData;
+using CARP::EventList;
+using CARP::EventStaticData;
 
 // total size: 0x40
 struct Trigger {

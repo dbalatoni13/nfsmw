@@ -29,21 +29,8 @@ class WWorld {
 
     void Close();
 
-    // static void *operator new(unsigned int size, void *ptr) {}
-
-    // static void operator delete(void *mem, void *ptr) {}
-
-    // static void *operator new(unsigned int size) {}
-
-    // static void operator delete(void *mem, unsigned int size) {}
-
-    // static void *operator new(unsigned int size, const char *name) {}
-
-    // static void operator delete(void *mem, const char *name) {}
-
-    // static void operator delete(void *mem, unsigned int size, const char *name) {}
-
-    // static bool IsPresent() {}
+    static void *operator new(unsigned int size) { return gFastMem.Alloc(size, nullptr); }
+    static void operator delete(void *mem, unsigned int size) { gFastMem.Free(mem, size, nullptr); }
 
     static WWorld &Get() {
         return *fgWorld;

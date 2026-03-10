@@ -19,6 +19,19 @@ template <typename T, std::size_t U> class CookieTrail {
 
   public:
     CookieTrail() : mCount(0), mLast(-1), mCapacity(U) {}
+
+    void Clear() {
+        mCount = 0;
+        mLast = -1;
+    }
+
+    int Count() const {
+        return mCount;
+    }
+
+    T *GetData() {
+        return mData;
+    }
 };
 
 // TODO move?

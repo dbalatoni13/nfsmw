@@ -198,9 +198,49 @@ struct WRoadSegment {
         return fFlags & (1 << 15);
     }
 
-    // void SetInRace(bool in_race) {}
+    void SetInRace(bool in_race) {
+        if (in_race) {
+            fFlags |= (1 << 15);
+        } else {
+            fFlags &= ~(1 << 15);
+        }
+    }
 
-    // bool IsShortcut() const {}
+    void SetRaceRouteForward(bool forward) {
+        if (forward) {
+            fFlags |= (1 << 2);
+        } else {
+            fFlags &= ~(1 << 2);
+        }
+    }
+
+    bool CrossesBarrier() const {
+        return fFlags & (1 << 13);
+    }
+
+    bool CrossesDriveThroughBarrier() const {
+        return fFlags & (1 << 12);
+    }
+
+    void SetCrossesBarrier(bool violates) {
+        if (violates) {
+            fFlags |= (1 << 13);
+        } else {
+            fFlags &= ~(1 << 13);
+        }
+    }
+
+    void SetCrossesDriveThroughBarrier(bool violates) {
+        if (violates) {
+            fFlags |= (1 << 12);
+        } else {
+            fFlags &= ~(1 << 12);
+        }
+    }
+
+    bool IsShortcut() const {
+        return (fFlags & 0x80) != 0;
+    }
 
     // void SetShortcut(bool shortcut) {}
 

@@ -54,6 +54,14 @@ class WCollider : public UTL::Collections::Listable<WCollider, 100> {
         return fInstanceCacheList;
     }
 
+    const WCollisionTriList &GetTriList() const {
+        return fTriList;
+    }
+
+    WCollisionTriList &GetTriList() {
+        return fTriList;
+    }
+
     ALIGN_16 UMath::Vector3 fRequestedPosition;     // offset 0x4, size 0xC
     float fRequestedRadius;                         // offset 0x10, size 0x4
     ALIGN_16 UMath::Vector3 fLastRequestedPosition; // offset 0x14, size 0xC

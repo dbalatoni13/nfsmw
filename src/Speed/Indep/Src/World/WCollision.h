@@ -13,11 +13,22 @@
 
 struct WSurface : CollisionSurface {
     static void InitSystem();
+    
+    unsigned int Surface() const {
+        return fSurface;
+    }
 };
 
 struct WCollisionArticle {
     // total size: 0x10
     void Resolve();
+
+    const Attrib::Collection *GetSurface(unsigned int ind) const {
+        unsigned int ref = fStripsSize + 0x10;
+        const char *dataStart = reinterpret_cast<const char *>(this) + ref + fEdgesSize;
+        return reinterpret_cast<const Attrib::Collection *>(
+            *reinterpret_cast<const unsigned int *>(dataStart + ind * 4));
+    }
 
     unsigned short fNumStrips;         // offset 0x0, size 0x2
     unsigned short fStripsSize;        // offset 0x2, size 0x2

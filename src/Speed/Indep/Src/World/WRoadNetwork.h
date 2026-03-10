@@ -43,6 +43,19 @@ class WRoadNetwork : public Debugable {
 
     ~WRoadNetwork() {}
 
+    static void Shutdown();
+    void ResetRaceSegments();
+    void ResetBarriers();
+    void GetSegmentNodes(const WRoadSegment &segment, const WRoadNode **node);
+    const WRoadProfile *GetSegmentProfile(const WRoadSegment &segment, int node_index);
+    void GetSegmentForwardVector(int segInd, UMath::Vector3 &forwardVector);
+    void GetSegmentForwardVector(const WRoadSegment &segment, UMath::Vector3 &forwardVector);
+    const WRoadNode *GetSegmentOppNode(int segInd, const WRoadNode *node);
+    const WRoadNode *GetSegmentOppNode(const WRoadSegment &segment, const WRoadNode *node);
+    unsigned char GetSegmentShortcutNumber(const WRoadSegment *segment);
+    bool GetSegmentTrafficLaneRightSide(const WRoadSegment &segment, int laneInd);
+    bool GetSegmentProfiles(const WRoadSegment &segment, const WRoadProfile **profile);
+
     // void SetRaceFilterValid(bool b) {}
 
     bool IsRaceFilterValid() {
@@ -53,11 +66,15 @@ class WRoadNetwork : public Debugable {
 
     // bool HasValidTrafficRoads() {}
 
-    // const WRoadNode *GetNode(int index) {}
+    const WRoadNode *GetNode(int index) {
+        return &fNodes[index];
+    }
 
-    // const WRoad *GetRoad(int index) {}
+    const WRoad *GetRoad(int index) const { return &fRoads[index]; }
 
-    // const WRoadProfile *GetProfile(int index) {}
+    const WRoadProfile *GetProfile(int index) {
+        return &fProfiles[index];
+    }
 
     const WRoadSegment *GetSegment(int index) {
         return &fSegments[index];
@@ -67,13 +84,15 @@ class WRoadNetwork : public Debugable {
 
     // WRoad *GetRoadNonConst(int index) {}
 
-    // WRoadSegment *GetSegmentNonConst(int index) {}
+    WRoadSegment *GetSegmentNonConst(int index) {
+        return &fSegments[index];
+    }
 
-    // unsigned int GetNumRoads() {}
+    unsigned int GetNumSegments() {
+        return fNumSegments;
+    }
 
     // unsigned int GetNumNodes() {}
-
-    // unsigned int GetNumSegments() {}
 
     // short GetSegRoadInd(int index) {}
 
@@ -199,6 +218,11 @@ class WRoadNav {
     void SetVehicle(class AIVehicle *ai_vehicle);
     void UpdateOccludedPosition(bool occlude_avoidables);
     void ChangeDragLanes(int left_right);
+    void SetStartEndControls(const WRoadSegment &segment);
+    void SetControlPos(const WRoadSegment &segment, bool is_start);
+    void UpdateCookieTrail(float time);
+    bool IsDrivable(int lane_type) const;
+    bool IsSelectable(int lane_type) const;
 
     bool IsValid() {
         return fValid;
@@ -285,7 +309,7 @@ class WRoadNav {
     }
 
     bool IsOccluded() const {
-        return bOccludedFromBehind;
+        return bCookieTrail && (nRoadOcclusion != 0 || nAvoidableOcclusion != 0);
     }
 
     const WRoadSegment *GetSegment() const {
@@ -307,6 +331,30 @@ class WRoadNav {
     void DetermineDragLane() {
         ChangeDragLanes(0);
     }
+
+    bool HasCookieTrail() const {
+        return pCookieTrail != nullptr;
+    }
+
+    AIVehicle *GetVehicle() {
+        return pAIVehicle;
+    }
+
+    float GetVehicleHalfWidth() {
+        return fVehicleHalfWidth;
+    }
+
+    int GetNumPathSegments() {
+        return nPathSegments;
+    }
+
+    unsigned short GetPathSegment(int n) {
+        return pPathSegments[n];
+    }
+
+    void ChangeLanes(float newOffset, float dist);
+
+    void DetermineVehicleHalfWidth();
 
   private:                                      // total size: 0x2F0
     int nCookieIndex;                           // offset 0x0, size 0x4
