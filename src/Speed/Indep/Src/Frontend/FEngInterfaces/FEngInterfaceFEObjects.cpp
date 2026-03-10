@@ -600,7 +600,6 @@ void FEngSetScaleY(FEObject* object, float y) {
 }
 
 void FEngGetSize(FEObject* object, float& x, float& y) {
-    float fVar1 = 0.0f;
     if (object == nullptr) {
         return;
     }
@@ -623,7 +622,7 @@ void FEngGetSize(FEObject* object, float& x, float& y) {
             FEString* pStr = static_cast<FEString*>(object);
             FEVector3& size = data->Size;
             x = size.x * pFont->GetTextWidth(pStr->GetString(), 0);
-            fVar1 = size.y * pFont->GetTextHeight(pStr->GetString(), pStr->Leading, 0, 0, false);
+            y = size.y * pFont->GetTextHeight(pStr->GetString(), pStr->Leading, 0, 0, false);
             break;
         }
         case FE_Model:
@@ -632,9 +631,9 @@ void FEngGetSize(FEObject* object, float& x, float& y) {
         case FE_CodeList:
         default:
             x = 0.0f;
+            y = 0.0f;
             break;
     }
-    y = fVar1;
 }
 
 void FEngSetSize(FEObject* object, float x, float y) {
