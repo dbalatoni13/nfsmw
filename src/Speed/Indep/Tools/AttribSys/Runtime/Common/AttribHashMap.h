@@ -202,10 +202,9 @@ class HashMap {
         unsigned int actualIndex = HashMapTablePolicy::KeyIndex(key, mTableSize, mKeyShift);
         unsigned int searchLen = 0;
         unsigned int maxSearchLen = table[actualIndex].MaxSearch();
-        unsigned int currline = (uintptr_t)&table[actualIndex] >> (lineSize & 0x3f); // TODO huh?
+        unsigned int currline = (uintptr_t)&table[actualIndex] >> (lineSize & 0x3f);
 
         if (currline != 0) {
-            result = 1; // commenting this out improves the score
             prevline = currline;
         }
         for (; searchLen < maxSearchLen; searchLen++) {

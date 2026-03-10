@@ -64,6 +64,8 @@
 
 _STLP_BEGIN_NAMESPACE
 
+static const char __stlp_node_alloc_name[] = {'S', 'T', 'L', '\0'};
+
 #if defined(_STLP_USE_RAW_SGI_ALLOCATORS)
 template <class _Tp, class _Alloc> struct __allocator;
 #endif
@@ -233,7 +235,7 @@ template <bool __threads, int __inst> class __node_alloc {
     /* __n must be > 0      */
     static void *_STLP_CALL allocate(size_t __n) {
 #ifndef CLANGD_DAMNIT
-        return gFastMem.Alloc(__n, "STL");
+        return gFastMem.Alloc(__n, __stlp_node_alloc_name);
 #else
         return (__n > (size_t)_MAX_BYTES) ? __stl_new(__n) : _M_allocate(__n);
 #endif
@@ -241,7 +243,7 @@ template <bool __threads, int __inst> class __node_alloc {
     /* __p may not be 0 */
     static void _STLP_CALL deallocate(void *__p, size_t __n) {
 #ifndef CLANGD_DAMNIT
-        gFastMem.Free(__p, __n, "STL");
+        gFastMem.Free(__p, __n, __stlp_node_alloc_name);
 #else
         if (__n > (size_t)_MAX_BYTES)
             __stl_delete(__p);

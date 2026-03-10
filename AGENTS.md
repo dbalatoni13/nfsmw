@@ -236,3 +236,6 @@ TU: <translation-unit-name> | Function: <FunctionName>
 
 <!-- Add new entries below this line -->
 
+### NamedRodataForInlinedAllocatorStrings
+TU: zAttribSys | Function: DatabaseExportPolicy::Initialize
+When an inlined allocator path must reference a specific rodata symbol, replace a repeated string literal with a named `static const char[]` so the compiler preserves the expected rodata label and relocation pattern.

@@ -239,4 +239,6 @@ Key StringToKey(const char *str) {
     return StringHash32(str);
 }
 
+TypeTable::~TypeTable() {}
+
 }; // namespace Attrib

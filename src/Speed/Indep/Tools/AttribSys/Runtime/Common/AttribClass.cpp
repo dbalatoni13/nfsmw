@@ -140,4 +140,6 @@ void Class::FreeLayout(void *layout) const {
     }
 }
 
+ClassPrivate::CollectionHashMap::~CollectionHashMap() {}
+
 }; // namespace Attrib
