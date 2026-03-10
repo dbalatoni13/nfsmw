@@ -55,6 +55,7 @@ typedef HENGINE__ *HENGINE;
 enum QueueMode {
     QUEUE_DISABLE = 0,
     QUEUE_SHALLOW = 1,
+    QUEUE = 2,
     QUEUE_ALLOW = 2,
     QUEUE_FLUSH = 3,
     QUEUE_ABORT = 4,

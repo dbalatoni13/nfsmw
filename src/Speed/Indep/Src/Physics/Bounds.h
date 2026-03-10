@@ -163,7 +163,11 @@ struct BoundsPack : public bTNode< BoundsPack > {
     };
 
     struct Table : public _STL::vector< Pair, UTL::Std::Allocator< Pair, _type_CollisionBoundsTable > > {
-        void Add(Collection *collection);
+        void Add(Collection *collection) {
+            Pair pair(collection->fNameHash, collection);
+            iterator pos = _STL::upper_bound(begin(), end(), pair);
+            insert(pos, pair);
+        }
         Collection *Find(UCrc32 name);
     };
 

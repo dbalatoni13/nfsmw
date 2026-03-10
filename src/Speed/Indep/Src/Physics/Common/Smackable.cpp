@@ -26,11 +26,7 @@ namespace DamageZone {
 void GetImpactStimulus(unsigned int &stimulus);
 } // namespace DamageZone
 
-namespace Dynamics {
-namespace Articulation {
-bool IsJoined(const IEntity *a, const IEntity *b);
-} // namespace Articulation
-} // namespace Dynamics
+Attrib::StringKey BEHAVIOR_MECHANIC_EFFECTS;
 
 UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::Prototype _Smackable("Smackable",
                                                                        Smackable::Construct);

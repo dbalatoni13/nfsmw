@@ -50,6 +50,7 @@ HJOINT__ *Create(IEntity *female, const UMath::Vector3 &female_lever, IEntity *m
 void Constrain(HJOINT__ *hjoint, IEntity *entity, const UMath::Matrix4 &mat, float theta1, float theta2, const UMath::Vector3 &post_vec, eConstraint type);
 void Release(IEntity *rb0);
 bool IsJoined(const IEntity *rb);
+bool IsJoined(const IEntity *rb0, const IEntity *rb1);
 
 }; // namespace Articulation
 

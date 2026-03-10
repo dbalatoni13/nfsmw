@@ -40,7 +40,7 @@ class HeirarchyModel : public Sim::Model, public IBody, public ITriggerableModel
 
     void PlaceTrigger(const UMath::Matrix4 &mat, bool retrigger) override;
 
-    virtual void OnProcessFrame();
+    void OnProcessFrame(float dT) override;
     virtual bool OnUpdateAvoidable();
     bool OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep);
 

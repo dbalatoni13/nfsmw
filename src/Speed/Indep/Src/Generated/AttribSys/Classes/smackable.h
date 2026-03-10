@@ -13,6 +13,25 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 
+enum eDRIVE_BY_TYPE {
+    DRIVE_BY_UNKNOWN = 0,
+    DRIVE_BY_TREE = 1,
+    DRIVE_BY_LAMPPOST = 2,
+    DRIVE_BY_SMOKABLE = 3,
+    DRIVE_BY_TUNNEL_IN = 4,
+    DRIVE_BY_TUNNEL_OUT = 5,
+    DRIVE_BY_OVERPASS_IN = 6,
+    DRIVE_BY_OVERPASS_OUT = 7,
+    DRIVE_BY_AI_CAR = 8,
+    DRIVE_BY_TRAFFIC = 9,
+    DRIVE_BY_BRIDGE = 10,
+    DRIVE_BY_PRE_COL = 11,
+    DRIVE_BY_CAMERA_BY = 12,
+    MAX_DRIVE_BY_TYPES = 13,
+};
+
+struct EffectLinkageRecord;
+
 namespace Attrib {
 namespace Gen {
 
@@ -44,6 +63,10 @@ struct smackable : Instance {
     }
 
     smackable(const smackable &src) : Instance(src) {
+        SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
+    smackable(const Instance &src) : Instance(src) {
         SetDefaultLayout(sizeof(_LayoutStruct));
     }
 

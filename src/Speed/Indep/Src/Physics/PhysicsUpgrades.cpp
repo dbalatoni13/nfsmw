@@ -138,9 +138,7 @@ int Physics::Upgrades::GetLevel(const pvehicle &vehicle, Type type) {
     if (t == nullptr || !vehicle.Lookup(t->currentkey, attrib)) {
         return 0;
     }
-    int result = 0;
-    attrib.Get(0, result);
-    return result;
+    return attrib.Get< int >(0u);
 }
 
 void Physics::Upgrades::GetPackage(const pvehicle &vehicle, Package &package) {
@@ -312,9 +310,7 @@ bool Physics::Upgrades::ApplyPreset(pvehicle &vehicle, const presetride &presetr
             continue;
         }
 
-        int level;
-        attrib.Get(0, level);
-        level = UMath::Min(level, max_level);
+        int level = UMath::Min(attrib.Get< int >(0u), max_level);
 
         if (!SetLevel(newvehicle, type, level)) {
             return false;
@@ -409,9 +405,7 @@ int Physics::Upgrades::GetMaxLevel(const pvehicle &vehicle, Type type) {
     if (t == nullptr || !vehicle.Lookup(t->countkey, attrib)) {
         return 0;
     }
-    int result = 0;
-    attrib.Get(0, result);
-    return result;
+    return attrib.Get< int >(0u);
 }
 
 bool Physics::Upgrades::SetMaximum(pvehicle &pvehicle) {

@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IEffects.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 
 extern Attrib::StringKey BEHAVIOR_MECHANIC_AUDIO;
@@ -87,9 +88,9 @@ void PVehicle::CommitBehaviorOverrides() {
 
 void PVehicle::Reset() {
     PhysicsObject::Reset();
-    mBrakeTime = 0.0f;
     mTimeInAir = 0.0f;
     mWheelsOnGround = 0;
+    mBrakeTime = 0.0f;
 }
 
 void PVehicle::SetDriverClass(DriverClass dc) {
@@ -110,10 +111,10 @@ void PVehicle::Deactivate() { SetPhysicsMode(PHYSICS_MODE_INACTIVE); }
 
 void PVehicle::Kill() {
     PhysicsObject::Kill();
-    UCrc32 draw(BEHAVIOR_MECHANIC_DRAW);
-    ReleaseBehavior(draw);
-    UCrc32 audio(BEHAVIOR_MECHANIC_AUDIO);
-    ReleaseBehavior(audio);
+    UCrc32 mechanic(BEHAVIOR_MECHANIC_DRAW);
+    ReleaseBehavior(mechanic);
+    mechanic = BEHAVIOR_MECHANIC_AUDIO;
+    ReleaseBehavior(mechanic);
     mResources.Invalidate();
 }
 
@@ -139,32 +140,38 @@ void PVehicle::OnDisableModeling() {
 }
 
 bool PVehicle::GetPerformance(Physics::Info::Performance &performance) const {
-    performance.TopSpeed = mPerformance.TopSpeed;
-    performance.Handling = mPerformance.Handling;
-    performance.Acceleration = mPerformance.Acceleration;
+    performance = mPerformance;
     return mPerformanceValid;
 }
 
-unsigned int PVehicle::GetVehicleKey() const { return GetAttributes().GetCollection(); }
+unsigned int PVehicle::GetVehicleKey() const { return mAttributes.GetCollection(); }
 
 CarType PVehicle::GetModelType() const { return mResources.Type; }
 
 bool PVehicle::IsSpooled() const { return mResources.IsSpooled(); }
 
-const UMath::Vector3 &PVehicle::GetPosition() const { return PhysicsObject::GetPosition(); }
+const UMath::Vector3 &PVehicle::GetPosition() const {
+    if (GetRigidBody() != nullptr) {
+        return GetRigidBody()->GetPosition();
+    } else {
+        return UMath::Vector3::kZero;
+    }
+}
 
 IModel *PVehicle::GetModel() {
     if (mRenderable != nullptr) {
         return mRenderable->GetModel();
+    } else {
+        return nullptr;
     }
-    return nullptr;
 }
 
 const IModel *PVehicle::GetModel() const {
     if (mRenderable != nullptr) {
         return mRenderable->GetModel();
+    } else {
+        return nullptr;
     }
-    return nullptr;
 }
 
 bool PVehicle::InShock() const {
@@ -175,10 +182,11 @@ bool PVehicle::InShock() const {
 }
 
 bool PVehicle::IsDestroyed() const {
-    if (mDamage == nullptr) {
+    if (mDamage != nullptr) {
+        return mDamage->IsDestroyed();
+    } else {
         return false;
     }
-    return mDamage->IsDestroyed();
 }
 
 void PVehicle::SetPhysicsMode(PhysicsMode mode) {
@@ -205,7 +213,7 @@ void PVehicle::SetTunings(const Physics::Tunings &tunings) {
 }
 
 bool PVehicle::OnTask(HSIMTASK htask, float dT) {
-    if (htask == mTaskFX) {
+    if (mTaskFX == htask) {
         OnTaskFX(dT);
         return true;
     }

@@ -127,7 +127,7 @@ class PhysicsObject : public Sim::Object,
     virtual void OnTaskSimulate(float dT);
     virtual void OnBehaviorChange(const UCrc32 &mechanic);
 
-  private:
+  protected:
     WWorldPos *mWPos;               // offset 0x58, size 0x4
     SimableType mObjType;           // offset 0x5C, size 0x4
     HSIMABLE mOwner;                // offset 0x60, size 0x4

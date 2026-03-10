@@ -84,7 +84,7 @@ class PVehicle : public PhysicsObject,
         Resource(const Attrib::Gen::pvehicle &attribs, bool compositing, bool valid);
         bool NeedsCompositing() const { return (Flags & 2) != 0; }
         bool IsValid() const { return (Flags & 1) != 0; }
-        bool IsSpooled() const;
+        bool IsSpooled() const { return (Flags & 2) != 0; }
         void Invalidate() { Flags &= ~1; }
     };
 
@@ -219,7 +219,6 @@ class PVehicle : public PhysicsObject,
     UTL::Std::map<UCrc32, UCrc32, _type_ID_PVehicleChangeReq> mBehaviorOverrides;
     bool mOverrideDirty;
     const CollisionGeometry::Bounds *mBounds;
-    const char *mCacheName;
     bool mIsModeling;
     float mOffScreenTime;
     float mOnScreenTime;
@@ -229,6 +228,7 @@ class PVehicle : public PhysicsObject,
     Resource mResources;
     Physics::Info::Performance mPerformance;
     bool mPerformanceValid;
+    const char *mCacheName;
 };
 
 #endif
