@@ -113,7 +113,7 @@ void PVehicle::Kill() {
     PhysicsObject::Kill();
     UCrc32 mechanic(BEHAVIOR_MECHANIC_DRAW);
     ReleaseBehavior(mechanic);
-    mechanic = BEHAVIOR_MECHANIC_AUDIO;
+    mechanic = UCrc32(BEHAVIOR_MECHANIC_AUDIO);
     ReleaseBehavior(mechanic);
     mResources.Invalidate();
 }
@@ -167,11 +167,10 @@ IModel *PVehicle::GetModel() {
 }
 
 const IModel *PVehicle::GetModel() const {
-    if (mRenderable != nullptr) {
-        return mRenderable->GetModel();
-    } else {
+    if (mRenderable == nullptr) {
         return nullptr;
     }
+    return mRenderable->GetModel();
 }
 
 bool PVehicle::InShock() const {

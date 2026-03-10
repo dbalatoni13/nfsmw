@@ -180,7 +180,11 @@ bool Physics::Upgrades::SetPackage(pvehicle &vehicle, const Package &package) {
 
 bool Physics::Upgrades::GetJunkman(const pvehicle &vehicle, Type type) {
     int junkman_current = vehicle.junkman_current();
-    return (junkman_current >> type) & 1;
+    bool result = true;
+    if (!((junkman_current >> type) & 1)) {
+        result = false;
+    }
+    return result;
 }
 
 bool Physics::Upgrades::CanInstallJunkman(const pvehicle &vehicle, Type type) {

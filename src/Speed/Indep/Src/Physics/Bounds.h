@@ -45,12 +45,6 @@ struct _V3c {
         to.y = static_cast< float >(y) * (1.0f / 128.0f);
         to.z = static_cast< float >(z) * (1.0f / 128.0f);
     }
-
-    void EndianSwap() {
-        ::bPlatEndianSwap(&x);
-        ::bPlatEndianSwap(&y);
-        ::bPlatEndianSwap(&z);
-    }
 };
 
 struct _Q4c {
@@ -64,13 +58,6 @@ struct _Q4c {
         to.y = static_cast< float >(y) * (1.0f / 16384.0f);
         to.z = static_cast< float >(z) * (1.0f / 16384.0f);
         to.w = static_cast< float >(w) * (1.0f / 16384.0f);
-    }
-
-    void EndianSwap() {
-        ::bPlatEndianSwap(&x);
-        ::bPlatEndianSwap(&y);
-        ::bPlatEndianSwap(&z);
-        ::bPlatEndianSwap(&w);
     }
 };
 
@@ -184,6 +171,7 @@ struct BoundsPack : public bTNode< BoundsPack > {
 };
 
 struct Collections : public bTList< BoundsPack > {
+    ~Collections() {}
     BoundsPack *Find(const bChunk *header);
     const Collection *Find(UCrc32 name);
 };
