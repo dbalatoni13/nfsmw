@@ -186,3 +186,140 @@ void WRoadNav::CancelPathFinding() {
         SetNavType(kTypeDirection);
     }
 }
+
+void WRoadNetwork::GetSegmentEndPoints(const WRoadSegment &segment, UMath::Vector3 &start, UMath::Vector3 &end) {
+    WRoadNetwork &roadNetwork = Get();
+    const WRoadNode *nodePtr[2];
+    roadNetwork.GetSegmentNodes(segment, nodePtr);
+    start = nodePtr[0]->fPosition;
+    end = nodePtr[1]->fPosition;
+}
+
+void WRoadNetwork::GetSegmentForwardVector(const WRoadSegment &segment, UMath::Vector3 &forwardVector) {
+    WRoadNetwork &roadNetwork = Get();
+    UMath::Vector3 start;
+    UMath::Vector3 end;
+    roadNetwork.GetSegmentEndPoints(segment, start, end);
+    forwardVector.x = end.x - start.x;
+    forwardVector.y = end.y - start.y;
+    forwardVector.z = end.z - start.z;
+    UMath::Normalize(forwardVector);
+}
+
+void WRoadNetwork::GetPointOnSegment(const WRoadSegment &segment, float d, UMath::Vector3 &point) {
+    if (d > 1.0f) {
+        d = 1.0f;
+    }
+    if (d < 0.0f) {
+        d = 0.0f;
+    }
+    WRoadNetwork &roadNetwork = Get();
+    UMath::Vector3 start;
+    UMath::Vector3 end;
+    roadNetwork.GetSegmentEndPoints(segment, start, end);
+    GetPointOnSegment(start, end, segment, d, point);
+}
+
+void WRoadNetwork::GetPointOnSegment(const UMath::Vector3 &start, const UMath::Vector3 &end, const WRoadSegment &segment, float d, UMath::Vector3 &point) {
+    if (segment.IsCurved()) {
+        GetSegmentCurveStep(start, end, segment, d, point);
+        return;
+    }
+    point.x = start.x + (end.x - start.x) * d;
+    point.y = start.y + (end.y - start.y) * d;
+    point.z = start.z + (end.z - start.z) * d;
+}
+
+bool WRoadNetwork::GetSegmentProfiles(const WRoadSegment &segment, const WRoadProfile **profile) {
+    WRoadNetwork &roadNetwork = Get();
+    const WRoadNode *node[2];
+    node[0] = roadNetwork.GetNode(segment.fNodeIndex[0]);
+    node[1] = roadNetwork.GetNode(segment.fNodeIndex[1]);
+    if (node[0] == nullptr || node[1] == nullptr) {
+        return false;
+    }
+    if (node[0]->fProfileIndex < 0 || node[1]->fProfileIndex < 0) {
+        return false;
+    }
+    profile[0] = roadNetwork.GetProfile(node[0]->fProfileIndex);
+    profile[1] = roadNetwork.GetProfile(node[1]->fProfileIndex);
+    return true;
+}
+
+int WRoadNetwork::GetSegmentNumTrafficLanes(const WRoadSegment &segment) {
+    const WRoadProfile *profile[2];
+    if (!GetSegmentProfiles(segment, profile)) {
+        return 0;
+    }
+    int numTrafficLanes0 = 0;
+    for (int i = 0; i < profile[0]->fNumZones; i++) {
+        if (profile[0]->GetLaneType(i, false) == 1) {
+            numTrafficLanes0++;
+        }
+    }
+    int numTrafficLanes1 = 0;
+    for (int i = 0; i < profile[1]->fNumZones; i++) {
+        if (profile[1]->GetLaneType(i, false) == 1) {
+            numTrafficLanes1++;
+        }
+    }
+    if (numTrafficLanes1 > numTrafficLanes0) {
+        return numTrafficLanes1;
+    }
+    return numTrafficLanes0;
+}
+
+int WRoadNetwork::GetSegmentTrafficLaneInd(const WRoadSegment &segment, int lane_count) {
+    const WRoadProfile *profile[2];
+    if (!GetSegmentProfiles(segment, profile)) {
+        return 0;
+    }
+    for (int i = 0; i < profile[0]->fNumZones; i++) {
+        if (profile[0]->GetLaneType(i, false) == 1) {
+            lane_count--;
+            if (lane_count == 0) {
+                return i;
+            }
+        }
+    }
+    return 0;
+}
+
+void WRoadNetwork::FlagSegmentRaceDirection(int FirstSegIndex, int SecondSegIndex) {
+    WRoadSegment *FirstSeg = GetSegmentNonConst(FirstSegIndex);
+    WRoadSegment *SecondSeg = GetSegmentNonConst(SecondSegIndex);
+    if (FirstSeg->fNodeIndex[1] == SecondSeg->fNodeIndex[0] || FirstSeg->fNodeIndex[1] == SecondSeg->fNodeIndex[1]) {
+        FirstSeg->SetRaceRouteForward(true);
+    } else {
+        FirstSeg->SetRaceRouteForward(false);
+    }
+    if (SecondSeg->fNodeIndex[0] == FirstSeg->fNodeIndex[0] || SecondSeg->fNodeIndex[0] == FirstSeg->fNodeIndex[1]) {
+        SecondSeg->SetRaceRouteForward(true);
+    } else {
+        SecondSeg->SetRaceRouteForward(false);
+    }
+}
+
+void WRoadNetwork::AddRaceSegments(WRoadNav *road_nav) {
+    if (road_nav->GetNavType() != WRoadNav::kTypePath) {
+        return;
+    }
+    int num_segments = road_nav->GetNumPathSegments();
+    for (int i = 0; i < num_segments; i++) {
+        GetSegmentNonConst(road_nav->GetPathSegment(i))->SetInRace(true);
+        if (i + 1 < num_segments) {
+            FlagSegmentRaceDirection(road_nav->GetPathSegment(i), road_nav->GetPathSegment(i + 1));
+        }
+    }
+}
+
+void WRoadNetwork::ResetShortcuts() {
+    for (unsigned int segment_number = 0; segment_number < fNumSegments; segment_number++) {
+        WRoadSegment *segment = GetSegmentNonConst(segment_number);
+        segment->SetShortcut(false);
+    }
+    for (unsigned int road_number = 0; road_number < fNumRoads; road_number++) {
+        WRoad *road = GetRoadNonConst(road_number);
+        road->nShortcut = 0;
+    }
+}

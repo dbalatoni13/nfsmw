@@ -16,6 +16,8 @@
 
 extern class WRoadNetwork *fgRoadNetwork;
 
+class WRoadNav;
+
 // total size: 0x1
 class WRoadNetwork : public Debugable {
   public:
@@ -55,6 +57,15 @@ class WRoadNetwork : public Debugable {
     unsigned char GetSegmentShortcutNumber(const WRoadSegment *segment);
     bool GetSegmentTrafficLaneRightSide(const WRoadSegment &segment, int laneInd);
     bool GetSegmentProfiles(const WRoadSegment &segment, const WRoadProfile **profile);
+    int GetSegmentNumTrafficLanes(const WRoadSegment &segment);
+    int GetSegmentTrafficLaneInd(const WRoadSegment &segment, int lane_count);
+    void GetSegmentEndPoints(const WRoadSegment &segment, UMath::Vector3 &start, UMath::Vector3 &end);
+    void GetPointOnSegment(const WRoadSegment &segment, float d, UMath::Vector3 &point);
+    void GetPointOnSegment(const UMath::Vector3 &start, const UMath::Vector3 &end, const WRoadSegment &segment, float d, UMath::Vector3 &point);
+    void GetSegmentCurveStep(const UMath::Vector3 &start, const UMath::Vector3 &end, const WRoadSegment &segment, float d, UMath::Vector3 &point);
+    void FlagSegmentRaceDirection(int FirstSegIndex, int SecondSegIndex);
+    void AddRaceSegments(WRoadNav *road_nav);
+    void ResetShortcuts();
 
     // void SetRaceFilterValid(bool b) {}
 
@@ -82,7 +93,7 @@ class WRoadNetwork : public Debugable {
 
     // const WRoad *GetSegmentRoad(int segment_index) {}
 
-    // WRoad *GetRoadNonConst(int index) {}
+    WRoad *GetRoadNonConst(int index) { return &fRoads[index]; }
 
     WRoadSegment *GetSegmentNonConst(int index) {
         return &fSegments[index];

@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/World/WorldConn.h"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 
 extern unsigned int eFrameCounter;
 
@@ -21,13 +22,16 @@ Server::Body* Server::LockID(unsigned int id) {
         body->refcount = 1;
         body->time = 0.0f;
         bIdentity(&body->matrix);
-        body->velocity = bVector3(0.0f, 0.0f, 0.0f);
-        body->acceleration = bVector3(0.0f, 0.0f, 0.0f);
-        iter = mBodies.insert(std::pair<const unsigned int, Body*>(id, nullptr)).first;
-        iter->second = body;
-    } else {
-        iter->second->refcount++;
+        body->velocity.x = 0.0f;
+        body->velocity.y = 0.0f;
+        body->velocity.z = 0.0f;
+        body->acceleration.x = 0.0f;
+        body->acceleration.y = 0.0f;
+        body->acceleration.z = 0.0f;
+        mBodies[id] = body;
+        return body;
     }
+    iter->second->refcount++;
     return iter->second;
 }
 
@@ -115,6 +119,50 @@ void WorldBodyConn::OnClose() {
 WorldBodyConn::~WorldBodyConn() {
     WorldConn::_Server->UnlockID(mID);
     mList.Remove(this);
+}
+
+WorldBodyConn::WorldBodyConn(const Sim::ConnectionData &data)
+    : Connection(data), //
+      mID(0) {
+    mList.AddTail(this);
+    WorldConn::Pkt_Body_Open *oc = Sim::Packet::Cast<WorldConn::Pkt_Body_Open>(data.pkt);
+    mID = oc->mID;
+    mDest = WorldConn::_Server->LockID(mID);
+    bConvertFromBond(mDest->matrix, *reinterpret_cast<const bMatrix4 *>(&oc->mMatrix));
+}
+
+void WorldBodyConn::Update(float dT) {
+    WorldConn::Pkt_Body_Service pkt;
+    pkt.SetMatrix(UMath::Matrix4::kIdentity);
+    int result = Service(&pkt);
+    if (result == 0) {
+        mDest->acceleration.x = 0.0f;
+        mDest->acceleration.y = 0.0f;
+        mDest->acceleration.z = 0.0f;
+        mDest->time = 0.0f;
+    } else {
+        bVector3 prevvel(mDest->velocity);
+        bConvertFromBond(mDest->matrix, *reinterpret_cast<const bMatrix4 *>(&pkt.mMatrix));
+        eSwizzleWorldVector(*reinterpret_cast<const bVector3 *>(&pkt.mVelocity), mDest->velocity);
+        if (0.0f < mDest->time) {
+            mDest->acceleration.x = (mDest->velocity.x - prevvel.x) / dT;
+            mDest->acceleration.y = (mDest->velocity.y - prevvel.y) / dT;
+            mDest->acceleration.z = (mDest->velocity.z - prevvel.z) / dT;
+        }
+        mDest->time = mDest->time + dT;
+    }
+}
+
+void WorldBodyConn::FetchData(float dT) {
+    for (WorldBodyConn *pconn = mList.GetHead(); pconn != mList.EndOfList(); pconn = pconn->GetNext()) {
+        pconn->Update(dT);
+    }
+}
+
+void WorldEffectConn::FetchData(float dT) {
+    for (WorldEffectConn *pconn = mList.GetHead(); pconn != mList.EndOfList(); pconn = pconn->GetNext()) {
+        pconn->Update(dT);
+    }
 }
 
 Sim::Connection *WorldEffectConn::Construct(const Sim::ConnectionData &data) {

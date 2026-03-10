@@ -3,7 +3,7 @@
 PathFinder* PathFinder::pInstance;
 
 Sim::IActivity* PathFinder::Construct(Sim::Param params) {
-    if (!pInstance) {
+    if (pInstance == nullptr) {
         pInstance = new PathFinder();
     }
     return pInstance;

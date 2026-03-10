@@ -41,100 +41,24 @@ struct WRoadNode {
 
 // total size: 0x4
 struct WRoadLane {
-    // int GetType() const {}
-
-    // float GetWidth() const {}
-
-    // float GetOffset() const {}
-
-    // void SetType(int type) {}
-
-    // void SetWidth(float width) {}
-
-    // void SetOffset(float offset) {}
-
-    // unsigned int &GetBits() {}
-
-    // void SwapEndian() {}
-
-    // unsigned int GetBits(int n_offset, int n_bits) const {}
-
-    // int GetBitsSigned(int n_offset, int n_bits) const {}
-
-    // void SetBits(int n_offset, int n_bits, int n_value) {}
+    int GetType() const {
+        return static_cast<int>((nBits >> 0) & 0xF);
+    }
 
     unsigned int nBits; // offset 0x0, size 0x4
 };
 
 // total size: 0x40
 struct WRoadProfile {
-    // int GetMiddleZone(bool inverted) const {}
-
-    // int GetLaneNumber(int lane, bool inverted) const {}
-
-    // float GetLaneWidth(int lane, bool inverted) const {}
-
-    // void SetLaneWidth(int lane, float width, bool inverted) {}
-
-    // float GetLaneOffset(int lane, bool inverted) const {}
-
-    // void SetLaneOffset(int lane, float width, bool inverted) {}
-
-    // int GetLaneType(int lane, bool inverted) const {}
-
-    // void SetLaneType(int lane, int type, bool inverted) {}
-
-    // float GetRawLaneOffset(int lane) const {}
-
-    // float GetRawLaneWidth(int lane) const {}
-
-    // float GetRelativeLaneOffset(int lane, bool inverted) const {}
-
-    // unsigned int &GetLaneBits(int lane, bool inverted) {}
-
-    // int GetNumForwardLanes() const {}
-
-    // int GetNumBackwardLanes() const {}
-
-    // int GetNumForwardLanes(bool inverted) const {}
-
-    // int GetNumBackwardLanes(bool inverted) const {}
-
-    // int GetNthForwardLane(int n) const {}
-
-    // int GetNthBackwardLane(int n) const {}
-
-    // int GetNthForwardLane(int n, bool inverted) const {}
-
-    // int GetNthBackwardLane(int n, bool inverted) const {}
-
-    // int GetNumTrafficLanes(bool forward, bool inverted) const {}
-
-    // int GetNthTrafficLane(int n, bool forward, bool inverted) const {}
-
-    // int GetNthTrafficLaneFromCurb(int n, bool forward, bool inverted) const {}
-
-    // int GetNumLanes(bool forward) const {}
-
-    // int GetNumLanes(bool forward, bool inverted) const {}
-
-    // int GetNthLane(int n, bool forward) const {}
-
-    // int GetNthLane(int n, bool forward, bool inverted) const {}
-
-    // float GetNthOffset(int n, bool forward) const {}
-
-    // float GetNthOffset(int n, bool forward, bool inverted) const {}
-
-    // float GetNthWidth(int n, bool forward) const {}
-
-    // float GetNthWidth(int n, bool forward, bool inverted) const {}
-
-    // float GetEntireWidth() const {}
-
-    // static short ScaleToProfile(float value) {}
-
-    // void InvertProfile(WRoadProfile &dest) const {}
+    int GetLaneType(int lane, bool inverted) const {
+        int lane_number;
+        if (inverted) {
+            lane_number = fNumZones - 1 - lane;
+        } else {
+            lane_number = lane;
+        }
+        return mLanes[lane_number].GetType();
+    }
 
     unsigned char fNumZones;   // offset 0x0, size 0x1
     unsigned char fMiddleZone; // offset 0x1, size 0x1
@@ -242,9 +166,19 @@ struct WRoadSegment {
         return (fFlags & 0x80) != 0;
     }
 
-    // void SetShortcut(bool shortcut) {}
+    void SetShortcut(bool shortcut) {
+        if (shortcut) {
+            fFlags |= 0x80;
+        } else {
+            fFlags &= ~0x80;
+        }
+    }
 
     // bool IsOneWay() const {}
+
+    bool IsCurved() const {
+        return (fFlags & 0x100) != 0;
+    }
 
     // void SetOneWay(bool one_way) {}
 

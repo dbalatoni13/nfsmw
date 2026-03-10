@@ -147,7 +147,6 @@ class Pkt_Body_Service : public Sim::Packet {
 
     ~Pkt_Body_Service() override {}
 
-  private:
     UMath::Matrix4 mMatrix;   // offset 0x4, size 0x40
     UMath::Vector3 mVelocity; // offset 0x44, size 0xC
 };
@@ -193,20 +192,50 @@ class Pkt_Effect_Service : public Sim::Packet {
     ALIGN_16 UMath::Vector3 mMagnitude; // offset 0x14, size 0xC
 };
 
+// total size: 0x48
+class Pkt_Body_Open : public Sim::Packet {
+  public:
+    Pkt_Body_Open(unsigned int id, const UMath::Matrix4 &matrix)
+        : mMatrix(matrix), //
+          mID(id) {}
+
+    UCrc32 ConnectionClass() override {
+        static UCrc32 hash("WorldBodyConn");
+        return hash;
+    }
+
+    unsigned int Size() override {
+        return 0x48;
+    }
+
+    static unsigned int SType() {
+        static UCrc32 hash("Pkt_Body_Open");
+        return hash.GetValue();
+    }
+
+    unsigned int Type() override {
+        return SType();
+    }
+
+    ~Pkt_Body_Open() override {}
+
+    UMath::Matrix4 mMatrix; // offset 0x4, size 0x40
+    unsigned int mID;       // offset 0x44, size 0x4
+};
+
 // total size: 0x18
 class Pkt_Effect_Open : public Sim::Packet {
   public:
-    Pkt_Effect_Open(const Attrib::Collection *effect_group, WUID owner, const Attrib::Collection *owner_attrib, const Attrib::Collection *context,
-                    WUID actee)
+    Pkt_Effect_Open(const Attrib::Collection *effect_group, unsigned int owner, const Attrib::Collection *owner_attrib, const Attrib::Collection *context,
+                    unsigned int actee)
         : mEffectGroup(effect_group),     //
           mOwner(owner),                  //
           mOwnerAttributes(owner_attrib), //
           mContext(context),              //
           mActee(actee) {}
 
-    ~Pkt_Effect_Open() {}
+    ~Pkt_Effect_Open() override {}
 
-  private:
     const Attrib::Collection *mEffectGroup;     // offset 0x4, size 0x4
     unsigned int mOwner;                        // offset 0x8, size 0x4
     const Attrib::Collection *mOwnerAttributes; // offset 0xC, size 0x4
