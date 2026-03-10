@@ -392,7 +392,9 @@ void SmokeableSpawner::OnLoad(unsigned int exclude_flags, bool ignore) {
 int SmokeableSpawnerPack::Loader(bChunk *chunk) {
     if (chunk->GetID() == 0x34027) {
         SmokeableSpawnerPack *spawner_pack = reinterpret_cast< SmokeableSpawnerPack * >(chunk->GetAlignedData(16));
-        if (!AreChunksBeingMoved()) {
+        if (AreChunksBeingMoved()) {
+            spawner_pack->OnMoved();
+        } else {
             spawner_pack->EndianSwap();
             if (Sim::Exists()) {
                 unsigned int exclude_flags = static_cast< unsigned int >(Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN);
@@ -401,8 +403,6 @@ int SmokeableSpawnerPack::Loader(bChunk *chunk) {
                 }
                 spawner_pack->OnLoad(exclude_flags);
             }
-        } else {
-            spawner_pack->OnMoved();
         }
         return 1;
     }
