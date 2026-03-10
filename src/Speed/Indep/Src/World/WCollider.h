@@ -31,6 +31,8 @@ class WCollider : public UTL::Collections::Listable<WCollider, 100> {
     };
 
     static void Destroy(WCollider *col);
+    static void InvalidateIntersectingColliders(const UMath::Vector4 &posRad);
+    static void InvalidateAllCachedData();
 
     void Clear();
     bool IsEmpty() const;
@@ -57,6 +59,15 @@ class WCollider : public UTL::Collections::Listable<WCollider, 100> {
     unsigned int fRefCount;                         // offset 0x90, size 0x4
     unsigned int fWorldID;                          // offset 0x94, size 0x4
     unsigned int fExclusionFlags;                   // offset 0x98, size 0x4
+
+  private:
+    void PrepareRegion(unsigned int updateMask);
+    void ClearLists(unsigned int typeMask);
+    void EmptyLists(unsigned int typeMask);
+    void ReserveLists(unsigned int typeMask);
+    unsigned int Validate() const;
+    unsigned int GetUpdateMask(const UMath::Vector3 &pt, float radius);
+    bool InRegion(const UMath::Vector3 &pt, float radius) const;
 };
 
 #endif

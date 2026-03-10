@@ -5,6 +5,11 @@
 #pragma once
 #endif
 
+struct UGroup;
 
+struct WGrid {
+    static void Init(const UGroup *mapGroup);
+    static void Shutdown();
+};
 
 #endif

@@ -38,7 +38,10 @@ struct WCollisionBarrierList : public WCollisionVector<WCollisionBarrierListEntr
 
 struct WCollisionTriBlock : public WCollisionVector<WCollisionTri> {};
 
-struct WCollisionTriList : public WCollisionVector<WCollisionTriBlock *> {};
+struct WCollisionTriList : public WCollisionVector<WCollisionTriBlock *> {
+    // total size: 0x14
+    WCollisionTriBlock *mCurrBlock; // offset 0x10, size 0x4
+};
 
 struct WCollisionObjectList : public WCollisionVector<const WCollisionObject *> {};
 

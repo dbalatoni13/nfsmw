@@ -45,17 +45,25 @@ class WWorld {
 
     // static bool IsPresent() {}
 
-    // static struct WWorld &Get() {}
+    static WWorld &Get() {
+        return *fgWorld;
+    }
 
     // static void Shutdown() {}
 
     // const struct world &GetAttributes() const {}
 
-    // bool IsValid() {}
+    bool IsValid() {
+        return fRootWorldGroup != nullptr;
+    }
 
-    // const struct UGroup &GetMapGroup() const {}
+    const UGroup &GetMapGroup() const {
+        return *fRootWorldGroup;
+    }
 
-    // const struct UGroup *GetMapGroup() {}
+    const UGroup *GetMapGroup() {
+        return fRootWorldGroup;
+    }
 
   private:
     static WWorld *fgWorld;               // size: 0x4

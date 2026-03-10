@@ -15,6 +15,8 @@ struct WSurface : CollisionSurface {};
 
 struct WCollisionArticle {
     // total size: 0x10
+    void Resolve();
+
     unsigned short fNumStrips;         // offset 0x0, size 0x2
     unsigned short fStripsSize;        // offset 0x2, size 0x2
     unsigned short fNumEdges;          // offset 0x4, size 0x2
@@ -45,10 +47,14 @@ struct WCollisionBarrierListEntry {
 
 struct WCollisionObject : public CollisionObject {
     // total size: 0x70
+    void MakeMatrix(UMath::Matrix4 &m, bool addXLate) const;
 };
 
 struct WCollisionInstance : public CollisionInstance {
     // total size: 0x40
+    float CalcSphericalRadius() const;
+    void CalcPosition(UMath::Vector3 &pos) const;
+    void MakeMatrix(UMath::Matrix4 &m, bool addXLate) const;
 };
 
 #endif

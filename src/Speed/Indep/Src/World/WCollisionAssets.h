@@ -6,9 +6,14 @@
 #endif
 
 #include "Speed/Indep/Libs/Support/Utility/UGroup.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "WCollision.h"
+
+struct ManagedCollisionInstance;
+typedef struct UTL::Std::map<unsigned int, ManagedCollisionInstance *, _type_map> CollisionInstanceMap;
+typedef struct UTL::Std::map<unsigned int, WCollisionObject *, _type_map> CollisionObjectMap;
 
 // total size: 0x3C
 class WCollisionAssets {
@@ -51,11 +56,11 @@ class WCollisionAssets {
 
     const WCollisionInstance *fStaticCollisionInstances;     // offset 0x0, size 0x4
     unsigned int fStaticCollisionInstancesCount;             // offset 0x4, size 0x4
-    struct CollisionInstanceMap *fManagedCollisionInstances; // offset 0x8, size 0x4
+    CollisionInstanceMap *fManagedCollisionInstances;        // offset 0x8, size 0x4
     unsigned int fManagedCollisionInstancesInd;              // offset 0xC, size 0x4
     const WCollisionObject *fStaticCollisionObjects;         // offset 0x10, size 0x4
     unsigned int fStaticCollisionObjectsCount;               // offset 0x14, size 0x4
-    struct CollisionObjectMap *fManagedCollisionObjects;     // offset 0x18, size 0x4
+    CollisionObjectMap *fManagedCollisionObjects;            // offset 0x18, size 0x4
     unsigned int fManagedCollisionObjectsInd;                // offset 0x1C, size 0x4
     unsigned int fNumPackLoadCallbacks;                      // offset 0x20, size 0x4
     void (*fPackLoadCallback[4])(int, bool);                 // offset 0x24, size 0x10

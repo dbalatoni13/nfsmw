@@ -24,6 +24,8 @@ struct WGridNodeElem {
 // total size: 0x40
 class WGridManagedDynamicElem {
   public:
+    static void AddElem(const UMath::Vector4 *oldPosRad, const UMath::Vector4 *newPosRad, WGridNode_ElemType type, unsigned int dataInd);
+    static void Shutdown();
     static void UpdateElems();
 
   private:

@@ -24,6 +24,17 @@ public:
         void * fPointer; // offset 0x0, size 0x4
         unsigned int fOffset; // offset 0x0, size 0x4
     }; // offset 0xC, size 0x4
+
+    unsigned int DataCount() const {
+        return fCount;
+    }
+
+    const void *GetDataConst() const {
+        if (fEmbedded) {
+            return reinterpret_cast<const char *>(this) + fOffset;
+        }
+        return fPointer;
+    }
 };
 
 struct UGroup {
@@ -51,6 +62,12 @@ struct UGroup {
         void * fPointer; // offset 0x0, size 0x4
         unsigned int fOffset; // offset 0x0, size 0x4
     }; // offset 0xC, size 0x4
+
+    static const UGroup *Deserialize(unsigned int numParts, const unsigned int *dataLengths, const void **serializedData, unsigned int deltaAddress);
+    const UGroup *GroupLocateTag(unsigned int typeIndexTag) const;
+    const UData *DataLocateTag(unsigned int typeIndexTag) const;
+    const UData *DataEnd() const;
+    const void *GetArray() const;
 };
 
 inline unsigned int UDataGroupType(unsigned int tag) {
