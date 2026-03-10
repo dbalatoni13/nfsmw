@@ -48,7 +48,7 @@ extern CarAnimationState gCarAnimationStates[16];
 
 extern AnimDirectory *TheAnimDirectory;
 extern int bEnableNisTextDisplay;
-extern bool mIsRaceStart;
+extern int mIsRaceStart;
 
 bTList<CAnimSceneData> g_loadedAnimSceneDataList;
 int mHandleCounter = 0;
@@ -504,11 +504,7 @@ void CAnimScene::ChangePlayStatus(ePlayStatus new_status) {
 
 bool CAnimScene::Init() {
     NisScene *scene_info = reinterpret_cast< CAnimSceneDataLayout * >(mAnimSceneData)->mNisScene;
-    bool is_race = false;
-    if (scene_info->SceneType == 0) {
-        is_race = true;
-    }
-    mIsRaceStart = is_race;
+    mIsRaceStart = !scene_info->SceneType;
     bool find_start_line = false;
     if (scene_info->SceneType == 0 || scene_info->SceneType == 3 || scene_info->SceneType == 2) {
         find_start_line = true;

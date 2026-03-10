@@ -14,7 +14,17 @@ class IControlScenario {
 
     virtual ~IControlScenario() {}
 
-    void HandleEventMessage(CWorldAnimEntityTree *entity_tree, unsigned int wa_msg, void *data);
+    virtual void HandleEventMessage(CWorldAnimEntityTree *entity_tree, unsigned int wa_msg, void *data) {}
+};
+
+// total size: 0x4
+class GenericNISControlScenario : public IControlScenario {
+  public:
+    GenericNISControlScenario() {}
+
+    ~GenericNISControlScenario() override;
+
+    void HandleEventMessage(CWorldAnimEntityTree *entity_tree, unsigned int wa_msg, void *data) override;
 };
 
 #endif

@@ -34,6 +34,10 @@
 
 #include "Speed/Indep/Src/Animation/AnimWorldScene.cpp"
 
+#include "Speed/Indep/Src/Animation/ControlScenario.cpp"
+
+#include "Speed/Indep/Src/Animation/GenericNISControlScenario.cpp"
+
 #include "Speed/Indep/Src/Animation/WorldAnimCtrl.cpp"
 
 #include "Speed/Indep/Src/Animation/WorldAnimInstanceDirectory.cpp"

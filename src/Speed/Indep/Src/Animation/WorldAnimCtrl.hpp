@@ -131,11 +131,11 @@ class CWorldAnimCtrl : public bTNode<CWorldAnimCtrl> {
         return PlayState == eACPS_PAUSED;
     }
 
-    void SetFlags(int flags) {}
+    void SetFlags(int flags) { m_flags |= flags; }
 
-    void ClearFlags(int flags) {}
+    void ClearFlags(int flags) { m_flags &= ~flags; }
 
-    void XorFlags(int flags) {}
+    void XorFlags(int flags) { m_flags ^= flags; }
 
     int GetCurIntFrame() {}
 

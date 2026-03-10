@@ -66,8 +66,7 @@ class AnimDirectory {
         while (file_name[pos] != '_') {
             pos++;
         }
-        int len = pos - start_pos;
-        for (; len != 0; len--) {
+        for (int len = pos - start_pos; len != 0; len--) {
             *buffer = file_name[start_pos];
             start_pos++;
             buffer++;
