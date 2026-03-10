@@ -337,14 +337,15 @@ bHash32 SmokeableSpawner::GetRenderMesh() const {
 void SmokeableSpawner::ShowInstance() const {
     SceneryOverrideInfo *info = GetSceneryOverrideInfo(mSceneryOverrideInfoNumber);
     if (info != nullptr) {
-        info->EnableRendering();
+        info->ExcludeFlags &= ~0x10;
+        info->AssignOverrides();
     }
 }
 
 bool SmokeableSpawner::IsInstanceVisible() const {
     SceneryOverrideInfo *info = GetSceneryOverrideInfo(mSceneryOverrideInfoNumber);
     if (info != nullptr) {
-        return (info->ExcludeFlags & 0x8000) == 0;
+        return (info->ExcludeFlags & 0x10) == 0;
     }
     return false;
 }
@@ -352,7 +353,8 @@ bool SmokeableSpawner::IsInstanceVisible() const {
 void SmokeableSpawner::HideInstance() const {
     SceneryOverrideInfo *info = GetSceneryOverrideInfo(mSceneryOverrideInfoNumber);
     if (info != nullptr) {
-        info->DisableRendering();
+        info->ExcludeFlags |= 0x10;
+        info->AssignOverrides();
     }
 }
 
