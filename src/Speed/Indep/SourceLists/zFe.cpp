@@ -84,6 +84,8 @@
 
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEButtons.cpp"
 
+#include "Speed/Indep/Src/FEng/FEMath.cpp"
+
 #include "Speed/Indep/Src/Frontend/FEObjectCallbacks.cpp"
 
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEGameInterface.cpp"
