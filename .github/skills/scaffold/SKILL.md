@@ -5,7 +5,7 @@ description: Workflow for creating an accurate header for an unimplemented class
 
 # Class Initialization Workflow
 
-Your goal is to create copy the struct and header definitions from the dwarf that capture the exact class layout (vtable, members, sizes) using `clangd`, the `lookup` and the `line-lookup` skills.
+Your goal is to copy the struct and header definitions from the dwarf that capture the exact class layout (vtable, members, sizes) using `find-symbol.py`, the `lookup` and the `line-lookup` skills.
 
 ## Phase 1: Gather Information
 
@@ -39,7 +39,17 @@ Write a TODO comment over the struct/class if you aren't 100% sure that it belon
 
 ## Phase 3: Add needed files to jumbo file and compile
 
-Since the project uses jumbo builds, you'll need to add the real source files to the jumbo build using `#include` statements before your changes can picked up by the build system. Try to build afterwards and see if there are any compile errors.
+Since the project uses jumbo builds, you'll need to add the real source files to the jumbo
+build using `#include` statements before your changes can be picked up by the build system.
+
+**Finding the correct jumbo unit:** Use the `line-lookup` skill on any function address from
+the class you are scaffolding. The outermost `.cpp` file in the result (the one spanning
+the widest sequential address range) is the source file being compiled. Its corresponding
+`SourceLists/z*.cpp` jumbo unit is where the new `#include` belongs. For example, if
+`line_lookup.py` shows `src/Speed/Indep/Src/zWorld2/CWorldObject.cpp` dominating the range,
+the new file goes into `src/Speed/Indep/SourceLists/zWorld2.cpp`.
+
+Try to build afterwards and see if there are any compile errors.
 
 ## Phase 4: Report
 

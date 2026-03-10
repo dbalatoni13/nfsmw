@@ -77,14 +77,30 @@ python tools/decomp-status.py --json             # machine-readable
 
 ### decomp-context.py — Function context for matching work
 
-Gathers source code, objdiff diff, Ghidra decompile, and debug map info:
+Gathers a scoped source excerpt, objdiff diff, and Ghidra decompile for a specific function:
 
 ```sh
 python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f AcceptScriptMsg
 python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --no-source
+python tools/decomp-context.py --ghidra-check   # verify Ghidra CLI is set up correctly
 ```
 
-Flags: `--no-source`, `--no-ghidra` to skip sections.
+Flags: `--no-source`, `--no-ghidra` to skip sections. Source output is automatically scoped
+to the function's line range (with a few lines of context) instead of dumping the whole file.
+
+### find-symbol.py — Check for existing definitions before declaring new types
+
+Before declaring any new struct, class, enum, global, or typedef, run this to check whether
+it already exists in `src/`. This is the CLI alternative to clangd workspace/symbol search.
+
+```sh
+python tools/find-symbol.py AITarget
+python tools/find-symbol.py CEntity --type class
+python tools/find-symbol.py EState --type enum
+```
+
+If it prints "Not found: ... Safe to declare", you can proceed to define the symbol.
+If it finds a match, include that header instead of redeclaring.
 
 ### dtk (decomp-toolkit)
 
@@ -167,3 +183,56 @@ register assignments but does NOT affect integer register assignments (and vice 
 - `fmuls fX, fX, fY` or sometimes `fmuls fX, fY, fX` often translates to `v *= fY`
 - `xoris r0, r0, 0x8000` in int-to-float conversion => field is `int`, not `uint`.
   Unsigned int-to-float uses a different sequence without `xoris`.
+
+### Branch structure
+
+- Ghidra almost always **inverts** `if`-statement branch logic: the true and false bodies
+  are swapped in its output. Fix by inverting the condition and swapping the two code paths.
+- A `do { ... } while (i < upperBound)` with a leading `if (upperBound > 0)` guard should
+  be written as a plain `for` loop — GCC emits the same code.
+
+### Stack frame and locals
+
+- Frame size (`stwu r1, -0xNNN(r1)`) is determined by the number and types of locals.
+  Every local that is NOT in the DWARF is a spurious temporary — remove it.
+- Every local that IS in the DWARF must exist in the source, even if you don't use the name.
+  Name it exactly as the DWARF shows.
+
+### Virtual vs direct calls
+
+- A `bl` to a specific address = direct (non-virtual) call.
+- An `lwz + mtctr + bctrl` sequence = virtual dispatch through vtable.
+- If the diff shows a virtual call where you have a direct call (or vice versa), the
+  const-qualifier of the method or the object pointer is wrong. Check the DWARF.
+
+### Register allocation hints
+
+- GCC is sensitive to expression decomposition. Splitting a compound expression into
+  named sub-expressions often produces different (matching) register allocation.
+- Conversely, merging sub-expressions into one can collapse intermediate registers.
+- If two adjacent float ops are swapped, try commuting the operands or using a temp.
+
+### Inlines
+
+- Inlines at the bottom of a TU are emitted by usage, not by definition. Do not write
+  them as normal function bodies; their presence in source is controlled by `#include`.
+- If an inline appears in the DWARF but does not exist in `src/`, deduce its body and add
+  it to the correct header (use `line-lookup` skill to find the header file).
+
+---
+
+## Discovered Matching Patterns
+
+This section accumulates session-specific patterns discovered during decompilation.
+Generalizable entries are promoted here; TU-specific ones stay in session context only.
+
+**Format for new entries:**
+
+```
+### <ShortDescription>
+TU: <translation-unit-name> | Function: <FunctionName>
+<Description of the source pattern that achieved the match>
+```
+
+<!-- Add new entries below this line -->
+
