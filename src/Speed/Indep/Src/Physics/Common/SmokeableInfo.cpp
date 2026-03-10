@@ -101,12 +101,12 @@ void SceneryModel::StartOverride() {
 }
 
 void SceneryModel::GetTransform(UMath::Matrix4 &matrix) const {
-    if (!mInstanceVisible) {
-        HeirarchyModel::GetTransform(matrix);
-    } else {
+    if (mInstanceVisible) {
         if (!GetSceneryTransform(matrix)) {
             matrix = UMath::Matrix4::kIdentity;
         }
+    } else {
+        HeirarchyModel::GetTransform(matrix);
     }
 }
 
