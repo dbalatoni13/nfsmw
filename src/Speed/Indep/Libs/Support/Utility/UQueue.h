@@ -13,10 +13,9 @@ template <typename T, int U> class UCircularQueue {
     T Elements[U]; // offset 0x10, size varies
 
   public:
-    UCircularQueue() : Size(0), Head(0), Tail(0), MaxSize(U) {}
+    UCircularQueue() : Size(0), Head(-1), Tail(0), MaxSize(U) {}
 
     void enqueue(const T &insert) {
-        Elements[Head] = insert;
         int new_head = Head + 1;
         Head = new_head;
         if (MaxSize - 1 < new_head) {
@@ -32,6 +31,7 @@ template <typename T, int U> class UCircularQueue {
             }
             Size = MaxSize;
         }
+        Elements[Head] = insert;
     }
 
     void dequeue() {

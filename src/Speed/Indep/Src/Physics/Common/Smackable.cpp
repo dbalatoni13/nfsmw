@@ -555,13 +555,18 @@ EventSequencer::IEngine *Smackable::GetEventSequencer() {
     return nullptr;
 }
 
-Smackable::Manager::Manager(float rate) : Sim::Object(0) {
+Smackable::Manager::Manager(float rate) : Sim::Activity(0) {
     AddTask("Smackable", rate, 0.0f, Sim::TASK_FRAME_FIXED);
 }
 
-Smackable::Manager::~Manager() {}
+Smackable::Manager::~Manager() {
+    RemoveTask(mManageTask);
+}
 
 bool Smackable::Manager::OnTask(HSIMTASK htask, float dT) {
+    if (htask != mManageTask) {
+        return false;
+    }
     UTL::Collections::Listable< Smackable, 160 >::Sort(Smackable::SimplifySort);
     if (static_cast< unsigned int >(Smackable_RigidCount) > 0xa) {
         TrySimplify();
@@ -649,7 +654,7 @@ bool Smackable::SimplifySort(const Smackable *lhs, const Smackable *rhs) {
     if (lhs->mSimplifyWeight < rhs->mSimplifyWeight) {
         return false;
     }
-    return lhs->mOwner < rhs->mOwner;
+    return lhs->GetInstanceHandle() < rhs->GetInstanceHandle();
 }
 
 bool Smackable::IsRequired() const { return false; }

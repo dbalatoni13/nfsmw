@@ -21,6 +21,7 @@
 #include "Speed/Indep/Src/Physics/Behaviors/RigidBody.h"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
+#include "Speed/Indep/Src/Sim/SimActivity.h"
 
 class HeirarchyModel;
 
@@ -52,7 +53,7 @@ class Smackable : public PhysicsObject,
                   public IExplodeable,
                   public EventSequencer::IContext {
   public:
-    class Manager : public Sim::Object, public UTL::Collections::Singleton<Manager> {
+    class Manager : public Sim::Activity, public UTL::Collections::Singleton<Manager> {
       public:
         void *operator new(std::size_t size) { return gFastMem.Alloc(size, nullptr); }
         void operator delete(void *mem, std::size_t size) {
@@ -61,6 +62,9 @@ class Smackable : public PhysicsObject,
         Manager(float rate);
         virtual ~Manager();
         bool OnTask(HSIMTASK htask, float dT) override;
+
+      private:
+        HSIMTASK mManageTask; // offset 0x50, size 0x4
     };
 
     void *operator new(std::size_t size) { return gFastMem.Alloc(size, nullptr); }
