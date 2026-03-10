@@ -1,6 +1,6 @@
 #include "Speed/Indep/Src/Camera/Actions/CDActionTrackCop.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
-#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"

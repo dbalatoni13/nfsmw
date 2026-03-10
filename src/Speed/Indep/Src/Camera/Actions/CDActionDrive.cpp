@@ -1,7 +1,15 @@
 #include "Speed/Indep/Src/Camera/Actions/CDActionDrive.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
+#include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MJumpCut.h"
-#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Libs/Support/Utility/UVector.h"
+
+extern bool gCinematicMomementCamera;
+extern bool gGameBreakerCamera;
 
 static float kCinematicMomementSeconds;
 
@@ -41,32 +49,109 @@ const IAttachable::List *CDActionDrive::GetAttachments() const {
 
 CameraAI::Action *CDActionDrive::Construct(CameraAI::Director *director) {
     IPlayer *player = nullptr;
-    {
-        const UTL::Vector<IPlayer *, 16> &list = IPlayer::GetList(PLAYER_LOCAL);
-        for (IPlayer *const *iter = list.begin(); iter != list.end(); ++iter) {
-            IPlayer *ip = *iter;
-            if (ip->GetRenderPort() == director->GetViewID()) {
-                player = ip;
-                break;
-            }
+    int player_idx;
+    ISimable *isimable;
+    const IPlayer::List &list = IPlayer::GetList(PLAYER_LOCAL);
+    for (IPlayer *const *iter = list.begin(); iter != list.end(); ++iter) {
+        IPlayer *ip = *iter;
+        if (ip->GetControllerPort() == static_cast<int>(director->GetViewID())) {
+            player = ip;
+            break;
         }
     }
-    if (!player) return nullptr;
-    if (!player->GetSettings()) return nullptr;
-    ISimable *isimable = player->GetSimable();
-    if (!isimable) return nullptr;
-    {
-        unsigned int world_id = isimable->GetWorldID();
-        if (!world_id) return nullptr;
-        return new ((const char *)nullptr) CDActionDrive(director, player);
+
+    if (player == nullptr) {
+        return nullptr;
     }
+
+    isimable = player->GetSimable();
+    if (isimable == nullptr) {
+        return nullptr;
+    }
+
+    IVehicle *ivehicle = nullptr;
+    isimable->QueryInterface(&ivehicle);
+    if (ivehicle == nullptr) {
+        return nullptr;
+    }
+
+    unsigned int world_id = isimable->GetWorldID();
+    if (world_id == 0) {
+        return nullptr;
+    }
+
+    return new ("CDActionDrive") CDActionDrive(director, player);
 }
 
 CDActionDrive::CDActionDrive(CameraAI::Director *director, IPlayer *player)
     : CameraAI::Action(), //
       IAttachable(this), //
       mMaxCollisionTime(0.5f) {
-    // TODO
+    mViewID = director->GetViewID();
+    bool smooth = director->IsCinematicMomement();
+
+    mTarget = WorldConn::Reference(0);
+    mPlayer = player;
+    mVehicle = nullptr;
+    mGameBreakerScale = 0.0f;
+    mCinematicMomementTimer = 0.0f;
+    mDampCollisionTime = 0.0f;
+    mGroundCollisionTime = 0.0f;
+    mObjectCollisionTime = 0.0f;
+    mPulseTimer = 0.0f;
+    mCinematicMomementTimerInc = false;
+    mGear = 0;
+
+    gCinematicMomementCamera = false;
+    gGameBreakerCamera = false;
+    if (smooth) {
+        gCinematicMomementCamera = true;
+        mCinematicMomementTimer = 1.0f;
+        kCinematicMomementSeconds = mMaxCollisionTime;
+        mPulseTimer = 0.5f;
+    }
+
+    mAttachments = new Sim::Attachments(static_cast<IAttachable *>(this));
+
+    mMsgJumpCut = Hermes::Handler::Create<MJumpCut, CDActionDrive, CDActionDrive>(
+        this, &CDActionDrive::MessageJumpCut, "Camera", 0);
+
+    mAttachments->Attach(mPlayer);
+
+    CameraMover *m = director->GetMover();
+    smooth = false;
+    if (m != nullptr && m->GetType() == CM_ICE) {
+        smooth = TheICEManager.IsSmoothExit();
+    }
+
+    mAnchor = new CameraAnchor(0);
+
+    if (0.0f < mCinematicMomementTimer) {
+        mAnchor->SetZoom(1.0f - mCinematicMomementTimer * 0.1f);
+    }
+
+    AquireCar();
+
+    if (mTarget.IsValid()) {
+        bMatrix4 mat(*mTarget.GetMatrix());
+
+        ICollisionBody *irbc = nullptr;
+        mVehicle->QueryInterface(&irbc);
+        if (irbc != nullptr) {
+            IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
+            UVector3 cg(irbc->GetCenterOfGravity());
+            irb->ConvertLocalToWorld(cg, false);
+            cg += irb->GetPosition();
+            eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(cg), reinterpret_cast<bVector3 &>(cg));
+        }
+
+        mAnchor->Update(0.0f, mat, *mTarget.GetVelocity(), *mTarget.GetAcceleration());
+    }
+
+    int pov_type = player->GetSettings()->CurCam;
+
+    mMover = new CubicCameraMover(static_cast<int>(director->GetViewID()), mAnchor, pov_type, smooth, false, false, true);
+    mRearViewMirrorMover = new RearViewMirrorCameraMover(3, mAnchor);
 }
 
 CDActionDrive::~CDActionDrive() {

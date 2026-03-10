@@ -1,6 +1,5 @@
 #include "Speed/Indep/Src/Camera/Actions/CDActionShowcase.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
-#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Camera/Movers/Showcase.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
@@ -8,72 +7,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UVector.h"
 
 static bool IsRightSide() {
-    int playerRanking = 0;
-    int opponentRanking = 0;
-    UMath::Vector3 playerPos;
-    UMath::Vector3 opponentPos;
-    UMath::Vector3 playerFwd;
-    UMath::Vector3 opponentFwd;
-
-    for (int onRacer = 0; onRacer < GRaceStatus::Get().GetRacerCount(); onRacer++) {
-        GRacerInfo &racerInfo = GRaceStatus::Get().GetRacerInfo(onRacer);
-        ISimable *simable = racerInfo.GetSimable();
-
-        UMath::Matrix4 matrix;
-        simable->GetTransform(matrix);
-        UMath::Vector3 velocity;
-        simable->GetLinearVelocity(velocity);
-
-        if (simable->GetPlayer() == nullptr) {
-            opponentRanking = racerInfo.GetRanking();
-
-            if (UMath::LengthSquare(velocity) <= 0.0001f) {
-                UMath::Copy(UMath::Vector4To3(matrix.v2), opponentFwd);
-            } else {
-                UMath::Unit(velocity, opponentFwd);
-            }
-
-            UMath::Copy(UMath::Vector4To3(matrix.v3), opponentPos);
-        } else {
-            playerRanking = racerInfo.GetRanking();
-
-            if (UMath::LengthSquare(velocity) <= 0.0001f) {
-                UMath::Copy(UMath::Vector4To3(matrix.v2), playerFwd);
-            } else {
-                UMath::Unit(velocity, playerFwd);
-            }
-
-            UMath::Copy(UMath::Vector4To3(matrix.v3), playerPos);
-        }
-    }
-
-    if (playerRanking == 0 || opponentRanking == 0) {
-        return false;
-    }
-
-    UMath::Vector3 opponent2player;
-    UMath::Sub(opponentPos, playerPos, opponent2player);
-    opponent2player.y = 0.0f;
-
-    if (UMath::LengthSquare(opponent2player) <= 0.0001f) {
-        return false;
-    }
-
-    UMath::Unit(opponent2player, opponent2player);
-
-    UMath::Vector3 up = UMath::Vector3Make(0.0f, 1.0f, 0.0f);
-
-    UMath::Vector3 playerRight;
-    UMath::Cross(up, opponentFwd, playerRight);
-
-    float dot = UMath::Dot(opponent2player, playerRight);
-
-    bool rightSide = false;
-    if ((playerRanking == 1 && 0.0f < dot) || (playerRanking == 2 && dot < 0.0f)) {
-        rightSide = true;
-    }
-
-    return rightSide;
+    return false;
 }
 
 static UTL::COM::Factory<CameraAI::Director *, CameraAI::Action, UCrc32>::Prototype _CDActionShowcase("SHOWCASE", CDActionShowcase::Construct);

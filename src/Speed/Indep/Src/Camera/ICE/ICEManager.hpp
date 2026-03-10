@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Src/Camera/ICE/ICEData.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
 enum ICEContext {
@@ -150,7 +151,7 @@ class ICEManager {
     }
 
     bool IsEditorOff() {
-        return nState == 0;
+        return nState <= 0;
     }
 
     int GetState() {
@@ -182,7 +183,7 @@ class ICEManager {
     }
 
     bool IsGenericCameraPlaying() {
-        return nPlayGenericGroupHash != 0;
+        return nPlayGenericGroupHash != bStringHash("");
     }
 
     float GetAnimElevationFixup(ICE::Vector3 *position);

@@ -156,23 +156,25 @@ void CameraAI::Director::SelectAction() {
         }
 
         if (!gGameBreakerCamera) {
-            eView *view = eGetView(static_cast<int>(mViewID), false);
-            CameraMover *cm = view->GetCameraMover();
-            if (cm != nullptr && cm->GetType() == CM_DRIVE_CUBIC) {
-                CameraAnchor *anchor = cm->GetAnchor();
-                if (anchor != nullptr) {
-                    if (AreMomentCamerasEnabled() &&
-                        (anchor->GetVelocityMagnitude() > kJumpSpeedHigh ||
-                         (anchor->GetVelocityMagnitude() > kJumpSpeedLow && anchor->IsTouchingGround())) &&
-                        anchor->IsCloseToRoadBlock()) {
-                        mDesiredMode = Attrib::StringKey("JUMP");
-                        mJumpTime = kJumpDuration;
-                        UMath::Vector4 position = UMath::Vector4::kZero;
-                        UMath::Vector4 vector = UMath::Vector4::kZero;
-                        UMath::Vector4 velocity = UMath::Vector4::kZero;
-                        MGamePlayMoment msg(position, vector, velocity, 0,
-                                            Attrib::StringHash32("jump"));
-                        msg.Deliver();
+            eView *view = &eViews[mViewID];
+            if (view != nullptr) {
+                CameraMover *cm = view->GetCameraMover();
+                if (cm != nullptr && cm->GetType() == CM_DRIVE_CUBIC) {
+                    CameraAnchor *anchor = cm->GetAnchor();
+                    if (anchor != nullptr) {
+                        if (AreMomentCamerasEnabled() &&
+                            (anchor->GetVelocityMagnitude() > kJumpSpeedHigh ||
+                             (anchor->GetVelocityMagnitude() > kJumpSpeedLow && anchor->IsTouchingGround())) &&
+                            anchor->IsCloseToRoadBlock()) {
+                            mDesiredMode = Attrib::StringKey("JUMP");
+                            mJumpTime = kJumpDuration;
+                            UMath::Vector4 position = UMath::Vector4::kZero;
+                            UMath::Vector4 vector = UMath::Vector4::kZero;
+                            UMath::Vector4 velocity = UMath::Vector4::kZero;
+                            MGamePlayMoment msg(position, vector, velocity, 0,
+                                                Attrib::StringHash32("jump"));
+                            msg.Deliver();
+                        }
                     }
                 }
             }

@@ -38,6 +38,10 @@ class Reference {
         return mAcceleration;
     }
 
+    unsigned int GetWorldID() const {
+        return mWorldID;
+    }
+
   private:
     unsigned int mWorldID;         // offset 0x0, size 0x4
     const bMatrix4 *mMatrix;       // offset 0x4, size 0x4

@@ -182,7 +182,7 @@ Camera *GetCurrentCamera();
 unsigned short ConvertLensLengthToFovAngle(float f_lens_mm);
 
 extern bool bMirrorICEData;
-int Tweak_ForceICEReplay;
+bool Tweak_ForceICEReplay;
 
 namespace ICEReplay {
 
@@ -202,20 +202,17 @@ bool CameraCutIsGood(ICEData *camera, float param, ICEAnchor *p_car) {
           reinterpret_cast<const bVector3 *>(p_car->GetGeometryPosition()));
     eInvertTransformationMatrix(&mWorldToCar, &mCarToWorld);
 
-    bVector3 *p_pos = old_cam->GetPosition();
-    bVector3 *p_tar = old_cam->GetTarget();
     bVector3 v_pos;
     bVector3 v_tar;
-    eMulVector(&v_pos, &mWorldToCar, p_pos);
-    eMulVector(&v_tar, &mWorldToCar, p_tar);
+    eMulVector(&v_pos, &mWorldToCar, old_cam->GetPosition());
+    eMulVector(&v_tar, &mWorldToCar, old_cam->GetTarget());
 
     bVector3 v_old_dir;
     bSub(&v_old_dir, &v_tar, &v_pos);
     bNormalize(&v_old_dir, &v_old_dir);
 
-    bVector3 *p_old_vel = old_cam->GetVelocityPosition();
     bVector3 v_old_vel;
-    eMulVector(&v_old_vel, &mWorldToCar, p_old_vel);
+    eMulVector(&v_old_vel, &mWorldToCar, old_cam->GetVelocityPosition());
     bNormalize(&v_old_vel, &v_old_vel);
 
     bVector3 v_eye;

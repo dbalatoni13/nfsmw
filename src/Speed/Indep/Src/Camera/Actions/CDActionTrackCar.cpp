@@ -1,6 +1,9 @@
 #include "Speed/Indep/Src/Camera/Actions/CDActionTrackCar.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
-#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Libs/Support/Utility/UVector.h"
 
 static UTL::COM::Factory<CameraAI::Director *, CameraAI::Action, UCrc32>::Prototype _CDActionTrackCar("TRACKCAR", CDActionTrackCar::Construct);
 
@@ -31,43 +34,104 @@ const IAttachable::List *CDActionTrackCar::GetAttachments() const {
 
 CameraAI::Action *CDActionTrackCar::Construct(CameraAI::Director *director) {
     IPlayer *player = nullptr;
-    {
-        const UTL::Vector<IPlayer *, 16> &list = IPlayer::GetList(PLAYER_LOCAL);
-        for (IPlayer *const *iter = list.begin(); iter != list.end(); ++iter) {
-            IPlayer *ip = *iter;
-            if (ip->GetRenderPort() == director->GetViewID()) {
-                player = ip;
-                break;
-            }
+    int player_idx;
+    ISimable *isimable;
+    const IPlayer::List &list = IPlayer::GetList(PLAYER_LOCAL);
+    for (IPlayer *const *iter = list.begin(); iter != list.end(); ++iter) {
+        IPlayer *ip = *iter;
+        if (ip->GetControllerPort() == static_cast<int>(director->GetViewID())) {
+            player = ip;
+            break;
         }
     }
-    if (!player) return nullptr;
-    if (!player->GetSettings()) return nullptr;
-    ISimable *isimable = player->GetSimable();
-    if (!isimable) return nullptr;
-    {
-        unsigned int world_id = isimable->GetWorldID();
-        if (!world_id) return nullptr;
-        return new ((const char *)nullptr) CDActionTrackCar(director, player);
+
+    if (player == nullptr) {
+        return nullptr;
     }
+
+    isimable = player->GetSimable();
+    if (isimable == nullptr) {
+        return nullptr;
+    }
+
+    IVehicle *ivehicle = nullptr;
+    isimable->QueryInterface(&ivehicle);
+    if (ivehicle == nullptr) {
+        return nullptr;
+    }
+
+    unsigned int world_id = isimable->GetWorldID();
+    if (world_id == 0) {
+        return nullptr;
+    }
+
+    return new ("CDActionTrackCar") CDActionTrackCar(director, player);
 }
 
 CDActionTrackCar::CDActionTrackCar(CameraAI::Director *director, IPlayer *player)
     : CameraAI::Action(), //
       IAttachable(this) {
-    // TODO
+    mTarget = WorldConn::Reference(0);
+    mPlayer = player;
+    mVehicle = nullptr;
+    mViewID = director->GetViewID();
+
+    mAttachments = new Sim::Attachments(static_cast<IAttachable *>(this));
+    mAttachments->Attach(mPlayer);
+
+    mAnchor = new CameraAnchor(0);
+
+    AquireCar();
+
+    if (mTarget.IsValid()) {
+        bMatrix4 mat(*mTarget.GetMatrix());
+
+        ICollisionBody *irbc = nullptr;
+        mVehicle->QueryInterface(&irbc);
+        if (irbc != nullptr) {
+            IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
+            UVector3 cg(irbc->GetCenterOfGravity());
+            irb->ConvertLocalToWorld(cg, false);
+            cg += irb->GetPosition();
+            eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(cg), reinterpret_cast<bVector3 &>(cg));
+        }
+
+        mAnchor->Update(0.0f, mat, *mTarget.GetVelocity(), *mTarget.GetAcceleration());
+    }
+
+    mMover = new TrackCarCameraMover(static_cast<int>(director->GetViewID()), mAnchor, true);
+    mMover->GetCamera()->SetRenderDash(0);
 }
 
 CDActionTrackCar::~CDActionTrackCar() {
-    // TODO
+    if (mPlayer) {
+        Detach(mPlayer);
+    }
+    if (mVehicle) {
+        Detach(mVehicle);
+    }
+    delete mMover;
+    delete mAnchor;
+    delete mAttachments;
 }
 
 void CDActionTrackCar::OnDetached(IAttachable *pOther) {
-    // TODO
+    if (ComparePtr(pOther, mPlayer)) {
+        mPlayer = nullptr;
+    }
+    if (ComparePtr(pOther, mVehicle)) {
+        OnCarDetached();
+    }
 }
 
 void CDActionTrackCar::OnCarDetached() {
-    // TODO
+    if (mTarget.IsValid()) {
+        mTarget.Set(0);
+    }
+    if (mAnchor) {
+        mAnchor->SetWorldID(0);
+    }
+    mVehicle = nullptr;
 }
 
 void CDActionTrackCar::AquireCar() {
@@ -75,10 +139,42 @@ void CDActionTrackCar::AquireCar() {
 }
 
 void CDActionTrackCar::Update(float dT) {
-    // TODO
+    if (mPlayer == nullptr) {
+        if (mVehicle != nullptr) {
+            Detach(mVehicle);
+            mVehicle = nullptr;
+        }
+    } else {
+        AquireCar();
+        if (mTarget.IsValid()) {
+            bMatrix4 mat(*mTarget.GetMatrix());
+
+            ICollisionBody *irbc = nullptr;
+            mVehicle->QueryInterface(&irbc);
+            if (irbc != nullptr) {
+                IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
+                UVector3 cg(irbc->GetCenterOfGravity());
+                irb->ConvertLocalToWorld(cg, false);
+                cg += irb->GetPosition();
+                eSwizzleWorldVector(reinterpret_cast<bVector3 &>(cg), reinterpret_cast<bVector3 &>(cg));
+            }
+
+            mAnchor->Update(dT, mat, *mTarget.GetVelocity(), *mTarget.GetAcceleration());
+        }
+    }
+    mMover->Update(dT);
 }
 
 bool CDActionTrackCar::GetTrafficBasis(UMath::Matrix4 &matrix, UMath::Vector3 &velocity) {
-    // TODO
-    return false;
+    IBody *ibody = nullptr;
+    if (mVehicle == nullptr) {
+        return false;
+    }
+    mVehicle->QueryInterface(&ibody);
+    if (ibody == nullptr) {
+        return false;
+    }
+    ibody->GetTransform(matrix);
+    ibody->GetLinearVelocity(velocity);
+    return true;
 }

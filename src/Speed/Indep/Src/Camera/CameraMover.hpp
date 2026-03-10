@@ -235,6 +235,10 @@ class CameraAnchor {
         return mWorldID;
     }
 
+    void SetWorldID(unsigned int id) {
+        mWorldID = id;
+    }
+
     bool IsTouchingGround() const {
         return mIsTouchingGround;
     }
