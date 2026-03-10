@@ -729,33 +729,43 @@ bool FEngGet2DExtentsForMouse(FEObject* pObject, FERect& Rect, FEVector2 offset)
         return false;
     }
 
-    if (pObject->Type == FE_Group) {
-        FEGroup* grp = static_cast<FEGroup*>(pObject);
-        FEObject* pChild = grp->GetFirstChild();
-        if (pChild != nullptr) {
-            do {
-                FERect ChildRect(-10000.0f, -10000.0f, 10000.0f, 10000.0f);
-                float cx = FEngGetCenterX(pObject);
-                float cy = FEngGetCenterY(pObject);
-                FEVector2 childOffset = offset + FEVector2(cx, cy);
-                if (FEngGet2DExtentsForMouse(pChild, ChildRect, childOffset)) {
-                    if (ChildRect.left < Rect.left) {
-                        Rect.left = ChildRect.left;
+    switch (pObject->Type) {
+        case FE_Group: {
+            FEGroup* grp = static_cast<FEGroup*>(pObject);
+            FEObject* pChild = grp->GetFirstChild();
+            if (pChild != nullptr) {
+                do {
+                    FERect ChildRect(-10000.0f, -10000.0f, 10000.0f, 10000.0f);
+                    float cx = FEngGetCenterX(pObject);
+                    float cy = FEngGetCenterY(pObject);
+                    FEVector2 childOffset = offset + FEVector2(cx, cy);
+                    if (FEngGet2DExtentsForMouse(pChild, ChildRect, childOffset)) {
+                        if (ChildRect.left < Rect.left) {
+                            Rect.left = ChildRect.left;
+                        }
+                        if (Rect.right < ChildRect.right) {
+                            Rect.right = ChildRect.right;
+                        }
+                        if (ChildRect.top < Rect.top) {
+                            Rect.top = ChildRect.top;
+                        }
+                        if (Rect.bottom < ChildRect.bottom) {
+                            Rect.bottom = ChildRect.bottom;
+                        }
                     }
-                    if (Rect.right < ChildRect.right) {
-                        Rect.right = ChildRect.right;
-                    }
-                    if (ChildRect.top < Rect.top) {
-                        Rect.top = ChildRect.top;
-                    }
-                    if (Rect.bottom < ChildRect.bottom) {
-                        Rect.bottom = ChildRect.bottom;
-                    }
-                }
-                pChild = pChild->GetNext();
-            } while (pChild != nullptr);
+                    pChild = pChild->GetNext();
+                } while (pChild != nullptr);
+            }
+            return true;
         }
-        return true;
+        case FE_Image:
+        case FE_String:
+        case FE_Movie:
+        case FE_ColoredImage:
+        case FE_MultiImage:
+            break;
+        default:
+            return false;
     }
 
     if (pObject->Flags & 1) {
