@@ -456,7 +456,7 @@ void Smackable::ProcessDeath(float dT) {
 }
 
 bool Smackable::ProcessDropout(float dT) {
-    if (!(mDropOutTimerMax > 0.0f) || !(mDropTimer > 0.0f)) {
+    if (mDropOutTimerMax <= 0.0f || mDropTimer <= 0.0f) {
         return false;
     }
     IRigidBody *irb = GetRigidBody();
@@ -474,9 +474,7 @@ void Smackable::ProcessOffWorld(float dT) {
     if (mAttributes.ALLOW_OFF_WORLD()) {
         return;
     }
-    if (ValidateWorld()) {
-        mOffWorldTimer = 0.0f;
-    } else {
+    if (!ValidateWorld()) {
         mOffWorldTimer += dT;
         if (mOffWorldTimer >= 1.0f) {
             if (mModel != nullptr && !mPersistant) {
@@ -485,6 +483,8 @@ void Smackable::ProcessOffWorld(float dT) {
             }
             static_cast< ISimable * >(this)->Kill();
         }
+    } else {
+        mOffWorldTimer = 0.0f;
     }
 }
 
