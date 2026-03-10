@@ -340,8 +340,7 @@ void PVehicle::OnBehaviorChange(const UCrc32 &mechanic) {
     } else if (crc == UCrc32(BEHAVIOR_MECHANIC_INPUT).GetValue()) {
         static_cast<ISimable *>(this)->QueryInterface(&mInput);
     } else if (crc == UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY).GetValue()) {
-        static_cast<ISimable *>(this)->QueryInterface(&mCollisionBody);
-        if (mCollisionBody != nullptr) {
+        if (static_cast<ISimable *>(this)->QueryInterface(&mCollisionBody)) {
             mCollisionBody->SetAnimating(mAnimating);
         }
         static_cast<ISimable *>(this)->QueryInterface(&mArticulation);
@@ -350,23 +349,19 @@ void PVehicle::OnBehaviorChange(const UCrc32 &mechanic) {
     } else if (crc == UCrc32(BEHAVIOR_MECHANIC_AUDIO).GetValue()) {
         static_cast<ISimable *>(this)->QueryInterface(&mAudible);
     } else if (crc == UCrc32(BEHAVIOR_MECHANIC_SUSPENSION).GetValue()) {
-        static_cast<ISimable *>(this)->QueryInterface(&mSuspension);
-        if (mSuspension == nullptr) {
+        if (!static_cast<ISimable *>(this)->QueryInterface(&mSuspension)) {
             return;
         }
         if (mCollisionBody == nullptr) {
             return;
         }
         const UMath::Vector3 &fwd = mCollisionBody->GetForwardVector();
-        IRigidBody *rb;
-        static_cast<ISimable *>(this)->QueryInterface(&rb);
-        const UMath::Vector3 &vel = rb->GetLinearVelocity();
+        const UMath::Vector3 &vel = static_cast<ISimable *>(this)->GetRigidBody()->GetLinearVelocity();
         float speed = UMath::Dot(fwd, vel);
         mSuspension->MatchSpeed(speed);
     } else if (crc == UCrc32(BEHAVIOR_MECHANIC_ENGINE).GetValue()) {
         static_cast<ISimable *>(this)->QueryInterface(&mTranny);
-        static_cast<ISimable *>(this)->QueryInterface(&mEngine);
-        if (mEngine == nullptr) {
+        if (!static_cast<ISimable *>(this)->QueryInterface(&mEngine)) {
             return;
         }
         mEngine->ChargeNOS(mStartingNOS - mEngine->GetNOSCapacity());
@@ -374,9 +369,7 @@ void PVehicle::OnBehaviorChange(const UCrc32 &mechanic) {
             return;
         }
         const UMath::Vector3 &fwd = mCollisionBody->GetForwardVector();
-        IRigidBody *rb;
-        static_cast<ISimable *>(this)->QueryInterface(&rb);
-        const UMath::Vector3 &vel = rb->GetLinearVelocity();
+        const UMath::Vector3 &vel = static_cast<ISimable *>(this)->GetRigidBody()->GetLinearVelocity();
         float speed = UMath::Dot(fwd, vel);
         mEngine->MatchSpeed(speed);
     } else if (crc == UCrc32(BEHAVIOR_MECHANIC_DAMAGE).GetValue()) {
