@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/Physics/SceneryModel.h"
 #include "Speed/Indep/Src/Physics/SmokeableInfo.hpp"
 
+#include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/Sim/SimSubSystem.h"
@@ -218,19 +219,16 @@ void SmokeableSpawnerPack::OnUnload() {
     SmokeableSection *section = TheSmokeableSections.FindOrAdd(static_cast< int >(ScenerySectionNumber));
     section->LastLoadTime = Sim::GetTime();
 
-    if (NumSmokeableSpawners > 0) {
-        do {
-            SmokeableSpawner *spawner = &SmokeableSpawners[n];
-            if (static_cast< unsigned int >(n) < 256) {
-                if (spawner->IsInstanceVisible()) {
-                    section->Rebuilds.Clear(static_cast< unsigned int >(n));
-                } else {
-                    section->Rebuilds.Set(static_cast< unsigned int >(n));
-                }
+    for (; n < NumSmokeableSpawners; n++) {
+        SmokeableSpawner *spawner = &SmokeableSpawners[n];
+        if (static_cast< unsigned int >(n) < 256) {
+            if (!spawner->IsInstanceVisible()) {
+                section->Rebuilds.Set(static_cast< unsigned int >(n));
+            } else {
+                section->Rebuilds.Clear(static_cast< unsigned int >(n));
             }
-            spawner->OnUnload();
-            n++;
-        } while (n < NumSmokeableSpawners);
+        }
+        spawner->OnUnload();
     }
 }
 
@@ -265,6 +263,10 @@ void SmokeableSpawnerPack::OnLoad(unsigned int exclude_flags) {
         }
     }
 
+    if (section == nullptr || !section->Rebuilds.Test()) {
+        GManager::Get().RestorePursuitBreakerIcons(static_cast< int >(ScenerySectionNumber));
+    }
+
     for (int n = 0; n < NumSmokeableSpawners; n++) {
         bool ignore = false;
         if (section != nullptr && static_cast< unsigned int >(n) < 256 && section->Rebuilds.Test(static_cast< unsigned int >(n))) {
@@ -291,12 +293,12 @@ void SmokeableSpawner::EndianSwap() {
     bEndianSwap32(&mPosition.y);
     bEndianSwap32(&mPosition.z);
     bEndianSwap32(&mPosition.w);
-    bPlatEndianSwap(&mModel);
-    bPlatEndianSwap(&mCollisionName);
-    bPlatEndianSwap(&mAttributes);
-    bPlatEndianSwap(&mSceneryOverrideInfoNumber);
-    bPlatEndianSwap(&mUniqueID);
-    bPlatEndianSwap(&mExcludeFlags);
+    bEndianSwap32(&mModel);
+    bEndianSwap32(&mCollisionName);
+    bEndianSwap32(&mAttributes);
+    bEndianSwap32(&mSceneryOverrideInfoNumber);
+    bEndianSwap32(&mUniqueID);
+    bEndianSwap32(&mExcludeFlags);
 }
 
 void SmokeableSpawner::OnUnload() {
