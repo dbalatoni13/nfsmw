@@ -113,6 +113,23 @@ struct pvehicle : Instance {
         return 0x4a97ec8f;
     }
 
+    Instance &GetBase() {
+        return *this;
+    }
+
+    const Instance &GetBase() const {
+        return *this;
+    }
+
+    const pvehicle &operator=(const pvehicle &rhs) {
+        Instance::operator=(rhs.GetBase());
+        return *this;
+    }
+
+    void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
+        Instance::Modify(dynamicCollectionKey, spaceForAdditionalAttributes);
+    }
+
     const RefSpec &transmission(unsigned int index) const {
         const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(GetAttributePointer(0x07a7a3e5, index));
         if (!resultptr) {
