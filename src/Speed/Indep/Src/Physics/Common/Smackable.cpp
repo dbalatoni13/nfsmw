@@ -312,10 +312,10 @@ void Smackable::OnCollision(const Sim::Collision::Info &cinfo) {
 }
 
 bool Smackable::InView() const {
-    if (mModel == nullptr) {
-        return false;
+    if (mModel != nullptr) {
+        return mModel->InView();
     }
-    return mModel->InView();
+    return false;
 }
 
 bool Smackable::IsRenderable() const { return mModel != nullptr; }
@@ -543,7 +543,10 @@ void Smackable::OnTaskSimulate(float dT) {
 }
 
 EventSequencer::IEngine *Smackable::GetEventSequencer() {
-    return PhysicsObject::GetEventSequencer();
+    if (mModel != nullptr) {
+        return mModel->GetEventSequencer();
+    }
+    return nullptr;
 }
 
 Smackable::Manager::Manager(float rate) : Sim::Object(0) {

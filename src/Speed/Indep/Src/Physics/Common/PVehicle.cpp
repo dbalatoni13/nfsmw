@@ -247,15 +247,19 @@ void PVehicle::SetDriverStyle(DriverStyle style) {
 }
 
 void PVehicle::Launch() {
-    if (mSequencer != nullptr && mPerfectLaunch.IsSet()) {
-        if (mDriverClass == DRIVER_HUMAN) {
-            if (mPerfectLaunch.Amount > 0.0f) {
-                mPerfectLaunch.Set(10.0f);
-                new EPerfectLaunch(ISimable::GetInstanceHandle(), mPerfectLaunch.Amount);
-            }
-        } else {
-            mPerfectLaunch.Clear();
+    if (mEngine == nullptr) {
+        return;
+    }
+    if (!(mPerfectLaunch.Time > 0.0f)) {
+        return;
+    }
+    if (mDriverClass == DRIVER_HUMAN) {
+        if (mPerfectLaunch.Amount > 0.0f) {
+            mPerfectLaunch.Set(10.0f);
+            new EPerfectLaunch(ISimable::GetInstanceHandle(), mPerfectLaunch.Amount);
         }
+    } else {
+        mPerfectLaunch.Clear();
     }
 }
 

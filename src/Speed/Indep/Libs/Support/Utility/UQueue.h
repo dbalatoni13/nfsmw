@@ -60,9 +60,9 @@ template <typename T, int U> class UCircularQueue {
     }
 
     void reset() {
-        Size = 0;
-        Head = 0;
         Tail = 0;
+        Size = 0;
+        Head = -1;
     }
 
     int size() const {
