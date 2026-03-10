@@ -259,7 +259,7 @@ void PVehicle::Launch() {
     if (mEngine == nullptr) {
         return;
     }
-    if (!(mPerfectLaunch.Time > 0.0f)) {
+    if (mPerfectLaunch.Time <= 0.0f) {
         return;
     }
     if (mDriverClass == DRIVER_HUMAN) {
@@ -374,6 +374,27 @@ void PVehicle::OnBehaviorChange(const UCrc32 &mechanic) {
         mEngine->MatchSpeed(speed);
     } else if (crc == UCrc32(BEHAVIOR_MECHANIC_DAMAGE).GetValue()) {
         static_cast<ISimable *>(this)->QueryInterface(&mDamage);
+    }
+}
+
+void PVehicle::SetSpeed(float speed) {
+    mSpeed = speed;
+    mPerfectLaunch.Clear();
+    if (mCollisionBody != nullptr) {
+        UMath::Vector3 vel;
+        const UMath::Vector3 &fwd = mCollisionBody->GetForwardVector();
+        UMath::Scale(fwd, speed, vel);
+        static_cast<ISimable *>(this)->GetRigidBody()->SetLinearVelocity(vel);
+        if (mSuspension != nullptr) {
+            mSuspension->MatchSpeed(speed);
+        }
+        if (mEngine != nullptr) {
+            mEngine->MatchSpeed(speed);
+        }
+        UpdateLocalVelocities();
+        if (mArticulation != nullptr && mArticulation->GetTrailer() != nullptr) {
+            mArticulation->GetTrailer()->SetSpeed(speed);
+        }
     }
 }
 
