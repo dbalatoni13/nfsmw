@@ -230,3 +230,60 @@ bool CAnimScene::IsPlaying() {
 bool CAnimScene::IsPaused() {
     return mPlayStatus == Paused;
 }
+
+bool CAnimScene::SetPropertyEnabled(eAnimProperty property_id, bool enable) {
+    CAnimProperty *anim_property = FindProperty(property_id);
+
+    if (anim_property == nullptr) {
+        AddProperty(property_id, enable);
+    } else {
+        anim_property->SetEnabled(enable);
+    }
+
+    return anim_property != nullptr;
+}
+
+bool CAnimScene::IsPropertyEnabled(eAnimProperty property_id) {
+    CAnimProperty *anim_property = FindProperty(property_id);
+
+    if (anim_property == nullptr) {
+        return false;
+    }
+    return anim_property->IsEnabled();
+}
+
+void CAnimScene::ResetTime() {
+    SetTime(mTimeStart);
+}
+
+void CAnimScene::JumpToEnd() {
+    SetTime(mTimeTotalLength);
+}
+
+void CAnimScene::AddProperty(eAnimProperty property_id, bool enabled) {
+    CAnimProperty *anim_property = FindProperty(property_id);
+
+    if (anim_property == nullptr) {
+        anim_property = new CAnimProperty(property_id, enabled);
+        bNode *tail = mAnimPropertyList.HeadNode.Prev;
+        tail->Next = anim_property;
+        mAnimPropertyList.HeadNode.Prev = anim_property;
+        anim_property->Next = &mAnimPropertyList.HeadNode;
+        anim_property->Prev = tail;
+    }
+}
+
+CAnimProperty *CAnimScene::FindProperty(eAnimProperty property_id) {
+    CAnimProperty *anim_property = reinterpret_cast< CAnimProperty * >(mAnimPropertyList.HeadNode.Next);
+
+    while (true) {
+        if (anim_property == reinterpret_cast< CAnimProperty * >(&mAnimPropertyList)) {
+            return nullptr;
+        }
+        if (anim_property->GetType() == property_id) {
+            break;
+        }
+        anim_property = anim_property->GetNext();
+    }
+    return anim_property;
+}

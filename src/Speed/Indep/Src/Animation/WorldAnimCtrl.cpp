@@ -1,4 +1,5 @@
 #include "WorldAnimCtrl.hpp"
+#include "AnimBank.hpp"
 #include "WorldAnimInstanceDirectory.hpp"
 #include "Speed/Indep/Src/EAGL4Anim/MemoryPoolManager.h"
 
@@ -117,4 +118,50 @@ void CWorldAnimCtrl::Cleanup() {
         }
         fn_anim++;
     } while (i > -1);
+}
+
+void CWorldAnimCtrl::SetEvalTime(float time) {
+    m_evalTime = time;
+    PlayDirection = eACPD_FWD;
+    LocalDelayElapsed = 0.0f;
+    if ((m_flags & 0x10) != 0) {
+        float end_time;
+        if ((m_flags & 0x40) == 0) {
+            end_time = m_animLength;
+        } else {
+            end_time = GetLoopRangeScaledEnd();
+        }
+        if (end_time < time) {
+            PlayDirection = eACPD_REV;
+            m_evalTime = end_time - (time - end_time);
+        }
+    }
+}
+
+float CWorldAnimCtrl::GetAnimLengthInSeconds() {
+    return (m_animLength * 0.033333335f) / (m_timeScale * m_f_speed_modifier);
+}
+
+int CWorldAnimCtrl::CreateFnAnimFromBank(EAGL4Anim::AnimBank *animBank, int animIndex, int dof) {
+    m_pFnAnim[dof] = animBank->NewFnAnim(animIndex);
+    m_pFnAnim[dof]->GetLength(m_animLength);
+
+    bool created = m_pFnAnim[dof] != nullptr;
+    if (created) {
+        m_isAllocated = 1;
+    }
+    return created;
+}
+
+int CWorldAnimCtrl::CreateFnAnimFromNamehash(unsigned int namehash, int dof) {
+    EAGL4Anim::AnimBank *animBank = nullptr;
+    int item_index = 0;
+    int found = GetAnimFromBankByNamehash(namehash, &animBank, &item_index);
+
+    if (found != 0) {
+        CreateFnAnimFromBank(animBank, item_index, dof);
+        m_isAllocated = 1;
+    }
+
+    return found != 0;
 }

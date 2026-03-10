@@ -114,6 +114,8 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
 
     void JumpToEnd();
 
+    void SetTime(float time);
+
     void GetTime(float &time);
 
     void UpdateTime(float time_step);
