@@ -180,3 +180,11 @@ void HandleWorldEffectEmitterGroupDelete(void *subscriber, EmitterGroup *grp) {
     WorldEffectConn *fx_conn = static_cast<WorldEffectConn *>(subscriber);
     fx_conn->ResetEmitterGroup();
 }
+
+int *World_UpdateBody(Sim::Packet *pkt) {
+    WorldConn::Pkt_Body_Open *data = static_cast<WorldConn::Pkt_Body_Open *>(pkt);
+    WorldConn::Server::Body *body = WorldConn::_Server->LockID(data->mID);
+    eSwizzleWorldMatrix(reinterpret_cast<const bMatrix4 &>(data->mMatrix), body->matrix);
+    WorldConn::_Server->UnlockID(data->mID);
+    return 0;
+}

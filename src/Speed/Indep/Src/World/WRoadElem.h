@@ -62,6 +62,49 @@ struct WRoadProfile {
         return mLanes[lane_number].GetType();
     }
 
+    int GetNumForwardLanes() const { return fMiddleZone; }
+    int GetNumBackwardLanes() const { return fNumZones - fMiddleZone; }
+    int GetNumLanes(bool forward) const {
+        if (forward) {
+            return GetNumForwardLanes();
+        }
+        return GetNumBackwardLanes();
+    }
+    int GetMiddleZone(bool inverted) const {
+        if (inverted) {
+            return fNumZones - fMiddleZone;
+        }
+        return fMiddleZone;
+    }
+    int GetNthForwardLane(int n) const {
+        int ret = fMiddleZone - n - 1;
+        if (ret < 0) {
+            ret = 0;
+        }
+        return ret;
+    }
+    int GetNthBackwardLane(int n) const {
+        int ret = fMiddleZone + n;
+        if (ret >= fNumZones) {
+            ret = fNumZones - 1;
+        }
+        return ret;
+    }
+    int GetNthLane(int n, bool forward) const {
+        if (forward) {
+            return GetNthForwardLane(n);
+        }
+        return GetNthBackwardLane(n);
+    }
+    int GetLaneNumber(int lane, bool inverted) const {
+        if (inverted) {
+            return fNumZones - 1 - lane;
+        }
+        return lane;
+    }
+    int GetNumTrafficLanes(bool forward) const;
+    int GetNthTrafficLane(int n, bool forward) const;
+
     unsigned char fNumZones;   // offset 0x0, size 0x1
     unsigned char fMiddleZone; // offset 0x1, size 0x1
     unsigned char nPadding[2]; // offset 0x2, size 0x2

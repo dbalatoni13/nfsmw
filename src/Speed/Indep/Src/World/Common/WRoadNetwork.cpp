@@ -247,8 +247,8 @@ int WRoadNetwork::GetSegmentNumTrafficLanes(const WRoadSegment &segment) {
     const WRoadProfile *profilePtr[2];
     int numTrafficLanes[2];
     numTrafficLanes[0] = 0;
-    numTrafficLanes[1] = 0;
     roadNetwork.GetSegmentProfiles(segment, profilePtr);
+    numTrafficLanes[1] = 0;
     for (int i = 0; i < profilePtr[0]->fNumZones; i++) {
         if (profilePtr[0]->GetLaneType(i, false) == 1) {
             numTrafficLanes[0]++;
@@ -313,4 +313,68 @@ void WRoadNetwork::ResetShortcuts() {
         WRoad *road = GetRoadNonConst(road_number);
         road->nShortcut = 0;
     }
+}
+
+bool WRoadNetwork::GetSegmentTrafficLaneRightSide(const WRoadSegment &segment, int laneInd) {
+    WRoadNetwork &roadNetwork = Get();
+    const WRoadProfile *profilePtr[2];
+    roadNetwork.GetSegmentProfiles(segment, profilePtr);
+    return laneInd >= profilePtr[0]->fMiddleZone;
+}
+
+int WRoadProfile::GetNumTrafficLanes(bool forward) const {
+    int num_traffic_lanes = 0;
+    int num_lanes = GetNumLanes(forward);
+    for (int i = 0; i < num_lanes; i++) {
+        if (GetLaneType(i, forward) == 1) {
+            num_traffic_lanes++;
+        }
+    }
+    return num_traffic_lanes;
+}
+
+int WRoadProfile::GetNthTrafficLane(int n, bool forward) const {
+    int num_traffic_lanes = 0;
+    int num_lanes = GetNumLanes(forward);
+    int fallback = GetMiddleZone(forward);
+    for (int i = 0; i < num_lanes; i++) {
+        int real_lane = GetNthLane(i, forward);
+        if (GetLaneType(real_lane, false) == 1) {
+            if (num_traffic_lanes == n) {
+                return real_lane;
+            }
+            num_traffic_lanes++;
+            fallback = real_lane;
+        }
+    }
+    return fallback;
+}
+
+unsigned char WRoadNav::FirstShortcutInPath() {
+    if (GetNavType() != kTypePath) {
+        return 0;
+    }
+    int num_segments = GetNumPathSegments();
+    WRoadNetwork &rn = WRoadNetwork::Get();
+    for (int i = 0; i < num_segments; i++) {
+        const WRoadSegment *segment = rn.GetSegment(GetPathSegment(i));
+        if (segment->IsShortcut()) {
+            int road_number = segment->fRoadID;
+            const WRoad *road = rn.GetRoad(road_number);
+            return road->nShortcut;
+        }
+    }
+    return 0;
+}
+
+const WRoadSegment *GetAttachedDirectionalSegment(const WRoadNode *node, short segInd) {
+    WRoadNetwork &roadNetwork = WRoadNetwork::Get();
+    const WRoadSegment *newRoadSegment = roadNetwork.GetSegment(segInd);
+    for (int i = 0; i < node->fNumSegments; i++) {
+        newRoadSegment = roadNetwork.GetSegment(node->fSegmentIndex[i]);
+        if (segInd != newRoadSegment->fNodeIndex[0] && !newRoadSegment->IsDecision()) {
+            return newRoadSegment;
+        }
+    }
+    return nullptr;
 }

@@ -218,6 +218,7 @@ class WRoadNav {
     bool IsOnLegalRoad();
     bool MakeShortcutDecision(int shortcut_number, unsigned int *cached, unsigned int *allowed);
     void CancelPathFinding();
+    unsigned char FirstShortcutInPath();
     bool FindPath(const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, char *shortcut_allowed);
     bool FindPathNow(const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, char *shortcut_allowed);
     bool FindingPath();
@@ -557,5 +558,7 @@ enum RoadNames {
     offroad_Hydro_Plant = 106,
     MAX_ROADNAMES = 107,
 };
+
+const WRoadSegment *GetAttachedDirectionalSegment(const WRoadNode *node, short segInd);
 
 #endif

@@ -4,14 +4,16 @@
 #include "Speed/Indep/Src/Sim/SimActivity.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 struct HSIMTASK__;
 class WRoadNav;
 struct WRoadNode;
 
 struct AStarNode : public bTNode<AStarNode> {
-    static void *operator new(unsigned int size) { return gFastMem.Alloc(size, nullptr); }
-    static void operator delete(void *ptr) { gFastMem.Free(ptr, sizeof(AStarNode), nullptr); }
+    static void *operator new(unsigned int size);
+    static void operator delete(void *ptr);
 
     short nParentSlot;
     short nSegmentIndex;
@@ -22,10 +24,17 @@ struct AStarNode : public bTNode<AStarNode> {
 
 enum AStarSearchState {};
 
-struct AStarSearch : public bTNode<AStarSearch> {
-    static void *operator new(unsigned int size) { return gFastMem.Alloc(size, nullptr); }
-    static void operator delete(void *ptr) { gFastMem.Free(ptr, sizeof(AStarSearch), nullptr); }
+extern SlotPool *AStarSearchSlotPool;
+extern SlotPool *AStarNodeSlotPool;
 
+struct AStarSearch : public bTNode<AStarSearch> {
+    static void *operator new(unsigned int size) { return bMalloc(AStarSearchSlotPool); }
+    static void operator delete(void *ptr) { bFree(AStarSearchSlotPool, ptr); }
+
+    AStarSearch(WRoadNav *road_nav, const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, const char *shortcut_allowed);
+    virtual ~AStarSearch();
+    float Service(float time);
+    bool IsFinished() { return nState > 0; }
     WRoadNav *GetRoadNav() { return pRoadNav; }
 
     AStarSearchState nState;
@@ -51,6 +60,10 @@ class PathFinder : public Sim::Activity {
 
     static PathFinder *Get() {
         return pInstance;
+    }
+
+    static void Set(PathFinder *instance) {
+        pInstance = instance;
     }
 
     static Sim::IActivity *Construct(Sim::Param params);
