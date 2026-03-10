@@ -246,6 +246,71 @@ Mps Physics::Info::Speedometer(const Attrib::Gen::transmission &transmission, co
     return speed;
 }
 
+float Physics::Info::MaxInductedPower(const pvehicle &pvehicle, const Tunings *tunings) {
+    engine eng(pvehicle.engine(0), 0, nullptr);
+    induction ind(pvehicle.induction(0), 0, nullptr);
+    unsigned int num_torque = eng.Num_TORQUE();
+    float result = 0.0f;
+
+    if (num_torque < 2) {
+        return result;
+    }
+
+    float rpm = eng.IDLE();
+    float delta_rpm = (eng.MAX_RPM() - eng.IDLE()) / static_cast<float>(num_torque - 1);
+
+    for (unsigned int i = 0; i < eng.Num_TORQUE(); i++) {
+        float pt_torque = eng.TORQUE(i) * (InductionBoost(eng, ind, rpm, 1.0f, tunings, nullptr) + 1.0f);
+        float hp = FTLB2HP(pt_torque, rpm);
+        if (hp > result) {
+            result = hp;
+        }
+        rpm += delta_rpm;
+    }
+
+    return result;
+}
+
+float Physics::Info::AvgInductedTorque(const engine &eng, const induction &ind, const transmission &trans, bool from_peak, const Tunings *tunings) {
+    unsigned int num_torque = eng.Num_TORQUE();
+    float torque = 0.0f;
+
+    if (num_torque < 2) {
+        return torque;
+    }
+
+    float peak_torque_rpm;
+    float peak_torque = MaxInductedTorque(eng, ind, peak_torque_rpm, tunings);
+    if (peak_torque <= 0.0f) {
+        return torque;
+    }
+
+    float torque_converter = trans.TORQUE_CONVERTER();
+    float rpm = eng.IDLE();
+    float total_torque = 0.0f;
+    float count = 0.0f;
+    float delta_rpm = (eng.MAX_RPM() - eng.IDLE()) / static_cast<float>(num_torque - 1);
+
+    for (unsigned int i = 0; i < eng.Num_TORQUE(); i++) {
+        float converter_ratio = UMath::Ramp(rpm, eng.IDLE(), peak_torque_rpm);
+        converter_ratio = 1.0f + torque_converter * (1.0f - converter_ratio);
+
+        float torque_pt = eng.TORQUE(i) * (InductionBoost(eng, ind, rpm, 1.0f, tunings, nullptr) + 1.0f) * converter_ratio;
+        if (!from_peak || rpm >= peak_torque_rpm) {
+            if (rpm <= eng.RED_LINE()) {
+                total_torque += torque_pt;
+                count += 1.0f;
+            }
+        }
+        rpm += delta_rpm;
+    }
+
+    if (count > 0.0f) {
+        torque = total_torque / count;
+    }
+    return torque;
+}
+
 float Physics::Info::MaxInductedTorque(const engine &eng, const induction &ind, float &atrpm, const Tunings *tunings) {
     unsigned int num_torque = eng.Num_TORQUE();
     float torque = 0.0f;
