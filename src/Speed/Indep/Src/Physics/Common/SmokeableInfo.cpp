@@ -7,12 +7,6 @@
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/Scenery.hpp"
 
-inline void bPlatEndianSwap(UCrc32 *c) {
-    unsigned int val = c->GetValue();
-    ::bPlatEndianSwap(&val);
-    *c = UCrc32(val);
-}
-
 void ResetPropTimers();
 
 SmokeableSectionQ TheSmokeableSections;
@@ -245,9 +239,9 @@ void SmokeableSpawnerPack::EndianSwap() {
         return;
     }
     EndianSwapped = 1;
-    bEndianSwap16(&ScenerySectionNumber);
-    bEndianSwap16(&FirstSmokeableSpawnerID);
-    bEndianSwap16(&NumSmokeableSpawners);
+    bPlatEndianSwap(&ScenerySectionNumber);
+    bPlatEndianSwap(&FirstSmokeableSpawnerID);
+    bPlatEndianSwap(&NumSmokeableSpawners);
     for (int n = 0; n < NumSmokeableSpawners; n++) {
         SmokeableSpawners[n].EndianSwap();
     }
