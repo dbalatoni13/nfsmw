@@ -74,7 +74,7 @@ CameraAI::Action *CDActionIce::Construct(CameraAI::Director *director) {
         return nullptr;
     }
 
-    if (!Tweak_ForceICEReplay && !TheICEManager.IsActive()) {
+    if (!Tweak_ForceICEReplay && !TheICEManager.ChooseCameraPlaybackTrack()) {
         return nullptr;
     }
 
@@ -99,7 +99,7 @@ CDActionIce::CDActionIce(CameraAI::Director *director, IPlayer *player)
     if (m != nullptr) {
         CameraAnchor *prevAnchor = m->GetAnchor();
         if (prevAnchor != nullptr) {
-            mPrev.mHash = prevAnchor->GetWorldID();
+            // mPrev from prevAnchor
         }
     }
 

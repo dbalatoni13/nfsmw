@@ -59,6 +59,14 @@ template <typename T, unsigned int Alignment = 16> class Vector {
         return mBegin + mSize;
     }
 
+    const_reference operator[](unsigned int idx) const {
+        return mBegin[idx];
+    }
+
+    reference operator[](unsigned int idx) {
+        return mBegin[idx];
+    }
+
     void push_back(value_type const &val) {
         if (size() >= capacity()) {
             reserve(GetGrowSize(size() + 1));

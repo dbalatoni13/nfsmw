@@ -418,6 +418,10 @@ inline float Lerp(const float a, const float b, const float t) {
     return a + (b - a) * t;
 }
 
+inline void Lerp(const Vector3 &a, const Vector3 &b, const float t, Vector3 &r) {
+    VU0_v3lerp(a, b, t, r);
+}
+
 inline void Negate(Vector3 &r) {
     VU0_v3negate(r);
 }

@@ -559,23 +559,31 @@ int ICEManager::ChooseGoodSceneCameraTrackIndex(unsigned int scene_hash, const I
                     bVector3 v_eye;
                     key[n].GetEye(n, reinterpret_cast<ICE::Vector3 *>(&v_eye));
 
-                    if (key[n].nSpaceEye == 2) {
+                    switch (key[n].nSpaceEye) {
+                    case 2:
                         bAdd(&v_eye, &v_eye, reinterpret_cast<const bVector3 *>(&mCarToWorld.v3));
-                    } else if (key[n].nSpaceEye == 0) {
+                        break;
+                    case 0:
                         eMulVector(&v_eye, &mCarToWorld, &v_eye);
-                    } else if (key[n].nSpaceEye == 3) {
+                        break;
+                    case 3:
                         eMulVector(&v_eye, reinterpret_cast<const bMatrix4 *>(scene_origin), &v_eye);
+                        break;
                     }
 
                     bVector3 v_look;
                     key[n].GetLook(n, reinterpret_cast<ICE::Vector3 *>(&v_look));
 
-                    if (key[n].nSpaceLook == 2) {
+                    switch (key[n].nSpaceLook) {
+                    case 2:
                         bAdd(&v_look, &v_look, reinterpret_cast<const bVector3 *>(&mCarToWorld.v3));
-                    } else if (key[n].nSpaceLook == 0) {
+                        break;
+                    case 0:
                         eMulVector(&v_look, &mCarToWorld, &v_look);
-                    } else if (key[n].nSpaceLook == 3) {
+                        break;
+                    case 3:
                         eMulVector(&v_look, reinterpret_cast<const bMatrix4 *>(scene_origin), &v_look);
+                        break;
                     }
 
                     bVector3 vCamDir;

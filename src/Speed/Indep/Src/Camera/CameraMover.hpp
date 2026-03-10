@@ -263,6 +263,14 @@ class CameraAnchor {
         return reinterpret_cast<bVector3 *>(&mGeomRot.v1);
     }
 
+    bVector3 *GetForwardVector() {
+        return reinterpret_cast<bVector3 *>(&mGeomRot.v0);
+    }
+
+    bVector3 *GetLeftVector() {
+        return reinterpret_cast<bVector3 *>(&mGeomRot.v1);
+    }
+
     void Update(float dT, const bMatrix4 &matrix, const bVector3 &velocity, const bVector3 &forward);
     void SetModel(int model);
     void SetZoom(float z) { mZoom = z; }
