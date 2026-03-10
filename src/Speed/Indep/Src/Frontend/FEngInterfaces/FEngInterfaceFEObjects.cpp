@@ -525,8 +525,8 @@ void FEngSetScaleX(FEObject* object, float x) {
     }
 
     FEObjData* data = object->GetObjData();
-    float scale = x;
     float size = data->Size.x;
+    float scale = x;
 
     switch (object->Type) {
         case FE_Image:
@@ -547,7 +547,7 @@ void FEngSetScaleX(FEObject* object, float x) {
     data->Size.x = scale;
 
     const float SizeEpsilon = 0.001f;
-    if (scale + SizeEpsilon < size || size < scale - SizeEpsilon) {
+    if (scale + SizeEpsilon < size || scale - SizeEpsilon > size) {
         object->Flags |= 0x400000;
     }
 }
@@ -558,8 +558,8 @@ void FEngSetScaleY(FEObject* object, float y) {
     }
 
     FEObjData* data = object->GetObjData();
-    float scale = y;
     float size = data->Size.y;
+    float scale = y;
 
     switch (object->Type) {
         case FE_Image:
@@ -580,7 +580,7 @@ void FEngSetScaleY(FEObject* object, float y) {
     data->Size.y = scale;
 
     const float SizeEpsilon = 0.001f;
-    if (scale + SizeEpsilon < size || size < scale - SizeEpsilon) {
+    if (scale + SizeEpsilon < size || scale - SizeEpsilon > size) {
         object->Flags |= 0x400000;
     }
 }
