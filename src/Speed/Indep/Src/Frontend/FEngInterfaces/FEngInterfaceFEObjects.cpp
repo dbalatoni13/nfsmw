@@ -221,11 +221,9 @@ void FEngGetTopLeft(FEObject* object, float& x, float& y) {
     FEVector3& pos = data->Pos;
     FEVector3& size = data->Size;
 
-    if (object->Type == FE_Group) {
-        return;
-    }
-
     switch (object->Type) {
+        case FE_Group:
+            break;
         case FE_Image:
         case FE_Movie:
         case FE_ColoredImage:
