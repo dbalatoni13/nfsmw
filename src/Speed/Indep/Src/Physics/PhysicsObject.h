@@ -33,6 +33,48 @@ class PhysicsObject : public Sim::Object,
     // Overrides
     virtual ~PhysicsObject();
 
+    // ISimable overrides
+    virtual SimableType GetSimableType() const override;
+    virtual void Kill() override;
+    virtual bool Attach(UTL::COM::IUnknown *object) override;
+    virtual bool Detach(UTL::COM::IUnknown *object) override;
+    virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const override;
+    virtual void AttachEntity(Sim::IEntity *e) override;
+    virtual void DetachEntity() override;
+    virtual struct IPlayer *GetPlayer() const override;
+    virtual bool IsPlayer() const override;
+    virtual bool IsOwnedByPlayer() const override;
+    virtual Sim::IEntity *GetEntity() const override;
+    virtual void DebugObject() override;
+    virtual HSIMABLE GetOwnerHandle() const override;
+    virtual ISimable *GetOwner() const override;
+    virtual bool IsOwnedBy(ISimable *queriedOwner) const override;
+    virtual void SetOwnerObject(ISimable *pOwner) override;
+    virtual const Attrib::Instance &GetAttributes() const override;
+    virtual WWorldPos &GetWPos() override;
+    virtual const WWorldPos &GetWPos() const override;
+    virtual class IRigidBody *GetRigidBody() override;
+    virtual const class IRigidBody *GetRigidBody() const override { return mRigidBody; }
+    virtual bool IsRigidBodySimple() const override;
+    virtual bool IsRigidBodyComplex() const override;
+    virtual const UMath::Vector3 &GetPosition() const override;
+    virtual void GetTransform(UMath::Matrix4 &matrix) const override;
+    virtual void GetLinearVelocity(UMath::Vector3 &velocity) const override;
+    virtual void GetAngularVelocity(UMath::Vector3 &velocity) const override;
+    virtual unsigned int GetWorldID() const override;
+    virtual EventSequencer::IEngine *GetEventSequencer() override;
+    virtual void ProcessStimulus(unsigned int stimulus) override;
+    virtual IModel *GetModel() override;
+    virtual const IModel *GetModel() const override;
+    virtual void SetCausality(HCAUSE from, float time) override;
+    virtual HCAUSE GetCausality() const override;
+    virtual float GetCausalityTime() const override;
+
+  protected:
+    Behavior *LoadBehavior(const UCrc32 &mechanic, const UCrc32 &behavior, Sim::Param params);
+    virtual void OnTaskSimulate(float dT);
+    virtual void OnBehaviorChange(const UCrc32 &mechanic);
+
   private:
     WWorldPos *mWPos;               // offset 0x58, size 0x4
     SimableType mObjType;           // offset 0x5C, size 0x4

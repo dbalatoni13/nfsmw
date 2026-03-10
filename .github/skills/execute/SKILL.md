@@ -16,7 +16,6 @@ This skill coordinates several agent types:
 1. **reverse-engineer** — Update Ghidra with accurate data types for the class
 2. **scaffolder** — Create header/source if the class is not yet in the project
 3. **implementer** — Match each function one at a time until the TU is complete.
-4. **refiner** — Use on non-matching functions to improve the match. This uses a slower, but more thorough model that can fix issues the implementer can't.
 
 All non-read-only work is done **sequentially** — never spawn multiple writing agents at
 the same time, as they will interfere with each other.

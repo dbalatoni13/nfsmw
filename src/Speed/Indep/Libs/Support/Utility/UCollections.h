@@ -235,7 +235,7 @@ template <typename T, int Size> class GarbageNode {
 
 template <typename T, typename Tag> class Container {
   public:
-    class Elements {
+    class Elements : public UTL::Std::list<T *, Tag> {
       public:
         Elements();
         ~Elements();
