@@ -493,6 +493,7 @@ class TrackCopCameraMover : public CameraMover {
     virtual CameraAnchor *GetAnchor();
     virtual bool RenderCarPOV();
     virtual bVector3 *GetTarget();
+    void SetRenderCarPOV(bool val) { bRenderCarPOV = val; }
 
   private:
     Bezier ZoomSpline;           // offset 0x80, size 0x44

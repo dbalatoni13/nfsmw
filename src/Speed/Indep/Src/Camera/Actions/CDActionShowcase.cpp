@@ -98,7 +98,7 @@ CDActionShowcase::CDActionShowcase(CameraAI::Director *director, IPlayer *player
             UVector3 cg(irbc->GetCenterOfGravity());
             irb->ConvertLocalToWorld(cg, false);
             cg += irb->GetPosition();
-            eSwizzleWorldVector(static_cast<bVector3 &>(cg), static_cast<bVector3 &>(cg));
+            eSwizzleWorldVector(reinterpret_cast<bVector3 &>(cg), reinterpret_cast<bVector3 &>(cg));
         }
 
         mAnchor->Update(0.0f, mat, *mTarget.GetVelocity(), *mTarget.GetAcceleration());

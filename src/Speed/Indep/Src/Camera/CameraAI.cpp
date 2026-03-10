@@ -244,6 +244,113 @@ void CameraAI::MaybeKillPursuitCam(unsigned int id) {
     }
 }
 
+static float AverageAir(ISimable *isimable, float fSeconds, float *pHighest, float *pLongest) {
+    IRigidBody *irb = isimable->GetRigidBody();
+    if (irb != nullptr) {
+        ICollisionBody *irbc;
+        if (isimable->QueryInterface(&irbc)) {
+            float fSpeed = irb->GetSpeed();
+            if (fSpeed >= 1.0f) {
+                int nSteps = static_cast<int>(fSpeed * fSeconds * 0.5f);
+                if (nSteps > 0) {
+                    ISuspension *isuspension;
+                    IVehicle *vehicle;
+                    if (isimable->QueryInterface(&isuspension) && isimable->QueryInterface(&vehicle)) {
+                        UMath::Vector3 p = UMath::Vector3::kZero;
+
+                        for (unsigned int j = 0; j < isuspension->GetNumWheels(); j++) {
+                            UMath::Vector3 wp = isuspension->GetWheelPos(j);
+                            const UMath::Vector3 &upVec = irbc->GetUpVector();
+                            float compression = isuspension->GetCompression(j);
+                            UMath::ScaleAdd(upVec, -compression, wp, wp);
+                            UMath::ScaleAdd(wp, 0.25f, p, p);
+                        }
+
+                        UMath::Vector4 vNormal = irbc->GetGroundNormal();
+                        WWorldPos pTopo = isimable->GetWPos();
+                        pTopo.SetTolerance(5.0f);
+
+                        float fElevation = pTopo.HeightAtPoint(p);
+                        float fAirSum = 0.0f;
+                        float fAirMax = bMax(0.0f, p.y - fElevation);
+                        float fStep = fSeconds / static_cast<float>(nSteps);
+                        float fAirTime = 0.0f;
+                        float fDeparture = 0.0f;
+
+                        if (0.0f < fAirMax) {
+                            fDeparture = -fStep;
+                            fAirTime = fStep;
+                        }
+
+                        Attrib::Gen::pvehicle attributes(vehicle->GetVehicleAttributes());
+                        Attrib::Gen::chassis chassis(attributes.chassis(0), 0, nullptr);
+
+                        float fDownForce = Physics::Info::AerodynamicDownforce(chassis, fSpeed);
+                        float gravity = irbc->GetGravity();
+                        float fDownAccel = gravity + (-fDownForce / irb->GetMass());
+
+                        UMath::Vector3 a = UMath::Vector3Make(0.0f, fDownAccel, 0.0f);
+
+                        const UMath::Vector3 &linVel = irb->GetLinearVelocity();
+                        UMath::Vector3 v;
+                        v.x = linVel.x;
+                        v.y = linVel.y;
+                        v.z = linVel.z;
+
+                        UMath::Vector3 pNew;
+                        UMath::ScaleAdd(v, 0.5f, p, pNew);
+
+                        const float tbarr = 1.0f;
+
+                        UMath::Vector4 seg[2];
+                        seg[0] = UMath::Vector4Make(p, tbarr);
+                        seg[1] = UMath::Vector4Make(pNew, tbarr);
+
+                        WCollisionMgr::WorldCollisionInfo cInfo;
+                        WCollisionMgr collMgr(0, 3);
+                        collMgr.CheckHitWorld(seg, cInfo, 2);
+
+                        if (!cInfo.HitSomething()) {
+                            int i = 1;
+                            bool bHighest = pHighest != nullptr;
+                            bool bLongest = pLongest != nullptr;
+                            float fFuture = fAirTime;
+
+                            if (nSteps > 1) {
+                                for (i = 1; i < nSteps; i++) {
+                                    fFuture = fStep * static_cast<float>(i) - fDeparture;
+                                    UMath::ScaleAdd(a, fFuture * 0.5f, v, pNew);
+                                    UMath::ScaleAdd(pNew, fFuture, p, pNew);
+
+                                    if (pTopo.Update(pNew, vNormal, true, nullptr, true)) {
+                                        if (pTopo.OnValidFace() && 0.5f <= vNormal.y) {
+                                            float fElevation = pTopo.HeightAtPoint(pNew);
+                                            float fAir = pNew.y - fElevation;
+                                            if (fAir <= 0.0f) break;
+                                            fAirMax = bMax(fAirMax, fAir);
+                                            fAirSum += fAir;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (bHighest) {
+                                *pHighest = fAirMax;
+                            }
+                            if (bLongest) {
+                                *pLongest = fFuture;
+                            }
+
+                            return fAirSum / static_cast<float>(i);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return 0.0f;
+}
+
 void CameraAI::MaybeKillJumpCam(unsigned int id) {
     Director *cd = FindDirector(id);
     if (cd != nullptr) {

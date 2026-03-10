@@ -30,8 +30,8 @@ CDActionDebug::CDActionDebug(CameraAI::Director *director)
     bVector3 dir;
 
     if (m != nullptr) {
-        pos = m->GetCamera()->GetPosition();
-        dir = m->GetCamera()->GetDirection();
+        pos = *m->GetCamera()->GetPosition();
+        dir = *m->GetCamera()->GetDirection();
     } else {
         pos.x = 0.0f;
         pos.y = 0.0f;
@@ -41,7 +41,7 @@ CDActionDebug::CDActionDebug(CameraAI::Director *director)
         dir.z = 1.0f;
     }
 
-    mMover = new DebugWorldCameraMover(static_cast<int>(director->GetViewID()), &pos, &dir, static_cast<JoystickPort>(director->GetViewID()));
+    mMover = new DebugWorldCameraMover(static_cast<int>(director->GetViewID()), &pos, &dir, static_cast<JoystickPort>(static_cast<int>(director->GetViewID())));
 }
 
 CDActionDebug::~CDActionDebug() {

@@ -100,7 +100,7 @@ CDActionTrackCop::CDActionTrackCop(CameraAI::Director *director, IPlayer *player
             UVector3 cg(irbc->GetCenterOfGravity());
             irb->ConvertLocalToWorld(cg, false);
             cg += irb->GetPosition();
-            eSwizzleWorldVector(static_cast<bVector3 &>(cg), static_cast<bVector3 &>(cg));
+            eSwizzleWorldVector(reinterpret_cast<bVector3 &>(cg), reinterpret_cast<bVector3 &>(cg));
         }
 
         mAnchor->Update(0.0f, mat, *mTarget.GetVelocity(), *mTarget.GetAcceleration());
@@ -108,7 +108,7 @@ CDActionTrackCop::CDActionTrackCop(CameraAI::Director *director, IPlayer *player
 
     mMover = new TrackCopCameraMover(static_cast<int>(director->GetViewID()), mAnchor, false);
     mMover->GetCamera()->SetRenderDash(0);
-    static_cast<TrackCopCameraMover *>(mMover)->bRenderCarPOV = renderCarPOV;
+    static_cast<TrackCopCameraMover *>(mMover)->SetRenderCarPOV(renderCarPOV);
 }
 
 CDActionTrackCop::~CDActionTrackCop() {
