@@ -71,6 +71,10 @@ class Smackable : public PhysicsObject,
     static ISimable *Construct(Sim::Param params);
     static bool SimplifySort(const Smackable *lhs, const Smackable *rhs);
     static bool TrySimplify();
+    static Attrib::StringKey CYLINDER;
+    static Attrib::StringKey TUBE;
+    static Attrib::StringKey CONE;
+    static Attrib::StringKey SPHERE;
 
     Smackable(const UMath::Matrix4 &matrix, const Attrib::Gen::smackable &attributes,
               const CollisionGeometry::Bounds *geoms, bool virginspawn, IModel *scenery,

@@ -34,6 +34,10 @@ UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::Prototype _RBSmacka
     "RBSmackable", RBSmackable::Construct);
 
 int Smackable_RigidCount;
+Attrib::StringKey Smackable::CYLINDER;
+Attrib::StringKey Smackable::TUBE;
+Attrib::StringKey Smackable::CONE;
+Attrib::StringKey Smackable::SPHERE;
 static float Smackable_ManagementRate = 0.125f;
 
 static float GetDropTimer(const Attrib::Gen::smackable &attributes) {

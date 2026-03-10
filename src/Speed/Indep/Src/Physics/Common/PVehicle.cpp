@@ -264,10 +264,7 @@ void PVehicle::Launch() {
 }
 
 float PVehicle::GetPerfectLaunch() const {
-    if (mRigidBody == nullptr && mPerfectLaunch.Time > 0.5f) {
-        return mPerfectLaunch.Amount;
-    }
-    return 0.5f;
+    return mPerfectLaunch.Amount;
 }
 
 bool PVehicle::IsLoading() const {
