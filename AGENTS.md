@@ -35,24 +35,24 @@ objdiff.json           Generated build/diff configuration
 Query structs, enums, functions, globals, and typedefs directly from the pre-extracted
 Dwarf dump.
 
-See `tools/skills/lookup/SKILL.md` for the full workflow.
+See `.github/skills/lookup/SKILL.md` for the full workflow.
 
 ### lookup_address.py — Locate classes and inlines via debug line mapping
 
 When you have a function's address and want to know which source file a class or inline
 originates from, use this script against the compiler-generated debug line mapping:
 
-See `tools/skills/line_lookup/SKILL.md` for the full workflow.
+See `.github/skills/line_lookup/SKILL.md` for the full workflow.
 
 ### decomp-diff.py — Diff & symbol overview
 
 Overview mode lists all symbols in a translation unit with match status:
 
 ```sh
-python scripts/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim
-python scripts/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s nonmatching -t function
-python scripts/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s missing -t function
-python scripts/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim --search RemoveIOWin
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s nonmatching -t function
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s missing -t function
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim --search RemoveIOWin
 ```
 
 Filters: `-t function,object` (type), `-s missing|matching|nonmatching|extra` (status),
@@ -61,8 +61,8 @@ Filters: `-t function,object` (type), `-s missing|matching|nonmatching|extra` (s
 Diff mode shows side-by-side instruction comparison:
 
 ```sh
-python scripts/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d DistributeOneMessage
-python scripts/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin -C 5
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d DistributeOneMessage
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin -C 5
 ```
 
 Mismatched args are wrapped in `{}`. Matching runs are collapsed (control with `-C <n>` context lines, `--no-collapse`). Left = original, right = decomp.
@@ -70,10 +70,10 @@ Mismatched args are wrapped in `{}`. Matching runs are collapsed (control with `
 ### decomp-status.py — Project-wide progress
 
 ```sh
-python scripts/decomp-status.py                    # all categories
-python scripts/decomp-status.py --category game    # filter to game code
-python scripts/decomp-status.py --unit main/Speed/Indep/SourceLists/zAnim
-python scripts/decomp-status.py --json             # machine-readable
+python tools/decomp-status.py                    # all categories
+python tools/decomp-status.py --category game    # filter to game code
+python tools/decomp-status.py --unit main/Speed/Indep/SourceLists/zAnim
+python tools/decomp-status.py --json             # machine-readable
 ```
 
 ### decomp-context.py — Function context for matching work
@@ -81,8 +81,8 @@ python scripts/decomp-status.py --json             # machine-readable
 Gathers source code, objdiff diff, Ghidra decompile, and debug map info:
 
 ```sh
-python scripts/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f AcceptScriptMsg
-python scripts/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --no-source
+python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f AcceptScriptMsg
+python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --no-source
 ```
 
 Flags: `--no-source`, `--no-ghidra` to skip sections.
