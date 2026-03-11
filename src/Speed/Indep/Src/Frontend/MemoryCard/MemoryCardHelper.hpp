@@ -8,6 +8,7 @@
 #include <types.h>
 
 #include "RealmcIface.hpp"
+#include "Speed/Indep/Src/Misc/Joylog.hpp"
 
 struct IAllocator;
 

@@ -1,14 +1,153 @@
 #include "uiWorldMap.hpp"
 
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiTrackMapStreamer.hpp"
 #include "Speed/Indep/Src/Gameplay/GIcon.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
+extern Timer RealTimer;
+void FEngGetSize(FEObject* obj, float& x, float& y);
+void FEngSetColor(FEObject* obj, unsigned int color);
+void FEngSetScript(FEObject* object, unsigned int script_hash, bool start_at_beginning);
+bool FEngIsScriptSet(FEObject* obj, unsigned int script_hash);
+void FEngSetTopLeft(FEObject* object, float x, float y);
+void FEngSetLanguageHash(FEString* text, unsigned int hash);
+bool FEngTestForIntersection(float xPos, float yPos, FEObject* obj);
+
+inline float FEngGetSizeY(FEObject* obj) {
+    float x;
+    float y;
+    FEngGetSize(obj, x, y);
+    return y;
+}
+
+inline void FEngSetSizeX(FEObject* obj, float x) {
+    float y = FEngGetSizeY(obj);
+    FEngSetSize(obj, x, y);
+}
+
 MapItem::~MapItem() {}
+
+void CopItem::Draw() {
+    if (!bHidden) {
+        unsigned int color;
+        if (FlashTimer < 3) {
+            color = 0xff0000ff;
+        } else if (FlashTimer - 5U < 2) {
+            color = 0xffa00000;
+        } else {
+            color = 0xffcccccc;
+        }
+        FEngSetColor(pIcon, color);
+        FlashTimer = FlashTimer + 1;
+        if (FlashTimer > 8) {
+            FlashTimer = 1;
+        }
+    }
+}
+
+void HeliItem::Draw() {
+    if (!bHidden) {
+        float width = bSin(RealTimer.GetSeconds()) * 88.0f + 88.0f;
+        FEngSetSizeX(static_cast< FEObject* >(pViewCone), width);
+        FlashTimer++;
+        if (FlashTimer > 32) {
+            FlashTimer = 1;
+        }
+    }
+}
+
+void ItemTypeToggle::Act(const char* parent_pkg, unsigned int data) {
+    if (data == 0xc407210) {
+        bVisibility ^= 1;
+        FEDatabase->GetGameplaySettings()->SetMapItem(GetType(), bVisibility);
+        g_pEAXSound->PlayUISoundFX(static_cast< eMenuSoundTriggers >(2));
+        Position();
+    }
+}
+
+void ItemTypeToggle::CheckMouse(const char* parent_pkg, const float mouse_x, const float mouse_y) {
+    if (FEngTestForIntersection(mouse_x, mouse_y, static_cast< FEObject* >(GetTitleObject()))) {
+        cFEng::Get()->QueueGameMessage(0xc407210, parent_pkg, 0xff);
+    }
+}
+
+void ItemTypeToggle::Draw() {
+    const unsigned long FEObj_Highlight = 0x249db7b7;
+    FEngSetLanguageHash(GetTitleObject(), NameHash);
+    if (!bVisibility) {
+        const unsigned long FEObj_NORMAL = 0x163c76;
+        FEngSetScript(pIconGroup, FEObj_NORMAL, true);
+        if (!FEngIsScriptSet(static_cast< FEObject* >(GetTitleObject()), FEObj_Highlight)) {
+            FEngSetScript(static_cast< FEObject* >(GetTitleObject()), FEObj_NORMAL, true);
+        }
+    } else {
+        const unsigned long FEObj_GREY = 0x6ebbfb68;
+        FEngSetScript(pIconGroup, FEObj_GREY, true);
+        if (!FEngIsScriptSet(static_cast< FEObject* >(GetTitleObject()), FEObj_Highlight)) {
+            FEngSetScript(static_cast< FEObject* >(GetTitleObject()), FEObj_GREY, true);
+        }
+    }
+}
+
+void ItemTypeToggle::Position() {
+    FEButtonWidget::Position();
+    FEngSetTopLeft(pIconGroup, GetTopLeftX() - 23.0f, GetTopLeftY() + 2.0f);
+}
+
+void ItemTypeToggle::UnsetFocus() {
+    if (!GetVisibility() && !bExiting) {
+        const unsigned long FEObj_NORMAL = 0x163c76;
+        FEngSetScript(static_cast< FEObject* >(GetTitleObject()), FEObj_NORMAL, true);
+        FEngSetScript(pIconGroup, FEObj_NORMAL, true);
+        if (GetBacking() != nullptr) {
+            FEngSetScript(GetBacking(), FEObj_NORMAL, true);
+        }
+    } else {
+        const unsigned long FEObj_GREY = 0x6ebbfb68;
+        FEButtonWidget::UnsetFocus();
+        FEngSetScript(pIconGroup, FEObj_GREY, true);
+    }
+}
+
+void ItemTypeToggle::SetIcon(FEImage* icon, unsigned int texHash, unsigned int texColour) {
+    unsigned int color = texColour;
+    unsigned int tex_hash = texHash;
+    pIcon = icon;
+    switch (ItemType) {
+    case WMIT_PLAYER_CAR:
+        color = 0xffabda4d;
+        tex_hash = 0xada85247;
+        break;
+    case WMIT_COP_CAR:
+        color = 0xffffffff;
+        tex_hash = 0xdac364e9;
+        break;
+    case WMIT_ROADBLOCK:
+        color = 0xffffed00;
+        tex_hash = 0x123f07e2;
+        break;
+    default:
+        break;
+    }
+    FEngSetColor(static_cast< FEObject* >(pIcon), color);
+    FEngSetTextureHash(pIcon, tex_hash);
+}
+
+void ItemTypeToggle::Show() {
+    FEButtonWidget::Show();
+    FEngSetVisible(static_cast< FEObject* >(pIcon));
+}
+
+void ItemTypeToggle::Hide() {
+    FEButtonWidget::Hide();
+    FEngSetInvisible(static_cast< FEObject* >(pIcon));
+}
 
 
 struct FEObject;
