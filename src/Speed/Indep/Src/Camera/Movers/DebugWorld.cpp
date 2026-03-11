@@ -227,9 +227,9 @@ void DebugWorldCameraMover::Update(float dT) {
 
     if (ForwardInc != 0.0f) {
         float fi;
-        if (SuperTurboOn != 0) {
+        if (SuperTurboOn) {
             fi = ForwardInc * SuperTurboSpeed;
-        } else if (TurboOn != 0) {
+        } else if (TurboOn) {
             fi = ForwardInc * TurboSpeed;
         } else {
             fi = ForwardInc;

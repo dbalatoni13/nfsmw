@@ -135,7 +135,9 @@ template <class T> class tAverage : public AverageBase {
     }
 
     virtual ~tAverage() {
-        AverageBase::DeAllocate(pData, sizeof(T) * nSlots, nullptr);
+        if (pData) {
+            delete[] pData;
+        }
     }
 
     T *GetValue() {
