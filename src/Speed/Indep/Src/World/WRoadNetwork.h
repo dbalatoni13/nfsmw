@@ -233,6 +233,7 @@ class WRoadNav {
     void SetVehicle(class AIVehicle *ai_vehicle);
     void UpdateOccludedPosition(bool occlude_avoidables);
     void ChangeDragLanes(int left_right);
+    bool ChangeDragDecision(int left_right);
     void SetStartEndControls(const WRoadSegment &segment);
     void SetControlPos(const WRoadSegment &segment, bool is_start);
     void UpdateCookieTrail(float time);
@@ -329,6 +330,10 @@ class WRoadNav {
 
     bool IsOccluded() const {
         return bCookieTrail && (nRoadOcclusion != 0 || nAvoidableOcclusion != 0);
+    }
+
+    bool IsOccludedFromBehind() const {
+        return IsOccludedByAvoidable() != 0 && bOccludedFromBehind;
     }
 
     const WRoadSegment *GetSegment() const {

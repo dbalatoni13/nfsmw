@@ -36,6 +36,10 @@ inline float Cosr(const float a) {
     return VU0_Cos(RAD2ANGLE(a) * (float)M_TWOPI);
 }
 
+inline float ASinr(const float x) {
+    return ANGLE2RAD(VU0_ASin(x));
+}
+
 void BuildRotate(Matrix4 &m, float r, float x, float y, float z);
 
 float Ceil(const float x);
@@ -312,6 +316,11 @@ inline float Dot(const Vector2 &a, const Vector2 &b) {
     return a.x * b.x + a.y * b.y;
 }
 
+inline void Scale(Vector2 &r, const float s) {
+    r.x *= s;
+    r.y *= s;
+}
+
 inline void Dot(const Vector3 &a, const Matrix4 &b, Vector3 &r) {
 #ifdef EA_PLATFORM_XENON
     r.x = Dot(a, UMath::Vector4To3(b.v0));
@@ -403,6 +412,16 @@ inline float Sqrt(const float f) {
 #else
     return VU0_sqrt(f);
 #endif
+}
+
+inline float Normalize(Vector2 &r) {
+    float h = r.x * r.x + r.y * r.y;
+    float l = Sqrt(h);
+    float c = 1.0f / l;
+    r.x *= c;
+    r.y *= c;
+    float ret = l;
+    return ret;
 }
 
 inline float Length(const Vector3 &a) {

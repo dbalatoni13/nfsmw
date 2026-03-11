@@ -257,6 +257,10 @@ inline float VU0_Cos(float x) {
     return cosf(x);
 }
 
+inline float VU0_ASin(float x) {
+    return asinf(x) / (float)M_TWOPI;
+}
+
 #endif
 
 inline float VU0_fabs(const float a) {

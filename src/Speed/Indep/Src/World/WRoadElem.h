@@ -339,13 +339,37 @@ struct WRoadSegment {
         v = UMath::Vector3Make(x, y, z);
     }
 
-    // void GetEndRightVec(UMath::Vector3 &v) const {}
+    void GetEndRightVec(UMath::Vector3 &v) const {
+        const float scale = -1.0f / 127.0f;
+        float x = scale * static_cast< float >(vEndHandle[2]);
+        float z = scale * static_cast< float >(vEndHandle[0]);
+        v = UMath::Vector3Make(x, 0.0f, z);
+    }
 
     // void GetEndRightVec(UMath::Vector2 &v) const {}
 
-    // void GetStartRightVec(UMath::Vector3 &v) const {}
+    void GetStartRightVec(UMath::Vector3 &v) const {
+        const float scale = 1.0f / 127.0f;
+        float x = scale * static_cast< float >(vStartHandle[2]);
+        float z = scale * static_cast< float >(vStartHandle[0]);
+        v = UMath::Vector3Make(x, 0.0f, z);
+    }
 
     // void GetStartRightVec(UMath::Vector2 &v) const {}
+
+    void GetEndForwardVec(UMath::Vector2 &v) const {
+        const float scale = -1.0f / 127.0f;
+        float x = scale * static_cast< float >(vEndHandle[0]);
+        float z = scale * static_cast< float >(vEndHandle[2]);
+        v = UMath::Vector2Make(x, z);
+    }
+
+    void GetStartForwardVec(UMath::Vector2 &v) const {
+        const float scale = 1.0f / 127.0f;
+        float x = scale * static_cast< float >(vStartHandle[0]);
+        float z = scale * static_cast< float >(vStartHandle[2]);
+        v = UMath::Vector2Make(x, z);
+    }
 
     void GetEndForwardVec(UMath::Vector3 &v) const {
         const float scale = -1.0f / 127.0f;
@@ -373,9 +397,23 @@ struct WRoadSegment {
 
     // void GetRightVec(int which_end, UMath::Vector2 &v) const {}
 
-    // void GetRightVec(int which_end, UMath::Vector3 &v) const {}
+    void GetRightVec(int which_end, UMath::Vector3 &v) const {
+        if (which_end == 0) {
+            GetStartRightVec(v);
+        } else {
+            GetEndRightVec(v);
+        }
+    }
 
     void GetForwardVec(int which_end, UMath::Vector3 &v) const {
+        if (which_end == 0) {
+            GetStartForwardVec(v);
+        } else {
+            GetEndForwardVec(v);
+        }
+    }
+
+    void GetForwardVec(int which_end, UMath::Vector2 &v) const {
         if (which_end == 0) {
             GetStartForwardVec(v);
         } else {

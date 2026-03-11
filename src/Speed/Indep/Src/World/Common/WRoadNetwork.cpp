@@ -8,6 +8,7 @@
 #include "Speed/Indep/Src/Interfaces/IBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/AI/AIVehicle.h"
@@ -491,6 +492,89 @@ bool WRoadNav::CanTrafficSpawn() {
     SetLaneInd(static_cast< char >(lane));
 
     return IsValid();
+}
+
+float WRoadNav::CookieTrailCurvature(const UMath::Vector3 &car_position, const UMath::Vector3 &car_velocity) {
+    if (pCookieTrail == nullptr) {
+        return 0.0f;
+    }
+
+    float road_curvature = 0.0f;
+    float apex = 0.0f;
+
+    if (pCookieTrail->Count() > 2) {
+        if (IsOccluded() && !IsOccludedFromBehind()) {
+            UMath::Vector3 current_to_apex;
+            const UMath::Vector3 &nav_position = fPosition;
+            const UMath::Vector3 &apex_position = fApexPosition;
+            const UMath::Vector3 &occluded_position = fOccludedPosition;
+
+            UMath::Sub(occluded_position, car_position, current_to_apex);
+            current_to_apex.y = 0.0f;
+            float dist_to_apex = UMath::Normalize(current_to_apex);
+
+            if (dist_to_apex > 1.0f) {
+                int apex_cookie_index = ClosestCookieAhead(fApexPosition, nullptr);
+
+                if (apex_cookie_index >= 0) {
+                    const NavCookie &apex_cookie = pCookieTrail->NthOldest(apex_cookie_index);
+                    float apex_width = bAbs(apex_cookie.LeftOffset - apex_cookie.RightOffset);
+                    apex_width = UMath::Max(apex_width, dist_to_apex);
+
+                    UMath::Vector3 apex_to_nav;
+                    UMath::Sub(nav_position, apex_position, apex_to_nav);
+                    apex_to_nav.y = 0.0f;
+                    UMath::Normalize(apex_to_nav);
+
+                    float sina = UMath::Clamp(current_to_apex.x * apex_to_nav.z - current_to_apex.z * apex_to_nav.x, -1.0f, 1.0f);
+                    float angle = UMath::Abs(UMath::ASinr(sina));
+
+                    if (current_to_apex.x * apex_to_nav.x + current_to_apex.z * apex_to_nav.z < 0.0f) {
+                        angle = static_cast< float >(M_PI) - angle;
+                    }
+
+                    float div = UMath::Max(1.0f, apex_width);
+                    apex = angle * UMath::Sinr(UMath::Min(angle, static_cast< float >(M_PI_2)));
+
+                    if (nAvoidableOcclusion != 0) {
+                        float my_trailingspeed = UMath::Dot(car_velocity, current_to_apex);
+                        float ratio = 0.0f;
+                        if (my_trailingspeed > 0.5f) {
+                            float closing_speed = (my_trailingspeed - fOccludingTrailSpeed) / my_trailingspeed;
+                            ratio = UMath::Ramp(closing_speed, 0.0f, 1.0f);
+                        }
+                        apex *= ratio * ratio;
+                    }
+
+                    apex = UMath::Clamp(apex, 0.0f, static_cast< float >(M_PI));
+                    apex = apex / div;
+                }
+            }
+        }
+    }
+
+    float distance = 0.0f;
+    float total_curvature = 0.0f;
+    float previous_curvature = 0.0f;
+    int num_cookies = pCookieTrail->Count();
+
+    for (int i = nCookieIndex; i < num_cookies; i++) {
+        const NavCookie &cookie = pCookieTrail->NthOldest(i);
+        float current_curvature = UMath::Clamp(cookie.Curvature, -0.01f, 0.01f);
+        if (nCookieIndex < i) {
+            float length = cookie.Length;
+            float avg_curvature = (current_curvature + previous_curvature) * 0.5f;
+            total_curvature += length * avg_curvature;
+            distance += length;
+        }
+        previous_curvature = current_curvature;
+    }
+
+    if (distance > 0.0f) {
+        road_curvature = bAbs(total_curvature / distance);
+    }
+
+    return UMath::Max(apex, road_curvature);
 }
 
 bool WRoadNav::IsSegmentInPath(int segment_number) {
@@ -1918,6 +2002,370 @@ void WRoadNav::SetControlPos(const WRoadSegment &segment, bool startControl) {
             UMath::ScaleAdd(handle, right_scale / original_distance, rightNodeRef, rightControlRef);
         }
     }
+}
+
+void WRoadNav::SetBoundPos(const WRoadSegment &segment, float offset, bool start) {
+    bool forward = fNodeInd != 0;
+    bool which_end;
+    if (fNodeInd == 0) {
+        which_end = !start;
+    } else {
+        which_end = start;
+    }
+    WRoadNetwork &road_network = WRoadNetwork::Get();
+    const WRoadNode *node = road_network.GetNode(segment.fNodeIndex[which_end]);
+    const UMath::Vector3 &nodePos = node->fPosition;
+    UMath::Vector3 rightVec;
+    float sign;
+
+    segment.GetRightVec(which_end, rightVec);
+
+    {
+        float vehicle_half_width = fVehicleHalfWidth;
+        float left_offset = offset + static_cast< float >(vehicle_half_width * 1.05f);
+        float right_offset = offset - static_cast< float >(vehicle_half_width * 1.05f);
+        int nav_type = GetNavType();
+
+        if (nav_type != 1) {
+            left_offset = offset + 0.5f;
+            right_offset = offset - 0.5f;
+
+            const WRoadProfile *profile = road_network.GetSegmentProfile(segment, which_end);
+            int num_lanes = profile->fNumZones;
+
+            {
+                int closest_drivable = -1;
+                float closest_offset = 0.0f;
+                bool inverted = segment.IsProfileInverted(which_end);
+                int middle_lane = profile->GetMiddleZone(inverted);
+
+                {
+                    int lane_index;
+                    for (lane_index = 0; lane_index < num_lanes; lane_index++) {
+                        int lane_type = profile->GetLaneType(lane_index, inverted);
+                        if (IsDrivable(lane_type)) {
+                            float lane_offset = profile->GetLaneOffset(lane_index, inverted);
+                            float lane_distance = bAbs(offset - lane_offset);
+                            if (closest_drivable < 0 || lane_distance < closest_offset) {
+                                closest_drivable = lane_index;
+                                closest_offset = lane_distance;
+                            }
+                        }
+                    }
+                }
+
+                {
+                    int left_lane = closest_drivable;
+                    int right_lane = closest_drivable;
+                    float left_lane_offset;
+                    float right_lane_offset;
+                    float safety_margin;
+                    float how_unsafe;
+
+                    // Walk left
+                    while (left_lane > 0) {
+                        int prev = left_lane - 1;
+                        int lt = profile->GetLaneType(prev, inverted);
+                        if (!IsDrivable(lt)) break;
+                        left_lane = prev;
+                    }
+
+                    // Walk right
+                    while (right_lane < num_lanes - 1) {
+                        int next = right_lane + 1;
+                        int lt = profile->GetLaneType(next, inverted);
+                        if (!IsDrivable(lt)) break;
+                        right_lane = next;
+                    }
+
+                    left_lane_offset = profile->GetRelativeLaneOffset(left_lane, inverted);
+                    right_lane_offset = profile->GetRelativeLaneOffset(right_lane, inverted);
+
+                    float left_width = profile->GetLaneWidth(left_lane, inverted);
+                    float right_width = profile->GetLaneWidth(right_lane, inverted);
+
+                    safety_margin = bMax(vehicle_half_width + vehicle_half_width, 0.0f);
+
+                    how_unsafe = (vehicle_half_width + vehicle_half_width) - (right_lane_offset - left_lane_offset);
+                    if (how_unsafe < 0.0f) {
+                        how_unsafe = 0.0f;
+                    }
+
+                    left_offset = left_lane_offset - how_unsafe * 0.5f;
+                    right_offset = right_lane_offset + how_unsafe * 0.5f;
+                }
+
+                offset = bClamp(offset, left_offset, right_offset);
+            }
+        }
+
+        UMath::Vector3 &leftRef = start ? fLeftEndPos : fLeftStartPos;
+        UMath::Vector3 &rightRef = start ? fRightEndPos : fRightStartPos;
+
+        UMath::ScaleAdd(rightVec, sign * left_offset, nodePos, leftRef);
+        UMath::ScaleAdd(rightVec, sign * right_offset, nodePos, rightRef);
+    }
+
+    UMath::Vector3 &posRef = start ? fEndPos : fStartPos;
+    UMath::ScaleAdd(rightVec, sign * offset, nodePos, posRef);
+}
+
+bool WRoadNav::ChangeDragDecision(int left_right) {
+    WRoadNetwork &rn = WRoadNetwork::Get();
+    int segment_number = GetSegmentInd();
+    const WRoadSegment *segment = rn.GetSegment(segment_number);
+
+    if (!segment->IsDecision()) return false;
+
+    {
+        UMath::Vector2 ray;
+        const WRoadNode *nodes[2];
+        rn.GetSegmentNodes(*segment, nodes);
+        int from_which_node = GetNodeInd() ^ 1;
+        const WRoadNode *from_node = nodes[from_which_node];
+        int new_which_node = 0;
+        float best = 0.7f;
+        const WRoadSegment *new_segment = nullptr;
+        float sign = -1.0f;
+        int num_segments;
+
+        segment->GetForwardVec(from_which_node, ray);
+        if (from_which_node == 1) {
+            UMath::Scale(ray, -1.0f);
+        }
+        UMath::Normalize(ray);
+
+        if (left_right < 0) {
+            sign = 1.0f;
+        }
+
+        num_segments = from_node->fNumSegments;
+        for (int i = 0; i < num_segments; i++) {
+            unsigned short departing_segment_number = from_node->fSegmentIndex[i];
+            if (departing_segment_number != segment_number) {
+                const WRoadSegment *departing_segment = rn.GetSegment(departing_segment_number);
+                if (departing_segment->IsDecision() && departing_segment->IsInRace()) {
+                    int to_which_node = from_node->fIndex != static_cast< int >(departing_segment->fNodeIndex[0]);
+
+                    UMath::Vector2 departing_ray;
+                    departing_segment->GetForwardVec(to_which_node, departing_ray);
+                    if (to_which_node) {
+                        UMath::Scale(departing_ray, -1.0f);
+                    }
+                    UMath::Normalize(departing_ray);
+
+                    float cross_val = sign * Cross(ray, departing_ray);
+                    if (cross_val >= 0.0f) {
+                        float dot = UMath::Dot(ray, departing_ray);
+                        if (dot > best) {
+                            new_segment = departing_segment;
+                            best = dot;
+                            new_which_node = to_which_node;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (new_segment != nullptr) {
+            int new_segment_index = new_segment->fIndex;
+            bool inverted = new_segment->IsProfileInverted(new_which_node) != static_cast< bool >(new_which_node);
+            const WRoadProfile *new_profile = rn.GetSegmentProfile(*new_segment, new_which_node);
+            int num_lanes = new_profile->fNumZones;
+            int end;
+            int start;
+            int new_lane;
+            float new_lane_offset;
+            UMath::Vector3 new_spline_point;
+
+            if (left_right >= 0) {
+                end = num_lanes;
+            } else {
+                end = -1;
+            }
+
+            if (left_right >= 0) {
+                start = 0;
+            } else {
+                start = num_lanes - 1;
+            }
+
+            new_lane = new_profile->GetMiddleZone(inverted);
+
+            for (int lane = start; lane != end; lane += left_right) {
+                int actual_lane = lane;
+                if (!inverted) {
+                    actual_lane = (new_profile->fNumZones - lane) - 1;
+                }
+                int lane_type = new_profile->GetLaneType(actual_lane, inverted);
+                if (IsDrivable(lane_type)) {
+                    new_lane = lane;
+                    break;
+                }
+            }
+
+            new_lane_offset = new_profile->GetRelativeLaneOffset(new_lane, inverted);
+            SetLaneOffset(new_lane_offset);
+
+            fNodeInd = new_which_node;
+            fSegmentInd = new_segment_index;
+            SetControlPos(*new_segment, false);
+            SetBoundPos(*new_segment, new_lane_offset, false);
+            RebuildSplines(new_segment);
+            FindClosestOnSpline(fPosition, new_spline_point, fSegTime, 1.0f, new_segment_index);
+            EvaluateSplines(new_segment);
+            return true;
+        }
+    }
+    return false;
+}
+
+void WRoadNav::ChangeDragLanes(int left_right) {
+    WRoadNetwork &rn = WRoadNetwork::Get();
+    int segment_number = GetSegmentInd();
+    const WRoadSegment *segment = rn.GetSegment(segment_number);
+    char node_ind = GetNodeInd();
+    const WRoadProfile *profile = rn.GetSegmentProfile(*segment, node_ind);
+
+    bool backward;
+    if (node_ind != 0) {
+        backward = segment->IsStartInverted();
+    } else {
+        backward = segment->IsEndInverted();
+    }
+
+    float current_offset = fLaneOffset;
+
+    if (left_right == 0) {
+        AIVehicle *vehicle = pAIVehicle;
+        ISimable *sim = nullptr;
+        if (vehicle != nullptr) {
+            sim = vehicle->GetSimable();
+        }
+        IRigidBody *rb = nullptr;
+        if (sim != nullptr) {
+            rb = sim->GetRigidBody();
+        }
+        if (rb != nullptr) {
+            WRoadNav temp;
+            temp.bRaceFilter = WRoadNetwork::Get().IsRaceFilterValid();
+            const UMath::Vector3 &rbPos = rb->GetPosition();
+            temp.InitAtPoint(rbPos, fForwardVector, false, 1.0f);
+            if (temp.fValid) {
+                current_offset = temp.fLaneOffset;
+            }
+        }
+    }
+
+    bool inverted = (backward != 0) == (node_ind != 0);
+    inverted = !inverted;
+
+    // Find closest selectable lane
+    int current_lane;
+    if (inverted) {
+        current_lane = profile->GetMiddleZone(inverted);
+    } else {
+        current_lane = profile->fNumZones - profile->GetMiddleZone(inverted);
+    }
+
+    // Find initial selectable lane
+    while (true) {
+        int actual_lane = current_lane;
+        if (inverted) {
+            actual_lane = (profile->fNumZones - current_lane) - 1;
+        }
+        int lane_type = profile->GetLaneType(actual_lane, inverted);
+        if (IsSelectable(lane_type)) break;
+        current_lane++;
+    }
+
+    // Get offset for initial lane
+    int lane_for_offset = current_lane;
+    int middle;
+    if (inverted) {
+        middle = profile->fNumZones - profile->GetMiddleZone(inverted);
+        lane_for_offset = (profile->fNumZones - current_lane) - 1;
+    } else {
+        middle = profile->GetMiddleZone(inverted);
+    }
+    float initial_offset = static_cast< float >(profile->GetLaneOffset(lane_for_offset, inverted)) * 0.012208521f;
+    if (static_cast< int >(current_lane) < static_cast< int >(middle)) {
+        initial_offset = -initial_offset;
+    }
+
+    float offset_difference = bAbs(initial_offset - current_offset);
+    int num_lanes = profile->fNumZones;
+
+    // Find closest selectable lane to current offset
+    for (int i = 0; i < num_lanes; i++) {
+        int actual_i = i;
+        if (inverted) {
+            actual_i = (profile->fNumZones - i) - 1;
+        }
+        int lane_type = profile->GetLaneType(actual_i, inverted);
+        if (IsSelectable(lane_type)) {
+            int middle2;
+            int lane_idx;
+            if (inverted) {
+                middle2 = profile->fNumZones - profile->GetMiddleZone(inverted);
+                lane_idx = (profile->fNumZones - i) - 1;
+            } else {
+                middle2 = profile->GetMiddleZone(inverted);
+                lane_idx = i;
+            }
+            float this_offset = static_cast< float >(profile->GetLaneOffset(lane_idx, inverted)) * 0.012208521f;
+            if (static_cast< int >(i) < static_cast< int >(middle2)) {
+                this_offset = -this_offset;
+            }
+            float diff = this_offset - current_offset;
+            float clamped = bClamp(diff, -offset_difference, offset_difference);
+            if (diff == clamped) {
+                offset_difference = bAbs(diff);
+                current_lane = i;
+            }
+        }
+    }
+
+    int target_lane = current_lane;
+    if (left_right != 0) {
+        int test_lane = current_lane;
+        while (true) {
+            test_lane += left_right;
+            target_lane = current_lane;
+            if (test_lane >= num_lanes || test_lane < 0) break;
+
+            int actual_test = test_lane;
+            if (inverted) {
+                actual_test = (profile->fNumZones - test_lane) - 1;
+            }
+            int lt = profile->GetLaneType(actual_test, inverted);
+            target_lane = current_lane;
+            if (!IsDrivable(lt) || IsSelectable(lt)) {
+                target_lane = test_lane;
+                break;
+            }
+        }
+
+        if (target_lane == current_lane) {
+            if (ChangeDragDecision(left_right)) return;
+        }
+    }
+
+    // Compute final offset
+    int final_lane;
+    int final_middle;
+    if (inverted) {
+        final_middle = profile->fNumZones - profile->GetMiddleZone(inverted);
+        final_lane = (profile->fNumZones - target_lane) - 1;
+    } else {
+        final_middle = profile->GetMiddleZone(inverted);
+        final_lane = target_lane;
+    }
+    float final_offset = static_cast< float >(profile->GetLaneOffset(final_lane, inverted)) * 0.012208521f;
+    if (static_cast< int >(target_lane) < static_cast< int >(final_middle)) {
+        final_offset = -final_offset;
+    }
+    ChangeLanes(final_offset, 0.0f);
 }
 
 bool WRoadNav::MakeShortcutDecision(int shortcut_number, unsigned int *cached, unsigned int *allowed) {
