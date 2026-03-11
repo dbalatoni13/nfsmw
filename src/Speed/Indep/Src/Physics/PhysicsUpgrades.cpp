@@ -144,6 +144,35 @@ void BlendParts<int>(const Attribute &start_attribute, const Attribute &end_attr
     new_attrib.Set(index, new_data);
 }
 
+template <typename T>
+void ScalePart(Attribute &attrib, unsigned int index, float scale) {
+    T start_data;
+    T new_data;
+
+    attrib.Get(index, start_data);
+
+    float *start_ptr = reinterpret_cast<float *>(&start_data);
+    float *new_ptr = reinterpret_cast<float *>(&new_data);
+
+    new_ptr[0] = start_ptr[0] * scale;
+    if (sizeof(T) > sizeof(float)) {
+        new_ptr[1] = start_ptr[1] * scale;
+    }
+
+    attrib.Set(index, new_data);
+}
+
+template <>
+void ScalePart<int>(Attribute &attrib, unsigned int index, float scale) {
+    int start_data = 0;
+
+    attrib.Get(index, start_data);
+
+    int new_data = static_cast<int>(static_cast<float>(start_data) * scale);
+
+    attrib.Set(index, new_data);
+}
+
 float Physics::Upgrades::GetPercent(const pvehicle &vehicle, Type type) {
     int max_level = GetMaxLevel(vehicle, type);
     if (max_level == 0) {
@@ -755,3 +784,4 @@ PUPartNode::PUPartNode(const RefSpec &collection0, const RefSpec &collection1, f
 template void BlendParts<AxlePair>(const Attribute &, const Attribute &, unsigned int, float, Attribute &);
 template void BlendParts<float>(const Attribute &, const Attribute &, unsigned int, float, Attribute &);
 template void ScalePart<AxlePair>(Attribute &, unsigned int, float);
+template void ScalePart<float>(Attribute &, unsigned int, float);
