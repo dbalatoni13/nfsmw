@@ -8,7 +8,9 @@
 #include "Speed/Indep/Src/Gameplay/GIcon.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/World/TrackInfo.hpp"
+#include "Speed/Indep/Src/World/RaceParameters.hpp"
 #include "Speed/Indep/Src/Generated/Events/EWorldMapOff.hpp"
 #include "Speed/Indep/Src/Input/ActionQueue.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
@@ -41,12 +43,14 @@ struct Minimap {
 };
 
 extern Timer RealTimer;
+extern RaceParameters TheRaceParameters;
 void FEngGetSize(FEObject* obj, float& x, float& y);
 void FEngGetCenter(FEObject* obj, float& x, float& y);
 void FEngGetTopLeft(FEObject* obj, float& x, float& y);
 void FEngGetBottomRight(FEObject* obj, float& x, float& y);
 float FEngGetScaleX(FEObject* obj);
 float FEngGetScaleY(FEObject* obj);
+void FEngSetButtonTexture(FEImage* img, unsigned int tex_hash);
 void FEngSetColor(FEObject* obj, unsigned int color);
 void FEngSetScript(FEObject* object, unsigned int script_hash, bool start_at_beginning);
 bool FEngIsScriptSet(FEObject* obj, unsigned int script_hash);
@@ -796,6 +800,80 @@ void WorldMap::PanToPlayer() {
 }
 
 void WorldMap::Setup() {
+    SetInitialPositions();
+
+    FEImage* img;
+    img = FEngFindImage(GetPackageName(), 0x5bc);
+    FEngSetButtonTexture(img, 0x5bc);
+    img = FEngFindImage(GetPackageName(), 0x682);
+    FEngSetButtonTexture(img, 0x682);
+    img = FEngFindImage(GetPackageName(), 0xfbb0b78e);
+    FEngSetButtonTexture(img, 0xfbb0b78e);
+
+    TrackMap = static_cast< FEMultiImage* >(FEngFindObject(GetPackageName(), 0x0f365871));
+    FEngGetTopLeft(static_cast< FEObject* >(TrackMap), MapTopLeft.x, MapTopLeft.y);
+    FEngGetSize(static_cast< FEObject* >(TrackMap), MapSize.x, MapSize.y);
+    Cursor = FEngFindObject(GetPackageName(), 0xf156f6c5);
+
+    int region_unlock = 0;
+    unsigned char bin = FEDatabase->GetCareerSettings()->GetCurrentBin();
+    if (bin >= 13) {
+        region_unlock = 1;
+    } else if (bin > 8) {
+        region_unlock = 2;
+    }
+
+    MapStreamer = new (__FILE__, __LINE__) UITrackMapStreamer();
+    GRaceParameters* params = GRaceStatus::Get().GetRaceParameters();
+    MapStreamer->Init(params, TrackMap, 0, region_unlock);
+    MapStreamer->SetZoomSpeed(0.5f);
+    MapStreamer->SetPanSpeed(0.5f);
+    MapStreamer->ResetZoom(false);
+    MapStreamer->ResetPan(false);
+
+    if (params != nullptr) {
+        CurrentRaceType = params->GetRaceType();
+    } else {
+        CurrentRaceType = -1;
+    }
+
+    pCurrentTrack = TrackInfo::GetTrackInfo(TheRaceParameters.TrackNumber);
+    AddPlayerCar();
+
+    IPlayer* player = *IPlayer::GetList(PLAYER_LOCAL).begin();
+    ISimable* isimable = player->GetSimable();
+    IVehicle* ivehicle;
+    if (isimable->QueryInterface(&ivehicle)) {
+        IVehicleAI* ivehicleai = ivehicle->GetAIVehiclePtr();
+        if (ivehicleai->GetPursuit() != nullptr) {
+            CurrentView = 3;
+        }
+    }
+
+    if (CurrentView != 3) {
+        CurrentView = FEDatabase->GetGameplaySettings()->LastMapView;
+    }
+
+    switch (CurrentView) {
+    case 0:
+        CurrentZoom = FEDatabase->GetGameplaySettings()->LastMapZoom;
+        SetupNavigation();
+        break;
+    case 1:
+        CurrentZoom = FEDatabase->GetGameplaySettings()->LastMapZoom;
+        SetupEvent();
+        break;
+    case 3:
+        CurrentZoom = FEDatabase->GetGameplaySettings()->LastPursuitMapZoom;
+        SetupPursuit();
+        break;
+    }
+
+    PanToPlayer();
+    float zoomFactor = GetZoomFactor(static_cast< eWorldMapZoomLevels >(CurrentZoom));
+    bVector2 zoom(1.0f / zoomFactor, 1.0f / zoomFactor);
+    MapStreamer->SetZoom(zoom);
+    SetInitialOption(0);
     RefreshHeader();
 }
 
