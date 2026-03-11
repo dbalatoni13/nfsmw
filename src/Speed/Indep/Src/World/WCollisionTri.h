@@ -27,14 +27,13 @@ struct WCollisionTri {
         UMath::Vector3 vecZ;
         UMath::Vector3 normal;
 
-        vecX.x = fPt0.x - fPt2.x;
-        vecX.y = fPt0.y - fPt2.y;
-        vecX.z = fPt0.z - fPt2.z;
-
         vecZ.x = fPt1.x - fPt0.x;
         vecZ.y = fPt1.y - fPt0.y;
         vecZ.z = fPt1.z - fPt0.z;
 
+        vecX.x = fPt0.x - fPt2.x;
+        vecX.y = fPt0.y - fPt2.y;
+        vecX.z = fPt0.z - fPt2.z;
         UMath::Cross(vecZ, vecX, normal);
 
         if (normal.x == 0.0f && normal.y == 0.0f && normal.z == 0.0f) {
