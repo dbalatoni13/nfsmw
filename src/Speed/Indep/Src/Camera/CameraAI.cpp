@@ -247,12 +247,11 @@ void CameraAI::Director::PursuitStart() {
     if (mPursuitStartTime <= 0.0f) {
         {
             MGamePlayMoment msg(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, 0x88bff834);
-            msg.Deliver();
+            msg.Send(UCrc32("MomentStrm"));
         }
         {
             MMiscSound snd(1);
-            snd.SetID(Attrib::StringHash32("play"));
-            snd.Deliver();
+            snd.Send(UCrc32("play"));
         }
 
         mPursuitStartTime = 5.0f;

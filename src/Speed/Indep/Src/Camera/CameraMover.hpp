@@ -334,6 +334,10 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
         return pCamera->GetPosition();
     }
 
+    bVector3 *GetDirection() {
+        return pCamera->GetDirection();
+    }
+
     Camera *GetCamera() {
         return pCamera;
     }

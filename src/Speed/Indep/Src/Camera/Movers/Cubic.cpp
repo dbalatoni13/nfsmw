@@ -84,11 +84,7 @@ void tTable<CubicPovData>::Blend(CubicPovData *dest, CubicPovData *a, CubicPovDa
 }
 
 CubicCameraMover::CubicCameraMover(int nView, CameraAnchor *p_car, int pov_type, bool smooth, bool disable_lag, bool look_back, bool perfect_focus)
-    : CameraMover(nView, CM_DRIVE_CUBIC) //
-    , bFirstTime(1) //
-    , tLastGrounded(WorldTimer - Timer(8000)) //
-    , tLastUnderVehicle(WorldTimer - Timer(0x1900)) //
-    , tLastGearChange(WorldTimer - Timer(6000)) {
+    : CameraMover(nView, CM_DRIVE_CUBIC) {
     bSnapNext = 0;
     bAccelLag = !disable_lag;
     bLookBack = look_back;
@@ -97,6 +93,10 @@ CubicCameraMover::CubicCameraMover(int nView, CameraAnchor *p_car, int pov_type,
     nPovType = pov_type;
     nPovTypeUsed = pov_type;
     fIgnoreSetSnapNextTimer = 0.0f;
+    tLastGrounded = WorldTimer - Timer(8000);
+    tLastUnderVehicle = WorldTimer - Timer(0x1900);
+    bFirstTime = 1;
+    tLastGearChange = WorldTimer - Timer(6000);
 
     POV *pov = pCar->GetPov(nPovType);
 

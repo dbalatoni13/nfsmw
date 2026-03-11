@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Misc/Table.hpp"
+#include "Speed/Indep/Src/World/Track.hpp"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/bWare/Inc/bFunk.hpp"
 
@@ -162,6 +163,7 @@ void DebugWorldCameraMover::JoyHandler() {
 
 void DebugWorldCameraMover::Update(float dT) {
     if (JumpToPosition.y != 0.0f) {
+        TopologyCoordinate topology_coordinate;
         JumpToPosition.z += 100.0f;
         bVector3 dir = Eye - Look;
         bVector3 eyelook;
@@ -189,24 +191,19 @@ void DebugWorldCameraMover::Update(float dT) {
     unsigned short hAngle = bFixATan(static_cast<int>(eyelook.x * 65536.0f),
                                      static_cast<int>(eyelook.y * 65536.0f));
 
-    if (TurnHInc != 0 || HeightInc != 0.0f) {
-        float xylen = eyelook.x * eyelook.x + eyelook.y * eyelook.y;
+    if (TurnHInc != 0 || TurnVInc != 0 || HeightInc != 0.0f) {
+        bVector2 *horiz = reinterpret_cast<bVector2 *>(&eyelook);
+        float xylen = bLength(horiz);
         hAngle = (hAngle + static_cast<int>(static_cast<float>(TurnHInc) * dT)) & 0xffff;
-
-        if (xylen > 0.0001f) {
-            float invlen = 1.0f / __builtin_sqrtf(xylen);
-            invlen = -(xylen * invlen * invlen - 3.0f) * invlen * 0.5f + invlen;
-            xylen = (-(xylen * invlen * invlen - 3.0f) * invlen * 0.5f + invlen) * xylen;
-        }
 
         unsigned short pitch = bFixATan(static_cast<int>(xylen * 65536.0f),
                                         static_cast<int>(eyelook.z * 65536.0f));
         pitch = (pitch + static_cast<int>(static_cast<float>(TurnVInc) * dT)) & 0xffff;
 
-        if (pitch - 0x3ff7 < 0x4009) {
+        if (static_cast<unsigned int>(pitch - 0x3ff7) < 0x4009u) {
             pitch = 0x3ff6;
         }
-        if (((pitch - 0x8000) & 0xffff) < 0x400a) {
+        if ((static_cast<unsigned int>(pitch - 0x8000) & 0xffffu) < 0x400au) {
             pitch = 0xc00a;
         }
 
@@ -220,7 +217,7 @@ void DebugWorldCameraMover::Update(float dT) {
         }
 
         float hi = fi * dT;
-        Eye.z += hi;
+        Eye = Eye + bVector3(0.0f, 0.0f, hi);
 
         float dist = 100.0f;
         Look.x = bCos(pitch) * (bCos(hAngle) * dist) + Eye.x;
@@ -237,8 +234,8 @@ void DebugWorldCameraMover::Update(float dT) {
         } else {
             fi = ForwardInc;
         }
-        float amount = fi * dT;
-        bVector3 forward = *GetCamera()->GetDirection() * amount;
+        fi *= dT;
+        bVector3 forward = *GetDirection() * fi;
         Eye += forward;
         Look += forward;
     } else if (ForwardAnalogInc != 0.0f) {
@@ -250,8 +247,8 @@ void DebugWorldCameraMover::Update(float dT) {
         } else {
             fi = ForwardAnalogInc;
         }
-        float amount = fi * dT;
-        bVector3 forward = *GetCamera()->GetDirection() * amount;
+        fi *= dT;
+        bVector3 forward = *GetDirection() * fi;
         Eye += forward;
         Look += forward;
     }
@@ -265,21 +262,24 @@ void DebugWorldCameraMover::Update(float dT) {
         } else {
             si = StrafeInc;
         }
+        si *= dT;
         unsigned short sAngle = (hAngle + 0x4000) & 0xffff;
-        float cval = bCos(sAngle) * (si * dT);
-        float sval = bSin(sAngle) * (si * dT);
+        float cval = bCos(sAngle) * si;
+        float sval = bSin(sAngle) * si;
         bVector3 rl(cval, sval, 0.0f);
         Eye += rl;
         Look += rl;
     }
 
     bVector3 up;
-    ComputeBankedUpVector(&up, &Eye, &Look, 0);
+    unsigned short bank = 0;
+    ComputeBankedUpVector(&up, &Eye, &Look, bank);
     bMatrix4 m;
     eCreateLookAtMatrix(&m, Eye, Look, up);
 
     if (Camera::StopUpdating == 0) {
-        GetCamera()->SetFieldOfView(0x32dc);
+        unsigned short fov = 0x32dc;
+        GetCamera()->SetFieldOfView(fov);
     }
     GetCamera()->SetCameraMatrix(m, dT);
 }
