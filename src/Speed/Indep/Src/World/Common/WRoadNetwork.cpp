@@ -375,6 +375,93 @@ float WRoadNav::SnapToSelectableLane(float input_offset) {
     return SnapToSelectableLane(input_offset, fSegmentInd, fNodeInd);
 }
 
+float WRoadNav::SnapToSelectableLane(float input_offset, int segment_no, char node_index) {
+    WRoadNetwork &roadNetwork = WRoadNetwork::Get();
+    bool cop_lane = fLaneType == kLaneCop || fLaneType == kLaneCopReckless;
+    bool drag_lane = fLaneType == kLaneDrag;
+    bool grid_lane = fLaneType == kLaneStartingGrid;
+    bool racing_lane = fLaneType == kLaneRacing;
+    const WRoadSegment *segment = roadNetwork.GetSegment(segment_no);
+    const WRoadProfile *profile = roadNetwork.GetSegmentProfile(*segment, node_index);
+    bool inverted = segment->IsProfileInverted(node_index);
+    bool forward = node_index > 0;
+
+    int best_lane = -1;
+    bool found_lane = false;
+    bool best_backward = false;
+    float next_offset = 0.0f;
+    float offset_difference = 1000.0f;
+
+    int num_forward_lanes = profile->GetNumLanes(forward, inverted);
+
+    for (int n = 0; n < num_forward_lanes; n++) {
+        int lane = profile->GetNthLane(n, forward, inverted);
+        unsigned char lane_type = profile->GetLaneType(lane, inverted);
+        if (IsSelectable(lane_type)) {
+            float offset = profile->GetRawLaneOffset(lane);
+            float difference = bClamp(offset - input_offset, -offset_difference, offset_difference);
+            if (offset - input_offset == difference) {
+                offset_difference = bAbs(offset - input_offset);
+                found_lane = true;
+                best_lane = lane;
+                next_offset = offset;
+            }
+        }
+    }
+
+    int num_backward_lanes = profile->GetNumLanes(!forward, inverted);
+
+    if ((cop_lane || drag_lane || grid_lane || racing_lane || !found_lane) && num_backward_lanes > 0) {
+        for (int n = 0; n < num_backward_lanes; n++) {
+            int lane = profile->GetNthLane(n, !forward, inverted);
+            unsigned char lane_type = profile->GetLaneType(lane, inverted);
+            if (IsSelectable(lane_type)) {
+                float offset = -profile->GetRawLaneOffset(lane);
+                float difference = bClamp(offset - input_offset, -offset_difference, offset_difference);
+                if (offset - input_offset == difference) {
+                    best_backward = true;
+                    offset_difference = bAbs(offset - input_offset);
+                    next_offset = offset;
+                    best_lane = lane;
+                }
+            }
+        }
+    }
+
+    float output_offset = next_offset;
+
+    if ((cop_lane || racing_lane) && best_lane > -1) {
+        float offset = profile->GetRawLaneOffset(best_lane);
+        float width = profile->GetRawLaneWidth(best_lane);
+        float difference = bClamp(input_offset - next_offset, -width * 0.5f, width * 0.5f);
+
+        bool inverted_xor_backward = (profile->GetLaneNumber(best_lane, inverted) < profile->GetMiddleZone(inverted)) != best_backward;
+
+        int left_lane;
+        int right_lane;
+        if (inverted_xor_backward) {
+            left_lane = profile->fNumZones - 1;
+            right_lane = 0;
+        } else {
+            left_lane = 0;
+            right_lane = profile->fNumZones - 1;
+        }
+
+        float right = profile->GetRelativeLaneOffset(right_lane, inverted);
+        float right_width = profile->GetLaneWidth(right_lane, inverted);
+
+        float left = profile->GetRelativeLaneOffset(left_lane, inverted);
+        float left_width = profile->GetLaneWidth(left_lane, inverted);
+
+        output_offset = next_offset + difference;
+        float safety_margin = right + right_width - 0.5f;
+        float left_limit = left - left_width + 0.5f;
+        output_offset = bClamp(output_offset, left_limit, safety_margin);
+    }
+
+    return output_offset;
+}
+
 int WRoadNav::ClosestCookieAhead(const UMath::Vector3 &position, NavCookie *interpolated_cookie) {
     return ClosestCookieAhead(position, nullptr, pCookieTrail->Count(), interpolated_cookie);
 }
@@ -911,10 +998,8 @@ bool WRoadNav::IsWrongWay() const {
             if (!seg_foward) {
                 result = true;
             }
-        } else {
-            if (seg_foward) {
-                result = true;
-            }
+        } else if (seg_foward) {
+            result = true;
         }
     }
     return result;
