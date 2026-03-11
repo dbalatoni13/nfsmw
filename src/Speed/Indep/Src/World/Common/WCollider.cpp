@@ -224,7 +224,8 @@ void WCollider::ReserveLists(unsigned int typeMask) {
 }
 
 unsigned int WCollider::Validate() const {
-    return *reinterpret_cast<const unsigned int *>(&fRegionInitialized);
+    if (!*reinterpret_cast<const unsigned int *>(&fRegionInitialized)) return 0;
+    return 1;
 }
 
 unsigned int WCollider::GetUpdateMask(const UMath::Vector3 &pt, float radius) {

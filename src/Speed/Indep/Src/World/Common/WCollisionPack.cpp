@@ -65,10 +65,10 @@ void WCollisionPack::DeInit() {
 
 void WCollisionArticle::Resolve() {
     if (!fResolvedFlag) {
-        char *surfaceData = reinterpret_cast<char *>(this) + fStripsSize + 0x10 + fEdgesSize;
-        for (unsigned int i = 0; i < fNumSurfaces; ++i) {
-            UCrc32 crc = *reinterpret_cast<UCrc32 *>(surfaceData + i * sizeof(const Attrib::Collection *));
-            *reinterpret_cast<const Attrib::Collection **>(surfaceData + i * sizeof(const Attrib::Collection *)) = SimSurface::Lookup(crc);
+        for (int i = 0; i < fNumSurfaces; ++i) {
+            unsigned int *surfaceData = reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(this) + (fStripsSize + 0x10) + fEdgesSize);
+            UCrc32 crc(surfaceData[i]);
+            surfaceData[i] = reinterpret_cast<unsigned int>(SimSurface::Lookup(crc));
         }
         fResolvedFlag = true;
     }

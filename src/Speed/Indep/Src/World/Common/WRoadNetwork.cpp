@@ -263,6 +263,38 @@ bool WRoadNav::FindingPath() {
     return path_finder != nullptr && path_finder->Pending(this) != nullptr;
 }
 
+float WRoadNav::GetPathDistanceRemaining() {
+    WRoadNetwork &rn = WRoadNetwork::Get();
+    float distance = 0.0f;
+    if (GetNavType() == kTypePath && pPathSegments != nullptr) {
+        bool accumulate = false;
+        for (int i = 0; i < nPathSegments; i++) {
+            unsigned short segment_number = pPathSegments[i];
+            float min_param = 0.0f;
+            if (segment_number == GetSegmentInd()) {
+                min_param = GetSegmentTime();
+                accumulate = true;
+            }
+            bool break_out = (segment_number == nPathGoalSegment);
+            float max_param = break_out ? fPathGoalParam : 1.0f;
+            if (accumulate) {
+                float coef = bMax(0.0f, max_param - min_param);
+                const WRoadSegment *segment = rn.GetSegment(segment_number);
+                float segment_length = coef * segment->GetLength();
+                if (segment->IsShortcut()) {
+                    const WRoad *road = rn.GetRoad(segment->fRoadID);
+                    segment_length *= road->GetScale();
+                }
+                distance += segment_length;
+            }
+            if (break_out) {
+                break;
+            }
+        }
+    }
+    return distance;
+}
+
 bool WRoadNav::IsSegmentInPath(int segment_number) {
     if (GetNavType() == kTypePath) {
         int num_segments = GetNumPathSegments();
@@ -707,10 +739,10 @@ bool WRoadNav::UpdateLaneChange(float distance) {
     if (laneChangeLerp < 1.0f) {
         fLaneOffset = (fToLaneOffset - fFromLaneOffset) * laneChangeLerp + fFromLaneOffset;
     } else {
-        fLaneChangeInc = 0.0f;
+        fLaneChangeDist = 0.0f;
         fFromLaneOffset = fToLaneOffset;
         fLaneOffset = fToLaneOffset;
-        fLaneChangeDist = 0.0f;
+        fLaneChangeInc = 0.0f;
     }
     return true;
 }

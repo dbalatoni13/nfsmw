@@ -118,8 +118,11 @@ void WCollisionAssets::Shutdown() {
     }
 
     sWCollisionAssets = nullptr;
-    WTriggerManager::Shutdown();
-    WGridManagedDynamicElem::Shutdown();
+    if (WTriggerManager::fgTriggerManager != nullptr) {
+        delete WTriggerManager::fgTriggerManager;
+    }
+    WTriggerManager::fgTriggerManager = nullptr;
+    WGridManagedDynamicElem::fgManagedDynamicElemList.clear();
     WGrid::Shutdown();
 }
 
@@ -296,22 +299,22 @@ unsigned int WCollisionAssets::AddObject(WCollisionObject *obj) {
 }
 
 WCollisionObject *WCollisionAssets::CreateObject(const UMath::Vector3 &dim, const UMath::Matrix4 &mat, bool dynamicFlag) {
-    WCollisionObject *obj = new (__FILE__, __LINE__) WCollisionObject;
+    WCollisionObject *obj = new (static_cast<const char *>(0), 0) WCollisionObject;
     obj->fFlags = 0;
     obj->fMat = mat;
     if (dynamicFlag) {
         obj->fFlags |= 1;
     }
-    obj->fDimensions = UMath::Vector4Make(dim, 0.0f);
     obj->fRenderInstanceInd = 0;
     obj->fFlags |= 0x40;
     obj->fPosRadius.x = mat.v3.x;
     obj->fPosRadius.y = mat.v3.y - dim.y;
     obj->fPosRadius.z = mat.v3.z;
+    obj->fDimensions = UMath::Vector4Make(dim, 1.0f);
     obj->fType = 0;
-    obj->fSurface.fSurface = 0;
-    obj->fSurface.fFlags = 0;
     obj->fPosRadius.w = UMath::Sqrt(obj->fDimensions.x * obj->fDimensions.x + obj->fDimensions.z * obj->fDimensions.z);
+    obj->fSurface.fFlags = 0;
+    obj->fSurface.fSurface = 0;
 
     unsigned int objectInd = AddObject(obj);
     WGridManagedDynamicElem::AddElem(nullptr, &obj->fPosRadius, WGrid_kObject, objectInd);
