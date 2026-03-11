@@ -673,7 +673,7 @@ HeirarchyModel::HeirarchyModel(bHash32 rendermesh, const CollisionGeometry::Boun
     if (visible) {
         RenderConn::Pkt_Smackable_Open pkt(mRenderMesh, GetWorldID(), GetCollisionGeometry(),
                                            mHeirarchy, mHeirarchyNode);
-        BeginDraw(UCrc32(0x804c146e), &pkt);
+        BeginDraw(UCrc32(0x804C0000), &pkt);
     }
     if (smackable.AI_AVOIDABLE()) {
         if (mAvoidable == nullptr) {
@@ -927,7 +927,7 @@ void HeirarchyModel::OnBeginSimulation() {
     RenderConn::Pkt_Smackable_Open pkt(mRenderMesh, model->GetWorldID(),
                                        model->GetCollisionGeometry(), mHeirarchy,
                                        mHeirarchyNode);
-    BeginDraw(UCrc32(0x804c146e), &pkt);
+    BeginDraw(UCrc32(0x804C0000), &pkt);
 }
 
 bool HeirarchyModel::OnDraw(Sim::Packet *service) {

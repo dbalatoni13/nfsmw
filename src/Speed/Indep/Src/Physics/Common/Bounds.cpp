@@ -430,7 +430,7 @@ bool CreateJoint(IBoundable *ifemale, UCrc32 femalenode_name, IBoundable *imale,
 }; // namespace CollisionGeometry
 
 int LoaderBounds(bChunk *chunk) {
-    if (chunk->GetID() != 0x8003b900) {
+    if (chunk->GetID() != 0x80030000) {
         return 0;
     }
     CollisionGeometry::BoundsPack *pack = new CollisionGeometry::BoundsPack(chunk);
@@ -439,7 +439,7 @@ int LoaderBounds(bChunk *chunk) {
 }
 
 int UnloaderBounds(bChunk *chunk) {
-    if (chunk->GetID() != 0x8003b900) {
+    if (chunk->GetID() != 0x80030000) {
         return 0;
     }
     CollisionGeometry::BoundsPack *pack = CollisionGeometry::TheCollections.Find(chunk);

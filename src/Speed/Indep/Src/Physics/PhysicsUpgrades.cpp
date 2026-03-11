@@ -143,6 +143,21 @@ void BlendParts<int>(const Attribute &start_attribute, const Attribute &end_attr
     new_attrib.Set(index, new_data);
 }
 
+template <>
+void BlendParts<float>(const Attribute &start_attribute, const Attribute &end_attribute, unsigned int index, float weight, Attribute &new_attrib) {
+    float start_data = 0.0f;
+    float end_data = 0.0f;
+
+    start_attribute.Get(index, start_data);
+    end_attribute.Get(index, end_data);
+
+    float new_data;
+
+    new_data = start_data * (1.0f - weight) + end_data * weight;
+
+    new_attrib.Set(index, new_data);
+}
+
 float Physics::Upgrades::GetPercent(const pvehicle &vehicle, Type type) {
     int max_level = GetMaxLevel(vehicle, type);
     if (max_level == 0) {
@@ -663,4 +678,3 @@ void Physics::Upgrades::Flush() {
 
 // Explicit template instantiations
 template void BlendParts<AxlePair>(const Attribute &, const Attribute &, unsigned int, float, Attribute &);
-template void BlendParts<float>(const Attribute &, const Attribute &, unsigned int, float, Attribute &);
