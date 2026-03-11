@@ -1,8 +1,6 @@
 #include "ControlScenario.hpp"
 #include "GenericNISControlScenario.hpp"
 
-extern const unsigned int WAM_NIS_GENERIC_CONTROL_MSG;
-
 GenericNISControlScenario::~GenericNISControlScenario() {}
 
 void GenericNISControlScenario::HandleEventMessage(CWorldAnimEntityTree *entity_tree, unsigned int wa_msg, void *data) {

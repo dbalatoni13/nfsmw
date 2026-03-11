@@ -198,6 +198,9 @@ struct NISListenerActivity : public Sim::Activity, public INISLISTENER {
     Hermes::HHANDLER mMessageBusted; // offset 0x54, size 0x4
 };
 
+static UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype
+    _NISListenerActivity(UCrc32("NISActivity"), NISListenerActivity::Construct);
+
 NISListenerActivity::NISListenerActivity() : Sim::Activity(1), INISLISTENER(this) {
     // TODO magic
     mMessageBusted =

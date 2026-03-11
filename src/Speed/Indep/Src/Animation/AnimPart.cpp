@@ -21,20 +21,17 @@ void CAnimPart::operator delete(void *ptr) {
 }
 
 int CAnimPart::Init(CAnimSkeleton *skeleton) {
-    EAGL4Anim::Skeleton *eagl_skeleton;
-    int num_bones;
-
     Purge();
-    eagl_skeleton = skeleton->GetEAGLSkeleton();
-    num_bones = eagl_skeleton->GetNumBones();
     m_pSkeleton = skeleton;
-    m_SQTsize = num_bones * 0xC;
-    m_pSQTs = new ("EAGL4::SQT buffer CAnimPart", 0) float[num_bones * 0xC];
-    for (int i = 0; i < m_SQTsize; i++) {
+    int num_bones = skeleton->GetEAGLSkeleton()->GetNumBones();
+    int sqt_size = num_bones * 0xC;
+    m_SQTsize = sqt_size;
+    m_pSQTs = new ("EAGL4::SQT buffer CAnimPart", 0) float[sqt_size];
+    for (int i = 0; i < sqt_size; i++) {
         m_pSQTs[i] = 0.0f;
     }
     if (m_pSQTs != nullptr) {
-        m_numGlobalMatrices = num_bones;
+        m_numGlobalMatrices = skeleton->GetEAGLSkeleton()->GetNumBones();
         m_pGlobalMatrices = AnimBridgeNewTransform("EAGL4::Transform GlobalPoseBuffer CAnimPart", m_numGlobalMatrices);
         if (m_pGlobalMatrices != nullptr) {
             skeleton->GetEAGLSkeleton()->GetStillPose(m_pSQTs, nullptr);
