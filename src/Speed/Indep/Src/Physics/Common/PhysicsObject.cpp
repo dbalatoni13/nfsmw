@@ -243,10 +243,7 @@ bool PhysicsObject::IsOwnedBy(ISimable *queriedOwner) const {
 }
 
 void PhysicsObject::DebugObject() {
-    IRigidBody *irb = GetRigidBody();
-    if (irb) {
-        irb->Debug();
-    }
+    static_cast<ISimable *>(this)->GetRigidBody()->Debug();
 }
 
 void PhysicsObject::OnBehaviorChange(const UCrc32 &mechanic) {

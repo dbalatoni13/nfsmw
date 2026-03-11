@@ -103,19 +103,33 @@ template <typename T>
 void BlendParts(const Attribute &start_attribute, const Attribute &end_attribute, unsigned int index, float weight, Attribute &new_attrib) {
     T start_data;
     T end_data;
-    T new_data;
 
     start_attribute.Get(index, start_data);
     end_attribute.Get(index, end_data);
 
+    T new_data;
+
     float *start_ptr = reinterpret_cast<float *>(&start_data);
     float *end_ptr = reinterpret_cast<float *>(&end_data);
     float *new_ptr = reinterpret_cast<float *>(&new_data);
-    unsigned int count = sizeof(T) / sizeof(float);
 
-    for (unsigned int i = 0; i < count; i++) {
-        new_ptr[i] = start_ptr[i] + (end_ptr[i] - start_ptr[i]) * weight;
+    new_ptr[0] = start_ptr[0] * (1.0f - weight) + end_ptr[0] * weight;
+    if (sizeof(T) > sizeof(float)) {
+        new_ptr[1] = start_ptr[1] * (1.0f - weight) + end_ptr[1] * weight;
     }
+
+    new_attrib.Set(index, new_data);
+}
+
+template <>
+void BlendParts<int>(const Attribute &start_attribute, const Attribute &end_attribute, unsigned int index, float weight, Attribute &new_attrib) {
+    int start_data = 0;
+    int end_data = 0;
+
+    start_attribute.Get(index, start_data);
+    end_attribute.Get(index, end_data);
+
+    int new_data = static_cast<int>(static_cast<float>(start_data) * (1.0f - weight) + static_cast<float>(end_data) * weight);
 
     new_attrib.Set(index, new_data);
 }
@@ -280,7 +294,7 @@ bool Physics::Upgrades::SetJunkman(pvehicle &vehicle, Type type) {
             return false;
         }
 
-        vehicle = newvehicle;
+        vehicle = static_cast<const Attrib::Instance &>(newvehicle);
     }
 
     return true;
@@ -519,7 +533,7 @@ bool Physics::Upgrades::SetLevel(pvehicle &vehicle, Type type, int level) {
         RemovePart(vehicle, type);
     } else {
         int max_level = GetMaxLevel(newvehicle, type);
-        if (max_level < 1 || max_level < level) {
+        if (max_level < 1 || level > max_level) {
             return false;
         }
 
@@ -528,7 +542,7 @@ bool Physics::Upgrades::SetLevel(pvehicle &vehicle, Type type, int level) {
             return false;
         }
 
-        vehicle = newvehicle;
+        vehicle = static_cast<const Attrib::Instance &>(newvehicle);
     }
 
     return true;
@@ -641,4 +655,3 @@ void Physics::Upgrades::Flush() {
 // Explicit template instantiations
 template void BlendParts<AxlePair>(const Attribute &, const Attribute &, unsigned int, float, Attribute &);
 template void BlendParts<float>(const Attribute &, const Attribute &, unsigned int, float, Attribute &);
-template void BlendParts<int>(const Attribute &, const Attribute &, unsigned int, float, Attribute &);

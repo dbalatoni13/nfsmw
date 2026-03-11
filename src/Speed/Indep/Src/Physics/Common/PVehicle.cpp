@@ -475,21 +475,22 @@ void PVehicle::ComputeHeading(UMath::Vector3 *v) {
 void PVehicle::CheckOffWorld() {
     UCrc32 susp(BEHAVIOR_MECHANIC_SUSPENSION);
     if (IsBehaviorActive(susp)) {
+        bool offWorld;
         if (static_cast<ISimable *>(this)->GetWPos().GetSurface() != SimSurface::kNull.GetConstCollection()) {
-            mOffWorld = false;
+            offWorld = false;
+        } else if (mSuspension == nullptr) {
+            offWorld = true;
         } else {
-            if (mSuspension == nullptr) {
-                mOffWorld = true;
-            } else {
-                unsigned int invalid_tires = 0;
-                for (unsigned int i = 0; i < mSuspension->GetNumWheels(); i++) {
-                    if (mSuspension->GetWheelRoadSurface(i).GetConstCollection() == SimSurface::kNull.GetConstCollection()) {
-                        invalid_tires++;
-                    }
+            unsigned int invalid_tires = 0;
+            for (unsigned int i = 0; i < mSuspension->GetNumWheels(); i++) {
+                if (mSuspension->GetWheelRoadSurface(i).GetConstCollection() ==
+                    SimSurface::kNull.GetConstCollection()) {
+                    invalid_tires++;
                 }
-                mOffWorld = !(invalid_tires < 2);
             }
+            offWorld = !(invalid_tires < 2);
         }
+        mOffWorld = offWorld;
     } else {
         float worldHeight = 0.0f;
         WCollisionMgr mgr(0, 3);
@@ -650,17 +651,15 @@ unsigned int PVehicle::CountResources() {
 }
 
 void PVehicle::OnTaskFX(float dT) {
-    IRigidBody &rigidBody = *static_cast<ISimable *>(this)->GetRigidBody();
+    static_cast<ISimable *>(this)->GetRigidBody();
     if (INIS::Get() == nullptr) {
         GlareOn(static_cast<VehicleFX::ID>(7));
     }
     bool do_brake = false;
     if (mInput != nullptr) {
-        if (mInput->GetControls().fBrake > 0.0f) {
-            do_brake = true;
-        }
+        do_brake = mInput->GetControls().fBrake > 0.0f;
     }
-    if (rigidBody.IsSimple()) {
+    if (!static_cast<ISimable *>(this)->IsPlayer()) {
         if (do_brake) {
             mBrakeTime = mBrakeTime + dT;
         } else {

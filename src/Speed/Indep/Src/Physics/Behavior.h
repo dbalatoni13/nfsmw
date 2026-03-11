@@ -61,6 +61,11 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
         return mIOwner;
     }
 
+    void DoSimulate(float dT) {
+        Sim::Profile::Scope profile(mProfile);
+        OnTaskSimulate(dT);
+    }
+
     void EnableProfile(const char *name) {
         Sim::Profile::Release(mProfile);
         mProfile = Sim::Profile::Create();

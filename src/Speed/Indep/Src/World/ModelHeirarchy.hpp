@@ -11,11 +11,10 @@ struct ModelHeirarchy {
     struct Node {
         unsigned int mNameHash;
         unsigned int mPad0;
-        unsigned char mPad1;
-        unsigned char mPad2;
+        unsigned int mModel;
+        unsigned short mPad1;
         unsigned char mNumChildren;
         unsigned char mFirstChild;
-        unsigned int mPad3;
     };
 
     unsigned int mNameHash;

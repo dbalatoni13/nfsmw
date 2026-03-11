@@ -63,6 +63,7 @@ struct _Q4c {
 
 struct PCloudHeader {
     int fNumPClouds;
+    int fPad[3];
 };
 
 struct PCloud {
@@ -160,6 +161,14 @@ struct BoundsPack : public bTNode< BoundsPack > {
 
     bChunk *mChunk;
     Table mTable;
+
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
+    void operator delete(void *mem, std::size_t size) {
+        gFastMem.Free(mem, size, nullptr);
+    }
 
     BoundsPack(bChunk *pack);
 

@@ -12,7 +12,7 @@
 struct EventList;
 
 // total size: 0x40
-struct Trigger {
+struct __attribute__((packed)) Trigger {
     UMath::Vector4 fMatRow0Width;    // offset 0x00, size 0x10
     unsigned int fType : 4;          // offset 0x10:0
     unsigned int fShape : 4;         // offset 0x10:4
@@ -52,7 +52,9 @@ class WTrigger : public Trigger {
     inline void Disable() { fFlags &= ~1; }
 
     inline bool IsEnabled(bool allowSilencables = true) const {
-        return (fFlags & 1) != 0;
+        if (fFlags & 1)
+            return true;
+        return false;
     }
 };
 

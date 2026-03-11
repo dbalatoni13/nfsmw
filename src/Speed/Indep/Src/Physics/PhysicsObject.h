@@ -51,7 +51,7 @@ class PhysicsObject : public Sim::Object,
             for (const_iterator iter = begin(); iter != end(); ++iter) {
                 Behavior *beh = *iter;
                 if (!beh->IsPaused()) {
-                    beh->OnTaskSimulate(dT);
+                    beh->DoSimulate(dT);
                 }
             }
         }

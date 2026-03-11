@@ -402,10 +402,10 @@ bool Smackable::ValidateWorld() {
     float height = wpos.HeightAtPoint(pos);
     IRigidBody *irb = GetRigidBody();
     float radius = irb->GetRadius();
-    if (height <= pos.y + radius) {
-        return true;
+    if (height > pos.y + radius) {
+        return false;
     }
-    return false;
+    return true;
 }
 
 bool Smackable::ShouldDie() {
@@ -450,25 +450,22 @@ void Smackable::ProcessDeath(float dT) {
         return;
     }
     if (mModel != nullptr) {
-        if (CanRetrigger()) {
-            if (!mVirgin || mCollisionBody == nullptr || !mCollisionBody->IsAttachedToWorld()) {
-                ITriggerableModel *itrigger = nullptr;
-                if (mModel->QueryInterface(&itrigger)) {
-                    UMath::Matrix4 mat;
-                    static_cast< ISimable * >(this)->GetTransform(mat);
-                    itrigger->PlaceTrigger(mat, true);
-                    static_cast< ISimable * >(this)->Detach(mModel);
-                    mModel = nullptr;
-                }
-            } else {
-                ISceneryModel *iscenery = nullptr;
-                if (mModel->QueryInterface(&iscenery)) {
-                    iscenery->RestoreScene();
-                    mModel = nullptr;
-                }
+        if (CanRetrigger() &&
+            (!mVirgin || mCollisionBody == nullptr || !mCollisionBody->IsAttachedToWorld())) {
+            ITriggerableModel *itrigger = nullptr;
+            if (mModel->QueryInterface(&itrigger)) {
+                UMath::Matrix4 mat;
+                static_cast< ISimable * >(this)->GetTransform(mat);
+                itrigger->PlaceTrigger(mat, true);
+                static_cast< ISimable * >(this)->Detach(mModel);
+                mModel = nullptr;
             }
         } else {
-            if (mModel != nullptr && !mPersistant) {
+            ISceneryModel *iscenery = nullptr;
+            if (mModel->QueryInterface(&iscenery)) {
+                iscenery->RestoreScene();
+                mModel = nullptr;
+            } else if (mModel != nullptr && !mPersistant) {
                 mModel->ReleaseModel();
                 mModel = nullptr;
             }
@@ -1075,8 +1072,6 @@ IPlaceableScenery *IPlaceableScenery::CreateInstance(const char *name, unsigned 
 }
 
 PlaceableScenery::~PlaceableScenery() {}
-
-SmackableAvoidable::~SmackableAvoidable() {}
 
 void HeirarchyModel::GetDimension(UMath::Vector3 &dim) const {
     GetCollisionGeometry()->GetHalfDimensions(dim);
