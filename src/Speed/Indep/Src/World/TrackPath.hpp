@@ -98,7 +98,7 @@ class TrackPathManager {
 
   public:
     int GetNumBarriers() const { return NumBarriers; }
-    TrackPathBarrier *GetBarrier(int index) { return \&pBarriers[index]; }
+    TrackPathBarrier *GetBarrier(int index) { return &pBarriers[index]; }
     void EnableBarriers(const char *group_name);
     void BuildZoneInfoTable();
     TrackPathZone *FindZone(const bVector2 *position, eTrackPathZoneType zone_type, TrackPathZone *prev_zone);

@@ -9,6 +9,8 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/AI/AIVehicle.h"
+#include "Speed/Indep/Libs/Support/Utility/UTLFastVector.h"
+#include "Speed/Indep/Src/World/Common/WGrid.h"
 #include "Speed/Indep/Src/World/WPathFinder.h"
 #include "Speed/Indep/Src/World/WWorld.h"
 #include "Speed/Indep/Src/World/TrackPath.hpp"
@@ -155,6 +157,102 @@ void WRoadNetwork::ResetBarriers() {
         WRoadSegment *segment = GetSegmentNonConst(segment_number);
         segment->SetCrossesDriveThroughBarrier(false);
         segment->SetCrossesBarrier(false);
+    }
+}
+
+
+void WRoadNetwork::ResolveBarriers() {
+    int num_exemptions = 0;
+    short exempted_roads[4];
+
+    ResetBarriers();
+
+    for (int i = 0; i < 4; i++) {
+        exempted_roads[i] = -1;
+    }
+
+    if (GRaceStatus::Exists()) {
+        WRoadNav nav;
+        const float dir_weight = 1.0f;
+        const bool force_centre_lane = true;
+        nav.SetDecisionFilter(true);
+        nav.SetNavType(WRoadNav::kTypeDirection);
+        GRaceParameters *race_parameters = GRaceStatus::Get().GetRaceParameters();
+
+        if (race_parameters != nullptr) {
+            num_exemptions = race_parameters->GetNumBarrierExemptions();
+            if (num_exemptions > 0) {
+                for (int i = 0; i < num_exemptions; i++) {
+                    GMarker *exemption = race_parameters->GetBarrierExemption(i);
+                    nav.InitAtPoint(exemption->GetPosition(), exemption->GetDirection(),
+                                    force_centre_lane, dir_weight);
+                    if (nav.IsValid()) {
+                        exempted_roads[i] = nav.GetRoadInd();
+                    }
+                }
+            }
+        } else {
+            UMath::Vector3 hack_direction = UMath::Vector3Make(-0.7f, 0.0f, 0.7f);
+            UMath::Vector3 hack_position = UMath::Vector3Make(-2511.0f, 147.8f, 1783.0f);
+            nav.InitAtPoint(hack_position, hack_direction, force_centre_lane, dir_weight);
+            if (nav.IsValid()) {
+                num_exemptions = 1;
+                exempted_roads[0] = nav.GetRoadInd();
+            }
+        }
+    }
+
+    WGrid &grid = WGrid::Get();
+    WRoadNetwork &roadNetwork = WRoadNetwork::Get();
+    int num_barriers = TheTrackPathManager.GetNumBarriers();
+
+    for (int barrier_number = 0; barrier_number < num_barriers; barrier_number++) {
+        TrackPathBarrier *barrier = TheTrackPathManager.GetBarrier(barrier_number);
+        if (barrier->IsEnabled()) {
+            UMath::Vector4 barrier_points[2];
+            barrier_points[0] = UMath::Vector4Make(-barrier->Points[0].y, 0.0f,
+                                                   barrier->Points[0].x, 1.0f);
+            barrier_points[1] = UMath::Vector4Make(-barrier->Points[1].y, 0.0f,
+                                                   barrier->Points[1].x, 1.0f);
+
+            UTL::FastVector<unsigned int, 16> node_list;
+            typedef UTL::Std::set<short, _type_set> SEGMENT_SET;
+            SEGMENT_SET segment_set;
+
+            grid.FindNodes(barrier_points, node_list);
+
+            for (unsigned int *iter = node_list.begin(); iter != node_list.end(); ++iter) {
+                WGridNode *grid_node = grid.GetNode(*iter);
+                if (grid_node != nullptr) {
+                    unsigned int numSegments = grid_node->GetElemTypeCount(WGrid_kRoadSegment);
+                    for (unsigned int i = 0; i < numSegments; i++) {
+                        segment_set.insert(
+                            static_cast<short>(grid_node->GetElemType(i, WGrid_kRoadSegment)));
+                    }
+                }
+            }
+
+            for (SEGMENT_SET::const_iterator it = segment_set.begin();
+                 it != segment_set.end(); ++it) {
+                WRoadSegment *segment = roadNetwork.GetSegmentNonConst(*it);
+                if (SegmentCrossesBarrier(segment, barrier)) {
+                    bool exempt = false;
+                    short road_number = segment->fRoadID;
+                    if (num_exemptions > 0 && road_number != -1) {
+                        for (int j = 0; j < num_exemptions; j++) {
+                            exempt = (road_number == exempted_roads[j]) || exempt;
+                        }
+                    }
+                    if (!exempt) {
+                        if (barrier->IsPlayerBarrier()) {
+                            segment->SetCrossesDriveThroughBarrier(true);
+                        } else {
+                            segment->SetCrossesBarrier(true);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -1112,15 +1210,15 @@ bool WRoadNav::IncLane(int direction) {
     const WRoadSegment *segment = roadNetwork.GetSegment(GetSegmentInd());
     const WRoadProfile *profile = roadNetwork.GetSegmentProfile(*segment, GetNodeInd());
 
-    bool backward = (GetNodeInd() != 0);
+    bool backward = (GetNodeInd() == 0);
     bool inverted = segment->IsProfileInverted(GetNodeInd());
     bool inverted_xor_backward = inverted ^ backward;
 
     int current_lane = 0;
     {
         for (int n = 0; n < profile->fNumZones - 1; n++) {
-            float width = profile->GetLaneWidth(n, !inverted_xor_backward);
-            float offset = profile->GetRelativeLaneOffset(n, !inverted_xor_backward);
+            float width = profile->GetLaneWidth(n, inverted_xor_backward);
+            float offset = profile->GetRelativeLaneOffset(n, inverted_xor_backward);
             if (width * 0.5f + offset < fLaneOffset) {
                 current_lane++;
             }
@@ -1128,18 +1226,18 @@ bool WRoadNav::IncLane(int direction) {
     }
 
     do {
-        if (direction < 1) {
-            current_lane--;
-        } else {
+        if (direction > 0) {
             current_lane++;
+        } else {
+            current_lane--;
         }
         if (current_lane < 0 || current_lane >= profile->fNumZones) {
             return false;
         }
-    } while (!IsSelectable(profile->GetLaneType(current_lane, !inverted_xor_backward)));
+    } while (!IsSelectable(profile->GetLaneType(current_lane, inverted_xor_backward)));
 
-    float new_offset = profile->GetRelativeLaneOffset(current_lane, !inverted_xor_backward);
-    float new_width = profile->GetLaneWidth(current_lane, !inverted_xor_backward);
+    float new_offset = profile->GetRelativeLaneOffset(current_lane, inverted_xor_backward);
+    float new_width = profile->GetLaneWidth(current_lane, inverted_xor_backward);
 
     if (UMath::Abs(new_offset - fLaneOffset) >= new_width * 0.5f) {
         ChangeLanes(new_offset, 0.0f);
@@ -1247,6 +1345,59 @@ float WRoadNav::FindClosestOnSpline(const UMath::Vector3 &point, UMath::Vector3 
     }
 
     return currDistance;
+}
+
+void WRoadNav::InitAtSegment(short segInd, char laneInd, float timeStep) {
+    WRoadNetwork &roadNetwork = WRoadNetwork::Get();
+    const WRoadSegment *segment = roadNetwork.GetSegment(segInd);
+
+    fDeadEnd = 0;
+    fValid = true;
+    fSegmentInd = segInd;
+
+    UMath::Vector3 vec;
+    roadNetwork.GetSegmentForwardVector(segInd, vec);
+
+    bool rightSide = roadNetwork.GetSegmentTrafficLaneRightSide(*segment, laneInd);
+
+    if (!rightSide && !segment->IsOneWay()) {
+        fNodeInd = 0;
+        fForwardVector = UMath::Vector3Make(-vec.x, -vec.y, -vec.z);
+        fSegTime = fabsf(1.0f - timeStep);
+    } else {
+        fNodeInd = 1;
+        fForwardVector = UMath::Vector3Make(vec.x, vec.y, vec.z);
+        fSegTime = timeStep;
+    }
+
+    fStartPos = roadNetwork.GetNode(segment->fNodeIndex[fNodeInd == 0])->fPosition;
+    fEndPos = roadNetwork.GetNode(segment->fNodeIndex[fNodeInd])->fPosition;
+
+    SetLaneInd(laneInd);
+    SetLaneOffset(0.0f);
+
+    {
+        const WRoadNode *nodePtr[2];
+        roadNetwork.GetSegmentNodes(*segment, nodePtr);
+
+        const WRoadProfile *profile;
+
+        profile = roadNetwork.GetProfile(nodePtr[fNodeInd == 0]->fProfileIndex);
+        float startOffset = profile->GetRawLaneOffset(static_cast< int >(laneInd));
+
+        profile = roadNetwork.GetProfile(nodePtr[fNodeInd]->fProfileIndex);
+        float endOffset = profile->GetRawLaneOffset(static_cast< int >(laneInd));
+
+        float laneOffset = (endOffset - startOffset) * fSegTime + startOffset;
+        SetLaneOffset(laneOffset);
+
+        SetStartEndPos(*segment, startOffset, endOffset);
+    }
+
+    SetStartEndControls(*segment);
+    RebuildSplines(segment);
+    EvaluateSplines(segment);
+    ResetCookieTrail();
 }
 
 void WRoadNav::InitAtSegment(short segInd, const UMath::Vector3 &pos, const UMath::Vector3 &dir, bool forceCenterLane) {

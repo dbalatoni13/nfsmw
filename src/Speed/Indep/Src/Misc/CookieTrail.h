@@ -35,7 +35,7 @@ template <typename T, int U> class CookieTrail {
 
     T &NthOldest(int n) {
         if (mCount < mCapacity) {
-            return mData[n];
+            return mData[n % mCount];
         }
         int idx = mLast + n + 1;
         return mData[idx % mCapacity];
