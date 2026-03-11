@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WWorld.h"
 #include "Speed/Indep/Src/World/WWorldMath.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 void VU0_v4crossprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r);
 

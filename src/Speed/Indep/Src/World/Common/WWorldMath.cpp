@@ -63,14 +63,14 @@ bool WWorldMath::MakeSegSpaceMatrix(const UMath::Vector3 &startPt, const UMath::
 
     if (__builtin_fabsf(fwdY) > 0.9f) {
         right.y = 0.0f;
-        right.w = 0.0f;
-        right.x = 1.0f;
         right.z = 0.0f;
+        right.x = 1.0f;
+        right.w = 0.0f;
     } else {
         right.x = 0.0f;
-        right.w = 0.0f;
-        right.y = 1.0f;
         right.z = 0.0f;
+        right.y = 1.0f;
+        right.w = 0.0f;
     }
 
     Crossxyz(right, forward, up);
