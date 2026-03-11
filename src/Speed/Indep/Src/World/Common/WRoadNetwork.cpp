@@ -801,10 +801,14 @@ bool WRoadNav::IsWrongWay() const {
         return false;
     }
     bool result = false;
+    bool is_node_one = (fNodeInd == 1);
     const WRoadSegment *segment = GetSegment();
     if (segment->IsInRace()) {
-        bool seg_foward = segment->RaceRouteForward();
-        if (fNodeInd == 1) {
+        bool seg_foward = true;
+        if (!segment->RaceRouteForward()) {
+            seg_foward = false;
+        }
+        if (is_node_one) {
             if (!seg_foward) {
                 result = true;
             }
@@ -1001,7 +1005,7 @@ void WRoadNav::PullOver() {
     int num_lanes = profile->fNumZones;
     bool inverted = segment->IsProfileInverted(which_node) ^ (which_node == 0);
 
-    int lane = profile->GetLaneNumber(GetLaneInd(), inverted);
+    int lane = profile->GetLaneNumber(static_cast<int>(GetLaneInd()), inverted);
 
     bool is_barrier = false;
     bool last_lane;

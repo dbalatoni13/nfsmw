@@ -93,9 +93,9 @@ void WTriggerManager::Init() {
         WTrigger &trig = WCollisionAssets::Get().Trigger(i);
         if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x12]) << 8) & 0x200) {
             WTrigger &trig2 = WCollisionAssets::Get().Trigger(i);
-            unsigned int flags = static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig2)[0x13])
-                               | ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig2)[0x12]) << 8)
-                               | (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig2)[0x11]) << 16));
+            unsigned int flags = (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig2)[0x11]) << 16)
+                               | (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig2)[0x12]) << 8)
+                               | static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig2)[0x13]);
             *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(&trig2) + 0x10) =
                 (*reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(&trig2) + 0x10) & 0xFF000000) | (flags & ~0x400);
         }

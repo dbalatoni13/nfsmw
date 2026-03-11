@@ -42,8 +42,8 @@ WCollisionAssets::WCollisionAssets()
         fPackLoadCallback[onCallback] = nullptr;
     }
 
-    fStaticTriggersCount = 0;
     fStaticTriggers = nullptr;
+    fStaticTriggersCount = 0;
     fStaticCollisionObjects = nullptr;
 
     mCollisionPackList = new WCollisionPack *[0xA8C];
@@ -71,8 +71,7 @@ WCollisionAssets::~WCollisionAssets() {
     delete fManagedCollisionInstances;
     fManagedCollisionInstances = nullptr;
 
-    CollisionObjectMap::iterator iter;
-    for (iter = fManagedCollisionObjects->begin(); iter != fManagedCollisionObjects->end(); ++iter) {
+    for (CollisionObjectMap::iterator iter = fManagedCollisionObjects->begin(); iter != fManagedCollisionObjects->end(); ++iter) {
         delete iter->second;
     }
     delete fManagedCollisionObjects;

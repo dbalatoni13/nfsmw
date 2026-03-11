@@ -112,8 +112,9 @@ struct WRoadProfile {
     int GetLaneNumber(int lane, bool inverted) const {
         if (inverted) {
             return fNumZones - lane - 1;
+        } else {
+            return lane;
         }
-        return lane;
     }
     int GetNumTrafficLanes(bool forward) const;
     int GetNthTrafficLane(int n, bool forward) const;
@@ -211,7 +212,7 @@ struct WRoadSegment {
     }
 
     bool RaceRouteForward() const {
-        return (fFlags & (1 << 2)) != 0;
+        return fFlags & (1 << 2);
     }
 
     // void SetRaceRouteForward(bool forward) {}

@@ -491,3 +491,94 @@ bool WCollisionMgr::GetBarrierNormal(const WCollisionBarrierList &barrierList, c
     }
     return cInfo.HitSomething();
 }
+
+bool WCollisionMgr::GetBarrierNormal(const WCollisionInstanceCacheList &instList, const UMath::Vector4 *testSegment, WorldCollisionInfo &cInfo) {
+    const WCollisionBarrier *closestBarrier = nullptr;
+    const WCollisionInstance *closestBarrierInst = nullptr;
+    UMath::Vector4 closestIntersectionPt;
+    float closestDistSq = FLT_MAX;
+
+    for (const WCollisionInstance *const *iIter = instList.begin(); iIter != instList.end(); ++iIter) {
+        const WCollisionInstance &cInst = **iIter;
+        const WCollisionArticle *cArt = cInst.fCollisionArticle;
+        if (cArt != nullptr && cArt->fNumEdges != 0) {
+            UMath::Matrix4 invMat;
+            UMath::Vector4 tseg[2];
+            cInst.MakeMatrix(invMat, true);
+            UMath::RotateTranslate(UMath::Vector4To3(testSegment[0]), invMat, UMath::Vector4To3(tseg[0]));
+            UMath::RotateTranslate(UMath::Vector4To3(testSegment[1]), invMat, UMath::Vector4To3(tseg[1]));
+
+            const WCollisionBarrier *barrier = cArt->GetBarrier(0);
+            for (int i = 0; i < cArt->fNumEdges; ++i) {
+                if (!SurfacePassesExclusion(barrier->GetWSurface())) {
+                    barrier = barrier->Next();
+                    continue;
+                }
+                UMath::Vector4 intersectionPt;
+                if (WWorldMath::SegmentIntersect(tseg, barrier->GetPts(), &intersectionPt)) {
+                    float yTop = barrier->YTop();
+                    float yBot = barrier->YBot();
+                    float yMin = yTop;
+                    if (yBot < yTop) {
+                        yMin = yBot;
+                    }
+                    if (yMin < intersectionPt.y) {
+                        if (yTop < yBot) {
+                            yTop = yBot;
+                        }
+                        if (intersectionPt.y < yTop) {
+                            float distSq = UMath::DistanceSquare(
+                                UMath::Vector4To3(intersectionPt),
+                                UMath::Vector4To3(tseg[0]));
+                            if (distSq < closestDistSq) {
+                                UMath::Copy(intersectionPt, closestIntersectionPt);
+                                closestBarrierInst = &cInst;
+                                closestBarrier = barrier;
+                                closestDistSq = distSq;
+                            }
+                        }
+                    }
+                }
+                barrier = barrier->Next();
+            }
+        }
+    }
+
+    cInfo.fType = 0;
+    if (closestBarrier != nullptr) {
+        cInfo.fCInst = closestBarrierInst;
+        cInfo.fType = 2;
+        cInfo.fAnimated = closestBarrierInst->IsDynamic();
+
+        UMath::Matrix4 invMat;
+        closestBarrierInst->MakeMatrix(invMat, true);
+        OrthoInverse(invMat);
+
+        WCollisionBarrier b;
+        UMath::RotateTranslate(UMath::Vector4To3(*closestBarrier->GetPt(0)), invMat, UMath::Vector4To3(b.fPts[0]));
+        UMath::RotateTranslate(UMath::Vector4To3(*closestBarrier->GetPt(1)), invMat, UMath::Vector4To3(b.fPts[1]));
+        b.fPts[0].w = closestBarrier->fPts[0].w;
+        b.fPts[1].w = closestBarrier->fPts[1].w;
+
+        const WCollisionArticle *cArt = closestBarrierInst->fCollisionArticle;
+        const Attrib::Collection *surfaceHash = cArt->GetSurface(closestBarrier->GetWSurface().Surface());
+
+        WCollisionBarrierListEntry ble(b, surfaceHash, closestDistSq);
+        cInfo.fBle = ble;
+
+        UMath::RotateTranslate(UMath::Vector4To3(closestIntersectionPt), invMat, UMath::Vector4To3(cInfo.fCollidePt));
+        cInfo.fCollidePt.w = 0.0f;
+
+        cInfo.fBle.fB.GetNormal(UMath::Vector4To3(cInfo.fNormal));
+        cInfo.fNormal.y = 0.0f;
+        cInfo.fNormal.w = 0.0f;
+
+        UMath::Vector3 testVec;
+        UMath::Sub(UMath::Vector4To3(*testSegment), UMath::Vector4To3(cInfo.fCollidePt), testVec);
+        if (cInfo.fNormal.x * testVec.x + cInfo.fNormal.z * testVec.z < 0.0f) {
+            cInfo.fNormal.x = -cInfo.fNormal.x;
+            cInfo.fNormal.z = -cInfo.fNormal.z;
+        }
+    }
+    return cInfo.HitSomething();
+}

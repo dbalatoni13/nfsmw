@@ -62,15 +62,16 @@ bool WWorldMath::MakeSegSpaceMatrix(const UMath::Vector3 &startPt, const UMath::
     forward.y = fwdY;
 
     if (__builtin_fabsf(fwdY) > 0.9f) {
-        right.w = 0.0f;
         right.y = 0.0f;
-        right.x = 1.0f;
-    } else {
         right.w = 0.0f;
+        right.x = 1.0f;
+        right.z = 0.0f;
+    } else {
         right.x = 0.0f;
+        right.w = 0.0f;
         right.y = 1.0f;
+        right.z = 0.0f;
     }
-    right.z = 0.0f;
 
     Crossxyz(right, forward, up);
 
@@ -108,7 +109,7 @@ void WWorldMath::NearestPointLine2D3(const UMath::Vector3 &pt, const UMath::Vect
     const float &pz = pt.z;
     float z = z2 - z1;
     float x = x2 - x1;
-    float div = pow2(z) + pow2(x);
+    float div = pow2(x) + pow2(z);
     float u = (px - x1) * x + (pz - z1) * z;
     if (0.0f < div) {
         u = u / div;
@@ -131,7 +132,7 @@ void WWorldMath::NearestPointLine2D(const UMath::Vector4 &pt, const UMath::Vecto
     const float &pz = pt.z;
     float z = z2 - z1;
     float x = x2 - x1;
-    float div = pow2(z) + pow2(x);
+    float div = pow2(x) + pow2(z);
     float u = (px - x1) * x + (pz - z1) * z;
     if (0.0f < div) {
         u = u / div;
