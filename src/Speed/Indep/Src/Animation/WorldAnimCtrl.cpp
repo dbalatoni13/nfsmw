@@ -157,10 +157,10 @@ int CWorldAnimCtrl::AdvanceAnimTime(float timestep) {
     float effective_time_scale = GetEffectiveTimeScale();
     float ets30 = effective_time_scale * 30.0f;
     float this_time_step = timestep * ets30;
-    float this_master_delay_elapsed = MasterDelayElapsed * ets30;
     float this_master_delay_len = m_masterDelayTime * 30.0f;
-    float this_local_delay_elapsed = LocalDelayElapsed * ets30;
     float this_local_delay_len = m_localDelayTime * 30.0f;
+    float this_master_delay_elapsed = MasterDelayElapsed * ets30;
+    float this_local_delay_elapsed = LocalDelayElapsed * ets30;
 
     float range_len;
     if (m_flags & 0x40) {

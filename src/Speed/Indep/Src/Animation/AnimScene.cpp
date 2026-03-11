@@ -158,16 +158,13 @@ void CAnimSceneData::InitHeaderData(void *data, int size) {
 void CAnimSceneData::AddEntityData(void *data, int size) {
     CAnimEntityFactory::EndianSwapEntityData(data, size);
 
-    CAnimEntityDataLayout *entity_data = reinterpret_cast< CAnimEntityDataLayout * >(new CAnimEntityData());
-    bNode *tail = mAnimEntityDataList.HeadNode.Prev;
+    CAnimEntityDataLayout *entity_data =
+        reinterpret_cast< CAnimEntityDataLayout * >(new CAnimEntityData());
 
     entity_data->mType = *reinterpret_cast< int * >(data);
     entity_data->mData = data;
     entity_data->mSize = size;
-    tail->Next = &entity_data->node;
-    entity_data->node.Next = &mAnimEntityDataList.HeadNode;
-    mAnimEntityDataList.HeadNode.Prev = &entity_data->node;
-    entity_data->node.Prev = tail;
+    mAnimEntityDataList.AddTail(&entity_data->node);
 }
 
 CAnimSceneData *CreateAnimSceneData(bChunk *nested_chunk, bChunk *sub_chunk) {
@@ -523,8 +520,8 @@ bool CAnimScene::Init() {
         find_start_line = true;
     }
 
-    bMatrix4 scene_rotation_matrix;
     bMatrix4 scene_translation_matrix;
+    bMatrix4 scene_rotation_matrix;
     CAnimLocator::GetInitialAnimMatricies(&scene_rotation_matrix, &scene_translation_matrix, find_start_line);
     mSceneRotationMatrix = scene_rotation_matrix;
     mSceneTranslationMatrix = scene_translation_matrix;

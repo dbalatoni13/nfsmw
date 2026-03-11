@@ -2,7 +2,7 @@
 #define _CANIMENTITYCREATIONCONTEXT
 
 struct CAnimEntityCreationContext {
-    static bool mIsRaceStart;
+    static int mIsRaceStart;
 
     static void SetRaceStartContext(bool enable) { mIsRaceStart = enable; }
 };

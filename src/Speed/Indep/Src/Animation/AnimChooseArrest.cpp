@@ -77,6 +77,7 @@ void ChooseArrestAnimation(int *cameraTrack, char *sceneName, int strLen) {
         case 5:
             bStrNCpy(sceneName, "ArrestM04b", strLen);
             break;
+        case 6:
         default:
             bStrNCpy(sceneName, "ArrestF23b", strLen);
             break;
@@ -105,6 +106,7 @@ void ChooseArrestAnimation(int *cameraTrack, char *sceneName, int strLen) {
     case 5:
         bStrNCpy(sceneName, "ArrestM14b", strLen);
         break;
+    case 6:
     default:
         bStrNCpy(sceneName, "ArrestF14b", strLen);
         break;

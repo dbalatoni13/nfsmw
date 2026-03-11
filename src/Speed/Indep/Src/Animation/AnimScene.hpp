@@ -21,6 +21,9 @@ enum eAnimProperty {
 
 // total size: 0x14
 class CAnimEntityData : public bTNode<CAnimEntityData> {
+  public:
+    void *operator new(size_t size) { return ::operator new[](size); }
+
   private:
     int mType;   // offset 0x8, size 0x4
     void *mData; // offset 0xC, size 0x4
@@ -30,6 +33,8 @@ class CAnimEntityData : public bTNode<CAnimEntityData> {
 // total size: 0x1C
 class CAnimSceneData : public bTNode<CAnimSceneData> {
   public:
+    void *operator new(size_t size) { return ::operator new[](size); }
+
     CAnimSceneData(bChunk *chunk);
     virtual ~CAnimSceneData();
 
