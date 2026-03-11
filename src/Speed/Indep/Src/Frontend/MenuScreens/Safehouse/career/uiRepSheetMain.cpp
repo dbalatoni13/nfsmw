@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
@@ -16,6 +17,7 @@ void FEngSetTextureHash(FEImage* image, unsigned int hash);
 void FEngSetScript(const char* pkg_name, unsigned int obj_hash, unsigned int script_hash, bool);
 void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned int lang_hash);
 int FEPrintf(const char* pkg_name, int hash, const char* fmt, ...);
+int FEngSNPrintf(char* buffer, int buf_size, const char* fmt, ...);
 unsigned int FEngHashString(const char* format, ...);
 const char* GetLocalizedString(unsigned int hash);
 int GetCurrentLanguage();
@@ -142,8 +144,84 @@ unsigned int uiRepSheetMain::GetDefeatedTexture() {
 }
 
 void uiRepSheetMain::UpdateInfo() {
-    FEPrintf(GetPackageName(), 0xb514e2d8, "%d", 0);
-    FEPrintf(GetPackageName(), 0xf91a59f6, "%d", 0);
+    GRaceBin* bin = GRaceDatabase::Get().GetBinNumber(iCurrentViewBin);
+    int completed_races = bin->GetAwardedRaceWins();
+    int required_races = bin->GetRequiredRaceWins();
+    int completed_challenges = bin->GetCompletedChallenges();
+    int required_challenges = bin->GetRequiredChallenges();
+    int completed_bounty = FEDatabase->GetPlayerCarStable(0)->GetTotalBounty();
+    int required_bounty = bin->GetRequiredBounty();
+
+    FEPrintf(GetPackageName(), 0x15d80973, "%d", completed_races);
+    FEPrintf(GetPackageName(), 0xd802fba8, "%d", completed_challenges);
+    FEPrintf(GetPackageName(), 0x322b18f9, "%u", completed_bounty);
+    FEPrintf(GetPackageName(), 0xde7ad199, "%d", required_races);
+    FEPrintf(GetPackageName(), 0x7242962e, "%d", required_challenges);
+    FEPrintf(GetPackageName(), 0x055c6e5f, "%u", required_bounty);
+
+    if (completed_races >= required_races) {
+        FEngSetScript(GetPackageName(), 0x4c3b1536, 0xe6361f46, true);
+    } else {
+        FEngSetScript(GetPackageName(), 0x4c3b1536, 0x16a259, true);
+    }
+    if (completed_challenges >= required_challenges) {
+        FEngSetScript(GetPackageName(), 0x4c3b1537, 0xe6361f46, true);
+    } else {
+        FEngSetScript(GetPackageName(), 0x4c3b1537, 0x16a259, true);
+    }
+    if (completed_bounty >= required_bounty) {
+        FEngSetScript(GetPackageName(), 0x4c3b1538, 0xe6361f46, true);
+    } else {
+        FEngSetScript(GetPackageName(), 0x4c3b1538, 0x16a259, true);
+    }
+
+    char buf[32];
+    if (bIsInGame) {
+        FEngSNPrintf(buf, 32, GetLocalizedString(0x96ca2471), iCurrentViewBin);
+    } else {
+        FEngSNPrintf(buf, 32, GetLocalizedString(0x3a64de21), iCurrentViewBin);
+    }
+    FEPrintf(GetPackageName(), 0x242657ce, "%s", buf);
+
+    const char* rival_name = GetLocalizedString(FEngHashString("BL_NAME_%d", iCurrentViewBin));
+    const char* challenge_blurb = GetLocalizedString(FEngHashString("BL_BLURB_%d", iCurrentViewBin));
+    FEPrintf(GetPackageName(), 0x7ac3d0c9, "%s", rival_name);
+    FEPrintf(GetPackageName(), 0x79cf0442, "%s", challenge_blurb);
+
+    unsigned int bossRaceCount = bin->GetBossRaceCount();
+    bBossAvailable = false;
+    for (unsigned int i = 0; i < bossRaceCount; i++) {
+        unsigned int hash = bin->GetBossRaceHash(i);
+        GRaceParameters* race = GRaceDatabase::Get().GetRaceFromHash(hash);
+        int available = race->GetIsAvailable(GRace::kRaceContext_Career);
+        bBossAvailable = bBossAvailable | (available != 0);
+    }
+
+    bBossBeaten = false;
+    if (FEDatabase->GetCareerSettings()->HasBeatenCareer() ||
+        static_cast<int>(FEDatabase->GetCareerSettings()->GetCurrentBin()) > static_cast<int>(iCurrentViewBin)) {
+        bBossBeaten = true;
+    }
+
+    FEngSetInvisible(GetPackageName(), 0x34d4433b);
+
+    if (bBossBeaten) {
+        FEngSetInvisible(GetPackageName(), 0x55f6aa1a);
+        FEngSetVisible(GetPackageName(), 0x34d4433b);
+        cFEng::Get()->QueuePackageMessage(0xb4c144b1, GetPackageName(), nullptr);
+    } else {
+        if (bBossAvailable) {
+            cFEng::Get()->QueuePackageMessage(FEngHashString("BOSS_AVAILABLE"), GetPackageName(), nullptr);
+            FEngSetVisible(GetPackageName(), 0x55f6aa1a);
+        } else {
+            cFEng::Get()->QueuePackageMessage(FEngHashString("BOSS_UNAVAILABLE"), GetPackageName(), nullptr);
+            FEngSetInvisible(GetPackageName(), 0x55f6aa1a);
+        }
+    }
+
+    FEPlayerCarDB* stable = FEDatabase->GetPlayerCarStable(0);
+    FEPrintf(GetPackageName(), 0xb514e2d8, "%s %d", GetLocalizedString(0xce6b99b1), stable->GetTotalBounty());
+    FEPrintf(GetPackageName(), 0xf91a59f6, "%s %d", GetLocalizedString(0x73b79e0), FEDatabase->GetCareerSettings()->GetCash());
 }
 
 void uiRepSheetMain::ScrollRival(eScrollDir dir) {

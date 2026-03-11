@@ -245,7 +245,7 @@ class GRaceParameters {
 
     unsigned int GetEventHash() const;
 
-    // bool GetIsAvailable(enum Context context) const;
+    bool GetIsAvailable(GRace::Context context) const;
 
     bool GetIsSunsetRace() const;
 
