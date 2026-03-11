@@ -203,6 +203,10 @@ class CameraAnchor {
         return &mGeomRot;
     }
 
+    bMatrix4 *GetGeometryOrientation() {
+        return &mGeomRot;
+    }
+
     float GetVelMag() const {
         return mVelMag;
     }
@@ -281,6 +285,22 @@ class CameraAnchor {
 
     void SetDimension(const bVector3 &dim) { mDimension = dim; }
     void SetTopSpeed(float s) { mTopSpeed = s; }
+
+    void SetVehicleDestroyed(bool destroyed) { mIsVehicleDestroyed = destroyed; }
+    void SetCloseToRoadBlock(bool close) { mIsCloseToRoadBlock = close; }
+    void SetBrakeEngaged(bool engaged) { mIsBrakeEngaged = engaged; }
+    void SetDragRace(bool drag) { mIsDragRace = drag; }
+    void SetSurface(const SimSurface &surface) { mSurface = surface; }
+    void SetTouchingGround(bool touchingGround) { mIsTouchingGround = touchingGround; }
+    void SetNosEngaged(bool engaged) { mIsNosEngaged = engaged; }
+    void SetOverRev(bool overRev) { mIsOverRev = overRev; }
+    void SetDrift(float amount) { mDrift = amount; }
+    void SetGearChanging(bool changing) { mIsGearChanging = changing; }
+    void SetCollisionDamping(float amount) { mCollisionDamping = amount; }
+    void SetGroundCollision(float amount) { mGroundCollision = amount; }
+    void SetObjectCollision(float amount) { mObjectCollision = amount; }
+
+    bVector3 *GetAcceleration() { return &mAccel; }
 
     POV *GetPov(int pov_type);
 
