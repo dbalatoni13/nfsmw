@@ -302,10 +302,23 @@ struct WRoadSegment {
     }
 
     bool IsProfileInverted(int which_end) const {
+        int bit;
         if (!which_end) {
-            return IsEndInverted();
+            bit = (fFlags >> 10) & 1;
+        } else {
+            bit = (fFlags >> 9) & 1;
         }
-        return IsStartInverted();
+        bool result = true;
+        if (!which_end) {
+            if (bit) {
+                result = false;
+            }
+        } else {
+            if (!bit) {
+                result = false;
+            }
+        }
+        return result;
     }
 
     // void SetEndInverted(bool inverted) {}
