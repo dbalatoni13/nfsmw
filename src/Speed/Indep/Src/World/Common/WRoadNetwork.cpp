@@ -16,6 +16,8 @@
 #include "Speed/Indep/Src/World/WWorld.h"
 #include "Speed/Indep/Src/World/TrackPath.hpp"
 
+extern BOOL bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *point, float extra_width);
+
 static const int drivable_lanes[8] = {
     static_cast<int>(0xFFFFDF7F),
     0x00000002,

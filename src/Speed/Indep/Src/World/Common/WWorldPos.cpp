@@ -54,16 +54,15 @@ bool WWorldPos::FindClosestFaceInternal(const WCollisionInstanceCacheList &instL
     for (const WCollisionInstance *const *iIter = instList.begin(); iIter != instList.end(); ++iIter) {
         WCollisionTri face;
         float dist;
-        const WCollisionInstance &cInst = **iIter;
 
-        if (!cInst.NeedsCrossProduct()) {
+        if (!(*iIter)->NeedsCrossProduct()) {
             WCollisionMgr collMgr(0, 3);
-            if (collMgr.FindFaceInCInst(pt, cInst, face, dist)) {
+            if (collMgr.FindFaceInCInst(pt, **iIter, face, dist)) {
                 foundFace = true;
                 if (dist < bestDist) {
                     fFaceValid = 1;
                     fFace = face;
-                    FindSurface(*cInst.fCollisionArticle);
+                    FindSurface(*(*iIter)->fCollisionArticle);
                     bestDist = dist;
                 }
             }
@@ -77,13 +76,13 @@ bool WWorldPos::FindClosestFaceInternal(const WCollisionInstanceCacheList &instL
                 WWorldMath::MakeSegSpaceMatrix(startPt, endPt, mat);
             }
             WCollisionMgr collMgr2(0, 3);
-            if (collMgr2.FindFaceInCInst(mat, endPt, cInst, face, dist)) {
+            if (collMgr2.FindFaceInCInst(mat, endPt, **iIter, face, dist)) {
                 foundFace = true;
                 dist = dist - fYOffset;
                 if (dist < bestDist) {
                     fFaceValid = 1;
                     fFace = face;
-                    FindSurface(*cInst.fCollisionArticle);
+                    FindSurface(*(*iIter)->fCollisionArticle);
                     bestDist = dist;
                 }
             }
