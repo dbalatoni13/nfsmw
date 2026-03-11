@@ -65,8 +65,7 @@ void DebugWorldCameraMover::JoyHandler() {
         ActionRef aRef = mActionQ->GetAction();
         float data = gDebugCameraInputGraph.GetValue(aRef.Data());
 
-        int id = aRef.ID();
-        switch (id) {
+        switch (aRef.ID()) {
         case 0x35:
             HeightInc = data * 10.0f;
             break;
@@ -74,50 +73,33 @@ void DebugWorldCameraMover::JoyHandler() {
             HeightInc = data * -10.0f;
             break;
         case 0x37:
-            StrafeInc = -data * -20.0f;
-            break;
-        case 0x38:
-            StrafeInc = data * -20.0f;
-            break;
-        case 0x39:
-            ForwardAnalogInc = data * 20.0f;
-            break;
-        case 0x3a:
-            ForwardAnalogInc = -data * 20.0f;
-            break;
         case 0x3b:
-            StrafeInc = -data * -20.0f;
-            break;
+            data = -data;
+        case 0x38:
         case 0x3c:
             StrafeInc = data * -20.0f;
             break;
+        case 0x3a:
+            data = -data;
+        case 0x39:
+            ForwardAnalogInc = data * 20.0f;
+            break;
+        case 0x3e:
+            data = -data;
         case 0x3d:
             ForwardInc = -data * 20.0f;
             break;
-        case 0x3e:
-            ForwardInc = data * 20.0f;
-            break;
-        case 0x3f:
-            TurnVInc = static_cast<short>(static_cast<int>(-data * 20000.0f));
-            break;
         case 0x40:
-            TurnVInc = static_cast<short>(static_cast<int>(data * 20000.0f));
-            break;
-        case 0x41:
-            TurnHInc = static_cast<short>(static_cast<int>(-data * -20000.0f));
-            break;
-        case 0x42:
-            TurnHInc = static_cast<short>(static_cast<int>(data * -20000.0f));
-            break;
+        case 0x44:
+            data = -data;
+        case 0x3f:
         case 0x43:
             TurnVInc = static_cast<short>(static_cast<int>(-data * 20000.0f));
             break;
-        case 0x44:
-            TurnVInc = static_cast<short>(static_cast<int>(data * 20000.0f));
-            break;
+        case 0x41:
         case 0x45:
-            TurnHInc = static_cast<short>(static_cast<int>(-data * -20000.0f));
-            break;
+            data = -data;
+        case 0x42:
         case 0x46:
             TurnHInc = static_cast<short>(static_cast<int>(data * -20000.0f));
             break;

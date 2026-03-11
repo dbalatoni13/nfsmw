@@ -36,11 +36,13 @@ void VU0_v4scaleaddxyz(const UMath::Vector4 &a, const float scaleby, const UMath
 float VU0_v4lengthsquare(const UMath::Vector4 &a);
 float VU0_v4lengthsquarexyz(const UMath::Vector4 &a);
 void VU0_v4subxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result);
+void VU0_v4sub(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result);
 float VU0_v4dotprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b);
 void VU0_v4scale(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &result);
 void VU0_v4scalexyz(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &result);
 float VU0_v4distancesquarexyz(const UMath::Vector4 &p1, const UMath::Vector4 &p2);
 void VU0_MATRIX3x4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 &m, UMath::Vector3 &result);
+void VU0_MATRIX3x4_vect4mult(const UMath::Vector4 &v, const UMath::Matrix4 &m, UMath::Vector4 &result);
 void VU0_qmul(const UMath::Vector4 &b, const UMath::Vector4 &a, UMath::Vector4 &dest);
 
 void VU0_v3quatrotate(const UMath::Vector4 &q, const UMath::Vector3 &v, UMath::Vector3 &result);
@@ -194,6 +196,8 @@ inline float VU0_v4lengthsquare(const UMath::Vector4 &a) {}
 
 inline float VU0_v4lengthsquarexyz(const UMath::Vector4 &a) {}
 
+inline void VU0_v4sub(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result) {}
+
 inline void VU0_v4subxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result) {}
 
 inline float VU0_v4dotprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b) {}
@@ -212,6 +216,20 @@ inline void VU0_v4scalexyz(const UMath::Vector4 &a, const float scaleby, UMath::
 inline float VU0_v4distancesquarexyz(const UMath::Vector4 &p1, const UMath::Vector4 &p2) {}
 
 inline void VU0_MATRIX3x4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 &m, UMath::Vector3 &result) {
+    asm __volatile__("lqc2 vf1, %1\n"
+                     "lqc2 vf2, 0x0(%2)\n"
+                     "lqc2 vf3, 0x10(%2)\n"
+                     "lqc2 vf4, 0x20(%2)\n"
+                     "lqc2 vf5, %0\n"
+                     "vmulax ACC, vf2, vf1x\n"
+                     "vmadday ACC, vf3, vf1y\n"
+                     "vmaddz vf5, vf4, vf1z\n"
+                     "sqc2 vf5, %0"
+                     : "=o"(result)
+                     : "o"(v), "r"(&m));
+}
+
+inline void VU0_MATRIX3x4_vect4mult(const UMath::Vector4 &v, const UMath::Matrix4 &m, UMath::Vector4 &result) {
     asm __volatile__("lqc2 vf1, %1\n"
                      "lqc2 vf2, 0x0(%2)\n"
                      "lqc2 vf3, 0x10(%2)\n"
@@ -625,6 +643,10 @@ inline float VU0_v3lengthxz(const struct UMath::Vector3 &a) {
 
 inline float VU0_v4lengthxyz(const UMath::Vector4 &a) {
     return VU0_sqrt(VU0_v4lengthsquarexyz(a));
+}
+
+inline float VU0_v4length(const UMath::Vector4 &a) {
+    return VU0_sqrt(VU0_v4lengthsquare(a));
 }
 
 inline void VU0_v3unit(const UMath::Vector3 &a, UMath::Vector3 &result) {

@@ -255,6 +255,10 @@ inline void Subxyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
     VU0_v4subxyz(a, b, r);
 }
 
+inline void Sub(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4sub(a, b, r);
+}
+
 inline void SetYRot(Matrix4 &r, float a) {
     VU0_MATRIX4setyrot(r, a);
 }
@@ -286,6 +290,10 @@ inline void Rotate(const Vector3 &a, const Matrix4 &m, Vector3 &r) {
 #else
     VU0_MATRIX3x4_vect3mult(a, m, r);
 #endif
+}
+
+inline void Rotate(const Vector4 &a, const Matrix4 &m, Vector4 &r) {
+    VU0_MATRIX3x4_vect4mult(a, m, r);
 }
 
 inline float Dot(const Vector3 &a, const Vector3 &b) {
@@ -387,6 +395,10 @@ inline float Length(const Vector3 &a) {
 #else
     return VU0_v3length(a);
 #endif
+}
+
+inline float Length(const Vector4 &a) {
+    return VU0_v4length(a);
 }
 
 inline void Matrix4ToQuaternion(const Matrix4 &m, Vector4 &q) {
