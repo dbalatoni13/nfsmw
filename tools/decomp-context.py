@@ -260,7 +260,7 @@ def check_ghidra() -> None:
     # Try a minimal command that lists available programs
     try:
         result = subprocess.run(
-            [ghidra_cmd, "list", "programs"],
+            [ghidra_cmd, "program", "list"],
             capture_output=True,
             timeout=15,
         )
@@ -275,9 +275,9 @@ def check_ghidra() -> None:
                 print(f"      Run: ghidra set-default project NeedForSpeed")
 
         if result.returncode != 0 and stderr:
-            print(f"WARN  ghidra list programs exited {result.returncode}: {stderr}")
+            print(f"WARN  ghidra program list exited {result.returncode}: {stderr}")
     except subprocess.TimeoutExpired:
-        print("WARN  ghidra list programs timed out — Ghidra may be slow to start")
+        print("WARN  ghidra program list timed out — Ghidra may be slow to start")
     except Exception as e:
         print(f"WARN  could not verify programs: {e}")
 
