@@ -170,32 +170,29 @@ bool PauseMenu::IsTuningAvailable() {
     FECarRecord* record = stable->GetCarRecordByHandle(player_car);
     FECustomizationRecord* custom = stable->GetCustomizationRecordByHandle(record->Customization);
     if (custom != nullptr) {
-        for (int i = 0; i < 7; i++) {
-            if (CustomTuningScreen::IsTuningAvailable(stable, record, i)) {
-                avail = true;
-            }
+        for (int i = 0; i <= 6; i++) {
+            avail = avail | CustomTuningScreen::IsTuningAvailable(stable, record, i);
         }
     }
     return avail;
 }
 
 void PauseMenu::Setup() {
-    if (!mCalledFromPostRace) {
-        FEngSetLanguageHash(GetPackageName(), 0x863404B5, 0x6C839FBE);
-    } else {
+    if (mCalledFromPostRace) {
         FEngSetLanguageHash(GetPackageName(), 0x863404B5, 0x376EB982);
+    } else {
+        FEngSetLanguageHash(GetPackageName(), 0x863404B5, 0x6C839FBE);
     }
     if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_TimeTrial) {
         SetupOnlineOptions();
     } else {
         SetupOptions();
     }
-    unsigned char lastButton = FEngGetLastButton(GetPackageName());
+    int lastButton = FEngGetLastButton(GetPackageName());
     if (bFadeInIconsImmediately) {
         Options.bFadingIn = true;
-        Options.fCurFadeTime = 0.0f;
         Options.bFadingOut = false;
-        Options.StartFadeIn();
+        Options.fCurFadeTime = 0.0f;
     }
     Options.SetInitialPos(lastButton);
     SetInitialOption(lastButton);
@@ -314,7 +311,9 @@ void PauseMenu::SetupOptions() {
 }
 
 void PauseMenu::SetupOnlineOptions() {
-    AddOption(new pm_QuitRaceToFE(0x4C9E34E6, 0xF95320B8, 0));
+    pm_QuitRaceToFE* opt = new pm_QuitRaceToFE(0x4C9E34E6, 0xF95320B8, 0);
+    opt->SetReactImmediately(true);
+    AddOption(opt);
 }
 
 void pm_ResumeRace::React(const char* pkg_name, unsigned int data, FEObject* obj,

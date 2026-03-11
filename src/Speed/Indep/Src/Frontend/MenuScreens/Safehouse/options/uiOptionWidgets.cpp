@@ -623,8 +623,11 @@ void POLeaderBoard::Draw() {
 }
 
 void COVibration::Act(const char* parent_pkg, unsigned int data) {
-    switch (data) {
-    case 0x9120409E: {
+    if (data == 0x9120409E) goto do_case1;
+    if (data != 0xB5971BF1) goto end;
+    goto do_case2;
+do_case1:
+    {
         int player = GetPlayerToEditForOptions();
         FEDatabase->GetPlayerSettings(player)->Rumble = 0;
         FEngSetInvisible(parent_pkg, 0xBFF41BD9);
@@ -633,11 +636,10 @@ void COVibration::Act(const char* parent_pkg, unsigned int data) {
         FEngSetVisible(parent_pkg, 0xBEE65E8C);
         FEngSetVisible(parent_pkg, 0x7C51B6D6);
         FEngSetVisible(GetRightImage());
-        break;
     }
-    default:
-        goto end;
-    case 0xB5971BF1: {
+    goto shared;
+do_case2:
+    {
         int player = GetPlayerToEditForOptions();
         if (FEDatabase->GetPlayerSettings(player)->Rumble) {
             return;
@@ -650,9 +652,8 @@ void COVibration::Act(const char* parent_pkg, unsigned int data) {
         FEngSetVisible(parent_pkg, 0xBFF41BD9);
         FEngSetVisible(parent_pkg, 0x7BCD6703);
         FEngSetVisible(GetLeftImage());
-        break;
     }
-    }
+shared:
     {
         int player = GetPlayerToEditForOptions();
         if (FEDatabase->GetPlayerSettings(player)->Rumble) {
@@ -679,11 +680,15 @@ void COVibration::Draw() {
 }
 
 void COVibration::UnsetFocus() {
-    FEngSetVisible("Pause_Controller.fng", 0xBFF41BD9);
-    FEngSetVisible("Pause_Controller.fng", 0x7BCD6703);
+    const unsigned long FEObj_ArrowMainLeft = 0xBFF41BD9;
+    const unsigned long FEObj_LEFTARROW0 = 0x7BCD6703;
+    const unsigned long FEObj_ArrowMainRight = 0xBEE65E8C;
+    const unsigned long FEObj_RIGHTARROW0 = 0x7C51B6D6;
+    FEngSetVisible("Pause_Controller.fng", FEObj_ArrowMainLeft);
+    FEngSetVisible("Pause_Controller.fng", FEObj_LEFTARROW0);
     FEngSetVisible(GetLeftImage());
-    FEngSetVisible("Pause_Controller.fng", 0xBEE65E8C);
-    FEngSetVisible("Pause_Controller.fng", 0x7C51B6D6);
+    FEngSetVisible("Pause_Controller.fng", FEObj_ArrowMainRight);
+    FEngSetVisible("Pause_Controller.fng", FEObj_RIGHTARROW0);
     FEngSetVisible(GetRightImage());
     FEToggleWidget::UnsetFocus();
 }
@@ -691,12 +696,16 @@ void COVibration::UnsetFocus() {
 void COVibration::SetFocus(const char* parent_pkg) {
     int player = GetPlayerToEditForOptions();
     if (FEDatabase->GetPlayerSettings(player)->Rumble) {
-        FEngSetInvisible("Pause_Controller.fng", 0xBEE65E8C);
-        FEngSetInvisible("Pause_Controller.fng", 0x7C51B6D6);
+        const unsigned long FEObj_ArrowMainRight = 0xBEE65E8C;
+        const unsigned long FEObj_RIGHTARROW0 = 0x7C51B6D6;
+        FEngSetInvisible("Pause_Controller.fng", FEObj_ArrowMainRight);
+        FEngSetInvisible("Pause_Controller.fng", FEObj_RIGHTARROW0);
         FEngSetInvisible(GetRightImage());
     } else {
-        FEngSetInvisible("Pause_Controller.fng", 0xBFF41BD9);
-        FEngSetInvisible("Pause_Controller.fng", 0x7BCD6703);
+        const unsigned long FEObj_ArrowMainLeft = 0xBFF41BD9;
+        const unsigned long FEObj_LEFTARROW0 = 0x7BCD6703;
+        FEngSetInvisible("Pause_Controller.fng", FEObj_ArrowMainLeft);
+        FEngSetInvisible("Pause_Controller.fng", FEObj_LEFTARROW0);
         FEngSetInvisible(GetLeftImage());
     }
     FEToggleWidget::SetFocus(parent_pkg);

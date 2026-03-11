@@ -70,8 +70,8 @@ void SubTitler::Load(const char* movieName, const char* packageName) {
             timeElapsed = 0.0f;
             lastTime = 0;
             for (int i = 0; data_[i].startTime != 0xFFFF; i++) {
-                bEndianSwap16(&data_[i]);
-                bEndianSwap32(reinterpret_cast< char* >(&data_[i]) + 4);
+                bPlatEndianSwap(&data_[i].startTime);
+                bPlatEndianSwap(&data_[i].stringHash);
             }
             str_ = FEngFindString(packageName, 0x599B8442);
             str2_ = FEngFindString(packageName, 0x2E8DA933);
@@ -96,9 +96,10 @@ float SubTitler::GetElapsedTime() {
     float thetime_ms;
     if (!mSubtitlePaused) {
         timenow = bGetTicker();
-        timeElapsed = timeElapsed + bGetTickerDifference(lastTime, timenow) * 0.001f;
-        lastTime = timenow;
         thetime_ms = timeElapsed;
+        thetime_ms += bGetTickerDifference(lastTime, timenow) * 0.001f;
+        lastTime = timenow;
+        timeElapsed = thetime_ms;
     } else {
         lastTime = bGetTicker();
         thetime_ms = timeElapsed;
@@ -108,7 +109,7 @@ float SubTitler::GetElapsedTime() {
 
 void SubTitler::Update(unsigned int msg) {
     if (gMoviePlayer != nullptr) {
-        mSubtitlePaused = gMoviePlayer->IsMoviePaused();
+        mSubtitlePaused = !!gMoviePlayer->IsMoviePaused();
         if (msg == 0xC98356BA) {
             if (data_ != nullptr && lastTime != 0) {
                 float timenow = GetElapsedTime();

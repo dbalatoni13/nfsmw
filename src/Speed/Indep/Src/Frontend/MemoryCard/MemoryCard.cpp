@@ -203,13 +203,16 @@ void MemoryCard::LoadLocale(eLanguages eLang) {
     if (s_pThis == nullptr) return;
     char sPath[64];
     bStrCpy(sPath, "FRONTEND/MC_");
-    if (eLang <= eLANGUAGE_LABELS && eLang >= eLANGUAGE_LARGEST) {
-        bStrCat(sPath, sPath, "English.bin");
-    } else {
+    if (eLang > eLANGUAGE_LABELS) goto use_lang_name;
+    if (eLang <= eLANGUAGE_FINNISH) goto use_lang_name;
+    bStrCat(sPath, sPath, "English.bin");
+    goto after_lang;
+use_lang_name: {
         const char* langName = GetLanguageName(eLang);
         bStrCat(sPath, sPath, langName);
         bStrCat(sPath, sPath, ".bin");
     }
+after_lang:
     if (s_pThis->m_pLocaleFileHandler == nullptr)
         s_pThis->m_pLocaleFileHandler = bMalloc(0x2000, 0);
     unsigned int currentsize = bFileSize(sPath);
@@ -218,8 +221,9 @@ void MemoryCard::LoadLocale(eLanguages eLang) {
     bClose(file);
     LOCALE_create(s_pThis->m_pLocaleFileHandler, 1);
     LOCALE_setstate(s_pThis->m_pLocaleFileHandler, 0, 0);
+    unsigned short* dest = gSaveType0;
     const char* str = GetLocalizedString(0xe6f55df0);
-    bStrCpy(gSaveType0, str);
+    bStrCpy(dest, str);
 }
 
 int MemoryCard::GetPrefixLength() { return bStrLen(m_pImp->GetPrefix()); }
