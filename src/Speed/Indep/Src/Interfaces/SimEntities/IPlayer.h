@@ -32,10 +32,12 @@ class IPlayer : public UTL::COM::IUnknown, public UTL::Collections::ListableSet<
     virtual ~IPlayer() {}
 
     virtual ISimable *GetSimable() const;
+    virtual ISimable *GetSimable();
 
     virtual const UMath::Vector3 &GetPosition() const;
     virtual bool SetPosition(const UMath::Vector3 &position);
     virtual PlayerSettings *GetSettings() const;
+    virtual void SetSettings(int fe_index);
     virtual int GetSettingsIndex() const;
     virtual IHud *GetHud() const;
     virtual void SetHud() const; // TODO fix params
