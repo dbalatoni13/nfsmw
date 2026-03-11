@@ -501,8 +501,9 @@ class cFrontendDatabase {
     char *m_pDBBackup;        // offset 0x1BC, size 0x4
   private:
     unsigned int FEGameMode; // offset 0x1C0, size 0x4
+    char _pad_pre_loadsave[0x14]; // padding to match retail layout
   public:
-    eLoadSaveGame LoadSaveGame; // offset 0x1C4, size 0x4
+    eLoadSaveGame LoadSaveGame; // offset 0x1D8, size 0x4
 #if ONLINE_SUPPORT
     cOnlineSettings OnlineSettings;
     OnlineCreateUserSettings mOnlineCreateUserSettings;
