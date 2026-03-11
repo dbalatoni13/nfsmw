@@ -89,7 +89,7 @@ The game uses stlport, so you'll often encounter \_STL, but in the code it must 
 
 ### Initial build
 
-Compile to a private temp `.o` so your output isn't overwritten by other parallel agents:
+Compile to a private temp `.o` so your output isn't overwritten by other concurrent builds:
 
 ```sh
 TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)

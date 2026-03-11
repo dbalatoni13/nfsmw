@@ -29,12 +29,15 @@ import re
 import subprocess
 import sys
 import tempfile
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 root_dir = os.path.abspath(os.path.join(script_dir, ".."))
 OBJDIFF_JSON = os.path.join(root_dir, "objdiff.json")
 BUILD_NINJA = os.path.join(root_dir, "build.ninja")
+COMPILE_COMMANDS = os.path.join(root_dir, "compile_commands.json")
+
+Command = Union[str, List[str]]
 
 
 def load_objdiff() -> Dict[str, Any]:
@@ -51,8 +54,24 @@ def find_unit_source(config: Dict[str, Any], unit_name: str) -> Optional[str]:
     return None
 
 
+def find_unit_target(config: Dict[str, Any], unit_name: str) -> Optional[str]:
+    """Return the build target path for a unit from objdiff.json, or None."""
+    for unit in config.get("units", []):
+        if unit["name"] == unit_name:
+            target = unit.get("base_path") or unit.get("target_path")
+            return str(target) if target else None
+    return None
+
+
 def get_compdb() -> Optional[List[Dict[str, Any]]]:
-    """Run `ninja -t compdb` and return the parsed compilation database."""
+    """Load compile_commands.json, falling back to `ninja -t compdb` if needed."""
+    if os.path.exists(COMPILE_COMMANDS):
+        try:
+            with open(COMPILE_COMMANDS) as f:
+                return json.load(f)
+        except json.JSONDecodeError as e:
+            print(f"Failed to parse compile_commands.json: {e}", file=sys.stderr)
+
     result = subprocess.run(
         ["ninja", "-t", "compdb"],
         capture_output=True,
@@ -71,27 +90,72 @@ def get_compdb() -> Optional[List[Dict[str, Any]]]:
         return None
 
 
+def get_build_command(target_path: str) -> Optional[str]:
+    """Return the final ninja command used to build target_path."""
+    result = subprocess.run(
+        ["ninja", "-t", "commands", target_path],
+        capture_output=True,
+        cwd=root_dir,
+    )
+    if result.returncode != 0:
+        print(
+            f"ninja -t commands failed:\n{result.stderr.decode(errors='replace')}",
+            file=sys.stderr,
+        )
+        return None
+
+    commands = [line.strip() for line in result.stdout.decode().splitlines() if line.strip()]
+    return commands[-1] if commands else None
+
+
 def find_entry(
     compdb: List[Dict[str, Any]], source_path: str
 ) -> Optional[Dict[str, Any]]:
-    """Find the compdb entry whose 'file' matches source_path."""
+    """Find the compdb entry whose 'file' matches source_path.
+
+    Prefers entries whose output is a .o file (actual compiler invocations)
+    over auxiliary entries (e.g. hash generation).
+    """
     abs_source = os.path.normcase(os.path.abspath(os.path.join(root_dir, source_path)))
+    candidates = []
     for entry in compdb:
         file_val = entry.get("file", "")
         if not os.path.isabs(file_val):
             entry_dir = entry.get("directory", root_dir)
             file_val = os.path.abspath(os.path.join(entry_dir, file_val))
         if os.path.normcase(file_val) == abs_source:
+            candidates.append(entry)
+    for entry in candidates:
+        out = entry.get("output", "")
+        if out.endswith(".o") or out.endswith(".obj"):
             return entry
-    return None
+    return candidates[0] if candidates else None
 
 
-def strip_transform_dep(command: str) -> str:
+def get_command(entry: Dict[str, Any]) -> Command:
+    command = entry.get("command")
+    if isinstance(command, str):
+        return command
+
+    arguments = entry.get("arguments")
+    if isinstance(arguments, list):
+        return arguments[:]
+
+    print(
+        "Compilation entry is missing both 'command' and 'arguments'",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
+
+def strip_transform_dep(command: Command) -> Command:
     """Remove the `&& python transform_dep.py ...` step from a compile command.
 
     The dependency file transformation is only needed for incremental ninja
     builds; it is safe to skip for one-off temp compilations.
     """
+    if isinstance(command, list):
+        return command
     return re.sub(
         r"\s*&&\s*\S*python3?\S*\s+\S*transform_dep\.py\s+\S+\s+\S+",
         "",
@@ -99,43 +163,58 @@ def strip_transform_dep(command: str) -> str:
     )
 
 
-def redirect_output(command: str, source_path: str, new_output: str) -> str:
+def find_output_argument(command: Command) -> Optional[Tuple[int, str]]:
+    if isinstance(command, list):
+        for i in range(len(command) - 1):
+            if command[i] == "-o":
+                return i + 1, command[i + 1]
+        return None
+
+    m = re.search(r"(?<!\S)-o\s+(\S+)", command)
+    if not m:
+        return None
+    return m.start(1), m.group(1)
+
+
+def redirect_output(command: Command, source_path: str, new_output: str) -> Command:
     """Replace the compiler output path in command with new_output.
 
     Handles two styles:
       - Direct file output  (-o path/to/file.o):   ngccc/ProDG, MSVC, EE-GCC
       - Directory output   (-o path/to/dir):       mwcc (MWCC outputs to a dir)
     """
-    m = re.search(r"(?<!\S)-o\s+(\S+)", command)
-    if not m:
+    output_arg = find_output_argument(command)
+    if output_arg is None:
         print("Could not find -o argument in compile command", file=sys.stderr)
         sys.exit(1)
 
-    o_arg = m.group(1)
+    index, o_arg = output_arg
 
     if o_arg.endswith(".o") or o_arg.endswith(".obj"):
-        # Direct-file compilers (ngccc, ee-gcc, MSVC): simply replace the path.
-        return command[: m.start(1)] + new_output + command[m.end(1) :]
+        replacement = new_output
     else:
-        # Directory-output compilers (mwcc): replace the basedir.
-        # The compiler will create <basedir>/<source_stem>.o automatically.
-        new_basedir = os.path.dirname(new_output)
-        return command[: m.start(1)] + new_basedir + command[m.end(1) :]
+        replacement = os.path.dirname(new_output)
+
+    if isinstance(command, list):
+        new_command = command[:]
+        new_command[index] = replacement
+        return new_command
+
+    return command[:index] + replacement + command[index + len(o_arg) :]
 
 
-def actual_output_path(command: str, source_path: str, new_output: str) -> str:
+def actual_output_path(command: Command, source_path: str, new_output: str) -> str:
     """Return the path where the compiled .o actually lands.
 
     For direct-file compilers this is new_output.  For directory-output
     compilers it is <new_output_dir>/<source_stem>.o.
     """
-    m = re.search(r"(?<!\S)-o\s+(\S+)", command)
-    if not m:
+    output_arg = find_output_argument(command)
+    if output_arg is None:
         return new_output
-    o_arg = m.group(1)
+    _, o_arg = output_arg
     if o_arg.endswith(".o") or o_arg.endswith(".obj"):
         return new_output
-    # mwcc directory case
     stem = os.path.splitext(os.path.basename(source_path))[0]
     return os.path.join(os.path.dirname(new_output), stem + ".o")
 
@@ -151,10 +230,17 @@ def compile_unit(unit_name: str, output_path: str) -> str:
 
     config = load_objdiff()
     source_path = find_unit_source(config, unit_name)
+    target_path = find_unit_target(config, unit_name)
     if not source_path:
         print(
             f"No source_path found for unit '{unit_name}' in objdiff.json.\n"
             "The unit may not have a source file yet (missing implementation).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if not target_path:
+        print(
+            f"No target_path found for unit '{unit_name}' in objdiff.json.",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -166,20 +252,14 @@ def compile_unit(unit_name: str, output_path: str) -> str:
         )
         sys.exit(1)
 
-    compdb = get_compdb()
-    if compdb is None:
-        sys.exit(1)
-
-    entry = find_entry(compdb, source_path)
-    if entry is None:
+    command = get_build_command(target_path)
+    if command is None:
         print(
-            f"No compilation entry found for '{source_path}'.\n"
-            "Make sure the source file exists and `ninja all_source` has been run.",
+            f"No build command found for target '{target_path}'.\n"
+            "Make sure the unit exists and `python configure.py` has been run.",
             file=sys.stderr,
         )
         sys.exit(1)
-
-    command = entry["command"]
 
     # 1. Strip the dependency-file transform step — not needed for temp builds.
     command = strip_transform_dep(command)
@@ -196,7 +276,7 @@ def compile_unit(unit_name: str, output_path: str) -> str:
     command = redirect_output(command, source_path, output_path)
 
     # 5. Run the compile.
-    result = subprocess.run(command, shell=True, cwd=root_dir)
+    result = subprocess.run(command, shell=isinstance(command, str), cwd=root_dir)
     if result.returncode != 0:
         print(
             f"Compilation failed (exit code {result.returncode})", file=sys.stderr
