@@ -154,10 +154,7 @@ bool WWorldMath::IntersectSegPlane(const UMath::Vector3 &P1, const UMath::Vector
     t = n / d;
     UMath::Sub(P2, P1, intersectionPt);
     UMath::ScaleAdd(intersectionPt, t, P1, intersectionPt);
-    bool result = true;
-    if (t < 0.0f || t > 1.0f) {
-        result = false;
-    }
+    bool result = static_cast< bool >(!(t < 0.0f || t > 1.0f));
     return result;
 }
 

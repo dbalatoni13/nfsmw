@@ -27,12 +27,10 @@ template <typename T, int Alignment = 16> class Vector {
   public:
     void Init() {}
 
-    Vector() {
-        mBegin = nullptr;
-        mCapacity = 0;
-        mSize = 0;
-        Init();
-    }
+    Vector()
+        : mBegin(nullptr), //
+          mCapacity(0), //
+          mSize(0) {}
 
     virtual ~Vector() {}
 
