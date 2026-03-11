@@ -35,12 +35,14 @@ extern OverlayEntry gIceOverlays[NUM_OVERLAYS];
 static unsigned char gOverlay;
 
 static int GetOverlayIndex(unsigned char overlay) {
+    int index = 0;
     for (int i = 0; i < NUM_OVERLAYS; i++) {
-        if (gIceOverlays[i].id == overlay) {
-            return i;
+        if (overlay == gIceOverlays[i].id) {
+            index = i;
+            break;
         }
     }
-    return 0;
+    return index;
 }
 
 namespace ICE {
