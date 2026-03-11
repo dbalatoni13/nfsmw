@@ -1,9 +1,10 @@
 #include "Speed/Indep/Src/Camera/Actions/CDActionTrackCop.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
-#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Interfaces/IBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Libs/Support/Utility/UVector.h"
 
 static UTL::COM::Factory<CameraAI::Director *, CameraAI::Action, UCrc32>::Prototype _CDActionTrackCop("TRACKCOP", CDActionTrackCop::Construct);
@@ -112,15 +113,34 @@ CDActionTrackCop::CDActionTrackCop(CameraAI::Director *director, IPlayer *player
 }
 
 CDActionTrackCop::~CDActionTrackCop() {
-    // TODO
+    if (mPlayer) {
+        Detach(mPlayer);
+    }
+    if (mVehicle) {
+        Detach(mVehicle);
+    }
+    delete mMover;
+    delete mAnchor;
+    delete mAttachments;
 }
 
 void CDActionTrackCop::OnDetached(IAttachable *pOther) {
-    // TODO
+    if (ComparePtr(pOther, mPlayer)) {
+        mPlayer = nullptr;
+    }
+    if (ComparePtr(pOther, mVehicle)) {
+        OnCarDetached();
+    }
 }
 
 void CDActionTrackCop::OnCarDetached() {
-    // TODO
+    if (mTarget.IsValid()) {
+        mTarget.Set(0);
+    }
+    if (mAnchor) {
+        mAnchor->SetWorldID(0);
+    }
+    mVehicle = nullptr;
 }
 
 void CDActionTrackCop::AquireCar() {
@@ -128,10 +148,42 @@ void CDActionTrackCop::AquireCar() {
 }
 
 void CDActionTrackCop::Update(float dT) {
-    // TODO
+    if (mPlayer == nullptr) {
+        if (mVehicle != nullptr) {
+            Detach(mVehicle);
+            mVehicle = nullptr;
+        }
+    } else {
+        AquireCar();
+        if (mTarget.IsValid()) {
+            bMatrix4 mat(*mTarget.GetMatrix());
+
+            ICollisionBody *irbc = nullptr;
+            mVehicle->QueryInterface(&irbc);
+            if (irbc != nullptr) {
+                IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
+                UVector3 cg(irbc->GetCenterOfGravity());
+                irb->ConvertLocalToWorld(cg, false);
+                cg += irb->GetPosition();
+                eSwizzleWorldVector(reinterpret_cast<bVector3 &>(cg), reinterpret_cast<bVector3 &>(cg));
+            }
+
+            mAnchor->Update(dT, mat, *mTarget.GetVelocity(), *mTarget.GetAcceleration());
+        }
+    }
+    mMover->Update(dT);
 }
 
 bool CDActionTrackCop::GetTrafficBasis(UMath::Matrix4 &matrix, UMath::Vector3 &velocity) {
-    // TODO
-    return false;
+    IBody *ibody = nullptr;
+    if (mVehicle == nullptr) {
+        return false;
+    }
+    mVehicle->QueryInterface(&ibody);
+    if (ibody == nullptr) {
+        return false;
+    }
+    ibody->GetTransform(matrix);
+    ibody->GetLinearVelocity(velocity);
+    return true;
 }

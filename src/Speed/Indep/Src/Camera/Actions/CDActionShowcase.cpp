@@ -109,15 +109,34 @@ CDActionShowcase::CDActionShowcase(CameraAI::Director *director, IPlayer *player
 }
 
 CDActionShowcase::~CDActionShowcase() {
-    // TODO
+    if (mPlayer) {
+        Detach(mPlayer);
+    }
+    if (mVehicle) {
+        Detach(mVehicle);
+    }
+    delete mMover;
+    delete mAnchor;
+    delete mAttachments;
 }
 
 void CDActionShowcase::OnDetached(IAttachable *pOther) {
-    // TODO
+    if (ComparePtr(pOther, mPlayer)) {
+        mPlayer = nullptr;
+    }
+    if (ComparePtr(pOther, mVehicle)) {
+        OnCarDetached();
+    }
 }
 
 void CDActionShowcase::OnCarDetached() {
-    // TODO
+    if (mTarget.IsValid()) {
+        mTarget.Set(0);
+    }
+    if (mAnchor) {
+        mAnchor->SetWorldID(0);
+    }
+    mVehicle = nullptr;
 }
 
 void CDActionShowcase::AquireCar() {
@@ -125,5 +144,28 @@ void CDActionShowcase::AquireCar() {
 }
 
 void CDActionShowcase::Update(float dT) {
-    // TODO
+    if (mPlayer == nullptr) {
+        if (mVehicle != nullptr) {
+            Detach(mVehicle);
+            mVehicle = nullptr;
+        }
+    } else {
+        AquireCar();
+        if (mTarget.IsValid()) {
+            bMatrix4 mat(*mTarget.GetMatrix());
+
+            ICollisionBody *irbc = nullptr;
+            mVehicle->QueryInterface(&irbc);
+            if (irbc != nullptr) {
+                IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
+                UVector3 cg(irbc->GetCenterOfGravity());
+                irb->ConvertLocalToWorld(cg, false);
+                cg += irb->GetPosition();
+                eSwizzleWorldVector(reinterpret_cast<bVector3 &>(cg), reinterpret_cast<bVector3 &>(cg));
+            }
+
+            mAnchor->Update(dT, mat, *mTarget.GetVelocity(), *mTarget.GetAcceleration());
+        }
+    }
+    mMover->Update(dT);
 }

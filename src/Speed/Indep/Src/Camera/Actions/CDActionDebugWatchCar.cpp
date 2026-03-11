@@ -1,5 +1,11 @@
 #include "Speed/Indep/Src/Camera/Actions/CDActionDebugWatchCar.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
+
+extern int mToggleCar;
+extern eVehicleList mToggleCarList;
 
 static UTL::COM::Factory<CameraAI::Director *, CameraAI::Action, UCrc32>::Prototype _CDActionDebugWatchCar("DEBUGWATCHCAR", CDActionDebugWatchCar::Construct);
 
@@ -13,16 +19,43 @@ Attrib::StringKey CDActionDebugWatchCar::GetNext() const {
 }
 
 ISimable *CDActionDebugWatchCar::GetSimable() {
-    // TODO
-    return nullptr;
+    return ISimable::FindInstance(mhSimable);
 }
 
 void CDActionDebugWatchCar::ReleaseTarget() {
-    // TODO
+    if (mTarget.IsValid()) {
+        mhSimable = 0;
+        mTarget.Set(0);
+    }
 }
 
 void CDActionDebugWatchCar::AquireTarget() {
-    // TODO
+    ISimable *isim = ISimable::FindInstance(mhSimable);
+    if (isim == nullptr) {
+        ReleaseTarget();
+    }
+
+    if (mToggleCar > -1 && mToggleCarList < VEHICLE_MAX && mToggleCarList > -1) {
+        int count = IVehicle::Count(mToggleCarList);
+        if (count != 0) {
+            IVehicle *ivehicle = IVehicle::GetList(mToggleCarList)[static_cast<unsigned int>(mToggleCar % count)];
+            if (ivehicle != nullptr) {
+                if (ivehicle->GetSimable()->GetInstanceHandle() != mhSimable) {
+                    unsigned int world_id = ivehicle->GetSimable()->GetWorldID();
+                    if (world_id != 0) {
+                        ReleaseTarget();
+                        const char *model_str = ivehicle->GetVehicleAttributes().MODEL().GetString();
+                        if (model_str == nullptr) {
+                            model_str = "";
+                        }
+                        mAnchor->SetModel(bStringHash(model_str));
+                        mTarget.Set(world_id);
+                        mhSimable = ivehicle->GetSimable()->GetInstanceHandle();
+                    }
+                }
+            }
+        }
+    }
 }
 
 CameraAI::Action *CDActionDebugWatchCar::Construct(CameraAI::Director *director) {
@@ -68,14 +101,25 @@ CDActionDebugWatchCar::CDActionDebugWatchCar(CameraAI::Director *director)
 }
 
 CDActionDebugWatchCar::~CDActionDebugWatchCar() {
-    // TODO
+    ReleaseTarget();
+    delete mMover;
+    delete mAnchor;
 }
 
 void CDActionDebugWatchCar::Update(float dT) {
-    // TODO
+    AquireTarget();
+    if (mTarget.IsValid()) {
+        mAnchor->SetWorldID(mTarget.GetWorldID());
+        mAnchor->Update(dT, *mTarget.GetMatrix(), *mTarget.GetVelocity(), *mTarget.GetAcceleration());
+    }
+    mMover->Update(dT);
 }
 
 bool CDActionDebugWatchCar::GetTrafficBasis(UMath::Matrix4 &matrix, UMath::Vector3 &velocity) {
-    // TODO
-    return false;
+    bool valid = mTarget.IsValid();
+    if (valid) {
+        ConversionUtil::RightToLeftMatrix4(*mTarget.GetMatrix(), matrix);
+        ConversionUtil::RightToLeftVector3(*mTarget.GetVelocity(), velocity);
+    }
+    return valid;
 }
