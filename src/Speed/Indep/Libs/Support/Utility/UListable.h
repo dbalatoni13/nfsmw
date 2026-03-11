@@ -29,7 +29,7 @@ template <typename T, int U> class Listable {
 
         // List(const List &);
         List();
-        virtual ~List();
+        ~List() override {}
 
         // List &operator=(List &);
     };

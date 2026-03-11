@@ -638,3 +638,18 @@ void CameraAI::MaybeDoJumpCam(ISimable *isimable) {
         }
     }
 }
+
+
+// Template definitions for Listable<T,U>::List
+namespace UTL {
+namespace Collections {
+
+template <typename T, int U>
+Listable<T, U>::List::List() : _Storage<T *, U>() {}
+
+} // namespace Collections
+} // namespace UTL
+
+// Static member definitions
+UTL::Collections::Listable<CameraAI::Director, 2>::List
+    UTL::Collections::Listable<CameraAI::Director, 2>::_mTable;
