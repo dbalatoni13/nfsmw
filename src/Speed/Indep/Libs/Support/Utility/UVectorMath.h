@@ -276,6 +276,10 @@ inline float VU0_fabs(const float a) {
     float result;
     asm __volatile__("abs.s %0, %1" : "=f"(result) : "f"(a));
     return result;
+#elif defined(EA_PLATFORM_GAMECUBE)
+    float result;
+    asm("fabs %0, %1" : "=f"(result) : "f"(a));
+    return result;
 #else
     if (a < 0.0f) {
         return -a;
