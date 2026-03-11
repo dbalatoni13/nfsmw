@@ -43,12 +43,17 @@ bool WCollisionMgr::GetWorldHeightAtPointRigorous(const UMath::Vector3 &pt, floa
         WorldCollisionInfo cInfo;
         WCollisionMgr(0, 3).CheckHitWorld(seg, cInfo, 1);
 
-        if (!cInfo.HitSomething() || cInfo.fType != 1) {
+        if (cInfo.HitSomething()) {
+            if (cInfo.fType == 1) {
+                height = cInfo.fCollidePt.y;
+                if (normal != nullptr) {
+                    *normal = UMath::Vector4To3(cInfo.fNormal);
+                }
+            } else {
+                return false;
+            }
+        } else {
             return false;
-        }
-        height = cInfo.fCollidePt.y;
-        if (normal != nullptr) {
-            *normal = UMath::Vector4To3(cInfo.fNormal);
         }
     }
     return true;
