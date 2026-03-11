@@ -40,6 +40,7 @@ struct GIcon {
     int GetSectionID() const { return mSectionID; }
     int GetCombinedSectionID() const { return mCombSectionID; }
     const UMath::Vector3& GetPosition() const { return mPosition; }
+    void GetPosition2D(bVector2& outPos) { outPos.x = mPosition.x; outPos.y = mPosition.y; }
     GIcon(Type type, const UMath::Vector3& pos, float rotDeg);
     ~GIcon();
     void Spawn();

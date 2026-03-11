@@ -8,6 +8,7 @@
 #include "Speed/Indep/Src/Gameplay/GIcon.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/World/TrackInfo.hpp"
 #include "Speed/Indep/Src/Generated/Events/EWorldMapOff.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
@@ -28,6 +29,14 @@ struct Minimap {
     static GameplayIconInfo& GetGameplayIconInfo(GIcon::Type iconType) {
         return kGameplayIconInfo[iconType];
     }
+    static GameplayIconInfo& GetGameplayIconInfo(eWorldMapItemType itemType) {
+        for (int i = 0; i < GIcon::kType_Count; i++) {
+            if (kGameplayIconInfo[i].mItemType == itemType) {
+                return kGameplayIconInfo[i];
+            }
+        }
+        return kGameplayIconInfo[0];
+    }
 };
 
 extern Timer RealTimer;
@@ -45,6 +54,8 @@ void FEngSetLanguageHash(FEString* text, unsigned int hash);
 bool FEngTestForIntersection(float xPos, float yPos, FEObject* obj);
 void FEngSetLastButton(const char* pkg_name, unsigned char button);
 void FEngSetRotationZ(FEObject* obj, float z);
+FEColor FEngGetObjectColor(FEObject* obj);
+unsigned int FEngGetTextureHash(FEImage* image);
 bool GPS_IsEngaged();
 void GPS_Disengage();
 int GPS_Engage(const UMath::Vector3& pos, float radius);
@@ -119,6 +130,15 @@ inline HeliItem::HeliItem(FEImage* view, FEObject* icon, bVector2& pos, bVector2
     InitialSize.y = FEngGetScaleY(pIcon);
     FEngSetCenter(static_cast< FEObject* >(pViewCone), pos.x, pos.y);
     FEngSetRotationZ(static_cast< FEObject* >(pViewCone), rot);
+}
+
+inline ItemTypeToggle::ItemTypeToggle(unsigned int name_hash, eWorldMapItemType type, bool vis)
+    : FEButtonWidget(true) {
+    ItemType = type;
+    NameHash = name_hash;
+    pIcon = nullptr;
+    bVisibility = vis;
+    bExiting = 0;
 }
 
 void CopItem::Draw() {
@@ -648,10 +668,36 @@ void WorldMap::Setup() {
     RefreshHeader();
 }
 
-void WorldMap::AddMapItemOption(unsigned int hash, eWorldMapItemType type) {
+void WorldMap::AddMapItemOption(unsigned int name_hash, eWorldMapItemType type) {
+    ItemTypeToggle* option = new ItemTypeToggle(name_hash, type, FEDatabase->GetGameplaySettings()->IsMapItemEnabled(type));
+    Minimap::GameplayIconInfo& iconInfo = Minimap::GetGameplayIconInfo(type);
+    unsigned int tex_hash = 0;
+    unsigned int colour = 0xffffffff;
+    FEObject* iconObj = FEngFindObject(GetPackageName(), FEngHashString(iconInfo.mElementString, 0));
+    if (iconObj != nullptr) {
+        FEColor c = FEngGetObjectColor(iconObj);
+        colour = static_cast< unsigned long >(c);
+        tex_hash = FEngGetTextureHash(static_cast< FEImage* >(iconObj));
+    }
+    option->SetIcon(GetCurrentFEImage("OPTION_ICON_"), tex_hash, colour);
+    option->SetIconGroup(GetCurrentFEObject("ICON_VIS_GROUP_"));
+    AddButtonOption(option);
 }
 
 void WorldMap::AddPlayerCar() {
+    const unsigned int FEObj_PlayerCarIndicator = 0xdd9ef5ff;
+    FEImage* icon = FEngFindImage(GetPackageName(), FEObj_PlayerCarIndicator);
+    IPlayer* player = *IPlayer::GetList(PLAYER_LOCAL).begin();
+    ISimable* isimable = player->GetSimable();
+    bVector2 target_pos;
+    bVector2 target_dir;
+    GetVehicleVectors(&target_pos, &target_dir, isimable);
+    bVector2 world_pos;
+    world_pos = target_pos;
+    ConvertPos(target_pos);
+    float rot = ConvertRot(target_dir);
+    MapItem* item = new MapItem(WMIT_PLAYER_CAR, static_cast< FEObject* >(icon), target_pos, world_pos, rot, nullptr);
+    TheMapItems.AddTail(item);
 }
 
 void WorldMap::AddCops() {
@@ -695,9 +741,45 @@ void WorldMap::AddCops() {
 }
 
 void WorldMap::AddRoadBlocks() {
+    int img_num = 0;
+    const IRoadBlock::List& blocks = IRoadBlock::GetList();
+    for (IRoadBlock* const* i = blocks.begin(); i != blocks.end(); i++) {
+        IRoadBlock* rb = *i;
+        UMath::Vector3 pos;
+        UMath::Vector3 dir;
+        const UMath::Vector3& centre = rb->GetRoadBlockCentre();
+        const UMath::Vector3& direction = rb->GetRoadBlockDir();
+        bVector2 target_pos;
+        bVector2 target_dir;
+        target_pos.x = centre.z;
+        target_pos.y = -centre.x;
+        target_dir.x = direction.z;
+        target_dir.y = -direction.x;
+        bVector2 world_pos;
+        world_pos = target_pos;
+        ConvertPos(target_pos);
+        float rot = ConvertRot(target_dir);
+        FEImage* icon = FEngFindImage(GetPackageName(), FEngHashString("MMICON_ROADBLOCK_%d", img_num));
+        img_num++;
+        MapItem* item = new MapItem(WMIT_ROADBLOCK, static_cast< FEObject* >(icon), target_pos, world_pos, rot, nullptr);
+        TheMapItems.AddTail(item);
+    }
 }
 
 void WorldMap::AddIcon(eWorldMapItemType type, unsigned int hash, GIcon* icon) {
+    if (hash != 0 && icon != nullptr) {
+        FEImage* image = FEngFindImage(GetPackageName(), hash);
+        if (image != nullptr) {
+            bVector2 pos2D;
+            bVector2 dir2D;
+            icon->GetPosition2D(pos2D);
+            bVector2 world_pos;
+            world_pos = pos2D;
+            ConvertPos(pos2D);
+            MapItem* item = new MapItem(type, static_cast< FEObject* >(image), pos2D, world_pos, 0.0f, icon);
+            TheMapItems.AddTail(item);
+        }
+    }
 }
 
 void WorldMap::AddIcons(GIcon::Type desiredIconType) {
@@ -725,15 +807,42 @@ void WorldMap::AddIcons(GIcon::Type desiredIconType) {
 }
 
 void WorldMap::SetupNavigation() {
+    FEngSetVisible(Cursor);
+    AddIcons(GIcon::kType_GateCustomShop);
+    AddIcons(GIcon::kType_GateSafehouse);
+    AddIcons(GIcon::kType_GateCarLot);
 }
 
 void WorldMap::SetupEvent() {
+    FEngSetVisible(Cursor);
+    AddIcons(GIcon::kType_RaceSprint);
+    AddIcons(GIcon::kType_RaceCircuit);
+    AddIcons(GIcon::kType_RaceDrag);
+    AddIcons(GIcon::kType_RaceKnockout);
+    AddIcons(GIcon::kType_RaceTollbooth);
+    AddIcons(GIcon::kType_RaceSpeedtrap);
+    AddIcons(GIcon::kType_RaceRival);
+    AddIcons(GIcon::kType_SpeedTrap);
+    AddIcons(GIcon::kType_SpeedTrapInRace);
 }
 
 void WorldMap::SetupPursuit() {
+    FEngSetInvisible(GetPackageName(), 0xa808e057);
+    FEngSetInvisible(GetPackageName(), 0x95fdfc4e);
+    AddIcons(GIcon::kType_GateSafehouse);
+    AddIcons(GIcon::kType_PursuitBreaker);
+    AddIcons(GIcon::kType_HidingSpot);
+    AddCops();
+    AddRoadBlocks();
 }
 
 void WorldMap::ConvertPos(bVector2& pos) {
+    float x = (pos.x - pCurrentTrack->TrackMapCalibrationUpperLeft.x) / pCurrentTrack->TrackMapCalibrationMapWidthMetres;
+    pos.x = x;
+    float y = (pCurrentTrack->TrackMapCalibrationUpperLeft.y - pos.y) / pCurrentTrack->TrackMapCalibrationMapWidthMetres + 1.0f;
+    pos.y = y;
+    pos.x = MapTopLeft.x + x * MapSize.x;
+    pos.y = MapTopLeft.y + y * MapSize.y;
 }
 
 float WorldMap::ConvertRot(bVector2& rot) {
@@ -741,6 +850,13 @@ float WorldMap::ConvertRot(bVector2& rot) {
 }
 
 void WorldMap::DrawItemType() {
+    Minimap::GameplayIconInfo& desiredIconInfo = Minimap::GetGameplayIconInfo(SelectedItem->GetType());
+    FEngSetLanguageHash(GetPackageName(), 0x9331fd4f, desiredIconInfo.mWorldMapTitle);
+    if (desiredIconInfo.mWorldMapTitle != 0) {
+        FEngSetVisible(GetPackageName(), 0x9331fd4f);
+    } else {
+        FEngSetInvisible(GetPackageName(), 0x9331fd4f);
+    }
 }
 
 void WorldMap::DrawItemStats() {

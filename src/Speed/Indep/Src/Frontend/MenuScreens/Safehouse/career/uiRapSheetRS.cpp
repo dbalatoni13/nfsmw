@@ -33,7 +33,7 @@ void uiRapSheetRS::RefreshHeader() {
         unsigned int wanring_val = rapsheetSummaryString.Num_WarningLevel();
         int totalInfractions = stable->GetTotalNumInfractions(true) + stable->GetTotalNumInfractions(false);
         for (unsigned int i = 0; i < rapsheetSummaryString.Num_WarningLevel(); i++) {
-            if (static_cast<unsigned int>(totalInfractions) > rapsheetSummaryString.WarningLevel(i)) { wanring_val = i; break; }
+            if (static_cast<unsigned int>(totalInfractions) <= rapsheetSummaryString.WarningLevel(i)) { wanring_val = i; break; }
         }
         if (wanring_val == 0) { wanring_val = 1; }
         FEngSetLanguageHash(GetPackageName(), 0x90211462, FEngHashString("RAPSHEET_WARNING_%d", wanring_val));
