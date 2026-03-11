@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/SpaceNode.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
@@ -90,9 +91,9 @@ bool CBasicCharacterAnimEntity::Init(void *init_data, SpaceNode *parent_space_no
     }
 
     if (info->mPlayFlags & 0x40) {
-        play_flags = 0x60;
+        play_flags |= 0x60;
     } else if (info->mPlayFlags & 0x20) {
-        play_flags = 0x20;
+        play_flags |= 0x20;
     }
     if (info->mPlayFlags & 0x10) {
         play_flags |= 0x10;
@@ -121,10 +122,10 @@ bool CBasicCharacterAnimEntity::Init(void *init_data, SpaceNode *parent_space_no
         }
         anim_part->Init(skel);
         if (play_flags == 0) {
-            mAnimCtrl->SetFlags(mAnimCtrl->GetFlags() | 0x29);
+            mAnimCtrl->SetFlags(0x29);
         } else {
             play_flags |= 1;
-            mAnimCtrl->SetFlags(mAnimCtrl->GetFlags() | play_flags);
+            mAnimCtrl->SetFlags(play_flags);
         }
     } else {
         skel = GetSkeletonFromList(skel_ROOT_hash);
@@ -133,11 +134,15 @@ bool CBasicCharacterAnimEntity::Init(void *init_data, SpaceNode *parent_space_no
         }
         anim_part->Init(skel);
         if (play_flags == 0) {
-            mAnimCtrl->SetFlags(mAnimCtrl->GetFlags() | 0x2A);
+            mAnimCtrl->SetFlags(0x2A);
         } else {
             play_flags |= 2;
-            mAnimCtrl->SetFlags(mAnimCtrl->GetFlags() | play_flags);
+            mAnimCtrl->SetFlags(play_flags);
         }
+    }
+
+    if (skel == nullptr) {
+        return false;
     }
 
     if (info->mTransAnimNameHash != 0) {
@@ -160,21 +165,24 @@ bool CBasicCharacterAnimEntity::Init(void *init_data, SpaceNode *parent_space_no
         return false;
     }
 
-    if (info->mPlayFlags & 0x40) {
-        mAnimCtrl->SetLoopRange(info->mLoopRangeStart, info->mLoopRangeEnd);
+    if (mAnimCtrl) {
+        if (info->mPlayFlags & 0x40) {
+            mAnimCtrl->SetLoopRange(info->mLoopRangeStart, info->mLoopRangeEnd);
+        }
+        mAnimCtrl->SetMasterDelayTime(info->mPlayDelay);
+        mAnimCtrl->SetFlags(0x80);
+        if (mAnimCtrl != nullptr && mAnimCtrl->GetFlags() == 8) {
+            bBreak();
+        }
     }
-    mAnimCtrl->SetMasterDelayTime(info->mPlayDelay);
-    mAnimCtrl->SetFlags(mAnimCtrl->GetFlags() | 0x80);
 
-    if (mKeepOnGround) {
+    if (mKeepOnGround && mAnimCtrl) {
         bVector3 pelvis_position;
-        float non_adjusted_z;
 
         mAnimCtrl->UpdateAnimPose(true);
         FindWorldBonePosition(1, &pelvis_position);
-        non_adjusted_z = mSpaceNode->GetWorldMatrix()->v3.z;
+        float non_adjusted_z = mSpaceNode->GetWorldMatrix()->v3.z;
         eUnSwizzleWorldVector(pelvis_position, pelvis_position);
-        pelvis_position.y += 2.0f;
         float ground_elevation;
         if (WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(
                 *reinterpret_cast<UMath::Vector3 *>(&pelvis_position), ground_elevation, nullptr)) {
@@ -186,14 +194,17 @@ bool CBasicCharacterAnimEntity::Init(void *init_data, SpaceNode *parent_space_no
         }
     }
 
-    if (skeletal_animation) {
-        mBoneMapType = -1;
+    if (skeletal_animation && mAnimCtrl != nullptr && anim_part != nullptr) {
+        int boneMapResult;
         if (anim_part->GetNumGlobalMatrices() == 0x30) {
-            mBoneMapType = 2;
-            if (info->mSkelNameHash == bStringHash("Bip23")) {
-                mBoneMapType = 3;
+            boneMapResult = 3;
+            if (info->mSkelNameHash != bStringHash("Bip23")) {
+                boneMapResult = 2;
             }
+        } else {
+            boneMapResult = -1;
         }
+        mBoneMapType = boneMapResult;
     }
 
     return true;
@@ -270,7 +281,6 @@ void CBasicCharacterAnimEntity::UpdateTimeStep(float time_step) {
             float inv_time_step = 1.0f / time_step;
             bScale(&diff, &diff, inv_time_step);
             mSpaceNode->SetLocalVelocity(&diff);
-            mSpaceNode->SetDirty();
         }
     }
 }
@@ -285,13 +295,13 @@ void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
     if (RenderCharacterShadows && mDrawShadow && !is_reflection && CharacterShadowTexture != nullptr && mBoneMapType != -1) {
         bVector3 left_foot;
         bVector3 right_foot;
+        ePoly shadow_poly;
         bVector2 parallel(1.0f, 0.0f);
         bVector2 perpendicular;
         bVector2 left0;
         bVector2 left1;
         bVector2 right0;
         bVector2 right1;
-        ePoly shadow_poly;
         float ground;
 
         FindWorldBonePosition(BoneMap[mBoneMapType].LeftFoot, &left_foot);
@@ -306,10 +316,18 @@ void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
         parallel *= 0.25f;
         perpendicular *= 0.35f;
 
-        left0 = bVector2(left_foot.x + parallel.x + perpendicular.x, left_foot.y + parallel.y + perpendicular.y);
-        left1 = bVector2(left_foot.x + parallel.x - perpendicular.x, left_foot.y + parallel.y - perpendicular.y);
-        right0 = bVector2(right_foot.x - parallel.x + perpendicular.x, right_foot.y - parallel.y + perpendicular.y);
-        right1 = bVector2(right_foot.x - parallel.x - perpendicular.x, right_foot.y - parallel.y - perpendicular.y);
+        left0 = bVector2(left_foot.x, left_foot.y);
+        left1 = bVector2(left_foot.x, left_foot.y);
+        right0 = bVector2(right_foot.x, right_foot.y);
+        right1 = bVector2(right_foot.x, right_foot.y);
+        left0.x += parallel.x + perpendicular.x;
+        left0.y += parallel.y + perpendicular.y;
+        left1.x += parallel.x - perpendicular.x;
+        left1.y += parallel.y - perpendicular.y;
+        right0.x -= parallel.x - perpendicular.x;
+        right0.y -= parallel.y - perpendicular.y;
+        right1.x -= parallel.x + perpendicular.x;
+        right1.y -= parallel.y + perpendicular.y;
 
         ground = mSpaceNode->GetWorldMatrix()->v3.z + 0.01f;
         shadow_poly.Vertices[0] = bVector3(left0.x, left0.y, ground);
