@@ -1,6 +1,11 @@
 #include "Speed/Indep/Src/World/WPathFinder.h"
 
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
+#include "Speed/Indep/Libs/Support/Utility/UVector.h"
+#include "Speed/Indep/Src/Misc/Joylog.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+
+extern int bPathFinderPrints;
 
 PathFinder* PathFinder::pInstance;
 
@@ -171,6 +176,202 @@ bool AStarSearch::Admissible(const WRoadSegment *segment, bool forward, WRoadNav
         return true;
     }
 }
+
+AStarNode::AStarNode(AStarNode *parent, const WRoadNode *road_node, int segment, float actual_cost, float estimated_cost)
+    : nParentSlot(parent != nullptr ? bGetSlotNumber(AStarNodeSlotPool, parent) : -1), //
+      nSegmentIndex(static_cast<short>(segment)),                                      //
+      nRoadNode(road_node->fIndex),                                                    //
+      fActualCost(static_cast<unsigned short>(static_cast<int>(actual_cost / ASTAR_METRIC_SCALE + 0.5f))),
+      fEstimatedCost(static_cast<unsigned short>(static_cast<int>(estimated_cost / ASTAR_METRIC_SCALE + 0.5f))) {}
+
+AStarNode *AStarNode::GetParent() {
+    if (nParentSlot < 0) {
+        return nullptr;
+    }
+    return static_cast<AStarNode *>(bGetSlot(AStarNodeSlotPool, nParentSlot));
+}
+
+float AStarSearch::Service(float time_limit_ms) {
+    unsigned int start_ticker = bGetTicker();
+    WRoadNav::EPathType path_type = pRoadNav->GetPathType();
+    bool race_route = (path_type == WRoadNav::kPathRaceRoute);
+    int prev_timeout_loops = 0x7FFFFFFF;
+    nServices++;
+    if (Joylog::IsReplaying()) {
+        prev_timeout_loops = static_cast<int>(Joylog::GetData(32, JOYLOG_CHANNEL_PATHFINDER_TIMEOUT));
+    }
+    int num_loops = 0;
+    while (IsActive()) {
+        if (lOpen.IsEmpty()) {
+            if (IsActive() && lOpen.IsEmpty()) {
+                pSolution = nullptr;
+                nState = static_cast<AStarSearchState>(3);
+            }
+            break;
+        }
+        if (Joylog::IsReplaying()) {
+            if (num_loops == prev_timeout_loops) {
+                break;
+            }
+        } else {
+            float elapsed_ms = bGetTickerDifference(start_ticker);
+            if (elapsed_ms > time_limit_ms) {
+                break;
+            }
+        }
+        AStarNode *current_node = lOpen.RemoveTail();
+        num_loops++;
+        nSteps++;
+        if (IsGoal(current_node)) {
+            pSolution = current_node;
+            nState = static_cast<AStarSearchState>(1);
+            break;
+        }
+        WRoadNetwork &road_network = WRoadNetwork::Get();
+        const WRoadNode *current_road_node = current_node->GetRoadNode();
+        int num_segments = static_cast<int>(current_road_node->fNumSegments);
+        if (bCountFreeSlots(AStarNodeSlotPool) < static_cast<int>(num_segments - 1)) {
+            if (race_route) {
+                nState = static_cast<AStarSearchState>(2);
+            } else {
+                nState = static_cast<AStarSearchState>(3);
+            }
+            if (race_route) {
+                pSolution = nullptr;
+            } else {
+                pSolution = current_node;
+            }
+            break;
+        }
+        for (int i = 0; i < num_segments; i++) {
+            int segment_index = static_cast<int>(current_road_node->fSegmentIndex[i]);
+            int current_segment_index = current_node->GetSegmentIndex();
+            if (segment_index == current_segment_index) {
+                continue;
+            }
+            const WRoadSegment *segment = road_network.GetSegment(segment_index);
+            const WRoadSegment *current_segment = road_network.GetSegment(current_segment_index);
+            if (current_segment->IsDecision() && segment->IsDecision() && path_type != WRoadNav::kPathCop) {
+                continue;
+            }
+            bool forward = (current_road_node->fIndex == segment->fNodeIndex[0]);
+            if (!Admissible(segment, forward, path_type)) {
+                continue;
+            }
+            float actual_cost = current_node->GetActualCost() + segment->GetLength();
+            const WRoadNode *next_road_node = road_network.GetSegmentOppNode(segment_index, current_road_node);
+            AStarNode *already_open = FindOpenNode(next_road_node, segment_index);
+            if (already_open != nullptr && actual_cost >= already_open->GetActualCost()) {
+                continue;
+            }
+            AStarNode *already_closed = FindClosedNode(next_road_node, segment_index);
+            if (already_closed != nullptr && actual_cost >= already_closed->GetActualCost()) {
+                continue;
+            }
+            if (already_open != nullptr) {
+                already_open->Remove();
+                delete already_open;
+            }
+            if (already_closed != nullptr) {
+                already_closed->Remove();
+                delete already_closed;
+            }
+            float estimated_cost = UMath::Distance(next_road_node->fPosition, vGoalPosition);
+            AStarNode *new_node = new AStarNode(current_node, next_road_node, segment_index, actual_cost, estimated_cost);
+            lOpen.AddSorted(AStarCheckFlip, new_node);
+        }
+        lClosed.AddHead(current_node);
+    }
+    if (nState > 0) {
+        AStarNode *node = pSolution;
+        int num_segments = 0;
+        while (node != nullptr) {
+            num_segments++;
+            node = node->GetParent();
+        }
+        node = pSolution;
+        int max_segments = pRoadNav->GetMaxPathSegments();
+        while (node != nullptr && num_segments > max_segments) {
+            num_segments--;
+            node = node->GetParent();
+        }
+        bool race_route_bogus = race_route;
+        bool segment_found = num_segments > 0;
+        if (segment_found) {
+            pRoadNav->SetNavType(WRoadNav::kTypePath);
+            race_route_bogus = false;
+            if (static_cast<int>(pRoadNav->GetSegmentInd()) == nGoalSegment) {
+                UMath::Vector3 dir;
+                UMath::Sub(vGoalPosition, pRoadNav->GetPosition(), dir);
+                float dot = UMath::Dot(dir, pRoadNav->GetForwardVector());
+                if (dot < 0.0f) {
+                    pRoadNav->Reverse();
+                    race_route_bogus = race_route;
+                }
+            }
+        }
+        pRoadNav->SetNumPathSegments(num_segments);
+        unsigned short *segments = pRoadNav->GetPathSegments();
+        if (node != nullptr) {
+            while (segment_found) {
+                int segment_index = node->GetSegmentIndex();
+                num_segments--;
+                segments[num_segments] = static_cast<unsigned short>(segment_index);
+                if (segment_index == static_cast<int>(pRoadNav->GetSegmentInd())) {
+                    WRoadNetwork &roadNetwork = WRoadNetwork::Get();
+                    const WRoadSegment *segment = roadNetwork.GetSegment(segment_index);
+                    const WRoadNode *currentnode = roadNetwork.GetNode(segment->fNodeIndex[static_cast<int>(pRoadNav->GetNodeInd())]);
+                    if (currentnode != node->GetRoadNode()) {
+                        pRoadNav->Reverse();
+                        race_route_bogus = race_route;
+                    }
+                }
+                node = node->GetParent();
+                if (node == nullptr) {
+                    break;
+                }
+                segment_found = num_segments > 0;
+            }
+        }
+        unsigned int path_segment_count = static_cast<unsigned int>(pRoadNav->GetNumPathSegments());
+        if (pRoadNav->GetPathType() == WRoadNav::kPathRaceRoute && nState != static_cast<AStarSearchState>(1)) {
+            pRoadNav->SetNumPathSegments(0);
+        }
+        if (race_route) {
+            typedef UTL::Std::set<unsigned short, _type_set> SEGMENT_SET;
+            SEGMENT_SET segment_set;
+            for (int i = 0; i < static_cast<int>(path_segment_count); i++) {
+                segment_set.insert(pRoadNav->GetPathSegment(i));
+            }
+            if (segment_set.size() < path_segment_count) {
+                race_route_bogus = true;
+            }
+        }
+        if (race_route_bogus) {
+            bVector2 goal_position_2d(vGoalPosition.z, -vGoalPosition.x);
+            bVector2 current_position_2d(pRoadNav->GetPosition().z, -pRoadNav->GetPosition().x);
+            pRoadNav->SetNavType(WRoadNav::kTypeDirection);
+            pRoadNav->SetNumPathSegments(0);
+            nState = static_cast<AStarSearchState>(3);
+            pSolution = nullptr;
+        }
+        if (bPathFinderPrints) {
+            float search_time = bGetTickerDifference(start_ticker);
+        }
+    }
+    float elapsed_ms = bGetTickerDifference(start_ticker);
+    if (Joylog::IsCapturing()) {
+        Joylog::AddData(num_loops, 32, JOYLOG_CHANNEL_PATHFINDER_TIMEOUT);
+    }
+    if (Joylog::IsCapturing()) {
+        Joylog::AddData(static_cast<int>(elapsed_ms), 32, JOYLOG_CHANNEL_PATHFINDER_TIMEOUT);
+    } else if (Joylog::IsReplaying()) {
+        elapsed_ms = static_cast<float>(static_cast<int>(Joylog::GetData(32, JOYLOG_CHANNEL_PATHFINDER_TIMEOUT)));
+    }
+    fSearchTime += elapsed_ms;
+    return elapsed_ms;
+}
+
 
 int AStarSearch::AStarCheckFlip(AStarNode *before, AStarNode *after) {
     return before->GetTotalCost() <= after->GetTotalCost();
