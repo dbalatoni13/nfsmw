@@ -71,7 +71,7 @@ static tPartMap put_maps[] = {
 static const tPartMap *FindPartMap(Type type) {
     const tPartMap *type_map = put_maps;
     if (type_map->key == 0) {
-        goto not_found;
+        return nullptr;
     }
     if (type_map->type == type) {
         return type_map;
@@ -79,12 +79,10 @@ static const tPartMap *FindPartMap(Type type) {
     do {
         type_map++;
         if (type_map->key == 0) {
-            goto not_found;
+            return nullptr;
         }
     } while (type_map->type != type);
     return type_map;
-not_found:
-    return nullptr;
 }
 
 static void DownGradeInternal(pvehicle &vehicle, Type type) {
@@ -145,21 +143,6 @@ void BlendParts<int>(const Attribute &start_attribute, const Attribute &end_attr
     new_attrib.Set(index, new_data);
 }
 
-template <>
-void BlendParts<float>(const Attribute &start_attribute, const Attribute &end_attribute, unsigned int index, float weight, Attribute &new_attrib) {
-    float start_data = 0.0f;
-    float end_data = 0.0f;
-
-    start_attribute.Get(index, start_data);
-    end_attribute.Get(index, end_data);
-
-    float new_data;
-
-    new_data = start_data * (1.0f - weight) + end_data * weight;
-
-    new_attrib.Set(index, new_data);
-}
-
 float Physics::Upgrades::GetPercent(const pvehicle &vehicle, Type type) {
     int max_level = GetMaxLevel(vehicle, type);
     if (max_level == 0) {
@@ -197,10 +180,6 @@ bool Physics::Upgrades::SetPackage(pvehicle &vehicle, const Package &package) {
     pvehicle newvehicle(vehicle);
     Clear(newvehicle);
 
-    if (!Validate(newvehicle)) {
-        return false;
-    }
-
     for (int i = 0; i < PUT_MAX; i++) {
         Type type = static_cast<Type>(i);
         int mask = 1 << type;
@@ -218,10 +197,6 @@ bool Physics::Upgrades::SetPackage(pvehicle &vehicle, const Package &package) {
         }
     }
 
-    if (!Validate(newvehicle)) {
-        return false;
-    }
-
     vehicle = newvehicle;
     return true;
 }
@@ -229,7 +204,7 @@ bool Physics::Upgrades::SetPackage(pvehicle &vehicle, const Package &package) {
 bool Physics::Upgrades::GetJunkman(const pvehicle &vehicle, Type type) {
     int junkman_current = vehicle.junkman_current();
     bool result = true;
-    if (((junkman_current >> type) & 1) == 0) {
+    if (!((junkman_current >> type) & 1)) {
         result = false;
     }
     return result;
@@ -344,10 +319,6 @@ bool Physics::Upgrades::ApplyPreset(pvehicle &vehicle, const presetride &presetr
 
     pvehicle newvehicle(vehicle);
     Clear(newvehicle);
-
-    if (!Validate(newvehicle)) {
-        return false;
-    }
 
     for (int i = 0; i < PUT_MAX; i++) {
         Type type = static_cast<Type>(i);
@@ -692,3 +663,4 @@ void Physics::Upgrades::Flush() {
 
 // Explicit template instantiations
 template void BlendParts<AxlePair>(const Attribute &, const Attribute &, unsigned int, float, Attribute &);
+template void BlendParts<float>(const Attribute &, const Attribute &, unsigned int, float, Attribute &);

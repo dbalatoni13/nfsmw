@@ -232,22 +232,24 @@ bool Smackable::OnExplosion(const UMath::Vector3 &normal, const UMath::Vector3 &
 void Smackable::OnBehaviorChange(const UCrc32 &mechanic) {
     PhysicsObject::OnBehaviorChange(mechanic);
     if (mechanic == UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY)) {
-        if (static_cast< ISimable * >(this)->QueryInterface(&mCollisionBody)) {
+        static_cast< ISimable * >(this)->QueryInterface(&mCollisionBody);
+        if (mCollisionBody != nullptr) {
             float detach = mAttributes.DETACH_FORCE();
             if (mVirgin && detach != 0.0f) {
                 mCollisionBody->AttachedToWorld(true, UMath::Max(0.0f, detach));
             }
             const CollisionGeometry::Bounds *cog =
-                mGeometry->GetChild(UCrc32(0x28b0bb8d));
-            if (cog != nullptr) {
+                mGeometry->fCollection->GetChild(mGeometry, UCrc32(0x28b0bb8d));
+            if (cog == nullptr) {
+                mCollisionBody->DistributeMass();
+            } else {
                 UMath::Vector3 cog_position;
                 cog->GetPosition(cog_position);
                 mCollisionBody->SetCenterOfGravity(cog_position);
-            } else {
-                mCollisionBody->DistributeMass();
             }
         }
-        if (static_cast< ISimable * >(this)->QueryInterface(&mSimpleBody)) {
+        static_cast< ISimable * >(this)->QueryInterface(&mSimpleBody);
+        if (mSimpleBody != nullptr) {
             mSimpleBody->ModifyFlags(0, 0x20b);
             ReleaseBehavior(UCrc32(BEHAVIOR_MECHANIC_EFFECTS));
         }
@@ -436,41 +438,42 @@ bool Smackable::CanRetrigger() const {
 
 void Smackable::ProcessDeath(float dT) {
     Seconds life;
-    if (ShouldDie()) {
-        if (mLife > 0.0f) {
-            life = mLife - dT;
-            goto store_life;
-        }
-        if (Dropout()) {
-            return;
-        }
-        if (mModel != nullptr) {
-            if (CanRetrigger()) {
-                if (mVirgin && mCollisionBody != nullptr && mCollisionBody->IsAttachedToWorld()) {
-                    ISceneryModel *iscenery = nullptr;
-                    if (mModel->QueryInterface(&iscenery)) {
-                        iscenery->RestoreScene();
-                        mModel = nullptr;
-                    }
-                } else {
-                    ITriggerableModel *itrigger = nullptr;
-                    if (mModel->QueryInterface(&itrigger)) {
-                        UMath::Matrix4 mat;
-                        static_cast< ISimable * >(this)->GetTransform(mat);
-                        itrigger->PlaceTrigger(mat, true);
-                        static_cast< ISimable * >(this)->Detach(mModel);
-                        mModel = nullptr;
-                    }
-                }
-            } else if (mModel != nullptr && !mPersistant) {
-                mModel->ReleaseModel();
-                mModel = nullptr;
-            }
-        }
-        static_cast< ISimable * >(this)->Kill();
+    if (!ShouldDie()) {
+        life = 0.125f;
+        goto store_life;
+    }
+    if (mLife > 0.0f) {
+        life = mLife - dT;
+        goto store_life;
+    }
+    if (Dropout()) {
         return;
     }
-    life = 0.125f;
+    if (mModel != nullptr) {
+        if (CanRetrigger()) {
+            if (mVirgin && mCollisionBody != nullptr && mCollisionBody->IsAttachedToWorld()) {
+                ISceneryModel *iscenery = nullptr;
+                if (mModel->QueryInterface(&iscenery)) {
+                    iscenery->RestoreScene();
+                    mModel = nullptr;
+                }
+            } else {
+                ITriggerableModel *itrigger = nullptr;
+                if (mModel->QueryInterface(&itrigger)) {
+                    UMath::Matrix4 mat;
+                    static_cast< ISimable * >(this)->GetTransform(mat);
+                    itrigger->PlaceTrigger(mat, true);
+                    static_cast< ISimable * >(this)->Detach(mModel);
+                    mModel = nullptr;
+                }
+            }
+        } else if (mModel != nullptr && !mPersistant) {
+            mModel->ReleaseModel();
+            mModel = nullptr;
+        }
+    }
+    static_cast< ISimable * >(this)->Kill();
+    return;
 store_life:
     mLife = life;
 }
@@ -670,7 +673,7 @@ HeirarchyModel::HeirarchyModel(bHash32 rendermesh, const CollisionGeometry::Boun
     if (visible) {
         RenderConn::Pkt_Smackable_Open pkt(mRenderMesh, GetWorldID(), GetCollisionGeometry(),
                                            mHeirarchy, mHeirarchyNode);
-        BeginDraw(UCrc32(0x804C0000), &pkt);
+        BeginDraw(UCrc32(0x804c146e), &pkt);
     }
     if (smackable.AI_AVOIDABLE()) {
         if (mAvoidable == nullptr) {
@@ -924,7 +927,7 @@ void HeirarchyModel::OnBeginSimulation() {
     RenderConn::Pkt_Smackable_Open pkt(mRenderMesh, model->GetWorldID(),
                                        model->GetCollisionGeometry(), mHeirarchy,
                                        mHeirarchyNode);
-    BeginDraw(UCrc32(0x804C0000), &pkt);
+    BeginDraw(UCrc32(0x804c146e), &pkt);
 }
 
 bool HeirarchyModel::OnDraw(Sim::Packet *service) {
@@ -953,7 +956,7 @@ PlaceableScenery *PlaceableScenery::Construct(const char *name, unsigned int att
     if (UTL::Collections::Listable< IModel, 434 >::Count() >= 435) {
         return nullptr;
     }
-    if (UTL::Collections::Countable< IPlaceableScenery >::Count() > 12) {
+    if (static_cast<unsigned int>(UTL::Collections::Countable< IPlaceableScenery >::Count()) > 12u) {
         return nullptr;
     }
     bHash32 render_name(bStringHashUpper(name));
