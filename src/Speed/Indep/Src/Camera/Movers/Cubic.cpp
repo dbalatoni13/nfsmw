@@ -571,3 +571,5 @@ void CubicCameraMover::Update(float dT) {
 
     GetCamera()->SetCameraMatrix(mWorldToCamera, dT);
 }
+
+template class tAverage<bVector3>;

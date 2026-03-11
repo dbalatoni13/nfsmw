@@ -1,5 +1,13 @@
 #include "CameraMover.hpp"
 #include "CameraAI.hpp"
+
+Attrib::Key Attrib::Gen::ecar::ClassKey() {
+    return 0xa5b543b7;
+}
+
+Attrib::Key Attrib::Gen::camerainfo::ClassKey() {
+    return 0x93c171e4;
+}
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Interfaces/IBody.h"

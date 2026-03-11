@@ -144,7 +144,14 @@ template <class T> class tAverage : public AverageBase {
 
     void Record(T *pValue);
 
-    virtual void Recalculate();
+    virtual void Recalculate() {
+        Total *= 0.0f;
+        for (int i = 0; i < nSamples; i++) {
+            Total += pData[i];
+        }
+        float fRecip = 1.0f / static_cast<float>(bMax(1, static_cast<int>(nSamples)));
+        Average = Total * fRecip;
+    }
 
     T *pData;     // offset 0x8, size 0x4
     T Total;      // offset 0xC

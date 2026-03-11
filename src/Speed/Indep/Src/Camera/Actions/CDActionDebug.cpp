@@ -71,3 +71,9 @@ bool CDActionDebug::GetTrafficBasis(UMath::Matrix4 &matrix, UMath::Vector3 &velo
     ConversionUtil::RightToLeftVector3(*mMover->GetCamera()->GetVelocityPosition(), velocity);
     return true;
 }
+
+namespace ConversionUtil {
+template void Copy4<UMath::Vector4, UMath::Vector4>(UMath::Vector4 &, const UMath::Vector4 &);
+template void RightToLeftVector3<UMath::Vector3, UMath::Vector3>(const UMath::Vector3 &, UMath::Vector3 &);
+template void RightToLeftMatrix4<UMath::Matrix4, UMath::Matrix4>(const UMath::Matrix4 &, UMath::Matrix4 &);
+} // namespace ConversionUtil

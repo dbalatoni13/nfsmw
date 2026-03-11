@@ -12,7 +12,7 @@ class ITrafficCenter : public UTL::Collections::Listable<ITrafficCenter, 8> {
   public:
     ITrafficCenter() {}
 
-    virtual bool GetTrafficBasis(UMath::Matrix4 &matrix, UMath::Vector3 &velocity);
+    virtual bool GetTrafficBasis(UMath::Matrix4 &matrix, UMath::Vector3 &velocity) = 0;
 
     virtual ~ITrafficCenter() {}
 };
