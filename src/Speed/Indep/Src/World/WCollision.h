@@ -85,6 +85,17 @@ struct WCollisionBarrier {
         return fPts[1].y;
     }
 
+    float GetInvXZLength() const {
+        return fPts[1].w;
+    }
+
+    void GetNormal(UMath::Vector3 &norm) const {
+        float invLen = GetInvXZLength();
+        norm.x = (fPts[1].z - fPts[0].z) * invLen;
+        norm.y = 0.0f;
+        norm.z = (fPts[0].x - fPts[1].x) * invLen;
+    }
+
     UMath::Vector4 fPts[2]; // offset 0x0, size 0x20
 };
 

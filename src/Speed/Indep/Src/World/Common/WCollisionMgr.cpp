@@ -384,3 +384,63 @@ void WCollisionMgr::BuildGeomFromWorldObb(const WCollisionObject &object, float 
 
     geom.Set(objMat, pos, dim, Dynamics::Collision::Geometry::BOX, dP);
 }
+
+bool WCollisionMgr::GetClosestIntersectingBarrier(const WCollisionBarrierList &barrierList, const UMath::Vector4 *testSegment, WorldCollisionInfo &cInfo) {
+    cInfo.fType = 0;
+    float closestDistSq = FLT_MAX;
+    const WCollisionBarrierListEntry *ret = nullptr;
+
+    for (const WCollisionBarrierListEntry *bIter = barrierList.begin(); bIter != barrierList.end(); ++bIter) {
+        const WCollisionBarrier *barrier = &bIter->fB;
+        if (!SurfacePassesExclusion(barrier->GetWSurface())) {
+            continue;
+        }
+        UMath::Vector4 intersectionPt;
+        if (WWorldMath::SegmentIntersect(testSegment, barrier->GetPts(), &intersectionPt)) {
+            float yBot = barrier->YBot();
+            float yTop = barrier->YTop();
+            float yMin = yBot;
+            if (yTop < yBot) {
+                yMin = yTop;
+            }
+            if (yMin < intersectionPt.y) {
+                float yMax = yBot;
+                if (yBot < yTop) {
+                    yMax = yTop;
+                }
+                if (intersectionPt.y < yMax) {
+                    float distSq = UMath::DistanceSquare(UMath::Vector4To3(intersectionPt), UMath::Vector4To3(*testSegment));
+                    if (distSq < closestDistSq) {
+                        cInfo.fCollidePt = intersectionPt;
+                        ret = bIter;
+                        closestDistSq = distSq;
+                    }
+                }
+            }
+        }
+    }
+
+    if (ret != nullptr) {
+        cInfo.fBle = *ret;
+        cInfo.fType = 2;
+    }
+    return cInfo.HitSomething();
+}
+
+bool WCollisionMgr::GetBarrierNormal(const WCollisionBarrierList &barrierList, const UMath::Vector4 *testSegment, WorldCollisionInfo &cInfo) {
+    cInfo.fType = 0;
+    if (GetClosestIntersectingBarrier(barrierList, testSegment, cInfo)) {
+        cInfo.fBle.fB.GetNormal(UMath::Vector4To3(cInfo.fNormal));
+        cInfo.fNormal.w = 0.0f;
+        cInfo.fAnimated = 0;
+        cInfo.fCInst = nullptr;
+        UMath::Vector3 testVec;
+        UMath::Sub(UMath::Vector4To3(*testSegment), UMath::Vector4To3(cInfo.fCollidePt), testVec);
+        if (cInfo.fNormal.x * testVec.x + cInfo.fNormal.z * testVec.z < 0.0f) {
+            cInfo.fNormal.x = -cInfo.fNormal.x;
+            cInfo.fNormal.z = -cInfo.fNormal.z;
+        }
+        cInfo.fType = 2;
+    }
+    return cInfo.HitSomething();
+}
