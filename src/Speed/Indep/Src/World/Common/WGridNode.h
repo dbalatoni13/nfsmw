@@ -111,20 +111,20 @@ inline const unsigned int *WGridNode::iterator::GetIndPtr() {
         fValid = true;
         retInd = fElemInd;
         fElemInd++;
-    } else if (fNode->fDynElems == nullptr) {
-        Invalidate();
-    } else {
+    } else if (fNode->fDynElems != nullptr) {
         fDynamic = true;
         while (fIter != fNode->fDynElems->end() && (*fIter).fType != fType) {
             ++fIter;
         }
-        if (!(fIter != fNode->fDynElems->end())) {
-            Invalidate();
-        } else {
+        if (fIter != fNode->fDynElems->end()) {
             retInd = &(*fIter).fInd;
             ++fIter;
             fElemInd = retInd;
+        } else {
+            Invalidate();
         }
+    } else {
+        Invalidate();
     }
     return retInd;
 }

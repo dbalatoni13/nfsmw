@@ -1,14 +1,13 @@
 #include "Speed/Indep/Src/World/Common/WGrid.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-WGrid::WGrid(const UMath::Vector4 &min, unsigned int rows, unsigned int cols, float edgeSize)
-    : fMin(min) //
-    , fEdgeSize(edgeSize) //
-    , fInvEdgeSize(1.0f / edgeSize) //
-    , fNumRows(rows) //
-    , fNumCols(cols) //
-    , fNodes(static_cast<WGridNode **>(bMalloc(cols * 4 * rows, 0)))
-{
+WGrid::WGrid(const UMath::Vector4 &min, unsigned int rows, unsigned int cols, float edgeSize) {
+    fMin = min;
+    fEdgeSize = edgeSize;
+    fInvEdgeSize = 1.0f / edgeSize;
+    fNumRows = rows;
+    fNumCols = cols;
+    fNodes = static_cast<WGridNode **>(bMalloc(cols * 4 * rows, 0));
     for (int i = 0; i < static_cast<int>(cols * rows); i++) {
         fNodes[i] = 0;
     }

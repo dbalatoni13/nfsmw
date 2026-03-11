@@ -101,7 +101,7 @@ struct WTrigger : public Trigger {
         }
     }
 
-    static void operator delete(void *mem, unsigned int size);
+    static void operator delete(void *mem, unsigned int size) { if (mem) gFastMem.Free(mem, size, nullptr); }
 };
 
 struct WTriggerList : public UTL::Std::vector<WTrigger *, _type_vector> {};

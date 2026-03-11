@@ -180,7 +180,7 @@ WorldBodyConn::WorldBodyConn(const Sim::ConnectionData &data)
 
 void WorldBodyConn::Update(float dT) {
     WorldConn::Pkt_Body_Service pkt;
-    pkt.SetMatrix(UMath::Matrix4::kIdentity);
+    pkt.mMatrix = UMath::Matrix4::kIdentity;
     int result = Service(&pkt);
     if (result == 0) {
         bFill(&mDest->acceleration, 0.0f, 0.0f, 0.0f);
@@ -188,8 +188,8 @@ void WorldBodyConn::Update(float dT) {
         return;
     }
     bVector3 prevvel(mDest->velocity);
-    bConvertFromBond(mDest->matrix, *reinterpret_cast<const bMatrix4 *>(&pkt.mMatrix));
-    eSwizzleWorldVector(*reinterpret_cast<const bVector3 *>(&pkt.mVelocity), mDest->velocity);
+    eSwizzleWorldMatrix(reinterpret_cast<const bMatrix4 &>(pkt.mMatrix), mDest->matrix);
+    eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(pkt.mVelocity), mDest->velocity);
     if (0.0f < mDest->time) {
         mDest->acceleration.x = (mDest->velocity.x - prevvel.x) / dT;
         mDest->acceleration.y = (mDest->velocity.y - prevvel.y) / dT;

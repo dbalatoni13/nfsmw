@@ -19,11 +19,12 @@ WTrigger::WTrigger() {
 
 WTrigger::WTrigger(const UMath::Matrix4 &mat, const UMath::Vector3 &dimensions, EventList *eventList, unsigned int flags) {
     memcpy(this, &mat, sizeof(UMath::Matrix4));
-    fShape = 1;
+    reinterpret_cast<unsigned char *>(this)[0x10] = (reinterpret_cast<unsigned char *>(this)[0x10] & 0xF0) | 1;
     fEvents = eventList;
-    fFlags = flags;
+    *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) =
+        (*reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) & 0xFF000000) | (flags & 0x00FFFFFF);
     fHeight = dimensions.y + dimensions.y;
-    fType = 0;
+    reinterpret_cast<unsigned char *>(this)[0x10] &= 0x0F;
     fPosRadius.x = mat[3][0];
     fPosRadius.y = mat[3][1];
     fPosRadius.z = mat[3][2];
@@ -53,8 +54,12 @@ void WTrigger::FireEvents(HSIMABLE__ *hSimable) {
         gEventDynamicData.fTriggerStimulus = WTriggerManager::Get().GetCurrentStimulus();
         EventManager::FireEventList(fEvents, false);
     }
-    if (fFlags & 2) {
-        Disable();
+    unsigned int flags = (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x11]) << 16)
+                       | (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x12]) << 8)
+                       | static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x13]);
+    if (flags & 2) {
+        *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) =
+            (*reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) & 0xFF000000) | (flags & ~1);
     }
 }
 
@@ -86,8 +91,13 @@ void WTriggerManager::Init() {
     Restart();
     for (unsigned int i = 0; i < WCollisionAssets::Get().NumTriggers(); i++) {
         WTrigger &trig = WCollisionAssets::Get().Trigger(i);
-        if (trig.fFlags & 0x200) {
-            WCollisionAssets::Get().Trigger(i).fFlags &= ~0x400;
+        if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x12]) << 8) & 0x200) {
+            WTrigger &trig2 = WCollisionAssets::Get().Trigger(i);
+            unsigned int flags = (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig2)[0x11]) << 16)
+                               | (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig2)[0x12]) << 8)
+                               | static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig2)[0x13]);
+            *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(&trig2) + 0x10) =
+                (*reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(&trig2) + 0x10) & 0xFF000000) | (flags & ~0x400);
         }
     }
 }
@@ -181,12 +191,8 @@ void WTriggerManager::Update(float dT) {
     }
 }
 
-void WTrigger::operator delete(void *mem, unsigned int size) {
-    gFastMem.Free(mem, size, nullptr);
-}
-
 WTrigger::~WTrigger() {
-    if (!(fFlags & 0x100) && fEvents != nullptr) {
+    if (!((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x12]) << 8) & 0x100) && fEvents != nullptr) {
         ::operator delete(fEvents);
     }
     if (WTriggerManager::Exists()) {
