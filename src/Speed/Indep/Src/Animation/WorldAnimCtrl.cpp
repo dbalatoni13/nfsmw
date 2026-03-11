@@ -60,11 +60,11 @@ void CWorldAnimCtrl::SetLoopRange(unsigned int loop_range_start, unsigned int lo
 }
 
 float CWorldAnimCtrl::GetLoopRangeScaledStart() {
-    return static_cast< float >(m_loop_range_start) * m_timeScale * m_f_speed_modifier;
+    return static_cast< float >(m_loop_range_start) * GetEffectiveTimeScale();
 }
 
 float CWorldAnimCtrl::GetLoopRangeScaledEnd() {
-    return static_cast< float >(m_loop_range_end) * m_timeScale * m_f_speed_modifier;
+    return static_cast< float >(m_loop_range_end) * GetEffectiveTimeScale();
 }
 
 void CWorldAnimCtrl::ApplySpeedModifier(float speed_modifier) {
@@ -72,23 +72,25 @@ void CWorldAnimCtrl::ApplySpeedModifier(float speed_modifier) {
 }
 
 void CWorldAnimCtrl::JumpToEndForTrigger() {
+    m_evalTime = m_animLength;
     PlayState = eACPS_PAUSED;
     PlayDirection = eACPD_REV;
-    m_evalTime = m_animLength;
 }
 
 void CWorldAnimCtrl::JumpToBeginForTrigger() {
-    PlayDirection = eACPD_FWD;
     PlayState = eACPS_PAUSED;
     m_evalTime = 0.0f;
+    PlayDirection = eACPD_FWD;
 }
 
 void CWorldAnimCtrl::Clear() {
-    for (int i = 3; i > -1; i--) {
+    for (int i = 0; i < 4; i++) {
         m_pFnAnim[i] = nullptr;
     }
-    m_flags = 0;
+    MasterDelayElapsed = 0.0f;
     m_f_speed_modifier = 1.0f;
+    StartType = eACST_IMMEDIATE;
+    m_flags = 0;
     m_loop_range_start = 0;
     m_loop_range_end = 0;
     m_fframe = 0.0f;
@@ -100,25 +102,18 @@ void CWorldAnimCtrl::Clear() {
     m_localDelayTime = 0.0f;
     m_isAllocated = 0;
     LocalDelayElapsed = 0.0f;
-    MasterDelayElapsed = 0.0f;
     PlayDirection = eACPD_FWD;
     PlayState = eACPS_STOPPED;
-    StartType = eACST_IMMEDIATE;
 }
 
 void CWorldAnimCtrl::Cleanup() {
-    EAGL4Anim::FnAnim **fn_anim = m_pFnAnim;
-    int i = 3;
-
     m_animPart.Purge();
-    do {
-        i--;
-        if (*fn_anim != nullptr) {
-            EAGL4Anim::MemoryPoolManager::DeleteFnAnim(*fn_anim);
-            *fn_anim = nullptr;
+    for (int i = 0; i < 4; i++) {
+        if (m_pFnAnim[i] != nullptr) {
+            EAGL4Anim::MemoryPoolManager::DeleteFnAnim(m_pFnAnim[i]);
+            m_pFnAnim[i] = nullptr;
         }
-        fn_anim++;
-    } while (i > -1);
+    }
 }
 
 void CWorldAnimCtrl::SetEvalTime(float time) {
@@ -127,12 +122,12 @@ void CWorldAnimCtrl::SetEvalTime(float time) {
     LocalDelayElapsed = 0.0f;
     if ((m_flags & 0x10) != 0) {
         float end_time;
-        if ((m_flags & 0x40) == 0) {
-            end_time = m_animLength;
-        } else {
+        if (m_flags & 0x40) {
             end_time = GetLoopRangeScaledEnd();
+        } else {
+            end_time = m_animLength;
         }
-        if (end_time < time) {
+        if (time > end_time) {
             PlayDirection = eACPD_REV;
             m_evalTime = end_time - (time - end_time);
         }
@@ -149,11 +144,11 @@ int CWorldAnimCtrl::CreateFnAnimFromBank(EAGL4Anim::AnimBank *animBank, int anim
     m_pFnAnim[dof] = animBank->NewFnAnim(animIndex);
     m_pFnAnim[dof]->GetLength(m_animLength);
 
-    bool created = m_pFnAnim[dof] != nullptr;
-    if (created) {
+    if (m_pFnAnim[dof] != nullptr) {
         m_isAllocated = 1;
+        return 1;
     }
-    return created;
+    return 0;
 }
 
 int CWorldAnimCtrl::AdvanceAnimTime(float timestep) {
@@ -326,12 +321,10 @@ int CWorldAnimCtrl::UpdateAnimPose() {
 int CWorldAnimCtrl::CreateFnAnimFromNamehash(unsigned int namehash, int dof) {
     EAGL4Anim::AnimBank *animBank = nullptr;
     int item_index = 0;
-    int found = GetAnimFromBankByNamehash(namehash, &animBank, &item_index);
-
-    if (found != 0) {
+    if (GetAnimFromBankByNamehash(namehash, &animBank, &item_index)) {
         CreateFnAnimFromBank(animBank, item_index, dof);
         m_isAllocated = 1;
+        return 1;
     }
-
-    return found != 0;
+    return 0;
 }

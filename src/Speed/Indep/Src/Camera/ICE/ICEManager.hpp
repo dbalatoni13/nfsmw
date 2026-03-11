@@ -54,6 +54,7 @@ class ICEManager {
     void Init();
     void Resolve();
     ICEData *GetCameraData(unsigned int scene_hash, int camTrack);
+    int GetNumSceneCameraTrack(unsigned int scene_hash);
 
     bool IsEditorOn() {
         // TODO maybe negated?

@@ -77,12 +77,16 @@ class CAnimCtrl : public bTNode<CAnimCtrl> {
     int IsMirror() {}
 
     void SetFlags(int flags) {
-        m_flags = flags;
+        m_flags |= flags;
     }
 
-    void ClearFlags(int flags) {}
+    void ClearFlags(int flags) {
+        m_flags &= ~flags;
+    }
 
-    void XorFlags(int flags) {}
+    void XorFlags(int flags) {
+        m_flags ^= flags;
+    }
 
     void HaltAnim() {}
 

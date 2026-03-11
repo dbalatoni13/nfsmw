@@ -82,7 +82,7 @@ CWorldAnimEntity::CWorldAnimEntity()
       mWorldModel(nullptr),       //
       mAnimCtrl(nullptr) {}
 
-CWorldAnimEntity::~CWorldAnimEntity() {}
+CWorldAnimEntity::~CWorldAnimEntity() { Purge(); }
 
 uint32 GetAnimChannelHash(uint32 anim_hash, uint32 dof) {
     if (dof == 0) {

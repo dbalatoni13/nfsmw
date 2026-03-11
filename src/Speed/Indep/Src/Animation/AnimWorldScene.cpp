@@ -32,9 +32,6 @@ CWorldAnimEntityTree *CAnimWorldScene::GetAnimTreeFromHash(unsigned int instance
 
 CAnimWorldScene::~CAnimWorldScene() {
     ClearAllAnimations();
-    while (!mInstancedAnimTreeList.IsEmpty()) {
-        delete mInstancedAnimTreeList.RemoveHead();
-    }
 }
 
 CWorldAnimEntityTree *CAnimWorldScene::InstantiateAnimTree(WorldAnimInstance *instance) {

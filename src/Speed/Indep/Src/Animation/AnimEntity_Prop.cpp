@@ -21,7 +21,7 @@ CPropAnimEntity::CPropAnimEntity()
       mThisInstanceNameHash(0), //
       mSpaceNode(nullptr) {}
 
-CPropAnimEntity::~CPropAnimEntity() {}
+CPropAnimEntity::~CPropAnimEntity() { Purge(); }
 
 // Functionally matching
 bool CPropAnimEntity::Init(void *init_data, SpaceNode *parent_space_node) {
