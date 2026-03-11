@@ -1,3 +1,5 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Career/FEGameWonScreen.hpp"
 
-void FEGameWonScreen::Setup() { mCurrentScreen = 0; }
+void FEGameWonScreen::Initialize() {
+    mCurrentScreen = 0;
+}
