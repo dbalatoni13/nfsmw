@@ -119,6 +119,7 @@ struct ICEShakeData {
 // total size: 0xB60
 struct ICEShakeTrack : public bTNode<ICEShakeTrack> {
     void PlatEndianSwap();
+    bool IsAllocated() { return Allocated != 0; }
 
     ICEShakeGroup *Group;   // offset 0x8, size 0x4
     short NumKeys;          // offset 0xC, size 0x2

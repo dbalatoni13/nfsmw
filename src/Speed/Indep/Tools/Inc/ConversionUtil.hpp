@@ -102,7 +102,7 @@ inline Mps KPH2MPS(Kph x) {
 namespace ConversionUtil {
 
 template <class T1, class T2>
-void Copy4(T1 &out, const T2 &in) {
+void Copy4(T2 &out, const T1 &in) {
     out.x = in.x;
     out.y = in.y;
     out.z = in.z;
@@ -137,33 +137,26 @@ T Make3(float x, float y, float z) {
 
 template <class T1, class T2>
 void RightToLeftVector4(const T1 &in, T2 &out) {
-    out.x = in.x;
-    out.y = in.z;
-    out.z = -in.y;
-    out.w = in.w;
+    out = Make4<T2>(-in.y, in.z, in.x, in.w);
 }
 
 template <class T1, class T2>
 void RightToLeftVector3(const T1 &in, T2 &out) {
-    out.x = in.x;
-    out.y = in.z;
-    out.z = -in.y;
+    out = Make3<T2>(-in.y, in.z, in.x);
 }
 
 template <class T1, class T2>
 void RightToLeftMatrix4(const T1 &in, T2 &out) {
     T2 tmp;
-    RightToLeftVector4(in[0], tmp[0]);
-    RightToLeftVector4(in[1], tmp[1]);
-    RightToLeftVector4(in[2], tmp[2]);
-    RightToLeftVector4(in[3], tmp[3]);
-    out[0] = tmp[0];
-    out[1] = tmp[2];
-    out[2].x = -tmp[1].x;
-    out[2].y = -tmp[1].y;
-    out[2].z = -tmp[1].z;
-    out[2].w = -tmp[1].w;
-    out[3] = tmp[3];
+    Copy4(tmp[0], in[0]);
+    Copy4(tmp[1], in[1]);
+    Copy4(tmp[2], in[2]);
+    Copy4(tmp[3], in[3]);
+    Scale3(tmp[0], -1.0f);
+    RightToLeftVector4(tmp[0], out[0]);
+    RightToLeftVector4(tmp[1], out[1]);
+    RightToLeftVector4(tmp[2], out[2]);
+    RightToLeftVector4(tmp[3], out[3]);
 }
 
 } // namespace ConversionUtil

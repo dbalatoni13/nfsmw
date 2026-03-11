@@ -28,7 +28,23 @@ void SelectCarCameraMover::SetZoomSpeed(float f) {
 }
 
 SelectCarCameraMover::SelectCarCameraMover(int view_id) : CameraMover(view_id, CM_SELECT_CAR) {
-    // TODO
+    CurrentAnimationTime = 0.0f;
+    CurrentCameraData.OrbitVAngle = 0.0f;
+    CurrentCameraData.OrbitHAngle = 0.0f;
+    CurrentCameraData.Radius = 0.0f;
+    CurrentCameraData.RollAngle = 0.0f;
+    CurrentCameraData.FOV = 0.0f;
+    bFill(&CurrentCameraData.LookAt, 0.0f, 0.0f, 0.0f);
+    StartAnimCameraData = CurrentCameraData;
+    GoalAnimCameraData = CurrentCameraData;
+    RadiusSpeed = 0.0f;
+    OrbitVSpeed = 0.0f;
+    OrbitHSpeed = 0.0f;
+    ControlMode = 1;
+    LookingAtParts = 0;
+    TotalAnimationTime = 1.0f;
+    Periods = 2;
+    Damping = 5.0f;
 }
 
 void SelectCarCameraMover::Update(float dT) {
@@ -159,5 +175,19 @@ float SelectCarCameraMover::FindBestAngleGoal(float start, float goal) {
 }
 
 void SelectCarCameraMover::CreateCameraMatrix(bMatrix4 *camera_matrix, SelectCarCameraData *camera_data) {
-    // TODO
+    bVector3 transpost(0.0f, 0.0f, camera_data->Radius);
+    bMatrix4 camera_to_world;
+    bVector3 eye;
+    bVector3 up;
+
+    bIdentity(camera_matrix);
+    eRotateZ(camera_matrix, camera_matrix, bDegToAng(camera_data->OrbitHAngle));
+    eRotateX(camera_matrix, camera_matrix, bDegToAng(camera_data->OrbitVAngle));
+    eTranslate(camera_matrix, camera_matrix, &transpost);
+    eInvertTransformationMatrix(&camera_to_world, camera_matrix);
+    eye.x = camera_to_world.v3.x;
+    eye.y = camera_to_world.v3.y;
+    eye.z = camera_to_world.v3.z;
+    ComputeBankedUpVector(&up, &eye, &camera_data->LookAt, bDegToAng(camera_data->RollAngle));
+    eCreateLookAtMatrix(camera_matrix, eye, camera_data->LookAt, up);
 }

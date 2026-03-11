@@ -37,11 +37,9 @@ const IAttachable::List *CDActionTrackCar::GetAttachments() const {
 
 CameraAI::Action *CDActionTrackCar::Construct(CameraAI::Director *director) {
     IPlayer *player = nullptr;
-    int player_idx;
-    ISimable *isimable;
-    const IPlayer::List &list = IPlayer::GetList(PLAYER_LOCAL);
-    for (IPlayer *const *iter = list.begin(); iter != list.end(); ++iter) {
-        IPlayer *ip = *iter;
+    IPlayer *ip;
+    for (IPlayer *const *iter = IPlayer::GetList(PLAYER_LOCAL).begin(); iter != IPlayer::GetList(PLAYER_LOCAL).end(); ++iter) {
+        ip = *iter;
         if (ip->GetControllerPort() == static_cast<int>(director->GetViewID())) {
             player = ip;
             break;
@@ -52,23 +50,20 @@ CameraAI::Action *CDActionTrackCar::Construct(CameraAI::Director *director) {
         return nullptr;
     }
 
-    isimable = player->GetSimable();
+    if (player->GetSettingsIndex() == 0) {
+        return nullptr;
+    }
+
+    ISimable *isimable = player->GetSimable();
     if (isimable == nullptr) {
         return nullptr;
     }
 
-    IVehicle *ivehicle = nullptr;
-    isimable->QueryInterface(&ivehicle);
-    if (ivehicle == nullptr) {
+    if (isimable->GetWorldID() == 0) {
         return nullptr;
     }
 
-    unsigned int world_id = isimable->GetWorldID();
-    if (world_id == 0) {
-        return nullptr;
-    }
-
-    return new ("CDActionTrackCar") CDActionTrackCar(director, player);
+    return new (static_cast<const char *>(0)) CDActionTrackCar(director, player);
 }
 
 CDActionTrackCar::CDActionTrackCar(CameraAI::Director *director, IPlayer *player)

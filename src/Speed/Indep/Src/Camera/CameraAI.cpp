@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 
+#include <algorithm>
 #include <list>
 
 #include <types.h>
@@ -62,9 +63,9 @@ void CameraAI::Director::ReleaseAction() {
 
 void CameraAI::Director::Reset() {
     mIsCinematicMomement = false;
-    mPursuitStartTime = 0.0f;
-    mJumpTime = 0.0f;
     mCinematicSlowdownSeconds = 0.0f;
+    mJumpTime = 0.0f;
+    mPursuitStartTime = 0.0f;
     SetAction(Attrib::StringKey("DRIVE"));
     if (mAction != nullptr) {
         mAction->Reset();
@@ -235,8 +236,7 @@ void CameraAI::Director::SelectAction() {
 }
 
 void CameraAI::Director::TotaledStart() {
-    Attrib::StringKey key("TOTALED");
-    mDesiredMode = key;
+    mDesiredMode = Attrib::StringKey("TOTALED");
     mJumpTime = 0.0f;
     SetAction(mDesiredMode);
 }
@@ -262,9 +262,7 @@ void CameraAI::Director::PursuitStart() {
 // --- Free functions ---
 
 IPlayer *FindPlayer(EVIEW_ID id) {
-    const UTL::Collections::ListableSet<IPlayer, 8, ePlayerList, PLAYER_MAX>::List &list =
-        UTL::Collections::ListableSet<IPlayer, 8, ePlayerList, PLAYER_MAX>::GetList(PLAYER_LOCAL);
-    for (IPlayer *const *iter = list.begin(); iter != list.end(); ++iter) {
+    for (IPlayer *const *iter = IPlayer::GetList(PLAYER_LOCAL).begin(); iter != IPlayer::GetList(PLAYER_LOCAL).end(); ++iter) {
         IPlayer *ip = *iter;
         if (ip->GetControllerPort() == static_cast<int>(id)) {
             return ip;
@@ -307,7 +305,7 @@ bool AreMomentCamerasEnabled() {
     if (splitCheck) {
         return false;
     }
-    if (FEDatabase->IsLANMode() || FEDatabase->IsOnlineMode()) {
+    if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
         return false;
     }
     return FEDatabase->GetGameplaySettings()->JumpCam;
@@ -495,24 +493,14 @@ void CameraAI::Shutdown() {
 }
 
 void CameraAI::AddAvoidable(IBody *body) {
-    Avoidables::iterator iter;
-    for (iter = TheAvoidables->begin(); iter != TheAvoidables->end(); ++iter) {
-        if (*iter == body) {
-            break;
-        }
-    }
+    Avoidables::iterator iter = _STL::find(TheAvoidables->begin(), TheAvoidables->end(), body);
     if (iter == TheAvoidables->end()) {
         TheAvoidables->push_back(body);
     }
 }
 
 void CameraAI::RemoveAvoidable(IBody *body) {
-    Avoidables::iterator iter;
-    for (iter = TheAvoidables->begin(); iter != TheAvoidables->end(); ++iter) {
-        if (*iter == body) {
-            break;
-        }
-    }
+    Avoidables::iterator iter = _STL::find(TheAvoidables->begin(), TheAvoidables->end(), body);
     if (iter != TheAvoidables->end()) {
         TheAvoidables->erase(iter);
     }

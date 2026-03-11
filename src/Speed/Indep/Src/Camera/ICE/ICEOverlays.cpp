@@ -1,5 +1,17 @@
 // ICE Overlay system
 
+#include <cstddef>
+
+class Event {
+  public:
+    void *operator new(std::size_t size);
+    void operator delete(void *ptr, std::size_t size);
+    virtual ~Event() {}
+    virtual const char *GetEventName();
+    Event(std::size_t size) : fEventSize(size) {}
+    std::size_t fEventSize;
+};
+
 struct cFEng {
     static cFEng *Get();
     static cFEng *mInstance;
@@ -8,7 +20,7 @@ struct cFEng {
     bool IsPackagePushed(const char *name);
 };
 
-struct ELoadingScreenOff {
+struct ELoadingScreenOff : public Event {
     ELoadingScreenOff();
 };
 
@@ -50,11 +62,11 @@ void ShowOverlay(unsigned char overlay) {
 
 void HideOverlay() {
     if ((gOverlay & 0x7f) != 0) {
-        if (!cFEng::mInstance->IsPackagePushed(GetOverlayName(gOverlay & 0x7f))) {
-            gOverlay = gOverlay | 0x80;
-        } else {
+        if (cFEng::mInstance->IsPackagePushed(GetOverlayName(gOverlay & 0x7f))) {
             cFEng::mInstance->PopNoControlPackage(GetOverlayName(gOverlay & 0x7f));
             gOverlay = 0;
+        } else {
+            gOverlay = gOverlay | 0x80;
         }
     }
 }

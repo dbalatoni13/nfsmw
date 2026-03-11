@@ -36,7 +36,7 @@ void ICEGroup::FlushAllocatedTracks() {
     while (track != TrackList.EndOfList()) {
         ICETrack *next = track->GetNext();
 
-        if (track->Allocated != 0) {
+        if (track->IsAllocated()) {
             TrackList.Remove(track);
             delete track;
             NumTracks--;
@@ -76,7 +76,7 @@ void ICEShakeGroup::FlushAllocatedTracks() {
     while (track != TrackList.EndOfList()) {
         ICEShakeTrack *next = track->GetNext();
 
-        if (track->Allocated != 0) {
+        if (track->IsAllocated()) {
             TrackList.Remove(track);
             delete track;
             NumTracks--;
@@ -228,35 +228,36 @@ void ICEShakeTrack::PlatEndianSwap() {
 }
 
 ICEManager::ICEManager() {
-    pNisCameras = 0;
-    pFmvCameras = 0;
-    pReplayCameras = 0;
-    pGenericCameras = 0;
-    pShakeGroup = 0;
-    nNisCameras = 0;
-    nFmvCameras = 0;
-    nReplayCameras = 0;
-    nGenericCameras = 0;
-    pPlaybackTrack = 0;
     nState = 0;
     nTrack = 0;
     nHandle = 0;
     nOption = 0;
     nSetting = 0;
+    nSceneHash = 0;
     nExitConfirmOption = 0;
     nDeleteConfirmOption = 0;
-    nContext = 3;
     nCopyMode = 0;
-    nSceneHash = 0;
+    nNisCameras = 0;
+    nFmvCameras = 0;
+    nReplayCameras = 0;
+    nGenericCameras = 0;
+    pNisCameras = 0;
+    pFmvCameras = 0;
+    pReplayCameras = 0;
+    pGenericCameras = 0;
+    pShakeGroup = 0;
+    nContext = 3;
     fAnimElevation = 0.0f;
     fParameterStart = 0.0f;
     fParameterLength = 0.0f;
     fParameterLengthBackup = 0.0f;
-    nPlayGenericGroupHash = 0;
+    nPlayGenericGroupHash = bStringHash("");
+    nPlayGenericTrackName[0] = 0;
+    pPlaybackTrack = 0;
+    ICEReplay::ClearRecentlyUsed();
     bSmoothExit = false;
     nMarkerIndex = -1;
     bUseRealTime = false;
-    ICEReplay::ClearRecentlyUsed();
 }
 
 float ICEManager::GetTimerSeconds() {
@@ -351,15 +352,17 @@ float ICEManager::GetParameter() {
 }
 
 float ICEManager::GetParameter(int i, ICETrack *track) {
-    if (track != 0 && i > -1) {
-        if (track->NumKeys <= i) {
-            return 1.0f;
-        }
-
+    if (track == 0) {
+        return 0.0f;
+    }
+    if (i < 0) {
+        return 0.0f;
+    }
+    if (i < track->NumKeys) {
         return track->Keys[i].fParameter;
     }
 
-    return 0.0f;
+    return 1.0f;
 }
 
 float ICEManager::GetIntervalSize(ICEData *data, ICETrack *track) {
@@ -489,7 +492,7 @@ ICEGroup *ICEManager::GetCameraGroup(ICEContext context, unsigned int handle) {
 
     for (int i = 0; i < num_groups; i++) {
         ICEGroup *group = &groups[i];
-        if (group->GetHandle() == handle) {
+        if (handle == group->GetHandle()) {
             return group;
         }
     }
@@ -642,13 +645,11 @@ ICEScene *FindAnimScene() {
 }
 
 unsigned int GetSceneCount() {
-    AnimDirectory *directory = TheAnimDirectory;
-
-    if (directory == 0) {
+    if (TheAnimDirectory == 0) {
         return 0;
     }
 
-    return directory->GetSceneCount();
+    return TheAnimDirectory->GetSceneCount();
 }
 
 unsigned int GetSceneHash(unsigned int slot) {
@@ -679,19 +680,15 @@ void FireEventTag(int key) {
 } // namespace ICE
 
 void ICECompleteEventTags() {
-    ICETrack *p_track = 0;
+    ICETrack *p_track;
     float fParameter0;
     float fParameter1;
     TheICEManager.GetCameraData(&p_track, &fParameter0, &fParameter1);
-    int key = TheICEManager.GetCameraIndex((fParameter0 + fParameter1) * 0.5f, p_track);
+    int key = TheICEManager.GetCameraIndex((fParameter0 + fParameter1) * 0.5f, p_track) + 1;
     if (p_track != 0) {
         int keyCount = p_track->GetNumKeys();
-        key++;
-        if (key < keyCount) {
-            do {
-                ICE::FireEventTag(key);
-                key++;
-            } while (key < keyCount);
+        for (; key < keyCount; key++) {
+            ICE::FireEventTag(key);
         }
     }
 }
