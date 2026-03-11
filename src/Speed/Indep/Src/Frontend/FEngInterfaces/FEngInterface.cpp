@@ -87,9 +87,8 @@ void cFEng::PopErrorPackage(int port) {
     if (bWasPaused) {
         if (!feManager->WaitingForControllerError()) {
             ResumeAllSystems(true);
-        } else {
-            FEManager::RequestUnPauseSimulation(nullptr);
         }
+        FEManager::RequestUnPauseSimulation(nullptr);
     }
 }
 
@@ -117,8 +116,7 @@ void cFEng::QueuePackagePush(const char* pPackageName, int pArg, unsigned long C
     if (TheGameFlowManager.IsInGame() && !pSuppressSimPause && !FEManager::IsPaused()) {
         FEManager::RequestPauseSimulation(pPackageName);
         HideEverySingleHud();
-        bool push_bkg = !IsPackagePushed("InGameBackground.fng");
-        if (push_bkg) {
+        if (!IsPackagePushed("InGameBackground.fng")) {
             mFEng->QueuePackagePush("InGameBackground.fng", 0);
         }
     }
@@ -131,7 +129,7 @@ void cFEng::QueuePackagePush(const char* pPackageName, int pArg, unsigned long C
 
 void cFEng::QueuePackagePop(int numPackagesToPop) {
     const int numPackagesPushed = mFEng->GetNumPackagesBelowPriority(FE_PACKAGE_PRIORITY_FIFTH_CLOSEST);
-    if (numPackagesToPop < 1 || numPackagesPushed < numPackagesToPop) {
+    if (numPackagesToPop < 1 || numPackagesToPop > numPackagesPushed) {
         numPackagesToPop = numPackagesPushed;
     }
     PrintLoadedPackages();
@@ -153,8 +151,7 @@ void cFEng::QueuePackageSwitch(const char* pPackageName, int pArg, unsigned long
     if (TheGameFlowManager.IsInGame() && !pSuppressSimPause && !FEManager::IsPaused()) {
         FEManager::RequestPauseSimulation(pPackageName);
         HideEverySingleHud();
-        bool push_bkg = !IsPackagePushed("InGameBackground.fng");
-        if (push_bkg) {
+        if (!IsPackagePushed("InGameBackground.fng")) {
             mFEng->QueuePackagePush("InGameBackground.fng", 0);
         }
     }
@@ -218,23 +215,25 @@ FEPackage* cFEng::FindPackageIdle(const char* pPackageName) {
 
 FEPackage* cFEng::FindPackage(const char* pPackageName) {
     if (pPackageName != nullptr && strlen(pPackageName) != 0) {
-        FEPackage* package;
-        if (FEPackageData::IsInScreenConstructor() > 0) {
-            package = FEPackageManager::Get()->FindPackage(pPackageName);
-        } else {
-            package = FindPackageActive(pPackageName);
-            if (package == nullptr) {
-                package = FindPackageIdle(pPackageName);
+        if (!FEPackageData::IsInScreenConstructor()) {
+            FEPackage* package = FindPackageActive(pPackageName);
+            if (package != nullptr) {
+                return package;
             }
+            package = FindPackageIdle(pPackageName);
+            if (package != nullptr) {
+                return package;
+            }
+        } else {
+            return FEPackageManager::Get()->FindPackage(pPackageName);
         }
-        return package;
     }
     return nullptr;
 }
 
 bool cFEng::IsPackagePushed(const char* pPackageName) {
     FEPackage* package;
-    if (FEPackageData::IsInScreenConstructor() > 0) {
+    if (FEPackageData::IsInScreenConstructor()) {
         package = FEPackageManager::Get()->FindPackage(pPackageName);
     } else {
         package = FindPackageActive(pPackageName);

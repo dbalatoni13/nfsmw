@@ -132,7 +132,7 @@ class MenuScreen {
 
     virtual ~MenuScreen();
     virtual void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) = 0;
-    virtual eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) = 0;
+    virtual eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) { return maybe; }
 
     void BaseNotify(u32 Message, FEObject *pObject, u32 Param1, u32 Param2);
 

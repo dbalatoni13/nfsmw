@@ -27,8 +27,8 @@ struct UIMemcardKeyboard : public MenuScreen {
 
     UIMemcardKeyboard(ScreenConstructorData* sd);
     ~UIMemcardKeyboard() override {}
-    virtual void Abort() {}
     virtual void Setup();
+    virtual void Abort() {}
     void ShowKeyboard();
     void NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
                              unsigned long param2) override;
@@ -64,6 +64,7 @@ struct UIMemcardBase : public UIMemcardKeyboard {
     UIMemcardBase(ScreenConstructorData* sd);
     ~UIMemcardBase() override;
     void Abort() override;
+    virtual void ShowKeyboard();
     virtual void DoSelect(const char* pFileName);
 
     eMenuSoundTriggers NotifySoundMessage(unsigned long msg,
@@ -108,7 +109,6 @@ struct UIMemcardBase : public UIMemcardKeyboard {
     void SetupPromptAutoSaveEnableFailedNoCard();
     void Setup() override;
     void SetStringCheckingCard();
-    virtual void ShowKeyboard();
     void DoSaveFlow(int flow);
     void SetMessageBlurbText(short* pText);
     void SetMessageBlurbText(char* pText);

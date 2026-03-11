@@ -37,8 +37,8 @@ bool cFEngGameInterface::LoadResources(FEPackage* pPackage, long Count, FEResour
         char filename[256];
         GetBaseName(filename, pList[i].pFilename);
         bToUpper(filename);
-        unsigned int type = pList[i].Type;
-        switch (type) {
+        unsigned int length = pList[i].Type;
+        switch (length) {
         case 1:
         case 2:
             pList[i].Handle = bStringHash(filename);
@@ -51,6 +51,7 @@ bool cFEngGameInterface::LoadResources(FEPackage* pPackage, long Count, FEResour
             pList[i].UserParam = 0;
             break;
         }
+        case 3:
         default:
             pList[i].Handle = bStringHash(filename);
             pList[i].UserParam = 0;
@@ -146,10 +147,10 @@ void cFEngGameInterface::PackageWasLoaded(FEPackage* pPackage) {
     FEPackageManager::Get()->PackageWasLoaded(pPackage);
     {
         FEngMovieStarter movie_starter(pPackage);
-        FEngHidePCObjects pcHideObjects;
-        FEngTransferFlagsToChildren transfer_to_children(4);
         pPackage->ForAllObjects(movie_starter);
+        FEngHidePCObjects pcHideObjects;
         pPackage->ForAllObjects(pcHideObjects);
+        FEngTransferFlagsToChildren transfer_to_children(4);
         pPackage->ForAllObjects(transfer_to_children);
     }
     if (GRaceStatus::Exists()) {
@@ -165,15 +166,19 @@ void cFEngGameInterface::PackageWasLoaded(FEPackage* pPackage) {
 
 bool cFEngGameInterface::PackageWillUnload(FEPackage* pPackage) {
     FEngMovieStopper movie_stop;
-    RenderObjectDisconnect disconnect(HACK_FEPkgMgr_GetPackageRenderInfo(pPackage), cFEngRender::mInstance);
     pPackage->ForAllObjects(movie_stop);
+    RenderObjectDisconnect disconnect;
+    disconnect.pFEngRenderer = cFEngRender::mInstance;
+    disconnect.PkgRenderInfo = HACK_FEPkgMgr_GetPackageRenderInfo(pPackage);
     pPackage->ForAllObjects(disconnect);
     FEPackageManager::Get()->PackageWillBeUnloaded(pPackage);
     return true;
 }
 
 void HackClearCache(FEPackage* pkg) {
-    RenderObjectDisconnect disconnect(HACK_FEPkgMgr_GetPackageRenderInfo(pkg), cFEngRender::mInstance);
+    RenderObjectDisconnect disconnect;
+    disconnect.pFEngRenderer = cFEngRender::mInstance;
+    disconnect.PkgRenderInfo = HACK_FEPkgMgr_GetPackageRenderInfo(pkg);
     pkg->ForAllObjects(disconnect);
 }
 

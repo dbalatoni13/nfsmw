@@ -379,7 +379,7 @@ void UIMemcardBase::SetupPromptForSave() {
         textHash = 0xd80818f8;
     }
     const char* localStr = GetLocalizedString(textHash);
-    char buf[516];
+    char buf[512];
     bSPrintf(buf, localStr, m_FileName, m_FileName);
     SetMessageBlurbText(buf);
 }
@@ -408,9 +408,9 @@ void UIMemcardBase::FindScreenSize(const wchar_t* msg) {
 
 void UIMemcardBase::ShowMessage(MemoryCardMessage* msg) {
     ShowMessage(reinterpret_cast< const wchar_t* >(msg->mMsg), msg->mnOptions,
-                reinterpret_cast< const wchar_t* >(&msg->mOptions[0]),
-                reinterpret_cast< const wchar_t* >(&msg->mOptions[128]),
-                reinterpret_cast< const wchar_t* >(&msg->mOptions[256]));
+                reinterpret_cast< const wchar_t* >(msg->mOptions[0]),
+                reinterpret_cast< const wchar_t* >(msg->mOptions[1]),
+                reinterpret_cast< const wchar_t* >(msg->mOptions[2]));
     MemoryCard::GetInstance()->ReleasePendingMessage();
 }
 

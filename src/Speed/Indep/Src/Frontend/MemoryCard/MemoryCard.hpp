@@ -68,7 +68,7 @@ enum MessageChoices {
 struct MemoryCardMessage {
     int mMsg[1024];           // offset 0x0, size 0x1000
     unsigned int mnOptions;   // offset 0x1000, size 0x4
-    int mOptions[128][4];     // offset 0x1004, size 0x800
+    int mOptions[4][128];     // offset 0x1004, size 0x800
 
     MemoryCardMessage(const wchar_t *msg, unsigned int nOptions, const wchar_t **options);
 };

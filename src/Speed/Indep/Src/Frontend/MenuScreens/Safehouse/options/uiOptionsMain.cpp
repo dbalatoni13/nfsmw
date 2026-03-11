@@ -129,8 +129,13 @@ void UIOptionsMain::Setup() {
 
     int lastButton = FEngGetLastButton(GetPackageName());
     if (bFadeInIconsImmediately) {
-        SetInitialOption(lastButton);
+        Options.bFadingOut = false;
+        Options.bFadingIn = true;
+        Options.bDelayUpdate = false;
+        Options.fCurFadeTime = 0.0f;
     }
+
+    Options.SetInitialPos(lastButton);
 
     const unsigned long FEObj_TITLEGROUP = 0xB71B576D;
     if (!mCalledFromPauseMenu) {

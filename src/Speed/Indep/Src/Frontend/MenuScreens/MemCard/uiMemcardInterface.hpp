@@ -23,7 +23,7 @@ struct MemoryCardSetup {
     }
 
     unsigned int GetMethod() const {
-        return (mOp >> 4) & 0xf;
+        return mOp & 0xf0;
     }
 
     unsigned int GetExtraOptions() const {
@@ -39,7 +39,7 @@ struct MemoryCardSetup {
     }
 
     void SetMethod(int method) {
-        mOp = (mOp & ~0xf0) | ((method & 0xf) << 4);
+        mOp = (mOp & ~0xf0) | (method & 0xf0);
     }
 
     void SetExtraOption(int eo) {

@@ -44,7 +44,7 @@ const char* LOCALE_getstrA(void* data, int strID);
 
 int ReplayJoyOp();
 bool FEngIsScriptSet(const char* pkg_name, unsigned long obj_hash, unsigned long script_hash);
-void ShowOneButton(const char*, const char*, int, unsigned int, unsigned int, unsigned int);
+void ShowOneButton(const char*, const char*, int, unsigned int, unsigned int, unsigned int, ...);
 
 void CaptureJoyOp(MemoryCardJoyLoggableEvents op) {
     Joylog::AddData(op, 8, JOYLOG_CHANNEL_MEMORY_CARD);
@@ -65,7 +65,7 @@ MemoryCardMessage::MemoryCardMessage(const wchar_t* msg, unsigned int nOptions,
             reinterpret_cast< const unsigned short* >(msg));
     mnOptions = nOptions;
     for (unsigned int i = 0; i < nOptions; i++) {
-        bStrCpy(reinterpret_cast< unsigned short* >(&mOptions[i * 128]),
+        bStrCpy(reinterpret_cast< unsigned short* >(mOptions[i]),
                 reinterpret_cast< const unsigned short* >(options[i]));
     }
 }
@@ -133,10 +133,10 @@ bool MemoryCard::IsCardAvailable() {
 void MemoryCard::SetExtraParam(SaveType t, const char* filename, void* buf, unsigned int size) {
     MemoryCard* mc = GetInstance();
     if (mc == nullptr) return;
-    mc->m_DataSize = size;
     mc->m_ReqFilename = filename;
     mc->m_Type = t;
     mc->m_pBuffer = static_cast< char* >(buf);
+    mc->m_DataSize = size;
 }
 
 void MemoryCard::InitCommand(int op) {
@@ -161,12 +161,12 @@ void MemoryCard::ProcessTask() {
 }
 
 bool MemoryCard::IsCardBusy() {
-    if (s_pThis == nullptr) return false;
-    if (s_pThis->m_pIMemcard->IsResettable()
-        && !s_pThis->IsAutoSaveIconVisible()
-        && (s_pThis->m_bInAutoSave == false || s_pThis->m_bWaitingForResponse != false))
-        return false;
-    return true;
+    if (s_pThis != nullptr
+        && (!s_pThis->m_pIMemcard->IsResettable()
+            || s_pThis->IsAutoSaveIconVisible()
+            || (s_pThis->m_bInAutoSave && !s_pThis->m_bWaitingForResponse)))
+        return true;
+    return false;
 }
 
 void MemoryCard::Init() {
@@ -280,8 +280,8 @@ void MemoryCard::BootupCheck(const char* entry) {
     m_pImp->ConstructSaveInfo(0, "", FEDatabase->GetUserProfileSaveSize(false));
     m_BootupParams.mEntryNamePattern = m_BootupFilename;
     m_BootupParams.mSaveReqs = reinterpret_cast< RealmcIface::SaveReq** >(m_pImp->GetSaveReqArray());
-    m_BootupParams.mValidCardIds = 1;
     m_BootupParams.mNumSaveTypes = 1;
+    m_BootupParams.mValidCardIds = 1;
     InitCommand(MO_BootUp);
     if (!Joylog::IsReplaying())
         m_pIMemcard->BootupCheck(&m_BootupParams, 0, static_cast< const char** >(nullptr), static_cast< unsigned short* >(nullptr));
@@ -305,7 +305,7 @@ bool MemoryCard::ShouldDoAutoSave(bool bForce) {
 void MemoryCard::StartAutoSave(bool bForce) {
     if (!ShouldDoAutoSave(bForce)) return;
     if (!FEDatabase->bProfileLoaded) return;
-    if (gMemcardSetup.GetMethod() != 0xb) { ShowAutoSaveIcon(); gMemcardSetup.mOp = 0; }
+    if (gMemcardSetup.GetMethod() != 0xb0) { ShowAutoSaveIcon(); gMemcardSetup.mOp = 0; }
     if (!m_bCardRemoved) {
         m_bInAutoSave = true;
         m_bCheckingCardForAutoSave = true;
@@ -317,7 +317,7 @@ void MemoryCard::StartAutoSave(bool bForce) {
 
 void MemoryCard::DoAutoSave() {
     m_bCheckingCardForAutoSave = false;
-    if (gMemcardSetup.GetMethod() == 0xb) {
+    if (gMemcardSetup.GetMethod() == 0xb0) {
         ShowMessages(true);
         m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, 0x100);
     } else { ShowOnlyAutoSaveMessages(); }
@@ -328,7 +328,7 @@ void MemoryCard::DoAutoSave() {
 void MemoryCard::EndAutoSave() {
     if (!m_bRetryAutoSave) m_MemOp = 0;
     m_bCheckingCardForAutoSave = false;
-    m_bFoundAutoSaveFile = false;
+    m_bCheckingCardForOverwrite = false;
     m_bInAutoSave = false;
     FEManager::Get()->SuppressControllerError(false);
     ShowMessages(true);
@@ -362,12 +362,12 @@ void MemoryCard::SetAutoSaveEnabled(bool bEnabled) {
     const char* prefix = m_pImp->GetPrefix();
     bStrCat(m_Filename, prefix, entryname);
     bStrNCpy(MemoryCardImp::gContentName, entryname, 16);
-    if (m_pFEScreen == nullptr || gMemcardSetup.GetMethod() != 0xa) ShowMessages(false);
+    if (m_pFEScreen == nullptr || gMemcardSetup.GetMethod() != 0xa0) ShowMessages(false);
     else { m_pFEScreen->SetStringCheckingCard(); ShowMessages(true); }
     bool bDisabling = !bEnabled;
     m_pIMemcard->SetMessage(RealmcIface::MESSAGE_SHOW, 1);
     if (bDisabling) { m_bDisablingAutoSaveForSave = true; }
-    else { gMemcardSetupPreviousOp = gMemcardSetup.mOp & 0xf0; gMemcardSetup.ClearMethod(); gMemcardSetup.SetMethod(0xa); }
+    else { gMemcardSetupPreviousOp = gMemcardSetup.mOp & 0xf0; gMemcardSetup.ClearMethod(); gMemcardSetup.SetMethod(0xa0); }
     InitCommand(MO_AutoSave);
     if (!Joylog::IsReplaying())
         m_pIMemcard->SetAutosave(bDisabling ? RealmcIface::AUTOSAVE_DISABLE : RealmcIface::AUTOSAVE_ENABLE, 0, nullptr, entryname, RealmcIface::CARD_UNKNOWN);
@@ -484,7 +484,7 @@ void MemoryCard::ReleasePendingMessage() {
 
 void MemoryCard::HandleAutoSaveError() {
     UIMemcardBase* pScreen = GetScreen();
-    if (gMemcardSetup.GetMethod() == 0xb || pScreen != nullptr)
+    if (gMemcardSetup.GetMethod() == 0xb0 || pScreen != nullptr)
         pScreen->HandleAutoSaveError();
     else
         MemcardEnter(nullptr, nullptr, 0x91, nullptr, nullptr, 0, 0);
@@ -492,7 +492,7 @@ void MemoryCard::HandleAutoSaveError() {
 
 void MemoryCard::HandleAutoSaveOverwriteMessage() {
     UIMemcardBase* pScreen = GetScreen();
-    if (gMemcardSetup.GetMethod() == 0xb || pScreen != nullptr)
+    if (gMemcardSetup.GetMethod() == 0xb0 || pScreen != nullptr)
         pScreen->HandleAutoSaveOverwriteMessage();
     else
         MemcardEnter(nullptr, nullptr, 0xd1, nullptr, nullptr, 0, 0);

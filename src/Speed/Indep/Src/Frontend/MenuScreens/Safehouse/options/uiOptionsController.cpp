@@ -30,11 +30,12 @@ UIOptionsController::UIOptionsController(ScreenConstructorData* sd)
     , NeedSetup(true) {
     if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
         cFEng::Get()->QueuePackageMessage(0x7DB7B6D7, GetPackageName(), 0);
+        const char* pkg = GetPackageName();
         unsigned int lang = 0x7B070985;
         if (GetPlayerToEditForOptions() == 0) {
             lang = 0x7B070984;
         }
-        FEngSetLanguageHash(GetPackageName(), 0x53BF826D, lang);
+        FEngSetLanguageHash(pkg, 0x53BF826D, lang);
     }
 
     oldConfig = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Config;
@@ -206,10 +207,10 @@ void UIOptionsController::SetupControllerConfig() {
         }
     }
 
-    if (FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog == false) {
-        FEngSetButtonTexture(FEngFindImage(GetPackageName(), 0x4592229C), 0x0B30961B);
-    } else {
+    if (FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog) {
         FEngSetTextureHash(FEngFindImage(GetPackageName(), 0x4592229C), 0x148E38);
+    } else {
+        FEngSetButtonTexture(FEngFindImage(GetPackageName(), 0x4592229C), 0x0B30961B);
     }
 
     FEngSetInvisible(GetPackageName(), 0x0F274B86);
@@ -302,11 +303,12 @@ void UIOptionsController::TogglePlayer() {
     oldVibration = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Rumble;
     oldDriveWithAnalog = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog;
 
+    const char* pkg = GetPackageName();
     unsigned int lang = 0x7B070985;
     if (GetPlayerToEditForOptions() == 0) {
         lang = 0x7B070984;
     }
-    FEngSetLanguageHash(GetPackageName(), 0x53BF826D, lang);
+    FEngSetLanguageHash(pkg, 0x53BF826D, lang);
 
     for (int i = 0; i < Options.CountElements(); i++) {
         Options.GetNode(i)->Draw();

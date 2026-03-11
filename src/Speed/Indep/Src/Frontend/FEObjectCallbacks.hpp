@@ -48,6 +48,7 @@ struct RenderObjectDisconnect : public FEObjectCallback {
     FEPackageRenderInfo* PkgRenderInfo; // offset 0x4
     cFEngRender* pFEngRenderer;         // offset 0x8
 
+    inline RenderObjectDisconnect() {}
     inline RenderObjectDisconnect(FEPackageRenderInfo* ri, cFEngRender* r)
         : PkgRenderInfo(ri) //
         , pFEngRenderer(r) {}

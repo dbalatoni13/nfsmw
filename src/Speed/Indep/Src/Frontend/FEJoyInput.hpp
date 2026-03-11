@@ -23,7 +23,7 @@ struct cFEngJoyInput {
 
     static cFEngJoyInput* mInstance;
 
-    static cFEngJoyInput* Get();
+    static cFEngJoyInput* Get() { return mInstance; }
     cFEngJoyInput();
     void FlushActions();
     void JoyDisable(JoystickPort port, bool do_flush);

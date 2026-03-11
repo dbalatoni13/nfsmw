@@ -328,10 +328,10 @@ void UIOptionsScreen::SetupPlayer() {
 }
 
 void UIOptionsScreen::SetupOnline() {
-    if (!mCalledFromPauseMenu) {
-        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0xE463B5F7);
-    } else {
+    if (mCalledFromPauseMenu) {
         FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0x966C856D);
+    } else {
+        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0xE463B5F7);
     }
 }
 

@@ -183,7 +183,7 @@ void AOSpeechVol::SetInitialValues() {
 void AOFEMusicVol::Act(const char* parent_pkg, unsigned int data) {
     UpdateSlider(data);
     float value = GetValue();
-    if (bEqual(value, 0.0f, 0.001f)) {
+    if (bEqual(0.0f, value, 0.001f)) {
         value = 0.0f;
     }
     FEDatabase->GetAudioSettings()->FEMusicVol = value;
@@ -359,10 +359,10 @@ void GOSpeedoUnits::Draw() {
 }
 
 void GORacingMiniMap::Act(const char* parent_pkg, unsigned int data) {
-    unsigned int mode = FEDatabase->GetGameplaySettings()->RacingMiniMapMode;
+    int mode = FEDatabase->GetGameplaySettings()->RacingMiniMapMode;
     if (data == 0x9120409E) {
         mode--;
-        if (static_cast<int>(mode) < 0) {
+        if (mode < 0) {
             mode = 2;
         }
     } else if (data == 0xB5971BF1) {
@@ -392,10 +392,10 @@ void GORacingMiniMap::Draw() {
 }
 
 void GOExploringMiniMap::Act(const char* parent_pkg, unsigned int data) {
-    unsigned int mode = FEDatabase->GetGameplaySettings()->ExploringMiniMapMode;
+    int mode = FEDatabase->GetGameplaySettings()->ExploringMiniMapMode;
     if (data == 0x9120409E) {
         mode--;
-        if (static_cast<int>(mode) < 0) {
+        if (mode < 0) {
             mode = 2;
         }
     } else if (data == 0xB5971BF1) {
@@ -615,10 +615,7 @@ void COVibration::Act(const char* parent_pkg, unsigned int data) {
         FEngSetVisible(parent_pkg, 0xBEE65E8C);
         FEngSetVisible(parent_pkg, 0x7C51B6D6);
         FEngSetVisible(GetRightImage());
-    } else {
-        if (data != 0xB5971BF1) {
-            goto end;
-        }
+    } else if (data == 0xB5971BF1) {
         int player = GetPlayerToEditForOptions();
         if (FEDatabase->GetPlayerSettings(player)->Rumble) {
             return;
@@ -631,6 +628,8 @@ void COVibration::Act(const char* parent_pkg, unsigned int data) {
         FEngSetVisible(parent_pkg, 0xBFF41BD9);
         FEngSetVisible(parent_pkg, 0x7BCD6703);
         FEngSetVisible(GetLeftImage());
+    } else {
+        goto end;
     }
     {
         int player = GetPlayerToEditForOptions();
@@ -669,14 +668,14 @@ void COVibration::UnsetFocus() {
 
 void COVibration::SetFocus(const char* parent_pkg) {
     int player = GetPlayerToEditForOptions();
-    if (FEDatabase->GetPlayerSettings(player)->Rumble == false) {
-        FEngSetInvisible("Pause_Controller.fng", 0xBFF41BD9);
-        FEngSetInvisible("Pause_Controller.fng", 0x7BCD6703);
-        FEngSetInvisible(GetLeftImage());
-    } else {
+    if (FEDatabase->GetPlayerSettings(player)->Rumble) {
         FEngSetInvisible("Pause_Controller.fng", 0xBEE65E8C);
         FEngSetInvisible("Pause_Controller.fng", 0x7C51B6D6);
         FEngSetInvisible(GetRightImage());
+    } else {
+        FEngSetInvisible("Pause_Controller.fng", 0xBFF41BD9);
+        FEngSetInvisible("Pause_Controller.fng", 0x7BCD6703);
+        FEngSetInvisible(GetLeftImage());
     }
     FEToggleWidget::SetFocus(parent_pkg);
 }
