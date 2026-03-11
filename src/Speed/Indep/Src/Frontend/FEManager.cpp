@@ -256,7 +256,7 @@ bool FEManager::ShouldPauseSimulation(bool useControllerErrors) {
         useControllerErrors && !UTL::Collections::Singleton<INIS>::Get() && !gMoviePlayer) {
         return true;
     }
-    return IsPaused();
+    return mPauseRequest != 0;
 }
 
 void FEManager::RequestPauseSimulation(const char *reason) {
@@ -342,6 +342,18 @@ void FEManager::Render() {
     if (DrawFEng) {
         cFEng::Get()->DrawForeground();
     }
+}
+
+int GetPortsPlayer(int port) {
+    if (FEDatabase->GetPlayersJoystickPort(0) != -1 &&
+        FEDatabase->GetPlayersJoystickPort(0) == port) {
+        return 0;
+    }
+    if (FEDatabase->GetPlayersJoystickPort(1) != -1 &&
+        FEDatabase->GetPlayersJoystickPort(1) == port) {
+        return 1;
+    }
+    return -1;
 }
 
 void FEManager::UpdateJoyInput() {

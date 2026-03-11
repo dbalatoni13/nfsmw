@@ -41,11 +41,17 @@ void LOCALE_create(void* data, int param);
 void LOCALE_setstate(void* data, int state, int param);
 const char* LOCALE_getstrA(void* data, int strID);
 
-int ReplayJoyOp();
 bool FEngIsScriptSet(const char* pkg_name, unsigned long obj_hash, unsigned long script_hash);
 
 void CaptureJoyOp(MemoryCardJoyLoggableEvents op) {
     Joylog::AddData(op, 8, JOYLOG_CHANNEL_MEMORY_CARD);
+}
+
+int ReplayJoyOp() {
+    MemoryCardJoyLoggableEvents l_Op =
+        static_cast< MemoryCardJoyLoggableEvents >(Joylog::GetData(8, JOYLOG_CHANNEL_MEMORY_CARD));
+    IJoyHelper::EmulateMemoryCardLibrary(l_Op);
+    return l_Op;
 }
 
 void InitMemoryCard() {
@@ -344,7 +350,7 @@ void MemoryCard::EndListingOldSaveFiles() {
     m_bListingOldSaveFiles = false;
     if (m_bOldSaveFileExists) {
         cFEng::Get()->QueueGameMessage(0x7e998e5e, nullptr, 0xff);
-        DialogInterface::ShowOneButton("", "", static_cast< eDialogTitle >(2), 0x417b2601u, 0x34dc1becu, 0xc5e2beacu, "");
+        DialogInterface::ShowOneButton("", "", static_cast< eDialogTitle >(2), 0x417b2601, 0x34dc1bec, 0xc5e2beac, 0u);
     }
     FEDatabase->GetCareerSettings()->AwardOneTimeCashBonus(m_bOldSaveFileExists);
 }
@@ -413,8 +419,7 @@ void MemoryCard::Save(const char* entryName) {
     SetExtraParam(ST_PROFILE, entryName, nullptr, saveSize);
     if (m_pImp->GetSaveInfo() == nullptr) {
         m_pImp->ConstructSaveInfo(ST_PROFILE, entryName, m_DataSize);
-        const char* prefix = m_pImp->GetPrefix();
-        bStrCat(m_Filename, prefix, entryName);
+        bStrCat(m_Filename, m_pImp->GetPrefix(), entryName);
     }
     bStrNCpy(MemoryCardImp::gContentName, entryName, 16);
     m_pBuffer = static_cast< char* >(bMalloc(m_DataSize, 0x40));

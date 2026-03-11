@@ -7,7 +7,25 @@
 #include "Speed/Indep/Src/Misc/Joylog.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-void DisplayMessage(const wchar_t* msg, unsigned int nOptions, const wchar_t** options);
+void DisplayUnicode(const wchar_t* str) {
+    const short* pWChar = reinterpret_cast< const short* >(str);
+    if (*pWChar == 0) {
+        return;
+    }
+    do {
+        pWChar++;
+    } while (*pWChar != 0);
+}
+
+void DisplayMessage(const wchar_t* msg, unsigned int count, const wchar_t** str) {
+    DisplayUnicode(msg);
+    if (count != 0) {
+        for (unsigned int i = 0; i < count; i++) {
+            DisplayUnicode(str[i]);
+        }
+    }
+}
+
 extern char g_GC_Disk_GameName[];
 
 void DisplayStatus(int i) {}

@@ -19,27 +19,7 @@ const char* GetLocalizedString(unsigned int hash);
 
 extern EAXSound* g_pEAXSound;
 
-enum eDialogTitle {};
-enum eDialogFirstButtons {};
-
-struct DialogInterface {
-    static int ShowTwoButtons(const char* from_pkg, const char* dlg_pkg, eDialogTitle title,
-                              unsigned int button1_text_hash, unsigned int button2_text_hash,
-                              unsigned int button1_pressed_message,
-                              unsigned int button2_pressed_message, unsigned int cancel_message,
-                              eDialogFirstButtons first_button, const char* fmt, ...);
-    static int ShowTwoButtons(const char* from_pkg, const char* dlg_pkg, eDialogTitle title,
-                              unsigned int button1_text_hash, unsigned int button2_text_hash,
-                              unsigned int button1_pressed_message,
-                              unsigned int button2_pressed_message, unsigned int cancel_message,
-                              eDialogFirstButtons first_button, unsigned int lang_hash, ...);
-    static int ShowOneButton(const char* from_pkg, const char* dlg_pkg, eDialogTitle title,
-                             unsigned int button_text_hash, unsigned int button_pressed_message,
-                             unsigned int cancel_message, const char* fmt, ...);
-    static int ShowOneButton(const char* from_pkg, const char* dlg_pkg, eDialogTitle title,
-                             unsigned int button_text_hash, unsigned int button_pressed_message,
-                             unsigned int cancel_message, unsigned int lang_hash, ...);
-};
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
 
 inline void FEngSetTextureHash(const char* pkg_name, unsigned int obj_hash,
                                unsigned int texture_hash) {
@@ -65,11 +45,12 @@ UIOptionsScreen::UIOptionsScreen(ScreenConstructorData* sd)
     if (FEDatabase->GetOptionsSettings()->CurrentCategory == OC_PLAYER &&
         Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
         cFEng::Get()->QueuePackageMessage(0x7DB7B6D7, GetPackageName(), 0);
+        const char* pkg = GetPackageName();
         unsigned int lang = 0x7B070985;
         if (GetPlayerToEditForOptions() == 0) {
             lang = 0x7B070984;
         }
-        FEngSetLanguageHash(GetPackageName(), 0x53BF826D, lang);
+        FEngSetLanguageHash(pkg, 0x53BF826D, lang);
     }
 
     Setup();
@@ -385,14 +366,19 @@ bool UIOptionsScreen::OptionsDidNotChange() {
 
 void UIOptionsScreen::RestoreOriginals() {
     eOptionsCategory curCat = FEDatabase->GetOptionsSettings()->CurrentCategory;
-    if (curCat == OC_AUDIO) {
+    switch (curCat) {
+    case OC_AUDIO:
         *FEDatabase->GetAudioSettings() = *OriginalAudioSettings;
-    } else if (curCat == OC_VIDEO) {
+        break;
+    case OC_VIDEO:
         *FEDatabase->GetVideoSettings() = *OriginalVideoSettings;
-    } else if (curCat == OC_GAMEPLAY) {
+        break;
+    case OC_GAMEPLAY:
         *FEDatabase->GetGameplaySettings() = *OriginalGameplaySettings;
-    } else if (curCat == OC_PLAYER) {
+        break;
+    case OC_PLAYER:
         *FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions()) = *OriginalPlayerSettings;
+        break;
     }
 }
 
@@ -407,11 +393,12 @@ void UIOptionsScreen::TogglePlayer(bool revert_changes) {
         *OriginalPlayerSettings =
             *FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions());
 
+        const char* pkg = GetPackageName();
         unsigned int lang = 0x7B070985;
         if (GetPlayerToEditForOptions() == 0) {
             lang = 0x7B070984;
         }
-        FEngSetLanguageHash(GetPackageName(), 0x53BF826D, lang);
+        FEngSetLanguageHash(pkg, 0x53BF826D, lang);
     }
 
     for (int i = 0; i < Options.CountElements(); i++) {

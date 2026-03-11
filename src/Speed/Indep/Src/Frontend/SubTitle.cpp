@@ -2,6 +2,7 @@
 #include "MoviePlayer/MoviePlayer.hpp"
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 extern int GetCurrentLanguage();
 extern int bSNPrintf(char*, int, const char*, ...);
@@ -96,8 +97,7 @@ float SubTitler::GetElapsedTime() {
     float thetime_ms;
     if (!mSubtitlePaused) {
         timenow = bGetTicker();
-        thetime_ms = timeElapsed;
-        thetime_ms += bGetTickerDifference(lastTime, timenow) * 0.001f;
+        thetime_ms = timeElapsed + bGetTickerDifference(lastTime, timenow) * 0.001f;
         lastTime = timenow;
         timeElapsed = thetime_ms;
     } else {
@@ -109,7 +109,9 @@ float SubTitler::GetElapsedTime() {
 
 void SubTitler::Update(unsigned int msg) {
     if (gMoviePlayer != nullptr) {
-        mSubtitlePaused = !!gMoviePlayer->IsMoviePaused();
+        int paused = gMoviePlayer->mMoviePaused;
+        if (paused) paused = 1;
+        mSubtitlePaused = paused;
         if (msg == 0xC98356BA) {
             if (data_ != nullptr && lastTime != 0) {
                 float timenow = GetElapsedTime();

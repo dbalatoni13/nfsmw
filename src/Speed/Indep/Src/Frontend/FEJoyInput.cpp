@@ -279,10 +279,13 @@ int MyMutex::AddRef() {
 
 int MyMutex::Release() {
     int ref = --mRefcount;
-    if (ref == 0) {
+    if (ref > 0) {
+        return ref;
+    }
+    if (this != nullptr) {
         delete this;
     }
-    return ref;
+    return 0;
 }
 
 IMutex* MyMutex::CreateInstance() {
@@ -295,10 +298,13 @@ int MyThread::AddRef() {
 
 int MyThread::Release() {
     int ref = --mRefcount;
-    if (ref == 0) {
+    if (ref > 0) {
+        return ref;
+    }
+    if (this != nullptr) {
         delete this;
     }
-    return ref;
+    return 0;
 }
 
 IThread* MyThread::CreateInstance() {

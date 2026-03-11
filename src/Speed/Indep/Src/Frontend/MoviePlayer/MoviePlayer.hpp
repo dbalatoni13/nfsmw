@@ -41,7 +41,7 @@ struct MoviePlayer {
     int fLiveStatus;                   // offset 0x12C
     unsigned int mTicker;              // offset 0x130
     bool mTickerFirstTime;             // offset 0x134
-    bool mMoviePaused;                 // offset 0x138
+    int mMoviePaused;                 // offset 0x138
     int mili_seconds;                  // offset 0x13C
     int seconds;                       // offset 0x140
     int minutes;                       // offset 0x144

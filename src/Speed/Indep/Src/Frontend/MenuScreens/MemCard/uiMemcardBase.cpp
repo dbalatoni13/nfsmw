@@ -339,7 +339,7 @@ void UIMemcardBase::SetupPromptNoProfileFound() {
 }
 
 void UIMemcardBase::SetupPromptSaveConfirm() {
-    const char* localStr;
+    char buf[512];
     unsigned int textHash;
     if ((gMemcardSetup.mOp & 0x8000) != 0) {
         textHash = 0x391a0aac;
@@ -350,9 +350,8 @@ void UIMemcardBase::SetupPromptSaveConfirm() {
     } else {
         textHash = 0x39b3ccba;
     }
-    localStr = GetLocalizedString(textHash);
+    const char* localStr = GetLocalizedString(textHash);
     ShowYesNo(0x39b3ccba, 0x4000000);
-    char buf[512];
     bSPrintf(buf, localStr, m_FileName, m_FileName);
     SetMessageBlurbText(buf);
 }

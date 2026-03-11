@@ -109,8 +109,12 @@ void uiCareerCrib::Setup() {
 
     int lastButton = FEngGetLastButton(GetPackageName());
     if (bFadeInIconsImmediately) {
-        SetInitialOption(lastButton);
+        Options.bFadingIn = true;
+        Options.bFadingOut = false;
+        Options.bDelayUpdate = false;
+        Options.fCurFadeTime = 0.0f;
     }
+    Options.SetInitialPos(lastButton);
 
     FEngSetLanguageHash(GetPackageName(), 0x3C458C1, 0xE596C4A3);
     FEngSetLanguageHash(GetPackageName(), 0xB5C74226, 0xE596C4A3);

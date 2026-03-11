@@ -202,7 +202,7 @@ void UIMain::Setup() {
         Options.fCurFadeTime = 0.0f;
     }
 
-    SetInitialOption(lastButton);
+    Options.SetInitialPos(lastButton);
     RefreshHeader();
     UpdateProfileData();
 }
