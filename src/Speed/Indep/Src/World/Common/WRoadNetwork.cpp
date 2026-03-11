@@ -1377,7 +1377,7 @@ void WRoadNav::UpdateCookieTrail(float cookie_gap) {
             add_new_cookie = true;
             cookie_length = current_ray_length;
             bVector2 cookie_ray_2d(current_cookie_ray.x, current_cookie_ray.z);
-            if (bDot(&cookie_ray_2d, reinterpret_cast<const bVector2 *>(&newest_cookie.Forward)) < -0.5f) {
+            if (bDot(&cookie_ray_2d, reinterpret_cast<const bVector2 *>(&newest_cookie.Forward)) < -0.99f) {
                 ClearCookieTrail();
             }
         }
@@ -1422,14 +1422,14 @@ void WRoadNav::UpdateCookieTrail(float cookie_gap) {
 void WRoadNav::IncNavPosition(float dist, const UMath::Vector3 &to, float max_lookahead) {
     if (!fValid) return;
 
-    float cookie_gap = 30.0f;
+    float cookie_gap = 3.0f;
     if (max_lookahead > 0.0f) {
-        cookie_gap = UMath::Clamp(max_lookahead * 0.5f, 5.0f, cookie_gap);
+        cookie_gap = UMath::Clamp(max_lookahead * (1.0f / 26.0f), 1.0f, cookie_gap);
     }
 
     if (bCookieTrail && pCookieTrail != nullptr) {
         while (dist > 0.0f) {
-            float incdist = bMin(cookie_gap * 0.5f, dist);
+            float incdist = bMin(cookie_gap * 1.1f, dist);
             PrivateIncNavPosition(incdist, to);
             dist -= incdist;
             UpdateCookieTrail(cookie_gap);
@@ -1448,7 +1448,7 @@ void WRoadNav::PrivateIncNavPosition(float dist, const UMath::Vector3 &to) {
 
     for (;;) {
         segment = roadNetwork.GetSegment(GetSegmentInd());
-        segmentLength = UMath::Max(0.001f, UMath::Distance(fStartPos, fEndPos));
+        segmentLength = UMath::Max(0.01f, UMath::Distance(fStartPos, fEndPos));
         distFraction = dist / segmentLength;
         toLength = UMath::Length(to);
 

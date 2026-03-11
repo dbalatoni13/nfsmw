@@ -82,11 +82,11 @@ struct NavCookie {
     unsigned short SegmentNodeInd : 1; // offset 0x3E, size 0x2
 
     void SetSegmentParameter(float t) {
-        SegmentParameter = static_cast< short >(bClamp(t, 0.0f, 1.0f) * 32767.0f);
+        SegmentParameter = static_cast< short >(bClamp(t, 0.0f, 1.0f) * 65535.0f);
     }
 
     float GetSegmentParameter() const {
-        return static_cast< float >(SegmentParameter) / 32767.0f;
+        return static_cast< float >(SegmentParameter) / 65535.0f;
     }
 };
 

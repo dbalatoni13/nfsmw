@@ -341,7 +341,7 @@ struct WRoadSegment {
     // void GetStartRightVec(UMath::Vector2 &v) const {}
 
     void GetEndForwardVec(UMath::Vector3 &v) const {
-        const float scale = 1.0f / 127.0f;
+        const float scale = -1.0f / 127.0f;
         float x = scale * static_cast< float >(vEndHandle[0]);
         float y = scale * static_cast< float >(vEndHandle[1]);
         float z = scale * static_cast< float >(vEndHandle[2]);
