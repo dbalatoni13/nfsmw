@@ -246,7 +246,7 @@ template <typename T, typename Tag> class Container {
     }
 
     template <typename P>
-    T *BuildElement(UCrc32 sig, const P &parms) {
+    T *BuildElement(const UCrc32 &sig, const P &parms) {
         T *e = T::CreateInstance(sig, parms);
         if (e != nullptr) {
             _mElements.push_back(e);

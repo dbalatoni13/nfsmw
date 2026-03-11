@@ -539,7 +539,7 @@ bool PerfStats::Fetch(const pvehicle &vehicle, bVector2 *graph_data, int *num_da
     return success;
 }
 
-void PerfLevel::Print() {
+void PerfLevel::Print(const char *) {
 }
 
 void PerfLevel::Rate() {

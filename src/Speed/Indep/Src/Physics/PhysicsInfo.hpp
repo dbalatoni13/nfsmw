@@ -85,7 +85,7 @@ struct PerfLevel {
 
     bool Analyze(const Attrib::Gen::pvehicle &pvehicle);
     void Rate();
-    void Print();
+    void Print(const char * = nullptr);
 
     PerfStats Stats;
     Physics::Info::Performance Stock;
