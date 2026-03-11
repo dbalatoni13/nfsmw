@@ -12,8 +12,8 @@ bool WWorldMath::IntersectCircle(float x1, float y1, float x2, float y2, float c
     y2 -= cy;
     y1 -= cy;
     y2 -= y1;
-    x2 -= cx;
     x1 -= cx;
+    x2 -= cx;
     x2 -= x1;
     float a = x2 * x2 + y2 * y2;
 
@@ -154,7 +154,10 @@ bool WWorldMath::IntersectSegPlane(const UMath::Vector3 &P1, const UMath::Vector
     t = n / d;
     UMath::Sub(P2, P1, intersectionPt);
     UMath::ScaleAdd(intersectionPt, t, P1, intersectionPt);
-    bool result = static_cast< bool >(!(t < 0.0f || t > 1.0f));
+    bool result = true;
+    if (t < 0.0f || t > 1.0f) {
+        result = false;
+    }
     return result;
 }
 

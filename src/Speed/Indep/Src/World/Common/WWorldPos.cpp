@@ -19,15 +19,13 @@ bool WWorldPos::FindClosestFaceInternal(const WCollisionInstanceCacheList *instL
     UMath::Vector3 pt = ptRaw;
     pt.y += fYOffset;
 
-    bool faceChanged = false;
+    bool onSameFace = false;
     if (fFaceValid) {
-        if (WWorldMath::InTri(pt, reinterpret_cast<const UMath::Vector4 *>(&fFace))) {
-            faceChanged = true;
-        }
+        onSameFace = WWorldMath::InTri(pt, reinterpret_cast<const UMath::Vector4 *>(&fFace));
     }
 
-    if (faceChanged && quitIfOnSameFace) {
-        return !faceChanged;
+    if (onSameFace && quitIfOnSameFace) {
+        return !onSameFace;
     }
 
     if (instList != nullptr) {

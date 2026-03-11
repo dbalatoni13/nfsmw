@@ -246,9 +246,9 @@ void WRoadNetwork::ResolveBarriers() {
                     }
                     if (!exempt) {
                         if (barrier->IsPlayerBarrier()) {
-                            segment->SetCrossesDriveThroughBarrier(true);
-                        } else {
                             segment->SetCrossesBarrier(true);
+                        } else {
+                            segment->SetCrossesDriveThroughBarrier(true);
                         }
                     }
                 }

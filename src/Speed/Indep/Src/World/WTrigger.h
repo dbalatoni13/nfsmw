@@ -57,7 +57,7 @@ struct WTrigger : public Trigger {
         unsigned int flags = (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x11]) << 16)
                            | (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x12]) << 8)
                            | static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x13]);
-        if (!(flags & 1)) {
+        if ((flags & 1) == 0) {
             return false;
         }
         if ((flags & 0x400) && !allowSilencables) {

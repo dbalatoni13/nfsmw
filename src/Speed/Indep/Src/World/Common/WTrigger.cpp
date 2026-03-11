@@ -20,10 +20,10 @@ WTrigger::WTrigger() {
 WTrigger::WTrigger(const UMath::Matrix4 &mat, const UMath::Vector3 &dimensions, EventList *eventList, unsigned int flags) {
     memcpy(this, &mat, sizeof(UMath::Matrix4));
     reinterpret_cast<unsigned char *>(this)[0x10] = (reinterpret_cast<unsigned char *>(this)[0x10] & 0xF0) | 1;
+    fHeight = dimensions.y + dimensions.y;
     fEvents = eventList;
     *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) =
         (*reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) & 0xFF000000) | (flags & 0x00FFFFFF);
-    fHeight = dimensions.y + dimensions.y;
     reinterpret_cast<unsigned char *>(this)[0x10] &= 0x0F;
     fPosRadius.x = mat[3][0];
     fPosRadius.y = mat[3][1];
@@ -322,9 +322,9 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
     float radsSq;
     UMath::Vector3 dP;
 
-    const float rbRadiusPlusVel = rBody->GetSpeed() * dT + rbRadius + trig->fPosRadius.w;
+    radsSq = rBody->GetSpeed() * dT + rbRadius + trig->fPosRadius.w;
     cp = UMath::Vector4To3(trig->fPosRadius);
-    radsSq = rbRadiusPlusVel * rbRadiusPlusVel;
+    radsSq *= radsSq;
     UMath::Scale(rBody->GetLinearVelocity(), dT, dP);
     UMath::Add(rBody->GetPosition(), dP, rPos);
 
@@ -382,11 +382,12 @@ bool WTriggerManager::CheckCollideSRB(const IRigidBody *srBody, const WTrigger *
 
     rPos = srBody->GetPosition();
     srRadius = srBody->GetRadius();
-    srRadiusPlusVel = srBody->GetSpeed() * dT + srRadius + trig->fPosRadius.w;
+    srRadiusPlusVel = srBody->GetSpeed() * dT + srRadius;
     UMath::Scale(srBody->GetLinearVelocity(), dT, dVdT);
     UMath::Add(rPos, dVdT, rPos);
     cp = UMath::Vector4To3(trig->fPosRadius);
     unsigned char shapeNum = reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF;
+    srRadiusPlusVel += trig->fPosRadius.w;
     radsSq = srRadiusPlusVel * srRadiusPlusVel;
 
     if (shapeNum == 1) {
