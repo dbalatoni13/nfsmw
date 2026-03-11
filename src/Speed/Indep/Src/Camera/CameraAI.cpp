@@ -433,20 +433,18 @@ static float AverageAir(ISimable *isimable, float fSeconds, float *pHighest, flo
     int i = 1;
     float fFuture = fAirTime;
 
-    if (nSteps > 1) {
-        for (i = 1; i < nSteps; i++) {
-            fFuture = fStep * static_cast<float>(i) - fDeparture;
-            UMath::ScaleAdd(a, fFuture * 0.5f, v, pNew);
-            UMath::ScaleAdd(pNew, fFuture, p, pNew);
+    for (i = 1; i < nSteps; i++) {
+        fFuture = fStep * static_cast<float>(i) - fDeparture;
+        UMath::ScaleAdd(a, fFuture * 0.5f, v, pNew);
+        UMath::ScaleAdd(pNew, fFuture, p, pNew);
 
-            if (pTopo.Update(pNew, vNormal, true, nullptr, true)) {
-                if (pTopo.OnValidFace() && 0.5f <= vNormal.y) {
-                    float fElevation = pTopo.HeightAtPoint(pNew);
-                    float fAir = pNew.y - fElevation;
-                    if (fAir <= 0.0f) break;
-                    fAirMax = bMax(fAirMax, fAir);
-                    fAirSum += fAir;
-                }
+        if (pTopo.Update(pNew, vNormal, true, nullptr, true)) {
+            if (pTopo.OnValidFace() && 0.5f <= vNormal.y) {
+                float fElevation = pTopo.HeightAtPoint(pNew);
+                float fAir = pNew.y - fElevation;
+                if (fAir <= 0.0f) break;
+                fAirMax = bMax(fAirMax, fAir);
+                fAirSum += fAir;
             }
         }
     }
