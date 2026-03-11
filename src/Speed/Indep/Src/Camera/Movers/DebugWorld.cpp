@@ -228,13 +228,12 @@ void DebugWorldCameraMover::Update(float dT) {
     if (ForwardInc != 0.0f) {
         float fi;
         if (SuperTurboOn) {
-            fi = ForwardInc * SuperTurboSpeed;
+            fi = ForwardInc * SuperTurboSpeed * dT;
         } else if (TurboOn) {
-            fi = ForwardInc * TurboSpeed;
+            fi = ForwardInc * TurboSpeed * dT;
         } else {
-            fi = ForwardInc;
+            fi = ForwardInc * dT;
         }
-        fi *= dT;
         bVector3 forward = *GetDirection() * fi;
         Eye += forward;
         Look += forward;
