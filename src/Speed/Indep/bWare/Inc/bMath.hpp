@@ -482,10 +482,14 @@ inline bVector3 bScaleAdd(const bVector3 &v1, const bVector3 &v2, float scale) {
 
 inline bVector3 bNormalize(const bVector3 &v) {
     bVector3 dest;
+    bNormalize(&dest, &v);
+    return dest;
 }
 
 inline bVector3 bNormalize(const bVector3 &v, float length) {
     bVector3 dest;
+    bNormalize(&dest, &v, length);
+    return dest;
 }
 
 inline bVector3 bMin(const bVector3 &v1, const bVector3 &v2) {
@@ -660,10 +664,15 @@ inline bVector4 *bScale(bVector4 *dest, const bVector4 *v, float scale) {
 }
 
 inline bVector4 *bScale(bVector4 *dest, const bVector4 *v1, const bVector4 *v2) {
-    float x;
-    float y;
-    float z;
-    float w;
+    float x = v1->x;
+    float y = v1->y;
+    float z = v1->z;
+    float w = v1->w;
+    dest->x = x * v2->x;
+    dest->y = y * v2->y;
+    dest->z = z * v2->z;
+    dest->w = w * v2->w;
+    return dest;
 }
 
 inline bVector4 *bMin(bVector4 *dest, const bVector4 *v1, const bVector4 *v2) {}

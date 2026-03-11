@@ -3,18 +3,36 @@
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Generated/Messages/MJumpCut.h"
 #include "Speed/Indep/Src/Interfaces/IBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IExplosion.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
+#include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
+#include "Speed/Indep/Src/Sim/SimSurface.h"
 #include "Speed/Indep/Libs/Support/Utility/UVector.h"
 
 extern bool gCinematicMomementCamera;
 extern bool gGameBreakerCamera;
+extern bool gCamCloseToRoadBlock;
 
 static float kCinematicMomementSeconds;
+
+class IVisualTreatment {
+public:
+    static IVisualTreatment *Get();
+    void TriggerPulse(float length);
+};
+
+int GetPOVTypeFromPlayerCamera(ePlayerSettingsCameras cam);
+void MaybeCameraShake(int nPlayer, bVector3 *pAccel);
 
 static UTL::COM::Factory<CameraAI::Director *, CameraAI::Action, UCrc32>::Prototype _CDActionDrive("DRIVE", CDActionDrive::Construct);
 
@@ -174,14 +192,14 @@ CDActionDrive::~CDActionDrive() {
 }
 
 void CDActionDrive::Reset() {
-    mGear = 0;
-    mCinematicMomementTimer = 0.0f;
+    mCinematicMomementTimerInc = false;
     mGameBreakerScale = 0.0f;
     mDampCollisionTime = 0.0f;
     mGroundCollisionTime = 0.0f;
     mObjectCollisionTime = 0.0f;
     mPulseTimer = 0.0f;
-    mCinematicMomementTimerInc = false;
+    mCinematicMomementTimer = 0.0f;
+    mGear = 0;
 }
 
 void CDActionDrive::OnDetached(IAttachable *pOther) {
@@ -278,7 +296,293 @@ void CDActionDrive::AquireCar() {
 }
 
 void CDActionDrive::Update(float dT) {
-    // TODO
+    gCinematicMomementCamera = false;
+    gGameBreakerCamera = false;
+
+    mDampCollisionTime -= dT;
+    if (mDampCollisionTime < 0.0f) {
+        mDampCollisionTime = 0.0f;
+    }
+    mGroundCollisionTime -= dT;
+    if (mGroundCollisionTime < 0.0f) {
+        mGroundCollisionTime = 0.0f;
+    }
+    mObjectCollisionTime -= dT;
+    if (mObjectCollisionTime < 0.0f) {
+        mObjectCollisionTime = 0.0f;
+    }
+
+    if (mPlayer == nullptr) {
+        if (mVehicle != nullptr) {
+            Detach(mVehicle);
+            mVehicle = nullptr;
+        }
+        return;
+    }
+
+    AquireCar();
+    mAnchor->SetVehicleDestroyed(false);
+    if (mVehicle != nullptr && mVehicle->IsDestroyed()) {
+        mAnchor->SetVehicleDestroyed(true);
+    }
+
+    if (mMover->OutsidePOV() && GRaceStatus::Exists()) {
+        if (GRaceStatus::Get().GetIsTimeLimited()) {
+            if (GRaceStatus::Get().GetRaceTimeRemaining() <= 0.0f) {
+                ISimable *playerSim = mPlayer->GetSimable();
+                GRacerInfo *racerInfo = GRaceStatus::Get().GetRacerInfo(playerSim);
+                if (racerInfo != nullptr && !racerInfo->IsFinishedRacing()) {
+                    return;
+                }
+            }
+        }
+
+        if (GRaceStatus::Exists()) {
+            ISimable *playerSim = mPlayer->GetSimable();
+            GRacerInfo *racerInfo = GRaceStatus::Get().GetRacerInfo(playerSim);
+            if (racerInfo != nullptr && racerInfo->GetCameraDetached()) {
+                return;
+            }
+        }
+    }
+
+    bool isBeingPursued = false;
+    mAnchor->SetCloseToRoadBlock(isBeingPursued);
+    IVehicleAI *ivehicleai = mVehicle->GetAIVehiclePtr();
+    if (ivehicleai != nullptr) {
+        IPursuit *ipursuit = ivehicleai->GetPursuit();
+        if (ipursuit != nullptr) {
+            float distance = 0.0f;
+            IVehicle *cop = ipursuit->GetNearestCopInRoadblock(&distance);
+            if (cop != nullptr && 0.0f < distance && distance < mAnchor->GetVelocityMagnitude() * 3.0f) {
+                for (IVehicle *const *iter = IVehicle::GetList(VEHICLE_AICOPS).begin(); iter != IVehicle::GetList(VEHICLE_AICOPS).end(); ++iter) {
+                    IVehicle *p_car = *iter;
+                    if (p_car != nullptr && p_car->IsActive() && p_car->GetVehicleClass() == VehicleClass::CAR) {
+                        UVector3 ucoppos(p_car->GetPosition());
+                        bVector3 coppos;
+                        eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(ucoppos), coppos);
+                        bVector3 copdir;
+                        bSub(&copdir, &coppos, mAnchor->GetGeometryPosition());
+                        float copdist = bLength(&copdir);
+
+                        if (0.0f < copdist && copdist < mAnchor->GetVelocityMagnitude() * 3.0f) {
+                            bVector3 unitcopdir;
+                            bNormalize(&unitcopdir, &copdir);
+                            float dot = bDot(&unitcopdir, mAnchor->GetForwardVector());
+                            if (-0.5f < dot) {
+                                float s = bClamp(dot, 0.0f, 1.0f);
+                                s = 1.0f - s * s;
+                                float targetsize = bSqrt(s);
+                                bVector2 target(copdir.z * targetsize, copdir.x * targetsize);
+                                if (bLength(&target) < 10.0f) {
+                                    mAnchor->SetCloseToRoadBlock(true);
+                                    gCamCloseToRoadBlock = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    IInput *iinput;
+    if (mVehicle != nullptr && mVehicle->QueryInterface(&iinput)) {
+        mMover->SetLookBack(false);
+        if (iinput->IsLookBackButtonPressed() && !mVehicle->IsStaging() && !isBeingPursued) {
+            mMover->SetLookBack(true);
+        }
+        mAnchor->SetBrakeEngaged(false);
+        if (0.0f < iinput->GetControls().fHandBrake || 0.0f < iinput->GetControls().fBrake) {
+            mAnchor->SetBrakeEngaged(true);
+        }
+    }
+
+    if (0.0f < mPulseTimer) {
+        float pulseTime = mPulseTimer - dT;
+        mPulseTimer = pulseTime;
+        if (0.0f < pulseTime && pulseTime < 0.25f) {
+            mPulseTimer = 0.0f;
+            IVisualTreatment *ivt = IVisualTreatment::Get();
+            if (ivt != nullptr) {
+                ivt->TriggerPulse(0.5f);
+            }
+        }
+    }
+
+    float timer;
+    if (mCinematicMomementTimerInc) {
+        timer = 1.0f;
+        if (mCinematicMomementTimer < 1.0f) {
+            timer = mCinematicMomementTimer + dT * 2.0f / kCinematicMomementSeconds;
+        }
+    } else {
+        timer = 0.0f;
+        if (0.0f < mCinematicMomementTimer) {
+            timer = mCinematicMomementTimer - dT / kCinematicMomementSeconds;
+        }
+    }
+    mCinematicMomementTimer = timer;
+
+    if (0.75f < mCinematicMomementTimer) {
+        gCinematicMomementCamera = true;
+    }
+
+    if (gCinematicMomementCamera) {
+        Camera *camera = mMover->GetCamera();
+        if (camera != nullptr) {
+            float timeScale = (1.0f - mCinematicMomementTimer) * 2.5f + 3.0f;
+            if (0.9f < timeScale) {
+                timeScale = 1.0f;
+            }
+            camera->SetSimTimeMultiplier(timeScale);
+        }
+    }
+
+    float gbScale;
+    if (mPlayer->InGameBreaker()) {
+        gbScale = dT * 2.0f + mGameBreakerScale;
+        mGameBreakerScale = gbScale;
+        gbScale = UMath::Min(gbScale, 1.0f);
+    } else {
+        gbScale = mGameBreakerScale - dT;
+        mGameBreakerScale = gbScale;
+        gbScale = UMath::Max(gbScale, 0.0f);
+    }
+    mGameBreakerScale = gbScale;
+
+    if (0.75f < mGameBreakerScale) {
+        gGameBreakerCamera = true;
+    }
+
+    {
+        PlayerSettings *settings = mPlayer->GetSettings();
+        if (settings != nullptr) {
+            int pov_type = GetPOVTypeFromPlayerCamera(settings->CurCam);
+
+            if (mVehicle == nullptr || !mVehicle->QueryInterface(&iinput)) {
+                mMover->SetPovType(pov_type);
+            } else {
+                static int old_pov = -1;
+                if (iinput->IsPullBackButtonPressed()) {
+                    old_pov = pov_type;
+                    mMover->SetPovType(PSC_PURSUIT);
+                } else {
+                    if (iinput->IsLookBackButtonPressed() && isBeingPursued) {
+                        old_pov = pov_type;
+                        mMover->SetPovType(PSC_PURSUIT);
+                    } else if (old_pov > -1) {
+                        mMover->SetPovType(old_pov);
+                        old_pov = -1;
+                    } else {
+                        mMover->SetPovType(pov_type);
+                    }
+                }
+            }
+        }
+    }
+
+    if (mTarget.IsValid()) {
+        if (mVehicle != nullptr) {
+            mAnchor->SetDragRace(mVehicle->GetDriverStyle() == STYLE_DRAG);
+        }
+
+        bMatrix4 mat(*mTarget.GetMatrix());
+
+        ICollisionBody *irbc = nullptr;
+        mAnchor->SetSurface(SimSurface::kNull);
+        mAnchor->SetTouchingGround(false);
+
+        if (mVehicle != nullptr && mVehicle->QueryInterface(&irbc)) {
+            IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
+            UVector3 cg(irbc->GetCenterOfGravity());
+            irb->ConvertLocalToWorld(cg, false);
+            cg += irb->GetPosition();
+            eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(cg), reinterpret_cast<bVector3 &>(mat.v3));
+
+            ISuspension *isuspension;
+            if (mVehicle->QueryInterface(&isuspension)) {
+                if (isuspension->GetNumWheels() == isuspension->GetNumWheelsOnGround()) {
+                    ISimable *isimable = mVehicle->GetSimable();
+                    WWorldPos &wpos = isimable->GetWPos();
+                    SimSurface surf(wpos.GetSurface());
+                    mAnchor->SetSurface(surf);
+                }
+                if (isuspension->GetNumWheelsOnGround() > 0) {
+                    mAnchor->SetTouchingGround(true);
+                }
+            }
+        }
+
+        mAnchor->SetNosEngaged(false);
+        mAnchor->SetOverRev(false);
+        if (mVehicle != nullptr) {
+            ISimable *isimable;
+            if (mVehicle->QueryInterface(&isimable)) {
+                IEngine *iengine;
+                if (isimable->QueryInterface(&iengine)) {
+                    mAnchor->SetNosEngaged(iengine->IsNOSEngaged());
+                    mAnchor->SetOverRev(iengine->GetRPM() > iengine->GetRedline() - 500.0f);
+                }
+            }
+        }
+
+        float drift = 0.0f;
+        if (mAnchor->IsTouchingGround() && mVehicle != nullptr) {
+            float slipangle = UMath::Abs(mVehicle->GetSlipAngle());
+            slipangle = ANGLE2DEG(slipangle);
+            drift = UMath::Ramp(slipangle, 5.0f, 45.0f);
+            float speedFactor = UMath::Ramp(mVehicle->GetAbsoluteSpeed() - 10.0f, 0.0f, 10.0f);
+            drift = drift * speedFactor;
+        }
+        mAnchor->SetDrift(drift);
+
+        mAnchor->SetGearChanging(false);
+        ITransmission *itrans;
+        if (mVehicle->QueryInterface(&itrans)) {
+            int gear = itrans->GetGear();
+            mAnchor->SetGearChanging(gear != mGear);
+            mGear = gear;
+        }
+
+        mAnchor->SetCollisionDamping(mDampCollisionTime / mMaxCollisionTime);
+        mAnchor->SetGroundCollision(mGroundCollisionTime / mMaxCollisionTime);
+        mAnchor->SetObjectCollision(mObjectCollisionTime / mMaxCollisionTime);
+
+        float zoom_input = mGameBreakerScale;
+        if (mGameBreakerScale - mCinematicMomementTimer < 0.0f) {
+            zoom_input = mCinematicMomementTimer;
+        }
+        mAnchor->SetZoom(1.0f - zoom_input * 0.1f);
+
+        mAnchor->Update(dT, mat, *mTarget.GetVelocity(), *mTarget.GetAcceleration());
+
+        unsigned int viewIndex = mViewID - 1;
+        if (viewIndex < 2) {
+            MaybeCameraShake(viewIndex, mAnchor->GetAcceleration());
+
+            for (IExplosion *const *iter = IExplosion::GetList().begin(); iter != IExplosion::GetList().end(); ++iter) {
+                IExplosion *explosion = *iter;
+                const UMath::Vector3 &pos = explosion->GetOrigin();
+                bVector3 bpos;
+                eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(pos), bpos);
+                bVector3 dir;
+                bSub(&dir, &bpos, mMover->GetPosition());
+                float distance = bLength(&dir);
+
+                float radius = explosion->GetMaximumRadius();
+                if (distance < radius + 20.0f && 0.0f < distance) {
+                    bVector3 explosion_dir;
+                    explosion_dir = bNormalize(dir);
+                    float force = -explosion->GetExpansionSpeed() / dT;
+                    bVector3 acc;
+                    bScale(&acc, &explosion_dir, force);
+                    MaybeCameraShake(mViewID - 1, &acc);
+                }
+            }
+        }
+    }
 }
 
 bool CDActionDrive::GetTrafficBasis(UMath::Matrix4 &matrix, UMath::Vector3 &velocity) {
