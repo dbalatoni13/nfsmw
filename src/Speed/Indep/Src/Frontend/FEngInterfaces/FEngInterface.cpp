@@ -201,7 +201,10 @@ FEPackage* cFEng::FindPackageWithControl() {
 
 FEPackage* cFEng::FindPackageAtBase() {
     FEPackageList* packageList = mFEng->GetPackageList();
-    return packageList->GetFirstPackage();
+    if (packageList != nullptr) {
+        return packageList->GetFirstPackage();
+    }
+    return nullptr;
 }
 
 FEPackage* cFEng::FindPackageActive(const char* pPackageName) {
@@ -215,7 +218,7 @@ FEPackage* cFEng::FindPackageIdle(const char* pPackageName) {
 
 FEPackage* cFEng::FindPackage(const char* pPackageName) {
     if (pPackageName != nullptr && strlen(pPackageName) != 0) {
-        if (FEPackageData::IsInScreenConstructor() > 0) {
+        if (FEPackageData::IsInScreenConstructor()) {
             return FEPackageManager::Get()->FindPackage(pPackageName);
         }
         FEPackage* package = FindPackageActive(pPackageName);
@@ -232,7 +235,7 @@ FEPackage* cFEng::FindPackage(const char* pPackageName) {
 
 bool cFEng::IsPackagePushed(const char* pPackageName) {
     FEPackage* package;
-    if (FEPackageData::IsInScreenConstructor() > 0) {
+    if (FEPackageData::IsInScreenConstructor()) {
         package = FEPackageManager::Get()->FindPackage(pPackageName);
     } else {
         package = FindPackageActive(pPackageName);
@@ -242,10 +245,10 @@ bool cFEng::IsPackagePushed(const char* pPackageName) {
 
 bool cFEng::IsPackageInControl(const char* pPackageName) {
     FEPackage* packageWithCtrl = FindPackageWithControl();
-    if (packageWithCtrl == nullptr) {
-        return false;
+    if (packageWithCtrl != nullptr) {
+        return bStrCmp(pPackageName, packageWithCtrl->GetName()) == 0;
     }
-    return bStrCmp(pPackageName, packageWithCtrl->GetName()) == 0;
+    return false;
 }
 
 void cFEng::PrintLoadedPackages() {}

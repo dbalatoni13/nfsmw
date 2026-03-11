@@ -35,8 +35,8 @@ struct FEGameInterface {
     virtual void DebugMessageBeginUpdate() {}
     virtual void DebugMessageEndUpdate() {}
 
-    virtual bool LoadResources(FEPackage*, int, FEResourceRequest*) = 0;
-    virtual bool UnloadResources(FEPackage*, int, FEResourceRequest*) = 0;
+    virtual bool LoadResources(FEPackage*, long, FEResourceRequest*) = 0;
+    virtual bool UnloadResources(FEPackage*, long, FEResourceRequest*) = 0;
     virtual void NotificationMessage(unsigned long, FEObject*, unsigned long, unsigned long) = 0;
     virtual void NotifySoundMessage(unsigned long, FEObject*, unsigned long, unsigned long) = 0;
     virtual void GenerateRenderContext(unsigned short, FEObject*) = 0;
@@ -63,8 +63,8 @@ struct cFEngGameInterface : public FEGameInterface {
     cFEngGameInterface();
     ~cFEngGameInterface() override;
 
-    bool LoadResources(FEPackage*, int, FEResourceRequest*) override;
-    bool UnloadResources(FEPackage*, int, FEResourceRequest*) override;
+    bool LoadResources(FEPackage*, long, FEResourceRequest*) override;
+    bool UnloadResources(FEPackage*, long, FEResourceRequest*) override;
     void NotificationMessage(unsigned long, FEObject*, unsigned long, unsigned long) override;
     void NotifySoundMessage(unsigned long, FEObject*, unsigned long, unsigned long) override;
     void GenerateRenderContext(unsigned short, FEObject*) override;

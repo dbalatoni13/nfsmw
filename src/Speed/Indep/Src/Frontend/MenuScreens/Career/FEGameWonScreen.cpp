@@ -12,22 +12,22 @@ FEGameWonScreen::FEGameWonScreen(ScreenConstructorData* sd)
     : MenuScreen(sd)
 {
     if (mCurrentScreen == 3) {
-        FEPrintf(GetPackageName(), 0x3cc94d6, "> %s", FEDatabase->GetUserProfile(0)->GetProfileName());
+        FEPrintf(GetPackageName(), static_cast<int>(0x3cc94d6), "> %s", FEDatabase->GetUserProfile(0)->GetProfileName());
     } else if (mCurrentScreen == 4) {
         FEPlayerCarDB* stable = FEDatabase->GetPlayerCarStable(0);
         UserProfile& prof = *FEDatabase->GetUserProfile(0);
         HighScoresDatabase* scores = prof.GetHighScores();
 
-        FEPrintf(GetPackageName(), 0x1232703a, GetLocalizedString(0xe21d083c), prof.GetCareer()->GetCaseFileName());
-        FEPrintf(GetPackageName(), 0xe3da78e7, GetLocalizedString(0x6031106e), prof.GetProfileName());
-        FEPrintf(GetPackageName(), 0x22f33e0a, GetLocalizedString(0x6031106e), prof.GetProfileName());
-        FEPrintf(GetPackageName(), 0xe3da78e8, GetLocalizedString(0x364e4525), stable->GetTotalBounty());
-        FEPrintf(GetPackageName(), 0xe3da78e9, GetLocalizedString(0xa355fedd), scores->GetCareerPursuitScore(static_cast<ePursuitDetailTypes>(7)));
-        FEPrintf(GetPackageName(), 0xe3da78ea, GetLocalizedString(0xb1e58db1), stable->GetNumImpoundedCars());
-        FEPrintf(GetPackageName(), 0xe3da78eb, GetLocalizedString(0x79fb7d16), stable->GetTotalFines(true));
-        FEPrintf(GetPackageName(), 0xe3da78ec, GetLocalizedString(0x463b461b), stable->GetTotalEvadedPursuits());
-        FEPrintf(GetPackageName(), 0xe3da78ed, GetLocalizedString(0xc5094459), stable->GetTotalBustedPursuits());
-        FEPrintf(GetPackageName(), 0xe3da78ee, GetLocalizedString(0x6dee0c7a), stable->GetNumCareerCarsWithARecord());
+        FEPrintf(GetPackageName(), static_cast<int>(0x1232703a), GetLocalizedString(0xe21d083c), prof.GetCareer()->GetCaseFileName());
+        FEPrintf(GetPackageName(), static_cast<int>(0xe3da78e7), GetLocalizedString(0x6031106e), prof.GetProfileName());
+        FEPrintf(GetPackageName(), static_cast<int>(0x22f33e0a), GetLocalizedString(0x6031106e), prof.GetProfileName());
+        FEPrintf(GetPackageName(), static_cast<int>(0xe3da78e8), GetLocalizedString(0x364e4525), stable->GetTotalBounty());
+        FEPrintf(GetPackageName(), static_cast<int>(0xe3da78e9), GetLocalizedString(0xa355fedd), scores->GetCareerPursuitScore(static_cast<ePursuitDetailTypes>(7)));
+        FEPrintf(GetPackageName(), static_cast<int>(0xe3da78ea), GetLocalizedString(0xb1e58db1), stable->GetNumImpoundedCars());
+        FEPrintf(GetPackageName(), static_cast<int>(0xe3da78eb), GetLocalizedString(0x79fb7d16), stable->GetTotalFines(true));
+        FEPrintf(GetPackageName(), static_cast<int>(0xe3da78ec), GetLocalizedString(0x463b461b), stable->GetTotalEvadedPursuits());
+        FEPrintf(GetPackageName(), static_cast<int>(0xe3da78ed), GetLocalizedString(0xc5094459), stable->GetTotalBustedPursuits());
+        FEPrintf(GetPackageName(), static_cast<int>(0xe3da78ee), GetLocalizedString(0x6dee0c7a), stable->GetNumCareerCarsWithARecord());
     }
 }
 

@@ -97,7 +97,10 @@ void FEAnyTutorialScreen::NotificationMessage(unsigned long msg, FEObject* obj,
                                                unsigned long param1, unsigned long param2) {
     mSubtitler.Update(msg);
 
-    if (msg == 0x406415E3 || msg == 0xB5AF2461) {
+    if (msg == 0x406415E3) {
+        DismissMovie(true);
+        mSubtitler.Update(0xC3960EB9);
+    } else if (msg == 0xB5AF2461) {
         DismissMovie(true);
         mSubtitler.Update(0xC3960EB9);
     } else if (msg == 0xC3960EB9) {

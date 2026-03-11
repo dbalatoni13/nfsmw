@@ -74,16 +74,29 @@ def get_compdb() -> Optional[List[Dict[str, Any]]]:
 def find_entry(
     compdb: List[Dict[str, Any]], source_path: str
 ) -> Optional[Dict[str, Any]]:
-    """Find the compdb entry whose 'file' matches source_path."""
+    """Find the compdb entry whose 'file' matches source_path.
+
+    When multiple entries exist for the same source file (e.g. hasher,
+    prodg compile, decompctx), prefer the one whose output ends with
+    '.o' or '.obj' — that is the actual compiler invocation.
+    """
     abs_source = os.path.normcase(os.path.abspath(os.path.join(root_dir, source_path)))
+    candidates = []
     for entry in compdb:
         file_val = entry.get("file", "")
         if not os.path.isabs(file_val):
             entry_dir = entry.get("directory", root_dir)
             file_val = os.path.abspath(os.path.join(entry_dir, file_val))
         if os.path.normcase(file_val) == abs_source:
+            candidates.append(entry)
+    if not candidates:
+        return None
+    # Prefer the entry that produces an object file
+    for entry in candidates:
+        out = entry.get("output", "")
+        if out.endswith(".o") or out.endswith(".obj"):
             return entry
-    return None
+    return candidates[0]
 
 
 def strip_transform_dep(command: str) -> str:

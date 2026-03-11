@@ -32,7 +32,7 @@ cFEngGameInterface::cFEngGameInterface() {
 cFEngGameInterface::~cFEngGameInterface() {
 }
 
-bool cFEngGameInterface::LoadResources(FEPackage* pPackage, int Count, FEResourceRequest* pList) {
+bool cFEngGameInterface::LoadResources(FEPackage* pPackage, long Count, FEResourceRequest* pList) {
     for (int i = 0; i < Count; i++) {
         char filename[256];
         GetBaseName(filename, pList[i].pFilename);
@@ -60,7 +60,7 @@ bool cFEngGameInterface::LoadResources(FEPackage* pPackage, int Count, FEResourc
     return true;
 }
 
-bool cFEngGameInterface::UnloadResources(FEPackage* pPackage, int Count, FEResourceRequest* pList) {
+bool cFEngGameInterface::UnloadResources(FEPackage* pPackage, long Count, FEResourceRequest* pList) {
     for (int i = 0; i < Count; i++) {
         if (pList[i].Type == 4) {
             bFree(reinterpret_cast<void*>(pList[i].Handle));

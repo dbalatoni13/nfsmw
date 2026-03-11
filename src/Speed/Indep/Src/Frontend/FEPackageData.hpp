@@ -11,7 +11,7 @@
 // total size: 0x38
 class FEPackageData : public bTNode<FEPackageData> {
   public:
-    static int IsInScreenConstructor() { return mInScreenConstructor; }
+    static int IsInScreenConstructor() { return mInScreenConstructor > 0; }
 
     // bChunk *GetChunk() {}
 

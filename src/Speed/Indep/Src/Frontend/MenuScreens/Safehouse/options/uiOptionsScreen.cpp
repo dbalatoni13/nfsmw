@@ -28,6 +28,9 @@ struct DialogInterface {
                               unsigned int button1_pressed_message,
                               unsigned int button2_pressed_message, unsigned int cancel_message,
                               eDialogFirstButtons first_button, const char* fmt, ...);
+    static int ShowOneButton(const char* from_pkg, const char* dlg_pkg, eDialogTitle title,
+                             unsigned int button_text_hash, unsigned int button_pressed_message,
+                             unsigned int cancel_message, const char* fmt, ...);
 };
 
 inline void FEngSetTextureHash(const char* pkg_name, unsigned int obj_hash,

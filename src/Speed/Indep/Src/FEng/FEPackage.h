@@ -43,6 +43,14 @@ struct FEMatrix4 {
     float m43; // offset 0x38
     float m44; // offset 0x3C
 
+    inline FEMatrix4& operator=(const FEMatrix4& m) {
+        m11 = m.m11; m12 = m.m12; m13 = m.m13; m14 = m.m14;
+        m21 = m.m21; m22 = m.m22; m23 = m.m23; m24 = m.m24;
+        m31 = m.m31; m32 = m.m32; m33 = m.m33; m34 = m.m34;
+        m41 = m.m41; m42 = m.m42; m43 = m.m43; m44 = m.m44;
+        return *this;
+    }
+
     void Identify();
 };
 

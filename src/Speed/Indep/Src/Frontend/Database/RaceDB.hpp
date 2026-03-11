@@ -46,6 +46,8 @@ struct TopEvadedPursuitDetail {
 
 // total size: 0x20
 struct CareerPursuitScores {
+    int GetValue(ePursuitDetailTypes type) const { return Value[type]; }
+
     int Value[8]; // offset 0x0, size 0x20
 };
 
@@ -71,7 +73,7 @@ enum RAP_CTS_ITEM { RAP_CTS_HELI_SPAWN=0,RAP_CTS_SUPPORT_VEHICLE_DEPLOYED=1,RAP_
 // total size: 0xBD8
 class HighScoresDatabase {
   public:
-    int GetCareerPursuitScore(ePursuitDetailTypes type) const { return CareerPursuitDetails.Value[type]; }
+    int GetCareerPursuitScore(ePursuitDetailTypes type) const { return CareerPursuitDetails.GetValue(type); }
     const TopEvadedPursuitDetail &GetTopEvadedPursuitScores(unsigned short index) const { return TopEvadedPursuitScores[index]; }
     const PursuitScore &GetBestPursuitScore(ePursuitDetailTypes type) const { return BestPursuitRankings[type]; }
     int CalcPursuitRank(ePursuitDetailTypes type, bool career_rank);

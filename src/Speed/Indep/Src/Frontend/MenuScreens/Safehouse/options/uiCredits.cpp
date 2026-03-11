@@ -25,12 +25,12 @@ uiCredits::uiCredits(ScreenConstructorData* sd)
     , prototypeStr_(nullptr) //
     , pendingDelete_(nullptr) //
     , uf_() {
-    if (FEDatabase->IsBeatGameMode()) {
-        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x0bf41045));
-        cFEng::Get()->QueuePackageMessage(0x3111b806, GetPackageName(), nullptr);
-    } else {
+    if (!FEDatabase->IsBeatGameMode()) {
         FEngSetInvisible(FEngFindObject(GetPackageName(), 0xeb4cf244));
         cFEng::Get()->QueuePackageMessage(0x8cb81f09, GetPackageName(), nullptr);
+    } else {
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x0bf41045));
+        cFEng::Get()->QueuePackageMessage(0x3111b806, GetPackageName(), nullptr);
     }
 }
 
@@ -38,9 +38,11 @@ uiCredits::~uiCredits() {}
 
 void uiCredits::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1,
                                     unsigned long param2) {
-    if (msg == 0x911ab364) {
+    switch (msg) {
+    case 0x911ab364:
         cFEng::Get()->QueuePackageMessage(0x587c018b, nullptr, nullptr);
-    } else if (msg == 0x35f8620b) {
+        break;
+    case 0x35f8620b: {
         char filename[32];
         const char* languageName =
             GetLanguageName(static_cast<eLanguages>(GetCurrentLanguage()));
@@ -59,44 +61,53 @@ void uiCredits::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned 
         uf_.LineWrap(0x2d);
         prototypeStr_ = FEngFindString(GetPackageName(), FEHashUpper("CreditsArea"));
         initComplete_ = true;
-    } else if (msg == 0x29161540) {
+        break;
+    }
+    case 0x29161540:
         pendingDelete_ = pobj;
-    } else if (msg == 0x406415e3) {
+        break;
+    case 0x406415e3:
         if (FEDatabase->IsBeatGameMode()) {
             cFEng::Get()->QueuePackageMessage(0x587c018b, nullptr, nullptr);
         }
-    } else if (msg == 0xc98356ba) {
+        break;
+    case 0xc98356ba:
         if (pendingDelete_ != nullptr) {
             ConstructData.pPackage->Objects.RemNode(pendingDelete_);
             cFEngRender::mInstance->RemoveCachedRender(pendingDelete_, nullptr);
             delete pendingDelete_;
             pendingDelete_ = nullptr;
         }
-    } else if (msg == 0xe1fde1d1) {
+        break;
+    case 0xe1fde1d1:
         uf_.Unload();
         initComplete_ = false;
-        if (FEDatabase->IsBeatGameMode()) {
-            FEGameWonScreen::QueuePackageSwitchForNextScreen();
-        } else {
+        if (!FEDatabase->IsBeatGameMode()) {
             cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+        } else {
+            FEGameWonScreen::QueuePackageSwitchForNextScreen();
         }
-    } else if (msg == 0xe6e946b8 && initComplete_) {
-        short* creditLine = uf_.Next();
-        if (creditLine == nullptr) {
-            creditLine = uf_.First();
-        }
-        if (creditLine != nullptr) {
-            FEString* ns = static_cast<FEString*>(prototypeStr_->Clone(false));
-            ns->Cached = nullptr;
-            *ns->GetObjData() = *prototypeStr_->GetObjData();
-            ns->SetString(creditLine);
-            ns->Flags |= 0x400000;
-            if (FEDatabase->IsBeatGameMode()) {
-                ns->SetScript(FEHashUpper("RollCredit_ENDGAME"), false);
-            } else {
-                ns->SetScript(FEHashUpper("RollCredit"), false);
+        break;
+    case 0xe6e946b8:
+        if (initComplete_) {
+            short* creditLine = uf_.Next();
+            if (creditLine == nullptr) {
+                creditLine = uf_.First();
             }
-            ConstructData.pPackage->Objects.AddNode(ConstructData.pPackage->Objects.GetTail(), ns);
+            if (creditLine != nullptr) {
+                FEString* ns = static_cast<FEString*>(prototypeStr_->Clone(false));
+                ns->Cached = nullptr;
+                *ns->GetObjData() = *prototypeStr_->GetObjData();
+                ns->SetString(creditLine);
+                ns->Flags |= 0x400000;
+                if (!FEDatabase->IsBeatGameMode()) {
+                    ns->SetScript(FEHashUpper("RollCredit"), false);
+                } else {
+                    ns->SetScript(FEHashUpper("RollCredit_ENDGAME"), false);
+                }
+                ConstructData.pPackage->Objects.AddNode(ConstructData.pPackage->Objects.GetTail(), ns);
+            }
         }
+        break;
     }
 }

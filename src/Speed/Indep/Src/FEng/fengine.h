@@ -40,7 +40,10 @@ struct FEngine {
     bool bRenderedRecently;     // offset 0x5260
     bool bDebugMessages;        // offset 0x5264
 
-    inline FEPackageList* GetPackageList() { return &PackList; }
+    inline FEPackageList* GetPackageList() {
+        FEPackageList* p = &PackList;
+        return p;
+    }
 
     inline void SetInterface(FEGameInterface* pNewInterface) { pInterface = pNewInterface; }
 
