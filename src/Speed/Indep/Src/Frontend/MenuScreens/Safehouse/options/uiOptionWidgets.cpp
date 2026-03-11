@@ -624,40 +624,30 @@ void POLeaderBoard::Draw() {
 
 void COVibration::Act(const char* parent_pkg, unsigned int data) {
     if (data == 0x9120409E) {
-        goto do_case1;
-    }
-    if (data != 0xB5971BF1) {
-        goto end;
-    }
-    goto do_case2;
-do_case1:
-    {
         int player = GetPlayerToEditForOptions();
-        FEDatabase->GetPlayerSettings(player)->Rumble = 0;
+        FEDatabase->GetPlayerSettings(player)->Rumble = false;
         FEngSetInvisible(parent_pkg, 0xBFF41BD9);
         FEngSetInvisible(parent_pkg, 0x7BCD6703);
         FEngSetInvisible(GetLeftImage());
         FEngSetVisible(parent_pkg, 0xBEE65E8C);
         FEngSetVisible(parent_pkg, 0x7C51B6D6);
         FEngSetVisible(GetRightImage());
-    }
-    goto shared;
-do_case2:
-    {
+    } else if (data == 0xB5971BF1) {
         int player = GetPlayerToEditForOptions();
         if (FEDatabase->GetPlayerSettings(player)->Rumble) {
             return;
         }
         player = GetPlayerToEditForOptions();
-        FEDatabase->GetPlayerSettings(player)->Rumble = 1;
+        FEDatabase->GetPlayerSettings(player)->Rumble = true;
         FEngSetInvisible(parent_pkg, 0xBEE65E8C);
         FEngSetInvisible(parent_pkg, 0x7C51B6D6);
         FEngSetInvisible(GetRightImage());
         FEngSetVisible(parent_pkg, 0xBFF41BD9);
         FEngSetVisible(parent_pkg, 0x7BCD6703);
         FEngSetVisible(GetLeftImage());
+    } else {
+        goto end;
     }
-shared:
     {
         int player = GetPlayerToEditForOptions();
         if (FEDatabase->GetPlayerSettings(player)->Rumble) {

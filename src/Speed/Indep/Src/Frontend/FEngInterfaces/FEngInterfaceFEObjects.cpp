@@ -15,13 +15,11 @@ class FEngFont {
 public:
     float GetTextWidth(const short* text, unsigned long flags);
     float GetTextHeight(const short* text, int leading, unsigned long flags, unsigned long maxWidth, bool wrap);
-    float GetHeight();
     float CalculateXOffset(unsigned int format, float scaledWidth);
     float CalculateYOffset(unsigned int format, float scaledHeight);
 };
 
 FEngFont* FindFont(unsigned int handle);
-int bStrLen(const unsigned short* s);
 int GetLocalizedWideString(short* buffer, int bufSize, unsigned int hash);
 TextureInfo* GetTextureInfo(unsigned int handle, int param2, int param3);
 void bMatrixToQuaternion(bQuaternion& quat, const bMatrix4& m);

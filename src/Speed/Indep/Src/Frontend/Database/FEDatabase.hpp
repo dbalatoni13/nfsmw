@@ -97,8 +97,6 @@ class GameplaySettings {
   public:
     void Default();
     bool operator==(const GameplaySettings& rhs) const;
-    bool IsMapItemEnabled(unsigned int type);
-    void SetMapItem(unsigned int type, bool enabled);
 
     int AutoSaveOn;                     // offset 0x0, size 0x1
     int RearviewOn;                     // offset 0x4, size 0x1

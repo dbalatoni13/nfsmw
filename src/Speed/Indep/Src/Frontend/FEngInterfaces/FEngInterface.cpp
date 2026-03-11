@@ -45,8 +45,8 @@ void cFEng::PushErrorPackage(const char* pPackageName, int pArg, unsigned long C
         }
         FEPackageManager::Get()->SetPackageDataArg(pPackageName, pArg);
         FEPackage* pPackage = mFEng->PushPackage(pPackageName, FE_PACKAGE_PRIORITY_ERROR, ControlMask);
-        mFEng->ToggleErrorScreenMode(true);
         pPackage->SetErrorScreen(true);
+        mFEng->ToggleErrorScreenMode(true);
         if (!FEManager::IsPaused() || bWasPaused) {
             bWasPaused = true;
             FEManager::RequestPauseSimulation(pPackageName);
@@ -55,8 +55,8 @@ void cFEng::PushErrorPackage(const char* pPackageName, int pArg, unsigned long C
     } else {
         FEPackageManager::Get()->SetPackageDataArg(pPackageName, pArg);
         FEPackage* pPackage = mFEng->PushPackage(pPackageName, FE_PACKAGE_PRIORITY_ERROR, ControlMask);
-        mFEng->ToggleErrorScreenMode(true);
         pPackage->SetErrorScreen(true);
+        mFEng->ToggleErrorScreenMode(true);
         if (!FEManager::IsPaused() || bWasPaused) {
             bWasPaused = true;
             FEManager::RequestPauseSimulation(pPackageName);
@@ -226,20 +226,19 @@ FEPackage* cFEng::FindPackageIdle(const char* pPackageName) {
 }
 
 FEPackage* cFEng::FindPackage(const char* pPackageName) {
-    if (pPackageName == nullptr || strlen(pPackageName) == 0) {
-        return nullptr;
-    }
-    if (FEPackageData::IsInScreenConstructor()) {
-        FEPackage* packagePtr = FEPackageManager::Get()->FindPackage(pPackageName);
-        return packagePtr;
-    }
-    FEPackage* package = FindPackageActive(pPackageName);
-    if (package != nullptr) {
-        return package;
-    }
-    package = FindPackageIdle(pPackageName);
-    if (package != nullptr) {
-        return package;
+    if (pPackageName != nullptr && strlen(pPackageName) != 0) {
+        if (!FEPackageData::IsInScreenConstructor()) {
+            FEPackage* package = FindPackageActive(pPackageName);
+            if (package != nullptr) {
+                return package;
+            }
+            package = FindPackageIdle(pPackageName);
+            if (package != nullptr) {
+                return package;
+            }
+        } else {
+            return FEPackageManager::Get()->FindPackage(pPackageName);
+        }
     }
     return nullptr;
 }

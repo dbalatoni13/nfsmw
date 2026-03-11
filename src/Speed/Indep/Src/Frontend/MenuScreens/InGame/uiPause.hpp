@@ -33,81 +33,63 @@ struct PauseMenu : public IconScrollerMenu {
 
 struct pm_ResumeRace : public IconOption {
     pm_ResumeRace(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {
-        SetReactImmediately(true);
-    }
+        : IconOption(tex_hash, name_hash, desc_hash) {}
     ~pm_ResumeRace() override {}
     void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
 };
 
 struct pm_ResumeFreeRoam : public IconOption {
     pm_ResumeFreeRoam(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {
-        SetReactImmediately(true);
-    }
+        : IconOption(tex_hash, name_hash, desc_hash) {}
     ~pm_ResumeFreeRoam() override {}
     void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
 };
 
 struct pm_RestartRace : public IconOption {
     pm_RestartRace(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {
-        SetReactImmediately(true);
-    }
+        : IconOption(tex_hash, name_hash, desc_hash) {}
     ~pm_RestartRace() override {}
     void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
 };
 
 struct pm_SwitchToOptions : public IconOption {
     pm_SwitchToOptions(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {
-        SetReactImmediately(true);
-    }
+        : IconOption(tex_hash, name_hash, desc_hash) {}
     ~pm_SwitchToOptions() override {}
     void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
 };
 
 struct pm_SwitchToTuning : public IconOption {
-    pm_SwitchToTuning(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash, bool unlocked)
-        : IconOption(tex_hash, name_hash, desc_hash) {
-        SetReactImmediately(true);
-    }
+    pm_SwitchToTuning(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
+        : IconOption(tex_hash, name_hash, desc_hash) {}
     ~pm_SwitchToTuning() override {}
     void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
 };
 
 struct pm_QuitMainMenu : public IconOption {
     pm_QuitMainMenu(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {
-        SetReactImmediately(true);
-    }
+        : IconOption(tex_hash, name_hash, desc_hash) {}
     ~pm_QuitMainMenu() override {}
     void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
 };
 
 struct pm_QuitQuickRace : public IconOption {
     pm_QuitQuickRace(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {
-        SetReactImmediately(true);
-    }
+        : IconOption(tex_hash, name_hash, desc_hash) {}
     ~pm_QuitQuickRace() override {}
     void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
 };
 
 struct pm_QuitRaceToFreeRoam : public IconOption {
     pm_QuitRaceToFreeRoam(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {
-        SetReactImmediately(true);
-    }
+        : IconOption(tex_hash, name_hash, desc_hash) {}
     ~pm_QuitRaceToFreeRoam() override {}
     void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
 };
 
 struct pm_QuitRaceToFE : public IconOption {
     pm_QuitRaceToFE(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {
-        SetReactImmediately(true);
-    }
+        : IconOption(tex_hash, name_hash, desc_hash) {}
     ~pm_QuitRaceToFE() override {}
     void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
 };

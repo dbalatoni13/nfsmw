@@ -118,11 +118,3 @@ void UnicodeFile::LineWrap(int maxCharacters) {
         p = Next();
     }
 }
-
-void DisplayUnicode(const wchar_t* str) {
-    const short* pWChar = reinterpret_cast< const short* >(str);
-    if (*pWChar == 0) return;
-    do {
-        pWChar++;
-    } while (*pWChar != 0);
-}

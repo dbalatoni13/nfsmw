@@ -37,11 +37,6 @@ struct THREAD {
     int reserved[198]; // offset 0x0, size 0x318
 };
 
-void THREAD_create(THREAD* thread, int (*func)(void*), void* arg, void* stack, int stackSize, int priority);
-void THREAD_waitexit(THREAD* thread, int timeout);
-void THREAD_setpriority(THREAD* thread, int priority);
-void THREAD_yield(int ticks);
-
 struct MyThread : public IThread {
     int mRefcount;                   // offset 0x4, size 0x4
     int (*mEntryFunc)(void*);        // offset 0x8, size 0x4
@@ -51,8 +46,6 @@ struct MyThread : public IThread {
     int mPriority;                   // offset 0x32C, size 0x4
     bool mActive;                    // offset 0x330, size 0x1
 
-    static int EntryProc(void* pContext);
-
     int AddRef() override;
     int Release() override;
     IThread* CreateInstance() override;
@@ -60,39 +53,9 @@ struct MyThread : public IThread {
     void Begin(int (*func)(void*)) override;
     void WaitForEnd(int) override;
     void Sleep(int ticks) override;
-    void SetPriority(int priority) override;
     int (*GetEntryFunc())(void*) override { return mEntryFunc; }
     bool IsActive() override { return mActive; }
 };
-
-inline void MyThread::Begin(int (*func)(void*)) {
-    mEntryFunc = func;
-    mStackBuffer = new char[mStackSize];
-    THREAD_create(&mThreadData, EntryProc, this, mStackBuffer, mStackSize, mPriority);
-    mActive = true;
-}
-
-inline void MyThread::WaitForEnd(int) {
-    THREAD_waitexit(&mThreadData, 0);
-    if (mStackBuffer != nullptr) {
-        delete[] static_cast< char* >(mStackBuffer);
-    }
-    mActive = false;
-}
-
-inline void MyThread::SetPriority(int priority) {
-    mPriority = 0;
-    THREAD_setpriority(&mThreadData, 0);
-}
-
-inline int MyThread::EntryProc(void* pContext) {
-    MyThread* pThread = static_cast< MyThread* >(pContext);
-    while (!pThread->IsActive()) {
-        THREAD_yield(1);
-    }
-    pThread->GetEntryFunc()(pThread);
-    return 0;
-}
 
 struct MyMutex : public IMutex {
     MUTEX mMutex;  // offset 0x4, size 0x1C
