@@ -87,8 +87,10 @@ void UIMemcardKeyboard::NotificationMessage(unsigned long msg, FEObject* obj, un
 
 // ===== UIMemcardBase =====
 
-UIMemcardBase::UIMemcardBase(ScreenConstructorData* sd) : UIMemcardKeyboard(sd) {
-    mIndex = 1;
+UIMemcardBase::UIMemcardBase(ScreenConstructorData* sd)
+    : UIMemcardKeyboard(sd) //
+    , mIndex(1) //
+{
     m_SimPausedForMemcard = false;
     m_ExpectingInput = false;
     m_LoadedNetConfig = 0;
@@ -163,8 +165,9 @@ void UIMemcardBase::Setup() {
 void UIMemcardBase::SetStringCheckingCard() {
     SetScreenVisible(true, 0);
     SetMessageBlurbText(static_cast< unsigned int >(0x99054304));
+    cFEng* pFeng = cFEng::Get();
     unsigned long hash = FEHashUpper("0_BUTTONS");
-    cFEng::Get()->QueuePackageMessage(hash, GetPackageName(), nullptr);
+    pFeng->QueuePackageMessage(hash, GetPackageName(), nullptr);
     HideAllButtons();
     m_ExpectingInput = false;
 }
@@ -292,20 +295,23 @@ void UIMemcardBase::ShowYesNo(unsigned int textHash, unsigned int flag) {
 
 void UIMemcardBase::SetScreenVisible(bool bVisible, int nButtons) {
     if (m_bVisible != bVisible) {
+        cFEng* pFeng = cFEng::Get();
         m_bVisible = bVisible;
         unsigned long msg = bVisible ? 0xc0f2ae7cUL : 0x4f3559b5UL;
-        cFEng::Get()->QueuePackageMessage(msg, GetPackageName(), nullptr);
+        pFeng->QueuePackageMessage(msg, GetPackageName(), nullptr);
         if (bVisible) {
+            pFeng = cFEng::Get();
             unsigned long resetMsg = FEHashUpper("INITIALIZE_SCREEN");
-            cFEng::Get()->QueuePackageMessage(resetMsg, GetPackageName(), nullptr);
+            pFeng->QueuePackageMessage(resetMsg, GetPackageName(), nullptr);
         }
         MemoryCard::GetInstance()->m_bHUDLoaded = m_bVisible;
     }
     if (bVisible) {
         char buf[36];
         bSPrintf(buf, "%d_BUTTONS", nButtons);
+        cFEng* pFeng = cFEng::Get();
         unsigned long hash = FEHashUpper(buf);
-        cFEng::Get()->QueuePackageMessage(hash, GetPackageName(), nullptr);
+        pFeng->QueuePackageMessage(hash, GetPackageName(), nullptr);
     }
 }
 
