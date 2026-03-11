@@ -164,11 +164,12 @@ void DebugWorldCameraMover::JoyHandler() {
 void DebugWorldCameraMover::Update(float dT) {
     if (JumpToPosition.y != 0.0f) {
         TopologyCoordinate topology_coordinate;
+        topology_coordinate.SetInterestBBox(&Eye, 0.0f, &Look);
+        topology_coordinate.IsLoaded();
         JumpToPosition.z += 100.0f;
         bVector3 dir = Eye - Look;
-        bVector3 eyelook;
-        bNormalize(&eyelook, &dir, 1.0f);
-        bVector3 newEye = JumpToPosition + eyelook;
+        bNormalize(&dir, &dir, 1.0f);
+        bVector3 newEye = JumpToPosition + dir;
         Eye = newEye;
         Look = JumpToPosition;
         bFill(&JumpToPosition, 0.0f, 0.0f, 0.0f);
@@ -192,9 +193,9 @@ void DebugWorldCameraMover::Update(float dT) {
                                      static_cast<int>(eyelook.y * 65536.0f));
 
     if (TurnHInc != 0 || TurnVInc != 0 || HeightInc != 0.0f) {
+        hAngle = (hAngle + static_cast<int>(static_cast<float>(TurnHInc) * dT)) & 0xffff;
         bVector2 *horiz = reinterpret_cast<bVector2 *>(&eyelook);
         float xylen = bLength(horiz);
-        hAngle = (hAngle + static_cast<int>(static_cast<float>(TurnHInc) * dT)) & 0xffff;
 
         unsigned short pitch = bFixATan(static_cast<int>(xylen * 65536.0f),
                                         static_cast<int>(eyelook.z * 65536.0f));

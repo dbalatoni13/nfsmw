@@ -92,9 +92,9 @@ CubicCameraMover::CubicCameraMover(int nView, CameraAnchor *p_car, int pov_type,
     pCar = p_car;
     nPovType = pov_type;
     nPovTypeUsed = pov_type;
-    fIgnoreSetSnapNextTimer = 0.0f;
     tLastGrounded = WorldTimer - Timer(8000);
     tLastUnderVehicle = WorldTimer - Timer(0x1900);
+    fIgnoreSetSnapNextTimer = 0.0f;
     bFirstTime = 1;
     tLastGearChange = WorldTimer - Timer(6000);
 
@@ -134,41 +134,35 @@ CubicCameraMover::CubicCameraMover(int nView, CameraAnchor *p_car, int pov_type,
     bVector3 eye_desired;
     bVector3 look_current;
     bVector3 look_desired;
-    bVector3 eye_movement;
-    bVector3 direction_current;
-    bVector3 direction_desired;
 
     pEye->GetVal(&eye_current);
     pLook->GetVal(&look_current);
     pEye->GetValDesired(&eye_desired);
     pLook->GetValDesired(&look_desired);
 
-    eye_movement = eye_desired - eye_current;
-    direction_current = look_current - eye_current;
-    direction_desired = look_desired - eye_desired;
+    bVector3 eye_movement(eye_desired - eye_current);
+    bVector3 direction_current(look_current - eye_current);
+    bVector3 direction_desired(look_desired - eye_desired);
 
     bNormalize(&direction_current, &direction_current);
     bNormalize(&direction_desired, &direction_desired);
 
-    vSavedEye.x = 0.0f;
-    vSavedEye.y = 0.0f;
     vSavedEye.z = 0.0f;
-    vCameraImpcat.x = 0.0f;
+    vSavedEye.y = 0.0f;
+    vSavedEye.x = 0.0f;
     vCameraImpcat.y = 0.0f;
-    vCameraImpcatTimer.x = 0.0f;
+    vCameraImpcat.x = 0.0f;
     vCameraImpcatTimer.y = 0.0f;
+    vCameraImpcatTimer.x = 0.0f;
 
-    if (smooth) {
-        if (bLength(&eye_movement) <= 50.0f && bDot(&direction_current, &direction_desired) >= -0.9f) {
-            fIgnoreSetSnapNextTimer = 1.0f;
-            return;
-        }
+    if (smooth && bLength(&eye_movement) <= 50.0f && bDot(&direction_current, &direction_desired) >= -0.9f) {
+        fIgnoreSetSnapNextTimer = 1.0f;
+    } else {
+        pUp->Snap();
+        pFov->Snap();
+        pEye->Snap();
+        pLook->Snap();
     }
-
-    pUp->Snap();
-    pFov->Snap();
-    pEye->Snap();
-    pLook->Snap();
 }
 
 bool CubicCameraMover::IsUnderVehicle() {

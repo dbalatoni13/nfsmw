@@ -117,7 +117,7 @@ CDActionDrive::CDActionDrive(CameraAI::Director *director, IPlayer *player)
     mDampCollisionTime = 0.0f;
     mGroundCollisionTime = 0.0f;
     mObjectCollisionTime = 0.0f;
-    mMaxCollisionTime = 0.5f;
+    mMaxCollisionTime = 2.0f;
     mPulseTimer = 0.0f;
     mCinematicMomementTimer = 0.0f;
     mCinematicMomementTimerInc = false;
@@ -129,7 +129,7 @@ CDActionDrive::CDActionDrive(CameraAI::Director *director, IPlayer *player)
         gCinematicMomementCamera = true;
         mCinematicMomementTimer = 1.0f;
         kCinematicMomementSeconds = mMaxCollisionTime;
-        mPulseTimer = 0.5f;
+        mPulseTimer = 0.3f;
     }
 
     mAttachments = new Sim::Attachments(static_cast<IAttachable *>(this));
