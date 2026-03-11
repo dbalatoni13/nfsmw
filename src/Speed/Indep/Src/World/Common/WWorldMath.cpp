@@ -9,11 +9,13 @@ bool WWorldMath::IntersectCircle(float x1, float y1, float x2, float y2, float c
         return true;
     }
 
-    float oy = y1 - cy;
-    float dy = (y2 - cy) - oy;
-    float ox = x1 - cx;
-    float dx = (x2 - cx) - ox;
-    float a = dx * dx + dy * dy;
+    y2 -= cy;
+    y1 -= cy;
+    y2 -= y1;
+    x2 -= cx;
+    x1 -= cx;
+    x2 -= x1;
+    float a = x2 * x2 + y2 * y2;
 
     if (a == 0.0f) {
         u2 = 0.0f;
@@ -21,9 +23,9 @@ bool WWorldMath::IntersectCircle(float x1, float y1, float x2, float y2, float c
         return true;
     }
 
-    float b = dx * ox + dy * oy;
+    float b = x2 * x1 + y2 * y1;
     float t = b + b;
-    float c = (ox * ox + oy * oy - r * r) * 4.0f;
+    float c = (x1 * x1 + y1 * y1 - r * r) * 4.0f;
 
     if (t * t - a * c >= 0.0f) {
         float root = rsqrt(t * t - a * c);
@@ -160,20 +162,20 @@ bool WWorldMath::IntersectSegPlane(const UMath::Vector3 &P1, const UMath::Vector
 }
 
 bool WWorldMath::SegmentIntersect(const UMath::Vector4 *line1, const UMath::Vector4 *line2, UMath::Vector4 *intersectPt) {
-    const float l1x = line1[1].x - line1[0].x;
-    const float l1z = line1[1].z - line1[0].z;
-    const float x11 = line1[0].x;
     const float z11 = line1[0].z;
-    const float l2x = line2[1].x - line2[0].x;
-    const float l2z = line2[1].z - line2[0].z;
+    const float x11 = line1[0].x;
+    const float l1z = line1[1].z - z11;
     const float x22 = line2[0].x;
+    const float l2x = line2[1].x - x22;
     const float z22 = line2[0].z;
+    const float l2z = line2[1].z - z22;
+    const float l1x = line1[1].x - x11;
     const float ua_d = l2z * l1x - l2x * l1z;
     if (ua_d == 0.0f) {
         return false;
     }
-    const float z12 = z11 - z22;
     const float x12 = x11 - x22;
+    const float z12 = z11 - z22;
     const float ua_n = l2x * z12 - l2z * x12;
     if ((ua_n >= 0.0f && ua_n <= ua_d) || (ua_n <= 0.0f && ua_d <= ua_n)) {
         const float ub_n = l1x * z12 - l1z * x12;
@@ -181,8 +183,8 @@ bool WWorldMath::SegmentIntersect(const UMath::Vector4 *line1, const UMath::Vect
             if (intersectPt != nullptr) {
                 float t = ua_n / ua_d;
                 intersectPt->x = t * l1x + x11;
-                intersectPt->w = 1.0f;
                 intersectPt->z = t * l1z + z11;
+                intersectPt->w = 1.0f;
                 intersectPt->y = t * (line1[1].y - line1[0].y) + line1[0].y;
             }
             return true;

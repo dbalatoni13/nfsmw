@@ -4,8 +4,8 @@
 WGrid::WGrid(const UMath::Vector4 &min, unsigned int rows, unsigned int cols, float edgeSize) {
     fMin = min;
     fInvEdgeSize = 1.0f / edgeSize;
-    fNumCols = cols;
     fNumRows = rows;
+    fNumCols = cols;
     fEdgeSize = edgeSize;
     fNodes = static_cast<WGridNode **>(bMalloc(cols * 4 * rows, 0));
     for (int i = 0; i < static_cast<int>(cols * rows); i++) {

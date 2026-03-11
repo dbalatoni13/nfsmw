@@ -1,8 +1,12 @@
 #include "Speed/Indep/Src/World/WGridManagedDynamicElem.h"
 
+#include "Speed/Indep/Libs/Support/Utility/UEALibs.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UTLVector.h"
 
+#include "Speed/Indep/Src/Physics/Dynamics/Collision.h"
 #include "Speed/Indep/Src/World/Common/WGrid.h"
+#include "Speed/Indep/Src/World/WCollider.h"
+#include "Speed/Indep/Src/World/WTrigger.h"
 
 void OrthoInverse(UMath::Matrix4 &m);
 

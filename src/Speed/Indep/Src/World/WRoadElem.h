@@ -132,6 +132,12 @@ struct WRoadProfile {
         }
         return GetNthTrafficLane(n, forward);
     }
+    int GetNthTrafficLaneFromCurb(int n, bool forward, bool inverted) const {
+        if (inverted) {
+            return GetNthTrafficLaneFromCurb(n, !forward);
+        }
+        return GetNthTrafficLaneFromCurb(n, forward);
+    }
     float GetLaneOffset(int lane, bool inverted) const {
         int lane_number = GetLaneNumber(lane, inverted);
         return mLanes[lane_number].GetOffset();
