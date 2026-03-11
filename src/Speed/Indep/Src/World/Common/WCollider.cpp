@@ -101,8 +101,7 @@ static void CalcNewRegionSizeFromRequested(bool useLastData, const UMath::Vector
 }
 
 void WCollider::InvalidateIntersectingColliders(const UMath::Vector4 &posRad) {
-    const List &list = GetList();
-    for (List::const_iterator iter = list.begin(); iter != list.end(); ++iter) {
+    for (List::const_iterator iter = GetList().begin(); iter != GetList().end(); ++iter) {
         WCollider &collider = **iter;
 
         if (UMath::Distance(collider.fPosition, UMath::Vector4To3(posRad)) < posRad.w + collider.fRadius) {
