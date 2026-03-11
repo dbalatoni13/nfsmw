@@ -110,7 +110,8 @@ void WWorldMath::NearestPointLine2D3(const UMath::Vector3 &pt, const UMath::Vect
     float z = z2 - z1;
     float x = x2 - x1;
     float div = pow2(x) + pow2(z);
-    float u = (px - x1) * x + (pz - z1) * z;
+    float u = (px - x1) * x;
+    u += (pz - z1) * z;
     if (0.0f < div) {
         u = u / div;
     } else {
@@ -133,7 +134,8 @@ void WWorldMath::NearestPointLine2D(const UMath::Vector4 &pt, const UMath::Vecto
     float z = z2 - z1;
     float x = x2 - x1;
     float div = pow2(x) + pow2(z);
-    float u = (px - x1) * x + (pz - z1) * z;
+    float u = (px - x1) * x;
+    u += (pz - z1) * z;
     if (0.0f < div) {
         u = u / div;
     } else {
@@ -169,12 +171,12 @@ bool WWorldMath::IntersectSegPlane(const UMath::Vector3 &P1, const UMath::Vector
 bool WWorldMath::SegmentIntersect(const UMath::Vector4 *line1, const UMath::Vector4 *line2, UMath::Vector4 *intersectPt) {
     const float l1x = line1[0].x;
     const float l1z = line1[0].z;
-    const float x11 = line1[1].x - l1x;
-    const float z11 = line1[1].z - l1z;
-    const float l2z = line2[0].z;
     const float l2x = line2[0].x;
+    const float z11 = line1[1].z - l1z;
     const float x22 = line2[1].x - l2x;
+    const float l2z = line2[0].z;
     const float z22 = line2[1].z - l2z;
+    const float x11 = line1[1].x - l1x;
     const float ua_d = z22 * x11 - x22 * z11;
     if (ua_d == 0.0f) {
         return false;
@@ -183,28 +185,19 @@ bool WWorldMath::SegmentIntersect(const UMath::Vector4 *line1, const UMath::Vect
         const float z12 = l1z - l2z;
         const float x12 = l1x - l2x;
         const float ua_n = x22 * z12 - z22 * x12;
-        if (ua_n < 0.0f) goto ua_neg;
-        if (ua_n <= ua_d) goto ua_ok;
-    ua_neg:
-        if (ua_n > 0.0f) return false;
-        if (ua_n < ua_d) return false;
-    ua_ok:
-        {
+        if ((ua_n >= 0.0f && ua_n <= ua_d) || (ua_n <= 0.0f && ua_n >= ua_d)) {
             const float ub_n = x11 * z12 - z11 * x12;
-            if (ub_n < 0.0f) goto ub_neg;
-            if (ub_n <= ua_d) goto ub_ok;
-        ub_neg:
-            if (ub_n > 0.0f) return false;
-            if (ub_n < ua_d) return false;
-        ub_ok:
-            if (intersectPt != nullptr) {
-                float t = ua_n / ua_d;
-                intersectPt->x = t * x11 + l1x;
-                intersectPt->z = t * z11 + l1z;
-                intersectPt->w = 1.0f;
-                intersectPt->y = t * (line1[1].y - line1[0].y) + line1[0].y;
+            if ((ub_n >= 0.0f && ub_n <= ua_d) || (ub_n <= 0.0f && ub_n >= ua_d)) {
+                if (intersectPt != nullptr) {
+                    float t = ua_n / ua_d;
+                    intersectPt->x = t * x11 + l1x;
+                    intersectPt->z = t * z11 + l1z;
+                    intersectPt->w = 1.0f;
+                    intersectPt->y = t * (line1[1].y - line1[0].y) + line1[0].y;
+                }
+                return true;
             }
-            return true;
         }
     }
+    return false;
 }

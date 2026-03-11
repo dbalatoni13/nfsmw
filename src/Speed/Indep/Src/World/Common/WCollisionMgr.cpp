@@ -519,10 +519,10 @@ bool WCollisionMgr::GetBarrierNormal(const WCollisionInstanceCacheList &instList
                     float yTop = barrier->YTop();
                     float yBot = barrier->YBot();
                     float yMin = yTop;
-                    if (yBot < yTop) {
+                    if (yTop > yBot) {
                         yMin = yBot;
                     }
-                    if (yMin < intersectionPt.y) {
+                    if (intersectionPt.y > yMin) {
                         if (yTop < yBot) {
                             yTop = yBot;
                         }
@@ -532,8 +532,8 @@ bool WCollisionMgr::GetBarrierNormal(const WCollisionInstanceCacheList &instList
                                 UMath::Vector4To3(tseg[0]));
                             if (distSq < closestDistSq) {
                                 UMath::Copy(intersectionPt, closestIntersectionPt);
-                                closestBarrierInst = &cInst;
                                 closestBarrier = barrier;
+                                closestBarrierInst = &cInst;
                                 closestDistSq = distSq;
                             }
                         }
@@ -554,17 +554,18 @@ bool WCollisionMgr::GetBarrierNormal(const WCollisionInstanceCacheList &instList
         closestBarrierInst->MakeMatrix(invMat, true);
         OrthoInverse(invMat);
 
-        WCollisionBarrier b;
-        UMath::RotateTranslate(UMath::Vector4To3(*closestBarrier->GetPt(0)), invMat, UMath::Vector4To3(b.fPts[0]));
-        UMath::RotateTranslate(UMath::Vector4To3(*closestBarrier->GetPt(1)), invMat, UMath::Vector4To3(b.fPts[1]));
-        b.fPts[0].w = closestBarrier->fPts[0].w;
-        b.fPts[1].w = closestBarrier->fPts[1].w;
+        {
+            WCollisionBarrier b;
+            UMath::RotateTranslate(UMath::Vector4To3(*closestBarrier->GetPt(0)), invMat, UMath::Vector4To3(b.fPts[0]));
+            UMath::RotateTranslate(UMath::Vector4To3(*closestBarrier->GetPt(1)), invMat, UMath::Vector4To3(b.fPts[1]));
+            b.fPts[0].w = closestBarrier->fPts[0].w;
+            b.fPts[1].w = closestBarrier->fPts[1].w;
 
-        const WCollisionArticle *cArt = closestBarrierInst->fCollisionArticle;
-        const Attrib::Collection *surfaceHash = cArt->GetSurface(closestBarrier->GetWSurface().Surface());
+            const Attrib::Collection *surfaceHash = closestBarrierInst->fCollisionArticle->GetSurface(b.GetWSurface().Surface());
 
-        WCollisionBarrierListEntry ble(b, surfaceHash, closestDistSq);
-        cInfo.fBle = ble;
+            WCollisionBarrierListEntry ble(b, surfaceHash, closestDistSq);
+            cInfo.fBle = ble;
+        }
 
         UMath::RotateTranslate(UMath::Vector4To3(closestIntersectionPt), invMat, UMath::Vector4To3(cInfo.fCollidePt));
         cInfo.fCollidePt.w = 0.0f;
@@ -573,11 +574,13 @@ bool WCollisionMgr::GetBarrierNormal(const WCollisionInstanceCacheList &instList
         cInfo.fNormal.y = 0.0f;
         cInfo.fNormal.w = 0.0f;
 
-        UMath::Vector3 testVec;
-        UMath::Sub(UMath::Vector4To3(*testSegment), UMath::Vector4To3(cInfo.fCollidePt), testVec);
-        if (cInfo.fNormal.x * testVec.x + cInfo.fNormal.z * testVec.z < 0.0f) {
-            cInfo.fNormal.x = -cInfo.fNormal.x;
-            cInfo.fNormal.z = -cInfo.fNormal.z;
+        {
+            UMath::Vector3 testVec;
+            UMath::Sub(UMath::Vector4To3(*testSegment), UMath::Vector4To3(cInfo.fCollidePt), testVec);
+            if (cInfo.fNormal.x * testVec.x + cInfo.fNormal.z * testVec.z < 0.0f) {
+                cInfo.fNormal.x = -cInfo.fNormal.x;
+                cInfo.fNormal.z = -cInfo.fNormal.z;
+            }
         }
     }
     return cInfo.HitSomething();

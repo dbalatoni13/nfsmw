@@ -51,7 +51,7 @@ inline float PtDir4(const UMath::Vector4 &p1, const UMath::Vector4 &p2, const UM
 }
 
 inline bool InTri(const UMath::Vector3 &pt, const UMath::Vector4 *pts) {
-    bool result = false;
+    bool result;
     float d = PtDir4(pts[0], pts[1], pt);
     if (d <= 0.0f) {
         result = false;

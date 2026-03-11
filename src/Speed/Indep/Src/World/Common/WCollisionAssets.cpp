@@ -305,8 +305,8 @@ WCollisionObject *WCollisionAssets::CreateObject(const UMath::Vector3 &dim, cons
     obj->fPosRadius.x = mat.v3.x;
     obj->fPosRadius.y = mat.v3.y - dim.y;
     obj->fPosRadius.z = mat.v3.z;
-    obj->fDimensions = UMath::Vector4Make(dim, 1.0f);
     obj->fType = 0;
+    obj->fDimensions = UMath::Vector4Make(dim, 1.0f);
     obj->fPosRadius.w = UMath::Sqrt(obj->fDimensions.x * obj->fDimensions.x + obj->fDimensions.z * obj->fDimensions.z);
     obj->fSurface.fFlags = 0;
     obj->fSurface.fSurface = 0;

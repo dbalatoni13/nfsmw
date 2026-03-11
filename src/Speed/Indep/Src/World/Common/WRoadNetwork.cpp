@@ -822,22 +822,24 @@ bool WRoadNav::IsWrongWay() const {
 }
 
 unsigned int WRoadNav::GetRoadSpeechId() {
+    unsigned int ret = 0;
     unsigned short segment_index = GetSegmentInd();
     WRoadNetwork &road_network = WRoadNetwork::Get();
     unsigned short num_segments = road_network.GetNumSegments();
-    segment_index = bClamp(static_cast<int>(segment_index), 0, static_cast<int>(num_segments) - 1);
+    segment_index = bClamp(segment_index, 0, num_segments - 1);
     if (GetSegmentInd() != segment_index) {
-        return 0;
+        return ret;
     }
     const WRoadSegment *segment = road_network.GetSegment(segment_index);
     short road_index = segment->fRoadID;
     short num_roads = road_network.GetNumRoads();
-    road_index = bClamp(static_cast<int>(road_index), 0, static_cast<int>(num_roads) - 1);
+    road_index = bClamp(road_index, 0, num_roads - 1);
     if (segment->fRoadID != road_index) {
-        return 0;
+        return ret;
     }
     const WRoad *road = road_network.GetRoad(road_index);
-    return road->nSpeechId;
+    ret = road->nSpeechId;
+    return ret;
 }
 
 unsigned char WRoadNav::GetShortcutNumber() {
@@ -1629,22 +1631,25 @@ void WRoadNav::InitAtSegment(short segInd, char laneInd, float timeStep) {
     SetLaneInd(laneInd);
     SetLaneOffset(0.0f);
 
-    const WRoadNode *nodePtr[2];
-    const WRoadProfile *profile;
-    float startOffset;
-    float endOffset;
-    roadNetwork.GetSegmentNodes(*segment, nodePtr);
+    {
+        SetLaneInd(laneInd);
+        const WRoadNode *nodePtr[2];
+        const WRoadProfile *profile;
+        float startOffset;
+        float endOffset;
+        roadNetwork.GetSegmentNodes(*segment, nodePtr);
 
-    profile = roadNetwork.GetProfile(nodePtr[fNodeInd == 0]->fProfileIndex);
-    startOffset = profile->GetRawLaneOffset(static_cast< int >(laneInd));
+        profile = roadNetwork.GetProfile(nodePtr[fNodeInd == 0]->fProfileIndex);
+        startOffset = profile->GetRawLaneOffset(static_cast< int >(laneInd));
 
-    profile = roadNetwork.GetProfile(nodePtr[fNodeInd]->fProfileIndex);
-    endOffset = profile->GetRawLaneOffset(static_cast< int >(laneInd));
+        profile = roadNetwork.GetProfile(nodePtr[fNodeInd]->fProfileIndex);
+        endOffset = profile->GetRawLaneOffset(static_cast< int >(laneInd));
 
-    float laneOffset = (endOffset - startOffset) * fSegTime + startOffset;
-    SetLaneOffset(laneOffset);
+        float laneOffset = (endOffset - startOffset) * fSegTime + startOffset;
+        SetLaneOffset(laneOffset);
 
-    SetStartEndPos(*segment, startOffset, endOffset);
+        SetStartEndPos(*segment, startOffset, endOffset);
+    }
 
     SetStartEndControls(*segment);
     RebuildSplines(segment);

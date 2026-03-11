@@ -151,7 +151,7 @@ struct WRoadProfile {
     }
 
     float GetRawLaneOffset(int lane) const {
-        return mLanes[lane].GetOffset();
+        return GetLaneOffset(lane, false);
     }
     float GetRawLaneWidth(int lane) const {
         return mLanes[lane].GetWidth();

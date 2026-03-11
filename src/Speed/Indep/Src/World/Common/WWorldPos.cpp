@@ -97,7 +97,6 @@ bool WWorldPos::FindClosestFace(const WCollisionTriList &triList, const UMath::V
     bool foundFace = false;
     bool onSameFace = false;
     fUsageCount++;
-    float bestDist = 100000.0f;
     UMath::Vector3 pt = ipt;
 
     if (fFaceValid) {
@@ -108,6 +107,7 @@ bool WWorldPos::FindClosestFace(const WCollisionTriList &triList, const UMath::V
         return false;
     }
 
+    float bestDist = 100000.0f;
     fFaceValid = 0;
     pt.y = pt.y + fYOffset;
 
