@@ -45,6 +45,7 @@ class WRoadNetwork : public Debugable {
     const WRoadNode *GetSegmentOppNode(const WRoadSegment &segment, const WRoadNode *node);
     unsigned char GetSegmentShortcutNumber(const WRoadSegment *segment);
     bool GetSegmentTrafficLaneRightSide(const WRoadSegment &segment, int laneInd);
+    int GetRightMostTrafficEntrance(int node_number, int onto_segment);
     bool GetSegmentProfiles(const WRoadSegment &segment, const WRoadProfile **profile);
     int GetSegmentNumTrafficLanes(const WRoadSegment &segment);
     int GetSegmentTrafficLaneInd(const WRoadSegment &segment, int lane_count);

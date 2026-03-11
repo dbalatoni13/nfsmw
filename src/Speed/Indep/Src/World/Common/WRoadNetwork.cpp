@@ -881,6 +881,78 @@ bool WRoadNetwork::GetSegmentTrafficLaneRightSide(const WRoadSegment &segment, i
     return laneInd >= profilePtr[0]->fMiddleZone;
 }
 
+int WRoadNetwork::GetRightMostTrafficEntrance(int node_number, int onto_segment) {
+    int ret = -1;
+    const WRoadNode *node = GetNode(node_number);
+    int num_segments = node->fNumSegments;
+
+    if (num_segments < 3) {
+        return ret;
+    }
+
+    const WRoadSegment *segment = GetSegment(onto_segment);
+    int which_node = node_number != segment->fNodeIndex[0];
+    bool inverted = segment->IsProfileInverted(which_node);
+    bool forward = static_cast< bool >(which_node) == inverted;
+    const WRoadProfile *profile = GetProfile(node->fProfileIndex);
+
+    if (profile->GetNumTrafficLanes(forward, inverted) > 0) {
+        UMath::Vector2 onto_forward;
+        float best_cross;
+        bool first = true;
+        UMath::Vector2 best_vector;
+
+        segment->GetForwardVec(which_node, onto_forward);
+
+        if (which_node) {
+            UMath::Scale(onto_forward, -1.0f, onto_forward);
+        }
+
+        for (int i = 0; i < num_segments; i++) {
+            int segment_number = node->fSegmentIndex[i];
+            if (segment_number != onto_segment) {
+                const WRoadSegment *from_segment = GetSegment(segment_number);
+                const WRoadNode *from_node = GetSegmentOppNode(segment_number, node);
+                int from_which_node = node_number != from_segment->fNodeIndex[0];
+                bool from_inverted = from_segment->IsProfileInverted(from_which_node);
+                bool from_forward = from_inverted != static_cast< bool >(from_which_node);
+                const WRoadProfile *from_profile = GetProfile(from_node->fProfileIndex);
+
+                if (from_profile->GetNumTrafficLanes(from_forward, from_inverted) != 0) {
+                    UMath::Vector3 vector_3d;
+                    UMath::Sub(from_node->fPosition, node->fPosition, vector_3d);
+                    UMath::Vector2 vector = UMath::Vector2Make(vector_3d.x, vector_3d.z);
+                    float cross = UMath::Cross(vector, onto_forward);
+
+                    if (first) {
+                        first = false;
+                        best_cross = cross;
+                        best_vector = vector;
+                        ret = segment_number;
+                    } else {
+                        float old_cross = UMath::Cross(best_vector, vector);
+                        bool right_of_onto = cross >= 0.0f;
+                        bool right_of_best = old_cross >= 0.0f;
+                        bool is_best;
+                        if (best_cross < 0.0f) {
+                            is_best = right_of_onto || right_of_best;
+                        } else {
+                            is_best = right_of_onto && right_of_best;
+                        }
+                        if (is_best) {
+                            best_cross = cross;
+                            best_vector = vector;
+                            ret = segment_number;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return ret;
+}
+
 int WRoadProfile::GetNumTrafficLanes(bool forward) const {
     int num_traffic_lanes = 0;
     int num_lanes = GetNumLanes(forward);

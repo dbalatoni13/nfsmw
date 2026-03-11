@@ -321,6 +321,11 @@ inline void Scale(Vector2 &r, const float s) {
     r.y *= s;
 }
 
+inline void Scale(const Vector2 &a, const float s, Vector2 &r) {
+    r.x = a.x * s;
+    r.y = a.y * s;
+}
+
 inline void Dot(const Vector3 &a, const Matrix4 &b, Vector3 &r) {
 #ifdef EA_PLATFORM_XENON
     r.x = Dot(a, UMath::Vector4To3(b.v0));
