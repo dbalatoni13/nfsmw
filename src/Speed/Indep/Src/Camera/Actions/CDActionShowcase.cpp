@@ -71,15 +71,16 @@ CameraAI::Action *CDActionShowcase::Construct(CameraAI::Director *director) {
 
 CDActionShowcase::CDActionShowcase(CameraAI::Director *director, IPlayer *player)
     : CameraAI::Action(), //
-      IAttachable(this) {
-    mTarget = WorldConn::Reference(0);
+      IAttachable(this), //
+      mTarget(0) {
     mPlayer = player;
     mVehicle = nullptr;
     mViewID = director->GetViewID();
 
     mAttachments = new Sim::Attachments(static_cast<IAttachable *>(this));
+    mAttachments->Attach(mPlayer);
 
-    mAnchor = new CameraAnchor(0);
+    mAnchor = new (static_cast<const char *>(0), 0) CameraAnchor(0);
 
     AquireCar();
 
@@ -87,21 +88,19 @@ CDActionShowcase::CDActionShowcase(CameraAI::Director *director, IPlayer *player
         bMatrix4 mat(*mTarget.GetMatrix());
 
         ICollisionBody *irbc = nullptr;
-        mVehicle->QueryInterface(&irbc);
-        if (irbc != nullptr) {
+        if (mVehicle != nullptr && mVehicle->QueryInterface(&irbc)) {
             IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
             UVector3 cg(irbc->GetCenterOfGravity());
             irb->ConvertLocalToWorld(cg, false);
             cg += irb->GetPosition();
-            eSwizzleWorldVector(reinterpret_cast<bVector3 &>(cg), reinterpret_cast<bVector3 &>(cg));
+            eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(cg), reinterpret_cast<bVector3 &>(mat.v3));
         }
 
         mAnchor->Update(0.0f, mat, *mTarget.GetVelocity(), *mTarget.GetAcceleration());
     }
 
-    bool flipSide = IsRightSide();
-    mMover = new ShowcaseCameraMover(static_cast<int>(director->GetViewID()), mAnchor, flipSide);
-    mMover->GetCamera()->SetRenderDash(0);
+    mMover = new (static_cast<const char *>(0), 0) ShowcaseCameraMover(static_cast<int>(director->GetViewID()), mAnchor, IsRightSide());
+    mMover->Enable();
 }
 
 CDActionShowcase::~CDActionShowcase() {

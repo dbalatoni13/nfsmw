@@ -78,20 +78,18 @@ CameraAI::Action *CDActionDrive::Construct(CameraAI::Director *director) {
         return nullptr;
     }
 
-    return new (static_cast<const char *>(0)) CDActionDrive(director, player);
+    return new CDActionDrive(director, player);
 }
 
 CDActionDrive::CDActionDrive(CameraAI::Director *director, IPlayer *player)
     : CameraAI::Action(), //
       IAttachable(this), //
+      mTarget(0), //
       mMaxCollisionTime(0.5f) {
-    mViewID = director->GetViewID();
-    bool smooth = director->IsCinematicMomement();
-
-    mTarget = WorldConn::Reference(0);
     mPlayer = player;
     mVehicle = nullptr;
     mGameBreakerScale = 0.0f;
+    mViewID = director->GetViewID();
     mCinematicMomementTimer = 0.0f;
     mDampCollisionTime = 0.0f;
     mGroundCollisionTime = 0.0f;
@@ -102,7 +100,7 @@ CDActionDrive::CDActionDrive(CameraAI::Director *director, IPlayer *player)
 
     gCinematicMomementCamera = false;
     gGameBreakerCamera = false;
-    if (smooth) {
+    if (director->IsCinematicMomement()) {
         gCinematicMomementCamera = true;
         mCinematicMomementTimer = 1.0f;
         kCinematicMomementSeconds = mMaxCollisionTime;
@@ -116,13 +114,13 @@ CDActionDrive::CDActionDrive(CameraAI::Director *director, IPlayer *player)
 
     mAttachments->Attach(mPlayer);
 
+    bool smooth = false;
     CameraMover *m = director->GetMover();
-    smooth = false;
     if (m != nullptr && m->GetType() == CM_ICE) {
         smooth = TheICEManager.IsSmoothExit();
     }
 
-    mAnchor = new CameraAnchor(0);
+    mAnchor = new (static_cast<const char *>(0), 0) CameraAnchor(0);
 
     if (0.0f < mCinematicMomementTimer) {
         mAnchor->SetZoom(1.0f - mCinematicMomementTimer * 0.1f);
@@ -134,22 +132,19 @@ CDActionDrive::CDActionDrive(CameraAI::Director *director, IPlayer *player)
         bMatrix4 mat(*mTarget.GetMatrix());
 
         ICollisionBody *irbc = nullptr;
-        mVehicle->QueryInterface(&irbc);
-        if (irbc != nullptr) {
+        if (mVehicle != nullptr && mVehicle->QueryInterface(&irbc)) {
             IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
             UVector3 cg(irbc->GetCenterOfGravity());
             irb->ConvertLocalToWorld(cg, false);
             cg += irb->GetPosition();
-            eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(cg), reinterpret_cast<bVector3 &>(cg));
+            eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(cg), reinterpret_cast<bVector3 &>(mat.v3));
         }
 
         mAnchor->Update(0.0f, mat, *mTarget.GetVelocity(), *mTarget.GetAcceleration());
     }
 
-    int pov_type = player->GetSettings()->CurCam;
-
-    mMover = new CubicCameraMover(static_cast<int>(director->GetViewID()), mAnchor, pov_type, smooth, false, false, true);
-    mRearViewMirrorMover = new RearViewMirrorCameraMover(3, mAnchor);
+    mMover = new (static_cast<const char *>(0), 0) CubicCameraMover(static_cast<int>(director->GetViewID()), mAnchor, player->GetSettings()->CurCam, smooth, false, false, true);
+    mRearViewMirrorMover = new (static_cast<const char *>(0), 0) RearViewMirrorCameraMover(3, mAnchor);
 }
 
 CDActionDrive::~CDActionDrive() {

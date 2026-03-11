@@ -69,8 +69,8 @@ CameraAI::Action *CDActionTrackCop::Construct(CameraAI::Director *director) {
 
 CDActionTrackCop::CDActionTrackCop(CameraAI::Director *director, IPlayer *player)
     : CameraAI::Action(), //
-      IAttachable(this) {
-    mTarget = WorldConn::Reference(0);
+      IAttachable(this), //
+      mTarget(0) {
     mPlayer = player;
     mVehicle = nullptr;
     bool renderCarPOV = true;
@@ -84,7 +84,7 @@ CDActionTrackCop::CDActionTrackCop(CameraAI::Director *director, IPlayer *player
         renderCarPOV = m->RenderCarPOV();
     }
 
-    mAnchor = new CameraAnchor(0);
+    mAnchor = new (static_cast<const char *>(0), 0) CameraAnchor(0);
 
     AquireCar();
 
@@ -92,20 +92,19 @@ CDActionTrackCop::CDActionTrackCop(CameraAI::Director *director, IPlayer *player
         bMatrix4 mat(*mTarget.GetMatrix());
 
         ICollisionBody *irbc = nullptr;
-        mVehicle->QueryInterface(&irbc);
-        if (irbc != nullptr) {
+        if (mVehicle != nullptr && mVehicle->QueryInterface(&irbc)) {
             IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
             UVector3 cg(irbc->GetCenterOfGravity());
             irb->ConvertLocalToWorld(cg, false);
             cg += irb->GetPosition();
-            eSwizzleWorldVector(reinterpret_cast<bVector3 &>(cg), reinterpret_cast<bVector3 &>(cg));
+            eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(cg), reinterpret_cast<bVector3 &>(mat.v3));
         }
 
         mAnchor->Update(0.0f, mat, *mTarget.GetVelocity(), *mTarget.GetAcceleration());
     }
 
-    mMover = new TrackCopCameraMover(static_cast<int>(director->GetViewID()), mAnchor, false);
-    mMover->GetCamera()->SetRenderDash(0);
+    mMover = new (static_cast<const char *>(0), 0) TrackCopCameraMover(static_cast<int>(director->GetViewID()), mAnchor, false);
+    mMover->Enable();
     static_cast<TrackCopCameraMover *>(mMover)->SetRenderCarPOV(renderCarPOV);
 }
 
