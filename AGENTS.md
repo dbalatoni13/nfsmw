@@ -207,15 +207,17 @@ Do not batch up multiple percentage milestones into one commit — commit as eac
 
 ## Parallel Sub-Agent Matching
 
-When working on a translation unit with multiple non-matching functions, you are encouraged to spawn sub-agents to work on individual functions in parallel. Each sub-agent should focus on **exactly one function** — do not assign a sub-agent more than one function at a time.
+When working on a translation unit with multiple non-matching functions, use sub-agents selectively for **simple, small, isolated** functions. The main agent should keep ownership of the harder matching work instead of delegating it away. Each sub-agent should focus on **exactly one function** — do not assign a sub-agent more than one function at a time.
 
 **Limit: never run more than 5 sub-agents concurrently.** Spawning too many at once causes resource contention and makes it harder to reason about progress.
 
 Guidelines:
-- Spawn a sub-agent per function for functions that are independent (no shared edits to the same source lines).
+- Prefer solving difficult, high-risk, or cross-cutting functions yourself. Use sub-agents only for straightforward functions with small, well-bounded edits.
+- Spawn a sub-agent per function only when the functions are independent (no shared edits to the same source lines).
 - Each sub-agent must use `build-unit.py` for parallel-safe compilation (never plain `ninja`).
-- Wait for a batch of sub-agents to finish before spawning the next batch.
-- After all sub-agents in a batch complete, check the updated match percentage and commit if it improved.
+- Do **not** sit idle waiting for sub-agents to finish. While they run, continue investigating or implementing other independent work in parallel.
+- Before applying a sub-agent's result, re-read the touched area and make sure it still fits the current state of the TU.
+- After a useful sub-agent result lands, check the updated match percentage and commit if it improved.
 
 ## Matching Philosophy
 
