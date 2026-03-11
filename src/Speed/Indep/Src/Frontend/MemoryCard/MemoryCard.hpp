@@ -227,7 +227,7 @@ struct MemoryCard {
     static void SetMessageMode(unsigned int msg, bool flag);
     static void TickCardRemoval();
     void Tick(int TickCount);
-    void MessageDone(RealmcIface::MessageChoices nInput);
+    void MessageDone(MessageChoices nInput);
     void BootupCheck(const char *entry);
     bool ShouldDoAutoSave(bool bForce);
     void StartAutoSave(bool bForce);
