@@ -315,7 +315,7 @@ void PhysicsObject::ReleaseBehaviors() {
         if (beh != nullptr) {
             UCrc32 mechanic(iter->first);
             mBehaviors.Remove(beh);
-            RemoveElement(beh);
+            DestroyElement(*beh);
             iter->second = nullptr;
             OnBehaviorChange(mechanic);
         }
@@ -331,7 +331,7 @@ void PhysicsObject::ReleaseBehavior(const UCrc32 &mechanic) {
     Behavior *beh = mMechanics[key];
     if (beh != nullptr) {
         mBehaviors.Remove(beh);
-        RemoveElement(beh);
+        DestroyElement(*beh);
         mMechanics[key] = nullptr;
         OnBehaviorChange(mechanic);
     }
