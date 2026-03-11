@@ -186,10 +186,16 @@ extern unsigned int iCurrentViewBin;
 GIcon* WorldMap::mGPSingIcon;
 
 void WorldMap::SetGPSing(GIcon* icon) {
-    mGPSingIcon = icon;
+    if (icon != nullptr) {
+        mGPSingIcon = icon;
+        icon->SetFlag(0x80);
+    }
 }
 
 void WorldMap::ClearGPSing() {
+    if (mGPSingIcon != nullptr) {
+        mGPSingIcon->ClearFlag(0x80);
+    }
     mGPSingIcon = nullptr;
 }
 

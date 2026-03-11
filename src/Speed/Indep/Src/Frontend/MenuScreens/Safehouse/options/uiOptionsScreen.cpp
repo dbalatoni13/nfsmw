@@ -213,18 +213,24 @@ void UIOptionsScreen::Setup() {
     FEngSetInvisible(GetPackageName(), 0x444969FE);
 
     eOptionsCategory curCat = FEDatabase->GetOptionsSettings()->CurrentCategory;
-    if (curCat == OC_AUDIO) {
+    switch (curCat) {
+    case OC_AUDIO:
         SetupAudio();
-    } else if (curCat == OC_VIDEO) {
+        break;
+    case OC_VIDEO:
         SetupVideo();
-    } else if (curCat == OC_GAMEPLAY) {
+        break;
+    case OC_GAMEPLAY:
         SetupGameplay();
-    } else if (curCat == OC_PLAYER) {
+        break;
+    case OC_PLAYER:
         SetupPlayer();
         FEngSetVisible(GetPackageName(), 0x444969FD);
         FEngSetVisible(GetPackageName(), 0x444969FE);
-    } else if (curCat == OC_ONLINE) {
+        break;
+    case OC_ONLINE:
         SetupOnline();
+        break;
     }
 
     SetInitialOption(0);
@@ -355,18 +361,23 @@ void UIOptionsScreen::RestoreDefaults() {
     bool bOldAutoSaveVal;
 
     eOptionsCategory curCat = FEDatabase->GetOptionsSettings()->CurrentCategory;
-    if (curCat == OC_AUDIO) {
+    switch (curCat) {
+    case OC_AUDIO:
         FEDatabase->GetAudioSettings()->Default();
-    } else if (curCat == OC_VIDEO) {
+        break;
+    case OC_VIDEO:
         FEDatabase->GetVideoSettings()->Default();
-    } else if (curCat == OC_GAMEPLAY) {
+        break;
+    case OC_GAMEPLAY:
         bOldAutoSaveVal = FEDatabase->GetGameplaySettings()->AutoSaveOn;
         FEDatabase->GetGameplaySettings()->Default();
         if (!ShouldShowAutoSave()) {
             FEDatabase->GetGameplaySettings()->AutoSaveOn = bOldAutoSaveVal;
         }
-    } else if (curCat == OC_PLAYER) {
+        break;
+    case OC_PLAYER:
         FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DefaultFromOptionsScreen();
+        break;
     }
 
     FEDatabase->GetOptionsSettings()->CurrentCategory = curCat;
@@ -378,17 +389,19 @@ void UIOptionsScreen::RestoreDefaults() {
 
 bool UIOptionsScreen::OptionsDidNotChange() {
     eOptionsCategory curCat = FEDatabase->GetOptionsSettings()->CurrentCategory;
-    if (curCat == OC_AUDIO) {
+    switch (curCat) {
+    case OC_AUDIO:
         return *FEDatabase->GetAudioSettings() == *OriginalAudioSettings;
-    } else if (curCat == OC_VIDEO) {
+    case OC_VIDEO:
         return *FEDatabase->GetVideoSettings() == *OriginalVideoSettings;
-    } else if (curCat == OC_GAMEPLAY) {
+    case OC_GAMEPLAY:
         return *FEDatabase->GetGameplaySettings() == *OriginalGameplaySettings;
-    } else if (curCat == OC_PLAYER) {
+    case OC_PLAYER:
         return *FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions()) ==
                *OriginalPlayerSettings;
+    default:
+        return false;
     }
-    return false;
 }
 
 void UIOptionsScreen::RestoreOriginals() {

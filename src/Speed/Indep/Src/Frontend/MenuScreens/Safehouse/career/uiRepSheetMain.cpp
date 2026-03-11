@@ -64,7 +64,10 @@ uiRepSheetMain::~uiRepSheetMain() {
 }
 
 eMenuSoundTriggers uiRepSheetMain::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
-    return IconScrollerMenu::NotifySoundMessage(msg, maybe);
+    if (bBossBeaten && msg == 0x7b6b89d7) {
+        return static_cast< eMenuSoundTriggers >(-1);
+    }
+    return maybe;
 }
 
 void uiRepSheetMain::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) {
@@ -119,6 +122,7 @@ void uiRepSheetMain::Setup() {
 }
 
 void uiRepSheetMain::NotifyTextureLoaded() {
+    FEngSetVisible(FEngFindObject(GetPackageName(), 0x7FE4020F));
 }
 
 unsigned int uiRepSheetMain::GetDefeatedTexture() {

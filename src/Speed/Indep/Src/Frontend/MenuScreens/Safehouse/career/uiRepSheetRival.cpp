@@ -53,6 +53,9 @@ uiRepSheetRival::~uiRepSheetRival() {
 }
 
 eMenuSoundTriggers uiRepSheetRival::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
+    if (bMidRivalFlow && msg == 0x911ab364) {
+        return static_cast< eMenuSoundTriggers >(-1);
+    }
     return maybe;
 }
 
