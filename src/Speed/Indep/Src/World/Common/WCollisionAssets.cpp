@@ -42,9 +42,9 @@ WCollisionAssets::WCollisionAssets()
         fPackLoadCallback[onCallback] = nullptr;
     }
 
-    fStaticCollisionObjects = nullptr;
-    fStaticTriggers = nullptr;
     fStaticTriggersCount = 0;
+    fStaticTriggers = nullptr;
+    fStaticCollisionObjects = nullptr;
 
     mCollisionPackList = new WCollisionPack *[0xA8C];
     int ix;

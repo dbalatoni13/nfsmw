@@ -247,9 +247,9 @@ void WRoadNetwork::ResolveBarriers() {
                     }
                     if (!exempt) {
                         if (barrier->IsPlayerBarrier()) {
-                            segment->SetCrossesBarrier(true);
-                        } else {
                             segment->SetCrossesDriveThroughBarrier(true);
+                        } else {
+                            segment->SetCrossesBarrier(true);
                         }
                     }
                 }
@@ -990,7 +990,8 @@ void WRoadNav::PullOver() {
 
     int which_node = GetNodeInd();
     WRoadNetwork &rn = WRoadNetwork::Get();
-    const WRoadSegment *segment = rn.GetSegment(GetSegmentInd());
+    int segment_number = GetSegmentInd();
+    const WRoadSegment *segment = rn.GetSegment(segment_number);
     const WRoadProfile *profile = rn.GetSegmentProfile(*segment, which_node);
     int num_lanes = profile->fNumZones;
     bool inverted = segment->IsProfileInverted(which_node) ^ (which_node == 0);
@@ -998,6 +999,7 @@ void WRoadNav::PullOver() {
     int lane = profile->GetLaneNumber(GetLaneInd(), inverted);
 
     bool is_barrier = false;
+    bool last_lane;
     while (lane < num_lanes - 1) {
         int next_lane_type = profile->GetLaneType(lane + 1, inverted);
         if (next_lane_type == kLaneAny) {
@@ -1018,7 +1020,8 @@ void WRoadNav::PullOver() {
     UMath::Vector3 nav_right = UMath::Vector3Make(nav_forward.z, 0.0f, -nav_forward.x);
     UMath::Normalize(nav_right);
 
-    UMath::ScaleAdd(nav_right, offset - GetLaneOffset(), GetPosition(), GetPosition());
+    float offset_change = offset - GetLaneOffset();
+    UMath::ScaleAdd(nav_right, offset_change, GetPosition(), GetPosition());
 }
 
 bool WRoadNav::IsSegmentInCookieTrail(int segment_number, bool use_whole_path) {

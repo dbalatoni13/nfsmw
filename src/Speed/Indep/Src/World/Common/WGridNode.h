@@ -45,7 +45,8 @@ struct WGridNode {
     }
 
     inline const unsigned int *GetElemTypePtr(WGridNode_ElemType type) const {
-        return reinterpret_cast<const unsigned int *>(fElemOffsets[type] + sizeof(WGridNode) + reinterpret_cast<int>(this));
+        unsigned int offset = fElemOffsets[type] + sizeof(WGridNode);
+        return reinterpret_cast<const unsigned int *>(offset + reinterpret_cast<int>(this));
     }
 
     inline unsigned int GetElemType(unsigned int index, WGridNode_ElemType type) const {

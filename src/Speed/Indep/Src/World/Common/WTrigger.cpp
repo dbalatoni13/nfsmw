@@ -451,9 +451,9 @@ inline float DistanceSquared_XZ(const UMath::Vector3 &a, const UMath::Vector3 &b
 
 void WTriggerManager::GetIntersectingTriggers(const UMath::Vector3 &pt, float radius, WTriggerList *triggerList) const {
     UTL::FastVector<unsigned int, 16> nodeInds;
+    fIterCount++;
     nodeInds.reserve(0x40);
     const WGrid &grid = WGrid::Get();
-    fIterCount++;
     grid.FindNodes(pt, radius, nodeInds);
     for (unsigned int *iter = nodeInds.begin(); iter != nodeInds.end(); ++iter) {
         WGridNode *gridNode = grid.fNodes[*iter];

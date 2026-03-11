@@ -111,8 +111,7 @@ struct WRoadProfile {
     }
     int GetLaneNumber(int lane, bool inverted) const {
         if (inverted) {
-            int num = fNumZones - lane;
-            return num - 1;
+            return fNumZones - lane - 1;
         }
         return lane;
     }
@@ -256,26 +255,26 @@ struct WRoadSegment {
     }
 
     bool CrossesBarrier() const {
-        return fFlags & (1 << 13);
+        return fFlags & (1 << 12);
     }
 
     bool CrossesDriveThroughBarrier() const {
-        return fFlags & (1 << 12);
+        return fFlags & (1 << 13);
     }
 
     void SetCrossesBarrier(bool violates) {
         if (violates) {
-            fFlags |= (1 << 13);
+            fFlags |= (1 << 12);
         } else {
-            fFlags &= ~(1 << 13);
+            fFlags &= ~(1 << 12);
         }
     }
 
     void SetCrossesDriveThroughBarrier(bool violates) {
         if (violates) {
-            fFlags |= (1 << 12);
+            fFlags |= (1 << 13);
         } else {
-            fFlags &= ~(1 << 12);
+            fFlags &= ~(1 << 13);
         }
     }
 
