@@ -196,7 +196,7 @@ bool Physics::Info::ShiftPoints(const transmission &transmission, const engine &
                 if (UMath::Abs(g1) > 0.00001f) {
                     float ratio = g2 / g1;
                     float next_rpm = ratio * max;
-                    shiftuptorque = Torque(engine, next_rpm) * (InductionBoost(engine, induction, 1.0f, next_rpm, NULL, NULL) + 1.0f) * g2 / g1;
+                    shiftuptorque = Torque(engine, next_rpm) * g2 / g1 * (InductionBoost(engine, induction, 1.0f, next_rpm, NULL, NULL) + 1.0f);
                 } else {
                     shiftuptorque = 0.0f;
                 }
