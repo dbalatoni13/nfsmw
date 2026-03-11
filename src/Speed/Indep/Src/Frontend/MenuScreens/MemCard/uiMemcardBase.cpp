@@ -48,8 +48,7 @@ void Next__19uiRepSheetRivalFlow(void* self);
 struct EAXSound;
 extern EAXSound* g_pEAXSound;
 
-static const unsigned int gButtonIDs[3] = {0xb8a7c6cc, 0xb8a7c6cd, 0xb8a7c6ce};
-static const unsigned int gButtonTextIDs[3] = {0xf9363f30, 0xfb8b67d1, 0xfde09072};
+// gButtonIDs and gButtonTextIDs are defined in uiMemcard.cpp (included before this file)
 
 // ===== UIMemcardKeyboard =====
 
@@ -104,8 +103,7 @@ UIMemcardBase::~UIMemcardBase() {
     MemoryCard::GetInstance()->m_pFEScreen = nullptr;
     if ((gMemcardSetup.mOp & 0x1000) != 0) {
         if (gMemcardSetup.mTermFunc != nullptr) {
-            reinterpret_cast< void (*)(void*) >(gMemcardSetup.mTermFunc)(
-                reinterpret_cast< void* >(gMemcardSetup.mTermFuncParam));
+            gMemcardSetup.mTermFunc(gMemcardSetup.mTermFuncParam);
         }
         int savedLastMsg = gMemcardSetup.mLastMessage;
         gMemcardSetup.mOp = 0;
@@ -114,7 +112,7 @@ UIMemcardBase::~UIMemcardBase() {
         gMemcardSetup.mToScreen = nullptr;
         gMemcardSetup.mFromScreen = nullptr;
         gMemcardSetup.mTermFunc = nullptr;
-        gMemcardSetup.mTermFuncParam = 0;
+        gMemcardSetup.mTermFuncParam = nullptr;
         gMemcardSetup.mSuccessMsg = 0;
         gMemcardSetup.mFailedMsg = 0;
         gMemcardSetup.mInBootFlow = false;
@@ -700,8 +698,7 @@ void UIMemcardBase::ExitComplete() {
     }
 
     if (gMemcardSetup.mTermFunc != nullptr) {
-        reinterpret_cast< void (*)(void*) >(gMemcardSetup.mTermFunc)(
-            reinterpret_cast< void* >(gMemcardSetup.mTermFuncParam));
+        gMemcardSetup.mTermFunc(gMemcardSetup.mTermFuncParam);
     }
     int savedMsg = gMemcardSetup.mLastMessage;
     gMemcardSetup.mOp = 0;
@@ -709,7 +706,7 @@ void UIMemcardBase::ExitComplete() {
     gMemcardSetup.mToScreen = nullptr;
     gMemcardSetup.mFromScreen = nullptr;
     gMemcardSetup.mTermFunc = nullptr;
-    gMemcardSetup.mTermFuncParam = 0;
+    gMemcardSetup.mTermFuncParam = nullptr;
     gMemcardSetup.mSuccessMsg = 0;
     gMemcardSetup.mFailedMsg = 0;
     gMemcardSetup.mInBootFlow = false;

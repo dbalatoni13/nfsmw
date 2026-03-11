@@ -9,7 +9,14 @@
 
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 
-struct AV_PLAYER;
+struct FRAME;
+struct AV_PLAYER {
+    ~AV_PLAYER();
+    FRAME* GetFirstFrame(unsigned int MaxFramesOutstanding, int VideoLatencyInMs);
+    int Pause();
+    int UnPause();
+    int SetVol(unsigned int Vol);
+};
 struct FRAME;
 
 // total size: 0x158
@@ -43,12 +50,29 @@ struct MoviePlayer {
     AV_PLAYER* fPlayer;               // offset 0x150
     FRAME* CurFrame;                   // offset 0x154
 
+    AV_PLAYER* GetPlayer() { return fPlayer; }
     bool IsMoviePaused() { return mMoviePaused; }
-
-    void Stop();
-    void HandleFatalError();
-    void Update();
+    Settings GetSettings() { return mSettings; }
+    int GetStatus() { return fStatus; }
+    int GetLiveStatus() { return fLiveStatus; }
     bool IsMoviePlaying();
+
+    MoviePlayer(int memClass);
+    ~MoviePlayer();
+    void Init(Settings& newSettings);
+    void ResetTimer();
+    void Play();
+    void Stop();
+    void Pause();
+    void UnPause();
+    char* const GetMovieFilename();
+    int GetMovieCategoryVolume();
+    void GetFirstFrame();
+    void DisplayTime();
+    void Update();
+    void UpdateFunction();
+    unsigned int GetMillisecondsPerFrame();
+    void HandleFatalError();
 };
 
 extern MoviePlayer* gMoviePlayer;
