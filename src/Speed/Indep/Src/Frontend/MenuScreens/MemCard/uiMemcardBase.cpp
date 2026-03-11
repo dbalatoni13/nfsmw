@@ -565,11 +565,7 @@ eMenuSoundTriggers UIMemcardBase::NotifySoundMessage(unsigned long msg,
 }
 
 void UIMemcardBase::InitCompleteDoList() {
-    while (!m_Items.IsEmpty()) {
-        Item* pItem = m_Items.GetHead();
-        pItem->Remove();
-        delete pItem;
-    }
+    m_Items.DeleteAllElements();
     SetStringCheckingCard();
     MemoryCard::GetInstance()->RequestTask(7, nullptr);
     cFEng* pFeng = cFEng::Get();
