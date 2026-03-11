@@ -315,9 +315,7 @@ void WRoadNetwork::BuildSegmentSpline(const WRoadSegment &segment, USpline &spli
     GetSegmentNodes(segment, nodePtr);
     const UMath::Vector3 &start = nodePtr[0]->fPosition;
     const UMath::Vector3 &end = nodePtr[1]->fPosition;
-    start_control = UVector3(start) + UVector3(start_control);
-    end_control = UVector3(end) + UVector3(end_control);
-    spline.BuildSplineEx(start, start_control, end, end_control);
+    spline.BuildSplineEx(start, UVector3(start) + UVector3(start_control), end, UVector3(end) + UVector3(end_control));
 }
 
 bool WRoadNetwork::GetSegmentProfiles(const WRoadSegment &segment, const WRoadProfile **profile) {
