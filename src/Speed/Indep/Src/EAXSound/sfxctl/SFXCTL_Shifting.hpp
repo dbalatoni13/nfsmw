@@ -6,23 +6,9 @@
 #endif
 
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL.hpp"
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
 
-enum eCURVETYPE {};
-
-// total size: 0x1c
-struct cInterpLine {
-    /* 0x00 */ float ElapsedTime;
-    /* 0x04 */ float Length;
-    /* 0x08 */ float Start;
-    /* 0x0c */ float Finish;
-    /* 0x10 */ eCURVETYPE CurveTypes;
-    /* 0x14 */ float CurValue;
-    /* 0x18 */ bool bComplete;
-
-    float GetValue() { return CurValue; }
-};
-
-enum Gear {};
 enum SHIFT_STAGE {};
 enum AEMS_SHIFTING_SAMPLES {};
 enum FX_POST_SHIFT_LFO {};

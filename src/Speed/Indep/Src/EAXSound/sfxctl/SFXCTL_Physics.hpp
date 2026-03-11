@@ -70,6 +70,7 @@ struct SFXCTL_Physics : public SFXCTL {
 };
 
 struct SndAIStateManager;
+struct SFXCTL_Shifting;
 
 struct SFXCTL_AIPhysics : public SFXCTL_Physics {
   protected:

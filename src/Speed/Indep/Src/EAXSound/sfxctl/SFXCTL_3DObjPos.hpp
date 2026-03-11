@@ -15,6 +15,7 @@ struct SFXCTL_3DObjPos : public SFXCTL {
     /* 0x28 */ bVector3 *m_pV3ObjPos;
     /* 0x2c */ bVector3 *m_pV3ObjDir;
     /* 0x30 */ bVector3 *m_pV3ObjVel;
+    /* 0x34 */ float m_fDistToRef[2][2];
 
   public:
     /* 0x44 */ int m_PlayerRef;
