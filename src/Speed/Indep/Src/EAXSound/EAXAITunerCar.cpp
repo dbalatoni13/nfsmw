@@ -22,9 +22,14 @@ void emAddHandler(void (*function)(emEvent *), unsigned int stream_mask);
 void emRemoveHandler(void (*function)(emEvent *));
 bool g_EAXIsPaused(void);
 
+struct SFXCTL_Physics;
+
 struct EAXCar : public CSTATE_Base {
-    // padding from 0x44 to 0x118 (EAXCar fields we don't detail)
-    char _pad_eaxcar[0x118 - 0x44];
+    // padding from 0x44 to 0x5c
+    char _pad_eaxcar0[0x5c - 0x44];
+    /* 0x5c */ SFXCTL_Physics *m_pPhysicsCTL;
+    // padding from 0x60 to 0x118
+    char _pad_eaxcar1[0x118 - 0x60];
 
     virtual void PreLoadAssets() override;
     virtual void Attach(void *pAttachment) override;

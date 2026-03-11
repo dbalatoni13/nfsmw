@@ -2,6 +2,20 @@
 
 SFXCTL_3DObjPos::~SFXCTL_3DObjPos() {}
 
+SFXCTL_3DObjPos::SFXCTL_3DObjPos()
+    : m_pV3ObjPos(nullptr) //
+    , m_pV3ObjDir(nullptr) //
+    , m_pV3ObjVel(nullptr) //
+    , m_bIsInTwoPlayerTransitionZone(false) //
+    , m_bDirectionClockwise(false) //
+    , m_bIsOtherCamRightSide(false) {
+    SetPlayerRef(0);
+    m_fDistToRef[0][0] = 0.0f;
+    m_fDistToRef[0][1] = 0.0f;
+    m_fDistToRef[1][0] = 0.0f;
+    m_fDistToRef[1][1] = 0.0f;
+}
+
 SndBase::TypeInfo *SFXCTL_3DObjPos::GetTypeInfo() const { return &s_TypeInfo; }
 
 char *SFXCTL_3DObjPos::GetTypeName() const { return s_TypeInfo.typeName; }

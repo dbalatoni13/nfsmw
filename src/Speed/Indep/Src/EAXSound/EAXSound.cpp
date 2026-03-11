@@ -59,9 +59,52 @@ struct EAXSND8Wrapper : public AudioMemBase {
     void STUPID();
 };
 
+struct stSndDataLoadParams {
+    /* 0x00 */ char _pad0[0x34];
+    /* 0x34 */ int Handle;
+};
+
+enum eBANK_SLOT_TYPE {
+    eBANK_SLOT_NONE = -1,
+    eBANK_SLOT_AI_AEMS_ENGINE = 0,
+    eBANK_SLOT_AI_GINA_ENGINE = 1,
+    eBANK_SLOT_AI_GIND_ENGINE = 2,
+    eBANK_SLOT_PATHFINDER = 3,
+    eBANK_SLOT_MAX_NUM = 4
+};
+
+struct stBankSlot {
+    /* 0x00 */ eBANK_SLOT_TYPE Type;
+    /* 0x04 */ int BANKmemLocation;
+    /* 0x08 */ char *MAINmemLocation;
+    /* 0x0c */ char *pLastAlloc;
+    /* 0x10 */ int MAINmemSize;
+    /* 0x14 */ int BANKMemSize;
+    /* 0x18 */ int LoadFailed;
+    /* 0x1c */ unsigned char Index;
+    /* 0x20 */ stSndDataLoadParams *pAssetParams;
+
+    void Clear();
+};
+
 struct EAXAemsManager : public AudioMemBase {
+    /* 0x004 */ char _pad0[0xF4]; // padding to m_pEvtSystems
+    /* 0x0f8 */ void **m_pEvtSystems_start;
+    /* 0x0fc */ void **m_pEvtSystems_end;
+    /* 0x100 */ void **m_pEvtSystems_end_of_storage;
+    /* 0x104 */ char _pad1[0x10]; // skip to m_nCallbackEvtSys
+    /* 0x114 */ int m_nCallbackEvtSys;
+    /* 0x118 */ stSndDataLoadParams *m_pCurLoadSDLP;
+    /* 0x11c */ stSndDataLoadParams *m_pCurUNLOADSDLP;
+    /* 0x120 */ bool m_IsWaitingForFileCB;
+
     bool AreResourceLoadsPending();
     void *GetCallbackEventSys();
+    static void EvtSysLoadCallback(int param, int error_status);
+    void RemoveAEMSBank();
+    void ResolvePendingAsyncLoads();
+    void InitSPUram();
+    void ResetBankLoadParams();
 };
 
 struct CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<CarSoundConn, 10> {

@@ -15,6 +15,9 @@ struct SFXCTL_Wheel : public SFXCTL {
     ~SFXCTL_Wheel() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
+    void UpdateParams(float t) override;
+
+    void UpdateTireParams();
 };
 
 #endif

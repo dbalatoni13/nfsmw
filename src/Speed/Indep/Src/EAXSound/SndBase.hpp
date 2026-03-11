@@ -78,6 +78,8 @@ struct SndBase : public AudioMemBase {
     bool m_bIsEnabled;                // offset 0x8, size 0x1
     int *m_pOutPutBlock;              // offset 0xC, size 0x4
     int *m_pInputBlock;               // offset 0x10, size 0x4
+
+  protected:
     struct CSTATE_Base *m_pStateBase; // offset 0x14, size 0x4
     struct EAXCar *m_pEAXCar;         // offset 0x18, size 0x4
     unsigned short m_refCount;        // offset 0x1C, size 0x2

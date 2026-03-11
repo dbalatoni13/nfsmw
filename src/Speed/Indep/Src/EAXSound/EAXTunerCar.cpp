@@ -104,9 +104,9 @@ int EAXTunerCar::UpdateRotation() {
     int zero = 0;
     asm volatile("" : "+r"(zero));
     int val = zero;
-    *(int *)&_pad_eaxcar[0xC0 - 0x44] = zero;
+    *(int *)&_pad_eaxcar1[0xC0 - 0x60] = zero;
     if (val > 0x400) val = 0x400;
-    *(int *)&_pad_eaxcar[0xC0 - 0x44] = val;
+    *(int *)&_pad_eaxcar1[0xC0 - 0x60] = val;
     return val;
 }
 
@@ -124,15 +124,15 @@ void EAXTunerCar::UpdatePov() {
         int (*vfunc)(char *) = (int (*)(char *))(*(int *)((char *)vtable2 + 0x2C));
         char *anchor = (char *)vfunc(cm + vthis_off);
 
-        *(int *)&_pad_eaxcar[0xBC - 0x44] = (*(int *)(cm + 0xC) == 1);
+        *(int *)&_pad_eaxcar1[0xBC - 0x60] = (*(int *)(cm + 0xC) == 1);
 
         if (anchor != 0) {
-            *(int *)&_pad_eaxcar[0xB8 - 0x44] = static_cast<int>(*(short *)(anchor + 0xD8));
+            *(int *)&_pad_eaxcar1[0xB8 - 0x60] = static_cast<int>(*(short *)(anchor + 0xD8));
         } else {
-            *(int *)&_pad_eaxcar[0xB8 - 0x44] = 7;
+            *(int *)&_pad_eaxcar1[0xB8 - 0x60] = 7;
         }
     } else {
-        *(int *)&_pad_eaxcar[0xBC - 0x44] = 0;
+        *(int *)&_pad_eaxcar1[0xBC - 0x60] = 0;
     }
 }
 

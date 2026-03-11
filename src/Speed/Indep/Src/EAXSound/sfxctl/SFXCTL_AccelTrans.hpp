@@ -15,6 +15,7 @@ struct SFXCTL_AccelTrans : public SFXCTL {
     ~SFXCTL_AccelTrans() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
+    int GetController(int Index) override;
     void Destroy() override;
 };
 

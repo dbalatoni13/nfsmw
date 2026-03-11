@@ -64,6 +64,7 @@ struct SFXCTL_Physics : public SFXCTL {
     ~SFXCTL_Physics() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
+    void SetupSFX(CSTATE_Base *_StateBase) override;
 
     void MsgRevOff(const MAIEngineRev &message);
 

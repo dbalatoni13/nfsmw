@@ -20,6 +20,15 @@ struct SFXCTL_3DObjPos : public SFXCTL {
   public:
     /* 0x44 */ int m_PlayerRef;
 
+  protected:
+    /* 0x48 */ bool m_bIsInTwoPlayerTransitionZone;
+    /* 0x4c */ bool m_bDirectionClockwise;
+    /* 0x50 */ bool m_bIsOtherCamRightSide;
+    /* 0x54 */ float m_fdvelmag_car[2];
+    /* 0x5c */ float m_fdvelmag_cam[2];
+
+  public:
+    SFXCTL_3DObjPos();
     ~SFXCTL_3DObjPos() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;

@@ -8,6 +8,11 @@ SndBase::TypeInfo *SFXCTL_Physics::GetTypeInfo() const { return &s_TypeInfo; }
 
 char *SFXCTL_Physics::GetTypeName() const { return s_TypeInfo.typeName; }
 
+void SFXCTL_Physics::SetupSFX(CSTATE_Base *_StateBase) {
+    SndBase::SetupSFX(_StateBase);
+    m_pEAXCar->m_pPhysicsCTL = this;
+}
+
 SndBase::TypeInfo *SFXCTL_AIPhysics::GetTypeInfo() const { return &s_TypeInfo; }
 
 char *SFXCTL_AIPhysics::GetTypeName() const { return s_TypeInfo.typeName; }
