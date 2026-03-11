@@ -121,8 +121,8 @@ void SelectCarCameraMover::Update(float dT) {
         if (ControlMode == 1) {
             float the_frame_rate = dT * kSelectCarFrameRate;
 
-            camera_data->OrbitHAngle = OrbitHSpeed * the_frame_rate + camera_data->OrbitHAngle;
-            float possibleNewOrbitV = OrbitVSpeed * the_frame_rate + camera_data->OrbitVAngle;
+            CurrentCameraData.OrbitHAngle = OrbitHSpeed * the_frame_rate + CurrentCameraData.OrbitHAngle;
+            float possibleNewOrbitV = OrbitVSpeed * the_frame_rate + CurrentCameraData.OrbitVAngle;
             if (CarGuysCamera == 0) {
                 if (possibleNewOrbitV > kSelectCarUpperOrbitV) {
                     possibleNewOrbitV = kSelectCarUpperOrbitV;
@@ -130,8 +130,8 @@ void SelectCarCameraMover::Update(float dT) {
                     possibleNewOrbitV = kSelectCarLowerOrbitV;
                 }
             }
-            camera_data->OrbitVAngle = possibleNewOrbitV;
-            float possibleNewRadius = RadiusSpeed * (the_frame_rate * kSelectCarRadiusSpeedScale) + camera_data->Radius;
+            CurrentCameraData.OrbitVAngle = possibleNewOrbitV;
+            float possibleNewRadius = RadiusSpeed * (the_frame_rate * kSelectCarRadiusSpeedScale) + CurrentCameraData.Radius;
             if (CarGuysCamera == 0) {
                 if (possibleNewRadius > kSelectCarUpperRadius) {
                     possibleNewRadius = kSelectCarUpperRadius;
@@ -140,39 +140,39 @@ void SelectCarCameraMover::Update(float dT) {
                 }
             }
             float complement = 1.0f - anim;
-            camera_data->Radius = possibleNewRadius;
-            camera_data->RollAngle = complement * StartAnimCameraData.RollAngle + anim * GoalAnimCameraData.RollAngle;
-            camera_data->FOV = complement * StartAnimCameraData.FOV + anim * GoalAnimCameraData.FOV;
+            CurrentCameraData.Radius = possibleNewRadius;
+            CurrentCameraData.RollAngle = complement * StartAnimCameraData.RollAngle + anim * GoalAnimCameraData.RollAngle;
+            CurrentCameraData.FOV = complement * StartAnimCameraData.FOV + anim * GoalAnimCameraData.FOV;
             bVector3 lookat_change = GoalAnimCameraData.LookAt - StartAnimCameraData.LookAt;
             lookat_change *= anim;
-            camera_data->LookAt = StartAnimCameraData.LookAt + lookat_change;
-            if (kSelectCarWrapAngle < camera_data->OrbitHAngle) {
-                camera_data->OrbitHAngle = camera_data->OrbitHAngle - kSelectCarWrapAngle;
+            CurrentCameraData.LookAt = StartAnimCameraData.LookAt + lookat_change;
+            if (CurrentCameraData.OrbitHAngle > kSelectCarWrapAngle) {
+                CurrentCameraData.OrbitHAngle = CurrentCameraData.OrbitHAngle - kSelectCarWrapAngle;
             }
-            if (camera_data->OrbitHAngle < 0.0f) {
-                camera_data->OrbitHAngle = camera_data->OrbitHAngle + kSelectCarWrapAngle;
+            if (CurrentCameraData.OrbitHAngle < 0.0f) {
+                CurrentCameraData.OrbitHAngle = CurrentCameraData.OrbitHAngle + kSelectCarWrapAngle;
             }
         } else if (ControlMode == 0) {
             float complement = 1.0f - anim;
-            camera_data->OrbitVAngle = complement * StartAnimCameraData.OrbitVAngle + anim * GoalAnimCameraData.OrbitVAngle;
-            camera_data->OrbitHAngle = complement * StartAnimCameraData.OrbitHAngle + anim * GoalAnimCameraData.OrbitHAngle;
-            camera_data->Radius = complement * StartAnimCameraData.Radius + anim * GoalAnimCameraData.Radius;
-            camera_data->RollAngle = complement * StartAnimCameraData.RollAngle + anim * GoalAnimCameraData.RollAngle;
-            camera_data->FOV = complement * StartAnimCameraData.FOV + anim * GoalAnimCameraData.FOV;
+            CurrentCameraData.OrbitVAngle = complement * StartAnimCameraData.OrbitVAngle + anim * GoalAnimCameraData.OrbitVAngle;
+            CurrentCameraData.OrbitHAngle = complement * StartAnimCameraData.OrbitHAngle + anim * GoalAnimCameraData.OrbitHAngle;
+            CurrentCameraData.Radius = complement * StartAnimCameraData.Radius + anim * GoalAnimCameraData.Radius;
+            CurrentCameraData.RollAngle = complement * StartAnimCameraData.RollAngle + anim * GoalAnimCameraData.RollAngle;
+            CurrentCameraData.FOV = complement * StartAnimCameraData.FOV + anim * GoalAnimCameraData.FOV;
             bVector3 lookat_change = GoalAnimCameraData.LookAt - StartAnimCameraData.LookAt;
             lookat_change *= anim;
-            camera_data->LookAt = StartAnimCameraData.LookAt + lookat_change;
-            if (kSelectCarWrapAngle < camera_data->OrbitHAngle) {
-                camera_data->OrbitHAngle = camera_data->OrbitHAngle - kSelectCarWrapAngle;
+            CurrentCameraData.LookAt = StartAnimCameraData.LookAt + lookat_change;
+            if (CurrentCameraData.OrbitHAngle > kSelectCarWrapAngle) {
+                CurrentCameraData.OrbitHAngle = CurrentCameraData.OrbitHAngle - kSelectCarWrapAngle;
             }
-            if (camera_data->OrbitHAngle < 0.0f) {
-                camera_data->OrbitHAngle = camera_data->OrbitHAngle + kSelectCarWrapAngle;
+            if (CurrentCameraData.OrbitHAngle < 0.0f) {
+                CurrentCameraData.OrbitHAngle = CurrentCameraData.OrbitHAngle + kSelectCarWrapAngle;
             }
-            if (kSelectCarWrapAngle < camera_data->RollAngle) {
-                camera_data->RollAngle = camera_data->RollAngle - kSelectCarWrapAngle;
+            if (CurrentCameraData.RollAngle > kSelectCarWrapAngle) {
+                CurrentCameraData.RollAngle = CurrentCameraData.RollAngle - kSelectCarWrapAngle;
             }
-            if (camera_data->RollAngle < 0.0f) {
-                camera_data->RollAngle = camera_data->RollAngle + kSelectCarWrapAngle;
+            if (CurrentCameraData.RollAngle < 0.0f) {
+                CurrentCameraData.RollAngle = CurrentCameraData.RollAngle + kSelectCarWrapAngle;
             }
             if (ControlMode == 0 && 1.0f <= animiation_amount) {
                 ControlMode = 2;

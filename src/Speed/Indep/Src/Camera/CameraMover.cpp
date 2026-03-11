@@ -734,11 +734,12 @@ void CameraMover::ChopperNoise(bMatrix4 *world_to_camera, float f_scale, bool us
         if (!vehicle->IsActive()) continue;
         if (vehicle->GetVehicleClass() != VehicleClass::CHOPPER) continue;
 
+        const UMath::Vector3 &pos = vehicle->GetPosition();
         bVector3 bpos;
         bVector3 dir;
         float distance;
 
-        eSwizzleWorldVector(vehicle->GetPosition(), bpos);
+        eSwizzleWorldVector(pos, bpos);
         bSub(&dir, &bpos, pCamera->GetPosition());
         dir.z = 0.0f;
         distance = bLength(&dir);
