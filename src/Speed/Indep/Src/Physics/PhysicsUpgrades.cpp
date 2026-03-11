@@ -104,8 +104,8 @@ static void DownGradeInternal(pvehicle &vehicle, Type type) {
 
 template <typename T>
 void BlendParts(const Attribute &start_attribute, const Attribute &end_attribute, unsigned int index, float weight, Attribute &new_attrib) {
-    T start_data;
-    T end_data;
+    T start_data = T();
+    T end_data = T();
 
     start_attribute.Get(index, start_data);
     end_attribute.Get(index, end_data);
@@ -139,7 +139,7 @@ void BlendParts<int>(const Attribute &start_attribute, const Attribute &end_attr
 
 template <typename T>
 void ScalePart(Attribute &attrib, unsigned int index, float scale) {
-    T start_data;
+    T start_data = T();
     T new_data;
 
     attrib.Get(index, start_data);
