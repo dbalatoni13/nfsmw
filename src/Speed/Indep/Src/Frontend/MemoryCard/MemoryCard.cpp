@@ -1,6 +1,15 @@
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
-
-void MemoryCard::RequestTask(int op, const char* name) {
-    m_ReqOp = op;
-    m_ReqFilename = name;
-}
+#include "Speed/Indep/Src/Misc/Joylog.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardBase.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.hpp"
+#include "Speed/Indep/Src/FEng/FEPackage.h"
+#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Gameplay/GManager.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/Src/Misc/bFile.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
