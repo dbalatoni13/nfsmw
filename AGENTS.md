@@ -29,6 +29,19 @@ objdiff.json           Generated build/diff configuration
 
 ## Agent Tooling
 
+## Sub-Agent Usage
+
+Sub-agents are allowed only for **read-only exploration** tasks such as:
+
+- searching the codebase for symbols, call sites, or include relationships
+- inspecting decomp output, assembly, DWARF, PS2 dumps, or line mappings
+- gathering context from Ghidra, `lookup.py`, `decomp-diff.py`, or similar tools
+- summarizing findings that help the main worker decide what to change
+
+Sub-agents must **not** write or edit code files, headers, configs, or other repository files.
+All persistent file changes, decomp implementations, scaffolding, and follow-up fixes must be
+done by the main worker after reviewing the read-only findings.
+
 ### lookup.py — Symbol lookup from the debug dump
 
 Query structs, enums, functions, globals, and typedefs directly from the pre-extracted
@@ -66,8 +79,8 @@ python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin -
 
 Mismatched args are wrapped in `{}`. Matching runs are collapsed (control with `-C <n>` context lines, `--no-collapse`). Left = original, right = decomp.
 
-**Parallel-safe usage** — when multiple agents compile the same TU, pass a private `--base-obj`
-so each agent diffs against its own compiled output and they never interfere:
+**Parallel-safe usage** — when you compile the same TU in multiple concurrent iterations,
+pass a private `--base-obj` so each diff uses its own compiled output:
 
 ```sh
 TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim)
@@ -135,7 +148,7 @@ If it finds a match, include that header instead of redeclaring.
 
 Dump the dwarf of your own implementation of a function.
 **Always use the temp `.o` produced by `build-unit.py`** so the dump reflects your own
-compilation and isn't overwritten by another parallel agent:
+compilation and isn't overwritten by another concurrent temp build:
 
 ```sh
 TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/UNITNAME)
@@ -151,7 +164,7 @@ dtk demangle 'AcceptScriptMsg__7CEntityF20EScriptObjectMessage9TUniqueIdR13CStat
 ### build-unit.py — Parallel-safe compilation
 
 Compile a single translation unit to a private temporary `.o` file that won't be
-overwritten by other agents.  Always prefer this over plain `ninja` when you need to
+overwritten by other concurrent temp builds. Always prefer this over plain `ninja` when you need to
 diff or inspect your own compiled output:
 
 ```sh
@@ -170,6 +183,21 @@ python tools/decomp-diff.py      -u main/Path/To/TU --base-obj "$TEMPOBJ" -d Fun
 python tools/decomp-context.py   -u main/Path/To/TU --base-obj "$TEMPOBJ" -f FunctionName
 dtk dwarf dump "$TEMPOBJ" -o /tmp/TU_check.nothpp
 ```
+
+### share_worktree_assets.py — Share stable assets across git worktrees
+
+Deduplicate immutable debug inputs and downloaded tool binaries across all git
+worktrees while keeping per-worktree generated build files local:
+
+```sh
+python tools/share_worktree_assets.py link --all
+python tools/share_worktree_assets.py status --all
+```
+
+This shares extracted `orig/*` contents, `symbols/*`, root ELF / MAP files, and
+downloaded tool binaries under `build/`. It does **not** share `build.ninja`,
+`objdiff.json`, `compile_commands.json`, or per-worktree object outputs, so run
+`python configure.py` inside each worktree after linking.
 
 ## Code Conventions
 
@@ -205,23 +233,13 @@ Examples:
 
 Do not batch up multiple percentage milestones into one commit — commit as each improvement lands.
 
-## Parallel Sub-Agent Matching
-
-When working on a translation unit with multiple non-matching functions, use sub-agents selectively for **simple, small, isolated** functions. The main agent should keep ownership of the harder matching work instead of delegating it away. Each sub-agent should focus on **exactly one function** — do not assign a sub-agent more than one function at a time.
-
-**Limit: never run more than 5 sub-agents concurrently.** Spawning too many at once causes resource contention and makes it harder to reason about progress.
-
-Guidelines:
-- Prefer solving difficult, high-risk, or cross-cutting functions yourself. Use sub-agents only for straightforward functions with small, well-bounded edits.
-- Spawn a sub-agent per function only when the functions are independent (no shared edits to the same source lines).
-- Each sub-agent must use `build-unit.py` for parallel-safe compilation (never plain `ninja`).
-- Do **not** sit idle waiting for sub-agents to finish. While they run, continue investigating or implementing other independent work in parallel.
-- Before applying a sub-agent's result, re-read the touched area and make sure it still fits the current state of the TU.
-- After a useful sub-agent result lands, check the updated match percentage and commit if it improved.
-
 ## Matching Philosophy
 
 You should take the Ghidra decompiler output for the initial translation step, get it to compile, make sure that the dwarf of the function matches and only then look for binary matching problems in the assembly. Be aware Ghidra usually gets the order of branches incorrect in if statements (it inverts the logic and the two bodies are swapped), this needs to be fixed to achieve bytematching status.
+
+You may use sub-agents to gather read-only context during this process, but they must not
+edit files. Treat their output as analysis input for the main worker, not as a path to
+delegate source changes.
 
 The dwarf of your structs doesn't have to neccessarily match the original due to various reasons, just make sure that you copied everything correctly.
 
