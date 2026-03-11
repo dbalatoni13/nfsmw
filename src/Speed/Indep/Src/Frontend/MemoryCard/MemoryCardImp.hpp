@@ -28,7 +28,7 @@ struct MemoryCardImp {
     inline SaveReq **GetSaveReqArray() { return &m_pSaveReq; }
     const char *GetPrefix();
     const char *GetTitleId();
-    SaveInfo *ConstructSaveInfo(int type, const char *DisplayName, int aSize);
+    SaveInfo *ConstructSaveInfo(MemoryCard::SaveType type, const char *DisplayName, int aSize);
     void DestructSaveInfo();
     void BootupCheckDone(RealmcIface::CardStatus status, RealmcIface::BootupCheckResults *pParam);
 

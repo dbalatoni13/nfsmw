@@ -44,8 +44,8 @@ public:
     bool IsEnabled();
     bool IsHidden();
     void GetTopLeft(bVector2& top_left);
-    float GetTopLeftX();
-    float GetTopLeftY();
+    float GetTopLeftX() { return vTopLeft.x; }
+    float GetTopLeftY() { return vTopLeft.y; }
     void GetSize(bVector2& size);
     float GetWidth();
     float GetHeight();

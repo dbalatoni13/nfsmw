@@ -120,4 +120,6 @@ public:
     void SetFEngObject(FEObject* obj);
 };
 
+inline void IconOption::SetReactImmediately(bool b) { bReactImmediately = b; }
+
 #endif

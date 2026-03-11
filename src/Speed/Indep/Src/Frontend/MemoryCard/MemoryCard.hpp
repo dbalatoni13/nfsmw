@@ -8,8 +8,9 @@
 #include <types.h>
 
 #include "MemoryCardHelper.hpp"
-#include "MemoryCardImp.hpp"
 #include "RealmcIface.hpp"
+
+struct MemoryCardImp;
 
 enum GCImageFormat {
     GC_IMAGE_FORMAT_CI8 = 0,
@@ -200,7 +201,7 @@ struct MemoryCard {
     inline GCBannerDataInfo *GetSaveBanner() { return m_pRMBanner; }
     static inline int GetLastError() { return s_pThis->m_LastError; }
     static inline int GetSpecialError() { return s_pThis->m_SpecialError; }
-    static inline bool IsProfile(const char *name) { return name[s_pThis->m_pImp->GetPrefix() - name] == 'P'; }
+    static inline bool IsProfile(const char *name);
     inline void SetBootFound(bool b) { m_bBootFoundFile = b; }
     inline UIMemcardBase *GetScreen() { return m_pFEScreen; }
     inline char *GetHeader() { return reinterpret_cast< char * >(m_Header); }
@@ -270,5 +271,11 @@ struct MemoryCard {
 void InitMemoryCard();
 void CaptureJoyOp(MemoryCardJoyLoggableEvents op);
 void DisplayStatus(int status);
+
+#include "MemoryCardImp.hpp"
+
+inline bool MemoryCard::IsProfile(const char *name) {
+    return name[s_pThis->m_pImp->GetPrefix() - name] == 'P';
+}
 
 #endif

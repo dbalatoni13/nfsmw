@@ -205,7 +205,7 @@ void MemoryCard::LoadLocale(eLanguages eLang) {
     if (s_pThis == nullptr) return;
     char sPath[64];
     bStrCpy(sPath, "FRONTEND/MC_");
-    if (eLang > eLANGUAGE_FINNISH && eLang < eLANGUAGE_MAX) {
+    if (eLang <= eLANGUAGE_LABELS && eLang >= eLANGUAGE_LARGEST) {
         bStrCat(sPath, sPath, "English.bin");
     } else {
         const char* langName = GetLanguageName(eLang);
@@ -277,7 +277,7 @@ void MemoryCard::MessageDone(RealmcIface::MessageChoices nInput) {
 
 void MemoryCard::BootupCheck(const char* entry) {
     bStrCpy(m_BootupFilename, "");
-    m_pImp->ConstructSaveInfo(0, "", FEDatabase->GetUserProfileSaveSize(false));
+    m_pImp->ConstructSaveInfo(ST_PROFILE, "", FEDatabase->GetUserProfileSaveSize(false));
     m_BootupParams.mEntryNamePattern = m_BootupFilename;
     m_BootupParams.mSaveReqs = reinterpret_cast< RealmcIface::SaveReq** >(m_pImp->GetSaveReqArray());
     m_BootupParams.mNumSaveTypes = 1;
@@ -410,7 +410,7 @@ void MemoryCard::Save(const char* entryName) {
     unsigned int saveSize = FEDatabase->GetUserProfileSaveSize(false);
     SetExtraParam(ST_PROFILE, entryName, nullptr, saveSize);
     if (m_pImp->GetSaveInfo() == nullptr) {
-        m_pImp->ConstructSaveInfo(0, entryName, m_DataSize);
+        m_pImp->ConstructSaveInfo(ST_PROFILE, entryName, m_DataSize);
         const char* prefix = m_pImp->GetPrefix();
         bStrCat(m_Filename, prefix, entryName);
     }
@@ -433,8 +433,7 @@ void MemoryCard::List(const char* filter, RealmcIface::TitleInfo* titleInfo) {
     bStrCat(m_Filename, prefix, "*");
     InitCommand(MO_List);
     if (!Joylog::IsReplaying()) {
-        if (filter == nullptr) filter = m_Filename;
-        m_pIMemcard->FindEntries(filter, titleInfo);
+        m_pIMemcard->FindEntries(filter != nullptr ? filter : m_Filename, titleInfo);
     } else { ReplayJoyOp(); }
 }
 

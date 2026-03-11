@@ -298,7 +298,7 @@ void MemcardCallbacks::FoundEntry(const RealmcIface::EntryInfo* info) {
 }
 
 void MemcardCallbacks::FindEntriesDone(RealmcIface::CardStatus status) {
-    CaptureJoyOp(MJ_FindEntriesDone);
+    JLog(MJ_FindEntriesDone);
     Joylog::AddOrGetData(static_cast<unsigned int>(status), 0x10,
                          JOYLOG_CHANNEL_MEMORY_CARD);
     GetMemcard()->m_MemOp = MemoryCard::MO_NONE;
@@ -307,10 +307,10 @@ void MemcardCallbacks::FindEntriesDone(RealmcIface::CardStatus status) {
         GetMemcard()->EndListingOldSaveFiles();
     } else if (GetMemcard()->IsCheckingCardForOverwrite()) {
         GetMemcard()->m_bCheckingCardForOverwrite = false;
-        if (!GetMemcard()->m_bFoundAutoSaveFile) {
-            GetMemcard()->DoAutoSave();
-        } else {
+        if (GetMemcard()->m_bFoundAutoSaveFile) {
             GetMemcard()->HandleAutoSaveOverwriteMessage();
+        } else {
+            GetMemcard()->DoAutoSave();
         }
     } else {
         cFEng::Get()->QueueGameMessage(0x5a051729,
@@ -518,7 +518,7 @@ void MemcardCallbacks::CardChecked(const RealmcIface::CardInfo* info) {
 }
 
 void MemcardCallbacks::CardRemoved() {
-    CaptureJoyOp(MJ_CardRemoved);
+    JLog(MJ_CardRemoved);
     GetMemcard()->m_bAutoSaveCardPulled = true;
     if (GetMemcard()->GetOp() == MemoryCard::MO_Save) {
         GetMemcard()->m_bAutoSaveCardPulledDuringSave = true;

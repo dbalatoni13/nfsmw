@@ -91,7 +91,6 @@ UIMemcardBase::UIMemcardBase(ScreenConstructorData* sd)
     : UIMemcardKeyboard(sd) //
     , mIndex(1) //
 {
-    m_SimPausedForMemcard = false;
     m_ExpectingInput = false;
     m_LoadedNetConfig = 0;
     m_nMsgOptions = 0;
@@ -99,6 +98,7 @@ UIMemcardBase::UIMemcardBase(ScreenConstructorData* sd)
     m_bDelayedFailed = false;
     m_bInButtonAnimation = false;
     m_pChild = nullptr;
+    m_SimPausedForMemcard = false;
 }
 
 UIMemcardBase::~UIMemcardBase() {

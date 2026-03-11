@@ -439,7 +439,7 @@ void FEManager::Update() {
 }
 
 void FEManager::SetEATraxSecondButton() {
-    if (gMoviePlayer && gMoviePlayer->IsMoviePlaying()) {
+    if (gMoviePlayer && static_cast< unsigned int >(gMoviePlayer->GetStatus() - 3) < 3) {
         return;
     }
 

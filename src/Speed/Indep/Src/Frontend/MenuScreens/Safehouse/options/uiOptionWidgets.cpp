@@ -623,29 +623,34 @@ void POLeaderBoard::Draw() {
 }
 
 void COVibration::Act(const char* parent_pkg, unsigned int data) {
-    if (data == 0x9120409E) {
+    switch (data) {
+    case 0x9120409E: {
         int player = GetPlayerToEditForOptions();
-        FEDatabase->GetPlayerSettings(player)->Rumble = false;
+        FEDatabase->GetPlayerSettings(player)->Rumble = 0;
         FEngSetInvisible(parent_pkg, 0xBFF41BD9);
         FEngSetInvisible(parent_pkg, 0x7BCD6703);
         FEngSetInvisible(GetLeftImage());
         FEngSetVisible(parent_pkg, 0xBEE65E8C);
         FEngSetVisible(parent_pkg, 0x7C51B6D6);
         FEngSetVisible(GetRightImage());
-    } else if (data == 0xB5971BF1) {
+        break;
+    }
+    case 0xB5971BF1: {
         int player = GetPlayerToEditForOptions();
         if (FEDatabase->GetPlayerSettings(player)->Rumble) {
             return;
         }
         player = GetPlayerToEditForOptions();
-        FEDatabase->GetPlayerSettings(player)->Rumble = true;
+        FEDatabase->GetPlayerSettings(player)->Rumble = 1;
         FEngSetInvisible(parent_pkg, 0xBEE65E8C);
         FEngSetInvisible(parent_pkg, 0x7C51B6D6);
         FEngSetInvisible(GetRightImage());
         FEngSetVisible(parent_pkg, 0xBFF41BD9);
         FEngSetVisible(parent_pkg, 0x7BCD6703);
         FEngSetVisible(GetLeftImage());
-    } else {
+        break;
+    }
+    default:
         goto end;
     }
     {

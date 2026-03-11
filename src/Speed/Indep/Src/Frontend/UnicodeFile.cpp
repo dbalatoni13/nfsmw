@@ -20,7 +20,7 @@ bool UnicodeFile::Load(const char* filename) {
     data_ = static_cast<short*>(bGetFile(filename, &size, 0));
     next_ = nullptr;
     if (data_ != nullptr) {
-        end_ = data_ + ((size & ~1u) >> 1);
+        end_ = data_ + size / 2;
         if (*data_ == static_cast<short>(0xFFFE)) {
             FixEndian();
         }
