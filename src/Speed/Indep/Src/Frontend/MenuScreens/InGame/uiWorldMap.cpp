@@ -7,6 +7,9 @@
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
+MapItem::~MapItem() {}
+
+
 struct FEObject;
 struct FEMultiImage;
 
