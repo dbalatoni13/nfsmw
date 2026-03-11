@@ -7,13 +7,18 @@
 
 #include <types.h>
 
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/CTextScroller.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feScrollerina.hpp"
 
 struct FEObject;
-struct CTextScroller;
+struct SMSMessage;
 
+// total size: 0xE8
 struct uiSMSMessage : public MenuScreen {
-    CTextScroller* pScrollBar;
+    CTextScroller m_TextScroller; // offset 0x2C, size 0x54
+    FEScrollBar ScrollBar;        // offset 0x80, size 0x64
+    SMSMessage* the_msg;          // offset 0xE4, size 0x4
 
     uiSMSMessage(ScreenConstructorData* sd);
     ~uiSMSMessage() override;

@@ -334,6 +334,9 @@ void uiSMS::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long 
 }
 
 eMenuSoundTriggers uiSMS::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
+    if (msg == 0x9120409e || msg == 0xb5971bf1 || msg == 0x48122792 || msg == 0x4ac5e165) {
+        return maybe;
+    }
     return ArrayScrollerMenu::NotifySoundMessage(msg, maybe);
 }
 

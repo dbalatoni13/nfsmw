@@ -196,6 +196,11 @@ struct SMSMessage {
     bool IsUnRead() { return (Flags & 2) != 0; }
     bool IsVoice();
 
+    unsigned int GetMsgHash();
+    unsigned int GetFromHash();
+    unsigned int GetSubjectHash();
+    unsigned int GetVoiceHash();
+
     unsigned char Handle;     // offset 0x0, size 0x1
     unsigned char Flags;      // offset 0x1, size 0x1
     unsigned short SortOrder; // offset 0x2, size 0x2
