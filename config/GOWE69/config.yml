@@ -34,8 +34,3 @@ block_relocations:
 
 - source: .text:0x80047c1c
   end: .text:0x80047c28
-
-- source: .text:0x8013D660
-  end: .text:0x8013D664
-
-- target: .rodata:0x803E4298

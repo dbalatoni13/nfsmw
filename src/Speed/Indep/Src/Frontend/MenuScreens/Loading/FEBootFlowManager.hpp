@@ -10,6 +10,7 @@ struct BootFlowManager {
     static void Destroy();
     static BootFlowManager *Get();
     virtual ~BootFlowManager();
+    void JumpToHead();
 };
 
 #endif

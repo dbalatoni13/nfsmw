@@ -51,7 +51,11 @@ struct MoviePlayer {
     FRAME* CurFrame;                   // offset 0x154
 
     AV_PLAYER* GetPlayer() { return fPlayer; }
-    int IsMoviePaused() { return mMoviePaused; }
+    bool IsMoviePaused() {
+        int x = mMoviePaused;
+        if (x) x = 1;
+        return x;
+    }
     Settings GetSettings() { return mSettings; }
     int GetStatus() { return fStatus; }
     int GetLiveStatus() { return fLiveStatus; }

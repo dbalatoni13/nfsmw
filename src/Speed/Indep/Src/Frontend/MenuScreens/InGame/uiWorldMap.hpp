@@ -9,6 +9,7 @@
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/UIWidgetMenu.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
+#include "Speed/Indep/Src/Gameplay/GIcon.h"
 #include "Speed/Indep/Src/Gameplay/GRace.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
@@ -27,7 +28,6 @@ struct FEMultiImage;
 struct ActionQueue;
 struct TrackInfo;
 struct UITrackMapStreamer;
-struct GIcon;
 
 enum eWorldMapItemType {
     WMIT_NONE = 0,
@@ -223,7 +223,7 @@ struct WorldMap : public UIWidgetMenu {
     void AddCops();
     void AddRoadBlocks();
     void AddIcon(eWorldMapItemType type, unsigned int icon_hash, GIcon* icon);
-    void AddIcons(GRace::Type desiredIconType);
+    void AddIcons(GIcon::Type desiredIconType);
     void SetupNavigation();
     void SetupEvent();
     void SetupPursuit();

@@ -203,8 +203,10 @@ void cFEngJoyInput::HandleJoy() {
                     bool bIsSplit;
                     if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
                         bIsSplit = true;
+                    } else if (is_splitscreen) {
+                        bIsSplit = true;
                     } else {
-                        bIsSplit = is_splitscreen ? true : false;
+                        bIsSplit = false;
                     }
                     JoystickPort player_port2 = static_cast<JoystickPort>(-1);
                     JoystickPort player_port1 = static_cast<JoystickPort>(FEDatabase->GetPlayersJoystickPort(0));
@@ -219,6 +221,7 @@ void cFEngJoyInput::HandleJoy() {
                         JoyEnable(player_port1, false);
                     }
                     JoyEnable(static_cast<JoystickPort>(port), false);
+                    mActionQ[port]->PopAction();
                 } else {
                     mActionQ[port]->IsEnabled();
                     for (int j = 0; j < 16; j++) {
@@ -244,8 +247,8 @@ void cFEngJoyInput::HandleJoy() {
                             }
                         }
                     }
+                    mActionQ[port]->PopAction();
                 }
-                mActionQ[port]->PopAction();
             }
         }
     }

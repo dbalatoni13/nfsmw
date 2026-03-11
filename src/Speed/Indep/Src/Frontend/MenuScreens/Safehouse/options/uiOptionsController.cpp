@@ -40,8 +40,8 @@ UIOptionsController::UIOptionsController(ScreenConstructorData* sd)
     }
 
     oldConfig = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Config;
-    oldVibration = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Rumble;
-    oldDriveWithAnalog = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog;
+    reinterpret_cast<int&>(oldVibration) = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Rumble;
+    reinterpret_cast<int&>(oldDriveWithAnalog) = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog;
 
     CalcControllerTextureToLoad();
 
@@ -301,8 +301,8 @@ void UIOptionsController::TogglePlayer() {
     SetPlayerToEditForOptions(GetPlayerToEditForOptions() == 0);
 
     oldConfig = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Config;
-    oldVibration = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Rumble;
-    oldDriveWithAnalog = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog;
+    reinterpret_cast<int&>(oldVibration) = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Rumble;
+    reinterpret_cast<int&>(oldDriveWithAnalog) = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog;
 
     const char* pkg = GetPackageName();
     int player = GetPlayerToEditForOptions();

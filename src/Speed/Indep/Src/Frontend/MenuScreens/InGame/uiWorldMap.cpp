@@ -7,8 +7,23 @@
 #include "Speed/Indep/Src/Gameplay/GIcon.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
+
+struct Minimap {
+    struct GameplayIconInfo {
+        GIcon::Type mIconType;
+        eWorldMapItemType mItemType;
+        const char* mElementString;
+        unsigned int mWorldMapTitle;
+        unsigned int mworldIconTexHash;
+    };
+    static GameplayIconInfo kGameplayIconInfo[];
+    static GameplayIconInfo& GetGameplayIconInfo(GIcon::Type iconType) {
+        return kGameplayIconInfo[iconType];
+    }
+};
 
 extern Timer RealTimer;
 void FEngGetSize(FEObject* obj, float& x, float& y);
@@ -281,7 +296,28 @@ void WorldMap::AddRoadBlocks() {
 void WorldMap::AddIcon(eWorldMapItemType type, unsigned int hash, GIcon* icon) {
 }
 
-void WorldMap::AddIcons(GRace::Type type) {
+void WorldMap::AddIcons(GIcon::Type desiredIconType) {
+    GIcon* sortedIcons[200];
+    int numIcons;
+    int numIconsPlaced;
+
+    numIconsPlaced = 0;
+    IPlayer* player = IPlayer::First(PLAYER_LOCAL);
+    numIcons = GManager::Get().GatherVisibleIcons(sortedIcons, player);
+    for (int onIcon = 0; onIcon < numIcons; onIcon++) {
+        GIcon* icon = sortedIcons[onIcon];
+        GIcon::Type iconType = icon->GetType();
+        Minimap::GameplayIconInfo& iconInfo = Minimap::GetGameplayIconInfo(iconType);
+        if (iconInfo.mItemType != 0 && iconType == desiredIconType) {
+            unsigned int hash = FEngHashString(iconInfo.mElementString, numIconsPlaced);
+            AddIcon(iconInfo.mItemType, hash, icon);
+            numIconsPlaced++;
+        }
+    }
+    if (numIconsPlaced > 0) {
+        Minimap::GameplayIconInfo& desiredIconInfo = Minimap::GetGameplayIconInfo(desiredIconType);
+        AddMapItemOption(desiredIconInfo.mWorldMapTitle, desiredIconInfo.mItemType);
+    }
 }
 
 void WorldMap::SetupNavigation() {
