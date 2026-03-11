@@ -46,7 +46,7 @@ WCollisionAssets::WCollisionAssets()
     fStaticTriggersCount = 0;
     fStaticCollisionObjects = nullptr;
 
-    mCollisionPackList = new WCollisionPack *[0xA8C];
+    mCollisionPackList = new (__FILE__, __LINE__) WCollisionPack *[0xA8C];
     int ix;
     for (ix = 0; ix <= 0xA8B; ++ix) {
         mCollisionPackList[ix] = nullptr;

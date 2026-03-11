@@ -346,7 +346,9 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
             }
             if ((reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF) == 3) {
                 if (rPos.y + rbRadius >= trig->fPosRadius.y - trig->fHeight * 0.5f) {
-                    return rPos.y - rbRadius < trig->fPosRadius.y + trig->fHeight * 0.5f;
+                    if (rPos.y - rbRadius < trig->fPosRadius.y + trig->fHeight * 0.5f) {
+                        return true;
+                    }
                 }
             } else if ((reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF) == 1) {
                 UMath::Vector3 dim3;

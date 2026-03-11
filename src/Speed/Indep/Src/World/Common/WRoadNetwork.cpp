@@ -827,15 +827,13 @@ unsigned int WRoadNav::GetRoadSpeechId() {
     unsigned short segment_index = GetSegmentInd();
     WRoadNetwork &road_network = WRoadNetwork::Get();
     unsigned short num_segments = road_network.GetNumSegments();
-    segment_index = bClamp(segment_index, 0, num_segments - 1);
-    if (GetSegmentInd() != segment_index) {
+    if (segment_index != bClamp(segment_index, 0, num_segments - 1)) {
         return 0;
     }
     const WRoadSegment *segment = road_network.GetSegment(segment_index);
     short road_index = segment->fRoadID;
     short num_roads = road_network.GetNumRoads();
-    road_index = bClamp(road_index, 0, num_roads - 1);
-    if (segment->fRoadID != road_index) {
+    if (road_index != bClamp(road_index, 0, num_roads - 1)) {
         return 0;
     }
     const WRoad *road = road_network.GetRoad(road_index);
@@ -1033,6 +1031,29 @@ void WRoadNav::PullOver() {
 
     float offset_change = offset - GetLaneOffset();
     UMath::ScaleAdd(nav_right, offset_change, GetPosition(), GetPosition());
+}
+
+bool WRoadNav::IsPointInCookieTrail(const UMath::Vector3 &position_3d, float margin) {
+    if (pCookieTrail != nullptr) {
+        bVector2 position(position_3d.x, position_3d.z);
+        if (bBoundingBoxIsInside(&vCookieTrailBoxMin, &vCookieTrailBoxMax, &position, margin)) {
+            int closest_cookie = ClosestCookieAhead(position_3d, nullptr);
+            if (closest_cookie >= nCookieIndex) {
+                const NavCookie &cookie = pCookieTrail->NthOldest(closest_cookie);
+                float y = bClamp(position_3d.y, cookie.Centre.y - 5.0f, cookie.Centre.y + 5.0f);
+                if (position_3d.y == y) {
+                    float min_offset = cookie.LeftOffset - margin;
+                    float max_offset = cookie.RightOffset + margin;
+                    bVector2 centre_2d(cookie.Centre.x, cookie.Centre.z);
+                    bVector2 cookie_to_position = position - centre_2d;
+                    float offset = bCross(&cookie_to_position, reinterpret_cast<const bVector2 *>(&cookie.Forward));
+                    float clamped_offset = bClamp(offset, min_offset, max_offset);
+                    return offset == clamped_offset;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 bool WRoadNav::IsSegmentInCookieTrail(int segment_number, bool use_whole_path) {
@@ -1632,6 +1653,7 @@ void WRoadNav::InitAtSegment(short segInd, char laneInd, float timeStep) {
     SetLaneOffset(0.0f);
 
     {
+        SetLaneInd(laneInd);
         const WRoadNode *nodePtr[2];
         const WRoadProfile *profile;
         float startOffset;

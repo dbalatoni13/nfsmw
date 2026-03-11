@@ -26,7 +26,7 @@ bool WWorldPos::FindClosestFaceInternal(const WCollisionInstanceCacheList *instL
         }
     }
 
-    if (faceChanged && quitIfOnSameFace) {
+    if (quitIfOnSameFace) {
         return !faceChanged;
     }
 
