@@ -432,18 +432,17 @@ bool WCollisionMgr::GetClosestIntersectingBarrier(const WCollisionBarrierList &b
         }
         UMath::Vector4 intersectionPt;
         if (WWorldMath::SegmentIntersect(testSegment, barrier->GetPts(), &intersectionPt)) {
+            float y = barrier->YTop();
             float yBot = barrier->YBot();
-            float yTop = barrier->YTop();
-            float yMin = yBot;
-            if (yTop < yBot) {
-                yMin = yTop;
+            if (y > yBot) {
+                y = yBot;
             }
-            if (yMin < intersectionPt.y) {
-                float yMax = yBot;
-                if (yBot < yTop) {
-                    yMax = yTop;
+            if (intersectionPt.y > y) {
+                y = barrier->YTop();
+                if (y < yBot) {
+                    y = yBot;
                 }
-                if (intersectionPt.y < yMax) {
+                if (intersectionPt.y < y) {
                     float distSq = UMath::DistanceSquare(UMath::Vector4To3(intersectionPt), UMath::Vector4To3(*testSegment));
                     if (distSq < closestDistSq) {
                         cInfo.fCollidePt = intersectionPt;
