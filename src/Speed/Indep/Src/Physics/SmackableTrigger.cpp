@@ -13,10 +13,10 @@ SmackableTrigger::SmackableTrigger(HMODEL__ *hmodel, bool virgin, const UMath::M
     el->fNumEvents = 1;
     mEventData = reinterpret_cast<Event::StaticData *>(el + 2);
     EventStaticData *es = reinterpret_cast<EventStaticData *>(el + 1);
-    es->fEventSize = 0x38;
-    es->fDataOffset = 0x10;
     es->fEventID = 0xEB626F77;
+    es->fEventSize = 0x38;
     es->fPad = 0;
+    es->fDataOffset = 0x10;
     WCollisionAssets::Get().AddTrigger(mTrigger);
     if (!virgin) {
         mTrigger->UpdateBox(&objectmatrix, &dim);
@@ -42,7 +42,8 @@ void SmackableTrigger::Enable() {
 }
 
 bool SmackableTrigger::IsEnabled() const {
-    if (mTrigger->IsEnabled())
+    unsigned int flags = mTrigger->fFlags;
+    if (flags & 1)
         return true;
     return false;
 }

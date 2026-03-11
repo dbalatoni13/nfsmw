@@ -13,7 +13,7 @@ Behavior::Behavior(const BehaviorParams &params, unsigned int num_interfaces)
     , mSignature(params.fSig)
     , mPriority(0)
     , mProfile(nullptr) {
-    const Attrib::Instance &attribs = mIOwner->GetAttributes();
+    const Attrib::Instance &attribs = params.fowner->GetAttributes();
     unsigned int count =
         reinterpret_cast<const Attrib::Gen::GenericAccessor *>(&attribs)->Num_BEHAVIOR_ORDER();
     while (mPriority < count) {
