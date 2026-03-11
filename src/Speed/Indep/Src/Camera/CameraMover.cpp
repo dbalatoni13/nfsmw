@@ -820,11 +820,11 @@ void CameraMover::TerrainVelocityNoise(bMatrix4 *world_to_camera, CameraAnchor *
 void CameraMover::ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *look, unsigned short bank) {
     bMatrix4 axis_rotation;
     bVector3 axis;
-    bVector3 new_up(0.0f, 0.0f, 1.0f);
 
     bSub(&axis, look, eye);
     bNormalize(&axis, &axis);
     eCreateAxisRotationMatrix(&axis_rotation, axis, bank);
+    bVector3 new_up(0.0f, 0.0f, 1.0f);
     eMulVector(up, &axis_rotation, &new_up);
 }
 
