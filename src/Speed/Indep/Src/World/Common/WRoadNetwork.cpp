@@ -5,11 +5,13 @@
 #include "Speed/Indep/Src/Gameplay/GMarker.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Interfaces/IBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/AI/AIVehicle.h"
 #include "Speed/Indep/Src/World/WPathFinder.h"
 #include "Speed/Indep/Src/World/WWorld.h"
+#include "Speed/Indep/Src/World/TrackPath.hpp"
 
 static const int drivable_lanes[8] = {
     static_cast<int>(0xFFFFDF7F),
@@ -117,11 +119,6 @@ void WRoadNetwork::Shutdown() {
         gFastMem.Free(fgRoadNetwork, sizeof(WRoadNetwork), nullptr);
         fgRoadNetwork = nullptr;
     }
-}
-
-// TODO: Being implemented by another agent
-bool WRoadNetwork::SegmentCrossesBarrier(WRoadSegment *segment, TrackPathBarrier *barrier) {
-    return false;
 }
 
 void WRoadNetwork::ResetRaceSegments() {
@@ -826,6 +823,71 @@ void WRoadNav::ClampCookieCentres(NavCookie *cookies, int num_cookies) {
             cookie.Centre.z = (cookie.Left.y + cookie.Right.y) * 0.5f;
         }
     }
+}
+
+int WRoadNav::FetchAvoidables(IBody **avoidables, const int listsize) const {
+    IVehicleAI *my_ai = pAIVehicle;
+    if (!my_ai) {
+        return 0;
+    }
+
+    bool is_formation_cop = false;
+    IPursuit *my_pursuit = my_ai->GetPursuit();
+
+    IPursuitAI *my_pursuitai;
+    if (my_ai->QueryInterface(&my_pursuitai) && my_pursuitai->GetInFormation()) {
+        is_formation_cop = true;
+    }
+
+    ISimable *my_pursuit_target = nullptr;
+    if (my_pursuit && is_formation_cop) {
+        AITarget *target = my_pursuit->GetTarget();
+        if (target) {
+            my_pursuit_target = target->GetSimable();
+        }
+    }
+
+    int num_avoidables = 0;
+
+    IArticulatedVehicle *my_hitch;
+    my_ai->QueryInterface(&my_hitch);
+
+    const AvoidableList &avoidable_list = my_ai->GetAvoidableList();
+
+    for (AvoidableList::const_iterator iter = avoidable_list.begin();
+         iter != avoidable_list.end() && num_avoidables < listsize;
+         iter++) {
+        AIAvoidable *av = *iter;
+        IBody *avoidable_body;
+        if (!av->QueryInterface(&avoidable_body)) {
+            continue;
+        }
+
+        if (my_hitch) {
+            if (ComparePtr(avoidable_body, my_hitch->GetTrailer()) && my_hitch->IsHitched()) {
+                continue;
+            }
+        }
+
+        if (is_formation_cop && my_pursuit) {
+            IVehicleAI *his_ai;
+            if (avoidable_body->QueryInterface(&his_ai)) {
+                IPursuit *his_pursuit = his_ai->GetPursuit();
+                if (my_pursuit == his_pursuit) {
+                    IPursuitAI *his_pursuitai;
+                    if (ComparePtr(my_pursuit_target, his_ai) ||
+                        (his_ai->QueryInterface(&his_pursuitai) && his_pursuitai->GetInFormation())) {
+                        continue;
+                    }
+                }
+            }
+        }
+
+        avoidables[num_avoidables] = avoidable_body;
+        num_avoidables++;
+    }
+
+    return num_avoidables;
 }
 
 void WRoadNetwork::GetPointAndVecOnSegment(const WRoadSegment &segment, float d, UMath::Vector3 &point, UMath::Vector3 &vec) {

@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include <cstddef>
 
@@ -57,6 +58,10 @@ template <typename T, int Alignment = 16> class Vector {
 
     iterator end() {
         return mBegin + mSize;
+    }
+
+    reference operator[](size_type idx) {
+        return mBegin[idx];
     }
 
     void push_back(value_type const &val) {
@@ -199,6 +204,25 @@ template <typename T, int Size, int Alignment = 16> class FixedVector : public V
   private:
     // TODO speed considerations for 64 bit
     int mVectorSpace[(sizeof(typename Vector<T, Alignment>::value_type) * Size) / sizeof(int)];
+};
+
+template <typename T, int Alignment = 16> class FastVector : public Vector<T, Alignment> {
+  public:
+    FastVector() {}
+
+    ~FastVector() override {
+        Vector<T, Alignment>::clear();
+    }
+
+  protected:
+    typename Vector<T, Alignment>::pointer AllocVectorSpace(std::size_t num, unsigned int alignment) override {
+        return static_cast<typename Vector<T, Alignment>::pointer>(
+            gFastMem.Alloc(num * sizeof(T), nullptr));
+    }
+
+    void FreeVectorSpace(typename Vector<T, Alignment>::pointer buffer, std::size_t num) override {
+        gFastMem.Free(buffer, num * sizeof(T), nullptr);
+    }
 };
 
 }; // namespace UTL

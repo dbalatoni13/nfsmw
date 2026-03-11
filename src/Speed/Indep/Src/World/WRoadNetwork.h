@@ -17,6 +17,7 @@
 extern class WRoadNetwork *fgRoadNetwork;
 
 class WRoadNav;
+struct TrackPathBarrier;
 
 // total size: 0x1
 class WRoadNetwork : public Debugable {

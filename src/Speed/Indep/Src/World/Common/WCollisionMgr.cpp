@@ -1,4 +1,8 @@
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
+#include "Speed/Indep/Src/World/WWorldMath.h"
+#include "Speed/Indep/Src/World/WWorldPos.h"
+
+#include <float.h>
 
 static void CalcCollisionFaceNormal(UMath::Vector3 *norm, UMath::Vector4 *facePts) {
     UMath::Vector3 vecX;
