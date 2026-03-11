@@ -44,3 +44,9 @@ int MyThread::Release() {
 IThread* MyThread::CreateInstance() {
     return new MyThread();
 }
+
+void THREAD_sleep(int ticks);
+
+void MyThread::Sleep(int ticks) {
+    THREAD_sleep(ticks);
+}

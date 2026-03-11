@@ -27,5 +27,5 @@ void cFEng::ServiceFengOnly() {
 }
 
 void cFEng::QueueGameMessage(unsigned int pMessage, const char* pPackageName, unsigned int controlMask) {
-    QueueMessage(pMessage, pPackageName, nullptr, controlMask);
+    QueueMessage(pMessage, pPackageName, reinterpret_cast<FEObject*>(-1), controlMask);
 }
