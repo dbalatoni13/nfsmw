@@ -54,10 +54,10 @@ struct WTrigger : public Trigger {
     bool IsEnabled() const { return (fFlags & 1) != 0; }
 
     bool IsEnabled(bool allowSilencables) const {
-        if (!(fFlags & 1)) {
+        if (!(reinterpret_cast<const unsigned char *>(this)[0x13] & 1)) {
             return false;
         }
-        if ((fFlags & 0x400) && !allowSilencables) {
+        if ((reinterpret_cast<const unsigned char *>(this)[0x12] & 4) && !allowSilencables) {
             return false;
         }
         return true;

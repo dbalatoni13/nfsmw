@@ -202,10 +202,10 @@ int WCollisionMgr::CheckHitWorld(const UMath::Vector4 *inputSeg, WorldCollisionI
     UMath::Vector4 segPosRad;
     int hitWorld;
 
+    cInfo.fType = 0;
+
     UMath::Copy(inputSeg[0], seg[0]);
     UMath::Copy(inputSeg[1], seg[1]);
-
-    cInfo.fType = 0;
 
     float len = UMath::Distancexyz(seg[0], seg[1]);
     if (len == 0.0f) {
@@ -278,27 +278,25 @@ int WCollisionMgr::CheckHitWorld(const UMath::Vector4 *inputSeg, WorldCollisionI
 
                 if (hitWorld == 0) {
                     cInfo = cInfoFace;
-                    hitWorld = 1;
                 } else {
                     float dsq1 = UMath::DistanceSquare(UMath::Vector4To3(seg[0]), UMath::Vector4To3(cInfo.fCollidePt));
                     float dsq2 = UMath::DistanceSquare(UMath::Vector4To3(seg[0]), UMath::Vector4To3(cInfoFace.fCollidePt));
-                    if (dsq1 > dsq2) {
-                        cInfo = cInfoFace;
-                        hitWorld = 1;
+                    if (dsq1 <= dsq2) {
+                        goto done;
                     }
+                    cInfo = cInfoFace;
                 }
+                hitWorld = 1;
             }
         }
     }
 
+done:
     if (hitWorld != 0) {
         UMath::Copy(cInfo.fCollidePt, seg[1]);
     }
 
-    if (cInfo.fType != 0) {
-        return 1;
-    }
-    return 0;
+    return cInfo.HitSomething() ? 1 : 0;
 }
 
 bool WCollisionMgr::GetWorldHeightAtPoint(const UMath::Vector3 &pt, float &height, UMath::Vector3 *normal) {

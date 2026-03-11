@@ -4,20 +4,22 @@ extern "C" float rsqrt(const float x);
 
 bool WWorldMath::IntersectCircle(float x1, float y1, float x2, float y2, float cx, float cy, float r, float &u1, float &u2) {
     if (InCircle(x1, y1, cx, cy, r) && InCircle(x2, y2, cx, cy, r)) {
-        u1 = 0.0f;
         u2 = 0.0f;
+        u1 = 0.0f;
         return true;
     }
 
     float oy = y1 - cy;
-    float dy = (y2 - cy) - oy;
+    y2 -= cy;
+    float dy = y2 - oy;
     float ox = x1 - cx;
-    float dx = (x2 - cx) - ox;
+    x2 -= cx;
+    float dx = x2 - ox;
     float a = dx * dx + dy * dy;
 
     if (a == 0.0f) {
-        u1 = 0.0f;
         u2 = 0.0f;
+        u1 = 0.0f;
         return true;
     }
 

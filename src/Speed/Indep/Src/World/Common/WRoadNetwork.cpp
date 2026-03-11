@@ -1497,18 +1497,18 @@ void WRoadNav::PrivateIncNavPosition(float dist, const UMath::Vector3 &to) {
             fSegmentInd = static_cast< short >(newSegInd);
             newSegment = roadNetwork.GetSegment(newSegInd);
 
-            if (!useOldStartPos) {
-                SetStartEndPos(*newSegment, fLaneOffset);
-            } else {
+            if (useOldStartPos) {
                 fStartPos = fEndPos;
                 if (bCookieTrail) {
                     fLeftStartPos = fLeftEndPos;
                     fRightStartPos = fRightEndPos;
                 }
                 SetBoundPos(*newSegment, nextLaneOffset, false);
-                fFromLaneOffset = nextLaneOffset;
-                fLaneOffset = nextLaneOffset;
                 fToLaneOffset = nextLaneOffset;
+                fLaneOffset = nextLaneOffset;
+                fFromLaneOffset = nextLaneOffset;
+            } else {
+                SetStartEndPos(*newSegment, fLaneOffset);
             }
 
             SetStartEndControls(*newSegment);

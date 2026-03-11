@@ -259,7 +259,9 @@ void WTriggerManager::ProcessRB(IRigidBody *rBody, float dT) {
                 if (trig.fIterStamp != fIterCount) {
                     trig.fIterStamp = fIterCount;
                     if (trig.IsEnabled(fSilencableEnabled) &&
-                        (trig.fFlags & activateFlag) != 0 &&
+                        ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x13])
+                        | (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x12]) << 8)
+                        | (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16)) & activateFlag) != 0 &&
                         CheckCollideRB(rBody, &trig, dT)) {
                         HSIMABLE__ *hSimable = rBody->GetOwner()->GetInstanceHandle();
                         SubmitForFire(trig, hSimable);
@@ -291,8 +293,10 @@ void WTriggerManager::ProcessSRB(IRigidBody *srBody, float dT) {
                 if (trig.fIterStamp != fIterCount) {
                     trig.fIterStamp = fIterCount;
                     if (trig.IsEnabled(fSilencableEnabled) &&
-                        (trig.fFlags & activateFlag) != 0) {
-                        if (srBody->GetOwner()->IsOwnedByPlayer() || !(trig.fFlags & 0x80)) {
+                        ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x13])
+                        | (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x12]) << 8)
+                        | (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16)) & activateFlag) != 0) {
+                        if (srBody->GetOwner()->IsOwnedByPlayer() || !(reinterpret_cast<const unsigned char *>(&trig)[0x13] & 0x80)) {
                             if (CheckCollideSRB(srBody, &trig, dT)) {
                                 HSIMABLE__ *hSimable = srBody->GetOwner()->GetInstanceHandle();
                                 SubmitForFire(trig, hSimable);
@@ -323,7 +327,7 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
 
     if (trig->fShape == 2) {
         if (UMath::DistanceSquare(cp, rPos) <= radsSq) {
-            if (trig->fFlags & 0x800) {
+            if (reinterpret_cast<const unsigned char *>(trig)[0x12] & 8) {
                 if (!trig->TestDirection(rBody->GetLinearVelocity())) {
                     return false;
                 }
@@ -332,7 +336,7 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
         }
     } else {
         if (UMath::DistanceSquarexz(cp, rPos) <= radsSq) {
-            if (trig->fFlags & 0x800) {
+            if (reinterpret_cast<const unsigned char *>(trig)[0x12] & 8) {
                 if (!trig->TestDirection(rBody->GetLinearVelocity())) {
                     return false;
                 }
@@ -391,7 +395,7 @@ bool WTriggerManager::CheckCollideSRB(const IRigidBody *srBody, const WTrigger *
     radsSq = srRadiusPlusVel * srRadiusPlusVel;
 
     if (shapeNum == 1) {
-        if (trig->fFlags & 0x800) {
+        if (reinterpret_cast<const unsigned char *>(trig)[0x12] & 8) {
             if (!trig->TestDirection(srBody->GetLinearVelocity())) {
                 return false;
             }
@@ -421,7 +425,7 @@ bool WTriggerManager::CheckCollideSRB(const IRigidBody *srBody, const WTrigger *
         }
     } else if (shapeNum == 2) {
         if (UMath::DistanceSquare(cp, rPos) < radsSq) {
-            if (trig->fFlags & 0x800) {
+            if (reinterpret_cast<const unsigned char *>(trig)[0x12] & 8) {
                 if (!trig->TestDirection(srBody->GetLinearVelocity())) {
                     return false;
                 }
@@ -430,7 +434,7 @@ bool WTriggerManager::CheckCollideSRB(const IRigidBody *srBody, const WTrigger *
         }
     } else if (shapeNum == 3) {
         if (UMath::DistanceSquarexz(cp, rPos) < radsSq) {
-            if (trig->fFlags & 0x800) {
+            if (reinterpret_cast<const unsigned char *>(trig)[0x12] & 8) {
                 if (!trig->TestDirection(srBody->GetLinearVelocity())) {
                     return false;
                 }

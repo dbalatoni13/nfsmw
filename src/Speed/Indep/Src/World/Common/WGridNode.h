@@ -120,7 +120,7 @@ inline const unsigned int *WGridNode::iterator::GetIndPtr() {
         while (fIter != fNode->fDynElems->end() && (*fIter).fType != fType) {
             ++fIter;
         }
-        if (fIter == fNode->fDynElems->end()) {
+        if (!(fIter != fNode->fDynElems->end())) {
             Invalidate();
         } else {
             retInd = &(*fIter).fInd;
