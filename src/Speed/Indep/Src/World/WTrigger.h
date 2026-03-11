@@ -52,9 +52,9 @@ class WTrigger : public Trigger {
     inline void Disable() { fFlags &= ~1; }
 
     inline bool IsEnabled(bool allowSilencables = true) const {
-        if (fFlags & 1)
-            return true;
-        return false;
+        if (!(fFlags & 1))
+            return false;
+        return true;
     }
 };
 

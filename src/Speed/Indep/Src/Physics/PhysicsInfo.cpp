@@ -821,13 +821,7 @@ bool Physics::Info::ComputePerformance(const pvehicle &vehicle, Performance &per
         }
     }
 
-    unsigned int coll_key = vehicle.GetCollection();
-    PerfLevel perf_level(coll_key);
-    bMemSet(&perf_level.Stats, 0, sizeof(PerfStats));
-    perf_level.Stock.Default();
-    perf_level.Upgraded.Default();
-    perf_level.Analyzed = false;
-    perf_level.Key = coll_key;
+    PerfLevel perf_level(vehicle.GetCollection());
     if (perf_level.Analyze(vehicle)) {
         perf_level.Rate();
         perf.TopSpeed = perf_level.Stock.TopSpeed;

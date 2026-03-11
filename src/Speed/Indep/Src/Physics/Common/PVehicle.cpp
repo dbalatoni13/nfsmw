@@ -1053,11 +1053,10 @@ PVehicle::PVehicle(DriverClass dc, const Attrib::Gen::pvehicle &attribs, const U
 }
 
 PVehicle::~PVehicle() {
-    IAttributeable::UnRegister(this);
-    DetachAll();
+    PhysicsObject::DetachAll();
     AITarget::UnRegister(static_cast<ISimable *>(this));
     if (mCustomization != nullptr) {
-        delete mCustomization;
+        gFastMem.Free(mCustomization, sizeof(FECustomizationRecord), nullptr);
         mCustomization = nullptr;
     }
     ReleaseBehaviors();
@@ -1069,10 +1068,10 @@ PVehicle::~PVehicle() {
         mSequencer->Release();
         mSequencer = nullptr;
     }
+    mInstances.Remove(this);
     CameraAI::RemoveAvoidable(static_cast<IBody *>(this));
     mBehaviorOverrides.clear();
     IVehicle::UnList();
-    mInstances.Remove(this);
 }
 
 UCrc32 PVehicle::LookupBehaviorSignature(const Attrib::StringKey &mechanic) const {

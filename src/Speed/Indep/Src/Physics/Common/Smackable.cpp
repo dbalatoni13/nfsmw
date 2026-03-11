@@ -261,12 +261,10 @@ void Smackable::DoImpactStimulus(unsigned int systemid, float intensity) {
     if (iev != nullptr) {
         EventSequencer::System *system = iev->FindSystem(systemid);
         if (system != nullptr) {
-            float clamped = UMath::Min(intensity, 1.0f);
-            if (clamped < 0.0f) {
-                clamped = 0.0f;
-            }
+            float clamped = UMath::Clamp(intensity, 0.0f, 1.0f);
             unsigned int level = static_cast< unsigned int >(clamped * 6.0f);
-            for (unsigned int i = 0; i <= level; ++i) {
+            unsigned int count = level + 1;
+            for (unsigned int i = 0; i < count; i++) {
                 unsigned int stimulus;
                 DamageZone::GetImpactStimulus(stimulus);
                 system->ProcessStimulus(stimulus, externalTime,
@@ -321,16 +319,20 @@ void Smackable::OnCollision(const Sim::Collision::Info &cinfo) {
     if (cinfo.objA == myHandle) {
         UMath::Vector3 normal = cinfo.normal;
         mLastImpactSpeed = cinfo.objAVel;
+        float impact_acceleration = cinfo.impulseA;
+        Sim::Collision::Info::CollisionType collisionType =
+            static_cast< Sim::Collision::Info::CollisionType >(cinfo.type);
         ISimable *other = ISimable::FindInstance(cinfo.objB);
-        OnImpact(cinfo.impulseA, speed,
-                 static_cast< Sim::Collision::Info::CollisionType >(cinfo.type), other);
+        OnImpact(impact_acceleration, speed, collisionType, other);
     } else if (cinfo.objB == myHandle) {
         UMath::Vector3 normal;
         UMath::Scale(cinfo.normal, -1.0f, normal);
         mLastImpactSpeed = cinfo.objBVel;
+        float impact_acceleration = cinfo.impulseB;
+        Sim::Collision::Info::CollisionType collisionType =
+            static_cast< Sim::Collision::Info::CollisionType >(cinfo.type);
         ISimable *other = ISimable::FindInstance(cinfo.objA);
-        OnImpact(cinfo.impulseB, speed,
-                 static_cast< Sim::Collision::Info::CollisionType >(cinfo.type), other);
+        OnImpact(impact_acceleration, speed, collisionType, other);
     }
 }
 
@@ -427,7 +429,11 @@ bool Smackable::ShouldDie() {
     if (mCollisionBody == nullptr) {
         return false;
     }
-    return !mCollisionBody->IsModeling();
+    int modeling = mCollisionBody->IsModeling();
+    if (modeling) {
+        return false;
+    }
+    return true;
 }
 
 bool Smackable::CanRetrigger() const {
