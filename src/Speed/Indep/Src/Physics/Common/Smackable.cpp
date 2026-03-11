@@ -232,24 +232,22 @@ bool Smackable::OnExplosion(const UMath::Vector3 &normal, const UMath::Vector3 &
 void Smackable::OnBehaviorChange(const UCrc32 &mechanic) {
     PhysicsObject::OnBehaviorChange(mechanic);
     if (mechanic == UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY)) {
-        static_cast< ISimable * >(this)->QueryInterface(&mCollisionBody);
-        if (mCollisionBody != nullptr) {
+        if (static_cast< ISimable * >(this)->QueryInterface(&mCollisionBody)) {
             float detach = mAttributes.DETACH_FORCE();
             if (mVirgin && detach != 0.0f) {
                 mCollisionBody->AttachedToWorld(true, UMath::Max(0.0f, detach));
             }
             const CollisionGeometry::Bounds *cog =
-                mGeometry->fCollection->GetChild(mGeometry, UCrc32(0x28b0bb8d));
-            if (cog == nullptr) {
-                mCollisionBody->DistributeMass();
-            } else {
+                mGeometry->GetChild(UCrc32(0x28b0bb8d));
+            if (cog != nullptr) {
                 UMath::Vector3 cog_position;
                 cog->GetPosition(cog_position);
                 mCollisionBody->SetCenterOfGravity(cog_position);
+            } else {
+                mCollisionBody->DistributeMass();
             }
         }
-        static_cast< ISimable * >(this)->QueryInterface(&mSimpleBody);
-        if (mSimpleBody != nullptr) {
+        if (static_cast< ISimable * >(this)->QueryInterface(&mSimpleBody)) {
             mSimpleBody->ModifyFlags(0, 0x20b);
             ReleaseBehavior(UCrc32(BEHAVIOR_MECHANIC_EFFECTS));
         }
@@ -438,42 +436,41 @@ bool Smackable::CanRetrigger() const {
 
 void Smackable::ProcessDeath(float dT) {
     Seconds life;
-    if (!ShouldDie()) {
-        life = 0.125f;
-        goto store_life;
-    }
-    if (mLife > 0.0f) {
-        life = mLife - dT;
-        goto store_life;
-    }
-    if (Dropout()) {
+    if (ShouldDie()) {
+        if (mLife > 0.0f) {
+            life = mLife - dT;
+            goto store_life;
+        }
+        if (Dropout()) {
+            return;
+        }
+        if (mModel != nullptr) {
+            if (CanRetrigger()) {
+                if (mVirgin && mCollisionBody != nullptr && mCollisionBody->IsAttachedToWorld()) {
+                    ISceneryModel *iscenery = nullptr;
+                    if (mModel->QueryInterface(&iscenery)) {
+                        iscenery->RestoreScene();
+                        mModel = nullptr;
+                    }
+                } else {
+                    ITriggerableModel *itrigger = nullptr;
+                    if (mModel->QueryInterface(&itrigger)) {
+                        UMath::Matrix4 mat;
+                        static_cast< ISimable * >(this)->GetTransform(mat);
+                        itrigger->PlaceTrigger(mat, true);
+                        static_cast< ISimable * >(this)->Detach(mModel);
+                        mModel = nullptr;
+                    }
+                }
+            } else if (mModel != nullptr && !mPersistant) {
+                mModel->ReleaseModel();
+                mModel = nullptr;
+            }
+        }
+        static_cast< ISimable * >(this)->Kill();
         return;
     }
-    if (mModel != nullptr) {
-        if (CanRetrigger()) {
-            if (mVirgin && mCollisionBody != nullptr && mCollisionBody->IsAttachedToWorld()) {
-                ISceneryModel *iscenery = nullptr;
-                if (mModel->QueryInterface(&iscenery)) {
-                    iscenery->RestoreScene();
-                    mModel = nullptr;
-                }
-            } else {
-                ITriggerableModel *itrigger = nullptr;
-                if (mModel->QueryInterface(&itrigger)) {
-                    UMath::Matrix4 mat;
-                    static_cast< ISimable * >(this)->GetTransform(mat);
-                    itrigger->PlaceTrigger(mat, true);
-                    static_cast< ISimable * >(this)->Detach(mModel);
-                    mModel = nullptr;
-                }
-            }
-        } else if (mModel != nullptr && !mPersistant) {
-            mModel->ReleaseModel();
-            mModel = nullptr;
-        }
-    }
-    static_cast< ISimable * >(this)->Kill();
-    return;
+    life = 0.125f;
 store_life:
     mLife = life;
 }
