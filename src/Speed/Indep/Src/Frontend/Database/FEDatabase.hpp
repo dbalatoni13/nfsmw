@@ -197,6 +197,7 @@ class CareerSettings {
     uint8 GetCurrentBin() const {
         return CurrentBin;
     }
+    void AwardOneTimeCashBonus(bool bOldSaveExists);
 
   public:
     uint32 CurrentCar;           // offset 0x0, size 0x4
