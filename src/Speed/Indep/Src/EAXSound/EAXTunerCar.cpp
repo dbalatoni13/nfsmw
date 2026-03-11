@@ -8,7 +8,7 @@ struct EAXTunerCar : public EAXCar {
     bool BottomOutPlay;          // offset 0x11C
     int BottomOutIntensity;      // offset 0x120
     bool TrunkBouncePlay;        // offset 0x124
-    float TrunkBounceInstensity; // offset 0x128
+    int TrunkBounceInstensity;   // offset 0x128
     bool PlayBackFire;           // offset 0x12C
     bool bFirstUpdate;           // offset 0x130
 
@@ -27,14 +27,6 @@ struct EAXTunerCar : public EAXCar {
     void FirstUpdate(float t);
 
     static CSTATE_Base *CreateState(unsigned int allocator);
-
-    void *operator new(size_t s, unsigned int allocator) {
-        if (allocator != 0) {
-            return gAudioMemoryManager.AllocateMemory(s, s_StateInfo.stateName, true);
-        } else {
-            return gAudioMemoryManager.AllocateMemory(s, s_StateInfo.stateName, false);
-        }
-    }
 
     void *operator new(size_t, void *p) { return p; }
 
@@ -57,7 +49,13 @@ char *EAXTunerCar::GetStateName(void) const {
 }
 
 CSTATE_Base *EAXTunerCar::CreateState(unsigned int allocator) {
-    return new (allocator) EAXTunerCar;
+    if (allocator == 0) {
+        return new (gAudioMemoryManager.AllocateMemory(
+            sizeof(EAXTunerCar), s_StateInfo.stateName, false)) EAXTunerCar;
+    } else {
+        return new (gAudioMemoryManager.AllocateMemory(
+            sizeof(EAXTunerCar), s_StateInfo.stateName, true)) EAXTunerCar;
+    }
 }
 
 EAXTunerCar::EAXTunerCar()
@@ -65,9 +63,9 @@ EAXTunerCar::EAXTunerCar()
 {
     bFirstUpdate = true;
     TrunkBounceInstensity = 0.0f;
-    PlayBackFire = false;
     BottomOutPlay = false;
     TrunkBouncePlay = false;
+    PlayBackFire = false;
 }
 
 EAXTunerCar::~EAXTunerCar() {}
@@ -78,33 +76,38 @@ void EAXTunerCar::ProcessSoundSphere(unsigned int unamehash, int nparamid, bVect
 
 int EAXTunerCar::SFXMessage(eSFXMessageType SFXMessageType, unsigned int param1, unsigned int param2) {
     switch (SFXMessageType) {
-    case SFX_CHANGEGEAR:
-        return 0;
+    case SFX_NONE:
+        break;
+    case SFX_SHIFT_UP:
+    case SFX_SHIFT_DOWN:
+    case SFX_NITROUS:
+        break;
     case SFX_BOTTOMOUT:
         BottomOutPlay = true;
         BottomOutIntensity = param1 >> 8;
         break;
-    case SFX_TRUNKBOUNCE:
+    case SFX_TRUNKBOUNCE: {
+        int t = param1;
         TrunkBouncePlay = true;
-        TrunkBounceInstensity = static_cast<float>(param1);
+        TrunkBounceInstensity = t;
         break;
+    }
+    case SFX_CHANGEGEAR:
+        return 0;
     default:
         break;
     }
     return EAXCar::SFXMessage(SFXMessageType, param1, param2);
 }
 
-inline int bMin_int(int a, int b) {
-    return a < b ? a : b;
-}
-
-inline int bMax_int(int a, int b) {
-    return a > b ? a : b;
-}
-
 int EAXTunerCar::UpdateRotation() {
-    *(int *)&_pad_eaxcar[0xC0 - 0x44] = bMin_int(bMax_int(0, 0), 0x400);
-    return *(int *)&_pad_eaxcar[0xC0 - 0x44];
+    int val = 0;
+    *(int *)&_pad_eaxcar[0xC0 - 0x44] = val;
+    if (val > 0x400) {
+        val = 0x400;
+        *(int *)&_pad_eaxcar[0xC0 - 0x44] = val;
+    }
+    return val;
 }
 
 void EAXTunerCar::UpdatePov() {
@@ -151,3 +154,5 @@ void EAXTunerCar::UpdateParams(float t) {
 int EAXTunerCar::Play(void *peventst) {
     return 0;
 }
+
+void DebugPrintSkidBar(int Horz, int Vert, char *Str, int Value) {}

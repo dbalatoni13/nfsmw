@@ -78,6 +78,8 @@ struct EAXAITunerCar : public EAXCar {
 
     void *operator new(size_t, void *p) { return p; }
 
+    void UpdatAIDriveBy(float t);
+
     static StateInfo s_StateInfo;
 };
 
@@ -131,4 +133,85 @@ void EAXAITunerCar::UpdateParams(float t) {
 }
 
 void EAXAITunerCar::ProcessEvent(emEvent *event) {
+}
+
+struct EAXCopCar : public EAXAITunerCar {
+    virtual void Attach(void *pAttachment) override;
+    virtual void UpdateParams(float t) override;
+    virtual CSTATE_Base::StateInfo *GetStateInfo(void) const override;
+    virtual char *GetStateName(void) const override;
+
+    static CSTATE_Base *CreateState(unsigned int allocator);
+
+    static CSTATE_Base::StateInfo s_StateInfo;
+};
+
+CSTATE_Base::StateInfo EAXCopCar::s_StateInfo = {
+    0x00030000,
+    "EAXCopCar",
+    &EAXCar::s_StateInfo,
+    reinterpret_cast< CSTATE_Base *(*)(void) >(&EAXCopCar::CreateState),
+};
+
+CSTATE_Base::StateInfo *EAXCopCar::GetStateInfo(void) const {
+    return &s_StateInfo;
+}
+
+char *EAXCopCar::GetStateName(void) const {
+    return s_StateInfo.stateName;
+}
+
+CSTATE_Base *EAXCopCar::CreateState(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (gAudioMemoryManager.AllocateMemory(
+            sizeof(EAXCopCar), s_StateInfo.stateName, false)) EAXCopCar;
+    } else {
+        return new (gAudioMemoryManager.AllocateMemory(
+            sizeof(EAXCopCar), s_StateInfo.stateName, true)) EAXCopCar;
+    }
+}
+
+struct EAXTruck : public EAXAITunerCar {
+    virtual void UpdateParams(float t) override;
+    virtual CSTATE_Base::StateInfo *GetStateInfo(void) const override;
+    virtual char *GetStateName(void) const override;
+
+    static CSTATE_Base *CreateState(unsigned int allocator);
+
+    static CSTATE_Base::StateInfo s_StateInfo;
+};
+
+CSTATE_Base::StateInfo EAXTruck::s_StateInfo = {
+    0x00030000,
+    "EAXTruck",
+    &EAXCar::s_StateInfo,
+    reinterpret_cast< CSTATE_Base *(*)(void) >(&EAXTruck::CreateState),
+};
+
+CSTATE_Base::StateInfo *EAXTruck::GetStateInfo(void) const {
+    return &s_StateInfo;
+}
+
+char *EAXTruck::GetStateName(void) const {
+    return s_StateInfo.stateName;
+}
+
+CSTATE_Base *EAXTruck::CreateState(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (gAudioMemoryManager.AllocateMemory(
+            sizeof(EAXTruck), s_StateInfo.stateName, false)) EAXTruck;
+    } else {
+        return new (gAudioMemoryManager.AllocateMemory(
+            sizeof(EAXTruck), s_StateInfo.stateName, true)) EAXTruck;
+    }
+}
+
+void EAXTruck::UpdateParams(float t) {
+    UpdatAIDriveBy(t);
+    EAXAITunerCar::UpdateParams(t);
+}
+
+void EAXCopCar::UpdateParams(float t) {
+    UpdatAIDriveBy(t);
+    EAXAITunerCar::UpdateParams(t);
 }

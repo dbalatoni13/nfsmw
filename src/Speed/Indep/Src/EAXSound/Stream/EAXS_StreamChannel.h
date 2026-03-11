@@ -40,13 +40,15 @@ struct StreamChannelParams {
     SNDPLAYOPTS StrmPlayOpts;
 };
 
+char *bStrCat(char *dest, const char *src1, const char *src2);
+
 struct EAXS_StreamManager;
 
 struct EAXS_StreamChannel : public SndStrmWrapper {
     EAXS_StreamChannel();
     void InitParams(EAXS_StreamManager *pstrmmgr);
     virtual ~EAXS_StreamChannel();
-    virtual int InitChannel(int maxChunks, int maxRequests, const char *pmem, int buffersize, eSTRMTYPE strmtype) {
+    virtual int InitChannel(int maxChunks, int maxRequests, char *pmem, int buffersize, eSTRMTYPE strmtype) {
         return 0;
     }
     virtual void ProcessTrackStreamerOn();

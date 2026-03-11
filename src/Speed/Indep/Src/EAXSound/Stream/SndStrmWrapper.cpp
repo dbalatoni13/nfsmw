@@ -1,14 +1,13 @@
 #include "Speed/Indep/Src/EAXSound/Stream/SndStrmWrapper.hpp"
 #include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
 
-SndStrmWrapper::SndStrmWrapper()
-    : m_StreamID(0) //
-    , m_handle(-1)  //
-{
+SndStrmWrapper::SndStrmWrapper() {
+    m_handle = -1;
+    m_StreamID = 0;
 }
 
 SndStrmWrapper::~SndStrmWrapper() {
-    if (m_handle > -1) {
+    if (m_handle >= 0) {
         DestroyStream();
         if (m_buffer != nullptr) {
             gAudioMemoryManager.FreeMemory(m_buffer);
@@ -18,10 +17,11 @@ SndStrmWrapper::~SndStrmWrapper() {
 
 int SndStrmWrapper::Stop() {
     int result = SNDSTRM_purge(m_handle);
-    if (result > -1) {
-        return 0;
+    int ret = -3;
+    if (result >= 0) {
+        ret = 0;
     }
-    return -3;
+    return ret;
 }
 
 int SndStrmWrapper::AddToStream(const char *filename, long offset, int holdtime) {
@@ -63,7 +63,7 @@ int SndStrmWrapper::GetRequestStatus(int sndrequesthandle, SNDREQUESTSTATUS *psr
 int SndStrmWrapper::GetTimeBuffered() {
     SNDSTREAMSTATUS sss;
     int result = GetStatus(&sss);
-    if (result > -1) {
+    if (result >= 0) {
         return sss.timebuffered;
     }
     return 0;
@@ -99,17 +99,18 @@ void SndStrmWrapper::Resume() {
 
 int SndStrmWrapper::PurgeStream() {
     int result = SNDSTRM_purge(m_handle);
-    if (result > -1) {
-        return 0;
+    int ret = -3;
+    if (result >= 0) {
+        ret = 0;
     }
-    return -3;
+    return ret;
 }
 
 void SndStrmWrapper::DestroyStream() {
-    if (m_handle > -1) {
+    if (m_handle >= 0) {
         Stop();
         unsigned int time = bGetTicker();
-        while (bGetTicker() < time + 0x14) {
+        while (time + 0x14 > bGetTicker()) {
             bSyncTaskRun();
         }
         SNDSTRM_destroy(m_handle);
