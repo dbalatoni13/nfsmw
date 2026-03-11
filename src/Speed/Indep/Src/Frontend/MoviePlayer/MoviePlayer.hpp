@@ -7,6 +7,8 @@
 
 #include <types.h>
 
+#include "Speed/Indep/bWare/Inc/bMemory.hpp"
+
 struct AV_PLAYER;
 struct FRAME;
 
@@ -41,6 +43,8 @@ struct MoviePlayer {
     AV_PLAYER* fPlayer;               // offset 0x150
     FRAME* CurFrame;                   // offset 0x154
 
+    bool IsMoviePaused() { return mMoviePaused; }
+
     void Stop();
     void HandleFatalError();
     void Update();
@@ -55,5 +59,17 @@ void MoviePlayer_Play();
 void MoviePlayer_StartUp();
 void MoviePlayer_ShutDown();
 bool GiveTheMoviePlayerBandwidth();
+
+struct ShapeMemoryAllocator : public EA::Allocator::IAllocator {
+    int mRefcount; // offset 0x4, size 0x4
+
+    ShapeMemoryAllocator() {}
+    ~ShapeMemoryAllocator() override {}
+    void* Alloc(unsigned int size, const EA::TagValuePair& flags) override;
+    void* Alloc(unsigned int size);
+    void Free(void* pBlock, unsigned int size) override;
+    int AddRef() override;
+    int Release() override;
+};
 
 #endif

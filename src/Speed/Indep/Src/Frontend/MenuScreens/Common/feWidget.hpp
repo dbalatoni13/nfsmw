@@ -67,6 +67,31 @@ public:
     bool MovedLastUpdate();
 };
 
+// 0x40
+struct FEButtonWidget : public FEWidget {
+    FEString* pTitle;        // 0x34
+    bVector2 vMaxTitleSize;  // 0x38
+
+    FEButtonWidget(bool enabled);
+    ~FEButtonWidget() override {}
+
+    FEString* GetTitleObject() { return pTitle; }
+    void SetTitleObject(FEString* string) { pTitle = string; }
+    void SetPos(bVector2& pos) override;
+    void GetMaxTitleSize(bVector2& size) { size = vMaxTitleSize; }
+    float GetMaxTitleWidth() { return vMaxTitleSize.x; }
+    float GetMaxTitleHeight() { return vMaxTitleSize.y; }
+    void SetMaxTitleSize(bVector2& size) { vMaxTitleSize = size; }
+    void SetMaxTitleWidth(float width) { vMaxTitleSize.x = width; }
+    void SetMaxTitleHeight(float height) { vMaxTitleSize.y = height; }
+    void CheckMouse(const char* parent_pkg, float mouse_x, float mouse_y) override;
+    void Position() override;
+    void Show() override;
+    void Hide() override;
+    void SetFocus(const char* parent_pkg) override;
+    void UnsetFocus() override;
+};
+
 // 0x54
 struct FEStatWidget : public FEWidget {
 private:

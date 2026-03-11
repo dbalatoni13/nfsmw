@@ -32,4 +32,10 @@ struct uiRepSheetBounty : public ArrayScrollerMenu {
     void RefreshHeader() override;
 };
 
+struct BountyDatum : public ArrayDatum {
+    BountyDatum(unsigned int hash, unsigned int desc, unsigned int index);
+    ~BountyDatum() override {}
+    void NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1, unsigned long param2) override;
+};
+
 #endif

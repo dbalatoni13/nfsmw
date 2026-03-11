@@ -4,8 +4,70 @@
 #include <types.h>
 
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 struct FEObject;
+struct FEImage;
+struct FEString;
+struct FEGroup;
+
+struct ScrollerDatumNode : public bTNode<ScrollerDatumNode> {
+    char String[128];           // offset 0x8
+    unsigned int LanguageHash;  // offset 0x88
+
+    ScrollerDatumNode(const char* string, unsigned int hash);
+    virtual ~ScrollerDatumNode() {}
+};
+
+struct ScrollerSlotNode : public bTNode<ScrollerSlotNode> {
+    FEObject* String; // offset 0x8
+
+    ScrollerSlotNode(FEObject* string);
+    virtual ~ScrollerSlotNode() {}
+};
+
+struct ScrollerDatum : public bTNode<ScrollerDatum> {
+    bTList<ScrollerDatumNode> Strings; // offset 0x8
+    bool bEnabled;                     // offset 0x10
+
+    ScrollerDatum() {}
+    ScrollerDatum(const char* string, unsigned int hash);
+    virtual ~ScrollerDatum() {}
+    void AddData(const char* string, unsigned int hash);
+    ScrollerDatumNode* Find(const char* to_find);
+    ScrollerDatumNode* Find(unsigned int hash);
+    void Printf();
+    char* GetTopDatumModeString();
+    void Enable() { bEnabled = true; }
+    void Disable() { bEnabled = false; }
+    bool IsEnabled() { return bEnabled; }
+};
+
+struct ScrollerSlot : public bTNode<ScrollerSlot> {
+    bTList<ScrollerSlotNode> FEStrings; // offset 0x8
+    FEObject* pBacking;                 // offset 0x10
+    bVector2 vTopLeft;                  // offset 0x14
+    bVector2 vSize;                     // offset 0x1C
+    bool bEnabled;                      // offset 0x24
+
+    ScrollerSlot() {}
+    ScrollerSlot(FEObject* string);
+    virtual ~ScrollerSlot() {}
+    void AddData(FEObject* string);
+    void SetBacking(FEObject* obj) { pBacking = obj; }
+    void Highlight();
+    void UnHighlight();
+    void Enable() { bEnabled = true; }
+    void Disable() { bEnabled = false; }
+    void GetSize(bVector2& size) { size = vSize; }
+    void GetTopLeft(bVector2& top_left) { top_left = vTopLeft; }
+    bool IsEnabled() { return bEnabled; }
+    void SetScript(unsigned int script_hash);
+    void FindSize();
+    void Show();
+    void Hide();
+    bool Find(FEObject* obj);
+};
 
 // 0x5C
 struct IconOption : public bTNode<IconOption> {

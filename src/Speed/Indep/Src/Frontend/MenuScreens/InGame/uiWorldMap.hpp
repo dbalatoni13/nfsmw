@@ -8,12 +8,14 @@
 #include <types.h>
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/UIWidgetMenu.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
 #include "Speed/Indep/Src/Gameplay/GRace.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 struct FEObject;
+struct FEImage;
 void FEngSetVisible(FEObject* obj);
 void FEngSetInvisible(FEObject* obj);
 
@@ -97,6 +99,42 @@ struct MapItem : public bTNode<MapItem> {
     void SetHidden(bool b);
     bool IsHidden();
     eWorldMapItemType GetType();
+};
+
+struct CopItem : public MapItem {
+    CopItem(FEObject* icon, bVector2& pos, bVector2& world_pos, float rot, eWorldMapItemType type);
+    ~CopItem() override {}
+    void Draw() override;
+};
+
+struct HeliItem : public CopItem {
+    FEImage* mpView; // offset 0x3C
+
+    HeliItem(FEImage* view, FEObject* icon, bVector2& pos, bVector2& world_pos, float rot);
+    ~HeliItem() override {}
+    void UpdatePos(bVector2& pos) override;
+    void UpdateScale(float scale) override;
+    void Draw() override;
+    void Show() override;
+    void Hide() override;
+};
+
+struct ItemTypeToggle : public FEButtonWidget {
+    FEObject* IconGroup;            // offset 0x48
+    eWorldMapItemType Type;         // offset 0x4C
+    bool Visibility;                // offset 0x50
+    bool bIsExiting;                // offset 0x54
+
+    ItemTypeToggle(unsigned int name_hash, eWorldMapItemType type, bool vis);
+    ~ItemTypeToggle() override {}
+    void Act(const char* parent_pkg, unsigned int data) override;
+    void Draw() override;
+    void Show();
+    void Hide();
+    void SetIconGroup(FEObject* obj) { IconGroup = obj; }
+    eWorldMapItemType GetType() { return Type; }
+    bool GetVisibility() { return Visibility; }
+    void StartExit() { bIsExiting = true; }
 };
 
 // total size: 0x19C

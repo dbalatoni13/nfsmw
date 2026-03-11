@@ -91,6 +91,7 @@ struct FEPackage : public FENode {
     inline FEButtonMap* GetButtonMap() { return &ButtonMap; }
     inline FEObject* GetFirstObject() { return static_cast<FEObject*>(Objects.GetHead()); }
     inline FEPackage* GetNext() { return static_cast<FEPackage*>(FENode::GetNext()); }
+    inline void SetErrorScreen(bool b) { bErrorScreen = b; }
 
     FEObject* FindObjectByHash(unsigned long NameHash);
     void SetCurrentButton(FEObject* pNewButton, bool bSendMsgs);

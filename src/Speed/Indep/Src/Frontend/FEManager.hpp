@@ -74,7 +74,7 @@ class FEManager {
 
     //  void SetGarageBackground(ResourceFile *pBackground) {}
 
-    //  void SetEATraxFirstButton(bool onOff) {}
+    void SetEATraxFirstButton(bool onOff) { mEATraxFirstButton = onOff; }
 
     static bool IsPaused() { return mInstance->mPauseRequest > 0; }
 
@@ -82,7 +82,15 @@ class FEManager {
 
     // static  const char *GetPauseReason(int idx) {}
 
-    void ClearControllerError(int port) { bWantControllerError[port] = false; }
+    void ClearControllerError(int port) {
+        if (port == 4) {
+            for (int i = 0; i <= 7; i++) {
+                bWantControllerError[i] = false;
+            }
+        } else {
+            bWantControllerError[port] = false;
+        }
+    }
 
     void SuppressControllerError(bool b) { bSuppressControllerError = b; }
 

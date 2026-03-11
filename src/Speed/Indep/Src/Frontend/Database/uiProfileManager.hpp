@@ -7,7 +7,33 @@
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconScrollerMenu.hpp"
 
-struct PMSave;
+struct PMSave : public IconOption {
+    PMSave(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
+        : IconOption(tex_hash, name_hash, desc_hash) {}
+    ~PMSave() override {}
+    void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
+};
+
+struct PMLoad : public IconOption {
+    PMLoad(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
+        : IconOption(tex_hash, name_hash, desc_hash) {}
+    ~PMLoad() override {}
+    void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
+};
+
+struct PMDelete : public IconOption {
+    PMDelete(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
+        : IconOption(tex_hash, name_hash, desc_hash) {}
+    ~PMDelete() override {}
+    void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
+};
+
+struct PMCreateNew : public IconOption {
+    PMCreateNew(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
+        : IconOption(tex_hash, name_hash, desc_hash) {}
+    ~PMCreateNew() override {}
+    void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
+};
 
 // total size: 0x170
 struct UIProfileManager : public IconScrollerMenu {

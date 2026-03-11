@@ -17,4 +17,18 @@ struct UIMain : public IconScrollerMenu {
     void UpdateProfileData();
 };
 
+struct MainCareer : public IconOption {
+    MainCareer(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
+        : IconOption(tex_hash, name_hash, desc_hash) {}
+    ~MainCareer() override {}
+    void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
+};
+
+struct Challenge : public IconOption {
+    Challenge(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
+        : IconOption(tex_hash, name_hash, desc_hash) {}
+    ~Challenge() override {}
+    void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
+};
+
 #endif

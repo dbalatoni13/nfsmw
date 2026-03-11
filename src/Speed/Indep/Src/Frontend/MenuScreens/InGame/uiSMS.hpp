@@ -10,7 +10,18 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feArrayScrollerMenu.hpp"
 
 struct SMSMessage;
+struct FEGroup;
+struct FEImage;
+struct FEString;
 enum eScrollDir;
+
+struct SMSSlot : public ArraySlot {
+    FEImage* pIcon; // offset 0x18
+
+    SMSSlot(FEGroup* grp, FEImage* icon, FEString* text);
+    ~SMSSlot() override {}
+    void Update(ArrayDatum* datum, bool isSelected) override;
+};
 
 // total size: 0x100
 struct uiSMS : public ArrayScrollerMenu {
