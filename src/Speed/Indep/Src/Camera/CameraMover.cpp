@@ -726,34 +726,35 @@ void CameraMover::ChopperNoise(bMatrix4 *world_to_camera, float f_scale, bool us
         return;
     }
 
-    const IVehicle::List &vehicles = IVehicle::GetList(VEHICLE_ALL);
+    const IVehicle::List &vehicles = IVehicle::GetList(VEHICLE_AICOPS);
 
     for (IVehicle::List::const_iterator iter = vehicles.begin(); iter != vehicles.end(); ++iter) {
         IVehicle *vehicle = *iter;
 
-        if (vehicle != nullptr && vehicle->GetVehicleClass() == VehicleClass::CHOPPER) {
-            bVector3 bpos;
-            bVector3 dir;
-            float distance;
+        if (!vehicle->IsActive()) continue;
+        if (vehicle->GetVehicleClass() != VehicleClass::CHOPPER) continue;
 
-            eSwizzleWorldVector(vehicle->GetPosition(), bpos);
-            bSub(&dir, &bpos, pCamera->GetPosition());
-            dir.z = 0.0f;
-            distance = bLength(&dir);
+        bVector3 bpos;
+        bVector3 dir;
+        float distance;
 
-            if (distance < 100.0f) {
-                float intensity = f_scale * (1.0f - distance * 0.01f);
-                bVector4 v_frequency;
-                bVector4 v_magnitude;
-                float time;
+        eSwizzleWorldVector(vehicle->GetPosition(), bpos);
+        bSub(&dir, &bpos, pCamera->GetPosition());
+        dir.z = 0.0f;
+        distance = bLength(&dir);
 
-                bScale(&v_frequency, &CameraNoiseChopperFrequency, intensity);
-                bScale(&v_magnitude, &CameraNoiseChopperAmplitude, intensity);
-                pCamera->SetNoiseFrequency1(&v_frequency);
-                pCamera->SetNoiseAmplitude1(&v_magnitude);
-                time = useWorldTimer ? WorldTimer.GetSeconds() : RealTimer.GetSeconds();
-                pCamera->ApplyNoise(world_to_camera, time, 1.0f);
-            }
+        if (distance < 100.0f) {
+            float intensity = f_scale * (1.0f - distance * 0.01f);
+            bVector4 v_frequency;
+            bVector4 v_magnitude;
+            float time;
+
+            bScale(&v_frequency, &CameraNoiseChopperFrequency, intensity);
+            bScale(&v_magnitude, &CameraNoiseChopperAmplitude, intensity);
+            pCamera->SetNoiseFrequency1(&v_frequency);
+            pCamera->SetNoiseAmplitude1(&v_magnitude);
+            time = useWorldTimer ? WorldTimer.GetSeconds() : RealTimer.GetSeconds();
+            pCamera->ApplyNoise(world_to_camera, time, 1.0f);
         }
     }
 }

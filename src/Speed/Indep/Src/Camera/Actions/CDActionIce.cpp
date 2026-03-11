@@ -46,8 +46,6 @@ const IAttachable::List *CDActionIce::GetAttachments() const {
 
 CameraAI::Action *CDActionIce::Construct(CameraAI::Director *director) {
     IPlayer *player = nullptr;
-    int player_idx;
-    ISimable *isimable;
     const IPlayer::List &list = IPlayer::GetList(PLAYER_LOCAL);
     for (IPlayer *const *iter = list.begin(); iter != list.end(); ++iter) {
         IPlayer *ip = *iter;
@@ -61,14 +59,12 @@ CameraAI::Action *CDActionIce::Construct(CameraAI::Director *director) {
         return nullptr;
     }
 
-    isimable = player->GetSimable();
-    if (isimable == nullptr) {
+    if (player->GetSettings() == nullptr) {
         return nullptr;
     }
 
-    IVehicle *ivehicle = nullptr;
-    isimable->QueryInterface(&ivehicle);
-    if (ivehicle == nullptr) {
+    ISimable *isimable = player->GetSimable();
+    if (isimable == nullptr) {
         return nullptr;
     }
 
@@ -77,11 +73,11 @@ CameraAI::Action *CDActionIce::Construct(CameraAI::Director *director) {
         return nullptr;
     }
 
-    if (!Tweak_ForceICEReplay && !TheICEManager.ChooseCameraPlaybackTrack()) {
+    if (!TheICEManager.ChooseCameraPlaybackTrack() && !Tweak_ForceICEReplay) {
         return nullptr;
     }
 
-    return new ("CDActionIce") CDActionIce(director, player);
+    return new (static_cast<const char *>(0)) CDActionIce(director, player);
 }
 
 CDActionIce::CDActionIce(CameraAI::Director *director, IPlayer *player)

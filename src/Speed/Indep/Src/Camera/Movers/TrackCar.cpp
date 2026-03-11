@@ -27,13 +27,13 @@ static bool IsAnyCopNear(CameraAnchor *pCar) {
 
 static bool IsBeingPursued(int nView) {
     IPerpetrator *iperp;
-    const IPlayer::List &playerList = IPlayer::GetList(PLAYER_ALL);
+    const IPlayer::List &playerList = IPlayer::GetList(PLAYER_LOCAL);
 
     IPlayer *const *iter = playerList.begin();
 
     while (iter != playerList.end()) {
         IPlayer *ip = *iter;
-        if (ip->GetRenderPort() == nView) {
+        if (ip->GetControllerPort() == nView) {
             ISimable *simable = ip->GetSimable();
             if (simable != nullptr) {
                 simable->QueryInterface(&iperp);

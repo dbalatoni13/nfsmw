@@ -105,6 +105,8 @@ SelectCarCameraMover::SelectCarCameraMover(int view_id) : CameraMover(view_id, C
 }
 
 void SelectCarCameraMover::Update(float dT) {
+    int screen_print_x;
+    int screen_print_y;
     SelectCarCameraData *camera_data = &CurrentCameraData;
 
     if (ControlMode != 2) {
@@ -179,8 +181,9 @@ void SelectCarCameraMover::Update(float dT) {
     }
     bMatrix4 camera_matrix;
     CreateCameraMatrix(&camera_matrix, camera_data);
+    screen_print_x = bDegToAng(camera_data->FOV);
     if (Camera::StopUpdating == 0) {
-        GetCamera()->SetFieldOfView(bDegToAng(camera_data->FOV));
+        GetCamera()->SetFieldOfView(static_cast<unsigned short>(screen_print_x));
     }
     if (Camera::StopUpdating == 0) {
         GetCamera()->SetTargetDistance(camera_data->Radius);
