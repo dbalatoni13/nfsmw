@@ -98,10 +98,7 @@ bool WWorldPos::FindClosestFace(const WCollisionTriList &triList, const UMath::V
     bool onSameFace = false;
     fUsageCount++;
     float bestDist = 100000.0f;
-    UMath::Vector3 pt;
-    pt.x = ipt.x;
-    pt.z = ipt.z;
-    pt.y = ipt.y;
+    UMath::Vector3 pt = ipt;
 
     if (fFaceValid) {
         onSameFace = WWorldMath::InTri(pt, reinterpret_cast<const UMath::Vector4 *>(&fFace));
@@ -115,7 +112,7 @@ bool WWorldPos::FindClosestFace(const WCollisionTriList &triList, const UMath::V
     pt.y = pt.y + fYOffset;
 
     for (WCollisionTriBlock *const *bIter = triList.begin(); bIter != triList.end(); ++bIter) {
-        if (foundFace && !(fFace.fSurface.Surface() & 4)) break;
+        if (foundFace && !fFace.fSurface.HasFlag(4)) break;
 
         const WCollisionTriBlock &triBlock = **bIter;
         for (const WCollisionTri *iIter = triBlock.begin(); iIter != triBlock.end(); ++iIter) {
@@ -142,13 +139,13 @@ bool WWorldPos::FindClosestFace(const WCollisionTriList &triList, const UMath::V
                     foundFace = true;
                     fSurface = reinterpret_cast<const Attrib::Collection *>(tri.fSurfaceRef);
                     bestDist = dist;
-                    if (!(fFace.fSurface.Surface() & 4)) break;
+                    if (!fFace.fSurface.HasFlag(4)) break;
                 }
             }
         }
     }
 
-    return false;
+    return !onSameFace;
 }
 
 bool WWorldPos::FindClosestFace(const WCollisionInstanceCacheList &instList, const UMath::Vector3 &pt, const UMath::Vector3 &endPt) {

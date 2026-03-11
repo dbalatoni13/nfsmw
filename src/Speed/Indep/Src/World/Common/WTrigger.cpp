@@ -54,9 +54,9 @@ void WTrigger::FireEvents(HSIMABLE__ *hSimable) {
         gEventDynamicData.fTriggerStimulus = WTriggerManager::Get().GetCurrentStimulus();
         EventManager::FireEventList(fEvents, false);
     }
-    unsigned int flags = static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x13])
-                       | ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x12]) << 8)
-                       | (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x11]) << 16));
+    unsigned int flags = (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x11]) << 16)
+                       | (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x12]) << 8)
+                       | static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x13]);
     if (flags & 2) {
         *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) =
             (*reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) & 0xFF000000u) | (flags & 0x00FFFFFEu);

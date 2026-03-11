@@ -30,6 +30,10 @@ struct WSurface : CollisionSurface {
     unsigned char &FlagsRef() {
         return fFlags;
     }
+
+    bool HasFlag(unsigned char flag) const {
+        return (fFlags & flag) != 0;
+    }
 };
 
 struct WCollisionBarrier;
@@ -114,6 +118,15 @@ struct WCollisionBarrierListEntry {
         : fB(),                 //
           fSurfaceRef(nullptr), //
           fDistanceToSq(0.0f) {}
+
+    WCollisionBarrierListEntry(const WCollisionBarrier &b, const Attrib::Collection *surfHash, float disttosq)
+        : fB(b),                   //
+          fSurfaceRef(surfHash),   //
+          fDistanceToSq(disttosq) {}
+
+    bool operator<(const WCollisionBarrierListEntry &rhs) const {
+        return fDistanceToSq < rhs.fDistanceToSq;
+    }
 };
 
 struct WCollisionObject : public CollisionObject {
@@ -143,6 +156,10 @@ struct WCollisionInstance : public CollisionInstance {
 
     inline bool NeedsCrossProduct() const {
         return (fFlags & 3) != 0;
+    }
+
+    inline bool IsDynamic() const {
+        return (fFlags & 2) != 0;
     }
 
     float CalcSphericalRadius() const;

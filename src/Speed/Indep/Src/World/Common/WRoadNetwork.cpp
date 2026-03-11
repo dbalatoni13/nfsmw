@@ -808,8 +808,10 @@ bool WRoadNav::IsWrongWay() const {
             if (!seg_foward) {
                 result = true;
             }
-        } else if (seg_foward) {
-            result = true;
+        } else {
+            if (seg_foward) {
+                result = true;
+            }
         }
     }
     return result;
@@ -999,9 +1001,10 @@ void WRoadNav::PullOver() {
     int num_lanes = profile->fNumZones;
     bool inverted = segment->IsProfileInverted(which_node) ^ (which_node == 0);
 
+    int lane = profile->GetLaneNumber(GetLaneInd(), inverted);
+
     bool is_barrier = false;
     bool last_lane;
-    int lane = profile->GetLaneNumber(GetLaneInd(), inverted);
     while (lane < num_lanes - 1) {
         int next_lane_type = profile->GetLaneType(lane + 1, inverted);
         if (next_lane_type == kLaneAny) {
@@ -1622,25 +1625,22 @@ void WRoadNav::InitAtSegment(short segInd, char laneInd, float timeStep) {
     SetLaneInd(laneInd);
     SetLaneOffset(0.0f);
 
-    {
-        SetLaneInd(laneInd);
-        const WRoadNode *nodePtr[2];
-        const WRoadProfile *profile;
-        float startOffset;
-        float endOffset;
-        roadNetwork.GetSegmentNodes(*segment, nodePtr);
+    const WRoadNode *nodePtr[2];
+    const WRoadProfile *profile;
+    float startOffset;
+    float endOffset;
+    roadNetwork.GetSegmentNodes(*segment, nodePtr);
 
-        profile = roadNetwork.GetProfile(nodePtr[fNodeInd == 0]->fProfileIndex);
-        startOffset = profile->GetRawLaneOffset(static_cast< int >(laneInd));
+    profile = roadNetwork.GetProfile(nodePtr[fNodeInd == 0]->fProfileIndex);
+    startOffset = profile->GetRawLaneOffset(static_cast< int >(laneInd));
 
-        profile = roadNetwork.GetProfile(nodePtr[fNodeInd]->fProfileIndex);
-        endOffset = profile->GetRawLaneOffset(static_cast< int >(laneInd));
+    profile = roadNetwork.GetProfile(nodePtr[fNodeInd]->fProfileIndex);
+    endOffset = profile->GetRawLaneOffset(static_cast< int >(laneInd));
 
-        float laneOffset = (endOffset - startOffset) * fSegTime + startOffset;
-        SetLaneOffset(laneOffset);
+    float laneOffset = (endOffset - startOffset) * fSegTime + startOffset;
+    SetLaneOffset(laneOffset);
 
-        SetStartEndPos(*segment, startOffset, endOffset);
-    }
+    SetStartEndPos(*segment, startOffset, endOffset);
 
     SetStartEndControls(*segment);
     RebuildSplines(segment);

@@ -106,9 +106,9 @@ void WWorldMath::NearestPointLine2D3(const UMath::Vector3 &pt, const UMath::Vect
     const float &z2 = p1.z;
     const float &px = pt.x;
     const float &pz = pt.z;
-    float x = x2 - x1;
     float z = z2 - z1;
-    float div = pow2(x) + pow2(z);
+    float x = x2 - x1;
+    float div = pow2(z) + pow2(x);
     float u = (px - x1) * x + (pz - z1) * z;
     if (0.0f < div) {
         u = u / div;
@@ -129,9 +129,9 @@ void WWorldMath::NearestPointLine2D(const UMath::Vector4 &pt, const UMath::Vecto
     const float &z2 = line[1].z;
     const float &px = pt.x;
     const float &pz = pt.z;
-    float x = x2 - x1;
     float z = z2 - z1;
-    float div = pow2(x) + pow2(z);
+    float x = x2 - x1;
+    float div = pow2(z) + pow2(x);
     float u = (px - x1) * x + (pz - z1) * z;
     if (0.0f < div) {
         u = u / div;
