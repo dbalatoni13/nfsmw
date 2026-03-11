@@ -227,13 +227,15 @@ Speed/Indep/SourceLists/zOnline.cpp:
 	.bss        start:0x804AAA88 end:0x804AAA90
 
 Speed/Indep/SourceLists/zFeOverlay.cpp:
-	.text       start:0x8030EB08 end:0x8031F4C0
 	.over       start:0x803A4294 end:0x803C6A3C
 	.ctors      start:0x803C8BE4 end:0x803C8BE8
-	.ctors      start:0x803C8BE8 end:0x803C8C20
-	.dtors      start:0x803C8C44 end:0x803C8C5C
 	.data       start:0x804390F0 end:0x804394D0
 	.bss        start:0x804AAA90 end:0x804B4DE8
+
+asd2:
+	.text       start:0x8030EB08 end:0x8031F4C0
+	.ctors      start:0x803C8BE8 end:0x803C8C20
+	.dtors      start:0x803C8C44 end:0x803C8C5C
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/PPCArch.c:
 	.text       start:0x8031F4C0 end:0x8031F5D8
