@@ -825,13 +825,15 @@ unsigned int WRoadNav::GetRoadSpeechId() {
     unsigned short segment_index = GetSegmentInd();
     WRoadNetwork &road_network = WRoadNetwork::Get();
     unsigned short num_segments = road_network.GetNumSegments();
-    if (segment_index != bClamp(segment_index, 0, num_segments - 1)) {
+    segment_index = bClamp(segment_index, 0, num_segments - 1);
+    if (GetSegmentInd() != segment_index) {
         return 0;
     }
     const WRoadSegment *segment = road_network.GetSegment(segment_index);
     short road_index = segment->fRoadID;
     short num_roads = road_network.GetNumRoads();
-    if (road_index != bClamp(road_index, 0, num_roads - 1)) {
+    road_index = bClamp(road_index, 0, num_roads - 1);
+    if (segment->fRoadID != road_index) {
         return 0;
     }
     const WRoad *road = road_network.GetRoad(road_index);
