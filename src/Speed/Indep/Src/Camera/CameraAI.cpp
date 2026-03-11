@@ -247,16 +247,15 @@ void CameraAI::Director::TotaledStart() {
 
 void CameraAI::Director::PursuitStart() {
     if (mPursuitStartTime <= 0.0f) {
-        UMath::Vector4 position = UMath::Vector4::kZero;
-        UMath::Vector4 vector = UMath::Vector4::kZero;
-        UMath::Vector4 velocity = UMath::Vector4::kZero;
-        MGamePlayMoment msg(position, vector, velocity, 0,
-                            Attrib::StringHash32("pursuit"));
-        msg.Deliver();
-
-        MMiscSound snd(1);
-        snd.SetID(Attrib::StringHash32("play"));
-        snd.Deliver();
+        {
+            MGamePlayMoment msg(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, 0x88bff834);
+            msg.Deliver();
+        }
+        {
+            MMiscSound snd(1);
+            snd.SetID(Attrib::StringHash32("play"));
+            snd.Deliver();
+        }
 
         mPursuitStartTime = 5.0f;
         mCinematicSlowdownSeconds = 3.0f;
@@ -639,16 +638,6 @@ void CameraAI::MaybeDoJumpCam(ISimable *isimable) {
     }
 }
 
-
-// Template definitions for Listable<T,U>::List
-namespace UTL {
-namespace Collections {
-
-template <typename T, int U>
-Listable<T, U>::List::List() : _Storage<T *, U>() {}
-
-} // namespace Collections
-} // namespace UTL
 
 // Static member definitions
 UTL::Collections::Listable<CameraAI::Director, 2>::List
