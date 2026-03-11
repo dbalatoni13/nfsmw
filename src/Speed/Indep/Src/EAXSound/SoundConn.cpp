@@ -6,3 +6,10 @@ void InitServices() {}
 void RestoreServices() {}
 
 } // namespace SoundConn
+
+Sim::ConnStatus CarSoundConn::OnStatusCheck() {
+    if (mConnected && mState != nullptr && mState->mAssetsLoaded) {
+        return Sim::CONNSTATUS_READY;
+    }
+    return Sim::CONNSTATUS_CONNECTING;
+}

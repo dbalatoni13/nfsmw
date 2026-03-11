@@ -44,9 +44,19 @@ extern Speech::Cache gSpeechCache;
 #include "Speed/Indep/Src/EAXSound/EAXFrontEnd.hpp"
 
 struct EAXSND8Wrapper : public AudioMemBase {
+    char *m_pSoundHeap;   // offset 0x04
+    char *m_pStreamBuff;  // offset 0x08
+    int m_nHeapSize;      // offset 0x0C
+    int m_nStreamSize;    // offset 0x10
+    eSndAudioMode m_eCurrentAudioMode; // offset 0x14
+    eSndAudioMode m_eLastAudioMode;    // offset 0x18
+
+    EAXSND8Wrapper();
     virtual ~EAXSND8Wrapper();
     eSndAudioMode GetDefaultPlatformAudioMode();
     eSndAudioMode SetAudioModeFromMemoryCard(eSndAudioMode mode);
+    void Update();
+    void STUPID();
 };
 
 struct EAXAemsManager : public AudioMemBase {
@@ -55,6 +65,9 @@ struct EAXAemsManager : public AudioMemBase {
 
 struct CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<CarSoundConn, 10> {
     bool mConnected; // offset 0x14, size 0x1
+    EAX_CarState *mState; // offset 0x18, size 0x4
+
+    Sim::ConnStatus OnStatusCheck() override;
 };
 
 struct CSTATEMGR_CarState : public CSTATEMGR_Base {
@@ -65,6 +78,8 @@ struct CSTATEMGR_CarState : public CSTATEMGR_Base {
 struct EAX_CarState {
     char _pad_context[0x210];
     GRace::Context mContext;
+    char _pad_assets[0x04];
+    bool mAssetsLoaded; // offset 0x218
 };
 
 extern EAXAemsManager gAEMSMgr;

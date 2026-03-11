@@ -101,3 +101,23 @@ void cSTICH_PlayBack::DestroyAllStichs(void) {
         }
     }
 }
+
+char *GetStichTypeName(STICH_TYPE CurType) {
+    return "";
+}
+
+void KillSample(cSampleWarpper *sampleref) {
+    sampleref->Destroy();
+}
+
+cSampleWarpper::cSampleWarpper(SND_SampleRef &NewRef) {
+    SampleRefData = &NewRef;
+    m_eIsPlaying = 0;
+    AEMS_ActiveSampleWsh = nullptr;
+    AEMS_ActiveSampleCol = nullptr;
+    AEMS_ActiveSampleStatic = nullptr;
+}
+
+void cSampleWarpper::Initialize() {
+    m_eIsPlaying = 1;
+}

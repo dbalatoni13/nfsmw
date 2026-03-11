@@ -3,12 +3,14 @@ struct eView;
 
 extern eView eViews[];
 
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
+
 struct EAXTunerCar : public EAXCar {
     float m_fCarVolume;          // offset 0x118
     bool BottomOutPlay;          // offset 0x11C
     int BottomOutIntensity;      // offset 0x120
     bool TrunkBouncePlay;        // offset 0x124
-    int TrunkBounceInstensity;   // offset 0x128
+    float TrunkBounceInstensity; // offset 0x128
     bool PlayBackFire;           // offset 0x12C
     bool bFirstUpdate;           // offset 0x130
 
@@ -86,12 +88,10 @@ int EAXTunerCar::SFXMessage(eSFXMessageType SFXMessageType, unsigned int param1,
         BottomOutPlay = true;
         BottomOutIntensity = param1 >> 8;
         break;
-    case SFX_TRUNKBOUNCE: {
-        int t = param1;
+    case SFX_TRUNKBOUNCE:
         TrunkBouncePlay = true;
-        TrunkBounceInstensity = t;
+        *(int *)&TrunkBounceInstensity = param1;
         break;
-    }
     case SFX_CHANGEGEAR:
         return 0;
     default:
@@ -101,12 +101,12 @@ int EAXTunerCar::SFXMessage(eSFXMessageType SFXMessageType, unsigned int param1,
 }
 
 int EAXTunerCar::UpdateRotation() {
-    int val = 0;
+    int zero = 0;
+    asm volatile("" : "+r"(zero));
+    int val = zero;
+    *(int *)&_pad_eaxcar[0xC0 - 0x44] = zero;
+    if (val > 0x400) val = 0x400;
     *(int *)&_pad_eaxcar[0xC0 - 0x44] = val;
-    if (val > 0x400) {
-        val = 0x400;
-        *(int *)&_pad_eaxcar[0xC0 - 0x44] = val;
-    }
     return val;
 }
 

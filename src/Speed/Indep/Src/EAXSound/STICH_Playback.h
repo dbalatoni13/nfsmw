@@ -54,14 +54,25 @@ struct SND_Params {
     int RVerb; // offset 0x14, size 0x4
 };
 
-struct cSampleWarpper : public AudioMemBase {
+struct cSampleWarpper {
+    char _pad[4];                 // offset 0x0, from empty ListableSet base
     int m_eIsPlaying;             // offset 0x4, size 0x4
     SND_SampleRef *SampleRefData; // offset 0x8, size 0x4
+    void *AEMS_ActiveSampleCol;   // offset 0xC, size 0x4
+    void *AEMS_ActiveSampleWsh;   // offset 0x10, size 0x4
+    void *AEMS_ActiveSampleStatic; // offset 0x14, size 0x4
+
+    cSampleWarpper(SND_SampleRef &NewRef);
+    ~cSampleWarpper();
 
     const SND_SampleRef &GetData() const {
         return *SampleRefData;
     }
 
+    static void *operator new(unsigned int size);
+    static void operator delete(void *ptr);
+
+    void Initialize();
     void Play(const SND_Params *params);
     void Destroy();
 };
@@ -81,6 +92,7 @@ struct cStichWrapper : public AudioMemBase {
 };
 
 char *GetStichTypeName(STICH_TYPE CurType /* r3 */);
+void KillSample(cSampleWarpper *sampleref);
 
 struct SampleQueueItem {
     // total size: 0x8

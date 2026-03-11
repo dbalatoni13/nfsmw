@@ -17,9 +17,9 @@ void EAXS_StreamChannel::InitParams(EAXS_StreamManager *pstrmmgr) {
     m_SChP.StrmFile = m_SChP.StrmFileName;
     bStrCat(m_StreamFileName, "", "");
     m_pStrmFileName = m_StreamFileName;
-    m_bPlayPosted = false;
     m_nBigFileOffset = 0;
     m_nStreamOffset = 0;
+    m_bPlayPosted = false;
 }
 
 EAXS_StreamChannel::~EAXS_StreamChannel() {
