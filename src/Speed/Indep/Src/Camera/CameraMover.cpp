@@ -862,8 +862,8 @@ float CameraMover::AdjustHeightAroundCar(const bVector3 *position, bVector3 *pCa
         UMath::Vector3 dim;
         bVector3 box;
         bVector2 eye_to_car = *reinterpret_cast<bVector2 *>(const_cast<bVector3 *>(car_position)) - *reinterpret_cast<const bVector2 *>(position);
-        float gap_squared = bDot(&eye_to_car, &eye_to_car);
         float gap_height = bAbs(car_position->z - position->z);
+        float gap_squared = bDot(&eye_to_car, &eye_to_car);
 
         car->GetDimension(dim);
         bFill(&box, dim.z + 0.85f, dim.x + 0.85f, dim.y + 0.85f);
@@ -872,13 +872,9 @@ float CameraMover::AdjustHeightAroundCar(const bVector3 *position, bVector3 *pCa
         float min_gap_squared = min_gap * min_gap;
 
         if (gap_squared < min_gap_squared && gap_height < box.z + box.z) {
-            {
-                UMath::Vector3 uvelocity;
-                bVector3 car_velocity;
-            }
-            {
-                bMatrix4 mWorldToCar;
-                bVector3 vCameraCarSpace;
+            bVector3 vCameraCarSpace;
+            bVector3 car_velocity;
+            bMatrix4 mWorldToCar;
 
                 eInvertTransformationMatrix(&mWorldToCar, &matrix);
                 eMulVector(&vCameraCarSpace, &mWorldToCar, position);
