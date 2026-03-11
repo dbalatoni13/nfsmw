@@ -176,6 +176,16 @@ static inline void ResetCubic3DState(tCubic3D *cubic) {
     ResetCubic1DState(&cubic->z);
 }
 
+template <> void tTable<float>::Blend(float *dest, float *a, float *b, float blend_a) {
+    *dest = *a * blend_a + *b * (1.0f - blend_a);
+}
+
+template <> void tTable<bVector2>::Blend(bVector2 *dest, bVector2 *a, bVector2 *b, float blend_a) {
+    float blend_b = 1.0f - blend_a;
+    dest->x = a->x * blend_a + b->x * blend_b;
+    dest->y = a->y * blend_a + b->y * blend_b;
+}
+
 CameraAnchor::CameraAnchor(int model)
     : mVelMag(0.0f), //
       mTopSpeed(0.0f), //
@@ -481,8 +491,9 @@ void UpdateCameraMovers(float dT) {
                         following_car = true;
                     }
 
+                    int pos_num = (view_id == 2);
                     TheTrackStreamer.PredictStreamingPosition(
-                        view_id == 2, &pos, &vel, &dir, following_car);
+                        pos_num, &pos, &vel, &dir, following_car);
                 }
             }
         }
@@ -1203,16 +1214,19 @@ void CubicCameraMover::CameraAccelCurve(bVector3 *pAccel) {
     bScale(pAccel, pAccel, 30.0f);
 }
 
-void CubicCameraMover::CameraSpeedHug(bVector3 *pForward) {
+void CubicCameraMover::CameraSpeedHug(bVector3 *pEyeOffset) {
     if (pCar == nullptr) {
         return;
     }
 
-    if (pCar->GetTopSpeed() > 0.0f) {
-        bVector2 hug = SampleVector2Table(CameraSpeedHugData, 5, pCar->GetVelMag(), 0.0f, pCar->GetTopSpeed());
+    float f_top_speed = pCar->GetTopSpeed();
+    if (f_top_speed > 0.0f) {
+        bVector2 v_speed_hug;
+        tTable<bVector2> speed_table(CameraSpeedHugData, 5, 0.0f, f_top_speed);
+        speed_table.GetValue(&v_speed_hug, pCar->GetVelocityMagnitude());
 
-        pForward->x *= hug.x;
-        pForward->z *= hug.y;
+        pEyeOffset->x *= v_speed_hug.x;
+        pEyeOffset->z *= v_speed_hug.y;
     }
 }
 

@@ -308,7 +308,7 @@ struct ALIGN_16 bVector3 {
 
     bVector3 operator-() {}
 
-    bVector3 operator*(float f) {}
+    bVector3 operator*(float f) const;
 
     bVector3 &operator-=(const bVector3 &v) {}
 };
@@ -317,6 +317,7 @@ bVector3 *bNormalize(bVector3 *dest, const bVector3 *v);
 bVector3 *bNormalize(bVector3 *dest, const bVector3 *v, float length);
 bVector3 *bScaleAdd(bVector3 *dest, const bVector3 *v1, const bVector3 *v2, float scale);
 bVector3 *bCross(bVector3 *dest, const bVector3 *v1, const bVector3 *v2);
+inline bVector3 bScale(const bVector3 &v, float scale);
 
 inline bVector3 *bFill(bVector3 *dest, float x, float y, float z) {
     dest->x = x;
@@ -470,10 +471,18 @@ inline float bDistBetween(const bVector3 &v1, const bVector3 &v2) {
 
 inline bVector3 bScale(const bVector3 &v, float scale) {
     bVector3 dest;
+    bScale(&dest, &v, scale);
+    return dest;
+}
+
+inline bVector3 bVector3::operator*(float f) const {
+    return bScale(*this, f);
 }
 
 inline bVector3 bScale(const bVector3 &v1, const bVector3 &v2) {
     bVector3 dest;
+    bScale(&dest, &v1, &v2);
+    return dest;
 }
 
 inline bVector3 bScaleAdd(const bVector3 &v1, const bVector3 &v2, float scale) {
