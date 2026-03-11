@@ -20,6 +20,7 @@ struct cFEng {
 
     void QueueGameMessagePkg(unsigned int pMessage, FEPackage* topkg);
     void QueueGameMessage(unsigned int pMessage, const char* pPackageName, unsigned int controlMask);
+    bool IsPackagePushed(const char* packageName);
 
     void QueuePackageMessage(unsigned int msg, const char* pkg_name, FEObject* obj);
 

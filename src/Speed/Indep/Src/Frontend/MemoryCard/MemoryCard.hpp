@@ -40,13 +40,6 @@ enum eLanguages {
     eLANGUAGE_MAX = 16,
 };
 
-enum MessageChoices {
-    CHOICE_NONE = 0,
-    CHOICE_OPTION1 = 1,
-    CHOICE_OPTION2 = 2,
-    CHOICE_OPTION3 = 3,
-    CHOICE_OPTION4 = 4,
-};
 
 // total size: 0x10
 struct BootupCheckParams {

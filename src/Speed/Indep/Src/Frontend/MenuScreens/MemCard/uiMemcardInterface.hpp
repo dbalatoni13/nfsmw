@@ -1,8 +1,32 @@
-#ifndef FRONTEND_MENUSCREENS_MEMCARD_UIMEMCARDINTERFACE_H
-#define FRONTEND_MENUSCREENS_MEMCARD_UIMEMCARDINTERFACE_H
+#ifndef _UIMEMCARDINTERFACE
+#define _UIMEMCARDINTERFACE
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#include <types.h>
+
+struct MemcardSetup {
+    int mOp;
+    const char* mFromScreen;
+    const char* mToScreen;
+    const char* mMemScreen;
+    void* mTermFunc;
+    int mTermFuncParam;
+    int mLastMessage;
+    int mPreviousCommand;
+    int mPreviousPrompt;
+    unsigned int mSuccessMsg;
+    unsigned int mFailedMsg;
+    int mLastController;
+    bool mInBootFlow;
+
+    int GetMethod() const {
+        return (mOp >> 4) & 0xf;
+    }
+
+    int GetCommand() const {
+        return mOp & 0xf;
+    }
+};
+
+extern MemcardSetup gMemcardSetup;
 
 #endif

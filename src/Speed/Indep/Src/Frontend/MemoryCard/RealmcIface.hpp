@@ -5,6 +5,22 @@
 #pragma once
 #endif
 
+enum MessageChoices {
+    CHOICE_NONE = 0,
+    CHOICE_OPTION1 = 1,
+    CHOICE_OPTION2 = 2,
+    CHOICE_OPTION3 = 3,
+    CHOICE_OPTION4 = 4,
+};
+
+namespace Realmc {
+struct SystemInterface;
+} // namespace Realmc
+using Realmc::SystemInterface;
+
+struct IGameInterface;
+struct GameInfo;
+
 namespace RealmcIface {
 
 enum CardStatus {
@@ -131,8 +147,111 @@ struct EntryInfo {
     char mGameCode[4];          // offset 0x1E, size 0x4
 };
 
-} // namespace RealmcIface
+enum MessageState {
+    MESSAGE_SHOW = 0,
+    MESSAGE_HIDE = 1,
+    MESSAGE_FORCE = 2,
+};
 
-struct MemcardInterface;
+enum MemcardTask {
+    TASK_NONE = 0,
+    TASK_CHECKCARD = 1,
+    TASK_BOOTUPCHECK = 2,
+    TASK_SAVECHECK = 4,
+    TASK_SAVE = 8,
+    TASK_LOAD = 16,
+    TASK_DELETE = 32,
+    TASK_FINDENTRIES = 64,
+    TASK_SETAUTOSAVE = 128,
+    TASK_MONITOR = 256,
+};
+
+enum TitleType {
+    TITLE_DEFAULT = 0,
+    TITLE_ALTERNATE = 1,
+};
+
+enum NameType {
+    NAME_ENTRY = 0,
+    NAME_PATH = 1,
+};
+
+enum DataFormat {
+    FORMAT_LAYER2 = 0,
+    FORMAT_RAW = 1,
+};
+
+struct SaveInfo;
+struct AutoloadEntry;
+struct SaveReq;
+
+// total size: 0x10
+struct BootupCheckParams {
+    char *mEntryNamePattern;    // offset 0x0, size 0x4
+    unsigned int mNumSaveTypes; // offset 0x4, size 0x4
+    SaveReq **mSaveReqs;        // offset 0x8, size 0x4
+    unsigned int mValidCardIds; // offset 0xC, size 0x4
+
+    void Clear();
+};
+
+// total size: 0x10
+struct TitleInfo {
+    TitleType mTitleType;   // offset 0x0, size 0x4
+    unsigned int mTitleId;  // offset 0x4, size 0x4
+    NameType mNameType;     // offset 0x8, size 0x4
+    DataFormat mDataFormat; // offset 0xC, size 0x4
+
+    void Clear();
+    void Init(TitleType titleType, unsigned int titleId, NameType nameType, DataFormat dataFormat);
+};
+
+struct MemcardInterfaceImpl;
+
+struct MemcardInterface {
+    MemcardInterfaceImpl *mImpl;
+
+    static MemcardInterface *CreateInstance(struct SystemInterface *iSystem,
+                                            struct IGameInterface *iGame,
+                                            struct GameInfo *gameInfo);
+    static const char *GetFilterForAllEntries();
+    void Release();
+    MemcardInterface(struct SystemInterface *iSystem, struct IGameInterface *iGame,
+                     struct GameInfo *gameInfo);
+    ~MemcardInterface();
+    void BootupCheck(const BootupCheckParams *params, unsigned int nEntries,
+                     const char **entryNames, unsigned short *content);
+    void BootupCheck(const BootupCheckParams *params, unsigned int nEntries,
+                     const AutoloadEntry *autoloadEntries);
+    void SaveCheck(const char *entryName, const SaveInfo *saveInfo,
+                   const TitleInfo *titleInfo);
+    void Save(const char *entryName, const char *header, const char *body,
+              const SaveInfo *saveInfo, const TitleInfo *titleInfo);
+    void Save(const char *entryName, const char *header, const char *body,
+              const SaveInfo *saveInfo);
+    void Load(const char *entryName, char *header, char *body,
+              const unsigned short *contentName, const TitleInfo *titleInfo,
+              const unsigned short *typeName);
+    void Delete(const char *entryName, const unsigned short *contentName);
+    void DeleteMultiple(unsigned int nEntryNames, const char **entryNames,
+                        const unsigned short *contentName);
+    void FindEntries(const char *entryNamePattern, const TitleInfo *titleInfo);
+    void MessageDone(::MessageChoices choice);
+    void CheckCard(CardId cardId);
+    void SetActiveCard(CardId cardId);
+    void SetAutosave(AutosaveState state, unsigned int nSaveReqs,
+                     SaveReq **saveReqs, const char *entryName, CardId cardId);
+    void SetMonitor(MonitorState state);
+    void SetMessage(MessageState state, unsigned int message);
+    const unsigned short *GetCardName();
+    const unsigned short *GetCardName(CardId cardId);
+    MemcardTask Update(unsigned int elapsedTime);
+    unsigned int CalcSaveSize(const SaveInfo *saveInfo);
+    void SetMaxCardNameLength(unsigned int maxLength);
+    bool IsResettable();
+    void SetRootPath(const char *path);
+};
+
+} // namespace RealmcIface
 
 #endif
