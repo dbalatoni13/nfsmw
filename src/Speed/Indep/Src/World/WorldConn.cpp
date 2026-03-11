@@ -411,4 +411,3 @@ static Attrib::RefSpec ChooseAudioAttributes(const Attrib::Gen::effects &effect,
 
     return effect.AudioFX_DEFAULT();
 }
-TEST_LINE_789

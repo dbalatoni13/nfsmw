@@ -272,6 +272,8 @@ struct Emitter : public bTNode<Emitter> {
         this->mLocalWorld = *local_world;
     }
 
+    void SetIntensity(float intensity) {}
+
     void SetIntensityRange(float min, float max) {
         this->mMinIntensity = min;
         this->mMaxIntensity = max;
