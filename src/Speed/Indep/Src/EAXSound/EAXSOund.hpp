@@ -163,7 +163,9 @@ class EAXSound : public AudioMemBase {
     CSTATE_Base *SpawnHelicopter(EAX_HeliState *pHeli);
     void DestroyEAXHeli(EAX_HeliState *pHeli);
     void DestroyEAXCar(EAX_CarState *pCar);
+    void LoadFrontEndSoundBanks(void (*callback)(int), int callback_param);
     void UnloadFrontEndSoundBanks();
+    void LoadInGameSoundBanks(void (*callback)(int), int callback_param);
     void UnLoadInGameSoundBanks();
     void CloseSound();
     void ReStartRace(bool bfullrestart);

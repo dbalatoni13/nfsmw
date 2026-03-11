@@ -1,6 +1,6 @@
 #include "./Config.h"
 
-bool IsSoundEnabled = true;
+int IsSoundEnabled = true;
 bool IsAudioStreamingEnabled = true;
 bool IsSpeechEnabled = true;
 bool IsNISAudioEnabled = true;

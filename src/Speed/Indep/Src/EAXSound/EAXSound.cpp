@@ -61,23 +61,32 @@ struct EAXSND8Wrapper : public AudioMemBase {
 
 struct EAXAemsManager : public AudioMemBase {
     bool AreResourceLoadsPending();
+    void *GetCallbackEventSys();
 };
 
 struct CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<CarSoundConn, 10> {
     bool mConnected; // offset 0x14, size 0x1
     EAX_CarState *mState; // offset 0x18, size 0x4
+    char _pad_target[0x10]; // Reference mTarget
 
+    CarSoundConn(const Sim::ConnectionData &data);
     void OnReceive(Sim::Packet *) override;
+    void OnClose() override;
     Sim::ConnStatus OnStatusCheck() override;
+    static Sim::Connection *Construct(const Sim::ConnectionData &data);
 };
 
 struct EAX_HeliState;
 
 struct HeliSoundConn : public Sim::Connection, public UTL::Collections::Listable<HeliSoundConn, 10> {
     EAX_HeliState *mState; // offset 0x18, size 0x4
+    char _pad_target[0x10]; // Reference mTarget
 
+    HeliSoundConn(const Sim::ConnectionData &data);
     void OnReceive(Sim::Packet *) override;
+    void OnClose() override;
     Sim::ConnStatus OnStatusCheck() override;
+    static Sim::Connection *Construct(const Sim::ConnectionData &data);
 };
 
 struct CSTATEMGR_CarState : public CSTATEMGR_Base {
@@ -512,11 +521,49 @@ void EAXSound::DestroyEAXCar(EAX_CarState *pCar) {
 
 // LoadFrontEndSoundBanks, etc. go here when implemented
 
+void InitializeSoundLoad() {
+    g_pEAXSound->InitializeSoundBootLoad();
+}
+
+void LoadAemsFrontEnd(void (*callback)(int), int callback_param) {
+    if (IsSoundEnabled == 1) {
+        g_pEAXSound->LoadFrontEndSoundBanks(callback, callback_param);
+    } else {
+        callback(callback_param);
+    }
+}
+
+void UnloadAemsFrontEnd() {
+    if (IsSoundEnabled == 1) {
+        g_pEAXSound->UnloadFrontEndSoundBanks();
+    }
+}
+
 void EAXSound::StopSND11() {}
 
 void EAXSound::StartSND11() {}
 
 // LoadInGameSoundBanks, etc. go here when implemented
+
+void LoadAemsInGame(void (*callback)(int), int callback_param) {
+    if (IsSoundEnabled == 1) {
+        g_pEAXSound->LoadInGameSoundBanks(callback, callback_param);
+    } else {
+        callback(callback_param);
+    }
+}
+
+void UnloadAemsInGame() {
+    if (IsSoundEnabled == 1) {
+        g_pEAXSound->UnLoadInGameSoundBanks();
+    }
+}
+
+void CloseSound() {
+    if (IsSoundEnabled) {
+        g_pEAXSound->CloseSound();
+    }
+}
 
 eSndAudioMode EAXSound::GetDefaultPlatformAudioMode() {
     return m_pEAXSND8Wrapper->GetDefaultPlatformAudioMode();

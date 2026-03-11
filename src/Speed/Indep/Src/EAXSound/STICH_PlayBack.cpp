@@ -121,3 +121,46 @@ cSampleWarpper::cSampleWarpper(SND_SampleRef &NewRef) {
 void cSampleWarpper::Initialize() {
     m_eIsPlaying = 1;
 }
+
+void *cSampleWarpper::operator new(unsigned int obj_size) {
+    if (cSTICH_PlayBack::mSampleRefSlotPool == nullptr || cSTICH_PlayBack::mSampleRefSlotPool->IsFull()) {
+        return nullptr;
+    }
+    return cSTICH_PlayBack::mSampleRefSlotPool->Malloc(1, nullptr);
+}
+
+void cSampleWarpper::operator delete(void *ptr) {
+    if (cSTICH_PlayBack::mSampleRefSlotPool != nullptr && ptr != nullptr) {
+        cSTICH_PlayBack::mSampleRefSlotPool->Free(ptr);
+    }
+}
+
+cStichWrapper::cStichWrapper(const SND_Stich &NewStichData)
+    : SndParams() //
+{
+    StichData = const_cast<SND_Stich *>(&NewStichData);
+    for (int i = 0; i < 18; i++) {
+        ActiveSamplesRefs[i] = nullptr;
+    }
+}
+
+cStichWrapper::~cStichWrapper() {
+    Destroy();
+}
+
+void *cStichWrapper::operator new(unsigned int obj_size) {
+    return cSTICH_PlayBack::mStitchSlotPool->Malloc(1, nullptr);
+}
+
+void cStichWrapper::operator delete(void *ptr) {
+    if (cSTICH_PlayBack::mStitchSlotPool != nullptr && ptr != nullptr) {
+        cSTICH_PlayBack::mStitchSlotPool->Free(ptr);
+    }
+}
+
+void cStichWrapper::Play(int Vol, int Pitch, int Azimuth) {
+    SndParams.Vol = Vol;
+    SndParams.Az = Azimuth;
+    SndParams.Pitch = Pitch;
+    Play(&SndParams);
+}

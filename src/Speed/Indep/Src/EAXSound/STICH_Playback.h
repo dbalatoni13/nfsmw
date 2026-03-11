@@ -52,6 +52,15 @@ struct SND_Params {
     int Az;    // offset 0xC, size 0x4
     int Mag;   // offset 0x10, size 0x4
     int RVerb; // offset 0x14, size 0x4
+
+    SND_Params()
+        : ID(0) //
+        , Vol(0x7fff) //
+        , Pitch(0x1000) //
+        , Az(0) //
+        , Mag(0) //
+        , RVerb(0)
+    {}
 };
 
 struct cSampleWarpper {
@@ -83,6 +92,15 @@ struct cStichWrapper : public AudioMemBase {
     SND_Stich *StichData;        // offset 0x1C, size 0x4
     bool bIsPlaying;             // offset 0x20, size 0x1
     cSampleWarpper *ActiveSamplesRefs[18]; // offset 0x24, size 0x48
+
+    cStichWrapper(const SND_Stich &NewStichData);
+    ~cStichWrapper() override;
+
+    static void *operator new(unsigned int obj_size);
+    static void operator delete(void *ptr);
+
+    void Play(int Vol, int Pitch, int Azimuth);
+    void Play(const SND_Params *params);
 
     const SND_Stich &GetData() const {
         return *StichData;
@@ -127,6 +145,8 @@ class cSTICH_PlayBack : public AudioMemBase {
     static int Prune(STICH_TYPE type, int priority, int num_to_clear);
 
   private:
+    friend struct cStichWrapper;
+    friend struct cSampleWarpper;
     struct bPList<SND_Stich> StichList[3]; // offset 0x4, size 0x18
 
     static SlotPool *mSampleRefSlotPool;

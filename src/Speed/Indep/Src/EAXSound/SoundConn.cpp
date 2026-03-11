@@ -21,3 +21,11 @@ void HeliSoundConn::OnReceive(Sim::Packet *) {}
 Sim::ConnStatus HeliSoundConn::OnStatusCheck() {
     return Sim::CONNSTATUS_READY;
 }
+
+Sim::Connection *CarSoundConn::Construct(const Sim::ConnectionData &data) {
+    return new CarSoundConn(data);
+}
+
+Sim::Connection *HeliSoundConn::Construct(const Sim::ConnectionData &data) {
+    return new HeliSoundConn(data);
+}

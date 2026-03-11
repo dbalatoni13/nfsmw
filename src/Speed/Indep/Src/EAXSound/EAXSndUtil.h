@@ -25,7 +25,7 @@ struct cInterpLine {
 
     cInterpLine();
     ~cInterpLine();
-    void Initialize(float len, float start, int finish, eCURVETYPE curve);
+    void Initialize(float _Start, float _Finish, int _Length, eCURVETYPE _Curve);
     void Update(float dt, float target);
     void Update(float dt);
     float GetValue() { return CurValue; }
@@ -45,10 +45,10 @@ struct cPathLine {
 
     cPathLine();
     ~cPathLine();
-    void Initialize(float len, float start, int finish);
+    void Initialize(float _Start, float _Finish, int _Length);
     void ClearStages();
     int AddStage(float len, float finish, int numstages, eCURVETYPE curve);
-    int AddLinkedStage(float len, int finish, eCURVETYPE curve);
+    int AddLinkedStage(float _Finish, int _Length, eCURVETYPE _Curve);
     void Update(float dt);
 };
 
@@ -72,5 +72,6 @@ struct EAX_CarState;
 struct bVector3;
 
 EAX_CarState *GetClosestPlayerCar(const bVector3 *vPosition);
+EAX_CarState *GetClosestPlayerCar(const bVector3 *vPosition, bool CameraRelative, int &CarID);
 
 #endif

@@ -5,7 +5,7 @@
 #pragma once
 #endif
 
-extern bool IsSoundEnabled;
+extern int IsSoundEnabled;
 extern bool IsAudioStreamingEnabled;
 extern bool IsSpeechEnabled;
 extern bool IsNISAudioEnabled;

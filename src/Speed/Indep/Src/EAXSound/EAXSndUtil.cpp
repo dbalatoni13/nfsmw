@@ -23,6 +23,23 @@ void cPathLine::ClearStages() {
     bComplete = false;
 }
 
+void cPathLine::Initialize(float _Start, float _Finish, int _Length) {
+    ClearStages();
+    AddStage(_Start, _Finish, _Length, LINEAR);
+    CurValue = _Start;
+}
+
+int cPathLine::AddLinkedStage(float _Finish, int _Length, eCURVETYPE _Curve) {
+    float _Start = 0.0f;
+    int result = -1;
+    if (num_stages != 0) {
+        result = AddStage(_Start, _Finish, _Length, _Curve);
+        IsLinked[num_stages - 1] = true;
+        result = num_stages;
+    }
+    return result;
+}
+
 cInterpLine::cInterpLine()
 : ElapsedTime(0.0f) //
 , Length(0.0f) //
@@ -34,6 +51,27 @@ cInterpLine::cInterpLine()
 {}
 
 cInterpLine::~cInterpLine() {}
+
+void cInterpLine::Initialize(float _Start, float _Finish, int _Length, eCURVETYPE _Curve) {
+    Length = static_cast<float>(_Length) * 0.001f;
+    if (Length <= 0.0f) {
+        Length = 0.01f;
+    }
+    ElapsedTime = 0.0f;
+    Finish = _Finish;
+    CurveTypes = _Curve;
+    bComplete = false;
+    Start = _Start;
+    CurValue = _Start;
+}
+
+void cInterpLine::Update(float delta_time, float _new_Finish) {
+    Finish = _new_Finish;
+    Update(delta_time);
+    if (bComplete) {
+        CurValue = _new_Finish;
+    }
+}
 
 Slope::Slope(float _Min, float _Max, float _Start, float _Finish) {
     Initialize(_Min, _Max, _Start, _Finish);
@@ -64,4 +102,9 @@ void Slope::Regenerate() {
     bNeedsRegenerate = false;
     fVal = bClamp(fVal, 0.0f, 1.0f);
     LastOutput = fVal * (Max - Min) + Min;
+}
+
+EAX_CarState *GetClosestPlayerCar(const bVector3 *vPosition) {
+    int CarID = 0;
+    return GetClosestPlayerCar(vPosition, false, CarID);
 }
