@@ -1078,8 +1078,6 @@ PVehicle::~PVehicle() {
     }
     mInstances.Remove(this);
     CameraAI::RemoveAvoidable(static_cast<IBody *>(this));
-    mBehaviorOverrides.clear();
-    IVehicle::UnList();
 }
 
 UCrc32 PVehicle::LookupBehaviorSignature(const Attrib::StringKey &mechanic) const {
