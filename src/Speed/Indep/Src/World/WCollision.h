@@ -237,6 +237,10 @@ struct WCollisionInstance : public CollisionInstance {
         return (fFlags & 3) != 0;
     }
 
+    inline bool IsYVecNotUp() const {
+        return (fFlags & 1) != 0;
+    }
+
     inline bool IsDynamic() const {
         return (fFlags & 2) != 0;
     }

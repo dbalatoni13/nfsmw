@@ -11,6 +11,7 @@ void OrthoInverse(UMath::Matrix4 &m);
 
 struct UTransform {
     UTransform() {}
+    UTransform(const UMath::Matrix4 &m) : fTransform(m) {}
     ~UTransform() {}
     UMath::Matrix4 fTransform;
 };
@@ -877,4 +878,82 @@ void WCollisionMgr::GetTriList(const WCollisionInstanceCacheList &instList, cons
             }
         }
     }
+}
+
+inline void MakeWorldSpaceFace(WCollisionTri &worldFace, const WCollisionTri &localFace, const UMath::Matrix4 &invMat) {
+    UTransform t(invMat);
+    OrthoInverse(t.fTransform);
+    worldFace.fSurface = localFace.fSurface;
+    worldFace.fFlags = localFace.fFlags;
+    UMath::RotateTranslate(localFace.fPt0, t.fTransform, worldFace.fPt0);
+    UMath::RotateTranslate(localFace.fPt1, t.fTransform, worldFace.fPt1);
+    UMath::RotateTranslate(localFace.fPt2, t.fTransform, worldFace.fPt2);
+}
+
+bool WCollisionMgr::FindFaceInCInst(const UMath::Vector3 &pt, const WCollisionInstance &cInst, WCollisionTri &retFace, float &retDist) {
+    UMath::Vector3 tpt;
+    UMath::Matrix4 invMat;
+
+    cInst.MakeMatrix(invMat, true);
+    UMath::RotateTranslate(pt, invMat, tpt);
+
+    const WCollisionArticle *cArt = cInst.fCollisionArticle;
+
+    if (cArt == nullptr || cArt->fNumStrips == 0 ||
+        tpt.x > cInst.fInvMatRow0Width.w || tpt.x < -cInst.fInvMatRow0Width.w ||
+        tpt.z > cInst.fInvMatRow2Length.w || tpt.z < -cInst.fInvMatRow2Length.w) {
+        return false;
+    }
+
+    WCollisionTri retVal;
+    bool foundFace;
+    float leastYDist = 1e38f;
+    foundFace = false;
+    const WCollisionStripSphere *sp = cArt->GetStripSphere(0);
+
+    for (int i = 0; i < cArt->fNumStrips; ++sp, ++i) {
+        UMath::Vector3 diffVec;
+        UMath::Sub(sp->fPos, tpt, diffVec);
+        float radius = static_cast<float>(static_cast<int>(sp->fRadius)) * (1.0f / 16.0f);
+        float dSq = diffVec.x * diffVec.x + diffVec.z * diffVec.z;
+        float radsSq = radius * radius;
+        if (dSq < radsSq) {
+            const WCollisionStrip *strip = reinterpret_cast<const WCollisionStrip *>(
+                reinterpret_cast<const char *>(cArt) + sp->Offset());
+            WCollisionTri face;
+            if (FindFaceInTriStrip(tpt, sp, strip, face)) {
+                UMath::Vector3 norm;
+                face.GetNormal(&norm);
+                if (norm.y < 0.0f) {
+                    norm.y = -norm.y;
+                    norm.x = -norm.x;
+                    norm.z = -norm.z;
+                }
+                if (norm.y >= 0.9999f) {
+                    norm.y = 0.9999f;
+                }
+                float dist = tpt.y - WWorldMath::GetPlaneY(norm, face.fPt0, tpt);
+
+                bool minYBelowTestPoint = (face.MinY() - 0.5f) < tpt.y;
+
+                if (cInst.IsYVecNotUp()) {
+                    minYBelowTestPoint = (face.MinY() - 0.5f) > tpt.y;
+                }
+
+                if (minYBelowTestPoint && 0.0f < dist && dist < leastYDist) {
+                    foundFace = true;
+                    leastYDist = dist;
+                    retVal = face;
+                    retDist = dist;
+                }
+            }
+        }
+    }
+
+    if (foundFace) {
+        MakeWorldSpaceFace(retFace, retVal, invMat);
+        return true;
+    }
+
+    return false;
 }
