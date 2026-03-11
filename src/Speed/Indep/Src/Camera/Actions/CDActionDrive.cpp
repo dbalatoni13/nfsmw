@@ -425,7 +425,7 @@ void CDActionDrive::Update(float dT) {
     }
     mCinematicMomementTimer = timer;
 
-    if (0.75f < mCinematicMomementTimer) {
+    if (0.001f < mCinematicMomementTimer) {
         gCinematicMomementCamera = true;
     }
 

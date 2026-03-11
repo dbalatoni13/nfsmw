@@ -220,10 +220,9 @@ void DebugWorldCameraMover::Update(float dT) {
         float hi = fi * dT;
         Eye = Eye + bVector3(0.0f, 0.0f, hi);
 
-        float dist = 100.0f;
-        Look.x = bCos(pitch) * (bCos(hAngle) * dist) + Eye.x;
-        Look.y = bCos(pitch) * (bSin(hAngle) * dist) + Eye.y;
-        Look.z = bSin(pitch) * dist + Eye.z;
+        Look.x = bCos(pitch) * (bCos(hAngle) * 100.0f) + Eye.x;
+        Look.y = bCos(pitch) * (bSin(hAngle) * 100.0f) + Eye.y;
+        Look.z = bSin(pitch) * 100.0f + Eye.z;
     }
 
     if (ForwardInc != 0.0f) {
@@ -272,10 +271,10 @@ void DebugWorldCameraMover::Update(float dT) {
         Look += rl;
     }
 
+    bMatrix4 m;
     bVector3 up;
     unsigned short bank = 0;
     ComputeBankedUpVector(&up, &Eye, &Look, bank);
-    bMatrix4 m;
     eCreateLookAtMatrix(&m, Eye, Look, up);
 
     if (Camera::StopUpdating == 0) {
