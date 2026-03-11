@@ -263,8 +263,7 @@ void Smackable::DoImpactStimulus(unsigned int systemid, float intensity) {
         if (system != nullptr) {
             float clamped = UMath::Clamp(intensity, 0.0f, 1.0f);
             unsigned int level = static_cast< unsigned int >(clamped * 6.0f);
-            unsigned int count = level + 1;
-            for (unsigned int i = 0; i < count; i++) {
+            for (unsigned int i = 0; i <= level; ++i) {
                 unsigned int stimulus;
                 DamageZone::GetImpactStimulus(stimulus);
                 system->ProcessStimulus(stimulus, externalTime,
@@ -429,11 +428,7 @@ bool Smackable::ShouldDie() {
     if (mCollisionBody == nullptr) {
         return false;
     }
-    int modeling = mCollisionBody->IsModeling();
-    if (modeling) {
-        return false;
-    }
-    return true;
+    return mCollisionBody->IsModeling() ? false : true;
 }
 
 bool Smackable::CanRetrigger() const {
@@ -451,45 +446,42 @@ bool Smackable::CanRetrigger() const {
 }
 
 void Smackable::ProcessDeath(float dT) {
-    Seconds life;
-    if (!ShouldDie()) {
-        life = 0.125f;
-        goto store_life;
-    }
-    if (mLife > 0.0f) {
-        life = mLife - dT;
-        goto store_life;
-    }
-    if (Dropout()) {
+    if (ShouldDie()) {
+        if (mLife > 0.0f) {
+            mLife -= dT;
+            return;
+        }
+        if (Dropout()) {
+            return;
+        }
+        if (mModel != nullptr) {
+            if (CanRetrigger()) {
+                if (mVirgin && mCollisionBody != nullptr &&
+                    mCollisionBody->IsAttachedToWorld()) {
+                    ISceneryModel *iscenery = nullptr;
+                    if (mModel->QueryInterface(&iscenery)) {
+                        iscenery->RestoreScene();
+                        mModel = nullptr;
+                    }
+                } else {
+                    ITriggerableModel *itrigger = nullptr;
+                    if (mModel->QueryInterface(&itrigger)) {
+                        UMath::Matrix4 mat;
+                        static_cast< ISimable * >(this)->GetTransform(mat);
+                        itrigger->PlaceTrigger(mat, true);
+                        static_cast< ISimable * >(this)->Detach(mModel);
+                        mModel = nullptr;
+                    }
+                }
+            } else if (mModel != nullptr && !mPersistant) {
+                mModel->ReleaseModel();
+                mModel = nullptr;
+            }
+        }
+        static_cast< ISimable * >(this)->Kill();
         return;
     }
-    if (mModel != nullptr) {
-        if (CanRetrigger()) {
-            if (mVirgin && mCollisionBody != nullptr && mCollisionBody->IsAttachedToWorld()) {
-                ISceneryModel *iscenery = nullptr;
-                if (mModel->QueryInterface(&iscenery)) {
-                    iscenery->RestoreScene();
-                    mModel = nullptr;
-                }
-            } else {
-                ITriggerableModel *itrigger = nullptr;
-                if (mModel->QueryInterface(&itrigger)) {
-                    UMath::Matrix4 mat;
-                    static_cast< ISimable * >(this)->GetTransform(mat);
-                    itrigger->PlaceTrigger(mat, true);
-                    static_cast< ISimable * >(this)->Detach(mModel);
-                    mModel = nullptr;
-                }
-            }
-        } else if (mModel != nullptr && !mPersistant) {
-            mModel->ReleaseModel();
-            mModel = nullptr;
-        }
-    }
-    static_cast< ISimable * >(this)->Kill();
-    return;
-store_life:
-    mLife = life;
+    mLife = 0.125f;
 }
 
 bool Smackable::ProcessDropout(float dT) {

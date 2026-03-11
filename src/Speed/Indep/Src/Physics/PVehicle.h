@@ -93,6 +93,35 @@ class PVehicle : public PhysicsObject,
         void Invalidate() { Flags &= ~1; }
     };
 
+    struct ManageNode {
+        PVehicle *vehicle;
+        Resource resource;
+        eVehicleCacheResult result;
+        unsigned int instancecount;
+
+        static bool sort_remove_resources(const ManageNode &a, const ManageNode &b) {
+            if (a.result != b.result) {
+                return a.result > b.result;
+            }
+            return a.resource.Cost > b.resource.Cost;
+        }
+        static bool sort_remove_instances(const ManageNode &a, const ManageNode &b) {
+            if (a.result != b.result) {
+                return a.result > b.result;
+            }
+            return a.instancecount > b.instancecount;
+        }
+        static bool sort_by_keep(const ManageNode &a, const ManageNode &b) {
+            return a.result < b.result;
+        }
+        static bool is_kept(const ManageNode &a) {
+            return a.result == VCR_WANT;
+        }
+    };
+
+    struct ManagementList : public UTL::FixedVector<ManageNode, 10, 16> {};
+
+
     PVehicle(DriverClass dc, const Attrib::Gen::pvehicle &attribs, const UMath::Vector3 &initialPos,
              const UMath::Vector3 &initialVec, const CollisionGeometry::Bounds *bounds,
              const FECustomizationRecord *customization, const Resource &resource,

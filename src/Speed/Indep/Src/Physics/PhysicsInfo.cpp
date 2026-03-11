@@ -563,24 +563,20 @@ bool PerfLevel::Analyze(const pvehicle &vehicle) {
 void PerformanceMaps::FindLimits(float direction, PerfStats &out) const {
     PerfStats temp;
     bMemSet(&temp, 0, sizeof(PerfStats));
-    out.Time0To100 = temp.Time0To100;
-    out.TopSpeed = temp.TopSpeed;
-    out.HandlingRating = temp.HandlingRating;
+    out = temp;
 
     for (const_iterator iter = begin(); iter != end(); iter++) {
         const PerfLevel &p = *iter;
         if (iter == begin()) {
-            out.Time0To100 = p.Stats.Time0To100;
-            out.TopSpeed = p.Stats.TopSpeed;
-            out.HandlingRating = p.Stats.HandlingRating;
+            out = p.Stats;
         } else {
-            if (out.HandlingRating * direction < p.Stats.HandlingRating * direction) {
+            if (p.Stats.HandlingRating * direction > out.HandlingRating * direction) {
                 out.HandlingRating = p.Stats.HandlingRating;
             }
-            if (out.Time0To100 * direction < p.Stats.Time0To100 * direction) {
+            if (p.Stats.Time0To100 * direction > out.Time0To100 * direction) {
                 out.Time0To100 = p.Stats.Time0To100;
             }
-            if (out.TopSpeed * direction < p.Stats.TopSpeed * direction) {
+            if (p.Stats.TopSpeed * direction > out.TopSpeed * direction) {
                 out.TopSpeed = p.Stats.TopSpeed;
             }
         }
