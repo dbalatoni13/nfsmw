@@ -26,6 +26,13 @@ class StringKey {
         mString = str;
     }
 
+    const StringKey &operator=(const StringKey &rhs) {
+        mString = rhs.mString;
+        mHash64 = rhs.mHash64;
+        mHash32 = rhs.mHash32;
+        return *this;
+    }
+
     bool operator==(const StringKey &rhs) const {
         return mHash64 == rhs.mHash64;
     }
@@ -47,10 +54,10 @@ class StringKey {
     }
 
     bool IsEmpty() const {
-        if (mString == nullptr) {
-            return true;
+        if (mString != nullptr) {
+            return *mString == '\0';
         }
-        return *mString == '\0';
+        return true;
     }
 
     const char *GetString() const {

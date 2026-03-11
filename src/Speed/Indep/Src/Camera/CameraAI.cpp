@@ -19,6 +19,8 @@
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
+#include "Speed/Indep/Src/Speech/SoundAI.h"
+#include "Speed/Indep/Src/World/TrackPath.hpp"
 
 extern Avoidables *TheAvoidables;
 extern bool gGameBreakerCamera;
@@ -33,6 +35,9 @@ static float kEndPursuitValue = -1.0f;
 static float kJumpSpeedHigh = 100.0f;
 static float kJumpSpeedLow = 80.0f;
 static float kJumpDuration = 5.0f;
+
+static const float Tweak_JumpCamHighestAirTresh[2] = {2.5f, 1.8f};
+static const float Tweak_JumpCamLongestAirTresh[2] = {25.0f, 15.0f};
 
 // --- Director methods ---
 
@@ -311,17 +316,16 @@ bool AreMomentCamerasEnabled() {
 // --- CameraAI namespace functions ---
 
 void CameraAI::Update(float dT) {
-    unsigned int playercount = IPlayer::Count(PLAYER_LOCAL);
+    IPlayer::Count(PLAYER_LOCAL);
     unsigned int player = 0;
     do {
         EVIEW_ID viewID = static_cast<EVIEW_ID>(++player);
         IPlayer *iplayer = FindPlayer(viewID);
         Director *cd = FindDirector(viewID);
-        if (cd != nullptr) {
-            if (iplayer == nullptr) {
-                delete cd;
-            }
-        } else if (iplayer != nullptr) {
+        if (cd != nullptr && iplayer == nullptr) {
+            delete cd;
+        }
+        if (iplayer != nullptr && cd == nullptr) {
             cd = new (static_cast<const char *>(0)) Director(viewID);
         }
     } while (player <= static_cast<unsigned int>(PLAYER_LOCAL));
@@ -561,6 +565,76 @@ void CameraAI::MaybeDoPursuitCam(IVehicle *ivehicle) {
     cd->PursuitStart();
 }
 
-void CameraAI::MaybeDoJumpCam(ISimable *simable) {
-    // TODO
+void CameraAI::MaybeDoJumpCam(ISimable *isimable) {
+    if (TheICEManager.IsEditorOn()) {
+        return;
+    }
+    if (!AreMomentCamerasEnabled()) {
+        return;
+    }
+    if (UTL::Collections::Singleton<INIS>::Get() != nullptr) {
+        return;
+    }
+    IVehicle *ivehicle;
+    if (isimable->QueryInterface(&ivehicle)) {
+        if (ivehicle->GetDriverStyle() == STYLE_DRAG) {
+            return;
+        }
+    }
+    Director *cd = FindDirector(isimable->GetWorldID());
+    if (cd == nullptr) {
+        return;
+    }
+    if (cd->IsJumping()) {
+        return;
+    }
+    if (gGameBreakerCamera) {
+        return;
+    }
+    UMath::Vector3 velocity;
+    isimable->GetLinearVelocity(velocity);
+    float speed = UMath::Length(velocity);
+    if (speed < 10.0f) {
+        return;
+    }
+    const UMath::Vector3 &pos = isimable->GetPosition();
+    bVector3 position;
+    bConvertFromBond(position, pos);
+    int set = 0;
+    TrackPathZone *zone = TheTrackPathManager.FindZone(
+        reinterpret_cast<const bVector2 *>(&position), TRACK_PATH_ZONE_JUMP_CAM, nullptr);
+    if (zone != nullptr) {
+        set = 1;
+    }
+    float highest = 0.0f;
+    float longest = 0.0f;
+    float avg = AverageAir(isimable, 3.0f, &highest, &longest);
+    if (avg >= 20.1f) {
+        return;
+    }
+    if (highest >= 20.1f) {
+        return;
+    }
+    if (longest >= 3.1f) {
+        return;
+    }
+    if (avg <= 1.0f) {
+        return;
+    }
+    if (highest > Tweak_JumpCamHighestAirTresh[set] &&
+        longest * speed > Tweak_JumpCamLongestAirTresh[set]) {
+        SetAction(cd->GetViewID(), "CDActionTrackCar");
+        cd->JumpStart(bClamp(longest + longest, 1.0f, 4.0f));
+        MGamePlayMoment msg(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, 0xa3447e3f);
+        msg.Send(UCrc32("MomentStrm"));
+    }
+    if (avg > 1.0f) {
+        SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+        if (ai != nullptr) {
+            Observer *observer = ai->GetObserver();
+            if (observer != nullptr) {
+                observer->NotifyAirborne(highest, longest);
+            }
+        }
+    }
 }
