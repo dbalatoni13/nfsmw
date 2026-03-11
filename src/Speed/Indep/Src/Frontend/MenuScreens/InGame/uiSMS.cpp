@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
@@ -19,6 +20,7 @@ void FEngSetLanguageHash(FEString* text, unsigned int hash);
 unsigned int FEngHashString(const char* format, ...);
 const char* GetLocalizedString(unsigned int hash);
 void FEngSetScript(const char* pkg_name, unsigned int obj_hash, unsigned int script_hash, bool start_at_beginning);
+unsigned int bStringHash(const char* str);
 
 SMSMessage* the_sms_msg;
 
@@ -232,8 +234,102 @@ void uiSMS::RefreshHeader() {
 
 void uiSMS::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) {
     ArrayScrollerMenu::NotificationMessage(msg, obj, param1, param2);
-    if (msg == 0x911ab364) {
+    switch (msg) {
+    case 0xc98356ba:
+        if (cFEng::Get()->IsPackagePushed("InGame_MC_Main_GC.fng")) {
+            bWaitingForMemcard = true;
+        } else {
+            bWaitingForMemcard = false;
+        }
+        if (bWaitingForMemcard) {
+            break;
+        }
+        if (!bInitCompleted) {
+            break;
+        }
+        if (the_sms_msg != nullptr && bAutoPlay) {
+            FEngSetScript(GetPackageName(), 0x47ff4e7c, bStringHash("READ"), true);
+            cFEng::Get()->QueuePackagePush("SMS_Message.fng", reinterpret_cast<int>(the_sms_msg), 0, false);
+        }
+        bInitCompleted = false;
+        break;
+    case 0x35f8620b:
+        bInitCompleted = true;
+        break;
+    case 0x775ce5df:
+        if (!the_sms_msg->IsValid()) {
+            for (int i = 0; i < 2; i++) {
+                last_msg[i] = 0xFF;
+            }
+        }
+        Setup();
+        break;
+    case 0x0c407210:
+        if (GetCurrentDatum() == nullptr) {
+            goto fallthrough_msg;
+        }
+        button_pressed = 0x0c407210;
+        FEngSetScript(GetPackageName(), 0x47ff4e7c, bStringHash("READ"), true);
+        break;
+    case 0x72619778:
+    case 0x911c0a4b: {
+        SMSDatum* datum = static_cast<SMSDatum*>(GetCurrentDatum());
+        if (datum == nullptr) {
+            break;
+        }
+        if (bVoiceMsg) {
+            last_msg[0] = datum->my_msg->GetHandle();
+        } else {
+            last_msg[1] = datum->my_msg->GetHandle();
+        }
+        break;
+    }
+    case 0x9120409e:
+        ScrollBoxes(static_cast<eScrollDir>(-1));
+        break;
+    case 0xb5971bf1:
+        ScrollBoxes(static_cast<eScrollDir>(1));
+        break;
+    case 0xc519bfc4:
+        if (the_sms_msg == nullptr) {
+            goto fallthrough_msg;
+        }
+        if (!the_sms_msg->IsValid()) {
+            goto fallthrough_msg;
+        }
+        DialogInterface::ShowTwoButtons(GetPackageName(), "InGameDialog.fng",
+            static_cast<eDialogTitle>(1), 0x70e01038, 0x417b25e4,
+            0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf,
+            static_cast<eDialogFirstButtons>(1), 0x8c3c2171);
+        break;
+    case 0xd05fc3a3: {
+        cFEng::Get()->QueuePackageMessage(0x8cb81f09, GetPackageName(), nullptr);
+        SMSDatum* datum = static_cast<SMSDatum*>(GetCurrentDatum());
+        if (datum == nullptr) {
+            break;
+        }
+        datum->my_msg->ClearFlags();
+        Setup();
+        break;
+    }
+    case 0x34dc1bcf:
+    case 0x1fab5998:
+    fallthrough_msg:
+        cFEng::Get()->QueuePackageMessage(0x8cb81f09, GetPackageName(), nullptr);
+        break;
+    case 0xe1fde1d1:
+        if (button_pressed != 0x0c407210) {
+            break;
+        }
+        if (GetCurrentDatum() == nullptr) {
+            break;
+        }
+        cFEng::Get()->QueuePackagePush("SMS_Message.fng", reinterpret_cast<int>(the_sms_msg), 0, false);
+        break;
+    case 0x911ab364:
+        button_pressed = 0x911ab364;
         cFEng::Get()->QueuePackagePop(0);
+        break;
     }
 }
 
