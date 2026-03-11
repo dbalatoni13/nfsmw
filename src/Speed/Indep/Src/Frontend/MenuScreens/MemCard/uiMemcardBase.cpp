@@ -169,19 +169,15 @@ void UIMemcardBase::SetStringCheckingCard() {
 }
 
 void UIMemcardBase::HideAllButtons() {
-    ShowButton(0, false, nullptr);
-    ShowButton(1, false, nullptr);
-    ShowButton(2, false, nullptr);
     m_bAnyButtonVisible = false;
-    m_ExpectingInput = false;
+    for (int i = 0; i <= 2; i++) {
+        ShowButton(i, false, nullptr);
+    }
+    FEngSetScript(GetPackageName(), 0x07f9dca9, 0x0016a259, true);
 }
 
 void UIMemcardBase::ShowButton(int idx, bool bShow, short* pText) {
-    if (!bShow) {
-        FEngSetButtonState(GetPackageName(), gButtonIDs[idx], false);
-        FEngSetInvisible(FEngFindObject(GetPackageName(), gButtonIDs[idx]));
-        FEngSetInvisible(FEngFindObject(GetPackageName(), gButtonTextIDs[idx]));
-    } else {
+    if (bShow) {
         m_bAnyButtonVisible = true;
         if (pText != nullptr) {
             FESetString(static_cast< FEString* >(
@@ -191,6 +187,10 @@ void UIMemcardBase::ShowButton(int idx, bool bShow, short* pText) {
         FEngSetVisible(FEngFindObject(GetPackageName(), gButtonIDs[idx]));
         FEngSetVisible(FEngFindObject(GetPackageName(), gButtonTextIDs[idx]));
         FEngSetScript(GetPackageName(), 0x57689fdd, 0xde6eff34, true);
+    } else {
+        FEngSetButtonState(GetPackageName(), gButtonIDs[idx], false);
+        FEngSetInvisible(FEngFindObject(GetPackageName(), gButtonIDs[idx]));
+        FEngSetInvisible(FEngFindObject(GetPackageName(), gButtonTextIDs[idx]));
     }
 }
 
