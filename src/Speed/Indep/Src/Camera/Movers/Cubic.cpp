@@ -94,9 +94,9 @@ CubicCameraMover::CubicCameraMover(int nView, CameraAnchor *p_car, int pov_type,
     nPovTypeUsed = pov_type;
     tLastGrounded = WorldTimer - Timer(8000);
     tLastUnderVehicle = WorldTimer - Timer(0x1900);
+    tLastGearChange = WorldTimer - Timer(6000);
     fIgnoreSetSnapNextTimer = 0.0f;
     bFirstTime = 1;
-    tLastGearChange = WorldTimer - Timer(6000);
 
     POV *pov = pCar->GetPov(nPovType);
 
