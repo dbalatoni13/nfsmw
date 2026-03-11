@@ -87,10 +87,8 @@ void CWorldAnimCtrl::Clear() {
     for (int i = 0; i < 4; i++) {
         m_pFnAnim[i] = nullptr;
     }
-    MasterDelayElapsed = 0.0f;
-    m_f_speed_modifier = 1.0f;
-    StartType = eACST_IMMEDIATE;
     m_flags = 0;
+    m_f_speed_modifier = 1.0f;
     m_loop_range_start = 0;
     m_loop_range_end = 0;
     m_fframe = 0.0f;
@@ -102,8 +100,10 @@ void CWorldAnimCtrl::Clear() {
     m_localDelayTime = 0.0f;
     m_isAllocated = 0;
     LocalDelayElapsed = 0.0f;
+    MasterDelayElapsed = 0.0f;
     PlayDirection = eACPD_FWD;
     PlayState = eACPS_STOPPED;
+    StartType = eACST_IMMEDIATE;
 }
 
 void CWorldAnimCtrl::Cleanup() {
