@@ -16,19 +16,21 @@ struct UTransform {
 };
 
 inline void WCollisionStrip::MakeFace(unsigned int ind, const UMath::Vector3 &cp, WCollisionTri &retFace) const {
-    const WCollisionPackedVert *v = Verts();
-    retFace.fPt0.x = static_cast<float>(v[ind].x) * (1.0f / 128.0f) + cp.x;
-    retFace.fPt0.y = static_cast<float>(v[ind].y) * (1.0f / 128.0f) + cp.y;
-    retFace.fPt0.z = static_cast<float>(v[ind].z) * (1.0f / 128.0f) + cp.z;
+    const WCollisionPackedVert *v = Verts() + ind;
+    retFace.fPt0.x = static_cast<float>(v->x) * (1.0f / 128.0f) + cp.x;
+    retFace.fPt0.y = static_cast<float>(v->y) * (1.0f / 128.0f) + cp.y;
+    retFace.fPt0.z = static_cast<float>(v->z) * (1.0f / 128.0f) + cp.z;
     retFace.fSurfaceRef = nullptr;
-    retFace.fPt1.x = static_cast<float>(v[ind + 1].x) * (1.0f / 128.0f) + cp.x;
-    retFace.fPt1.y = static_cast<float>(v[ind + 1].y) * (1.0f / 128.0f) + cp.y;
-    retFace.fPt1.z = static_cast<float>(v[ind + 1].z) * (1.0f / 128.0f) + cp.z;
+    v++;
+    retFace.fPt1.x = static_cast<float>(v->x) * (1.0f / 128.0f) + cp.x;
+    retFace.fPt1.y = static_cast<float>(v->y) * (1.0f / 128.0f) + cp.y;
+    retFace.fPt1.z = static_cast<float>(v->z) * (1.0f / 128.0f) + cp.z;
     retFace.fFlags = 0;
-    retFace.fPt2.x = static_cast<float>(v[ind + 2].x) * (1.0f / 128.0f) + cp.x;
-    retFace.fPt2.y = static_cast<float>(v[ind + 2].y) * (1.0f / 128.0f) + cp.y;
-    retFace.fPt2.z = static_cast<float>(v[ind + 2].z) * (1.0f / 128.0f) + cp.z;
-    retFace.fSurface = WSurface(v[ind + 2].surface);
+    v++;
+    retFace.fPt2.x = static_cast<float>(v->x) * (1.0f / 128.0f) + cp.x;
+    retFace.fPt2.y = static_cast<float>(v->y) * (1.0f / 128.0f) + cp.y;
+    retFace.fPt2.z = static_cast<float>(v->z) * (1.0f / 128.0f) + cp.z;
+    retFace.fSurface = WSurface(v->surface);
 }
 
 inline void WCollisionStrip::MakeNextFace(unsigned int ind, const UMath::Vector3 &cp, WCollisionTri &retFace) const {
@@ -430,17 +432,18 @@ bool WCollisionMgr::GetClosestIntersectingBarrier(const WCollisionBarrierList &b
         }
         UMath::Vector4 intersectionPt;
         if (WWorldMath::SegmentIntersect(testSegment, barrier->GetPts(), &intersectionPt)) {
-            float yTop = barrier->YTop();
             float yBot = barrier->YBot();
-            float yMin = yTop;
-            if (yTop > yBot) {
-                yMin = yBot;
+            float yTop = barrier->YTop();
+            float yMin = yBot;
+            if (yTop < yBot) {
+                yMin = yTop;
             }
-            if (intersectionPt.y > yMin) {
-                if (yTop < yBot) {
-                    yTop = yBot;
+            if (yMin < intersectionPt.y) {
+                float yMax = yBot;
+                if (yBot < yTop) {
+                    yMax = yTop;
                 }
-                if (intersectionPt.y < yTop) {
+                if (intersectionPt.y < yMax) {
                     float distSq = UMath::DistanceSquare(UMath::Vector4To3(intersectionPt), UMath::Vector4To3(*testSegment));
                     if (distSq < closestDistSq) {
                         cInfo.fCollidePt = intersectionPt;
@@ -694,7 +697,7 @@ bool WCollisionMgr::FindFaceInTriStrip(const UMath::Vector3 &pt, const WCollisio
     strip->MakeFace(0, sp->fPos, retFace);
 
     if (strip->Flags() & 2) {
-        for (int i = 0; i < numTris; ++i) {
+        for (int i = 0; i < numTris; ) {
             const WSurface &surf = retFace.fSurface;
             if (!surf.HasFlag(8)) {
                 if (WWorldMath::InTri(pt, reinterpret_cast<const UMath::Vector4 *>(&retFace))) {
@@ -705,12 +708,14 @@ bool WCollisionMgr::FindFaceInTriStrip(const UMath::Vector3 &pt, const WCollisio
                     }
                 }
             }
-            strip->MakeNextFace(i + 1, sp->fPos, retFace);
+            ++i;
+            if (i >= numTris) break;
+            strip->MakeNextFace(i, sp->fPos, retFace);
         }
     } else {
         bool rightFlag = (strip->Flags() & 1) != 0;
         strip->MakeFace(0, sp->fPos, retFace);
-        for (int i = 0; i < numTris; ++i) {
+        for (int i = 0; i < numTris; ) {
             if (rightFlag) {
                 const WSurface &surf = retFace.fSurface;
                 if (!surf.HasFlag(8)) {
@@ -730,8 +735,10 @@ bool WCollisionMgr::FindFaceInTriStrip(const UMath::Vector3 &pt, const WCollisio
                     }
                 }
             }
+            ++i;
             rightFlag = !rightFlag;
-            strip->MakeNextFace(i + 1, sp->fPos, retFace);
+            if (i >= numTris) break;
+            strip->MakeNextFace(i, sp->fPos, retFace);
         }
     }
 
@@ -745,24 +752,28 @@ struct AABB {
     bVector2 mMax;
 
     AABB(const UMath::Vector3 &pt, float radius) {
-        mMin.x = pt.x - radius;
-        mMin.y = pt.z - radius;
         mMax.x = pt.x + radius;
         mMax.y = pt.z + radius;
+        mMin.x = pt.x - radius;
+        mMin.y = pt.z - radius;
     }
 
     AABB(const UMath::Vector3 &pt1, const UMath::Vector3 &pt2, const UMath::Vector3 &pt3) {
-        mMin.x = bMin(bMin(pt1.x, pt2.x), pt3.x);
-        mMin.y = bMin(bMin(pt1.z, pt2.z), pt3.z);
-        mMax.x = bMax(bMax(pt1.x, pt2.x), pt3.x);
-        mMax.y = bMax(bMax(pt1.z, pt2.z), pt3.z);
+        mMin.x = bMin(pt3.x, bMin(pt1.x, pt2.x));
+        mMin.y = bMin(pt3.z, bMin(pt1.z, pt2.z));
+        mMax.x = bMax(pt3.x, bMax(pt1.x, pt2.x));
+        mMax.y = bMax(pt3.z, bMax(pt1.z, pt2.z));
     }
 
     bool Overlap(const AABB &test) {
-        if (mMax.x < test.mMin.x || mMax.y < test.mMin.y || test.mMax.x < mMin.x) {
-            return false;
+        if (!(test.mMin.x > mMax.x)) {
+            if (!(test.mMin.y > mMax.y)) {
+                if (test.mMax.x >= mMin.x) {
+                    return test.mMax.y >= mMin.y;
+                }
+            }
         }
-        return mMin.y <= test.mMax.y;
+        return false;
     }
 };
 
@@ -800,14 +811,13 @@ void WCollisionMgr::GetTriList(const WCollisionInstanceCacheList &instList, cons
             AABB regionAABB(pt, radius);
 
             const WCollisionStripSphere *sp = cArt->GetStripSphere(0);
-            for (int i = 0; i < cArt->fNumStrips; ++i) {
+            for (int i = 0; i < cArt->fNumStrips; ++i, ++sp) {
                 UMath::Vector3 diffVec;
                 v3sub(1, &sp->fPos, &tpt, &diffVec);
 
                 float spRadius = static_cast<float>(sp->fRadius) * (1.0f / 16.0f) + radius;
                 float dSq = diffVec.x * diffVec.x + diffVec.z * diffVec.z;
-                float tempRadSum = spRadius;
-                if (dSq < tempRadSum * tempRadSum) {
+                if (dSq < spRadius * spRadius) {
                     const WCollisionStrip *strip = reinterpret_cast<const WCollisionStrip *>(
                         reinterpret_cast<const char *>(cArt) + sp->Offset());
                     int numTris = strip->NumTris();
@@ -819,7 +829,7 @@ void WCollisionMgr::GetTriList(const WCollisionInstanceCacheList &instList, cons
                     strip->MakeFace(0, off, face);
 
                     for (int i = 0; i < numTris; ++i) {
-                        AABB faceAABB(face.fPt0, face.fPt1, face.fPt2);
+                        AABB faceAABB(face.fPt1, face.fPt2, face.fPt0);
                         if (faceAABB.Overlap(regionAABB)) {
                             UMath::Vector3 nearPt;
                             float dir = PTDir(face.fPt1, face.fPt0, face.fPt2);
@@ -864,7 +874,6 @@ void WCollisionMgr::GetTriList(const WCollisionInstanceCacheList &instList, cons
                         }
                     }
                 }
-                sp = cArt->GetStripSphere(i + 1);
             }
         }
     }

@@ -157,24 +157,26 @@ struct WCollisionBarrier {
 
     float DistSq(const UMath::Vector3 &pt) const {
         float invLen = GetInvXZLength();
-        float x1 = fPts[0].x;
         float z1 = fPts[0].z;
-        float x2 = fPts[1].x;
         float z2 = fPts[1].z;
-        float px = pt.x;
         float pz = pt.z;
-        float u = ((px - x1) * (x2 - x1) + (pz - z1) * (z2 - z1)) * invLen * invLen;
-        if (u >= 0.0f) {
-            if (u <= 1.0f) {
-                float nearX = (u * (x2 - x1) + x1) - px;
-                float nearZ = (u * (z2 - z1) + z1) - pz;
-                return nearX * nearX + nearZ * nearZ;
-            }
-            float nearX = x2 - px;
-            float nearZ = z2 - pz;
-            return nearX * nearX + nearZ * nearZ;
+        float x1 = fPts[0].x;
+        float x2 = fPts[1].x;
+        float px = pt.x;
+        float u = ((pz - z1) * (z2 - z1) + (px - x1) * (x2 - x1)) * invLen * invLen;
+        float nearZ;
+        float nearX;
+        if (u < 0.0f) {
+            nearZ = z1 - pz;
+            nearX = x1 - px;
+        } else if (u > 1.0f) {
+            nearZ = z2 - pz;
+            nearX = x2 - px;
+        } else {
+            nearZ = u * (z2 - z1) + z1 - pz;
+            nearX = u * (x2 - x1) + x1 - px;
         }
-        return (x1 - px) * (x1 - px) + (z1 - pz) * (z1 - pz);
+        return nearX * nearX + nearZ * nearZ;
     }
 
     UMath::Vector4 fPts[2]; // offset 0x0, size 0x20
