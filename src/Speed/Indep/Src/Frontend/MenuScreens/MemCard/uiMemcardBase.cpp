@@ -429,10 +429,6 @@ void UIMemcardBase::ShowMessage(const wchar_t* msg, unsigned int nOptions,
     HideAllButtons();
     SetMessage(reinterpret_cast< short* >(const_cast< wchar_t* >(msg)));
     switch (nOptions) {
-    case 1:
-        SetButtonText(reinterpret_cast< short* >(const_cast< wchar_t* >(option1)),
-                      nullptr, nullptr);
-        break;
     case 2:
         SetButtonText(reinterpret_cast< short* >(const_cast< wchar_t* >(option1)),
                       reinterpret_cast< short* >(const_cast< wchar_t* >(option2)),
@@ -443,19 +439,18 @@ void UIMemcardBase::ShowMessage(const wchar_t* msg, unsigned int nOptions,
                       reinterpret_cast< short* >(const_cast< wchar_t* >(option2)),
                       reinterpret_cast< short* >(const_cast< wchar_t* >(option3)));
         break;
+    case 1:
+        SetButtonText(reinterpret_cast< short* >(const_cast< wchar_t* >(option1)),
+                      nullptr, nullptr);
+        break;
     default:
         MemoryCard::GetInstance()->SetWaitingForResponse(false);
         break;
     }
     SetScreenVisible(true, nOptions);
-    cFEng* pFEng = cFEng::Get();
-    const char* hashStr;
-    if (nOptions == 0) {
-        hashStr = "SHOW LOADER";
-    } else {
-        hashStr = "HIDE LOADER";
-    }
-    pFEng->QueuePackageMessage(FEHashUpper(hashStr), GetPackageName(), nullptr);
+    cFEng::Get()->QueuePackageMessage(
+        FEHashUpper(nOptions == 0 ? "SHOW LOADER" : "HIDE LOADER"),
+        GetPackageName(), nullptr);
 }
 
 void UIMemcardBase::ActivateChild() {
@@ -574,11 +569,14 @@ void UIMemcardBase::InitComplete() {
     if ((gMemcardSetup.mOp & 0x4000) != 0) {
         cFEng::Get()->QueueGameMessage(0x5afe12f4, gMemcardSetup.mFromScreen, 0xff);
     }
-    if ((gMemcardSetup.mOp & 0x400000) != 0 ||
-        ((gMemcardSetup.mOp & 0x10000) != 0 && (gMemcardSetup.mOp & 0xf0) == 0xb0)) {
-        cFEng* pFeng = cFEng::Get();
-        unsigned int memcardOnHash = FEHashUpper("MEMCARD_ON");
-        pFeng->QueuePackageMessage(memcardOnHash, GetPackageName(), nullptr);
+    if ((gMemcardSetup.mOp & 0x400000) != 0) goto doQueuePackageMessage;
+    if ((gMemcardSetup.mOp & 0x10000) != 0) {
+        if ((gMemcardSetup.mOp & 0xf0) == 0xb0) {
+        doQueuePackageMessage:
+            cFEng* pFeng = cFEng::Get();
+            unsigned int memcardOnHash = FEHashUpper("MEMCARD_ON");
+            pFeng->QueuePackageMessage(memcardOnHash, GetPackageName(), nullptr);
+        }
     }
     switch (MemcardGetCurrentUIOperation()) {
     case 0x10:
