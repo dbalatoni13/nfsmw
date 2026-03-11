@@ -102,10 +102,12 @@ void EAXSound::PlayNIS() {
 // PlayUISoundFX, StopUISoundFX go here when implemented
 
 void EAXSound::SetCsisName(SndBase *psndbase) {
+    char *dest = csCSISdebug;
+    const char *fmt = " %s, 0x%x ";
     int ninst = psndbase->GetUniqueID();
     char *name = psndbase->GetTypeName();
-    bSPrintf(csCSISdebug, " %s, 0x%x ", name, ninst);
-    SetCsisName(csCSISdebug);
+    bSPrintf(dest, fmt, name, ninst);
+    SetCsisName(dest);
 }
 
 void EAXSound::SetCsisName(char *pcsAllocName) {
@@ -278,11 +280,11 @@ void EAXSound::CommitAssets() {
 }
 
 EAXCar *EAXSound::GetPlayerTunerCar(int nindex) {
-    EAXCar *pEVar1 = nullptr;
-    if (m_pStateMgr[eMM_PLAYERCAR] != nullptr) {
-        pEVar1 = reinterpret_cast<EAXCar *>(m_pStateMgr[eMM_PLAYERCAR]->GetStateObj(nindex));
+    CSTATEMGR_Base *mgr = m_pStateMgr[2];
+    if (mgr == nullptr) {
+        return nullptr;
     }
-    return pEVar1;
+    return (EAXCar *)mgr->GetStateObj(nindex);
 }
 
 // LoadFrontEndSoundBanks, etc. go here when implemented
