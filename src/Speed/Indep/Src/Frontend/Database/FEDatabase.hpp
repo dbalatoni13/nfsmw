@@ -182,6 +182,8 @@ class OptionsSettings {
 // total size: 0x4
 struct SMSMessage {
   public:
+    unsigned short GetSortOrder() const { return SortOrder; }
+
   private:
     unsigned char Handle;     // offset 0x0, size 0x1
     unsigned char Flags;      // offset 0x1, size 0x1
