@@ -430,8 +430,6 @@ static float AverageAir(ISimable *isimable, float fSeconds, float *pHighest, flo
     }
 
     int i = 1;
-    bool bHighest = pHighest != nullptr;
-    bool bLongest = pLongest != nullptr;
     float fFuture = fAirTime;
 
     if (nSteps > 1) {
@@ -452,10 +450,10 @@ static float AverageAir(ISimable *isimable, float fSeconds, float *pHighest, flo
         }
     }
 
-    if (bHighest) {
+    if (pHighest != nullptr) {
         *pHighest = fAirMax;
     }
-    if (bLongest) {
+    if (pLongest != nullptr) {
         *pLongest = fFuture;
     }
 
@@ -562,6 +560,8 @@ void CameraAI::MaybeDoPursuitCam(IVehicle *ivehicle) {
     cd->PursuitStart();
 }
 
+// NON-MATCHING: dead store offset mismatch (stw r0, 0xa0(r1) vs 0x70(r1))
+// GCC internal stack slot reuse picks Vector4 temp slot instead of _GetKind return slot
 void CameraAI::MaybeDoJumpCam(ISimable *isimable) {
     if (TheICEManager.IsEditorOn()) {
         return;
