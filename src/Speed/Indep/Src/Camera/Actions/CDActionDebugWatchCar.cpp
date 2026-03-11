@@ -9,6 +9,10 @@ extern eVehicleList mToggleCarList;
 
 extern bool CameraDebugWatchCar;
 
+template <>
+UTL::Collections::Listable<IDebugWatchCar, 2>::List
+    UTL::Collections::Listable<IDebugWatchCar, 2>::_mTable;
+
 static UTL::COM::Factory<CameraAI::Director *, CameraAI::Action, UCrc32>::Prototype _CDActionDebugWatchCar("DEBUGWATCHCAR", CDActionDebugWatchCar::Construct);
 
 const Attrib::StringKey &CDActionDebugWatchCar::GetName() const {

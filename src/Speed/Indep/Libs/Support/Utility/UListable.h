@@ -70,6 +70,12 @@ template <typename T, int U> class Listable {
     static List _mTable;
 };
 
+template <typename T, int U>
+Listable<T, U>::List::List() {}
+
+template <typename T, int U>
+Listable<T, U>::List::~List() {}
+
 template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class ListableSet {
   public:
     typedef T value_type;

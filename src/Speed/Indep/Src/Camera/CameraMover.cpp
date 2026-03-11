@@ -1,6 +1,5 @@
 #include "CameraMover.hpp"
 #include "CameraAI.hpp"
-#include "Speed/Indep/Libs/Support/Utility/UVector.h"
 
 Attrib::Key Attrib::Gen::ecar::ClassKey() {
     return 0xa5b543b7;
@@ -872,22 +871,8 @@ float CameraMover::AdjustHeightAroundCar(const bVector3 *position, bVector3 *pCa
         float min_gap_squared = min_gap * min_gap;
 
         if (gap_squared < min_gap_squared && gap_height < box.z + box.z) {
-            if (0) {
-                UVector3 uvelocity;
-                bVector3 car_velocity;
-                eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(uvelocity), car_velocity);
-                bVector2 relative_velocity = *reinterpret_cast<bVector2 *>(&car_velocity) - *reinterpret_cast<const bVector2 *>(pForward);
-                float speed_squared = bDot(&relative_velocity, &relative_velocity);
-                {
-                    float dot = bDot(&eye_to_car, &relative_velocity);
-                    {
-                        bVector2 car_to_car = *reinterpret_cast<bVector2 *>(&car_velocity) - *reinterpret_cast<const bVector2 *>(car_position);
-                        float dot = bDot(&car_to_car, &relative_velocity);
-                    }
-                }
-            }
-            bVector3 vCameraCarSpace;
             bMatrix4 mWorldToCar;
+            bVector3 vCameraCarSpace;
 
             eInvertTransformationMatrix(&mWorldToCar, &matrix);
             eMulVector(&vCameraCarSpace, &mWorldToCar, position);
