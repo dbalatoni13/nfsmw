@@ -16,9 +16,14 @@ struct FEString;
 enum eScrollDir;
 
 struct SMSSlot : public ArraySlot {
-    FEImage* pIcon; // offset 0x18
+    FEImage* pIcon; // offset 0x14
+    FEString* pText; // offset 0x18
 
-    SMSSlot(FEGroup* grp, FEImage* icon, FEString* text);
+    SMSSlot(FEGroup* grp, FEImage* icon, FEString* text)
+        : ArraySlot(reinterpret_cast<FEObject*>(grp)) //
+        , pIcon(icon) //
+        , pText(text)
+    {}
     ~SMSSlot() override {}
     void Update(ArrayDatum* datum, bool isSelected) override;
 };

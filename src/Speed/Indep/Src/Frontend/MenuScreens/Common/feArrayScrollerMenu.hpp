@@ -115,13 +115,7 @@ class ArrayDatum : public bTNode<ArrayDatum> {
         , locked(false) //
         , checked(false) {}
 
-    ArrayDatum(uint32 hash, uint32 desc)
-        : hash(hash) //
-        , desc(desc) //
-        , enabled(true) //
-        , greyedOut(false) //
-        , locked(false) //
-        , checked(false) {}
+    ArrayDatum(uint32 hash, uint32 desc);
 
     virtual ~ArrayDatum() {}
 

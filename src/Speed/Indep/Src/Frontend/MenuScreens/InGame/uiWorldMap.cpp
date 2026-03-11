@@ -300,8 +300,8 @@ void WorldMap::SetGPSing(GIcon* icon) {
 void WorldMap::ClearGPSing() {
     if (mGPSingIcon != nullptr) {
         mGPSingIcon->ClearFlag(0x80);
+        mGPSingIcon = nullptr;
     }
-    mGPSingIcon = nullptr;
 }
 
 WorldMap::WorldMap(ScreenConstructorData* sd)

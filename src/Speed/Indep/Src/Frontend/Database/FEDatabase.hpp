@@ -184,9 +184,18 @@ class OptionsSettings {
 // total size: 0x4
 struct SMSMessage {
   public:
+    unsigned char GetHandle() { return Handle; }
+    void SetHandle(unsigned char handle) { Handle = handle; }
+    unsigned int GetFlags() { return Flags; }
+    void SetFlag(unsigned int flag) { Flags |= flag; }
+    void ClearFlags() { Flags = 0; }
     unsigned short GetSortOrder() const { return SortOrder; }
+    void SetSortOrder(unsigned short order) { SortOrder = order; }
+    bool IsValid() { return Handle != 0xFF; }
+    bool IsRead() { return (Flags & 4) != 0; }
+    bool IsUnRead() { return (Flags & 2) != 0; }
+    bool IsVoice();
 
-  private:
     unsigned char Handle;     // offset 0x0, size 0x1
     unsigned char Flags;      // offset 0x1, size 0x1
     unsigned short SortOrder; // offset 0x2, size 0x2
@@ -218,6 +227,9 @@ class CareerSettings {
     }
     int GetCash() {
         return CurrentCash;
+    }
+    SMSMessage* GetSMSMessage(unsigned int index) {
+        return &SMSMessages[index];
     }
     void ResumeCareer();
     void StartNewCareer(bool bEnterGameplay);
