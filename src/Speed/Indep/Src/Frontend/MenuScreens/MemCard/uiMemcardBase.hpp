@@ -8,9 +8,9 @@ struct UIMemcardBase : public MenuScreen {
     bool m_bInButtonAnimation;
     int m_Dummy80;
 
-    UIMemcardBase(ScreenConstructorData* sd) : MenuScreen(sd) {}
+    UIMemcardBase(ScreenConstructorData* sd);
 
-    UIMemcardBase(ScreenConstructorData* sd) : MenuScreen(sd) {}
+    UIMemcardBase(ScreenConstructorData* sd);
 
     bool AddItem(const char* pName, const char* pDate, int size, int flag);
     bool IsProfile(const char* pName);
