@@ -117,6 +117,20 @@ python tools/find-symbol.py EState --type enum
 If it prints "Not found: ... Safe to declare", you can proceed to define the symbol.
 If it finds a match, include that header instead of redeclaring.
 
+### find-symbol.py — Check for existing definitions before declaring new types
+
+Before declaring any new struct, class, enum, global, or typedef, run this to check whether
+it already exists in `src/`. This is the CLI alternative to clangd workspace/symbol search.
+
+```sh
+python tools/find-symbol.py AITarget
+python tools/find-symbol.py CEntity --type class
+python tools/find-symbol.py EState --type enum
+```
+
+If it prints "Not found: ... Safe to declare", you can proceed to define the symbol.
+If it finds a match, include that header instead of redeclaring.
+
 ### dtk (decomp-toolkit)
 
 Dump the dwarf of your own implementation of a function.
@@ -193,15 +207,17 @@ Do not batch up multiple percentage milestones into one commit — commit as eac
 
 ## Parallel Sub-Agent Matching
 
-When working on a translation unit with multiple non-matching functions, you are encouraged to spawn sub-agents to work on individual functions in parallel. Each sub-agent should focus on **exactly one function** — do not assign a sub-agent more than one function at a time.
+When working on a translation unit with multiple non-matching functions, use sub-agents selectively for **simple, small, isolated** functions. The main agent should keep ownership of the harder matching work instead of delegating it away. Each sub-agent should focus on **exactly one function** — do not assign a sub-agent more than one function at a time.
 
 **Limit: never run more than 5 sub-agents concurrently.** Spawning too many at once causes resource contention and makes it harder to reason about progress.
 
 Guidelines:
-- Spawn a sub-agent per function for functions that are independent (no shared edits to the same source lines).
+- Prefer solving difficult, high-risk, or cross-cutting functions yourself. Use sub-agents only for straightforward functions with small, well-bounded edits.
+- Spawn a sub-agent per function only when the functions are independent (no shared edits to the same source lines).
 - Each sub-agent must use `build-unit.py` for parallel-safe compilation (never plain `ninja`).
-- Wait for a batch of sub-agents to finish before spawning the next batch.
-- After all sub-agents in a batch complete, check the updated match percentage and commit if it improved.
+- Do **not** sit idle waiting for sub-agents to finish. While they run, continue investigating or implementing other independent work in parallel.
+- Before applying a sub-agent's result, re-read the touched area and make sure it still fits the current state of the TU.
+- After a useful sub-agent result lands, check the updated match percentage and commit if it improved.
 
 ## Matching Philosophy
 
@@ -323,3 +339,11 @@ TU: <translation-unit-name> | Function: <FunctionName>
 ```
 
 <!-- Add new entries below this line -->
+
+### ExplicitInlineSpecialMembersForSTLElements
+TU: zAttribSys | Function: _STL::_Rb_tree<Attrib::TypeDesc, ...>::_M_insert
+If an STL node insertion path refuses to match, check whether the element type is missing explicit inline special members that the original source exposed. Adding the Dwarf-backed `operator new`, `operator delete`, placement `new`, copy constructor, and tiny accessors to `TypeDesc` made the tree node creation/insertion path match exactly.
+
+### RegisterAllocatorTieBreakDeadEnd
+TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass
+If two near-matching functions differ only because the same inlined helper chain lands `mTableSize` in `r6` in the original but `r7` in the rebuild, treat it as a likely GCC 3.x register-allocation tie-break, not a normal source mismatch. In `zAttribSys`, `VecHashMap::FindIndex` inlined through `Remove -> RemoveIndex -> UpdateSearchLength` produced a stable `lwz r6, 4(r3)` vs `lwz r7, 4(r3)` split, which then propagated into later `UpdateSearchLength` control-flow differences. This survived 300+ source experiments: loop-form changes, adding/removing temporaries, splitting/merging expressions, helper inline/outline changes, declaration-order tweaks, member type changes, access-control changes, template method reorderings, and inline vs out-of-line ctor/dtor placement. Once the diff has collapsed to this kind of isolated register swap and DWARF locals/inlining already match, stop attacking each caller separately. Document the functions as `NON_MATCHING`, note the shared inlined root cause, and only consider flag permutation or compiler-level investigation as a last resort.
