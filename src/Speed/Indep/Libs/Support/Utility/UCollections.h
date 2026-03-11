@@ -245,6 +245,15 @@ template <typename T, typename Tag> class Container {
         _mElements.push_back(e);
     }
 
+    template <typename P>
+    T *BuildElement(UCrc32 sig, const P &parms) {
+        T *e = T::CreateInstance(sig, parms);
+        if (e != nullptr) {
+            _mElements.push_back(e);
+        }
+        return e;
+    }
+
     bool DestroyElement(T &el) {
         typename Elements::iterator last = _mElements.end();
         for (typename Elements::iterator first = _mElements.begin(); first != last; first++) {
