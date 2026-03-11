@@ -13,24 +13,24 @@ struct IAllocator;
 
 struct IThread {
     virtual ~IThread() {}
-    virtual int AddRef() { return 0; }
-    virtual int Release() { return 0; }
-    virtual IThread* CreateInstance() { return nullptr; }
-    virtual void SetStackSize(unsigned int stacksize) {}
-    virtual void Begin(int (*func)(void*)) {}
-    virtual void WaitForEnd(int) {}
-    virtual void Sleep(int ticks) {}
-    virtual int (*GetEntryFunc())(void*) { return nullptr; }
-    virtual bool IsActive() { return false; }
+    virtual int AddRef() = 0;
+    virtual int Release() = 0;
+    virtual IThread* CreateInstance() = 0;
+    virtual void SetStackSize(unsigned int stacksize) = 0;
+    virtual void Begin(int (*func)(void*)) = 0;
+    virtual void WaitForEnd(int) = 0;
+    virtual void Sleep(int ticks) = 0;
+    virtual int (*GetEntryFunc())(void*) = 0;
+    virtual bool IsActive() = 0;
 };
 
 struct IMutex {
     virtual ~IMutex() {}
-    virtual int AddRef() { return 0; }
-    virtual int Release() { return 0; }
-    virtual IMutex* CreateInstance() { return nullptr; }
-    virtual void Lock() {}
-    virtual void Unlock() {}
+    virtual int AddRef() = 0;
+    virtual int Release() = 0;
+    virtual IMutex* CreateInstance() = 0;
+    virtual void Lock() = 0;
+    virtual void Unlock() = 0;
 };
 
 struct THREAD {

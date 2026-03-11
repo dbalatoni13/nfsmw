@@ -31,7 +31,7 @@ struct tCubic1D {
     void SetdVal(float v);
     void SetValDesired(float v);
     void SetdValDesired(float v);
-    void SetDuration(const float t);
+    void SetDuration(const float t) { duration = t; }
     void SetState(short s);
     void SetFlags(short f);
     float GetVal();
@@ -66,7 +66,10 @@ struct tCubic2D {
     void SetdVal(float vx, float vy);
     void SetValDesired(float vx, float vy);
     void SetdValDesired(float vx, float vy);
-    void SetDuration(const float t);
+    void SetDuration(const float t) {
+        x.SetDuration(t);
+        y.SetDuration(t);
+    }
     void SetDuration(const float tx, const float ty);
     void SetState(short s);
     void SetFlags(short s);
