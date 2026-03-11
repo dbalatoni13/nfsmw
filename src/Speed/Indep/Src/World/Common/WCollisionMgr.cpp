@@ -31,3 +31,58 @@ static void CalcCollisionFaceNormal(UMath::Vector3 *norm, UMath::Vector4 *facePt
         norm->y = 1.0f;
     }
 }
+
+bool WCollisionMgr::GetWorldHeightAtPointRigorous(const UMath::Vector3 &pt, float &height, UMath::Vector3 *normal) {
+    if (!GetWorldHeightAtPoint(pt, height, normal)) {
+        UMath::Vector4 seg[2];
+        seg[1] = UMath::Vector4Make(pt, 1.0f);
+        seg[0] = seg[1];
+        seg[0].y -= 2.0f;
+        seg[1].y += 1000.0f;
+
+        WorldCollisionInfo cInfo;
+        WCollisionMgr(0, 3).CheckHitWorld(seg, cInfo, 1);
+
+        if (!cInfo.HitSomething() || cInfo.fType != 1) {
+            return false;
+        }
+        height = cInfo.fCollidePt.y;
+        if (normal != nullptr) {
+            *normal = UMath::Vector4To3(cInfo.fNormal);
+        }
+    }
+    return true;
+}
+
+bool WCollisionMgr::GetWorldHeightAtPoint(const UMath::Vector3 &pt, float &height, UMath::Vector3 *normal) {
+    WWorldPos temp(2.0f);
+    temp.FindClosestFace(pt, true);
+    if (temp.OnValidFace()) {
+        UMath::Vector3 norm;
+        temp.UNormal(&norm);
+        height = WWorldMath::GetPlaneY(norm, UMath::Vector4To3(temp.FacePoint(0)), pt);
+        if (normal != nullptr) {
+            *normal = norm;
+        }
+        return true;
+    }
+    return false;
+}
+
+void WCollisionMgr::ClosestCollisionInfo(const UMath::Vector4 *seg, const WorldCollisionInfo &c1, const WorldCollisionInfo &c2, WorldCollisionInfo &result) {
+    if (c1.HitSomething() || c2.HitSomething()) {
+        float distSqC1 = FLT_MAX;
+        float distSqC2 = FLT_MAX;
+        if (c1.HitSomething()) {
+            distSqC1 = UMath::DistanceSquare(UMath::Vector4To3(*seg), UMath::Vector4To3(c1.fCollidePt));
+        }
+        if (c2.HitSomething()) {
+            distSqC2 = UMath::DistanceSquare(UMath::Vector4To3(*seg), UMath::Vector4To3(c2.fCollidePt));
+        }
+        if (distSqC1 < distSqC2) {
+            result = c1;
+        } else {
+            result = c2;
+        }
+    }
+}

@@ -54,6 +54,15 @@ class TrackPathZone {
     }
 };
 
+
+struct TrackPathBarrier {
+    bVector2 Points[2];     // offset 0x0, size 0x10
+    char Enabled;           // offset 0x10, size 0x1
+    char Pad;               // offset 0x11, size 0x1
+    char PlayerBarrier;     // offset 0x12, size 0x1
+    char LeftHanded;        // offset 0x13, size 0x1
+    unsigned int GroupHash; // offset 0x14, size 0x4
+};
 class TrackPathManager {
     struct ZoneInfo {
         // total size: 0x4C

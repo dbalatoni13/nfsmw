@@ -28,8 +28,8 @@ template <typename T, int U> class Listable {
         typedef value_type const *const_pointer;
 
         // List(const List &);
-        List();
-        virtual ~List();
+        List() {}
+        ~List() override {}
 
         // List &operator=(List &);
     };
