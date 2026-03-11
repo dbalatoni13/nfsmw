@@ -37,6 +37,18 @@ extern const char* gTUTORIAL_MOVIE_PURSUIT;
 
 MilestoneDatum* theMilestone;
 
+void MilestoneDatum::NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1,
+                                         unsigned long param2) {
+    if (msg != 0xc407210) {
+        return;
+    }
+    if (!IsChecked()) {
+        theMilestone = this;
+    } else {
+        theMilestone = nullptr;
+    }
+}
+
 uiRepSheetMilestones::uiRepSheetMilestones(ScreenConstructorData* sd)
     : ArrayScrollerMenu(sd, 3, 3, true) {
     bIsInGame = sd->Arg != 0;

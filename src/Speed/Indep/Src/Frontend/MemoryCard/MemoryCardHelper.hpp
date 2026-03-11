@@ -54,6 +54,8 @@ struct MyThread : public IThread {
     void Begin(int (*func)(void*)) override;
     void WaitForEnd(int) override;
     void Sleep(int ticks) override;
+    void SetPriority(int priority) override;
+    static int EntryProc(void* pContext);
     int (*GetEntryFunc())(void*) override { return mEntryFunc; }
     bool IsActive() override { return mActive; }
 };

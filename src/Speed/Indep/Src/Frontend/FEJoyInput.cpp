@@ -314,7 +314,40 @@ IThread* MyThread::CreateInstance() {
 }
 
 void THREAD_sleep(int ticks);
+void THREAD_create(THREAD* thread, int (*func)(void*), void* param, void* stack, int stackSize, int priority);
+void THREAD_waitexit(THREAD* thread, int status);
+void THREAD_setpriority(THREAD* thread, int priority);
+void THREAD_yield(int ticks);
 
 void MyThread::Sleep(int ticks) {
     THREAD_sleep(ticks);
+}
+
+void MyThread::Begin(int (*func)(void*)) {
+    mEntryFunc = func;
+    mStackBuffer = new char[mStackSize];
+    THREAD_create(&mThreadData, EntryProc, this, mStackBuffer, mStackSize, mPriority);
+    mActive = true;
+}
+
+void MyThread::WaitForEnd(int) {
+    THREAD_waitexit(&mThreadData, 0);
+    if (mStackBuffer != nullptr) {
+        delete[] static_cast< char* >(mStackBuffer);
+    }
+    mActive = false;
+}
+
+void MyThread::SetPriority(int priority) {
+    mPriority = 0;
+    THREAD_setpriority(&mThreadData, 0);
+}
+
+int MyThread::EntryProc(void* pContext) {
+    MyThread* pThread = static_cast< MyThread* >(pContext);
+    while (!pThread->mActive) {
+        THREAD_yield(1);
+    }
+    pThread->mEntryFunc(pContext);
+    return 0;
 }

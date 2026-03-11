@@ -30,8 +30,8 @@ struct GIcon {
     unsigned short mRotation;
     unsigned short mPad;
     static EffectInfo kEffectInfo[];
-    void SetFlag(unsigned int mask);
-    void ClearFlag(unsigned int mask);
+    void SetFlag(unsigned int mask) { mFlags |= mask; }
+    void ClearFlag(unsigned int mask) { mFlags &= ~mask; }
     bool IsFlagSet(unsigned int mask) const { return (mFlags & mask) != 0; }
     bool IsFlagClear(unsigned int mask) const { return (mFlags & mask) == 0; }
     void SetGPSing() { SetFlag(0x80); }
