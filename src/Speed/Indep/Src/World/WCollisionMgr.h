@@ -34,7 +34,7 @@ class WCollisionMgr {
               fPad(0),                               //
               fCInst(nullptr) {}
 
-        bool HitSomething() const {}
+        bool HitSomething() const { return fType; }
     };
 
     class ICollisionHandler {

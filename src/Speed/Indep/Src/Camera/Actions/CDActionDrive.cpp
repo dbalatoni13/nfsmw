@@ -327,22 +327,22 @@ void CDActionDrive::Update(float dT) {
     }
 
     if (mMover->OutsidePOV() && GRaceStatus::Exists()) {
-        if (false) { // TODO: false
+        if (GRaceStatus::Get().GetIsTimeLimited()) {
             if (GRaceStatus::Get().GetRaceTimeRemaining() <= 0.0f) {
                 ISimable *playerSim = mPlayer->GetSimable();
                 GRacerInfo *racerInfo = GRaceStatus::Get().GetRacerInfo(playerSim);
-                if (racerInfo != nullptr && !false) { // TODO: false
+                if (racerInfo != nullptr && !racerInfo->IsFinishedRacing()) {
                     return;
                 }
             }
         }
+    }
 
-        if (GRaceStatus::Exists()) {
-            ISimable *playerSim = mPlayer->GetSimable();
-            GRacerInfo *racerInfo = GRaceStatus::Get().GetRacerInfo(playerSim);
-            if (racerInfo != nullptr && false) { // TODO: false
-                return;
-            }
+    if (GRaceStatus::Exists()) {
+        ISimable *playerSim = mPlayer->GetSimable();
+        GRacerInfo *racerInfo = GRaceStatus::Get().GetRacerInfo(playerSim);
+        if (racerInfo != nullptr && racerInfo->GetCameraDetached()) {
+            return;
         }
     }
 
@@ -374,7 +374,7 @@ void CDActionDrive::Update(float dT) {
                                 s = 1.0f - s * s;
                                 float targetsize = bSqrt(s);
                                 bVector2 target(copdir.z * targetsize, copdir.x * targetsize);
-                                if (bLength(&target) < 10.0f) {
+                                if (bLength(target) < 10.0f) {
                                     mAnchor->SetCloseToRoadBlock(true);
                                     gCamCloseToRoadBlock = true;
                                     break;
@@ -550,10 +550,7 @@ void CDActionDrive::Update(float dT) {
         mAnchor->SetGroundCollision(mGroundCollisionTime / mMaxCollisionTime);
         mAnchor->SetObjectCollision(mObjectCollisionTime / mMaxCollisionTime);
 
-        float zoom_input = mGameBreakerScale;
-        if (mGameBreakerScale - mCinematicMomementTimer < 0.0f) {
-            zoom_input = mCinematicMomementTimer;
-        }
+        float zoom_input = bMax(mGameBreakerScale, mCinematicMomementTimer);
         mAnchor->SetZoom(1.0f - zoom_input * 0.1f);
 
         mAnchor->Update(dT, mat, *mTarget.GetVelocity(), *mTarget.GetAcceleration());
@@ -577,7 +574,7 @@ void CDActionDrive::Update(float dT) {
                     explosion_dir = bNormalize(dir);
                     float force = -explosion->GetExpansionSpeed() / dT;
                     bVector3 acc;
-                    bScale(&acc, &explosion_dir, force);
+                    acc = bScale(explosion_dir, force);
                     MaybeCameraShake(mViewID - 1, &acc);
                 }
             }

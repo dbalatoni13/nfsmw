@@ -182,23 +182,26 @@ void CDActionShowcase::Update(float dT) {
             Detach(mVehicle);
             mVehicle = nullptr;
         }
-    } else {
-        AquireCar();
-        if (mTarget.IsValid()) {
-            bMatrix4 mat(*mTarget.GetMatrix());
+        return;
+    }
 
-            ICollisionBody *irbc = nullptr;
-            mVehicle->QueryInterface(&irbc);
-            if (irbc != nullptr) {
-                IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
-                UVector3 cg(irbc->GetCenterOfGravity());
-                irb->ConvertLocalToWorld(cg, false);
-                cg += irb->GetPosition();
-                eSwizzleWorldVector(reinterpret_cast<bVector3 &>(cg), reinterpret_cast<bVector3 &>(cg));
-            }
+    AquireCar();
+    if (!mTarget.IsValid()) {
+        return;
+    }
 
-            mAnchor->Update(dT, mat, *mTarget.GetVelocity(), *mTarget.GetAcceleration());
+    bMatrix4 mat(*mTarget.GetMatrix());
+
+    ICollisionBody *irbc;
+    if (mVehicle != nullptr) {
+        if (mVehicle->QueryInterface(&irbc)) {
+            IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
+            UVector3 cg(irbc->GetCenterOfGravity());
+            irb->ConvertLocalToWorld(cg, false);
+            cg += irb->GetPosition();
+            eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(cg), reinterpret_cast<bVector3 &>(mat.v3));
         }
     }
-    mMover->Update(dT);
+
+    mAnchor->Update(dT, mat, *mTarget.GetVelocity(), *mTarget.GetAcceleration());
 }

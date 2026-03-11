@@ -34,7 +34,7 @@ static float kEndPursuitThreshold = 0.0f;
 static float kEndPursuitValue = -1.0f;
 static float kJumpSpeedHigh = 100.0f;
 static float kJumpSpeedLow = 80.0f;
-static float kJumpDuration = 5.0f;
+static const float kJumpDuration = 5.0f;
 
 static const float Tweak_JumpCamHighestAirTresh[2] = {2.5f, 1.8f};
 static const float Tweak_JumpCamLongestAirTresh[2] = {25.0f, 15.0f};
@@ -209,9 +209,7 @@ void CameraAI::Director::SelectAction() {
                 if (nis2 != nullptr) {
                     nis2->FireEventTag("CameraFinished");
                 }
-                UCrc32 port(0x20d60dbf);
-                MICECameraFinished finishedMsg;
-                finishedMsg.Post(port);
+                MICECameraFinished().Post(UCrc32(0x20d60dbf));
             }
         }
     }
@@ -360,109 +358,108 @@ void CameraAI::MaybeKillPursuitCam(unsigned int id) {
 
 static float AverageAir(ISimable *isimable, float fSeconds, float *pHighest, float *pLongest) {
     IRigidBody *irb = isimable->GetRigidBody();
-    if (irb != nullptr) {
-        ICollisionBody *irbc;
-        if (isimable->QueryInterface(&irbc)) {
-            float fSpeed = irb->GetSpeed();
-            if (fSpeed >= 1.0f) {
-                int nSteps = static_cast<int>(fSpeed * fSeconds * 0.5f);
-                if (nSteps > 0) {
-                    ISuspension *isuspension;
-                    IVehicle *vehicle;
-                    if (isimable->QueryInterface(&isuspension) && isimable->QueryInterface(&vehicle)) {
-                        UMath::Vector3 p = UMath::Vector3::kZero;
+    if (irb == nullptr) return 0.0f;
 
-                        for (unsigned int j = 0; j < isuspension->GetNumWheels(); j++) {
-                            UMath::Vector3 wp = isuspension->GetWheelPos(j);
-                            const UMath::Vector3 &upVec = irbc->GetUpVector();
-                            float compression = isuspension->GetCompression(j);
-                            UMath::ScaleAdd(upVec, -compression, wp, wp);
-                            UMath::ScaleAdd(wp, 0.25f, p, p);
-                        }
+    ICollisionBody *irbc;
+    if (!isimable->QueryInterface(&irbc)) return 0.0f;
 
-                        UMath::Vector4 vNormal = irbc->GetGroundNormal();
-                        WWorldPos pTopo = isimable->GetWPos();
-                        pTopo.SetTolerance(5.0f);
+    float fSpeed = irb->GetSpeed();
+    if (fSpeed < 1.0f) return 0.0f;
 
-                        float fElevation = pTopo.HeightAtPoint(p);
-                        float fAirSum = 0.0f;
-                        float fAirMax = bMax(0.0f, p.y - fElevation);
-                        float fStep = fSeconds / static_cast<float>(nSteps);
-                        float fAirTime = 0.0f;
-                        float fDeparture = 0.0f;
+    int nSteps = static_cast<int>(fSpeed * fSeconds * 0.5f);
+    if (nSteps <= 0) return 0.0f;
 
-                        if (0.0f < fAirMax) {
-                            fDeparture = -fStep;
-                            fAirTime = fStep;
-                        }
+    ISuspension *isuspension;
+    if (!isimable->QueryInterface(&isuspension)) return 0.0f;
 
-                        Attrib::Gen::pvehicle attributes(vehicle->GetVehicleAttributes());
-                        Attrib::Gen::chassis chassis(attributes.chassis(0), 0, nullptr);
+    IVehicle *vehicle;
+    if (!isimable->QueryInterface(&vehicle)) return 0.0f;
 
-                        float fDownForce = Physics::Info::AerodynamicDownforce(chassis, fSpeed);
-                        float gravity = irbc->GetGravity();
-                        float fDownAccel = gravity + (-fDownForce / irb->GetMass());
+    UMath::Vector3 p = UMath::Vector3::kZero;
 
-                        UMath::Vector3 a = UMath::Vector3Make(0.0f, fDownAccel, 0.0f);
+    for (unsigned int j = 0; j < isuspension->GetNumWheels(); j++) {
+        UMath::Vector3 wp = isuspension->GetWheelPos(j);
+        const UMath::Vector3 &upVec = irbc->GetUpVector();
+        float compression = isuspension->GetCompression(j);
+        UMath::ScaleAdd(upVec, -compression, wp, wp);
+        UMath::ScaleAdd(wp, 0.25f, p, p);
+    }
 
-                        const UMath::Vector3 &linVel = irb->GetLinearVelocity();
-                        UMath::Vector3 v;
-                        v.x = linVel.x;
-                        v.y = linVel.y;
-                        v.z = linVel.z;
+    UMath::Vector4 vNormal = irbc->GetGroundNormal();
+    WWorldPos pTopo = isimable->GetWPos();
+    pTopo.SetTolerance(5.0f);
 
-                        UMath::Vector3 pNew;
-                        UMath::ScaleAdd(v, 0.5f, p, pNew);
+    float fElevation = pTopo.HeightAtPoint(p);
+    float fAirSum = 0.0f;
+    float fAirMax = bMax(0.0f, p.y - fElevation);
+    float fStep = fSeconds / static_cast<float>(nSteps);
+    float fAirTime = 0.0f;
+    float fDeparture = 0.0f;
 
-                        const float tbarr = 1.0f;
+    if (0.0f < fAirMax) {
+        fDeparture = -fStep;
+        fAirTime = fStep;
+    }
 
-                        UMath::Vector4 seg[2];
-                        seg[0] = UMath::Vector4Make(p, tbarr);
-                        seg[1] = UMath::Vector4Make(pNew, tbarr);
+    Attrib::Gen::pvehicle attributes(vehicle->GetVehicleAttributes());
+    Attrib::Gen::chassis chassis(attributes.chassis(0), 0, nullptr);
 
-                        WCollisionMgr::WorldCollisionInfo cInfo;
-                        WCollisionMgr collMgr(0, 3);
-                        collMgr.CheckHitWorld(seg, cInfo, 2);
+    float fDownForce = -Physics::Info::AerodynamicDownforce(chassis, fSpeed);
+    float gravity = irbc->GetGravity();
+    float fDownAccel = gravity + fDownForce / irb->GetMass();
 
-                        if (!cInfo.HitSomething()) {
-                            int i = 1;
-                            bool bHighest = pHighest != nullptr;
-                            bool bLongest = pLongest != nullptr;
-                            float fFuture = fAirTime;
+    UMath::Vector3 a = UMath::Vector3Make(0.0f, fDownAccel, 0.0f);
 
-                            if (nSteps > 1) {
-                                for (i = 1; i < nSteps; i++) {
-                                    fFuture = fStep * static_cast<float>(i) - fDeparture;
-                                    UMath::ScaleAdd(a, fFuture * 0.5f, v, pNew);
-                                    UMath::ScaleAdd(pNew, fFuture, p, pNew);
+    UMath::Vector3 v = irb->GetLinearVelocity();
 
-                                    if (pTopo.Update(pNew, vNormal, true, nullptr, true)) {
-                                        if (pTopo.OnValidFace() && 0.5f <= vNormal.y) {
-                                            float fElevation = pTopo.HeightAtPoint(pNew);
-                                            float fAir = pNew.y - fElevation;
-                                            if (fAir <= 0.0f) break;
-                                            fAirMax = bMax(fAirMax, fAir);
-                                            fAirSum += fAir;
-                                        }
-                                    }
-                                }
-                            }
+    UMath::Vector3 pNew;
+    UMath::ScaleAdd(v, 0.5f, p, pNew);
 
-                            if (bHighest) {
-                                *pHighest = fAirMax;
-                            }
-                            if (bLongest) {
-                                *pLongest = fFuture;
-                            }
+    const float tbarr = 1.0f;
 
-                            return fAirSum / static_cast<float>(i);
-                        }
-                    }
+    UMath::Vector4 seg[2];
+    seg[0] = UMath::Vector4Make(p, tbarr);
+    seg[1] = UMath::Vector4Make(pNew, tbarr);
+
+    WCollisionMgr::WorldCollisionInfo cInfo;
+    WCollisionMgr collMgr(0, 3);
+    collMgr.CheckHitWorld(seg, cInfo, 2);
+
+    if (cInfo.HitSomething()) {
+        return 0.0f;
+    }
+
+    int i = 1;
+    bool bHighest = pHighest != nullptr;
+    bool bLongest = pLongest != nullptr;
+    float fFuture = fAirTime;
+
+    if (nSteps > 1) {
+        for (i = 1; i < nSteps; i++) {
+            fFuture = fStep * static_cast<float>(i) - fDeparture;
+            UMath::ScaleAdd(a, fFuture * 0.5f, v, pNew);
+            UMath::ScaleAdd(pNew, fFuture, p, pNew);
+
+            if (pTopo.Update(pNew, vNormal, true, nullptr, true)) {
+                if (pTopo.OnValidFace() && 0.5f <= vNormal.y) {
+                    float fElevation = pTopo.HeightAtPoint(pNew);
+                    float fAir = pNew.y - fElevation;
+                    if (fAir <= 0.0f) break;
+                    fAirMax = bMax(fAirMax, fAir);
+                    fAirSum += fAir;
                 }
             }
         }
     }
-    return 0.0f;
+
+    if (bHighest) {
+        *pHighest = fAirMax;
+    }
+    if (bLongest) {
+        *pLongest = fFuture;
+    }
+
+    return fAirSum / static_cast<float>(i);
 }
 
 void CameraAI::MaybeKillJumpCam(unsigned int id) {
@@ -598,11 +595,12 @@ void CameraAI::MaybeDoJumpCam(ISimable *isimable) {
         return;
     }
     int set = 0;
-    register TrackPathManager *tpm = &TheTrackPathManager;
     bVector3 position;
-    bConvertFromBond(position, isimable->GetPosition());
-    if (tpm->FindZone(
-            reinterpret_cast<const bVector2 *>(&position), TRACK_PATH_ZONE_JUMP_CAM, nullptr) != nullptr) {
+    TrackPathZone *zone = TheTrackPathManager.FindZone(
+        reinterpret_cast<const bVector2 *>(
+            &bConvertFromBond(position, isimable->GetPosition())),
+        TRACK_PATH_ZONE_JUMP_CAM, nullptr);
+    if (zone != nullptr) {
         set = 1;
     }
     float highest = 0.0f;
