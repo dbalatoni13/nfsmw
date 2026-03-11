@@ -233,14 +233,17 @@ void UIMemcardBase::SetMessageBlurbText(short* pText) {
     if (m_pDisplayMsgShadow != nullptr) {
         FESetString(m_pDisplayMsgShadow, pText);
     }
-    FindScreenSize(reinterpret_cast< const int* >(pText));
+    FindScreenSize(reinterpret_cast< const wchar_t* >(pText));
 }
 
 void UIMemcardBase::SetMessageBlurbText(char* pText) {
+    int wText[1024];
     FEPrintf(m_pDisplayMsg, "%s", pText);
     if (m_pDisplayMsgShadow != nullptr) {
         FEPrintf(m_pDisplayMsgShadow, "%s", pText);
     }
+    bStrCpy(reinterpret_cast< unsigned short* >(wText), pText);
+    FindScreenSize(reinterpret_cast< const wchar_t* >(wText));
 }
 
 void UIMemcardBase::SetMessageBlurbText(unsigned int textHash) {
@@ -251,7 +254,7 @@ void UIMemcardBase::SetMessageBlurbText(unsigned int textHash) {
     const char* str = GetLocalizedString(textHash);
     unsigned short buf[2048];
     bStrCpy(buf, str);
-    FindScreenSize(reinterpret_cast< const int* >(buf));
+    FindScreenSize(reinterpret_cast< const wchar_t* >(buf));
 }
 
 void UIMemcardBase::ShowOK(unsigned int textHash, unsigned int flag) {
@@ -399,35 +402,35 @@ void UIMemcardBase::ShowKeyboard() {
     UIMemcardKeyboard::ShowKeyboard();
 }
 
-void UIMemcardBase::FindScreenSize(const int* msg) {
+void UIMemcardBase::FindScreenSize(const wchar_t* msg) {
     cFEng::Get()->QueuePackageMessage(0x79b0c1c7, GetPackageName(), nullptr);
 }
 
 void UIMemcardBase::ShowMessage(MemoryCardMessage* msg) {
-    ShowMessage(reinterpret_cast< const int* >(msg->mMsg), msg->mnOptions,
-                reinterpret_cast< const int* >(&msg->mOptions[0]),
-                reinterpret_cast< const int* >(&msg->mOptions[128]),
-                reinterpret_cast< const int* >(&msg->mOptions[256]));
+    ShowMessage(reinterpret_cast< const wchar_t* >(msg->mMsg), msg->mnOptions,
+                reinterpret_cast< const wchar_t* >(&msg->mOptions[0]),
+                reinterpret_cast< const wchar_t* >(&msg->mOptions[128]),
+                reinterpret_cast< const wchar_t* >(&msg->mOptions[256]));
     MemoryCard::GetInstance()->ReleasePendingMessage();
 }
 
-void UIMemcardBase::ShowMessage(const int* msg, unsigned int nOptions,
-                                const int* option1, const int* option2,
-                                const int* option3) {
+void UIMemcardBase::ShowMessage(const wchar_t* msg, unsigned int nOptions,
+                                const wchar_t* option1, const wchar_t* option2,
+                                const wchar_t* option3) {
     PopChild();
     HideAllButtons();
-    SetMessage(reinterpret_cast< short* >(const_cast< int* >(msg)));
+    SetMessage(reinterpret_cast< short* >(const_cast< wchar_t* >(msg)));
     if (nOptions == 2) {
-        SetButtonText(reinterpret_cast< short* >(const_cast< int* >(option1)),
-                      reinterpret_cast< short* >(const_cast< int* >(option2)),
+        SetButtonText(reinterpret_cast< short* >(const_cast< wchar_t* >(option1)),
+                      reinterpret_cast< short* >(const_cast< wchar_t* >(option2)),
                       nullptr);
     } else if (nOptions == 1) {
-        SetButtonText(reinterpret_cast< short* >(const_cast< int* >(option1)),
+        SetButtonText(reinterpret_cast< short* >(const_cast< wchar_t* >(option1)),
                       nullptr, nullptr);
     } else if (nOptions == 3) {
-        SetButtonText(reinterpret_cast< short* >(const_cast< int* >(option1)),
-                      reinterpret_cast< short* >(const_cast< int* >(option2)),
-                      reinterpret_cast< short* >(const_cast< int* >(option3)));
+        SetButtonText(reinterpret_cast< short* >(const_cast< wchar_t* >(option1)),
+                      reinterpret_cast< short* >(const_cast< wchar_t* >(option2)),
+                      reinterpret_cast< short* >(const_cast< wchar_t* >(option3)));
     } else {
         MemoryCard::GetInstance()->SetWaitingForResponse(false);
     }

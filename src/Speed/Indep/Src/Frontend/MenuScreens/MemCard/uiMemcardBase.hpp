@@ -113,12 +113,12 @@ struct UIMemcardBase : public UIMemcardKeyboard {
     void SetMessageBlurbText(short* pText);
     void SetMessageBlurbText(char* pText);
     void SetMessageBlurbText(unsigned int textHash);
-    void FindScreenSize(const int* msg);
+    void FindScreenSize(const wchar_t* msg);
     unsigned int GetAutoSaveWarning();
     unsigned int GetAutoSaveWarning2();
     void ShowMessage(MemoryCardMessage* msg);
-    void ShowMessage(const int* msg, unsigned int nOptions, const int* option1,
-                     const int* option2, const int* option3);
+    void ShowMessage(const wchar_t* msg, unsigned int nOptions, const wchar_t* option1,
+                     const wchar_t* option2, const wchar_t* option3);
     void ActivateChild();
     void PopChild();
     void HandleAutoSaveError();

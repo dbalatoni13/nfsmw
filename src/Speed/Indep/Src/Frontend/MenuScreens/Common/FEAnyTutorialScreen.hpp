@@ -17,6 +17,10 @@ struct FEAnyTutorialScreen : public MenuScreen {
     Timer mTimer;             // offset 0x38
     SubTitler mSubtitler;     // offset 0x3C
 
+    FEAnyTutorialScreen(ScreenConstructorData* sd);
+    ~FEAnyTutorialScreen() override;
+    static MenuScreen* Create(ScreenConstructorData* sd);
+    void NotificationMessage(unsigned long, FEObject*, unsigned long, unsigned long) override;
     static void LaunchMovie(const char*, const char*);
     static void DismissMovie(bool);
     static void SetMovieName(const char*);

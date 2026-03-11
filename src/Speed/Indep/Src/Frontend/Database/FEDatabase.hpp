@@ -321,6 +321,10 @@ class cFrontendDatabase {
         return CurrentUserProfiles[0]->GetCareer();
     }
 
+    bool IsDDay() {
+        return GetCareerSettings()->GetCurrentBin() >= 16;
+    }
+
     bool IsSplitScreenMode() {
         return FEGameMode & 4;
     }
