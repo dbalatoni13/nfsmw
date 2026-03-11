@@ -514,18 +514,22 @@ void CAnimScene::ChangePlayStatus(ePlayStatus new_status) {
 
 bool CAnimScene::Init() {
     NisScene *scene_info = reinterpret_cast< CAnimSceneDataLayout * >(mAnimSceneData)->mNisScene;
-    CAnimEntityCreationContext::SetRaceStartContext(!scene_info->SceneType);
+    if (scene_info->SceneType) {
+        CAnimEntityCreationContext::SetRaceStartContext(false);
+    } else {
+        CAnimEntityCreationContext::SetRaceStartContext(true);
+    }
     bool find_start_line = false;
     if (scene_info->SceneType == 0 || scene_info->SceneType == 3 || scene_info->SceneType == 2) {
         find_start_line = true;
     }
 
-    bMatrix4 scene_translation_matrix;
     bMatrix4 scene_rotation_matrix;
+    bMatrix4 scene_translation_matrix;
+    bMatrix4 scene_transform_matrix;
     CAnimLocator::GetInitialAnimMatricies(&scene_rotation_matrix, &scene_translation_matrix, find_start_line);
     mSceneRotationMatrix = scene_rotation_matrix;
     mSceneTranslationMatrix = scene_translation_matrix;
-    bMatrix4 scene_transform_matrix;
     bMulMatrix(&scene_transform_matrix, &scene_translation_matrix, &scene_rotation_matrix);
     mSceneTransformMatrix = scene_transform_matrix;
 

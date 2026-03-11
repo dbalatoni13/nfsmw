@@ -105,9 +105,8 @@ bool CWorldAnimEntity::Init(void *init_data, SpaceNode *parent_space_node) {
     mThisInstanceNameHash = info->mThisInstanceNameHash;
     mParentInstanceNameHash = info->mParentInstanceNameHash;
 
-    SpaceNode *space_node = CreateSpaceNode(nullptr);
-    mSpaceNode = space_node;
-    space_node->SetParent(parent_space_node);
+    mSpaceNode = CreateSpaceNode(nullptr);
+    mSpaceNode->SetParent(parent_space_node);
     mSpaceNode->SetNameHash(mThisInstanceNameHash);
     mSpaceNode->SetLocalMatrix(&info->mLocalMatrix);
 
@@ -138,8 +137,7 @@ bool CWorldAnimEntity::Init(void *init_data, SpaceNode *parent_space_node) {
     ctrl->SetFlags(0x100);
 
     CAnimPart *anim_part = mAnimCtrl->GetAnimPart();
-    unsigned int skel_hash = bStringHash("ROOT");
-    CAnimSkeleton *skel = GetSkeletonFromList(skel_hash);
+    CAnimSkeleton *skel = GetSkeletonFromList(bStringHash("ROOT"));
     play_flags = info->instance_data->play_flags;
     anim_part->Init(skel);
 

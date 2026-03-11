@@ -174,6 +174,11 @@ register assignments but does NOT affect integer register assignments (and vice 
   of stores becomes deterministic that way. However if you put all possible variables into the initializer list
   and the order is wrong, you might have to initialize some or all variables in the function body instead. 
 
+### Relocation diffs
+- When you have to use a constant that looks like an address, it's possible that the splitter thought it was
+  an allocation and it shows up as a diff because the left side has a symbol and the right side has a constant.
+  In this case you need to figure out the virtual address of the instruction and block the relocation in config.yml.
+
 
 ### Assembly patterns
 

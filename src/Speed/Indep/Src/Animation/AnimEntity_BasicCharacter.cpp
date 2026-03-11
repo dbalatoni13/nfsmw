@@ -294,13 +294,13 @@ void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
     if (RenderCharacterShadows && mDrawShadow && !is_reflection && CharacterShadowTexture != nullptr && mBoneMapType != -1) {
         bVector3 left_foot;
         bVector3 right_foot;
-        ePoly shadow_poly;
         bVector2 parallel;
         bVector2 perpendicular;
         bVector2 left0;
         bVector2 left1;
         bVector2 right0;
         bVector2 right1;
+        ePoly shadow_poly;
 
         FindWorldBonePosition(BoneMap[mBoneMapType].LeftFoot, &left_foot);
         FindWorldBonePosition(BoneMap[mBoneMapType].RightFoot, &right_foot);
@@ -323,10 +323,10 @@ void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
         left0.y += parallel.y + perpendicular.y;
         left1.x += parallel.x - perpendicular.x;
         left1.y += parallel.y - perpendicular.y;
-        right0.x += perpendicular.x - parallel.x;
-        right0.y += perpendicular.y - parallel.y;
-        right1.x += -parallel.x - perpendicular.x;
-        right1.y += -parallel.y - perpendicular.y;
+        right0.x -= parallel.x - perpendicular.x;
+        right0.y -= parallel.y - perpendicular.y;
+        right1.x -= parallel.x + perpendicular.x;
+        right1.y -= parallel.y + perpendicular.y;
 
         float ground = mSpaceNode->GetWorldMatrix()->v3.z + 0.01f;
         shadow_poly.Vertices[0] = bVector3(left1.x, left1.y, ground);
