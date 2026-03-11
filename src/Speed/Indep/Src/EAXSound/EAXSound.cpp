@@ -453,12 +453,13 @@ EAXCar *EAXSound::GetPlayerTunerCar(int nindex) {
 }
 
 CSTATE_Base *EAXSound::SpawnHelicopter(EAX_HeliState *pHeli) {
-    if (IsSoundEnabled) {
-        CSTATE_Base *newheli = m_pStateMgr[eMM_HELICOPTER]->GetFreeState(pHeli);
-        if (newheli != nullptr) {
-            newheli->Attach(pHeli);
-            return newheli;
-        }
+    if (!IsSoundEnabled) {
+        return nullptr;
+    }
+    CSTATE_Base *newheli = m_pStateMgr[eMM_HELICOPTER]->GetFreeState(pHeli);
+    if (newheli != nullptr) {
+        newheli->Attach(pHeli);
+        return newheli;
     }
     return nullptr;
 }
