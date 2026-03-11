@@ -19,8 +19,8 @@ struct WGridNode {
     void ShutDown() {
         if (fDynElems != nullptr) {
             delete fDynElems;
-            fDynElems = nullptr;
         }
+        fDynElems = nullptr;
     }
 
     WGridNodeElemList* fDynElems;       // offset 0x0, size 0x4
