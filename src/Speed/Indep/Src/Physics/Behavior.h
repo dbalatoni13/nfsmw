@@ -20,6 +20,13 @@ extern Attrib::StringKey BEHAVIOR_MECHANIC_SUSPENSION;
 
 // total size: 0x10
 struct BehaviorParams {
+    BehaviorParams(const Sim::Param &params, struct PhysicsObject *owner,
+                   const UCrc32 &mechanic, const UCrc32 &signature)
+        : fparams(params) //
+        , fowner(owner) //
+        , fSig(signature) //
+        , fMechanic(mechanic) {}
+
     const Sim::Param &fparams;    // offset 0x0, size 0x4
     struct PhysicsObject *fowner; // offset 0x4, size 0x4
     const UCrc32 &fSig;           // offset 0x8, size 0x4

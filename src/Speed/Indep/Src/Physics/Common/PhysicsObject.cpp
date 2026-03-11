@@ -364,15 +364,15 @@ Behavior *PhysicsObject::LoadBehavior(const UCrc32 &mechanic, const UCrc32 &beha
     }
 
     unsigned int key = mechanic.GetValue();
-    BehaviorParams bp = {params, this, behavior, mechanic};
-    beh = Behavior::CreateInstance(sig, bp);
+    BehaviorParams bp(params, this, mechanic, behavior);
+    beh = BuildElement(sig, bp);
     if (beh != nullptr) {
-        AddElement(beh);
-        mBehaviors.Add(beh);
         mMechanics[key] = beh;
+        mBehaviors.Add(beh);
         OnBehaviorChange(mechanic);
+        return beh;
     }
-    return beh;
+    return nullptr;
 }
 
 bool PhysicsObject::Attach(UTL::COM::IUnknown *object) {

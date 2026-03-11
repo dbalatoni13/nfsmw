@@ -59,6 +59,48 @@ struct Performance {
     float Acceleration;
 };
 
+} // namespace Info
+} // namespace Physics
+
+struct PerfStats {
+    PerfStats() //
+        : Time0To100(0.0f) //
+        , TopSpeed(0.0f) //
+        , HandlingRating(0.0f) {}
+
+    bool Fetch(const Attrib::Gen::pvehicle &pvehicle, bVector2 *graph_data, int *num_data);
+
+    float Time0To100;
+    float TopSpeed;
+    float HandlingRating;
+};
+
+struct PerfLevel {
+    PerfLevel(unsigned int key) //
+        : Stats() //
+        , Stock() //
+        , Upgraded() //
+        , Key(key) //
+        , Analyzed(false) {}
+
+    bool Analyze(const Attrib::Gen::pvehicle &pvehicle);
+    void Rate();
+    void Print();
+
+    PerfStats Stats;
+    Physics::Info::Performance Stock;
+    Physics::Info::Performance Upgraded;
+    unsigned int Key;
+    bool Analyzed;
+};
+
+struct PerformanceMaps : public UTL::Std::list<PerfLevel, _type_PerformanceMaps> {
+    void FindLimits(float direction, PerfStats &out) const;
+};
+
+namespace Physics {
+namespace Info {
+
 void Init();
 
 float AerodynamicDownforce(const Attrib::Gen::chassis &chassis, const float speed);
@@ -98,7 +140,7 @@ float MaxInductedTorque(const Attrib::Gen::engine &engine, const Attrib::Gen::in
 float MaxInductedTorque(const Attrib::Gen::pvehicle &pvehicle, float &atrpm, const Tunings *tunings);
 float MaxTorque(const Attrib::Gen::engine &engine, float &atrpm);
 void Init();
-bool FindPerformanceCandidates(const Performance &target, const Performance &tolerance,
+void FindPerformanceCandidates(const Performance &minimum_perf, const Performance &maximum_perf,
                                UTL::Std::list<unsigned int, _type_list> &candidates);
 bool HasPerformanceRatings(const Attrib::Gen::pvehicle &pvehicle);
 bool EstimatePerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &perf);

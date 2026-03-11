@@ -1,10 +1,20 @@
 #include "PhysicsInfo.hpp"
 #include "PhysicsTunings.h"
+#include "PhysicsUpgrades.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/brakes.h"
+#include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/Sim/UTil.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 using namespace Attrib::Gen;
+
+static PerfStats top_stats;
+static PerfStats bottom_stats;
+static PerformanceMaps TheStockCars;
+Physics::Info::Performance Physics::Info::PerformanceWeights[7];
 
 float Physics::Info::AerodynamicDownforce(const chassis &chassis, const float speed) {
     return speed * 2 * chassis.AERO_COEFFICIENT() * 1000.0f;
@@ -381,3 +391,514 @@ bool Physics::Info::HasPerformanceRatings(const pvehicle &pvehicle) {
     float top_handling = pvehicle.HandlingRating(1);
     return base_handling < top_handling && 0.0f < top_handling;
 }
+
+bool PerfStats::Fetch(const pvehicle &vehicle, bVector2 *graph_data, int *num_data) {
+    Time0To100 = 0.0f;
+    TopSpeed = 0.0f;
+    HandlingRating = 0.0f;
+
+    engine eng(vehicle.engine(0), 0, nullptr);
+    induction ind(vehicle.induction(0), 0, nullptr);
+    transmission trans(vehicle.transmission(0), 0, nullptr);
+    chassis chas(vehicle.chassis(0), 0, nullptr);
+    tires tir(vehicle.tires(0), 0, nullptr);
+    brakes bra(vehicle.brakes(0).GetCollection(), 0, nullptr);
+    nos n(vehicle.nos(0), 0, nullptr);
+
+    float max_torque_rpm;
+    Physics::Info::MaxTorque(eng, max_torque_rpm);
+    float wheel_diameter = Physics::Info::WheelDiameter(vehicle, false);
+    float idle_rpm = eng.IDLE();
+    float redline_rpm = eng.RED_LINE();
+    float min_w = RPM2RPS(idle_rpm);
+    float max_w = RPM2RPS(redline_rpm);
+    float wheel_radius = wheel_diameter * 0.5f;
+    float final_gear = trans.FINAL_GEAR();
+    float speed_limiter = MPH2MPS(eng.SPEED_LIMITER(0));
+
+    float shift_up[12];
+    float shift_down[12];
+
+    bool result = Physics::Info::ShiftPoints(trans, eng, ind, shift_up, shift_down, 12);
+
+    if (!result || wheel_radius <= 0.0f || final_gear <= 0.0f) {
+        return false;
+    }
+
+    float speed = 0.0f;
+    unsigned int gear = 0;
+    float time = 0.0f;
+    float mass = vehicle.MASS();
+    float dT = 0.125f;
+    int data_index = 0;
+    if (graph_data != nullptr) {
+        dT = 1.0f;
+    }
+    int max_data_index = 0;
+    if (num_data != nullptr) {
+        max_data_index = *num_data;
+    }
+    float power_range = max_w - min_w;
+    unsigned int num_gears = Physics::Info::NumFowardGears(vehicle);
+    unsigned int last_gear = num_gears - 1;
+
+    do {
+        float total_gear_ratio = trans.GEAR_RATIO(gear + G_FIRST) * final_gear;
+        float differential_rpm = RPS2RPM(min_w + (speed / wheel_radius) * total_gear_ratio * (power_range / max_w));
+        float rpm = UMath::Min(differential_rpm, redline_rpm);
+        rpm = UMath::Max(rpm, idle_rpm);
+
+        if (gear == 0) {
+            rpm = UMath::Max(rpm, max_torque_rpm);
+        }
+
+        float torque = Physics::Info::Torque(eng, rpm) * FTLB2NM(1.0f);
+        float boost = Physics::Info::InductionBoost(eng, ind, rpm, 1.0f, nullptr, nullptr);
+        float nos_capacity = Physics::Info::NosCapacity(n, nullptr);
+        float force = torque * (boost + 1.0f) * total_gear_ratio;
+        if (time < nos_capacity && speed > 5.0f) {
+            float nos_boost = Physics::Info::NosBoost(n, nullptr);
+            force *= nos_boost;
+        }
+        float accel = (force / wheel_radius) / mass;
+
+        if (graph_data != nullptr) {
+            int idx = bMin(data_index, max_data_index);
+            graph_data[idx].y = accel;
+            graph_data[idx].x = speed;
+            data_index++;
+        }
+
+        float drag = UMath::Abs(speed * speed * chas.DRAG_COEFFICIENT()) / mass;
+        speed = (speed + accel * dT) - drag * dT;
+
+        if (speed >= MPH2MPS(100.0f) && Time0To100 <= 0.0f) {
+            Time0To100 = time;
+            dT = 1.0f;
+        }
+
+        if (speed_limiter <= 0.0f || speed < speed_limiter) {
+            if (gear == last_gear) {
+                float top = TopSpeed;
+                if ((accel < drag || redline_rpm <= rpm) && top <= 0.0f) {
+                    TopSpeed = speed;
+                    top = speed;
+                }
+            }
+        } else {
+            TopSpeed = speed_limiter;
+        }
+
+        time += dT;
+
+        if (TopSpeed > 0.0f && Time0To100 > 0.0f) break;
+
+        if (shift_up[gear + G_FIRST] <= rpm) {
+            gear++;
+            if (last_gear <= gear) {
+                gear = last_gear;
+            }
+        }
+    } while (time < 120.0f);
+
+    if (gear == last_gear) {
+        TopSpeed = speed;
+    } else if (TopSpeed <= 0.0f) {
+        TopSpeed = speed;
+    }
+
+    float base_handling = vehicle.HandlingRating(0);
+    float top_handling = vehicle.HandlingRating(1);
+    float handling_sum = 0.0f;
+    float diff = top_handling - base_handling;
+    float *pw = &Physics::Info::PerformanceWeights[0].Handling;
+    float weight_sum = 0.0f;
+    Physics::Upgrades::Type type = Physics::Upgrades::PUT_TIRES;
+    do {
+        Physics::Upgrades::Type next = static_cast<Physics::Upgrades::Type>(type + Physics::Upgrades::PUT_BRAKES);
+        weight_sum += *pw;
+        float pct = Physics::Upgrades::GetPercent(vehicle, type);
+        float w = *pw;
+        pw += 3;
+        handling_sum += pct * w;
+        type = next;
+    } while (static_cast<int>(type) < 7);
+    if (weight_sum > 1e-6f) {
+        handling_sum /= weight_sum;
+    }
+    HandlingRating = UMath::Lerp(base_handling, top_handling, handling_sum);
+
+    if (num_data != nullptr) {
+        *num_data = data_index;
+    }
+
+    bool success = false;
+    if (TopSpeed > 0.0f && Time0To100 > 0.0f) {
+        success = true;
+    }
+    return success;
+}
+
+void PerfLevel::Print() {
+}
+
+void PerfLevel::Rate() {
+    Stock.Handling = UMath::Ramp(Stats.HandlingRating, bottom_stats.HandlingRating, top_stats.HandlingRating);
+
+    float accel_ratio = UMath::Ramp(Stats.Time0To100, bottom_stats.Time0To100, top_stats.Time0To100);
+    Stock.Acceleration = 1.0f - accel_ratio;
+
+    Stock.TopSpeed = UMath::Ramp(Stats.TopSpeed, bottom_stats.TopSpeed, top_stats.TopSpeed);
+}
+
+bool PerfLevel::Analyze(const pvehicle &vehicle) {
+    Analyzed = false;
+    bool result = Stats.Fetch(vehicle, nullptr, nullptr);
+    if (result) {
+        Analyzed = true;
+    }
+    return result;
+}
+
+void PerformanceMaps::FindLimits(float direction, PerfStats &out) const {
+    PerfStats temp;
+    bMemSet(&temp, 0, sizeof(PerfStats));
+    out.Time0To100 = temp.Time0To100;
+    out.TopSpeed = temp.TopSpeed;
+    out.HandlingRating = temp.HandlingRating;
+
+    for (const_iterator iter = begin(); iter != end(); iter++) {
+        const PerfLevel &p = *iter;
+        if (iter == begin()) {
+            out.Time0To100 = p.Stats.Time0To100;
+            out.TopSpeed = p.Stats.TopSpeed;
+            out.HandlingRating = p.Stats.HandlingRating;
+        } else {
+            if (out.HandlingRating * direction < p.Stats.HandlingRating * direction) {
+                out.HandlingRating = p.Stats.HandlingRating;
+            }
+            if (out.Time0To100 * direction < p.Stats.Time0To100 * direction) {
+                out.Time0To100 = p.Stats.Time0To100;
+            }
+            if (out.TopSpeed * direction < p.Stats.TopSpeed * direction) {
+                out.TopSpeed = p.Stats.TopSpeed;
+            }
+        }
+    }
+}
+
+void Physics::Info::Init() {
+    const Attrib::Class *aclass = Attrib::Database::Get().GetClass(pvehicle::ClassKey());
+    unsigned int key = aclass->GetFirstCollection();
+
+    PerformanceMaps all_cars;
+    PerformanceMaps upgraded_cars;
+
+    while (key != 0) {
+        pvehicle vehicle(key, 0, nullptr);
+        if (vehicle.MODEL().GetHash32() != UCrc32::kNull.GetValue() && !vehicle.IsDynamic()) {
+            PerfLevel performance(key);
+            if (performance.Analyze(vehicle)) {
+                all_cars.push_back(performance);
+                upgraded_cars.push_back(performance);
+            }
+        }
+        key = aclass->GetNextCollection(key);
+    }
+
+    for (PerformanceMaps::iterator iter = all_cars.begin(); iter != all_cars.end(); iter++) {
+        PerfLevel &p = *iter;
+        pvehicle vehicle(p.Key, 0, nullptr);
+        if (HasPerformanceRatings(vehicle)) {
+            PerfLevel performance(p.Key);
+            performance.Analyze(vehicle);
+            performance.Rate();
+            performance.Print();
+            p.Stock = performance.Stock;
+            p.Upgraded = performance.Upgraded;
+        }
+    }
+
+    all_cars.FindLimits(1.0f, top_stats);
+    all_cars.FindLimits(-1.0f, bottom_stats);
+
+    for (PerformanceMaps::iterator iter = all_cars.begin(); iter != all_cars.end(); iter++) {
+        PerfLevel &p = *iter;
+        p.Rate();
+        p.Print();
+    }
+
+    TheStockCars = all_cars;
+}
+
+bool Physics::Info::ComputeAccelerationTable(const pvehicle &vehicle, float &top_speed, float *table, int num_entries) {
+    transmission trans(vehicle.transmission(0), 0, nullptr);
+    tires tir(vehicle.tires(0), 0, nullptr);
+    chassis chas(vehicle.chassis(0), 0, nullptr);
+    engine eng(vehicle.engine(0), 0, nullptr);
+    induction ind(vehicle.induction(0), 0, nullptr);
+
+    float avg_torque = AvgInductedTorque(eng, ind, trans, true, nullptr);
+    avg_torque = avg_torque * FTLB2NM(1.0f);
+
+    if (avg_torque <= 0.0f || num_entries < 2 || table == nullptr) {
+        return false;
+    }
+
+    bVector2 graph_data[10];
+    for (int i = 9; i >= 0; i--) {
+    }
+
+    unsigned int num_gears = NumFowardGears(trans);
+    if (num_gears == 0) {
+        return false;
+    }
+
+    float mass = vehicle.MASS();
+    float final_gear = trans.FINAL_GEAR();
+    float wheel_radius = WheelDiameter(tir, false) * 0.5f;
+
+    if (wheel_radius <= 0.001f) {
+        return false;
+    }
+
+    top_speed = 0.0f;
+    int graph_max = 0;
+    float prev_accel = 0.0f;
+    float prev_speed = 0.0f;
+
+    for (unsigned int foward_gear = 0; foward_gear < num_gears; foward_gear++) {
+        float gear_ratio = trans.GEAR_RATIO(foward_gear + G_FIRST) * final_gear;
+        float gear_eff = trans.GEAR_EFFICIENCY(foward_gear + G_FIRST);
+
+        if (gear_ratio <= 0.0f) break;
+
+        float speed = (eng.RED_LINE() * RPM2RPS(1.0f) * wheel_radius) / gear_ratio;
+        float force = (avg_torque * gear_ratio * gear_eff) / wheel_radius;
+        float drag = speed * speed * chas.DRAG_COEFFICIENT();
+        float accel = (force - drag) / mass;
+
+        if (accel <= 0.0f) {
+            if (prev_accel <= 0.0f) break;
+            speed = UMath::Lerp(prev_speed, speed, prev_accel / (prev_accel - accel));
+            accel = 0.0f;
+        }
+
+        top_speed = UMath::Max(top_speed, speed);
+
+        graph_data[graph_max].x = speed;
+        graph_data[graph_max].y = accel;
+        graph_max++;
+        prev_accel = accel;
+        prev_speed = speed;
+    }
+
+    if (graph_max == 0) {
+        return false;
+    }
+
+    Graph accel_graph(graph_data, graph_max);
+    float max_speed = top_speed;
+
+    if (max_speed <= 0.0f) {
+        return false;
+    }
+
+    float inc = max_speed / static_cast<float>(num_entries - 1);
+    for (int i = 0; i < num_entries; i++) {
+        table[i] = accel_graph.GetValue(inc * static_cast<float>(i));
+    }
+
+    return true;
+}
+
+bool Physics::Info::EstimatePerformance(const pvehicle &vehicle, Performance &perf) {
+    Performance stock;
+    Performance upgraded;
+
+    bool success = GetStockPerformance(vehicle, stock);
+    bool result = false;
+    if (success) {
+        success = GetMaximumPerformance(vehicle, upgraded);
+        if (success) {
+            perf.TopSpeed = 0.0f;
+            perf.Acceleration = 0.0f;
+            perf.Handling = 0.0f;
+
+            Performance weights;
+            Performance junk;
+            Performance junk_weights;
+
+            Physics::Info::Performance *pw = PerformanceWeights;
+            Physics::Upgrades::Type type = Physics::Upgrades::PUT_TIRES;
+            do {
+                float value = Physics::Upgrades::GetPercent(vehicle, type);
+
+                junk_weights.Handling += pw->Handling;
+                junk_weights.Acceleration += pw->Acceleration;
+                junk_weights.TopSpeed += pw->TopSpeed;
+
+                if (Physics::Upgrades::GetJunkman(vehicle, type)) {
+                    junk.Handling += pw->Handling;
+                    junk.Acceleration += pw->Acceleration;
+                    junk.TopSpeed += pw->TopSpeed;
+                }
+
+                float hw = pw->Handling;
+                type = static_cast<Physics::Upgrades::Type>(type + Physics::Upgrades::PUT_BRAKES);
+                float handling = hw * value + perf.Handling;
+                weights.Handling += hw;
+                perf.Handling = handling;
+                weights.Acceleration += pw->Acceleration;
+                perf.Acceleration += pw->Acceleration * value;
+                weights.TopSpeed += pw->TopSpeed;
+                perf.TopSpeed += pw->TopSpeed * value;
+                pw++;
+            } while (static_cast<int>(type) < 7);
+
+            if (weights.Handling > 1e-6f) {
+                perf.Handling = perf.Handling / weights.Handling;
+            }
+            if (weights.Acceleration > 1e-6f) {
+                perf.Acceleration = perf.Acceleration / weights.Acceleration;
+            }
+            if (weights.TopSpeed > 1e-6f) {
+                perf.TopSpeed = perf.TopSpeed / weights.TopSpeed;
+            }
+
+            if (junk_weights.Handling > 1e-6f) {
+                float junk_ratio = junk.Handling / junk_weights.Handling;
+                upgraded.Handling = UMath::Lerp(upgraded.Handling, 1.0f, junk_ratio);
+                float bonus = junk_ratio * 0.33f;
+                float h = perf.Handling * (bonus + 1.0f);
+                perf.Handling = h;
+                stock.Handling = UMath::Lerp(stock.Handling, upgraded.Handling, bonus);
+                perf.Handling = UMath::Min(h, 1.0f);
+            }
+
+            if (junk_weights.Acceleration > 1e-6f) {
+                float junk_ratio = junk.Acceleration / junk_weights.Acceleration;
+                upgraded.Acceleration = UMath::Lerp(upgraded.Acceleration, 1.0f, junk_ratio);
+                float bonus = junk_ratio * 0.33f;
+                float a = perf.Acceleration * (bonus + 1.0f);
+                perf.Acceleration = a;
+                stock.Acceleration = UMath::Lerp(stock.Acceleration, upgraded.Acceleration, bonus);
+                perf.Acceleration = UMath::Min(a, 1.0f);
+            }
+
+            if (junk_weights.TopSpeed > 1e-6f) {
+                float junk_ratio = junk.TopSpeed / junk_weights.TopSpeed;
+                upgraded.TopSpeed = UMath::Lerp(upgraded.TopSpeed, 1.0f, junk_ratio);
+                float bonus = junk_ratio * 0.33f;
+                float t = perf.TopSpeed * (bonus + 1.0f);
+                perf.TopSpeed = t;
+                stock.TopSpeed = UMath::Lerp(stock.TopSpeed, upgraded.TopSpeed, bonus);
+                perf.TopSpeed = UMath::Min(t, 1.0f);
+            }
+
+            result = true;
+            perf.Handling = UMath::Lerp(stock.Handling, upgraded.Handling, perf.Handling);
+            perf.Acceleration = UMath::Lerp(stock.Acceleration, upgraded.Acceleration, perf.Acceleration);
+            perf.TopSpeed = UMath::Lerp(stock.TopSpeed, upgraded.TopSpeed, perf.TopSpeed);
+        } else {
+            result = false;
+        }
+    }
+    return result;
+}
+
+bool Physics::Info::ComputePerformance(const pvehicle &vehicle, Performance &perf) {
+    if (!HasPerformanceRatings(vehicle)) {
+        return false;
+    }
+
+    for (PerformanceMaps::iterator iter = TheStockCars.begin(); iter != TheStockCars.end(); iter++) {
+        if ((*iter).Key == vehicle.GetCollection()) {
+            perf.TopSpeed = (*iter).Stock.TopSpeed;
+            perf.Handling = (*iter).Stock.Handling;
+            perf.Acceleration = (*iter).Stock.Acceleration;
+            return true;
+        }
+    }
+
+    unsigned int coll_key = vehicle.GetCollection();
+    PerfLevel perf_level(coll_key);
+    bMemSet(&perf_level.Stats, 0, sizeof(PerfStats));
+    perf_level.Stock.Default();
+    perf_level.Upgraded.Default();
+    perf_level.Analyzed = false;
+    perf_level.Key = coll_key;
+    if (perf_level.Analyze(vehicle)) {
+        perf_level.Rate();
+        perf.TopSpeed = perf_level.Stock.TopSpeed;
+        perf.Handling = perf_level.Stock.Handling;
+        perf.Acceleration = perf_level.Stock.Acceleration;
+        return true;
+    }
+
+    return false;
+}
+
+bool Physics::Info::GetStockPerformance(const pvehicle &vehicle, Performance &perf) {
+    if (!HasPerformanceRatings(vehicle)) {
+        return false;
+    }
+
+    unsigned int key = vehicle.GetCollection();
+    if (vehicle.IsDynamic()) {
+        key = vehicle.GetParent();
+    }
+
+    for (PerformanceMaps::const_iterator iter = TheStockCars.begin(); iter != TheStockCars.end(); iter++) {
+        const PerfLevel &p = *iter;
+        if (p.Key == key) {
+            perf.TopSpeed = p.Stock.TopSpeed;
+            perf.Handling = p.Stock.Handling;
+            perf.Acceleration = p.Stock.Acceleration;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Physics::Info::GetMaximumPerformance(const pvehicle &vehicle, Performance &perf) {
+    if (!HasPerformanceRatings(vehicle)) {
+        return false;
+    }
+
+    unsigned int key = vehicle.GetCollection();
+    if (vehicle.IsDynamic()) {
+        key = vehicle.GetParent();
+    }
+
+    for (PerformanceMaps::const_iterator iter = TheStockCars.begin(); iter != TheStockCars.end(); iter++) {
+        const PerfLevel &p = *iter;
+        if (p.Key == key) {
+            perf.TopSpeed = p.Upgraded.TopSpeed;
+            perf.Handling = p.Upgraded.Handling;
+            perf.Acceleration = p.Upgraded.Acceleration;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void Physics::Info::FindPerformanceCandidates(const Performance &minimum_perf, const Performance &maximum_perf,
+                                              UTL::Std::list<unsigned int, _type_list> &vlist) {
+    vlist.clear();
+
+    for (PerformanceMaps::const_iterator iter = TheStockCars.begin(); iter != TheStockCars.end(); iter++) {
+        const PerfLevel &p = *iter;
+        if (p.Stock.TopSpeed <= maximum_perf.TopSpeed &&
+            p.Stock.Acceleration <= maximum_perf.Acceleration &&
+            p.Stock.Handling <= maximum_perf.Handling &&
+            minimum_perf.TopSpeed <= p.Upgraded.TopSpeed &&
+            minimum_perf.Acceleration <= p.Upgraded.Acceleration &&
+            minimum_perf.Handling <= p.Upgraded.Handling) {
+            vlist.push_back(p.Key);
+        }
+    }
+}
+
