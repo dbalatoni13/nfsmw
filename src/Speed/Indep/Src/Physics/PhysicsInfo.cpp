@@ -274,7 +274,8 @@ float Physics::Info::MaxInductedPower(const pvehicle &pvehicle, const Tunings *t
 }
 
 float Physics::Info::AvgInductedTorque(const engine &eng, const induction &ind, const transmission &trans, bool from_peak, const Tunings *tunings) {
-    if (eng.Num_TORQUE() < 2) {
+    unsigned int num_torque = eng.Num_TORQUE();
+    if (num_torque < 2) {
         return 0.0f;
     }
 

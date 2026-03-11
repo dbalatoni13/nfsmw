@@ -466,9 +466,9 @@ void PVehicle::UpdateLocalVelocities() {
     IRigidBody *rigidbody = static_cast<ISimable *>(this)->GetRigidBody();
     if (rigidbody == nullptr || mCollisionBody == nullptr) {
         UMath::Clear(mLocalVel);
-        mAbsSpeed = 0.0f;
-        mSlipAngle = 0.0f;
         mSpeed = 0.0f;
+        mSlipAngle = 0.0f;
+        mAbsSpeed = 0.0f;
     } else {
         mLocalVel = rigidbody->GetLinearVelocity();
         rigidbody->ConvertWorldToLocal(mLocalVel, false);

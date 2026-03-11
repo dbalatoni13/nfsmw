@@ -60,10 +60,10 @@ static float GetDropTimer(const Attrib::Gen::smackable &attributes) {
     if (!(result > 0.0f)) {
         return 0.0f;
     }
-    if (!(attributes.DROPOUT(1) > 0.0f)) {
-        return 0.0f;
+    if (attributes.DROPOUT(1) > 0.0f) {
+        return result;
     }
-    return result;
+    return 0.0f;
 }
 
 bool Smackable::Simplify() {
@@ -271,17 +271,16 @@ void Smackable::OnBehaviorChange(const UCrc32 &mechanic) {
 }
 
 void Smackable::DoImpactStimulus(unsigned int systemid, float intensity) {
-    float externalTime = Sim::GetTime();
+    float time = Sim::GetTime();
     EventSequencer::IEngine *iev = static_cast< ISimable * >(this)->GetEventSequencer();
     if (iev != nullptr) {
         EventSequencer::System *system = iev->FindSystem(systemid);
         if (system != nullptr) {
-            float clamped = UMath::Clamp(intensity, 0.0f, 1.0f);
-            unsigned int level = static_cast< unsigned int >(clamped * 6.0f);
-            unsigned int count = level + 1;
-            for (unsigned int i = 0; i < count; i++) {
+            intensity = UMath::Clamp(intensity, 0.0f, 1.0f);
+            unsigned int level = static_cast< unsigned int >(intensity * 6.0f);
+            for (unsigned int i = 0; i < level + 1; i++) {
                 UCrc32 stimulus = DamageZone::GetImpactStimulus(i);
-                system->ProcessStimulus(stimulus.GetValue(), externalTime,
+                system->ProcessStimulus(stimulus.GetValue(), time,
                                         static_cast< EventSequencer::IContext * >(this),
                                         EventSequencer::QUEUE_ALLOW);
             }
