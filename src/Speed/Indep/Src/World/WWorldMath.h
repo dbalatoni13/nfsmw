@@ -31,14 +31,15 @@ inline float InvSqrt(const float f) {
     return VU0_rsqrt(f);
 }
 
+inline float wwfabs(float a) {
+    float r;
+    asm("fabs %0, %1" : "=f"(r) : "f"(a));
+    return r;
+}
+
 inline bool PtsEqual(const UMath::Vector3 &p0, const UMath::Vector3 &p1, float tolerance) {
-    float d;
-    asm("fabs %0, %1" : "=f"(d) : "f"(p0.x - p1.x));
-    if (d >= tolerance) return false;
-    asm("fabs %0, %1" : "=f"(d) : "f"(p0.y - p1.y));
-    if (d >= tolerance) return false;
-    asm("fabs %0, %1" : "=f"(d) : "f"(p0.z - p1.z));
-    return d < tolerance;
+    const float kTolerance = tolerance;
+    return wwfabs(p0.x - p1.x) < kTolerance && wwfabs(p0.y - p1.y) < kTolerance && wwfabs(p0.z - p1.z) < kTolerance;
 }
 
 inline void Crossxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r) {

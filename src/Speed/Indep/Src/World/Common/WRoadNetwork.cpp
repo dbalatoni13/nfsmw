@@ -1384,41 +1384,39 @@ void WRoadNav::UpdateCookieTrail(float cookie_gap) {
         if (!add_new_cookie) return;
     }
 
-    {
-        NavCookie cookie;
-        cookie.SetSegmentParameter(GetSegmentTime());
-        cookie.Centre = GetPosition();
-        cookie.Flags = 0;
-        cookie.Length = cookie_length;
-        cookie.Curvature = GetCurvature();
-        cookie.SegmentNumber = GetSegmentInd() & 0x7FFF;
-        cookie.SegmentNodeInd = GetNodeInd() & 1;
+    NavCookie cookie;
+    cookie.SetSegmentParameter(GetSegmentTime());
+    cookie.Centre = GetPosition();
+    cookie.Flags = 0;
+    cookie.Length = cookie_length;
+    cookie.Curvature = GetCurvature();
+    cookie.SegmentNumber = GetSegmentInd() & 0x7FFF;
+    cookie.SegmentNodeInd = GetNodeInd() & 1;
 
-        bVector2 centre(GetPosition().x, GetPosition().z);
+    bVector2 centre(GetPosition().x, GetPosition().z);
 
-        cookie.Left = UMath::Vector2Make(GetLeftPosition().x, GetLeftPosition().z);
-        cookie.Right = UMath::Vector2Make(GetRightPosition().x, GetRightPosition().z);
+    cookie.Left = UMath::Vector2Make(GetLeftPosition().x, GetLeftPosition().z);
+    cookie.Right = UMath::Vector2Make(GetRightPosition().x, GetRightPosition().z);
 
-        bVector2 centre_to_left = *reinterpret_cast<bVector2 *>(&cookie.Left) - centre;
-        bVector2 centre_to_right = *reinterpret_cast<bVector2 *>(&cookie.Right) - centre;
-        bVector2 right = centre_to_right - centre_to_left;
-        bVector2 forward(-right.y, right.x);
+    bVector2 centre_to_left = *reinterpret_cast<bVector2 *>(&cookie.Left) - centre;
+    bVector2 centre_to_right = *reinterpret_cast<bVector2 *>(&cookie.Right) - centre;
+    bVector2 right = centre_to_right - centre_to_left;
+    bVector2 forward(-right.y, right.x);
 
-        bNormalize(reinterpret_cast<bVector2 *>(&cookie.Forward), &forward);
+    bNormalize(reinterpret_cast<bVector2 *>(&cookie.Forward), &forward);
 
-        cookie.LeftOffset = bCross(&centre_to_left, reinterpret_cast<const bVector2 *>(&cookie.Forward));
-        cookie.RightOffset = bCross(&centre_to_right, reinterpret_cast<const bVector2 *>(&cookie.Forward));
+    cookie.LeftOffset = bCross(&centre_to_left, reinterpret_cast<const bVector2 *>(&cookie.Forward));
+    cookie.RightOffset = bCross(&centre_to_right, reinterpret_cast<const bVector2 *>(&cookie.Forward));
 
-        if (num_cookies == 0) {
-            mCurrentCookie = cookie;
-        }
-
-        if (pCookieTrail->Count() == pCookieTrail->Capacity()) {
-            nCookieIndex = bMax(nCookieIndex - 1, 0);
-        }
-
-        pCookieTrail->AddNew(cookie);
+    if (num_cookies == 0) {
+        mCurrentCookie = cookie;
     }
+
+    if (pCookieTrail->Count() == pCookieTrail->Capacity()) {
+        nCookieIndex = bMax(nCookieIndex - 1, 0);
+    }
+
+    pCookieTrail->AddNew(cookie);
 }
 
 void WRoadNav::IncNavPosition(float dist, const UMath::Vector3 &to, float max_lookahead) {
