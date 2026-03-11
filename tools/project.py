@@ -1780,6 +1780,10 @@ def generate_objdiff_config(
         ],
         "units": [],
         "progress_categories": [],
+        "options": {
+            "functionRelocDiffs": "none",
+            "ppc.calculatePoolRelocations": False,
+        },
     }
 
     # decomp.me compiler name mapping

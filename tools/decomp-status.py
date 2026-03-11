@@ -36,7 +36,20 @@ def load_project_config() -> Dict[str, Any]:
 def run_objdiff(unit_name: str) -> Optional[Dict[str, Any]]:
     """Run objdiff-cli diff for a unit and return parsed JSON."""
     result = subprocess.run(
-        [OBJDIFF_CLI, "diff", "-u", unit_name, "-o", "-", "--format", "json"],
+        [
+            OBJDIFF_CLI,
+            "diff",
+            "-c",
+            "functionRelocDiffs=none",
+            "-c",
+            "ppc.calculatePoolRelocations=false",
+            "-u",
+            unit_name,
+            "-o",
+            "-",
+            "--format",
+            "json",
+        ],
         capture_output=True,
         cwd=root_dir,
     )
