@@ -197,16 +197,16 @@ void ItemTypeToggle::Draw() {
     const unsigned long FEObj_Highlight = 0x249db7b7;
     FEngSetLanguageHash(GetTitleObject(), NameHash);
     if (bVisibility) {
-        const unsigned long FEObj_NORMAL = 0x163c76;
-        FEngSetScript(pIconGroup, FEObj_NORMAL, true);
-        if (!FEngIsScriptSet(static_cast< FEObject* >(GetTitleObject()), FEObj_Highlight)) {
-            FEngSetScript(static_cast< FEObject* >(GetTitleObject()), FEObj_NORMAL, true);
-        }
-    } else {
         const unsigned long FEObj_GREY = 0x6ebbfb68;
         FEngSetScript(pIconGroup, FEObj_GREY, true);
         if (!FEngIsScriptSet(static_cast< FEObject* >(GetTitleObject()), FEObj_Highlight)) {
             FEngSetScript(static_cast< FEObject* >(GetTitleObject()), FEObj_GREY, true);
+        }
+    } else {
+        const unsigned long FEObj_NORMAL = 0x163c76;
+        FEngSetScript(pIconGroup, FEObj_NORMAL, true);
+        if (!FEngIsScriptSet(static_cast< FEObject* >(GetTitleObject()), FEObj_Highlight)) {
+            FEngSetScript(static_cast< FEObject* >(GetTitleObject()), FEObj_NORMAL, true);
         }
     }
 }

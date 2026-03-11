@@ -88,7 +88,9 @@ struct MapItem : public bTNode<MapItem> {
             float rot, GIcon* icon);
     virtual ~MapItem();
 
-    void GetInitialPos(bVector2& pos);
+    void GetInitialPos(bVector2& pos) {
+        pos = InitialPos;
+    }
     void GetWorldPos(bVector2& pos) {
         pos = WorldPos;
     }
@@ -111,7 +113,7 @@ struct MapItem : public bTNode<MapItem> {
     virtual void ResetSize() {
         FEngSetSize(pIcon, InitialSize.x, InitialSize.y);
     }
-    GIcon* GetIcon();
+    GIcon* GetIcon() { return TheIcon; }
     void SetHidden(bool b) {
         bHidden = b;
         if (!b) {
