@@ -15,6 +15,43 @@ void FEPrintf(const char* pkg_name, unsigned int hash, const char* format, ...);
 unsigned int FEngHashString(const char* format, ...);
 const char* GetLocalizedString(unsigned int hash);
 
+
+SMSMessage* the_sms_msg;
+
+struct SMSDatum : public ArrayDatum {
+    SMSMessage* my_msg; // offset 0x24, size 0x4
+
+    SMSDatum(SMSMessage* msg)
+        : ArrayDatum(0, 0) //
+        , my_msg(msg)
+    {}
+
+    ~SMSDatum() override {}
+
+    void NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1, unsigned long param2) override;
+};
+
+struct SMSSortNode : public bTNode<SMSSortNode> {
+    SMSMessage* the_msg; // offset 0x8, size 0x4
+
+    SMSSortNode(SMSMessage* msg)
+        : the_msg(msg)
+    {}
+
+    ~SMSSortNode() {}
+};
+
+void SMSDatum::NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1, unsigned long param2) {
+    if (msg != 0x0C407210) {
+        return;
+    }
+    the_sms_msg = my_msg;
+}
+
+int SortSMS(SMSSortNode* before, SMSSortNode* after) {
+    return after->the_msg->GetSortOrder() < before->the_msg->GetSortOrder();
+}
+
 uiSMS::uiSMS(ScreenConstructorData* sd)
     : ArrayScrollerMenu(sd, 3, 3, true) {
     button_pressed = 0;
