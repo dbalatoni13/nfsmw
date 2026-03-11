@@ -801,12 +801,13 @@ bool WRoadNav::IsWrongWay() const {
             bool seg_foward = segment->RaceRouteForward();
             if (fNodeInd == 1) {
                 if (!seg_foward) {
-                    return false;
+                    result = true;
                 }
-            } else if (seg_foward) {
-                return false;
+            } else {
+                if (seg_foward) {
+                    result = true;
+                }
             }
-            result = true;
         }
     }
     return result;
@@ -1620,6 +1621,7 @@ void WRoadNav::InitAtSegment(short segInd, char laneInd, float timeStep) {
     SetLaneOffset(0.0f);
 
     {
+        SetLaneInd(laneInd);
         const WRoadNode *nodePtr[2];
         const WRoadProfile *profile;
         float startOffset;

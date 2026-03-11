@@ -63,8 +63,10 @@ WCollisionAssets::~WCollisionAssets() {
         }
     }
 
-    delete[] mCollisionPackList;
-    mCollisionPackList = nullptr;
+    if (mCollisionPackList != nullptr) {
+        delete[] mCollisionPackList;
+        mCollisionPackList = nullptr;
+    }
 
     delete fManagedCollisionInstances;
     fManagedCollisionInstances = nullptr;

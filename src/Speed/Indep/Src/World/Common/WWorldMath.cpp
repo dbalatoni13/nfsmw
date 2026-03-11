@@ -61,22 +61,21 @@ bool WWorldMath::MakeSegSpaceMatrix(const UMath::Vector3 &startPt, const UMath::
     forward.z = forward.z * rLen;
     forward.y = fwdY;
 
+    right.z = 0.0f;
     if (wwfabs(fwdY) > 0.9f) {
         right.w = 0.0f;
         right.y = 0.0f;
         right.x = 1.0f;
-        right.z = 0.0f;
     } else {
         right.w = 0.0f;
         right.x = 0.0f;
         right.y = 1.0f;
-        right.z = 0.0f;
     }
 
     Crossxyz(right, forward, up);
 
     up.w = 0.0f;
-    float lensq = up.y * up.y + up.x * up.x + up.z * up.z;
+    float lensq = up.x * up.x + up.y * up.y + up.z * up.z;
     if (lensq != 0.0f) {
         rLen = InvSqrt(lensq);
     } else {
@@ -101,14 +100,15 @@ float WWorldMath::GetPlaneY(const UMath::Vector3 &normal, const UMath::Vector3 &
 }
 
 void WWorldMath::NearestPointLine2D3(const UMath::Vector3 &pt, const UMath::Vector3 &p0, const UMath::Vector3 &p1, UMath::Vector3 &nearPt) {
+
     const float &x1 = p0.x;
     const float &z1 = p0.z;
     const float &x2 = p1.x;
     const float &z2 = p1.z;
     const float &px = pt.x;
     const float &pz = pt.z;
-    float x = x2 - x1;
     float z = z2 - z1;
+    float x = x2 - x1;
     float div = pow2(x) + pow2(z);
     float u = (px - x1) * x + (pz - z1) * z;
     if (0.0f < div) {
@@ -116,20 +116,23 @@ void WWorldMath::NearestPointLine2D3(const UMath::Vector3 &pt, const UMath::Vect
     } else {
         u = 0.0f;
     }
-    nearPt.x = u * (x2 - x1) + x1;
-    nearPt.z = u * (z2 - z1) + z1;
+    float nz = u * (z2 - z1) + z1;
+    float nx = u * (x2 - x1) + x1;
     nearPt.y = 0.0f;
+    nearPt.z = nz;
+    nearPt.x = nx;
 }
 
 void WWorldMath::NearestPointLine2D(const UMath::Vector4 &pt, const UMath::Vector4 *line, UMath::Vector4 &nearPt) {
+
     const float &x1 = line[0].x;
     const float &z1 = line[0].z;
     const float &x2 = line[1].x;
     const float &z2 = line[1].z;
     const float &px = pt.x;
     const float &pz = pt.z;
-    float x = x2 - x1;
     float z = z2 - z1;
+    float x = x2 - x1;
     float div = pow2(x) + pow2(z);
     float u = (px - x1) * x + (pz - z1) * z;
     if (0.0f < div) {
@@ -137,9 +140,11 @@ void WWorldMath::NearestPointLine2D(const UMath::Vector4 &pt, const UMath::Vecto
     } else {
         u = 0.0f;
     }
-    nearPt.x = u * (x2 - x1) + x1;
-    nearPt.z = u * (z2 - z1) + z1;
+    float nz = u * (z2 - z1) + z1;
+    float nx = u * (x2 - x1) + x1;
     nearPt.y = 0.0f;
+    nearPt.z = nz;
+    nearPt.x = nx;
 }
 
 bool WWorldMath::IntersectSegPlane(const UMath::Vector3 &P1, const UMath::Vector3 &P2, const UMath::Vector3 &PtOnPlane, const UMath::Vector3 &Normal, UMath::Vector3 &intersectionPt, float &t) {
@@ -163,33 +168,40 @@ bool WWorldMath::IntersectSegPlane(const UMath::Vector3 &P1, const UMath::Vector
 }
 
 bool WWorldMath::SegmentIntersect(const UMath::Vector4 *line1, const UMath::Vector4 *line2, UMath::Vector4 *intersectPt) {
-    const float x11 = line1[0].x;
-    const float z11 = line1[0].z;
-    const float x22 = line2[0].x;
-    const float l1z = line1[1].z - z11;
-    const float z22 = line2[0].z;
-    const float l2x = line2[1].x - x22;
-    const float l2z = line2[1].z - z22;
-    const float l1x = line1[1].x - x11;
-    const float ua_d = l2z * l1x - l2x * l1z;
+    const float l1x = line1[0].x;
+    const float l1z = line1[0].z;
+    const float x11 = line1[1].x - l1x;
+    const float z11 = line1[1].z - l1z;
+    const float l2z = line2[0].z;
+    const float l2x = line2[0].x;
+    const float x22 = line2[1].x - l2x;
+    const float z22 = line2[1].z - l2z;
+    const float ua_d = z22 * x11 - x22 * z11;
     if (ua_d == 0.0f) {
         return false;
     }
-    const float x12 = x11 - x22;
-    const float z12 = z11 - z22;
-    const float ua_n = l2x * z12 - l2z * x12;
-    if ((0.0f <= ua_n && ua_n <= ua_d) || (ua_n <= 0.0f && ua_d <= ua_n)) {
-        const float ub_n = l1x * z12 - l1z * x12;
-        if ((0.0f <= ub_n && ub_n <= ua_d) || (ub_n <= 0.0f && ua_d <= ub_n)) {
+    {
+        const float z12 = l1z - l2z;
+        const float x12 = l1x - l2x;
+        const float ua_n = x22 * z12 - z22 * x12;
+        if (0.0f <= ua_n && ua_n <= ua_d) goto ua_ok;
+        if (ua_n <= 0.0f && ua_d <= ua_n) goto ua_ok;
+        return false;
+    ua_ok:
+        {
+            const float ub_n = x11 * z12 - z11 * x12;
+            if (0.0f <= ub_n && ub_n <= ua_d) goto ub_ok;
+            if (ub_n <= 0.0f && ua_d <= ub_n) goto ub_ok;
+            return false;
+        ub_ok:
             if (intersectPt != nullptr) {
                 float t = ua_n / ua_d;
-                intersectPt->x = t * l1x + x11;
+                intersectPt->x = t * x11 + l1x;
+                intersectPt->z = t * z11 + l1z;
                 intersectPt->w = 1.0f;
-                intersectPt->z = t * l1z + z11;
                 intersectPt->y = t * (line1[1].y - line1[0].y) + line1[0].y;
             }
             return true;
         }
     }
-    return false;
 }

@@ -465,7 +465,7 @@ void WTriggerManager::GetIntersectingTriggers(const UMath::Vector3 &pt, float ra
                 if (trig.fIterStamp != fIterCount) {
                     trig.fIterStamp = fIterCount;
                     float totalRadius = radius + trig.fPosRadius.w;
-                    if (DistanceSquared_XZ(UMath::Vector4To3(trig.fPosRadius), pt) < totalRadius * totalRadius) {
+                    if (DistanceSquared_XZ(pt, UMath::Vector4To3(trig.fPosRadius)) < totalRadius * totalRadius) {
                         triggerList->push_back(&trig);
                     }
                 }
