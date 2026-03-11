@@ -15,6 +15,9 @@ class AudioEvent : public _AudioEventBase {
 
   public:
     virtual ~AudioEvent() {}
+    virtual void Stop() = 0;
+    virtual void _unk() = 0;
+    virtual void Update(const bVector3 &p, const bVector3 &n, const bVector3 &v, float mag) = 0;
 };
 } // namespace Sound
 
@@ -207,19 +210,22 @@ WorldEffectConn::WorldEffectConn(const Sim::ConnectionData &data, const WorldCon
       mAttributes(oc->mEffectGroup, 0, nullptr), //
       mOwnerRef(oc->mOwner)
 {
-    unsigned int effect_creation_flags = 0;
-
-    mAudioEvent = nullptr;
     mPaused = false;
     mSilent = false;
+    mAudioEvent = nullptr;
     mActee = oc->mActee;
+
+    unsigned int effect_creation_flags = 0;
 
     Attrib::Instance owner_attribs(oc->mOwnerAttributes, 0, nullptr);
     unsigned int owner_class = owner_attribs.GetClass();
-    if (owner_class == 0x4a97ec8f) {
+    switch (owner_class) {
+    case 0x4a97ec8f:
         effect_creation_flags = 0x10000000;
-    } else if (owner_class == 0xce70d7db) {
+        break;
+    case 0xce70d7db:
         effect_creation_flags = 0x20000000;
+        break;
     }
 
     Attrib::Instance context_attribs(oc->mContext, 0, nullptr);
@@ -251,7 +257,7 @@ WorldEffectConn::~WorldEffectConn() {
         }
     }
     if (mAudioEvent != nullptr) {
-        delete static_cast<Sound::AudioEvent *>(mAudioEvent);
+        static_cast<Sound::AudioEvent *>(mAudioEvent)->Stop();
         mAudioEvent = nullptr;
     }
     mList.Remove(this);
