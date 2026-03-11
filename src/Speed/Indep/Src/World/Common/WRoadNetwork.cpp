@@ -210,6 +210,7 @@ void WRoadNetwork::ResolveBarriers() {
     for (int barrier_number = 0; barrier_number < num_barriers; barrier_number++) {
         TrackPathBarrier *barrier = TheTrackPathManager.GetBarrier(barrier_number);
         if (barrier->IsEnabled()) {
+            typedef UTL::Std::set<short, _type_set> SEGMENT_SET;
             UMath::Vector4 barrier_points[2];
             barrier_points[0] = UMath::Vector4Make(-barrier->Points[0].y, 0.0f,
                                                    barrier->Points[0].x, 1.0f);
@@ -219,7 +220,6 @@ void WRoadNetwork::ResolveBarriers() {
             UTL::FastVector<unsigned int, 16> node_list;
             grid.FindNodes(barrier_points, node_list);
 
-            typedef UTL::Std::set<short, _type_set> SEGMENT_SET;
             SEGMENT_SET segment_set;
 
             for (unsigned int *iter = node_list.begin(); iter != node_list.end(); ++iter) {
@@ -1596,9 +1596,9 @@ void WRoadNav::InitAtSegment(short segInd, char laneInd, float timeStep) {
     WRoadNetwork &roadNetwork = WRoadNetwork::Get();
     const WRoadSegment *segment = roadNetwork.GetSegment(segInd);
 
+    fSegmentInd = segInd;
     fDeadEnd = 0;
     fValid = true;
-    fSegmentInd = segInd;
 
     UMath::Vector3 vec;
     roadNetwork.GetSegmentForwardVector(segInd, vec);
@@ -1621,15 +1621,16 @@ void WRoadNav::InitAtSegment(short segInd, char laneInd, float timeStep) {
 
     {
         const WRoadNode *nodePtr[2];
+        const WRoadProfile *profile;
+        float startOffset;
+        float endOffset;
         roadNetwork.GetSegmentNodes(*segment, nodePtr);
 
-        const WRoadProfile *profile;
-
         profile = roadNetwork.GetProfile(nodePtr[fNodeInd == 0]->fProfileIndex);
-        float startOffset = profile->GetRawLaneOffset(static_cast< int >(laneInd));
+        startOffset = profile->GetRawLaneOffset(static_cast< int >(laneInd));
 
         profile = roadNetwork.GetProfile(nodePtr[fNodeInd]->fProfileIndex);
-        float endOffset = profile->GetRawLaneOffset(static_cast< int >(laneInd));
+        endOffset = profile->GetRawLaneOffset(static_cast< int >(laneInd));
 
         float laneOffset = (endOffset - startOffset) * fSegTime + startOffset;
         SetLaneOffset(laneOffset);

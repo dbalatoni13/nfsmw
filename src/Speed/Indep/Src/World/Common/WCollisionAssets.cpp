@@ -66,22 +66,14 @@ WCollisionAssets::~WCollisionAssets() {
     delete[] mCollisionPackList;
     mCollisionPackList = nullptr;
 
-    if (fManagedCollisionInstances != nullptr) {
-        CollisionInstanceMap::iterator it;
-        for (it = fManagedCollisionInstances->begin(); it != fManagedCollisionInstances->end(); ++it) {
-            delete it->second;
-        }
-        delete fManagedCollisionInstances;
-    }
+    delete fManagedCollisionInstances;
     fManagedCollisionInstances = nullptr;
 
-    if (fManagedCollisionObjects != nullptr) {
-        CollisionObjectMap::iterator it;
-        for (it = fManagedCollisionObjects->begin(); it != fManagedCollisionObjects->end(); ++it) {
-            delete it->second;
-        }
-        delete fManagedCollisionObjects;
+    CollisionObjectMap::iterator iter;
+    for (iter = fManagedCollisionObjects->begin(); iter != fManagedCollisionObjects->end(); ++iter) {
+        delete iter->second;
     }
+    delete fManagedCollisionObjects;
     fManagedCollisionObjects = nullptr;
 }
 

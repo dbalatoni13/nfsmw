@@ -496,10 +496,7 @@ inline float Limit(const float a, const float l) {
 
 struct UQuat : public UMath::Vector4 {
     UQuat() {
-        x = 0.0f;
-        y = 0.0f;
-        z = 0.0f;
-        w = 1.0f;
+        *static_cast<UMath::Vector4 *>(this) = UMath::Vector4::kIdentity;
     }
 
     UQuat(const UMath::Vector4 &From) {

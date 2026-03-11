@@ -65,17 +65,18 @@ bool WWorldMath::MakeSegSpaceMatrix(const UMath::Vector3 &startPt, const UMath::
         right.w = 0.0f;
         right.y = 0.0f;
         right.x = 1.0f;
+        right.z = 0.0f;
     } else {
         right.w = 0.0f;
         right.x = 0.0f;
         right.y = 1.0f;
+        right.z = 0.0f;
     }
-    right.z = 0.0f;
 
     Crossxyz(right, forward, up);
 
-    float lensq = up.y * up.y + up.x * up.x + up.z * up.z;
     up.w = 0.0f;
+    float lensq = up.y * up.y + up.x * up.x + up.z * up.z;
     if (lensq != 0.0f) {
         rLen = InvSqrt(lensq);
     } else {
