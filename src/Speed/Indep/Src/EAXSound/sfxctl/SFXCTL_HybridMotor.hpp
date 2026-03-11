@@ -30,6 +30,7 @@ struct SFXCTL_HybridMotor : public SFXCTL {
     char *GetTypeName() const override;
     int GetController(int Index) override;
     void InitSFX() override;
+    void AttachController(SFXCTL *) override;
 };
 
 #endif

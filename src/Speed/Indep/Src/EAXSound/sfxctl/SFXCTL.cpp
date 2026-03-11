@@ -9,3 +9,5 @@ char *SFXCTL::GetTypeName() const { return s_TypeInfo.typeName; }
 void SFXCTL::InitSFX() {}
 
 void SFXCTL::UpdateParams(float t) {}
+
+SFXCTL::~SFXCTL() {}

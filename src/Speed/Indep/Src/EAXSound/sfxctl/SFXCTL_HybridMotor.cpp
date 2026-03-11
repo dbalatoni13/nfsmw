@@ -1,4 +1,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_HybridMotor.hpp"
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Engine.hpp"
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_AccelTrans.hpp"
 
 SFXCTL_HybridMotor::~SFXCTL_HybridMotor() {}
 
@@ -24,4 +27,19 @@ void SFXCTL_HybridMotor::InitSFX() {
     m_EngVolAEMS = 0;
     m_EngVolAccelGinsu = 0;
     m_EngVolDecelGinsu = 0;
+}
+
+void SFXCTL_HybridMotor::AttachController(SFXCTL *ctrl) {
+    int id = (ctrl->GetTypeInfo()->ObjectID >> 4) & 0xFFF;
+    switch (id) {
+    case 4:
+        m_pEngineCtl = static_cast<SFXCTL_Engine *>(ctrl);
+        break;
+    case 2:
+        m_pShiftingCtl = static_cast<SFXCTL_Shifting *>(ctrl);
+        break;
+    case 3:
+        m_pAccelTranCtl = static_cast<SFXCTL_AccelTrans *>(ctrl);
+        break;
+    }
 }

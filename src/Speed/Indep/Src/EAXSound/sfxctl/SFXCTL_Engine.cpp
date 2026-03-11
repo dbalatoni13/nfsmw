@@ -1,4 +1,8 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Engine.hpp"
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_AccelTrans.hpp"
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DCarPos.hpp"
 
 SFXCTL_Engine::~SFXCTL_Engine() {}
 
@@ -40,5 +44,23 @@ int SFXCTL_Engine::GetController(int Index) {
         return 7;
     default:
         return -1;
+    }
+}
+
+void SFXCTL_Engine::AttachController(SFXCTL *ctrl) {
+    int id = (ctrl->GetTypeInfo()->ObjectID >> 4) & 0xFFF;
+    switch (id) {
+    case 2:
+        m_pShiftCtl = static_cast<SFXCTL_Shifting *>(ctrl);
+        break;
+    case 3:
+        m_pAccelTransitionCtl = static_cast<SFXCTL_AccelTrans *>(ctrl);
+        break;
+    case 0:
+        m_pPhysicsCtl = static_cast<SFXCTL_Physics *>(ctrl);
+        break;
+    case 7:
+        m_p3DCarPosCtl = static_cast<SFXCTL_3DCarPos *>(ctrl);
+        break;
     }
 }
