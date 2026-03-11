@@ -23,7 +23,7 @@ void PhysicsObject::Behaviors::Add(Behavior *beh) {
 }
 
 void PhysicsObject::Behaviors::Remove(Behavior *beh) {
-    erase(_STL::remove(begin(), end(), beh), end());
+    erase(_STL::remove(begin(), end(), beh));
 }
 
 PhysicsObject::PhysicsObject(const Attrib::Instance &attribs, SimableType objType, WUID wuid,
