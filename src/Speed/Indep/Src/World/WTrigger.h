@@ -71,7 +71,7 @@ struct WTrigger : public Trigger {
         m[0][1] = fMatRow0Width.y;
         m[0][2] = fMatRow0Width.z;
         m[0][3] = 0.0f;
-        if (reinterpret_cast<const unsigned char *>(this)[0x12] & 0x10) {
+        if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x12]) << 8) & 0x1000) {
             m[1][0] = fMatRow2Length.y * fMatRow0Width.z - fMatRow2Length.z * fMatRow0Width.y;
             m[1][1] = fMatRow2Length.z * fMatRow0Width.x - fMatRow2Length.x * fMatRow0Width.z;
             m[1][2] = fMatRow2Length.x * fMatRow0Width.y - fMatRow2Length.y * fMatRow0Width.x;

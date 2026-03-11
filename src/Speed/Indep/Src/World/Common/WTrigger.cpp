@@ -324,7 +324,7 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
 
     if ((reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF) == 2) {
         if (UMath::DistanceSquare(cp, rPos) <= radsSq) {
-            if (reinterpret_cast<const unsigned char *>(trig)[0x12] & 8) {
+            if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(trig)[0x12]) << 8) & 0x800) {
                 if (!trig->TestDirection(rBody->GetLinearVelocity())) {
                     return false;
                 }
@@ -333,7 +333,7 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
         }
     } else {
         if (UMath::DistanceSquarexz(cp, rPos) <= radsSq) {
-            if (reinterpret_cast<const unsigned char *>(trig)[0x12] & 8) {
+            if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(trig)[0x12]) << 8) & 0x800) {
                 if (!trig->TestDirection(rBody->GetLinearVelocity())) {
                     return false;
                 }
@@ -384,7 +384,7 @@ bool WTriggerManager::CheckCollideSRB(const IRigidBody *srBody, const WTrigger *
     radsSq = srRadiusPlusVel * srRadiusPlusVel;
 
     if (shapeNum == 1) {
-        if (reinterpret_cast<const unsigned char *>(trig)[0x12] & 8) {
+        if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(trig)[0x12]) << 8) & 0x800) {
             if (!trig->TestDirection(srBody->GetLinearVelocity())) {
                 return false;
             }
@@ -410,7 +410,7 @@ bool WTriggerManager::CheckCollideSRB(const IRigidBody *srBody, const WTrigger *
         }
     } else if (shapeNum == 2) {
         if (UMath::DistanceSquare(cp, rPos) < radsSq) {
-            if (reinterpret_cast<const unsigned char *>(trig)[0x12] & 8) {
+            if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(trig)[0x12]) << 8) & 0x800) {
                 if (!trig->TestDirection(srBody->GetLinearVelocity())) {
                     return false;
                 }
@@ -419,7 +419,7 @@ bool WTriggerManager::CheckCollideSRB(const IRigidBody *srBody, const WTrigger *
         }
     } else if (shapeNum == 3) {
         if (UMath::DistanceSquarexz(cp, rPos) < radsSq) {
-            if (reinterpret_cast<const unsigned char *>(trig)[0x12] & 8) {
+            if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(trig)[0x12]) << 8) & 0x800) {
                 if (!trig->TestDirection(srBody->GetLinearVelocity())) {
                     return false;
                 }
