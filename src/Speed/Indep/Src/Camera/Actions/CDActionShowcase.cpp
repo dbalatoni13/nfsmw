@@ -8,7 +8,70 @@
 #include "Speed/Indep/Libs/Support/Utility/UVector.h"
 
 static bool IsRightSide() {
-    return false;
+    int playerRanking = 0;
+    int opponentRanking = 0;
+    UMath::Vector3 playerPos;
+    UMath::Vector3 opponentPos;
+    UMath::Vector3 playerFwd;
+    UMath::Vector3 opponentFwd;
+
+    for (int onRacer = 0; onRacer < GRaceStatus::Get().GetRacerCount(); onRacer++) {
+        GRacerInfo &racerInfo = GRaceStatus::Get().GetRacerInfo(onRacer);
+        ISimable *simable = racerInfo.GetSimable();
+        UMath::Matrix4 matrix;
+        UMath::Vector3 velocity;
+
+        simable->GetTransform(matrix);
+        simable->GetLinearVelocity(velocity);
+
+        if (simable->IsPlayer()) {
+            playerRanking = racerInfo.GetRanking();
+            if (UMath::LengthSquare(velocity) > 0.0f) {
+                UMath::Unit(velocity, playerFwd);
+            } else {
+                playerFwd = UMath::Vector4To3(matrix.v0);
+            }
+            playerPos = UMath::Vector4To3(matrix.v3);
+        } else {
+            opponentRanking = racerInfo.GetRanking();
+            if (UMath::LengthSquare(velocity) > 0.0f) {
+                UMath::Unit(velocity, opponentFwd);
+            } else {
+                opponentFwd = UMath::Vector4To3(matrix.v0);
+            }
+            opponentPos = UMath::Vector4To3(matrix.v3);
+        }
+    }
+
+    if (playerRanking == 0 || opponentRanking == 0) {
+        return false;
+    }
+
+    UMath::Vector3 opponent2player;
+    UMath::Sub(opponentPos, playerPos, opponent2player);
+    opponent2player.y = 0.0f;
+
+    if (UMath::LengthSquare(opponent2player) > 10000.0f) {
+        return false;
+    }
+
+    UMath::Unit(opponent2player, opponent2player);
+    UMath::Vector3 up = {0.0f, 1.0f, 0.0f};
+    UMath::Vector3 playerRight;
+    UMath::Cross(up, playerFwd, playerRight);
+    float dot = UMath::Dot(opponent2player, playerRight);
+
+    bool rightSide = false;
+    if (playerRanking == 1) {
+        if (dot > 0.0f) {
+            rightSide = true;
+        }
+    } else if (playerRanking == 2) {
+        if (dot < 0.0f) {
+            rightSide = true;
+        }
+    }
+    return rightSide;
 }
 
 static UTL::COM::Factory<CameraAI::Director *, CameraAI::Action, UCrc32>::Prototype _CDActionShowcase("SHOWCASE", CDActionShowcase::Construct);
