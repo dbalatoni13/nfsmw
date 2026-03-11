@@ -257,8 +257,8 @@ void PhysicsObject::OnBehaviorChange(const UCrc32 &mechanic) {
         mRigidBody = irb;
         if (mBodyService == nullptr && irb != nullptr) {
             UMath::Matrix4 mat;
-            irb->GetMatrix4(mat);
-            UMath::Copy(irb->GetPosition(), UMath::ExtractAxis(mat, 3));
+            mRigidBody->GetMatrix4(mat);
+            UMath::Copy(mRigidBody->GetPosition(), UMath::ExtractAxis(mat, 3));
             WorldConn::Pkt_Body_Open pkt(mWorldID, mat);
             mBodyService = OpenService(UCrc32(0x998c21c0), &pkt);
         }
@@ -272,10 +272,11 @@ bool PhysicsObject::IsBehaviorActive(const UCrc32 &mechanic) const {
     if (iter._M_node == mMechanics.end()._M_node) {
         return false;
     }
-    if (iter->second == nullptr) {
+    Behavior *beh = iter->second;
+    if (beh == nullptr) {
         return false;
     }
-    return !iter->second->IsPaused();
+    return !beh->IsPaused();
 }
 
 void PhysicsObject::PauseBehavior(const UCrc32 &mechanic, bool pause) {
@@ -356,14 +357,13 @@ Behavior *PhysicsObject::LoadBehavior(const UCrc32 &mechanic, const UCrc32 &beha
     }
     ReleaseBehavior(mechanic);
 
-    UCrc32 sig(behavior);
-    if (sig == UCrc32::kNull) {
+    if (behavior == UCrc32::kNull) {
         return nullptr;
     }
 
     unsigned int key = mechanic.GetValue();
     BehaviorParams bp(params, this, mechanic, behavior);
-    beh = BuildElement(sig, bp);
+    beh = BuildElement(behavior, bp);
     if (beh != nullptr) {
         mMechanics[key] = beh;
         mBehaviors.Add(beh);
