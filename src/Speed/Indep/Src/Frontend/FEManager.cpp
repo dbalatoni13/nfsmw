@@ -75,6 +75,21 @@ void InitChyron();
 void SummonChyron(char *, char *, char *);
 void UpdateGarageCarLoaders();
 unsigned long FEngMapJoyportToJoyParam(int);
+
+struct LGWheels {
+    bool IsConnected(int channel);
+    void StopConstantForce(int channel);
+    void StopSurfaceEffect(int channel);
+    void StopDamperForce(int channel);
+    void StopCarAirborne(int channel);
+    void StopSlipperyRoadEffect(int channel);
+    void PlaySpringForce(int channel, char offset, unsigned char saturation, short coefficient);
+};
+
+struct SteeringWheelDevice {
+    static LGWheels *lgwheels;
+};
+
 void SteeringWheels_StopAllForces();
 
 FEManager::FEManager()
@@ -341,6 +356,21 @@ void FEManager::StopFE() {
 void FEManager::Render() {
     if (DrawFEng) {
         cFEng::Get()->DrawForeground();
+    }
+}
+
+void SteeringWheels_StopAllForces() {
+    if (SteeringWheelDevice::lgwheels != nullptr) {
+        for (int mDeviceIndex = 0; mDeviceIndex < 2; mDeviceIndex++) {
+            if (SteeringWheelDevice::lgwheels->IsConnected(mDeviceIndex)) {
+                SteeringWheelDevice::lgwheels->StopConstantForce(mDeviceIndex);
+                SteeringWheelDevice::lgwheels->StopSurfaceEffect(mDeviceIndex);
+                SteeringWheelDevice::lgwheels->StopDamperForce(mDeviceIndex);
+                SteeringWheelDevice::lgwheels->StopCarAirborne(mDeviceIndex);
+                SteeringWheelDevice::lgwheels->StopSlipperyRoadEffect(mDeviceIndex);
+                SteeringWheelDevice::lgwheels->PlaySpringForce(mDeviceIndex, 0, 200, 200);
+            }
+        }
     }
 }
 

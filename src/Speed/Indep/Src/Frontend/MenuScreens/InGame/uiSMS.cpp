@@ -11,6 +11,7 @@ FEImage* FEngFindImage(const char* pkg_name, int hash);
 void FEngSetVisible(FEObject* obj);
 void FEngSetInvisible(FEObject* obj);
 void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned int lang_hash);
+void FEngSetLanguageHash(FEString* text, unsigned int hash);
 void FEPrintf(const char* pkg_name, unsigned int hash, const char* format, ...);
 unsigned int FEngHashString(const char* format, ...);
 const char* GetLocalizedString(unsigned int hash);
@@ -50,6 +51,20 @@ void SMSDatum::NotificationMessage(unsigned long msg, FEObject* pObj, unsigned l
 
 int SortSMS(SMSSortNode* before, SMSSortNode* after) {
     return after->the_msg->GetSortOrder() < before->the_msg->GetSortOrder();
+}
+
+void SMSSlot::Update(ArrayDatum* datum, bool isSelected) {
+    ArraySlot::Update(datum, isSelected);
+    if (datum != nullptr) {
+        SMSMessage* msg = static_cast<SMSDatum*>(datum)->my_msg;
+        FEString* text = *reinterpret_cast<FEString**>(reinterpret_cast<char*>(this) + 0x18);
+        FEngSetLanguageHash(text, FEngHashString("SMS_SUBJECT_%d", *reinterpret_cast<unsigned char*>(msg)));
+        if (datum->IsChecked()) {
+            FEngSetVisible(pIcon);
+        } else {
+            FEngSetInvisible(pIcon);
+        }
+    }
 }
 
 uiSMS::uiSMS(ScreenConstructorData* sd)

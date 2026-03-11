@@ -25,6 +25,17 @@ void eLoadStreamingTexturePack(const char* filename, void (*callback)(void*), vo
 void eLoadStreamingTexture(unsigned int* name_hash_table, int num_hashes,
                            void (*callback)(void*), void* param, int memory_pool_num);
 void eUnloadStreamingTexture(unsigned int* name_hash_table, int num_hashes);
+
+inline void eLoadStreamingTexture(unsigned int name_hash, void (*callback)(unsigned int),
+                                   unsigned int param0, int memory_pool_num) {
+    eLoadStreamingTexture(&name_hash, 1, reinterpret_cast< void (*)(void*) >(callback),
+                          reinterpret_cast< void* >(param0), memory_pool_num);
+}
+
+inline void eUnloadStreamingTexture(unsigned int name_hash) {
+    eUnloadStreamingTexture(&name_hash, 1);
+}
+
 void eWaitForStreamingTexturePackLoading(const char* filename);
 void eUnloadAllStreamingTextures(const char* filename);
 void eUnloadStreamingTexturePack(const char* filename);
@@ -83,8 +94,7 @@ UITrackMapStreamer::~UITrackMapStreamer() {
         TheTrackStreamer.RefreshLoading();
     }
     eWaitForStreamingTexturePackLoading("TRACKS\\L2RA\\TrackMaps.bin");
-    unsigned int hash = MapHash;
-    eUnloadStreamingTexture(&hash, 1);
+    eUnloadStreamingTexture(MapHash);
     eUnloadAllStreamingTextures("TRACKS\\L2RA\\TrackMaps.bin");
     if (bMapPackLoaded) {
         eUnloadStreamingTexturePack("TRACKS\\L2RA\\TrackMaps.bin");
@@ -106,14 +116,10 @@ void UITrackMapStreamer::Init(GRaceParameters* track, FEMultiImage* map, int unu
     TrackMap = map;
     FEngSetInvisible(static_cast< FEObject* >(map));
     if (bMapPackLoaded && !bLoadingMap) {
-        unsigned int old_hash = MapHash;
-        eUnloadStreamingTexture(&old_hash, 1);
+        eUnloadStreamingTexture(MapHash);
         eWaitForStreamingTexturePackLoading("TRACKS\\L2RA\\TrackMaps.bin");
         MapHash = CalcMapTextureHash();
-        unsigned int new_hash = MapHash;
-        eLoadStreamingTexture(&new_hash, 1,
-                              reinterpret_cast< void (*)(void*) >(MapLoadCallback),
-                              reinterpret_cast< void* >(new_hash), MemPoolNum);
+        eLoadStreamingTexture(MapHash, MapLoadCallback, MapHash, MemPoolNum);
         bLoadingMap = true;
     }
 }
@@ -136,10 +142,7 @@ void UITrackMapStreamer::SetMapPackLoaded() {
     if (eIsStreamingTexturePackLoaded("TRACKS\\L2RA\\TrackMaps.bin")) {
         bMapPackLoaded = true;
         MapHash = CalcMapTextureHash();
-        unsigned int hash = MapHash;
-        eLoadStreamingTexture(&hash, 1,
-                              reinterpret_cast< void (*)(void*) >(MapLoadCallback),
-                              reinterpret_cast< void* >(hash), MemPoolNum);
+        eLoadStreamingTexture(MapHash, MapLoadCallback, MapHash, MemPoolNum);
         bLoadingMap = true;
     }
 }

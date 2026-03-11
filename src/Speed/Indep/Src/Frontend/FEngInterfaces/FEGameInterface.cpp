@@ -11,7 +11,7 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 bool FEngTestForIntersection(float xPos, float yPos, FEObject* obj);
-void GetBaseName(char* dest, const char* path);
+char* GetBaseName(char* dest, const char* path);
 void bToUpper(char* str);
 FEPackageRenderInfo* HACK_FEPkgMgr_GetPackageRenderInfo(FEPackage* pkg);
 

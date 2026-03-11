@@ -96,7 +96,7 @@ float SubTitler::GetElapsedTime() {
     float thetime_ms;
     if (!mSubtitlePaused) {
         timenow = bGetTicker();
-        thetime_ms = timeElapsed + bGetTickerDifference(lastTime, timenow) * 0.001f;
+        thetime_ms = bGetTickerDifference(lastTime, timenow) * 0.001f + timeElapsed;
         lastTime = timenow;
         timeElapsed = thetime_ms;
     } else {
@@ -108,7 +108,7 @@ float SubTitler::GetElapsedTime() {
 
 void SubTitler::Update(unsigned int msg) {
     if (gMoviePlayer != nullptr) {
-        register int paused = gMoviePlayer->IsMoviePaused();
+        int paused = gMoviePlayer->IsMoviePaused();
         if (paused) paused = 1;
         mSubtitlePaused = paused;
         if (msg == 0xC98356BA) {

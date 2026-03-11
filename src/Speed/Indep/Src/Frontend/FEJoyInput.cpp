@@ -25,7 +25,6 @@ struct KeyboardEditString {
     int KeysProcessed;
     int MaxTextLength;
     bool mEnabled;
-    int pad411;
     FEngTextInputObject* TextInputObject;
 
     bool IsCapturing() {
