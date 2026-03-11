@@ -73,29 +73,31 @@ void WCollider::Destroy(WCollider *col) {
 
 static void CalcNewRegionSizeFromRequested(bool useLastData, const UMath::Vector3 &reqPos, float reqRad, const UMath::Vector3 &oldPos,
                                            float oldRad, const UMath::Vector3 &lastPos, UMath::Vector3 &pos, float &rad) {
-    if (useLastData) {
-        float vel = UMath::Distance(reqPos, lastPos);
-        if (vel > 5.0f) {
-            pos = reqPos;
-            rad = reqRad * 1.1f;
-            return;
-        }
-        UMath::Vector3 moveVec;
-        float lifeFactor = 2.5f;
-        UMath::Sub(reqPos, oldPos, moveVec);
-        UMath::Unit(moveVec, moveVec);
-        UMath::Scale(moveVec, vel * lifeFactor, moveVec);
-        UMath::Add(reqPos, moveVec, pos);
-
-        float moveDist = UMath::Length(moveVec);
-        rad = reqRad + moveDist + 0.1f;
-        if (rad > 25.0f) {
-            rad = 25.0f;
-        }
+    if (!useLastData) {
+        pos = reqPos;
+        rad = reqRad * 1.1f;
         return;
     }
-    pos = reqPos;
-    rad = reqRad * 1.1f;
+
+    float vel = UMath::Distance(reqPos, lastPos);
+    if (vel > 5.0f) {
+        pos = reqPos;
+        rad = reqRad * 1.1f;
+        return;
+    }
+
+    UMath::Vector3 moveVec;
+    float lifeFactor = 2.5f;
+    UMath::Sub(reqPos, oldPos, moveVec);
+    UMath::Unit(moveVec, moveVec);
+    UMath::Scale(moveVec, vel * lifeFactor, moveVec);
+    UMath::Add(reqPos, moveVec, pos);
+
+    float moveDist = UMath::Length(moveVec);
+    rad = reqRad + moveDist + 0.1f;
+    if (rad > 25.0f) {
+        rad = 25.0f;
+    }
 }
 
 void WCollider::InvalidateIntersectingColliders(const UMath::Vector4 &posRad) {
