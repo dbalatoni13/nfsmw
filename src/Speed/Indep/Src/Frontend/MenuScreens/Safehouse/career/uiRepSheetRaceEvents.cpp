@@ -18,9 +18,13 @@ unsigned int FEngHashString(const char* format, ...);
 void FEngSetScript(const char* pkg_name, unsigned int obj_hash, unsigned int script_hash, bool);
 
 extern unsigned int iCurrentViewBin;
+extern GRaceParameters* theRace;
 
 void RaceDatum::NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1, unsigned long param2) {
-    if (msg == 0x406415e3) {
+    if (msg == 0xc407210) {
+        if (!IsLocked()) {
+            theRace = race;
+        }
     }
 }
 
