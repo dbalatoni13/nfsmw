@@ -1,5 +1,8 @@
 #include "Speed/Indep/Src/World/WGridManagedDynamicElem.h"
 
+#include "Speed/Indep/Libs/Support/Utility/UTLFastVector.h"
+#include "Speed/Indep/Libs/Support/Utility/UTLFastVector.h"
+
 void OrthoInverse(UMath::Matrix4 &m);
 
 std::list<WGridManagedDynamicElem, UTL::Std::Allocator<WGridManagedDynamicElem, _type_list> > WGridManagedDynamicElem::fgManagedDynamicElemList;
