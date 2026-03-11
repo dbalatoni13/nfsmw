@@ -319,6 +319,7 @@ void Smackable::OnCollision(const Sim::Collision::Info &cinfo) {
     mLastCollisionPosition = UMath::Vector4Make(cinfo.position, 0.0f);
     HSIMABLE myHandle = static_cast< ISimable * >(this)->GetInstanceHandle();
     if (cinfo.objA == myHandle) {
+        UMath::Vector3 normal = cinfo.normal;
         mLastImpactSpeed = cinfo.objAVel;
         ISimable *other = ISimable::FindInstance(cinfo.objB);
         OnImpact(cinfo.impulseA, speed,
