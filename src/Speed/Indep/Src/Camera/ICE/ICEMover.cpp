@@ -84,16 +84,15 @@ float ConvertApertureNumberToFStop(float aperture) {
         57.017517f,
         64.0f,
     };
-    int index = static_cast<int>(aperture + 0.5f);
-
-    if (index < 0) {
-        index = 0;
+    int n = static_cast<int>(aperture + 0.5f);
+    if (n < 0) {
+        n = 0;
     }
-    if (index > 36) {
-        index = 36;
+    if (n > 36) {
+        n = 36;
     }
 
-    return kFStops[index];
+    return kFStops[n];
 }
 
 static void CreateLookAtMatrix(ICE::Matrix4 *mat, ICE::Vector3 &eye, ICE::Vector3 &center, unsigned short dutch) {

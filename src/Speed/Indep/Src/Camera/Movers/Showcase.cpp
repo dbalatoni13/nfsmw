@@ -26,12 +26,12 @@ ShowcaseCameraMover::ShowcaseCameraMover(int nView, CameraAnchor *p_car, bool fl
 }
 
 void ShowcaseCameraMover::SetFromTweakables() {
-    mLatAng = gPhoto_LatAng;
     mUpAng = gPhoto_UpAng;
     mDist = gPhoto_Dist;
+    mLatAng = gPhoto_LatAng;
     mCarPosBias = gPhoto_CarPosBias;
-    mFOV = gPhoto_LatAng;
     mFd = gPhoto_DOF;
+    mFOV = gPhoto_LatAng;
     mDOF = gPhoto_DOF;
 }
 
