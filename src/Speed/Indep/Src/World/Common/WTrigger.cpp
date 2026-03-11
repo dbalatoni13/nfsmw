@@ -71,17 +71,34 @@ void WTriggerManager::DeleteRefs(const WTrigger *trig) {
     std::set<FireOnExitRec>::const_iterator iter = fgFireOnExitList->begin();
     while (iter != fgFireOnExitList->end()) {
         const FireOnExitRec &rec = *iter;
-        if (&rec.mTrigger == trig) {
+        if (trig == &rec.mTrigger) {
             std::set<FireOnExitRec>::const_iterator newlocation = iter;
             ++newlocation;
             fgFireOnExitList->erase(iter);
-            if (newlocation == fgFireOnExitList->end()) {
+            iter = newlocation;
+            if (iter == fgFireOnExitList->end()) {
                 return;
             }
-            iter = newlocation;
-        } else {
-            ++iter;
         }
+        ++iter;
+    }
+}
+
+void WTriggerManager::SubmitForFire(WTrigger &trig, HSIMABLE__ *hSimable) {
+    if ((reinterpret_cast<const unsigned char *>(&trig)[0x12] >> 7) != 0) {
+        ISimable *iSimable = ISimable::FindInstance(hSimable);
+        if (iSimable != nullptr) {
+            FireOnExitRec rec(trig, hSimable);
+            fgFireOnExitList->insert(rec);
+        } else {
+            trig.FireEvents(hSimable);
+        }
+    }
+    if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16 & 0x40000) != 0) {
+        trig.FireEvents(hSimable);
+    }
+    if (((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x12]) << 8 | static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16) & 0x48000) == 0) {
+        trig.FireEvents(hSimable);
     }
 }
 
@@ -96,6 +113,40 @@ WTrigger::~WTrigger() {
     if (WTriggerManager::Exists()) {
         WTriggerManager::Get().DeleteRefs(this);
     }
+}
+
+void WTrigger::UpdateBox(const UMath::Matrix4& mat, const UMath::Vector3& dimension) {
+    UMath::Vector4 oldPosRad = fPosRadius;
+    unsigned int flags = reinterpret_cast<const unsigned char *>(this)[0x13]
+                       | (reinterpret_cast<const unsigned char *>(this)[0x11] << 16
+                        | reinterpret_cast<const unsigned char *>(this)[0x12] << 8);
+    EventList* eventList = fEvents;
+
+    memcpy(this, &mat, sizeof(UMath::Matrix4));
+
+    reinterpret_cast<unsigned char *>(this)[0x10] = (reinterpret_cast<unsigned char *>(this)[0x10] & 0xF0) | 1;
+
+    if (mat.v1.y < 0.0f) {
+        flags |= 0x1000;
+    } else {
+        flags &= ~0x1000;
+    }
+
+    fHeight = dimension.y + dimension.y;
+    fEvents = eventList;
+    *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) =
+        (*reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) & 0xFF000000) | (flags & 0x00FFFFFF);
+    reinterpret_cast<unsigned char *>(this)[0x10] &= 0x0F;
+
+    fPosRadius.x = mat[3][0];
+    fPosRadius.y = mat[3][1];
+    fPosRadius.z = mat[3][2];
+    fPosRadius.w = UMath::Length(dimension);
+
+    fMatRow0Width.w = dimension.x + dimension.x;
+    fMatRow2Length.w = dimension.z + dimension.z;
+
+    WGridManagedDynamicElem::AddElem(&oldPosRad, &fPosRadius, WGrid_kTrigger, reinterpret_cast<unsigned int>(this));
 }
 
 bool WTrigger::UpdatePos(const UMath::Vector3 &newPos, unsigned int triggerInd) {
