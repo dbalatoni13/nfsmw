@@ -235,7 +235,7 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     // void SetFocus(enum MachineState s) {}
 
     // struct Observer *GetObserver() {}
-    Observer *GetObserver() {
+    struct Observer *GetObserver() {
         return mObserver;
     }
 
