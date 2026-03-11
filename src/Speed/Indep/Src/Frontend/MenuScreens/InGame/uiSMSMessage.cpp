@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/CTextScroller.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
 struct FEObject;
