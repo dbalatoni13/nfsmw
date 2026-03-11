@@ -148,21 +148,28 @@ struct HeliItem : public CopItem {
 };
 
 struct ItemTypeToggle : public FEButtonWidget {
-    FEObject* IconGroup;            // offset 0x48
-    eWorldMapItemType Type;         // offset 0x4C
-    bool Visibility;                // offset 0x50
-    bool bIsExiting;                // offset 0x54
+    eWorldMapItemType ItemType;     // offset 0x40, size 0x4
+    unsigned int NameHash;          // offset 0x44, size 0x4
+    FEImage* pIcon;                 // offset 0x48, size 0x4
+    FEObject* pIconGroup;           // offset 0x4C, size 0x4
+    int bVisibility;                // offset 0x50, size 0x4
+    int bExiting;                   // offset 0x54, size 0x4
 
     ItemTypeToggle(unsigned int name_hash, eWorldMapItemType type, bool vis);
     ~ItemTypeToggle() override {}
+    void SetIconGroup(FEObject* obj) { pIconGroup = obj; }
+    eWorldMapItemType GetType() { return ItemType; }
+    int GetVisibility() { return bVisibility; }
+    void StartExit() { bExiting = true; }
+
     void Act(const char* parent_pkg, unsigned int data) override;
+    void CheckMouse(const char* parent_pkg, const float mouse_x, const float mouse_y) override;
     void Draw() override;
-    void Show();
-    void Hide();
-    void SetIconGroup(FEObject* obj) { IconGroup = obj; }
-    eWorldMapItemType GetType() { return Type; }
-    bool GetVisibility() { return Visibility; }
-    void StartExit() { bIsExiting = true; }
+    void Position() override;
+    void UnsetFocus() override;
+    void SetIcon(FEImage* icon, unsigned int texHash, unsigned int texColour);
+    void Show() override;
+    void Hide() override;
 };
 
 // total size: 0x19C
