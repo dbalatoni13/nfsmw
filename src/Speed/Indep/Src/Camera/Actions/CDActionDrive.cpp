@@ -461,9 +461,7 @@ void CDActionDrive::Update(float dT) {
         if (settings != nullptr) {
             int pov_type = GetPOVTypeFromPlayerCamera(settings->CurCam);
 
-            if (mVehicle == nullptr || !mVehicle->QueryInterface(&iinput)) {
-                mMover->SetPovType(pov_type);
-            } else {
+            if (mVehicle != nullptr && mVehicle->QueryInterface(&iinput)) {
                 static int old_pov = -1;
                 if (iinput->IsPullBackButtonPressed()) {
                     old_pov = pov_type;
@@ -479,6 +477,8 @@ void CDActionDrive::Update(float dT) {
                         mMover->SetPovType(pov_type);
                     }
                 }
+            } else {
+                mMover->SetPovType(pov_type);
             }
         }
     }
