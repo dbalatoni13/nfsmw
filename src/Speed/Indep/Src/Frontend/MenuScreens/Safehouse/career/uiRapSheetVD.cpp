@@ -83,10 +83,10 @@ void uiRapSheetVD::RefreshHeader() {
     FEPrintf(GetPackageName(), 0x1FFFB988, GetLocalizedString(0x6031106E), prof->GetProfileName());
     FEPrintf(GetPackageName(), 0x1FFFB989, GetLocalizedString(0x364E4525), stable->GetTotalBounty());
     unsigned int prefName = stable->GetPreferedCarName();
-    if (prefName == 0) { FEPrintf(GetPackageName(), 0x1FFFB98A, GetLocalizedString(0xFBAF89DF), GetLocalizedString(0x73AF0386)); }
-    else { FEPrintf(GetPackageName(), 0x1FFFB98A, GetLocalizedString(0xFBAF89DF), GetLocalizedString(stable->GetPreferedCarName())); }
+    if (prefName != 0) { FEPrintf(GetPackageName(), 0x1FFFB98A, GetLocalizedString(0xFBAF89DF), GetLocalizedString(stable->GetPreferedCarName())); }
+    else { FEPrintf(GetPackageName(), 0x1FFFB98A, GetLocalizedString(0xFBAF89DF), GetLocalizedString(0x73AF0386)); }
     unsigned int prevCar = scores->GetPreviouslyPursuedCarNameHash();
-    if (prevCar == 0) { FEPrintf(GetPackageName(), 0x1FFFB98B, GetLocalizedString(0x074A86E1), GetLocalizedString(0x73AF0386)); }
-    else { FEPrintf(GetPackageName(), 0x1FFFB98B, GetLocalizedString(0x074A86E1), GetLocalizedString(scores->GetPreviouslyPursuedCarNameHash())); }
+    if (prevCar != 0) { FEPrintf(GetPackageName(), 0x1FFFB98B, GetLocalizedString(0x074A86E1), GetLocalizedString(scores->GetPreviouslyPursuedCarNameHash())); }
+    else { FEPrintf(GetPackageName(), 0x1FFFB98B, GetLocalizedString(0x074A86E1), GetLocalizedString(0x73AF0386)); }
     ArrayScrollerMenu::RefreshHeader();
 }

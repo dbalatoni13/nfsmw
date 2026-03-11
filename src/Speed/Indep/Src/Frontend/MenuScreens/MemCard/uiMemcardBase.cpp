@@ -211,7 +211,8 @@ void UIMemcardBase::SetButtonText(short* b1, short* b2, short* b3) {
         ShowButton(1, false, nullptr);
         ShowButton(2, false, nullptr);
     }
-    FEngSetCurrentButton(GetPackageName(), gButtonIDs[0]);
+    int active = 0;
+    FEngSetCurrentButton(GetPackageName(), gButtonIDs[active]);
     m_ExpectingInput = true;
     gMemcardSetup.mPreviousPrompt = gMemcardSetup.mOp & 0xf000000;
     gMemcardSetup.mOp = gMemcardSetup.mOp & 0xf0ffffff;
