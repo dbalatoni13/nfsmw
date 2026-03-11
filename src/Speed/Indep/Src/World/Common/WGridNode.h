@@ -34,6 +34,10 @@ struct WGridNode {
         return reinterpret_cast<const unsigned int *>(dataStart + fElemOffsets[type]);
     }
 
+    inline unsigned int GetElemType(unsigned int index, WGridNode_ElemType type) const {
+        return GetElemTypePtr(type)[index];
+    }
+
     inline void AddDynamic(unsigned int ind, WGridNode_ElemType type) {
         if (fDynElems == nullptr) {
             fDynElems = new WGridNodeElemList();

@@ -334,6 +334,14 @@ inline float Normalize(Vector3 &r) {
     return m;
 }
 
+inline float Normalize(Vector4 &r) {
+    float m = VU0_v4length(r);
+    if (m != 0.0f) {
+        VU0_v4scale(r, 1.0f / m, r);
+    }
+    return m;
+}
+
 inline void Direction(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &r) {
     VU0_v3sub(a, b, r);
     VU0_v3unit(r, r);
@@ -463,5 +471,53 @@ inline float Limit(const float a, const float l) {
 }
 
 } // namespace UMath
+
+struct UQuat : public UMath::Vector4 {
+    UQuat() {
+        x = 0.0f;
+        y = 0.0f;
+        z = 0.0f;
+        w = 1.0f;
+    }
+
+    UQuat(const UMath::Vector4 &From) {
+        x = From.x;
+        y = From.y;
+        z = From.z;
+        w = From.w;
+    }
+
+    const UQuat &operator=(const UMath::Vector4 &From) {
+        x = From.x;
+        y = From.y;
+        z = From.z;
+        w = From.w;
+        return *this;
+    }
+
+    void BuildDeltaAxis(const UMath::Vector3 &normal1, const UMath::Vector3 &normal2) {
+        const float angle = UMath::Dot(normal1, normal2);
+        if (angle > 0.999f) {
+            *this = UMath::Vector4::kIdentity;
+            return;
+        }
+        UMath::Vector3 axis;
+        UMath::Cross(normal1, normal2, axis);
+        if (angle >= -0.999f) {
+            const float s = UMath::Sqrt(2.0f * (1.0f + angle));
+            const float invs = 1.0f / s;
+            x = axis.x * invs;
+            y = axis.y * invs;
+            z = axis.z * invs;
+            w = s * 0.5f;
+        } else {
+            x = axis.x;
+            y = axis.y;
+            z = axis.z;
+            w = 0.0f;
+            UMath::Normalize(*static_cast<UMath::Vector4 *>(this));
+        }
+    }
+};
 
 #endif

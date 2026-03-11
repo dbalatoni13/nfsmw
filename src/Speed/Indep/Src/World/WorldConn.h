@@ -86,6 +86,14 @@ class Reference {
         return mMatrix;
     }
 
+    const bVector3 *GetVelocity() const {
+        return mVelocity;
+    }
+
+    unsigned int GetWorldID() const {
+        return mWorldID;
+    }
+
   private:
     unsigned int mWorldID;         // offset 0x0, size 0x4
     const bMatrix4 *mMatrix;       // offset 0x4, size 0x4
@@ -189,7 +197,6 @@ class Pkt_Effect_Service : public Sim::Packet {
 
     ~Pkt_Effect_Service() override {}
 
-  private:
     ALIGN_16 UMath::Vector3 mPosition;  // offset 0x4, size 0xC
     bool mTracking;                     // offset 0x10, size 0x1
     ALIGN_16 UMath::Vector3 mMagnitude; // offset 0x14, size 0xC
