@@ -18,23 +18,21 @@ void eWaitForStreamingTexturePackLoading(const char* name);
 struct TextureInfo;
 TextureInfo* GetTextureInfo(unsigned int hash, int, int);
 
-extern bool gTrackMapStreamFETextureLoading;
-
 uiRepSheetRivalStreamer::uiRepSheetRivalStreamer(const char* name, bool in_game) {
     pkg_name = name;
+    MemPoolNum = 0;
     bInGame = in_game;
-    LoadedBin = -1;
     DesiredBin = -1;
+    LoadedBin = -1;
     LoadingInProgress = true;
     bMakeSpaceInPoolComplete = false;
-    MemPoolNum = 0;
     NumLoadedTextures = 0;
     Rival = nullptr;
     Tag = nullptr;
     BG = nullptr;
     if (bInGame) {
         MemPoolNum = 7;
-        gTrackMapStreamFETextureLoading = true;
+        TheTrackStreamer.DisableZoneSwitching();
         TheTrackStreamer.MakeSpaceInPool(0x30000, MakeSpaceInPoolCallbackBridge, reinterpret_cast<int>(this));
     } else {
         eLoadStreamingTexturePack("BL_RIVAL_PACK", TexturePackLoadedCallbackBridge, this, 0);
@@ -42,9 +40,11 @@ uiRepSheetRivalStreamer::uiRepSheetRivalStreamer(const char* name, bool in_game)
 }
 
 uiRepSheetRivalStreamer::~uiRepSheetRivalStreamer() {
-    if (bInGame && !bMakeSpaceInPoolComplete) {
-        TheTrackStreamer.WaitForCurrentLoadingToComplete();
-        gTrackMapStreamFETextureLoading = false;
+    if (bInGame) {
+        if (!bMakeSpaceInPoolComplete) {
+            TheTrackStreamer.WaitForCurrentLoadingToComplete();
+        }
+        TheTrackStreamer.EnableZoneSwitching();
         TheTrackStreamer.RefreshLoading();
     }
     eWaitForStreamingTexturePackLoading("BL_RIVAL_PACK");

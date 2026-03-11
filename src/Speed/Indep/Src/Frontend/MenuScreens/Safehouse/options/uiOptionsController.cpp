@@ -59,15 +59,15 @@ UIOptionsController::~UIOptionsController() {
 }
 
 bool UIOptionsController::OptionsDidNotChange() {
-    bool result;
-    eControllerConfig curConfig =
-        FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Config;
-    bool curVibration = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Rumble;
-    bool curDriveWithAnalog =
-        FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog;
-
-    result = oldDriveWithAnalog == curDriveWithAnalog && oldVibration == curVibration &&
-             oldConfig == curConfig;
+    bool result =
+        (oldConfig == FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Config);
+    if (oldVibration != FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Rumble) {
+        result = false;
+    }
+    if (oldDriveWithAnalog !=
+        FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog) {
+        result = false;
+    }
     return result;
 }
 
@@ -248,11 +248,10 @@ unsigned int UIOptionsController::CalcControllerTextureToLoad() {
     unsigned int texture_hash;
     isWheelConfig = 0;
 
-    JoystickPort port = static_cast<JoystickPort>(GetPlayerToEditForOptions());
-
-    if (IsJoystickTypeWheel(port)) {
-        isWheelConfig = 1;
+    GetPlayerToEditForOptions();
+    if (IsJoystickTypeWheel(static_cast<JoystickPort>(GetPlayerToEditForOptions()))) {
         texture_hash = 0xB511476B;
+        isWheelConfig = 1;
     } else {
         if (FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog) {
             texture_hash = 0xED543BAB;

@@ -273,8 +273,7 @@ void UITrackMapStreamer::ResetZoom(bool use_track) {
         ZoomToTrack();
         ZoomCubic.Snap();
     } else {
-        bVector2 zoom(1.0f, 1.0f);
-        SetZoom(zoom);
+        SetZoom(bVector2(1.0f, 1.0f));
     }
 }
 

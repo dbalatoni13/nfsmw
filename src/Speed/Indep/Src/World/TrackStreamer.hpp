@@ -154,7 +154,9 @@ class TrackStreamer {
     void *AllocateUserMemory(int size, const char *debug_name, int offset);
     void FreeUserMemory(void *mem);
     bool IsUserMemory(void *mem);
-    bool HasMemoryPool();
+    bool HasMemoryPool() {
+        return pMemoryPoolMem != nullptr;
+    }
 
     void DisableZoneSwitching() {
         ZoneSwitchingDisabled = true;

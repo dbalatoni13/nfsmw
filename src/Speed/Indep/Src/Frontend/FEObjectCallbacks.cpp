@@ -41,6 +41,7 @@ static int GetMovieNameEnum(const char* movieName) {
 
 static void CalculateMovieFilename(char* buffer, int bufsize, const char* basename,
                                    eLanguages cur_language) {
+    const char* extension;
     const char* prefix = "";
     char language[64];
     const char* pal_or_ntsc;
@@ -52,8 +53,9 @@ static void CalculateMovieFilename(char* buffer, int bufsize, const char* basena
     }
 
     bSPrintf(language, "_%s", GetLanguageName(cur_language));
+    extension = ".vp6";
     FEngSNPrintf(buffer, bufsize, "%sMOVIES\\%s%s%s%s", prefix, basename, language, pal_or_ntsc,
-                 ".vp6");
+                 extension);
 }
 
 
@@ -115,9 +117,7 @@ bool FEngMovieStarter::Callback(FEObject* obj) {
             CalculateMovieFilename(buffer, 0x40, movie_name, eLANGUAGE_ENGLISH);
         }
 
-        if (!bFileExists(buffer)) {
-            cFEng::Get()->QueueGameMessagePkg(0xc3960eb9, pPackage);
-        } else {
+        if (bFileExists(buffer)) {
             MoviePlayer_StartUp();
             {
                 MoviePlayer::Settings settings;
@@ -133,11 +133,13 @@ bool FEngMovieStarter::Callback(FEObject* obj) {
                 settings.movieId = 0;
                 bStrNCpy(settings.filename, buffer, 0x100);
                 settings.loop = true;
-                settings.type = 0;
                 settings.movieId = movieID;
+                settings.type = 0;
                 gMoviePlayer->Init(settings);
             }
             MoviePlayer_Play();
+        } else {
+            cFEng::Get()->QueueGameMessagePkg(0xc3960eb9, pPackage);
         }
 
         return false;
@@ -174,10 +176,13 @@ static char* GetBaseName(char* dest, const char* filename) {
 
     last = x;
     if (x != 0) {
-        while (filename[x] != '.' && --x != 0) {
-        }
-        if (filename[x] == '.') {
-            last = x;
+        if (filename[x] != '.') {
+            while (--x != 0) {
+                if (filename[x] == '.') {
+                    last = x;
+                    break;
+                }
+            }
         }
     }
 

@@ -11,7 +11,7 @@ void FEngSetCurrentButton(const char* pkg_name, unsigned int hash);
 uiRapSheetMain::uiRapSheetMain(ScreenConstructorData* sd)
     : UIWidgetMenu(sd) //
     , button_pressed(0)
-{ Setup(); }
+{ RefreshHeader(); }
 uiRapSheetMain::~uiRapSheetMain() {}
 void uiRapSheetMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) {
     if (msg == 0x35F8620B) { unsigned char button = FEngGetLastButton(GetPackageName()); if (button == 0) { button = 1; } FEngSetCurrentButton(GetPackageName(), FEngHashString("BL_%d", button)); }

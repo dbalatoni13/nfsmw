@@ -27,6 +27,7 @@ uiRapSheetCTS::uiRapSheetCTS(ScreenConstructorData* sd) : ArrayScrollerMenu(sd, 
 }
 uiRapSheetCTS::~uiRapSheetCTS() {}
 void uiRapSheetCTS::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) {
+    ArrayScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
     if (msg == 0xE1FDE1D1) { cFEng::Get()->QueuePackageSwitch("RapSheetMain.fng", 0, 0, false); }
 }
 void uiRapSheetCTS::Setup() {

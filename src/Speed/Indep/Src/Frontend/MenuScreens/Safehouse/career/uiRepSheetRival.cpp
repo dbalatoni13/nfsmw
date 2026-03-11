@@ -117,6 +117,10 @@ unsigned int uiRepSheetRival::GetDefeatedTexture() {
     case 7: return 0x87b7723;
     case 12: return 0x87babfb;
     case 13: return 0x87b80ad;
+    case 8:
+    case 9:
+    case 10:
+    case 11:
     default: return 0x87b7d0a;
     }
 }
