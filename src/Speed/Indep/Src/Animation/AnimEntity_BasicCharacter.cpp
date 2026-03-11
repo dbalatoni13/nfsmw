@@ -195,16 +195,15 @@ bool CBasicCharacterAnimEntity::Init(void *init_data, SpaceNode *parent_space_no
     }
 
     if (skeletal_animation && mAnimCtrl != nullptr && anim_part != nullptr) {
-        int boneMapResult;
         if (anim_part->GetNumGlobalMatrices() == 0x30) {
-            boneMapResult = 3;
-            if (info->mSkelNameHash != bStringHash("Bip23")) {
-                boneMapResult = 2;
+            if (info->mSkelNameHash == bStringHash("Bip23")) {
+                mBoneMapType = 3;
+            } else {
+                mBoneMapType = 2;
             }
         } else {
-            boneMapResult = -1;
+            mBoneMapType = -1;
         }
-        mBoneMapType = boneMapResult;
     }
 
     return true;
@@ -295,31 +294,31 @@ void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
     if (RenderCharacterShadows && mDrawShadow && !is_reflection && CharacterShadowTexture != nullptr && mBoneMapType != -1) {
         bVector3 left_foot;
         bVector3 right_foot;
-        ePoly shadow_poly;
-        bVector2 parallel(1.0f, 0.0f);
+        bVector2 parallel;
         bVector2 perpendicular;
         bVector2 left0;
         bVector2 left1;
         bVector2 right0;
         bVector2 right1;
-        float ground;
+        ePoly shadow_poly;
 
         FindWorldBonePosition(BoneMap[mBoneMapType].LeftFoot, &left_foot);
         FindWorldBonePosition(BoneMap[mBoneMapType].RightFoot, &right_foot);
+        bFill(&parallel, 1.0f, 0.0f);
         if (left_foot.x != right_foot.x || left_foot.y != right_foot.y) {
             parallel.x = left_foot.x - right_foot.x;
             parallel.y = left_foot.y - right_foot.y;
             bNormalize(&parallel, &parallel);
         }
 
-        perpendicular = bVector2(-parallel.y, parallel.x);
+        bFill(&perpendicular, -parallel.y, parallel.x);
         parallel *= 0.25f;
         perpendicular *= 0.35f;
 
-        left0 = bVector2(left_foot.x, left_foot.y);
-        left1 = bVector2(left_foot.x, left_foot.y);
-        right0 = bVector2(right_foot.x, right_foot.y);
-        right1 = bVector2(right_foot.x, right_foot.y);
+        bFill(&left0, left_foot.x, left_foot.y);
+        bFill(&left1, left_foot.x, left_foot.y);
+        bFill(&right0, right_foot.x, right_foot.y);
+        bFill(&right1, right_foot.x, right_foot.y);
         left0.x += parallel.x + perpendicular.x;
         left0.y += parallel.y + perpendicular.y;
         left1.x += parallel.x - perpendicular.x;
@@ -329,9 +328,9 @@ void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
         right1.x -= parallel.x + perpendicular.x;
         right1.y -= parallel.y + perpendicular.y;
 
-        ground = mSpaceNode->GetWorldMatrix()->v3.z + 0.01f;
-        shadow_poly.Vertices[0] = bVector3(left0.x, left0.y, ground);
-        shadow_poly.Vertices[1] = bVector3(left1.x, left1.y, ground);
+        float ground = mSpaceNode->GetWorldMatrix()->v3.z + 0.01f;
+        shadow_poly.Vertices[0] = bVector3(left1.x, left1.y, ground);
+        shadow_poly.Vertices[1] = bVector3(left0.x, left0.y, ground);
         shadow_poly.Vertices[2] = bVector3(right0.x, right0.y, ground);
         shadow_poly.Vertices[3] = bVector3(right1.x, right1.y, ground);
         shadow_poly.Colours[0][0] = 0x80;
@@ -351,12 +350,12 @@ void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
         shadow_poly.Colours[3][2] = 0x80;
         shadow_poly.Colours[3][3] = 0x80;
         shadow_poly.UVs[0][0] = 0.0f;
-        shadow_poly.UVs[0][1] = 1.0f;
+        shadow_poly.UVs[0][1] = 0.0f;
         shadow_poly.UVs[0][2] = 1.0f;
         shadow_poly.UVs[0][3] = 0.0f;
-        shadow_poly.UVs[1][0] = 0.0f;
-        shadow_poly.UVs[1][1] = 0.0f;
-        shadow_poly.UVs[1][2] = 1.0f;
+        shadow_poly.UVs[1][0] = 1.0f;
+        shadow_poly.UVs[1][1] = 1.0f;
+        shadow_poly.UVs[1][2] = 0.0f;
         shadow_poly.UVs[1][3] = 1.0f;
         view->Render(&shadow_poly, CharacterShadowTexture, eGetIdentityMatrix(), 0, 0.0f);
     }
