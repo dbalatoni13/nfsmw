@@ -363,9 +363,9 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
 
     virtual void SetPovType(int pov_type) {}
 
-    virtual bool OutsidePOV();
-
     virtual bool RenderCarPOV();
+
+    virtual bool OutsidePOV();
 
     virtual float MinDistToWall();
 
