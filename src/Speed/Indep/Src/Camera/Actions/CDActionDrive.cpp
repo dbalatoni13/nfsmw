@@ -415,7 +415,7 @@ void CDActionDrive::Update(float dT) {
     if (mCinematicMomementTimerInc) {
         timer = 1.0f;
         if (mCinematicMomementTimer < 1.0f) {
-            timer = mCinematicMomementTimer + dT * 2.0f / kCinematicMomementSeconds;
+            timer = mCinematicMomementTimer + dT / kCinematicMomementSeconds;
         }
     } else {
         timer = 0.0f;

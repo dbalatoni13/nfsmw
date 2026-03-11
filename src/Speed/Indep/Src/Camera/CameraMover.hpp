@@ -384,7 +384,7 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
     void TerrainVelocityNoise(bMatrix4 *world_to_camera, CameraAnchor *car, float speed_scale, float terrain_scale);
     static void ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *look, unsigned short bank);
     void IsoProjectionMatrix(bMatrix4 *pMatrix, bVector3 *pEye, bVector3 *pLook, bVector2 *pProjection);
-    double AdjustHeightAroundCar(const bVector3 *car_pos, bVector3 *pEye, bVector3 *pForward);
+    float AdjustHeightAroundCar(const bVector3 *car_pos, bVector3 *pEye, bVector3 *pForward);
     int MinGapCars(bMatrix4 *pMatrix, bVector3 *pLook, bVector3 *pForward);
     int MinGapTopology(bMatrix4 *pMatrix, bVector3 *pLook);
     bool EnforceMinGapToWalls(WCollider *collider, bVector3 *pCarPos, bVector3 *pCameraPos, bVector4 *pAdjust);

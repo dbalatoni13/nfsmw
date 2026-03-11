@@ -846,7 +846,7 @@ void CameraMover::IsoProjectionMatrix(bMatrix4 *pMatrix, bVector3 *pEye, bVector
     eCreateLookAtMatrix(pMatrix, *pEye, vNewLookWorldSpace, vUp);
 }
 
-double CameraMover::AdjustHeightAroundCar(const bVector3 *position, bVector3 *pCarPos, bVector3 *pForward) {
+float CameraMover::AdjustHeightAroundCar(const bVector3 *position, bVector3 *pCarPos, bVector3 *pForward) {
     _STL::list<IBody *, UTL::Std::Allocator<IBody *, _type_CameraAIAvoidables> >::const_iterator iter;
 
     for (iter = TheAvoidables->begin(); iter != TheAvoidables->end(); ++iter) {
