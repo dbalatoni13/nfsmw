@@ -270,9 +270,7 @@ POV *CameraAnchor::GetPov(int pov_type) {
             attrib_key = 0xd76a6fad;
             break;
         default:
-            mPOV.Type = 3;
-            mCameraInfoAttributes.Change(Attrib::FindCollection(Attrib::Gen::camerainfo::ClassKey(), 0xeec2271a));
-            goto after_camerainfo;
+            goto default_case;
     }
 
     {
@@ -284,6 +282,11 @@ POV *CameraAnchor::GetPov(int pov_type) {
 
         mCameraInfoAttributes.ChangeWithDefault(*refspec);
     }
+    goto after_camerainfo;
+
+default_case:
+    mPOV.Type = 3;
+    mCameraInfoAttributes.Change(Attrib::FindCollection(Attrib::Gen::camerainfo::ClassKey(), 0xeec2271a));
 
 after_camerainfo:
     {
