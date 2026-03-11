@@ -34,3 +34,389 @@ inline void FEngSetTextureHash(const char* pkg_name, unsigned int obj_hash,
                                unsigned int texture_hash) {
     FEngSetTextureHash(FEngFindImage(pkg_name, obj_hash), texture_hash);
 }
+
+int UIOptionsScreen::PlayerToEdit = 0;
+
+UIOptionsScreen::UIOptionsScreen(ScreenConstructorData* sd)
+    : UIWidgetMenu(sd) //
+    , mCalledFromPauseMenu(sd->Arg != 0) //
+    , NeedsColorCal(false) //
+    , OriginalAudioSettings(nullptr) //
+    , OriginalVideoSettings(nullptr) //
+    , OriginalGameplaySettings(nullptr) //
+    , OriginalPlayerSettings(nullptr) {
+    unsigned int maxWidgets = 9;
+    if (mCalledFromPauseMenu) {
+        maxWidgets = 10;
+    }
+    iMaxWidgetsOnScreen = maxWidgets;
+
+    if (FEDatabase->GetOptionsSettings()->CurrentCategory == OC_PLAYER &&
+        Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
+        cFEng::Get()->QueuePackageMessage(0x7DB7B6D7, GetPackageName(), 0);
+        unsigned int lang = 0x7B070985;
+        if (GetPlayerToEditForOptions() == 0) {
+            lang = 0x7B070984;
+        }
+        FEngSetLanguageHash(GetPackageName(), 0x53BF826D, lang);
+    }
+
+    Setup();
+}
+
+UIOptionsScreen::~UIOptionsScreen() {
+    delete OriginalAudioSettings;
+    delete OriginalVideoSettings;
+    delete OriginalGameplaySettings;
+    delete OriginalPlayerSettings;
+}
+
+void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1,
+                                          unsigned long param2) {
+    UIWidgetMenu::NotificationMessage(msg, pobj, param1, param2);
+
+    if (msg == 0x9A5AD46D) {
+        TogglePlayer(false);
+    } else if (msg == 0x72619778) {
+        return;
+    } else if (msg == 0x7E998E5E) {
+        if (FEDatabase->GetOptionsSettings()->CurrentCategory == OC_GAMEPLAY) {
+            ClearWidgets();
+            SetupGameplay();
+            SetInitialOption(0);
+        } else {
+            for (int i = 0; i < Options.CountElements(); i++) {
+                Options.GetNode(i)->Draw();
+            }
+        }
+    } else if (msg == 0x775DBA97) {
+        RestoreOriginals();
+        MemoryCard::GetInstance()->SetCardRemovedWithAutoSaveEnabled(false);
+        cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
+    } else if (msg == 0x911AB364) {
+        if (OptionsDidNotChange()) {
+            cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
+        } else {
+            const char* dlg_pkg;
+            if (mCalledFromPauseMenu) {
+                dlg_pkg = "InGameDialog.fng";
+            } else {
+                dlg_pkg = "Dialog.fng";
+            }
+            DialogInterface::ShowTwoButtons(GetPackageName(), dlg_pkg,
+                                            static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4,
+                                            0x775DBA97, 0x34DC1BCF, 0x34DC1BCF,
+                                            static_cast<eDialogFirstButtons>(1),
+                                            GetLocalizedString(0xE9CB802F));
+        }
+    } else if (msg == 0xA2A07AC4) {
+        TogglePlayer(true);
+    } else if (msg == 0xB5AF2461) {
+        new EUnPause();
+    } else if (msg == 0xC519BFC4) {
+        const char* dlg_pkg;
+        if (mCalledFromPauseMenu) {
+            dlg_pkg = "InGameDialog.fng";
+        } else {
+            dlg_pkg = "Dialog.fng";
+        }
+        DialogInterface::ShowTwoButtons(GetPackageName(), dlg_pkg, static_cast<eDialogTitle>(1),
+                                        0x70E01038, 0x417B25E4, 0xD05FC3A3, 0x34DC1BCF,
+                                        0x34DC1BCF, static_cast<eDialogFirstButtons>(1),
+                                        GetLocalizedString(0x8AEF5AE8));
+    } else if (msg == 0xD05FC3A3) {
+        if (!FEDatabase->IsOptionsDirty() &&
+            FEDatabase->GetOptionsSettings()->CurrentCategory == OC_GAMEPLAY) {
+            MemcardEnter(GetPackageName(), GetPackageName(), 0xA1, 0, 0, 0, 0);
+        }
+        RestoreDefaults();
+    } else if (msg == 0xD9FEEC59 || msg == 0x5073EF13 || msg == 0x406415E3) {
+        if (FEDatabase->GetOptionsSettings()->CurrentCategory != OC_PLAYER) {
+            return;
+        }
+        unsigned int snd = 0xF4B32D4D;
+        if (msg == 0x5073EF13) {
+            snd = 0x6B283007;
+        }
+        cFEng::Get()->QueueSoundMessage(snd, GetPackageName());
+        if (OptionsDidNotChange()) {
+            cFEng::Get()->QueueGameMessage(0x9A5AD46D, 0, 0xFF);
+        } else {
+            char buf[128];
+            FEngSNPrintf(buf, 128, GetLocalizedString(0xBA463431),
+                         GetPlayerToEditForOptions() + 1);
+            const char* dlg_pkg;
+            if (mCalledFromPauseMenu) {
+                dlg_pkg = "InGameDialog.fng";
+            } else {
+                dlg_pkg = "Dialog.fng";
+            }
+            DialogInterface::ShowTwoButtons(GetPackageName(), dlg_pkg,
+                                            static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4,
+                                            0x9A5AD46D, 0xA2A07AC4, 0x34DC1BCF,
+                                            static_cast<eDialogFirstButtons>(1), buf);
+        }
+    } else if (msg == 0xE1FDE1D1) {
+        bool dirty = false;
+        if (FEDatabase->IsOptionsDirty() || !OptionsDidNotChange()) {
+            dirty = true;
+        }
+        FEDatabase->SetOptionsDirty(dirty);
+
+        if (!mCalledFromPauseMenu) {
+            if (!FEDatabase->IsOnlineMode()) {
+                cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, 0);
+            } else {
+                cFEng::Get()->QueuePackageSwitch("OL_MAIN.fng", 0, 0, 0);
+            }
+        } else {
+            cFEng::Get()->QueuePackageSwitch("Pause_Main.fng", 1, 0, 0);
+        }
+
+        if (FEDatabase->GetOptionsSettings()->CurrentCategory != OC_AUDIO) {
+            return;
+        }
+        g_pEAXSound->UpdateVolumes(FEDatabase->GetAudioSettings(), -1.0f);
+    } else if (msg == 0x34DC1BCF) {
+        return;
+    }
+}
+
+void UIOptionsScreen::Setup() {
+    ClearWidgets();
+    NeedsColorCal = false;
+    mInitialAutoSaveValue = FEDatabase->GetGameplaySettings()->AutoSaveOn;
+
+    FEngSetInvisible(GetPackageName(), 0xE54C30BE);
+    FEngSetInvisible(GetPackageName(), 0x8E1BEA84);
+    FEngSetInvisible(GetPackageName(), 0x608BB8C8);
+    FEngSetInvisible(GetPackageName(), 0x444969FD);
+    FEngSetInvisible(GetPackageName(), 0x444969FE);
+
+    eOptionsCategory curCat = FEDatabase->GetOptionsSettings()->CurrentCategory;
+    if (curCat == OC_AUDIO) {
+        SetupAudio();
+    } else if (curCat == OC_VIDEO) {
+        SetupVideo();
+    } else if (curCat == OC_GAMEPLAY) {
+        SetupGameplay();
+    } else if (curCat == OC_PLAYER) {
+        SetupPlayer();
+        FEngSetVisible(GetPackageName(), 0x444969FD);
+        FEngSetVisible(GetPackageName(), 0x444969FE);
+    } else if (curCat == OC_ONLINE) {
+        SetupOnline();
+    }
+
+    SetInitialOption(0);
+}
+
+void UIOptionsScreen::SetupAudio() {
+    FEngSetTextureHash(GetPackageName(), 0x8007B4C, 0xF37AF144);
+
+    if (!mCalledFromPauseMenu) {
+        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0x3932C2E4);
+    } else {
+        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0xB1426DFA);
+    }
+
+    AddSliderOption(new AOSFXMasterVol(true), true);
+    AddSliderOption(new AOCarVol(true), true);
+    AddSliderOption(new AOSpeechVol(true), true);
+    AddSliderOption(new AOFEMusicVol(true), true);
+    AddSliderOption(new AOIGMusicVol(true), true);
+    AddToggleOption(new AOInteractiveMusicMode(true), true);
+    AddToggleOption(new AOEATraxMusicMode(true), true);
+
+    if (TheGameFlowManager.IsInFrontend()) {
+        AddToggleOption(new AOAudioMode(true), true);
+    }
+
+    OriginalAudioSettings = new AudioSettings();
+    *OriginalAudioSettings = *FEDatabase->GetAudioSettings();
+}
+
+void UIOptionsScreen::SetupVideo() {
+    FEngSetTextureHash(GetPackageName(), 0x8007B4C, 0x8A006328);
+
+    if (!mCalledFromPauseMenu) {
+        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0x48478029);
+    } else {
+        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0xD94EA03F);
+    }
+
+    AddToggleOption(new VOWideScreen(true), true);
+
+    OriginalVideoSettings = new VideoSettings();
+    *OriginalVideoSettings = *FEDatabase->GetVideoSettings();
+
+    FEngSetScript(GetPackageName(), 0xAD6B204F, 0x5079C8F8, true);
+}
+
+void UIOptionsScreen::SetupGameplay() {
+    FEngSetTextureHash(GetPackageName(), 0x8007B4C, 0x4DF98FB2);
+
+    if (!mCalledFromPauseMenu) {
+        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0x01CCE8C2);
+    } else {
+        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0x3936D9F8);
+    }
+
+    bool split = ShouldShowAutoSave();
+    if (split) {
+        AddToggleOption(new GOAutoSave(true), true);
+    }
+
+    if (Sim::GetUserMode() != Sim::USER_SPLIT_SCREEN) {
+        AddToggleOption(new GOJumpCams(true), true);
+    }
+
+    AddToggleOption(new GODamage(true), true);
+    AddToggleOption(new GORearview(true), true);
+    AddToggleOption(new GOSpeedoUnits(true), true);
+
+    if (!mCalledFromPauseMenu || Sim::GetUserMode() != Sim::USER_SPLIT_SCREEN) {
+        if (!FEDatabase->IsOnlineMode() && !FEDatabase->IsLANMode()) {
+            AddToggleOption(new GOExploringMiniMap(true), true);
+        }
+        AddToggleOption(new GORacingMiniMap(true), true);
+    }
+
+    if (OriginalGameplaySettings == nullptr) {
+        OriginalGameplaySettings = new GameplaySettings();
+        *OriginalGameplaySettings = *FEDatabase->GetGameplaySettings();
+    }
+}
+
+void UIOptionsScreen::SetupPlayer() {
+    FEngSetTextureHash(GetPackageName(), 0x8007B4C, 0xD708EFEF);
+
+    if (!mCalledFromPauseMenu) {
+        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0xC055165F);
+    } else {
+        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0xD9DC2F12);
+    }
+
+    FEngSetScript(GetPackageName(), 0x8A41F5B9, 0x5079C8F8, true);
+
+    unsigned int lang = 0x7B070985;
+    if (GetPlayerToEditForOptions() == 0) {
+        lang = 0x7B070984;
+    }
+    FEngSetLanguageHash(GetPackageName(), 0x53BF826D, lang);
+
+    if (!GRaceStatus::Exists() || GRaceStatus::Get().GetRaceType() != GRace::kRaceType_Drag) {
+        AddToggleOption(new POTransmission(true), true);
+    }
+
+    AddToggleOption(new PODriveCam(true), true);
+    AddToggleOption(new POGauges(true), true);
+    AddToggleOption(new POPosition(true), true);
+    AddToggleOption(new POSplitTime(true), true);
+    AddToggleOption(new POScore(true), true);
+
+    if (!GRaceStatus::Exists() || (!GRaceStatus::IsDragRace() && !GRaceStatus::IsTollboothRace())) {
+        AddToggleOption(new POLeaderBoard(true), true);
+    }
+
+    OriginalPlayerSettings = new PlayerSettings();
+    *OriginalPlayerSettings =
+        *FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions());
+}
+
+void UIOptionsScreen::SetupOnline() {
+    if (!mCalledFromPauseMenu) {
+        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0xE463B5F7);
+    } else {
+        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0x966C856D);
+    }
+}
+
+void UIOptionsScreen::RestoreDefaults() {
+    bool bOldAutoSaveVal;
+
+    eOptionsCategory curCat = FEDatabase->GetOptionsSettings()->CurrentCategory;
+    if (curCat == OC_AUDIO) {
+        FEDatabase->GetAudioSettings()->Default();
+    } else if (curCat == OC_VIDEO) {
+        FEDatabase->GetVideoSettings()->Default();
+    } else if (curCat == OC_GAMEPLAY) {
+        bOldAutoSaveVal = FEDatabase->GetGameplaySettings()->AutoSaveOn;
+        FEDatabase->GetGameplaySettings()->Default();
+        if (!ShouldShowAutoSave()) {
+            FEDatabase->GetGameplaySettings()->AutoSaveOn = bOldAutoSaveVal;
+        }
+    } else if (curCat == OC_PLAYER) {
+        FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DefaultFromOptionsScreen();
+    }
+
+    FEDatabase->GetOptionsSettings()->CurrentCategory = curCat;
+
+    for (int i = 0; i < Options.CountElements(); i++) {
+        Options.GetNode(i)->Draw();
+    }
+}
+
+bool UIOptionsScreen::OptionsDidNotChange() {
+    eOptionsCategory curCat = FEDatabase->GetOptionsSettings()->CurrentCategory;
+    if (curCat == OC_AUDIO) {
+        return *FEDatabase->GetAudioSettings() == *OriginalAudioSettings;
+    } else if (curCat == OC_VIDEO) {
+        return *FEDatabase->GetVideoSettings() == *OriginalVideoSettings;
+    } else if (curCat == OC_GAMEPLAY) {
+        return *FEDatabase->GetGameplaySettings() == *OriginalGameplaySettings;
+    } else if (curCat == OC_PLAYER) {
+        return *FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions()) ==
+               *OriginalPlayerSettings;
+    }
+    return false;
+}
+
+void UIOptionsScreen::RestoreOriginals() {
+    eOptionsCategory curCat = FEDatabase->GetOptionsSettings()->CurrentCategory;
+    if (curCat == OC_AUDIO) {
+        *FEDatabase->GetAudioSettings() = *OriginalAudioSettings;
+    } else if (curCat == OC_VIDEO) {
+        *FEDatabase->GetVideoSettings() = *OriginalVideoSettings;
+    } else if (curCat == OC_GAMEPLAY) {
+        *FEDatabase->GetGameplaySettings() = *OriginalGameplaySettings;
+    } else if (curCat == OC_PLAYER) {
+        *FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions()) = *OriginalPlayerSettings;
+    }
+}
+
+void UIOptionsScreen::TogglePlayer(bool revert_changes) {
+    if (revert_changes) {
+        RestoreOriginals();
+    }
+
+    SetPlayerToEditForOptions(GetPlayerToEditForOptions() == 0);
+
+    if (FEDatabase->GetOptionsSettings()->CurrentCategory == OC_PLAYER) {
+        *OriginalPlayerSettings =
+            *FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions());
+
+        unsigned int lang = 0x7B070985;
+        if (GetPlayerToEditForOptions() == 0) {
+            lang = 0x7B070984;
+        }
+        FEngSetLanguageHash(GetPackageName(), 0x53BF826D, lang);
+    }
+
+    for (int i = 0; i < Options.CountElements(); i++) {
+        Options.GetNode(i)->Draw();
+    }
+}
+
+bool UIOptionsScreen::ShouldShowAutoSave() {
+    if (!GRaceStatus::Exists() ||
+        GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career ||
+        (GRaceStatus::Get().GetRaceParameters() &&
+         GRaceStatus::Get().GetRaceParameters()->GetIsChallengeSeriesRace())) {
+        if (IsMemcardEnabled && IsAutoSaveEnabled && FEDatabase->IsCareerMode() &&
+            !FEDatabase->IsOnlineMode()) {
+            return true;
+        }
+    }
+    return false;
+}

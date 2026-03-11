@@ -436,6 +436,15 @@ class cFrontendDatabase {
 
     void GetGameCompletionStats(GameCompletionStats* stats);
 
+    bool IsFinalEpicChase();
+    unsigned int GetUserProfileSaveSize(bool bExcludeGameplay);
+    void SaveUserProfileToBuffer(void* buffer, int size);
+    void AllocBackupDB(bool b);
+    void DefaultProfile();
+    bool LoadUserProfileFromBuffer(void* buffer, int size, int player);
+    void RestoreFromBackupDB();
+    void DeallocBackupDB();
+
     bool MatchesGameMode(unsigned int mode) {
         return FEGameMode & mode;
     }

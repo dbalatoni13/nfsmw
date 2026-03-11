@@ -6,6 +6,7 @@
 #endif
 
 #include "FEMenuScreen.hpp"
+#include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "feScrollerina.hpp"
 
