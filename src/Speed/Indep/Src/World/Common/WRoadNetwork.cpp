@@ -1928,40 +1928,38 @@ bool WRoadNav::MakeShortcutDecision(int shortcut_number, unsigned int *cached, u
     }
     if (GetPathType() != kPathRacer) return true;
 
-    {
-        int mask = 1 << (shortcut_number & 0x3f);
-        GRaceParameters *race_parameters = GRaceStatus::Get().GetRaceParameters();
-        if (cached != nullptr && (mask & *cached) != 0) {
-            bool shortcut_allowed = (mask & *allowed) != 0;
-            return shortcut_allowed;
+    int mask = 1 << shortcut_number;
+    if (cached != nullptr && (mask & *cached) != 0) {
+        bool shortcut_allowed = (mask & *allowed) != 0;
+        return shortcut_allowed;
+    }
+    GRaceParameters *race_parameters = GRaceStatus::Get().GetRaceParameters();
+    if (race_parameters != nullptr) {
+        AIVehicle *vehicle = GetVehicle();
+        float skill;
+        if (vehicle != nullptr) {
+            skill = vehicle->GetSkill();
+        } else {
+            skill = 0.0f;
         }
-        if (race_parameters != nullptr) {
-            AIVehicle *vehicle = GetVehicle();
-            float skill;
-            if (vehicle == nullptr) {
-                skill = 0.0f;
-            } else {
-                skill = vehicle->GetSkill();
-            }
-            GMarker *marker = race_parameters->GetShortcut(shortcut_number);
-            float min = marker->ShortcutMinChance(0);
-            float max = marker->ShortcutMaxChance(0);
-            if (min > 0.0f) {
-                min = min * 0.01f;
-            }
-            if (max > 0.0f) {
-                max = max * 0.01f;
-            }
-            float chance = skill * (max - min) + min;
-            bool shortcut_allowed = bRandom(1.0f) < chance;
-            if (shortcut_allowed && allowed != nullptr) {
-                *allowed = *allowed | mask;
-            }
-            if (cached != nullptr) {
-                *cached = *cached | mask;
-            }
-            return shortcut_allowed;
+        GMarker *marker = race_parameters->GetShortcut(shortcut_number);
+        float min = marker->ShortcutMinChance(0);
+        float max = marker->ShortcutMaxChance(0);
+        if (min > 1.0f) {
+            min = min * 0.01f;
         }
+        if (max > 1.0f) {
+            max = max * 0.01f;
+        }
+        float chance = skill * (max - min) + min;
+        bool shortcut_allowed = bRandom(1.0f) < chance;
+        if (shortcut_allowed && allowed != nullptr) {
+            *allowed = *allowed | mask;
+        }
+        if (cached != nullptr) {
+            *cached = *cached | mask;
+        }
+        return shortcut_allowed;
     }
     return true;
 }
