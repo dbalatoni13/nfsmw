@@ -43,7 +43,17 @@ struct cFEng {
     void DrawForeground();
     void PushErrorPackage(const char* pPackageName, int pArg, unsigned long ControlMask);
     void PopErrorPackage();
+    void PopErrorPackage(int);
+    void PauseAllSystems();
+    void ResumeAllSystems(bool);
     void Service();
+    void ServiceFengOnly();
+    FEPackage* FindPackageAtBase();
+    FEPackage* FindPackageActive(const char* pPackageName);
+    FEPackage* FindPackageIdle(const char* pPackageName);
+    void PrintLoadedPackages();
+    void QueueMessage(unsigned int msg, const char* pkg_name, FEObject* obj, unsigned int controlMask);
+    bool IsPackageInControl(const char* packageName);
 };
 
 #endif

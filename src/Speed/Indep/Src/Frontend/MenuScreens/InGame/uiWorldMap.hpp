@@ -13,6 +13,10 @@
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+struct FEObject;
+void FEngSetVisible(FEObject* obj);
+void FEngSetInvisible(FEObject* obj);
+
 struct FEMultiImage;
 struct ActionQueue;
 struct TrackInfo;
@@ -82,8 +86,12 @@ struct MapItem : public bTNode<MapItem> {
     virtual void UpdatePos(bVector2& pos);
     virtual void UpdateScale(float scale);
     virtual void Draw() {}
-    virtual void Show();
-    virtual void Hide();
+    virtual void Show() {
+        FEngSetVisible(pIcon);
+    }
+    virtual void Hide() {
+        FEngSetInvisible(pIcon);
+    }
     virtual void ResetSize();
     GIcon* GetIcon();
     void SetHidden(bool b);
