@@ -43,15 +43,25 @@ void cFEng::PushErrorPackage(const char* pPackageName, int pArg, unsigned long C
         if (cFEng::Get()->IsPackagePushed(pPackageName)) {
             return;
         }
-    }
-    FEPackageManager::Get()->SetPackageDataArg(pPackageName, pArg);
-    FEPackage* pPackage = mFEng->PushPackage(pPackageName, FE_PACKAGE_PRIORITY_ERROR, ControlMask);
-    pPackage->SetErrorScreen(true);
-    mFEng->ToggleErrorScreenMode(true);
-    if (!FEManager::IsPaused() || bWasPaused) {
-        bWasPaused = true;
-        FEManager::RequestPauseSimulation(pPackageName);
-        PauseAllSystems();
+        FEPackageManager::Get()->SetPackageDataArg(pPackageName, pArg);
+        FEPackage* pPackage = mFEng->PushPackage(pPackageName, FE_PACKAGE_PRIORITY_ERROR, ControlMask);
+        pPackage->SetErrorScreen(true);
+        mFEng->ToggleErrorScreenMode(true);
+        if (!FEManager::IsPaused() || bWasPaused) {
+            bWasPaused = true;
+            FEManager::RequestPauseSimulation(pPackageName);
+            PauseAllSystems();
+        }
+    } else {
+        FEPackageManager::Get()->SetPackageDataArg(pPackageName, pArg);
+        FEPackage* pPackage = mFEng->PushPackage(pPackageName, FE_PACKAGE_PRIORITY_ERROR, ControlMask);
+        pPackage->SetErrorScreen(true);
+        mFEng->ToggleErrorScreenMode(true);
+        if (!FEManager::IsPaused() || bWasPaused) {
+            bWasPaused = true;
+            FEManager::RequestPauseSimulation(pPackageName);
+            PauseAllSystems();
+        }
     }
 }
 
@@ -116,7 +126,8 @@ void cFEng::QueuePackagePush(const char* pPackageName, int pArg, unsigned long C
     if (TheGameFlowManager.IsInGame() && !pSuppressSimPause && !FEManager::IsPaused()) {
         FEManager::RequestPauseSimulation(pPackageName);
         HideEverySingleHud();
-        if (!IsPackagePushed("InGameBackground.fng")) {
+        bool push_bkg = IsPackagePushed("InGameBackground.fng");
+        if (!push_bkg) {
             mFEng->QueuePackagePush("InGameBackground.fng", 0);
         }
     }
