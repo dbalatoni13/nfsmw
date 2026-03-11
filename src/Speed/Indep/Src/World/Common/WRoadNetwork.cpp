@@ -1446,21 +1446,35 @@ void WRoadNav::PrivateIncNavPosition(float dist, const UMath::Vector3 &to) {
     float distFraction;
     float toLength;
 
-    while (true) {
+    for (;;) {
         segment = roadNetwork.GetSegment(GetSegmentInd());
         segmentLength = UMath::Max(UMath::Distance(fStartPos, fEndPos), 0.001f);
         toLength = UMath::Length(to);
         distFraction = fSegTime + dist / segmentLength;
-        if (distFraction <= 1.0f) break;
+
+        if (distFraction <= 1.0f) {
+            fSegTime = distFraction;
+            fSegTime = UMath::Min(UMath::Max(fSegTime, 0.0f), 1.0f);
+
+            if (UpdateLaneChange(dist)) {
+                SetStartEndPos(*segment, fLaneOffset);
+                SetStartEndControls(*segment);
+                RebuildSplines(segment);
+            }
+
+            EvaluateSplines(segment);
+            return;
+        }
 
         {
-            short newSegInd = static_cast< short >(GetSegmentInd());
-            float nextLaneOffset = fLaneOffset;
-            bool useOldStartPos = false;
-            char old_node_ind = fNodeInd;
-            const WRoadSegment *newSegment;
+            short newSegInd = GetSegmentInd();
 
             UpdateLaneChange((1.0f - fSegTime) * segmentLength);
+
+            char old_node_ind = fNodeInd;
+            float nextLaneOffset = fLaneOffset;
+            bool useOldStartPos = false;
+            const WRoadSegment *newSegment;
 
             if (fNavType == kTypeDirection && toLength == 0.0f) {
                 UMath::Vector3 endTo;
@@ -1504,17 +1518,6 @@ void WRoadNav::PrivateIncNavPosition(float dist, const UMath::Vector3 &to) {
             fSegTime = 0.0f;
         }
     }
-
-    fSegTime = distFraction;
-    fSegTime = UMath::Min(UMath::Max(distFraction, 0.0f), 1.0f);
-
-    if (UpdateLaneChange(dist)) {
-        SetStartEndPos(*segment, fLaneOffset);
-        SetStartEndControls(*segment);
-        RebuildSplines(segment);
-    }
-
-    EvaluateSplines(segment);
 }
 
 void WRoadNav::Reset() {

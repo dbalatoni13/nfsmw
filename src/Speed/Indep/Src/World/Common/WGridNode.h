@@ -89,9 +89,9 @@ inline WGridNode::iterator::iterator(const WGridNode *node, WGridNode_ElemType t
       fDynamic(false) {
     fNumEntriesRemaining = node->GetElemTypeCount(type);
     if (fNumEntriesRemaining != 0) {
-        fValid = true;
         fElemInd = node->GetElemTypePtr(type);
     }
+    fValid = (fNumEntriesRemaining != 0);
     if (node->fDynElems != nullptr) {
         fIter = node->fDynElems->begin();
         fValid = true;
@@ -104,10 +104,10 @@ inline void WGridNode::iterator::Invalidate() {
 }
 
 inline const unsigned int *WGridNode::iterator::GetIndPtr() {
-    const unsigned int *retInd = nullptr;
     if (!fValid) {
         return nullptr;
     }
+    const unsigned int *retInd = nullptr;
     if (!fDynamic && fNumEntriesRemaining > 0) {
         fNumEntriesRemaining--;
         fValid = true;

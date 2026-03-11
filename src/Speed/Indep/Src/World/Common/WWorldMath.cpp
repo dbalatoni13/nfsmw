@@ -1,5 +1,90 @@
 #include "Speed/Indep/Src/World/WWorldMath.h"
 
+bool WWorldMath::IntersectCircle(float x1, float y1, float x2, float y2, float cx, float cy, float r, float &u1, float &u2) {
+    if (InCircle(x1, y1, cx, cy, r) && InCircle(x2, y2, cx, cy, r)) {
+        u1 = 0.0f;
+        u2 = 0.0f;
+        return true;
+    }
+
+    float oy = y1 - cy;
+    float dy = (y2 - cy) - oy;
+    float ox = x1 - cx;
+    float dx = (x2 - cx) - ox;
+    float a = dx * dx + dy * dy;
+
+    if (a == 0.0f) {
+        u1 = 0.0f;
+        u2 = 0.0f;
+        return true;
+    }
+
+    float b = dx * ox + dy * oy;
+    float t = b + b;
+    float c = (ox * ox + oy * oy - r * r) * 4.0f;
+
+    if (t * t - a * c >= 0.0f) {
+        float root = bSqrt(t * t - a * c);
+        float inv2timesA = 1.0f / (a + a);
+        u1 = (-t - root) * inv2timesA;
+        u2 = (-t + root) * inv2timesA;
+        if (u1 >= 0.0f && u1 <= 1.0f) {
+            return true;
+        }
+        if (u2 >= 0.0f && u2 <= 1.0f) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool WWorldMath::MakeSegSpaceMatrix(const UMath::Vector3 &startPt, const UMath::Vector3 &endPt, UMath::Matrix4 &mat) {
+    if (PtsEqual(startPt, endPt, 0.001f)) {
+        return false;
+    }
+
+    UMath::Vector4 &right = mat.v0;
+    UMath::Vector4 &forward = mat.v1;
+    UMath::Vector4 &up = mat.v2;
+
+    UMath::Sub(startPt, endPt, UMath::Vector4To3(forward));
+    forward.w = 0.0f;
+
+    float rLen = InvSqrt(forward.x * forward.x + forward.y * forward.y + forward.z * forward.z);
+    float fwdY = forward.y;
+    forward.x = forward.x * rLen;
+    forward.z = forward.z * rLen;
+    forward.y = fwdY * rLen;
+
+    if (UMath::Abs(forward.y) <= 0.9f) {
+        right.w = 0.0f;
+        right.x = 0.0f;
+        right.y = 1.0f;
+    } else {
+        right.w = 0.0f;
+        right.y = 0.0f;
+        right.x = 1.0f;
+    }
+    right.z = 0.0f;
+
+    Crossxyz(right, forward, up);
+    up.w = 0.0f;
+
+    float lensq = up.z * up.z + up.x * up.x + up.y * up.y;
+    if (lensq != 0.0f) {
+        rLen = InvSqrt(lensq);
+    }
+    up.x = up.x * rLen;
+    up.y = up.y * rLen;
+    up.z = up.z * rLen;
+
+    Crossxyz(forward, up, right);
+
+    mat.v3 = UMath::Vector4Make(startPt, 1.0f);
+
+    return true;
+}
+
 float WWorldMath::GetPlaneY(const UMath::Vector3 &normal, const UMath::Vector3 &pointOnPlane, const UMath::Vector3 &testPoint) {
     if (normal.y == 0.0f) {
         return pointOnPlane.y;

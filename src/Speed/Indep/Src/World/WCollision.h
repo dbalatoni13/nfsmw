@@ -13,7 +13,13 @@
 
 struct WSurface : CollisionSurface {
     static void InitSystem();
-    
+
+    WSurface() {}
+    WSurface(unsigned char surface, unsigned char flags) {
+        fSurface = surface;
+        fFlags = flags;
+    }
+
     unsigned int Surface() const {
         return fSurface;
     }

@@ -366,28 +366,20 @@ void WCollisionMgr::BuildGeomFromWorldObb(const WCollisionObject &object, float 
                                           WSurface &surface) {
     surface = object.GetWSurface();
 
-    UMath::Vector3 objPos;
-    objPos.x = object.fPosRadius.x;
-    objPos.y = object.fPosRadius.y;
-    objPos.z = object.fPosRadius.z;
-
+    UMath::Vector3 pos = UMath::Vector3Make(object.fPosRadius.x, object.fPosRadius.y, object.fPosRadius.z);
+    UMath::Vector3 objPos = pos;
     UMath::Matrix4 objMat;
-    UMath::Vector3 pos = objPos;
 
     object.MakeMatrix(objMat, false);
 
     vel.x = 0.0f;
-    vel.y = 0.0f;
     vel.z = 0.0f;
-    UMath::ScaleAdd(objPos, dt, UMath::Vector4To3(objMat.v3), pos);
+    vel.y = 0.0f;
+    UMath::ScaleAdd(UMath::Vector4To3(objMat.v1), object.fDimensions.y, objPos, pos);
 
-    UMath::Vector3 dim;
-    dim.x = object.fDimensions.x;
-    dim.y = object.fDimensions.y;
-    dim.z = object.fDimensions.z;
-
+    UMath::Vector3 dim = UMath::Vector3Make(object.fDimensions.x, object.fDimensions.y, object.fDimensions.z);
     UMath::Vector3 dP = dim;
-    UMath::Scale(dP, dt, vel);
+    UMath::Scale(vel, dt, dim);
 
-    geom.Set(objMat, pos, dim, Dynamics::Collision::Geometry::BOX, dP);
+    geom.Set(objMat, pos, dP, Dynamics::Collision::Geometry::BOX, dim);
 }
