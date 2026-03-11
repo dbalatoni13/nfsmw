@@ -9,8 +9,8 @@ bool WWorldMath::IntersectCircle(float x1, float y1, float x2, float y2, float c
         return true;
     }
 
-    y2 -= cy;
     y1 -= cy;
+    y2 -= cy;
     y2 -= y1;
     x1 -= cx;
     x2 -= cx;
@@ -154,20 +154,20 @@ bool WWorldMath::IntersectSegPlane(const UMath::Vector3 &P1, const UMath::Vector
     t = n / d;
     UMath::Sub(P2, P1, intersectionPt);
     UMath::ScaleAdd(intersectionPt, t, P1, intersectionPt);
-    bool result = true;
-    if (t < 0.0f || t > 1.0f) {
+    bool result = false;
+    if (t < 0.0f || (result = true, t > 1.0f)) {
         result = false;
     }
     return result;
 }
 
 bool WWorldMath::SegmentIntersect(const UMath::Vector4 *line1, const UMath::Vector4 *line2, UMath::Vector4 *intersectPt) {
-    const float z11 = line1[0].z;
     const float x11 = line1[0].x;
-    const float l1z = line1[1].z - z11;
+    const float z11 = line1[0].z;
     const float x22 = line2[0].x;
-    const float l2x = line2[1].x - x22;
+    const float l1z = line1[1].z - z11;
     const float z22 = line2[0].z;
+    const float l2x = line2[1].x - x22;
     const float l2z = line2[1].z - z22;
     const float l1x = line1[1].x - x11;
     const float ua_d = l2z * l1x - l2x * l1z;
@@ -177,14 +177,14 @@ bool WWorldMath::SegmentIntersect(const UMath::Vector4 *line1, const UMath::Vect
     const float x12 = x11 - x22;
     const float z12 = z11 - z22;
     const float ua_n = l2x * z12 - l2z * x12;
-    if ((ua_n >= 0.0f && ua_n <= ua_d) || (ua_n <= 0.0f && ua_d <= ua_n)) {
+    if ((0.0f <= ua_n && ua_n <= ua_d) || (ua_n <= 0.0f && ua_d <= ua_n)) {
         const float ub_n = l1x * z12 - l1z * x12;
-        if ((ub_n >= 0.0f && ub_n <= ua_d) || (ub_n <= 0.0f && ua_d <= ub_n)) {
+        if ((0.0f <= ub_n && ub_n <= ua_d) || (ub_n <= 0.0f && ua_d <= ub_n)) {
             if (intersectPt != nullptr) {
                 float t = ua_n / ua_d;
                 intersectPt->x = t * l1x + x11;
-                intersectPt->z = t * l1z + z11;
                 intersectPt->w = 1.0f;
+                intersectPt->z = t * l1z + z11;
                 intersectPt->y = t * (line1[1].y - line1[0].y) + line1[0].y;
             }
             return true;

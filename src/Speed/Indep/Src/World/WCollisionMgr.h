@@ -85,8 +85,8 @@ class WCollisionMgr {
     }
 
     WCollisionMgr(unsigned int surfaceExclMask, unsigned int primitiveExclMask) {
-        this->fSurfaceExclusionMask = surfaceExclMask;
         this->fPrimitiveMask = primitiveExclMask;
+        this->fSurfaceExclusionMask = surfaceExclMask;
     }
 
     ~WCollisionMgr() {}

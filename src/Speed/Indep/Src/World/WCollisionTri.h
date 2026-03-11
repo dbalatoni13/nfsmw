@@ -22,14 +22,7 @@ struct WCollisionTri {
     WSurface fSurface;                    // offset 0x2C, size 0x2
     unsigned short PAD;                   // offset 0x2E, size 0x2
 
-    WCollisionTri()
-        : fPt0(UMath::Vector3::kZero), //
-          fSurfaceRef(nullptr), //
-          fPt1(UMath::Vector3::kZero), //
-          fFlags(0), //
-          fPt2(UMath::Vector3::kZero), //
-          fSurface(), //
-          PAD(0) {}
+    WCollisionTri() {}
 
     inline void GetNormal(UMath::Vector3 *norm) const {
         UMath::Vector3 vecX;
@@ -70,14 +63,21 @@ struct WCollisionBarrierList : public WCollisionVector<WCollisionBarrierListEntr
 
 struct WCollisionTriBlock : public WCollisionVector<WCollisionTri> {
     static void *operator new(unsigned int size) { return gFastMem.Alloc(size, nullptr); }
-    static void operator delete(void *mem, unsigned int size) { gFastMem.Free(mem, size, nullptr); }
+    static void operator delete(void *mem, unsigned int size) { if (mem) gFastMem.Free(mem, size, nullptr); }
 };
 
 struct WCollisionTriList : public WCollisionVector<WCollisionTriBlock *> {
     // total size: 0x14
     WCollisionTriList() : mCurrBlock(nullptr) {}
     ~WCollisionTriList() { clear_all(); }
-    void clear_all();
+
+    inline void clear_all() {
+        for (WCollisionTriBlock **i = begin(); i != end(); ++i) {
+            delete *i;
+        }
+        clear();
+        mCurrBlock = nullptr;
+    }
     WCollisionTriBlock *mCurrBlock; // offset 0x10, size 0x4
 };
 

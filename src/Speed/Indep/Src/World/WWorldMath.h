@@ -19,7 +19,7 @@ inline float wmin(const float &a, const float &b) {
 }
 
 inline float wmax(const float &a, const float &b) {
-    if (a > b) return a;
+    if (a >= b) return a;
     return b;
 }
 

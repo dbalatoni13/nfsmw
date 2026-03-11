@@ -29,34 +29,37 @@ struct ManagedCollisionInstance {
 WCollisionAssets::WCollisionAssets()
     : fStaticCollisionInstances(nullptr),      //
       fStaticCollisionInstancesCount(0),       //
-      fManagedCollisionInstances(new CollisionInstanceMap), //
+      fManagedCollisionInstances(new (__FILE__, __LINE__) CollisionInstanceMap), //
       fManagedCollisionInstancesInd(0x8000),   //
       fStaticCollisionObjects(nullptr),        //
       fStaticCollisionObjectsCount(0),         //
-      fManagedCollisionObjects(new CollisionObjectMap), //
+      fManagedCollisionObjects(new (__FILE__, __LINE__) CollisionObjectMap), //
       fManagedCollisionObjectsInd(0x8000),     //
-      fNumPackLoadCallbacks(0),                //
-      fStaticTriggers(nullptr),                //
-      fStaticTriggersCount(0) {
-    unsigned int i;
+      fNumPackLoadCallbacks(0) {
+    unsigned int onCallback;
 
-    for (i = 0; i <= 3; ++i) {
-        fPackLoadCallback[i] = nullptr;
+    for (onCallback = 0; onCallback <= 3; ++onCallback) {
+        fPackLoadCallback[onCallback] = nullptr;
     }
 
+    fStaticCollisionObjects = nullptr;
+    fStaticTriggers = nullptr;
+    fStaticTriggersCount = 0;
+
     mCollisionPackList = new WCollisionPack *[0xA8C];
-    for (i = 0; i <= 0xA8B; ++i) {
-        mCollisionPackList[i] = nullptr;
+    int ix;
+    for (ix = 0; ix <= 0xA8B; ++ix) {
+        mCollisionPackList[ix] = nullptr;
     }
 }
 
 WCollisionAssets::~WCollisionAssets() {
-    unsigned int i;
+    int ix;
 
-    for (i = 0; i <= 0xA8B; ++i) {
-        if (mCollisionPackList[i] != nullptr) {
-            delete mCollisionPackList[i];
-            mCollisionPackList[i] = nullptr;
+    for (ix = 0; ix <= 0xA8B; ++ix) {
+        if (mCollisionPackList[ix] != nullptr) {
+            delete mCollisionPackList[ix];
+            mCollisionPackList[ix] = nullptr;
         }
     }
 

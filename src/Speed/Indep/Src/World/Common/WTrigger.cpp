@@ -59,7 +59,7 @@ void WTrigger::FireEvents(HSIMABLE__ *hSimable) {
                        | static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x13]);
     if (flags & 2) {
         *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) =
-            (*reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) & 0xFF000000) | (flags & ~1);
+            (*reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) & 0xFF000000u) | (flags & 0x00FFFFFEu);
     }
 }
 
@@ -345,9 +345,10 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
                 }
             }
             if ((reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF) == 3) {
-                if (rPos.y + rbRadius >= trig->fPosRadius.y - trig->fHeight * 0.5f &&
-                    rPos.y - rbRadius < trig->fPosRadius.y + trig->fHeight * 0.5f) {
-                    return true;
+                if (rPos.y + rbRadius >= trig->fPosRadius.y - trig->fHeight * 0.5f) {
+                    if (rPos.y - rbRadius < trig->fPosRadius.y + trig->fHeight * 0.5f) {
+                        return true;
+                    }
                 }
             } else if ((reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF) == 1) {
                 UMath::Vector3 dim3;
@@ -358,6 +359,7 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
                 UMath::Matrix4 m;
                 trig->MakeMatrix(m, false, false);
                 UMath::Vector4 trigPos = trig->fPosRadius;
+                trigPos.w = 1.0f;
                 UMath::Vector3 trigDimension;
                 trigDimension.x = trig->fMatRow0Width.w * 0.5f;
                 trigDimension.y = trig->fHeight * 0.5f;
@@ -407,6 +409,7 @@ bool WTriggerManager::CheckCollideSRB(const IRigidBody *srBody, const WTrigger *
         UMath::Matrix4 m;
         trig->MakeMatrix(m, false, false);
         UMath::Vector4 trigPos = trig->fPosRadius;
+        trigPos.w = 1.0f;
         UMath::Vector3 trigDimension;
         trigDimension.x = trig->fMatRow0Width.w * 0.5f;
         trigDimension.y = trig->fHeight * 0.5f;

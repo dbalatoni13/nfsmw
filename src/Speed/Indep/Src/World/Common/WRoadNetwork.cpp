@@ -873,16 +873,15 @@ bool WRoadNav::IsOnLegalRoad() {
 
 bool WRoadNav::FindPath(const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, char *shortcut_allowed) {
     PathFinder *path_finder = PathFinder::Get();
-    bool ret = false;
-    if (path_finder != nullptr) {
-        MaybeAllocatePathSegments();
-        AStarSearch *search = path_finder->Pending(this);
-        if (search == nullptr) {
-            search = path_finder->Submit(this, goal_position, goal_direction, shortcut_allowed);
-        }
-        ret = search != nullptr;
+    if (path_finder == nullptr) {
+        return false;
     }
-    return ret;
+    MaybeAllocatePathSegments();
+    AStarSearch *search = path_finder->Pending(this);
+    if (search == nullptr) {
+        search = path_finder->Submit(this, goal_position, goal_direction, shortcut_allowed);
+    }
+    return search != nullptr;
 }
 
 bool WRoadNav::FindPathNow(const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, char *shortcut_allowed) {

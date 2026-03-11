@@ -73,47 +73,38 @@ void WCollider::Destroy(WCollider *col) {
 
 static void CalcNewRegionSizeFromRequested(bool useLastData, const UMath::Vector3 &reqPos, float reqRad, const UMath::Vector3 &oldPos,
                                            float oldRad, const UMath::Vector3 &lastPos, UMath::Vector3 &pos, float &rad) {
-    float vel = UMath::Distance(reqPos, lastPos);
-    if (!useLastData || vel <= 5.0f) {
-        pos = reqPos;
-        rad = reqRad * 1.1f;
+    if (useLastData) {
+        float vel = UMath::Distance(reqPos, lastPos);
+        if (vel > 5.0f) {
+            pos = reqPos;
+            rad = reqRad * 1.1f;
+            return;
+        }
+        UMath::Vector3 moveVec;
+        float lifeFactor = 2.5f;
+        UMath::Sub(reqPos, oldPos, moveVec);
+        UMath::Unit(moveVec, moveVec);
+        UMath::Scale(moveVec, vel * lifeFactor, moveVec);
+        UMath::Add(reqPos, moveVec, pos);
+
+        float moveDist = UMath::Length(moveVec);
+        rad = reqRad + moveDist + 0.1f;
+        if (rad > 25.0f) {
+            rad = 25.0f;
+        }
         return;
     }
-
-    UMath::Vector3 moveVec;
-    UMath::Sub(reqPos, oldPos, moveVec);
-    UMath::Unit(moveVec, moveVec);
-    UMath::Scale(moveVec, vel * 2.5f, moveVec);
-    UMath::Add(reqPos, moveVec, pos);
-
-    rad = reqRad + UMath::Length(moveVec) + 0.1f;
-    if (rad < 25.0f) {
-        rad = 25.0f;
-    }
-}
-
-static void ClearTriList(WCollisionTriList &triList) {
-    WCollisionTriBlock **iter = triList.begin();
-    WCollisionTriBlock **end = triList.end();
-    while (iter != end) {
-        delete *iter++;
-    }
-    triList.clear();
-    triList.mCurrBlock = NULL;
+    pos = reqPos;
+    rad = reqRad * 1.1f;
 }
 
 void WCollider::InvalidateIntersectingColliders(const UMath::Vector4 &posRad) {
     const List &list = GetList();
-    List::const_iterator iter = list.begin();
-    List::const_iterator end = list.end();
-    while (iter != end) {
-        WCollider *collider = *iter;
-        ++iter;
-        UMath::Vector3 delta;
-        VU0_v3sub(collider->fPosition, UMath::Vector4To3(posRad), delta);
+    for (List::const_iterator iter = list.begin(); iter != list.end(); ++iter) {
+        WCollider &collider = **iter;
 
-        if (VU0_sqrt(VU0_v3lengthsquare(delta)) <= posRad.w + collider->fRadius) {
-            collider->Clear();
+        if (UMath::Distance(collider.fPosition, UMath::Vector4To3(posRad)) < posRad.w + collider.fRadius) {
+            collider.Clear();
         }
     }
 }
@@ -186,7 +177,7 @@ void WCollider::Clear() {
 void WCollider::ClearLists(unsigned int typeMask) {
     if (typeMask & 0x8) {
         fInstanceCacheList.clear();
-        ClearTriList(fTriList);
+        fTriList.clear_all();
     }
 
     if (typeMask & 0x4) {
@@ -201,7 +192,7 @@ void WCollider::ClearLists(unsigned int typeMask) {
 void WCollider::EmptyLists(unsigned int typeMask) {
     if (typeMask & 0x8) {
         fInstanceCacheList.resize(0);
-        ClearTriList(fTriList);
+        fTriList.clear_all();
     }
 
     if (typeMask & 0x4) {
@@ -246,7 +237,7 @@ bool WCollider::InRegion(const UMath::Vector3 &pt, float radius) const {
     if (radDiff < 0.0f) {
         return false;
     }
-    return radDiff * radDiff >= UMath::DistanceSquare(pt, fPosition);
+    return UMath::DistanceSquare(pt, fPosition) < radDiff * radDiff;
 }
 
 void WCollider::InvalidateAllCachedData() {
@@ -255,19 +246,14 @@ void WCollider::InvalidateAllCachedData() {
     List::const_iterator end = list.end();
     const unsigned int regionInitialized = false;
     while (iter != end) {
-        WCollider *collider = *iter;
+        (*iter)->Clear();
+        (*iter)->fRegionInitialized = regionInitialized;
         ++iter;
-        collider->Clear();
-        collider->fRegionInitialized = regionInitialized;
     }
 }
 
 void WCollisionObject::MakeMatrix(UMath::Matrix4 &m, bool addXLate) const {
-    const unsigned int *src = reinterpret_cast<const unsigned int *>(&fMat);
-    unsigned int *dst = reinterpret_cast<unsigned int *>(&m);
-    for (unsigned int i = 0; i < 0x10; ++i) {
-        dst[i] = src[i];
-    }
+    m = fMat;
 
     if (addXLate) {
         m.v3.x = fPosRadius.x;
