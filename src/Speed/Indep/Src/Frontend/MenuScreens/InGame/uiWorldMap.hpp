@@ -18,6 +18,10 @@ struct FEObject;
 struct FEImage;
 void FEngSetVisible(FEObject* obj);
 void FEngSetInvisible(FEObject* obj);
+void FEngSetCenter(FEObject* obj, float x, float y);
+void FEngSetSize(FEObject* obj, float x, float y);
+void FEngSetScaleX(FEObject* obj, float x);
+void FEngSetScaleY(FEObject* obj, float y);
 
 struct FEMultiImage;
 struct ActionQueue;
@@ -85,8 +89,12 @@ struct MapItem : public bTNode<MapItem> {
     void GetInitialPos(bVector2& pos);
     void GetWorldPos(bVector2& pos);
     void GetCurrentPos(bVector2& pos);
-    virtual void UpdatePos(bVector2& pos);
-    virtual void UpdateScale(float scale);
+    virtual void UpdatePos(bVector2& pos) {
+        FEngSetCenter(pIcon, pos.x, pos.y);
+    }
+    virtual void UpdateScale(float scale) {
+        FEngSetSize(pIcon, InitialSize.x * scale, InitialSize.y * scale);
+    }
     virtual void Draw() {}
     virtual void Show() {
         FEngSetVisible(pIcon);
@@ -94,7 +102,9 @@ struct MapItem : public bTNode<MapItem> {
     virtual void Hide() {
         FEngSetInvisible(pIcon);
     }
-    virtual void ResetSize();
+    virtual void ResetSize() {
+        FEngSetSize(pIcon, InitialSize.x, InitialSize.y);
+    }
     GIcon* GetIcon();
     void SetHidden(bool b);
     bool IsHidden();
@@ -114,11 +124,27 @@ struct HeliItem : public CopItem {
 
     HeliItem(FEImage* view, FEObject* icon, bVector2& pos, bVector2& world_pos, float rot);
     ~HeliItem() override {}
-    void UpdatePos(bVector2& pos) override;
-    void UpdateScale(float scale) override;
+    void UpdatePos(bVector2& pos) override {
+        FEngSetCenter(pIcon, pos.x, pos.y);
+        FEngSetCenter(static_cast< FEObject* >(pViewCone), pos.x, pos.y);
+    }
+    void UpdateScale(float scale) override {
+        FEngSetScaleX(pIcon, InitialSize.x * scale);
+        FEngSetScaleY(pIcon, InitialSize.y * scale);
+    }
     void Draw() override;
-    void Show() override;
-    void Hide() override;
+    void Show() override {
+        MapItem::Show();
+        FEngSetVisible(static_cast< FEObject* >(pViewCone));
+    }
+    void Hide() override {
+        MapItem::Hide();
+        FEngSetInvisible(static_cast< FEObject* >(pViewCone));
+    }
+    void ResetSize() override {
+        FEngSetScaleX(pIcon, InitialSize.x);
+        FEngSetScaleY(pIcon, InitialSize.y);
+    }
 };
 
 struct ItemTypeToggle : public FEButtonWidget {

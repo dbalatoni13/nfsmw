@@ -428,28 +428,33 @@ void UIMemcardBase::ShowMessage(const wchar_t* msg, unsigned int nOptions,
     PopChild();
     HideAllButtons();
     SetMessage(reinterpret_cast< short* >(const_cast< wchar_t* >(msg)));
-    if (nOptions == 2) {
+    switch (nOptions) {
+    case 2:
         SetButtonText(reinterpret_cast< short* >(const_cast< wchar_t* >(option1)),
                       reinterpret_cast< short* >(const_cast< wchar_t* >(option2)),
                       nullptr);
-    } else if (nOptions == 1) {
-        SetButtonText(reinterpret_cast< short* >(const_cast< wchar_t* >(option1)),
-                      nullptr, nullptr);
-    } else if (nOptions == 3) {
+        break;
+    case 3:
         SetButtonText(reinterpret_cast< short* >(const_cast< wchar_t* >(option1)),
                       reinterpret_cast< short* >(const_cast< wchar_t* >(option2)),
                       reinterpret_cast< short* >(const_cast< wchar_t* >(option3)));
-    } else {
+        break;
+    case 1:
+        SetButtonText(reinterpret_cast< short* >(const_cast< wchar_t* >(option1)),
+                      nullptr, nullptr);
+        break;
+    case 0:
+    default:
         MemoryCard::GetInstance()->SetWaitingForResponse(false);
+        break;
     }
     SetScreenVisible(true, nOptions);
-    unsigned long hash;
+    cFEng* pFEng = cFEng::Get();
     if (nOptions == 0) {
-        hash = FEHashUpper("SHOW LOADER");
+        pFEng->QueuePackageMessage(FEHashUpper("SHOW LOADER"), GetPackageName(), nullptr);
     } else {
-        hash = FEHashUpper("HIDE LOADER");
+        pFEng->QueuePackageMessage(FEHashUpper("HIDE LOADER"), GetPackageName(), nullptr);
     }
-    cFEng::Get()->QueuePackageMessage(hash, GetPackageName(), nullptr);
 }
 
 void UIMemcardBase::ActivateChild() {
