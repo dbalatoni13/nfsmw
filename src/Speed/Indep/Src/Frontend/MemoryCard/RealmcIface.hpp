@@ -13,6 +13,8 @@ using Realmc::SystemInterface;
 struct IGameInterface;
 struct GameInfo;
 
+namespace RealmcIface {
+
 enum MessageChoices {
     CHOICE_NONE = 0,
     CHOICE_OPTION1 = 1,
@@ -20,8 +22,6 @@ enum MessageChoices {
     CHOICE_OPTION3 = 3,
     CHOICE_OPTION4 = 4,
 };
-
-namespace RealmcIface {
 
 enum CardStatus {
     STATUS_OK = 0,
