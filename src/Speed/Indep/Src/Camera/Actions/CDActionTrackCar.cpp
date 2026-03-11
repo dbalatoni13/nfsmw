@@ -37,6 +37,7 @@ const IAttachable::List *CDActionTrackCar::GetAttachments() const {
 
 CameraAI::Action *CDActionTrackCar::Construct(CameraAI::Director *director) {
     IPlayer *player = nullptr;
+    int player_idx;
     IPlayer *ip;
     for (IPlayer *const *iter = IPlayer::GetList(PLAYER_LOCAL).begin(); iter != IPlayer::GetList(PLAYER_LOCAL).end(); ++iter) {
         ip = *iter;
@@ -47,23 +48,29 @@ CameraAI::Action *CDActionTrackCar::Construct(CameraAI::Director *director) {
     }
 
     if (player == nullptr) {
-        return nullptr;
+        goto null_return;
     }
 
     if (player->GetSettingsIndex() == 0) {
-        return nullptr;
+        goto null_return;
     }
 
-    ISimable *isimable = player->GetSimable();
-    if (isimable == nullptr) {
-        return nullptr;
+    {
+        ISimable *isimable = player->GetSimable();
+        if (isimable == nullptr) {
+            goto null_return;
+        }
+
+        unsigned int world_id = isimable->GetWorldID();
+        CameraAI::Action *action = nullptr;
+        if (world_id != 0) {
+            action = new (static_cast<const char *>(0)) CDActionTrackCar(director, player);
+        }
+        return action;
     }
 
-    if (isimable->GetWorldID() == 0) {
-        return nullptr;
-    }
-
-    return new (static_cast<const char *>(0)) CDActionTrackCar(director, player);
+null_return:
+    return nullptr;
 }
 
 CDActionTrackCar::CDActionTrackCar(CameraAI::Director *director, IPlayer *player)
@@ -96,8 +103,8 @@ CDActionTrackCar::CDActionTrackCar(CameraAI::Director *director, IPlayer *player
         mAnchor->Update(0.0f, mat, *mTarget.GetVelocity(), *mTarget.GetAcceleration());
     }
 
-    mMover = new (static_cast<const char *>(0), 0) TrackCarCameraMover(static_cast<int>(director->GetViewID()), mAnchor, true);
-    mMover->Enable();
+        mMover = new (static_cast<const char *>(0), 0) TrackCarCameraMover(static_cast<int>(director->GetViewID()), mAnchor, true);
+    mMover->ResetState();
 }
 
 CDActionTrackCar::~CDActionTrackCar() {

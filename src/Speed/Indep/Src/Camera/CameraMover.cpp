@@ -160,13 +160,13 @@ bool RenderCarPovType(int pov_type, bool look_back) {
     return (static_cast<unsigned int>(pov_type - 2) < 3) || (pov_type == 1 && !look_back) || pov_type == 6 || pov_type == 5;
 }
 
-static void ResetCubic1DState(tCubic1D *cubic) {
+static inline void ResetCubic1DState(tCubic1D *cubic) {
     cubic->Val = cubic->ValDesired;
     cubic->dVal = cubic->dValDesired;
     cubic->state = 0;
 }
 
-static void ResetCubic3DState(tCubic3D *cubic) {
+static inline void ResetCubic3DState(tCubic3D *cubic) {
     ResetCubic1DState(&cubic->x);
     ResetCubic1DState(&cubic->y);
     ResetCubic1DState(&cubic->z);
@@ -1280,10 +1280,10 @@ void CubicCameraMover::ResetState() {
     ResetCubic3DState(pLook);
     ResetCubic3DState(pForward);
     GetCamera()->ClearVelocity();
-    vSavedEye.x = 0.0f;
-    vSavedEye.y = 0.0f;
-    vSavedEye.z = 0.0f;
-    fIgnoreSetSnapNextTimer = 0.0f;
+    vCameraImpcat.x = 0.0f;
+    vCameraImpcat.y = 0.0f;
+    vCameraImpcatTimer.x = 0.0f;
+    vCameraImpcatTimer.y = 0.0f;
 }
 
 Bezier::Bezier()
