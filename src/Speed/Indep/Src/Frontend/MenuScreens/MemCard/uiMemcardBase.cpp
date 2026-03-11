@@ -109,8 +109,9 @@ UIMemcardBase::~UIMemcardBase() {
             gMemcardSetup.mTermFunc(gMemcardSetup.mTermFuncParam);
         }
         int savedLastMsg = gMemcardSetup.mLastMessage;
+        gMemcardSetup.mPreviousCommand = 0;
         gMemcardSetup.mOp = 0;
-        gMemcardSetup.mPreviousPrompt = 0;
+        gMemcardSetup.mLastMessage = savedLastMsg;
         gMemcardSetup.mMemScreen = nullptr;
         gMemcardSetup.mToScreen = nullptr;
         gMemcardSetup.mFromScreen = nullptr;
@@ -119,8 +120,7 @@ UIMemcardBase::~UIMemcardBase() {
         gMemcardSetup.mSuccessMsg = 0;
         gMemcardSetup.mFailedMsg = 0;
         gMemcardSetup.mInBootFlow = false;
-        gMemcardSetup.mPreviousCommand = 0;
-        gMemcardSetup.mLastMessage = savedLastMsg;
+        gMemcardSetup.mPreviousPrompt = 0;
     }
     EmptyFileList();
 }

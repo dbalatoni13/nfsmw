@@ -755,16 +755,20 @@ bool FEngGet2DExtentsForMouse(FEObject* pObject, FERect& Rect, FEVector2 offset)
         }
         case FE_Image:
         case FE_String:
-        case FE_Model:
-        case FE_List:
-        case FE_CodeList:
         case FE_Movie:
         case FE_ColoredImage:
         case FE_MultiImage:
-            if (pObject->Flags & 1) {
-                return false;
-            }
+            FEngGetTopLeft(pObject, Rect.left, Rect.top);
+            FEngGetBottomRight(pObject, Rect.right, Rect.bottom);
 
+            Rect.left += offset.x;
+            Rect.right += offset.x;
+            Rect.top += offset.y;
+            Rect.bottom += offset.y;
+            break;
+        case FE_Model:
+        case FE_List:
+        case FE_CodeList:
             FEngGetTopLeft(pObject, Rect.left, Rect.top);
             FEngGetBottomRight(pObject, Rect.right, Rect.bottom);
 
