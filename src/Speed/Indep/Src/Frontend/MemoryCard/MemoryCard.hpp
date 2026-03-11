@@ -11,12 +11,26 @@
 #include "MemoryCardImp.hpp"
 #include "RealmcIface.hpp"
 
-struct GCIconDataInfo;
-struct GCBannerDataInfo;
+enum GCImageFormat {
+    GC_IMAGE_FORMAT_CI8 = 0,
+};
+
+enum GCAnimationImageLoop {
+    GC_ANIMATION_LOOP_NONE = 0,
+};
+
+struct GCIconDataInfo {
+    int numIconFrames;
+    char *imageData;
+    GCAnimationImageLoop animationLoop;
+};
+
+struct GCBannerDataInfo {
+    char *imageData;
+    GCImageFormat imageFormat;
+};
+
 struct UIMemcardBase;
-struct GameInfo;
-struct TitleInfo;
-struct AutoloadEntry;
 
 enum eLanguages {
     eLANGUAGE_NONE = -1,
@@ -40,16 +54,7 @@ enum eLanguages {
     eLANGUAGE_MAX = 16,
 };
 
-
-// total size: 0x10
-struct BootupCheckParams {
-    char *mEntryNamePattern;   // offset 0x0, size 0x4
-    unsigned int mNumSaveTypes; // offset 0x4, size 0x4
-    SaveReq **mSaveReqs;       // offset 0x8, size 0x4
-    unsigned int mValidCardIds; // offset 0xC, size 0x4
-
-    void Clear();
-};
+using RealmcIface::BootupCheckParams;
 
 // total size: 0x1804
 struct MemoryCardMessage {
@@ -135,7 +140,7 @@ struct MemoryCard {
     SaveType m_Type;                        // offset 0x180, size 0x4
     unsigned int m_DataSize;                // offset 0x184, size 0x4
     int m_TimeOffsetSec;                    // offset 0x188, size 0x4
-    MemcardInterface *m_pIMemcard;          // offset 0x18C, size 0x4
+    RealmcIface::MemcardInterface *m_pIMemcard; // offset 0x18C, size 0x4
     UIMemcardBase *m_pFEScreen;             // offset 0x190, size 0x4
     MemoryCardImp *m_pImp;                  // offset 0x194, size 0x4
 
@@ -239,7 +244,7 @@ struct MemoryCard {
     void FakeLoad(int iSlot);
     void LoadYNCF(int iSlot);
     void Save(const char *entryName);
-    void List(const char *filter, TitleInfo *titleInfo);
+    void List(const char *filter, RealmcIface::TitleInfo *titleInfo);
     void Load(const char *filename);
     void Delete(const char *filename);
     void ListOldSaveFilesNGC();

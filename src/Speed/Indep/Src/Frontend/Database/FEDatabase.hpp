@@ -436,6 +436,8 @@ class cFrontendDatabase {
 
     void GetGameCompletionStats(GameCompletionStats* stats);
 
+    void BuildCurrentRideForPlayer(int player, class RideInfo* ride);
+
     bool IsFinalEpicChase();
     unsigned int GetUserProfileSaveSize(bool bExcludeGameplay);
     void SaveUserProfileToBuffer(void* buffer, int size);

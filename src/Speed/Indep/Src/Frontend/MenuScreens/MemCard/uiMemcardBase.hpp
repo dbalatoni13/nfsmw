@@ -3,7 +3,7 @@
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 
-struct UIMemcardBase : FEMenuScreen {
+struct UIMemcardBase : public MenuScreen {
     char m_FileName[60];
     bool m_bInButtonAnimation;
     int m_Dummy80;

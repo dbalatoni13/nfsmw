@@ -254,4 +254,6 @@ struct MemcardInterface {
 
 } // namespace RealmcIface
 
+struct MemcardInterface;
+
 #endif
