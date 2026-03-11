@@ -627,9 +627,10 @@ void WCollisionMgr::GetBarrierList(WCollisionBarrierList &barrierList, const WCo
 
     for (const WCollisionInstance *const *iIter = instList.begin(); iIter != instList.end(); ++iIter) {
         const WCollisionInstance &cInst = **iIter;
-        const WCollisionArticle *cArt = cInst.fCollisionArticle;
 
         if (!InstancePassesExclusion(cInst)) continue;
+
+        const WCollisionArticle *cArt = cInst.fCollisionArticle;
         if (cArt == nullptr || cArt->fNumEdges == 0) continue;
 
         UMath::Vector3 tpt;
@@ -752,10 +753,10 @@ struct AABB {
     bVector2 mMax;
 
     AABB(const UMath::Vector3 &pt, float radius) {
-        mMax.x = pt.x + radius;
-        mMax.y = pt.z + radius;
         mMin.x = pt.x - radius;
         mMin.y = pt.z - radius;
+        mMax.x = pt.x + radius;
+        mMax.y = pt.z + radius;
     }
 
     AABB(const UMath::Vector3 &pt1, const UMath::Vector3 &pt2, const UMath::Vector3 &pt3) {
@@ -768,8 +769,8 @@ struct AABB {
     bool Overlap(const AABB &test) {
         if (!(test.mMin.x > mMax.x)) {
             if (!(test.mMin.y > mMax.y)) {
-                if (test.mMax.x >= mMin.x) {
-                    return test.mMax.y >= mMin.y;
+                if (!(mMin.x > test.mMax.x)) {
+                    return !(mMin.y > test.mMax.y);
                 }
             }
         }
