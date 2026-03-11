@@ -324,8 +324,7 @@ void PhysicsObject::ReleaseBehaviors() {
 
 void PhysicsObject::ReleaseBehavior(const UCrc32 &mechanic) {
     unsigned int key = mechanic.GetValue();
-    Mechanics::iterator iter = mMechanics.find(key);
-    if (iter._M_node == mMechanics.end()._M_node) {
+    if (mMechanics.find(key) == mMechanics.end()) {
         return;
     }
     Behavior *beh = mMechanics[key];
