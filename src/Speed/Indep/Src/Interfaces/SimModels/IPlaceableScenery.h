@@ -22,6 +22,8 @@ class IPlaceableScenery : public UTL::COM::IUnknown, public UTL::Collections::Co
     virtual void PickUp();
     virtual bool Place(const UMath::Matrix4 &transform, bool snap_to_ground);
     virtual void Destroy();
+
+    static IPlaceableScenery *CreateInstance(const char *name, unsigned int attributes);
 };
 
 #endif

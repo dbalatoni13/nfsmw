@@ -143,7 +143,10 @@ class Model : public Sim::Object,
     void EndDraw();
     void EndSimulation();
 
-    void UpdateVisibility(bool visible) {}
+    void UpdateVisibility(bool visible, float distance) {
+        mInView = visible;
+        mDistanceToView = distance;
+    }
 
     bool IsRendering() const { return mService != nullptr; }
 

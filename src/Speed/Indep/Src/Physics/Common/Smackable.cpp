@@ -2,6 +2,8 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
+#include "Speed/Indep/Src/Camera/CameraAI.hpp"
+#include "Speed/Indep/Src/Ecstasy/eModel.hpp"
 #include "Speed/Indep/Src/Interfaces/SimModels/IModel.h"
 #include "Speed/Indep/Src/Interfaces/SimModels/IPlaceableScenery.h"
 #include "Speed/Indep/Src/Interfaces/SimModels/ISceneryModel.h"
@@ -9,13 +11,26 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ICause.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IExplosion.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Physics/Behaviors/SimpleRigidBody.h"
 #include "Speed/Indep/Src/Physics/Bounds.h"
 #include "Speed/Indep/Src/Physics/HeirarchyModel.h"
+#include "Speed/Indep/Src/Physics/PlaceableScenery.h"
+#include "Speed/Indep/Src/Physics/SmackableTrigger.h"
+#include "Speed/Indep/Src/Physics/SmokeableInfo.hpp"
+#include "Speed/Indep/Src/Render/RenderConn.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/DamageZones.h"
+#include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WWorldPos.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+
+namespace CameraAI {
+void AddAvoidable(IBody *body);
+void RemoveAvoidable(IBody *body);
+} // namespace CameraAI
+
+const ModelHeirarchy *FindSceneryHeirarchyByName(unsigned int name);
 
 namespace Sim {
 bool CanSpawnRigidBody(const UMath::Vector3 &position, bool highPriority);
@@ -634,13 +649,404 @@ bool RBSmackable::CanCollideWithWorld() const {
     return RigidBody::CanCollideWithWorld();
 }
 
+HeirarchyModel::HeirarchyModel(bHash32 rendermesh, const CollisionGeometry::Bounds *geometry,
+                               UCrc32 nodename, HeirarchyModel *parent,
+                               const Attrib::Collection *attribs, const ModelHeirarchy *heirarchy,
+                               unsigned int child_index, bool visible)
+    : Sim::Model(parent != nullptr ? static_cast< IModel * >(parent) : nullptr, geometry,
+                 nodename, 6) //
+    , IBody(this) //
+    , ITriggerableModel(this) //
+    , Attrib::Gen::smackable(attribs, 0, nullptr) //
+{
+    mTriggerAvoid = UMath::Vector4::kZero;
+    mHeirarchy = const_cast< ModelHeirarchy * >(heirarchy);
+    mHeirarchyNode = static_cast< unsigned short >(child_index);
+    mRenderMesh = rendermesh;
+    mOffScreenTimer = 10.0f;
+    mChildVisibility = 0xFFFFFFFF;
+    mAvoidable = nullptr;
+    mTrigger = nullptr;
+    mFlags = 0;
+    Attrib::Gen::smackable smackable(attribs, 0, nullptr);
+    if (visible) {
+        RenderConn::Pkt_Smackable_Open pkt;
+        pkt.mModelHash = mRenderMesh;
+        pkt.mObjectWUID = GetWorldID();
+        pkt.mCollisionNode = GetCollisionGeometry();
+        pkt.mHeirarchy = mHeirarchy;
+        pkt.mRenderNode = mHeirarchyNode;
+        BeginDraw(UCrc32(0x804c146e), &pkt);
+    }
+    if (smackable.AI_AVOIDABLE()) {
+        if (mAvoidable == nullptr) {
+            mAvoidable = new SmackableAvoidable(this);
+        }
+    }
+    if (smackable.CAMERA_AVOIDABLE()) {
+        SetCameraAvoidable(true);
+    }
+}
+
+void HeirarchyModel::SetCameraAvoidable(bool b) {
+    bool is_avoidable = mFlags & 1;
+    if (static_cast< unsigned short >(b) != is_avoidable) {
+        if (!b) {
+            CameraAI::RemoveAvoidable(static_cast< IBody * >(this));
+            mFlags = mFlags & 0xFFFE;
+        } else {
+            if (!CAMERA_AVOIDABLE()) {
+                return;
+            }
+            CameraAI::AddAvoidable(static_cast< IBody * >(this));
+            mFlags = mFlags | 1;
+        }
+    }
+}
+
+bool HeirarchyModel::OnRemoveOffScreen(float dT) {
+    if (0.0f < mOffScreenTimer) {
+        IModel *model = static_cast< IModel * >(this);
+        if (!model->InView()) {
+            float timer = mOffScreenTimer - dT;
+            mOffScreenTimer = timer;
+            if (timer < 0.0f) {
+                mOffScreenTimer = 0.0f;
+                return true;
+            }
+        } else {
+            mOffScreenTimer = KILL_OFF_SCREEN();
+        }
+    }
+    return false;
+}
+
+void HeirarchyModel::OnProcessFrame(float dT) {
+    if (OnRemoveOffScreen(dT)) {
+        ReleaseModel();
+    }
+}
+
+void HeirarchyModel::HidePart(const UCrc32 &nodename) {
+    int index = FindHeirarchyChild(nodename);
+    if (index > -1) {
+        mChildVisibility = mChildVisibility & ~(1 << (index & 0x1F));
+    }
+}
+
+void HeirarchyModel::ShowPart(const UCrc32 &nodename) {
+    int index = FindHeirarchyChild(nodename);
+    if (index > -1) {
+        mChildVisibility = mChildVisibility | (1 << (index & 0x1F));
+    }
+}
+
+bool HeirarchyModel::IsPartVisible(const UCrc32 &nodename) const {
+    int index = FindHeirarchyChild(nodename);
+    if (index < 0) {
+        return false;
+    }
+    return (mChildVisibility & (1 << (index & 0x1F))) != 0;
+}
+
+int HeirarchyModel::FindHeirarchyChild(const UCrc32 &nodename) const {
+    if (mHeirarchy == nullptr) {
+        return -1;
+    }
+    const ModelHeirarchy::Node *nodes = mHeirarchy->GetNodes();
+    const ModelHeirarchy::Node &node = nodes[mHeirarchyNode];
+    unsigned int numChildren = node.mNumChildren;
+    int childindex = -1;
+    for (unsigned int i = 0; i < numChildren; ++i) {
+        int idx = node.mFirstChild + i;
+        if (nodes[idx].mNameHash == nodename.GetValue()) {
+            childindex = idx;
+        }
+    }
+    return childindex;
+}
+
+IModel *HeirarchyModel::SpawnModel(UCrc32 rendernode, UCrc32 collisionnode, UCrc32 attributes) {
+    if (mHeirarchy != nullptr && !IsDirty()) {
+        if (UTL::Collections::Listable< IModel, 434 >::Count() > 434) {
+            return nullptr;
+        }
+        int childindex = FindHeirarchyChild(rendernode);
+        if (childindex > -1) {
+            const CollisionGeometry::Bounds *geom = GetCollisionGeometry();
+            const CollisionGeometry::Bounds *bounds =
+                geom->fCollection->GetChild(geom, collisionnode);
+            if (bounds != nullptr) {
+                const Attrib::Collection *attribs =
+                    SmokeableSpawner::FindAttributes(attributes);
+                if (attribs != nullptr) {
+                    const ModelHeirarchy::Node *nodes = mHeirarchy->GetNodes();
+                    eModel *emodel =
+                        reinterpret_cast< eModel * >(nodes[childindex].mNameHash);
+                    if (emodel != nullptr) {
+                        bHash32 meshname(emodel->GetNameHash());
+                        HeirarchyModel *child = new HeirarchyModel(
+                            meshname, bounds, rendernode, this, attribs, mHeirarchy,
+                            childindex, true);
+                        if (child == nullptr) {
+                            return nullptr;
+                        }
+                        return static_cast< IModel * >(child);
+                    }
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
+HeirarchyModel::~HeirarchyModel() {
+    EndSimulation();
+    RemoveTrigger();
+    ReleaseChildModels();
+    if (mAvoidable != nullptr) {
+        delete mAvoidable;
+        mAvoidable = nullptr;
+    }
+    SetCameraAvoidable(false);
+}
+
+void HeirarchyModel::OnBeginDraw() {
+    StartSequencer(UCrc32(EventSequencer()));
+    mOffScreenTimer = KILL_OFF_SCREEN();
+}
+
+void HeirarchyModel::OnEndDraw() {
+    mOffScreenTimer = 0.0f;
+    if ((mFlags & 1) != 0) {
+        CameraAI::RemoveAvoidable(static_cast< IBody * >(this));
+        mFlags = mFlags & 0xFFFE;
+    }
+}
+
+void HeirarchyModel::GetTransform(UMath::Matrix4 &matrix) const {
+    IModel *model = const_cast< IModel * >(static_cast< const IModel * >(this));
+    ISimable *simable = model->GetSimable();
+    if (simable != nullptr) {
+        ISimable *sim = model->GetSimable();
+        sim->GetTransform(matrix);
+    } else {
+        if (mTrigger == nullptr) {
+            UMath::Copy(UMath::Matrix4::kIdentity, matrix);
+        } else {
+            mTrigger->GetObjectMatrix(matrix);
+        }
+    }
+}
+
+void HeirarchyModel::GetAngularVelocity(UMath::Vector3 &velocity) const {
+    IModel *model = const_cast< IModel * >(static_cast< const IModel * >(this));
+    ISimable *simable = model->GetSimable();
+    float y = UMath::Vector3::kZero.y;
+    float x = UMath::Vector3::kZero.x;
+    if (simable != nullptr) {
+        ISimable *sim = model->GetSimable();
+        IRigidBody *irb = sim->GetRigidBody();
+        const UMath::Vector3 &av = irb->GetAngularVelocity();
+        velocity.x = av.x;
+        velocity.y = av.y;
+        velocity.z = av.z;
+    } else {
+        velocity.z = UMath::Vector3::kZero.z;
+        velocity.x = x;
+        velocity.y = y;
+    }
+}
+
+void HeirarchyModel::RemoveTrigger() {
+    if (mTrigger != nullptr) {
+        delete mTrigger;
+        mTrigger = nullptr;
+    }
+}
+
+void HeirarchyModel::DisableTrigger() {
+    if (mTrigger != nullptr) {
+        mTrigger->Disable();
+    }
+}
+
+void HeirarchyModel::SetTrigger(const UMath::Matrix4 &matrix, bool virgin) {
+    UMath::Vector3 dim;
+    GetCollisionGeometry()->GetHalfDimensions(dim);
+    float x_len = dim.x;
+    float z_len = dim.z;
+    if (mTrigger == nullptr) {
+        SmackableTrigger *trigger = new (gFastMem.Alloc(sizeof(SmackableTrigger), nullptr))
+            SmackableTrigger(GetInstanceHandle(), virgin, matrix, dim, 0);
+        mTrigger = trigger;
+    } else {
+        mTrigger->Move(matrix, dim, virgin);
+        mTrigger->Enable();
+    }
+    mTriggerAvoid.x = matrix.v3.x;
+    mTriggerAvoid.y = matrix.v3.y;
+    mTriggerAvoid.z = matrix.v3.z;
+    mTriggerAvoid.w = matrix.v3.w;
+    float zx = z_len * matrix.v2.x + x_len * matrix.v0.x;
+    float zz = z_len * matrix.v2.z + x_len * matrix.v0.z;
+    mTriggerAvoid.w = UMath::Sqrt(zx * zx + zz * zz);
+}
+
+bool HeirarchyModel::OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) {
+    if (mTrigger == nullptr || !mTrigger->IsEnabled()) {
+        IModel *model = static_cast< IModel * >(this);
+        ISimable *simable = model->GetSimable();
+        if (simable != nullptr) {
+            ISimable *sim = model->GetSimable();
+            IRigidBody *irb = sim->GetRigidBody();
+            if (irb != nullptr) {
+                sweep = irb->GetRadius();
+                const UMath::Vector3 &position = irb->GetPosition();
+                pos.x = position.x;
+                pos.y = position.y;
+                pos.z = position.z;
+                return true;
+            }
+        }
+    } else if (0.0f < mTriggerAvoid.w) {
+        pos.x = mTriggerAvoid.x;
+        pos.y = mTriggerAvoid.y;
+        pos.z = mTriggerAvoid.z;
+        sweep = mTriggerAvoid.w;
+        return true;
+    }
+    return false;
+}
+
+void HeirarchyModel::PlaceTrigger(const UMath::Matrix4 &matrix, bool enable) {
+    SetTrigger(matrix, false);
+    if (!enable) {
+        DisableTrigger();
+    }
+}
+
+void HeirarchyModel::OnEndSimulation() {
+    if (mAvoidable != nullptr) {
+        mAvoidable->SetAvoidableObject(static_cast< IBody * >(this));
+    }
+}
+
+void HeirarchyModel::OnBeginSimulation() {
+    DisableTrigger();
+    if (mAvoidable != nullptr) {
+        IModel *model = static_cast< IModel * >(this);
+        mAvoidable->SetAvoidableObject(model->GetSimable());
+    }
+    RenderConn::Pkt_Smackable_Open pkt;
+    pkt.mModelHash = mRenderMesh;
+    pkt.mObjectWUID = static_cast< IModel * >(this)->GetWorldID();
+    pkt.mCollisionNode = static_cast< IModel * >(this)->GetCollisionGeometry();
+    pkt.mHeirarchy = mHeirarchy;
+    pkt.mRenderNode = mHeirarchyNode;
+    BeginDraw(UCrc32(0x804c146e), &pkt);
+}
+
+bool HeirarchyModel::OnDraw(Sim::Packet *service) {
+    RenderConn::Pkt_Smackable_Service *pss =
+        static_cast< RenderConn::Pkt_Smackable_Service * >(service);
+    UpdateVisibility(pss->mVisible, pss->mDistanceToView);
+    pss->mChildVisibility = mChildVisibility;
+    return true;
+}
+
+PlaceableScenery::PlaceableScenery(bHash32 rendermesh,
+                                   const CollisionGeometry::Bounds *geometry,
+                                   const Attrib::Collection *attribs,
+                                   const ModelHeirarchy *heirarchy)
+    : HeirarchyModel(rendermesh, geometry, UCrc32(0x9756df79), nullptr, attribs, heirarchy, 0,
+                     false) //
+    , IPlaceableScenery(this) //
+{
+}
+
+void PlaceableScenery::ReleaseModel() {
+    static_cast< IPlaceableScenery * >(this)->Destroy();
+}
+
+PlaceableScenery *PlaceableScenery::Construct(const char *name, unsigned int attributes) {
+    if (UTL::Collections::Listable< IModel, 434 >::Count() >= 435) {
+        return nullptr;
+    }
+    if (UTL::Collections::Countable< IPlaceableScenery >::Count() > 12) {
+        return nullptr;
+    }
+    bHash32 render_name(bStringHashUpper(name));
+    UCrc32 collision_name(name);
+    bHash32 heirarchy_name(render_name);
+    const ModelHeirarchy *heirarchy = FindSceneryHeirarchyByName(render_name.GetValue());
+    const CollisionGeometry::Collection *collection = CollisionGeometry::Lookup(collision_name);
+    if (collection == nullptr) {
+        return nullptr;
+    }
+    const CollisionGeometry::Bounds *bounds = collection->GetRoot();
+    if (bounds != nullptr) {
+        eModel model(render_name.GetValue());
+        if (model.GetSolid() == nullptr) {
+            bHash32 fallback(0xc7395a8);
+            render_name = fallback;
+            heirarchy_name = fallback;
+        }
+        const Attrib::Collection *attribs =
+            Attrib::FindCollection(Attrib::Gen::smackable::ClassKey(), attributes);
+        Attrib::Gen::smackable smk_attribs(attribs, 0, nullptr);
+        PlaceableScenery *result = new PlaceableScenery(heirarchy_name, bounds,
+                                                        smk_attribs.GetConstCollection(),
+                                                        heirarchy);
+        return result;
+    }
+    return nullptr;
+}
+
+void PlaceableScenery::PickUp() {
+    HidePart(UCrc32());
+    StopEffects();
+    EndDraw();
+    EndSimulation();
+    ReleaseSequencer();
+    DisableTrigger();
+}
+
+bool PlaceableScenery::Place(const UMath::Matrix4 &transform, bool snap_to_ground) {
+    static_cast< IPlaceableScenery * >(this)->Destroy();
+    UMath::Matrix4 mat;
+    UMath::Copy(transform, mat);
+    if (snap_to_ground) {
+        WCollisionMgr wcm(0, 3);
+        float worldHeight = 1000.0f;
+        if (!wcm.GetWorldHeightAtPointRigorous(UMath::Vector4To3(mat.v3), worldHeight, nullptr)) {
+            return false;
+        }
+        UMath::Vector3 dim;
+        GetDimension(dim);
+        mat.v3.y = worldHeight + dim.y;
+    }
+    PlaceTrigger(mat, false);
+    SmackableParams sp(mat, true, static_cast< IModel * >(this), false);
+    ISimable *physics = UTL::COM::Factory< Sim::Param, ISimable, UCrc32 >::CreateInstance(
+        UCrc32("Smackable"), sp);
+    if (physics == nullptr) {
+        static_cast< IPlaceableScenery * >(this)->Destroy();
+        return false;
+    }
+    return true;
+}
+
 SmackableAvoidable::SmackableAvoidable(HeirarchyModel *model)
     : AIAvoidable(
-          model != nullptr
-              ? static_cast< UTL::COM::IUnknown * >(static_cast< ITriggerableModel * >(model))
+          mModel != nullptr
+              ? static_cast< UTL::COM::IUnknown * >(static_cast< IModel * >(mModel))
               : nullptr) //
     , mModel(model) //
 {
+    SetAvoidableObject(model != nullptr
+                           ? static_cast< UTL::COM::IUnknown * >(static_cast< IBody * >(model))
+                           : nullptr);
 }
 
 bool SmackableAvoidable::OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) {
@@ -661,3 +1067,36 @@ bool Smackable::IsRequired() const { return false; }
 void Smackable::HidePart(const UCrc32 &name) {}
 void Smackable::ShowPart(const UCrc32 &name) {}
 bool Smackable::IsPartVisible(const UCrc32 &name) const { return true; }
+
+IPlaceableScenery *IPlaceableScenery::CreateInstance(const char *name, unsigned int attributes) {
+    return PlaceableScenery::Construct(name, attributes);
+}
+
+PlaceableScenery::~PlaceableScenery() {}
+
+SmackableAvoidable::~SmackableAvoidable() {}
+
+void HeirarchyModel::GetDimension(UMath::Vector3 &dim) const {
+    GetCollisionGeometry()->GetHalfDimensions(dim);
+}
+
+const Attrib::Instance &HeirarchyModel::GetAttributes() const {
+    return *static_cast< const Attrib::Instance * >(
+        static_cast< const Attrib::Gen::smackable * >(this));
+}
+
+unsigned int HeirarchyModel::GetWorldID() const {
+    return Sim::Model::GetWorldID();
+}
+
+void HeirarchyModel::GetLinearVelocity(UMath::Vector3 &velocity) const {
+    Sim::Model::GetLinearVelocity(velocity);
+}
+
+void PlaceableScenery::Destroy() {
+    Sim::Model::ReleaseModel();
+}
+
+bool PlaceableScenery::OnRemoveOffScreen(float time) {
+    return false;
+}

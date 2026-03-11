@@ -66,6 +66,10 @@ template <typename T, int U> class Listable {
         std::sort(_mTable.begin(), _mTable.end(), pred);
     }
 
+    static int Count() {
+        return _mTable.size();
+    }
+
   private:
     static List _mTable;
 };
@@ -132,6 +136,10 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
         for (std::size_t i = 0; i < EnumMax; i++) {
             _mLists._remove(static_cast<iterator>(this), i);
         }
+    }
+
+    void UnList(Enum from) {
+        _mLists._remove(static_cast<iterator>(this), from);
     }
 
     ~ListableSet() {

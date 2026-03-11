@@ -34,6 +34,15 @@ struct SmackableParams : public Sim::Param {
         , fSimplePhysics(_ctor_arg.fSimplePhysics) //
     {}
 
+    SmackableParams(const UMath::Matrix4 &matrix, bool virginspawn, IModel *scenery,
+                    bool simple_physics)
+        : Sim::Param(UCrc32(0xa6b47fac), this) //
+        , fMatrix(matrix) //
+        , fVirginSpawn(virginspawn) //
+        , fScenery(scenery) //
+        , fSimplePhysics(simple_physics) //
+    {}
+
     static UCrc32 TypeName() {
         static UCrc32 value = "SmackableParams";
         return value;

@@ -10,8 +10,8 @@
 #include "Speed/Indep/Src/Interfaces/IBody.h"
 #include "Speed/Indep/Src/Interfaces/SimModels/ITriggerableModel.h"
 #include "Speed/Indep/Src/Sim/SimModel.h"
+#include "Speed/Indep/Src/World/ModelHeirarchy.hpp"
 
-struct ModelHeirarchy;
 struct SmackableTrigger;
 struct SmackableAvoidable;
 

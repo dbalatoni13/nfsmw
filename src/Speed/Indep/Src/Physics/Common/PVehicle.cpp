@@ -1,8 +1,10 @@
 #include "Speed/Indep/Src/Physics/PVehicle.h"
 
+#include "Speed/Indep/Src/Camera/CameraAI.hpp"
 #include "Speed/Indep/Src/FE/FECustomizationRecord.h"
 #include "Speed/Indep/Src/Generated/Events/EPerfectLaunch.hpp"
 #include "Speed/Indep/Src/Generated/Events/EPlayerAirborne.hpp"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAudible.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
@@ -17,16 +19,29 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
+#include "Speed/Indep/Src/World/CarInfo.hpp"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 
 extern Attrib::StringKey BEHAVIOR_MECHANIC_AI;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_AUDIO;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_DAMAGE;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_DRAW;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_EFFECTS;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_ENGINE;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_INPUT;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_RESET;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_RIGIDBODY;
 extern Attrib::StringKey BEHAVIOR_MECHANIC_SUSPENSION;
+
+extern bool Tweak_UseTweakerTunings;
+extern float Tweak_TuningAero;
+
+namespace CameraAI {
+void AddAvoidable(IBody *body);
+void RemoveAvoidable(IBody *body);
+} // namespace CameraAI
+
+bool CanInstancesShareResourceCost(CarType type);
 
 const ISimable *PVehicle::GetSimable() const { return static_cast<const ISimable *>(this); }
 
@@ -567,5 +582,192 @@ void PVehicle::OnTaskSimulate(float dT) {
         mWheelsOnGround = 0;
         mSpeedometer = 0.0f;
         mTimeInAir = 0.0f;
+    }
+}
+
+bool CanInstancesShareResourceCost(CarType type) {
+    CarUsageType usage_type = GetCarTypeInfo(type)->GetCarUsageType();
+    return usage_type == CAR_USAGE_TYPE_COP || usage_type == CAR_USAGE_TYPE_TRAFFIC;
+}
+
+void PVehicle::CleanResources() {
+    for (PVehicle *dirty = mInstances.GetHead(); dirty != mInstances.EndOfList();) {
+        PVehicle *next = dirty->GetNext();
+        if (dirty->IsDirty()) {
+            static_cast<ISimable *>(dirty)->Kill();
+        }
+        dirty = next;
+    }
+}
+
+const Physics::Tunings *PVehicle::GetTunings() const {
+    if (IsLoading()) {
+        return nullptr;
+    }
+    if (Tweak_UseTweakerTunings) {
+        static Physics::Tunings tunings;
+        static bool __tmp = false;
+        if (!__tmp) {
+            tunings.Default();
+            __tmp = true;
+        }
+        tunings.Value[Physics::Tunings::STEERING] = 0.0f;
+        tunings.Value[Physics::Tunings::HANDLING] = 0.0f;
+        tunings.Value[Physics::Tunings::BRAKES] = 0.0f;
+        tunings.Value[Physics::Tunings::RIDEHEIGHT] = 0.0f;
+        tunings.Value[Physics::Tunings::AERODYNAMICS] = Tweak_TuningAero;
+        tunings.Value[Physics::Tunings::NOS] = 0.0f;
+        tunings.Value[Physics::Tunings::INDUCTION] = 0.0f;
+        return &tunings;
+    }
+    if (mCustomization != nullptr) {
+        return mCustomization->GetTunings();
+    }
+    return nullptr;
+}
+
+unsigned int PVehicle::CountResources() {
+    unsigned int count = 0;
+    UTL::Std::list<Resource, _type_list> resource_list;
+    for (PVehicle *pv = mInstances.GetHead(); pv != mInstances.EndOfList(); pv = pv->GetNext()) {
+        bool found = false;
+        for (UTL::Std::list<Resource, _type_list>::const_iterator iter = resource_list.begin();
+             iter != resource_list.end(); ++iter) {
+            if ((*iter).Type == pv->mResources.Type) {
+                found = true;
+                break;
+            }
+        }
+        if (found && CanInstancesShareResourceCost(pv->mResources.Type)) {
+        } else {
+            resource_list.push_back(pv->mResources);
+        }
+        count += pv->mResources.Cost;
+    }
+    return count;
+}
+
+void PVehicle::OnTaskFX(float dT) {
+    IRigidBody &rigidBody = *static_cast<ISimable *>(this)->GetRigidBody();
+    if (INIS::Get() == nullptr) {
+        GlareOn(static_cast<VehicleFX::ID>(7));
+    }
+    bool do_brake = false;
+    if (mInput != nullptr) {
+        if (mInput->GetControls().fBrake > 0.0f) {
+            do_brake = true;
+        }
+    }
+    if (rigidBody.IsSimple()) {
+        if (do_brake) {
+            mBrakeTime = mBrakeTime + dT;
+        } else {
+            mBrakeTime = 0.0f;
+        }
+        do_brake = mBrakeTime > 0.5f;
+    }
+    if (do_brake) {
+        GlareOn(static_cast<VehicleFX::ID>(0x38));
+    } else {
+        GlareOff(static_cast<VehicleFX::ID>(0x38));
+    }
+    if (mTranny != nullptr && mTranny->IsReversing()) {
+        GlareOn(static_cast<VehicleFX::ID>(0xc0));
+    } else {
+        GlareOff(static_cast<VehicleFX::ID>(0xc0));
+    }
+}
+
+void PVehicle::OnBeginMode(PhysicsMode mode) {
+    if (mode == PHYSICS_MODE_INACTIVE) {
+        IVehicle::AddToList(VEHICLE_INACTIVE);
+        if (mCollisionBody != nullptr) {
+            mCollisionBody->DisableTriggering();
+        }
+        static_cast<ISimable *>(this)->DetachEntity();
+    } else if (mode == PHYSICS_MODE_SIMULATED) {
+        if (mCollisionBody != nullptr) {
+            mCollisionBody->EnableModeling();
+        }
+        CameraAI::AddAvoidable(static_cast<IBody *>(this));
+        {
+            UCrc32 mechanic(BEHAVIOR_MECHANIC_DRAW);
+            PauseBehavior(mechanic, false);
+        }
+        {
+            UCrc32 mechanic(BEHAVIOR_MECHANIC_SUSPENSION);
+            PauseBehavior(mechanic, false);
+        }
+        {
+            UCrc32 mechanic(BEHAVIOR_MECHANIC_ENGINE);
+            PauseBehavior(mechanic, false);
+        }
+        {
+            UCrc32 mechanic(BEHAVIOR_MECHANIC_RIGIDBODY);
+            PauseBehavior(mechanic, false);
+        }
+        {
+            UCrc32 mechanic(BEHAVIOR_MECHANIC_EFFECTS);
+            PauseBehavior(mechanic, false);
+        }
+        {
+            UCrc32 mechanic(BEHAVIOR_MECHANIC_RESET);
+            PauseBehavior(mechanic, false);
+        }
+        {
+            UCrc32 mechanic(BEHAVIOR_MECHANIC_AUDIO);
+            PauseBehavior(mechanic, false);
+        }
+        {
+            UCrc32 mechanic(BEHAVIOR_MECHANIC_DAMAGE);
+            PauseBehavior(mechanic, false);
+        }
+    }
+}
+
+void PVehicle::OnEndMode(PhysicsMode mode) {
+    if (mode == PHYSICS_MODE_INACTIVE) {
+        if (mCollisionBody != nullptr) {
+            mCollisionBody->EnableTriggering();
+        }
+        static_cast<ISimable *>(this)->DetachEntity();
+        IVehicle::UnList(VEHICLE_INACTIVE);
+    } else if (mode == PHYSICS_MODE_SIMULATED) {
+        if (mCollisionBody != nullptr) {
+            mCollisionBody->DisableModeling();
+        }
+        CameraAI::RemoveAvoidable(static_cast<IBody *>(this));
+        {
+            UCrc32 mechanic(BEHAVIOR_MECHANIC_DRAW);
+            PauseBehavior(mechanic, true);
+        }
+        {
+            UCrc32 mechanic(BEHAVIOR_MECHANIC_SUSPENSION);
+            PauseBehavior(mechanic, true);
+        }
+        {
+            UCrc32 mechanic(BEHAVIOR_MECHANIC_ENGINE);
+            PauseBehavior(mechanic, true);
+        }
+        {
+            UCrc32 mechanic(BEHAVIOR_MECHANIC_RIGIDBODY);
+            PauseBehavior(mechanic, true);
+        }
+        {
+            UCrc32 mechanic(BEHAVIOR_MECHANIC_EFFECTS);
+            PauseBehavior(mechanic, true);
+        }
+        {
+            UCrc32 mechanic(BEHAVIOR_MECHANIC_RESET);
+            PauseBehavior(mechanic, true);
+        }
+        {
+            UCrc32 mechanic(BEHAVIOR_MECHANIC_AUDIO);
+            PauseBehavior(mechanic, true);
+        }
+        {
+            UCrc32 mechanic(BEHAVIOR_MECHANIC_DAMAGE);
+            PauseBehavior(mechanic, true);
+        }
     }
 }

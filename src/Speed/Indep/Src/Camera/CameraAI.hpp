@@ -7,12 +7,16 @@
 
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 
+class IBody;
+
 namespace CameraAI {
 
 void Update(float dT);
 void Reset();
 void MaybeDoTotaledCam(IPlayer *iplayer);
 void MaybeDoPursuitCam(IVehicle *ivehicle);
+void AddAvoidable(IBody *body);
+void RemoveAvoidable(IBody *body);
 
 }; // namespace CameraAI
 
