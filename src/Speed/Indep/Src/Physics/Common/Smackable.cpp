@@ -960,7 +960,7 @@ void PlaceableScenery::ReleaseModel() {
 }
 
 PlaceableScenery *PlaceableScenery::Construct(const char *name, unsigned int attributes) {
-    if (UTL::Collections::Listable< IModel, 434 >::Count() >= 435) {
+    if (static_cast<unsigned int>(UTL::Collections::Listable< IModel, 434 >::Count()) > 434u) {
         return nullptr;
     }
     if (static_cast<unsigned int>(UTL::Collections::Countable< IPlaceableScenery >::Count()) > 12u) {
