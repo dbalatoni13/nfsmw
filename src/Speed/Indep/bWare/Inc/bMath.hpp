@@ -162,7 +162,7 @@ inline float bCeil(float a) {
 }
 
 inline int bClamp(int a, int MINIMUM, int MAXIMUM) {
-    return bMin(bMax(a, MINIMUM), MAXIMUM);
+    return bMin(MAXIMUM, bMax(a, MINIMUM));
 }
 
 // TODO is this order correct?
