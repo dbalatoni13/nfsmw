@@ -3,9 +3,8 @@
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
-
-struct TextureInfo;
-struct Shape;
+#include "Speed/Indep/Src/World/CarLoader.hpp"
+#include "Speed/Indep/Src/Misc/Joylog.hpp"
 
 extern TrackStreamer TheTrackStreamer;
 extern bool IsSoundEnabled;
@@ -16,18 +15,25 @@ extern void* RCMPDecodeBuffer;
 
 extern int bStrNICmp(const char*, const char*, int);
 
-typedef void* (*RCMP_AllocFunc)(const char*, unsigned int, int, int, int);
-typedef void (*RCMP_FreeFunc)(void*);
+void* RCMP_PlayerAllocAlign(const char*, int, int, int, int);
+void RCMP_PlayerFree(void*);
 
-extern RCMP_AllocFunc RCMP_PlayerAllocAlign;
-extern RCMP_FreeFunc RCMP_PlayerFree_func;
+extern void PlatFinishMovie();
+extern void PlatSetFirstMovieFrame(TextureInfo*, RealShape::Shape*, bool);
+extern unsigned int RCMP_GetMaxFramesOutStanding();
+extern unsigned int bGetTicker();
+extern float bGetTickerDifference(unsigned int);
+extern void* bMalloc(int, int);
+extern int bLargestMalloc(int);
+extern void bFree(void*);
+extern int GetVideoMode();
+extern void eWaitUntilRenderingDone();
+extern void NotifyFirstFrame_SubTitler();
+extern void SoundPause(bool, eSNDPAUSE_REASON);
+extern void SYNCTASK_run();
+extern void THREAD_yield(int);
 
-struct RCMP_System {
-    RCMP_AllocFunc AllocMem;
-    RCMP_FreeFunc FreeMem;
-    int memClass;
-};
-extern RCMP_System __4RCMP_rcmp_sys;
+extern int CarLoaderMemoryPoolNumber;
 
 struct MovieVolumeEntry {
     const char* name;
@@ -35,27 +41,21 @@ struct MovieVolumeEntry {
 };
 extern MovieVolumeEntry MovieVolumeArray[];
 
-extern void PlatFinishMovie();
-extern void PlatSetFirstMovieFrame(TextureInfo*, Shape*, bool);
-extern unsigned int RCMP_GetMaxFramesOutStanding();
-extern void RCMP_PlayerFree(void*);
-extern unsigned int bGetTicker();
-extern float bGetTickerDifference(unsigned int);
-extern void* bMalloc(int, int);
-extern void bFree(void*);
-extern int GetVideoMode();
-extern void eWaitUntilRenderingDone();
-extern void NotifyFirstFrame_SubTitler();
-
-namespace RealShape {
-void SetAllocator(EA::Allocator::IAllocator*);
-}
-
-extern int GamecubeMaybeAllocateFromCarLoader(int, const char*, int);
-
 MoviePlayer* gMoviePlayer;
 unsigned int gMovieStartTime = 0xFFFFFFFF;
 ShapeMemoryAllocator gShapeMemoryAllocator;
+
+void* GamecubeMaybeAllocateFromCarLoader(int size, const char* name, int alloc_params) {
+    if ((!TheTrackStreamer.HasMemoryPool() || bLargestMalloc(7) < size) &&
+        bLargestMalloc(0) < size) {
+        TheCarLoader.MakeSpaceInPool(size);
+        void* ptr = bMalloc(size, (CarLoaderMemoryPoolNumber & 0xf) | alloc_params);
+        if (ptr != nullptr) {
+            return ptr;
+        }
+    }
+    return nullptr;
+}
 
 bool MoviePlayer_Bypass() {
     return bGetTickerDifference(gMovieStartTime) > 30.0f;
@@ -66,6 +66,47 @@ void MoviePlayer_Play() {
         gMovieStartTime = bGetTicker();
         gMoviePlayer->Play();
     }
+}
+
+void* RCMP::AV_PLAYER::operator new(unsigned int size) {
+    return __4RCMP_rcmp_sys.AllocMem("rcmp", size, 0, 0, __4RCMP_rcmp_sys.memClass);
+}
+void RCMP::AV_PLAYER::operator delete(void* ptr) {
+    __4RCMP_rcmp_sys.FreeMem(ptr);
+}
+
+void* RCMP_PlayerAllocAlign(const char* name, int size, int alignment, int headersize, int type) {
+    if (name == nullptr || *name == '\0') {
+        name = "RCMP_Mem";
+    }
+    size = size + headersize;
+    unsigned int alloc_params = (static_cast<unsigned int>(headersize) & 0x1ffc) << 17;
+    void* maybe = reinterpret_cast<void*>(GamecubeMaybeAllocateFromCarLoader(
+        size, name, alloc_params | (static_cast<unsigned int>(alignment) & 0x1ffc) << 6));
+    if (maybe == nullptr) {
+        if (!TheTrackStreamer.HasMemoryPool()) {
+            if (alignment == 0) {
+                alignment = 0x80;
+            }
+            maybe = bMalloc(size, alloc_params | (static_cast<unsigned int>(alignment) & 0x1ffc) << 6 | 0x40);
+        } else {
+            maybe = TheTrackStreamer.AllocateUserMemory(size, name, headersize);
+        }
+    }
+    return maybe;
+}
+
+void RCMP_PlayerFree(void* ptr) {
+    if (TheTrackStreamer.HasMemoryPool()) {
+        if (ptr == nullptr) {
+            return;
+        }
+        if (TheTrackStreamer.IsUserMemory(ptr)) {
+            TheTrackStreamer.FreeUserMemory(ptr);
+            return;
+        }
+    }
+    bFree(ptr);
 }
 
 void MoviePlayer_StartUp() {
@@ -100,7 +141,7 @@ MoviePlayer::MoviePlayer(int memClass) {
     fCurFrameNum = 0;
     fPlayer = nullptr;
     __4RCMP_rcmp_sys.AllocMem = RCMP_PlayerAllocAlign;
-    __4RCMP_rcmp_sys.FreeMem = RCMP_PlayerFree_func;
+    __4RCMP_rcmp_sys.FreeMem = RCMP_PlayerFree;
     __4RCMP_rcmp_sys.memClass = memClass;
     RealShape::SetAllocator(&gShapeMemoryAllocator);
     if (TheTrackStreamer.HasMemoryPool()) {
@@ -136,17 +177,39 @@ void MoviePlayer::ResetTimer() {
     milliseconds = 0.0f;
 }
 
+void MoviePlayer::Play() {
+    if (SkipMovies == 0) {
+        RCMP::AV_PLAYER::LOAD_ENUM loadType = static_cast<RCMP::AV_PLAYER::LOAD_ENUM>(mSettings.preload != false);
+        RCMP::AV_PLAYER::SOUND_ENUM soundType = static_cast<RCMP::AV_PLAYER::SOUND_ENUM>(mSettings.sound == false);
+        fPlayer = new RCMP::AV_PLAYER(mSettings.filename, mSettings.bufferSize, loadType, soundType);
+        HandleFatalError();
+        if (fPlayer == nullptr) {
+            fLiveStatus = 2;
+            fStatus = 2;
+            return;
+        }
+        GetFirstFrame();
+        if (mSettings.sound) {
+            fPlayer->SetVol(mSettings.volume);
+        }
+        fCurFrameNum++;
+        fPlayer->Pause();
+        if (CurFrame != nullptr) {
+            PlatSetFirstMovieFrame(&MovieTextureInfo, CurFrame->GetShape(), mSettings.type == 0);
+            NotifyFirstFrame_SubTitler();
+            fLiveStatus = 5;
+            fStatus = 5;
+            fPlayer->UnPause();
+            return;
+        }
+    }
+    cFEng::Get()->QueueGameMessage(0xc3960eb9, 0, 0xff);
+}
+
 void MoviePlayer::Stop() {
     fStatus = 1;
     fLiveStatus = 1;
     ResetTimer();
-}
-
-unsigned int MoviePlayer::GetMillisecondsPerFrame() {
-    if (GetVideoMode() == 0) {
-        return 20;
-    }
-    return 16;
 }
 
 int MoviePlayer::GetMovieCategoryVolume() {
@@ -166,6 +229,80 @@ int MoviePlayer::GetMovieCategoryVolume() {
         }
     }
     return vol;
+}
+
+void MoviePlayer::GetFirstFrame() {
+    CurFrame = fPlayer->GetFirstFrame(RCMP_GetMaxFramesOutStanding(), GetMillisecondsPerFrame() * 2);
+}
+
+void MoviePlayer::Update() {
+    if (fStatus == 5) {
+        UpdateFunction();
+        int movie_done = (fLiveStatus != 5);
+        {
+            int joylog_movie_done = movie_done;
+            if (Joylog::IsReplaying()) {
+                joylog_movie_done = Joylog::GetData(4, JOYLOG_CHANNEL_MOVIE_PLAYER_STATUS);
+                if (joylog_movie_done != 0 && movie_done == 0) {
+                    while (fLiveStatus != 0) {
+                        UpdateFunction();
+                    }
+                }
+            }
+            Joylog::AddData(joylog_movie_done, 4, JOYLOG_CHANNEL_MOVIE_PLAYER_STATUS);
+            if (joylog_movie_done != 0) {
+                fStatus = fLiveStatus;
+                eWaitUntilRenderingDone();
+                cFEng::Get()->QueueGameMessage(0xc3960eb9, 0, 0xff);
+                SoundPause(false, eSNDPAUSE_MOVIE);
+                SetSoundControlState(false, SNDSTATE_PAUSE, "movie done");
+                if (fPlayer != nullptr) {
+                    delete fPlayer;
+                }
+                void* buf = RCMPDecodeBuffer;
+                fPlayer = nullptr;
+                RCMP_PlayerFree(buf);
+                RCMPDecodeBuffer = nullptr;
+                ResetTimer();
+            }
+        }
+        HandleFatalError();
+    }
+}
+
+void MoviePlayer::UpdateFunction() {
+    static int recurse;
+    if (recurse == 0) {
+        int MovieFinished = 0;
+        recurse = 1;
+        bool ReDraw = false;
+        SYNCTASK_run();
+        THREAD_yield(0);
+        if (!fPlayer->IsTimeForDecode() || CurFrame == nullptr) {
+            ReDraw = true;
+        } else {
+            fPlayer->GetDecoder()->ReleaseFrame(CurFrame);
+            CurFrame = fPlayer->GetFrame(fPlayer->GetGoalFrame());
+        }
+        if (CurFrame == nullptr) {
+            MovieFinished = fPlayer->IsAudioFinished();
+        } else if (!ReDraw) {
+            FillInTextureInfo(static_cast<unsigned int*>(RCMPDecodeBuffer), &MovieTextureInfo, CurFrame->GetShape());
+        }
+        HandleFatalError();
+        if (MovieFinished != 0) {
+            eWaitUntilRenderingDone();
+            fLiveStatus = 0;
+        }
+        recurse = 0;
+    }
+}
+
+unsigned int MoviePlayer::GetMillisecondsPerFrame() {
+    if (GetVideoMode() == 0) {
+        return 20;
+    }
+    return 16;
 }
 
 void MoviePlayer::HandleFatalError() {}

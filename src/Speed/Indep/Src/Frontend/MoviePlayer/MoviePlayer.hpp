@@ -55,7 +55,7 @@ struct MoviePlayer {
     Settings GetSettings() { return mSettings; }
     int GetStatus() { return fStatus; }
     int GetLiveStatus() { return fLiveStatus; }
-    bool IsMoviePlaying();
+    bool IsMoviePlaying() { return fStatus >= 3 && fStatus <= 5; }
 
     MoviePlayer(int memClass);
     ~MoviePlayer();

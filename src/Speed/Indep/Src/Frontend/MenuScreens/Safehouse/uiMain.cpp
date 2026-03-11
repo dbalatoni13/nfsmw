@@ -101,14 +101,13 @@ void MainCareer::React(const char* pkg_name, unsigned int data, FEObject* obj, u
 }
 
 void Challenge::React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) {
-    if (data == 0x0C407210) {
-        if (!FEDatabase->bProfileLoaded && IsMemcardEnabled) {
-            MemcardEnter("MainMenu.fng", "ChallengeSeries.fng", 0x10063, nullptr, nullptr, 0, 0);
-        } else {
-            FEDatabase->SetGameMode(eFE_GAME_MODE_CHALLENGE);
-            SetReactImmediately(false);
-            cFEng::Get()->QueuePackageMessage(0x0C407210, pkg_name, nullptr);
-        }
+    if (data != 0x0C407210) return;
+    if (FEDatabase->bProfileLoaded) {
+        FEDatabase->SetGameMode(eFE_GAME_MODE_CHALLENGE);
+        SetReactImmediately(false);
+        cFEng::Get()->QueuePackageMessage(0x0C407210, pkg_name, nullptr);
+    } else if (IsMemcardEnabled) {
+        MemcardEnter("MainMenu.fng", "ChallengeSeries.fng", 0x10163, nullptr, nullptr, 0, 0);
     }
 }
 
