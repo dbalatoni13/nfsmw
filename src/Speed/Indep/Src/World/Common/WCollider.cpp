@@ -53,10 +53,11 @@ WCollider *WCollider::Create(unsigned int wuid, eColliderShape shape, unsigned i
         if (wuid != 0) {
             fWuidMap[wuid] = col;
         }
+        return col;
     } else {
         col->AddRef();
+        return col;
     }
-    return col;
 }
 
 void WCollider::Destroy(WCollider *col) {

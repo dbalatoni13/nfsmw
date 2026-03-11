@@ -322,8 +322,7 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
     UMath::Scale(rBody->GetLinearVelocity(), dT, dP);
     UMath::Add(rBody->GetPosition(), dP, rPos);
 
-    unsigned char shapeNum = reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF;
-    if (shapeNum == 2) {
+    if ((reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF) == 2) {
         if (UMath::DistanceSquare(cp, rPos) <= radsSq) {
             if (reinterpret_cast<const unsigned char *>(trig)[0x12] & 8) {
                 if (!trig->TestDirection(rBody->GetLinearVelocity())) {
@@ -339,12 +338,12 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
                     return false;
                 }
             }
-            if (shapeNum == 3) {
+            if ((reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF) == 3) {
                 if (rPos.y + rbRadius >= trig->fPosRadius.y - trig->fHeight * 0.5f &&
                     rPos.y - rbRadius < trig->fPosRadius.y + trig->fHeight * 0.5f) {
                     return true;
                 }
-            } else if (shapeNum == 1) {
+            } else if ((reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF) == 1) {
                 UMath::Vector3 dim3;
                 UMath::Matrix4 bodyMat;
                 rBody->GetDimension(dim3);
