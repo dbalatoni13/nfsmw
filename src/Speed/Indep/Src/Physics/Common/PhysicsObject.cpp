@@ -396,7 +396,7 @@ bool PhysicsObject::Attach(UTL::COM::IUnknown *object) {
 }
 
 void PhysicsObject::DetachAll() {
-    static_cast<ISimable *>(this)->DetachEntity();
+    DetachEntity();
     if (mAttachments) {
         delete mAttachments;
         mAttachments = nullptr;

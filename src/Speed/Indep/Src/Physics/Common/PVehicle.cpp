@@ -751,7 +751,7 @@ void PVehicle::OnBeginMode(PhysicsMode mode) {
         if (mCollisionBody != nullptr) {
             mCollisionBody->DisableTriggering();
         }
-        static_cast<ISimable *>(this)->DetachEntity();
+        DetachEntity();
     } else if (mode == PHYSICS_MODE_SIMULATED) {
         if (mCollisionBody != nullptr) {
             mCollisionBody->EnableModeling();
@@ -797,7 +797,7 @@ void PVehicle::OnEndMode(PhysicsMode mode) {
         if (mCollisionBody != nullptr) {
             mCollisionBody->EnableTriggering();
         }
-        static_cast<ISimable *>(this)->DetachEntity();
+        DetachEntity();
         IVehicle::UnList(VEHICLE_INACTIVE);
     } else if (mode == PHYSICS_MODE_EMULATED) {
     } else if (mode == PHYSICS_MODE_SIMULATED) {
