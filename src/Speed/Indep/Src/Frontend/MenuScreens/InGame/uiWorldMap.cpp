@@ -271,7 +271,8 @@ void FEngSetVisible(FEObject* obj);
 void FEngSetInvisible(FEObject* obj);
 void FEngSetTextureHash(FEImage* image, unsigned int hash);
 void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned int lang_hash);
-void FEPrintf(const char* pkg_name, unsigned int hash, const char* format, ...);
+void FEngSetScript(const char* pkg_name, unsigned int obj_hash, unsigned int script_hash, bool start_at_beginning);
+int FEPrintf(const char* pkg_name, int hash, const char* format, ...);
 unsigned int FEngHashString(const char* format, ...);
 unsigned char FEngGetLastButton(const char* pkg_name);
 void FEngSetRotationZ(FEObject* obj, float rot);
@@ -1029,4 +1030,75 @@ void WorldMap::DrawItemStats() {
 }
 
 void WorldMap::RefreshHeader() {
+    switch (CurrentView) {
+    case 0:
+        FEngSetLanguageHash(GetPackageName(), 0xd259525f, 0xbf55e8b2);
+        break;
+    case 1:
+        FEngSetLanguageHash(GetPackageName(), 0xd259525f, 0xdfd23484);
+        break;
+    case 2:
+        FEngSetLanguageHash(GetPackageName(), 0xd259525f, 0xf74b357d);
+        break;
+    case 3:
+        FEngSetLanguageHash(GetPackageName(), 0xd259525f, 0xfea872d4);
+        break;
+    }
+
+    unsigned int zoom_hash = 0x213587bf;
+    switch (CurrentZoom) {
+    case 1:
+        zoom_hash = 0x0a9be7d7;
+        break;
+    case 2:
+        zoom_hash = 0x0a9be7d8;
+        break;
+    case 3:
+        zoom_hash = 0x0a9be7da;
+        break;
+    }
+    FEngSetLanguageHash(GetPackageName(), 0xcb76ce5b, zoom_hash);
+
+    if (SelectedItem != nullptr) {
+        DrawItemType();
+        DrawItemStats();
+    } else {
+        FEPrintf(GetPackageName(), 0x9331fd4f, "");
+        FEPrintf(GetPackageName(), 0xfeeeb39b, "");
+    }
+
+    if (pCurrentOption != nullptr && bInToggleMode) {
+        ItemTypeToggle* tog = static_cast< ItemTypeToggle* >(pCurrentOption);
+        if (tog->GetVisibility()) {
+            FEngSetScript(GetPackageName(), 0x32490131, 0x6ebbfb68, true);
+            FEngSetLanguageHash(GetPackageName(), 0x29456cc8, 0x2c35ec64);
+        } else {
+            FEngSetScript(GetPackageName(), 0x32490131, 0x6ebbfb68, true);
+            FEngSetLanguageHash(GetPackageName(), 0x29456cc8, 0xba0a6a2b);
+        }
+        FEngSetLanguageHash(GetPackageName(), 0x51f0064f, 0x58b828ed);
+        return;
+    }
+
+    IPlayer* iplayer = IPlayer::First(PLAYER_LOCAL);
+    if (iplayer == nullptr) {
+        return;
+    }
+
+    ISimable* isimable = iplayer->GetSimable();
+    if (isimable == nullptr) {
+        return;
+    }
+
+    if (SelectedItem != nullptr && SelectedItem->TheIcon != 0) {
+        FEngSetLanguageHash(GetPackageName(), 0x29456cc8, 0x43512519);
+        FEngSetScript(GetPackageName(), 0x32490131, 0x6ebbfb68, true);
+    } else if (mGPSingIcon != nullptr) {
+        FEngSetLanguageHash(GetPackageName(), 0x29456cc8, 0xf1d0d8a5);
+        FEngSetScript(GetPackageName(), 0x32490131, 0x6ebbfb68, true);
+    } else {
+        FEngSetLanguageHash(GetPackageName(), 0x29456cc8, 0x43512519);
+        FEngSetScript(GetPackageName(), 0x32490131, 0x00163c76, true);
+    }
+    FEngSetLanguageHash(GetPackageName(), 0x51f0064f, 0x001335f0);
 }
