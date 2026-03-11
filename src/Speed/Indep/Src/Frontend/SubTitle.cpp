@@ -92,13 +92,11 @@ void SubTitler::Unload() {
 }
 
 float SubTitler::GetElapsedTime() {
-    unsigned int timenow;
-    float thetime_ms;
+    unsigned int ret;
     if (!mSubtitlePaused) {
-        timenow = bGetTicker();
-        thetime_ms = bGetTickerDifference(lastTime, timenow) * 0.001f;
-        lastTime = timenow;
-        timeElapsed = timeElapsed + thetime_ms;
+        ret = bGetTicker();
+        timeElapsed += bGetTickerDifference(lastTime, ret) * 0.001f;
+        lastTime = ret;
     } else {
         lastTime = bGetTicker();
     }

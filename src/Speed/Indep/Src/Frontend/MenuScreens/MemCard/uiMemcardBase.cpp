@@ -105,10 +105,10 @@ UIMemcardBase::~UIMemcardBase() {
     m_pDisplayMsg = nullptr;
     MemoryCard::GetInstance()->m_pFEScreen = nullptr;
     if ((gMemcardSetup.mOp & 0x1000) != 0) {
+        int savedLastMsg = gMemcardSetup.mLastMessage;
         if (gMemcardSetup.mTermFunc != nullptr) {
             gMemcardSetup.mTermFunc(gMemcardSetup.mTermFuncParam);
         }
-        int savedLastMsg = gMemcardSetup.mLastMessage;
         gMemcardSetup.mPreviousCommand = 0;
         gMemcardSetup.mOp = 0;
         gMemcardSetup.mLastMessage = savedLastMsg;
@@ -122,7 +122,6 @@ UIMemcardBase::~UIMemcardBase() {
         gMemcardSetup.mInBootFlow = false;
         gMemcardSetup.mPreviousPrompt = 0;
     }
-    EmptyFileList();
 }
 
 void UIMemcardBase::Abort() {
