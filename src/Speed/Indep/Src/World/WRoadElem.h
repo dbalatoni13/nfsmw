@@ -293,11 +293,11 @@ struct WRoadSegment {
 
     // void SetOneWay(bool one_way) {}
 
-    int IsStartInverted() const {
+    bool IsStartInverted() const {
         return (fFlags >> 9) & 1;
     }
 
-    int IsEndInverted() const {
+    bool IsEndInverted() const {
         return (fFlags >> 10) & 1;
     }
 
