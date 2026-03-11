@@ -30,7 +30,7 @@ struct MilestoneDatum : public ArrayDatum {
 
     virtual unsigned int GetType() { return 0; }
     void NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1,
-                             unsigned long param2) override;
+                             unsigned long param2) override {}
 };
 
 // total size: 0x2C
