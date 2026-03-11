@@ -165,6 +165,16 @@ files: floats fill f1–f8 sequentially, integers fill r3–r10 sequentially, in
 each other. This means inserting/removing a `float` parameter shifts all subsequent float
 register assignments but does NOT affect integer register assignments (and vice versa).
 
+### Store instruction order hints
+
+- GCC likes to reorder store instructions, so try multiple combinations instead of strictly
+  using the order from the assembly. When there are lots of store instructions after each other,
+  the first one of the source code often ends up being the last in the assembly.
+- The developers usually initialized members using initializer lists. This is great because the order
+  of stores becomes deterministic that way. However if you put all possible variables into the initializer list
+  and the order is wrong, you might have to initialize some or all variables in the function body instead. 
+
+
 ### Assembly patterns
 
 - `fmuls fX, fX, fY` or sometimes `fmuls fX, fY, fX` often translates to `v *= fY`

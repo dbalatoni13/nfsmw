@@ -31,7 +31,7 @@ class CAnimEntityData : public bTNode<CAnimEntityData> {
 class CAnimSceneData : public bTNode<CAnimSceneData> {
   public:
     CAnimSceneData(bChunk *chunk);
-    ~CAnimSceneData();
+    virtual ~CAnimSceneData();
 
     static CAnimSceneData *FindAnimSceneData(unsigned int scene_name_hash);
 
