@@ -938,19 +938,27 @@ void PVehicle::UpdateListing() {
     }
 }
 
-PVehicle::Resource::Resource(const Attrib::Gen::pvehicle &attribs, bool compositing, bool is_player) {
-    const Attrib::StringKey &model = attribs.MODEL();
-    const char *model_name = model.GetString();
-    if (model_name != nullptr) {
-        Type = CarPartDB.GetCarType(bStringHashUpper(model_name));
-    } else {
-        Type = CARTYPE_NONE;
+PVehicle::Resource::Resource(const Attrib::Gen::pvehicle &attribs, bool spool, bool is_player) {
+    Flags = 0;
+    CarPartDatabase &db = CarPartDB;
+    const char *text = attribs.MODEL().GetString();
+    if (text == nullptr) {
+        text = "";
     }
-    bool split_screen = IsSplitScreen();
-    Cost = CarInfo_GetResourceCost(Type, is_player, split_screen);
-    Flags = 1;
-    if (compositing && CarInfo_IsSkinned(Type)) {
-        Flags |= 2;
+    CarType type = db.GetCarType(bStringHash(text));
+    Type = type;
+    if (type != CARTYPE_NONE && type < NUM_CARTYPES) {
+        if (CarInfo_IsSkinned(type)) {
+            Flags |= 4;
+        }
+        bool split_screen = Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN;
+        Cost = CarInfo_GetResourceCost(Type, is_player, split_screen);
+        if (spool) {
+            Flags |= 2;
+        }
+        if (Cost != 0) {
+            Flags |= 1;
+        }
     }
 }
 
