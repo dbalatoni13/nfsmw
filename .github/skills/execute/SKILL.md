@@ -61,7 +61,10 @@ python tools/decomp-workflow.py unit -u main/Path/To/TU
 Manual equivalent:
 
 ```sh
-python tools/decomp-diff.py -u main/Path/To/TU
+python tools/decomp-status.py --unit main/Path/To/TU
+TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
+python tools/decomp-diff.py -u main/Path/To/TU -s missing -t function --base-obj "$TEMPOBJ"
+python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching -t function --base-obj "$TEMPOBJ"
 ```
 
 This shows all symbols with their match status. Note the total count of missing,
@@ -93,8 +96,8 @@ Manual equivalent:
 ```sh
 ninja                  # full build to update shared state (progress, sha1)
 TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
-python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching -t function --base-obj "$TEMPOBJ"
 python tools/decomp-diff.py -u main/Path/To/TU -s missing -t function --base-obj "$TEMPOBJ"
+python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching -t function --base-obj "$TEMPOBJ"
 ```
 
 ### 3c. Implement each function sequentially

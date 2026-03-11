@@ -31,18 +31,16 @@ import sys
 import tempfile
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
-root_dir = os.path.abspath(os.path.join(script_dir, ".."))
-OBJDIFF_JSON = os.path.join(root_dir, "objdiff.json")
-BUILD_NINJA = os.path.join(root_dir, "build.ninja")
-COMPILE_COMMANDS = os.path.join(root_dir, "compile_commands.json")
+from _common import BUILD_NINJA, OBJDIFF_JSON, ROOT_DIR, ToolError, fail, load_objdiff_config
+
+root_dir = ROOT_DIR
+COMPILE_COMMANDS = os.path.join(ROOT_DIR, "compile_commands.json")
 
 Command = Union[str, List[str]]
 
 
 def load_objdiff() -> Dict[str, Any]:
-    with open(OBJDIFF_JSON) as f:
-        return json.load(f)
+    return load_objdiff_config()
 
 
 def find_unit_source(config: Dict[str, Any], unit_name: str) -> Optional[str]:
@@ -221,45 +219,25 @@ def actual_output_path(command: Command, source_path: str, new_output: str) -> s
 
 def compile_unit(unit_name: str, output_path: str) -> str:
     """Compile unit to output_path and return the actual .o path."""
-    if not os.path.exists(OBJDIFF_JSON):
-        print(
-            "objdiff.json not found. Run:  python configure.py && ninja all_source",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
     config = load_objdiff()
     source_path = find_unit_source(config, unit_name)
     target_path = find_unit_target(config, unit_name)
     if not source_path:
-        print(
+        fail(
             f"No source_path found for unit '{unit_name}' in objdiff.json.\n"
-            "The unit may not have a source file yet (missing implementation).",
-            file=sys.stderr,
+            "The unit may not have a source file yet (missing implementation)."
         )
-        sys.exit(1)
     if not target_path:
-        print(
-            f"No target_path found for unit '{unit_name}' in objdiff.json.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
+        fail(f"No target_path found for unit '{unit_name}' in objdiff.json.")
     if not os.path.exists(BUILD_NINJA):
-        print(
-            "build.ninja not found. Run:  python configure.py && ninja all_source",
-            file=sys.stderr,
-        )
-        sys.exit(1)
+        fail(f"Missing {BUILD_NINJA}\nHint: Run: python configure.py")
 
     command = get_build_command(target_path)
     if command is None:
-        print(
+        fail(
             f"No build command found for target '{target_path}'.\n"
-            "Make sure the unit exists and `python configure.py` has been run.",
-            file=sys.stderr,
+            "Make sure the unit exists and `python configure.py` has been run."
         )
-        sys.exit(1)
 
     # 1. Strip the dependency-file transform step — not needed for temp builds.
     command = strip_transform_dep(command)
@@ -278,10 +256,7 @@ def compile_unit(unit_name: str, output_path: str) -> str:
     # 5. Run the compile.
     result = subprocess.run(command, shell=isinstance(command, str), cwd=root_dir)
     if result.returncode != 0:
-        print(
-            f"Compilation failed (exit code {result.returncode})", file=sys.stderr
-        )
-        sys.exit(1)
+        fail(f"Compilation failed (exit code {result.returncode})")
 
     return actual
 
@@ -316,7 +291,10 @@ def main() -> None:
         )
         os.close(fd)
 
-    actual = compile_unit(args.unit, output_path)
+    try:
+        actual = compile_unit(args.unit, output_path)
+    except ToolError as e:
+        fail(str(e))
     print(actual)
 
 

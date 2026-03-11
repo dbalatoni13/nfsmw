@@ -16,35 +16,25 @@ Usage:
 import argparse
 import json
 import os
-import subprocess
 import sys
 from typing import Any, Dict, List, Optional
+from _common import ROOT_DIR, ToolError, fail, load_objdiff_config, run_objdiff_json
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
-root_dir = os.path.abspath(os.path.join(script_dir, ".."))
+root_dir = ROOT_DIR
 
 OBJDIFF_CLI = os.path.join(root_dir, "build", "tools", "objdiff-cli")
-OBJDIFF_JSON = os.path.join(root_dir, "objdiff.json")
 
 
 def load_project_config() -> Dict[str, Any]:
     """Load objdiff.json project configuration."""
-    with open(OBJDIFF_JSON) as f:
-        return json.load(f)
+    return load_objdiff_config()
 
 
 def run_objdiff(unit_name: str) -> Optional[Dict[str, Any]]:
     """Run objdiff-cli diff for a unit and return parsed JSON."""
-    result = subprocess.run(
-        [OBJDIFF_CLI, "diff", "-u", unit_name, "-o", "-", "--format", "json"],
-        capture_output=True,
-        cwd=root_dir,
-    )
-    if result.returncode != 0:
-        return None
     try:
-        return json.loads(result.stdout)
-    except json.JSONDecodeError:
+        return run_objdiff_json(OBJDIFF_CLI, unit_name, root_dir=root_dir)
+    except ToolError:
         return None
 
 
@@ -141,8 +131,7 @@ def main():
         categorized.setdefault(cat, []).append(unit)
 
     if not categorized:
-        print("No units match the given filters.", file=sys.stderr)
-        sys.exit(1)
+        fail("No units match the given filters.")
 
     # Process each unit
     results = {}
