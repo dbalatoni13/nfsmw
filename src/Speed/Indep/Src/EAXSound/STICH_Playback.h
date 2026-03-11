@@ -49,9 +49,7 @@ class cSTICH_PlayBack : public AudioMemBase {
     void Update(float t);
     void DestroyAllStichs(void);
 
-    bPList<SND_Stich> &GetStichList(STICH_TYPE StichType) {
-        return StichList[StichType];
-    }
+    bPList<SND_Stich> &GetStichList(STICH_TYPE StichType);
 
   protected:
     static void QueueSampleRequest(struct SampleQueueItem &samplereq);

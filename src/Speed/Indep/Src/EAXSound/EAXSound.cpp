@@ -1,4 +1,6 @@
 #include "./EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.hpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Pathfinder.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.hpp"
 #include "Speed/Indep/Src/Misc/Config.h"
 
@@ -29,15 +31,15 @@ struct EAXSND8Wrapper : public AudioMemBase {
     virtual ~EAXSND8Wrapper();
 };
 
-// TODO look at dwarf
 void EAXSound::START_321Countdown() {
     if (IsSoundEnabled && IsAudioStreamingEnabled) {
-        SFX_Base *obj = GetSFXBase_Object(0x40010010);
-        if (obj) {
+        SFXObj_Pathfinder *ppf = static_cast<SFXObj_Pathfinder *>(GetSFXBase_Object(0x40010010));
+        if (ppf) {
+            ppf->Set321(true);
         }
-        SFX_Base *nis = GetSFXBase_Object(0x40010050);
-        if (nis) {
-            // nis->StartNIS();
+        SFXObj_NISStream *pnis = static_cast<SFXObj_NISStream *>(GetSFXBase_Object(0x40000050));
+        if (pnis) {
+            pnis->StartNIS();
         }
     }
 }

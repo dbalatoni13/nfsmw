@@ -5,6 +5,10 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX.hpp"
 
+struct SFXObj_NISStream : CARSFX {
+    void StartNIS();
+};
 
 #endif

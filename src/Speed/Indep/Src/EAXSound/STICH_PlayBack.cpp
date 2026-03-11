@@ -37,8 +37,12 @@ int cSTICH_PlayBack::Prune(STICH_TYPE type, int priority, int num_to_clear) {
 }
 
 bool cSTICH_PlayBack::AddStich(STICH_TYPE StichType, SND_Stich &NewStichData) {
-    GetStichList(StichType).AddTail(&NewStichData);
+    StichList[StichType].AddTail(&NewStichData);
     return true;
+}
+
+bPList<SND_Stich> &cSTICH_PlayBack::GetStichList(STICH_TYPE StichType) {
+    return StichList[StichType];
 }
 
 SND_Stich &cSTICH_PlayBack::GetStich(STICH_TYPE StichType, int Index) {
