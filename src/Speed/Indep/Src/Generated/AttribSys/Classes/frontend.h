@@ -12,6 +12,20 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 
+typedef unsigned int type_bStringHash;
+typedef unsigned int reflection_typedef_eFEPartUpgradeLevels;
+
+struct FECarPartInfo {
+    reflection_typedef_eFEPartUpgradeLevels Level;
+    float Rep;
+    float Cost;
+};
+
+enum eUnlockableEntity {
+    UNLOCKABLE_THING_UNKNOWN = 0,
+    NUM_UNLOCKABLES = 57,
+};
+
 namespace Attrib {
 namespace Gen {
 

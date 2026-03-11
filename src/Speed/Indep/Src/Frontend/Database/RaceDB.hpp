@@ -3,6 +3,7 @@
 
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+#endif
 
 enum ePursuitDetailTypes {
     ePDT_CostToState = 0,
@@ -10,8 +11,6 @@ enum ePursuitDetailTypes {
     ePDT_Infractions = 2,
     ePDT_SpeedingTotalFine = 3,
 };
-
-#endif
 
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
@@ -68,9 +67,16 @@ struct CostToStateScores {
     int mNumPropertiesDamaged;       // offset 0x1C, size 0x4
 };
 
+enum RAP_CTS_ITEM { RAP_CTS_HELI_SPAWN=0,RAP_CTS_SUPPORT_VEHICLE_DEPLOYED=1,RAP_CTS_COP_CAR_DEPLOYED=2,RAP_CTS_COP_DESTROYED=3,RAP_CTS_COP_DAMAGED=4,RAP_CTS_ROADBLOCK_DEPLOYED=5,RAP_CTS_SPIKE_STRIP_DEPLOYED=6,RAP_CTS_HELI_SPIKE_STRIP_DEPLOYED=7,RAP_CTS_TRAFFIC_CAR_HIT=8,RAP_CTS_PROPERTY_DAMAGE=9 };
 // total size: 0xBD8
 class HighScoresDatabase {
   public:
+    int GetCareerPursuitScore(ePursuitDetailTypes type) const { return CareerPursuitDetails.Value[type]; }
+    const TopEvadedPursuitDetail &GetTopEvadedPursuitScores(unsigned short index) const { return TopEvadedPursuitScores[index]; }
+    const PursuitScore &GetBestPursuitScore(ePursuitDetailTypes type) const { return BestPursuitRankings[type]; }
+    int CalcPursuitRank(ePursuitDetailTypes type, bool career_rank);
+    unsigned int GetPreviouslyPursuedCarNameHash() const;
+    void GetCareerCST(RAP_CTS_ITEM item, int &quantity, unsigned int &value) const;
     TrackHighScore TrackHighScoreTable[320];          // offset 0x0, size 0xA00
     float TotalOdometer;                              // offset 0xA00, size 0x4
     int TotalStarts;                                  // offset 0xA04, size 0x4
@@ -117,12 +123,5 @@ struct cFinishedRaceStats {
     int NumStats;                        // offset 0x600, size 0x4
 };
 
-
-enum ePursuitDetailTypes {
-    ePDT_CostToState = 0,
-    ePDT_Bounty = 1,
-    ePDT_Infractions = 2,
-    ePDT_SpeedingTotalFine = 3,
-};
 
 #endif

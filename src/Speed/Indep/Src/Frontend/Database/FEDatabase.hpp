@@ -200,6 +200,25 @@ class CareerSettings {
         return CurrentBin;
     }
     void AwardOneTimeCashBonus(bool bOldSaveExists);
+    const char *GetCaseFileName() { return CaseFileName; }
+
+    bool HasCareerStarted() {
+        return SpecialFlags & 1;
+    }
+    bool IsGameOver() {
+        return SpecialFlags & 0x800;
+    }
+    bool HasRapSheet() {
+        return SpecialFlags & 0x10;
+    }
+    bool HasBeatenCareer() {
+        return SpecialFlags & 0x4000;
+    }
+    int GetCash() {
+        return CurrentCash;
+    }
+    void ResumeCareer();
+    void StartNewCareer(bool bEnterGameplay);
 
   public:
     uint32 CurrentCar;           // offset 0x0, size 0x4
@@ -245,6 +264,7 @@ class UserProfile {
     CareerSettings *GetCareer() {
         return &TheCareerSettings;
     }
+    HighScoresDatabase *GetHighScores() { return &HighScores; }
 
   private:
     char m_aProfileName[32];            // offset 0x0, size 0x20
@@ -424,6 +444,7 @@ class cFrontendDatabase {
     UserProfile* GetMultiplayerProfile(int player) {
         return CurrentUserProfiles[player];
     }
+    UserProfile* GetUserProfile(int player) { return CurrentUserProfiles[player]; }
 
     OptionsSettings* GetOptionsSettings() {
         return CurrentUserProfiles[0]->GetOptions();
@@ -453,6 +474,7 @@ class cFrontendDatabase {
     bool LoadUserProfileFromBuffer(void* buffer, int size, int player);
     void RestoreFromBackupDB();
     void DeallocBackupDB();
+    void RefreshCurrentRide();
 
     bool MatchesGameMode(unsigned int mode) {
         return FEGameMode & mode;

@@ -19,6 +19,9 @@ struct FECarRecord {
     unsigned char Customization; // offset 0x10, size 0x1
     unsigned char CareerHandle;  // offset 0x11, size 0x1
     unsigned short Padd;         // offset 0x12, size 0x2
+    bool IsValid() { return Handle != 0xFFFFFFFF; }
+    bool MatchesFilter(int theFilter);
+    unsigned int GetNameHash();
 };
 
 // total size: 0x198
@@ -47,6 +50,7 @@ struct FEImpoundData {
     char EvadeCount;                 // offset 0x4, size 0x1
     char Pad1;                       // offset 0x5, size 0x1
     short Pad2;                      // offset 0x6, size 0x2
+    bool IsImpounded() const { return ImpoundedState != 0; }
 };
 
 // total size: 0x10
@@ -59,6 +63,8 @@ struct FEInfractionsData {
     unsigned short Damage;    // offset 0xA, size 0x2
     unsigned short Resist;    // offset 0xC, size 0x2
     unsigned short OffRoad;   // offset 0xE, size 0x2
+    unsigned int GetFineValue() const;
+    unsigned short GetTotalInfractions() const;
 };
 
 // total size: 0x38
@@ -68,13 +74,22 @@ class FECareerRecord {
         return Bounty;
     }
 
-    // unsigned int GetNumEvadedPursuits() const {}
+    unsigned int GetNumEvadedPursuits() const {
+        return NumEvadedPursuits;
+    }
 
-    // unsigned int GetNumBustedPursuits() const {}
+    unsigned int GetNumBustedPursuits() const {
+        return NumBustedPursuits;
+    }
 
     // int GetTimesBusted() {}
 
-    // const FEInfractionsData &GetInfractions(bool get_unserved) const {}
+    const FEInfractionsData& GetInfractions(bool get_unserved) const {
+        if (get_unserved) {
+            return UnservedInfractions;
+        }
+        return ServedInfractions;
+    }
 
     // void TweakBounty(unsigned int bounty) {}
 
