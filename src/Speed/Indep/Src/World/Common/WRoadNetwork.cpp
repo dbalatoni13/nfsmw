@@ -217,7 +217,7 @@ void WRoadNetwork::ResolveBarriers() {
                                                    barrier->Points[1].x, 1.0f);
 
             UTL::FastVector<unsigned int, 16> node_list;
-            typedef UTL::Std::set<unsigned short, _type_set> SEGMENT_SET;
+            typedef UTL::Std::set<short, _type_set> SEGMENT_SET;
             SEGMENT_SET segment_set;
 
             grid.FindNodes(barrier_points, node_list);
@@ -228,7 +228,7 @@ void WRoadNetwork::ResolveBarriers() {
                     unsigned int numSegments = grid_node->GetElemTypeCount(WGrid_kRoadSegment);
                     for (unsigned int i = 0; i < numSegments; i++) {
                         segment_set.insert(
-                            static_cast<unsigned short>(grid_node->GetElemType(i, WGrid_kRoadSegment)));
+                            static_cast<short>(grid_node->GetElemType(i, WGrid_kRoadSegment)));
                     }
                 }
             }
@@ -1096,9 +1096,11 @@ int WRoadNav::FetchAvoidables(IBody **avoidables, const int listsize) const {
     }
 
     IPursuit *my_pursuit = my_ai->GetPursuit();
-    IPursuitAI *my_pursuitai;
     bool is_formation_cop = false;
-    if (my_ai->QueryInterface(&my_pursuitai) && my_pursuitai->GetInFormation()) {
+
+    IPursuitAI *my_pursuitai;
+    my_ai->QueryInterface(&my_pursuitai);
+    if (my_pursuitai && my_pursuitai->GetInFormation()) {
         is_formation_cop = true;
     }
 
@@ -1423,9 +1425,7 @@ void WRoadNav::InitAtSegment(short segInd, char laneInd, float timeStep) {
     UMath::Vector3 vec;
     roadNetwork.GetSegmentForwardVector(segInd, vec);
 
-    bool rightSide = roadNetwork.GetSegmentTrafficLaneRightSide(*segment, laneInd);
-
-    if (!rightSide && !segment->IsOneWay()) {
+    if (!roadNetwork.GetSegmentTrafficLaneRightSide(*segment, laneInd) && !(segment->fFlags & 0x40)) {
         fNodeInd = 0;
         fForwardVector = UMath::Vector3Make(-vec.x, -vec.y, -vec.z);
         fSegTime = fabsf(1.0f - timeStep);
