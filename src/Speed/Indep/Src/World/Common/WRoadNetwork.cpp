@@ -1089,6 +1089,24 @@ void WRoadNav::ClampCookieCentres(NavCookie *cookies, int num_cookies) {
         }
     }
 }
+
+static float TimeToClosestApproach(const UMath::Vector3 &p0, const UMath::Vector3 &v0, const UMath::Vector3 &p1, const UMath::Vector3 &v1, float *closing_speed) {
+    UMath::Vector3 p;
+    UMath::Vector3 v;
+    UMath::Vector3 dir;
+    p = UVector3(p1) - p0;
+    v = UVector3(v1) - v0;
+    UMath::Unit(p, dir);
+    float a = UMath::Dot(dir, v);
+    *closing_speed = -a;
+    float b = UMath::Dot(v, v);
+    a = UMath::Dot(p, v);
+    if (b >= 0.001f) {
+        return -a / b;
+    }
+    return 1000.0f;
+}
+
 int WRoadNav::FetchAvoidables(IBody **avoidables, const int listsize) const {
     IVehicleAI *my_ai = pAIVehicle;
     if (!my_ai) {
@@ -1340,6 +1358,163 @@ void WRoadNav::EvaluateSplines(const WRoadSegment *segment) {
             roadNetwork.GetPointOnSegment(fRightStartPos, fRightEndPos, *segment, fSegTime, fRightPosition);
         }
     }
+}
+
+void WRoadNav::UpdateCookieTrail(float cookie_gap) {
+    if (!IsValid()) return;
+    if (!bCookieTrail || pCookieTrail == nullptr) return;
+
+    int num_cookies = pCookieTrail->Count();
+    float cookie_length = 0.0f;
+    bool add_new_cookie = (num_cookies == 0);
+
+    if (!add_new_cookie) {
+        const NavCookie &newest_cookie = pCookieTrail->Newest();
+        UMath::Vector3 current_cookie_ray = UVector3(GetPosition()) - newest_cookie.Centre;
+        float current_ray_length = UMath::Length(current_cookie_ray);
+
+        if (cookie_gap <= current_ray_length) {
+            add_new_cookie = true;
+            cookie_length = current_ray_length;
+            bVector2 cookie_ray_2d(current_cookie_ray.x, current_cookie_ray.z);
+            if (bDot(&cookie_ray_2d, reinterpret_cast<const bVector2 *>(&newest_cookie.Forward)) < -0.5f) {
+                ClearCookieTrail();
+            }
+        }
+        if (!add_new_cookie) return;
+    }
+
+    NavCookie cookie;
+    cookie.Centre = GetPosition();
+    cookie.Curvature = GetCurvature();
+    cookie.SetSegmentParameter(GetSegmentTime());
+    cookie.SegmentNumber = GetSegmentInd() & 0x7FFF;
+    cookie.SegmentNodeInd = GetNodeInd() & 1;
+    cookie.Flags = 0;
+    cookie.Length = cookie_length;
+
+    bVector2 centre(GetPosition().x, GetPosition().z);
+
+    cookie.Left = UMath::Vector2Make(GetLeftPosition().x, GetLeftPosition().z);
+    cookie.Right = UMath::Vector2Make(GetRightPosition().x, GetRightPosition().z);
+
+    bVector2 centre_to_left = *reinterpret_cast<bVector2 *>(&cookie.Left) - centre;
+    bVector2 centre_to_right = *reinterpret_cast<bVector2 *>(&cookie.Right) - centre;
+    bVector2 right = centre_to_right - centre_to_left;
+    bVector2 forward(-right.y, right.x);
+
+    bNormalize(reinterpret_cast<bVector2 *>(&cookie.Forward), &forward);
+
+    cookie.LeftOffset = bCross(&centre_to_left, reinterpret_cast<const bVector2 *>(&cookie.Forward));
+    cookie.RightOffset = bCross(&centre_to_right, reinterpret_cast<const bVector2 *>(&cookie.Forward));
+
+    if (num_cookies == 0) {
+        mCurrentCookie = cookie;
+    }
+
+    if (pCookieTrail->Count() == pCookieTrail->Capacity()) {
+        nCookieIndex = bMax(nCookieIndex - 1, 0);
+    }
+
+    pCookieTrail->AddNew(cookie);
+}
+
+void WRoadNav::IncNavPosition(float dist, const UMath::Vector3 &to, float max_lookahead) {
+    if (!fValid) return;
+
+    float cookie_gap = 30.0f;
+    if (max_lookahead > 0.0f) {
+        cookie_gap = UMath::Clamp(max_lookahead * 0.5f, 5.0f, cookie_gap);
+    }
+
+    if (bCookieTrail && pCookieTrail != nullptr) {
+        while (dist > 0.0f) {
+            float incdist = bMin(cookie_gap * 0.5f, dist);
+            PrivateIncNavPosition(incdist, to);
+            dist -= incdist;
+            UpdateCookieTrail(cookie_gap);
+        }
+    } else {
+        PrivateIncNavPosition(dist, to);
+    }
+}
+
+void WRoadNav::PrivateIncNavPosition(float dist, const UMath::Vector3 &to) {
+    WRoadNetwork &roadNetwork = WRoadNetwork::Get();
+    const WRoadSegment *segment;
+    float segmentLength;
+    float distFraction;
+    float toLength;
+
+    while (true) {
+        segment = roadNetwork.GetSegment(GetSegmentInd());
+        segmentLength = UMath::Max(UMath::Distance(fStartPos, fEndPos), 0.001f);
+        toLength = UMath::Length(to);
+        distFraction = fSegTime + dist / segmentLength;
+        if (distFraction <= 1.0f) break;
+
+        {
+            short newSegInd = static_cast< short >(GetSegmentInd());
+            float nextLaneOffset = fLaneOffset;
+            bool useOldStartPos = false;
+            char old_node_ind = fNodeInd;
+            const WRoadSegment *newSegment;
+
+            UpdateLaneChange((1.0f - fSegTime) * segmentLength);
+
+            if (fNavType == kTypeDirection && toLength == 0.0f) {
+                UMath::Vector3 endTo;
+                segment->GetForwardVec(old_node_ind, endTo);
+                if (old_node_ind == 0) {
+                    UMath::Negate(endTo);
+                }
+                newSegInd = GetNextOffset(endTo, nextLaneOffset, fNodeInd, useOldStartPos);
+            } else if (fNavType == kTypeDirection || fNavType == kTypePath) {
+                newSegInd = GetNextOffset(to, nextLaneOffset, fNodeInd, useOldStartPos);
+            } else if (fNavType == kTypeTraffic) {
+                newSegInd = GetNextTraffic(to, nextLaneOffset, fNodeInd, useOldStartPos);
+            }
+
+            if (GetSegmentInd() == newSegInd && fNodeInd == old_node_ind) {
+                fDeadEnd = 1;
+                if (fNavType == kTypeTraffic) return;
+            }
+
+            fSegmentInd = static_cast< short >(newSegInd);
+            newSegment = roadNetwork.GetSegment(newSegInd);
+
+            if (!useOldStartPos) {
+                SetStartEndPos(*newSegment, fLaneOffset);
+            } else {
+                fStartPos = fEndPos;
+                if (bCookieTrail) {
+                    fLeftStartPos = fLeftEndPos;
+                    fRightStartPos = fRightEndPos;
+                }
+                SetBoundPos(*newSegment, nextLaneOffset, false);
+                fFromLaneOffset = nextLaneOffset;
+                fLaneOffset = nextLaneOffset;
+                fToLaneOffset = nextLaneOffset;
+            }
+
+            SetStartEndControls(*newSegment);
+            RebuildSplines(newSegment);
+            fPosition = fStartPos;
+            dist = (dist / segmentLength - (1.0f - fSegTime)) * segmentLength;
+            fSegTime = 0.0f;
+        }
+    }
+
+    fSegTime = distFraction;
+    fSegTime = UMath::Min(UMath::Max(distFraction, 0.0f), 1.0f);
+
+    if (UpdateLaneChange(dist)) {
+        SetStartEndPos(*segment, fLaneOffset);
+        SetStartEndControls(*segment);
+        RebuildSplines(segment);
+    }
+
+    EvaluateSplines(segment);
 }
 
 void WRoadNav::Reset() {

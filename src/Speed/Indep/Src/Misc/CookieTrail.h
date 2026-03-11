@@ -7,6 +7,7 @@
 
 #include <cstddef>
 
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
 // total size: 0x810
@@ -31,6 +32,27 @@ template <typename T, int U> class CookieTrail {
 
     T *GetData() {
         return mData;
+    }
+
+    T &Newest() {
+        return mData[mLast];
+    }
+
+    const T &Newest() const {
+        return mData[mLast];
+    }
+
+    int Capacity() {
+        return mCapacity;
+    }
+
+    void AddNew(const T &t) {
+        int cap = mCapacity;
+        mLast = (mLast + 1) - ((mLast + 1) / cap) * cap;
+        if (mCount < cap) {
+            mCount++;
+        }
+        mData[mLast] = t;
     }
 
     T &NthOldest(int n) {
@@ -58,6 +80,14 @@ struct NavCookie {
     short SegmentParameter;            // offset 0x3C, size 0x2
     unsigned short SegmentNumber : 15; // offset 0x3E, size 0x2
     unsigned short SegmentNodeInd : 1; // offset 0x3E, size 0x2
+
+    void SetSegmentParameter(float t) {
+        SegmentParameter = static_cast< short >(bClamp(t, 0.0f, 1.0f) * 32767.0f);
+    }
+
+    float GetSegmentParameter() const {
+        return static_cast< float >(SegmentParameter) / 32767.0f;
+    }
 };
 
 struct ResetCookie {

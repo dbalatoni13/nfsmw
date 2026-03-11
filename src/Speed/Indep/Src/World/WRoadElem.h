@@ -340,13 +340,21 @@ struct WRoadSegment {
 
     // void GetStartRightVec(UMath::Vector2 &v) const {}
 
-    // void GetEndForwardVec(UMath::Vector2 &v) const {}
+    void GetEndForwardVec(UMath::Vector3 &v) const {
+        const float scale = 1.0f / 127.0f;
+        float x = scale * static_cast< float >(vEndHandle[0]);
+        float y = scale * static_cast< float >(vEndHandle[1]);
+        float z = scale * static_cast< float >(vEndHandle[2]);
+        v = UMath::Vector3Make(x, y, z);
+    }
 
-    // void GetEndForwardVec(UMath::Vector3 &v) const {}
-
-    // void GetStartForwardVec(UMath::Vector2 &v) const {}
-
-    // void GetStartForwardVec(UMath::Vector3 &v) const {}
+    void GetStartForwardVec(UMath::Vector3 &v) const {
+        const float scale = 1.0f / 127.0f;
+        float x = scale * static_cast< float >(vStartHandle[0]);
+        float y = scale * static_cast< float >(vStartHandle[1]);
+        float z = scale * static_cast< float >(vStartHandle[2]);
+        v = UMath::Vector3Make(x, y, z);
+    }
 
     // void GetControl(int which_end, UMath::Vector3 &v) const {}
 
@@ -354,9 +362,13 @@ struct WRoadSegment {
 
     // void GetRightVec(int which_end, UMath::Vector3 &v) const {}
 
-    // void GetForwardVec(int which_end, UMath::Vector2 &v) const {}
-
-    // void GetForwardVec(int which_end, UMath::Vector3 &v) const {}
+    void GetForwardVec(int which_end, UMath::Vector3 &v) const {
+        if (which_end == 0) {
+            GetStartForwardVec(v);
+        } else {
+            GetEndForwardVec(v);
+        }
+    }
 
     // void SetEndControl(UMath::Vector3 &v) {}
 

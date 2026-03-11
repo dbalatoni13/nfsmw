@@ -53,37 +53,53 @@ def find_unit_source(config: Dict[str, Any], unit_name: str) -> Optional[str]:
 
 def get_compdb() -> Optional[List[Dict[str, Any]]]:
     """Run `ninja -t compdb` and return the parsed compilation database."""
-    result = subprocess.run(
-        ["ninja", "-t", "compdb"],
-        capture_output=True,
-        cwd=root_dir,
-    )
-    if result.returncode != 0:
-        print(
-            f"ninja -t compdb failed:\n{result.stderr.decode(errors='replace')}",
-            file=sys.stderr,
+    all_entries: List[Dict[str, Any]] = []
+    for rule in [None, "prodg", "mwcc", "mwcc_sjis", "ee-gcc", "msvc", "as"]:
+        cmd = ["ninja", "-t", "compdb"]
+        if rule:
+            cmd.append(rule)
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            cwd=root_dir,
         )
+        if result.returncode != 0:
+            continue
+        try:
+            entries = json.loads(result.stdout)
+            all_entries.extend(entries)
+        except json.JSONDecodeError:
+            continue
+    if not all_entries:
+        print("ninja -t compdb returned no entries", file=sys.stderr)
         return None
-    try:
-        return json.loads(result.stdout)
-    except json.JSONDecodeError as e:
-        print(f"Failed to parse ninja compdb output: {e}", file=sys.stderr)
-        return None
+    return all_entries
 
 
 def find_entry(
     compdb: List[Dict[str, Any]], source_path: str
 ) -> Optional[Dict[str, Any]]:
-    """Find the compdb entry whose 'file' matches source_path."""
+    """Find the compdb entry whose 'file' matches source_path (compiler rules only)."""
     abs_source = os.path.normcase(os.path.abspath(os.path.join(root_dir, source_path)))
+    candidates = []
     for entry in compdb:
         file_val = entry.get("file", "")
         if not os.path.isabs(file_val):
             entry_dir = entry.get("directory", root_dir)
             file_val = os.path.abspath(os.path.join(entry_dir, file_val))
         if os.path.normcase(file_val) == abs_source:
+            candidates.append(entry)
+    # Prefer entries whose output ends in .o (actual compiler entries)
+    for entry in candidates:
+        out = entry.get("output", "")
+        if out.endswith(".o") or out.endswith(".obj"):
             return entry
-    return None
+    # Fallback: prefer entries with -o pointing to an object file
+    for entry in candidates:
+        cmd = entry.get("command", "")
+        if re.search(r"-o\s+\S+\.o\b", cmd):
+            return entry
+    return candidates[0] if candidates else None
 
 
 def strip_transform_dep(command: str) -> str:

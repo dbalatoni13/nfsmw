@@ -196,6 +196,7 @@ class WRoadNav {
     bool OnPath() const;
     float GetSegmentCentreShift(int segment_number, int which_node);
     short GetNextOffset(const UMath::Vector3 &to, float &nextLaneOffset, char &nodeInd, bool &useOldStartPos);
+    short GetNextTraffic(const UMath::Vector3 &to, float &nextLaneOffset, char &nodeInd, bool &useOldStartPos);
 
     void SnapToSelectableLane();
     float SnapToSelectableLane(float input_offset);
@@ -255,6 +256,10 @@ class WRoadNav {
 
     UMath::Vector3 &GetForwardVector() {
         return fForwardVector;
+    }
+
+    float GetCurvature() {
+        return fCurvature;
     }
 
     const NavCookie &GetCurrentCookie() {

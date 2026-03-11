@@ -66,7 +66,7 @@ struct WCollisionObject : public CollisionObject {
     };
 
     const WSurface GetWSurface() const {
-        return reinterpret_cast<const WSurface &>(fSurface);
+        return WSurface(fSurface.fSurface, fSurface.fFlags);
     }
 
     bool IsDynamic() const { return (fFlags & 1) != 0; }
