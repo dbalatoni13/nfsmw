@@ -16,10 +16,10 @@ struct SFXCTL : public SndBase {
 
     SFXCTL();
     ~SFXCTL() override;
-    TypeInfo *GetTypeInfo() override;
+    TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
     void InitSFX() override;
-    void UpdateParams() override;
+    void UpdateParams(float t) override;
 
     float GetPhysTRQ();
     float GetPhysRPM();

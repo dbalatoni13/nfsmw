@@ -5,6 +5,74 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL.hpp"
 
+enum eCURVETYPE {};
+
+// total size: 0x1c
+struct cInterpLine {
+    /* 0x00 */ float ElapsedTime;
+    /* 0x04 */ float Length;
+    /* 0x08 */ float Start;
+    /* 0x0c */ float Finish;
+    /* 0x10 */ eCURVETYPE CurveTypes;
+    /* 0x14 */ float CurValue;
+    /* 0x18 */ bool bComplete;
+
+    float GetValue() { return CurValue; }
+};
+
+enum Gear {};
+enum SHIFT_STAGE {};
+enum AEMS_SHIFTING_SAMPLES {};
+enum FX_POST_SHIFT_LFO {};
+
+struct shiftpattern;
+struct Graph;
+struct Timer;
+
+struct SFXCTL_Engine;
+
+struct SFXCTL_Shifting : public SFXCTL {
+  protected:
+    static TypeInfo s_TypeInfo;
+
+  public:
+    /* 0x28 */ SFXCTL_Engine *m_pEngineCtl;
+    /* 0x2c */ bool m_bNeed_ShiftGearSnd;
+    /* 0x30 */ bool m_bNeed_DisengageSnd;
+    /* 0x34 */ bool m_bNeed_EngageSnd;
+    /* 0x38 */ bool m_bNeed_AccelSnd;
+    /* 0x3c */ bool m_bNeed_DeccelSnd;
+    /* 0x40 */ bool m_bShouldBeWhining;
+    /* 0x44 */ bool m_bBrakePedalMashed;
+    /* 0x48 */ shiftpattern *m_pShiftingPatternData;
+    /* 0x4c */ SHIFT_STAGE eShiftState;
+    /* 0x50 */ SHIFT_STAGE eShiftStageChanged;
+    /* 0x54 */ int m_VOL_LFO_AMP;
+    /* 0x58 */ int m_VOL_LFO_FRQ;
+    /* 0x5c */ int m_TRQ_LFO_AMP;
+    /* 0x60 */ int m_TRQ_LFO_FRQ;
+    /* 0x64 */ int m_RPM_LFO_AMP;
+    /* 0x68 */ int m_RPM_LFO_FRQ;
+    /* 0x6c */ bool m_bPendingNeedShiftSound;
+    /* 0x70 */ AEMS_SHIFTING_SAMPLES ShiftType;
+    /* 0x74 */ float tShiftDelay;
+    /* 0x78 */ float t_Last_Shift;
+    /* 0x7c */ float RPM_AtShift;
+    /* 0x80 */ cInterpLine m_InterpShiftTorque;
+    /* 0x9c */ cInterpLine m_InterpShiftRPM;
+    /* 0xb8 */ cInterpLine m_InterpShiftVol;
+
+    TypeInfo *GetTypeInfo() const override;
+    char *GetTypeName() const override;
+    int GetController(int Index) override;
+
+    float GetShiftingRPM();
+    float GetShiftingTRQ();
+    float GetShiftingVOL();
+    Gear GetCurGear();
+    Gear GetLastGear();
+};
 
 #endif

@@ -5,6 +5,15 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DObjPos.hpp"
 
+struct SFXCTL_3DCarPos : public SFXCTL_3DObjPos {
+  protected:
+    static TypeInfo s_TypeInfo;
+
+  public:
+    TypeInfo *GetTypeInfo() const override;
+    char *GetTypeName() const override;
+};
 
 #endif
