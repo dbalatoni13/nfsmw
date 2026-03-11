@@ -5,21 +5,50 @@
 extern unsigned int eFrameCounter;
 extern EmitterSystem gEmitterSystem;
 
-struct _AudioEventBase {
-    char _x;
-};
+void bRotateVector(bVector3 *dest, const bMatrix4 *m, bVector3 *v);
 
 namespace Sound {
-class AudioEvent : public _AudioEventBase {
-    char _pad[0x5F];
+
+struct AudioEventParams {
+    bVector3 position;          // offset 0x0, size 0x10
+    bVector3 normal;            // offset 0x10, size 0x10
+    bVector3 velocity;          // offset 0x20, size 0x10
+    float magnitude;            // offset 0x30, size 0x4
+    Attrib::RefSpec attributes; // offset 0x34, size 0xC
+    unsigned int object;        // offset 0x40, size 0x4
+    unsigned int other_object;  // offset 0x44, size 0x4
+};
+
+class AudioEvent : public UTL::COM::Factory<const AudioEventParams &, AudioEvent, unsigned int> {
+    AudioEventParams mParams;       // offset 0x4, size 0x48
+    Attrib::Instance mAttributes;   // offset 0x4C, size 0x14
 
   public:
+    static AudioEvent *CreateInstance(const AudioEventParams &params) {
+        return UTL::COM::Factory<const AudioEventParams &, AudioEvent, unsigned int>::CreateInstance(
+            params.attributes.GetClassKey(), params);
+    }
+
     virtual ~AudioEvent() {}
     virtual void Stop() = 0;
     virtual void _unk() = 0;
     virtual void Update(const bVector3 &p, const bVector3 &n, const bVector3 &v, float mag) = 0;
 };
+
+float DistanceToView(const bVector3 *position);
+
 } // namespace Sound
+
+inline float Quadratic(float x, float A, float B, float C, float D) {
+    return A + B * x + C * x * x + D * x * x * x;
+}
+
+inline float SolveEffectQuadratic(float x, const UMath::Vector4 &v) {
+    float y = Quadratic(x, v[0], v[1], v[2], v[3]);
+    return UMath::Clamp(y, 0.0f, 1.0f);
+}
+
+static Attrib::RefSpec ChooseAudioAttributes(const Attrib::Gen::effects &effect, const bMatrix4 *matrix, const bVector3 *normal);
 
 namespace WorldConn {
 
@@ -174,6 +203,100 @@ void WorldBodyConn::Update(float dT) {
 void WorldBodyConn::FetchData(float dT) {
     for (WorldBodyConn *pconn = mList.GetHead(); pconn != mList.EndOfList(); pconn = pconn->GetNext()) {
         pconn->Update(dT);
+    }
+}
+
+void WorldEffectConn::Update(float dT) {
+    WorldConn::Pkt_Effect_Service pkt;
+    pkt.mPosition = UMath::Vector3::kZero;
+    pkt.mTracking = false;
+    pkt.mMagnitude = UMath::Vector3::kZero;
+    int result = Service(&pkt);
+    if (result == 0) {
+        if (!mPaused) {
+            if (mAudioEvent != nullptr) {
+                static_cast<Sound::AudioEvent *>(mAudioEvent)->Stop();
+                mAudioEvent = nullptr;
+            }
+            mPaused = true;
+            if (mEmitters != nullptr) {
+                mEmitters->Disable();
+            }
+        }
+        return;
+    }
+    mPaused = false;
+    UMath::Vector3 simnormal;
+    simnormal = pkt.mMagnitude;
+    float intensity = UMath::Normalize(simnormal);
+    float emitter_intensity = SolveEffectQuadratic(intensity, mAttributes.EmitterQuadratic());
+    float audio_intensity = SolveEffectQuadratic(intensity, mAttributes.AudioQuadratic());
+    bVector3 velocity(0.0f, 0.0f, 0.0f);
+    bVector3 normal;
+    bVector3 position;
+    eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(pkt.mPosition), position);
+    eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(simnormal), normal);
+    if (mOwnerRef.GetVelocity() != nullptr) {
+        if (0.0f < mAttributes.InheritVelocity()) {
+            bScale(&velocity, mOwnerRef.GetVelocity(), mAttributes.InheritVelocity());
+        }
+    }
+    if (pkt.mTracking && mOwnerRef.IsValid()) {
+        bVector3 world_pos;
+        bVector3 world_mag;
+        bMulMatrix(&world_pos, mOwnerRef.GetMatrix(), &position);
+        bRotateVector(&world_mag, mOwnerRef.GetMatrix(), &normal);
+        position = world_pos;
+        normal = world_mag;
+    }
+    float distance = Sound::DistanceToView(&position);
+    if (mEmitters != nullptr) {
+        static const UMath::Vector3 up = {0.0f, 1.0f, 0.0f};
+        UQuat quat;
+        bMatrix4 matrix;
+        bVector3 sim_dir;
+        quat.BuildDeltaAxis(up, reinterpret_cast<const UMath::Vector3 &>(normal));
+        UMath::QuaternionToMatrix4(quat, reinterpret_cast<UMath::Matrix4 &>(matrix));
+        bCopy(&matrix.v3, &position, 1.0f);
+        if (0.0f < emitter_intensity) {
+            if (distance < mAttributes.VisualCullDist()) {
+                mEmitters->Enable();
+                mEmitters->SetLocalWorld(&matrix);
+                mEmitters->SetInheritVelocity(&velocity);
+                mEmitters->SetIntensity(emitter_intensity);
+                mEmitters->Update(dT);
+                goto audio_section;
+            }
+        }
+        mEmitters->Disable();
+    }
+audio_section:
+    if (mAudioEvent == nullptr) {
+        if (!mSilent && 0.0f < audio_intensity) {
+            if (distance < mAttributes.AudioCullDist()) {
+                Sound::AudioEventParams params;
+                params.position = position;
+                params.normal = normal;
+                params.velocity = velocity;
+                params.magnitude = audio_intensity;
+                params.attributes = ChooseAudioAttributes(mAttributes, mOwnerRef.GetMatrix(), &normal);
+                params.object = mOwnerRef.GetWorldID();
+                params.other_object = mActee;
+                mAudioEvent = Sound::AudioEvent::CreateInstance(params);
+                if (mAudioEvent == nullptr) {
+                    mSilent = true;
+                }
+            }
+        }
+    } else {
+        if (0.0f < audio_intensity) {
+            if (distance < mAttributes.AudioCullDist()) {
+                static_cast<Sound::AudioEvent *>(mAudioEvent)->Update(position, normal, velocity, audio_intensity);
+                return;
+            }
+        }
+        static_cast<Sound::AudioEvent *>(mAudioEvent)->Stop();
+        mAudioEvent = nullptr;
     }
 }
 
