@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/World/WWorld.h"
 
+#include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
 #include "Speed/Indep/Src/World/WCollision.h"
 #include "Speed/Indep/Src/World/WCollisionAssets.h"
@@ -39,6 +40,34 @@ int WWorld::Unloader(bChunk* chunk) {
     fCarpData = nullptr;
     fCarpDataSize = 0;
     return 1;
+}
+
+bool WWorld::Open() {
+    const void *sources[3];
+    int sizes[3];
+
+    sources[0] = fCarpData;
+    sizes[0] = fCarpDataSize;
+    sizes[1] = 0;
+    sources[2] = nullptr;
+    sources[1] = nullptr;
+    sizes[2] = 0;
+
+    const UGroup *persistentGroup = UGroup::Deserialize(1, reinterpret_cast<const unsigned int *>(sizes), sources, 0);
+    CARP::ResolveTagReferences(persistentGroup, 0);
+    WCollisionAssets::Init(persistentGroup, nullptr);
+    fRootWorldGroup = persistentGroup;
+
+    unsigned int artCount = persistentGroup->GroupCountType(0x41727469);
+    const UGroup *article = fRootWorldGroup->GroupLocateFirst(0x41727469, 0xFFFFFFFF, 0xFFFFFFFF);
+
+    for (unsigned int artInd = 0; artInd < artCount; artInd++) {
+        article->DataLocateTag(0x53426172);
+        article->GetArray();
+        article++;
+    }
+
+    return fRootWorldGroup != nullptr;
 }
 
 int LoaderCarpWGrid(bChunk* chunk) {

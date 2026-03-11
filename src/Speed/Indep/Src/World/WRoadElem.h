@@ -104,6 +104,7 @@ struct WRoadProfile {
     }
     int GetNumTrafficLanes(bool forward) const;
     int GetNthTrafficLane(int n, bool forward) const;
+    int GetNthTrafficLaneFromCurb(int n, bool forward) const;
 
     unsigned char fNumZones;   // offset 0x0, size 0x1
     unsigned char fMiddleZone; // offset 0x1, size 0x1

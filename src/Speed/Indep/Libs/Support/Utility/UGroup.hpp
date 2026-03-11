@@ -64,6 +64,8 @@ struct UGroup {
     }; // offset 0xC, size 0x4
 
     static const UGroup *Deserialize(unsigned int numParts, const unsigned int *dataLengths, const void **serializedData, unsigned int deltaAddress);
+    unsigned int GroupCountType(unsigned int type) const;
+    const UGroup *GroupLocateFirst(unsigned int type, unsigned int baseIndex, unsigned int maxIndex) const;
     const UGroup *GroupLocateTag(unsigned int typeIndexTag) const;
     const UData *DataLocateTag(unsigned int typeIndexTag) const;
     const UData *DataEnd() const;

@@ -85,8 +85,8 @@ void WCollisionPack::Resolve(const UGroup *cGroup, unsigned int deltaAddress) {
         mInstanceList = reinterpret_cast<const WCollisionInstance *>(instanceUData->GetDataConst());
         mInstanceNum = instanceUData->DataCount();
     } else {
-        mInstanceNum = i;
         mInstanceList = nullptr;
+        mInstanceNum = i;
     }
 
     if (objectUData != reinterpret_cast<const UData *>(

@@ -347,6 +347,23 @@ int WRoadProfile::GetNthTrafficLane(int n, bool forward) const {
     return fallback;
 }
 
+int WRoadProfile::GetNthTrafficLaneFromCurb(int n, bool forward) const {
+    int num_traffic_lanes = 0;
+    int num_lanes = GetNumLanes(forward);
+    int fallback = GetMiddleZone(!forward);
+    for (int i = num_lanes - 1; i >= 0; i--) {
+        int real_lane = GetNthLane(i, !forward);
+        if (GetLaneType(real_lane, false) == 1) {
+            if (num_traffic_lanes == n) {
+                return real_lane;
+            }
+            num_traffic_lanes++;
+            fallback = real_lane;
+        }
+    }
+    return fallback;
+}
+
 unsigned char WRoadNav::FirstShortcutInPath() {
     if (GetNavType() == kTypePath) {
         int num_segments = GetNumPathSegments();
