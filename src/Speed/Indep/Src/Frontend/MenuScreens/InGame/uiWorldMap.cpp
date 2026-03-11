@@ -6,12 +6,39 @@
 #include "Speed/Indep/Src/Gameplay/GIcon.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
+
+extern Timer RealTimer;
+float bSin(float x);
+void FEngGetSize(FEObject* obj, float& x, float& y);
+
+inline float FEngGetSizeY(FEObject* obj) {
+    float x;
+    float y;
+    FEngGetSize(obj, x, y);
+    return y;
+}
+
+inline void FEngSetSizeX(FEObject* obj, float x) {
+    float y = FEngGetSizeY(obj);
+    FEngSetSize(obj, x, y);
+}
 
 MapItem::~MapItem() {}
 
+void HeliItem::Draw() {
+    if (!bHidden) {
+        float width = bSin(RealTimer.GetSeconds()) * 32.0f + 32.0f;
+        FEngSetSizeX(pViewCone, width);
+        FlashTimer++;
+        if (FlashTimer > 32) {
+            FlashTimer = 1;
+        }
+    }
+}
 
-struct FEObject;
+
 struct FEMultiImage;
 
 FEObject* FEngFindObject(const char* pkg_name, unsigned int hash);

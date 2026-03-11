@@ -113,7 +113,7 @@ public:
     bool ReactsImmediately();
     bool IsLocked();
     void SetLocked(bool b);
-    void SetReactImmediately(bool b);
+    void SetReactImmediately(bool b) { bReactImmediately = b; }
     bool IsTutorialAvailable();
     const char* GetTutorialMovieName();
     void SetTutorialMovieName(const char* name);

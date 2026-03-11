@@ -226,19 +226,20 @@ FEPackage* cFEng::FindPackageIdle(const char* pPackageName) {
 }
 
 FEPackage* cFEng::FindPackage(const char* pPackageName) {
-    if (pPackageName != nullptr && strlen(pPackageName) != 0) {
-        if (!FEPackageData::IsInScreenConstructor()) {
-            FEPackage* package = FindPackageActive(pPackageName);
-            if (package != nullptr) {
-                return package;
-            }
-            package = FindPackageIdle(pPackageName);
-            if (package != nullptr) {
-                return package;
-            }
-        } else {
-            return FEPackageManager::Get()->FindPackage(pPackageName);
-        }
+    if (pPackageName == nullptr || strlen(pPackageName) == 0) {
+        return nullptr;
+    }
+    if (FEPackageData::IsInScreenConstructor()) {
+        FEPackage* packagePtr = FEPackageManager::Get()->FindPackage(pPackageName);
+        return packagePtr;
+    }
+    FEPackage* package = FindPackageActive(pPackageName);
+    if (package != nullptr) {
+        return package;
+    }
+    package = FindPackageIdle(pPackageName);
+    if (package != nullptr) {
+        return package;
     }
     return nullptr;
 }
