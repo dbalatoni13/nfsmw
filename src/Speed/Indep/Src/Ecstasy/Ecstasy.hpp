@@ -402,7 +402,10 @@ struct eReplacementTextureTable {
     }
 
     void SetNewNameHash(unsigned int name_hash) {
+        if (name_hash == this->hNewNameHash) return;
+        
         hNewNameHash = name_hash;
+        pTextureInfo = (TextureInfo *)-1;
     }
 
     void SetExplicit(unsigned int name_hash, TextureInfo *pRepTextureInfo) {}
