@@ -215,11 +215,11 @@ struct bVector2 {
 
     bVector2(float _x, float _y);
 
-    bVector2(const bVector2 &v) {}
+    bVector2(const bVector2 &v) : x(v.x), y(v.y) {}
 
     bVector2 operator-(const bVector2 &v);
 
-    bVector2 &operator=(const bVector2 &v) {}
+    bVector2 &operator=(const bVector2 &v) { x = v.x; y = v.y; return *this; }
 
     bVector2 &operator*=(float scale) {}
 
