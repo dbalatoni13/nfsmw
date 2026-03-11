@@ -129,10 +129,9 @@ void UIOptionsMain::Setup() {
 
     int lastButton = FEngGetLastButton(GetPackageName());
     if (bFadeInIconsImmediately) {
-        Options.fCurFadeTime = 0.0f;
-        Options.bFadingOut = false;
         Options.bDelayUpdate = false;
-        Options.bFadingIn = true;
+        Options.bFadingOut = false;
+        Options.StartFadeIn();
     }
 
     Options.SetInitialPos(lastButton);

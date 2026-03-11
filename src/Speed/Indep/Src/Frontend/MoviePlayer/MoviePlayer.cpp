@@ -3,9 +3,11 @@
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
+#include "Speed/Indep/Src/Misc/Joylog.hpp"
 
 struct TextureInfo;
 struct Shape;
+struct DECODER;
 
 extern TrackStreamer TheTrackStreamer;
 extern bool IsSoundEnabled;
@@ -46,12 +48,27 @@ extern void bFree(void*);
 extern int GetVideoMode();
 extern void eWaitUntilRenderingDone();
 extern void NotifyFirstFrame_SubTitler();
+extern void SoundPause(bool pause, eSNDPAUSE_REASON reason);
+extern void SYNCTASK_run();
+extern void THREAD_yield(int);
 
 namespace RealShape {
 void SetAllocator(EA::Allocator::IAllocator*);
 }
 
 extern int GamecubeMaybeAllocateFromCarLoader(int, const char*, int);
+
+// AV_PLAYER member functions not declared in header (using mangled names)
+extern "C" {
+AV_PLAYER* __Q24RCMP9AV_PLAYERPCciQ34RCMP9AV_PLAYER9LOAD_ENUMQ34RCMP9AV_PLAYER10SOUND_ENUM(
+    void*, const char*, int, int, int);
+FRAME* GetFrame__Q24RCMP9AV_PLAYERf(AV_PLAYER*, float);
+int IsTimeForDecode__Q24RCMP9AV_PLAYER(AV_PLAYER*);
+int IsAudioFinished__Q24RCMP9AV_PLAYER(AV_PLAYER*);
+void ReleaseFrame__Q24RCMP7DECODERPQ24RCMP5FRAME(DECODER*, FRAME*);
+void FillInTextureInfo__11MoviePlayerPUiP11TextureInfoPQ29RealShape5Shape(
+    MoviePlayer*, unsigned int*, TextureInfo*, Shape*);
+}
 
 MoviePlayer* gMoviePlayer;
 unsigned int gMovieStartTime = 0xFFFFFFFF;
@@ -84,19 +101,19 @@ void MoviePlayer_ShutDown() {
 }
 
 MoviePlayer::MoviePlayer(int memClass) {
-    mSettings.preload = false;
+    mSettings.filename[0] = '\0';
     mSettings.bufferSize = 0x40000;
     mSettings.activeController = 0;
-    mSettings.movieId = 0;
+    mSettings.preload = false;
     mSettings.volume = 0;
     mSettings.sound = IsSoundEnabled != false;
-    fStatus = 3;
     fLiveStatus = 3;
+    fStatus = 3;
     CurFrame = nullptr;
     mSettings.loop = false;
     mSettings.pal = false;
     mSettings.type = 0;
-    mSettings.preload = false;
+    mSettings.movieId = 0;
     fCurFrameNum = 0;
     fPlayer = nullptr;
     __4RCMP_rcmp_sys.AllocMem = RCMP_PlayerAllocAlign;
@@ -119,21 +136,30 @@ MoviePlayer::~MoviePlayer() {
 }
 
 void MoviePlayer::Init(Settings& newSettings) {
-    mSettings = newSettings;
+    mSettings.activeController = newSettings.activeController;
+    mSettings.bufferSize = newSettings.bufferSize;
+    mSettings.loop = newSettings.loop;
+    mSettings.preload = newSettings.preload;
+    mSettings.volume = newSettings.volume;
+    mSettings.sound = newSettings.sound;
+    mSettings.pal = newSettings.pal;
+    mSettings.type = newSettings.type;
+    mSettings.movieId = newSettings.movieId;
+    bStrNCpy(mSettings.filename, newSettings.filename, 256);
     mSettings.volume = GetMovieCategoryVolume();
     ResetTimer();
     HandleFatalError();
 }
 
 void MoviePlayer::ResetTimer() {
-    minutes = 0;
-    prevMilliseconds = 0.0f;
-    mTickerFirstTime = true;
-    mTicker = 0;
-    mMoviePaused = false;
     mili_seconds = 0;
     seconds = 0;
+    mTickerFirstTime = true;
     milliseconds = 0.0f;
+    prevMilliseconds = 0.0f;
+    minutes = 0;
+    mMoviePaused = false;
+    mTicker = 0;
 }
 
 void MoviePlayer::Stop() {

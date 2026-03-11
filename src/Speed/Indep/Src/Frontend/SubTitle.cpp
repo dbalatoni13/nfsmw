@@ -108,7 +108,9 @@ float SubTitler::GetElapsedTime() {
 
 void SubTitler::Update(unsigned int msg) {
     if (gMoviePlayer != nullptr) {
-        mSubtitlePaused = gMoviePlayer->IsMoviePaused();
+        int paused = gMoviePlayer->IsMoviePaused();
+        if (paused) paused = 1;
+        mSubtitlePaused = paused;
         if (msg == 0xC98356BA) {
             if (data_ != nullptr && lastTime != 0) {
                 float timenow = GetElapsedTime();

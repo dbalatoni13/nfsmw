@@ -49,7 +49,7 @@ void cFEng::PushErrorPackage(const char* pPackageName, int pArg, unsigned long C
         mFEng->ToggleErrorScreenMode(true);
         if (FEManager::IsPaused() && !bWasPaused) {
         } else {
-            bWasPaused = 1;
+            bWasPaused = true;
             FEManager::RequestPauseSimulation(pPackageName);
             PauseAllSystems();
         }
@@ -60,7 +60,7 @@ void cFEng::PushErrorPackage(const char* pPackageName, int pArg, unsigned long C
         mFEng->ToggleErrorScreenMode(true);
         if (FEManager::IsPaused() && !bWasPaused) {
         } else {
-            bWasPaused = 1;
+            bWasPaused = true;
             FEManager::RequestPauseSimulation(pPackageName);
             PauseAllSystems();
         }

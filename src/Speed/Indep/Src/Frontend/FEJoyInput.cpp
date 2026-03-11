@@ -225,9 +225,7 @@ void cFEngJoyInput::HandleJoy() {
                 } else {
                     mActionQ[port]->IsEnabled();
                     for (int j = 0; j < 16; j++) {
-                        if (!mActionQ[port]->IsConnected()) {
-                            MapJoyEventToFEPad[j].state[port] = 0;
-                        } else {
+                        if (mActionQ[port]->IsConnected()) {
                             if (MapJoyEventToFEPad[j].eventID == aRef.ID()) {
                                 MapJoyEventToFEPad[j].state[port] = static_cast<int>(aRef.Data() + 0.5f);
                                 if (!gKeyboardManager.IsCapturing()) {
@@ -245,6 +243,8 @@ void cFEngJoyInput::HandleJoy() {
                                 }
                                 break;
                             }
+                        } else {
+                            MapJoyEventToFEPad[j].state[port] = 0;
                         }
                     }
                     mActionQ[port]->PopAction();

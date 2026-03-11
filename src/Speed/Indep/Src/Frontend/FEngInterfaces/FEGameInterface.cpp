@@ -37,7 +37,8 @@ bool cFEngGameInterface::LoadResources(FEPackage* pPackage, long Count, FEResour
         char filename[256];
         GetBaseName(filename, pList[i].pFilename);
         bToUpper(filename);
-        switch (pList[i].Type) {
+        unsigned int length = pList[i].Type;
+        switch (length) {
         case 1:
         case 2:
             pList[i].Handle = bStringHash(filename);
@@ -50,6 +51,7 @@ bool cFEngGameInterface::LoadResources(FEPackage* pPackage, long Count, FEResour
             pList[i].UserParam = 0;
             break;
         }
+        case 3:
         default:
             pList[i].Handle = bStringHash(filename);
             pList[i].UserParam = 0;

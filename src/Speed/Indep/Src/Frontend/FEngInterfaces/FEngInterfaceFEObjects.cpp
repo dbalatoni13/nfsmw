@@ -527,8 +527,8 @@ void FEngSetScaleX(FEObject* object, float x) {
     float scale = x;
 
     switch (object->Type) {
-        case FE_Movie:
         case FE_Image:
+        case FE_Movie:
         case FE_ColoredImage:
         case FE_MultiImage: {
             TextureInfo* pTex = GetTextureInfo(object->Handle, 1, 0);
@@ -556,8 +556,8 @@ void FEngSetScaleY(FEObject* object, float y) {
     float scale = y;
 
     switch (object->Type) {
-        case FE_Movie:
         case FE_Image:
+        case FE_Movie:
         case FE_ColoredImage:
         case FE_MultiImage: {
             TextureInfo* pTex = GetTextureInfo(object->Handle, 1, 0);
