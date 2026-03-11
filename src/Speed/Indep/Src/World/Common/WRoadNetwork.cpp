@@ -1504,8 +1504,8 @@ void WRoadNav::PrivateIncNavPosition(float dist, const UMath::Vector3 &to) {
                     fRightStartPos = fRightEndPos;
                 }
                 SetBoundPos(*newSegment, nextLaneOffset, false);
-                fToLaneOffset = nextLaneOffset;
                 fLaneOffset = nextLaneOffset;
+                fToLaneOffset = nextLaneOffset;
                 fFromLaneOffset = nextLaneOffset;
             } else {
                 SetStartEndPos(*newSegment, fLaneOffset);
