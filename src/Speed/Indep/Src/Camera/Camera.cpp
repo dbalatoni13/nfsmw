@@ -174,8 +174,8 @@ void Camera::SetCameraMatrix(const bMatrix4 &m, float fTime) {
         VelocityKey.Target = CurrentKey.Target - PreviousKey.Target;
         VelocityKey.Target *= fTimeRecip;
 
-        VelocityKey.FieldOfView =
-            static_cast<unsigned short>(static_cast<int>(fTimeRecip * static_cast<float>(static_cast<unsigned short>(CurrentKey.FieldOfView - PreviousKey.FieldOfView))));
+        VelocityKey.FieldOfView = CurrentKey.FieldOfView - PreviousKey.FieldOfView;
+        VelocityKey.FieldOfView = static_cast<unsigned short>(static_cast<int>(fTimeRecip * static_cast<float>(VelocityKey.FieldOfView)));
 
         VelocityKey.TargetDistance = (CurrentKey.TargetDistance - PreviousKey.TargetDistance) * fTimeRecip;
         VelocityKey.FocalDistance = (CurrentKey.FocalDistance - PreviousKey.FocalDistance) * fTimeRecip;
