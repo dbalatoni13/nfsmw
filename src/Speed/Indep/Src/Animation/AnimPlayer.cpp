@@ -20,6 +20,18 @@ enum eNISMemoryPool {
     CarPool = 2,
 };
 
+struct AnimDirectoryLayout {
+    unsigned int mAnimSceneCount;
+    AnimSceneLoadInfo mAnimSceneLoadInfo[ANIM_SCENE_MAX];
+    AnimFileLoadInfo mAnimFileLoadInfo;
+};
+
+struct CAnimSceneNodeLayout {
+    void *vtable;
+    bNode node;
+    int mHandle;
+};
+
 struct CAnimResourceFileProxy : public bTNode<CAnimResourceFileProxy> {
     ResourceFile *mResourceFile; // offset 0x8
     void *mMemPointer;          // offset 0xC
@@ -101,18 +113,19 @@ int AnimLoader_SizeNeeded() {
     int size_needed = 0;
 
     while (true) {
-        int file_index;
         if (cur_shared_file_position < static_cast< int >(gAnimLoader_Info.mSharedFileCount)) {
-            file_index = cur_shared_file_position + gAnimLoader_Info.mSharedFileStartIndex;
+            char *filename = TheAnimDirectory->GetFileName(cur_shared_file_position + gAnimLoader_Info.mSharedFileStartIndex);
+            int file_size = bFileSize(filename);
             cur_shared_file_position++;
-        } else {
-            if (cur_scene_file_position >= static_cast< int >(gAnimLoader_Info.mSceneFileCount)) {
-                return size_needed;
-            }
-            file_index = cur_scene_file_position + gAnimLoader_Info.mSceneFileStartIndex;
+            AnimLoader_IncrementAndAlignUp(size_needed, file_size);
+        } else if (cur_scene_file_position < static_cast< int >(gAnimLoader_Info.mSceneFileCount)) {
+            char *filename = TheAnimDirectory->GetFileName(cur_scene_file_position + gAnimLoader_Info.mSceneFileStartIndex);
+            int file_size = bFileSize(filename);
             cur_scene_file_position++;
+            AnimLoader_IncrementAndAlignUp(size_needed, file_size);
+        } else {
+            return size_needed;
         }
-        AnimLoader_IncrementAndAlignUp(size_needed, bFileSize(TheAnimDirectory->GetFileName(file_index)));
     }
 }
 
@@ -161,9 +174,9 @@ bool CAnimPlayer::Load(unsigned int anim_id, int camera_track_number, bool Disab
         return false;
     }
 
-    unsigned int scene_count = TheAnimDirectory->GetSceneCount();
     bool scene_found = false;
     unsigned int scene_slot = 0;
+    unsigned int scene_count = TheAnimDirectory->GetSceneCount();
 
     if (scene_slot < scene_count) {
         do {
@@ -249,9 +262,11 @@ bool CAnimPlayer::Unload(unsigned int anim_id) {
 }
 
 void CAnimPlayer::InitWorldAnimScene() {
-    if (!DisableWorldAnimations && !AnimCfg_DisableWorldAnimations &&
-        TheWorldAnimInstanceDirectory.GetNumInstanceEntries() > 0 && mWorldAnimScene == nullptr) {
-        mWorldAnimScene = new CAnimWorldScene();
+    if (!DisableWorldAnimations && !AnimCfg_DisableWorldAnimations) {
+        int numEntries = TheWorldAnimInstanceDirectory.GetNumInstanceEntries();
+        if (mWorldAnimScene == nullptr && numEntries > 0) {
+            mWorldAnimScene = new CAnimWorldScene();
+        }
     }
 }
 

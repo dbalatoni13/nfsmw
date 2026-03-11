@@ -175,7 +175,7 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
     // Virtual functions
     // ICEScene
     // TODO are all of these really overridden?
-    ~CAnimScene() override;
+    virtual ~CAnimScene();
     unsigned int GetSceneHash() override;
     int GetCameraTrackNumber() override;
     void SetTime() override;
