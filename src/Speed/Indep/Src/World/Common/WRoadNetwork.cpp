@@ -44,16 +44,16 @@ void WRoadNetwork::Init() {
         fValid = false;
         fValidRaceFilter = false;
         fValidTrafficRoads = true;
-        fNumNodes = 0;
-        fNumSegments = 0;
-        fNumIntersections = 0;
         fNumRoads = 0;
+        fNumIntersections = 0;
+        fNumSegments = 0;
+        fNumNodes = 0;
         nRoadMemoryUsage = 0;
-        nNodeMemoryUsage = 0;
-        nProfileMemoryUsage = 0;
-        nSegmentMemoryUsage = 0;
-        nIntersectionMemoryUsage = 0;
         nTotalMemoryUsage = 0;
+        nIntersectionMemoryUsage = 0;
+        nSegmentMemoryUsage = 0;
+        nProfileMemoryUsage = 0;
+        nNodeMemoryUsage = 0;
 
         if (WWorld::Get().GetMapGroup()) {
             const UGroup *networkGroup = WWorld::Get().GetMapGroup()->GroupLocate('RN', 'gp');
@@ -561,8 +561,8 @@ void WRoadNetwork::GetPointOnSegment(const UMath::Vector3 &start, const UMath::V
 void WRoadNetwork::BuildSegmentSpline(const WRoadSegment &segment, USpline &spline) {
     const WRoadNode *nodePtr[2];
     UMath::Vector3 end_control;
-    UMath::Vector3 start_control;
     segment.GetEndControl(end_control);
+    UMath::Vector3 start_control;
     segment.GetStartControl(start_control);
     GetSegmentNodes(segment, nodePtr);
     const UMath::Vector3 &start = nodePtr[0]->fPosition;
@@ -1524,11 +1524,11 @@ void WRoadNav::Reset() {
     DetermineVehicleHalfWidth();
     fPathType = kPathNone;
     nPathGoalSegment = 0xFFFF;
-    fPosition = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
     fNavType = kTypeNone;
     fLaneType = kLaneRacing;
     nPathSegments = 0;
     bCrossedPathGoal = false;
+    fPosition = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
     fForwardVector = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
     fSegmentInd = 0;
     fNodeInd = 0;
