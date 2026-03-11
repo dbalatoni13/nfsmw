@@ -71,6 +71,10 @@ template <typename T, unsigned int Alignment = 16> class Vector {
         mSize = size() - 1;
     }
 
+    reference operator[](size_type idx) {
+        return mBegin[idx];
+    }
+
     void reserve(size_type num) {
         if (num > capacity()) {
             OnGrowRequest(num);

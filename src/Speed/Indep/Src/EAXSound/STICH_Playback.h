@@ -18,6 +18,20 @@ enum STICH_TYPE {
     STICH_TYPE_UNKNOWN = -1,
 };
 
+struct SND_SampleRef {
+    // total size: 0x10
+    unsigned char SampleIndex;  // offset 0x0, size 0x1
+    char eStichType;            // offset 0x1, size 0x1
+    unsigned short Volume;      // offset 0x2, size 0x2
+    unsigned short Pitch;       // offset 0x4, size 0x2
+    unsigned short Offset;      // offset 0x6, size 0x2
+    short Az;                   // offset 0x8, size 0x2
+    unsigned short RND_Vol;     // offset 0xA, size 0x2
+    short RND_Pitch;            // offset 0xC, size 0x2
+    unsigned char Priority;     // offset 0xE, size 0x1
+    unsigned char eRollOffType; // offset 0xF, size 0x1
+};
+
 struct SND_Stich {
     // total size: 0x14
     unsigned int NameHash;                // offset 0x0, size 0x4
@@ -41,6 +55,14 @@ struct SND_Params {
 };
 
 struct cSampleWarpper : public AudioMemBase {
+    int m_eIsPlaying;             // offset 0x4, size 0x4
+    SND_SampleRef *SampleRefData; // offset 0x8, size 0x4
+
+    const SND_SampleRef &GetData() const {
+        return *SampleRefData;
+    }
+
+    void Play(const SND_Params *params);
     void Destroy();
 };
 
