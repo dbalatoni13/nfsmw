@@ -415,14 +415,19 @@ bool Smackable::ValidateWorld() {
     WWorldPos &wpos = static_cast< ISimable * >(this)->GetWPos();
     wpos.FindClosestFace(pos, true);
     if (!wpos.OnValidFace()) {
-        return false;
+        goto fail;
     }
-    float height = wpos.HeightAtPoint(pos);
-    IRigidBody *irb = GetRigidBody();
-    float radius = irb->GetRadius();
-    if (height > pos.y + radius) {
-        return false;
+    {
+        float height = wpos.HeightAtPoint(pos);
+        IRigidBody *irb = GetRigidBody();
+        float radius = irb->GetRadius();
+        if (height <= pos.y + radius) {
+            goto success;
+        }
     }
+fail:
+    return false;
+success:
     return true;
 }
 
@@ -439,9 +444,14 @@ bool Smackable::ShouldDie() {
         }
     }
     if (mCollisionBody == nullptr) {
-        return false;
+        goto shouldnt_die;
     }
-    return !mCollisionBody->IsModeling();
+    if (mCollisionBody->IsModeling()) {
+        goto shouldnt_die;
+    }
+    return true;
+shouldnt_die:
+    return false;
 }
 
 bool Smackable::CanRetrigger() const {
@@ -692,7 +702,8 @@ HeirarchyModel::HeirarchyModel(bHash32 rendermesh, const CollisionGeometry::Boun
     if (visible) {
         RenderConn::Pkt_Smackable_Open pkt(mRenderMesh, GetWorldID(), GetCollisionGeometry(),
                                            mHeirarchy, mHeirarchyNode);
-        BeginDraw(UCrc32(0x804c146e), &pkt);
+        nodename = UCrc32(0x804c146e);
+        BeginDraw(nodename, &pkt);
     }
     if (smackable.AI_AVOIDABLE()) {
         if (mAvoidable == nullptr) {
@@ -886,16 +897,14 @@ void HeirarchyModel::SetTrigger(const UMath::Matrix4 &matrix, bool virgin) {
     UMath::Vector3 dim;
     GetCollisionGeometry()->GetHalfDimensions(dim);
     if (mTrigger == nullptr) {
-        SmackableTrigger *trigger = new (gFastMem.Alloc(sizeof(SmackableTrigger), nullptr))
-            SmackableTrigger(GetInstanceHandle(), virgin, matrix, dim, 0);
-        mTrigger = trigger;
+        mTrigger = new SmackableTrigger(GetInstanceHandle(), virgin, matrix, dim, 0);
     } else {
         mTrigger->Move(matrix, dim, virgin);
         mTrigger->Enable();
     }
     mTriggerAvoid = matrix.v3;
-    float zx = dim.z * matrix.v2.x + dim.x * matrix.v0.x;
-    float zz = dim.z * matrix.v2.z + dim.x * matrix.v0.z;
+    float zz = dim.y * matrix.v1.z + dim.x * matrix.v0.z + dim.z * matrix.v2.z;
+    float zx = dim.y * matrix.v1.x + dim.x * matrix.v0.x + dim.z * matrix.v2.x;
     mTriggerAvoid.w = UMath::Sqrt(zx * zx + zz * zz);
 }
 

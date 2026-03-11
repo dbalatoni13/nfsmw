@@ -91,7 +91,7 @@ class Model : public Sim::Object,
     }
 
     WUID GetWorldID() const override;
-    const CollisionGeometry::Bounds *GetCollisionGeometry() const override;
+    const CollisionGeometry::Bounds *GetCollisionGeometry() const override { return mGeometry; }
     void ReleaseModel() override;
 
     ISimable *GetSimable() const override {
