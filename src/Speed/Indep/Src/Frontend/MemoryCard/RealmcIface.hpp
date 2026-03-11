@@ -220,7 +220,7 @@ struct MemcardInterface {
                      struct GameInfo *gameInfo);
     ~MemcardInterface();
     void BootupCheck(const BootupCheckParams *params, unsigned int nEntries,
-                     const char **entryNames, unsigned short *content);
+                     const char **entryNames, wchar_t *content);
     void BootupCheck(const BootupCheckParams *params, unsigned int nEntries,
                      const AutoloadEntry *autoloadEntries);
     void SaveCheck(const char *entryName, const SaveInfo *saveInfo,

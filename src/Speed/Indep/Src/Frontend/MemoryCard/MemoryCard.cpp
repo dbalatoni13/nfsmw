@@ -1,6 +1,5 @@
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 #include "Speed/Indep/Src/Misc/Joylog.hpp"
-
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardBase.hpp"
@@ -44,7 +43,6 @@ const char* LOCALE_getstrA(void* data, int strID);
 
 int ReplayJoyOp();
 bool FEngIsScriptSet(const char* pkg_name, unsigned long obj_hash, unsigned long script_hash);
-void ShowOneButton(const char*, const char*, int, unsigned int, unsigned int, unsigned int, ...);
 
 void CaptureJoyOp(MemoryCardJoyLoggableEvents op) {
     Joylog::AddData(op, 8, JOYLOG_CHANNEL_MEMORY_CARD);
@@ -284,7 +282,7 @@ void MemoryCard::BootupCheck(const char* entry) {
     m_BootupParams.mValidCardIds = 1;
     InitCommand(MO_BootUp);
     if (!Joylog::IsReplaying())
-        m_pIMemcard->BootupCheck(&m_BootupParams, 0, static_cast< const char** >(nullptr), static_cast< unsigned short* >(nullptr));
+        m_pIMemcard->BootupCheck(&m_BootupParams, 0, static_cast< const char** >(nullptr), static_cast< wchar_t* >(nullptr));
 }
 
 bool MemoryCard::ShouldDoAutoSave(bool bForce) {
@@ -342,7 +340,7 @@ void MemoryCard::EndListingOldSaveFiles() {
     m_bListingOldSaveFiles = false;
     if (m_bOldSaveFileExists) {
         cFEng::Get()->QueueGameMessage(0x7e998e5e, nullptr, 0xff);
-        ShowOneButton("", "", 2, 0x417b2601, 0x34dc1bec, 0xc5e2beac);
+        DialogInterface::ShowOneButton("", "", static_cast< eDialogTitle >(2), 0x417b2601u, 0x34dc1becu, 0xc5e2beacu, "");
     }
     FEDatabase->GetCareerSettings()->AwardOneTimeCashBonus(m_bOldSaveFileExists);
 }

@@ -96,9 +96,9 @@ float SubTitler::GetElapsedTime() {
     float thetime_ms;
     if (!mSubtitlePaused) {
         timenow = bGetTicker();
-        thetime_ms = timeElapsed + bGetTickerDifference(lastTime, timenow) * 0.001f;
+        timeElapsed = timeElapsed + bGetTickerDifference(lastTime, timenow) * 0.001f;
         lastTime = timenow;
-        timeElapsed = thetime_ms;
+        thetime_ms = timeElapsed;
     } else {
         lastTime = bGetTicker();
         thetime_ms = timeElapsed;

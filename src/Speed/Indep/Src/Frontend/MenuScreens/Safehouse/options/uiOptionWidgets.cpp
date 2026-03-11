@@ -635,6 +635,8 @@ void COVibration::Act(const char* parent_pkg, unsigned int data) {
         FEngSetVisible(GetRightImage());
         break;
     }
+    default:
+        goto end;
     case 0xB5971BF1: {
         int player = GetPlayerToEditForOptions();
         if (FEDatabase->GetPlayerSettings(player)->Rumble) {
@@ -650,8 +652,6 @@ void COVibration::Act(const char* parent_pkg, unsigned int data) {
         FEngSetVisible(GetLeftImage());
         break;
     }
-    default:
-        goto end;
     }
     {
         int player = GetPlayerToEditForOptions();
