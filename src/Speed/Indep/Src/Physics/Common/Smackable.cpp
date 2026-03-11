@@ -56,9 +56,10 @@ Attrib::StringKey Smackable::SPHERE;
 static float Smackable_ManagementRate = 0.125f;
 
 static float GetDropTimer(const Attrib::Gen::smackable &attributes) {
-    if (attributes.DROPOUT(0) > 0.0f) {
+    float result = attributes.DROPOUT(0);
+    if (result > 0.0f) {
         if (attributes.DROPOUT(1) > 0.0f) {
-            return attributes.DROPOUT(0);
+            return result;
         }
     }
     return 0.0f;
@@ -770,10 +771,13 @@ void HeirarchyModel::ShowPart(const UCrc32 &nodename) {
 
 bool HeirarchyModel::IsPartVisible(const UCrc32 &nodename) const {
     int index = FindHeirarchyChild(nodename);
-    if (index >= 0 && (mChildVisibility & (1 << index)) != 0) {
-        return true;
+    if (index < 0) {
+        return false;
     }
-    return false;
+    if ((mChildVisibility & (1 << index)) == 0) {
+        return false;
+    }
+    return true;
 }
 
 int HeirarchyModel::FindHeirarchyChild(const UCrc32 &nodename) const {
@@ -903,8 +907,8 @@ void HeirarchyModel::SetTrigger(const UMath::Matrix4 &matrix, bool virgin) {
         mTrigger->Enable();
     }
     mTriggerAvoid = matrix.v3;
-    float zz = dim.y * matrix.v1.z + dim.x * matrix.v0.z + dim.z * matrix.v2.z;
     float zx = dim.y * matrix.v1.x + dim.x * matrix.v0.x + dim.z * matrix.v2.x;
+    float zz = dim.y * matrix.v1.z + dim.x * matrix.v0.z + dim.z * matrix.v2.z;
     mTriggerAvoid.w = UMath::Sqrt(zx * zx + zz * zz);
 }
 
