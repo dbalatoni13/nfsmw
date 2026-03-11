@@ -46,8 +46,8 @@ struct MyThread : public IThread {
     int mPriority;                   // offset 0x32C, size 0x4
     bool mActive;                    // offset 0x330, size 0x1
 
-    int AddRef() override { return ++mRefcount; }
-    int Release() override { int ref = --mRefcount; if (ref == 0) delete this; return ref; }
+    int AddRef() override;
+    int Release() override;
     IThread* CreateInstance() override;
     void SetStackSize(unsigned int stacksize) override { mStackSize = stacksize; }
     void Begin(int (*func)(void*)) override;
@@ -60,8 +60,8 @@ struct MyThread : public IThread {
 struct MyMutex : public IMutex {
     int mRefcount; // offset 0x4, size 0x4
 
-    int AddRef() override { return ++mRefcount; }
-    int Release() override { int ref = --mRefcount; if (ref == 0) delete this; return ref; }
+    int AddRef() override;
+    int Release() override;
     IMutex* CreateInstance() override;
     void Acquire() override;
     void Release2() override;
