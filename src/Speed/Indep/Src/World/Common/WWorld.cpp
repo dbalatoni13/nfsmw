@@ -46,13 +46,12 @@ bool WWorld::Open() {
     const void *sources[3];
     int sizes[3];
 
-    sources[0] = fCarpData;
-    sizes[0] = fCarpDataSize;
     sources[2] = nullptr;
     sources[1] = nullptr;
-    sizes[1] = 0;
     sizes[2] = 0;
-
+    sizes[1] = 0;
+    sources[0] = fCarpData;
+    sizes[0] = fCarpDataSize;
     const UGroup *persistentGroup = UGroup::Deserialize(1, reinterpret_cast<const unsigned int *>(sizes), sources, 0);
     CARP::ResolveTagReferences(persistentGroup, 0);
     WCollisionAssets::Init(persistentGroup, nullptr);
