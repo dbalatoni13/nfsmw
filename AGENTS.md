@@ -170,6 +170,39 @@ This is a **C++98** codebase compiled with ProDG (GCC under the hood). Key rules
 - Use `nullptr` and `override`. If they are missing, you need to include `types.h`.
 - Omit `struct` when declaring variables or parameters, we are not in C land.
 
+## Committing Progress
+
+After each meaningful percentage-point improvement in objdiff match score, commit your changes. Check the current unit match percentage with:
+
+```sh
+python tools/decomp-status.py --unit main/Path/To/TU
+```
+
+Commit whenever the match percentage increases (e.g. you matched a new function). Use this format for the commit message:
+
+```
+n%: short description of what was matched or changed
+```
+
+Examples:
+- `42%: match UpdateCamera`
+- `78%: match PlayerController constructor and destructor`
+- `100%: full match for zAnim`
+
+Do not batch up multiple percentage milestones into one commit — commit as each improvement lands.
+
+## Parallel Sub-Agent Matching
+
+When working on a translation unit with multiple non-matching functions, you are encouraged to spawn sub-agents to work on individual functions in parallel. Each sub-agent should focus on **exactly one function** — do not assign a sub-agent more than one function at a time.
+
+**Limit: never run more than 5 sub-agents concurrently.** Spawning too many at once causes resource contention and makes it harder to reason about progress.
+
+Guidelines:
+- Spawn a sub-agent per function for functions that are independent (no shared edits to the same source lines).
+- Each sub-agent must use `build-unit.py` for parallel-safe compilation (never plain `ninja`).
+- Wait for a batch of sub-agents to finish before spawning the next batch.
+- After all sub-agents in a batch complete, check the updated match percentage and commit if it improved.
+
 ## Matching Philosophy
 
 You should take the Ghidra decompiler output for the initial translation step, get it to compile, make sure that the dwarf of the function matches and only then look for binary matching problems in the assembly. Be aware Ghidra usually gets the order of branches incorrect in if statements (it inverts the logic and the two bodies are swapped), this needs to be fixed to achieve bytematching status.
