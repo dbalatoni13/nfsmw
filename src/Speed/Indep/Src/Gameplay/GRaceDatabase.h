@@ -138,6 +138,10 @@ class GRaceDatabase {
         return GetRaceFromHash(Attrib::StringHash32(name));
     }
 
+    unsigned int GetBinCount();
+    GRaceBin* GetBin(unsigned int index);
+    GRaceBin* GetBinNumber(int number);
+
   private:
     unsigned int mRaceCountStatic;           // offset 0x0, size 0x4
     unsigned int mRaceCountDynamic;          // offset 0x4, size 0x4

@@ -110,6 +110,8 @@ class EAXSound : public AudioMemBase {
 
     void Update(float t);
 
+    void PlayFEMusic(int nIndex);
+
     void START_321Countdown();
 
     SFX_Base *GetSFXBase_Object(int nID);

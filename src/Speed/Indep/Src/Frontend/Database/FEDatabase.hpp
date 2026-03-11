@@ -95,6 +95,9 @@ enum eLoadSaveGame {
 // total size: 0x20
 class GameplaySettings {
   public:
+    void Default();
+    bool operator==(const GameplaySettings& rhs) const;
+
     bool AutoSaveOn;                    // offset 0x0, size 0x1
     bool RearviewOn;                    // offset 0x4, size 0x1
     bool Damage;                        // offset 0x8, size 0x1
@@ -112,6 +115,9 @@ class GameplaySettings {
 // total size: 0x2C
 class PlayerSettings {
   public:
+    void Default();
+    void DefaultFromOptionsScreen();
+    bool operator==(const PlayerSettings& rhs) const;
     unsigned int GetControllerAttribs(eControllerAttribs type, bool wheel_connected) const;
     void ScrollDriveCam(int dir);
 
@@ -133,6 +139,9 @@ class PlayerSettings {
 // total size: 0x10
 class VideoSettings {
   public:
+    void Default();
+    bool operator==(const VideoSettings& rhs) const;
+
     float FEScale;       // offset 0x0, size 0x4
     float ScreenOffsetX; // offset 0x4, size 0x4
     float ScreenOffsetY; // offset 0x8, size 0x4
@@ -142,6 +151,9 @@ class VideoSettings {
 // total size: 0x34
 class AudioSettings {
   public:
+    void Default();
+    bool operator==(const AudioSettings& rhs) const;
+
     float MasterVol;          // offset 0x0, size 0x4
     float SpeechVol;          // offset 0x4, size 0x4
     float FEMusicVol;         // offset 0x8, size 0x4

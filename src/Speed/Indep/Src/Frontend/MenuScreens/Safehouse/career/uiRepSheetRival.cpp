@@ -122,7 +122,7 @@ unsigned int uiRepSheetRival::GetDefeatedTexture() {
 }
 
 void uiRepSheetRival::RefreshHeader() {
-    GRaceBin* bin = GRaceDatabase::mObj->GetBinNumber(iCurrentViewBin);
+    GRaceBin* bin = GRaceDatabase::mObj->GetBin(iCurrentViewBin);
     if (bin == nullptr) {
         return;
     }

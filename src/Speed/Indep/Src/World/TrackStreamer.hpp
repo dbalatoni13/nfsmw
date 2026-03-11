@@ -216,6 +216,7 @@ class TrackStreamer {
     int MakeSpaceInPoolCallbackParam;                     // offset 0x880, size 0x4
     int MakeSpaceInPoolSize;                              // offset 0x884, size 0x4
 
+  public:
     void MakeSpaceInPool(int size, void (*callback)(int), int param);
     bool MakeSpaceInPool(int size, bool force_unloading);
     void WaitForCurrentLoadingToComplete();

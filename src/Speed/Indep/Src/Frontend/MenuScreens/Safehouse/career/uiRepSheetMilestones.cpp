@@ -76,13 +76,13 @@ void uiRepSheetMilestones::RefreshTrack() {
 
 void uiRepSheetMilestones::AddMilestone(GMilestone* milestone) {
     MilestoneDatum* datum = new MilestoneDatum();
-    datum->milestone = milestone;
+    datum->my_milestone = milestone;
     AddDatum(datum);
 }
 
 void uiRepSheetMilestones::AddSpeedtrap(GSpeedTrap* trap) {
     SpeedTrapDatum* datum = new SpeedTrapDatum();
-    datum->speedtrap = trap;
+    datum->my_speedtrap = trap;
     AddDatum(datum);
 }
 

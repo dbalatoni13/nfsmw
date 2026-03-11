@@ -14,6 +14,8 @@ struct cFEng {
 
     static inline cFEng* Get() { return mInstance; }
 
+    bool IsErrorState() { return mFEng->bErrorScreenMode; }
+
     FEPackage* FindPackage(const char* pPackageName);
 
     void QueueGameMessagePkg(unsigned int pMessage, FEPackage* topkg);

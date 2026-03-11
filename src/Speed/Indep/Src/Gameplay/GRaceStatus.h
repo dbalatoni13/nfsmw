@@ -29,6 +29,13 @@ struct GRacerInfo {
         return mPctRaceComplete;
     }
 
+    ISimable *GetSimable() const;
+
+    bool GetIsKnockedOut() const { return mKnockedOut; }
+    bool GetIsTotalled() const { return mTotalled; }
+    bool GetIsEngineBlown() const { return mEngineBlown; }
+    bool IsFinishedRacing() const { return mFinishedRacing; }
+
   private:
     HSIMABLE mhSimable;              // offset 0x0, size 0x4
     GCharacter *mGameCharacter;      // offset 0x4, size 0x4
@@ -482,6 +489,10 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     PlayMode GetPlayMode() {
         return mPlayMode;
+    }
+
+    bool GetIsTimeLimited() const {
+        return mRaceParms && mRaceParms->GetTimeLimit() > 0.0f;
     }
 
     unsigned int GetTrafficPattern() const {

@@ -71,7 +71,7 @@ bool UISafehouseRaceSheet::AddRace(GRaceParameters* race) {
 
 void UISafehouseRaceSheet::Setup() {
     ClearData();
-    GRaceBin* bin = GRaceDatabase::Get().GetBinNumber(iCurrentViewBin);
+    GRaceBin* bin = GRaceDatabase::Get().GetBin(iCurrentViewBin);
     if (bin != nullptr) {
         unsigned int count = bin->GetBossRaceCount();
         for (unsigned int i = 0; i < count; i++) {

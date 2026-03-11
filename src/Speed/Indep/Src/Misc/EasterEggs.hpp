@@ -5,6 +5,11 @@
 #pragma once
 #endif
 
+struct EasterEggs {
+    void HandleJoy();
+    virtual ~EasterEggs();
+};
 
+extern EasterEggs gEasterEggs;
 
 #endif
