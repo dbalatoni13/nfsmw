@@ -321,7 +321,7 @@ void WRoadNetwork::ResolveShortcuts() {
         if (race_parameters != nullptr) {
             WRoadNav nav;
             nav.SetDecisionFilter(true);
-            nav.SetNavType(kNavType_Traffic);
+            nav.SetNavType(WRoadNav::kTypeTraffic);
             int num_shortcuts = race_parameters->GetNumShortcuts();
             for (int i = 0; i < num_shortcuts; i++) {
                 GMarker *shortcut = race_parameters->GetShortcut(i);

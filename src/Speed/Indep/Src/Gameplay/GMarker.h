@@ -8,6 +8,8 @@
 #include "Speed/Indep/Src/Gameplay/GRuntimeInstance.h"
 
 struct GMarker : public GRuntimeInstance {
+    GMarker(const unsigned int &markerKey);
+
     const UMath::Vector3 &GetPosition() const { return mPosition; }
     const UMath::Vector3 &GetDirection() const { return mDirection; }
 

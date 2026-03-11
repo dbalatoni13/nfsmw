@@ -7,6 +7,16 @@
 #include "Speed/Indep/Src/World/WTrigger.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+struct TrackOBB {
+    unsigned int TypeNameHash;
+    unsigned int Pad[3];
+    bMatrix4 Matrix;
+    bVector3 Dims;
+};
+
+int GetNumTrackOBBs();
+TrackOBB *GetTrackOBB(int index);
+
 struct ManagedCollisionInstance {
     ManagedCollisionInstance(WCollisionInstance *cInst, unsigned int trigInd)
         : mCInst(cInst), //
@@ -70,6 +80,36 @@ WCollisionAssets::~WCollisionAssets() {
         delete fManagedCollisionObjects;
     }
     fManagedCollisionObjects = nullptr;
+}
+
+void WCollisionAssets::Init(const UGroup *mapGroup, const UData *triggerUData) {
+    if (mapGroup == nullptr) {
+        sWCollisionAssets = new WCollisionAssets();
+        WTriggerManager::Init();
+        WGrid::Init(nullptr);
+        WGridManagedDynamicElem::Init();
+    } else {
+        sWCollisionAssets = new WCollisionAssets();
+        if (triggerUData == nullptr) {
+            sWCollisionAssets->fStaticTriggers = nullptr;
+            sOriginalTriggerData = nullptr;
+            sSavedTriggerData = nullptr;
+        }
+        WTriggerManager::Init();
+        WGrid::Init(mapGroup);
+        unsigned int num = GetNumTrackOBBs();
+        for (num = num - 1; num != static_cast<unsigned int>(-1); --num) {
+            TrackOBB *tobb = GetTrackOBB(num);
+            UMath::Matrix4 mat = *reinterpret_cast<const UMath::Matrix4 *>(&tobb->Matrix);
+            bConvertToBond(reinterpret_cast<bMatrix4 &>(mat), tobb->Matrix);
+            UMath::Vector3 dim;
+            bConvertToBond(dim, tobb->Dims);
+            dim.x = bAbs(dim.x);
+            dim.y = bAbs(dim.y);
+            dim.z = bAbs(dim.z);
+            WCollisionObject *obj = Get().CreateObject(dim, mat, false);
+        }
+    }
 }
 
 void WCollisionAssets::Shutdown() {
