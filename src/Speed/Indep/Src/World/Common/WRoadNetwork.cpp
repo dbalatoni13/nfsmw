@@ -44,19 +44,19 @@ static const int selectable_lanes[8] = {
 void WRoadNetwork::Init() {
     if (fgRoadNetwork == nullptr) {
         fgRoadNetwork = new WRoadNetwork();
-        fValidTrafficRoads = true;
         fValid = false;
         fValidRaceFilter = false;
-        fNumRoads = 0;
-        fNumIntersections = 0;
-        fNumSegments = 0;
+        fValidTrafficRoads = true;
         fNumNodes = 0;
-        nTotalMemoryUsage = 0;
-        nIntersectionMemoryUsage = 0;
-        nSegmentMemoryUsage = 0;
-        nProfileMemoryUsage = 0;
-        nNodeMemoryUsage = 0;
+        fNumSegments = 0;
+        fNumIntersections = 0;
+        fNumRoads = 0;
         nRoadMemoryUsage = 0;
+        nNodeMemoryUsage = 0;
+        nProfileMemoryUsage = 0;
+        nSegmentMemoryUsage = 0;
+        nIntersectionMemoryUsage = 0;
+        nTotalMemoryUsage = 0;
 
         if (WWorld::Get().GetMapGroup()) {
             const UGroup *networkGroup = WWorld::Get().GetMapGroup()->GroupLocate('RN', 'gp');
