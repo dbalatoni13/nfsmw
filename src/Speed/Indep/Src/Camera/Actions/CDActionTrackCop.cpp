@@ -52,7 +52,7 @@ CameraAI::Action *CDActionTrackCop::Construct(CameraAI::Director *director) {
         goto null_return;
     }
 
-    if (player->GetSettingsIndex() == 0) {
+    if (player->GetSettings() == nullptr) {
         goto null_return;
     }
 
