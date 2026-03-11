@@ -153,16 +153,17 @@ void WCollisionAssets::SetExclusionFlags(WCollisionPack *collisionPack) {
 
             unsigned int next = i + 1;
             if (exclusionFlags != 0) {
-                if (cInst->fCollisionArticle != nullptr) {
+                const WCollisionArticle *cArt = cInst->fCollisionArticle;
+                if (cArt != nullptr) {
                     int j = 0;
-                    unsigned char *edge = reinterpret_cast<unsigned char *>(const_cast<WCollisionArticle *>(cInst->fCollisionArticle));
-                    edge += cInst->fCollisionArticle->fStripsSize + 0x10;
+                    unsigned char *barrier = reinterpret_cast<unsigned char *>(const_cast<WCollisionArticle *>(cArt));
+                    barrier += cArt->fStripsSize + 0x10;
 
-                    if (j < cInst->fCollisionArticle->fNumEdges) {
+                    if (j < cArt->fNumEdges) {
                         do {
-                            edge[0xD] |= exclusionFlags;
+                            barrier[0xD] |= exclusionFlags;
                             ++j;
-                            edge += 0x20;
+                            barrier += 0x20;
                         } while (j < cInst->fCollisionArticle->fNumEdges);
                     }
                 }

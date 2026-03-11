@@ -8,15 +8,16 @@ void OrthoInverse(UMath::Matrix4 &m);
 
 std::list<WGridManagedDynamicElem, UTL::Std::Allocator<WGridManagedDynamicElem, _type_list> > WGridManagedDynamicElem::fgManagedDynamicElemList;
 
-WGridManagedDynamicElem::WGridManagedDynamicElem(UMath::Vector4 *dstPosRad, const UMath::Vector4 *srcPosRad, const WGridNodeElem &elem)
-    : fType(1), //
-      fPosRad(srcPosRad), //
-      fLastPosRad(UMath::Vector4::kIdentity), //
-      fElem(elem), //
-      fSrcPosRad(srcPosRad), //
-      fDstPosRad(dstPosRad), //
-      fDstCInst(nullptr), //
-      fDstTrigger(nullptr) {}
+WGridManagedDynamicElem::WGridManagedDynamicElem(UMath::Vector4 *dstPosRad, const UMath::Vector4 *srcPosRad, const WGridNodeElem &elem) {
+    fType = 1;
+    fLastPosRad = UMath::Vector4::kIdentity;
+    fDstPosRad = dstPosRad;
+    fElem = elem;
+    fDstTrigger = nullptr;
+    fPosRad = srcPosRad;
+    fSrcPosRad = srcPosRad;
+    fDstCInst = nullptr;
+}
 
 void WGridManagedDynamicElem::AddElem(const UMath::Vector4 *oldPosRad, const UMath::Vector4 *newPosRad,
                                       WGridNode_ElemType type, unsigned int dataInd) {
