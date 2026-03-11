@@ -54,8 +54,9 @@ extern EAXSound* g_pEAXSound;
 
 UIMemcardKeyboard::UIMemcardKeyboard(ScreenConstructorData* sd) : MenuScreen(sd) {
     m_pDisplayMsg = static_cast< FEString* >(FEngFindObject(GetPackageName(), 0x1e2640fa));
+    const char* pkg = GetPackageName();
     unsigned int shadowHash = FEHashUpper("message_blurb_shadow");
-    m_pDisplayMsgShadow = static_cast< FEString* >(FEngFindObject(GetPackageName(), shadowHash));
+    m_pDisplayMsgShadow = static_cast< FEString* >(FEngFindObject(pkg, shadowHash));
     m_pTitleMaster = static_cast< FEString* >(FEngFindObject(GetPackageName(), 0x426c7b4d));
     m_pOK = static_cast< FEString* >(FEngFindObject(GetPackageName(), gButtonIDs[0]));
     m_pCancel = static_cast< FEString* >(FEngFindObject(GetPackageName(), gButtonIDs[1]));
