@@ -40,28 +40,8 @@ struct Manager {
 
 extern Speech::Cache gSpeechCache;
 
-// Minimal definitions for delete — virtual destructors required
-struct EAXCommon {
-    int m_nAemsPlayHandle[7];        // offset 0x0, size 0x1C
-    void *m_pPlayCommonSampleHandle; // offset 0x1C, size 0x4
-    void *m_pRadar;                  // offset 0x20, size 0x4
-    SFX_Base *m_pSFXOBJ_FEHUD;      // offset 0x24, size 0x4
-    void *mMsgMiscSound;            // offset 0x28, size 0x4
-    virtual ~EAXCommon();
-    virtual void Initialize();
-    virtual int Play(eMenuSoundTriggers etrigger);
-    virtual void Stop(eMenuSoundTriggers etrigger);
-    void AttachSFXOBJ(SFX_Base *psb, eSFXOBJ_MAIN_TYPES type);
-};
-
-struct EAXFrontEnd {
-    char _pad[0x10C];
-    virtual ~EAXFrontEnd();
-    virtual void Initialize();
-    virtual int Play(eMenuSoundTriggers etrigger);
-    virtual void Stop(eMenuSoundTriggers etrigger);
-    void AttachSFXOBJ(SFX_Base *psb, eSFXOBJ_MAIN_TYPES type);
-};
+#include "Speed/Indep/Src/EAXSound/EAXCommon.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXFrontEnd.hpp"
 
 struct EAXSND8Wrapper : public AudioMemBase {
     virtual ~EAXSND8Wrapper();
@@ -520,3 +500,5 @@ eSndAudioMode EAXSound::GetDefaultPlatformAudioMode() {
 eSndAudioMode EAXSound::SetAudioModeFromMemoryCard(eSndAudioMode mode) {
     return m_pEAXSND8Wrapper->SetAudioModeFromMemoryCard(mode);
 }
+
+void SoundPause(bool bpause, eSNDPAUSE_REASON esndpause) {}
