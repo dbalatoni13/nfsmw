@@ -42,10 +42,26 @@ struct FEngine {
 
     inline FEPackageList* GetPackageList() { return &PackList; }
 
+    inline void SetInterface(FEGameInterface* pNewInterface) { pInterface = pNewInterface; }
+
+    inline void ToggleErrorScreenMode(bool b) { bErrorScreenMode = b; }
+
+    FEngine();
+    void SetNumJoyPads(unsigned char Count);
+    void SetExecution(bool bProcessEverything);
+    void SetInitialState();
     void Render();
     void Update(long, unsigned int);
+    FEPackage* PushPackage(const char* pPackageName, unsigned char Level, unsigned long ControlMask);
     FEPackage* FindIdlePackage(const char* pName) const;
     FEPackage* FindPackageWithControl();
+    void QueuePackagePush(const char* pPackageName, unsigned long ControlMask);
+    void QueuePackageSwitch(const char* pPackageName, unsigned long ControlMask);
+    void QueuePackagePop();
+    void QueueMessage(unsigned long MsgID, FEObject* pFrom, FEPackage* pFromPackage, FEObject* pTo, unsigned long ControlMask);
+    void SendMessageToGame(unsigned long MsgID, FEObject* pFrom, FEPackage* pFromPackage, unsigned long uControlMask);
+    int GetNumPackagesBelowPriority(unsigned char priority);
+    void MakeLoadedPackagesDirty();
 };
 
 #endif

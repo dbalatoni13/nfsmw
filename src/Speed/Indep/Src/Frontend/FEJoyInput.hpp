@@ -28,12 +28,12 @@ struct cFEngJoyInput {
     void FlushActions();
     void JoyDisable(JoystickPort port, bool do_flush);
     bool IsJoyPluggedIn(JoystickPort port);
-    void JoyEnable();
-    bool IsJoyEnabled();
-    void SetRequiredJoy(JoystickPort port);
-    void CheckUnplugged();
+    void JoyEnable(JoystickPort port, bool do_flush);
+    bool IsJoyEnabled(JoystickPort port);
+    void SetRequiredJoy(JoystickPort port, bool required);
+    bool CheckUnplugged();
     void HandleJoy();
-    unsigned long GetJoyPadMask(unsigned char port);
+    unsigned long GetJoyPadMask(unsigned char pPadIndex);
 };
 
 #endif

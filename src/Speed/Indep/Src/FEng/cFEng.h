@@ -23,6 +23,7 @@ struct cFEng {
     static void Init();
     static inline cFEng* Get() { return mInstance; }
 
+    cFEng();
     bool IsErrorState() { return mFEng->bErrorScreenMode; }
 
     FEPackage* FindPackage(const char* pPackageName);

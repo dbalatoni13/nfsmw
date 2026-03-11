@@ -47,19 +47,9 @@ class ActionQueue : public UTL::Collections::Listable<ActionQueue, 20> {
 
     // bool IsRequired() const {}
 
-    // void SetRequired(bool b) {}
+    void SetRequired(bool b) { mRequired = b; }
 
-    // bool IsValid() const {}
-
-    // int GetPort() const {}
-
-    // bool IsActive() const {}
-
-    // int Size() {}
-
-    // Timer LastActionTime() const {}
-
-    // Timer ActivationTime() const {}
+    bool IsConnected() const;
 
     unsigned int GetConfig() const {
         return mConfig;
