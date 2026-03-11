@@ -50,6 +50,7 @@ bool WWorldMath::MakeSegSpaceMatrix(const UMath::Vector3 &startPt, const UMath::
     UMath::Vector4 &right = mat.v0;
     UMath::Vector4 &forward = mat.v1;
     UMath::Vector4 &up = mat.v2;
+    UMath::Vector4 &trans = mat.v3;
 
     UMath::Sub(startPt, endPt, UMath::Vector4To3(forward));
     forward.w = 0.0f;
@@ -60,7 +61,7 @@ bool WWorldMath::MakeSegSpaceMatrix(const UMath::Vector3 &startPt, const UMath::
     forward.z = forward.z * rLen;
     forward.y = fwdY * rLen;
 
-    if (UMath::Abs(forward.y) <= 0.9f) {
+    if (bAbs(forward.y) <= 0.9f) {
         right.w = 0.0f;
         right.x = 0.0f;
         right.y = 1.0f;
@@ -84,7 +85,7 @@ bool WWorldMath::MakeSegSpaceMatrix(const UMath::Vector3 &startPt, const UMath::
 
     Crossxyz(forward, up, right);
 
-    mat.v3 = UMath::Vector4Make(startPt, 1.0f);
+    trans = UMath::Vector4Make(startPt, 1.0f);
 
     return true;
 }

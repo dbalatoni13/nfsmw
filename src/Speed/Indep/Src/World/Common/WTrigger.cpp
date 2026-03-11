@@ -259,9 +259,9 @@ void WTriggerManager::ProcessRB(IRigidBody *rBody, float dT) {
                 if (trig.fIterStamp != fIterCount) {
                     trig.fIterStamp = fIterCount;
                     if (trig.IsEnabled(fSilencableEnabled) &&
-                        ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x13])
+                        (((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16)
                         | (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x12]) << 8)
-                        | (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16)) & activateFlag) != 0 &&
+                        | static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x13])) & activateFlag) != 0 &&
                         CheckCollideRB(rBody, &trig, dT)) {
                         HSIMABLE__ *hSimable = rBody->GetOwner()->GetInstanceHandle();
                         SubmitForFire(trig, hSimable);
@@ -293,9 +293,9 @@ void WTriggerManager::ProcessSRB(IRigidBody *srBody, float dT) {
                 if (trig.fIterStamp != fIterCount) {
                     trig.fIterStamp = fIterCount;
                     if (trig.IsEnabled(fSilencableEnabled) &&
-                        ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x13])
+                        (((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16)
                         | (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x12]) << 8)
-                        | (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16)) & activateFlag) != 0) {
+                        | static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x13])) & activateFlag) != 0) {
                         if (srBody->GetOwner()->IsOwnedByPlayer() || !(reinterpret_cast<const unsigned char *>(&trig)[0x13] & 0x80)) {
                             if (CheckCollideSRB(srBody, &trig, dT)) {
                                 HSIMABLE__ *hSimable = srBody->GetOwner()->GetInstanceHandle();
@@ -311,21 +311,19 @@ void WTriggerManager::ProcessSRB(IRigidBody *srBody, float dT) {
 
 bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *trig, float dT) const {
     const float rbRadius = rBody->GetRadius();
-    float rbRadiusPlusVel;
     UMath::Vector3 rPos;
     UMath::Vector3 cp;
     float radsSq;
     UMath::Vector3 dP;
 
-    rbRadiusPlusVel = rBody->GetSpeed() * dT + rbRadius + trig->fPosRadius.w;
-    cp.x = trig->fPosRadius.x;
-    cp.z = trig->fPosRadius.z;
-    cp.y = trig->fPosRadius.y;
+    const float rbRadiusPlusVel = rBody->GetSpeed() * dT + rbRadius + trig->fPosRadius.w;
+    cp = UMath::Vector4To3(trig->fPosRadius);
     radsSq = rbRadiusPlusVel * rbRadiusPlusVel;
     UMath::Scale(rBody->GetLinearVelocity(), dT, dP);
     UMath::Add(rBody->GetPosition(), dP, rPos);
 
-    if (trig->fShape == 2) {
+    unsigned char shapeNum = reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF;
+    if (shapeNum == 2) {
         if (UMath::DistanceSquare(cp, rPos) <= radsSq) {
             if (reinterpret_cast<const unsigned char *>(trig)[0x12] & 8) {
                 if (!trig->TestDirection(rBody->GetLinearVelocity())) {
@@ -341,12 +339,12 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
                     return false;
                 }
             }
-            if (trig->fShape == 3) {
+            if (shapeNum == 3) {
                 if (trig->fPosRadius.y - trig->fHeight * 0.5f <= rPos.y + rbRadius &&
                     rPos.y - rbRadius < trig->fPosRadius.y + trig->fHeight * 0.5f) {
                     return true;
                 }
-            } else if (trig->fShape == 1) {
+            } else if (shapeNum == 1) {
                 UMath::Vector3 dim3;
                 UMath::Matrix4 bodyMat;
                 rBody->GetDimension(dim3);

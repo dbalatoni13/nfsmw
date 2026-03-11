@@ -33,7 +33,7 @@ inline float InvSqrt(const float f) {
 
 inline bool PtsEqual(const UMath::Vector3 &p0, const UMath::Vector3 &p1, float tolerance) {
     const float kTolerance = tolerance;
-    return UMath::Abs(p0.x - p1.x) < kTolerance && UMath::Abs(p0.y - p1.y) < kTolerance && UMath::Abs(p0.z - p1.z) < kTolerance;
+    return bAbs(p0.x - p1.x) < kTolerance && bAbs(p0.y - p1.y) < kTolerance && bAbs(p0.z - p1.z) < kTolerance;
 }
 
 inline void Crossxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r) {
