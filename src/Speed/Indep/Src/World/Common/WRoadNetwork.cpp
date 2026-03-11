@@ -470,7 +470,7 @@ bool WRoadNav::CanTrafficSpawn() {
         return false;
     }
 
-    const bool player_or_racer = (which_node == 1);
+    int player_or_racer = (which_node == 1);
     bool inverted = segment->IsProfileInverted(which_node);
 
     const WRoadProfile *profile = road_network.GetSegmentProfile(*segment, which_node);
@@ -1094,11 +1094,9 @@ int WRoadNav::FetchAvoidables(IBody **avoidables, const int listsize) const {
     }
 
     IPursuit *my_pursuit = my_ai->GetPursuit();
-    bool is_formation_cop = false;
-
     IPursuitAI *my_pursuitai;
-    my_ai->QueryInterface(&my_pursuitai);
-    if (my_pursuitai && my_pursuitai->GetInFormation()) {
+    bool is_formation_cop = false;
+    if (my_ai->QueryInterface(&my_pursuitai) && my_pursuitai->GetInFormation()) {
         is_formation_cop = true;
     }
 
