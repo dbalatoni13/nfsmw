@@ -561,6 +561,19 @@ void WRoadNetwork::GetPointOnSegment(const UMath::Vector3 &start, const UMath::V
     point.z = start.z + (end.z - start.z) * d;
 }
 
+void WRoadNetwork::GetSegmentCurveStep(const UMath::Vector3 &start, const UMath::Vector3 &end, const WRoadSegment &segment, float u, UMath::Vector3 &point) {
+    WRoadNetwork &roadNetwork = Get();
+    static USpline roadSpline;
+    UMath::Vector4 tempPos;
+    UMath::Vector3 end_control;
+    UMath::Vector3 start_control;
+    segment.GetEndControl(end_control);
+    segment.GetStartControl(start_control);
+    roadSpline.BuildSplineEx(start, UVector3(start) + UVector3(start_control), end, UVector3(end) + UVector3(end_control));
+    roadSpline.EvaluateSpline(u, tempPos);
+    point = UMath::Vector4To3(tempPos);
+}
+
 void WRoadNetwork::BuildSegmentSpline(const WRoadSegment &segment, USpline &spline) {
     const WRoadNode *nodePtr[2];
     UMath::Vector3 end_control;
@@ -1774,7 +1787,7 @@ void WRoadNav::InitAtSegment(short segInd, float timeStep, const UMath::Vector3 
         fEndPos = roadNetwork.GetNode(segment->fNodeIndex[0])->fPosition;
     } else {
         fNodeInd = 1;
-        fForwardVector = UMath::Vector3Make(segmentForwardVector.x, segmentForwardVector.y, segmentForwardVector.z);
+        fForwardVector = segmentForwardVector;
         fSegTime = timeStep;
         fStartPos = roadNetwork.GetNode(segment->fNodeIndex[0])->fPosition;
         fEndPos = roadNetwork.GetNode(segment->fNodeIndex[1])->fPosition;

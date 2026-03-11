@@ -24,6 +24,11 @@ struct WCollisionTri {
 
     WCollisionTri() {}
 
+    float MinY() const {
+        float minY = UMath::Min(fPt0.y, fPt1.y);
+        return UMath::Min(minY, fPt2.y);
+    }
+
     inline void GetNormal(UMath::Vector3 *norm) const {
         UMath::Vector3 vecX;
         UMath::Vector3 vecZ;

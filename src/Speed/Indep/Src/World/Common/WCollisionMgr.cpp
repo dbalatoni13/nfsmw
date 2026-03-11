@@ -4,7 +4,16 @@
 #include "Speed/Indep/Src/World/WWorldPos.h"
 #include "Speed/Indep/Src/World/Common/WGrid.h"
 
+#include <algorithm>
 #include <float.h>
+
+void OrthoInverse(UMath::Matrix4 &m);
+
+struct UTransform {
+    UTransform() {}
+    ~UTransform() {}
+    UMath::Matrix4 fTransform;
+};
 
 inline void WCollisionStrip::MakeFace(unsigned int ind, const UMath::Vector3 &cp, WCollisionTri &retFace) const {
     const WCollisionPackedVert *v = Verts();
@@ -22,7 +31,15 @@ inline void WCollisionStrip::MakeFace(unsigned int ind, const UMath::Vector3 &cp
     retFace.fSurface = WSurface(v[ind + 2].surface);
 }
 
-void OrthoInverse(UMath::Matrix4 &m);
+inline void WCollisionStrip::MakeNextFace(unsigned int ind, const UMath::Vector3 &cp, WCollisionTri &retFace) const {
+    const WCollisionPackedVert *v = Verts() + ind + 2;
+    retFace.fPt0 = retFace.fPt1;
+    retFace.fPt1 = retFace.fPt2;
+    retFace.fPt2.x = static_cast<float>(v->x) * (1.0f / 128.0f) + cp.x;
+    retFace.fPt2.y = static_cast<float>(v->y) * (1.0f / 128.0f) + cp.y;
+    retFace.fPt2.z = static_cast<float>(v->z) * (1.0f / 128.0f) + cp.z;
+    retFace.fSurface = WSurface(v->surface);
+}
 
 inline void NearPtLinePerSegXZ(const UMath::Vector3 &p0, const UMath::Vector3 &p1, float &invDen, UMath::Vector3 &diffVec) {
     UMath::Sub(p1, p0, diffVec);
@@ -413,18 +430,17 @@ bool WCollisionMgr::GetClosestIntersectingBarrier(const WCollisionBarrierList &b
         }
         UMath::Vector4 intersectionPt;
         if (WWorldMath::SegmentIntersect(testSegment, barrier->GetPts(), &intersectionPt)) {
-            float yBot = barrier->YBot();
             float yTop = barrier->YTop();
-            float yMin = yBot;
-            if (yTop < yBot) {
-                yMin = yTop;
+            float yBot = barrier->YBot();
+            float yMin = yTop;
+            if (yTop > yBot) {
+                yMin = yBot;
             }
-            if (yMin < intersectionPt.y) {
-                float yMax = yBot;
-                if (yBot < yTop) {
-                    yMax = yTop;
+            if (intersectionPt.y > yMin) {
+                if (yTop < yBot) {
+                    yTop = yBot;
                 }
-                if (intersectionPt.y < yMax) {
+                if (intersectionPt.y < yTop) {
                     float distSq = UMath::DistanceSquare(UMath::Vector4To3(intersectionPt), UMath::Vector4To3(*testSegment));
                     if (distSq < closestDistSq) {
                         cInfo.fCollidePt = intersectionPt;
@@ -602,6 +618,128 @@ bool WCollisionMgr::GetBarrierNormal(const WCollisionInstanceCacheList &instList
     return cInfo.HitSomething();
 }
 
+void WCollisionMgr::GetBarrierList(WCollisionBarrierList &barrierList, const WCollisionInstanceCacheList &instList, const UMath::Vector3 &pos, float radius) {
+    float radiusSq = radius * radius;
+    barrierList.reserve(0x15);
+
+    for (const WCollisionInstance *const *iIter = instList.begin(); iIter != instList.end(); ++iIter) {
+        const WCollisionInstance &cInst = **iIter;
+        const WCollisionArticle *cArt = cInst.fCollisionArticle;
+
+        if (!InstancePassesExclusion(cInst)) continue;
+        if (cArt == nullptr || cArt->fNumEdges == 0) continue;
+
+        UMath::Vector3 tpt;
+        UMath::Matrix4 invMat;
+        UTransform t;
+        bool tValid = false;
+
+        cInst.MakeMatrix(invMat, true);
+        UMath::RotateTranslate(pos, invMat, tpt);
+
+        const WCollisionBarrier *barrier = cArt->GetBarrier(0);
+        for (int i = 0; i < cArt->fNumEdges; ++i) {
+            if (SurfacePassesExclusion(barrier->GetWSurface())) {
+                float distsqr = barrier->DistSq(tpt);
+                if (distsqr < radiusSq) {
+                    float yBot = barrier->YBot();
+                    float yTop = barrier->YTop();
+                    float yMin = yBot;
+                    if (yTop < yBot) {
+                        yMin = yTop;
+                    }
+                    if (yMin < tpt.y + radius) {
+                        float yMax = yBot;
+                        if (yBot < yTop) {
+                            yMax = yTop;
+                        }
+                        if (tpt.y - radius <= yMax) {
+                            if (!tValid) {
+                                t.fTransform = invMat;
+                                t.fTransform[0][3] = 0.0f;
+                                t.fTransform[1][3] = 0.0f;
+                                t.fTransform[2][3] = 0.0f;
+                                t.fTransform[3][3] = 1.0f;
+                                OrthoInverse(t.fTransform);
+                                tValid = true;
+                            }
+
+                            WCollisionBarrier wBarrier = *barrier;
+                            UMath::RotateTranslate(UMath::Vector4To3(wBarrier.fPts[0]), t.fTransform, UMath::Vector4To3(wBarrier.fPts[0]));
+                            UMath::RotateTranslate(UMath::Vector4To3(wBarrier.fPts[1]), t.fTransform, UMath::Vector4To3(wBarrier.fPts[1]));
+                            wBarrier.fPts[0].w = barrier->fPts[0].w;
+                            wBarrier.fPts[1].w = barrier->fPts[1].w;
+
+                            const Attrib::Collection *collection = cArt->GetSurface(wBarrier.GetWSurface().Surface());
+                            WCollisionBarrierListEntry ble(wBarrier, collection, distsqr);
+
+                            WCollisionBarrierListEntry *it = std::upper_bound(barrierList.begin(), barrierList.end(), ble);
+                            barrierList.insert(it, ble);
+                        }
+                    }
+                }
+            }
+            barrier = barrier->Next();
+        }
+    }
+}
+
+bool WCollisionMgr::FindFaceInTriStrip(const UMath::Vector3 &pt, const WCollisionStripSphere *sp, const WCollisionStrip *strip,
+                                       WCollisionTri &retFace) {
+    if (!StripPassesExclusion(*strip)) {
+        return false;
+    }
+
+    int numTris = strip->NumTris();
+    strip->MakeFace(0, sp->fPos, retFace);
+
+    if (strip->Flags() & 2) {
+        for (int i = 0; i < numTris; ++i) {
+            const WSurface &surf = retFace.fSurface;
+            if (!surf.HasFlag(8)) {
+                if (WWorldMath::InTri(pt, reinterpret_cast<const UMath::Vector4 *>(&retFace))) {
+                    if (SurfacePassesExclusion(surf)) {
+                        if (retFace.MinY() < pt.y + 1.0f) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            strip->MakeNextFace(i + 1, sp->fPos, retFace);
+        }
+    } else {
+        bool rightFlag = (strip->Flags() & 1) != 0;
+        strip->MakeFace(0, sp->fPos, retFace);
+        for (int i = 0; i < numTris; ++i) {
+            if (rightFlag) {
+                const WSurface &surf = retFace.fSurface;
+                if (!surf.HasFlag(8)) {
+                    if (WWorldMath::InTriR(pt, reinterpret_cast<const UMath::Vector4 *>(&retFace))) {
+                        if (SurfacePassesExclusion(surf)) {
+                            return true;
+                        }
+                    }
+                }
+            } else {
+                const WSurface &surf = retFace.fSurface;
+                if (!surf.HasFlag(8)) {
+                    if (WWorldMath::InTriL(pt, reinterpret_cast<const UMath::Vector4 *>(&retFace))) {
+                        if (SurfacePassesExclusion(surf)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            rightFlag = !rightFlag;
+            strip->MakeNextFace(i + 1, sp->fPos, retFace);
+        }
+    }
+
+    return false;
+}
+
+extern "C" void v3sub(int num, const UMath::Vector3 *src, const UMath::Vector3 *vtosub, UMath::Vector3 *results);
+
 struct AABB {
     bVector2 mMin;
     bVector2 mMax;
@@ -659,12 +797,12 @@ void WCollisionMgr::GetTriList(const WCollisionInstanceCacheList &instList, cons
             cInst.MakeMatrix(invMat, true);
             UMath::RotateTranslate(ipt, invMat, tpt);
 
-            AABB regionAABB(tpt, radius);
+            AABB regionAABB(pt, radius);
 
             const WCollisionStripSphere *sp = cArt->GetStripSphere(0);
             for (int i = 0; i < cArt->fNumStrips; ++i) {
                 UMath::Vector3 diffVec;
-                UMath::Sub(sp->fPos, tpt, diffVec);
+                v3sub(1, &sp->fPos, &tpt, &diffVec);
 
                 float spRadius = static_cast<float>(sp->fRadius) * (1.0f / 16.0f) + radius;
                 float dSq = diffVec.x * diffVec.x + diffVec.z * diffVec.z;
@@ -687,48 +825,42 @@ void WCollisionMgr::GetTriList(const WCollisionInstanceCacheList &instList, cons
                             float dir = PTDir(face.fPt1, face.fPt0, face.fPt2);
                             float side;
 
-                            side = PtDir(tpt, face.fPt0, face.fPt1);
+                            side = PtDir(pt, face.fPt0, face.fPt1);
                             if (!(side * dir > 0.0f)) {
-                                WWorldMath::NearestPointLine2D3(tpt, face.fPt0, face.fPt1, nearPt);
+                                WWorldMath::NearestPointLine2D3(pt, face.fPt0, face.fPt1, nearPt);
                                 if (!(side * dir > 0.0f)) {
-                                    if (XZDistSq(tpt, nearPt) >= radiusSq) {
+                                    if (XZDistSq(pt, nearPt) >= radiusSq) {
                                         goto next_tri;
                                     }
                                 }
                             }
 
-                            side = PtDir(tpt, face.fPt1, face.fPt2);
+                            side = PtDir(pt, face.fPt1, face.fPt2);
                             if (!(side * dir > 0.0f)) {
-                                WWorldMath::NearestPointLine2D3(tpt, face.fPt1, face.fPt2, nearPt);
+                                WWorldMath::NearestPointLine2D3(pt, face.fPt1, face.fPt2, nearPt);
                                 if (!(side * dir > 0.0f)) {
-                                    if (XZDistSq(tpt, nearPt) >= radiusSq) {
+                                    if (XZDistSq(pt, nearPt) >= radiusSq) {
                                         goto next_tri;
                                     }
                                 }
                             }
 
-                            side = PtDir(tpt, face.fPt2, face.fPt0);
+                            side = PtDir(pt, face.fPt2, face.fPt0);
                             if (!(side * dir > 0.0f)) {
-                                WWorldMath::NearestPointLine2D3(tpt, face.fPt2, face.fPt0, nearPt);
+                                WWorldMath::NearestPointLine2D3(pt, face.fPt2, face.fPt0, nearPt);
                                 if (!(side * dir > 0.0f)) {
-                                    if (XZDistSq(tpt, nearPt) >= radiusSq) {
+                                    if (XZDistSq(pt, nearPt) >= radiusSq) {
                                         goto next_tri;
                                     }
                                 }
                             }
 
-                            face.fSurfaceRef = reinterpret_cast<const SimSurface *>(static_cast<const void *>(cArt->GetSurface(face.fSurface.Surface())));
+                            face.fSurfaceRef = reinterpret_cast<const SimSurface *>(cArt->GetSurface(face.fSurface.Surface()));
                             triList.add_tri(face);
                         }
                     next_tri:
                         if (i + 1 < numTris) {
-                            face.fPt0 = face.fPt1;
-                            face.fPt1 = face.fPt2;
-                            const WCollisionPackedVert *v = strip->Verts();
-                            face.fPt2.x = static_cast<float>(v[i + 3].x) * (1.0f / 128.0f) + off.x;
-                            face.fPt2.y = static_cast<float>(v[i + 3].y) * (1.0f / 128.0f) + off.y;
-                            face.fPt2.z = static_cast<float>(v[i + 3].z) * (1.0f / 128.0f) + off.z;
-                            face.fSurface = WSurface(v[i + 3].surface);
+                            strip->MakeNextFace(i + 1, off, face);
                         }
                     }
                 }

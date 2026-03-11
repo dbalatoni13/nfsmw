@@ -25,13 +25,13 @@ struct WSurface : CollisionSurface {
         fSurface = 0;
         fFlags = 0;
     }
-    WSurface(unsigned char surface, unsigned char flags) {
-        fSurface = surface;
-        fFlags = flags;
-    }
     WSurface(const CollisionSurface &surface) {
         fSurface = surface.fSurface;
         fFlags = surface.fFlags;
+    }
+    WSurface(unsigned char surface, unsigned char flags) {
+        fSurface = surface;
+        fFlags = flags;
     }
 
     unsigned int Surface() const {
@@ -39,6 +39,10 @@ struct WSurface : CollisionSurface {
     }
 
     unsigned char &FlagsRef() {
+        return fFlags;
+    }
+
+    unsigned char Flags() const {
         return fFlags;
     }
 
@@ -76,7 +80,12 @@ struct WCollisionStrip {
         return NumVerts() - 2;
     }
 
+    unsigned int Flags() const {
+        return *reinterpret_cast<const unsigned short *>(&Verts()[1].surface);
+    }
+
     void MakeFace(unsigned int ind, const UMath::Vector3 &cp, WCollisionTri &retFace) const;
+    void MakeNextFace(unsigned int ind, const UMath::Vector3 &cp, WCollisionTri &retFace) const;
 };
 
 struct WCollisionArticle {
@@ -144,6 +153,28 @@ struct WCollisionBarrier {
         norm.x = (fPts[1].z - fPts[0].z) * invLen;
         norm.y = 0.0f;
         norm.z = (fPts[0].x - fPts[1].x) * invLen;
+    }
+
+    float DistSq(const UMath::Vector3 &pt) const {
+        float invLen = GetInvXZLength();
+        float x1 = fPts[0].x;
+        float z1 = fPts[0].z;
+        float x2 = fPts[1].x;
+        float z2 = fPts[1].z;
+        float px = pt.x;
+        float pz = pt.z;
+        float u = ((px - x1) * (x2 - x1) + (pz - z1) * (z2 - z1)) * invLen * invLen;
+        if (u >= 0.0f) {
+            if (u <= 1.0f) {
+                float nearX = (u * (x2 - x1) + x1) - px;
+                float nearZ = (u * (z2 - z1) + z1) - pz;
+                return nearX * nearX + nearZ * nearZ;
+            }
+            float nearX = x2 - px;
+            float nearZ = z2 - pz;
+            return nearX * nearX + nearZ * nearZ;
+        }
+        return (x1 - px) * (x1 - px) + (z1 - pz) * (z1 - pz);
     }
 
     UMath::Vector4 fPts[2]; // offset 0x0, size 0x20
