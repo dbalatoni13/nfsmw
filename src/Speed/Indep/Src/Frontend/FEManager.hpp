@@ -84,11 +84,11 @@ class FEManager {
 
     //  void ClearControllerError(int port) {}
 
-    //  void SuppressControllerError(bool b) {}
+    void SuppressControllerError(bool b) { bSuppressControllerError = b; }
 
-    //  void AllowControllerError(bool b) {}
+    void AllowControllerError(bool b) { bAllowControllerError = b; }
 
-    //  bool IsAllowingControllerError() {}
+    bool IsAllowingControllerError() { return bAllowControllerError; }
 
     //  bool IsFirstBoot() {}
 

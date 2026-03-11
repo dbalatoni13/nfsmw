@@ -140,7 +140,7 @@ struct MemoryCard {
     SaveType m_Type;                        // offset 0x180, size 0x4
     unsigned int m_DataSize;                // offset 0x184, size 0x4
     int m_TimeOffsetSec;                    // offset 0x188, size 0x4
-    RealmcIface::MemcardInterface *m_pIMemcard; // offset 0x18C, size 0x4
+    MemcardInterface *m_pIMemcard; // offset 0x18C, size 0x4
     UIMemcardBase *m_pFEScreen;             // offset 0x190, size 0x4
     MemoryCardImp *m_pImp;                  // offset 0x194, size 0x4
 
