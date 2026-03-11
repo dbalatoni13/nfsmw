@@ -28,7 +28,8 @@ struct RapSheetCTSDatum : public ArrayDatum {
     int value; // offset 0x2C, size 0x4
 
     RapSheetCTSDatum(int num_times, unsigned long item_name, int total_value)
-        : times(num_times) //
+        : ArrayDatum(0, 0) //
+        , times(num_times) //
         , itemHash(item_name) //
         , value(total_value)
     {}
