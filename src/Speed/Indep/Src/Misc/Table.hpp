@@ -129,8 +129,9 @@ template <class T> class tAverage : public AverageBase {
   public:
     tAverage(int nSlots) : AverageBase(sizeof(T), nSlots) {
         pData = new (__FILE__, __LINE__) T[nSlots];
-        Total = pData[0];
+        bMemSet(pData, 0, sizeof(T) * nSlots);
         Average = pData[0];
+        Total = pData[0];
     }
 
     virtual ~tAverage() {
