@@ -325,14 +325,15 @@ void PhysicsObject::ReleaseBehaviors() {
 void PhysicsObject::ReleaseBehavior(const UCrc32 &mechanic) {
     unsigned int key = mechanic.GetValue();
     Mechanics::iterator iter = mMechanics.find(key);
-    if (iter != mMechanics.end()) {
-        Behavior *beh = iter->second;
-        if (beh != nullptr) {
-            mBehaviors.Remove(beh);
-            DestroyElement(*beh);
-            iter->second = nullptr;
-            OnBehaviorChange(mechanic);
-        }
+    if (iter._M_node == mMechanics.end()._M_node) {
+        return;
+    }
+    Behavior *beh = mMechanics[key];
+    if (beh != nullptr) {
+        mBehaviors.Remove(beh);
+        RemoveElement(beh);
+        mMechanics[key] = nullptr;
+        OnBehaviorChange(mechanic);
     }
 }
 
