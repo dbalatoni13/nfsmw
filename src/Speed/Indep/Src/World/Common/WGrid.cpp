@@ -17,6 +17,33 @@ WGrid::~WGrid() {
     bFree(fNodes);
 }
 
+void WGrid::Init(const UGroup *mapGroup) {
+    fgMapGroup = mapGroup;
+    if (mapGroup != nullptr) {
+        const UGroup *cDatGroup = mapGroup->GroupLocate('CD', 'at');
+        const UData *carpGridData = cDatGroup->DataLocate('CG', 'rd');
+        const WGrid *carpGrid = static_cast<const WGrid *>(carpGridData->GetDataConst());
+
+        if (carpGrid->fNumRows == 0 || carpGrid->fNumCols == 0) {
+            fgGrid = new WGrid(UMath::Vector4Make(-10000.0f, -10000.0f, -10000.0f, 1.0f), 2, 2, 10000.0f);
+        } else {
+            fgGrid = new WGrid(carpGrid->fMin, carpGrid->fNumRows, carpGrid->fNumCols, carpGrid->fEdgeSize);
+        }
+
+        unsigned int numNodes = cDatGroup->DataCountType(UDataGroupTag('CG', 'cn'));
+        const UData *nodeDat = cDatGroup->DataLocateFirst(UDataGroupTag('CG', 'cn'), 0xFFFFFFFF, 0xFFFFFFFF);
+        if (nodeDat != cDatGroup->DataEnd()) {
+            const WGridNode *n = static_cast<const WGridNode *>(nodeDat->GetDataConst());
+            for (unsigned int i = 0; i < nodeDat->DataCount(); i++) {
+                fgGrid->fNodes[n->GetNodeInd()] = const_cast<WGridNode *>(n);
+                n = reinterpret_cast<const WGridNode *>(reinterpret_cast<const char *>(n) + n->TotalSize());
+            }
+        }
+    } else {
+        fgGrid = new WGrid(UMath::Vector4Make(-10000.0f, -10000.0f, -10000.0f, 1.0f), 2, 2, 10000.0f);
+    }
+}
+
 void WGrid::Shutdown() {
     if (fgGrid != nullptr) {
         for (int i = 0; i < static_cast<int>(fgGrid->fNumRows * fgGrid->fNumCols); i++) {

@@ -306,6 +306,20 @@ void WRoadNetwork::GetPointOnSegment(const UMath::Vector3 &start, const UMath::V
     point.z = start.z + (end.z - start.z) * d;
 }
 
+void WRoadNetwork::BuildSegmentSpline(const WRoadSegment &segment, USpline &spline) {
+    UMath::Vector3 end_control;
+    UMath::Vector3 start_control;
+    segment.GetEndControl(end_control);
+    segment.GetStartControl(start_control);
+    const WRoadNode *nodePtr[2];
+    GetSegmentNodes(segment, nodePtr);
+    const UMath::Vector3 &start = nodePtr[0]->fPosition;
+    const UMath::Vector3 &end = nodePtr[1]->fPosition;
+    start_control = UVector3(start) + UVector3(start_control);
+    end_control = UVector3(end) + UVector3(end_control);
+    spline.BuildSplineEx(start, start_control, end, end_control);
+}
+
 bool WRoadNetwork::GetSegmentProfiles(const WRoadSegment &segment, const WRoadProfile **profile) {
     WRoadNetwork &roadNetwork = Get();
     const WRoadNode *node[2];
@@ -766,6 +780,35 @@ void WRoadNetwork::GetPointAndVecOnSegment(const WRoadSegment &segment, float d,
         roadSpline.EvaluateTangent(d, tangent);
         vec = UMath::Vector4To3(tangent);
     }
+}
+
+float WRoadNetwork::GetLinePointIntersect(const UMath::Vector3 &start, const UMath::Vector3 &end, const UMath::Vector3 &pt, UMath::Vector3 &intersect, bool checkBound) {
+    UMath::Vector3 segVec;
+    UMath::Vector3 posVec;
+
+    UMath::Sub(end, start, segVec);
+    UMath::Unit(segVec, segVec);
+    UMath::Sub(pt, start, posVec);
+    float length = UMath::Distance(pt, start);
+    UMath::Unit(posVec, posVec);
+    float dist = length * UMath::Dot(segVec, posVec);
+    float segDist = UMath::Distance(start, end);
+
+    if (checkBound) {
+        if (dist >= segDist) {
+            intersect = end;
+            return 1.0f;
+        }
+        if (dist <= 0.0f) {
+            intersect = start;
+            return 0.0f;
+        }
+    }
+
+    UMath::Unit(segVec, segVec);
+    UMath::Scale(segVec, dist, segVec);
+    UMath::Add(start, segVec, intersect);
+    return dist / segDist;
 }
 
 float WRoadNetwork::GetSegmentPointIntersect(const WRoadSegment &segment, const UMath::Vector3 &pt, UMath::Vector3 &intersect, bool checkBound) {

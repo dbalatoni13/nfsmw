@@ -23,6 +23,8 @@ struct WGridNode {
         fDynElems = nullptr;
     }
 
+    unsigned int GetNodeInd() const { return fNodeInd; }
+
     WGridNodeElemList* fDynElems;       // offset 0x0, size 0x4
     unsigned short fNodeInd;            // offset 0x4, size 0x2
     unsigned short fPad;                // offset 0x6, size 0x2

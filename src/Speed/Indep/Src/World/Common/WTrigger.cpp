@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/World/WTrigger.h"
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Main/Event.h"
 #include "Speed/Indep/Src/Main/EventSequencer.h"
 #include "Speed/Indep/Src/World/WCollisionAssets.h"
@@ -132,6 +133,48 @@ void WTriggerManager::SubmitForFire(WTrigger &trig, HSIMABLE__ *hSimable) {
     }
     if (((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x12]) << 8 | static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16) & 0x48000) == 0) {
         trig.FireEvents(hSimable);
+    }
+}
+
+void WTriggerManager::Update(float dT) {
+    fProcessingStimulus = 1;
+    IRigidBody * const *enditer = IRigidBody::GetList().end();
+    for (IRigidBody * const *iter = IRigidBody::GetList().begin(); iter != enditer; ++iter) {
+        IRigidBody *rigidBody = *iter;
+        if (rigidBody->IsSimple()) {
+            ProcessSRB(rigidBody, dT);
+        } else {
+            ProcessRB(rigidBody, dT);
+        }
+    }
+    fProcessingStimulus = 2;
+    std::set<FireOnExitRec>::const_iterator iter = fgFireOnExitList->begin();
+    while (iter != fgFireOnExitList->end()) {
+        const FireOnExitRec &rec = *iter;
+        ISimable *iSimable = ISimable::FindInstance(rec.mhSimable);
+        if (iSimable != nullptr) {
+            IRigidBody *iRigidBody = iSimable->GetRigidBody();
+            if (iRigidBody != nullptr) {
+                bool result;
+                if (iRigidBody->IsSimple()) {
+                    result = CheckCollideSRB(iRigidBody, &rec.mTrigger, dT);
+                } else {
+                    result = CheckCollideRB(iRigidBody, &rec.mTrigger, dT);
+                }
+                if (result == true) {
+                    ++iter;
+                    continue;
+                }
+                rec.mTrigger.FireEvents(rec.mhSimable);
+            }
+        }
+        std::set<FireOnExitRec>::const_iterator newlocation = iter;
+        ++newlocation;
+        fgFireOnExitList->erase(iter);
+        iter = newlocation;
+        if (iter == fgFireOnExitList->end()) {
+            return;
+        }
     }
 }
 

@@ -233,7 +233,9 @@ struct WRoadSegment {
         }
     }
 
-    // bool IsOneWay() const {}
+    bool IsOneWay() const {
+        return (fFlags & 0x40) != 0;
+    }
 
     bool IsCurved() const {
         return (fFlags & 0x100) != 0;
@@ -253,9 +255,21 @@ struct WRoadSegment {
 
     // void SetProfileInverted(int which_end, bool inverted) {}
 
-    // void GetEndControl(UMath::Vector3 &v) const {}
+    void GetEndControl(UMath::Vector3 &v) const {
+        float scale = static_cast< float >(fEndHandleLength) * (500.0f / (127.0f * 65535.0f));
+        float x = scale * static_cast< float >(vEndHandle[0]);
+        float y = scale * static_cast< float >(vEndHandle[1]);
+        float z = scale * static_cast< float >(vEndHandle[2]);
+        v = UMath::Vector3Make(x, y, z);
+    }
 
-    // void GetStartControl(UMath::Vector3 &v) const {}
+    void GetStartControl(UMath::Vector3 &v) const {
+        float scale = static_cast< float >(fStartHandleLength) * (500.0f / (127.0f * 65535.0f));
+        float x = scale * static_cast< float >(vStartHandle[0]);
+        float y = scale * static_cast< float >(vStartHandle[1]);
+        float z = scale * static_cast< float >(vStartHandle[2]);
+        v = UMath::Vector3Make(x, y, z);
+    }
 
     // void GetEndRightVec(UMath::Vector3 &v) const {}
 

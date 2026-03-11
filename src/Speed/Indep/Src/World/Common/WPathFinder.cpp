@@ -96,6 +96,62 @@ AStarSearch::~AStarSearch() {
     delete pSolution;
 }
 
+bool AStarSearch::Admissible(const WRoadSegment *segment, bool forward, WRoadNav::EPathType path_type) {
+    WRoadNetwork &rn = WRoadNetwork::Get();
+
+    switch (path_type) {
+    case WRoadNav::kPathGPS:
+        if (segment->IsOneWay() && !forward)
+            return false;
+        if (segment->CrossesDriveThroughBarrier() || segment->CrossesBarrier())
+            return false;
+        return true;
+    case WRoadNav::kPathCop:
+        if (segment->IsOneWay() && !forward)
+            return false;
+        return true;
+    case WRoadNav::kPathRacer: {
+        if (segment->IsShortcut()) {
+            int shortcut_number = rn.GetSegmentShortcutNumber(segment);
+            bool shortcut_allowed = pRoadNav->MakeShortcutDecision(shortcut_number, &nShortcutCached, &nShortcutAllowed);
+            if (!shortcut_allowed)
+                return false;
+        }
+        if (segment->IsOneWay() && !forward)
+            return false;
+        if (segment->CrossesDriveThroughBarrier() || segment->CrossesBarrier())
+            return false;
+        return true;
+    }
+    case WRoadNav::kPathPlayer: {
+        if (segment->IsShortcut()) {
+            int shortcut_number = rn.GetSegmentShortcutNumber(segment);
+            if (shortcut_number != pRoadNav->GetShortcutNumber())
+                return false;
+        }
+        if (segment->IsOneWay() && !forward)
+            return false;
+        if (segment->CrossesDriveThroughBarrier() || segment->CrossesBarrier())
+            return false;
+        return true;
+    }
+    case WRoadNav::kPathRaceRoute: {
+        if (segment->IsShortcut()) {
+            int shortcut_number = rn.GetSegmentShortcutNumber(segment);
+            if (pShortcutAllowed[shortcut_number] == 0)
+                return false;
+        }
+        if (segment->CrossesDriveThroughBarrier() || segment->CrossesBarrier())
+            return false;
+        if (segment->IsOneWay() && !forward)
+            return false;
+        return true;
+    }
+    default:
+        return true;
+    }
+}
+
 int AStarSearch::AStarCheckFlip(AStarNode *before, AStarNode *after) {
     return before->GetTotalCost() <= after->GetTotalCost();
 }

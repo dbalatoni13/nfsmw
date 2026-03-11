@@ -42,10 +42,13 @@ public:
     }
 
     const void *GetDataConst() const {
+        const void *data;
         if (fEmbedded) {
-            return reinterpret_cast<const char *>(this) + fOffset;
+            data = reinterpret_cast<const char *>(this) + fOffset;
+        } else {
+            data = fPointer;
         }
-        return fPointer;
+        return data;
     }
 };
 
@@ -79,6 +82,8 @@ struct UGroup {
     unsigned int GroupCountType(unsigned int type) const;
     const UGroup *GroupLocateFirst(unsigned int type, unsigned int baseIndex, unsigned int maxIndex) const;
     const UGroup *GroupLocateTag(unsigned int typeIndexTag) const;
+    unsigned int DataCountType(unsigned int type) const;
+    const UData *DataLocateFirst(unsigned int type, unsigned int baseIndex, unsigned int maxIndex) const;
     const UData *DataLocateTag(unsigned int typeIndexTag) const;
     const void *GetArray() const;
 

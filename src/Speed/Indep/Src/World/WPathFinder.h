@@ -44,6 +44,7 @@ struct AStarSearch : public bTNode<AStarSearch> {
     AStarNode *FindOpenNode(const WRoadNode *road_node, int segment_number);
     AStarNode *FindClosedNode(const WRoadNode *road_node, int segment_number);
     static int AStarCheckFlip(AStarNode *before, AStarNode *after);
+    bool Admissible(const WRoadSegment *segment, bool forward, WRoadNav::EPathType path_type);
     float Service(float time);
     bool IsFinished() { return nState > 0; }
     WRoadNav *GetRoadNav() { return pRoadNav; }
