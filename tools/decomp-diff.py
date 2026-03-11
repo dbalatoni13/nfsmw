@@ -20,126 +20,23 @@ Parallel-safe usage (use a temp .o to avoid collisions with other agents):
 import argparse
 import json
 import os
-import shutil
 import subprocess
 import sys
-import tempfile
 from typing import Any, Dict, List, Optional, Tuple
+from _common import ROOT_DIR, ToolError, fail, run_objdiff_json
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
-root_dir = os.path.abspath(os.path.join(script_dir, ".."))
-
+root_dir = ROOT_DIR
 OBJDIFF_CLI = os.path.join(root_dir, "build", "tools", "objdiff-cli")
-OBJDIFF_JSON = os.path.join(root_dir, "objdiff.json")
-
-
-def _make_abs(path: Optional[str], base: str) -> Optional[str]:
-    """Return an absolute version of path relative to base, or None."""
-    if path is None:
-        return None
-    if os.path.isabs(str(path)):
-        return str(path)
-    return os.path.abspath(os.path.join(base, str(path)))
-
-
-def _absolutize_config(config: Dict[str, Any], unit_name: str, base_obj: str) -> bool:
-    """Rewrite all file paths in config to absolute paths and override base_path
-    for unit_name with base_obj.  Returns True if the unit was found."""
-    found = False
-    for unit in config.get("units", []):
-        tp = _make_abs(unit.get("target_path"), root_dir)
-        if tp is not None:
-            unit["target_path"] = tp
-
-        if unit["name"] == unit_name:
-            unit["base_path"] = os.path.abspath(base_obj)
-            found = True
-        else:
-            bp = _make_abs(unit.get("base_path"), root_dir)
-            if bp is not None:
-                unit["base_path"] = bp
-
-        meta = unit.get("metadata") or {}
-        sp = _make_abs(meta.get("source_path"), root_dir)
-        if sp is not None:
-            meta["source_path"] = sp
-
-        scratch = unit.get("scratch") or {}
-        cp = _make_abs(scratch.get("ctx_path"), root_dir)
-        if cp is not None:
-            scratch["ctx_path"] = cp
-
-    return found
 
 
 def run_objdiff(unit: str, base_obj: Optional[str] = None) -> Dict[str, Any]:
-    """Run objdiff-cli diff and return parsed JSON.
-
-    If base_obj is given, a temporary objdiff.json is created that overrides the
-    base_path for this unit so parallel agents don't interfere with each other.
-    """
-    if base_obj is not None:
-        return _run_objdiff_with_base_obj(unit, base_obj)
-
-    result = subprocess.run(
-        [
-            OBJDIFF_CLI,
-            "diff",
-            "-c",
-            "functionRelocDiffs=none",
-            "-u",
-            unit,
-            "-o",
-            "-",
-            "--format",
-            "json",
-        ],
-        capture_output=True,
-        cwd=root_dir,
+    return run_objdiff_json(
+        OBJDIFF_CLI,
+        unit,
+        base_obj=base_obj,
+        extra_args=["-c", "functionRelocDiffs=none"],
+        root_dir=root_dir,
     )
-    if result.returncode != 0:
-        print(f"objdiff-cli error: {result.stderr.decode()}", file=sys.stderr)
-        sys.exit(1)
-    return json.loads(result.stdout)
-
-
-def _run_objdiff_with_base_obj(unit: str, base_obj: str) -> Dict[str, Any]:
-    """Run objdiff-cli using a temporary config that points base_path at base_obj."""
-    with open(OBJDIFF_JSON) as f:
-        config = json.load(f)
-
-    if not _absolutize_config(config, unit, base_obj):
-        print(f"Unit not found in objdiff.json: {unit}", file=sys.stderr)
-        sys.exit(1)
-
-    tmpdir = tempfile.mkdtemp(prefix="nfsmw_objdiff_")
-    try:
-        tmp_config = os.path.join(tmpdir, "objdiff.json")
-        with open(tmp_config, "w") as f:
-            json.dump(config, f)
-
-        result = subprocess.run(
-            [
-                OBJDIFF_CLI,
-                "diff",
-                "-c",
-                "functionRelocDiffs=none",
-                "-u",
-                unit,
-                "-o",
-                "-",
-                "--format",
-                "json",
-            ],
-            capture_output=True,
-            cwd=tmpdir,
-        )
-        if result.returncode != 0:
-            print(f"objdiff-cli error: {result.stderr.decode()}", file=sys.stderr)
-            sys.exit(1)
-        return json.loads(result.stdout)
-    finally:
-        shutil.rmtree(tmpdir, ignore_errors=True)
 
 
 def classify_symbol(sym: Dict[str, Any]) -> str:
@@ -571,7 +468,10 @@ def main():
 
     args = parser.parse_args()
 
-    data = run_objdiff(args.unit, base_obj=args.base_obj)
+    try:
+        data = run_objdiff(args.unit, base_obj=args.base_obj)
+    except ToolError as e:
+        fail(str(e))
 
     if args.diff:
         build_diff(data, args.diff, args)

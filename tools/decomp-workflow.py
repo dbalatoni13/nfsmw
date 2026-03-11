@@ -18,14 +18,11 @@ import os
 import subprocess
 import sys
 from typing import List, Optional, Sequence, Tuple
+from _common import BUILD_NINJA, OBJDIFF_JSON, ROOT_DIR, ToolError, ensure_exists
 
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
-ROOT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 TOOLS_DIR = os.path.join(ROOT_DIR, "tools")
-
-BUILD_NINJA = os.path.join(ROOT_DIR, "build.ninja")
-OBJDIFF_JSON = os.path.join(ROOT_DIR, "objdiff.json")
 PS2_TYPES = os.path.join(ROOT_DIR, "symbols", "PS2", "PS2_types.nothpp")
 
 DEFAULT_SMOKE_UNIT = "main/Speed/Indep/SourceLists/zCamera"
@@ -96,20 +93,12 @@ def run_stream(cmd: Sequence[str]) -> None:
         raise WorkflowError(format_failure(cmd, result.returncode))
 
 
-def ensure_exists(path: str, hint: str) -> None:
-    if not os.path.exists(path):
-        raise WorkflowError(f"Missing {path}\nHint: {hint}")
-
-
 def ensure_decomp_prereqs() -> None:
-    ensure_exists(
-        BUILD_NINJA,
-        "Run: python configure.py",
-    )
-    ensure_exists(
-        OBJDIFF_JSON,
-        "Run: python configure.py",
-    )
+    try:
+        ensure_exists(BUILD_NINJA, "Run: python configure.py")
+        ensure_exists(OBJDIFF_JSON, "Run: python configure.py")
+    except ToolError as e:
+        raise WorkflowError(str(e))
 
 
 def build_temp_obj(unit_name: str) -> str:
@@ -262,6 +251,52 @@ def command_unit(args: argparse.Namespace) -> None:
             maybe_remove(temp_obj)
 
 
+def command_build(args: argparse.Namespace) -> None:
+    cmd = python_tool("build-unit.py", "-u", args.unit)
+    if args.output:
+        cmd.extend(["-o", os.path.abspath(args.output)])
+    run_stream(cmd)
+
+
+def command_diff(args: argparse.Namespace) -> None:
+    ensure_decomp_prereqs()
+    temp_obj = None
+    cleanup = False
+    try:
+        temp_obj, cleanup = resolve_base_obj(
+            args.unit, args.base_obj, args.no_build, args.keep_temp_obj
+        )
+
+        title = f"Diff Workflow: {args.unit}"
+        if args.diff:
+            title += f" / {args.diff}"
+        print_section(title)
+
+        cmd: List[str] = python_tool("decomp-diff.py", "-u", args.unit)
+        if args.diff:
+            cmd.extend(["-d", args.diff])
+        if args.type:
+            cmd.extend(["-t", args.type])
+        if args.status:
+            cmd.extend(["-s", args.status])
+        if args.section:
+            cmd.extend(["--section", args.section])
+        if args.search:
+            cmd.extend(["--search", args.search])
+        if args.context is not None:
+            cmd.extend(["-C", str(args.context)])
+        if args.range:
+            cmd.extend(["--range", args.range])
+        if args.no_collapse:
+            cmd.append("--no-collapse")
+        if temp_obj:
+            cmd.extend(["--base-obj", temp_obj])
+        run_stream(cmd)
+    finally:
+        if cleanup:
+            maybe_remove(temp_obj)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
@@ -338,6 +373,66 @@ def build_parser() -> argparse.ArgumentParser:
         help="Keep the auto-built temp object instead of deleting it afterwards",
     )
     unit.set_defaults(func=command_unit)
+
+    build = subparsers.add_parser(
+        "build",
+        help="Run build-unit.py with wrapper-friendly defaults",
+    )
+    build.add_argument("-u", "--unit", required=True, help="Translation unit name")
+    build.add_argument(
+        "-o",
+        "--output",
+        help="Explicit output .o path (default: auto-generated temp file)",
+    )
+    build.set_defaults(func=command_build)
+
+    diff = subparsers.add_parser(
+        "diff",
+        help="Build a temp object if needed and run decomp-diff.py",
+    )
+    diff.add_argument("-u", "--unit", required=True, help="Translation unit name")
+    diff.add_argument(
+        "-d",
+        "--diff",
+        metavar="SYMBOL",
+        help="Show diff for a specific symbol instead of overview mode",
+    )
+    diff.add_argument("-t", "--type", help="Filter by type: function, object")
+    diff.add_argument(
+        "-s",
+        "--status",
+        help="Filter by status: missing, matching, nonmatching, extra",
+    )
+    diff.add_argument("--section", help="Filter by section name")
+    diff.add_argument("--search", help="Fuzzy search on demangled symbol name")
+    diff.add_argument(
+        "-C",
+        "--context",
+        type=int,
+        default=3,
+        help="Context lines around mismatches (default: 3)",
+    )
+    diff.add_argument("--range", help="Instruction offset range (hex, e.g. 100-200)")
+    diff.add_argument(
+        "--no-collapse",
+        action="store_true",
+        help="Don't collapse matching instruction runs",
+    )
+    diff.add_argument(
+        "--base-obj",
+        help="Use an explicit object file instead of building a temp object",
+    )
+    diff.add_argument(
+        "--no-build",
+        action="store_true",
+        help="Do not build a temp object when --base-obj is not provided",
+    )
+    diff.add_argument(
+        "--keep-temp-obj",
+        action="store_true",
+        help="Keep the auto-built temp object instead of deleting it afterwards",
+    )
+    diff.set_defaults(func=command_diff)
 
     return parser
 

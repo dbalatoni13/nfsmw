@@ -140,6 +140,8 @@ Prefer this wrapper for routine agent-driven flows instead of manually chaining
 ```sh
 python tools/decomp-workflow.py health
 python tools/decomp-workflow.py health --smoke-build-unit main/Speed/Indep/SourceLists/zAnim
+python tools/decomp-workflow.py build -u main/Speed/Indep/SourceLists/zAnim
+python tools/decomp-workflow.py diff -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin
 python tools/decomp-workflow.py unit -u main/Speed/Indep/SourceLists/zAnim
 ```
@@ -147,6 +149,10 @@ python tools/decomp-workflow.py unit -u main/Speed/Indep/SourceLists/zAnim
 The wrapper keeps the existing tools as the source of truth. It is intended to reduce
 repeated command chaining and to standardize temp-object handling and worktree preflight
 checks for agents.
+
+On a newly updated or unusual worktree, run `python tools/decomp-workflow.py health` first.
+If it reports missing generated files such as `objdiff.json` or `build.ninja`, run
+`python configure.py` in that worktree before using the decomp wrappers.
 
 ### find-symbol.py — Check for existing definitions before declaring new types
 

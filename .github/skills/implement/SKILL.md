@@ -17,6 +17,7 @@ Preferred shortcut:
 
 ```sh
 python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
 ```
 
 Equivalent manual form:
@@ -99,8 +100,15 @@ The game uses stlport, so you'll often encounter \_STL, but in the code it must 
 
 Compile to a private temp `.o` so your output isn't overwritten by other concurrent builds.
 If you just need the standard context + temp-build flow, prefer
-`python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName` and drop
-down to the manual loop below when you need tighter control over repeated diff iterations:
+`python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName`.
+If you only need a temp build or a standardized diff run, use:
+
+```sh
+python tools/decomp-workflow.py build -u main/Path/To/TU
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
+```
+
+Drop down to the manual loop below when you need tighter control over repeated diff iterations:
 
 ```sh
 TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
