@@ -30,12 +30,44 @@ struct SND_Stich {
     struct SND_SampleRef *pSampleRefList; // offset 0x10, size 0x4
 };
 
+struct SND_Params {
+    // total size: 0x18
+    int ID;    // offset 0x0, size 0x4
+    int Vol;   // offset 0x4, size 0x4
+    int Pitch; // offset 0x8, size 0x4
+    int Az;    // offset 0xC, size 0x4
+    int Mag;   // offset 0x10, size 0x4
+    int RVerb; // offset 0x14, size 0x4
+};
+
+struct cSampleWarpper : public AudioMemBase {
+    void Destroy();
+};
+
+// total size: 0x6C
+struct cStichWrapper : public AudioMemBase {
+    SND_Params SndParams;        // offset 0x4, size 0x18
+    SND_Stich *StichData;        // offset 0x1C, size 0x4
+    bool bIsPlaying;             // offset 0x20, size 0x1
+    cSampleWarpper *ActiveSamplesRefs[18]; // offset 0x24, size 0x48
+
+    const SND_Stich &GetData() const {
+        return *StichData;
+    }
+
+    void Destroy();
+};
+
 char *GetStichTypeName(STICH_TYPE CurType /* r3 */);
 
 struct SampleQueueItem {
     // total size: 0x8
-    struct cSampleWarpper *pSample; // offset 0x0, size 0x4
-    struct cStichWrapper *pStitch;  // offset 0x4, size 0x4
+    cSampleWarpper *pSample; // offset 0x0, size 0x4
+    cStichWrapper *pStitch;  // offset 0x4, size 0x4
+
+    bool operator==(const SampleQueueItem &compareto) const {
+        return pSample == compareto.pSample && pStitch == compareto.pStitch;
+    }
 };
 
 // total size: 0x1C
@@ -50,6 +82,10 @@ class cSTICH_PlayBack : public AudioMemBase {
     void DestroyAllStichs(void);
 
     bPList<SND_Stich> &GetStichList(STICH_TYPE StichType);
+
+    static UTL::FixedVector<SampleQueueItem, 43, 16> &GetQueueList(STICH_TYPE type) {
+        return mQueuedSampleList[type];
+    }
 
   protected:
     static void QueueSampleRequest(struct SampleQueueItem &samplereq);

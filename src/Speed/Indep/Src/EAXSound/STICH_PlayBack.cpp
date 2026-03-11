@@ -23,9 +23,23 @@ cSTICH_PlayBack::~cSTICH_PlayBack() {
     }
 }
 
-void cSTICH_PlayBack::QueueSampleRequest(struct SampleQueueItem &samplereq) {}
+void cSTICH_PlayBack::QueueSampleRequest(struct SampleQueueItem &samplereq) {
+    STICH_TYPE type = static_cast<STICH_TYPE>(samplereq.pStitch->GetData().eStichType);
+    GetQueueList(type).push_back(samplereq);
+}
 
-void cSTICH_PlayBack::RemoveFromList(struct SampleQueueItem sampleitem) {}
+void cSTICH_PlayBack::RemoveFromList(struct SampleQueueItem sampleitem) {
+    STICH_TYPE type = static_cast<STICH_TYPE>(sampleitem.pStitch->GetData().eStichType);
+    UTL::FixedVector<SampleQueueItem, 43, 16> &list = GetQueueList(type);
+    for (SampleQueueItem *iter = list.begin(); iter != list.end(); ++iter) {
+        SampleQueueItem compareto = *iter;
+        if (compareto == sampleitem) {
+            GetQueueList(type).erase(iter);
+            break;
+        }
+    }
+    sampleitem.pSample->Destroy();
+}
 
 // UNSOLVED
 int cSTICH_PlayBack::Prune(STICH_TYPE type, int priority, int num_to_clear) {
