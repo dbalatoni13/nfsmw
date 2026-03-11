@@ -39,38 +39,39 @@ void uiRapSheetVD::NotificationMessage(unsigned long msg, FEObject* pobj, unsign
     if (msg == 0xE1FDE1D1) { cFEng::Get()->QueuePackageSwitch("RapSheetMain.fng", 0, 0, false); }
 }
 void uiRapSheetVD::Setup() {
-    int count = 0;
+    int numCars = 0;
     ClearData();
     FEPlayerCarDB* stable = FEDatabase->GetPlayerCarStable(0);
     for (int i = 0; i < 200; i++) {
-        FECarRecord* car = stable->GetCarByIndex(i);
-        if (car->IsValid() && car->MatchesFilter(0xF0002)) {
-            FECareerRecord* career = stable->GetCareerRecordByHandle(car->CareerHandle);
-            if (career != nullptr) {
-                unsigned int name = car->GetNameHash();
-                int bounty = career->GetBounty();
-                int fines = career->GetInfractions(true).GetFineValue();
-                int unserved = stable->GetNumInfractionsOnCar(car->Handle, true);
-                int evaded = career->GetNumEvadedPursuits();
-                int busted = career->GetNumBustedPursuits();
-                unsigned int status;
-                if (career->TheImpoundData.IsImpounded()) { status = 0x35E4E01F; }
-                else if (busted != 0) { status = 0x2089554C; }
-                else { status = 0xD3EFE2E5; }
-                count++;
-                AddDatum(new(__FILE__, __LINE__) RapSheetVDDatum(name, status, bounty, fines, unserved, evaded, busted));
+        FECarRecord* fe_car = stable->GetCarByIndex(i);
+        if (fe_car->IsValid() && fe_car->MatchesFilter(0xF0002)) {
+            FECareerRecord* record = stable->GetCareerRecordByHandle(fe_car->CareerHandle);
+            if (record != nullptr) {
+                unsigned int name_hash = fe_car->GetNameHash();
+                unsigned int bounty = record->GetBounty();
+                unsigned int fines = record->GetInfractions(true).GetFineValue();
+                unsigned short unserved = stable->GetNumInfractionsOnCar(fe_car->Handle, true);
+                unsigned int evaded = record->GetNumEvadedPursuits();
+                unsigned int busted = record->GetNumBustedPursuits();
+                unsigned int status_hash;
+                if (record->TheImpoundData.IsImpounded()) { status_hash = 0x35E4E01F; }
+                else if (busted != 0) { status_hash = 0x2089554C; }
+                else { status_hash = 0xD3EFE2E5; }
+                AddDatum(new(__FILE__, __LINE__) RapSheetVDDatum(name_hash, status_hash, bounty, fines, unserved, evaded, busted));
+                numCars++;
             }
         }
     }
-    while (count < GetWidth() * GetHeight()) {
-        count++;
-        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_CAR_%d", count), GetLocalizedString(0x73AF0386));
-        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE_%d", count), "");
-        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE2_%d", count), "");
-        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE3_%d", count), "");
-        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE4_%d", count), "");
-        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE5_%d", count), "");
-        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE6_%d", count), "");
+    int i = numCars;
+    while (i < GetWidth() * GetHeight()) {
+        i++;
+        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_CAR_%d", i), GetLocalizedString(0x73AF0386));
+        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE_%d", i), "");
+        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE2_%d", i), "");
+        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE3_%d", i), "");
+        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE4_%d", i), "");
+        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE5_%d", i), "");
+        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE6_%d", i), "");
     }
     SetInitialPosition(0);
     RefreshHeader();

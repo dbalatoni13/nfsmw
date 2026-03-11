@@ -193,9 +193,9 @@ class ArrayScroller {
 
     void SetDimensions(int w, int h) {}
 
-    int GetWidth() {}
+    int GetWidth() { return width; }
 
-    int GetHeight() {}
+    int GetHeight() { return height; }
 
     void ScrollLeft() {}
 
