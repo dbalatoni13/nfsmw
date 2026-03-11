@@ -22,6 +22,15 @@ struct WCollisionTri {
     WSurface fSurface;                    // offset 0x2C, size 0x2
     unsigned short PAD;                   // offset 0x2E, size 0x2
 
+    WCollisionTri()
+        : fPt0(UMath::Vector3::kZero), //
+          fSurfaceRef(nullptr), //
+          fPt1(UMath::Vector3::kZero), //
+          fFlags(0), //
+          fPt2(UMath::Vector3::kZero), //
+          fSurface(), //
+          PAD(0) {}
+
     inline void GetNormal(UMath::Vector3 *norm) const {
         UMath::Vector3 vecX;
         UMath::Vector3 vecZ;

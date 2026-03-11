@@ -32,12 +32,13 @@ class WWorldPos {
         }
     }
 
-    WWorldPos(float yOffset) {
-        this->fFaceValid = 0;
-        this->fMissCount = 0;
-        this->fUsageCount = 0;
-        this->fYOffset = yOffset;
-        this->fSurface = nullptr;
+    WWorldPos(float yOffset)
+        : fFace(), //
+          fYOffset(yOffset), //
+          fSurface(nullptr) {
+        fFaceValid = 0;
+        fMissCount = 0;
+        fUsageCount = 0;
     }
 
     ~WWorldPos() {}
