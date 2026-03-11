@@ -412,13 +412,17 @@ void FEngGetCenter(FEObject* object, float& x, float& y) {
             break;
         }
         case FE_Image:
+        case FE_Movie:
+        case FE_ColoredImage:
+        case FE_MultiImage:
+            x = pos.x;
+            y = pos.y;
+            break;
         case FE_Model:
         case FE_List:
         case FE_Group:
         case FE_CodeList:
-        case FE_Movie:
-        case FE_ColoredImage:
-        case FE_MultiImage:
+        default:
             x = pos.x;
             y = pos.y;
             break;
@@ -447,13 +451,17 @@ void FEngSetCenter(FEObject* object, float x, float y) {
             break;
         }
         case FE_Image:
+        case FE_Movie:
+        case FE_ColoredImage:
+        case FE_MultiImage:
+            pos.x = x;
+            pos.y = y;
+            break;
         case FE_Model:
         case FE_List:
         case FE_Group:
         case FE_CodeList:
-        case FE_Movie:
-        case FE_ColoredImage:
-        case FE_MultiImage:
+        default:
             pos.x = x;
             pos.y = y;
             break;

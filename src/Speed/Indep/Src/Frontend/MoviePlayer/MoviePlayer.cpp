@@ -137,16 +137,16 @@ void MoviePlayer::ResetTimer() {
 }
 
 void MoviePlayer::Stop() {
-    fLiveStatus = 1;
     fStatus = 1;
+    fLiveStatus = 1;
     ResetTimer();
 }
 
 unsigned int MoviePlayer::GetMillisecondsPerFrame() {
-    if (GetVideoMode() != 0) {
-        return 16;
+    if (GetVideoMode() == 0) {
+        return 20;
     }
-    return 20;
+    return 16;
 }
 
 int MoviePlayer::GetMovieCategoryVolume() {

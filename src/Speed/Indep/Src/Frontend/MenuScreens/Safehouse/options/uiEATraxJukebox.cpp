@@ -141,13 +141,13 @@ void UIEATraxScreen::ScrollOrderState(unsigned long msg) {
 }
 
 void UIEATraxScreen::ScrollTracks(unsigned long msg) {
-    if (msg != 0x72619778) {
-        if (!Tracks.IsAtTail()) {
-            Tracks.ScrollNext();
-        }
-    } else {
+    if (msg == 0x72619778) {
         if (!Tracks.IsAtHead()) {
             Tracks.ScrollPrev();
+        }
+    } else {
+        if (!Tracks.IsAtTail()) {
+            Tracks.ScrollNext();
         }
     }
 }
