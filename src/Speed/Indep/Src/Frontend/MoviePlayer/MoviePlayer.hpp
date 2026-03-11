@@ -42,6 +42,8 @@ struct MoviePlayer {
     FRAME* CurFrame;                   // offset 0x154
 
     void HandleFatalError();
+    void Update();
+    bool IsMoviePlaying();
 };
 
 extern MoviePlayer* gMoviePlayer;
