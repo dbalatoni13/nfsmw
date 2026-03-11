@@ -74,9 +74,13 @@ def get_compdb() -> Optional[List[Dict[str, Any]]]:
 def find_entry(
     compdb: List[Dict[str, Any]], source_path: str
 ) -> Optional[Dict[str, Any]]:
-    """Find the compdb entry whose 'file' matches source_path."""
+    """Find the compdb entry whose 'file' matches source_path and output is a .o file."""
     abs_source = os.path.normcase(os.path.abspath(os.path.join(root_dir, source_path)))
     for entry in compdb:
+        # Skip non-.o entries (e.g. hasher, context generation)
+        output = entry.get("output", "")
+        if not output.endswith(".o"):
+            continue
         file_val = entry.get("file", "")
         if not os.path.isabs(file_val):
             entry_dir = entry.get("directory", root_dir)
