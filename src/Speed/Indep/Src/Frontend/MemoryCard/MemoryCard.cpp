@@ -209,16 +209,18 @@ void MemoryCard::LoadLocale(eLanguages eLang) {
     if (s_pThis == nullptr) return;
     char sPath[64];
     bStrCpy(sPath, "FRONTEND/MC_");
-    if (eLang > eLANGUAGE_LABELS) goto use_lang_name;
-    if (eLang <= eLANGUAGE_FINNISH) goto use_lang_name;
-    bStrCat(sPath, sPath, "English.bin");
-    goto after_lang;
-use_lang_name: {
+    if (eLang <= eLANGUAGE_LABELS) {
+        if (eLang >= eLANGUAGE_LARGEST) {
+            bStrCat(sPath, sPath, "English.bin");
+        } else {
+            goto lang_code;
+        }
+    } else {
+    lang_code:
         const char* langName = GetLanguageName(eLang);
         bStrCat(sPath, sPath, langName);
         bStrCat(sPath, sPath, ".bin");
     }
-after_lang:
     if (s_pThis->m_pLocaleFileHandler == nullptr)
         s_pThis->m_pLocaleFileHandler = bMalloc(0x2000, 0);
     unsigned int currentsize = bFileSize(sPath);
