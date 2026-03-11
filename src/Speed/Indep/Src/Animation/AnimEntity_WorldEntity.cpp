@@ -129,12 +129,8 @@ bool CWorldAnimEntity::Init(void *init_data, SpaceNode *parent_space_node) {
         mAnimCtrl->SetTimeScale(1.0f);
     }
 
-    CWorldAnimCtrl *ctrl = mAnimCtrl;
-    ctrl->SetMasterDelayTime(info->instance_data->master_delay);
-    ctrl->SetFlags(0x80);
-    ctrl = mAnimCtrl;
-    ctrl->SetLocalDelayTime(info->instance_data->loop_delay);
-    ctrl->SetFlags(0x100);
+    mAnimCtrl->SetMasterDelayTime(info->instance_data->master_delay);
+    mAnimCtrl->SetLocalDelayTime(info->instance_data->loop_delay);
 
     CAnimPart *anim_part = mAnimCtrl->GetAnimPart();
     CAnimSkeleton *skel = GetSkeletonFromList(bStringHash("ROOT"));
@@ -179,7 +175,6 @@ bool CWorldAnimEntity::Init(void *init_data, SpaceNode *parent_space_node) {
             float rand_delay = bRandom(anim_len_sec * 0.5f, &seed);
             CWorldAnimCtrl *ctrl = mAnimCtrl;
             ctrl->SetLocalDelayTime(rand_delay);
-            ctrl->SetFlags(0x100);
         }
         if (info->instance_data->play_flags & 0x400) {
             unsigned int seed = 0x69babe69;

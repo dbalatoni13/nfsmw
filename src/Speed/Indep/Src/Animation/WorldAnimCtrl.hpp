@@ -170,6 +170,7 @@ class CWorldAnimCtrl : public bTNode<CWorldAnimCtrl> {
     }
 
     void SetMasterDelayTime(float time) {
+        m_flags |= 0x80;
         m_masterDelayTime = time;
     }
 
@@ -178,6 +179,7 @@ class CWorldAnimCtrl : public bTNode<CWorldAnimCtrl> {
     }
 
     void SetLocalDelayTime(float time) {
+        m_flags |= 0x100;
         m_localDelayTime = time;
     }
 
