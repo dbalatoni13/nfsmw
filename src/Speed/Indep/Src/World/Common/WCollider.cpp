@@ -7,7 +7,7 @@
 void VU0_v4crossprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r);
 
 UTL::Std::map<unsigned int, WCollider *, _type_map> WCollider::fWuidMap;
-UTL::Collections::Listable<WCollider, 100>::List UTL::Collections::Listable<WCollider, 100>::_mTable;
+template <> UTL::Collections::Listable<WCollider, 100>::List UTL::Collections::Listable<WCollider, 100>::_mTable;
 
 WCollider::WCollider(eColliderShape colliderShape, unsigned int typeMask, unsigned int exclusionMask)
     : fRequestedPosition(UMath::Vector3::kZero),     //
