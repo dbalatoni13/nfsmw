@@ -492,17 +492,17 @@ void PODriveCam::Draw() {
     int player = GetPlayerToEditForOptions();
     int cam = static_cast<int>(FEDatabase->GetPlayerSettings(player)->CurCam);
     switch (cam) {
-    case 0:
-        hash = 0xC3E9AE58;
-        break;
-    case 1:
-        hash = 0x414F19D7;
+    case 3:
+        hash = 0x1EA4CEC2;
         break;
     case 2:
         hash = 0x5AE3441F;
         break;
-    case 3:
-        hash = 0x1EA4CEC2;
+    case 1:
+        hash = 0x414F19D7;
+        break;
+    case 0:
+        hash = 0xC3E9AE58;
         break;
     case 4:
         hash = 0x916039B4;
