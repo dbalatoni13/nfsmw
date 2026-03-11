@@ -14,9 +14,17 @@ uiRapSheetMain::uiRapSheetMain(ScreenConstructorData* sd)
 { RefreshHeader(); }
 uiRapSheetMain::~uiRapSheetMain() {}
 void uiRapSheetMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) {
-    if (msg == 0x35F8620B) { unsigned char button = FEngGetLastButton(GetPackageName()); if (button == 0) { button = 1; } FEngSetCurrentButton(GetPackageName(), FEngHashString("BL_%d", button)); }
-    else if (msg == 0x0C407210) { button_pressed = pobj->NameHash; }
-    else if (msg == 0xE1FDE1D1) {
+    switch (msg) {
+    case 0x35F8620B: {
+        unsigned char button = FEngGetLastButton(GetPackageName());
+        if (button == 0) { button = 1; }
+        FEngSetCurrentButton(GetPackageName(), FEngHashString("BL_%d", button));
+        break;
+    }
+    case 0x0C407210:
+        button_pressed = pobj->NameHash;
+        break;
+    case 0xE1FDE1D1: {
         int button_num = 1;
         if (button_pressed == 0xCDA0A66D) { button_num = 3; cFEng::Get()->QueuePackageSwitch("RapSheetCTS.fng", 0, 0, false); }
         else if (button_pressed == 0xCDA0A66B) { cFEng::Get()->QueuePackageSwitch("RapSheetRS.fng", 0, 0, false); }
@@ -26,6 +34,8 @@ void uiRapSheetMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsi
         else if (button_pressed == 0xCDA0A670) { button_num = 6; cFEng::Get()->QueuePackageSwitch("RapSheetVD.fng", 0, 0, false); }
         else { button_num = 1; cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false); FEDatabase->ClearGameMode(eFE_GAME_MODE_RAP_SHEET); }
         FEngSetLastButton(GetPackageName(), static_cast<unsigned char>(button_num));
+        break;
+    }
     }
 }
 void uiRapSheetMain::RefreshHeader() {

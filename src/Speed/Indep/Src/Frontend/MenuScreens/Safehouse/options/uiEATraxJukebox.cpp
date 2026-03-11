@@ -240,23 +240,33 @@ void UIEATraxScreen::ReInsertSong() {
 
 void UIEATraxScreen::NotificationMessage(unsigned long msg, FEObject* pObject, unsigned long Param1,
                                          unsigned long Param2) {
-    if (msg == 0x72619778 || msg == 0x911C0A4B) {
+    switch (msg) {
+    case 0x72619778:
+    case 0x911C0A4B:
         if (bTrackGrabbed == false) {
             ScrollTracks(msg);
         } else {
             MoveTrack(msg);
         }
-    } else if (msg == 0x35F8620B) {
+        break;
+    case 0x35F8620B:
         Tracks.HighlightSelected();
-    } else if (msg == 0x5073EF13 || msg == 0xD9FEEC59) {
+        break;
+    case 0x5073EF13:
+    case 0xD9FEEC59:
         ScrollOrderState(msg);
-    } else if (msg == 0x9120409E || msg == 0xB5971BF1) {
+        break;
+    case 0x9120409E:
+    case 0xB5971BF1:
         ScrollTrackPlayability(msg);
-    } else if (msg == 0xC519BFC3) {
+        break;
+    case 0xC519BFC3:
         PreviewSong();
-    } else if (msg == 0xC519BFC4) {
+        break;
+    case 0xC519BFC4:
         bTrackGrabbed = bTrackGrabbed ^ 1;
-    } else if (msg == 0x911AB364) {
+        break;
+    case 0x911AB364:
         if (OptionsDidNotChange()) {
             cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), nullptr);
         } else {
@@ -267,17 +277,22 @@ void UIEATraxScreen::NotificationMessage(unsigned long msg, FEObject* pObject, u
                                             static_cast< eDialogFirstButtons >(1), blurb);
         }
         MControlPathfinder(true, 0, 0, 0).Send("EATraxInit");
-    } else if (msg == 0x775DBA97) {
+        break;
+    case 0x775DBA97:
         RestoreOriginals();
         cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), nullptr);
-    } else if (msg == 0xE1FDE1D1) {
+        break;
+    case 0xE1FDE1D1:
         MControlPathfinder(true, 0xFFFFFFFF, 0, 0).Send("EATraxInit");
-        unsigned long dirty = 0;
-        if (FEDatabase->IsOptionsDirty() || !OptionsDidNotChange()) {
-            dirty = 1;
+        {
+            unsigned long dirty = 0;
+            if (FEDatabase->IsOptionsDirty() || !OptionsDidNotChange()) {
+                dirty = 1;
+            }
+            FEDatabase->SetOptionsDirty(dirty);
         }
-        FEDatabase->SetOptionsDirty(dirty);
         cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+        break;
     }
 }
 

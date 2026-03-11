@@ -33,7 +33,8 @@ uiRepSheetRivalBio::uiRepSheetRivalBio(ScreenConstructorData* sd)
 }
 
 void uiRepSheetRivalBio::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) {
-    if (msg == 0x406415e3) {
+    switch (msg) {
+    case 0x406415e3:
         if ((FEDatabase->GetGameMode() & 0x20000) != 0) {
             if (uiRepSheetRivalFlow::Get()->GetStage() == -1) {
                 uiRepSheetRivalFlow::Get()->StartFlow(5);
@@ -41,7 +42,8 @@ void uiRepSheetRivalBio::NotificationMessage(unsigned long msg, FEObject* obj, u
                 uiRepSheetRivalFlow::Get()->Next();
             }
         }
-    } else if (msg == 0x911ab364) {
+        break;
+    case 0x911ab364:
         if ((FEDatabase->GetGameMode() & 0x20000) == 0) {
             if (!bIsInGame) {
                 cFEng::Get()->QueuePackageSwitch("BL_MAIN", 0, 0, false);
@@ -49,6 +51,7 @@ void uiRepSheetRivalBio::NotificationMessage(unsigned long msg, FEObject* obj, u
                 cFEng::Get()->QueuePackageSwitch("IG_BL_MAIN", 1, 0, false);
             }
         }
+        break;
     }
 }
 

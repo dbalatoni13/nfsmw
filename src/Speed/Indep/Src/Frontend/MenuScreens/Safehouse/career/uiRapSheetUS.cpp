@@ -31,8 +31,10 @@ uiRapSheetUS::uiRapSheetUS(ScreenConstructorData* sd)
 uiRapSheetUS::~uiRapSheetUS() {}
 void uiRapSheetUS::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) {
     ArrayScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
-    if (msg == 0xC519BFC4) { ToggleView(); }
-    else if (msg == 0xE1FDE1D1) { cFEng::Get()->QueuePackageSwitch("RapSheetMain.fng", 0, 0, false); }
+    switch (msg) {
+    case 0xC519BFC4: ToggleView(); break;
+    case 0xE1FDE1D1: cFEng::Get()->QueuePackageSwitch("RapSheetMain.fng", 0, 0, false); break;
+    }
 }
 void uiRapSheetUS::ToggleView() { view_unserved = !view_unserved; Setup(); }
 void uiRapSheetUS::Setup() {

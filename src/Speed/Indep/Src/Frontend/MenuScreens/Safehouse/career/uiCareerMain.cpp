@@ -41,12 +41,13 @@ void uiCareerCrib::NotificationMessage(unsigned long msg, FEObject* pobj, unsign
                                        unsigned long param2) {
     IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
 
-    if (msg == 0x34DC1BCF) {
+    switch (msg) {
+    case 0x34DC1BCF:
         return;
-    } else if (msg == 0x1265ECE9) {
+    case 0x1265ECE9:
         GarageMainScreen::GetInstance()->UpdateCurrentCameraView(false);
         return;
-    } else if (msg == 0xD05FC3A3) {
+    case 0xD05FC3A3: {
         const char* lastDDayRace = GRaceDatabase::Get().GetDDayEndRace();
         bool dday_flow_completed = false;
         if (!SkipDDayRaces) {
@@ -73,7 +74,8 @@ void uiCareerCrib::NotificationMessage(unsigned long msg, FEObject* pobj, unsign
         }
         FEDatabase->SetGameMode(eFE_GAME_MODE_CAREER);
         return;
-    } else if (msg == 0xE1FDE1D1) {
+    }
+    case 0xE1FDE1D1:
         if (PrevButtonMessage != 0x911AB364) {
             return;
         }

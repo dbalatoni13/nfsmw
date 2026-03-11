@@ -45,13 +45,17 @@ void UIProfileManager::NotificationMessage(unsigned long msg, FEObject* obj, uns
                                            unsigned long param2) {
     IconScrollerMenu::NotificationMessage(msg, obj, param1, param2);
 
-    if (msg == 0x7E998E5E) {
+    switch (msg) {
+    case 0x7E998E5E:
         FEDatabase->RefreshCurrentRide();
         Refresh();
-    } else if (msg == 0x35F8620B) {
+        break;
+    case 0x35F8620B:
         Refresh();
-    } else if (msg == 0x911AB364) {
+        break;
+    case 0x911AB364:
         cFEng::Get()->QueuePackageSwitch("MainMenu.fng", 0, 0, false);
+        break;
     }
 }
 
@@ -130,10 +134,13 @@ void UIDeleteProfile::NotificationMessage(unsigned long msg, FEObject* obj, unsi
                                           unsigned long param2) {
     IconScrollerMenu::NotificationMessage(msg, obj, param1, param2);
 
-    if (msg == 0x7E998E5E) {
+    switch (msg) {
+    case 0x7E998E5E:
         Refresh();
-    } else if (msg == 0x911AB364) {
+        break;
+    case 0x911AB364:
         cFEng::Get()->QueuePackageSwitch("ProfileManager.fng", 0, 0, false);
+        break;
     }
 }
 

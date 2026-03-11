@@ -98,9 +98,11 @@ eMenuSoundTriggers UIMemcardBoot::NotifySoundMessage(unsigned long msg, eMenuSou
 void UIMemcardBoot::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
                                          unsigned long param2) {
     UIMemcardBase::NotificationMessage(msg, obj, param1, param2);
-    if (msg == 0x461a18ee) {
+    switch (msg) {
+    case 0x461a18ee:
         ChangeToNextBootFlowScreen__15BootFlowManageri(BootFlowManager::Get(), 0xff);
-    } else if (msg == 0x35f8620b) {
+        break;
+    case 0x35f8620b:
         HideAllButtons();
         MemoryCard::GetInstance()->ShowMessages(true);
         if (!IsMemcardEnabled) {
@@ -111,9 +113,11 @@ void UIMemcardBoot::NotificationMessage(unsigned long msg, FEObject* obj, unsign
         MemoryCard::GetInstance()->BootupCheck(nullptr);
         SetScreenVisible(true, 0);
         m_bVisible = true;
-    } else if (msg == 0x8867412d) {
+        break;
+    case 0x8867412d:
         ChangeToNextBootFlowScreen__15BootFlowManageri(BootFlowManager::Get(), 0xff);
         MemoryCard::GetInstance()->m_bHUDLoaded = false;
+        break;
     }
 }
 

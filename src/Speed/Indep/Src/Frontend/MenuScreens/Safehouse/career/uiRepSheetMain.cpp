@@ -74,7 +74,8 @@ eMenuSoundTriggers uiRepSheetMain::NotifySoundMessage(unsigned long msg, eMenuSo
 
 void uiRepSheetMain::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) {
     IconScrollerMenu::NotificationMessage(msg, obj, param1, param2);
-    if (msg == 0x406415e3) {
+    switch (msg) {
+    case 0x406415e3:
         if (selection == 0) {
             if (bIsInGame) {
                 cFEng::Get()->QueuePackageSwitch("IG_BL_CHALLENGE", 1, 0, false);
@@ -100,12 +101,14 @@ void uiRepSheetMain::NotificationMessage(unsigned long msg, FEObject* obj, unsig
                 cFEng::Get()->QueuePackageSwitch("BL_BIO", 0, 0, false);
             }
         }
-    } else if (msg == 0x911ab364) {
+        break;
+    case 0x911ab364:
         if (bIsInGame) {
             cFEng::Get()->QueuePackageSwitch("IG_PAUSEMENU", 1, 0, false);
         } else {
             cFEng::Get()->QueuePackageSwitch("FE_CAREER", 0, 0, false);
         }
+        break;
     }
 }
 

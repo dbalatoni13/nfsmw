@@ -777,31 +777,40 @@ void UIMemcardBase::NotificationMessage(unsigned long msg, FEObject* obj, unsign
     if (msg != 0xc407210 && MemoryCard::GetInstance()->GetOp() == 0) {
         UIMemcardKeyboard::NotificationMessage(msg, obj, param1, param2);
     }
-    if (msg == 0xc502df5d) {
+    switch (msg) {
+    case 0xc502df5d:
         m_bInButtonAnimation = true;
         TranslateButton(reinterpret_cast< FEObject* >(param1));
-    } else if (msg == 0x35f8620b || msg == 0x3a2be557) {
+        break;
+    case 0x35f8620b:
+    case 0x3a2be557:
         InitComplete();
-    } else if (msg == 0xc407210) {
+        break;
+    case 0xc407210:
         m_bInButtonAnimation = false;
         gMemcardSetup.mLastController = param2;
         HandleButtonPressed(0xc407210, obj, param1, param2, false);
-    } else if (msg == 0x54b3ac6c) {
+        break;
+    case 0x54b3ac6c:
         SetScreenVisible(false, 0);
         cFEng::Get()->QueuePackagePush("MC_List.fng", 0, 0, false);
-    } else if (msg == 0xda5b8712) {
+        break;
+    case 0xda5b8712: {
         const char* editStr = FEngGetEditedString();
         bStrCpy(m_FileName, editStr);
         FEDatabase->CurrentUserProfiles[0]->SetProfileName(m_FileName, true);
         FEDatabase->DeallocBackupDB();
         FEDatabase->bProfileLoaded = true;
         DoSaveFlow(4);
-    } else if (msg == 0xc98356ba) {
+        break;
+    }
+    case 0xc98356ba:
         if (m_bDelayedFailed) {
             m_bDelayedFailed = false;
             cFEng::Get()->QueueGameMessage(0x8867412d, GetPackageName(), 0xff);
         }
-    } else if (msg == 0xc9d30688) {
+        break;
+    case 0xc9d30688:
         if ((gMemcardSetup.mOp & 0xf0) == 0x60 && !FEDatabase->bProfileLoaded) {
             DoSaveFlow(2);
         } else if ((gMemcardSetup.mOp & 0x60) == 0 || !FEDatabase->bProfileLoaded) {
@@ -810,10 +819,13 @@ void UIMemcardBase::NotificationMessage(unsigned long msg, FEObject* obj, unsign
         } else {
             DoSaveFlow(1);
         }
-    } else if (msg == 0xe1fde1d1) {
+        break;
+    case 0xe1fde1d1:
         ExitComplete();
-    } else if (msg == 0xf35d144e) {
+        break;
+    case 0xf35d144e:
         SetupPromptCorruptProfile();
+        break;
     }
 }
 

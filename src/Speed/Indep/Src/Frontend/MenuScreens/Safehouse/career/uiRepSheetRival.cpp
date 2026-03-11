@@ -60,7 +60,8 @@ eMenuSoundTriggers uiRepSheetRival::NotifySoundMessage(unsigned long msg, eMenuS
 }
 
 void uiRepSheetRival::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) {
-    if (msg == 0x406415e3) {
+    switch (msg) {
+    case 0x406415e3:
         if (bMidRivalFlow) {
             uiRepSheetRivalFlow::Get()->Next();
         } else if ((FEDatabase->GetGameMode() & 0x20000) != 0) {
@@ -74,7 +75,8 @@ void uiRepSheetRival::NotificationMessage(unsigned long msg, FEObject* obj, unsi
                 GManager::Get().StartRaceFromInGame(launch_race->GetEventHash());
             }
         }
-    } else if (msg == 0x911ab364) {
+        break;
+    case 0x911ab364:
         if (!bMidRivalFlow) {
             if (!bOneOff) {
                 if ((FEDatabase->GetGameMode() & 0x20000) == 0) {
@@ -88,6 +90,7 @@ void uiRepSheetRival::NotificationMessage(unsigned long msg, FEObject* obj, unsi
                 new EUnPause();
             }
         }
+        break;
     }
 }
 

@@ -15,10 +15,18 @@ bool uiRapSheetRankings::career_view = false;
 uiRapSheetRankings::uiRapSheetRankings(ScreenConstructorData* sd) : MenuScreen(sd) , button_pressed(0) , init_button(0) { Setup(); }
 uiRapSheetRankings::~uiRapSheetRankings() {}
 void uiRapSheetRankings::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) {
-    if (msg == 0x35F8620B) { FEngSetCurrentButton(GetPackageName(), init_button); }
-    else if (msg == 0x0C407210) { button_pressed = pobj->NameHash; }
-    else if (msg == 0xC519BFC4) { career_view = !career_view; Setup(); }
-    else if (msg == 0xE1FDE1D1) {
+    switch (msg) {
+    case 0x35F8620B:
+        FEngSetCurrentButton(GetPackageName(), init_button);
+        break;
+    case 0x0C407210:
+        button_pressed = pobj->NameHash;
+        break;
+    case 0xC519BFC4:
+        career_view = !career_view;
+        Setup();
+        break;
+    case 0xE1FDE1D1: {
         int index = 10;
         if (button_pressed == 0xCDA0A66E) { index = 3; }
         else if (button_pressed == 0xCDA0A66B) { index = 0; }
@@ -32,6 +40,8 @@ void uiRapSheetRankings::NotificationMessage(unsigned long msg, FEObject* pobj, 
         else if (button_pressed == 0xCDA0A673) { index = 6; }
         if (index == 10) { cFEng::Get()->QueuePackageSwitch("RapSheetMain.fng", 0, 0, false); FEngSetLastButton(GetPackageName(), 0); }
         else { uiRapSheetRankingsDetail::career_view = career_view; cFEng::Get()->QueuePackageSwitch("RapSheetRankingsDetail.fng", index, 0, false); FEngSetLastButton(GetPackageName(), static_cast<unsigned char>(index)); }
+        break;
+    }
     }
 }
 void uiRapSheetRankings::RefreshHeader() {

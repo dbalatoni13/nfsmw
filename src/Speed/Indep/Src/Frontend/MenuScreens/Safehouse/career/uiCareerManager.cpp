@@ -28,17 +28,23 @@ void uiCareerManager::NotificationMessage(unsigned long msg, FEObject* pobj, uns
                                           unsigned long param2) {
     IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
 
-    if (msg == 0x7E998E5E) {
+    switch (msg) {
+    case 0x7E998E5E:
         FEDatabase->RefreshCurrentRide();
-    } else if (msg == 0x1265ECE9) {
+        break;
+    case 0x1265ECE9:
         GarageMainScreen::GetInstance()->UpdateCurrentCameraView(false);
-    } else if (msg == 0xE1FDE1D1 && PrevButtonMessage == 0x911AB364) {
-        if (!FEDatabase->GetCareerSettings()->HasCareerStarted()) {
-            cFEng::Get()->QueuePackageSwitch("MainMenu.fng", 0, 0, false);
-            FEDatabase->ClearGameMode(eFE_GAME_MODE_CAREER_MANAGER);
-        } else {
-            cFEng::Get()->QueuePackageSwitch(GetPackageName(), 0, 0, false);
+        break;
+    case 0xE1FDE1D1:
+        if (PrevButtonMessage == 0x911AB364) {
+            if (!FEDatabase->GetCareerSettings()->HasCareerStarted()) {
+                cFEng::Get()->QueuePackageSwitch("MainMenu.fng", 0, 0, false);
+                FEDatabase->ClearGameMode(eFE_GAME_MODE_CAREER_MANAGER);
+            } else {
+                cFEng::Get()->QueuePackageSwitch(GetPackageName(), 0, 0, false);
+            }
         }
+        break;
     }
 }
 

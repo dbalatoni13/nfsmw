@@ -15,12 +15,33 @@ unsigned int GetFECarNameHashFromFEKey(unsigned int fekey);
 uiRapSheetTEP::uiRapSheetTEP(ScreenConstructorData* sd) : UIWidgetMenu(sd) , button_pressed(0) , num_pursuits(0) { Setup(); }
 uiRapSheetTEP::~uiRapSheetTEP() {}
 void uiRapSheetTEP::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) {
-    if (msg == 0x406415E3) { if (num_pursuits == 0) { return; } cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), nullptr); }
-    else if (msg == 0x0C407210) { button_pressed = pobj->NameHash; }
-    else if (msg == 0x35F8620B) { if (num_pursuits == 0) { return; } unsigned char button = FEngGetLastButton(GetPackageName()); if (button == 0) { button = 1; } FEngSetCurrentButton(GetPackageName(), FEngHashString("BL_%d", button)); }
-    else if (msg == 0x72619778) { if (pobj == nullptr) { return; } if (pobj->NameHash != 0xCDA0A66B) { return; } FEngSetCurrentButton(GetPackageName(), FEngHashString("BL_%d", num_pursuits)); }
-    else if (msg == 0x911C0A4B) { if (pobj == nullptr) { return; } if (pobj->NameHash != static_cast<unsigned long>(FEngHashString("BL_%d", num_pursuits))) { return; } FEngSetCurrentButton(GetPackageName(), 0xCDA0A66B); }
-    else if (msg == 0xE1FDE1D1) {
+    switch (msg) {
+    case 0x406415E3:
+        if (num_pursuits == 0) { return; }
+        cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), nullptr);
+        break;
+    case 0x0C407210:
+        button_pressed = pobj->NameHash;
+        break;
+    case 0x35F8620B:
+        if (num_pursuits == 0) { return; }
+        {
+            unsigned char button = FEngGetLastButton(GetPackageName());
+            if (button == 0) { button = 1; }
+            FEngSetCurrentButton(GetPackageName(), FEngHashString("BL_%d", button));
+        }
+        break;
+    case 0x72619778:
+        if (pobj == nullptr) { return; }
+        if (pobj->NameHash != 0xCDA0A66B) { return; }
+        FEngSetCurrentButton(GetPackageName(), FEngHashString("BL_%d", num_pursuits));
+        break;
+    case 0x911C0A4B:
+        if (pobj == nullptr) { return; }
+        if (pobj->NameHash != static_cast<unsigned long>(FEngHashString("BL_%d", num_pursuits))) { return; }
+        FEngSetCurrentButton(GetPackageName(), 0xCDA0A66B);
+        break;
+    case 0xE1FDE1D1: {
         int index;
         if (button_pressed == 0xCDA0A66D) { index = 2; }
         else if (button_pressed == 0xCDA0A66B) { index = 0; }
@@ -30,6 +51,8 @@ void uiRapSheetTEP::NotificationMessage(unsigned long msg, FEObject* pobj, unsig
         else { index = -1; }
         if (index != -1) { cFEng::Get()->QueuePackageSwitch("RapSheetPD.fng", index, 0, false); FEngSetLastButton(GetPackageName(), static_cast<unsigned char>(index + 1)); }
         else { cFEng::Get()->QueuePackageSwitch("RapSheetMain.fng", 0, 0, false); FEngSetLastButton(GetPackageName(), 1); }
+        break;
+    }
     }
 }
 void uiRapSheetTEP::Setup() {

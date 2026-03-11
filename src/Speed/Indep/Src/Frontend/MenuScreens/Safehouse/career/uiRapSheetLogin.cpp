@@ -17,16 +17,20 @@ uiRapSheetLogin::uiRapSheetLogin(ScreenConstructorData* sd)
 uiRapSheetLogin::~uiRapSheetLogin() {}
 
 void uiRapSheetLogin::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) {
-    if (msg == 0x7EABCA56 || msg == 0x406415E3) {
+    switch (msg) {
+    case 0x7EABCA56:
+    case 0x406415E3:
         if (screen == 0) {
             g_pEAXSound->StopUISoundFX(UISND_RAPSHEET_LOGIN);
         } else if (screen == 2) {
             g_pEAXSound->StopUISoundFX(UISND_RAPSHEET_LOGIN2);
         }
         screen = 3;
-    } else if (msg == 0x911AB364) {
+        break;
+    case 0x911AB364:
         returnToMainMenu = true;
-    } else if (msg == 0xE1FDE1D1) {
+        break;
+    case 0xE1FDE1D1:
         if (returnToMainMenu) {
             cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
             FEDatabase->ClearGameMode(eFE_GAME_MODE_RAP_SHEET);
@@ -35,6 +39,7 @@ void uiRapSheetLogin::NotificationMessage(unsigned long msg, FEObject* pobj, uns
         } else {
             cFEng::Get()->QueuePackageSwitch("RapSheetLogin2.fng", 2, 0, false);
         }
+        break;
     }
 }
 

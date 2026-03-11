@@ -95,11 +95,13 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
                                           unsigned long param2) {
     UIWidgetMenu::NotificationMessage(msg, pobj, param1, param2);
 
-    if (msg == 0x9A5AD46D) {
+    switch (msg) {
+    case 0x9A5AD46D:
         TogglePlayer(false);
-    } else if (msg == 0x72619778) {
+        break;
+    case 0x72619778:
         return;
-    } else if (msg == 0x7E998E5E) {
+    case 0x7E998E5E:
         if (FEDatabase->GetOptionsSettings()->CurrentCategory == OC_GAMEPLAY) {
             ClearWidgets();
             SetupGameplay();
@@ -109,11 +111,13 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
                 Options.GetNode(i)->Draw();
             }
         }
-    } else if (msg == 0x775DBA97) {
+        break;
+    case 0x775DBA97:
         RestoreOriginals();
         MemoryCard::GetInstance()->SetCardRemovedWithAutoSaveEnabled(false);
         cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
-    } else if (msg == 0x911AB364) {
+        break;
+    case 0x911AB364:
         if (OptionsDidNotChange()) {
             cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
         } else {
@@ -129,11 +133,14 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
                                             static_cast<eDialogFirstButtons>(1),
                                             GetLocalizedString(0xE9CB802F));
         }
-    } else if (msg == 0xA2A07AC4) {
+        break;
+    case 0xA2A07AC4:
         TogglePlayer(true);
-    } else if (msg == 0xB5AF2461) {
+        break;
+    case 0xB5AF2461:
         new EUnPause();
-    } else if (msg == 0xC519BFC4) {
+        break;
+    case 0xC519BFC4: {
         const char* dlg_pkg;
         if (mCalledFromPauseMenu) {
             dlg_pkg = "InGameDialog.fng";
@@ -144,39 +151,47 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
                                         0x70E01038, 0x417B25E4, 0xD05FC3A3, 0x34DC1BCF,
                                         0x34DC1BCF, static_cast<eDialogFirstButtons>(1),
                                         GetLocalizedString(0x8AEF5AE8));
-    } else if (msg == 0xD05FC3A3) {
+        break;
+    }
+    case 0xD05FC3A3:
         if (!FEDatabase->IsOptionsDirty() &&
             FEDatabase->GetOptionsSettings()->CurrentCategory == OC_GAMEPLAY) {
             MemcardEnter(GetPackageName(), GetPackageName(), 0xA1, 0, 0, 0, 0);
         }
         RestoreDefaults();
-    } else if (msg == 0xD9FEEC59 || msg == 0x5073EF13 || msg == 0x406415E3) {
+        break;
+    case 0xD9FEEC59:
+    case 0x5073EF13:
+    case 0x406415E3:
         if (FEDatabase->GetOptionsSettings()->CurrentCategory != OC_PLAYER) {
             return;
         }
-        unsigned int snd = 0xF4B32D4D;
-        if (msg == 0x5073EF13) {
-            snd = 0x6B283007;
-        }
-        cFEng::Get()->QueueSoundMessage(snd, GetPackageName());
-        if (OptionsDidNotChange()) {
-            cFEng::Get()->QueueGameMessage(0x9A5AD46D, 0, 0xFF);
-        } else {
-            char buf[128];
-            FEngSNPrintf(buf, 128, GetLocalizedString(0xBA463431),
-                         GetPlayerToEditForOptions() + 1);
-            const char* dlg_pkg;
-            if (mCalledFromPauseMenu) {
-                dlg_pkg = "InGameDialog.fng";
-            } else {
-                dlg_pkg = "Dialog.fng";
+        {
+            unsigned int snd = 0xF4B32D4D;
+            if (msg == 0x5073EF13) {
+                snd = 0x6B283007;
             }
-            DialogInterface::ShowTwoButtons(GetPackageName(), dlg_pkg,
-                                            static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4,
-                                            0x9A5AD46D, 0xA2A07AC4, 0x34DC1BCF,
-                                            static_cast<eDialogFirstButtons>(1), buf);
+            cFEng::Get()->QueueSoundMessage(snd, GetPackageName());
+            if (OptionsDidNotChange()) {
+                cFEng::Get()->QueueGameMessage(0x9A5AD46D, 0, 0xFF);
+            } else {
+                char buf[128];
+                FEngSNPrintf(buf, 128, GetLocalizedString(0xBA463431),
+                             GetPlayerToEditForOptions() + 1);
+                const char* dlg_pkg;
+                if (mCalledFromPauseMenu) {
+                    dlg_pkg = "InGameDialog.fng";
+                } else {
+                    dlg_pkg = "Dialog.fng";
+                }
+                DialogInterface::ShowTwoButtons(GetPackageName(), dlg_pkg,
+                                                static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4,
+                                                0x9A5AD46D, 0xA2A07AC4, 0x34DC1BCF,
+                                                static_cast<eDialogFirstButtons>(1), buf);
+            }
         }
-    } else if (msg == 0xE1FDE1D1) {
+        break;
+    case 0xE1FDE1D1: {
         bool dirty = false;
         if (FEDatabase->IsOptionsDirty() || !OptionsDidNotChange()) {
             dirty = true;
@@ -197,7 +212,9 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
             return;
         }
         g_pEAXSound->UpdateVolumes(FEDatabase->GetAudioSettings(), -1.0f);
-    } else if (msg == 0x34DC1BCF) {
+        break;
+    }
+    case 0x34DC1BCF:
         return;
     }
 }
