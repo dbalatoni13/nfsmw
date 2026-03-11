@@ -58,13 +58,10 @@ void WRoadNetwork::GetSegmentNodes(const WRoadSegment &segment, const WRoadNode 
 const WRoadProfile *WRoadNetwork::GetSegmentProfile(const WRoadSegment &segment, int node_index) {
     WRoadNetwork &roadNetwork = Get();
     const WRoadNode *node = roadNetwork.GetNode(segment.fNodeIndex[node_index]);
-    if (node) {
-        if (node->fProfileIndex < 0) {
-            return &fInvalidProfile;
-        }
-        return roadNetwork.GetProfile(node->fProfileIndex);
+    if (!node || node->fProfileIndex < 0) {
+        return &fInvalidProfile;
     }
-    return &fInvalidProfile;
+    return roadNetwork.GetProfile(node->fProfileIndex);
 }
 
 void WRoadNetwork::GetSegmentForwardVector(int segInd, UMath::Vector3 &forwardVector) {
@@ -259,7 +256,7 @@ int WRoadNetwork::GetSegmentNumTrafficLanes(const WRoadSegment &segment) {
             numTrafficLanes[1]++;
         }
     }
-    return UMath::Max(numTrafficLanes[0], numTrafficLanes[1]);
+    return UMath::Max(numTrafficLanes[1], numTrafficLanes[0]);
 }
 
 int WRoadNetwork::GetSegmentTrafficLaneInd(const WRoadSegment &segment, int lane_count) {
@@ -267,10 +264,10 @@ int WRoadNetwork::GetSegmentTrafficLaneInd(const WRoadSegment &segment, int lane
     Get().GetSegmentProfiles(segment, profile);
     for (int i = 0; i < profile[0]->fNumZones; i++) {
         if (profile[0]->GetLaneType(i, false) == 1) {
-            lane_count--;
-            if (lane_count == 0) {
+            if (lane_count <= 0) {
                 return i;
             }
+            lane_count--;
         }
     }
     return 0;
@@ -374,7 +371,6 @@ const WRoadSegment *GetAttachedDirectionalSegment(const WRoadNode *node, short s
     return nullptr;
 }
 WRoadNav::WRoadNav() {
-    bOccludedFromBehind = false;
     fOccludingTrailSpeed = 0.0f;
     pAIVehicle = nullptr;
     bRaceFilter = false;
@@ -386,6 +382,7 @@ WRoadNav::WRoadNav() {
     pPathSegments = nullptr;
     nRoadOcclusion = 0;
     nAvoidableOcclusion = 0;
+    bOccludedFromBehind = false;
     Reset();
 }
 

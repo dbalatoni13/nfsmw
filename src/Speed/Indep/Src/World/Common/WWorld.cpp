@@ -36,8 +36,8 @@ int WWorld::Unloader(bChunk* chunk) {
     if (chunk->GetID() != 0x3B800) {
         return 0;
     }
-    fCarpDataSize = 0;
     fCarpData = nullptr;
+    fCarpDataSize = 0;
     return 1;
 }
 

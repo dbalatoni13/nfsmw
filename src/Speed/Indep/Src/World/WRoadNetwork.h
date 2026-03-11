@@ -357,8 +357,8 @@ class WRoadNav {
     }
 
     void SetLaneInd(char ind) {
-        fLaneInd = ind;
         fToLaneInd = ind;
+        fLaneInd = ind;
     }
 
     float GetLaneOffset() const {
