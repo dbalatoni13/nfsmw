@@ -58,8 +58,8 @@ struct MyThread : public IThread {
 };
 
 struct MyMutex : public IMutex {
-    int mRefcount; // offset 0x4, size 0x4
-    MUTEX mMutex;  // offset 0x8, size 0x1C
+    MUTEX mMutex;  // offset 0x4, size 0x1C
+    int mRefcount; // offset 0x20, size 0x4
 
     int AddRef() override;
     int Release() override;
