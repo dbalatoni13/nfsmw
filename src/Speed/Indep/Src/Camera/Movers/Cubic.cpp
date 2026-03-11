@@ -84,7 +84,11 @@ void tTable<CubicPovData>::Blend(CubicPovData *dest, CubicPovData *a, CubicPovDa
 }
 
 CubicCameraMover::CubicCameraMover(int nView, CameraAnchor *p_car, int pov_type, bool smooth, bool disable_lag, bool look_back, bool perfect_focus)
-    : CameraMover(nView, CM_DRIVE_CUBIC) {
+    : CameraMover(nView, CM_DRIVE_CUBIC) //
+    , bFirstTime(1) //
+    , tLastGrounded(WorldTimer - Timer(8000)) //
+    , tLastUnderVehicle(WorldTimer - Timer(0x1900)) //
+    , tLastGearChange(WorldTimer - Timer(6000)) {
     bSnapNext = 0;
     bAccelLag = !disable_lag;
     bLookBack = look_back;
@@ -93,21 +97,17 @@ CubicCameraMover::CubicCameraMover(int nView, CameraAnchor *p_car, int pov_type,
     nPovType = pov_type;
     nPovTypeUsed = pov_type;
     fIgnoreSetSnapNextTimer = 0.0f;
-    tLastGrounded = WorldTimer - Timer(8000);
-    tLastUnderVehicle = WorldTimer - Timer(0x1900);
-    bFirstTime = 1;
-    tLastGearChange = WorldTimer - Timer(6000);
 
     POV *pov = pCar->GetPov(nPovType);
 
     CubicPovData pov_data;
-    aCubicPovTables[nPovTypeUsed].GetValue(&pov_data, 0.0f);
+    aCubicPovTables[nPovType].GetValue(&pov_data, 0.0f);
 
-    pFov = new (__FILE__, __LINE__) tCubic1D(0, pov_data.fFovDuration);
-    pEye = new (__FILE__, __LINE__) tCubic3D(0, pov_data.fEyeDuration);
-    pLook = new (__FILE__, __LINE__) tCubic3D(0, pov_data.fLookDuration);
-    pForward = new (__FILE__, __LINE__) tCubic3D(0, pov_data.GetForwardDuration());
-    pUp = new (__FILE__, __LINE__) tCubic3D(0, pov_data.GetForwardDuration());
+    pFov = new (__FILE__, __LINE__) tCubic1D(1, pov_data.fFovDuration);
+    pEye = new (__FILE__, __LINE__) tCubic3D(1, pov_data.fEyeDuration);
+    pLook = new (__FILE__, __LINE__) tCubic3D(1, pov_data.fLookDuration);
+    pForward = new (__FILE__, __LINE__) tCubic3D(1, pov_data.GetForwardDuration());
+    pUp = new (__FILE__, __LINE__) tCubic3D(1, pov_data.GetForwardDuration());
 
     pAvgAccel = new tAverage<bVector3>(5);
 
