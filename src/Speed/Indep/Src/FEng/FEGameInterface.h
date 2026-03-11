@@ -79,6 +79,7 @@ struct cFEngGameInterface : public FEGameInterface {
     unsigned long GetJoyPadMask(unsigned char) override;
     void GetMouseInfo(FEMouseInfo&) override;
     bool DoesPointTouchObject(float, float, FEObject*) override;
+    void OutputWarning(const char*, FEng_WarningLevel) override;
     bool UnloadUnreferencedLibrary(FEPackage*) override;
     void RenderObjectList(FEObjectListEntry* pList, unsigned long Count) override;
     bool SetCellData(FECodeListBox*, unsigned long, unsigned long) override;

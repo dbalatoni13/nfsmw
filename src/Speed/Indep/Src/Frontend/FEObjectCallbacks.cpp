@@ -2,11 +2,8 @@
 
 #include "Speed/Indep/Src/FEng/FEPackage.h"
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
+#include "Speed/Indep/Src/Frontend/cFEngRender.hpp"
 
-struct cFEngRender {
-    static cFEngRender* mInstance;
-    void RemoveCachedRender(FEObject* obj, FEPackageRenderInfo* ri);
-};
 
 bool FEngMovieStopper::Callback(FEObject* obj) {
     if (obj->Type == 7) {
