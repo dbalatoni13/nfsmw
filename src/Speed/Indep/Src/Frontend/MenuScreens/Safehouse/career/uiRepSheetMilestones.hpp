@@ -28,7 +28,7 @@ struct MilestoneDatum : public ArrayDatum {
 
     ~MilestoneDatum() override {}
 
-    virtual unsigned int GetType();
+    virtual unsigned int GetType() { return 0; }
     void NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1,
                              unsigned long param2) override;
 };
@@ -47,7 +47,7 @@ struct SpeedTrapDatum : public MilestoneDatum {
 
     ~SpeedTrapDatum() override {}
 
-    unsigned int GetType() override;
+    unsigned int GetType() override { return 1; }
 };
 
 // total size: 0xF4

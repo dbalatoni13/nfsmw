@@ -3,6 +3,14 @@
 
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
+
+enum ePursuitDetailTypes {
+    ePDT_CostToState = 0,
+    ePDT_Bounty = 1,
+    ePDT_Infractions = 2,
+    ePDT_SpeedingTotalFine = 3,
+};
+
 #endif
 
 #include "Speed/Indep/Src/Misc/Timer.hpp"
@@ -107,6 +115,14 @@ struct FinishedRaceStatsEntry {
 struct cFinishedRaceStats {
     FinishedRaceStatsEntry RaceStats[8]; // offset 0x0, size 0x600
     int NumStats;                        // offset 0x600, size 0x4
+};
+
+
+enum ePursuitDetailTypes {
+    ePDT_CostToState = 0,
+    ePDT_Bounty = 1,
+    ePDT_Infractions = 2,
+    ePDT_SpeedingTotalFine = 3,
 };
 
 #endif

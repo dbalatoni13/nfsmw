@@ -15,7 +15,11 @@ struct FEMouseInfo;
 struct FECodeListBox;
 struct FEMatrix4;
 struct FEResourceRequest;
-enum FEng_WarningLevel;
+enum FEng_WarningLevel {
+    FEng_NonWarning = 0,
+    FEng_SoftWarning = 1,
+    FEng_HardWarning = 2,
+};
 
 // total size: 0x4
 struct FEGameInterface {

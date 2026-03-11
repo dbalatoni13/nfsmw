@@ -7,6 +7,7 @@
 
 #include "FEMenuScreen.hpp"
 #include "Speed/Indep/Src/FEng/FEString.h"
+#include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "feScrollerina.hpp"
 
@@ -105,6 +106,14 @@ class ArrayDatum : public bTNode<ArrayDatum> {
     void SetChecked(bool b) {
         checked = b;
     }
+
+    ArrayDatum()
+        : hash(0) //
+        , desc(0) //
+        , enabled(true) //
+        , greyedOut(false) //
+        , locked(false) //
+        , checked(false) {}
 
     ArrayDatum(uint32 hash, uint32 desc)
         : hash(hash) //

@@ -40,6 +40,8 @@ struct MoviePlayer {
     float prevMilliseconds;            // offset 0x14C
     AV_PLAYER* fPlayer;               // offset 0x150
     FRAME* CurFrame;                   // offset 0x154
+
+    void HandleFatalError();
 };
 
 extern MoviePlayer* gMoviePlayer;

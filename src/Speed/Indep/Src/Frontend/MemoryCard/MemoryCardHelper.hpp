@@ -9,6 +9,83 @@
 
 #include "RealmcIface.hpp"
 
+struct IAllocator;
+
+struct IThread {
+    virtual ~IThread() {}
+    virtual int AddRef() { return 0; }
+    virtual int Release() { return 0; }
+    virtual IThread* CreateInstance() { return nullptr; }
+    virtual void SetStackSize(unsigned int stacksize) {}
+    virtual void Begin(int (*func)(void*)) {}
+    virtual void WaitForEnd(int) {}
+    virtual void Sleep(int ticks) {}
+    virtual int (*GetEntryFunc())(void*) { return nullptr; }
+    virtual bool IsActive() { return false; }
+};
+
+struct IMutex {
+    virtual ~IMutex() {}
+    virtual int AddRef() { return 0; }
+    virtual int Release() { return 0; }
+    virtual IMutex* CreateInstance() { return nullptr; }
+    virtual void Acquire() {}
+    virtual void Release2() {}
+};
+
+struct THREAD {
+    int reserved[198]; // offset 0x0, size 0x318
+};
+
+struct MyThread : public IThread {
+    int mRefcount;                   // offset 0x4, size 0x4
+    int (*mEntryFunc)(void*);        // offset 0x8, size 0x4
+    unsigned int mStackSize;         // offset 0xC, size 0x4
+    void* mStackBuffer;              // offset 0x10, size 0x4
+    THREAD mThreadData;              // offset 0x14, size 0x318
+    int mPriority;                   // offset 0x32C, size 0x4
+    bool mActive;                    // offset 0x330, size 0x1
+
+    int AddRef() override;
+    int Release() override;
+    IThread* CreateInstance() override;
+    void SetStackSize(unsigned int stacksize) override { mStackSize = stacksize; }
+    void Begin(int (*func)(void*)) override;
+    void WaitForEnd(int) override;
+    void Sleep(int ticks) override;
+    int (*GetEntryFunc())(void*) override { return mEntryFunc; }
+    bool IsActive() override { return mActive; }
+};
+
+struct MyMutex : public IMutex {
+    int mRefcount; // offset 0x4, size 0x4
+
+    int AddRef() override;
+    int Release() override;
+    IMutex* CreateInstance() override;
+    void Acquire() override;
+    void Release2() override;
+};
+
+namespace Realmc {
+
+// total size: 0x10
+struct SystemInterface {
+    IAllocator *mAllocator;              // offset 0x0, size 0x4
+    IThread *mThread;                    // offset 0x4, size 0x4
+    IMutex *mMutex;                      // offset 0x8, size 0x4
+    const char *(*mGetStrCallback)(int); // offset 0xC, size 0x4
+
+    void Clear() {
+        mAllocator = nullptr;
+        mThread = nullptr;
+        mMutex = nullptr;
+        mGetStrCallback = nullptr;
+    }
+};
+
+} // namespace Realmc
+
 struct MemoryCard;
 struct UIMemcardBase;
 
