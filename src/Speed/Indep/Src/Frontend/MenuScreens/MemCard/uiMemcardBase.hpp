@@ -27,7 +27,7 @@ struct UIMemcardKeyboard : public MenuScreen {
 
     UIMemcardKeyboard(ScreenConstructorData* sd);
     ~UIMemcardKeyboard() override {}
-    virtual void Abort();
+    virtual void Abort() {}
     virtual void Setup();
     void ShowKeyboard();
     void NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
