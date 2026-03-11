@@ -51,6 +51,7 @@ extern GRaceParameters* theRace;
 
 void RaceDatum::NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1, unsigned long param2) {
     if (msg == 0xc407210) {
+        if (!IsLocked()) {
             theRace = race;
         }
     }
@@ -95,6 +96,7 @@ void UISafehouseRaceSheet::NotificationMessage(unsigned long msg, FEObject* obj,
         if (theRace == nullptr) {
             break;
         }
+        if (!bIsInGame) {
             signed char joyPort = static_cast< signed char >(FEngMapJoyParamToJoyport(param2));
             FEDatabase->SetPlayersJoystickPort(0, joyPort);
         }
@@ -141,9 +143,9 @@ void UISafehouseRaceSheet::RefreshHeader() {
     }
     FEngSetLanguageHash(GetPackageName(), 0x78008599, eventsHash);
     FEPlayerCarDB* stable = FEDatabase->GetPlayerCarStable(0);
-    FEPrintf(GetPackageName(), 0xb514e2d8, "%s %",
+    FEPrintf(GetPackageName(), 0xb514e2d8, "%s %$d",
              GetLocalizedString(0xce6b99b1), stable->GetTotalBounty());
-    FEPrintf(GetPackageName(), 0xf91a59f6, "%s %",
+    FEPrintf(GetPackageName(), 0xf91a59f6, "%s %$d",
              GetLocalizedString(0x73b79e0), FEDatabase->GetCareerSettings()->GetCash());
     ArrayDatum* datum = GetCurrentDatum();
     if (datum == nullptr) {
@@ -158,7 +160,7 @@ void UISafehouseRaceSheet::RefreshHeader() {
         distUnits = GetLocalizedString(0x867dcfd9);
     }
     FEPrintf(GetPackageName(), 0x18b36f, "%d", race->GetNumLaps());
-    FEPrintf(GetPackageName(), 0x80c9daa, "%ash.1f %s",
+    FEPrintf(GetPackageName(), 0x80c9daa, "%$0.1f %s",
              race->GetRaceLengthMeters() * 0.001f, distUnits);
     unsigned int trackNameHash = CalcLanguageHash("TRACKNAME_", race);
     FEngSetLanguageHash(GetPackageName(), 0xf2cd475, trackNameHash);
@@ -197,9 +199,9 @@ void UISafehouseRaceSheet::RefreshHeader() {
         top_speed = MPS2MPH(static_cast< float >(info->mTopSpeed));
         avg_speed = MPS2MPH(static_cast< float >(info->mAverageSpeed));
     }
-    FEPrintf(GetPackageName(), 0xebd7f926, "%ash.2f %s", top_speed, distUnits);
-    FEPrintf(GetPackageName(), 0xde9145fb, "%ash.2f %s", avg_speed, distUnits);
-    FEPrintf(GetPackageName(), 0x763f4b5b, "%ash.0f", race->GetCashValue());
+    FEPrintf(GetPackageName(), 0xebd7f926, "%$0.2f %s", top_speed, distUnits);
+    FEPrintf(GetPackageName(), 0xde9145fb, "%$0.2f %s", avg_speed, distUnits);
+    FEPrintf(GetPackageName(), 0x763f4b5b, "%$0.0f", race->GetCashValue());
     FEImage* img = FEngFindImage(GetPackageName(), 0xf97ec5d5);
     FEngSetTextureHash(img, FEDBGetRaceIconHash(FEDatabase, race->GetRaceType()));
     for (int i = 0; i < GetNumSlots(); i++) {

@@ -582,38 +582,7 @@ void WorldMap::UpdateAnalogInput() {
 
 void WorldMap::UpdateCursor(bool zoom_thing) {
     UpdateAnalogInput();
-    if (!MapStreamer->IsZooming()) {
-        if (!zoom_thing) {
-            if (CurrentVelocity.x == 0.0f && CurrentVelocity.y == 0.0f) {
-                if (bCursorMoving) {
-                    cFEng::Get()->QueuePackageMessage(0x7e6687da, GetPackageName(), nullptr);
-                    bCursorMoving = false;
-                }
-                if (SnapCursor()) {
-                    RefreshHeader();
-                }
-            } else {
-                if (!bCursorMoving) {
-                    cFEng::Get()->QueuePackageMessage(0x9f710838, GetPackageName(), nullptr);
-                    bCursorMoving = true;
-                }
-                MoveCursor(CurrentVelocity.x, CurrentVelocity.y);
-                if (SelectedItem != nullptr) {
-                    bVector2 cursor;
-                    bVector2 pos;
-                    FEngGetCenter(Cursor, cursor.x, cursor.y);
-                    SelectedItem->GetCurrentPos(pos);
-                    float dist = bDistBetween(cursor, pos);
-                    if (dist >= fSnapDist) {
-                        const unsigned int _UNSNAP = 0x7efe8ff4;
-                        FEngSetScript(Cursor, _UNSNAP, true);
-                        SelectedItem = nullptr;
-                        RefreshHeader();
-                    }
-                }
-            }
-        }
-    } else {
+    if (MapStreamer->IsZooming()) {
         float zoom = MapStreamer->GetZoomFactor();
         bVector2 pan(0.0f, 0.0f);
         MapStreamer->GetPan(pan);
@@ -630,6 +599,35 @@ void WorldMap::UpdateCursor(bool zoom_thing) {
         pos -= dpan;
         ClampToMapBounds(pos.x, pos.y);
         FEngSetCenter(Cursor, pos.x, pos.y);
+    } else if (!zoom_thing) {
+        if (CurrentVelocity.x == 0.0f && CurrentVelocity.y == 0.0f) {
+            if (bCursorMoving) {
+                cFEng::Get()->QueuePackageMessage(0x7e6687da, GetPackageName(), nullptr);
+                bCursorMoving = false;
+            }
+            if (SnapCursor()) {
+                RefreshHeader();
+            }
+        } else {
+            if (!bCursorMoving) {
+                cFEng::Get()->QueuePackageMessage(0x9f710838, GetPackageName(), nullptr);
+                bCursorMoving = true;
+            }
+            MoveCursor(CurrentVelocity.x, CurrentVelocity.y);
+            if (SelectedItem != nullptr) {
+                bVector2 cursor;
+                bVector2 pos;
+                FEngGetCenter(Cursor, cursor.x, cursor.y);
+                SelectedItem->GetCurrentPos(pos);
+                float dist = bDistBetween(cursor, pos);
+                if (dist >= fSnapDist) {
+                    const unsigned int _UNSNAP = 0x7efe8ff4;
+                    FEngSetScript(Cursor, _UNSNAP, true);
+                    SelectedItem = nullptr;
+                    RefreshHeader();
+                }
+            }
+        }
     }
 }
 
