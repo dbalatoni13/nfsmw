@@ -411,7 +411,20 @@ void UIMemcardBase::ShowKeyboard() {
 }
 
 void UIMemcardBase::FindScreenSize(const wchar_t* msg) {
-    cFEng::Get()->QueuePackageMessage(0x79b0c1c7, GetPackageName(), nullptr);
+    FEngFont* font = FindFont(0x545570c6);
+    int len = bStrLen(reinterpret_cast< const unsigned short* >(msg));
+    float height = font->GetHeight();
+    float numLines = static_cast< float >(len) * height;
+    unsigned int hash;
+    if (numLines < 2200.0f) {
+        hash = 0x79b0c1c7;
+    } else if (numLines < 4400.0f) {
+        hash = 0xa13adcaf;
+    } else {
+        cFEng::Get()->QueuePackageMessage(0x792bc959, GetPackageName(), nullptr);
+        return;
+    }
+    cFEng::Get()->QueuePackageMessage(hash, GetPackageName(), nullptr);
 }
 
 void UIMemcardBase::ShowMessage(MemoryCardMessage* msg) {
@@ -627,8 +640,8 @@ void UIMemcardBase::InitComplete() {
         break;
     case 0xb0:
         if (FEDatabase->bProfileLoaded) {
-            char* dst = m_FileName;
             if (MemoryCard::GetInstance()->ShouldDoAutoSave(false)) {
+                char* dst = m_FileName;
                 SetScreenVisible(true, 0);
                 SetStringCheckingCard();
                 const char* profileName = FEDatabase->CurrentUserProfiles[0]->GetProfileName();
