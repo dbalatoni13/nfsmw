@@ -147,11 +147,7 @@ bool UIMemcardBase::IsProfile(const char* pName) {
 }
 
 void UIMemcardBase::EmptyFileList() {
-    while (!m_Items.IsEmpty()) {
-        Item* pItem = m_Items.GetHead();
-        pItem->Remove();
-        delete pItem;
-    }
+    m_Items.DeleteAllElements();
 }
 
 void UIMemcardBase::Setup() {
@@ -339,21 +335,18 @@ void UIMemcardBase::SetupPromptNoProfileFound() {
 }
 
 void UIMemcardBase::SetupPromptSaveConfirm() {
-    char* fmt;
     char text[512];
-    {
-        unsigned int fmtHash;
-        if ((gMemcardSetup.mOp & 0x8000) != 0) {
-            fmtHash = 0x391a0aac;
-        } else if ((gMemcardSetup.mOp & 0x40000) != 0) {
-            fmtHash = 0xb0af33a5;
-        } else if ((gMemcardSetup.mOp & 0x200000) != 0) {
-            fmtHash = 0xd80818f8;
-        } else {
-            fmtHash = 0x39b3ccba;
-        }
-        fmt = const_cast< char* >(GetLocalizedString(fmtHash));
+    unsigned int fmtHash;
+    if ((gMemcardSetup.mOp & 0x8000) != 0) {
+        fmtHash = 0x391a0aac;
+    } else if ((gMemcardSetup.mOp & 0x40000) != 0) {
+        fmtHash = 0xb0af33a5;
+    } else if ((gMemcardSetup.mOp & 0x200000) != 0) {
+        fmtHash = 0xd80818f8;
+    } else {
+        fmtHash = 0x39b3ccba;
     }
+    char* fmt = const_cast< char* >(GetLocalizedString(fmtHash));
     ShowYesNo(0x39b3ccba, 0x4000000);
     bSPrintf(text, fmt, m_FileName, m_FileName);
     SetMessageBlurbText(text);
