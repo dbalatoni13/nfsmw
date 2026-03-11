@@ -381,8 +381,8 @@ bool PhysicsObject::Attach(UTL::COM::IUnknown *object) {
             if (e != nullptr) {
                 if (mEntity != nullptr) {
                     Detach(mEntity);
-                    mPlayer = nullptr;
                     mEntity = nullptr;
+                    mPlayer = nullptr;
                 }
                 mEntity = e;
                 IPlayer *p = nullptr;
