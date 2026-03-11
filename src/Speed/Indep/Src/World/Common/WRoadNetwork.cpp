@@ -11,7 +11,6 @@
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/AI/AIVehicle.h"
-#include "Speed/Indep/Libs/Support/Utility/UTLFastVector.h"
 #include "Speed/Indep/Src/World/Common/WGrid.h"
 #include "Speed/Indep/Src/World/WPathFinder.h"
 #include "Speed/Indep/Src/World/WWorld.h"

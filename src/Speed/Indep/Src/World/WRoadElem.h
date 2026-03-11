@@ -67,7 +67,7 @@ struct WRoadProfile {
     int GetLaneType(int lane, bool inverted) const {
         int lane_number;
         if (inverted) {
-            lane_number = fNumZones - lane - 1;
+            lane_number = fNumZones - 1 - lane;
         } else {
             lane_number = lane;
         }
@@ -110,7 +110,7 @@ struct WRoadProfile {
     }
     int GetLaneNumber(int lane, bool inverted) const {
         if (inverted) {
-            return fNumZones - lane - 1;
+            return fNumZones - 1 - lane;
         }
         return lane;
     }
@@ -138,12 +138,6 @@ struct WRoadProfile {
         int lane_number = GetLaneNumber(lane, inverted);
         return mLanes[lane_number].GetWidth();
     }
-    float GetRawLaneOffset(int lane) const {
-        return mLanes[lane].GetOffset();
-    }
-    float GetRawLaneWidth(int lane) const {
-        return mLanes[lane].GetWidth();
-    }
     float GetRelativeLaneOffset(int lane, bool inverted) const {
         int real_middle = GetMiddleZone(inverted);
         float offset = GetLaneOffset(lane, inverted);
@@ -151,6 +145,13 @@ struct WRoadProfile {
             offset = -offset;
         }
         return offset;
+    }
+
+    float GetRawLaneOffset(int lane) const {
+        return mLanes[lane].GetOffset();
+    }
+    float GetRawLaneWidth(int lane) const {
+        return mLanes[lane].GetWidth();
     }
 
     unsigned char fNumZones;   // offset 0x0, size 0x1
@@ -301,14 +302,10 @@ struct WRoadSegment {
     }
 
     bool IsProfileInverted(int which_end) const {
-        int bit;
-            bit = IsEndInverted();
-        } else {
-            bit = IsStartInverted();
+        if (!which_end) {
+            return IsEndInverted();
         }
-            return bit == 0;
-        }
-        return bit != 0;
+        return IsStartInverted();
     }
 
     // void SetEndInverted(bool inverted) {}

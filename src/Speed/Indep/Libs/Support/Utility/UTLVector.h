@@ -202,6 +202,7 @@ template <typename T, int Size, int Alignment = 16> class FixedVector : public V
     int mVectorSpace[(sizeof(typename Vector<T, Alignment>::value_type) * Size) / sizeof(int)];
 };
 
+
 template <typename T, int Alignment = 16> class FastVector : public Vector<T, Alignment> {
   public:
     FastVector() {}
@@ -220,7 +221,6 @@ template <typename T, int Alignment = 16> class FastVector : public Vector<T, Al
         gFastMem.Free(buffer, num * sizeof(T), nullptr);
     }
 };
-
 }; // namespace UTL
 
 #endif
