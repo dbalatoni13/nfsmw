@@ -15,7 +15,7 @@ void FEngSetInvisible(FEObject* obj);
 void FEngSetTextureHash(FEImage* image, unsigned int hash);
 void FEngSetScript(const char* pkg_name, unsigned int obj_hash, unsigned int script_hash, bool);
 void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned int lang_hash);
-void FEPrintf(const char* pkg_name, unsigned int hash, const char* format, ...);
+int FEPrintf(const char* pkg_name, int hash, const char* fmt, ...);
 unsigned int FEngHashString(const char* format, ...);
 const char* GetLocalizedString(unsigned int hash);
 int GetCurrentLanguage();

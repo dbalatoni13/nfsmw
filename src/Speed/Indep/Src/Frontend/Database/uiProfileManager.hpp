@@ -35,6 +35,23 @@ struct PMCreateNew : public IconOption {
     void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
 };
 
+struct PMPopDelete : public IconOption {
+    PMPopDelete(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
+        : IconOption(tex_hash, name_hash, desc_hash) {}
+    ~PMPopDelete() override {}
+    void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
+};
+
+// total size: 0x16C
+struct UIDeleteProfile : public IconScrollerMenu {
+    UIDeleteProfile(ScreenConstructorData* sd);
+    ~UIDeleteProfile() override;
+    void Setup() override;
+    void Refresh();
+    void NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
+                             unsigned long param2) override;
+};
+
 // total size: 0x170
 struct UIProfileManager : public IconScrollerMenu {
     PMSave* mpSave; // offset 0x16C

@@ -235,7 +235,7 @@ struct bVector2 {
 
     bVector2 operator*(float f) {}
 
-    bVector2 &operator-=(const bVector2 &v) {}
+    bVector2 &operator-=(const bVector2 &v);
 
     bVector2 &operator+=(const bVector2 &v) {}
 };
@@ -248,6 +248,19 @@ inline bVector2 *bFill(bVector2 *dest, float x, float y) {
     dest->x = x;
     dest->y = y;
     return dest;
+}
+
+inline bVector2 *bSub(bVector2 *dest, const bVector2 *v1, const bVector2 *v2) {
+    float x1 = v1->x;
+    float y1 = v1->y;
+    float x2 = v2->x;
+    float y2 = v2->y;
+    return bFill(dest, x1 - x2, y1 - y2);
+}
+
+inline bVector2 &bVector2::operator-=(const bVector2 &v) {
+    bSub(this, this, &v);
+    return *this;
 }
 
 inline bVector2::bVector2(float _x, float _y) {

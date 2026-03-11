@@ -138,9 +138,26 @@ class GRaceDatabase {
         return GetRaceFromHash(Attrib::StringHash32(name));
     }
 
+    bool IsCareerRaceComplete(unsigned int eventHash) {
+        return CheckRaceScoreFlags(eventHash, kCompleted_ContextCareer);
+    }
+
+    const char *GetDDayEndRace() const {
+        return sDDayRaces[7];
+    }
+
+    const char *GetFinalBossRace() const {
+        return sDDayRaces[4];
+    }
+
+    bool CheckRaceScoreFlags(unsigned int eventHash, ScoreFlags mask);
+    const char *GetNextDDayRace();
+
     unsigned int GetBinCount();
     GRaceBin* GetBin(unsigned int index);
     GRaceBin* GetBinNumber(int number);
+
+    static const char sDDayRaces[8][5];
 
   private:
     unsigned int mRaceCountStatic;           // offset 0x0, size 0x4

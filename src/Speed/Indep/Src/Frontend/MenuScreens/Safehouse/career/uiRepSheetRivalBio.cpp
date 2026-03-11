@@ -11,7 +11,7 @@ struct FEObject;
 FEImage* FEngFindImage(const char* pkg_name, int hash);
 void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned int lang_hash);
 unsigned int FEngHashString(const char* format, ...);
-void FEPrintf(const char* pkg_name, unsigned int hash, const char* format, ...);
+int FEPrintf(const char* pkg_name, int hash, const char* fmt, ...);
 const char* GetLocalizedString(unsigned int hash);
 
 extern unsigned int iCurrentViewBin;

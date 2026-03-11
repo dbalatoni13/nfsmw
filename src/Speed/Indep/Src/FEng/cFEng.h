@@ -33,6 +33,7 @@ struct cFEng {
     void QueueGameMessage(unsigned int pMessage, const char* pPackageName, unsigned int controlMask);
     bool IsPackagePushed(const char* packageName);
     void PushNoControlPackage(const char* pPackageName, FE_PACKAGE_PRIORITY pPriority);
+    void PopNoControlPackage(const char* pPackageName);
 
     void QueuePackageMessage(unsigned int msg, const char* pkg_name, FEObject* obj);
 
@@ -55,6 +56,7 @@ struct cFEng {
     void PrintLoadedPackages();
     void QueueMessage(unsigned int msg, const char* pkg_name, FEObject* obj, unsigned int controlMask);
     bool IsPackageInControl(const char* packageName);
+    void MakeLoadedPackagesDirty();
 };
 
 #endif

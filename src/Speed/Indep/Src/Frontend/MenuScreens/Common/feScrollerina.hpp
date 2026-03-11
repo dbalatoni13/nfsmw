@@ -105,8 +105,8 @@ struct Scrollerina {
     ScrollerDatum* GetSelectedDatum() { return SelectedDatum; }
     unsigned int GetNumSlots() { return iNumSlots; }
     unsigned int GetNumData() { return iNumData; }
-    ScrollerDatum* GetFirstDatum();
-    ScrollerDatum* GetLastDatum();
+    ScrollerDatum* GetFirstDatum() { return Data.GetHead(); }
+    ScrollerDatum* GetLastDatum() { return Data.GetTail(); }
     ScrollerDatum* GetTopDatum() { return TopDatum; }
     ScrollerSlot* GetFirstSlot();
     ScrollerSlot* GetLastSlot();
@@ -114,8 +114,8 @@ struct Scrollerina {
     FEScrollBar* GetScrollBarPointer() { return &ScrollBar; }
     void SetMouseDownMsg(unsigned int msg) { mouseDownMsg = msg; }
     void SetClickToSelectMode(bool flag) { bInClickToSelectMode = flag; }
-    bool IsAtHead();
-    bool IsAtTail();
+    bool IsAtHead() { return SelectedDatum == Data.GetHead(); }
+    bool IsAtTail() { return SelectedDatum == Data.GetTail(); }
     bool IsWrapped() { return bWrapped; }
     bool HasActiveSelection();
     unsigned int GetSelectedNodeIndex();

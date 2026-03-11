@@ -193,6 +193,10 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
         return mStartFreeRoamPursuit;
     }
 
+    void SetStartingFreeRoamFromSafeHouse() {
+        mStartFreeRoamFromSafeHouse = true;
+    }
+
     void TrackValue(const char *valueName, int value) {
         TrackValue(valueName, static_cast<float>(value));
     }

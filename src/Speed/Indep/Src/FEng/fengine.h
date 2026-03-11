@@ -53,6 +53,7 @@ struct FEngine {
     void Render();
     void Update(long, unsigned int);
     FEPackage* PushPackage(const char* pPackageName, unsigned char Level, unsigned long ControlMask);
+    bool UnloadPackage(FEPackage* pPackage);
     FEPackage* FindIdlePackage(const char* pName) const;
     FEPackage* FindPackageWithControl();
     void QueuePackagePush(const char* pPackageName, unsigned long ControlMask);

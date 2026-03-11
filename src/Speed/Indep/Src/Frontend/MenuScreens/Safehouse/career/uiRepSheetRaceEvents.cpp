@@ -13,7 +13,7 @@ FEImage* FEngFindImage(const char* pkg_name, int hash);
 void FEngSetVisible(FEObject* obj);
 void FEngSetInvisible(FEObject* obj);
 void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned int lang_hash);
-void FEPrintf(const char* pkg_name, unsigned int hash, const char* format, ...);
+int FEPrintf(const char* pkg_name, int hash, const char* fmt, ...);
 unsigned int FEngHashString(const char* format, ...);
 void FEngSetScript(const char* pkg_name, unsigned int obj_hash, unsigned int script_hash, bool);
 

@@ -160,6 +160,10 @@ class TrackStreamer {
         ZoneSwitchingDisabled = true;
     }
 
+    void EnableZoneSwitching() {
+        ZoneSwitchingDisabled = false;
+    }
+
     int IsSectionVisible(int section_number) {
         return CurrentVisibleSectionTable.IsSet(section_number);
     }

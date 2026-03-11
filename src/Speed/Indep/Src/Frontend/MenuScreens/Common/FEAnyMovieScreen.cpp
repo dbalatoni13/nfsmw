@@ -14,18 +14,7 @@ struct FEMovie;
 extern FEObject* FEngFindObject(const char* pkg_name, unsigned int obj_hash);
 extern void FEngSetMovieName(FEMovie* movie, const char* name);
 
-// GarageMainScreen minimal definition for IsVisable check
-// total size: 0x90, inherits MenuScreen at 0x0
-struct GarageMainScreen : public MenuScreen {
-    char _pad_2c[0x44];             // offset 0x2C to 0x70
-    int HideEntireScreen;           // offset 0x70
-
-    GarageMainScreen(ScreenConstructorData* sd) : MenuScreen(sd) {}
-    ~GarageMainScreen() override;
-    void NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) override;
-    bool IsVisable() { return HideEntireScreen == 0; }
-    static GarageMainScreen* GetInstance();
-};
+// GarageMainScreen already defined in uiMain.cpp (earlier in TU)
 
 char FEAnyMovieScreen::MovieFilename[64];
 char FEAnyMovieScreen::ReturnToPackageName[64];

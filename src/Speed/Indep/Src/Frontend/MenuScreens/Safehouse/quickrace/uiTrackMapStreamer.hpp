@@ -26,7 +26,11 @@ struct tCubic1D {
 
     tCubic1D(short type, float dur);
 
-    void Snap();
+    void Snap() {
+        Val = ValDesired;
+        dVal = dValDesired;
+        state = 0;
+    }
     void SetVal(const float v);
     void SetdVal(float v);
     void SetValDesired(float v);
@@ -61,7 +65,10 @@ struct tCubic2D {
     tCubic2D(short type, bVector2* pDuration);
 
     int HasArrived();
-    void Snap();
+    void Snap() {
+        x.Snap();
+        y.Snap();
+    }
     void SetVal(const float vx, const float vy);
     void SetdVal(float vx, float vy);
     void SetValDesired(float vx, float vy);

@@ -19,14 +19,8 @@ int FEPrintf(FEString* text, const char* fmt, ...);
 FEObject* FEngFindObject(const char* pkg_name, unsigned int obj_hash);
 void FEngSetInvisible(FEObject* obj);
 void FEngSetVisible(FEObject* obj);
-
-inline void FEngSetInvisible(const char* pkg_name, unsigned int obj_hash) {
-    FEngSetInvisible(FEngFindObject(pkg_name, obj_hash));
-}
-
-inline void FEngSetVisible(const char* pkg_name, unsigned int obj_hash) {
-    FEngSetVisible(FEngFindObject(pkg_name, obj_hash));
-}
+void FEngSetInvisible(const char* pkg_name, unsigned int obj_hash);
+void FEngSetVisible(const char* pkg_name, unsigned int obj_hash);
 
 enum POVTypes {
     POV_BUMPER = 0,

@@ -17,8 +17,18 @@ struct FEImage : public FEObject {
 
     FEObject* Clone(bool bReference) override;
 
-    inline void SetTopLeft(const FEVector2& topright, bool bRelative);
+    inline void SetTopLeft(const FEVector2& topleft, bool bRelative);
     inline void SetBottomRight(const FEVector2& bottomright, bool bRelative);
 };
+
+inline void FEImage::SetTopLeft(const FEVector2& topleft, bool bRelative) {
+    SetTrackValue(FETrack_UpperLeft, topleft, bRelative);
+    Flags |= 0x400000;
+}
+
+inline void FEImage::SetBottomRight(const FEVector2& bottomright, bool bRelative) {
+    SetTrackValue(FETrack_LowerRight, bottomright, bRelative);
+    Flags |= 0x400000;
+}
 
 #endif
