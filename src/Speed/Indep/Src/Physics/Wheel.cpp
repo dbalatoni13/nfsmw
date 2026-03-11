@@ -58,7 +58,8 @@ bool Wheel::InitPosition(const IRigidBody &rb, float maxcompression) {
     const UMath::Vector3 &body_av = rb.GetAngularVelocity();
     const UMath::Vector3 &body_lv = rb.GetLinearVelocity();
     const WCollider *collider = rb.GetWCollider();
-    return UpdatePosition(body_av, body_lv, matrix, UMath::Vector3::kZero, 0.0f, maxcompression, false, collider, pos.y + pos.y);
+    UMath::Vector3 dim = rb.GetDimension();
+    return UpdatePosition(body_av, body_lv, matrix, UMath::Vector3::kZero, 0.0f, maxcompression, false, collider, dim.y + dim.y);
 }
 
 bool Wheel::UpdatePosition(const UMath::Vector3 &body_av, const UMath::Vector3 &body_lv, 
