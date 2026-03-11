@@ -2,9 +2,12 @@
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 
 extern ICEManager TheICEManager;
 extern bool Tweak_ForceICEReplay;
+extern bool Tweak_EnableICEAuthoring;
 #include "Speed/Indep/Src/Camera/ICE/ICEMover.hpp"
 
 static UTL::COM::Factory<CameraAI::Director *, CameraAI::Action, UCrc32>::Prototype _CDActionIce("ICE", CDActionIce::Construct);
@@ -129,21 +132,141 @@ CDActionIce::CDActionIce(CameraAI::Director *director, IPlayer *player)
 }
 
 CDActionIce::~CDActionIce() {
-    // TODO
+    TheICEManager.SetGenericCameraToPlay("", "");
+    if (mPlayer) {
+        mAttachments->Detach(mPlayer);
+    }
+    ReleaseCar(true);
+    delete mMover;
+    delete mAnchor;
+    delete mAttachments;
 }
 
 void CDActionIce::OnDetached(IAttachable *pOther) {
-    // TODO
+    if (ComparePtr(pOther, mPlayer)) {
+        mPlayer = nullptr;
+    }
+    if (ComparePtr(pOther, mVehicle)) {
+        ReleaseCar(false);
+    }
 }
 
 void CDActionIce::ReleaseCar(bool detach) {
-    // TODO
+    if (mVehicle != nullptr) {
+        if (detach) {
+            Detach(mVehicle);
+        }
+        mVehicle = nullptr;
+    }
+    mTarget.Set(0);
 }
 
 void CDActionIce::AquireCar() {
-    // TODO
+    ISimable *isimable;
+    ITransmission *itrans;
+    ISuspension *isuspension;
+
+    if (mPlayer == nullptr) {
+        return;
+    }
+
+    if (!ComparePtr(mPlayer->GetSimable(), mVehicle)) {
+        ReleaseCar(true);
+    }
+    if (mVehicle != nullptr) {
+        return;
+    }
+
+    isimable = mPlayer->GetSimable();
+    if (isimable == nullptr) {
+        return;
+    }
+
+    mTarget.Set(isimable->GetWorldID());
+    if (!mTarget.IsValid()) {
+        return;
+    }
+
+    if (!isimable->QueryInterface(&mVehicle)) {
+        return;
+    }
+
+    Attach(mVehicle);
+
+    if (mVehicle->QueryInterface(&itrans)) {
+        mAnchor->SetTopSpeed(itrans->GetMaxSpeedometer());
+    }
+
+    if (mVehicle->QueryInterface(&isuspension)) {
+        mAnchor->SetNumWheels(isuspension->GetNumWheels() != 0);
+    }
 }
 
 void CDActionIce::Update(float dT) {
-    // TODO
+    while (!mActionQ.IsEmpty()) {
+        ActionRef aRef = mActionQ.GetAction();
+        float data = aRef.Data();
+        if (aRef.ID() == 0x15 && Tweak_EnableICEAuthoring) {
+            Tweak_EnableICEAuthoring = false;
+            mDone = true;
+        }
+        mActionQ.PopAction();
+    }
+
+    if (mPlayer == nullptr) {
+        ReleaseCar(true);
+    } else {
+        AquireCar();
+        if (mTarget.IsValid()) {
+            bMatrix4 mat(*mTarget.GetMatrix());
+            ICollisionBody *irbc;
+            ISimable *isimable;
+            float forward_slip;
+            ISuspension *isuspension;
+
+            if (mVehicle != nullptr && mVehicle->QueryInterface(&irbc)) {
+                IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
+                UVector3 cg(irbc->GetCenterOfGravity());
+                irb->ConvertLocalToWorld(cg, false);
+                cg += irb->GetPosition();
+                eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(cg), reinterpret_cast<bVector3 &>(mat.v3));
+            }
+
+            mAnchor->SetSlipAngle(0.0f);
+            if (mVehicle != nullptr) {
+                mAnchor->SetSlipAngle(mVehicle->GetSlipAngle());
+            }
+
+            mAnchor->SetRPM(0.0f);
+            mAnchor->SetNosEngaged(false);
+            mAnchor->SetNosPercentageLeft(0.0f);
+
+            if (mVehicle != nullptr && mVehicle->QueryInterface(&isimable)) {
+                IEngine *iengine;
+                if (isimable->QueryInterface(&iengine)) {
+                    mAnchor->SetRPM(iengine->GetRPM());
+                    mAnchor->SetNosEngaged(iengine->IsNOSEngaged());
+                    mAnchor->SetNosPercentageLeft(iengine->GetNOSCapacity());
+                }
+            }
+
+            forward_slip = 0.0f;
+            if (mVehicle != nullptr && mVehicle->QueryInterface(&isuspension)) {
+                for (unsigned int i = 0; i < isuspension->GetNumWheels(); i++) {
+                    if (isuspension->GetWheelSlip(i) > 0.0f) {
+                        forward_slip += isuspension->GetWheelSlip(i);
+                    }
+                }
+            }
+
+            mAnchor->SetForwardSlip(forward_slip);
+            mAnchor->Update(dT, *reinterpret_cast<const ICE::Matrix4 *>(&mat),
+                            *reinterpret_cast<const ICE::Vector3 *>(mTarget.GetVelocity()),
+                            *reinterpret_cast<const ICE::Vector3 *>(mTarget.GetAcceleration()));
+            if (TheICEManager.IsEditorOff() && Tweak_ForceICEReplay) {
+                TheICEManager.ChooseReplayCamera();
+            }
+        }
+        TheICEManager.Update();
+    }
 }
