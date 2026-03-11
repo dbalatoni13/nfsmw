@@ -193,7 +193,7 @@ bool Smackable::SetDynamicData(const EventSequencer::System *system, EventDynami
 
 bool Smackable::OnExplosion(const UMath::Vector3 &normal, const UMath::Vector3 &position,
                             float dT, IExplosion *explosion) {
-    if (!(explosion->GetTargets() & 1)) {
+    if ((explosion->GetTargets() & 1) == 0) {
         return false;
     }
     IRigidBody *irb = GetRigidBody();
@@ -214,10 +214,11 @@ bool Smackable::OnExplosion(const UMath::Vector3 &normal, const UMath::Vector3 &
     }
     EventSequencer::IEngine *sequencer = static_cast< ISimable * >(this)->GetEventSequencer();
     if (sequencer != nullptr) {
-        float time = Sim::GetTime();
-        sequencer->ProcessStimulus(0xab556d39, time, nullptr, EventSequencer::QUEUE_ALLOW);
+        sequencer->ProcessStimulus(0xab556d39, Sim::GetTime(), nullptr,
+                                   EventSequencer::QUEUE_ALLOW);
         if (explosion->GetCausality() != nullptr) {
-            sequencer->ProcessStimulus(0xffcd8a63, time, nullptr, EventSequencer::QUEUE_ALLOW);
+            sequencer->ProcessStimulus(0xffcd8a63, Sim::GetTime(), nullptr,
+                                       EventSequencer::QUEUE_ALLOW);
         }
     }
     if (!static_cast< ISimable * >(this)->GetCausality() && explosion->GetCausality()) {
@@ -281,10 +282,9 @@ void Smackable::OnImpact(float acceleration, float speed,
     Sim::GetTime();
     EventSequencer::IEngine *iev = static_cast< ISimable * >(this)->GetEventSequencer();
     if (iev != nullptr) {
-        if (type == Sim::Collision::Info::WORLD) {
-            DoImpactStimulus(0x7ebe81c0, speed / MPH2MPS(100.0f));
-        } else if (static_cast< int >(type) < 3) {
-            if (type == Sim::Collision::Info::OBJECT && iother != nullptr) {
+        switch (type) {
+        case Sim::Collision::Info::OBJECT:
+            if (iother != nullptr) {
                 float intensity = acceleration / MPH2MPS(100.0f);
                 DoImpactStimulus(0xd59062c8, intensity);
                 if (iother->IsPlayer()) {
@@ -294,8 +294,15 @@ void Smackable::OnImpact(float acceleration, float speed,
                     DoImpactStimulus(0x80b88c1d, intensity);
                 }
             }
-        } else if (type == Sim::Collision::Info::GROUND) {
+            break;
+        case Sim::Collision::Info::GROUND:
             DoImpactStimulus(0x2bf74e61, speed * 0.1f);
+            break;
+        case Sim::Collision::Info::WORLD:
+            DoImpactStimulus(0x7ebe81c0, speed / MPH2MPS(100.0f));
+            break;
+        default:
+            break;
         }
     }
 }
@@ -312,7 +319,6 @@ void Smackable::OnCollision(const Sim::Collision::Info &cinfo) {
     mLastCollisionPosition = UMath::Vector4Make(cinfo.position, 0.0f);
     HSIMABLE myHandle = static_cast< ISimable * >(this)->GetInstanceHandle();
     if (cinfo.objA == myHandle) {
-        UMath::Vector3 normal = cinfo.normal;
         mLastImpactSpeed = cinfo.objAVel;
         ISimable *other = ISimable::FindInstance(cinfo.objB);
         OnImpact(cinfo.impulseA, speed,
@@ -431,7 +437,10 @@ bool Smackable::CanRetrigger() const {
     if (!wpos.OnValidFace()) {
         return false;
     }
-    return mCollisionBody->IsSleeping();
+    if (mCollisionBody->IsSleeping()) {
+        return true;
+    }
+    return false;
 }
 
 void Smackable::ProcessDeath(float dT) {
