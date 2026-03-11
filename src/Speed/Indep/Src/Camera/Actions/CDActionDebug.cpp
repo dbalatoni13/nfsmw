@@ -27,26 +27,21 @@ CDActionDebug::CDActionDebug(CameraAI::Director *director)
     : CameraAI::Action(), //
       mActionQ(1, 0x98c7a2f5, "DebugWorld", false) {
     mDone = false;
-    mPrev = director->GetAction()->GetName();
+    bVector3 start_position(0.0f, 0.0f, 0.0f);
+    bVector3 start_direction(0.0f, 0.0f, 1.0f);
+    Action *prev_action = director->GetAction();
 
-    CameraMover *m = director->GetMover();
-    bVector3 pos;
-    bVector3 dir;
-
-    if (m != nullptr) {
-        pos = *m->GetCamera()->GetPosition();
-        dir = *m->GetCamera()->GetDirection();
-    } else {
-        pos.x = 0.0f;
-        pos.y = 0.0f;
-        pos.z = 0.0f;
-        dir.x = 0.0f;
-        dir.y = 0.0f;
-        dir.z = 1.0f;
+    if (prev_action != nullptr) {
+        mPrev = prev_action->GetName();
+        CameraMover *prev_mover = prev_action->GetMover();
+        if (prev_mover != nullptr) {
+            start_position = *prev_mover->GetPosition();
+            start_direction = *prev_mover->GetDirection();
+        }
     }
 
-        int viewId = static_cast<int>(director->GetViewID());
-    mMover = new DebugWorldCameraMover(viewId, &pos, &dir, static_cast<JoystickPort>(viewId));
+    int viewId = static_cast<int>(director->GetViewID());
+    mMover = new DebugWorldCameraMover(viewId, &start_position, &start_direction, static_cast<JoystickPort>(viewId));
 }
 
 CDActionDebug::~CDActionDebug() {
