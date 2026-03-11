@@ -11,6 +11,10 @@ Usage:
   python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f __9CAnimBank --no-ghidra
   python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f __9CAnimBank --no-source
   python tools/decomp-context.py --ghidra-check
+
+Parallel-safe usage (avoids interference from other agents building the same TU):
+  TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim)
+  python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f __9CAnimBank --base-obj "$TEMPOBJ"
 """
 
 import argparse
@@ -18,6 +22,7 @@ import json
 import os
 import re
 import shutil
+import tempfile
 import subprocess
 import sys
 from typing import Any, Dict, List, Optional, Tuple
@@ -51,8 +56,15 @@ def find_unit(config: Dict[str, Any], unit_name: str) -> Optional[Dict[str, Any]
     return None
 
 
-def run_objdiff(unit_name: str) -> Optional[Dict[str, Any]]:
-    """Run objdiff-cli diff and return parsed JSON."""
+def run_objdiff(unit_name: str, base_obj: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """Run objdiff-cli diff and return parsed JSON.
+
+    If base_obj is given, a temporary objdiff.json is used that overrides the
+    base_path for this unit so parallel agents don't interfere with each other.
+    """
+    if base_obj is not None:
+        return _run_objdiff_with_base_obj(unit_name, base_obj)
+
     result = subprocess.run(
         [OBJDIFF_CLI, "diff", "-u", unit_name, "-o", "-", "--format", "json"],
         capture_output=True,
@@ -64,6 +76,67 @@ def run_objdiff(unit_name: str) -> Optional[Dict[str, Any]]:
         return json.loads(result.stdout)
     except json.JSONDecodeError:
         return None
+
+
+def _make_abs(path: Optional[str], base: str) -> Optional[str]:
+    if path is None:
+        return None
+    if os.path.isabs(str(path)):
+        return str(path)
+    return os.path.abspath(os.path.join(base, str(path)))
+
+
+def _run_objdiff_with_base_obj(unit_name: str, base_obj: str) -> Optional[Dict[str, Any]]:
+    """Run objdiff-cli using a temporary config pointing base_path at base_obj."""
+    with open(OBJDIFF_JSON) as f:
+        config = json.load(f)
+
+    found = False
+    for unit in config.get("units", []):
+        tp = _make_abs(unit.get("target_path"), root_dir)
+        if tp is not None:
+            unit["target_path"] = tp
+
+        if unit["name"] == unit_name:
+            unit["base_path"] = os.path.abspath(base_obj)
+            found = True
+        else:
+            bp = _make_abs(unit.get("base_path"), root_dir)
+            if bp is not None:
+                unit["base_path"] = bp
+
+        meta = unit.get("metadata") or {}
+        sp = _make_abs(meta.get("source_path"), root_dir)
+        if sp is not None:
+            meta["source_path"] = sp
+
+        scratch = unit.get("scratch") or {}
+        cp = _make_abs(scratch.get("ctx_path"), root_dir)
+        if cp is not None:
+            scratch["ctx_path"] = cp
+
+    if not found:
+        return None
+
+    tmpdir = tempfile.mkdtemp(prefix="nfsmw_objdiff_")
+    try:
+        tmp_config = os.path.join(tmpdir, "objdiff.json")
+        with open(tmp_config, "w") as f:
+            json.dump(config, f)
+
+        result = subprocess.run(
+            [OBJDIFF_CLI, "diff", "-u", unit_name, "-o", "-", "--format", "json"],
+            capture_output=True,
+            cwd=tmpdir,
+        )
+        if result.returncode != 0:
+            return None
+        try:
+            return json.loads(result.stdout)
+        except json.JSONDecodeError:
+            return None
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
 
 
 def find_symbol_in_diff(
@@ -349,6 +422,17 @@ def main():
         action="store_true",
         help="Verify Ghidra CLI is reachable and programs are loaded, then exit",
     )
+    # Parallel-safe option: use a pre-compiled temp .o instead of the shared build output.
+    # Obtain the temp path with: TEMPOBJ=$(python tools/build-unit.py -u <unit>)
+    parser.add_argument(
+        "--base-obj",
+        metavar="PATH",
+        help=(
+            "Use this .o file as the decomp base instead of the one from objdiff.json. "
+            "Allows parallel agents to see their own compilation result without interference. "
+            "Produce the path with build-unit.py."
+        ),
+    )
     args = parser.parse_args()
 
     if args.ghidra_check:
@@ -368,7 +452,7 @@ def main():
     source_path = meta.get("source_path", "")
 
     # === objdiff Status (run first so we have line numbers for source scoping) ===
-    diff_data = run_objdiff(args.unit)
+    diff_data = run_objdiff(args.unit, base_obj=args.base_obj)
     left_sym = right_sym = None
 
     if diff_data:
@@ -431,15 +515,18 @@ def main():
 
             # Run decomp-diff.py for the actual diff if not 100%
             if mp is not None and mp < 100.0:
+                diff_cmd = [
+                    sys.executable,
+                    os.path.join(script_dir, "decomp-diff.py"),
+                    "-u",
+                    args.unit,
+                    "-d",
+                    args.function,
+                ]
+                if args.base_obj:
+                    diff_cmd += ["--base-obj", args.base_obj]
                 result = subprocess.run(
-                    [
-                        sys.executable,
-                        os.path.join(script_dir, "decomp-diff.py"),
-                        "-u",
-                        args.unit,
-                        "-d",
-                        args.function,
-                    ],
+                    diff_cmd,
                     capture_output=True,
                     cwd=root_dir,
                 )

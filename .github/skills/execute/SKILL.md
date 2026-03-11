@@ -66,12 +66,15 @@ Wait for this agent to complete before proceeding.
 
 ### 3a. Get the updated function list
 
-After scaffolding, rebuild and re-check the function list:
+After scaffolding, rebuild and re-check the function list.
+Use `build-unit.py` to compile to a private temp `.o` so the status check isn't
+polluted by another parallel agent's compilation:
 
 ```sh
-ninja
-python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching -t function
-python tools/decomp-diff.py -u main/Path/To/TU -s missing -t function
+ninja                  # full build to update shared state (progress, sha1)
+TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
+python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching -t function --base-obj "$TEMPOBJ"
+python tools/decomp-diff.py -u main/Path/To/TU -s missing -t function --base-obj "$TEMPOBJ"
 ```
 
 ### 3c. Implement each function sequentially
@@ -118,6 +121,9 @@ Remind agents in their prompts:
 > After modifying any shared headers, run `ninja changes` to check for regressions.
 > Empty changeset = no regressions. If regressions appear, revert the shared change
 > and use a local workaround instead.
+
+> Use `build-unit.py` + `--base-obj` for all diff and context commands so your
+> results are isolated from other agents compiling the same TU concurrently.
 
 ### 3g. Periodic reassessment
 
@@ -176,6 +182,11 @@ Implement the function [ClassName]::[FunctionName]
 **Standard agent instructions:**
 - Use the lookup and line-lookup skills for dwarf info.
 - After modifying shared headers, run `ninja changes` to check for regressions (empty = good).
+- Use `build-unit.py` + `--base-obj` for all build/diff/context/dwarf-dump commands so your
+  compiled output is isolated from other agents working on different TUs:
+    TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
+    python tools/decomp-diff.py -u main/Path/To/TU -d [FunctionName] --base-obj "$TEMPOBJ"
+    dtk dwarf dump "$TEMPOBJ" -o /tmp/TU_check.nothpp
 - Report any new general assembly patterns or matching tips you discover.
 
 **Matching tips from this session:**
