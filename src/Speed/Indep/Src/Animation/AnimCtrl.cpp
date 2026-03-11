@@ -118,10 +118,12 @@ int CAnimCtrl::AdvanceAnimTime(float timestep) {
 
     float timeScale30 = m_timeScale * 30.0f;
     float this_time_step = timestep * timeScale30;                      // f1
-    float this_master_delay_elapsed = MasterDelayElapsed * timeScale30; // f30
+    register float raw_master asm("fr9") = MasterDelayElapsed;
     float this_master_delay_len = m_masterDelayTime * 30.0f;           // f11
-    float this_local_delay_elapsed = LocalDelayElapsed * timeScale30;  // f29
+    register float raw_local asm("fr10") = LocalDelayElapsed;
     float this_local_delay_len = m_localDelayTime * 30.0f;             // f2
+    register float this_local_delay_elapsed asm("fr29") = raw_local * timeScale30;
+    register float this_master_delay_elapsed asm("fr30") = raw_master * timeScale30;
 
     float range_len = m_flags & 0x40 ? m_f_loop_end - m_f_loop_start : m_animLength; // f13
     float begin_of_anim = m_flags & 0x40 ? m_f_loop_start : 0.0f;                    // f9

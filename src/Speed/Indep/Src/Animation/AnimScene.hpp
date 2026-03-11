@@ -213,6 +213,10 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
     bMatrix4 mSceneTransformMatrix;               // offset 0xC4, size 0x40
     SpaceNode *mSpaceNode;                        // offset 0x104, size 0x4
     int mAnimCandidateType;                       // offset 0x108, size 0x4
+
+    void SetSceneRotationMatrix(bMatrix4 &scene_rotation_matrix) { mSceneRotationMatrix = scene_rotation_matrix; }
+    void SetSceneTranslationMatrix(bMatrix4 &scene_translation_matrix) { mSceneTranslationMatrix = scene_translation_matrix; }
+    void SetSceneTransformMatrix(bMatrix4 &scene_transform_matrix) { mSceneTransformMatrix = scene_transform_matrix; }
     int mAnimCandidateIndex;                      // offset 0x10C, size 0x4
 };
 

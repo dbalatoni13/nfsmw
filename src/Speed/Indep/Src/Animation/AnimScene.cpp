@@ -64,7 +64,7 @@ extern float gCopCarDoorAnim_AnimLength[4];
 extern float gCopCarDoorAnim_Delta[4];
 extern float gCopCarDoorAnim_StartPos[4];
 
-bMatrix4 &bConvertToBond(bMatrix4 &dest, const bMatrix4 &v);
+void bConvertToBond(bMatrix4 &dest, const bMatrix4 &v);
 CAnimSkeleton *GetSkeletonFromList(unsigned int namehash);
 void DumpAnimBanks();
 
@@ -93,8 +93,8 @@ void StartCopDoorAnim(int door, float startPos, float AnimLength, float endPos) 
     gCopCarDoorAnim_CurrentTime[door] = 0.0f;
     if (AnimLength > 0.0f) {
         gCopCarDoorAnim_AnimLength[door] = AnimLength;
-        gCopCarDoorAnim_Delta[door] = endPos - startPos;
         gCopCarDoorAnim_StartPos[door] = startPos;
+        gCopCarDoorAnim_Delta[door] = endPos - startPos;
     } else {
         gCopCarDoorAnim_AnimLength[door] = 0.0f;
     }
@@ -514,10 +514,10 @@ void CAnimScene::ChangePlayStatus(ePlayStatus new_status) {
 
 bool CAnimScene::Init() {
     NisScene *scene_info = reinterpret_cast< CAnimSceneDataLayout * >(mAnimSceneData)->mNisScene;
-    if (scene_info->SceneType) {
-        CAnimEntityCreationContext::SetRaceStartContext(false);
-    } else {
+    if (scene_info->SceneType == 0) {
         CAnimEntityCreationContext::SetRaceStartContext(true);
+    } else {
+        CAnimEntityCreationContext::SetRaceStartContext(false);
     }
     bool find_start_line = false;
     if (scene_info->SceneType == 0 || scene_info->SceneType == 3 || scene_info->SceneType == 2) {
@@ -528,10 +528,10 @@ bool CAnimScene::Init() {
     bMatrix4 scene_translation_matrix;
     bMatrix4 scene_transform_matrix;
     CAnimLocator::GetInitialAnimMatricies(&scene_rotation_matrix, &scene_translation_matrix, find_start_line);
-    mSceneRotationMatrix = scene_rotation_matrix;
-    mSceneTranslationMatrix = scene_translation_matrix;
+    SetSceneRotationMatrix(scene_rotation_matrix);
+    SetSceneTranslationMatrix(scene_translation_matrix);
     bMulMatrix(&scene_transform_matrix, &scene_translation_matrix, &scene_rotation_matrix);
-    mSceneTransformMatrix = scene_transform_matrix;
+    SetSceneTransformMatrix(scene_transform_matrix);
 
     SpaceNode *space_node = CreateSpaceNode(nullptr);
     mSpaceNode = space_node;
@@ -722,8 +722,8 @@ void CAnimScene::AnimatedCars_SetMainAndWheels(int current_car, CAnimCtrl *main_
     bMulMatrix(&animated_car_matrix, &mSceneTranslationMatrix, &animated_car_matrix);
     bConvertToBond(animated_car_matrix, animated_car_matrix);
 
-    float ground_elevation = 0.0f;
     WCollisionMgr collisionMgr(0, 3);
+    float ground_elevation = 0.0f;
     bool point_valid = collisionMgr.GetWorldHeightAtPointRigorous(
         *reinterpret_cast< UMath::Vector3 * >(&animated_car_matrix.v3), ground_elevation, nullptr);
 
