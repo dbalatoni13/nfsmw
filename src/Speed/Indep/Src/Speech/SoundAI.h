@@ -14,10 +14,18 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/SimActivity.h"
 
 DECLARE_CONTAINER_TYPE(IVehiclePtrs);
+
+// total size: 0xC
+struct BlowByRecord {
+    float distance;    // offset 0x0, size 0x4
+    float speed;       // offset 0x4, size 0x4
+    Timer timestamp;   // offset 0x8, size 0x4
+};
 
 // total size: 0x260
 class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public UTL::Collections::Singleton<SoundAI> {
@@ -350,7 +358,7 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     CarHeading mAILastKnown;                  // offset 0x1D4, size 0x8
     PursuitState mPursuitState;               // offset 0x1DC, size 0x4
     QuadrantState mQuadrantState;             // offset 0x1E0, size 0x4
-    // BlowByRecord mRecentBlowby;               // offset 0x1E4, size 0xC
+    BlowByRecord mRecentBlowby;               // offset 0x1E4, size 0xC
     int mInfraction;                        // offset 0x1F0, size 0x4
     int mNumCopsInWave;                     // offset 0x1F4, size 0x4
     int mNumActiveCopCars;                  // offset 0x1F8, size 0x4

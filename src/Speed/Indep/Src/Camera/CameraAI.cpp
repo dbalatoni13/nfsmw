@@ -145,7 +145,6 @@ void CameraAI::Director::SetAction(Attrib::StringKey desiredMode) {
 
 void CameraAI::Director::SelectAction() {
     if (TheICEManager.IsEditorOff()) {
-        bool isICEPlaying = false;
 
         if (mJumpTime < 0.0f) {
             mJumpTime = 0.0f;
@@ -178,7 +177,7 @@ void CameraAI::Director::SelectAction() {
                             mJumpTime = kJumpDuration;
                             {
                                 MGamePlayMoment msg(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, 0x2d8acb81);
-                                msg.Deliver();
+                                msg.Send(UCrc32("MomentStrm"));
                             }
                         }
                     }
@@ -186,6 +185,7 @@ void CameraAI::Director::SelectAction() {
             }
         }
 
+        bool isICEPlaying = false;
         INIS *nis = UTL::Collections::Singleton<INIS>::Get();
         if (nis != nullptr) {
             if (nis->IsPlaying()) {
@@ -199,8 +199,8 @@ void CameraAI::Director::SelectAction() {
 
         if (isICEPlaying || TheICEManager.IsGenericCameraPlaying()) {
             mDesiredMode = Attrib::StringKey("ICE");
-            mPursuitStartTime = 0.0f;
             mJumpTime = 0.0f;
+            mPursuitStartTime = 0.0f;
         } else {
             if (mAction != nullptr && mAction->GetName() == Attrib::StringKey("ICE")) {
                 TheICEManager.SetUseRealTime(false);
@@ -209,8 +209,9 @@ void CameraAI::Director::SelectAction() {
                 if (nis2 != nullptr) {
                     nis2->FireEventTag("CameraFinished");
                 }
+                UCrc32 port(0x20d60dbf);
                 MICECameraFinished finishedMsg;
-                finishedMsg.Post(UCrc32(0x20d60dbf));
+                finishedMsg.Post(port);
             }
         }
     }
@@ -596,13 +597,12 @@ void CameraAI::MaybeDoJumpCam(ISimable *isimable) {
     if (speed < 10.0f) {
         return;
     }
-    const UMath::Vector3 &pos = isimable->GetPosition();
-    bVector3 position;
-    bConvertFromBond(position, pos);
     int set = 0;
-    TrackPathZone *zone = TheTrackPathManager.FindZone(
-        reinterpret_cast<const bVector2 *>(&position), TRACK_PATH_ZONE_JUMP_CAM, nullptr);
-    if (zone != nullptr) {
+    register TrackPathManager *tpm = &TheTrackPathManager;
+    bVector3 position;
+    bConvertFromBond(position, isimable->GetPosition());
+    if (tpm->FindZone(
+            reinterpret_cast<const bVector2 *>(&position), TRACK_PATH_ZONE_JUMP_CAM, nullptr) != nullptr) {
         set = 1;
     }
     float highest = 0.0f;

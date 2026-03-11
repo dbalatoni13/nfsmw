@@ -11,7 +11,7 @@
 // total size: 0x48
 class MGamePlayMoment : public Hermes::Message {
   public:
-    static std::size_t _GetSize() {
+    static unsigned int _GetSize() {
         return sizeof(MGamePlayMoment);
     }
 

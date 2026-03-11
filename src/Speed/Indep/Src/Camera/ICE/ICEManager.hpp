@@ -73,9 +73,8 @@ struct ICETrack : public bTNode<ICETrack> {
     }
 
     ICEData *GetKey(int n) {
-        int clamped = bClamp(n, 0, NumKeys - 1);
-        if (n != clamped) return 0;
-        return &Keys[clamped];
+        if (n != UMath::Clamp(n, 0, NumKeys - 1)) return 0;
+        return &Keys[n];
     }
 
     char *GetName() {
