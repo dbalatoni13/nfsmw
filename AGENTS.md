@@ -66,6 +66,14 @@ python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin -
 
 Mismatched args are wrapped in `{}`. Matching runs are collapsed (control with `-C <n>` context lines, `--no-collapse`). Left = original, right = decomp.
 
+**Parallel-safe usage** — when multiple agents compile the same TU, pass a private `--base-obj`
+so each agent diffs against its own compiled output and they never interfere:
+
+```sh
+TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim)
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim --base-obj "$TEMPOBJ" -d FindIOWin
+```
+
 ### decomp-status.py — Project-wide progress
 
 ```sh
@@ -88,6 +96,27 @@ python tools/decomp-context.py --ghidra-check   # verify Ghidra CLI is set up co
 Flags: `--no-source`, `--no-ghidra` to skip sections. Source output is automatically scoped
 to the function's line range (with a few lines of context) instead of dumping the whole file.
 
+**Parallel-safe usage** — pass `--base-obj` to use a private compiled `.o`:
+
+```sh
+TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim)
+python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --base-obj "$TEMPOBJ"
+```
+
+### find-symbol.py — Check for existing definitions before declaring new types
+
+Before declaring any new struct, class, enum, global, or typedef, run this to check whether
+it already exists in `src/`. This is the CLI alternative to clangd workspace/symbol search.
+
+```sh
+python tools/find-symbol.py AITarget
+python tools/find-symbol.py CEntity --type class
+python tools/find-symbol.py EState --type enum
+```
+
+If it prints "Not found: ... Safe to declare", you can proceed to define the symbol.
+If it finds a match, include that header instead of redeclaring.
+
 ### find-symbol.py — Check for existing definitions before declaring new types
 
 Before declaring any new struct, class, enum, global, or typedef, run this to check whether
@@ -104,16 +133,42 @@ If it finds a match, include that header instead of redeclaring.
 
 ### dtk (decomp-toolkit)
 
-Dump the dwarf of your own implementation of a function:
+Dump the dwarf of your own implementation of a function.
+**Always use the temp `.o` produced by `build-unit.py`** so the dump reflects your own
+compilation and isn't overwritten by another parallel agent:
 
 ```sh
-dtk dwarf dump build/GOWE69/src/Speed/Indep/SourceLists/UNITNAME.o -o /tmp/UNITNAME_<random_number>.nothpp
+TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/UNITNAME)
+dtk dwarf dump "$TEMPOBJ" -o /tmp/UNITNAME_<random_number>.nothpp
 ```
 
 Demangle a symbol (you probably won't need this):
 
 ```sh
 dtk demangle 'AcceptScriptMsg__7CEntityF20EScriptObjectMessage9TUniqueIdR13CStateManager'
+```
+
+### build-unit.py — Parallel-safe compilation
+
+Compile a single translation unit to a private temporary `.o` file that won't be
+overwritten by other agents.  Always prefer this over plain `ninja` when you need to
+diff or inspect your own compiled output:
+
+```sh
+# Compile to an auto-generated temp path (printed to stdout):
+TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim)
+
+# Compile to an explicit path:
+python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim -o /tmp/my.o
+```
+
+Typical parallel-safe iteration loop:
+
+```sh
+TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
+python tools/decomp-diff.py      -u main/Path/To/TU --base-obj "$TEMPOBJ" -d FunctionName
+python tools/decomp-context.py   -u main/Path/To/TU --base-obj "$TEMPOBJ" -f FunctionName
+dtk dwarf dump "$TEMPOBJ" -o /tmp/TU_check.nothpp
 ```
 
 ## Code Conventions
@@ -204,6 +259,20 @@ The inline information in the dwarf is incredibly useful. When you encounter one
 
 It's very important that you use math inlines from bMath and UMath as shown in the dwarf. UVector inlines use temporaries that the compiler couldn't optimize out. You can see in the dwarf on which stack address they are and deduce final destination they are copied to.
 
+### Store instruction order hints
+
+- GCC likes to reorder store instructions, so try multiple combinations instead of strictly
+  using the order from the assembly. When there are lots of store instructions after each other,
+  the first one of the source code often ends up being the last in the assembly.
+- The developers usually initialized members using initializer lists. This is great because the order
+  of stores becomes deterministic that way. However if you put all possible variables into the initializer list
+  and the order is wrong, you might have to initialize some or all variables in the function body instead. 
+
+### Relocation diffs
+- When you have to use a constant that looks like an address, it's possible that the splitter thought it was
+  an allocation and it shows up as a diff because the left side has a symbol and the right side has a constant.
+  In this case you need to figure out the virtual address of the instruction and block the relocation in config.yml.
+
 ### PPC EABI calling convention
 
 On PowerPC EABI (as used by GCC), float and integer parameters use **separate** register
@@ -268,7 +337,6 @@ TU: <translation-unit-name> | Function: <FunctionName>
 ```
 
 <!-- Add new entries below this line -->
-
 
 ### ExplicitInlineSpecialMembersForSTLElements
 TU: zAttribSys | Function: _STL::_Rb_tree<Attrib::TypeDesc, ...>::_M_insert
