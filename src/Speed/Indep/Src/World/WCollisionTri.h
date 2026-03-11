@@ -59,10 +59,16 @@ struct WCollisionBarrierList : public WCollisionVector<WCollisionBarrierListEntr
     // total size: 0x10
 };
 
-struct WCollisionTriBlock : public WCollisionVector<WCollisionTri> {};
+struct WCollisionTriBlock : public WCollisionVector<WCollisionTri> {
+    static void *operator new(unsigned int size) { return gFastMem.Alloc(size, nullptr); }
+    static void operator delete(void *mem, unsigned int size) { gFastMem.Free(mem, size, nullptr); }
+};
 
 struct WCollisionTriList : public WCollisionVector<WCollisionTriBlock *> {
     // total size: 0x14
+    WCollisionTriList() : mCurrBlock(nullptr) {}
+    ~WCollisionTriList() { clear_all(); }
+    void clear_all();
     WCollisionTriBlock *mCurrBlock; // offset 0x10, size 0x4
 };
 
