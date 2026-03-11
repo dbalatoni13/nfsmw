@@ -32,12 +32,37 @@ struct WGrid {
         return nodeInd < fNumRows * fNumCols;
     }
 
+    inline void RangeCheckROWCOL(unsigned int &row, unsigned int &col) const {
+        if (col >= fNumCols) {
+            if (col < 0x7FFFFFFF) {
+                col = fNumCols - 1;
+            } else {
+                col = 0;
+            }
+        }
+        if (row >= fNumRows) {
+            if (row < 0x7FFFFFFF) {
+                row = fNumRows - 1;
+            } else {
+                row = 0;
+            }
+        }
+    }
+
     inline unsigned int GetNodeInd(unsigned int row, unsigned int col) const {
         return row * fNumCols + col;
     }
 
+    inline void GetRowCol(unsigned int ind, unsigned int &row, unsigned int &col) const {
+        row = ind / fNumCols;
+        col = ind - row * fNumCols;
+        RangeCheckROWCOL(row, col);
+    }
+
     inline WGridNode *GetNode(unsigned int ind) const {
-        return fNodes[ind];
+        unsigned int row, col;
+        GetRowCol(ind, row, col);
+        return GetNode(row, col);
     }
 
     inline WGridNode *GetNode(unsigned int row, unsigned int col) const {

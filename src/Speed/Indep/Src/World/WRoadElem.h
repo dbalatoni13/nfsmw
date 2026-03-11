@@ -49,6 +49,15 @@ struct WRoadLane {
     }
 
     unsigned int GetBits(int n_offset, int n_bits) const;
+    int GetBitsSigned(int n_offset, int n_bits) const;
+
+    float GetWidth() const {
+        return static_cast< float >(GetBitsSigned(4, 14)) * (100.0f / 8191.0f);
+    }
+
+    float GetOffset() const {
+        return static_cast< float >(GetBitsSigned(18, 14)) * (100.0f / 8191.0f);
+    }
 
     unsigned int nBits; // offset 0x0, size 0x4
 };
@@ -108,6 +117,35 @@ struct WRoadProfile {
     int GetNumTrafficLanes(bool forward) const;
     int GetNthTrafficLane(int n, bool forward) const;
     int GetNthTrafficLaneFromCurb(int n, bool forward) const;
+
+    int GetNumTrafficLanes(bool forward, bool inverted) const {
+        if (inverted) {
+            forward = !forward;
+        }
+        return GetNumTrafficLanes(forward);
+    }
+    int GetNthTrafficLane(int n, bool forward, bool inverted) const {
+        if (inverted) {
+            forward = !forward;
+        }
+        return GetNthTrafficLane(n, forward);
+    }
+    float GetLaneOffset(int lane, bool inverted) const {
+        int lane_number = GetLaneNumber(lane, inverted);
+        return mLanes[lane_number].GetOffset();
+    }
+    float GetLaneWidth(int lane, bool inverted) const {
+        int lane_number = GetLaneNumber(lane, inverted);
+        return mLanes[lane_number].GetWidth();
+    }
+    float GetRelativeLaneOffset(int lane, bool inverted) const {
+        int real_middle = GetMiddleZone(inverted);
+        float offset = GetLaneOffset(lane, inverted);
+        if (lane < real_middle) {
+            offset = -offset;
+        }
+        return offset;
+    }
 
     unsigned char fNumZones;   // offset 0x0, size 0x1
     unsigned char fMiddleZone; // offset 0x1, size 0x1
@@ -248,11 +286,20 @@ struct WRoadSegment {
 
     // void SetOneWay(bool one_way) {}
 
-    // bool IsEndInverted() const {}
+    bool IsStartInverted() const {
+        return (fFlags >> 9) & 1;
+    }
 
-    // bool IsStartInverted() const {}
+    bool IsEndInverted() const {
+        return (fFlags >> 10) & 1;
+    }
 
-    // bool IsProfileInverted(int which_end) const {}
+    bool IsProfileInverted(int which_end) const {
+        if (!which_end) {
+            return IsEndInverted();
+        }
+        return IsStartInverted();
+    }
 
     // void SetEndInverted(bool inverted) {}
 

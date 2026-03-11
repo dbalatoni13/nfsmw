@@ -119,6 +119,11 @@ void WRoadNetwork::Shutdown() {
     }
 }
 
+// TODO: Being implemented by another agent
+bool WRoadNetwork::SegmentCrossesBarrier(WRoadSegment *segment, TrackPathBarrier *barrier) {
+    return false;
+}
+
 void WRoadNetwork::ResetRaceSegments() {
     fValidRaceFilter = false;
     for (int i = 0; i < static_cast<int>(fNumSegments); i++) {

@@ -59,6 +59,7 @@ class WRoadNetwork : public Debugable {
     float GetSegmentPointIntersect(const WRoadSegment &segment, const UMath::Vector3 &pt, UMath::Vector3 &intersect, bool checkBound);
     float GetLinePointIntersect(const UMath::Vector3 &start, const UMath::Vector3 &end, const UMath::Vector3 &pt, UMath::Vector3 &intersect, bool checkBound);
     void BuildSegmentSpline(const WRoadSegment &segment, USpline &spline);
+    bool SegmentCrossesBarrier(WRoadSegment *segment, TrackPathBarrier *barrier);
 
     // void SetRaceFilterValid(bool b) {}
 
