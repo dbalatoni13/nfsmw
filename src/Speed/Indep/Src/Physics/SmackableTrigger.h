@@ -24,6 +24,8 @@ class SmackableTrigger {
     void GetObjectMatrix(UMath::Matrix4 &matrix) const;
     void Move(const UMath::Matrix4 &matrix, const UMath::Vector3 &dim, bool virgin);
 
+    void *operator new(std::size_t size) { return gFastMem.Alloc(size, nullptr); }
+
     void operator delete(void *mem, std::size_t size) {
         if (mem) {
             gFastMem.Free(mem, size, nullptr);

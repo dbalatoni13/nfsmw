@@ -296,25 +296,18 @@ bool Physics::Upgrades::SetJunkman(pvehicle &vehicle, Type type) {
 
     int junkman_current = vehicle.junkman_current();
 
-    if (!newvehicle.IsDynamic()) {
-        const char *name = newvehicle.CollectionName();
-        Key uniqueKey = newvehicle.GenerateUniqueKey(name, false);
-        newvehicle.Modify(uniqueKey, newvehicle.LocalAttribCount());
+    if (newvehicle.IsDynamic()) {
+        newvehicle.Remove(0xcdc136e8);
     }
 
     Attribute part_attribute;
-    if (!newvehicle.Lookup(part_key, part_attribute)) {
+    if (!newvehicle.Lookup(part_key, part_attribute) || part_attribute.GetType() != 0x2b936eb7) {
         return false;
     }
 
-    RefSpec basepart;
-    part_attribute.Get(0, basepart);
+    RefSpec basepart(part_attribute.Get< RefSpec >(0));
 
-    junkman junkman_inst(vehicle.junkman(), 0, nullptr);
-    if (!junkman_inst.IsValid()) {
-        return false;
-    }
-
+    junkman junkman_inst(newvehicle.junkman(), 0, nullptr);
     PUJunkNode node(basepart, junkman_inst, junk_key);
 
     if (!node.IsValid()) {
@@ -325,18 +318,25 @@ bool Physics::Upgrades::SetJunkman(pvehicle &vehicle, Type type) {
     newref.SetCollection(node.GetConstCollection());
 
     if (newref != basepart) {
+        if (!newvehicle.IsDynamic()) {
+            const char *name = newvehicle.CollectionName();
+            Key uniqueKey = newvehicle.GenerateUniqueKey(name, false);
+            newvehicle.Modify(uniqueKey, newvehicle.LocalAttribCount());
+        } else {
+            newvehicle.Remove(part_key);
+        }
+
         if (!newvehicle.GetBase().AddAndSet(part_key, &newref, 1)) {
             return false;
         }
-
-        junkman_current |= (1 << type);
-        if (!newvehicle.GetBase().AddAndSet(0xcdc136e8, &junkman_current, 1)) {
-            return false;
-        }
-
-        vehicle = static_cast<const Attrib::Instance &>(newvehicle);
     }
 
+    junkman_current |= (1 << type);
+    if (!newvehicle.GetBase().AddAndSet(0xcdc136e8, &junkman_current, 1)) {
+        return false;
+    }
+
+    vehicle = static_cast<const Attrib::Instance &>(newvehicle);
     return true;
 }
 
@@ -350,10 +350,6 @@ bool Physics::Upgrades::ApplyPreset(pvehicle &vehicle, const presetride &presetr
 
     pvehicle newvehicle(vehicle);
     Clear(newvehicle);
-
-    if (!Validate(newvehicle)) {
-        return false;
-    }
 
     for (int i = 0; i < PUT_MAX; i++) {
         Type type = static_cast<Type>(i);
@@ -379,7 +375,7 @@ bool Physics::Upgrades::ApplyPreset(pvehicle &vehicle, const presetride &presetr
         }
     }
 
-    vehicle = newvehicle;
+    vehicle = static_cast<const Attrib::Instance &>(newvehicle);
     return true;
 }
 

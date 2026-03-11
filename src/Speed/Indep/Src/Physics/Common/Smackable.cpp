@@ -1020,7 +1020,7 @@ PlaceableScenery *PlaceableScenery::Construct(const char *name, unsigned int att
 }
 
 void PlaceableScenery::PickUp() {
-    HidePart(UCrc32());
+    HideModel();
     StopEffects();
     EndDraw();
     EndSimulation();

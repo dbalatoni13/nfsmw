@@ -1125,7 +1125,7 @@ UCrc32 PVehicle::LookupBehaviorSignature(const Attrib::StringKey &mechanic) cons
     }
     if (mechanic == BEHAVIOR_MECHANIC_SUSPENSION && mClass == VehicleClass::CAR) {
         int dc = static_cast<int>(mDriverClass);
-        if (dc > 2 && (dc < 5 || dc == 6)) {
+        if (dc >= 3 && (dc < 5 || dc == 6)) {
             return UCrc32("SuspensionSimple");
         }
     }
