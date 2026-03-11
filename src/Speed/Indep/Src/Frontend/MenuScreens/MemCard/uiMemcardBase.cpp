@@ -472,24 +472,26 @@ void UIMemcardBase::HandleAutoSaveError() {
         gMemcardSetup.mPreviousCommand = gMemcardSetup.mOp & 0xf0;
         gMemcardSetup.mOp = (gMemcardSetup.mOp & ~0xf0) | 0x50;
     }
+    char* dst = m_FileName;
     const char* profileName = FEDatabase->CurrentUserProfiles[0]->GetProfileName();
-    bStrCpy(m_FileName, profileName);
-    if (!MemoryCard::GetInstance()->IsCheckingCardForAutoSave() &&
-        !MemoryCard::GetInstance()->IsCheckingCardForOverwrite() &&
-        !MemoryCard::GetInstance()->WasCardRemovedWithAutoSaveEnabled()) {
-        MemoryCard::GetInstance()->SetRetryAutoSave(true);
-        ShowMessage(MemoryCard::GetInstance()->GetPendingMessage());
-    } else {
+    bStrCpy(dst, profileName);
+    if (MemoryCard::GetInstance()->IsCheckingCardForAutoSave() ||
+        MemoryCard::GetInstance()->IsCheckingCardForOverwrite() ||
+        MemoryCard::GetInstance()->WasCardRemovedWithAutoSaveEnabled()) {
         MemoryCard::GetInstance()->ReleasePendingMessage();
         SetupAutoSaveConfirmPrompt();
         MemoryCard::GetInstance()->SetCardRemovedWithAutoSaveEnabled(false);
+    } else {
+        MemoryCard::GetInstance()->SetRetryAutoSave(true);
+        ShowMessage(MemoryCard::GetInstance()->GetPendingMessage());
     }
     MemoryCard::GetInstance()->EndAutoSave();
 }
 
 void UIMemcardBase::HandleAutoSaveOverwriteMessage() {
+    char* dst = m_FileName;
     const char* profileName = FEDatabase->CurrentUserProfiles[0]->GetProfileName();
-    bStrCpy(m_FileName, profileName);
+    bStrCpy(dst, profileName);
     MemoryCard::GetInstance()->EndAutoSave();
     FEDatabase->bAutoSaveOverwriteConfirmed = true;
     gMemcardSetup.mPreviousCommand = gMemcardSetup.mOp & 0xf0;
