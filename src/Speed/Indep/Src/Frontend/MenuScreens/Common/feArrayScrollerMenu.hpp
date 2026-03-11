@@ -173,9 +173,9 @@ class ArrayScroller {
 
     int ForceSelectionOnScreen(int new_datum, int start);
 
-    // void ScrollHor(enum eScrollDir dir);
+    void ScrollHor(enum eScrollDir dir);
 
-    // void ScrollVer(enum eScrollDir dir);
+    void ScrollVer(enum eScrollDir dir);
 
     void UpdateScrollbar();
 
@@ -191,31 +191,31 @@ class ArrayScroller {
 
     void SetDescLabel(uint32 hash) {}
 
-    void SetDimensions(int w, int h) {}
+    void SetDimensions(int w, int h) { width = w; height = h; }
 
     int GetWidth() { return width; }
 
     int GetHeight() { return height; }
 
-    void ScrollLeft() {}
+    void ScrollLeft() { ScrollHor(eSD_PREV); }
 
-    void ScrollRight() {}
+    void ScrollRight() { ScrollHor(eSD_NEXT); }
 
-    void ScrollUp() {}
+    void ScrollUp() { ScrollVer(eSD_PREV); }
 
-    void ScrollDown() {}
+    void ScrollDown() { ScrollVer(eSD_NEXT); }
 
-    void SetMouseDownMsg(uint32 msg) {}
+    void SetMouseDownMsg(uint32 msg) { mouseDownMsg = msg; }
 
-    void SetClickToSelectMode(bool flag) {}
+    void SetClickToSelectMode(bool flag) { bInClickToSelectMode = flag; }
 
-    int GetNumSlots() {}
+    int GetNumSlots() { return slots.CountElements(); }
 
-    int GetStartDatumNum() {}
+    int GetStartDatumNum() { return startDatum; }
 
-    int GetCurrentDatumNum() {}
+    int GetCurrentDatumNum() { return startDatum; }
 
-    int GetNumDatum() {}
+    int GetNumDatum() { return data.CountElements(); }
 
     ArrayDatum *GetCurrentDatum() {
         return currentDatum;
