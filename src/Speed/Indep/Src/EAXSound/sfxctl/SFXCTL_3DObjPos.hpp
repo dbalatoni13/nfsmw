@@ -23,6 +23,7 @@ struct SFXCTL_3DObjPos : public SFXCTL {
     char *GetTypeName() const override;
     void Detach() override;
 
+    virtual void Generate3DParams() {}
     virtual void AssignPositionVector(bVector3 *pV3ObjPos);
     virtual void AssignDirectionVector(const bVector3 *pV3ObjDir);
     virtual void AssignVelocityVector(const bVector3 *pV3ObjVel);
