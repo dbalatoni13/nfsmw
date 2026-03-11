@@ -273,9 +273,9 @@ void WCollisionObject::MakeMatrix(UMath::Matrix4 &m, bool addXLate) const {
 float WCollisionInstance::CalcSphericalRadius() const {
     float maxExtent = fInvMatRow2Length.w;
     if (maxExtent < fInvPosRadius.w) maxExtent = fInvPosRadius.w;
-    if (maxExtent < fHeight) maxExtent = fHeight;
-    if (maxExtent < fInvMatRow0Width.w) return fInvMatRow0Width.w;
-    return maxExtent;
+    if (fHeight > maxExtent) maxExtent = fHeight;
+    if (maxExtent >= fInvMatRow0Width.w) return maxExtent;
+    return fInvMatRow0Width.w;
 }
 
 void WCollisionInstance::CalcPosition(UMath::Vector3 &pos) const {

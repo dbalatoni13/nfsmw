@@ -822,24 +822,20 @@ bool WRoadNav::IsWrongWay() const {
 }
 
 unsigned int WRoadNav::GetRoadSpeechId() {
-    unsigned int ret = 0;
     unsigned short segment_index = GetSegmentInd();
     WRoadNetwork &road_network = WRoadNetwork::Get();
     unsigned short num_segments = road_network.GetNumSegments();
-    segment_index = bClamp(segment_index, 0, num_segments - 1);
-    if (GetSegmentInd() != segment_index) {
-        return ret;
+    if (segment_index != bClamp(segment_index, 0, num_segments - 1)) {
+        return 0;
     }
     const WRoadSegment *segment = road_network.GetSegment(segment_index);
     short road_index = segment->fRoadID;
     short num_roads = road_network.GetNumRoads();
-    road_index = bClamp(road_index, 0, num_roads - 1);
-    if (segment->fRoadID != road_index) {
-        return ret;
+    if (road_index != bClamp(road_index, 0, num_roads - 1)) {
+        return 0;
     }
     const WRoad *road = road_network.GetRoad(road_index);
-    ret = road->nSpeechId;
-    return ret;
+    return road->nSpeechId;
 }
 
 unsigned char WRoadNav::GetShortcutNumber() {
@@ -1632,7 +1628,6 @@ void WRoadNav::InitAtSegment(short segInd, char laneInd, float timeStep) {
     SetLaneOffset(0.0f);
 
     {
-        SetLaneInd(laneInd);
         const WRoadNode *nodePtr[2];
         const WRoadProfile *profile;
         float startOffset;

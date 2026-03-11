@@ -345,10 +345,9 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
                 }
             }
             if ((reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF) == 3) {
-                if (rPos.y + rbRadius >= trig->fPosRadius.y - trig->fHeight * 0.5f) {
-                    if (rPos.y - rbRadius < trig->fPosRadius.y + trig->fHeight * 0.5f) {
-                        return true;
-                    }
+                if (rPos.y + rbRadius >= trig->fPosRadius.y - trig->fHeight * 0.5f &&
+                    rPos.y - rbRadius < trig->fPosRadius.y + trig->fHeight * 0.5f) {
+                    return true;
                 }
             } else if ((reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF) == 1) {
                 UMath::Vector3 dim3;
@@ -444,8 +443,8 @@ bool WTriggerManager::CheckCollideSRB(const IRigidBody *srBody, const WTrigger *
 }
 
 inline float DistanceSquared_XZ(const UMath::Vector3 &a, const UMath::Vector3 &b) {
-    float x = a.x - b.x;
     float z = a.z - b.z;
+    float x = a.x - b.x;
     return x * x + z * z;
 }
 
@@ -464,8 +463,7 @@ void WTriggerManager::GetIntersectingTriggers(const UMath::Vector3 &pt, float ra
                 WTrigger &trig = WCollisionAssets::Get().Trigger(ind);
                 if (trig.fIterStamp != fIterCount) {
                     trig.fIterStamp = fIterCount;
-                    float totalRadius = radius + trig.fPosRadius.w;
-                    if (DistanceSquared_XZ(pt, UMath::Vector4To3(trig.fPosRadius)) < totalRadius * totalRadius) {
+                    if (DistanceSquared_XZ(pt, UMath::Vector4To3(trig.fPosRadius)) < (radius + trig.fPosRadius.w) * (radius + trig.fPosRadius.w)) {
                         triggerList->push_back(&trig);
                     }
                 }
