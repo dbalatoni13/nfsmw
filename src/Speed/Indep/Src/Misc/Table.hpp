@@ -34,7 +34,7 @@ class TableBase {
     }
 
     float GetIndex(float f) const {
-        return (f - MinArg) * IndexMultiplier;
+        return IndexMultiplier * (f - MinArg);
     }
 
   protected:
@@ -74,14 +74,11 @@ template <typename T> class tTable : public TableBase {
         int index = static_cast<int>(normarg);
         if (index < 0) {
             bMemCpy(p, &pTable[0], sizeof(T));
-        } else if (index < entries - 1) {
-            float blend = normarg - bFloor(normarg);
-            if (normarg < blend) {
-                blend = blend - 1.0f;
-            }
-            Blend(p, &pTable[index + 1], &pTable[index], blend);
-        } else {
+        } else if (index >= entries - 1) {
             bMemCpy(p, &pTable[entries - 1], sizeof(T));
+        } else {
+            float blend = normarg - bFloor(normarg);
+            Blend(p, &pTable[index + 1], &pTable[index], blend);
         }
     }
 };

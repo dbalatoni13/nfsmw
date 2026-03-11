@@ -245,7 +245,7 @@ void CameraAnchor::SetModel(int model) {
         }
 
         mModel = model;
-        mModelAttributes.ChangeWithDefault(Attrib::StringToLowerCaseKey(name));
+        // TODO: mModelAttributes.ChangeWithDefault
     }
 }
 
@@ -310,38 +310,28 @@ POV *CameraAnchor::GetPov(int pov_type) {
 }
 
 void CameraAnchor::Update(float dT, const bMatrix4 &matrix, const bVector3 &velocity, const bVector3 &forward) {
-    float old_vel_mag = mVelMag;
     float dist = bDistBetween(&mGeomPos, reinterpret_cast<const bVector3 *>(&matrix.v3));
-    float vel_mag_sq;
 
     PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(&matrix), *reinterpret_cast<Mtx44 *>(&mGeomRot));
-    mAccel.x = 0.0f;
-    mAccel.y = 0.0f;
-    mAccel.z = 0.0f;
+    float savedVelMag = mVelMag;
+    mGeomRot.v3.z = 0.0f;
+    mGeomRot.v3.y = 0.0f;
+    mGeomRot.v3.x = 0.0f;
 
     mGeomPos.x = matrix.v3.x;
     mGeomPos.y = matrix.v3.y;
     mGeomPos.z = matrix.v3.z;
     mVelocity = velocity;
 
-    vel_mag_sq = forward.x * forward.x + forward.y * forward.y + forward.z * forward.z;
-    if (vel_mag_sq > 0.0f) {
-        mVelMag = bSqrt(vel_mag_sq);
-    } else {
-        mVelMag = 0.0f;
-    }
+    mVelMag = bLength(&velocity);
 
     if (dT > 0.0f && dist / dT < 200.0f) {
-        bVector3 accel_local;
-
-        accel_local.x = (mVelMag - old_vel_mag) / dT;
-        accel_local.y = 0.0f;
-        accel_local.z = 0.0f;
-        bMulMatrix(&mAccel, &mGeomRot, &accel_local);
+        bVector3 acc((mVelMag - savedVelMag) / dT, 0.0f, 0.0f);
+        bMulMatrix(&mAccel, &mGeomRot, &acc);
     } else {
         mAccel.x = 0.0f;
-        mAccel.y = 0.0f;
         mAccel.z = 0.0f;
+        mAccel.y = 0.0f;
     }
 }
 
@@ -394,6 +384,9 @@ Camera *GetCurrentCamera() {
     return 0;
 }
 
+static bool sHavePrevPosition;
+static bVector3 sPrevPosition;
+
 void UpdateCameraMovers(float dT) {
     for (int view_id = 0; view_id < 22; view_id++) {
         eView *view = eGetView(view_id, false);
@@ -422,13 +415,11 @@ void UpdateCameraMovers(float dT) {
 
         if (TrackStreamerRemoteCaffeinating != 0 && DisableCommunication == 0 && camera != nullptr) {
             if (bAbs(RealTime - LastUpdateTimeCaffeine) > 0x10) {
-                bVector3 eye;
-                bVector3 look;
                 LongVector fix_eye;
                 LongVector fix_look;
 
-                look = *camera->GetDirection() * 0.01f;
-                eye = *camera->GetPosition() - look;
+                bVector3 look = *camera->GetDirection() * 0.01f;
+                bVector3 eye = *camera->GetPosition() - look;
 
                 LastUpdateTimeCaffeine = RealTime;
 
@@ -436,10 +427,13 @@ void UpdateCameraMovers(float dT) {
                 MakeLongVector(&fix_look, camera->GetPosition(), 100.0f);
                 espSetCameraPositionFix(&fix_eye, &fix_look);
 
-                static bVector3 prev_position(0.0f, 0.0f, 0.0f);
+                if (!sHavePrevPosition) {
+                    sPrevPosition = bVector3(0.0f, 0.0f, 0.0f);
+                    sHavePrevPosition = true;
+                }
 
-                if (bDistBetween(&prev_position, camera->GetPosition()) > 0.01f) {
-                    prev_position = *camera->GetPosition();
+                if (bDistBetween(&sPrevPosition, camera->GetPosition()) > 0.01f) {
+                    sPrevPosition = *camera->GetPosition();
                 }
 
                 bLength(reinterpret_cast<const bVector2 *>(camera->GetPosition()));
@@ -1221,8 +1215,8 @@ void CubicCameraMover::CameraSpeedHug(bVector3 *pEyeOffset) {
 
     float f_top_speed = pCar->GetTopSpeed();
     if (f_top_speed > 0.0f) {
-        bVector2 v_speed_hug;
         tTable<bVector2> speed_table(CameraSpeedHugData, 5, 0.0f, f_top_speed);
+        bVector2 v_speed_hug;
         speed_table.GetValue(&v_speed_hug, pCar->GetVelocityMagnitude());
 
         pEyeOffset->x *= v_speed_hug.x;
