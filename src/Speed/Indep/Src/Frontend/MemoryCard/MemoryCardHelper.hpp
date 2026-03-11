@@ -148,6 +148,11 @@ enum MemoryCardJoyLoggableEvents {
 
 struct IJoyHelper {
     static void EmulateMemoryCardLibrary(int aJoyOp);
+
+    inline void JLog(MemoryCardJoyLoggableEvents op) {
+        if (Joylog::IsCapturing())
+            Joylog::AddData(static_cast< int >(op), 8, JOYLOG_CHANNEL_MEMORY_CARD);
+    }
 };
 
 struct MemcardCallbacks : public IGameInterface, public IJoyHelper {
