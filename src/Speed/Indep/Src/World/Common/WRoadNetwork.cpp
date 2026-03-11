@@ -1044,7 +1044,7 @@ bool WRoadNav::IsSegmentInCookieTrail(int segment_number, bool use_whole_path) {
 bool WRoadNav::CookieCutter(NavCookie &cookie, const UMath::Vector3 &centre, float projection, bool pass_left,
                             unsigned int cut_flags) {
     bVector2 cookie_to_centre(centre.x - cookie.Centre.x, centre.z - cookie.Centre.z);
-    float l = bCross(&cookie_to_centre, &cookie.Forward);
+    float l = bCross(&cookie_to_centre, reinterpret_cast<const bVector2 *>(&cookie.Forward));
     float left_offset = cookie.LeftOffset;
     float right_offset = cookie.RightOffset;
 
@@ -1066,11 +1066,11 @@ bool WRoadNav::CookieCutter(NavCookie &cookie, const UMath::Vector3 &centre, flo
 
     if (pass_left) {
         right_offset = bMax(left_offset + minimum_width, l - projection);
-        bScaleAdd(&cookie.Right, &cookie_centre, &cookie_right, right_offset);
+        bScaleAdd(reinterpret_cast<bVector2 *>(&cookie.Right), &cookie_centre, &cookie_right, right_offset);
         cookie.RightOffset = right_offset;
     } else {
         left_offset = bMin(l + projection, right_offset - minimum_width);
-        bScaleAdd(&cookie.Left, &cookie_centre, &cookie_right, left_offset);
+        bScaleAdd(reinterpret_cast<bVector2 *>(&cookie.Left), &cookie_centre, &cookie_right, left_offset);
         cookie.LeftOffset = left_offset;
     }
 
