@@ -67,7 +67,8 @@ struct WRoadProfile {
     int GetLaneType(int lane, bool inverted) const {
         int lane_number;
         if (inverted) {
-            lane_number = fNumZones - 1 - lane;
+            int num = fNumZones - lane;
+            lane_number = num - 1;
         } else {
             lane_number = lane;
         }
@@ -110,7 +111,8 @@ struct WRoadProfile {
     }
     int GetLaneNumber(int lane, bool inverted) const {
         if (inverted) {
-            return fNumZones - 1 - lane;
+            int num = fNumZones - lane;
+            return num - 1;
         }
         return lane;
     }
@@ -293,15 +295,15 @@ struct WRoadSegment {
 
     // void SetOneWay(bool one_way) {}
 
-    bool IsStartInverted() const {
+    int IsStartInverted() const {
         return (fFlags >> 9) & 1;
     }
 
-    bool IsEndInverted() const {
+    int IsEndInverted() const {
         return (fFlags >> 10) & 1;
     }
 
-    bool IsProfileInverted(int which_end) const {
+    int IsProfileInverted(int which_end) const {
         if (!which_end) {
             return IsEndInverted();
         }
