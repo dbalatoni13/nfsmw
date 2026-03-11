@@ -258,8 +258,9 @@ void UIMemcardBase::SetMessageBlurbText(unsigned int textHash) {
 }
 
 void UIMemcardBase::ShowOK(unsigned int textHash, unsigned int flag) {
+    cFEng* pFeng = cFEng::Get();
     unsigned long msg = FEHashUpper("HIDE LOADER");
-    cFEng::Get()->QueuePackageMessage(msg, GetPackageName(), nullptr);
+    pFeng->QueuePackageMessage(msg, GetPackageName(), nullptr);
     SetMessageBlurbText(textHash);
     gMemcardSetup.mOp = gMemcardSetup.mOp | static_cast< int >(flag & 0xf000000);
     ShowButton(0, true, nullptr);
@@ -272,8 +273,9 @@ void UIMemcardBase::ShowOK(unsigned int textHash, unsigned int flag) {
 }
 
 void UIMemcardBase::ShowYesNo(unsigned int textHash, unsigned int flag) {
+    cFEng* pFeng = cFEng::Get();
     unsigned long msg = FEHashUpper("HIDE LOADER");
-    cFEng::Get()->QueuePackageMessage(msg, GetPackageName(), nullptr);
+    pFeng->QueuePackageMessage(msg, GetPackageName(), nullptr);
     SetMessageBlurbText(textHash);
     gMemcardSetup.mOp = gMemcardSetup.mOp | static_cast< int >(flag & 0xf000000);
     ShowButton(0, true, nullptr);
@@ -310,9 +312,9 @@ void UIMemcardBase::SetIcon(unsigned int iconHash) {
     FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xfac88427), iconHash);
 }
 
-int UIMemcardBase::TranslateButton(FEObject* obj) {
+void UIMemcardBase::TranslateButton(FEObject* obj) {
     if (obj->Flags & 1) {
-        return -1;
+        return;
     }
     unsigned long nameHash = obj->NameHash;
     if (nameHash == gButtonIDs[0]) {
@@ -323,7 +325,6 @@ int UIMemcardBase::TranslateButton(FEObject* obj) {
         MemoryCard::GetInstance()->MessageDone(static_cast< RealmcIface::MessageChoices >(3));
     }
     m_ExpectingInput = false;
-    return 0;
 }
 
 void UIMemcardBase::SetupPromptNoProfileFound() {

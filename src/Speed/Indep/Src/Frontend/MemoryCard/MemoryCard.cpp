@@ -306,13 +306,14 @@ void MemoryCard::StartAutoSave(bool bForce) {
     if (!ShouldDoAutoSave(bForce)) return;
     if (!FEDatabase->bProfileLoaded) return;
     if (gMemcardSetup.GetMethod() != 0xb0) { ShowAutoSaveIcon(); gMemcardSetup.mOp = 0; }
-    if (!m_bCardRemoved) {
+    if (m_bCardRemoved) { HandleAutoSaveError(); }
+    else {
         m_bInAutoSave = true;
         m_bCheckingCardForAutoSave = true;
         FEManager::Get()->SuppressControllerError(true);
         ShowMessages(false);
         CheckCard(0);
-    } else { HandleAutoSaveError(); }
+    }
 }
 
 void MemoryCard::DoAutoSave() {

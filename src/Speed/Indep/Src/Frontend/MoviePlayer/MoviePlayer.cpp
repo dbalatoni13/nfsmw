@@ -223,7 +223,8 @@ int ShapeMemoryAllocator::AddRef() {
 }
 
 int ShapeMemoryAllocator::Release() {
-    int ref = --mRefcount;
+    int ref = mRefcount - 1;
+    mRefcount = ref;
     if (ref < 1) {
         delete this;
         ref = 0;

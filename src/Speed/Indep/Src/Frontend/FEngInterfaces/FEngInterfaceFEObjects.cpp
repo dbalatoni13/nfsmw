@@ -247,6 +247,9 @@ void FEngGetTopLeft(FEObject* object, float& x, float& y) {
             }
             break;
         }
+        case FE_Model:
+        case FE_List:
+        case FE_CodeList:
         default:
             x = pos.x;
             y = pos.y;
@@ -403,20 +406,19 @@ void FEngGetCenter(FEObject* object, float& x, float& y) {
                 }
                 float width = size.x * pFont->GetTextWidth(characters, 0);
                 float height = size.y * pFont->GetTextHeight(characters, pStr->Leading, 0, 0, false);
-                x = pFont->CalculateXOffset(pStr->Format, width) + pos.x + width * 0.5f;
-                y = pFont->CalculateYOffset(pStr->Format, height) + pos.y + height * 0.5f;
+                x = pos.x + pFont->CalculateXOffset(pStr->Format, width) + width * 0.5f;
+                y = pos.y + pFont->CalculateYOffset(pStr->Format, height) + height * 0.5f;
             }
             break;
         }
         case FE_Image:
-        case FE_Movie:
-        case FE_ColoredImage:
-        case FE_MultiImage:
         case FE_Model:
         case FE_List:
         case FE_Group:
         case FE_CodeList:
-        default:
+        case FE_Movie:
+        case FE_ColoredImage:
+        case FE_MultiImage:
             x = pos.x;
             y = pos.y;
             break;
@@ -445,14 +447,13 @@ void FEngSetCenter(FEObject* object, float x, float y) {
             break;
         }
         case FE_Image:
-        case FE_Movie:
-        case FE_ColoredImage:
-        case FE_MultiImage:
         case FE_Model:
         case FE_List:
         case FE_Group:
         case FE_CodeList:
-        default:
+        case FE_Movie:
+        case FE_ColoredImage:
+        case FE_MultiImage:
             pos.x = x;
             pos.y = y;
             break;
@@ -742,29 +743,31 @@ bool FEngGet2DExtentsForMouse(FEObject* pObject, FERect& Rect, FEVector2 offset)
                     pChild = pChild->GetNext();
                 } while (pChild != nullptr);
             }
-            return true;
+            break;
         }
         case FE_Image:
         case FE_String:
+        case FE_Model:
+        case FE_List:
+        case FE_CodeList:
         case FE_Movie:
         case FE_ColoredImage:
         case FE_MultiImage:
+            if (pObject->Flags & 1) {
+                return false;
+            }
+
+            FEngGetTopLeft(pObject, Rect.left, Rect.top);
+            FEngGetBottomRight(pObject, Rect.right, Rect.bottom);
+
+            Rect.left += offset.x;
+            Rect.right += offset.x;
+            Rect.top += offset.y;
+            Rect.bottom += offset.y;
             break;
         default:
             return false;
     }
-
-    if (pObject->Flags & 1) {
-        return false;
-    }
-
-    FEngGetTopLeft(pObject, Rect.left, Rect.top);
-    FEngGetBottomRight(pObject, Rect.right, Rect.bottom);
-
-    Rect.left += offset.x;
-    Rect.right += offset.x;
-    Rect.top += offset.y;
-    Rect.bottom += offset.y;
 
     return true;
 }

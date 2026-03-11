@@ -35,8 +35,8 @@ SubTitler::SubTitler() {
     back_ = nullptr;
     gCurrentSubtitler_ = this;
     timeElapsed = 0.0f;
-    mSubtitlePaused = false;
     lastTime = 0;
+    mSubtitlePaused = false;
 }
 
 SubTitler::~SubTitler() {
@@ -66,9 +66,9 @@ void SubTitler::Load(const char* movieName, const char* packageName) {
         bSNPrintf(filename, 64, "SUBTITLES\\%s", movieName);
         data_ = static_cast< SubtitleInfo* >(bGetFile(filename, 0, 0));
         if (data_ != nullptr) {
-            lastTime = 0;
-            timeElapsed = 0.0f;
             next_ = 0;
+            timeElapsed = 0.0f;
+            lastTime = 0;
             for (int i = 0; data_[i].startTime != 0xFFFF; i++) {
                 bEndianSwap16(&data_[i]);
                 bEndianSwap32(reinterpret_cast< char* >(&data_[i]) + 4);
@@ -98,7 +98,7 @@ float SubTitler::GetElapsedTime() {
         timenow = bGetTicker();
         thetime_ms = bGetTickerDifference(lastTime, timenow) * 0.001f;
         lastTime = timenow;
-        timeElapsed += thetime_ms;
+        timeElapsed = timeElapsed + thetime_ms;
     } else {
         lastTime = bGetTicker();
     }

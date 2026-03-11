@@ -81,7 +81,7 @@ struct UIMemcardBase : public UIMemcardKeyboard {
     void ShowYesNo(unsigned int textHash, unsigned int iconHash);
     void SetScreenVisible(bool bVisible, int delay);
     void SetIcon(unsigned int iconHash);
-    int TranslateButton(FEObject* pButton);
+    void TranslateButton(FEObject* pButton);
     bool AddItem(const char* pName, const char* pDate, int size, int flag);
     bool IsProfile(const char* pName);
     int BuildDeleteList(const char* pName, const char** pList);

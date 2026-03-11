@@ -129,8 +129,8 @@ void UIOptionsMain::Setup() {
 
     int lastButton = FEngGetLastButton(GetPackageName());
     if (bFadeInIconsImmediately) {
-        Options.bFadingOut = false;
         Options.bFadingIn = true;
+        Options.bFadingOut = false;
         Options.bDelayUpdate = false;
         Options.fCurFadeTime = 0.0f;
     }

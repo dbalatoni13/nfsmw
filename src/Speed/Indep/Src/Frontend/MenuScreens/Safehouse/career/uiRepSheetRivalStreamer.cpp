@@ -77,7 +77,7 @@ void uiRepSheetRivalStreamer::Init(unsigned int the_bin, FEImage* the_rival, FEI
 
 void uiRepSheetRivalStreamer::LoadTextures() {
     if (LoadedBin != DesiredBin) {
-        if (NumLoadedTextures > 0) {
+        if (NumLoadedTextures != 0) {
             UnloadTextures();
         }
         LoadingInProgress = true;
@@ -89,35 +89,32 @@ void uiRepSheetRivalStreamer::LoadTextures() {
 
 void uiRepSheetRivalStreamer::UnloadTextures() {
     eUnloadStreamingTexture(LoadedTextures, NumLoadedTextures);
-    LoadedBin = -1;
     NumLoadedTextures = 0;
+    LoadedBin = -1;
 }
 
 int uiRepSheetRivalStreamer::CalcTexturesToLoad(unsigned int* temp, int bin) {
     int count = 0;
     if (Rival != nullptr) {
         if (bInGame) {
-            temp[count] = FEngHashString("BL_INGAME_RIVAL_%d", bin);
+            temp[count++] = FEngHashString("BL_INGAME_RIVAL_%d", bin);
         } else {
-            temp[count] = FEngHashString("BL_RIVAL_%d", bin);
+            temp[count++] = FEngHashString("BL_RIVAL_%d", bin);
         }
-        count++;
     }
     if (Tag != nullptr) {
         if (bInGame) {
-            temp[count] = FEngHashString("BL_INGAME_TAG_%d", bin);
+            temp[count++] = FEngHashString("BL_INGAME_TAG_%d", bin);
         } else {
-            temp[count] = FEngHashString("BL_TAG_%d", bin);
+            temp[count++] = FEngHashString("BL_TAG_%d", bin);
         }
-        count++;
     }
     if (BG != nullptr) {
         if (bInGame) {
-            temp[count] = FEngHashString("BL_INGAME_BG_%d", bin);
+            temp[count++] = FEngHashString("BL_INGAME_BG_%d", bin);
         } else {
-            temp[count] = FEngHashString("BL_BG_%d", bin);
+            temp[count++] = FEngHashString("BL_BG_%d", bin);
         }
-        count++;
     }
     return count;
 }

@@ -31,8 +31,9 @@ UIOptionsController::UIOptionsController(ScreenConstructorData* sd)
     if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
         cFEng::Get()->QueuePackageMessage(0x7DB7B6D7, GetPackageName(), 0);
         const char* pkg = GetPackageName();
+        int player = GetPlayerToEditForOptions();
         unsigned int lang = 0x7B070985;
-        if (GetPlayerToEditForOptions() == 0) {
+        if (player == 0) {
             lang = 0x7B070984;
         }
         FEngSetLanguageHash(pkg, 0x53BF826D, lang);
@@ -304,8 +305,9 @@ void UIOptionsController::TogglePlayer() {
     oldDriveWithAnalog = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog;
 
     const char* pkg = GetPackageName();
+    int player = GetPlayerToEditForOptions();
     unsigned int lang = 0x7B070985;
-    if (GetPlayerToEditForOptions() == 0) {
+    if (player == 0) {
         lang = 0x7B070984;
     }
     FEngSetLanguageHash(pkg, 0x53BF826D, lang);
