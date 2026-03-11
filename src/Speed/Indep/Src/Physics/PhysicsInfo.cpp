@@ -14,6 +14,7 @@ using namespace Attrib::Gen;
 static PerfStats top_stats;
 static PerfStats bottom_stats;
 static PerformanceMaps TheStockCars;
+static int Physics_Info_initialized;
 Physics::Info::Performance Physics::Info::PerformanceWeights[7];
 
 float Physics::Info::AerodynamicDownforce(const chassis &chassis, const float speed) {
@@ -553,11 +554,11 @@ void PerfLevel::Rate() {
 
 bool PerfLevel::Analyze(const pvehicle &vehicle) {
     Analyzed = false;
-    bool result = Stats.Fetch(vehicle, nullptr, nullptr);
-    if (result) {
-        Analyzed = true;
+    if (!Stats.Fetch(vehicle, nullptr, nullptr)) {
+        return false;
     }
-    return result;
+    Analyzed = true;
+    return true;
 }
 
 void PerformanceMaps::FindLimits(float direction, PerfStats &out) const {
@@ -593,38 +594,66 @@ void Physics::Info::Init() {
     while (key != 0) {
         pvehicle vehicle(key, 0, nullptr);
         if (vehicle.MODEL().GetHash32() != UCrc32::kNull.GetValue() && !vehicle.IsDynamic()) {
-            PerfLevel performance(key);
-            if (performance.Analyze(vehicle)) {
-                all_cars.push_back(performance);
-                upgraded_cars.push_back(performance);
+            if (HasPerformanceRatings(vehicle)) {
+                PerfLevel performance(key);
+                if (performance.Analyze(vehicle)) {
+                    TheStockCars.push_back(performance);
+                    all_cars.push_back(performance);
+                }
             }
         }
+        Physics::Upgrades::Flush();
         key = aclass->GetNextCollection(key);
     }
 
-    for (PerformanceMaps::iterator iter = all_cars.begin(); iter != all_cars.end(); iter++) {
+    for (PerformanceMaps::iterator iter = TheStockCars.begin(); iter != TheStockCars.end(); iter++) {
         PerfLevel &p = *iter;
         pvehicle vehicle(p.Key, 0, nullptr);
-        if (HasPerformanceRatings(vehicle)) {
-            PerfLevel performance(p.Key);
-            performance.Analyze(vehicle);
-            performance.Rate();
-            performance.Print();
-            p.Stock = performance.Stock;
-            p.Upgraded = performance.Upgraded;
+        Physics::Upgrades::SetMaximum(vehicle);
+        PerfLevel performance(p.Key);
+        if (performance.Analyze(vehicle)) {
+            upgraded_cars.push_back(performance);
+            all_cars.push_back(performance);
+        }
+        Physics::Upgrades::Flush();
+    }
+
+    int count = 0;
+    for (PerformanceMaps::iterator iter = TheStockCars.begin(); iter != TheStockCars.end(); iter++) {
+        count++;
+    }
+
+    if (count == 0) {
+        return;
+    }
+
+    all_cars.FindLimits(-1.0f, bottom_stats);
+    all_cars.FindLimits(1.0f, top_stats);
+
+    for (PerformanceMaps::iterator iter = TheStockCars.begin(); iter != TheStockCars.end(); iter++) {
+        PerfLevel &p = *iter;
+        p.Rate();
+        p.Print("Stock Performance");
+    }
+
+    for (PerformanceMaps::iterator iter = upgraded_cars.begin(); iter != upgraded_cars.end(); iter++) {
+        PerfLevel &p = *iter;
+        p.Rate();
+        p.Print("Upgraded Performance");
+    }
+
+    for (PerformanceMaps::iterator iter = TheStockCars.begin(); iter != TheStockCars.end(); iter++) {
+        PerfLevel &p = *iter;
+        p.Upgraded = p.Stock;
+        for (PerformanceMaps::iterator iter2 = upgraded_cars.begin(); iter2 != upgraded_cars.end(); iter2++) {
+            if (p.Key == (*iter2).Key) {
+                p.Upgraded = (*iter2).Stock;
+                break;
+            }
         }
     }
 
-    all_cars.FindLimits(1.0f, top_stats);
-    all_cars.FindLimits(-1.0f, bottom_stats);
-
-    for (PerformanceMaps::iterator iter = all_cars.begin(); iter != all_cars.end(); iter++) {
-        PerfLevel &p = *iter;
-        p.Rate();
-        p.Print();
-    }
-
-    TheStockCars = all_cars;
+    Physics_Info_initialized = 1;
 }
 
 bool Physics::Info::ComputeAccelerationTable(const pvehicle &vehicle, float &top_speed, float *table, int num_entries) {
@@ -810,23 +839,19 @@ bool Physics::Info::ComputePerformance(const pvehicle &vehicle, Performance &per
 
     for (PerformanceMaps::iterator iter = TheStockCars.begin(); iter != TheStockCars.end(); iter++) {
         if ((*iter).Key == vehicle.GetCollection()) {
-            perf.TopSpeed = (*iter).Stock.TopSpeed;
-            perf.Handling = (*iter).Stock.Handling;
-            perf.Acceleration = (*iter).Stock.Acceleration;
+            perf = (*iter).Stock;
             return true;
         }
     }
 
-    PerfLevel perf_level(vehicle.GetCollection());
-    if (perf_level.Analyze(vehicle)) {
-        perf_level.Rate();
-        perf.TopSpeed = perf_level.Stock.TopSpeed;
-        perf.Handling = perf_level.Stock.Handling;
-        perf.Acceleration = perf_level.Stock.Acceleration;
-        return true;
+    unsigned int coll_key = vehicle.GetCollection();
+    PerfLevel perf_level(coll_key);
+    if (!perf_level.Analyze(vehicle)) {
+        return false;
     }
-
-    return false;
+    perf_level.Rate();
+    perf = perf_level.Stock;
+    return true;
 }
 
 bool Physics::Info::GetStockPerformance(const pvehicle &vehicle, Performance &perf) {
@@ -842,9 +867,7 @@ bool Physics::Info::GetStockPerformance(const pvehicle &vehicle, Performance &pe
     for (PerformanceMaps::const_iterator iter = TheStockCars.begin(); iter != TheStockCars.end(); iter++) {
         const PerfLevel &p = *iter;
         if (p.Key == key) {
-            perf.TopSpeed = p.Stock.TopSpeed;
-            perf.Handling = p.Stock.Handling;
-            perf.Acceleration = p.Stock.Acceleration;
+            perf = p.Stock;
             return true;
         }
     }
@@ -865,9 +888,7 @@ bool Physics::Info::GetMaximumPerformance(const pvehicle &vehicle, Performance &
     for (PerformanceMaps::const_iterator iter = TheStockCars.begin(); iter != TheStockCars.end(); iter++) {
         const PerfLevel &p = *iter;
         if (p.Key == key) {
-            perf.TopSpeed = p.Upgraded.TopSpeed;
-            perf.Handling = p.Upgraded.Handling;
-            perf.Acceleration = p.Upgraded.Acceleration;
+            perf = p.Upgraded;
             return true;
         }
     }

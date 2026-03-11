@@ -42,7 +42,9 @@ void SmackableTrigger::Enable() {
 }
 
 bool SmackableTrigger::IsEnabled() const {
-    return mTrigger->IsEnabled();
+    if (mTrigger->IsEnabled())
+        return true;
+    return false;
 }
 
 void SmackableTrigger::GetObjectMatrix(UMath::Matrix4 &matrix) const {

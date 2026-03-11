@@ -440,10 +440,8 @@ bool Smackable::ShouldDie() {
     }
     if (mCollisionBody == nullptr) {
         return false;
-    } else if (!mCollisionBody->IsModeling()) {
-        return true;
     }
-    return false;
+    return !mCollisionBody->IsModeling();
 }
 
 bool Smackable::CanRetrigger() const {

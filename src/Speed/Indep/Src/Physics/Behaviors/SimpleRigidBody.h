@@ -24,7 +24,7 @@ struct RBSimpleParams : public Sim::Param {
 
     RBSimpleParams(const UMath::Vector3 &initPos, const UMath::Vector3 &initVel, const UMath::Vector3 &initAngVel, const UMath::Matrix4 &initMat,
                    float initRadius, float initMass)
-        : Sim::Param(TypeName(), static_cast<RBSimpleParams *>(nullptr)), finitPos(initPos), finitVel(initVel), finitAngVel(initAngVel),
+        : Sim::Param(UCrc32(0xa6b47fac), static_cast<RBSimpleParams *>(nullptr)), finitPos(initPos), finitVel(initVel), finitAngVel(initAngVel),
           finitMat(initMat), finitRadius(initRadius), finitMass(initMass) {}
 
     static UCrc32 TypeName() {
