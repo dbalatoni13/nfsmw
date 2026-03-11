@@ -30,7 +30,6 @@ bool CPropAnimEntity::Init(void *init_data, SpaceNode *parent_space_node) {
     PropAnimEntityInfo *info = reinterpret_cast<PropAnimEntityInfo *>(init_data);
     mTypeID = info->mTypeID;
     mThisInstanceNameHash = info->mThisInstanceNameHash;
-    // TODO ???
     if (mThisInstanceNameHash == info->mParentInstanceNameHash) {
     }
     if (info->mParentInstanceNameHash == 0) {

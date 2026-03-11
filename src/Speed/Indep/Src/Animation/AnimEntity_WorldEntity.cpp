@@ -60,7 +60,7 @@ void WorldAnimEntityTreeInfo::operator delete(void *ptr) {
 }
 
 void CWorldAnimEntity::EndianSwapEntityData(void *data, int size) {
-    WorldAnimEntityInfo *info;
+    WorldAnimEntityInfo *info = static_cast<WorldAnimEntityInfo *>(data);
     bPlatEndianSwap(&info->mTypeID);
     bPlatEndianSwap(&info->mThisInstanceNameHash);
     bPlatEndianSwap(&info->mParentInstanceNameHash);
@@ -69,8 +69,6 @@ void CWorldAnimEntity::EndianSwapEntityData(void *data, int size) {
     bPlatEndianSwap(&info->mLODZ);
     bPlatEndianSwap(&info->mAnimTreeHash);
     bPlatEndianSwap(&info->mAnimNameHash);
-    bPlatEndianSwap(&info->mAnimContentFlags);
-    bPlatEndianSwap(&info->mParentIndex);
     bPlatEndianSwap(&info->mLocalMatrix);
 }
 
