@@ -38,7 +38,7 @@ bool CanSpawnSimpleRigidBody(const UMath::Vector3 &position, bool highPriority);
 } // namespace Sim
 
 namespace DamageZone {
-void GetImpactStimulus(unsigned int &stimulus);
+UCrc32 GetImpactStimulus(unsigned int level);
 } // namespace DamageZone
 
 Attrib::StringKey BEHAVIOR_MECHANIC_EFFECTS;
@@ -184,7 +184,20 @@ Smackable::Smackable(const UMath::Matrix4 &matrix, const Attrib::Gen::smackable 
     }
 }
 
-Smackable::~Smackable() {}
+Smackable::~Smackable() {
+    DetachAll();
+    if (mManageTask != nullptr) {
+        RemoveTask(mManageTask);
+        mManageTask = nullptr;
+    }
+    if (mModel != nullptr) {
+        Detach(mModel);
+        mModel = nullptr;
+    }
+    ReleaseBehavior(UCrc32(BEHAVIOR_MECHANIC_EFFECTS));
+    ReleaseBehavior(UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY));
+    Sim::Collision::RemoveListener(static_cast< Sim::Collision::IListener * >(this));
+}
 
 bool Smackable::SetDynamicData(const EventSequencer::System *system, EventDynamicData *data) {
     data->fPosition = mLastCollisionPosition;
@@ -263,10 +276,10 @@ void Smackable::DoImpactStimulus(unsigned int systemid, float intensity) {
         if (system != nullptr) {
             float clamped = UMath::Clamp(intensity, 0.0f, 1.0f);
             unsigned int level = static_cast< unsigned int >(clamped * 6.0f);
-            for (unsigned int i = 0; i <= level; ++i) {
-                unsigned int stimulus;
-                DamageZone::GetImpactStimulus(stimulus);
-                system->ProcessStimulus(stimulus, externalTime,
+            unsigned int count = level + 1;
+            for (unsigned int i = 0; i < count; i++) {
+                UCrc32 stimulus = DamageZone::GetImpactStimulus(i);
+                system->ProcessStimulus(stimulus.GetValue(), externalTime,
                                         static_cast< EventSequencer::IContext * >(this),
                                         EventSequencer::QUEUE_ALLOW);
             }
@@ -427,8 +440,10 @@ bool Smackable::ShouldDie() {
     }
     if (mCollisionBody == nullptr) {
         return false;
+    } else if (!mCollisionBody->IsModeling()) {
+        return true;
     }
-    return mCollisionBody->IsModeling() ? false : true;
+    return false;
 }
 
 bool Smackable::CanRetrigger() const {
