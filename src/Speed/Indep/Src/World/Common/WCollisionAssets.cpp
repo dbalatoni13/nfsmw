@@ -153,17 +153,15 @@ void WCollisionAssets::SetExclusionFlags(WCollisionPack *collisionPack) {
 
             unsigned int next = i + 1;
             if (exclusionFlags != 0) {
-                WCollisionArticle *cArt = const_cast<WCollisionArticle *>(cInst->fCollisionArticle);
+                const WCollisionArticle *cArt = cInst->fCollisionArticle;
                 if (cArt != nullptr) {
+                    const WCollisionBarrier *barrier = cArt->GetBarrier(0u);
                     int j = 0;
-                    unsigned char *barrier = reinterpret_cast<unsigned char *>(cArt);
-                    barrier += cArt->fStripsSize + 0x10;
-
                     if (j < cArt->fNumEdges) {
                         do {
-                            barrier[0xD] |= exclusionFlags;
+                            const_cast<WSurface &>(barrier->GetWSurface()).FlagsRef() |= exclusionFlags;
                             ++j;
-                            barrier += 0x20;
+                            barrier = barrier->Next();
                         } while (j < cInst->fCollisionArticle->fNumEdges);
                     }
                 }
@@ -293,7 +291,8 @@ void WCollisionAssets::UnLoadCollisionPack(bChunk *chunk) {
 }
 
 unsigned int WCollisionAssets::AddObject(WCollisionObject *obj) {
-    unsigned int objectInd = fManagedCollisionObjectsInd++;
+    unsigned int objectInd = fManagedCollisionObjectsInd;
+    fManagedCollisionObjectsInd = objectInd + 1;
     (*fManagedCollisionObjects)[objectInd] = obj;
     return objectInd;
 }

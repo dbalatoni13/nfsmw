@@ -44,16 +44,16 @@ void WRoadNetwork::Init() {
         fValid = false;
         fValidRaceFilter = false;
         fValidTrafficRoads = true;
-        fNumRoads = 0;
-        fNumIntersections = 0;
-        fNumSegments = 0;
         fNumNodes = 0;
+        fNumSegments = 0;
+        fNumIntersections = 0;
+        fNumRoads = 0;
         nRoadMemoryUsage = 0;
-        nTotalMemoryUsage = 0;
-        nIntersectionMemoryUsage = 0;
-        nSegmentMemoryUsage = 0;
-        nProfileMemoryUsage = 0;
         nNodeMemoryUsage = 0;
+        nProfileMemoryUsage = 0;
+        nSegmentMemoryUsage = 0;
+        nIntersectionMemoryUsage = 0;
+        nTotalMemoryUsage = 0;
 
         if (WWorld::Get().GetMapGroup()) {
             const UGroup *networkGroup = WWorld::Get().GetMapGroup()->GroupLocate('RN', 'gp');
@@ -1530,14 +1530,14 @@ void WRoadNav::Reset() {
     bCrossedPathGoal = false;
     fPosition = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
     fForwardVector = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
-    fNodeInd = 0;
-    fSegmentInd = 0;
-    fSegTime = 0.0f;
-    fCurvature = 0.0f;
     fStartPos = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
     fEndPos = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
     fStartControl = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
     fEndControl = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
+    fNodeInd = 0;
+    fSegmentInd = 0;
+    fSegTime = 0.0f;
+    fCurvature = 0.0f;
     fDeadEnd = 0;
     fLaneInd = 0;
     fFromLaneInd = 0;

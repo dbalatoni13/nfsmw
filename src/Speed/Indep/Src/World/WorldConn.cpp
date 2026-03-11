@@ -183,21 +183,19 @@ void WorldBodyConn::Update(float dT) {
     pkt.SetMatrix(UMath::Matrix4::kIdentity);
     int result = Service(&pkt);
     if (result == 0) {
-        mDest->acceleration.x = 0.0f;
-        mDest->acceleration.y = 0.0f;
-        mDest->acceleration.z = 0.0f;
+        bFill(&mDest->acceleration, 0.0f, 0.0f, 0.0f);
         mDest->time = 0.0f;
-    } else {
-        bVector3 prevvel(mDest->velocity);
-        bConvertFromBond(mDest->matrix, *reinterpret_cast<const bMatrix4 *>(&pkt.mMatrix));
-        eSwizzleWorldVector(*reinterpret_cast<const bVector3 *>(&pkt.mVelocity), mDest->velocity);
-        if (0.0f < mDest->time) {
-            mDest->acceleration.x = (mDest->velocity.x - prevvel.x) / dT;
-            mDest->acceleration.y = (mDest->velocity.y - prevvel.y) / dT;
-            mDest->acceleration.z = (mDest->velocity.z - prevvel.z) / dT;
-        }
-        mDest->time = mDest->time + dT;
+        return;
     }
+    bVector3 prevvel(mDest->velocity);
+    bConvertFromBond(mDest->matrix, *reinterpret_cast<const bMatrix4 *>(&pkt.mMatrix));
+    eSwizzleWorldVector(*reinterpret_cast<const bVector3 *>(&pkt.mVelocity), mDest->velocity);
+    if (0.0f < mDest->time) {
+        mDest->acceleration.x = (mDest->velocity.x - prevvel.x) / dT;
+        mDest->acceleration.y = (mDest->velocity.y - prevvel.y) / dT;
+        mDest->acceleration.z = (mDest->velocity.z - prevvel.z) / dT;
+    }
+    mDest->time = mDest->time + dT;
 }
 
 void WorldBodyConn::FetchData(float dT) {

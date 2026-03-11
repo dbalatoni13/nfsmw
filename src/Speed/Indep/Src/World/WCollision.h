@@ -23,7 +23,13 @@ struct WSurface : CollisionSurface {
     unsigned int Surface() const {
         return fSurface;
     }
+
+    unsigned char &FlagsRef() {
+        return fFlags;
+    }
 };
+
+struct WCollisionBarrier;
 
 struct WCollisionArticle {
     // total size: 0x10
@@ -35,6 +41,8 @@ struct WCollisionArticle {
         return reinterpret_cast<const Attrib::Collection *>(
             *reinterpret_cast<const unsigned int *>(dataStart + ind * 4));
     }
+
+    inline const WCollisionBarrier *GetBarrier(unsigned int ind) const;
 
     unsigned short fNumStrips;         // offset 0x0, size 0x2
     unsigned short fStripsSize;        // offset 0x2, size 0x2
@@ -49,8 +57,22 @@ struct WCollisionArticle {
 
 // total size: 0x20
 struct WCollisionBarrier {
+    const WSurface &GetWSurface() const {
+        return *reinterpret_cast<const WSurface *>(
+            reinterpret_cast<const char *>(this) + 0xC);
+    }
+
+    const WCollisionBarrier *Next() const {
+        return this + 1;
+    }
+
     UMath::Vector4 fPts[2]; // offset 0x0, size 0x20
 };
+
+inline const WCollisionBarrier *WCollisionArticle::GetBarrier(unsigned int ind) const {
+    const char *dataStart = reinterpret_cast<const char *>(this) + (fStripsSize + 0x10);
+    return reinterpret_cast<const WCollisionBarrier *>(dataStart + ind * 0x20);
+}
 
 // total size: 0x28
 struct WCollisionBarrierListEntry {
