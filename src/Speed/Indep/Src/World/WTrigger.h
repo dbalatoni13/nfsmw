@@ -7,6 +7,7 @@
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 
 namespace CARP {
@@ -18,7 +19,7 @@ using CARP::EventList;
 using CARP::EventStaticData;
 
 struct IRigidBody;
-struct WTriggerList;
+struct WTrigger;
 
 // total size: 0x40
 struct Trigger {
@@ -52,8 +53,55 @@ struct WTrigger : public Trigger {
     void Disable() { fFlags &= ~1; }
     bool IsEnabled() const { return (fFlags & 1) != 0; }
 
+    bool IsEnabled(bool allowSilencables) const {
+        if (!(fFlags & 1)) {
+            return false;
+        }
+        if ((fFlags & 0x400) && !allowSilencables) {
+            return false;
+        }
+        return true;
+    }
+
+    void MakeMatrix(UMath::Matrix4 &m, bool addXLate, bool frombase) const {
+        m[0][0] = fMatRow0Width.x;
+        m[0][1] = fMatRow0Width.y;
+        m[0][2] = fMatRow0Width.z;
+        m[0][3] = 0.0f;
+        if (fFlags & 0x1000) {
+            m[1][0] = fMatRow2Length.y * fMatRow0Width.z - fMatRow2Length.z * fMatRow0Width.y;
+            m[1][1] = fMatRow2Length.z * fMatRow0Width.x - fMatRow2Length.x * fMatRow0Width.z;
+            m[1][2] = fMatRow2Length.x * fMatRow0Width.y - fMatRow2Length.y * fMatRow0Width.x;
+        } else {
+            m[1][0] = 0.0f;
+            m[1][1] = 1.0f;
+            m[1][2] = 0.0f;
+        }
+        m[1][3] = 0.0f;
+        m[2][0] = fMatRow2Length.x;
+        m[2][1] = fMatRow2Length.y;
+        m[2][2] = fMatRow2Length.z;
+        m[2][3] = 0.0f;
+        m[3][3] = 1.0f;
+        if (addXLate) {
+            m[3][0] = fPosRadius.x;
+            m[3][2] = fPosRadius.z;
+            if (frombase) {
+                m[3][1] = fPosRadius.y - fHeight * 0.5f;
+            } else {
+                m[3][1] = fPosRadius.y;
+            }
+        } else {
+            m[3][0] = 0.0f;
+            m[3][1] = 0.0f;
+            m[3][2] = 0.0f;
+        }
+    }
+
     static void operator delete(void *mem, unsigned int size);
 };
+
+struct WTriggerList : public UTL::Std::vector<WTrigger *, _type_vector> {};
 
 struct FireOnExitRec {
     FireOnExitRec(WTrigger &trigger, HSIMABLE__ *hSimable) : mTrigger(trigger)
@@ -118,7 +166,7 @@ class WTriggerManager {
     bool fSilencableEnabled;          // offset 0x0, size 0x1
     int fProcessingStimulus;          // offset 0x4, size 0x4
     FireOnExitList *fgFireOnExitList; // offset 0x8, size 0x4
-    unsigned short fIterCount;        // offset 0xC, size 0x2
+    mutable unsigned short fIterCount;        // offset 0xC, size 0x2
 };
 
 #endif

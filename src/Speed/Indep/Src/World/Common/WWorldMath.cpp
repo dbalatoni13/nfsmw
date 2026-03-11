@@ -1,5 +1,7 @@
 #include "Speed/Indep/Src/World/WWorldMath.h"
 
+extern "C" float rsqrt(const float x);
+
 bool WWorldMath::IntersectCircle(float x1, float y1, float x2, float y2, float cx, float cy, float r, float &u1, float &u2) {
     if (InCircle(x1, y1, cx, cy, r) && InCircle(x2, y2, cx, cy, r)) {
         u1 = 0.0f;
@@ -24,7 +26,7 @@ bool WWorldMath::IntersectCircle(float x1, float y1, float x2, float y2, float c
     float c = (ox * ox + oy * oy - r * r) * 4.0f;
 
     if (t * t - a * c >= 0.0f) {
-        float root = bSqrt(t * t - a * c);
+        float root = rsqrt(t * t - a * c);
         float inv2timesA = 1.0f / (a + a);
         u1 = (-t - root) * inv2timesA;
         u2 = (-t + root) * inv2timesA;

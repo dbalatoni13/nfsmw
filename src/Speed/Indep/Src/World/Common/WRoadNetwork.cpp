@@ -1448,12 +1448,12 @@ void WRoadNav::PrivateIncNavPosition(float dist, const UMath::Vector3 &to) {
 
     for (;;) {
         segment = roadNetwork.GetSegment(GetSegmentInd());
-        segmentLength = UMath::Max(UMath::Distance(fStartPos, fEndPos), 0.001f);
+        segmentLength = UMath::Max(0.001f, UMath::Distance(fStartPos, fEndPos));
+        distFraction = dist / segmentLength;
         toLength = UMath::Length(to);
-        distFraction = fSegTime + dist / segmentLength;
 
-        if (distFraction <= 1.0f) {
-            fSegTime = distFraction;
+        if (fSegTime + distFraction <= 1.0f) {
+            fSegTime = fSegTime + distFraction;
             fSegTime = UMath::Min(UMath::Max(fSegTime, 0.0f), 1.0f);
 
             if (UpdateLaneChange(dist)) {
@@ -1514,7 +1514,7 @@ void WRoadNav::PrivateIncNavPosition(float dist, const UMath::Vector3 &to) {
             SetStartEndControls(*newSegment);
             RebuildSplines(newSegment);
             fPosition = fStartPos;
-            dist = (dist / segmentLength - (1.0f - fSegTime)) * segmentLength;
+            dist = (distFraction - (1.0f - fSegTime)) * segmentLength;
             fSegTime = 0.0f;
         }
     }

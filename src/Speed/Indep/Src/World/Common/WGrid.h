@@ -53,6 +53,12 @@ struct WGrid {
         return row * fNumCols + col;
     }
 
+    inline void GetRowCol(const UMath::Vector3 &pt, unsigned int &row, unsigned int &col) const {
+        col = static_cast< int >((pt.x - fMin.x) * fInvEdgeSize);
+        row = static_cast< int >((pt.z - fMin.z) * fInvEdgeSize);
+        RangeCheckROWCOL(row, col);
+    }
+
     inline void GetRowCol(unsigned int ind, unsigned int &row, unsigned int &col) const {
         row = ind / fNumCols;
         col = ind - row * fNumCols;

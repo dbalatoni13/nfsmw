@@ -69,3 +69,40 @@ void WGrid::FindNodes(const UMath::Vector3 &pt, float radius, UTL::Vector<unsign
     pts[0].y = 0.0f;
     FindNodesBox(pts, nodeIndList);
 }
+
+void WGrid::FindNodesBox(const UMath::Vector4 *pts, UTL::Vector<unsigned int, 16> &nodeIndList) const {
+    unsigned int colMin;
+    unsigned int rowMin;
+    unsigned int colMax;
+    unsigned int rowMax;
+
+    GetRowCol(UMath::Vector4To3(pts[0]), rowMin, colMin);
+    GetRowCol(UMath::Vector4To3(pts[1]), rowMax, colMax);
+
+    if (rowMin > rowMax) {
+        unsigned int temp = rowMin;
+        rowMin = rowMax;
+        rowMax = temp;
+    }
+    if (colMin > colMax) {
+        unsigned int temp = colMin;
+        colMin = colMax;
+        colMax = temp;
+    }
+
+    if (rowMax - rowMin > 20) {
+        rowMax = rowMin;
+    }
+    if (colMax - colMin > 20) {
+        colMax = colMin;
+    }
+
+    RangeCheckROWCOL(rowMin, colMin);
+    RangeCheckROWCOL(rowMax, colMax);
+
+    for (unsigned int col = colMin; col <= colMax; col++) {
+        for (unsigned int row = rowMin; row <= rowMax; row++) {
+            nodeIndList.push_back(GetNodeInd(row, col));
+        }
+    }
+}

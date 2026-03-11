@@ -24,7 +24,7 @@ inline float wmax(const float &a, const float &b) {
 }
 
 inline bool InCircle(float x, float y, float cx, float cy, float r) {
-    return pow2(x - cx) + pow2(y - cy) < pow2(r);
+    return pow2(cx - x) + pow2(cy - y) < pow2(r);
 }
 
 inline float InvSqrt(const float f) {

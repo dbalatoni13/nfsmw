@@ -86,8 +86,6 @@ void WCollisionMgr::GetInstanceListGuts(const NodeIndexList &nodeInds, WCollisio
     float minSegY = WWorldMath::wmin(seg[1].y, seg[0].y);
     float maxSegY = WWorldMath::wmax(seg[1].y, seg[0].y);
 
-    ++fIterCount;
-
     for (const unsigned int *iter = nodeInds.begin(); iter != nodeInds.end(); ++iter) {
         WGridNode *node = grid.fNodes[*iter];
         if (node != nullptr) {

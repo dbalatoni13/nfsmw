@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/World/WWorldPos.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
+#include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WWorldMath.h"
 
 bool WWorldPos::FindClosestFace(const WCollider *collider, const UMath::Vector3 &ptRaw, bool quitIfOnSameFace) {
@@ -11,6 +12,251 @@ bool WWorldPos::FindClosestFace(const WCollider *collider, const UMath::Vector3 
 
 bool WWorldPos::FindClosestFace(const UMath::Vector3 &ptRaw, bool quitIfOnSameFace) {
     return FindClosestFaceInternal(static_cast<const WCollisionInstanceCacheList *>(nullptr), ptRaw, quitIfOnSameFace);
+}
+
+bool WWorldPos::FindClosestFaceInternal(const WCollisionInstanceCacheList *instList, const UMath::Vector3 &ptRaw, bool quitIfOnSameFace) {
+    fUsageCount++;
+    UMath::Vector3 pt;
+    pt.x = ptRaw.x;
+    pt.z = ptRaw.z;
+    pt.y = ptRaw.y + fYOffset;
+
+    bool onFace = false;
+    if (fFaceValid) {
+        float ax = fFace.fPt0.x;
+        float az = fFace.fPt0.z;
+        float bx = fFace.fPt1.x;
+        float bz = fFace.fPt1.z;
+        float cx = fFace.fPt2.x;
+        float cz = fFace.fPt2.z;
+
+        float cross1 = (ax - bx) * (pt.z - bz) - (pt.x - bx) * (az - bz);
+        if (0.0f < cross1) {
+            onFace = false;
+            float cross2 = (bx - cx) * (pt.z - cz) - (pt.x - cx) * (bz - cz);
+            if (0.0f <= cross2) {
+                onFace = 0.0f <= (cx - ax) * (pt.z - az) - (pt.x - ax) * (cz - az);
+            }
+        } else {
+            onFace = false;
+            float cross2 = (bx - cx) * (pt.z - cz) - (pt.x - cx) * (bz - cz);
+            if (cross2 <= 0.0f) {
+                onFace = (cx - ax) * (pt.z - az) - (pt.x - ax) * (cz - az) <= 0.0f;
+            }
+        }
+
+        if (onFace) {
+            onFace = true;
+        }
+    }
+
+    if (!onFace || !quitIfOnSameFace) {
+        if (instList == nullptr) {
+            WCollisionInstanceCacheList localList;
+            localList.reserve(16);
+            WCollisionMgr collMgr(0, 3);
+            collMgr.GetInstanceList(localList, pt, 0.0f, true);
+            FindClosestFaceInternal(localList, pt);
+        } else {
+            FindClosestFaceInternal(*instList, pt);
+        }
+        return true;
+    }
+    return false;
+}
+
+bool WWorldPos::FindClosestFaceInternal(const WCollisionInstanceCacheList &instList, const UMath::Vector3 &pt) {
+    fFaceValid = 0;
+    bool matComputed = false;
+    bool found = false;
+    float bestDist = 100000.0f;
+    UMath::Matrix4 segMat;
+    UMath::Vector3 startPt;
+    UMath::Vector3 endPt;
+
+    for (const WCollisionInstance *const *it = instList.begin(); it != instList.end(); ++it) {
+        WCollisionTri tri;
+        tri.fSurface.fSurface = 0;
+        const WCollisionInstance *inst = *it;
+        float dist;
+
+        if (!inst->NeedsCrossProduct()) {
+            WCollisionMgr collMgr(0, 3);
+            if (collMgr.FindFaceInCInst(pt, *inst, tri, dist)) {
+                found = true;
+                if (dist < bestDist) {
+                    fFaceValid = 1;
+                    fFace = tri;
+                    FindSurface(*inst->fCollisionArticle);
+                    bestDist = dist;
+                }
+            }
+        } else {
+            if (!matComputed) {
+                startPt.x = pt.x;
+                startPt.z = pt.z;
+                matComputed = true;
+                endPt.y = pt.y - 100.0f;
+                startPt.y = pt.y + fYOffset;
+                endPt.x = startPt.x;
+                endPt.z = startPt.z;
+                WWorldMath::MakeSegSpaceMatrix(startPt, endPt, segMat);
+            }
+            WCollisionMgr collMgr2(0, 3);
+            if (collMgr2.FindFaceInCInst(segMat, endPt, *inst, tri, dist)) {
+                found = true;
+                dist = dist - fYOffset;
+                if (dist < bestDist) {
+                    fFaceValid = 1;
+                    fFace = tri;
+                    FindSurface(*inst->fCollisionArticle);
+                    bestDist = dist;
+                }
+            }
+        }
+    }
+
+    return found;
+}
+
+bool WWorldPos::FindClosestFace(const WCollisionTriList &triList, const UMath::Vector3 &ipt, bool quitIfOnSameFace) {
+    bool found = false;
+    bool onFace = false;
+    fUsageCount++;
+    float bestDiff = 100000.0f;
+    UMath::Vector3 pt;
+    pt.x = ipt.x;
+    pt.z = ipt.z;
+    pt.y = ipt.y;
+
+    if (fFaceValid) {
+        float ax = fFace.fPt0.x;
+        float az = fFace.fPt0.z;
+        float bx = fFace.fPt1.x;
+        float bz = fFace.fPt1.z;
+        float cx = fFace.fPt2.x;
+        float cz = fFace.fPt2.z;
+
+        float cross1 = (ax - bx) * (pt.z - bz) - (pt.x - bx) * (az - bz);
+        if (0.0f < cross1) {
+            float cross2 = (bx - cx) * (pt.z - cz) - (pt.x - cx) * (bz - cz);
+            if (0.0f <= cross2) {
+                onFace = 0.0f <= (cx - ax) * (pt.z - az) - (pt.x - ax) * (cz - az);
+            }
+        } else {
+            float cross2 = (bx - cx) * (pt.z - cz) - (pt.x - cx) * (bz - cz);
+            if (cross2 <= 0.0f) {
+                onFace = (cx - ax) * (pt.z - az) - (pt.x - ax) * (cz - az) <= 0.0f;
+            }
+        }
+    }
+
+    if (onFace && quitIfOnSameFace) {
+        return false;
+    }
+
+    fFaceValid = 0;
+    pt.y = pt.y + fYOffset;
+
+    for (WCollisionTriBlock *const *blockIt = triList.begin(); blockIt != triList.end(); ++blockIt) {
+        if (found && !(fFace.fSurface.Surface() & 4)) break;
+
+        WCollisionTriBlock *block = *blockIt;
+        for (WCollisionTri *tri = block->begin(); tri != block->end(); ++tri) {
+            float ax = tri->fPt0.x;
+            float az = tri->fPt0.z;
+            float bx = tri->fPt1.x;
+            float bz = tri->fPt1.z;
+            float cx = tri->fPt2.x;
+            float cz = tri->fPt2.z;
+
+            bool inside = false;
+            float cross1 = (ax - bx) * (pt.z - bz) - (pt.x - bx) * (az - bz);
+            if (0.0f < cross1) {
+                float cross2 = (bx - cx) * (pt.z - cz) - (pt.x - cx) * (bz - cz);
+                if (0.0f <= cross2) {
+                    inside = 0.0f <= (cx - ax) * (pt.z - az) - (pt.x - ax) * (cz - az);
+                }
+            } else {
+                float cross2 = (bx - cx) * (pt.z - cz) - (pt.x - cx) * (bz - cz);
+                if (cross2 <= 0.0f) {
+                    inside = (cx - ax) * (pt.z - az) - (pt.x - ax) * (cz - az) <= 0.0f;
+                }
+            }
+
+            if (inside) {
+                UMath::Vector3 vecZ;
+                vecZ.x = tri->fPt1.x - tri->fPt0.x;
+                vecZ.y = tri->fPt1.y - tri->fPt0.y;
+                vecZ.z = tri->fPt1.z - tri->fPt0.z;
+                UMath::Vector3 vecX;
+                vecX.x = tri->fPt0.x - tri->fPt2.x;
+                vecX.y = tri->fPt0.y - tri->fPt2.y;
+                vecX.z = tri->fPt0.z - tri->fPt2.z;
+                UMath::Vector3 normal;
+                UMath::Cross(vecZ, vecX, normal);
+
+                UMath::Vector3 norm;
+                if (normal.x == 0.0f && normal.y == 0.0f && normal.z == 0.0f) {
+                    norm.x = 0.0f;
+                    norm.y = 1.0f;
+                    norm.z = 0.0f;
+                } else {
+                    v3unit(&normal, &norm);
+                }
+
+                if (norm.y < 0.0f) {
+                    norm.y = -norm.y;
+                    norm.x = -norm.x;
+                    norm.z = -norm.z;
+                }
+                if (0.9999f <= norm.y) {
+                    norm.y = 0.9999f;
+                }
+
+                float y = WWorldMath::GetPlaneY(norm, tri->fPt0, pt);
+                float diff = pt.y - y;
+                if (diff < bestDiff && -100000.0f < diff) {
+                    fFaceValid = 1;
+                    fFace = *tri;
+                    found = true;
+                    fSurface = reinterpret_cast<const Attrib::Collection *>(tri->fSurfaceRef);
+                    bestDiff = diff;
+                    if (!(fFace.fSurface.Surface() & 4)) break;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+bool WWorldPos::FindClosestFace(const WCollisionInstanceCacheList &instList, const UMath::Vector3 &pt, const UMath::Vector3 &endPt) {
+    fUsageCount++;
+    fFaceValid = 0;
+
+    UMath::Matrix4 segMat;
+    if (WWorldMath::MakeSegSpaceMatrix(pt, endPt, segMat)) {
+        float bestDist = 100000.0f;
+        fFaceValid = 0;
+
+        for (const WCollisionInstance *const *it = instList.begin(); it != instList.end(); ++it) {
+            WCollisionTri tri;
+            tri.fSurface.fSurface = 0;
+            float dist;
+            WCollisionMgr collMgr(0, 3);
+            if (collMgr.FindFaceInCInst(segMat, endPt, **it, tri, dist)) {
+                if (dist < bestDist) {
+                    fFaceValid = 1;
+                    fFace = tri;
+                    FindSurface(*(*it)->fCollisionArticle);
+                    bestDist = dist;
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 bool WWorldPos::Update(const UMath::Vector3 &pos, UMath::Vector4 &dest, bool usecache, const WCollider *collider, bool keep_valid) {

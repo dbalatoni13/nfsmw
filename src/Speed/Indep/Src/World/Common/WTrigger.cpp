@@ -6,6 +6,8 @@
 #include "Speed/Indep/Src/Main/EventSequencer.h"
 #include "Speed/Indep/Src/World/WCollisionAssets.h"
 #include "Speed/Indep/Src/World/WGridManagedDynamicElem.h"
+#include "Speed/Indep/Src/World/Common/WGrid.h"
+#include "Speed/Indep/Src/Physics/Dynamics/Collision.h"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
@@ -234,4 +236,241 @@ bool WTrigger::UpdatePos(const UMath::Vector3 &newPos, unsigned int triggerInd) 
     fPosRadius.z = newPos.z;
     WGridManagedDynamicElem::AddElem(&oldPosRad, &fPosRadius, WGrid_kTrigger, triggerInd);
     return true;
+}
+
+void WTriggerManager::ProcessRB(IRigidBody *rBody, float dT) {
+    fIterCount++;
+    unsigned int activateFlag = rBody->GetTriggerFlags();
+    if (activateFlag == 0) {
+        return;
+    }
+    float radius = rBody->GetRadius();
+    UTL::FastVector<unsigned int, 16> nodeInds;
+    nodeInds.reserve(0x40);
+    const WGrid &grid = WGrid::Get();
+    grid.FindNodes(rBody->GetPosition(), radius, nodeInds);
+    for (unsigned int *iter = nodeInds.begin(); iter != nodeInds.end(); ++iter) {
+        WGridNode *gridNode = grid.fNodes[*iter];
+        if (gridNode != nullptr) {
+            WGridNode::iterator eIter(gridNode, WGrid_kTrigger);
+            while (const unsigned int *indPtr = eIter.GetIndPtr()) {
+                unsigned int ind = *indPtr;
+                WTrigger &trig = WCollisionAssets::Get().Trigger(ind);
+                if (trig.fIterStamp != fIterCount) {
+                    trig.fIterStamp = fIterCount;
+                    if (trig.IsEnabled(fSilencableEnabled) &&
+                        (trig.fFlags & activateFlag) != 0 &&
+                        CheckCollideRB(rBody, &trig, dT)) {
+                        HSIMABLE__ *hSimable = rBody->GetOwner()->GetInstanceHandle();
+                        SubmitForFire(trig, hSimable);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void WTriggerManager::ProcessSRB(IRigidBody *srBody, float dT) {
+    fIterCount++;
+    unsigned int activateFlag = srBody->GetTriggerFlags();
+    if (activateFlag == 0) {
+        return;
+    }
+    float radius = UMath::Max(srBody->GetRadius(), 1.5f);
+    UTL::FastVector<unsigned int, 16> nodeInds;
+    nodeInds.reserve(0x40);
+    const WGrid &grid = WGrid::Get();
+    grid.FindNodes(srBody->GetPosition(), radius, nodeInds);
+    for (unsigned int *iter = nodeInds.begin(); iter != nodeInds.end(); ++iter) {
+        WGridNode *gridNode = grid.fNodes[*iter];
+        if (gridNode != nullptr) {
+            WGridNode::iterator eIter(gridNode, WGrid_kTrigger);
+            while (const unsigned int *indPtr = eIter.GetIndPtr()) {
+                unsigned int ind = *indPtr;
+                WTrigger &trig = WCollisionAssets::Get().Trigger(ind);
+                if (trig.fIterStamp != fIterCount) {
+                    trig.fIterStamp = fIterCount;
+                    if (trig.IsEnabled(fSilencableEnabled) &&
+                        (trig.fFlags & activateFlag) != 0) {
+                        if (srBody->GetOwner()->IsOwnedByPlayer() || !(trig.fFlags & 0x80)) {
+                            if (CheckCollideSRB(srBody, &trig, dT)) {
+                                HSIMABLE__ *hSimable = srBody->GetOwner()->GetInstanceHandle();
+                                SubmitForFire(trig, hSimable);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *trig, float dT) const {
+    const float rbRadius = rBody->GetRadius();
+    float rbRadiusPlusVel;
+    UMath::Vector3 rPos;
+    UMath::Vector3 cp;
+    float radsSq;
+    UMath::Vector3 dP;
+
+    rbRadiusPlusVel = rBody->GetSpeed() * dT + rbRadius + trig->fPosRadius.w;
+    cp.x = trig->fPosRadius.x;
+    cp.z = trig->fPosRadius.z;
+    cp.y = trig->fPosRadius.y;
+    radsSq = rbRadiusPlusVel * rbRadiusPlusVel;
+    UMath::Scale(rBody->GetLinearVelocity(), dT, dP);
+    UMath::Add(rBody->GetPosition(), dP, rPos);
+
+    if (trig->fShape == 2) {
+        if (UMath::DistanceSquare(cp, rPos) <= radsSq) {
+            if (trig->fFlags & 0x800) {
+                if (!trig->TestDirection(rBody->GetLinearVelocity())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    } else {
+        if (UMath::DistanceSquarexz(cp, rPos) <= radsSq) {
+            if (trig->fFlags & 0x800) {
+                if (!trig->TestDirection(rBody->GetLinearVelocity())) {
+                    return false;
+                }
+            }
+            if (trig->fShape == 3) {
+                if (trig->fPosRadius.y - trig->fHeight * 0.5f <= rPos.y + rbRadius &&
+                    rPos.y - rbRadius < trig->fPosRadius.y + trig->fHeight * 0.5f) {
+                    return true;
+                }
+            } else if (trig->fShape == 1) {
+                UMath::Vector3 dim3;
+                UMath::Matrix4 bodyMat;
+                rBody->GetDimension(dim3);
+                rBody->GetMatrix4(bodyMat);
+                Dynamics::Collision::Geometry carOBB(bodyMat, rPos, dim3, Dynamics::Collision::Geometry::BOX, dP);
+                UMath::Matrix4 m;
+                trig->MakeMatrix(m, false, false);
+                UMath::Vector4 trigPos;
+                trigPos.x = trig->fPosRadius.x;
+                trigPos.y = trig->fPosRadius.y;
+                trigPos.z = trig->fPosRadius.z;
+                trigPos.w = 1.0f;
+                UMath::Vector3 trigDimension;
+                trigDimension.x = trig->fMatRow0Width.w * 0.5f;
+                trigDimension.y = trig->fHeight * 0.5f;
+                trigDimension.z = trig->fMatRow2Length.w * 0.5f;
+                Dynamics::Collision::Geometry trigOBB(m, UMath::Vector4To3(trigPos), trigDimension, Dynamics::Collision::Geometry::BOX, UMath::Vector3::kZero);
+                if (Dynamics::Collision::Geometry::FindIntersection(&carOBB, &trigOBB, &carOBB)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool WTriggerManager::CheckCollideSRB(const IRigidBody *srBody, const WTrigger *trig, float dT) const {
+    UMath::Vector3 rPos;
+    float srRadius;
+    float srRadiusPlusVel;
+    UMath::Vector3 dVdT;
+    UMath::Vector3 cp;
+    float radsSq;
+
+    rPos.x = srBody->GetPosition().x;
+    rPos.y = srBody->GetPosition().y;
+    rPos.z = srBody->GetPosition().z;
+    srRadius = srBody->GetRadius();
+    srRadiusPlusVel = srBody->GetSpeed() * dT + srRadius + trig->fPosRadius.w;
+    UMath::Scale(srBody->GetLinearVelocity(), dT, dVdT);
+    UMath::Add(rPos, dVdT, rPos);
+    cp.x = trig->fPosRadius.x;
+    cp.z = trig->fPosRadius.z;
+    unsigned char shapeNum = trig->fShape;
+    cp.y = trig->fPosRadius.y;
+    radsSq = srRadiusPlusVel * srRadiusPlusVel;
+
+    if (shapeNum == 1) {
+        if (trig->fFlags & 0x800) {
+            if (!trig->TestDirection(srBody->GetLinearVelocity())) {
+                return false;
+            }
+        }
+        UMath::Vector3 dim3;
+        memset(&dim3, 0, sizeof(dim3));
+        dim3.x = srRadius;
+        dim3.y = srRadius;
+        dim3.z = srRadius;
+        UMath::Matrix4 bodyMat;
+        srBody->GetMatrix4(bodyMat);
+        Dynamics::Collision::Geometry srbOBB(bodyMat, rPos, dim3, Dynamics::Collision::Geometry::SPHERE, dVdT);
+        UMath::Matrix4 m;
+        trig->MakeMatrix(m, false, false);
+        UMath::Vector4 trigPos;
+        trigPos.x = trig->fPosRadius.x;
+        trigPos.y = trig->fPosRadius.y;
+        trigPos.z = trig->fPosRadius.z;
+        trigPos.w = 1.0f;
+        UMath::Vector3 trigDimension;
+        trigDimension.x = trig->fMatRow0Width.w * 0.5f;
+        trigDimension.y = trig->fHeight * 0.5f;
+        trigDimension.z = trig->fMatRow2Length.w * 0.5f;
+        Dynamics::Collision::Geometry trigOBB(m, UMath::Vector4To3(trigPos), trigDimension, Dynamics::Collision::Geometry::BOX, UMath::Vector3::kZero);
+        if (Dynamics::Collision::Geometry::FindIntersection(&trigOBB, &srbOBB, &trigOBB)) {
+            return true;
+        }
+    } else if (shapeNum == 2) {
+        if (UMath::DistanceSquare(cp, rPos) < radsSq) {
+            if (trig->fFlags & 0x800) {
+                if (!trig->TestDirection(srBody->GetLinearVelocity())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    } else if (shapeNum == 3) {
+        if (UMath::DistanceSquarexz(cp, rPos) < radsSq) {
+            if (trig->fFlags & 0x800) {
+                if (!trig->TestDirection(srBody->GetLinearVelocity())) {
+                    return false;
+                }
+            }
+            if (trig->fPosRadius.y - trig->fHeight * 0.5f <= rPos.y + srRadius &&
+                rPos.y - srRadius < trig->fPosRadius.y + trig->fHeight * 0.5f) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+inline float DistanceSquared_XZ(const UMath::Vector3 &a, const UMath::Vector3 &b) {
+    float x = a.x - b.x;
+    float z = a.z - b.z;
+    return x * x + z * z;
+}
+
+void WTriggerManager::GetIntersectingTriggers(const UMath::Vector3 &pt, float radius, WTriggerList *triggerList) const {
+    UTL::FastVector<unsigned int, 16> nodeInds;
+    nodeInds.reserve(0x40);
+    fIterCount++;
+    const WGrid &grid = WGrid::Get();
+    grid.FindNodes(pt, radius, nodeInds);
+    for (unsigned int *iter = nodeInds.begin(); iter != nodeInds.end(); ++iter) {
+        WGridNode *gridNode = grid.fNodes[*iter];
+        if (gridNode != nullptr) {
+            WGridNode::iterator eIter(gridNode, WGrid_kTrigger);
+            while (const unsigned int *indPtr = eIter.GetIndPtr()) {
+                unsigned int ind = *indPtr;
+                WTrigger &trig = WCollisionAssets::Get().Trigger(ind);
+                if (trig.fIterStamp != fIterCount) {
+                    trig.fIterStamp = fIterCount;
+                    float totalRadius = radius + trig.fPosRadius.w;
+                    if (DistanceSquared_XZ(UMath::Vector4To3(trig.fPosRadius), pt) < totalRadius * totalRadius) {
+                        triggerList->push_back(&trig);
+                    }
+                }
+            }
+        }
+    }
 }
