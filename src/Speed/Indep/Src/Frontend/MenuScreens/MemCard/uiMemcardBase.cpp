@@ -9,3 +9,6 @@ unsigned int UIMemcardBase::GetAutoSaveWarning() {
 unsigned int UIMemcardBase::GetAutoSaveWarning2() {
     return 0x2386f454;
 }
+
+void UIMemcardKeyboard::Setup() {}
+void UIMemcardKeyboard::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) {}
