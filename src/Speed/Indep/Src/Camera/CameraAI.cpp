@@ -405,8 +405,7 @@ static float AverageAir(ISimable *isimable, float fSeconds, float *pHighest, flo
     Attrib::Gen::chassis chassis(attributes.chassis(0), 0, nullptr);
 
     float fDownForce = -Physics::Info::AerodynamicDownforce(chassis, fSpeed);
-    float gravity = irbc->GetGravity();
-    float fDownAccel = gravity + fDownForce / irb->GetMass();
+    float fDownAccel = irbc->GetGravity() + fDownForce / irb->GetMass();
 
     UMath::Vector3 a = UMath::Vector3Make(0.0f, fDownAccel, 0.0f);
 
@@ -422,8 +421,7 @@ static float AverageAir(ISimable *isimable, float fSeconds, float *pHighest, flo
     seg[1] = UMath::Vector4Make(pNew, tbarr);
 
     WCollisionMgr::WorldCollisionInfo cInfo;
-    WCollisionMgr collMgr(0, 3);
-    collMgr.CheckHitWorld(seg, cInfo, 2);
+    WCollisionMgr(0, 3).CheckHitWorld(seg, cInfo, 2);
 
     if (cInfo.HitSomething()) {
         return 0.0f;
