@@ -39,13 +39,10 @@ class WWorldPos {
         this->fFaceValid = 0;
         this->fMissCount = 0;
         this->fUsageCount = 0;
-        this->fSurface = nullptr;
         fFace.fPt0 = UMath::Vector3::kZero;
-        fFace.fSurfaceRef = nullptr;
         fFace.fPt1 = UMath::Vector3::kZero;
-        fFace.fFlags = 0;
         fFace.fPt2 = UMath::Vector3::kZero;
-        fFace.PAD = 0;
+        this->fSurface = nullptr;
     }
 
     ~WWorldPos() {}

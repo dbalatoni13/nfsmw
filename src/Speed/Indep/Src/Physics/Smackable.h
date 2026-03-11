@@ -182,6 +182,6 @@ class SmackableAvoidable : public AIAvoidable {
 };
 
 extern Attrib::StringKey BEHAVIOR_MECHANIC_EFFECTS;
-extern int Smackable_RigidCount;
+extern unsigned int Smackable_RigidCount;
 
 #endif

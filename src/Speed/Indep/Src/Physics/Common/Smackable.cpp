@@ -48,7 +48,7 @@ UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::Prototype _Smackable("Smackable
 UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::Prototype _RBSmackable(
     "RBSmackable", RBSmackable::Construct);
 
-int Smackable_RigidCount;
+unsigned int Smackable_RigidCount;
 Attrib::StringKey Smackable::CYLINDER;
 Attrib::StringKey Smackable::TUBE;
 Attrib::StringKey Smackable::CONE;
@@ -97,32 +97,34 @@ bool Smackable::TrySimplify() {
 }
 
 ISimable *Smackable::Construct(Sim::Param params) {
-    const SmackableParams &sp = params.Fetch< SmackableParams >(UCrc32(0xa6b47fac));
-    IModel *scenery = sp.fScenery;
-    if (scenery == nullptr) {
+    const SmackableParams sp = params.Fetch< SmackableParams >(UCrc32(0xa6b47fac));
+    if (sp.fScenery == nullptr) {
         return nullptr;
     }
-    Attrib::Gen::smackable attributes(scenery->GetAttributes());
-    if (attributes.GetCollection() == nullptr) {
+    Attrib::Gen::smackable attributes(sp.fScenery->GetAttributes());
+    if (!attributes.IsValid()) {
         return nullptr;
     }
     IPlaceableScenery *placeable = nullptr;
-    bool is_persistant = scenery->QueryInterface(&placeable);
+    bool is_persistant = false;
+    if (sp.fScenery->QueryInterface(&placeable)) {
+        is_persistant = true;
+    }
     bool simple_physics = attributes.SimplePhysics() || sp.fSimplePhysics;
     if (!simple_physics && !is_persistant && Smackable_RigidCount >= 0x14 && !TrySimplify()) {
         return nullptr;
     }
-    scenery->GetWorldID();
-    const CollisionGeometry::Bounds *geoms = scenery->GetCollisionGeometry();
+    sp.fScenery->GetWorldID();
+    const CollisionGeometry::Bounds *geoms = sp.fScenery->GetCollisionGeometry();
     if (geoms == nullptr || !(attributes.MASS() > 0.0f)) {
         return nullptr;
     }
     UMath::Matrix4 matrix = sp.fMatrix;
     bool canSpawn;
-    if (!simple_physics) {
-        canSpawn = Sim::CanSpawnRigidBody(UMath::Vector4To3(matrix.v3), false);
-    } else {
+    if (simple_physics) {
         canSpawn = Sim::CanSpawnSimpleRigidBody(UMath::Vector4To3(matrix.v3), false);
+    } else {
+        canSpawn = Sim::CanSpawnRigidBody(UMath::Vector4To3(matrix.v3), false);
     }
     if (!canSpawn) {
         return nullptr;
@@ -130,7 +132,7 @@ ISimable *Smackable::Construct(Sim::Param params) {
     if (!Manager::Exists()) {
         new Manager(Smackable_ManagementRate);
     }
-    return new Smackable(matrix, attributes, geoms, sp.fVirginSpawn, scenery, simple_physics,
+    return new Smackable(matrix, attributes, geoms, sp.fVirginSpawn, sp.fScenery, simple_physics,
                          is_persistant);
 }
 
@@ -612,7 +614,7 @@ Smackable::Manager::~Manager() {
 bool Smackable::Manager::OnTask(HSIMTASK htask, float dT) {
     if (htask == mManageTask) {
         UTL::Collections::Listable< Smackable, 160 >::Sort(Smackable::SimplifySort);
-        if (static_cast< unsigned int >(Smackable_RigidCount) > 0xa) {
+        if (Smackable_RigidCount > 0xa) {
             TrySimplify();
         }
         return true;

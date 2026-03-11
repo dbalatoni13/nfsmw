@@ -2,21 +2,20 @@
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 
 Wheel::Wheel(unsigned int flags) : mWorldPos(0.025f) //
+    , mNormal(UMath::Vector4::kZero) //
+    , mPosition(UMath::Vector3::kZero) //
+    , mFlags(flags) //
+    , mForce(UMath::Vector3::kZero) //
+    , mAirTime(0.0f) //
+    , mLocalArm(UMath::Vector3::kZero) //
+    , mCompression(0.0f) //
+    , mWorldArm(UMath::Vector3::kZero) //
+    , pad(0) //
+    , mVelocity(UMath::Vector3::kZero) //
+    , pad2(0) //
     , mSurface(SimSurface::kNull) //
-{
-    mNormal = UMath::Vector4::kZero;
-    mPosition = UMath::Vector3::kZero;
-    mFlags = flags;
-    mForce = UMath::Vector3::kZero;
-    mAirTime = 0.0f;
-    mLocalArm = UMath::Vector3::kZero;
-    mCompression = 0.0f;
-    mWorldArm = UMath::Vector3::kZero;
-    pad = 0;
-    mVelocity = UMath::Vector3::kZero;
-    pad2 = 0;
-    mSurfaceStick = 0.0f;
-    mIntegral = UMath::Vector4::kZero;
+    , mSurfaceStick(0.0f) //
+    , mIntegral(UMath::Vector4::kZero) {
 }
 
 void Wheel::UpdateTime(float dT) {
