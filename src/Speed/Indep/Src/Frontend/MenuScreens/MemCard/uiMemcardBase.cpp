@@ -516,9 +516,11 @@ void UIMemcardBase::HandleAutoSaveOverwriteMessage() {
 
 void UIMemcardBase::DoSaveFlow(int flow) {
     m_Flow = flow;
-    if (flow == 6) {
+    switch (flow) {
+    case 6:
         SetupPromptSaveConfirm();
-    } else if (flow == 2) {
+        break;
+    case 2: {
         unsigned int textHash;
         if ((gMemcardSetup.mOp & 0x80000) != 0) {
             textHash = 0xbadd522c;
@@ -532,16 +534,22 @@ void UIMemcardBase::DoSaveFlow(int flow) {
             textHash = 0xbe97590f;
         }
         ShowYesNo(textHash, 0x1000000);
-    } else if (flow == 1) {
+        break;
+    }
+    case 1:
         ShowYesNo(0x7209349f, 0x5000000);
-    } else if (flow == 4) {
+        break;
+    case 4:
         SetupPromptForSave();
-    } else if (flow == 8) {
+        break;
+    case 8:
         FEDatabase->CurrentUserProfiles[0]->SetProfileName(m_FileName, true);
         MemoryCard::GetInstance()->Save(m_FileName);
         SetStringCheckingCard();
-    } else if (flow == 12) {
+        break;
+    case 12:
         MemoryCard::GetInstance()->SetAutoSaveEnabled(false);
+        break;
     }
 }
 
@@ -698,10 +706,12 @@ void UIMemcardBase::ExitComplete() {
     if ((gMemcardSetup.mOp & 0x400000) == 0) {
         if ((gMemcardSetup.mOp & 0x10000) == 0) {
             unsigned int cmd = gMemcardSetup.mOp & 0xf;
-            if (cmd == 2) {
+            switch (cmd) {
+            case 2:
                 cFEng::Get()->QueuePackageSwitch(gMemcardSetup.mToScreen,
                     MemoryCard::GetInstance()->GetPlayerNum(), 0, false);
-            } else if (cmd == 1) {
+                break;
+            case 1: {
                 bool popExtra;
                 if (!m_SimPausedForMemcard) {
                     popExtra = true;
@@ -710,10 +720,13 @@ void UIMemcardBase::ExitComplete() {
                     popExtra = cFEng::Get()->IsPackagePushed("SMS_Mailboxes.fng");
                 }
                 cFEng::Get()->QueuePackagePop(popExtra ? 1 : 0);
-            } else if (cmd == 3) {
+                break;
+            }
+            case 3:
                 cFEng::Get()->QueuePackagePop(1);
                 cFEng::Get()->QueuePackageSwitch(gMemcardSetup.mToScreen,
                     MemoryCard::GetInstance()->GetPlayerNum(), 0, false);
+                break;
             }
         } else if (TheGameFlowManager.GetState() == GAMEFLOW_STATE_IN_FRONTEND) {
             cFEng::Get()->QueuePackagePop(1);
@@ -838,9 +851,11 @@ void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject* obj, unsign
     gMemcardSetup.mPreviousPrompt = promptFlags;
     HideAllButtons();
 
-    if (promptFlags == 0x7000000) {
+    switch (promptFlags) {
+    case 0x7000000:
         cFEng::Get()->QueueGameMessage(0x461a18ee, GetPackageName(), 0xff);
-    } else if (promptFlags == 0x1000000) {
+        break;
+    case 0x1000000:
         if (isSecondBtn && !bPadBack) {
             FEDatabase->AllocBackupDB(true);
             if ((gMemcardSetup.mOp & 0x40000) == 0 && (gMemcardSetup.mOp & 0x200000) == 0) {
@@ -860,9 +875,12 @@ void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject* obj, unsign
             }
             cFEng::Get()->QueueGameMessage(0x8867412d, GetPackageName(), 0xff);
         }
-    } else if (promptFlags == 0x3000000 || promptFlags == 0xd000000) {
+        break;
+    case 0x3000000:
+    case 0xd000000:
         cFEng::Get()->QueueGameMessage(0x8867412d, GetPackageName(), 0xff);
-    } else if (promptFlags == 0x4000000) {
+        break;
+    case 0x4000000:
         if (isSecondBtn && !bPadBack) {
             DoSaveFlow(12);
         } else {
@@ -871,7 +889,8 @@ void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject* obj, unsign
             }
             cFEng::Get()->QueueGameMessage(0xdc12af2e, GetPackageName(), 0xff);
         }
-    } else if (promptFlags == 0x5000000) {
+        break;
+    case 0x5000000:
         if (isSecondBtn && !bPadBack) {
             FEDatabase->AllocBackupDB(true);
             if ((gMemcardSetup.mOp & 0x40000) == 0 && (gMemcardSetup.mOp & 0x200000) == 0) {
@@ -880,15 +899,18 @@ void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject* obj, unsign
         } else {
             MemcardExit(0x8867412d);
         }
-    } else if (promptFlags == 0x6000000) {
+        break;
+    case 0x6000000:
         if (isSecondBtn && !bPadBack) {
             InitCompleteDoList();
         } else {
             cFEng::Get()->QueueGameMessage(0x8867412d, GetPackageName(), 0xff);
         }
-    } else if (promptFlags == 0x9000000) {
+        break;
+    case 0x9000000:
         DoSaveFlow(3);
-    } else if (promptFlags == 0xa000000) {
+        break;
+    case 0xa000000:
         if (isSecondBtn && !bPadBack) {
             FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheAudioSettings.AudioMode = 0;
             cFEng::Get()->QueueGameMessage(0x8867412d, GetPackageName(), 0xff);
@@ -901,13 +923,15 @@ void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject* obj, unsign
             gMemcardSetup.mOp = gMemcardSetup.mOp | 0x50;
             DoSaveFlow(12);
         }
-    } else if (promptFlags == 0xb000000) {
+        break;
+    case 0xb000000:
         if ((gMemcardSetup.mOp & 0xf0) == 0xa0 && (gMemcardSetup.mOp & 0x8000) == 0) {
             gMemcardSetup.mOp = (gMemcardSetup.mOp & ~0xf) | 1;
         }
         cFEng::Get()->QueueGameMessage(0x7e998e5e, nullptr, 0xff);
         cFEng::Get()->QueueGameMessage(0x461a18ee, nullptr, 0xff);
-    } else if (promptFlags == 0xc000000) {
+        break;
+    case 0xc000000:
         if (isSecondBtn && !bPadBack) {
             MemoryCard::GetInstance()->SetAutoSaveEnabled(true);
         } else {
@@ -915,7 +939,8 @@ void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject* obj, unsign
             cFEng::Get()->QueueGameMessage(0x7e998e5e, nullptr, 0xff);
             cFEng::Get()->QueueGameMessage(0x461a18ee, nullptr, 0xff);
         }
-    } else {
+        break;
+    default:
         SetStringCheckingCard();
         if (MemoryCard::GetInstance()->GetPendingMessage() != nullptr) {
             ShowMessage(MemoryCard::GetInstance()->GetPendingMessage());
@@ -924,6 +949,7 @@ void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject* obj, unsign
             unsigned long hash = FEHashUpper("SHOW LOADER");
             cFEng::Get()->QueuePackageMessage(hash, GetPackageName(), nullptr);
         }
+        break;
     }
 }
 
