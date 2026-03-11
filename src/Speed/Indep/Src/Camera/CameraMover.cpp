@@ -976,7 +976,7 @@ int CameraMover::MinGapCars(bMatrix4 *pMatrix, bVector3 *pLook, bVector3 *pForwa
     float old_z = pCameraPos->z;
     int i = 0;
     bVector3 vCarCameraSpace;
-    double adjust;
+    float adjust;
 
     for (;;) {
         adjust = AdjustHeightAroundCar(pCameraPos, pLook, pForward);

@@ -38,9 +38,10 @@ static bool IsBeingPursued(int nView) {
             if (simable != nullptr) {
                 simable->QueryInterface(&iperp);
                 if (iperp != nullptr) {
-                    if (iperp->IsBeingPursued()) {
-                        return true;
+                    if (!iperp->IsBeingPursued()) {
+                        return false;
                     }
+                    return true;
                 }
             }
             return false;
