@@ -53,7 +53,7 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
 
     void Pause(bool pause);
 
-    bool IsPaused() {
+    int IsPaused() {
         return mPaused;
     }
 
@@ -96,7 +96,7 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
     virtual void OnUnPause();
 
   private:
-    bool mPaused;                 // offset 0x30, size 0x1
+    int mPaused;                  // offset 0x30, size 0x4
     struct PhysicsObject *mOwner; // offset 0x34, size 0x4
     ISimable *mIOwner;            // offset 0x38, size 0x4
     const UCrc32 mMechanic;       // offset 0x3C, size 0x4
