@@ -21,15 +21,15 @@ template <typename T, int U> class Listable {
     typedef value_type *pointer;
     typedef value_type const *const_pointer;
 
-    class List : public _Storage<pointer, U> {
+    class List : public FixedVector<pointer, U> {
       public:
         typedef T value_type;
         typedef value_type *pointer;
         typedef value_type const *const_pointer;
 
         // List(const List &);
-        List() {}
-        virtual ~List() {}
+        List();
+        virtual ~List();
 
         // List &operator=(List &);
     };
@@ -69,9 +69,6 @@ template <typename T, int U> class Listable {
   private:
     static List _mTable;
 };
-
-template <typename T, int U>
-typename Listable<T, U>::List Listable<T, U>::_mTable;
 
 template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class ListableSet {
   public:
@@ -150,11 +147,6 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
   private:
     static _ListSet _mLists;
 };
-
-template <typename T, int ListSize, typename Enum, std::size_t EnumMax>
-int ListableSet<T, ListSize, Enum, EnumMax>::Count(Enum idx) {
-    return _mLists._buckets[idx].size();
-}
 
 template <typename T> class Countable {
     static int _mCount;
