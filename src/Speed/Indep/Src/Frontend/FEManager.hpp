@@ -76,7 +76,7 @@ class FEManager {
 
     //  void SetEATraxFirstButton(bool onOff) {}
 
-    // static  bool IsPaused() {}
+    static bool IsPaused() { return mInstance->mPauseRequest > 0; }
 
     // static  int GetNumPauseRequests() {}
 

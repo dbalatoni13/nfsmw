@@ -20,6 +20,7 @@ struct cFEng {
     FEngine* mFEng; // offset 0x0, size 0x4
     bool bWasPaused; // offset 0x4, size 0x1
 
+    static void Init();
     static inline cFEng* Get() { return mInstance; }
 
     bool IsErrorState() { return mFEng->bErrorScreenMode; }

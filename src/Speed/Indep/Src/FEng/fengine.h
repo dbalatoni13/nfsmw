@@ -5,6 +5,9 @@
 #pragma once
 #endif
 
-
+struct FEngine {
+    char _pad[0x525c];
+    bool bErrorScreenMode; // offset 0x525c
+};
 
 #endif
