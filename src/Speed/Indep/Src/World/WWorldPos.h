@@ -55,11 +55,7 @@ class WWorldPos {
     }
 
     void UNormal(UMath::Vector3 *norm) const {
-        if (!OnValidFace()) {
-            norm->x = 0.0f;
-            norm->y = 1.0f;
-            norm->z = 0.0f;
-        } else {
+        if (fFaceValid) {
             fFace.GetNormal(norm);
             if (norm->y < 0.0f) {
                 norm->y = -norm->y;
@@ -69,6 +65,10 @@ class WWorldPos {
             if (0.9999f <= norm->y) {
                 norm->y = 0.9999f;
             }
+        } else {
+            norm->z = 0.0f;
+            norm->x = 0.0f;
+            norm->y = 1.0f;
         }
     }
 
