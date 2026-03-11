@@ -41,6 +41,7 @@ struct MoviePlayer {
     AV_PLAYER* fPlayer;               // offset 0x150
     FRAME* CurFrame;                   // offset 0x154
 
+    void Stop();
     void HandleFatalError();
     void Update();
     bool IsMoviePlaying();
