@@ -20,6 +20,7 @@ unsigned int FEngHashString(const char* format, ...);
 const char* GetLocalizedString(unsigned int hash);
 
 extern unsigned int iCurrentViewBin;
+extern unsigned int theMarker;
 
 uiRepSheetBounty::uiRepSheetBounty(ScreenConstructorData* sd)
     : ArrayScrollerMenu(sd, 3, 3, true) {
@@ -63,4 +64,10 @@ void uiRepSheetBounty::RefreshTrack() {
 
 void uiRepSheetBounty::RefreshHeader() {
     ArrayScrollerMenu::RefreshHeader();
+}
+
+void BountyDatum::NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1, unsigned long param2) {
+    if (msg == 0xc407210) {
+        theMarker = GManager::Get().GetBountySpawnMarker(static_cast< unsigned int >(index));
+    }
 }

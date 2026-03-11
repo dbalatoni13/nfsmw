@@ -7,8 +7,6 @@
 extern int GetCurrentLanguage();
 extern int bSNPrintf(char*, int, const char*, ...);
 extern void* bGetFile(const char*, int*, int);
-extern void bEndianSwap16(void*);
-extern void bEndianSwap32(void*);
 extern void bFree(void*);
 extern unsigned int bGetTicker();
 extern float bGetTickerDifference(unsigned int, unsigned int);
@@ -97,9 +95,10 @@ float SubTitler::GetElapsedTime() {
     float thetime_ms;
     if (!mSubtitlePaused) {
         timenow = bGetTicker();
-        thetime_ms = timeElapsed + bGetTickerDifference(lastTime, timenow) * 0.001f;
+        float result = timeElapsed + bGetTickerDifference(lastTime, timenow) * 0.001f;
         lastTime = timenow;
-        timeElapsed = thetime_ms;
+        timeElapsed = result;
+        thetime_ms = result;
     } else {
         lastTime = bGetTicker();
         thetime_ms = timeElapsed;
@@ -109,7 +108,7 @@ float SubTitler::GetElapsedTime() {
 
 void SubTitler::Update(unsigned int msg) {
     if (gMoviePlayer != nullptr) {
-        int paused = gMoviePlayer->mMoviePaused;
+        int paused = gMoviePlayer->IsMoviePaused();
         if (paused) paused = 1;
         mSubtitlePaused = paused;
         if (msg == 0xC98356BA) {

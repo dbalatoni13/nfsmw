@@ -4,6 +4,24 @@
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
 #include "Speed/Indep/Src/Frontend/cFEngRender.hpp"
 
+extern int FEngStrICmp(const char*, const char*);
+
+struct MovieNameMap {
+    const char* movieName;
+    int movieId;
+};
+
+static MovieNameMap sMovieNameMap[42];
+
+static int GetMovieNameEnum(const char* movieName) {
+    for (int i = 0; i < 42; i++) {
+        if (FEngStrICmp(movieName, sMovieNameMap[i].movieName) == 0) {
+            return sMovieNameMap[i].movieId;
+        }
+    }
+    return -1;
+}
+
 
 bool FEngMovieStopper::Callback(FEObject* obj) {
     if (obj->Type == 7) {

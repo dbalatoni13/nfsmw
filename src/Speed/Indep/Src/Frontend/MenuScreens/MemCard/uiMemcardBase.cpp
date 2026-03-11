@@ -339,21 +339,24 @@ void UIMemcardBase::SetupPromptNoProfileFound() {
 }
 
 void UIMemcardBase::SetupPromptSaveConfirm() {
-    char buf[512];
-    unsigned int textHash;
-    if ((gMemcardSetup.mOp & 0x8000) != 0) {
-        textHash = 0x391a0aac;
-    } else if ((gMemcardSetup.mOp & 0x40000) != 0) {
-        textHash = 0xb0af33a5;
-    } else if ((gMemcardSetup.mOp & 0x200000) != 0) {
-        textHash = 0xd80818f8;
-    } else {
-        textHash = 0x39b3ccba;
+    char* fmt;
+    char text[512];
+    {
+        unsigned int fmtHash;
+        if ((gMemcardSetup.mOp & 0x8000) != 0) {
+            fmtHash = 0x391a0aac;
+        } else if ((gMemcardSetup.mOp & 0x40000) != 0) {
+            fmtHash = 0xb0af33a5;
+        } else if ((gMemcardSetup.mOp & 0x200000) != 0) {
+            fmtHash = 0xd80818f8;
+        } else {
+            fmtHash = 0x39b3ccba;
+        }
+        fmt = const_cast< char* >(GetLocalizedString(fmtHash));
     }
-    const char* localStr = GetLocalizedString(textHash);
     ShowYesNo(0x39b3ccba, 0x4000000);
-    bSPrintf(buf, localStr, m_FileName, m_FileName);
-    SetMessageBlurbText(buf);
+    bSPrintf(text, fmt, m_FileName, m_FileName);
+    SetMessageBlurbText(text);
 }
 
 void UIMemcardBase::SetupAutoSaveConfirmPrompt() {

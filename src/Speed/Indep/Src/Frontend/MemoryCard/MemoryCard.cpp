@@ -350,7 +350,7 @@ void MemoryCard::EndListingOldSaveFiles() {
     m_bListingOldSaveFiles = false;
     if (m_bOldSaveFileExists) {
         cFEng::Get()->QueueGameMessage(0x7e998e5e, nullptr, 0xff);
-        DialogInterface::ShowOneButton("", "", static_cast< eDialogTitle >(2), 0x417b2601, 0x34dc1bec, 0xc5e2beac, 0u);
+        DialogInterface::ShowOneButton("", "", static_cast< eDialogTitle >(2), 0x417b2601, 0x34dc1bec, 0xc5e2beac);
     }
     FEDatabase->GetCareerSettings()->AwardOneTimeCashBonus(m_bOldSaveFileExists);
 }

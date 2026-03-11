@@ -12,6 +12,8 @@ FEGameWonScreen::FEGameWonScreen(ScreenConstructorData* sd)
     : MenuScreen(sd)
 {
     switch (mCurrentScreen) {
+    case 0:
+        break;
     case 3:
         FEPrintf(GetPackageName(), static_cast<int>(0x3cc94d6), "> %s", FEDatabase->GetUserProfile(0)->GetProfileName());
         break;

@@ -26,7 +26,7 @@ struct SubTitler {
     float timeElapsed;         // offset 0x14
     unsigned int lastTime;     // offset 0x18
     bool mIsTutorial;          // offset 0x1C
-    bool mSubtitlePaused;      // offset 0x20
+    int mSubtitlePaused;      // offset 0x20
 
     static SubTitler* gCurrentSubtitler_;
 
