@@ -308,17 +308,16 @@ struct WRoadSegment {
         } else {
             bit = (fFlags >> 9) & 1;
         }
-        bool result = true;
         if (!which_end) {
             if (bit) {
-                result = false;
+                return false;
             }
-        } else {
-            if (!bit) {
-                result = false;
-            }
+            return true;
         }
-        return result;
+        if (bit) {
+            return true;
+        }
+        return false;
     }
 
     // void SetEndInverted(bool inverted) {}
