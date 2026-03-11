@@ -485,18 +485,18 @@ CameraMover::CameraMover(int view_id, CameraMoverTypes type)
     : mWPos(0.025f) {
     mCollider = WCollider::Create(0, WCollider::kColliderShape_Sphere, 0x1C, 0);
     Type = type;
-    RenderDash = 0;
-    ViewID = view_id;
     Enabled = 0;
-    pView = nullptr;
-    pCamera = nullptr;
+    ViewID = view_id;
     fAccumulatedClearance = 0.0f;
     fAccumulatedAdjust = 0.0f;
     fSavedAdjust = 0.0f;
-    vSavedForward.z = 0.0f;
-    vSavedForward.x = 0.0f;
     vSavedForward.y = 0.0f;
+    vSavedForward.x = 0.0f;
+    vSavedForward.z = 0.0f;
     if (view_id == -1) {
+        RenderDash = 0;
+        pView = nullptr;
+        pCamera = nullptr;
     } else {
         pView = eGetView(view_id, false);
         pCamera = pView->GetCamera();
@@ -570,7 +570,8 @@ bool CameraMover::IsSomethingInBetween(const UMath::Vector4 &start, const UMath:
     seg[1] = end;
     seg[0].y += 0.1f;
     seg[1].y += 0.1f;
-    return collision_mgr.CheckHitWorld(seg, cInfo, 3) != 0;
+    collision_mgr.CheckHitWorld(seg, cInfo, 3);
+    return cInfo.HitSomething();
 }
 
 bool CameraMover::IsSomethingInBetween(const bVector3 *start, const bVector3 *end) {
@@ -699,17 +700,15 @@ void CameraMover::HandheldNoise(bMatrix4 *world_to_camera, float f_scale, bool u
         return;
     }
 
-    bVector4 v_frequency = CameraNoiseHandheldFrequency;
-    bVector4 v_magnitude = CameraNoiseHandheldAmplitude;
-
-    v_magnitude.x *= f_scale;
-    v_magnitude.y *= f_scale;
-    v_magnitude.z *= f_scale;
-    v_magnitude.w *= f_scale;
+    bVector4 v_frequency;
+    bVector4 v_magnitude;
+    bScale(&v_frequency, &CameraNoiseHandheldFrequency, 1.0f);
+    bScale(&v_magnitude, &CameraNoiseHandheldAmplitude, f_scale);
 
     pCamera->SetNoiseFrequency1(&v_frequency);
     pCamera->SetNoiseAmplitude1(&v_magnitude);
-    pCamera->ApplyNoise(world_to_camera, useWorldTimer ? WorldTimer.GetSeconds() : RealTimer.GetSeconds(), 1.0f);
+    float time = useWorldTimer ? WorldTimer.GetSeconds() : RealTimer.GetSeconds();
+    pCamera->ApplyNoise(world_to_camera, time, 1.0f);
 }
 
 void CameraMover::ChopperNoise(bMatrix4 *world_to_camera, float f_scale, bool useWorldTimer) {

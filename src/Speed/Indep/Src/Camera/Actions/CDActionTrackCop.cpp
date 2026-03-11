@@ -148,11 +148,13 @@ void CDActionTrackCop::OnCarDetached() {
 }
 
 void CDActionTrackCop::AquireCar() {
+    ISimable *isimable;
+
     if (mPlayer == nullptr) {
         return;
     }
-    ISimable *isimable = mPlayer->GetSimable();
-    if (!ComparePtr(isimable, mVehicle)) {
+
+    if (!ComparePtr(mPlayer->GetSimable(), mVehicle)) {
         if (mVehicle != nullptr) {
             Detach(mVehicle);
             mVehicle = nullptr;
@@ -165,15 +167,16 @@ void CDActionTrackCop::AquireCar() {
     if (isimable != nullptr) {
         mTarget.Set(isimable->GetWorldID());
         if (mTarget.IsValid()) {
-            isimable->QueryInterface(&mVehicle);
-            if (mVehicle != nullptr) {
+            if (isimable->QueryInterface(&mVehicle)) {
                 Attach(mVehicle);
                 const char *model_str = mVehicle->GetVehicleAttributes().MODEL().GetString();
+                if (model_str == nullptr) {
+                    model_str = "";
+                }
                 mAnchor->SetModel(bStringHash(model_str));
                 mAnchor->SetWorldID(mTarget.GetWorldID());
-                ITransmission *itrans = nullptr;
-                mVehicle->QueryInterface(&itrans);
-                if (itrans != nullptr) {
+                ITransmission *itrans;
+                if (mVehicle->QueryInterface(&itrans)) {
                     mAnchor->SetTopSpeed(itrans->GetMaxSpeedometer());
                 }
             }
