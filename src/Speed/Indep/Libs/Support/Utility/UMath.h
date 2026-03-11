@@ -326,6 +326,10 @@ inline void UnitCross(const Vector3 &a, const Vector3 &b, Vector3 &r) {
 }
 #endif
 
+float VU0_v4length(const Vector4 &a);
+void VU0_v4scale(const Vector4 &a, float s, Vector4 &r);
+float VU0_v4lengthxyz(const Vector4 &a);
+
 inline float Normalize(Vector3 &r) {
     float m = VU0_v3length(r);
     if (m != 0.0f) {

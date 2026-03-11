@@ -397,6 +397,7 @@ class WRoadNav {
     }
 
     void ChangeLanes(float newOffset, float dist);
+    bool IncLane(int direction);
     bool UpdateLaneChange(float distance);
     void InitAtPath(const UMath::Vector3 &position, bool forceCenterLane);
     int FindClosestOnPath(const UMath::Vector3 &position, UMath::Vector3 *found_position, UMath::Vector3 *found_direction, unsigned short *found_segment, float *found_interval) const;

@@ -138,6 +138,12 @@ struct WRoadProfile {
         int lane_number = GetLaneNumber(lane, inverted);
         return mLanes[lane_number].GetWidth();
     }
+    float GetRawLaneOffset(int lane) const {
+        return mLanes[lane].GetOffset();
+    }
+    float GetRawLaneWidth(int lane) const {
+        return mLanes[lane].GetWidth();
+    }
     float GetRelativeLaneOffset(int lane, bool inverted) const {
         int real_middle = GetMiddleZone(inverted);
         float offset = GetLaneOffset(lane, inverted);

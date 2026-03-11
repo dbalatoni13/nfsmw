@@ -621,6 +621,10 @@ inline float VU0_v4lengthxyz(const UMath::Vector4 &a) {
     return VU0_sqrt(VU0_v4lengthsquarexyz(a));
 }
 
+inline float VU0_v4length(const UMath::Vector4 &a) {
+    return VU0_sqrt(VU0_v4lengthsquare(a));
+}
+
 inline void VU0_v3unit(const UMath::Vector3 &a, UMath::Vector3 &result) {
 #ifdef EA_PLATFORM_PLAYSTATION2
     u_long128 _t0;
