@@ -181,13 +181,13 @@ python tools/decomp-status.py --unit main/Path/To/TU
 Commit whenever the match percentage increases (e.g. you matched a new function). Use this format for the commit message:
 
 ```
-n%: short description of what was matched or changed
+n.n%: short description of what was matched or changed
 ```
 
 Examples:
-- `42%: match UpdateCamera`
-- `78%: match PlayerController constructor and destructor`
-- `100%: full match for zAnim`
+- `42.1%: match UpdateCamera`
+- `78.5%: match PlayerController constructor and destructor`
+- `100.0%: full match for zAnim`
 
 Do not batch up multiple percentage milestones into one commit — commit as each improvement lands.
 
@@ -323,4 +323,3 @@ TU: <translation-unit-name> | Function: <FunctionName>
 ```
 
 <!-- Add new entries below this line -->
-
