@@ -103,7 +103,7 @@ private:
 
 public:
     FEStatWidget(bool enabled);
-    ~FEStatWidget() override;
+    ~FEStatWidget() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void CheckMouse(const char* parent_pkg, const float mouse_x, const float mouse_y) override;
     void Draw() override;
@@ -150,7 +150,7 @@ private:
 
 public:
     FEToggleWidget(bool enabled);
-    ~FEToggleWidget() override;
+    ~FEToggleWidget() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void CheckMouse(const char* parent_pkg, const float mouse_x, const float mouse_y) override;
     void Draw() override;

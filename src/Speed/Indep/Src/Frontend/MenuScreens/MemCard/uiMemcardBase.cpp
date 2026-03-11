@@ -450,11 +450,13 @@ void UIMemcardBase::ShowMessage(const wchar_t* msg, unsigned int nOptions,
     }
     SetScreenVisible(true, nOptions);
     cFEng* pFEng = cFEng::Get();
+    const char* hashStr;
     if (nOptions == 0) {
-        pFEng->QueuePackageMessage(FEHashUpper("SHOW LOADER"), GetPackageName(), nullptr);
+        hashStr = "SHOW LOADER";
     } else {
-        pFEng->QueuePackageMessage(FEHashUpper("HIDE LOADER"), GetPackageName(), nullptr);
+        hashStr = "HIDE LOADER";
     }
+    pFEng->QueuePackageMessage(FEHashUpper(hashStr), GetPackageName(), nullptr);
 }
 
 void UIMemcardBase::ActivateChild() {
