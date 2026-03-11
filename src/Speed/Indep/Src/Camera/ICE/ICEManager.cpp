@@ -1004,26 +1004,40 @@ static void ICEGetPlayerCarTransform(ICE::Matrix4 *mCarToWorld) {
 
 int LoaderICECameras(bChunk *pChunk) {
     unsigned int id = pChunk->GetID();
-    if (id == 0x0003B211) {
-        TheICEManager.LoadCameraShakes(pChunk);
-        return 1;
-    } else if (id >= 0x8003B200 && id <= 0x8003B203) {
+    if (id != 0x0003B211) {
+        if (id < 0x0003B211) {
+            return 0;
+        }
+        if (id > 0x8003B203) {
+            return 0;
+        }
+        if (id < 0x8003B200) {
+            return 0;
+        }
         TheICEManager.LoadCameraSet(pChunk);
         return 1;
     }
-    return 0;
+    TheICEManager.LoadCameraShakes(pChunk);
+    return 1;
 }
 
 int UnloaderICECameras(bChunk *pChunk) {
     unsigned int id = pChunk->GetID();
-    if (id == 0x0003B211) {
-        TheICEManager.UnloadCameraShakes(pChunk);
-        return 1;
-    } else if (id >= 0x8003B200 && id <= 0x8003B203) {
+    if (id != 0x0003B211) {
+        if (id < 0x0003B211) {
+            return 0;
+        }
+        if (id > 0x8003B203) {
+            return 0;
+        }
+        if (id < 0x8003B200) {
+            return 0;
+        }
         TheICEManager.UnloadCameraSet(pChunk);
         return 1;
     }
-    return 0;
+    TheICEManager.UnloadCameraShakes(pChunk);
+    return 1;
 }
 
 namespace ICE {

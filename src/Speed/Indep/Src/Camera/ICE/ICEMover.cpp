@@ -461,9 +461,9 @@ void ICEMover::DutchCubicInit(ICE::Cubic1D *pDutch) {
 }
 
 void ICEMover::FovCubicInit(ICE::Cubic1D *pFov) {
-    unsigned short fov_velocity_angle = GetCamera()->GetVelocityFov();
     unsigned short fov_angle = GetCamera()->GetFov();
-    float fFov = static_cast<float>(static_cast<int>(fov_velocity_angle)) * (1.0f / 30.0f) + static_cast<float>(static_cast<int>(fov_angle));
+    unsigned short fov_velocity_angle = GetCamera()->GetVelocityFov();
+    float fFov = static_cast<float>(static_cast<int>(fov_angle)) + static_cast<float>(static_cast<int>(fov_velocity_angle)) * (1.0f / 30.0f);
     float fFovVel = static_cast<float>(static_cast<int>(fov_velocity_angle)) * pFov->duration;
 
     pFov->SetVal(fFov);
