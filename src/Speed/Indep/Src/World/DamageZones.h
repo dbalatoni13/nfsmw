@@ -5,7 +5,7 @@
 #pragma once
 #endif
 
-class UCrc32;
+struct UCrc32;
 
 namespace Attrib {
 class StringKey;

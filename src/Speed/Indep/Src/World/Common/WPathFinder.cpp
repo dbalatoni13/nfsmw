@@ -184,12 +184,6 @@ AStarNode::AStarNode(AStarNode *parent, const WRoadNode *road_node, int segment,
       fActualCost(static_cast<unsigned short>(static_cast<int>(actual_cost / ASTAR_METRIC_SCALE + 0.5f))),
       fEstimatedCost(static_cast<unsigned short>(static_cast<int>(estimated_cost / ASTAR_METRIC_SCALE + 0.5f))) {}
 
-// TODO: implement properly
-float AStarSearch::Service(float time_limit_ms) {
-    UTL::Std::set<unsigned short, _type_set> visited;
-    return 0.0f;
-}
-
 AStarNode *AStarNode::GetParent() {
     if (nParentSlot < 0) {
         return nullptr;
