@@ -722,9 +722,8 @@ void CAnimScene::AnimatedCars_SetMainAndWheels(int current_car, CAnimCtrl *main_
     bMulMatrix(&animated_car_matrix, &mSceneTranslationMatrix, &animated_car_matrix);
     bConvertToBond(animated_car_matrix, animated_car_matrix);
 
-    WCollisionMgr collisionMgr(0, 3);
     float ground_elevation = 0.0f;
-    bool point_valid = collisionMgr.GetWorldHeightAtPointRigorous(
+    bool point_valid = WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(
         *reinterpret_cast< UMath::Vector3 * >(&animated_car_matrix.v3), ground_elevation, nullptr);
 
     if (point_valid) {
