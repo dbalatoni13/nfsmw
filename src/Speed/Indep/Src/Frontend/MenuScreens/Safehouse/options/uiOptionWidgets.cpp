@@ -684,7 +684,7 @@ void COConfig::Act(const char* parent_pkg, unsigned int data) {
     int player = GetPlayerToEditForOptions();
     int config = static_cast<int>(FEDatabase->GetPlayerSettings(player)->Config);
     player = GetPlayerToEditForOptions();
-    bool isAnalogSwiched = FEDatabase->GetPlayerSettings(player)->DriveWithAnalog;
+    int isAnalogSwiched = FEDatabase->GetPlayerSettings(player)->DriveWithAnalog;
     if (UIOptionsController::isWheelConfig == 0) {
         if (data == 0x9120409E) {
             config--;

@@ -14,9 +14,9 @@ struct PlayerSettings;
 struct UIOptionsScreen : public UIWidgetMenu {
     static int PlayerToEdit;
 
-    bool mCalledFromPauseMenu;                    // offset 0x138, size 0x1
-    bool NeedsColorCal;                           // offset 0x13C, size 0x1
-    bool mInitialAutoSaveValue;                   // offset 0x140, size 0x1
+    int mCalledFromPauseMenu;                     // offset 0x138, size 0x1
+    int NeedsColorCal;                            // offset 0x13C, size 0x1
+    int mInitialAutoSaveValue;                    // offset 0x140, size 0x1
     FEToggleWidget* speakeroption;                // offset 0x144, size 0x4
     FESliderWidget* volumeoption;                 // offset 0x148, size 0x4
     AudioSettings* OriginalAudioSettings;         // offset 0x14C, size 0x4
