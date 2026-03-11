@@ -123,6 +123,10 @@ inline Vector2 Vector2Make(float x, float y) {
     return c;
 }
 
+inline float Cross(const Vector2 &a, const Vector2 &b) {
+    return a.x * b.y - a.y * b.x;
+}
+
 inline UMath::Vector3 Vector3Make(float x, float y, float z) {
     Vector3 c;
 

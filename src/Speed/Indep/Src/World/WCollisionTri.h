@@ -78,6 +78,15 @@ struct WCollisionTriList : public WCollisionVector<WCollisionTriBlock *> {
         clear();
         mCurrBlock = nullptr;
     }
+    inline void add_tri(const WCollisionTri &tri) {
+        if (mCurrBlock == nullptr || mCurrBlock->size() == mCurrBlock->capacity()) {
+            mCurrBlock = new WCollisionTriBlock();
+            mCurrBlock->reserve(0x15);
+            push_back(mCurrBlock);
+        }
+        mCurrBlock->push_back(tri);
+    }
+
     WCollisionTriBlock *mCurrBlock; // offset 0x10, size 0x4
 };
 

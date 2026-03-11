@@ -11,6 +11,13 @@
 #include "Speed/Indep/Src/Physics/Dynamics/Collision.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+struct WCollisionPackedVert {
+    short x;
+    short y;
+    short z;
+    CollisionSurface surface;
+};
+
 struct WSurface : CollisionSurface {
     static void InitSystem();
 
@@ -21,6 +28,10 @@ struct WSurface : CollisionSurface {
     WSurface(unsigned char surface, unsigned char flags) {
         fSurface = surface;
         fFlags = flags;
+    }
+    WSurface(const CollisionSurface &surface) {
+        fSurface = surface.fSurface;
+        fFlags = surface.fFlags;
     }
 
     unsigned int Surface() const {
@@ -37,6 +48,36 @@ struct WSurface : CollisionSurface {
 };
 
 struct WCollisionBarrier;
+struct WCollisionTri;
+
+struct WCollisionStripSphere {
+    // total size: 0x10
+    unsigned int Offset() const {
+        return static_cast<unsigned int>(fOffset) + 0x10;
+    }
+
+    UMath::Vector3 fPos;         // offset 0x0, size 0xC
+    unsigned short fRadius;      // offset 0xC, size 0x2
+    unsigned short fOffset;      // offset 0xE, size 0x2
+};
+
+struct WCollisionStrip {
+    // total size: 0x1
+    const WCollisionPackedVert *Verts() const {
+        return reinterpret_cast<const WCollisionPackedVert *>(this);
+    }
+
+    unsigned int NumVerts() const {
+        const WCollisionPackedVert *v = Verts();
+        return *reinterpret_cast<const unsigned short *>(&v[0].surface);
+    }
+
+    unsigned int NumTris() const {
+        return NumVerts() - 2;
+    }
+
+    void MakeFace(unsigned int ind, const UMath::Vector3 &cp, WCollisionTri &retFace) const;
+};
 
 struct WCollisionArticle {
     // total size: 0x10
@@ -50,6 +91,11 @@ struct WCollisionArticle {
     }
 
     inline const WCollisionBarrier *GetBarrier(unsigned int ind) const;
+
+    const WCollisionStripSphere *GetStripSphere(unsigned int ind) const {
+        const char *dataStart = reinterpret_cast<const char *>(this) + 0x10;
+        return reinterpret_cast<const WCollisionStripSphere *>(dataStart + ind * sizeof(WCollisionStripSphere));
+    }
 
     unsigned short fNumStrips;         // offset 0x0, size 0x2
     unsigned short fStripsSize;        // offset 0x2, size 0x2

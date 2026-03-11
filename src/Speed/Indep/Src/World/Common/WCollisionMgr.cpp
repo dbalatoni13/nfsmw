@@ -6,6 +6,22 @@
 
 #include <float.h>
 
+inline void WCollisionStrip::MakeFace(unsigned int ind, const UMath::Vector3 &cp, WCollisionTri &retFace) const {
+    const WCollisionPackedVert *v = Verts();
+    retFace.fPt0.x = static_cast<float>(v[ind].x) * (1.0f / 128.0f) + cp.x;
+    retFace.fPt0.y = static_cast<float>(v[ind].y) * (1.0f / 128.0f) + cp.y;
+    retFace.fPt0.z = static_cast<float>(v[ind].z) * (1.0f / 128.0f) + cp.z;
+    retFace.fSurfaceRef = nullptr;
+    retFace.fPt1.x = static_cast<float>(v[ind + 1].x) * (1.0f / 128.0f) + cp.x;
+    retFace.fPt1.y = static_cast<float>(v[ind + 1].y) * (1.0f / 128.0f) + cp.y;
+    retFace.fPt1.z = static_cast<float>(v[ind + 1].z) * (1.0f / 128.0f) + cp.z;
+    retFace.fFlags = 0;
+    retFace.fPt2.x = static_cast<float>(v[ind + 2].x) * (1.0f / 128.0f) + cp.x;
+    retFace.fPt2.y = static_cast<float>(v[ind + 2].y) * (1.0f / 128.0f) + cp.y;
+    retFace.fPt2.z = static_cast<float>(v[ind + 2].z) * (1.0f / 128.0f) + cp.z;
+    retFace.fSurface = WSurface(v[ind + 2].surface);
+}
+
 void OrthoInverse(UMath::Matrix4 &m);
 
 inline void NearPtLinePerSegXZ(const UMath::Vector3 &p0, const UMath::Vector3 &p1, float &invDen, UMath::Vector3 &diffVec) {
@@ -584,4 +600,140 @@ bool WCollisionMgr::GetBarrierNormal(const WCollisionInstanceCacheList &instList
         }
     }
     return cInfo.HitSomething();
+}
+
+struct AABB {
+    bVector2 mMin;
+    bVector2 mMax;
+
+    AABB(const UMath::Vector3 &pt, float radius) {
+        mMin.x = pt.x - radius;
+        mMin.y = pt.z - radius;
+        mMax.x = pt.x + radius;
+        mMax.y = pt.z + radius;
+    }
+
+    AABB(const UMath::Vector3 &pt1, const UMath::Vector3 &pt2, const UMath::Vector3 &pt3) {
+        mMin.x = bMin(bMin(pt1.x, pt2.x), pt3.x);
+        mMin.y = bMin(bMin(pt1.z, pt2.z), pt3.z);
+        mMax.x = bMax(bMax(pt1.x, pt2.x), pt3.x);
+        mMax.y = bMax(bMax(pt1.z, pt2.z), pt3.z);
+    }
+
+    bool Overlap(const AABB &test) {
+        if (mMax.x < test.mMin.x || mMax.y < test.mMin.y || test.mMax.x < mMin.x) {
+            return false;
+        }
+        return mMin.y <= test.mMax.y;
+    }
+};
+
+inline float PTDir(const UMath::Vector3 &vert, const UMath::Vector3 &p0, const UMath::Vector3 &p1) {
+    float x0 = vert.x - p0.x;
+    float z0 = vert.z - p0.z;
+    float x1 = p1.x - p0.x;
+    float z1 = p1.z - p0.z;
+    return x1 * z0 - x0 * z1;
+}
+
+inline float PtDir(const UMath::Vector3 &p1, const UMath::Vector3 &p2, const UMath::Vector3 &p3) {
+    return (p2.x - p3.x) * (p1.z - p3.z) - (p1.x - p3.x) * (p2.z - p3.z);
+}
+
+inline float XZDistSq(const UMath::Vector3 &p0, const UMath::Vector3 &p1) {
+    return (p0.x - p1.x) * (p0.x - p1.x) + (p0.z - p1.z) * (p0.z - p1.z);
+}
+
+void WCollisionMgr::GetTriList(const WCollisionInstanceCacheList &instList, const UMath::Vector3 &pt, float radius, WCollisionTriList &triList) {
+    float radiusSq = radius * radius;
+
+    for (const WCollisionInstance *const *iIter = instList.begin(); iIter != instList.end(); ++iIter) {
+        const WCollisionInstance &cInst = **iIter;
+        const WCollisionArticle *cArt = cInst.fCollisionArticle;
+        if (cArt != nullptr) {
+            UMath::Vector3 ipt;
+            UMath::Vector3 tpt;
+            UMath::Matrix4 invMat;
+
+            ipt = pt;
+            cInst.MakeMatrix(invMat, true);
+            UMath::RotateTranslate(ipt, invMat, tpt);
+
+            AABB regionAABB(tpt, radius);
+
+            const WCollisionStripSphere *sp = cArt->GetStripSphere(0);
+            for (int i = 0; i < cArt->fNumStrips; ++i) {
+                UMath::Vector3 diffVec;
+                UMath::Sub(sp->fPos, tpt, diffVec);
+
+                float spRadius = static_cast<float>(sp->fRadius) * (1.0f / 16.0f) + radius;
+                float dSq = diffVec.x * diffVec.x + diffVec.z * diffVec.z;
+                float tempRadSum = spRadius;
+                if (dSq < tempRadSum * tempRadSum) {
+                    const WCollisionStrip *strip = reinterpret_cast<const WCollisionStrip *>(
+                        reinterpret_cast<const char *>(cArt) + sp->Offset());
+                    int numTris = strip->NumTris();
+                    WCollisionTri face;
+                    UMath::Vector3 off;
+
+                    UMath::Sub(sp->fPos, UMath::Vector4To3(invMat.v3), off);
+
+                    strip->MakeFace(0, off, face);
+
+                    for (int i = 0; i < numTris; ++i) {
+                        AABB faceAABB(face.fPt0, face.fPt1, face.fPt2);
+                        if (faceAABB.Overlap(regionAABB)) {
+                            UMath::Vector3 nearPt;
+                            float dir = PTDir(face.fPt1, face.fPt0, face.fPt2);
+                            float side;
+
+                            side = PtDir(tpt, face.fPt0, face.fPt1);
+                            if (!(side * dir > 0.0f)) {
+                                WWorldMath::NearestPointLine2D3(tpt, face.fPt0, face.fPt1, nearPt);
+                                if (!(side * dir > 0.0f)) {
+                                    if (XZDistSq(tpt, nearPt) >= radiusSq) {
+                                        goto next_tri;
+                                    }
+                                }
+                            }
+
+                            side = PtDir(tpt, face.fPt1, face.fPt2);
+                            if (!(side * dir > 0.0f)) {
+                                WWorldMath::NearestPointLine2D3(tpt, face.fPt1, face.fPt2, nearPt);
+                                if (!(side * dir > 0.0f)) {
+                                    if (XZDistSq(tpt, nearPt) >= radiusSq) {
+                                        goto next_tri;
+                                    }
+                                }
+                            }
+
+                            side = PtDir(tpt, face.fPt2, face.fPt0);
+                            if (!(side * dir > 0.0f)) {
+                                WWorldMath::NearestPointLine2D3(tpt, face.fPt2, face.fPt0, nearPt);
+                                if (!(side * dir > 0.0f)) {
+                                    if (XZDistSq(tpt, nearPt) >= radiusSq) {
+                                        goto next_tri;
+                                    }
+                                }
+                            }
+
+                            face.fSurfaceRef = reinterpret_cast<const SimSurface *>(static_cast<const void *>(cArt->GetSurface(face.fSurface.Surface())));
+                            triList.add_tri(face);
+                        }
+                    next_tri:
+                        if (i + 1 < numTris) {
+                            face.fPt0 = face.fPt1;
+                            face.fPt1 = face.fPt2;
+                            const WCollisionPackedVert *v = strip->Verts();
+                            face.fPt2.x = static_cast<float>(v[i + 3].x) * (1.0f / 128.0f) + off.x;
+                            face.fPt2.y = static_cast<float>(v[i + 3].y) * (1.0f / 128.0f) + off.y;
+                            face.fPt2.z = static_cast<float>(v[i + 3].z) * (1.0f / 128.0f) + off.z;
+                            face.fSurface = WSurface(v[i + 3].surface);
+                        }
+                    }
+                }
+                sp = cArt->GetStripSphere(i + 1);
+            }
+        }
+    }
 }

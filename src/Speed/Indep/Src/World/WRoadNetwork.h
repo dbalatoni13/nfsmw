@@ -204,6 +204,7 @@ class WRoadNav {
 
     void InitAtPoint(const UMath::Vector3 &pos, const UMath::Vector3 &dir, bool forceCenterLane, float dirWeight);
     void InitFromOtherNav(WRoadNav *other_nav, bool flip_direction);
+    void InitLaneOffset(const UMath::Vector3 &vehicle_pos);
     void InitAtSegment(short segInd, char laneInd, float timeStep);
     void InitAtSegment(short segInd, float timeStep, const UMath::Vector3 &pos, const UMath::Vector3 &dir, bool forceCenterLane);
     void InitAtSegment(short segInd, const UMath::Vector3 &pos, const UMath::Vector3 &dir, bool forceCenterLane);

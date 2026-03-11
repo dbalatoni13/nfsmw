@@ -43,19 +43,19 @@ static const int selectable_lanes[8] = {
 void WRoadNetwork::Init() {
     if (fgRoadNetwork == nullptr) {
         fgRoadNetwork = new WRoadNetwork();
+        fValidTrafficRoads = true;
         fValid = false;
         fValidRaceFilter = false;
-        fValidTrafficRoads = true;
-        fNumNodes = 0;
-        fNumSegments = 0;
-        fNumIntersections = 0;
         fNumRoads = 0;
-        nRoadMemoryUsage = 0;
-        nNodeMemoryUsage = 0;
-        nProfileMemoryUsage = 0;
-        nSegmentMemoryUsage = 0;
-        nIntersectionMemoryUsage = 0;
+        fNumIntersections = 0;
+        fNumSegments = 0;
+        fNumNodes = 0;
         nTotalMemoryUsage = 0;
+        nIntersectionMemoryUsage = 0;
+        nSegmentMemoryUsage = 0;
+        nProfileMemoryUsage = 0;
+        nNodeMemoryUsage = 0;
+        nRoadMemoryUsage = 0;
 
         if (WWorld::Get().GetMapGroup()) {
             const UGroup *networkGroup = WWorld::Get().GetMapGroup()->GroupLocate('RN', 'gp');
@@ -642,7 +642,7 @@ void WRoadNetwork::AddRaceSegments(WRoadNav *road_nav) {
     int num_segments = road_nav->GetNumPathSegments();
     for (int i = 0; i < num_segments; i++) {
         GetSegmentNonConst(road_nav->GetPathSegment(i))->SetInRace(true);
-        if (i + 1 < num_segments) {
+        if (i < num_segments - 1) {
             FlagSegmentRaceDirection(road_nav->GetPathSegment(i), road_nav->GetPathSegment(i + 1));
         }
     }
@@ -1212,14 +1212,14 @@ int WRoadNav::FetchAvoidables(IBody **avoidables, const int listsize) const {
 void WRoadNetwork::GetPointAndVecOnSegment(const WRoadSegment &segment, float d, UMath::Vector3 &point, UMath::Vector3 &vec) {
     WRoadNetwork &roadNetwork = Get();
     roadNetwork.GetPointOnSegment(segment, d, point);
-    if (!segment.IsCurved()) {
-        roadNetwork.GetSegmentForwardVector(segment, vec);
-    } else {
+    if (segment.IsCurved()) {
         static USpline roadSpline;
         roadNetwork.BuildSegmentSpline(segment, roadSpline);
         UMath::Vector4 tangent;
         roadSpline.EvaluateTangent(d, tangent);
         vec = UMath::Vector4To3(tangent);
+    } else {
+        roadNetwork.GetSegmentForwardVector(segment, vec);
     }
 }
 
@@ -1688,4 +1688,267 @@ void WRoadNav::InitAtSegment(short segInd, const UMath::Vector3 &pos, const UMat
         FindClosestOnSpline(pos, fPosition, timeStep, 0.25f, static_cast<int>(segment->fIndex));
     }
     InitAtSegment(segInd, timeStep, pos, dir, forceCenterLane);
+}
+
+void WRoadNav::InitLaneOffset(const UMath::Vector3 &vehicle_pos) {
+    WRoadNetwork &roadNetwork = WRoadNetwork::Get();
+    const WRoadSegment *segment = roadNetwork.GetSegment(GetSegmentInd());
+    UMath::Vector3 nav_forward;
+    UMath::Unit(GetForwardVector(), nav_forward);
+    const UMath::Vector3 &nav_position = GetPosition();
+    UMath::Vector3 nav_to_vehicle = UVector3(vehicle_pos) - nav_position;
+    UMath::Vector2 nav_forward_2d = UMath::Vector2Make(nav_forward.x, nav_forward.z);
+    UMath::Vector2 nav_to_vehicle_2d = UMath::Vector2Make(nav_to_vehicle.x, nav_to_vehicle.z);
+    float current_offset = UMath::Cross(nav_forward_2d, nav_to_vehicle_2d);
+    SetStartEndPos(*segment, current_offset);
+    SetLaneOffset(current_offset);
+
+    if (fNavType != kTypeTraffic) return;
+
+    {
+        bool forward = GetNodeInd() == 1;
+        int start = forward ? 0 : 1;
+        int end = forward ? 1 : 0;
+        bool end_inverted = segment->IsProfileInverted(end);
+        bool start_inverted = segment->IsProfileInverted(start);
+        const WRoadProfile *end_profile = roadNetwork.GetSegmentProfile(*segment, end);
+        const WRoadProfile *start_profile = roadNetwork.GetSegmentProfile(*segment, start);
+        int num_start_traffic_lanes = start_profile->GetNumTrafficLanes(forward, start_inverted);
+        int num_end_traffic_lanes = end_profile->GetNumTrafficLanes(forward, end_inverted);
+        int num_traffic_lanes = bMin(num_start_traffic_lanes, num_end_traffic_lanes);
+        if (num_traffic_lanes > 0) {
+            bool foundClosest = false;
+            float closestDist;
+            float startOffset;
+            float endOffset;
+            float current_offset = GetLaneOffset();
+            for (int i = 0; i < num_traffic_lanes; i++) {
+                int end_lane = start_profile->GetNthTrafficLaneFromCurb(i, forward, start_inverted);
+                int start_lane = end_profile->GetNthTrafficLaneFromCurb(i, forward, end_inverted);
+                float parameter = GetSegmentTime();
+                float end_offset = start_profile->GetLaneOffset(end_lane, start_inverted);
+                float start_offset = end_profile->GetLaneOffset(start_lane, end_inverted);
+                float lane_offset = UMath::Lerp(start_offset, end_offset, parameter);
+                float distance = bAbs(current_offset - lane_offset);
+                if (!foundClosest || distance < closestDist) {
+                    SetLaneOffset(lane_offset);
+                    SetLaneInd(static_cast< char >(end_lane));
+                    foundClosest = true;
+                    startOffset = end_offset;
+                    closestDist = distance;
+                    endOffset = start_offset;
+                }
+            }
+            SetStartEndPos(*segment, endOffset, startOffset);
+        }
+    }
+
+    SetStartEndControls(*segment);
+    RebuildSplines(segment);
+    EvaluateSplines(segment);
+}
+
+void WRoadNav::InitAtSegment(short segInd, float timeStep, const UMath::Vector3 &pos, const UMath::Vector3 &dir, bool forceCenterLane) {
+    WRoadNetwork &roadNetwork = WRoadNetwork::Get();
+    const WRoadSegment *segment = roadNetwork.GetSegment(segInd);
+    UMath::Vector3 segmentForwardVector;
+
+    fDeadEnd = 0;
+    fValid = true;
+    fSegmentInd = segInd;
+
+    roadNetwork.GetSegmentForwardVector(*segment, segmentForwardVector);
+    float facingDot = UMath::Dot(dir, segmentForwardVector);
+    bool backward;
+    if (bRaceFilter) {
+        backward = !segment->RaceRouteForward();
+    } else {
+        backward = facingDot < 0.0f;
+    }
+
+    if (backward) {
+        fNodeInd = 0;
+        UMath::Scale(segmentForwardVector, -1.0f, fForwardVector);
+        fSegTime = UMath::Abs(1.0f - timeStep);
+        fStartPos = roadNetwork.GetNode(segment->fNodeIndex[1])->fPosition;
+        fEndPos = roadNetwork.GetNode(segment->fNodeIndex[0])->fPosition;
+    } else {
+        fNodeInd = 1;
+        fForwardVector = UMath::Vector3Make(segmentForwardVector.x, segmentForwardVector.y, segmentForwardVector.z);
+        fSegTime = timeStep;
+        fStartPos = roadNetwork.GetNode(segment->fNodeIndex[0])->fPosition;
+        fEndPos = roadNetwork.GetNode(segment->fNodeIndex[1])->fPosition;
+    }
+
+    SetLaneOffset(0.0f);
+    SetStartEndPos(*segment, 0.0f);
+
+    SetStartEndControls(*segment);
+    RebuildSplines(segment);
+    EvaluateSplines(segment);
+
+    if (!forceCenterLane) {
+        InitLaneOffset(pos);
+    }
+    ResetCookieTrail();
+}
+
+int WRoadNav::FindClosestOnPath(const UMath::Vector3 &position, UMath::Vector3 *found_position, UMath::Vector3 *found_direction, unsigned short *found_segment, float *found_interval) const {
+    if (pPathSegments != nullptr && nPathSegments > 0) {
+        float min_dist_sq = 0.0f;
+        int found_segment_index = -1;
+        float best_interval = -1.0f;
+        UMath::Vector3 best_position;
+        WRoadNetwork &roadNetwork = WRoadNetwork::Get();
+        for (int i = 0; i < nPathSegments; i++) {
+            const WRoadSegment *segment = roadNetwork.GetSegment(pPathSegments[i]);
+            UMath::Vector3 intersect;
+            float d = roadNetwork.GetSegmentPointIntersect(*segment, position, intersect, true);
+            float dist_square = UMath::DistanceSquare(intersect, position);
+            if (min_dist_sq > 0.0f && dist_square >= min_dist_sq) continue;
+            best_position = intersect;
+            found_segment_index = i;
+            best_interval = d;
+            min_dist_sq = dist_square;
+        }
+        if (found_segment_index > -1) {
+            unsigned short segment = pPathSegments[found_segment_index];
+            const WRoadNode *this_nodes[2];
+            const WRoadSegment *this_segment = roadNetwork.GetSegment(segment);
+            int tail;
+            unsigned short next_segment;
+            unsigned short prev_segment;
+            USpline roadSpline;
+            UMath::Vector4 tangent;
+
+            roadNetwork.GetSegmentNodes(*this_segment, this_nodes);
+            if (found_segment_index < nPathSegments - 1) {
+                next_segment = pPathSegments[found_segment_index + 1];
+            } else {
+                next_segment = static_cast< unsigned short >(-1);
+            }
+            if (found_segment_index >= 1) {
+                prev_segment = pPathSegments[found_segment_index - 1];
+            } else {
+                prev_segment = static_cast< unsigned short >(-1);
+            }
+
+            roadNetwork.BuildSegmentSpline(*this_segment, roadSpline);
+            roadSpline.EvaluateTangent(best_interval, tangent);
+
+            if (found_direction != nullptr) {
+                *found_direction = UMath::Vector4To3(tangent);
+                if (!this_nodes[0]->IsSegment(next_segment)) {
+                    if (this_nodes[1]->IsSegment(prev_segment)) {
+                        UMath::Negate(*found_direction);
+                    }
+                }
+            }
+
+            if (found_segment != nullptr) {
+                *found_segment = segment;
+            }
+            if (found_position != nullptr) {
+                *found_position = best_position;
+            }
+            if (found_interval != nullptr) {
+                *found_interval = best_interval;
+            }
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void WRoadNav::SetControlPos(const WRoadSegment &segment, bool startControl) {
+    if (!(segment.fFlags & 0x100)) return;
+
+    {
+        bool forward = fNodeInd != 0;
+        bool which_end;
+        if (fNodeInd == 0) {
+            which_end = !startControl;
+        } else {
+            which_end = startControl;
+        }
+        WRoadNetwork &road_network = WRoadNetwork::Get();
+        const UMath::Vector3 &nodePos = road_network.GetNode(segment.fNodeIndex[which_end])->fPosition;
+        const UMath::Vector3 &otherPos = road_network.GetNode(segment.fNodeIndex[which_end ^ 1])->fPosition;
+        UMath::Vector3 handle;
+        UMath::Vector3 controlPos;
+
+        segment.GetControl(which_end, handle);
+        controlPos = UVector3(nodePos) + UVector3(handle);
+
+        float original_distance = UMath::Distance(nodePos, otherPos);
+        original_distance = UMath::Max(original_distance, 0.001f);
+        float new_distance = UMath::Distance(fStartPos, fEndPos);
+        new_distance = UMath::Max(new_distance, 0.001f);
+        float scale = new_distance / original_distance;
+
+        const UMath::Vector3 &nodeRef = startControl ? fEndPos : fStartPos;
+        UMath::Vector3 &controlRef = startControl ? fEndControl : fStartControl;
+        UMath::ScaleAdd(handle, scale, nodeRef, controlRef);
+
+        if (bCookieTrail) {
+            float left_scale = UMath::Distance(fLeftStartPos, fLeftEndPos);
+            left_scale = UMath::Max(left_scale, 0.001f);
+            float right_scale = UMath::Distance(fRightStartPos, fRightEndPos);
+            right_scale = UMath::Max(right_scale, 0.001f);
+
+            const UMath::Vector3 &leftNodeRef = startControl ? fLeftEndPos : fLeftStartPos;
+            UMath::Vector3 &leftControlRef = startControl ? fLeftEndControl : fLeftStartControl;
+            UMath::ScaleAdd(handle, left_scale / original_distance, leftNodeRef, leftControlRef);
+
+            const UMath::Vector3 &rightNodeRef = startControl ? fRightEndPos : fRightStartPos;
+            UMath::Vector3 &rightControlRef = startControl ? fRightEndControl : fRightStartControl;
+            UMath::ScaleAdd(handle, right_scale / original_distance, rightNodeRef, rightControlRef);
+        }
+    }
+}
+
+bool WRoadNav::MakeShortcutDecision(int shortcut_number, unsigned int *cached, unsigned int *allowed) {
+    if (shortcut_number == 0xff) return true;
+
+    if (GetPathType() == kPathPlayer) {
+        return shortcut_number == GetShortcutNumber();
+    }
+    if (GetPathType() != kPathRacer) return true;
+
+    {
+        int mask = 1 << (shortcut_number & 0x3f);
+        GRaceParameters *race_parameters = GRaceStatus::Get().GetRaceParameters();
+        if (cached != nullptr && (mask & *cached) != 0) {
+            bool shortcut_allowed = (mask & *allowed) != 0;
+            return shortcut_allowed;
+        }
+        if (race_parameters != nullptr) {
+            AIVehicle *vehicle = GetVehicle();
+            float skill;
+            if (vehicle == nullptr) {
+                skill = 0.0f;
+            } else {
+                skill = vehicle->GetSkill();
+            }
+            GMarker *marker = race_parameters->GetShortcut(shortcut_number);
+            float min = marker->ShortcutMinChance(0);
+            float max = marker->ShortcutMaxChance(0);
+            if (min > 0.0f) {
+                min = min * 0.01f;
+            }
+            if (max > 0.0f) {
+                max = max * 0.01f;
+            }
+            float chance = skill * (max - min) + min;
+            bool shortcut_allowed = bRandom(1.0f) < chance;
+            if (shortcut_allowed && allowed != nullptr) {
+                *allowed = *allowed | mask;
+            }
+            if (cached != nullptr) {
+                *cached = *cached | mask;
+            }
+            return shortcut_allowed;
+        }
+    }
+    return true;
 }
