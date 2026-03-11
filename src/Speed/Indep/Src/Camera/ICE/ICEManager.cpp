@@ -121,7 +121,7 @@ int ICETrack::GetKeyNumber(float f_param) {
     if (i < 1) {
         return i;
     }
-    if (!(f_param < parameters[i * 33])) {
+    if (parameters[i * 33] <= f_param) {
         return i;
     }
 
@@ -211,10 +211,12 @@ ICEData *ICETrack::GetCameraData(float *p_start, float *p_end, float *p_current)
 }
 
 void ICEShakeData::PlatEndianSwap() {
-    for (int i = 0; i < 3; i++) {
-        bPlatEndianSwap(&q[i]);
-        bPlatEndianSwap(&p[i]);
-    }
+    bPlatEndianSwap(&q[0]);
+    bPlatEndianSwap(&q[1]);
+    bPlatEndianSwap(&q[2]);
+    bPlatEndianSwap(&p[0]);
+    bPlatEndianSwap(&p[1]);
+    bPlatEndianSwap(&p[2]);
 }
 
 void ICEShakeTrack::PlatEndianSwap() {
@@ -330,13 +332,11 @@ ICEShakeTrack *ICEManager::GetShakeTrack(unsigned int shake_type) {
 }
 
 int ICEManager::GetCameraIndex(float f_param, ICETrack *track) {
-    int camera_index = 0;
-
     if (track != 0) {
-        camera_index = track->GetKeyNumber(f_param);
+        return track->GetKeyNumber(f_param);
     }
 
-    return camera_index;
+    return 0;
 }
 
 float ICEManager::GetParameter() {
@@ -417,8 +417,8 @@ void ICEManager::ChooseReplayCamera() {
 
 float ICEManager::GetAnimElevationFixup(ICE::Vector3 *position) {
     float elevation = GetGroundElevation(position);
-    if (elevation != 0.0f) {
-        return fAnimElevation - elevation;
+    if (0.0f < elevation) {
+        return elevation - fAnimElevation;
     }
     return 0.0f;
 }
@@ -429,7 +429,8 @@ void ICEManager::FixAnimElevation(ICE::Vector3 *position) {
 
 void ICEManager::SetGenericCameraToPlay(const char *group_name, const char *track_name) {
     nPlayGenericGroupHash = Attrib::StringHash32(group_name);
-    bStrNCpy(nPlayGenericTrackName, track_name, 14);
+    bStrNCpy(nPlayGenericTrackName, track_name, 13);
+    nPlayGenericTrackName[13] = 0;
 }
 
 ICEData *ICEManager::GetCameraData(unsigned int scene_hash, int camTrack) {
@@ -467,20 +468,20 @@ ICEGroup *ICEManager::GetCameraGroup(ICEContext context, unsigned int handle) {
 
     switch (context) {
     case eDCE_NIS:
-        num_groups = nNisCameras;
         groups = pNisCameras;
+        num_groups = nNisCameras;
         break;
     case eDCE_FMV:
-        num_groups = nFmvCameras;
         groups = pFmvCameras;
+        num_groups = nFmvCameras;
         break;
     case eDCE_REPLAY:
-        num_groups = nReplayCameras;
         groups = pReplayCameras;
+        num_groups = nReplayCameras;
         break;
     case eDCE_GENERIC:
-        num_groups = nGenericCameras;
         groups = pGenericCameras;
+        num_groups = nGenericCameras;
         break;
     default:
         break;
@@ -685,8 +686,12 @@ void ICECompleteEventTags() {
     int key = TheICEManager.GetCameraIndex((fParameter0 + fParameter1) * 0.5f, p_track);
     if (p_track != 0) {
         int keyCount = p_track->GetNumKeys();
-        while (++key < keyCount) {
-            ICE::FireEventTag(key);
+        key++;
+        if (key < keyCount) {
+            do {
+                ICE::FireEventTag(key);
+                key++;
+            } while (key < keyCount);
         }
     }
 }

@@ -2,6 +2,7 @@
 
 struct cFEng {
     static cFEng *Get();
+    static cFEng *mInstance;
     void PushNoControlPackage(const char *name, int priority);
     void PopNoControlPackage(const char *name);
     bool IsPackagePushed(const char *name);
@@ -42,17 +43,17 @@ void ShowOverlay(unsigned char overlay) {
         if ((gOverlay & 0x7f) == 0 || (gOverlay & 0x80) != 0) {
             new ELoadingScreenOff();
             gOverlay = overlay;
-            cFEng::Get()->PushNoControlPackage(GetOverlayName(overlay), 0x67);
+            cFEng::mInstance->PushNoControlPackage(GetOverlayName(overlay), 0x67);
         }
     }
 }
 
 void HideOverlay() {
     if ((gOverlay & 0x7f) != 0) {
-        if (!cFEng::Get()->IsPackagePushed(GetOverlayName(gOverlay & 0x7f))) {
+        if (!cFEng::mInstance->IsPackagePushed(GetOverlayName(gOverlay & 0x7f))) {
             gOverlay = gOverlay | 0x80;
         } else {
-            cFEng::Get()->PopNoControlPackage(GetOverlayName(gOverlay & 0x7f));
+            cFEng::mInstance->PopNoControlPackage(GetOverlayName(gOverlay & 0x7f));
             gOverlay = 0;
         }
     }

@@ -280,12 +280,11 @@ void CDActionDrive::Update(float dT) {
 }
 
 bool CDActionDrive::GetTrafficBasis(UMath::Matrix4 &matrix, UMath::Vector3 &velocity) {
-    IBody *ibody = nullptr;
+    IBody *ibody;
     if (mVehicle == nullptr) {
         return false;
     }
-    mVehicle->QueryInterface(&ibody);
-    if (ibody == nullptr) {
+    if (!mVehicle->QueryInterface(&ibody)) {
         return false;
     }
     ibody->GetTransform(matrix);

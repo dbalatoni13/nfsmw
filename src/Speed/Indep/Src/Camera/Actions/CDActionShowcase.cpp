@@ -111,10 +111,10 @@ CDActionShowcase::CDActionShowcase(CameraAI::Director *director, IPlayer *player
 
 CDActionShowcase::~CDActionShowcase() {
     if (mPlayer) {
-        Detach(mPlayer);
+        mAttachments->Detach(mPlayer);
     }
     if (mVehicle) {
-        Detach(mVehicle);
+        mAttachments->Detach(mVehicle);
     }
     delete mMover;
     delete mAnchor;

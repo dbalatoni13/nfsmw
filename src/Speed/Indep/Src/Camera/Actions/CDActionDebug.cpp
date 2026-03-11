@@ -20,7 +20,7 @@ Attrib::StringKey CDActionDebug::GetNext() const {
 }
 
 CameraAI::Action *CDActionDebug::Construct(CameraAI::Director *director) {
-    return new ("CDActionDebug") CDActionDebug(director);
+    return new (static_cast<const char *>(0)) CDActionDebug(director);
 }
 
 CDActionDebug::CDActionDebug(CameraAI::Director *director)

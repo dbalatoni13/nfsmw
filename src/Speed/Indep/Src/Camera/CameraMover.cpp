@@ -849,8 +849,8 @@ bVector3 *CameraMover::DutchAroundCar(bVector3 *pCarPos, bVector3 *pCarVelocity)
     static bVector3 ret(0.0f, 0.0f, 0.0f);
 
     ret.x = 0.0f;
-    ret.y = 0.0f;
     ret.z = 0.0f;
+    ret.y = 0.0f;
 
     {
         _STL::list<IBody *, UTL::Std::Allocator<IBody *, _type_CameraAIAvoidables> >::const_iterator iter;
@@ -973,70 +973,58 @@ void CameraMover::FovCubicInit(tCubic1D *cubic) {
     cubic->SetdVal(fov_velocity);
 }
 
-void CameraMover::EyeCubicInit(tCubic3D *eye, bMatrix4 *matrix, bVector3 *target) {
-    bVector3 value;
-    bVector4 dval;
-    bScaleAdd(&value, pCamera->GetPosition(), pCamera->GetVelocityPosition(), 1.0f / 30.0f);
+void CameraMover::EyeCubicInit(tCubic3D *pEye, bMatrix4 *pMatrix, bVector3 *pVelocity) {
+    bVector3 vEye;
+    bScaleAdd(&vEye, pCamera->GetPosition(), pCamera->GetVelocityPosition(), 1.0f / 30.0f);
 
-    if (matrix != nullptr) {
-        bMulMatrix(&value, matrix, &value);
+    if (pMatrix != nullptr) {
+        bMulMatrix(&vEye, pMatrix, &vEye);
     }
 
-    eye->SetVal(&value);
+    pEye->SetVal(&vEye);
 
-    dval.x = pCamera->GetVelocityPosition()->x;
-    dval.y = pCamera->GetVelocityPosition()->y;
-    dval.z = pCamera->GetVelocityPosition()->z;
+    bVector3 vEyeRel(*pCamera->GetVelocityPosition());
 
-    if (target != nullptr) {
-        dval.x -= target->x;
-        dval.y -= target->y;
-        dval.z -= target->z;
+    if (pVelocity != nullptr) {
+        bSub(&vEyeRel, &vEyeRel, pVelocity);
     }
 
-    dval.x *= eye->x.duration;
-    dval.y *= eye->x.duration;
-    dval.z *= eye->x.duration;
-    dval.w = 0.0f;
+    bVector4 vEyeVel;
+    bScale(reinterpret_cast<bVector3 *>(&vEyeVel), &vEyeRel, pEye->x.duration);
+    vEyeVel.w = 0.0f;
 
-    if (matrix != nullptr) {
-        bMulMatrix(&dval, matrix, &dval);
+    if (pMatrix != nullptr) {
+        bMulMatrix(&vEyeVel, pMatrix, &vEyeVel);
     }
 
-    eye->SetdVal(reinterpret_cast<bVector3 *>(&dval));
+    pEye->SetdVal(reinterpret_cast<bVector3 *>(&vEyeVel));
 }
 
-void CameraMover::LookCubicInit(tCubic3D *look, bMatrix4 *matrix, bVector3 *target) {
-    bVector3 value;
-    bVector4 dval;
-    bScaleAdd(&value, pCamera->GetTarget(), pCamera->GetVelocityTarget(), 1.0f / 30.0f);
+void CameraMover::LookCubicInit(tCubic3D *pLook, bMatrix4 *pMatrix, bVector3 *pVelocity) {
+    bVector3 vLook;
+    bScaleAdd(&vLook, pCamera->GetTarget(), pCamera->GetVelocityTarget(), 1.0f / 30.0f);
 
-    if (matrix != nullptr) {
-        bMulMatrix(&value, matrix, &value);
+    if (pMatrix != nullptr) {
+        bMulMatrix(&vLook, pMatrix, &vLook);
     }
 
-    look->SetVal(&value);
+    pLook->SetVal(&vLook);
 
-    dval.x = pCamera->GetVelocityTarget()->x;
-    dval.y = pCamera->GetVelocityTarget()->y;
-    dval.z = pCamera->GetVelocityTarget()->z;
+    bVector3 vLookRel(*pCamera->GetVelocityTarget());
 
-    if (target != nullptr) {
-        dval.x -= target->x;
-        dval.y -= target->y;
-        dval.z -= target->z;
+    if (pVelocity != nullptr) {
+        bSub(&vLookRel, &vLookRel, pVelocity);
     }
 
-    dval.x *= look->x.duration;
-    dval.y *= look->x.duration;
-    dval.z *= look->x.duration;
-    dval.w = 0.0f;
+    bVector4 vLookVel;
+    bScale(reinterpret_cast<bVector3 *>(&vLookVel), &vLookRel, pLook->x.duration);
+    vLookVel.w = 0.0f;
 
-    if (matrix != nullptr) {
-        bMulMatrix(&dval, matrix, &dval);
+    if (pMatrix != nullptr) {
+        bMulMatrix(&vLookVel, pMatrix, &vLookVel);
     }
 
-    look->SetdVal(reinterpret_cast<bVector3 *>(&dval));
+    pLook->SetdVal(reinterpret_cast<bVector3 *>(&vLookVel));
 }
 
 void CameraMover::SetEyeLook(tCubic3D *eye, tCubic3D *look, tCubic1D *fov, bMatrix4 *matrix, bVector3 *target) {
@@ -1312,8 +1300,8 @@ Bezier::Bezier()
 
 void Bezier::GetPoint(bVector3 *pPoint, float parameter) {
     if (pControlPoints != nullptr) {
-        bVector4 v;
         bVector4 basis;
+        bVector4 v;
         float t = 1.0f - parameter;
         float t2 = t * t;
 

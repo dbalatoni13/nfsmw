@@ -116,17 +116,46 @@ void SelectCarCameraMover::Update(float dT) {
 }
 
 void SelectCarCameraMover::SetCurrentOrientation(bVector3 &orbit, float roll, float fov, bVector3 &lookAt) {
-    // TODO
+    CurrentCameraData.OrbitVAngle = orbit.x;
+    CurrentCameraData.OrbitHAngle = orbit.y;
+    CurrentCameraData.Radius = orbit.z;
+    CurrentCameraData.RollAngle = roll;
+    CurrentCameraData.FOV = fov;
+    CurrentCameraData.LookAt = lookAt;
 }
 
 void SelectCarCameraMover::SetDesiredOrientation(bVector3 &orbit, float roll, float fov, bVector3 &lookAt, float animSpeed, float damping,
                                                   int periods) {
-    // TODO
+    GoalAnimCameraData = CurrentCameraData;
+    ControlMode = 0;
+    StartAnimCameraData = CurrentCameraData;
+    GoalAnimCameraData.OrbitVAngle = orbit.x;
+    GoalAnimCameraData.OrbitHAngle = orbit.y;
+    GoalAnimCameraData.Radius = orbit.z;
+    GoalAnimCameraData.RollAngle = roll;
+    GoalAnimCameraData.FOV = fov;
+    GoalAnimCameraData.LookAt = lookAt;
+    Damping = damping;
+    Periods = periods;
+    GoalAnimCameraData.OrbitVAngle = FindBestAngleGoal(StartAnimCameraData.OrbitVAngle, GoalAnimCameraData.OrbitVAngle);
+    GoalAnimCameraData.OrbitHAngle = FindBestAngleGoal(StartAnimCameraData.OrbitHAngle, GoalAnimCameraData.OrbitHAngle);
+    GoalAnimCameraData.RollAngle = FindBestAngleGoal(StartAnimCameraData.RollAngle, GoalAnimCameraData.RollAngle);
+    TotalAnimationTime = animSpeed;
+    CurrentAnimationTime = 0.0f;
 }
 
 float SelectCarCameraMover::FindBestAngleGoal(float start, float goal) {
-    // TODO
-    return 0.0f;
+    float normal_h_diff = bAbs(start - goal);
+    float over_h_diff = bAbs(start - (goal + kSelectCarWrapAngle));
+    float under_h_diff = bAbs(start - (goal - kSelectCarWrapAngle));
+
+    if (over_h_diff < normal_h_diff && over_h_diff < under_h_diff) {
+        return goal + kSelectCarWrapAngle;
+    }
+    if (under_h_diff < normal_h_diff && under_h_diff < over_h_diff) {
+        return goal - kSelectCarWrapAngle;
+    }
+    return goal;
 }
 
 void SelectCarCameraMover::CreateCameraMatrix(bMatrix4 *camera_matrix, SelectCarCameraData *camera_data) {

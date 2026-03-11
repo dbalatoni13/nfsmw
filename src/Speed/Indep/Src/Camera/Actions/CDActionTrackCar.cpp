@@ -108,10 +108,10 @@ CDActionTrackCar::CDActionTrackCar(CameraAI::Director *director, IPlayer *player
 
 CDActionTrackCar::~CDActionTrackCar() {
     if (mPlayer) {
-        Detach(mPlayer);
+        mAttachments->Detach(mPlayer);
     }
     if (mVehicle) {
-        Detach(mVehicle);
+        mAttachments->Detach(mVehicle);
     }
     delete mMover;
     delete mAnchor;
@@ -199,12 +199,11 @@ void CDActionTrackCar::Update(float dT) {
 }
 
 bool CDActionTrackCar::GetTrafficBasis(UMath::Matrix4 &matrix, UMath::Vector3 &velocity) {
-    IBody *ibody = nullptr;
+    IBody *ibody;
     if (mVehicle == nullptr) {
         return false;
     }
-    mVehicle->QueryInterface(&ibody);
-    if (ibody == nullptr) {
+    if (!mVehicle->QueryInterface(&ibody)) {
         return false;
     }
     ibody->GetTransform(matrix);

@@ -116,10 +116,10 @@ CDActionTrackCop::CDActionTrackCop(CameraAI::Director *director, IPlayer *player
 
 CDActionTrackCop::~CDActionTrackCop() {
     if (mPlayer) {
-        Detach(mPlayer);
+        mAttachments->Detach(mPlayer);
     }
     if (mVehicle) {
-        Detach(mVehicle);
+        mAttachments->Detach(mVehicle);
     }
     delete mMover;
     delete mAnchor;
@@ -207,12 +207,11 @@ void CDActionTrackCop::Update(float dT) {
 }
 
 bool CDActionTrackCop::GetTrafficBasis(UMath::Matrix4 &matrix, UMath::Vector3 &velocity) {
-    IBody *ibody = nullptr;
+    IBody *ibody;
     if (mVehicle == nullptr) {
         return false;
     }
-    mVehicle->QueryInterface(&ibody);
-    if (ibody == nullptr) {
+    if (!mVehicle->QueryInterface(&ibody)) {
         return false;
     }
     ibody->GetTransform(matrix);

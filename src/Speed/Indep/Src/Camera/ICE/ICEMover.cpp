@@ -44,7 +44,7 @@ float ConvertLensDeltaToFovDelta(float f_lens_mm, float f_lens_slope) {
 }
 
 float ConvertApertureNumberToFStop(float aperture) {
-    static const float kFStops[] = {
+    const float kFStops[] = {
         1.0f,
         1.1224620f,
         1.2599211f,
@@ -260,13 +260,11 @@ float Cubic1D::GetVal(float t) const {
 }
 
 float Cubic1D::GetdVal(float t) const {
-    float value = Coeff[0] * (t * 3.0f) + Coeff[1];
-    return (value + Coeff[1]) * t + Coeff[2];
+    return (Coeff[0] * (t * 3.0f) + (Coeff[1] + Coeff[1])) * t + Coeff[2];
 }
 
 float Cubic1D::GetddVal(float t) const {
-    float value = Coeff[0] * (t * 6.0f) + Coeff[1];
-    return value + Coeff[1];
+    return Coeff[0] * (t * 6.0f) + (Coeff[1] + Coeff[1]);
 }
 
 float Cubic1D::GetValDesired() const {
@@ -317,24 +315,33 @@ void Cubic1D::ClampSecondDerivative(float fMag) {
 }
 
 void Cubic1D::Update(float fSeconds, float fDClamp, float fDDClamp) {
-    if (state == 2) {
-        time = 0.0f;
-
-        if (flags == 0) {
-            state = 1;
-        }
-        if (0.0f < fDClamp) {
-            ClampDerivative(fDClamp);
-        }
-
-        MakeCoeffs();
-
-        if (0.0f < fDDClamp) {
-            ClampSecondDerivative(fDDClamp);
-        }
+    if (state == 1) {
+        goto update;
+    }
+    if (state <= 1) {
+        return;
+    }
+    if (state != 2) {
+        return;
     }
 
-    if (state == 1 || state == 2) {
+    time = 0.0f;
+
+    if (flags == 0) {
+        state = 1;
+    }
+    if (0.0f < fDClamp) {
+        ClampDerivative(fDClamp);
+    }
+
+    MakeCoeffs();
+
+    if (0.0f < fDDClamp) {
+        ClampSecondDerivative(fDDClamp);
+    }
+
+update:
+    {
         float t = 1.0f;
 
         if (0.0f < duration) {
@@ -755,6 +762,8 @@ blend:
 }
 
 unsigned short ICEMover::GetFOV(float f_param) {
+    float result;
+
     if (pICEData == 0) {
         goto blend;
     }
@@ -762,10 +771,14 @@ unsigned short ICEMover::GetFOV(float f_param) {
         goto blend;
     }
 
-    return static_cast<unsigned short>(pFov->GetVal(f_param));
+    result = pFov->GetVal(f_param);
+    goto done;
 
 blend:
-    return static_cast<unsigned short>(pFov->GetVal() * (1.0f - f_param) + pFov->GetValDesired() * f_param);
+    result = pFov->GetVal() * (1.0f - f_param) + pFov->GetValDesired() * f_param;
+
+done:
+    return static_cast<unsigned short>(result);
 }
 
 ICEMover::~ICEMover() {
@@ -794,7 +807,18 @@ ICEMover::~ICEMover() {
 }
 
 void ICEMover::GetEye(ICE::Vector3 *vEye, float f_param) {
-    if (pICEData == 0 || pICEData->bCubicEye == 0) {
+    if (pICEData == 0) {
+        goto blend;
+    }
+    if (pICEData->bCubicEye == 0) {
+        goto blend;
+    }
+
+    pEye->GetVal(vEye, f_param);
+    return;
+
+blend:
+    {
         ICE::Vector3 v0;
         ICE::Vector3 v1;
         pEye->GetVal(&v0);
@@ -803,13 +827,22 @@ void ICEMover::GetEye(ICE::Vector3 *vEye, float f_param) {
         bScale(reinterpret_cast<bVector3 *>(vEye), reinterpret_cast<const bVector3 *>(&v0), inv);
         bScaleAdd(reinterpret_cast<bVector3 *>(vEye), reinterpret_cast<const bVector3 *>(vEye),
                   reinterpret_cast<const bVector3 *>(&v1), f_param);
-    } else {
-        pEye->GetVal(vEye, f_param);
     }
 }
 
 void ICEMover::GetLook(ICE::Vector3 *vLook, float f_param) {
-    if (pICEData == 0 || pICEData->bCubicLook == 0) {
+    if (pICEData == 0) {
+        goto blend;
+    }
+    if (pICEData->bCubicLook == 0) {
+        goto blend;
+    }
+
+    pLook->GetVal(vLook, f_param);
+    return;
+
+blend:
+    {
         ICE::Vector3 v0;
         ICE::Vector3 v1;
         pLook->GetVal(&v0);
@@ -818,8 +851,6 @@ void ICEMover::GetLook(ICE::Vector3 *vLook, float f_param) {
         bScale(reinterpret_cast<bVector3 *>(vLook), reinterpret_cast<const bVector3 *>(&v0), inv);
         bScaleAdd(reinterpret_cast<bVector3 *>(vLook), reinterpret_cast<const bVector3 *>(vLook),
                   reinterpret_cast<const bVector3 *>(&v1), f_param);
-    } else {
-        pLook->GetVal(vLook, f_param);
     }
 }
 

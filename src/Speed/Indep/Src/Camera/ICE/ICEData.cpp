@@ -19,8 +19,8 @@ void ICEData::PlatEndianSwap() {
         bPlatEndianSwap(&fDutch[i]);
         bPlatEndianSwap(&fLens[i]);
         bPlatEndianSwap(&fNearClip[i]);
-        bPlatEndianSwap(&fNoiseAmplitude[i]);
         bPlatEndianSwap(&fFocalDistance[i]);
+        bPlatEndianSwap(&fNoiseAmplitude[i]);
         bPlatEndianSwap(&fNoiseFrequency[i]);
     }
 }

@@ -2,12 +2,14 @@
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/Src/Generated/Messages/MICECameraFinished.h"
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
 #include "Speed/Indep/Src/Interfaces/IBody.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 
 #include <list>
 
@@ -60,9 +62,9 @@ void CameraAI::Director::ReleaseAction() {
 
 void CameraAI::Director::Reset() {
     mIsCinematicMomement = false;
-    mCinematicSlowdownSeconds = 0.0f;
-    mJumpTime = 0.0f;
     mPursuitStartTime = 0.0f;
+    mJumpTime = 0.0f;
+    mCinematicSlowdownSeconds = 0.0f;
     SetAction(Attrib::StringKey("DRIVE"));
     if (mAction != nullptr) {
         mAction->Reset();
@@ -88,10 +90,10 @@ void CameraAI::Director::EndPursuitStart() {
 }
 
 CameraMover *CameraAI::Director::GetMover() {
-    if (mAction == nullptr) {
-        return nullptr;
+    if (mAction != nullptr) {
+        return mAction->GetMover();
     }
-    return mAction->GetMover();
+    return nullptr;
 }
 
 void CameraAI::Director::Update(float dT) {
@@ -233,7 +235,8 @@ void CameraAI::Director::SelectAction() {
 }
 
 void CameraAI::Director::TotaledStart() {
-    mDesiredMode = Attrib::StringKey("TOTALED");
+    Attrib::StringKey key("TOTALED");
+    mDesiredMode = key;
     mJumpTime = 0.0f;
     SetAction(mDesiredMode);
 }
@@ -297,15 +300,17 @@ CameraAI::Director *FindDirector(unsigned int id) {
 }
 
 bool AreMomentCamerasEnabled() {
+    bool splitCheck = false;
     if (FEDatabase->IsSplitScreenMode()) {
-        if (FEDatabase->iNumPlayers == 2) {
-            return false;
-        }
+        splitCheck = (FEDatabase->iNumPlayers == 2);
     }
-    if (!FEDatabase->IsLANMode() && !FEDatabase->IsOnlineMode()) {
-        return FEDatabase->GetGameplaySettings()->JumpCam;
+    if (splitCheck) {
+        return false;
     }
-    return false;
+    if (FEDatabase->IsLANMode() || FEDatabase->IsOnlineMode()) {
+        return false;
+    }
+    return FEDatabase->GetGameplaySettings()->JumpCam;
 }
 
 // --- CameraAI namespace functions ---
@@ -490,23 +495,90 @@ void CameraAI::Shutdown() {
 }
 
 void CameraAI::AddAvoidable(IBody *body) {
-    // TODO
+    Avoidables::iterator iter;
+    for (iter = TheAvoidables->begin(); iter != TheAvoidables->end(); ++iter) {
+        if (*iter == body) {
+            break;
+        }
+    }
+    if (iter == TheAvoidables->end()) {
+        TheAvoidables->push_back(body);
+    }
 }
 
 void CameraAI::RemoveAvoidable(IBody *body) {
-    // TODO
+    Avoidables::iterator iter;
+    for (iter = TheAvoidables->begin(); iter != TheAvoidables->end(); ++iter) {
+        if (*iter == body) {
+            break;
+        }
+    }
+    if (iter != TheAvoidables->end()) {
+        TheAvoidables->erase(iter);
+    }
 }
 
 void CameraAI::StartCinematicSlowdown(EVIEW_ID viewID, float seconds) {
-    // TODO
+    const Director::List &list = Director::GetList();
+    for (Director *const *iter = list.begin(); iter != list.end(); ++iter) {
+        Director *cd = *iter;
+        if (cd->GetViewID() == viewID) {
+            Action *action = cd->GetAction();
+            if (action != nullptr && action->GetName() == Attrib::StringKey("DRIVE")) {
+                cd->SetCinematicSlowdown(seconds);
+            }
+        }
+    }
 }
 
 void CameraAI::MaybeDoTotaledCam(IPlayer *iplayer) {
-    // TODO
+    if (Sim::GetUserMode() != Sim::USER_SINGLE) {
+        return;
+    }
+    const Director::List &list = Director::GetList();
+    for (Director *const *iter = list.begin(); iter != list.end(); ++iter) {
+        Director *cd = *iter;
+        if (cd->GetViewID() == iplayer->GetControllerPort()) {
+            cd->TotaledStart();
+        }
+    }
 }
 
 void CameraAI::MaybeDoPursuitCam(IVehicle *ivehicle) {
-    // TODO
+    if (TheICEManager.IsEditorOn()) {
+        return;
+    }
+    if (!AreMomentCamerasEnabled()) {
+        return;
+    }
+    INIS *nis = UTL::Collections::Singleton<INIS>::Get();
+    if (nis != nullptr) {
+        return;
+    }
+    GRaceParameters *parms = GRaceStatus::Get().GetRaceParameters();
+    if (parms != nullptr) {
+        if (parms->GetIsPursuitRace()) {
+            return;
+        }
+        if (GRaceStatus::Get().GetRaceTimeElapsed() < 5.0f) {
+            return;
+        }
+    }
+    if (ivehicle->GetDriverStyle() == STYLE_DRAG) {
+        return;
+    }
+    ISimable *isimable = ivehicle->GetSimable();
+    if (isimable == nullptr) {
+        return;
+    }
+    Director *cd = FindDirector(isimable->GetWorldID());
+    if (cd == nullptr) {
+        return;
+    }
+    if (gGameBreakerCamera) {
+        return;
+    }
+    cd->PursuitStart();
 }
 
 void CameraAI::MaybeDoJumpCam(ISimable *simable) {
