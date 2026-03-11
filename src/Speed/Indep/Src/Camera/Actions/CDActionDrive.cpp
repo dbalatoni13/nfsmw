@@ -164,8 +164,10 @@ CDActionDrive::~CDActionDrive() {
     if (mVehicle) {
         mAttachments->Detach(mVehicle);
     }
-    delete mRearViewMirrorMover;
-    delete mMover;
+    CameraMover *rvm = mRearViewMirrorMover;
+    delete rvm;
+    CameraMover *m = mMover;
+    delete m;
     delete mAnchor;
     delete mAttachments;
     Sim::Collision::RemoveListener(static_cast<Sim::Collision::IListener *>(this));

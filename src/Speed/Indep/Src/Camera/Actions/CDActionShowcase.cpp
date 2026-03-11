@@ -117,7 +117,8 @@ CDActionShowcase::~CDActionShowcase() {
     if (mVehicle) {
         mAttachments->Detach(mVehicle);
     }
-    delete mMover;
+    CameraMover *m = mMover;
+    delete m;
     delete mAnchor;
     delete mAttachments;
 }

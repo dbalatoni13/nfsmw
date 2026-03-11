@@ -17,10 +17,10 @@ const Attrib::StringKey &CDActionDebugWatchCar::GetName() const {
 }
 
 Attrib::StringKey CDActionDebugWatchCar::GetNext() const {
-    if (CameraDebugWatchCar) {
-        return Attrib::StringKey();
+    if (!CameraDebugWatchCar) {
+        return mPrev;
     }
-    return mPrev;
+    return Attrib::StringKey();
 }
 
 ISimable *CDActionDebugWatchCar::GetSimable() {
@@ -108,7 +108,8 @@ CDActionDebugWatchCar::CDActionDebugWatchCar(CameraAI::Director *director)
 
 CDActionDebugWatchCar::~CDActionDebugWatchCar() {
     ReleaseTarget();
-    delete mMover;
+    CameraMover *m = mMover;
+    delete m;
     delete mAnchor;
 }
 

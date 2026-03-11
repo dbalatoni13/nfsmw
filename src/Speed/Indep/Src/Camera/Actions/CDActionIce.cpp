@@ -18,10 +18,10 @@ const Attrib::StringKey &CDActionIce::GetName() const {
 }
 
 Attrib::StringKey CDActionIce::GetNext() const {
-    if (!mDone) {
-        return Attrib::StringKey("");
+    if (mDone) {
+        return mPrev;
     }
-    return mPrev;
+    return Attrib::StringKey("");
 }
 
 CameraMover *CDActionIce::GetMover() {
@@ -137,7 +137,8 @@ CDActionIce::~CDActionIce() {
         mAttachments->Detach(mPlayer);
     }
     ReleaseCar(true);
-    delete mMover;
+    CameraMover *m = mMover;
+    delete m;
     delete mAnchor;
     delete mAttachments;
 }

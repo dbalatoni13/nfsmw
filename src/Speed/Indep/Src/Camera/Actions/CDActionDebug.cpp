@@ -13,10 +13,10 @@ const Attrib::StringKey &CDActionDebug::GetName() const {
 }
 
 Attrib::StringKey CDActionDebug::GetNext() const {
-    if (!mDone) {
-        return Attrib::StringKey("");
+    if (mDone) {
+        return mPrev;
     }
-    return mPrev;
+    return Attrib::StringKey("");
 }
 
 CameraAI::Action *CDActionDebug::Construct(CameraAI::Director *director) {
@@ -50,7 +50,8 @@ CDActionDebug::CDActionDebug(CameraAI::Director *director)
 }
 
 CDActionDebug::~CDActionDebug() {
-    delete mMover;
+    CameraMover *m = mMover;
+    delete m;
 }
 
 void CDActionDebug::Update(float dT) {
