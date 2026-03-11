@@ -89,8 +89,10 @@ The game uses stlport, so you'll often encounter \_STL, but in the code it must 
 
 ### Initial build
 
+Compile to a private temp `.o` so your output isn't overwritten by other parallel agents:
+
 ```sh
-ninja
+TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
 ```
 
 If the build fails, fix compilation errors first.
@@ -99,10 +101,10 @@ If the build fails, fix compilation errors first.
 
 ```sh
 # Quick status
-python tools/decomp-diff.py -u main/Path/To/TU --search FunctionName
+python tools/decomp-diff.py -u main/Path/To/TU --search FunctionName --base-obj "$TEMPOBJ"
 
 # Full instruction diff
-python tools/decomp-diff.py -u main/Path/To/TU -d FunctionName
+python tools/decomp-diff.py -u main/Path/To/TU -d FunctionName --base-obj "$TEMPOBJ"
 ```
 
 ### Interpreting the diff
@@ -122,18 +124,25 @@ After writing your code, occasionally run the dwarf dump on the compiled output 
 due to work on other functions, query the unmangled name instead.
 
 ```bash
-# Dump your compiled unit (see dwarf dump tool)
+# Compile to temp .o and dump its DWARF (use the same TEMPOBJ from the build step above):
+dtk dwarf dump "$TEMPOBJ" -o /tmp/my_unit_dump.nothpp
 # Then look up the same function in your output:
-python lookup.py --file /tmp/my_unit_dump.nothpp function EPerfectLaunch::~EPerfectLaunch(void)
+python tools/lookup.py --file /tmp/my_unit_dump.nothpp function "EPerfectLaunch::~EPerfectLaunch(void)"
 # Compare with the original:
-python lookup.py ./symbols/Dwarf function 0x801DE9AC
+python tools/lookup.py ./symbols/Dwarf function 0x801DE9AC
 ```
 
 If you can't figure out the source address using objdiff, find the function in the temporary file manually.
 
 ### Iterate
 
-Repeat the build-diff cycle until the diff shows 100% match with no `~` lines.
+Repeat the build-diff cycle until the diff shows 100% match with no `~` lines:
+
+```sh
+TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
+python tools/decomp-diff.py -u main/Path/To/TU -d FunctionName --base-obj "$TEMPOBJ"
+```
+
 Every mismatched instruction is a signal — don't settle for "close enough".
 Reaching 100% matching status is not enough, also make sure that the dwarf of the function matches the original.
 
