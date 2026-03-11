@@ -6,8 +6,10 @@
 #include "Speed/Indep/Src/Gameplay/GMarker.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Interfaces/IBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
+#include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/AI/AIVehicle.h"
 #include "Speed/Indep/Libs/Support/Utility/UTLFastVector.h"
 #include "Speed/Indep/Src/World/Common/WGrid.h"
@@ -456,8 +458,8 @@ bool WRoadNav::CanTrafficSpawn() {
     }
 
     WRoadNetwork &road_network = WRoadNetwork::Get();
-    int which_node = GetNodeInd();
     const WRoadSegment *segment = road_network.GetSegment(GetSegmentInd());
+    int which_node = GetNodeInd();
 
     if (segment->IsDecision()) {
         return false;
@@ -997,35 +999,30 @@ void WRoadNav::PullOver() {
     int num_lanes = profile->fNumZones;
     bool inverted = segment->IsProfileInverted(which_node);
 
-    int lane = GetLaneInd();
-    if (inverted) {
-        lane = profile->fNumZones - 1 - lane;
-    }
+    int lane = profile->GetLaneNumber(GetLaneInd(), inverted);
 
     bool is_barrier = false;
-    do {
-        if (lane >= num_lanes - 1) break;
+    while (lane < num_lanes - 1) {
         int next_lane_type = profile->GetLaneType(lane + 1, inverted);
         if (next_lane_type == kLaneAny) {
             is_barrier = true;
         }
         if (next_lane_type != kLaneTraffic) break;
         lane++;
-    } while (true);
+    }
 
     float extra = fVehicleHalfWidth;
     if (lane == num_lanes - 1 || is_barrier) {
         extra = -extra;
     }
 
-    float offset = profile->GetLaneOffset(lane, inverted);
-    float offset_change = profile->GetLaneWidth(lane, inverted) * 0.5f;
+    float offset = profile->GetLaneOffset(lane, inverted) + profile->GetLaneWidth(lane, inverted) * 0.5f + extra;
 
     const UMath::Vector3 &nav_forward = GetForwardVector();
     UMath::Vector3 nav_right = UMath::Vector3Make(nav_forward.z, 0.0f, -nav_forward.x);
     UMath::Normalize(nav_right);
 
-    UMath::ScaleAdd(nav_right, offset_change + offset + extra - GetLaneOffset(), GetPosition(), GetPosition());
+    UMath::ScaleAdd(nav_right, offset - GetLaneOffset(), GetPosition(), GetPosition());
 }
 
 bool WRoadNav::IsSegmentInCookieTrail(int segment_number, bool use_whole_path) {
@@ -1091,6 +1088,75 @@ void WRoadNav::ClampCookieCentres(NavCookie *cookies, int num_cookies) {
         }
     }
 }
+int WRoadNav::FetchAvoidables(IBody **avoidables, const int listsize) const {
+    IVehicleAI *my_ai = pAIVehicle;
+    if (!my_ai) {
+        return 0;
+    }
+
+    IPursuit *my_pursuit = my_ai->GetPursuit();
+    bool is_formation_cop = false;
+
+    IPursuitAI *my_pursuitai;
+    my_ai->QueryInterface(&my_pursuitai);
+    if (my_pursuitai && my_pursuitai->GetInFormation()) {
+        is_formation_cop = true;
+    }
+
+    ISimable *my_pursuit_target = nullptr;
+    if (my_pursuit && is_formation_cop) {
+        AITarget *target = my_pursuit->GetTarget();
+        if (target) {
+            my_pursuit_target = target->GetSimable();
+        }
+    }
+
+    int num_avoidables = 0;
+
+    IArticulatedVehicle *my_hitch;
+    my_ai->QueryInterface(&my_hitch);
+
+    const AvoidableList &avoidable_list = my_ai->GetAvoidableList();
+
+    for (AvoidableList::const_iterator iter = avoidable_list.begin();
+         iter != avoidable_list.end() && num_avoidables < listsize;
+         iter++) {
+        AIAvoidable *av = *iter;
+        IBody *avoidable_body;
+        if (!av->QueryInterface(&avoidable_body)) {
+            continue;
+        }
+
+        if (my_hitch) {
+            if (ComparePtr(avoidable_body, my_hitch->GetTrailer()) && my_hitch->IsHitched()) {
+                continue;
+            }
+        }
+
+        if (is_formation_cop && my_pursuit) {
+            IVehicleAI *his_ai;
+            if (avoidable_body->QueryInterface(&his_ai)) {
+                IPursuit *his_pursuit = his_ai->GetPursuit();
+                if (my_pursuit == his_pursuit) {
+                    IPursuitAI *his_pursuitai;
+                    if (ComparePtr(my_pursuit_target, his_ai)) {
+                        continue;
+                    }
+                    his_ai->QueryInterface(&his_pursuitai);
+                    if (his_pursuitai && his_pursuitai->GetInFormation()) {
+                        continue;
+                    }
+                }
+            }
+        }
+
+        avoidables[num_avoidables] = avoidable_body;
+        num_avoidables++;
+    }
+
+    return num_avoidables;
+}
+
 
 void WRoadNetwork::GetPointAndVecOnSegment(const WRoadSegment &segment, float d, UMath::Vector3 &point, UMath::Vector3 &vec) {
     WRoadNetwork &roadNetwork = Get();
