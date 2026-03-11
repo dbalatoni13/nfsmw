@@ -102,13 +102,15 @@ struct MapItem : public bTNode<MapItem> {
 };
 
 struct CopItem : public MapItem {
+    int FlashTimer;              // offset 0x38, size 0x4
+
     CopItem(FEObject* icon, bVector2& pos, bVector2& world_pos, float rot, eWorldMapItemType type);
     ~CopItem() override {}
     void Draw() override;
 };
 
 struct HeliItem : public CopItem {
-    FEImage* mpView; // offset 0x3C
+    FEImage* pViewCone; // offset 0x3C, size 0x4
 
     HeliItem(FEImage* view, FEObject* icon, bVector2& pos, bVector2& world_pos, float rot);
     ~HeliItem() override {}
