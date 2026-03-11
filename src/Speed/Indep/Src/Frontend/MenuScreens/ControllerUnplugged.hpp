@@ -16,6 +16,7 @@ struct ControllerUnplugged : public MenuScreen {
     ~ControllerUnplugged() override;
     static MenuScreen* Create(ScreenConstructorData* sd);
     void NotificationMessage(unsigned long, FEObject*, unsigned long, unsigned long) override;
+    void Setup();
 };
 
 #endif

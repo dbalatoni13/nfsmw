@@ -29,8 +29,8 @@ struct IMutex {
     virtual int AddRef() { return 0; }
     virtual int Release() { return 0; }
     virtual IMutex* CreateInstance() { return nullptr; }
-    virtual void Acquire() {}
-    virtual void Release2() {}
+    virtual void Lock() {}
+    virtual void Unlock() {}
 };
 
 struct THREAD {
@@ -59,12 +59,13 @@ struct MyThread : public IThread {
 
 struct MyMutex : public IMutex {
     int mRefcount; // offset 0x4, size 0x4
+    MUTEX mMutex;  // offset 0x8, size 0x1C
 
     int AddRef() override;
     int Release() override;
     IMutex* CreateInstance() override;
-    void Acquire() override;
-    void Release2() override;
+    void Lock() override;
+    void Unlock() override;
 };
 
 namespace Realmc {
