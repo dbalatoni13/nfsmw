@@ -66,6 +66,10 @@ class WRoadNetwork : public Debugable {
     void FlagSegmentRaceDirection(int FirstSegIndex, int SecondSegIndex);
     void AddRaceSegments(WRoadNav *road_nav);
     void ResetShortcuts();
+    void GetPointAndVecOnSegment(const WRoadSegment &segment, float d, UMath::Vector3 &point, UMath::Vector3 &vec);
+    float GetSegmentPointIntersect(const WRoadSegment &segment, const UMath::Vector3 &pt, UMath::Vector3 &intersect, bool checkBound);
+    float GetLinePointIntersect(const UMath::Vector3 &start, const UMath::Vector3 &end, const UMath::Vector3 &pt, UMath::Vector3 &intersect, bool checkBound);
+    void BuildSegmentSpline(const WRoadSegment &segment, USpline &spline);
 
     // void SetRaceFilterValid(bool b) {}
 
@@ -344,6 +348,29 @@ class WRoadNav {
         return fDeadEnd;
     }
 
+    float GetSegmentTime() const {
+        return fSegTime;
+    }
+
+    char GetLaneInd() const {
+        return fLaneInd;
+    }
+
+    void SetLaneInd(char ind) {
+        fLaneInd = ind;
+        fToLaneInd = ind;
+    }
+
+    float GetLaneOffset() const {
+        return fLaneOffset;
+    }
+
+    void SetLaneOffset(float offset) {
+        fLaneOffset = offset;
+        fToLaneOffset = offset;
+        fFromLaneOffset = offset;
+    }
+
     float GetOutOfBounds() {
         return mOutOfBounds;
     }
@@ -373,10 +400,20 @@ class WRoadNav {
     }
 
     void ChangeLanes(float newOffset, float dist);
+    bool UpdateLaneChange(float distance);
+    void InitAtPath(const UMath::Vector3 &position, bool forceCenterLane);
+    int FindClosestOnPath(const UMath::Vector3 &position, UMath::Vector3 *found_position, UMath::Vector3 *found_direction, unsigned short *found_segment, float *found_interval) const;
+    float FindClosestOnSpline(const UMath::Vector3 &point, UMath::Vector3 &intersectPoint, float &timeStep, float incStep, int segInd);
+    void RebuildSplines(const WRoadSegment *segment);
+    void EvaluateSplines(const WRoadSegment *segment);
 
     void DetermineVehicleHalfWidth();
     void SetBoundPos(const WRoadSegment &segment, float offset, bool start);
     void SetStartEndPos(const WRoadSegment &segment, float startOffset, float endOffset);
+
+    void SetStartEndPos(const WRoadSegment &segment, float offset) {
+        SetStartEndPos(segment, offset, offset);
+    }
     int FindClosestSegmentInd(const UMath::Vector3 &point, const UMath::Vector3 &dir, float dirWeight, UMath::Vector3 &closestPoint, float &time);
     unsigned int GetRoadSpeechId();
 

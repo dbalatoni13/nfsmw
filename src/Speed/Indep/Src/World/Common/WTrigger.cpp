@@ -1,7 +1,9 @@
 #include "Speed/Indep/Src/World/WTrigger.h"
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Src/Main/Event.h"
 #include "Speed/Indep/Src/World/WCollisionAssets.h"
+#include "Speed/Indep/Src/World/WGridManagedDynamicElem.h"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
@@ -57,4 +59,50 @@ void WTriggerManager::Init() {
 void WTriggerManager::Restart() {
     fgTriggerManager->fgFireOnExitList->clear();
     Get().EnableSilencables();
+}
+
+void WTriggerManager::ClearAllFireOnExit() {
+    if (fgFireOnExitList != nullptr) {
+        fgFireOnExitList->clear();
+    }
+}
+
+void WTriggerManager::DeleteRefs(const WTrigger *trig) {
+    std::set<FireOnExitRec>::const_iterator iter = fgFireOnExitList->begin();
+    while (iter != fgFireOnExitList->end()) {
+        const FireOnExitRec &rec = *iter;
+        if (&rec.mTrigger == trig) {
+            std::set<FireOnExitRec>::const_iterator newlocation = iter;
+            ++newlocation;
+            fgFireOnExitList->erase(iter);
+            if (newlocation == fgFireOnExitList->end()) {
+                return;
+            }
+            iter = newlocation;
+        } else {
+            ++iter;
+        }
+    }
+}
+
+void WTrigger::operator delete(void *mem, unsigned int size) {
+    gFastMem.Free(mem, size, nullptr);
+}
+
+WTrigger::~WTrigger() {
+    if (!(fFlags & 0x100) && fEvents != nullptr) {
+        ::operator delete(fEvents);
+    }
+    if (WTriggerManager::Exists()) {
+        WTriggerManager::Get().DeleteRefs(this);
+    }
+}
+
+bool WTrigger::UpdatePos(const UMath::Vector3 &newPos, unsigned int triggerInd) {
+    UMath::Vector4 oldPosRad = fPosRadius;
+    fPosRadius.x = newPos.x;
+    fPosRadius.y = newPos.y;
+    fPosRadius.z = newPos.z;
+    WGridManagedDynamicElem::AddElem(&oldPosRad, &fPosRadius, WGrid_kTrigger, triggerInd);
+    return true;
 }

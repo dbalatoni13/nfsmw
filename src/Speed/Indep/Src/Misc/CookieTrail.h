@@ -32,6 +32,14 @@ template <typename T, std::size_t U> class CookieTrail {
     T *GetData() {
         return mData;
     }
+
+    T &NthOldest(int n) {
+        if (mCount < mCapacity) {
+            return mData[n];
+        }
+        int idx = mLast + n + 1;
+        return mData[idx % mCapacity];
+    }
 };
 
 // TODO move?

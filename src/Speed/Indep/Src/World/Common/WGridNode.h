@@ -5,12 +5,23 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Src/World/WGridManagedDynamicElem.h"
 
-struct WGridNodeElemList;
+struct WGridNodeElemList : public std::list<WGridNodeElem, UTL::Std::Allocator<WGridNodeElem, _type_list> > {
+    static void *operator new(unsigned int size) { return gFastMem.Alloc(size, nullptr); }
+    static void operator delete(void *mem, unsigned int size) { gFastMem.Free(mem, size, nullptr); }
+};
 
 struct WGridNode {
     unsigned int TotalSize() const;
+
+    void ShutDown() {
+        if (fDynElems != nullptr) {
+            delete fDynElems;
+            fDynElems = nullptr;
+        }
+    }
 
     WGridNodeElemList* fDynElems;       // offset 0x0, size 0x4
     unsigned short fNodeInd;            // offset 0x4, size 0x2

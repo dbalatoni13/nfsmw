@@ -458,17 +458,16 @@ bool WRoadNav::IsOnLegalRoad() {
 
 bool WRoadNav::FindPath(const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, char *shortcut_allowed) {
     PathFinder *path_finder = PathFinder::Get();
+    bool ret = false;
     if (path_finder != nullptr) {
         MaybeAllocatePathSegments();
         AStarSearch *search = path_finder->Pending(this);
         if (search == nullptr) {
             search = path_finder->Submit(this, goal_position, goal_direction, shortcut_allowed);
         }
-        if (search != nullptr) {
-            return true;
-        }
+        ret = search != nullptr;
     }
-    return false;
+    return ret;
 }
 
 bool WRoadNav::FindPathNow(const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, char *shortcut_allowed) {
@@ -480,18 +479,276 @@ bool WRoadNav::FindPathNow(const UMath::Vector3 *goal_position, const UMath::Vec
 }
 
 void WRoadNav::SetStartEndPos(const WRoadSegment &segment, float startOffset, float endOffset) {
-    SetBoundPos(segment, startOffset, false);
-    SetBoundPos(segment, endOffset, true);
+    SetBoundPos(segment, endOffset, false);
+    SetBoundPos(segment, startOffset, true);
 }
 
 void WRoadNav::InitAtPoint(const UMath::Vector3 &pos, const UMath::Vector3 &dir, bool forceCenterLane, float dirWeight) {
-    UMath::Vector3 closestPoint;
     float time;
-    int segment = FindClosestSegmentInd(pos, dir, dirWeight, closestPoint, time);
+    int segment = FindClosestSegmentInd(pos, dir, dirWeight, fPosition, time);
     if (segment == -1) {
         fValid = false;
         fSegmentInd = 0;
     } else {
         InitAtSegment(static_cast<short>(segment), time, pos, dir, forceCenterLane);
     }
+}
+
+void WRoadNav::InitAtPath(const UMath::Vector3 &position, bool forceCenterLane) {
+    UMath::Vector3 found_position;
+    UMath::Vector3 found_direction;
+    unsigned short found_segment;
+    float found_interval = -1.0f;
+    int result = FindClosestOnPath(position, &found_position, &found_direction, &found_segment, &found_interval);
+    if (result == 0) {
+        fValid = false;
+        fSegmentInd = 0;
+    } else {
+        InitAtSegment(static_cast<short>(found_segment), found_interval, found_position, found_direction, forceCenterLane);
+    }
+}
+
+bool WRoadNav::UpdateLaneChange(float distance) {
+    if (fLaneChangeDist <= 0.0f) {
+        return false;
+    }
+    float laneChangeLerp = (fLaneChangeInc + distance) / fLaneChangeDist;
+    fLaneChangeInc = fLaneChangeInc + distance;
+    if (laneChangeLerp < 1.0f) {
+        fLaneOffset = (fToLaneOffset - fFromLaneOffset) * laneChangeLerp + fFromLaneOffset;
+    } else {
+        fLaneChangeInc = 0.0f;
+        fFromLaneOffset = fToLaneOffset;
+        fLaneOffset = fToLaneOffset;
+        fLaneChangeDist = 0.0f;
+    }
+    return true;
+}
+
+void WRoadNav::RebuildSplines(const WRoadSegment *segment) {
+    if (segment->IsCurved()) {
+        fRoadSpline.BuildSplineEx(fStartPos, fStartControl, fEndPos, fEndControl);
+        if (bCookieTrail) {
+            fLeftSpline.BuildSplineEx(fLeftStartPos, fLeftStartControl, fLeftEndPos, fLeftEndControl);
+            fRightSpline.BuildSplineEx(fRightStartPos, fRightStartControl, fRightEndPos, fRightEndControl);
+        }
+    }
+}
+
+void WRoadNav::InitFromOtherNav(WRoadNav *other_nav, bool flip_direction) {
+    if (other_nav != this) {
+        fSegmentInd = other_nav->GetSegmentInd();
+        fNodeInd = other_nav->GetNodeInd();
+        fSegTime = other_nav->GetSegmentTime();
+        SetLaneInd(other_nav->GetLaneInd());
+        SetLaneOffset(other_nav->GetLaneOffset());
+        fValid = other_nav->fValid;
+        if (flip_direction) {
+            fNodeInd = fNodeInd ^ 1;
+            fSegTime = 1.0f - fSegTime;
+        }
+        WRoadNetwork &road_network = WRoadNetwork::Get();
+        const WRoadSegment *segment = road_network.GetSegment(fSegmentInd);
+        SetStartEndPos(*segment, GetLaneOffset());
+        SetStartEndControls(*segment);
+        RebuildSplines(segment);
+        EvaluateSplines(segment);
+        ResetCookieTrail();
+    }
+}
+
+void WRoadNav::Reverse() {
+    if (GetRaceFilter() && !IsWrongWay() && (fPathType == kPathRacer || fPathType == kPathPlayer)) {
+        return;
+    }
+    fNodeInd = fNodeInd ^ 1;
+    fSegTime = 1.0f - fSegTime;
+    const WRoadSegment *segment = WRoadNetwork::Get().GetSegment(fSegmentInd);
+    SetStartEndPos(*segment, fLaneOffset);
+    SetStartEndControls(*segment);
+    RebuildSplines(segment);
+    EvaluateSplines(segment);
+    ResetCookieTrail();
+}
+
+bool WRoadNav::IsSegmentInCookieTrail(int segment_number, bool use_whole_path) {
+    if (pCookieTrail != nullptr) {
+        int num_cookies = pCookieTrail->Count();
+        int i = 0;
+        if (!use_whole_path) {
+            i = nCookieIndex;
+        }
+        for (; i < num_cookies; i++) {
+            const NavCookie &cookie = pCookieTrail->NthOldest(i);
+            if (segment_number == cookie.SegmentNumber) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+void WRoadNav::ClampCookieCentres(NavCookie *cookies, int num_cookies) {
+    for (int i = 0; i < num_cookies; i++) {
+        NavCookie &cookie = cookies[i];
+        if (cookie.Flags & 1) {
+            float size = (cookie.RightOffset - cookie.LeftOffset) * 0.5f;
+            cookie.RightOffset = size;
+            cookie.Centre.x = (cookie.Left.x + cookie.Right.x) * 0.5f;
+            cookie.LeftOffset = -size;
+            cookie.Centre.z = (cookie.Left.y + cookie.Right.y) * 0.5f;
+        }
+    }
+}
+
+void WRoadNetwork::GetPointAndVecOnSegment(const WRoadSegment &segment, float d, UMath::Vector3 &point, UMath::Vector3 &vec) {
+    WRoadNetwork &roadNetwork = Get();
+    roadNetwork.GetPointOnSegment(segment, d, point);
+    if (!segment.IsCurved()) {
+        roadNetwork.GetSegmentForwardVector(segment, vec);
+    } else {
+        static USpline roadSpline;
+        roadNetwork.BuildSegmentSpline(segment, roadSpline);
+        UMath::Vector4 tangent;
+        roadSpline.EvaluateTangent(d, tangent);
+        vec = UMath::Vector4To3(tangent);
+    }
+}
+
+float WRoadNetwork::GetSegmentPointIntersect(const WRoadSegment &segment, const UMath::Vector3 &pt, UMath::Vector3 &intersect, bool checkBound) {
+    WRoadNetwork &roadNetwork = Get();
+    UMath::Vector3 pos;
+    UMath::Vector3 pos2;
+    const WRoadNode *node0 = roadNetwork.GetNode(segment.fNodeIndex[0]);
+    const WRoadNode *node1 = roadNetwork.GetNode(segment.fNodeIndex[1]);
+    pos = node0->fPosition;
+    pos2 = node1->fPosition;
+    return roadNetwork.GetLinePointIntersect(pos, pos2, pt, intersect, checkBound);
+}
+
+bool WRoadNav::OnPath() const {
+    if (fNavType != kTypePath || !IsValid() || pPathSegments == nullptr || nPathSegments <= 0) {
+        return false;
+    }
+    int i = 0;
+    WRoadNetwork &roadNetwork = WRoadNetwork::Get();
+    const WRoadSegment *segment = roadNetwork.GetSegment(fSegmentInd);
+    const WRoadNode *node = roadNetwork.GetNode(segment->fNodeIndex[static_cast<int>(fNodeInd)]);
+    for (i = 0; i < nPathSegments; i++) {
+        if (fSegmentInd == pPathSegments[i]) {
+            break;
+        }
+    }
+    if (i + 1 < nPathSegments) {
+        int new_segment_index = pPathSegments[i + 1];
+        const WRoadSegment *new_segment = roadNetwork.GetSegment(new_segment_index);
+        const WRoadNode *new_nodes[2];
+        roadNetwork.GetSegmentNodes(*new_segment, new_nodes);
+        bool match_first = node == new_nodes[0];
+        bool match_second = node == new_nodes[1];
+        if (!match_first && !match_second) {
+            return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+void WRoadNav::ChangeLanes(float new_lane_offset, float dist) {
+    if (dist > 0.0f) {
+        float old_lane_offset = fToLaneOffset;
+        fLaneChangeInc = 0.0f;
+        fLaneOffset = old_lane_offset;
+        fToLaneOffset = new_lane_offset;
+        fLaneChangeDist = dist;
+        fFromLaneOffset = old_lane_offset;
+        return;
+    }
+    float old_lane_offset = fLaneOffset;
+    if (old_lane_offset != new_lane_offset) {
+        SetLaneOffset(new_lane_offset);
+        fLaneChangeDist = 0.0f;
+        const WRoadSegment *segment = WRoadNetwork::Get().GetSegment(fSegmentInd);
+        if (segment->IsDecision() && fLaneType != kLaneStartingGrid) {
+            SetBoundPos(*segment, new_lane_offset, false);
+            SetControlPos(*segment, false);
+        } else {
+            SetStartEndPos(*segment, new_lane_offset, new_lane_offset);
+            SetStartEndControls(*segment);
+        }
+        RebuildSplines(segment);
+        EvaluateSplines(segment);
+    }
+}
+
+void WRoadNav::EvaluateSplines(const WRoadSegment *segment) {
+    if (segment->IsCurved()) {
+        UMath::Vector4 tempPos;
+        fRoadSpline.EvaluateSpline(fSegTime, tempPos);
+        fPosition = UMath::Vector4To3(tempPos);
+        fRoadSpline.EvaluateTangent(fSegTime, tempPos);
+        fForwardVector = UMath::Vector4To3(tempPos);
+        fCurvature = fRoadSpline.EvaluateCurvatureXZ(fSegTime);
+        if (bCookieTrail) {
+            UMath::Vector4 left_position;
+            UMath::Vector4 right_position;
+            fLeftSpline.EvaluateSpline(fSegTime, left_position);
+            fRightSpline.EvaluateSpline(fSegTime, right_position);
+            fLeftPosition = UMath::Vector4To3(left_position);
+            fRightPosition = UMath::Vector4To3(right_position);
+        }
+    } else {
+        fCurvature = 0.0f;
+        UMath::Sub(fEndPos, fStartPos, fForwardVector);
+        WRoadNetwork &roadNetwork = WRoadNetwork::Get();
+        roadNetwork.GetPointOnSegment(fStartPos, fEndPos, *segment, fSegTime, fPosition);
+        if (bCookieTrail) {
+            roadNetwork.GetPointOnSegment(fLeftStartPos, fLeftEndPos, *segment, fSegTime, fLeftPosition);
+            roadNetwork.GetPointOnSegment(fRightStartPos, fRightEndPos, *segment, fSegTime, fRightPosition);
+        }
+    }
+}
+
+void WRoadNav::Reset() {
+    fValid = false;
+    ClearCookieTrail();
+    DetermineVehicleHalfWidth();
+    fPathType = kPathNone;
+    nPathGoalSegment = 0xFFFF;
+    fPosition = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
+    fNavType = kTypeNone;
+    fLaneType = kLaneRacing;
+    nPathSegments = 0;
+    bCrossedPathGoal = false;
+    fForwardVector = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
+    fSegmentInd = 0;
+    fStartPos = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
+    fNodeInd = 0;
+    fSegTime = 0.0f;
+    fCurvature = 0.0f;
+    fEndPos = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
+    fStartControl = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
+    fEndControl = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
+    fToLaneInd = 0;
+    fDeadEnd = 0;
+    fLaneInd = 0;
+    fFromLaneInd = 0;
+    fLaneOffset = 0.0f;
+    fFromLaneOffset = 0.0f;
+    fToLaneOffset = 0.0f;
+    mOutOfBounds = 0.0f;
+    fLaneChangeDist = 0.0f;
+    fLaneChangeInc = 0.0f;
+}
+
+void WRoadNav::InitAtSegment(short segInd, const UMath::Vector3 &pos, const UMath::Vector3 &dir, bool forceCenterLane) {
+    WRoadNetwork &rn = WRoadNetwork::Get();
+    const WRoadSegment *segment = rn.GetSegment(segInd);
+    float timeStep = rn.GetSegmentPointIntersect(*segment, pos, fPosition, true);
+    if (segment->IsCurved()) {
+        rn.GetPointOnSegment(*segment, timeStep, fPosition);
+        FindClosestOnSpline(pos, fPosition, timeStep, 1.0f, static_cast<int>(segment->fIndex));
+        FindClosestOnSpline(pos, fPosition, timeStep, 0.25f, static_cast<int>(segment->fIndex));
+    }
+    InitAtSegment(segInd, timeStep, pos, dir, forceCenterLane);
 }

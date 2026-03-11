@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/World/WCollisionPack.h"
 #include "Speed/Indep/Src/World/WGridManagedDynamicElem.h"
 #include "Speed/Indep/Src/World/WTrigger.h"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 struct ManagedCollisionInstance {
     ManagedCollisionInstance(WCollisionInstance *cInst, unsigned int trigInd)
@@ -215,4 +216,41 @@ void WCollisionAssets::RemoveTrigger(WTrigger *trigger) {
     if (trigger != nullptr && ((static_cast<unsigned int>(reinterpret_cast<unsigned char *>(trigger)[0x12]) << 8) & 0x100) == 0) {
         delete trigger;
     }
+}
+
+void WCollisionAssets::LoadCollisionPack(bChunk *chunk) {
+    bChunkCarpHeader *chunk_header = reinterpret_cast<bChunkCarpHeader *>(chunk->GetAlignedData(16));
+    int sectionId = chunk_header->GetSectionNumber();
+    if (!chunk_header->IsResolved()) {
+        bPlatEndianSwap(&sectionId);
+    }
+    if (mCollisionPackList[sectionId] == nullptr) {
+        mCollisionPackList[sectionId] = new WCollisionPack(chunk);
+        for (unsigned int onCallback = 0; onCallback < fNumPackLoadCallbacks; ++onCallback) {
+            if (fPackLoadCallback[onCallback] != nullptr) {
+                fPackLoadCallback[onCallback](sectionId, true);
+            }
+        }
+    }
+    SetExclusionFlags(mCollisionPackList[sectionId]);
+}
+
+void WCollisionAssets::UnLoadCollisionPack(bChunk *chunk) {
+    bChunkCarpHeader *chunk_header = reinterpret_cast<bChunkCarpHeader *>(chunk->GetAlignedData(16));
+    int sectionId = chunk_header->GetSectionNumber();
+    if (mCollisionPackList[sectionId] != nullptr) {
+        for (unsigned int onCallback = 0; onCallback < fNumPackLoadCallbacks; ++onCallback) {
+            if (fPackLoadCallback[onCallback] != nullptr) {
+                fPackLoadCallback[onCallback](sectionId, false);
+            }
+        }
+        delete mCollisionPackList[sectionId];
+        mCollisionPackList[sectionId] = nullptr;
+    }
+}
+
+unsigned int WCollisionAssets::AddObject(WCollisionObject *obj) {
+    unsigned int objectInd = fManagedCollisionObjectsInd++;
+    (*fManagedCollisionObjects)[objectInd] = obj;
+    return objectInd;
 }
