@@ -19,8 +19,8 @@ inline float wmin(const float &a, const float &b) {
 }
 
 inline float wmax(const float &a, const float &b) {
-    if (a >= b) return a;
-    return b;
+    if (a < b) return b;
+    return a;
 }
 
 inline bool InCircle(float x, float y, float cx, float cy, float r) {
