@@ -89,7 +89,9 @@ struct MapItem : public bTNode<MapItem> {
     virtual ~MapItem();
 
     void GetInitialPos(bVector2& pos);
-    void GetWorldPos(bVector2& pos);
+    void GetWorldPos(bVector2& pos) {
+        pos = WorldPos;
+    }
     void GetCurrentPos(bVector2& pos) {
         FEngGetCenter(pIcon, pos.x, pos.y);
     }

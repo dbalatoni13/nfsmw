@@ -62,6 +62,9 @@ void GPS_Disengage();
 int GPS_Engage(const UMath::Vector3& pos, float radius);
 void GetVehicleVectors(bVector2* pos, bVector2* dir, ISimable* simable);
 
+float FEngGetCenterX(FEObject* obj);
+float FEngGetCenterY(FEObject* obj);
+
 inline float bDistBetween(const bVector2* v1, const bVector2* v2) {
     float x = v1->x - v2->x;
     float y = v1->y - v2->y;
@@ -274,6 +277,9 @@ unsigned char FEngGetLastButton(const char* pkg_name);
 void FEngSetRotationZ(FEObject* obj, float rot);
 void FEngSetPosition(FEObject* obj, float x, float y);
 const char* GetLocalizedString(unsigned int hash);
+void FEngSetVisible(const char* pkg_name, unsigned int obj_hash);
+void FEngSetInvisible(const char* pkg_name, unsigned int obj_hash);
+void FEngSetTextureHash(const char* pkg_name, unsigned int obj_hash, unsigned int tex_hash);
 
 extern unsigned int iCurrentViewBin;
 
@@ -673,7 +679,46 @@ void WorldMap::UpdateCursor(bool zoom_thing) {
     }
 }
 
-void WorldMap::MoveCursor(float dx, float dy) {
+void WorldMap::MoveCursor(float x, float y) {
+    float dx = FEngGetCenterX(Cursor) + x;
+    float dy = FEngGetCenterY(Cursor) + y;
+    bVector2 excess(0.0f, 0.0f);
+    bVector2 bottom_right;
+    FEngGetBottomRight(static_cast< FEObject* >(TrackMap), bottom_right.x, bottom_right.y);
+    if (CurrentZoom != 0 && (x != 0.0f || y != 0.0f)) {
+        if (dx < MapTopLeft.x + 8.0f) {
+            excess.x = (MapTopLeft.x + 8.0f) - dx;
+        } else if (dx > bottom_right.x + -8.0f) {
+            excess.x = dx - (bottom_right.x + -8.0f);
+        } else if (dy < MapTopLeft.y + 26.0f) {
+            excess.y = (MapTopLeft.y + 26.0f) - dy;
+        } else if (dy > bottom_right.y + -32.0f) {
+            excess.y = dy - (bottom_right.y + -32.0f);
+        }
+        if (excess.x != 0.0f || excess.y != 0.0f) {
+            bVector2 cur_pan;
+            MapStreamer->GetPan(cur_pan);
+            if (excess.x != 0.0f) {
+                excess.x = x / MapSize.x;
+            }
+            if (excess.y != 0.0f) {
+                excess.y = y / MapSize.y;
+            }
+            float factor = MapStreamer->GetZoomFactor();
+            cur_pan += excess;
+            float max_pan = 0.5f - 1.0f / factor * 0.5f;
+            cur_pan.x = bClamp(cur_pan.x, -max_pan, max_pan);
+            cur_pan.y = bClamp(cur_pan.y, -max_pan, max_pan);
+            bVector2 prev_pan;
+            MapStreamer->GetPan(prev_pan);
+            bVector2 pan_to = cur_pan + prev_pan;
+            cur_pan = pan_to * 0.5f + bVector2(0.5f, 0.5f);
+            MapStreamer->SetPan(cur_pan);
+        }
+    }
+    dx = bClamp(dx, MapTopLeft.x + 8.0f, bottom_right.x + -8.0f);
+    dy = bClamp(dy, MapTopLeft.y + 26.0f, bottom_right.y + -32.0f);
+    FEngSetCenter(Cursor, dx, dy);
 }
 
 bool WorldMap::SnapCursor() {
@@ -945,6 +990,42 @@ void WorldMap::DrawItemType() {
 }
 
 void WorldMap::DrawItemStats() {
+    IPlayer* player = *IPlayer::GetList(PLAYER_LOCAL).begin();
+    ISimable* isimable = player->GetSimable();
+    UMath::Vector3 player_pos = isimable->GetPosition();
+    bVector2 real_player;
+    bVector2 real_trigger;
+    real_player.x = player_pos.z;
+    real_player.y = -player_pos.x;
+    SelectedItem->GetWorldPos(real_trigger);
+    float distance = bDistBetween(real_trigger, real_player);
+    bool kph = true;
+    const char* distUnits;
+    if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
+        distUnits = GetLocalizedString(0x8569a26a);
+    } else {
+        kph = false;
+        distUnits = GetLocalizedString(0x867dcfd9);
+    }
+    if (SelectedItem->GetType() != WMIT_PLAYER_CAR) {
+        float length;
+        if (kph) {
+            length = distance * 0.001f;
+        } else {
+            length = distance * 0.000625f;
+        }
+        FEPrintf(GetPackageName(), 0xfeeeb39b, "%$.1f %s", length, distUnits);
+        FEngSetVisible(GetPackageName(), 0xfeeeb39b);
+    } else {
+        FEngSetInvisible(GetPackageName(), 0xfeeeb39b);
+    }
+    Minimap::GameplayIconInfo& desiredIconInfo = Minimap::GetGameplayIconInfo(SelectedItem->GetType());
+    if (desiredIconInfo.mworldIconTexHash != 0) {
+        FEngSetTextureHash(GetPackageName(), 0x9a5ab124, desiredIconInfo.mworldIconTexHash);
+        FEngSetVisible(GetPackageName(), 0x9a5ab124);
+    } else {
+        FEngSetInvisible(GetPackageName(), 0x9a5ab124);
+    }
 }
 
 void WorldMap::RefreshHeader() {
