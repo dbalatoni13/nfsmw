@@ -1,5 +1,33 @@
 #include "./EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.hpp"
 #include "Speed/Indep/Src/Misc/Config.h"
+
+namespace Speech {
+struct Cache {
+    void Dump();
+};
+} // namespace Speech
+
+extern Speech::Cache gSpeechCache;
+
+// Minimal definitions for delete — virtual destructors required
+struct EAXCommon {
+    int m_nAemsPlayHandle[7];        // offset 0x0, size 0x1C
+    void *m_pPlayCommonSampleHandle; // offset 0x1C, size 0x4
+    void *m_pRadar;                  // offset 0x20, size 0x4
+    SFX_Base *m_pSFXOBJ_FEHUD;      // offset 0x24, size 0x4
+    void *mMsgMiscSound;            // offset 0x28, size 0x4
+    virtual ~EAXCommon();
+};
+
+struct EAXFrontEnd {
+    char _pad[0x10C];
+    virtual ~EAXFrontEnd();
+};
+
+struct EAXSND8Wrapper : public AudioMemBase {
+    virtual ~EAXSND8Wrapper();
+};
 
 // TODO look at dwarf
 void EAXSound::START_321Countdown() {
@@ -47,7 +75,36 @@ EAXSound::EAXSound() {
 }
 
 EAXSound::~EAXSound() {
-    // gSpeechCache.Dump();
+    gSpeechCache.Dump();
+
+    if (mAttributes != nullptr) {
+        delete mAttributes;
+        mAttributes = nullptr;
+    }
+
+    if (mLocalAttr != nullptr) {
+        delete mLocalAttr;
+        mLocalAttr = nullptr;
+    }
+
+    if (m_pCmnSnd != nullptr) {
+        delete m_pCmnSnd;
+        m_pCmnSnd = nullptr;
+    }
+
+    if (m_pFESnd != nullptr) {
+        delete m_pFESnd;
+        m_pFESnd = nullptr;
+    }
+
+    if (m_pEAXSND8Wrapper != nullptr) {
+        delete m_pEAXSND8Wrapper;
+        m_pEAXSND8Wrapper = nullptr;
+    }
+
+    if (g_pNISRevMgr != nullptr) {
+        delete g_pNISRevMgr;
+    }
 }
 
 void EAXSound::StopSND11() {}
