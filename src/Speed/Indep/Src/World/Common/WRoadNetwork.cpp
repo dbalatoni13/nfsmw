@@ -1628,12 +1628,12 @@ float WRoadNav::FindClosestOnSpline(const UMath::Vector3 &point, UMath::Vector3 
 void WRoadNav::InitAtSegment(short segInd, char laneInd, float timeStep) {
     WRoadNetwork &roadNetwork = WRoadNetwork::Get();
     const WRoadSegment *segment = roadNetwork.GetSegment(segInd);
+    UMath::Vector3 vec;
 
     fDeadEnd = 0;
     fValid = true;
     fSegmentInd = segInd;
 
-    UMath::Vector3 vec;
     roadNetwork.GetSegmentForwardVector(segInd, vec);
 
     if (!roadNetwork.GetSegmentTrafficLaneRightSide(*segment, laneInd) && !(segment->fFlags & 0x40)) {

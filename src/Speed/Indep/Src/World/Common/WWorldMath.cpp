@@ -100,6 +100,8 @@ float WWorldMath::GetPlaneY(const UMath::Vector3 &normal, const UMath::Vector3 &
     return pointOnPlane.y - (normal.x * (testPoint.x - pointOnPlane.x) + normal.z * (testPoint.z - pointOnPlane.z)) / normal.y;
 }
 
+static const float kZero = 0.0f;
+
 void WWorldMath::NearestPointLine2D3(const UMath::Vector3 &pt, const UMath::Vector3 &p0, const UMath::Vector3 &p1, UMath::Vector3 &nearPt) {
     const float &x1 = p0.x;
     const float &z1 = p0.z;
@@ -114,14 +116,13 @@ void WWorldMath::NearestPointLine2D3(const UMath::Vector3 &pt, const UMath::Vect
     if (0.0f < div) {
         u = u / div;
     } else {
-        nearPt.y = 0.0f;
-        u = nearPt.y;
+        u = kZero;
     }
     float nx = u * (x2 - x1) + x1;
     float nz = u * (z2 - z1) + z1;
-    nearPt.x = nx;
     nearPt.z = nz;
     nearPt.y = 0.0f;
+    nearPt.x = nx;
 }
 
 void WWorldMath::NearestPointLine2D(const UMath::Vector4 &pt, const UMath::Vector4 *line, UMath::Vector4 &nearPt) {
@@ -138,14 +139,13 @@ void WWorldMath::NearestPointLine2D(const UMath::Vector4 &pt, const UMath::Vecto
     if (0.0f < div) {
         u = u / div;
     } else {
-        nearPt.y = 0.0f;
-        u = nearPt.y;
+        u = kZero;
     }
     float nx = u * (x2 - x1) + x1;
     float nz = u * (z2 - z1) + z1;
-    nearPt.x = nx;
     nearPt.z = nz;
     nearPt.y = 0.0f;
+    nearPt.x = nx;
 }
 
 bool WWorldMath::IntersectSegPlane(const UMath::Vector3 &P1, const UMath::Vector3 &P2, const UMath::Vector3 &PtOnPlane, const UMath::Vector3 &Normal, UMath::Vector3 &intersectionPt, float &t) {
