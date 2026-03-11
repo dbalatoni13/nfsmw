@@ -862,8 +862,8 @@ float CameraMover::AdjustHeightAroundCar(const bVector3 *position, bVector3 *pCa
         UMath::Vector3 dim;
         bVector3 box;
         bVector2 eye_to_car = *reinterpret_cast<bVector2 *>(const_cast<bVector3 *>(car_position)) - *reinterpret_cast<const bVector2 *>(position);
-        float gap_height = bAbs(car_position->z - position->z);
         float gap_squared = bDot(&eye_to_car, &eye_to_car);
+        float gap_height = bAbs(car_position->z - position->z);
 
         car->GetDimension(dim);
         bFill(&box, dim.z + 0.85f, dim.x + 0.85f, dim.y + 0.85f);
@@ -872,39 +872,51 @@ float CameraMover::AdjustHeightAroundCar(const bVector3 *position, bVector3 *pCa
         float min_gap_squared = min_gap * min_gap;
 
         if (gap_squared < min_gap_squared && gap_height < box.z + box.z) {
+            if (0) {
+                UVector3 uvelocity;
+                bVector3 car_velocity;
+                eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(uvelocity), car_velocity);
+                bVector2 relative_velocity = *reinterpret_cast<bVector2 *>(&car_velocity) - *reinterpret_cast<const bVector2 *>(pForward);
+                float speed_squared = bDot(&relative_velocity, &relative_velocity);
+                {
+                    float dot = bDot(&eye_to_car, &relative_velocity);
+                    {
+                        bVector2 car_to_car = *reinterpret_cast<bVector2 *>(&car_velocity) - *reinterpret_cast<const bVector2 *>(car_position);
+                        float dot = bDot(&car_to_car, &relative_velocity);
+                    }
+                }
+            }
             bVector3 vCameraCarSpace;
-            bVector3 car_velocity;
             bMatrix4 mWorldToCar;
 
-                eInvertTransformationMatrix(&mWorldToCar, &matrix);
-                eMulVector(&vCameraCarSpace, &mWorldToCar, position);
+            eInvertTransformationMatrix(&mWorldToCar, &matrix);
+            eMulVector(&vCameraCarSpace, &mWorldToCar, position);
 
-                float cam_x4 = vCameraCarSpace.x * vCameraCarSpace.x;
-                float cam_y4 = vCameraCarSpace.y * vCameraCarSpace.y;
-                float box_x4 = box.x * box.x;
-                float box_y4 = box.y * box.y;
-                cam_x4 *= cam_x4;
-                cam_y4 *= cam_y4;
-                box_x4 *= box_x4;
-                box_y4 *= box_y4;
-                float m = cam_x4 / box_x4 + cam_y4 / box_y4;
+            float cam_x4 = vCameraCarSpace.x * vCameraCarSpace.x;
+            float cam_y4 = vCameraCarSpace.y * vCameraCarSpace.y;
+            float box_x4 = box.x * box.x;
+            float box_y4 = box.y * box.y;
+            cam_x4 *= cam_x4;
+            cam_y4 *= cam_y4;
+            box_x4 *= box_x4;
+            box_y4 *= box_y4;
+            float m = cam_x4 / box_x4 + cam_y4 / box_y4;
 
-                if (m < 1.0f) {
-                    float remaining = 1.0f - m;
-                    float sqrt_remaining = bSqrt(remaining);
-                    float sqrt_sqrt = bSqrt(sqrt_remaining);
-                    float new_z = sqrt_sqrt * box.z;
+            if (m < 1.0f) {
+                float remaining = 1.0f - m;
+                float sqrt_remaining = bSqrt(remaining);
+                float sqrt_sqrt = bSqrt(sqrt_remaining);
+                float new_z = sqrt_sqrt * box.z;
 
-                    if (new_z > vCameraCarSpace.z) {
-                        vCameraCarSpace.z = new_z;
-                        bVector3 vNewCam;
-                        eMulVector(&vNewCam, &matrix, &vCameraCarSpace);
-                        float zdiff = vNewCam.z - position->z;
-                        if (zdiff > min_gap) {
-                            zdiff = 0.0f;
-                        }
-                        return zdiff;
+                if (new_z > vCameraCarSpace.z) {
+                    vCameraCarSpace.z = new_z;
+                    bVector3 vNewCam;
+                    eMulVector(&vNewCam, &matrix, &vCameraCarSpace);
+                    float zdiff = vNewCam.z - position->z;
+                    if (zdiff > min_gap) {
+                        zdiff = 0.0f;
                     }
+                    return zdiff;
                 }
             }
         }
