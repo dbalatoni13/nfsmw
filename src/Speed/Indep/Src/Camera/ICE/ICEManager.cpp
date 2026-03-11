@@ -645,7 +645,7 @@ ICEScene *FindAnimScene() {
 }
 
 unsigned int GetSceneCount() {
-    if (TheAnimDirectory == 0) {
+    if (TheAnimDirectory == nullptr) {
         return 0;
     }
 

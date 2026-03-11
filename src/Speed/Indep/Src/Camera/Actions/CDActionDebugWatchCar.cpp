@@ -7,6 +7,8 @@
 extern int mToggleCar;
 extern eVehicleList mToggleCarList;
 
+extern bool CameraDebugWatchCar;
+
 static UTL::COM::Factory<CameraAI::Director *, CameraAI::Action, UCrc32>::Prototype _CDActionDebugWatchCar("DEBUGWATCHCAR", CDActionDebugWatchCar::Construct);
 
 const Attrib::StringKey &CDActionDebugWatchCar::GetName() const {
@@ -15,6 +17,9 @@ const Attrib::StringKey &CDActionDebugWatchCar::GetName() const {
 }
 
 Attrib::StringKey CDActionDebugWatchCar::GetNext() const {
+    if (CameraDebugWatchCar) {
+        return Attrib::StringKey("");
+    }
     return mPrev;
 }
 

@@ -63,8 +63,8 @@ void CameraAI::Director::ReleaseAction() {
 
 void CameraAI::Director::Reset() {
     mIsCinematicMomement = false;
-    mCinematicSlowdownSeconds = 0.0f;
     mJumpTime = 0.0f;
+    mCinematicSlowdownSeconds = 0.0f;
     mPursuitStartTime = 0.0f;
     SetAction(Attrib::StringKey("DRIVE"));
     if (mAction != nullptr) {
@@ -272,8 +272,7 @@ IPlayer *FindPlayer(EVIEW_ID id) {
 }
 
 CameraAI::Director *FindDirector(EVIEW_ID id) {
-    const CameraAI::Director::List &list = CameraAI::Director::GetList();
-    for (CameraAI::Director *const *iter = list.begin(); iter != list.end(); ++iter) {
+    for (CameraAI::Director *const *iter = CameraAI::Director::GetList().begin(); iter != CameraAI::Director::GetList().end(); ++iter) {
         CameraAI::Director *cd = *iter;
         if (cd->GetViewID() == id) {
             return cd;
@@ -283,8 +282,7 @@ CameraAI::Director *FindDirector(EVIEW_ID id) {
 }
 
 CameraAI::Director *FindDirector(unsigned int id) {
-    const CameraAI::Director::List &list = CameraAI::Director::GetList();
-    for (CameraAI::Director *const *iter = list.begin(); iter != list.end(); ++iter) {
+    for (CameraAI::Director *const *iter = CameraAI::Director::GetList().begin(); iter != CameraAI::Director::GetList().end(); ++iter) {
         CameraAI::Director *cd = *iter;
         IPlayer *iplayer = FindPlayer(cd->GetViewID());
         if (iplayer != nullptr) {
@@ -335,16 +333,14 @@ void CameraAI::Update(float dT) {
 }
 
 void CameraAI::Reset() {
-    const Director::List &list = Director::GetList();
-    for (Director *const *iter = list.begin(); iter != list.end(); ++iter) {
+    for (Director *const *iter = Director::GetList().begin(); iter != Director::GetList().end(); ++iter) {
         Director *cd = *iter;
         cd->Reset();
     }
 }
 
 void CameraAI::SetAction(EVIEW_ID viewID, const char *desiredMode) {
-    const Director::List &list = Director::GetList();
-    for (Director *const *iter = list.begin(); iter != list.end(); ++iter) {
+    for (Director *const *iter = Director::GetList().begin(); iter != Director::GetList().end(); ++iter) {
         Director *cd = *iter;
         if (cd->GetViewID() == viewID) {
             cd->SetAction(Attrib::StringKey(desiredMode));
@@ -507,8 +503,7 @@ void CameraAI::RemoveAvoidable(IBody *body) {
 }
 
 void CameraAI::StartCinematicSlowdown(EVIEW_ID viewID, float seconds) {
-    const Director::List &list = Director::GetList();
-    for (Director *const *iter = list.begin(); iter != list.end(); ++iter) {
+    for (Director *const *iter = Director::GetList().begin(); iter != Director::GetList().end(); ++iter) {
         Director *cd = *iter;
         if (cd->GetViewID() == viewID) {
             Action *action = cd->GetAction();
@@ -523,8 +518,7 @@ void CameraAI::MaybeDoTotaledCam(IPlayer *iplayer) {
     if (Sim::GetUserMode() != Sim::USER_SINGLE) {
         return;
     }
-    const Director::List &list = Director::GetList();
-    for (Director *const *iter = list.begin(); iter != list.end(); ++iter) {
+    for (Director *const *iter = Director::GetList().begin(); iter != Director::GetList().end(); ++iter) {
         Director *cd = *iter;
         if (cd->GetViewID() == iplayer->GetControllerPort()) {
             cd->TotaledStart();
