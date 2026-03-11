@@ -33,3 +33,23 @@ void SFXCTL_Shifting::PostShiftFX_End() {
     m_RPM_LFO_AMP = 0;
     m_RPM_LFO_FRQ = 0;
 }
+
+void SFXCTL_Shifting::CleanUpShiftFX() {
+    PostShiftFX_End();
+    eShiftState = static_cast<SHIFT_STAGE>(0);
+    eShiftStageChanged = static_cast<SHIFT_STAGE>(0);
+}
+
+void SFXCTL_Shifting::SetupSFX(CSTATE_Base *_StateBase) {
+    SndBase::SetupSFX(_StateBase);
+    eAemsUpgradeLevel ugl = m_pEAXCar->m_TurboUGL;
+    m_UGL = ugl;
+    m_pShiftingPatternData = reinterpret_cast<shiftpattern *>(reinterpret_cast<char *>(m_pEAXCar) + 0xd8);
+    m_nPostShiftFXLevel = ugl % 2;
+}
+
+void SFXCTL_Shifting::AttachController(SFXCTL *ctrl) {
+    if (((ctrl->GetTypeInfo()->ObjectID >> 4) & 0xFFF) == 4) {
+        m_pEngineCtl = static_cast<SFXCTL_Engine *>(ctrl);
+    }
+}

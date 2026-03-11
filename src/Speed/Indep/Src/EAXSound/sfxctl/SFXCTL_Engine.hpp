@@ -30,6 +30,10 @@ struct SFXCTL_Engine : public SFXCTL {
     /* 0x11c */ float m_fSmoothedEng_RPM;
     /* 0x120 */ float m_fEng_Trq;
     /* 0x124 */ float m_fSmoothedEng_Trq;
+    /* 0x128 */ int m_Rotation;
+    /* 0x12c */ bool m_bIsEngineBlown;
+    /* 0x130 */ int m_DistanceFltr;
+    /* 0x134 */ bool bClutchStateOn;
 
     ~SFXCTL_Engine() override;
     TypeInfo *GetTypeInfo() const override;
@@ -41,6 +45,9 @@ struct SFXCTL_Engine : public SFXCTL {
     virtual float GetSmoothedEngTorque();
 
     void MsgCountdownDone(const MCountdownDone &message);
+    void UpdateClutchState();
+    bool ShouldTurnOnClutch();
+    void SetupSFX(CSTATE_Base *_StateBase) override;
 };
 
 #endif

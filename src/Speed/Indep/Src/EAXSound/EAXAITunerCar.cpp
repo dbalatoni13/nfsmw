@@ -28,8 +28,11 @@ struct EAXCar : public CSTATE_Base {
     // padding from 0x44 to 0x5c
     char _pad_eaxcar0[0x5c - 0x44];
     /* 0x5c */ SFXCTL_Physics *m_pPhysicsCTL;
-    // padding from 0x60 to 0x118
-    char _pad_eaxcar1[0x118 - 0x60];
+    // padding from 0x60 to 0xb4
+    char _pad_eaxcar1[0xb4 - 0x60];
+    /* 0xb4 */ eAemsUpgradeLevel m_TurboUGL;
+    // padding from 0xb8 to 0x118
+    char _pad_eaxcar2[0x118 - 0xb8];
 
     virtual void PreLoadAssets() override;
     virtual void Attach(void *pAttachment) override;

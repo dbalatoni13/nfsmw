@@ -51,7 +51,9 @@ struct SFXCTL_Shifting : public SFXCTL {
     /* 0x80 */ cInterpLine m_InterpShiftTorque;
     /* 0x9c */ cInterpLine m_InterpShiftRPM;
     /* 0xb8 */ cInterpLine m_InterpShiftVol;
-    /* 0xd4 */ char _pad_shifting[0x88]; // 0xd4 to 0x15c
+    /* 0xd4 */ char _pad_shifting0[0x120 - 0xd4]; // 0xd4 to 0x120
+    /* 0x120 */ int m_nPostShiftFXLevel;
+    /* 0x124 */ char _pad_shifting1[0x15c - 0x124]; // 0x124 to 0x15c
     /* 0x15c */ FX_POST_SHIFT_LFO eShift_LFO;
 
     ~SFXCTL_Shifting() override;
@@ -65,6 +67,9 @@ struct SFXCTL_Shifting : public SFXCTL {
     Gear GetCurGear();
     Gear GetLastGear();
     void PostShiftFX_End();
+    void CleanUpShiftFX();
+    void SetupSFX(CSTATE_Base *_StateBase) override;
+    void AttachController(SFXCTL *) override;
 };
 
 #endif

@@ -18,3 +18,12 @@ void SFXCTL_Engine::MsgCountdownDone(const MCountdownDone &message) {
     tMergeWithPhysicsOffStart = 0.7f;
     bPreRace = 0;
 }
+
+void SFXCTL_Engine::UpdateClutchState() {
+    bClutchStateOn = ShouldTurnOnClutch();
+}
+
+void SFXCTL_Engine::SetupSFX(CSTATE_Base *_StateBase) {
+    SndBase::SetupSFX(_StateBase);
+    m_UGL = static_cast<eAemsUpgradeLevel>(m_pEAXCar->GetEngineUpgradeLevel());
+}

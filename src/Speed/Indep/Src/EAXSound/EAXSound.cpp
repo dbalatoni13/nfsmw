@@ -84,7 +84,17 @@ struct stBankSlot {
     /* 0x1c */ unsigned char Index;
     /* 0x20 */ stSndDataLoadParams *pAssetParams;
 
-    void Clear();
+    void Clear() {
+        Type = static_cast<eBANK_SLOT_TYPE>(-1);
+        BANKmemLocation = 0;
+        MAINmemLocation = nullptr;
+        pLastAlloc = nullptr;
+        MAINmemSize = 0;
+        BANKMemSize = 0;
+        LoadFailed = 0;
+        Index = 0;
+        pAssetParams = nullptr;
+    }
 };
 
 struct EAXAemsManager : public AudioMemBase {
