@@ -110,3 +110,5 @@ bool CDActionDebugWatchCar::GetTrafficBasis(UMath::Matrix4 &matrix, UMath::Vecto
     }
     return valid;
 }
+
+template class UTL::Collections::Listable<IDebugWatchCar, 2>::List;
