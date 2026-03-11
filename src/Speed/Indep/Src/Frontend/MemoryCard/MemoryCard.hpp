@@ -62,7 +62,7 @@ struct MemoryCardMessage {
     unsigned int mnOptions;   // offset 0x1000, size 0x4
     int mOptions[128][4];     // offset 0x1004, size 0x800
 
-    MemoryCardMessage(const int *msg, unsigned int nOptions, const int **options);
+    MemoryCardMessage(const wchar_t *msg, unsigned int nOptions, const wchar_t **options);
 };
 
 // total size: 0x198
@@ -227,7 +227,7 @@ struct MemoryCard {
     static void SetMessageMode(unsigned int msg, bool flag);
     static void TickCardRemoval();
     void Tick(int TickCount);
-    void MessageDone(MessageChoices nInput);
+    void MessageDone(RealmcIface::MessageChoices nInput);
     void BootupCheck(const char *entry);
     bool ShouldDoAutoSave(bool bForce);
     void StartAutoSave(bool bForce);

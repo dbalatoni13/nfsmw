@@ -5,14 +5,6 @@
 #pragma once
 #endif
 
-enum MessageChoices {
-    CHOICE_NONE = 0,
-    CHOICE_OPTION1 = 1,
-    CHOICE_OPTION2 = 2,
-    CHOICE_OPTION3 = 3,
-    CHOICE_OPTION4 = 4,
-};
-
 namespace Realmc {
 struct SystemInterface;
 } // namespace Realmc
@@ -20,6 +12,14 @@ using Realmc::SystemInterface;
 
 struct IGameInterface;
 struct GameInfo;
+
+enum MessageChoices {
+    CHOICE_NONE = 0,
+    CHOICE_OPTION1 = 1,
+    CHOICE_OPTION2 = 2,
+    CHOICE_OPTION3 = 3,
+    CHOICE_OPTION4 = 4,
+};
 
 namespace RealmcIface {
 
@@ -236,7 +236,7 @@ struct MemcardInterface {
     void DeleteMultiple(unsigned int nEntryNames, const char **entryNames,
                         const unsigned short *contentName);
     void FindEntries(const char *entryNamePattern, const TitleInfo *titleInfo);
-    void MessageDone(::MessageChoices choice);
+    void MessageDone(MessageChoices choice);
     void CheckCard(CardId cardId);
     void SetActiveCard(CardId cardId);
     void SetAutosave(AutosaveState state, unsigned int nSaveReqs,
