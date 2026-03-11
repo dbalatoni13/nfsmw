@@ -703,8 +703,7 @@ HeirarchyModel::HeirarchyModel(bHash32 rendermesh, const CollisionGeometry::Boun
     if (visible) {
         RenderConn::Pkt_Smackable_Open pkt(mRenderMesh, GetWorldID(), GetCollisionGeometry(),
                                            mHeirarchy, mHeirarchyNode);
-        nodename = UCrc32(0x804c146e);
-        BeginDraw(nodename, &pkt);
+        BeginDraw(UCrc32(0x804c146e), &pkt);
     }
     if (smackable.AI_AVOIDABLE()) {
         if (mAvoidable == nullptr) {
@@ -807,7 +806,7 @@ IModel *HeirarchyModel::SpawnModel(UCrc32 rendernode, UCrc32 collisionnode, UCrc
         if (childindex > -1) {
             const CollisionGeometry::Bounds *geom = GetCollisionGeometry();
             const CollisionGeometry::Bounds *bounds =
-                geom->fCollection->GetChild(geom, collisionnode);
+                geom->GetChild(collisionnode);
             if (bounds != nullptr) {
                 const Attrib::Collection *attribs =
                     SmokeableSpawner::FindAttributes(attributes);
@@ -820,10 +819,11 @@ IModel *HeirarchyModel::SpawnModel(UCrc32 rendernode, UCrc32 collisionnode, UCrc
                         HeirarchyModel *child = new HeirarchyModel(
                             meshname, bounds, rendernode, this, attribs, mHeirarchy,
                             childindex, true);
-                        if (child == nullptr) {
-                            return nullptr;
+                        IModel *result = nullptr;
+                        if (child != nullptr) {
+                            result = static_cast< IModel * >(child);
                         }
-                        return static_cast< IModel * >(child);
+                        return result;
                     }
                 }
             }
@@ -907,8 +907,8 @@ void HeirarchyModel::SetTrigger(const UMath::Matrix4 &matrix, bool virgin) {
         mTrigger->Enable();
     }
     mTriggerAvoid = matrix.v3;
-    float zx = dim.y * matrix.v1.x + dim.x * matrix.v0.x + dim.z * matrix.v2.x;
     float zz = dim.y * matrix.v1.z + dim.x * matrix.v0.z + dim.z * matrix.v2.z;
+    float zx = dim.y * matrix.v1.x + dim.x * matrix.v0.x + dim.z * matrix.v2.x;
     mTriggerAvoid.w = UMath::Sqrt(zx * zx + zz * zz);
 }
 
