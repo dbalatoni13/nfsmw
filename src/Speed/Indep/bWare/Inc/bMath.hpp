@@ -880,28 +880,35 @@ struct bQuaternion {
 
     bQuaternion &Slerp(bQuaternion &r, const bQuaternion &target, float t) const;
 
-    void GetMatrix(bMatrix4 &m) const {
-        float xx = x + x;
-        float yy = y + y;
-        float zz = z + z;
-        float wx = w * xx;
-        float d = 1.0f - x * xx;
-        m[3][3] = 1.0f;
-        m[2][3] = 0.0f;
-        m[3][0] = 0.0f;
-        m[3][1] = 0.0f;
-        m[3][2] = 0.0f;
-        m[0][3] = 0.0f;
-        m[1][3] = 0.0f;
-        m[0][1] = x * yy + w * zz;
-        m[0][2] = x * zz - w * yy;
-        m[1][2] = y * zz + wx;
-        m[2][2] = d - y * yy;
-        m[0][0] = (1.0f - y * yy) - z * zz;
-        m[1][1] = d - z * zz;
-        m[1][0] = x * yy - w * zz;
-        m[2][0] = x * zz + w * yy;
-        m[2][1] = y * zz - wx;
+    void GetMatrix(bMatrix4 &mat) const {
+        float x2 = x + x;
+        float y2 = y + y;
+        float z2 = z + z;
+        float xx = x * x2;
+        float xy = x * y2;
+        float xz = x * z2;
+        float yy = y * y2;
+        float yz = y * z2;
+        float zz = z * z2;
+        float sx = w * x2;
+        float sy = w * y2;
+        float sz = w * z2;
+        mat[0][0] = 1.0f - (yy + zz);
+        mat[0][1] = xy + sz;
+        mat[0][2] = xz - sy;
+        mat[0][3] = 0.0f;
+        mat[1][0] = xy - sz;
+        mat[1][1] = 1.0f - (xx + zz);
+        mat[1][2] = yz + sx;
+        mat[1][3] = 0.0f;
+        mat[2][0] = xz + sy;
+        mat[2][1] = yz - sx;
+        mat[2][2] = 1.0f - (xx + yy);
+        mat[2][3] = 0.0f;
+        mat[3][0] = 0.0f;
+        mat[3][1] = 0.0f;
+        mat[3][2] = 0.0f;
+        mat[3][3] = 1.0f;
     }
 };
 
