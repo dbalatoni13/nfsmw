@@ -427,6 +427,53 @@ bool WCollisionMgr::GetClosestIntersectingBarrier(const WCollisionBarrierList &b
     return cInfo.HitSomething();
 }
 
+bool WCollisionMgr::GetWorldNormal(const WCollisionInstanceCacheList *instList, const WCollisionBarrierList *barrierList, const UMath::Vector4 *seg,
+                                   WorldCollisionInfo &cInfo) {
+    WorldCollisionInfo cInfoFaces;
+    WorldCollisionInfo cInfoBarrier;
+
+    if (barrierList != nullptr) {
+        GetBarrierNormal(*barrierList, seg, cInfoBarrier);
+    }
+
+    if (instList != nullptr) {
+        static WWorldPos wPos(2.0f);
+
+        wPos.FindClosestFace(*instList, UMath::Vector4To3(seg[0]), UMath::Vector4To3(seg[1]));
+
+        if (wPos.OnValidFace()) {
+            float t;
+
+            wPos.UNormal(&UMath::Vector4To3(cInfoFaces.fNormal));
+            cInfoFaces.fNormal.w = 1.0f;
+
+            if (WWorldMath::IntersectSegPlane(
+                    UMath::Vector4To3(seg[0]),
+                    UMath::Vector4To3(seg[1]),
+                    UMath::Vector4To3(wPos.FacePoint(0)),
+                    UMath::Vector4To3(cInfoFaces.fNormal),
+                    UMath::Vector4To3(cInfoFaces.fCollidePt),
+                    t)) {
+                cInfoFaces.fType = 1;
+                cInfoFaces.fAnimated = 0;
+                cInfoFaces.fCInst = nullptr;
+
+                UMath::Vector4 hitVec;
+                UMath::Subxyz(seg[0], cInfoFaces.fCollidePt, hitVec);
+                float dot = UMath::Dotxyz(cInfoFaces.fNormal, hitVec);
+
+                if (dot < 0.0f) {
+                    UMath::Negatexyz(cInfoFaces.fNormal);
+                }
+            }
+        }
+    }
+
+    cInfo.fType = 0;
+    ClosestCollisionInfo(seg, cInfoFaces, cInfoBarrier, cInfo);
+    return cInfo.HitSomething();
+}
+
 bool WCollisionMgr::GetBarrierNormal(const WCollisionBarrierList &barrierList, const UMath::Vector4 *testSegment, WorldCollisionInfo &cInfo) {
     cInfo.fType = 0;
     if (GetClosestIntersectingBarrier(barrierList, testSegment, cInfo)) {

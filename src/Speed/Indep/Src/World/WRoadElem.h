@@ -111,7 +111,8 @@ struct WRoadProfile {
     }
     int GetLaneNumber(int lane, bool inverted) const {
         if (inverted) {
-            return fNumZones - lane - 1;
+            int num = fNumZones - lane;
+            return num - 1;
         }
         return lane;
     }
@@ -155,7 +156,7 @@ struct WRoadProfile {
     }
 
     float GetRawLaneOffset(int lane) const {
-        return GetLaneOffset(lane, false);
+        return mLanes[lane].GetOffset();
     }
     float GetRawLaneWidth(int lane) const {
         return mLanes[lane].GetWidth();
