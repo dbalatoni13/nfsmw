@@ -217,10 +217,10 @@ void WRoadNetwork::ResolveBarriers() {
                                                    barrier->Points[1].x, 1.0f);
 
             UTL::FastVector<unsigned int, 16> node_list;
+            grid.FindNodes(barrier_points, node_list);
+
             typedef UTL::Std::set<short, _type_set> SEGMENT_SET;
             SEGMENT_SET segment_set;
-
-            grid.FindNodes(barrier_points, node_list);
 
             for (unsigned int *iter = node_list.begin(); iter != node_list.end(); ++iter) {
                 WGridNode *grid_node = grid.fNodes[*iter];
