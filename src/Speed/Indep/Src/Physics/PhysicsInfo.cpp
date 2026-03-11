@@ -609,11 +609,12 @@ void Physics::Info::Init() {
     for (PerformanceMaps::iterator iter = TheStockCars.begin(); iter != TheStockCars.end(); iter++) {
         PerfLevel &p = *iter;
         pvehicle vehicle(p.Key, 0, nullptr);
-        Physics::Upgrades::SetMaximum(vehicle);
-        PerfLevel performance(p.Key);
-        if (performance.Analyze(vehicle)) {
-            upgraded_cars.push_back(performance);
-            all_cars.push_back(performance);
+        if (Physics::Upgrades::SetMaximum(vehicle)) {
+            PerfLevel performance(p.Key);
+            if (performance.Analyze(vehicle)) {
+                upgraded_cars.push_back(performance);
+                all_cars.push_back(performance);
+            }
         }
         Physics::Upgrades::Flush();
     }
@@ -671,8 +672,6 @@ bool Physics::Info::ComputeAccelerationTable(const pvehicle &vehicle, float &top
     }
 
     bVector2 graph_data[10];
-    for (int i = 9; i >= 0; i--) {
-    }
 
     unsigned int num_gears = NumFowardGears(trans);
     if (num_gears == 0) {
@@ -905,9 +904,9 @@ void Physics::Info::FindPerformanceCandidates(const Performance &minimum_perf, c
         if (p.Stock.TopSpeed <= maximum_perf.TopSpeed &&
             p.Stock.Acceleration <= maximum_perf.Acceleration &&
             p.Stock.Handling <= maximum_perf.Handling &&
-            minimum_perf.TopSpeed <= p.Upgraded.TopSpeed &&
-            minimum_perf.Acceleration <= p.Upgraded.Acceleration &&
-            minimum_perf.Handling <= p.Upgraded.Handling) {
+            p.Upgraded.TopSpeed >= minimum_perf.TopSpeed &&
+            p.Upgraded.Acceleration >= minimum_perf.Acceleration &&
+            p.Upgraded.Handling >= minimum_perf.Handling) {
             vlist.push_back(p.Key);
         }
     }

@@ -63,11 +63,6 @@ struct Performance {
 } // namespace Physics
 
 struct PerfStats {
-    PerfStats() //
-        : Time0To100(0.0f) //
-        , TopSpeed(0.0f) //
-        , HandlingRating(0.0f) {}
-
     bool Fetch(const Attrib::Gen::pvehicle &pvehicle, bVector2 *graph_data, int *num_data);
 
     float Time0To100;
