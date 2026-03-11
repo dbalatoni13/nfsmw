@@ -53,3 +53,12 @@ void SFXCTL_Shifting::AttachController(SFXCTL *ctrl) {
         m_pEngineCtl = static_cast<SFXCTL_Engine *>(ctrl);
     }
 }
+
+void SFXCTL_Shifting::UpdateMixerOutputs() {
+    int upDisengage = (eShiftState == SHFT_UP_DISENGAGE) ? 0x7FFF : 0;
+    SetDMIX_Input(0, upDisengage);
+    int upEngaging = (eShiftStageChanged == SHFT_UP_ENGAGING) ? 0x7FFF : 0;
+    SetDMIX_Input(1, upEngaging);
+    int downShifting = IsDownShifting() ? 0x7FFF : 0;
+    SetDMIX_Input(2, downShifting);
+}

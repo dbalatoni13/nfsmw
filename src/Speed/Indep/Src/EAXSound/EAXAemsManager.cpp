@@ -1,5 +1,6 @@
 extern void SNDAEMS_removemodulebank(int handle);
 extern void SubscribeEventSys();
+extern int SNDmemlargestunused(int *start);
 
 void EAXAemsManager::ResolvePendingAsyncLoads() {}
 
@@ -17,4 +18,10 @@ void EAXAemsManager::RemoveAEMSBank() {
     if (mbhandle != -1) {
         SNDAEMS_removemodulebank(mbhandle);
     }
+}
+
+void EAXAemsManager::InitSPUram() {
+    int Start = -1;
+    int Size = SNDmemlargestunused(&Start);
+    m_SPU_UpperAddress = Start + Size;
 }

@@ -98,7 +98,9 @@ struct stBankSlot {
 };
 
 struct EAXAemsManager : public AudioMemBase {
-    /* 0x004 */ char _pad0[0xF4]; // padding to m_pEvtSystems
+    /* 0x004 */ char _pad0[0xb8 - 0x4]; // padding to m_SPU_UpperAddress
+    /* 0x0b8 */ int m_SPU_UpperAddress;
+    /* 0x0bc */ char _pad0a[0xF8 - 0xbc]; // padding to m_pEvtSystems
     /* 0x0f8 */ void **m_pEvtSystems_start;
     /* 0x0fc */ void **m_pEvtSystems_end;
     /* 0x100 */ void **m_pEvtSystems_end_of_storage;

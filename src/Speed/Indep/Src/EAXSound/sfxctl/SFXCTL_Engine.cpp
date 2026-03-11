@@ -27,3 +27,18 @@ void SFXCTL_Engine::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
     m_UGL = static_cast<eAemsUpgradeLevel>(m_pEAXCar->GetEngineUpgradeLevel());
 }
+
+int SFXCTL_Engine::GetController(int Index) {
+    switch (Index) {
+    case 0:
+        return 2;
+    case 1:
+        return 3;
+    case 2:
+        return 0;
+    case 3:
+        return 7;
+    default:
+        return -1;
+    }
+}

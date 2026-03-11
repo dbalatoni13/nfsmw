@@ -48,6 +48,7 @@ struct SFXCTL_Engine : public SFXCTL {
     void UpdateClutchState();
     bool ShouldTurnOnClutch();
     void SetupSFX(CSTATE_Base *_StateBase) override;
+    int GetController(int Index) override;
 };
 
 #endif

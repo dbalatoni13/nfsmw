@@ -9,7 +9,16 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
 
-enum SHIFT_STAGE {};
+enum SHIFT_STAGE {
+    SHFT_NONE = 0,
+    SHFT_UP_DISENGAGE = 1,
+    SHFT_UP_ENGAGING = 2,
+    SHFT_UP_LFO = 3,
+    SHFT_DOWN_DISENGAGE = 4,
+    SHFT_DOWN_ENGAGING_RISE = 5,
+    SHFT_DOWN_ENGAGING_FALL = 6,
+    SHFT_DOWN_ENGAGING_REATTACH = 7,
+};
 enum AEMS_SHIFTING_SAMPLES {};
 enum FX_POST_SHIFT_LFO {
     SHIFT_LFO_NONE = 0
@@ -70,6 +79,11 @@ struct SFXCTL_Shifting : public SFXCTL {
     void CleanUpShiftFX();
     void SetupSFX(CSTATE_Base *_StateBase) override;
     void AttachController(SFXCTL *) override;
+    void UpdateMixerOutputs() override;
+
+    bool IsDownShifting() {
+        return static_cast<unsigned int>(eShiftState - SHFT_DOWN_DISENGAGE) < 4u;
+    }
 };
 
 #endif
