@@ -187,11 +187,16 @@ template <> void tTable<bVector2>::Blend(bVector2 *dest, bVector2 *a, bVector2 *
 }
 
 CameraAnchor::CameraAnchor(int model)
-    : mVelMag(0.0f), //
+    : mVelocity(0.0f, 0.0f, 0.0f), //
+      mVelMag(0.0f), //
       mTopSpeed(0.0f), //
+      mGeomPos(0.0f, 0.0f, 0.0f), //
+      mDimension(0.0f, 0.0f, 0.0f), //
+      mAccel(0.0f, 0.0f, 0.0f), //
+      mGeomRot(), //
       mModel(0), //
       mWorldID(0), //
-      mSurface(), //
+      mSurface(SimSurface::kNull), //
       mCollisionDamping(0.0f), //
       mDrift(0.0f), //
       mGroundCollision(0.0f), //
@@ -207,18 +212,6 @@ CameraAnchor::CameraAnchor(int model)
       mZoom(1.0f), //
       mModelAttributes(Attrib::FindCollection(Attrib::Gen::ecar::ClassKey(), 0xeec2271a), 0, nullptr), //
       mCameraInfoAttributes(Attrib::FindCollection(Attrib::Gen::camerainfo::ClassKey(), 0xeec2271a), 0, nullptr) {
-    mVelocity.x = 0.0f;
-    mVelocity.y = 0.0f;
-    mVelocity.z = 0.0f;
-    mGeomPos.x = 0.0f;
-    mGeomPos.y = 0.0f;
-    mGeomPos.z = 0.0f;
-    mDimension.x = 0.0f;
-    mDimension.y = 0.0f;
-    mDimension.z = 0.0f;
-    mAccel.x = 0.0f;
-    mAccel.y = 0.0f;
-    mAccel.z = 0.0f;
     mPOV.Type = 3;
     mPOV.Angle = bDegToAng(mCameraInfoAttributes.ANGLE(0));
     mPOV.Lag = mCameraInfoAttributes.LAG(0);
