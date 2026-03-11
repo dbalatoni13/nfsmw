@@ -305,7 +305,7 @@ struct WRoadSegment {
 
     bool IsProfileInverted(int which_end) const {
         if (!which_end) {
-            return !IsEndInverted();
+            return IsEndInverted();
         }
         return IsStartInverted();
     }

@@ -10,11 +10,9 @@ bool WWorldMath::IntersectCircle(float x1, float y1, float x2, float y2, float c
     }
 
     float oy = y1 - cy;
-    y2 -= cy;
-    float dy = y2 - oy;
+    float dy = (y2 - cy) - oy;
     float ox = x1 - cx;
-    x2 -= cx;
-    float dx = x2 - ox;
+    float dx = (x2 - cx) - ox;
     float a = dx * dx + dy * dy;
 
     if (a == 0.0f) {

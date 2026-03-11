@@ -56,8 +56,7 @@ void WGridManagedDynamicElem::AddElem(const UMath::Vector4 *oldPosRad, const UMa
 
 
 void WGridManagedDynamicElem::UpdateElems() {
-    std::list<WGridManagedDynamicElem, UTL::Std::Allocator<WGridManagedDynamicElem, _type_list> >::iterator eIter;
-    for (eIter = fgManagedDynamicElemList.begin(); eIter != fgManagedDynamicElemList.end(); ++eIter) {
+    for (std::list<WGridManagedDynamicElem, UTL::Std::Allocator<WGridManagedDynamicElem, _type_list> >::iterator eIter = fgManagedDynamicElemList.begin(); eIter != fgManagedDynamicElemList.end(); ++eIter) {
         (*eIter).Update();
     }
 }

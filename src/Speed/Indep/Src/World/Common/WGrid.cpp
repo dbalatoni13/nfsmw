@@ -7,8 +7,8 @@ WGrid::WGrid(const UMath::Vector4 &min, unsigned int rows, unsigned int cols, fl
     fNumCols = cols;
     fNumRows = rows;
     fEdgeSize = edgeSize;
-    fNodes = static_cast<WGridNode **>(bMalloc(static_cast<int>(cols) * 4 * static_cast<int>(rows), 0));
-    for (int i = 0; i < static_cast<int>(rows * cols); i++) {
+    fNodes = static_cast<WGridNode **>(bMalloc(cols * 4 * rows, 0));
+    for (int i = 0; i < static_cast<int>(cols * rows); i++) {
         fNodes[i] = 0;
     }
 }

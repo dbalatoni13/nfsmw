@@ -559,11 +559,11 @@ void WRoadNetwork::GetPointOnSegment(const UMath::Vector3 &start, const UMath::V
 }
 
 void WRoadNetwork::BuildSegmentSpline(const WRoadSegment &segment, USpline &spline) {
+    const WRoadNode *nodePtr[2];
     UMath::Vector3 end_control;
     UMath::Vector3 start_control;
     segment.GetEndControl(end_control);
     segment.GetStartControl(start_control);
-    const WRoadNode *nodePtr[2];
     GetSegmentNodes(segment, nodePtr);
     const UMath::Vector3 &start = nodePtr[0]->fPosition;
     const UMath::Vector3 &end = nodePtr[1]->fPosition;
@@ -665,7 +665,7 @@ void WRoadNetwork::ResolveShortcuts() {
         if (race_parameters != nullptr) {
             WRoadNav nav;
             nav.SetDecisionFilter(true);
-            nav.SetNavType(WRoadNav::kTypeTraffic);
+            nav.SetNavType(WRoadNav::kTypeDirection);
             int num_shortcuts = race_parameters->GetNumShortcuts();
             for (int i = 0; i < num_shortcuts; i++) {
                 GMarker *shortcut = race_parameters->GetShortcut(i);
@@ -1114,10 +1114,10 @@ int WRoadNav::FetchAvoidables(IBody **avoidables, const int listsize) const {
     }
 
     IPursuit *my_pursuit = my_ai->GetPursuit();
-    bool is_formation_cop = false;
 
     IPursuitAI *my_pursuitai;
     my_ai->QueryInterface(&my_pursuitai);
+    bool is_formation_cop = false;
     if (my_pursuitai && my_pursuitai->GetInFormation()) {
         is_formation_cop = true;
     }
@@ -1304,7 +1304,7 @@ bool WRoadNav::IncLane(int direction) {
         for (int n = 0; n < profile->fNumZones - 1; n++) {
             float width = profile->GetLaneWidth(n, inverted_xor_backward);
             float offset = profile->GetRelativeLaneOffset(n, inverted_xor_backward);
-            if (width * 0.5f + offset < fLaneOffset) {
+            if (fLaneOffset > width * 0.5f + offset) {
                 current_lane++;
             }
         }
@@ -1350,8 +1350,8 @@ void WRoadNav::EvaluateSplines(const WRoadSegment *segment) {
         }
     } else {
         fCurvature = 0.0f;
-        UMath::Sub(fEndPos, fStartPos, fForwardVector);
         WRoadNetwork &roadNetwork = WRoadNetwork::Get();
+        UMath::Sub(fEndPos, fStartPos, fForwardVector);
         roadNetwork.GetPointOnSegment(fStartPos, fEndPos, *segment, fSegTime, fPosition);
         if (bCookieTrail) {
             roadNetwork.GetPointOnSegment(fLeftStartPos, fLeftEndPos, *segment, fSegTime, fLeftPosition);
@@ -1495,7 +1495,7 @@ void WRoadNav::PrivateIncNavPosition(float dist, const UMath::Vector3 &to) {
             }
 
             fSegmentInd = static_cast< short >(newSegInd);
-            newSegment = roadNetwork.GetSegment(newSegInd);
+            newSegment = roadNetwork.GetSegment(GetSegmentInd());
 
             if (useOldStartPos) {
                 fStartPos = fEndPos;

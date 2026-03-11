@@ -290,26 +290,28 @@ float WCollisionInstance::CalcSphericalRadius() const {
 }
 
 void WCollisionInstance::CalcPosition(UMath::Vector3 &pos) const {
+    bool needsCross = NeedsCrossProduct();
     pos.x = (-fInvPosRadius.x * fInvMatRow0Width.x - fInvPosRadius.y * fInvMatRow0Width.y) - fInvPosRadius.z * fInvMatRow0Width.z;
     pos.z = (-fInvPosRadius.x * fInvMatRow2Length.x - fInvPosRadius.y * fInvMatRow2Length.y) - fInvPosRadius.z * fInvMatRow2Length.z;
 
-    if ((fFlags & 0x3) != 0) {
+    if (needsCross) {
         UMath::Vector4 upVec;
         VU0_v4crossprodxyz(reinterpret_cast<const UMath::Vector4 &>(fInvMatRow2Length), reinterpret_cast<const UMath::Vector4 &>(fInvMatRow0Width),
                            upVec);
         pos.y = (-fInvPosRadius.x * upVec.x - fInvPosRadius.y * upVec.y) - fInvPosRadius.z * upVec.z;
     } else {
-        pos.y = -fInvMatRow2Length.y;
+        pos.y = -fInvPosRadius.y;
     }
 }
 
 void WCollisionInstance::MakeMatrix(UMath::Matrix4 &m, bool addXLate) const {
+    bool needsCross = NeedsCrossProduct();
     m.v0.x = fInvMatRow0Width.x;
     m.v0.y = fInvMatRow0Width.y;
     m.v0.z = fInvMatRow0Width.z;
     m.v0.w = 0.0f;
 
-    if ((fFlags & 0x3) != 0) {
+    if (needsCross) {
         VU0_v4crossprodxyz(reinterpret_cast<const UMath::Vector4 &>(fInvMatRow2Length), reinterpret_cast<const UMath::Vector4 &>(fInvMatRow0Width),
                            m.v1);
         m.v1.w = 0.0f;

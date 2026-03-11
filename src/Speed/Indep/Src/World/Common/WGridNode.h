@@ -45,8 +45,8 @@ struct WGridNode {
     }
 
     inline const unsigned int *GetElemTypePtr(WGridNode_ElemType type) const {
-        const char *dataStart = reinterpret_cast<const char *>(this) + sizeof(WGridNode);
-        return reinterpret_cast<const unsigned int *>(dataStart + fElemOffsets[type]);
+        return reinterpret_cast<const unsigned int *>(
+            reinterpret_cast<const char *>(this) + fElemOffsets[type] + sizeof(WGridNode));
     }
 
     inline unsigned int GetElemType(unsigned int index, WGridNode_ElemType type) const {
@@ -63,8 +63,7 @@ struct WGridNode {
 
     inline void RemoveDynamic(unsigned int ind, WGridNode_ElemType type) {
         if (fDynElems != nullptr) {
-            WGridNodeElemList::iterator eIter;
-            for (eIter = fDynElems->begin(); eIter != fDynElems->end(); ++eIter) {
+            for (WGridNodeElemList::iterator eIter = fDynElems->begin(); eIter != fDynElems->end(); ++eIter) {
                 if ((*eIter).fInd == ind && (*eIter).fType == type) {
                     fDynElems->erase(eIter);
                     return;
