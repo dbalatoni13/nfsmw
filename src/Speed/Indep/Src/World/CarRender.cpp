@@ -444,14 +444,14 @@ CarRenderInfo::~CarRenderInfo() {
     for (int model_index = 0; model_index < 0x4C; model_index++) {
         for (int model_number = 0; model_index < 1; model_index++) {
             for (int model_lod = this->mMinLodLevel; model_lod <= this->mMaxLodLevel; model_lod++) {
-                eModel *model = this->mCarPartModels[model_lod][model_number][model_index].GetModel();
+                eModel *model = this->mCarPartModels[model_index][model_number][model_lod].GetModel();
                 if (model == nullptr) break;
                 if (model->GetNameHash() == 0) break;
 
                 model->UnInit();
                 CarPartModelPool->Free(model);
-                this->mCarPartModels[model_lod][model_number][model_index].SetModel(nullptr);
-                this->mCarPartModels[model_lod][model_number][model_index].Clear();
+                this->mCarPartModels[model_index][model_number][model_lod].SetModel(nullptr);
+                this->mCarPartModels[model_index][model_number][model_lod].Clear();
             }
         }
     }
@@ -502,4 +502,78 @@ void CarRenderInfo::SetPlayerDamage(const DamageZone::Info &damageInfo) {
     this->SetCarGlassDamageState(damageInfo.Get(DamageZone::DZ_RFRONT) > kDamageWindowThresh, REPLACETEX_WINDOW_RIGHT_FRONT, bStringHash("WINDOW_FRONT"), 0xa155545);
     this->SetCarGlassDamageState(damageInfo.Get(DamageZone::DZ_RREAR ) > kDamageWindowThresh, REPLACETEX_WINDOW_RIGHT_REAR, bStringHash("WINDOW_FRONT"), 0xa155545);
     this->SetCarGlassDamageState(damageInfo.Get(DamageZone::DZ_REAR  ) > kDamageWindowThresh, REPLACETEX_WINDOW_REAR_DEFOST, bStringHash("REAR_DEFROSTER"), 0xa155545);
+}
+
+
+void CarRenderInfo::SetCarDamageState(bool on, unsigned int startID, unsigned int endID) {
+    bool hidden = !on;
+
+    for (int model_number = 0; model_number < 1; model_number++) {
+        for (int model_lod = this->mMinLodLevel; model_lod <= this->mMaxLodLevel; model_lod++) {
+            for (unsigned int i = startID; i <= endID; i++) {
+                CarPartModel* model = &this->mCarPartModels[i][model_number][model_lod];
+                
+                if (!model) continue;
+                if (!model->GetModel()) continue;
+                
+                model->Hide(hidden);
+            }
+        }
+    }
+}
+
+void CarRenderInfo::SetCarGlassDamageState(bool on, CarReplacementTexID replacementId, unsigned int undamageHash, unsigned int damageHash) {
+    if (on) {
+        this->MasterReplacementTextureTable[replacementId].SetNewNameHash(damageHash);
+    } else {
+        this->MasterReplacementTextureTable[replacementId].SetNewNameHash(undamageHash);
+    }
+}
+
+void CarRenderInfo::SetDamageInfo(const DamageZone::Info& damageInfo) {
+    if (damageInfo.Value != this->mDamageZoneInfo.Value) {
+        this->mDamageZoneInfo.Value = damageInfo.Value;
+        if (this->mDamageBehaviour != nullptr) {
+            if (this->mDamageZoneInfo.Value == 0) {
+                this->mDamageBehaviour->Reset();
+            } else {
+                this->mDamageBehaviour->DamageVehicle(this->mDamageZoneInfo);
+            }
+        }
+    }
+    if (this->mDamageBehaviour == nullptr) {
+        this->SetPlayerDamage(damageInfo);
+    }
+}
+
+unsigned int CarRenderInfo::FindCarPart(int slotId) {
+    unsigned int model_namehash = 0;
+
+    if (slotId <= 0x4C) {
+        eModel *model = this->mCarPartModels[slotId][0][this->mMinLodLevel].GetModel();
+        if (model) {
+            model_namehash = model->GetNameHash();
+        }
+    }
+
+    return model_namehash;
+}
+
+unsigned int CarRenderInfo::HideCarPart(int slotId, bool hide) {
+    unsigned int model_namehash = 0;
+
+    if (slotId <= 0x4C) {
+        for (int lodId = this->mMinLodLevel; lodId <= this->mMaxLodLevel; lodId++) {
+            CarPartModel *carPartModel = &this->mCarPartModels[slotId][0][lodId];
+            eModel *model = carPartModel->GetModel();
+
+            carPartModel->Hide(hide);
+
+            if (lodId == this->mMinLodLevel && model) {
+                model_namehash = model->GetNameHash();
+            }
+        }
+    }
+
+    return model_namehash;
 }
