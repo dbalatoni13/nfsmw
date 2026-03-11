@@ -54,6 +54,86 @@ int ReplayJoyOp() {
     return l_Op;
 }
 
+void IJoyHelper::EmulateMemoryCardLibrary(int aJoyOp) {
+    char* pBuf = new char[0x400];
+    char* pBuf1 = pBuf + 1;
+    const wchar_t* pOptions[4];
+    pOptions[0] = reinterpret_cast< const wchar_t* >(pBuf + 0x338);
+    pOptions[1] = reinterpret_cast< const wchar_t* >(pBuf + 0x36a);
+    pOptions[2] = reinterpret_cast< const wchar_t* >(pBuf + 0x39c);
+    pOptions[3] = reinterpret_cast< const wchar_t* >(pBuf + 0x3ce);
+    RealmcIface::CardInfo lCardInfo;
+    RealmcIface::EntryInfo lEntryInfo;
+    lEntryInfo.mName = pBuf;
+    switch (aJoyOp) {
+    case 1:
+        gMemcardCallbacks.ShowMessage(reinterpret_cast< const wchar_t* >(pBuf), 0, pOptions);
+        break;
+    case 2:
+        gMemcardCallbacks.ClearMessage();
+        break;
+    case 3: {
+        RealmcIface::BootupCheckResults lBootRes;
+        lBootRes.Clear();
+        gMemcardCallbacks.BootupCheckDone(static_cast< RealmcIface::CardStatus >(0), lBootRes);
+        break;
+    }
+    case 4:
+        gMemcardCallbacks.SaveCheckDone(static_cast< RealmcIface::TaskResult >(0),
+                                        static_cast< RealmcIface::CardStatus >(0));
+        break;
+    case 5:
+        gMemcardCallbacks.SaveDone(pBuf);
+        break;
+    case 6:
+        gMemcardCallbacks.CheckLoadedData(pBuf);
+        break;
+    case 7:
+        gMemcardCallbacks.LoadDone(pBuf);
+        break;
+    case 8:
+        gMemcardCallbacks.DeleteDone(pBuf);
+        break;
+    case 9:
+        gMemcardCallbacks.ClearEntries();
+        break;
+    case 10:
+        gMemcardCallbacks.FoundEntry(&lEntryInfo);
+        break;
+    case 0xb:
+        gMemcardCallbacks.FindEntriesDone(static_cast< RealmcIface::CardStatus >(0));
+        break;
+    case 0xc:
+        gMemcardCallbacks.Retry(static_cast< RealmcIface::CardStatus >(0));
+        break;
+    case 0xd:
+        gMemcardCallbacks.Failed(static_cast< RealmcIface::TaskResult >(0),
+                                 static_cast< RealmcIface::CardStatus >(0));
+        break;
+    case 0xe:
+        gMemcardCallbacks.CardChecked(&lCardInfo);
+        break;
+    case 0xf:
+        gMemcardCallbacks.CardRemoved();
+        break;
+    case 0x10:
+        gMemcardCallbacks.SetAutosaveDone(static_cast< RealmcIface::TaskResult >(0),
+                                          static_cast< RealmcIface::CardStatus >(0),
+                                          static_cast< RealmcIface::AutosaveState >(0));
+        break;
+    case 0x11:
+        gMemcardCallbacks.LoadReady(pBuf, 0, 0, pBuf1, pBuf1);
+        break;
+    case 0x12:
+        gMemcardCallbacks.SetMonitorDone(static_cast< RealmcIface::CardStatus >(0),
+                                         static_cast< RealmcIface::MonitorState >(1));
+        break;
+    }
+    if (pBuf != nullptr) {
+        delete[] pBuf;
+    }
+}
+
 void InitMemoryCard() {
     MemoryCard::s_pThis = new MemoryCard();
     bStrCpy(gSaveType0, "");

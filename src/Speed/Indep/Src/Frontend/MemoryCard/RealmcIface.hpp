@@ -120,6 +120,8 @@ struct TimeInfo {
 
 // total size: 0xC
 struct BootupCheckResults {
+    void Clear();
+
     CardId mFirstGoodCard;        // offset 0x0, size 0x4
     bool mEntryFound;             // offset 0x4, size 0x1
     unsigned int mNumBlocksNeeded; // offset 0x8, size 0x4
@@ -127,6 +129,9 @@ struct BootupCheckResults {
 
 // total size: 0x1C
 struct CardInfo {
+    CardInfo();
+    void Clear();
+
     CardId mCardId;             // offset 0x0, size 0x4
     CardStatus mStatus;         // offset 0x4, size 0x4
     unsigned int mFreeSpace;    // offset 0x8, size 0x4
@@ -138,6 +143,9 @@ struct CardInfo {
 
 // total size: 0x24
 struct EntryInfo {
+    EntryInfo();
+    void Clear();
+
     char *mName;                // offset 0x0, size 0x4
     CardStatus mStatus;         // offset 0x4, size 0x4
     unsigned int mEntryBlocks;  // offset 0x8, size 0x4
