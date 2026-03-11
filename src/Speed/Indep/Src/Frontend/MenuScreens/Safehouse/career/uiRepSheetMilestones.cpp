@@ -33,16 +33,7 @@ void InGameAnyTutorialScreenLaunchMovie(const char*, const char*) asm("LaunchMov
 extern unsigned int iCurrentViewBin;
 extern const char* gTUTORIAL_MOVIE_PURSUIT;
 
-inline void FEngSetInvisible(const char* pkg_name, unsigned int obj_hash) {
-    FEngSetInvisible(FEngFindObject(pkg_name, obj_hash));
-}
-inline void FEngSetVisible(const char* pkg_name, unsigned int obj_hash) {
-    FEngSetVisible(FEngFindObject(pkg_name, obj_hash));
-}
-inline void FEngSetTextureHash(const char* pkg_name, unsigned int obj_hash,
-                               unsigned int texture_hash) {
-    FEngSetTextureHash(FEngFindImage(pkg_name, obj_hash), texture_hash);
-}
+// FEngSetInvisible/FEngSetVisible/FEngSetTextureHash inlines defined in uiMain.cpp
 
 MilestoneDatum* theMilestone;
 
@@ -205,6 +196,7 @@ void uiRepSheetMilestones::Setup() {
 
 void uiRepSheetMilestones::RefreshTrack() {
     if (GetCurrentDatum() != nullptr) {
+        bVector2 position;
         float rotation = 0.0f;
         if (TrackMapStreamer != nullptr) {
             TrackMapStreamer->Init(nullptr, TrackMap, 0, 0);
@@ -220,7 +212,6 @@ void uiRepSheetMilestones::RefreshTrack() {
             GSpeedTrap* pSpeedTrap = sdt->my_speedtrap;
             key = pSpeedTrap->GetJumpMarkerKey();
         }
-        bVector2 position;
         GManager::Get().CalcMapCoordsForMarker(key, position, rotation);
         if (TrackMapStreamer != nullptr) {
             TrackMapStreamer->PanTo(position);

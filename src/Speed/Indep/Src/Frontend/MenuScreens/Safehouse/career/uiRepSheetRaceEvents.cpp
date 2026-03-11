@@ -51,8 +51,7 @@ extern GRaceParameters* theRace;
 
 void RaceDatum::NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1, unsigned long param2) {
     if (msg == 0xc407210) {
-            theRace = race;
-        }
+        theRace = race;
     }
 }
 
@@ -95,9 +94,8 @@ void UISafehouseRaceSheet::NotificationMessage(unsigned long msg, FEObject* obj,
         if (theRace == nullptr) {
             break;
         }
-            signed char joyPort = static_cast< signed char >(FEngMapJoyParamToJoyport(param2));
-            FEDatabase->SetPlayersJoystickPort(0, joyPort);
-        }
+        signed char joyPort = static_cast< signed char >(FEngMapJoyParamToJoyport(param2));
+        FEDatabase->SetPlayersJoystickPort(0, joyPort);
         const char* dialog = "";
         if (bIsInGame) {
             dialog = "InGameDialog.fng";

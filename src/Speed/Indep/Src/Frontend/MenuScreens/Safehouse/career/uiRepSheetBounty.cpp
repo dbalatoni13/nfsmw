@@ -32,12 +32,7 @@ extern unsigned int iCurrentViewBin;
 extern unsigned int theMarker;
 extern const char* gTUTORIAL_MOVIE_BOUNTY;
 
-inline void FEngSetInvisible(const char* pkg_name, unsigned int obj_hash) {
-    FEngSetInvisible(FEngFindObject(pkg_name, obj_hash));
-}
-inline void FEngSetVisible(const char* pkg_name, unsigned int obj_hash) {
-    FEngSetVisible(FEngFindObject(pkg_name, obj_hash));
-}
+// FEngSetInvisible/FEngSetVisible inlines defined in uiMain.cpp
 // FEngSetTextureHash inline already defined in uiOptionsScreen.cpp
 
 uiRepSheetBounty::uiRepSheetBounty(ScreenConstructorData* sd)
@@ -189,6 +184,7 @@ void uiRepSheetBounty::Setup() {
 
 void uiRepSheetBounty::RefreshTrack() {
     if (GetCurrentDatum() != nullptr) {
+        bVector2 position;
         float rotation = 0.0f;
         if (TrackMapStreamer != nullptr) {
             TrackMapStreamer->Init(nullptr, TrackMap, 0, 0);
@@ -196,7 +192,6 @@ void uiRepSheetBounty::RefreshTrack() {
         }
         BountyDatum* d = static_cast<BountyDatum*>(GetCurrentDatum());
         unsigned int key = GManager::Get().GetBountySpawnMarker(d->index);
-        bVector2 position;
         GManager::Get().CalcMapCoordsForMarker(key, position, rotation);
         if (TrackMapStreamer != nullptr) {
             TrackMapStreamer->PanTo(position);
