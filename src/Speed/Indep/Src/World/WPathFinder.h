@@ -16,6 +16,11 @@ struct AStarNode : public bTNode<AStarNode> {
     static void *operator new(unsigned int size);
     static void operator delete(void *ptr);
 
+    AStarNode() {}
+    AStarNode(AStarNode *parent, const WRoadNode *road_node, int segment, float actual_cost, float estimated_cost);
+
+    AStarNode *GetParent();
+
     const WRoadNode *GetRoadNode() { return WRoadNetwork::Get().GetNode(nRoadNode); }
     int GetSegmentIndex() { return nSegmentIndex; }
     float GetActualCost() { return static_cast<float>(fActualCost) * ASTAR_METRIC_SCALE; }
@@ -47,6 +52,7 @@ struct AStarSearch : public bTNode<AStarSearch> {
     bool Admissible(const WRoadSegment *segment, bool forward, WRoadNav::EPathType path_type);
     float Service(float time);
     bool IsFinished() { return nState > 0; }
+    bool IsActive() { return nState == 0; }
     WRoadNav *GetRoadNav() { return pRoadNav; }
 
     AStarSearchState nState;

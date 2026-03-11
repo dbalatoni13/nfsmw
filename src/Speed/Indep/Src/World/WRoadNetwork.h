@@ -392,6 +392,18 @@ class WRoadNav {
         return nPathSegments;
     }
 
+    void SetNumPathSegments(int n) {
+        nPathSegments = n;
+    }
+
+    int GetMaxPathSegments() {
+        return 0x3FC / sizeof(unsigned short);
+    }
+
+    unsigned short *GetPathSegments() {
+        return pPathSegments;
+    }
+
     unsigned short GetPathSegment(int n) {
         return pPathSegments[n];
     }
