@@ -120,6 +120,7 @@ void CameraAI::Director::Update(float dT) {
 }
 
 void CameraAI::Director::SetAction(Attrib::StringKey desiredMode) {
+    Action *action;
     mDesiredMode = desiredMode;
     if (mAction != nullptr) {
         const Attrib::StringKey &key = mAction->GetNext();
@@ -133,7 +134,7 @@ void CameraAI::Director::SetAction(Attrib::StringKey desiredMode) {
         }
     }
     if (!mDesiredMode.IsEmpty()) {
-        Action *action = Action::CreateInstance(UCrc32(mDesiredMode), this);
+        action = Action::CreateInstance(UCrc32(mDesiredMode), this);
         if (action != nullptr) {
             ReleaseAction();
             mAction = action;

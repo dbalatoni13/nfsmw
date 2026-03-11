@@ -40,3 +40,21 @@ block_relocations:
 
 - source: .text:0x8007ee24
   end: .text:0x8007ee2c
+
+# CameraAI::Director - R_PPC_NONE on StringKey ctor inline mr instructions
+- source: .text:0x80068F8C
+  end: .text:0x80068F90
+- source: .text:0x80068FAC
+  end: .text:0x80068FB0
+
+# CameraAI::Director::Reset - R_PPC_NONE on StringKey ctor inline mr instructions
+- source: .text:0x8006921C
+  end: .text:0x80069220
+- source: .text:0x80069234
+  end: .text:0x80069238
+
+# CameraAI::Director::Update - R_PPC_NONE on StringKey ctor inline mr instructions
+- source: .text:0x80069F50
+  end: .text:0x80069F54
+- source: .text:0x80069F60
+  end: .text:0x80069F64
