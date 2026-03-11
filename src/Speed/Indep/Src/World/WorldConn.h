@@ -9,6 +9,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Miscellaneous/stringhash.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/effects.h"
 #include "Speed/Indep/Src/Sim/SimConn.h"
 #include "Speed/Indep/Src/Sim/SimServer.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
@@ -17,6 +18,8 @@
 #include "WorldTypes.h"
 
 #include <types.h>
+
+class EmitterGroup;
 
 DECLARE_CONTAINER_TYPE(WorldConnServerMap);
 
@@ -294,13 +297,13 @@ class WorldEffectConn : public Sim::Connection, public bTNode<WorldEffectConn> {
 
     static bTList<WorldEffectConn> mList;
 
-    Attrib::Instance mAttributes;   // offset 0x18, size 0x14
-    WorldConn::Reference mOwnerRef;  // offset 0x2C, size 0x10
-    void *mEmitters;                 // offset 0x3C, size 0x4
-    bool mPaused;                    // offset 0x40, size 0x1
-    bool mSilent;                    // offset 0x44, size 0x1
+    Attrib::Gen::effects mAttributes; // offset 0x18, size 0x14
+    WorldConn::Reference mOwnerRef;   // offset 0x2C, size 0x10
+    EmitterGroup *mEmitters;          // offset 0x3C, size 0x4
+    bool mPaused;                     // offset 0x40, size 0x1
+    bool mSilent;                     // offset 0x44, size 0x1
     void *mAudioEvent;               // offset 0x48, size 0x4
-    unsigned int mActee;             // offset 0x4C, size 0x4
+    unsigned int mActee;              // offset 0x4C, size 0x4
 };
 
 #endif

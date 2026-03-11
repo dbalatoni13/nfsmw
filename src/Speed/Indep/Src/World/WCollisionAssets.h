@@ -34,7 +34,7 @@ class WCollisionAssets {
     const WCollisionInstance *Instance(unsigned int ind) const;
     const WCollisionObject *Object(unsigned int ind) const;
     unsigned int AddObject(WCollisionObject *obj);
-    struct WCollisionObject *CreateObject(UMath::Vector3 &dim, const UMath::Matrix4 &mat, bool dynamicFlag);
+    struct WCollisionObject *CreateObject(const UMath::Vector3 &dim, const UMath::Matrix4 &mat, bool dynamicFlag);
     struct WTrigger &Trigger(unsigned int tag) const;
     void AddTrigger(struct WTrigger *trig);
     void RemoveTrigger(struct WTrigger *trigger);

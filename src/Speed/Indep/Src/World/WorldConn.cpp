@@ -1,7 +1,22 @@
 #include "Speed/Indep/Src/World/WorldConn.h"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Ecstasy/EmitterSystem.h"
 
 extern unsigned int eFrameCounter;
+extern EmitterSystem gEmitterSystem;
+
+struct _AudioEventBase {
+    char _x;
+};
+
+namespace Sound {
+class AudioEvent : public _AudioEventBase {
+    char _pad[0x5F];
+
+  public:
+    virtual ~AudioEvent() {}
+};
+} // namespace Sound
 
 namespace WorldConn {
 
@@ -174,8 +189,6 @@ void WorldEffectConn::OnClose() {
     delete this;
 }
 
-class EmitterGroup;
-
 void HandleWorldEffectEmitterGroupDelete(void *subscriber, EmitterGroup *grp) {
     WorldEffectConn *fx_conn = static_cast<WorldEffectConn *>(subscriber);
     fx_conn->ResetEmitterGroup();
@@ -187,4 +200,85 @@ int *World_UpdateBody(Sim::Packet *pkt) {
     eSwizzleWorldMatrix(reinterpret_cast<const bMatrix4 &>(data->mMatrix), body->matrix);
     WorldConn::_Server->UnlockID(data->mID);
     return 0;
+}
+
+WorldEffectConn::WorldEffectConn(const Sim::ConnectionData &data, const WorldConn::Pkt_Effect_Open *oc)
+    : Connection(data), //
+      mAttributes(oc->mEffectGroup, 0, nullptr), //
+      mOwnerRef(oc->mOwner)
+{
+    unsigned int effect_creation_flags = 0;
+
+    mAudioEvent = nullptr;
+    mPaused = false;
+    mSilent = false;
+    mActee = oc->mActee;
+
+    Attrib::Instance owner_attribs(oc->mOwnerAttributes, 0, nullptr);
+    unsigned int owner_class = owner_attribs.GetClass();
+    if (owner_class == 0x4a97ec8f) {
+        effect_creation_flags = 0x10000000;
+    } else if (owner_class == 0xce70d7db) {
+        effect_creation_flags = 0x20000000;
+    }
+
+    Attrib::Instance context_attribs(oc->mContext, 0, nullptr);
+    unsigned int context_class = context_attribs.GetClass();
+    if (context_class == 0xfb111fef) {
+        effect_creation_flags |= 0x01000000;
+    } else {
+        effect_creation_flags |= 0x02000000;
+    }
+
+    mList.AddTail(this);
+
+    const Attrib::Collection *fxspec = mAttributes.emittergroup().GetCollection();
+    mEmitters = nullptr;
+    if (fxspec != nullptr) {
+        mEmitters = gEmitterSystem.CreateEmitterGroup(fxspec, effect_creation_flags | 0x800000);
+        if (mEmitters != nullptr) {
+            mEmitters->SubscribeToDeletion(this, HandleWorldEffectEmitterGroupDelete);
+            mEmitters->Disable();
+        }
+    }
+}
+
+WorldEffectConn::~WorldEffectConn() {
+    if (mEmitters != nullptr) {
+        mEmitters->UnSubscribe();
+        if (mEmitters != nullptr) {
+            delete mEmitters;
+        }
+    }
+    if (mAudioEvent != nullptr) {
+        delete static_cast<Sound::AudioEvent *>(mAudioEvent);
+        mAudioEvent = nullptr;
+    }
+    mList.Remove(this);
+}
+
+static Attrib::RefSpec ChooseAudioAttributes(const Attrib::Gen::effects &effect, const bMatrix4 *matrix, const bVector3 *normal) {
+    if (matrix != nullptr && normal != nullptr) {
+        Attrib::RefSpec zone_spec;
+        float AngleDiff_Front = bDot(reinterpret_cast<const bVector3 *>(&matrix->v0), normal);
+        float AngleDiff_Top = bDot(reinterpret_cast<const bVector3 *>(&matrix->v2), normal);
+
+        if (AngleDiff_Front < -0.707f) {
+            zone_spec = effect.AudioFX_FRONT();
+        } else if (AngleDiff_Front > 0.707f) {
+            zone_spec = effect.AudioFX_REAR();
+        } else if (AngleDiff_Top < -0.707f) {
+            zone_spec = effect.AudioFX_TOP();
+        } else if (AngleDiff_Top > 0.707f) {
+            zone_spec = effect.AudioFX_BOTTOM();
+        } else {
+            zone_spec = effect.AudioFX_SIDE();
+        }
+
+        if (zone_spec.GetCollectionKey() != 0 && zone_spec.GetClassKey() != 0) {
+            return zone_spec;
+        }
+    }
+
+    return effect.AudioFX_DEFAULT();
 }

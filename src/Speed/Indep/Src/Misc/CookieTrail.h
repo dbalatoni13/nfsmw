@@ -10,7 +10,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
 // total size: 0x810
-template <typename T, std::size_t U> class CookieTrail {
+template <typename T, int U> class CookieTrail {
     int mCount;          // offset 0x0, size 0x4
     int mLast;           // offset 0x4, size 0x4
     const int mCapacity; // offset 0x8, size 0x4

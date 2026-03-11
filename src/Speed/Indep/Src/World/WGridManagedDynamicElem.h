@@ -18,6 +18,11 @@ enum WGridNode_ElemType {
 
 // total size: 0x8
 struct WGridNodeElem {
+    WGridNodeElem() {}
+    WGridNodeElem(unsigned int ind, WGridNode_ElemType type)
+        : fInd(ind), //
+          fType(type) {}
+
     unsigned int fInd;        // offset 0x0, size 0x4
     WGridNode_ElemType fType; // offset 0x4, size 0x4
 };

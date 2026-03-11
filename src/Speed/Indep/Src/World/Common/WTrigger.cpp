@@ -131,7 +131,7 @@ void WTriggerManager::SubmitForFire(WTrigger &trig, HSIMABLE__ *hSimable) {
     if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16 & 0x40000) != 0) {
         trig.FireEvents(hSimable);
     }
-    if (((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x12]) << 8 | static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16) & 0x48000) == 0) {
+    if (((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16 | static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x12]) << 8) & 0x48000) == 0) {
         trig.FireEvents(hSimable);
     }
 }

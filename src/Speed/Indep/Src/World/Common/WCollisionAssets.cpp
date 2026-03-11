@@ -294,3 +294,33 @@ unsigned int WCollisionAssets::AddObject(WCollisionObject *obj) {
     (*fManagedCollisionObjects)[objectInd] = obj;
     return objectInd;
 }
+
+WCollisionObject *WCollisionAssets::CreateObject(const UMath::Vector3 &dim, const UMath::Matrix4 &mat, bool dynamicFlag) {
+    WCollisionObject *obj = new (__FILE__, __LINE__) WCollisionObject;
+    obj->fFlags = 0;
+    obj->fMat = mat;
+    if (dynamicFlag) {
+        obj->fFlags |= 1;
+    }
+    obj->fDimensions = UMath::Vector4Make(dim, 0.0f);
+    obj->fRenderInstanceInd = 0;
+    obj->fFlags |= 0x40;
+    obj->fPosRadius.x = mat.v3.x;
+    obj->fPosRadius.y = mat.v3.y - dim.y;
+    obj->fPosRadius.z = mat.v3.z;
+    obj->fType = 0;
+    obj->fSurface.fSurface = 0;
+    obj->fSurface.fFlags = 0;
+    obj->fPosRadius.w = UMath::Sqrt(obj->fDimensions.x * obj->fDimensions.x + obj->fDimensions.z * obj->fDimensions.z);
+
+    unsigned int objectInd = AddObject(obj);
+    WGridManagedDynamicElem::AddElem(nullptr, &obj->fPosRadius, WGrid_kObject, objectInd);
+
+    if (dynamicFlag) {
+        WGridNodeElem elem(objectInd, WGrid_kObject);
+        WGridManagedDynamicElem dynElem(&obj->fPosRadius, &mat.v3, elem);
+        WGridManagedDynamicElem::DynamicElemList().push_back(dynElem);
+    }
+
+    return obj;
+}

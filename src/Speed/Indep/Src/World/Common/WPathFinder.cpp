@@ -1,6 +1,26 @@
 #include "Speed/Indep/Src/World/WPathFinder.h"
 
+#include "Speed/Indep/Src/Sim/Simulation.h"
+
 PathFinder* PathFinder::pInstance;
+
+PathFinder::PathFinder()
+    : Activity(0) {
+    AStarNodeSlotPool = bNewSlotPool(0x14, 0xC00, "AStarNodeSlotPool", 0);
+    AStarSearchSlotPool = bNewSlotPool(0x54, 0x10, "AStarSearchSlotPool", 0);
+    mSimTask = AddTask(UCrc32("AIVehicle"), 1.0f, 0.0f, Sim::TASK_FRAME_VARIABLE);
+    Sim::ProfileTask(mSimTask, "PathFinder");
+}
+
+PathFinder::~PathFinder() {
+    lSearches.DeleteAllElements();
+    bDeleteSlotPool(AStarSearchSlotPool);
+    bDeleteSlotPool(AStarNodeSlotPool);
+    AStarSearchSlotPool = nullptr;
+    AStarNodeSlotPool = nullptr;
+    RemoveTask(mSimTask);
+    pInstance = nullptr;
+}
 
 Sim::IActivity* PathFinder::Construct(Sim::Param params) {
     if (pInstance == nullptr) {
