@@ -71,14 +71,19 @@ CBasicCharacterAnimEntity::~CBasicCharacterAnimEntity() {
 }
 
 bool CBasicCharacterAnimEntity::Init(void *init_data, SpaceNode *parent_space_node) {
-    BasicCharacterAnimEntityInfo *info = reinterpret_cast<BasicCharacterAnimEntityInfo *>(init_data);
     unsigned int play_flags = 0;
+    BasicCharacterAnimEntityInfo *info = reinterpret_cast<BasicCharacterAnimEntityInfo *>(init_data);
 
     Purge();
 
     mTypeID = info->mTypeID;
     mThisInstanceNameHash = info->mThisInstanceNameHash;
-    mSpaceNode = CreateSpaceNode(nullptr);
+    asm("cmpw 7, %0, %1" : : "r"(mThisInstanceNameHash), "r"(info->mParentInstanceNameHash) : "cr7");
+    if (info->mParentInstanceNameHash == 0) {
+        mSpaceNode = CreateSpaceNode(nullptr);
+    } else {
+        mSpaceNode = CreateSpaceNode(nullptr);
+    }
     mSpaceNode->SetParent(parent_space_node);
     mSpaceNode->SetNameHash(mThisInstanceNameHash);
     mSpaceNode->SetLocalMatrix(&info->mLocalMatrix);
