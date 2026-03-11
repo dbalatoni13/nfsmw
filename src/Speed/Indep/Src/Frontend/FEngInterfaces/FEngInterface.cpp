@@ -151,7 +151,8 @@ void cFEng::QueuePackageSwitch(const char* pPackageName, int pArg, unsigned long
     if (TheGameFlowManager.IsInGame() && !pSuppressSimPause && !FEManager::IsPaused()) {
         FEManager::RequestPauseSimulation(pPackageName);
         HideEverySingleHud();
-        if (!IsPackagePushed("InGameBackground.fng")) {
+        bool push_bkg = IsPackagePushed("InGameBackground.fng");
+        if (!push_bkg) {
             mFEng->QueuePackagePush("InGameBackground.fng", 0);
         }
     }

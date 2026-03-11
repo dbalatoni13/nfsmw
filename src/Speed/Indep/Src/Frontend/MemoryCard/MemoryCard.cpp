@@ -531,10 +531,12 @@ queue:
 void MemoryCard::HideAutoSaveIcon() {
     if (m_bAutoSaveIconShowing) {
         m_bAutoSaveIconShowing = false;
+        cFEng* eng = cFEng::Get();
         unsigned int msg = FEHashUpper("FadeOut");
-        cFEng::Get()->QueuePackageMessage(msg, "AutoSaveIcon.fng", nullptr);
+        eng->QueuePackageMessage(msg, "AutoSaveIcon.fng", nullptr);
+        eng = cFEng::Get();
         msg = FEHashUpper("ShowSMSIcon");
-        cFEng::Get()->QueuePackageMessage(msg, nullptr, nullptr);
+        eng->QueuePackageMessage(msg, nullptr, nullptr);
     }
 }
 
