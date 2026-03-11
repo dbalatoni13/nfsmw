@@ -194,7 +194,9 @@ WTrigger::~WTrigger() {
 
 void WTrigger::UpdateBox(const UMath::Matrix4& mat, const UMath::Vector3& dimension) {
     UMath::Vector4 oldPosRad = fPosRadius;
-    unsigned int flags = fFlags;
+    unsigned int flags = reinterpret_cast<const unsigned char *>(this)[0x12] << 8
+                       | (reinterpret_cast<const unsigned char *>(this)[0x11] << 16
+                        | reinterpret_cast<const unsigned char *>(this)[0x13]);
     EventList* eventList = fEvents;
 
     memcpy(this, &mat, sizeof(UMath::Matrix4));
