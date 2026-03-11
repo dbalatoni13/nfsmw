@@ -123,10 +123,9 @@ const PCloud *Collection::GetPointCloud(const Bounds *parent) const {
 
 const Bounds *Collection::GetBounds(UCrc32 hash_name) const {
     if (hash_name != UCrc32::kNull) {
-        const Bounds *bounds = GetBounds();
         for (int i = 0; i < fNumBounds; i++) {
-            if (bounds[i].fNameHash == hash_name) {
-                return &bounds[i];
+            if (GetBounds()[i].fNameHash == hash_name) {
+                return &GetBounds()[i];
             }
         }
     }
@@ -138,7 +137,9 @@ void Collection::Init() {
         ::bPlatEndianSwap(&fNameHash);
         ::bPlatEndianSwap(&fNumBounds);
         if (fIsResolved == 0) {
-            for (int i = 0; i < fNumBounds; i++) {
+            int i;
+            PCloud *pcloud;
+            for (i = 0; i < fNumBounds; i++) {
                 Bounds &bounds = GetBounds()[i];
                 ::bPlatEndianSwap(&bounds.fPosition.x);
                 ::bPlatEndianSwap(&bounds.fPosition.y);
@@ -153,7 +154,6 @@ void Collection::Init() {
                 ::bPlatEndianSwap(&bounds.fPivot.x);
                 ::bPlatEndianSwap(&bounds.fPivot.y);
                 ::bPlatEndianSwap(&bounds.fPivot.z);
-                ::bPlatEndianSwap(&bounds.fFlags);
                 ::bPlatEndianSwap(&bounds.fChildIndex);
                 ::bPlatEndianSwap(&bounds.fRadius);
                 ::bPlatEndianSwap(&bounds.fFlags);
@@ -161,8 +161,8 @@ void Collection::Init() {
                 ::bPlatEndianSwap(&bounds.fSurface);
             }
             ::bPlatEndianSwap(&GetPCHeader()->fNumPClouds);
-            PCloud *pcloud = GetPCloud();
-            int i = 0;
+            pcloud = GetPCloud();
+            i = 0;
             while (i < GetPCHeader()->fNumPClouds) {
                 ::bPlatEndianSwap(&pcloud->fNumVerts);
                 i = i + 1;
