@@ -2,8 +2,7 @@
 
 Matching decompilation of Need for Speed Most Wanted 2005 (GameCube) targeting the USA Release build (`GOWE69`).
 The goal is to produce C++ source that compiles to byte-identical and dwarf-identical object code against the
-original retail binary using the ProDG GC 3.9.3 compiler. You're completely autonomous, don't stop until you have tried
-every single function for a long time. Do 5 functions in parallel using subagents.
+original retail binary using the ProDG GC 3.9.3 compiler.
 
 ## Build & Verify
 
@@ -67,6 +66,14 @@ python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin -
 
 Mismatched args are wrapped in `{}`. Matching runs are collapsed (control with `-C <n>` context lines, `--no-collapse`). Left = original, right = decomp.
 
+**Parallel-safe usage** — when multiple agents compile the same TU, pass a private `--base-obj`
+so each agent diffs against its own compiled output and they never interfere:
+
+```sh
+TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim)
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim --base-obj "$TEMPOBJ" -d FindIOWin
+```
+
 ### decomp-status.py — Project-wide progress
 
 ```sh
@@ -78,21 +85,47 @@ python tools/decomp-status.py --json             # machine-readable
 
 ### decomp-context.py — Function context for matching work
 
-Gathers source code, objdiff diff, Ghidra decompile, and debug map info:
+Gathers a scoped source excerpt, objdiff diff, and Ghidra decompile for a specific function:
 
 ```sh
 python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f AcceptScriptMsg
 python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --no-source
+python tools/decomp-context.py --ghidra-check   # verify Ghidra CLI is set up correctly
 ```
 
-Flags: `--no-source`, `--no-ghidra` to skip sections.
+Flags: `--no-source`, `--no-ghidra` to skip sections. Source output is automatically scoped
+to the function's line range (with a few lines of context) instead of dumping the whole file.
+
+**Parallel-safe usage** — pass `--base-obj` to use a private compiled `.o`:
+
+```sh
+TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim)
+python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --base-obj "$TEMPOBJ"
+```
+
+### find-symbol.py — Check for existing definitions before declaring new types
+
+Before declaring any new struct, class, enum, global, or typedef, run this to check whether
+it already exists in `src/`. This is the CLI alternative to clangd workspace/symbol search.
+
+```sh
+python tools/find-symbol.py AITarget
+python tools/find-symbol.py CEntity --type class
+python tools/find-symbol.py EState --type enum
+```
+
+If it prints "Not found: ... Safe to declare", you can proceed to define the symbol.
+If it finds a match, include that header instead of redeclaring.
 
 ### dtk (decomp-toolkit)
 
-Dump the dwarf of your own implementation of a function:
+Dump the dwarf of your own implementation of a function.
+**Always use the temp `.o` produced by `build-unit.py`** so the dump reflects your own
+compilation and isn't overwritten by another parallel agent:
 
 ```sh
-dtk dwarf dump build/GOWE69/src/Speed/Indep/SourceLists/UNITNAME.o -o /tmp/UNITNAME_<random_number>.nothpp
+TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/UNITNAME)
+dtk dwarf dump "$TEMPOBJ" -o /tmp/UNITNAME_<random_number>.nothpp
 ```
 
 Demangle a symbol (you probably won't need this):
@@ -101,7 +134,28 @@ Demangle a symbol (you probably won't need this):
 dtk demangle 'AcceptScriptMsg__7CEntityF20EScriptObjectMessage9TUniqueIdR13CStateManager'
 ```
 
-DON'T EVER USE OBJDUMP or very low level tools.
+### build-unit.py — Parallel-safe compilation
+
+Compile a single translation unit to a private temporary `.o` file that won't be
+overwritten by other agents.  Always prefer this over plain `ninja` when you need to
+diff or inspect your own compiled output:
+
+```sh
+# Compile to an auto-generated temp path (printed to stdout):
+TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim)
+
+# Compile to an explicit path:
+python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim -o /tmp/my.o
+```
+
+Typical parallel-safe iteration loop:
+
+```sh
+TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
+python tools/decomp-diff.py      -u main/Path/To/TU --base-obj "$TEMPOBJ" -d FunctionName
+python tools/decomp-context.py   -u main/Path/To/TU --base-obj "$TEMPOBJ" -f FunctionName
+dtk dwarf dump "$TEMPOBJ" -o /tmp/TU_check.nothpp
+```
 
 ## Code Conventions
 
@@ -158,6 +212,20 @@ The inline information in the dwarf is incredibly useful. When you encounter one
 
 It's very important that you use math inlines from bMath and UMath as shown in the dwarf. UVector inlines use temporaries that the compiler couldn't optimize out. You can see in the dwarf on which stack address they are and deduce final destination they are copied to.
 
+### Store instruction order hints
+
+- GCC likes to reorder store instructions, so try multiple combinations instead of strictly
+  using the order from the assembly. When there are lots of store instructions after each other,
+  the first one of the source code often ends up being the last in the assembly.
+- The developers usually initialized members using initializer lists. This is great because the order
+  of stores becomes deterministic that way. However if you put all possible variables into the initializer list
+  and the order is wrong, you might have to initialize some or all variables in the function body instead. 
+
+### Relocation diffs
+- When you have to use a constant that looks like an address, it's possible that the splitter thought it was
+  an allocation and it shows up as a diff because the left side has a symbol and the right side has a constant.
+  In this case you need to figure out the virtual address of the instruction and block the relocation in config.yml.
+
 ### PPC EABI calling convention
 
 On PowerPC EABI (as used by GCC), float and integer parameters use **separate** register
@@ -170,3 +238,55 @@ register assignments but does NOT affect integer register assignments (and vice 
 - `fmuls fX, fX, fY` or sometimes `fmuls fX, fY, fX` often translates to `v *= fY`
 - `xoris r0, r0, 0x8000` in int-to-float conversion => field is `int`, not `uint`.
   Unsigned int-to-float uses a different sequence without `xoris`.
+
+### Branch structure
+
+- Ghidra almost always **inverts** `if`-statement branch logic: the true and false bodies
+  are swapped in its output. Fix by inverting the condition and swapping the two code paths.
+- A `do { ... } while (i < upperBound)` with a leading `if (upperBound > 0)` guard should
+  be written as a plain `for` loop — GCC emits the same code.
+
+### Stack frame and locals
+
+- Frame size (`stwu r1, -0xNNN(r1)`) is determined by the number and types of locals.
+  Every local that is NOT in the DWARF is a spurious temporary — remove it.
+- Every local that IS in the DWARF must exist in the source, even if you don't use the name.
+  Name it exactly as the DWARF shows.
+
+### Virtual vs direct calls
+
+- A `bl` to a specific address = direct (non-virtual) call.
+- An `lwz + mtctr + bctrl` sequence = virtual dispatch through vtable.
+- If the diff shows a virtual call where you have a direct call (or vice versa), the
+  const-qualifier of the method or the object pointer is wrong. Check the DWARF.
+
+### Register allocation hints
+
+- GCC is sensitive to expression decomposition. Splitting a compound expression into
+  named sub-expressions often produces different (matching) register allocation.
+- Conversely, merging sub-expressions into one can collapse intermediate registers.
+- If two adjacent float ops are swapped, try commuting the operands or using a temp.
+
+### Inlines
+
+- Inlines at the bottom of a TU are emitted by usage, not by definition. Do not write
+  them as normal function bodies; their presence in source is controlled by `#include`.
+- If an inline appears in the DWARF but does not exist in `src/`, deduce its body and add
+  it to the correct header (use `line-lookup` skill to find the header file).
+
+---
+
+## Discovered Matching Patterns
+
+This section accumulates session-specific patterns discovered during decompilation.
+Generalizable entries are promoted here; TU-specific ones stay in session context only.
+
+**Format for new entries:**
+
+```
+### <ShortDescription>
+TU: <translation-unit-name> | Function: <FunctionName>
+<Description of the source pattern that achieved the match>
+```
+
+<!-- Add new entries below this line -->
