@@ -8,6 +8,13 @@
 #include "Speed/Indep/Src/Physics/PhysicsTunings.h"
 #include "Speed/Indep/Src/Physics/PhysicsUpgrades.hpp"
 
+namespace Attrib {
+namespace Gen {
+struct pvehicle;
+}
+} // namespace Attrib
+struct PresetCar;
+
 struct FECustomizationRecord {
     short InstalledPartIndices[139];                       // offset 0x000, size 0x116
     Physics::Upgrades::Package InstalledPhysics;           // offset 0x118, size 0x20
@@ -31,6 +38,11 @@ struct FECustomizationRecord {
     Physics::Tunings *GetTunings() {
         return &Tunings[ActiveTuning];
     }
+
+    void Default();
+    void BecomePreset(PresetCar *preset);
+    bool WriteRecordIntoPhysics(Attrib::Gen::pvehicle &vehicle) const;
+    bool WritePhysicsIntoRecord(const Attrib::Gen::pvehicle &vehicle);
 };
 
 #endif

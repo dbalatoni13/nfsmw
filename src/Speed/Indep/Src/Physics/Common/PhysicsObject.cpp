@@ -294,13 +294,18 @@ void PhysicsObject::PauseBehavior(const UCrc32 &mechanic, bool pause) {
 
 bool PhysicsObject::ResetBehavior(const UCrc32 &mechanic) {
     unsigned int key = mechanic.GetValue();
-    if (mMechanics.find(key) != mMechanics.end()) {
+    Mechanics::iterator iter = mMechanics.find(key);
+    if (iter._M_node == mMechanics.end()._M_node) {
+        goto ret_false;
+    }
+    {
         Behavior *beh = mMechanics[key];
         if (beh != nullptr) {
             beh->Reset();
             return true;
         }
     }
+ret_false:
     return false;
 }
 
@@ -359,20 +364,17 @@ Behavior *PhysicsObject::LoadBehavior(const UCrc32 &mechanic, const UCrc32 &beha
     }
 
     unsigned int key = mechanic.GetValue();
-    const void *bp[4];
-    bp[0] = &params;
-    bp[1] = this;
-    bp[2] = &behavior;
-    bp[3] = &mechanic;
-    beh = BuildElement(sig, *reinterpret_cast<const BehaviorParams *>(bp));
+    BehaviorParams bp = {params, this, behavior, mechanic};
+    beh = Behavior::CreateInstance(sig, bp);
     if (beh != nullptr) {
-        mMechanics[key] = beh;
+        AddElement(beh);
         mBehaviors.Add(beh);
+        mMechanics[key] = beh;
         OnBehaviorChange(mechanic);
-        return beh;
     }
-    return nullptr;
+    return beh;
 }
+
 bool PhysicsObject::Attach(UTL::COM::IUnknown *object) {
     if (mAttachments != nullptr) {
         if (!UTL::COM::ComparePtr(mEntity, object)) {

@@ -8,6 +8,7 @@
 #include "PhysicsTunings.h"
 #include "PhysicsTypes.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/chassis.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engine.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/induction.h"
@@ -16,8 +17,10 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/tires.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/transmission.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 class _type_list;
+DECLARE_CONTAINER_TYPE(PerformanceMaps);
 
 namespace Physics {
 namespace Info {
