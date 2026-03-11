@@ -1,5 +1,7 @@
 #include "Speed/Indep/Src/World/WGridManagedDynamicElem.h"
 
+#include "Speed/Indep/Libs/Support/Utility/UTLFastVector.h"
+
 #include "Speed/Indep/Libs/Support/Utility/UTLVector.h"
 #include "Speed/Indep/Src/World/Common/WGrid.h"
 
@@ -53,7 +55,6 @@ void WGridManagedDynamicElem::AddElem(const UMath::Vector4 *oldPosRad, const UMa
     }
 }
 
-int TestFunction12345() { return 42; }
 
 void WGridManagedDynamicElem::UpdateElems() {
     std::list<WGridManagedDynamicElem, UTL::Std::Allocator<WGridManagedDynamicElem, _type_list> >::iterator eIter;
@@ -61,4 +62,3 @@ void WGridManagedDynamicElem::UpdateElems() {
         (*eIter).Update();
     }
 }
-test_sentinel_12345
