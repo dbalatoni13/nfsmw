@@ -14,7 +14,7 @@ struct cFEng {
 
     static inline cFEng* Get() { return mInstance; }
 
-    bool IsErrorState() { return mFEng->bErrorScreenMode; }
+    bool IsErrorState();
 
     FEPackage* FindPackage(const char* pPackageName);
 
