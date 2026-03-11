@@ -217,7 +217,7 @@ void WRoadNetwork::ResolveBarriers() {
                                                    barrier->Points[1].x, 1.0f);
 
             UTL::FastVector<unsigned int, 16> node_list;
-            typedef UTL::Std::set<short, _type_set> SEGMENT_SET;
+            typedef UTL::Std::set<unsigned short, _type_set> SEGMENT_SET;
             SEGMENT_SET segment_set;
 
             grid.FindNodes(barrier_points, node_list);
@@ -228,7 +228,7 @@ void WRoadNetwork::ResolveBarriers() {
                     unsigned int numSegments = grid_node->GetElemTypeCount(WGrid_kRoadSegment);
                     for (unsigned int i = 0; i < numSegments; i++) {
                         segment_set.insert(
-                            static_cast<short>(grid_node->GetElemType(i, WGrid_kRoadSegment)));
+                            static_cast<unsigned short>(grid_node->GetElemType(i, WGrid_kRoadSegment)));
                     }
                 }
             }
@@ -476,7 +476,7 @@ bool WRoadNav::CanTrafficSpawn() {
     const WRoadProfile *profile = road_network.GetSegmentProfile(*segment, which_node);
 
     int num_traffic_lanes = profile->GetNumTrafficLanes(player_or_racer, inverted);
-    if (num_traffic_lanes == 0) {
+    if (!num_traffic_lanes) {
         return false;
     }
 
@@ -1044,7 +1044,7 @@ bool WRoadNav::IsSegmentInCookieTrail(int segment_number, bool use_whole_path) {
 bool WRoadNav::CookieCutter(NavCookie &cookie, const UMath::Vector3 &centre, float projection, bool pass_left,
                             unsigned int cut_flags) {
     bVector2 cookie_to_centre(centre.x - cookie.Centre.x, centre.z - cookie.Centre.z);
-    float l = bCross(&cookie_to_centre, reinterpret_cast<const bVector2 *>(&cookie.Forward));
+    float l = bCross(&cookie_to_centre, &cookie.Forward);
     float left_offset = cookie.LeftOffset;
     float right_offset = cookie.RightOffset;
 
@@ -1057,18 +1057,20 @@ bool WRoadNav::CookieCutter(NavCookie &cookie, const UMath::Vector3 &centre, flo
     bVector2 cookie_centre(cookie.Centre.x, cookie.Centre.z);
     bVector2 cookie_right(cookie.Forward.y, -cookie.Forward.x);
 
-    float minimum_width = 1.0f;
+    float minimum_width;
     if (GetNavType() == kTypeTraffic) {
         minimum_width = 0.1f;
+    } else {
+        minimum_width = 1.0f;
     }
 
     if (pass_left) {
         right_offset = bMax(left_offset + minimum_width, l - projection);
-        bScaleAdd(reinterpret_cast<bVector2 *>(&cookie.Right), &cookie_centre, &cookie_right, right_offset);
+        bScaleAdd(&cookie.Right, &cookie_centre, &cookie_right, right_offset);
         cookie.RightOffset = right_offset;
     } else {
         left_offset = bMin(l + projection, right_offset - minimum_width);
-        bScaleAdd(reinterpret_cast<bVector2 *>(&cookie.Left), &cookie_centre, &cookie_right, left_offset);
+        bScaleAdd(&cookie.Left, &cookie_centre, &cookie_right, left_offset);
         cookie.LeftOffset = left_offset;
     }
 
