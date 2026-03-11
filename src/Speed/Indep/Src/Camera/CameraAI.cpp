@@ -394,11 +394,12 @@ static float AverageAir(ISimable *isimable, float fSeconds, float *pHighest, flo
     float fAirMax = bMax(0.0f, p.y - fElevation);
     float fStep = fSeconds / static_cast<float>(nSteps);
     float fAirTime = fStep;
-    float fDeparture = -fStep;
+    float fDeparture = 0.0f;
 
     if (fAirMax <= 0.0f) {
         fAirTime = 0.0f;
-        fDeparture = 0.0f;
+    } else {
+        fDeparture = -fStep;
     }
 
     Attrib::Gen::pvehicle attributes(vehicle->GetVehicleAttributes());
