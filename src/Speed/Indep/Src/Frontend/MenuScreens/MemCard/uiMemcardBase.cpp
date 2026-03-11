@@ -429,6 +429,10 @@ void UIMemcardBase::ShowMessage(const wchar_t* msg, unsigned int nOptions,
     HideAllButtons();
     SetMessage(reinterpret_cast< short* >(const_cast< wchar_t* >(msg)));
     switch (nOptions) {
+    case 1:
+        SetButtonText(reinterpret_cast< short* >(const_cast< wchar_t* >(option1)),
+                      nullptr, nullptr);
+        break;
     case 2:
         SetButtonText(reinterpret_cast< short* >(const_cast< wchar_t* >(option1)),
                       reinterpret_cast< short* >(const_cast< wchar_t* >(option2)),
@@ -439,18 +443,19 @@ void UIMemcardBase::ShowMessage(const wchar_t* msg, unsigned int nOptions,
                       reinterpret_cast< short* >(const_cast< wchar_t* >(option2)),
                       reinterpret_cast< short* >(const_cast< wchar_t* >(option3)));
         break;
-    case 1:
-        SetButtonText(reinterpret_cast< short* >(const_cast< wchar_t* >(option1)),
-                      nullptr, nullptr);
-        break;
     default:
         MemoryCard::GetInstance()->SetWaitingForResponse(false);
         break;
     }
     SetScreenVisible(true, nOptions);
-    cFEng::Get()->QueuePackageMessage(
-        FEHashUpper(nOptions == 0 ? "SHOW LOADER" : "HIDE LOADER"),
-        GetPackageName(), nullptr);
+    cFEng* pFEng = cFEng::Get();
+    const char* hashStr;
+    if (nOptions == 0) {
+        hashStr = "SHOW LOADER";
+    } else {
+        hashStr = "HIDE LOADER";
+    }
+    pFEng->QueuePackageMessage(FEHashUpper(hashStr), GetPackageName(), nullptr);
 }
 
 void UIMemcardBase::ActivateChild() {
@@ -622,11 +627,12 @@ void UIMemcardBase::InitComplete() {
         break;
     case 0xb0:
         if (FEDatabase->bProfileLoaded) {
+            char* dst = m_FileName;
             if (MemoryCard::GetInstance()->ShouldDoAutoSave(false)) {
                 SetScreenVisible(true, 0);
                 SetStringCheckingCard();
                 const char* profileName = FEDatabase->CurrentUserProfiles[0]->GetProfileName();
-                bStrCpy(m_FileName, profileName);
+                bStrCpy(dst, profileName);
                 MemoryCard::GetInstance()->StartAutoSave(true);
                 return;
             }
