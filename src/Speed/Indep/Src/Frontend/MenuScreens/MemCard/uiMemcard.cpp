@@ -32,8 +32,8 @@ unsigned int MemcardGetCurrentUIOperation();
 
 extern "C" void ChangeToNextBootFlowScreen__15BootFlowManageri(void* self, int param);
 
-static const unsigned int gButtonIDs[3] = {0xb8a7c6cc, 0xb8a7c6cd, 0xb8a7c6ce};
-static const unsigned int gButtonTextIDs[3] = {0xf9363f30, 0xfb8b67d1, 0xfde09072};
+static unsigned int gButtonIDs[3] = {0xb8a7c6cc, 0xb8a7c6cd, 0xb8a7c6ce};
+static unsigned int gButtonTextIDs[3] = {0xf9363f30, 0xfb8b67d1, 0xfde09072};
 
 static const unsigned int sOpName[] = {0x841c21af, 0xe85326e2};
 

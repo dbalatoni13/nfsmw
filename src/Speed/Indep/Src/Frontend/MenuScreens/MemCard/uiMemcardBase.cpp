@@ -109,9 +109,7 @@ UIMemcardBase::~UIMemcardBase() {
         if (gMemcardSetup.mTermFunc != nullptr) {
             gMemcardSetup.mTermFunc(gMemcardSetup.mTermFuncParam);
         }
-        gMemcardSetup.mPreviousCommand = 0;
         gMemcardSetup.mOp = 0;
-        gMemcardSetup.mLastMessage = savedLastMsg;
         gMemcardSetup.mMemScreen = nullptr;
         gMemcardSetup.mToScreen = nullptr;
         gMemcardSetup.mFromScreen = nullptr;
@@ -120,7 +118,9 @@ UIMemcardBase::~UIMemcardBase() {
         gMemcardSetup.mSuccessMsg = 0;
         gMemcardSetup.mFailedMsg = 0;
         gMemcardSetup.mInBootFlow = false;
+        gMemcardSetup.mPreviousCommand = 0;
         gMemcardSetup.mPreviousPrompt = 0;
+        gMemcardSetup.mLastMessage = savedLastMsg;
     }
 }
 
@@ -339,6 +339,7 @@ void UIMemcardBase::SetupPromptNoProfileFound() {
 }
 
 void UIMemcardBase::SetupPromptSaveConfirm() {
+    const char* localStr;
     unsigned int textHash;
     if ((gMemcardSetup.mOp & 0x8000) != 0) {
         textHash = 0x391a0aac;
@@ -349,7 +350,7 @@ void UIMemcardBase::SetupPromptSaveConfirm() {
     } else {
         textHash = 0x39b3ccba;
     }
-    const char* localStr = GetLocalizedString(textHash);
+    localStr = GetLocalizedString(textHash);
     ShowYesNo(0x39b3ccba, 0x4000000);
     char buf[512];
     bSPrintf(buf, localStr, m_FileName, m_FileName);
