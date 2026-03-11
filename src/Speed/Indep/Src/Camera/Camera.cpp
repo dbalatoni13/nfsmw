@@ -18,24 +18,12 @@ static unsigned short aBaselineFovNoise;
 static int cameralink;
 
 Camera::Camera() {
-    bMatrix4 matrix;
+    bMatrix4 m;
 
-    matrix.v0.x = 1.0f;
-    matrix.v0.y = 0.0f;
-    matrix.v0.z = 0.0f;
-    matrix.v0.w = 0.0f;
-    matrix.v1.x = 0.0f;
-    matrix.v1.y = -1.0f;
-    matrix.v1.z = 0.0f;
-    matrix.v1.w = 0.0f;
-    matrix.v2.x = 0.0f;
-    matrix.v2.y = 0.0f;
-    matrix.v2.z = -1.0f;
-    matrix.v2.w = 100.0f;
-    matrix.v3.x = 0.0f;
-    matrix.v3.y = 0.0f;
-    matrix.v3.z = 1200.0f;
-    matrix.v3.w = 1.0f;
+    m.v0 = bVector4(1.0f, 0.0f, 0.0f, 0.0f);
+    m.v1 = bVector4(0.0f, -1.0f, 0.0f, 0.0f);
+    m.v2 = bVector4(0.0f, 0.0f, -1.0f, 100.0f);
+    m.v3 = bVector4(0.0f, 0.0f, 1200.0f, 1.0f);
 
     LastUpdateTime = 0x80000000;
     LastDisparateTime = RealTimeFrames;
@@ -66,8 +54,8 @@ Camera::Camera() {
     CurrentKey.NoiseAmplitude2.x = 0.0f;
     CurrentKey.NoiseAmplitude2.y = 0.0f;
     CurrentKey.NoiseAmplitude2.z = 0.0f;
-    SetCameraMatrix(matrix, 1.0f);
-    SetCameraMatrix(matrix, 1.0f);
+    SetCameraMatrix(m, 1.0f);
+    SetCameraMatrix(m, 1.0f);
 }
 
 void Camera::UpdateAll(float dT) {
@@ -226,26 +214,20 @@ void Camera::SetCameraMatrix(const bMatrix4 &m, float fTime) {
 }
 
 void Camera::ApplyNoise(bMatrix4 *p_matrix, float time, float intensity) {
-    bVector4 noise1;
-    bVector4 noise2;
-    bVector4 v_noise;
+    bVector4 v(CurrentKey.NoiseFrequency1);
+    bScale(&v, &v, time);
+    bVector4 v1(Noise(v.x), Noise(v.y), Noise(v.z), Noise(v.w));
+    bScale(&v1, &v1, &CurrentKey.NoiseAmplitude1);
+
+    bVector4 v2(CurrentKey.NoiseFrequency2);
+    bScale(&v2, &v2, time);
+    bVector4 v_noise(Noise(v2.x), Noise(v2.y), Noise(v2.z), Noise(v2.w));
+    bScale(&v_noise, &v_noise, &CurrentKey.NoiseAmplitude2);
+
+    v_noise = v1 + v_noise;
+    bScale(&v_noise, &v_noise, intensity);
+
     bMatrix4 m;
-
-    noise1.x = Noise(CurrentKey.NoiseFrequency1.x * time) * CurrentKey.NoiseAmplitude1.x;
-    noise1.y = Noise(CurrentKey.NoiseFrequency1.y * time) * CurrentKey.NoiseAmplitude1.y;
-    noise1.z = Noise(CurrentKey.NoiseFrequency1.z * time) * CurrentKey.NoiseAmplitude1.z;
-    noise1.w = Noise(CurrentKey.NoiseFrequency1.w * time) * CurrentKey.NoiseAmplitude1.w;
-
-    noise2.x = Noise(CurrentKey.NoiseFrequency2.x * time) * CurrentKey.NoiseAmplitude2.x;
-    noise2.y = Noise(CurrentKey.NoiseFrequency2.y * time) * CurrentKey.NoiseAmplitude2.y;
-    noise2.z = Noise(CurrentKey.NoiseFrequency2.z * time) * CurrentKey.NoiseAmplitude2.z;
-    noise2.w = Noise(CurrentKey.NoiseFrequency2.w * time) * CurrentKey.NoiseAmplitude2.w;
-
-    v_noise.x = (noise1.x + noise2.x) * intensity;
-    v_noise.y = (noise1.y + noise2.y) * intensity;
-    v_noise.z = (noise1.z + noise2.z) * intensity;
-    v_noise.w = (noise1.w + noise2.w) * intensity;
-
     bIdentity(&m);
     eRotateX(&m, &m, FovRelativeAngle(bDegToAng(v_noise.z)));
     eRotateY(&m, &m, FovRelativeAngle(bDegToAng(v_noise.w)));

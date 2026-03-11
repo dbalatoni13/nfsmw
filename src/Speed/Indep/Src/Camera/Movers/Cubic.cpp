@@ -83,6 +83,94 @@ void tTable<CubicPovData>::Blend(CubicPovData *dest, CubicPovData *a, CubicPovDa
     bScaleAdd(dest->GetForwardDuration(), &v9, b->GetForwardDuration(), blend_b);
 }
 
+CubicCameraMover::CubicCameraMover(int nView, CameraAnchor *p_car, int pov_type, bool smooth, bool disable_lag, bool look_back, bool perfect_focus)
+    : CameraMover(nView, CM_DRIVE_CUBIC) {
+    bSnapNext = 0;
+    bAccelLag = !disable_lag;
+    bLookBack = look_back;
+    bPerfectFocus = perfect_focus;
+    pCar = p_car;
+    nPovType = pov_type;
+    nPovTypeUsed = pov_type;
+    fIgnoreSetSnapNextTimer = 0.0f;
+    tLastGrounded = WorldTimer - Timer(8000);
+    tLastUnderVehicle = WorldTimer - Timer(0x1900);
+    bFirstTime = 1;
+    tLastGearChange = WorldTimer - Timer(6000);
+
+    POV *pov = pCar->GetPov(nPovType);
+
+    CubicPovData pov_data;
+    aCubicPovTables[nPovTypeUsed].GetValue(&pov_data, 0.0f);
+
+    pFov = new (__FILE__, __LINE__) tCubic1D(0, pov_data.fFovDuration);
+    pEye = new (__FILE__, __LINE__) tCubic3D(0, pov_data.fEyeDuration);
+    pLook = new (__FILE__, __LINE__) tCubic3D(0, pov_data.fLookDuration);
+    pForward = new (__FILE__, __LINE__) tCubic3D(0, pov_data.GetForwardDuration());
+    pUp = new (__FILE__, __LINE__) tCubic3D(0, pov_data.GetForwardDuration());
+
+    pAvgAccel = new tAverage<bVector3>(5);
+
+    bMatrix4 mCarToWorld;
+    SetDesired(&mCarToWorld, pov, &pov_data, true);
+
+    bMatrix4 mWorldToCar;
+    eInvertTransformationMatrix(&mWorldToCar, &mCarToWorld);
+
+    if (bLookBack) {
+        mWorldToCar.v0.x = -mWorldToCar.v0.x;
+        mWorldToCar.v0.y = -mWorldToCar.v0.y;
+        mWorldToCar.v1.x = -mWorldToCar.v1.x;
+        mWorldToCar.v1.y = -mWorldToCar.v1.y;
+        mWorldToCar.v2.x = -mWorldToCar.v2.x;
+        mWorldToCar.v2.y = -mWorldToCar.v2.y;
+        mWorldToCar.v3.x = -mWorldToCar.v3.x;
+        mWorldToCar.v3.y = -mWorldToCar.v3.y;
+    }
+
+    SetEyeLook(pEye, pLook, pFov, &mWorldToCar, pCar->GetVelocity());
+
+    bVector3 eye_current;
+    bVector3 eye_desired;
+    bVector3 look_current;
+    bVector3 look_desired;
+    bVector3 eye_movement;
+    bVector3 direction_current;
+    bVector3 direction_desired;
+
+    pEye->GetVal(&eye_current);
+    pLook->GetVal(&look_current);
+    pEye->GetValDesired(&eye_desired);
+    pLook->GetValDesired(&look_desired);
+
+    eye_movement = eye_desired - eye_current;
+    direction_current = look_current - eye_current;
+    direction_desired = look_desired - eye_desired;
+
+    bNormalize(&direction_current, &direction_current);
+    bNormalize(&direction_desired, &direction_desired);
+
+    vSavedEye.x = 0.0f;
+    vSavedEye.y = 0.0f;
+    vSavedEye.z = 0.0f;
+    vCameraImpcat.x = 0.0f;
+    vCameraImpcat.y = 0.0f;
+    vCameraImpcatTimer.x = 0.0f;
+    vCameraImpcatTimer.y = 0.0f;
+
+    if (smooth) {
+        if (bLength(&eye_movement) <= 50.0f && bDot(&direction_current, &direction_desired) >= -0.9f) {
+            fIgnoreSetSnapNextTimer = 1.0f;
+            return;
+        }
+    }
+
+    pUp->Snap();
+    pFov->Snap();
+    pEye->Snap();
+    pLook->Snap();
+}
+
 bool CubicCameraMover::IsUnderVehicle() {
     const IVehicle::List &vehicles = IVehicle::GetList(VEHICLE_ALL);
 

@@ -187,6 +187,10 @@ class CameraAnchor {
         return &mGeomPos;
     }
 
+    bVector3 *GetVelocity() {
+        return &mVelocity;
+    }
+
     const bVector3 *GetVelocity() const {
         return &mVelocity;
     }

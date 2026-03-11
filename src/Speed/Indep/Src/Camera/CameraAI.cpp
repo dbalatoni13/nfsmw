@@ -474,7 +474,6 @@ void CameraAI::Init() {
 
 void CameraAI::Shutdown() {
     if (TheAvoidables != nullptr) {
-        TheAvoidables->clear();
         delete TheAvoidables;
     }
     TheAvoidables = nullptr;
