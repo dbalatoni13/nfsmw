@@ -31,6 +31,12 @@ struct Vector3 {
 
 // total size: 0x10
 struct Vector4 {
+    Vector4()
+        : x(0.0f), //
+          y(0.0f), //
+          z(0.0f), //
+          w(0.0f) {}
+
     float x; // offset 0x0, size 0x4
     float y; // offset 0x4, size 0x4
     float z; // offset 0x8, size 0x4
@@ -39,6 +45,12 @@ struct Vector4 {
 
 // total size: 0x40
 struct Matrix4 {
+    Matrix4()
+        : v0(), //
+          v1(), //
+          v2(), //
+          v3() {}
+
     struct Vector4 v0; // offset 0x0, size 0x10
     struct Vector4 v1; // offset 0x10, size 0x10
     struct Vector4 v2; // offset 0x20, size 0x10
