@@ -237,8 +237,8 @@ template <typename T, typename Tag> class Container {
   public:
     class Elements : public UTL::Std::list<T *, Tag> {
       public:
-        Elements();
-        ~Elements();
+        Elements() {}
+        ~Elements() {}
     };
 
     void AddElement(T *e) {

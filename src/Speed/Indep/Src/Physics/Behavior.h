@@ -93,6 +93,10 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
     virtual void OnTaskSimulate(float dT);
     virtual void OnBehaviorChange(const UCrc32 &mechanic) {}
 
+    inline void BehaviorChanged(const UCrc32 &mechanic) {
+        OnBehaviorChange(mechanic);
+    }
+
     virtual ~Behavior() {
         // TODO
         Sim::Profile::Release(nullptr);

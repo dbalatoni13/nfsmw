@@ -76,9 +76,7 @@ inline void Copy(const Matrix4 &a, Matrix4 &r) {
 }
 
 inline void Copy(const Vector3 &a, Vector3 &r) {
-    r.x = a.x;
-    r.y = a.y;
-    r.z = a.z;
+    __builtin_memcpy(&r, &a, sizeof(Vector3));
 }
 
 inline void Set(Matrix4 &m, unsigned int row, const Vector4 &a) {

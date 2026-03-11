@@ -55,6 +55,12 @@ class PhysicsObject : public Sim::Object,
                 }
             }
         }
+
+        void Changed(const UCrc32 &mechanic) {
+            for (const_iterator iter = begin(); iter != end(); ++iter) {
+                (*iter)->BehaviorChanged(mechanic);
+            }
+        }
     };
 
     PhysicsObject(const Attrib::Instance &attribs, SimableType objType, WUID wuid, unsigned int num_interfaces);

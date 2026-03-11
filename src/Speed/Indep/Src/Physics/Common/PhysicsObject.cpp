@@ -263,9 +263,7 @@ void PhysicsObject::OnBehaviorChange(const UCrc32 &mechanic) {
             mBodyService = OpenService(UCrc32(0x998c21c0), &pkt);
         }
     }
-    for (Behaviors::const_iterator iter = mBehaviors.begin(); iter != mBehaviors.end(); ++iter) {
-        (*iter)->OnBehaviorChange(mechanic);
-    }
+    mBehaviors.Changed(mechanic);
 }
 
 bool PhysicsObject::IsBehaviorActive(const UCrc32 &mechanic) const {
