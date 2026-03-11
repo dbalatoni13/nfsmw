@@ -34,8 +34,8 @@ void SndAITrigger::Initialize(int AvgSize) {
 }
 
 void SndAIStateManager::SwitchState(SND_AI_STATE NewState) {
+    PrevState = CurState;
     bTransition = true;
     m_tLastSwitch = SndBase::m_fRunningTime;
-    PrevState = CurState;
     CurState = NewState;
 }

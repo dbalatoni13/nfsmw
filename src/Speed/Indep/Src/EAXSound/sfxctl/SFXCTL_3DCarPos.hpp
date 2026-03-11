@@ -12,6 +12,7 @@ struct SFXCTL_3DCarPos : public SFXCTL_3DObjPos {
     static TypeInfo s_TypeInfo;
 
   public:
+    ~SFXCTL_3DCarPos() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
 };

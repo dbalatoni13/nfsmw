@@ -12,6 +12,7 @@ struct SFXCTL_Tunnel : public SFXCTL {
     static TypeInfo s_TypeInfo;
 
   public:
+    ~SFXCTL_Tunnel() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
     int GetController(int Index) override;

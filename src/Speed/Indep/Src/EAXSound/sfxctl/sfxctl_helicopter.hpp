@@ -12,6 +12,7 @@ struct SFXCTL_3DHeliPos : public SFXCTL_3DObjPos {
     static TypeInfo s_TypeInfo;
 
   public:
+    ~SFXCTL_3DHeliPos() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
 };
@@ -26,6 +27,7 @@ struct SFXCTL_Helicopter : public SFXCTL {
     /* 0x28 */ EAX_HeliState *m_pHeliState;
     /* 0x2c */ SFXCTL_3DHeliPos *m_p3DHeliPosCtl;
 
+    ~SFXCTL_Helicopter() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
     int GetController(int Index) override;

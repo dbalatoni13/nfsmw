@@ -1,5 +1,9 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
 
+SFXCTL_Physics::~SFXCTL_Physics() {}
+
+SFXCTL_AIPhysics::~SFXCTL_AIPhysics() {}
+
 SndBase::TypeInfo *SFXCTL_Physics::GetTypeInfo() const { return &s_TypeInfo; }
 
 char *SFXCTL_Physics::GetTypeName() const { return s_TypeInfo.typeName; }

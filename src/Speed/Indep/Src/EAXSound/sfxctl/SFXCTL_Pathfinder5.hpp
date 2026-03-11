@@ -14,6 +14,7 @@ struct SFXCTL_Pathfinder : public SFXCTL {
     static TypeInfo s_TypeInfo;
 
   public:
+    ~SFXCTL_Pathfinder() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
     int GetController(int Index) override;

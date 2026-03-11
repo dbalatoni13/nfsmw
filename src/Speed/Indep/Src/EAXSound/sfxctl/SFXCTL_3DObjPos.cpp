@@ -1,5 +1,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DObjPos.hpp"
 
+SFXCTL_3DObjPos::~SFXCTL_3DObjPos() {}
+
 SndBase::TypeInfo *SFXCTL_3DObjPos::GetTypeInfo() const { return &s_TypeInfo; }
 
 char *SFXCTL_3DObjPos::GetTypeName() const { return s_TypeInfo.typeName; }

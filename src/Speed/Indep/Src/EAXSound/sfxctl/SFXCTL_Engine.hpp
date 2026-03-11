@@ -31,6 +31,7 @@ struct SFXCTL_Engine : public SFXCTL {
     /* 0x120 */ float m_fEng_Trq;
     /* 0x124 */ float m_fSmoothedEng_Trq;
 
+    ~SFXCTL_Engine() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
 

@@ -1,5 +1,9 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/sfxctl_helicopter.hpp"
 
+SFXCTL_3DHeliPos::~SFXCTL_3DHeliPos() {}
+
+SFXCTL_Helicopter::~SFXCTL_Helicopter() {}
+
 SndBase::TypeInfo *SFXCTL_3DHeliPos::GetTypeInfo() const { return &s_TypeInfo; }
 
 char *SFXCTL_3DHeliPos::GetTypeName() const { return s_TypeInfo.typeName; }

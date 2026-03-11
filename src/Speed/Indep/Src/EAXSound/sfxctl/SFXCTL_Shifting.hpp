@@ -54,6 +54,7 @@ struct SFXCTL_Shifting : public SFXCTL {
     /* 0xd4 */ char _pad_shifting[0x88]; // 0xd4 to 0x15c
     /* 0x15c */ FX_POST_SHIFT_LFO eShift_LFO;
 
+    ~SFXCTL_Shifting() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
     int GetController(int Index) override;

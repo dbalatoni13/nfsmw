@@ -36,4 +36,8 @@ void EAXS_StreamManager::AddStreamChannel(EAXS_StreamChannel *pstrmchannel, eSTR
 
 void EAXS_StreamManager::RemoveStreamChannel(eSTRMTYPE strmtype) {}
 
-void AssignAudioStreamHandle(unsigned int realstrmhandle) {}
+void AssignAudioStreamHandle(unsigned int realstrmhandle) {
+    unsigned int nStartAudioMemPool = reinterpret_cast<unsigned int>(gAudioMemoryManager.GetMemPoolMem());
+    if (realstrmhandle >= nStartAudioMemPool) {
+    }
+}

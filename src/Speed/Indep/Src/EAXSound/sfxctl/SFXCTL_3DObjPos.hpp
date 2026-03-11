@@ -20,6 +20,7 @@ struct SFXCTL_3DObjPos : public SFXCTL {
   public:
     /* 0x44 */ int m_PlayerRef;
 
+    ~SFXCTL_3DObjPos() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
     void Detach() override;

@@ -1,5 +1,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Tunnel.hpp"
 
+SFXCTL_Tunnel::~SFXCTL_Tunnel() {}
+
 SndBase::TypeInfo *SFXCTL_Tunnel::GetTypeInfo() const { return &s_TypeInfo; }
 
 char *SFXCTL_Tunnel::GetTypeName() const { return s_TypeInfo.typeName; }

@@ -2,6 +2,8 @@
 
 SFXCTL_Pathfinder *g_pSFXCTL_Pathfinder;
 
+SFXCTL_Pathfinder::~SFXCTL_Pathfinder() {}
+
 SndBase::TypeInfo *SFXCTL_Pathfinder::GetTypeInfo() const { return &s_TypeInfo; }
 
 char *SFXCTL_Pathfinder::GetTypeName() const { return s_TypeInfo.typeName; }

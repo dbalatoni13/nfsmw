@@ -61,6 +61,7 @@ struct SFXCTL_Physics : public SFXCTL {
     /* 0xc8 */ float NISRPM;
     /* 0xcc */ float NISTRQ;
 
+    ~SFXCTL_Physics() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
 
@@ -79,6 +80,7 @@ struct SFXCTL_AIPhysics : public SFXCTL_Physics {
   public:
     /* 0xd0 */ SFXCTL_Shifting *m_pShiftCtl;
 
+    ~SFXCTL_AIPhysics() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
     int GetController(int Index) override;

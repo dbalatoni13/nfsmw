@@ -1,5 +1,9 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Collision.hpp"
 
+SFXCTL_3DColPos::~SFXCTL_3DColPos() {}
+
+SFXCTL_3DScrapePos::~SFXCTL_3DScrapePos() {}
+
 SndBase::TypeInfo *SFXCTL_3DColPos::GetTypeInfo() const { return &s_TypeInfo; }
 
 char *SFXCTL_3DColPos::GetTypeName() const { return s_TypeInfo.typeName; }

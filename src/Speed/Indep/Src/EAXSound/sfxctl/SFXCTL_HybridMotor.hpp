@@ -12,6 +12,7 @@ struct SFXCTL_HybridMotor : public SFXCTL {
     static TypeInfo s_TypeInfo;
 
   public:
+    ~SFXCTL_HybridMotor() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
 };

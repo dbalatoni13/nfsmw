@@ -1,6 +1,8 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Engine.hpp"
 
+SFXCTL_Shifting::~SFXCTL_Shifting() {}
+
 SndBase::TypeInfo *SFXCTL_Shifting::GetTypeInfo() const { return &s_TypeInfo; }
 
 char *SFXCTL_Shifting::GetTypeName() const { return s_TypeInfo.typeName; }

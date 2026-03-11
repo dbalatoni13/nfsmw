@@ -19,6 +19,8 @@ class AudioMemoryManager {
     char *AllocateMemoryChar(int, const char *, bool);
     void FreeMemory(void *);
 
+    void *GetMemPoolMem() const { return m_pMemoryPoolMem; }
+
   private:
     void *m_pMemoryPoolMem;     // offset 0x0, size 0x4
     void *m_pSnd11PoolMem;      // offset 0x4, size 0x4

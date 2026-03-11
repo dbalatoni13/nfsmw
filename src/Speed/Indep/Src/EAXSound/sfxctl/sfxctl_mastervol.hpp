@@ -12,6 +12,7 @@ struct SFXCTL_MasterVol : public SFXCTL {
     static TypeInfo s_TypeInfo;
 
   public:
+    ~SFXCTL_MasterVol() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
     void InitSFX() override;
