@@ -1,6 +1,7 @@
 #include "PhysicsUpgrades.hpp"
 #include "PhysicsInfo.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/junkman.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/presetride.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
@@ -661,6 +662,96 @@ void Physics::Upgrades::Flush() {
     Database::Get().CollectGarbage();
 }
 
+PUJunkNode::PUJunkNode(const RefSpec &collection, const junkman &junkman, unsigned int junkkey)
+    : Instance(collection, 0, nullptr) {
+    Attribute junk_attribute;
+    if (junkman.Lookup(junkkey, junk_attribute)) {
+        Key uniqueKey = GenerateUniqueKey("junk_upgrade", false);
+        Modify(uniqueKey, 0);
+        unsigned int len = junk_attribute.GetLength();
+        for (unsigned int index = 0; index < len; index++) {
+            JunkmanMod modifire;
+            junk_attribute.Get(index, modifire);
+            if (&modifire != nullptr) {
+                Attribute start_attribute = Get(modifire.DefinitionKey);
+                unsigned int count = start_attribute.GetLength();
+                if (count != 0) {
+                    Add(modifire.DefinitionKey, count);
+                    Attribute attribute = Get(modifire.DefinitionKey);
+                    unsigned int type = attribute.GetType();
+                    for (unsigned int i = 0; i < count; i++) {
+                        if (type == 0x4cb36381) {
+                            ScalePart<AxlePair>(attribute, i, modifire.Scale);
+                        } else if (type < 0x4cb36382) {
+                            if (type == 0x3c16ec5e) {
+                                ScalePart<float>(attribute, i, modifire.Scale);
+                            } else {
+                                bBreak();
+                            }
+                        } else {
+                            if (type != 0x5763da41) {
+                                bBreak();
+                                continue;
+                            }
+                            ScalePart<int>(attribute, i, modifire.Scale);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+PUPartNode::PUPartNode(const RefSpec &collection0, const RefSpec &collection1, float weight)
+    : Instance(collection0, 0, nullptr) {
+    if (weight >= 1.0f) {
+        ChangeWithDefault(collection1);
+    } else if (weight > 0.0f) {
+        ChangeWithDefault(collection0);
+        Key uniqueKey = GenerateUniqueKey("part_upgrade", false);
+        Modify(uniqueKey, 0);
+        Instance end_instance(collection1, 0, nullptr);
+        Instance start_instance(collection0, 0, nullptr);
+        AttributeIterator iter = end_instance.Iterator();
+        while (iter.Valid()) {
+            Key key = iter.GetKey();
+            Attribute end_attribute = end_instance.Get(key);
+            Attribute start_attribute = start_instance.Get(key);
+            unsigned int end_count = end_attribute.GetLength();
+            unsigned int start_count = start_attribute.GetLength();
+            unsigned int count = UMath::Max(end_count, start_count);
+            unsigned int end_type = end_attribute.GetType();
+            unsigned int start_type = start_attribute.GetType();
+            if (end_type == start_type) {
+                if (count != 0) {
+                    Add(key, count);
+                    Attribute new_attrib = Get(key);
+                    unsigned int type = start_attribute.GetType();
+                    for (unsigned int i = 0; i < count; i++) {
+                        if (type == 0x4cb36381) {
+                            BlendParts<AxlePair>(start_attribute, end_attribute, i, weight, new_attrib);
+                        } else if (type < 0x4cb36382) {
+                            if (type == 0x3c16ec5e) {
+                                BlendParts<float>(start_attribute, end_attribute, i, weight, new_attrib);
+                            } else {
+                                bBreak();
+                            }
+                        } else {
+                            if (type != 0x5763da41) {
+                                bBreak();
+                                continue;
+                            }
+                            BlendParts<int>(start_attribute, end_attribute, i, weight, new_attrib);
+                        }
+                    }
+                }
+            }
+            iter.Advance();
+        }
+    }
+}
+
 // Explicit template instantiations
 template void BlendParts<AxlePair>(const Attribute &, const Attribute &, unsigned int, float, Attribute &);
 template void BlendParts<float>(const Attribute &, const Attribute &, unsigned int, float, Attribute &);
+template void ScalePart<AxlePair>(Attribute &, unsigned int, float);
