@@ -21,9 +21,7 @@ bool WWorldPos::FindClosestFaceInternal(const WCollisionInstanceCacheList *instL
 
     bool faceChanged = false;
     if (fFaceValid) {
-        if (WWorldMath::InTri(pt, reinterpret_cast<const UMath::Vector4 *>(&fFace))) {
-            faceChanged = true;
-        }
+        faceChanged = WWorldMath::InTri(pt, reinterpret_cast<const UMath::Vector4 *>(&fFace));
     }
 
     if (faceChanged && quitIfOnSameFace) {

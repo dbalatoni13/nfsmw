@@ -754,10 +754,11 @@ unsigned char WRoadNav::FirstShortcutInPath() {
 }
 
 const WRoadSegment *GetAttachedDirectionalSegment(const WRoadNode *node, short segment_index) {
+    WRoadNetwork &roadNetwork = WRoadNetwork::Get();
     for (int i = 0; i < node->fNumSegments; i++) {
-        const WRoadSegment *segment = WRoadNetwork::Get().GetSegment(node->fSegmentIndex[i]);
-        if (segment_index != segment->fIndex && (segment->fFlags ^ 1) & 1) {
-            return segment;
+        const WRoadSegment *newRoadSegment = roadNetwork.GetSegment(node->fSegmentIndex[i]);
+        if (segment_index != newRoadSegment->fIndex && (newRoadSegment->fFlags ^ 1) & 1) {
+            return newRoadSegment;
         }
     }
     return nullptr;
@@ -873,15 +874,18 @@ bool WRoadNav::IsOnLegalRoad() {
 
 bool WRoadNav::FindPath(const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, char *shortcut_allowed) {
     PathFinder *path_finder = PathFinder::Get();
-    if (path_finder == nullptr) {
-        return false;
+    bool ret = false;
+    if (path_finder != nullptr) {
+        MaybeAllocatePathSegments();
+        AStarSearch *search = path_finder->Pending(this);
+        if (search == nullptr) {
+            search = path_finder->Submit(this, goal_position, goal_direction, shortcut_allowed);
+        }
+        if (search != nullptr) {
+            ret = true;
+        }
     }
-    MaybeAllocatePathSegments();
-    AStarSearch *search = path_finder->Pending(this);
-    if (search == nullptr) {
-        search = path_finder->Submit(this, goal_position, goal_direction, shortcut_allowed);
-    }
-    return search != nullptr;
+    return ret;
 }
 
 bool WRoadNav::FindPathNow(const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, char *shortcut_allowed) {
@@ -993,7 +997,7 @@ void WRoadNav::PullOver() {
     const WRoadSegment *segment = rn.GetSegment(GetSegmentInd());
     const WRoadProfile *profile = rn.GetSegmentProfile(*segment, which_node);
     int num_lanes = profile->fNumZones;
-    bool inverted = segment->IsProfileInverted(which_node);
+    bool inverted = segment->IsProfileInverted(which_node) ^ (which_node == 0);
 
     int lane = profile->GetLaneNumber(GetLaneInd(), inverted);
 

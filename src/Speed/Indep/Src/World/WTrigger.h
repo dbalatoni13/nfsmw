@@ -85,7 +85,6 @@ struct WTrigger : public Trigger {
         m[2][1] = fMatRow2Length.y;
         m[2][2] = fMatRow2Length.z;
         m[2][3] = 0.0f;
-        m[3][3] = 1.0f;
         if (addXLate) {
             m[3][0] = fPosRadius.x;
             m[3][2] = fPosRadius.z;
@@ -99,6 +98,7 @@ struct WTrigger : public Trigger {
             m[3][1] = 0.0f;
             m[3][2] = 0.0f;
         }
+        m[3][3] = 1.0f;
     }
 
     static void operator delete(void *mem, unsigned int size) { if (mem) gFastMem.Free(mem, size, nullptr); }
