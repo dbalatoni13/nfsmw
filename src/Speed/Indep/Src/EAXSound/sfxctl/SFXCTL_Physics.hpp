@@ -82,6 +82,7 @@ struct SFXCTL_AIPhysics : public SFXCTL_Physics {
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
     int GetController(int Index) override;
+    void SetupSFX(CSTATE_Base *_StateBase) override;
     void Destroy() override;
     void UpdateMixerOutputs() override;
 };

@@ -29,6 +29,7 @@ struct SFXCTL_Helicopter : public SFXCTL {
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
     int GetController(int Index) override;
+    void SetupSFX(CSTATE_Base *_StateBase) override;
     void Detach() override;
 };
 

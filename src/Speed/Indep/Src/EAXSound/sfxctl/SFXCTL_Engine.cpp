@@ -11,3 +11,8 @@ float SFXCTL_Engine::GetSmoothedEngRPM() { return m_fSmoothedEng_RPM; }
 float SFXCTL_Engine::GetEngTorque() { return m_fEng_Trq; }
 
 float SFXCTL_Engine::GetSmoothedEngTorque() { return m_fSmoothedEng_Trq; }
+
+void SFXCTL_Engine::MsgCountdownDone(const MCountdownDone &message) {
+    tMergeWithPhysicsOffStart = 0.7f;
+    bPreRace = 0;
+}

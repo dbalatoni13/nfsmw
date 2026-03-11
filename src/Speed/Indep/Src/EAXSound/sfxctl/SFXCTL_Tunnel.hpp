@@ -16,6 +16,7 @@ struct SFXCTL_Tunnel : public SFXCTL {
     char *GetTypeName() const override;
     int GetController(int Index) override;
     void AttachController(SFXCTL *psfxctl) override;
+    void SetupSFX(CSTATE_Base *_StateBase) override;
     void Destroy() override;
 };
 

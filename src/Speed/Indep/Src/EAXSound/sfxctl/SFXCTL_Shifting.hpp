@@ -11,7 +11,9 @@
 
 enum SHIFT_STAGE {};
 enum AEMS_SHIFTING_SAMPLES {};
-enum FX_POST_SHIFT_LFO {};
+enum FX_POST_SHIFT_LFO {
+    SHIFT_LFO_NONE = 0
+};
 
 struct shiftpattern;
 struct Graph;
@@ -49,6 +51,8 @@ struct SFXCTL_Shifting : public SFXCTL {
     /* 0x80 */ cInterpLine m_InterpShiftTorque;
     /* 0x9c */ cInterpLine m_InterpShiftRPM;
     /* 0xb8 */ cInterpLine m_InterpShiftVol;
+    /* 0xd4 */ char _pad_shifting[0x88]; // 0xd4 to 0x15c
+    /* 0x15c */ FX_POST_SHIFT_LFO eShift_LFO;
 
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
@@ -59,6 +63,7 @@ struct SFXCTL_Shifting : public SFXCTL {
     float GetShiftingVOL();
     Gear GetCurGear();
     Gear GetLastGear();
+    void PostShiftFX_End();
 };
 
 #endif

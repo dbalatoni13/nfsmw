@@ -10,6 +10,7 @@
 struct SFXCTL_Shifting;
 struct SFXCTL_AccelTrans;
 struct SFXCTL_3DCarPos;
+struct MCountdownDone;
 
 struct SFXCTL_Engine : public SFXCTL {
   protected:
@@ -20,7 +21,10 @@ struct SFXCTL_Engine : public SFXCTL {
     /* 0x2c */ SFXCTL_AccelTrans *m_pAccelTransitionCtl;
     /* 0x30 */ struct SFXCTL_Physics *m_pPhysicsCtl;
     /* 0x34 */ SFXCTL_3DCarPos *m_p3DCarPosCtl;
-    /* 0x38 */ char _pad_engine[0xDC];
+    /* 0x38 */ char _pad_engine0[0x88]; // 0x38 to 0xc0
+    /* 0xc0 */ float tMergeWithPhysicsOffStart;
+    /* 0xc4 */ int bPreRace;
+    /* 0xc8 */ char _pad_engine1[0x4C]; // 0xc8 to 0x114
     /* 0x114 */ float m_fEng_RPM;
     /* 0x118 */ float m_fPrevRPM;
     /* 0x11c */ float m_fSmoothedEng_RPM;
@@ -34,6 +38,8 @@ struct SFXCTL_Engine : public SFXCTL {
     virtual float GetSmoothedEngRPM();
     virtual float GetEngTorque();
     virtual float GetSmoothedEngTorque();
+
+    void MsgCountdownDone(const MCountdownDone &message);
 };
 
 #endif

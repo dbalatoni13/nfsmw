@@ -108,6 +108,7 @@ class Average : public AverageBase {
     ~Average();
 
     void Init(int slots);
+    void Reset(float fValue);
 
     float GetValue() {
         return fAverage;

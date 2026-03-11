@@ -19,6 +19,10 @@ void SFXCTL_AIPhysics::Destroy() {}
 
 void SFXCTL_AIPhysics::UpdateMixerOutputs() {}
 
+void SFXCTL_AIPhysics::SetupSFX(CSTATE_Base *_StateBase) {
+    SFXCTL_Physics::SetupSFX(_StateBase);
+}
+
 SndBase::TypeInfo *SFXCTL_TruckPhysics::GetTypeInfo() const { return &s_TypeInfo; }
 
 char *SFXCTL_TruckPhysics::GetTypeName() const { return s_TypeInfo.typeName; }

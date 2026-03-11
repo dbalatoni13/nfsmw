@@ -9,3 +9,7 @@ int SFXCTL_Tunnel::GetController(int Index) { return -1; }
 void SFXCTL_Tunnel::AttachController(SFXCTL *psfxctl) {}
 
 void SFXCTL_Tunnel::Destroy() {}
+
+void SFXCTL_Tunnel::SetupSFX(CSTATE_Base *_StateBase) {
+    SndBase::SetupSFX(_StateBase);
+}

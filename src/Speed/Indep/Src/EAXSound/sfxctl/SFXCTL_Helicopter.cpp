@@ -16,3 +16,7 @@ int SFXCTL_Helicopter::GetController(int Index) {
 }
 
 void SFXCTL_Helicopter::Detach() { m_pHeliState = nullptr; }
+
+void SFXCTL_Helicopter::SetupSFX(CSTATE_Base *_StateBase) {
+    SndBase::SetupSFX(_StateBase);
+}

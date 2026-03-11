@@ -21,3 +21,13 @@ float SFXCTL_Shifting::GetShiftingVOL() { return m_InterpShiftVol.CurValue; }
 Gear SFXCTL_Shifting::GetCurGear() { return m_pEngineCtl->m_pPhysicsCtl->m_CurGear; }
 
 Gear SFXCTL_Shifting::GetLastGear() { return m_pEngineCtl->m_pPhysicsCtl->m_LastGear; }
+
+void SFXCTL_Shifting::PostShiftFX_End() {
+    eShift_LFO = SHIFT_LFO_NONE;
+    m_VOL_LFO_AMP = 0;
+    m_VOL_LFO_FRQ = 0;
+    m_TRQ_LFO_AMP = 0;
+    m_TRQ_LFO_FRQ = 0;
+    m_RPM_LFO_AMP = 0;
+    m_RPM_LFO_FRQ = 0;
+}

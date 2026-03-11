@@ -38,6 +38,10 @@ class Connection : public UTL::COM::Factory<const ConnectionData &, Connection, 
         }
     }
 
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
   protected:
     Connection();
 
