@@ -2,8 +2,7 @@
 #define _CFENG
 
 #include "FEPackage.h"
-
-struct FEngine;
+#include "FEngine.h"
 
 enum FE_PACKAGE_PRIORITY {
     FE_PACKAGE_PRIORITY_FIFTH_CLOSEST = 100,
@@ -23,7 +22,7 @@ struct cFEng {
 
     static inline cFEng* Get() { return mInstance; }
 
-    bool IsErrorState();
+    bool IsErrorState() { return mFEng->bErrorScreenMode; }
 
     FEPackage* FindPackage(const char* pPackageName);
 
