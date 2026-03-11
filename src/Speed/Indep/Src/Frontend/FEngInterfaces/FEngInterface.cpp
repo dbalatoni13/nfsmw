@@ -2,17 +2,23 @@
 #include "Speed/Indep/Src/FEng/FEGameInterface.h"
 #include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Frontend/FEObjectCallbacks.hpp"
 #include "Speed/Indep/Src/Frontend/FEPackageManager.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 
+#include <cstring>
+
 void SoundPause(bool pause, eSNDPAUSE_REASON reason);
 void SetSoundControlState(bool set, eSNDCTLSTATE state, const char* name);
 void HideEverySingleHud();
+int bStrCmp(const char* s1, const char* s2);
+FEPackageRenderInfo* HACK_FEPkgMgr_GetPackageRenderInfo(FEPackage* pkg);
 
 extern Timer MessengerCreationTimer;
+extern float RealTimeElapsed;
 
 cFEng* cFEng::mInstance;
 
@@ -159,14 +165,38 @@ void cFEng::QueuePackageSwitch(const char* pPackageName, int pArg, unsigned long
     }
 }
 
-void cFEng::QueueGameMessagePkg(unsigned int pMessage, FEPackage* topkg) {
-    mFEng->QueueMessage(pMessage, nullptr, topkg, nullptr, 0xFFFFFFFF);
+void cFEng::PushNoControlPackage(const char* pPackageName, FE_PACKAGE_PRIORITY pPriority) {
+    mFEng->PushPackage(pPackageName, pPriority, 0);
 }
 
-void cFEng::PrintLoadedPackages() {}
+void cFEng::PopNoControlPackage(const char* pPackageName) {
+    FEPackage* packageToPop = FEPackageManager::Get()->FindPackage(pPackageName);
+    mFEng->UnloadPackage(packageToPop);
+}
+
+void cFEng::Service() {
+    mFEng->Update(static_cast<long>(RealTimeElapsed * 1000.0f),
+                  IsGameFlowInGame() && WorldTimeElapsed > 0.0f);
+}
+
+void cFEng::ServiceFengOnly() {
+    mFEng->Update(0, 0);
+}
 
 void cFEng::DrawForeground() {
     mFEng->Render();
+}
+
+FEPackage* cFEng::FindPackageWithControl() {
+    FEPackageList* packageList = mFEng->GetPackageList();
+    if (packageList != nullptr) {
+        for (FEPackage* package = packageList->GetLastPackage(); package != nullptr; package = package->GetPrev()) {
+            if (package->GetControlMask() != 0) {
+                return package;
+            }
+        }
+    }
+    return nullptr;
 }
 
 FEPackage* cFEng::FindPackageAtBase() {
@@ -183,10 +213,89 @@ FEPackage* cFEng::FindPackageIdle(const char* pPackageName) {
     return mFEng->FindIdlePackage(pPackageName);
 }
 
-void cFEng::ServiceFengOnly() {
-    mFEng->Update(0, 0);
+FEPackage* cFEng::FindPackage(const char* pPackageName) {
+    if (pPackageName != nullptr && strlen(pPackageName) != 0) {
+        if (FEPackageData::IsInScreenConstructor() > 0) {
+            return FEPackageManager::Get()->FindPackage(pPackageName);
+        }
+        FEPackage* package = FindPackageActive(pPackageName);
+        if (package != nullptr) {
+            return package;
+        }
+        package = FindPackageIdle(pPackageName);
+        if (package != nullptr) {
+            return package;
+        }
+    }
+    return nullptr;
+}
+
+bool cFEng::IsPackagePushed(const char* pPackageName) {
+    FEPackage* package;
+    if (FEPackageData::IsInScreenConstructor() > 0) {
+        package = FEPackageManager::Get()->FindPackage(pPackageName);
+    } else {
+        package = FindPackageActive(pPackageName);
+    }
+    return package != nullptr;
+}
+
+bool cFEng::IsPackageInControl(const char* pPackageName) {
+    FEPackage* packageWithCtrl = FindPackageWithControl();
+    if (packageWithCtrl == nullptr) {
+        return false;
+    }
+    return bStrCmp(pPackageName, packageWithCtrl->GetName()) == 0;
+}
+
+void cFEng::PrintLoadedPackages() {}
+
+void cFEng::QueueMessage(unsigned int pMessage, const char* pPackageName, FEObject* to, unsigned int controlMask) {
+    if (pPackageName != nullptr) {
+        FEPackage* package = FindPackage(pPackageName);
+        if (package != nullptr) {
+            mFEng->QueueMessage(pMessage, nullptr, package, to, controlMask);
+        }
+    } else {
+        FEPackageList* pkg_list = mFEng->GetPackageList();
+        if (pkg_list != nullptr) {
+            for (FEPackage* pkg = pkg_list->GetFirstPackage(); pkg != nullptr; pkg = pkg->GetNext()) {
+                mFEng->QueueMessage(pMessage, nullptr, pkg, to, 0);
+            }
+        }
+    }
 }
 
 void cFEng::QueueGameMessage(unsigned int pMessage, const char* pPackageName, unsigned int controlMask) {
     QueueMessage(pMessage, pPackageName, reinterpret_cast<FEObject*>(-1), controlMask);
+}
+
+void cFEng::QueueGameMessagePkg(unsigned int pMessage, FEPackage* topkg) {
+    mFEng->QueueMessage(pMessage, nullptr, topkg, reinterpret_cast<FEObject*>(-1), 0);
+}
+
+void cFEng::QueuePackageMessage(unsigned int pMessage, const char* pPackageName, FEObject* obj) {
+    if (obj != nullptr) {
+        QueueMessage(pMessage, pPackageName, obj, 0xFF);
+    } else {
+        QueueMessage(pMessage, pPackageName, reinterpret_cast<FEObject*>(-4), 0xFF);
+    }
+}
+
+void cFEng::QueueSoundMessage(unsigned int pMessage, const char* pPackageName) {
+    FEPackage* package = FindPackage(pPackageName);
+    if (package != nullptr) {
+        mFEng->QueueMessage(pMessage, nullptr, package, reinterpret_cast<FEObject*>(-5), 0);
+    }
+}
+
+void cFEng::MakeLoadedPackagesDirty() {
+    FEPackageList* pkg_list = mFEng->GetPackageList();
+    if (pkg_list != nullptr) {
+        ObjectDirtySetter dirt;
+        for (FEPackage* pkg = pkg_list->GetFirstPackage(); pkg != nullptr; pkg = pkg->GetNext()) {
+            dirt.pRenderInfo = HACK_FEPkgMgr_GetPackageRenderInfo(pkg);
+            pkg->ForAllObjects(dirt);
+        }
+    }
 }

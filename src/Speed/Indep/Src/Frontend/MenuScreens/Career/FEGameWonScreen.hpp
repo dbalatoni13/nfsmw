@@ -17,6 +17,7 @@ struct FEGameWonScreen : public MenuScreen {
     void Initialize();
     void Setup();
     void NotificationMessage(unsigned long, FEObject*, unsigned long, unsigned long) override;
+    static void QueuePackageSwitchForNextScreen();
 };
 
 #endif

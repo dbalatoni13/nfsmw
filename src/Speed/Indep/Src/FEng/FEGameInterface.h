@@ -13,8 +13,8 @@ struct FEObjectListEntry;
 struct FEMouse;
 struct FEMouseInfo;
 struct FECodeListBox;
-struct FEMatrix4;
 struct FEResourceRequest;
+struct FEMatrix4;
 enum FEng_WarningLevel {
     FEng_NonWarning = 0,
     FEng_SoftWarning = 1,

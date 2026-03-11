@@ -59,6 +59,7 @@ struct RenderObjectDisconnect : public FEObjectCallback {
 struct ObjectDirtySetter : public FEObjectCallback {
     FEPackageRenderInfo* pRenderInfo; // offset 0x4
 
+    inline ObjectDirtySetter() {}
     inline ObjectDirtySetter(FEPackageRenderInfo* ri) : pRenderInfo(ri) {}
     bool Callback(FEObject* obj) override;
     ~ObjectDirtySetter() override {}

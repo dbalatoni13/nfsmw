@@ -14,6 +14,38 @@ struct FEObjectMouseState;
 struct FEMessageResponse;
 struct FEPackageRenderInfo;
 
+// total size: 0x18
+struct FEResourceRequest {
+    unsigned long ID;             // offset 0x0, size 0x4
+    const char* pFilename;        // offset 0x4, size 0x4
+    unsigned long Type;           // offset 0x8, size 0x4
+    unsigned long Flags;          // offset 0xC, size 0x4
+    unsigned long Handle;         // offset 0x10, size 0x4
+    unsigned long UserParam;      // offset 0x14, size 0x4
+};
+
+// total size: 0x40
+struct FEMatrix4 {
+    float m11; // offset 0x0
+    float m12; // offset 0x4
+    float m13; // offset 0x8
+    float m14; // offset 0xC
+    float m21; // offset 0x10
+    float m22; // offset 0x14
+    float m23; // offset 0x18
+    float m24; // offset 0x1C
+    float m31; // offset 0x20
+    float m32; // offset 0x24
+    float m33; // offset 0x28
+    float m34; // offset 0x2C
+    float m41; // offset 0x30
+    float m42; // offset 0x34
+    float m43; // offset 0x38
+    float m44; // offset 0x3C
+
+    void Identify();
+};
+
 // total size: 0x14
 struct FENode : public FEMinNode {
     char* name;            // offset 0xC, size 0x4
@@ -87,10 +119,15 @@ struct FEPackage : public FENode {
     FEPackage();
     ~FEPackage() override;
 
+    bool InitializePackage();
+    void Update(FEngine* pEngine, long tDeltaTicks);
+
     inline FEObject* GetCurrentButton() { return pCurrentButton; }
     inline FEButtonMap* GetButtonMap() { return &ButtonMap; }
     inline FEObject* GetFirstObject() { return static_cast<FEObject*>(Objects.GetHead()); }
     inline FEPackage* GetNext() { return static_cast<FEPackage*>(FENode::GetNext()); }
+    inline FEPackage* GetPrev() { return static_cast<FEPackage*>(FENode::GetPrev()); }
+    inline unsigned long GetControlMask() const { return Controllers; }
     inline void SetErrorScreen(bool b) { bErrorScreen = b; }
 
     FEObject* FindObjectByHash(unsigned long NameHash);

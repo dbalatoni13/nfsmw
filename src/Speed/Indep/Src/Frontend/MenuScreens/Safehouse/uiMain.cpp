@@ -8,13 +8,16 @@
 
 // GarageMainScreen forward definition (full definition in FEAnyMovieScreen.cpp later in TU)
 struct GarageMainScreen : public MenuScreen {
-    char _pad_2c[0x44];             // offset 0x2C to 0x70
+    char _pad_2c[0x2C];             // offset 0x2C to 0x58
+    bool CameraPushRequested;       // offset 0x58
+    char _pad_59[0x17];             // offset 0x59 to 0x70
     int HideEntireScreen;           // offset 0x70
 
     GarageMainScreen(ScreenConstructorData* sd) : MenuScreen(sd) {}
     ~GarageMainScreen() override;
     void NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) override;
     bool IsVisable() { return HideEntireScreen == 0; }
+    void CancelCameraPush() { CameraPushRequested = false; }
     void UpdateCurrentCameraView(bool b);
     static GarageMainScreen* GetInstance();
 };
