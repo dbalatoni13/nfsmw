@@ -183,6 +183,10 @@ inline float bAngToRad(unsigned short angle) {
     return ((float)angle) * 0.0000958738f;
 }
 
+inline float SignExtendAng(unsigned short angle) {
+    return static_cast<float>(static_cast<short>(angle));
+}
+
 inline float bDegToRad(float degrees) {
     return degrees * 0.017453292f;
 }

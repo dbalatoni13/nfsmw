@@ -1610,9 +1610,12 @@ void TrackCopCameraMover::Init() {
 void TrackCopCameraMover::Update(float dT) {
     if (FEManager::Get() == nullptr || !FEManager::ShouldPauseSimulation(true)) {
         bVector3 world_up(0.0f, 0.0f, 1.0f);
-        bVector3 look;
         bVector3 eye;
+        bVector3 look;
         bVector3 offset;
+        bVector3 displacement;
+        bVector3 hcomp;
+        bVector3 look_offset;
         bMatrix4 camera_matrix;
         float focal_distance;
 
@@ -1638,13 +1641,22 @@ void TrackCopCameraMover::Update(float dT) {
             GetCamera()->SetFieldOfView(static_cast<unsigned short>(bDegToAng(offset.x)));
         }
 
-        offset.x = 0.0f;
-        offset.y = 0.0f;
-        offset.z = 0.0f;
-        eMulVector(&offset, CarToFollow->GetMatrix(), &offset);
-        look.x += offset.x;
-        look.y += offset.y;
-        look.z += offset.z;
+        displacement = eye - look;
+        float distance = bLength(&displacement);
+        if (distance < 1.0f) {
+            distance = 1.0f;
+        }
+        displacement /= distance;
+        bCross(&hcomp, &displacement, &world_up);
+
+        float vert_comp = 0.0f;
+        bScale(&hcomp, &hcomp, vert_comp);
+        look_offset.x = vert_comp;
+        look_offset.y = vert_comp;
+        look_offset.z = vert_comp;
+
+        eMulVector(&look_offset, CarToFollow->GetGeometryOrientation(), &look_offset);
+        look += look_offset;
 
         eCreateLookAtMatrix(&camera_matrix, eye, look, world_up);
         focal_distance = bDistBetween(CarToFollow->GetGeomPos(), &eye);
@@ -1652,9 +1664,12 @@ void TrackCopCameraMover::Update(float dT) {
             GetCamera()->SetTargetDistance(focal_distance);
         }
 
-        FocalDistCubic.dVal = FocalDistCubic.Val * 0.1f;
+        FocalDistCubic.dValDesired = FocalDistCubic.Val * 0.1f;
         SplineSeek(&FocalDistCubic, dT, 0.0f, 0.0f);
-        focal_distance = bMax(1.0f, focal_distance + FocalDistCubic.Val);
+        focal_distance += FocalDistCubic.Val;
+        if (focal_distance < 2.0f) {
+            focal_distance = 2.0f;
+        }
 
         if (FocusEffects) {
             if (Camera::StopUpdating == 0) {

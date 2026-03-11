@@ -39,9 +39,9 @@ float ConvertFovAngleToLensLength(unsigned short a_fov) {
 }
 
 float ConvertLensDeltaToFovDelta(float f_lens_mm, float f_lens_slope) {
-    short a_fov = bATan(f_lens_mm, 15.96f) << 1;
-    short a_fov_desired = bATan(f_lens_mm + f_lens_slope * 0.01f, 15.96f) << 1;
-    return static_cast<float>(a_fov_desired - a_fov) * 100.0f;
+    unsigned short a = bATan(f_lens_mm, 15.96f) << 1;
+    unsigned short b = bATan(f_lens_mm + f_lens_slope * 0.01f, 15.96f) << 1;
+    return (SignExtendAng(b) - SignExtendAng(a)) * 100.0f;
 }
 
 float ConvertApertureNumberToFStop(float aperture) {
