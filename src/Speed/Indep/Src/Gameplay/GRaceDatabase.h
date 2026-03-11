@@ -38,7 +38,9 @@ class GRaceBin {
 
     GVault *GetChildVault() const;
 
+    GRaceBin* GetBin(unsigned int index);
     int GetBinNumber() const;
+    int GetBinNumber(int index);
 
     int GetBossReputation() const;
 
