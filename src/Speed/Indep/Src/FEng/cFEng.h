@@ -11,11 +11,6 @@ enum FE_PACKAGE_PRIORITY {
     FE_PACKAGE_PRIORITY_SECOND_CLOSEST = 103,
     FE_PACKAGE_PRIORITY_CLOSEST = 104,
     FE_PACKAGE_PRIORITY_ERROR = 105,
-    void DrawForeground();
-    void PushErrorPackage(const char * pPackageName, int pArg, unsigned long ControlMask);
-    void PopErrorPackage();
-    void Service();
-    FEPackage* FindPackageWithControl();
 };
 
 // total size: 0x8
@@ -31,6 +26,7 @@ struct cFEng {
     bool IsErrorState() { return mFEng->bErrorScreenMode; }
 
     FEPackage* FindPackage(const char* pPackageName);
+    FEPackage* FindPackageWithControl();
 
     void QueueGameMessagePkg(unsigned int pMessage, FEPackage* topkg);
     void QueueGameMessage(unsigned int pMessage, const char* pPackageName, unsigned int controlMask);
@@ -43,6 +39,11 @@ struct cFEng {
     void QueuePackagePush(const char* pPackageName, int pArg, unsigned long ControlMask, bool pSuppressSimPause);
     void QueuePackagePop(int numPackagesToPop);
     void QueueSoundMessage(unsigned int pMessage, const char* pPackageName);
+
+    void DrawForeground();
+    void PushErrorPackage(const char* pPackageName, int pArg, unsigned long ControlMask);
+    void PopErrorPackage();
+    void Service();
 };
 
 #endif
