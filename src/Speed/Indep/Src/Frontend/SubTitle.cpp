@@ -90,15 +90,15 @@ void SubTitler::Unload() {
     }
 }
 
+// NONMATCHING: regalloc - fmadds targets f1 directly instead of f0 + fmr
 float SubTitler::GetElapsedTime() {
     unsigned int timenow;
     float thetime_ms;
     if (!mSubtitlePaused) {
         timenow = bGetTicker();
-        float result = timeElapsed + bGetTickerDifference(lastTime, timenow) * 0.001f;
+        thetime_ms = timeElapsed + bGetTickerDifference(lastTime, timenow) * 0.001f;
         lastTime = timenow;
-        timeElapsed = result;
-        thetime_ms = result;
+        timeElapsed = thetime_ms;
     } else {
         lastTime = bGetTicker();
         thetime_ms = timeElapsed;
