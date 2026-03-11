@@ -85,7 +85,6 @@ void SelectCarCameraMover::SetZoomSpeed(float f) {
 }
 
 SelectCarCameraMover::SelectCarCameraMover(int view_id) : CameraMover(view_id, CM_SELECT_CAR) {
-    CurrentAnimationTime = 0.0f;
     CurrentCameraData.OrbitVAngle = 0.0f;
     CurrentCameraData.OrbitHAngle = 0.0f;
     CurrentCameraData.Radius = 0.0f;
@@ -97,6 +96,7 @@ SelectCarCameraMover::SelectCarCameraMover(int view_id) : CameraMover(view_id, C
     RadiusSpeed = 0.0f;
     OrbitVSpeed = 0.0f;
     OrbitHSpeed = 0.0f;
+    CurrentAnimationTime = 0.0f;
     ControlMode = 1;
     LookingAtParts = 0;
     TotalAnimationTime = 1.0f;

@@ -148,6 +148,11 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
     static _ListSet _mLists;
 };
 
+template <typename T, int ListSize, typename Enum, std::size_t EnumMax>
+int ListableSet<T, ListSize, Enum, EnumMax>::Count(Enum idx) {
+    return static_cast<int>(_mLists._buckets[idx].size());
+}
+
 template <typename T> class Countable {
     static int _mCount;
 

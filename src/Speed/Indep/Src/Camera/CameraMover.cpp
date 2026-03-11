@@ -46,7 +46,7 @@ extern int LastUpdateTimeCaffeine;
 extern int LastUpdateTimeJR2;
 extern int RealTime;
 extern int DisableCommunication;
-extern int TrackStreamerRemoteCaffeinating;
+static volatile const int RemoteCaffeinating = 0;
 extern int bStreamingPositionFromICE;
 extern Timer RealTimer;
 extern bool TrackCopCameraMover_IdleSim;
@@ -250,7 +250,7 @@ void CameraAnchor::SetModel(int model) {
 }
 
 POV *CameraAnchor::GetPov(int pov_type) {
-    Attrib::Key attrib_key;
+    unsigned int attrib_key;
 
     mPOV.Type = static_cast<short>(pov_type);
 
@@ -279,11 +279,10 @@ POV *CameraAnchor::GetPov(int pov_type) {
         default:
             mPOV.Type = 3;
             mCameraInfoAttributes.Change(Attrib::FindCollection(Attrib::Gen::camerainfo::ClassKey(), 0xeec2271a));
-            attrib_key = 0;
-            break;
+            goto after_camerainfo;
     }
 
-    if (attrib_key != 0) {
+    {
         const Attrib::RefSpec *refspec = reinterpret_cast<const Attrib::RefSpec *>(mModelAttributes.GetAttributePointer(attrib_key, 0));
 
         if (refspec == nullptr) {
@@ -293,8 +292,14 @@ POV *CameraAnchor::GetPov(int pov_type) {
         mCameraInfoAttributes.ChangeWithDefault(*refspec);
     }
 
+after_camerainfo:
     {
-        float zoom = bMax(1.0f, mZoom);
+        float zoom;
+        if (mZoom > 1.0f) {
+            zoom = mZoom;
+        } else {
+            zoom = 1.0f;
+        }
         unsigned int index = eGetCurrentViewMode() == 3;
 
         mPOV.Angle = bDegToAng(mCameraInfoAttributes.ANGLE(index));
@@ -302,8 +307,8 @@ POV *CameraAnchor::GetPov(int pov_type) {
         mPOV.Height = mCameraInfoAttributes.HEIGHT(index);
         mPOV.LatOffset = mCameraInfoAttributes.LATOFFSET(index);
         mPOV.Fov = bDegToAng(mCameraInfoAttributes.FOV(index) * zoom);
-        mPOV.Stiffness = mCameraInfoAttributes.STIFFNESS(index);
         mPOV.AllowTilting = static_cast<short>(mCameraInfoAttributes.TILTING(index));
+        mPOV.Stiffness = mCameraInfoAttributes.STIFFNESS(index);
     }
 
     return &mPOV;
@@ -413,7 +418,7 @@ void UpdateCameraMovers(float dT) {
             }
         }
 
-        if (TrackStreamerRemoteCaffeinating != 0 && DisableCommunication == 0 && camera != nullptr) {
+        if (RemoteCaffeinating != 0 && DisableCommunication == 0 && camera != nullptr) {
             if (bAbs(RealTime - LastUpdateTimeCaffeine) > 0x10) {
                 LongVector fix_eye;
                 LongVector fix_look;

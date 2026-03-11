@@ -53,7 +53,7 @@ class CDActionDrive : public CameraAI::Action, public IAttachable, public Sim::C
     float mDampCollisionTime;           // offset 0x5C, size 0x4
     float mGroundCollisionTime;         // offset 0x60, size 0x4
     float mObjectCollisionTime;         // offset 0x64, size 0x4
-    const float mMaxCollisionTime;      // offset 0x68, size 0x4
+    float mMaxCollisionTime;             // offset 0x68, size 0x4
     float mPulseTimer;                  // offset 0x6C, size 0x4
     float mCinematicMomementTimer;      // offset 0x70, size 0x4
     bool mCinematicMomementTimerInc;    // offset 0x74, size 0x1

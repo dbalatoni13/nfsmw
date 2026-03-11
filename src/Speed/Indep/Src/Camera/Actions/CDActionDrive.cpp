@@ -109,16 +109,16 @@ null_return:
 CDActionDrive::CDActionDrive(CameraAI::Director *director, IPlayer *player)
     : CameraAI::Action(), //
       IAttachable(this), //
-      mTarget(0), //
-      mMaxCollisionTime(0.5f) {
+      mTarget(0) {
     mPlayer = player;
     mVehicle = nullptr;
     mGameBreakerScale = 0.0f;
-    mViewID = director->GetViewID();
     mCinematicMomementTimer = 0.0f;
+    mViewID = director->GetViewID();
     mDampCollisionTime = 0.0f;
     mGroundCollisionTime = 0.0f;
     mObjectCollisionTime = 0.0f;
+    mMaxCollisionTime = 0.5f;
     mPulseTimer = 0.0f;
     mCinematicMomementTimerInc = false;
     mGear = 0;

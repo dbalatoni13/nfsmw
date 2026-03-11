@@ -117,7 +117,7 @@ void CameraAI::Director::Update(float dT) {
 void CameraAI::Director::SetAction(Attrib::StringKey desiredMode) {
     mDesiredMode = desiredMode;
     if (mAction != nullptr) {
-        Attrib::StringKey key = mAction->GetNext();
+        const Attrib::StringKey &key = mAction->GetNext();
         if (!key.IsEmpty()) {
             mDesiredMode = key;
         }
@@ -212,7 +212,7 @@ void CameraAI::Director::SelectAction() {
     }
 
     if (mAction != nullptr) {
-        Attrib::StringKey key = mAction->GetNext();
+        const Attrib::StringKey &key = mAction->GetNext();
         if (!key.IsEmpty()) {
             mDesiredMode = key;
         }
@@ -324,7 +324,7 @@ void CameraAI::Update(float dT) {
         } else if (iplayer != nullptr) {
             cd = new (static_cast<const char *>(0)) Director(viewID);
         }
-    } while (player <= playercount);
+    } while (player <= static_cast<unsigned int>(PLAYER_LOCAL));
     for (Director *const *iter = Director::GetList().begin(); iter != Director::GetList().end(); ++iter) {
         Director *cd = *iter;
         cd->Update(dT);
