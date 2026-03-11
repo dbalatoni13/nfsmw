@@ -35,6 +35,7 @@ class IPlayer : public UTL::COM::IUnknown, public UTL::Collections::ListableSet<
 
     virtual const UMath::Vector3 &GetPosition() const;
     virtual bool SetPosition(const UMath::Vector3 &position);
+    virtual void SetSettings(int settingsIndex);
     virtual PlayerSettings *GetSettings() const;
     virtual int GetSettingsIndex() const;
     virtual IHud *GetHud() const;

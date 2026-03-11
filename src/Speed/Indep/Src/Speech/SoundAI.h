@@ -7,6 +7,7 @@
 
 #include "EAXAirSupport.h"
 #include "Speed/Indep/Src/EAXSound/EAXSoundTypes.h"
+#include "Speed/Indep/Src/Speech/Observer.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/speechtune.h"
 #include "Speed/Indep/Src/Generated/Messages/MUnspawnCop.h"
 #include "Speed/Indep/Src/Interfaces/IListener.h"
@@ -234,6 +235,9 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     // void SetFocus(enum MachineState s) {}
 
     // struct Observer *GetObserver() {}
+    Observer *GetObserver() {
+        return mObserver;
+    }
 
     // struct RoadblockFlow *GetRBFlow() {}
 
