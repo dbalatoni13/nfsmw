@@ -254,14 +254,16 @@ template <typename T, typename Tag> class Container {
         return e;
     }
 
-    void RemoveElement(T *e) {
-        for (typename Elements::iterator it = _mElements.begin(); it != _mElements.end(); ++it) {
-            if (*it == e) {
-                _mElements.erase(it);
-                delete e;
-                break;
+    bool DestroyElement(T &el) {
+        typename Elements::iterator last = _mElements.end();
+        for (typename Elements::iterator first = _mElements.begin(); first != last; first++) {
+            if (*first == &el) {
+                _mElements.erase(first);
+                delete &el;
+                return true;
             }
         }
+        return false;
     }
 
   private:
