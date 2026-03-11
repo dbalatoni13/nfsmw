@@ -217,18 +217,18 @@ void WRoadNetwork::ResolveBarriers() {
                                                    barrier->Points[1].x, 1.0f);
 
             UTL::FastVector<unsigned int, 16> node_list;
-            typedef UTL::Std::set<unsigned short, _type_set> SEGMENT_SET;
+            typedef UTL::Std::set<short, _type_set> SEGMENT_SET;
             SEGMENT_SET segment_set;
 
             grid.FindNodes(barrier_points, node_list);
 
             for (unsigned int *iter = node_list.begin(); iter != node_list.end(); ++iter) {
-                WGridNode *grid_node = grid.GetNode(*iter);
+                WGridNode *grid_node = grid.fNodes[*iter];
                 if (grid_node != nullptr) {
                     unsigned int numSegments = grid_node->GetElemTypeCount(WGrid_kRoadSegment);
                     for (unsigned int i = 0; i < numSegments; i++) {
                         segment_set.insert(
-                            static_cast<unsigned short>(grid_node->GetElemType(i, WGrid_kRoadSegment)));
+                            static_cast<short>(grid_node->GetElemType(i, WGrid_kRoadSegment)));
                     }
                 }
             }
@@ -241,7 +241,7 @@ void WRoadNetwork::ResolveBarriers() {
                     short road_number = segment->fRoadID;
                     if (num_exemptions > 0 && road_number != -1) {
                         for (int j = 0; j < num_exemptions; j++) {
-                            exempt = (road_number == exempted_roads[j]) || exempt;
+                            exempt = exempt | (road_number == exempted_roads[j]);
                         }
                     }
                     if (!exempt) {
