@@ -1236,17 +1236,18 @@ bool WRoadNav::OnPath() const {
     if (fNavType != kTypePath || !IsValid() || pPathSegments == nullptr || nPathSegments <= 0) {
         return false;
     }
-    int i = 0;
+    int i;
     WRoadNetwork &roadNetwork = WRoadNetwork::Get();
     const WRoadSegment *segment = roadNetwork.GetSegment(fSegmentInd);
     const WRoadNode *node = roadNetwork.GetNode(segment->fNodeIndex[static_cast<int>(fNodeInd)]);
+    bool found;
     for (i = 0; i < nPathSegments; i++) {
         if (fSegmentInd == pPathSegments[i]) {
             break;
         }
     }
-    if (i + 1 < nPathSegments) {
-        int new_segment_index = pPathSegments[i + 1];
+    if (++i < nPathSegments) {
+        int new_segment_index = pPathSegments[i];
         const WRoadSegment *new_segment = roadNetwork.GetSegment(new_segment_index);
         const WRoadNode *new_nodes[2];
         roadNetwork.GetSegmentNodes(*new_segment, new_nodes);
