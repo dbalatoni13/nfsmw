@@ -123,6 +123,9 @@ struct Bounds {
     const Bounds *GetChild(unsigned int idx) const {
         return fCollection->GetChild(this, idx);
     }
+    const Bounds *GetChild(UCrc32 name) const {
+        return fCollection->GetChild(this, name);
+    }
 };
 
 inline PCloudHeader *Collection::GetPCHeader() {

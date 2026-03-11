@@ -232,24 +232,22 @@ bool Smackable::OnExplosion(const UMath::Vector3 &normal, const UMath::Vector3 &
 void Smackable::OnBehaviorChange(const UCrc32 &mechanic) {
     PhysicsObject::OnBehaviorChange(mechanic);
     if (mechanic == UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY)) {
-        static_cast< ISimable * >(this)->QueryInterface(&mCollisionBody);
-        if (mCollisionBody != nullptr) {
+        if (static_cast< ISimable * >(this)->QueryInterface(&mCollisionBody)) {
             float detach = mAttributes.DETACH_FORCE();
             if (mVirgin && detach != 0.0f) {
                 mCollisionBody->AttachedToWorld(true, UMath::Max(0.0f, detach));
             }
             const CollisionGeometry::Bounds *cog =
-                mGeometry->fCollection->GetChild(mGeometry, UCrc32(0x28b0bb8d));
-            if (cog == nullptr) {
-                mCollisionBody->DistributeMass();
-            } else {
+                mGeometry->GetChild(UCrc32(0x28b0bb8d));
+            if (cog != nullptr) {
                 UMath::Vector3 cog_position;
                 cog->GetPosition(cog_position);
                 mCollisionBody->SetCenterOfGravity(cog_position);
+            } else {
+                mCollisionBody->DistributeMass();
             }
         }
-        static_cast< ISimable * >(this)->QueryInterface(&mSimpleBody);
-        if (mSimpleBody != nullptr) {
+        if (static_cast< ISimable * >(this)->QueryInterface(&mSimpleBody)) {
             mSimpleBody->ModifyFlags(0, 0x20b);
             ReleaseBehavior(UCrc32(BEHAVIOR_MECHANIC_EFFECTS));
         }
