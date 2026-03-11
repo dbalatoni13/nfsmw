@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 namespace ICE {
 void HideOverlay();
@@ -161,24 +162,24 @@ ICEMover::ICEMover(int nView, ICEAnchor *pCar)
       vSmoothCarPos(), //
       vSmoothCarFwd() {
     GetCamera()->ClearVelocity();
-    pEye = new ICE::Cubic3D(0, 0.0f);
-    pLook = new ICE::Cubic3D(0, 0.0f);
-    pDutch = new ICE::Cubic1D(0, 0.0f);
-    pFov = new ICE::Cubic1D(0, 0.0f);
-    pNearClip = new ICE::Cubic1D(0, 0.0f);
-    pNoiseAmplitude = new ICE::Cubic1D(0, 0.0f);
-    pNoiseFrequency = new ICE::Cubic1D(0, 0.0f);
-    pFocalDistance = new ICE::Cubic1D(0, 0.0f);
-    pAperture = new ICE::Cubic1D(0, 0.0f);
-    pLetterbox = new ICE::Cubic1D(0, 0.0f);
-    pSimSpeed = new ICE::Cubic1D(0, 0.0f);
-    pAccelOffset = new ICE::Cubic3D(1, 0.0f);
-    bViolatesTopology = false;
-    fParameter0 = 0.0f;
-    fParameter1 = 0.0f;
+    pEye = new (__FILE__, __LINE__) ICE::Cubic3D(0, 1.0f);
+    pLook = new (__FILE__, __LINE__) ICE::Cubic3D(0, 1.0f);
+    pDutch = new (__FILE__, __LINE__) ICE::Cubic1D(0, 1.0f);
+    pFov = new (__FILE__, __LINE__) ICE::Cubic1D(0, 1.0f);
+    pNearClip = new (__FILE__, __LINE__) ICE::Cubic1D(0, 1.0f);
+    pNoiseAmplitude = new (__FILE__, __LINE__) ICE::Cubic1D(0, 1.0f);
+    pNoiseFrequency = new (__FILE__, __LINE__) ICE::Cubic1D(0, 1.0f);
+    pFocalDistance = new (__FILE__, __LINE__) ICE::Cubic1D(0, 1.0f);
+    pAperture = new (__FILE__, __LINE__) ICE::Cubic1D(0, 1.0f);
+    pLetterbox = new (__FILE__, __LINE__) ICE::Cubic1D(0, 1.0f);
+    pSimSpeed = new (__FILE__, __LINE__) ICE::Cubic1D(0, 1.0f);
+    pAccelOffset = new (__FILE__, __LINE__) ICE::Cubic3D(1, 1.0f);
     pICEData = 0;
     nSpaceEye = 0;
     nSpaceLook = 0;
+    fParameter0 = 0.0f;
+    bViolatesTopology = false;
+    fParameter1 = 0.0f;
     ICE::HideOverlay();
     PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mHybridToWorld));
     bCopy(reinterpret_cast<bVector3 *>(&vSmoothCarPos), reinterpret_cast<const bVector3 *>(pCar->GetGeometryPosition()));
