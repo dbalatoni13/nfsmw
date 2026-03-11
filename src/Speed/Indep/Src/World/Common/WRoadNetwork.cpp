@@ -934,9 +934,9 @@ bool WRoadNav::UpdateLaneChange(float distance) {
     if (laneChangeLerp < 1.0f) {
         fLaneOffset = (fToLaneOffset - fFromLaneOffset) * laneChangeLerp + fFromLaneOffset;
     } else {
+        fLaneOffset = fToLaneOffset;
         fLaneChangeDist = 0.0f;
         fFromLaneOffset = fToLaneOffset;
-        fLaneOffset = fToLaneOffset;
         fLaneChangeInc = 0.0f;
     }
     return true;

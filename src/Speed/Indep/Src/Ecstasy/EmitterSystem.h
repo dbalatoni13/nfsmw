@@ -324,6 +324,7 @@ class EmitterGroup : public bTNode<EmitterGroup> {
     uint32 NumEmitters() const;
     bool MakeOneShot(bool force_all);
     void SetInheritVelocity(const bVector3 *vel);
+    void SetIntensity(float intensity);
     void Enable();
     void Disable();
     void SubscribeToDeletion(void *subscriber, void (*callback)(void *, struct EmitterGroup *));

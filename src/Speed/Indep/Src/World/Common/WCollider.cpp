@@ -3,6 +3,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WWorld.h"
+#include "Speed/Indep/Src/World/WWorldMath.h"
 
 void VU0_v4crossprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r);
 
@@ -282,17 +283,9 @@ void WCollisionObject::MakeMatrix(UMath::Matrix4 &m, bool addXLate) const {
 }
 
 float WCollisionInstance::CalcSphericalRadius() const {
-    float sphericalRadius = fInvMatRow2Length.w;
-    if (sphericalRadius < fInvPosRadius.w) {
-        sphericalRadius = fInvPosRadius.w;
-    }
-    if (sphericalRadius < fHeight) {
-        sphericalRadius = fHeight;
-    }
-    if (sphericalRadius < fInvMatRow0Width.w) {
-        sphericalRadius = fInvMatRow0Width.w;
-    }
-    return sphericalRadius;
+    float maxExtent = WWorldMath::wmax(fInvMatRow2Length.w, fInvPosRadius.w);
+    maxExtent = WWorldMath::wmax(fHeight, maxExtent);
+    return WWorldMath::wmax(fInvMatRow0Width.w, maxExtent);
 }
 
 void WCollisionInstance::CalcPosition(UMath::Vector3 &pos) const {

@@ -112,6 +112,9 @@ void bFree(SlotPool *slot_pool, void *first_slot, void *last_slot);
 
 extern SlotPool *ePolySlotPool;
 
+inline int bGetSlotNumber(SlotPool *pool, void *p) { return pool->GetSlotNumber(p); }
+inline void *bGetSlot(SlotPool *pool, int n) { return pool->GetSlot(n); }
+
 extern unsigned char *CurrentBufferStart;
 extern unsigned char *CurrentBufferPos;
 extern unsigned char *CurrentBufferEnd;

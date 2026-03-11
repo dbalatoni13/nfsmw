@@ -11,6 +11,11 @@ namespace WWorldMath {
 
 inline float pow2(float a) { return a * a; }
 
+inline float wmax(const float &a, const float &b) {
+    if (a > b) return a;
+    return b;
+}
+
 bool IntersectCircle(float x1, float y1, float x2, float y2, float cx, float cy, float r, float &u1, float &u2);
 float GetPlaneY(const UMath::Vector3 &normal, const UMath::Vector3 &pointOnPlane, const UMath::Vector3 &testPoint);
 void NearestPointLine2D(const UMath::Vector4 &pt, const UMath::Vector4 *line, UMath::Vector4 &nearPt);
