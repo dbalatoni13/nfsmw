@@ -41,6 +41,10 @@ struct FEngine {
     FEGameInterface* pInterface; // offset 0x118
     char _padRest[0x5140];      // offset 0x11C to 0x525C
     bool bErrorScreenMode;      // offset 0x525C
+    char _pad5[0x3];
+    bool bRenderedRecently;     // offset 0x5260
+    char _pad6[0x3];
+    bool bDebugMessages;        // offset 0x5264
 
     inline FEPackageList* GetPackageList() { return &PackList; }
 

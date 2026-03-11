@@ -57,6 +57,14 @@ enum eLanguages {
 using RealmcIface::BootupCheckParams;
 
 // total size: 0x1804
+enum MessageChoices {
+    CHOICE_NONE = 0,
+    CHOICE_OPTION1 = 1,
+    CHOICE_OPTION2 = 2,
+    CHOICE_OPTION3 = 3,
+    CHOICE_OPTION4 = 4,
+};
+
 struct MemoryCardMessage {
     int mMsg[1024];           // offset 0x0, size 0x1000
     unsigned int mnOptions;   // offset 0x1000, size 0x4
@@ -227,7 +235,7 @@ struct MemoryCard {
     static void SetMessageMode(unsigned int msg, bool flag);
     static void TickCardRemoval();
     void Tick(int TickCount);
-    void MessageDone(MessageChoices nInput);
+    void MessageDone(RealmcIface::MessageChoices nInput);
     void BootupCheck(const char *entry);
     bool ShouldDoAutoSave(bool bForce);
     void StartAutoSave(bool bForce);
