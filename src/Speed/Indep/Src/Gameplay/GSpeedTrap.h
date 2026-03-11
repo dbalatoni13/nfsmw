@@ -29,6 +29,7 @@ struct GSpeedTrap {
     GSpeedTrap();
     float GetBounty() const;
     int GetLocalizationTag() const;
+    unsigned int GetJumpMarkerKey() const;
     void Init(unsigned int trapKey);
     void Reset();
     void Unlock();

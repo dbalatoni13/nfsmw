@@ -466,6 +466,15 @@ class cFrontendDatabase {
 
     void GetGameCompletionStats(GameCompletionStats* stats);
 
+    unsigned int GetBountyIconHash(unsigned int index);
+    unsigned int GetBountyHeaderHash(unsigned int index);
+    unsigned int GetBountyDescHash(unsigned int index);
+    unsigned int GetMilestoneDescHash(unsigned int tag);
+    unsigned int GetMilestoneIconHash(unsigned int typeKey, bool active);
+    bool IsMilestoneTimeFormat(int typeKey) const;
+    unsigned int GetRaceIconHash(GRace::Type type);
+    unsigned int GetRaceNameHash(GRace::Type type);
+
     void BuildCurrentRideForPlayer(int player, class RideInfo* ride);
 
     bool IsFinalEpicChase();
