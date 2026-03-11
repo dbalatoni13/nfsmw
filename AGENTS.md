@@ -132,6 +132,22 @@ TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim)
 python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --base-obj "$TEMPOBJ"
 ```
 
+### decomp-workflow.py — Wrapper for common agent workflows
+
+Prefer this wrapper for routine agent-driven flows instead of manually chaining
+`build-unit.py`, `decomp-context.py`, `decomp-diff.py`, and `decomp-status.py`:
+
+```sh
+python tools/decomp-workflow.py health
+python tools/decomp-workflow.py health --smoke-build-unit main/Speed/Indep/SourceLists/zAnim
+python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin
+python tools/decomp-workflow.py unit -u main/Speed/Indep/SourceLists/zAnim
+```
+
+The wrapper keeps the existing tools as the source of truth. It is intended to reduce
+repeated command chaining and to standardize temp-object handling and worktree preflight
+checks for agents.
+
 ### find-symbol.py — Check for existing definitions before declaring new types
 
 Before declaring any new struct, class, enum, global, or typedef, run this to check whether
