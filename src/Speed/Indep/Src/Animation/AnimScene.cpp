@@ -513,6 +513,9 @@ void CAnimScene::ChangePlayStatus(ePlayStatus new_status) {
 }
 
 bool CAnimScene::Init() {
+    bMatrix4 scene_rotation_matrix;
+    bMatrix4 scene_translation_matrix;
+    bMatrix4 scene_transform_matrix;
     NisScene *scene_info = reinterpret_cast< CAnimSceneDataLayout * >(mAnimSceneData)->mNisScene;
     if (scene_info->SceneType == 0) {
         CAnimEntityCreationContext::SetRaceStartContext(true);
@@ -524,9 +527,6 @@ bool CAnimScene::Init() {
         find_start_line = true;
     }
 
-    bMatrix4 scene_rotation_matrix;
-    bMatrix4 scene_translation_matrix;
-    bMatrix4 scene_transform_matrix;
     CAnimLocator::GetInitialAnimMatricies(&scene_rotation_matrix, &scene_translation_matrix, find_start_line);
     SetSceneRotationMatrix(scene_rotation_matrix);
     SetSceneTranslationMatrix(scene_translation_matrix);
@@ -551,9 +551,9 @@ bool CAnimScene::Init() {
     AnimatedCars_ResetToBeginning();
     InitCharacterEffects();
 
-    NisScene *nis_scene = reinterpret_cast< CAnimSceneDataLayout * >(mAnimSceneData)->mNisScene;
-    if (nis_scene->SeeulatorOverlayName[0] != '\0') {
-        TheVisibleSectionManager.ActivateOverlay(nis_scene->SeeulatorOverlayName);
+    char *overlay_name = reinterpret_cast< CAnimSceneDataLayout * >(mAnimSceneData)->mNisScene->SeeulatorOverlayName;
+    if (overlay_name[0] != '\0') {
+        TheVisibleSectionManager.ActivateOverlay(overlay_name);
     }
     return true;
 }
