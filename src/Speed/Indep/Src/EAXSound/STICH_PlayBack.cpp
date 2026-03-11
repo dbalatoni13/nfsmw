@@ -33,8 +33,8 @@ void cSTICH_PlayBack::QueueSampleRequest(struct SampleQueueItem &samplereq) {
 
 void cSTICH_PlayBack::RemoveFromList(struct SampleQueueItem sampleitem) {
     STICH_TYPE type = static_cast<STICH_TYPE>(sampleitem.pStitch->GetData().eStichType);
-    UTL::FixedVector<SampleQueueItem, 43, 16> &list = GetQueueList(type);
-    for (SampleQueueItem *iter = list.begin(); iter != list.end(); ++iter) {
+    for (SampleQueueItem *iter = mQueuedSampleList[type].begin();
+         iter != mQueuedSampleList[type].end(); ++iter) {
         SampleQueueItem compareto = *iter;
         if (compareto == sampleitem) {
             GetQueueList(type).erase(iter);
