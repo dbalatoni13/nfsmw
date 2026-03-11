@@ -121,6 +121,9 @@ class VideoSettings {
 // total size: 0x34
 class AudioSettings {
   public:
+    float GetMasteredFEMusicVol() { return MasterVol * FEMusicVol; }
+    float GetMasteredIGMusicVol() { return MasterVol * IGMusicVol; }
+
     float MasterVol;          // offset 0x0, size 0x4
     float SpeechVol;          // offset 0x4, size 0x4
     float FEMusicVol;         // offset 0x8, size 0x4

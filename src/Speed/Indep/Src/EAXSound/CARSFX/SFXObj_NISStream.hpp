@@ -9,6 +9,9 @@
 
 struct SFXObj_NISStream : CARSFX {
     void StartNIS();
+    bool IsNISStreamReady() { return m_bNISAudioStreamReady; }
+
+    static bool m_bNISAudioStreamReady;
 };
 
 #endif

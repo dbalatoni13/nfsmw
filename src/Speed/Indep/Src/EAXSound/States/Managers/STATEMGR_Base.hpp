@@ -40,6 +40,8 @@ struct CSTATEMGR_Base : public AudioMemBase {
     CSTATE_Base *GetStateObj(int nInstance);
     CSTATE_Base *GetStateObj(void *testattachment);
 
+    int GetStateObjCount() { return m_CurNumStates; }
+
     void DisconnectMixMap();
     void SafeConnectOrphanObjects();
 

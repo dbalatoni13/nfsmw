@@ -12,6 +12,17 @@
 #include "Speed/Indep/Src/Main/Event.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
 
+enum eSndAudioMode {
+    AUDIO_MODE_MONO = 0,
+    AUDIO_MODE_STEREO = 1,
+    AUDIO_MODE_PROLOGIC = 2,
+    AUDIO_MODE_MIN = 0,
+    AUDIO_MODE_MAX = 2,
+};
+
+struct EAXCar;
+struct CSTATEMGR_Base;
+
 // yes that is the correct name for the file
 
 enum eSNDPAUSE_REASON {
@@ -117,6 +128,32 @@ class EAXSound : public AudioMemBase {
     void QueueNISStream(unsigned int anim_id, int camera_track_number, void (*setmstimecb)(unsigned int, int));
     bool IsNISStreamQueued();
     void NISFinished();
+    void PlayNIS();
+
+    bool AreResourceLoadsPending();
+    void ReInitMasterVolumes();
+    void UpdateSongInfo();
+    void SetCsisName(char *pcsAllocName);
+    void SetCsisName(struct SndBase *psndbase);
+    static int GetStateRefCount(int nstate);
+    enum eSndAudioMode GetDefaultPlatformAudioMode();
+    enum eSndAudioMode SetAudioModeFromMemoryCard(enum eSndAudioMode mode);
+    unsigned int Random(int range);
+    float Random(float range);
+    float GetCurMusicVolume();
+    struct EAXCar *GetPlayerTunerCar(int nindex);
+    void InitEATRAX();
+    static int *GetPointerCallback(int nid);
+    static void SetSFXOutCallback(int nid, int *ptr);
+    static bool SetSFXInputCallback(int nid, int *ptr);
+    void UpdateVolumes(struct AudioSettings *paudiosettings, float NewValue);
+    void CommitAssets();
+    static void MixMapReadyCallback();
+    void AttachPlayerCars();
+
+    static struct SndBase *GetSndBase_Object(int nID);
+
+    static CSTATEMGR_Base *m_pStateMgr[13];
 
   private:
     int ncompiletest;                            // offset 0x4, size 0x4

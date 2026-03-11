@@ -56,6 +56,8 @@ struct CSTATE_Base : public AudioMemBase {
     void DisconnectMixMap();
     void SafeConnectOrphanObjects();
 
+    bool IsAttached() { return bIsAttached; }
+
     void *operator new(size_t s) {
         return gAudioMemoryManager.AllocateMemory(s, GetStaticStateInfo()->stateName, 0);
     }

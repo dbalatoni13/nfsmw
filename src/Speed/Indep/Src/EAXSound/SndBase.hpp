@@ -56,6 +56,18 @@ struct SndBase : public AudioMemBase {
 
     int GetDMixOutput(int idx, DMX_PRESET_TYPE etype);
 
+    int *GetOutputBlockPtr() { return m_pOutPutBlock; }
+    void SetOutputsPtr(int *ptr) { m_pOutPutBlock = ptr; }
+    void SetInputsPtr(int *ptr) {
+        m_pInputBlock = ptr;
+        if (ptr != nullptr) {
+            int *pctl = ptr;
+            pctl[15] = 1;
+        }
+    }
+    CSTATE_Base *GetStateBase() { return m_pStateBase; }
+    int GetUniqueID() { return objectID; }
+
   protected:
     static TypeInfo s_TypeInfo; // for some ungodly reason these are all defined in zEAXSound.cpp
                                 // but the rest of SndBase's funcs are in zEAXSound2.cpp

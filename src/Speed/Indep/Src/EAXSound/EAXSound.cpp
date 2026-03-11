@@ -1,7 +1,9 @@
 #include "./EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Pathfinder.hpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Base.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Misc/Config.h"
 
 namespace Speech {
@@ -29,7 +31,36 @@ struct EAXFrontEnd {
 
 struct EAXSND8Wrapper : public AudioMemBase {
     virtual ~EAXSND8Wrapper();
+    eSndAudioMode GetDefaultPlatformAudioMode();
+    eSndAudioMode SetAudioModeFromMemoryCard(eSndAudioMode mode);
 };
+
+struct EAXAemsManager : public AudioMemBase {
+    bool AreResourceLoadsPending();
+};
+
+struct CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<CarSoundConn, 10> {
+    bool mConnected; // offset 0x14, size 0x1
+};
+
+struct CSTATEMGR_CarState : public CSTATEMGR_Base {
+    static void ResolveCarBanks();
+};
+
+extern EAXAemsManager gAEMSMgr;
+extern unsigned int SoundRandomSeed;
+extern float g_SliderValue;
+extern float g_fMasterSFXVolume;
+extern int g_iMasterSFXVolume;
+extern int g_DMIX_DummyInputBlock[];
+extern char *g_pcsCSISAllocString;
+extern char csCSISdebug[];
+extern bool bIsMapInQueuedFileLoad;
+
+unsigned int bRandom(int range, unsigned int *seed);
+float bRandom(float range, unsigned int *seed);
+int bSPrintf(char *destString, const char *fmt, ...);
+void SoundPause(bool on, eSNDPAUSE_REASON reason);
 
 void EAXSound::START_321Countdown() {
     if (IsSoundEnabled && IsAudioStreamingEnabled) {
@@ -42,6 +73,43 @@ void EAXSound::START_321Countdown() {
             pnis->StartNIS();
         }
     }
+}
+
+bool EAXSound::AreResourceLoadsPending() {
+    return gAEMSMgr.AreResourceLoadsPending();
+}
+
+// QueueNISButtonThrough, QueueNISStream go here when implemented
+
+bool EAXSound::IsNISStreamQueued() {
+    if (!IsSoundEnabled || !IsAudioStreamingEnabled) {
+        return true;
+    }
+    SFXObj_NISStream *pnis = static_cast<SFXObj_NISStream *>(GetSFXBase_Object(0x40000050));
+    return pnis->IsNISStreamReady();
+}
+
+// NISFinished goes here when implemented
+
+void EAXSound::PlayNIS() {
+    if (IsSoundEnabled && IsAudioStreamingEnabled) {
+        SFXObj_NISStream *pnis = static_cast<SFXObj_NISStream *>(GetSFXBase_Object(0x40000050));
+        pnis->StartNIS();
+        SoundPause(true, eSNDPAUSE_NISON);
+    }
+}
+
+// PlayUISoundFX, StopUISoundFX go here when implemented
+
+void EAXSound::SetCsisName(SndBase *psndbase) {
+    int ninst = psndbase->GetUniqueID();
+    char *name = psndbase->GetTypeName();
+    bSPrintf(csCSISdebug, " %s, 0x%x ", name, ninst);
+    SetCsisName(csCSISdebug);
+}
+
+void EAXSound::SetCsisName(char *pcsAllocName) {
+    g_pcsCSISAllocString = pcsAllocName;
 }
 
 EAXSound::EAXSound() {
@@ -109,6 +177,126 @@ EAXSound::~EAXSound() {
     }
 }
 
+int *EAXSound::GetPointerCallback(int nid) {
+    SndBase *pbs = GetSndBase_Object(nid);
+    if (pbs == nullptr) {
+        return g_DMIX_DummyInputBlock;
+    }
+    int *ptr = pbs->GetOutputBlockPtr();
+    if (ptr == nullptr) {
+        return nullptr;
+    }
+    return ptr;
+}
+
+void EAXSound::SetSFXOutCallback(int nid, int *ptr) {
+    SndBase *pbs = GetSndBase_Object(nid);
+    if (pbs != nullptr) {
+        pbs->SetOutputsPtr(ptr);
+    }
+    int *pclear = ptr;
+    for (int n = 0; n < 15; n++) {
+        *pclear = 0;
+        pclear++;
+    }
+}
+
+bool EAXSound::SetSFXInputCallback(int nid, int *ptr) {
+    SndBase *pbs = GetSndBase_Object(nid);
+    if (pbs != nullptr) {
+        pbs->SetInputsPtr(ptr);
+        if (pbs->GetStateBase() != nullptr) {
+            return pbs->GetStateBase()->IsAttached();
+        }
+    }
+    return false;
+}
+
+int EAXSound::GetStateRefCount(int nstate) {
+    if (m_pStateMgr[nstate] == nullptr) {
+        return 0;
+    }
+    return m_pStateMgr[nstate]->GetStateObjCount();
+}
+
+// GetSFXBase_Object, GetSndBase_Object go here when implemented
+
+float EAXSound::GetCurMusicVolume() {
+    if (m_eSndGameMode == SND_FRONTEND) {
+        return m_pCurAudioSettings->GetMasteredFEMusicVol();
+    }
+    return m_pCurAudioSettings->GetMasteredIGMusicVol();
+}
+
+void EAXSound::ReInitMasterVolumes() {}
+
+void EAXSound::UpdateVolumes(AudioSettings *paudiosettings, float NewValue) {
+    m_pCurAudioSettings = paudiosettings;
+    ReInitMasterVolumes();
+    g_fMasterSFXVolume = paudiosettings->AmbientVol;
+    g_iMasterSFXVolume = static_cast<int>(paudiosettings->AmbientVol * 32767.0f);
+    g_SliderValue = NewValue;
+}
+
+unsigned int EAXSound::Random(int range) {
+    return bRandom(range, &SoundRandomSeed);
+}
+
+float EAXSound::Random(float range) {
+    return bRandom(range, &SoundRandomSeed);
+}
+
+void EAXSound::UpdateSongInfo() {}
+
+// InitializeDriver, RefreshLocalAttr, etc. go here when implemented
+
+void EAXSound::MixMapReadyCallback() {
+    bIsMapInQueuedFileLoad = false;
+    for (int n = 0; n < eMM_MAX_MAIN_MIXSTATES; n++) {
+        if (m_pStateMgr[n] != nullptr) {
+            m_pStateMgr[n]->SafeConnectOrphanObjects();
+        }
+    }
+    g_pEAXSound->AttachPlayerCars();
+}
+
+void EAXSound::InitEATRAX() {
+    UpdateSongInfo();
+}
+
+// Update goes here when implemented
+
+void EAXSound::CommitAssets() {
+    CSTATEMGR_CarState::ResolveCarBanks();
+    typedef UTL::Collections::Listable<CarSoundConn, 10> CarList;
+    for (CarSoundConn *const *iter = CarList::GetList().begin(); iter != CarList::GetList().end(); ++iter) {
+        CarSoundConn *pconn = *iter;
+        if (!pconn->mConnected) {
+            pconn->mConnected = true;
+        }
+    }
+}
+
+EAXCar *EAXSound::GetPlayerTunerCar(int nindex) {
+    EAXCar *pEVar1 = nullptr;
+    if (m_pStateMgr[eMM_PLAYERCAR] != nullptr) {
+        pEVar1 = reinterpret_cast<EAXCar *>(m_pStateMgr[eMM_PLAYERCAR]->GetStateObj(nindex));
+    }
+    return pEVar1;
+}
+
+// LoadFrontEndSoundBanks, etc. go here when implemented
+
 void EAXSound::StopSND11() {}
 
 void EAXSound::StartSND11() {}
+
+// LoadInGameSoundBanks, etc. go here when implemented
+
+eSndAudioMode EAXSound::GetDefaultPlatformAudioMode() {
+    return m_pEAXSND8Wrapper->GetDefaultPlatformAudioMode();
+}
+
+eSndAudioMode EAXSound::SetAudioModeFromMemoryCard(eSndAudioMode mode) {
+    return m_pEAXSND8Wrapper->SetAudioModeFromMemoryCard(mode);
+}
