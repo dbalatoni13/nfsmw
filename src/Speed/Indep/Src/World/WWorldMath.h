@@ -52,14 +52,14 @@ inline float PtDir4(const UMath::Vector4 &p1, const UMath::Vector4 &p2, const UM
 
 inline bool InTri(const UMath::Vector3 &pt, const UMath::Vector4 *pts) {
     float d = PtDir4(pts[0], pts[1], pt);
-    if (0.0f < d) {
-        if (0.0f <= PtDir4(pts[1], pts[2], pt)) {
-            return 0.0f <= PtDir4(pts[2], pts[0], pt);
+    if (d <= 0.0f) {
+        if (PtDir4(pts[1], pts[2], pt) <= 0.0f) {
+            return PtDir4(pts[2], pts[0], pt) <= 0.0f;
         }
         return false;
     } else {
-        if (PtDir4(pts[1], pts[2], pt) <= 0.0f) {
-            return PtDir4(pts[2], pts[0], pt) <= 0.0f;
+        if (0.0f <= PtDir4(pts[1], pts[2], pt)) {
+            return 0.0f <= PtDir4(pts[2], pts[0], pt);
         }
         return false;
     }
