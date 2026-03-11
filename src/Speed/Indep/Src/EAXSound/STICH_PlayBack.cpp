@@ -93,4 +93,11 @@ void cSTICH_PlayBack::Update(float t) {
     }
 }
 
-void cSTICH_PlayBack::DestroyAllStichs(void) {}
+void cSTICH_PlayBack::DestroyAllStichs(void) {
+    for (int i = 0; i < MAX_NUM_STICH_TYPE; i++) {
+        GetQueueList(static_cast<STICH_TYPE>(i)).clear();
+        while (!StichList[i].IsEmpty()) {
+            StichList[i].RemoveHead();
+        }
+    }
+}
