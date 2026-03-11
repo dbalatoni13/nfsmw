@@ -82,17 +82,12 @@ def get_compdb() -> Optional[List[Dict[str, Any]]]:
             f"ninja -t compdb failed:\n{result.stderr.decode(errors='replace')}",
             file=sys.stderr,
         )
-        if result.returncode != 0:
-            continue
-        try:
-            entries = json.loads(result.stdout)
-            all_entries.extend(entries)
-        except json.JSONDecodeError:
-            continue
-    if not all_entries:
-        print("ninja -t compdb returned no entries", file=sys.stderr)
         return None
-    return all_entries
+    try:
+        return json.loads(result.stdout)
+    except json.JSONDecodeError as e:
+        print(f"Failed to parse ninja compdb output: {e}", file=sys.stderr)
+        return None
 
 
 def get_build_command(target_path: str) -> Optional[str]:
