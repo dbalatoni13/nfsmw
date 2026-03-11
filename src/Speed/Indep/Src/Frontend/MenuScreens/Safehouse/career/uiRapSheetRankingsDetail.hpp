@@ -40,13 +40,14 @@ struct RapSheetRankingsDatum : public ArrayDatum {
     float value; // offset 0x30, size 0x4
 
     RapSheetRankingsDatum(unsigned int item_num, unsigned int player_hash, unsigned int car_hash, float val)
-        : itemNum(item_num) //
+        : ArrayDatum(0, 0) //
+        , itemNum(item_num) //
         , nameHash(player_hash) //
         , carHash(car_hash) //
         , value(val)
     {}
     ~RapSheetRankingsDatum() override {}
-    void NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1, unsigned long param2) override {}
+    void NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1, unsigned long param2) override;
 
     unsigned int getItemNum() { return itemNum; }
     unsigned int getPlayerName() { return nameHash; }

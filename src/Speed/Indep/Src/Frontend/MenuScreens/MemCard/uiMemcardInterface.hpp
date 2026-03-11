@@ -25,8 +25,20 @@ struct MemcardSetup {
     int GetCommand() const {
         return mOp & 0xf;
     }
+
+    void SetMethod(int method) {
+        mOp = (mOp & ~0xf0) | ((method & 0xf) << 4);
+    }
+
+    void ClearMethod() {
+        mOp = mOp & ~0xf0;
+    }
 };
 
 extern MemcardSetup gMemcardSetup;
+
+void MemcardEnter(const char *from, const char *to, unsigned int op,
+                  void (*termFunc)(void *), void *termParam,
+                  unsigned int successMsg, unsigned int failedMsg);
 
 #endif

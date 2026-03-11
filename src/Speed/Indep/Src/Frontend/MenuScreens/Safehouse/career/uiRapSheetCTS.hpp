@@ -33,7 +33,7 @@ struct RapSheetCTSDatum : public ArrayDatum {
         , value(total_value)
     {}
     ~RapSheetCTSDatum() override {}
-    void NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1, unsigned long param2) override {}
+    void NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1, unsigned long param2) override;
 
     int getNumTimes() { return times; }
     unsigned long getItemHash() { return itemHash; }

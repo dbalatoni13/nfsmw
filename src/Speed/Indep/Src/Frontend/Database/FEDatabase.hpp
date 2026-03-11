@@ -440,7 +440,7 @@ class cFrontendDatabase {
 
     bool IsFinalEpicChase();
     unsigned int GetUserProfileSaveSize(bool bExcludeGameplay);
-    void SaveUserProfileToBuffer(void* buffer, int size);
+    void SaveUserProfileToBuffer(void* buffer, unsigned int size);
     void AllocBackupDB(bool b);
     void DefaultProfile();
     bool LoadUserProfileFromBuffer(void* buffer, int size, int player);

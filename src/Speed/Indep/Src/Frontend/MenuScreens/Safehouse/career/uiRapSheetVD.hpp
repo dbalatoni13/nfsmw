@@ -17,7 +17,7 @@ struct RapSheetVDArraySlot : public ArraySlot {
     FEString* pBusted; // offset 0x2C, size 0x4
 
     RapSheetVDArraySlot(FEString* CarName, FEString* Bounty, FEString* Fines, FEString* Unserved, FEString* ToDrive, FEString* Evaded, FEString* Busted)
-        : ArraySlot(ToDrive) //
+        : ArraySlot(reinterpret_cast<FEObject*>(ToDrive)) //
         , pCar(CarName) //
         , pBounty(Bounty) //
         , pFines(Fines) //
@@ -40,7 +40,8 @@ struct RapSheetVDDatum : public ArrayDatum {
     int Busted; // offset 0x3C, size 0x4
 
     RapSheetVDDatum(unsigned int carHash, unsigned int statusHash, int bounty, int fines, int unserved, int evaded, int busted)
-        : CarHash(carHash) //
+        : ArrayDatum(0, 0) //
+        , CarHash(carHash) //
         , StatusHash(statusHash) //
         , Bounty(bounty) //
         , Fines(fines) //
@@ -49,7 +50,7 @@ struct RapSheetVDDatum : public ArrayDatum {
         , Busted(busted)
     {}
     ~RapSheetVDDatum() override {}
-    void NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1, unsigned long param2) override {}
+    void NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1, unsigned long param2) override;
 
     unsigned int getCarHash() { return CarHash; }
     unsigned int getStatusHash() { return StatusHash; }

@@ -5,6 +5,15 @@
 
 struct FEngine;
 
+enum FE_PACKAGE_PRIORITY {
+    FE_PACKAGE_PRIORITY_FIFTH_CLOSEST = 100,
+    FE_PACKAGE_PRIORITY_FOURTH_CLOSEST = 101,
+    FE_PACKAGE_PRIORITY_THIRD_CLOSEST = 102,
+    FE_PACKAGE_PRIORITY_SECOND_CLOSEST = 103,
+    FE_PACKAGE_PRIORITY_CLOSEST = 104,
+    FE_PACKAGE_PRIORITY_ERROR = 105,
+};
+
 // total size: 0x8
 struct cFEng {
     static cFEng* mInstance;
@@ -21,6 +30,7 @@ struct cFEng {
     void QueueGameMessagePkg(unsigned int pMessage, FEPackage* topkg);
     void QueueGameMessage(unsigned int pMessage, const char* pPackageName, unsigned int controlMask);
     bool IsPackagePushed(const char* packageName);
+    void PushNoControlPackage(const char* pPackageName, FE_PACKAGE_PRIORITY pPriority);
 
     void QueuePackageMessage(unsigned int msg, const char* pkg_name, FEObject* obj);
 

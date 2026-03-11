@@ -28,12 +28,13 @@ struct RapSheetUSDatum : public ArrayDatum {
     unsigned int total; // offset 0x2C, size 0x4
 
     RapSheetUSDatum(unsigned int item_name, unsigned int unserved_infractions, unsigned int total_infractions)
-        : itemName(item_name) //
+        : ArrayDatum(0, 0) //
+        , itemName(item_name) //
         , unserved(unserved_infractions) //
         , total(total_infractions)
     {}
     ~RapSheetUSDatum() override {}
-    void NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1, unsigned long param2) override {}
+    void NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1, unsigned long param2) override;
 
     unsigned int getItemName() { return itemName; }
     unsigned int getNumUnserved() { return unserved; }
