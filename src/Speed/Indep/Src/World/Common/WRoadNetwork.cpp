@@ -1596,9 +1596,9 @@ void WRoadNav::InitAtSegment(short segInd, char laneInd, float timeStep) {
     WRoadNetwork &roadNetwork = WRoadNetwork::Get();
     const WRoadSegment *segment = roadNetwork.GetSegment(segInd);
 
-    fSegmentInd = segInd;
     fDeadEnd = 0;
     fValid = true;
+    fSegmentInd = segInd;
 
     UMath::Vector3 vec;
     roadNetwork.GetSegmentForwardVector(segInd, vec);

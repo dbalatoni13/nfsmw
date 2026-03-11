@@ -93,8 +93,7 @@ static void CalcNewRegionSizeFromRequested(bool useLastData, const UMath::Vector
     UMath::Scale(moveVec, vel * lifeFactor, moveVec);
     UMath::Add(reqPos, moveVec, pos);
 
-    float moveDist = UMath::Length(moveVec);
-    rad = reqRad + moveDist + 0.1f;
+    rad = reqRad + UMath::Length(moveVec) + 0.1f;
     if (rad > 25.0f) {
         rad = 25.0f;
     }

@@ -522,19 +522,19 @@ struct UQuat : public UMath::Vector4 {
         }
         UMath::Vector3 axis;
         UMath::Cross(normal1, normal2, axis);
-        if (angle >= -0.999f) {
+        if (angle < -0.999f) {
+            x = axis.x;
+            y = axis.y;
+            z = axis.z;
+            w = 0.0f;
+            UMath::Normalize(*static_cast<UMath::Vector4 *>(this));
+        } else {
             const float s = UMath::Sqrt(2.0f * (1.0f + angle));
             const float invs = 1.0f / s;
             x = axis.x * invs;
             y = axis.y * invs;
             z = axis.z * invs;
             w = s * 0.5f;
-        } else {
-            x = axis.x;
-            y = axis.y;
-            z = axis.z;
-            w = 0.0f;
-            UMath::Normalize(*static_cast<UMath::Vector4 *>(this));
         }
     }
 };
