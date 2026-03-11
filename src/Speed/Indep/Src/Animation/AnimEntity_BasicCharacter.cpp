@@ -294,13 +294,13 @@ void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
     if (RenderCharacterShadows && mDrawShadow && !is_reflection && CharacterShadowTexture != nullptr && mBoneMapType != -1) {
         bVector3 left_foot;
         bVector3 right_foot;
+        ePoly shadow_poly;
         bVector2 parallel;
         bVector2 perpendicular;
         bVector2 left0;
         bVector2 left1;
         bVector2 right0;
         bVector2 right1;
-        ePoly shadow_poly;
 
         FindWorldBonePosition(BoneMap[mBoneMapType].LeftFoot, &left_foot);
         FindWorldBonePosition(BoneMap[mBoneMapType].RightFoot, &right_foot);

@@ -176,7 +176,7 @@ struct ePoly {
 
     void SetFlags(unsigned char i) {}
 
-    void SetFlailer(unsigned char i) {}
+    void SetFlailer(unsigned char i) { Flailer = i; }
 
     unsigned char GetFlags() {}
 

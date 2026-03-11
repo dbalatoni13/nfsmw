@@ -9,11 +9,11 @@ void GenericNISControlScenario::HandleEventMessage(CWorldAnimEntityTree *entity_
     }
 
     GenericNISControlScenarioInfo *gcsi = static_cast<GenericNISControlScenarioInfo *>(data);
-    bool set_to_pos_immediately = __builtin_fabsf(gcsi->len) < 0.001;
+    bool set_to_pos_immediately = __builtin_fabs(gcsi->len) < 0.001;
     int open;
-    if (__builtin_fabsf(gcsi->pos - 1.0f) >= 0.001) {
+    if (__builtin_fabs(gcsi->pos - 1.0f) >= 0.001) {
         open = 0;
-        if (__builtin_fabsf(gcsi->pos) >= 0.001) {
+        if (__builtin_fabs(gcsi->pos) >= 0.001) {
             open = -1;
         }
     } else {
