@@ -129,14 +129,14 @@ struct FireOnExitRec {
 class FireOnExitList : public std::set<FireOnExitRec> {
   public:
     static void *operator new(unsigned int size) { return gFastMem.Alloc(size, nullptr); }
-    static void operator delete(void *mem, unsigned int size) { gFastMem.Free(mem, size, nullptr); }
+    static void operator delete(void *mem, unsigned int size) { if (mem) gFastMem.Free(mem, size, nullptr); }
 };
 
 // total size: 0x10
 class WTriggerManager {
   public:
     static void *operator new(unsigned int size) { return gFastMem.Alloc(size, nullptr); }
-    static void operator delete(void *mem, unsigned int size) { gFastMem.Free(mem, size, nullptr); }
+    static void operator delete(void *mem, unsigned int size) { if (mem) gFastMem.Free(mem, size, nullptr); }
 
     WTriggerManager();
     ~WTriggerManager();
