@@ -30,10 +30,12 @@ struct GIcon {
     unsigned short mRotation;
     unsigned short mPad;
     static EffectInfo kEffectInfo[];
-    void SetFlag(unsigned int mask) { mFlags |= mask; }
-    void ClearFlag(unsigned int mask) { mFlags &= ~mask; }
+    void SetFlag(unsigned int mask);
+    void ClearFlag(unsigned int mask);
     bool IsFlagSet(unsigned int mask) const { return (mFlags & mask) != 0; }
     bool IsFlagClear(unsigned int mask) const { return (mFlags & mask) == 0; }
+    void SetGPSing() { SetFlag(0x80); }
+    void ClearGPSing() { ClearFlag(0x80); }
     Type GetType() const { return static_cast< Type >(mType); }
     int GetSectionID() const { return mSectionID; }
     int GetCombinedSectionID() const { return mCombSectionID; }

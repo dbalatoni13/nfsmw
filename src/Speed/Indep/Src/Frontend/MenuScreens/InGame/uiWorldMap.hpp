@@ -106,9 +106,16 @@ struct MapItem : public bTNode<MapItem> {
         FEngSetSize(pIcon, InitialSize.x, InitialSize.y);
     }
     GIcon* GetIcon();
-    void SetHidden(bool b);
-    bool IsHidden();
-    eWorldMapItemType GetType();
+    void SetHidden(bool b) {
+        bHidden = b;
+        if (!b) {
+            Show();
+        } else {
+            Hide();
+        }
+    }
+    bool IsHidden() { return bHidden; }
+    eWorldMapItemType GetType() { return TheType; }
 };
 
 struct CopItem : public MapItem {

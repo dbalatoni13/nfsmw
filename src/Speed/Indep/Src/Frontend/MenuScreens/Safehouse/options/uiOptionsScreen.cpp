@@ -19,6 +19,7 @@ const char* GetLocalizedString(unsigned int hash);
 
 extern EAXSound* g_pEAXSound;
 
+#define _DIALOGINTERFACE
 enum eDialogTitle {};
 enum eDialogFirstButtons {};
 

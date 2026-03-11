@@ -197,6 +197,15 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
         mStartFreeRoamFromSafeHouse = true;
     }
 
+    void OverrideFreeRoamStartMarker(unsigned int markerKey) {
+        mOverrideFreeRoamStartMarker = markerKey;
+    }
+
+    void QueueFreeRoamPursuit(float minHeat) {
+        mStartFreeRoamPursuit = true;
+        mQueuedPursuitMinHeat = minHeat;
+    }
+
     void TrackValue(const char *valueName, int value) {
         TrackValue(valueName, static_cast<float>(value));
     }
