@@ -60,11 +60,33 @@ struct WCollisionBarrierListEntry {
 
 struct WCollisionObject : public CollisionObject {
     // total size: 0x70
+    enum Types {
+        kBox = 0,
+        kCylinder = 1,
+    };
+
+    const WSurface GetWSurface() const {
+        return reinterpret_cast<const WSurface &>(fSurface);
+    }
+
+    bool IsDynamic() const { return (fFlags & 1) != 0; }
+
     void MakeMatrix(UMath::Matrix4 &m, bool addXLate) const;
 };
 
+extern signed char SceneryGroupEnabledTable[];
+
+inline int IsSceneryGroupEnabled(int group_number) {
+    return SceneryGroupEnabledTable[group_number];
+}
+
 struct WCollisionInstance : public CollisionInstance {
     // total size: 0x40
+
+    inline bool NeedsCrossProduct() const {
+        return (fFlags & 3) != 0;
+    }
+
     float CalcSphericalRadius() const;
     void CalcPosition(UMath::Vector3 &pos) const;
     void MakeMatrix(UMath::Matrix4 &m, bool addXLate) const;

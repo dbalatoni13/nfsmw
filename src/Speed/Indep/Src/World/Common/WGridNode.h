@@ -14,6 +14,21 @@ struct WGridNodeElemList : public std::list<WGridNodeElem, UTL::Std::Allocator<W
 };
 
 struct WGridNode {
+    // total size: 0x1C
+    struct iterator {
+        WGridNode_ElemType fType;                        // offset 0x0, size 0x4
+        const WGridNode *fNode;                          // offset 0x4, size 0x4
+        int fNumEntriesRemaining;                        // offset 0x8, size 0x4
+        const unsigned int *fElemInd;                    // offset 0xC, size 0x4
+        bool fValid;                                     // offset 0x10, size 0x1
+        bool fDynamic;                                   // offset 0x14, size 0x1
+        WGridNodeElemList::iterator fIter;               // offset 0x18, size 0x4
+
+        inline iterator(const WGridNode *node, WGridNode_ElemType type);
+        inline void Invalidate();
+        inline const unsigned int *GetIndPtr();
+    };
+
     unsigned int TotalSize() const;
 
     void ShutDown() {
@@ -64,5 +79,56 @@ struct WGridNode {
     unsigned char fElemCounts[4];       // offset 0x8, size 0x4
     unsigned short fElemOffsets[4];     // offset 0xC, size 0x8
 };
+
+inline WGridNode::iterator::iterator(const WGridNode *node, WGridNode_ElemType type)
+    : fType(type), //
+      fNode(node), //
+      fNumEntriesRemaining(0), //
+      fElemInd(nullptr), //
+      fValid(false), //
+      fDynamic(false) {
+    fNumEntriesRemaining = node->GetElemTypeCount(type);
+    if (fNumEntriesRemaining > 0) {
+        fValid = true;
+        fElemInd = node->GetElemTypePtr(type);
+    }
+    if (node->fDynElems != nullptr) {
+        fValid = true;
+        fIter = node->fDynElems->begin();
+    }
+}
+
+inline void WGridNode::iterator::Invalidate() {
+    fElemInd = nullptr;
+    fValid = false;
+}
+
+inline const unsigned int *WGridNode::iterator::GetIndPtr() {
+    const unsigned int *retInd = nullptr;
+    if (!fValid) {
+        return nullptr;
+    }
+    if (!fDynamic && fNumEntriesRemaining > 0) {
+        fNumEntriesRemaining--;
+        fValid = true;
+        retInd = fElemInd;
+        fElemInd++;
+    } else if (fNode->fDynElems == nullptr) {
+        Invalidate();
+    } else {
+        fDynamic = true;
+        while (fIter != fNode->fDynElems->end() && (*fIter).fType != fType) {
+            ++fIter;
+        }
+        if (fIter == fNode->fDynElems->end()) {
+            Invalidate();
+        } else {
+            retInd = &(*fIter).fInd;
+            ++fIter;
+            fElemInd = retInd;
+        }
+    }
+    return retInd;
+}
 
 #endif

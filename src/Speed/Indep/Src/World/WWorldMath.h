@@ -11,6 +11,11 @@ namespace WWorldMath {
 
 inline float pow2(float a) { return a * a; }
 
+inline float wmin(const float &a, const float &b) {
+    if (a < b) return a;
+    return b;
+}
+
 inline float wmax(const float &a, const float &b) {
     if (a > b) return a;
     return b;

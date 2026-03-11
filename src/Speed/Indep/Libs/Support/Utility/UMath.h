@@ -57,7 +57,7 @@ inline float DistanceSquare(const Vector3 &a, const Vector3 &b) {
 }
 
 inline float DistanceSquarexz(const Vector3 &a, const Vector3 &b) {
-    return VU0_v3distancesquare(a, b);
+    return VU0_v3distancesquarexz(a, b);
 }
 
 inline void Clear(Vector3 &r) {
@@ -247,6 +247,24 @@ inline void Sub(const Vector3 &a, const Vector3 &b, Vector3 &r) {
 
 inline void Subxyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
     VU0_v4subxyz(a, b, r);
+}
+
+inline void Addxyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4addxyz(a, b, r);
+}
+
+inline void Scalexyz(const Vector4 &a, const float s, Vector4 &r) {
+    VU0_v4scalexyz(a, s, r);
+}
+
+inline void Negatexyz(Vector4 &r) {
+    VU0_v4negatexyz(r);
+}
+
+inline float Distancexyz(const Vector4 &a, const Vector4 &b) {
+    Vector4 temp;
+    VU0_v4subxyz(a, b, temp);
+    return VU0_sqrt(VU0_v4lengthsquarexyz(temp));
 }
 
 inline void SetYRot(Matrix4 &r, float a) {
