@@ -340,7 +340,7 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
                 }
             }
             if (shapeNum == 3) {
-                if (trig->fPosRadius.y - trig->fHeight * 0.5f <= rPos.y + rbRadius &&
+                if (rPos.y + rbRadius >= trig->fPosRadius.y - trig->fHeight * 0.5f &&
                     rPos.y - rbRadius < trig->fPosRadius.y + trig->fHeight * 0.5f) {
                     return true;
                 }
@@ -352,11 +352,7 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
                 Dynamics::Collision::Geometry carOBB(bodyMat, rPos, dim3, Dynamics::Collision::Geometry::BOX, dP);
                 UMath::Matrix4 m;
                 trig->MakeMatrix(m, false, false);
-                UMath::Vector4 trigPos;
-                trigPos.x = trig->fPosRadius.x;
-                trigPos.y = trig->fPosRadius.y;
-                trigPos.z = trig->fPosRadius.z;
-                trigPos.w = 1.0f;
+                UMath::Vector4 trigPos = trig->fPosRadius;
                 UMath::Vector3 trigDimension;
                 trigDimension.x = trig->fMatRow0Width.w * 0.5f;
                 trigDimension.y = trig->fHeight * 0.5f;
@@ -404,11 +400,7 @@ bool WTriggerManager::CheckCollideSRB(const IRigidBody *srBody, const WTrigger *
         Dynamics::Collision::Geometry srbOBB(bodyMat, rPos, dim3, Dynamics::Collision::Geometry::SPHERE, dVdT);
         UMath::Matrix4 m;
         trig->MakeMatrix(m, false, false);
-        UMath::Vector4 trigPos;
-        trigPos.x = trig->fPosRadius.x;
-        trigPos.y = trig->fPosRadius.y;
-        trigPos.z = trig->fPosRadius.z;
-        trigPos.w = 1.0f;
+        UMath::Vector4 trigPos = trig->fPosRadius;
         UMath::Vector3 trigDimension;
         trigDimension.x = trig->fMatRow0Width.w * 0.5f;
         trigDimension.y = trig->fHeight * 0.5f;
@@ -433,7 +425,7 @@ bool WTriggerManager::CheckCollideSRB(const IRigidBody *srBody, const WTrigger *
                     return false;
                 }
             }
-            if (trig->fPosRadius.y - trig->fHeight * 0.5f <= rPos.y + srRadius &&
+            if (rPos.y + srRadius >= trig->fPosRadius.y - trig->fHeight * 0.5f &&
                 rPos.y - srRadius < trig->fPosRadius.y + trig->fHeight * 0.5f) {
                 return true;
             }
@@ -451,8 +443,8 @@ inline float DistanceSquared_XZ(const UMath::Vector3 &a, const UMath::Vector3 &b
 void WTriggerManager::GetIntersectingTriggers(const UMath::Vector3 &pt, float radius, WTriggerList *triggerList) const {
     UTL::FastVector<unsigned int, 16> nodeInds;
     nodeInds.reserve(0x40);
-    fIterCount++;
     const WGrid &grid = WGrid::Get();
+    fIterCount++;
     grid.FindNodes(pt, radius, nodeInds);
     for (unsigned int *iter = nodeInds.begin(); iter != nodeInds.end(); ++iter) {
         WGridNode *gridNode = grid.fNodes[*iter];

@@ -61,23 +61,27 @@ bool WWorldMath::MakeSegSpaceMatrix(const UMath::Vector3 &startPt, const UMath::
     forward.z = forward.z * rLen;
     forward.y = fwdY * rLen;
 
-    if (bAbs(forward.y) <= 0.9f) {
+    float absY;
+    asm("fabs %0, %1" : "=f"(absY) : "f"(forward.y));
+    if (absY <= 0.9f) {
         right.w = 0.0f;
-        right.x = 0.0f;
         right.y = 1.0f;
+        right.x = 0.0f;
     } else {
         right.w = 0.0f;
-        right.y = 0.0f;
         right.x = 1.0f;
+        right.y = 0.0f;
     }
     right.z = 0.0f;
 
     Crossxyz(right, forward, up);
     up.w = 0.0f;
 
-    float lensq = up.z * up.z + up.x * up.x + up.y * up.y;
+    float lensq = up.y * up.y + up.x * up.x + up.z * up.z;
     if (lensq != 0.0f) {
         rLen = InvSqrt(lensq);
+    } else {
+        rLen = 0.0f;
     }
     up.x = up.x * rLen;
     up.y = up.y * rLen;

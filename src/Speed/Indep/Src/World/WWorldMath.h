@@ -32,8 +32,13 @@ inline float InvSqrt(const float f) {
 }
 
 inline bool PtsEqual(const UMath::Vector3 &p0, const UMath::Vector3 &p1, float tolerance) {
-    const float kTolerance = tolerance;
-    return bAbs(p0.x - p1.x) < kTolerance && bAbs(p0.y - p1.y) < kTolerance && bAbs(p0.z - p1.z) < kTolerance;
+    float d;
+    asm("fabs %0, %1" : "=f"(d) : "f"(p0.x - p1.x));
+    if (d >= tolerance) return false;
+    asm("fabs %0, %1" : "=f"(d) : "f"(p0.y - p1.y));
+    if (d >= tolerance) return false;
+    asm("fabs %0, %1" : "=f"(d) : "f"(p0.z - p1.z));
+    return d < tolerance;
 }
 
 inline void Crossxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r) {

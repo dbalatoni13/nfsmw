@@ -378,9 +378,9 @@ void WCollisionMgr::BuildGeomFromWorldObb(const WCollisionObject &object, float 
     vel.y = 0.0f;
     UMath::ScaleAdd(UMath::Vector4To3(objMat.v1), object.fDimensions.y, objPos, pos);
 
-    UMath::Vector3 dim = UMath::Vector3Make(object.fDimensions.x, object.fDimensions.y, object.fDimensions.z);
-    UMath::Vector3 dP = dim;
-    UMath::Scale(vel, dt, dim);
+    UMath::Vector3 dP = UMath::Vector3Make(object.fDimensions.x, object.fDimensions.y, object.fDimensions.z);
+    UMath::Vector3 dim = dP;
+    UMath::Scale(vel, dt, dP);
 
-    geom.Set(objMat, pos, dP, Dynamics::Collision::Geometry::BOX, dim);
+    geom.Set(objMat, pos, dim, Dynamics::Collision::Geometry::BOX, dP);
 }
