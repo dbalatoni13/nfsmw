@@ -124,6 +124,17 @@ struct WRoadIntersection {
     char fPad[9];                // offset 0x35, size 0x9
 };
 
+// total size: 0xE
+struct WRoadNetworkInfo {
+    unsigned short fNumProfiles;      // offset 0x0, size 0x2
+    unsigned short fNumNodes;         // offset 0x2, size 0x2
+    unsigned short fNumSegments;      // offset 0x4, size 0x2
+    unsigned short fNumIntersections; // offset 0x6, size 0x2
+    unsigned short fNumRoads;         // offset 0x8, size 0x2
+    unsigned short fNumJunctions;     // offset 0xA, size 0x2
+    char fPad[2];                     // offset 0xC, size 0x2
+};
+
 // total size: 0x16
 struct WRoadSegment {
     bool IsDecision() const {

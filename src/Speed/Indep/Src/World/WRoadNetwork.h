@@ -21,30 +21,17 @@ class WRoadNav;
 // total size: 0x1
 class WRoadNetwork : public Debugable {
   public:
-    // static inline void *operator new(unsigned int size, void *ptr) {}
-
-    // static inline void operator delete(void *mem, void *ptr) {}
-
-    // static inline void *operator new(unsigned int size) {}
-
-    // static inline void operator delete(void *mem, unsigned int size) {}
-
-    // static inline void *operator new(unsigned int size, const char *name) {}
-
-    // static inline void operator delete(void *mem, const char *name) {}
-
-    // static inline void operator delete(void *mem, unsigned int size, const char *name) {}
+    static void *operator new(unsigned int size) { return gFastMem.Alloc(size, nullptr); }
 
     static WRoadNetwork &Get() {
         return *fgRoadNetwork;
     }
 
-    // static unsigned int GetTotalMemoryUsage() {}
-
     WRoadNetwork() {}
 
     ~WRoadNetwork() {}
 
+    static void Init();
     static void Shutdown();
     void ResetRaceSegments();
     void ResetBarriers();

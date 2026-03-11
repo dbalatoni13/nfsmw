@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/Gameplay/GMarker.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/World/WPathFinder.h"
+#include "Speed/Indep/Src/World/WWorld.h"
 
 static const int drivable_lanes[8] = {
     static_cast<int>(0xFFFFDF7F),
@@ -27,6 +28,85 @@ static const int selectable_lanes[8] = {
     0x00000402,
     static_cast<int>(0xFFFFFFFF),
 };
+
+void WRoadNetwork::Init() {
+    if (fgRoadNetwork == nullptr) {
+        fgRoadNetwork = new WRoadNetwork();
+        fValid = false;
+        fValidRaceFilter = false;
+        fValidTrafficRoads = true;
+        fNumNodes = 0;
+        fNumSegments = 0;
+        fNumIntersections = 0;
+        fNumRoads = 0;
+        nRoadMemoryUsage = 0;
+        nNodeMemoryUsage = 0;
+        nProfileMemoryUsage = 0;
+        nSegmentMemoryUsage = 0;
+        nIntersectionMemoryUsage = 0;
+        nTotalMemoryUsage = 0;
+
+        if (WWorld::Get().GetMapGroup()) {
+            const UGroup *networkGroup = WWorld::Get().GetMapGroup()->GroupLocate('RN', 'gp');
+            if (networkGroup != WWorld::Get().GetMapGroup()->GroupEnd()) {
+                const UData *headerData = networkGroup->DataLocate('RN', 'hd');
+                const WRoadNetworkInfo *roadInfo =
+                    static_cast< const WRoadNetworkInfo * >(headerData->GetDataConst());
+
+                fNumSegments = roadInfo->fNumSegments;
+                fNumNodes = roadInfo->fNumNodes;
+                fNumRoads = roadInfo->fNumRoads;
+                nSegmentMemoryUsage = fNumSegments * sizeof(WRoadSegment);
+                fNumProfiles = roadInfo->fNumProfiles;
+                nNodeMemoryUsage = fNumNodes * sizeof(WRoadNode);
+                nRoadMemoryUsage = fNumRoads * sizeof(WRoad);
+                fNumIntersections = roadInfo->fNumIntersections;
+                nProfileMemoryUsage = fNumProfiles * sizeof(WRoadProfile);
+                nIntersectionMemoryUsage = fNumIntersections * sizeof(WRoadIntersection);
+                nTotalMemoryUsage = nRoadMemoryUsage + nNodeMemoryUsage +
+                                    nProfileMemoryUsage + nSegmentMemoryUsage +
+                                    nIntersectionMemoryUsage;
+
+                if (fNumNodes == 0) {
+                    fValid = false;
+                    return;
+                }
+
+                const UData *data;
+                void *nonConstData;
+
+                data = networkGroup->DataLocate('RN', 'pf');
+                nonConstData = const_cast< void * >(data->GetDataConst());
+                if (data != networkGroup->DataEnd()) {
+                    fProfiles = static_cast< WRoadProfile * >(nonConstData);
+                }
+
+                data = networkGroup->DataLocate('RN', 'nd');
+                nonConstData = const_cast< void * >(data->GetDataConst());
+                if (data != networkGroup->DataEnd()) {
+                    fNodes = static_cast< WRoadNode * >(nonConstData);
+                }
+
+                data = networkGroup->DataLocate('RN', 'sg');
+                nonConstData = const_cast< void * >(data->GetDataConst());
+                if (data != networkGroup->DataEnd()) {
+                    fSegments = static_cast< WRoadSegment * >(nonConstData);
+                }
+
+                data = networkGroup->DataLocate('RN', 'rd');
+                nonConstData = const_cast< void * >(data->GetDataConst());
+                if (data != networkGroup->DataEnd()) {
+                    fRoads = static_cast< WRoad * >(nonConstData);
+                }
+
+                fValid = true;
+            }
+        }
+        fgRoadNetwork->ResolveBarriers();
+        fgRoadNetwork->ResolveShortcuts();
+        fgRoadNetwork->ResetRaceSegments();
+    }
+}
 
 void WRoadNetwork::Shutdown() {
     if (fgRoadNetwork) {
