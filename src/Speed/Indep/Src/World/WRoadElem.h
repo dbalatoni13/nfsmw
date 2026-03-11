@@ -33,7 +33,14 @@ struct WRoad {
 
 // total size: 0x20
 struct WRoadNode {
-    // bool IsSegment(unsigned short segment_id) const {}
+    bool IsSegment(unsigned short segment_id) const {
+        for (int i = 0; i < static_cast< int >(fNumSegments); i++) {
+            if (fSegmentIndex[i] == segment_id) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     UMath::Vector3 fPosition;        // offset 0x0, size 0xC
     short fIndex;                    // offset 0xC, size 0x2
@@ -356,7 +363,13 @@ struct WRoadSegment {
         v = UMath::Vector3Make(x, y, z);
     }
 
-    // void GetControl(int which_end, UMath::Vector3 &v) const {}
+    void GetControl(int which_end, UMath::Vector3 &v) const {
+        if (which_end == 0) {
+            GetStartControl(v);
+        } else {
+            GetEndControl(v);
+        }
+    }
 
     // void GetRightVec(int which_end, UMath::Vector2 &v) const {}
 
