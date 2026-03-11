@@ -199,9 +199,9 @@ void SelectCarCameraMover::SetCurrentOrientation(bVector3 &orbit, float roll, fl
 
 void SelectCarCameraMover::SetDesiredOrientation(bVector3 &orbit, float roll, float fov, bVector3 &lookAt, float animSpeed, float damping,
                                                   int periods) {
-    GoalAnimCameraData = CurrentCameraData;
-    ControlMode = 0;
     StartAnimCameraData = CurrentCameraData;
+    ControlMode = 0;
+    GoalAnimCameraData = CurrentCameraData;
     GoalAnimCameraData.OrbitVAngle = orbit.x;
     GoalAnimCameraData.OrbitHAngle = orbit.y;
     GoalAnimCameraData.Radius = orbit.z;
@@ -213,8 +213,8 @@ void SelectCarCameraMover::SetDesiredOrientation(bVector3 &orbit, float roll, fl
     GoalAnimCameraData.OrbitVAngle = FindBestAngleGoal(StartAnimCameraData.OrbitVAngle, GoalAnimCameraData.OrbitVAngle);
     GoalAnimCameraData.OrbitHAngle = FindBestAngleGoal(StartAnimCameraData.OrbitHAngle, GoalAnimCameraData.OrbitHAngle);
     GoalAnimCameraData.RollAngle = FindBestAngleGoal(StartAnimCameraData.RollAngle, GoalAnimCameraData.RollAngle);
-    TotalAnimationTime = animSpeed;
     CurrentAnimationTime = 0.0f;
+    TotalAnimationTime = animSpeed;
 }
 
 float SelectCarCameraMover::FindBestAngleGoal(float start, float goal) {
