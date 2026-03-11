@@ -242,9 +242,9 @@ void UIMemcardBase::SetMessageBlurbText(short* pText) {
 
 void UIMemcardBase::SetMessageBlurbText(char* pText) {
     int wText[1024];
-    FEPrintf(m_pDisplayMsg, "%s", pText);
+    FEPrintf(m_pDisplayMsg, pText);
     if (m_pDisplayMsgShadow != nullptr) {
-        FEPrintf(m_pDisplayMsgShadow, "%s", pText);
+        FEPrintf(m_pDisplayMsgShadow, pText);
     }
     bStrCpy(reinterpret_cast< unsigned short* >(wText), pText);
     FindScreenSize(reinterpret_cast< const wchar_t* >(wText));
