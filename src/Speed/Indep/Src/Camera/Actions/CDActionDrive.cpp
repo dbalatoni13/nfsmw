@@ -442,7 +442,7 @@ void CDActionDrive::Update(float dT) {
 
     float gbScale;
     if (mPlayer->InGameBreaker()) {
-        gbScale = dT * 2.0f + mGameBreakerScale;
+        gbScale = dT * 4.0f + mGameBreakerScale;
         mGameBreakerScale = gbScale;
         gbScale = UMath::Min(gbScale, 1.0f);
     } else {

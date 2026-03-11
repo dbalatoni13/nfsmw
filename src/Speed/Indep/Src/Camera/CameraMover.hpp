@@ -358,9 +358,9 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
 
     virtual void SetPovType(int pov_type) {}
 
-    virtual bool OutsidePOV();
-
     virtual bool RenderCarPOV();
+
+    virtual bool OutsidePOV();
 
     virtual float MinDistToWall();
 
@@ -454,8 +454,8 @@ class CubicCameraMover : public CameraMover {
     virtual void SetLookBack(bool b);
     virtual void SetDisableLag(bool disable);
     virtual void SetPovType(int pov_type);
-    virtual bool OutsidePOV();
     virtual bool RenderCarPOV();
+    virtual bool OutsidePOV();
     virtual float MinDistToWall();
     virtual unsigned short GetLookbackAngle();
     virtual void ResetState();

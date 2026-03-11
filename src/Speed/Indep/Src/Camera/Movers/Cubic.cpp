@@ -155,14 +155,19 @@ CubicCameraMover::CubicCameraMover(int nView, CameraAnchor *p_car, int pov_type,
     vCameraImpcatTimer.y = 0.0f;
     vCameraImpcatTimer.x = 0.0f;
 
-    if (smooth && bLength(&eye_movement) <= 50.0f && bDot(&direction_current, &direction_desired) >= -0.9f) {
-        fIgnoreSetSnapNextTimer = 1.0f;
-    } else {
-        pUp->Snap();
-        pFov->Snap();
-        pEye->Snap();
-        pLook->Snap();
-    }
+    if (smooth && bLength(&eye_movement) <= 50.0f && bDot(&direction_current, &direction_desired) >= -0.9f)
+        goto set_timer;
+
+    pUp->Snap();
+    pFov->Snap();
+    pEye->Snap();
+    pLook->Snap();
+    goto done;
+
+set_timer:
+    fIgnoreSetSnapNextTimer = 1.0f;
+
+done:;
 }
 
 bool CubicCameraMover::IsUnderVehicle() {
