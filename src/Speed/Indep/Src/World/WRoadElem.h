@@ -11,7 +11,7 @@
 struct WRoad {
     float GetScale() const {
         unsigned int s = static_cast< unsigned int >(nScale) << 8;
-        return static_cast< float >(s) * (500.0f / 65535.0f);
+        return static_cast< float >(s) * (1.0f / 65536.0f);
     }
 
     // float GetLength() const {}
@@ -230,7 +230,7 @@ struct WRoadSegment {
     // void SetCrossesDriveThroughBarrier(bool violates) {}
 
     float GetLength() const {
-        return static_cast< float >(nLength) * (500.0f / 65535.0f);
+        return static_cast< float >(nLength) * (1000.0f / 65535.0f);
     }
 
     // void SetLength(float length) {}

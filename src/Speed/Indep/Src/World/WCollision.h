@@ -69,6 +69,22 @@ struct WCollisionBarrier {
         return this + 1;
     }
 
+    const UMath::Vector4 *GetPts() const {
+        return fPts;
+    }
+
+    const UMath::Vector4 *GetPt(int ptInd) const {
+        return &fPts[ptInd];
+    }
+
+    const float YBot() const {
+        return fPts[0].y;
+    }
+
+    const float YTop() const {
+        return fPts[1].y;
+    }
+
     UMath::Vector4 fPts[2]; // offset 0x0, size 0x20
 };
 

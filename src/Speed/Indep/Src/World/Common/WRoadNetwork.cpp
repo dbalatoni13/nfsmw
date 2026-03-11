@@ -235,7 +235,8 @@ void WRoadNetwork::ResolveBarriers() {
 
             for (SEGMENT_SET::const_iterator it = segment_set.begin();
                  it != segment_set.end(); ++it) {
-                WRoadSegment *segment = roadNetwork.GetSegmentNonConst(*it);
+                short segment_number = *it;
+                WRoadSegment *segment = roadNetwork.GetSegmentNonConst(segment_number);
                 if (SegmentCrossesBarrier(segment, barrier)) {
                     bool exempt = false;
                     short road_number = segment->fRoadID;
@@ -857,35 +858,30 @@ unsigned char WRoadNav::GetShortcutNumber() {
 }
 
 bool WRoadNav::IsOnLegalRoad() {
-    if (!IsValid()) {
-        return false;
-    }
-    int segment_number = GetSegmentInd();
-    const WRoadSegment *segment = WRoadNetwork::Get().GetSegment(segment_number);
-    if (segment->IsDecision()) {
-        const WRoadNode *node = WRoadNetwork::Get().GetNode(segment->fNodeIndex[GetNodeInd()]);
-        segment = GetAttachedDirectionalSegment(node, segment_number);
-    }
-    if (segment != nullptr && segment->IsTrafficAllowed()) {
-        return true;
+    if (IsValid()) {
+        int segment_number = GetSegmentInd();
+        WRoadNetwork &rn = WRoadNetwork::Get();
+        const WRoadSegment *segment = rn.GetSegment(segment_number);
+        if (segment->IsDecision()) {
+            const WRoadNode *node = rn.GetNode(segment->fNodeIndex[GetNodeInd()]);
+            segment = GetAttachedDirectionalSegment(node, segment_number);
+        }
+        return segment != nullptr && segment->IsTrafficAllowed();
     }
     return false;
 }
 
 bool WRoadNav::FindPath(const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, char *shortcut_allowed) {
     PathFinder *path_finder = PathFinder::Get();
-    bool ret = false;
     if (path_finder != nullptr) {
         MaybeAllocatePathSegments();
         AStarSearch *search = path_finder->Pending(this);
         if (search == nullptr) {
             search = path_finder->Submit(this, goal_position, goal_direction, shortcut_allowed);
         }
-        if (search != nullptr) {
-            ret = true;
-        }
+        return search != nullptr;
     }
-    return ret;
+    return false;
 }
 
 bool WRoadNav::FindPathNow(const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, char *shortcut_allowed) {
@@ -1085,8 +1081,8 @@ void WRoadNav::ClampCookieCentres(NavCookie *cookies, int num_cookies) {
             float size = (cookie.RightOffset - cookie.LeftOffset) * 0.5f;
             cookie.RightOffset = size;
             cookie.Centre.x = (cookie.Left.x + cookie.Right.x) * 0.5f;
-            cookie.LeftOffset = -size;
             cookie.Centre.z = (cookie.Left.y + cookie.Right.y) * 0.5f;
+            cookie.LeftOffset = -size;
         }
     }
 }

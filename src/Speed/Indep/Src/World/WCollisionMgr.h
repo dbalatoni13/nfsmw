@@ -84,6 +84,10 @@ class WCollisionMgr {
         return (fSurfaceExclusionMask & inst.fFlags) == 0;
     }
 
+    bool SurfacePassesExclusion(const WSurface &surface) const {
+        return (fSurfaceExclusionMask & surface.fFlags) == 0;
+    }
+
     WCollisionMgr(unsigned int surfaceExclMask, unsigned int primitiveExclMask) {
         this->fPrimitiveMask = primitiveExclMask;
         this->fSurfaceExclusionMask = surfaceExclMask;
