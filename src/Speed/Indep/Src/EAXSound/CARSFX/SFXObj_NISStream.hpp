@@ -9,6 +9,10 @@
 
 struct SFXObj_NISStream : CARSFX {
     void StartNIS();
+    void QueueNISStream(unsigned int anim_id, int camera_track_number, void (*setmstimecb)(unsigned int, int), bool bButtonThrough);
+    void QueueNISStream(unsigned int anim_id, int camera_track_number, bool bButtonThrough, bool param4);
+    void NISActivityDone();
+    void StopStream();
     bool IsNISStreamReady() { return m_bNISAudioStreamReady; }
 
     static bool m_bNISAudioStreamReady;

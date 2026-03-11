@@ -38,7 +38,7 @@ struct CSTATE_Base : public AudioMemBase {
     virtual ~CSTATE_Base();
     virtual void Setup(int _m_SFXFlags);
     virtual void PreLoadAssets();
-    virtual void Attach();
+    virtual void Attach(void *pAttachment);
     virtual void LoadData();
     virtual void UpdateParams(float t);
     virtual void ProcessUpdate();
@@ -55,6 +55,8 @@ struct CSTATE_Base : public AudioMemBase {
     bool IsDataLoaded(void);
     void DisconnectMixMap();
     void SafeConnectOrphanObjects();
+    SndBase *GetSFXObject(int sfxid);
+    SndBase *GetSFXCTLObject(int sfxid);
 
     bool IsAttached() { return bIsAttached; }
 

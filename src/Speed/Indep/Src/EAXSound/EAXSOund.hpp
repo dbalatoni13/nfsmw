@@ -8,6 +8,8 @@
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
 #include "Speed/Indep/Src/EAXSound/SFX_base.hpp"
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
+#include "Speed/Indep/Src/EAXSound/States/STATE_Base.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/audiosystem.h"
 #include "Speed/Indep/Src/Main/Event.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
@@ -22,6 +24,9 @@ enum eSndAudioMode {
 
 struct EAXCar;
 struct CSTATEMGR_Base;
+struct EAX_HeliState;
+struct EAX_CarState;
+struct CSTATE_Base;
 
 // yes that is the correct name for the file
 
@@ -150,6 +155,26 @@ class EAXSound : public AudioMemBase {
     void CommitAssets();
     static void MixMapReadyCallback();
     void AttachPlayerCars();
+    void QueueNISButtonThrough(unsigned int anim_id, int camera_track_number);
+    void PlayUISoundFX(eMenuSoundTriggers etriggertype);
+    void StopUISoundFX(eMenuSoundTriggers etriggertype);
+    void SetSFXBaseObject(SFX_Base *psb, eMAINMAPSTATES estate, int ntype, int instance);
+    void PlayFEMusic(int nIndex);
+    CSTATE_Base *SpawnHelicopter(EAX_HeliState *pHeli);
+    void DestroyEAXHeli(EAX_HeliState *pHeli);
+    void DestroyEAXCar(EAX_CarState *pCar);
+    void UnloadFrontEndSoundBanks();
+    void UnLoadInGameSoundBanks();
+    void CloseSound();
+    void ReStartRace(bool bfullrestart);
+    void Destroy();
+    void RestoreDriver();
+    void InitializeDriver();
+    void RefreshLocalAttr();
+    void InitializeSoundBootLoad();
+    void StartNewGamePlay();
+    void InitializeInGame();
+    void InitializeFrontEnd();
 
     static struct SndBase *GetSndBase_Object(int nID);
 
