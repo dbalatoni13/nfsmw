@@ -65,7 +65,12 @@ struct LaunchState {
     void Clear() { Time = 0.0f; Amount = 0.0f; }
     bool IsSet() const { return Time > 0.0f; }
     void Set(float time) { Time = time; Amount = 0.0f; }
-    void Tick(float dT) { Amount += dT; }
+    void Tick(float dT) {
+        Time -= dT;
+        if (Time <= 0.0f) {
+            Clear();
+        }
+    }
 };
 
 class PVehicle : public PhysicsObject,

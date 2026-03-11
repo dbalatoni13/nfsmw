@@ -126,10 +126,7 @@ struct pvehicle : Instance {
         return *this;
     }
 
-    const pvehicle &operator=(const Instance &rhs) {
-        Instance::operator=(rhs);
-        return *this;
-    }
+    const pvehicle &operator=(const Instance &rhs);
 
     void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
         Instance::Modify(dynamicCollectionKey, spaceForAdditionalAttributes);
@@ -685,6 +682,7 @@ struct pvehicle : Instance {
 };
 
 } // namespace Gen
+
 } // namespace Attrib
 
 #endif

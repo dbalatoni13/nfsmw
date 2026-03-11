@@ -56,13 +56,12 @@ Attrib::StringKey Smackable::SPHERE;
 static float Smackable_ManagementRate = 0.125f;
 
 static float GetDropTimer(const Attrib::Gen::smackable &attributes) {
-    float result = 0.0f;
-    if (0.0f < attributes.DROPOUT(0)) {
-        if (0.0f < attributes.DROPOUT(1)) {
-            result = attributes.DROPOUT(0);
+    if (attributes.DROPOUT(0) > 0.0f) {
+        if (attributes.DROPOUT(1) > 0.0f) {
+            return attributes.DROPOUT(0);
         }
     }
-    return result;
+    return 0.0f;
 }
 
 bool Smackable::Simplify() {
@@ -593,7 +592,7 @@ Behavior *RBSmackable::Construct(const BehaviorParams &parms) {
 
 RBSmackable::RBSmackable(const BehaviorParams &parms, const RBComplexParams &rp)
     : RigidBody(parms, rp) //
-    , mSpecs(parms.fowner, 0) //
+    , mSpecs(this, 0) //
 {
     mFrame = 0;
     Smackable_RigidCount++;
@@ -667,12 +666,8 @@ HeirarchyModel::HeirarchyModel(bHash32 rendermesh, const CollisionGeometry::Boun
     mFlags = 0;
     Attrib::Gen::smackable smackable(attribs, 0, nullptr);
     if (visible) {
-        RenderConn::Pkt_Smackable_Open pkt;
-        pkt.mModelHash = mRenderMesh;
-        pkt.mObjectWUID = GetWorldID();
-        pkt.mCollisionNode = GetCollisionGeometry();
-        pkt.mHeirarchy = mHeirarchy;
-        pkt.mRenderNode = mHeirarchyNode;
+        RenderConn::Pkt_Smackable_Open pkt(mRenderMesh, GetWorldID(), GetCollisionGeometry(),
+                                           mHeirarchy, mHeirarchyNode);
         BeginDraw(UCrc32(0x804c146e), &pkt);
     }
     if (smackable.AI_AVOIDABLE()) {
@@ -688,15 +683,15 @@ HeirarchyModel::HeirarchyModel(bHash32 rendermesh, const CollisionGeometry::Boun
 void HeirarchyModel::SetCameraAvoidable(bool b) {
     bool is_avoidable = mFlags & 1;
     if (static_cast< unsigned short >(b) != is_avoidable) {
-        if (!b) {
-            CameraAI::RemoveAvoidable(static_cast< IBody * >(this));
-            mFlags = mFlags & 0xFFFE;
-        } else {
+        if (b) {
             if (!CAMERA_AVOIDABLE()) {
                 return;
             }
             CameraAI::AddAvoidable(static_cast< IBody * >(this));
             mFlags = mFlags | 1;
+        } else {
+            CameraAI::RemoveAvoidable(static_cast< IBody * >(this));
+            mFlags = mFlags & 0xFFFE;
         }
     }
 }
@@ -727,23 +722,23 @@ void HeirarchyModel::OnProcessFrame(float dT) {
 void HeirarchyModel::HidePart(const UCrc32 &nodename) {
     int index = FindHeirarchyChild(nodename);
     if (index > -1) {
-        mChildVisibility = mChildVisibility & ~(1 << (index & 0x1F));
+        mChildVisibility = mChildVisibility & ~(1 << index);
     }
 }
 
 void HeirarchyModel::ShowPart(const UCrc32 &nodename) {
     int index = FindHeirarchyChild(nodename);
     if (index > -1) {
-        mChildVisibility = mChildVisibility | (1 << (index & 0x1F));
+        mChildVisibility = mChildVisibility | (1 << index);
     }
 }
 
 bool HeirarchyModel::IsPartVisible(const UCrc32 &nodename) const {
     int index = FindHeirarchyChild(nodename);
-    if (index < 0) {
-        return false;
+    if (index >= 0 && (mChildVisibility & (1 << index)) != 0) {
+        return true;
     }
-    return (mChildVisibility & (1 << (index & 0x1F))) != 0;
+    return false;
 }
 
 int HeirarchyModel::FindHeirarchyChild(const UCrc32 &nodename) const {
@@ -758,6 +753,7 @@ int HeirarchyModel::FindHeirarchyChild(const UCrc32 &nodename) const {
         int idx = node.mFirstChild + i;
         if (nodes[idx].mNameHash == nodename.GetValue()) {
             childindex = idx;
+            break;
         }
     }
     return childindex;
@@ -779,7 +775,7 @@ IModel *HeirarchyModel::SpawnModel(UCrc32 rendernode, UCrc32 collisionnode, UCrc
                 if (attribs != nullptr) {
                     const ModelHeirarchy::Node *nodes = mHeirarchy->GetNodes();
                     eModel *emodel =
-                        reinterpret_cast< eModel * >(nodes[childindex].mNameHash);
+                        reinterpret_cast< eModel * >(nodes[childindex].mModel);
                     if (emodel != nullptr) {
                         bHash32 meshname(emodel->GetNameHash());
                         HeirarchyModel *child = new HeirarchyModel(
@@ -828,10 +824,10 @@ void HeirarchyModel::GetTransform(UMath::Matrix4 &matrix) const {
         ISimable *sim = model->GetSimable();
         sim->GetTransform(matrix);
     } else {
-        if (mTrigger == nullptr) {
-            UMath::Copy(UMath::Matrix4::kIdentity, matrix);
-        } else {
+        if (mTrigger != nullptr) {
             mTrigger->GetObjectMatrix(matrix);
+        } else {
+            UMath::Copy(UMath::Matrix4::kIdentity, matrix);
         }
     }
 }
@@ -839,19 +835,13 @@ void HeirarchyModel::GetTransform(UMath::Matrix4 &matrix) const {
 void HeirarchyModel::GetAngularVelocity(UMath::Vector3 &velocity) const {
     IModel *model = const_cast< IModel * >(static_cast< const IModel * >(this));
     ISimable *simable = model->GetSimable();
-    float y = UMath::Vector3::kZero.y;
-    float x = UMath::Vector3::kZero.x;
     if (simable != nullptr) {
         ISimable *sim = model->GetSimable();
         IRigidBody *irb = sim->GetRigidBody();
         const UMath::Vector3 &av = irb->GetAngularVelocity();
-        velocity.x = av.x;
-        velocity.y = av.y;
-        velocity.z = av.z;
+        velocity = av;
     } else {
-        velocity.z = UMath::Vector3::kZero.z;
-        velocity.x = x;
-        velocity.y = y;
+        velocity = UMath::Vector3::kZero;
     }
 }
 
@@ -871,8 +861,6 @@ void HeirarchyModel::DisableTrigger() {
 void HeirarchyModel::SetTrigger(const UMath::Matrix4 &matrix, bool virgin) {
     UMath::Vector3 dim;
     GetCollisionGeometry()->GetHalfDimensions(dim);
-    float x_len = dim.x;
-    float z_len = dim.z;
     if (mTrigger == nullptr) {
         SmackableTrigger *trigger = new (gFastMem.Alloc(sizeof(SmackableTrigger), nullptr))
             SmackableTrigger(GetInstanceHandle(), virgin, matrix, dim, 0);
@@ -881,21 +869,16 @@ void HeirarchyModel::SetTrigger(const UMath::Matrix4 &matrix, bool virgin) {
         mTrigger->Move(matrix, dim, virgin);
         mTrigger->Enable();
     }
-    mTriggerAvoid.x = matrix.v3.x;
-    mTriggerAvoid.y = matrix.v3.y;
-    mTriggerAvoid.z = matrix.v3.z;
-    mTriggerAvoid.w = matrix.v3.w;
-    float zx = z_len * matrix.v2.x + x_len * matrix.v0.x;
-    float zz = z_len * matrix.v2.z + x_len * matrix.v0.z;
+    mTriggerAvoid = matrix.v3;
+    float zx = dim.z * matrix.v2.x + dim.x * matrix.v0.x;
+    float zz = dim.z * matrix.v2.z + dim.x * matrix.v0.z;
     mTriggerAvoid.w = UMath::Sqrt(zx * zx + zz * zz);
 }
 
 bool HeirarchyModel::OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) {
     if (mTrigger != nullptr && mTrigger->IsEnabled()) {
         if (0.0f < mTriggerAvoid.w) {
-            pos.x = mTriggerAvoid.x;
-            pos.y = mTriggerAvoid.y;
-            pos.z = mTriggerAvoid.z;
+            pos = *reinterpret_cast< const UMath::Vector3 * >(&mTriggerAvoid);
             sweep = mTriggerAvoid.w;
             return true;
         }
@@ -908,9 +891,7 @@ bool HeirarchyModel::OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) {
             if (irb != nullptr) {
                 sweep = irb->GetRadius();
                 const UMath::Vector3 &position = irb->GetPosition();
-                pos.x = position.x;
-                pos.y = position.y;
-                pos.z = position.z;
+                pos = position;
                 return true;
             }
         }
@@ -937,12 +918,10 @@ void HeirarchyModel::OnBeginSimulation() {
         IModel *model = static_cast< IModel * >(this);
         mAvoidable->SetAvoidableObject(model->GetSimable());
     }
-    RenderConn::Pkt_Smackable_Open pkt;
-    pkt.mModelHash = mRenderMesh;
-    pkt.mObjectWUID = static_cast< IModel * >(this)->GetWorldID();
-    pkt.mCollisionNode = static_cast< IModel * >(this)->GetCollisionGeometry();
-    pkt.mHeirarchy = mHeirarchy;
-    pkt.mRenderNode = mHeirarchyNode;
+    IModel *model = static_cast< IModel * >(this);
+    RenderConn::Pkt_Smackable_Open pkt(mRenderMesh, model->GetWorldID(),
+                                       model->GetCollisionGeometry(), mHeirarchy,
+                                       mHeirarchyNode);
     BeginDraw(UCrc32(0x804c146e), &pkt);
 }
 

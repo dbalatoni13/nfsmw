@@ -27,11 +27,7 @@ struct Tunings {
     };
     float Value[7]; // offset 0x0, size 0x1C
 
-    void Default() {
-        for (int i = 0; i < MAX_TUNINGS; i++) {
-            Value[i] = 0.0f;
-        }
-    }
+    void Default();
 
     static float LowerLimit(Path path);
     static float UpperLimit(Path path);

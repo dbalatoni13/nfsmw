@@ -14,6 +14,15 @@ using Attrib::Key;
 using Attrib::RefSpec;
 using namespace Attrib::Gen;
 
+namespace Attrib {
+namespace Gen {
+const pvehicle &pvehicle::operator=(const Instance &rhs) {
+    Instance::operator=(rhs);
+    return *this;
+}
+} // namespace Gen
+} // namespace Attrib
+
 struct PUJunkNode : Attrib::Instance {
     PUJunkNode(const RefSpec &collection, const junkman &junkman, unsigned int junkkey);
 

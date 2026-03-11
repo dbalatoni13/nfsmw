@@ -43,6 +43,13 @@ void RemoveAvoidable(IBody *body);
 
 bool CanInstancesShareResourceCost(CarType type);
 
+struct AIBehaviors {
+    DriverClass dclass;
+    UCrc32 vclass;
+    UCrc32 signature;
+};
+extern AIBehaviors ai_behaviors[];
+
 const ISimable *PVehicle::GetSimable() const { return static_cast<const ISimable *>(this); }
 
 ISimable *PVehicle::GetSimable() { return static_cast<ISimable *>(this); }
@@ -277,12 +284,12 @@ void PVehicle::Launch() {
     if (mEngine == nullptr) {
         return;
     }
-    if (mPerfectLaunch.Time <= 0.0f) {
+    if (mPerfectLaunch.Time > 0.0f) {
         return;
     }
     if (mDriverClass == DRIVER_HUMAN) {
         if (mPerfectLaunch.Amount > 0.0f) {
-            mPerfectLaunch.Set(10.0f);
+            mPerfectLaunch.Time = 10.0f;
             new EPerfectLaunch(ISimable::GetInstanceHandle(), mPerfectLaunch.Amount);
         }
     } else {
@@ -475,12 +482,14 @@ void PVehicle::ComputeHeading(UMath::Vector3 *v) {
 void PVehicle::CheckOffWorld() {
     UCrc32 susp(BEHAVIOR_MECHANIC_SUSPENSION);
     if (IsBehaviorActive(susp)) {
-        bool offWorld;
-        if (static_cast<ISimable *>(this)->GetWPos().GetSurface() != SimSurface::kNull.GetConstCollection()) {
-            offWorld = false;
-        } else if (mSuspension == nullptr) {
-            offWorld = true;
-        } else {
+        if (static_cast<ISimable *>(this)->GetWPos().GetSurface() !=
+            SimSurface::kNull.GetConstCollection()) {
+            goto set_false;
+        }
+        if (mSuspension == nullptr) {
+            goto set_true;
+        }
+        {
             unsigned int invalid_tires = 0;
             for (unsigned int i = 0; i < mSuspension->GetNumWheels(); i++) {
                 if (mSuspension->GetWheelRoadSurface(i).GetConstCollection() ==
@@ -488,15 +497,21 @@ void PVehicle::CheckOffWorld() {
                     invalid_tires++;
                 }
             }
-            offWorld = !(invalid_tires < 2);
+            mOffWorld = !(invalid_tires < 2);
         }
-        mOffWorld = offWorld;
+        goto done;
+    set_true:
+        mOffWorld = true;
+        goto done;
+    set_false:
+        mOffWorld = false;
     } else {
         float worldHeight = 0.0f;
         WCollisionMgr mgr(0, 3);
         const UMath::Vector3 &pos = static_cast<ISimable *>(this)->GetPosition();
         mOffWorld = !mgr.GetWorldHeightAtPointRigorous(pos, worldHeight, nullptr);
     }
+done:;
 }
 
 void PVehicle::OnTaskSimulate(float dT) {
@@ -542,46 +557,58 @@ void PVehicle::OnTaskSimulate(float dT) {
             sleeping = true;
         }
         PauseBehavior(mechSusp, sleeping);
-        if (mTranny == nullptr) {
+        if (mTranny != nullptr) {
+            if (!mTranny->IsGearChanging()) {
+                mSpeedometer = mTranny->GetSpeedometer();
+            }
+        } else {
             mSpeedometer = mAbsSpeed;
-        } else if (!mTranny->IsGearChanging()) {
-            mSpeedometer = mTranny->GetSpeedometer();
         }
         unsigned int num_onground;
-        if (mSuspension == nullptr) {
-            mTimeInAir = mTimeInAir + dT;
-        } else {
+        if (mSuspension != nullptr) {
             num_onground = mSuspension->GetNumWheelsOnGround();
             if (num_onground == 0 && mWheelsOnGround != 0 && mDriverClass == DRIVER_HUMAN) {
                 new EPlayerAirborne(ISimable::GetInstanceHandle());
             }
             mWheelsOnGround = num_onground;
-            if (mSuspension != nullptr && num_onground != 0) {
-                mTimeInAir = 0.0f;
-            } else {
+            if (mSuspension == nullptr || num_onground == 0) {
                 mTimeInAir = mTimeInAir + dT;
+            } else {
+                mTimeInAir = 0.0f;
             }
+        } else {
+            mTimeInAir = mTimeInAir + dT;
         }
         if (IsStaging()) {
             DoStaging(dT);
         } else {
-            mPerfectLaunch.Tick(dT);
-            if (!mPerfectLaunch.IsSet()) {
-                mPerfectLaunch.Clear();
+            if (mPerfectLaunch.IsSet()) {
+                if (mTranny != nullptr) {
+                    if (!mTranny->IsGearChanging()) {
+                        mPerfectLaunch.Tick(dT);
+                    } else {
+                        if (mDriverClass == DRIVER_HUMAN) {
+                            mPerfectLaunch.Clear();
+                        }
+                    }
+                    if (GetSpeed() > MPH2MPS(60.0f)) {
+                        mPerfectLaunch.Clear();
+                    }
+                }
             }
         }
     } else if (mPhysicsMode == PHYSICS_MODE_EMULATED) {
         mTimeInAir = 0.0f;
-        if (mSuspension == nullptr) {
-            mWheelsOnGround = 0;
-        } else {
+        if (mSuspension != nullptr) {
             mWheelsOnGround = mSuspension->GetNumWheels();
+        } else {
+            mWheelsOnGround = 0;
         }
         mSpeedometer = mAbsSpeed;
     } else {
         mWheelsOnGround = 0;
-        mSpeedometer = 0.0f;
         mTimeInAir = 0.0f;
+        mSpeedometer = 0.0f;
     }
 }
 
@@ -733,6 +760,7 @@ void PVehicle::OnEndMode(PhysicsMode mode) {
         }
         static_cast<ISimable *>(this)->DetachEntity();
         IVehicle::UnList(VEHICLE_INACTIVE);
+    } else if (mode == PHYSICS_MODE_EMULATED) {
     } else if (mode == PHYSICS_MODE_SIMULATED) {
         if (mCollisionBody != nullptr) {
             mCollisionBody->DisableModeling();

@@ -18,8 +18,8 @@ class IRenderable : public UTL::COM::IUnknown {
 
     virtual ~IRenderable() {}
 
-    virtual bool IsRenderable() const = 0;
     virtual bool InView() const = 0;
+    virtual bool IsRenderable() const = 0;
     virtual HMODEL GetModelHandle() const = 0;
     virtual const IModel *GetModel() const = 0;
     virtual IModel *GetModel() = 0;

@@ -185,6 +185,10 @@ bool PhysicsObject::OnTask(HSIMTASK htask, float dT) {
 
 void PhysicsObject::Kill() {
     ReleaseGC();
+    if (mBodyService) {
+        CloseService(mBodyService);
+        mBodyService = nullptr;
+    }
 }
 
 void PhysicsObject::SetOwnerObject(ISimable *pOwner) {
@@ -198,24 +202,22 @@ void PhysicsObject::SetOwnerObject(ISimable *pOwner) {
 bool PhysicsObject::IsOwnedByPlayer() const {
     ISimable *owner = ISimable::FindInstance(mOwner);
     if (owner != nullptr) {
-        while (true) {
-            IPlayer *next = owner->GetPlayer();
-            if (next != nullptr) {
+        do {
+            if (owner->IsPlayer()) {
                 return true;
             }
-            HSIMABLE ownerHandle = owner->GetOwnerHandle();
-            if (ownerHandle == nullptr) {
+            if (owner->GetOwnerHandle() == nullptr) {
                 return false;
             }
-            if (ownerHandle == owner->GetInstanceHandle()) {
+            if (owner->GetOwnerHandle() == owner->GetInstanceHandle()) {
                 return false;
             }
-            ISimable *newOwner = ISimable::FindInstance(ownerHandle);
-            if (owner == newOwner || newOwner == nullptr) {
+            ISimable *newOwner = ISimable::FindInstance(owner->GetOwnerHandle());
+            if (owner == newOwner) {
                 return false;
             }
             owner = newOwner;
-        }
+        } while (owner != nullptr);
     }
     return false;
 }
@@ -224,26 +226,28 @@ bool PhysicsObject::IsOwnedBy(ISimable *queriedOwner) const {
     if (queriedOwner != nullptr) {
         HSIMABLE qSig = queriedOwner->GetInstanceHandle();
         ISimable *potentialOwner = ISimable::FindInstance(mOwner);
-        while (potentialOwner != nullptr) {
-            if (potentialOwner->GetInstanceHandle() == qSig) {
-                return true;
-            }
-            HSIMABLE ownerHandle = potentialOwner->GetOwnerHandle();
-            if (ownerHandle == nullptr) {
-                return false;
-            }
-            ISimable *newOwner = ISimable::FindInstance(ownerHandle);
-            if (potentialOwner == newOwner || newOwner == nullptr) {
-                return false;
-            }
-            potentialOwner = newOwner;
+        if (potentialOwner != nullptr) {
+            do {
+                if (potentialOwner->GetInstanceHandle() == qSig) {
+                    return true;
+                }
+                HSIMABLE ownerHandle = potentialOwner->GetOwnerHandle();
+                if (ownerHandle == nullptr) {
+                    return false;
+                }
+                ISimable *newOwner = ISimable::FindInstance(ownerHandle);
+                if (potentialOwner == newOwner) {
+                    return false;
+                }
+                potentialOwner = newOwner;
+            } while (potentialOwner != nullptr);
         }
     }
     return false;
 }
 
 void PhysicsObject::DebugObject() {
-    static_cast<ISimable *>(this)->GetRigidBody()->Debug();
+    GetRigidBody()->Debug();
 }
 
 void PhysicsObject::OnBehaviorChange(const UCrc32 &mechanic) {
@@ -267,7 +271,10 @@ void PhysicsObject::OnBehaviorChange(const UCrc32 &mechanic) {
 bool PhysicsObject::IsBehaviorActive(const UCrc32 &mechanic) const {
     unsigned int key = mechanic.GetValue();
     Mechanics::const_iterator iter = mMechanics.find(key);
-    if (iter == mMechanics.end() || iter->second == nullptr) {
+    if (iter._M_node == mMechanics.end()._M_node) {
+        return false;
+    }
+    if (iter->second == nullptr) {
         return false;
     }
     return !iter->second->IsPaused();
@@ -275,11 +282,13 @@ bool PhysicsObject::IsBehaviorActive(const UCrc32 &mechanic) const {
 
 void PhysicsObject::PauseBehavior(const UCrc32 &mechanic, bool pause) {
     unsigned int key = mechanic.GetValue();
-    if (mMechanics.find(key) != mMechanics.end()) {
-        Behavior *beh = mMechanics[key];
-        if (beh != nullptr) {
-            beh->Pause(pause);
-        }
+    Mechanics::iterator iter = mMechanics.find(key);
+    if (iter._M_node == mMechanics.end()._M_node) {
+        return;
+    }
+    Behavior *beh = mMechanics[key];
+    if (beh != nullptr) {
+        beh->Pause(pause);
     }
 }
 
@@ -365,12 +374,10 @@ bool PhysicsObject::Attach(UTL::COM::IUnknown *object) {
     if (mAttachments != nullptr) {
         if (!UTL::COM::ComparePtr(mEntity, object)) {
             Sim::IEntity *e = nullptr;
-            if (object != nullptr) {
-                object->QueryInterface(&e);
-            }
+            object->QueryInterface(&e);
             if (e != nullptr) {
                 if (mEntity != nullptr) {
-                    DetachEntity();
+                    Detach(mEntity);
                     mPlayer = nullptr;
                     mEntity = nullptr;
                 }
@@ -394,18 +401,14 @@ void PhysicsObject::DetachAll() {
 }
 
 bool PhysicsObject::Detach(UTL::COM::IUnknown *object) {
-    if (mAttachments) {
-        Sim::IEntity *e = nullptr;
-        if (object != nullptr) {
-            object->QueryInterface(&e);
-        }
-        if (e != nullptr && e == mEntity) {
-            mEntity = nullptr;
-            mPlayer = nullptr;
-        }
-        return mAttachments->Detach(object);
+    if (!mAttachments) {
+        return false;
     }
-    return false;
+    if (UTL::COM::ComparePtr(mEntity, object)) {
+        mEntity = nullptr;
+        mPlayer = nullptr;
+    }
+    return mAttachments->Detach(object);
 }
 
 void PhysicsObject::DetachEntity() {
@@ -425,9 +428,8 @@ void PhysicsObject::AttachEntity(Sim::IEntity *e) {
 }
 
 void PhysicsObject::ProcessStimulus(unsigned int stimulus) {
-    EventSequencer::IEngine *engine = GetEventSequencer();
-    if (engine != nullptr) {
-        engine->ProcessStimulus(stimulus, Sim::GetTime(), nullptr, EventSequencer::QUEUE_ALLOW);
+    if (GetEventSequencer() != nullptr) {
+        GetEventSequencer()->ProcessStimulus(stimulus, Sim::GetTime(), nullptr, EventSequencer::QUEUE_ALLOW);
     }
 }
 
