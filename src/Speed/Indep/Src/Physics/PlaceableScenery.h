@@ -20,7 +20,7 @@ class PlaceableScenery : public HeirarchyModel, public IPlaceableScenery {
     }
 
     void operator delete(void *mem, std::size_t size) {
-        gFastMem.Free(mem, size, nullptr);
+        if (mem) { gFastMem.Free(mem, size, nullptr); }
     }
 
     static PlaceableScenery *Construct(const char *name, unsigned int node);

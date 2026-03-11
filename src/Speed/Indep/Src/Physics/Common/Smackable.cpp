@@ -478,18 +478,18 @@ void Smackable::ProcessDeath(float dT) {
 }
 
 bool Smackable::ProcessDropout(float dT) {
-    if (mDropOutTimerMax <= 0.0f || mDropTimer <= 0.0f) {
-        return false;
+    if (mDropOutTimerMax > 0.0f && mDropTimer > 0.0f) {
+        IRigidBody *irb = GetRigidBody();
+        mDropTimer -= dT;
+        float dropspeed = mAttributes.DROPOUT(1);
+        irb->ModifyYPos(-dropspeed * dT);
+        if (mDropTimer <= 0.0f) {
+            static_cast< ISimable * >(this)->Kill();
+            mDropTimer = 0.0f;
+        }
+        return true;
     }
-    IRigidBody *irb = GetRigidBody();
-    mDropTimer -= dT;
-    float dropspeed = mAttributes.DROPOUT(1);
-    irb->ModifyYPos(-dropspeed * dT);
-    if (mDropTimer <= 0.0f) {
-        static_cast< ISimable * >(this)->Kill();
-        mDropTimer = 0.0f;
-    }
-    return true;
+    return false;
 }
 
 void Smackable::ProcessOffWorld(float dT) {
@@ -579,14 +579,14 @@ Smackable::Manager::~Manager() {
 }
 
 bool Smackable::Manager::OnTask(HSIMTASK htask, float dT) {
-    if (htask != mManageTask) {
-        return false;
+    if (htask == mManageTask) {
+        UTL::Collections::Listable< Smackable, 160 >::Sort(Smackable::SimplifySort);
+        if (static_cast< unsigned int >(Smackable_RigidCount) > 0xa) {
+            TrySimplify();
+        }
+        return true;
     }
-    UTL::Collections::Listable< Smackable, 160 >::Sort(Smackable::SimplifySort);
-    if (static_cast< unsigned int >(Smackable_RigidCount) > 0xa) {
-        TrySimplify();
-    }
-    return true;
+    return false;
 }
 
 Behavior *RBSmackable::Construct(const BehaviorParams &parms) {
@@ -894,7 +894,15 @@ void HeirarchyModel::SetTrigger(const UMath::Matrix4 &matrix, bool virgin) {
 }
 
 bool HeirarchyModel::OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) {
-    if (mTrigger == nullptr || !mTrigger->IsEnabled()) {
+    if (mTrigger != nullptr && mTrigger->IsEnabled()) {
+        if (0.0f < mTriggerAvoid.w) {
+            pos.x = mTriggerAvoid.x;
+            pos.y = mTriggerAvoid.y;
+            pos.z = mTriggerAvoid.z;
+            sweep = mTriggerAvoid.w;
+            return true;
+        }
+    } else {
         IModel *model = static_cast< IModel * >(this);
         ISimable *simable = model->GetSimable();
         if (simable != nullptr) {
@@ -909,12 +917,6 @@ bool HeirarchyModel::OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) {
                 return true;
             }
         }
-    } else if (0.0f < mTriggerAvoid.w) {
-        pos.x = mTriggerAvoid.x;
-        pos.y = mTriggerAvoid.y;
-        pos.z = mTriggerAvoid.z;
-        sweep = mTriggerAvoid.w;
-        return true;
     }
     return false;
 }

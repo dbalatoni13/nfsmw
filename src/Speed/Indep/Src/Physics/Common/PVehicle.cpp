@@ -416,7 +416,6 @@ void PVehicle::SetSpeed(float speed) {
     }
 }
 
-
 void PVehicle::UpdateLocalVelocities() {
     IRigidBody *rigidbody = static_cast<ISimable *>(this)->GetRigidBody();
     if (rigidbody == nullptr || mCollisionBody == nullptr) {
@@ -587,7 +586,10 @@ void PVehicle::OnTaskSimulate(float dT) {
 
 bool CanInstancesShareResourceCost(CarType type) {
     CarUsageType usage_type = GetCarTypeInfo(type)->GetCarUsageType();
-    return usage_type == CAR_USAGE_TYPE_COP || usage_type == CAR_USAGE_TYPE_TRAFFIC;
+    if (usage_type == CAR_USAGE_TYPE_COP) {
+        return true;
+    }
+    return usage_type == CAR_USAGE_TYPE_TRAFFIC;
 }
 
 void PVehicle::CleanResources() {

@@ -18,8 +18,9 @@ void RBTractor::SetHitch(bool hitched) {
         CollisionGeometry::IBoundable *ibounds_trailer;
         if (mTrailer && !mHitched && mTrailer->QueryInterface(&ibounds_trailer)) {
             UCrc32 name5thwheel("5THWHEEL");
-            const Attrib::Collection *tractor_col = CollisionGeometry::Lookup(UCrc32(GetVehicle()->GetVehicleAttributes().MODEL()));
-            const Attrib::Collection *trailer_col = CollisionGeometry::Lookup(UCrc32(mTrailer->GetVehicleAttributes().MODEL()));
+            // TODO clanker
+            // const Attrib::Collection *tractor_col = CollisionGeometry::Lookup(UCrc32(GetVehicle()->GetVehicleAttributes().MODEL()));
+            // const Attrib::Collection *trailer_col = CollisionGeometry::Lookup(UCrc32(mTrailer->GetVehicleAttributes().MODEL()));
 
             mHitched = CollisionGeometry::CreateJoint(this, name5thwheel, ibounds_trailer, name5thwheel, &m5thWheel, &mTrailer5thWheel, 0);
             if (mHitched) {
