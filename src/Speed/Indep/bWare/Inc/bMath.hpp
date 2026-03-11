@@ -830,6 +830,7 @@ inline void bIdentity(bMatrix4 *a) {
 }
 
 void bConvertFromBond(bMatrix4 &dest, const bMatrix4 &m);
+void bConvertToBond(bMatrix4 &dest, const bMatrix4 &m);
 
 inline void eIdentity(bMatrix4 *a) {
     bIdentity(a);

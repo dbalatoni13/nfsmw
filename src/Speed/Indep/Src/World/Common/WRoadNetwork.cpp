@@ -2,6 +2,8 @@
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UVector.h"
+#include "Speed/Indep/Src/Gameplay/GMarker.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/World/WPathFinder.h"
 
 static const int drivable_lanes[8] = {
@@ -309,6 +311,37 @@ void WRoadNetwork::ResetShortcuts() {
     for (unsigned int road_number = 0; road_number < fNumRoads; road_number++) {
         WRoad *road = GetRoadNonConst(road_number);
         road->nShortcut = 0xFF;
+    }
+}
+
+void WRoadNetwork::ResolveShortcuts() {
+    ResetShortcuts();
+    if (GRaceStatus::Exists()) {
+        GRaceParameters *race_parameters = GRaceStatus::Get().GetRaceParameters();
+        if (race_parameters != nullptr) {
+            WRoadNav nav;
+            nav.SetDecisionFilter(true);
+            nav.SetNavType(kNavType_Traffic);
+            int num_shortcuts = race_parameters->GetNumShortcuts();
+            for (int i = 0; i < num_shortcuts; i++) {
+                GMarker *shortcut = race_parameters->GetShortcut(i);
+                if (shortcut != nullptr) {
+                    nav.InitAtPoint(shortcut->GetPosition(), shortcut->GetDirection(), true, 0.7f);
+                    if (nav.IsValid()) {
+                        WRoad *road = Get().GetRoadNonConst(nav.GetRoadInd());
+                        road->nShortcut = static_cast<char>(i);
+                    }
+                }
+            }
+            for (unsigned int segment_number = 0; segment_number < fNumSegments; segment_number++) {
+                WRoadSegment *segment = GetSegmentNonConst(segment_number);
+                if (segment->fRoadID != -1) {
+                    if (Get().GetRoad(segment->fRoadID)->nShortcut != 0xFF) {
+                        segment->SetShortcut(true);
+                    }
+                }
+            }
+        }
     }
 }
 

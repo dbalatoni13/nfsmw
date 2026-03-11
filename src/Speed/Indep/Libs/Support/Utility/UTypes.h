@@ -147,4 +147,9 @@ typedef Vector4 Quaternion;
 
 } // namespace UMath
 
+inline UMath::Vector3 &bConvertToBond(UMath::Vector3 &dest, const bVector3 &v) {
+    bConvertToBond(reinterpret_cast<bVector3 &>(dest), v);
+    return dest;
+}
+
 #endif

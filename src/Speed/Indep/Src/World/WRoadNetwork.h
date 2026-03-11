@@ -66,6 +66,8 @@ class WRoadNetwork : public Debugable {
     void FlagSegmentRaceDirection(int FirstSegIndex, int SecondSegIndex);
     void AddRaceSegments(WRoadNav *road_nav);
     void ResetShortcuts();
+    void ResolveShortcuts();
+    void ResolveBarriers();
     void GetPointAndVecOnSegment(const WRoadSegment &segment, float d, UMath::Vector3 &point, UMath::Vector3 &vec);
     float GetSegmentPointIntersect(const WRoadSegment &segment, const UMath::Vector3 &pt, UMath::Vector3 &intersect, bool checkBound);
     float GetLinePointIntersect(const UMath::Vector3 &start, const UMath::Vector3 &end, const UMath::Vector3 &pt, UMath::Vector3 &intersect, bool checkBound);
@@ -113,7 +115,7 @@ class WRoadNetwork : public Debugable {
 
     // unsigned int GetNumNodes() {}
 
-    // short GetSegRoadInd(int index) {}
+    short GetSegRoadInd(int index) { return fSegments[index].fRoadID; }
 
     // void IncSegmentStamp() {}
 
@@ -338,6 +340,10 @@ class WRoadNav {
 
     short GetSegmentInd() const {
         return fSegmentInd;
+    }
+
+    short GetRoadInd() const {
+        return WRoadNetwork::Get().GetSegRoadInd(fSegmentInd);
     }
 
     char GetNodeInd() const {
