@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 #include "Speed/Indep/Src/Misc/Joylog.hpp"
+
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardBase.hpp"
@@ -13,3 +14,535 @@
 #include "Speed/Indep/Src/Misc/bFile.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+
+struct GameInfo {
+    int mGameTitle[33];
+    unsigned int mTitleId;
+    bool mMultipleSaveTypesUsed;
+    bool mMultitapSupported;
+    GameInfo(const unsigned short* gameTitle, unsigned int titleId,
+             bool multipleSaveTypesUsed, bool multitapSupported);
+};
+
+extern unsigned short gSaveType0[];
+extern unsigned short gSaveType1[];
+extern unsigned short gSaveType2[];
+extern IAllocator* gMemoryAllocator;
+extern MemcardCallbacks gMemcardCallbacks;
+extern unsigned int gMemcardSetupPreviousOp;
+
+void bStrCpy(unsigned short* to, const char* from);
+void bStrCpy(unsigned short* to, const unsigned short* from);
+void bStrNCpy(unsigned short* to, const char* from, int n);
+char* bStrCat(char* dest, const char* s1, const char* s2);
+
+const char* GetLanguageName(eLanguages lang);
+const char* GetLocalizedString(unsigned int hash);
+void LOCALE_create(void* data, int param);
+void LOCALE_setstate(void* data, int state, int param);
+const char* LOCALE_getstrA(void* data, int strID);
+
+int ReplayJoyOp();
+bool FEngIsScriptSet(const char* pkg_name, unsigned long obj_hash, unsigned long script_hash);
+void ShowOneButton(const char*, const char*, int, unsigned int, unsigned int, unsigned int);
+
+void CaptureJoyOp(MemoryCardJoyLoggableEvents op) {
+    Joylog::AddData(op, 8, JOYLOG_CHANNEL_MEMORY_CARD);
+}
+
+void InitMemoryCard() {
+    MemoryCard::s_pThis = new MemoryCard();
+    bStrCpy(gSaveType0, "");
+    bStrCpy(gSaveType1, "");
+    bStrCpy(gSaveType2, "");
+    bStrNCpy(MemoryCardImp::gContentName, "", 16);
+    MemoryCard::s_pThis->Init();
+}
+
+MemoryCardMessage::MemoryCardMessage(const wchar_t* msg, unsigned int nOptions,
+                                     const wchar_t** options) {
+    bStrCpy(reinterpret_cast< unsigned short* >(mMsg),
+            reinterpret_cast< const unsigned short* >(msg));
+    mnOptions = nOptions;
+    for (unsigned int i = 0; i < nOptions; i++) {
+        bStrCpy(reinterpret_cast< unsigned short* >(&mOptions[i * 128]),
+                reinterpret_cast< const unsigned short* >(options[i]));
+    }
+}
+
+MemoryCard::MemoryCard() {
+    m_MemOp = 0;
+    m_bWaitingForResponse = false;
+    m_pIMemcard = nullptr;
+    m_PendingMessage = nullptr;
+    m_BootupParams.Clear();
+    m_Type = ST_PROFILE;
+    m_bBootFoundFile = false;
+    m_bAutoSave = false;
+    m_bInAutoSave = false;
+    m_bCheckingCardForAutoSave = false;
+    m_bFoundAutoSaveFile = false;
+    m_bCheckingCardForOverwrite = false;
+    m_bAutoSaveRequested = false;
+    m_bAutoSaveCardPulled = false;
+    m_ReqOp = 0;
+    m_bInBootSequence = true;
+    m_bRetryBootCheck = false;
+    m_bManualSave = false;
+    m_bAutoSaveCardPulledDuringSave = false;
+    m_bOldSaveFileExists = false;
+    m_bListingOldSaveFiles = false;
+    m_bMemcardScreenShowing = false;
+    m_bCardRemoved = false;
+    m_bRetryAutoSave = false;
+    m_bInitialized = false;
+    m_bDisablingAutoSaveForSave = false;
+    m_bAutoLoading = false;
+    m_bListingForCreate = false;
+    m_bHUDLoaded = false;
+    m_bCancelNextAutoSave = false;
+    m_bMonitorOn = false;
+    m_bAutoSaveIconShowing = false;
+    m_bNeedToAllowControllerErrors = false;
+    m_bNonSilentAutoSave = false;
+    m_bAutoLoadDone = false;
+    m_bMemcardScreenExiting = false;
+    m_nPlayer = 0;
+    char* pIcon = static_cast< char* >(bGetFile("GCSaveIcon.tpl", nullptr, 0));
+    char* pBanner = static_cast< char* >(bGetFile("GCSaveBanner.tpl", nullptr, 0));
+    GCIconDataInfo* pIconData = new GCIconDataInfo();
+    m_pRMIcon = pIconData;
+    pIconData->numIconFrames = 0;
+    pIconData->imageData = nullptr;
+    GCBannerDataInfo* pBannerData = new GCBannerDataInfo();
+    m_pRMBanner = pBannerData;
+    pBannerData->imageData = nullptr;
+    pIconData->numIconFrames = 1;
+    pIconData->imageData = pIcon;
+    pIconData->animationLoop = static_cast< GCAnimationImageLoop >(0);
+    pBannerData->imageData = pBanner;
+    pBannerData->imageFormat = static_cast< GCImageFormat >(0);
+}
+
+bool MemoryCard::IsCardAvailable() {
+    if (s_pThis == nullptr) return false;
+    if (s_pThis->m_LastError != 0 && s_pThis->m_LastError != 11) return false;
+    return true;
+}
+
+void MemoryCard::SetExtraParam(SaveType t, const char* filename, void* buf, unsigned int size) {
+    MemoryCard* mc = GetInstance();
+    if (mc == nullptr) return;
+    mc->m_DataSize = size;
+    mc->m_ReqFilename = filename;
+    mc->m_Type = t;
+    mc->m_pBuffer = static_cast< char* >(buf);
+}
+
+void MemoryCard::InitCommand(int op) {
+    m_MemOp = op;
+    m_LastError = 0;
+    m_ReqOp = 0;
+    m_bWaitingForResponse = false;
+}
+
+void MemoryCard::RequestTask(int op, const char* name) {
+    m_ReqFilename = name;
+    m_ReqOp = op;
+}
+
+void MemoryCard::ProcessTask() {
+    if (GetScreen() != nullptr) {
+        if (m_ReqOp == MO_Delete) Delete(m_ReqFilename);
+        else if (m_ReqOp == MO_Load) Load(m_ReqFilename);
+        else if (m_ReqOp == MO_List) List(nullptr, nullptr);
+        m_ReqOp = 0;
+    }
+}
+
+bool MemoryCard::IsCardBusy() {
+    if (s_pThis == nullptr) return false;
+    if (s_pThis->m_pIMemcard->IsResettable()
+        && !s_pThis->IsAutoSaveIconVisible()
+        && (s_pThis->m_bInAutoSave == false || s_pThis->m_bWaitingForResponse != false))
+        return false;
+    return true;
+}
+
+void MemoryCard::Init() {
+    static Realmc::SystemInterface iSystem;
+    static Realmc::SystemInterface* pSystem;
+    static MemoryCardImp sMemcardImp;
+    if (pSystem == nullptr) {
+        iSystem.mAllocator = gMemoryAllocator;
+        iSystem.mThread = new MyThread();
+        iSystem.mMutex = new MyMutex();
+        pSystem = &iSystem;
+        iSystem.mGetStrCallback = GetLocaleString;
+    }
+    m_pImp = &sMemcardImp;
+    bStrCpy(reinterpret_cast< unsigned short* >(m_GameTitle), "Need for Speed Most Wanted");
+    GameInfo* pGameInfo = new GameInfo(reinterpret_cast< unsigned short* >(m_GameTitle), 0, false, false);
+    m_pGameInfo = pGameInfo;
+    m_pIMemcard = RealmcIface::MemcardInterface::CreateInstance(&iSystem, &gMemcardCallbacks, pGameInfo);
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_SHOW, 1);
+    m_pLocaleFileHandler = nullptr;
+    m_TimeOffsetSec = 0;
+}
+
+void MemoryCard::StartBootSequence() {
+    m_bInBootSequence = true;
+    gMemcardSetup.mOp = 0x20;
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, 0x4000);
+}
+
+void MemoryCard::EndBootSequence() {
+    m_bInBootSequence = false;
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_SHOW, 0x4000);
+}
+
+void MemoryCard::LoadLocale(eLanguages eLang) {
+    if (s_pThis == nullptr) return;
+    char sPath[64];
+    bStrCpy(sPath, "FRONTEND/MC_");
+    if (eLang > eLANGUAGE_FINNISH && eLang < eLANGUAGE_MAX) {
+        bStrCat(sPath, sPath, "English.bin");
+    } else {
+        const char* langName = GetLanguageName(eLang);
+        bStrCat(sPath, sPath, langName);
+        bStrCat(sPath, sPath, ".bin");
+    }
+    if (s_pThis->m_pLocaleFileHandler == nullptr)
+        s_pThis->m_pLocaleFileHandler = bMalloc(0x2000, 0);
+    unsigned int currentsize = bFileSize(sPath);
+    bFile* file = bOpen(sPath, 1, 1);
+    bRead(file, s_pThis->m_pLocaleFileHandler, currentsize);
+    bClose(file);
+    LOCALE_create(s_pThis->m_pLocaleFileHandler, 1);
+    LOCALE_setstate(s_pThis->m_pLocaleFileHandler, 0, 0);
+    const char* str = GetLocalizedString(0xe6f55df0);
+    bStrCpy(gSaveType0, str);
+}
+
+int MemoryCard::GetPrefixLength() { return bStrLen(m_pImp->GetPrefix()); }
+const char* MemoryCard::GetPrefix() { return m_pImp->GetPrefix(); }
+const char* MemoryCard::GetLocaleString(int strID) { return LOCALE_getstrA(s_pThis->m_pLocaleFileHandler, strID); }
+
+void MemoryCard::SetMessageMode(unsigned int msg, bool flag) {
+    if (s_pThis != nullptr)
+        s_pThis->m_pIMemcard->SetMessage(flag ? RealmcIface::MESSAGE_SHOW : RealmcIface::MESSAGE_HIDE, msg);
+}
+
+void MemoryCard::Tick(int TickCount) {
+    if (m_MemOp == 0 && m_ReqOp != 0) ProcessTask();
+    if (m_bAutoSaveRequested && m_bHUDLoaded && GManager::Exists() && !GManager::Get().GetHasPendingSMS()) {
+        m_bAutoSaveRequested = false;
+        m_bHUDLoaded = false;
+        StartAutoSave(false);
+    }
+    if (Joylog::IsReplaying()) {
+        int result;
+        do { result = ReplayJoyOp(); } while (result != 0);
+    } else {
+        m_pIMemcard->Update(TickCount);
+        if (Joylog::IsCapturing()) CaptureJoyOp(MJ_None);
+    }
+    if (FEDatabase == nullptr) return;
+    if (FEDatabase->IsOptionsMode()) return;
+    if (!cFEng::Get()->IsPackagePushed("ScreenPrintf")
+        && !cFEng::Get()->IsPackagePushed("MemoryCard.fng")
+        && !IsAutoSaveIconVisible()) {
+        if (!m_bNeedToAllowControllerErrors) return;
+        m_bNeedToAllowControllerErrors = false;
+        if (FEManager::Get()->IsAllowingControllerError()) return;
+        if (m_bNonSilentAutoSave) { m_bNonSilentAutoSave = false; return; }
+        FEManager::Get()->AllowControllerError(true);
+        FEManager::Get()->SuppressControllerError(false);
+    } else {
+        if (!FEManager::Get()->IsAllowingControllerError() && TheGameFlowManager.GetState() != 6) return;
+        if (cFEng::Get()->IsPackagePushed("IG_Pause.fng") || cFEng::Get()->IsPackagePushed("AutoSaveIcon.fng"))
+            m_bNonSilentAutoSave = true;
+        m_bNeedToAllowControllerErrors = true;
+        FEManager::Get()->AllowControllerError(false);
+        FEManager::Get()->SuppressControllerError(true);
+    }
+}
+
+void MemoryCard::MessageDone(RealmcIface::MessageChoices nInput) {
+    if (m_bWaitingForResponse) {
+        m_pIMemcard->MessageDone(nInput);
+        m_bWaitingForResponse = false;
+    }
+}
+
+void MemoryCard::BootupCheck(const char* entry) {
+    bStrCpy(m_BootupFilename, "");
+    m_pImp->ConstructSaveInfo(0, "", FEDatabase->GetUserProfileSaveSize(false));
+    m_BootupParams.mEntryNamePattern = m_BootupFilename;
+    m_BootupParams.mSaveReqs = reinterpret_cast< RealmcIface::SaveReq** >(m_pImp->GetSaveReqArray());
+    m_BootupParams.mValidCardIds = 1;
+    m_BootupParams.mNumSaveTypes = 1;
+    InitCommand(MO_BootUp);
+    if (!Joylog::IsReplaying())
+        m_pIMemcard->BootupCheck(&m_BootupParams, 0, static_cast< const char** >(nullptr), static_cast< unsigned short* >(nullptr));
+}
+
+bool MemoryCard::ShouldDoAutoSave(bool bForce) {
+    if (bForce) return true;
+    if (m_bCancelNextAutoSave) { m_bCancelNextAutoSave = false; return false; }
+    if (!IsMemcardEnabled || !IsAutoSaveEnabled) return false;
+    if (!FEDatabase->IsOnlineMode() && !FEDatabase->IsLANMode()
+        && (FEDatabase->GetGameplaySettings()->AutoSaveOn || m_bCardRemoved)) {
+        if (!FEDatabase->IsFinalEpicChase() && GRaceStatus::Exists()
+            && GRaceStatus::Get().GetRaceParameters() != nullptr
+            && GRaceStatus::Get().GetRaceParameters()->GetIsBossRace())
+            return false;
+        return true;
+    }
+    return false;
+}
+
+void MemoryCard::StartAutoSave(bool bForce) {
+    if (!ShouldDoAutoSave(bForce)) return;
+    if (!FEDatabase->bProfileLoaded) return;
+    if (gMemcardSetup.GetMethod() != 0xb) { ShowAutoSaveIcon(); gMemcardSetup.mOp = 0; }
+    if (!m_bCardRemoved) {
+        m_bInAutoSave = true;
+        m_bCheckingCardForAutoSave = true;
+        FEManager::Get()->SuppressControllerError(true);
+        ShowMessages(false);
+        CheckCard(0);
+    } else { HandleAutoSaveError(); }
+}
+
+void MemoryCard::DoAutoSave() {
+    m_bCheckingCardForAutoSave = false;
+    if (gMemcardSetup.GetMethod() == 0xb) {
+        ShowMessages(true);
+        m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, 0x100);
+    } else { ShowOnlyAutoSaveMessages(); }
+    const char* name = FEDatabase->CurrentUserProfiles[0]->GetProfileName();
+    Save(name);
+}
+
+void MemoryCard::EndAutoSave() {
+    if (!m_bRetryAutoSave) m_MemOp = 0;
+    m_bCheckingCardForAutoSave = false;
+    m_bFoundAutoSaveFile = false;
+    m_bInAutoSave = false;
+    FEManager::Get()->SuppressControllerError(false);
+    ShowMessages(true);
+    HideAutoSaveIcon();
+}
+
+void MemoryCard::StartListingOldSaveFiles() { m_bListingOldSaveFiles = true; ListOldSaveFilesNGC(); }
+
+void MemoryCard::EndListingOldSaveFiles() {
+    m_bListingOldSaveFiles = false;
+    if (m_bOldSaveFileExists) {
+        cFEng::Get()->QueueGameMessage(0x7e998e5e, nullptr, 0xff);
+        ShowOneButton("", "", 2, 0x417b2601, 0x34dc1bec, 0xc5e2beac);
+    }
+    FEDatabase->GetCareerSettings()->AwardOneTimeCashBonus(m_bOldSaveFileExists);
+}
+
+void MemoryCard::SetMonitor(bool bEnabled) {
+    InitCommand(MO_SetMonitor);
+    if (!Joylog::IsReplaying())
+        m_pIMemcard->SetMonitor(bEnabled ? RealmcIface::MONITOR_ON : RealmcIface::MONITOR_OFF);
+    if (!bEnabled && Joylog::IsReplaying()) ReplayJoyOp();
+}
+
+void MemoryCard::SetAutoSaveEnabled(bool bEnabled) {
+    char entryname[16];
+    const char* name = FEDatabase->CurrentUserProfiles[0]->GetProfileName();
+    bStrCpy(entryname, name);
+    unsigned int saveSize = FEDatabase->GetUserProfileSaveSize(false);
+    SetExtraParam(ST_PROFILE, entryname, nullptr, saveSize);
+    const char* prefix = m_pImp->GetPrefix();
+    bStrCat(m_Filename, prefix, entryname);
+    bStrNCpy(MemoryCardImp::gContentName, entryname, 16);
+    if (m_pFEScreen == nullptr || gMemcardSetup.GetMethod() != 0xa) ShowMessages(false);
+    else { m_pFEScreen->SetStringCheckingCard(); ShowMessages(true); }
+    bool bDisabling = !bEnabled;
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_SHOW, 1);
+    if (bDisabling) { m_bDisablingAutoSaveForSave = true; }
+    else { gMemcardSetupPreviousOp = gMemcardSetup.mOp & 0xf0; gMemcardSetup.ClearMethod(); gMemcardSetup.SetMethod(0xa); }
+    InitCommand(MO_AutoSave);
+    if (!Joylog::IsReplaying())
+        m_pIMemcard->SetAutosave(bDisabling ? RealmcIface::AUTOSAVE_DISABLE : RealmcIface::AUTOSAVE_ENABLE, 0, nullptr, entryname, RealmcIface::CARD_UNKNOWN);
+    if (bDisabling && Joylog::IsReplaying()) ReplayJoyOp();
+}
+
+void MemoryCard::ShowOnlyAutoSaveMessages() {
+    m_bManualSave = false;
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_SHOW, 2);
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_SHOW, 4);
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_SHOW, 0x800);
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, 1);
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, 0x100);
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, 0x200);
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, 0x400);
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, 0x1000);
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, 0x2000);
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, 0x4000);
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, 0x8000);
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, 0x10000);
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, 0x20000);
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, 0x40000);
+    m_pIMemcard->SetMessage(RealmcIface::MESSAGE_HIDE, 0x80000);
+}
+
+void MemoryCard::ShowMessages(bool bShow) {
+    m_bManualSave = bShow;
+    m_pIMemcard->SetMessage(bShow ? RealmcIface::MESSAGE_SHOW : RealmcIface::MESSAGE_HIDE, 0xffffffff);
+}
+
+void MemoryCard::CheckCard(int iSlot) {
+    RealmcIface::CardId id;
+    id = RealmcIface::CARD_UNKNOWN;
+    InitCommand(MO_CheckCard);
+    if (!Joylog::IsReplaying()) m_pIMemcard->CheckCard(id);
+}
+
+void MemoryCard::Save(const char* entryName) {
+    unsigned int saveSize = FEDatabase->GetUserProfileSaveSize(false);
+    SetExtraParam(ST_PROFILE, entryName, nullptr, saveSize);
+    if (m_pImp->GetSaveInfo() == nullptr) {
+        m_pImp->ConstructSaveInfo(0, entryName, m_DataSize);
+        const char* prefix = m_pImp->GetPrefix();
+        bStrCat(m_Filename, prefix, entryName);
+    }
+    bStrNCpy(MemoryCardImp::gContentName, entryName, 16);
+    m_pBuffer = static_cast< char* >(bMalloc(m_DataSize, 0x40));
+    FEDatabase->SaveUserProfileToBuffer(m_pBuffer, m_DataSize);
+    m_Header[0] = 0x10d;
+    m_Header[1] = m_DataSize;
+    InitCommand(MO_Save);
+    if (!Joylog::IsReplaying())
+        m_pIMemcard->Save(m_Filename, GetHeader(), GetData(),
+                          reinterpret_cast< const RealmcIface::SaveInfo* >(m_pImp->GetSaveInfo()),
+                          static_cast< const RealmcIface::TitleInfo* >(nullptr));
+}
+
+void MemoryCard::List(const char* filter, RealmcIface::TitleInfo* titleInfo) {
+    SetExtraParam(ST_PROFILE, nullptr, nullptr, 0);
+    m_EntryCount = 0;
+    const char* prefix = m_pImp->GetPrefix();
+    bStrCat(m_Filename, prefix, "*");
+    InitCommand(MO_List);
+    if (!Joylog::IsReplaying()) {
+        if (filter == nullptr) filter = m_Filename;
+        m_pIMemcard->FindEntries(filter, titleInfo);
+    } else { ReplayJoyOp(); }
+}
+
+void MemoryCard::Load(const char* filename) {
+    unsigned int saveSize = FEDatabase->GetUserProfileSaveSize(false);
+    SetExtraParam(ST_PROFILE, filename, nullptr, saveSize);
+    FEDatabase->AllocBackupDB(true);
+    m_pBuffer = static_cast< char* >(bMalloc(m_DataSize, 0x40));
+    if (filename != nullptr) {
+        bStrNCpy(MemoryCardImp::gContentName, filename, 16);
+        const char* prefix = m_pImp->GetPrefix();
+        bStrCat(m_Filename, prefix, filename);
+    }
+    InitCommand(MO_Load);
+    if (!Joylog::IsReplaying()) {
+        if (!InBootSequence()) {
+            m_pIMemcard->Load(m_Filename, static_cast< char* >(nullptr), static_cast< char* >(nullptr),
+                              MemoryCardImp::gContentName,
+                              static_cast< const RealmcIface::TitleInfo* >(nullptr),
+                              static_cast< const unsigned short* >(nullptr));
+        } else { m_bAutoLoading = true; BootupCheck(filename); }
+    }
+}
+
+void MemoryCard::Delete(const char* filename) {
+    InitCommand(MO_Delete);
+    if (filename != nullptr) {
+        bStrNCpy(MemoryCardImp::gContentName, filename, 16);
+        const char* prefix = m_pImp->GetPrefix();
+        bStrCat(m_Filename, prefix, filename);
+    }
+    if (!Joylog::IsReplaying()) m_pIMemcard->Delete(m_Filename, MemoryCardImp::gContentName);
+}
+
+void MemoryCard::ListOldSaveFilesNGC() {
+    RealmcIface::TitleInfo titleInfo;
+    titleInfo.mTitleType = static_cast< RealmcIface::TitleType >(1);
+    titleInfo.mTitleId = 0;
+    titleInfo.mNameType = static_cast< RealmcIface::NameType >(0);
+    titleInfo.mDataFormat = static_cast< RealmcIface::DataFormat >(0);
+    s_pThis->ShowMessages(false);
+    List("NFSMW*", &titleInfo);
+}
+
+void MemoryCard::ReleasePendingMessage() {
+    if (m_PendingMessage != nullptr) { delete m_PendingMessage; m_PendingMessage = nullptr; }
+}
+
+void MemoryCard::HandleAutoSaveError() {
+    UIMemcardBase* pScreen = GetScreen();
+    if (gMemcardSetup.GetMethod() == 0xb || pScreen != nullptr)
+        pScreen->HandleAutoSaveError();
+    else
+        MemcardEnter(nullptr, nullptr, 0x91, nullptr, nullptr, 0, 0);
+}
+
+void MemoryCard::HandleAutoSaveOverwriteMessage() {
+    UIMemcardBase* pScreen = GetScreen();
+    if (gMemcardSetup.GetMethod() == 0xb || pScreen != nullptr)
+        pScreen->HandleAutoSaveOverwriteMessage();
+    else
+        MemcardEnter(nullptr, nullptr, 0xd1, nullptr, nullptr, 0, 0);
+}
+
+void MemoryCard::ShowAutoSaveIcon() {
+    if (m_bAutoSaveIconShowing) return;
+    m_bAutoSaveIconShowing = true;
+    if (!cFEng::Get()->IsPackagePushed("AutoSaveIcon.fng"))
+        cFEng::Get()->PushNoControlPackage("AutoSaveIcon.fng", static_cast< FE_PACKAGE_PRIORITY >(0x68));
+    unsigned int msg = FEHashUpper("FadeIn");
+    cFEng::Get()->QueuePackageMessage(msg, "AutoSaveIcon.fng", nullptr);
+    bool bWidescreen = FEDatabase->GetVideoSettings()->WideScreen;
+    if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() != nullptr
+        && GRaceStatus::Get().GetRaceParameters()->GetIsDDayRace()) {
+        const char* script;
+        if (!bWidescreen) script = "SAVE_DDAY_4_3";
+        else script = "SAVE_DDAY_16_9";
+        msg = FEHashUpper(script);
+    } else {
+        if (cFEng::Get()->IsPackagePushed("SMS_HUD.fng") || GManager::Get().GetHasPendingSMS()) {
+            unsigned int hideMsg = FEHashUpper("HideSMSIcon");
+            cFEng::Get()->QueuePackageMessage(hideMsg, nullptr, nullptr);
+            goto queue;
+        }
+        const char* script;
+        if (!bWidescreen) script = "SAVE_REG_4_3";
+        else script = "SAVE_REG_16_9";
+        msg = FEHashUpper(script);
+    }
+queue:
+    cFEng::Get()->QueuePackageMessage(msg, "AutoSaveIcon.fng", nullptr);
+}
+
+void MemoryCard::HideAutoSaveIcon() {
+    if (m_bAutoSaveIconShowing) {
+        m_bAutoSaveIconShowing = false;
+        unsigned int msg = FEHashUpper("FadeOut");
+        cFEng::Get()->QueuePackageMessage(msg, "AutoSaveIcon.fng", nullptr);
+        msg = FEHashUpper("ShowSMSIcon");
+        cFEng::Get()->QueuePackageMessage(msg, nullptr, nullptr);
+    }
+}
+
+bool MemoryCard::IsAutoSaveIconVisible() {
+    if (m_bAutoSaveIconShowing) return true;
+    unsigned int obj = FEHashUpper("AUTOSAVE_ICON");
+    unsigned int script1 = FEHashUpper("FadeIn");
+    if (FEngIsScriptSet("AutoSaveIcon.fng", obj, script1)) return true;
+    unsigned int script2 = FEHashUpper("Idle");
+    if (FEngIsScriptSet("AutoSaveIcon.fng", obj, script2)) return true;
+    return false;
+}
