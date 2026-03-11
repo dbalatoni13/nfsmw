@@ -13,6 +13,8 @@
 #include "Speed/Indep/Src/Gameplay/GRace.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+
+void FEngGetCenter(FEObject* obj, float& x, float& y);
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 struct FEObject;
@@ -88,7 +90,9 @@ struct MapItem : public bTNode<MapItem> {
 
     void GetInitialPos(bVector2& pos);
     void GetWorldPos(bVector2& pos);
-    void GetCurrentPos(bVector2& pos);
+    void GetCurrentPos(bVector2& pos) {
+        FEngGetCenter(pIcon, pos.x, pos.y);
+    }
     virtual void UpdatePos(bVector2& pos) {
         FEngSetCenter(pIcon, pos.x, pos.y);
     }

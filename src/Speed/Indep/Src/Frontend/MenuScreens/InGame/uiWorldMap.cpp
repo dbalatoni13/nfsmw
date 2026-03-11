@@ -10,6 +10,7 @@
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/World/TrackInfo.hpp"
 #include "Speed/Indep/Src/Generated/Events/EWorldMapOff.hpp"
+#include "Speed/Indep/Src/Input/ActionQueue.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
@@ -188,7 +189,7 @@ void ItemTypeToggle::CheckMouse(const char* parent_pkg, const float mouse_x, con
 void ItemTypeToggle::Draw() {
     const unsigned long FEObj_Highlight = 0x249db7b7;
     FEngSetLanguageHash(GetTitleObject(), NameHash);
-    if (!bVisibility) {
+    if (bVisibility) {
         const unsigned long FEObj_NORMAL = 0x163c76;
         FEngSetScript(pIconGroup, FEObj_NORMAL, true);
         if (!FEngIsScriptSet(static_cast< FEObject* >(GetTitleObject()), FEObj_Highlight)) {
@@ -598,6 +599,27 @@ bool WorldMap::ClampToMapBounds(float& x, float& y) {
 }
 
 void WorldMap::UpdateAnalogInput() {
+    if (mActionQ != nullptr) {
+        while (!mActionQ->IsEmpty() && !bInToggleMode) {
+            ActionRef aRef = mActionQ->GetAction();
+            float speed = 14.0f;
+            switch (aRef.ID()) {
+            case FRONTENDACTION_RUP:
+                CurrentVelocity.y = -aRef.Data() * speed;
+                break;
+            case FRONTENDACTION_RDOWN:
+                CurrentVelocity.y = aRef.Data() * speed;
+                break;
+            case FRONTENDACTION_RLEFT:
+                CurrentVelocity.x = -aRef.Data() * speed;
+                break;
+            case FRONTENDACTION_RRIGHT:
+                CurrentVelocity.x = aRef.Data() * speed;
+                break;
+            }
+            mActionQ->PopAction();
+        }
+    }
 }
 
 void WorldMap::UpdateCursor(bool zoom_thing) {
@@ -655,13 +677,76 @@ void WorldMap::MoveCursor(float dx, float dy) {
 }
 
 bool WorldMap::SnapCursor() {
-    return false;
+    bVector2 cursor;
+    bVector2 item_pos;
+    MapItem* snap_to = nullptr;
+    float last_closest = 100000000.0f;
+    FEngGetCenter(Cursor, cursor.x, cursor.y);
+    for (MapItem* item = TheMapItems.GetHead(); item != TheMapItems.EndOfList(); item = item->GetNext()) {
+        bVector2 pos;
+        item->GetCurrentPos(pos);
+        float cur_dist = bDistBetween(cursor, pos);
+        if (!item->IsHidden() && cur_dist < fSnapDist && cur_dist < last_closest) {
+            item_pos = pos;
+            snap_to = item;
+            last_closest = cur_dist;
+        }
+    }
+    if (snap_to != nullptr) {
+        const unsigned int _SNAP = 0x1cbf71;
+        FEngSetCenter(Cursor, item_pos.x, item_pos.y);
+        if (snap_to == SelectedItem) {
+            return false;
+        }
+        SelectedItem = snap_to;
+        FEngSetScript(Cursor, _SNAP, true);
+    } else {
+        if (SelectedItem == nullptr) {
+            return false;
+        }
+        const unsigned int _UNSNAP = 0x7efe8ff4;
+        FEngSetScript(Cursor, _UNSNAP, true);
+        SelectedItem = nullptr;
+    }
+    return true;
 }
 
-void WorldMap::PanToCursor(float speed) {
+void WorldMap::PanToCursor(float to_zoom) {
+    bVector2 cursor;
+    bVector2 pan;
+    bVector2 map_c;
+    FEngGetCenter(Cursor, cursor.x, cursor.y);
+    MapStreamer->GetPan(pan);
+    pan.x += 0.5f;
+    pan.y += 0.5f;
+    float zoom = MapStreamer->GetZoomFactor();
+    FEngGetCenter(static_cast< FEObject* >(TrackMap), map_c.x, map_c.y);
+    bVector2 offset;
+    offset.x = (cursor.x - map_c.x) / MapSize.x;
+    offset.y = (cursor.y - map_c.y) / MapSize.y;
+    float max_pan = 1.0f / to_zoom * 0.5f;
+    offset.y = offset.y * (1.0f / zoom);
+    offset.x = offset.x * (1.0f / zoom);
+    CursorMoveFrom.y = (pan.y + offset.y) * MapSize.y + MapTopLeft.y;
+    CursorMoveFrom.x = (pan.x + offset.x) * MapSize.x + MapTopLeft.x;
+    bVector2 pan_to;
+    pan_to.x = bClamp(pan.x + offset.x, max_pan, 1.0f - max_pan);
+    pan_to.y = bClamp(pan.y + offset.y, max_pan, 1.0f - max_pan);
+    MapStreamer->PanTo(pan_to);
 }
 
 void WorldMap::PanToPlayer() {
+    IPlayer* player = *IPlayer::GetList(PLAYER_LOCAL).begin();
+    ISimable* isimable = player->GetSimable();
+    bVector2 target_pos;
+    bVector2 target_dir;
+    GetVehicleVectors(&target_pos, &target_dir, isimable);
+    target_pos.x = (target_pos.x - pCurrentTrack->TrackMapCalibrationUpperLeft.x) / pCurrentTrack->TrackMapCalibrationMapWidthMetres;
+    target_pos.y = (pCurrentTrack->TrackMapCalibrationUpperLeft.y - target_pos.y) / pCurrentTrack->TrackMapCalibrationMapWidthMetres + 1.0f;
+    float max_pan = 1.0f / GetZoomFactor(static_cast< eWorldMapZoomLevels >(CurrentZoom)) * 0.5f;
+    target_pos.x = bClamp(target_pos.x, max_pan, 1.0f - max_pan);
+    target_pos.y = bClamp(target_pos.y, max_pan, 1.0f - max_pan);
+    MapStreamer->SetPan(target_pos);
 }
 
 void WorldMap::Setup() {
@@ -845,8 +930,8 @@ void WorldMap::ConvertPos(bVector2& pos) {
     pos.y = MapTopLeft.y + y * MapSize.y;
 }
 
-float WorldMap::ConvertRot(bVector2& rot) {
-    return 0.0f;
+float WorldMap::ConvertRot(bVector2& dir) {
+    return bAngToDeg(bATan(dir.y, dir.x));
 }
 
 void WorldMap::DrawItemType() {

@@ -187,7 +187,7 @@ inline float bDegToRad(float degrees) {
 }
 
 inline float bAngToDeg(unsigned short angle) {
-    return static_cast<unsigned int>(angle) * (65536.0f / 360.0f);
+    return static_cast<unsigned int>(angle) * (360.0f / 65536.0f);
 }
 
 inline float bCos(float angle) {
