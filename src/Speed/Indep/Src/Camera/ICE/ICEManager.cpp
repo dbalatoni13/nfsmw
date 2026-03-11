@@ -711,10 +711,11 @@ void ICEManager::Resolve() {
             unsigned int scene_hash = ICE::GetSceneHash(scene);
             char scene_name[16];
             ICE::GetNameOfSceneHash(scene_hash, scene_name);
+            char *name_ptr = scene_name;
 
-            if (bStrNICmp(scene_name, "FMV", 3) != 0 &&
-                bStrNICmp(scene_name, "replay", 6) != 0 &&
-                bStrNICmp(scene_name, "clip", 4) != 0) {
+            if (bStrNICmp(name_ptr, "FMV", 3) != 0 &&
+                bStrNICmp(name_ptr, "replay", 6) != 0 &&
+                bStrNICmp(name_ptr, "clip", 4) != 0) {
                 if (GetNisCameraGroup(scene_hash) == 0) {
                     if (nNisCameras <= 0xff) {
                         pNisCameras[nNisCameras].Context = eDCE_NIS;

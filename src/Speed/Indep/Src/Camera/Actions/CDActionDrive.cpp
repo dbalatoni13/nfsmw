@@ -192,12 +192,12 @@ CDActionDrive::~CDActionDrive() {
 }
 
 void CDActionDrive::Reset() {
-    mCinematicMomementTimerInc = false;
     mGameBreakerScale = 0.0f;
     mDampCollisionTime = 0.0f;
     mGroundCollisionTime = 0.0f;
     mObjectCollisionTime = 0.0f;
     mPulseTimer = 0.0f;
+    mCinematicMomementTimerInc = false;
     mCinematicMomementTimer = 0.0f;
     mGear = 0;
 }

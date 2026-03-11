@@ -40,7 +40,7 @@ class WCollisionMgr {
     class ICollisionHandler {
       public:
         ICollisionHandler() {}
-        virtual bool OnWCollide(const WorldCollisionInfo &cInfo, const bVector3 &cPoint, void *userdata);
+        virtual bool OnWCollide(const WorldCollisionInfo &cInfo, const UMath::Vector3 &cPoint, void *userdata);
     };
 
     typedef UTL::Vector<unsigned int, 16> NodeIndexList;

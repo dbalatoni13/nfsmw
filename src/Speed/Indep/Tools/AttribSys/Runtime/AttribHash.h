@@ -26,6 +26,12 @@ class StringKey {
         mString = str;
     }
 
+    StringKey(const StringKey &src) {
+        mHash64 = src.mHash64;
+        mHash32 = src.mHash32;
+        mString = src.mString;
+    }
+
     const StringKey &operator=(const StringKey &rhs) {
         mString = rhs.mString;
         mHash64 = rhs.mHash64;

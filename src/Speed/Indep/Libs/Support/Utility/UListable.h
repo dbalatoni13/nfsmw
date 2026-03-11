@@ -21,15 +21,15 @@ template <typename T, int U> class Listable {
     typedef value_type *pointer;
     typedef value_type const *const_pointer;
 
-    class List : public _Storage<pointer, U> {
+    class List : public FixedVector<pointer, U> {
       public:
         typedef T value_type;
         typedef value_type *pointer;
         typedef value_type const *const_pointer;
 
         // List(const List &);
-        List() : _Storage<pointer, U>() {}
-        ~List() override {}
+        List();
+        virtual ~List();
 
         // List &operator=(List &);
     };

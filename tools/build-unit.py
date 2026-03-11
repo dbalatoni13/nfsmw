@@ -74,16 +74,26 @@ def get_compdb() -> Optional[List[Dict[str, Any]]]:
 def find_entry(
     compdb: List[Dict[str, Any]], source_path: str
 ) -> Optional[Dict[str, Any]]:
-    """Find the compdb entry whose 'file' matches source_path."""
+    """Find the compdb entry whose 'file' matches source_path.
+
+    Prefers entries whose output is a .o file (actual compiler invocations)
+    over auxiliary entries (e.g. hashgen).
+    """
     abs_source = os.path.normcase(os.path.abspath(os.path.join(root_dir, source_path)))
+    candidates = []
     for entry in compdb:
         file_val = entry.get("file", "")
         if not os.path.isabs(file_val):
             entry_dir = entry.get("directory", root_dir)
             file_val = os.path.abspath(os.path.join(entry_dir, file_val))
         if os.path.normcase(file_val) == abs_source:
+            candidates.append(entry)
+    # Prefer entries whose output is a .o file (compiler invocations).
+    for entry in candidates:
+        out = entry.get("output", "")
+        if out.endswith(".o") or out.endswith(".obj"):
             return entry
-    return None
+    return candidates[0] if candidates else None
 
 
 def strip_transform_dep(command: str) -> str:
