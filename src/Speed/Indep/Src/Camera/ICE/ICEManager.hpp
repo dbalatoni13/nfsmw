@@ -43,7 +43,9 @@ struct ICETrack : public bTNode<ICETrack> {
     void PlatEndianSwap();
     int GetContext();
     int GetKeyNumber(float f_param);
-    int GetKeyNumber(ICEData *data);
+    int GetKeyNumber(ICEData *data) {
+        return static_cast<int>(data - Keys);
+    }
     float GetParameter();
     struct ICEData *GetCameraData(float *p_start, float *p_end, float *p_current);
 
@@ -102,6 +104,7 @@ struct ICETrack : public bTNode<ICETrack> {
 struct ICEShakeGroup {
     void FlushAllocatedTracks();
     struct ICEShakeTrack *GetTrack(int n);
+    void FlushTracks();
 
     int NumTracks;                                 // offset 0x0, size 0x4
     struct bTList<struct ICEShakeTrack> TrackList; // offset 0x4, size 0x8
@@ -120,6 +123,14 @@ struct ICEShakeData {
 struct ICEShakeTrack : public bTNode<ICEShakeTrack> {
     void PlatEndianSwap();
     bool IsAllocated() { return Allocated != 0; }
+
+    void SetGroup(ICEShakeGroup *g) {
+        Group = g;
+    }
+
+    int MemoryImageSize() {
+        return static_cast<int>(sizeof(ICEShakeTrack)) - (120 - NumKeys) * static_cast<int>(sizeof(ICEShakeData));
+    }
 
     ICEShakeGroup *Group;   // offset 0x8, size 0x4
     short NumKeys;          // offset 0xC, size 0x2

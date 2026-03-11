@@ -18,7 +18,7 @@ const Attrib::StringKey &CDActionDebugWatchCar::GetName() const {
 
 Attrib::StringKey CDActionDebugWatchCar::GetNext() const {
     if (CameraDebugWatchCar) {
-        return Attrib::StringKey("");
+        return Attrib::StringKey();
     }
     return mPrev;
 }
@@ -40,7 +40,7 @@ void CDActionDebugWatchCar::AquireTarget() {
         ReleaseTarget();
     }
 
-    if (mToggleCar > -1 && mToggleCarList < VEHICLE_MAX && mToggleCarList > -1) {
+    if (mToggleCar >= 0 && mToggleCarList <= 9 && mToggleCarList >= 0) {
         int count = IVehicle::Count(mToggleCarList);
         if (count != 0) {
             IVehicle *ivehicle = IVehicle::GetList(mToggleCarList)[static_cast<unsigned int>(mToggleCar % count)];
@@ -49,11 +49,12 @@ void CDActionDebugWatchCar::AquireTarget() {
                     unsigned int world_id = ivehicle->GetSimable()->GetWorldID();
                     if (world_id != 0) {
                         ReleaseTarget();
+                        CameraAnchor *anchor = mAnchor;
                         const char *model_str = ivehicle->GetVehicleAttributes().MODEL().GetString();
                         if (model_str == nullptr) {
                             model_str = "";
                         }
-                        mAnchor->SetModel(bStringHash(model_str));
+                        anchor->SetModel(bStringHash(model_str));
                         mTarget.Set(world_id);
                         mhSimable = ivehicle->GetSimable()->GetInstanceHandle();
                     }

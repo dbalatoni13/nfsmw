@@ -41,13 +41,12 @@ CameraAI::Director::Director(EVIEW_ID viewID)
       mViewID(viewID),                  //
       mDesiredMode(""),                 //
       mAction(nullptr),                 //
-      mInputQ(false),                   //
+      mInputQ(1, 0x98c7a2f5, "CAMERA", false), //
       mPrepareToEnableIce(false),       //
       mPursuitStartTime(0.0f),          //
       mJumpTime(0.0f),                  //
       mIsCinematicMomement(false),      //
       mCinematicSlowdownSeconds(0.0f) {
-    Reset();
 }
 
 CameraAI::Director::~Director() {
@@ -64,8 +63,8 @@ void CameraAI::Director::ReleaseAction() {
 void CameraAI::Director::Reset() {
     mIsCinematicMomement = false;
     mJumpTime = 0.0f;
-    mCinematicSlowdownSeconds = 0.0f;
     mPursuitStartTime = 0.0f;
+    mCinematicSlowdownSeconds = 0.0f;
     SetAction(Attrib::StringKey("DRIVE"));
     if (mAction != nullptr) {
         mAction->Reset();

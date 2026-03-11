@@ -2,8 +2,14 @@
 #include "ICEAnimScene.hpp"
 #include "ICEReplay.hpp"
 #include "Speed/Indep/Src/Animation/AnimDirectory.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
@@ -12,6 +18,7 @@
 
 extern Timer RealTimer;
 extern AnimDirectory *TheAnimDirectory;
+extern int bUseOldDutch;
 
 struct ICEAnchor;
 ICEAnchor *GetICEAnchor();
@@ -26,6 +33,7 @@ ICETrack *ChooseGoodCamera(ICEAnchor *p_car, ICEGroup *p_replay_cameras, int num
 namespace ICE {
 ICEScene *FindAnimScene();
 unsigned int GetSceneCount();
+void GetNameOfSceneHash(unsigned int hash, char *name);
 }
 
 ICEManager TheICEManager;
@@ -460,9 +468,15 @@ ICEData *ICEManager::GetCameraData(ICETrack **p_track, float *p_start, float *p_
 }
 
 ICEData *ICEManager::GetNeighbour(ICEData *data, int key, ICETrack *track) {
+    if (track == 0) {
+        return 0;
+    }
     int camera = track->GetKeyNumber(data);
-    camera += key;
-    return track->GetKey(camera);
+    int offset = camera - 1;
+    if (key) {
+        offset = camera + 1;
+    }
+    return track->GetKey(offset);
 }
 
 ICEGroup *ICEManager::GetCameraGroup(ICEContext context, unsigned int handle) {
@@ -500,8 +514,55 @@ ICEGroup *ICEManager::GetCameraGroup(ICEContext context, unsigned int handle) {
 }
 
 ICEGroup *ICEManager::AddCameraGroup(ICEContext context, unsigned int handle) {
-    // TODO
-    return 0;
+    ICEGroup *group = GetCameraGroup(context, handle);
+    if (group != 0) {
+        return group;
+    }
+
+    switch (context) {
+    case eDCE_NIS: {
+        int index = nNisCameras;
+        if (index > 0xff) {
+            return 0;
+        }
+        group = &pNisCameras[index];
+        nNisCameras = index + 1;
+        break;
+    }
+    case eDCE_FMV: {
+        int index = nFmvCameras;
+        if (index > 9) {
+            return 0;
+        }
+        group = &pFmvCameras[index];
+        nFmvCameras = index + 1;
+        break;
+    }
+    case eDCE_REPLAY: {
+        int index = nReplayCameras;
+        if (index > 0x31) {
+            return 0;
+        }
+        group = &pReplayCameras[index];
+        nReplayCameras = index + 1;
+        break;
+    }
+    case eDCE_GENERIC: {
+        int index = nGenericCameras;
+        if (index > 0x31) {
+            return 0;
+        }
+        group = &pGenericCameras[index];
+        nGenericCameras = index + 1;
+        break;
+    }
+    default:
+        return 0;
+    }
+
+    group->Context = context;
+    group->Handle = handle;
+    return group;
 }
 
 void ICEManager::LoadCameraSet(bChunk *chunk) {
@@ -512,12 +573,32 @@ void ICEManager::UnloadCameraSet(bChunk *chunk) {
     // TODO
 }
 
-void ICEManager::LoadCameraShakes(bChunk *chunk) {
-    // TODO
+void ICEManager::LoadCameraShakes(bChunk *set_chunk) {
+    bPlatEndianSwap(reinterpret_cast<unsigned int *>(set_chunk->GetData()));
+    ICEShakeGroup *group = pShakeGroup;
+    if (group != 0) {
+        int num_tracks = *reinterpret_cast<int *>(set_chunk->GetData());
+        ICEShakeTrack *track = reinterpret_cast<ICEShakeTrack *>(set_chunk->GetData() + 4);
+        for (int i = 0; i < num_tracks; i++) {
+            track->PlatEndianSwap();
+            track->SetGroup(group);
+            group->TrackList.AddTail(track);
+            group->NumTracks++;
+            track = reinterpret_cast<ICEShakeTrack *>(reinterpret_cast<char *>(track) + track->MemoryImageSize());
+        }
+    }
 }
 
-void ICEManager::UnloadCameraShakes(bChunk *chunk) {
-    // TODO
+void ICEManager::UnloadCameraShakes(bChunk *set_chunk) {
+    ICEShakeGroup *group = pShakeGroup;
+    group->NumTracks = 0;
+    while (!group->TrackList.IsEmpty()) {
+        ICEShakeTrack *track = group->TrackList.RemoveHead();
+        if (track->IsAllocated() && track != 0) {
+            delete track;
+        }
+    }
+    group->FlushAllocatedTracks();
 }
 
 void ICEManager::Init() {
@@ -529,8 +610,32 @@ void ICEManager::Resolve() {
 }
 
 bool ICEManager::ChooseCameraPlaybackTrack() {
-    // TODO
-    return false;
+    pPlaybackTrack = 0;
+    bUseOldDutch = 0;
+    ICEScene *scene = ICE::FindAnimScene();
+    if (scene != 0) {
+        unsigned int scene_hash = scene->GetSceneHash();
+        ICEGroup *group = GetNisCameraGroup(scene_hash);
+        if (group != 0) {
+            char name[14];
+            bSPrintf(name, "Track %d", scene->GetCameraTrackNumber());
+            pPlaybackTrack = group->GetTrack(name);
+            if (pPlaybackTrack == 0) {
+                char scene_name[16];
+                ICE::GetNameOfSceneHash(scene_hash, scene_name);
+            }
+            bUseOldDutch = 1;
+        }
+    } else {
+        pPlaybackTrack = ChooseGenericCamera();
+        if (pPlaybackTrack == 0) {
+            pPlaybackTrack = ICEReplay::ChooseGoodCamera(GetICEAnchor(), pReplayCameras, nReplayCameras);
+            if (pPlaybackTrack != 0) {
+                pPlaybackTrack->Start = GetTimerSeconds();
+            }
+        }
+    }
+    return pPlaybackTrack != 0;
 }
 
 int ICEManager::ChooseGoodSceneCameraTrackIndex(unsigned int scene_hash, const ICE::Matrix4 *scene_origin) {
@@ -614,21 +719,56 @@ void ICEManager::GetSlope(ICE::Vector3 *eye, ICE::Vector3 *look, float *fov, flo
 }
 
 static float GetGroundElevation(const ICE::Vector3 *position) {
-    // TODO
-    return 0.0f;
+    float ground_elevation = 0.0f;
+    if (IsGameFlowInGame()) {
+        UMath::Vector3 unswizzled_position;
+        eUnSwizzleWorldVector(reinterpret_cast<const bVector3 &>(*position), reinterpret_cast<bVector3 &>(unswizzled_position));
+        unswizzled_position.y += 4.0f;
+        WCollisionMgr collisionMgr(0, 3);
+        bool point_valid = collisionMgr.GetWorldHeightAtPointRigorous(unswizzled_position, ground_elevation, 0);
+        if (!point_valid) {
+            ground_elevation = position->z;
+        }
+    }
+    return ground_elevation;
 }
 
-static void ICEGetPlayerCarTransform(ICE::Matrix4 *matrix) {
-    // TODO
+static void ICEGetPlayerCarTransform(ICE::Matrix4 *mCarToWorld) {
+    bIdentity(reinterpret_cast<bMatrix4 *>(mCarToWorld));
+    IPlayer *iplayer = IPlayer::First(PLAYER_LOCAL);
+    if (iplayer != 0) {
+        IRigidBody *player_rigid_body = iplayer->GetSimable()->GetRigidBody();
+        if (player_rigid_body != 0) {
+            UMath::Matrix4 mat;
+            player_rigid_body->GetMatrix4(mat);
+            bConvertFromBond(*reinterpret_cast<bMatrix4 *>(mCarToWorld), reinterpret_cast<const bMatrix4 &>(mat));
+            const UMath::Vector3 &pos = player_rigid_body->GetPosition();
+            eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(pos), reinterpret_cast<bVector3 &>(reinterpret_cast<bMatrix4 *>(mCarToWorld)->v3));
+        }
+    }
 }
 
 int LoaderICECameras(bChunk *pChunk) {
-    // TODO
+    unsigned int id = pChunk->GetID();
+    if (id == 0x0003B211) {
+        TheICEManager.LoadCameraShakes(pChunk);
+        return 1;
+    } else if (id >= 0x8003B200 && id <= 0x8003B203) {
+        TheICEManager.LoadCameraSet(pChunk);
+        return 1;
+    }
     return 0;
 }
 
 int UnloaderICECameras(bChunk *pChunk) {
-    // TODO
+    unsigned int id = pChunk->GetID();
+    if (id == 0x0003B211) {
+        TheICEManager.UnloadCameraShakes(pChunk);
+        return 1;
+    } else if (id >= 0x8003B200 && id <= 0x8003B203) {
+        TheICEManager.UnloadCameraSet(pChunk);
+        return 1;
+    }
     return 0;
 }
 
@@ -664,7 +804,29 @@ unsigned int GetSceneHash(unsigned int slot) {
 void GetNameOfSceneHash(unsigned int hash, char *name) {
     *name = 0;
     if (TheAnimDirectory != 0) {
-        TheAnimDirectory->GetNameOfSceneHash(hash, name);
+        for (unsigned int i = 0; i < TheAnimDirectory->GetSceneCount(); i++) {
+            AnimSceneLoadInfo info;
+            TheAnimDirectory->GetSceneLoadInfo(i, info);
+            if (hash == info.mAnimSceneHash) {
+                char *filename = TheAnimDirectory->GetFileName(info.mSceneFileStartIndex);
+                int pos = 0;
+                while (filename[pos] != '_') {
+                    pos++;
+                }
+                pos++;
+                int start = pos;
+                while (filename[pos] != '_') {
+                    pos++;
+                }
+                int len = pos - start - 1;
+                for (int j = start; len >= 0; j++, len--) {
+                    *name = filename[j];
+                    name++;
+                }
+                *name = 0;
+                break;
+            }
+        }
     }
 }
 

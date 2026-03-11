@@ -879,6 +879,30 @@ struct bQuaternion {
     }
 
     bQuaternion &Slerp(bQuaternion &r, const bQuaternion &target, float t) const;
+
+    void GetMatrix(bMatrix4 &m) const {
+        float xx = x + x;
+        float yy = y + y;
+        float zz = z + z;
+        float wx = w * xx;
+        float d = 1.0f - x * xx;
+        m[3][3] = 1.0f;
+        m[2][3] = 0.0f;
+        m[3][0] = 0.0f;
+        m[3][1] = 0.0f;
+        m[3][2] = 0.0f;
+        m[0][3] = 0.0f;
+        m[1][3] = 0.0f;
+        m[0][1] = x * yy + w * zz;
+        m[0][2] = x * zz - w * yy;
+        m[1][2] = y * zz + wx;
+        m[2][2] = d - y * yy;
+        m[0][0] = (1.0f - y * yy) - z * zz;
+        m[1][1] = d - z * zz;
+        m[1][0] = x * yy - w * zz;
+        m[2][0] = x * zz + w * yy;
+        m[2][1] = y * zz - wx;
+    }
 };
 
 class bBitTable {

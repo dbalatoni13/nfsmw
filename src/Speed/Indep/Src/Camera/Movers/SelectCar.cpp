@@ -15,16 +15,73 @@ static float kSelectCarWrapAngle = 360.0f;
 
 SelectCarCameraMover::~SelectCarCameraMover() {}
 
+static float kSelectCarDefaultRollV = 0.0f;
+static float kSelectCarDefaultFOVV = 45.0f;
+static float kSelectCarDefaultLookAtZV = 0.75f;
+static float kSelectCarDefaultAnimTimeV = 0.555f;
+
 void SelectCarCameraMover::SetVRotateSpeed(float f) {
-    OrbitVSpeed = f;
+    if (ControlMode != 0) {
+        if (ControlMode != 1) {
+            StartAnimCameraData.RollAngle = CurrentCameraData.RollAngle;
+            StartAnimCameraData.FOV = CurrentCameraData.FOV;
+            StartAnimCameraData.LookAt = CurrentCameraData.LookAt;
+            GoalAnimCameraData.RollAngle = kSelectCarDefaultRollV;
+            GoalAnimCameraData.FOV = kSelectCarDefaultFOVV;
+            bFill(&GoalAnimCameraData.LookAt, kSelectCarDefaultRollV, kSelectCarDefaultRollV, kSelectCarDefaultLookAtZV);
+            GoalAnimCameraData.RollAngle = FindBestAngleGoal(CurrentCameraData.RollAngle, kSelectCarDefaultRollV);
+            CurrentAnimationTime = kSelectCarDefaultRollV;
+            TotalAnimationTime = kSelectCarDefaultAnimTimeV;
+        }
+        OrbitVSpeed = f;
+        ControlMode = 1;
+    }
 }
+
+static float kSelectCarDefaultRollH = 0.0f;
+static float kSelectCarDefaultFOVH = 45.0f;
+static float kSelectCarDefaultLookAtZH = 0.75f;
+static float kSelectCarDefaultAnimTimeH = 0.555f;
 
 void SelectCarCameraMover::SetHRotateSpeed(float f) {
-    OrbitHSpeed = f;
+    if (ControlMode != 0) {
+        if (ControlMode != 1) {
+            StartAnimCameraData.RollAngle = CurrentCameraData.RollAngle;
+            StartAnimCameraData.FOV = CurrentCameraData.FOV;
+            StartAnimCameraData.LookAt = CurrentCameraData.LookAt;
+            GoalAnimCameraData.RollAngle = kSelectCarDefaultRollH;
+            GoalAnimCameraData.FOV = kSelectCarDefaultFOVH;
+            bFill(&GoalAnimCameraData.LookAt, kSelectCarDefaultRollH, kSelectCarDefaultRollH, kSelectCarDefaultLookAtZH);
+            GoalAnimCameraData.RollAngle = FindBestAngleGoal(CurrentCameraData.RollAngle, kSelectCarDefaultRollH);
+            CurrentAnimationTime = kSelectCarDefaultRollH;
+            TotalAnimationTime = kSelectCarDefaultAnimTimeH;
+        }
+        OrbitHSpeed = f;
+        ControlMode = 1;
+    }
 }
 
+static float kSelectCarDefaultRollZ = 0.0f;
+static float kSelectCarDefaultFOVZ = 45.0f;
+static float kSelectCarDefaultLookAtZZ = 0.75f;
+static float kSelectCarDefaultAnimTimeZ = 0.555f;
+
 void SelectCarCameraMover::SetZoomSpeed(float f) {
-    RadiusSpeed = f;
+    if (ControlMode != 0) {
+        if (ControlMode != 1) {
+            StartAnimCameraData.RollAngle = CurrentCameraData.RollAngle;
+            StartAnimCameraData.FOV = CurrentCameraData.FOV;
+            StartAnimCameraData.LookAt = CurrentCameraData.LookAt;
+            GoalAnimCameraData.RollAngle = kSelectCarDefaultRollZ;
+            GoalAnimCameraData.FOV = kSelectCarDefaultFOVZ;
+            bFill(&GoalAnimCameraData.LookAt, kSelectCarDefaultRollZ, kSelectCarDefaultRollZ, kSelectCarDefaultLookAtZZ);
+            GoalAnimCameraData.RollAngle = FindBestAngleGoal(CurrentCameraData.RollAngle, kSelectCarDefaultRollZ);
+            CurrentAnimationTime = kSelectCarDefaultRollZ;
+            TotalAnimationTime = kSelectCarDefaultAnimTimeZ;
+        }
+        RadiusSpeed = f;
+        ControlMode = 1;
+    }
 }
 
 SelectCarCameraMover::SelectCarCameraMover(int view_id) : CameraMover(view_id, CM_SELECT_CAR) {
