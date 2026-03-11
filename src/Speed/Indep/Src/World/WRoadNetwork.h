@@ -18,6 +18,7 @@ extern class WRoadNetwork *fgRoadNetwork;
 
 class WRoadNav;
 struct TrackPathBarrier;
+class IBody;
 
 // total size: 0x1
 class WRoadNetwork : public Debugable {
@@ -211,6 +212,7 @@ class WRoadNav {
     void IncNavPosition(float dist, const UMath::Vector3 &to, float max_lookahead);
     void PrivateIncNavPosition(float dist, const UMath::Vector3 &to);
     void ClampCookieCentres(NavCookie *cookies, int num_cookies);
+    int FetchAvoidables(IBody **avoidables, const int listsize) const;
     bool IsWrongWay() const;
     bool IsOnShortcut();
     unsigned char GetShortcutNumber();

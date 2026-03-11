@@ -9,9 +9,12 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/AI/AIVehicle.h"
+#include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/World/WPathFinder.h"
 #include "Speed/Indep/Src/World/WWorld.h"
 #include "Speed/Indep/Src/World/TrackPath.hpp"
+
+unsigned int bRandom(int range);
 
 static const int drivable_lanes[8] = {
     static_cast<int>(0xFFFFDF7F),
@@ -793,6 +796,42 @@ void WRoadNav::Reverse() {
     RebuildSplines(segment);
     EvaluateSplines(segment);
     ResetCookieTrail();
+}
+
+void WRoadNav::PullOver() {
+    ClearCookieTrail();
+
+    int which_node = GetNodeInd();
+    WRoadNetwork &rn = WRoadNetwork::Get();
+    const WRoadSegment *segment = rn.GetSegment(GetSegmentInd());
+    const WRoadProfile *profile = rn.GetSegmentProfile(*segment, which_node);
+    int num_lanes = profile->fNumZones;
+    bool inverted = segment->IsProfileInverted(which_node);
+
+    int lane = profile->GetLaneNumber(GetLaneInd(), inverted);
+
+    bool is_barrier = false;
+    while (lane < num_lanes - 1) {
+        int next_lane_type = profile->GetLaneType(lane + 1, inverted);
+        if (next_lane_type == kLaneAny) {
+            is_barrier = true;
+        }
+        if (next_lane_type != kLaneTraffic) break;
+        lane++;
+    }
+
+    float extra = fVehicleHalfWidth;
+    if (lane == num_lanes - 1 || is_barrier) {
+        extra = -extra;
+    }
+
+    float offset = profile->GetLaneWidth(lane, inverted) * 0.5f + profile->GetLaneOffset(lane, inverted) + extra;
+
+    const UMath::Vector3 &nav_forward = GetForwardVector();
+    UMath::Vector3 nav_right = UMath::Vector3Make(nav_forward.z, 0.0f, -nav_forward.x);
+    UMath::Normalize(nav_right);
+
+    UMath::ScaleAdd(nav_right, offset - GetLaneOffset(), GetPosition(), GetPosition());
 }
 
 bool WRoadNav::IsSegmentInCookieTrail(int segment_number, bool use_whole_path) {
