@@ -299,7 +299,7 @@ unsigned int WCollisionAssets::AddObject(WCollisionObject *obj) {
 }
 
 WCollisionObject *WCollisionAssets::CreateObject(const UMath::Vector3 &dim, const UMath::Matrix4 &mat, bool dynamicFlag) {
-    WCollisionObject *obj = new (static_cast<const char *>(0), 0) WCollisionObject;
+    WCollisionObject *obj = new (__FILE__, __LINE__) WCollisionObject;
     obj->fFlags = 0;
     obj->fMat = mat;
     if (dynamicFlag) {
