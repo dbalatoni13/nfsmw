@@ -113,8 +113,8 @@ void WWorldMath::NearestPointLine2D3(const UMath::Vector3 &pt, const UMath::Vect
     } else {
         u = 0.0f;
     }
-    nearPt.z = u * (z2 - z1) + z1;
     nearPt.y = 0.0f;
+    nearPt.z = u * (z2 - z1) + z1;
     nearPt.x = u * (x2 - x1) + x1;
 }
 
@@ -134,8 +134,8 @@ void WWorldMath::NearestPointLine2D(const UMath::Vector4 &pt, const UMath::Vecto
     } else {
         u = 0.0f;
     }
-    nearPt.z = u * (z2 - z1) + z1;
     nearPt.y = 0.0f;
+    nearPt.z = u * (z2 - z1) + z1;
     nearPt.x = u * (x2 - x1) + x1;
 }
 
@@ -152,13 +152,11 @@ bool WWorldMath::IntersectSegPlane(const UMath::Vector3 &P1, const UMath::Vector
     t = n / d;
     UMath::Sub(P2, P1, intersectionPt);
     UMath::ScaleAdd(intersectionPt, t, P1, intersectionPt);
-    if (t < 0.0f) {
-        return false;
+    bool result = true;
+    if (t < 0.0f || t > 1.0f) {
+        result = false;
     }
-    if (t > 1.0f) {
-        return false;
-    }
-    return true;
+    return result;
 }
 
 bool WWorldMath::SegmentIntersect(const UMath::Vector4 *line1, const UMath::Vector4 *line2, UMath::Vector4 *intersectPt) {

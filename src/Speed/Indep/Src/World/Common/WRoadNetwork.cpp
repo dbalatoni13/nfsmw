@@ -62,15 +62,15 @@ void WRoadNetwork::Init() {
                 const WRoadNetworkInfo *roadInfo =
                     static_cast< const WRoadNetworkInfo * >(headerData->GetDataConst());
 
-                fNumSegments = roadInfo->fNumSegments;
-                fNumNodes = roadInfo->fNumNodes;
-                fNumRoads = roadInfo->fNumRoads;
-                nSegmentMemoryUsage = fNumSegments * sizeof(WRoadSegment);
                 fNumProfiles = roadInfo->fNumProfiles;
-                nNodeMemoryUsage = fNumNodes * sizeof(WRoadNode);
-                nRoadMemoryUsage = fNumRoads * sizeof(WRoad);
+                fNumNodes = roadInfo->fNumNodes;
+                fNumSegments = roadInfo->fNumSegments;
                 fNumIntersections = roadInfo->fNumIntersections;
+                fNumRoads = roadInfo->fNumRoads;
+                nRoadMemoryUsage = fNumRoads * sizeof(WRoad);
+                nNodeMemoryUsage = fNumNodes * sizeof(WRoadNode);
                 nProfileMemoryUsage = fNumProfiles * sizeof(WRoadProfile);
+                nSegmentMemoryUsage = fNumSegments * sizeof(WRoadSegment);
                 nIntersectionMemoryUsage = fNumIntersections * sizeof(WRoadIntersection);
                 nTotalMemoryUsage = nRoadMemoryUsage + nNodeMemoryUsage +
                                     nProfileMemoryUsage + nSegmentMemoryUsage +
@@ -588,10 +588,8 @@ bool WRoadNetwork::GetSegmentProfiles(const WRoadSegment &segment, const WRoadPr
 int WRoadNetwork::GetSegmentNumTrafficLanes(const WRoadSegment &segment) {
     WRoadNetwork &roadNetwork = Get();
     const WRoadProfile *profilePtr[2];
-    int numTrafficLanes[2];
-    numTrafficLanes[0] = 0;
+    int numTrafficLanes[2] = {0};
     roadNetwork.GetSegmentProfiles(segment, profilePtr);
-    numTrafficLanes[1] = 0;
     for (int i = 0; i < profilePtr[0]->fNumZones; i++) {
         if (profilePtr[0]->GetLaneType(i, false) == 1) {
             numTrafficLanes[0]++;

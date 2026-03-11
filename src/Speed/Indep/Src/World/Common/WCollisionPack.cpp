@@ -22,10 +22,10 @@ WCollisionPack::~WCollisionPack() {
 }
 
 void WCollisionPack::Init(bChunk *chunk) {
-    const UGroup *carpGroup;
-    unsigned int deltaRelocationOffset;
-    unsigned int carpSize;
     const void *carpSource;
+    int carpSize;
+    unsigned int deltaRelocationOffset;
+    const UGroup *carpGroup;
 
     if (mCarpChunkHeader->GetFlags() & 1) {
     } else {
@@ -34,8 +34,8 @@ void WCollisionPack::Init(bChunk *chunk) {
 
     carpSource = mCarpChunkHeader + 1;
     mSectionNumber = mCarpChunkHeader->GetSectionNumber();
-    carpSize = mCarpChunkHeader->GetCarpSize();
     deltaRelocationOffset = 0;
+    carpSize = mCarpChunkHeader->GetCarpSize();
 
     if (mCarpChunkHeader->GetFlags() & 1) {
         deltaRelocationOffset =
@@ -43,7 +43,7 @@ void WCollisionPack::Init(bChunk *chunk) {
     }
 
     if (mCarpChunkHeader != mCarpChunkHeader->GetLastAddress()) {
-        carpGroup = UGroup::Deserialize(1, &carpSize, &carpSource, deltaRelocationOffset);
+        carpGroup = UGroup::Deserialize(1, reinterpret_cast<unsigned int *>(&carpSize), &carpSource, deltaRelocationOffset);
     } else {
         carpGroup = reinterpret_cast<const UGroup *>(carpSource);
     }
