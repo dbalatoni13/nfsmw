@@ -65,7 +65,13 @@ struct WRoadLane {
 // total size: 0x40
 struct WRoadProfile {
     int GetLaneType(int lane, bool inverted) const {
-        return mLanes[GetLaneNumber(lane, inverted)].GetType();
+        int lane_number;
+        if (inverted) {
+            lane_number = fNumZones - lane - 1;
+        } else {
+            lane_number = lane;
+        }
+        return mLanes[lane_number].GetType();
     }
 
     int GetNumForwardLanes() const { return fNumZones - fMiddleZone; }
@@ -289,10 +295,16 @@ struct WRoadSegment {
     }
 
     bool IsProfileInverted(int which_end) const {
+        int bit;
         if (!which_end) {
-            return IsEndInverted();
+            bit = IsEndInverted();
+        } else {
+            bit = IsStartInverted();
         }
-        return IsStartInverted();
+        if (!which_end) {
+            return bit == 0;
+        }
+        return bit != 0;
     }
 
     // void SetEndInverted(bool inverted) {}
