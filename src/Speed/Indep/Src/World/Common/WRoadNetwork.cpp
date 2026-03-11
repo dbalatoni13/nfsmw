@@ -4,6 +4,10 @@
 #include "Speed/Indep/Libs/Support/Utility/UVector.h"
 #include "Speed/Indep/Src/Gameplay/GMarker.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/Interfaces/IBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
+#include "Speed/Indep/Src/AI/AIVehicle.h"
 #include "Speed/Indep/Src/World/WPathFinder.h"
 #include "Speed/Indep/Src/World/WWorld.h"
 
@@ -205,6 +209,27 @@ void WRoadNav::SetPathType(EPathType type) {
 void WRoadNav::SetVehicle(AIVehicle *ai_vehicle) {
     pAIVehicle = ai_vehicle;
     DetermineVehicleHalfWidth();
+}
+
+void WRoadNav::DetermineVehicleHalfWidth() {
+    fVehicleHalfWidth = 1.0f;
+    if (pAIVehicle != nullptr) {
+        IBody *body;
+        if (pAIVehicle->GetOwner()->QueryInterface(&body)) {
+            UMath::Vector3 dimension;
+            body->GetDimension(dimension);
+            fVehicleHalfWidth = dimension.x;
+        }
+
+        if (GRaceStatus::IsDragRace()) {
+            IVehicle *ivehicle;
+            if (pAIVehicle->GetOwner()->QueryInterface(&ivehicle)) {
+                if (VehicleClass::TRACTOR == ivehicle->GetVehicleClass()) {
+                    fVehicleHalfWidth += 2.0f;
+                }
+            }
+        }
+    }
 }
 
 bool WRoadNav::IsDrivable(int lane_type) const {
@@ -506,7 +531,7 @@ unsigned char WRoadNav::FirstShortcutInPath() {
 const WRoadSegment *GetAttachedDirectionalSegment(const WRoadNode *node, short segment_index) {
     for (int i = 0; i < node->fNumSegments; i++) {
         const WRoadSegment *segment = WRoadNetwork::Get().GetSegment(node->fSegmentIndex[i]);
-        if (segment_index != segment->fIndex && !segment->IsDecision()) {
+        if (segment_index != segment->fIndex && (segment->fFlags ^ 1) & 1) {
             return segment;
         }
     }
