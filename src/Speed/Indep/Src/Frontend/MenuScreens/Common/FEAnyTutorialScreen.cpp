@@ -15,6 +15,11 @@ extern unsigned int FEngHashString(const char*, ...);
 extern unsigned int bStringHash(const char*, int);
 extern void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned int language);
 
+inline void FEngSetMovieName(const char* pkg_name, unsigned int obj_hash, const char* name) {
+    FEMovie* movie = static_cast<FEMovie*>(FEngFindObject(pkg_name, obj_hash));
+    FEngSetMovieName(movie, name);
+}
+
 char FEAnyTutorialScreen::MovieFilename[64];
 char FEAnyTutorialScreen::PackageFilename[64];
 bool FEAnyTutorialScreen::PackageSet;
@@ -29,8 +34,7 @@ FEAnyTutorialScreen::FEAnyTutorialScreen(ScreenConstructorData* sd)
 
     DismissChyron();
 
-    FEMovie* movie = static_cast<FEMovie*>(FEngFindObject(GetPackageName(), 0x0348FF9F));
-    FEngSetMovieName(movie, MovieFilename);
+    FEngSetMovieName(GetPackageName(), 0x0348FF9F, MovieFilename);
 
     if (eIsWidescreen()) {
         cFEng::Get()->QueuePackageMessage(0x70D2183B, GetPackageName(), nullptr);
@@ -97,10 +101,7 @@ void FEAnyTutorialScreen::NotificationMessage(unsigned long msg, FEObject* obj,
                                                unsigned long param1, unsigned long param2) {
     mSubtitler.Update(msg);
 
-    if (msg == 0x406415E3) {
-        DismissMovie(true);
-        mSubtitler.Update(0xC3960EB9);
-    } else if (msg == 0xB5AF2461) {
+    if (msg == 0xB5AF2461 || msg == 0x406415E3) {
         DismissMovie(true);
         mSubtitler.Update(0xC3960EB9);
     } else if (msg == 0xC3960EB9) {

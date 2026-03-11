@@ -46,7 +46,7 @@ struct TopEvadedPursuitDetail {
 
 // total size: 0x20
 struct CareerPursuitScores {
-    int GetValue(ePursuitDetailTypes type) const { return Value[type]; }
+    int GetValue(ePursuitDetailTypes type) const;
 
     int Value[8]; // offset 0x0, size 0x20
 };
