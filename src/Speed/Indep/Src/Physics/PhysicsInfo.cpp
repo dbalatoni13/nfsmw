@@ -365,10 +365,10 @@ float Physics::Info::Redline(const pvehicle &pvehicle) {
 
 unsigned int Physics::Info::NumFowardGears(const transmission &transmission) {
     unsigned int num_ratios = transmission.Num_GEAR_RATIO();
-    if (num_ratios < 3) {
-        return 0;
+    if (num_ratios > 2) {
+        return num_ratios - 2;
     }
-    return num_ratios - 2;
+    return 0;
 }
 
 unsigned int Physics::Info::NumFowardGears(const pvehicle &pvehicle) {

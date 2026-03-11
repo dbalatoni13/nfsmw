@@ -72,7 +72,7 @@ static tPartMap put_maps[] = {
 static const tPartMap *FindPartMap(Type type) {
     const tPartMap *type_map = put_maps;
     if (type_map->key == 0) {
-        return nullptr;
+        goto not_found;
     }
     if (type_map->type == type) {
         return type_map;
@@ -80,10 +80,12 @@ static const tPartMap *FindPartMap(Type type) {
     do {
         type_map++;
         if (type_map->key == 0) {
-            return nullptr;
+            goto not_found;
         }
     } while (type_map->type != type);
     return type_map;
+not_found:
+    return nullptr;
 }
 
 static void DownGradeInternal(pvehicle &vehicle, Type type) {
@@ -210,6 +212,10 @@ bool Physics::Upgrades::SetPackage(pvehicle &vehicle, const Package &package) {
     pvehicle newvehicle(vehicle);
     Clear(newvehicle);
 
+    if (!Validate(newvehicle)) {
+        return false;
+    }
+
     for (int i = 0; i < PUT_MAX; i++) {
         Type type = static_cast<Type>(i);
         int mask = 1 << type;
@@ -227,6 +233,10 @@ bool Physics::Upgrades::SetPackage(pvehicle &vehicle, const Package &package) {
         }
     }
 
+    if (!Validate(newvehicle)) {
+        return false;
+    }
+
     vehicle = newvehicle;
     return true;
 }
@@ -234,7 +244,7 @@ bool Physics::Upgrades::SetPackage(pvehicle &vehicle, const Package &package) {
 bool Physics::Upgrades::GetJunkman(const pvehicle &vehicle, Type type) {
     int junkman_current = vehicle.junkman_current();
     bool result = true;
-    if (!((junkman_current >> type) & 1)) {
+    if (((junkman_current >> type) & 1) == 0) {
         result = false;
     }
     return result;
@@ -349,6 +359,10 @@ bool Physics::Upgrades::ApplyPreset(pvehicle &vehicle, const presetride &presetr
 
     pvehicle newvehicle(vehicle);
     Clear(newvehicle);
+
+    if (!Validate(newvehicle)) {
+        return false;
+    }
 
     for (int i = 0; i < PUT_MAX; i++) {
         Type type = static_cast<Type>(i);
