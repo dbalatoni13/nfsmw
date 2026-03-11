@@ -71,7 +71,20 @@ struct MemoryCardSetup {
         return cmd == 3 || cmd == 4;
     }
 
-    void Clear();
+    inline void Clear() {
+        mPreviousPrompt = 0;
+        mOp = 0;
+        mMemScreen = nullptr;
+        mToScreen = nullptr;
+        mFromScreen = nullptr;
+        mTermFunc = nullptr;
+        mTermFuncParam = nullptr;
+        mLastMessage = 0;
+        mSuccessMsg = 0;
+        mFailedMsg = 0;
+        mInBootFlow = false;
+        mPreviousCommand = 0;
+    }
 
     void SendTermMessage(unsigned int msg) {
         if (mTermFunc != nullptr) {

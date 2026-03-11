@@ -38,7 +38,7 @@ struct FEVector3 {
     inline FEVector3(float* pf) : x(pf[0]), y(pf[1]), z(pf[2]) {}
     inline FEVector3(const FEVector3& v) { *this = v; }
 
-    FEVector3& operator=(const FEVector3& v);
+    inline FEVector3& operator=(const FEVector3& v) { x = v.x; y = v.y; z = v.z; return *this; }
 };
 
 // total size: 0x10
