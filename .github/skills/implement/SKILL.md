@@ -13,6 +13,14 @@ Collect data from **all** of these sources in parallel where possible.
 
 ### 1a. decomp-context.py
 
+Preferred shortcut:
+
+```sh
+python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName
+```
+
+Equivalent manual form:
+
 ```sh
 python tools/decomp-context.py -u main/Path/To/TU -f FunctionName
 ```
@@ -89,7 +97,10 @@ The game uses stlport, so you'll often encounter \_STL, but in the code it must 
 
 ### Initial build
 
-Compile to a private temp `.o` so your output isn't overwritten by other concurrent builds:
+Compile to a private temp `.o` so your output isn't overwritten by other concurrent builds.
+If you just need the standard context + temp-build flow, prefer
+`python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName` and drop
+down to the manual loop below when you need tighter control over repeated diff iterations:
 
 ```sh
 TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
