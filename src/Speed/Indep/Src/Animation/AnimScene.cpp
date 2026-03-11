@@ -808,11 +808,9 @@ void CAnimScene::AnimatedCars_Bind() {
 
             IRigidBody *irb;
             if (gCarAnimationStates[i].mIVehicle->QueryInterface(&irb)) {
-                UMath::Vector3 zeroVec;
-                UMath::Vector3 *pZero = &zeroVec;
-                memset(pZero, 0, 0xc);
-                irb->SetLinearVelocity(*pZero);
-                irb->SetAngularVelocity(*pZero);
+                UMath::Vector3 zeroVec = {};
+                irb->SetLinearVelocity(zeroVec);
+                irb->SetAngularVelocity(zeroVec);
             }
 
             IInput *pInput;
