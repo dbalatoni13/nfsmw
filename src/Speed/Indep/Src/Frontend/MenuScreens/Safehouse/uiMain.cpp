@@ -91,6 +91,27 @@ void MainOptions::React(const char* pkg_name, unsigned int data, FEObject* obj, 
     FEDatabase->SetGameMode(eFE_GAME_MODE_OPTIONS);
 }
 
+void MainCareer::React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) {
+    if (data != 0x0C407210) return;
+    if (IsMemcardEnabled) {
+        FEDatabase->SetGameMode(eFE_GAME_MODE_CAREER_MANAGER);
+    } else {
+        FEDatabase->SetGameMode(eFE_GAME_MODE_CAREER);
+    }
+}
+
+void Challenge::React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) {
+    if (data == 0x0C407210) {
+        if (!FEDatabase->bProfileLoaded && IsMemcardEnabled) {
+            MemcardEnter("MainMenu.fng", "ChallengeSeries.fng", 0x10063, nullptr, nullptr, 0, 0);
+        } else {
+            FEDatabase->SetGameMode(eFE_GAME_MODE_CHALLENGE);
+            SetReactImmediately(false);
+            cFEng::Get()->QueuePackageMessage(0x0C407210, pkg_name, nullptr);
+        }
+    }
+}
+
 UIMain::UIMain(ScreenConstructorData* sd)
     : IconScrollerMenu(sd) //
     , m_bStatsShowing(false) {
