@@ -152,9 +152,8 @@ class WRoadNav {
         kPathRacer = 0x0002,
         kPathGPS = 0x0003,
         kPathPlayer = 0x0004,
-        kPathPathy = 0x0005,
-        kPathChopper = 0x0006,
-        kPathRaceRoute = 0x0007,
+        kPathChopper = 0x0005,
+        kPathRaceRoute = 0x0006,
     };
 
     enum ELaneType {
@@ -414,6 +413,12 @@ class WRoadNav {
 
     unsigned short *GetPathSegments() {
         return pPathSegments;
+    }
+
+    void SetPathGoal(unsigned short segment_number, float param) {
+        bCrossedPathGoal = false;
+        nPathGoalSegment = segment_number;
+        fPathGoalParam = param;
     }
 
     unsigned short GetPathSegment(int n) {
