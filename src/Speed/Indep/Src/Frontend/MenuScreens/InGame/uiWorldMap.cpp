@@ -3,12 +3,17 @@
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiTrackMapStreamer.hpp"
 #include "Speed/Indep/Src/Gameplay/GIcon.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/Generated/Events/EWorldMapOff.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
 struct Minimap {
@@ -27,12 +32,44 @@ struct Minimap {
 
 extern Timer RealTimer;
 void FEngGetSize(FEObject* obj, float& x, float& y);
+void FEngGetCenter(FEObject* obj, float& x, float& y);
+void FEngGetTopLeft(FEObject* obj, float& x, float& y);
+void FEngGetBottomRight(FEObject* obj, float& x, float& y);
+float FEngGetScaleX(FEObject* obj);
+float FEngGetScaleY(FEObject* obj);
 void FEngSetColor(FEObject* obj, unsigned int color);
 void FEngSetScript(FEObject* object, unsigned int script_hash, bool start_at_beginning);
 bool FEngIsScriptSet(FEObject* obj, unsigned int script_hash);
 void FEngSetTopLeft(FEObject* object, float x, float y);
 void FEngSetLanguageHash(FEString* text, unsigned int hash);
 bool FEngTestForIntersection(float xPos, float yPos, FEObject* obj);
+void FEngSetLastButton(const char* pkg_name, unsigned char button);
+void FEngSetRotationZ(FEObject* obj, float z);
+bool GPS_IsEngaged();
+void GPS_Disengage();
+int GPS_Engage(const UMath::Vector3& pos, float radius);
+void GetVehicleVectors(bVector2* pos, bVector2* dir, ISimable* simable);
+
+inline float bDistBetween(const bVector2* v1, const bVector2* v2) {
+    float x = v1->x - v2->x;
+    float y = v1->y - v2->y;
+    return bSqrt(x * x + y * y);
+}
+inline float bDistBetween(const bVector2& v1, const bVector2& v2) {
+    return bDistBetween(&v1, &v2);
+}
+
+inline int tCubic1D::HasArrived() {
+    return state == 0;
+}
+
+inline int tCubic2D::HasArrived() {
+    return x.HasArrived() && y.HasArrived();
+}
+
+inline bool UITrackMapStreamer::IsZooming() {
+    return !ZoomCubic.HasArrived();
+}
 
 inline float FEngGetSizeY(FEObject* obj) {
     float x;
@@ -47,6 +84,42 @@ inline void FEngSetSizeX(FEObject* obj, float x) {
 }
 
 MapItem::~MapItem() {}
+
+inline MapItem::MapItem(eWorldMapItemType type, FEObject* iconObj, bVector2& map_pos, bVector2& world_pos,
+                 float rot, GIcon* icon) {
+    pIcon = iconObj;
+    InitialPos = map_pos;
+    WorldPos = world_pos;
+    Rot = rot;
+    TheType = type;
+    TheIcon = icon;
+    bHidden = false;
+    if (FEDatabase->GetGameplaySettings()->IsMapItemEnabled(type)) {
+        bHidden = false;
+        Show();
+    } else {
+        bHidden = true;
+        Hide();
+    }
+    FEngGetSize(pIcon, InitialSize.x, InitialSize.y);
+    FEngSetCenter(pIcon, InitialPos.x, InitialPos.y);
+    FEngSetRotationZ(pIcon, Rot);
+}
+
+inline CopItem::CopItem(FEObject* icon, bVector2& pos, bVector2& world_pos, float rot,
+                 eWorldMapItemType type)
+    : MapItem(type, icon, pos, world_pos, rot, nullptr) {
+    FlashTimer = -1;
+}
+
+inline HeliItem::HeliItem(FEImage* view, FEObject* icon, bVector2& pos, bVector2& world_pos, float rot)
+    : CopItem(icon, pos, world_pos, rot, WMIT_COP_HELI) {
+    pViewCone = view;
+    InitialSize.x = FEngGetScaleX(pIcon);
+    InitialSize.y = FEngGetScaleY(pIcon);
+    FEngSetCenter(static_cast< FEObject* >(pViewCone), pos.x, pos.y);
+    FEngSetRotationZ(static_cast< FEObject* >(pViewCone), rot);
+}
 
 void CopItem::Draw() {
     if (!bHidden) {
@@ -224,14 +297,241 @@ WorldMap::~WorldMap() {
     delete MapStreamer;
 }
 
-void WorldMap::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) {
-    UIWidgetMenu::NotificationMessage(msg, obj, param1, param2);
-    if (msg == 0x911ab364) {
-        cFEng::Get()->QueuePackagePop(0);
+void WorldMap::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
+                                   unsigned long param2) {
+    if ((bInToggleMode || (msg != 0x72619778 && msg != 0x911c0a4b)) && msg != 0xc407210) {
+        UIWidgetMenu::NotificationMessage(msg, obj, param1, param2);
+    }
+    if (msg == 0xa16ca7bd) {
+        if (GPS_IsEngaged()) {
+            GPS_Disengage();
+            ClearGPSing();
+        }
+        if (SelectedItem != nullptr && SelectedItem->GetIcon() != nullptr) {
+            UMath::Vector3 pos;
+            eUnSwizzleWorldVector(SelectedItem->GetIcon()->GetPosition(),
+                                  reinterpret_cast< bVector3& >(pos));
+            if (GPS_Engage(pos, 0.0f) == 0) {
+                DialogInterface::ShowOneButton(GetPackageName(), "", static_cast< eDialogTitle >(1),
+                                               0x417b2601, 0x34dc1bec, 0x7afdf4cc);
+            } else {
+                SetGPSing(SelectedItem->GetIcon());
+                FEngSetLastButton(GetPackageName(), 0);
+                cFEng::Get()->QueuePackageMessage(0x911ab364, GetPackageName(), nullptr);
+            }
+        }
+    } else if (msg < 0xa16ca7be) {
+        if (msg != 0x72619778) {
+            if (msg < 0x72619779) {
+                if (msg == 0x35f8620b) {
+                    FEWidget* w = pCurrentOption;
+                    if (w != nullptr) {
+                        w->UnsetFocus();
+                    }
+                    return;
+                }
+                if (msg > 0x35f8620b) {
+                    if (msg == 0x5073ef13 && !bInToggleMode) {
+                        ScrollZoom(eSD_PREV);
+                    }
+                    return;
+                }
+                if (msg != 0xc407210) {
+                    return;
+                }
+                if (!bInToggleMode) {
+                    IPlayer* iplayer = IPlayer::First(PLAYER_LOCAL);
+                    if (iplayer != nullptr) {
+                        ISimable* isimable = iplayer->GetSimable();
+                        if (isimable != nullptr) {
+                            if (SelectedItem == nullptr || SelectedItem->GetIcon() == nullptr) {
+                                if (mGPSingIcon == nullptr) {
+                                    return;
+                                }
+                                DialogInterface::ShowTwoButtons(
+                                    GetPackageName(), "InGameDialog.fng",
+                                    static_cast< eDialogTitle >(3), 0x417b2601, 0x1a294dad,
+                                    0xa16ca7bd, 0xb4edeb6d, 0xb4edeb6d,
+                                    static_cast< eDialogFirstButtons >(1), 0xa6be2ebb);
+                            } else {
+                                DialogInterface::ShowTwoButtons(
+                                    GetPackageName(), "InGameDialog.fng",
+                                    static_cast< eDialogTitle >(3), 0x70e01038, 0x417b25e4,
+                                    0xa16ca7bd, 0xb4edeb6d, 0xb4edeb6d,
+                                    static_cast< eDialogFirstButtons >(1), 0x96ac0a32);
+                            }
+                        }
+                    }
+                    return;
+                }
+                FEWidget* w = pCurrentOption;
+                if (w == nullptr) {
+                    return;
+                }
+                static_cast< ItemTypeToggle* >(w)->Act(GetPackageName(), 0xc407210);
+                UpdateIconVisibility(static_cast< ItemTypeToggle* >(pCurrentOption)->GetType(),
+                                     static_cast< ItemTypeToggle* >(pCurrentOption)->GetVisibility());
+            } else if (msg != 0x911c0a4b) {
+                if (msg < 0x911c0a4c) {
+                    if (msg != 0x911ab364) {
+                        return;
+                    }
+                    goto leave_screen;
+                }
+                if (msg != 0x9120409e || bInToggleMode || CurrentView == 3) {
+                    return;
+                }
+                goto view_switch;
+            }
+        }
+    } else {
+        if (msg == 0xc519bfc4) {
+            return;
+        }
+        if (msg > 0xc519bfc4) {
+            if (msg == 0xd9feec59) {
+                if (!bInToggleMode) {
+                    ScrollZoom(eSD_NEXT);
+                }
+            } else if (msg < 0xd9feec5a) {
+                if (msg == 0xc98356ba &&
+                    cFEng::Get()->IsPackageInControl(GetPackageName())) {
+                    UpdateCursor(false);
+                    MapStreamer->UpdateAnimation();
+                    UpdateCursor(true);
+                    float zoom = MapStreamer->GetZoomFactor();
+                    float max_zoom = GetZoomFactor(WMZ_LEVEL_4);
+                    bVector2 pan(0.0f, 0.0f);
+                    MapStreamer->GetPan(pan);
+                    bVector2 map_center;
+                    FEngGetCenter(static_cast< FEObject* >(TrackMap), map_center.x, map_center.y);
+                    bVector2 map_br;
+                    FEngGetBottomRight(static_cast< FEObject* >(TrackMap), map_br.x, map_br.y);
+                    for (MapItem* item = TheMapItems.GetHead(); item != TheMapItems.EndOfList();
+                         item = item->GetNext()) {
+                        bVector2 pos(0.0f, 0.0f);
+                        item->GetInitialPos(pos);
+                        bVector2 delta = pos - map_center;
+                        delta *= zoom;
+                        pos = delta + map_center;
+                        bVector2 dpan(pan.x * MapSize.x, pan.y * MapSize.y);
+                        dpan = dpan * zoom;
+                        pos -= dpan;
+                        item->UpdatePos(pos);
+                        float icon_scale =
+                            ((zoom - 1.0f) / (max_zoom - 1.0f)) * 0.5f + 1.0f;
+                        item->UpdateScale(icon_scale);
+                        item->GetCurrentPos(pos);
+                        if (!ClampToMapBounds(pos.x, pos.y)) {
+                            if (!item->IsHidden()) {
+                                item->Show();
+                            }
+                        } else {
+                            item->Hide();
+                        }
+                        item->Draw();
+                    }
+                }
+            } else if (msg == 0xe1fde1d1) {
+                new EWorldMapOff();
+            }
+            return;
+        }
+        if (msg == 0xb5af2461) {
+            FEngSetLastButton(GetPackageName(), 0);
+            goto leave_screen;
+        } else {
+            if (msg < 0xb5af2462) {
+                if (msg != 0xb5971bf1 || bInToggleMode || CurrentView == 3) {
+                    return;
+                }
+                goto view_switch;
+            }
+            if (msg != 0xc519bfc3) {
+                return;
+            }
+            if (!bInToggleMode) {
+                bInToggleMode = true;
+                cFEng::Get()->QueuePackageMessage(0x5c28136d, GetPackageName(), nullptr);
+                FEWidget* w = pCurrentOption;
+                if (w != nullptr) {
+                    w->SetFocus(GetPackageName());
+                }
+                goto refresh_and_end;
+            }
+        }
+        bInToggleMode = false;
+        cFEng::Get()->QueuePackageMessage(0x947e6205, GetPackageName(), nullptr);
+        goto finish_toggle;
+    }
+    return;
+
+view_switch : {
+    const unsigned int _UNSNAP = 0x7efe8ff4;
+    FEngSetScript(Cursor, _UNSNAP, true);
+    SelectedItem = nullptr;
+    ClearItems();
+    AddPlayerCar();
+    if (CurrentView == 0) {
+        CurrentView = 1;
+        SetupEvent();
+        SetInitialOption(0);
+    } else if (CurrentView == 1) {
+        CurrentView = 0;
+        SetupNavigation();
+        SetInitialOption(0);
+    }
+    FEDatabase->GetGameplaySettings()->LastMapView = static_cast< unsigned char >(CurrentView);
+}
+
+finish_toggle : {
+    FEWidget* w = pCurrentOption;
+    if (w != nullptr) {
+        w->UnsetFocus();
     }
 }
 
+refresh_and_end:
+    RefreshHeader();
+    return;
+
+leave_screen:
+    if (!bInToggleMode) {
+        cFEng::Get()->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
+        return;
+    }
+    bInToggleMode = false;
+    cFEng::Get()->QueuePackageMessage(0x947e6205, GetPackageName(), nullptr);
+    goto finish_toggle;
+}
+
 void WorldMap::ScrollZoom(eScrollDir dir) {
+    int zoom = CurrentZoom;
+    if (dir == eSD_PREV) {
+        zoom--;
+        if (zoom < 0) {
+            zoom = WMZ_MAX_ZOOM;
+        }
+    } else if (dir == eSD_NEXT) {
+        zoom++;
+        if (zoom > WMZ_MAX_ZOOM) {
+            zoom = 0;
+        }
+    }
+    if (zoom != CurrentZoom) {
+        CurrentZoom = zoom;
+        RefreshHeader();
+        float factor = GetZoomFactor(static_cast< eWorldMapZoomLevels >(zoom));
+        float factorInv = 1.0f / factor;
+        bVector2 scale(factorInv, factorInv);
+        MapStreamer->ZoomTo(scale);
+        PanToCursor(factor);
+        if (CurrentView <= 1) {
+            FEDatabase->GetGameplaySettings()->LastMapZoom = static_cast< unsigned char >(CurrentZoom);
+        } else if (CurrentView == 3) {
+            FEDatabase->GetGameplaySettings()->LastPursuitMapZoom = static_cast< unsigned char >(CurrentZoom);
+        }
+    }
 }
 
 float WorldMap::GetZoomFactor(eWorldMapZoomLevels level) {
@@ -244,6 +544,19 @@ float WorldMap::GetZoomFactor(eWorldMapZoomLevels level) {
 }
 
 void WorldMap::UpdateIconVisibility(eWorldMapItemType type, bool visible) {
+    MapItem* item = TheMapItems.GetHead();
+    while (item != TheMapItems.EndOfList()) {
+        if (item->TheType == type) {
+            if (visible) {
+                item->bHidden = false;
+                item->Show();
+            } else {
+                item->bHidden = true;
+                item->Hide();
+            }
+        }
+        item = item->GetNext();
+    }
 }
 
 void WorldMap::ClearItems() {
@@ -267,7 +580,57 @@ bool WorldMap::ClampToMapBounds(float& x, float& y) {
 void WorldMap::UpdateAnalogInput() {
 }
 
-void WorldMap::UpdateCursor(bool snap) {
+void WorldMap::UpdateCursor(bool zoom_thing) {
+    UpdateAnalogInput();
+    if (!MapStreamer->IsZooming()) {
+        if (!zoom_thing) {
+            if (CurrentVelocity.x == 0.0f && CurrentVelocity.y == 0.0f) {
+                if (bCursorMoving) {
+                    cFEng::Get()->QueuePackageMessage(0x7e6687da, GetPackageName(), nullptr);
+                    bCursorMoving = false;
+                }
+                if (SnapCursor()) {
+                    RefreshHeader();
+                }
+            } else {
+                if (!bCursorMoving) {
+                    cFEng::Get()->QueuePackageMessage(0x9f710838, GetPackageName(), nullptr);
+                    bCursorMoving = true;
+                }
+                MoveCursor(CurrentVelocity.x, CurrentVelocity.y);
+                if (SelectedItem != nullptr) {
+                    bVector2 cursor;
+                    bVector2 pos;
+                    FEngGetCenter(Cursor, cursor.x, cursor.y);
+                    SelectedItem->GetCurrentPos(pos);
+                    float dist = bDistBetween(cursor, pos);
+                    if (dist >= fSnapDist) {
+                        const unsigned int _UNSNAP = 0x7efe8ff4;
+                        FEngSetScript(Cursor, _UNSNAP, true);
+                        SelectedItem = nullptr;
+                        RefreshHeader();
+                    }
+                }
+            }
+        }
+    } else {
+        float zoom = MapStreamer->GetZoomFactor();
+        bVector2 pan(0.0f, 0.0f);
+        MapStreamer->GetPan(pan);
+        bVector2 map_center;
+        FEngGetCenter(static_cast< FEObject* >(TrackMap), map_center.x, map_center.y);
+        bVector2 map_br;
+        FEngGetTopLeft(static_cast< FEObject* >(TrackMap), MapTopLeft.x, MapTopLeft.y);
+        bVector2 pos(CursorMoveFrom.x, CursorMoveFrom.y);
+        bVector2 delta = pos - map_center;
+        delta *= zoom;
+        pos = delta + map_center;
+        bVector2 dpan(pan.x * MapSize.x, pan.y * MapSize.y);
+        dpan = dpan * zoom;
+        pos -= dpan;
+        ClampToMapBounds(pos.x, pos.y);
+        FEngSetCenter(Cursor, pos.x, pos.y);
+    }
 }
 
 void WorldMap::MoveCursor(float dx, float dy) {
@@ -294,6 +657,43 @@ void WorldMap::AddPlayerCar() {
 }
 
 void WorldMap::AddCops() {
+    int img_num = 0;
+    const IVehicle::List& vehicles = IVehicle::GetList(VEHICLE_AICOPS);
+    for (IVehicle* const* iter = vehicles.begin(); iter != vehicles.end(); iter++) {
+        if (!(*iter)->IsActive()) {
+            continue;
+        }
+        IPursuitAI* ipursuitai;
+        (*iter)->QueryInterface(&ipursuitai);
+        ISimable* isimable = (*iter)->GetSimable();
+        bVector2 target_pos;
+        bVector2 target_dir;
+        GetVehicleVectors(&target_pos, &target_dir, isimable);
+        bVector2 world_pos;
+        world_pos = target_pos;
+        ConvertPos(target_pos);
+        float rot = ConvertRot(target_dir);
+        if (ipursuitai != nullptr && ipursuitai->GetInPursuit()) {
+            const UCrc32& vehicleClass = (*iter)->GetVehicleClass();
+            if (vehicleClass == VehicleClass::CHOPPER) {
+                AddMapItemOption(0xead9bd85, WMIT_COP_HELI);
+                FEObject* icon = FEngFindObject(GetPackageName(), 0xe26be422);
+                FEImage* view = FEngFindImage(GetPackageName(), 0x21390e47);
+                HeliItem* item = new HeliItem(view, icon, target_pos, world_pos, rot);
+                TheMapItems.AddTail(item);
+            } else {
+                FEImage* icon = FEngFindImage(GetPackageName(),
+                                              FEngHashString("MMICON_COPCAR_%d", img_num));
+                CopItem* item = new CopItem(static_cast< FEObject* >(icon), target_pos, world_pos,
+                                            rot, WMIT_COP_CAR);
+                TheMapItems.AddTail(item);
+                img_num++;
+            }
+        }
+    }
+    if (img_num > 0) {
+        AddMapItemOption(0xead6ef6c, WMIT_COP_CAR);
+    }
 }
 
 void WorldMap::AddRoadBlocks() {
