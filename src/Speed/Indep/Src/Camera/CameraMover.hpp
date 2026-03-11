@@ -100,11 +100,7 @@ struct tCubic3D {
 
     void SetVal(const bVector3 *pV);
     void SetdVal(bVector3 *pV);
-    void SetValDesired(const bVector3 *pV) {
-        x.SetValDesired(pV->x);
-        y.SetValDesired(pV->y);
-        z.SetValDesired(pV->z);
-    }
+    void SetValDesired(bVector3 *pV);
 
     void GetVal(bVector3 *pV) {
         pV->x = x.Val;
@@ -367,9 +363,9 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
 
     virtual void SetPovType(int pov_type) {}
 
-    virtual bool RenderCarPOV();
-
     virtual bool OutsidePOV();
+
+    virtual bool RenderCarPOV();
 
     virtual float MinDistToWall();
 
@@ -382,6 +378,7 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
 
     virtual void Enable();
     virtual void Disable();
+    virtual bool IsHoodCamera() { return false; }
 
     virtual bVector3 *GetTarget();
 
@@ -403,11 +400,12 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
     void SetEyeLook(tCubic3D *eye, tCubic3D *look, tCubic1D *fov, bMatrix4 *matrix, bVector3 *target);
 
     unsigned int GetAnchorID();
-    int IsHoodCamera();
 
-  private:
+  protected:
     CameraMoverTypes Type;       // offset 0xC, size 0x4
     int ViewID;                  // offset 0x10, size 0x4
+
+  private:
     int Enabled;                 // offset 0x14, size 0x4
     eView *pView;                // offset 0x18, size 0x4
     Camera *pCamera;             // offset 0x1C, size 0x4
@@ -467,7 +465,7 @@ class CubicCameraMover : public CameraMover {
     virtual unsigned short GetLookbackAngle();
     virtual void ResetState();
 
-    int IsHoodCamera();
+    bool IsHoodCamera() override;
     bool HighliteMode();
     void SetSnapNext();
     void SetForward(POV *pov, bool snap);

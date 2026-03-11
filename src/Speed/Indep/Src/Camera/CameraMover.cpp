@@ -10,6 +10,8 @@ Attrib::Key Attrib::Gen::camerainfo::ClassKey() {
 }
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Gameplay/GManager.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Interfaces/IBody.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
@@ -52,7 +54,9 @@ extern bool TrackCopCameraMover_IdleSim;
 bool OutsidePovType(int pov_type);
 bool RenderCarPovType(int pov_type, bool look_back);
 bool RenderCarPovTypeRaw(int pov_type, int look_back) __asm__("RenderCarPovType__Fib");
-void espSetCameraPositionFix(const struct LongVector *eye, const struct LongVector *target);
+struct LongVector;
+inline void espSetCameraPositionFix(const LongVector *eye, const LongVector *target) {}
+inline void espCentrePlaneView(const bVector3 *pos) {}
 int bFunkDoesServerExist(const char *server_name);
 
 extern bVector4 CameraNoiseHandheldFrequency;
@@ -89,7 +93,7 @@ struct LongVector {
     int z;
 };
 
-static void MakeLongVector(LongVector *dest, const bVector3 *src, float scale) {
+static inline void MakeLongVector(LongVector *dest, const bVector3 *src, float scale) {
     dest->x = static_cast<int>(src->x * scale);
     dest->y = static_cast<int>(src->y * scale);
     dest->z = static_cast<int>(src->z * scale);
@@ -221,15 +225,17 @@ CameraAnchor::~CameraAnchor() {}
 
 void CameraAnchor::SetModel(int model) {
     if (mModel != model) {
-        const char *model_name = "";
         CarTypeInfo *info = GetCarTypeInfoFromHash(model);
+        const char *name;
 
         if (info != nullptr) {
-            model_name = info->CarTypeName;
+            name = info->CarTypeName;
+        } else {
+            name = "";
         }
 
         mModel = model;
-        mModelAttributes.Change(Attrib::FindCollectionWithDefault(Attrib::Gen::ecar::ClassKey(), Attrib::StringToLowerCaseKey(model_name)));
+        mModelAttributes.ChangeWithDefault(Attrib::StringToLowerCaseKey(name));
     }
 }
 
@@ -379,15 +385,12 @@ Camera *GetCurrentCamera() {
 }
 
 void UpdateCameraMovers(float dT) {
-    static bool sHavePrevPosition = false;
-    static bVector3 sPrevPosition;
-
     for (int view_id = 0; view_id < 22; view_id++) {
         eView *view = eGetView(view_id, false);
-        CameraMover *camera_mover = view->GetCameraMover();
+        CameraMover *m = view->GetCameraMover();
 
-        if (camera_mover != nullptr) {
-            camera_mover->Update(dT);
+        if (m != nullptr) {
+            m->Update(dT);
         }
     }
 
@@ -409,65 +412,77 @@ void UpdateCameraMovers(float dT) {
 
         if (TrackStreamerRemoteCaffeinating != 0 && DisableCommunication == 0 && camera != nullptr) {
             if (bAbs(RealTime - LastUpdateTimeCaffeine) > 0x10) {
-                LongVector eye;
-                LongVector target;
-                bVector3 scaled_velocity = *camera->GetVelocityPosition();
-                bVector3 look = *camera->GetPosition() - scaled_velocity;
+                bVector3 eye;
+                bVector3 look;
+                LongVector fix_eye;
+                LongVector fix_look;
+
+                look = *camera->GetDirection() * 0.01f;
+                eye = *camera->GetPosition() - look;
 
                 LastUpdateTimeCaffeine = RealTime;
-                scaled_velocity.x *= 0.01f;
-                scaled_velocity.y *= 0.01f;
-                scaled_velocity.z *= 0.01f;
 
-                MakeLongVector(&eye, camera->GetPosition(), 100.0f);
-                MakeLongVector(&target, &look, 100.0f);
-                espSetCameraPositionFix(&eye, &target);
+                MakeLongVector(&fix_eye, &eye, 100.0f);
+                MakeLongVector(&fix_look, camera->GetPosition(), 100.0f);
+                espSetCameraPositionFix(&fix_eye, &fix_look);
 
-                if (!sHavePrevPosition) {
-                    sPrevPosition = *camera->GetPosition();
-                    sHavePrevPosition = true;
+                static bVector3 prev_position(0.0f, 0.0f, 0.0f);
+
+                if (bDistBetween(&prev_position, camera->GetPosition()) > 0.01f) {
+                    prev_position = *camera->GetPosition();
                 }
 
-                if (bDistBetween(&sPrevPosition, camera->GetPosition()) > 0.1f) {
-                    sPrevPosition = *camera->GetPosition();
-                }
+                bLength(reinterpret_cast<const bVector2 *>(camera->GetPosition()));
+                espCentrePlaneView(camera->GetPosition());
             }
         }
     }
 
-    {
+    if ((!GManager::Exists() || !GManager::Get().GetIsWarping()) &&
+        (!GRaceStatus::Exists() || !GRaceStatus::Get().GetIsScriptWaitingForLoading())) {
         bool set_any_positions = false;
 
         for (int view_id = 1; view_id < 3; view_id++) {
             eView *view = eGetView(view_id, false);
 
             if (view->Active != 0) {
-                Camera *camera = view->GetCamera();
                 CameraMover *camera_mover = view->GetCameraMover();
 
-                if (camera != nullptr && camera_mover != nullptr) {
-                    bVector3 pos = *camera->GetPosition();
-
+                if (camera_mover != nullptr) {
                     if (!set_any_positions) {
                         TheTrackStreamer.ClearStreamingPositions();
                         set_any_positions = true;
                     }
 
+                    bVector3 pos;
+                    bVector3 vel;
+                    bVector3 dir;
+
+                    pos = *view->GetCamera()->GetPosition();
+                    vel = *view->GetCamera()->GetVelocityPosition();
+                    dir = *view->GetCamera()->GetDirection();
+
                     if (bStreamingPositionFromICE != 0) {
-                        if (INIS::Exists() && INIS::Get()->GetStartLocation() != nullptr) {
-                            bConvertFromBond(pos, *reinterpret_cast<const bVector3 *>(INIS::Get()->GetStartLocation()));
+                        INIS *nis = INIS::Get();
+                        if (nis != nullptr) {
+                            bConvertFromBond(pos, reinterpret_cast<const bVector3 &>(*nis->GetStartLocation()));
                         }
-                    } else {
-                        IPlayer *player = IPlayer::First(PLAYER_LOCAL);
 
-                        if (player != nullptr && player->GetSimable() != nullptr && player->GetSimable()->GetRigidBody() != nullptr) {
-                            IRigidBody *body = player->GetSimable()->GetRigidBody();
-
-                            bConvertFromBond(pos, reinterpret_cast<const bVector3 &>(body->GetPosition()));
-                        }
+                        dir.z = vel.z;
+                        vel.x = 0.0f;
+                        vel.y = 0.0f;
+                        dir.x = 0.0f;
+                        dir.y = 0.0f;
                     }
 
-                    TheTrackStreamer.SetStreamingPosition(view_id - 1, &pos);
+                    bool following_car = false;
+                    CameraMover *mover = view->GetCameraMover();
+                    if (mover->GetType() == CM_DRIVE_CUBIC) {
+                        following_car = true;
+                    }
+
+                    TheTrackStreamer.PredictStreamingPosition(
+                        view_id == 2, &pos, &vel, &dir, following_car);
                 }
             }
         }
@@ -575,22 +590,11 @@ bool CameraMover::IsSomethingInBetween(const UMath::Vector4 &start, const UMath:
 }
 
 bool CameraMover::IsSomethingInBetween(const bVector3 *start, const bVector3 *end) {
-    bVector3 bond_start;
-    bVector3 bond_end;
-    UMath::Vector4 world_start;
-    UMath::Vector4 world_end;
-
-    bConvertToBond(bond_start, *start);
-    bConvertToBond(bond_end, *end);
-    world_start.x = bond_start.x;
-    world_start.y = bond_start.y;
-    world_start.z = bond_start.z;
-    world_start.w = 1.0f;
-    world_end.x = bond_end.x;
-    world_end.y = bond_end.y;
-    world_end.z = bond_end.z;
-    world_end.w = 1.0f;
-    return IsSomethingInBetween(world_start, world_end);
+    UMath::Vector4 p0;
+    UMath::Vector4 p1;
+    eUnSwizzleWorldVector(*start, reinterpret_cast<bVector3 &>(p0));
+    eUnSwizzleWorldVector(*end, reinterpret_cast<bVector3 &>(p1));
+    return IsSomethingInBetween(p0, p1);
 }
 
 float CameraMover::MinDistToWall() {
@@ -685,10 +689,6 @@ unsigned int CameraMover::GetAnchorID() {
         return anchor->GetWorldID();
     }
     return 0;
-}
-
-int CameraMover::IsHoodCamera() {
-    return false;
 }
 
 bVector3 *CameraMover::GetTarget() {
@@ -836,20 +836,68 @@ void CameraMover::IsoProjectionMatrix(bMatrix4 *pMatrix, bVector3 *pEye, bVector
     eCreateLookAtMatrix(pMatrix, *pEye, vNewLookWorldSpace, vUp);
 }
 
-double CameraMover::AdjustHeightAroundCar(const bVector3 *car_pos, bVector3 *pEye, bVector3 *pForward) {
-    double adjust = 0.0;
-    float min_height = car_pos->z + 1.0f;
+double CameraMover::AdjustHeightAroundCar(const bVector3 *position, bVector3 *pCarPos, bVector3 *pForward) {
+    _STL::list<IBody *, UTL::Std::Allocator<IBody *, _type_CameraAIAvoidables> >::const_iterator iter;
 
-    if (pEye->z < min_height) {
-        adjust = min_height - pEye->z;
-        pEye->z = min_height;
+    for (iter = TheAvoidables->begin(); iter != TheAvoidables->end(); ++iter) {
+        IBody *car = *iter;
+        UMath::Matrix4 umatrix;
+        bMatrix4 matrix;
+
+        car->GetTransform(umatrix);
+        eSwizzleWorldMatrix(reinterpret_cast<const bMatrix4 &>(umatrix), matrix);
+
+        const bVector3 *car_position = reinterpret_cast<const bVector3 *>(&matrix.v3);
+        UMath::Vector3 dim;
+        bVector3 box;
+        bVector2 eye_to_car = *reinterpret_cast<bVector2 *>(const_cast<bVector3 *>(car_position)) - *reinterpret_cast<const bVector2 *>(position);
+        float gap_squared = bDot(&eye_to_car, &eye_to_car);
+        float gap_height = bAbs(car_position->z - position->z);
+
+        car->GetDimension(dim);
+        bFill(&box, dim.z + 0.85f, dim.x + 0.85f, dim.y + 0.85f);
+
+        float min_gap = bLength(reinterpret_cast<const bVector2 *>(&box));
+        float min_gap_squared = min_gap * min_gap;
+
+        if (gap_squared < min_gap_squared && gap_height < box.z + box.z) {
+            bVector3 vCameraCarSpace;
+            bVector3 car_velocity;
+            bMatrix4 mWorldToCar;
+
+            eInvertTransformationMatrix(&mWorldToCar, &matrix);
+            eMulVector(&vCameraCarSpace, &mWorldToCar, position);
+
+            float cam_x4 = vCameraCarSpace.x * vCameraCarSpace.x;
+            float cam_y4 = vCameraCarSpace.y * vCameraCarSpace.y;
+            float box_x4 = box.x * box.x;
+            float box_y4 = box.y * box.y;
+            cam_x4 *= cam_x4;
+            cam_y4 *= cam_y4;
+            box_x4 *= box_x4;
+            box_y4 *= box_y4;
+            float m = cam_x4 / box_x4 + cam_y4 / box_y4;
+
+            if (m < 1.0f) {
+                float remaining = 1.0f - m;
+                float sqrt_remaining = bSqrt(remaining);
+                float sqrt_sqrt = bSqrt(sqrt_remaining);
+                float new_z = sqrt_sqrt * box.z;
+
+                if (new_z > vCameraCarSpace.z) {
+                    vCameraCarSpace.z = new_z;
+                    bVector3 vNewCam;
+                    eMulVector(&vNewCam, &matrix, &vCameraCarSpace);
+                    float zdiff = vNewCam.z - position->z;
+                    if (zdiff > min_gap) {
+                        zdiff = 0.0f;
+                    }
+                    return zdiff;
+                }
+            }
+        }
     }
-
-    if (pForward != nullptr && pForward->z < 0.5f) {
-        pForward->z = 0.5f;
-    }
-
-    return adjust;
+    return 0.0f;
 }
 
 bVector3 *CameraMover::DutchAroundCar(bVector3 *pCarPos, bVector3 *pCarVelocity) {
@@ -913,36 +961,53 @@ bVector3 *CameraMover::DutchAroundCar(bVector3 *pCarPos, bVector3 *pCarVelocity)
 }
 
 int CameraMover::MinGapCars(bMatrix4 *pMatrix, bVector3 *pLook, bVector3 *pForward) {
-    bMatrix4 inv_matrix;
-    bVector3 projection;
-    int adjusted = 0;
-    int iterations = 0;
-    double height_adjust;
+    bMatrix4 mCameraToWorld;
 
-    eInvertTransformationMatrix(&inv_matrix, pMatrix);
-    do {
-        height_adjust = AdjustHeightAroundCar(reinterpret_cast<const bVector3 *>(&pMatrix->v3), pLook, pForward);
-        if (height_adjust <= 0.0) {
-            break;
-        }
+    eInvertTransformationMatrix(&mCameraToWorld, pMatrix);
+    bool ret = false;
+    bVector3 *pCameraPos = reinterpret_cast<bVector3 *>(&mCameraToWorld.v3);
+    float old_z = pCameraPos->z;
+    int i = 0;
+    bVector3 vCarCameraSpace;
+    double adjust;
 
-        adjusted = 1;
-        iterations++;
-        pLook->z += static_cast<float>(height_adjust);
-    } while (iterations < 16);
-
-    vSavedForward = *pForward;
-    fSavedAdjust = pLook->z;
-    eMulVector(&projection, pMatrix, pForward);
-
-    if (projection.z > 0.0f) {
-        bVector2 iso(projection.x / projection.z, projection.y / projection.z);
-        IsoProjectionMatrix(pMatrix, pLook, pForward, &iso);
-    } else {
-        adjusted = 0;
+    for (;;) {
+        adjust = AdjustHeightAroundCar(pCameraPos, pLook, pForward);
+        if (i > 15) break;
+        if (adjust <= 0.0f) break;
+        ret = true;
+        i++;
+        pCameraPos->z += adjust;
+        AdjustHeightAroundCar(pCameraPos, pLook, pForward);
     }
 
-    return adjusted;
+    {
+        float fwd_dot = bDot(&vSavedForward, reinterpret_cast<const bVector3 *>(pMatrix));
+        bCopy(&vSavedForward, reinterpret_cast<const bVector3 *>(pMatrix));
+
+        float total_adjust = pCameraPos->z - old_z;
+        float speed2D = bLength(reinterpret_cast<const bVector2 *>(pForward));
+
+        if (speed2D < 1.0f && fwd_dot > 0.9f && total_adjust < fSavedAdjust) {
+            total_adjust = fSavedAdjust;
+        }
+
+        fSavedAdjust = total_adjust;
+        float avg = (fAccumulatedAdjust + total_adjust) * 0.5f;
+        fAccumulatedAdjust += total_adjust - avg;
+        pCameraPos->z = old_z + avg;
+    }
+
+    eMulVector(&vCarCameraSpace, pMatrix, pLook);
+
+    if (vCarCameraSpace.z > 0.0f) {
+        bVector2 vProjection(vCarCameraSpace.x / vCarCameraSpace.z, vCarCameraSpace.y / vCarCameraSpace.z);
+        IsoProjectionMatrix(pMatrix, pCameraPos, pLook, &vProjection);
+    } else {
+        ret = false;
+    }
+
+    return ret;
 }
 
 int CameraMover::MinGapTopology(bMatrix4 *pMatrix, bVector3 *pLook) {
@@ -1082,8 +1147,8 @@ unsigned short CubicCameraMover::GetLookbackAngle() {
     return 0x8000;
 }
 
-int CubicCameraMover::IsHoodCamera() {
-    int is_hood_camera = 0;
+bool CubicCameraMover::IsHoodCamera() {
+    bool is_hood_camera = false;
 
     if (nPovTypeUsed == 1) {
         is_hood_camera = !bLookBack;
@@ -1091,46 +1156,51 @@ int CubicCameraMover::IsHoodCamera() {
     return is_hood_camera;
 }
 
-void CubicCameraMover::SetForward(POV *pov, bool snap) {
-    if (pCar == nullptr) {
-        return;
-    }
-
-    if (pov == nullptr || !OutsidePovType(pov->Type)) {
-        pForward->SetValDesired(reinterpret_cast<const bVector3 *>(&pCar->GetMatrix()->v0));
-    } else {
-        bVector3 forward = *pCar->GetVelocity();
-        const bVector3 *car_forward = reinterpret_cast<const bVector3 *>(&pCar->GetMatrix()->v0);
-        float drift_speed = gDriftSpeed.GetValue(pCar->GetVelMag());
-
-        if (bDot(&forward, car_forward) < 0.0f) {
-            bScaleAdd(&forward, &forward, car_forward, bDot(&forward, car_forward) * 0.25f);
+void CubicCameraMover::SetForward(POV *pov, bool bSnap) {
+    if (pov != nullptr && OutsidePovType(pov->Type)) {
+        if (!bSnap && HighliteMode()) {
+            return;
         }
 
-        bNormalize(&forward, &forward);
-        forward.x *= drift_speed;
-        forward.y *= drift_speed;
-        forward.z *= drift_speed;
-        bScaleAdd(&forward, &forward, car_forward, 1.0f - drift_speed);
-        pForward->SetValDesired(&forward);
+        bVector3 v(*pCar->GetVelocity());
+        const bVector3 *pFwd = pCar->GetForwardVector();
+        float fDot = bDot(&v, pFwd);
+
+        if (fDot < 0.0f) {
+            bScaleAdd(&v, &v, pFwd, fDot * -2.0f);
+        }
+
+        float fDrift = gDriftSpeed.GetValue(pCar->GetVelocityMagnitude());
+        bNormalize(&v, &v);
+        bScale(&v, &v, fDrift);
+        bScaleAdd(&v, &v, pFwd, 1.0f - fDrift);
+
+        float fSeconds = (WorldTimer - tLastGrounded).GetSeconds();
+        float z = bClamp(1.0f - fSeconds * 0.5f, 0.0f, 1.0f);
+        v.z *= z;
+        v.z *= 1.0f - pCar->GetForwardVector()->z * pCar->GetForwardVector()->z;
+
+        pForward->SetValDesired(&v);
+
+        if (!bSnap) {
+            return;
+        }
+    } else {
+        if (pCar == nullptr) {
+            return;
+        }
+        pForward->SetValDesired(pCar->GetForwardVector());
     }
 
-    if (snap) {
-        pForward->Snap();
-    }
+    pForward->Snap();
 }
 
 void CubicCameraMover::CameraAccelCurve(bVector3 *pAccel) {
-    if (pCar == nullptr) {
-        pAccel->x = 0.0f;
-        pAccel->y = 0.0f;
-        pAccel->z = 0.0f;
-        return;
-    }
-
-    pAccel->x = SampleFloatTable(CameraAccelerationCurve, 5, pCar->GetAccel()->x, -2.0f, 2.0f) * 4.0f;
-    pAccel->y = SampleFloatTable(CameraAccelerationCurve, 5, pCar->GetAccel()->y, -2.0f, 2.0f) * 4.0f;
-    pAccel->z = SampleFloatTable(CameraAccelerationCurve, 5, pCar->GetAccel()->z, -2.0f, 2.0f) * 4.0f;
+    tTable<float> accel_table(CameraAccelerationCurve, 5, -30.0f, 30.0f);
+    accel_table.GetValue(&pAccel->x, pCar->GetAcceleration()->x);
+    accel_table.GetValue(&pAccel->y, pCar->GetAcceleration()->y);
+    accel_table.GetValue(&pAccel->z, pCar->GetAcceleration()->z);
+    bScale(pAccel, pAccel, 30.0f);
 }
 
 void CubicCameraMover::CameraSpeedHug(bVector3 *pForward) {
@@ -1147,10 +1217,18 @@ void CubicCameraMover::CameraSpeedHug(bVector3 *pForward) {
 }
 
 void CubicCameraMover::MakeSpace(bMatrix4 *pMatrix) {
-    if (!RenderCarPOV()) {
-        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(pCar->GetMatrix()), *reinterpret_cast<Mtx44 *>(pMatrix));
+    if (OutsidePOV()) {
+        bIdentity(pMatrix);
 
-        if (pCar->GetMatrix()->v0.z < 0.5f) {
+        bVector3 vForward(pForward->x.Val, pForward->y.Val, pForward->z.Val);
+        bNormalize(reinterpret_cast<bVector3 *>(&pMatrix->v0), &vForward);
+        bCross(reinterpret_cast<bVector3 *>(&pMatrix->v1), reinterpret_cast<const bVector3 *>(&pMatrix->v2), reinterpret_cast<const bVector3 *>(&pMatrix->v0));
+        bCross(reinterpret_cast<bVector3 *>(&pMatrix->v2), reinterpret_cast<const bVector3 *>(&pMatrix->v0), reinterpret_cast<const bVector3 *>(&pMatrix->v1));
+        bCopy(&pMatrix->v3, pCar->GetGeometryPosition(), 1.0f);
+    } else {
+        bCopy(pMatrix, pCar->GetGeometryOrientation(), pCar->GetGeometryPosition());
+
+        if (pCar->GetGeometryOrientation()->v2.z < 0.5f) {
             pMatrix->v1.x = -pMatrix->v1.x;
             pMatrix->v1.y = -pMatrix->v1.y;
             pMatrix->v1.z = -pMatrix->v1.z;
@@ -1160,30 +1238,6 @@ void CubicCameraMover::MakeSpace(bMatrix4 *pMatrix) {
             pMatrix->v2.z = -pMatrix->v2.z;
             pMatrix->v2.w = -pMatrix->v2.w;
         }
-    } else {
-        bIdentity(pMatrix);
-
-        {
-            bVector3 forward;
-            bVector3 right;
-            bVector3 up;
-
-            pForward->GetVal(&forward);
-            bNormalize(reinterpret_cast<bVector3 *>(&pMatrix->v0), &forward);
-            right = bCross(*reinterpret_cast<const bVector3 *>(&pMatrix->v2), *reinterpret_cast<const bVector3 *>(&pMatrix->v0));
-            up = bCross(*reinterpret_cast<const bVector3 *>(&pMatrix->v0), right);
-            pMatrix->v1.x = right.x;
-            pMatrix->v1.y = right.y;
-            pMatrix->v1.z = right.z;
-            pMatrix->v2.x = up.x;
-            pMatrix->v2.y = up.y;
-            pMatrix->v2.z = up.z;
-        }
-
-        pMatrix->v3.x = pCar->GetGeomPos()->x;
-        pMatrix->v3.y = pCar->GetGeomPos()->y;
-        pMatrix->v3.z = pCar->GetGeomPos()->z;
-        pMatrix->v3.w = 1.0f;
     }
 }
 
@@ -1198,9 +1252,11 @@ CubicCameraMover::~CubicCameraMover() {
 
 void CubicCameraMover::SetPovType(int pov_type) {
     if (pov_type != nPovTypeUsed) {
-        bool reset = !OutsidePovType(nPovTypeUsed) || !OutsidePovType(pov_type);
+        bool old_outside = OutsidePovType(nPovTypeUsed);
+        bool new_outside = OutsidePovType(pov_type);
+        bool reset = !new_outside || !old_outside;
 
-        bSnapNext = bSnapNext || reset;
+        bSnapNext = !!(bSnapNext | reset);
         nPovType = pov_type;
     }
 }
@@ -1212,10 +1268,10 @@ void CubicCameraMover::ResetState() {
     ResetCubic3DState(pLook);
     ResetCubic3DState(pForward);
     GetCamera()->ClearVelocity();
-    vCameraImpcat.x = 0.0f;
     vCameraImpcat.y = 0.0f;
-    vCameraImpcatTimer.x = 0.0f;
+    vCameraImpcat.x = 0.0f;
     vCameraImpcatTimer.y = 0.0f;
+    vCameraImpcatTimer.x = 0.0f;
 }
 
 Bezier::Bezier()
@@ -1266,33 +1322,32 @@ RearViewMirrorCameraMover::RearViewMirrorCameraMover(int view_id, CameraAnchor *
 RearViewMirrorCameraMover::~RearViewMirrorCameraMover() {}
 
 void RearViewMirrorCameraMover::Update(float dT) {
-    if (*reinterpret_cast<int *>(reinterpret_cast<char *>(FEDatabase) + 0x5c) != 0) {
-        bMatrix4 identity;
-        bMatrix4 car_matrix;
-        bMatrix4 mirror_matrix;
-        bMatrix4 camera_matrix;
-        bVector3 eye;
+    if (FEDatabase->GetGameplaySettings()->RearviewOn) {
+        bMatrix4 m;
+        bMatrix4 tbod;
+        bMatrix4 CarRotMat;
+        bMatrix4 rvm_matrix;
 
-        bIdentity(&identity);
-        eye.x = -pCar->GetGeomPos()->x;
-        eye.y = -pCar->GetGeomPos()->y;
-        eye.z = -pCar->GetGeomPos()->z;
-        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(pCar->GetMatrix()), *reinterpret_cast<Mtx44 *>(&car_matrix));
-        bTransposeMatrix(&mirror_matrix, &car_matrix);
-        eRotateX(&mirror_matrix, &mirror_matrix, 0x4000);
-        eRotateY(&mirror_matrix, &mirror_matrix, 0x4000);
-        eRotateZ(&mirror_matrix, &mirror_matrix, 0);
-        eMulMatrix(&camera_matrix, &identity, &mirror_matrix);
-        camera_matrix.v3.x += RVMOffsetInCar.x;
-        camera_matrix.v3.y += RVMOffsetInCar.y;
-        camera_matrix.v3.z += RVMOffsetInCar.z;
+        eIdentity(&m);
+        m.v3.x = -pCar->GetGeometryPosition()->x;
+        m.v3.y = -pCar->GetGeometryPosition()->y;
+        m.v3.z = -pCar->GetGeometryPosition()->z;
+        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(pCar->GetGeometryOrientation()), *reinterpret_cast<Mtx44 *>(&CarRotMat));
+        eTransposeMatrix(&tbod, &CarRotMat);
+        eRotateX(&tbod, &tbod, 0x4000);
+        eRotateY(&tbod, &tbod, 0x4000);
+        eRotateZ(&tbod, &tbod, 0);
+        eMulMatrix(&rvm_matrix, &m, &tbod);
+        rvm_matrix.v3.x += RVMOffsetInCar.x;
+        rvm_matrix.v3.y += RVMOffsetInCar.y;
+        rvm_matrix.v3.z += RVMOffsetInCar.z;
         if (Camera::StopUpdating == 0) {
             GetCamera()->SetFieldOfView(20000);
         }
         GetCamera()->SetNearZ(RVMnearz);
         GetCamera()->SetFarZ(RVMfarz);
-        ApplyCameraShake(0, &camera_matrix);
-        GetCamera()->SetCameraMatrix(camera_matrix, dT);
+        ApplyCameraShake(ViewID, &rvm_matrix);
+        GetCamera()->SetCameraMatrix(rvm_matrix, dT);
     }
 }
 
