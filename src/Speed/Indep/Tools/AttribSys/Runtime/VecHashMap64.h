@@ -238,10 +238,7 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, unsigned int
             Policy::KeyIndex(mTable[worstIndex].Key(), mTableSize, 0);
         }
 
-        if (mTable[freeIndex].IsValid()) {
-        }
-
-        if (freeIndex != worstIndex) {
+        if (freeIndex != worstIndex && mTable[freeIndex].IsValid()) {
             mTable[freeIndex].Move(mTable[worstIndex]);
         }
         if (mTable[worstIndex].IsValid()) {
