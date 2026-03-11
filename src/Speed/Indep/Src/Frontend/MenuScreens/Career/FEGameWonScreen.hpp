@@ -14,6 +14,8 @@ struct FEGameWonScreen : public MenuScreen {
     FEGameWonScreen(ScreenConstructorData* sd);
     ~FEGameWonScreen() override;
     static MenuScreen* Create(ScreenConstructorData* sd);
+    void Initialize();
+    void Setup();
     void NotificationMessage(unsigned long, FEObject*, unsigned long, unsigned long) override;
 };
 
