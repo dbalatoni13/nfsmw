@@ -26,7 +26,7 @@ protected:
 
 public:
     FEWidget(FEObject* backing, bool enabled, bool hidden);
-    virtual ~FEWidget();
+    virtual ~FEWidget() {}
     virtual void Act(const char* parent_pkg, unsigned int data);
     virtual void CheckMouse(const char* parent_pkg, const float mouse_x, const float mouse_y);
     virtual void Draw();
