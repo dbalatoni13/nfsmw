@@ -19,9 +19,9 @@ extern bool bMirrorICEData;
 extern ICE::Vector3 vIceAccelLagScale;
 extern ICE::Vector3 vIceAccelLagMin;
 extern ICE::Vector3 vIceAccelLagMax;
-void bQuaternionToMatrix(bMatrix4 *matrix, const bQuaternion *quaternion);
 
 bVector3 *bCross(bVector3 *dest, const bVector3 *v1, const bVector3 *v2);
+void bQuaternionToMatrix(bMatrix4 *matrix, const bQuaternion *quaternion);
 
 unsigned short ConvertLensLengthToFovAngle(float f_lens_mm) {
     return (bATan(f_lens_mm, 15.96f) & 0x7FFF) << 1;

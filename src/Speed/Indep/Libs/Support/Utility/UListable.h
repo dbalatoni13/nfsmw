@@ -21,7 +21,7 @@ template <typename T, int U> class Listable {
     typedef value_type *pointer;
     typedef value_type const *const_pointer;
 
-    class List : public FixedVector<pointer, U> {
+    class List : public _Storage<pointer, U> {
       public:
         typedef T value_type;
         typedef value_type *pointer;
