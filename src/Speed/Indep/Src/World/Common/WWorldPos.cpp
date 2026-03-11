@@ -21,7 +21,9 @@ bool WWorldPos::FindClosestFaceInternal(const WCollisionInstanceCacheList *instL
 
     bool faceChanged = false;
     if (fFaceValid) {
-        faceChanged = WWorldMath::InTri(pt, reinterpret_cast<const UMath::Vector4 *>(&fFace));
+        if (WWorldMath::InTri(pt, reinterpret_cast<const UMath::Vector4 *>(&fFace))) {
+            faceChanged = true;
+        }
     }
 
     if (faceChanged && quitIfOnSameFace) {
@@ -162,11 +164,12 @@ bool WWorldPos::FindClosestFace(const WCollisionInstanceCacheList &instList, con
             WCollisionTri face;
             float dist;
             WCollisionMgr collMgr(0, 3);
-            if (collMgr.FindFaceInCInst(mat, endPt, **iIter, face, dist)) {
+            const WCollisionInstance &cInst = **iIter;
+            if (collMgr.FindFaceInCInst(mat, endPt, cInst, face, dist)) {
                 if (dist < bestDist) {
                     fFaceValid = 1;
                     fFace = face;
-                    FindSurface(*(*iIter)->fCollisionArticle);
+                    FindSurface(*cInst.fCollisionArticle);
                     bestDist = dist;
                 }
             }
