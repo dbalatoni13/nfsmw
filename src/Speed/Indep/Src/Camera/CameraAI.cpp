@@ -175,12 +175,10 @@ void CameraAI::Director::SelectAction() {
                             anchor->IsCloseToRoadBlock()) {
                             mDesiredMode = Attrib::StringKey("JUMP");
                             mJumpTime = kJumpDuration;
-                            UMath::Vector4 position = UMath::Vector4::kZero;
-                            UMath::Vector4 vector = UMath::Vector4::kZero;
-                            UMath::Vector4 velocity = UMath::Vector4::kZero;
-                            MGamePlayMoment msg(position, vector, velocity, 0,
-                                                Attrib::StringHash32("jump"));
-                            msg.Deliver();
+                            {
+                                MGamePlayMoment msg(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, 0x2d8acb81);
+                                msg.Deliver();
+                            }
                         }
                     }
                 }
@@ -321,11 +319,11 @@ void CameraAI::Update(float dT) {
         EVIEW_ID viewID = static_cast<EVIEW_ID>(++player);
         IPlayer *iplayer = FindPlayer(viewID);
         Director *cd = FindDirector(viewID);
-        if (cd != nullptr) {
-            if (iplayer == nullptr) {
-                delete cd;
-            }
-        } else if (iplayer != nullptr) {
+        if (cd != nullptr && iplayer == nullptr) {
+            delete cd;
+            continue;
+        }
+        if (iplayer != nullptr && cd == nullptr) {
             cd = new (static_cast<const char *>(0)) Director(viewID);
         }
     } while (player <= static_cast<unsigned int>(PLAYER_LOCAL));
