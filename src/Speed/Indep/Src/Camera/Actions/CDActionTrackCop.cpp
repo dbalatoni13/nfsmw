@@ -1,9 +1,11 @@
 #include "Speed/Indep/Src/Camera/Actions/CDActionTrackCop.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Interfaces/IBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Libs/Support/Utility/UVector.h"
 
@@ -144,7 +146,37 @@ void CDActionTrackCop::OnCarDetached() {
 }
 
 void CDActionTrackCop::AquireCar() {
-    // TODO
+    if (mPlayer == nullptr) {
+        return;
+    }
+    ISimable *isimable = mPlayer->GetSimable();
+    if (!ComparePtr(isimable, mVehicle)) {
+        if (mVehicle != nullptr) {
+            Detach(mVehicle);
+            mVehicle = nullptr;
+        }
+    }
+    if (mVehicle != nullptr) {
+        return;
+    }
+    isimable = mPlayer->GetSimable();
+    if (isimable != nullptr) {
+        mTarget.Set(isimable->GetWorldID());
+        if (mTarget.IsValid()) {
+            isimable->QueryInterface(&mVehicle);
+            if (mVehicle != nullptr) {
+                Attach(mVehicle);
+                const char *model_str = mVehicle->GetVehicleAttributes().MODEL().GetString();
+                mAnchor->SetModel(bStringHash(model_str));
+                mAnchor->SetWorldID(mTarget.GetWorldID());
+                ITransmission *itrans = nullptr;
+                mVehicle->QueryInterface(&itrans);
+                if (itrans != nullptr) {
+                    mAnchor->SetTopSpeed(itrans->GetMaxSpeedometer());
+                }
+            }
+        }
+    }
 }
 
 void CDActionTrackCop::Update(float dT) {

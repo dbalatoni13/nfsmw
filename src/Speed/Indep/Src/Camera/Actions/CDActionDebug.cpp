@@ -1,5 +1,9 @@
 #include "Speed/Indep/Src/Camera/Actions/CDActionDebug.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
+#include "Speed/Indep/Src/Camera/Camera.hpp"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+
+extern bool Tweak_EnableICEAuthoring;
 
 static UTL::COM::Factory<CameraAI::Director *, CameraAI::Action, UCrc32>::Prototype _CDActionDebug("DEBUG", CDActionDebug::Construct);
 
@@ -46,14 +50,24 @@ CDActionDebug::CDActionDebug(CameraAI::Director *director)
 }
 
 CDActionDebug::~CDActionDebug() {
-    // TODO
+    delete mMover;
 }
 
 void CDActionDebug::Update(float dT) {
-    // TODO
+    while (!mActionQ.IsEmpty()) {
+        ActionRef aRef = mActionQ.GetAction();
+        float data = aRef.Data();
+        if (aRef.ID() == 0x15 && !Tweak_EnableICEAuthoring) {
+            mDone = true;
+        }
+        mActionQ.PopAction();
+    }
 }
 
 bool CDActionDebug::GetTrafficBasis(UMath::Matrix4 &matrix, UMath::Vector3 &velocity) {
-    // TODO
-    return false;
+    bMatrix4 camera_to_world;
+    eInvertTransformationMatrix(&camera_to_world, mMover->GetCamera()->GetCameraMatrix());
+    ConversionUtil::RightToLeftMatrix4(camera_to_world, matrix);
+    ConversionUtil::RightToLeftVector3(*mMover->GetCamera()->GetVelocityPosition(), velocity);
+    return true;
 }

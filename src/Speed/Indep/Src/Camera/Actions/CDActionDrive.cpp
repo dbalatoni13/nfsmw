@@ -3,9 +3,12 @@
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Generated/Messages/MJumpCut.h"
+#include "Speed/Indep/Src/Interfaces/IBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
 #include "Speed/Indep/Libs/Support/Utility/UVector.h"
 
 extern bool gCinematicMomementCamera;
@@ -183,19 +186,93 @@ void CDActionDrive::Reset() {
 }
 
 void CDActionDrive::OnDetached(IAttachable *pOther) {
-    // TODO
+    if (ComparePtr(pOther, mPlayer)) {
+        mPlayer = nullptr;
+    }
+    if (ComparePtr(pOther, mVehicle)) {
+        OnCarDetached();
+    }
 }
 
 void CDActionDrive::OnCarDetached() {
-    // TODO
+    Sim::Collision::RemoveListener(static_cast<Sim::Collision::IListener *>(this), mVehicle);
+    if (mTarget.IsValid()) {
+        mTarget.Set(0);
+    }
+    if (mAnchor != nullptr) {
+        mAnchor->SetWorldID(0);
+    }
+    mVehicle = nullptr;
 }
 
 void CDActionDrive::OnCollision(const Sim::Collision::Info &cinfo) {
-    // TODO
+    float speed = UMath::Length(cinfo.closingVel);
+    switch (cinfo.type) {
+    case Sim::Collision::Info::OBJECT: {
+        if (speed > 20.0f) {
+            float objecttime = UMath::Min((speed - 20.0f) * 0.01f, 1.0f);
+            objecttime = UMath::Max(objecttime * mMaxCollisionTime, mObjectCollisionTime);
+            mObjectCollisionTime = objecttime;
+        }
+        break;
+    }
+    case Sim::Collision::Info::WORLD: {
+        if (speed > 5.0f) {
+            float damptime = UMath::Min((speed - 5.0f) * 0.025f, 1.0f);
+            damptime = UMath::Max(damptime * mMaxCollisionTime, mDampCollisionTime);
+            mDampCollisionTime = damptime;
+        }
+        break;
+    }
+    case Sim::Collision::Info::GROUND: {
+        if (speed > 3.0f) {
+            float groundtime = UMath::Min((speed - 3.0f) * 0.05f, 1.0f);
+            groundtime = UMath::Max(groundtime * mMaxCollisionTime, mGroundCollisionTime);
+            mGroundCollisionTime = groundtime;
+        }
+        break;
+    }
+    }
 }
 
 void CDActionDrive::AquireCar() {
-    // TODO
+    if (mPlayer == nullptr) {
+        return;
+    }
+    ISimable *isimable = mPlayer->GetSimable();
+    if (!ComparePtr(isimable, mVehicle)) {
+        if (mVehicle != nullptr) {
+            Detach(mVehicle);
+            mVehicle = nullptr;
+        }
+    }
+    if (mVehicle != nullptr) {
+        return;
+    }
+    isimable = mPlayer->GetSimable();
+    if (isimable != nullptr) {
+        mTarget.Set(isimable->GetWorldID());
+        if (mTarget.IsValid()) {
+            isimable->QueryInterface(&mVehicle);
+            if (mVehicle != nullptr) {
+                Attach(mVehicle);
+                Sim::Collision::AddListener(static_cast<Sim::Collision::IListener *>(this), mVehicle, "Camera");
+                const char *model_str = mVehicle->GetVehicleAttributes().MODEL().GetString();
+                mAnchor->SetModel(bStringHash(model_str));
+                mAnchor->SetWorldID(mTarget.GetWorldID());
+                IRigidBody *body = isimable->GetRigidBody();
+                UMath::Vector3 dimension;
+                body->GetDimension(dimension);
+                mAnchor->SetDimension(dimension);
+                ITransmission *itrans = nullptr;
+                mVehicle->QueryInterface(&itrans);
+                if (itrans != nullptr) {
+                    mAnchor->SetTopSpeed(itrans->GetMaxSpeedometer());
+                    mGear = itrans->GetGear();
+                }
+            }
+        }
+    }
 }
 
 void CDActionDrive::Update(float dT) {
@@ -203,10 +280,21 @@ void CDActionDrive::Update(float dT) {
 }
 
 bool CDActionDrive::GetTrafficBasis(UMath::Matrix4 &matrix, UMath::Vector3 &velocity) {
-    // TODO
-    return false;
+    IBody *ibody = nullptr;
+    if (mVehicle == nullptr) {
+        return false;
+    }
+    mVehicle->QueryInterface(&ibody);
+    if (ibody == nullptr) {
+        return false;
+    }
+    ibody->GetTransform(matrix);
+    ibody->GetLinearVelocity(velocity);
+    return true;
 }
 
 void CDActionDrive::MessageJumpCut(const MJumpCut &message) {
-    // TODO
+    if (mAnchor != nullptr && message.GetAnchorWorldID() == mAnchor->GetWorldID()) {
+        static_cast<CubicCameraMover *>(mMover)->SetSnapNext();
+    }
 }
