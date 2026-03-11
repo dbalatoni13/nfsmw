@@ -543,11 +543,16 @@ eMenuSoundTriggers UIMemcardBase::NotifySoundMessage(unsigned long msg,
 }
 
 void UIMemcardBase::InitCompleteDoList() {
-    EmptyFileList();
+    while (!m_Items.IsEmpty()) {
+        Item* pItem = m_Items.GetHead();
+        pItem->Remove();
+        delete pItem;
+    }
     SetStringCheckingCard();
     MemoryCard::GetInstance()->RequestTask(7, nullptr);
+    cFEng* pFeng = cFEng::Get();
     unsigned long hash = FEHashUpper("SHOW LOADER");
-    cFEng::Get()->QueuePackageMessage(hash, GetPackageName(), nullptr);
+    pFeng->QueuePackageMessage(hash, GetPackageName(), nullptr);
 }
 
 void UIMemcardBase::InitComplete() {
