@@ -1479,7 +1479,7 @@ void WRoadNav::PrivateIncNavPosition(float dist, const UMath::Vector3 &to) {
             if (fNavType == kTypeDirection && toLength == 0.0f) {
                 UMath::Vector3 endTo;
                 segment->GetForwardVec(old_node_ind, endTo);
-                if (old_node_ind == 0) {
+                if (fNodeInd == 0) {
                     UMath::Negate(endTo);
                 }
                 newSegInd = GetNextOffset(endTo, nextLaneOffset, fNodeInd, useOldStartPos);
