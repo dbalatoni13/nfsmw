@@ -3,17 +3,24 @@
 
 #include "Speed/Indep/Src/Sim/SimActivity.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
+#include "Speed/Indep/Src/World/WRoadNetwork.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 struct HSIMTASK__;
-class WRoadNav;
-struct WRoadNode;
+
+extern float ASTAR_METRIC_SCALE;
 
 struct AStarNode : public bTNode<AStarNode> {
     static void *operator new(unsigned int size);
     static void operator delete(void *ptr);
+
+    const WRoadNode *GetRoadNode() { return WRoadNetwork::Get().GetNode(nRoadNode); }
+    int GetSegmentIndex() { return nSegmentIndex; }
+    float GetActualCost() { return static_cast<float>(fActualCost) * ASTAR_METRIC_SCALE; }
+    float GetEstimatedCost() { return static_cast<float>(fEstimatedCost) * ASTAR_METRIC_SCALE; }
+    float GetTotalCost() { return GetActualCost() + GetEstimatedCost(); }
 
     short nParentSlot;
     short nSegmentIndex;
@@ -33,6 +40,10 @@ struct AStarSearch : public bTNode<AStarSearch> {
 
     AStarSearch(WRoadNav *road_nav, const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, const char *shortcut_allowed);
     virtual ~AStarSearch();
+    bool IsGoal(AStarNode *node);
+    AStarNode *FindOpenNode(const WRoadNode *road_node, int segment_number);
+    AStarNode *FindClosedNode(const WRoadNode *road_node, int segment_number);
+    static int AStarCheckFlip(AStarNode *before, AStarNode *after);
     float Service(float time);
     bool IsFinished() { return nState > 0; }
     WRoadNav *GetRoadNav() { return pRoadNav; }

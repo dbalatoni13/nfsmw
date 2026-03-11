@@ -62,8 +62,8 @@ struct WRoadProfile {
         return mLanes[lane_number].GetType();
     }
 
-    int GetNumForwardLanes() const { return fMiddleZone; }
-    int GetNumBackwardLanes() const { return fNumZones - fMiddleZone; }
+    int GetNumForwardLanes() const { return fNumZones - fMiddleZone; }
+    int GetNumBackwardLanes() const { return fMiddleZone; }
     int GetNumLanes(bool forward) const {
         if (forward) {
             return GetNumForwardLanes();
@@ -143,7 +143,9 @@ struct WRoadSegment {
         return IsTrafficAllowed() ^ CopsXorTraffic();
     }
 
-    // bool RaceRouteForward() const {}
+    bool RaceRouteForward() const {
+        return fFlags & (1 << 2);
+    }
 
     // void SetRaceRouteForward(bool forward) {}
 

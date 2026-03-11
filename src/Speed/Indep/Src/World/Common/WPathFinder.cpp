@@ -65,3 +65,45 @@ AStarSearch *PathFinder::Submit(WRoadNav *road_nav, const UMath::Vector3 *goal_p
     }
     return ret;
 }
+
+bool AStarSearch::IsGoal(AStarNode *node) {
+    bool result = false;
+    if (nGoalSegment == node->GetSegmentIndex() && (pGoalNode == nullptr || pGoalNode == node->GetRoadNode())) {
+        result = true;
+    }
+    return result;
+}
+
+AStarNode *AStarSearch::FindOpenNode(const WRoadNode *road_node, int segment_number) {
+    for (AStarNode *node = lOpen.GetHead(); node != lOpen.EndOfList(); node = node->GetNext()) {
+        if (road_node == node->GetRoadNode() && segment_number == node->GetSegmentIndex()) {
+            return node;
+        }
+    }
+    return nullptr;
+}
+
+AStarNode *AStarSearch::FindClosedNode(const WRoadNode *road_node, int segment_number) {
+    for (AStarNode *node = lClosed.GetHead(); node != lClosed.EndOfList(); node = node->GetNext()) {
+        if (road_node == node->GetRoadNode() && segment_number == node->GetSegmentIndex()) {
+            return node;
+        }
+    }
+    return nullptr;
+}
+
+AStarSearch::~AStarSearch() {
+    delete pSolution;
+}
+
+int AStarSearch::AStarCheckFlip(AStarNode *before, AStarNode *after) {
+    return before->GetTotalCost() <= after->GetTotalCost();
+}
+
+void *AStarNode::operator new(unsigned int size) {
+    return bMalloc(AStarNodeSlotPool);
+}
+
+void AStarNode::operator delete(void *ptr) {
+    bFree(AStarNodeSlotPool, ptr);
+}

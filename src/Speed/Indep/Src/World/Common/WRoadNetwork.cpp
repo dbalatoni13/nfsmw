@@ -326,7 +326,7 @@ int WRoadProfile::GetNumTrafficLanes(bool forward) const {
     int num_traffic_lanes = 0;
     int num_lanes = GetNumLanes(forward);
     for (int i = 0; i < num_lanes; i++) {
-        if (GetLaneType(i, forward) == 1) {
+        if (GetLaneType(i, !forward) == 1) {
             num_traffic_lanes++;
         }
     }
@@ -351,30 +351,147 @@ int WRoadProfile::GetNthTrafficLane(int n, bool forward) const {
 }
 
 unsigned char WRoadNav::FirstShortcutInPath() {
-    if (GetNavType() != kTypePath) {
-        return 0;
-    }
-    int num_segments = GetNumPathSegments();
-    WRoadNetwork &rn = WRoadNetwork::Get();
-    for (int i = 0; i < num_segments; i++) {
-        const WRoadSegment *segment = rn.GetSegment(GetPathSegment(i));
-        if (segment->IsShortcut()) {
-            int road_number = segment->fRoadID;
-            const WRoad *road = rn.GetRoad(road_number);
-            return road->nShortcut;
+    if (GetNavType() == kTypePath) {
+        int num_segments = GetNumPathSegments();
+        for (int i = 0; i < num_segments; i++) {
+            const WRoadSegment *segment = WRoadNetwork::Get().GetSegment(GetPathSegment(i));
+            if (segment->IsShortcut()) {
+                const WRoad *road = WRoadNetwork::Get().GetRoad(segment->fRoadID);
+                return road->nShortcut;
+            }
         }
     }
-    return 0;
+    return 0xff;
 }
 
-const WRoadSegment *GetAttachedDirectionalSegment(const WRoadNode *node, short segInd) {
-    WRoadNetwork &roadNetwork = WRoadNetwork::Get();
-    const WRoadSegment *newRoadSegment = roadNetwork.GetSegment(segInd);
+const WRoadSegment *GetAttachedDirectionalSegment(const WRoadNode *node, short segment_index) {
     for (int i = 0; i < node->fNumSegments; i++) {
-        newRoadSegment = roadNetwork.GetSegment(node->fSegmentIndex[i]);
-        if (segInd != newRoadSegment->fNodeIndex[0] && !newRoadSegment->IsDecision()) {
-            return newRoadSegment;
+        const WRoadSegment *segment = WRoadNetwork::Get().GetSegment(node->fSegmentIndex[i]);
+        if (segment_index != segment->fIndex && !segment->IsDecision()) {
+            return segment;
         }
     }
     return nullptr;
+}
+WRoadNav::WRoadNav() {
+    bOccludedFromBehind = false;
+    fOccludingTrailSpeed = 0.0f;
+    pAIVehicle = nullptr;
+    bRaceFilter = false;
+    bTrafficFilter = false;
+    bCopFilter = false;
+    bDecisionFilter = false;
+    pCookieTrail = nullptr;
+    bCookieTrail = false;
+    pPathSegments = nullptr;
+    nRoadOcclusion = 0;
+    nAvoidableOcclusion = 0;
+    Reset();
+}
+
+WRoadNav::~WRoadNav() {
+    PathFinder *path_finder = PathFinder::Get();
+    if (path_finder) {
+        path_finder->Cancel(this);
+    }
+    if (pCookieTrail) {
+        delete pCookieTrail;
+    }
+    if (pPathSegments) {
+        delete pPathSegments;
+    }
+}
+
+bool WRoadNav::IsWrongWay() const {
+    bool result = false;
+    if (GetRaceFilter() && IsValid()) {
+        const WRoadSegment *segment = GetSegment();
+        if (segment->IsInRace()) {
+            bool seg_foward = segment->RaceRouteForward();
+            if (fNodeInd == 1) {
+                if (!seg_foward) {
+                    return false;
+                }
+            } else if (seg_foward) {
+                return false;
+            }
+            result = true;
+        }
+    }
+    return result;
+}
+
+unsigned int WRoadNav::GetRoadSpeechId() {
+    unsigned short segment_index = GetSegmentInd();
+    WRoadNetwork &road_network = WRoadNetwork::Get();
+    unsigned short num_segments = road_network.GetNumSegments();
+    segment_index = bClamp(static_cast<int>(segment_index), 0, static_cast<int>(num_segments) - 1);
+    if (GetSegmentInd() != segment_index) {
+        return 0;
+    }
+    const WRoadSegment *segment = road_network.GetSegment(segment_index);
+    short road_index = segment->fRoadID;
+    short num_roads = road_network.GetNumRoads();
+    road_index = bClamp(static_cast<int>(road_index), 0, static_cast<int>(num_roads) - 1);
+    if (segment->fRoadID != road_index) {
+        return 0;
+    }
+    const WRoad *road = road_network.GetRoad(road_index);
+    return road->nSpeechId;
+}
+
+bool WRoadNav::IsOnLegalRoad() {
+    if (!IsValid()) {
+        return false;
+    }
+    int segment_number = GetSegmentInd();
+    const WRoadSegment *segment = WRoadNetwork::Get().GetSegment(segment_number);
+    if (segment->IsDecision()) {
+        const WRoadNode *node = WRoadNetwork::Get().GetNode(segment->fNodeIndex[GetNodeInd()]);
+        segment = GetAttachedDirectionalSegment(node, segment_number);
+    }
+    if (segment != nullptr && segment->IsTrafficAllowed()) {
+        return true;
+    }
+    return false;
+}
+
+bool WRoadNav::FindPath(const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, char *shortcut_allowed) {
+    PathFinder *path_finder = PathFinder::Get();
+    if (path_finder != nullptr) {
+        MaybeAllocatePathSegments();
+        AStarSearch *search = path_finder->Pending(this);
+        if (search == nullptr) {
+            search = path_finder->Submit(this, goal_position, goal_direction, shortcut_allowed);
+        }
+        if (search != nullptr) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool WRoadNav::FindPathNow(const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, char *shortcut_allowed) {
+    bool ret = FindPath(goal_position, goal_direction, shortcut_allowed);
+    if (ret) {
+        PathFinder::Get()->ServiceAll();
+    }
+    return ret && nPathSegments > 0;
+}
+
+void WRoadNav::SetStartEndPos(const WRoadSegment &segment, float startOffset, float endOffset) {
+    SetBoundPos(segment, startOffset, false);
+    SetBoundPos(segment, endOffset, true);
+}
+
+void WRoadNav::InitAtPoint(const UMath::Vector3 &pos, const UMath::Vector3 &dir, bool forceCenterLane, float dirWeight) {
+    UMath::Vector3 closestPoint;
+    float time;
+    int segment = FindClosestSegmentInd(pos, dir, dirWeight, closestPoint, time);
+    if (segment == -1) {
+        fValid = false;
+        fSegmentInd = 0;
+    } else {
+        InitAtSegment(static_cast<short>(segment), time, pos, dir, forceCenterLane);
+    }
 }

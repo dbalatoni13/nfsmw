@@ -103,6 +103,10 @@ class WRoadNetwork : public Debugable {
         return fNumSegments;
     }
 
+    unsigned int GetNumRoads() {
+        return fNumRoads;
+    }
+
     // unsigned int GetNumNodes() {}
 
     // short GetSegRoadInd(int index) {}
@@ -236,7 +240,7 @@ class WRoadNav {
     bool IsDrivable(int lane_type) const;
     bool IsSelectable(int lane_type) const;
 
-    bool IsValid() {
+    bool IsValid() const {
         return fValid;
     }
 
@@ -332,6 +336,10 @@ class WRoadNav {
         return fSegmentInd;
     }
 
+    char GetNodeInd() const {
+        return fNodeInd;
+    }
+
     char HitDeadEnd() const {
         return fDeadEnd;
     }
@@ -367,6 +375,10 @@ class WRoadNav {
     void ChangeLanes(float newOffset, float dist);
 
     void DetermineVehicleHalfWidth();
+    void SetBoundPos(const WRoadSegment &segment, float offset, bool start);
+    void SetStartEndPos(const WRoadSegment &segment, float startOffset, float endOffset);
+    int FindClosestSegmentInd(const UMath::Vector3 &point, const UMath::Vector3 &dir, float dirWeight, UMath::Vector3 &closestPoint, float &time);
+    unsigned int GetRoadSpeechId();
 
   private:                                      // total size: 0x2F0
     int nCookieIndex;                           // offset 0x0, size 0x4

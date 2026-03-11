@@ -20,6 +20,9 @@ public:
         OVERHAUSER_LINE = 0,
     };
 
+    USpline();
+    ~USpline();
+
     static const UMath::Matrix4 &GetBasisMatrix(SplineType splineType);
 
     // total size: 0x6C
