@@ -6,12 +6,7 @@
 #endif
 
 struct GSpeedTrap {
-    enum Flags {
-        kFlag_Unlocked = 1,
-        kFlag_Active = 2,
-        kFlag_Completed = 4,
-        kFlag_KnockedOver = 8,
-    };
+    enum Flags { kFlag_Unlocked = 1, kFlag_Active = 2, kFlag_Completed = 4, kFlag_KnockedOver = 8, };
     unsigned short mFlags;
     unsigned short mBinNumber;
     unsigned int mSpeedTrapKey;

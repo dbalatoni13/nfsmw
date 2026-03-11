@@ -19,11 +19,7 @@ struct GIcon {
         kType_PursuitBreaker = 12, kType_SpeedTrap = 13, kType_SpeedTrapInRace = 14,
         kType_AreaUnlock = 15, kType_Checkpoint = 16, kType_Count = 17,
     };
-    struct EffectInfo {
-        unsigned int mType;
-        unsigned int mModelHash;
-        unsigned int mParticleHash;
-    };
+    struct EffectInfo { unsigned int mType; unsigned int mModelHash; unsigned int mParticleHash; };
     unsigned short mType;
     unsigned short mFlags;
     short mSectionID;
