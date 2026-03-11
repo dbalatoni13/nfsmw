@@ -120,16 +120,16 @@ void DebugWorldCameraMover::JoyHandler() {
         case 0x49: {
             bVector3 simpos;
             eUnSwizzleWorldVector(*GetPosition(), simpos);
-            IPlayer *player = IPlayer::First(PLAYER_LOCAL);
-            if (player != nullptr) {
-                ISimable *sim = player->GetSimable();
-                if (sim != nullptr) {
-                    WCollisionMgr wcm(0, 3);
-                    wcm.GetWorldHeightAtPoint(
-                        reinterpret_cast<const UMath::Vector3 &>(simpos), simpos.y, nullptr);
-                    simpos.y += 3.0f;
-                    IRigidBody *rb = sim->GetRigidBody();
-                    rb->SetPosition(reinterpret_cast<const UMath::Vector3 &>(simpos));
+            {
+                IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+                if (player != nullptr) {
+                    ISimable *sim = player->GetSimable();
+                    if (sim != nullptr) {
+                        WCollisionMgr(0, 3).GetWorldHeightAtPoint(
+                            reinterpret_cast<const UMath::Vector3 &>(simpos), simpos.y, nullptr);
+                        simpos.y += 3.0f;
+                        sim->GetRigidBody()->SetPosition(reinterpret_cast<const UMath::Vector3 &>(simpos));
+                    }
                 }
             }
             break;

@@ -253,7 +253,7 @@ template <typename T> class tGraph {
             } else {
                 for (int i = 0; i < NumEntries - 1; ++i) {
                     if (x >= GraphData[i].x && x < GraphData[i + 1].x) {
-                        const T blend = (x - GraphData[i].x) / (GraphData[i + 1].x - GraphData[i].x);
+                        T blend = (x - GraphData[i].x) / (GraphData[i + 1].x - GraphData[i].x);
                         Blend(pValue, &GraphData[i + 1].y, &GraphData[i].y, blend);
                         return;
                     }
