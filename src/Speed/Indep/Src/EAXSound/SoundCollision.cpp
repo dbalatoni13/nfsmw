@@ -7,6 +7,7 @@ struct CollisionEvent {
     CSTATE_Base *Owner;
 
     void SetOwner(CSTATE_Base *owner);
+    void Pause(bool pause);
 };
 
 } // namespace Sound
@@ -14,3 +15,5 @@ struct CollisionEvent {
 void Sound::CollisionEvent::SetOwner(CSTATE_Base *owner) {
     Owner = owner;
 }
+
+void Sound::CollisionEvent::Pause(bool pause) {}

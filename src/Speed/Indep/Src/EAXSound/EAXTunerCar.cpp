@@ -111,16 +111,14 @@ int EAXTunerCar::UpdateRotation() {
 }
 
 void EAXTunerCar::UpdatePov() {
-    char *view1 = (char *)&eViews[1];
-    void **pNext = (void **)(view1 + 0x3C);
-    void *sentinel = (void *)(view1 + 0x3C);
+    char *views = (char *)eViews;
+    void **pNext = (void **)(views + 0xA4);
+    void *sentinel = (void *)(views + 0xA4);
     char *cm = 0;
     if (*pNext != sentinel) {
         cm = (char *)*pNext;
     }
-    if (cm == 0) {
-        *(int *)&_pad_eaxcar[0xBC - 0x44] = 0;
-    } else {
+    if (cm != 0) {
         int *vtable2 = *(int **)(cm + 0x8);
         short vthis_off = *(short *)((char *)vtable2 + 0x28);
         int (*vfunc)(char *) = (int (*)(char *))(*(int *)((char *)vtable2 + 0x2C));
@@ -128,11 +126,13 @@ void EAXTunerCar::UpdatePov() {
 
         *(int *)&_pad_eaxcar[0xBC - 0x44] = (*(int *)(cm + 0xC) == 1);
 
-        if (anchor == 0) {
-            *(int *)&_pad_eaxcar[0xB8 - 0x44] = 7;
-        } else {
+        if (anchor != 0) {
             *(int *)&_pad_eaxcar[0xB8 - 0x44] = static_cast<int>(*(short *)(anchor + 0xD8));
+        } else {
+            *(int *)&_pad_eaxcar[0xB8 - 0x44] = 7;
         }
+    } else {
+        *(int *)&_pad_eaxcar[0xBC - 0x44] = 0;
     }
 }
 

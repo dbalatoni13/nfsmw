@@ -67,6 +67,16 @@ struct CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<
     bool mConnected; // offset 0x14, size 0x1
     EAX_CarState *mState; // offset 0x18, size 0x4
 
+    void OnReceive(Sim::Packet *) override;
+    Sim::ConnStatus OnStatusCheck() override;
+};
+
+struct EAX_HeliState;
+
+struct HeliSoundConn : public Sim::Connection, public UTL::Collections::Listable<HeliSoundConn, 10> {
+    EAX_HeliState *mState; // offset 0x18, size 0x4
+
+    void OnReceive(Sim::Packet *) override;
     Sim::ConnStatus OnStatusCheck() override;
 };
 

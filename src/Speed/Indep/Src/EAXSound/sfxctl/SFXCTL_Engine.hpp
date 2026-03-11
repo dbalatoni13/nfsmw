@@ -20,9 +20,20 @@ struct SFXCTL_Engine : public SFXCTL {
     /* 0x2c */ SFXCTL_AccelTrans *m_pAccelTransitionCtl;
     /* 0x30 */ struct SFXCTL_Physics *m_pPhysicsCtl;
     /* 0x34 */ SFXCTL_3DCarPos *m_p3DCarPosCtl;
+    /* 0x38 */ char _pad_engine[0xDC];
+    /* 0x114 */ float m_fEng_RPM;
+    /* 0x118 */ float m_fPrevRPM;
+    /* 0x11c */ float m_fSmoothedEng_RPM;
+    /* 0x120 */ float m_fEng_Trq;
+    /* 0x124 */ float m_fSmoothedEng_Trq;
 
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
+
+    virtual float GetEngRPM();
+    virtual float GetSmoothedEngRPM();
+    virtual float GetEngTorque();
+    virtual float GetSmoothedEngTorque();
 };
 
 #endif

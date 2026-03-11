@@ -35,3 +35,5 @@ void EAXS_StreamManager::AddStreamChannel(EAXS_StreamChannel *pstrmchannel, eSTR
 }
 
 void EAXS_StreamManager::RemoveStreamChannel(eSTRMTYPE strmtype) {}
+
+void AssignAudioStreamHandle(unsigned int realstrmhandle) {}
