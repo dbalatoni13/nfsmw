@@ -437,40 +437,45 @@ bool Smackable::CanRetrigger() const {
 }
 
 void Smackable::ProcessDeath(float dT) {
+    Seconds life;
     if (!ShouldDie()) {
-        mLife = 0.125f;
-        return;
+        life = 0.125f;
+        goto store_life;
     }
     if (mLife > 0.0f) {
-        mLife -= dT;
-        return;
+        life = mLife - dT;
+        goto store_life;
     }
     if (Dropout()) {
         return;
     }
     if (mModel != nullptr) {
-        if (CanRetrigger() &&
-            (!mVirgin || mCollisionBody == nullptr || !mCollisionBody->IsAttachedToWorld())) {
-            ITriggerableModel *itrigger = nullptr;
-            if (mModel->QueryInterface(&itrigger)) {
-                UMath::Matrix4 mat;
-                static_cast< ISimable * >(this)->GetTransform(mat);
-                itrigger->PlaceTrigger(mat, true);
-                static_cast< ISimable * >(this)->Detach(mModel);
-                mModel = nullptr;
+        if (CanRetrigger()) {
+            if (mVirgin && mCollisionBody != nullptr && mCollisionBody->IsAttachedToWorld()) {
+                ISceneryModel *iscenery = nullptr;
+                if (mModel->QueryInterface(&iscenery)) {
+                    iscenery->RestoreScene();
+                    mModel = nullptr;
+                }
+            } else {
+                ITriggerableModel *itrigger = nullptr;
+                if (mModel->QueryInterface(&itrigger)) {
+                    UMath::Matrix4 mat;
+                    static_cast< ISimable * >(this)->GetTransform(mat);
+                    itrigger->PlaceTrigger(mat, true);
+                    static_cast< ISimable * >(this)->Detach(mModel);
+                    mModel = nullptr;
+                }
             }
-        } else {
-            ISceneryModel *iscenery = nullptr;
-            if (mModel->QueryInterface(&iscenery)) {
-                iscenery->RestoreScene();
-                mModel = nullptr;
-            } else if (mModel != nullptr && !mPersistant) {
-                mModel->ReleaseModel();
-                mModel = nullptr;
-            }
+        } else if (mModel != nullptr && !mPersistant) {
+            mModel->ReleaseModel();
+            mModel = nullptr;
         }
     }
     static_cast< ISimable * >(this)->Kill();
+    return;
+store_life:
+    mLife = life;
 }
 
 bool Smackable::ProcessDropout(float dT) {
@@ -586,7 +591,7 @@ bool Smackable::Manager::OnTask(HSIMTASK htask, float dT) {
 }
 
 Behavior *RBSmackable::Construct(const BehaviorParams &parms) {
-    const RBComplexParams &rp = parms.fparams.Fetch< RBComplexParams >(UCrc32(0xa6b47fac));
+    RBComplexParams rp = parms.fparams.Fetch< RBComplexParams >(UCrc32(0xa6b47fac));
     return new RBSmackable(parms, rp);
 }
 
@@ -761,7 +766,7 @@ int HeirarchyModel::FindHeirarchyChild(const UCrc32 &nodename) const {
 
 IModel *HeirarchyModel::SpawnModel(UCrc32 rendernode, UCrc32 collisionnode, UCrc32 attributes) {
     if (mHeirarchy != nullptr && !IsDirty()) {
-        if (UTL::Collections::Listable< IModel, 434 >::Count() > 434) {
+        if (UTL::Collections::Listable< IModel, 434 >::Count() > 434u) {
             return nullptr;
         }
         int childindex = FindHeirarchyChild(rendernode);
