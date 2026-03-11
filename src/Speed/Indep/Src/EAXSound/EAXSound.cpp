@@ -42,8 +42,8 @@ EAXSound::EAXSound() {
     bPlayCameraSnapShot = false;
     mmsgMRestartRace = nullptr;
     m_bPause_MainFNG = false;
-    mData.fEventID = 0xF2D10992; // TODO magic
     mEventID = 0;
+    mData.fEventID = 0xF2D10992; // TODO magic
 }
 
 EAXSound::~EAXSound() {
