@@ -198,6 +198,7 @@ void CDActionTrackCar::Update(float dT) {
         if (mVehicle->QueryInterface(&irbc)) {
             IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
             UVector3 cg(irbc->GetCenterOfGravity());
+            cg.x = 0.0f;
             irb->ConvertLocalToWorld(cg, false);
             cg += irb->GetPosition();
             eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(cg), reinterpret_cast<bVector3 &>(mat.v3));
