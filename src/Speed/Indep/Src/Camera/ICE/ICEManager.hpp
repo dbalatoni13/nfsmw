@@ -24,13 +24,32 @@ struct ICEGroup {
     struct ICETrack *GetTrack(int n);
     struct ICETrack *GetTrack(char *s);
 
+    ICEGroup();
+    ~ICEGroup();
+
     unsigned int GetHandle() {
         return Handle;
+    }
+
+    int GetContext() {
+        return Context;
+    }
+
+    void SetHandle(unsigned int n) {
+        Handle = n;
+    }
+
+    void SetContext(int context) {
+        Context = context;
     }
 
     int GetNumTracks() {
         return NumTracks;
     }
+
+    void AddTrack(struct ICETrack *track);
+
+    void FlushTracks();
 
     unsigned int Handle;               // offset 0x0, size 0x4
     int Context;                       // offset 0x4, size 0x4
@@ -91,6 +110,10 @@ struct ICETrack : public bTNode<ICETrack> {
         Length = l;
     }
 
+    int MemoryImageSize() {
+        return static_cast<int>(sizeof(ICETrack)) - (50 - NumKeys) * static_cast<int>(sizeof(ICEData));
+    }
+
     ICEGroup *Group;  // offset 0x8, size 0x4
     float Start;      // offset 0xC, size 0x4
     float Length;     // offset 0x10, size 0x4
@@ -100,11 +123,38 @@ struct ICETrack : public bTNode<ICETrack> {
     ICEData Keys[50]; // offset 0x28, size 0x19C8
 };
 
+inline ICEGroup::ICEGroup()
+    : Handle(0) //
+    , Context(eDCE_NOCONTEXT) //
+    , NumTracks(0) {}
+
+inline ICEGroup::~ICEGroup() {}
+
+inline void ICEGroup::AddTrack(ICETrack *track) {
+    track->SetGroup(this);
+    TrackList.AddTail(track);
+    NumTracks++;
+}
+
+inline void ICEGroup::FlushTracks() {
+    while (!TrackList.IsEmpty()) {
+        ICETrack *track = TrackList.RemoveHead();
+        if (track->IsAllocated() && track != 0) {
+            delete track;
+        }
+    }
+}
+
 // total size: 0xC
 struct ICEShakeGroup {
     void FlushAllocatedTracks();
     struct ICEShakeTrack *GetTrack(int n);
     void FlushTracks();
+
+    ICEShakeGroup();
+    ~ICEShakeGroup();
+
+    void AddTrack(struct ICEShakeTrack *track);
 
     int NumTracks;                                 // offset 0x0, size 0x4
     struct bTList<struct ICEShakeTrack> TrackList; // offset 0x4, size 0x8
@@ -138,6 +188,16 @@ struct ICEShakeTrack : public bTNode<ICEShakeTrack> {
     char Name[14];          // offset 0xF, size 0xE
     ICEShakeData Keys[120]; // offset 0x20, size 0xB40
 };
+
+inline ICEShakeGroup::~ICEShakeGroup() {}
+
+inline ICEShakeGroup::ICEShakeGroup() : NumTracks(0) {}
+
+inline void ICEShakeGroup::AddTrack(ICEShakeTrack *track) {
+    track->SetGroup(this);
+    TrackList.AddTail(track);
+    NumTracks++;
+}
 
 // total size: 0x80
 class ICEManager {

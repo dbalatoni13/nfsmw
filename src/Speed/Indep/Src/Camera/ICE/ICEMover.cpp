@@ -204,43 +204,25 @@ ICEAnchor::ICEAnchor()
 }
 
 void ICEAnchor::Update(float dT, const ICE::Matrix4 &orientpos, const ICE::Vector3 &velocity, const ICE::Vector3 &) {
-    float previous_mag = mVelMag;
     float dist = bDistBetween(reinterpret_cast<const bVector3 *>(&mGeomPos), reinterpret_cast<const bVector3 *>(&orientpos.v3));
 
     PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(&orientpos), *reinterpret_cast<Mtx44 *>(&mGeomRot));
-    mGeomRot.v3.x = 0.0f;
-    mGeomRot.v3.y = 0.0f;
+    float savedVelMag = mVelMag;
     mGeomRot.v3.z = 0.0f;
-    mGeomPos.x = orientpos.v3.x;
-    mGeomPos.y = orientpos.v3.y;
-    mGeomPos.z = orientpos.v3.z;
-    mVelocity = velocity;
+    mGeomRot.v3.y = 0.0f;
+    mGeomRot.v3.x = 0.0f;
+    bCopy(reinterpret_cast<bVector3 *>(&mGeomPos), reinterpret_cast<const bVector3 *>(&orientpos.v3));
+    bCopy(reinterpret_cast<bVector3 *>(&mVelocity), reinterpret_cast<const bVector3 *>(&velocity));
 
-    {
-        float vel_squared = velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z;
+    mVelMag = bLength(reinterpret_cast<const bVector3 *>(&velocity));
 
-        if (5.0e-11f < vel_squared) {
-            float inv_mag = 1.0f / bSqrt(vel_squared);
-            inv_mag += -(vel_squared * inv_mag * inv_mag - 1.0f) * inv_mag * 0.5f;
-            mVelMag = (-(vel_squared * inv_mag * inv_mag - 1.0f) * inv_mag * 0.5f + inv_mag) * vel_squared;
-        } else {
-            mVelMag = 0.0f;
-        }
-    }
-
-    if (dT <= 0.0f || 300.0f <= dist / dT) {
+    if (dT > 0.0f && dist / dT < 300.0f) {
+        ICE::Vector3 acc((mVelMag - savedVelMag) / dT, 0.0f, 0.0f);
+        bMulMatrix(reinterpret_cast<bVector3 *>(&mAccel), reinterpret_cast<const bMatrix4 *>(&mGeomRot), reinterpret_cast<const bVector3 *>(&acc));
+    } else {
         mAccel.x = 0.0f;
         mAccel.y = 0.0f;
         mAccel.z = 0.0f;
-        mAccel.pad = 0.0f;
-    } else {
-        ICE::Vector3 accel;
-
-        accel.x = (mVelMag - previous_mag) / dT;
-        accel.y = 0.0f;
-        accel.z = 0.0f;
-        accel.pad = 0.0f;
-        bMulMatrix(reinterpret_cast<bVector3 *>(&mAccel), reinterpret_cast<const bMatrix4 *>(&mGeomRot), reinterpret_cast<const bVector3 *>(&accel));
     }
 }
 

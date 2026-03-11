@@ -20,6 +20,8 @@ extern Timer RealTimer;
 extern AnimDirectory *TheAnimDirectory;
 extern int bUseOldDutch;
 
+int bStrNICmp(const char *s1, const char *s2, int n);
+
 struct ICEAnchor;
 ICEAnchor *GetICEAnchor();
 
@@ -33,8 +35,12 @@ ICETrack *ChooseGoodCamera(ICEAnchor *p_car, ICEGroup *p_replay_cameras, int num
 namespace ICE {
 ICEScene *FindAnimScene();
 unsigned int GetSceneCount();
+unsigned int GetSceneHash(unsigned int slot);
 void GetNameOfSceneHash(unsigned int hash, char *name);
+bool KeysShared(ICEData *p1, int n1, ICEData *p2, int n2);
 }
+
+static const char *GenericCategoryNames[2] = {"Cinematics", "Debug"};
 
 ICEManager TheICEManager;
 
@@ -435,7 +441,16 @@ float ICEManager::GetAnimElevationFixup(ICE::Vector3 *position) {
 }
 
 void ICEManager::FixAnimElevation(ICE::Vector3 *position) {
-    // TODO
+    ICEScene *scene = ICE::FindAnimScene();
+    if (scene != 0 && scene->IsCameraFixingElevation()) {
+        ICE::Vector3 world_position;
+        ICE::MulVector(&world_position, reinterpret_cast<const ICE::Matrix4 *>(&scene->GetSceneTransformMatrix()), position);
+        if (IsEditorOff()) {
+            const ICE::Vector3 *scene_origin = reinterpret_cast<const ICE::Vector3 *>(&scene->GetSceneTransformMatrix().v3);
+            fAnimElevation = GetGroundElevation(scene_origin);
+        }
+        position->z += GetAnimElevationFixup(&world_position);
+    }
 }
 
 void ICEManager::SetGenericCameraToPlay(const char *group_name, const char *track_name) {
@@ -523,7 +538,7 @@ ICEGroup *ICEManager::AddCameraGroup(ICEContext context, unsigned int handle) {
     case eDCE_NIS: {
         int index = nNisCameras;
         if (index > 0xff) {
-            return 0;
+            return group;
         }
         group = &pNisCameras[index];
         nNisCameras = index + 1;
@@ -532,7 +547,7 @@ ICEGroup *ICEManager::AddCameraGroup(ICEContext context, unsigned int handle) {
     case eDCE_FMV: {
         int index = nFmvCameras;
         if (index > 9) {
-            return 0;
+            return group;
         }
         group = &pFmvCameras[index];
         nFmvCameras = index + 1;
@@ -541,7 +556,7 @@ ICEGroup *ICEManager::AddCameraGroup(ICEContext context, unsigned int handle) {
     case eDCE_REPLAY: {
         int index = nReplayCameras;
         if (index > 0x31) {
-            return 0;
+            return group;
         }
         group = &pReplayCameras[index];
         nReplayCameras = index + 1;
@@ -550,27 +565,113 @@ ICEGroup *ICEManager::AddCameraGroup(ICEContext context, unsigned int handle) {
     case eDCE_GENERIC: {
         int index = nGenericCameras;
         if (index > 0x31) {
-            return 0;
+            return group;
         }
         group = &pGenericCameras[index];
         nGenericCameras = index + 1;
         break;
     }
     default:
-        return 0;
+        return group;
     }
 
-    group->Context = context;
-    group->Handle = handle;
+    group->SetContext(context);
+    group->SetHandle(handle);
     return group;
 }
 
-void ICEManager::LoadCameraSet(bChunk *chunk) {
-    // TODO
+void ICEManager::LoadCameraSet(bChunk *set_chunk) {
+    ICEContext context = eDCE_NOCONTEXT;
+    unsigned int id = set_chunk->GetID();
+
+    switch (id) {
+    case 0x8003B200:
+        context = eDCE_NIS;
+        break;
+    case 0x8003B201:
+        context = eDCE_FMV;
+        break;
+    case 0x8003B202:
+        context = eDCE_REPLAY;
+        break;
+    case 0x8003B203:
+        context = eDCE_GENERIC;
+        break;
+    }
+
+    for (bChunk *chunk = set_chunk->GetFirstChunk(); chunk != set_chunk->GetLastChunk(); chunk = chunk->GetNext()) {
+        bPlatEndianSwap(reinterpret_cast<unsigned int *>(chunk->GetData()));
+        bPlatEndianSwap(reinterpret_cast<unsigned int *>(chunk->GetData() + 4));
+        ICEGroup *group = AddCameraGroup(context, *reinterpret_cast<unsigned int *>(chunk->GetData()));
+        if (group != 0) {
+            int num_tracks = *reinterpret_cast<int *>(chunk->GetData() + 4);
+            ICETrack *track = reinterpret_cast<ICETrack *>(chunk->GetData() + 8);
+            for (int i = 0; i < num_tracks; i++) {
+                track->PlatEndianSwap();
+                group->AddTrack(track);
+                track = reinterpret_cast<ICETrack *>(reinterpret_cast<char *>(track) + track->MemoryImageSize());
+            }
+        }
+    }
 }
 
-void ICEManager::UnloadCameraSet(bChunk *chunk) {
-    // TODO
+void ICEManager::UnloadCameraSet(bChunk *set_chunk) {
+    ICEContext context = eDCE_NOCONTEXT;
+    unsigned int id = set_chunk->GetID();
+
+    switch (id) {
+    case 0x8003B200:
+        context = eDCE_NIS;
+        break;
+    case 0x8003B201:
+        context = eDCE_FMV;
+        break;
+    case 0x8003B202:
+        context = eDCE_REPLAY;
+        break;
+    case 0x8003B203:
+        context = eDCE_GENERIC;
+        break;
+    default:
+        context = eDCE_NOCONTEXT;
+        break;
+    }
+
+    for (bChunk *chunk = set_chunk->GetFirstChunk(); chunk != set_chunk->GetLastChunk(); chunk = chunk->GetNext()) {
+        ICEGroup *group = GetCameraGroup(context, *reinterpret_cast<unsigned int *>(chunk->GetData()));
+        if (group != 0) {
+            group->NumTracks = 0;
+            group->FlushTracks();
+        }
+    }
+
+    int num_groups = 0;
+    ICEGroup *groups = 0;
+
+    switch (context) {
+    case eDCE_NIS:
+        num_groups = nNisCameras;
+        groups = pNisCameras;
+        break;
+    case eDCE_FMV:
+        num_groups = nFmvCameras;
+        groups = pFmvCameras;
+        break;
+    case eDCE_REPLAY:
+        num_groups = nReplayCameras;
+        groups = pReplayCameras;
+        break;
+    case eDCE_GENERIC:
+        num_groups = nGenericCameras;
+        groups = pGenericCameras;
+        break;
+    default:
+        break;
+    }
+
+    for (int i = 0; i < num_groups; i++) {
+        groups[i].FlushAllocatedTracks();
+    }
 }
 
 void ICEManager::LoadCameraShakes(bChunk *set_chunk) {
@@ -581,9 +682,7 @@ void ICEManager::LoadCameraShakes(bChunk *set_chunk) {
         ICEShakeTrack *track = reinterpret_cast<ICEShakeTrack *>(set_chunk->GetData() + 4);
         for (int i = 0; i < num_tracks; i++) {
             track->PlatEndianSwap();
-            track->SetGroup(group);
-            group->TrackList.AddTail(track);
-            group->NumTracks++;
+            group->AddTrack(track);
             track = reinterpret_cast<ICEShakeTrack *>(reinterpret_cast<char *>(track) + track->MemoryImageSize());
         }
     }
@@ -602,11 +701,82 @@ void ICEManager::UnloadCameraShakes(bChunk *set_chunk) {
 }
 
 void ICEManager::Init() {
-    // TODO
+    pNisCameras = new ICEGroup[256];
+    pFmvCameras = new ICEGroup[10];
+    pReplayCameras = new ICEGroup[50];
+    pGenericCameras = new ICEGroup[50];
+    pShakeGroup = new ICEShakeGroup;
 }
 
 void ICEManager::Resolve() {
-    // TODO
+    unsigned int num_scenes = ICE::GetSceneCount();
+
+    {
+        for (unsigned int scene = 0; scene < num_scenes; scene++) {
+            unsigned int scene_hash = ICE::GetSceneHash(scene);
+            char scene_name[16];
+            ICE::GetNameOfSceneHash(scene_hash, scene_name);
+
+            if (bStrNICmp(scene_name, "FMV", 3) != 0 &&
+                bStrNICmp(scene_name, "replay", 6) != 0 &&
+                bStrNICmp(scene_name, "clip", 4) != 0) {
+                if (GetNisCameraGroup(scene_hash) == 0) {
+                    if (nNisCameras <= 0xff) {
+                        pNisCameras[nNisCameras].Context = eDCE_NIS;
+                        pNisCameras[nNisCameras].Handle = scene_hash;
+                        nNisCameras++;
+                    }
+                }
+            }
+        }
+    }
+
+    {
+        for (unsigned int fmv = 0; fmv < num_scenes; fmv++) {
+            unsigned int scene_hash = ICE::GetSceneHash(fmv);
+            char scene_name[16];
+            ICE::GetNameOfSceneHash(scene_hash, scene_name);
+
+            if (bStrNICmp(scene_name, "FMV", 3) == 0) {
+                if (GetFmvCameraGroup(scene_hash) == 0) {
+                    if (nFmvCameras <= 9) {
+                        pFmvCameras[nFmvCameras].Context = eDCE_FMV;
+                        pFmvCameras[nFmvCameras].Handle = scene_hash;
+                        nFmvCameras++;
+                    }
+                }
+            }
+        }
+    }
+
+    {
+        int num_categories = ICE::GetReplayCategoryNumElements();
+        for (int category = 0; category < num_categories; category++) {
+            unsigned int category_hash = ICE::GetReplayCategoryHash(category);
+
+            if (GetReplayCameraGroup(category_hash) == 0) {
+                if (nReplayCameras <= 0x31) {
+                    pReplayCameras[nReplayCameras].Context = eDCE_REPLAY;
+                    pReplayCameras[nReplayCameras].Handle = category_hash;
+                    nReplayCameras++;
+                }
+            }
+        }
+    }
+
+    {
+        for (int name = 0; name < 2; name++) {
+            unsigned int name_hash = bStringHash(GenericCategoryNames[name]);
+
+            if (GetGenericCameraGroup(name_hash) == 0) {
+                if (nGenericCameras <= 0x31) {
+                    pGenericCameras[nGenericCameras].Context = eDCE_GENERIC;
+                    pGenericCameras[nGenericCameras].Handle = name_hash;
+                    nGenericCameras++;
+                }
+            }
+        }
+    }
 }
 
 bool ICEManager::ChooseCameraPlaybackTrack() {
@@ -715,7 +885,95 @@ int ICEManager::ChooseGoodSceneCameraTrackIndex(unsigned int scene_hash, const I
 }
 
 void ICEManager::GetSlope(ICE::Vector3 *eye, ICE::Vector3 *look, float *fov, float *dutch, ICEData *data, int key, ICETrack *track) {
-    // TODO
+    ICE::Vector3 v_eye_slope;
+    ICE::Vector3 v_look_slope;
+    float f_dutch_slope = 0.0f;
+    float f_lens_slope = 0.0f;
+
+    if (data->nType != 0) {
+        ICEData *p_neighbour = GetNeighbour(data, key, track);
+        bool shared_slope = false;
+        if (p_neighbour != 0 && p_neighbour->nType != 0 &&
+            ICE::KeysShared(data, key, p_neighbour, key ^ 1)) {
+            ICE::Vector3 v0;
+            ICE::Vector3 v1;
+            ICE::Vector3 v_eye0;
+            ICE::Vector3 v_eye1;
+            ICE::Vector3 v_look0;
+            ICE::Vector3 v_look1;
+
+            shared_slope = true;
+
+            p_neighbour->GetEye(0, &v0);
+            p_neighbour->GetEye(1, &v1);
+            bSub(reinterpret_cast<bVector3 *>(&v_eye0), reinterpret_cast<const bVector3 *>(&v1), reinterpret_cast<const bVector3 *>(&v0));
+
+            p_neighbour->GetLook(0, &v0);
+            p_neighbour->GetLook(1, &v1);
+            bSub(reinterpret_cast<bVector3 *>(&v_look0), reinterpret_cast<const bVector3 *>(&v1), reinterpret_cast<const bVector3 *>(&v0));
+
+            float f_dutch0 = p_neighbour->fDutch[0];
+            float f_lens0 = p_neighbour->fLens[0];
+            float f_dutch1 = p_neighbour->fDutch[1];
+            float f_lens1 = p_neighbour->fLens[1];
+
+            data->GetEye(0, &v0);
+            data->GetEye(1, &v1);
+            bSub(reinterpret_cast<bVector3 *>(&v_eye1), reinterpret_cast<const bVector3 *>(&v1), reinterpret_cast<const bVector3 *>(&v0));
+
+            data->GetLook(0, &v0);
+            data->GetLook(1, &v1);
+            float f_dutch_data0 = data->fDutch[0];
+            float f_lens_data1 = data->fLens[1];
+            bSub(reinterpret_cast<bVector3 *>(&v_look1), reinterpret_cast<const bVector3 *>(&v1), reinterpret_cast<const bVector3 *>(&v0));
+            float f_lens_data0 = data->fLens[0];
+            float f_dutch_data1 = data->fDutch[1];
+
+            float f_camera_size = GetIntervalSize(data, track);
+            float f_neighbour_size = GetIntervalSize(p_neighbour, track);
+
+            float f_neighbour_blend = f_camera_size / (f_camera_size + f_neighbour_size);
+            float f_camera_blend = 1.0f - f_neighbour_blend;
+
+            if (f_neighbour_size > 0.000001f) {
+                f_neighbour_blend *= f_camera_size / f_neighbour_size;
+            }
+
+            float tangent_length = data->fTangentLength[key];
+            bScale(reinterpret_cast<bVector3 *>(&v_eye_slope), reinterpret_cast<const bVector3 *>(&v_eye0), f_neighbour_blend * tangent_length);
+            bScaleAdd(reinterpret_cast<bVector3 *>(&v_eye_slope), reinterpret_cast<const bVector3 *>(&v_eye_slope), reinterpret_cast<const bVector3 *>(&v_eye1), f_camera_blend * tangent_length);
+
+            bScale(reinterpret_cast<bVector3 *>(&v_look_slope), reinterpret_cast<const bVector3 *>(&v_look0), f_neighbour_blend * tangent_length);
+            bScaleAdd(reinterpret_cast<bVector3 *>(&v_look_slope), reinterpret_cast<const bVector3 *>(&v_look_slope), reinterpret_cast<const bVector3 *>(&v_look1), f_camera_blend * tangent_length);
+
+            f_lens_slope = (f_dutch1 - f_lens1) * f_neighbour_blend * tangent_length + (f_dutch_data1 - f_lens_data1) * f_camera_blend * tangent_length;
+            f_dutch_slope = (f_lens0 - f_dutch0) * f_neighbour_blend * tangent_length + (f_lens_data0 - f_dutch_data0) * f_camera_blend * tangent_length;
+        }
+        if (!shared_slope) {
+            ICE::Vector3 v_eye0;
+            ICE::Vector3 v_eye1;
+            ICE::Vector3 v_look0;
+            ICE::Vector3 v_look1;
+
+            data->GetEye(0, &v_eye0);
+            data->GetEye(1, &v_eye1);
+            data->GetLook(0, &v_look0);
+            data->GetLook(1, &v_look1);
+
+            float tangent_length = data->fTangentLength[key];
+            bSub(reinterpret_cast<bVector3 *>(&v_eye_slope), reinterpret_cast<const bVector3 *>(&v_eye1), reinterpret_cast<const bVector3 *>(&v_eye0));
+            bScale(reinterpret_cast<bVector3 *>(&v_eye_slope), reinterpret_cast<const bVector3 *>(&v_eye_slope), tangent_length);
+            bSub(reinterpret_cast<bVector3 *>(&v_look_slope), reinterpret_cast<const bVector3 *>(&v_look1), reinterpret_cast<const bVector3 *>(&v_look0));
+            bScale(reinterpret_cast<bVector3 *>(&v_look_slope), reinterpret_cast<const bVector3 *>(&v_look_slope), tangent_length);
+            f_lens_slope = tangent_length * (data->fLens[1] - data->fLens[0]);
+            f_dutch_slope = tangent_length * (data->fDutch[1] - data->fDutch[0]);
+        }
+    }
+
+    *eye = v_eye_slope;
+    *look = v_look_slope;
+    *fov = f_dutch_slope;
+    *dutch = f_lens_slope;
 }
 
 static float GetGroundElevation(const ICE::Vector3 *position) {
