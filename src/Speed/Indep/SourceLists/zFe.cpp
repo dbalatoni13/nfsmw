@@ -2,6 +2,8 @@
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionWidgets.cpp"
 
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.cpp"
+
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsMain.cpp"
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsScreen.cpp"
