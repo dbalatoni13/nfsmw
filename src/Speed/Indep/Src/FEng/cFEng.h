@@ -11,6 +11,11 @@ enum FE_PACKAGE_PRIORITY {
     FE_PACKAGE_PRIORITY_SECOND_CLOSEST = 103,
     FE_PACKAGE_PRIORITY_CLOSEST = 104,
     FE_PACKAGE_PRIORITY_ERROR = 105,
+    void DrawForeground();
+    void PushErrorPackage(const char * pPackageName, int pArg, unsigned long ControlMask);
+    void PopErrorPackage();
+    void Service();
+    FEPackage* FindPackageWithControl();
 };
 
 // total size: 0x8

@@ -82,7 +82,7 @@ class FEManager {
 
     // static  const char *GetPauseReason(int idx) {}
 
-    //  void ClearControllerError(int port) {}
+    void ClearControllerError(int port) { bWantControllerError[port] = false; }
 
     void SuppressControllerError(bool b) { bSuppressControllerError = b; }
 
