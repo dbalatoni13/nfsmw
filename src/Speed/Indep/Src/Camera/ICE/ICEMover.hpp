@@ -156,6 +156,30 @@ struct Cubic3D {
         z.MakeCoeffs();
     }
 
+    void SetVal(float vx, float vy, float vz) {
+        x.SetVal(vx);
+        y.SetVal(vy);
+        z.SetVal(vz);
+    }
+
+    void SetdVal(float vx, float vy, float vz) {
+        x.SetdVal(vx);
+        y.SetdVal(vy);
+        z.SetdVal(vz);
+    }
+
+    void SetValDesired(float vx, float vy, float vz) {
+        x.SetValDesired(vx);
+        y.SetValDesired(vy);
+        z.SetValDesired(vz);
+    }
+
+    void SetdValDesired(float vx, float vy, float vz) {
+        x.dValDesired = vx;
+        y.dValDesired = vy;
+        z.dValDesired = vz;
+    }
+
     void SetVal(const Vector3 *pV);
     void SetdVal(const Vector3 *pV);
     void SetValDesired(const Vector3 *pV);

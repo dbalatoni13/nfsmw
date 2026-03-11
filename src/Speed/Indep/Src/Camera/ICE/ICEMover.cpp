@@ -291,25 +291,27 @@ void Cubic1D::ClampDerivative(float fMag) {
 }
 
 void Cubic1D::ClampSecondDerivative(float fMag) {
-    float acc0 = GetSecondDerivative(0.0f);
-    float acc0_abs = bAbs(acc0);
-    float acc1 = GetSecondDerivative(duration);
-    float acc1_abs = bAbs(acc1);
-    bool need_fix = false;
+    float fAcc0 = GetSecondDerivative(0.0f);
+    float fAcc0Abs = bAbs(fAcc0);
+    float fAcc1 = GetSecondDerivative(duration);
+    float fAcc1Abs = bAbs(fAcc1);
+    bool bNeedFix = false;
 
-    if (acc0_abs > fMag) {
-        acc0 = (acc0_abs / acc0) * fMag;
-        need_fix = true;
+    if (fAcc0Abs > fMag) {
+        float fSign = fAcc0Abs / fAcc0;
+        fAcc0 = fSign * fMag;
+        bNeedFix = true;
     }
-    if (acc1_abs > fMag) {
-        acc1 = (acc1_abs / acc1) * fMag;
-        need_fix = true;
+    if (fAcc1Abs > fMag) {
+        float fSign = fAcc1Abs / fAcc1;
+        fAcc1 = fSign * fMag;
+        bNeedFix = true;
     }
-    if (need_fix) {
-        float duration_squared = duration * duration;
-        float start = acc0 * duration_squared;
+    if (bNeedFix) {
+        float fDurationSquared = duration * duration;
+        float start = fAcc0 * fDurationSquared;
 
-        Coeff[0] = (acc1 * duration_squared - start) * (1.0f / 6.0f);
+        Coeff[0] = (fAcc1 * fDurationSquared - start) * (1.0f / 6.0f);
         Coeff[1] = start * 0.5f;
     }
 }
@@ -342,50 +344,40 @@ void Cubic1D::Update(float fSeconds, float fDClamp, float fDDClamp) {
 
 update:
     {
-        float t = 1.0f;
+        float t;
 
         if (0.0f < duration) {
-            t = time + fSeconds / duration;
+            float interval = fSeconds / duration;
+            time = time + interval;
+        } else {
+            time = 1.0f;
         }
-
-        time = t;
 
         if (1.0f < time) {
             time = 1.0f;
             Snap();
         }
 
-        Val = GetVal(time);
-        dVal = GetdVal(time);
+        t = time;
+        Val = GetVal(t);
+        dVal = GetdVal(t);
     }
 }
 
 void Cubic3D::SetVal(const Vector3 *pV) {
-    x.SetVal(pV->x);
-    y.SetVal(pV->y);
-    z.SetVal(pV->z);
+    SetVal(pV->x, pV->y, pV->z);
 }
 
 void Cubic3D::SetdVal(const Vector3 *pV) {
-    x.SetdVal(pV->x);
-    y.SetdVal(pV->y);
-    z.SetdVal(pV->z);
+    SetdVal(pV->x, pV->y, pV->z);
 }
 
 void Cubic3D::SetValDesired(const Vector3 *pV) {
-    x.SetValDesired(pV->x);
-    y.SetValDesired(pV->y);
-    z.SetValDesired(pV->z);
+    SetValDesired(pV->x, pV->y, pV->z);
 }
 
 void Cubic3D::SetdValDesired(const Vector3 *pV) {
-    float vx = pV->x;
-    float vy = pV->y;
-    float vz = pV->z;
-
-    x.dValDesired = vx;
-    y.dValDesired = vy;
-    z.dValDesired = vz;
+    SetdValDesired(pV->x, pV->y, pV->z);
 }
 
 void Cubic3D::GetVal(Vector3 *pV) const {
