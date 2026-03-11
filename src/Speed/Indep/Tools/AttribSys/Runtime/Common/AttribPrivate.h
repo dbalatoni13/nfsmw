@@ -191,26 +191,10 @@ class ClassPrivate : public Class {
     }
 
     // total size: 0x10
-    class CollectionHashMap : public VecHashMap<unsigned int, Attrib::Collection, Attrib::Class::TablePolicy, true, 40> {
-      public:
-        CollectionHashMap(std::size_t reserve) : VecHashMap<unsigned int, Attrib::Collection, Attrib::Class::TablePolicy, true, 40>(reserve) {}
+    struct CollectionHashMap : public VecHashMap<unsigned int, Attrib::Collection, Attrib::Class::TablePolicy, true, 40> {
+        CollectionHashMap(unsigned int reserve);
 
         ~CollectionHashMap();
-
-        unsigned int GetNextValidIndex(unsigned int startPoint) const {
-            unsigned int index = startPoint + 1;
-            for (; index < mTableSize && !mTable[index].IsValid(); index++) {
-            }
-            return index;
-        }
-
-        unsigned int GetKeyAtIndex(unsigned int index) const {
-            if (ValidIndex(index)) {
-                (void)ValidIndex(index);
-                return mTable[index].Key();
-            }
-            return 0;
-        }
     };
 
     void *operator new(std::size_t bytes) {

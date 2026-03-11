@@ -56,7 +56,7 @@ Collection::Collection(const CollectionLoadData &loadData, Vault *v) : mTable(lo
     const unsigned int *typeList = loadData.GetTypes();
     const CollectionLoadData::AttribEntry *entries = loadData.GetEntries();
 
-    for (std::size_t i = 0; i < loadData.mNumEntries; i++) {
+    for (unsigned int i = 0; i < loadData.mNumEntries; i++) {
         const CollectionLoadData::AttribEntry &entry = entries[i];
         if (entry.mNodeFlags & Node::Flag_IsByValue) {
             unsigned int bytes = Database::Get().GetTypeDesc(typeList[entry.mType]).GetSize();

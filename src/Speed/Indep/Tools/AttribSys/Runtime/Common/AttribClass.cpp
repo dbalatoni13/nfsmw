@@ -49,6 +49,11 @@ Key Class::GetNextDefinition(Key prev) const {
     return 0;
 }
 
+ClassPrivate::CollectionHashMap::~CollectionHashMap() {}
+
+ClassPrivate::CollectionHashMap::CollectionHashMap(unsigned int reserve)
+    : VecHashMap<unsigned int, Attrib::Collection, Attrib::Class::TablePolicy, true, 40>(reserve) {}
+
 const Collection *Class::GetCollection(Key key) const {
     return mPrivates.mCollections.Find(key);
 }
@@ -77,12 +82,16 @@ Key Class::GetNextCollection(Key prev) const {
     return 0;
 }
 
+inline void Class::Reserve(unsigned int spaceForAdditionalCollections) {
+    mPrivates.mCollections.Reserve(mPrivates.mCollections.Size() + spaceForAdditionalCollections);
+}
+
 void Class::SetTableBuffer(void *fixedAlloc, std::size_t bytes) {
     mPrivates.mCollections.SetTableBuffer(fixedAlloc, bytes);
 }
 
 unsigned int Class::GetTableNodeSize() const {
-    return 12;
+    return mPrivates.mCollections.GetTableNodeSize();
 }
 
 void Class::Delete() const {
@@ -93,6 +102,7 @@ bool Class::AddCollection(Collection *c) {
     return mPrivates.mCollections.Add(c->GetKey(), c);
 }
 
+// NON_MATCHING: 98.6% - r6/r7 register swap in VecHashMap::FindIndex inlined into Remove
 bool Class::RemoveCollection(Collection *c) {
     return mPrivates.mCollections.Remove(c->GetKey());
 }

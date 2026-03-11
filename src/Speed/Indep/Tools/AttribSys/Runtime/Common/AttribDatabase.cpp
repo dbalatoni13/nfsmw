@@ -1,6 +1,7 @@
 #include "../AttribHash.h"
 #include "../AttribSys.h"
 #include "AttribPrivate.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribLoadAndGo.h"
 #include <types.h>
 
@@ -218,6 +219,7 @@ bool Database::AddClass(Class *c) {
     return mPrivates.mClasses.Add(c->GetKey(), c);
 }
 
+// NON_MATCHING: 98.5% - r6/r7 register swap in VecHashMap::FindIndex inlined into Remove
 void Database::RemoveClass(const Class *c) {
     mPrivates.mClasses.Remove(c->GetKey());
 }
@@ -238,5 +240,7 @@ const char *KeyToString(Key k) {
 Key StringToKey(const char *str) {
     return StringHash32(str);
 }
+
+TypeTable::~TypeTable() {}
 
 }; // namespace Attrib

@@ -351,3 +351,7 @@ If an STL node insertion path refuses to match, check whether the element type i
 
 TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass
 If two near-matching functions differ only because the same inlined helper chain lands `mTableSize` in `r6` in the original but `r7` in the rebuild, treat it as a likely GCC 3.x register-allocation tie-break, not a normal source mismatch. In `zAttribSys`, `VecHashMap::FindIndex` inlined through `Remove -> RemoveIndex -> UpdateSearchLength` produced a stable `lwz r6, 4(r3)` vs `lwz r7, 4(r3)` split, which then propagated into later `UpdateSearchLength` control-flow differences. This survived 300+ source experiments: loop-form changes, adding/removing temporaries, splitting/merging expressions, helper inline/outline changes, declaration-order tweaks, member type changes, access-control changes, template method reorderings, and inline vs out-of-line ctor/dtor placement. Once the diff has collapsed to this kind of isolated register swap and DWARF locals/inlining already match, stop attacking each caller separately. Document the functions as `NON_MATCHING`, note the shared inlined root cause, and only consider flag permutation or compiler-level investigation as a last resort.
+
+### NamedRodataForInlinedAllocatorStrings
+TU: zAttribSys | Function: DatabaseExportPolicy::Initialize
+When an inlined allocator path must reference a specific rodata symbol, replace a repeated string literal with a named `static const char[]` so the compiler preserves the expected rodata label and relocation pattern.
