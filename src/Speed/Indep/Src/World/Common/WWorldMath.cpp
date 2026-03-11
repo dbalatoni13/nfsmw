@@ -191,8 +191,8 @@ bool WWorldMath::SegmentIntersect(const UMath::Vector4 *line1, const UMath::Vect
                 if (intersectPt != nullptr) {
                     float t = ua_n / ua_d;
                     intersectPt->x = t * x11 + l1x;
-                    intersectPt->z = t * z11 + l1z;
                     intersectPt->w = 1.0f;
+                    intersectPt->z = t * z11 + l1z;
                     intersectPt->y = t * (line1[1].y - line1[0].y) + line1[0].y;
                 }
                 return true;
