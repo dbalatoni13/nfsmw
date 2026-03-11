@@ -134,7 +134,7 @@ void WCollider::Refresh(const UMath::Vector3 &pt, float radius, bool predictiveS
             fRequestedRadius = radius;
 
             if (predictiveSizing) {
-                CalcNewRegionSizeFromRequested(fRegionInitialized, pt, radius, fLastRequestedPosition, fLastRequestedRadius, fLastRefreshedPosition,
+                CalcNewRegionSizeFromRequested(fRegionInitialized, fRequestedPosition, radius, fLastRequestedPosition, fLastRequestedRadius, fLastRefreshedPosition,
                                                fPosition, fRadius);
             } else {
                 fPosition = fRequestedPosition;

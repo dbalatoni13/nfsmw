@@ -46,6 +46,25 @@ inline void Crossxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Ve
     VU0_v4crossprodxyz(a, b, r);
 }
 
+inline float PtDir4(const UMath::Vector4 &p1, const UMath::Vector4 &p2, const UMath::Vector3 &tp) {
+    return (p1.x - p2.x) * (tp.z - p2.z) - (tp.x - p2.x) * (p1.z - p2.z);
+}
+
+inline bool InTri(const UMath::Vector3 &pt, const UMath::Vector4 *pts) {
+    float d = PtDir4(pts[0], pts[1], pt);
+    if (0.0f < d) {
+        if (0.0f <= PtDir4(pts[1], pts[2], pt)) {
+            return 0.0f <= PtDir4(pts[2], pts[0], pt);
+        }
+        return false;
+    } else {
+        if (PtDir4(pts[1], pts[2], pt) <= 0.0f) {
+            return PtDir4(pts[2], pts[0], pt) <= 0.0f;
+        }
+        return false;
+    }
+}
+
 bool IntersectCircle(float x1, float y1, float x2, float y2, float cx, float cy, float r, float &u1, float &u2);
 bool MakeSegSpaceMatrix(const UMath::Vector3 &startPt, const UMath::Vector3 &endPt, UMath::Matrix4 &mat);
 float GetPlaneY(const UMath::Vector3 &normal, const UMath::Vector3 &pointOnPlane, const UMath::Vector3 &testPoint);

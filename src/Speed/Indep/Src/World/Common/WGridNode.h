@@ -87,13 +87,13 @@ inline WGridNode::iterator::iterator(const WGridNode *node, WGridNode_ElemType t
       fElemInd(nullptr), //
       fValid(false), //
       fDynamic(false) {
-    fNumEntriesRemaining = fNode->GetElemTypeCount(type);
-    if (fNumEntriesRemaining > 0) {
-        fValid = true;
-        fElemInd = fNode->GetElemTypePtr(type);
+    fNumEntriesRemaining = node->GetElemTypeCount(type);
+    if (fNumEntriesRemaining != 0) {
+        fElemInd = node->GetElemTypePtr(type);
     }
-    if (fNode->fDynElems != nullptr) {
-        fIter = fNode->fDynElems->begin();
+    fValid = (fNumEntriesRemaining != 0);
+    if (node->fDynElems != nullptr) {
+        fIter = node->fDynElems->begin();
         fValid = true;
     }
 }
