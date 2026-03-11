@@ -105,9 +105,9 @@ void uiRepSheetMain::NotificationMessage(unsigned long msg, FEObject* obj, unsig
 }
 
 void uiRepSheetMain::Setup() {
-    pRivalImg = FEngFindImage(PackageFilename, 0xc1f62308);
-    pTagImg = FEngFindImage(PackageFilename, 0xf5a2a087);
-    FEImage* bgImg = FEngFindImage(PackageFilename, 0x2cbe1dd0);
+    pRivalImg = FEngFindImage(GetPackageName(), 0xc1f62308);
+    pTagImg = FEngFindImage(GetPackageName(), 0xf5a2a087);
+    FEImage* bgImg = FEngFindImage(GetPackageName(), 0x2cbe1dd0);
     RivalStreamer.Init(iCurrentViewBin, pRivalImg, pTagImg, bgImg);
 
     AddOption(new RepSheetIcon(0xefc9662e, 0x84e4a54c, 0));
@@ -138,8 +138,8 @@ unsigned int uiRepSheetMain::GetDefeatedTexture() {
 }
 
 void uiRepSheetMain::UpdateInfo() {
-    FEPrintf(PackageFilename, 0xb514e2d8, "%d", 0);
-    FEPrintf(PackageFilename, 0xf91a59f6, "%d", 0);
+    FEPrintf(GetPackageName(), 0xb514e2d8, "%d", 0);
+    FEPrintf(GetPackageName(), 0xf91a59f6, "%d", 0);
 }
 
 void uiRepSheetMain::ScrollRival(eScrollDir dir) {

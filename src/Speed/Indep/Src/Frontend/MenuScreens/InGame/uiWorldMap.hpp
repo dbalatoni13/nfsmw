@@ -8,6 +8,7 @@
 #include <types.h>
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/UIWidgetMenu.hpp"
+#include "Speed/Indep/Src/Gameplay/GRace.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -80,7 +81,7 @@ struct MapItem : public bTNode<MapItem> {
     void GetCurrentPos(bVector2& pos);
     virtual void UpdatePos(bVector2& pos);
     virtual void UpdateScale(float scale);
-    virtual void Draw();
+    virtual void Draw() {}
     virtual void Show();
     virtual void Hide();
     virtual void ResetSize();
@@ -141,7 +142,7 @@ struct WorldMap : public UIWidgetMenu {
     void AddCops();
     void AddRoadBlocks();
     void AddIcon(eWorldMapItemType type, unsigned int icon_hash, GIcon* icon);
-    void AddIcons(enum Type desiredIconType);
+    void AddIcons(GRace::Type desiredIconType);
     void SetupNavigation();
     void SetupEvent();
     void SetupPursuit();

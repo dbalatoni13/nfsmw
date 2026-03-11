@@ -23,10 +23,10 @@ uiRepSheetRivalBio::uiRepSheetRivalBio(ScreenConstructorData* sd)
     if ((FEDatabase->GetGameMode() & 0x20000) == 0) {
         cFEng::Get()->QueuePackageMessage(0xaf922178, PackageFilename, nullptr);
     } else {
-        if (FEDatabase->GetCareerSettings()->CurrentBin == 16) {
-            new EEnterBin(FEDatabase->GetCareerSettings()->CurrentBin - 1);
+        if (FEDatabase->GetCareerSettings()->GetCurrentBin() == 16) {
+            new EEnterBin(FEDatabase->GetCareerSettings()->GetCurrentBin() - 1);
         }
-        iCurrentViewBin = FEDatabase->GetCareerSettings()->CurrentBin;
+        iCurrentViewBin = FEDatabase->GetCareerSettings()->GetCurrentBin();
         cFEng::Get()->QueuePackageMessage(0xb21a45f, PackageFilename, nullptr);
     }
     Setup();
@@ -54,21 +54,21 @@ void uiRepSheetRivalBio::NotificationMessage(unsigned long msg, FEObject* obj, u
 
 void uiRepSheetRivalBio::RefreshHeader() {
     unsigned int hash = FEngHashString("BL_NAME_%d", iCurrentViewBin);
-    FEngSetLanguageHash(PackageFilename, 0x7ac3d0c9, hash);
+    FEngSetLanguageHash(GetPackageName(), 0x7ac3d0c9, hash);
     hash = FEngHashString("BL_RIDE_%d", iCurrentViewBin);
-    FEngSetLanguageHash(PackageFilename, 0xb1f2748d, hash);
+    FEngSetLanguageHash(GetPackageName(), 0xb1f2748d, hash);
     hash = FEngHashString("BL_BIO_1_%d", iCurrentViewBin);
-    FEngSetLanguageHash(PackageFilename, 0x27e1d6d8, hash);
+    FEngSetLanguageHash(GetPackageName(), 0x27e1d6d8, hash);
     hash = FEngHashString("BL_BIO_2_%d", iCurrentViewBin);
-    FEngSetLanguageHash(PackageFilename, 0xcb5bf41a, hash);
+    FEngSetLanguageHash(GetPackageName(), 0xcb5bf41a, hash);
     hash = FEngHashString("BL_BIO_3_%d", iCurrentViewBin);
-    FEngSetLanguageHash(PackageFilename, 0xa6f07bf3, hash);
+    FEngSetLanguageHash(GetPackageName(), 0xa6f07bf3, hash);
 }
 
 void uiRepSheetRivalBio::Setup() {
-    pRivalImg = FEngFindImage(PackageFilename, 0xc1f62308);
-    pTagImg = FEngFindImage(PackageFilename, 0xf5a2a087);
-    pBGImg = FEngFindImage(PackageFilename, 0x2cbe1dd0);
+    pRivalImg = FEngFindImage(GetPackageName(), 0xc1f62308);
+    pTagImg = FEngFindImage(GetPackageName(), 0xf5a2a087);
+    pBGImg = FEngFindImage(GetPackageName(), 0x2cbe1dd0);
     RivalStreamer.Init(iCurrentViewBin, pRivalImg, pTagImg, pBGImg);
     RefreshHeader();
 }

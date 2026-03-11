@@ -37,9 +37,9 @@ public:
     virtual void Disable() { bEnabled = false; }
     virtual void SetFocus(const char* parent_pkg);
     virtual void UnsetFocus();
-    virtual void SetPos(bVector2& pos);
-    virtual void SetPosX(float x);
-    virtual void SetPosY(float y);
+    virtual void SetPos(bVector2& pos) { SetTopLeft(pos); }
+    virtual void SetPosX(float x) { SetTopLeftX(x); }
+    virtual void SetPosY(float y) { SetTopLeftY(y); }
 
     bool IsEnabled();
     bool IsHidden();

@@ -182,8 +182,11 @@ class CareerSettings {
     uint32 GetCurrentCar() {
         return CurrentCar;
     }
+    uint8 GetCurrentBin() const {
+        return CurrentBin;
+    }
 
-  private:
+  public:
     uint32 CurrentCar;           // offset 0x0, size 0x4
     uint32 SpecialFlags;         // offset 0x4, size 0x4
     uint8 CurrentBin;            // offset 0x8, size 0x1

@@ -39,7 +39,7 @@ void uiRepSheetRivalFlow::Next() {
         cFEng::Get()->QueuePackageSwitch("IG_BL_MARKSELECT", 1, 0, false);
         break;
     case 2: {
-        unsigned char bin = FEDatabase->GetCareerSettings()->CurrentBin;
+        unsigned char bin = FEDatabase->GetCareerSettings()->GetCurrentBin();
         if (bin == 8 || bin == 12) {
             cFEng::Get()->QueuePackageSwitch("IG_BL_REGIONUNLOCK", 1, 0, false);
         } else {
@@ -64,7 +64,7 @@ void uiRepSheetRivalFlow::Next() {
         break;
     }
     case 6: {
-        unsigned char bin = FEDatabase->GetCareerSettings()->CurrentBin;
+        unsigned char bin = FEDatabase->GetCareerSettings()->GetCurrentBin();
         if (bin != 16) {
             iCurrentViewBin = bin;
             cFEng::Get()->QueuePackageSwitch("IG_BL_BIO", 3, 0, false);

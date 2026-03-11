@@ -28,9 +28,9 @@ uiRepSheetMilestones::uiRepSheetMilestones(ScreenConstructorData* sd)
     TrackMap = nullptr;
     TrackMapStreamer = new UITrackMapStreamer();
     if (!bIsInGame) {
-        FEngSetLanguageHash(PackageFilename, 0xbde82fcc, 0x216f1b81);
+        FEngSetLanguageHash(GetPackageName(), 0xbde82fcc, 0x216f1b81);
     } else {
-        FEngSetLanguageHash(PackageFilename, 0xbde82fcc, 0x578b767b);
+        FEngSetLanguageHash(GetPackageName(), 0xbde82fcc, 0x578b767b);
     }
     Setup();
 }

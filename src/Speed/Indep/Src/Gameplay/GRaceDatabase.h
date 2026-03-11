@@ -151,6 +151,7 @@ class GRaceDatabase {
     unsigned int *mInitialUnlockHash;        // offset 0x38, size 0x4
     struct GRaceSaveInfo *mRaceScoreInfo;    // offset 0x3C, size 0x4
 
+  public:
     static GRaceDatabase *mObj;
 };
 

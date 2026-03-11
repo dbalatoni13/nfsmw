@@ -41,7 +41,7 @@ void uiSafehouseRegionUnlock::Setup() {
     pRivalImg = FEngFindImage(PackageFilename, 0xc1f62308);
     pTagImg = FEngFindImage(PackageFilename, 0xf5a2a087);
     pBGImg = FEngFindImage(PackageFilename, 0x2cbe1dd0);
-    unsigned char bin = FEDatabase->GetCareerSettings()->CurrentBin;
+    unsigned char bin = FEDatabase->GetCareerSettings()->GetCurrentBin();
     if (bin == 12) {
         FEngSetLanguageHash(PackageFilename, 0xd6c0e097, 0x29e4b193);
     } else if (bin == 8) {

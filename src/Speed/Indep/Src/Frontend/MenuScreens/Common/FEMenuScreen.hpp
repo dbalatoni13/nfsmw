@@ -171,6 +171,7 @@ class MenuScreen {
   private:
     static int gEAMIconState; // size: 0x4, address: 0xFFFFFFFF
 
+  protected:
     const char *PackageFilename;                 // offset 0xC, size 0x4
     ScreenConstructorData ConstructData;         // offset 0x10, size 0xC
     bool IsGarageScreen;                         // offset 0x1C, size 0x1

@@ -138,7 +138,7 @@ void WorldMap::AddRoadBlocks() {
 void WorldMap::AddIcon(eWorldMapItemType type, unsigned int hash, GIcon* icon) {
 }
 
-void WorldMap::AddIcons(Type type) {
+void WorldMap::AddIcons(GRace::Type type) {
 }
 
 void WorldMap::SetupNavigation() {

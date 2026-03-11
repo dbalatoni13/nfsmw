@@ -71,12 +71,12 @@ bool UISafehouseRaceSheet::AddRace(GRaceParameters* race) {
 
 void UISafehouseRaceSheet::Setup() {
     ClearData();
-    GRaceBin* bin = GRaceDatabase::mObj->GetBinByNumber(iCurrentViewBin);
+    GRaceBin* bin = GRaceDatabase::Get().GetBinNumber(iCurrentViewBin);
     if (bin != nullptr) {
         unsigned int count = bin->GetBossRaceCount();
         for (unsigned int i = 0; i < count; i++) {
             unsigned int hash = bin->GetBossRaceHash(i);
-            GRaceParameters* race = GRaceDatabase::mObj->GetRaceFromHash(hash);
+            GRaceParameters* race = GRaceDatabase::Get().GetRaceFromHash(hash);
             AddRace(race);
         }
     }

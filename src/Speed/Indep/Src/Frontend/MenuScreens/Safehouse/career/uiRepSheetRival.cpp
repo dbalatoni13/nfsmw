@@ -61,14 +61,14 @@ void uiRepSheetRival::NotificationMessage(unsigned long msg, FEObject* obj, unsi
         if (bMidRivalFlow) {
             uiRepSheetRivalFlow::Get()->Next();
         } else if ((FEDatabase->GetGameMode() & 0x20000) != 0) {
-            new EEnterBin(FEDatabase->GetCareerSettings()->CurrentBin - 1);
+            new EEnterBin(FEDatabase->GetCareerSettings()->GetCurrentBin() - 1);
             uiRepSheetRivalFlow::Get()->StartFlow(1);
         } else if (launch_race != nullptr) {
             if (!bIsInGame) {
                 StartRace();
             } else {
                 new ERaceSheetOff();
-                GManager::mObj->StartRaceFromInGame(launch_race->GetEventHash());
+                GManager::Get().StartRaceFromInGame(launch_race->GetEventHash());
             }
         }
     } else if (msg == 0x911ab364) {
@@ -89,11 +89,11 @@ void uiRepSheetRival::NotificationMessage(unsigned long msg, FEObject* obj, unsi
 }
 
 void uiRepSheetRival::Setup() {
-    pRivalImg = FEngFindImage(PackageFilename, 0xc1f62308);
-    pDefeatedImg = FEngFindImage(PackageFilename, 0x7fe4020f);
-    pDefeatedImgBG = FEngFindImage(PackageFilename, 0x26869897);
-    pTagImg = FEngFindImage(PackageFilename, 0xf5a2a087);
-    pBGImg = FEngFindImage(PackageFilename, 0x2cbe1dd0);
+    pRivalImg = FEngFindImage(GetPackageName(), 0xc1f62308);
+    pDefeatedImg = FEngFindImage(GetPackageName(), 0x7fe4020f);
+    pDefeatedImgBG = FEngFindImage(GetPackageName(), 0x26869897);
+    pTagImg = FEngFindImage(GetPackageName(), 0xf5a2a087);
+    pBGImg = FEngFindImage(GetPackageName(), 0x2cbe1dd0);
     RivalStreamer.Init(iCurrentViewBin, pRivalImg, pTagImg, pBGImg);
     FEngSetInvisible(reinterpret_cast<FEObject*>(pDefeatedImg));
     FEngSetInvisible(reinterpret_cast<FEObject*>(pDefeatedImgBG));
@@ -122,7 +122,7 @@ unsigned int uiRepSheetRival::GetDefeatedTexture() {
 }
 
 void uiRepSheetRival::RefreshHeader() {
-    GRaceBin* bin = GRaceDatabase::mObj->GetBinByNumber(iCurrentViewBin);
+    GRaceBin* bin = GRaceDatabase::mObj->GetBinNumber(iCurrentViewBin);
     if (bin == nullptr) {
         return;
     }
@@ -136,13 +136,13 @@ void uiRepSheetRival::RefreshHeader() {
         SetupRace(i + 1, race);
     }
     int totalBounty = FEDatabase->GetPlayerCarStable(0)->GetTotalBounty();
-    FEPrintf(PackageFilename, 0xb514e2d8, "%d", totalBounty);
+    FEPrintf(GetPackageName(), 0xb514e2d8, "%d", totalBounty);
 }
 
 void uiRepSheetRival::SetupRace(unsigned int index, GRaceParameters* race) {
     unsigned int iconHash = FEngHashString("RACE_ICON_%d", index);
     unsigned int nameHash = FEngHashString("RACE_NAME_%d", index);
-    FEngSetLanguageHash(PackageFilename, nameHash, race->GetEventHash());
+    FEngSetLanguageHash(GetPackageName(), nameHash, race->GetEventHash());
 }
 
 void uiRepSheetRival::TextureLoadedCallback(unsigned int tex) {
