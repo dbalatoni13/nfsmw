@@ -120,6 +120,7 @@ class EAXSound : public AudioMemBase {
     void StopSND11();
 
     void StopUISoundFX(eMenuSoundTriggers trigger);
+    void PlayUISoundFX(eMenuSoundTriggers trigger);
 
     void QueueNISStream(unsigned int anim_id, int camera_track_number, void (*setmstimecb)(unsigned int, int));
     bool IsNISStreamQueued();
