@@ -61,6 +61,8 @@ struct UIMemcardBase : public UIMemcardKeyboard {
     bTList<UIMemcardBase::Item> m_Items; // offset 0x88, size 0x8
     bool m_SimPausedForMemcard;   // offset 0x90, size 0x1
 
+    bool IsInButtonAnimation() { return m_bInButtonAnimation; }
+
     UIMemcardBase(ScreenConstructorData* sd);
     ~UIMemcardBase() override;
     void Abort() override;
