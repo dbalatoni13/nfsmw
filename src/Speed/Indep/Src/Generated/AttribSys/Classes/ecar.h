@@ -73,6 +73,10 @@ struct ecar : Instance {
         Change(FindCollection(ClassKey(), collectionkey));
     }
 
+    void ChangeWithDefault(unsigned int collectionkey) {
+        Change(FindCollectionWithDefault(ClassKey(), collectionkey));
+    }
+
     static Key ClassKey();
 
     const RefSpec &CameraInfo_Close(unsigned int index) const {

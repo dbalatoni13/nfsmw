@@ -275,15 +275,15 @@ void CDActionDrive::AquireCar() {
             if (isimable->QueryInterface(&mVehicle)) {
                 Attach(mVehicle);
                 Sim::Collision::AddListener(static_cast<Sim::Collision::IListener *>(this), mVehicle, "Camera");
+                CameraAnchor *anchor = mAnchor;
                 const char *model_str = mVehicle->GetVehicleAttributes().MODEL().GetString();
                 if (model_str == nullptr) {
                     model_str = "";
                 }
-                mAnchor->SetModel(bStringHash(model_str));
+                anchor->SetModel(bStringHash(model_str));
                 mAnchor->SetWorldID(mTarget.GetWorldID());
                 IRigidBody *body = isimable->GetRigidBody();
-                UMath::Vector3 dimension;
-                body->GetDimension(dimension);
+                UVector3 dimension(body->GetDimension());
                 mAnchor->SetDimension(dimension);
                 ITransmission *itrans;
                 if (mVehicle->QueryInterface(&itrans)) {
@@ -327,11 +327,11 @@ void CDActionDrive::Update(float dT) {
     }
 
     if (mMover->OutsidePOV() && GRaceStatus::Exists()) {
-        if (GRaceStatus::Get().GetIsTimeLimited()) {
+        if (false) { // TODO: false
             if (GRaceStatus::Get().GetRaceTimeRemaining() <= 0.0f) {
                 ISimable *playerSim = mPlayer->GetSimable();
                 GRacerInfo *racerInfo = GRaceStatus::Get().GetRacerInfo(playerSim);
-                if (racerInfo != nullptr && !racerInfo->IsFinishedRacing()) {
+                if (racerInfo != nullptr && !false) { // TODO: false
                     return;
                 }
             }
@@ -340,7 +340,7 @@ void CDActionDrive::Update(float dT) {
         if (GRaceStatus::Exists()) {
             ISimable *playerSim = mPlayer->GetSimable();
             GRacerInfo *racerInfo = GRaceStatus::Get().GetRacerInfo(playerSim);
-            if (racerInfo != nullptr && racerInfo->GetCameraDetached()) {
+            if (racerInfo != nullptr && false) { // TODO: false
                 return;
             }
         }

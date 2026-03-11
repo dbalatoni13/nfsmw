@@ -731,8 +731,11 @@ float ICEMover::GetDutch(float f_param) {
 
     return pDutch->GetVal(f_param);
 
-blend:
-    return pDutch->GetVal() * (1.0f - f_param) + pDutch->GetValDesired() * f_param;
+blend: {
+    float v0 = pDutch->GetVal();
+    float v1 = pDutch->GetValDesired();
+    return v0 * (1.0f - f_param) + v1 * f_param;
+}
 }
 
 unsigned short ICEMover::GetFOV(float f_param) {

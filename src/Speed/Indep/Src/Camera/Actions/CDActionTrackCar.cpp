@@ -161,11 +161,12 @@ void CDActionTrackCar::AquireCar() {
         if (mTarget.IsValid()) {
             if (isimable->QueryInterface(&mVehicle)) {
                 Attach(mVehicle);
+                CameraAnchor *anchor = mAnchor;
                 const char *model_str = mVehicle->GetVehicleAttributes().MODEL().GetString();
                 if (model_str == nullptr) {
                     model_str = "";
                 }
-                mAnchor->SetModel(bStringHash(model_str));
+                anchor->SetModel(bStringHash(model_str));
                 mAnchor->SetWorldID(mTarget.GetWorldID());
                 ITransmission *itrans;
                 if (mVehicle->QueryInterface(&itrans)) {

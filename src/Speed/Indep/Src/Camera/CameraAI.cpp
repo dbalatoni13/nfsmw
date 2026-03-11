@@ -311,21 +311,21 @@ bool AreMomentCamerasEnabled() {
 // --- CameraAI namespace functions ---
 
 void CameraAI::Update(float dT) {
-    unsigned int playercount = UTL::Collections::ListableSet<IPlayer, 8, ePlayerList, PLAYER_MAX>::GetList(PLAYER_LOCAL).size();
-    for (unsigned int player = 1; player <= playercount; ++player) {
-        EVIEW_ID viewID = static_cast<EVIEW_ID>(player);
+    unsigned int playercount = IPlayer::Count(PLAYER_LOCAL);
+    unsigned int player = 0;
+    do {
+        EVIEW_ID viewID = static_cast<EVIEW_ID>(++player);
         IPlayer *iplayer = FindPlayer(viewID);
         Director *cd = FindDirector(viewID);
-        if (cd == nullptr) {
-            if (iplayer != nullptr) {
-                cd = new ("CameraAI") Director(viewID);
+        if (cd != nullptr) {
+            if (iplayer == nullptr) {
+                delete cd;
             }
-        } else if (iplayer == nullptr) {
-            delete cd;
+        } else if (iplayer != nullptr) {
+            cd = new (static_cast<const char *>(0)) Director(viewID);
         }
-    }
-    const Director::List &list = Director::GetList();
-    for (Director *const *iter = list.begin(); iter != list.end(); ++iter) {
+    } while (player <= playercount);
+    for (Director *const *iter = Director::GetList().begin(); iter != Director::GetList().end(); ++iter) {
         Director *cd = *iter;
         cd->Update(dT);
     }

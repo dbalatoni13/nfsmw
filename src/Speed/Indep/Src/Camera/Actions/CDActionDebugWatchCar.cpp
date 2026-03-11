@@ -17,10 +17,10 @@ const Attrib::StringKey &CDActionDebugWatchCar::GetName() const {
 }
 
 Attrib::StringKey CDActionDebugWatchCar::GetNext() const {
-    if (!CameraDebugWatchCar) {
-        return mPrev;
+    if (CameraDebugWatchCar) {
+        return Attrib::StringKey();
     }
-    return Attrib::StringKey();
+    return mPrev;
 }
 
 ISimable *CDActionDebugWatchCar::GetSimable() {

@@ -58,12 +58,8 @@ class StringKey {
     }
 
   private:
-    // total size: 0x10
     unsigned long long mHash64; // offset 0x0, size 0x8
-    union {
-        unsigned int mHash32;       // offset 0x8, size 0x4
-        unsigned int mHash;
-    };
+    unsigned int mHash32;       // offset 0x8, size 0x4
     const char *mString;        // offset 0xC, size 0x4
 };
 

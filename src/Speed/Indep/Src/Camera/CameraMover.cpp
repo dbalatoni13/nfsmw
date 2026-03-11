@@ -245,7 +245,7 @@ void CameraAnchor::SetModel(int model) {
         }
 
         mModel = model;
-        // TODO: mModelAttributes.ChangeWithDefault
+        mModelAttributes.ChangeWithDefault(Attrib::StringToLowerCaseKey(name));
     }
 }
 

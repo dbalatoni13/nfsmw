@@ -632,9 +632,6 @@ void ICEManager::UnloadCameraSet(bChunk *set_chunk) {
     case 0x8003B203:
         context = eDCE_GENERIC;
         break;
-    default:
-        context = eDCE_NOCONTEXT;
-        break;
     }
 
     for (bChunk *chunk = set_chunk->GetFirstChunk(); chunk != set_chunk->GetLastChunk(); chunk = chunk->GetNext()) {
@@ -650,22 +647,20 @@ void ICEManager::UnloadCameraSet(bChunk *set_chunk) {
 
     switch (context) {
     case eDCE_NIS:
-        num_groups = nNisCameras;
         groups = pNisCameras;
+        num_groups = nNisCameras;
         break;
     case eDCE_FMV:
-        num_groups = nFmvCameras;
         groups = pFmvCameras;
+        num_groups = nFmvCameras;
         break;
     case eDCE_REPLAY:
-        num_groups = nReplayCameras;
         groups = pReplayCameras;
+        num_groups = nReplayCameras;
         break;
     case eDCE_GENERIC:
-        num_groups = nGenericCameras;
         groups = pGenericCameras;
-        break;
-    default:
+        num_groups = nGenericCameras;
         break;
     }
 

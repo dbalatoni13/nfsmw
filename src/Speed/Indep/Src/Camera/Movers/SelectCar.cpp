@@ -221,14 +221,16 @@ float SelectCarCameraMover::FindBestAngleGoal(float start, float goal) {
     float normal_h_diff = bAbs(start - goal);
     float over_h_diff = bAbs(start - (goal + kSelectCarWrapAngle));
     float under_h_diff = bAbs(start - (goal - kSelectCarWrapAngle));
+    float return_goal;
 
     if (over_h_diff < normal_h_diff && over_h_diff < under_h_diff) {
-        return goal + kSelectCarWrapAngle;
+        return_goal = goal + kSelectCarWrapAngle;
+    } else if (under_h_diff < normal_h_diff && under_h_diff < over_h_diff) {
+        return_goal = goal - kSelectCarWrapAngle;
+    } else {
+        return_goal = goal;
     }
-    if (under_h_diff < normal_h_diff && under_h_diff < over_h_diff) {
-        return goal - kSelectCarWrapAngle;
-    }
-    return goal;
+    return return_goal;
 }
 
 void SelectCarCameraMover::CreateCameraMatrix(bMatrix4 *camera_matrix, SelectCarCameraData *camera_data) {

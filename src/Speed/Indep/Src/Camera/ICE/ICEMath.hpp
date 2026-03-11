@@ -23,6 +23,12 @@ struct Vector3 {
         pad = 0.0f;
     }
 
+    Vector3(float _x, float _y, float _z)
+        : x(_x), //
+          y(_y), //
+          z(_z), //
+          pad(0.0f) {}
+
     float x;   // offset 0x0, size 0x4
     float y;   // offset 0x4, size 0x4
     float z;   // offset 0x8, size 0x4
