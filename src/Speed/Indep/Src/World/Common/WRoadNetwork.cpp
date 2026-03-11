@@ -1530,8 +1530,8 @@ void WRoadNav::Reset() {
     bCrossedPathGoal = false;
     fPosition = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
     fForwardVector = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
-    fSegmentInd = 0;
     fNodeInd = 0;
+    fSegmentInd = 0;
     fSegTime = 0.0f;
     fCurvature = 0.0f;
     fStartPos = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
