@@ -379,17 +379,13 @@ bool WTriggerManager::CheckCollideSRB(const IRigidBody *srBody, const WTrigger *
     UMath::Vector3 cp;
     float radsSq;
 
-    rPos.x = srBody->GetPosition().x;
-    rPos.y = srBody->GetPosition().y;
-    rPos.z = srBody->GetPosition().z;
+    rPos = srBody->GetPosition();
     srRadius = srBody->GetRadius();
     srRadiusPlusVel = srBody->GetSpeed() * dT + srRadius + trig->fPosRadius.w;
     UMath::Scale(srBody->GetLinearVelocity(), dT, dVdT);
     UMath::Add(rPos, dVdT, rPos);
-    cp.x = trig->fPosRadius.x;
-    cp.z = trig->fPosRadius.z;
-    unsigned char shapeNum = trig->fShape;
-    cp.y = trig->fPosRadius.y;
+    cp = UMath::Vector4To3(trig->fPosRadius);
+    unsigned char shapeNum = reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF;
     radsSq = srRadiusPlusVel * srRadiusPlusVel;
 
     if (shapeNum == 1) {
