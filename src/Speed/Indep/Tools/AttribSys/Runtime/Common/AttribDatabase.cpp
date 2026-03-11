@@ -219,6 +219,7 @@ bool Database::AddClass(Class *c) {
     return mPrivates.mClasses.Add(c->GetKey(), c);
 }
 
+// NON_MATCHING: 98.5% - r6/r7 register swap in VecHashMap::FindIndex inlined into Remove
 void Database::RemoveClass(const Class *c) {
     mPrivates.mClasses.Remove(c->GetKey());
 }

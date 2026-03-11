@@ -188,17 +188,11 @@ class Database {
     const TypeDesc &GetTypeDesc(Type t) const;
     void DumpContents(Key classFilter) const;
 
-    static Database &Get() {
-        return *sThis;
-    }
+    static Database &Get();
 
-    void operator delete(void *ptr, std::size_t bytes) {
-        Free(ptr, bytes, "Attrib::Database");
-    }
+    void operator delete(void *ptr, unsigned int bytes);
 
-    bool IsInitialized() {
-        return sThis != nullptr;
-    }
+    static bool IsInitialized();
 
     friend class DatabasePrivate;
     friend class DatabaseExportPolicy;
@@ -211,6 +205,18 @@ class Database {
 
     DatabasePrivate &mPrivates; // offset 0x0, size 0x4
 };
+
+inline Database &Database::Get() {
+    return *sThis;
+}
+
+inline void Database::operator delete(void *ptr, unsigned int bytes) {
+    Free(ptr, bytes, "Attrib::Database");
+}
+
+inline bool Database::IsInitialized() {
+    return sThis != nullptr;
+}
 
 class Array {
 #define Flag_AlignedAt16 (1 << 15)
@@ -408,9 +414,42 @@ class Node {
         Flag_IsLocatable = 1 << 6,
     };
 
+    // DWARF order: GetFlag, SetFlag, operator new, operator delete, operator new(placement),
+    //              operator delete(), Node(), Node(key,...), operator=, operator==/!=/< (Node),
+    //              operator==/!=/< (uint), RequiresRelease..IsLocatable, Invalidate, IsValid,
+    //              GetPointer(void*), GetPointer(const void*), GetArray, GetKey, GetType,
+    //              GetSize, GetCount, GetTypeDesc, MaxSearch, ResetSearchLength,
+    //              SetSearchLength, Move
+
+    bool GetFlag(unsigned int mask) const {
+        return mFlags & mask;
+    }
+
+    void SetFlag(unsigned int mask, bool value) {
+        if (value) {
+            mFlags |= mask;
+        } else {
+            mFlags &= ~mask;
+        }
+    }
+
+    void *operator new(std::size_t bytes) {
+        return AttribAlloc::Allocate(bytes, "");
+    }
+
+    void operator delete(void *ptr, std::size_t bytes) {
+        AttribAlloc::Free(ptr, bytes, "");
+    }
+
     void *operator new(std::size_t, void *ptr) {
         return ptr;
     }
+
+    void *operator new(std::size_t, void *ptr, unsigned int) {
+        return ptr;
+    }
+
+    void operator delete(void *ptr) {}
 
     Node() : mKey(0), mTypeIndex(0), mMax(0), mFlags(0), mPtr(this) {}
 
@@ -421,20 +460,22 @@ class Node {
         }
     }
 
-    void Move(Node &src) {
-        mKey = src.mKey;
-        mTypeIndex = src.mTypeIndex;
-        mPtr = src.mPtr;
-        mFlags = src.mFlags;
-
-        src.mPtr = &src;
-        src.mFlags = 0;
-        src.mKey = 0;
+    const Node &operator=(const Node &rhs) {
+        mKey = rhs.mKey;
+        mPtr = rhs.mPtr;
+        mTypeIndex = rhs.mTypeIndex;
+        mMax = rhs.mMax;
+        mFlags = rhs.mFlags;
+        return *this;
     }
 
-    bool GetFlag(unsigned int mask) const {
-        return mFlags & mask;
-    }
+    bool operator==(const Node &rhs) const { return mKey == rhs.mKey; }
+    bool operator!=(const Node &rhs) const { return mKey != rhs.mKey; }
+    bool operator<(const Node &rhs) const { return mKey < rhs.mKey; }
+
+    bool operator==(unsigned int rhs) const { return mKey == rhs; }
+    bool operator!=(unsigned int rhs) const { return mKey != rhs; }
+    bool operator<(unsigned int rhs) const { return mKey < rhs; }
 
     bool RequiresRelease() const {
         return GetFlag(Flag_RequiresRelease);
@@ -464,11 +505,26 @@ class Node {
         return GetFlag(Flag_IsLocatable);
     }
 
+    void Invalidate() {
+        mPtr = this;
+        mKey = 0;
+    }
+
     bool IsValid() const {
         return IsLaidOut() || mPtr != this;
     }
 
     void *GetPointer(void *layoutptr) const {
+        if (IsByValue()) {
+            return &mValue;
+        } else if (IsLaidOut()) {
+            return (void *)(uintptr_t(layoutptr) + uintptr_t(mPtr));
+        } else {
+            return mPtr;
+        }
+    }
+
+    void *GetPointer(const void *layoutptr) const {
         if (IsByValue()) {
             return &mValue;
         } else if (IsLaidOut()) {
@@ -486,6 +542,18 @@ class Node {
         }
     }
 
+    Key GetKey() const {
+        return IsValid() ? mKey : 0;
+    }
+
+    unsigned int GetType() const {
+        return mTypeIndex;
+    }
+
+    unsigned int GetSize(void *layoutptr) const {
+        return GetTypeDesc().GetSize();
+    }
+
     std::size_t GetCount(void *layoutptr) const {
         if (IsValid()) {
             if (IsArray()) {
@@ -496,29 +564,31 @@ class Node {
         return 0;
     }
 
-    Key GetKey() const {
-        return IsValid() ? mKey : 0;
+    const TypeDesc &GetTypeDesc() const {
+        return Database::Get().GetIndexedTypeDesc(mTypeIndex);
     }
 
     std::size_t MaxSearch() const {
         return mMax;
     }
 
-    void SetSearchLength(std::size_t searchLen) {
-        mMax = std::max(mMax, (unsigned char)searchLen);
-    }
-
     void ResetSearchLength(std::size_t searchLen) {
         mMax = searchLen;
     }
 
-    const TypeDesc &GetTypeDesc() const {
-        return Database::Get().GetIndexedTypeDesc(mTypeIndex);
+    void SetSearchLength(std::size_t searchLen) {
+        mMax = std::max(mMax, (unsigned char)searchLen);
     }
 
-    void Invalidate() {
-        mPtr = this;
-        mKey = 0;
+    void Move(Node &src) {
+        mKey = src.mKey;
+        mTypeIndex = src.mTypeIndex;
+        mPtr = src.mPtr;
+        mFlags = src.mFlags;
+
+        src.mPtr = &src;
+        src.mFlags = 0;
+        src.mKey = 0;
     }
 
   private:
@@ -537,18 +607,13 @@ class Node {
 // total size: 0xC
 class Class {
   public:
-    class TablePolicy {
-      public:
-        static std::size_t KeyIndex(std::size_t k, std::size_t tableSize, unsigned int keyShift) {
-            return RotateNTo32(k, keyShift) % tableSize;
+    struct TablePolicy {
+        static void *Alloc(std::size_t bytes) {
+            return TableAllocFunc(bytes);
         }
 
-        static std::size_t WrapIndex(std::size_t index, std::size_t tableSize, unsigned int keyShift) {
-            return index % tableSize;
-        }
-
-        static std::size_t TableSize(std::size_t entries) {
-            return AdjustHashTableSize(entries);
+        static void Free(void *ptr, std::size_t bytes) {
+            TableFreeFunc(ptr, bytes);
         }
 
         static std::size_t GrowRequest(std::size_t currententries, bool collisionoverrun) {
@@ -559,12 +624,16 @@ class Class {
             }
         }
 
-        static void *Alloc(std::size_t bytes) {
-            return TableAllocFunc(bytes);
+        static std::size_t TableSize(std::size_t entries) {
+            return AdjustHashTableSize(entries);
         }
 
-        static void Free(void *ptr, std::size_t bytes) {
-            TableFreeFunc(ptr, bytes);
+        static unsigned int KeyIndex(unsigned int k, unsigned int tableSize, unsigned int keyShift) {
+            return RotateNTo32(k, keyShift) % tableSize;
+        }
+
+        static unsigned int WrapIndex(unsigned int index, unsigned int tableSize, unsigned int keyShift) {
+            return index % tableSize;
         }
     };
 
@@ -582,6 +651,7 @@ class Class {
     unsigned int GetNumCollections() const;
     Key GetFirstCollection() const;
     Key GetNextCollection(Key prev) const;
+    void Reserve(unsigned int spaceForAdditionalCollections);
     void SetTableBuffer(void *fixedAlloc, std::size_t bytes);
     unsigned int GetTableNodeSize() const;
     void CopyLayout(void *srcLayout, void *dstLayout) const;
