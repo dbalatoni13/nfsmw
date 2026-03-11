@@ -4,7 +4,7 @@
 
 ControllerUnplugged::ControllerUnplugged(ScreenConstructorData* sd)
     : MenuScreen(sd) //
-    , port(PORT_INVALID)
+    , port(static_cast<JoystickPort>(-1))
 {
     Setup();
 }
