@@ -308,7 +308,7 @@ void WRoadNetwork::ResetShortcuts() {
     }
     for (unsigned int road_number = 0; road_number < fNumRoads; road_number++) {
         WRoad *road = GetRoadNonConst(road_number);
-        road->nShortcut = 0;
+        road->nShortcut = 0xFF;
     }
 }
 
@@ -437,6 +437,32 @@ unsigned int WRoadNav::GetRoadSpeechId() {
     return road->nSpeechId;
 }
 
+unsigned char WRoadNav::GetShortcutNumber() {
+    if (!IsValid()) {
+        return 0xFF;
+    }
+    WRoadNetwork &rn = WRoadNetwork::Get();
+    int segment_number = GetSegmentInd();
+    const WRoadSegment *segment = rn.GetSegment(segment_number);
+    if (segment->IsDecision()) {
+        const WRoadNode *nodes[2];
+        int which_node = GetNodeInd();
+        rn.GetSegmentNodes(*segment, nodes);
+        segment = GetAttachedDirectionalSegment(nodes[which_node], segment_number);
+        if (segment == nullptr || !segment->IsShortcut()) {
+            segment = GetAttachedDirectionalSegment(nodes[which_node ^ 1], segment_number);
+        }
+    }
+    if (segment != nullptr && segment->IsShortcut()) {
+        int road_number = segment->fRoadID;
+        if (road_number != -1) {
+            const WRoad *road = rn.GetRoad(road_number);
+            return road->nShortcut;
+        }
+    }
+    return 0xFF;
+}
+
 bool WRoadNav::IsOnLegalRoad() {
     if (!IsValid()) {
         return false;
@@ -484,8 +510,8 @@ void WRoadNav::InitAtPoint(const UMath::Vector3 &pos, const UMath::Vector3 &dir,
     float time;
     int segment = FindClosestSegmentInd(pos, dir, dirWeight, fPosition, time);
     if (segment == -1) {
-        fValid = false;
         fSegmentInd = 0;
+        fValid = false;
     } else {
         InitAtSegment(static_cast<short>(segment), time, pos, dir, forceCenterLane);
     }
@@ -498,8 +524,8 @@ void WRoadNav::InitAtPath(const UMath::Vector3 &position, bool forceCenterLane) 
     float found_interval = -1.0f;
     int result = FindClosestOnPath(position, &found_position, &found_direction, &found_segment, &found_interval);
     if (result == 0) {
-        fValid = false;
         fSegmentInd = 0;
+        fValid = false;
     } else {
         InitAtSegment(static_cast<short>(found_segment), found_interval, found_position, found_direction, forceCenterLane);
     }

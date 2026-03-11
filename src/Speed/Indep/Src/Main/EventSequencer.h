@@ -13,6 +13,8 @@
 // TODO move?
 struct EventDynamicData {
     // total size: 0x64
+    void Clear() { memset(this, 0, sizeof(EventDynamicData)); }
+
     UMath::Vector4 fPosition;        // offset 0x0, size 0x10
     UMath::Vector4 fVector;          // offset 0x10, size 0x10
     UMath::Vector4 fVelocity;        // offset 0x20, size 0x10

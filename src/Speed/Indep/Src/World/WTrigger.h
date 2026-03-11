@@ -48,6 +48,10 @@ struct WTrigger : public Trigger {
     void UpdateBox(const UMath::Matrix4& boxMat, const UMath::Vector3& center);
     bool UpdatePos(const UMath::Vector3 &newPos, unsigned int triggerInd);
 
+    void Enable() { fFlags |= 1; }
+    void Disable() { fFlags &= ~1; }
+    bool IsEnabled() const { return (fFlags & 1) != 0; }
+
     static void operator delete(void *mem, unsigned int size);
 };
 

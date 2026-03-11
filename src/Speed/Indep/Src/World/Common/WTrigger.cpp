@@ -2,13 +2,31 @@
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Src/Main/Event.h"
+#include "Speed/Indep/Src/Main/EventSequencer.h"
 #include "Speed/Indep/Src/World/WCollisionAssets.h"
 #include "Speed/Indep/Src/World/WGridManagedDynamicElem.h"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+extern EventDynamicData gEventDynamicData;
+
 WTrigger::WTrigger() {
     bMemSet(this, 0, sizeof(WTrigger));
+}
+
+WTrigger::WTrigger(const UMath::Matrix4 &mat, const UMath::Vector3 &dimensions, EventList *eventList, unsigned int flags) {
+    memcpy(this, &mat, sizeof(UMath::Matrix4));
+    fShape = 1;
+    fEvents = eventList;
+    fFlags = flags;
+    fHeight = dimensions.y + dimensions.y;
+    fType = 0;
+    fPosRadius.x = mat[3][0];
+    fPosRadius.y = mat[3][1];
+    fPosRadius.z = mat[3][2];
+    fPosRadius.w = UMath::Length(dimensions);
+    fMatRow0Width.w = dimensions.x + dimensions.x;
+    fMatRow2Length.w = dimensions.z + dimensions.z;
 }
 
 bool WTrigger::HasEvent(unsigned int eventID, const CARP::EventStaticData** foundEvent) const {
@@ -20,6 +38,21 @@ bool WTrigger::HasEvent(unsigned int eventID, const CARP::EventStaticData** foun
 
 bool WTrigger::TestDirection(const UMath::Vector3& vec) const {
     return UMath::Dot(UMath::Vector4To3(fMatRow2Length), vec) >= 0.0f;
+}
+
+void WTrigger::FireEvents(HSIMABLE__ *hSimable) {
+    if (fEvents != nullptr) {
+        bMemSet(&gEventDynamicData, 0, sizeof(EventDynamicData));
+        gEventDynamicData.fhSimable = reinterpret_cast<uintptr_t>(hSimable);
+        gEventDynamicData.fPosition = fPosRadius;
+        gEventDynamicData.fPosition.w = 1.0f;
+        gEventDynamicData.fTrigger = this;
+        gEventDynamicData.fTriggerStimulus = WTriggerManager::Get().GetCurrentStimulus();
+        EventManager::FireEventList(fEvents, false);
+    }
+    if (fFlags & 2) {
+        Disable();
+    }
 }
 
 int LoaderTrigger(bChunk* chunk) {
