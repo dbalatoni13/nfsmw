@@ -42,6 +42,22 @@ Sub-agents must **not** write or edit code files, headers, configs, or other rep
 All persistent file changes, decomp implementations, scaffolding, and follow-up fixes must be
 done by the main worker after reviewing the read-only findings.
 
+## Forbidden Changes
+
+Do **not** edit or otherwise touch the comparison and configuration inputs that define the
+project's match metrics:
+
+- `config/GOWE69/symbols.txt`
+- `config/GOWE69/splits.txt`
+- `configure.py`
+
+Treat these files as read-only unless the user explicitly asks for a task that is specifically
+about maintaining that infrastructure.
+
+Do **not** try to cheat objdiff, progress, or match metrics in any way. The goal is to improve
+the real decompilation output, not to manipulate the comparison setup, hide mismatches, or make
+progress numbers look better without actually matching the original code.
+
 ### lookup.py — Symbol lookup from the debug dump
 
 Query structs, enums, functions, globals, and typedefs directly from the pre-extracted
