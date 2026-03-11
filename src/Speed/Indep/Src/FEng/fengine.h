@@ -19,7 +19,7 @@ struct FEPackageList {
         return static_cast<FEPackage*>(Packages.GetTail());
     }
     inline FEPackage* FindPackage(const char* pName) const {
-        return static_cast<FEPackage*>(Packages.FindNode(FEHashUpper(pName)));
+        return static_cast<FEPackage*>(Packages.FindNode(pName));
     }
     inline unsigned long GetCount() const { return Packages.GetNumElements(); }
 };

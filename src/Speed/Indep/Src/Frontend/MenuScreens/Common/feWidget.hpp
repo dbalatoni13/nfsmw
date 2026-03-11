@@ -49,7 +49,7 @@ public:
     void GetSize(bVector2& size);
     float GetWidth();
     float GetHeight();
-    void SetTopLeft(bVector2& top_left) { vTopLeft = top_left; }
+    void SetTopLeft(bVector2& top_left) { vTopLeft.x = top_left.x; vTopLeft.y = top_left.y; }
     void SetTopLeftX(float x) { vTopLeft.x = x; }
     void SetTopLeftY(float y) { vTopLeft.y = y; }
     void SetSize(bVector2& size);

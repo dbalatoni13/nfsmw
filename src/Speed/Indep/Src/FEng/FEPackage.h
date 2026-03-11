@@ -30,7 +30,9 @@ struct FENode : public FEMinNode {
 };
 
 // total size: 0x10
-struct FEList : public FEMinList {};
+struct FEList : public FEMinList {
+    FENode* FindNode(const char* pName) const;
+};
 
 // total size: 0x8
 struct FEButtonMap {
