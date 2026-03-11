@@ -283,8 +283,8 @@ void CDActionDrive::AquireCar() {
                 anchor->SetModel(bStringHash(model_str));
                 mAnchor->SetWorldID(mTarget.GetWorldID());
                 IRigidBody *body = isimable->GetRigidBody();
-                UVector3 dimension(body->GetDimension());
-                mAnchor->SetDimension(dimension);
+                UMath::Vector3 dimension = body->GetDimension();
+                mAnchor->SetDimension(bVector3(dimension.x, dimension.y, dimension.z));
                 ITransmission *itrans;
                 if (mVehicle->QueryInterface(&itrans)) {
                     mAnchor->SetTopSpeed(itrans->GetMaxSpeedometer());
