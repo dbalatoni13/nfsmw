@@ -80,17 +80,21 @@ void UIOptionsController::NotificationMessage(unsigned long msg, FEObject* pobj,
 
     UIWidgetMenu::NotificationMessage(msg, pobj, param1, param2);
 
-    if (msg == 0x9A5AD46D) {
+    switch (msg) {
+    case 0x9A5AD46D: {
         bool dirty = false;
         if (FEDatabase->IsOptionsDirty() || !OptionsDidNotChange()) {
             dirty = true;
         }
         FEDatabase->SetOptionsDirty(dirty);
         TogglePlayer();
-    } else if (msg == 0x775DBA97) {
+        break;
+    }
+    case 0x775DBA97:
         RestoreOriginals();
         cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
-    } else if (msg == 0x911AB364) {
+        break;
+    case 0x911AB364:
         if (OptionsDidNotChange()) {
             cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
         } else {
@@ -99,18 +103,24 @@ void UIOptionsController::NotificationMessage(unsigned long msg, FEObject* pobj,
                                             0x34DC1BCF, static_cast<eDialogFirstButtons>(1),
                                             GetLocalizedString(0xE9CB802F));
         }
-    } else if (msg == 0x92B703B5) {
+        break;
+    case 0x92B703B5:
         SetupControllerConfig();
-    } else if (msg == 0xA2A07AC4) {
+        break;
+    case 0xA2A07AC4:
         RestoreOriginals();
         TogglePlayer();
-    } else if (msg == 0xB5AF2461) {
+        break;
+    case 0xB5AF2461:
         if (mCalledFromPauseMenu) {
             new EUnPause();
         }
-    } else if (msg == 0xC98356BA) {
+        break;
+    case 0xC98356BA:
         DetectControllers();
-    } else if (msg == 0xD9FEEC59 || msg == 0x5073EF13) {
+        break;
+    case 0xD9FEEC59:
+    case 0x5073EF13:
         if (OptionsDidNotChange()) {
             cFEng::Get()->QueueGameMessage(0x9A5AD46D, 0, 0xFF);
         } else {
@@ -128,7 +138,8 @@ void UIOptionsController::NotificationMessage(unsigned long msg, FEObject* pobj,
                                             0x9A5AD46D, 0xA2A07AC4, 0x34DC1BCF,
                                             static_cast<eDialogFirstButtons>(1), buf);
         }
-    } else if (msg == 0xE1FDE1D1) {
+        break;
+    case 0xE1FDE1D1: {
         bool dirty = false;
         if (FEDatabase->IsOptionsDirty() || !OptionsDidNotChange()) {
             dirty = true;
@@ -146,7 +157,9 @@ void UIOptionsController::NotificationMessage(unsigned long msg, FEObject* pobj,
         } else {
             cFEng::Get()->QueuePackageSwitch("Pause_Main.fng", 1, 0, 0);
         }
-    } else if (msg == 0x34DC1BCF) {
+        break;
+    }
+    case 0x34DC1BCF:
         return;
     }
 }

@@ -64,21 +64,25 @@ class FEManager {
 
     void ExitOnlineGameplayBasedOnConnection();
 
-    //  void SetFirstScreen(const char *pPackageName, int arg, unsigned int controlMask) {}
+    void SetFirstScreen(const char *pPackageName, int arg, unsigned int controlMask) {
+        mFirstScreen = pPackageName;
+        mFirstScreenArg = arg;
+        mFirstScreenMask = controlMask;
+    }
 
-    //  void RequestBootFlow() {}
+    void RequestBootFlow() { mFirstBoot = true; }
 
-    //  eGarageType GetPreviousGarageType() {}
+    eGarageType GetPreviousGarageType() { return mPreviousGarageType; }
 
-    //  ResourceFile *GetGarageBackground() {}
+    ResourceFile *GetGarageBackground() { return mGarageBackground; }
 
-    //  void SetGarageBackground(ResourceFile *pBackground) {}
+    void SetGarageBackground(ResourceFile *pBackground) { mGarageBackground = pBackground; }
 
     void SetEATraxFirstButton(bool onOff) { mEATraxFirstButton = onOff; }
 
     static inline bool IsPaused() { return mInstance->mPauseRequest > 0; }
 
-    // static  int GetNumPauseRequests() {}
+    static int GetNumPauseRequests() { return mPauseRequest; }
 
     // static  const char *GetPauseReason(int idx) {}
 
@@ -98,7 +102,7 @@ class FEManager {
 
     bool IsAllowingControllerError() { return bAllowControllerError; }
 
-    //  bool IsFirstBoot() {}
+    bool IsFirstBoot() { return mFirstBoot; }
 
     //  ~FEManager() {}
 

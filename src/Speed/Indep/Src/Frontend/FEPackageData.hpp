@@ -13,35 +13,35 @@ class FEPackageData : public bTNode<FEPackageData> {
   public:
     static int IsInScreenConstructor() { return mInScreenConstructor > 0; }
 
-    // bChunk *GetChunk() {}
+    bChunk *GetChunk() { return MyChunk; }
 
-    // struct FEPackage *GetPackage() {}
+    struct FEPackage *GetPackage() { return pPackage; }
 
-    // bool IsCompressedChunk() {}
+    bool IsCompressedChunk() { return DataChunk != nullptr; }
 
-    // bool IsActive() {}
+    bool IsActive() { return pScreen != nullptr; }
 
-    // void SetPermanent(int flag) {}
+    void SetPermanent(int flag) { IsPermanent = flag; }
 
-    // int GetPermanent() {}
+    int GetPermanent() { return IsPermanent; }
 
-    // void SetArgument(int pArg) {}
+    void SetArgument(int pArg) { mArg = pArg; }
 
-    // int GetArgument() {}
+    int GetArgument() { return mArg; }
 
-    // bool GetVisibility() {}
+    bool GetVisibility() { return IsVisible; }
 
-    // void SetVisibility(bool visible) {}
+    void SetVisibility(bool visible) { IsVisible = visible; }
 
-    // int GetLastKnownControlMask() {}
+    int GetLastKnownControlMask() { return LastKnownControlMask; }
 
-    // bool WasSetupForHotchunk() {}
+    bool WasSetupForHotchunk() { return bWasSetupForHotchunk; }
 
-    // void SetupForHotchunk() {}
+    void SetupForHotchunk() { bWasSetupForHotchunk = true; }
 
-    // void ClearHotchunk() {}
+    void ClearHotchunk() { bWasSetupForHotchunk = false; }
 
-    // struct MenuScreen *GetScreen() {}
+    struct MenuScreen *GetScreen() { return pScreen; }
 
     // struct FEPackageRenderInfo *GetRenderInfo() {}
 

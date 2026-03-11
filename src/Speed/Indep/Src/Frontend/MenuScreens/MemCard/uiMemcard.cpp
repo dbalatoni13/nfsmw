@@ -230,19 +230,25 @@ void UIMemcardMain::ListDone() {
 void UIMemcardMain::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
                                          unsigned long param2) {
     UIMemcardBase::NotificationMessage(msg, obj, param1, param2);
-    if (msg == 0xa4bb7ae1) {
+    switch (msg) {
+    case 0xa4bb7ae1:
         cFEng::Get()->QueueGameMessage(0x461a18ee, nullptr, 0xff);
-    } else if (msg == 0x461a18ee) {
+        break;
+    case 0x461a18ee:
         if (MemoryCard::GetInstance()->InBootSequence()) {
             PopChild();
         }
         FEDatabase->DeallocBackupDB();
         MemcardExit(0x461a18ee);
-    } else if (msg == 0x5a051729) {
+        break;
+    case 0x5a051729: {
         unsigned long hideHash = FEHashUpper("HIDE LOADER");
         cFEng::Get()->QueuePackageMessage(hideHash, GetPackageName(), nullptr);
         ListDone();
-    } else if (msg == 0x8867412d || msg == 0xdc12af2e) {
+        break;
+    }
+    case 0x8867412d:
+    case 0xdc12af2e:
         PopChild();
         if ((gMemcardSetup.mOp & 0x800) != 0 &&
             FEDatabase->CurrentUserProfiles[0]->IsProfileNamed()) {
@@ -268,34 +274,44 @@ void UIMemcardMain::NotificationMessage(unsigned long msg, FEObject* obj, unsign
             }
             FEDatabase->DeallocBackupDB();
         }
-    } else if (msg == 0x15457de1) {
+        break;
+    case 0x15457de1:
         PopChild();
-    } else if (msg == 0x8d0cc9f9) {
+        break;
+    case 0x8d0cc9f9:
         PopChild();
         SetStringCheckingCard();
         MemoryCard::GetInstance()->BootupCheck(nullptr);
-    } else if (msg == 0xa643dee3) {
+        break;
+    case 0xa643dee3:
         if (!MemoryCard::GetInstance()->IsAutoLoadDone()) {
             return;
         }
         cFEng::Get()->QueueGameMessage(0x461a18ee, GetPackageName(), 0xff);
-    } else if (msg == 0xb57fdb17) {
+        break;
+    case 0xb57fdb17:
         SetupPromptAutoSaveEnableFailedNoCard();
-    } else if (msg == 0xc6c6b68f) {
+        break;
+    case 0xc6c6b68f:
         DoSaveFlow(8);
-    } else if (msg == 0xc98356ba) {
+        break;
+    case 0xc98356ba:
         if (!m_ExpectingInput) {
             return;
         }
-        unsigned long handlerHash = FEHashUpper("LOADER");
-        unsigned long appearHash = FEHashUpper("APPEAR");
-        if (!FEngIsScriptSet(GetPackageName(), handlerHash, appearHash)) {
-            return;
+        {
+            unsigned long handlerHash = FEHashUpper("LOADER");
+            unsigned long appearHash = FEHashUpper("APPEAR");
+            if (!FEngIsScriptSet(GetPackageName(), handlerHash, appearHash)) {
+                return;
+            }
+            unsigned long hideHash = FEHashUpper("HIDE LOADER");
+            cFEng::Get()->QueuePackageMessage(hideHash, GetPackageName(), nullptr);
         }
-        unsigned long hideHash = FEHashUpper("HIDE LOADER");
-        cFEng::Get()->QueuePackageMessage(hideHash, GetPackageName(), nullptr);
-    } else if (msg == 0xfe202e3b) {
+        break;
+    case 0xfe202e3b:
         DoSaveFlow(4);
+        break;
     }
 }
 
@@ -342,7 +358,8 @@ UIMemcardList::~UIMemcardList() {}
 
 void UIMemcardList::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
                                          unsigned long param2) {
-    if (msg == 0x911ab364) {
+    switch (msg) {
+    case 0x911ab364:
         if (!MemoryCard::GetInstance()->InBootSequence()) {
             cFEng::Get()->QueueGameMessage(0x8867412d,
                 MemoryCard::GetInstance()->GetScreen()->GetPackageName(), 0xff);
@@ -351,7 +368,8 @@ void UIMemcardList::NotificationMessage(unsigned long msg, FEObject* obj, unsign
             cFEng::Get()->QueueGameMessage(0x8d0cc9f9, "MC_Main_GC.fng", 0xff);
             gMemcardSetup.mLastController = param2;
         }
-    } else if (msg == 0x406415e3) {
+        break;
+    case 0x406415e3: {
         bool isMultitap = false;
         if (FEDatabase->MatchesGameMode(4)) {
             isMultitap = FEDatabase->iNumPlayers == 2;
@@ -362,7 +380,9 @@ void UIMemcardList::NotificationMessage(unsigned long msg, FEObject* obj, unsign
             FEDatabase->SetPlayersJoystickPort(MemoryCard::GetInstance()->GetPlayerNum(), port);
         }
         MemoryCard::GetInstance()->SetMonitor(false);
-    } else if (msg == 0x35f8620b) {
+        break;
+    }
+    case 0x35f8620b:
         m_SaveGameList.SetSelected(m_SaveGameList.GetFirstSlot());
         if (m_SaveGameList.GetSelectedSlot() != nullptr) {
             m_SaveGameList.GetSelectedSlot()->SetScript(0x249db7b7);
@@ -372,13 +392,16 @@ void UIMemcardList::NotificationMessage(unsigned long msg, FEObject* obj, unsign
         if (MemoryCard::GetInstance()->InBootSequence()) {
             FEngSetLanguageHash(GetPackageName(), 0xb8a7c6cd, 0x1a294dad);
         }
-    } else if (msg == 0x72619778) {
+        break;
+    case 0x72619778:
         gMemcardSetup.mLastController = param2;
         m_SaveGameList.ScrollPrev();
-    } else if (msg == 0x911c0a4b) {
+        break;
+    case 0x911c0a4b:
         gMemcardSetup.mLastController = param2;
         m_SaveGameList.ScrollNext();
-    } else if (msg == 0xc98356ba) {
+        break;
+    case 0xc98356ba:
         if (m_Initialized == 0) {
             m_Initialized = 1;
             UIMemcardBase* parent = MemoryCard::GetInstance()->GetScreen();
@@ -393,13 +416,17 @@ void UIMemcardList::NotificationMessage(unsigned long msg, FEObject* obj, unsign
             }
             FEngSetScript("MC_List.fng", 0x47ff4e7c, 0x13c37b, true);
         }
-    } else if (msg == 0xeb29392a && m_LastMsg == 0x406415e3) {
-        UIMemcardBase* parent = MemoryCard::GetInstance()->GetScreen();
-        ScrollerDatum* datum = m_SaveGameList.GetSelectedDatum();
-        if (datum != nullptr) {
-            const char* fileName = datum->GetTopDatumModeString();
-            parent->DoSelect(fileName);
+        break;
+    case 0xeb29392a:
+        if (m_LastMsg == 0x406415e3) {
+            UIMemcardBase* parent = MemoryCard::GetInstance()->GetScreen();
+            ScrollerDatum* datum = m_SaveGameList.GetSelectedDatum();
+            if (datum != nullptr) {
+                const char* fileName = datum->GetTopDatumModeString();
+                parent->DoSelect(fileName);
+            }
         }
+        break;
     }
     m_LastMsg = msg;
 }

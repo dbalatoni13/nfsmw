@@ -156,9 +156,9 @@ class MenuScreen {
 
     const char *GetPackageName() { return PackageFilename; }
 
-    // FEPackage *GetPackage() {}
+    FEPackage *GetPackage() { return ConstructData.pPackage; }
 
-    void SetAsGarageScreen() {}
+    void SetAsGarageScreen() { IsGarageScreen = true; }
 
   protected:
     bool mPlaySound;                      // offset 0x0, size 0x1

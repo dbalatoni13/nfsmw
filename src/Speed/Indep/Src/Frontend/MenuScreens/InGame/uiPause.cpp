@@ -54,54 +54,46 @@ void PauseMenu::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned 
     if (msg != 0x911AB364 || !mCalledFromPostRace) {
         IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
     }
-    if (msg == 0x9120409E) {
+    switch (msg) {
+    case 0x9120409E:
         return;
-    }
-    if (msg == 0x43DA9FD0) {
+    case 0x43DA9FD0:
         FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
         return;
-    }
-    if (msg == 0x30EB8F53) {
+    case 0x30EB8F53:
         FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
         return;
-    }
-    if (msg == 0xC9BFD1C3) {
+    case 0xC9BFD1C3:
         FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
         return;
-    }
-    if (msg == 0x451E768E) {
+    case 0x451E768E:
         FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
         return;
-    }
-    if (msg == 0x911AB364) {
+    case 0x911AB364:
         if (mCalledFromPostRace) {
             return;
         }
         FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
         StorePrevNotification(0x911AB364, pobj, param1, param2);
         return;
-    }
-    if (msg == 0xB5AF2461) {
+    case 0xB5AF2461:
         if (mCalledFromPostRace) {
             return;
         }
         mSelectionHash = 0xFDAE152F;
         FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
         return;
-    }
-    if (msg == 0xB4623F67) {
+    case 0xB4623F67:
         Options.bFadingIn = true;
         Options.fCurFadeTime = 0.0f;
         Options.bFadingOut = false;
         Options.StartFadeIn();
         cFEng::Get()->QueuePackageMessage(0xC6341FF6, GetPackageName(), 0);
         return;
-    }
-    if (msg == 0xE1A57D51) {
+    case 0xE1A57D51:
         FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
         return;
-    }
-    if (msg == 0xE1FDE1D1) {
+    case 0xE1FDE1D1:
         if (PrevButtonMessage != 0x911AB364) {
             if (mSelectionHash == 0x85162CB0) {
                 if (GRaceStatus::Exists()) {

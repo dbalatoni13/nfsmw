@@ -20,7 +20,7 @@ void RapSheetVDArraySlot::Update(ArrayDatum* datum, bool isSelected) {
         FEPrintf(pBusted, "%d", d->getBusted());
     }
 }
-uiRapSheetVD::uiRapSheetVD(ScreenConstructorData* sd) : ArrayScrollerMenu(sd, 1, 5, false) {
+uiRapSheetVD::uiRapSheetVD(ScreenConstructorData* sd) : ArrayScrollerMenu(sd, 1, 2, false) {
     for (int i = 0; i < GetWidth() * GetHeight(); i++) {
         FEString* pCar = FEngFindString(GetPackageName(), FEngHashString("RAPSHEET_CAR_%d", i + 1));
         FEString* pBounty = FEngFindString(GetPackageName(), FEngHashString("RAPSHEET_VALUE_%d", i + 1));

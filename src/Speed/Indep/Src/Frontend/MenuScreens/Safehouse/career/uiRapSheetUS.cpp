@@ -18,7 +18,7 @@ void RapSheetUSArraySlot::Update(ArrayDatum* datum, bool isSelected) {
 }
 uiRapSheetUS::uiRapSheetUS(ScreenConstructorData* sd)
     : ArrayScrollerMenu(sd, 1, 8, false) //
-    , view_unserved(false)
+    , view_unserved(true)
 {
     for (int i = 0; i < GetWidth() * GetHeight(); i++) {
         FEString* pName = FEngFindString(GetPackageName(), FEngHashString("RAPSHEET_ITEM_%d", i + 1));

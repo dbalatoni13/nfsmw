@@ -122,16 +122,22 @@ void UIMain::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long
                                  unsigned long param2) {
     IconScrollerMenu::NotificationMessage(msg, obj, param1, param2);
 
-    if (msg == 0x35f8620b) {
+    switch (msg) {
+    case 0x35f8620b:
         if (!MemoryCard::GetInstance()->IsAutoLoadDone()) {
             MemoryCard::GetInstance()->SetAutoLoadDone(true);
             MemcardEnter(nullptr, nullptr, 0xF1, nullptr, nullptr, 0, 0);
         }
-    } else if (msg == 0x1265ece9) {
+        break;
+    case 0x1265ece9:
         GarageMainScreen::GetInstance()->UpdateCurrentCameraView(false);
-    } else if (msg == 0x7e998e5e) {
+        break;
+    case 0x7e998e5e:
         UpdateProfileData();
-    } else if (msg == 0xc519bfc4) {
+        break;
+    case 0x9120409e:
+        break;
+    case 0xc519bfc4:
         if (FEDatabase->bProfileLoaded) {
             const char* scriptName;
             if (!m_bStatsShowing) {
@@ -142,26 +148,30 @@ void UIMain::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long
             cFEng::Get()->QueuePackageMessage(FEHashUpper(scriptName), GetPackageName(), nullptr);
             m_bStatsShowing = !m_bStatsShowing;
         }
-    } else if (msg == 0xe1fde1d1 && PrevButtonMessage == 0x0c407210) {
-        const char* pkg;
-        if (FEDatabase->IsCareerMode()) {
-            pkg = "MainMenu_Sub.fng";
-        } else if (FEDatabase->IsCareerManagerMode()) {
-            pkg = "MainMenu_Sub.fng";
-        } else if (FEDatabase->IsQuickRaceMode()) {
-            pkg = "MainMenu_Sub.fng";
-        } else if (FEDatabase->IsOptionsMode()) {
-            pkg = "MainMenu_Sub.fng";
-        } else if (FEDatabase->IsProfileManagerMode()) {
-            pkg = "MC_ProfileManager.fng";
-        } else if (FEDatabase->IsChallengeMode()) {
-            pkg = "ChallengeSeries.fng";
-        } else if (FEDatabase->IsCustomizeMode()) {
-            pkg = "MyCarsManager.fng";
-        } else {
-            return;
+        break;
+    case 0xe1fde1d1:
+        if (PrevButtonMessage == 0x0c407210) {
+            const char* pkg;
+            if (FEDatabase->IsCareerMode()) {
+                pkg = "MainMenu_Sub.fng";
+            } else if (FEDatabase->IsCareerManagerMode()) {
+                pkg = "MainMenu_Sub.fng";
+            } else if (FEDatabase->IsQuickRaceMode()) {
+                pkg = "MainMenu_Sub.fng";
+            } else if (FEDatabase->IsOptionsMode()) {
+                pkg = "MainMenu_Sub.fng";
+            } else if (FEDatabase->IsProfileManagerMode()) {
+                pkg = "MC_ProfileManager.fng";
+            } else if (FEDatabase->IsChallengeMode()) {
+                pkg = "ChallengeSeries.fng";
+            } else if (FEDatabase->IsCustomizeMode()) {
+                pkg = "MyCarsManager.fng";
+            } else {
+                return;
+            }
+            cFEng::Get()->QueuePackageSwitch(pkg, 0, 0, false);
         }
-        cFEng::Get()->QueuePackageSwitch(pkg, 0, 0, false);
+        break;
     }
 }
 

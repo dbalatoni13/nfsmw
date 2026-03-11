@@ -871,7 +871,9 @@ void WorldMap::Setup() {
 
     PanToPlayer();
     float zoomFactor = GetZoomFactor(static_cast< eWorldMapZoomLevels >(CurrentZoom));
-    bVector2 zoom(1.0f / zoomFactor, 1.0f / zoomFactor);
+    bVector2 zoom;
+    zoom.x = 1.0f / zoomFactor;
+    zoom.y = zoom.x;
     MapStreamer->SetZoom(zoom);
     SetInitialOption(0);
     RefreshHeader();
