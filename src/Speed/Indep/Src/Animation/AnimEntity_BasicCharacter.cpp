@@ -118,30 +118,29 @@ bool CBasicCharacterAnimEntity::Init(void *init_data, SpaceNode *parent_space_no
     if (info->mSkelNameHash != 0) {
         skel = GetSkeletonFromList(info->mSkelNameHash);
         if (skel == nullptr) {
-            return false;
+            goto init_fail;
         }
         anim_part->Init(skel);
         if (play_flags == 0) {
             mAnimCtrl->SetFlags(0x29);
         } else {
-            play_flags |= 1;
-            mAnimCtrl->SetFlags(play_flags);
+            mAnimCtrl->SetFlags(play_flags | 1);
         }
     } else {
         skel = GetSkeletonFromList(skel_ROOT_hash);
         if (skel == nullptr) {
-            return false;
+            goto init_fail;
         }
         anim_part->Init(skel);
         if (play_flags == 0) {
             mAnimCtrl->SetFlags(0x2A);
         } else {
-            play_flags |= 2;
-            mAnimCtrl->SetFlags(play_flags);
+            mAnimCtrl->SetFlags(play_flags | 2);
         }
     }
 
     if (skel == nullptr) {
+    init_fail:
         return false;
     }
 
@@ -169,8 +168,9 @@ bool CBasicCharacterAnimEntity::Init(void *init_data, SpaceNode *parent_space_no
         if (info->mPlayFlags & 0x40) {
             mAnimCtrl->SetLoopRange(info->mLoopRangeStart, info->mLoopRangeEnd);
         }
-        mAnimCtrl->SetMasterDelayTime(info->mPlayDelay);
-        mAnimCtrl->SetFlags(0x80);
+        CAnimCtrl *ctrl = mAnimCtrl;
+        ctrl->SetMasterDelayTime(info->mPlayDelay);
+        ctrl->SetFlags(0x80);
         if (mAnimCtrl != nullptr && mAnimCtrl->GetFlags() == 8) {
             bBreak();
         }
