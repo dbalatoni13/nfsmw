@@ -1409,70 +1409,74 @@ TrackCarCameraMover::~TrackCarCameraMover() {
 
 void TrackCarCameraMover::Update(float dT) {
     if (!TheGameFlowManager.IsPaused()) {
-        bVector3 world_up(0.0f, 0.0f, 1.0f);
-        bVector3 to_car;
-        bVector3 offset;
-        bMatrix4 camera_matrix;
-        float dist;
-        float inv_dist;
-        float focal_distance;
+        bVector3 up(0.0f, 0.0f, 1.0f);
+        unsigned short fov;
 
         GetCamera()->SetSimTimeMultiplier(1.0f);
 
-        to_car.x = Eye.x - CarToFollow->GetGeomPos()->x;
-        to_car.y = Eye.y - CarToFollow->GetGeomPos()->y;
-        to_car.z = Eye.z - CarToFollow->GetGeomPos()->z;
-        dist = bLength(&to_car);
+        bVector3 displacement = Eye - *CarToFollow->GetGeometryPosition();
+        float distance = bLength(&displacement);
+        if (distance < 1.0f) {
+            distance = 1.0f;
+        }
 
-        if (dist > 0.0f) {
-            unsigned short fov = bATan(dist, TrackCarIsoZoomDistance[CameraType]);
-            unsigned int fov_limit = bMax(800, static_cast<int>((fov & 0x7fff) << 1));
-
+        fov = bATan(distance, TrackCarIsoZoomDistance[CameraType]);
+        unsigned int x = static_cast<unsigned int>(fov & 0x7fff) << 1;
+        if (x) {
+            int fov_limit = 800;
+            if (static_cast<int>(x) > 800) {
+                fov_limit = static_cast<int>(x);
+            }
             if (fov_limit > 0x332c) {
                 fov_limit = 0x332c;
             }
-            if (Camera::StopUpdating == 0 && (fov & 0x7fff) != 0) {
+            if (Camera::StopUpdating == 0) {
                 GetCamera()->SetFieldOfView(static_cast<unsigned short>(fov_limit));
             }
         }
 
-        Look = *CarToFollow->GetGeomPos();
-        inv_dist = dist > 1.0f ? 1.0f / dist : 1.0f;
-        to_car.x *= inv_dist;
-        to_car.y *= inv_dist;
-        to_car.z *= inv_dist;
-        world_up = bCross(to_car, world_up);
+        Look = *CarToFollow->GetGeometryPosition();
+        displacement /= distance;
+        bVector3 hcomp;
+        bCross(&hcomp, &displacement, &up);
 
-        offset.x = TrackCarLookOffsetX[CameraType];
-        offset.y = TrackCarLookOffsetY[CameraType];
-        offset.z = TrackCarLookOffsetZ[CameraType];
-        eMulVector(&offset, CarToFollow->GetMatrix(), &offset);
+        bVector3 look_offset;
+        look_offset.x = TrackCarLookOffsetX[CameraType];
+        look_offset.y = TrackCarLookOffsetY[CameraType];
+        look_offset.z = TrackCarLookOffsetZ[CameraType];
+        float vert_comp = 0.0f;
+        bScale(&hcomp, &hcomp, vert_comp);
+        eMulVector(&look_offset, CarToFollow->GetGeometryOrientation(), &look_offset);
 
-        Look.x += offset.x;
-        Look.y += offset.y;
-        Look.z += offset.z;
+        Look += look_offset;
+        bVector3 lookdir = Look - Eye;
+        bNormalize(&lookdir, &lookdir);
 
-        eCreateLookAtMatrix(&camera_matrix, Eye, Look, world_up);
-        focal_distance = bDistBetween(CarToFollow->GetGeomPos(), &Eye);
+        bMatrix4 m;
+        eCreateLookAtMatrix(&m, Eye, Look, up);
+        float focal_dist = bDistBetween(CarToFollow->GetGeometryPosition(), &Eye);
         if (Camera::StopUpdating == 0) {
-            GetCamera()->SetTargetDistance(focal_distance);
+            GetCamera()->SetTargetDistance(focal_dist);
         }
 
-        FocalDistCubic.dVal = FocalDistCubic.Val * 0.1f;
-        SplineSeek(&FocalDistCubic, dT, 0.0f, 0.0f);
-        focal_distance = bMax(1.0f, focal_distance + FocalDistCubic.Val);
+        FocalDistCubic.dValDesired = FocalDistCubic.Val * 0.1f;
+        SplineSeek(&FocalDistCubic, dT, vert_comp, vert_comp);
+        focal_dist += FocalDistCubic.Val;
+        if (focal_dist < 2.0f) {
+            focal_dist = 2.0f;
+        }
 
         if (FocusEffects) {
             if (Camera::StopUpdating == 0) {
-                GetCamera()->SetFocalDistance(focal_distance + FocalDistCubic.Val);
+                GetCamera()->SetFocalDistance(focal_dist + FocalDistCubic.Val);
             }
             if (Camera::StopUpdating == 0) {
                 GetCamera()->SetDepthOfField(2.0f);
             }
         }
 
-        GetCamera()->SetCameraMatrix(camera_matrix, dT);
-        if (IsSomethingInBetween(GetCamera()->GetPosition(), CarToFollow->GetGeomPos())) {
+        GetCamera()->SetCameraMatrix(m, dT);
+        if (IsSomethingInBetween(GetCamera()->GetPosition(), CarToFollow->GetGeometryPosition())) {
             CameraAI::MaybeKillJumpCam(CarToFollow->GetWorldID());
         }
     }
