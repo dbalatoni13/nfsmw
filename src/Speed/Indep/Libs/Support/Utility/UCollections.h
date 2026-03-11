@@ -246,7 +246,8 @@ template <typename T, typename Tag> class Container {
     }
 
     void RemoveElement(T *e) {
-        for (typename Elements::iterator it = _mElements.begin(); it != _mElements.end(); ++it) {
+        typename Elements::iterator end_it = _mElements.end();
+        for (typename Elements::iterator it = _mElements.begin(); it != end_it; ++it) {
             if (*it == e) {
                 _mElements.erase(it);
                 delete e;
