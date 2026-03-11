@@ -1,6 +1,5 @@
 #include "Speed/Indep/Src/World/WGridManagedDynamicElem.h"
 
-#include "Speed/Indep/Libs/Support/Utility/UEALibs.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UTLVector.h"
 
 #include "Speed/Indep/Src/Physics/Dynamics/Collision.h"
@@ -9,6 +8,8 @@
 #include "Speed/Indep/Src/World/WTrigger.h"
 
 void OrthoInverse(UMath::Matrix4 &m);
+void v3add(int num, const UMath::Vector3 *src, const UMath::Vector3 *vtosub, UMath::Vector3 *results);
+void v3add(int num, const UMath::Vector3 *src, const UMath::Vector3 *vtosub, UMath::Vector3 *results);
 
 std::list<WGridManagedDynamicElem, UTL::Std::Allocator<WGridManagedDynamicElem, _type_list> > WGridManagedDynamicElem::fgManagedDynamicElemList;
 
