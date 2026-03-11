@@ -242,14 +242,16 @@ void AOAudioMode::Draw() {
     FEngSetLanguageHash(GetTitleObject(), 0x2881AB87);
     unsigned int hash = 0;
     int mode = FEDatabase->GetAudioSettings()->AudioMode;
-    if (mode == 1) {
+    switch (mode) {
+    case 0:
+        hash = 0xC50FA35F;
+        break;
+    case 1:
         hash = 0x55DA8BF8;
-    } else if (mode < 1) {
-        if (mode == 0) {
-            hash = 0xC50FA35F;
-        }
-    } else if (mode == 2) {
+        break;
+    case 2:
         hash = 0xF6FAFF24;
+        break;
     }
     FEngSetLanguageHash(GetDataObject(), hash);
 }
@@ -379,14 +381,16 @@ void GORacingMiniMap::Draw() {
     FEngSetLanguageHash(GetTitleObject(), 0x9FA5EC9E);
     unsigned int hash = 0;
     unsigned char mode = FEDatabase->GetGameplaySettings()->RacingMiniMapMode;
-    if (mode == 1) {
+    switch (mode) {
+    case 1:
         hash = 0xF4B00E99;
-    } else if (mode < 1) {
-        if (mode == 0) {
-            hash = 0xF75595F2;
-        }
-    } else if (mode == 2) {
+        break;
+    case 0:
+        hash = 0xF75595F2;
+        break;
+    case 2:
         hash = 0x70DFE5C2;
+        break;
     }
     FEngSetLanguageHash(GetDataObject(), hash);
 }
@@ -412,14 +416,16 @@ void GOExploringMiniMap::Draw() {
     FEngSetLanguageHash(GetTitleObject(), 0xC6269082);
     unsigned int hash = 0;
     unsigned char mode = FEDatabase->GetGameplaySettings()->ExploringMiniMapMode;
-    if (mode == 1) {
+    switch (mode) {
+    case 1:
         hash = 0xF4B00E99;
-    } else if (mode < 1) {
-        if (mode == 0) {
-            hash = 0xF75595F2;
-        }
-    } else if (mode == 2) {
+        break;
+    case 0:
+        hash = 0xF75595F2;
+        break;
+    case 2:
         hash = 0x70DFE5C2;
+        break;
     }
     FEngSetLanguageHash(GetDataObject(), hash);
 }
@@ -444,10 +450,13 @@ void POTransmission::Draw() {
     FEngSetLanguageHash(GetTitleObject(), 0xD31407E7);
     int player = GetPlayerToEditForOptions();
     unsigned char trans = FEDatabase->GetPlayerSettings(player)->Transmission;
-    if (trans == 0) {
+    switch (trans) {
+    case 0:
         hash = 0x8CD532A0;
-    } else if (trans == 1) {
+        break;
+    case 1:
         hash = 0x317D3005;
+        break;
     }
     FEngSetLanguageHash(GetDataObject(), hash);
 }
@@ -482,18 +491,22 @@ void PODriveCam::Draw() {
     FEngSetLanguageHash(GetTitleObject(), 0xF6CCDC5F);
     int player = GetPlayerToEditForOptions();
     int cam = static_cast<int>(FEDatabase->GetPlayerSettings(player)->CurCam);
-    if (cam == 2) {
+    switch (cam) {
+    case 0:
+        hash = 0xC3E9AE58;
+        break;
+    case 1:
+        hash = 0x414F19D7;
+        break;
+    case 2:
         hash = 0x5AE3441F;
-    } else if (cam < 2) {
-        if (cam == 0) {
-            hash = 0xC3E9AE58;
-        } else if (cam == 1) {
-            hash = 0x414F19D7;
-        }
-    } else if (cam == 3) {
+        break;
+    case 3:
         hash = 0x1EA4CEC2;
-    } else if (cam == 4) {
+        break;
+    case 4:
         hash = 0x916039B4;
+        break;
     }
     FEngSetLanguageHash(GetDataObject(), hash);
 }
@@ -560,7 +573,7 @@ void POSplitTime::Act(const char* parent_pkg, unsigned int data) {
         int player = GetPlayerToEditForOptions();
         unsigned char splitTime = FEDatabase->GetPlayerSettings(player)->SplitTimeType;
         player = GetPlayerToEditForOptions();
-        FEDatabase->GetPlayerSettings(player)->SplitTimeType = (splitTime == 0) ? 4 : 0;
+        FEDatabase->GetPlayerSettings(player)->SplitTimeType = (!splitTime) << 2;
     }
     Update(data);
 }
@@ -570,18 +583,22 @@ void POSplitTime::Draw() {
     FEngSetLanguageHash(GetTitleObject(), 0x084BC378);
     int player = GetPlayerToEditForOptions();
     unsigned char splitTime = FEDatabase->GetPlayerSettings(player)->SplitTimeType;
-    if (splitTime == 2) {
+    switch (splitTime) {
+    case 0:
+        hash = 0x417B2604;
+        break;
+    case 1:
+        hash = 0xC44D3943;
+        break;
+    case 2:
         hash = 0x17FAFC32;
-    } else if (splitTime < 2) {
-        if (splitTime == 0) {
-            hash = 0x417B2604;
-        } else if (splitTime == 1) {
-            hash = 0xC44D3943;
-        }
-    } else if (splitTime == 3) {
+        break;
+    case 3:
         hash = 0x1EA459F8;
-    } else if (splitTime == 4) {
+        break;
+    case 4:
         hash = 0x70DFE5C2;
+        break;
     }
     FEngSetLanguageHash(GetDataObject(), hash);
 }
@@ -685,7 +702,10 @@ void COConfig::Act(const char* parent_pkg, unsigned int data) {
     int config = static_cast<int>(FEDatabase->GetPlayerSettings(player)->Config);
     player = GetPlayerToEditForOptions();
     int isAnalogSwiched = FEDatabase->GetPlayerSettings(player)->DriveWithAnalog;
-    if (UIOptionsController::isWheelConfig == 0) {
+    if (UIOptionsController::isWheelConfig) {
+        config = 0;
+        isAnalogSwiched = 1;
+    } else {
         if (data == 0x9120409E) {
             config--;
             if (config < 0) {
@@ -699,9 +719,6 @@ void COConfig::Act(const char* parent_pkg, unsigned int data) {
                 config = 0;
             }
         }
-    } else {
-        config = 0;
-        isAnalogSwiched = true;
     }
     player = GetPlayerToEditForOptions();
     FEDatabase->GetPlayerSettings(player)->DriveWithAnalog = isAnalogSwiched;

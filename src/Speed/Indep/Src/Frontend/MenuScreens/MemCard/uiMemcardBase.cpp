@@ -443,7 +443,6 @@ void UIMemcardBase::ShowMessage(const wchar_t* msg, unsigned int nOptions,
                       reinterpret_cast< short* >(const_cast< wchar_t* >(option2)),
                       reinterpret_cast< short* >(const_cast< wchar_t* >(option3)));
         break;
-    case 0:
     default:
         MemoryCard::GetInstance()->SetWaitingForResponse(false);
         break;

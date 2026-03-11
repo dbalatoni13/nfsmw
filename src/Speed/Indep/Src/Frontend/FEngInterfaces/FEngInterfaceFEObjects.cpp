@@ -69,7 +69,7 @@ FEObject* FEngFindGroup(const char* pkg_name, unsigned int obj_hash) {
 
 void FEngSetInvisible(FEObject* obj) {
     if (obj != nullptr) {
-        obj->Flags |= 0x2400001;
+        obj->Flags |= 1 | 0x2400000;
         if (obj->Type == FE_Group) {
             FEGroup* group = static_cast<FEGroup*>(obj);
             FEObject* child = group->GetFirstChild();
