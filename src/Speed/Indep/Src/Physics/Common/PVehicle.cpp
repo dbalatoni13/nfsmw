@@ -1311,30 +1311,20 @@ bool PVehicle::SetVehicleOnGround(const UMath::Vector3 &resetPos, const UMath::V
 }
 
 ISimable *PVehicle::Construct(Sim::Param params) {
-    const VehicleParams &vp = params.Fetch<VehicleParams>(VehicleParams::TypeName());
-    DriverClass carClass = vp.carClass;
-    unsigned int vehicle = vp.carType;
-    const UMath::Vector3 &initialVec = vp.initialVec;
-    const UMath::Vector3 &initialPos = vp.initialPos;
-    const FECustomizationRecord *customizations = vp.customization;
-    IVehicleCache *whosasking = vp.VehicleCache;
-    const Physics::Info::Performance *performance = vp.matched;
-    unsigned int flags = vp.Flags;
-    Attrib::Gen::pvehicle attributes(Attrib::FindCollection(Attrib::Gen::pvehicle::ClassKey(), vehicle), 0, nullptr);
-    if (attributes.GetCollection() == nullptr) {
+    const VehicleParams vp = params.Fetch< VehicleParams >(UCrc32(0xa6b47fac));
+    Attrib::Gen::pvehicle attributes(
+        Attrib::FindCollection(Attrib::Gen::pvehicle::ClassKey(), vp.carType), 0, nullptr);
+    if (!attributes.IsValid()) {
         return nullptr;
     }
+    const FECustomizationRecord *customizations = vp.customization;
     if (customizations == nullptr) {
-        const char *presetName = attributes.DefaultPresetRide();
-        if (presetName != nullptr) {
-            unsigned int hash = bStringHashUpper(presetName);
+        const char *vehicle_name = attributes.DefaultPresetRide();
+        if (vehicle_name != nullptr) {
+            unsigned int hash = bStringHashUpper(vehicle_name);
             PresetCar *preset = FindFEPresetCar(hash);
             if (preset != nullptr) {
-                static bool __tmp = false;
                 static FECustomizationRecord temp_record;
-                if (!__tmp) {
-                    __tmp = true;
-                }
                 temp_record.Default();
                 temp_record.BecomePreset(preset);
                 customizations = &temp_record;
@@ -1347,10 +1337,11 @@ ISimable *PVehicle::Construct(Sim::Param params) {
     if (!customizations->WriteRecordIntoPhysics(attributes)) {
         return nullptr;
     }
+    const Physics::Info::Performance *performance = vp.matched;
     if (performance != nullptr && !Physics::Upgrades::MatchPerformance(attributes, *performance)) {
         return nullptr;
     }
-    if ((flags & 4) != 0) {
+    if ((vp.Flags & 4) != 0) {
         Physics::Upgrades::RemoveJunkman(attributes, Physics::Upgrades::PUT_NOS);
         Physics::Upgrades::RemovePart(attributes, Physics::Upgrades::PUT_NOS);
     }
@@ -1358,7 +1349,7 @@ ISimable *PVehicle::Construct(Sim::Param params) {
         int maxLevel = Physics::Upgrades::GetMaxLevel(attributes, Physics::Upgrades::PUT_NOS);
         Physics::Upgrades::SetLevel(attributes, Physics::Upgrades::PUT_NOS, maxLevel);
     }
-    if ((flags & 0x10) != 0) {
+    if ((vp.Flags & 0x10) != 0) {
         if (Physics::Upgrades::GetLevel(attributes, Physics::Upgrades::PUT_NOS) == 0) {
             int maxLevel = Physics::Upgrades::GetMaxLevel(attributes, Physics::Upgrades::PUT_NOS);
             if (maxLevel > 0) {
@@ -1366,58 +1357,59 @@ ISimable *PVehicle::Construct(Sim::Param params) {
             }
         }
     }
-    {
-        UCrc32 geomKey(attributes.MODEL());
-        const CollisionGeometry::Collection *geoms = CollisionGeometry::Lookup(geomKey);
-        if (geoms != nullptr) {
-            const CollisionGeometry::Bounds *bounds = geoms->GetRoot();
-            if (bounds != nullptr) {
-                bool spooling_resources = (flags & 1) != 0;
-                Resource resource(attributes, spooling_resources, carClass == DRIVER_HUMAN);
-                if (resource.IsValid()) {
-                    UTL::Std::list<Resource, _type_list> resources;
-                    resources.push_back(resource);
-                    Attrib::RefSpec trailer_ref;
-                    const Attrib::RefSpec *src = reinterpret_cast<const Attrib::RefSpec *>(
-                        attributes.GetAttributePointer(0x9a5537fe, 0));
-                    if (src != nullptr) {
-                        trailer_ref = *src;
-                    }
-                    if (trailer_ref.GetCollectionKey() != 0) {
-                        Attrib::Gen::pvehicle trailerAttribs(trailer_ref.GetCollectionKey(), 0, nullptr);
-                        Resource trailerResource(trailerAttribs, spooling_resources, false);
-                        resources.push_back(trailerResource);
-                    }
-                    if (MakeRoom(whosasking, resources)) {
-                        Physics::Info::Performance perf;
-                        const Physics::Info::Performance *matched_performance = performance;
-                        if (matched_performance == nullptr && (flags & 8) != 0) {
-                            if (Physics::Info::ComputePerformance(attributes, perf)) {
-                                matched_performance = &perf;
-                            }
-                        }
-                        if (CanSpawnRigidBody(initialPos, true)) {
-                            const char *cache_name = nullptr;
-                            if (whosasking != nullptr) {
-                                cache_name = whosasking->GetCacheName();
-                            }
-                            PVehicle *pv = new PVehicle(carClass, attributes, initialVec, initialPos,
-                                                        bounds, customizations, resource, matched_performance, cache_name);
-                            if ((flags & 2) != 0) {
-                                pv->SetVehicleOnGround(initialPos, initialVec);
-                            }
-                            ISimable *result = nullptr;
-                            if (pv != nullptr) {
-                                result = static_cast<ISimable *>(pv);
-                            }
-                            return result;
-                        }
-                    }
-                }
-            }
+        const CollisionGeometry::Collection *geoms =
+        CollisionGeometry::Lookup(UCrc32(attributes.MODEL()));
+    if (geoms == nullptr) {
+        return nullptr;
+    }
+    const CollisionGeometry::Bounds *bounds = geoms->GetRoot();
+    if (bounds == nullptr) {
+        return nullptr;
+    }
+    bool spooling_resources = (vp.Flags & 1) != 0;
+    Resource resource(attributes, spooling_resources, vp.carClass == DRIVER_HUMAN);
+    if (!resource.IsValid()) {
+        return nullptr;
+    }
+    UTL::Std::list< Resource, _type_list > resources;
+    resources.push_back(resource);
+    Attrib::RefSpec trailer_ref;
+    const Attrib::RefSpec *src = reinterpret_cast< const Attrib::RefSpec * >(
+        attributes.GetAttributePointer(0x9a5537fe, 0));
+    if (src != nullptr) {
+        trailer_ref = *src;
+    }
+    if (trailer_ref.GetCollectionKey() != 0) {
+        Attrib::Gen::pvehicle trailerAttribs(trailer_ref.GetCollectionKey(), 0, nullptr);
+        Resource trailerResource(trailerAttribs, spooling_resources, false);
+        resources.push_back(trailerResource);
+    }
+    if (!MakeRoom(vp.VehicleCache, resources)) {
+        return nullptr;
+    }
+    Physics::Info::Performance perf;
+    if (performance == nullptr && (vp.Flags & 8) != 0) {
+        if (Physics::Info::ComputePerformance(attributes, perf)) {
+            performance = &perf;
         }
     }
-    return nullptr;
+    if (!CanSpawnRigidBody(vp.initialPos, true)) {
+        return nullptr;
+    }
+    const char *cache_name = nullptr;
+    if (vp.VehicleCache != nullptr) {
+        cache_name = vp.VehicleCache->GetCacheName();
+    }
+    PVehicle *pv = new PVehicle(vp.carClass, attributes, vp.initialVec, vp.initialPos, bounds,
+                                customizations, resource, performance, cache_name);
+    if ((vp.Flags & 2) != 0) {
+        pv->SetVehicleOnGround(vp.initialPos, vp.initialVec);
+    }
+    ISimable *result = nullptr;
+    if (pv != nullptr) {
+        result = static_cast< ISimable * >(pv);
+    }
+    return result;
 }
 
 bool PVehicle::MakeRoom(IVehicleCache *whosasking, const UTL::Std::list<Resource, _type_list> &resources) {

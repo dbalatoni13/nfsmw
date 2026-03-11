@@ -15,7 +15,7 @@ void PhysicsObject::Behaviors::Add(Behavior *beh) {
     int pri = beh->GetPriority();
     iterator iter;
     for (iter = begin(); iter != end(); ++iter) {
-        if (pri < (*iter)->GetPriority()) {
+        if ((*iter)->GetPriority() > pri) {
             break;
         }
     }
