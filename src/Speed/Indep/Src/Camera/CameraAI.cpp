@@ -321,10 +321,11 @@ void CameraAI::Update(float dT) {
         EVIEW_ID viewID = static_cast<EVIEW_ID>(++player);
         IPlayer *iplayer = FindPlayer(viewID);
         Director *cd = FindDirector(viewID);
-        if (cd != nullptr && iplayer == nullptr) {
-            delete cd;
-        }
-        if (iplayer != nullptr && cd == nullptr) {
+        if (cd != nullptr) {
+            if (iplayer == nullptr) {
+                delete cd;
+            }
+        } else if (iplayer != nullptr) {
             cd = new (static_cast<const char *>(0)) Director(viewID);
         }
     } while (player <= static_cast<unsigned int>(PLAYER_LOCAL));
@@ -640,5 +641,6 @@ void CameraAI::MaybeDoJumpCam(ISimable *isimable) {
 
 
 // Static member definitions
+template <>
 UTL::Collections::Listable<CameraAI::Director, 2>::List
     UTL::Collections::Listable<CameraAI::Director, 2>::_mTable;
