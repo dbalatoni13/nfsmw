@@ -1267,9 +1267,8 @@ void CubicCameraMover::SetPovType(int pov_type) {
     if (pov_type != nPovTypeUsed) {
         bool old_outside = OutsidePovType(nPovTypeUsed);
         bool new_outside = OutsidePovType(pov_type);
-        bool reset = !new_outside || !old_outside;
 
-        bSnapNext = !!(bSnapNext | reset);
+        bSnapNext = !!(bSnapNext | (!new_outside || !old_outside));
         nPovType = pov_type;
     }
 }

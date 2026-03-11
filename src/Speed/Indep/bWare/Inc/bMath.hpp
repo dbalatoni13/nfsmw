@@ -90,7 +90,8 @@ inline float bSqrt(float x) {
 }
 
 inline int bMin(int a, int b) {
-    return a > b ? b : a;
+    if (b - a < 0) return b;
+    return a;
 }
 
 inline float bMin(float a, float b) {
@@ -162,7 +163,7 @@ inline float bCeil(float a) {
 }
 
 inline int bClamp(int a, int MINIMUM, int MAXIMUM) {
-    return bMin(MAXIMUM, bMax(a, MINIMUM));
+    return bMin(bMax(a, MINIMUM), MAXIMUM);
 }
 
 // TODO is this order correct?

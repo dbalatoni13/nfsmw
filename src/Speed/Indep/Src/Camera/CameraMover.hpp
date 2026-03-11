@@ -102,17 +102,8 @@ struct tCubic3D {
     void SetdVal(bVector3 *pV);
     void SetValDesired(bVector3 *pV);
 
-    void GetVal(bVector3 *pV) {
-        pV->x = x.Val;
-        pV->y = y.Val;
-        pV->z = z.Val;
-    }
-
-    void GetValDesired(bVector3 *pV) {
-        pV->x = x.ValDesired;
-        pV->y = y.ValDesired;
-        pV->z = z.ValDesired;
-    }
+    void GetVal(bVector3 *pV);
+    void GetValDesired(bVector3 *pV);
 
     void Snap() {
         x.Snap();

@@ -128,7 +128,9 @@ class AverageBase {
 template <class T> class tAverage : public AverageBase {
   public:
     tAverage(int nSlots) : AverageBase(sizeof(T), nSlots) {
-        pData = static_cast<T *>(AverageBase::Allocate(sizeof(T) * nSlots, nullptr));
+        pData = new (__FILE__, __LINE__) T[nSlots];
+        Total = pData[0];
+        Average = pData[0];
     }
 
     virtual ~tAverage() {

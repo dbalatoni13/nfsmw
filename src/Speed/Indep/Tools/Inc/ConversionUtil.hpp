@@ -148,9 +148,9 @@ void RightToLeftVector3(const T1 &in, T2 &out) {
 template <class T1, class T2>
 void RightToLeftMatrix4(const T1 &in, T2 &out) {
     T2 tmp;
-    Copy4(tmp[0], in[0]);
-    Copy4(tmp[1], in[1]);
-    Copy4(tmp[2], in[2]);
+    Copy4(tmp[0], in[1]);
+    Copy4(tmp[1], in[2]);
+    Copy4(tmp[2], in[0]);
     Copy4(tmp[3], in[3]);
     Scale3(tmp[0], -1.0f);
     RightToLeftVector4(tmp[0], out[0]);
