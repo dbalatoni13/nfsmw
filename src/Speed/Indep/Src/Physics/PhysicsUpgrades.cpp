@@ -15,15 +15,6 @@ using Attrib::Key;
 using Attrib::RefSpec;
 using namespace Attrib::Gen;
 
-namespace Attrib {
-namespace Gen {
-const pvehicle &pvehicle::operator=(const Instance &rhs) {
-    Instance::operator=(rhs);
-    return *this;
-}
-} // namespace Gen
-} // namespace Attrib
-
 struct PUJunkNode : Attrib::Instance {
     PUJunkNode(const RefSpec &collection, const junkman &junkman, unsigned int junkkey);
 
@@ -799,3 +790,12 @@ template void BlendParts<AxlePair>(const Attribute &, const Attribute &, unsigne
 template void BlendParts<float>(const Attribute &, const Attribute &, unsigned int, float, Attribute &);
 template void ScalePart<AxlePair>(Attribute &, unsigned int, float);
 template void ScalePart<float>(Attribute &, unsigned int, float);
+
+namespace Attrib {
+namespace Gen {
+const pvehicle &pvehicle::operator=(const Instance &rhs) {
+    Instance::operator=(rhs);
+    return *this;
+}
+} // namespace Gen
+} // namespace Attrib

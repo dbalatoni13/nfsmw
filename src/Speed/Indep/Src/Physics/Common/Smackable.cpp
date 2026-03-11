@@ -57,12 +57,13 @@ static float Smackable_ManagementRate = 0.125f;
 
 static float GetDropTimer(const Attrib::Gen::smackable &attributes) {
     float result = attributes.DROPOUT(0);
-    if (result > 0.0f) {
-        if (attributes.DROPOUT(1) > 0.0f) {
-            return result;
-        }
+    if (!(result > 0.0f)) {
+        return 0.0f;
     }
-    return 0.0f;
+    if (!(attributes.DROPOUT(1) > 0.0f)) {
+        return 0.0f;
+    }
+    return result;
 }
 
 bool Smackable::Simplify() {

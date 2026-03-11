@@ -122,7 +122,7 @@ struct pvehicle : Instance {
     }
 
     const pvehicle &operator=(const pvehicle &rhs) {
-        Instance::operator=(rhs.GetBase());
+        operator=(rhs.GetBase());
         return *this;
     }
 

@@ -912,3 +912,4 @@ void Physics::Info::FindPerformanceCandidates(const Performance &minimum_perf, c
     }
 }
 
+TEST_MARKER
