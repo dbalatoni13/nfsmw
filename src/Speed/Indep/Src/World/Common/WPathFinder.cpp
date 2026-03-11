@@ -28,10 +28,12 @@ PathFinder::~PathFinder() {
 }
 
 Sim::IActivity* PathFinder::Construct(Sim::Param params) {
-    if (pInstance == nullptr) {
-        pInstance = new PathFinder();
+    PathFinder *manager = pInstance;
+    if (manager == nullptr) {
+        manager = new PathFinder();
+        pInstance = manager;
     }
-    return pInstance;
+    return manager;
 }
 
 void PathFinder::ServiceAll() {
