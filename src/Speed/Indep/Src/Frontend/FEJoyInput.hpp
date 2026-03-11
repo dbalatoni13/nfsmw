@@ -26,7 +26,7 @@ struct cFEngJoyInput {
     static cFEngJoyInput* Get();
     cFEngJoyInput();
     void FlushActions();
-    void JoyDisable();
+    void JoyDisable(JoystickPort port, bool do_flush);
     bool IsJoyPluggedIn(JoystickPort port);
     void JoyEnable();
     bool IsJoyEnabled();
