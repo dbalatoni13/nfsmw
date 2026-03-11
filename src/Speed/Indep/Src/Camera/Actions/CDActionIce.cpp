@@ -73,11 +73,10 @@ CameraAI::Action *CDActionIce::Construct(CameraAI::Director *director) {
         return nullptr;
     }
 
-    if (!TheICEManager.ChooseCameraPlaybackTrack() && !Tweak_ForceICEReplay) {
-        return nullptr;
+    if (TheICEManager.ChooseCameraPlaybackTrack() || Tweak_ForceICEReplay) {
+        return new (static_cast<const char *>(0)) CDActionIce(director, player);
     }
-
-    return new (static_cast<const char *>(0)) CDActionIce(director, player);
+    return nullptr;
 }
 
 CDActionIce::CDActionIce(CameraAI::Director *director, IPlayer *player)

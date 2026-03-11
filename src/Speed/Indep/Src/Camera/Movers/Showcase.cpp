@@ -101,8 +101,9 @@ void ShowcaseCameraMover::BuildPhotoCameraMatrix() {
 
 void ShowcaseCameraMover::Update(float dT) {
     BuildPhotoCameraMatrix();
+    unsigned short fov = bDegToAng(mFOV);
     if (Camera::StopUpdating == 0) {
-        GetCamera()->SetFieldOfView(bDegToAng(mFOV));
+        GetCamera()->SetFieldOfView(fov);
     }
     if (Camera::StopUpdating == 0) {
         GetCamera()->SetDepthOfField(mDOF);
