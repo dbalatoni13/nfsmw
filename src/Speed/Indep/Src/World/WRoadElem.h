@@ -67,8 +67,7 @@ struct WRoadProfile {
     int GetLaneType(int lane, bool inverted) const {
         int lane_number;
         if (inverted) {
-            int num = fNumZones - lane;
-            lane_number = num - 1;
+            lane_number = fNumZones - lane - 1;
         } else {
             lane_number = lane;
         }
@@ -110,11 +109,7 @@ struct WRoadProfile {
         return GetNthBackwardLane(n);
     }
     int GetLaneNumber(int lane, bool inverted) const {
-        if (inverted) {
-            return fNumZones - lane - 1;
-        } else {
-            return lane;
-        }
+        return inverted ? fNumZones - lane - 1 : lane;
     }
     int GetNumTrafficLanes(bool forward) const;
     int GetNthTrafficLane(int n, bool forward) const;

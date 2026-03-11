@@ -1005,7 +1005,7 @@ void WRoadNav::PullOver() {
     int num_lanes = profile->fNumZones;
     bool inverted = segment->IsProfileInverted(which_node) ^ (which_node == 0);
 
-    int lane = profile->GetLaneNumber(static_cast<int>(GetLaneInd()), inverted);
+    int lane = profile->GetLaneNumber(GetLaneInd(), inverted);
 
     bool is_barrier = false;
     bool last_lane;
