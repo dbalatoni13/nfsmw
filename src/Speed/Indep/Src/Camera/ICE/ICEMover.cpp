@@ -557,27 +557,6 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
                 UMath::Matrix4 *eye_space;
                 UMath::Matrix4 *look_space;
 
-                bCopy(reinterpret_cast<bMatrix4 *>(&mCarToWorld),
-                      reinterpret_cast<const bMatrix4 *>(pCar->GetGeometryOrientation()),
-                      reinterpret_cast<const bVector3 *>(pCar->GetGeometryPosition()));
-
-                eInvertTransformationMatrix(reinterpret_cast<bMatrix4 *>(&mWorldToCar),
-                                            reinterpret_cast<const bMatrix4 *>(&mCarToWorld));
-
-                eInvertTransformationMatrix(reinterpret_cast<bMatrix4 *>(&mWorldToHybrid),
-                                            reinterpret_cast<const bMatrix4 *>(&mHybridToWorld));
-
-                PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mWorldToScene));
-
-                if (nSpaceEye == 3 || nSpaceLook == 3) {
-                    ICEScene *scene = ICE::FindAnimScene();
-                    if (scene != 0) {
-                        bMatrix4 &sceneMat = scene->GetSceneTransformMatrix();
-                        pWorldToScene = &mWorldToScene;
-                        eInvertTransformationMatrix(reinterpret_cast<bMatrix4 *>(pWorldToScene), &sceneMat);
-                    }
-                }
-
                 eye.SetVal(&v_eye[0]);
                 eye.SetdVal(&v_eye_slope[0]);
                 eye.SetValDesired(&v_eye[1]);
@@ -609,6 +588,27 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
                     bCopy(reinterpret_cast<bMatrix4 *>(&mHybridToWorld),
                           reinterpret_cast<const bMatrix4 *>(pCar->GetGeometryOrientation()),
                           reinterpret_cast<const bVector3 *>(carPos));
+                }
+
+                bCopy(reinterpret_cast<bMatrix4 *>(&mCarToWorld),
+                      reinterpret_cast<const bMatrix4 *>(pCar->GetGeometryOrientation()),
+                      reinterpret_cast<const bVector3 *>(pCar->GetGeometryPosition()));
+
+                eInvertTransformationMatrix(reinterpret_cast<bMatrix4 *>(&mWorldToCar),
+                                            reinterpret_cast<const bMatrix4 *>(&mCarToWorld));
+
+                eInvertTransformationMatrix(reinterpret_cast<bMatrix4 *>(&mWorldToHybrid),
+                                            reinterpret_cast<const bMatrix4 *>(&mHybridToWorld));
+
+                PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mWorldToScene));
+
+                if (nSpaceEye == 3 || nSpaceLook == 3) {
+                    ICEScene *scene = ICE::FindAnimScene();
+                    if (scene != 0) {
+                        bMatrix4 &sceneMat = scene->GetSceneTransformMatrix();
+                        pWorldToScene = &mWorldToScene;
+                        eInvertTransformationMatrix(reinterpret_cast<bMatrix4 *>(pWorldToScene), &sceneMat);
+                    }
                 }
 
                 switch (nSpaceEye) {
