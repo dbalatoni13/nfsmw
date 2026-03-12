@@ -288,20 +288,6 @@ bool AStarSearch::Admissible(const WRoadSegment *segment, bool forward, WRoadNav
     }
 }
 
-AStarNode::AStarNode(AStarNode *parent, const WRoadNode *road_node, int segment, float actual_cost, float estimated_cost)
-    : nParentSlot(parent != nullptr ? bGetSlotNumber(AStarNodeSlotPool, parent) : -1), //
-      nSegmentIndex(static_cast<short>(segment)),                                      //
-      nRoadNode(road_node->fIndex),                                                    //
-      fActualCost(static_cast<unsigned short>(static_cast<int>(actual_cost / ASTAR_METRIC_SCALE + 0.5f))),
-      fEstimatedCost(static_cast<unsigned short>(static_cast<int>(estimated_cost / ASTAR_METRIC_SCALE + 0.5f))) {}
-
-AStarNode *AStarNode::GetParent() {
-    if (nParentSlot < 0) {
-        return nullptr;
-    }
-    return static_cast<AStarNode *>(bGetSlot(AStarNodeSlotPool, nParentSlot));
-}
-
 float AStarSearch::Service(float time_limit_ms) {
     unsigned int start_ticker = bGetTicker();
     WRoadNav::EPathType path_type = pRoadNav->GetPathType();
@@ -486,10 +472,6 @@ float AStarSearch::Service(float time_limit_ms) {
 
 int AStarSearch::AStarCheckFlip(AStarNode *before, AStarNode *after) {
     return before->GetTotalCost() <= after->GetTotalCost();
-}
-
-void *AStarNode::operator new(unsigned int size) {
-    return bMalloc(AStarNodeSlotPool);
 }
 
 void AStarNode::operator delete(void *ptr) {

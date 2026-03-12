@@ -11,15 +11,27 @@
 struct HSIMTASK__;
 
 extern float ASTAR_METRIC_SCALE;
+extern SlotPool *AStarSearchSlotPool;
+extern SlotPool *AStarNodeSlotPool;
 
 struct AStarNode : public bTNode<AStarNode> {
-    static void *operator new(unsigned int size);
+    static void *operator new(unsigned int size) { return bMalloc(AStarNodeSlotPool); }
     static void operator delete(void *ptr);
 
     AStarNode() {}
-    AStarNode(AStarNode *parent, const WRoadNode *road_node, int segment, float actual_cost, float estimated_cost);
+    AStarNode(AStarNode *parent, const WRoadNode *road_node, int segment, float actual_cost, float estimated_cost)
+        : nParentSlot(parent != nullptr ? bGetSlotNumber(AStarNodeSlotPool, parent) : -1), //
+          nSegmentIndex(static_cast<short>(segment)),                                      //
+          nRoadNode(road_node->fIndex),                                                    //
+          fActualCost(static_cast<unsigned short>(static_cast<int>(actual_cost / ASTAR_METRIC_SCALE + 0.5f))),
+          fEstimatedCost(static_cast<unsigned short>(static_cast<int>(estimated_cost / ASTAR_METRIC_SCALE + 0.5f))) {}
 
-    AStarNode *GetParent();
+    AStarNode *GetParent() {
+        if (nParentSlot < 0) {
+            return nullptr;
+        }
+        return static_cast<AStarNode *>(bGetSlot(AStarNodeSlotPool, nParentSlot));
+    }
 
     const WRoadNode *GetRoadNode() { return WRoadNetwork::Get().GetNode(nRoadNode); }
     int GetSegmentIndex() { return nSegmentIndex; }
@@ -35,9 +47,6 @@ struct AStarNode : public bTNode<AStarNode> {
 };
 
 enum AStarSearchState {};
-
-extern SlotPool *AStarSearchSlotPool;
-extern SlotPool *AStarNodeSlotPool;
 
 struct AStarSearch : public bTNode<AStarSearch> {
     static void *operator new(unsigned int size) { return bMalloc(AStarSearchSlotPool); }
