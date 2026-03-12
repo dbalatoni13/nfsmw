@@ -67,7 +67,13 @@ static const bVector4 CameraNoiseSpeedFrequency(1.8f, 2.0f, 2.125f, 2.0f);
 static const bVector4 CameraNoiseSpeedAmplitude(0.03f, 0.025f, 0.68f, 0.28f);
 static const bVector4 CameraNoiseTerrainFrequency(3.0f, 5.0f, 7.0f, 5.5f);
 static const bVector4 CameraNoiseTerrainAmplitude(0.007f, 0.01f, 0.3f, 0.4f);
-extern bVector4 CameraNoiseSpeedData[5];
+static const bVector4 CameraNoiseSpeedData[5] = {
+    bVector4(0.0f, 0.0f, 0.6f, 1.0f),
+    bVector4(0.005f, 0.5f, 1.1f, 1.1f),
+    bVector4(0.03f, 0.8f, 1.2f, 1.2f),
+    bVector4(0.07f, 1.0f, 1.3f, 1.3f),
+    bVector4(0.02f, 1.0f, 1.0f, 1.4f),
+};
 extern float CameraAccelerationCurve[5];
 extern bVector2 CameraSpeedHugData[5];
 extern Graph gDriftSpeed;
