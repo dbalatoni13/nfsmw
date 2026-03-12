@@ -544,39 +544,35 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
                 UMath::Matrix4 mCarToWorld;
                 UMath::Matrix4 mWorldToCar;
                 UMath::Matrix4 mWorldToHybrid;
-                ICE::Cubic3D eye(0, 0.0f);
-                ICE::Cubic3D look(0, 0.0f);
-                ICE::Cubic1D dutch(0, 0.0f);
-                ICE::Cubic1D fov(0, 0.0f);
                 UMath::Matrix4 mWorldToScene;
                 UMath::Matrix4 *pWorldToScene = 0;
                 UMath::Matrix4 *eye_space;
                 UMath::Matrix4 *look_space;
 
-                eye.SetVal(&v_eye[0]);
-                eye.SetdVal(&v_eye_slope[0]);
-                eye.SetValDesired(&v_eye[1]);
-                eye.SetdValDesired(&v_eye_slope[1]);
+                pEye->SetVal(&v_eye[0]);
+                pEye->SetdVal(&v_eye_slope[0]);
+                pEye->SetValDesired(&v_eye[1]);
+                pEye->SetdValDesired(&v_eye_slope[1]);
 
-                look.SetVal(&v_look[0]);
-                look.SetdVal(&v_look_slope[0]);
-                look.SetValDesired(&v_look[1]);
-                look.SetdValDesired(&v_look_slope[1]);
+                pLook->SetVal(&v_look[0]);
+                pLook->SetdVal(&v_look_slope[0]);
+                pLook->SetValDesired(&v_look[1]);
+                pLook->SetdValDesired(&v_look_slope[1]);
 
-                dutch.SetVal(pCameraData->fDutch[0]);
-                dutch.SetdVal(f_dutch_slope[0]);
-                dutch.SetValDesired(pCameraData->fDutch[1]);
-                dutch.SetdValDesired(f_dutch_slope[1]);
+                pDutch->SetVal(pCameraData->fDutch[0]);
+                pDutch->SetdVal(f_dutch_slope[0]);
+                pDutch->SetValDesired(pCameraData->fDutch[1]);
+                pDutch->SetdValDesired(f_dutch_slope[1]);
 
                 unsigned short fov0 = ConvertLensLengthToFovAngle(pCameraData->fLens[0]);
                 unsigned short fov1 = ConvertLensLengthToFovAngle(pCameraData->fLens[1]);
                 float fov0_slope = ConvertLensDeltaToFovDelta(pCameraData->fLens[0], f_lens_slope[0]);
                 float fov1_slope = ConvertLensDeltaToFovDelta(pCameraData->fLens[1], f_lens_slope[1]);
 
-                fov.SetVal(static_cast<float>(fov0));
-                fov.SetdVal(fov0_slope);
-                fov.SetValDesired(static_cast<float>(fov1));
-                fov.SetdValDesired(fov1_slope);
+                pFov->SetVal(static_cast<float>(fov0));
+                pFov->SetdVal(fov0_slope);
+                pFov->SetValDesired(static_cast<float>(fov1));
+                pFov->SetdValDesired(fov1_slope);
 
                 if (flush) {
                     PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mHybridToWorld));
@@ -624,10 +620,10 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
                 ICE::Vector3 *eye_vel = (nSpaceEye == 0) ? pCar->GetVelocity() : static_cast<ICE::Vector3 *>(0);
                 ICE::Vector3 *look_vel = (nSpaceLook == 0) ? pCar->GetVelocity() : static_cast<ICE::Vector3 *>(0);
 
-                EyeCubicInit(&eye, reinterpret_cast<ICE::Matrix4 *>(eye_space), eye_vel);
-                LookCubicInit(&look, reinterpret_cast<ICE::Matrix4 *>(look_space), look_vel);
-                DutchCubicInit(&dutch);
-                FovCubicInit(&fov);
+                EyeCubicInit(pEye, reinterpret_cast<ICE::Matrix4 *>(eye_space), eye_vel);
+                LookCubicInit(pLook, reinterpret_cast<ICE::Matrix4 *>(look_space), look_vel);
+                DutchCubicInit(pDutch);
+                FovCubicInit(pFov);
 
                 float f_route_param = TheICEManager.GetParameter();
                 float f_to_start = bAbs(f_route_param - fParameter0);
@@ -639,42 +635,42 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
                     ICE::Vector3 v_look_val;
                     ICE::Vector3 v_dlook;
 
-                    eye.GetVal(&v_eye_val);
-                    eye.GetdVal(&v_deye);
+                    pEye->GetVal(&v_eye_val);
+                    pEye->GetdVal(&v_deye);
                     pEye->SetValDesired(&v_eye_val);
                     pEye->SetdValDesired(&v_deye);
 
-                    look.GetVal(&v_look_val);
-                    look.GetdVal(&v_dlook);
+                    pLook->GetVal(&v_look_val);
+                    pLook->GetdVal(&v_dlook);
                     pLook->SetValDesired(&v_look_val);
                     pLook->SetdValDesired(&v_dlook);
 
-                    pDutch->SetValDesired(dutch.GetVal());
-                    pDutch->dValDesired = dutch.GetdVal();
+                    pDutch->SetValDesired(pDutch->GetVal());
+                    pDutch->dValDesired = pDutch->GetdVal();
 
-                    pFov->SetValDesired(fov.GetVal());
-                    pFov->dValDesired = fov.GetdVal();
+                    pFov->SetValDesired(pFov->GetVal());
+                    pFov->dValDesired = pFov->GetdVal();
                 } else {
                     ICE::Vector3 v_eye_val;
                     ICE::Vector3 v_deye;
                     ICE::Vector3 v_look_val;
                     ICE::Vector3 v_dlook;
 
-                    eye.GetVal(&v_eye_val);
-                    eye.GetdVal(&v_deye);
+                    pEye->GetVal(&v_eye_val);
+                    pEye->GetdVal(&v_deye);
                     pEye->SetVal(&v_eye_val);
                     pEye->SetdVal(&v_deye);
 
-                    look.GetVal(&v_look_val);
-                    look.GetdVal(&v_dlook);
+                    pLook->GetVal(&v_look_val);
+                    pLook->GetdVal(&v_dlook);
                     pLook->SetVal(&v_look_val);
                     pLook->SetdVal(&v_dlook);
 
-                    pDutch->SetVal(dutch.GetVal());
-                    pDutch->SetdVal(dutch.GetdVal());
+                    pDutch->SetVal(pDutch->GetVal());
+                    pDutch->SetdVal(pDutch->GetdVal());
 
-                    pFov->SetVal(fov.GetVal());
-                    pFov->SetdVal(fov.GetdVal());
+                    pFov->SetVal(pFov->GetVal());
+                    pFov->SetdVal(pFov->GetdVal());
                 }
             }
         }
