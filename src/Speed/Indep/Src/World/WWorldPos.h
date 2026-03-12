@@ -9,8 +9,7 @@
 #include "Speed/Indep/Src/World/WCollisionTri.h"
 
 // total size: 0x3C
-class WWorldPos {
-  public:
+struct WWorldPos {
     void MakeFaceAtPoint(const UMath::Vector3 &inPoint);
     bool FindClosestFace(const WCollider *collider, const UMath::Vector3 &ptRaw, bool quitIfOnSameFace);
     bool FindClosestFace(const UMath::Vector3 &ptRaw, bool quitIfOnSameFace);
@@ -33,11 +32,10 @@ class WWorldPos {
     }
 
     WWorldPos(float yOffset) {
-        this->fFaceValid = 0;
-        this->fMissCount = 0;
-        this->fUsageCount = 0;
-        this->fYOffset = yOffset;
-        this->fSurface = nullptr;
+        fFaceValid = 0;
+        fMissCount = 0;
+        fUsageCount = 0;
+        fYOffset = yOffset;
     }
 
     ~WWorldPos() {}
@@ -66,7 +64,6 @@ class WWorldPos {
 
     // bool FindClosestFace(const WCollisionInstanceCacheList &instList, const UMath::Vector3 &pt, bool quitIfOnSameFace) {}
 
-  private:
     WCollisionTri fFace;                // offset 0x0, size 0x30
     unsigned int fFaceValid : 1;        // offset 0x30, size 0x4
     unsigned int fMissCount : 15;       // offset 0x30, size 0x4

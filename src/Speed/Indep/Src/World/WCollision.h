@@ -11,7 +11,12 @@
 #include "Speed/Indep/Src/Physics/Dynamics/Collision.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-struct WSurface : CollisionSurface {};
+struct WSurface : CollisionSurface {
+    WSurface() {
+        fSurface = 0;
+        fFlags = 0;
+    }
+};
 
 struct WCollisionArticle {
     // total size: 0x10

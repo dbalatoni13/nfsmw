@@ -509,21 +509,25 @@ bool DoesCameraTypeDisablePreculler(CameraMoverTypes type) {
 }
 
 CameraMover::CameraMover(int view_id, CameraMoverTypes type)
-    : mWPos(0.025f) {
-    mCollider = WCollider::Create(0, WCollider::kColliderShape_Sphere, 0x1C, 0);
+    : mCollider(WCollider::Create(0, WCollider::kColliderShape_Sphere, 0x1C, 0)) //
+    , mWPos(0.025f) {
+    mWPos.fFace.fPt0 = UMath::Vector3::kZero;
+    mWPos.fFace.fPt1 = UMath::Vector3::kZero;
+    mWPos.fFace.fPt2 = UMath::Vector3::kZero;
     Type = type;
-    Enabled = 0;
+    mWPos.fSurface = nullptr;
     ViewID = view_id;
+    Enabled = 0;
     fAccumulatedClearance = 0.0f;
     fAccumulatedAdjust = 0.0f;
     fSavedAdjust = 0.0f;
+    vSavedForward.z = 0.0f;
     vSavedForward.y = 0.0f;
     vSavedForward.x = 0.0f;
-    vSavedForward.z = 0.0f;
     if (view_id == -1) {
-        RenderDash = 0;
         pView = nullptr;
         pCamera = nullptr;
+        RenderDash = 0;
     } else {
         pView = eGetView(view_id, false);
         pCamera = pView->GetCamera();
