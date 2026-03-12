@@ -984,8 +984,8 @@ struct AABB {
     bool Overlap(const AABB &test) {
         if (!(test.mMin.x > mMax.x)) {
             if (!(test.mMin.y > mMax.y)) {
-                if (!(mMin.x > test.mMax.x)) {
-                    return !(mMin.y > test.mMax.y);
+                if (test.mMax.x >= mMin.x) {
+                    return test.mMax.y >= mMin.y;
                 }
             }
         }
@@ -1031,7 +1031,7 @@ void WCollisionMgr::GetTriList(const WCollisionInstanceCacheList &instList, cons
                 UMath::Vector3 diffVec;
                 v3sub(1, &sp->fPos, &tpt, &diffVec);
 
-                float spRadius = static_cast<float>(sp->fRadius) * (1.0f / 16.0f) + radius;
+                float spRadius = static_cast<float>(static_cast<int>(sp->fRadius)) * (1.0f / 16.0f) + radius;
                 float dSq = diffVec.x * diffVec.x + diffVec.z * diffVec.z;
                 if (dSq < spRadius * spRadius) {
                     const WCollisionStrip *strip = reinterpret_cast<const WCollisionStrip *>(
