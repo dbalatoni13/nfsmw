@@ -18,12 +18,14 @@ most common agent flows:
 """
 
 import argparse
+import json
 import re
 import os
+import shlex
 import subprocess
 import sys
 import tempfile
-from typing import List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence
 from _common import (
     BUILD_NINJA,
     OBJDIFF_JSON,
@@ -40,6 +42,7 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 TOOLS_DIR = os.path.join(ROOT_DIR, "tools")
 PS2_TYPES = os.path.join(ROOT_DIR, "symbols", "PS2", "PS2_types.nothpp")
 DTK = os.path.join(ROOT_DIR, "build", "tools", "dtk")
+OBJDIFF_CLI = os.path.join(ROOT_DIR, "build", "tools", "objdiff-cli")
 GC_SYMBOLS = os.path.join(ROOT_DIR, "config", "GOWE69", "symbols.txt")
 PS2_SYMBOLS = os.path.join(ROOT_DIR, "config", "SLES-53558-A124", "symbols.txt")
 GC_DWARF = os.path.join(ROOT_DIR, "symbols", "Dwarf")
@@ -140,11 +143,40 @@ def get_unit_build_output(unit_name: str) -> str:
     return make_abs(target) or target
 
 
-def build_shared_unit(unit_name: str) -> str:
+def build_shared_unit(unit_name: str, quiet: bool = False) -> str:
     ensure_decomp_prereqs()
     target = get_unit_build_target(unit_name)
-    run_stream(["ninja", target])
+    cmd = ["ninja", target]
+    if quiet:
+        result = subprocess.run(
+            cmd,
+            cwd=ROOT_DIR,
+            text=True,
+            capture_output=True,
+        )
+        if result.returncode != 0:
+            raise WorkflowError(
+                format_failure(cmd, result.returncode, result.stdout, result.stderr)
+            )
+    else:
+        run_stream(cmd)
     return get_unit_build_output(unit_name)
+
+
+def ensure_shared_unit_output(unit_name: str) -> str:
+    output_path = get_unit_build_output(unit_name)
+    if os.path.exists(output_path):
+        return output_path
+
+    print(f"Shared build missing for {unit_name}; rebuilding...", flush=True)
+    try:
+        output_path = build_shared_unit(unit_name, quiet=True)
+    except WorkflowError as e:
+        raise WorkflowError(
+            f"Auto-build failed while preparing shared output for {unit_name}\n{e}"
+        )
+    print(f"Shared build ready: {output_path}", flush=True)
+    return output_path
 
 
 def maybe_remove(path: Optional[str]) -> None:
@@ -242,6 +274,16 @@ def command_health(args: argparse.Namespace) -> None:
         )
 
     print_section("Tool Checks")
+    report(
+        os.path.exists(OBJDIFF_CLI),
+        "objdiff-cli",
+        OBJDIFF_CLI if os.path.exists(OBJDIFF_CLI) else "missing (seed build/tools in this worktree)",
+    )
+    report(
+        os.path.exists(DTK),
+        "dtk",
+        DTK if os.path.exists(DTK) else "missing (seed build/tools in this worktree)",
+    )
     try:
         run_capture(python_tool("decomp-context.py", "--ghidra-check"))
         report(True, "ghidra", "GC + PS2 programs available")
@@ -317,9 +359,85 @@ def command_health(args: argparse.Namespace) -> None:
         raise WorkflowError(f"Health check failed with {failures} issue(s)")
 
 
+def build_next_candidates(
+    status_data: Dict[str, Any], strategy: str
+) -> List[Dict[str, Any]]:
+    candidates: List[Dict[str, Any]] = []
+
+    for category, entries in status_data.items():
+        for entry in entries:
+            unit_name = entry.get("name", "")
+            display_unit = unit_name.replace("main/", "")
+            has_source = bool(entry.get("has_source"))
+
+            for func in entry.get("top_unmatched_functions", []):
+                function_name = func.get("name", "?")
+                unmatched = int(func.get("unmatched_bytes_est", 0))
+                match_percent = func.get("match_percent")
+                status = func.get("status", "?")
+                size = int(func.get("size", 0))
+                is_static_init = function_name.startswith(
+                    "__static_initialization_and_destruction_0"
+                )
+                is_initializer = "InitializeTables" in function_name or is_static_init
+                reason = "largest remaining byte win"
+                score = float(unmatched)
+
+                if strategy == "balanced":
+                    if status == "nonmatching":
+                        score *= 1.15
+                        reason = "large remaining win with an existing implementation"
+                    if has_source:
+                        score *= 1.1
+                        reason += " and source available"
+                    if is_initializer:
+                        score *= 0.3
+                        reason = (
+                            "large remaining win, but likely lower-priority init/setup work"
+                        )
+                elif strategy == "quick-wins":
+                    score = min(float(unmatched), 768.0)
+                    if status == "nonmatching":
+                        score *= 1.3
+                        reason = "existing implementation makes this a likely quick win"
+                    if match_percent is not None and match_percent >= 90.0:
+                        score *= 1.2
+                        reason = "high match % makes this a likely quick cleanup"
+                    if has_source:
+                        score *= 1.05
+                        if "source" not in reason:
+                            reason += " with source available"
+                    if is_initializer:
+                        score *= 0.1
+                        reason = (
+                            "deprioritized init/setup work; likely not the fastest useful win"
+                        )
+
+                candidates.append(
+                    {
+                        "category": category,
+                        "unit": unit_name,
+                        "display_unit": display_unit,
+                        "function": function_name,
+                        "status": status,
+                        "size": size,
+                        "match_percent": match_percent,
+                        "unmatched_bytes_est": unmatched,
+                        "score": score,
+                        "reason": reason,
+                    }
+                )
+
+    candidates.sort(
+        key=lambda c: (-c["score"], -c["unmatched_bytes_est"], -c["size"], c["function"].lower())
+    )
+    return candidates
+
+
 def command_function(args: argparse.Namespace) -> None:
     ensure_decomp_prereqs()
     print_section(f"Function Workflow: {args.function}")
+    ensure_shared_unit_output(args.unit)
     cmd = python_tool("decomp-context.py", "-u", args.unit, "-f", args.function)
     if args.no_source:
         cmd.append("--no-source")
@@ -339,19 +457,102 @@ def command_function(args: argparse.Namespace) -> None:
 def command_unit(args: argparse.Namespace) -> None:
     ensure_decomp_prereqs()
     print_section(f"Unit Status: {args.unit}")
-    run_stream(python_tool("decomp-status.py", "--unit", args.unit))
+    ensure_shared_unit_output(args.unit)
+    top_unmatched_limit = args.limit if args.limit is not None else 5
+    run_stream(
+        python_tool(
+            "decomp-status.py",
+            "--unit",
+            args.unit,
+            "--top-unmatched",
+            str(top_unmatched_limit),
+        )
+    )
 
     common_args: List[str] = ["-u", args.unit, "-t", "function"]
     if args.search:
         common_args.extend(["--search", args.search])
     if args.limit is not None:
         common_args.extend(["--limit", str(args.limit)])
+    common_args.extend(["--sort", "unmatched"])
 
     print_section("Missing Functions")
     run_stream(python_tool("decomp-diff.py", *common_args, "-s", "missing"))
 
     print_section("Nonmatching Functions")
     run_stream(python_tool("decomp-diff.py", *common_args, "-s", "nonmatching"))
+
+
+def command_next(args: argparse.Namespace) -> None:
+    ensure_decomp_prereqs()
+    if args.unit:
+        ensure_shared_unit_output(args.unit)
+
+    cmd = python_tool("decomp-status.py", "--json")
+    if args.category:
+        cmd.extend(["--category", args.category])
+    if args.unit:
+        cmd.extend(["--unit", args.unit])
+
+    result = run_capture(cmd)
+    status_data = json.loads(result.stdout)
+    candidates = build_next_candidates(status_data, args.strategy)
+    if args.limit is not None:
+        candidates = candidates[: args.limit]
+
+    if not candidates:
+        if args.unit:
+            for entries in status_data.values():
+                for entry in entries:
+                    if entry.get("name") != args.unit:
+                        continue
+                    status = entry.get("status")
+                    if status == "error":
+                        raise WorkflowError(
+                            f"Unable to rank {args.unit}: {entry.get('error_message', 'objdiff failed')}"
+                        )
+                    if status == "complete":
+                        raise WorkflowError(f"{args.unit} is already complete.")
+                    if status == "no_source":
+                        raise WorkflowError(
+                            f"{args.unit} has no decomp source configured in objdiff.json."
+                        )
+                    if status == "no_target":
+                        raise WorkflowError(
+                            f"{args.unit} has no target object configured in objdiff.json."
+                        )
+        raise WorkflowError("No unmatched function candidates found for the given filters.")
+
+    if args.command_only:
+        for candidate in candidates:
+            print(
+                "python tools/decomp-workflow.py function "
+                f"-u {shlex.quote(candidate['unit'])} "
+                f"-f {shlex.quote(candidate['function'])}"
+            )
+        return
+
+    print_section("Next Targets")
+    print(
+        f"{'UNMATCH':>8}  {'MATCH':>7}  {'SIZE':>6}  {'UNIT':<34} {'FUNCTION'}"
+    )
+    print("-" * 120)
+    for candidate in candidates:
+        match_str = (
+            f"{candidate['match_percent']:.1f}%"
+            if candidate["match_percent"] is not None
+            else "-"
+        )
+        print(
+            f"{candidate['unmatched_bytes_est']:>7}B  {match_str:>7}  {candidate['size']:>5}B  "
+            f"{candidate['display_unit']:<34} {candidate['function']}"
+        )
+        print(f"  why: {candidate['reason']}")
+        print(
+            "  next: python tools/decomp-workflow.py function "
+            f"-u {shlex.quote(candidate['unit'])} "
+            f"-f {shlex.quote(candidate['function'])}"
+        )
 
 
 def command_build(args: argparse.Namespace) -> None:
@@ -364,6 +565,7 @@ def command_diff(args: argparse.Namespace) -> None:
     if args.diff:
         title += f" / {args.diff}"
     print_section(title)
+    ensure_shared_unit_output(args.unit)
 
     cmd: List[str] = python_tool("decomp-diff.py", "-u", args.unit)
     if args.diff:
@@ -473,6 +675,31 @@ def build_parser() -> argparse.ArgumentParser:
         help="Limit each symbol list to the first N matching rows",
     )
     unit.set_defaults(func=command_unit)
+
+    next_cmd = subparsers.add_parser(
+        "next",
+        help="Recommend the highest-impact next functions to work on",
+    )
+    next_cmd.add_argument("--category", help="Filter by progress category")
+    next_cmd.add_argument("--unit", help="Restrict recommendations to one unit")
+    next_cmd.add_argument(
+        "--limit",
+        type=int,
+        default=10,
+        help="Limit the number of suggested targets (default: 10)",
+    )
+    next_cmd.add_argument(
+        "--strategy",
+        choices=["impact", "balanced", "quick-wins"],
+        default="balanced",
+        help="Ranking strategy for recommendations (default: balanced)",
+    )
+    next_cmd.add_argument(
+        "--command-only",
+        action="store_true",
+        help="Print only follow-up commands, one per line",
+    )
+    next_cmd.set_defaults(func=command_next)
 
     build = subparsers.add_parser(
         "build",
