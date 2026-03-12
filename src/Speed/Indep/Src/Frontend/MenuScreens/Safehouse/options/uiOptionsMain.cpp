@@ -75,7 +75,27 @@ void UIOptionsMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsig
         }
         if (PrevButtonMessage == 0x0C407210) {
             eOptionsCategory curCat = FEDatabase->GetOptionsSettings()->CurrentCategory;
-            if (curCat == OC_CONTROLS) {
+            switch (curCat) {
+            case OC_AUDIO:
+            case OC_VIDEO:
+            case OC_GAMEPLAY:
+            case OC_PLAYER:
+            case OC_ONLINE:
+                if (mCalledFromPauseMenu && !FEDatabase->IsOnlineMode() &&
+                    !FEDatabase->IsLANMode()) {
+                    cFEng::Get()->QueuePackageSwitch("Pause_Options.fng", 1, 0, false);
+                } else {
+                    cFEng::Get()->QueuePackageSwitch("Options.fng", 0, 0, false);
+                }
+                return;
+            case OC_CREDITS:
+                cFEng::Get()->QueuePackageSwitch("Credits.fng", 0, 0, false);
+                return;
+            case OC_TRAILERS:
+                FEDatabase->SetGameMode(eFE_GAME_TRAILERS);
+                cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+                return;
+            case OC_CONTROLS:
                 UIOptionsController::PortToConfigure = FEngMapJoyParamToJoyport(PrevParam1);
                 if (mCalledFromPauseMenu) {
                     cFEng::Get()->QueuePackageSwitch("Pause_Controller.fng", 0, 0, false);
@@ -83,28 +103,10 @@ void UIOptionsMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsig
                     cFEng::Get()->QueuePackageSwitch("UI_OptionsController.fng", 0, 0, false);
                 }
                 return;
-            }
-            if (curCat == OC_EATRAX) {
+            case OC_EATRAX:
                 cFEng::Get()->QueuePackageSwitch("EA_Trax_Jukebox.fng", 0, 0, false);
                 return;
-            }
-            if (curCat == OC_TRAILERS) {
-                FEDatabase->SetGameMode(eFE_GAME_TRAILERS);
-                cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
-                return;
-            }
-            if (curCat == OC_CREDITS) {
-                cFEng::Get()->QueuePackageSwitch("Credits.fng", 0, 0, false);
-                return;
-            }
-            if (curCat == OC_AUDIO || curCat == OC_VIDEO || curCat == OC_GAMEPLAY ||
-                curCat == OC_PLAYER || curCat == OC_ONLINE) {
-                if (mCalledFromPauseMenu && !FEDatabase->IsOnlineMode() &&
-                    !FEDatabase->IsLANMode()) {
-                    cFEng::Get()->QueuePackageSwitch("Pause_Options.fng", 1, 0, false);
-                } else {
-                    cFEng::Get()->QueuePackageSwitch("Options.fng", 0, 0, false);
-                }
+            default:
                 return;
             }
         }
