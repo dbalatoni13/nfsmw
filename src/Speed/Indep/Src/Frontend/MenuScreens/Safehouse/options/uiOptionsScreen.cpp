@@ -469,14 +469,15 @@ void UIOptionsScreen::TogglePlayer(bool revert_changes) {
 }
 
 bool UIOptionsScreen::ShouldShowAutoSave() {
+    bool result = false;
     if (!GRaceStatus::Exists() ||
         GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career ||
         (GRaceStatus::Get().GetRaceParameters() &&
          GRaceStatus::Get().GetRaceParameters()->GetIsChallengeSeriesRace())) {
-        if (IsMemcardEnabled && IsAutoSaveEnabled && FEDatabase->IsCareerMode() &&
+        if (IsMemcardEnabled && IsAutoSaveEnabled && FEDatabase->bProfileLoaded &&
             !FEDatabase->IsOnlineMode()) {
-            return true;
+            result = true;
         }
     }
-    return false;
+    return result;
 }
