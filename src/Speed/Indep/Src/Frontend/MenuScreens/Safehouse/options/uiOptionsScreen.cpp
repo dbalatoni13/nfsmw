@@ -96,27 +96,6 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
     UIWidgetMenu::NotificationMessage(msg, pobj, param1, param2);
 
     switch (msg) {
-    case 0x9A5AD46D:
-        TogglePlayer(false);
-        break;
-    case 0x72619778:
-        return;
-    case 0x7E998E5E:
-        if (FEDatabase->GetOptionsSettings()->CurrentCategory == OC_GAMEPLAY) {
-            ClearWidgets();
-            SetupGameplay();
-            SetInitialOption(0);
-        } else {
-            for (int i = 0; i < Options.CountElements(); i++) {
-                Options.GetNode(i)->Draw();
-            }
-        }
-        break;
-    case 0x775DBA97:
-        RestoreOriginals();
-        MemoryCard::GetInstance()->SetCardRemovedWithAutoSaveEnabled(false);
-        cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
-        break;
     case 0x911AB364:
         if (OptionsDidNotChange()) {
             cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
@@ -134,11 +113,10 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
                                             GetLocalizedString(0xE9CB802F));
         }
         break;
-    case 0xA2A07AC4:
-        TogglePlayer(true);
-        break;
-    case 0xB5AF2461:
-        new EUnPause();
+    case 0x775DBA97:
+        RestoreOriginals();
+        MemoryCard::GetInstance()->SetCardRemovedWithAutoSaveEnabled(false);
+        cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
         break;
     case 0xC519BFC4: {
         const char* dlg_pkg;
@@ -153,16 +131,8 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
                                         GetLocalizedString(0x8AEF5AE8));
         break;
     }
-    case 0xD05FC3A3:
-        if (!FEDatabase->IsOptionsDirty() &&
-            FEDatabase->GetOptionsSettings()->CurrentCategory == OC_GAMEPLAY) {
-            MemcardEnter(GetPackageName(), GetPackageName(), 0xA1, 0, 0, 0, 0);
-        }
-        RestoreDefaults();
-        break;
     case 0xD9FEEC59:
     case 0x5073EF13:
-    case 0x406415E3:
         if (FEDatabase->GetOptionsSettings()->CurrentCategory != OC_PLAYER) {
             return;
         }
@@ -172,9 +142,7 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
                 snd = 0x6B283007;
             }
             cFEng::Get()->QueueSoundMessage(snd, GetPackageName());
-            if (OptionsDidNotChange()) {
-                cFEng::Get()->QueueGameMessage(0x9A5AD46D, 0, 0xFF);
-            } else {
+            if (!OptionsDidNotChange()) {
                 char buf[128];
                 FEngSNPrintf(buf, 128, GetLocalizedString(0xBA463431),
                              GetPlayerToEditForOptions() + 1);
@@ -188,8 +156,23 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
                                                 static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4,
                                                 0x9A5AD46D, 0xA2A07AC4, 0x34DC1BCF,
                                                 static_cast<eDialogFirstButtons>(1), buf);
+            } else {
+                cFEng::Get()->QueueGameMessage(0x9A5AD46D, 0, 0xFF);
             }
         }
+        break;
+    case 0xA2A07AC4:
+        TogglePlayer(true);
+        break;
+    case 0x9A5AD46D:
+        TogglePlayer(false);
+        break;
+    case 0xD05FC3A3:
+        if (!FEDatabase->IsOptionsDirty() &&
+            FEDatabase->GetOptionsSettings()->CurrentCategory == OC_GAMEPLAY) {
+            MemcardEnter(GetPackageName(), GetPackageName(), 0xA1, 0, 0, 0, 0);
+        }
+        RestoreDefaults();
         break;
     case 0xE1FDE1D1: {
         bool dirty = false;
@@ -198,14 +181,12 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
         }
         FEDatabase->SetOptionsDirty(dirty);
 
-        if (!mCalledFromPauseMenu) {
-            if (!FEDatabase->IsOnlineMode()) {
-                cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, 0);
-            } else {
-                cFEng::Get()->QueuePackageSwitch("OL_MAIN.fng", 0, 0, 0);
-            }
+        if (mCalledFromPauseMenu) {
+            cFEng::Get()->QueuePackageSwitch("Pause_Main.fng", 1, 0, false);
+        } else if (FEDatabase->IsOnlineMode()) {
+            cFEng::Get()->QueuePackageSwitch("OL_MAIN.fng", 0, 0, false);
         } else {
-            cFEng::Get()->QueuePackageSwitch("Pause_Main.fng", 1, 0, 0);
+            cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
         }
 
         if (FEDatabase->GetOptionsSettings()->CurrentCategory != OC_AUDIO) {
@@ -214,6 +195,23 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
         g_pEAXSound->UpdateVolumes(FEDatabase->GetAudioSettings(), -1.0f);
         break;
     }
+    case 0xB5AF2461:
+        new EUnPause();
+        break;
+    case 0x7E998E5E:
+        if (FEDatabase->GetOptionsSettings()->CurrentCategory == OC_GAMEPLAY) {
+            ClearWidgets();
+            SetupGameplay();
+            SetInitialOption(0);
+        } else {
+            for (int i = 0; i < Options.CountElements(); i++) {
+                Options.GetNode(i)->Draw();
+            }
+        }
+        break;
+    case 0x72619778:
+    case 0x406415E3:
+        break;
     case 0x34DC1BCF:
         return;
     }
