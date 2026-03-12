@@ -497,14 +497,10 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
 
     if (flush) {
         FlushAccumulationBuffer();
-        ICE::Vector3 *pos = pCar->GetGeometryPosition();
-        vSmoothCarPos.x = pos->x;
-        vSmoothCarPos.y = pos->y;
-        vSmoothCarPos.z = pos->z;
-        ICE::Vector3 *fwd = pCar->GetForwardVector();
-        vSmoothCarFwd.x = fwd->x;
-        vSmoothCarFwd.y = fwd->y;
-        vSmoothCarFwd.z = fwd->z;
+        bCopy(reinterpret_cast<bVector3 *>(&vSmoothCarPos),
+              reinterpret_cast<const bVector3 *>(pCar->GetGeometryPosition()));
+        bCopy(reinterpret_cast<bVector3 *>(&vSmoothCarFwd),
+              reinterpret_cast<const bVector3 *>(pCar->GetForwardVector()));
     }
 
     if (b_new_camera) {
@@ -564,15 +560,10 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
                 pDutch->SetValDesired(pCameraData->fDutch[1]);
                 pDutch->SetdValDesired(f_dutch_slope[1]);
 
-                unsigned short fov0 = ConvertLensLengthToFovAngle(pCameraData->fLens[0]);
-                unsigned short fov1 = ConvertLensLengthToFovAngle(pCameraData->fLens[1]);
-                float fov0_slope = ConvertLensDeltaToFovDelta(pCameraData->fLens[0], f_lens_slope[0]);
-                float fov1_slope = ConvertLensDeltaToFovDelta(pCameraData->fLens[1], f_lens_slope[1]);
-
-                pFov->SetVal(static_cast<float>(fov0));
-                pFov->SetdVal(fov0_slope);
-                pFov->SetValDesired(static_cast<float>(fov1));
-                pFov->SetdValDesired(fov1_slope);
+                pFov->SetVal(static_cast<float>(ConvertLensLengthToFovAngle(pCameraData->fLens[0])));
+                pFov->SetdVal(ConvertLensDeltaToFovDelta(pCameraData->fLens[0], f_lens_slope[0]));
+                pFov->SetValDesired(static_cast<float>(ConvertLensLengthToFovAngle(pCameraData->fLens[1])));
+                pFov->SetdValDesired(ConvertLensDeltaToFovDelta(pCameraData->fLens[1], f_lens_slope[1]));
 
                 if (flush) {
                     PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mHybridToWorld));
