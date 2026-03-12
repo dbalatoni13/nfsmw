@@ -363,29 +363,6 @@ UIMemcardList::~UIMemcardList() {}
 void UIMemcardList::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
                                          unsigned long param2) {
     switch (msg) {
-    case 0x911ab364:
-        if (!MemoryCard::GetInstance()->InBootSequence()) {
-            cFEng::Get()->QueueGameMessage(0x8867412d,
-                MemoryCard::GetInstance()->GetScreen()->GetPackageName(), 0xff);
-            gMemcardSetup.mLastController = param2;
-        } else {
-            cFEng::Get()->QueueGameMessage(0x8d0cc9f9, "MC_Main_GC.fng", 0xff);
-            gMemcardSetup.mLastController = param2;
-        }
-        break;
-    case 0x406415e3: {
-        bool isMultitap = false;
-        if (FEDatabase->MatchesGameMode(4)) {
-            isMultitap = FEDatabase->iNumPlayers == 2;
-        }
-        gMemcardSetup.mLastController = param2;
-        if (!isMultitap) {
-            signed char port = static_cast< signed char >(FEngMapJoyParamToJoyport(static_cast< int >(param2)));
-            FEDatabase->SetPlayersJoystickPort(MemoryCard::GetInstance()->GetPlayerNum(), port);
-        }
-        MemoryCard::GetInstance()->SetMonitor(false);
-        break;
-    }
     case 0x35f8620b:
         m_SaveGameList.SetSelected(m_SaveGameList.GetFirstSlot());
         if (m_SaveGameList.GetSelectedSlot() != nullptr) {
@@ -396,14 +373,6 @@ void UIMemcardList::NotificationMessage(unsigned long msg, FEObject* obj, unsign
         if (MemoryCard::GetInstance()->InBootSequence()) {
             FEngSetLanguageHash(GetPackageName(), 0xb8a7c6cd, 0x1a294dad);
         }
-        break;
-    case 0x72619778:
-        gMemcardSetup.mLastController = param2;
-        m_SaveGameList.ScrollPrev();
-        break;
-    case 0x911c0a4b:
-        gMemcardSetup.mLastController = param2;
-        m_SaveGameList.ScrollNext();
         break;
     case 0xc98356ba:
         if (m_Initialized == 0) {
@@ -421,6 +390,37 @@ void UIMemcardList::NotificationMessage(unsigned long msg, FEObject* obj, unsign
             FEngSetScript("MC_List.fng", 0x47ff4e7c, 0x13c37b, true);
         }
         break;
+    case 0x911ab364:
+        if (MemoryCard::GetInstance()->InBootSequence()) {
+            cFEng::Get()->QueueGameMessage(0x8d0cc9f9, "MC_Main_GC.fng", 0xff);
+            gMemcardSetup.mLastController = param1;
+        } else {
+            cFEng::Get()->QueueGameMessage(0x8867412d,
+                MemoryCard::GetInstance()->GetScreen()->GetPackageName(), 0xff);
+            gMemcardSetup.mLastController = param1;
+        }
+        break;
+    case 0x72619778:
+        gMemcardSetup.mLastController = param1;
+        m_SaveGameList.ScrollPrev();
+        break;
+    case 0x911c0a4b:
+        gMemcardSetup.mLastController = param1;
+        m_SaveGameList.ScrollNext();
+        break;
+    case 0x406415e3: {
+        bool isMultitap = false;
+        if (FEDatabase->MatchesGameMode(4)) {
+            isMultitap = FEDatabase->iNumPlayers == 2;
+        }
+        gMemcardSetup.mLastController = param1;
+        if (!isMultitap) {
+            signed char port = static_cast< signed char >(FEngMapJoyParamToJoyport(static_cast< int >(param1)));
+            FEDatabase->SetPlayersJoystickPort(MemoryCard::GetInstance()->GetPlayerNum(), port);
+        }
+        MemoryCard::GetInstance()->SetMonitor(false);
+        break;
+    }
     case 0xeb29392a:
         if (m_LastMsg == 0x406415e3) {
             UIMemcardBase* parent = MemoryCard::GetInstance()->GetScreen();

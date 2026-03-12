@@ -42,17 +42,29 @@ void uiCareerCrib::NotificationMessage(unsigned long msg, FEObject* pobj, unsign
     IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
 
     switch (msg) {
-    case 0x34DC1BCF:
-        return;
     case 0x1265ECE9:
         GarageMainScreen::GetInstance()->UpdateCurrentCameraView(false);
         return;
+    case 0xE1FDE1D1:
+        if (PrevButtonMessage != 0x911AB364) {
+            return;
+        }
+        FEManager::Get()->SetGarageType(GARAGETYPE_MAIN_FE);
+        FEDatabase->ClearGameMode(eFE_GAME_MODE_CAREER);
+        if (!IsMemcardEnabled) {
+            cFEng::Get()->QueuePackageSwitch("MainMenu.fng", 0, 0, false);
+        } else {
+            FEDatabase->SetGameMode(eFE_GAME_MODE_CAREER_MANAGER);
+            cFEng::Get()->QueuePackageSwitch(GetPackageName(), 0, 0, false);
+        }
+        return;
     case 0xD05FC3A3: {
-        const char* lastDDayRace = GRaceDatabase::Get().GetDDayEndRace();
         bool dday_flow_completed = false;
         if (!SkipDDayRaces) {
-            GRaceParameters* parms = GRaceDatabase::Get().GetRaceFromName(lastDDayRace);
-            dday_flow_completed = GRaceDatabase::Get().IsCareerRaceComplete(parms->GetEventHash());
+            GRaceParameters* parms =
+                GRaceDatabase::Get().GetRaceFromHash(Attrib::StringHash32(GRaceDatabase::Get().GetDDayEndRace()));
+            dday_flow_completed =
+                GRaceDatabase::Get().CheckRaceScoreFlags(parms->GetEventHash(), GRaceDatabase::kCompleted_ContextCareer);
         } else {
             dday_flow_completed = true;
         }
@@ -66,7 +78,8 @@ void uiCareerCrib::NotificationMessage(unsigned long msg, FEObject* pobj, unsign
             } else {
                 firstDDayRace = GRaceDatabase::Get().GetDDayEndRace();
             }
-            GRaceParameters* parms = GRaceDatabase::Get().GetRaceFromName(firstDDayRace);
+            GRaceParameters* parms =
+                GRaceDatabase::Get().GetRaceFromHash(Attrib::StringHash32(firstDDayRace));
             GRaceCustom* race = GRaceDatabase::Get().AllocCustomRace(parms);
             GRaceDatabase::Get().SetStartupRace(race, kRaceContext_Career);
             GRaceDatabase::Get().FreeCustomRace(race);
@@ -75,18 +88,7 @@ void uiCareerCrib::NotificationMessage(unsigned long msg, FEObject* pobj, unsign
         FEDatabase->SetGameMode(eFE_GAME_MODE_CAREER);
         return;
     }
-    case 0xE1FDE1D1:
-        if (PrevButtonMessage != 0x911AB364) {
-            return;
-        }
-        FEManager::Get()->SetGarageType(GARAGETYPE_MAIN_FE);
-        FEDatabase->ClearGameMode(eFE_GAME_MODE_CAREER);
-        if (!IsMemcardEnabled) {
-            cFEng::Get()->QueuePackageSwitch("MainMenu.fng", 0, 0, false);
-        } else {
-            FEDatabase->SetGameMode(eFE_GAME_MODE_CAREER_MANAGER);
-            cFEng::Get()->QueuePackageSwitch(GetPackageName(), 0, 0, false);
-        }
+    case 0x34DC1BCF:
         return;
     }
 }
