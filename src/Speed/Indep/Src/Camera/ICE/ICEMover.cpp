@@ -852,8 +852,7 @@ void ICEMover::Update(float dT) {
         return;
     }
 
-    bool bNoTrack = (p_track == 0);
-    if (!bNoTrack) {
+    if (p_track != nullptr) {
         int context = p_track->GetContext();
         bLerpLag = (context == 3);
         if (p_track->GetContext() != 2) {
@@ -877,10 +876,10 @@ void ICEMover::Update(float dT) {
     }
 
     float f_route_param;
-    if (bNoTrack) {
-        f_route_param = TheICEManager.GetParameter();
-    } else {
+    if (p_track != nullptr) {
         f_route_param = p_track->GetParameter();
+    } else {
+        f_route_param = TheICEManager.GetParameter();
     }
 
     float f_range = fParameter1 - fParameter0;
@@ -1050,7 +1049,7 @@ void ICEMover::Update(float dT) {
         GetCamera()->SetNoiseFrequency2(0.0f, 0.0f, 0.0f, 0.0f);
 
         float routeLen;
-        if (!bNoTrack) {
+        if (p_track != nullptr) {
             routeLen = p_track->GetLength();
         } else {
             routeLen = TheICEManager.GetParameterLength();
@@ -1062,7 +1061,7 @@ void ICEMover::Update(float dT) {
         ICEShakeTrack *shake_track = TheICEManager.GetShakeTrack(pICEData->nShakeType);
         if (shake_track != 0) {
             float routeLen;
-            if (!bNoTrack) {
+            if (p_track != nullptr) {
                 routeLen = p_track->GetLength();
             } else {
                 routeLen = TheICEManager.GetParameterLength();
@@ -1119,7 +1118,7 @@ void ICEMover::Update(float dT) {
         }
     }
 
-    if (bNoTrack || p_track->GetContext() != 2) {
+    if (p_track == nullptr || p_track->GetContext() != 2) {
         bool constrain_to_topology = false;
         if (pICEData != 0 && pICEData->bConstrainToWorld != 0) {
             constrain_to_topology = (n_state < 9);
