@@ -81,6 +81,7 @@ void UISafehouseRaceSheet::NotificationMessage(unsigned long msg, FEObject* obj,
     case 0xc98356ba:
         TrackMapStreamer.UpdateAnimation();
         break;
+    case 0x72619778:
     case 0x9120409e:
     case 0x911c0a4b:
     case 0xb5971bf1:
@@ -94,8 +95,10 @@ void UISafehouseRaceSheet::NotificationMessage(unsigned long msg, FEObject* obj,
         if (theRace == nullptr) {
             break;
         }
-        signed char joyPort = static_cast< signed char >(FEngMapJoyParamToJoyport(param2));
-        FEDatabase->SetPlayersJoystickPort(0, joyPort);
+        if (!bIsInGame) {
+            signed char joyPort = static_cast< signed char >(FEngMapJoyParamToJoyport(param1));
+            FEDatabase->SetPlayersJoystickPort(0, joyPort);
+        }
         const char* dialog = "";
         if (bIsInGame) {
             dialog = "InGameDialog.fng";
@@ -117,14 +120,14 @@ void UISafehouseRaceSheet::NotificationMessage(unsigned long msg, FEObject* obj,
             StartRace();
         }
         break;
-    case 0x34dc1bcf:
-        break;
     case 0x911ab364:
         if (bIsInGame) {
             cFEng::Get()->QueuePackageSwitch("InGameReputationOverview.fng", 1, 0, false);
         } else {
             cFEng::Get()->QueuePackageSwitch("SafeHouseReputationOverview.fng", 0, 0, false);
         }
+        break;
+    case 0x34dc1bcf:
         break;
     }
 }

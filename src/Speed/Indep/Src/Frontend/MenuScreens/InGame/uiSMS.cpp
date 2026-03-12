@@ -218,14 +218,14 @@ void uiSMS::AddSMSSlot(unsigned int index) {
 
 void uiSMS::RefreshHeader() {
     ArrayScrollerMenu::RefreshHeader();
-    if (!bVoiceMsg) {
-        FEngSetScript(GetPackageName(), 0x4A2EEBC8, 0x1B20C3, true);
-        FEngSetScript(GetPackageName(), 0x8A6AD1C1, 0x7AB5521A, true);
-        FEngSetScript(GetPackageName(), 0x8F2FAD70, 0x249DB7B7, true);
-    } else {
+    if (bVoiceMsg) {
         FEngSetScript(GetPackageName(), 0x4A2EEBC8, 0x1B20C2, true);
         FEngSetScript(GetPackageName(), 0x8A6AD1C1, 0x249DB7B7, true);
         FEngSetScript(GetPackageName(), 0x8F2FAD70, 0x7AB5521A, true);
+    } else {
+        FEngSetScript(GetPackageName(), 0x4A2EEBC8, 0x1B20C3, true);
+        FEngSetScript(GetPackageName(), 0x8A6AD1C1, 0x7AB5521A, true);
+        FEngSetScript(GetPackageName(), 0x8F2FAD70, 0x249DB7B7, true);
     }
     if (GetNumDatum() < 1) {
         FEngSetScript(GetPackageName(), 0x07890734, 0x16A259, true);

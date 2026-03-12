@@ -253,10 +253,10 @@ void UIOptionsScreen::Setup() {
 void UIOptionsScreen::SetupAudio() {
     FEngSetTextureHash(GetPackageName(), 0x8007B4C, 0xF37AF144);
 
-    if (!mCalledFromPauseMenu) {
-        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0x3932C2E4);
-    } else {
+    if (mCalledFromPauseMenu) {
         FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0xB1426DFA);
+    } else {
+        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0x3932C2E4);
     }
 
     AddSliderOption(new AOSFXMasterVol(true), true);
@@ -278,10 +278,10 @@ void UIOptionsScreen::SetupAudio() {
 void UIOptionsScreen::SetupVideo() {
     FEngSetTextureHash(GetPackageName(), 0x8007B4C, 0x8A006328);
 
-    if (!mCalledFromPauseMenu) {
-        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0x48478029);
-    } else {
+    if (mCalledFromPauseMenu) {
         FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0xD94EA03F);
+    } else {
+        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0x48478029);
     }
 
     AddToggleOption(new VOWideScreen(true), true);
@@ -295,10 +295,10 @@ void UIOptionsScreen::SetupVideo() {
 void UIOptionsScreen::SetupGameplay() {
     FEngSetTextureHash(GetPackageName(), 0x8007B4C, 0x4DF98FB2);
 
-    if (!mCalledFromPauseMenu) {
-        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0x01CCE8C2);
-    } else {
+    if (mCalledFromPauseMenu) {
         FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0x3936D9F8);
+    } else {
+        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0x01CCE8C2);
     }
 
     bool split = ShouldShowAutoSave();
@@ -330,10 +330,10 @@ void UIOptionsScreen::SetupGameplay() {
 void UIOptionsScreen::SetupPlayer() {
     FEngSetTextureHash(GetPackageName(), 0x8007B4C, 0xD708EFEF);
 
-    if (!mCalledFromPauseMenu) {
-        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0xC055165F);
-    } else {
+    if (mCalledFromPauseMenu) {
         FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0xD9DC2F12);
+    } else {
+        FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0xC055165F);
     }
 
     FEngSetScript(GetPackageName(), 0x8A41F5B9, 0x5079C8F8, true);
