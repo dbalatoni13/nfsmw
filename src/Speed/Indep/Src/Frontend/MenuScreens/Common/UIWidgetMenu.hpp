@@ -53,7 +53,7 @@ struct UIWidgetMenu : public MenuScreen {
     bool bAllowScroll;              // offset 0x134, size 0x1
 
     UIWidgetMenu(ScreenConstructorData* sd);
-    ~UIWidgetMenu() override;
+    ~UIWidgetMenu() override {}
 
     void NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) override;
     eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override;
