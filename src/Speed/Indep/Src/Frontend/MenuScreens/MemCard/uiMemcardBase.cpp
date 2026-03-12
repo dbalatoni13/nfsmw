@@ -844,19 +844,15 @@ void UIMemcardBase::NotificationMessage(unsigned long msg, FEObject* obj, unsign
 
 void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject* obj, unsigned long param1,
                                          unsigned long param2, bool bPadBack) {
-    FEObject* btnObj = reinterpret_cast< FEObject* >(param1);
-    bool isSecondBtn = btnObj->NameHash == gButtonIDs[1];
+    bool isSecondBtn = (obj->NameHash == gButtonIDs[0]) && !bPadBack;
     int promptFlags = gMemcardSetup.mOp & 0xf000000;
     gMemcardSetup.mOp = gMemcardSetup.mOp & 0xf0ffffff;
     gMemcardSetup.mPreviousPrompt = promptFlags;
     HideAllButtons();
 
     switch (promptFlags) {
-    case 0x7000000:
-        cFEng::Get()->QueueGameMessage(0x461a18ee, GetPackageName(), 0xff);
-        break;
     case 0x1000000:
-        if (isSecondBtn && !bPadBack) {
+        if (isSecondBtn) {
             FEDatabase->AllocBackupDB(true);
             if ((gMemcardSetup.mOp & 0x40000) == 0 && (gMemcardSetup.mOp & 0x200000) == 0) {
                 FEDatabase->DefaultProfile();
@@ -876,12 +872,8 @@ void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject* obj, unsign
             cFEng::Get()->QueueGameMessage(0x8867412d, GetPackageName(), 0xff);
         }
         break;
-    case 0x3000000:
-    case 0xd000000:
-        cFEng::Get()->QueueGameMessage(0x8867412d, GetPackageName(), 0xff);
-        break;
     case 0x4000000:
-        if (isSecondBtn && !bPadBack) {
+        if (isSecondBtn) {
             DoSaveFlow(12);
         } else {
             if ((gMemcardSetup.mOp & 0xf0) == 0x60) {
@@ -891,27 +883,35 @@ void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject* obj, unsign
         }
         break;
     case 0x5000000:
-        if (isSecondBtn && !bPadBack) {
+        if (isSecondBtn) {
             FEDatabase->AllocBackupDB(true);
             if ((gMemcardSetup.mOp & 0x40000) == 0 && (gMemcardSetup.mOp & 0x200000) == 0) {
                 FEDatabase->DefaultProfile();
             }
+            DoSaveFlow(10);
         } else {
             MemcardExit(0x8867412d);
         }
         break;
     case 0x6000000:
-        if (isSecondBtn && !bPadBack) {
+        if (isSecondBtn) {
             InitCompleteDoList();
         } else {
             cFEng::Get()->QueueGameMessage(0x8867412d, GetPackageName(), 0xff);
         }
         break;
+    case 0x7000000:
+        cFEng::Get()->QueueGameMessage(0x461a18ee, GetPackageName(), 0xff);
+        break;
+    case 0x8000000:
+        DoSaveFlow(11);
+        break;
     case 0x9000000:
+        cFEng::Get()->QueuePackageMessage(0x40E73793, GetPackageName(), nullptr);
         DoSaveFlow(3);
         break;
     case 0xa000000:
-        if (isSecondBtn && !bPadBack) {
+        if (isSecondBtn) {
             FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheAudioSettings.AudioMode = 0;
             cFEng::Get()->QueueGameMessage(0x8867412d, GetPackageName(), 0xff);
         } else {
@@ -932,13 +932,17 @@ void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject* obj, unsign
         cFEng::Get()->QueueGameMessage(0x461a18ee, nullptr, 0xff);
         break;
     case 0xc000000:
-        if (isSecondBtn && !bPadBack) {
+        if (isSecondBtn) {
             MemoryCard::GetInstance()->SetAutoSaveEnabled(true);
         } else {
             FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheAudioSettings.AudioMode = 0;
             cFEng::Get()->QueueGameMessage(0x7e998e5e, nullptr, 0xff);
             cFEng::Get()->QueueGameMessage(0x461a18ee, nullptr, 0xff);
         }
+        break;
+    case 0x3000000:
+    case 0xd000000:
+        cFEng::Get()->QueueGameMessage(0x8867412d, GetPackageName(), 0xff);
         break;
     default:
         SetStringCheckingCard();
