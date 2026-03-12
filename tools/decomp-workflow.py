@@ -257,12 +257,16 @@ def command_health(args: argparse.Namespace) -> None:
     report(
         os.path.exists(BUILD_NINJA),
         "build.ninja",
-        BUILD_NINJA if os.path.exists(BUILD_NINJA) else "missing (run: python configure.py)",
+        BUILD_NINJA
+        if os.path.exists(BUILD_NINJA)
+        else "missing (run: python tools/share_worktree_assets.py bootstrap)",
     )
     report(
         os.path.exists(OBJDIFF_JSON),
         "objdiff.json",
-        OBJDIFF_JSON if os.path.exists(OBJDIFF_JSON) else "missing (run: python configure.py)",
+        OBJDIFF_JSON
+        if os.path.exists(OBJDIFF_JSON)
+        else "missing (run: python tools/share_worktree_assets.py bootstrap)",
     )
 
     print_section("Shared Assets")
@@ -342,7 +346,10 @@ def command_health(args: argparse.Namespace) -> None:
             output_path = build_shared_unit(args.smoke_build)
             report(True, "build", output_path)
         except WorkflowError as e:
-            report(False, "build", str(e))
+            detail = str(e)
+            if "objdiff.json" in detail or "build.ninja" in detail:
+                detail += "\nHint: Run: python tools/share_worktree_assets.py bootstrap"
+            report(False, "build", detail)
 
     if args.smoke_dtk:
         print_section("DTK Smoke Test")

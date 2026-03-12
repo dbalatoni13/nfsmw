@@ -12,6 +12,7 @@ Examples:
   python tools/share_worktree_assets.py status
   python tools/share_worktree_assets.py status --all
   python tools/share_worktree_assets.py link --all
+  python tools/share_worktree_assets.py bootstrap
 """
 
 import argparse
@@ -27,6 +28,7 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 root_dir = os.path.abspath(os.path.join(script_dir, ".."))
 
 SHARED_ROOT_NAME = "worktree-shared"
+DEFAULT_BOOTSTRAP_VERSION = "GOWE69"
 
 
 @dataclass(frozen=True)
@@ -56,6 +58,24 @@ def run_git(args: List[str], cwd: str) -> str:
         print(result.stderr.strip(), file=sys.stderr)
         sys.exit(result.returncode)
     return result.stdout
+
+
+def run_command(
+    args: List[str], cwd: str, description: str, echo_success_output: bool = False
+) -> subprocess.CompletedProcess[str]:
+    result = subprocess.run(args, cwd=cwd, capture_output=True, text=True)
+    if result.returncode != 0:
+        message = [f"{description} failed in {cwd}: {' '.join(args)}"]
+        if result.stdout.strip():
+            message.append(f"stdout:\n{result.stdout.strip()}")
+        if result.stderr.strip():
+            message.append(f"stderr:\n{result.stderr.strip()}")
+        raise RuntimeError("\n".join(message))
+    if echo_success_output and result.stdout.strip():
+        print(result.stdout.strip())
+    if echo_success_output and result.stderr.strip():
+        print(result.stderr.strip(), file=sys.stderr)
+    return result
 
 
 def git_common_dir(cwd: str) -> str:
@@ -302,16 +322,67 @@ def print_status(worktrees: List[str], shared_root: str) -> int:
     return 0
 
 
-def link_assets(worktrees: List[str], shared_root: str) -> int:
+def link_assets(
+    target_worktrees: List[str], seed_worktrees: List[str], shared_root: str
+) -> int:
     os.makedirs(shared_root, exist_ok=True)
-    assets = discover_assets(worktrees, shared_root)
+    assets = discover_assets(seed_worktrees, shared_root)
     for spec in assets:
-        shared_path = ensure_shared_asset(spec, worktrees, shared_root)
+        shared_path = ensure_shared_asset(spec, seed_worktrees, shared_root)
         if shared_path is None:
             continue
-        for worktree in worktrees:
+        for worktree in target_worktrees:
             status = link_asset(worktree, spec, shared_path)
             print(f"{worktree}: {spec.relpath} -> {status}")
+    return 0
+
+
+def bootstrap_generated_files(worktree: str, version: str) -> None:
+    build_ninja = os.path.join(worktree, "build.ninja")
+    objdiff_json = os.path.join(worktree, "objdiff.json")
+    compile_commands = os.path.join(worktree, "compile_commands.json")
+    config_target = os.path.join("build", version, "config.json")
+
+    print(f"{worktree}: running configure.py")
+    run_command([sys.executable, "configure.py"], worktree, "configure.py")
+
+    if not os.path.isfile(build_ninja):
+        raise RuntimeError(f"{worktree}: configure.py did not create build.ninja")
+
+    if not os.path.isfile(objdiff_json) or not os.path.isfile(compile_commands):
+        print(f"{worktree}: generating {config_target} for local objdiff metadata")
+        run_command(["ninja", config_target], worktree, f"ninja {config_target}")
+        print(f"{worktree}: rerunning configure.py")
+        run_command([sys.executable, "configure.py"], worktree, "configure.py")
+
+    missing = []
+    if not os.path.isfile(objdiff_json):
+        missing.append("objdiff.json")
+    if not os.path.isfile(compile_commands):
+        missing.append("compile_commands.json")
+    if missing:
+        raise RuntimeError(
+            f"{worktree}: bootstrap did not create {', '.join(missing)}"
+        )
+
+
+def bootstrap_worktrees(
+    target_worktrees: List[str],
+    seed_worktrees: List[str],
+    shared_root: str,
+    version: str,
+    run_health: bool,
+    smoke_build: Optional[str],
+) -> int:
+    link_assets(target_worktrees, seed_worktrees, shared_root)
+    for worktree in target_worktrees:
+        bootstrap_generated_files(worktree, version)
+        if run_health or smoke_build:
+            cmd = [sys.executable, os.path.join("tools", "decomp-workflow.py"), "health"]
+            if smoke_build:
+                cmd.extend(["--smoke-build", smoke_build])
+            print(f"{worktree}: running {' '.join(cmd)}")
+            run_command(cmd, worktree, "decomp-workflow health", echo_success_output=True)
     return 0
 
 
@@ -324,24 +395,49 @@ def main() -> int:
     )
     parser.add_argument(
         "command",
-        choices=("status", "link"),
-        help="Inspect or create shared asset symlinks.",
+        choices=("status", "link", "bootstrap"),
+        help="Inspect, link, or fully bootstrap worktree-local setup.",
     )
     parser.add_argument(
         "--all",
         action="store_true",
         help="Operate on all worktrees for this repository (default: current worktree only).",
     )
+    parser.add_argument(
+        "--version",
+        default=DEFAULT_BOOTSTRAP_VERSION,
+        help="Version whose split config should be generated during bootstrap (default: GOWE69).",
+    )
+    parser.add_argument(
+        "--health",
+        action="store_true",
+        help="Run `decomp-workflow.py health` after bootstrap completes.",
+    )
+    parser.add_argument(
+        "--smoke-build",
+        metavar="UNIT",
+        help="Also run `decomp-workflow.py health --smoke-build UNIT` after bootstrap.",
+    )
     args = parser.parse_args()
 
     common_dir = git_common_dir(root_dir)
     shared_root = os.path.join(common_dir, SHARED_ROOT_NAME)
-    worktrees = list_worktrees(root_dir) if args.all else [root_dir]
+    seed_worktrees = list_worktrees(root_dir)
+    target_worktrees = seed_worktrees if args.all else [root_dir]
 
     try:
         if args.command == "status":
-            return print_status(worktrees, shared_root)
-        return link_assets(worktrees, shared_root)
+            return print_status(target_worktrees, shared_root)
+        if args.command == "link":
+            return link_assets(target_worktrees, seed_worktrees, shared_root)
+        return bootstrap_worktrees(
+            target_worktrees,
+            seed_worktrees,
+            shared_root,
+            args.version,
+            args.health,
+            args.smoke_build,
+        )
     except RuntimeError as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
