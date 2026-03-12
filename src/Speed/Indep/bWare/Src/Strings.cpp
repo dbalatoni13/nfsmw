@@ -684,17 +684,16 @@ int bMatchNameWithWildcard(const char *wild, const char *string) {
                 return true;
             }
 
-            cp = string + 1;
             mp = wild;
+            cp = string + 1;
         } else {
-            int wild_int = static_cast<int>(wild_char);
-            if ((bToUpper(wild_char) != bToUpper(*string)) && (wild_int != '?')) {
+            if ((bToUpper(wild_char) == bToUpper(*string)) || (wild_char == '?')) {
+                wild = wild + 1;
+                string = string + 1;
+            } else {
                 string = cp;
                 wild = mp;
                 cp = string + 1;
-            } else {
-                wild = wild + 1;
-                string = string + 1;
             }
         }
     }
