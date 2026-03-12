@@ -29,7 +29,7 @@ python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
 ```
 
 If the shared unit object is missing, the wrapper now rebuilds it automatically before
-running `function` / `diff`.
+running `next --unit` / `function` / `diff`.
 
 If you only need one Ghidra view, add `--ghidra-version gc` or `--ghidra-version ps2`
 to keep the context run faster and shorter.

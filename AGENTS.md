@@ -150,8 +150,9 @@ python tools/decomp-workflow.py unit -u main/Speed/Indep/SourceLists/zAnim --sea
 
 The wrapper keeps the existing tools as the source of truth. It is intended to reduce
 repeated command chaining and to standardize routine worktree preflight checks for agents.
-`function`, `unit`, and `diff` now also auto-build the unit's shared `.o` once when that
-output is missing, so wrapper-first inspection works more often on half-prepared worktrees.
+`next --unit`, `function`, `unit`, and `diff` now also auto-build the unit's shared `.o`
+once when that output is missing, so wrapper-first inspection works more often on
+half-prepared worktrees.
 
 When you do not already have a specific target in mind, start with `next` or `unit`
 instead of picking functions in raw objdiff order. `next` is the fastest way to answer
