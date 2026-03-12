@@ -462,8 +462,8 @@ float bStrToFloat(const char *s) {
                 break;
             }
 
-            fractional_part = static_cast<float>(current - '0') * fraction * 0.1f + fractional_part;
             fraction = fraction * 0.1f;
+            fractional_part = static_cast<float>(current - '0') * fraction + fractional_part;
         }
 
         if (fractional_part != 0.0f) {
