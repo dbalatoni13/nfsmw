@@ -25,7 +25,10 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
 #include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Physics/Behavior.h"
+#include "Speed/Indep/Src/Physics/Behaviors/DamageVehicle.h"
+#include "Speed/Indep/Src/Physics/Behaviors/RigidBody.h"
 #include "Speed/Indep/Src/Physics/Bounds.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
@@ -1149,62 +1152,61 @@ void PVehicle::LoadBehaviors(const UMath::Vector3 &initialPos, const UMath::Matr
     if (IsDirty()) {
         return;
     }
+    ProfileNode profile_node("LoadBehaviors", 0);
     if (mEngine != nullptr) {
         mStartingNOS = mEngine->GetNOSCapacity();
     }
     UMath::Vector3 linearVel;
-    bMemSet(&linearVel, 0, sizeof(UMath::Vector3));
+    memset(&linearVel, 0, sizeof(UMath::Vector3));
     UMath::Vector3 Dimension;
     mBounds->GetHalfDimensions(Dimension);
     unsigned int collision_mask = 0;
-    DriverClass dc = mDriverClass;
-    if (dc == DRIVER_COP) {
+    switch (mDriverClass) {
+    case DRIVER_HUMAN:
+    case DRIVER_RACER:
+    case DRIVER_REMOTE:
+        break;
+    case DRIVER_COP:
         collision_mask = 0x80;
-    } else if (dc != DRIVER_HUMAN && dc != DRIVER_RACER && dc != DRIVER_REMOTE) {
-        collision_mask = 0x40;
+        break;
+    default:
+        collision_mask |= 0x40;
+        break;
     }
     float mass = mAttributes.MASS();
     const UMath::Vector3 &tensorScale = UMath::Vector4To3(mAttributes.TENSOR_SCALE());
     UMath::Vector3 initMoment = Util_GenerateCarTensor(mass, Dimension.x, Dimension.y, Dimension.z, tensorScale);
+
     UCrc32 rbclass = LookupBehaviorSignature(BEHAVIOR_MECHANIC_RIGIDBODY);
-    Sim::Param rbparam;
-    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY), rbclass, rbparam);
+    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY), rbclass,
+                 RBComplexParams(initialPos, linearVel, UMath::Vector3::kZero, initMat, mass, initMoment, Dimension, mBounds, true, collision_mask));
 
     UCrc32 iclass = LookupBehaviorSignature(BEHAVIOR_MECHANIC_INPUT);
-    Sim::Param inputparam;
-    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_INPUT), iclass, inputparam);
+    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_INPUT), iclass, Sim::Param());
 
     UCrc32 engine = LookupBehaviorSignature(BEHAVIOR_MECHANIC_ENGINE);
-    Sim::Param engineparam;
-    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_ENGINE), engine, engineparam);
+    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_ENGINE), engine, EngineParams());
 
     UCrc32 suspclass = LookupBehaviorSignature(BEHAVIOR_MECHANIC_SUSPENSION);
-    Sim::Param suspparam;
-    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_SUSPENSION), suspclass, suspparam);
+    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_SUSPENSION), suspclass, SuspensionParams());
 
     UCrc32 damageclass = LookupBehaviorSignature(BEHAVIOR_MECHANIC_DAMAGE);
-    Sim::Param damageparam;
-    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_DAMAGE), damageclass, damageparam);
+    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_DAMAGE), damageclass, DamageParams());
 
     UCrc32 drawclass = LookupBehaviorSignature(BEHAVIOR_MECHANIC_DRAW);
-    Sim::Param drawparam;
-    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_DRAW), drawclass, drawparam);
+    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_DRAW), drawclass, Sim::Param());
 
     UCrc32 audioclass = LookupBehaviorSignature(BEHAVIOR_MECHANIC_AUDIO);
-    Sim::Param audioparam;
-    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_AUDIO), audioclass, audioparam);
+    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_AUDIO), audioclass, Sim::Param());
 
     UCrc32 aiclass = LookupBehaviorSignature(BEHAVIOR_MECHANIC_AI);
-    Sim::Param aiparam;
-    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_AI), aiclass, aiparam);
+    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_AI), aiclass, AIParams());
 
     UCrc32 effectsclass = LookupBehaviorSignature(BEHAVIOR_MECHANIC_EFFECTS);
-    Sim::Param effectsparam;
-    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_EFFECTS), effectsclass, effectsparam);
+    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_EFFECTS), effectsclass, Sim::Param());
 
     UCrc32 resetclass = LookupBehaviorSignature(BEHAVIOR_MECHANIC_RESET);
-    Sim::Param resetparam;
-    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_RESET), resetclass, resetparam);
+    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_RESET), resetclass, Sim::Param());
 
     ResetBehavior(UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY));
     ResetBehavior(UCrc32(BEHAVIOR_MECHANIC_INPUT));
