@@ -74,6 +74,9 @@ template <typename T, int U> class Listable {
     static List _mTable;
 };
 
+template <typename T, int N>
+typename Listable<T, N>::List Listable<T, N>::_mTable;
+
 template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class ListableSet {
   public:
     typedef T value_type;
@@ -173,6 +176,12 @@ template <typename T> class Countable {
         return _mCount;
     }
 };
+
+template <typename T>
+int Countable<T>::_mCount;
+
+template <typename T, int ListSize, typename Enum, std::size_t EnumMax>
+typename ListableSet<T, ListSize, Enum, EnumMax>::_ListSet ListableSet<T, ListSize, Enum, EnumMax>::_mLists;
 
 }; // namespace Collections
 }; // namespace UTL

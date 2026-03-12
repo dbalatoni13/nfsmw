@@ -132,12 +132,14 @@ class Effects : public Behavior, public Sim::Collision::IListener {
 // total size: 0xF4
 class EffectsVehicle : public Effects {
   public:
+    static Behavior *Construct(const BehaviorParams &params);
     EffectsVehicle(const BehaviorParams &bp);
 };
 
 // total size: 0xF8
 class EffectsCar : public EffectsVehicle {
   public:
+    static Behavior *Construct(const BehaviorParams &params);
     EffectsCar(const BehaviorParams &bp);
 
     // Overrides
@@ -157,12 +159,14 @@ class EffectsCar : public EffectsVehicle {
 // total size: 0xF8
 class EffectsPlayer : public EffectsCar {
   public:
+    static Behavior *Construct(const BehaviorParams &params);
     EffectsPlayer(const BehaviorParams &bp);
 };
 
 // total size: 0xF4
 class EffectsSmackable : public Effects {
   public:
+    static Behavior *Construct(const BehaviorParams &params);
     EffectsSmackable(const BehaviorParams &bp);
 
     // Overrides
@@ -173,6 +177,7 @@ class EffectsSmackable : public Effects {
 // total size: 0xF4
 class EffectsFragment : public Effects {
   public:
+    static Behavior *Construct(const BehaviorParams &params);
     EffectsFragment(const BehaviorParams &bp);
 };
 

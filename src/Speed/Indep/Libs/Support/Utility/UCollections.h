@@ -233,6 +233,15 @@ template <typename T, int Size> class GarbageNode {
     static Collector _mCollector;
 };
 
+template <typename Handle, typename T, int Size>
+uintptr_t Instanceable<Handle, T, Size>::_mHNext;
+
+template <typename Handle, typename T, int Size>
+typename Instanceable<Handle, T, Size>::_List Instanceable<Handle, T, Size>::_mList;
+
+template <typename T, int Size>
+typename GarbageNode<T, Size>::Collector GarbageNode<T, Size>::_mCollector;
+
 template <typename T, typename Tag> class Container {
   public:
     class Elements : public UTL::Std::list<T *, Tag> {

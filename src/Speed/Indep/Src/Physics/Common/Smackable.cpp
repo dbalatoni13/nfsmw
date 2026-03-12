@@ -47,7 +47,7 @@ Attrib::StringKey BEHAVIOR_MECHANIC_EFFECTS;
 
 UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::Prototype _Smackable("Smackable",
                                                                        Smackable::Construct);
-UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::Prototype _RBSmackable(
+UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::Prototype __RBSmackable(
     "RBSmackable", RBSmackable::Construct);
 
 unsigned int Smackable_RigidCount;
