@@ -329,7 +329,7 @@ unsigned short bASin(float x) {
             } while (table_number < 0xb);
         }
 
-        int table_index = (fix_x - (table_top - table_spacing)) >> (0xbU - table_number & 0x3f);
+        int table_index = (fix_x - (table_top - table_spacing)) >> (0xbU - table_number);
         int entry = (table_number * 0x10 + table_index) * 8;
         double table_value = static_cast<double>(
             static_cast<float>(static_cast<float>(table_top - table_spacing + table_index * (table_spacing >> 4)) * 1.5258789e-05f));
