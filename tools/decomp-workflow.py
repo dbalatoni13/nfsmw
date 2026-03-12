@@ -51,12 +51,10 @@ DEBUG_SYMBOL_PROBE_DEMANGLED = "Camera::UpdateAll(float)"
 DEBUG_SYMBOL_PROBE_GC_ADDR = "0x80065A84"
 
 SHARED_ASSET_REQUIREMENTS = [
-    ("NFSMWRELEASE.ELF", "GameCube ELF"),
-    ("NFS.ELF", "PS2 ELF"),
-    ("NFS.MAP", "PS2 MAP"),
     (os.path.join("build", "tools"), "downloaded tooling"),
     (os.path.join("orig", "GOWE69", "NFSMWRELEASE.ELF"), "GameCube original ELF"),
     (os.path.join("orig", "SLES-53558-A124", "NFS.ELF"), "PS2 original ELF"),
+    (os.path.join("orig", "SLES-53558-A124", "NFS.MAP"), "PS2 MAP"),
     (os.path.join("symbols", "Dwarf"), "DWARF dump"),
 ]
 
