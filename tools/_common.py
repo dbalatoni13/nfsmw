@@ -14,6 +14,12 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 BUILD_NINJA = os.path.join(ROOT_DIR, "build.ninja")
 OBJDIFF_JSON = os.path.join(ROOT_DIR, "objdiff.json")
+OBJDIFF_DEFAULT_CONFIG_ARGS = [
+    "-c",
+    "functionRelocDiffs=none",
+    "-c",
+    "ppc.calculatePoolRelocations=false",
+]
 
 
 class ToolError(RuntimeError):
@@ -261,6 +267,7 @@ def run_objdiff_json(
     ensure_project_prereqs()
 
     cmd = [objdiff_cli, "diff"]
+    cmd.extend(OBJDIFF_DEFAULT_CONFIG_ARGS)
     if extra_args:
         cmd.extend(extra_args)
     cmd.extend(["-u", unit_name, "-o", "-", "--format", "json"])
