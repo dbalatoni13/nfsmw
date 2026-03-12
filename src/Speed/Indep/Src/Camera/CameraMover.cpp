@@ -1449,13 +1449,13 @@ void TrackCarCameraMover::Update(float dT) {
 
 TrackCopCameraMover::TrackCopCameraMover(int nView, CameraAnchor *pCar, bool focus_effects)
     : CameraMover(nView, CM_TRACK_COP),
+      ZoomSplineParam(0.0f), //
+      EyeSplineParam(0.0f), //
+      LookSplineParam(0.0f), //
       CarToFollow(pCar),
       FocalDistCubic(1, 1.0f),
       FocusEffects(focus_effects),
       bRenderCarPOV(true) {
-    ZoomSplineParam = 0.0f;
-    EyeSplineParam = 0.0f;
-    LookSplineParam = 0.0f;
     Init();
 }
 
