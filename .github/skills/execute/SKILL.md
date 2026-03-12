@@ -52,16 +52,32 @@ Determine the file path (e.g. `src/Speed/Indep/SourceLists/zWorld2`). The game u
 
 ### 1b. Get the full function list
 
+Preferred shortcut:
+
 ```sh
-python tools/decomp-diff.py -u main/Path/To/TU
+python tools/decomp-workflow.py next --unit main/Path/To/TU --limit 10
+python tools/decomp-workflow.py unit -u main/Path/To/TU --limit 20
 ```
 
-This shows all symbols with their match status. Note the total count of missing,
-nonmatching, and matching functions.
+Use `next` first when you want the wrapper to rank the most useful targets instead of
+following raw objdiff order. `--strategy balanced` is the default and is usually the best
+starting point because it now favors large remaining gains and penalizes near-finished
+cleanup work. Use `--strategy impact` when you only care about the biggest unmatched-byte
+wins. Use `--strategy quick-wins` when you want lower-match functions where the first big
+chunk of progress is likely to come faster than late cleanup.
+
+Stay in the wrapper flow by default. Only drop to raw `decomp-status.py` / `decomp-diff.py`
+when you need an option the wrapper does not expose yet.
+
+If the shared unit object is missing, the wrapper now rebuilds it automatically before
+running `next --unit` / `unit`.
+
+If you need the raw tools instead of the wrapper, run `decomp-status.py` and
+`decomp-diff.py` directly against the shared build output as a fallback, not the default.
 
 ## Phase 2: Scaffold (if needed)
 
-A jump file contains many files and classes. If the TU depends on a type whose
+A jumbo file contains many files and classes. If the TU depends on a type whose
 definition does not yet exist in the project, follow the scaffold workflow in
 `.github/skills/scaffold/SKILL.md` to create the needed header/source definitions
 before moving on.
@@ -70,16 +86,16 @@ before moving on.
 
 ### 3a. Get the updated function list
 
-After scaffolding, rebuild and re-check the function list.
-Use `build-unit.py` to compile to a private temp `.o` so the status check isn't
-polluted by another concurrent temp build:
+After scaffolding, rebuild and re-check the function list:
+
+Preferred shortcut:
 
 ```sh
-ninja                  # full build to update shared state (progress, sha1)
-TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
-python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching -t function --base-obj "$TEMPOBJ"
-python tools/decomp-diff.py -u main/Path/To/TU -s missing -t function --base-obj "$TEMPOBJ"
+python tools/decomp-workflow.py unit -u main/Path/To/TU
 ```
+
+If you need the raw tools, rebuild normally and then run `decomp-diff.py`
+directly on the unit only as a fallback.
 
 ### 3c. Implement each function sequentially
 
@@ -115,15 +131,17 @@ After modifying any shared headers, run `ninja changes` to check for regressions
 Empty changeset = no regressions. If regressions appear, revert the shared change
 and use a local workaround instead.
 
-Use `build-unit.py` + `--base-obj` for diff and context commands when you want
-results isolated from other concurrent builds of the same TU.
+Use `python tools/decomp-workflow.py function ...` or
+`python tools/decomp-workflow.py diff ...` when you want a shorter, wrapper-first
+view for one function.
 
 ### 3g. Periodic reassessment
 
 After every few functions, re-run the full status check:
 
 ```sh
-python tools/decomp-diff.py -u main/Path/To/TU
+python tools/decomp-workflow.py unit -u main/Path/To/TU
+python tools/decomp-workflow.py next --unit main/Path/To/TU --limit 10
 ```
 
 Review progress and decide whether to:
@@ -137,15 +155,18 @@ Review progress and decide whether to:
 When all functions have been attempted:
 
 ```sh
-# Full status
-python tools/decomp-diff.py -u main/Path/To/TU
+# Wrapper-first unit summary
+python tools/decomp-workflow.py unit -u main/Path/To/TU
 
-# Check for any remaining mismatches
-python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching
+# Focused remaining mismatches
+python tools/decomp-workflow.py diff -u main/Path/To/TU -s nonmatching -t function
 
 # Verify no regressions
 ninja changes
 ```
+
+If you need a raw full-symbol dump beyond that, use `decomp-diff.py` only as a final
+fallback.
 
 For any remaining nonmatching functions, make one final pass using the implementation
 or refiner workflow with all context accumulated during the session.

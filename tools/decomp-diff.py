@@ -11,254 +11,117 @@ Usage:
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s nonmatching
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d __9CAnimBank
-
-Parallel-safe usage (use a temp .o to avoid collisions with other agents):
-  TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim)
-  python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim --base-obj "$TEMPOBJ" -d __9CAnimBank
 """
 
 import argparse
-import json
 import os
-import shutil
-import subprocess
 import sys
-import tempfile
 from typing import Any, Dict, List, Optional, Tuple
+from _common import (
+    ROOT_DIR,
+    ToolError,
+    build_objdiff_symbol_rows,
+    fail,
+    run_objdiff_json,
+)
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
-root_dir = os.path.abspath(os.path.join(script_dir, ".."))
-
+root_dir = ROOT_DIR
 OBJDIFF_CLI = os.path.join(root_dir, "build", "tools", "objdiff-cli")
-OBJDIFF_JSON = os.path.join(root_dir, "objdiff.json")
-
-
-def _make_abs(path: Optional[str], base: str) -> Optional[str]:
-    """Return an absolute version of path relative to base, or None."""
-    if path is None:
-        return None
-    if os.path.isabs(str(path)):
-        return str(path)
-    return os.path.abspath(os.path.join(base, str(path)))
-
-
-def _absolutize_config(config: Dict[str, Any], unit_name: str, base_obj: str) -> bool:
-    """Rewrite all file paths in config to absolute paths and override base_path
-    for unit_name with base_obj.  Returns True if the unit was found."""
-    found = False
-    for unit in config.get("units", []):
-        tp = _make_abs(unit.get("target_path"), root_dir)
-        if tp is not None:
-            unit["target_path"] = tp
-
-        if unit["name"] == unit_name:
-            unit["base_path"] = os.path.abspath(base_obj)
-            found = True
-        else:
-            bp = _make_abs(unit.get("base_path"), root_dir)
-            if bp is not None:
-                unit["base_path"] = bp
-
-        meta = unit.get("metadata") or {}
-        sp = _make_abs(meta.get("source_path"), root_dir)
-        if sp is not None:
-            meta["source_path"] = sp
-
-        scratch = unit.get("scratch") or {}
-        cp = _make_abs(scratch.get("ctx_path"), root_dir)
-        if cp is not None:
-            scratch["ctx_path"] = cp
-
-    return found
 
 
 def run_objdiff(unit: str, base_obj: Optional[str] = None) -> Dict[str, Any]:
-    """Run objdiff-cli diff and return parsed JSON.
-
-    If base_obj is given, a temporary objdiff.json is created that overrides the
-    base_path for this unit so parallel agents don't interfere with each other.
-    """
-    if base_obj is not None:
-        return _run_objdiff_with_base_obj(unit, base_obj)
-
-    result = subprocess.run(
-        [
-            OBJDIFF_CLI,
-            "diff",
-            "-c",
-            "functionRelocDiffs=none",
-            "-u",
-            unit,
-            "-o",
-            "-",
-            "--format",
-            "json",
-        ],
-        capture_output=True,
-        cwd=root_dir,
+    return run_objdiff_json(
+        OBJDIFF_CLI,
+        unit,
+        base_obj=base_obj,
+        root_dir=root_dir,
     )
-    if result.returncode != 0:
-        print(f"objdiff-cli error: {result.stderr.decode()}", file=sys.stderr)
-        sys.exit(1)
-    return json.loads(result.stdout)
-
-
-def _run_objdiff_with_base_obj(unit: str, base_obj: str) -> Dict[str, Any]:
-    """Run objdiff-cli using a temporary config that points base_path at base_obj."""
-    with open(OBJDIFF_JSON) as f:
-        config = json.load(f)
-
-    if not _absolutize_config(config, unit, base_obj):
-        print(f"Unit not found in objdiff.json: {unit}", file=sys.stderr)
-        sys.exit(1)
-
-    tmpdir = tempfile.mkdtemp(prefix="nfsmw_objdiff_")
-    try:
-        tmp_config = os.path.join(tmpdir, "objdiff.json")
-        with open(tmp_config, "w") as f:
-            json.dump(config, f)
-
-        result = subprocess.run(
-            [
-                OBJDIFF_CLI,
-                "diff",
-                "-c",
-                "functionRelocDiffs=none",
-                "-u",
-                unit,
-                "-o",
-                "-",
-                "--format",
-                "json",
-            ],
-            capture_output=True,
-            cwd=tmpdir,
-        )
-        if result.returncode != 0:
-            print(f"objdiff-cli error: {result.stderr.decode()}", file=sys.stderr)
-            sys.exit(1)
-        return json.loads(result.stdout)
-    finally:
-        shutil.rmtree(tmpdir, ignore_errors=True)
-
-
-def classify_symbol(sym: Dict[str, Any]) -> str:
-    """Classify a symbol as 'function', 'object', or 'section'."""
-    kind = sym.get("kind", "")
-    if kind == "SYMBOL_FUNCTION":
-        return "function"
-    if kind == "SYMBOL_OBJECT":
-        return "object"
-    if kind == "SYMBOL_SECTION":
-        return "section"
-    # Fallback for external/relocation-only symbols (empty kind)
-    if "instructions" in sym:
-        return "function"
-    if "data_diff" in sym:
-        return "object"
-    return "unknown"
-
-
-def symbol_section(sym: Dict[str, Any], sections: List[Dict[str, Any]]) -> str:
-    """Determine which section a symbol belongs to."""
-    # For named section data symbols like [.rodata-0]
-    name = sym.get("name", "")
-    if name.startswith("[."):
-        return name[1:].split("-")[0].rstrip("]")
-    # Use content type as best indicator
-    if classify_symbol(sym) == "function":
-        return ".text"
-    # Check sections for data
-    for sec in sections:
-        kind = sec.get("kind", "")
-        if kind in ("SECTION_DATA", "SECTION_BSS"):
-            return sec["name"]
-    return ".data"
-
 
 def fuzzy_match(pattern: str, name: str) -> bool:
     """Case-insensitive substring match."""
     return pattern.lower() in name.lower()
 
 
+def describe_pair_status(
+    left_sym: Optional[Dict[str, Any]], right_sym: Optional[Dict[str, Any]]
+) -> str:
+    if left_sym is not None and right_sym is None:
+        return "missing in decomp"
+    if left_sym is None and right_sym is not None:
+        return "extra in decomp"
+
+    sym = left_sym if left_sym is not None else right_sym
+    if sym is None:
+        return "not found"
+
+    mp = sym.get("match_percent")
+    if mp is not None:
+        return f"{mp:.1f}% match"
+    return "paired"
+
+
 def build_overview(data: Dict[str, Any], args) -> None:
     """Print overview of all symbols in a unit."""
-    left_syms = data.get("left", {}).get("symbols", [])
-    right_syms = data.get("right", {}).get("symbols", [])
-    left_sections = data.get("left", {}).get("sections", [])
-    right_sections = data.get("right", {}).get("sections", [])
-
-    rows = []
-
-    # Process left (original/target) symbols
-    for i, sym in enumerate(left_syms):
-        sym_type = classify_symbol(sym)
-        # Skip section symbols and external references
-        if sym_type in ("section", "unknown"):
-            continue
-        # Skip symbols without size
-        size = int(sym.get("size", "0"))
-        if size == 0:
-            continue
-
-        name = sym.get("demangled_name", sym.get("name", "?"))
-        section = symbol_section(sym, left_sections)
-        ts = sym.get("target_symbol")
-        mp = sym.get("match_percent")
-
-        if ts is None:
-            status = "missing"
-            match_str = "-"
-        elif mp is not None and mp >= 100.0:
-            status = "match"
-            match_str = f"{mp:.1f}%"
-        elif mp is not None:
-            status = "nonmatching"
-            match_str = f"{mp:.1f}%"
-        else:
-            status = "missing"
-            match_str = "-"
-
-        rows.append((status, match_str, size, section, sym_type, name, "left"))
-
-    # Process right (decomp/base) symbols that aren't targeted (extra)
-    for i, sym in enumerate(right_syms):
-        if sym.get("target_symbol") is not None:
-            continue  # Already covered via left side
-        sym_type = classify_symbol(sym)
-        if sym_type in ("section", "unknown"):
-            continue
-        size = int(sym.get("size", "0"))
-        if size == 0:
-            continue
-        name = sym.get("demangled_name", sym.get("name", "?"))
-        section = symbol_section(sym, right_sections)
-        rows.append(("extra", "-", size, section, sym_type, name, "right"))
+    rows = build_objdiff_symbol_rows(data)
 
     # Apply filters
     if args.type:
         types = set(t.strip() for t in args.type.split(","))
-        rows = [r for r in rows if r[4] in types]
+        rows = [r for r in rows if r["type"] in types]
 
     if args.status:
-        statuses = set(s.strip() for s in args.status.split(","))
-        rows = [r for r in rows if r[0] in statuses]
+        status_aliases = {"matching": "match", "matched": "match"}
+        statuses = set(
+            status_aliases.get(s.strip(), s.strip()) for s in args.status.split(",")
+        )
+        rows = [r for r in rows if r["status"] in statuses]
 
     if args.section:
-        rows = [r for r in rows if r[3] == args.section]
+        rows = [r for r in rows if r["section"] == args.section]
 
     if args.search:
-        rows = [r for r in rows if fuzzy_match(args.search, r[5])]
+        rows = [r for r in rows if fuzzy_match(args.search, r["name"])]
+
+    if args.sort == "unmatched":
+        rows.sort(
+            key=lambda r: (-r["unmatched_bytes_est"], -r["size"], r["name"].lower())
+        )
+    elif args.sort == "size":
+        rows.sort(key=lambda r: (-r["size"], r["name"].lower()))
+    elif args.sort == "match":
+        rows.sort(
+            key=lambda r: (
+                r["match_percent"] is None,
+                r["match_percent"] if r["match_percent"] is not None else 101.0,
+                -r["size"],
+                r["name"].lower(),
+            )
+        )
+    elif args.sort == "name":
+        rows.sort(key=lambda r: r["name"].lower())
+
+    if args.limit is not None:
+        rows = rows[: args.limit]
 
     if not rows:
         print("No symbols match the given filters.")
         return
 
     # Print header
-    print(f"{'STATUS':<10} {'MATCH':>7}  {'SIZE':>6}  {'SECTION':<10} {'NAME'}")
-    print("-" * 80)
-    for status, match_str, size, section, sym_type, name, side in rows:
-        print(f"{status:<10} {match_str:>7}  {size:>5}B  {section:<10} {name}")
+    print(
+        f"{'STATUS':<10} {'MATCH':>7}  {'UNMATCH':>8}  {'SIZE':>6}  {'SECTION':<10} {'NAME'}"
+    )
+    print("-" * 96)
+    for row in rows:
+        match_str = (
+            f"{row['match_percent']:.1f}%"
+            if row["match_percent"] is not None
+            else "-"
+        )
+        print(
+            f"{row['status']:<10} {match_str:>7}  {row['unmatched_bytes_est']:>7}B  "
+            f"{row['size']:>5}B  {row['section']:<10} {row['name']}"
+        )
 
 
 def render_instruction(
@@ -383,8 +246,8 @@ def build_diff(data: Dict[str, Any], symbol_name: str, args) -> None:
     right_insts = (right_sym or {}).get("instructions", [])
     n_insts = max(len(left_insts), len(right_insts))
 
-    mp_str = f"{mp:.1f}%" if mp is not None else "N/A"
-    print(f"{display_name}: {mp_str} match ({size}B, {n_insts} instructions)")
+    status_str = describe_pair_status(left_sym, right_sym)
+    print(f"{display_name}: {status_str} ({size}B, {n_insts} instructions)")
     print()
 
     if n_insts == 0:
@@ -539,6 +402,17 @@ def main():
     )
     parser.add_argument("--section", help="Filter by section name (e.g. .text)")
     parser.add_argument("--search", help="Fuzzy search on demangled symbol name")
+    parser.add_argument(
+        "--limit",
+        type=int,
+        help="Limit overview output to the first N matching rows",
+    )
+    parser.add_argument(
+        "--sort",
+        choices=["objdiff", "unmatched", "size", "match", "name"],
+        default="objdiff",
+        help="Sort overview rows (default: objdiff order)",
+    )
 
     # Diff options
     parser.add_argument(
@@ -557,21 +431,20 @@ def main():
         help="Don't collapse matching instruction runs",
     )
 
-    # Parallel-safe option: use a pre-compiled temp .o instead of the shared build output.
-    # Obtain the temp path with: TEMPOBJ=$(python tools/build-unit.py -u <unit>)
     parser.add_argument(
         "--base-obj",
         metavar="PATH",
         help=(
-            "Use this .o file as the decomp base instead of the one from objdiff.json. "
-            "Allows parallel agents to diff against their own private compilation output "
-            "without interference. Produce the path with build-unit.py."
+            "Use this .o file as the decomp base instead of the one from objdiff.json."
         ),
     )
 
     args = parser.parse_args()
 
-    data = run_objdiff(args.unit, base_obj=args.base_obj)
+    try:
+        data = run_objdiff(args.unit, base_obj=args.base_obj)
+    except ToolError as e:
+        fail(str(e))
 
     if args.diff:
         build_diff(data, args.diff, args)

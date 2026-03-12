@@ -36,9 +36,9 @@ class AssetSpec:
 
 
 FIXED_ASSETS = (
-    AssetSpec("NFSMWRELEASE.ELF", "file"),
-    AssetSpec("NFS.ELF", "file"),
-    AssetSpec("NFS.MAP", "file"),
+    AssetSpec(os.path.join("orig", "GOWE69", "NFSMWRELEASE.ELF"), "file"),
+    AssetSpec(os.path.join("orig", "SLES-53558-A124", "NFS.ELF"), "file"),
+    AssetSpec(os.path.join("orig", "SLES-53558-A124", "NFS.MAP"), "file"),
     AssetSpec(os.path.join("build", "tools"), "dir"),
     AssetSpec(os.path.join("build", "compilers"), "dir"),
     AssetSpec(os.path.join("build", "ppc_binutils"), "dir"),
