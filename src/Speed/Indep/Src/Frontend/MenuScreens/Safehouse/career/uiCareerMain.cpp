@@ -51,11 +51,11 @@ void uiCareerCrib::NotificationMessage(unsigned long msg, FEObject* pobj, unsign
         }
         FEManager::Get()->SetGarageType(GARAGETYPE_MAIN_FE);
         FEDatabase->ClearGameMode(eFE_GAME_MODE_CAREER);
-        if (!IsMemcardEnabled) {
-            cFEng::Get()->QueuePackageSwitch("MainMenu.fng", 0, 0, false);
-        } else {
+        if (IsMemcardEnabled) {
             FEDatabase->SetGameMode(eFE_GAME_MODE_CAREER_MANAGER);
             cFEng::Get()->QueuePackageSwitch(GetPackageName(), 0, 0, false);
+        } else {
+            cFEng::Get()->QueuePackageSwitch("MainMenu.fng", 0, 0, false);
         }
         return;
     case 0xD05FC3A3: {

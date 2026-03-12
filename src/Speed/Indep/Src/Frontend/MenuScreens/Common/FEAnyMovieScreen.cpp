@@ -65,14 +65,15 @@ void FEAnyMovieScreen::NotificationMessage(unsigned long msg, FEObject* obj, uns
     mSubtitler.Update(msg);
 
     switch (msg) {
+    case 0xC3960EB9:
+        DismissMovie();
+        break;
     case 0x406415E3:
     case 0xB5AF2461:
-        if (FEDatabase->IsDDay() || MoviePlayer_Bypass()) {
-            mSubtitler.Update(0xC3960EB9);
-            DismissMovie();
+        if (!FEDatabase->IsDDay()) {
+            if (!MoviePlayer_Bypass()) break;
         }
-        break;
-    case 0xC3960EB9:
+        mSubtitler.Update(0xC3960EB9);
         DismissMovie();
         break;
     }
