@@ -341,22 +341,20 @@ int *World_OneShotEffect(Sim::Packet *pkt) {
         eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(pe->mPosition), position);
         float distance = Sound::DistanceToView(&position);
         float audioCullDist = effects.AudioCullDist();
-        bool noaudio = audioCullDist < distance;
+        bool noaudio = distance > audioCullDist;
         float visualCullDist = effects.VisualCullDist();
-        if (!noaudio || distance <= visualCullDist) {
+        bool novideo = distance > visualCullDist;
+        if (!noaudio || !novideo) {
             UMath::Vector4 mEmitterQuadratic = UMath::Vector4Make(0.0f, 1.0f, 0.0f, 0.0f);
             UMath::Vector4 mAudioQuadratic = UMath::Vector4Make(0.0f, 1.0f, 0.0f, 0.0f);
-            Attrib::TAttrib<UMath::Vector4> attrib(effects.Get(0xa9402c33));
+            Attrib::TAttrib<UMath::Vector4> attrib;
+            attrib = Attrib::TAttrib<UMath::Vector4>(effects.Get(0xa9402c33));
             if (attrib.IsValid()) {
-                const UMath::Vector4 *p = reinterpret_cast<const UMath::Vector4 *>(attrib.GetDataAddress());
-                mEmitterQuadratic = *p;
+                mEmitterQuadratic = attrib.Get(0);
             }
-            {
-                Attrib::TAttrib<UMath::Vector4> attrib2(effects.Get(0x15e6552f));
-                if (attrib2.IsValid()) {
-                    const UMath::Vector4 *p = reinterpret_cast<const UMath::Vector4 *>(attrib2.GetDataAddress());
-                    mAudioQuadratic = *p;
-                }
+            attrib = Attrib::TAttrib<UMath::Vector4>(effects.Get(0x15e6552f));
+            if (attrib.IsValid()) {
+                mAudioQuadratic = attrib.Get(0);
             }
             UMath::Vector3 simnormal;
             simnormal.x = pe->mMagnitude.x;
@@ -374,7 +372,7 @@ int *World_OneShotEffect(Sim::Packet *pkt) {
                 }
                 bVector3 normal;
                 eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(simnormal), normal);
-                if (0.0f < emitter_intensity && distance <= visualCullDist) {
+                if (0.0f < emitter_intensity && !novideo) {
                     const Attrib::Collection *emitter_group_spec = effects.emittergroup().GetCollection();
                     EmitterGroup *emitter_group = gEmitterSystem.CreateEmitterGroup(emitter_group_spec, effect_creation_flags | 0x400000);
                     if (emitter_group != nullptr) {

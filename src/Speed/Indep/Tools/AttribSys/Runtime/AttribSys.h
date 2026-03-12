@@ -909,10 +909,11 @@ template <typename t> class TAttrib : public Attribute {
         Free(ptr, bytes, "Attrib::TAttrib");
     }
 
+    TAttrib() {}
     TAttrib(const Attribute &src) : Attribute(src) {}
     ~TAttrib() {}
 
-    bool &Get(unsigned int index) const;
+    const t &Get(unsigned int index) const;
 };
 
 } // namespace Attrib
