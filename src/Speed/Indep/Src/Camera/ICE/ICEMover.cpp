@@ -23,6 +23,37 @@ extern ICE::Vector3 vIceAccelLagMax;
 bVector3 *bCross(bVector3 *dest, const bVector3 *v1, const bVector3 *v2);
 void bQuaternionToMatrix(bMatrix4 *matrix, const bQuaternion *quaternion);
 
+void bQuaternion::GetMatrix(bMatrix4 &mat) const {
+    float x2 = x + x;
+    float y2 = y + y;
+    float z2 = z + z;
+    float xx = x * x2;
+    float xy = x * y2;
+    float xz = x * z2;
+    float yy = y * y2;
+    float yz = y * z2;
+    float zz = z * z2;
+    float sx = w * x2;
+    float sy = w * y2;
+    float sz = w * z2;
+    mat.v0.x = 1.0f - (yy + zz);
+    mat.v0.y = xy + sz;
+    mat.v0.z = xz - sy;
+    mat.v0.w = 0.0f;
+    mat.v1.x = xy - sz;
+    mat.v1.y = 1.0f - (xx + zz);
+    mat.v1.z = yz + sx;
+    mat.v1.w = 0.0f;
+    mat.v2.x = xz + sy;
+    mat.v2.y = yz - sx;
+    mat.v2.z = 1.0f - (xx + yy);
+    mat.v2.w = 0.0f;
+    mat.v3.x = 0.0f;
+    mat.v3.y = 0.0f;
+    mat.v3.z = 0.0f;
+    mat.v3.w = 1.0f;
+}
+
 unsigned short ConvertLensLengthToFovAngle(float f_lens_mm) {
     return (bATan(f_lens_mm, 15.96f) & 0x7FFF) << 1;
 }
