@@ -1375,33 +1375,6 @@ TrackCarCameraMover::TrackCarCameraMover(int nView, CameraAnchor *pCar, bool foc
     Init();
 }
 
-void TrackCarCameraMover::Init() {
-    bVector3 offset;
-
-    CameraType = 0;
-    Eye = *CarToFollow->GetGeomPos();
-    Look = *CarToFollow->GetGeomPos();
-
-    Eye.z += TrackCarIsoZoomDistance[CameraType];
-    offset.x = TrackCarLookOffsetX[CameraType];
-    offset.y = TrackCarLookOffsetY[CameraType];
-    offset.z = TrackCarLookOffsetZ[CameraType];
-    eMulVector(&offset, CarToFollow->GetMatrix(), &offset);
-
-    Look.x += offset.x;
-    Look.y += offset.y;
-    Look.z += offset.z;
-    FocalDistCubic.Val = 0.0f;
-    FocalDistCubic.ValDesired = 0.0f;
-    FocalDistCubic.dVal = 0.0f;
-    FocalDistCubic.dValDesired = 0.0f;
-    GetCamera()->ClearVelocity();
-
-    if (Camera::StopUpdating == 0) {
-        GetCamera()->SetTargetDistance(bDistBetween(&Eye, CarToFollow->GetGeomPos()));
-    }
-}
-
 TrackCarCameraMover::~TrackCarCameraMover() {
     GetCamera()->SetSimTimeMultiplier(1.0f);
     if (Camera::StopUpdating == 0) {
