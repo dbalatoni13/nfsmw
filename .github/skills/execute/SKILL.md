@@ -52,8 +52,19 @@ Determine the file path (e.g. `src/Speed/Indep/SourceLists/zWorld2`). The game u
 
 ### 1b. Get the full function list
 
+Preferred shortcut:
+
 ```sh
-python tools/decomp-diff.py -u main/Path/To/TU
+python tools/decomp-workflow.py unit -u main/Path/To/TU --limit 20
+```
+
+Manual equivalent:
+
+```sh
+python tools/decomp-status.py --unit main/Path/To/TU
+TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
+python tools/decomp-diff.py -u main/Path/To/TU -s missing -t function --base-obj "$TEMPOBJ"
+python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching -t function --base-obj "$TEMPOBJ"
 ```
 
 This shows all symbols with their match status. Note the total count of missing,
@@ -74,11 +85,19 @@ After scaffolding, rebuild and re-check the function list.
 Use `build-unit.py` to compile to a private temp `.o` so the status check isn't
 polluted by another concurrent temp build:
 
+Preferred shortcut:
+
+```sh
+python tools/decomp-workflow.py unit -u main/Path/To/TU
+```
+
+Manual equivalent:
+
 ```sh
 ninja                  # full build to update shared state (progress, sha1)
 TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
-python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching -t function --base-obj "$TEMPOBJ"
 python tools/decomp-diff.py -u main/Path/To/TU -s missing -t function --base-obj "$TEMPOBJ"
+python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching -t function --base-obj "$TEMPOBJ"
 ```
 
 ### 3c. Implement each function sequentially
