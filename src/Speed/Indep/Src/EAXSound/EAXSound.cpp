@@ -55,8 +55,9 @@ struct EAXSND8Wrapper : public AudioMemBase {
     virtual ~EAXSND8Wrapper();
     eSndAudioMode GetDefaultPlatformAudioMode();
     eSndAudioMode SetAudioModeFromMemoryCard(eSndAudioMode mode);
+    eSndAudioMode SetAudioRenderMode(eSndAudioMode mode);
     void ReInit();
-    void SetSnd8RenderMode(eSndAudioMode mode);
+    eSndAudioMode SetSnd8RenderMode(eSndAudioMode mode);
     void Update();
     void STUPID();
 };
