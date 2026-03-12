@@ -115,10 +115,8 @@ struct FireOnExitRec {
     }
 
     bool operator<(const FireOnExitRec &rhs) const {
-        if (&mTrigger != &rhs.mTrigger) {
-            return &mTrigger < &rhs.mTrigger;
-        }
-        return mhSimable < rhs.mhSimable;
+        if (mhSimable < rhs.mhSimable) return true;
+        return &mTrigger < &rhs.mTrigger;
     }
 
     WTrigger &mTrigger; // offset 0x0, size 0x4
