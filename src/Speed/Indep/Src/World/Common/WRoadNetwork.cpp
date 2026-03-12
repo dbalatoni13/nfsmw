@@ -219,7 +219,7 @@ void WRoadNetwork::ResolveBarriers() {
     for (int barrier_number = 0; barrier_number < num_barriers; barrier_number++) {
         TrackPathBarrier *barrier = TheTrackPathManager.GetBarrier(barrier_number);
         if (barrier->IsEnabled()) {
-            typedef UTL::Std::set<short, _type_set> SEGMENT_SET;
+            typedef UTL::Std::set<unsigned short, _type_set> SEGMENT_SET;
             UMath::Vector4 barrier_points[2];
             barrier_points[0] = UMath::Vector4Make(-barrier->Points[0].y, 0.0f,
                                                    barrier->Points[0].x, 1.0f);
@@ -1374,9 +1374,11 @@ void WRoadNav::ClampCookieCentres(NavCookie *cookies, int num_cookies) {
         NavCookie &cookie = cookies[i];
         if (cookie.Flags & 1) {
             float size = (cookie.RightOffset - cookie.LeftOffset) * 0.5f;
+            float cx = (cookie.Left.x + cookie.Right.x) * 0.5f;
+            float cz = (cookie.Left.y + cookie.Right.y) * 0.5f;
             cookie.RightOffset = size;
-            cookie.Centre.x = (cookie.Left.x + cookie.Right.x) * 0.5f;
-            cookie.Centre.z = (cookie.Left.y + cookie.Right.y) * 0.5f;
+            cookie.Centre.x = cx;
+            cookie.Centre.z = cz;
             cookie.LeftOffset = -size;
         }
     }
@@ -1393,10 +1395,10 @@ static float TimeToClosestApproach(const UMath::Vector3 &p0, const UMath::Vector
     *closing_speed = -a;
     float b = UMath::Dot(v, v);
     a = UMath::Dot(p, v);
-    if (b >= 0.001f) {
-        return -a / b;
+    if (b < 0.001f) {
+        return 1000.0f;
     }
-    return 1000.0f;
+    return -a / b;
 }
 
 int WRoadNav::FetchAvoidables(IBody **avoidables, const int listsize) const {
@@ -2312,7 +2314,8 @@ void WRoadNav::Reset() {
 void WRoadNav::UpdateOccludedPosition(bool occlude_avoidables) {
     if (!bCookieTrail) return;
 
-    nRoadOcclusion = nAvoidableOcclusion = 0;
+    nRoadOcclusion = 0;
+    nAvoidableOcclusion = 0;
     fOccludingTrailSpeed = 0.0f;
     bOccludedFromBehind = false;
 
@@ -2663,8 +2666,7 @@ float WRoadNav::FindClosestOnSpline(const UMath::Vector3 &point, UMath::Vector3 
 }
 
 int WRoadNav::FindClosestSegmentInd(const UMath::Vector3 &point, const UMath::Vector3 &dir, float dirWeight, UMath::Vector3 &closestPoint, float &time) {
-    typedef UTL::Std::set<short, _type_set> SEGMENT_SET;
-
+    typedef UTL::Std::set<unsigned short, _type_set> SEGMENT_SET;
     const WGrid &grid = WGrid::Get();
     WRoadNetwork &roadNetwork = WRoadNetwork::Get();
     short segInd = -1;
