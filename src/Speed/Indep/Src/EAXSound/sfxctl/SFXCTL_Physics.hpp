@@ -70,6 +70,7 @@ struct SFXCTL_Physics : public SFXCTL {
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
     void SetupSFX(CSTATE_Base *_StateBase) override;
+    void InitSFX() override;
 
     void MsgRevOff(const MAIEngineRev &message);
 
@@ -86,12 +87,18 @@ struct SFXCTL_AIPhysics : public SFXCTL_Physics {
   public:
     /* 0xd0 */ SFXCTL_Shifting *m_pShiftCtl;
     /* 0xd4 */ SndAIStateManager AIStateManager;
+    /* 0x268 */ char _pad_ai[0x20]; // padding for intermediate fields
+    /* 0x288 */ float Zero60Time;
+    /* 0x28c */ float m_fDeltaRPM;
 
     ~SFXCTL_AIPhysics() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
     int GetController(int Index) override;
     void SetupSFX(CSTATE_Base *_StateBase) override;
+    void InitSFX() override;
+    void AttachController(SFXCTL *) override;
+    void UpdateTorque(float t);
     void Destroy() override;
     void UpdateMixerOutputs() override;
 };

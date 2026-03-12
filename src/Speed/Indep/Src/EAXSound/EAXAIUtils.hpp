@@ -57,6 +57,7 @@ struct SndAIStateManager : public AudioMemBase {
 
     SND_AI_STATE GetState() { return CurState; }
     void SwitchState(SND_AI_STATE NewState);
+    void Initialize(SFXCTL_Physics *pPhys);
 };
 
 #endif
