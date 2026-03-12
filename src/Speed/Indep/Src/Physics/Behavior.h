@@ -50,17 +50,17 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
 
     Behavior(const BehaviorParams &params, unsigned int num_interfaces);
 
-    const UCrc32 &GetMechanic() {
+    const UCrc32 &GetMechanic() const {
         return mMechanic;
     }
 
-    const UCrc32 &GetSignature() {
+    const UCrc32 &GetSignature() const {
         return mSignature;
     }
 
     void Pause(bool pause);
 
-    int IsPaused() {
+    bool IsPaused() const {
         return mPaused;
     }
 
@@ -107,7 +107,7 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
     virtual void OnUnPause();
 
   private:
-    int mPaused;                  // offset 0x30, size 0x4
+    bool mPaused;                 // offset 0x30, size 0x1
     struct PhysicsObject *mOwner; // offset 0x34, size 0x4
     ISimable *mIOwner;            // offset 0x38, size 0x4
     const UCrc32 mMechanic;       // offset 0x3C, size 0x4

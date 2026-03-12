@@ -150,16 +150,16 @@ Smackable::Smackable(const UMath::Matrix4 &matrix, const Attrib::Gen::smackable 
     , IExplodeable(this) //
     , EventSequencer::IContext(this) //
     , mAttributes(attributes) //
+    , mDropOutTimerMax(GetDropTimer(attributes)) //
+    , mAutoSimplify(attributes.AUTO_SIMPLIFY()) //
+    , mVirgin(virginspawn) //
     , mRBSpecs(static_cast<ISimable *>(this), 0) //
 {
     mSimplifyWeight = 0.0f;
     mAge = 0.0f;
     mDropTimer = 0.0f;
     mLife = 0.125f;
-    mDropOutTimerMax = GetDropTimer(attributes);
     mOffWorldTimer = 0.0f;
-    mAutoSimplify = attributes.AUTO_SIMPLIFY();
-    mVirgin = virginspawn;
     mPersistant = is_persistant;
     mLastImpactSpeed = UMath::Vector3::kZero;
     mModel = scenery;

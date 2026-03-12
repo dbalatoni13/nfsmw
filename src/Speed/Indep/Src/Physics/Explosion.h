@@ -91,15 +91,15 @@ class Explosion : public PhysicsObject, public IExplosion {
     void TestCollisions(float dT);
     void OnCollide(IRigidBody *other, float dT, float radius, const Dynamics::Collision::Geometry &explosion_sphere);
 
-    float mExpansionSpeed;
-    float mExpansionRadius;
-    HMODEL mSource;
+    const float mExpansionSpeed;
+    const float mExpansionRadius;
+    const HMODEL mSource;
     ISimpleBody *mIRBSimple;
     bool mEffectSource;
     HCAUSE mCausality;
     float mCauseTime;
-    bool mDamages;
-    unsigned int mTargets;
+    const bool mDamages;
+    const unsigned int mTargets;
 };
 
 #endif

@@ -136,10 +136,10 @@ class Smackable : public PhysicsObject,
     float mAge;
     float mLife;
     float mDropTimer;
-    float mDropOutTimerMax;
+    const float mDropOutTimerMax;
     float mOffWorldTimer;
-    float mAutoSimplify;
-    bool mVirgin;
+    const float mAutoSimplify;
+    const bool mVirgin;
     IModel *mModel;
     const CollisionGeometry::Bounds *mGeometry;
     HSIMTASK mManageTask;

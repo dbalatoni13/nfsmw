@@ -68,8 +68,6 @@ class PVehicle : public PhysicsObject,
                  public IAttributeable {
   public:
     struct LaunchState {
-        float Time;  // offset 0x0, size 0x4
-        float Amount; // offset 0x4, size 0x4
         LaunchState() : Time(0.0f), Amount(0.0f) {}
         void Clear() { Time = 0.0f; Amount = 0.0f; }
         bool IsSet() const { return Time > 0.0f; }
@@ -80,6 +78,9 @@ class PVehicle : public PhysicsObject,
                 Clear();
             }
         }
+
+        float Time;   // offset 0x0, size 0x4
+        float Amount; // offset 0x4, size 0x4
     };
 
     struct Resource {
@@ -89,24 +90,19 @@ class PVehicle : public PhysicsObject,
             NEEDS_COMPOSITING = 4,
         };
 
-        CarType Type;        // offset 0x0, size 0x4
-        unsigned int Cost;   // offset 0x4, size 0x4
-        unsigned int Flags;  // offset 0x8, size 0x4
-
         Resource() : Type(CARTYPE_NONE), Cost(0), Flags(0) {}
         Resource(const Attrib::Gen::pvehicle &pvehicle, bool spool, bool is_player);
         bool NeedsCompositing() const { return (Flags & NEEDS_COMPOSITING) != 0; }
         bool IsValid() const { return (Flags & VALID) != 0; }
         bool IsSpooled() const { return (Flags & SPOOL) != 0; }
         void Invalidate() { Flags &= ~VALID; }
+
+        CarType Type;        // offset 0x0, size 0x4
+        unsigned int Cost;   // offset 0x4, size 0x4
+        unsigned int Flags;  // offset 0x8, size 0x4
     };
 
     struct ManageNode {
-        PVehicle *vehicle;            // offset 0x0, size 0x4
-        Resource resource;            // offset 0x4, size 0xC
-        eVehicleCacheResult result;   // offset 0x10, size 0x4
-        unsigned int instancecount;   // offset 0x14, size 0x4
-
         ManageNode() {}
         static void print(const ManageNode &n) {}
         static bool sort_remove_resources(const ManageNode &lhs, const ManageNode &rhs) {
@@ -127,6 +123,11 @@ class PVehicle : public PhysicsObject,
         static bool is_kept(const ManageNode &h) {
             return h.result == VCR_WANT;
         }
+
+        PVehicle *vehicle;            // offset 0x0, size 0x4
+        Resource resource;            // offset 0x4, size 0xC
+        eVehicleCacheResult result;   // offset 0x10, size 0x4
+        unsigned int instancecount;   // offset 0x14, size 0x4
     };
 
     struct ManagementList : public UTL::FixedVector<ManageNode, 10, 16> {};

@@ -21,17 +21,17 @@ ISimable *Explosion::Construct(Sim::Param params) {
 
 Explosion::Explosion(const ExplosionParams &params, Sim::Param sp)
     : PhysicsObject("explosion", "default", SIMABLE_EXPLOSION, nullptr, 0) //
-    , IExplosion(this)
+    , IExplosion(this) //
+    , mExpansionSpeed(params.fExpansionSpeed) //
+    , mExpansionRadius(params.fRadius) //
+    , mSource(params.fSource) //
+    , mDamages(params.fDamage) //
+    , mTargets(params.fTargets)
 {
-    mExpansionSpeed = params.fExpansionSpeed;
-    mExpansionRadius = params.fRadius;
-    mSource = params.fSource;
     mIRBSimple = nullptr;
     mEffectSource = params.fEffectSource;
     mCausality = nullptr;
     mCauseTime = 0.0f;
-    mDamages = params.fDamage;
-    mTargets = params.fTargets;
 
     float start_radius = UMath::Max(0.0f, params.fStartRadius);
 

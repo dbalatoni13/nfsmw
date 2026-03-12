@@ -12,8 +12,7 @@
 
 struct HMODEL__;
 
-class SmackableTrigger {
-  public:
+struct SmackableTrigger {
     SmackableTrigger(HMODEL__ *hmodel, bool virgin, const UMath::Matrix4 &objectmatrix,
                      const UMath::Vector3 &dim, unsigned int extra_flags);
     ~SmackableTrigger();
@@ -32,7 +31,6 @@ class SmackableTrigger {
         }
     }
 
-  private:
     WTrigger *mTrigger;
     Event::StaticData *mEventData;
 };
