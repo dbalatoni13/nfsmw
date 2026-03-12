@@ -1100,7 +1100,7 @@ void ICEMover::Update(float dT) {
 
                 bQuaternion q(r.x, r.y, r.z, halfAngle);
                 UMath::Matrix4 shake_matrix;
-                bQuaternionToMatrix(reinterpret_cast<bMatrix4 *>(&shake_matrix), &q);
+                q.GetMatrix(*reinterpret_cast<bMatrix4 *>(&shake_matrix));
 
                 UMath::Vector3 t;
                 t.x = shake_data->p[0] * f_amplitude;

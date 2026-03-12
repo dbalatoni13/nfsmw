@@ -587,17 +587,17 @@ bool CameraMover::OnWCollide(const WCollisionMgr::WorldCollisionInfo &cInfo, con
     return true;
 }
 
-bool CameraMover::IsSomethingInBetween(const UMath::Vector4 &start, const UMath::Vector4 &end) {
+bool CameraMover::IsSomethingInBetween(const UMath::Vector4 &p0, const UMath::Vector4 &p1) {
     UMath::Vector4 seg[2];
+    seg[0] = p0;
+    seg[1] = p1;
+    seg[0].y += 0.5f;
+    seg[1].y += 0.5f;
     WCollisionMgr::WorldCollisionInfo cInfo;
     WCollisionMgr collision_mgr(0, 3);
-
-    seg[0] = start;
-    seg[1] = end;
-    seg[0].y += 0.1f;
-    seg[1].y += 0.1f;
     collision_mgr.CheckHitWorld(seg, cInfo, 3);
-    return cInfo.HitSomething();
+    bool result = cInfo.HitSomething();
+    return result;
 }
 
 bool CameraMover::IsSomethingInBetween(const bVector3 *start, const bVector3 *end) {
