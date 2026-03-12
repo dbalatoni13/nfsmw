@@ -54,9 +54,17 @@ int bStrLen(const unsigned short *s) {
 
 // UNSOLVED
 char *bStrCpy(char *to, const char *from) {
-    char *dest = to;
+    char c = *from;
+    int n = 0;
 
-    while ((*dest++ = *from++) != '\0') {}
+    *to = c;
+    if (c != '\0') {
+        do {
+            n = n + 1;
+            c = from[n];
+            to[n] = c;
+        } while (c != '\0');
+    }
     return to;
 }
 
@@ -84,19 +92,21 @@ char *bStrNCpy(char *to, const char *from, int m) {
     int remaining = m - 1;
     int n = 0;
 
-    if (m != 0) {
-        char c = *from;
-        *to = c;
-        if (c != '\0') {
-            do {
-                if (remaining == 0) {
-                    return to;
-                }
-                n = n + 1;
-                remaining = remaining - 1;
-                c = from[n];
-                to[n] = c;
-            } while (c != '\0');
+    if (m == 0) {
+        return to;
+    }
+
+    char c = *from;
+    *to = c;
+    if (c != '\0') {
+        while (remaining != 0) {
+            n = n + 1;
+            remaining = remaining - 1;
+            c = from[n];
+            to[n] = c;
+            if (c == '\0') {
+                break;
+            }
         }
     }
 
@@ -358,9 +368,11 @@ char *bStrCat(char *to, const char *s1, const char *s2) {
 char *bToUpper(char *s) {
     int n = 0;
 
-    while (s[n] != '\0') {
-        s[n] = bToUpper(s[n]);
-        n++;
+    if (s[n] != '\0') {
+        do {
+            s[n] = bToUpper(s[n]);
+            n = n + 1;
+        } while (s[n] != '\0');
     }
 
     return s;
@@ -373,21 +385,20 @@ int bStrToLong(const char *s) {
         int value = 0;
 
         do {
-            unsigned int digit;
+            unsigned int digit = static_cast<int>(static_cast<char>(c)) - '0';
 
             if (c == '\0') {
                 return value;
             }
 
-            digit = c - '0';
-            if (digit > 9) {
-                if ((c - 'a') < 26) {
+            if ((digit & 0xff) > 9) {
+                if (static_cast<unsigned int>(static_cast<int>(static_cast<char>(c)) - 'a') < 0x1aU) {
                     c &= 0x5f;
                 }
-                if ((c - 'A') > 5) {
+                if (static_cast<unsigned int>(static_cast<int>(static_cast<char>(c)) - 'A') > 5U) {
                     return value;
                 }
-                digit = c - '7';
+                digit = static_cast<int>(static_cast<char>(c)) - '7';
             }
 
             p = p + 1;
@@ -401,28 +412,18 @@ int bStrToLong(const char *s) {
 
     if (c == '-') {
         negative = true;
-        s = s + 1;
-    } else if (c == '+') {
-        s = s + 1;
+    } else if (c != '+') {
+        goto parse_decimal;
     }
-
+    s = s + 1;
+parse_decimal:
     int value = 0;
+    c = *s;
 
-    if ((*s != '\0') && ((*s - '0') < 10U)) {
-        int scaled = 0;
-        char next;
+    while ((c != '\0') && ((static_cast<unsigned int>(c - '0')) < 10U)) {
+        s = s + 1;
+        value = value * 10 + c - '0';
         c = *s;
-
-        do {
-            s = s + 1;
-            next = *s;
-            value = scaled + c - '0';
-            if (next == '\0') {
-                break;
-            }
-            scaled = value * 10;
-            c = next;
-        } while ((next - '0') < 10U);
     }
 
     if (negative) {
