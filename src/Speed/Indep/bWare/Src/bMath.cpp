@@ -307,7 +307,12 @@ unsigned short bASin(float x) {
     }
 
     unsigned int a;
-    if (x < 1.0f) {
+    if (x >= 1.0f) {
+        a = 0xc000;
+        if (negative == 0) {
+            a = 0x4000;
+        }
+    } else {
         int table_spacing = 0x8000;
         int table_number = 0;
         int fix_x = static_cast<int>(x * 65536.0f);
@@ -333,13 +338,6 @@ unsigned short bASin(float x) {
             0xffff;
         if (negative != 0) {
             a = (-static_cast<int>(a)) & 0xffff;
-        }
-    } else {
-        a = 0;
-        if (negative != 0) {
-            a = a | 0xc000;
-        } else {
-            a = 0x4000;
         }
     }
 
