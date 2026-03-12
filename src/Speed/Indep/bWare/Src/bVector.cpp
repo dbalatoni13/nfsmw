@@ -260,9 +260,12 @@ float bDistToLine(const bVector2 *point, const bVector2 *line_p1, const bVector2
     bVector2 p(point->x - line_p1->x, point->y - line_p1->y);
     bVector2 tangent(line_p2->x - line_p1->x, line_p2->y - line_p1->y);
     float length = bLength(&tangent);
-    bVector2 normal(-tangent.y / length, tangent.x / length);
+    bVector2 normal;
+    bNormalize(&tangent, &tangent);
+    normal.x = -tangent.y;
+    normal.y = tangent.x;
     float d = bDot(&p, &normal);
-    float l = bDot(&p, &tangent) / length;
+    float l = bDot(&p, &tangent);
     float distance;
 
     if (l < 0.0f) {
