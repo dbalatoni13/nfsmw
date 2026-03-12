@@ -238,7 +238,7 @@ bool Smackable::OnExplosion(const UMath::Vector3 &normal, const UMath::Vector3 &
     if (sequencer != nullptr) {
         sequencer->ProcessStimulus(0xab556d39, Sim::GetTime(), nullptr,
                                    EventSequencer::QUEUE_ALLOW);
-        if (explosion->GetCausality() != nullptr) {
+        if (explosion->HasDamage()) {
             sequencer->ProcessStimulus(0xffcd8a63, Sim::GetTime(), nullptr,
                                        EventSequencer::QUEUE_ALLOW);
         }
