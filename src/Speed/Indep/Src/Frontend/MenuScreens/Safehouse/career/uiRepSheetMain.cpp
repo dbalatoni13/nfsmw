@@ -233,7 +233,7 @@ void uiRepSheetMain::UpdateInfo() {
         unsigned int hash = bin->GetBossRaceHash(i);
         GRaceParameters* race = GRaceDatabase::Get().GetRaceFromHash(hash);
         int available = race->GetIsAvailable(GRace::kRaceContext_Career);
-        bBossAvailable = bBossAvailable | (available != 0);
+        bBossAvailable = (bBossAvailable != 0) | (available != 0);
     }
 
     bBossBeaten = false;
@@ -250,10 +250,12 @@ void uiRepSheetMain::UpdateInfo() {
         cFEng::Get()->QueuePackageMessage(0xb4c144b1, GetPackageName(), nullptr);
     } else {
         if (bBossAvailable) {
-            cFEng::Get()->QueuePackageMessage(FEngHashString("BOSS_AVAILABLE"), GetPackageName(), nullptr);
+            unsigned int msgHash = FEngHashString("BOSS_AVAILABLE");
+            cFEng::Get()->QueuePackageMessage(msgHash, GetPackageName(), nullptr);
             FEngSetVisible(GetPackageName(), 0x55f6aa1a);
         } else {
-            cFEng::Get()->QueuePackageMessage(FEngHashString("BOSS_UNAVAILABLE"), GetPackageName(), nullptr);
+            unsigned int msgHash = FEngHashString("BOSS_UNAVAILABLE");
+            cFEng::Get()->QueuePackageMessage(msgHash, GetPackageName(), nullptr);
             FEngSetInvisible(GetPackageName(), 0x55f6aa1a);
         }
     }
