@@ -255,7 +255,7 @@ int PlatformMemoryINIT() {
 }
 
 void bVirtualMemoryManager::Init() {
-#ifdef TARGET_GC
+#ifdef EA_PLATFORM_GAMECUBE
     this->bIsValid = false;
     this->mVirtualBaseAddr = 0x7e000000;
     this->mMRamBaseAddr = reinterpret_cast<uintptr_t>(OSGetArenaLo());

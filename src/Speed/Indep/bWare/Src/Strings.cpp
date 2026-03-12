@@ -338,10 +338,10 @@ char *bToUpper(char *s) {
 int bStrToLong(const char *s) {
     if ((s[0] == '0') && (s[1] == 'x')) {
         const unsigned char *p = reinterpret_cast<const unsigned char *>(s + 2);
+        unsigned char c = *p;
         int value = 0;
 
-        while (true) {
-            unsigned char c = *p;
+        do {
             unsigned int digit;
 
             if (c == '\0') {
@@ -359,31 +359,43 @@ int bStrToLong(const char *s) {
                 digit = c - '7';
             }
 
-            p++;
+            p = p + 1;
+            c = *p;
             value = value * 16 + digit;
-        }
+        } while (true);
     }
 
     bool negative = false;
-    if (*s == '-') {
-        negative = true;
-    } else if (*s != '+') {
-        goto parse_digits;
-    }
-    s++;
-
-parse_digits:
-    int value = 0;
     char c = *s;
 
-    while ((c != '\0') && ((c - '0') < 10U)) {
-        s++;
-        value = value * 10 + c - '0';
+    if (c == '-') {
+        negative = true;
+        s = s + 1;
+    } else if (c == '+') {
+        s = s + 1;
+    }
+
+    int value = 0;
+
+    if ((*s != '\0') && ((*s - '0') < 10U)) {
+        int scaled = 0;
+        char next;
         c = *s;
+
+        do {
+            s = s + 1;
+            next = *s;
+            value = scaled + c - '0';
+            if (next == '\0') {
+                break;
+            }
+            scaled = value * 10;
+            c = next;
+        } while ((next - '0') < 10U);
     }
 
     if (negative) {
-        value = -value;
+        return -value;
     }
 
     return value;

@@ -132,9 +132,18 @@ void _stuff_char(bOutputInfo *output_info, const char ch, int *outLen) {
 }
 
 void _stuff_str(bOutputInfo *output_info, const char *str, int strLen, int *outLen) {
-    if (!output_info->StdOut) {
+    if (output_info->StdOut != 0) {
+        if (strLen != 0) {
+            do {
+                char ch = *str;
+                str = str + 1;
+                _stuff_char(output_info, ch, outLen);
+                strLen = strLen - 1;
+            } while (strLen != 0);
+        }
+    } else {
         int max_len = (output_info->DestStringLen - *outLen) - 1;
-        if (max_len < strLen) {
+        if (strLen > max_len) {
             strLen = max_len;
         }
 
@@ -142,20 +151,13 @@ void _stuff_str(bOutputInfo *output_info, const char *str, int strLen, int *outL
         if (output_info->DestString != nullptr) {
             while (strLen > 0) {
                 char *dest = output_info->DestString;
-                char ch = *str;
-                str++;
-                *dest = ch;
-                output_info->DestString = dest + 1;
-                strLen--;
+                *dest = *str;
+                str = str + 1;
+                dest = dest + 1;
+                output_info->DestString = dest;
+                strLen = strLen - 1;
             }
         }
-    } else if (strLen != 0) {
-        do {
-            char ch = *str;
-            str++;
-            _stuff_char(output_info, ch, outLen);
-            strLen--;
-        } while (strLen != 0);
     }
 }
 

@@ -51,61 +51,40 @@ int bMemCmp(const void *s1, const void *s2, unsigned int numbytes) {
 }
 
 void bMemSet(void *dest, unsigned char c, unsigned int numbytes) {
-    unsigned char *cdest = reinterpret_cast<unsigned char *>(dest);
-    unsigned int fill = c;
-    fill |= fill << 8;
-    fill |= fill << 16;
+    int *idest = reinterpret_cast<int *>(dest);
+    int fill = c * 0x1010101;
 
-    if (((int)cdest & 3) == 0) {
-        unsigned int align16 = (int)cdest & 0xf;
-        if (align16 != 0) {
-            while ((align16 != 0) && (numbytes >= 4)) {
-                *reinterpret_cast<unsigned int *>(cdest) = fill;
-                cdest += 4;
-                numbytes -= 4;
-                align16 = (int)cdest & 0xf;
-            }
+    if ((reinterpret_cast<uintptr_t>(idest) & 3) == 0) {
+        while (((reinterpret_cast<uintptr_t>(idest) & 0xf) != 0) && (numbytes > 3)) {
+            *idest = fill;
+            idest++;
+            numbytes -= 4;
         }
     }
 
-    if ((((int)cdest & 7) == 0) && (numbytes > 0x1f)) {
-        do {
-            reinterpret_cast<unsigned int *>(cdest)[0] = fill;
-            reinterpret_cast<unsigned int *>(cdest)[1] = fill;
-            reinterpret_cast<unsigned int *>(cdest)[2] = fill;
-            reinterpret_cast<unsigned int *>(cdest)[3] = fill;
-            reinterpret_cast<unsigned int *>(cdest)[4] = fill;
-            reinterpret_cast<unsigned int *>(cdest)[5] = fill;
-            reinterpret_cast<unsigned int *>(cdest)[6] = fill;
-            reinterpret_cast<unsigned int *>(cdest)[7] = fill;
-            cdest += 0x20;
-            numbytes -= 0x20;
-        } while (numbytes > 0x1f);
-    }
-
-    if ((((int)cdest & 3) == 0) && (numbytes > 0xf)) {
-        do {
-            reinterpret_cast<unsigned int *>(cdest)[0] = fill;
-            reinterpret_cast<unsigned int *>(cdest)[1] = fill;
-            reinterpret_cast<unsigned int *>(cdest)[2] = fill;
-            reinterpret_cast<unsigned int *>(cdest)[3] = fill;
-            cdest += 0x10;
+    if ((reinterpret_cast<uintptr_t>(idest) & 7) == 0) {
+        while (numbytes > 0xf) {
+            idest[0] = fill;
+            idest[1] = fill;
+            idest[2] = fill;
+            idest[3] = fill;
+            idest += 4;
             numbytes -= 0x10;
-        } while (numbytes > 0xf);
+        }
     }
 
-    if (((int)cdest & 3) == 0) {
+    if ((reinterpret_cast<uintptr_t>(idest) & 3) == 0) {
         while (numbytes > 7) {
-            reinterpret_cast<unsigned int *>(cdest)[0] = fill;
-            reinterpret_cast<unsigned int *>(cdest)[1] = fill;
+            idest[0] = fill;
+            idest[1] = fill;
+            idest += 2;
             numbytes -= 8;
-            cdest += 8;
         }
     }
 
     while (numbytes != 0) {
-        *cdest = c;
-        cdest++;
+        *reinterpret_cast<unsigned char *>(idest) = c;
+        idest = reinterpret_cast<int *>(reinterpret_cast<char *>(idest) + 1);
         numbytes--;
     }
 }
