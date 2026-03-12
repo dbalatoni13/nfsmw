@@ -58,6 +58,17 @@ Do **not** try to cheat objdiff, progress, or match metrics in any way. The goal
 the real decompilation output, not to manipulate the comparison setup, hide mismatches, or make
 progress numbers look better without actually matching the original code.
 
+**Never** copy, overwrite, or symlink a compiled source `.o` file into `build/GOWE69/obj/`.
+The `obj/` directory contains the **original reference objects** extracted from the retail
+binary by `dtk dol split`. Replacing them with your own compiled output will make objdiff
+compare your code against itself, producing a false 100% match. If the `obj/` file is
+accidentally corrupted, regenerate it with:
+
+```sh
+rm build/GOWE69/config.json
+ninja build/GOWE69/config.json   # re-splits from the original ELF
+```
+
 ### lookup.py — Symbol lookup from the debug dump
 
 Query structs, enums, functions, globals, and typedefs directly from the pre-extracted
