@@ -127,7 +127,11 @@ struct EAXAemsManager : public AudioMemBase {
     bool AreResourceLoadsPending();
     void *GetCallbackEventSys();
     static void EvtSysLoadCallback(int param, int error_status);
+    void UnloadSndData(Attrib::StringKey filename);
+    void UnloadSndData(int index);
     void RemoveAEMSBank();
+    static void AddAemsBank();
+    void CheckForCompleteAsyncLoad();
     void ResolvePendingAsyncLoads();
     void InitSPUram();
     void ResetBankLoadParams();
