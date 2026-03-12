@@ -32,7 +32,7 @@ class ISuspension : public UTL::COM::IUnknown {
     virtual void ApplyVehicleEntryForces(bool enteringVehicle, const UMath::Vector3 &pos, bool calledfromEvent);
     virtual const float GetWheelRoadHeight(unsigned int i) const;
     virtual bool IsWheelOnGround(unsigned int i) const;
-    virtual void Unknown_ISuspension_0x58(); // TODO: unknown virtual
+    virtual float GetCompression(unsigned int i) const;
     virtual Meters GuessCompression(unsigned int wheelIndex, float downforce) const;
     virtual float GetWheelSlip(unsigned int idx) const;
     virtual float GetToleratedSlip(unsigned int idx) const;
@@ -48,7 +48,6 @@ class ISuspension : public UTL::COM::IUnknown {
     virtual float CalculateUndersteerFactor() const;
     virtual float CalculateOversteerFactor() const;
     virtual Meters GetRideHeight(unsigned int wheelIndex) const;
-    virtual float GetCompression(unsigned int i) const;
     virtual float GetWheelRadius(unsigned int index) const;
     virtual float GetMaxSteering() const;
     virtual void MatchSpeed(float speed);

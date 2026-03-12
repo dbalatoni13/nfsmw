@@ -90,8 +90,7 @@ inline float bSqrt(float x) {
 }
 
 inline int bMin(int a, int b) {
-    if (b - a < 0) return b;
-    return a;
+    return a > b ? b : a;
 }
 
 inline float bMin(float a, float b) {
