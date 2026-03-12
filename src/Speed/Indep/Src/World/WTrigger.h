@@ -15,9 +15,6 @@ struct EventStaticData;
 struct EventList;
 }
 
-using CARP::EventList;
-using CARP::EventStaticData;
-
 struct IRigidBody;
 struct WTrigger;
 
@@ -31,7 +28,7 @@ struct Trigger {
     unsigned int fShape : 4;      // offset 0x10, size 0x4
     unsigned int fFlags : 24;     // offset 0x10, size 0x4
     float fHeight;                // offset 0x14, size 0x4
-    EventList *fEvents;           // offset 0x18, size 0x4
+    CARP::EventList *fEvents;           // offset 0x18, size 0x4
     unsigned short fIterStamp;    // offset 0x1C, size 0x2
     unsigned short fFingerprint;  // offset 0x1E, size 0x2
     UMath::Vector4 fMatRow2Length; // offset 0x20, size 0x10
@@ -41,7 +38,7 @@ struct Trigger {
 // total size: 0x40
 struct WTrigger : public Trigger {
     WTrigger();
-    WTrigger(const UMath::Matrix4 &boxMat, const UMath::Vector3 &center, EventList *events, unsigned int type);
+    WTrigger(const UMath::Matrix4 &boxMat, const UMath::Vector3 &center, CARP::EventList *events, unsigned int type);
     ~WTrigger();
     bool HasEvent(unsigned int eventID, const CARP::EventStaticData** foundEvent) const;
     bool TestDirection(const UMath::Vector3& vec) const;

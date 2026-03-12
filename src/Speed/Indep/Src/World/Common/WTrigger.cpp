@@ -17,7 +17,7 @@ WTrigger::WTrigger() {
     bMemSet(this, 0, sizeof(WTrigger));
 }
 
-WTrigger::WTrigger(const UMath::Matrix4 &mat, const UMath::Vector3 &dimensions, EventList *eventList, unsigned int flags) {
+WTrigger::WTrigger(const UMath::Matrix4 &mat, const UMath::Vector3 &dimensions, CARP::EventList *eventList, unsigned int flags) {
     memcpy(this, &mat, sizeof(UMath::Matrix4));
     reinterpret_cast<unsigned char *>(this)[0x10] = (reinterpret_cast<unsigned char *>(this)[0x10] & 0xF0) | 1;
     fHeight = dimensions.y + dimensions.y;
@@ -208,7 +208,7 @@ void WTrigger::UpdateBox(const UMath::Matrix4& mat, const UMath::Vector3& dimens
     unsigned int flags = reinterpret_cast<const unsigned char *>(this)[0x13]
                        | (reinterpret_cast<const unsigned char *>(this)[0x12] << 8
                         | b11);
-    EventList* eventList = fEvents;
+    CARP::EventList* eventList = fEvents;
 
     memcpy(this, &mat, sizeof(UMath::Matrix4));
 
