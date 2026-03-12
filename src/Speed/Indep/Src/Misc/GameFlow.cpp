@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Generated/Events/ELoadingScreenOff.hpp"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/CarLoader.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
@@ -242,4 +243,40 @@ void TrackLoader::LoadHandler() {
 
 void TrackLoader::FinishedLoading() {
     TheGameFlowManager.SetSingleFunction(reinterpret_cast<void (*)(int)>(BeginWorldLoad), "BeginWorldLoad", 0);
+}
+
+extern int EnableCodeOverlay;
+extern int EnableCodeOverlayDebuggingOnly;
+extern int CodeOverlayMemoryPoolNumber;
+extern int TrackStreamerLoadingBarUp;
+extern int _11LoadingTips_mDoneShowingLoadingTips;
+
+void bMemorySetOverflowPoolNumber(int pool, int overflow);
+void bCloseMemoryPool(int pool);
+void EndGameFlowLoadingFrontEnd();
+void FinishedGameLoading();
+
+void CodeOverlayUnloadingGame() {
+    if ((EnableCodeOverlay != 0 || EnableCodeOverlayDebuggingOnly != 0) && CodeOverlayMemoryPoolNumber != 0) {
+        bMemorySetOverflowPoolNumber(0, -1);
+        bCloseMemoryPool(CodeOverlayMemoryPoolNumber);
+        CodeOverlayMemoryPoolNumber = 0;
+    }
+}
+
+void WaitForSimulation() {
+    int state = Sim::GetState();
+    if (state < 2) {
+        TheGameFlowManager.SetSingleFunction(reinterpret_cast<void (*)(int)>(WaitForSimulation), "WaitForSimulation", 0);
+    } else {
+        TheGameFlowManager.SetSingleFunction(reinterpret_cast<void (*)(int)>(FinishedGameLoading), "FinishedGameLoading", 0);
+    }
+}
+
+void DelayWaitForLoadingScreen() {
+    if (_11LoadingTips_mDoneShowingLoadingTips == 0) {
+        TheGameFlowManager.SetSingleFunction(reinterpret_cast<void (*)(int)>(DelayWaitForLoadingScreen), "DelayWaitForLoadingScreen", 0);
+    } else {
+        TheGameFlowManager.SetSingleFunction(reinterpret_cast<void (*)(int)>(EndGameFlowLoadingFrontEnd), "EndGameFlowLoadingFrontEnd", 0);
+    }
 }
