@@ -235,12 +235,6 @@ CarType PVehicle::GetModelType() const { return mResources.Type; }
 
 bool PVehicle::IsSpooled() const { return mResources.IsSpooled(); }
 
-const UMath::Vector3 &PVehicle::GetPosition() const {
-    if (mRigidBody == nullptr) {
-        return UMath::Vector3::kZero;
-    }
-    return mRigidBody->GetPosition();
-}
 
 IModel *PVehicle::GetModel() {
     if (mRenderable != nullptr) {

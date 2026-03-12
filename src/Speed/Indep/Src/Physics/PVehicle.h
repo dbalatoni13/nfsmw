@@ -173,7 +173,12 @@ class PVehicle : public PhysicsObject,
     virtual EventSequencer::IEngine *GetEventSequencer() override;
     virtual IModel *GetModel() override;
     virtual const IModel *GetModel() const override;
-    virtual const UMath::Vector3 &GetPosition() const override;
+    virtual const UMath::Vector3 &GetPosition() const override {
+        if (mRigidBody == nullptr) {
+            return UMath::Vector3::kZero;
+        }
+        return mRigidBody->GetPosition();
+    }
     virtual void OnDebugDraw();
     virtual const ISimable *GetSimable() const override;
     virtual ISimable *GetSimable() override;

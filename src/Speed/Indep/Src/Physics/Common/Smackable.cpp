@@ -58,7 +58,8 @@ Attrib::StringKey Smackable::SPHERE;
 static float Smackable_ManagementRate = 0.125f;
 
 static float GetDropTimer(const Attrib::Gen::smackable &attributes) {
-    float result = attributes.DROPOUT(0);
+    float result;
+    result = attributes.DROPOUT(0);
     if (!(result > 0.0f)) {
         return 0.0f;
     }

@@ -93,7 +93,12 @@ class PhysicsObject : public Sim::Object,
     virtual const class IRigidBody *GetRigidBody() const override { return mRigidBody; }
     virtual bool IsRigidBodySimple() const override;
     virtual bool IsRigidBodyComplex() const override;
-    virtual const UMath::Vector3 &GetPosition() const override;
+    virtual const UMath::Vector3 &GetPosition() const override {
+        if (mRigidBody == nullptr) {
+            return UMath::Vector3::kZero;
+        }
+        return mRigidBody->GetPosition();
+    }
     virtual void GetTransform(UMath::Matrix4 &matrix) const override;
     virtual void GetLinearVelocity(UMath::Vector3 &velocity) const override;
     virtual void GetAngularVelocity(UMath::Vector3 &velocity) const override;
