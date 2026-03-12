@@ -791,22 +791,12 @@ void UIMemcardBase::NotificationMessage(unsigned long msg, FEObject* obj, unsign
         UIMemcardKeyboard::NotificationMessage(msg, obj, param1, param2);
     }
     switch (msg) {
-    case 0xc502df5d:
-        m_bInButtonAnimation = true;
-        TranslateButton(reinterpret_cast< FEObject* >(param1));
+    case 0xe1fde1d1:
+        ExitComplete();
         break;
-    case 0x35f8620b:
     case 0x3a2be557:
+    case 0x35f8620b:
         InitComplete();
-        break;
-    case 0xc407210:
-        m_bInButtonAnimation = false;
-        gMemcardSetup.mLastController = param1;
-        HandleButtonPressed(0xc407210, obj, param1, param2, false);
-        break;
-    case 0x54b3ac6c:
-        SetScreenVisible(false, 0);
-        cFEng::Get()->QueuePackagePush("MC_List.fng", 0, 0, false);
         break;
     case 0xda5b8712: {
         const char* editStr = FEngGetEditedString();
@@ -817,12 +807,6 @@ void UIMemcardBase::NotificationMessage(unsigned long msg, FEObject* obj, unsign
         DoSaveFlow(4);
         break;
     }
-    case 0xc98356ba:
-        if (m_bDelayedFailed) {
-            m_bDelayedFailed = false;
-            cFEng::Get()->QueueGameMessage(0x8867412d, GetPackageName(), 0xff);
-        }
-        break;
     case 0xc9d30688:
         if ((gMemcardSetup.mOp & 0xf0) == 0x60 && !FEDatabase->bProfileLoaded) {
             DoSaveFlow(2);
@@ -833,11 +817,27 @@ void UIMemcardBase::NotificationMessage(unsigned long msg, FEObject* obj, unsign
             DoSaveFlow(1);
         }
         break;
-    case 0xe1fde1d1:
-        ExitComplete();
+    case 0xc98356ba:
+        if (m_bDelayedFailed) {
+            m_bDelayedFailed = false;
+            cFEng::Get()->QueueGameMessage(0x8867412d, GetPackageName(), 0xff);
+        }
+        break;
+    case 0xc502df5d:
+        m_bInButtonAnimation = true;
+        TranslateButton(reinterpret_cast< FEObject* >(param1));
+        break;
+    case 0xc407210:
+        m_bInButtonAnimation = false;
+        gMemcardSetup.mLastController = param1;
+        HandleButtonPressed(0xc407210, obj, param1, param2, false);
         break;
     case 0xf35d144e:
         SetupPromptCorruptProfile();
+        break;
+    case 0x54b3ac6c:
+        SetScreenVisible(false, 0);
+        cFEng::Get()->QueuePackagePush("MC_List.fng", 0, 0, false);
         break;
     }
 }
