@@ -42,6 +42,22 @@ Sub-agents must **not** write or edit code files, headers, configs, or other rep
 All persistent file changes, decomp implementations, scaffolding, and follow-up fixes must be
 done by the main worker after reviewing the read-only findings.
 
+## Forbidden Changes
+
+Do **not** edit or otherwise touch the comparison and configuration inputs that define the
+project's match metrics:
+
+- `config/GOWE69/symbols.txt`
+- `config/GOWE69/splits.txt`
+- `configure.py`
+
+Treat these files as read-only unless the user explicitly asks for a task that is specifically
+about maintaining that infrastructure.
+
+Do **not** try to cheat objdiff, progress, or match metrics in any way. The goal is to improve
+the real decompilation output, not to manipulate the comparison setup, hide mismatches, or make
+progress numbers look better without actually matching the original code.
+
 ### lookup.py — Symbol lookup from the debug dump
 
 Query structs, enums, functions, globals, and typedefs directly from the pre-extracted
@@ -115,6 +131,49 @@ to the function's line range (with a few lines of context) instead of dumping th
 TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim)
 python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --base-obj "$TEMPOBJ"
 ```
+
+### decomp-workflow.py — Wrapper for common agent workflows
+
+Prefer this wrapper for routine agent-driven flows instead of manually chaining
+`build-unit.py`, `decomp-context.py`, `decomp-diff.py`, and `decomp-status.py`:
+
+```sh
+python tools/decomp-workflow.py health
+python tools/decomp-workflow.py health --smoke-build-unit main/Speed/Indep/SourceLists/zAnim
+python tools/decomp-workflow.py health --smoke-dtk main/Speed/Indep/SourceLists/zAnim
+python tools/decomp-workflow.py build -u main/Speed/Indep/SourceLists/zAnim
+python tools/decomp-workflow.py diff -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin
+python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin
+python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --brief
+python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --ghidra-version gc
+python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --lookup-mode full
+python tools/decomp-workflow.py unit -u main/Speed/Indep/SourceLists/zAnim --search FindIOWin --limit 20
+```
+
+The wrapper keeps the existing tools as the source of truth. It is intended to reduce
+repeated command chaining and to standardize temp-object handling and worktree preflight
+checks for agents.
+
+`function` is the preferred context-gathering entrypoint: it bundles source excerpt,
+objdiff status/diff, compact GC DWARF function lookup, and Ghidra output in one run.
+If the unit metadata points at an empty or otherwise useless source-list file, it also
+falls back to the GC debug-line-mapped repo source file when that file exists and has
+real content.
+Add `--brief` when you want to keep the helper sections compact; it trims suggested
+commands and related-source hints without hiding the core status/diff/source data.
+
+When working with these tools, do not just work around recurring friction silently. If you
+notice a clear, safe workflow or tooling improvement that would make future decomp work
+faster, shorter, or more reliable, prefer implementing that improvement as part of the task
+instead of leaving the paper cut in place. Favor small, surgical tuning to wrappers, shared
+helpers, error messages, output shaping, and context-gathering defaults when they remove
+repeated manual steps for future agents.
+
+On a newly updated or unusual worktree, run `python tools/decomp-workflow.py health` first.
+If it reports missing generated files such as `objdiff.json` or `build.ninja`, run
+`python configure.py` in that worktree before using the decomp wrappers. `health` also
+checks the debug-symbol side of the setup now: GC/PS2 `symbols.txt`, GC DWARF lookup,
+PS2 type lookup, and the GC debug line mapping.
 
 ### find-symbol.py — Check for existing definitions before declaring new types
 
