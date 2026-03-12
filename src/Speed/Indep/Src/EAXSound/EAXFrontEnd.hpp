@@ -17,11 +17,11 @@ struct EAXFrontEnd {
     SFX_Base *m_pSFXOBJ_FEHUD; // offset 0x108
 
     EAXFrontEnd();
-    ~EAXFrontEnd();
+    virtual ~EAXFrontEnd();
     void AttachSFXOBJ(SFX_Base *psfx, eSFXOBJ_MAIN_TYPES sfxtype);
     virtual void Initialize();
-    virtual void Stop(eMenuSoundTriggers etrigger);
     virtual int Play(eMenuSoundTriggers etrigger);
+    virtual void Stop(eMenuSoundTriggers etrigger);
     virtual int Play(void *peventst);
     virtual void Update(void *peventst);
     virtual void *GetEventPointer(int neventindex);

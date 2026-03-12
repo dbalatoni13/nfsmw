@@ -244,8 +244,9 @@ void EAXSound::PlayUISoundFX(eMenuSoundTriggers etriggertype) {
                 m_pCmnSnd->Play(etriggertype);
             }
         } else if (etriggertype < UISND_FRONTEND_MAX_NUM) {
+            etriggertype = static_cast<eMenuSoundTriggers>(etriggertype - UISND_COMMON_MAX_NUM);
             if (m_pFESnd != nullptr) {
-                m_pFESnd->Play(static_cast<eMenuSoundTriggers>(etriggertype - UISND_COMMON_MAX_NUM));
+                m_pFESnd->Play(etriggertype);
             }
         }
     }
@@ -258,8 +259,9 @@ void EAXSound::StopUISoundFX(eMenuSoundTriggers etriggertype) {
                 m_pCmnSnd->Stop(etriggertype);
             }
         } else {
+            etriggertype = static_cast<eMenuSoundTriggers>(etriggertype - UISND_COMMON_MAX_NUM);
             if (m_pFESnd != nullptr) {
-                m_pFESnd->Stop(static_cast<eMenuSoundTriggers>(etriggertype - UISND_COMMON_MAX_NUM));
+                m_pFESnd->Stop(etriggertype);
             }
         }
     }
