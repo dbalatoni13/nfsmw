@@ -6,7 +6,6 @@
 #endif
 
 #include "./WCollision.h"
-#include "Speed/Indep/Libs/Support/Utility/UEALibs.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
@@ -34,7 +33,7 @@ struct WCollisionTri {
             norm->y = 1.0f;
             norm->z = 0.0f;
         } else {
-            v3unit(&normal, norm);
+            VU0_v3unit(normal, *norm);
         }
     }
     // total size: 0x30

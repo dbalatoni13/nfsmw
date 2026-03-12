@@ -33,10 +33,15 @@ class IPlayer : public UTL::COM::IUnknown, public UTL::Collections::ListableSet<
 
     virtual ISimable *GetSimable() const;
 
+#ifndef EA_BUILD_A124
+    virtual bool IsLocal() const;
+#endif
+
     virtual const UMath::Vector3 &GetPosition() const;
     virtual bool SetPosition(const UMath::Vector3 &position);
-    virtual int GetSettingsIndex() const;
     virtual PlayerSettings *GetSettings() const;
+    virtual void SetSettings(int fe_index);
+    virtual int GetSettingsIndex() const;
     virtual IHud *GetHud() const;
     virtual void SetHud() const; // TODO fix params
     virtual void SetRenderPort(int renderport);
@@ -45,8 +50,6 @@ class IPlayer : public UTL::COM::IUnknown, public UTL::Collections::ListableSet<
     virtual int GetControllerPort() const;
     virtual IFeedback *GetFFB();
     virtual ISteeringWheel *GetSteeringDevice();
-    virtual void Unknown_vtable_0x78(); // TODO: unknown virtual
-    virtual void Unknown_vtable_0x80(); // TODO: unknown virtual
     virtual bool InGameBreaker() const;
     virtual bool CanRechargeNOS() const;
     virtual void ResetGameBreaker(bool full);
