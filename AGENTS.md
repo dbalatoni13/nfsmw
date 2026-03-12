@@ -140,19 +140,40 @@ Prefer this wrapper for routine agent-driven flows instead of manually chaining
 ```sh
 python tools/decomp-workflow.py health
 python tools/decomp-workflow.py health --smoke-build-unit main/Speed/Indep/SourceLists/zAnim
+python tools/decomp-workflow.py health --smoke-dtk main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py build -u main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py diff -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin
-python tools/decomp-workflow.py unit -u main/Speed/Indep/SourceLists/zAnim
+python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --brief
+python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --ghidra-version gc
+python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --lookup-mode full
+python tools/decomp-workflow.py unit -u main/Speed/Indep/SourceLists/zAnim --search FindIOWin --limit 20
 ```
 
 The wrapper keeps the existing tools as the source of truth. It is intended to reduce
 repeated command chaining and to standardize temp-object handling and worktree preflight
 checks for agents.
 
+`function` is the preferred context-gathering entrypoint: it bundles source excerpt,
+objdiff status/diff, compact GC DWARF function lookup, and Ghidra output in one run.
+If the unit metadata points at an empty or otherwise useless source-list file, it also
+falls back to the GC debug-line-mapped repo source file when that file exists and has
+real content.
+Add `--brief` when you want to keep the helper sections compact; it trims suggested
+commands and related-source hints without hiding the core status/diff/source data.
+
+When working with these tools, do not just work around recurring friction silently. If you
+notice a clear, safe workflow or tooling improvement that would make future decomp work
+faster, shorter, or more reliable, prefer implementing that improvement as part of the task
+instead of leaving the paper cut in place. Favor small, surgical tuning to wrappers, shared
+helpers, error messages, output shaping, and context-gathering defaults when they remove
+repeated manual steps for future agents.
+
 On a newly updated or unusual worktree, run `python tools/decomp-workflow.py health` first.
 If it reports missing generated files such as `objdiff.json` or `build.ninja`, run
-`python configure.py` in that worktree before using the decomp wrappers.
+`python configure.py` in that worktree before using the decomp wrappers. `health` also
+checks the debug-symbol side of the setup now: GC/PS2 `symbols.txt`, GC DWARF lookup,
+PS2 type lookup, and the GC debug line mapping.
 
 ### find-symbol.py — Check for existing definitions before declaring new types
 

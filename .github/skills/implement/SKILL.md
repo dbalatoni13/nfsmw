@@ -17,8 +17,18 @@ Preferred shortcut:
 
 ```sh
 python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName
+python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName --brief
 python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
 ```
+
+If you only need one Ghidra view, add `--ghidra-version gc` or `--ghidra-version ps2`
+to keep the context run faster and shorter.
+
+The wrapper defaults to compact GC DWARF signatures. Add `--lookup-mode full` when you
+need the full DWARF body with locals and nested inline info.
+
+Add `--brief` when you want a shorter helper view; it trims suggested commands and
+related-source hints while keeping the core source/status/diff context.
 
 Equivalent manual form:
 
@@ -29,6 +39,10 @@ python tools/decomp-context.py -u main/Path/To/TU -f FunctionName
 This provides in one shot:
 
 - Current source code (if any exists)
+- A fallback source excerpt from the GC debug-line-mapped repo file when the metadata
+  source path is empty or otherwise unhelpful
+- Related source-file hints when the unit metadata source is empty or unhelpful
+- Compact GC DWARF signature by default, or full DWARF body with `--lookup-mode full`
 - objdiff status and instruction-level diff
 - Ghidra decompilation of the original
 

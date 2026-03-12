@@ -55,7 +55,7 @@ Determine the file path (e.g. `src/Speed/Indep/SourceLists/zWorld2`). The game u
 Preferred shortcut:
 
 ```sh
-python tools/decomp-workflow.py unit -u main/Path/To/TU
+python tools/decomp-workflow.py unit -u main/Path/To/TU --limit 20
 ```
 
 Manual equivalent:
