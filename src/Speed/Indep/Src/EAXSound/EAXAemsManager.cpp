@@ -7,6 +7,8 @@ extern char *g_DataPaths[];
 extern int DISABLE_SLOT_LOADING;
 extern int SNDmemlargestunused(int *start);
 extern void SNDmemlimits(int lower, int upper);
+extern int bLargestMalloc(int pool);
+extern void *bMalloc(int size, const char *name, int line, int pool);
 extern int bFileSize(const char *filename);
 extern char *bStrCat(char *destString, const char *s1, const char *s2);
 extern void bFree(void *ptr);
@@ -27,6 +29,7 @@ extern "C" char *AudioMemoryManager_AllocateMemoryChar(AudioMemoryManager *mgr, 
     "AllocateMemoryChar__18AudioMemoryManageriPCcb");
 extern "C" void AudioMemoryManager_FreeMemory(AudioMemoryManager *mgr, void *mem) asm("FreeMemory__18AudioMemoryManagerPv");
 extern "C" void TrackStreamer_FreeUserMemory(TrackStreamer *streamer, void *mem) asm("FreeUserMemory__13TrackStreamerPv");
+extern "C" void DataLoadCB_EAXAemsManager(int param, int error_status) asm("DataLoadCB__14EAXAemsManagerii");
 extern "C" void *ResidentAllocCB_EAXAemsManager(void *ptr, int reqsize, int maxsize) asm("ResidentAllocCB__14EAXAemsManagerPvii");
 extern "C" void BankSlotSystem_DestroySlots(void *slots) asm("DestroySlots__14BankSlotSystem");
 extern "C" void SndAssetQueue_clear(void *queue) asm(
@@ -46,6 +49,12 @@ enum eTEMPALLOCLOCATION {
     TMP_ALLOC_MAIN = 1,
     TMP_ALLOC_TRACKSTREAMER = 2,
     TMP_ALLOC_AUDIO = 3,
+};
+
+enum eSndDataType {
+    SDT_INVALID = 0,
+    SDT_GENERIC_DATA = 2,
+    SDT_AEMS_ASYNCSPU = 3,
 };
 } // namespace
 
@@ -243,6 +252,117 @@ void EAXAemsManager::ResolveCurrentDataMemory() {
     }
 
     *reinterpret_cast<void **>(curLoad + 0x28) = nullptr;
+}
+
+int EAXAemsManager::InitiateLoad() {
+    if (m_pCurLoadSDLP == nullptr) {
+        return -1;
+    }
+
+    char *curLoad = reinterpret_cast<char *>(m_pCurLoadSDLP);
+    char tempPath[256];
+    char *filename = *reinterpret_cast<char **>(curLoad + 0x14);
+    if (filename == nullptr) {
+        filename = const_cast<char *>("");
+    }
+
+    int dataPath = *reinterpret_cast<int *>(curLoad + 0x4);
+    bStrCat(tempPath, g_DataPaths[dataPath], filename);
+    int fileSize = bFileSize(tempPath);
+    *reinterpret_cast<int *>(curLoad + 0x20) = fileSize;
+    if (fileSize < 1) {
+        return -1;
+    }
+
+    int eDataType = *reinterpret_cast<int *>(curLoad + 0x0);
+    if (eDataType < SDT_GENERIC_DATA) {
+        *reinterpret_cast<int *>(curLoad + 0x30) = TMP_ALLOC_AUDIO;
+        *reinterpret_cast<int *>(curLoad + 0x0) = SDT_AEMS_ASYNCSPU;
+    } else {
+        *reinterpret_cast<int *>(curLoad + 0x30) = TMP_ALLOC_MAIN;
+    }
+
+    int memLocation = *reinterpret_cast<int *>(curLoad + 0x30);
+    if (memLocation == TMP_ALLOC_MAIN) {
+        if (bLargestMalloc(0) < fileSize) {
+            return -2;
+        }
+        void *pmem = bMalloc(fileSize, filename, 0, 0x1040);
+        *reinterpret_cast<void **>(curLoad + 0x28) = pmem;
+        AddQueuedFile(pmem, tempPath, 0, fileSize, DataLoadCB_EAXAemsManager, reinterpret_cast<int>(m_pCurLoadSDLP), nullptr);
+        m_IsWaitingForFileCB = 1;
+    } else if (memLocation == TMP_ALLOC_AUDIO) {
+        void *pmem = AudioMemoryManager_AllocateMemory(&gAudioMemoryManager, fileSize, filename, false);
+        *reinterpret_cast<void **>(curLoad + 0x28) = pmem;
+        AddQueuedFile(pmem, tempPath, 0, fileSize, DataLoadCB_EAXAemsManager, reinterpret_cast<int>(m_pCurLoadSDLP), nullptr);
+        m_IsWaitingForFileCB = 1;
+    } else {
+        m_IsWaitingForFileCB = 0;
+    }
+
+    if (*reinterpret_cast<int *>(curLoad + 0x0) == SDT_AEMS_ASYNCSPU) {
+        stBankSlot *pBankSlot = *reinterpret_cast<stBankSlot **>(curLoad + 0x24);
+        if (pBankSlot == nullptr) {
+            SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
+        } else {
+            SNDmemlimits(pBankSlot->BANKmemLocation, pBankSlot->BANKmemLocation + pBankSlot->BANKMemSize);
+        }
+    }
+
+    return 0;
+}
+
+void EAXAemsManager::SetupNextLoad() {
+    m_pCurLoadSDLP = nullptr;
+    if (m_nCurLoadedBankIndex < (m_nEndOfList - 1)) {
+        m_nCurLoadedBankIndex++;
+        m_pCurLoadSDLP = g_SndAssetList + m_nCurLoadedBankIndex;
+        if (InitiateLoad() < 0) {
+            RemoveBankListing(m_nCurLoadedBankIndex);
+            SetupNextLoad();
+        }
+    }
+}
+
+void EAXAemsManager::Update() {
+    if (m_pCurLoadSDLP == nullptr) {
+        SetupNextLoad();
+        if (m_pCurLoadSDLP == nullptr) {
+            return;
+        }
+    }
+
+    if (*reinterpret_cast<int *>(reinterpret_cast<char *>(m_pCurLoadSDLP) + 0x38) == 0) {
+        CheckForCompleteAsyncLoad();
+    }
+
+    if (*reinterpret_cast<int *>(reinterpret_cast<char *>(m_pCurLoadSDLP) + 0x3C) != 0) {
+        if (*reinterpret_cast<int *>(reinterpret_cast<char *>(m_pCurLoadSDLP) + 0x0) < SDT_GENERIC_DATA) {
+            ResolveCurrentDataMemory();
+        }
+        SetupNextLoad();
+    }
+}
+
+void EAXAemsManager::RemoveBankListing(int index) {
+    if (index < 0 || index >= m_nEndOfList) {
+        return;
+    }
+
+    char *assetEntry = reinterpret_cast<char *>(&g_SndAssetList[index]);
+    stBankSlot *pBankSlot = *reinterpret_cast<stBankSlot **>(assetEntry + 0x24);
+    if (pBankSlot != nullptr) {
+        pBankSlot->pAssetParams = nullptr;
+    }
+
+    int handle = *reinterpret_cast<int *>(assetEntry + 0x34);
+    if (handle != -1) {
+        SNDAEMS_removemodulebank(handle);
+    }
+    *reinterpret_cast<void **>(assetEntry + 0x28) = nullptr;
+    *reinterpret_cast<int *>(assetEntry + 0x34) = -1;
+    *reinterpret_cast<int *>(assetEntry + 0x38) = 0;
+    *reinterpret_cast<int *>(assetEntry + 0x3C) = 0;
 }
 
 void EAXAemsManager::ResolvePendingAsyncLoads() {}

@@ -141,6 +141,9 @@ struct EAXAemsManager : public AudioMemBase {
     virtual ~EAXAemsManager();
     void Init();
     int AddEventSystem(eEVTSYS eESIndex, eSNDDATAPATH eSDP);
+    int InitiateLoad();
+    void SetupNextLoad();
+    void Update();
     bool AreResourceLoadsPending();
     void *GetCallbackEventSys();
     static void EvtSysLoadCallback(int param, int error_status);
@@ -154,6 +157,7 @@ struct EAXAemsManager : public AudioMemBase {
     void InitializeSlots(bool bDoPFSlot);
     void RegisterSlots(eBANK_SLOT_TYPE Type, int NumSlots, int SizePerSlotSPU, int SizePerSlotMainMem, bool bDoPFSlot);
     void ResetBankLoadParams();
+    void RemoveBankListing(int index);
     void DestroySlots(bool bDoPFSlot);
     int IsAssetInList(Attrib::StringKey filename);
     int IsAssetLoaded(Attrib::StringKey filename);
