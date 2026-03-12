@@ -75,7 +75,8 @@ class PVehicle : public PhysicsObject,
         void Tick(float dT) {
             Time -= dT;
             if (Time <= 0.0f) {
-                Clear();
+                Time = 0.0f;
+                Amount = 0.0f;
             }
         }
 

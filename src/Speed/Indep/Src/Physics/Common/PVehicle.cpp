@@ -597,20 +597,18 @@ void PVehicle::OnTaskSimulate(float dT) {
         } else {
             mSpeedometer = mAbsSpeed;
         }
-        unsigned int num_onground;
+        unsigned int num_onground = 0;
         if (mSuspension != nullptr) {
             num_onground = mSuspension->GetNumWheelsOnGround();
             if (num_onground == 0 && mWheelsOnGround != 0 && mDriverClass == DRIVER_HUMAN) {
                 new EPlayerAirborne(ISimable::GetInstanceHandle());
             }
             mWheelsOnGround = num_onground;
-            if (mSuspension == nullptr || num_onground == 0) {
-                mTimeInAir = mTimeInAir + dT;
-            } else {
-                mTimeInAir = 0.0f;
-            }
-        } else {
+        }
+        if (mSuspension == nullptr || num_onground == 0) {
             mTimeInAir = mTimeInAir + dT;
+        } else {
+            mTimeInAir = 0.0f;
         }
         if (IsStaging()) {
             DoStaging(dT);
@@ -618,10 +616,15 @@ void PVehicle::OnTaskSimulate(float dT) {
             if (mPerfectLaunch.IsSet()) {
                 if (mTranny != nullptr) {
                     if (!mTranny->IsGearChanging()) {
-                        mPerfectLaunch.Tick(dT);
+                        mPerfectLaunch.Time -= dT;
+                        if (mPerfectLaunch.Time <= 0.0f) {
+                            mPerfectLaunch.Amount = 0.0f;
+                            mPerfectLaunch.Time = 0.0f;
+                        }
                     } else {
                         if (mDriverStyle == STYLE_DRAG) {
-                            mPerfectLaunch.Clear();
+                            mPerfectLaunch.Time = 0.0f;
+                            mPerfectLaunch.Amount = 0.0f;
                         }
                     }
                     if (GetSpeed() > MPH2MPS(60.0f)) {
