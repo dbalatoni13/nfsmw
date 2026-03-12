@@ -235,8 +235,17 @@ void UIMemcardMain::NotificationMessage(unsigned long msg, FEObject* obj, unsign
                                          unsigned long param2) {
     UIMemcardBase::NotificationMessage(msg, obj, param1, param2);
     switch (msg) {
+    case 0x5a051729: {
+        unsigned long hideHash = FEHashUpper("HIDE LOADER");
+        cFEng::Get()->QueuePackageMessage(hideHash, GetPackageName(), nullptr);
+        ListDone();
+        break;
+    }
     case 0xa4bb7ae1:
         cFEng::Get()->QueueGameMessage(0x461a18ee, nullptr, 0xff);
+        break;
+    case 0xfe202e3b:
+        DoSaveFlow(4);
         break;
     case 0x461a18ee:
         if (MemoryCard::GetInstance()->InBootSequence()) {
@@ -245,12 +254,18 @@ void UIMemcardMain::NotificationMessage(unsigned long msg, FEObject* obj, unsign
         FEDatabase->DeallocBackupDB();
         MemcardExit(0x461a18ee);
         break;
-    case 0x5a051729: {
-        unsigned long hideHash = FEHashUpper("HIDE LOADER");
-        cFEng::Get()->QueuePackageMessage(hideHash, GetPackageName(), nullptr);
-        ListDone();
+    case 0xa643dee3:
+        if (!MemoryCard::GetInstance()->IsAutoLoadDone()) {
+            return;
+        }
+        cFEng::Get()->QueueGameMessage(0x461a18ee, GetPackageName(), 0xff);
         break;
-    }
+    case 0x15457de1:
+        PopChild();
+        break;
+    case 0xc6c6b68f:
+        DoSaveFlow(8);
+        break;
     case 0x8867412d:
     case 0xdc12af2e:
         PopChild();
@@ -279,25 +294,13 @@ void UIMemcardMain::NotificationMessage(unsigned long msg, FEObject* obj, unsign
             FEDatabase->DeallocBackupDB();
         }
         break;
-    case 0x15457de1:
-        PopChild();
+    case 0xb57fdb17:
+        SetupPromptAutoSaveEnableFailedNoCard();
         break;
     case 0x8d0cc9f9:
         PopChild();
         SetStringCheckingCard();
         MemoryCard::GetInstance()->BootupCheck(nullptr);
-        break;
-    case 0xa643dee3:
-        if (!MemoryCard::GetInstance()->IsAutoLoadDone()) {
-            return;
-        }
-        cFEng::Get()->QueueGameMessage(0x461a18ee, GetPackageName(), 0xff);
-        break;
-    case 0xb57fdb17:
-        SetupPromptAutoSaveEnableFailedNoCard();
-        break;
-    case 0xc6c6b68f:
-        DoSaveFlow(8);
         break;
     case 0xc98356ba:
         if (!m_ExpectingInput) {
@@ -312,9 +315,6 @@ void UIMemcardMain::NotificationMessage(unsigned long msg, FEObject* obj, unsign
             unsigned long hideHash = FEHashUpper("HIDE LOADER");
             cFEng::Get()->QueuePackageMessage(hideHash, GetPackageName(), nullptr);
         }
-        break;
-    case 0xfe202e3b:
-        DoSaveFlow(4);
         break;
     }
 }
