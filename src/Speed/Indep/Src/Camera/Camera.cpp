@@ -137,13 +137,13 @@ void Camera::SetCameraMatrix(const bMatrix4 &m, float fTime) {
         scaledmatrix.v3.y *= 0.01f;
         scaledmatrix.v3.z *= 0.01f;
         scaledmatrix.v3.w = 1.0f;
-        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(&scaledmatrix), *reinterpret_cast<Mtx44 *>(&CurrentKey.Matrix));
+        bCopy(reinterpret_cast<bMatrix4 *>(&CurrentKey.Matrix), reinterpret_cast<const bMatrix4 *>(&scaledmatrix));
     } else {
         if (cameralink != 0) {
             cameralink = 0;
         }
 
-        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(&m), *reinterpret_cast<Mtx44 *>(&CurrentKey.Matrix));
+        bCopy(reinterpret_cast<bMatrix4 *>(&CurrentKey.Matrix), reinterpret_cast<const bMatrix4 *>(&m));
     }
 
     bMatrix4 t;

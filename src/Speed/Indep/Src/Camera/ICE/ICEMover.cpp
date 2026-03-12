@@ -213,7 +213,7 @@ ICEMover::ICEMover(int nView, ICEAnchor *pCar)
     bViolatesTopology = false;
     fParameter1 = 0.0f;
     ICE::HideOverlay();
-    PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mHybridToWorld));
+    bIdentity(reinterpret_cast<bMatrix4 *>(&mHybridToWorld));
     bCopy(reinterpret_cast<bVector3 *>(&vSmoothCarPos), reinterpret_cast<const bVector3 *>(pCar->GetGeometryPosition()));
     bCopy(reinterpret_cast<bVector3 *>(&vSmoothCarFwd), reinterpret_cast<const bVector3 *>(pCar->GetForwardVector()));
     SetDesired(true, true);
@@ -233,13 +233,13 @@ ICEAnchor::ICEAnchor()
       mIsTouchingGround(true), //
       mIsNosEngaged(false), //
       mNosPercentageLeft(0.0f) {
-    PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mGeomRot));
+    bIdentity(reinterpret_cast<bMatrix4 *>(&mGeomRot));
 }
 
 void ICEAnchor::Update(float dT, const ICE::Matrix4 &orientpos, const ICE::Vector3 &velocity, const ICE::Vector3 &) {
     float dist = bDistBetween(reinterpret_cast<const bVector3 *>(&mGeomPos), reinterpret_cast<const bVector3 *>(&orientpos.v3));
 
-    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(&orientpos), *reinterpret_cast<Mtx44 *>(&mGeomRot));
+    bCopy(reinterpret_cast<bMatrix4 *>(&mGeomRot), reinterpret_cast<const bMatrix4 *>(&orientpos));
     float savedVelMag = mVelMag;
     mGeomRot.v3.z = 0.0f;
     mGeomRot.v3.y = 0.0f;
@@ -587,7 +587,7 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
         pFov->dValDesired = ConvertLensDeltaToFovDelta(pCameraData->fLens[1], f_lens_slope[1]);
 
         if (flush) {
-            PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mHybridToWorld));
+            bIdentity(reinterpret_cast<bMatrix4 *>(&mHybridToWorld));
             bCopy(reinterpret_cast<bMatrix4 *>(&mHybridToWorld),
                   reinterpret_cast<const bMatrix4 *>(pCar->GetGeometryOrientation()),
                   reinterpret_cast<const bVector3 *>(pCar->GetGeometryPosition()));
@@ -886,7 +886,7 @@ void ICEMover::Update(float dT) {
     bViolatesTopology = false;
     SetDesired(false, TheICEManager.RefreshCameraSplines());
 
-    PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mSceneToWorld));
+    bIdentity(reinterpret_cast<bMatrix4 *>(&mSceneToWorld));
 
     if (nSpaceEye == 3 || nSpaceLook == 3) {
         ICEScene *scene = ICE::FindAnimScene();
@@ -894,7 +894,7 @@ void ICEMover::Update(float dT) {
             return;
         }
         bMatrix4 &sceneMat = scene->GetSceneTransformMatrix();
-        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(&sceneMat), *reinterpret_cast<Mtx44 *>(&mSceneToWorld));
+        bCopy(reinterpret_cast<bMatrix4 *>(&mSceneToWorld), reinterpret_cast<const bMatrix4 *>(&sceneMat));
     }
 
     float f_route_param;
@@ -969,7 +969,7 @@ void ICEMover::Update(float dT) {
             vSmoothCarFwd.y = (carFwd->y - vSmoothCarFwd.y) * lerp + vSmoothCarFwd.y;
             vSmoothCarFwd.z = (carFwd->z - vSmoothCarFwd.z) * lerp + vSmoothCarFwd.z;
 
-            PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mCarToWorld));
+            bIdentity(reinterpret_cast<bMatrix4 *>(&mCarToWorld));
             bNormalize(reinterpret_cast<bVector3 *>(&vSmoothCarFwd), reinterpret_cast<const bVector3 *>(&vSmoothCarFwd));
             bCopy(reinterpret_cast<bVector4 *>(&mCarToWorld.v0), reinterpret_cast<const bVector3 *>(&vSmoothCarFwd), 0.0f);
             bCross(reinterpret_cast<bVector3 *>(&mCarToWorld.v1), reinterpret_cast<const bVector3 *>(&mCarToWorld.v2), reinterpret_cast<const bVector3 *>(&mCarToWorld.v0));

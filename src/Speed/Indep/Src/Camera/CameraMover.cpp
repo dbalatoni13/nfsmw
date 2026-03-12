@@ -322,7 +322,7 @@ after_camerainfo:
 void CameraAnchor::Update(float dT, const bMatrix4 &matrix, const bVector3 &velocity, const bVector3 &forward) {
     float dist = bDistBetween(&mGeomPos, reinterpret_cast<const bVector3 *>(&matrix.v3));
 
-    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(&matrix), *reinterpret_cast<Mtx44 *>(&mGeomRot));
+    bCopy(reinterpret_cast<bMatrix4 *>(&mGeomRot), reinterpret_cast<const bMatrix4 *>(&matrix));
     float savedVelMag = mVelMag;
     mGeomRot.v3.z = 0.0f;
     mGeomRot.v3.y = 0.0f;
@@ -1415,7 +1415,7 @@ void RearViewMirrorCameraMover::Update(float dT) {
         m.v3.x = -pCar->GetGeometryPosition()->x;
         m.v3.y = -pCar->GetGeometryPosition()->y;
         m.v3.z = -pCar->GetGeometryPosition()->z;
-        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(pCar->GetGeometryOrientation()), *reinterpret_cast<Mtx44 *>(&CarRotMat));
+        bCopy(reinterpret_cast<bMatrix4 *>(&CarRotMat), reinterpret_cast<const bMatrix4 *>(pCar->GetGeometryOrientation()));
         eTransposeMatrix(&tbod, &CarRotMat);
         eRotateX(&tbod, &tbod, 0x4000);
         eRotateY(&tbod, &tbod, 0x4000);
