@@ -204,7 +204,7 @@ Dump the dwarf of your own implementation of a function after rebuilding the uni
 
 ```sh
 python tools/decomp-workflow.py build -u main/Speed/Indep/SourceLists/zAnim
-dtk dwarf dump build/GOWE69/src/Speed/Indep/SourceLists/zAnim.o -o /tmp/zAnim_check.nothpp
+build/tools/dtk dwarf dump build/GOWE69/src/Speed/Indep/SourceLists/zAnim.o -o /tmp/zAnim_check.nothpp
 ```
 
 Demangle a symbol (you probably won't need this):
