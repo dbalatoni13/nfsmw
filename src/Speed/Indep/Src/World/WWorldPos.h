@@ -52,11 +52,15 @@ struct WWorldPos {
         fYOffset = liftAmount;
     }
 
-    void UNormal(UMath::Vector3 *norm) const {}
+    void UNormal(UMath::Vector3 *norm) const {
+        fFace.GetNormal(norm);
+    }
 
     void UNormal(UMath::Vector4 *norm) const {}
 
-    // const UMath::Vector4 &FacePoint(int ptInd) const {}
+    const UMath::Vector4 &FacePoint(int ptInd) const {
+        return reinterpret_cast<const UMath::Vector4 *>(&fFace)[ptInd];
+    }
 
     const Attrib::Collection *GetSurface() const {
         return fSurface;

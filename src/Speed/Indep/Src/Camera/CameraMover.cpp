@@ -21,7 +21,10 @@ Attrib::Key Attrib::Gen::camerainfo::ClassKey() {
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
+#include "Speed/Indep/Src/World/WWorldMath.h"
 #include "Speed/Indep/bWare/Inc/bFunk.hpp"
+
+int AmIinATunnel(eView *view, int CheckOverPass);
 
 DECLARE_CONTAINER_TYPE(CameraAIAvoidables);
 
@@ -1031,31 +1034,92 @@ int CameraMover::MinGapCars(bMatrix4 *pMatrix, bVector3 *pLook, bVector3 *pForwa
     return ret;
 }
 
-int CameraMover::MinGapTopology(bMatrix4 *pMatrix, bVector3 *pLook) {
-    bMatrix4 inv_matrix;
-    bVector3 eye;
-    bVector3 look_camera_space;
+bool CameraMover::MinGapTopology(bMatrix4 *pMatrix, bVector3 *pCarPos) {
+    bMatrix4 mCameraToWorld;
+    bVector3 vCenter;
+    bVector4 vAdjust;
+    UMath::Vector3 usCamPos;
+    UMath::Vector3 usCarPos;
+    UMath::Vector4 seg[2];
+    bVector3 vCarCameraSpace;
+    bVector2 vProjection;
 
-    eInvertTransformationMatrix(&inv_matrix, pMatrix);
-    eye.x = pMatrix->v3.x;
-    eye.y = pMatrix->v3.y;
-    eye.z = pMatrix->v3.z;
+    eInvertTransformationMatrix(&mCameraToWorld, pMatrix);
+    bVector3 *pCameraPos = reinterpret_cast<bVector3 *>(&mCameraToWorld.v3);
 
-    if (eye.z < pLook->z + 0.5f) {
-        eye.z = pLook->z + 0.5f;
+    bScale(&vCenter, pCameraPos, 0.5f);
+    bScaleAdd(&vCenter, &vCenter, pCarPos, 0.5f);
+
+    vAdjust.x = 0.0f;
+    vAdjust.y = 0.0f;
+    vAdjust.z = 0.0f;
+    vAdjust.w = 1.0f;
+
+    float fRadius = bDistBetween(pCarPos, pCameraPos);
+    fRadius = (fRadius + 1.0f) * 0.5f;
+    if (fRadius > 50.0f) {
+        fRadius = 50.0f;
     }
 
-    eMulVector(&look_camera_space, pMatrix, pLook);
-    if (look_camera_space.z <= 0.0f) {
-        return 0;
+    eUnSwizzleWorldVector(reinterpret_cast<const bVector3 &>(vCenter), reinterpret_cast<bVector3 &>(usCamPos));
+    mCollider->Refresh(usCamPos, fRadius, true);
+
+    eUnSwizzleWorldVector(*pCarPos, reinterpret_cast<bVector3 &>(usCarPos));
+    eUnSwizzleWorldVector(*pCameraPos, reinterpret_cast<bVector3 &>(usCamPos));
+
+    seg[0] = UMath::Vector4Make(usCamPos, 1.0f);
+    seg[1] = UMath::Vector4Make(usCarPos, 1.0f);
+
+    bool bViolates = EnforceMinGapToWalls(mCollider, pCarPos, pCameraPos, &vAdjust);
+
+    pCameraPos->x += vAdjust.x;
+    pCameraPos->y += vAdjust.y;
+    pCameraPos->z += vAdjust.z;
+
+    int inTunnel = AmIinATunnel(&eViews[ViewID], 1);
+
+    eUnSwizzleWorldVector(*pCameraPos, reinterpret_cast<bVector3 &>(usCamPos));
+
+    if (!inTunnel && usCamPos.y < pCarPos->z + 0.5f) {
+        usCamPos.y = pCarPos->z + 0.5f;
     }
 
     {
-        bVector2 projection(look_camera_space.x / look_camera_space.z, look_camera_space.y / look_camera_space.z);
-        IsoProjectionMatrix(pMatrix, &eye, pLook, &projection);
+        WWorldPos temp(0.5f);
+        temp.FindClosestFace(mCollider, usCamPos, true);
+
+        if (temp.OnValidFace()) {
+            UMath::Vector3 norm;
+            temp.UNormal(&norm);
+
+            if (norm.y < 0.0f) {
+                norm.y = -norm.y;
+                norm.x = -norm.x;
+                norm.z = -norm.z;
+            }
+            if (0.95f <= norm.y) {
+                norm.y = 0.95f;
+            }
+
+            float height = WWorldMath::GetPlaneY(norm, UMath::Vector4To3(temp.FacePoint(0)), usCamPos);
+            if (pCameraPos->z < height + 1.0f) {
+                pCameraPos->z = height + 1.0f;
+            }
+            if (inTunnel && (height + 3.0f < pCameraPos->z)) {
+                pCameraPos->z = height + 3.0f;
+            }
+        }
     }
 
-    return 1;
+    eMulVector(&vCarCameraSpace, pMatrix, pCarPos);
+    if (vCarCameraSpace.z <= 0.0f) {
+        return bViolates;
+    }
+
+    vProjection = bVector2(vCarCameraSpace.x / vCarCameraSpace.z, vCarCameraSpace.y / vCarCameraSpace.z);
+    IsoProjectionMatrix(pMatrix, pCameraPos, pCarPos, &vProjection);
+
+    return bViolates;
 }
 
 void CameraMover::FovCubicInit(tCubic1D *cubic) {

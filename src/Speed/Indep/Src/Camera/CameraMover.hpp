@@ -386,7 +386,7 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
     void IsoProjectionMatrix(bMatrix4 *pMatrix, bVector3 *pEye, bVector3 *pLook, bVector2 *pProjection);
     float AdjustHeightAroundCar(const bVector3 *car_pos, bVector3 *pEye, bVector3 *pForward);
     int MinGapCars(bMatrix4 *pMatrix, bVector3 *pLook, bVector3 *pForward);
-    int MinGapTopology(bMatrix4 *pMatrix, bVector3 *pLook);
+    bool MinGapTopology(bMatrix4 *pMatrix, bVector3 *pCarPos);
     bool EnforceMinGapToWalls(WCollider *collider, bVector3 *pCarPos, bVector3 *pCameraPos, bVector4 *pAdjust);
     bVector3 *DutchAroundCar(bVector3 *pPos, bVector3 *pVelocity);
     void FovCubicInit(tCubic1D *cubic);
