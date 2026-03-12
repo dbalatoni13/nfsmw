@@ -801,7 +801,7 @@ void UIMemcardBase::NotificationMessage(unsigned long msg, FEObject* obj, unsign
         break;
     case 0xc407210:
         m_bInButtonAnimation = false;
-        gMemcardSetup.mLastController = param2;
+        gMemcardSetup.mLastController = param1;
         HandleButtonPressed(0xc407210, obj, param1, param2, false);
         break;
     case 0x54b3ac6c:
