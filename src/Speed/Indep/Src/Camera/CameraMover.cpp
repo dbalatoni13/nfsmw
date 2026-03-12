@@ -812,7 +812,7 @@ void CameraMover::TerrainVelocityNoise(bMatrix4 *world_to_camera, CameraAnchor *
     float f_terrain_magnitude = f_terrain_scale * v_speed_terrain_freq.y * f_road_noise_amplitude;
     float f_terrain_frequency = v_speed_terrain_freq.w * f_road_noise_grid_spacing_inverse;
 
-    if (!RenderCarPOV()) {
+    if (!OutsidePOV()) {
         f_speed_magnitude *= 0.25f;
         f_terrain_magnitude *= 0.25f;
     }
