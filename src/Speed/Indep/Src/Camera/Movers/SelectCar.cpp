@@ -11,7 +11,7 @@ static float kSelectCarLowerOrbitV = 94.5f;
 static float kSelectCarRadiusSpeedScale = 0.125f;
 static float kSelectCarUpperRadius = 6.65f;
 static float kSelectCarLowerRadius = 4.65f;
-static float kSelectCarWrapAngle = 360.0f;
+static const float kSelectCarWrapAngle = 360.0f;
 
 SelectCarCameraMover::~SelectCarCameraMover() {}
 

@@ -28,12 +28,12 @@ extern bool gGameBreakerCamera;
 void SetNewSndCamAction(Attrib::StringKey mode, EVIEW_ID viewID);
 
 static float kJumpTimeMultiplier = 2.0f;
-static float kEndJumpThreshold = 0.0f;
-static float kEndJumpValue = -1.0f;
-static float kEndPursuitThreshold = 0.0f;
-static float kEndPursuitValue = -1.0f;
-static float kJumpSpeedHigh = 100.0f;
-static float kJumpSpeedLow = 80.0f;
+static const float kEndJumpThreshold = 0.0f;
+static const float kEndJumpValue = -1.0f;
+static const float kEndPursuitThreshold = 0.0f;
+static const float kEndPursuitValue = -1.0f;
+static const float kJumpSpeedHigh = 100.0f;
+static const float kJumpSpeedLow = 80.0f;
 static const float kJumpDuration = 5.0f;
 
 static const float Tweak_JumpCamHighestAirTresh[2] = {2.5f, 1.8f};
