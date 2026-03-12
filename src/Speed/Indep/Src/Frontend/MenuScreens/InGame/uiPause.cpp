@@ -184,30 +184,27 @@ void PauseMenu::Setup() {
 }
 
 void PauseMenu::SetupOptions() {
-    FEngSetInvisible(GetPackageName(), 0x812A09D4);
+    if (mCalledFromPostRace) {
+        FEngSetInvisible(GetPackageName(), 0x812A09D4);
+    }
     if (mCalledFromPostRace) {
         if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
-            if (FEDatabase->IsDDay()) {
-                AddOption(new pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
-                AddOption(new pm_QuitRaceToFE(0x4C9E34E6, 0x690E9B7C, 0));
+            if (FEDatabase->IsDDay() || FEDatabase->IsFinalEpicChase()) {
+                AddOption(new("", 0) pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
+                AddOption(new("", 0) pm_QuitRaceToFE(0x4C9E34E6, 0x690E9B7C, 0));
             } else {
-                if (!FEDatabase->IsFinalEpicChase()) {
-                    AddOption(new pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
-                    AddOption(new pm_QuitRaceToFE(0x4C9E34E6, 0x3C14C420, 0));
-                    AddOption(new pm_QuitRaceToFreeRoam(0x56FFBD2C, 0x9DC599B0, 0));
-                } else {
-                    AddOption(new pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
-                    AddOption(new pm_QuitRaceToFE(0x4C9E34E6, 0x690E9B7C, 0));
-                }
+                AddOption(new("", 0) pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
+                AddOption(new("", 0) pm_QuitRaceToFE(0x4C9E34E6, 0x3C14C420, 0));
+                AddOption(new("", 0) pm_QuitRaceToFreeRoam(0x56FFBD2C, 0x9DC599B0, 0));
             }
         } else {
-            AddOption(new pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
+            AddOption(new("", 0) pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
             GRaceParameters* pParams = GRaceStatus::Get().GetRaceParameters();
-            if (pParams == nullptr || !pParams->GetIsChallengeSeriesRace()) {
-                pm_QuitQuickRace* opt = new pm_QuitQuickRace(0x4C9E34E6, 0x4349998B, 0);
+            if (pParams != nullptr && pParams->GetIsChallengeSeriesRace()) {
+                pm_QuitMainMenu* opt = new("", 0) pm_QuitMainMenu(0x4C9E34E6, 0xE950B7AF, 0);
                 AddOption(opt);
             } else {
-                pm_QuitMainMenu* opt = new pm_QuitMainMenu(0x4C9E34E6, 0xE950B7AF, 0);
+                pm_QuitQuickRace* opt = new("", 0) pm_QuitQuickRace(0x4C9E34E6, 0x4349998B, 0);
                 AddOption(opt);
             }
         }
@@ -216,16 +213,16 @@ void PauseMenu::SetupOptions() {
     if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
         if (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming) {
             if (FEDatabase->IsDDay()) {
-                AddOption(new pm_ResumeFreeRoam(0x12BB5EA2, 0x01BD185C, 0));
-                AddOption(new pm_QuitRaceToFE(0x4C9E34E6, 0x690E9B7C, 0));
-                AddOption(new pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
+                AddOption(new("", 0) pm_ResumeFreeRoam(0x12BB5EA2, 0x01BD185C, 0));
+                AddOption(new("", 0) pm_QuitRaceToFE(0x4C9E34E6, 0x690E9B7C, 0));
+                AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
             } else {
-                AddOption(new pm_ResumeFreeRoam(0x12BB5EA2, 0x01BD185C, 0));
-                AddOption(new pm_QuitRaceToFE(0x4C9E34E6, 0x690E9B7C, 0));
-                pm_SwitchToTuning* tuning = new pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
+                AddOption(new("", 0) pm_ResumeFreeRoam(0x12BB5EA2, 0x01BD185C, 0));
+                AddOption(new("", 0) pm_QuitRaceToFE(0x4C9E34E6, 0x690E9B7C, 0));
+                pm_SwitchToTuning* tuning = new("", 0) pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
                 tuning->Locked = !IsTuningAvailable();
                 AddOption(tuning);
-                AddOption(new pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
+                AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
             }
         } else {
             GRaceParameters* pParams = GRaceStatus::Get().GetRaceParameters();
@@ -234,70 +231,69 @@ void PauseMenu::SetupOptions() {
                 isEpicPursuit = true;
             }
             if (FEDatabase->IsDDay()) {
-                AddOption(new pm_ResumeRace(0x12BB5EA2, 0xDED357E7, 0));
-                AddOption(new pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
-                AddOption(new pm_QuitRaceToFE(0x4C9E34E6, 0x690E9B7C, 0));
-                AddOption(new pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
+                AddOption(new("", 0) pm_ResumeRace(0x12BB5EA2, 0xDED357E7, 0));
+                AddOption(new("", 0) pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
+                AddOption(new("", 0) pm_QuitRaceToFE(0x4C9E34E6, 0x690E9B7C, 0));
+                AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
             } else if (FEDatabase->IsFinalEpicChase() || isEpicPursuit) {
-                AddOption(new pm_ResumeRace(0x12BB5EA2, 0xDED357E7, 0));
-                AddOption(new pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
-                AddOption(new pm_QuitRaceToFE(0x4C9E34E6, 0x690E9B7C, 0));
-                pm_SwitchToTuning* tuning = new pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
+                AddOption(new("", 0) pm_ResumeRace(0x12BB5EA2, 0xDED357E7, 0));
+                AddOption(new("", 0) pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
+                AddOption(new("", 0) pm_QuitRaceToFE(0x4C9E34E6, 0x690E9B7C, 0));
+                pm_SwitchToTuning* tuning = new("", 0) pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
                 tuning->Locked = !IsTuningAvailable();
                 AddOption(tuning);
-                AddOption(new pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
+                AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
             } else {
                 if (PostRacePursuitScreen::GetPursuitData().mPursuitIsActive == false) {
-                    AddOption(new pm_ResumeRace(0x12BB5EA2, 0xDED357E7, 0));
-                    AddOption(new pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
-                    AddOption(new pm_QuitRaceToFE(0x4C9E34E6, 0x3C14C420, 0));
-                    AddOption(new pm_QuitRaceToFreeRoam(0x56FFBD2C, 0x9DC599B0, 0));
+                    AddOption(new("", 0) pm_ResumeRace(0x12BB5EA2, 0xDED357E7, 0));
+                    AddOption(new("", 0) pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
+                    AddOption(new("", 0) pm_QuitRaceToFE(0x4C9E34E6, 0x3C14C420, 0));
+                    AddOption(new("", 0) pm_QuitRaceToFreeRoam(0x56FFBD2C, 0x9DC599B0, 0));
                     pm_SwitchToTuning* tuning =
-                        new pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
+                        new("", 0) pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
                     tuning->Locked = !IsTuningAvailable();
                     AddOption(tuning);
-                    AddOption(new pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
+                    AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
                 } else {
-                    AddOption(new pm_ResumeFreeRoam(0x12BB5EA2, 0x01BD185C, 0));
+                    AddOption(new("", 0) pm_ResumeFreeRoam(0x12BB5EA2, 0x01BD185C, 0));
                     pm_SwitchToTuning* tuning =
-                        new pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
+                        new("", 0) pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
                     tuning->Locked = !IsTuningAvailable();
                     AddOption(tuning);
-                    AddOption(new pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
+                    AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
                 }
             }
         }
     } else {
         if (Sim::GetUserMode() != 1) {
-            AddOption(new pm_ResumeRace(0x12BB5EA2, 0xDED357E7, 0));
-            AddOption(new pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
+            AddOption(new("", 0) pm_ResumeRace(0x12BB5EA2, 0xDED357E7, 0));
+            AddOption(new("", 0) pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
             GRaceParameters* pParams = GRaceStatus::Get().GetRaceParameters();
-            if (pParams == nullptr || !pParams->GetIsChallengeSeriesRace()) {
-                pm_QuitQuickRace* opt = new pm_QuitQuickRace(0x4C9E34E6, 0x4349998B, 0);
+            if (pParams != nullptr && pParams->GetIsChallengeSeriesRace()) {
+                pm_QuitMainMenu* opt = new("", 0) pm_QuitMainMenu(0x4C9E34E6, 0xE950B7AF, 0);
                 AddOption(opt);
             } else {
-                pm_QuitMainMenu* opt = new pm_QuitMainMenu(0x4C9E34E6, 0xE950B7AF, 0);
+                pm_QuitQuickRace* opt = new("", 0) pm_QuitQuickRace(0x4C9E34E6, 0x4349998B, 0);
                 AddOption(opt);
             }
             if (!GRaceStatus::IsTollboothRace() &&
                 (pParams == nullptr || !pParams->GetIsChallengeSeriesRace())) {
-                pm_SwitchToTuning* tuning = new pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
+                pm_SwitchToTuning* tuning = new("", 0) pm_SwitchToTuning(0x483238FD, 0x6A3672A2, 0);
                 tuning->Locked = !IsTuningAvailable();
                 AddOption(tuning);
             }
-            AddOption(new pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
+            AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
             return;
         }
-        AddOption(new pm_ResumeRace(0x12BB5EA2, 0xDED357E7, 0));
-        AddOption(new pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
-        AddOption(new pm_QuitQuickRace(0x4C9E34E6, 0x4349998B, 0));
-        AddOption(new pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
+        AddOption(new("", 0) pm_ResumeRace(0x12BB5EA2, 0xDED357E7, 0));
+        AddOption(new("", 0) pm_RestartRace(0xB295A6B6, 0xF893AFA1, 0));
+        AddOption(new("", 0) pm_QuitQuickRace(0x4C9E34E6, 0x4349998B, 0));
+        AddOption(new("", 0) pm_SwitchToOptions(0x520DE4E3, 0x2B5A03A8, 0));
     }
 }
 
 void PauseMenu::SetupOnlineOptions() {
-    pm_QuitRaceToFE* opt = new pm_QuitRaceToFE(0x4C9E34E6, 0xF95320B8, 0);
-    opt->SetReactImmediately(true);
+    pm_QuitRaceToFE* opt = new("", 0) pm_QuitRaceToFE(0x4C9E34E6, 0xF95320B8, 0);
     AddOption(opt);
 }
 

@@ -62,16 +62,14 @@ void uiRapSheetVD::Setup() {
             }
         }
     }
-    int i = numCars;
-    while (i < GetWidth() * GetHeight()) {
-        i++;
-        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_CAR_%d", i), GetLocalizedString(0x73AF0386));
-        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE_%d", i), "");
-        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE2_%d", i), "");
-        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE3_%d", i), "");
-        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE4_%d", i), "");
-        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE5_%d", i), "");
-        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE6_%d", i), "");
+    for (int i = numCars; i < GetWidth() * GetHeight(); i++) {
+        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_CAR_%d", i + 1), GetLocalizedString(0x73AF0386));
+        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE_%d", i + 1), "");
+        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE2_%d", i + 1), "");
+        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE3_%d", i + 1), "");
+        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE4_%d", i + 1), "");
+        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE5_%d", i + 1), "");
+        FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE6_%d", i + 1), "");
     }
     SetInitialPosition(0);
     RefreshHeader();
