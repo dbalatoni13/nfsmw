@@ -184,12 +184,12 @@ bool CubicCameraMover::IsUnderVehicle() {
             continue;
         }
 
-        IRigidBody *irb = isimable->GetRigidBody();
-        if (irb == nullptr) {
+        if (isimable->GetWorldID() == pCar->GetWorldID()) {
             continue;
         }
 
-        if (isimable->GetWorldID() == pCar->GetWorldID()) {
+        IRigidBody *irb = isimable->GetRigidBody();
+        if (irb == nullptr) {
             continue;
         }
 
