@@ -554,12 +554,7 @@ done:;
 }
 
 void PVehicle::OnTaskSimulate(float dT) {
-    UCrc32 mechDraw(BEHAVIOR_MECHANIC_DRAW);
-    bool visible = false;
-    if (IsBehaviorActive(mechDraw) && mRenderable != nullptr && mRenderable->IsRenderable()) {
-        visible = true;
-    }
-    if (visible) {
+    if (IsBehaviorActive(UCrc32(BEHAVIOR_MECHANIC_DRAW)) && mRenderable != nullptr && mRenderable->IsRenderable()) {
         if (!mRenderable->InView()) {
             mOffScreenTime = mOffScreenTime + dT;
             mOnScreenTime = 0.0f;
@@ -590,12 +585,8 @@ void PVehicle::OnTaskSimulate(float dT) {
         CheckOffWorld();
     }
     if (mPhysicsMode == PHYSICS_MODE_SIMULATED) {
-        UCrc32 mechSusp(BEHAVIOR_MECHANIC_SUSPENSION);
-        bool sleeping = false;
-        if (mCollisionBody->IsSleeping() && IsStaging()) {
-            sleeping = true;
-        }
-        PauseBehavior(mechSusp, sleeping);
+        PauseBehavior(UCrc32(BEHAVIOR_MECHANIC_SUSPENSION),
+            mCollisionBody->IsSleeping() && IsDestroyed());
         if (mTranny != nullptr) {
             if (!mTranny->IsGearChanging()) {
                 mSpeedometer = mTranny->GetSpeedometer();
@@ -626,7 +617,7 @@ void PVehicle::OnTaskSimulate(float dT) {
                     if (!mTranny->IsGearChanging()) {
                         mPerfectLaunch.Tick(dT);
                     } else {
-                        if (mDriverClass == DRIVER_HUMAN) {
+                        if (mDriverStyle == STYLE_DRAG) {
                             mPerfectLaunch.Clear();
                         }
                     }
