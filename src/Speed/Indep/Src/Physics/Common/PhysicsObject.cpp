@@ -374,25 +374,26 @@ Behavior *PhysicsObject::LoadBehavior(const UCrc32 &mechanic, const UCrc32 &beha
 }
 
 bool PhysicsObject::Attach(UTL::COM::IUnknown *object) {
-    if (mAttachments != nullptr) {
-        if (!UTL::COM::ComparePtr(mEntity, object)) {
-            Sim::IEntity *e = nullptr;
-            object->QueryInterface(&e);
-            if (e != nullptr) {
-                if (mEntity != nullptr) {
-                    Detach(mEntity);
-                    mEntity = nullptr;
-                    mPlayer = nullptr;
-                }
-                mEntity = e;
-                IPlayer *p = nullptr;
-                e->QueryInterface(&p);
-                mPlayer = p;
-            }
-            return mAttachments->Attach(object);
-        }
+    if (mAttachments == nullptr) {
+        return false;
     }
-    return false;
+    if (UTL::COM::ComparePtr(mEntity, object)) {
+        return false;
+    }
+    Sim::IEntity *e = nullptr;
+    object->QueryInterface(&e);
+    if (e != nullptr) {
+        if (mEntity != nullptr) {
+            Detach(mEntity);
+            mEntity = nullptr;
+            mPlayer = nullptr;
+        }
+        mEntity = e;
+        IPlayer *p = nullptr;
+        e->QueryInterface(&p);
+        mPlayer = p;
+    }
+    return mAttachments->Attach(object);
 }
 
 void PhysicsObject::DetachAll() {
