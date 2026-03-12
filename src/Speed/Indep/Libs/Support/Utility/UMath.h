@@ -410,7 +410,7 @@ inline int Clamp(const int a, const int amin, const int amax) {
 }
 
 inline float Clamp(const float a, const float amin, const float amax) {
-    return VU0_floatmax(amin, VU0_floatmin(a, amax));
+    return bClamp(a, amin, amax);
 }
 
 inline float Abs(const float a) {

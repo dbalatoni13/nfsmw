@@ -184,54 +184,25 @@ float ICETrack::GetParameter() {
 }
 
 ICEData *ICETrack::GetCameraData(float *p_start, float *p_end, float *p_current) {
-    float current = GetParameter();
+    float f_param = GetParameter();
 
-    if (current < 0.0f || 1.0f < current) {
+    if (f_param != UMath::Clamp(f_param, 0.0f, 1.0f)) {
         return 0;
     }
 
-    int i = GetKeyNumber(current);
+    int key = GetKeyNumber(f_param);
 
     if (p_current != 0) {
-        *p_current = current;
+        *p_current = f_param;
     }
     if (p_start != 0) {
-        float start = 0.0f;
-
-        if (i > -1 && i < NumKeys) {
-            start = Keys[i].fParameter;
-        }
-
-        *p_start = start;
+        *p_start = GetParameter(key);
     }
     if (p_end != 0) {
-        int next = i + 1;
-        float end = 1.0f;
-
-        if (next > -1 && next < NumKeys) {
-            end = Keys[next].fParameter;
-        }
-
-        *p_end = end;
+        *p_end = GetParameter(key + 1);
     }
 
-    int clamped = i;
-
-    if (clamped < 0) {
-        clamped = 0;
-    }
-
-    int max = NumKeys - 1;
-
-    if (max < clamped) {
-        clamped = max;
-    }
-
-    if (i == clamped) {
-        return &Keys[i];
-    }
-
-    return 0;
+    return GetKey(key);
 }
 
 void ICEShakeData::PlatEndianSwap() {

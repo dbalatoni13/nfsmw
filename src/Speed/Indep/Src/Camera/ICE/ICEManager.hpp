@@ -66,6 +66,11 @@ struct ICETrack : public bTNode<ICETrack> {
         return static_cast<int>(data - Keys);
     }
     float GetParameter();
+    float GetParameter(int n) {
+        if (n < 0) return 0.0f;
+        if (n >= NumKeys) return 1.0f;
+        return Keys[n].fParameter;
+    }
     struct ICEData *GetCameraData(float *p_start, float *p_end, float *p_current);
 
     int GetNumKeys() {
