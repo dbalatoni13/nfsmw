@@ -130,11 +130,13 @@ int ICETrack::GetContext() {
 
 int ICETrack::GetKeyNumber(float f_param) {
     int i = NumKeys - 1;
-    float *parameters = &Keys[0].fParameter;
 
     if (i < 1) {
         return i;
     }
+
+    float *parameters = &Keys[0].fParameter;
+
     if (parameters[i * 33] <= f_param) {
         return i;
     }
