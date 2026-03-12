@@ -227,6 +227,12 @@ class CareerSettings {
     bool HasRapSheet() {
         return SpecialFlags & 0x10;
     }
+    void SetHasRapSheet() {
+        SpecialFlags |= 0x10;
+    }
+    void SetHasDoneCareerIntro() {
+        SpecialFlags |= 0x20;
+    }
     bool HasBeatenCareer() {
         return SpecialFlags & 0x4000;
     }
