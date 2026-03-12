@@ -99,9 +99,6 @@ void UIMemcardBoot::NotificationMessage(unsigned long msg, FEObject* obj, unsign
                                          unsigned long param2) {
     UIMemcardBase::NotificationMessage(msg, obj, param1, param2);
     switch (msg) {
-    case 0x461a18ee:
-        ChangeToNextBootFlowScreen__15BootFlowManageri(BootFlowManager::Get(), 0xff);
-        break;
     case 0x35f8620b:
         HideAllButtons();
         MemoryCard::GetInstance()->ShowMessages(true);
@@ -114,9 +111,12 @@ void UIMemcardBoot::NotificationMessage(unsigned long msg, FEObject* obj, unsign
         SetScreenVisible(true, 0);
         m_bVisible = true;
         break;
+    case 0x461a18ee:
+        MemoryCard::GetInstance()->StartBootSequence();
+        // fall through
     case 0x8867412d:
         ChangeToNextBootFlowScreen__15BootFlowManageri(BootFlowManager::Get(), 0xff);
-        MemoryCard::GetInstance()->m_bHUDLoaded = false;
+        MemoryCard::GetInstance()->m_bInitialized = false;
         break;
     }
 }

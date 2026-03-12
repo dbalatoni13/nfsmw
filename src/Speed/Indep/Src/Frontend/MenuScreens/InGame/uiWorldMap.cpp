@@ -151,13 +151,11 @@ inline ItemTypeToggle::ItemTypeToggle(unsigned int name_hash, eWorldMapItemType 
 
 void CopItem::Draw() {
     if (!bHidden) {
-        unsigned int color;
+        unsigned int color = 0xffcccccc;
         if (FlashTimer < 3) {
             color = 0xff0000ff;
         } else if (FlashTimer - 5U < 2) {
             color = 0xffa00000;
-        } else {
-            color = 0xffcccccc;
         }
         FEngSetColor(pIcon, color);
         FlashTimer = FlashTimer + 1;
@@ -183,7 +181,7 @@ void ItemTypeToggle::Act(const char* parent_pkg, unsigned int data) {
         bVisibility ^= 1;
         FEDatabase->GetGameplaySettings()->SetMapItem(GetType(), bVisibility);
         g_pEAXSound->PlayUISoundFX(static_cast< eMenuSoundTriggers >(2));
-        Position();
+        Draw();
     }
 }
 
