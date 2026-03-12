@@ -48,6 +48,7 @@ inline void *operator new[](size_t size, const char *file, int line) {
 #endif
 }
 
+#ifdef _MSC_VER
 inline void operator delete(void *ptr, const char *, int) {
 #if MILESTONE_OPT
     bFree(ptr);
@@ -63,6 +64,7 @@ inline void operator delete[](void *ptr, const char *, int) {
     delete[] reinterpret_cast<char *>(ptr);
 #endif
 }
+#endif
 
 void bEndianSwap64(void *value);
 void bEndianSwap32(void *value);

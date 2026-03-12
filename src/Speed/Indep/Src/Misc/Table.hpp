@@ -236,7 +236,9 @@ struct PidError {
         return gFastMem.Alloc(size, name);
     }
 
+#ifdef _MSC_VER
     void operator delete(void *mem, const char *name) {}
+#endif
 
     // void operator delete(void *mem, unsigned int size, const char *name) {}
 
