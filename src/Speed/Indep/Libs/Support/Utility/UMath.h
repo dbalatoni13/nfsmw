@@ -67,7 +67,11 @@ inline float DistanceSquare(const Vector3 &a, const Vector3 &b) {
 }
 
 inline float DistanceSquarexz(const Vector3 &a, const Vector3 &b) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    return VU0_v3distancesquare(a, b);
+#else
     return VU0_v3distancesquarexz(a, b);
+#endif
 }
 
 inline void Clear(Vector3 &r) {

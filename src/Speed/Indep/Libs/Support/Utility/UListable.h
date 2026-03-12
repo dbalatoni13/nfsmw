@@ -21,6 +21,20 @@ template <typename T, int U> class Listable {
     typedef value_type *pointer;
     typedef value_type const *const_pointer;
 
+#if MILESTONE_OPT
+    class List : public FixedVector<pointer, U> {
+      public:
+        typedef T value_type;
+        typedef value_type *pointer;
+        typedef value_type const *const_pointer;
+
+        // List(const List &);
+        List() {}
+        ~List() override {}
+
+        // List &operator=(List &);
+    };
+#else
     class List : public _Storage<pointer, U> {
       public:
         typedef T value_type;
@@ -33,6 +47,7 @@ template <typename T, int U> class Listable {
 
         // List &operator=(List &);
     };
+#endif
 
     typedef void (*ForEachFunc)(pointer);
     typedef bool (*ComparisonFunc)(pointer, pointer);
