@@ -5,8 +5,8 @@ bQuaternion bIdentityQuaternion(0.0f, 0.0f, 0.0f, 1.0f);
 // UNSOLVED
 bQuaternion &bQuaternion::Slerp(bQuaternion &r, const bQuaternion &target, float t) const {
     float cos_theta = bDot(reinterpret_cast<const bVector4 *>(this), reinterpret_cast<const bVector4 *>(&target));
-    float scale1 = 1.0f - t;
-    float scale2 = t;
+    float scale1;
+    float scale2;
 
     if ((1.0f - bAbs(cos_theta)) > 0.0001f) {
         unsigned short theta = bACos(bAbs(cos_theta));
@@ -16,6 +16,9 @@ bQuaternion &bQuaternion::Slerp(bQuaternion &r, const bQuaternion &target, float
 
         scale1 = bSin(a1) / sin_theta;
         scale2 = bSin(a2) / sin_theta;
+    } else {
+        scale1 = 1.0f - t;
+        scale2 = t;
     }
 
     if (cos_theta < 0.0f) {
@@ -25,10 +28,7 @@ bQuaternion &bQuaternion::Slerp(bQuaternion &r, const bQuaternion &target, float
     bQuaternion qtemp;
     bScale(reinterpret_cast<bVector4 *>(&qtemp), reinterpret_cast<const bVector4 *>(this), scale1);
     bScaleAdd(reinterpret_cast<bVector4 *>(&qtemp), reinterpret_cast<const bVector4 *>(&qtemp), reinterpret_cast<const bVector4 *>(&target), scale2);
-    r.x = qtemp.x;
-    r.y = qtemp.y;
-    r.z = qtemp.z;
-    r.w = qtemp.w;
+    r = qtemp;
     return r;
 }
 
