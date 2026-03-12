@@ -1,3 +1,6 @@
+#ifndef _LZCOMPRESS
+#define _LZCOMPRESS
+
 #include "types.h"
 
 // total size: 0x10
@@ -13,3 +16,6 @@ class LZHeader {
 
 int32 LZDecompress(uint8 *pSrc, uint8 *pDst);
 int LZValidHeader(LZHeader *header);
+unsigned int LZGetMaxCompressedSize(unsigned int source_data_size);
+
+#endif

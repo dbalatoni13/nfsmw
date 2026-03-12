@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
 enum bFileOpenMode {
     BOPEN_MODE_APPEND = 2,
@@ -13,13 +14,74 @@ enum bFileOpenMode {
     BOPEN_MODE_READONLY = 1,
 };
 
+// total size: 0x14
+struct MemoryFileEntry {
+    unsigned int Hash;       // offset 0x0, size 0x4
+    int Offset;              // offset 0x4, size 0x4
+    int FileSize;            // offset 0x8, size 0x4
+    int MemorySize;          // offset 0xC, size 0x4
+    unsigned char *Data;     // offset 0x10, size 0x4
+};
+
+// total size: 0x28010
+struct MemoryFile : public bTNode<MemoryFile> {
+    unsigned int Magic;                      // offset 0x8, size 0x4
+    int NumFileEntries;                      // offset 0xC, size 0x4
+    MemoryFileEntry FileEntries[8192];       // offset 0x10, size 0x28000
+};
+
+// total size: 0x18
+struct CachedRealFileHandle : public bTNode<CachedRealFileHandle> {
+    static void *operator new(unsigned int size) {
+        return CachedRealFileHandleSlotPool->Malloc();
+    }
+
+    static void operator delete(void *ptr) {
+        CachedRealFileHandleSlotPool->Free(ptr);
+    }
+
+    CachedRealFileHandle(const char *filename, int file_handle, int file_size)
+        : NumReferences(0), //
+          FileHandle(file_handle), //
+          FileSize(file_size), //
+          Filename(filename) {}
+
+    ~CachedRealFileHandle() {}
+
+    int GetFileHandle() { return FileHandle; }
+    int GetFileSize() { return FileSize; }
+    void AddReference() { NumReferences++; }
+    void RemoveReference() { NumReferences--; }
+
+    static CachedRealFileHandle *FindHandle(const char *filename);
+    static CachedRealFileHandle *AddHandle(const char *filename, int file_handle, int file_size);
+    static bool RemoveUnusedHandle();
+    static void FlushUnusedHandle(const char *filename);
+    static void FlushUnusedHandles(bool print_warning);
+
+    static int NumInstances;
+    static bTList<CachedRealFileHandle> HandleList;
+    static SlotPool *CachedRealFileHandleSlotPool;
+
+    int NumReferences;       // offset 0x8, size 0x4
+    int FileHandle;          // offset 0xC, size 0x4
+    int FileSize;            // offset 0x10, size 0x4
+    const char *Filename;    // offset 0x14, size 0x4
+};
+
 struct bFile : public bTNode<bFile> {
     // total size: 0x38
+    bFile(const char *filename, bFileOpenMode open_mode);
+
+    void OpenLowLevel();
+    void MaybeAddCachedHandle();
+    void ReadAsync(void *buf, int num_bytes, void (*callback)(void *), void *callback_param);
+
     bFileOpenMode OpenMode;                             // offset 0x8, size 0x4
     int FileSize;                                       // offset 0xC, size 0x4
     int Position;                                       // offset 0x10, size 0x4
     int FileHandle;                                     // offset 0x14, size 0x4
-    struct CachedRealFileHandle *pCachedRealFileHandle; // offset 0x18, size 0x4
+    CachedRealFileHandle *pCachedRealFileHandle;        // offset 0x18, size 0x4
     int CloseAfterCallbacks;                            // offset 0x1C, size 0x4
     int NumPendingCallbacks;                            // offset 0x20, size 0x4
     const char *Filename;                               // offset 0x24, size 0x4
@@ -31,8 +93,8 @@ struct bFile : public bTNode<bFile> {
 
 bFile *bOpen(const char *filename, int open_mode, int warn_if_cant_open);
 void bClose(bFile *f);
-void bRead(struct bFile *f, void *buf, int numbytes);
-void bSeek(struct bFile *f, int position, int mode);
+void bRead(bFile *f, void *buf, int numbytes);
+void bSeek(bFile *f, int position, int mode);
 int bFileSize(bFile *f);
 int bFileSize(const char *filename);
 void bAppendToFile(const char *filename, void *buf, int num_bytes);
@@ -40,11 +102,19 @@ void *bGetFile(const char *filename, int *size, int allocation_params);
 int bFileExists(const char *f);
 int bFPrintf(bFile *file, const char *fmt, ...);
 void bFileFlushCachedFiles();
+void bFileFlushCacheFile(const char *filename);
+unsigned int bFileGetFilenameHash(const char *filename);
+int GetRealFileOpenFlags(bFileOpenMode open_mode);
+void AddMemoryFile(void *pmemory_file);
+void RemoveMemoryFile(void *pmemory_file);
+MemoryFileEntry *FindMemoryFileEntry(const char *filename);
+void AsyncCloseFileCallback(int fop, int status, void *userdata);
+void AsyncCloseFile(int file_handle);
 
 void ServiceFileStats();
-
+bool bIsMainThread();
 void bThreadYield(int a);
-
 void bSyncTaskRun();
+void bFileRunTimingTest();
 
 #endif
