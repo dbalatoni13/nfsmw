@@ -81,6 +81,15 @@ enum eBANK_SLOT_TYPE {
     eBANK_SLOT_MAX_NUM = 4
 };
 
+enum eEVTSYS {
+    EVTSYS_MAIN = 0,
+    EVTSYS_FE = 1,
+};
+
+enum eSNDDATAPATH {
+    SNDPATH_EVTSYS = 0,
+};
+
 struct stBankSlot {
     /* 0x00 */ eBANK_SLOT_TYPE Type;
     /* 0x04 */ int BANKmemLocation;
@@ -107,6 +116,7 @@ struct stBankSlot {
 
 struct EAXAemsManager : public AudioMemBase {
     static int m_RequiredSlots[4];
+    static int m_SlotSizes[4][2];
 
     /* 0x004 */ char _pad0[0x9c - 0x4];
     /* 0x09c */ int m_nCurLoadedBankIndex;
@@ -127,6 +137,10 @@ struct EAXAemsManager : public AudioMemBase {
     /* 0x128 */ char _pad0x128[0x4];
     /* 0x12c */ int m_IsWaitingForFileCB;
 
+    EAXAemsManager();
+    virtual ~EAXAemsManager();
+    void Init();
+    int AddEventSystem(eEVTSYS eESIndex, eSNDDATAPATH eSDP);
     bool AreResourceLoadsPending();
     void *GetCallbackEventSys();
     static void EvtSysLoadCallback(int param, int error_status);
@@ -137,11 +151,14 @@ struct EAXAemsManager : public AudioMemBase {
     void CheckForCompleteAsyncLoad();
     void ResolvePendingAsyncLoads();
     void InitSPUram();
+    void InitializeSlots(bool bDoPFSlot);
+    void RegisterSlots(eBANK_SLOT_TYPE Type, int NumSlots, int SizePerSlotSPU, int SizePerSlotMainMem, bool bDoPFSlot);
     void ResetBankLoadParams();
     void DestroySlots(bool bDoPFSlot);
     int IsAssetInList(Attrib::StringKey filename);
     int IsAssetLoaded(Attrib::StringKey filename);
     void CompleteAsyncLoad();
+    void ResolveCurrentDataMemory();
 };
 
 struct CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<CarSoundConn, 10> {
