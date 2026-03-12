@@ -1,5 +1,7 @@
 #include "Speed/Indep/Src/Physics/PVehicle.h"
 
+#include <algorithm>
+
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/Camera/CameraAI.hpp"
 #include "Speed/Indep/Src/FE/FECustomizationRecord.h"
@@ -47,6 +49,7 @@ class CarPartDatabase { public: CarType GetCarType(unsigned int hash); };
 extern CarPartDatabase CarPartDB;
 bool CarInfo_IsSkinned(CarType type);
 unsigned int CarInfo_GetResourceCost(CarType type, bool is_player, bool split_screen);
+unsigned int CarInfo_GetResourcePool(bool needs_compositing);
 bool IsSplitScreen();
 PresetCar *FindFEPresetCar(unsigned int hash);
 int GetMikeMannBuild();
@@ -1403,23 +1406,228 @@ ISimable *PVehicle::Construct(Sim::Param params) {
 }
 
 bool PVehicle::MakeRoom(IVehicleCache *whosasking, const UTL::Std::list<Resource, _type_list> &resources) {
+    CleanResources();
+
+    unsigned int newinstances = resources.size();
+
     unsigned int newresources = 0;
     bool needs_compositing = false;
     for (UTL::Std::list<Resource, _type_list>::const_iterator res_iter = resources.begin();
-         res_iter != resources.end(); ++res_iter) {
+         res_iter != resources.end(); res_iter++) {
         const Resource &resource = *res_iter;
         unsigned int cost = resource.Cost;
         if (resource.NeedsCompositing()) {
             needs_compositing = true;
         }
-        for (PVehicle *v = mInstances.GetHead(); v != mInstances.EndOfList();
-             v = v->GetNext()) {
-            if (v->mResources.Type == resource.Type && CanInstancesShareResourceCost(resource.Type)) {
-                cost = 0;
+        for (PVehicle *vehicle = mInstances.GetHead(); vehicle != mInstances.EndOfList();
+             vehicle = vehicle->GetNext()) {
+            if (vehicle->mResources.Type == resource.Type) {
+                if (CanInstancesShareResourceCost(resource.Type)) {
+                    cost = 0;
+                }
                 break;
             }
         }
         newresources += cost;
     }
-    return true;
+
+    unsigned int resource_limit = CarInfo_GetResourcePool(needs_compositing);
+    unsigned int current_resources = CountResources();
+    unsigned int current_instances = IVehicle::Count(VEHICLE_ALL);
+    unsigned int needed_resources = 0;
+    unsigned int needed_instances = 0;
+    if (current_resources + newresources > resource_limit) {
+        needed_resources = (current_resources + newresources) - resource_limit;
+    }
+    if (current_instances + newinstances > 10) {
+        needed_instances = (current_instances + newinstances) - 10;
+    }
+
+    bool result = needed_resources != 0;
+    if (result || needed_instances != 0) {
+        if (whosasking == nullptr) {
+            result = false;
+        } else {
+            ManagementList vehicle_list;
+            vehicle_list.reserve(10);
+
+            for (PVehicle *vehicle = mInstances.GetHead(); vehicle != mInstances.EndOfList();
+                 vehicle = vehicle->GetNext()) {
+                ManageNode node;
+                node.vehicle = vehicle;
+                node.resource = vehicle->mResources;
+                node.instancecount = 1;
+                node.result = VCR_DONTCARE;
+                vehicle_list.push_back(node);
+            }
+
+            for (ManageNode *node_iter = vehicle_list.begin();
+                 node_iter != vehicle_list.end(); ++node_iter) {
+                ManageNode &node = *node_iter;
+                if (node.result != VCR_WANT) {
+                    IVehicle *removethis = nullptr;
+                    if (node.vehicle != nullptr) {
+                        removethis = node.vehicle;
+                    }
+                    node.result = whosasking->OnQueryVehicleCache(removethis, whosasking);
+                }
+            }
+
+            for (ManageNode *node_iter = vehicle_list.begin();
+                 node_iter != vehicle_list.end(); ++node_iter) {
+                ManageNode &node = *node_iter;
+                if (node.result != VCR_WANT) {
+                    for (IVehicleCache *const *cache_iter =
+                             UTL::Collections::Listable<IVehicleCache, 18>::GetList().begin();
+                         cache_iter !=
+                             UTL::Collections::Listable<IVehicleCache, 18>::GetList().end();
+                         ++cache_iter) {
+                        IVehicleCache *cache = *cache_iter;
+                        if (!UTL::COM::ComparePtr(cache, whosasking)) {
+                            IVehicle *removethis = nullptr;
+                            if (node.vehicle != nullptr) {
+                                removethis = node.vehicle;
+                            }
+                            if (cache->OnQueryVehicleCache(removethis, whosasking) == VCR_WANT) {
+                                node.result = VCR_WANT;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            std::sort(vehicle_list.begin(), vehicle_list.end(), ManageNode::sort_by_keep);
+            vehicle_list.print();
+
+            for (UTL::Std::list<Resource, _type_list>::const_iterator res_iter = resources.begin();
+                 res_iter != resources.end(); res_iter++) {
+                const Resource &resource = *res_iter;
+                for (ManageNode *node_iter = vehicle_list.begin();
+                     node_iter != vehicle_list.end(); ++node_iter) {
+                    ManageNode &node = *node_iter;
+                    if (resource.Type == node.resource.Type) {
+                        node.result = VCR_WANT;
+                        break;
+                    }
+                }
+            }
+
+            vehicle_list.print();
+
+            if (result) {
+                CarType type = CARTYPE_NONE;
+                eVehicleCacheResult pushresult = VCR_DONTCARE;
+                for (ManageNode *node_iter = vehicle_list.begin();
+                     node_iter != vehicle_list.end(); ++node_iter) {
+                    ManageNode &node = *node_iter;
+                    CarType t = node.resource.Type;
+                    if (t != type) {
+                        pushresult = node.result;
+                        type = t;
+                    }
+                    if (pushresult == VCR_WANT) {
+                        node.result = VCR_WANT;
+                    }
+                }
+            }
+
+            ManageNode *end_iter = std::remove_if(vehicle_list.begin(), vehicle_list.end(),
+                                                  ManageNode::is_kept);
+            vehicle_list.erase(end_iter, vehicle_list.end());
+
+            if (vehicle_list.size() == 0) {
+                result = false;
+            } else {
+                UTL::Std::map<CarType, unsigned int, _type_map> type_map;
+                for (ManageNode *node_iter = vehicle_list.begin();
+                     node_iter != vehicle_list.end(); ++node_iter) {
+                    type_map[node_iter->resource.Type]++;
+                }
+
+                for (ManageNode *node_iter = vehicle_list.begin();
+                     node_iter != vehicle_list.end(); ++node_iter) {
+                    node_iter->instancecount = type_map[node_iter->resource.Type];
+                }
+
+                unsigned int found_instances = 0;
+                ManageNode *node_iter = vehicle_list.begin();
+                if (result) {
+                    std::sort(vehicle_list.begin(), vehicle_list.end(),
+                              ManageNode::sort_remove_resources);
+                    vehicle_list.print();
+
+                    unsigned int found_resources = 0;
+                    CarType type = CARTYPE_NONE;
+                    unsigned int type_cost = 0;
+                    for (node_iter = vehicle_list.begin(); node_iter != vehicle_list.end();
+                         ++node_iter) {
+                        CarType t = node_iter->resource.Type;
+                        if (t != type) {
+                            found_resources += type_cost;
+                            type = t;
+                        }
+                        if (found_resources >= needed_resources) {
+                            type_cost = 0;
+                            break;
+                        }
+                        type_cost = node_iter->resource.Cost;
+                        found_instances++;
+                    }
+
+                    if (found_resources + type_cost < needed_resources) {
+                        return false;
+                    }
+                }
+
+                if (found_instances < needed_instances) {
+                    std::sort(node_iter, vehicle_list.end(),
+                              ManageNode::sort_remove_instances);
+                    vehicle_list.print();
+
+                    for (; node_iter != vehicle_list.end(); ++node_iter) {
+                        if (found_instances >= needed_instances) {
+                            break;
+                        }
+                        found_instances++;
+                    }
+
+                    if (found_instances < needed_instances) {
+                        return false;
+                    }
+                }
+
+                vehicle_list.erase(node_iter, vehicle_list.end());
+
+                vehicle_list.print();
+
+                for (ManageNode *node_iter = vehicle_list.begin();
+                     node_iter != vehicle_list.end(); ++node_iter) {
+                    ManageNode &node = *node_iter;
+                    PVehicle *killit = node.vehicle;
+                    for (IVehicleCache *const *citer =
+                             UTL::Collections::Listable<IVehicleCache, 18>::GetList().begin();
+                         citer !=
+                             UTL::Collections::Listable<IVehicleCache, 18>::GetList().end();
+                         ++citer) {
+                        IVehicleCache *cache = *citer;
+                        IVehicle *ivehicle = nullptr;
+                        if (killit != nullptr) {
+                            ivehicle = killit;
+                        }
+                        cache->OnRemovedVehicleCache(ivehicle);
+                    }
+                    if (killit != nullptr) {
+                        delete killit;
+                    }
+                }
+
+                result = true;
+            }
+        }
+    } else {
+        result = true;
+    }
+
+    return result;
 }

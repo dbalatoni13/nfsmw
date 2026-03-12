@@ -130,7 +130,9 @@ class PVehicle : public PhysicsObject,
         unsigned int instancecount;   // offset 0x14, size 0x4
     };
 
-    struct ManagementList : public UTL::FixedVector<ManageNode, 10, 16> {};
+    struct ManagementList : public UTL::FixedVector<ManageNode, 10, 16> {
+        void print() const {}
+    };
 
     typedef UTL::Std::list<Resource, _type_list> ResourceList;
     typedef UTL::Std::map<UCrc32, UCrc32, _type_ID_PVehicleChangeReq> ChangeRequest;
