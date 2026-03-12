@@ -670,7 +670,7 @@ void PVehicle::CleanResources() {
 }
 
 const Physics::Tunings *PVehicle::GetTunings() const {
-    if (IsLoading()) {
+    if (GetDriverClass()) {
         return nullptr;
     }
     if (Tweak_UseTweakerTunings) {

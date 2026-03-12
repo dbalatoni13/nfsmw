@@ -575,7 +575,7 @@ void Smackable::CalcSimplificationWeight() {
     IRigidBody *irb = GetRigidBody();
     float radius = irb->GetRadius();
     float baseweight = static_cast<float>(mAttributes.CAN_SIMPLIFY());
-    if (!static_cast<IRenderable *>(this)->IsRenderable()) {
+    if (!static_cast<IRenderable *>(this)->InView()) {
         baseweight += baseweight;
     }
     mSimplifyWeight = (dist + baseweight) / radius;
