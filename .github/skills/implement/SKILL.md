@@ -13,6 +13,25 @@ Collect data from **all** of these sources in parallel where possible.
 
 ### 1a. decomp-context.py
 
+Preferred shortcut:
+
+```sh
+python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName
+python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName --brief
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
+```
+
+If you only need one Ghidra view, add `--ghidra-version gc` or `--ghidra-version ps2`
+to keep the context run faster and shorter.
+
+The wrapper defaults to compact GC DWARF signatures. Add `--lookup-mode full` when you
+need the full DWARF body with locals and nested inline info.
+
+Add `--brief` when you want a shorter helper view; it trims suggested commands and
+related-source hints while keeping the core source/status/diff context.
+
+Equivalent manual form:
+
 ```sh
 python tools/decomp-context.py -u main/Path/To/TU -f FunctionName
 ```
@@ -20,6 +39,10 @@ python tools/decomp-context.py -u main/Path/To/TU -f FunctionName
 This provides in one shot:
 
 - Current source code (if any exists)
+- A fallback source excerpt from the GC debug-line-mapped repo file when the metadata
+  source path is empty or otherwise unhelpful
+- Related source-file hints when the unit metadata source is empty or unhelpful
+- Compact GC DWARF signature by default, or full DWARF body with `--lookup-mode full`
 - objdiff status and instruction-level diff
 - Ghidra decompilation of the original
 
@@ -89,10 +112,14 @@ The game uses stlport, so you'll often encounter \_STL, but in the code it must 
 
 ### Initial build
 
-Compile to a private temp `.o` so your output isn't overwritten by other parallel agents:
+Rebuild the shared object the normal way before diffing. If you just need the
+standard context flow, prefer
+`python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName`.
+For a rebuild plus a standardized diff run, use:
 
 ```sh
-TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
+python tools/decomp-workflow.py build -u main/Path/To/TU
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
 ```
 
 If the build fails, fix compilation errors first.
@@ -101,10 +128,10 @@ If the build fails, fix compilation errors first.
 
 ```sh
 # Quick status
-python tools/decomp-diff.py -u main/Path/To/TU --search FunctionName --base-obj "$TEMPOBJ"
+python tools/decomp-diff.py -u main/Path/To/TU --search FunctionName
 
 # Full instruction diff
-python tools/decomp-diff.py -u main/Path/To/TU -d FunctionName --base-obj "$TEMPOBJ"
+python tools/decomp-diff.py -u main/Path/To/TU -d FunctionName
 ```
 
 ### Interpreting the diff
@@ -124,23 +151,24 @@ After writing your code, occasionally run the dwarf dump on the compiled output 
 due to work on other functions, query the unmangled name instead.
 
 ```bash
-# Compile to temp .o and dump its DWARF (use the same TEMPOBJ from the build step above):
-dtk dwarf dump "$TEMPOBJ" -o /tmp/my_unit_dump.nothpp
+# Rebuild the unit, then dump the shared object file's DWARF:
+python tools/decomp-workflow.py build -u main/Path/To/TU
+dtk dwarf dump build/GOWE69/src/Path/To/TU.o -o /tmp/my_unit_dump.nothpp
 # Then look up the same function in your output:
 python tools/lookup.py --file /tmp/my_unit_dump.nothpp function "EPerfectLaunch::~EPerfectLaunch(void)"
 # Compare with the original:
 python tools/lookup.py ./symbols/Dwarf function 0x801DE9AC
 ```
 
-If you can't figure out the source address using objdiff, find the function in the temporary file manually.
+If you can't figure out the source address using objdiff, find the function in the rebuilt object file manually.
 
 ### Iterate
 
 Repeat the build-diff cycle until the diff shows 100% match with no `~` lines:
 
 ```sh
-TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
-python tools/decomp-diff.py -u main/Path/To/TU -d FunctionName --base-obj "$TEMPOBJ"
+python tools/decomp-workflow.py build -u main/Path/To/TU
+python tools/decomp-diff.py -u main/Path/To/TU -d FunctionName
 ```
 
 Every mismatched instruction is a signal — don't settle for "close enough".
