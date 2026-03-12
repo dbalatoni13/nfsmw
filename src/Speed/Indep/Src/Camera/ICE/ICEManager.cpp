@@ -1049,11 +1049,12 @@ unsigned int GetSceneHash(unsigned int slot) {
 void GetNameOfSceneHash(unsigned int hash, char *name) {
     *name = 0;
     if (TheAnimDirectory != 0) {
-        for (unsigned int i = 0; i < TheAnimDirectory->GetSceneCount(); i++) {
-            AnimSceneLoadInfo info;
-            TheAnimDirectory->GetSceneLoadInfo(i, info);
-            if (hash == info.mAnimSceneHash) {
-                char *filename = TheAnimDirectory->GetFileName(info.mSceneFileStartIndex);
+        AnimDirectory *dir = TheAnimDirectory;
+        for (unsigned int i = 0; i < dir->GetSceneCount(); i++) {
+            if (hash == dir->GetSceneLoadInfo(i)->mAnimSceneHash) {
+                AnimSceneLoadInfo info;
+                dir->GetSceneLoadInfo(i, info);
+                char *filename = dir->GetFileName(info.mSceneFileStartIndex);
                 int pos = 0;
                 while (filename[pos] != '_') {
                     pos++;
