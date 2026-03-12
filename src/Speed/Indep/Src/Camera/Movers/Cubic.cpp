@@ -436,11 +436,8 @@ void CubicCameraMover::Update(float dT) {
         avg->nCurrentSlot = 0;
     }
 
-    float fAccelH = bAbs(vAccel.x);
+    float fAccelH = bMax(bAbs(vAccel.x), bAbs(vAccel.y));
     float fAccelV;
-    if (bAbs(vAccel.x) - bAbs(vAccel.y) < 0.0f) {
-        fAccelH = bAbs(vAccel.y);
-    }
 
     if (0.1f <= fAccelH && 0.0f < pCar->GetCollisionDamping() &&
         vCameraImpcat.x < pCar->GetCollisionDamping()) {
@@ -449,9 +446,9 @@ void CubicCameraMover::Update(float dT) {
     }
 
     float eye_duration = pov_data.fEyeDuration;
-    pUp->SetDuration(eye_duration);
-    pFov->SetDuration(eye_duration);
-    pLook->SetDuration(eye_duration);
+    pUp->SetDuration(pov_data.fUpDuration);
+    pFov->SetDuration(pov_data.fFovDuration);
+    pLook->SetDuration(pov_data.fLookDuration);
     bVector3 *foward_duration = pov_data.GetForwardDuration();
     pForward->SetDuration(foward_duration->x + collision_damper + drift_damper,
                           foward_duration->y + collision_damper + drift_damper,
