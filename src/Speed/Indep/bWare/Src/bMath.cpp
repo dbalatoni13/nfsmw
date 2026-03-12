@@ -313,7 +313,7 @@ unsigned short bASin(float x) {
         int fix_x = static_cast<int>(x * 65536.0f);
         int table_top = 0x8000;
 
-        if (fix_x > 0x7fff) {
+        if (fix_x >= table_spacing) {
             do {
                 table_spacing = table_spacing >> 1;
                 table_number = table_number + 1;
