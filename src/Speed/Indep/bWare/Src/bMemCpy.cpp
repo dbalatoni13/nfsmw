@@ -52,12 +52,12 @@ int bMemCmp(const void *s1, const void *s2, unsigned int numbytes) {
 
 void bMemSet(void *dest, unsigned char c, unsigned int numbytes) {
     int *idest = reinterpret_cast<int *>(dest);
-    int fill = c;
+    int fill = c << 16;
     int pair[2];
 
-    fill = fill + (c << 8);
-    fill = fill + (c << 16);
     fill = fill + (c << 24);
+    fill = fill + (c << 8);
+    fill = fill + c;
     pair[0] = fill;
     pair[1] = fill;
 

@@ -22,7 +22,11 @@ bQuaternion &bQuaternion::Slerp(bQuaternion &r, const bQuaternion &target, float
     }
 
     bVector4 temp(this->x * scale0, this->y * scale0, this->z * scale0, this->w * scale0);
-    bScaleAdd(reinterpret_cast<bVector4 *>(&r), &temp, reinterpret_cast<const bVector4 *>(&target), scale1);
+    bScaleAdd(&temp, &temp, reinterpret_cast<const bVector4 *>(&target), scale1);
+    r.x = temp.x;
+    r.y = temp.y;
+    r.z = temp.z;
+    r.w = temp.w;
     return r;
 }
 

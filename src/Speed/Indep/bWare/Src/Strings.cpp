@@ -68,9 +68,15 @@ unsigned short *bStrCpy(unsigned short *to, const unsigned short *from) {
 }
 
 unsigned short *bStrCpy(unsigned short *to, const char *from) {
-    unsigned short *dest = to;
+    char c = *from;
+    int n = 0;
 
-    while ((*dest++ = static_cast<unsigned char>(*from++)) != 0) {}
+    *to = c;
+    while (c != '\0') {
+        n = n + 1;
+        c = from[n];
+        to[n] = c;
+    }
     return to;
 }
 
@@ -206,36 +212,42 @@ int bStrNICmp(const char *s1, const char *s2, int n) {
         return 0;
     }
 
-    if (s2 != nullptr) {
-        while (n != 0) {
-            char c1 = *s1;
-            char c2 = *s2;
-            n--;
+    if (s2 == nullptr) {
+        return 1;
+    }
 
-            if ((c1 == '\0') || (c2 == '\0')) {
-                break;
-            }
+    while (n-- != 0) {
+        char c1 = *s1;
+        unsigned int c2;
 
-            s1++;
-            c1 = bToUpper(c1);
-            s2++;
-            c2 = bToUpper(c2);
-            if (c1 != c2) {
-                break;
-            }
+        if (c1 == '\0') {
+            break;
         }
 
-        if (n < 0) {
-            return 0;
+        c2 = static_cast<unsigned char>(*s2);
+        if (c2 == 0) {
+            break;
         }
 
-        if (*s1 == '\0') {
-            if (*s2 == '\0') {
-                return bToUpper(s1[-1]) - bToUpper(s2[-1]);
-            }
-
-            return -1;
+        s1 = s1 + 1;
+        c1 = bToUpper(c1);
+        s2 = s2 + 1;
+        c2 = static_cast<unsigned char>(bToUpper(static_cast<char>(c2)));
+        if (c1 != c2) {
+            break;
         }
+    }
+
+    if (n < 0) {
+        return 0;
+    }
+
+    if (*s1 == '\0') {
+        if (*s2 == '\0') {
+            return bToUpper(s1[-1]) - bToUpper(s2[-1]);
+        }
+
+        return -1;
     }
 
     return 1;
@@ -292,38 +304,37 @@ int bStrNCmp(const char *s1, const char *s2, int n) {
 }
 
 int bStrICmp(const char *s1, const char *s2) {
-    if (s1 != nullptr) {
-        if (s2 == nullptr) {
-            return 1;
+    if (s1 == nullptr) {
+        if (s2 != nullptr) {
+            return -1;
+        }
+        return 0;
+    }
+
+    if (s2 == nullptr) {
+        return 1;
+    }
+
+    unsigned int c1;
+    unsigned int c2;
+
+    do {
+        char ch = *s1;
+        s1 = s1 + 1;
+        c1 = static_cast<unsigned int>(ch);
+        if ((c1 - 'a') < 26) {
+            c1 = c1 & 0x5f;
         }
 
-        unsigned int c1;
-        unsigned int c2;
+        ch = *s2;
+        s2 = s2 + 1;
+        c2 = static_cast<unsigned int>(ch);
+        if ((c2 - 'a') < 26) {
+            c2 = c2 & 0x5f;
+        }
+    } while ((c1 != 0) && (c2 != 0) && (c1 == c2));
 
-        do {
-            char ch = *s1;
-            s1++;
-            c1 = static_cast<unsigned int>(ch);
-            if ((c1 - 'a') < 26) {
-                c1 &= 0x5f;
-            }
-
-            ch = *s2;
-            s2++;
-            c2 = static_cast<unsigned int>(ch);
-            if ((c2 - 'a') < 26) {
-                c2 &= 0x5f;
-            }
-        } while ((c1 != 0) && (c2 != 0) && (c1 == c2));
-
-        return c1 - c2;
-    }
-
-    if (s2 != nullptr) {
-        return -1;
-    }
-
-    return 0;
+    return c1 - c2;
 }
 
 char *bStrCat(char *to, const char *s1, const char *s2) {
