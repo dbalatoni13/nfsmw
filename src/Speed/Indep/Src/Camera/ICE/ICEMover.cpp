@@ -568,8 +568,8 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
             if ((pCameraData->bSmooth & 1) != 0) {
                 TheICEManager.SetSmoothExit(true);
                 {
-                    UMath::Matrix4 mCarToWorld;
-                    UMath::Matrix4 mWorldToCar;
+                    ICE::Matrix4 mCarToWorld;
+                    ICE::Matrix4 mWorldToCar;
 
                     bCopy(reinterpret_cast<bMatrix4 *>(&mCarToWorld),
                           reinterpret_cast<const bMatrix4 *>(pCar->GetGeometryOrientation()),
@@ -578,7 +578,7 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
                     eInvertTransformationMatrix(reinterpret_cast<bMatrix4 *>(&mWorldToCar),
                                                 reinterpret_cast<const bMatrix4 *>(&mCarToWorld));
 
-                    UMath::Matrix4 mWorldToHybrid;
+                    ICE::Matrix4 mWorldToHybrid;
 
                     eInvertTransformationMatrix(reinterpret_cast<bMatrix4 *>(&mWorldToHybrid),
                                                 reinterpret_cast<const bMatrix4 *>(&mHybridToWorld));
@@ -588,10 +588,10 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
                     ICE::Cubic1D dutch(1, 1.0f);
                     ICE::Cubic1D fov(1, 1.0f);
 
-                    UMath::Matrix4 mWorldToScene;
-                    UMath::Matrix4 *pWorldToScene = 0;
-                    UMath::Matrix4 *eye_space;
-                    UMath::Matrix4 *look_space;
+                    ICE::Matrix4 mWorldToScene;
+                    ICE::Matrix4 *pWorldToScene = 0;
+                    ICE::Matrix4 *eye_space;
+                    ICE::Matrix4 *look_space;
 
                     if (nSpaceEye == 3 || nSpaceLook == 3) {
                         ICEScene *scene = ICE::FindAnimScene();
@@ -603,14 +603,14 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
                     }
 
                     switch (nSpaceEye) {
-                        case 0: eye_space = reinterpret_cast<UMath::Matrix4 *>(&mWorldToCar); break;
+                        case 0: eye_space = &mWorldToCar; break;
                         case 2: eye_space = &mWorldToHybrid; break;
                         case 3: eye_space = pWorldToScene; break;
                         default: eye_space = 0; break;
                     }
 
                     switch (nSpaceLook) {
-                        case 0: look_space = reinterpret_cast<UMath::Matrix4 *>(&mWorldToCar); break;
+                        case 0: look_space = &mWorldToCar; break;
                         case 2: look_space = &mWorldToHybrid; break;
                         case 3: look_space = pWorldToScene; break;
                         default: look_space = 0; break;
@@ -619,8 +619,8 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
                     ICE::Vector3 *eye_vel = (nSpaceEye == 0) ? pCar->GetVelocity() : static_cast<ICE::Vector3 *>(0);
                     ICE::Vector3 *look_vel = (nSpaceLook == 0) ? pCar->GetVelocity() : static_cast<ICE::Vector3 *>(0);
 
-                    EyeCubicInit(&eye, reinterpret_cast<ICE::Matrix4 *>(eye_space), eye_vel);
-                    LookCubicInit(&look, reinterpret_cast<ICE::Matrix4 *>(look_space), look_vel);
+                    EyeCubicInit(&eye, eye_space, eye_vel);
+                    LookCubicInit(&look, look_space, look_vel);
                     DutchCubicInit(&dutch);
                     FovCubicInit(&fov);
 
