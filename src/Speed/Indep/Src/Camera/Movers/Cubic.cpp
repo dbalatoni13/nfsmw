@@ -464,7 +464,7 @@ void CubicCameraMover::Update(float dT) {
                           foward_duration->z + collision_damper + drift_damper);
 
     if (HighliteMode()) {
-        eye_duration = pov_data.fEyeDuration * 2.0f;
+        eye_duration = pov_data.fEyeDuration * (10.0f / 13.0f);
     }
 
     pEye->SetDuration(eye_duration, eye_duration, eye_duration);
@@ -480,22 +480,24 @@ void CubicCameraMover::Update(float dT) {
     float target_dist = bDistBetween(GetCamera()->GetPosition(), pCar->GetGeometryPosition());
     GetCamera()->SetTargetDistance(target_dist);
 
-    float fSign;
+    float dof;
     if (!bPerfectFocus) {
         GetCamera()->SetFocalDistance(40.0f);
-        fSign = 100.0f;
+        dof = 100.0f;
     } else {
         GetCamera()->SetFocalDistance(0.0f);
     }
-    GetCamera()->SetDepthOfField(fSign);
+    GetCamera()->SetDepthOfField(dof);
 
     bMatrix4 mCarToWorld;
     SetDesired(&mCarToWorld, pov, &pov_data, bSnapNext);
     bSnapNext = 0;
 
-    float f_stiffness = 1.0f;
+    float fSign;
     if (bLookBack) {
-        f_stiffness = -1.0f;
+        fSign = -1.0f;
+    } else {
+        fSign = 1.0f;
     }
     bVector3 vUp;
     vUp.x = (*pUp).x.Val;
@@ -507,8 +509,8 @@ void CubicCameraMover::Update(float dT) {
         vUp.z = pCar->GetUpVector()->z;
     }
 
-    bVector3 vEye(f_stiffness * (*pEye).x.Val, f_stiffness * (*pEye).y.Val, (*pEye).z.Val);
-    bVector3 vLook(f_stiffness * (*pLook).x.Val, f_stiffness * (*pLook).y.Val, (*pLook).z.Val);
+    bVector3 vEye(fSign * (*pEye).x.Val, fSign * (*pEye).y.Val, (*pEye).z.Val);
+    bVector3 vLook(fSign * (*pLook).x.Val, fSign * (*pLook).y.Val, (*pLook).z.Val);
 
     {
         float impact;
@@ -588,7 +590,7 @@ void CubicCameraMover::Update(float dT) {
     }
 
     bVector3 vDiff = vEye - vLook;
-    vDiff *= f_stiffness;
+    vDiff *= fSign;
     vLook = vLook + vDiff;
     vEye = vLook;
 
