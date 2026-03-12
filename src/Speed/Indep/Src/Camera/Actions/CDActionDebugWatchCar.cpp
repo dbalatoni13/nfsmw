@@ -83,7 +83,7 @@ CDActionDebugWatchCar::CDActionDebugWatchCar(CameraAI::Director *director)
     mPrev = director->GetAction()->GetName();
 
     mAnchor = new CameraAnchor(0);
-    mMover = new TrackCarCameraMover(static_cast<int>(director->GetViewID()), mAnchor, true);
+    mMover = new CubicCameraMover(static_cast<int>(director->GetViewID()), mAnchor, 0, false, false, false, true);
 }
 
 CDActionDebugWatchCar::~CDActionDebugWatchCar() {
