@@ -116,21 +116,26 @@ ISimable *Smackable::Construct(Sim::Param params) {
     }
     sp.fScenery->GetWorldID();
     const CollisionGeometry::Bounds *geoms = sp.fScenery->GetCollisionGeometry();
-    if (geoms == nullptr || !(attributes.MASS() > 0.0f)) {
+    if (geoms == nullptr) {
+        return nullptr;
+    }
+    if (!(attributes.MASS() > 0.0f)) {
         return nullptr;
     }
     UMath::Matrix4 matrix = sp.fMatrix;
-    bool canSpawn;
     if (simple_physics) {
-        canSpawn = Sim::CanSpawnSimpleRigidBody(UMath::Vector4To3(matrix.v3), false);
+        if (!Sim::CanSpawnSimpleRigidBody(UMath::Vector4To3(matrix.v3), false)) {
+            return nullptr;
+        }
     } else {
-        canSpawn = Sim::CanSpawnRigidBody(UMath::Vector4To3(matrix.v3), false);
+        if (!Sim::CanSpawnRigidBody(UMath::Vector4To3(matrix.v3), false)) {
+            return nullptr;
+        }
     }
-    if (!canSpawn) {
-        return nullptr;
-    }
-    if (!Manager::Exists()) {
-        new Manager(Smackable_ManagementRate);
+    if (Manager::Get() == nullptr) {
+        if (new Manager(Smackable_ManagementRate) == nullptr) {
+            return nullptr;
+        }
     }
     return new Smackable(matrix, attributes, geoms, sp.fVirginSpawn, sp.fScenery, simple_physics,
                          is_persistant);

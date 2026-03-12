@@ -10,9 +10,7 @@ Wheel::Wheel(unsigned int flags) : mWorldPos(0.025f) //
     , mLocalArm(UMath::Vector3::kZero) //
     , mCompression(0.0f) //
     , mWorldArm(UMath::Vector3::kZero) //
-    , pad(0) //
     , mVelocity(UMath::Vector3::kZero) //
-    , pad2(0) //
     , mSurface(SimSurface::kNull) //
     , mSurfaceStick(0.0f) //
     , mIntegral(UMath::Vector4::kZero) {
