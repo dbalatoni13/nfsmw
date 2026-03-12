@@ -119,13 +119,14 @@ void UIOptionsController::NotificationMessage(unsigned long msg, FEObject* pobj,
             char buf[128];
             FEngSNPrintf(buf, 128, GetLocalizedString(0xBA463431),
                          GetPlayerToEditForOptions() + 1);
+            const char* pkgName = GetPackageName();
             const char* dlg_pkg;
             if (mCalledFromPauseMenu) {
                 dlg_pkg = "InGameDialog.fng";
             } else {
                 dlg_pkg = "Dialog.fng";
             }
-            DialogInterface::ShowTwoButtons(GetPackageName(), dlg_pkg,
+            DialogInterface::ShowTwoButtons(pkgName, dlg_pkg,
                                             static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4,
                                             0x9A5AD46D, 0xA2A07AC4, 0x34DC1BCF,
                                             static_cast<eDialogFirstButtons>(1), buf);

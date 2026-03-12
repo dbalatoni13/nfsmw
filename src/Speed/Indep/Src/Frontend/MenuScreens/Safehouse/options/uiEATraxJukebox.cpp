@@ -241,14 +241,6 @@ void UIEATraxScreen::ReInsertSong() {
 void UIEATraxScreen::NotificationMessage(unsigned long msg, FEObject* pObject, unsigned long Param1,
                                          unsigned long Param2) {
     switch (msg) {
-    case 0x72619778:
-    case 0x911C0A4B:
-        if (bTrackGrabbed == false) {
-            ScrollTracks(msg);
-        } else {
-            MoveTrack(msg);
-        }
-        break;
     case 0x35F8620B:
         Tracks.HighlightSelected();
         break;
@@ -260,11 +252,13 @@ void UIEATraxScreen::NotificationMessage(unsigned long msg, FEObject* pObject, u
     case 0xB5971BF1:
         ScrollTrackPlayability(msg);
         break;
-    case 0xC519BFC3:
-        PreviewSong();
-        break;
-    case 0xC519BFC4:
-        bTrackGrabbed = bTrackGrabbed ^ 1;
+    case 0x72619778:
+    case 0x911C0A4B:
+        if (bTrackGrabbed == false) {
+            ScrollTracks(msg);
+        } else {
+            MoveTrack(msg);
+        }
         break;
     case 0x911AB364:
         if (OptionsDidNotChange()) {
@@ -281,6 +275,12 @@ void UIEATraxScreen::NotificationMessage(unsigned long msg, FEObject* pObject, u
     case 0x775DBA97:
         RestoreOriginals();
         cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), nullptr);
+        break;
+    case 0xC519BFC4:
+        bTrackGrabbed = bTrackGrabbed ^ 1;
+        break;
+    case 0xC519BFC3:
+        PreviewSong();
         break;
     case 0xE1FDE1D1:
         MControlPathfinder(true, 0xFFFFFFFF, 0, 0).Send("EATraxInit");

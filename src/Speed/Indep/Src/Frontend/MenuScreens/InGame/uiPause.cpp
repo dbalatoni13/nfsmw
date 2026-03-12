@@ -71,6 +71,7 @@ void PauseMenu::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned 
         return;
     case 0x43DA9FD0:
     case 0x30EB8F53:
+    case 0x30F32A49:
     case 0x451E768E:
     case 0xE1A57D51:
     case 0xC9BFD1C3:

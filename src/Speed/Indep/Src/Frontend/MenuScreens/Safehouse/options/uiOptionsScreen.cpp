@@ -212,8 +212,6 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
     case 0x72619778:
     case 0x406415E3:
         break;
-    case 0x34DC1BCF:
-        return;
     }
 }
 
