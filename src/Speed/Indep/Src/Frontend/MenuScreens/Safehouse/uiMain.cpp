@@ -19,6 +19,7 @@ struct GarageMainScreen : public MenuScreen {
     bool IsVisable() { return HideEntireScreen == 0; }
     void CancelCameraPush() { CameraPushRequested = false; }
     void UpdateCurrentCameraView(bool b);
+    void EnableCarRendering();
     static GarageMainScreen* GetInstance();
 };
 

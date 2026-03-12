@@ -36,24 +36,6 @@ struct FadeScreen {
     static bool IsFadeScreenOn();
 };
 
-enum eSetRideInfoReasons {
-    SET_RIDE_INFO_REASON_VINYL = 0,
-    SET_RIDE_INFO_REASON_LOAD_CAR = 1,
-    SET_RIDE_INFO_REASON_CATCHALL = 2,
-};
-
-enum eCarViewerWhichCar {
-    eCARVIEWER_PLAYER1_CAR = 0,
-    eCARVIEWER_PLAYER2_CAR = 1,
-};
-
-struct CarViewer {
-    static void ShowCarScreen();
-    static void ShowAllCars();
-    static void SetRideInfo(RideInfo *ride, eSetRideInfoReasons reason, eCarViewerWhichCar which_car);
-    static bool haveLoadedOnce;
-};
-
 struct ICountdown : public UTL::COM::IUnknown {
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;

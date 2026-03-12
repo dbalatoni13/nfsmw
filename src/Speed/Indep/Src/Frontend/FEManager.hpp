@@ -125,4 +125,24 @@ class FEManager {
     bool mEATraxFirstButton;         // offset 0x48, size 0x1
 };
 
+class RideInfo;
+
+enum eSetRideInfoReasons {
+    SET_RIDE_INFO_REASON_VINYL = 0,
+    SET_RIDE_INFO_REASON_LOAD_CAR = 1,
+    SET_RIDE_INFO_REASON_CATCHALL = 2,
+};
+
+enum eCarViewerWhichCar {
+    eCARVIEWER_PLAYER1_CAR = 0,
+    eCARVIEWER_PLAYER2_CAR = 1,
+};
+
+struct CarViewer {
+    static void ShowCarScreen();
+    static void ShowAllCars();
+    static void SetRideInfo(RideInfo* ride, eSetRideInfoReasons reason, eCarViewerWhichCar which_car);
+    static bool haveLoadedOnce;
+};
+
 #endif

@@ -2,8 +2,12 @@
 
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
+#include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEAnyMovieScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRivalFlow.hpp"
 #include "Speed/Indep/Src/Generated/Events/EEnterBin.hpp"
+#include "Speed/Indep/Src/World/CarInfo.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
 struct FEObject;
@@ -15,6 +19,12 @@ int FEPrintf(const char* pkg_name, int hash, const char* fmt, ...);
 const char* GetLocalizedString(unsigned int hash);
 
 extern unsigned int iCurrentViewBin;
+
+namespace Showcase {
+extern const char* FromPackage;
+extern int FromArgs;
+extern int BlackListNumber;
+} // namespace Showcase
 
 uiRepSheetRivalBio::uiRepSheetRivalBio(ScreenConstructorData* sd)
     : MenuScreen(sd)
@@ -32,24 +42,62 @@ uiRepSheetRivalBio::uiRepSheetRivalBio(ScreenConstructorData* sd)
     Setup();
 }
 
-void uiRepSheetRivalBio::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) {
+void uiRepSheetRivalBio::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
+                                              unsigned long param2) {
     switch (msg) {
-    case 0x406415e3:
+    case 0xc519bfbf: {
         if ((FEDatabase->GetGameMode() & 0x20000) != 0) {
-            if (uiRepSheetRivalFlow::Get()->GetStage() == -1) {
-                uiRepSheetRivalFlow::Get()->StartFlow(5);
-            } else {
-                uiRepSheetRivalFlow::Get()->Next();
-            }
+            break;
+        }
+        char buf[64];
+        if (iCurrentViewBin == 1) {
+            bSNPrintf(buf, 64, "E3_DEMO_BMW");
+        } else {
+            bSNPrintf(buf, 64, "BL%d", iCurrentViewBin);
+        }
+        FEPlayerCarDB* stable = FEDatabase->GetPlayerCarStable(0);
+        FECarRecord* pCar = stable->CreateNewPresetCar(buf);
+        if (pCar == nullptr) {
+            break;
+        }
+        RideInfo ride;
+        ride.Init(static_cast< CarType >(-1), static_cast< CarRenderUsage >(0), 0, 0);
+        stable->BuildRideForPlayer(pCar->Handle, 0, &ride);
+        CarViewer::SetRideInfo(&ride, SET_RIDE_INFO_REASON_LOAD_CAR, eCARVIEWER_PLAYER1_CAR);
+        Showcase::FromPackage = PackageFilename;
+        Showcase::BlackListNumber = iCurrentViewBin;
+        Showcase::FromArgs = 0;
+        cFEng::Get()->QueuePackageSwitch("Showcase.fng", reinterpret_cast< int >(pCar), 0, false);
+        break;
+    }
+    case 0xc519bfc3: {
+        if ((FEDatabase->GetGameMode() & 0x20000) != 0) {
+            break;
+        }
+        char buf[64];
+        bSNPrintf(buf, 64, "blacklist_%02d", iCurrentViewBin);
+        FEAnyMovieScreen::LaunchMovie(GetPackageName(), buf);
+        break;
+    }
+    case 0x406415e3:
+        if ((FEDatabase->GetGameMode() & 0x20000) == 0) {
+            break;
+        }
+        if (uiRepSheetRivalFlow::Get()->GetStage() == -1) {
+            uiRepSheetRivalFlow::Get()->StartFlow(5);
+        } else {
+            uiRepSheetRivalFlow::Get()->Next();
         }
         break;
     case 0x911ab364:
-        if ((FEDatabase->GetGameMode() & 0x20000) == 0) {
-            if (!bIsInGame) {
-                cFEng::Get()->QueuePackageSwitch("BL_MAIN", 0, 0, false);
-            } else {
-                cFEng::Get()->QueuePackageSwitch("IG_BL_MAIN", 1, 0, false);
-            }
+        if ((FEDatabase->GetGameMode() & 0x20000) != 0) {
+            break;
+        }
+        if (bIsInGame) {
+            cFEng::Get()->QueuePackageSwitch("InGameReputationOverview.fng", 1, 0, false);
+        } else {
+            GarageMainScreen::GetInstance()->EnableCarRendering();
+            cFEng::Get()->QueuePackageSwitch("SafeHouseReputationOverview.fng", 0, 0, false);
         }
         break;
     }

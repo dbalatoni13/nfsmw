@@ -40,9 +40,7 @@ class RideInfo {
   public:
     void Init(CarType type, CarRenderUsage usage, int has_dash, int can_be_vertex_damaged);
 
-    RideInfo() {
-        Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
-    }
+    RideInfo() {}
 
     CarType Type;            // offset 0x0, size 0x4
     char InstanceIndex;      // offset 0x4, size 0x1
