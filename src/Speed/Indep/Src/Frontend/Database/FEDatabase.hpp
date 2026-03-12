@@ -458,9 +458,7 @@ class cFrontendDatabase {
         bIsOptionsDirty = dirty;
     }
 
-    void SetPlayersJoystickPort(int player, signed char port) {
-        PlayerJoyports[player] = port;
-    }
+    void SetPlayersJoystickPort(int player, signed char port);
 
     signed char GetPlayersJoystickPort(int player) {
         return PlayerJoyports[player];

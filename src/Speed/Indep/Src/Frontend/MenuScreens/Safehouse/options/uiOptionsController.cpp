@@ -74,26 +74,31 @@ bool UIOptionsController::OptionsDidNotChange() {
 void UIOptionsController::NotificationMessage(unsigned long msg, FEObject* pobj,
                                               unsigned long param1, unsigned long param2) {
     if (msg == 0x9120409E || msg == 0xB5971BF1) {
-        signed char joyPort = FEngMapJoyParamToJoyport(param1);
+        int joyPort = FEngMapJoyParamToJoyport(param1);
         FEDatabase->SetPlayersJoystickPort(GetPlayerToEditForOptions(), joyPort);
     }
 
     UIWidgetMenu::NotificationMessage(msg, pobj, param1, param2);
 
     switch (msg) {
-    case 0x9A5AD46D: {
+    case 0xE1FDE1D1: {
         bool dirty = false;
         if (FEDatabase->IsOptionsDirty() || !OptionsDidNotChange()) {
             dirty = true;
         }
         FEDatabase->SetOptionsDirty(dirty);
-        TogglePlayer();
+
+        if (mCalledFromPauseMenu) {
+            cFEng::Get()->QueuePackageSwitch("Pause_Main.fng", 1, 0, false);
+        } else {
+            if (FEDatabase->IsOnlineMode()) {
+                cFEng::Get()->QueuePackageSwitch("OL_MAIN.fng", 0, 0, false);
+            } else {
+                cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+            }
+        }
         break;
     }
-    case 0x775DBA97:
-        RestoreOriginals();
-        cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
-        break;
     case 0x911AB364:
         if (OptionsDidNotChange()) {
             cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
@@ -104,26 +109,13 @@ void UIOptionsController::NotificationMessage(unsigned long msg, FEObject* pobj,
                                             GetLocalizedString(0xE9CB802F));
         }
         break;
-    case 0x92B703B5:
-        SetupControllerConfig();
-        break;
-    case 0xA2A07AC4:
+    case 0x775DBA97:
         RestoreOriginals();
-        TogglePlayer();
-        break;
-    case 0xB5AF2461:
-        if (mCalledFromPauseMenu) {
-            new EUnPause();
-        }
-        break;
-    case 0xC98356BA:
-        DetectControllers();
+        cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
         break;
     case 0xD9FEEC59:
     case 0x5073EF13:
-        if (OptionsDidNotChange()) {
-            cFEng::Get()->QueueGameMessage(0x9A5AD46D, 0, 0xFF);
-        } else {
+        if (!OptionsDidNotChange()) {
             char buf[128];
             FEngSNPrintf(buf, 128, GetLocalizedString(0xBA463431),
                          GetPlayerToEditForOptions() + 1);
@@ -137,28 +129,34 @@ void UIOptionsController::NotificationMessage(unsigned long msg, FEObject* pobj,
                                             static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4,
                                             0x9A5AD46D, 0xA2A07AC4, 0x34DC1BCF,
                                             static_cast<eDialogFirstButtons>(1), buf);
+        } else {
+            cFEng::Get()->QueueGameMessage(0x9A5AD46D, 0, 0xFF);
         }
         break;
-    case 0xE1FDE1D1: {
+    case 0xA2A07AC4:
+        RestoreOriginals();
+        TogglePlayer();
+        break;
+    case 0x9A5AD46D: {
         bool dirty = false;
         if (FEDatabase->IsOptionsDirty() || !OptionsDidNotChange()) {
             dirty = true;
         }
         FEDatabase->SetOptionsDirty(dirty);
-
-        if (!mCalledFromPauseMenu) {
-            const char* pkg;
-            if (!FEDatabase->IsOnlineMode()) {
-                pkg = "MainMenu_Sub.fng";
-            } else {
-                pkg = "OL_MAIN.fng";
-            }
-            cFEng::Get()->QueuePackageSwitch(pkg, 0, 0, 0);
-        } else {
-            cFEng::Get()->QueuePackageSwitch("Pause_Main.fng", 1, 0, 0);
-        }
+        TogglePlayer();
         break;
     }
+    case 0xB5AF2461:
+        if (mCalledFromPauseMenu) {
+            new EUnPause();
+        }
+        break;
+    case 0x92B703B5:
+        SetupControllerConfig();
+        break;
+    case 0xC98356BA:
+        DetectControllers();
+        break;
     case 0x34DC1BCF:
         return;
     }
