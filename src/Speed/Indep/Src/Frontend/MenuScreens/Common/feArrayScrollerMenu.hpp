@@ -189,7 +189,7 @@ class ArrayScroller {
 
     void ClearData();
 
-    void SetDescLabel(uint32 hash) {}
+    void SetDescLabel(uint32 hash) { descLabel = hash; }
 
     void SetDimensions(int w, int h) { width = w; height = h; }
 

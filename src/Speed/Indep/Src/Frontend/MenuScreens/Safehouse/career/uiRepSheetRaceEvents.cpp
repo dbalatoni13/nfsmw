@@ -242,14 +242,36 @@ bool UISafehouseRaceSheet::AddRace(GRaceParameters* race) {
 
 void UISafehouseRaceSheet::Setup() {
     ClearData();
-    GRaceBin* bin = GRaceDatabase::Get().GetBin(iCurrentViewBin);
-    if (bin != nullptr) {
-        unsigned int count = bin->GetBossRaceCount();
-        for (unsigned int i = 0; i < count; i++) {
-            unsigned int hash = bin->GetBossRaceHash(i);
-            GRaceParameters* race = GRaceDatabase::Get().GetRaceFromHash(hash);
-            AddRace(race);
+    if (currentEvents) {
+        GRaceBin* bin = GRaceDatabase::Get().GetBinNumber(iCurrentViewBin);
+        for (unsigned int i = 0; i < bin->GetWorldRaceCount(); i++) {
+            unsigned int raceHash = bin->GetWorldRaceHash(i);
+            GRaceParameters* race = GRaceDatabase::Get().GetRaceFromHash(raceHash);
+            if (AddRace(race)) {
+                GetDatumAt(GetNumDatum() - 1)->SetLocked(false);
+                if (GRaceDatabase::Get().IsCareerRaceComplete(raceHash)) {
+                    GetDatumAt(GetNumDatum() - 1)->SetChecked(true);
+                }
+            }
         }
+    } else {
+        unsigned int bindex = FEDatabase->GetCareerSettings()->GetCurrentBin();
+        while (bindex <= GRaceDatabase::Get().GetBinCount()) {
+            GRaceBin* bin = GRaceDatabase::Get().GetBinNumber(bindex);
+            bindex++;
+            if (bin != nullptr) {
+                for (unsigned int i = 0; i < bin->GetWorldRaceCount(); i++) {
+                    if (AddRace(GRaceDatabase::Get().GetRaceFromHash(bin->GetWorldRaceHash(i)))) {
+                        GetDatumAt(GetNumDatum() - 1)->SetLocked(false);
+                    }
+                }
+            }
+        }
+    }
+    SetDescLabel(0x9ba78ba2);
+    if (GetCurrentDatum() != nullptr) {
+        RaceDatum* datum = static_cast< RaceDatum* >(GetCurrentDatum());
+        TrackMapStreamer.Init(datum->race, TrackMap, 0, 0);
     }
     SetInitialPosition(0);
     RefreshHeader();
