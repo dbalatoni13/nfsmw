@@ -609,35 +609,23 @@ const Attrib::Gen::emitterdata &Emitter::GetAttributes() const {
     return this->mDynamicData->GetAttributes();
 }
 
-// UNSOLVED
 bool EmitterGroup::MakeOneShot(bool force_all) {
     bool at_least_one_was_oneshot = false;
-    bool bVar2;
 
-    Emitter *emitter = this->mEmitters.GetHead();
-    do {
-        if (emitter == (Emitter *)&this->mEmitters) {
-            bVar2 = false;
-            if ((force_all) || (at_least_one_was_oneshot)) {
-                bVar2 = true;
-            }
-            return bVar2;
-        }
-        if (force_all) {
-        LAB_80111078:
-            emitter->mFlags = emitter->mFlags | 1;
-        } else {
-            const Attrib::Gen::emitterdata atr = emitter->GetAttributes();
-            bool one_shot = force_all;
+    for (Emitter *emitter = mEmitters.GetHead(); emitter != mEmitters.EndOfList(); emitter = emitter->GetNext()) {
+        bool one_shot = force_all;
+        if (!one_shot) {
+            const Attrib::Gen::emitterdata &atr = emitter->GetAttributes();
             if (atr.IsValid() && atr.IsOneShot()) {
                 at_least_one_was_oneshot = true;
                 one_shot = true;
             }
-            if (one_shot)
-                goto LAB_80111078;
         }
-        emitter = emitter->GetNext();
-    } while (true);
+        if (one_shot) {
+            emitter->MakeOneShot();
+        }
+    }
+    return force_all || at_least_one_was_oneshot;
 }
 
 void EmitterGroup::SetLocalWorld(const bMatrix4 *m) {
@@ -673,42 +661,60 @@ void EmitterLibrary::EndianSwap() {
     bPlatEndianSwap(&this->mNumTriggers);
 }
 
-// UNSOLVED
-unsigned short *EmitterLibraryHeader::GetLibraryNumTriggers(int i) {
-    EmitterLibrary *plib = reinterpret_cast<EmitterLibrary *>(&this[1]);
+uint16 *EmitterLibraryHeader::GetLibraryNumTriggers(int32 i) {
+    EmitterLibrary *plib = reinterpret_cast<EmitterLibrary *>(this + 1);
     EmitterLibrary *lib = plib;
-
     if (i == 0) {
-        return &plib->mNumTriggers;
-    }
-    int ix;
-    for (ix = 0; ix < i; i++) {
-        unsigned short num_trigs = lib->mNumTriggers;
-        WorldFXTrigger *trigs = reinterpret_cast<WorldFXTrigger *>(&lib[1]);
-        lib = reinterpret_cast<EmitterLibrary *>(&trigs[num_trigs]);
-    }
-    if (ix == i) {
         return &lib->mNumTriggers;
+    }
+    int32 ix = 0;
+    while (ix < i) {
+        WorldFXTrigger *trigs = reinterpret_cast<WorldFXTrigger *>(lib + 1);
+        uint16 num_trigs = lib->mNumTriggers;
+        if (ix == i) {
+            return &lib->mNumTriggers;
+        }
+        lib = reinterpret_cast<EmitterLibrary *>(trigs + num_trigs);
+        if (++ix == i) {
+            return &lib->mNumTriggers;
+        }
+    }
+    return nullptr;
+}
+
+WorldFXTrigger *EmitterLibraryHeader::GetLibraryTriggers(int32 i) {
+    EmitterLibrary *plib = reinterpret_cast<EmitterLibrary *>(this + 1);
+    EmitterLibrary *lib = plib;
+    int32 ix = 0;
+    while (ix <= i) {
+        WorldFXTrigger *trigs = reinterpret_cast<WorldFXTrigger *>(lib + 1);
+        if (ix == i) {
+            if (lib->mNumTriggers == 0) {
+                return nullptr;
+            }
+            return trigs;
+        }
+        uint16 num_trigs = lib->mNumTriggers;
+        lib = reinterpret_cast<EmitterLibrary *>(trigs + lib->mNumTriggers);
+        ix++;
     }
     return nullptr;
 }
 
 // UNSOLVED
-EmitterLibrary *EmitterLibraryHeader::GetLibrary(int i) {
-    EmitterLibrary *plib = reinterpret_cast<EmitterLibrary *>(&this[1]);
-    EmitterLibrary *lib = plib;
-
+EmitterLibrary *EmitterLibraryHeader::GetLibrary(int32 i) {
+    EmitterLibrary *lib = reinterpret_cast<EmitterLibrary *>(this + 1);
     if (i == 0) {
-        return plib;
-    }
-    int ix;
-    for (ix = 0; ix < i; i++) {
-        unsigned short num_trigs = lib->mNumTriggers;
-        WorldFXTrigger *trigs = reinterpret_cast<WorldFXTrigger *>(&lib[1]);
-        lib = reinterpret_cast<EmitterLibrary *>(&trigs[num_trigs]);
-    }
-    if (ix == i) {
         return lib;
+    }
+    int32 ix = 0;
+    while (ix < i) {
+        uint16 num_trigs = lib->mNumTriggers;
+        WorldFXTrigger *trigs = reinterpret_cast<WorldFXTrigger *>(lib + 1);
+        lib = reinterpret_cast<EmitterLibrary *>(trigs + num_trigs);
+        if (++ix == i) {
+            return lib;
+        }
     }
     return nullptr;
 }
@@ -740,46 +746,37 @@ void EmitterLibraryHeader::EndianSwap() {
 // UNSOLVED (lazy)
 EmitterParticle *EmitterSystem::GetNewParticle(Emitter *spawning_emitter) {
     unsigned short num_emitters;
-    bool done;
-    bool bVar3;
-    unsigned int uVar4;
-    bNode *pbVar5;
-    EmitterGroup *grp;
     EmitterGroup *this_00;
-    EmitterGroup *local_r31_188;
 
     if (this->mTotalNumParticles == 1024) {
         bool high_priority = spawning_emitter->GetEmitterGroup()->GetFlags() & 0x40000;
         if (high_priority) {
-            done = false;
-            grp = this->mEmitterGroups.GetHead();
-            while (this_00 = grp, bVar3 = !done, bVar3) {
-                if (this_00 == this->mEmitterGroups.EndOfList()) {
-                    if (bVar3) {
-                        grp = this->mEmitterGroups.GetHead();
-                        while ((bVar3 && (grp != this->mEmitterGroups.EndOfList()))) {
-                            local_r31_188 = grp->GetNext();
-                            if (((grp->GetFlags() & 0x40000) == 0) && (done = true)) {
-                                delete grp;
-                            }
-                            bVar3 = !done;
-                            grp = local_r31_188;
-                        }
-                    }
-                    break;
+            bool done = false; // r29
+            EmitterGroup *grp = this->mEmitterGroups.GetHead();
+            while (!done && grp != mEmitterGroups.EndOfList()) {
+                EmitterGroup *grpnext = grp->GetNext();
+                if (grp->GetNumParticles() != 0 && 
+                    ((grp->GetFlags() & 0x8000000) != 0) && 
+                    ((grp->GetFlags() & 0x40000) == 0) &&
+                    ((grp->GetFlags() & 0x4000000) == 0)) {
+                    done = true;
+                    delete grp;
                 }
-                grp = this_00->GetNext();
-                uVar4 = this_00->GetNumParticles();
-                if ((uVar4 != 0) && (uVar4 = this_00->GetFlags(), (uVar4 & 0x8000000) != 0) && ((uVar4 & 0x40000) == 0) &&
-                    ((uVar4 & 0x4000000) == 0 && (done = true))) {
-                    delete this_00;
+                grp = grpnext;
+            }
+            while (!done && grp != mEmitterGroups.EndOfList()) {
+                EmitterGroup *grpnext = grp->GetNext();
+                if ((grp->GetFlags() & 0x40000) == 0) {
+                    done = true;
+                    delete grp;
                 }
+                grp = grpnext;
             }
         }
     }
     EmitterParticle *new_particle = new EmitterParticle();
     if (new_particle) {
-        new_particle->mFlags = spawning_emitter->mFlags & 0xFFFF0000;
+        new_particle->mFlags = spawning_emitter->GetFlags() & 0xFFFF0000;
         spawning_emitter->GetParticles().AddTail(new_particle);
         int listix = spawning_emitter->GetParticleListIndex();
         this->mTotalNumParticles++;
