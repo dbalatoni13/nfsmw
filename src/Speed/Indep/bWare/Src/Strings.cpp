@@ -78,24 +78,20 @@ char *bStrNCpy(char *to, const char *from, int m) {
     int remaining = m - 1;
     int n = 0;
 
-    if (m == 0) {
-        return to;
-    }
-
-    char c = *from;
-    *to = c;
-    if (c != '\0') {
-        do {
-            bool done = remaining == 0;
-            n = n + 1;
-            remaining = remaining - 1;
-            if (done) {
-                return to;
-            }
-
-            c = from[n];
-            to[n] = c;
-        } while (c != '\0');
+    if (m != 0) {
+        char c = *from;
+        *to = c;
+        if (c != '\0') {
+            do {
+                if (remaining == 0) {
+                    return to;
+                }
+                n = n + 1;
+                remaining = remaining - 1;
+                c = from[n];
+                to[n] = c;
+            } while (c != '\0');
+        }
     }
 
     return to;
@@ -118,24 +114,20 @@ unsigned short *bStrNCpy(unsigned short *to, const char *from, int m) {
     int remaining = m - 1;
     int n = 0;
 
-    if (m == 0) {
-        return to;
-    }
-
-    char c = *from;
-    *to = static_cast<unsigned char>(c);
-    if (c != '\0') {
-        do {
-            bool done = remaining == 0;
-            n = n + 1;
-            remaining = remaining - 1;
-            if (done) {
-                return to;
-            }
-
-            c = from[n];
-            to[n] = static_cast<unsigned char>(c);
-        } while (c != '\0');
+    if (m != 0) {
+        char c = *from;
+        *to = static_cast<unsigned char>(c);
+        if (c != '\0') {
+            do {
+                if (remaining == 0) {
+                    return to;
+                }
+                n = n + 1;
+                remaining = remaining - 1;
+                c = from[n];
+                to[n] = static_cast<unsigned char>(c);
+            } while (c != '\0');
+        }
     }
 
     return to;
@@ -738,14 +730,12 @@ char *bStrIStr(const char *s1, const char *s2) {
     int len = bStrLen(s2);
     char c = *s1;
 
-    while (true) {
-        if (c == '\0') {
-            return nullptr;
-        }
+    while (c != '\0') {
         if (bStrNICmp(s1, s2, len) == 0) {
             return const_cast<char *>(s1);
         }
-        s1 = s1 + 1;
-        c = *s1;
+        c = *++s1;
     }
+
+    return nullptr;
 }
