@@ -529,39 +529,6 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
         TheICEManager.SetSmoothExit(true);
 
         {
-            UMath::Matrix4 mCarToWorld;
-            UMath::Matrix4 mWorldToCar;
-            UMath::Matrix4 mWorldToHybrid;
-            ICE::Cubic3D eye(0, 0.0f);
-            ICE::Cubic3D look(0, 0.0f);
-            ICE::Cubic1D dutch(0, 0.0f);
-            ICE::Cubic1D fov(0, 0.0f);
-            UMath::Matrix4 mWorldToScene;
-            UMath::Matrix4 *pWorldToScene = 0;
-            UMath::Matrix4 *eye_space;
-            UMath::Matrix4 *look_space;
-
-            bCopy(reinterpret_cast<bMatrix4 *>(&mCarToWorld),
-                  reinterpret_cast<const bMatrix4 *>(pCar->GetGeometryOrientation()),
-                  reinterpret_cast<const bVector3 *>(pCar->GetGeometryPosition()));
-
-            eInvertTransformationMatrix(reinterpret_cast<bMatrix4 *>(&mWorldToCar),
-                                        reinterpret_cast<const bMatrix4 *>(&mCarToWorld));
-
-            eInvertTransformationMatrix(reinterpret_cast<bMatrix4 *>(&mWorldToHybrid),
-                                        reinterpret_cast<const bMatrix4 *>(&mHybridToWorld));
-
-            PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mWorldToScene));
-
-            if (nSpaceEye == 3 || nSpaceLook == 3) {
-                ICEScene *scene = ICE::FindAnimScene();
-                if (scene != 0) {
-                    bMatrix4 &sceneMat = scene->GetSceneTransformMatrix();
-                    pWorldToScene = &mWorldToScene;
-                    eInvertTransformationMatrix(reinterpret_cast<bMatrix4 *>(pWorldToScene), &sceneMat);
-                }
-            }
-
             ICE::Vector3 v_eye[2];
             ICE::Vector3 v_look[2];
             ICE::Vector3 v_eye_slope[2];
@@ -577,107 +544,142 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
             TheICEManager.GetSlope(&v_eye_slope[0], &v_look_slope[0], &f_lens_slope[0], &f_dutch_slope[0], pCameraData, 0, p_track);
             TheICEManager.GetSlope(&v_eye_slope[1], &v_look_slope[1], &f_lens_slope[1], &f_dutch_slope[1], pCameraData, 1, p_track);
 
-            eye.SetVal(&v_eye[0]);
-            eye.SetdVal(&v_eye_slope[0]);
-            eye.SetValDesired(&v_eye[1]);
-            eye.SetdValDesired(&v_eye_slope[1]);
+            {
+                UMath::Matrix4 mCarToWorld;
+                UMath::Matrix4 mWorldToCar;
+                UMath::Matrix4 mWorldToHybrid;
+                ICE::Cubic3D eye(0, 0.0f);
+                ICE::Cubic3D look(0, 0.0f);
+                ICE::Cubic1D dutch(0, 0.0f);
+                ICE::Cubic1D fov(0, 0.0f);
+                UMath::Matrix4 mWorldToScene;
+                UMath::Matrix4 *pWorldToScene = 0;
+                UMath::Matrix4 *eye_space;
+                UMath::Matrix4 *look_space;
 
-            look.SetVal(&v_look[0]);
-            look.SetdVal(&v_look_slope[0]);
-            look.SetValDesired(&v_look[1]);
-            look.SetdValDesired(&v_look_slope[1]);
-
-            dutch.SetVal(pCameraData->fDutch[0]);
-            dutch.SetdVal(f_dutch_slope[0]);
-            dutch.SetValDesired(pCameraData->fDutch[1]);
-            dutch.SetdValDesired(f_dutch_slope[1]);
-
-            unsigned short fov0 = ConvertLensLengthToFovAngle(pCameraData->fLens[0]);
-            unsigned short fov1 = ConvertLensLengthToFovAngle(pCameraData->fLens[1]);
-            float fov0_slope = ConvertLensDeltaToFovDelta(pCameraData->fLens[0], f_lens_slope[0]);
-            float fov1_slope = ConvertLensDeltaToFovDelta(pCameraData->fLens[1], f_lens_slope[1]);
-
-            fov.SetVal(static_cast<float>(fov0));
-            fov.SetdVal(fov0_slope);
-            fov.SetValDesired(static_cast<float>(fov1));
-            fov.SetdValDesired(fov1_slope);
-
-            if (hard_cut || es || ls) {
-                PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mHybridToWorld));
-                ICE::Vector3 *carPos = pCar->GetGeometryPosition();
-                bCopy(reinterpret_cast<bMatrix4 *>(&mHybridToWorld),
+                bCopy(reinterpret_cast<bMatrix4 *>(&mCarToWorld),
                       reinterpret_cast<const bMatrix4 *>(pCar->GetGeometryOrientation()),
-                      reinterpret_cast<const bVector3 *>(carPos));
-            }
+                      reinterpret_cast<const bVector3 *>(pCar->GetGeometryPosition()));
 
-            switch (nSpaceEye) {
-                case 0: eye_space = reinterpret_cast<UMath::Matrix4 *>(&mWorldToCar); break;
-                case 2: eye_space = &mWorldToHybrid; break;
-                case 3: eye_space = pWorldToScene; break;
-                default: eye_space = 0; break;
-            }
+                eInvertTransformationMatrix(reinterpret_cast<bMatrix4 *>(&mWorldToCar),
+                                            reinterpret_cast<const bMatrix4 *>(&mCarToWorld));
 
-            switch (nSpaceLook) {
-                case 0: look_space = reinterpret_cast<UMath::Matrix4 *>(&mWorldToCar); break;
-                case 2: look_space = &mWorldToHybrid; break;
-                case 3: look_space = pWorldToScene; break;
-                default: look_space = 0; break;
-            }
+                eInvertTransformationMatrix(reinterpret_cast<bMatrix4 *>(&mWorldToHybrid),
+                                            reinterpret_cast<const bMatrix4 *>(&mHybridToWorld));
 
-            ICE::Vector3 *eye_vel = (nSpaceEye == 0) ? pCar->GetVelocity() : static_cast<ICE::Vector3 *>(0);
-            ICE::Vector3 *look_vel = (nSpaceLook == 0) ? pCar->GetVelocity() : static_cast<ICE::Vector3 *>(0);
+                PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mWorldToScene));
 
-            EyeCubicInit(&eye, reinterpret_cast<ICE::Matrix4 *>(eye_space), eye_vel);
-            LookCubicInit(&look, reinterpret_cast<ICE::Matrix4 *>(look_space), look_vel);
-            DutchCubicInit(&dutch);
-            FovCubicInit(&fov);
+                if (nSpaceEye == 3 || nSpaceLook == 3) {
+                    ICEScene *scene = ICE::FindAnimScene();
+                    if (scene != 0) {
+                        bMatrix4 &sceneMat = scene->GetSceneTransformMatrix();
+                        pWorldToScene = &mWorldToScene;
+                        eInvertTransformationMatrix(reinterpret_cast<bMatrix4 *>(pWorldToScene), &sceneMat);
+                    }
+                }
 
-            float f_route_param = TheICEManager.GetParameter();
-            float f_to_start = bAbs(f_route_param - fParameter0);
-            float f_to_end = bAbs(f_route_param - fParameter1);
+                eye.SetVal(&v_eye[0]);
+                eye.SetdVal(&v_eye_slope[0]);
+                eye.SetValDesired(&v_eye[1]);
+                eye.SetdValDesired(&v_eye_slope[1]);
 
-            if (f_to_end <= f_to_start) {
-                ICE::Vector3 v_eye_val;
-                ICE::Vector3 v_deye;
-                ICE::Vector3 v_look_val;
-                ICE::Vector3 v_dlook;
+                look.SetVal(&v_look[0]);
+                look.SetdVal(&v_look_slope[0]);
+                look.SetValDesired(&v_look[1]);
+                look.SetdValDesired(&v_look_slope[1]);
 
-                eye.GetVal(&v_eye_val);
-                eye.GetdVal(&v_deye);
-                pEye->SetValDesired(&v_eye_val);
-                pEye->SetdValDesired(&v_deye);
+                dutch.SetVal(pCameraData->fDutch[0]);
+                dutch.SetdVal(f_dutch_slope[0]);
+                dutch.SetValDesired(pCameraData->fDutch[1]);
+                dutch.SetdValDesired(f_dutch_slope[1]);
 
-                look.GetVal(&v_look_val);
-                look.GetdVal(&v_dlook);
-                pLook->SetValDesired(&v_look_val);
-                pLook->SetdValDesired(&v_dlook);
+                unsigned short fov0 = ConvertLensLengthToFovAngle(pCameraData->fLens[0]);
+                unsigned short fov1 = ConvertLensLengthToFovAngle(pCameraData->fLens[1]);
+                float fov0_slope = ConvertLensDeltaToFovDelta(pCameraData->fLens[0], f_lens_slope[0]);
+                float fov1_slope = ConvertLensDeltaToFovDelta(pCameraData->fLens[1], f_lens_slope[1]);
 
-                pDutch->SetValDesired(dutch.GetVal());
-                pDutch->dValDesired = dutch.GetdVal();
+                fov.SetVal(static_cast<float>(fov0));
+                fov.SetdVal(fov0_slope);
+                fov.SetValDesired(static_cast<float>(fov1));
+                fov.SetdValDesired(fov1_slope);
 
-                pFov->SetValDesired(fov.GetVal());
-                pFov->dValDesired = fov.GetdVal();
-            } else {
-                ICE::Vector3 v_eye_val;
-                ICE::Vector3 v_deye;
-                ICE::Vector3 v_look_val;
-                ICE::Vector3 v_dlook;
+                if (hard_cut || es || ls) {
+                    PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mHybridToWorld));
+                    ICE::Vector3 *carPos = pCar->GetGeometryPosition();
+                    bCopy(reinterpret_cast<bMatrix4 *>(&mHybridToWorld),
+                          reinterpret_cast<const bMatrix4 *>(pCar->GetGeometryOrientation()),
+                          reinterpret_cast<const bVector3 *>(carPos));
+                }
 
-                eye.GetVal(&v_eye_val);
-                eye.GetdVal(&v_deye);
-                pEye->SetVal(&v_eye_val);
-                pEye->SetdVal(&v_deye);
+                switch (nSpaceEye) {
+                    case 0: eye_space = reinterpret_cast<UMath::Matrix4 *>(&mWorldToCar); break;
+                    case 2: eye_space = &mWorldToHybrid; break;
+                    case 3: eye_space = pWorldToScene; break;
+                    default: eye_space = 0; break;
+                }
 
-                look.GetVal(&v_look_val);
-                look.GetdVal(&v_dlook);
-                pLook->SetVal(&v_look_val);
-                pLook->SetdVal(&v_dlook);
+                switch (nSpaceLook) {
+                    case 0: look_space = reinterpret_cast<UMath::Matrix4 *>(&mWorldToCar); break;
+                    case 2: look_space = &mWorldToHybrid; break;
+                    case 3: look_space = pWorldToScene; break;
+                    default: look_space = 0; break;
+                }
 
-                pDutch->SetVal(dutch.GetVal());
-                pDutch->SetdVal(dutch.GetdVal());
+                ICE::Vector3 *eye_vel = (nSpaceEye == 0) ? pCar->GetVelocity() : static_cast<ICE::Vector3 *>(0);
+                ICE::Vector3 *look_vel = (nSpaceLook == 0) ? pCar->GetVelocity() : static_cast<ICE::Vector3 *>(0);
 
-                pFov->SetVal(fov.GetVal());
-                pFov->SetdVal(fov.GetdVal());
+                EyeCubicInit(&eye, reinterpret_cast<ICE::Matrix4 *>(eye_space), eye_vel);
+                LookCubicInit(&look, reinterpret_cast<ICE::Matrix4 *>(look_space), look_vel);
+                DutchCubicInit(&dutch);
+                FovCubicInit(&fov);
+
+                float f_route_param = TheICEManager.GetParameter();
+                float f_to_start = bAbs(f_route_param - fParameter0);
+                float f_to_end = bAbs(f_route_param - fParameter1);
+
+                if (f_to_end <= f_to_start) {
+                    ICE::Vector3 v_eye_val;
+                    ICE::Vector3 v_deye;
+                    ICE::Vector3 v_look_val;
+                    ICE::Vector3 v_dlook;
+
+                    eye.GetVal(&v_eye_val);
+                    eye.GetdVal(&v_deye);
+                    pEye->SetValDesired(&v_eye_val);
+                    pEye->SetdValDesired(&v_deye);
+
+                    look.GetVal(&v_look_val);
+                    look.GetdVal(&v_dlook);
+                    pLook->SetValDesired(&v_look_val);
+                    pLook->SetdValDesired(&v_dlook);
+
+                    pDutch->SetValDesired(dutch.GetVal());
+                    pDutch->dValDesired = dutch.GetdVal();
+
+                    pFov->SetValDesired(fov.GetVal());
+                    pFov->dValDesired = fov.GetdVal();
+                } else {
+                    ICE::Vector3 v_eye_val;
+                    ICE::Vector3 v_deye;
+                    ICE::Vector3 v_look_val;
+                    ICE::Vector3 v_dlook;
+
+                    eye.GetVal(&v_eye_val);
+                    eye.GetdVal(&v_deye);
+                    pEye->SetVal(&v_eye_val);
+                    pEye->SetdVal(&v_deye);
+
+                    look.GetVal(&v_look_val);
+                    look.GetdVal(&v_dlook);
+                    pLook->SetVal(&v_look_val);
+                    pLook->SetdVal(&v_dlook);
+
+                    pDutch->SetVal(dutch.GetVal());
+                    pDutch->SetdVal(dutch.GetdVal());
+
+                    pFov->SetVal(fov.GetVal());
+                    pFov->SetdVal(fov.GetdVal());
+                }
             }
         }
     }
