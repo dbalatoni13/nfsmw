@@ -439,10 +439,19 @@ void CubicCameraMover::Update(float dT) {
     float fAccelH = bMax(bAbs(vAccel.x), bAbs(vAccel.y));
     float fAccelV;
 
-    if (0.1f <= fAccelH && 0.0f < pCar->GetCollisionDamping() &&
+    if (24.0f <= fAccelH && 0.0f < pCar->GetCollisionDamping() &&
         vCameraImpcat.x < pCar->GetCollisionDamping()) {
         vCameraImpcat.x = pCar->GetCollisionDamping();
         vCameraImpcatTimer.x = 1.0f;
+    }
+
+    fAccelV = vAccel.z;
+    if (fAccelV >= 24.0f) {
+        float impact = bClamp((fAccelV - 24.0f) * (1.0f / 6.0f), 0.0f, 1.0f);
+        if (impact > vCameraImpcat.y) {
+            vCameraImpcat.y = impact;
+            vCameraImpcatTimer.y = 1.0f;
+        }
     }
 
     float eye_duration = pov_data.fEyeDuration;
