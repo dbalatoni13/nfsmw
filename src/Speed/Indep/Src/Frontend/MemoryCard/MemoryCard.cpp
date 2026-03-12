@@ -379,9 +379,9 @@ void MemoryCard::BootupCheck(const char* entry) {
 bool MemoryCard::ShouldDoAutoSave(bool bForce) {
     if (bForce) return true;
     if (m_bCancelNextAutoSave) { m_bCancelNextAutoSave = false; return false; }
+    if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) return false;
     if (!IsMemcardEnabled || !IsAutoSaveEnabled) return false;
-    if (!FEDatabase->IsOnlineMode() && !FEDatabase->IsLANMode()
-        && (FEDatabase->GetGameplaySettings()->AutoSaveOn || m_bCardRemoved)) {
+    if (FEDatabase->GetGameplaySettings()->AutoSaveOn || m_bCardRemoved) {
         if (!FEDatabase->IsFinalEpicChase() && GRaceStatus::Exists()
             && GRaceStatus::Get().GetRaceParameters() != nullptr
             && GRaceStatus::Get().GetRaceParameters()->GetIsBossRace())
