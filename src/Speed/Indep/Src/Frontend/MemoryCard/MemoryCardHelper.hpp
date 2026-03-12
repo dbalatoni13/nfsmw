@@ -38,6 +38,8 @@ struct THREAD {
     int reserved[198]; // offset 0x0, size 0x318
 };
 
+void THREAD_destroy(THREAD* thread);
+
 struct MyThread : public IThread {
     int mRefcount;                   // offset 0x4, size 0x4
     int (*mEntryFunc)(void*);        // offset 0x8, size 0x4
@@ -46,6 +48,13 @@ struct MyThread : public IThread {
     THREAD mThreadData;              // offset 0x14, size 0x318
     int mPriority;                   // offset 0x32C, size 0x4
     bool mActive;                    // offset 0x330, size 0x1
+
+    ~MyThread() {
+        if (mActive) {
+            WaitForEnd(0);
+            THREAD_destroy(&mThreadData);
+        }
+    }
 
     int AddRef() override;
     int Release() override;
@@ -63,6 +72,10 @@ struct MyThread : public IThread {
 struct MyMutex : public IMutex {
     MUTEX mMutex;  // offset 0x4, size 0x1C
     int mRefcount; // offset 0x20, size 0x4
+
+    ~MyMutex() {
+        MUTEX_destroy(&mMutex);
+    }
 
     int AddRef() override;
     int Release() override;

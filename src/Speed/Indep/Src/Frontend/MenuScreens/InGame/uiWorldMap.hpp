@@ -86,7 +86,7 @@ struct MapItem : public bTNode<MapItem> {
 
     MapItem(eWorldMapItemType type, FEObject* iconObj, bVector2& map_pos, bVector2& world_pos,
             float rot, GIcon* icon);
-    virtual ~MapItem();
+    virtual ~MapItem() {}
 
     void GetInitialPos(bVector2& pos) {
         pos = InitialPos;

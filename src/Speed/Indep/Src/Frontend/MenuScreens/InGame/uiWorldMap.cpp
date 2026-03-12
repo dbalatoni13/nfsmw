@@ -102,8 +102,6 @@ inline void FEngSetSizeX(FEObject* obj, float x) {
     FEngSetSize(obj, x, y);
 }
 
-MapItem::~MapItem() {}
-
 inline MapItem::MapItem(eWorldMapItemType type, FEObject* iconObj, bVector2& map_pos, bVector2& world_pos,
                  float rot, GIcon* icon) {
     pIcon = iconObj;
