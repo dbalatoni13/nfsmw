@@ -2566,3 +2566,174 @@ bool WRoadNav::MakeShortcutDecision(int shortcut_number, unsigned int *cached, u
     }
     return true;
 }
+
+short WRoadNav::GetNextTraffic(const UMath::Vector3 &toVec, float &nextLaneOffset, char &nodeInd, bool &useOldStartPos) {
+    struct Candidate {
+        int Lane;
+        int WhichNode;
+        int SegmentNumber;
+        bool LastResort;
+    };
+
+    WRoadNetwork &roadNetwork = WRoadNetwork::Get();
+    int which_node = static_cast< int >(GetNodeInd());
+    short oldSegInd = GetSegmentInd();
+    const WRoadSegment *segment = roadNetwork.GetSegment(oldSegInd);
+    const WRoadProfile *profile = roadNetwork.GetSegmentProfile(*segment, which_node);
+    bool forward = (which_node == 1);
+    bool inverted = segment->IsProfileInverted(which_node);
+    char newLaneInd = GetLaneInd();
+    int nth_lane = 0;
+    int num_traffic_lanes = 0;
+
+    int num_lanes = profile->GetNumLanes(forward, inverted);
+    for (int i = 0; i < num_lanes; i++) {
+        int real_lane = profile->GetNthLane(i, forward, inverted);
+        if (profile->GetLaneType(real_lane, inverted) == 1) {
+            if (newLaneInd == real_lane) {
+                nth_lane = num_traffic_lanes;
+            }
+            num_traffic_lanes++;
+        }
+    }
+
+    const WRoadNode *node = roadNetwork.GetNode(segment->fNodeIndex[which_node]);
+    short newSegInd = GetSegmentInd();
+    int current_lane = static_cast< int >(GetLaneInd());
+    const WRoadSegment *checkSegment = GetAttachedDirectionalSegment(node, oldSegInd);
+
+    if (node->fNumSegments < 2) {
+        newSegInd = segment->fIndex;
+    } else if (checkSegment != nullptr) {
+        newSegInd = checkSegment->fIndex;
+        bool new_forward = (node == roadNetwork.GetNode(checkSegment->fNodeIndex[0]));
+        nodeInd = new_forward;
+        bool new_inverted = checkSegment->IsProfileInverted(static_cast< int >(nodeInd));
+        const WRoadProfile *new_profile = roadNetwork.GetSegmentProfile(*checkSegment, static_cast< int >(nodeInd));
+        current_lane = new_profile->GetNthTrafficLane(nth_lane, new_forward, new_inverted);
+    } else {
+        float lenSq = UMath::LengthSquare(toVec);
+        if (lenSq > 0.01f) {
+            float bestDot = -1.0f;
+            float check_segment_number = bestDot;
+            for (int onSeg = 0; onSeg < static_cast< int >(node->fNumSegments); onSeg++) {
+                const WRoadSegment *intersectionSegment = roadNetwork.GetSegment(node->fSegmentIndex[onSeg]);
+                if (intersectionSegment->fIndex == GetSegmentInd()) continue;
+                if (!intersectionSegment->IsTrafficAllowed()) continue;
+
+                const WRoadNode *oppNode = roadNetwork.GetSegmentOppNode(*intersectionSegment, node);
+                const WRoadSegment *checkSegment = GetAttachedDirectionalSegment(oppNode, -1);
+                if (checkSegment == nullptr) continue;
+                if (!checkSegment->IsTrafficAllowed()) continue;
+
+                bool reverse = (oppNode != roadNetwork.GetNode(checkSegment->fNodeIndex[0]));
+                UMath::Vector3 vec;
+                roadNetwork.GetSegmentForwardVector(*checkSegment, vec);
+                if (reverse) {
+                    vec = UMath::Vector3Make(-vec.x, -vec.y, -vec.z);
+                }
+                UMath::Unit(vec, vec);
+                float dot = UMath::Dot(vec, toVec);
+
+                if (dot >= bestDot) {
+                    newSegInd = node->fSegmentIndex[onSeg];
+                    const WRoadSegment *newSegment = roadNetwork.GetSegment(newSegInd);
+                    nodeInd = (node == roadNetwork.GetNode(newSegment->fNodeIndex[0]));
+                    check_segment_number = static_cast< float >(checkSegment->fIndex);
+                    bestDot = dot;
+                }
+            }
+
+            if (check_segment_number != -1.0f) {
+                const WRoadSegment *newSegment = roadNetwork.GetSegment(newSegInd);
+                bool new_forward = (nodeInd == 1);
+                const WRoadProfile *new_profile = roadNetwork.GetSegmentProfile(*newSegment, static_cast< int >(nodeInd));
+                bool new_inverted = newSegment->IsProfileInverted(static_cast< int >(nodeInd));
+
+                int rightmost = roadNetwork.GetRightMostTrafficEntrance(
+                    newSegment->fNodeIndex[static_cast< int >(nodeInd)],
+                    static_cast< int >(check_segment_number));
+
+                if (newSegInd == rightmost) {
+                    int nth_from_curb = num_traffic_lanes - nth_lane - 1;
+                    current_lane = new_profile->GetNthTrafficLaneFromCurb(nth_from_curb, new_forward, new_inverted);
+                } else {
+                    current_lane = new_profile->GetNthTrafficLane(nth_lane, new_forward, new_inverted);
+                }
+            }
+        } else {
+            int num_candidates = 0;
+            Candidate candidates[7];
+
+            for (int i = 0; i < static_cast< int >(node->fNumSegments); i++) {
+                int new_segment_number = node->fSegmentIndex[i];
+                if (new_segment_number == GetSegmentInd()) continue;
+
+                const WRoadSegment *decision_segment = roadNetwork.GetSegment(new_segment_number);
+                if (!decision_segment->IsTrafficAllowed()) continue;
+
+                const WRoadNode *nodePtr[2];
+                roadNetwork.GetSegmentNodes(*decision_segment, nodePtr);
+                const WRoadNode *oppNode = nodePtr[0];
+                if (node == nodePtr[0]) {
+                    oppNode = nodePtr[1];
+                }
+
+                const WRoadSegment *checkSegment = GetAttachedDirectionalSegment(oppNode, -1);
+                if (checkSegment == nullptr) continue;
+                if (!checkSegment->IsTrafficAllowed()) continue;
+                if (oppNode != roadNetwork.GetNode(checkSegment->fNodeIndex[0]) && checkSegment->IsOneWay()) continue;
+
+                int new_which_node = (node->fIndex != decision_segment->fNodeIndex[1]);
+                bool new_forward = new_which_node;
+                bool new_inverted = decision_segment->IsProfileInverted(new_which_node);
+                const WRoadProfile *new_profile = roadNetwork.GetSegmentProfile(*decision_segment, new_which_node);
+                int num_traffic_lanes = new_profile->GetNumTrafficLanes(new_forward, new_inverted);
+
+                if (num_traffic_lanes == 0) continue;
+
+                int rightmost_traffic_entrance = roadNetwork.GetRightMostTrafficEntrance(
+                    oppNode->fIndex, checkSegment->fIndex);
+
+                if (new_segment_number == rightmost_traffic_entrance) {
+                    int nth_from_curb = num_traffic_lanes - nth_lane - 1;
+                    candidates[num_candidates].LastResort = (nth_from_curb > 0);
+                    candidates[num_candidates].Lane = new_profile->GetNthTrafficLaneFromCurb(nth_from_curb, new_forward, new_inverted);
+                } else {
+                    candidates[num_candidates].LastResort = false;
+                    candidates[num_candidates].Lane = new_profile->GetNthTrafficLane(nth_lane, new_forward, new_inverted);
+                }
+                candidates[num_candidates].WhichNode = new_which_node;
+                candidates[num_candidates].SegmentNumber = new_segment_number;
+                num_candidates++;
+            }
+
+            if (num_candidates > 0) {
+                int selection = 0;
+                if (num_candidates > 1) {
+                    selection = bRandom(num_candidates);
+                    if (candidates[selection].LastResort) {
+                        selection = (selection + 1) % num_candidates;
+                    }
+                }
+                nodeInd = static_cast< char >(candidates[selection].WhichNode);
+                newSegInd = static_cast< short >(candidates[selection].SegmentNumber);
+                current_lane = candidates[selection].Lane;
+            }
+        }
+    }
+
+    if (newSegInd != GetSegmentInd()) {
+        if (current_lane < 0) {
+            current_lane = 0;
+        }
+        SetLaneInd(static_cast< char >(current_lane));
+        fToLaneInd = static_cast< char >(current_lane);
+
+        const WRoadNode *oppNode = roadNetwork.GetSegmentOppNode(*roadNetwork.GetSegment(newSegInd), node);
+        nextLaneOffset = roadNetwork.GetProfile(oppNode->fProfileIndex)->GetLaneOffset(current_lane, false);
+    }
+
+    useOldStartPos = true;
+    return newSegInd;
+}
