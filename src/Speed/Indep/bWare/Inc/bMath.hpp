@@ -215,19 +215,11 @@ struct bVector2 {
 
     bVector2(float _x, float _y);
 
-    #if MILESTONE_OPT
-    bVector2(const bVector2 &v) {}
-    #else
     bVector2(const bVector2 &v);
-    #endif
 
     bVector2 operator-(const bVector2 &v);
 
-    #if MILESTONE_OPT
-    bVector2 &operator=(const bVector2 &v) { return *this; }
-    #else
     bVector2 &operator=(const bVector2 &v);
-    #endif
 
     bVector2 &operator*=(float scale) {}
 
@@ -258,20 +250,17 @@ inline bVector2 *bFill(bVector2 *dest, float x, float y) {
     return dest;
 }
 
-#if !MILESTONE_OPT
 inline bVector2 *bCopy(bVector2 *dest, const bVector2 *v) {
     float x = v->x;
     float y = v->y;
     bFill(dest, x, y);
     return dest;
 }
-#endif
 
 inline bVector2::bVector2(float _x, float _y) {
     bFill(this, _x, _y);
 }
 
-#if !MILESTONE_OPT
 inline bVector2::bVector2(const bVector2 &v) {
     bCopy(this, &v);
 }
@@ -280,7 +269,6 @@ inline bVector2 &bVector2::operator=(const bVector2 &v) {
     bCopy(this, &v);
     return *this;
 }
-#endif
 
 inline bVector2 bVector2::operator-(const bVector2 &v) {
     float x1 = this->x;
@@ -310,7 +298,6 @@ inline float bDot(const bVector2 *v1, const bVector2 *v2) {
     return v1->x * v2->x + v1->y * v2->y;
 }
 
-#if !MILESTONE_OPT
 inline float bCross(const bVector2 *a, const bVector2 *b) {
     return a->x * b->y - a->y * b->x;
 }
@@ -318,7 +305,6 @@ inline float bCross(const bVector2 *a, const bVector2 *b) {
 inline float bDot(const bVector2 &v1, const bVector2 &v2) {
     return bDot(&v1, &v2);
 }
-#endif
 
 struct ALIGN_16 bVector3 {
     // total size: 0x10
