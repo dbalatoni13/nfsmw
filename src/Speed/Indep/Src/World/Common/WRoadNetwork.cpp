@@ -3225,7 +3225,7 @@ bool WRoadNav::ChangeDragDecision(int left_right) {
                     float cross_val = sign * Cross(ray, departing_ray);
                     if (cross_val >= 0.0f) {
                         float dot = UMath::Dot(ray, departing_ray);
-                        if (dot > best) {
+                        if (best < dot) {
                             new_segment = departing_segment;
                             best = dot;
                             new_which_node = to_which_node;

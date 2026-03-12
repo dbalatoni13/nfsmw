@@ -173,7 +173,7 @@ template <typename T, int Alignment = 16> class Vector {
 
 template <typename T, int Size, int Alignment = 16> class FixedVector : public Vector<T, Alignment> {
   public:
-    FixedVector() {}
+    FixedVector() { this->reserve(Size); }
 
     ~FixedVector() override {
         // clang is being annoying
