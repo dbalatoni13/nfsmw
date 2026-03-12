@@ -198,6 +198,7 @@ int Anim_Apply_Trans = 1;  // size: 0x4, address: 0x80415688
 int Anim_Apply_Rots = 1;   // size: 0x4, address: 0x8041568C
 int Anim_Apply_Scales = 1; // size: 0x4, address: 0x80415690
 
+// TODO
 extern unsigned int eFrameCounter;
 
 int CAnimCtrl::UpdateAnimPose(bool force_calc) {

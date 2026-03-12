@@ -14,6 +14,7 @@
 
 static int NumWorldAnimEntities;           // size: 0x4, address: 0x804156F4
 static int MaxNumWorldAnimEntities;        // size: 0x4, address: 0x804156F8
+// TODO move? they are static though
 static int NumWorldAnimEntityTrees;        // size: 0x4, address: 0x804156FC
 static int MaxNumWorldAnimEntityTrees;     // size: 0x4, address: 0x80415700
 static int NumWorldAnimEntityTreeInfos;    // size: 0x4, address: 0x80415704
@@ -234,6 +235,7 @@ void CWorldAnimEntity::SetTime(float time) {
     if (mAnimCtrl) {
         mAnimCtrl->SetEvalTime(0.0f);
     }
+    // TODO is this right?
     UpdateTimeStep(time);
 }
 
@@ -301,6 +303,7 @@ WorldAnimEntityTreeInfo::WorldAnimEntityTreeInfo(unsigned int treenamehash, bPLi
 
         loaded_world_anim_entity_chunks.AddSorted(&CompareParentIndex, new bPNode(waei));
     }
+    // TODO is the sizeof right?
     bMemCpy(named_ranges, ranges, 4 * sizeof(WorldAnimNamedRange));
 }
 
@@ -333,8 +336,10 @@ WorldAnimEntityTreeInfo::~WorldAnimEntityTreeInfo() {
     }
 }
 
+// TODO move somewhere in zMisc
 extern int AnimCfg_DisableWorldAnimations;
 
+// TODO move?
 bPList<WorldAnimEntityInfo> temp_loaded_world_anim_entity_chunks;
 
 int LoaderWorldAnimTreeMarker(bChunk *chunk) {
@@ -507,6 +512,7 @@ int UnloaderWorldAnimDirectoryData(bChunk *chunk) {
 }
 
 CWorldAnimEntity *CWorldAnimEntityTree::GetEntityByNameHash(unsigned int namehash) {
+    // TODO
     for (bPNode *node = instantiated_world_anim_entities.GetHead(); node != instantiated_world_anim_entities.EndOfList(); node = node->GetNext()) {
         CWorldAnimEntity *entity = reinterpret_cast<CWorldAnimEntity *>(node->GetObject());
         if (entity->GetInstanceNameHash() == namehash) {

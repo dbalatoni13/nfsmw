@@ -149,6 +149,7 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
     const bMatrix4 &GetSceneTranslationMatrix() { return mSceneTranslationMatrix; }
 
     // Virtual overrides from ICEScene
+    // TODO are all of these really overridden?
     virtual ~CAnimScene();
     unsigned int GetSceneHash() override;
     int GetCameraTrackNumber() override;
@@ -222,6 +223,7 @@ struct CAnimMomentScene : public ICEScene {
 
     virtual ~CAnimMomentScene();
 
+    // TODO are all of these really overridden?
     unsigned int GetSceneHash() override { return mSceneHash; }
     int GetCameraTrackNumber() override { return mCamera_track_number; }
     bool IsControllingCamera() override { return true; }

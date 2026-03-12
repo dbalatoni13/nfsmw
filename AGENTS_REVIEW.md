@@ -8,6 +8,8 @@ You should heavily rely on your skills. An AI agent recently decompiled the tran
 but the result is not as clean as human written code. The dwarf in Symbols/Dwarf unfortunately also didn't
 contain the GameCube dwarf, so the agent had to rely on the PS2 ones.
 
+DON'T remove any TODO comments.
+
 You should do the following tasks:
 
 1. Get rid of `using namespace` and qualify the full names instead.

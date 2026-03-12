@@ -18,6 +18,7 @@ class CAnimSettings {
     static bool mDebugPrintEnabled; // size: 0x1
 };
 
+// TODO move?
 enum eAnimCategory {
     eAnimCategory_None = 0,
     eAnimCategory_Race = 1,
