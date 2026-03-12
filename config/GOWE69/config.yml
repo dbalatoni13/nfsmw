@@ -58,3 +58,9 @@ block_relocations:
   end: .text:0x80069F54
 - source: .text:0x80069F60
   end: .text:0x80069F64
+
+# LoaderICECameras / UnloaderICECameras - false relocation to _STL::find
+- source: .text:0x8007F114
+  end: .text:0x8007F11C
+- source: .text:0x8007F19C
+  end: .text:0x8007F1A4

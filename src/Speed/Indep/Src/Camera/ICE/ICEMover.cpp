@@ -102,7 +102,9 @@ static void CreateLookAtMatrix(ICE::Matrix4 *mat, ICE::Vector3 &eye, ICE::Vector
     UMath::Vector3 a;
     UMath::Matrix4 tl;
 
-    UMath::Sub(reinterpret_cast<UMath::Vector3 &>(center), reinterpret_cast<UMath::Vector3 &>(eye), c);
+    c.x = center.x - eye.x;
+    c.y = center.y - eye.y;
+    c.z = center.z - eye.z;
     bNormalize(reinterpret_cast<bVector3 *>(&c), reinterpret_cast<const bVector3 *>(&c));
 
     vUp.x = 0.0f;
