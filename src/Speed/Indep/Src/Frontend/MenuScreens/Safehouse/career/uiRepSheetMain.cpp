@@ -23,14 +23,15 @@ const char* GetLocalizedString(unsigned int hash);
 int GetCurrentLanguage();
 void eUnloadStreamingTexture(unsigned int* textures, int count);
 void eWaitForStreamingTexturePackLoading(const char* name);
+unsigned char FEngGetLastButton(const char* pkg_name);
 
 extern unsigned int iCurrentViewBin;
 extern int selection;
 
 struct RepSheetIcon : public IconOption {
-    int id;
+    unsigned int id;
 
-    RepSheetIcon(unsigned int tex_hash, unsigned int name_hash, int the_id)
+    RepSheetIcon(unsigned int tex_hash, unsigned int name_hash, unsigned int the_id)
         : IconOption(tex_hash, name_hash, 0) {
         id = the_id;
     }
@@ -114,15 +115,47 @@ void uiRepSheetMain::NotificationMessage(unsigned long msg, FEObject* obj, unsig
 }
 
 void uiRepSheetMain::Setup() {
-    pRivalImg = FEngFindImage(GetPackageName(), 0xc1f62308);
-    pTagImg = FEngFindImage(GetPackageName(), 0xf5a2a087);
-    FEImage* bgImg = FEngFindImage(GetPackageName(), 0x2cbe1dd0);
-    RivalStreamer.Init(iCurrentViewBin, pRivalImg, pTagImg, bgImg);
+    if (FEDatabase->GetCareerSettings()->GetCurrentBin() == 0xf) {
+        FEngSetInvisible(GetPackageName(), 0x47b22fca);
+        FEngSetInvisible(GetPackageName(), 0x72ad598c);
+    }
 
     AddOption(new RepSheetIcon(0xefc9662e, 0x84e4a54c, 0));
     AddOption(new RepSheetIcon(0xd807e9b3, 0x216f1b81, 1));
-    AddOption(new RepSheetIcon(0x8c99ea56, 0x578b767b, 2));
-    AddOption(new RepSheetIcon(0x6b003b5, 0x3e6c8ae0, 3));
+    AddOption(new RepSheetIcon(0x021a4b0c, 0xe451941e, 2));
+    AddOption(new RepSheetIcon(0xe97e4e83, 0x2d159737, 4));
+
+    selection = 0;
+
+    int lastButton = FEngGetLastButton(GetPackageName());
+
+    if (bFadeInIconsImmediately) {
+        Options.fCurFadeTime = 0.0f;
+        Options.bDelayUpdate = false;
+        Options.bFadingOut = false;
+        Options.bFadingIn = true;
+    }
+
+    Options.SetInitialPos(lastButton);
+    IconScrollerMenu::RefreshHeader();
+
+    if (bIsInGame) {
+        FEngSetLanguageHash(GetPackageName(), 0xb71b576d, 0x2e3919e9);
+    } else {
+        FEngSetLanguageHash(GetPackageName(), 0xb71b576d, 0xcace5999);
+    }
+
+    pRivalImg = FEngFindImage(GetPackageName(), 0xc1f62308);
+    pTagImg = FEngFindImage(GetPackageName(), 0xf5a2a087);
+
+    RivalStreamer.Init(iCurrentViewBin, pRivalImg, pTagImg, nullptr);
+
+    FEngSetInvisible(GetPackageName(), 0x7fe4020f);
+
+    DefeatedTextureHash = GetDefeatedTexture();
+    FEngSetTextureHash(GetPackageName(), 0x7fe4020f, DefeatedTextureHash);
+
+    eLoadStreamingTexture(DefeatedTextureHash, TextureLoadedCallback, reinterpret_cast< unsigned int >(this), 0);
 
     UpdateInfo();
 }
