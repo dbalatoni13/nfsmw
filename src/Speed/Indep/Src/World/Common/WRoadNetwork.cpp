@@ -1465,7 +1465,7 @@ int WRoadNav::FetchAvoidables(IBody **avoidables, const int listsize) const {
 
 void WRoadNetwork::GetPointAndVecOnSegment(const WRoadSegment &segment, float d, UMath::Vector3 &point, UMath::Vector3 &vec) {
     WRoadNetwork &roadNetwork = Get();
-    roadNetwork.GetPointOnSegment(segment, d, point);
+    GetPointOnSegment(segment, d, point);
     if (segment.IsCurved()) {
         static USpline roadSpline;
         roadNetwork.BuildSegmentSpline(segment, roadSpline);
@@ -1507,14 +1507,13 @@ float WRoadNetwork::GetLinePointIntersect(const UMath::Vector3 &start, const UMa
 }
 
 float WRoadNetwork::GetSegmentPointIntersect(const WRoadSegment &segment, const UMath::Vector3 &pt, UMath::Vector3 &intersect, bool checkBound) {
-    WRoadNetwork &roadNetwork = Get();
     UMath::Vector3 pos;
     UMath::Vector3 pos2;
-    const WRoadNode *node0 = roadNetwork.GetNode(segment.fNodeIndex[0]);
-    const WRoadNode *node1 = roadNetwork.GetNode(segment.fNodeIndex[1]);
+    const WRoadNode *node0 = GetNode(segment.fNodeIndex[0]);
+    const WRoadNode *node1 = GetNode(segment.fNodeIndex[1]);
     pos = node0->fPosition;
     pos2 = node1->fPosition;
-    return roadNetwork.GetLinePointIntersect(pos, pos2, pt, intersect, checkBound);
+    return GetLinePointIntersect(pos, pos2, pt, intersect, checkBound);
 }
 
 bool WRoadNav::OnPath() const {
