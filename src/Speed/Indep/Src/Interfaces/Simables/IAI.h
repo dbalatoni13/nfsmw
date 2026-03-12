@@ -70,15 +70,14 @@ class IRoadBlock : public UTL::COM::IUnknown, public UTL::Collections::Listable<
 };
 
 class IVehicleAI : public UTL::COM::IUnknown {
-  protected:
-    ~IVehicleAI() override {}
-
   public:
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
 
     IVehicleAI(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual ~IVehicleAI() {}
 
     virtual ISimable *GetSimable() const;
     virtual IVehicle *GetVehicle() const;
@@ -100,7 +99,6 @@ class IVehicleAI : public UTL::COM::IUnknown {
     virtual WRoadNav *GetDriveToNav();
     virtual bool GetDrivableToDriveToNav();
     virtual void ResetDriveToNav(eLaneSelection lane_selection);
-    virtual void ResetDriveToNav(UMath::Vector3 &target);
     virtual bool ResetVehicleToRoadNav(WRoadNav *other_nav);
     virtual bool ResetVehicleToRoadNav(short segInd, char laneInd, float timeStep);
     virtual bool ResetVehicleToRoadPos(const UMath::Vector3 &position, const UMath::Vector3 &forwardVector);

@@ -2312,10 +2312,9 @@ void WRoadNav::Reset() {
 void WRoadNav::UpdateOccludedPosition(bool occlude_avoidables) {
     if (!bCookieTrail) return;
 
-    bOccludedFromBehind = false;
+    nRoadOcclusion = nAvoidableOcclusion = 0;
     fOccludingTrailSpeed = 0.0f;
-    nRoadOcclusion = 0;
-    nAvoidableOcclusion = 0;
+    bOccludedFromBehind = false;
 
     ISimable *simable = pAIVehicle ? pAIVehicle->GetSimable() : nullptr;
     IRigidBody *car = simable ? simable->GetRigidBody() : nullptr;
@@ -2326,9 +2325,9 @@ void WRoadNav::UpdateOccludedPosition(bool occlude_avoidables) {
 
     UMath::Vector3 car_forward_3d;
     car->GetForwardVector(car_forward_3d);
-    const UMath::Vector3 &car_velocity_3d = car->GetPosition();
+    const UMath::Vector3 &car_velocity_3d = car->GetLinearVelocity();
     UMath::Vector3 car_position_3d;
-    UMath::ScaleAdd(car_forward_3d, 0.0f, car->GetLinearVelocity(), car_position_3d);
+    UMath::ScaleAdd(car_forward_3d, 0.0f, car->GetPosition(), car_position_3d);
 
     bVector2 car_position(car_position_3d.x, car_position_3d.z);
 
@@ -2542,16 +2541,16 @@ void WRoadNav::UpdateOccludedPosition(bool occlude_avoidables) {
 
         if (last_visible < num_cookies && occluder != nullptr) {
             const NavCookie &apex_cookie = cookies[occluding_index];
-            UMath::Vector3 offset_3d;
-            offset_3d.x = occluder->x;
-            offset_3d.y = cookies[occluding_index].Centre.y - car_position_3d.y;
-            offset_3d.z = occluder->y;
-            UMath::Vector3 apex_world;
-            UMath::Add(car_position_3d, offset_3d, apex_world);
+            UMath::Vector3 c;
+            c.x = occluder->x;
+            c.y = cookies[occluding_index].Centre.y - car_position_3d.y;
+            c.z = occluder->y;
+            UMath::Vector3 result;
+            UMath::Add(car_position_3d, c, result);
 
-            fApexPosition.x = apex_world.x;
-            fApexPosition.z = apex_world.z;
-            fApexPosition.y = apex_world.y;
+            fApexPosition.x = result.x;
+            fApexPosition.z = result.z;
+            fApexPosition.y = result.y;
 
             if ((apex_cookie.Flags & 1) == 0) {
                 nRoadOcclusion = left_occlusion ? -1 : 1;
@@ -2559,64 +2558,65 @@ void WRoadNav::UpdateOccludedPosition(bool occlude_avoidables) {
                 nRoadOcclusion = 0;
             }
 
-            if ((apex_cookie.Flags & 1) == 0) {
-                nAvoidableOcclusion = 0;
+            if ((apex_cookie.Flags & 1) != 0) {
+                nAvoidableOcclusion = left_occlusion ? -1 : 1;
             } else {
-                nAvoidableOcclusion = 1;
+                nAvoidableOcclusion = 0;
             }
 
+            int behind = 0;
+            if (nAvoidableOcclusion != 0) {
+                behind = (apex_cookie.Flags & 2) != 0 ? 1 : 0;
+            }
+            bOccludedFromBehind = behind;
+
             if (IsOccluded()) {
-                float apex_width = fVehicleHalfWidth;
+                float apex_width = bAbs(apex_cookie.RightOffset - apex_cookie.LeftOffset);
                 bVector2 apex_2d(fApexPosition.x, fApexPosition.z);
-                bVector2 apex_to_car(car_position.x - apex_2d.x, car_position.y - apex_2d.y);
+                bVector2 apex_to_car = car_position - apex_2d;
 
                 bVector2 to_left(cookies[occluding_index].Left.x - apex_2d.x, cookies[occluding_index].Left.y - apex_2d.y);
+                bVector2 left_dir = bNormalize(to_left);
+
                 bVector2 to_right(cookies[occluding_index].Right.x - apex_2d.x, cookies[occluding_index].Right.y - apex_2d.y);
-                bVector2 occ_to_left(fOccludedPosition.x - apex_2d.x, fOccludedPosition.z - apex_2d.y);
-                bVector2 occ_to_right(fOccludedPosition.x - apex_2d.x, fOccludedPosition.z - apex_2d.y);
+                bVector2 right_dir = bNormalize(to_right);
 
-                bVector2 apex_forward;
-                bNormalize(&apex_forward, &to_left);
-                bVector2 to_right_norm;
-                bNormalize(&to_right_norm, &to_right);
+                float dist_to_apex = bLength(&apex_to_car);
 
-                float dist = bSqrt((apex_2d.x - car_position.x) * (apex_2d.x - car_position.x) +
-                                         (apex_2d.y - car_position.y) * (apex_2d.y - car_position.y));
+                bVector2 apex_to_nav = right_dir * dist_to_apex;
+                bVector2 desired_position = apex_2d + apex_to_nav;
 
-                bVector2 occ_dir(apex_forward.x * dist, apex_forward.y * dist);
+                bVector2 bisect = left_dir + right_dir;
+                bVector2 perp = bNormalize(bisect);
 
-                bVector2 combined(apex_forward.x + to_right_norm.x, apex_forward.y + to_right_norm.y);
-                bVector2 combined_norm;
-                bNormalize(&combined_norm, &combined);
-
-                float dot_forward = occ_dir.x * combined_norm.x + occ_dir.y * combined_norm.y;
-                dot_forward = bMin(dot_forward, apex_width);
+                bVector2 desired_to_apex = desired_position - apex_2d;
+                float projection = bDot(desired_to_apex, perp);
+                projection = bMin(projection, apex_width);
 
                 if (nAvoidableOcclusion != 0) {
-                    float speed_dot = car_velocity.x * apex_forward.x + car_velocity.y * apex_forward.y;
-                    if (speed_dot + speed_dot > 1e-6f) {
-                        float ramp = (speed_dot - fOccludingTrailSpeed) / (speed_dot + speed_dot);
-                        ramp = bMin(ramp, 1.0f);
-                        ramp = bMax(ramp, 0.0f);
-                        ramp = ramp + ramp;
+                    float my_trailingspeed = bDot(car_velocity, perp);
+                    float closing_speed = my_trailingspeed + my_trailingspeed;
+                    if (closing_speed > 1e-6f) {
+                        float ratio = UMath::Ramp(my_trailingspeed - fOccludingTrailSpeed, 0.0f, closing_speed);
+                        ratio = ratio + ratio;
                     } else {
-                        dot_forward = 0.0f;
+                        projection = 0.0f;
                     }
-                    dot_forward = dot_forward * dot_forward;
-                    dot_forward = bMin(dot_forward, apex_width);
+                    projection = projection * projection;
+                    projection = bMin(projection, apex_width);
                 }
 
+                perp *= projection;
+                fOccludedPosition.x = perp.x + fApexPosition.x;
+                fOccludedPosition.z = perp.y + fApexPosition.z;
                 fOccludedPosition.y = fApexPosition.y;
-                fOccludedPosition.z = combined_norm.y * dot_forward + fApexPosition.z;
-                fOccludedPosition.x = combined_norm.x * dot_forward + fApexPosition.x;
             } else {
                 fOccludedPosition = fPosition;
-                fOccludedPosition.z = fPosition.z;
             }
         }
     }
 
-    if (nRoadOcclusion == 0) {
+    if (nAvoidableOcclusion == 0) {
         bOccludedFromBehind = false;
         fOccludingTrailSpeed = 0.0f;
     }
