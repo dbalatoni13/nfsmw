@@ -195,13 +195,26 @@ void uiRepSheetMilestones::Setup() {
     GMilestone* ms = GManager::mObj->GetFirstMilestone(false, iCurrentViewBin);
     while (ms != nullptr) {
         AddMilestone(ms);
+        if (ms->GetIsLocked()) {
+            GetDatumAt(GetNumDatum() - 1)->SetLocked(true);
+        }
+        if (ms->GetIsAwarded()) {
+            GetDatumAt(GetNumDatum() - 1)->SetChecked(true);
+        }
         ms = GManager::mObj->GetNextMilestone(ms, false, iCurrentViewBin);
     }
     GSpeedTrap* st = GManager::mObj->GetFirstSpeedTrap(false, iCurrentViewBin);
     while (st != nullptr) {
         AddSpeedtrap(st);
+        if (st->IsFlagClear(GSpeedTrap::kFlag_Unlocked)) {
+            GetDatumAt(GetNumDatum() - 1)->SetLocked(true);
+        }
+        if (st->IsFlagSet(GSpeedTrap::kFlag_Completed)) {
+            GetDatumAt(GetNumDatum() - 1)->SetChecked(true);
+        }
         st = GManager::mObj->GetNextSpeedTrap(st, false, iCurrentViewBin);
     }
+    SetDescLabel(0xB5117FDE);
     SetInitialPosition(0);
     RefreshTrack();
     RefreshHeader();
@@ -311,3 +324,6 @@ void uiRepSheetMilestones::RefreshHeader() {
         }
     }
 }
+
+bool GSpeedTrap::IsFlagSet(unsigned int mask) const { return (mFlags & mask) != 0; }
+bool GSpeedTrap::IsFlagClear(unsigned int mask) const { return (mFlags & mask) == 0; }

@@ -15,6 +15,10 @@ struct MilestoneTypeInfo {
 // total size: 0x14
 class GMilestone {
   public:
+    bool GetIsLocked() const { return mState == 1; }
+    bool GetIsAvailable() const { return mState == 2; }
+    bool GetIsDonePendingEscape() const { return mState == 3; }
+    bool GetIsAwarded() const { return mState == 4; }
     unsigned int GetTypeKey() const { return mTypeKey; }
     unsigned int GetChallengeKey() const { return mChallengeKey; }
     unsigned int GetBinNumber() const { return mBinNumber; }

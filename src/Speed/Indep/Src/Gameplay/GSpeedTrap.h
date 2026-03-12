@@ -15,8 +15,8 @@ struct GSpeedTrap {
     float mRecordedValue;
     void SetFlag(unsigned int mask) { mFlags |= mask; }
     void ClearFlag(unsigned int mask) { mFlags &= ~mask; }
-    bool IsFlagSet(unsigned int mask) const { return (mFlags & mask) != 0; }
-    bool IsFlagClear(unsigned int mask) const { return (mFlags & mask) == 0; }
+    bool IsFlagSet(unsigned int mask) const;
+    bool IsFlagClear(unsigned int mask) const;
     bool GetIsLocked() const { return IsFlagClear(kFlag_Unlocked); }
     bool GetIsUnlocked() const { return IsFlagSet(kFlag_Unlocked); }
     bool GetIsCompleted() const { return IsFlagSet(kFlag_Completed); }
