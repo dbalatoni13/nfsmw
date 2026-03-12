@@ -459,7 +459,7 @@ CarRenderInfo::~CarRenderInfo() {
 
 void CarRenderInfo::Init() {
     if (this->mDamageBehaviour != nullptr) {
-        this->mDamageBehaviour->Reset();
+        this->mDamageBehaviour->Init();
     }
 
     this->mDamageInfoCache.Clear();
