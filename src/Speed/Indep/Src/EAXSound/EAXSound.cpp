@@ -98,7 +98,11 @@ struct stBankSlot {
 };
 
 struct EAXAemsManager : public AudioMemBase {
-    /* 0x004 */ char _pad0[0xb8 - 0x4]; // padding to m_SPU_UpperAddress
+    /* 0x004 */ char _pad0[0x9c - 0x4];
+    /* 0x09c */ int m_nCurLoadedBankIndex;
+    /* 0x0a0 */ int m_nEndOfList;
+    /* 0x0a4 */ char _pad0xA4[0x10];
+    /* 0x0b4 */ int m_SPUMainAllocsEnd;
     /* 0x0b8 */ int m_SPU_UpperAddress;
     /* 0x0bc */ char _pad0a[0xF8 - 0xbc]; // padding to m_pEvtSystems
     /* 0x0f8 */ void **m_pEvtSystems_start;
@@ -108,7 +112,10 @@ struct EAXAemsManager : public AudioMemBase {
     /* 0x114 */ int m_nCallbackEvtSys;
     /* 0x118 */ stSndDataLoadParams *m_pCurLoadSDLP;
     /* 0x11c */ stSndDataLoadParams *m_pCurUNLOADSDLP;
-    /* 0x120 */ bool m_IsWaitingForFileCB;
+    /* 0x120 */ stSndDataLoadParams *m_pAsyncLoadSDLP;
+    /* 0x124 */ int m_ItemsPendingAsyncResolve;
+    /* 0x128 */ char _pad0x128[0x4];
+    /* 0x12c */ int m_IsWaitingForFileCB;
 
     bool AreResourceLoadsPending();
     void *GetCallbackEventSys();
@@ -117,6 +124,7 @@ struct EAXAemsManager : public AudioMemBase {
     void ResolvePendingAsyncLoads();
     void InitSPUram();
     void ResetBankLoadParams();
+    void CompleteAsyncLoad();
 };
 
 struct CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<CarSoundConn, 10> {
