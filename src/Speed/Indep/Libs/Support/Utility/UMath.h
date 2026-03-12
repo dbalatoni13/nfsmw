@@ -36,9 +36,11 @@ inline float Cosr(const float a) {
     return VU0_Cos(RAD2ANGLE(a) * (float)M_TWOPI);
 }
 
+#ifndef EA_PLATFORM_PLAYSTATION2
 inline float ASinr(const float x) {
     return ANGLE2RAD(VU0_ASin(x));
 }
+#endif
 
 void BuildRotate(Matrix4 &m, float r, float x, float y, float z);
 

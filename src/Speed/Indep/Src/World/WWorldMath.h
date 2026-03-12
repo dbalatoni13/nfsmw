@@ -32,9 +32,13 @@ inline float InvSqrt(const float f) {
 }
 
 inline float wwfabs(float a) {
+#ifdef __GNUC__
     float r;
     asm("fabs %0, %1" : "=f"(r) : "f"(a));
     return r;
+#else
+    return a < 0.0f ? -a : a;
+#endif
 }
 
 inline bool PtsEqual(const UMath::Vector3 &p0, const UMath::Vector3 &p1, float tolerance) {
