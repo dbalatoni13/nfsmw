@@ -162,17 +162,16 @@ def run_objdiff_json(
                     hint_lines.extend(
                         [
                             f"Hint: the requested base object is missing: {missing_path}",
-                            f"Rebuild it with: python tools/build-unit.py -u {unit_name}",
+                            "Rebuild that object or point --base-obj at an existing file.",
                         ]
                     )
                 else:
                     hint_lines.extend(
                         [
                             f"Hint: the shared build output for {unit_name} is missing: {missing_path}",
-                            "Fastest one-off fix for direct tools:",
-                            f"  TEMPOBJ=$(python tools/build-unit.py -u {unit_name})",
-                            "  rerun your diff/context command with --base-obj \"$TEMPOBJ\"",
-                            "Wrapper flows that auto-build temp objects:",
+                            "Fastest fixes:",
+                            f"  python tools/decomp-workflow.py build -u {unit_name}",
+                            "Wrapper flows for inspection after rebuilding:",
                             f"  python tools/decomp-workflow.py unit -u {unit_name}",
                             f"  python tools/decomp-workflow.py diff -u {unit_name} ...",
                             "Or rebuild shared outputs with: ninja all_source",
