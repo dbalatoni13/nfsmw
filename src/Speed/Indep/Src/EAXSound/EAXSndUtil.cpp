@@ -108,3 +108,11 @@ EAX_CarState *GetClosestPlayerCar(const bVector3 *vPosition) {
     int CarID = 0;
     return GetClosestPlayerCar(vPosition, false, CarID);
 }
+
+bool IsCarInRadius(EAX_CarState *pCar, const bVector3 *vPos, float fRadius) {
+    if (pCar == nullptr) {
+        return false;
+    }
+    float dist = bDistBetween(vPos, reinterpret_cast<const bVector3 *>(reinterpret_cast<const char *>(pCar) + 0x44));
+    return dist < fRadius;
+}
