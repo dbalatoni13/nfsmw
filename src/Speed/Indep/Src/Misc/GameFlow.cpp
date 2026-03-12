@@ -194,11 +194,14 @@ void BeginGameFlowLoadTrack() {
 void BeginGameFlowUnloadTrack(int reload) {
     TheTrackLoader.Unload();
     TheRegionLoader.Unload();
-    if (reload == 0) {
-        TheGameFlowManager.LoadFrontend();
-    } else if (reload == 1) {
-        SetLeakDetector();
-        TheGameFlowManager.LoadTrack();
+    switch (reload) {
+        case 0:
+            TheGameFlowManager.LoadFrontend();
+            break;
+        case 1:
+            SetLeakDetector();
+            TheGameFlowManager.LoadTrack();
+            break;
     }
 }
 
