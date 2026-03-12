@@ -131,10 +131,10 @@ void UITrackMapStreamer::MapLoadCallback(unsigned int texture) {
 unsigned int UITrackMapStreamer::CalcMapTextureHash() {
     if (pCurrentTrack) {
         return CalcLanguageHash("TRACK_MAP_", pCurrentTrack);
-    } else if (RegionUnlock) {
-        return FEngHashString("TRACK_MAP_UNLOCK_%d", RegionUnlock);
-    } else {
+    } else if (!RegionUnlock) {
         return FEHashUpper("TRACK_MAP");
+    } else {
+        return FEngHashString("TRACK_MAP_UNLOCK_%d", RegionUnlock);
     }
 }
 
@@ -219,10 +219,10 @@ void UITrackMapStreamer::UpdateAnimation() {
 float UITrackMapStreamer::GetZoomFactor() {
     bVector2 temp;
     ZoomCubic.GetVal(&temp);
-    if (temp.x != 0.0f) {
-        return 1.0f / temp.x;
+    if (temp.x == 0.0f) {
+        return 1.0f;
     }
-    return 1.0f;
+    return 1.0f / temp.x;
 }
 
 void UITrackMapStreamer::GetPan(bVector2& pan) {
