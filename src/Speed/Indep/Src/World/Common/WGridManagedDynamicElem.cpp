@@ -15,13 +15,15 @@ std::list<WGridManagedDynamicElem, UTL::Std::Allocator<WGridManagedDynamicElem, 
 
 WGridManagedDynamicElem::WGridManagedDynamicElem(UMath::Vector4 *dstPosRad, const UMath::Vector4 *srcPosRad, const WGridNodeElem &elem)
     : fType(1), //
-      fPosRad(srcPosRad), //
       fLastPosRad(UMath::Vector4::kIdentity), //
       fElem(elem), //
-      fSrcPosRad(srcPosRad), //
       fDstPosRad(dstPosRad), //
       fDstCInst(nullptr), //
-      fDstTrigger(nullptr) {}
+      fDstTrigger(nullptr)
+{
+    fSrcPosRad = srcPosRad;
+    fPosRad = srcPosRad;
+}
 
 void WGridManagedDynamicElem::Update() {
     if (fType == 1) {
