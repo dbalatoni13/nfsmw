@@ -16,8 +16,7 @@ enum eAnimEntityType {
     eAnimEntityType_MaxAnimEntityTypes = 4,
 };
 
-class IAnimEntity {
-  public:
+struct IAnimEntity {
     virtual ~IAnimEntity() {}
 
     virtual bool Init(void *init_data, struct SpaceNode *parent_space_node) = 0;

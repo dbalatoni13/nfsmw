@@ -332,10 +332,6 @@ void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
         right1.x -= parallel.x + perpendicular.x;
         right1.y -= parallel.y + perpendicular.y;
 
-        // NOTE: Stack layout mismatch - original compiler places ePoly at r1+0x28
-        // (before bVector2s at r1+0xD0) despite source declaration order, causing
-        // different register allocation (r24-r31 vs r28-r31). This 0x10 frame size
-        // difference cascades through all stack-relative instructions.
         ePoly shadow_poly;
         float ground = mSpaceNode->GetWorldMatrix()->v3.z + 0.01f;
         shadow_poly.Vertices[0] = bVector3(left1.x, left1.y, ground);

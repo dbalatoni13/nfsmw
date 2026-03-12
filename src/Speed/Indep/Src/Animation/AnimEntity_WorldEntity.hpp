@@ -14,6 +14,37 @@ class CWorldAnimEntityTree;
 // total size: 0x24
 class CWorldAnimEntity : public IAnimEntity {
   public:
+    virtual uint32 GetTypeID() {
+        return mTypeID;
+    }
+
+    // Overrides: IAnimEntity
+    uint32 GetInstanceNameHash() override {
+        return mThisInstanceNameHash;
+    }
+
+    // Overrides: IAnimEntity
+    SpaceNode *GetSpaceNode() override {
+        return mSpaceNode;
+    }
+
+    // Overrides: IAnimEntity
+    WorldModel *GetWorldModel() override {
+        return mWorldModel;
+    }
+
+    CWorldAnimCtrl *GetAnimCtrl() {
+        return mAnimCtrl;
+    }
+
+    unsigned int GetParentInstanceNameHash() {
+        return mParentInstanceNameHash;
+    }
+
+    CWorldAnimEntityTree *GetAnimTree() {
+        return mAnimTree;
+    }
+
     void *operator new(size_t size, const char *debug_name);
 
     void operator delete(void *ptr);
@@ -52,37 +83,6 @@ class CWorldAnimEntity : public IAnimEntity {
     float GetNumSecondsUntilThisFrame(float frame_number);
 
     float GetNumSecondsBetweenFrames(float start_frame, float end_frame);
-
-    virtual uint32 GetTypeID() {
-        return mTypeID;
-    }
-
-    // Overrides: IAnimEntity
-    uint32 GetInstanceNameHash() override {
-        return mThisInstanceNameHash;
-    }
-
-    // Overrides: IAnimEntity
-    SpaceNode *GetSpaceNode() override {
-        return mSpaceNode;
-    }
-
-    // Overrides: IAnimEntity
-    WorldModel *GetWorldModel() override {
-        return mWorldModel;
-    }
-
-    CWorldAnimCtrl *GetAnimCtrl() {
-        return mAnimCtrl;
-    }
-
-    unsigned int GetParentInstanceNameHash() {
-        return mParentInstanceNameHash;
-    }
-
-    CWorldAnimEntityTree *GetAnimTree() {
-        return mAnimTree;
-    }
 
   private:
     friend class CAnimWorldScene;

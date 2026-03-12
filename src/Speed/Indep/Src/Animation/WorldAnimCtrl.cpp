@@ -19,12 +19,12 @@ void *CWorldAnimCtrl::operator new(size_t size, const char *debug_name) {
     if (NumWorldAnimCtrls > MaxNumWorldAnimCtrls) {
         MaxNumWorldAnimCtrls = NumWorldAnimCtrls;
     }
-    return bOMalloc(reinterpret_cast< WorldAnimInstanceDirectoryLayout * >(&TheWorldAnimInstanceDirectory)->WorldAnimCtrlSlotPool);
+    return bOMalloc(reinterpret_cast<WorldAnimInstanceDirectoryLayout *>(&TheWorldAnimInstanceDirectory)->WorldAnimCtrlSlotPool);
 }
 
 void CWorldAnimCtrl::operator delete(void *ptr) {
     NumWorldAnimCtrls--;
-    bFree(reinterpret_cast< WorldAnimInstanceDirectoryLayout * >(&TheWorldAnimInstanceDirectory)->WorldAnimCtrlSlotPool, ptr);
+    bFree(reinterpret_cast<WorldAnimInstanceDirectoryLayout *>(&TheWorldAnimInstanceDirectory)->WorldAnimCtrlSlotPool, ptr);
 }
 
 CWorldAnimCtrl::CWorldAnimCtrl() {
@@ -60,11 +60,11 @@ void CWorldAnimCtrl::SetLoopRange(unsigned int loop_range_start, unsigned int lo
 }
 
 float CWorldAnimCtrl::GetLoopRangeScaledStart() {
-    return static_cast< float >(m_loop_range_start) * GetEffectiveTimeScale();
+    return static_cast<float>(m_loop_range_start) * GetEffectiveTimeScale();
 }
 
 float CWorldAnimCtrl::GetLoopRangeScaledEnd() {
-    return static_cast< float >(m_loop_range_end) * GetEffectiveTimeScale();
+    return static_cast<float>(m_loop_range_end) * GetEffectiveTimeScale();
 }
 
 void CWorldAnimCtrl::ApplySpeedModifier(float speed_modifier) {

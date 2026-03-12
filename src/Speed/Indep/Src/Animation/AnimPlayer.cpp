@@ -113,12 +113,12 @@ int AnimLoader_SizeNeeded() {
     int size_needed = 0;
 
     while (true) {
-        if (cur_shared_file_position < static_cast< int >(gAnimLoader_Info.mSharedFileCount)) {
+        if (cur_shared_file_position < static_cast<int>(gAnimLoader_Info.mSharedFileCount)) {
             char *filename = TheAnimDirectory->GetFileName(cur_shared_file_position + gAnimLoader_Info.mSharedFileStartIndex);
             int file_size = bFileSize(filename);
             cur_shared_file_position++;
             AnimLoader_IncrementAndAlignUp(size_needed, file_size);
-        } else if (cur_scene_file_position < static_cast< int >(gAnimLoader_Info.mSceneFileCount)) {
+        } else if (cur_scene_file_position < static_cast<int>(gAnimLoader_Info.mSceneFileCount)) {
             char *filename = TheAnimDirectory->GetFileName(cur_scene_file_position + gAnimLoader_Info.mSceneFileStartIndex);
             int file_size = bFileSize(filename);
             cur_scene_file_position++;
@@ -137,20 +137,20 @@ void AnimLoader_LoadResourceFile(const char *filename) {
     int file_size = bFileSize(filename);
     ResourceFile *res_file = CreateResourceFile(filename, RESOURCE_FILE_NIS, 0, 0, file_size);
     res_file->AssignMemory(gAnimLoader_MovingPointer, 0, filename);
-    res_file->BeginLoading(reinterpret_cast< void (*)(void *) >(AnimLoader_Callback), nullptr);
+    res_file->BeginLoading(reinterpret_cast<void (*)(void *)>(AnimLoader_Callback), nullptr);
     CAnimResourceFileProxy *proxy =
         new CAnimResourceFileProxy(res_file, gAnimLoader_MovingPointer, gAnimLoader_UsingMemoryPool);
     gAnimLoader_ResourceFileList.AddTail(proxy);
-    AnimLoader_IncrementAndAlignUp(reinterpret_cast< int & >(gAnimLoader_MovingPointer), file_size);
+    AnimLoader_IncrementAndAlignUp(reinterpret_cast<int &>(gAnimLoader_MovingPointer), file_size);
 }
 
 void AnimLoader_NextStep() {
     if (gAnimLoader_InProgress) {
-        if (gAnimLoader_CurSharedFilePosition < static_cast< int >(gAnimLoader_Info.mSharedFileCount)) {
+        if (gAnimLoader_CurSharedFilePosition < static_cast<int>(gAnimLoader_Info.mSharedFileCount)) {
             AnimLoader_LoadResourceFile(
                 TheAnimDirectory->GetFileName(gAnimLoader_CurSharedFilePosition + gAnimLoader_Info.mSharedFileStartIndex));
             gAnimLoader_CurSharedFilePosition++;
-        } else if (gAnimLoader_CurSceneFilePosition < static_cast< int >(gAnimLoader_Info.mSceneFileCount)) {
+        } else if (gAnimLoader_CurSceneFilePosition < static_cast<int>(gAnimLoader_Info.mSceneFileCount)) {
             AnimLoader_LoadResourceFile(
                 TheAnimDirectory->GetFileName(gAnimLoader_CurSceneFilePosition + gAnimLoader_Info.mSceneFileStartIndex));
             gAnimLoader_CurSceneFilePosition++;

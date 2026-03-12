@@ -77,7 +77,7 @@ void CAnimSkeleton::DynamicLoadResolve() {
         int idx = 0;
 
         if (m_pDynLoader->GetNextSymbol("Skeleton", idx, sym)) {
-            EAGL4Anim::Skeleton *skeleton = reinterpret_cast< EAGL4Anim::Skeleton * >(sym.data);
+            EAGL4Anim::Skeleton *skeleton = reinterpret_cast<EAGL4Anim::Skeleton *>(sym.data);
             m_pName = sym.name;
             m_NameHash = bStringHash(sym.name);
             m_pSkeleton = skeleton;

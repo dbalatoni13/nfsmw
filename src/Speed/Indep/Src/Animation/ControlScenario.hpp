@@ -8,21 +8,19 @@
 #include "AnimEntity_WorldEntity.hpp"
 
 // total size: 0x4
-class IControlScenario {
-  public:
-    IControlScenario() {}
-
+struct IControlScenario {
     virtual ~IControlScenario() {}
+
+    IControlScenario() {}
 
     virtual void HandleEventMessage(CWorldAnimEntityTree *entity_tree, unsigned int wa_msg, void *data) {}
 };
 
 // total size: 0x4
-class GenericNISControlScenario : public IControlScenario {
-  public:
-    GenericNISControlScenario() {}
+struct GenericNISControlScenario : public IControlScenario {
+    ~GenericNISControlScenario() override {}
 
-    ~GenericNISControlScenario() override;
+    GenericNISControlScenario() {}
 
     void HandleEventMessage(CWorldAnimEntityTree *entity_tree, unsigned int wa_msg, void *data) override;
 };

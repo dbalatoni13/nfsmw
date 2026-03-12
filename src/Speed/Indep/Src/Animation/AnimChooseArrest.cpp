@@ -179,8 +179,6 @@ bool ChooseArrestLocation(UMath::Vector3 &position, float &angle) {
     }
 }
 
-// TODO where to put this?
-
 // total size: 0x58
 struct NISListenerActivity : public Sim::Activity, public INISLISTENER {
     static IActivity *Construct(Sim::Param params) {
@@ -204,7 +202,6 @@ static UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype
     _NISListenerActivity(UCrc32("NISActivity"), NISListenerActivity::Construct);
 
 NISListenerActivity::NISListenerActivity() : Sim::Activity(1), INISLISTENER(this) {
-    // TODO magic
     mMessageBusted =
         Hermes::Handler::Create<MPerpBusted, NISListenerActivity, NISListenerActivity>(this, &NISListenerActivity::MessageBusted, 0xfea34c0a, 0);
 }

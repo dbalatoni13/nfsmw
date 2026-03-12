@@ -511,9 +511,13 @@ int UnloaderWorldAnimDirectoryData(bChunk *chunk) {
     return 1;
 }
 
-// STRIPPED
 CWorldAnimEntity *CWorldAnimEntityTree::GetEntityByNameHash(unsigned int namehash) {
-    // TODO
+    for (bPNode *node = instantiated_world_anim_entities.GetHead(); node != instantiated_world_anim_entities.EndOfList(); node = node->GetNext()) {
+        CWorldAnimEntity *entity = reinterpret_cast<CWorldAnimEntity *>(node->GetObject());
+        if (entity->GetInstanceNameHash() == namehash) {
+            return entity;
+        }
+    }
     return nullptr;
 }
 

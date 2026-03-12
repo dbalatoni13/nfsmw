@@ -90,7 +90,7 @@ CWorldAnimEntityTree *CAnimWorldScene::InstantiateAnimTree(WorldAnimInstance *in
     int num_entities = treeinfo->loaded_world_anim_entity_chunks.CountElements();
     CWorldAnimEntity **arr_of_ptrs =
         new ("CWorldAnimEntity*", 0) CWorldAnimEntity *[num_entities];
-    bMemSet(arr_of_ptrs, 0, num_entities * static_cast< int >(sizeof(CWorldAnimEntity *)));
+    bMemSet(arr_of_ptrs, 0, num_entities * static_cast<int>(sizeof(CWorldAnimEntity *)));
 
     if (instance->play_flags & 0x400) {
         bRandom(1.0f);
@@ -105,7 +105,7 @@ CWorldAnimEntityTree *CAnimWorldScene::InstantiateAnimTree(WorldAnimInstance *in
     for (bPNode *node = treeinfo->loaded_world_anim_entity_chunks.GetHead();
          node != treeinfo->loaded_world_anim_entity_chunks.EndOfList(); node = node->GetNext()) {
         WorldAnimEntityInfo *entinfo =
-            reinterpret_cast< WorldAnimEntityInfo * >(node->GetObject());
+            reinterpret_cast<WorldAnimEntityInfo *>(node->GetObject());
         SpaceNode *parent_space_node = nullptr;
 
         if (entinfo->mParentIndex != -1) {
@@ -170,7 +170,7 @@ void CAnimWorldScene::UpdateTime(float time_step) {
         for (CWorldAnimEntityTree *tree = mInstancedAnimTreeList.GetHead(); tree != mInstancedAnimTreeList.EndOfList(); tree = tree->GetNext()) {
             for (bPNode *node = tree->instantiated_world_anim_entities.GetHead(); node != tree->instantiated_world_anim_entities.EndOfList();
                  node = node->GetNext()) {
-                reinterpret_cast< IAnimEntity * >(node->GetpObject())->UpdateTimeStep(time_step);
+                reinterpret_cast<IAnimEntity *>(node->GetpObject())->UpdateTimeStep(time_step);
             }
         }
     }

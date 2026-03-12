@@ -19,6 +19,22 @@ enum eAnimProperty {
     eAnimProp_MaxAnimProperty = 3,
 };
 
+// total size: 0x40
+struct NisScene {
+    static const int MaxSceneNameLength;
+
+    unsigned int mSceneNameHash;         // offset 0x0, size 0x4
+    char mSceneName[16];                 // offset 0x4, size 0x10
+    char *Description;                   // offset 0x14, size 0x4
+    int SceneType;                       // offset 0x18, size 0x4
+    int HaveLayout;                      // offset 0x1C, size 0x4
+    int HaveCarAnimation;                // offset 0x20, size 0x4
+    int NumberOfCars;                    // offset 0x24, size 0x4
+    int StartFrame;                      // offset 0x28, size 0x4
+    int VanishFrame;                     // offset 0x2C, size 0x4
+    char SeeulatorOverlayName[16];       // offset 0x30, size 0x10
+};
+
 // total size: 0x14
 class CAnimEntityData : public bTNode<CAnimEntityData> {
   public:
@@ -35,20 +51,35 @@ class CAnimSceneData : public bTNode<CAnimSceneData> {
   public:
     void *operator new(size_t size) { return ::operator new[](size); }
 
+    bChunk *GetChunk() {
+        return mChunk;
+    }
+
+    unsigned int GetAnimID() {
+        return mNisScene->mSceneNameHash;
+    }
+
+    NisScene *GetSceneInfo() {
+        return mNisScene;
+    }
+
+    bTList<CAnimEntityData> *GetAnimEntityDataList() {
+        return &mAnimEntityDataList;
+    }
+
+    static CAnimSceneData *FindAnimSceneData(unsigned int anim_id);
+
     CAnimSceneData(bChunk *chunk);
     virtual ~CAnimSceneData();
-
-    static CAnimSceneData *FindAnimSceneData(unsigned int scene_name_hash);
 
     void EndianSwapHeaderData();
     void InitHeaderData(void *data, int size);
     void AddEntityData(void *data, int size);
-
-    int GetSceneInfo();
+    void RemoveAllEntityData();
 
   private:
     bChunk *mChunk;                              // offset 0x8, size 0x4
-    struct NisScene *mNisScene;                  // offset 0xC, size 0x4
+    NisScene *mNisScene;                         // offset 0xC, size 0x4
     bTList<CAnimEntityData> mAnimEntityDataList; // offset 0x10, size 0x8
 };
 
@@ -213,11 +244,11 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
     bMatrix4 mSceneTransformMatrix;               // offset 0xC4, size 0x40
     SpaceNode *mSpaceNode;                        // offset 0x104, size 0x4
     int mAnimCandidateType;                       // offset 0x108, size 0x4
+    int mAnimCandidateIndex;                      // offset 0x10C, size 0x4
 
     void SetSceneRotationMatrix(bMatrix4 &scene_rotation_matrix) { mSceneRotationMatrix = scene_rotation_matrix; }
     void SetSceneTranslationMatrix(bMatrix4 &scene_translation_matrix) { mSceneTranslationMatrix = scene_translation_matrix; }
     void SetSceneTransformMatrix(bMatrix4 &scene_transform_matrix) { mSceneTransformMatrix = scene_transform_matrix; }
-    int mAnimCandidateIndex;                      // offset 0x10C, size 0x4
 };
 
 // total size: 0x94
