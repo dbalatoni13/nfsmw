@@ -568,9 +568,7 @@ bool CameraMover::RenderCarPOV() {
 void CameraMover::Enable() {
     if (Enabled == 0) {
         Enabled = 1;
-        if (Camera::StopUpdating == 0) {
-            pCamera->SetRenderDash(RenderDash);
-        }
+        pCamera->SetRenderDash(RenderDash);
         pView->AttachCameraMover(this);
         pCamera->SetNearZ(0.5f);
     }

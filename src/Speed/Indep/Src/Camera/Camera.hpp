@@ -130,7 +130,9 @@ class Camera {
     }
 
     void SetRenderDash(int r) {
-        RenderDash = r;
+        if (!StopUpdating) {
+            RenderDash = r;
+        }
     }
 
     void SetTargetDistance(float f) {
