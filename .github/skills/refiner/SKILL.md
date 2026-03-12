@@ -18,7 +18,19 @@ approaches that were tried before — instead, apply systematic lateral analysis
 
 ## Phase 1: Read the full diff without collapsing
 
-First rebuild the unit normally, then diff:
+Preferred shortcut:
+
+```sh
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName --no-collapse
+```
+
+If the shared unit object is missing, the wrapper now rebuilds it automatically before
+running `diff`.
+
+Stay in the wrapper flow for refiner passes unless you hit a wrapper limitation and need a
+backend-only option.
+
+If you need the raw backend form instead of the wrapper, rebuild the unit and then run:
 
 ```sh
 python tools/decomp-workflow.py build -u main/Path/To/TU
@@ -37,8 +49,7 @@ Read every instruction pair. Categorize each mismatch:
 | **Relocation offset** | `@stringBase0` or data offset differs | More string literals will shift this; add them in order |
 | **Virtual vs direct call** | `bl` vs indirect through vtable | Check const-qualifier; use `GetFoo()` vs `Foo()` |
 | **Inline vs outlined** | Extra call to helper vs inlined sequence | Force inline by rewriting the expression without calling the helper |
-| **Missing `this->` dereference** | Wrong address in load/store | Ensure member access goes through the correct `this` pointer |
-| **Loop structure** | `do/while` vs `for` vs `while` | Try all three forms; compiler emits different branch sequences |
+| **Loop structure** | Guarded `do/while` from Ghidra or mismatched loop branches | Rewrite to the natural source form suggested by the control flow; in particular, a guarded `do/while` often needs to become a plain `for` loop |
 
 ## Phase 2: Systematic permutation strategies
 
@@ -90,21 +101,17 @@ python tools/lookup.py ./symbols/Dwarf struct bMath
 
 Replace hand-rolled sequences with the correct inline call.
 
-### 2e. Initializer list order
+### 2e. Constructor initialization placement
 
-Constructors compiled with GCC are sensitive to initializer list order. The DWARF
-shows the canonical member order. If yours differs, reorder.
+Only do this for constructors. Compare which members are initialized in the
+initializer list versus the function body, and in what order. Initializer-list use
+often stabilizes store order, but forcing every member into the initializer list can
+also make the match worse.
 
 ### 2f. Cast type
 
 `static_cast<int>` vs `static_cast<unsigned int>` produces different assembly
 sequences on PPC (see `xoris` pattern in AGENTS.md). Check all casts.
-
-### 2g. Compiler flag hint
-
-If none of the above resolve the mismatch, note the function address and consider
-running `flag_permuter.py`. This is a last resort — only do this for a single
-isolated function, not as a general strategy.
 
 ## Phase 3: DWARF verification
 

@@ -226,9 +226,12 @@ class ProjectConfig:
         self.print_progress_categories: Union[bool, List[str]] = (
             True  # Print additional progress categories in the CLI progress output
         )
-        self.progress_report_args: Optional[List[str]] = (
-            None  # Flags to `objdiff-cli report generate`
-        )
+        self.progress_report_args: Optional[List[str]] = [
+            "-c",
+            "functionRelocDiffs=none",
+            "-c",
+            "ppc.calculatePoolRelocations=false",
+        ]  # Flags to `objdiff-cli report generate`
 
         # Progress fancy printing
         self.progress_use_fancy: bool = False
