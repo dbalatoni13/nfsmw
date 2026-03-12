@@ -240,7 +240,7 @@ This is a **C++98** codebase compiled with ProDG GC 3.9.3 (GCC 2.95 under the ho
 - Omit the `this` pointer.
 - Use `nullptr` and `override`. If they are missing, you need to include `types.h`.
 - Omit `struct` when declaring variables or parameters, we are not in C land.
-- Avoid using `using namespace` at all cost. Since the game uses jumbo builds, they leak through files.
+- Avoid using `using` directives at all cost. Since the game uses jumbo builds, they leak through files.
 
 ## Committing Progress
 
