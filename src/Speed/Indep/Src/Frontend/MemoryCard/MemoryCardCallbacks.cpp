@@ -40,7 +40,7 @@ void MemcardCallbacks::ShowMessage(const wchar_t* msg, unsigned int nOptions,
     if (GetMemcard()->IsMemcardScreenExiting()) {
         return;
     }
-    CaptureJoyOp(MJ_ShowMesssage);
+    JLog(MJ_ShowMesssage);
     Joylog::AddOrGetData(
         reinterpret_cast<unsigned short*>(const_cast<wchar_t*>(msg)),
         JOYLOG_CHANNEL_MEMORY_CARD);
@@ -84,7 +84,7 @@ void MemcardCallbacks::ShowMessage(const wchar_t* msg, unsigned int nOptions,
 
 void MemcardCallbacks::ClearMessage() {
     if (!GetMemcard()->IsAutoSaving()) {
-        CaptureJoyOp(MJ_ClearMessage);
+        JLog(MJ_ClearMessage);
         if (GetMemcard()->GetOp() != MemoryCard::MO_FakeLoad &&
             GetMemcard()->GetOp() != MemoryCard::MO_LoadYNCF) {
             UIMemcardBase* pScreen = GetScreen();
@@ -97,7 +97,7 @@ void MemcardCallbacks::ClearMessage() {
 
 void MemcardCallbacks::BootupCheckDone(RealmcIface::CardStatus status,
                                        RealmcIface::BootupCheckResults res) {
-    CaptureJoyOp(MJ_BootupCheckDone);
+    JLog(MJ_BootupCheckDone);
     status = static_cast<RealmcIface::CardStatus>(
         Joylog::AddOrGetData(static_cast<unsigned int>(status), 0x10,
                              JOYLOG_CHANNEL_MEMORY_CARD));
@@ -135,11 +135,11 @@ void MemcardCallbacks::BootupCheckDone(RealmcIface::CardStatus status,
 
 void MemcardCallbacks::SaveCheckDone(RealmcIface::TaskResult result,
                                      RealmcIface::CardStatus status) {
-    CaptureJoyOp(MJ_SaveCheckDone);
+    JLog(MJ_SaveCheckDone);
 }
 
 void MemcardCallbacks::SaveDone(const char* filename) {
-    CaptureJoyOp(MJ_SaveDone);
+    JLog(MJ_SaveDone);
     Joylog::AddOrGetData(const_cast<char*>(filename), JOYLOG_CHANNEL_MEMORY_CARD);
     if (GetMemcard()->IsTypeProfile()) {
         bFree(GetMemcard()->m_pBuffer);
@@ -177,12 +177,12 @@ void MemcardCallbacks::SaveDone(const char* filename) {
 }
 
 RealmcIface::DataStatus MemcardCallbacks::CheckLoadedData(const char* data) {
-    CaptureJoyOp(MJ_CheckLoadedData);
+    JLog(MJ_CheckLoadedData);
     return RealmcIface::DATA_OK;
 }
 
 void MemcardCallbacks::LoadDone(const char* filename) {
-    CaptureJoyOp(MJ_LoadDone);
+    JLog(MJ_LoadDone);
     Joylog::AddOrGetData(const_cast<char*>(filename), JOYLOG_CHANNEL_MEMORY_CARD);
     MemoryCard* mc = GetMemcard();
     if (Joylog::IsReplaying()) {
@@ -250,7 +250,7 @@ void MemcardCallbacks::LoadDone(const char* filename) {
 }
 
 void MemcardCallbacks::DeleteDone(const char* filename) {
-    CaptureJoyOp(MJ_DeleteDone);
+    JLog(MJ_DeleteDone);
     Joylog::AddOrGetData(const_cast<char*>(filename), JOYLOG_CHANNEL_MEMORY_CARD);
     GetMemcard()->GetPrefixLength();
     int idx = GetMemcard()->GetPrefixLength();
@@ -265,11 +265,11 @@ void MemcardCallbacks::DeleteDone(const char* filename) {
 }
 
 void MemcardCallbacks::ClearEntries() {
-    CaptureJoyOp(MJ_ClearEntries);
+    JLog(MJ_ClearEntries);
 }
 
 void MemcardCallbacks::FoundEntry(const RealmcIface::EntryInfo* info) {
-    CaptureJoyOp(MJ_FoundEntry);
+    JLog(MJ_FoundEntry);
     Joylog::AddOrGetData(const_cast<char*>(info->mName), JOYLOG_CHANNEL_MEMORY_CARD);
     const_cast<RealmcIface::EntryInfo*>(info)->mStatus =
         static_cast<RealmcIface::CardStatus>(Joylog::AddOrGetData(
@@ -338,7 +338,7 @@ void MemcardCallbacks::FindEntriesDone(RealmcIface::CardStatus status) {
 }
 
 void MemcardCallbacks::Retry(RealmcIface::CardStatus status) {
-    CaptureJoyOp(MJ_Retry);
+    JLog(MJ_Retry);
     Joylog::AddOrGetData(static_cast<unsigned int>(status), 0x10,
                          JOYLOG_CHANNEL_MEMORY_CARD);
     if (GetScreen() != nullptr) {
@@ -351,7 +351,7 @@ void MemcardCallbacks::Retry(RealmcIface::CardStatus status) {
 
 void MemcardCallbacks::Failed(RealmcIface::TaskResult result,
                               RealmcIface::CardStatus status) {
-    CaptureJoyOp(MJ_Failed);
+    JLog(MJ_Failed);
     unsigned int msg = 0x8867412d;
     status = static_cast<RealmcIface::CardStatus>(
         Joylog::AddOrGetData(static_cast<unsigned int>(status), 0x10,
@@ -458,7 +458,7 @@ void MemcardCallbacks::CardChanged(RealmcIface::TaskResult result,
 }
 
 void MemcardCallbacks::CardChecked(const RealmcIface::CardInfo* info) {
-    CaptureJoyOp(MJ_CardChecked);
+    JLog(MJ_CardChecked);
     const_cast<RealmcIface::CardInfo*>(info)->mCardId =
         static_cast<RealmcIface::CardId>(Joylog::AddOrGetData(
             static_cast<unsigned int>(info->mCardId), 0x20,
@@ -560,7 +560,7 @@ void MemcardCallbacks::CardRemoved() {
 void MemcardCallbacks::SetAutosaveDone(RealmcIface::TaskResult res,
                                        RealmcIface::CardStatus status,
                                        RealmcIface::AutosaveState flag) {
-    CaptureJoyOp(MJ_SetAutosaveDone);
+    JLog(MJ_SetAutosaveDone);
     Joylog::AddOrGetData(static_cast<unsigned int>(res), 8,
                          JOYLOG_CHANNEL_MEMORY_CARD);
     status = static_cast<RealmcIface::CardStatus>(
@@ -618,7 +618,7 @@ void MemcardCallbacks::SetAutosaveDone(RealmcIface::TaskResult res,
 
 void MemcardCallbacks::SetMonitorDone(RealmcIface::CardStatus status,
                                       RealmcIface::MonitorState state) {
-    CaptureJoyOp(MJ_SetMonitorDone);
+    JLog(MJ_SetMonitorDone);
     status = static_cast<RealmcIface::CardStatus>(
         Joylog::AddOrGetData(static_cast<unsigned int>(status), 0x10,
                              JOYLOG_CHANNEL_MEMORY_CARD));
@@ -653,7 +653,7 @@ RealmcIface::TaskStatus MemcardCallbacks::LoadReady(const char* entryName,
                                                     unsigned int bodySize,
                                                     char*& headerData,
                                                     char*& bodyData) {
-    CaptureJoyOp(MJ_LoadReady);
+    JLog(MJ_LoadReady);
     Joylog::AddOrGetData(const_cast<char*>(entryName),
                          JOYLOG_CHANNEL_MEMORY_CARD);
     RealmcIface::TaskStatus res = RealmcIface::TASK_CANCEL;
