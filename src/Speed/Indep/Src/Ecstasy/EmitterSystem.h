@@ -301,7 +301,7 @@ class EmitterGroup : public bTNode<EmitterGroup> {
     typedef void (*OnDeleteCallback)(void *, EmitterGroup *);
 
     // total size: 0x80
-    struct bTList<Emitter> mEmitters;                // offset 0x8, size 0x8
+    bTList<Emitter> mEmitters;                       // offset 0x8, size 0x8
     uint32 mGroupKey;                                // offset 0x10, size 0x4
     uint32 Padding;                                  // offset 0x14, size 0x4
     uint32 mFlags;                                   // offset 0x18, size 0x4
