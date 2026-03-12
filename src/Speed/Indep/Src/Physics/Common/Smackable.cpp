@@ -153,35 +153,47 @@ Smackable::Smackable(const UMath::Matrix4 &matrix, const Attrib::Gen::smackable 
     , IExplodeable(this) //
     , EventSequencer::IContext(this) //
     , mAttributes(attributes) //
+    , mSimplifyWeight(0.0f) //
+    , mAge(0.0f) //
+    , mLife(Smackable_ManagementRate) //
+    , mDropTimer(0.0f) //
     , mDropOutTimerMax(GetDropTimer(attributes)) //
+    , mOffWorldTimer(0.0f) //
     , mAutoSimplify(attributes.AUTO_SIMPLIFY()) //
     , mVirgin(virginspawn) //
+    , mModel(scenery) //
+    , mGeometry(geoms) //
+    , mManageTask(nullptr) //
+    , mDroppingOut(false) //
+    , mPersistant(is_persistant) //
+    , mCollisionBody(nullptr) //
+    , mSimpleBody(nullptr) //
+    , mLastImpactSpeed(UMath::Vector3::kZero) //
     , mRBSpecs(static_cast<ISimable *>(this), 0) //
+    , mLastCollisionPosition(UMath::Vector4::kZero) //
 {
-    mSimplifyWeight = 0.0f;
-    mAge = 0.0f;
-    mDropTimer = 0.0f;
-    mLife = 0.125f;
-    mOffWorldTimer = 0.0f;
-    mPersistant = is_persistant;
-    mLastImpactSpeed = UMath::Vector3::kZero;
-    mModel = scenery;
-    mGeometry = geoms;
-    mManageTask = nullptr;
-    mDroppingOut = false;
-    mCollisionBody = nullptr;
-    mSimpleBody = nullptr;
     UMath::Vector3 dimension;
     geoms->GetHalfDimensions(dimension);
-    float radius = UMath::Max(dimension.x, UMath::Max(dimension.y, dimension.z));
-    UMath::Scale(dimension, 2.0f, dimension);
+    dimension.x = UMath::Max(dimension.x, 0.025f);
+    dimension.y = UMath::Max(dimension.y, 0.025f);
+    dimension.z = UMath::Max(dimension.z, 0.025f);
+    float radius = UMath::Length(dimension);
     float mass = attributes.MASS();
     Dynamics::Inertia::Box inertia(mass, dimension.x, dimension.y, dimension.z);
+    UMath::Scale(inertia, 2.0f, inertia);
     UMath::Vector3 moment;
-    if (!attributes.MOMENT(moment)) {
-        moment = inertia;
+    if (attributes.MOMENT(moment)) {
+        if (moment.x > 0.0f) {
+            inertia.x *= moment.x;
+        }
+        if (moment.y > 0.0f) {
+            inertia.y *= moment.y;
+        }
+        if (moment.z > 0.0f) {
+            inertia.z *= moment.z;
+        }
     }
-    bool active = !virginspawn;
+    bool active = !virginspawn || mPersistant;
     UCrc32 smack_class;
     if (simple_physics) {
         RBSimpleParams rbp(UMath::Vector4To3(matrix.v3), UMath::Vector3::kZero,
@@ -189,15 +201,27 @@ Smackable::Smackable(const UMath::Matrix4 &matrix, const Attrib::Gen::smackable 
         LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY), UCrc32("SimpleRigidBody"), rbp);
     } else {
         RBComplexParams rbparams(UMath::Vector4To3(matrix.v3), UMath::Vector3::kZero,
-                                 UMath::Vector3::kZero, matrix, mass, moment, dimension, geoms,
+                                 UMath::Vector3::kZero, matrix, mass, inertia, dimension, geoms,
                                  active, 0);
-        LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY), UCrc32("RBSmackable"), rbparams);
+        if (mPersistant) {
+            LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY), UCrc32("RigidBody"), rbparams);
+        } else {
+            LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY), UCrc32("RBSmackable"), rbparams);
+        }
     }
-    for (unsigned int i = 0; i < attributes.Num_BEHAVIORS(); ++i) {
-        const Attrib::StringKey &key = attributes.BEHAVIORS(i);
+    LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_EFFECTS), UCrc32("EffectsSmackable"), Sim::Param());
+    for (unsigned int i = 0; i < mAttributes.Num_BEHAVIORS(); ++i) {
+        const Attrib::StringKey &key = mAttributes.BEHAVIORS(i);
         if (key.IsNotEmpty()) {
             LoadBehavior(UCrc32(key), UCrc32(key), Sim::Param());
         }
+    }
+    Attach(scenery);
+    mManageTask = AddTask("Physics", 0.1f, 0.0f, Sim::TASK_FRAME_FIXED);
+    CalcSimplificationWeight();
+    if (mAttributes.EventSequencer().IsNotEmpty()) {
+        Sim::Collision::AddListener(static_cast<Sim::Collision::IListener *>(this),
+                                    GetInstanceHandle(), "Smackable");
     }
 }
 
