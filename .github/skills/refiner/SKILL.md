@@ -18,11 +18,11 @@ approaches that were tried before — instead, apply systematic lateral analysis
 
 ## Phase 1: Read the full diff without collapsing
 
-First compile to a private temp `.o`, then diff:
+First rebuild the unit normally, then diff:
 
 ```sh
-TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
-python tools/decomp-diff.py -u main/Path/To/TU -d FunctionName --no-collapse --base-obj "$TEMPOBJ"
+python tools/decomp-workflow.py build -u main/Path/To/TU
+python tools/decomp-diff.py -u main/Path/To/TU -d FunctionName --no-collapse
 ```
 
 Read every instruction pair. Categorize each mismatch:
@@ -109,11 +109,12 @@ isolated function, not as a general strategy.
 ## Phase 3: DWARF verification
 
 After any instruction match, verify the DWARF also matches.
-Use the same `TEMPOBJ` from Phase 1 (or rebuild if you've changed the source):
+Use the rebuilt shared object from Phase 1 (or rebuild again if you've changed the source):
 
 ```bash
-# Compile to temp .o and dump its DWARF
-dtk dwarf dump "$TEMPOBJ" -o /tmp/refiner_<func>_check.nothpp
+# Rebuild the unit, then dump its DWARF
+python tools/decomp-workflow.py build -u main/Path/To/TU
+dtk dwarf dump build/GOWE69/src/Path/To/TU.o -o /tmp/refiner_<func>_check.nothpp
 
 # Compare your function's DWARF against the original
 python tools/lookup.py --file /tmp/refiner_<func>_check.nothpp function "ClassName::FunctionName(void)"

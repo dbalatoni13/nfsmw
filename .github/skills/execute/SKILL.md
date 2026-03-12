@@ -58,21 +58,15 @@ Preferred shortcut:
 python tools/decomp-workflow.py unit -u main/Path/To/TU --limit 20
 ```
 
-Manual equivalent:
-
-```sh
-python tools/decomp-status.py --unit main/Path/To/TU
-TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
-python tools/decomp-diff.py -u main/Path/To/TU -s missing -t function --base-obj "$TEMPOBJ"
-python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching -t function --base-obj "$TEMPOBJ"
-```
+If you need the raw tools instead of the wrapper, run `decomp-status.py` and
+`decomp-diff.py` directly against the shared build output.
 
 This shows all symbols with their match status. Note the total count of missing,
 nonmatching, and matching functions.
 
 ## Phase 2: Scaffold (if needed)
 
-A jump file contains many files and classes. If the TU depends on a type whose
+A jumbo file contains many files and classes. If the TU depends on a type whose
 definition does not yet exist in the project, follow the scaffold workflow in
 `.github/skills/scaffold/SKILL.md` to create the needed header/source definitions
 before moving on.
@@ -81,9 +75,7 @@ before moving on.
 
 ### 3a. Get the updated function list
 
-After scaffolding, rebuild and re-check the function list.
-Use `build-unit.py` to compile to a private temp `.o` so the status check isn't
-polluted by another concurrent temp build:
+After scaffolding, rebuild and re-check the function list:
 
 Preferred shortcut:
 
@@ -91,14 +83,8 @@ Preferred shortcut:
 python tools/decomp-workflow.py unit -u main/Path/To/TU
 ```
 
-Manual equivalent:
-
-```sh
-ninja                  # full build to update shared state (progress, sha1)
-TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
-python tools/decomp-diff.py -u main/Path/To/TU -s missing -t function --base-obj "$TEMPOBJ"
-python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching -t function --base-obj "$TEMPOBJ"
-```
+If you need the raw tools, rebuild normally and then run `decomp-diff.py`
+directly on the unit.
 
 ### 3c. Implement each function sequentially
 
@@ -134,8 +120,9 @@ After modifying any shared headers, run `ninja changes` to check for regressions
 Empty changeset = no regressions. If regressions appear, revert the shared change
 and use a local workaround instead.
 
-Use `build-unit.py` + `--base-obj` for diff and context commands when you want
-results isolated from other concurrent builds of the same TU.
+Use `python tools/decomp-workflow.py function ...` or
+`python tools/decomp-workflow.py diff ...` when you want a shorter, wrapper-first
+view for one function.
 
 ### 3g. Periodic reassessment
 
