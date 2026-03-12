@@ -44,7 +44,10 @@ SubTitler::~SubTitler() {
 }
 
 bool SubTitler::ShouldShowSubTitles(const char* movie_name) {
-    if (GetCurrentLanguage() != 0 || mIsTutorial) {
+    if (GetCurrentLanguage() != 0) {
+        return true;
+    }
+    if (mIsTutorial) {
         return true;
     }
     return false;

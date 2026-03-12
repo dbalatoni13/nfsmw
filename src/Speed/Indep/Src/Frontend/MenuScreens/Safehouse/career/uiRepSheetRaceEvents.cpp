@@ -51,7 +51,9 @@ extern GRaceParameters* theRace;
 
 void RaceDatum::NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1, unsigned long param2) {
     if (msg == 0xc407210) {
-        theRace = race;
+        if (!IsLocked()) {
+            theRace = race;
+        }
     }
 }
 

@@ -41,6 +41,7 @@ struct RepSheetIcon : public IconOption {
 };
 
 void RepSheetIcon::React(const char* pkg, unsigned int data, FEObject* obj, unsigned int p1, unsigned int p2) {
+    if (data != 0xc407210) return;
     selection = id;
 }
 

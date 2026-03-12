@@ -226,10 +226,10 @@ void MemoryCard::SetExtraParam(SaveType t, const char* filename, void* buf, unsi
 }
 
 void MemoryCard::InitCommand(int op) {
-    m_MemOp = op;
-    m_LastError = 0;
     m_ReqOp = 0;
     m_bWaitingForResponse = false;
+    m_LastError = 0;
+    m_MemOp = op;
 }
 
 void MemoryCard::RequestTask(int op, const char* name) {
