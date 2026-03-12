@@ -1485,35 +1485,6 @@ TrackCopCameraMover::~TrackCopCameraMover() {
     GetCamera()->ClearVelocity();
 }
 
-bool TrackCopCameraMover::FindPursuitVehiclePosition(bVector3 *pPosition) {
-    bool found = false;
-    float best_distance = 10000.0f;
-    const IVehicle::List &vehicles = IVehicle::GetList(VEHICLE_ALL);
-
-    for (IVehicle::List::const_iterator iter = vehicles.begin(); iter != vehicles.end(); ++iter) {
-        IVehicle *vehicle = *iter;
-
-        if (vehicle != nullptr && vehicle->GetVehicleClass() == VehicleClass::CAR) {
-            bVector3 render_position;
-            float distance;
-
-            eSwizzleWorldVector(vehicle->GetPosition(), render_position);
-            if (IsSomethingInBetween(GetCamera()->GetPosition(), &render_position)) {
-                continue;
-            }
-
-            distance = bDistBetween(CarToFollow->GetGeomPos(), &render_position);
-            if (distance < best_distance) {
-                *pPosition = render_position;
-                best_distance = distance;
-                found = true;
-            }
-        }
-    }
-
-    return found;
-}
-
 void TrackCopCameraMover::Update(float dT) {
     if (FEManager::Get() == nullptr || !FEManager::ShouldPauseSimulation(true)) {
         bVector3 world_up(0.0f, 0.0f, 1.0f);

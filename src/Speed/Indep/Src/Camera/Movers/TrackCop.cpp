@@ -1,12 +1,55 @@
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Camera/CameraAI.hpp"
+#include "Speed/Indep/Src/AI/AITarget.h"
 
 extern bool TrackCopCameraMover_IdleSim;
 void HideEverySingleHud();
 
 static float CrossXY(const bVector3 *v1, const bVector3 *v2) {
     return v1->x * v2->y - v1->y * v2->x;
+}
+
+bool TrackCopCameraMover::FindPursuitVehiclePosition(bVector3 *copPos) {
+    const float kMinDist = 300.0f;
+    float minDist = kMinDist;
+    for (IVehicle *const *iter = IVehicle::GetList(VEHICLE_AICOPS).begin();
+         iter != IVehicle::GetList(VEHICLE_AICOPS).end(); ++iter) {
+        IVehicle *p_car = *iter;
+        if (p_car == nullptr) continue;
+        if (!p_car->IsActive()) continue;
+        if (!(p_car->GetVehicleClass() == VehicleClass::CAR)) continue;
+
+        IVehicleAI *p_vehicleai;
+        if (!p_car->QueryInterface(&p_vehicleai)) continue;
+
+        AITarget *p_target = p_vehicleai->GetTarget();
+        if (p_target == nullptr) continue;
+        if (!p_target->IsValid()) continue;
+
+        ISimable *p_targetsimable = p_target->GetSimable();
+        if (p_targetsimable == nullptr) continue;
+        if (p_targetsimable->GetWorldID() != CarToFollow->GetWorldID()) continue;
+
+        IPursuitAI *p_pursuitai;
+        if (!p_car->QueryInterface(&p_pursuitai)) continue;
+        if (!p_pursuitai->GetInPursuit()) continue;
+        if (p_pursuitai->GetTimeSinceTargetSeen() > 0.0f) continue;
+
+        UMath::Vector3 upos = p_car->GetPosition();
+        bVector3 bpos;
+        eSwizzleWorldVector(upos, bpos);
+
+        if (IsSomethingInBetween(GetCamera()->GetPosition(), &bpos)) continue;
+
+        float dist = bDistBetween(CarToFollow->GetGeomPos(), &bpos);
+        if (dist < minDist) {
+            *copPos = bpos;
+            minDist = dist;
+        }
+    }
+
+    return minDist < kMinDist;
 }
 
 void TrackCopCameraMover::Init() {
