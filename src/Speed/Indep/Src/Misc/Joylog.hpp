@@ -53,11 +53,13 @@ struct JoylogBuffer {
 
     void PrintNearbyJoylogEntries(int error_pos);
 
-    // char *GetFilename() {}
+    char *GetFilename() { return Filename; }
 
     // int GetTotalSize() {}
 
-    // int IsMoreData() {}
+    int IsMoreData() {
+        return CurrentPosition < TopPosition;
+    }
 
     // int GetPosition() {}
 
@@ -126,7 +128,10 @@ class Joylog {
 
     static int IsReplaying();
 
-    // static float GetData(JoylogChannel channel_number) {}
+    static float GetData(JoylogChannel channel_number) {
+        int data = static_cast<int>(GetData(32, channel_number));
+        return *reinterpret_cast<float *>(&data);
+    }
 
     static void AddData(float data, JoylogChannel channel_number) {}
 

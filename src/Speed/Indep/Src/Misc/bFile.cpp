@@ -58,15 +58,14 @@ unsigned int bFileGetFilenameHash(const char *filename) {
 void ServiceFileStats() {}
 
 int GetRealFileOpenFlags(bFileOpenMode open_mode) {
-    if (open_mode != BOPEN_MODE_READONLY) {
-        if (open_mode == BOPEN_MODE_WRITE) {
-            return 6;
-        }
-        if (open_mode == BOPEN_MODE_APPEND) {
-            return 2;
-        }
+    switch (open_mode) {
+    case BOPEN_MODE_WRITE:
+        return 6;
+    case BOPEN_MODE_APPEND:
+        return 2;
+    default:
+        return 1;
     }
-    return 1;
 }
 
 void AddMemoryFile(void *pmemory_file) {
@@ -94,8 +93,9 @@ MemoryFileEntry *FindMemoryFileEntry(const char *filename) {
     for (MemoryFile *memory_file = MemoryFileList.GetHead(); memory_file != MemoryFileList.EndOfList();
          memory_file = memory_file->GetNext()) {
         for (int n = 0; n < memory_file->NumFileEntries; n++) {
-            if (memory_file->FileEntries[n].Hash == name_hash) {
-                return &memory_file->FileEntries[n];
+            MemoryFileEntry *memory_file_entry = &memory_file->FileEntries[n];
+            if (memory_file_entry->Hash == name_hash) {
+                return memory_file_entry;
             }
         }
     }
@@ -125,6 +125,7 @@ bFile::bFile(const char *filename, bFileOpenMode open_mode) {
     Filename = bAllocateSharedString(filename);
     WriteBuffer = nullptr;
     FileHandle = -1;
+    WriteBufferSize = 0;
     CloseAfterCallbacks = 0;
     OpenMode = open_mode;
     Position = 0;
@@ -133,7 +134,6 @@ bFile::bFile(const char *filename, bFileOpenMode open_mode) {
     NumPendingCallbacks = 0;
     WriteBufferPos = 0;
     WriteBufferNumBytes = 0;
-    WriteBufferSize = 0;
     if (open_mode == BOPEN_MODE_WRITE || open_mode == BOPEN_MODE_APPEND) {
         bFileFlushCacheFile(filename);
         WriteBufferSize = 0x2000;
@@ -147,7 +147,9 @@ bFile::bFile(const char *filename, bFileOpenMode open_mode) {
         FileHandle = c->GetFileHandle();
     } else {
         MemoryFileEntry *entry = FindMemoryFileEntry(Filename);
-        if (entry == nullptr) {
+        if (entry != nullptr) {
+            FileHandle = entry->FileSize;
+        } else {
             OpenLowLevel();
             if (FileHandle > -1) {
                 if (OpenMode == BOPEN_MODE_APPEND) {
@@ -155,10 +157,10 @@ bFile::bFile(const char *filename, bFileOpenMode open_mode) {
                 }
                 MaybeAddCachedHandle();
             }
-        } else {
-            FileHandle = entry->FileSize;
         }
     }
 }
 
-void bFileRunTimingTest() {}
+void bFileRunTimingTest() {
+    char filename[64];
+}
