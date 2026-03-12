@@ -256,15 +256,11 @@ ICEManager::ICEManager() {
 }
 
 float ICEManager::GetTimerSeconds() {
-    int packed_time;
-
-    if (!bUseRealTime) {
-        packed_time = WorldTimer.GetPackedTime();
+    if (bUseRealTime) {
+        return RealTimer.GetSeconds();
     } else {
-        packed_time = RealTimer.GetPackedTime();
+        return WorldTimer.GetSeconds();
     }
-
-    return packed_time / 4000.0f;
 }
 
 bool ICEManager::RefreshCameraSplines() {
