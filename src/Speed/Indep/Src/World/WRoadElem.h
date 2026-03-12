@@ -353,8 +353,8 @@ struct WRoadSegment {
 
     void GetEndRightVec(UMath::Vector3 &v) const {
         const float scale = -1.0f / 127.0f;
-        float x = scale * static_cast< float >(vEndHandle[2]);
-        float z = scale * static_cast< float >(vEndHandle[0]);
+        float x = scale * static_cast< float >(vEndHandle[0]);
+        float z = scale * static_cast< float >(vEndHandle[2]);
         v = UMath::Vector3Make(x, 0.0f, z);
     }
 
@@ -362,8 +362,8 @@ struct WRoadSegment {
 
     void GetStartRightVec(UMath::Vector3 &v) const {
         const float scale = 1.0f / 127.0f;
-        float x = scale * static_cast< float >(vStartHandle[2]);
-        float z = scale * static_cast< float >(vStartHandle[0]);
+        float x = scale * static_cast< float >(vStartHandle[0]);
+        float z = scale * static_cast< float >(vStartHandle[2]);
         v = UMath::Vector3Make(x, 0.0f, z);
     }
 

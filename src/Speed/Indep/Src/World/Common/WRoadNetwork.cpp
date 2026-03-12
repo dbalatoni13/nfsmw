@@ -2121,9 +2121,9 @@ void WRoadNav::SetControlPos(const WRoadSegment &segment, bool startControl) {
         bool forward = fNodeInd != 0;
         bool which_end;
         if (fNodeInd == 0) {
-            which_end = !startControl;
-        } else {
             which_end = startControl;
+        } else {
+            which_end = !startControl;
         }
         WRoadNetwork &road_network = WRoadNetwork::Get();
         const UMath::Vector3 &nodePos = road_network.GetNode(segment.fNodeIndex[which_end])->fPosition;
@@ -2165,27 +2165,27 @@ void WRoadNav::SetBoundPos(const WRoadSegment &segment, float offset, bool start
     bool forward = fNodeInd != 0;
     bool which_end;
     if (fNodeInd == 0) {
-        which_end = !start;
-    } else {
         which_end = start;
+    } else {
+        which_end = !start;
     }
     WRoadNetwork &road_network = WRoadNetwork::Get();
     const WRoadNode *node = road_network.GetNode(segment.fNodeIndex[which_end]);
     const UMath::Vector3 &nodePos = node->fPosition;
     UMath::Vector3 rightVec;
-    float sign;
+    float sign = forward ? 1.0f : -1.0f;
 
     segment.GetRightVec(which_end, rightVec);
 
-    {
+    if (bCookieTrail) {
         float vehicle_half_width = fVehicleHalfWidth;
-        float left_offset = offset + static_cast< float >(vehicle_half_width * 1.05f);
-        float right_offset = offset - static_cast< float >(vehicle_half_width * 1.05f);
+        float left_offset = offset + vehicle_half_width * 0.5f;
+        float right_offset = offset - vehicle_half_width * 0.5f;
         int nav_type = GetNavType();
 
-        if (nav_type != 1) {
-            left_offset = offset + 0.5f;
-            right_offset = offset - 0.5f;
+        if (nav_type != kTypeTraffic) {
+            left_offset = offset + 2.0f;
+            right_offset = offset - 2.0f;
 
             const WRoadProfile *profile = road_network.GetSegmentProfile(segment, which_end);
             int num_lanes = profile->fNumZones;
@@ -2193,7 +2193,7 @@ void WRoadNav::SetBoundPos(const WRoadSegment &segment, float offset, bool start
             {
                 int closest_drivable = -1;
                 float closest_offset = 0.0f;
-                bool inverted = segment.IsProfileInverted(which_end);
+                bool inverted = !forward != segment.IsProfileInverted(fNodeInd);
                 int middle_lane = profile->GetMiddleZone(inverted);
 
                 {
@@ -2219,7 +2219,6 @@ void WRoadNav::SetBoundPos(const WRoadSegment &segment, float offset, bool start
                     float safety_margin;
                     float how_unsafe;
 
-                    // Walk left
                     while (left_lane > 0) {
                         int prev = left_lane - 1;
                         int lt = profile->GetLaneType(prev, inverted);
@@ -2227,7 +2226,6 @@ void WRoadNav::SetBoundPos(const WRoadSegment &segment, float offset, bool start
                         left_lane = prev;
                     }
 
-                    // Walk right
                     while (right_lane < num_lanes - 1) {
                         int next = right_lane + 1;
                         int lt = profile->GetLaneType(next, inverted);
@@ -2256,14 +2254,14 @@ void WRoadNav::SetBoundPos(const WRoadSegment &segment, float offset, bool start
             }
         }
 
-        UMath::Vector3 &leftRef = start ? fLeftEndPos : fLeftStartPos;
-        UMath::Vector3 &rightRef = start ? fRightEndPos : fRightStartPos;
+        UMath::Vector3 &leftRef = start ? fLeftStartPos : fLeftEndPos;
+        UMath::Vector3 &rightRef = start ? fRightStartPos : fRightEndPos;
 
         UMath::ScaleAdd(rightVec, sign * left_offset, nodePos, leftRef);
         UMath::ScaleAdd(rightVec, sign * right_offset, nodePos, rightRef);
     }
 
-    UMath::Vector3 &posRef = start ? fEndPos : fStartPos;
+    UMath::Vector3 &posRef = start ? fStartPos : fEndPos;
     UMath::ScaleAdd(rightVec, sign * offset, nodePos, posRef);
 }
 
