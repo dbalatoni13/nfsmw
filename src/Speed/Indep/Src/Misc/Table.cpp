@@ -1,5 +1,15 @@
 #include "Table.hpp"
 
+void *AverageBase::Allocate(unsigned int size, const char *name) {
+    return gFastMem.Alloc(size, name);
+}
+
+void AverageBase::DeAllocate(void *ptr, unsigned int size, const char *name) {
+    if (ptr != nullptr) {
+        gFastMem.Free(ptr, size, name);
+    }
+}
+
 // Credits: Brawltendo
 // TODO variables aren't dwarf matching
 float Table::GetValue(float input) {
@@ -44,6 +54,81 @@ Average::Average(int slots)
     Init(slots);
 }
 
+void Average::Init(int slots) {
+    if (pData != nullptr && pData != SmallDataBuffer) {
+        DeAllocate(pData, static_cast<unsigned int>(nSlots) << 2, "Average::Data");
+        pData = nullptr;
+    }
+    pData = SmallDataBuffer;
+    nSlots = slots;
+    if (static_cast<int>(slots) > 5) {
+        pData = static_cast<float *>(Allocate(static_cast<unsigned int>(static_cast<unsigned char>(slots)) << 2, "Average::Data"));
+    }
+    bMemSet(pData, 0, slots << 2);
+}
+
+Average::~Average() {
+    if (pData != SmallDataBuffer) {
+        DeAllocate(pData, static_cast<unsigned int>(nSlots) << 2, "Average::Data");
+    }
+}
+
+void Average::Recalculate() {
+    int i = 0;
+    fTotal = 0.0f;
+    if (nSlots != 0) {
+        do {
+            fTotal = fTotal + pData[i];
+            i = i + 1;
+        } while (i < static_cast<int>(static_cast<unsigned int>(nSlots)));
+    }
+    unsigned int num = static_cast<unsigned int>(nSamples);
+    if (num == 0) {
+        num = 1;
+    }
+    fAverage = fTotal * (1.0f / static_cast<float>(static_cast<int>(num)));
+}
+
+void Average::Record(float fValue) {
+    if (nSamples < nSlots) {
+        nSamples = nSamples + 1;
+    }
+    fTotal = fTotal + fValue;
+    fTotal = fTotal - pData[nCurrentSlot];
+    pData[nCurrentSlot] = fValue;
+    unsigned char slot = nCurrentSlot + 1;
+    nCurrentSlot = slot;
+    fAverage = fTotal / static_cast<float>(static_cast<int>(static_cast<unsigned int>(nSamples)));
+    if (nSlots <= slot) {
+        nCurrentSlot = 0;
+    }
+}
+
+void Average::Reset(float fValue) {
+    int i = 0;
+    if (nSlots != 0) {
+        do {
+            pData[i] = fValue;
+            i = i + 1;
+        } while (i < static_cast<int>(static_cast<unsigned int>(nSlots)));
+    }
+    nSamples = 0;
+    fTotal = fValue * static_cast<float>(static_cast<int>(static_cast<unsigned int>(nSlots)));
+}
+
+void Average::Flush(float fValue) {
+    int i = 0;
+    if (nSlots != 0) {
+        do {
+            pData[i] = fValue;
+            i = i + 1;
+        } while (i < static_cast<int>(static_cast<unsigned int>(nSlots)));
+    }
+    fAverage = fValue;
+    nSamples = nSlots;
+    fTotal = fValue * static_cast<float>(static_cast<int>(static_cast<unsigned int>(nSlots)));
+}
+
 AverageWindow::AverageWindow(float f_timewindow, float f_frequency)
     : Average(f_timewindow * f_frequency + 0.5f), //
       fTimeWindow(f_timewindow),                  //
@@ -51,4 +136,78 @@ AverageWindow::AverageWindow(float f_timewindow, float f_frequency)
       AllocSize(4 * nSize) {
     pTimeData = (float *)Allocate(AllocSize, "AverageWindow::TimeData");
     bMemSet(pTimeData, 0, AllocSize);
+}
+
+AverageWindow::~AverageWindow() {
+    DeAllocate(pTimeData, AllocSize, "AverageWindow::TimeData");
+}
+
+void AverageWindow::Reset(float fValue) {
+    int i = 0;
+    if (nSlots != 0) {
+        do {
+            pData[i] = fValue;
+            pTimeData[i] = 0.0f;
+            i = i + 1;
+        } while (i < static_cast<int>(static_cast<unsigned int>(nSlots)));
+    }
+    nCurrentSlot = 0;
+    fAverage = 0.0f;
+    nSamples = 0;
+    iOldestValue = 0;
+    fTotal = fValue * static_cast<float>(static_cast<int>(static_cast<unsigned int>(nSlots)));
+}
+
+void AverageWindow::Record(const float fValue, const float fTimeNow) {
+    if (pData[nCurrentSlot] == 0.0f && pTimeData[nCurrentSlot] == 0.0f) {
+        nSamples = nSamples + 1;
+    } else {
+        fTotal = fTotal - pData[nCurrentSlot];
+    }
+    fTotal = fTotal + fValue;
+    pData[nCurrentSlot] = fValue;
+    pTimeData[nCurrentSlot] = fTimeNow;
+    float sentinel = 0.0f;
+    if (fTimeWindow < fTimeNow - pTimeData[iOldestValue]) {
+        do {
+            int oldest_offset = iOldestValue * 4;
+            if (sentinel < *(reinterpret_cast<float *>(reinterpret_cast<int>(pTimeData) + oldest_offset))) {
+                fTotal = fTotal - pData[iOldestValue];
+                pData[iOldestValue] = sentinel;
+                pTimeData[iOldestValue] = sentinel;
+                nSamples = nSamples - 1;
+            }
+            iOldestValue = iOldestValue + 1;
+            if (static_cast<int>(static_cast<unsigned int>(nSlots)) <= iOldestValue) {
+                iOldestValue = 0;
+            }
+        } while (fTimeWindow < fTimeNow - pTimeData[iOldestValue]);
+    }
+    unsigned char slot = nCurrentSlot + 1;
+    nCurrentSlot = slot;
+    fAverage = fTotal / static_cast<float>(static_cast<int>(static_cast<unsigned int>(nSamples)));
+    if (nSlots <= slot) {
+        nCurrentSlot = 0;
+    }
+}
+
+void PidError::Record(float fError, float fTime, bool bZeroDerivative, bool bZeroIntegral) {
+    float diff = fError - fPreviousError;
+    fCurrentError = fError;
+    fPreviousError = fError;
+    float integral_value;
+    if (bZeroIntegral) {
+        integral_value = 0.0f;
+    } else {
+        integral_value = diff * fTime * fFrequency;
+    }
+    float derivative_value;
+    if (bZeroDerivative) {
+        derivative_value = 0.0f;
+    } else {
+        derivative_value = diff / fTime;
+    }
+    aTimes.Record(fTime);
+    aIntegral.Record(integral_value);
+    aDerivative.Record(derivative_value);
 }

@@ -83,8 +83,8 @@ class AverageBase {
     AverageBase(int size, int slots);
     virtual ~AverageBase() {}
 
-    void *Allocate(unsigned int size, const char *name);
-    void DeAllocate(void *ptr, unsigned int size, const char *name);
+    static void *Allocate(unsigned int size, const char *name);
+    static void DeAllocate(void *ptr, unsigned int size, const char *name);
 
     // bool FullySampled() {}
 
@@ -105,9 +105,13 @@ class Average : public AverageBase {
   public:
     Average();
     Average(int slots);
-    ~Average();
+    ~Average() override;
 
     void Init(int slots);
+    void Record(float fValue);
+    void Recalculate() override;
+    void Reset(float fValue);
+    void Flush(float fValue);
 
     float GetValue() {
         return fAverage;
