@@ -32,7 +32,7 @@ inline float InvSqrt(const float f) {
 }
 
 inline float wwfabs(float a) {
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(EA_PLATFORM_PLAYSTATION2)
     float r;
     asm("fabs %0, %1" : "=f"(r) : "f"(a));
     return r;
