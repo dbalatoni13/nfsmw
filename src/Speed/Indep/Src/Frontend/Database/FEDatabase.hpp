@@ -339,8 +339,6 @@ struct FEKeyboardSettings {
 
 // total size: 0x6
 struct GameCompletionStats {
-    GameCompletionStats();
-
     unsigned char m_nOverall;                // offset 0x0, size 0x1
     unsigned char m_nCareer;                 // offset 0x1, size 0x1
     unsigned char m_nRapSheetRankings;       // offset 0x2, size 0x1

@@ -206,11 +206,7 @@ void MemcardCallbacks::LoadDone(const char* filename) {
         bool isProfileValid = FEDatabase->LoadUserProfileFromBuffer(
             GetMemcard()->GetData(), GetMemcard()->GetSize(),
             GetMemcard()->GetPlayerNum());
-        if (!isProfileValid) {
-            GetMemcard()->ShowMessages(false);
-            FEDatabase->RestoreFromBackupDB();
-            cFEng::Get()->QueueGameMessage(0xf35d144e, nullptr, 0xff);
-        } else {
+        if (isProfileValid) {
             FEDatabase->DeallocBackupDB();
             if (GetMemcard()->GetPlayerNum() != 0) {
                 if (GetMemcard()->m_pBuffer != nullptr) {
@@ -235,6 +231,10 @@ void MemcardCallbacks::LoadDone(const char* filename) {
                 }
                 cFEng::Get()->QueueGameMessage(msg, nullptr, 0xff);
             }
+        } else {
+            GetMemcard()->ShowMessages(false);
+            FEDatabase->RestoreFromBackupDB();
+            cFEng::Get()->QueueGameMessage(0xf35d144e, nullptr, 0xff);
         }
     } else {
         FEDatabase->RestoreFromBackupDB();
