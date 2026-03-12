@@ -3,11 +3,14 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Generated/Events/ELoadingScreenOff.hpp"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
 #include "Speed/Indep/Src/World/CarLoader.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
+#include "Speed/Indep/Src/World/RaceParameters.hpp"
 #include "Speed/Indep/Src/World/Scenery.hpp"
 #include "Speed/Indep/Src/World/TimeOfDay.hpp"
+#include "Speed/Indep/Src/World/TrackInfo.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/Src/World/World.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
@@ -159,4 +162,81 @@ void GetBuildVersionName(char *build_version_name) {
 #else
     bStrCpy(build_version_name, "Release");
 #endif
+}
+
+extern int FreeMemoryEnteringGame;
+extern int RealTimeFramesEnteringGame;
+extern int RealTimeFrames;
+
+void ActivateMemorySponge() {
+    int amount_to_waste = bLargestMalloc(0);
+    FreeMemoryEnteringGame = amount_to_waste;
+    RealTimeFramesEnteringGame = RealTimeFrames;
+}
+
+void DeactivateMemorySponge() {
+    FreeMemoryEnteringGame = 0;
+    RealTimeFramesEnteringGame = 0;
+}
+
+RegionLoader TheRegionLoader;
+TrackLoader TheTrackLoader;
+int TrackStreamerLoadingBarUp;
+
+void BeginGameFlowLoadRegion() {
+    TheRegionLoader.BeginLoading();
+}
+
+void BeginGameFlowLoadTrack() {
+    TheTrackLoader.BeginLoading();
+}
+
+void BeginGameFlowUnloadTrack(int reload) {
+    TheTrackLoader.Unload();
+    TheRegionLoader.Unload();
+    if (reload == 0) {
+        TheGameFlowManager.LoadFrontend();
+    } else if (reload == 1) {
+        SetLeakDetector();
+        TheGameFlowManager.LoadTrack();
+    }
+}
+
+void GameFlowClearFEngLoadingScreen() {
+    new ELoadingScreenOff();
+}
+
+extern RaceParameters TheRaceParameters;
+extern void InitWorldModels();
+extern void BeginWorldLoad(int);
+
+void TrackLoader::BeginLoading() {
+    TheGameFlowManager.SetState(GAMEFLOW_STATE_LOADING_TRACK);
+    Phase = 0;
+    LoadedTrackInfo = TrackInfo::GetTrackInfo(TheRaceParameters.TrackNumber);
+    LoadHandler();
+}
+
+void TrackLoader::LoadHandler() {
+    Phase = Phase + 1;
+    TheGameFlowManager.ClearWaitingForCallback();
+    TheGameFlowManager.SetWaitingForCallback("TrackLoader", Phase);
+    if (Phase == 1) {
+        TheGameFlowManager.SetState(GAMEFLOW_STATE_LOADING_TRACK);
+    } else if (Phase == 2) {
+        LoadHandler();
+        return;
+    } else if (Phase == 3) {
+        InitWorldModels();
+        TheGameFlowManager.ClearWaitingForCallback();
+        FinishedLoading();
+        return;
+    } else {
+        return;
+    }
+    LoadHandler();
+}
+
+void TrackLoader::FinishedLoading() {
+    TheGameFlowManager.SetSingleFunction(reinterpret_cast<void (*)(int)>(BeginWorldLoad), "BeginWorldLoad", 0);
 }

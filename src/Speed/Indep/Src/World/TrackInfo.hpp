@@ -80,6 +80,8 @@ class TrackInfo {
     const char *GetLoadedTrackInfo() {
         return this->RegionName;
     }
+
+    static TrackInfo *GetTrackInfo(int track_number);
 };
 
 extern TrackInfo *LoadedTrackInfo;

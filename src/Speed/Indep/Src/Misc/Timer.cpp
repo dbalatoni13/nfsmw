@@ -158,19 +158,19 @@ void AdvanceRealTime() {
     RealTimeFrames = RealTimeFrames + frames_elapsed_60hz;
     RealTime = RealTimeFrames;
     Timer t(RealTimeElapsed);
-    RealLoopCounter = RealLoopCounter + 1;
     RealTimer = RealTimer + t;
+    RealLoopCounter = RealLoopCounter + 1;
 }
 
 void ResetWorldTime() {
     WorldTimer.SetTime(Sim::GetTime());
-    WorldTimeFrames = 1;
-    WorldTimeElapsedFrame = 0.0f;
-    WorldLoopCounter = 0;
-    WorldTime = 1;
-    WorldTimeSeconds = WorldTimer.GetSeconds();
-    WorldTimeFramesElapsed = 0;
     WorldTimeElapsed = 0.0f;
+    WorldTimeFramesElapsed = 0;
+    WorldTimeSeconds = WorldTimer.GetSeconds();
+    WorldTime = 1;
+    WorldLoopCounter = 0;
+    WorldTimeElapsedFrame = 0.0f;
+    WorldTimeFrames = 1;
 }
 
 void PrepareWorldTimestep(float elapsed_time) {
@@ -184,6 +184,7 @@ void PrepareWorldTimestep(float elapsed_time) {
 void AdvanceWorldTime() {
     if (NeedToPrepareWorldTimestep == 0 && (NeedToPrepareWorldTimestep = 1, WorldTimeElapsed != 0.0f)) {
         int frames_elapsed_60hz = static_cast<int>((WorldTimeElapsedFrame + WorldTimeElapsed) * 60.0f);
+        WorldTimeFramesElapsed = frames_elapsed_60hz;
         WorldTime = WorldTimeFrames + frames_elapsed_60hz;
         WorldTimeElapsedFrame = (WorldTimeElapsedFrame + WorldTimeElapsed) - static_cast<float>(frames_elapsed_60hz) * (1.0f / 60.0f);
         WorldTimeFrames = WorldTime;
@@ -199,7 +200,7 @@ float GetDebugRealTime() {
     extern volatile unsigned int LastFrameCounterTick;
     float frame_counter_seconds = VideoFramesToSeconds(FrameCounter);
     if (LastFrameCounterTick != 0) {
-        float fractional_time = bGetTickerDifference(LastFrameCounterTick, bGetTicker());
+        float fractional_time = bGetTickerDifference(LastFrameCounterTick, bGetTicker()) * 0.001f;
         float max_fractional_time = GetVideoFrameTime(GetVideoMode());
         if (fractional_time > max_fractional_time) {
             fractional_time = max_fractional_time;

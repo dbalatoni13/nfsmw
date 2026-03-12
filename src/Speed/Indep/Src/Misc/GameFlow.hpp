@@ -87,5 +87,41 @@ void BootLoadingScreen();
 void UnloadFrontEndVault();
 void MaybeDoMemoryProfile();
 void HandleTrackStreamerLoadingBar();
+void CheckLeakDetector(const char *);
+
+struct ResourceFile;
+struct VMFile;
+
+// total size: 0x20
+struct RegionLoader {
+    int Phase;                           // offset 0x0, size 0x4
+    ResourceFile *pResourceInGameA;      // offset 0x4, size 0x4
+    ResourceFile *pResourceInGameB;      // offset 0x8, size 0x4
+    ResourceFile *pResourceInGameSplitScreen; // offset 0xC, size 0x4
+    ResourceFile *pResourceRegion;       // offset 0x10, size 0x4
+    VMFile *pResourceGlobalB_VM;         // offset 0x14, size 0x4
+    VMFile *pResourceInGameB_VM;         // offset 0x18, size 0x4
+    VMFile *pResourceRegion_VM;          // offset 0x1C, size 0x4
+
+    void BeginLoading();
+    void LoadHandler();
+    void FinishedLoading();
+    void Unload();
+};
+
+// total size: 0x4
+struct TrackLoader {
+    int Phase; // offset 0x0, size 0x4
+
+    void BeginLoading();
+    void LoadHandler();
+    void FinishedLoading();
+    void Unload();
+    void InitTopologyAndSceneryGroups();
+    void CloseTopologyAndSceneryGroups();
+};
+
+extern RegionLoader TheRegionLoader;
+extern TrackLoader TheTrackLoader;
 
 #endif
