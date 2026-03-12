@@ -67,7 +67,6 @@ void CAnimBank::Cleanup() {
     m_purge = false;
 
     delete m_pFnAnimBanks;
-    // TODO why isn't this if auto-generated? hmm
     if (m_pAnimBank) {
         delete m_pAnimBank;
     }

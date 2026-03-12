@@ -12,7 +12,6 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "WorldAnimInstanceDirectory.hpp"
 
-// TODO move? they are static though
 static int NumWorldAnimEntities;           // size: 0x4, address: 0x804156F4
 static int MaxNumWorldAnimEntities;        // size: 0x4, address: 0x804156F8
 static int NumWorldAnimEntityTrees;        // size: 0x4, address: 0x804156FC
@@ -235,7 +234,6 @@ void CWorldAnimEntity::SetTime(float time) {
     if (mAnimCtrl) {
         mAnimCtrl->SetEvalTime(0.0f);
     }
-    // TODO is this right?
     UpdateTimeStep(time);
 }
 
@@ -303,7 +301,6 @@ WorldAnimEntityTreeInfo::WorldAnimEntityTreeInfo(unsigned int treenamehash, bPLi
 
         loaded_world_anim_entity_chunks.AddSorted(&CompareParentIndex, new bPNode(waei));
     }
-    // TODO is the sizeof right?
     bMemCpy(named_ranges, ranges, 4 * sizeof(WorldAnimNamedRange));
 }
 
@@ -336,10 +333,8 @@ WorldAnimEntityTreeInfo::~WorldAnimEntityTreeInfo() {
     }
 }
 
-// TODO move somewhere in zMisc
 extern int AnimCfg_DisableWorldAnimations;
 
-// TODO move?
 bPList<WorldAnimEntityInfo> temp_loaded_world_anim_entity_chunks;
 
 int LoaderWorldAnimTreeMarker(bChunk *chunk) {

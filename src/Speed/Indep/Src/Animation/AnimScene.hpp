@@ -113,108 +113,46 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
 
     CAnimScene(CAnimSceneData *anim_scene_data, int camera_track_number, int anim_candidate_type, int anim_candidate_index);
 
-    int GenerateHandle();
-    int GetHandle();
-
-    unsigned int GetAnimID();
-
-    int GetSceneType();
-
-    void GetSceneName(char *ret_name);
-
-    const char *GetAnimDescription();
-
-    bool SetPropertyEnabled(eAnimProperty property_id, bool enable);
-
-    bool IsPropertyEnabled(eAnimProperty property_id);
-
-    bool IsBoundToGame();
-
-    bool BindToGame();
-
-    bool UnBindToGame();
-
-    void ChangePlayStatus(ePlayStatus new_status);
-
-    bool Cue();
-
-    bool Play();
-
-    bool Stop();
-
-    bool IsCued();
-
-    bool IsStopped();
-
-    bool IsPaused();
-
-    void ResetTime();
-
-    void JumpToEnd();
-
-    void SetTime(float time);
-
-    void GetTime(float &time);
-
-    void UpdateTime(float time_step);
-
-    void RenderEffects(eView *view, int is_reflection);
-
-    void AddProperty(eAnimProperty property_id, bool enabled);
-
-    void RemoveProperties();
-
-    CAnimProperty *FindProperty(eAnimProperty property_id);
-
     bool Init();
-
     bool Purge();
-
-    void ForceCarToAnimCarPosition(struct Car *car, int car_num);
-
-    void ForcePlayerToAnimCarPosition(int player_num, int car_num);
-
-    void ClearCarAnimStates();
-
-    void InitCarAnimStatesFromStartingPositions();
-
-    void InitCarAnimStatesFromNIS();
-
-    int FindCurrentWorldCarIndex(struct Car *car);
-
-    void SetCarAnimationPositions();
-
-    void CreateCarAnimationControllers();
-
-    void ClearCarAnimationControllers();
-
-    void AnimatedCars_SetMainAndWheels(int current_car, CAnimCtrl *main_anim_ctrl, float time_step);
-
-    void AnimatedCars_ResetToBeginning();
-
-    void AnimatedCars_ClearLastPose();
-
-    void AnimatedCars_SetTime(float time);
-
+    int GetHandle();
+    unsigned int GetAnimID();
+    int GetSceneType();
+    void GetSceneName(char *ret_name);
+    const char *GetAnimDescription();
+    bool SetPropertyEnabled(eAnimProperty property_id, bool enable);
+    bool IsPropertyEnabled(eAnimProperty property_id);
+    bool IsBoundToGame();
+    bool BindToGame();
+    bool UnBindToGame();
+    void ResetTime();
+    void GetTime(float &time);
+    void UpdateTime(float time_step);
+    void JumpToEnd();
+    void RenderEffects(eView *view, int is_reflection);
+    bool Cue();
+    bool Play();
+    bool Stop();
+    bool IsCued();
+    bool IsStopped();
+    bool IsPaused();
+    IAnimEntity *GetAnimEntityWithModelName(const char *name);
     void AnimatedCars_Update(float time_step);
 
-    void AnimatedCars_Bind();
+    bool IsPastThisTime(float time) { return mTimeElapsed > time; }
+    bool IsFinished() { return mTimeElapsed >= mTimeTotalLength; }
+    void SetCameraControl(bool enable) { mControllingCamera = enable; }
+    bPList<IAnimEntity> *GetAnimEntityList() { return &mInstancedAnimEntityList; }
+    void SetSceneRotationMatrix(bMatrix4 &scene_rotation_matrix) { mSceneRotationMatrix = scene_rotation_matrix; }
+    void SetSceneTranslationMatrix(bMatrix4 &scene_translation_matrix) { mSceneTranslationMatrix = scene_translation_matrix; }
+    void SetSceneTransformMatrix(bMatrix4 &scene_transform_matrix) { mSceneTransformMatrix = scene_transform_matrix; }
+    const bMatrix4 &GetSceneTranslationMatrix() { return mSceneTranslationMatrix; }
 
-    void AnimatedCars_UnBind();
-
-    IAnimEntity *GetAnimEntityWithModelName(const char *name);
-
-    void CreateAnimEntities();
-
-    void ClearAnimEntities();
-
-    // Virtual functions
-    // ICEScene
-    // TODO are all of these really overridden?
+    // Virtual overrides from ICEScene
     virtual ~CAnimScene();
     unsigned int GetSceneHash() override;
     int GetCameraTrackNumber() override;
-    void SetTime() override;
+    void SetTime(float time) override;
     bool Pause() override;
     bool UnPause() override;
     bool IsPlaying() override;
@@ -227,6 +165,31 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
     bMatrix4 &GetSceneTransformMatrix() override;
 
   private:
+    static int mHandleCounter;
+
+    int GenerateHandle();
+    void ChangePlayStatus(ePlayStatus new_status);
+    void AddProperty(eAnimProperty property_id, bool enabled);
+    void RemoveProperties();
+    CAnimProperty *FindProperty(eAnimProperty property_id);
+    void ForceCarToAnimCarPosition(struct Car *car, int car_num);
+    void ForcePlayerToAnimCarPosition(int player_num, int car_num);
+    void ClearCarAnimStates();
+    void InitCarAnimStatesFromStartingPositions();
+    void InitCarAnimStatesFromNIS();
+    int FindCurrentWorldCarIndex(struct Car *car);
+    void SetCarAnimationPositions();
+    void CreateCarAnimationControllers();
+    void ClearCarAnimationControllers();
+    void AnimatedCars_SetMainAndWheels(int current_car, CAnimCtrl *main_anim_ctrl, float time_step);
+    void AnimatedCars_ResetToBeginning();
+    void AnimatedCars_ClearLastPose();
+    void AnimatedCars_SetTime(float time);
+    void AnimatedCars_Bind();
+    void AnimatedCars_UnBind();
+    void CreateAnimEntities();
+    void ClearAnimEntities();
+
     int mHandle;                                  // offset 0xC, size 0x4
     CAnimSceneData *mAnimSceneData;               // offset 0x10, size 0x4
     bPList<IAnimEntity> mInstancedAnimEntityList; // offset 0x14, size 0x8
@@ -245,35 +208,36 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
     SpaceNode *mSpaceNode;                        // offset 0x104, size 0x4
     int mAnimCandidateType;                       // offset 0x108, size 0x4
     int mAnimCandidateIndex;                      // offset 0x10C, size 0x4
-
-    void SetSceneRotationMatrix(bMatrix4 &scene_rotation_matrix) { mSceneRotationMatrix = scene_rotation_matrix; }
-    void SetSceneTranslationMatrix(bMatrix4 &scene_translation_matrix) { mSceneTranslationMatrix = scene_translation_matrix; }
-    void SetSceneTransformMatrix(bMatrix4 &scene_transform_matrix) { mSceneTransformMatrix = scene_transform_matrix; }
 };
 
 // total size: 0x94
-class CAnimMomentScene : public ICEScene {
-  public:
-    // Virtual functions
+struct CAnimMomentScene : public ICEScene {
+    CAnimMomentScene(unsigned int sceneHash, int camera_track_number, bMatrix4 &rot, bMatrix4 &transform)
+        : mSceneHash(sceneHash), //
+          mCamera_track_number(camera_track_number), //
+          mTimeElapsed(0.0f), //
+          mTotalTime(0.0f), //
+          mSceneRotationMatrix(rot), //
+          mSceneTransformMatrix(transform) {}
+
     virtual ~CAnimMomentScene();
 
-    // ICEScene
-    // TODO are all of these really overridden?
-    unsigned int GetSceneHash() override;
-    int GetCameraTrackNumber() override;
-    bool IsControllingCamera() override;
-    bool IsCameraFixingElevation() override;
-    void SetTime() override;
-    bool Pause() override;
-    bool UnPause() override;
-    bool IsPlaying() override;
-    float GetTimeStart() override;
-    float GetTimeTotalLength() override;
-    float GetTimeElapsed() override;
-    bMatrix4 &GetSceneRotationMatrix() override;
-    bMatrix4 &GetSceneTransformMatrix() override;
+    unsigned int GetSceneHash() override { return mSceneHash; }
+    int GetCameraTrackNumber() override { return mCamera_track_number; }
+    bool IsControllingCamera() override { return true; }
+    bool IsCameraFixingElevation() override { return false; }
+    void SetTime(float time) override { mTimeElapsed = time; }
+    bool Pause() override { return true; }
+    bool UnPause() override { return true; }
+    bool IsPlaying() override { return true; }
+    void Update(float dT) { mTimeElapsed += dT; }
+    bool IsFinished() { return mTimeElapsed >= mTotalTime; }
+    float GetTimeStart() override { return 0.0f; }
+    float GetTimeTotalLength() override { return mTotalTime; }
+    float GetTimeElapsed() override { return mTimeElapsed; }
+    bMatrix4 &GetSceneRotationMatrix() override { return mSceneRotationMatrix; }
+    bMatrix4 &GetSceneTransformMatrix() override { return mSceneTransformMatrix; }
 
-  private:
     unsigned int mSceneHash;        // offset 0x4, size 0x4
     int mCamera_track_number;       // offset 0x8, size 0x4
     float mTimeElapsed;             // offset 0xC, size 0x4

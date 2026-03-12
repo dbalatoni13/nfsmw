@@ -57,7 +57,7 @@ CAnimSkeleton *GetSkeletonFromList(unsigned int namehash);
 void DumpAnimBanks();
 
 bTList<CAnimSceneData> g_loadedAnimSceneDataList;
-int mHandleCounter = 0;
+int CAnimScene::mHandleCounter = 0;
 
 CarAnimationState::CarAnimationState() {
     AnimCtrl = nullptr;
