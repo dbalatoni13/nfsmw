@@ -33,7 +33,13 @@ def load_project_config() -> Dict[str, Any]:
 def run_objdiff(unit_name: str) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
     """Run objdiff-cli diff for a unit and return parsed JSON."""
     try:
-        return run_objdiff_json(OBJDIFF_CLI, unit_name, root_dir=root_dir), None
+        return run_objdiff_json(
+            OBJDIFF_CLI, unit_name, root_dir=root_dir,
+            extra_args=[
+                "-c", "functionRelocDiffs=none",
+                "-c", "ppc.calculatePoolRelocations=false",
+            ],
+        ), None
     except ToolError as e:
         return None, str(e)
 
