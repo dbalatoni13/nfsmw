@@ -1030,7 +1030,7 @@ PlaceableScenery *PlaceableScenery::Construct(const char *name, unsigned int att
 }
 
 void PlaceableScenery::PickUp() {
-    HideModel();
+    ReleaseChildModels();
     StopEffects();
     EndDraw();
     EndSimulation();
