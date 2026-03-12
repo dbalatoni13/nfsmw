@@ -22,7 +22,9 @@
 #include "Speed/Indep/Src/Speech/SoundAI.h"
 #include "Speed/Indep/Src/World/TrackPath.hpp"
 
+#ifndef EA_PLATFORM_PLAYSTATION2
 extern Avoidables *TheAvoidables;
+#endif
 extern bool gGameBreakerCamera;
 
 void SetNewSndCamAction(Attrib::StringKey mode, EVIEW_ID viewID);
@@ -464,14 +466,18 @@ void CameraAI::MaybeKillJumpCam(unsigned int id) {
 }
 
 void CameraAI::Init() {
+#ifndef EA_PLATFORM_PLAYSTATION2
     TheAvoidables = new Avoidables();
+#endif
 }
 
 void CameraAI::Shutdown() {
+#ifndef EA_PLATFORM_PLAYSTATION2
     if (TheAvoidables != nullptr) {
         delete TheAvoidables;
     }
     TheAvoidables = nullptr;
+#endif
     Director::List copy(Director::GetList());
     for (Director *const *iter = copy.begin(); iter != copy.end(); ++iter) {
         Director *cd = *iter;
@@ -482,17 +488,21 @@ void CameraAI::Shutdown() {
 }
 
 void CameraAI::AddAvoidable(IBody *body) {
+#ifndef EA_PLATFORM_PLAYSTATION2
     Avoidables::iterator iter = _STL::find(TheAvoidables->begin(), TheAvoidables->end(), body);
     if (iter == TheAvoidables->end()) {
         TheAvoidables->push_back(body);
     }
+#endif
 }
 
 void CameraAI::RemoveAvoidable(IBody *body) {
+#ifndef EA_PLATFORM_PLAYSTATION2
     Avoidables::iterator iter = _STL::find(TheAvoidables->begin(), TheAvoidables->end(), body);
     if (iter != TheAvoidables->end()) {
         TheAvoidables->erase(iter);
     }
+#endif
 }
 
 void CameraAI::StartCinematicSlowdown(EVIEW_ID viewID, float seconds) {

@@ -26,6 +26,7 @@ Attrib::Key Attrib::Gen::camerainfo::ClassKey() {
 
 int AmIinATunnel(eView *view, int CheckOverPass);
 
+#ifndef EA_PLATFORM_PLAYSTATION2
 DECLARE_CONTAINER_TYPE(CameraAIAvoidables);
 
 struct Avoidables : public _STL::list<IBody *, UTL::Std::Allocator<IBody *, _type_CameraAIAvoidables> > {
@@ -41,6 +42,7 @@ struct Avoidables : public _STL::list<IBody *, UTL::Std::Allocator<IBody *, _typ
 };
 
 Avoidables *TheAvoidables;
+#endif
 
 extern int WeHaveCheckedIfJR2ServerExists;
 extern int DisablePrecullerCounter;
@@ -862,6 +864,7 @@ void CameraMover::IsoProjectionMatrix(bMatrix4 *pMatrix, bVector3 *pEye, bVector
 }
 
 float CameraMover::AdjustHeightAroundCar(const bVector3 *position, bVector3 *pCarPos, bVector3 *pForward) {
+#ifndef EA_PLATFORM_PLAYSTATION2
     _STL::list<IBody *, UTL::Std::Allocator<IBody *, _type_CameraAIAvoidables> >::const_iterator iter;
 
     for (iter = TheAvoidables->begin(); iter != TheAvoidables->end(); ++iter) {
@@ -921,6 +924,7 @@ float CameraMover::AdjustHeightAroundCar(const bVector3 *position, bVector3 *pCa
             }
         }
     }
+#endif
     return 0.0f;
 }
 
@@ -932,6 +936,7 @@ bVector3 *CameraMover::DutchAroundCar(bVector3 *pCarPos, bVector3 *pCarVelocity)
     ret.y = 0.0f;
 
     {
+#ifndef EA_PLATFORM_PLAYSTATION2
         _STL::list<IBody *, UTL::Std::Allocator<IBody *, _type_CameraAIAvoidables> >::const_iterator iter;
 
         for (iter = TheAvoidables->begin(); iter != TheAvoidables->end(); ++iter) {
@@ -979,6 +984,7 @@ bVector3 *CameraMover::DutchAroundCar(bVector3 *pCarPos, bVector3 *pCarVelocity)
                 }
             }
         }
+#endif
     }
 
     return &ret;
