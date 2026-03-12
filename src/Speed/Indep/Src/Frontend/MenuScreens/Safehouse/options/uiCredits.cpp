@@ -39,9 +39,6 @@ uiCredits::~uiCredits() {}
 void uiCredits::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1,
                                     unsigned long param2) {
     switch (msg) {
-    case 0x911ab364:
-        cFEng::Get()->QueuePackageMessage(0x587c018b, nullptr, nullptr);
-        break;
     case 0x35f8620b: {
         char filename[32];
         const char* languageName =
@@ -63,12 +60,13 @@ void uiCredits::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned 
         initComplete_ = true;
         break;
     }
-    case 0x29161540:
-        pendingDelete_ = pobj;
-        break;
-    case 0x406415e3:
-        if (FEDatabase->IsBeatGameMode()) {
-            cFEng::Get()->QueuePackageMessage(0x587c018b, nullptr, nullptr);
+    case 0xe1fde1d1:
+        uf_.Unload();
+        initComplete_ = false;
+        if (!FEDatabase->IsBeatGameMode()) {
+            cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+        } else {
+            FEGameWonScreen::QueuePackageSwitchForNextScreen();
         }
         break;
     case 0xc98356ba:
@@ -77,15 +75,6 @@ void uiCredits::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned 
             cFEngRender::mInstance->RemoveCachedRender(pendingDelete_, nullptr);
             delete pendingDelete_;
             pendingDelete_ = nullptr;
-        }
-        break;
-    case 0xe1fde1d1:
-        uf_.Unload();
-        initComplete_ = false;
-        if (!FEDatabase->IsBeatGameMode()) {
-            cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
-        } else {
-            FEGameWonScreen::QueuePackageSwitchForNextScreen();
         }
         break;
     case 0xe6e946b8:
@@ -107,6 +96,17 @@ void uiCredits::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned 
                 }
                 ConstructData.pPackage->Objects.AddNode(ConstructData.pPackage->Objects.GetTail(), ns);
             }
+        }
+        break;
+    case 0x29161540:
+        pendingDelete_ = pobj;
+        break;
+    case 0x911ab364:
+        cFEng::Get()->QueuePackageMessage(0x587c018b, nullptr, nullptr);
+        break;
+    case 0x406415e3:
+        if (FEDatabase->IsBeatGameMode()) {
+            cFEng::Get()->QueuePackageMessage(0x587c018b, nullptr, nullptr);
         }
         break;
     }

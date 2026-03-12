@@ -102,20 +102,21 @@ void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj,
                                         static_cast<eDialogFirstButtons>(1), messageHash);
         return;
     }
-    case 0x34dc1bcf:
-        return;
-    case 0x72619778:
-    case 0x911c0a4b:
-    case 0x9120409e:
-    case 0xb5971bf1:
-        break;
-    case 0x911ab364:
+    case 0xc519bfc3:
         if (bIsInGame) {
-            cFEng::Get()->QueuePackageSwitch("IG_BL_MAIN", 1, 0, false);
-        } else {
-            cFEng::Get()->QueuePackageSwitch("BL_MAIN", 0, 0, false);
+            return;
+        }
+        FEngSetScript(GetPackageName(), 0x99344537, 0x16a259, true);
+        FEAnyTutorialScreen::LaunchMovie(gTUTORIAL_MOVIE_PURSUIT, GetPackageName());
+        return;
+    case 0xc98356ba:
+        if (TrackMapStreamer != nullptr) {
+            TrackMapStreamer->UpdateAnimation();
         }
         return;
+    case 0x911c0a4b:
+    case 0xb5971bf1:
+        break;
     case 0xc3960eb9: {
         if (bIsInGame) {
             FEngSetVisible("IG_BL_TRACKMAP.fng", 0x2716cdbf);
@@ -147,11 +148,6 @@ void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj,
         RaceStarterStartCareerFreeRoam();
         return;
     }
-    case 0xc98356ba:
-        if (TrackMapStreamer != nullptr) {
-            TrackMapStreamer->UpdateAnimation();
-        }
-        return;
     case 0xd05fc3a3: {
         CareerSettings* career = FEDatabase->GetCareerSettings();
         if ((career->SpecialFlags & 0x200) == 0) {
@@ -173,12 +169,17 @@ void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj,
         cFEng::Get()->QueueGameMessage(0xc3960eb9, GetPackageName(), 0xff);
         return;
     }
-    case 0xc519bfc3:
+    case 0x911ab364:
         if (bIsInGame) {
-            return;
+            cFEng::Get()->QueuePackageSwitch("IG_BL_MAIN", 1, 0, false);
+        } else {
+            cFEng::Get()->QueuePackageSwitch("BL_MAIN", 0, 0, false);
         }
-        FEngSetScript(GetPackageName(), 0x99344537, 0x16a259, true);
-        FEAnyTutorialScreen::LaunchMovie(gTUTORIAL_MOVIE_PURSUIT, GetPackageName());
+        return;
+    case 0x72619778:
+    case 0x9120409e:
+        break;
+    case 0x34dc1bcf:
         return;
     default:
         return;
