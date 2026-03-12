@@ -164,69 +164,74 @@ void UIMemcardMain::DoSelect(const char* pName) {
 }
 
 void UIMemcardMain::ListDone() {
-    bool showChild = false;
+    bool bCreateChild = false;
     MemoryCard::GetInstance()->ShowMessages(true);
 
-    int itemCount = m_Items.CountElements();
+    int nSize = m_Items.CountElements();
 
     unsigned int uiOp = MemcardGetCurrentUIOperation();
 
-    if (uiOp == 0x40) {
+    switch (uiOp) {
+    case 0x30:
+        if (nSize == 0) {
+            SetupPromptNoProfileFound();
+        } else {
+            bCreateChild = true;
+        }
+        break;
+    case 0x10:
+    case 0x70:
+        if (nSize != 0) {
+            bCreateChild = true;
+        } else {
+            SetupPromptNoProfileFound();
+        }
+        break;
+    case 0x20:
+        gMemcardSetup.mInBootFlow = true;
+        if (nSize > 1) {
+            bCreateChild = true;
+        } else if (nSize == 1) {
+            const char* pName = m_Items.GetHead()->m_Name;
+            pName += MemoryCard::GetInstance()->GetPrefixLength();
+            bStrCpy(m_FileName, pName);
+            MemoryCard::GetInstance()->Load(m_FileName);
+        } else {
+            MemoryCard::GetInstance()->BootupCheck(nullptr);
+        }
+        break;
+    case 0xf0:
+        if (nSize > 1) {
+            bCreateChild = true;
+        } else if (nSize != 1) {
+            DoSaveFlow(2);
+        } else {
+            const char* pName = m_Items.GetHead()->m_Name;
+            pName += MemoryCard::GetInstance()->GetPrefixLength();
+            bStrCpy(m_FileName, pName);
+            MemoryCard::GetInstance()->Load(m_FileName);
+        }
+        break;
+    case 0x40:
         if (FEDatabase->bProfileLoaded) {
+            const char* pName = m_FileName;
             const char* profileName = FEDatabase->CurrentUserProfiles[0]->GetProfileName();
-            bStrCpy(m_FileName, profileName);
+            bStrCpy(const_cast<char*>(pName), profileName);
             DoSaveFlow(4);
         } else {
             DoSaveFlow(2);
         }
-    } else if (uiOp == 0x10 || uiOp == 0x70) {
-        if (itemCount == 0) {
-            SetupPromptNoProfileFound();
-        } else {
-            showChild = true;
-        }
-    } else if (uiOp == 0x20) {
-        gMemcardSetup.mInBootFlow = true;
-        if (itemCount < 2) {
-            if (itemCount == 0) {
-                MemoryCard::GetInstance()->BootupCheck(nullptr);
-            } else {
-                Item* firstItem = m_Items.GetHead();
-                int prefixLen = MemoryCard::GetInstance()->GetPrefixLength();
-                bStrCpy(m_FileName, firstItem->m_Name + prefixLen);
-                MemoryCard::GetInstance()->Load(m_FileName);
-            }
-        } else {
-            showChild = true;
-        }
-    } else if (uiOp == 0x30) {
-        if (itemCount == 0) {
-            SetupPromptNoProfileFound();
-        } else {
-            showChild = true;
-        }
-    } else if (uiOp == 0x60) {
-        if (!FEDatabase->bProfileLoaded || (gMemcardSetup.mOp & 0x80000) != 0) {
-            DoSaveFlow(2);
-        } else {
+        break;
+    case 0x60:
+        if (FEDatabase->bProfileLoaded && (gMemcardSetup.mOp & 0x80000) == 0) {
             DoSaveFlow(1);
-        }
-    } else if (uiOp == 0xf0) {
-        if (itemCount < 2) {
-            if (itemCount == 1) {
-                Item* firstItem = m_Items.GetHead();
-                int prefixLen = MemoryCard::GetInstance()->GetPrefixLength();
-                bStrCpy(m_FileName, firstItem->m_Name + prefixLen);
-                MemoryCard::GetInstance()->Load(m_FileName);
-            } else {
-                DoSaveFlow(2);
-            }
         } else {
-            showChild = true;
+            DoSaveFlow(2);
         }
+        break;
     }
 
-    if (showChild) {
+    if (bCreateChild) {
         ActivateChild();
     }
 }
