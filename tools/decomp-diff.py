@@ -30,7 +30,7 @@ def run_objdiff(unit: str, base_obj: Optional[str] = None) -> Dict[str, Any]:
         OBJDIFF_CLI,
         unit,
         base_obj=base_obj,
-        extra_args=["-c", "functionRelocDiffs=none"],
+        extra_args=["-c", "functionRelocDiffs=none", "ppc.calculatePoolRelocations=false"],
         root_dir=root_dir,
     )
 
