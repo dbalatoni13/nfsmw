@@ -318,6 +318,101 @@ void HandleWorldEffectEmitterGroupDelete(void *subscriber, EmitterGroup *grp) {
     fx_conn->ResetEmitterGroup();
 }
 
+int *World_OneShotEffect(Sim::Packet *pkt) {
+    WorldConn::Pkt_Effect_Send *pe = Sim::Packet::Cast<WorldConn::Pkt_Effect_Send>(pkt);
+    Attrib::Gen::effects effects(pe->mEffectGroup, 0, nullptr);
+    if (effects.IsValid()) {
+        Attrib::Instance owner_attribs(pe->mOwnerAttributes, 0, nullptr);
+        unsigned int effect_creation_flags = 0;
+        unsigned int owner_class = owner_attribs.GetClass();
+        if (owner_class == 0x4a97ec8f) {
+            effect_creation_flags = 0x10000000;
+        } else if (owner_class == 0xce70d7db) {
+            effect_creation_flags = 0x20000000;
+        }
+        Attrib::Instance context_attribs(pe->mContext, 0, nullptr);
+        unsigned int context_class = context_attribs.GetClass();
+        if (context_class == 0xfb111fef) {
+            effect_creation_flags |= 0x01000000;
+        } else {
+            effect_creation_flags |= 0x02000000;
+        }
+        bVector3 position;
+        eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(pe->mPosition), position);
+        float distance = Sound::DistanceToView(&position);
+        float audioCullDist = effects.AudioCullDist();
+        bool noaudio = audioCullDist < distance;
+        float visualCullDist = effects.VisualCullDist();
+        if (!noaudio || distance <= visualCullDist) {
+            UMath::Vector4 mEmitterQuadratic = UMath::Vector4Make(0.0f, 1.0f, 0.0f, 0.0f);
+            UMath::Vector4 mAudioQuadratic = UMath::Vector4Make(0.0f, 1.0f, 0.0f, 0.0f);
+            Attrib::TAttrib<UMath::Vector4> attrib(effects.Get(0xa9402c33));
+            if (attrib.IsValid()) {
+                const UMath::Vector4 *p = reinterpret_cast<const UMath::Vector4 *>(attrib.GetDataAddress());
+                mEmitterQuadratic = *p;
+            }
+            {
+                Attrib::TAttrib<UMath::Vector4> attrib2(effects.Get(0x15e6552f));
+                if (attrib2.IsValid()) {
+                    const UMath::Vector4 *p = reinterpret_cast<const UMath::Vector4 *>(attrib2.GetDataAddress());
+                    mAudioQuadratic = *p;
+                }
+            }
+            UMath::Vector3 simnormal;
+            simnormal.x = pe->mMagnitude.x;
+            simnormal.y = pe->mMagnitude.z;
+            simnormal.z = pe->mMagnitude.y;
+            float intensity = UMath::Normalize(simnormal);
+            float emitter_intensity = SolveEffectQuadratic(intensity, mEmitterQuadratic);
+            float audio_intensity = SolveEffectQuadratic(intensity, mAudioQuadratic);
+            if (0.0f < emitter_intensity || 0.0f < audio_intensity) {
+                WorldConn::Reference effect_object(pe->mOwner);
+                bVector3 velocity(0.0f, 0.0f, 0.0f);
+                float inherit = effects.InheritVelocity();
+                if (effect_object.IsValid() && 0.0f < inherit) {
+                    bScale(&velocity, effect_object.GetVelocity(), inherit);
+                }
+                bVector3 normal;
+                eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(simnormal), normal);
+                if (0.0f < emitter_intensity && distance <= visualCullDist) {
+                    const Attrib::Collection *emitter_group_spec = effects.emittergroup().GetCollection();
+                    EmitterGroup *emitter_group = gEmitterSystem.CreateEmitterGroup(emitter_group_spec, effect_creation_flags | 0x400000);
+                    if (emitter_group != nullptr) {
+                        static const UMath::Vector3 up = {0.0f, 1.0f, 0.0f};
+                        UQuat quat;
+                        UMath::Matrix4 mat;
+                        bMatrix4 matrix;
+                        quat.BuildDeltaAxis(up, reinterpret_cast<const UMath::Vector3 &>(normal));
+                        UMath::QuaternionToMatrix4(quat, mat);
+                        bConvertFromBond(matrix, reinterpret_cast<const bMatrix4 &>(mat));
+                        bCopy(&matrix.v3, &position, 1.0f);
+                        emitter_group->SetIntensity(emitter_intensity);
+                        emitter_group->MakeOneShot(true);
+                        emitter_group->SetAutoUpdate(true);
+                        emitter_group->SetLocalWorld(&matrix);
+                        emitter_group->SetInheritVelocity(&velocity);
+                    }
+                }
+                if (0.0f < audio_intensity && !noaudio) {
+                    Sound::AudioEventParams params;
+                    params.position = position;
+                    params.normal = normal;
+                    params.velocity = velocity;
+                    params.magnitude = audio_intensity;
+                    params.attributes = ChooseAudioAttributes(effects, effect_object.IsValid() ? effect_object.GetMatrix() : nullptr, &normal);
+                    params.object = pe->mOwner;
+                    params.other_object = pe->mActee;
+                    Sound::AudioEvent *event = Sound::AudioEvent::CreateInstance(params);
+                    if (event != nullptr) {
+                        event->Stop();
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
+
 int *World_UpdateBody(Sim::Packet *pkt) {
     WorldConn::Pkt_Body_Open *data = static_cast<WorldConn::Pkt_Body_Open *>(pkt);
     WorldConn::Server::Body *body = WorldConn::_Server->LockID(data->mID);
