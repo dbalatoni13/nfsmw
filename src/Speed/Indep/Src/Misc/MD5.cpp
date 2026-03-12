@@ -7,8 +7,13 @@ static const char hexChars[] = "0123456789abcdef";
 void MD5::Update(const void *buffer, int length) {
     const unsigned char *_buffer = static_cast<const unsigned char *>(buffer);
 
-    if (computed) {
-        Reset();
+    if (computed == true) {
+        uRegs[0] = 0x67452301;
+        uRegs[1] = 0xEFCDAB89;
+        uRegs[2] = 0x98BADCFE;
+        uRegs[3] = 0x10325476;
+        computed = false;
+        uCount = 0;
     }
 
     if (length < 0) {
@@ -39,16 +44,6 @@ void *MD5::GetRaw() {
     return rawMD5;
 }
 
-const char *MD5::GetString() {
-    if (uCount == 0) {
-        return nullptr;
-    }
-    if (!computed) {
-        _Final();
-    }
-    return reinterpret_cast<const char *>(strMD5);
-}
-
 #define F(x, y, z) ((z) ^ ((x) & ((y) ^ (z))))
 #define G(x, y, z) ((y) ^ ((z) & ((x) ^ (y))))
 #define H(x, y, z) ((x) ^ (y) ^ (z))
@@ -74,24 +69,22 @@ const char *MD5::GetString() {
 
 void MD5::_Transform() {
     unsigned int uData[16];
-    unsigned char *pInput = &strData[63];
+    unsigned char *pInput = strData;
 
-    int i = 16;
-    unsigned int *pData = uData;
+    unsigned int i = 0;
     do {
-        *pData = (static_cast<unsigned int>(pInput[0]) << 24) |
-                 (static_cast<unsigned int>(pInput[-1]) << 16) |
-                 (static_cast<unsigned int>(pInput[-2]) << 8) |
-                 static_cast<unsigned int>(pInput[-3]);
-        pData--;
-        pInput -= 4;
-        i--;
-    } while (i != 0);
+        uData[i] = static_cast<unsigned int>(pInput[0]) |
+                   (static_cast<unsigned int>(pInput[1]) << 8) |
+                   (static_cast<unsigned int>(pInput[2]) << 16) |
+                   (static_cast<unsigned int>(pInput[3]) << 24);
+        pInput += 4;
+        i++;
+    } while (i <= 15);
 
-    unsigned int a = uRegs[0];
-    unsigned int b = uRegs[1];
     unsigned int c = uRegs[2];
     unsigned int d = uRegs[3];
+    unsigned int b = uRegs[1];
+    unsigned int a = uRegs[0];
 
     // Round 1
     FF(a, b, c, d, uData[0], 7, 0xd76aa478);

@@ -36,7 +36,16 @@ public:
 
     void Update(const void *buffer, int length);
     void *GetRaw();
-    const char *GetString();
+
+    const char *GetString() {
+        if (uCount == 0) {
+            return 0;
+        }
+        if (!computed) {
+            _Final();
+        }
+        return reinterpret_cast<const char *>(strMD5);
+    }
 
 private:
     void _Transform();
