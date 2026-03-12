@@ -7,7 +7,7 @@ This script keeps the existing tools as the source of truth and orchestrates the
 most common agent flows:
 
   python tools/decomp-workflow.py health
-  python tools/decomp-workflow.py health --smoke-build-unit main/Speed/Indep/SourceLists/zCamera
+  python tools/decomp-workflow.py health --smoke-build main/Speed/Indep/SourceLists/zCamera
   python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zCamera -f UpdateAll
   python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zCamera -f UpdateAll --brief
   python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zCamera -f UpdateAll --ghidra-version gc
@@ -23,8 +23,17 @@ import os
 import subprocess
 import sys
 import tempfile
-from typing import List, Optional, Sequence, Tuple
-from _common import BUILD_NINJA, OBJDIFF_JSON, ROOT_DIR, ToolError, ensure_exists
+from typing import List, Optional, Sequence
+from _common import (
+    BUILD_NINJA,
+    OBJDIFF_JSON,
+    ROOT_DIR,
+    ToolError,
+    ensure_exists,
+    find_objdiff_unit,
+    load_objdiff_config,
+    make_abs,
+)
 
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -33,7 +42,7 @@ PS2_TYPES = os.path.join(ROOT_DIR, "symbols", "PS2", "PS2_types.nothpp")
 DTK = os.path.join(ROOT_DIR, "build", "tools", "dtk")
 GC_SYMBOLS = os.path.join(ROOT_DIR, "config", "GOWE69", "symbols.txt")
 PS2_SYMBOLS = os.path.join(ROOT_DIR, "config", "SLES-53558-A124", "symbols.txt")
-GC_DWARF = os.path.join(ROOT_DIR, "symbols", "mw_dwarfdump.nothpp")
+GC_DWARF = os.path.join(ROOT_DIR, "symbols", "Dwarf")
 DEBUG_LINES = os.path.join(ROOT_DIR, "symbols", "debug_lines.txt")
 
 DEFAULT_SMOKE_UNIT = "main/Speed/Indep/SourceLists/zCamera"
@@ -49,7 +58,6 @@ SHARED_ASSET_REQUIREMENTS = [
     (os.path.join("orig", "GOWE69", "NFSMWRELEASE.ELF"), "GameCube original ELF"),
     (os.path.join("orig", "SLES-53558-A124", "NFS.ELF"), "PS2 original ELF"),
     (os.path.join("symbols", "Dwarf"), "DWARF dump"),
-    (os.path.join("symbols", "mw_dwarfdump.nothpp"), "combined dwarf dump"),
 ]
 
 
@@ -115,17 +123,28 @@ def ensure_decomp_prereqs() -> None:
         raise WorkflowError(str(e))
 
 
-def build_temp_obj(unit_name: str) -> str:
-    result = run_capture(python_tool("build-unit.py", "-u", unit_name))
-    lines = [line.strip() for line in result.stdout.splitlines() if line.strip()]
-    if not lines:
-        raise WorkflowError(
-            "build-unit.py succeeded but did not print an output path to stdout"
-        )
-    actual = lines[-1]
-    if not os.path.exists(actual):
-        raise WorkflowError(f"build-unit.py reported a missing output path: {actual}")
-    return actual
+def get_unit_build_target(unit_name: str) -> str:
+    config = load_objdiff_config()
+    unit = find_objdiff_unit(config, unit_name)
+    if unit is None:
+        raise WorkflowError(f"Unit not found in objdiff.json: {unit_name}")
+
+    target = unit.get("base_path") or unit.get("target_path")
+    if not target:
+        raise WorkflowError(f"Unit has no build target in objdiff.json: {unit_name}")
+    return str(target)
+
+
+def get_unit_build_output(unit_name: str) -> str:
+    target = get_unit_build_target(unit_name)
+    return make_abs(target) or target
+
+
+def build_shared_unit(unit_name: str) -> str:
+    ensure_decomp_prereqs()
+    target = get_unit_build_target(unit_name)
+    run_stream(["ninja", target])
+    return get_unit_build_output(unit_name)
 
 
 def maybe_remove(path: Optional[str]) -> None:
@@ -135,7 +154,7 @@ def maybe_remove(path: Optional[str]) -> None:
         if os.path.exists(path):
             os.remove(path)
     except OSError as e:
-        print(f"Warning: failed to remove temp object {path}: {e}", file=sys.stderr)
+        print(f"Warning: failed to remove temporary file {path}: {e}", file=sys.stderr)
 
 
 def dtk_dwarf_dump(obj_path: str) -> str:
@@ -252,13 +271,7 @@ def command_health(args: argparse.Namespace) -> None:
 
     try:
         run_capture(
-            python_tool(
-                "lookup.py",
-                "--file",
-                GC_DWARF,
-                "function",
-                DEBUG_SYMBOL_PROBE_DEMANGLED,
-            )
+            python_tool("lookup.py", GC_DWARF, "function", DEBUG_SYMBOL_PROBE_DEMANGLED)
         )
         report(True, "gc-dwarf", f"{DEBUG_SYMBOL_PROBE_DEMANGLED} found")
     except WorkflowError as e:
@@ -280,153 +293,98 @@ def command_health(args: argparse.Namespace) -> None:
     except WorkflowError as e:
         report(False, "debug-lines", str(e))
 
-    if args.smoke_build_unit:
+    if args.smoke_build:
         print_section("Build Smoke Test")
-        temp_obj = None
         try:
-            temp_obj = build_temp_obj(args.smoke_build_unit)
-            report(True, "build-unit", temp_obj)
+            output_path = build_shared_unit(args.smoke_build)
+            report(True, "build", output_path)
         except WorkflowError as e:
-            report(False, "build-unit", str(e))
-        finally:
-            maybe_remove(temp_obj)
+            report(False, "build", str(e))
 
     if args.smoke_dtk:
         print_section("DTK Smoke Test")
-        temp_obj = None
         dump_path = None
         try:
-            temp_obj = build_temp_obj(args.smoke_dtk)
-            dump_path = dtk_dwarf_dump(temp_obj)
+            obj_path = build_shared_unit(args.smoke_dtk)
+            dump_path = dtk_dwarf_dump(obj_path)
             report(True, "dtk", dump_path)
         except WorkflowError as e:
             report(False, "dtk", str(e))
         finally:
             maybe_remove(dump_path)
-            maybe_remove(temp_obj)
 
     if failures:
         raise WorkflowError(f"Health check failed with {failures} issue(s)")
 
 
-def resolve_base_obj(
-    unit_name: str, base_obj: Optional[str], no_build: bool, keep_temp: bool
-) -> Tuple[Optional[str], bool]:
-    if base_obj:
-        return os.path.abspath(base_obj), False
-    if no_build:
-        return None, False
-    temp_obj = build_temp_obj(unit_name)
-    print(f"Using temp object: {temp_obj}", flush=True)
-    return temp_obj, not keep_temp
-
-
 def command_function(args: argparse.Namespace) -> None:
     ensure_decomp_prereqs()
-    temp_obj = None
-    cleanup = False
-    try:
-        temp_obj, cleanup = resolve_base_obj(
-            args.unit, args.base_obj, args.no_build, args.keep_temp_obj
-        )
-        print_section(f"Function Workflow: {args.function}")
-        cmd = python_tool("decomp-context.py", "-u", args.unit, "-f", args.function)
-        if args.no_source:
-            cmd.append("--no-source")
-        if args.no_lookup:
-            cmd.append("--no-lookup")
-        else:
-            cmd.extend(["--lookup-mode", args.lookup_mode])
-        if args.no_ghidra:
-            cmd.append("--no-ghidra")
-        else:
-            cmd.extend(["--ghidra-version", args.ghidra_version])
-        if args.brief:
-            cmd.append("--brief")
-        if temp_obj:
-            cmd.extend(["--base-obj", temp_obj])
-        run_stream(cmd)
-    finally:
-        if cleanup:
-            maybe_remove(temp_obj)
+    print_section(f"Function Workflow: {args.function}")
+    cmd = python_tool("decomp-context.py", "-u", args.unit, "-f", args.function)
+    if args.no_source:
+        cmd.append("--no-source")
+    if args.no_lookup:
+        cmd.append("--no-lookup")
+    else:
+        cmd.extend(["--lookup-mode", args.lookup_mode])
+    if args.no_ghidra:
+        cmd.append("--no-ghidra")
+    else:
+        cmd.extend(["--ghidra-version", args.ghidra_version])
+    if args.brief:
+        cmd.append("--brief")
+    run_stream(cmd)
 
 
 def command_unit(args: argparse.Namespace) -> None:
     ensure_decomp_prereqs()
-    temp_obj = None
-    cleanup = False
-    try:
-        temp_obj, cleanup = resolve_base_obj(
-            args.unit, args.base_obj, args.no_build, args.keep_temp_obj
-        )
+    print_section(f"Unit Status: {args.unit}")
+    run_stream(python_tool("decomp-status.py", "--unit", args.unit))
 
-        print_section(f"Unit Status: {args.unit}")
-        run_stream(python_tool("decomp-status.py", "--unit", args.unit))
+    common_args: List[str] = ["-u", args.unit, "-t", "function"]
+    if args.search:
+        common_args.extend(["--search", args.search])
+    if args.limit is not None:
+        common_args.extend(["--limit", str(args.limit)])
 
-        common_args: List[str] = ["-u", args.unit, "-t", "function"]
-        if temp_obj:
-            common_args.extend(["--base-obj", temp_obj])
-        if args.search:
-            common_args.extend(["--search", args.search])
-        if args.limit is not None:
-            common_args.extend(["--limit", str(args.limit)])
+    print_section("Missing Functions")
+    run_stream(python_tool("decomp-diff.py", *common_args, "-s", "missing"))
 
-        print_section("Missing Functions")
-        run_stream(python_tool("decomp-diff.py", *common_args, "-s", "missing"))
-
-        print_section("Nonmatching Functions")
-        run_stream(python_tool("decomp-diff.py", *common_args, "-s", "nonmatching"))
-    finally:
-        if cleanup:
-            maybe_remove(temp_obj)
+    print_section("Nonmatching Functions")
+    run_stream(python_tool("decomp-diff.py", *common_args, "-s", "nonmatching"))
 
 
 def command_build(args: argparse.Namespace) -> None:
-    cmd = python_tool("build-unit.py", "-u", args.unit)
-    if args.output:
-        cmd.extend(["-o", os.path.abspath(args.output)])
-    run_stream(cmd)
+    print(build_shared_unit(args.unit), flush=True)
 
 
 def command_diff(args: argparse.Namespace) -> None:
     ensure_decomp_prereqs()
-    temp_obj = None
-    cleanup = False
-    try:
-        temp_obj, cleanup = resolve_base_obj(
-            args.unit, args.base_obj, args.no_build, args.keep_temp_obj
-        )
+    title = f"Diff Workflow: {args.unit}"
+    if args.diff:
+        title += f" / {args.diff}"
+    print_section(title)
 
-        title = f"Diff Workflow: {args.unit}"
-        if args.diff:
-            title += f" / {args.diff}"
-        print_section(title)
-
-        cmd: List[str] = python_tool("decomp-diff.py", "-u", args.unit)
-        if args.diff:
-            cmd.extend(["-d", args.diff])
-        if args.type:
-            cmd.extend(["-t", args.type])
-        if args.status:
-            cmd.extend(["-s", args.status])
-        if args.section:
-            cmd.extend(["--section", args.section])
-        if args.search:
-            cmd.extend(["--search", args.search])
-        if args.limit is not None:
-            cmd.extend(["--limit", str(args.limit)])
-        if args.context is not None:
-            cmd.extend(["-C", str(args.context)])
-        if args.range:
-            cmd.extend(["--range", args.range])
-        if args.no_collapse:
-            cmd.append("--no-collapse")
-        if temp_obj:
-            cmd.extend(["--base-obj", temp_obj])
-        run_stream(cmd)
-    finally:
-        if cleanup:
-            maybe_remove(temp_obj)
+    cmd: List[str] = python_tool("decomp-diff.py", "-u", args.unit)
+    if args.diff:
+        cmd.extend(["-d", args.diff])
+    if args.type:
+        cmd.extend(["-t", args.type])
+    if args.status:
+        cmd.extend(["-s", args.status])
+    if args.section:
+        cmd.extend(["--section", args.section])
+    if args.search:
+        cmd.extend(["--search", args.search])
+    if args.limit is not None:
+        cmd.extend(["--limit", str(args.limit)])
+    if args.context is not None:
+        cmd.extend(["-C", str(args.context)])
+    if args.range:
+        cmd.extend(["--range", args.range])
+    if args.no_collapse:
+        cmd.append("--no-collapse")
+    run_stream(cmd)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -442,12 +400,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Check whether the current worktree is ready for GC and PS2 decomp work",
     )
     health.add_argument(
-        "--smoke-build-unit",
+        "--smoke-build",
         metavar="UNIT",
         nargs="?",
         const=DEFAULT_SMOKE_UNIT,
         help=(
-            "Also run build-unit.py as a smoke test. If UNIT is omitted, uses "
+            "Also build the unit's shared output as a smoke test. If UNIT is omitted, uses "
             f"{DEFAULT_SMOKE_UNIT}"
         ),
     )
@@ -465,24 +423,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     function = subparsers.add_parser(
         "function",
-        help="Build a temp object if needed and run decomp-context.py for one function",
+        help="Run decomp-context.py for one function",
     )
     function.add_argument("-u", "--unit", required=True, help="Translation unit name")
     function.add_argument("-f", "--function", required=True, help="Function name to inspect")
-    function.add_argument(
-        "--base-obj",
-        help="Use an explicit object file instead of building a temp object",
-    )
-    function.add_argument(
-        "--no-build",
-        action="store_true",
-        help="Do not build a temp object when --base-obj is not provided",
-    )
-    function.add_argument(
-        "--keep-temp-obj",
-        action="store_true",
-        help="Keep the auto-built temp object instead of deleting it afterwards",
-    )
     function.add_argument(
         "--no-source",
         action="store_true",
@@ -522,20 +466,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="Show a compact unit workflow summary using decomp-status.py and decomp-diff.py",
     )
     unit.add_argument("-u", "--unit", required=True, help="Translation unit name")
-    unit.add_argument(
-        "--base-obj",
-        help="Use an explicit object file instead of building a temp object",
-    )
-    unit.add_argument(
-        "--no-build",
-        action="store_true",
-        help="Do not build a temp object when --base-obj is not provided",
-    )
-    unit.add_argument(
-        "--keep-temp-obj",
-        action="store_true",
-        help="Keep the auto-built temp object instead of deleting it afterwards",
-    )
     unit.add_argument("--search", help="Fuzzy search on demangled symbol name")
     unit.add_argument(
         "--limit",
@@ -546,19 +476,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     build = subparsers.add_parser(
         "build",
-        help="Run build-unit.py with wrapper-friendly defaults",
+        help="Build a unit's shared output with its configured ninja target",
     )
     build.add_argument("-u", "--unit", required=True, help="Translation unit name")
-    build.add_argument(
-        "-o",
-        "--output",
-        help="Explicit output .o path (default: auto-generated temp file)",
-    )
     build.set_defaults(func=command_build)
 
     diff = subparsers.add_parser(
         "diff",
-        help="Build a temp object if needed and run decomp-diff.py",
+        help="Run decomp-diff.py",
     )
     diff.add_argument("-u", "--unit", required=True, help="Translation unit name")
     diff.add_argument(
@@ -592,20 +517,6 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-collapse",
         action="store_true",
         help="Don't collapse matching instruction runs",
-    )
-    diff.add_argument(
-        "--base-obj",
-        help="Use an explicit object file instead of building a temp object",
-    )
-    diff.add_argument(
-        "--no-build",
-        action="store_true",
-        help="Do not build a temp object when --base-obj is not provided",
-    )
-    diff.add_argument(
-        "--keep-temp-obj",
-        action="store_true",
-        help="Keep the auto-built temp object instead of deleting it afterwards",
     )
     diff.set_defaults(func=command_diff)
 

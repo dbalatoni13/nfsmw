@@ -14,10 +14,6 @@ Usage:
   python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f __9CAnimBank --no-lookup
   python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f __9CAnimBank --no-source
   python tools/decomp-context.py --ghidra-check
-
-Parallel-safe usage (avoids interference from other agents building the same TU):
-  TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim)
-  python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f __9CAnimBank --base-obj "$TEMPOBJ"
 """
 
 import argparse
@@ -37,7 +33,7 @@ OBJDIFF_CLI = os.path.join(root_dir, "build", "tools", "objdiff-cli")
 DTK = os.path.join(root_dir, "build", "tools", "dtk")
 GC_SYMBOLS_FILE = os.path.join(root_dir, "config", "GOWE69", "symbols.txt")
 PS2_SYMBOLS_FILE = os.path.join(root_dir, "config", "SLES-53558-A124", "symbols.txt")
-GC_DWARF_FILE = os.path.join(root_dir, "symbols", "mw_dwarfdump.nothpp")
+GC_DWARF_PATH = os.path.join(root_dir, "symbols", "Dwarf")
 DEBUG_LINES_FILE = os.path.join(root_dir, "symbols", "debug_lines.txt")
 GC_GHIDRA_PROGRAM = "NFSMWRELEASE.ELF"
 PS2_GHIDRA_PROGRAM = "NFS.ELF"
@@ -136,15 +132,14 @@ def format_hex_address(address: str) -> str:
 
 
 def lookup_function_dwarf(query: str) -> Tuple[Optional[str], Optional[str]]:
-    """Query the combined GC DWARF dump for one function."""
-    if not os.path.exists(GC_DWARF_FILE):
-        return None, f"DWARF dump not found: {GC_DWARF_FILE}"
+    """Query the split GC DWARF dump for one function."""
+    if not os.path.exists(GC_DWARF_PATH):
+        return None, f"DWARF dump not found: {GC_DWARF_PATH}"
 
     cmd = [
         sys.executable,
         os.path.join(script_dir, "lookup.py"),
-        "--file",
-        GC_DWARF_FILE,
+        GC_DWARF_PATH,
         "function",
         query,
     ]
@@ -948,15 +943,11 @@ def main():
         action="store_true",
         help="Verify Ghidra CLI is reachable and programs are loaded, then exit",
     )
-    # Parallel-safe option: use a pre-compiled temp .o instead of the shared build output.
-    # Obtain the temp path with: TEMPOBJ=$(python tools/build-unit.py -u <unit>)
     parser.add_argument(
         "--base-obj",
         metavar="PATH",
         help=(
-            "Use this .o file as the decomp base instead of the one from objdiff.json. "
-            "Allows parallel agents to see their own compilation result without interference. "
-            "Produce the path with build-unit.py."
+            "Use this .o file as the decomp base instead of the one from objdiff.json."
         ),
     )
     args = parser.parse_args()

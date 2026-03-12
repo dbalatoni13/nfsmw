@@ -11,10 +11,6 @@ Usage:
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s nonmatching
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d __9CAnimBank
-
-Parallel-safe usage (use a temp .o to avoid collisions with other agents):
-  TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim)
-  python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim --base-obj "$TEMPOBJ" -d __9CAnimBank
 """
 
 import argparse
@@ -480,15 +476,11 @@ def main():
         help="Don't collapse matching instruction runs",
     )
 
-    # Parallel-safe option: use a pre-compiled temp .o instead of the shared build output.
-    # Obtain the temp path with: TEMPOBJ=$(python tools/build-unit.py -u <unit>)
     parser.add_argument(
         "--base-obj",
         metavar="PATH",
         help=(
-            "Use this .o file as the decomp base instead of the one from objdiff.json. "
-            "Allows parallel agents to diff against their own private compilation output "
-            "without interference. Produce the path with build-unit.py."
+            "Use this .o file as the decomp base instead of the one from objdiff.json."
         ),
     )
 

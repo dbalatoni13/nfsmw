@@ -2,7 +2,7 @@
 
 Matching decompilation of Need for Speed Most Wanted 2005 (GameCube) targeting the USA Release build (`GOWE69`).
 The goal is to produce C++ source that compiles to byte-identical and dwarf-identical object code against the
-original retail binary using the ProDG GC 3.9.3 compiler.
+original retail binary using the ProDG GC 3.9.3 compiler, which is GCC 2.95-based under the hood.
 
 ## Build & Verify
 
@@ -35,7 +35,7 @@ Sub-agents are allowed only for **read-only exploration** tasks such as:
 
 - searching the codebase for symbols, call sites, or include relationships
 - inspecting decomp output, assembly, DWARF, PS2 dumps, or line mappings
-- gathering context from Ghidra, `lookup.py`, `decomp-diff.py`, or similar tools
+- gathering context from Ghidra, `tools/decomp-workflow.py`, `lookup.py`, `decomp-diff.py`, or similar tools
 - summarizing findings that help the main worker decide what to change
 
 Sub-agents must **not** write or edit code files, headers, configs, or other repository files.
@@ -95,14 +95,6 @@ python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin -
 
 Mismatched args are wrapped in `{}`. Matching runs are collapsed (control with `-C <n>` context lines, `--no-collapse`). Left = original, right = decomp.
 
-**Parallel-safe usage** — when you compile the same TU in multiple concurrent iterations,
-pass a private `--base-obj` so each diff uses its own compiled output:
-
-```sh
-TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim)
-python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim --base-obj "$TEMPOBJ" -d FindIOWin
-```
-
 ### decomp-status.py — Project-wide progress
 
 ```sh
@@ -125,21 +117,14 @@ python tools/decomp-context.py --ghidra-check   # verify Ghidra CLI is set up co
 Flags: `--no-source`, `--no-ghidra` to skip sections. Source output is automatically scoped
 to the function's line range (with a few lines of context) instead of dumping the whole file.
 
-**Parallel-safe usage** — pass `--base-obj` to use a private compiled `.o`:
-
-```sh
-TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim)
-python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --base-obj "$TEMPOBJ"
-```
-
 ### decomp-workflow.py — Wrapper for common agent workflows
 
 Prefer this wrapper for routine agent-driven flows instead of manually chaining
-`build-unit.py`, `decomp-context.py`, `decomp-diff.py`, and `decomp-status.py`:
+`decomp-context.py`, `decomp-diff.py`, and `decomp-status.py`:
 
 ```sh
 python tools/decomp-workflow.py health
-python tools/decomp-workflow.py health --smoke-build-unit main/Speed/Indep/SourceLists/zAnim
+python tools/decomp-workflow.py health --smoke-build main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py health --smoke-dtk main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py build -u main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py diff -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin
@@ -151,8 +136,7 @@ python tools/decomp-workflow.py unit -u main/Speed/Indep/SourceLists/zAnim --sea
 ```
 
 The wrapper keeps the existing tools as the source of truth. It is intended to reduce
-repeated command chaining and to standardize temp-object handling and worktree preflight
-checks for agents.
+repeated command chaining and to standardize routine worktree preflight checks for agents.
 
 `function` is the preferred context-gathering entrypoint: it bundles source excerpt,
 objdiff status/diff, compact GC DWARF function lookup, and Ghidra output in one run.
@@ -205,42 +189,17 @@ If it finds a match, include that header instead of redeclaring.
 
 ### dtk (decomp-toolkit)
 
-Dump the dwarf of your own implementation of a function.
-**Always use the temp `.o` produced by `build-unit.py`** so the dump reflects your own
-compilation and isn't overwritten by another concurrent temp build:
+Dump the dwarf of your own implementation of a function after rebuilding the unit normally:
 
 ```sh
-TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/UNITNAME)
-dtk dwarf dump "$TEMPOBJ" -o /tmp/UNITNAME_<random_number>.nothpp
+python tools/decomp-workflow.py build -u main/Speed/Indep/SourceLists/zAnim
+dtk dwarf dump build/GOWE69/src/Speed/Indep/SourceLists/zAnim.o -o /tmp/zAnim_check.nothpp
 ```
 
 Demangle a symbol (you probably won't need this):
 
 ```sh
 dtk demangle 'AcceptScriptMsg__7CEntityF20EScriptObjectMessage9TUniqueIdR13CStateManager'
-```
-
-### build-unit.py — Parallel-safe compilation
-
-Compile a single translation unit to a private temporary `.o` file that won't be
-overwritten by other agents. Always prefer this over plain `ninja` when you need to
-diff or inspect your own compiled output:
-
-```sh
-# Compile to an auto-generated temp path (printed to stdout):
-TEMPOBJ=$(python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim)
-
-# Compile to an explicit path:
-python tools/build-unit.py -u main/Speed/Indep/SourceLists/zAnim -o /tmp/my.o
-```
-
-Typical parallel-safe iteration loop:
-
-```sh
-TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
-python tools/decomp-diff.py      -u main/Path/To/TU --base-obj "$TEMPOBJ" -d FunctionName
-python tools/decomp-context.py   -u main/Path/To/TU --base-obj "$TEMPOBJ" -f FunctionName
-dtk dwarf dump "$TEMPOBJ" -o /tmp/TU_check.nothpp
 ```
 
 ### share_worktree_assets.py — Share stable assets across git worktrees
@@ -260,7 +219,7 @@ downloaded tool binaries under `build/`. It does **not** share `build.ninja`,
 
 ## Code Conventions
 
-This is a **C++98** codebase compiled with ProDG (GCC under the hood). Key rules:
+This is a **C++98** codebase compiled with ProDG GC 3.9.3 (GCC 2.95 under the hood). Key rules:
 
 - No `auto`, range-for, `enum class`, lambdas, or any C++11+
 - Enum values use prefix: `enum EFoo { kF_Value1, kF_Value2 }` (not `enum class`)
@@ -304,7 +263,7 @@ Guidelines:
 
 - Prefer solving difficult matching work in the main worker. Use sub-agents to inspect one function's context, diff, DWARF, or related call paths without editing files.
 - Spawn a sub-agent per function only when the functions are independent (no shared edits to the same source lines).
-- When a sub-agent needs to compile or diff, it must use `build-unit.py` for parallel-safe compilation (never plain `ninja`).
+- Sub-agents stay read-only. Let them inspect existing diff/context output rather than compiling or rebuilding.
 - Do not sit idle waiting for sub-agents to finish. Continue with other independent investigation while they run.
 - After a useful result lands and you make a real improvement, check the updated match percentage and commit if it improved.
 
@@ -442,4 +401,4 @@ If an STL node insertion path refuses to match, check whether the element type i
 ### RegisterAllocatorTieBreakDeadEnd
 
 TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass
-If two near-matching functions differ only because the same inlined helper chain lands `mTableSize` in `r6` in the original but `r7` in the rebuild, treat it as a likely GCC 3.x register-allocation tie-break, not a normal source mismatch. In `zAttribSys`, `VecHashMap::FindIndex` inlined through `Remove -> RemoveIndex -> UpdateSearchLength` produced a stable `lwz r6, 4(r3)` vs `lwz r7, 4(r3)` split, which then propagated into later `UpdateSearchLength` control-flow differences. This survived 300+ source experiments: loop-form changes, adding/removing temporaries, splitting/merging expressions, helper inline/outline changes, declaration-order tweaks, member type changes, access-control changes, template method reorderings, and inline vs out-of-line ctor/dtor placement. Once the diff has collapsed to this kind of isolated register swap and DWARF locals/inlining already match, stop attacking each caller separately. Document the functions as `NON_MATCHING`, note the shared inlined root cause, and only consider flag permutation or compiler-level investigation as a last resort.
+If two near-matching functions differ only because the same inlined helper chain lands `mTableSize` in `r6` in the original but `r7` in the rebuild, treat it as a likely ProDG/GCC 2.95 register-allocation tie-break, not a normal source mismatch. In `zAttribSys`, `VecHashMap::FindIndex` inlined through `Remove -> RemoveIndex -> UpdateSearchLength` produced a stable `lwz r6, 4(r3)` vs `lwz r7, 4(r3)` split, which then propagated into later `UpdateSearchLength` control-flow differences. This survived 300+ source experiments: loop-form changes, adding/removing temporaries, splitting/merging expressions, helper inline/outline changes, declaration-order tweaks, member type changes, access-control changes, template method reorderings, and inline vs out-of-line ctor/dtor placement. Once the diff has collapsed to this kind of isolated register swap and DWARF locals/inlining already match, stop attacking each caller separately. Document the functions as `NON_MATCHING`, note the shared inlined root cause, and only consider flag permutation or compiler-level investigation as a last resort.
