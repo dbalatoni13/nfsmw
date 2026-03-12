@@ -381,8 +381,7 @@ bool PhysicsObject::Attach(UTL::COM::IUnknown *object) {
         return false;
     }
     Sim::IEntity *e = nullptr;
-    object->QueryInterface(&e);
-    if (e != nullptr) {
+    if (object->QueryInterface(&e)) {
         if (mEntity != nullptr) {
             Detach(mEntity);
             mEntity = nullptr;

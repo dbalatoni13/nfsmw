@@ -74,10 +74,6 @@ class PVehicle : public PhysicsObject,
         void Set(float time) { Time = time; Amount = 0.0f; }
         void Tick(float dT) {
             Time -= dT;
-            if (Time <= 0.0f) {
-                Time = 0.0f;
-                Amount = 0.0f;
-            }
         }
 
         float Time;   // offset 0x0, size 0x4
