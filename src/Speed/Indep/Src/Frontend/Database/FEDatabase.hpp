@@ -516,9 +516,7 @@ class cFrontendDatabase {
     bool bSavedProfileForMP;   // offset 0x8, size 0x1
     bool bProfileLoaded;       // offset 0xC, size 0x1
     bool bIsOptionsDirty;      // offset 0x10, size 0x1
-#ifndef EA_BUILD_A124
     bool bAutoSaveOverwriteConfirmed; // offset 0x14, size 0x1
-#endif
     unsigned int iDefaultStableHash;     // offset 0x18, size 0x4
     signed char PlayerJoyports[2];       // offset 0x1C, size 0x2
     UserProfile *CurrentUserProfiles[2]; // offset 0x20, size 0x8

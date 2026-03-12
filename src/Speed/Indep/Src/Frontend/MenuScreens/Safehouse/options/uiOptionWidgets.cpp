@@ -8,7 +8,9 @@
 #include "Speed/Indep/Src/Input/IOModule.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+#ifdef EA_PLATFORM_GAMECUBE
 #include "Speed/GameCube/bWare/GameCube/dolphinsdk/include/dolphin/os.h"
+#endif
 
 struct FEString;
 struct FEObject;
@@ -232,7 +234,9 @@ void AOAudioMode::Act(const char* parent_pkg, unsigned int data) {
         }
     }
     if (FEDatabase->GetAudioSettings()->AudioMode != mode) {
+#ifdef EA_PLATFORM_GAMECUBE
         OSSetSoundMode(mode != 0);
+#endif
     }
     FEDatabase->GetAudioSettings()->AudioMode = mode;
     Update(data);

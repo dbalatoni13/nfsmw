@@ -45,7 +45,7 @@ bool cFEngGameInterface::LoadResources(FEPackage* pPackage, long Count, FEResour
             pList[i].UserParam = 0;
             break;
         case 4: {
-            void* mem = bMalloc(256, 0);
+            void* mem = bMalloc(256, "TODO", __LINE__, 0);
             bStrNCpy(static_cast<char*>(mem), filename, 256);
             pList[i].Handle = reinterpret_cast<unsigned long>(mem);
             pList[i].UserParam = 0;

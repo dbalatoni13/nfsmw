@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Src/FEng/FEObject.h"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconPanel.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -68,10 +69,6 @@ class FEScrollBar {
 };
 
 struct FEImage;
-struct ScrollerSlot;
-struct ScrollerDatum;
-
-enum eScrollDir;
 
 // total size: 0xC8
 struct Scrollerina {
