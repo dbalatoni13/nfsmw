@@ -32,21 +32,14 @@ enum eInductionType {
 };
 
 struct Performance {
-    Performance() {
-        Default();
-    }
+    Performance() {}
 
-    Performance(float topspeed, float handling, float accel) {
-        TopSpeed = topspeed;
-        Handling = handling;
-        Acceleration = accel;
-    }
+    Performance(float topspeed, float handling, float accel)
+        : TopSpeed(topspeed) //
+        , Handling(handling) //
+        , Acceleration(accel) {}
 
-    void Default() {
-        TopSpeed = 0.0f;
-        Handling = 0.0f;
-        Acceleration = 0.0f;
-    }
+    void Default();
 
     void Maximize(const Performance &other) {
         TopSpeed = UMath::Max(TopSpeed, other.TopSpeed);

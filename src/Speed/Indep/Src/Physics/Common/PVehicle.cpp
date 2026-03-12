@@ -970,7 +970,8 @@ PVehicle::PVehicle(DriverClass dc, const Attrib::Gen::pvehicle &attribs, const U
     , mAttributes(attribs) //
     , mClass() //
     , mPerfectLaunch() //
-    , mPerformance() //
+    , mBehaviorOverrides() //
+    , mResources() //
 {
     mCustomization = nullptr;
     mInput = nullptr;
@@ -1022,7 +1023,7 @@ PVehicle::PVehicle(DriverClass dc, const Attrib::Gen::pvehicle &attribs, const U
     AITarget::Register(static_cast<ISimable *>(this));
     if (customization != nullptr) {
         FECustomizationRecord *pFVar = static_cast<FECustomizationRecord *>(operator new(0x198));
-        bMemCpy(pFVar, customization, 0x198);
+        memcpy(pFVar, customization, 0x198);
         mCustomization = pFVar;
     }
     UCrc32 classKey(mAttributes.CLASS());
@@ -1030,28 +1031,35 @@ PVehicle::PVehicle(DriverClass dc, const Attrib::Gen::pvehicle &attribs, const U
     IVehicle::AddToList(VEHICLE_ALL);
     UpdateListing();
     float rate;
-    if (mDriverClass == DRIVER_HUMAN) {
+    switch (mDriverClass) {
+    case DRIVER_HUMAN:
         rate = 0.0f;
-    } else if (mDriverClass == DRIVER_TRAFFIC) {
+        break;
+    case DRIVER_TRAFFIC:
         rate = 0.05f;
-    } else {
+        break;
+    default:
         rate = 0.02f;
+        break;
     }
     UCrc32 fxName("FX");
     mTaskFX = AddTask(fxName, rate, 0.0f, Sim::TASK_FRAME_FIXED);
     Debugable::MakeDebugable(DBG_PHYSICS_RACERS);
-    PhysicsObject::Reset();
+    Reset();
     if (mDamage != nullptr) {
         mDamage->ResetDamage();
     }
     mGlareState = 0;
-    UMath::Matrix4 initMat = Util_GenerateMatrix(initialVec, nullptr);
+    UMath::Matrix4 initMat;
+    initMat = Util_GenerateMatrix(initialVec, nullptr);
     LoadBehaviors(initialPos, initMat);
+    SetOwnerObject(this);
     const Attrib::StringKey seq(mAttributes.EventSequencer());
     if (seq.IsNotEmpty()) {
         mSequencer = EventSequencer::Create(this, static_cast<EventSequencer::IContext *>(this),
                                             UCrc32(seq.GetString()), Sim::GetTime(), 0.0f);
     }
+    OnBeginMode(PHYSICS_MODE_SIMULATED);
 }
 
 PVehicle::~PVehicle() {

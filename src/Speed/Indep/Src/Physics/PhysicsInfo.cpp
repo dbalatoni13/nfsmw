@@ -16,6 +16,12 @@ static PerformanceMaps TheStockCars;
 static int Physics_Info_initialized;
 Physics::Info::Performance Physics::Info::PerformanceWeights[7];
 
+void Physics::Info::Performance::Default() {
+    TopSpeed = 0.0f;
+    Handling = 0.0f;
+    Acceleration = 0.0f;
+}
+
 float Physics::Info::AerodynamicDownforce(const Attrib::Gen::chassis &chassis, const float speed) {
     return speed * 2 * chassis.AERO_COEFFICIENT() * 1000.0f;
 }
