@@ -300,42 +300,47 @@ unsigned short bATan(float x, float y) {
 }
 
 unsigned short bASin(float x) {
-    bool negative = x < 0.0f;
-    if (negative) {
-        x = -x;
+    bool positive = 0.0f <= x;
+    double value = x;
+
+    if (!positive) {
+        value = -value;
     }
 
     unsigned int a;
-    if (x < 1.0f) {
+    if (value < 1.0) {
         int table_spacing = 0x8000;
         int table_number = 0;
-        int fix_x = static_cast<int>(x * 65536.0f);
+        int fix_x = static_cast<int>(value * 65536.0);
         int table_top = 0x8000;
 
         if (fix_x > 0x7fff) {
             do {
-                table_spacing >>= 1;
-                table_number++;
-                table_top += table_spacing;
+                table_spacing = table_spacing >> 1;
+                table_number = table_number + 1;
+                table_top = table_top + table_spacing;
                 if (fix_x < table_top) {
                     break;
                 }
             } while (table_number < 0xb);
         }
 
-        int table_bottom = table_top - table_spacing;
-        int table_index = (fix_x - table_bottom) >> (0xbU - table_number & 0x1f);
+        int table_index = (fix_x - (table_top - table_spacing)) >> (0xbU - table_number & 0x3f);
         int entry = (table_number * 0x10 + table_index) * 8;
-        float table_x = static_cast<float>(table_bottom + table_index * (table_spacing >> 4)) * 1.5258789e-05f;
-        unsigned short table_a = *reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(bASinTable) + entry);
-        float slope = *reinterpret_cast<float *>(reinterpret_cast<char *>(bASinTable) + entry + 4);
-
-        a = (table_a + static_cast<int>((x - table_x) * slope * 65536.0f)) & 0xffff;
-        if (negative) {
+        double table_value = static_cast<double>(
+            static_cast<float>(static_cast<float>(table_top - table_spacing + table_index * (table_spacing >> 4)) * 1.5258789e-05f));
+        a = (static_cast<unsigned int>(*reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(bASinTable) + entry)) +
+             static_cast<int>(static_cast<float>(value - table_value) *
+                              *reinterpret_cast<float *>(reinterpret_cast<char *>(bASinTable) + entry + 4) * 65536.0f)) &
+            0xffff;
+        if (!positive) {
             a = (-static_cast<int>(a)) & 0xffff;
         }
     } else {
-        a = negative ? 0xc000 : 0x4000;
+        a = 0xc000;
+        if (positive) {
+            a = 0x4000;
+        }
     }
 
     return static_cast<unsigned short>(a);

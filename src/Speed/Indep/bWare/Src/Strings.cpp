@@ -623,35 +623,54 @@ void bSharedStringPool::Free(const char *s) {
 int bMatchNameWithWildcard(const char *wild, const char *string) {
     const char *saved_string = nullptr;
     const char *saved_wild = nullptr;
-    
-    while (*string != '\0') {
-        char wild_char = *wild;
+    char string_char = *string;
 
+    while (string_char != '\0') {
+        char wild_char = *wild;
         if (wild_char == '*') {
-            saved_wild = ++wild;
-            if (*saved_wild == '\0') {
+            if (string_char == '\0') {
+                break;
+            }
+
+            const char *next_wild = wild + 1;
+            const char *next_string = string;
+            if (*next_wild == '\0') {
                 return true;
             }
-            saved_string = string + 1;
-            continue;
-        }
 
-        if ((bToUpper(wild_char) != bToUpper(*string)) && (wild_char != '?')) {
-            if (saved_wild != nullptr) {
+            saved_string = next_string + 1;
+            saved_wild = next_wild;
+            wild = next_wild;
+            string = next_string;
+        } else {
+            int wild_int = static_cast<int>(wild_char);
+            if (static_cast<unsigned int>(wild_int - 'a') < 0x1aU) {
+                wild_char &= 0x5f;
+            }
+
+            unsigned int upper_string = static_cast<unsigned int>(*string);
+            if (upper_string - 'a' < 0x1aU) {
+                upper_string &= 0x5f;
+            }
+
+            if ((static_cast<int>(wild_char) != static_cast<int>(upper_string)) && (wild_int != '?')) {
                 wild = saved_wild;
                 string = saved_string;
-                saved_string++;
-                continue;
+                if (wild == nullptr) {
+                    return false;
+                }
+                saved_string = string + 1;
+            } else {
+                wild = wild + 1;
+                string = string + 1;
             }
-            return false;
         }
 
-        string++;
-        wild++;
+        string_char = *string;
     }
 
     while (*wild == '*') {
-        wild++;
+        wild = wild + 1;
     }
 
     return *wild == '\0';
