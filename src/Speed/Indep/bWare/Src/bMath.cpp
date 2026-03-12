@@ -300,18 +300,17 @@ unsigned short bATan(float x, float y) {
 }
 
 unsigned short bASin(float x) {
-    bool positive = 0.0f <= x;
-    double value = x;
-
-    if (!positive) {
-        value = -value;
+    int negative = 0;
+    if (x < 0.0f) {
+        x = -x;
+        negative = 1;
     }
 
     unsigned int a;
-    if (value < 1.0) {
+    if (x < 1.0f) {
         int table_spacing = 0x8000;
         int table_number = 0;
-        int fix_x = static_cast<int>(value * 65536.0);
+        int fix_x = static_cast<int>(x * 65536.0f);
         int table_top = 0x8000;
 
         if (fix_x > 0x7fff) {
@@ -330,15 +329,16 @@ unsigned short bASin(float x) {
         double table_value = static_cast<double>(
             static_cast<float>(static_cast<float>(table_top - table_spacing + table_index * (table_spacing >> 4)) * 1.5258789e-05f));
         a = (static_cast<unsigned int>(*reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(bASinTable) + entry)) +
-             static_cast<int>(static_cast<float>(value - table_value) *
-                              *reinterpret_cast<float *>(reinterpret_cast<char *>(bASinTable) + entry + 4) * 65536.0f)) &
+             static_cast<int>(static_cast<float>(x - table_value) * *reinterpret_cast<float *>(reinterpret_cast<char *>(bASinTable) + entry + 4) * 65536.0f)) &
             0xffff;
-        if (!positive) {
+        if (negative != 0) {
             a = (-static_cast<int>(a)) & 0xffff;
         }
     } else {
-        a = 0xc000;
-        if (positive) {
+        a = 0;
+        if (negative != 0) {
+            a = a | 0xc000;
+        } else {
             a = 0x4000;
         }
     }
