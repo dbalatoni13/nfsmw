@@ -87,6 +87,7 @@ class FEManager {
     // static  const char *GetPauseReason(int idx) {}
 
     void ClearControllerError(int port) {
+        if (port == -1) return;
         if (port == 4) {
             for (int i = 0; i <= 7; i++) {
                 bWantControllerError[i] = false;

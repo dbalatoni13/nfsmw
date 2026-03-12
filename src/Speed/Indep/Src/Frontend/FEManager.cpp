@@ -424,8 +424,9 @@ void FEManager::Update() {
 
     cFEng::Get()->Service();
 
-    if (!cFEng::Get()->IsErrorState()) {
-        FEPackageManager::Get();
+    if (cFEng::Get()->IsErrorState()) {
+        FEPackageManager::Get()->ErrorTick();
+    } else {
         FEPackageManager::Get()->Tick();
 
         if (TheGameFlowManager.IsInFrontend()) {
@@ -449,16 +450,13 @@ void FEManager::Update() {
             SummonChyron(0, 0, 0);
             SummonChyronNow = 0;
         } else {
-            if (mEATraxDelay > -1) {
+            if (mEATraxDelay >= 0) {
                 mEATraxDelay--;
                 if (mEATraxDelay == 0) {
                     SummonChyron(0, 0, 0);
                 }
             }
         }
-    } else {
-        FEPackageManager::Get();
-        FEPackageManager::Get()->ErrorTick();
     }
 }
 
