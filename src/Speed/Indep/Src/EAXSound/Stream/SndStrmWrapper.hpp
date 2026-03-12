@@ -47,12 +47,14 @@ int SNDSTRM_purge(int sndStrmHandle);
 int SNDSTRM_status(int sndstreamhandle, SNDSTREAMSTATUS *psss);
 int SNDSTRM_requeststatus(int sndrequesthandle, SNDREQUESTSTATUS *psrs);
 int SNDSTRM_modifyhold(int sndrequesthandle, int holdtime);
+int SNDSTRM_overhead(int maxrequests, int maxchunks);
 int SNDSTRM_lowpass(int sndstreamhandle, int lowpasscutoff);
 int SNDSTRM_pitchmult(int sndstreamhandle, int pitchmult);
 int SNDSTRM_setgreedylevel(int sndstreamhandle, int greedylevel);
 int SNDSTRM_setvol(int sndStrmHandle, int sourceChannel, float volume);
 int SNDSTRM_setazimuth(int sndStrmHandle, int sourceChannel, float azimuth);
 int SNDSTRM_autovol(int sndStrmHandle, int time, int targetVol);
+void SNDplaysetdef(SNDPLAYOPTS *pspo);
 void SNDSYS_entercritical();
 void SNDSYS_leavecritical();
 }
@@ -67,7 +69,7 @@ struct SndStrmWrapper {
     SndStrmWrapper();
     ~SndStrmWrapper();
     int Create(int maxChunks, int maxRequests, int buffersize);
-    int CreateStream(int maxChunks, int maxRequests, const char *pmem, int buffersize, void *paddr);
+    int CreateStream(int maxChunks, int maxRequests, char *pmem, int buffersize, void *paddr);
     bool IsPlaying();
     int Stop();
     int AddToStream(const char *filename, long offset, int holdtime);
