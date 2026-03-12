@@ -324,6 +324,16 @@ struct smackable : Instance {
         return *resultptr;
     }
 
+    bool MOMENT(UMath::Vector3 &result) const {
+        const UMath::Vector3 *resultptr =
+            reinterpret_cast<const UMath::Vector3 *>(GetAttributePointer(0xfb19212f, 0));
+        if (resultptr) {
+            result = *resultptr;
+            return true;
+        }
+        return false;
+    }
+
     const char *CollectionName() const {
         return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->CollectionName;
     }

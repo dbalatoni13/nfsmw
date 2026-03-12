@@ -657,7 +657,7 @@ void PVehicle::CleanResources() {
     for (PVehicle *dirty = mInstances.GetHead(); dirty != mInstances.EndOfList();) {
         PVehicle *next = dirty->GetNext();
         if (dirty->IsDirty()) {
-            static_cast<ISimable *>(dirty)->Kill();
+            delete dirty;
         }
         dirty = next;
     }
@@ -704,8 +704,8 @@ unsigned int PVehicle::CountResources() {
         if (found && CanInstancesShareResourceCost(pv->mResources.Type)) {
         } else {
             resource_list.push_back(pv->mResources);
+            count += pv->mResources.Cost;
         }
-        count += pv->mResources.Cost;
     }
     return count;
 }

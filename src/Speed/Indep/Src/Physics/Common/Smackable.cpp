@@ -13,7 +13,9 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Physics/Behaviors/SimpleRigidBody.h"
+#include "Speed/Indep/Src/Physics/Behaviors/RigidBody.h"
 #include "Speed/Indep/Src/Physics/Bounds.h"
+#include "Speed/Indep/Src/Physics/Dynamics/Inertia.h"
 #include "Speed/Indep/Src/Physics/HeirarchyModel.h"
 #include "Speed/Indep/Src/Physics/PlaceableScenery.h"
 #include "Speed/Indep/Src/Physics/SmackableTrigger.h"
@@ -170,12 +172,17 @@ Smackable::Smackable(const UMath::Matrix4 &matrix, const Attrib::Gen::smackable 
     mSimpleBody = nullptr;
     UMath::Vector3 dimension;
     geoms->GetHalfDimensions(dimension);
+    float radius = UMath::Max(dimension.x, UMath::Max(dimension.y, dimension.z));
     UMath::Scale(dimension, 2.0f, dimension);
     float mass = attributes.MASS();
-    UMath::Vector3 moment = attributes.MOMENT();
+    Dynamics::Inertia::Box inertia(mass, dimension.x, dimension.y, dimension.z);
+    UMath::Vector3 moment;
+    if (!attributes.MOMENT(moment)) {
+        moment = inertia;
+    }
     bool active = !virginspawn;
+    UCrc32 smack_class;
     if (simple_physics) {
-        float radius = UMath::Max(dimension.x, UMath::Max(dimension.y, dimension.z));
         RBSimpleParams rbp(UMath::Vector4To3(matrix.v3), UMath::Vector3::kZero,
                            UMath::Vector3::kZero, matrix, radius, mass);
         LoadBehavior(UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY), UCrc32("SimpleRigidBody"), rbp);
@@ -187,7 +194,7 @@ Smackable::Smackable(const UMath::Matrix4 &matrix, const Attrib::Gen::smackable 
     }
     for (unsigned int i = 0; i < attributes.Num_BEHAVIORS(); ++i) {
         const Attrib::StringKey &key = attributes.BEHAVIORS(i);
-        if (key.IsValid()) {
+        if (key.IsNotEmpty()) {
             LoadBehavior(UCrc32(key), UCrc32(key), Sim::Param());
         }
     }
