@@ -128,12 +128,12 @@ void CStartNewCareer::React(const char* pkg_name, unsigned int data, FEObject* o
         signed char port = FEngMapJoyParamToJoyport(param1);
         db->SetPlayersJoystickPort(0, port);
 
-        if (!FEDatabase->GetCareerSettings()->HasCareerStarted() &&
-            FEDatabase->bProfileLoaded) {
+        if (FEDatabase->GetCareerSettings()->HasCareerStarted() ||
+            !FEDatabase->bProfileLoaded) {
+            MemcardEnter(pkg_name, pkg_name, 0x80063, 0, 0, 0, 0);
+        } else {
             FEDatabase->GetCareerSettings()->StartNewCareer(true);
             cFEng::Get()->QueuePackageSwitch(pkg_name, 0, 0, false);
-        } else {
-            MemcardEnter(pkg_name, pkg_name, 0x80063, 0, 0, 0, 0);
         }
     }
 }
