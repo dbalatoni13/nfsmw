@@ -336,9 +336,9 @@ void CameraAnchor::Update(float dT, const bMatrix4 &matrix, const bVector3 &velo
         bVector3 acc((mVelMag - savedVelMag) / dT, 0.0f, 0.0f);
         bMulMatrix(&mAccel, &mGeomRot, &acc);
     } else {
-        mAccel.x = 0.0f;
         mAccel.z = 0.0f;
         mAccel.y = 0.0f;
+        mAccel.x = 0.0f;
     }
 }
 
@@ -378,17 +378,14 @@ void CameraMoverRestartRace() {
 }
 
 Camera *GetCurrentCamera() {
-    Camera *camera = 0;
-
-    if (&eViews[1] != 0) {
-        camera = eViews[1].pCamera;
+    eView *view = eGetView(1, false);
+    if (view != nullptr) {
+        Camera *c = view->GetCamera();
+        if (c != nullptr) {
+            return c;
+        }
     }
-
-    if (camera != 0) {
-        return camera;
-    }
-
-    return 0;
+    return nullptr;
 }
 
 static bool sHavePrevPosition;
@@ -764,64 +761,73 @@ void CameraMover::ChopperNoise(bMatrix4 *world_to_camera, float f_scale, bool us
     }
 }
 
-void CameraMover::TerrainVelocityNoise(bMatrix4 *world_to_camera, CameraAnchor *car, float speed_scale, float terrain_scale) {
-    if (car == nullptr) {
+void CameraMover::TerrainVelocityNoise(bMatrix4 *world_to_camera, CameraAnchor *p_car, float f_speed_scale, float f_terrain_scale) {
+    if (p_car == nullptr) {
         return;
     }
 
-    float speed_amount = speed_scale * car->GetVelMag();
-    float terrain_amount = terrain_scale * car->GetSurface().CAMERA_NOISE(0);
-    float terrain_mix = car->GetSurface().CAMERA_NOISE(1);
-    bVector3 accel = *car->GetAccel();
-    const bMatrix4 *matrix = car->GetMatrix();
-    float accel_forward = accel.x * matrix->v0.x + accel.y * matrix->v1.x + accel.z * matrix->v2.x;
-    bVector4 speed_frequency = CameraNoiseSpeedFrequency;
-    bVector4 speed_amplitude = CameraNoiseSpeedAmplitude;
-    bVector4 terrain_frequency = CameraNoiseTerrainFrequency;
-    bVector4 terrain_amplitude = CameraNoiseTerrainAmplitude;
+    const float speed_tresh = 5.0f;
 
-    if (speed_amount > 0.0f) {
-        int speed_index = bClamp(static_cast<int>(speed_amount * 0.05f), 0, 4);
-        bVector4 speed_sample = CameraNoiseSpeedData[speed_index];
+    bVector4 v_speed_terrain_freq;
+    tTable<bVector4> speed_table(const_cast<bVector4 *>(CameraNoiseSpeedData), 5, 0.0f, 80.0f);
+    speed_table.GetValue(&v_speed_terrain_freq, p_car->GetVelocityMagnitude());
 
-        terrain_amount += bAbs(accel_forward) * 0.25f;
-        speed_amount = speed_sample.x * speed_scale + bAbs(accel_forward) * 0.5f;
+    float f_road_noise_amplitude = p_car->GetSurface().CAMERA_NOISE(0);
+    float f_road_noise_grid_spacing_inverse = p_car->GetSurface().CAMERA_NOISE(1);
+
+    float f_speed_magnitude = f_speed_scale * v_speed_terrain_freq.x;
+    float f_speed_frequency = v_speed_terrain_freq.z;
+
+    if (p_car->IsDragRace()) {
+        f_speed_magnitude *= 1.5f;
     }
 
-    if (car->IsDragRace()) {
-        speed_amount *= 0.75f;
+    if (p_car->GetVelocityMagnitude() > speed_tresh) {
+        const float accel_max = 20.0f;
+        float accel = bDot(p_car->GetAcceleration(), p_car->GetForwardVector());
+        accel = bClamp(accel, 0.0f, accel_max);
+        accel *= 0.05f;
+        f_speed_magnitude += accel * 0.15f;
+        f_speed_frequency += (0.5f - f_speed_frequency) * accel;
     }
 
-    if (car->IsOverRev()) {
-        speed_amount += 1.0f;
-        terrain_amount *= 0.5f;
+    if (p_car->IsOverRev()) {
+        f_speed_magnitude += 0.15f;
+        f_speed_frequency *= 0.7f;
     }
 
-    if (car->IsNosEngaged() && car->GetVelMag() > 1.0f) {
-        speed_amount = 1.5f;
-        terrain_amount = 1.0f;
+    if (p_car->IsNosEngaged() && p_car->GetVelocityMagnitude() > speed_tresh) {
+        f_speed_magnitude = 0.3f;
+        f_speed_frequency = 2.0f;
     }
 
-    if (car->IsBrakeEngaged() && car->GetVelMag() > 1.0f) {
-        speed_amount = 1.5f;
-        terrain_amount = 0.0f;
+    if (p_car->IsBrakeEngaged() && p_car->GetVelocityMagnitude() > speed_tresh) {
+        f_speed_magnitude = 0.3f;
+        f_speed_frequency = speed_tresh;
     }
+
+    float f_terrain_magnitude = f_terrain_scale * v_speed_terrain_freq.y * f_road_noise_amplitude;
+    float f_terrain_frequency = v_speed_terrain_freq.w * f_road_noise_grid_spacing_inverse;
 
     if (!RenderCarPOV()) {
-        speed_amount *= 0.5f;
-        terrain_amount *= 0.5f;
+        f_speed_magnitude *= 0.25f;
+        f_terrain_magnitude *= 0.25f;
     }
 
-    terrain_amount *= terrain_mix;
-    bScale(&speed_frequency, &speed_frequency, terrain_amount);
-    bScale(&speed_amplitude, &speed_amplitude, speed_amount);
-    bScale(&terrain_frequency, &terrain_frequency, terrain_mix);
-    bScale(&terrain_amplitude, &terrain_amplitude, terrain_scale * terrain_amount);
+    bVector4 v_speed_frequency;
+    bVector4 v_speed_magnitude;
+    bScale(&v_speed_frequency, &CameraNoiseSpeedFrequency, f_speed_frequency);
+    bScale(&v_speed_magnitude, &CameraNoiseSpeedAmplitude, f_speed_magnitude);
+    pCamera->SetNoiseFrequency1(&v_speed_frequency);
+    pCamera->SetNoiseAmplitude1(&v_speed_magnitude);
 
-    pCamera->SetNoiseFrequency1(&speed_frequency);
-    pCamera->SetNoiseAmplitude1(&speed_amplitude);
-    pCamera->SetNoiseFrequency2(&terrain_frequency);
-    pCamera->SetNoiseAmplitude2(&terrain_amplitude);
+    bVector4 v_terrain_frequency;
+    bVector4 v_terrain_magnitude;
+    bScale(&v_terrain_frequency, &CameraNoiseTerrainFrequency, f_terrain_frequency);
+    bScale(&v_terrain_magnitude, &CameraNoiseTerrainAmplitude, f_terrain_magnitude);
+    pCamera->SetNoiseFrequency2(&v_terrain_frequency);
+    pCamera->SetNoiseAmplitude2(&v_terrain_magnitude);
+
     pCamera->ApplyNoise(world_to_camera, WorldTimer.GetSeconds(), 1.0f);
 }
 
