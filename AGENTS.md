@@ -137,6 +137,8 @@ Prefer this wrapper for routine agent-driven flows instead of manually chaining
 python tools/decomp-workflow.py health
 python tools/decomp-workflow.py health --smoke-build main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py health --smoke-dtk main/Speed/Indep/SourceLists/zAnim
+python tools/decomp-workflow.py next --category game --limit 10
+python tools/decomp-workflow.py next --unit main/Speed/Indep/SourceLists/zAnim --limit 5
 python tools/decomp-workflow.py build -u main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py diff -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin
@@ -148,6 +150,31 @@ python tools/decomp-workflow.py unit -u main/Speed/Indep/SourceLists/zAnim --sea
 
 The wrapper keeps the existing tools as the source of truth. It is intended to reduce
 repeated command chaining and to standardize routine worktree preflight checks for agents.
+`next --unit`, `function`, `unit`, and `diff` now also auto-build the unit's shared `.o`
+once when that output is missing, so wrapper-first inspection works more often on
+half-prepared worktrees.
+
+In normal agent work, use the wrapper commands first. Drop to the raw backend tools only
+when you specifically need a backend-only flag, are debugging a wrapper/backend discrepancy,
+or are doing a final exhaustive check that the wrapper does not expose directly.
+
+When you do not already have a specific target in mind, start with `next` or `unit`
+instead of picking functions in raw objdiff order. `next` is the fastest way to answer
+"what should I work on now?":
+
+- `--strategy balanced` favors functions with large remaining gains, penalizes
+  high-match cleanup work, de-prioritizes obvious init/setup sinkholes, and prefers
+  targets with usable source context.
+- `--strategy impact` is the blunt "largest unmatched byte loss first" view.
+- `--strategy quick-wins` biases toward low-match functions where getting the first
+  40-60% tends to be much faster than squeezing a polished function from 95% to 100%.
+  It should not be treated as a cleanup/polish mode.
+
+When choosing what to work on next, bias toward low-match, high-remaining functions.
+As a rule of thumb, getting a function from 0% to 80% is usually much faster and higher
+leverage than pushing a function from 90% to 100%.
+Leave 85%+ cleanup and refiner-style polish for deliberate cleanup passes unless the
+user explicitly wants that work or the function is directly blocking something else.
 
 `function` is the preferred context-gathering entrypoint: it bundles source excerpt,
 objdiff status/diff, compact GC DWARF function lookup, and Ghidra output in one run.
@@ -167,8 +194,9 @@ repeated manual steps for future agents.
 On a newly updated or unusual worktree, run `python tools/decomp-workflow.py health` first.
 If it reports missing generated files such as `objdiff.json` or `build.ninja`, run
 `python configure.py` in that worktree before using the decomp wrappers. `health` also
-checks the debug-symbol side of the setup now: GC/PS2 `symbols.txt`, GC DWARF lookup,
-PS2 type lookup, and the GC debug line mapping.
+checks the debug-symbol side of the setup now, plus the wrapper binaries themselves:
+`objdiff-cli`, `dtk`, GC/PS2 `symbols.txt`, GC DWARF lookup, PS2 type lookup, and the
+GC debug line mapping.
 
 ### find-symbol.py — Check for existing definitions before declaring new types
 

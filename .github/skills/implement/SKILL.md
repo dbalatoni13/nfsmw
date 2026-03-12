@@ -11,6 +11,19 @@ Your goal is to decompile a specific function: writing C++ source that compiles 
 
 Collect data from **all** of these sources in parallel where possible.
 
+If the function was not already chosen for you, pick it with the ranking wrapper first:
+
+```sh
+python tools/decomp-workflow.py next --unit main/Path/To/TU --limit 10
+python tools/decomp-workflow.py next --category game --limit 10
+```
+
+Prefer low-match, high-remaining targets here. Do not default to near-finished cleanup
+functions unless the user explicitly wants a cleanup/refiner pass.
+
+Use the wrapper flow first throughout this skill. Drop to raw `decomp-context.py` or
+`decomp-diff.py` only when the wrapper is missing a specific flag or you are debugging.
+
 ### 1a. decomp-context.py
 
 Preferred shortcut:
@@ -21,6 +34,9 @@ python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName --br
 python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
 ```
 
+If the shared unit object is missing, the wrapper now rebuilds it automatically before
+running `next --unit` / `function` / `diff`.
+
 If you only need one Ghidra view, add `--ghidra-version gc` or `--ghidra-version ps2`
 to keep the context run faster and shorter.
 
@@ -30,7 +46,7 @@ need the full DWARF body with locals and nested inline info.
 Add `--brief` when you want a shorter helper view; it trims suggested commands and
 related-source hints while keeping the core source/status/diff context.
 
-Equivalent manual form:
+Equivalent manual fallback:
 
 ```sh
 python tools/decomp-context.py -u main/Path/To/TU -f FunctionName
@@ -94,7 +110,7 @@ and assembly:
 
 Utilize the dwarf information that you get from the lookup skill heavily.
 
-Don't add any comments.
+Don't add explanatory comments during implementation unless you need to document a remaining DWARF mismatch.
 
 Don't use any temporary local variables that don't exist in the dwarf.
 
@@ -128,10 +144,10 @@ If the build fails, fix compilation errors first.
 
 ```sh
 # Quick status
-python tools/decomp-diff.py -u main/Path/To/TU --search FunctionName
+python tools/decomp-workflow.py diff -u main/Path/To/TU --search FunctionName --limit 20
 
 # Full instruction diff
-python tools/decomp-diff.py -u main/Path/To/TU -d FunctionName
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
 ```
 
 ### Interpreting the diff
@@ -168,7 +184,7 @@ Repeat the build-diff cycle until the diff shows 100% match with no `~` lines:
 
 ```sh
 python tools/decomp-workflow.py build -u main/Path/To/TU
-python tools/decomp-diff.py -u main/Path/To/TU -d FunctionName
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
 ```
 
 Every mismatched instruction is a signal — don't settle for "close enough".
