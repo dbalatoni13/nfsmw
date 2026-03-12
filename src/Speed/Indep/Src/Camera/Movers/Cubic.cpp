@@ -615,7 +615,7 @@ void CubicCameraMover::Update(float dT) {
     TerrainVelocityNoise(&mWorldToCamera, pCar, PovVelocityNoiseScale[nPovTypeUsed],
                          PovTerrainNoiseScale[nPovTypeUsed]);
 
-    if (!bOutside) {
+    if (bOutside) {
         MinGapTopology(&mWorldToCamera, pCar->GetGeometryPosition());
         if (!isUnder) {
             MinGapCars(&mWorldToCamera, pCar->GetGeometryPosition(), const_cast<bVector3 *>(pCar->GetVelocity()));
