@@ -58,23 +58,16 @@ void uiRapSheetTEP::NotificationMessage(unsigned long msg, FEObject* pobj, unsig
     }
 }
 void uiRapSheetTEP::Setup() {
-    UserProfile* prof = FEDatabase->GetUserProfile(0);
+    UserProfile& prof = *FEDatabase->GetUserProfile(0);
     FEPlayerCarDB* stable = FEDatabase->GetPlayerCarStable(0);
-    HighScoresDatabase* scores = prof->GetHighScores();
-    FEPrintf(GetPackageName(), 0x1232703A, GetLocalizedString(0xE21D083C), prof->GetCareer()->GetCaseFileName());
-    FEPrintf(GetPackageName(), 0xE3DA78E7, GetLocalizedString(0x6031106E), prof->GetProfileName());
+    HighScoresDatabase* scores = prof.GetHighScores();
+    FEPrintf(GetPackageName(), 0x1232703A, GetLocalizedString(0xE21D083C), prof.GetCareer()->GetCaseFileName());
+    FEPrintf(GetPackageName(), 0xE3DA78E7, GetLocalizedString(0x6031106E), prof.GetProfileName());
     FEPrintf(GetPackageName(), 0xE3DA78E8, GetLocalizedString(0x364E4525), stable->GetTotalBounty());
     for (int i = 0; i < 5; i++) {
         const TopEvadedPursuitDetail& pursuit = scores->GetTopEvadedPursuitScores(static_cast<unsigned short>(i));
-        if (pursuit.Length == 0) {
-            int index = i + 1;
-            FEngSetButtonState(GetPackageName(), FEngHashString("BL_%d", index), false);
-            FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_CAR_%d", index), GetLocalizedString(0xE3274304));
-            FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE_%d", index), "");
-            FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE2_%d", index), "");
-            FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE3_%d", index), "");
-        } else {
-            Timer t(pursuit.Length);
+        Timer t(pursuit.Length);
+        if (t != Timer()) {
             char time_str[16];
             t.PrintToString(time_str, 0);
             int index = i + 1;
@@ -83,6 +76,13 @@ void uiRapSheetTEP::Setup() {
             FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE2_%d", index), GetLocalizedString(0x41474FB1), pursuit.PursuitName);
             FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE3_%d", index), GetLocalizedString(0x36175146), time_str);
             num_pursuits++;
+        } else {
+            int index = i + 1;
+            FEngSetButtonState(GetPackageName(), FEngHashString("BL_%d", index), false);
+            FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_CAR_%d", index), GetLocalizedString(0xE3274304));
+            FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE_%d", index), "");
+            FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE2_%d", index), "");
+            FEPrintf(GetPackageName(), FEngHashString("RAPSHEET_VALUE3_%d", index), "");
         }
     }
     if (num_pursuits == 0) {
