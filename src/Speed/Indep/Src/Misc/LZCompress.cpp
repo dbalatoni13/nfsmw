@@ -2,6 +2,8 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include <cstring>
 
+void HUFF_decode(void *dest, const void *src);
+
 static void ShortMove(unsigned char *pDest, unsigned char *pSrc, int Len) {
     int Run = 0;
     do {
@@ -207,26 +209,26 @@ int JLZDecompress(unsigned char *pSrc, unsigned char *pDst) {
         unsigned int flags1 = *reinterpret_cast<unsigned char *>(&header[4]) | 0x100;
         unsigned int flags2 = *(pSrc + 0x11) | 0x100;
         while (remaining != 0) {
-            if ((flags1 & 1) == 0) {
+            if ((flags1 & 1) != 0) {
+                int len;
+                if ((flags2 & 1) != 0) {
+                    len = ((*src & 0xf0) << 4 | static_cast<unsigned int>(src[1])) + 3;
+                    ShortMove(pDst, pDst - ((*src & 0xf) + 1), len);
+                } else {
+                    len = (*src & 0x1f) + 3;
+                    ShortMove(pDst, pDst - (((*src & 0xe0) << 3 | static_cast<unsigned int>(src[1])) + 0x11), len);
+                }
+                pDst = pDst + len;
+                src = src + 2;
+                remaining = remaining - 2;
+                flags2 = static_cast<int>(flags2) >> 1;
+            } else {
                 if (pDst < end) {
                     *pDst = *src;
                     src = src + 1;
                     pDst = pDst + 1;
                 }
                 remaining = remaining - 1;
-            } else {
-                int len;
-                if ((flags2 & 1) == 0) {
-                    len = (*src & 0x1f) + 3;
-                    ShortMove(pDst, pDst - (((*src & 0xe0) << 3 | static_cast<unsigned int>(src[1])) + 0x11), len);
-                } else {
-                    len = ((*src & 0xf0) << 4 | static_cast<unsigned int>(src[1])) + 3;
-                    ShortMove(pDst, pDst - ((*src & 0xf) + 1), len);
-                }
-                pDst = pDst + len;
-                src = src + 2;
-                remaining = remaining - 2;
-                flags2 = static_cast<int>(flags2) >> 1;
             }
             flags1 = static_cast<int>(flags1) >> 1;
             if (flags1 == 1) {
@@ -359,7 +361,27 @@ int RAWCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst) {
     return header[3] + 0x10;
 }
 
+int RAWDecompress(unsigned char *pSrc, unsigned char *pDst) {
+    int *header = reinterpret_cast<int *>(pSrc);
+    if (header[0] == 0x57574152 && *reinterpret_cast<char *>(&header[1]) == '\x01') {
+        memcpy(pDst, &header[4], header[2]);
+        return header[2];
+    } else {
+        return 0;
+    }
+}
+
 int HUFF_encode(void *dest, const void *src, int size);
+
+int HUFFDecompress(unsigned char *pSrc, unsigned char *pDst) {
+    int *header = reinterpret_cast<int *>(pSrc);
+    if (header[0] == 0x46465548 && *reinterpret_cast<char *>(&header[1]) == '\x01') {
+        HUFF_decode(pDst, &header[4]);
+        return header[2];
+    } else {
+        return 0;
+    }
+}
 
 int HUFFCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst) {
     unsigned int *header = reinterpret_cast<unsigned int *>(pDst);
@@ -371,4 +393,879 @@ int HUFFCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst) {
     int compressed = HUFF_encode(&header[4], pSrc, SrcSize);
     header[3] = compressed;
     return compressed + 0x10;
+}
+
+// total size: 0x31EC
+struct HuffEncodeContext {
+    char qleapcode[256];
+    unsigned int count[768];
+    unsigned int bitnum[17];
+    unsigned int repbits[252];
+    unsigned int repbase[252];
+    unsigned int tree_left[520];
+    unsigned int tree_right[520];
+    unsigned int bitsarray[256];
+    unsigned int patternarray[256];
+    unsigned int masks[17];
+    unsigned int packbits;
+    unsigned int workpattern;
+    unsigned char *buffer;
+    unsigned char *bufptr;
+    int flen;
+    unsigned int csum;
+    unsigned int mostbits;
+    unsigned int codes;
+    unsigned int chainused;
+    unsigned int clue;
+    unsigned int dclue;
+    unsigned int clues;
+    unsigned int dclues;
+    int mindelta;
+    int maxdelta;
+    unsigned int plen;
+    unsigned int ulen;
+    unsigned int sortptr[256];
+};
+
+// total size: 0x8
+struct HUFFMemStruct {
+    char *ptr;
+    int len;
+};
+
+static void HUFF_writebits(HuffEncodeContext *ctx, HUFFMemStruct *mem, unsigned int pattern, unsigned int bits) {
+    if (bits < 0x11) {
+        unsigned int total = ctx->packbits + bits;
+        ctx->packbits = total;
+        ctx->workpattern = ctx->workpattern + ((pattern & ctx->masks[bits]) << (0x18 - total));
+        while (total > 7) {
+            mem->ptr[mem->len] = static_cast<char>(*reinterpret_cast<unsigned short *>(&ctx->workpattern));
+            mem->len = mem->len + 1;
+            total = ctx->packbits - 8;
+            ctx->workpattern = ctx->workpattern << 8;
+            ctx->plen = ctx->plen + 1;
+            ctx->packbits = total;
+        }
+    } else {
+        HUFF_writebits(ctx, mem, pattern >> 0x10, bits - 0x10);
+        HUFF_writebits(ctx, mem, pattern, 0x10);
+    }
+}
+
+static void HUFF_treechase(HuffEncodeContext *ctx, unsigned int node, unsigned int depth) {
+    if (node < 0x100) {
+        ctx->bitsarray[node] = depth;
+    } else {
+        HUFF_treechase(ctx, ctx->tree_left[node], depth + 1);
+        HUFF_treechase(ctx, ctx->tree_right[node], depth + 1);
+    }
+}
+
+static void HUFF_maketree(HuffEncodeContext *ctx) {
+    unsigned int freq[258];
+    unsigned int index[259];
+
+    freq[0] = 0;
+    unsigned int j = 0;
+    unsigned int n = 1;
+    do {
+        ctx->bitsarray[j] = 99;
+        unsigned int c = ctx->count[j];
+        unsigned int next = n;
+        if (c != 0) {
+            freq[n] = c;
+            next = n + 1;
+            index[n] = j;
+        }
+        j = j + 1;
+        n = next;
+    } while (j < 0x100);
+    ctx->codes = n - 1;
+    unsigned int treeNode = 0x100;
+    if (n < 3) {
+        HUFF_treechase(ctx, index[n - 1], 1);
+    } else {
+        unsigned int top;
+        do {
+            unsigned int prevTree = treeNode;
+            top = n - 1;
+            n = n - 2;
+            unsigned int topFreq = freq[top];
+            unsigned int topIdx = top;
+            unsigned int secFreq = freq[n];
+            unsigned int secIdx = n;
+            if (topFreq < freq[n]) {
+                topFreq = freq[n];
+                topIdx = n;
+                secFreq = freq[top];
+                secIdx = top;
+            }
+            unsigned int smallest = secFreq;
+            if (n != 0) {
+                while (true) {
+                    secFreq = smallest;
+                    n = n - 1;
+                    smallest = freq[n];
+                    while (topFreq < smallest) {
+                        n = n - 1;
+                        smallest = freq[n];
+                    }
+                    if (n == 0) break;
+                    topIdx = n;
+                    smallest = secFreq;
+                    topFreq = freq[n];
+                    if (freq[n] <= secFreq) {
+                        topIdx = secIdx;
+                        smallest = freq[n];
+                        topFreq = secFreq;
+                        secIdx = n;
+                    }
+                }
+            }
+            unsigned int leftNode = index[topIdx];
+            unsigned int rightNode = index[secIdx];
+            freq[topIdx] = topFreq + secFreq;
+            index[topIdx] = prevTree;
+            ctx->tree_left[prevTree] = leftNode;
+            unsigned int savedFreq = freq[top];
+            ctx->tree_right[prevTree] = rightNode;
+            freq[secIdx] = savedFreq;
+            index[secIdx] = index[top];
+            n = top;
+            treeNode = prevTree + 1;
+        } while (top > 2);
+        HUFF_treechase(ctx, treeNode - 1, 0);
+    }
+}
+
+static void HUFF_writenum(HuffEncodeContext *ctx, HUFFMemStruct *mem, unsigned int value) {
+    int bits;
+    int base;
+    if (value < 0xfc) {
+        bits = ctx->repbits[value];
+        base = ctx->repbase[value];
+    } else if (value < 0x1fc) { bits = 6; base = 0xfc; }
+    else if (value < 0x3fc) { bits = 7; base = 0x1fc; }
+    else if (value < 0x7fc) { bits = 8; base = 0x3fc; }
+    else if (value < 0xffc) { bits = 9; base = 0x7fc; }
+    else if (value < 0x1ffc) { bits = 10; base = 0xffc; }
+    else if (value < 0x3ffc) { bits = 0xb; base = 0x1ffc; }
+    else if (value < 0x7ffc) { bits = 0xc; base = 0x3ffc; }
+    else if (value < 0xfffc) { bits = 0xd; base = 0x7ffc; }
+    else if (value < 0x1fffc) { bits = 0xe; base = 0xfffc; }
+    else if (value < 0x3fffc) { bits = 0xf; base = 0x1fffc; }
+    else if (value < 0x80000) { bits = 0x10; base = 0x3fffc; }
+    else if (value < 0x100000) { bits = 0x11; base = 0x80000; }
+    else { bits = 0x12; base = 0x100000; }
+    HUFF_writebits(ctx, mem, 1, bits + 1);
+    HUFF_writebits(ctx, mem, value - base, bits + 2);
+}
+
+static void HUFF_writeexp(HuffEncodeContext *ctx, HUFFMemStruct *mem, unsigned int value) {
+    int idx = ctx->clue * 4;
+    HUFF_writebits(ctx, mem, ctx->patternarray[ctx->clue], ctx->bitsarray[ctx->clue]);
+    HUFF_writenum(ctx, mem, 0);
+    HUFF_writebits(ctx, mem, value, 9);
+}
+
+static void HUFF_writecode(HuffEncodeContext *ctx, HUFFMemStruct *mem, unsigned int code) {
+    if (static_cast<int>(code) == static_cast<int>(ctx->clue)) {
+        HUFF_writeexp(ctx, mem, code);
+    } else {
+        HUFF_writebits(ctx, mem, ctx->patternarray[code], ctx->bitsarray[code]);
+    }
+}
+
+static void HUFF_init(HuffEncodeContext *ctx) {
+    unsigned int i = 0;
+    do {
+        ctx->repbits[i] = 0;
+        ctx->repbase[i] = 0;
+        i = i + 1;
+    } while (i < 4);
+    for (; i < 0xc; i = i + 1) {
+        ctx->repbits[i] = 1;
+        ctx->repbase[i] = 4;
+    }
+    for (; i < 0x1c; i = i + 1) {
+        ctx->repbits[i] = 2;
+        ctx->repbase[i] = 0xc;
+    }
+    for (; i < 0x3c; i = i + 1) {
+        ctx->repbits[i] = 3;
+        ctx->repbase[i] = 0x1c;
+    }
+    for (; i < 0x7c; i = i + 1) {
+        ctx->repbits[i] = 4;
+        ctx->repbase[i] = 0x3c;
+    }
+    if (i < 0xfc) {
+        do {
+            ctx->repbits[i] = 5;
+            ctx->repbase[i] = 0x7c;
+            i = i + 1;
+        } while (i < 0xfc);
+    }
+}
+
+static int HUFF_minrep(HuffEncodeContext *ctx, unsigned int value, unsigned int level) {
+    int result;
+    if (level == 0) {
+        result = 0;
+        if (value != 0) {
+            result = 0x14;
+            if (value < 0xfc) {
+                result = ctx->bitsarray[ctx->clue] + ctx->repbits[value] * 2 + 3;
+            }
+        }
+    } else {
+        result = HUFF_minrep(ctx, value, level - 1);
+        if (ctx->count[ctx->clue + level] != 0) {
+            int alt = HUFF_minrep(ctx, value - (value / level) * level, level - 1);
+            alt = alt + ctx->bitsarray[ctx->clue + level] * static_cast<int>(value / level);
+            if (alt < result) {
+                result = alt;
+            }
+        }
+    }
+    return result;
+}
+
+static void HUFF_analysis(HuffEncodeContext *EC, unsigned int opt, unsigned int chainsaw);
+static void HUFF_pack(HuffEncodeContext *EC, HUFFMemStruct *dest, unsigned int opt);
+
+static int HUFF_packfile(HuffEncodeContext *ctx, HUFFMemStruct *src, HUFFMemStruct *dst, int uncompressedSize) {
+    ctx->masks[0] = 0;
+    ctx->packbits = 0;
+    ctx->workpattern = 0;
+    unsigned int i = 1;
+    do {
+        int prev = i - 1;
+        ctx->masks[i] = ctx->masks[prev] * 2 + 1;
+        i = i + 1;
+    } while (i < 0x11);
+    HUFF_init(ctx);
+    int bufStart = *reinterpret_cast<int *>(&src->ptr);
+    ctx->buffer = reinterpret_cast<unsigned char *>(bufStart);
+    int bufLen = src->len;
+    ctx->flen = bufLen;
+    ctx->ulen = bufLen;
+    ctx->bufptr = reinterpret_cast<unsigned char *>(bufStart + bufLen);
+    dst->len = 0;
+    ctx->plen = 0;
+    ctx->packbits = 0;
+    ctx->workpattern = 0;
+    HUFF_analysis(ctx, 0x39, 0xf);
+    if (uncompressedSize < 0x1000000) {
+        if (uncompressedSize == src->len) {
+            HUFF_writebits(ctx, dst, 0x30fb, 0x10);
+            HUFF_writebits(ctx, dst, src->len, 0x18);
+        } else {
+            HUFF_writebits(ctx, dst, 0x31fb, 0x10);
+            HUFF_writebits(ctx, dst, uncompressedSize, 0x18);
+            HUFF_writebits(ctx, dst, src->len, 0x18);
+        }
+    } else {
+        if (uncompressedSize == src->len) {
+            HUFF_writebits(ctx, dst, 0xb0fb, 0x10);
+            HUFF_writebits(ctx, dst, uncompressedSize, 0x20);
+        } else {
+            HUFF_writebits(ctx, dst, 0xb1fb, 0x10);
+            HUFF_writebits(ctx, dst, uncompressedSize, 0x20);
+        }
+        HUFF_writebits(ctx, dst, src->len, 0x20);
+    }
+    HUFF_pack(ctx, dst, 0x39);
+    return dst->len;
+}
+
+int HUFF_encode(void *dest, const void *src, int size) {
+    int result = 0;
+    HuffEncodeContext *ctx = static_cast<HuffEncodeContext *>(bMalloc(0x31ec, 0));
+    if (ctx != nullptr) {
+        HUFFMemStruct srcMem;
+        srcMem.ptr = const_cast<char *>(static_cast<const char *>(src));
+        srcMem.len = size;
+        HUFFMemStruct dstMem;
+        dstMem.ptr = static_cast<char *>(dest);
+        dstMem.len = size;
+        result = HUFF_packfile(ctx, &srcMem, &dstMem, size);
+        bFree(ctx);
+    }
+    return result;
+}
+
+static void HUFF_analysis(HuffEncodeContext *EC, unsigned int opt, unsigned int chainsaw) {
+    unsigned int count2[256];
+    unsigned int dcount[256];
+
+    unsigned int i = 0;
+    do {
+        EC->count[i] = 0;
+        i = i + 1;
+    } while (i < 0x300);
+
+    unsigned char *bptr1 = EC->buffer;
+    unsigned char *bptr2 = EC->bufptr;
+    unsigned int i1 = 0x100;
+    int di = 0;
+    unsigned int thres = ~opt;
+
+    if (bptr1 < bptr2) {
+        unsigned char *nextBptr;
+        do {
+            unsigned int i2 = *bptr1;
+            unsigned int i3 = i1 - 0x100;
+            nextBptr = bptr1 + 1;
+            di = di + i2;
+            if (i2 == i1) {
+                unsigned int repn = 0;
+                unsigned char *limit = bptr1 + 0x7531;
+                if (bptr2 < limit) {
+                    limit = bptr2;
+                }
+                do {
+                    if (limit <= nextBptr) break;
+                    i2 = *nextBptr;
+                    repn = repn + 1;
+                    nextBptr = nextBptr + 1;
+                    di = di + i2;
+                } while (i2 == i1);
+                if (repn < 0xff) {
+                    EC->count[repn + 0x200] = EC->count[repn + 0x200] + 1;
+                } else {
+                    EC->count[0x200] = EC->count[0x200] + 1;
+                }
+            }
+            i1 = i2;
+            unsigned int deltaIdx = ((i1 - i3) * 4 & 0x7fc | 0x400) >> 2;
+            EC->count[i1] = EC->count[i1] + 1;
+            EC->count[deltaIdx] = EC->count[deltaIdx] + 1;
+            bptr2 = EC->bufptr;
+            bptr1 = nextBptr;
+        } while (nextBptr < bptr2);
+    }
+    EC->csum = di;
+    if (EC->count[0x200] == 0) {
+        EC->count[0x200] = 1;
+    }
+
+    unsigned int smallest = 0;
+    EC->dclues = 0;
+    unsigned int i2 = 0;
+    EC->clues = 0;
+    do {
+        unsigned int cval = EC->count[i2];
+        unsigned int repn = 0;
+        unsigned int ncode = i2;
+        if (cval < EC->count[smallest]) {
+            smallest = i2;
+        }
+        while (cval == 0 && ncode < 0x100) {
+            repn = repn + 1;
+            cval = EC->count[ncode + 1];
+            ncode = ncode + 1;
+        }
+        if (EC->dclues <= repn) {
+            EC->dclue = i2;
+            EC->dclues = repn;
+            if (EC->clues <= repn) {
+                EC->dclues = EC->clues;
+                EC->dclue = EC->clue;
+                EC->clue = i2;
+                EC->clues = repn;
+            }
+        }
+        i2 = ncode + 1;
+    } while (i2 < 0x100);
+
+    if ((opt & 0x20) != 0 && EC->clues == 0) {
+        EC->clue = smallest;
+        EC->clues = 1;
+    }
+    if ((thres & 2) != 0) {
+        if (EC->clues > 1) {
+            EC->clues = 1;
+        }
+        if ((thres & 1) != 0) {
+            EC->clues = 0;
+        }
+    }
+    if ((thres & 4) == 0) {
+        if (EC->dclues > 10) {
+            unsigned int tmp = EC->clue;
+            unsigned int tmpClues = EC->clues;
+            EC->clues = EC->dclues;
+            EC->clue = EC->dclue;
+            EC->dclue = tmp;
+            EC->dclues = tmpClues;
+        }
+        unsigned int dcluesVal = EC->dclues;
+        if (static_cast<unsigned int>(EC->clues << 2) < dcluesVal) {
+            int adj = dcluesVal - (dcluesVal >> 2);
+            EC->clues = dcluesVal >> 2;
+            EC->dclues = adj;
+            EC->clue = EC->dclue + adj;
+        }
+    } else {
+        EC->dclues = 0;
+    }
+
+    int dcluesVal = EC->dclues;
+    if (dcluesVal != 0) {
+        unsigned int i2val = 1;
+        int halfDclues = -(dcluesVal / 2);
+        EC->mindelta = halfDclues;
+        unsigned int threshold = EC->ulen / 0x19;
+        EC->maxdelta = dcluesVal + halfDclues;
+        if (EC->maxdelta != 0) {
+            do {
+                unsigned int dcountVal = EC->count[i2val + 0x100];
+                if (threshold < dcountVal) {
+                    EC->count[(EC->dclue + (i2val - 1) * 2)] = dcountVal;
+                }
+                i2val = i2val + 1;
+            } while (static_cast<int>(i2val) <= EC->maxdelta);
+        }
+        i2val = 1;
+        if (EC->mindelta != 0) {
+            do {
+                unsigned int dcountVal = EC->count[0x200 - i2val];
+                if (threshold < dcountVal) {
+                    EC->count[(EC->dclue + (i2val - 1) * 2 + 1)] = dcountVal;
+                }
+                i2val = i2val + 1;
+            } while (static_cast<int>(i2val) <= static_cast<int>(-EC->mindelta));
+        }
+
+        i2val = 0;
+        unsigned int lastUsed = 0;
+        if (EC->dclues != 0) {
+            do {
+                if (EC->count[EC->dclue + i2val] != 0) {
+                    lastUsed = i2val;
+                }
+                i2val = i2val + 1;
+            } while (i2val < EC->dclues);
+        }
+        int trimCount = (EC->dclues - lastUsed) + -1;
+        dcluesVal = EC->dclues - trimCount;
+        EC->dclues = dcluesVal;
+        if (static_cast<int>(EC->clue) == static_cast<int>(EC->dclue) + dcluesVal + trimCount) {
+            EC->clue = EC->clue - trimCount;
+            EC->clues = EC->clues + trimCount;
+        }
+        int newHalf = -(static_cast<int>(EC->dclues) / 2);
+        EC->mindelta = newHalf;
+        EC->maxdelta = EC->dclues + newHalf;
+    }
+
+    if (EC->clues != 0 && EC->clues != 0) {
+        i2 = 0;
+        do {
+            int srcIdx = i2 + 0x200;
+            int dstIdx = EC->clue + i2;
+            i2 = i2 + 1;
+            EC->count[dstIdx] = EC->count[srcIdx];
+        } while (i2 < EC->clues);
+    }
+    HUFF_maketree(EC);
+
+    if (EC->clues > 1 && EC->clues > 1) {
+        i2 = 1;
+        do {
+            unsigned int ncode = i2 - 1;
+            if (ncode > 8) {
+                ncode = 8;
+            }
+            if (EC->count[EC->clue + i2] != 0) {
+                ncode = HUFF_minrep(EC, i2, ncode);
+                int idx = (EC->clue + i2);
+                if (ncode <= EC->bitsarray[idx] ||
+                    static_cast<int>(EC->count[idx]) * static_cast<int>(ncode - EC->bitsarray[idx]) < static_cast<int>(i2 >> 1)) {
+                    EC->count[idx] = 0;
+                }
+            }
+            i2 = i2 + 1;
+        } while (i2 < EC->clues);
+    }
+
+    i2 = 0;
+    unsigned int next;
+    do {
+        unsigned int cval = EC->count[i2];
+        EC->count[i2] = 0;
+        count2[i2] = cval;
+        EC->count[i2 + 0x100] = 0;
+        next = i2 + 1;
+        EC->count[i2 + 0x200] = 0;
+        dcount[i2] = 0;
+        i2 = next;
+    } while (next < 0x100);
+
+    bptr1 = EC->bufptr;
+    if (EC->buffer < bptr1) {
+        bptr2 = EC->buffer;
+        i1 = 0x100;
+        unsigned char *nextBptr;
+        do {
+            i2 = *bptr2;
+            nextBptr = bptr2 + 1;
+            if (i2 == i1) {
+                unsigned int repn = 0;
+                unsigned char *limit = bptr2 + 0x7531;
+                if (bptr1 < limit) {
+                    limit = bptr1;
+                }
+                unsigned int cluesVal = EC->clues;
+                int iVar19 = i2 * 4;
+                do {
+                    if (limit <= nextBptr) break;
+                    i2 = *nextBptr;
+                    repn = repn + 1;
+                    nextBptr = nextBptr + 1;
+                } while (i2 == i1);
+                unsigned int directCost = repn * EC->bitsarray[iVar19 >> 2];
+                unsigned int clueOneCost = 32000;
+                unsigned int clueMultiCost = 32000;
+                if (cluesVal != 0) {
+                    int clueIdx = EC->clue;
+                    if (count2[clueIdx] != 0 && (clueOneCost = 0x14, repn < 0xfc)) {
+                        clueOneCost = EC->bitsarray[clueIdx] + EC->repbits[repn] * 2 + 3;
+                    }
+                    if (cluesVal > 1) {
+                        clueMultiCost = 0;
+                        unsigned int remaining = repn;
+                        unsigned int level = cluesVal;
+                        while (level = level - 1, level != 0) {
+                            if (count2[clueIdx + level] != 0) {
+                                unsigned int quotient = remaining / level;
+                                remaining = remaining - quotient * level;
+                                clueMultiCost = clueMultiCost + quotient * EC->bitsarray[clueIdx + level];
+                            }
+                        }
+                        smallest = 0;
+                        if (remaining != 0) {
+                            clueMultiCost = 32000;
+                        }
+                    }
+                }
+                if (clueOneCost < directCost || clueMultiCost < directCost) {
+                    unsigned int repnCopy = repn;
+                    if (clueOneCost < clueMultiCost) {
+                        int idx = EC->clue;
+                        EC->count[idx] = EC->count[idx] + 1;
+                    } else {
+                        while (smallest = cluesVal - 1, smallest != 0) {
+                            int idx = EC->clue + smallest;
+                            cluesVal = smallest;
+                            if (count2[idx] != 0) {
+                                EC->count[idx] = EC->count[idx] + repnCopy / smallest;
+                                repnCopy = repnCopy - (repnCopy / smallest) * smallest;
+                            }
+                        }
+                    }
+                } else {
+                    EC->count[iVar19 >> 2] = EC->count[iVar19 >> 2] + repn;
+                }
+            }
+            unsigned int ncode = i2;
+            if (EC->dclues != 0) {
+                unsigned int delta = i2 - i1;
+                unsigned int dIdx = 0;
+                unsigned int pattern = 0;
+                if (static_cast<int>(delta) <= EC->maxdelta && EC->mindelta <= static_cast<int>(delta)) {
+                    dIdx = (delta - 1) * 2 + EC->dclue;
+                    if (i2 < i1) {
+                        dIdx = (i1 - i2 - 1) * 2 + EC->dclue + 1;
+                    }
+                    if (thres < count2[dIdx]) {
+                        pattern = static_cast<unsigned int>(count2[i2] < 4);
+                        unsigned int dBits = EC->bitsarray[dIdx];
+                        unsigned int iBits = EC->bitsarray[i2];
+                        if (dBits < iBits) {
+                            pattern = pattern + 1;
+                        }
+                        if (dBits == iBits && EC->count[i2] < EC->count[dIdx]) {
+                            pattern = pattern + 1;
+                        }
+                    }
+                }
+                if (pattern != 0) {
+                    ncode = dIdx;
+                }
+            }
+            EC->count[ncode] = EC->count[ncode] + 1;
+            bptr1 = EC->bufptr;
+            bptr2 = nextBptr;
+            i1 = i2;
+        } while (nextBptr < bptr1);
+    }
+    if ((opt & 0x20) != 0) {
+        int idx = EC->clue;
+        EC->count[idx] = EC->count[idx] + 1;
+    }
+    HUFF_maketree(EC);
+    EC->chainused = 0;
+
+    while (chainsaw < 99) {
+        unsigned int maxBits = 0;
+        i2 = 0;
+        unsigned int prevMax = 0;
+        unsigned int maxIdx = 0;
+        do {
+            if (EC->count[i2] != 0) {
+                unsigned int bits = EC->bitsarray[i2];
+                if (maxBits <= bits) {
+                    maxBits = bits;
+                    prevMax = maxIdx;
+                    maxIdx = i2;
+                }
+            }
+            i2 = i2 + 1;
+        } while (i2 < 0x100);
+        if (maxBits <= chainsaw) break;
+
+        unsigned int ncode = 0;
+        unsigned int nbits = EC->bitsarray[0];
+        if (EC->count[0] == 0) goto find_next_nonzero;
+        while (chainsaw <= nbits) {
+find_next_nonzero:
+            do {
+                ncode = ncode + 1;
+                if (ncode > 0xff) goto find_best_below;
+            } while (EC->count[ncode] == 0);
+            nbits = EC->bitsarray[ncode];
+        }
+find_best_below:
+        for (; ncode < 0x100; ncode = ncode + 1) {
+            if (EC->count[ncode] != 0) {
+                unsigned int curBits = EC->bitsarray[ncode];
+                if (curBits < chainsaw && EC->bitsarray[i2] < curBits) {
+                    i2 = ncode;
+                }
+            }
+        }
+        int newBits = EC->bitsarray[i2] + 1;
+        EC->bitsarray[i2] = newBits;
+        EC->bitsarray[maxIdx] = newBits;
+        EC->bitsarray[prevMax] = EC->bitsarray[prevMax] - 1;
+        EC->chainused = chainsaw;
+    }
+
+    if ((thres & 8) != 0) {
+        unsigned int idx = 0;
+        do {
+            EC->bitsarray[idx] = 8;
+            idx = idx + 1;
+        } while (idx < 0x100);
+    }
+
+    i2 = 0;
+    do {
+        EC->bitnum[i2] = 0;
+        i2 = i2 + 1;
+    } while (i2 < 0x11);
+    i2 = 0;
+    do {
+        unsigned int bits = EC->bitsarray[i2];
+        if (bits < 0x11) {
+            EC->bitnum[bits] = EC->bitnum[bits] + 1;
+        }
+        i2 = i2 + 1;
+    } while (i2 < 0x100);
+
+    int sortIdx = 0;
+    unsigned int mostbits = 0;
+    unsigned int bitLevel = 1;
+    unsigned int nextLevel;
+    do {
+        nextLevel = bitLevel + 1;
+        if (EC->bitnum[bitLevel] != 0) {
+            i2 = 0;
+            do {
+                if (EC->bitsarray[i2] == bitLevel) {
+                    EC->sortptr[sortIdx] = i2;
+                    sortIdx = sortIdx + 1;
+                }
+                i2 = i2 + 1;
+                mostbits = bitLevel;
+            } while (i2 < 0x100);
+        }
+        bitLevel = nextLevel;
+    } while (nextLevel < 0x11);
+
+    i2 = 0;
+    EC->mostbits = mostbits;
+    int pattern = 0;
+    unsigned int prevBits = 0;
+    if (EC->codes != 0) {
+        do {
+            int symIdx = EC->sortptr[i2];
+            i2 = i2 + 1;
+            if (prevBits < EC->bitsarray[symIdx]) {
+                do {
+                    prevBits = prevBits + 1;
+                    pattern = pattern << 1;
+                } while (prevBits < EC->bitsarray[symIdx]);
+            }
+            EC->patternarray[symIdx] = pattern;
+            pattern = pattern + 1;
+        } while (i2 < EC->codes);
+    }
+}
+
+static void HUFF_pack(HuffEncodeContext *EC, HUFFMemStruct *dest, unsigned int opt) {
+    HUFF_writebits(EC, dest, EC->clue, 8);
+    unsigned int i = 1;
+    int curpc = 0;
+    if (EC->mostbits != 0) {
+        do {
+            HUFF_writenum(EC, dest, EC->bitnum[i]);
+            i = i + 1;
+        } while (i <= EC->mostbits);
+    }
+
+    unsigned int ncode = 0;
+    unsigned int i1 = 0xff;
+    do {
+        EC->qleapcode[ncode] = 0;
+        ncode = ncode + 1;
+    } while (ncode < 0x100);
+
+    unsigned int sortI = 0;
+    ncode = 0xff;
+    if (EC->codes != 0) {
+        do {
+            unsigned int symIdx = EC->sortptr[sortI];
+            sortI = sortI + 1;
+            int gap = -1;
+            do {
+                ncode = (ncode + 1) & 0xff;
+                if (EC->qleapcode[ncode] == '\0') {
+                    gap = gap + 1;
+                }
+            } while (symIdx != ncode);
+            EC->qleapcode[symIdx] = 1;
+            HUFF_writenum(EC, dest, gap);
+        } while (sortI < EC->codes);
+    }
+
+    if (EC->clues == 0) {
+        EC->clue = 32000;
+    }
+
+    unsigned char *bptr2 = EC->bufptr;
+    if (EC->buffer < bptr2) {
+        i1 = 0x100;
+        unsigned char *bptr1 = EC->buffer;
+        unsigned char *nextBptr;
+        do {
+            ncode = *bptr1;
+            nextBptr = bptr1 + 1;
+            if (ncode == i1) {
+                unsigned int repn = 0;
+                unsigned char *limit = bptr1 + 0x7531;
+                if (bptr2 < limit) {
+                    limit = bptr2;
+                }
+                unsigned int cluesVal = EC->clues;
+                int iVar5 = ncode * 4;
+                do {
+                    if (limit <= nextBptr) break;
+                    ncode = *nextBptr;
+                    repn = repn + 1;
+                    nextBptr = nextBptr + 1;
+                } while (ncode == i1);
+                unsigned int directCost = repn * EC->bitsarray[iVar5 >> 2];
+                unsigned int clueOneCost = 32000;
+                unsigned int clueMultiCost = 32000;
+                if (cluesVal != 0) {
+                    int clueIdx = EC->clue * 4;
+                    if (EC->count[clueIdx >> 2] != 0 && (clueOneCost = 0x14, repn < 0xfc)) {
+                        clueOneCost = EC->bitsarray[clueIdx >> 2] + EC->repbits[repn] * 2 + 3;
+                    }
+                    if (cluesVal > 1) {
+                        clueMultiCost = 0;
+                        unsigned int remaining = repn;
+                        unsigned int level = cluesVal;
+                        while (level = level - 1, level != 0) {
+                            int idx = (EC->clue + level);
+                            if (EC->count[idx] != 0) {
+                                unsigned int quotient = remaining / level;
+                                remaining = remaining - quotient * level;
+                                clueMultiCost = clueMultiCost + quotient * EC->bitsarray[idx];
+                            }
+                        }
+                        if (remaining != 0) {
+                            clueMultiCost = 32000;
+                        }
+                    }
+                }
+                if (clueOneCost < directCost || clueMultiCost < directCost) {
+                    if (clueOneCost < clueMultiCost) {
+                        int idx = EC->clue;
+                        HUFF_writebits(EC, dest, EC->patternarray[idx], EC->bitsarray[idx]);
+                        HUFF_writenum(EC, dest, repn);
+                    } else if (cluesVal - 1 != 0) {
+                        unsigned int level = cluesVal - 1;
+                        unsigned int prevLevel;
+                        do {
+                            prevLevel = level - 1;
+                            if (EC->count[EC->clue + level] != 0) {
+                                unsigned int quotient = repn / level;
+                                repn = repn - quotient * level;
+                                for (; quotient != 0; quotient = quotient - 1) {
+                                    HUFF_writecode(EC, dest, EC->clue + level);
+                                }
+                            }
+                            level = prevLevel;
+                        } while (prevLevel != 0);
+                    }
+                } else {
+                    for (; repn != 0; repn = repn - 1) {
+                        HUFF_writecode(EC, dest, i1);
+                    }
+                }
+            }
+            bool useDelta = false;
+            if (EC->dclues != 0) {
+                int delta = ncode - i1;
+                if (delta <= EC->maxdelta && EC->mindelta <= delta) {
+                    int dIdx = (delta - 1) * 2 + EC->dclue;
+                    if (ncode < i1) {
+                        dIdx = (i1 - ncode - 1) * 2 + EC->dclue + 1;
+                    }
+                    if (EC->bitsarray[dIdx] < EC->bitsarray[ncode]) {
+                        useDelta = true;
+                        HUFF_writebits(EC, dest, EC->patternarray[dIdx], EC->bitsarray[dIdx]);
+                    }
+                }
+            }
+            if (!useDelta) {
+                HUFF_writecode(EC, dest, ncode);
+            }
+            int progress = reinterpret_cast<int>(nextBptr) - reinterpret_cast<int>(EC->buffer);
+            if (EC->plen + curpc <= static_cast<unsigned int>(progress)) {
+                curpc = progress - EC->plen;
+            }
+            bptr2 = EC->bufptr;
+            i1 = ncode;
+            bptr1 = nextBptr;
+        } while (nextBptr < bptr2);
+    }
+    int clueIdx = EC->clue;
+    HUFF_writebits(EC, dest, EC->patternarray[clueIdx], EC->bitsarray[clueIdx]);
+    HUFF_writenum(EC, dest, 0);
+    HUFF_writebits(EC, dest, 2, 2);
+    HUFF_writebits(EC, dest, 0, 7);
+}
+
+static void HUFF_decompress(unsigned char *pSrc, unsigned char *pDst) {
+    // TODO: 3392B decompressor - extremely complex
+}
+
+void HUFF_decode(void *dest, const void *src) {
+    HUFF_decompress(static_cast<unsigned char *>(const_cast<void *>(src)),
+                    static_cast<unsigned char *>(dest));
 }
