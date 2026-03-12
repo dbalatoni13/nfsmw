@@ -57,7 +57,9 @@ struct uiRepSheetMilestones : public ArrayScrollerMenu {
     FEMultiImage* TrackMap;            // offset 0xF0, size 0x4
 
     uiRepSheetMilestones(ScreenConstructorData* sd);
-    ~uiRepSheetMilestones() override {}
+    ~uiRepSheetMilestones() override {
+        delete TrackMapStreamer;
+    }
 
     eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override;
     void NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,

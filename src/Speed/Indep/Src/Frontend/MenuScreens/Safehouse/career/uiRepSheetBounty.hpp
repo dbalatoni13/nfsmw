@@ -21,7 +21,9 @@ struct uiRepSheetBounty : public ArrayScrollerMenu {
     bool tutorialPlaying;              // offset 0x174, size 0x1
 
     uiRepSheetBounty(ScreenConstructorData* sd);
-    ~uiRepSheetBounty() override {}
+    ~uiRepSheetBounty() override {
+        delete TrackMapStreamer;
+    }
 
     eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override;
     void NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
