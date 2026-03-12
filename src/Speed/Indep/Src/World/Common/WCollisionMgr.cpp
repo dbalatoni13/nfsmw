@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/World/WWorldMath.h"
 #include "Speed/Indep/Src/World/WWorldPos.h"
 #include "Speed/Indep/Src/World/Common/WGrid.h"
+#include "Speed/Indep/Libs/Support/Utility/UVector.h"
 
 #include <algorithm>
 #include <float.h>
@@ -428,6 +429,90 @@ void WCollisionMgr::BuildGeomFromWorldObb(const WCollisionObject &object, float 
     UMath::Scale(vel, dt, dP);
 
     geom.Set(objMat, pos, dim, Dynamics::Collision::Geometry::BOX, dP);
+}
+
+bool WCollisionMgr::Collide(Dynamics::Collision::Geometry *geom, const WCollisionBarrierList *barrierList, ICollisionHandler *results,
+                            void *userdata, bool force_single_sided) {
+    bool hit = false;
+    if (!barrierList || barrierList->empty()) {
+        return hit;
+    }
+
+    const WCollisionBarrierList &barriers = *barrierList;
+    UMath::Matrix4 mat = UMath::Matrix4::kIdentity;
+
+    for (const WCollisionBarrierListEntry *iter = barriers.begin(); iter != barriers.end(); ++iter) {
+        if (!SurfacePassesExclusion(iter->fB.GetWSurface())) {
+            continue;
+        }
+
+        UMath::Vector4 bcp;
+        iter->fB.GetCenter(bcp);
+
+        UMath::Vector3 &vR = UMath::Vector4To3(mat[0]);
+        UMath::Vector3 &vU = UMath::Vector4To3(mat[1]);
+        UMath::Vector3 &vF = UMath::Vector4To3(mat[2]);
+
+        iter->fB.GetNormal(vF);
+
+        float w = iter->fB.GetWidth();
+        float h = iter->fB.GetHeight();
+
+        UMath::Vector3 bdim;
+        memset(&bdim, 0, sizeof(bdim));
+        bdim.x = w * 0.5f;
+        bdim.y = h * 0.5f;
+
+        vU = UMath::Vector3Make(0.0f, 1.0f, 0.0f);
+
+        UMath::Cross(vU, vF, vR);
+
+        Dynamics::Collision::Geometry bgeom(mat, UVector3(bcp), bdim, Dynamics::Collision::Geometry::BOX, UMath::Vector3::kZero);
+
+        if (!Dynamics::Collision::Geometry::FindIntersection(geom, &bgeom, geom)) {
+            continue;
+        }
+
+        if (force_single_sided || !iter->fB.GetWSurface().HasFlag(0x10)) {
+            if (UMath::Dot(vF, geom->GetCollisionNormal()) <= 0.0f) {
+                continue;
+            }
+        }
+
+        hit = true;
+
+        if (!results) {
+            return true;
+        }
+
+        float penetration = -geom->GetOverlap();
+
+        WorldCollisionInfo cInfo;
+        cInfo.fNormal = UMath::Vector4Make(geom->GetCollisionNormal(), penetration);
+        cInfo.fBle = *iter;
+        cInfo.fType = 2;
+        cInfo.fCollidePt = UMath::Vector4Make(geom->GetCollisionPoint(), penetration);
+
+        if (cInfo.fCInst && cInfo.fCInst->IsDynamic()) {
+            cInfo.fAnimated = true;
+        }
+
+        UMath::Vector3 dP;
+        UMath::Scale(geom->GetCollisionNormal(), -geom->GetOverlap(), dP);
+
+        UMath::Vector3 cPoint;
+        cPoint = geom->GetCollisionPoint();
+
+        if (geom->PenetratesOther()) {
+            UMath::Add(cPoint, dP, cPoint);
+        }
+
+        if (results->OnWCollide(cInfo, cPoint, userdata)) {
+            geom->Move(dP);
+        }
+    }
+
+    return hit;
 }
 
 bool WCollisionMgr::GetClosestIntersectingBarrier(const WCollisionBarrierList &barrierList, const UMath::Vector4 *testSegment, WorldCollisionInfo &cInfo) {

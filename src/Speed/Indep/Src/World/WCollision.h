@@ -155,6 +155,22 @@ struct WCollisionBarrier {
         norm.z = (fPts[0].x - fPts[1].x) * invLen;
     }
 
+    void GetCenter(UMath::Vector4 &cp) const {
+        cp.x = (fPts[0].x + fPts[1].x) * 0.5f;
+        cp.y = (fPts[0].y + fPts[1].y) * 0.5f;
+        cp.z = (fPts[0].z + fPts[1].z) * 0.5f;
+    }
+
+    float GetWidth() const {
+        float rz = fPts[0].z - fPts[1].z;
+        float rx = fPts[0].x - fPts[1].x;
+        return UMath::Sqrt(rx * rx + rz * rz);
+    }
+
+    float GetHeight() const {
+        return UMath::Abs(fPts[0].y - fPts[1].y);
+    }
+
     float DistSq(const UMath::Vector3 &pt) const {
         float invLen = GetInvXZLength();
         float z1 = fPts[0].z;

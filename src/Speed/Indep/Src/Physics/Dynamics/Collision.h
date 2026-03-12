@@ -101,6 +101,12 @@ class Geometry {
         return mOverlap;
     }
 
+    Shape GetShape() const {
+        return static_cast<Shape>(mShape);
+    }
+
+    void Move(const UMath::Vector3 &deltaP);
+
   private:
     UMath::Vector4 mPosition;         // offset 0x0, size 0x10
     UMath::Vector4 mNormal[3];        // offset 0x10, size 0x30
