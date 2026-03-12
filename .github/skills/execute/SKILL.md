@@ -65,7 +65,7 @@ starting point. Use `--strategy impact` when you only care about the biggest unm
 wins, or `--strategy quick-wins` when you want already-implemented functions in mature units.
 
 If the shared unit object is missing, the wrapper now rebuilds it automatically before
-running `unit`.
+running `next --unit` / `unit`.
 
 If you need the raw tools instead of the wrapper, run `decomp-status.py` and
 `decomp-diff.py` directly against the shared build output.

@@ -18,7 +18,16 @@ approaches that were tried before — instead, apply systematic lateral analysis
 
 ## Phase 1: Read the full diff without collapsing
 
-First rebuild the unit normally, then diff:
+Preferred shortcut:
+
+```sh
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName --no-collapse
+```
+
+If the shared unit object is missing, the wrapper now rebuilds it automatically before
+running `diff`.
+
+If you need the raw backend form instead of the wrapper, rebuild the unit and then run:
 
 ```sh
 python tools/decomp-workflow.py build -u main/Path/To/TU
