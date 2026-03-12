@@ -10,7 +10,11 @@
 #include <cstddef>
 
 namespace UTL {
+#if MILESTONE_OPT
+template <typename T, unsigned int Alignment = 16> class Vector {
+#else
 template <typename T, int Alignment = 16> class Vector {
+#endif
   public:
     typedef T value_type;
     typedef value_type *pointer;
@@ -171,7 +175,11 @@ template <typename T, int Alignment = 16> class Vector {
     size_type mSize;     // offset 0x8, size 0x4
 };
 
+#if MILESTONE_OPT
+template <typename T, std::size_t Size, unsigned int Alignment = 16> class FixedVector : public Vector<T, Alignment> {
+#else
 template <typename T, int Size, int Alignment = 16> class FixedVector : public Vector<T, Alignment> {
+#endif
   public:
     FixedVector() {}
 
@@ -203,7 +211,11 @@ template <typename T, int Size, int Alignment = 16> class FixedVector : public V
 };
 
 
+#if MILESTONE_OPT
+template <typename T, unsigned int Alignment = 16> class FastVector : public Vector<T, Alignment> {
+#else
 template <typename T, int Alignment = 16> class FastVector : public Vector<T, Alignment> {
+#endif
   public:
     FastVector() {}
 
