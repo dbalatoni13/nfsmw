@@ -36,32 +36,34 @@ void UIOptionsMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsig
                                         unsigned long param2) {
     IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
 
-    if (msg == 0x911AB364) {
+    switch (msg) {
+    case 0xB5AF2461:
+        FEDatabase->ClearGameMode(eFE_GAME_MODE_OPTIONS);
+        break;
+    case 0x911AB364:
         FEDatabase->ClearGameMode(eFE_GAME_MODE_OPTIONS);
         StorePrevNotification(msg, pobj, param1, param2);
-        if (mCalledFromPauseMenu) {
-            FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
+        if (!mCalledFromPauseMenu) {
+            if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
+                cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
+            }
             return;
         }
-        if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
-            const unsigned long FEObj_leavescreen = 0x587C018B;
-            cFEng::Get()->QueuePackageMessage(FEObj_leavescreen, GetPackageName(), 0);
-        }
+        FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
         return;
-    } else if (msg == 0x0C407210) {
+    case 0x0C407210:
         if (FEngIsScriptRunning(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34)) {
             return;
         }
-    } else if (msg == 0xB5AF2461) {
-        FEDatabase->ClearGameMode(eFE_GAME_MODE_OPTIONS);
-    } else if (msg == 0xE1FDE1D1) {
+        break;
+    case 0xE1FDE1D1:
         if (PrevButtonMessage == 0xB5AF2461) {
             new EUnPause();
             return;
         }
         if (PrevButtonMessage == 0x911AB364) {
             if (mCalledFromPauseMenu) {
-                cFEng::Get()->QueuePackageSwitch("Pause_Main.fng", 0, 0, 0);
+                cFEng::Get()->QueuePackageSwitch("Pause_Main.fng", 0, 0, false);
                 return;
             }
             if (FEDatabase->IsLANMode() || FEDatabase->IsOnlineMode()) {
@@ -76,41 +78,40 @@ void UIOptionsMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsig
             if (curCat == OC_CONTROLS) {
                 UIOptionsController::PortToConfigure = FEngMapJoyParamToJoyport(PrevParam1);
                 if (mCalledFromPauseMenu) {
-                    cFEng::Get()->QueuePackageSwitch("Pause_Controller.fng", 0, 0, 0);
+                    cFEng::Get()->QueuePackageSwitch("Pause_Controller.fng", 0, 0, false);
                 } else {
-                    cFEng::Get()->QueuePackageSwitch("UI_OptionsController.fng", 0, 0, 0);
+                    cFEng::Get()->QueuePackageSwitch("UI_OptionsController.fng", 0, 0, false);
                 }
                 return;
             }
             if (curCat == OC_EATRAX) {
-                cFEng::Get()->QueuePackageSwitch("EA_Trax_Jukebox.fng", 0, 0, 0);
+                cFEng::Get()->QueuePackageSwitch("EA_Trax_Jukebox.fng", 0, 0, false);
                 return;
             }
             if (curCat == OC_TRAILERS) {
                 FEDatabase->SetGameMode(eFE_GAME_TRAILERS);
-                cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, 0);
+                cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
                 return;
             }
             if (curCat == OC_CREDITS) {
-                cFEng::Get()->QueuePackageSwitch("Credits.fng", 0, 0, 0);
+                cFEng::Get()->QueuePackageSwitch("Credits.fng", 0, 0, false);
                 return;
             }
             if (curCat == OC_AUDIO || curCat == OC_VIDEO || curCat == OC_GAMEPLAY ||
                 curCat == OC_PLAYER || curCat == OC_ONLINE) {
                 if (mCalledFromPauseMenu && !FEDatabase->IsOnlineMode() &&
                     !FEDatabase->IsLANMode()) {
-                    cFEng::Get()->QueuePackageSwitch("Pause_Options.fng", 1, 0, 0);
+                    cFEng::Get()->QueuePackageSwitch("Pause_Options.fng", 1, 0, false);
                 } else {
-                    cFEng::Get()->QueuePackageSwitch("Options.fng", 0, 0, 0);
+                    cFEng::Get()->QueuePackageSwitch("Options.fng", 0, 0, false);
                 }
                 return;
             }
         }
         return;
-    } else {
+    default:
         return;
     }
-
     StorePrevNotification(msg, pobj, param1, param2);
     FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
 }
