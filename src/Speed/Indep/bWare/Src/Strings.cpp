@@ -434,10 +434,10 @@ parse_decimal:
 }
 
 float bStrToFloat(const char *s) {
-    bool negative = false;
+    bool negate = false;
 
     if (*s == '-') {
-        negative = true;
+        negate = true;
         s++;
     } else if (*s == '+') {
         s++;
@@ -445,61 +445,56 @@ float bStrToFloat(const char *s) {
 
     float value = 0.0f;
     char current = *s;
-    char test = *s;
 
-    while ((int)test - '0' < 10U) {
-        int digit = static_cast<int>(current);
+    while (bIsDigit(current)) {
         s++;
+        value = value * 10.0f + static_cast<float>(current - '0');
         current = *s;
-        value = value * 10.0f + static_cast<float>(digit - '0');
-        test = *s;
     }
 
     if (current == '.') {
-        float fraction = 0.0f;
-        float scale = 1.0f;
+        float fractional_part = 0.0f;
+        float fraction = 1.0f;
 
-        s++;
-        current = *s;
-        test = *s;
-        while ((int)test - '0' < 10U) {
-            int digit = static_cast<int>(current);
-            s++;
-            current = *s;
-            fraction = static_cast<float>(digit - '0') * scale * 0.1f + fraction;
-            scale = scale * 0.1f;
-            test = *s;
+        while (true) {
+            current = *++s;
+            if (!bIsDigit(current)) {
+                break;
+            }
+
+            fractional_part = static_cast<float>(current - '0') * fraction * 0.1f + fractional_part;
+            fraction = fraction * 0.1f;
         }
 
-        if (fraction != 0.0f) {
-            fraction = static_cast<float>(static_cast<int>(fraction) + 1);
+        if (fractional_part != 0.0f) {
+            fractional_part = static_cast<float>(static_cast<int>(fractional_part) + 1);
         }
 
-        value = value + fraction;
+        value = value + fractional_part;
     }
 
     if ((current == 'e') || (current == 'E')) {
-        int exponent = bStrToLong(s + 1);
-        float scale = 1.0f;
+        int exp = bStrToLong(s + 1);
+        float multiplier = 1.0f;
 
-        if (exponent > 0) {
+        if (exp > 0) {
             do {
-                scale = scale * 10.0f;
-                exponent--;
-            } while (exponent > 0);
+                multiplier = multiplier * 10.0f;
+                exp--;
+            } while (exp > 0);
         }
 
-        if (exponent < 0) {
+        if (exp < 0) {
             do {
-                scale = scale * 0.1f;
-                exponent++;
-            } while (exponent < 0);
+                multiplier = multiplier * 0.1f;
+                exp++;
+            } while (exp < 0);
         }
 
-        value = value * scale;
+        value = value * multiplier;
     }
 
-    if (negative) {
+    if (negate) {
         value = -value;
     }
 
@@ -665,14 +660,12 @@ void bSharedStringPool::Free(const char *s) {
 }
 
 int bMatchNameWithWildcard(const char *wild, const char *string) {
-    const char *saved_string = nullptr;
-    const char *saved_wild = nullptr;
+    const char *cp = nullptr;
+    const char *mp = nullptr;
     char string_char = *string;
-
+ 
     while (string_char != '\0') {
         char wild_char = *wild;
-        int wild_int;
-        int string_int;
 
         if (wild_char == '*') {
             if (string_char == '\0') {
@@ -682,17 +675,8 @@ int bMatchNameWithWildcard(const char *wild, const char *string) {
             break;
         }
 
-        wild_int = static_cast<int>(wild_char);
-        if (static_cast<unsigned int>(wild_int - 'a') < 0x1aU) {
-            wild_char &= 0x5f;
-        }
-
-        string_int = static_cast<int>(*string);
-        if (static_cast<unsigned int>(string_int - 'a') < 0x1aU) {
-            string_int &= 0x5f;
-        }
-
-        if ((static_cast<int>(wild_char) != string_int) && (wild_int != '?')) {
+        int wild_int = static_cast<int>(wild_char);
+        if ((bToUpper(wild_char) != bToUpper(*string)) && (wild_int != '?')) {
             return false;
         }
 
@@ -713,27 +697,18 @@ int bMatchNameWithWildcard(const char *wild, const char *string) {
                 return true;
             }
 
-            saved_string = string + 1;
-            saved_wild = next_wild;
+            cp = string + 1;
+            mp = next_wild;
             wild = next_wild;
         } else {
             int wild_int = static_cast<int>(wild_char);
-            if (static_cast<unsigned int>(wild_int - 'a') < 0x1aU) {
-                wild_char &= 0x5f;
-            }
-
-            int string_int = static_cast<int>(*string);
-            if (static_cast<unsigned int>(string_int - 'a') < 0x1aU) {
-                string_int &= 0x5f;
-            }
-
-            if ((static_cast<int>(wild_char) != string_int) && (wild_int != '?')) {
-                string = saved_string;
-                wild = saved_wild;
+            if ((bToUpper(wild_char) != bToUpper(*string)) && (wild_int != '?')) {
+                string = cp;
+                wild = mp;
                 if (wild == nullptr) {
                     return false;
                 }
-                saved_string = string + 1;
+                cp = string + 1;
             } else {
                 wild = wild + 1;
                 string = string + 1;
