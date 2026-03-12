@@ -516,17 +516,18 @@ const char *bSharedStringPool::Allocate(const char *s) {
         return string->String;
     }
 
-    bool search_table = true;
+    int search_table = 1;
     char count = this->FastLookupTableCount[hash_index];
-    if ((count == 0) || ((count == 1) && (string != nullptr))) {
-        search_table = false;
+    if (count == 0) {
+        search_table = 0;
+    } else if ((count == 1) && (string != nullptr)) {
+        search_table = 0;
     }
 
-    bSharedString *table_start = this->StringTable;
-    bSharedString *table_end = reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(table_start) + this->StringTableSizeBytes);
-
-    if (search_table) {
-        for (string = table_start; string != table_end; string = reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(string) + string->Size * 8)) {
+    if (search_table != 0) {
+        for (string = this->StringTable;
+             string != reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(this->StringTable) + this->StringTableSizeBytes);
+             string = reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(string) + string->Size * 8)) {
             if ((string->Count != 0) && (bStrCmp(s, string->String) == 0)) {
                 this->FastLookupTable[hash_index] = string;
                 string->Count++;
@@ -552,7 +553,7 @@ const char *bSharedStringPool::Allocate(const char *s) {
 
                 bSharedString *next_next_string =
                     reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(next_string) + next_string->Size * 8);
-                if (next_next_string != table_end) {
+                if (next_next_string != reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(this->StringTable) + this->StringTableSizeBytes)) {
                     next_next_string->Prev = static_cast<unsigned short>((reinterpret_cast<char *>(next_next_string) - reinterpret_cast<char *>(next_string)) >> 3);
                 }
             }
@@ -564,19 +565,19 @@ const char *bSharedStringPool::Allocate(const char *s) {
             this->FastLookupTableCount[hash_index] = this->FastLookupTableCount[hash_index] + 1;
 
             this->NumBytesAllocated += size * 8;
-            if (this->MostBytesAllocated < this->NumBytesAllocated) {
+            if (this->NumBytesAllocated > this->MostBytesAllocated) {
                 this->MostBytesAllocated = this->NumBytesAllocated;
             }
 
             this->NumStringsAllocated++;
-            if (this->MostStringsAllocated < this->NumStringsAllocated) {
+            if (this->NumStringsAllocated > this->MostStringsAllocated) {
                 this->MostStringsAllocated = this->NumStringsAllocated;
             }
 
             unsigned short allocated_size = string->Size;
             this->LargestFreeString = reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(string) + allocated_size * 8);
-            if (this->LargestFreeString == table_end) {
-                this->LargestFreeString = table_start;
+            if (this->LargestFreeString == reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(this->StringTable) + this->StringTableSizeBytes)) {
+                this->LargestFreeString = this->StringTable;
             }
 
             this->Mutex.Unlock();
@@ -584,8 +585,8 @@ const char *bSharedStringPool::Allocate(const char *s) {
         }
 
         string = reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(string) + string_size * 8);
-        if (string == table_end) {
-            string = table_start;
+        if (string == reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(this->StringTable) + this->StringTableSizeBytes)) {
+            string = this->StringTable;
         }
     } while (string != this->LargestFreeString);
 
