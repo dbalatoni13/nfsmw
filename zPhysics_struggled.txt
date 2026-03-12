@@ -5,13 +5,11 @@ zPhysics Translation Unit — Nonmatching Functions Report
 function could not be matched and what was attempted.
 
 
-=== VTABLE OFFSET ISSUE (compiler ABI mismatch) ===
+=== VTABLE OFFSET ISSUE ===
 
-The GC ProDG compiler appears to emit 1 destructor vtable entry for classes
-with virtual destructors, while our toolchain emits 2 (D0 + D1). This shifts
-ALL virtual call offsets by exactly 8 bytes through COM interfaces. These
+There is a shift in ALL virtual call offsets by exactly 8 bytes through COM interfaces. These
 functions are structurally correct but every virtual dispatch is off by one
-vtable slot. This is NOT fixable at the source level.
+vtable slot.
 
   PlaceableScenery::PickUp                          99.9%   124B   (only 2 mismatched vtable offsets)
   PVehicle::GetTunings                             100.0%   224B   (code matches, vtable offsets wrong)
@@ -124,13 +122,3 @@ code structure differences, and/or are too large to isolate individual issues.
   Total nonmatching:  69 functions
   Total missing:     274 functions (template instantiations)
   Total matching:    375 functions
-
-  Root blocker: The IVehicle vtable has 1 extra destructor entry in our build
-  compared to the original GC binary. This is a compiler ABI difference
-  (ProDG GCC 3.x vs our GCC) that shifts all virtual dispatch offsets by 8
-  bytes. Fixing this would likely resolve ~18 functions to 100% and improve
-  many others significantly.
-
-  Secondary blocker: -fforce-addr and instruction scheduling differences
-  between our GCC and the original ProDG compiler cause register allocation
-  mismatches that cannot be fixed at the source level.
