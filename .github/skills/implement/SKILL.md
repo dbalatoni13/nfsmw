@@ -13,6 +13,25 @@ Collect data from **all** of these sources in parallel where possible.
 
 ### 1a. decomp-context.py
 
+Preferred shortcut:
+
+```sh
+python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName
+python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName --brief
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
+```
+
+If you only need one Ghidra view, add `--ghidra-version gc` or `--ghidra-version ps2`
+to keep the context run faster and shorter.
+
+The wrapper defaults to compact GC DWARF signatures. Add `--lookup-mode full` when you
+need the full DWARF body with locals and nested inline info.
+
+Add `--brief` when you want a shorter helper view; it trims suggested commands and
+related-source hints while keeping the core source/status/diff context.
+
+Equivalent manual form:
+
 ```sh
 python tools/decomp-context.py -u main/Path/To/TU -f FunctionName
 ```
@@ -20,6 +39,10 @@ python tools/decomp-context.py -u main/Path/To/TU -f FunctionName
 This provides in one shot:
 
 - Current source code (if any exists)
+- A fallback source excerpt from the GC debug-line-mapped repo file when the metadata
+  source path is empty or otherwise unhelpful
+- Related source-file hints when the unit metadata source is empty or unhelpful
+- Compact GC DWARF signature by default, or full DWARF body with `--lookup-mode full`
 - objdiff status and instruction-level diff
 - Ghidra decompilation of the original
 
@@ -89,7 +112,17 @@ The game uses stlport, so you'll often encounter \_STL, but in the code it must 
 
 ### Initial build
 
-Compile to a private temp `.o` so your output isn't overwritten by other concurrent builds:
+Compile to a private temp `.o` so your output isn't overwritten by other concurrent builds.
+If you just need the standard context + temp-build flow, prefer
+`python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName`.
+If you only need a temp build or a standardized diff run, use:
+
+```sh
+python tools/decomp-workflow.py build -u main/Path/To/TU
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
+```
+
+Drop down to the manual loop below when you need tighter control over repeated diff iterations:
 
 ```sh
 TEMPOBJ=$(python tools/build-unit.py -u main/Path/To/TU)
