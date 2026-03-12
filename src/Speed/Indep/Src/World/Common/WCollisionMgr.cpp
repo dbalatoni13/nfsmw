@@ -54,6 +54,15 @@ inline void NearPtLinePerSegXZ(const UMath::Vector3 &p0, const UMath::Vector3 &p
     }
 }
 
+inline void NearPtLine(const UMath::Vector3 &pt, const UMath::Vector3 &p0, float den, const UMath::Vector3 &diffVec, UMath::Vector3 &nearPt) {
+    float u = ((pt.x - p0.x) * diffVec.x + (pt.y - p0.y) * diffVec.y + (pt.z - p0.z) * diffVec.z) * den;
+    u = UMath::Min(u, 1.0f);
+    u = UMath::Max(u, 0.0f);
+    nearPt.x = u * diffVec.x + p0.x;
+    nearPt.y = u * diffVec.y + p0.y;
+    nearPt.z = u * diffVec.z + p0.z;
+}
+
 inline void NearPtLineXZ(const UMath::Vector3 &pt, const UMath::Vector3 &p0, float den, const UMath::Vector3 &diffVec, UMath::Vector3 &nearPt) {
     float u = ((pt.x - p0.x) * diffVec.x + (pt.z - p0.z) * diffVec.z) * den;
     u = UMath::Min(u, 1.0f);
@@ -945,6 +954,77 @@ bool WCollisionMgr::FindFaceInCInst(const UMath::Vector3 &pt, const WCollisionIn
                     leastYDist = dist;
                     retVal = face;
                     retDist = dist;
+                }
+            }
+        }
+    }
+
+    if (foundFace) {
+        MakeWorldSpaceFace(retFace, retVal, invMat);
+        return true;
+    }
+
+    return false;
+}
+
+bool WCollisionMgr::FindFaceInCInst(const UMath::Matrix4 &vectorMat, const UMath::Vector3 &endPt,
+                                    const WCollisionInstance &cInst, WCollisionTri &retFace, float &retDist) {
+    UMath::Matrix4 invMat;
+    cInst.MakeMatrix(invMat, true);
+
+    UTransform mat(invMat);
+    OrthoInverse(mat.fTransform);
+    UTransform vecMatInv(vectorMat);
+    OrthoInverse(vecMatInv.fTransform);
+
+    UMath::Matrix4 combinedMat;
+    UMath::Mult(mat.fTransform, vecMatInv.fTransform, combinedMat);
+
+    const WCollisionArticle *cArt = cInst.fCollisionArticle;
+    if (cArt == nullptr) {
+        return false;
+    }
+
+    WCollisionTri retVal;
+    float leastYDist = 1e38f;
+
+    UMath::Vector3 tp0;
+    UMath::Vector3 tp1;
+
+    const UMath::Vector3 &startPt = UMath::Vector4To3(vectorMat.v3);
+    bool foundFace = false;
+    UMath::RotateTranslate(startPt, invMat, tp0);
+
+    const WCollisionStripSphere *sp = cArt->GetStripSphere(0);
+    UMath::RotateTranslate(endPt, invMat, tp1);
+
+    int i = 0;
+
+    UMath::Vector3 npVec;
+    UMath::Sub(tp1, tp0, npVec);
+    float invDen = 1.0f / (npVec.x * npVec.x + npVec.y * npVec.y + npVec.z * npVec.z);
+
+    for (; i < cArt->fNumStrips; ++i, ++sp) {
+        float radius = static_cast<float>(static_cast<int>(sp->fRadius)) * (1.0f / 16.0f);
+        float radsSq = radius * radius;
+
+        UMath::Vector3 diffVec;
+        UMath::Vector3 nearPt;
+        NearPtLine(sp->fPos, tp0, invDen, npVec, nearPt);
+        UMath::Sub(sp->fPos, nearPt, diffVec);
+        float dSq = diffVec.x * diffVec.x + diffVec.y * diffVec.y + diffVec.z * diffVec.z;
+
+        if (dSq < radsSq) {
+            const WCollisionStrip *strip = reinterpret_cast<const WCollisionStrip *>(
+                reinterpret_cast<const char *>(cArt) + sp->Offset());
+            WCollisionTri face;
+            float faceY;
+            if (FindFaceInTriStrip(combinedMat, UMath::Vector3::kZero, sp, strip, faceY, face)) {
+                if (0.0f < faceY && faceY < leastYDist) {
+                    leastYDist = faceY;
+                    retVal = face;
+                    retDist = faceY;
+                    foundFace = true;
                 }
             }
         }
