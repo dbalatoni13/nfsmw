@@ -232,6 +232,11 @@ inline void ScaleAdd(const Vector4 &a, const float s, const Vector4 &b, Vector4 
     VU0_v4scaleadd(a, s, b, r);
 }
 
+inline void ScaleAdd(const Vector2 &a, const float s, const Vector2 &b, Vector2 &r) {
+    r.x = a.x + s * b.x;
+    r.y = a.y + s * b.y;
+}
+
 inline void ScaleAddxyz(const Vector4 &a, const float s, const Vector4 &b, Vector4 &r) {
     VU0_v4scaleaddxyz(a, s, b, r);
 }
@@ -480,6 +485,12 @@ inline float Ramp(const float a, const float amin, const float amax) {
 
 inline float Lerp(const float a, const float b, const float t) {
     return a + (b - a) * t;
+}
+
+inline void Lerp(const Vector2 &a, const Vector2 &b, const float t, Vector2 &r) {
+    float u = 1.0f - t;
+    r.x = a.x * u + b.x * t;
+    r.y = a.y * u + b.y * t;
 }
 
 inline void Negate(Vector3 &r) {

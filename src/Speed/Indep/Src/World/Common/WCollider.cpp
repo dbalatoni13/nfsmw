@@ -8,6 +8,8 @@
 
 void VU0_v4crossprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r);
 
+bool Tweak_colliderDraws;
+
 UTL::Std::map<unsigned int, WCollider *, _type_map> WCollider::fWuidMap;
 template <> UTL::Collections::Listable<WCollider, 100>::List UTL::Collections::Listable<WCollider, 100>::_mTable;
 

@@ -7,6 +7,8 @@
 
 extern int bPathFinderPrints;
 
+UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _PathFinder("PathFinder", PathFinder::Construct);
+
 PathFinder* PathFinder::pInstance;
 
 PathFinder::PathFinder()

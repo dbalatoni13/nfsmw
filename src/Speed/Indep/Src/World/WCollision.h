@@ -20,6 +20,7 @@ struct WCollisionPackedVert {
 
 struct WSurface : CollisionSurface {
     static void InitSystem();
+    static WSurface kNull;
 
     WSurface() {
         fSurface = 0;

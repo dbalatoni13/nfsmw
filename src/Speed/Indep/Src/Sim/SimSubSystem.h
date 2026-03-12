@@ -15,7 +15,12 @@ class SubSystem {
     void ValidateHeap(bool before, bool initializing);
 
     SubSystem(const char *name, void (* initcb)(), void (* restorecb)()) {
-        
+        mInit = initcb;
+        mRestore = restorecb;
+        mSig = UCrc32(name);
+        mNext = mHead;
+        mHead = this;
+        mName = name;
     }
 
     static void Init(const UCrc32 &sig) {

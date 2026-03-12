@@ -155,6 +155,15 @@ void Reference::Unlock() {
 bTList<WorldBodyConn> WorldBodyConn::mList;
 bTList<WorldEffectConn> WorldEffectConn::mList;
 
+UTL::COM::Factory<const Sim::ConnectionData &, Sim::Connection, UCrc32>::Prototype _WorldBodyConn("WorldBodyConn", WorldBodyConn::Construct);
+UTL::COM::Factory<const Sim::ConnectionData &, Sim::Connection, UCrc32>::Prototype _WorldEffectConn("WorldEffectConn", WorldEffectConn::Construct);
+
+int *World_OneShotEffect(Sim::Packet *pkt);
+int *World_UpdateBody(Sim::Packet *pkt);
+
+UTL::COM::Factory<Sim::Packet *, int, UCrc32>::Prototype _World_OneShotEffect("World_OneShotEffect", World_OneShotEffect);
+UTL::COM::Factory<Sim::Packet *, int, UCrc32>::Prototype _World_UpdateBody("World_UpdateBody", World_UpdateBody);
+
 Sim::Connection *WorldBodyConn::Construct(const Sim::ConnectionData &data) {
     return new WorldBodyConn(data);
 }

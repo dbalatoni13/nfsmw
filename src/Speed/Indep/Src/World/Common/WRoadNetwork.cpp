@@ -16,8 +16,11 @@
 #include "Speed/Indep/Src/World/WPathFinder.h"
 #include "Speed/Indep/Src/World/WWorld.h"
 #include "Speed/Indep/Src/World/TrackPath.hpp"
+#include "Speed/Indep/Src/Sim/SimSubSystem.h"
 
 extern BOOL bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *point, float extra_width);
+extern void bInitializeBoundingBox(bVector2 *min, bVector2 *max);
+extern void bExpandBoundingBox(bVector2 *min, bVector2 *max, const bVector2 *point);
 extern bool bAiRandomTurns;
 
 static const int drivable_lanes[8] = {
@@ -41,6 +44,8 @@ static const int selectable_lanes[8] = {
     0x00000402,
     static_cast<int>(0xFFFFFFFF),
 };
+
+Sim::SubSystem _Physics_System_WRoadNetwork("WRoadNetwork", WRoadNetwork::Init, WRoadNetwork::Shutdown);
 
 void WRoadNetwork::Init() {
     if (fgRoadNetwork == nullptr) {
@@ -2302,6 +2307,319 @@ void WRoadNav::Reset() {
     fLaneChangeDist = 0.0f;
     fLaneChangeInc = 0.0f;
     mOutOfBounds = 0.0f;
+}
+
+void WRoadNav::UpdateOccludedPosition(bool occlude_avoidables) {
+    if (!bCookieTrail) return;
+
+    bOccludedFromBehind = false;
+    fOccludingTrailSpeed = 0.0f;
+    nRoadOcclusion = 0;
+    nAvoidableOcclusion = 0;
+
+    ISimable *simable = pAIVehicle ? pAIVehicle->GetSimable() : nullptr;
+    IRigidBody *car = simable ? simable->GetRigidBody() : nullptr;
+    if (!car) return;
+
+    int num_cookies = pCookieTrail->Count();
+    if (num_cookies <= 0) return;
+
+    UMath::Vector3 car_forward_3d;
+    car->GetForwardVector(car_forward_3d);
+    const UMath::Vector3 &car_velocity_3d = car->GetPosition();
+    UMath::Vector3 car_position_3d;
+    UMath::ScaleAdd(car_forward_3d, 0.0f, car->GetLinearVelocity(), car_position_3d);
+
+    bVector2 car_position(car_position_3d.x, car_position_3d.z);
+
+    bool traffic = (fNavType == kTypeTraffic);
+    float look_min = 0.0f;
+    float look_max;
+    float out_scale;
+    float out_bounds;
+    if (traffic) {
+        look_max = 80.0f;
+        out_bounds = 6.0f;
+    } else {
+        look_max = 200.0f;
+        out_bounds = 10.0f;
+    }
+    out_scale = 4.0f;
+
+    int n = nCookieIndex;
+    float current_dot = 0.0f;
+    float look_ahead = look_min;
+    if (n < num_cookies) {
+        for (; n < num_cookies; n++) {
+            const NavCookie &cookie = pCookieTrail->NthOldest(n);
+            bVector2 cookie_to_car(car_position.x - cookie.Centre.x, car_position.y - cookie.Centre.z);
+            float dot = bDot(reinterpret_cast< const bVector2 * >(&cookie.Forward), &cookie_to_car);
+            if (dot >= current_dot) {
+                nCookieIndex = n;
+                float offset = bCross(&cookie_to_car, reinterpret_cast< const bVector2 * >(&cookie.Forward));
+                float out_of_bounds = bMax(cookie.LeftOffset - offset, offset - cookie.RightOffset);
+                look_ahead = out_scale * bMax(0.0f, -(out_bounds + out_of_bounds)) + look_ahead;
+                current_dot = dot;
+                if (look_max - look_ahead < 0.0f) {
+                    look_ahead = look_max;
+                }
+            }
+            if (-look_ahead > dot) break;
+        }
+    }
+
+    const NavCookie &current_cookie = pCookieTrail->NthOldest(nCookieIndex);
+    int next_cookie_index = nCookieIndex + 1;
+
+    if (next_cookie_index < num_cookies) {
+        const NavCookie &next_cookie = pCookieTrail->NthOldest(next_cookie_index);
+        bVector2 cookie_to_car(car_position.x - next_cookie.Centre.x, car_position.y - next_cookie.Centre.z);
+        float sum = current_dot + bAbs(bDot(reinterpret_cast< const bVector2 * >(&current_cookie.Forward), &cookie_to_car));
+        float current_blend;
+        float next_blend;
+        if (sum > 1e-4f) {
+            current_blend = 1.0f - current_dot / sum;
+        } else {
+            current_blend = 1.0f;
+        }
+        next_blend = 1.0f - current_blend;
+
+        UMath::Lerp(current_cookie.Left, next_cookie.Left, current_blend, mCurrentCookie.Left);
+        UMath::Lerp(current_cookie.Right, next_cookie.Right, current_blend, mCurrentCookie.Right);
+        UMath::Lerp(current_cookie.Forward, next_cookie.Forward, current_blend, mCurrentCookie.Forward);
+
+        float forward_len = bLength(reinterpret_cast< bVector2 * >(&mCurrentCookie.Forward));
+        if (forward_len > 1e-6f) {
+            float inv_len = 1.0f / forward_len;
+            mCurrentCookie.Forward.x *= inv_len;
+            mCurrentCookie.Forward.y *= inv_len;
+        }
+
+        mCurrentCookie.Centre.x = UMath::Lerp(current_cookie.Centre.x, next_cookie.Centre.x, current_blend);
+        mCurrentCookie.Centre.y = UMath::Lerp(current_cookie.Centre.y, next_cookie.Centre.y, current_blend);
+        mCurrentCookie.Centre.z = UMath::Lerp(current_cookie.Centre.z, next_cookie.Centre.z, current_blend);
+
+        mCurrentCookie.LeftOffset = UMath::Lerp(current_cookie.LeftOffset, next_cookie.LeftOffset, current_blend);
+        mCurrentCookie.RightOffset = UMath::Lerp(current_cookie.RightOffset, next_cookie.RightOffset, current_blend);
+
+        int next_segment_number = next_cookie.SegmentNumber;
+        int current_segment_number = current_cookie.SegmentNumber;
+
+        if (current_segment_number == next_segment_number) {
+            mCurrentCookie.SegmentNumber = next_segment_number;
+            mCurrentCookie.SegmentNodeInd = current_cookie.SegmentNodeInd;
+            float current_param = current_cookie.GetSegmentParameter();
+            float next_param = next_cookie.GetSegmentParameter();
+            float t = UMath::Lerp(current_param, next_param, current_blend);
+            mCurrentCookie.SetSegmentParameter(t);
+        } else {
+            WRoadNetwork &rn = WRoadNetwork::Get();
+            const WRoadSegment *next_segment = rn.GetSegment(next_segment_number);
+            const WRoadSegment *current_segment = rn.GetSegment(current_segment_number);
+            float next_segment_length = next_segment->GetLength();
+            float current_segment_length = current_segment->GetLength();
+            float next_dist = next_segment_length * next_cookie.GetSegmentParameter();
+            float current_dist = current_segment_length * (1.0f - current_cookie.GetSegmentParameter());
+            float distance = current_dist * current_blend + next_dist;
+            if (distance >= 0.0f) {
+                distance = distance / next_segment_length;
+                if (distance < 0.0f) {
+                    distance = 0.0f;
+                }
+                mCurrentCookie.SegmentNumber = next_segment_number;
+            } else {
+                distance = (distance + current_segment_length) / current_segment_length;
+                mCurrentCookie.SegmentNumber = current_segment_number;
+                if (distance < 0.0f) {
+                    distance = 0.0f;
+                }
+            }
+            mCurrentCookie.SegmentNodeInd = (distance >= 0.0f) ? next_cookie.SegmentNodeInd : current_cookie.SegmentNodeInd;
+            if (1.0f - distance < 0.0f) {
+                distance = 1.0f;
+            }
+            mCurrentCookie.SetSegmentParameter(distance);
+        }
+    } else {
+        mCurrentCookie.Forward = current_cookie.Forward;
+        mCurrentCookie.LeftOffset = current_cookie.LeftOffset;
+        mCurrentCookie.RightOffset = current_cookie.RightOffset;
+        mCurrentCookie.SegmentNumber = current_cookie.SegmentNumber;
+        mCurrentCookie.SegmentNodeInd = current_cookie.SegmentNodeInd;
+        UMath::ScaleAdd(current_cookie.Left, current_dot, current_cookie.Forward, mCurrentCookie.Left);
+        UMath::ScaleAdd(current_cookie.Right, current_dot, current_cookie.Forward, mCurrentCookie.Right);
+        mCurrentCookie.Centre.x = current_cookie.Centre.x + current_dot * current_cookie.Forward.x;
+        mCurrentCookie.Centre.z = current_cookie.Centre.z + current_dot * current_cookie.Forward.y;
+        mCurrentCookie.Centre.y = current_cookie.Centre.y;
+    }
+
+    bVector2 occ_centre(mCurrentCookie.Centre.x, mCurrentCookie.Centre.z);
+    bVector2 occ_to_car = car_position - occ_centre;
+    float cross = bCross(&occ_to_car, reinterpret_cast< const bVector2 * >(&mCurrentCookie.Forward));
+    float out = bMax(cross - mCurrentCookie.RightOffset, mCurrentCookie.LeftOffset - cross);
+    mOutOfBounds = fVehicleHalfWidth + out;
+
+    if (n < num_cookies) {
+        NavCookie cookies[33];
+        bMemSet(&cookies[num_cookies], 0, static_cast< unsigned int >(0x40));
+
+        int i = nCookieIndex;
+        for (; i < num_cookies; i++) {
+            cookies[i] = pCookieTrail->NthOldest(i);
+        }
+
+        bVector2 car_velocity(car_velocity_3d.x, car_velocity_3d.z);
+
+        if (occlude_avoidables) {
+            float delta_offset = car_velocity.x * mCurrentCookie.Forward.y - mCurrentCookie.Forward.x * car_velocity.y;
+            HolePunchAvoidables(&cookies[nCookieIndex], num_cookies - nCookieIndex, cross, delta_offset);
+        }
+
+        UMath::ScaleAdd(car_velocity_3d, 0.0f, car_position_3d, car_position_3d);
+        bVector2 car_pos_updated(car_position_3d.x, car_position_3d.z);
+        car_position = car_pos_updated;
+
+        bInitializeBoundingBox(&vCookieTrailBoxMin, &vCookieTrailBoxMax);
+        int first_index = nCookieIndex;
+        int last_visible = nCookieIndex;
+        int occluding_index = nCookieIndex;
+        int left_limit_index = nCookieIndex;
+        int right_limit_index = nCookieIndex;
+        bVector2 *occluder = nullptr;
+        bool left_occlusion = false;
+        bVector2 left_limit;
+        bVector2 right_limit;
+
+        for (int j = nCookieIndex; j <= num_cookies; j++) {
+            const NavCookie &cookie = (j < num_cookies) ? cookies[j] : *(reinterpret_cast<const NavCookie *>(&fPosition));
+            bVector2 left(cookie.Left.x, cookie.Left.y);
+            bVector2 right(cookie.Right.x, cookie.Right.y);
+            bVector2 car_to_left = left - car_position;
+            bVector2 car_to_right = right - car_position;
+
+            if (n < num_cookies) {
+                bExpandBoundingBox(&vCookieTrailBoxMin, &vCookieTrailBoxMax, &left);
+                bExpandBoundingBox(&vCookieTrailBoxMin, &vCookieTrailBoxMax, &right);
+            }
+
+            if (j == first_index) {
+                left_limit = car_to_left;
+                right_limit = car_to_right;
+            } else {
+                const UMath::Vector3 &centre_3d = (j < num_cookies) ? cookies[j].Centre : fPosition;
+                bool use_nav = (j != num_cookies);
+                bVector2 centre(centre_3d.x, centre_3d.z);
+                bVector2 car_to_centre = centre - car_position;
+
+                if (j != num_cookies) {
+                    if (left_limit.x * car_to_left.y - car_to_left.x * left_limit.y < 0.0f) {
+                        left_limit = car_to_left;
+                        left_limit_index = j;
+                    }
+                    if (0.0f < right_limit.x * car_to_right.y - car_to_right.x * right_limit.y) {
+                        right_limit = car_to_right;
+                        right_limit_index = j;
+                    }
+                }
+
+                if (0.0f <= car_to_centre.x * left_limit.y - left_limit.x * car_to_centre.y) {
+                    last_visible = j;
+                    if (0.0f < car_to_centre.x * right_limit.y - right_limit.x * car_to_centre.y) {
+                        left_occlusion = false;
+                        last_visible = last_visible;
+                        occluder = &right_limit;
+                        occluding_index = right_limit_index;
+                    }
+                } else {
+                    left_occlusion = true;
+                    occluder = &left_limit;
+                    occluding_index = left_limit_index;
+                }
+            }
+
+            if (0.0f < left_limit.x * right_limit.y - right_limit.x * left_limit.y) break;
+        }
+
+        if (last_visible < num_cookies && occluder != nullptr) {
+            const NavCookie &apex_cookie = cookies[occluding_index];
+            UMath::Vector3 offset_3d;
+            offset_3d.x = occluder->x;
+            offset_3d.y = cookies[occluding_index].Centre.y - car_position_3d.y;
+            offset_3d.z = occluder->y;
+            UMath::Vector3 apex_world;
+            UMath::Add(car_position_3d, offset_3d, apex_world);
+
+            fApexPosition.x = apex_world.x;
+            fApexPosition.z = apex_world.z;
+            fApexPosition.y = apex_world.y;
+
+            if ((apex_cookie.Flags & 1) == 0) {
+                nRoadOcclusion = left_occlusion ? -1 : 1;
+            } else {
+                nRoadOcclusion = 0;
+            }
+
+            if ((apex_cookie.Flags & 1) == 0) {
+                nAvoidableOcclusion = 0;
+            } else {
+                nAvoidableOcclusion = 1;
+            }
+
+            if (IsOccluded()) {
+                float apex_width = fVehicleHalfWidth;
+                bVector2 apex_2d(fApexPosition.x, fApexPosition.z);
+                bVector2 apex_to_car(car_position.x - apex_2d.x, car_position.y - apex_2d.y);
+
+                bVector2 to_left(cookies[occluding_index].Left.x - apex_2d.x, cookies[occluding_index].Left.y - apex_2d.y);
+                bVector2 to_right(cookies[occluding_index].Right.x - apex_2d.x, cookies[occluding_index].Right.y - apex_2d.y);
+                bVector2 occ_to_left(fOccludedPosition.x - apex_2d.x, fOccludedPosition.z - apex_2d.y);
+                bVector2 occ_to_right(fOccludedPosition.x - apex_2d.x, fOccludedPosition.z - apex_2d.y);
+
+                bVector2 apex_forward;
+                bNormalize(&apex_forward, &to_left);
+                bVector2 to_right_norm;
+                bNormalize(&to_right_norm, &to_right);
+
+                float dist = bSqrt((apex_2d.x - car_position.x) * (apex_2d.x - car_position.x) +
+                                         (apex_2d.y - car_position.y) * (apex_2d.y - car_position.y));
+
+                bVector2 occ_dir(apex_forward.x * dist, apex_forward.y * dist);
+
+                bVector2 combined(apex_forward.x + to_right_norm.x, apex_forward.y + to_right_norm.y);
+                bVector2 combined_norm;
+                bNormalize(&combined_norm, &combined);
+
+                float dot_forward = occ_dir.x * combined_norm.x + occ_dir.y * combined_norm.y;
+                dot_forward = bMin(dot_forward, apex_width);
+
+                if (nAvoidableOcclusion != 0) {
+                    float speed_dot = car_velocity.x * apex_forward.x + car_velocity.y * apex_forward.y;
+                    if (speed_dot + speed_dot > 1e-6f) {
+                        float ramp = (speed_dot - fOccludingTrailSpeed) / (speed_dot + speed_dot);
+                        ramp = bMin(ramp, 1.0f);
+                        ramp = bMax(ramp, 0.0f);
+                        ramp = ramp + ramp;
+                    } else {
+                        dot_forward = 0.0f;
+                    }
+                    dot_forward = dot_forward * dot_forward;
+                    dot_forward = bMin(dot_forward, apex_width);
+                }
+
+                fOccludedPosition.y = fApexPosition.y;
+                fOccludedPosition.z = combined_norm.y * dot_forward + fApexPosition.z;
+                fOccludedPosition.x = combined_norm.x * dot_forward + fApexPosition.x;
+            } else {
+                fOccludedPosition = fPosition;
+                fOccludedPosition.z = fPosition.z;
+            }
+        }
+    }
+
+    if (nRoadOcclusion == 0) {
+        bOccludedFromBehind = false;
+        fOccludingTrailSpeed = 0.0f;
+    }
 }
 
 float WRoadNav::FindClosestOnSpline(const UMath::Vector3 &point, UMath::Vector3 &intersectPoint, float &timeStep, float incStep, int segInd) {

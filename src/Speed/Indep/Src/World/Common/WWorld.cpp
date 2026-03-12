@@ -5,6 +5,11 @@
 #include "Speed/Indep/Src/World/WCollision.h"
 #include "Speed/Indep/Src/World/WCollisionAssets.h"
 
+int LoaderCarpWGrid(bChunk *chunk);
+int UnloaderCarpWGrid(bChunk *chunk);
+
+bChunkLoader bChunkLoaderWGrid(0x3B800, LoaderCarpWGrid, UnloaderCarpWGrid);
+
 WWorld* WWorld::fgWorld;
 
 WWorld::WWorld()
@@ -80,6 +85,8 @@ int UnloaderCarpWGrid(bChunk* chunk) {
 void WWorld::Close() {
     WCollisionAssets::Shutdown();
 }
+
+WSurface WSurface::kNull;
 
 void WSurface::InitSystem() {
 }
