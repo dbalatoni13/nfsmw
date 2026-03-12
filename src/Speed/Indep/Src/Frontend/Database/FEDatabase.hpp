@@ -491,6 +491,7 @@ class cFrontendDatabase {
     unsigned int GetBountyHeaderHash(unsigned int index);
     unsigned int GetBountyDescHash(unsigned int index);
     unsigned int GetMilestoneDescHash(unsigned int tag);
+    unsigned int GetMilestoneHeaderHash(unsigned int tag);
     unsigned int GetMilestoneIconHash(unsigned int typeKey, bool active);
     bool IsMilestoneTimeFormat(int typeKey) const;
     unsigned int GetRaceIconHash(GRace::Type type);

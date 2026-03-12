@@ -249,14 +249,18 @@ void uiRepSheetMilestones::RefreshTrack() {
 }
 
 void uiRepSheetMilestones::AddMilestone(GMilestone* milestone) {
-    MilestoneDatum* datum = new MilestoneDatum();
-    datum->my_milestone = milestone;
+    MilestoneDatum* datum = new MilestoneDatum(
+        FEDatabase->GetMilestoneIconHash(milestone->GetTypeKey(), true),
+        FEDatabase->GetMilestoneHeaderHash(milestone->GetLocalizationTag()),
+        milestone);
     AddDatum(datum);
 }
 
 void uiRepSheetMilestones::AddSpeedtrap(GSpeedTrap* trap) {
-    SpeedTrapDatum* datum = new SpeedTrapDatum();
-    datum->my_speedtrap = trap;
+    SpeedTrapDatum* datum = new SpeedTrapDatum(
+        FEDatabase->GetRaceIconHash(static_cast<GRace::Type>(5)),
+        0xF3B3D8DC,
+        trap);
     AddDatum(datum);
 }
 
