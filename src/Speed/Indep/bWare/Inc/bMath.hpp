@@ -319,7 +319,7 @@ struct ALIGN_16 bVector3 {
 
     bVector3 operator*(float f) const;
 
-    bVector3 &operator-=(const bVector3 &v) {}
+    bVector3 &operator-=(const bVector3 &v);
 };
 
 bVector3 *bNormalize(bVector3 *dest, const bVector3 *v);
@@ -410,6 +410,11 @@ inline bVector3 &bVector3::operator/=(float inv_scale) {
 
 inline bVector3 &bVector3::operator+=(const bVector3 &v) {
     bAdd(this, this, &v);
+    return *this;
+}
+
+inline bVector3 &bVector3::operator-=(const bVector3 &v) {
+    bSub(this, this, &v);
     return *this;
 }
 
