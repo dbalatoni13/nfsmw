@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRivalFlow.hpp"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Events/EEnterBin.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 #include "Speed/Indep/Src/Generated/Events/ERaceSheetOff.hpp"
@@ -19,6 +20,7 @@ FEImage* FEngFindImage(const char* pkg_name, int hash);
 void FEngSetInvisible(FEObject* obj);
 void FEngSetVisible(FEObject* obj);
 void FEngSetTextureHash(FEImage* image, unsigned int hash);
+void FEngSetTextureHash(const char* pkg_name, unsigned int obj_hash, unsigned int texture_hash);
 void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned int lang_hash);
 unsigned int FEngHashString(const char* format, ...);
 int FEPrintf(const char* pkg_name, int hash, const char* fmt, ...);
@@ -28,6 +30,7 @@ int GetCurrentLanguage();
 void eLoadStreamingTexture(unsigned int* textures, int count, void (*callback)(void*), void* param, int pool);
 void eUnloadStreamingTexture(unsigned int* textures, int count);
 void eWaitForStreamingTexturePackLoading(const char* name);
+unsigned int CalcLanguageHash(const char* prefix, GRaceParameters* pRaceParams);
 void StartRace();
 
 extern unsigned int iCurrentViewBin;
@@ -188,10 +191,19 @@ void uiRepSheetRival::RefreshHeader() {
     FEPrintf(pkgName, 0xf91a59f6, "%s %$d", GetLocalizedString(0x073b79e0), FEDatabase->GetCareerSettings()->GetCash());
 }
 
-void uiRepSheetRival::SetupRace(unsigned int index, GRaceParameters* race) {
-    unsigned int iconHash = FEngHashString("RACE_ICON_%d", index);
-    unsigned int nameHash = FEngHashString("RACE_NAME_%d", index);
-    FEngSetLanguageHash(GetPackageName(), nameHash, race->GetEventHash());
+void uiRepSheetRival::SetupRace(unsigned int num, GRaceParameters* race) {
+    unsigned int icon_hash = FEngHashString("EVENT_ICON_%d", num);
+    unsigned int type_hash = FEngHashString("EVENT NAME_%d", num);
+    unsigned int name_hash = FEngHashString("DATA_%d", num);
+    unsigned int best_hash = FEngHashString("RIVAL_BEST_DATA_%d", num);
+    FEngSetTextureHash(GetPackageName(), icon_hash, FEDatabase->GetRaceIconHash(race->GetRaceType()));
+    FEngSetLanguageHash(GetPackageName(), type_hash, FEDatabase->GetRaceNameHash(race->GetRaceType()));
+    FEngSetLanguageHash(GetPackageName(), name_hash, CalcLanguageHash("TRACKNAME_", race));
+    Timer t;
+    t.SetTime(race->GetRivalBestTime());
+    char buf[64];
+    t.PrintToString(buf, 0);
+    FEPrintf(GetPackageName(), best_hash, "%s", buf);
 }
 
 void uiRepSheetRival::TextureLoadedCallback(unsigned int tex) {
