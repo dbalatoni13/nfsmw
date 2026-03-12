@@ -200,7 +200,7 @@ If it finds a match, include that header instead of redeclaring.
 
 ### dtk (decomp-toolkit)
 
-Dump the dwarf of your own implementation of a function after rebuilding the unit normally:
+Dump the dwarf of your own implementation of a function after rebuilding the unit normally (ignore dwarf specific errors):
 
 ```sh
 python tools/decomp-workflow.py build -u main/Speed/Indep/SourceLists/zAnim
