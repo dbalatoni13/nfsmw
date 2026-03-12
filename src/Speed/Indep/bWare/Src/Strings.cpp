@@ -58,12 +58,10 @@ char *bStrCpy(char *to, const char *from) {
     int n = 0;
 
     *to = c;
-    if (c != '\0') {
-        do {
-            n = n + 1;
-            c = from[n];
-            to[n] = c;
-        } while (c != '\0');
+    while (c != '\0') {
+        n = n + 1;
+        c = from[n];
+        to[n] = c;
     }
     return to;
 }
@@ -92,21 +90,19 @@ char *bStrNCpy(char *to, const char *from, int m) {
     int remaining = m - 1;
     int n = 0;
 
-    if (m == 0) {
-        return to;
-    }
-
-    char c = *from;
-    *to = c;
-    if (c != '\0') {
-        while (remaining != 0) {
-            n = n + 1;
-            remaining = remaining - 1;
-            c = from[n];
-            to[n] = c;
-            if (c == '\0') {
-                break;
-            }
+    if (m != 0) {
+        char c = *from;
+        *to = c;
+        if (c != '\0') {
+            do {
+                if (remaining == 0) {
+                    return to;
+                }
+                n = n + 1;
+                remaining = remaining - 1;
+                c = from[n];
+                to[n] = c;
+            } while (c != '\0');
         }
     }
 
@@ -348,31 +344,37 @@ int bStrICmp(const char *s1, const char *s2) {
 }
 
 char *bStrCat(char *to, const char *s1, const char *s2) {
-    int n = 0;
-    int nn = 0;
+    int to_n = 0;
+    int s1_n = 0;
+    int s2_n;
 
-    while (s1[n] != '\0') {
-        to[n] = s1[n];
-        n++;
+    while (s1[s1_n] != '\0') {
+        to[to_n] = s1[s1_n];
+        to_n++;
+        s1_n++;
     }
 
-    while (s2[nn] != '\0') {
-        to[n + nn] = s2[nn];
-        nn++;
+    s2_n = 0;
+    if (s2[s2_n] != '\0') {
+        do {
+            to[to_n] = s2[s2_n];
+            s2_n++;
+            to_n++;
+        } while (s2[s2_n] != '\0');
     }
 
-    to[n + nn] = '\0';
+    to[to_n] = '\0';
     return to;
 }
 
 char *bToUpper(char *s) {
-    int n = 0;
+    char *p = s;
 
-    if (s[n] != '\0') {
+    if (*p != '\0') {
         do {
-            s[n] = bToUpper(s[n]);
-            n = n + 1;
-        } while (s[n] != '\0');
+            *p = bToUpper(*p);
+            p = p + 1;
+        } while (*p != '\0');
     }
 
     return s;
