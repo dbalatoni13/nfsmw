@@ -664,19 +664,9 @@ void bSharedStringPool::Free(const char *s) {
 int bMatchNameWithWildcard(const char *wild, const char *string) {
     const char *cp = nullptr;
     const char *mp = nullptr;
-    char string_char = *string;
  
-    while (string_char != '\0') {
+    while ((*string != '\0') && (*wild != '*')) {
         char wild_char = *wild;
-
-        if (wild_char == '*') {
-            if (string_char == '\0') {
-                break;
-            }
-
-            break;
-        }
-
         int wild_int = static_cast<int>(wild_char);
         if ((bToUpper(wild_char) != bToUpper(*string)) && (wild_int != '?')) {
             return false;
@@ -684,40 +674,29 @@ int bMatchNameWithWildcard(const char *wild, const char *string) {
 
         string = string + 1;
         wild = wild + 1;
-        string_char = *string;
     }
 
-    while (string_char != '\0') {
+    while (*string != '\0') {
         char wild_char = *wild;
         if (wild_char == '*') {
-            if (string_char == '\0') {
-                break;
-            }
-
-            const char *next_wild = wild + 1;
-            if (*next_wild == '\0') {
+            wild = wild + 1;
+            if (*wild == '\0') {
                 return true;
             }
 
             cp = string + 1;
-            mp = next_wild;
-            wild = next_wild;
+            mp = wild;
         } else {
             int wild_int = static_cast<int>(wild_char);
             if ((bToUpper(wild_char) != bToUpper(*string)) && (wild_int != '?')) {
                 string = cp;
                 wild = mp;
-                if (wild == nullptr) {
-                    return false;
-                }
                 cp = string + 1;
             } else {
                 wild = wild + 1;
                 string = string + 1;
             }
         }
-
-        string_char = *string;
     }
 
     while (*wild == '*') {
