@@ -871,18 +871,16 @@ bool PVehicle::OnExplosion(const UMath::Vector3 &normal, const UMath::Vector3 &p
             return false;
         }
     }
-    if (static_cast<ISimable *>(this)->IsOwnedByPlayer()) {
-        return false;
-    }
-    HCAUSE causality = explosion->GetCausality();
-    if (causality != nullptr) {
+    if (static_cast<ISimable *>(this)->GetCausality() == nullptr && explosion->GetCausality() != nullptr) {
+        HCAUSE causality = explosion->GetCausality();
         ICause *cause = ICause::FindInstance(causality);
         if (cause != nullptr) {
             cause->OnCausedExplosion(explosion, static_cast<ISimable *>(this));
         }
     }
     IRigidBody *irb = static_cast<ISimable *>(this)->GetRigidBody();
-    float factor = explosion->GetExpansionSpeed() * (1.0f / irb->GetMass());
+    float factor = 1.0f / irb->GetMass();
+    factor *= explosion->GetExpansionSpeed();
     UMath::Vector3 point_velocity;
     irb->GetPointVelocity(position, point_velocity);
     float speed = UMath::Dot(point_velocity, normal);
