@@ -55,20 +55,6 @@ void PauseMenu::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned 
         IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
     }
     switch (msg) {
-    case 0x9120409E:
-        return;
-    case 0x43DA9FD0:
-        FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
-        return;
-    case 0x30EB8F53:
-        FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
-        return;
-    case 0xC9BFD1C3:
-        FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
-        return;
-    case 0x451E768E:
-        FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
-        return;
     case 0x911AB364:
         if (mCalledFromPostRace) {
             return;
@@ -83,15 +69,19 @@ void PauseMenu::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned 
         mSelectionHash = 0xFDAE152F;
         FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
         return;
+    case 0x43DA9FD0:
+    case 0x30EB8F53:
+    case 0x451E768E:
+    case 0xE1A57D51:
+    case 0xC9BFD1C3:
+        FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
+        return;
     case 0xB4623F67:
         Options.bFadingIn = true;
         Options.fCurFadeTime = 0.0f;
         Options.bFadingOut = false;
         Options.StartFadeIn();
         cFEng::Get()->QueuePackageMessage(0xC6341FF6, GetPackageName(), 0);
-        return;
-    case 0xE1A57D51:
-        FEngSetScript(GetPackageName(), 0x47FF4E7C, 0xDE6EFF34, true);
         return;
     case 0xE1FDE1D1:
         if (PrevButtonMessage != 0x911AB364) {
@@ -146,6 +136,8 @@ void PauseMenu::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned 
             }
         }
         new EUnPause();
+        return;
+    case 0x9120409E:
         return;
     }
 }

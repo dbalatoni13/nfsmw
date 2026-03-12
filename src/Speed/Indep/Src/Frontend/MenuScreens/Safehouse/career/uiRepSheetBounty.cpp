@@ -81,41 +81,13 @@ void uiRepSheetBounty::NotificationMessage(unsigned long msg, FEObject* obj, uns
                                         static_cast<eDialogFirstButtons>(1), 0xcd195d0b);
         return;
     }
-    case 0x34dc1bcf:
-        return;
-    case 0x72619778:
-    case 0x911c0a4b:
-    case 0x9120409e:
-    case 0xb5971bf1:
-        break;
-    case 0x911ab364:
+    case 0xc519bfc3:
         if (bIsInGame) {
-            cFEng::Get()->QueuePackageSwitch("IG_BL_MAIN", 1, 0, false);
-        } else {
-            cFEng::Get()->QueuePackageSwitch("BL_MAIN", 0, 0, false);
-        }
-        return;
-    case 0xc3960eb9:
-        if (tutorialPlaying) {
-            tutorialPlaying = false;
-            FEngSetScript(GetPackageName(), 0x99344537, 0x1744b3, true);
             return;
         }
-        if (bIsInGame) {
-            FEngSetVisible("IG_BL_TRACKMAP.fng", 0x2716cdbf);
-            GManager::Get().WarpToMarker(theMarker, true);
-            new ERaceSheetOff();
-            return;
-        }
-        GManager::Get().OverrideFreeRoamStartMarker(theMarker);
-        GManager::Get().QueueFreeRoamPursuit(0.0f);
-        GManager::Get().QueueFreeRoamPursuit(0.0f);
-        RaceStarterStartCareerFreeRoam();
-        return;
-    case 0xc98356ba:
-        if (TrackMapStreamer != nullptr) {
-            TrackMapStreamer->UpdateAnimation();
-        }
+        tutorialPlaying = true;
+        FEngSetScript(GetPackageName(), 0x99344537, 0x16a259, true);
+        FEAnyTutorialScreen::LaunchMovie(gTUTORIAL_MOVIE_BOUNTY, GetPackageName());
         return;
     case 0xd05fc3a3: {
         CareerSettings* career = FEDatabase->GetCareerSettings();
@@ -138,13 +110,41 @@ void uiRepSheetBounty::NotificationMessage(unsigned long msg, FEObject* obj, uns
         cFEng::Get()->QueueGameMessage(0xc3960eb9, GetPackageName(), 0xff);
         return;
     }
-    case 0xc519bfc3:
-        if (bIsInGame) {
+    case 0xc3960eb9:
+        if (tutorialPlaying) {
+            tutorialPlaying = false;
+            FEngSetScript(GetPackageName(), 0x99344537, 0x1744b3, true);
             return;
         }
-        tutorialPlaying = true;
-        FEngSetScript(GetPackageName(), 0x99344537, 0x16a259, true);
-        FEAnyTutorialScreen::LaunchMovie(gTUTORIAL_MOVIE_BOUNTY, GetPackageName());
+        if (bIsInGame) {
+            FEngSetVisible("IG_BL_TRACKMAP.fng", 0x2716cdbf);
+            GManager::Get().WarpToMarker(theMarker, true);
+            new ERaceSheetOff();
+            return;
+        }
+        GManager::Get().OverrideFreeRoamStartMarker(theMarker);
+        GManager::Get().QueueFreeRoamPursuit(0.0f);
+        GManager::Get().QueueFreeRoamPursuit(0.0f);
+        RaceStarterStartCareerFreeRoam();
+        return;
+    case 0x911ab364:
+        if (bIsInGame) {
+            cFEng::Get()->QueuePackageSwitch("IG_BL_MAIN", 1, 0, false);
+        } else {
+            cFEng::Get()->QueuePackageSwitch("BL_MAIN", 0, 0, false);
+        }
+        return;
+    case 0xc98356ba:
+        if (TrackMapStreamer != nullptr) {
+            TrackMapStreamer->UpdateAnimation();
+        }
+        return;
+    case 0x72619778:
+    case 0x911c0a4b:
+    case 0x9120409e:
+    case 0xb5971bf1:
+        break;
+    case 0x34dc1bcf:
         return;
     default:
         return;

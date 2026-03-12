@@ -123,30 +123,13 @@ void UIMain::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long
     IconScrollerMenu::NotificationMessage(msg, obj, param1, param2);
 
     switch (msg) {
+    case 0x1265ece9:
+        GarageMainScreen::GetInstance()->UpdateCurrentCameraView(false);
+        break;
     case 0x35f8620b:
         if (!MemoryCard::GetInstance()->IsAutoLoadDone()) {
             MemoryCard::GetInstance()->SetAutoLoadDone(true);
             MemcardEnter(nullptr, nullptr, 0xF1, nullptr, nullptr, 0, 0);
-        }
-        break;
-    case 0x1265ece9:
-        GarageMainScreen::GetInstance()->UpdateCurrentCameraView(false);
-        break;
-    case 0x7e998e5e:
-        UpdateProfileData();
-        break;
-    case 0x9120409e:
-        break;
-    case 0xc519bfc4:
-        if (FEDatabase->bProfileLoaded) {
-            const char* scriptName;
-            if (!m_bStatsShowing) {
-                scriptName = "GAMESTATS_APPEAR";
-            } else {
-                scriptName = "GAMESTATS_LEAVE";
-            }
-            cFEng::Get()->QueuePackageMessage(FEHashUpper(scriptName), GetPackageName(), nullptr);
-            m_bStatsShowing = !m_bStatsShowing;
         }
         break;
     case 0xe1fde1d1:
@@ -171,6 +154,23 @@ void UIMain::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long
             }
             cFEng::Get()->QueuePackageSwitch(pkg, 0, 0, false);
         }
+        break;
+    case 0xc519bfc4:
+        if (FEDatabase->bProfileLoaded) {
+            const char* scriptName;
+            if (!m_bStatsShowing) {
+                scriptName = "GAMESTATS_APPEAR";
+            } else {
+                scriptName = "GAMESTATS_LEAVE";
+            }
+            cFEng::Get()->QueuePackageMessage(FEHashUpper(scriptName), GetPackageName(), nullptr);
+            m_bStatsShowing = !m_bStatsShowing;
+        }
+        break;
+    case 0x7e998e5e:
+        UpdateProfileData();
+        break;
+    case 0x9120409e:
         break;
     }
 }
