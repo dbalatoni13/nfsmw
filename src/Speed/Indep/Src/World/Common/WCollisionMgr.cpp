@@ -755,6 +755,49 @@ bool WCollisionMgr::FindFaceInTriStrip(const UMath::Vector3 &pt, const WCollisio
     return false;
 }
 
+bool WCollisionMgr::FindFaceInTriStrip(const UMath::Matrix4 &vectorMat, const UMath::Vector3 &pt,
+                                        const WCollisionStripSphere *sp, const WCollisionStrip *strip,
+                                        float &faceY, WCollisionTri &retFace) {
+    if (!StripPassesExclusion(*strip)) {
+        return false;
+    }
+
+    int numTris = strip->NumTris();
+    bool foundFace = false;
+    WCollisionTri face;
+    strip->MakeFace(0, sp->fPos, face);
+
+    int retFaceInd = 0;
+    float bestFaceY = 1e38f;
+
+    UMath::RotateTranslate(face.fPt0, vectorMat, face.fPt0);
+    UMath::RotateTranslate(face.fPt1, vectorMat, face.fPt1);
+
+    for (int i = 0; i < numTris; ) {
+        UMath::RotateTranslate(face.fPt2, vectorMat, face.fPt2);
+        if (WWorldMath::InTri(pt, reinterpret_cast<const UMath::Vector4 *>(&face))) {
+            UMath::Vector3 norm;
+            CalcCollisionFaceNormal(&norm, reinterpret_cast<UMath::Vector4 *>(&face));
+            float y = pt.y - WWorldMath::GetPlaneY(norm, face.fPt2, pt);
+            faceY = y;
+            if (y < bestFaceY && -1.0f < y && SurfacePassesExclusion(face.fSurface)) {
+                bestFaceY = y;
+                retFaceInd = i;
+                foundFace = true;
+            }
+        }
+        ++i;
+        if (i >= numTris) break;
+        strip->MakeNextFace(i, sp->fPos, face);
+    }
+
+    if (foundFace) {
+        strip->MakeFace(retFaceInd, sp->fPos, retFace);
+    }
+    faceY = bestFaceY;
+    return foundFace;
+}
+
 extern "C" void v3sub(int num, const UMath::Vector3 *src, const UMath::Vector3 *vtosub, UMath::Vector3 *results);
 
 struct AABB {
