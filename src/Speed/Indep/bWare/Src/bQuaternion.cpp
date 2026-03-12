@@ -46,8 +46,8 @@ void bMatrixToQuaternion(bQuaternion &quat, const bMatrix4 &m) {
         param_1[1] = (param_2[8] - param_2[2]) * fVar6;
         param_1[2] = (param_2[1] - param_2[4]) * fVar6;
     } else {
-        unsigned int uVar3 = static_cast<unsigned int>(*param_2 < param_2[5]);
-        unsigned int uVar1 = uVar3 + 1;
+        int uVar3 = *param_2 < param_2[5];
+        int uVar1 = uVar3 + 1;
         int iVar2 = uVar3 * 0x10;
         int iVar4 = uVar3 * 4;
 
@@ -57,8 +57,8 @@ void bMatrixToQuaternion(bQuaternion &quat, const bMatrix4 &m) {
             uVar1 = 3;
         }
 
-        uVar1 = static_cast<unsigned int>(uVar1) % static_cast<unsigned int>(3);
-        uVar3 = static_cast<unsigned int>(uVar1 + 1) % static_cast<unsigned int>(3);
+        uVar1 = uVar1 % 3;
+        uVar3 = (uVar1 + 1) % 3;
         fVar5 = bSqrt(((*(float *)((int)param_2 + iVar4 + iVar2) - param_2[uVar1 * 5]) - param_2[uVar3 * 5]) + 1.0f);
         *(float *)((int)afStack_10 + iVar4) = fVar5 * 0.5f;
         if (fVar5 != 0.0f) {
