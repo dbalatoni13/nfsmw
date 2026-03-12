@@ -65,15 +65,13 @@ void bMatrixToQuaternion(bQuaternion &quat, const bMatrix4 &m) {
             fVar5 = 0.5f / fVar5;
         }
 
-        float fVar6 = *(float *)((int)param_2 + uVar3 * 4 + iVar2);
-        float fVar7 = *(float *)((int)param_2 + iVar4 + uVar3 * 0x10);
         afStack_10[3] = (param_2[uVar1 * 4 + uVar3] - param_2[uVar3 * 4 + uVar1]) * fVar5;
         afStack_10[uVar1] =
             (*(float *)((int)param_2 + uVar1 * 4 + iVar2) + *(float *)((int)param_2 + iVar4 + uVar1 * 0x10)) * fVar5;
-        afStack_10[uVar3] = (fVar6 + fVar7) * fVar5;
-        *param_1 = afStack_10[0];
-        param_1[3] = afStack_10[3];
+        afStack_10[uVar3] = (*(float *)((int)param_2 + uVar3 * 4 + iVar2) + *(float *)((int)param_2 + iVar4 + uVar3 * 0x10)) * fVar5;
+        param_1[0] = afStack_10[0];
         param_1[1] = afStack_10[1];
         param_1[2] = afStack_10[2];
+        param_1[3] = afStack_10[3];
     }
 }
