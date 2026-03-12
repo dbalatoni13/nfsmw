@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -64,6 +65,13 @@ def load_objdiff_config() -> Dict[str, Any]:
     if not isinstance(data, dict):
         raise ToolError("objdiff.json does not contain a JSON object")
     return data
+
+
+def find_objdiff_unit(config: Dict[str, Any], unit_name: str) -> Optional[Dict[str, Any]]:
+    for unit in config.get("units", []):
+        if unit.get("name") == unit_name:
+            return unit
+    return None
 
 
 def make_abs(path: Optional[str], base: str = ROOT_DIR) -> Optional[str]:
@@ -140,8 +148,44 @@ def run_objdiff_json(
             capture_output=True,
         )
         if result.returncode != 0:
+            stderr = result.stderr
+            hint_lines = []
+            missing_path = None
+
+            if "No such file or directory" in stderr:
+                match = re.search(r"Failed:\s+Loading\s+(.+)", stderr)
+                if match:
+                    missing_path = match.group(1).strip()
+
+            if missing_path is not None:
+                if base_obj is not None:
+                    hint_lines.extend(
+                        [
+                            f"Hint: the requested base object is missing: {missing_path}",
+                            f"Rebuild it with: python tools/build-unit.py -u {unit_name}",
+                        ]
+                    )
+                else:
+                    hint_lines.extend(
+                        [
+                            f"Hint: the shared build output for {unit_name} is missing: {missing_path}",
+                            "Fastest one-off fix for direct tools:",
+                            f"  TEMPOBJ=$(python tools/build-unit.py -u {unit_name})",
+                            "  rerun your diff/context command with --base-obj \"$TEMPOBJ\"",
+                            "Wrapper flows that auto-build temp objects:",
+                            f"  python tools/decomp-workflow.py unit -u {unit_name}",
+                            f"  python tools/decomp-workflow.py diff -u {unit_name} ...",
+                            "Or rebuild shared outputs with: ninja all_source",
+                        ]
+                    )
+
+            message = format_subprocess_error(
+                cmd, result.returncode, result.stdout, result.stderr
+            )
+            if hint_lines:
+                message += "\n" + "\n".join(hint_lines)
             raise ToolError(
-                format_subprocess_error(cmd, result.returncode, result.stdout, result.stderr)
+                message
             )
         try:
             return json.loads(result.stdout)

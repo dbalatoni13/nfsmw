@@ -78,6 +78,24 @@ def fuzzy_match(pattern: str, name: str) -> bool:
     return pattern.lower() in name.lower()
 
 
+def describe_pair_status(
+    left_sym: Optional[Dict[str, Any]], right_sym: Optional[Dict[str, Any]]
+) -> str:
+    if left_sym is not None and right_sym is None:
+        return "missing in decomp"
+    if left_sym is None and right_sym is not None:
+        return "extra in decomp"
+
+    sym = left_sym if left_sym is not None else right_sym
+    if sym is None:
+        return "not found"
+
+    mp = sym.get("match_percent")
+    if mp is not None:
+        return f"{mp:.1f}% match"
+    return "paired"
+
+
 def build_overview(data: Dict[str, Any], args) -> None:
     """Print overview of all symbols in a unit."""
     left_syms = data.get("left", {}).get("symbols", [])
@@ -146,6 +164,9 @@ def build_overview(data: Dict[str, Any], args) -> None:
 
     if args.search:
         rows = [r for r in rows if fuzzy_match(args.search, r[5])]
+
+    if args.limit is not None:
+        rows = rows[: args.limit]
 
     if not rows:
         print("No symbols match the given filters.")
@@ -280,8 +301,8 @@ def build_diff(data: Dict[str, Any], symbol_name: str, args) -> None:
     right_insts = (right_sym or {}).get("instructions", [])
     n_insts = max(len(left_insts), len(right_insts))
 
-    mp_str = f"{mp:.1f}%" if mp is not None else "N/A"
-    print(f"{display_name}: {mp_str} match ({size}B, {n_insts} instructions)")
+    status_str = describe_pair_status(left_sym, right_sym)
+    print(f"{display_name}: {status_str} ({size}B, {n_insts} instructions)")
     print()
 
     if n_insts == 0:
@@ -436,6 +457,11 @@ def main():
     )
     parser.add_argument("--section", help="Filter by section name (e.g. .text)")
     parser.add_argument("--search", help="Fuzzy search on demangled symbol name")
+    parser.add_argument(
+        "--limit",
+        type=int,
+        help="Limit overview output to the first N matching rows",
+    )
 
     # Diff options
     parser.add_argument(
