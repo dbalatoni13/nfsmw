@@ -815,8 +815,8 @@ void UIMemcardBase::NotificationMessage(unsigned long msg, FEObject* obj, unsign
     case 0xe1fde1d1:
         ExitComplete();
         break;
-    case 0x3a2be557:
     case 0x35f8620b:
+    case 0x3a2be557:
         InitComplete();
         break;
     case 0xda5b8712: {
@@ -831,11 +831,11 @@ void UIMemcardBase::NotificationMessage(unsigned long msg, FEObject* obj, unsign
     case 0xc9d30688:
         if ((gMemcardSetup.mOp & 0xf0) == 0x60 && !FEDatabase->bProfileLoaded) {
             DoSaveFlow(2);
-        } else if ((gMemcardSetup.mOp & 0x60) == 0 || !FEDatabase->bProfileLoaded) {
+        } else if ((gMemcardSetup.mOp & 0x60) != 0 && FEDatabase->bProfileLoaded) {
+            DoSaveFlow(1);
+        } else {
             FEPrintf(m_pDisplayMsg, "");
             m_bDelayedFailed = true;
-        } else {
-            DoSaveFlow(1);
         }
         break;
     case 0xc98356ba:

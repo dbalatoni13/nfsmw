@@ -135,11 +135,11 @@ void UIDeleteProfile::NotificationMessage(unsigned long msg, FEObject* obj, unsi
     IconScrollerMenu::NotificationMessage(msg, obj, param1, param2);
 
     switch (msg) {
-    case 0x7E998E5E:
-        Refresh();
-        break;
     case 0x911AB364:
         cFEng::Get()->QueuePackageSwitch("ProfileManager.fng", 0, 0, false);
+        break;
+    case 0x7E998E5E:
+        Refresh();
         break;
     }
 }
