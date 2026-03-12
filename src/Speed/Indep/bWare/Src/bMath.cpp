@@ -300,7 +300,7 @@ unsigned short bATan(float x, float y) {
 }
 
 unsigned short bASin(float x) {
-    int negative = 0;
+    register int negative = 0;
     if (x < 0.0f) {
         x = -x;
         negative = 1;

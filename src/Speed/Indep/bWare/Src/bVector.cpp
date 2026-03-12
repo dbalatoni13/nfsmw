@@ -266,10 +266,9 @@ float bDistToLine(const bVector2 *point, const bVector2 *line_p1, const bVector2
     float distance;
 
     if (l < 0.0f) {
-        distance = bLength(&p);
+        distance = bSqrt(l * l + d * d);
     } else if (l > length) {
-        bVector2 p2(point->x - line_p2->x, point->y - line_p2->y);
-        distance = bLength(&p2);
+        distance = bSqrt((l - length) * (l - length) + d * d);
     } else {
         distance = bAbs(d);
     }
