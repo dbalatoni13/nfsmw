@@ -474,30 +474,30 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
     ICETrack *p_track = 0;
     ICEData *pCameraData = TheICEManager.GetCameraData(&p_track, &fParameter0, &fParameter1);
 
-    bool b_new_camera = (pICEData == pCameraData);
+    bool b_new_camera = (pICEData != pCameraData);
 
-    if (!b_refresh && b_new_camera) {
+    if (!b_refresh && !b_new_camera) {
         return;
     }
 
     bool hard_cut = false;
-    if (!b_new_camera && pCameraData != 0 && pOldCameraData != 0) {
-        hard_cut = !ICE::KeysShared(pOldCameraData, 1, pCameraData, 0);
+    if (b_new_camera && pCameraData != 0 && pOldCameraData != 0) {
+        hard_cut = (ICE::KeysShared(pOldCameraData, 1, pCameraData, 0) == 0);
     }
 
-    bool entering_smooth = false;
-    if (pCameraData != 0 && pOldCameraData == 0 && (pCameraData->bSmooth & 1)) {
-        entering_smooth = true;
+    int es = 0;
+    if (pCameraData != 0 && pICEData == 0 && !(pCameraData->bSmooth & 1)) {
+        es = 1;
+    }
+    int ls = 0;
+    if (pICEData != 0 && pCameraData == 0 && !(pICEData->bSmooth & 1)) {
+        ls = 1;
     }
 
-    bool leaving_smooth = false;
-    if (pOldCameraData != 0 && pCameraData == 0 && (pOldCameraData->bSmooth & 1)) {
-        leaving_smooth = true;
-    }
-
+    int flush = hard_cut | es | ls;
     pICEData = pCameraData;
 
-    if (hard_cut || entering_smooth || leaving_smooth) {
+    if (flush) {
         FlushAccumulationBuffer();
         ICE::Vector3 *pos = pCar->GetGeometryPosition();
         vSmoothCarPos.x = pos->x;
@@ -509,7 +509,7 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
         vSmoothCarFwd.z = fwd->z;
     }
 
-    if (!b_new_camera) {
+    if (b_new_camera) {
         int key = TheICEManager.GetCameraIndex((fParameter0 + fParameter1) * 0.5f, p_track);
         ICE::FireEventTag(key);
     }
@@ -521,7 +521,7 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
     nSpaceEye = pCameraData->nSpaceEye;
     nSpaceLook = pCameraData->nSpaceLook;
 
-    if (!b_new_camera && (pCameraData->bSmooth & 1) != 0) {
+    if (b_new_camera && (pCameraData->bSmooth & 1) != 0) {
         bMirrorICEData = (pCameraData->bSmooth >> 1) & 1;
 
         TheICEManager.SetSmoothExit(true);
@@ -600,7 +600,7 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
             fov.SetValDesired(static_cast<float>(fov1));
             fov.SetdValDesired(fov1_slope);
 
-            if (hard_cut || entering_smooth || leaving_smooth) {
+            if (hard_cut || es || ls) {
                 PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mHybridToWorld));
                 ICE::Vector3 *carPos = pCar->GetGeometryPosition();
                 bCopy(reinterpret_cast<bMatrix4 *>(&mHybridToWorld),

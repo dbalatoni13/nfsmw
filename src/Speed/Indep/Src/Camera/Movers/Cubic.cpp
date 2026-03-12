@@ -44,42 +44,38 @@ bVector3* bClamp(bVector3* dest, const bVector3* pMin, const bVector3* pMax) {
 
 void tTable<CubicPovData>::Blend(CubicPovData *dest, CubicPovData *a, CubicPovData *b, float blend_a) {
     float blend_b = 1.0f - blend_a;
+    float f1 = blend_b * b->fEyeDuration;
+    float f2 = blend_b * b->fLookDuration;
+    float f3 = blend_b * b->fFovDuration;
+    float f4 = blend_b * b->fUpDuration;
 
-    dest->fEyeDuration = blend_a * a->fEyeDuration + blend_b * b->fEyeDuration;
-    dest->fLookDuration = blend_a * a->fLookDuration + blend_b * b->fLookDuration;
-    dest->fFovDuration = blend_a * a->fFovDuration + blend_b * b->fFovDuration;
-    dest->fUpDuration = blend_a * a->fUpDuration + blend_b * b->fUpDuration;
+    dest->fEyeDuration = blend_a * a->fEyeDuration + f1;
+    dest->fLookDuration = blend_a * a->fLookDuration + f2;
+    dest->fFovDuration = blend_a * a->fFovDuration + f3;
+    dest->fUpDuration = blend_a * a->fUpDuration + f4;
 
     bVector3 v0, v1, v2, v3, v4, v5, v6, v7, v8, v9;
 
     bScale(&v0, a->GetUpAccel(), blend_a);
-    bScaleAdd(dest->GetUpAccel(), &v0, b->GetUpAccel(), blend_b);
-
     bScale(&v1, a->GetUpAccelMin(), blend_a);
-    bScaleAdd(dest->GetUpAccelMin(), &v1, b->GetUpAccelMin(), blend_b);
-
     bScale(&v2, a->GetUpAccelMax(), blend_a);
-    bScaleAdd(dest->GetUpAccelMax(), &v2, b->GetUpAccelMax(), blend_b);
-
     bScale(&v3, a->GetEyeAccel(), blend_a);
-    bScaleAdd(dest->GetEyeAccel(), &v3, b->GetEyeAccel(), blend_b);
-
     bScale(&v4, a->GetEyeAccelMin(), blend_a);
-    bScaleAdd(dest->GetEyeAccelMin(), &v4, b->GetEyeAccelMin(), blend_b);
-
     bScale(&v5, a->GetEyeAccelMax(), blend_a);
-    bScaleAdd(dest->GetEyeAccelMax(), &v5, b->GetEyeAccelMax(), blend_b);
-
     bScale(&v6, a->GetLookAccel(), blend_a);
-    bScaleAdd(dest->GetLookAccel(), &v6, b->GetLookAccel(), blend_b);
-
     bScale(&v7, a->GetLookAccelMin(), blend_a);
-    bScaleAdd(dest->GetLookAccelMin(), &v7, b->GetLookAccelMin(), blend_b);
-
     bScale(&v8, a->GetLookAccelMax(), blend_a);
-    bScaleAdd(dest->GetLookAccelMax(), &v8, b->GetLookAccelMax(), blend_b);
-
     bScale(&v9, a->GetForwardDuration(), blend_a);
+
+    bScaleAdd(dest->GetUpAccel(), &v0, b->GetUpAccel(), blend_b);
+    bScaleAdd(dest->GetUpAccelMin(), &v1, b->GetUpAccelMin(), blend_b);
+    bScaleAdd(dest->GetUpAccelMax(), &v2, b->GetUpAccelMax(), blend_b);
+    bScaleAdd(dest->GetEyeAccel(), &v3, b->GetEyeAccel(), blend_b);
+    bScaleAdd(dest->GetEyeAccelMin(), &v4, b->GetEyeAccelMin(), blend_b);
+    bScaleAdd(dest->GetEyeAccelMax(), &v5, b->GetEyeAccelMax(), blend_b);
+    bScaleAdd(dest->GetLookAccel(), &v6, b->GetLookAccel(), blend_b);
+    bScaleAdd(dest->GetLookAccelMin(), &v7, b->GetLookAccelMin(), blend_b);
+    bScaleAdd(dest->GetLookAccelMax(), &v8, b->GetLookAccelMax(), blend_b);
     bScaleAdd(dest->GetForwardDuration(), &v9, b->GetForwardDuration(), blend_b);
 }
 
