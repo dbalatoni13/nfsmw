@@ -15,11 +15,11 @@ float tCubic1D::GetVal(float t) {
 }
 
 float tCubic1D::GetdVal(float t) {
-    return (Coeff[0] * t * 3.0f + Coeff[1] + Coeff[1]) * t + Coeff[2];
+    return (Coeff[0] * (t * 3.0f) + Coeff[1] + Coeff[1]) * t + Coeff[2];
 }
 
 float tCubic1D::GetddVal(float t) {
-    return Coeff[0] * t * 6.0f + Coeff[1] + Coeff[1];
+    return Coeff[0] * (t * 6.0f) + Coeff[1] + Coeff[1];
 }
 
 float tCubic1D::GetDerivative(float t) {
@@ -87,14 +87,13 @@ void tCubic1D::Update(float dt, float maxDeriv, float maxSecondDeriv) {
         t = 1.0f;
     }
     time = t;
-    t = time;
-    if (t > 1.0f) {
+    if (time > 1.0f) {
+        time = 1.0f;
         Val = ValDesired;
         dVal = dValDesired;
-        time = 1.0f;
         state = 0;
-        t = 1.0f;
     }
+    t = time;
     Val = GetVal(t);
     dVal = GetdVal(t);
 }
@@ -119,19 +118,17 @@ void tCubic2D::GetVal(bVector2 *v) {
 
 void tCubic3D::SetVal(const bVector3 *v) {
     float vx = v->x;
-    float vz = v->z;
     float vy = v->y;
+    float vz = v->z;
     x.Val = vx;
     if (vx != x.ValDesired) {
         x.state = 2;
     }
     y.Val = vy;
-    if (vy == y.ValDesired) {
-        z.Val = vz;
-    } else {
+    if (vy != y.ValDesired) {
         y.state = 2;
-        z.Val = vz;
     }
+    z.Val = vz;
     if (vz != z.ValDesired) {
         z.state = 2;
     }
@@ -139,8 +136,8 @@ void tCubic3D::SetVal(const bVector3 *v) {
 
 void tCubic3D::SetdVal(bVector3 *v) {
     float vx = v->x;
-    float vz = v->z;
     float vy = v->y;
+    float vz = v->z;
     x.dVal = vx;
     if (vx != x.dValDesired) {
         x.state = 2;
@@ -157,8 +154,8 @@ void tCubic3D::SetdVal(bVector3 *v) {
 
 void tCubic3D::SetValDesired(bVector3 *v) {
     float vx = v->x;
-    float vz = v->z;
     float vy = v->y;
+    float vz = v->z;
     x.ValDesired = vx;
     if (vx != x.Val) {
         x.state = 2;

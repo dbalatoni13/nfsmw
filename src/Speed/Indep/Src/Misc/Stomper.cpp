@@ -5,37 +5,29 @@ extern StompEntry *StomperTable[8];
 static Stomper *pStomper;
 
 void *StompEntry::Clear(void *pStack) {
-    float *fptr = static_cast<float *>(pStack);
     switch (type) {
     case 0:
-        *reinterpret_cast<unsigned char *>(address) = *reinterpret_cast<unsigned char *>(fptr);
-        fptr = fptr + 1;
-        break;
+        *reinterpret_cast<unsigned char *>(address) = *static_cast<unsigned char *>(pStack);
+        return static_cast<char *>(pStack) + 4;
     case 1:
-        *reinterpret_cast<unsigned short *>(address) = *reinterpret_cast<unsigned short *>(fptr);
-        fptr = fptr + 1;
-        break;
+        *reinterpret_cast<unsigned short *>(address) = *static_cast<unsigned short *>(pStack);
+        return static_cast<char *>(pStack) + 4;
     case 2:
-        *reinterpret_cast<float *>(address) = *fptr;
-        fptr = fptr + 1;
-        break;
+        *reinterpret_cast<int *>(address) = *static_cast<int *>(pStack);
+        return static_cast<char *>(pStack) + 4;
     case 3:
-        *reinterpret_cast<float *>(address) = *fptr;
-        fptr = fptr + 1;
-        break;
+        *reinterpret_cast<float *>(address) = *static_cast<float *>(pStack);
+        return static_cast<char *>(pStack) + 4;
     case 4:
-        reinterpret_cast<void (*)(int, int)>(address)(0, *reinterpret_cast<int *>(fptr));
-        fptr = fptr + 1;
-        break;
+        reinterpret_cast<void (*)(int, int)>(address)(0, *static_cast<int *>(pStack));
+        return static_cast<char *>(pStack) + 4;
     case 5:
-        reinterpret_cast<void (*)(float, int)>(address)(*fptr, 0);
-        fptr = fptr + 1;
-        break;
+        reinterpret_cast<void (*)(float, int)>(address)(*static_cast<float *>(pStack), 0);
+        return static_cast<char *>(pStack) + 4;
     case 6:
-        fptr = static_cast<float *>(StompEntry::ClearAll(fptr));
-        break;
+        return reinterpret_cast<StompEntry *>(address)->ClearAll(pStack);
     }
-    return fptr;
+    return pStack;
 }
 
 void *StompEntry::ClearAll(void *pStack) {
