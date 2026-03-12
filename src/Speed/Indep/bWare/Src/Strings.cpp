@@ -368,13 +368,11 @@ char *bStrCat(char *to, const char *s1, const char *s2) {
 }
 
 char *bToUpper(char *s) {
-    char *p = s;
-
-    if (*p != '\0') {
+    if (*s != '\0') {
         do {
-            *p = bToUpper(*p);
-            p = p + 1;
-        } while (*p != '\0');
+            *s = bToUpper(*s);
+            s = s + 1;
+        } while (*s != '\0');
     }
 
     return s;
