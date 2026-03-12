@@ -29,7 +29,7 @@ template <typename T, int U> class Listable {
 
         // List(const List &);
         List();
-        virtual ~List();
+        virtual ~List() {}
 
         // List &operator=(List &);
     };
@@ -72,9 +72,6 @@ template <typename T, int U> class Listable {
 
 template <typename T, int U>
 Listable<T, U>::List::List() {}
-
-template <typename T, int U>
-Listable<T, U>::List::~List() {}
 
 template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class ListableSet {
   public:
