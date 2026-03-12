@@ -149,15 +149,7 @@ void UITrackMapStreamer::SetMapPackLoaded() {
 
 void UITrackMapStreamer::SetMapLoaded(unsigned int texture) {
     unsigned int hash = CalcMapTextureHash();
-    if (hash == texture) {
-        bLoadingMap = false;
-        FEngSetTextureHash(static_cast< FEImage* >(TrackMap), hash);
-        FEngSetVisible(static_cast< FEObject* >(TrackMap));
-        if (bUsingTrackForAnim) {
-            ZoomToTrack();
-            PanToTrack();
-        }
-    } else {
+    if (hash != texture) {
         unsigned int old_texture = texture;
         eUnloadStreamingTexture(&old_texture, 1);
         MapHash = hash;
@@ -166,6 +158,14 @@ void UITrackMapStreamer::SetMapLoaded(unsigned int texture) {
         eLoadStreamingTexture(&new_hash, 1,
                               reinterpret_cast< void (*)(void*) >(MapLoadCallback),
                               reinterpret_cast< void* >(new_hash), MemPoolNum);
+    } else {
+        bLoadingMap = false;
+        FEngSetTextureHash(static_cast< FEImage* >(TrackMap), hash);
+        FEngSetVisible(static_cast< FEObject* >(TrackMap));
+        if (bUsingTrackForAnim) {
+            ZoomToTrack();
+            PanToTrack();
+        }
     }
 }
 
