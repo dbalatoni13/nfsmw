@@ -14,7 +14,7 @@ Collect data from **all** of these sources in parallel where possible.
 ### 1a. decomp-context.py
 
 ```sh
-python scripts/decomp-context.py -u main/Path/To/TU -f FunctionName
+python tools/decomp-context.py -u main/Path/To/TU -f FunctionName
 ```
 
 This provides in one shot:
@@ -29,8 +29,7 @@ Reference the skill for the usage. It gives info based on the virtual address of
 
 ### 1c. Existing source and header
 
-- Read the header (`include/.../*.hpp`) for class layout, member types, field offsets
-- Read the source (`src/.../*.cpp`) for existing implementations and includes
+- Read the headers for class layout, member types, field offsets and the source files for existing implementations and includes (both are in `src/.../*.cpp`).
 - Check parent class headers for inherited members/methods used in the function
 
 ### 1e. Assembly reference
@@ -98,10 +97,10 @@ If the build fails, fix compilation errors first.
 
 ```sh
 # Quick status
-python scripts/decomp-diff.py -u main/Path/To/TU --search FunctionName
+python tools/decomp-diff.py -u main/Path/To/TU --search FunctionName
 
 # Full instruction diff
-python scripts/decomp-diff.py -u main/Path/To/TU -d FunctionName
+python tools/decomp-diff.py -u main/Path/To/TU -d FunctionName
 ```
 
 ### Interpreting the diff

@@ -16,7 +16,6 @@ This skill coordinates several agent types:
 1. **reverse-engineer** — Update Ghidra with accurate data types for the class
 2. **scaffolder** — Create header/source if the class is not yet in the project
 3. **implementer** — Match each function one at a time until the TU is complete.
-4. **refiner** — Use on non-matching functions to improve the match. This uses a slower, but more thorough model that can fix issues the implementer can't.
 
 All non-read-only work is done **sequentially** — never spawn multiple writing agents at
 the same time, as they will interfere with each other.
@@ -70,8 +69,8 @@ After scaffolding, rebuild and re-check the function list:
 
 ```sh
 ninja
-python scripts/decomp-diff.py -u main/Path/To/TU -s nonmatching -t function
-python scripts/decomp-diff.py -u main/Path/To/TU -s missing -t function
+python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching -t function
+python tools/decomp-diff.py -u main/Path/To/TU -s missing -t function
 ```
 
 ### 3c. Implement each function sequentially
@@ -124,7 +123,7 @@ Remind agents in their prompts:
 After every few functions, re-run the full status check:
 
 ```sh
-python scripts/decomp-diff.py -u main/Path/To/TU
+python tools/decomp-diff.py -u main/Path/To/TU
 ```
 
 Review progress and decide whether to:
@@ -139,10 +138,10 @@ When all functions have been attempted:
 
 ```sh
 # Full status
-python scripts/decomp-diff.py -u main/Path/To/TU
+python tools/decomp-diff.py -u main/Path/To/TU
 
 # Check for any remaining mismatches
-python scripts/decomp-diff.py -u main/Path/To/TU -s nonmatching
+python tools/decomp-diff.py -u main/Path/To/TU -s nonmatching
 
 # Verify no regressions
 ninja changes

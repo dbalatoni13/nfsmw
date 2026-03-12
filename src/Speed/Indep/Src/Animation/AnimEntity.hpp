@@ -16,20 +16,17 @@ enum eAnimEntityType {
     eAnimEntityType_MaxAnimEntityTypes = 4,
 };
 
-class IAnimEntity {
-  public:
-    virtual ~IAnimEntity() {
-        Purge();
-    }
+struct IAnimEntity {
+    virtual ~IAnimEntity() {}
 
-    virtual bool Init(void *init_data, struct SpaceNode *parent_space_node);
-    virtual void Purge();
-    virtual unsigned int GetInstanceNameHash();
-    virtual SpaceNode *GetSpaceNode();
-    virtual void SetTime(float time);
-    virtual void UpdateTimeStep(float time_step);
-    virtual void RenderEffects(eView *view, int is_reflection);
-    virtual WorldModel *GetWorldModel();
+    virtual bool Init(void *init_data, struct SpaceNode *parent_space_node) = 0;
+    virtual void Purge() = 0;
+    virtual unsigned int GetInstanceNameHash() = 0;
+    virtual SpaceNode *GetSpaceNode() = 0;
+    virtual void SetTime(float time) = 0;
+    virtual void UpdateTimeStep(float time_step) = 0;
+    virtual void RenderEffects(eView *view, int is_reflection) {}
+    virtual WorldModel *GetWorldModel() { return nullptr; }
 };
 
 // total size: 0x1

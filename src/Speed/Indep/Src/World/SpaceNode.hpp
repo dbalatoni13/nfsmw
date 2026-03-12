@@ -77,6 +77,7 @@ class SpaceNode : public bTNode<SpaceNode> {
 
     void SetLocalVelocity(bVector3 *velocity) {
         LocalVelocity = *velocity;
+        SetDirty();
     }
 
     void SetBlendingMatrices(bMatrix4 *matrix) {

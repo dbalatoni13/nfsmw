@@ -37,6 +37,9 @@ class WWorldPos {
         this->fMissCount = 0;
         this->fUsageCount = 0;
         this->fYOffset = yOffset;
+        fFace.fPt0 = UMath::Vector3::kZero;
+        fFace.fPt1 = UMath::Vector3::kZero;
+        fFace.fPt2 = UMath::Vector3::kZero;
         this->fSurface = nullptr;
     }
 
@@ -44,7 +47,7 @@ class WWorldPos {
 
     // bool OffEdge() const {}
 
-    // bool OnValidFace() const {}
+    bool OnValidFace() const { return fFaceValid; }
 
     void ForceFaceValidity() {}
 
@@ -54,11 +57,29 @@ class WWorldPos {
         fYOffset = liftAmount;
     }
 
-    void UNormal(UMath::Vector3 *norm) const {}
+    void UNormal(UMath::Vector3 *norm) const {
+        if (!OnValidFace()) {
+            norm->x = 0.0f;
+            norm->y = 1.0f;
+            norm->z = 0.0f;
+        } else {
+            fFace.GetNormal(norm);
+            if (norm->y < 0.0f) {
+                norm->y = -norm->y;
+                norm->x = -norm->x;
+                norm->z = -norm->z;
+            }
+            if (norm->y >= 0.9999f) {
+                norm->y = 0.9999f;
+            }
+        }
+    }
 
     void UNormal(UMath::Vector4 *norm) const {}
 
-    // const UMath::Vector4 &FacePoint(int ptInd) const {}
+    const UMath::Vector4 &FacePoint(int ptInd) const {
+        return reinterpret_cast<const UMath::Vector4 *>(&fFace)[ptInd];
+    }
 
     const Attrib::Collection *GetSurface() const {
         return fSurface;

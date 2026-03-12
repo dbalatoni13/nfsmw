@@ -14,6 +14,37 @@ class CWorldAnimEntityTree;
 // total size: 0x24
 class CWorldAnimEntity : public IAnimEntity {
   public:
+    virtual uint32 GetTypeID() {
+        return mTypeID;
+    }
+
+    // Overrides: IAnimEntity
+    uint32 GetInstanceNameHash() override {
+        return mThisInstanceNameHash;
+    }
+
+    // Overrides: IAnimEntity
+    SpaceNode *GetSpaceNode() override {
+        return mSpaceNode;
+    }
+
+    // Overrides: IAnimEntity
+    WorldModel *GetWorldModel() override {
+        return mWorldModel;
+    }
+
+    CWorldAnimCtrl *GetAnimCtrl() {
+        return mAnimCtrl;
+    }
+
+    unsigned int GetParentInstanceNameHash() {
+        return mParentInstanceNameHash;
+    }
+
+    CWorldAnimEntityTree *GetAnimTree() {
+        return mAnimTree;
+    }
+
     void *operator new(size_t size, const char *debug_name);
 
     void operator delete(void *ptr);
@@ -53,38 +84,8 @@ class CWorldAnimEntity : public IAnimEntity {
 
     float GetNumSecondsBetweenFrames(float start_frame, float end_frame);
 
-    virtual uint32 GetTypeID() {
-        return mTypeID;
-    }
-
-    // Overrides: IAnimEntity
-    uint32 GetInstanceNameHash() override {
-        return mThisInstanceNameHash;
-    }
-
-    // Overrides: IAnimEntity
-    SpaceNode *GetSpaceNode() override {
-        return mSpaceNode;
-    }
-
-    // Overrides: IAnimEntity
-    WorldModel *GetWorldModel() override {
-        return mWorldModel;
-    }
-
-    CWorldAnimCtrl *GetAnimCtrl() {
-        return mAnimCtrl;
-    }
-
-    unsigned int GetParentInstanceNameHash() {
-        return mParentInstanceNameHash;
-    }
-
-    CWorldAnimEntityTree *GetAnimTree() {
-        return mAnimTree;
-    }
-
   private:
+    friend class CAnimWorldScene;
     uint32 mTypeID;                   // offset 0x4, size 0x4
     uint32 mThisInstanceNameHash;     // offset 0x8, size 0x4
     SpaceNode *mSpaceNode;            // offset 0xC, size 0x4
@@ -139,6 +140,9 @@ struct WorldAnimEntityTreeInfo : public bTNode<WorldAnimEntityTreeInfo> {
     virtual ~WorldAnimEntityTreeInfo();
 
   private:
+    friend class WorldAnimInstanceDirectory;
+    friend class CAnimWorldScene;
+
     uint32 tree_name_hash;                                       // offset 0x8, size 0x4
     bPList<WorldAnimEntityInfo> loaded_world_anim_entity_chunks; // offset 0xC, size 0x8
     WorldAnimNamedRange named_ranges[4];                         // offset 0x14, size 0x40

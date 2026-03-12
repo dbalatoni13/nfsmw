@@ -18,7 +18,12 @@ struct AnimFileLoadInfo {
 
 // total size: 0x8
 struct AnimSceneLoadInfo {
-    AnimSceneLoadInfo() {}
+    AnimSceneLoadInfo()
+        : mAnimSceneHash(0), //
+          mSharedFileCount(0), //
+          mSharedFileStartIndex(0), //
+          mSceneFileCount(0), //
+          mSceneFileStartIndex(0) {}
 
     unsigned int mAnimSceneHash;         // offset 0x0, size 0x4
     unsigned char mSharedFileCount;      // offset 0x4, size 0x1
@@ -34,19 +39,54 @@ class AnimDirectory {
 
     ~AnimDirectory() {}
 
-    unsigned int GetFileCount() {}
+    unsigned int GetFileCount() { return mAnimFileLoadInfo.mAnimFileCount; }
 
-    char *GetFileName(unsigned int file_slot_position) {}
+    char *GetFileName(unsigned int file_slot_position) {
+        return mAnimFileLoadInfo.mAnimFileNameTable[file_slot_position];
+    }
 
-    unsigned int GetSceneCount() {}
+    unsigned int GetSceneCount() { return mAnimSceneCount; }
 
-    void GetSceneLoadInfo(unsigned int scene_slot_position, AnimSceneLoadInfo &info) {}
+    void GetSceneLoadInfo(unsigned int scene_slot_position, AnimSceneLoadInfo &info) {
+        info = mAnimSceneLoadInfo[scene_slot_position];
+    }
 
-    AnimSceneLoadInfo *GetSceneLoadInfo(int slot) {}
+    AnimSceneLoadInfo *GetSceneLoadInfo(int slot) { return &mAnimSceneLoadInfo[slot]; }
 
-    void GetNameOfSceneNumber(int scene_slot_position, char *buffer) {}
+    void GetNameOfSceneNumber(int scene_slot_position, char *buffer) {
+        AnimSceneLoadInfo info;
+        info = mAnimSceneLoadInfo[scene_slot_position];
+        char *file_name = GetFileName(info.mSceneFileStartIndex);
+        int pos = 0;
+        while (file_name[pos] != '_') {
+            pos++;
+        }
+        pos++;
+        int start_pos = pos;
+        while (file_name[pos] != '_') {
+            pos++;
+        }
+        int len = pos - start_pos;
+        if (len != 0) {
+            pos = start_pos;
+            len--;
+            do {
+                *buffer++ = file_name[pos++];
+            } while (len-- != 0);
+        }
+        *buffer = '\0';
+    }
 
-    void GetNameOfSceneHash(unsigned int scene_hash, char *buffer) {}
+    void GetNameOfSceneHash(unsigned int scene_hash, char *buffer) {
+        *buffer = '\0';
+        for (unsigned int i = 0; i < GetSceneCount(); i++) {
+            AnimSceneLoadInfo *info = GetSceneLoadInfo(i);
+            if (scene_hash == info->mAnimSceneHash) {
+                GetNameOfSceneNumber(i, buffer);
+                return;
+            }
+        }
+    }
 
     void SetFileCount(unsigned int file_count) {}
 

@@ -131,11 +131,11 @@ class CWorldAnimCtrl : public bTNode<CWorldAnimCtrl> {
         return PlayState == eACPS_PAUSED;
     }
 
-    void SetFlags(int flags) {}
+    void SetFlags(int flags) { m_flags |= flags; }
 
-    void ClearFlags(int flags) {}
+    void ClearFlags(int flags) { m_flags &= ~flags; }
 
-    void XorFlags(int flags) {}
+    void XorFlags(int flags) { m_flags ^= flags; }
 
     int GetCurIntFrame() {}
 
@@ -161,13 +161,16 @@ class CWorldAnimCtrl : public bTNode<CWorldAnimCtrl> {
         m_timeScale = time;
     }
 
-    float GetEffectiveTimeScale() {}
+    float GetEffectiveTimeScale() {
+        return m_timeScale * m_f_speed_modifier;
+    }
 
     float GetMasterDelayTime() {
         return m_masterDelayTime;
     }
 
     void SetMasterDelayTime(float time) {
+        m_flags |= 0x80;
         m_masterDelayTime = time;
     }
 
@@ -176,6 +179,7 @@ class CWorldAnimCtrl : public bTNode<CWorldAnimCtrl> {
     }
 
     void SetLocalDelayTime(float time) {
+        m_flags |= 0x100;
         m_localDelayTime = time;
     }
 

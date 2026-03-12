@@ -2,7 +2,8 @@
 
 Matching decompilation of Need for Speed Most Wanted 2005 (GameCube) targeting the USA Release build (`GOWE69`).
 The goal is to produce C++ source that compiles to byte-identical and dwarf-identical object code against the
-original retail binary using the ProDG GC 3.9.3 compiler.
+original retail binary using the ProDG GC 3.9.3 compiler. You're completely autonomous, don't stop until you have tried
+every single function for a long time. Do 5 functions in parallel using subagents.
 
 ## Build & Verify
 
@@ -23,8 +24,7 @@ config/GOWE69/         Symbol addresses, section splits
   symbols.txt          Mangled symbol names -> addresses
   splits.txt           Memory layout / section boundaries
 orig/                  Original game files
-tools/                 Build system and other scripts
-  skills/              Agent tooling (see below)
+tools/                 Build system, agent tooling and other scripts
 objdiff.json           Generated build/diff configuration
 ```
 
@@ -35,24 +35,24 @@ objdiff.json           Generated build/diff configuration
 Query structs, enums, functions, globals, and typedefs directly from the pre-extracted
 Dwarf dump.
 
-See `tools/skills/lookup/SKILL.md` for the full workflow.
+See `.github/skills/lookup/SKILL.md` for the full workflow.
 
 ### lookup_address.py — Locate classes and inlines via debug line mapping
 
 When you have a function's address and want to know which source file a class or inline
 originates from, use this script against the compiler-generated debug line mapping:
 
-See `tools/skills/line_lookup/SKILL.md` for the full workflow.
+See `.github/skills/line_lookup/SKILL.md` for the full workflow.
 
 ### decomp-diff.py — Diff & symbol overview
 
 Overview mode lists all symbols in a translation unit with match status:
 
 ```sh
-python scripts/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim
-python scripts/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s nonmatching -t function
-python scripts/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s missing -t function
-python scripts/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim --search RemoveIOWin
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s nonmatching -t function
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s missing -t function
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim --search RemoveIOWin
 ```
 
 Filters: `-t function,object` (type), `-s missing|matching|nonmatching|extra` (status),
@@ -61,8 +61,8 @@ Filters: `-t function,object` (type), `-s missing|matching|nonmatching|extra` (s
 Diff mode shows side-by-side instruction comparison:
 
 ```sh
-python scripts/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d DistributeOneMessage
-python scripts/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin -C 5
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d DistributeOneMessage
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin -C 5
 ```
 
 Mismatched args are wrapped in `{}`. Matching runs are collapsed (control with `-C <n>` context lines, `--no-collapse`). Left = original, right = decomp.
@@ -70,10 +70,10 @@ Mismatched args are wrapped in `{}`. Matching runs are collapsed (control with `
 ### decomp-status.py — Project-wide progress
 
 ```sh
-python scripts/decomp-status.py                    # all categories
-python scripts/decomp-status.py --category game    # filter to game code
-python scripts/decomp-status.py --unit main/Speed/Indep/SourceLists/zAnim
-python scripts/decomp-status.py --json             # machine-readable
+python tools/decomp-status.py                    # all categories
+python tools/decomp-status.py --category game    # filter to game code
+python tools/decomp-status.py --unit main/Speed/Indep/SourceLists/zAnim
+python tools/decomp-status.py --json             # machine-readable
 ```
 
 ### decomp-context.py — Function context for matching work
@@ -81,8 +81,8 @@ python scripts/decomp-status.py --json             # machine-readable
 Gathers source code, objdiff diff, Ghidra decompile, and debug map info:
 
 ```sh
-python scripts/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f AcceptScriptMsg
-python scripts/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --no-source
+python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f AcceptScriptMsg
+python tools/decomp-context.py -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --no-source
 ```
 
 Flags: `--no-source`, `--no-ghidra` to skip sections.
@@ -100,6 +100,8 @@ Demangle a symbol (you probably won't need this):
 ```sh
 dtk demangle 'AcceptScriptMsg__7CEntityF20EScriptObjectMessage9TUniqueIdR13CStateManager'
 ```
+
+DON'T EVER USE OBJDUMP or very low level tools.
 
 ## Code Conventions
 
@@ -162,6 +164,21 @@ On PowerPC EABI (as used by GCC), float and integer parameters use **separate** 
 files: floats fill f1–f8 sequentially, integers fill r3–r10 sequentially, independently of
 each other. This means inserting/removing a `float` parameter shifts all subsequent float
 register assignments but does NOT affect integer register assignments (and vice versa).
+
+### Store instruction order hints
+
+- GCC likes to reorder store instructions, so try multiple combinations instead of strictly
+  using the order from the assembly. When there are lots of store instructions after each other,
+  the first one of the source code often ends up being the last in the assembly.
+- The developers usually initialized members using initializer lists. This is great because the order
+  of stores becomes deterministic that way. However if you put all possible variables into the initializer list
+  and the order is wrong, you might have to initialize some or all variables in the function body instead. 
+
+### Relocation diffs
+- When you have to use a constant that looks like an address, it's possible that the splitter thought it was
+  an allocation and it shows up as a diff because the left side has a symbol and the right side has a constant.
+  In this case you need to figure out the virtual address of the instruction and block the relocation in config.yml.
+
 
 ### Assembly patterns
 

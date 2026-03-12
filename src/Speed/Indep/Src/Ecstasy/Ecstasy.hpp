@@ -168,13 +168,15 @@ struct ePoly {
     unsigned char flags;         // offset 0x90, size 0x1
     unsigned char Flailer;       // offset 0x91, size 0x1
 
+    ePoly();
+
     void *operator new(size_t size) {}
 
     void operator delete(void *ptr) {}
 
     void SetFlags(unsigned char i) {}
 
-    void SetFlailer(unsigned char i) {}
+    void SetFlailer(unsigned char i) { Flailer = i; }
 
     unsigned char GetFlags() {}
 

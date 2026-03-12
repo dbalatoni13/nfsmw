@@ -1,7 +1,6 @@
 #ifndef WORLD_WCOLLISION_H
 #define WORLD_WCOLLISION_H
 
-#include <cstring>
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -11,7 +10,12 @@
 #include "Speed/Indep/Src/Physics/Dynamics/Collision.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-struct WSurface : CollisionSurface {};
+struct WSurface : CollisionSurface {
+    WSurface() {
+        fSurface = 0;
+        fFlags = 0;
+    }
+};
 
 struct WCollisionArticle {
     // total size: 0x10
