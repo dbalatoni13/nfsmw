@@ -116,11 +116,14 @@ void CAnimCtrl::GetFlagString(unsigned int flag, char *buffer, int size) {}
 int CAnimCtrl::AdvanceAnimTime(float timestep) {
     int result_anim_is_done = false; // r30
 
-    float this_time_step = timestep * m_timeScale * 30.0f;                      // f1
-    float this_master_delay_elapsed = MasterDelayElapsed * m_timeScale * 30.0f; // f30
-    float this_master_delay_len = m_masterDelayTime * m_timeScale * 30.0f;      // f11
-    float this_local_delay_elapsed = LocalDelayElapsed * m_timeScale * 30.0f;   // f29
-    float this_local_delay_len = m_localDelayTime * m_timeScale * 30.0f;        // f2
+    float timeScale30 = m_timeScale * 30.0f;
+    float this_time_step = timestep * timeScale30;                      // f1
+    register float raw_master asm("fr9") = MasterDelayElapsed;
+    float this_master_delay_len = m_masterDelayTime * 30.0f;           // f11
+    register float raw_local asm("fr10") = LocalDelayElapsed;
+    float this_local_delay_len = m_localDelayTime * 30.0f;             // f2
+    register float this_local_delay_elapsed asm("fr29") = raw_local * timeScale30;
+    register float this_master_delay_elapsed asm("fr30") = raw_master * timeScale30;
 
     float range_len = m_flags & 0x40 ? m_f_loop_end - m_f_loop_start : m_animLength; // f13
     float begin_of_anim = m_flags & 0x40 ? m_f_loop_start : 0.0f;                    // f9
@@ -131,11 +134,12 @@ int CAnimCtrl::AdvanceAnimTime(float timestep) {
     bool pingpong = m_flags & 0x10; // r9
     if (linear) {
         if (pingpong) {
-            m_flags &= 0x10;
+            ClearFlags(0x10);
+            pingpong = false;
         }
     } else if (!pingpong) {
         linear = true;
-        m_flags |= 8;
+        SetFlags(8);
     }
     bool delay_world_start = m_flags & 0x80 && this_master_delay_elapsed < this_master_delay_len && m_evalTime < end_of_anim; // r8
     bool delay_loop_start = m_flags & 0x100 && this_local_delay_elapsed < this_local_delay_len && m_evalTime < end_of_anim;   // r0
@@ -143,7 +147,7 @@ int CAnimCtrl::AdvanceAnimTime(float timestep) {
 
     if (delay_world_start) {
         float new_timestep = this_master_delay_elapsed + this_time_step;
-        if (this_time_step > this_master_delay_len) {
+        if (new_timestep > this_master_delay_len) {
             new_evaltime += bFMod(new_timestep, this_master_delay_len);
         }
         MasterDelayElapsed = (new_timestep / m_timeScale) * 0.033333335f;

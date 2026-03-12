@@ -9,6 +9,11 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+struct TextureInfo;
+struct eLightContext;
+struct eModel;
+struct ePoly;
+
 enum EVIEW_ID {
     EVIEW_NONE = -1,
     EVIEW_FLAILER = 0,

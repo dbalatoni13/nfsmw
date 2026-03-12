@@ -59,11 +59,29 @@ class WWorldPos {
         fYOffset = liftAmount;
     }
 
-    void UNormal(UMath::Vector3 *norm) const {}
+    void UNormal(UMath::Vector3 *norm) const {
+        if (!OnValidFace()) {
+            norm->x = 0.0f;
+            norm->y = 1.0f;
+            norm->z = 0.0f;
+        } else {
+            fFace.GetNormal(norm);
+            if (norm->y < 0.0f) {
+                norm->y = -norm->y;
+                norm->x = -norm->x;
+                norm->z = -norm->z;
+            }
+            if (norm->y >= 0.9999f) {
+                norm->y = 0.9999f;
+            }
+        }
+    }
 
     void UNormal(UMath::Vector4 *norm) const {}
 
-    // const UMath::Vector4 &FacePoint(int ptInd) const {}
+    const UMath::Vector4 &FacePoint(int ptInd) const {
+        return reinterpret_cast<const UMath::Vector4 *>(&fFace)[ptInd];
+    }
 
     const Attrib::Collection *GetSurface() const {
         return fSurface;

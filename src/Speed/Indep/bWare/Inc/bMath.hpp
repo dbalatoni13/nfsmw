@@ -290,6 +290,19 @@ inline bVector2 *bCopy(bVector2 *dest, const bVector2 *v) {
     return dest;
 }
 
+inline bVector2 *bScale(bVector2 *dest, const bVector2 *v, float scale) {
+    float x = v->x;
+    float y = v->y;
+    dest->x = x * scale;
+    dest->y = y * scale;
+    return dest;
+}
+
+inline bVector2 &bVector2::operator*=(float scale) {
+    bScale(this, this, scale);
+    return *this;
+}
+
 inline bVector2 &bVector2::operator=(const bVector2 &v) {
     bCopy(this, &v);
     return *this;
