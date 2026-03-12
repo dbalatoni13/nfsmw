@@ -217,10 +217,7 @@ void UIMain::Setup() {
 }
 
 void UIMain::UpdateProfileData() {
-    if (!FEDatabase->bProfileLoaded) {
-        FEngSetInvisible(GetPackageName(), FEHashUpper("NAME_GROUP"));
-        FEngSetInvisible(GetPackageName(), FEHashUpper("GAME STATS GROUP"));
-    } else {
+    if (FEDatabase->bProfileLoaded) {
         GameCompletionStats stats;
         const unsigned long FEObj_PLAYERNAMEGROUP = 0xb514e2d8;
 
@@ -248,5 +245,8 @@ void UIMain::UpdateProfileData() {
                  FEDatabase->GetMultiplayerProfile(0)->GetProfileName());
         FEngSetVisible(GetPackageName(), FEHashUpper("NAME_GROUP"));
         FEngSetVisible(GetPackageName(), FEHashUpper("GAME STATS GROUP"));
+    } else {
+        FEngSetInvisible(GetPackageName(), FEHashUpper("NAME_GROUP"));
+        FEngSetInvisible(GetPackageName(), FEHashUpper("GAME STATS GROUP"));
     }
 }
