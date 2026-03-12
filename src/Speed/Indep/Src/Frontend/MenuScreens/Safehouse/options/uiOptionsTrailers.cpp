@@ -43,10 +43,7 @@ void UIOptionsTrailers::Setup() {
     unsigned char lastButton = FEngGetLastButton(GetPackageName());
 
     if (bFadeInIconsImmediately) {
-        Options.bFadingOut = false;
-        Options.bFadingIn = true;
-        Options.bDelayUpdate = false;
-        Options.fCurFadeTime = 0.0f;
+        Options.StartFadeIn();
     }
 
     Options.SetInitialPos(lastButton);
