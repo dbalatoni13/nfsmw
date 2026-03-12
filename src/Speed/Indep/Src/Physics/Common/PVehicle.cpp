@@ -656,7 +656,7 @@ bool CanInstancesShareResourceCost(CarType type) {
 void PVehicle::CleanResources() {
     for (PVehicle *dirty = mInstances.GetHead(); dirty != mInstances.EndOfList();) {
         PVehicle *next = dirty->GetNext();
-        if (dirty->IsDirty()) {
+        if (dirty != nullptr && dirty->IsDirty()) {
             delete dirty;
         }
         dirty = next;
@@ -701,11 +701,12 @@ unsigned int PVehicle::CountResources() {
                 break;
             }
         }
-        if (found && CanInstancesShareResourceCost(pv->mResources.Type)) {
-        } else {
+        unsigned int cost = 0;
+        if (!(found && CanInstancesShareResourceCost(pv->mResources.Type))) {
             resource_list.push_back(pv->mResources);
-            count += pv->mResources.Cost;
+            cost = pv->mResources.Cost;
         }
+        count += cost;
     }
     return count;
 }
@@ -1048,7 +1049,7 @@ PVehicle::PVehicle(DriverClass dc, const Attrib::Gen::pvehicle &attribs, const U
     mGlareState = 0;
     UMath::Matrix4 initMat = Util_GenerateMatrix(initialVec, nullptr);
     LoadBehaviors(initialPos, initMat);
-    const Attrib::StringKey &seq = mAttributes.EventSequencer();
+    const Attrib::StringKey seq(mAttributes.EventSequencer());
     if (seq.IsNotEmpty()) {
         mSequencer = EventSequencer::Create(this, static_cast<EventSequencer::IContext *>(this),
                                             UCrc32(seq.GetString()), Sim::GetTime(), 0.0f);
