@@ -151,8 +151,9 @@ void uiCareerCrib::Setup() {
 void CResumeFreeRoam::React(const char* pkg_name, unsigned int data, FEObject* obj,
                             unsigned int param1, unsigned int param2) {
     if (data == 0x0C407210) {
-        signed char port = FEngMapJoyParamToJoyport(param2);
-        FEDatabase->SetPlayersJoystickPort(0, port);
+        cFrontendDatabase* db = FEDatabase;
+        signed char port = FEngMapJoyParamToJoyport(param1);
+        db->SetPlayersJoystickPort(0, port);
         const char* blurb = GetLocalizedString(0xEB694C0C);
         DialogInterface::ShowTwoButtons(pkg_name, "", static_cast<eDialogTitle>(1), 0x70E01038,
                                         0x417B25E4, 0xD05FC3A3, 0x34DC1BCF, 0x34DC1BCF,

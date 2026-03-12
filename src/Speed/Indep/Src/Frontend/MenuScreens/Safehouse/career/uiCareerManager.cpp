@@ -101,15 +101,16 @@ void CResumeCareer::React(const char* pkg_name, unsigned int data, FEObject* obj
                           unsigned int param1, unsigned int param2) {
     if (data == 0x0C407210) {
         bool should_go_into_epic_pursuit = false;
-        signed char port = FEngMapJoyParamToJoyport(param2);
-        FEDatabase->SetPlayersJoystickPort(0, port);
+        cFrontendDatabase* db = FEDatabase;
+        signed char port = FEngMapJoyParamToJoyport(param1);
+        db->SetPlayersJoystickPort(0, port);
         FEDatabase->GetCareerSettings()->ResumeCareer();
 
         if (!FEDatabase->GetCareerSettings()->HasBeatenCareer()) {
             GRaceParameters* parms =
                 GRaceDatabase::Get().GetRaceFromName(GRaceDatabase::Get().GetFinalBossRace());
-            should_go_into_epic_pursuit =
-                GRaceDatabase::Get().IsCareerRaceComplete(parms->GetEventHash());
+            if (GRaceDatabase::Get().IsCareerRaceComplete(parms->GetEventHash()))
+                should_go_into_epic_pursuit = true;
         }
 
         if (FEDatabase->GetCareerSettings()->GetCurrentBin() != 16 &&
@@ -123,8 +124,9 @@ void CResumeCareer::React(const char* pkg_name, unsigned int data, FEObject* obj
 void CStartNewCareer::React(const char* pkg_name, unsigned int data, FEObject* obj,
                             unsigned int param1, unsigned int param2) {
     if (data == 0x0C407210) {
-        signed char port = FEngMapJoyParamToJoyport(param2);
-        FEDatabase->SetPlayersJoystickPort(0, port);
+        cFrontendDatabase* db = FEDatabase;
+        signed char port = FEngMapJoyParamToJoyport(param1);
+        db->SetPlayersJoystickPort(0, port);
 
         if (!FEDatabase->GetCareerSettings()->HasCareerStarted() &&
             FEDatabase->bProfileLoaded) {
@@ -139,8 +141,9 @@ void CStartNewCareer::React(const char* pkg_name, unsigned int data, FEObject* o
 void CLoadCareer::React(const char* pkg_name, unsigned int data, FEObject* obj,
                         unsigned int param1, unsigned int param2) {
     if (data == 0x0C407210) {
-        signed char port = FEngMapJoyParamToJoyport(param2);
-        FEDatabase->SetPlayersJoystickPort(0, port);
+        cFrontendDatabase* db = FEDatabase;
+        signed char port = FEngMapJoyParamToJoyport(param1);
+        db->SetPlayersJoystickPort(0, port);
         MemcardEnter(pkg_name, pkg_name, 0x413, 0, 0, 0x7E998E5E, 0x8867412D);
     }
 }
