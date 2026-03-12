@@ -207,4 +207,5 @@ void uiRepSheetRival::SetupRace(unsigned int num, GRaceParameters* race) {
 }
 
 void uiRepSheetRival::TextureLoadedCallback(unsigned int tex) {
+    reinterpret_cast< uiRepSheetRival* >(tex)->NotifyTextureLoaded();
 }

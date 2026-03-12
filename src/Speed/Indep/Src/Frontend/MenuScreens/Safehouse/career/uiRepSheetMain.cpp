@@ -274,4 +274,5 @@ void uiRepSheetMain::ScrollRival(eScrollDir dir) {
 }
 
 void uiRepSheetMain::TextureLoadedCallback(unsigned int tex) {
+    reinterpret_cast< uiRepSheetMain* >(tex)->NotifyTextureLoaded();
 }

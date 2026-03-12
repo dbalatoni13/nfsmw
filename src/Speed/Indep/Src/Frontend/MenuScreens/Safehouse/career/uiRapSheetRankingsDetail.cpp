@@ -134,7 +134,12 @@ void uiRapSheetRankingsDetail::RefreshHeader() {
 }
 void uiRapSheetRankingsDetail::UpdateHighlight() {
     int highlight = player_rank - GetStartDatumNum();
-    int numSlots = GetNumSlots();
-    if (highlight < 1 || numSlots < highlight) { cFEng::Get()->QueuePackageMessage(0x58B123F7, nullptr, nullptr); }
-    else { cFEng::Get()->QueuePackageMessage(FEngHashString("RAPSHEET_HIGHLIGHT_%d", highlight), nullptr, nullptr); }
+    if (highlight > 0) {
+        int numSlots = GetNumSlots();
+        if (highlight <= numSlots) {
+            cFEng::Get()->QueuePackageMessage(FEngHashString("RAPSHEET_HIGHLIGHT_%d", highlight), nullptr, nullptr);
+            return;
+        }
+    }
+    cFEng::Get()->QueuePackageMessage(0x58B123F7, nullptr, nullptr);
 }
