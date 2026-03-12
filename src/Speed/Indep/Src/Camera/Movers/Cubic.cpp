@@ -453,8 +453,23 @@ void CubicCameraMover::Update(float dT) {
     pFov->SetDuration(eye_duration);
     pLook->SetDuration(eye_duration);
     bVector3 *foward_duration = pov_data.GetForwardDuration();
-    pForward->SetDuration(foward_duration->x, foward_duration->y, foward_duration->z);
-    pEye->SetDuration(eye_duration);
+    pForward->SetDuration(foward_duration->x + collision_damper + drift_damper,
+                          foward_duration->y + collision_damper + drift_damper,
+                          foward_duration->z + collision_damper + drift_damper);
+
+    if (HighliteMode()) {
+        eye_duration = pov_data.fEyeDuration * 2.0f;
+    }
+
+    pEye->SetDuration(eye_duration, eye_duration, eye_duration);
+
+    pUp->Update(dT, 0.0f, 0.0f);
+    pFov->Update(dT, 0.0f, 0.0f);
+    pEye->Update(dT, 0.0f, 0.0f);
+    pLook->Update(dT, 0.0f, 0.0f);
+    pForward->Update(dT, 0.0f, 0.0f);
+
+    bool bOutside = OutsidePovType(pov->Type);
 
     float target_dist = bDistBetween(GetCamera()->GetPosition(), pCar->GetGeometryPosition());
     GetCamera()->SetTargetDistance(target_dist);
@@ -476,8 +491,6 @@ void CubicCameraMover::Update(float dT) {
     if (bLookBack) {
         f_stiffness = -1.0f;
     }
-
-    bool bOutside = OutsidePovType(pov->Type);
     bVector3 vUp;
     vUp.x = (*pUp).x.Val;
     vUp.y = (*pUp).y.Val;
@@ -558,38 +571,6 @@ void CubicCameraMover::Update(float dT) {
             isUnder = true;
         }
     }
-
-    pUp->SetDuration(0.0f, 0.0f, 0.0f);
-    pFov->SetDuration(0.0f);
-    pEye->SetDuration(0.0f, 0.0f, 0.0f);
-    pLook->SetDuration(0.0f, 0.0f, 0.0f);
-    pForward->SetDuration(0.0f, 0.0f, collision_damper + drift_damper);
-
-    if (HighliteMode()) {
-        eye_duration = pov_data.fEyeDuration * 2.0f;
-    }
-
-    pEye->SetDuration(eye_duration, eye_duration, eye_duration);
-
-    pUp->Update(dT, 0.0f, 0.0f);
-    pFov->Update(dT, 0.0f, 0.0f);
-    pEye->Update(dT, 0.0f, 0.0f);
-    pLook->Update(dT, 0.0f, 0.0f);
-    pForward->Update(dT, 0.0f, 0.0f);
-
-    bOutside = OutsidePovType(pov->Type);
-
-    target_dist = bDistBetween(GetCamera()->GetPosition(), pCar->GetGeometryPosition());
-    GetCamera()->SetTargetDistance(target_dist);
-
-    fSign = 0.0f;
-    if (!bPerfectFocus) {
-        GetCamera()->SetFocalDistance(40.0f);
-        fSign = 100.0f;
-    } else {
-        GetCamera()->SetFocalDistance(0.0f);
-    }
-    GetCamera()->SetDepthOfField(fSign);
 
     if (GRaceStatus::Exists() && pCar->IsDragRace()) {
         float seconds = GRaceStatus::Get().GetRaceTimeElapsed();

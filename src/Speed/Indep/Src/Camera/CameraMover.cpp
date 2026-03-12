@@ -1289,10 +1289,6 @@ void CubicCameraMover::CameraAccelCurve(bVector3 *pAccel) {
 }
 
 void CubicCameraMover::CameraSpeedHug(bVector3 *pEyeOffset) {
-    if (pCar == nullptr) {
-        return;
-    }
-
     float f_top_speed = pCar->GetTopSpeed();
     if (f_top_speed > 0.0f) {
         tTable<bVector2> speed_table(CameraSpeedHugData, 5, 0.0f, f_top_speed);
