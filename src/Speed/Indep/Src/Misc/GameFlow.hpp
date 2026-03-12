@@ -107,6 +107,8 @@ struct RegionLoader {
     void LoadHandler();
     void FinishedLoading();
     void Unload();
+
+    static void LoadHandler(int);
 };
 
 // total size: 0x4

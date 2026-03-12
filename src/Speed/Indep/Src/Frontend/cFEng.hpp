@@ -15,6 +15,10 @@ public:
 
     void QueueGameMessage(unsigned int pMessage, const char *pPackageName,
                           unsigned int controlMask);
+    bool IsPackagePushed(const char *name);
+    bool IsPackageInControl(const char *name);
+    void PopNoControlPackage(const char *name);
+    void QueuePackagePop(int all);
 
     static cFEng *mInstance;
 };
