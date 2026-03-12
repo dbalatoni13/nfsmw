@@ -24,20 +24,34 @@ struct tCubic1D {
     short state;         // offset 0x28, size 0x2
     short flags;         // offset 0x2A, size 0x2
 
-    tCubic1D(short type, float dur);
+    tCubic1D(short type, float dur)
+        : Val(0.0f) //
+        , dVal(0.0f) //
+        , ValDesired(0.0f) //
+        , dValDesired(0.0f) //
+        , time(0.0f) //
+        , duration(dur) //
+        , state(type) //
+        , flags(1)
+    {
+        Coeff[0] = 0.0f;
+        Coeff[1] = 0.0f;
+        Coeff[2] = 0.0f;
+        Coeff[3] = 0.0f;
+    }
 
     void Snap() {
         Val = ValDesired;
         dVal = dValDesired;
         state = 0;
     }
-    void SetVal(const float v);
-    void SetdVal(float v);
-    void SetValDesired(float v);
-    void SetdValDesired(float v);
+    void SetVal(const float v) { Val = v; state = 2; }
+    void SetdVal(float v) { dVal = v; state = 2; }
+    void SetValDesired(float v) { ValDesired = v; state = 2; }
+    void SetdValDesired(float v) { dValDesired = v; }
     void SetDuration(const float t) { duration = t; }
-    void SetState(short s);
-    void SetFlags(short f);
+    void SetState(short s) { state = s; }
+    void SetFlags(short f) { flags = f; }
     float GetVal();
     float GetdVal();
     float GetddVal();
@@ -61,7 +75,7 @@ struct tCubic2D {
     tCubic1D x; // offset 0x0, size 0x2C
     tCubic1D y; // offset 0x2C, size 0x2C
 
-    tCubic2D(short type, float dur);
+    tCubic2D(short type, float dur) : x(type, dur), y(type, dur) {}
     tCubic2D(short type, bVector2* pDuration);
 
     int HasArrived();
@@ -69,17 +83,17 @@ struct tCubic2D {
         x.Snap();
         y.Snap();
     }
-    void SetVal(const float vx, const float vy);
-    void SetdVal(float vx, float vy);
-    void SetValDesired(float vx, float vy);
-    void SetdValDesired(float vx, float vy);
+    void SetVal(const float vx, const float vy) { x.SetVal(vx); y.SetVal(vy); }
+    void SetdVal(float vx, float vy) { x.SetdVal(vx); y.SetdVal(vy); }
+    void SetValDesired(float vx, float vy) { x.SetValDesired(vx); y.SetValDesired(vy); }
+    void SetdValDesired(float vx, float vy) { x.SetdValDesired(vx); y.SetdValDesired(vy); }
     void SetDuration(const float t) {
         x.SetDuration(t);
         y.SetDuration(t);
     }
     void SetDuration(const float tx, const float ty);
-    void SetState(short s);
-    void SetFlags(short s);
+    void SetState(short s) { x.SetState(s); y.SetState(s); }
+    void SetFlags(short s) { x.SetFlags(s); y.SetFlags(s); }
     void PathdValDesired(float x2, float y2);
     void PathdValDesired(bVector2* v);
     void MakeCoeffs();
