@@ -116,5 +116,7 @@ bool bIsMainThread();
 void bThreadYield(int a);
 void bSyncTaskRun();
 void bFileRunTimingTest();
+void bReadAsync(bFile *f, void *buf, int numbytes, void (*callback)(void *), void *param);
+void bServiceFileSystem();
 
 #endif
