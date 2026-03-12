@@ -653,7 +653,7 @@ void bSharedStringPool::Free(const char *s) {
             }
         }
 
-        if (this->LargestFreeString->Size < string->Size) {
+        if (string->Size > this->LargestFreeString->Size) {
             this->LargestFreeString = string;
         }
     }

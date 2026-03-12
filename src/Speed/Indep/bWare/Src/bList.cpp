@@ -61,8 +61,8 @@ void bList::MergeSort(SortFunc cmp) {
     this->HeadNode.Prev->Next = list;
 
     while (true) {
-        bNode *tail = nullptr;
         bNode *old_tail = nullptr;
+        bNode *tail = nullptr;
         int num_merges = 0;
         bNode *p = list;
 
@@ -79,7 +79,6 @@ void bList::MergeSort(SortFunc cmp) {
                     break;
                 }
             }
-
             int qsize = insize;
             while (true) {
                 bNode *e;

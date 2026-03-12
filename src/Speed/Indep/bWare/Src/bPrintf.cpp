@@ -308,10 +308,8 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
         }
 
         if (spec == 'v') {
-            char temp[160];
-            char *bad = badptr;
-            int len = bStrLen(bad);
-            _stuff_str(output_info, bad, len, &outLen);
+            int len = bStrLen(badptr);
+            _stuff_str(output_info, badptr, len, &outLen);
             if ((*fmt >= '2') && (*fmt <= '4')) {
                 fmt++;
             }
@@ -414,11 +412,10 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
         }
     }
 
-    if (!output_info->StdOut) {
-        if ((output_info->DestString != nullptr) && (output_info->DestStringLen > 0)) {
-            *output_info->DestString = '\0';
-        }
-    } else {
+    if ((output_info->DestString != nullptr) && (output_info->DestStringLen > 0)) {
+        *output_info->DestString = '\0';
+    }
+    if (output_info->StdOut) {
         bFlushBufferedPutChar();
     }
 
