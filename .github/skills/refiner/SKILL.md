@@ -90,21 +90,10 @@ python tools/lookup.py ./symbols/Dwarf struct bMath
 
 Replace hand-rolled sequences with the correct inline call.
 
-### 2e. Initializer list order
-
-Constructors compiled with GCC are sensitive to initializer list order. The DWARF
-shows the canonical member order. If yours differs, reorder.
-
-### 2f. Cast type
+### 2e. Cast type
 
 `static_cast<int>` vs `static_cast<unsigned int>` produces different assembly
 sequences on PPC (see `xoris` pattern in AGENTS.md). Check all casts.
-
-### 2g. Compiler flag hint
-
-If none of the above resolve the mismatch, note the function address and consider
-running `flag_permuter.py`. This is a last resort — only do this for a single
-isolated function, not as a general strategy.
 
 ## Phase 3: DWARF verification
 
