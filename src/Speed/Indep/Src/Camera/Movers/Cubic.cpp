@@ -242,16 +242,15 @@ bool CubicCameraMover::IsUnderVehicle() {
             testPos.w = 0.0f;
 
             UMath::Vector4 test2vehicle;
-            UMath::Subxyz(testPos, vehiclePos, test2vehicle);
-            float dist = UMath::Lengthxyz(test2vehicle);
+            UMath::Sub(testPos, vehiclePos, test2vehicle);
+            float dist = UMath::Length(test2vehicle);
 
             if (dist >= irb->GetRadius()) {
                 continue;
             }
 
             UMath::Vector4 test2vehicleLocal;
-            UMath::Rotate(reinterpret_cast<const UMath::Vector3 &>(test2vehicle), world2local,
-                          reinterpret_cast<UMath::Vector3 &>(test2vehicleLocal));
+            UMath::Rotate(test2vehicle, world2local, test2vehicleLocal);
 
             float absX = test2vehicleLocal.x;
             if (absX < 0.0f) {
