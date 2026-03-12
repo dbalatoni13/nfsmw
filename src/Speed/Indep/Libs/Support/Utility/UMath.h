@@ -176,6 +176,10 @@ inline void Add(const Vector3 &a, const Vector3 &b, Vector3 &r) {
 #endif
 }
 
+inline void Add(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4add(a, b, r);
+}
+
 inline void Scale(const Vector3 &a, const Vector3 &b, Vector3 &r) {
 #ifdef EA_PLATFORM_XENON
     r.x = a.x * b.x;
@@ -261,8 +265,16 @@ inline void Scalexyz(const Vector4 &a, const float s, Vector4 &r) {
     VU0_v4scalexyz(a, s, r);
 }
 
+inline void Scalexyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4scalexyz(a, b, r);
+}
+
 inline void Negatexyz(Vector4 &r) {
     VU0_v4negatexyz(r);
+}
+
+inline float DistanceSquarexyz(const Vector4 &a, const Vector4 &b) {
+    return VU0_v4distancesquarexyz(a, b);
 }
 
 inline float Distancexyz(const Vector4 &a, const Vector4 &b) {
@@ -302,6 +314,10 @@ inline void Rotate(const Vector3 &a, const Matrix4 &m, Vector3 &r) {
 #else
     VU0_MATRIX3x4_vect3mult(a, m, r);
 #endif
+}
+
+inline void Rotate(const Vector4 &a, const Matrix4 &m, Vector4 &r) {
+    VU0_MATRIX3x4_vect4mult(a, m, r);
 }
 
 inline float Dot(const Vector3 &a, const Vector3 &b) {

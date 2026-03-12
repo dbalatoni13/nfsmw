@@ -515,6 +515,84 @@ bool WCollisionMgr::Collide(Dynamics::Collision::Geometry *geom, const WCollisio
     return hit;
 }
 
+bool WCollisionMgr::Collide(Dynamics::Collision::Geometry *geom, const WCollisionInstanceCacheList *instanceList, ICollisionHandler *results,
+                             void *userdata) {
+    bool hit = false;
+
+    if (instanceList != nullptr && !instanceList->empty()) {
+        unsigned int i;
+        unsigned int j;
+        static const UMath::Vector4 offsets[2][4] = {
+            {{-1.0f, -1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, -1.0f, 1.0f}, {-1.0f, 1.0f, 1.0f, 1.0f}, {1.0f, -1.0f, -1.0f, 1.0f}},
+            {{1.0f, 1.0f, 1.0f, 1.0f}, {-1.0f, -1.0f, -1.0f, 1.0f}, {1.0f, -1.0f, 1.0f, 1.0f}, {-1.0f, 1.0f, -1.0f, 1.0f}}};
+        unsigned int num2check;
+        UMath::Vector4 arms[2][4];
+        UMath::Vector4 dim = UMath::Vector4Make(geom->GetDimension(), 1.0f);
+        UMath::Vector4 cp = UMath::Vector4Make(geom->GetPosition(), 1.0f);
+        UMath::Vector4 seg[2];
+        UMath::Vector4 delta;
+
+        for (i = 0; i < 4; i++) {
+            for (j = 0; j < 2; j++) {
+                seg[0].w = 1.0f;
+                UMath::Scalexyz(offsets[0][i * 2 + j], dim, seg[0]);
+                UMath::Rotate(seg[0], geom->GetOrientation(), seg[1]);
+                seg[1].w = 1.0f;
+                UMath::Add(seg[1], cp, arms[0][i * 2 + j]);
+                arms[0][i * 2 + j].w = 1.0f;
+            }
+        }
+
+        delta = UMath::Vector4::kIdentity;
+
+        for (i = 0; i < 4; i++) {
+            UMath::Addxyz(arms[0][i * 2], delta, seg[0]);
+            UMath::Addxyz(arms[0][i * 2 + 1], delta, seg[1]);
+
+            WorldCollisionInfo cInfo;
+
+            if (GetWorldNormal(instanceList, nullptr, seg, cInfo)) {
+                if (results == nullptr) {
+                    return true;
+                }
+
+                UMath::Vector4 penVec;
+                UMath::Vector4 cPoint;
+                float penetration;
+
+                float dist0 = UMath::DistanceSquarexyz(seg[0], cInfo.fCollidePt);
+                float dist1 = UMath::DistanceSquarexyz(seg[1], cInfo.fCollidePt);
+
+                if (dist0 < dist1) {
+                    cPoint = seg[0];
+                } else {
+                    cPoint = seg[1];
+                }
+
+                UMath::Subxyz(cPoint, cInfo.fCollidePt, penVec);
+                penVec.w = 0.0f;
+                cInfo.fNormal.w = 1.0f;
+                penetration = -UMath::Dotxyz(penVec, cInfo.fNormal);
+                if (penetration < 0.0f) {
+                    UMath::Negatexyz(cInfo.fNormal);
+                    penetration = -penetration;
+                }
+
+                cInfo.fNormal.w = penetration;
+                cPoint.w = penetration;
+
+                if (results->OnWCollide(cInfo, UMath::Vector4To3(cPoint), userdata)) {
+                    UMath::ScaleAddxyz(cInfo.fNormal, cInfo.fNormal.w, delta, delta);
+                }
+
+                hit = true;
+            }
+        }
+    }
+
+    return hit;
+}
+
 bool WCollisionMgr::GetClosestIntersectingBarrier(const WCollisionBarrierList &barrierList, const UMath::Vector4 *testSegment, WorldCollisionInfo &cInfo) {
     cInfo.fType = 0;
     float closestDistSq = FLT_MAX;
