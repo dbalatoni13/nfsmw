@@ -18,7 +18,12 @@ struct AnimFileLoadInfo {
 
 // total size: 0x8
 struct AnimSceneLoadInfo {
-    AnimSceneLoadInfo() {}
+    AnimSceneLoadInfo()
+        : mAnimSceneHash(0) //
+        , mSharedFileCount(0) //
+        , mSharedFileStartIndex(0) //
+        , mSceneFileCount(0) //
+        , mSceneFileStartIndex(0) {}
 
     unsigned int mAnimSceneHash;         // offset 0x0, size 0x4
     unsigned char mSharedFileCount;      // offset 0x4, size 0x1

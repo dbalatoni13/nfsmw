@@ -832,15 +832,13 @@ blend:
 }
 
 ICEAnchor *GetICEAnchor() {
-    CameraMover *camera_mover = 0;
-
-    if (&eViews[1] != 0) {
-        camera_mover = eViews[1].GetCameraMover();
+    eView *view = eGetView(1, false);
+    if (view != 0) {
+        CameraMover *m = view->GetCameraMover();
+        if (m != 0 && m->GetType() == CM_ICE) {
+            return reinterpret_cast<ICEMover *>(m)->GetICEAnchor();
+        }
     }
-    if (camera_mover != 0 && camera_mover->GetType() == CM_ICE) {
-        return reinterpret_cast<ICEMover *>(camera_mover)->GetICEAnchor();
-    }
-
     return 0;
 }
 

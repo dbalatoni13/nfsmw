@@ -1042,12 +1042,12 @@ unsigned int GetSceneCount() {
 }
 
 unsigned int GetSceneHash(unsigned int slot) {
-    if (TheAnimDirectory == 0 || TheAnimDirectory->GetSceneCount() <= slot) {
-        return 0;
+    if (TheAnimDirectory != 0 && slot < TheAnimDirectory->GetSceneCount()) {
+        AnimSceneLoadInfo info;
+        TheAnimDirectory->GetSceneLoadInfo(slot, info);
+        return info.mAnimSceneHash;
     }
-    AnimSceneLoadInfo info;
-    TheAnimDirectory->GetSceneLoadInfo(slot, info);
-    return info.mAnimSceneHash;
+    return 0;
 }
 
 void GetNameOfSceneHash(unsigned int hash, char *name) {
