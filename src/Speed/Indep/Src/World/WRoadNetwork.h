@@ -296,6 +296,14 @@ class WRoadNav {
         return fPathType;
     }
 
+    bool RespectFullBarriers() {
+        return fPathType != kPathCop && fPathType != kPathChopper;
+    }
+
+    bool RespectDriveThroughBarriers() {
+        return fPathType == kPathRacer || fPathType == kPathPlayer || fPathType == kPathGPS || fPathType == kPathRaceRoute;
+    }
+
     ENavType GetNavType() const {
         return fNavType;
     }

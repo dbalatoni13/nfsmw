@@ -276,6 +276,14 @@ struct WRoadSegment {
         return fFlags & (1 << 13);
     }
 
+    bool CrossesBarrier(bool player) const {
+        bool ret = CrossesBarrier();
+        if (player) {
+            ret = CrossesBarrier() | CrossesDriveThroughBarrier();
+        }
+        return ret;
+    }
+
     void SetCrossesBarrier(bool violates) {
         if (violates) {
             fFlags |= (1 << 12);
