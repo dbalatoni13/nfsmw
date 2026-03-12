@@ -480,18 +480,22 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
         return;
     }
 
-    bool hard_cut = false;
+    int hard_cut = 0;
     if (b_new_camera && pCameraData != 0 && pOldCameraData != 0) {
         hard_cut = (ICE::KeysShared(pOldCameraData, 1, pCameraData, 0) == 0);
     }
 
-    bool flush = hard_cut;
+    int cond1 = 0;
     if (pCameraData != 0 && pICEData == 0 && !(pCameraData->bSmooth & 1)) {
-        flush = true;
+        cond1 = 1;
     }
+    int flush = (hard_cut | cond1) != 0;
+
+    int cond2 = 0;
     if (pICEData != 0 && pCameraData == 0 && !(pICEData->bSmooth & 1)) {
-        flush = true;
+        cond2 = 1;
     }
+    flush = (flush | cond2) != 0;
 
     pICEData = pCameraData;
 
