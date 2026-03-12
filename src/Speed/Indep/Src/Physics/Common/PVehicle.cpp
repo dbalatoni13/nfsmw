@@ -910,25 +910,32 @@ void PVehicle::UpdateListing() {
         IVehicle::AddToList(VEHICLE_PLAYERS);
         IVehicle::AddToList(VEHICLE_RACERS);
         break;
-    case DRIVER_TRAFFIC:
-        IVehicle::AddToList(VEHICLE_AITRAFFIC);
-        IVehicle::AddToList(VEHICLE_AI);
+    case DRIVER_REMOTE:
+        IVehicle::AddToList(VEHICLE_PLAYERS);
+        IVehicle::AddToList(VEHICLE_RACERS);
+        IVehicle::AddToList(VEHICLE_REMOTE);
         break;
     case DRIVER_COP:
-        IVehicle::AddToList(VEHICLE_AICOPS);
         IVehicle::AddToList(VEHICLE_AI);
+        IVehicle::AddToList(VEHICLE_AICOPS);
         break;
     case DRIVER_RACER:
-        IVehicle::AddToList(VEHICLE_AIRACERS);
         IVehicle::AddToList(VEHICLE_AI);
+        IVehicle::AddToList(VEHICLE_AIRACERS);
         IVehicle::AddToList(VEHICLE_RACERS);
         break;
-    case DRIVER_REMOTE:
-        IVehicle::AddToList(VEHICLE_REMOTE);
-        IVehicle::AddToList(VEHICLE_RACERS);
+    case DRIVER_TRAFFIC:
+        IVehicle::AddToList(VEHICLE_AI);
+        IVehicle::AddToList(VEHICLE_AITRAFFIC);
         break;
     default:
         break;
+    }
+    if (!IsActive()) {
+        IVehicle::AddToList(VEHICLE_INACTIVE);
+    }
+    if (mClass == VehicleClass::TRAILER) {
+        IVehicle::AddToList(VEHICLE_TRAILERS);
     }
 }
 
