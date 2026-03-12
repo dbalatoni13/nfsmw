@@ -1878,6 +1878,134 @@ float WRoadNav::FindClosestOnSpline(const UMath::Vector3 &point, UMath::Vector3 
     return currDistance;
 }
 
+int WRoadNav::FindClosestSegmentInd(const UMath::Vector3 &point, const UMath::Vector3 &dir, float dirWeight, UMath::Vector3 &closestPoint, float &time) {
+    typedef UTL::Std::set<short, _type_set> SEGMENT_SET;
+
+    const WGrid &grid = WGrid::Get();
+    WRoadNetwork &roadNetwork = WRoadNetwork::Get();
+    short segInd = -1;
+    bool found = false;
+    float foundScore = 0.0f;
+    UTL::FastVector<unsigned int, 16> node_indices;
+    UMath::Vector3 ndir;
+    SEGMENT_SET segment_set;
+    UMath::Vector3 intersectPoint;
+    UMath::Vector3 intersectDir;
+    UMath::Vector3 intersectRight;
+    UMath::Vector3 offset;
+    UMath::Vector3 start;
+    UMath::Vector3 end;
+    UMath::Vector3 segdir;
+    float timeStep;
+    float rightedge[2];
+    float leftedge[2];
+
+    node_indices.reserve(0x40);
+    grid.FindNodes(point, 500.0f, node_indices);
+
+    ndir = dir;
+    UMath::Normalize(ndir);
+
+    for (unsigned int *iter = node_indices.begin(); iter != node_indices.end(); ++iter) {
+        WGridNode *grid_node = grid.fNodes[*iter];
+        if (grid_node != nullptr) {
+            unsigned int numSegments = grid_node->GetElemTypeCount(WGrid_kRoadSegment);
+            for (unsigned int i = 0; i < numSegments; ++i) {
+                short seg = static_cast< short >(grid_node->GetElemType(i, WGrid_kRoadSegment));
+                segment_set.insert(seg);
+            }
+        }
+    }
+
+    for (SEGMENT_SET::const_iterator it = segment_set.begin(); it != segment_set.end(); ++it) {
+        short index = *it;
+        if (index >= static_cast< int >(roadNetwork.GetNumSegments())) continue;
+        const WRoadSegment *segment = roadNetwork.GetSegment(index);
+
+        if (bDecisionFilter && segment->IsDecision()) continue;
+        if (bRaceFilter && !segment->IsInRace()) continue;
+        if (bTrafficFilter && !segment->IsTrafficAllowed()) continue;
+        if (bCopFilter && !segment->ShouldCopsConsider()) continue;
+
+        timeStep = roadNetwork.GetSegmentPointIntersect(*segment, point, intersectPoint, true);
+
+        if (segment->IsCurved()) {
+            roadNetwork.GetPointOnSegment(*segment, timeStep, intersectPoint);
+            FindClosestOnSpline(point, intersectPoint, timeStep, 1.0f, static_cast< int >(segment->fIndex));
+            FindClosestOnSpline(point, intersectPoint, timeStep, 0.25f, static_cast< int >(segment->fIndex));
+        }
+
+        VU0_v3sub(point, intersectPoint, intersectDir);
+        float currDistance = VU0_sqrt(VU0_v3lengthsquare(intersectDir));
+        float currScore;
+
+        if (dirWeight > 0.0f) {
+            roadNetwork.GetPointAndVecOnSegment(*segment, timeStep, intersectPoint, intersectDir);
+
+            offset.x = intersectDir.z;
+            offset.y = 0.0f;
+            offset.z = -intersectDir.x;
+            intersectRight = offset;
+            UMath::Normalize(intersectRight);
+
+            UMath::Sub(point, intersectPoint, offset);
+            float sideDistance = UMath::Dot(intersectRight, offset);
+
+            for (int i = 0; i < 2; i++) {
+                bool inverted = segment->IsProfileInverted(i);
+                const WRoadProfile *profile = roadNetwork.GetSegmentProfile(*segment, i);
+
+                float relOffset = profile->GetRelativeLaneOffset(inverted ? profile->fNumZones - 1 : 0, inverted);
+                float laneWidth = profile->GetLaneWidth(inverted ? profile->fNumZones - 1 : 0, inverted);
+                rightedge[i] = relOffset - laneWidth * 0.5f;
+
+                relOffset = profile->GetRelativeLaneOffset(inverted ? 0 : profile->fNumZones - 1, inverted);
+                laneWidth = profile->GetLaneWidth(inverted ? 0 : profile->fNumZones - 1, inverted);
+                leftedge[i] = relOffset + laneWidth * 0.5f;
+            }
+
+            float right = rightedge[0] + (rightedge[1] - rightedge[0]) * timeStep;
+            float left = leftedge[0] + (leftedge[1] - leftedge[0]) * timeStep;
+
+            float oldSideDistance;
+            if (sideDistance > right) {
+                oldSideDistance = sideDistance - right;
+            } else if (sideDistance < left) {
+                oldSideDistance = sideDistance - left;
+            } else {
+                oldSideDistance = 0.0f;
+            }
+
+            UMath::ScaleAdd(intersectRight, oldSideDistance - sideDistance, offset, offset);
+            currDistance = UMath::Length(offset);
+
+            start = roadNetwork.GetNode(segment->fNodeIndex[0])->fPosition;
+            end = roadNetwork.GetNode(segment->fNodeIndex[1])->fPosition;
+            UMath::Sub(end, start, segdir);
+            UMath::Normalize(segdir);
+
+            float dot = UMath::Dot(ndir, segdir);
+            if (!segment->IsOneWay()) {
+                dot = UMath::Abs(dot);
+            }
+
+            currScore = currDistance + dirWeight * (1.0f - dot) * 100.0f;
+        } else {
+            currScore = currDistance;
+        }
+
+        if (!found || currScore < foundScore) {
+            found = true;
+            closestPoint = intersectPoint;
+            time = timeStep;
+            foundScore = currScore;
+            segInd = index;
+        }
+    }
+
+    return segInd;
+}
+
 void WRoadNav::InitAtSegment(short segInd, char laneInd, float timeStep) {
     WRoadNetwork &roadNetwork = WRoadNetwork::Get();
     const WRoadSegment *segment = roadNetwork.GetSegment(segInd);

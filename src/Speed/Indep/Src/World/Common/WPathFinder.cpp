@@ -237,7 +237,7 @@ bool AStarSearch::Admissible(const WRoadSegment *segment, bool forward, WRoadNav
     case WRoadNav::kPathGPS:
         if (segment->IsOneWay() && !forward)
             return false;
-        if (segment->CrossesDriveThroughBarrier() || segment->CrossesBarrier())
+        if (segment->CrossesBarrier() || segment->CrossesDriveThroughBarrier())
             return false;
         return true;
     case WRoadNav::kPathCop:
@@ -253,7 +253,7 @@ bool AStarSearch::Admissible(const WRoadSegment *segment, bool forward, WRoadNav
         }
         if (segment->IsOneWay() && !forward)
             return false;
-        if (segment->CrossesDriveThroughBarrier() || segment->CrossesBarrier())
+        if (segment->CrossesBarrier() || segment->CrossesDriveThroughBarrier())
             return false;
         return true;
     }
@@ -265,7 +265,7 @@ bool AStarSearch::Admissible(const WRoadSegment *segment, bool forward, WRoadNav
         }
         if (segment->IsOneWay() && !forward)
             return false;
-        if (segment->CrossesDriveThroughBarrier() || segment->CrossesBarrier())
+        if (segment->CrossesBarrier() || segment->CrossesDriveThroughBarrier())
             return false;
         return true;
     }
@@ -275,7 +275,7 @@ bool AStarSearch::Admissible(const WRoadSegment *segment, bool forward, WRoadNav
             if (pShortcutAllowed[shortcut_number] == 0)
                 return false;
         }
-        if (segment->CrossesDriveThroughBarrier() || segment->CrossesBarrier())
+        if (segment->CrossesBarrier() || segment->CrossesDriveThroughBarrier())
             return false;
         if (segment->IsOneWay() && !forward)
             return false;
