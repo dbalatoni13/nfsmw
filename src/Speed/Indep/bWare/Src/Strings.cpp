@@ -526,7 +526,7 @@ const char *bSharedStringPool::Allocate(const char *s) {
 
     if (search_table != 0) {
         for (string = this->StringTable;
-             string != reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(this->StringTable) + this->StringTableSizeBytes);
+             string != reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(this->StringTable) + (this->StringTableSize << 3));
              string = reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(string) + string->Size * 8)) {
             if ((string->Count != 0) && (bStrCmp(s, string->String) == 0)) {
                 this->FastLookupTable[hash_index] = string;
@@ -541,19 +541,20 @@ const char *bSharedStringPool::Allocate(const char *s) {
     string = this->LargestFreeString;
 
     do {
-        unsigned int string_size = string->Size;
+        unsigned short string_count = string->Count;
+        unsigned short string_size = string->Size;
 
-        if ((string->Count == 0) && (size <= static_cast<int>(string_size))) {
-            if (size < static_cast<int>(string_size)) {
+        if ((string_count == 0) && (size <= static_cast<int>(string_size))) {
+            if (string_size > static_cast<unsigned int>(size)) {
                 bSharedString *next_string = reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(string) + size * 8);
                 next_string->Size = string->Size - static_cast<unsigned short>(size);
                 next_string->Prev = static_cast<unsigned short>((reinterpret_cast<char *>(next_string) - reinterpret_cast<char *>(string)) >> 3);
-                next_string->Count = 0;
+                next_string->Count = string_count;
                 next_string->String[0] = '\0';
 
                 bSharedString *next_next_string =
                     reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(next_string) + next_string->Size * 8);
-                if (next_next_string != reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(this->StringTable) + this->StringTableSizeBytes)) {
+                if (next_next_string != reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(this->StringTable) + (this->StringTableSize << 3))) {
                     next_next_string->Prev = static_cast<unsigned short>((reinterpret_cast<char *>(next_next_string) - reinterpret_cast<char *>(next_string)) >> 3);
                 }
             }
@@ -576,7 +577,7 @@ const char *bSharedStringPool::Allocate(const char *s) {
 
             unsigned short allocated_size = string->Size;
             this->LargestFreeString = reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(string) + allocated_size * 8);
-            if (this->LargestFreeString == reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(this->StringTable) + this->StringTableSizeBytes)) {
+            if (this->LargestFreeString == reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(this->StringTable) + (this->StringTableSize << 3))) {
                 this->LargestFreeString = this->StringTable;
             }
 
@@ -585,7 +586,7 @@ const char *bSharedStringPool::Allocate(const char *s) {
         }
 
         string = reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(string) + string_size * 8);
-        if (string == reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(this->StringTable) + this->StringTableSizeBytes)) {
+        if (string == reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(this->StringTable) + (this->StringTableSize << 3))) {
             string = this->StringTable;
         }
     } while (string != this->LargestFreeString);
