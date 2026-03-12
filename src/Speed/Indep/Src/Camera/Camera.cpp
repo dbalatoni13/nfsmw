@@ -14,7 +14,7 @@ extern int JR2ServerExists;
 int Camera::StopUpdating;
 volatile JollyRancherResponsePacket Camera::JollyRancherResponse;
 
-static const unsigned short aBaselineFovNoise = 0x2AAA;
+static unsigned short aBaselineFovNoise = 0x2AAA;
 static int cameralink;
 
 Camera::Camera() {
