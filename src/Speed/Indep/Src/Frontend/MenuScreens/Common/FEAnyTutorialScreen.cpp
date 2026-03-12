@@ -102,13 +102,13 @@ void FEAnyTutorialScreen::NotificationMessage(unsigned long msg, FEObject* obj,
     mSubtitler.Update(msg);
 
     switch (msg) {
+    case 0xC3960EB9:
+        DismissMovie(false);
+        break;
     case 0xB5AF2461:
     case 0x406415E3:
         DismissMovie(true);
         mSubtitler.Update(0xC3960EB9);
-        break;
-    case 0xC3960EB9:
-        DismissMovie(false);
         break;
     }
 }

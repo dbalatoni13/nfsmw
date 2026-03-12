@@ -252,7 +252,6 @@ void MemcardCallbacks::LoadDone(const char* filename) {
 void MemcardCallbacks::DeleteDone(const char* filename) {
     JLog(MJ_DeleteDone);
     Joylog::AddOrGetData(const_cast<char*>(filename), JOYLOG_CHANNEL_MEMORY_CARD);
-    GetMemcard()->GetPrefixLength();
     int idx = GetMemcard()->GetPrefixLength();
     if (bStrCmp(filename + idx,
                 FEDatabase->GetUserProfile(0)->GetProfileName()) == 0) {
