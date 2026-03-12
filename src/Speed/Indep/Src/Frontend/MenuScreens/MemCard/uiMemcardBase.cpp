@@ -515,41 +515,62 @@ void UIMemcardBase::HandleAutoSaveOverwriteMessage() {
 }
 
 void UIMemcardBase::DoSaveFlow(int flow) {
-    m_Flow = flow;
-    switch (flow) {
-    case 6:
-        SetupPromptSaveConfirm();
-        break;
-    case 2: {
-        unsigned int textHash;
-        if ((gMemcardSetup.mOp & 0x80000) != 0) {
-            textHash = 0xbadd522c;
-        } else if ((gMemcardSetup.mOp & 0x10000) != 0) {
-            textHash = 0x93c25b3d;
-        } else if ((gMemcardSetup.mOp & 0x8000) != 0) {
-            textHash = 0xf8448956;
-        } else if ((gMemcardSetup.mOp & 0x200000) != 0) {
-            textHash = 0xd80818f8;
-        } else {
-            textHash = 0xbe97590f;
+    if (flow != 0) {
+        m_Flow = flow;
+    } else {
+        if (!FEDatabase->GetUserProfile(0)->IsProfileNamed()) {
+            m_Flow = 2;
         }
-        ShowYesNo(textHash, 0x1000000);
-        break;
     }
+    switch (m_Flow) {
+    case 9:
+        ShowOK(0xd9783c57, 0x3000000);
+        break;
     case 1:
         ShowYesNo(0x7209349f, 0x5000000);
+        break;
+    case 2: {
+        unsigned int msg;
+        if ((gMemcardSetup.mOp & 0x80000) != 0) {
+            msg = 0xbadd522c;
+        } else if ((gMemcardSetup.mOp & 0x10000) != 0) {
+            msg = 0x93c25b3d;
+        } else if ((gMemcardSetup.mOp & 0x8000) != 0) {
+            msg = 0xf8448956;
+        } else {
+            msg = 0xbe97590f;
+        }
+        ShowYesNo(msg, 0x1000000);
+        break;
+    }
+    case 3:
+        ShowKeyboard();
+        break;
+    case 6:
+        SetupPromptSaveConfirm();
         break;
     case 4:
         SetupPromptForSave();
         break;
-    case 8:
-        FEDatabase->CurrentUserProfiles[0]->SetProfileName(m_FileName, true);
-        MemoryCard::GetInstance()->Save(m_FileName);
-        SetStringCheckingCard();
-        break;
     case 12:
         MemoryCard::GetInstance()->SetAutoSaveEnabled(false);
         break;
+    case 8:
+        FEDatabase->GetUserProfile(0)->SetProfileName(m_FileName, true);
+        MemoryCard::GetInstance()->Save(m_FileName);
+        SetStringCheckingCard();
+        break;
+    case 10: {
+        cFEng::Get()->QueuePackageMessage(0x1c8ace, GetPackageName(), nullptr);
+        unsigned int warning = GetAutoSaveWarning();
+        ShowOK(warning, 0x9000000);
+        break;
+    }
+    case 11: {
+        unsigned int warning = GetAutoSaveWarning2();
+        ShowOK(warning, 0x9000000);
+        break;
+    }
     }
 }
 
