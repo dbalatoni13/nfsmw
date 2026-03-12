@@ -144,6 +144,44 @@ float bCos(unsigned short angle) {
     return bSin(static_cast<unsigned short>(angle + bDegToAng(90.0f)));
 }
 
+void bSinCos(float *presult_sin, float *presult_cos, unsigned short angle) {
+    float a = bAngToRad(angle);
+    float flip_sign = 1.0f;
+    const float pi = 3.1415927f;
+
+    if (a >= 4.712389f) {
+        a -= 2.0f * pi;
+    } else if (a >= 1.5707964f) {
+        flip_sign = -flip_sign;
+        a -= pi;
+    }
+
+    float result_sin = a;
+    float result_cos = 1.0f;
+    float a2 = a * a;
+    float a3 = a * a2;
+    float a4 = a2 * a2;
+    float a5 = a3 * a2;
+    float a6 = a4 * a2;
+    float a7 = a5 * a2;
+    float a8 = a6 * a2;
+    float a9 = a7 * a2;
+    float a10 = a8 * a2;
+
+    result_sin -= a3 * 0.16666667f;
+    result_cos -= a2 * 0.5f;
+    result_sin += a5 * 0.008333334f;
+    result_cos += a4 * 0.041666668f;
+    result_sin -= a7 * 0.0001984127f;
+    result_cos -= a6 * 0.0013888889f;
+    result_sin += a9 * 0.0000027557319f;
+    result_cos += a8 * 0.000024801588f;
+    result_cos -= a10 * 0.00000027557319f;
+
+    *presult_sin = result_sin * flip_sign;
+    *presult_cos = result_cos * flip_sign;
+}
+
 struct ASinTableEntry {
     // total size: 0x8
     unsigned short Angle; // offset 0x0, size 0x2
@@ -261,6 +299,125 @@ unsigned short bATan(float x, float y) {
         return bDegToAng(180.0f) + a;
 }
 
+unsigned short bASin(float x) {
+    bool negative = x < 0.0f;
+    if (negative) {
+        x = -x;
+    }
+
+    unsigned int a;
+    if (x < 1.0f) {
+        int table_spacing = 0x8000;
+        int table_number = 0;
+        int fix_x = static_cast<int>(x * 65536.0f);
+        int table_top = 0x8000;
+
+        if (fix_x > 0x7fff) {
+            do {
+                table_spacing >>= 1;
+                table_number++;
+                table_top += table_spacing;
+                if (fix_x < table_top) {
+                    break;
+                }
+            } while (table_number < 0xb);
+        }
+
+        int table_bottom = table_top - table_spacing;
+        int table_index = (fix_x - table_bottom) >> (0xbU - table_number & 0x1f);
+        int entry = (table_number * 0x10 + table_index) * 8;
+        float table_x = static_cast<float>(table_bottom + table_index * (table_spacing >> 4)) * 1.5258789e-05f;
+        unsigned short table_a = *reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(bASinTable) + entry);
+        float slope = *reinterpret_cast<float *>(reinterpret_cast<char *>(bASinTable) + entry + 4);
+
+        a = (table_a + static_cast<int>((x - table_x) * slope * 65536.0f)) & 0xffff;
+        if (negative) {
+            a = (-static_cast<int>(a)) & 0xffff;
+        }
+    } else {
+        a = negative ? 0xc000 : 0x4000;
+    }
+
+    return static_cast<unsigned short>(a);
+}
+
+unsigned short bFixATan(int x) {
+    bool negative = x < 0;
+    if (negative) {
+        x = -x;
+    }
+
+    unsigned int lo;
+    unsigned int hi;
+    int fraction;
+
+    if (x < 0x200000) {
+        const unsigned short *table;
+        int index;
+
+        if (x < 0x40000) {
+            index = x >> 0xb;
+            table = bFixATanTableLow;
+            fraction = (x << 5) & 0xffff;
+        } else {
+            index = x >> 0xe;
+            table = bFixATanTableHigh;
+            fraction = (x << 2) & 0xffff;
+        }
+
+        hi = table[index + 1];
+        lo = table[index];
+    } else if (x < 0x1000000) {
+        fraction = x >> 8;
+        hi = 0x3fd7;
+        lo = 0x3eba;
+    } else {
+        lo = 0x3fff;
+        hi = 0x3fff;
+        fraction = 0;
+    }
+
+    unsigned int result = lo + (static_cast<int>((hi - lo) * fraction) >> 16);
+    if (!negative) {
+        return static_cast<unsigned short>(result & 0xffff);
+    }
+    return static_cast<unsigned short>((-static_cast<int>(result)) & 0xffff);
+}
+
+unsigned short bFixATan(int x, int y) {
+    unsigned char quad = static_cast<unsigned char>(x < 0);
+    if (x < 0) {
+        x = -x;
+    }
+
+    if (y < 0) {
+        quad ^= 3;
+        y = -y;
+    }
+
+    short angle;
+    if ((y >> 0xe) < x) {
+        angle = static_cast<short>(bFixATan(bDiv(y, x)));
+    } else {
+        angle = 0x4000;
+    }
+
+    if (quad == 1) {
+        angle = static_cast<short>(-0x8000 - angle);
+    } else {
+        if (quad < 2) {
+            if (quad == 0) {
+                return static_cast<unsigned short>(angle);
+            }
+        } else if (quad == 2) {
+            return static_cast<unsigned short>(angle - 0x8000);
+        }
+        angle = static_cast<short>(-angle);
+    }
+
+    return static_cast<unsigned short>(angle);
+}
+
 void bMathTimingTest() {}
 
 void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src) {
@@ -289,6 +446,99 @@ float fDeterminant(bMatrix4 *m) {
          m->v0.y * m->v1.x * m->v2.z * m->v3.w);
 
     return value;
+}
+
+void fInvertMatrix(bMatrix4 *d, bMatrix4 *s) {
+    float *param_1 = reinterpret_cast<float *>(d);
+    float *pfVar1 = reinterpret_cast<float *>(s);
+    float fVar2 = fDeterminant(s);
+    fVar2 = 1.0f / fVar2;
+
+    *param_1 = fVar2 * (((((pfVar1[6] * pfVar1[0xb] * pfVar1[0xd] - pfVar1[7] * pfVar1[10] * pfVar1[0xd]) + pfVar1[7] * pfVar1[9] * pfVar1[0xe]) -
+                           pfVar1[5] * pfVar1[0xb] * pfVar1[0xe]) -
+                          pfVar1[6] * pfVar1[9] * pfVar1[0xf]) +
+                         pfVar1[5] * pfVar1[10] * pfVar1[0xf]);
+    param_1[1] = fVar2 * ((((pfVar1[3] * pfVar1[10] * pfVar1[0xd] - pfVar1[2] * pfVar1[0xb] * pfVar1[0xd]) - pfVar1[3] * pfVar1[9] * pfVar1[0xe]) +
+                            pfVar1[1] * pfVar1[0xb] * pfVar1[0xe] + pfVar1[2] * pfVar1[9] * pfVar1[0xf]) -
+                           pfVar1[1] * pfVar1[10] * pfVar1[0xf]);
+    param_1[2] = fVar2 * (((((pfVar1[2] * pfVar1[7] * pfVar1[0xd] - pfVar1[3] * pfVar1[6] * pfVar1[0xd]) + pfVar1[3] * pfVar1[5] * pfVar1[0xe]) -
+                             pfVar1[1] * pfVar1[7] * pfVar1[0xe]) -
+                            pfVar1[2] * pfVar1[5] * pfVar1[0xf]) +
+                           pfVar1[1] * pfVar1[6] * pfVar1[0xf]);
+    param_1[3] = fVar2 * ((((pfVar1[3] * pfVar1[6] * pfVar1[9] - pfVar1[2] * pfVar1[7] * pfVar1[9]) - pfVar1[3] * pfVar1[5] * pfVar1[10]) +
+                            pfVar1[1] * pfVar1[7] * pfVar1[10] + pfVar1[2] * pfVar1[5] * pfVar1[0xb]) -
+                           pfVar1[1] * pfVar1[6] * pfVar1[0xb]);
+    param_1[4] = fVar2 * ((((pfVar1[7] * pfVar1[10] * pfVar1[0xc] - pfVar1[6] * pfVar1[0xb] * pfVar1[0xc]) - pfVar1[7] * pfVar1[8] * pfVar1[0xe]) +
+                            pfVar1[4] * pfVar1[0xb] * pfVar1[0xe] + pfVar1[6] * pfVar1[8] * pfVar1[0xf]) -
+                           pfVar1[4] * pfVar1[10] * pfVar1[0xf]);
+    param_1[5] = fVar2 * (((((pfVar1[2] * pfVar1[0xb] * pfVar1[0xc] - pfVar1[3] * pfVar1[10] * pfVar1[0xc]) + pfVar1[3] * pfVar1[8] * pfVar1[0xe]) -
+                             *pfVar1 * pfVar1[0xb] * pfVar1[0xe]) -
+                            pfVar1[2] * pfVar1[8] * pfVar1[0xf]) +
+                           *pfVar1 * pfVar1[10] * pfVar1[0xf]);
+    param_1[6] = fVar2 * ((((pfVar1[3] * pfVar1[6] * pfVar1[0xc] - pfVar1[2] * pfVar1[7] * pfVar1[0xc]) - pfVar1[3] * pfVar1[4] * pfVar1[0xe]) +
+                            *pfVar1 * pfVar1[7] * pfVar1[0xe] + pfVar1[2] * pfVar1[4] * pfVar1[0xf]) -
+                           *pfVar1 * pfVar1[6] * pfVar1[0xf]);
+    param_1[7] = fVar2 * (((((pfVar1[2] * pfVar1[7] * pfVar1[8] - pfVar1[3] * pfVar1[6] * pfVar1[8]) + pfVar1[3] * pfVar1[4] * pfVar1[10]) -
+                             *pfVar1 * pfVar1[7] * pfVar1[10]) -
+                            pfVar1[2] * pfVar1[4] * pfVar1[0xb]) +
+                           *pfVar1 * pfVar1[6] * pfVar1[0xb]);
+    param_1[8] = fVar2 * (((((pfVar1[5] * pfVar1[0xb] * pfVar1[0xc] - pfVar1[7] * pfVar1[9] * pfVar1[0xc]) + pfVar1[7] * pfVar1[8] * pfVar1[0xd]) -
+                             pfVar1[4] * pfVar1[0xb] * pfVar1[0xd]) -
+                            pfVar1[5] * pfVar1[8] * pfVar1[0xf]) +
+                           pfVar1[4] * pfVar1[9] * pfVar1[0xf]);
+    param_1[9] = fVar2 * ((((pfVar1[3] * pfVar1[9] * pfVar1[0xc] - pfVar1[1] * pfVar1[0xb] * pfVar1[0xc]) - pfVar1[3] * pfVar1[8] * pfVar1[0xd]) +
+                            *pfVar1 * pfVar1[0xb] * pfVar1[0xd] + pfVar1[1] * pfVar1[8] * pfVar1[0xf]) -
+                           *pfVar1 * pfVar1[9] * pfVar1[0xf]);
+    param_1[10] = fVar2 * (((((pfVar1[1] * pfVar1[7] * pfVar1[0xc] - pfVar1[3] * pfVar1[5] * pfVar1[0xc]) + pfVar1[3] * pfVar1[4] * pfVar1[0xd]) -
+                              *pfVar1 * pfVar1[7] * pfVar1[0xd]) -
+                             pfVar1[1] * pfVar1[4] * pfVar1[0xf]) +
+                            *pfVar1 * pfVar1[5] * pfVar1[0xf]);
+    param_1[0xb] = fVar2 * ((((pfVar1[3] * pfVar1[5] * pfVar1[8] - pfVar1[1] * pfVar1[7] * pfVar1[8]) - pfVar1[3] * pfVar1[4] * pfVar1[9]) +
+                              *pfVar1 * pfVar1[7] * pfVar1[9] + pfVar1[1] * pfVar1[4] * pfVar1[0xb]) -
+                             *pfVar1 * pfVar1[5] * pfVar1[0xb]);
+    param_1[0xc] = fVar2 * ((((pfVar1[6] * pfVar1[9] * pfVar1[0xc] - pfVar1[5] * pfVar1[10] * pfVar1[0xc]) - pfVar1[6] * pfVar1[8] * pfVar1[0xd]) +
+                              pfVar1[4] * pfVar1[10] * pfVar1[0xd] + pfVar1[5] * pfVar1[8] * pfVar1[0xe]) -
+                             pfVar1[4] * pfVar1[9] * pfVar1[0xe]);
+    param_1[0xd] = fVar2 * (((((pfVar1[1] * pfVar1[10] * pfVar1[0xc] - pfVar1[2] * pfVar1[9] * pfVar1[0xc]) + pfVar1[2] * pfVar1[8] * pfVar1[0xd]) -
+                              *pfVar1 * pfVar1[10] * pfVar1[0xd]) -
+                             pfVar1[1] * pfVar1[8] * pfVar1[0xe]) +
+                            *pfVar1 * pfVar1[9] * pfVar1[0xe]);
+    param_1[0xe] = fVar2 * ((((pfVar1[2] * pfVar1[5] * pfVar1[0xc] - pfVar1[1] * pfVar1[6] * pfVar1[0xc]) - pfVar1[2] * pfVar1[4] * pfVar1[0xd]) +
+                              *pfVar1 * pfVar1[6] * pfVar1[0xd] + pfVar1[1] * pfVar1[4] * pfVar1[0xe]) -
+                             *pfVar1 * pfVar1[5] * pfVar1[0xe]);
+    param_1[0xf] = fVar2 * (((((pfVar1[1] * pfVar1[6] * pfVar1[8] - pfVar1[2] * pfVar1[5] * pfVar1[8]) + pfVar1[2] * pfVar1[4] * pfVar1[9]) -
+                              *pfVar1 * pfVar1[6] * pfVar1[9]) -
+                             pfVar1[1] * pfVar1[4] * pfVar1[10]) +
+                            *pfVar1 * pfVar1[5] * pfVar1[10]);
+}
+
+void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float u4) {
+    bMatrix4 u;
+    bMatrix4 inv_u;
+    bMatrix4 e;
+    bMatrix4 h;
+    bMatrix4 temp;
+    bMatrix4 temp2;
+
+    u.v0 = bVector4(u1 * u1 * u1, u1 * u1, u1, 1.0f);
+    u.v1 = bVector4(u2 * u2 * u2, u2 * u2, u2, 1.0f);
+    u.v2 = bVector4(u3 * u3 * u3, u3 * u3, u3, 1.0f);
+    u.v3 = bVector4(u4 * u4 * u4, u4 * u4, u4, 1.0f);
+
+    h.v0 = bVector4(2.0f, -2.0f, 1.0f, 1.0f);
+    h.v1 = bVector4(-3.0f, 3.0f, -2.0f, -1.0f);
+    h.v2 = bVector4(0.0f, 0.0f, 1.0f, 0.0f);
+    h.v3 = bVector4(1.0f, 0.0f, 0.0f, 0.0f);
+
+    e.v0 = bVector4(0.0f, 0.0f, 0.0f, 1.0f);
+    e.v1 = bVector4(1.0f, 1.0f, 1.0f, 1.0f);
+    e.v2 = bVector4(0.0f, 0.0f, 1.0f, 0.0f);
+    e.v3 = bVector4(3.0f, 2.0f, 1.0f, 0.0f);
+
+    fInvertMatrix(&inv_u, &u);
+    bMulMatrix(&temp, &e, &inv_u);
+    bMulMatrix(&temp2, &h, &temp);
+    bMulMatrix(b, &temp2, p);
 }
 
 void hermite_parameter(bVector4 *dest, const bMatrix4 *b, float t) {
@@ -320,4 +570,78 @@ bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m) {
 // TODO
 #endif
     return dest;
+}
+
+void bConvertToBond(bMatrix4 &dest, const bMatrix4 &m) {
+    const float *src = reinterpret_cast<const float *>(&m);
+    float *dst = reinterpret_cast<float *>(&dest);
+    float fVar4 = src[6];
+    float fVar5 = src[4];
+    float uVar1 = src[10];
+    float uVar2 = src[8];
+    float uVar3 = src[11];
+
+    dst[4] = -src[9];
+    dst[7] = uVar3;
+    dst[5] = uVar1;
+    dst[6] = uVar2;
+
+    uVar3 = src[0];
+    uVar1 = src[3];
+    uVar2 = src[2];
+    dst[8] = -src[1];
+    dst[11] = uVar1;
+    dst[9] = uVar2;
+    dst[10] = uVar3;
+
+    dst[0] = src[5];
+    dst[1] = -fVar4;
+    dst[2] = -fVar5;
+    dst[3] = src[7];
+
+    uVar3 = src[12];
+    uVar1 = src[15];
+    uVar2 = src[14];
+    dst[12] = -src[13];
+    dst[15] = uVar1;
+    dst[13] = uVar2;
+    dst[14] = uVar3;
+}
+
+void bConvertFromBond(bMatrix4 &dest, const bMatrix4 &m) {
+    const float *src = reinterpret_cast<const float *>(&m);
+    float *dst = reinterpret_cast<float *>(&dest);
+    float fVar1 = src[8];
+    float uVar2 = src[9];
+    float uVar3 = src[11];
+    float fVar4 = src[2];
+    float fVar5 = src[1];
+    float uVar6 = src[0];
+    float uVar7 = src[3];
+
+    dst[0] = src[10];
+    dst[1] = -fVar1;
+    dst[2] = uVar2;
+    dst[3] = uVar3;
+
+    fVar1 = src[4];
+    uVar2 = src[7];
+    uVar3 = src[5];
+    dst[8] = src[6];
+    dst[9] = -fVar1;
+    dst[10] = uVar3;
+    dst[11] = uVar2;
+
+    dst[4] = -fVar4;
+    dst[5] = uVar6;
+    dst[6] = -fVar5;
+    dst[7] = uVar7;
+
+    fVar1 = src[12];
+    uVar2 = src[14];
+    uVar3 = src[13];
+    dst[15] = src[15];
+    dst[12] = uVar2;
+    dst[13] = -fVar1;
+    dst[14] = uVar3;
 }

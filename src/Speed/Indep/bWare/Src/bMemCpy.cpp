@@ -50,6 +50,66 @@ int bMemCmp(const void *s1, const void *s2, unsigned int numbytes) {
     return *reinterpret_cast<const unsigned char *>(s1) - *reinterpret_cast<const unsigned char *>(s2);
 }
 
+void bMemSet(void *dest, unsigned char c, unsigned int numbytes) {
+    unsigned char *cdest = reinterpret_cast<unsigned char *>(dest);
+    unsigned int fill = c;
+    fill |= fill << 8;
+    fill |= fill << 16;
+
+    if (((int)cdest & 3) == 0) {
+        unsigned int align16 = (int)cdest & 0xf;
+        if (align16 != 0) {
+            while ((align16 != 0) && (numbytes >= 4)) {
+                *reinterpret_cast<unsigned int *>(cdest) = fill;
+                cdest += 4;
+                numbytes -= 4;
+                align16 = (int)cdest & 0xf;
+            }
+        }
+    }
+
+    if ((((int)cdest & 7) == 0) && (numbytes > 0x1f)) {
+        do {
+            reinterpret_cast<unsigned int *>(cdest)[0] = fill;
+            reinterpret_cast<unsigned int *>(cdest)[1] = fill;
+            reinterpret_cast<unsigned int *>(cdest)[2] = fill;
+            reinterpret_cast<unsigned int *>(cdest)[3] = fill;
+            reinterpret_cast<unsigned int *>(cdest)[4] = fill;
+            reinterpret_cast<unsigned int *>(cdest)[5] = fill;
+            reinterpret_cast<unsigned int *>(cdest)[6] = fill;
+            reinterpret_cast<unsigned int *>(cdest)[7] = fill;
+            cdest += 0x20;
+            numbytes -= 0x20;
+        } while (numbytes > 0x1f);
+    }
+
+    if ((((int)cdest & 3) == 0) && (numbytes > 0xf)) {
+        do {
+            reinterpret_cast<unsigned int *>(cdest)[0] = fill;
+            reinterpret_cast<unsigned int *>(cdest)[1] = fill;
+            reinterpret_cast<unsigned int *>(cdest)[2] = fill;
+            reinterpret_cast<unsigned int *>(cdest)[3] = fill;
+            cdest += 0x10;
+            numbytes -= 0x10;
+        } while (numbytes > 0xf);
+    }
+
+    if (((int)cdest & 3) == 0) {
+        while (numbytes > 7) {
+            reinterpret_cast<unsigned int *>(cdest)[0] = fill;
+            reinterpret_cast<unsigned int *>(cdest)[1] = fill;
+            numbytes -= 8;
+            cdest += 8;
+        }
+    }
+
+    while (numbytes != 0) {
+        *cdest = c;
+        cdest++;
+        numbytes--;
+    }
+}
+
 void bOverlappedMemCpy(void *dest, const void *src, unsigned int numbytes) {
     char *cdest = reinterpret_cast<char *>(dest);
     const char *csrc = reinterpret_cast<const char *>(src);

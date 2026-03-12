@@ -256,6 +256,27 @@ int bBoundingBoxIsInside(const bVector3 *bbox_min, const bVector3 *bbox_max, con
     return true;
 }
 
+float bDistToLine(const bVector2 *point, const bVector2 *line_p1, const bVector2 *line_p2) {
+    bVector2 p(point->x - line_p1->x, point->y - line_p1->y);
+    bVector2 tangent(line_p2->x - line_p1->x, line_p2->y - line_p1->y);
+    float length = bLength(&tangent);
+    bVector2 normal(-tangent.y / length, tangent.x / length);
+    float d = bDot(&p, &normal);
+    float l = bDot(&p, &tangent) / length;
+    float distance;
+
+    if (l < 0.0f) {
+        distance = bLength(&p);
+    } else if (l > length) {
+        bVector2 p2(point->x - line_p2->x, point->y - line_p2->y);
+        distance = bLength(&p2);
+    } else {
+        distance = bAbs(d);
+    }
+
+    return distance;
+}
+
 bool bIsPointInPoly(const bVector2 *point, const bVector2 *points, int num_points) {
     float x = point->x;
     float y = point->y;

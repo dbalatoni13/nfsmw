@@ -50,6 +50,96 @@ void bList::Sort(SortFunc check_flip) {
     }
 }
 
+void bList::MergeSort(SortFunc cmp) {
+    bNode *list = this->HeadNode.Next;
+    if (list == &this->HeadNode) {
+        return;
+    }
+
+    int insize = 1;
+    list->Prev = this->HeadNode.Prev;
+    this->HeadNode.Prev->Next = list;
+
+    while (true) {
+        bNode *tail = nullptr;
+        bNode *old_tail = nullptr;
+        int num_merges = 0;
+        bNode *p = list;
+
+        while (p != nullptr) {
+            num_merges++;
+
+            int psize = 0;
+            bNode *q = p;
+            for (int i = 0; i < insize; i++) {
+                psize++;
+                q = q->Next;
+                if (q == list) {
+                    q = nullptr;
+                    break;
+                }
+            }
+
+            int qsize = insize;
+            while (true) {
+                bNode *e;
+                if (psize < 1) {
+                    if ((qsize < 1) || (q == nullptr)) {
+                        break;
+                    }
+
+                    qsize--;
+                    e = q;
+                    p = q->Next;
+                    if (p == list) {
+                        p = nullptr;
+                    }
+                } else {
+                    if ((qsize != 0) && (q != nullptr) && (cmp(p, q) < 1)) {
+                        qsize--;
+                        e = q;
+                        p = q->Next;
+                        if (p == list) {
+                            p = nullptr;
+                        }
+                    } else {
+                        psize--;
+                        e = p;
+                        p = p->Next;
+                        if (p == list) {
+                            p = nullptr;
+                        }
+                    }
+                }
+
+                if (tail != nullptr) {
+                    tail->Next = e;
+                    e->Prev = tail;
+                } else {
+                    old_tail = e;
+                    e->Prev = nullptr;
+                }
+
+                tail = e;
+                list = old_tail;
+            }
+        }
+
+        tail->Next = old_tail;
+        old_tail->Prev = tail;
+        if (num_merges < 2) {
+            old_tail->Prev = &this->HeadNode;
+            this->HeadNode.Next = old_tail;
+            this->HeadNode.Prev = tail;
+            tail->Next = &this->HeadNode;
+            return;
+        }
+
+        insize *= 2;
+        list = old_tail;
+    }
+}
+
 SlotPool *bPNodeSlotPool = nullptr;
 BOOL bPListWantToClose = false;
 

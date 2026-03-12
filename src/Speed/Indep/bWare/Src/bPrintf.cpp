@@ -111,3 +111,49 @@ int bVSNPrintf(char *destString, int max_len, const char *fmt, va_list argList) 
     }
     return retVal;
 }
+
+void _stuff_char(bOutputInfo *output_info, const char ch, int *outLen) {
+    if (!output_info->StdOut) {
+        if (output_info->DestStringLen - 1 <= *outLen) {
+            return;
+        }
+
+        char *dest = output_info->DestString;
+        if (dest != nullptr) {
+            *dest = ch;
+            output_info->DestString = dest + 1;
+        }
+    } else {
+        bBufferedPutChar(ch);
+    }
+
+    *outLen = *outLen + 1;
+}
+
+void _stuff_str(bOutputInfo *output_info, const char *str, int strLen, int *outLen) {
+    if (!output_info->StdOut) {
+        int max_len = (output_info->DestStringLen - *outLen) - 1;
+        if (max_len < strLen) {
+            strLen = max_len;
+        }
+
+        *outLen = *outLen + strLen;
+        if (output_info->DestString != nullptr) {
+            while (strLen > 0) {
+                char *dest = output_info->DestString;
+                char ch = *str;
+                str++;
+                *dest = ch;
+                output_info->DestString = dest + 1;
+                strLen--;
+            }
+        }
+    } else if (strLen != 0) {
+        do {
+            char ch = *str;
+            str++;
+            _stuff_char(output_info, ch, outLen);
+            strLen--;
+        } while (strLen != 0);
+    }
+}
