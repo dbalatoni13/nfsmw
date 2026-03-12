@@ -11,15 +11,22 @@ char *SFXCTL_AccelTrans::GetTypeName() const { return s_TypeInfo.typeName; }
 void SFXCTL_AccelTrans::Destroy() {}
 
 int SFXCTL_AccelTrans::GetController(int Index) {
-    int result = -1;
     if (Index == 1) {
-        result = 2;
-    } else if (Index < 1) {
-        if (Index == 0) {
-            result = 4;
-        }
+        goto ReturnTwo;
     }
-    return result;
+    if (Index > 1) {
+        goto ReturnNegOne;
+    }
+    if (Index != 0) {
+        goto ReturnNegOne;
+    }
+    return 4;
+
+ReturnTwo:
+    return 2;
+
+ReturnNegOne:
+    return -1;
 }
 
 void SFXCTL_AccelTrans::SetupSFX(CSTATE_Base *_StateBase) {
