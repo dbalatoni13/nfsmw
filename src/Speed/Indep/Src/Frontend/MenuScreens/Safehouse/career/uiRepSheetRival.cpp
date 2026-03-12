@@ -132,21 +132,41 @@ unsigned int uiRepSheetRival::GetDefeatedTexture() {
 }
 
 void uiRepSheetRival::RefreshHeader() {
-    GRaceBin* bin = GRaceDatabase::mObj->GetBin(iCurrentViewBin);
-    if (bin == nullptr) {
-        return;
+    char buf[64];
+    GRaceBin* bin = GRaceDatabase::Get().GetBinNumber(iCurrentViewBin);
+    unsigned int num_boss_races = bin->GetBossRaceCount();
+    if (num_boss_races >= 5) {
+        cFEng::Get()->QueuePackageMessage(0xe7177701, GetPackageName(), nullptr);
+    } else if (num_boss_races == 4) {
+        cFEng::Get()->QueuePackageMessage(0x9a1d3a40, GetPackageName(), nullptr);
+    } else if (num_boss_races == 3) {
+        cFEng::Get()->QueuePackageMessage(0x4d22fd7f, GetPackageName(), nullptr);
+    } else {
+        cFEng::Get()->QueuePackageMessage(0x0028c0be, GetPackageName(), nullptr);
     }
-    unsigned int bossCount = bin->GetBossRaceCount();
-    for (unsigned int i = 0; i < bossCount; i++) {
+    unsigned int i = 0;
+    while (i < bin->GetBossRaceCount()) {
         unsigned int raceHash = bin->GetBossRaceHash(i);
         GRaceParameters* race = GRaceDatabase::mObj->GetRaceFromHash(raceHash);
         if (launch_race == nullptr) {
             launch_race = race;
         }
-        SetupRace(i + 1, race);
+        GRaceDatabase* db = &GRaceDatabase::Get();
+        unsigned int eventHash = race->GetEventHash();
+        i++;
+        if (db->CheckRaceScoreFlags(eventHash, static_cast< GRaceDatabase::ScoreFlags >(2))) {
+            bSNPrintf(buf, 64, "CROSSOUT_%d", i);
+            cFEng::Get()->QueuePackageMessage(FEHashUpper(buf), GetPackageName(), nullptr);
+        }
+        SetupRace(i, race);
     }
-    int totalBounty = FEDatabase->GetPlayerCarStable(0)->GetTotalBounty();
-    FEPrintf(GetPackageName(), 0xb514e2d8, "%d", totalBounty);
+    FEPlayerCarDB* stable = FEDatabase->GetPlayerCarStable(0);
+    const char* pkgName = GetPackageName();
+    const char* label = GetLocalizedString(0xce6b99b1);
+    unsigned int totalBounty = stable->GetTotalBounty();
+    FEPrintf(pkgName, 0xb514e2d8, "%s %$d", label, totalBounty);
+    pkgName = GetPackageName();
+    FEPrintf(pkgName, 0xf91a59f6, "%s %$d", GetLocalizedString(0x073b79e0), FEDatabase->GetCareerSettings()->GetCash());
 }
 
 void uiRepSheetRival::SetupRace(unsigned int index, GRaceParameters* race) {
