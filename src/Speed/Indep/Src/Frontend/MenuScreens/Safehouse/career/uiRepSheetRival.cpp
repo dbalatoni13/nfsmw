@@ -37,16 +37,16 @@ extern unsigned int iCurrentViewBin;
 
 uiRepSheetRival::uiRepSheetRival(ScreenConstructorData* sd)
     : MenuScreen(sd)
-    , RivalStreamer(sd->PackageFilename, sd->Arg != 0) {
-    bIsInGame = sd->Arg != 0;
-    launch_race = nullptr;
+    , bIsInGame(sd->Arg != 0) //
+    , launch_race(nullptr) //
+    , RivalStreamer(sd->PackageFilename, bIsInGame) {
+    new EFadeScreenOff(0x161a918);
     bMidRivalFlow = false;
     bOneOff = false;
     if (bIsInGame) {
         bMidRivalFlow = sd->Arg == 2;
         bOneOff = sd->Arg == 3;
     }
-    new EFadeScreenOff(0x161a918);
     Setup();
 }
 
