@@ -343,11 +343,15 @@ void MyThread::SetPriority(int priority) {
     THREAD_setpriority(&mThreadData, 0);
 }
 
+bool MyThread::IsActive() { return mActive; }
+
+int (*MyThread::GetEntryFunc())(void*) { return mEntryFunc; }
+
 int MyThread::EntryProc(void* pContext) {
     MyThread* pThread = static_cast< MyThread* >(pContext);
-    while (!pThread->mActive) {
+    while (!pThread->MyThread::IsActive()) {
         THREAD_yield(1);
     }
-    pThread->mEntryFunc(pContext);
+    pThread->MyThread::GetEntryFunc()(pContext);
     return 0;
 }

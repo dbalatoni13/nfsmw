@@ -139,7 +139,7 @@ void InitMemoryCard() {
     bStrCpy(gSaveType0, "");
     bStrCpy(gSaveType1, "");
     bStrCpy(gSaveType2, "");
-    bStrNCpy(MemoryCardImp::gContentName, "", 16);
+    bStrCpy(MemoryCardImp::gContentName, "");
     MemoryCard::s_pThis->Init();
 }
 
@@ -237,9 +237,17 @@ void MemoryCard::RequestTask(int op, const char* name) {
 
 void MemoryCard::ProcessTask() {
     if (GetScreen() != nullptr) {
-        if (m_ReqOp == MO_Delete) Delete(m_ReqFilename);
-        else if (m_ReqOp == MO_Load) Load(m_ReqFilename);
-        else if (m_ReqOp == MO_List) List(nullptr, nullptr);
+        switch (m_ReqOp) {
+        case MO_Delete:
+            Delete(m_ReqFilename);
+            break;
+        case MO_Load:
+            Load(m_ReqFilename);
+            break;
+        case MO_List:
+            List(nullptr, nullptr);
+            break;
+        }
         m_ReqOp = 0;
     }
 }
@@ -559,10 +567,11 @@ void MemoryCard::Delete(const char* filename) {
 
 void MemoryCard::ListOldSaveFilesNGC() {
     RealmcIface::TitleInfo titleInfo;
-    titleInfo.mTitleType = static_cast< RealmcIface::TitleType >(1);
-    titleInfo.mTitleId = 0;
-    titleInfo.mNameType = static_cast< RealmcIface::NameType >(0);
-    titleInfo.mDataFormat = static_cast< RealmcIface::DataFormat >(0);
+    titleInfo.Init(
+        static_cast< RealmcIface::TitleType >(1),
+        0,
+        static_cast< RealmcIface::NameType >(0),
+        static_cast< RealmcIface::DataFormat >(0));
     s_pThis->ShowMessages(false);
     List("NFSMW*", &titleInfo);
 }

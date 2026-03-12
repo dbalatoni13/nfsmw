@@ -75,8 +75,8 @@ struct MyThread : public IThread {
     void Sleep(int ticks) override;
     void SetPriority(int priority) override;
     static int EntryProc(void* pContext);
-    int (*GetEntryFunc())(void*) override { return mEntryFunc; }
-    bool IsActive() override { return mActive; }
+    int (*GetEntryFunc())(void*) override;
+    bool IsActive() override;
 };
 
 struct MyMutex : public IMutex {
