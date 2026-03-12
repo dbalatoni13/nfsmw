@@ -28,7 +28,7 @@ class bHash32 {
     }
 };
 
-struct UCrc32 {
+class UCrc32 {
   public:
     static const UCrc32 kNull;
 
