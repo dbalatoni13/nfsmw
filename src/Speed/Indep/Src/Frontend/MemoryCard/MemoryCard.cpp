@@ -14,15 +14,6 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-struct GameInfo {
-    int mGameTitle[33];
-    unsigned int mTitleId;
-    bool mMultipleSaveTypesUsed;
-    bool mMultitapSupported;
-    GameInfo(const unsigned short* gameTitle, unsigned int titleId,
-             bool multipleSaveTypesUsed, bool multitapSupported);
-};
-
 extern unsigned short gSaveType0[];
 extern unsigned short gSaveType1[];
 extern unsigned short gSaveType2[];

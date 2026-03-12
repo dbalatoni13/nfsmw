@@ -153,12 +153,15 @@ UIMemcardMain::UIMemcardMain(ScreenConstructorData* sd) : UIMemcardBase(sd) {
 void UIMemcardMain::DoSelect(const char* pName) {
     bStrCpy(m_FileName, pName);
     int listOp = m_pChild->m_ListOp;
-    if (listOp == 0) {
+    switch (listOp) {
+    case 0:
         MemoryCard::GetInstance()->RequestTask(5, m_FileName);
         SetStringCheckingCard();
-    } else if (listOp == 1) {
+        break;
+    case 1:
         MemoryCard::GetInstance()->RequestTask(6, m_FileName);
         SetStringCheckingCard();
+        break;
     }
     PopChild();
 }

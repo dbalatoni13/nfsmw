@@ -11,9 +11,9 @@ struct SystemInterface;
 using Realmc::SystemInterface;
 
 struct IGameInterface;
-struct GameInfo;
 
 namespace RealmcIface {
+struct GameInfo;
 
 enum MessageChoices {
     CHOICE_NONE = 0,
@@ -216,6 +216,22 @@ struct TitleInfo {
 
 struct MemcardInterfaceImpl;
 
+struct GameInfo {
+    wchar_t mGameTitle[33];          // offset 0x0, size 0x84
+    unsigned int mTitleId;           // offset 0x84, size 0x4
+    bool mMultipleSaveTypesUsed;     // offset 0x88, size 0x1
+    bool mMultitapSupported;         // offset 0x8C, size 0x1
+
+    GameInfo(const unsigned short *gameTitle, unsigned int titleId,
+             bool multipleSaveTypesUsed, bool multitapSupported);
+    GameInfo(const wchar_t *gameTitle, unsigned int titleId,
+             bool multipleSaveTypesUsed, bool multitapSupported) {
+        GameInfo(reinterpret_cast< const unsigned short * >(gameTitle), titleId,
+                 multipleSaveTypesUsed, multitapSupported);
+    }
+    void Clear();
+};
+
 struct MemcardInterface {
     MemcardInterfaceImpl *mImpl;
 
@@ -240,7 +256,16 @@ struct MemcardInterface {
     void Load(const char *entryName, char *header, char *body,
               const unsigned short *contentName, const TitleInfo *titleInfo,
               const unsigned short *typeName);
+    void Load(const char *entryName, char *header, char *body,
+              const wchar_t *contentName, const TitleInfo *titleInfo) {
+        Load(entryName, header, body,
+             reinterpret_cast< const unsigned short * >(contentName), titleInfo,
+             reinterpret_cast< const unsigned short * >(contentName));
+    }
     void Delete(const char *entryName, const unsigned short *contentName);
+    void Delete(const char *entryName, const wchar_t *contentName) {
+        Delete(entryName, reinterpret_cast< const unsigned short * >(contentName));
+    }
     void DeleteMultiple(unsigned int nEntryNames, const char **entryNames,
                         const unsigned short *contentName);
     void FindEntries(const char *entryNamePattern, const TitleInfo *titleInfo);
@@ -262,5 +287,6 @@ struct MemcardInterface {
 
 } // namespace RealmcIface
 
+using RealmcIface::GameInfo;
 
 #endif

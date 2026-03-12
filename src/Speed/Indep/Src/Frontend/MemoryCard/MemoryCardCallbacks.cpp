@@ -147,17 +147,17 @@ void MemcardCallbacks::SaveDone(const char* filename) {
     GetMemcard()->m_pImp->DestructSaveInfo();
     GetMemcard()->m_pBuffer = nullptr;
     GetMemcard()->m_MemOp = MemoryCard::MO_NONE;
-    FEDatabase->SetOptionsDirty(true);
+    FEDatabase->bProfileLoaded = true;
     FEDatabase->bIsOptionsDirty = false;
     GetMemcard()->m_bCardRemoved = false;
     if (GetMemcard()->IsManualSave() && gMemcardSetup.GetMethod() != 0xb0) {
-        if (FEDatabase->GetGameplaySettings()->AutoSaveOn == false) {
-            cFEng::Get()->QueueGameMessage(0x461a18ee, nullptr, 0xff);
-        } else {
+        if (FEDatabase->GetGameplaySettings()->AutoSaveOn) {
             GetMemcard()->m_bRetryAutoSave = false;
             GetMemcard()->SetAutoSaveEnabled(true);
+        } else {
+            cFEng::Get()->QueueGameMessage(0x461a18ee, nullptr, 0xff);
         }
-    } else if (!GetMemcard()->IsAutoSaving() && gMemcardSetup.GetMethod() != 0xb0) {
+    } else if (GetMemcard()->IsAutoSaving() || gMemcardSetup.GetMethod() == 0xb0) {
         GetMemcard()->m_bAutoSaveCardPulled = false;
         if (GetMemcard()->m_bFoundAutoSaveFile) {
             FEDatabase->bAutoSaveOverwriteConfirmed = true;
@@ -171,8 +171,6 @@ void MemcardCallbacks::SaveDone(const char* filename) {
         if (gMemcardSetup.GetMethod() == 0xb0) {
             cFEng::Get()->QueueGameMessage(0x461a18ee, nullptr, 0xff);
         }
-    } else {
-        cFEng::Get()->QueueGameMessage(0x461a18ee, nullptr, 0xff);
     }
 }
 
