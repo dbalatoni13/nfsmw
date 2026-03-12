@@ -68,7 +68,7 @@ struct OMCredits : public IconOption {
 
 // 0xA4
 struct AOSFXMasterVol : public FESliderWidget {
-    AOSFXMasterVol(bool enabled);
+    AOSFXMasterVol(bool enabled) : FESliderWidget(enabled) {}
     ~AOSFXMasterVol() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -77,7 +77,7 @@ struct AOSFXMasterVol : public FESliderWidget {
 
 // 0xA4
 struct AOCarVol : public FESliderWidget {
-    AOCarVol(bool enabled);
+    AOCarVol(bool enabled) : FESliderWidget(enabled) {}
     ~AOCarVol() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -86,7 +86,7 @@ struct AOCarVol : public FESliderWidget {
 
 // 0xA4
 struct AOSpeechVol : public FESliderWidget {
-    AOSpeechVol(bool enabled);
+    AOSpeechVol(bool enabled) : FESliderWidget(enabled) {}
     ~AOSpeechVol() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -95,7 +95,7 @@ struct AOSpeechVol : public FESliderWidget {
 
 // 0xA4
 struct AOFEMusicVol : public FESliderWidget {
-    AOFEMusicVol(bool enabled);
+    AOFEMusicVol(bool enabled) : FESliderWidget(enabled) {}
     ~AOFEMusicVol() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -104,7 +104,7 @@ struct AOFEMusicVol : public FESliderWidget {
 
 // 0xA4
 struct AOIGMusicVol : public FESliderWidget {
-    AOIGMusicVol(bool enabled);
+    AOIGMusicVol(bool enabled) : FESliderWidget(enabled) {}
     ~AOIGMusicVol() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -115,7 +115,7 @@ struct AOIGMusicVol : public FESliderWidget {
 
 // 0x64
 struct AOInteractiveMusicMode : public FEToggleWidget {
-    AOInteractiveMusicMode(bool enabled);
+    AOInteractiveMusicMode(bool enabled) : FEToggleWidget(enabled) {}
     ~AOInteractiveMusicMode() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -123,7 +123,7 @@ struct AOInteractiveMusicMode : public FEToggleWidget {
 
 // 0x64
 struct AOEATraxMusicMode : public FEToggleWidget {
-    AOEATraxMusicMode(bool enabled);
+    AOEATraxMusicMode(bool enabled) : FEToggleWidget(enabled) {}
     ~AOEATraxMusicMode() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -131,7 +131,7 @@ struct AOEATraxMusicMode : public FEToggleWidget {
 
 // 0x64
 struct AOAudioMode : public FEToggleWidget {
-    AOAudioMode(bool enabled);
+    AOAudioMode(bool enabled) : FEToggleWidget(enabled) {}
     ~AOAudioMode() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -141,7 +141,7 @@ struct AOAudioMode : public FEToggleWidget {
 
 // 0x64
 struct VOWideScreen : public FEToggleWidget {
-    VOWideScreen(bool enabled);
+    VOWideScreen(bool enabled) : FEToggleWidget(enabled) {}
     ~VOWideScreen() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -151,7 +151,7 @@ struct VOWideScreen : public FEToggleWidget {
 
 // 0x64
 struct GODamage : public FEToggleWidget {
-    GODamage(bool enabled);
+    GODamage(bool enabled) : FEToggleWidget(enabled) {}
     ~GODamage() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -159,7 +159,7 @@ struct GODamage : public FEToggleWidget {
 
 // 0x64
 struct GOAutoSave : public FEToggleWidget {
-    GOAutoSave(bool enabled);
+    GOAutoSave(bool enabled) : FEToggleWidget(enabled) {}
     ~GOAutoSave() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -167,7 +167,7 @@ struct GOAutoSave : public FEToggleWidget {
 
 // 0x64
 struct GOJumpCams : public FEToggleWidget {
-    GOJumpCams(bool enabled);
+    GOJumpCams(bool enabled) : FEToggleWidget(enabled) {}
     ~GOJumpCams() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -175,7 +175,7 @@ struct GOJumpCams : public FEToggleWidget {
 
 // 0x64
 struct GORearview : public FEToggleWidget {
-    GORearview(bool enabled);
+    GORearview(bool enabled) : FEToggleWidget(enabled) {}
     ~GORearview() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -183,7 +183,7 @@ struct GORearview : public FEToggleWidget {
 
 // 0x64
 struct GOSpeedoUnits : public FEToggleWidget {
-    GOSpeedoUnits(bool enabled);
+    GOSpeedoUnits(bool enabled) : FEToggleWidget(enabled) {}
     ~GOSpeedoUnits() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -191,7 +191,7 @@ struct GOSpeedoUnits : public FEToggleWidget {
 
 // 0x64
 struct GORacingMiniMap : public FEToggleWidget {
-    GORacingMiniMap(bool enabled);
+    GORacingMiniMap(bool enabled) : FEToggleWidget(enabled) {}
     ~GORacingMiniMap() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -199,7 +199,7 @@ struct GORacingMiniMap : public FEToggleWidget {
 
 // 0x64
 struct GOExploringMiniMap : public FEToggleWidget {
-    GOExploringMiniMap(bool enabled);
+    GOExploringMiniMap(bool enabled) : FEToggleWidget(enabled) {}
     ~GOExploringMiniMap() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -209,7 +209,7 @@ struct GOExploringMiniMap : public FEToggleWidget {
 
 // 0x64
 struct POTransmission : public FEToggleWidget {
-    POTransmission(bool enabled);
+    POTransmission(bool enabled) : FEToggleWidget(enabled) {}
     ~POTransmission() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -217,7 +217,7 @@ struct POTransmission : public FEToggleWidget {
 
 // 0x64
 struct PODriveCam : public FEToggleWidget {
-    PODriveCam(bool enabled);
+    PODriveCam(bool enabled) : FEToggleWidget(enabled) {}
     ~PODriveCam() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -225,7 +225,7 @@ struct PODriveCam : public FEToggleWidget {
 
 // 0x64
 struct POGauges : public FEToggleWidget {
-    POGauges(bool enabled);
+    POGauges(bool enabled) : FEToggleWidget(enabled) {}
     ~POGauges() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -233,7 +233,7 @@ struct POGauges : public FEToggleWidget {
 
 // 0x64
 struct POPosition : public FEToggleWidget {
-    POPosition(bool enabled);
+    POPosition(bool enabled) : FEToggleWidget(enabled) {}
     ~POPosition() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -241,7 +241,7 @@ struct POPosition : public FEToggleWidget {
 
 // 0x64
 struct POScore : public FEToggleWidget {
-    POScore(bool enabled);
+    POScore(bool enabled) : FEToggleWidget(enabled) {}
     ~POScore() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -249,7 +249,7 @@ struct POScore : public FEToggleWidget {
 
 // 0x64
 struct POSplitTime : public FEToggleWidget {
-    POSplitTime(bool enabled);
+    POSplitTime(bool enabled) : FEToggleWidget(enabled) {}
     ~POSplitTime() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -257,7 +257,7 @@ struct POSplitTime : public FEToggleWidget {
 
 // 0x64
 struct POLeaderBoard : public FEToggleWidget {
-    POLeaderBoard(bool enabled);
+    POLeaderBoard(bool enabled) : FEToggleWidget(enabled) {}
     ~POLeaderBoard() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -267,7 +267,7 @@ struct POLeaderBoard : public FEToggleWidget {
 
 // 0x64
 struct COVibration : public FEToggleWidget {
-    COVibration(int player_num, bool enabled);
+    COVibration(int player_num, bool enabled) : FEToggleWidget(enabled) {}
     ~COVibration() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
@@ -277,7 +277,7 @@ struct COVibration : public FEToggleWidget {
 
 // 0x64
 struct COConfig : public FEToggleWidget {
-    COConfig(bool enabled);
+    COConfig(bool enabled) : FEToggleWidget(enabled) {}
     ~COConfig() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
