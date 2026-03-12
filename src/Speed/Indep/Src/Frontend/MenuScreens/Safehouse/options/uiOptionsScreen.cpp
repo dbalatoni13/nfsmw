@@ -271,7 +271,9 @@ void UIOptionsScreen::SetupAudio() {
         AddToggleOption(new AOAudioMode(true), true);
     }
 
-    OriginalAudioSettings = new AudioSettings();
+    AudioSettings* temp = new AudioSettings();
+    temp->Default();
+    OriginalAudioSettings = temp;
     *OriginalAudioSettings = *FEDatabase->GetAudioSettings();
 }
 
@@ -286,7 +288,9 @@ void UIOptionsScreen::SetupVideo() {
 
     AddToggleOption(new VOWideScreen(true), true);
 
-    OriginalVideoSettings = new VideoSettings();
+    VideoSettings* temp = new VideoSettings();
+    temp->Default();
+    OriginalVideoSettings = temp;
     *OriginalVideoSettings = *FEDatabase->GetVideoSettings();
 
     FEngSetScript(GetPackageName(), 0xAD6B204F, 0x5079C8F8, true);
@@ -322,7 +326,9 @@ void UIOptionsScreen::SetupGameplay() {
     }
 
     if (OriginalGameplaySettings == nullptr) {
-        OriginalGameplaySettings = new GameplaySettings();
+        GameplaySettings* temp = new GameplaySettings();
+        temp->Default();
+        OriginalGameplaySettings = temp;
         *OriginalGameplaySettings = *FEDatabase->GetGameplaySettings();
     }
 }
@@ -358,7 +364,9 @@ void UIOptionsScreen::SetupPlayer() {
         AddToggleOption(new POLeaderBoard(true), true);
     }
 
-    OriginalPlayerSettings = new PlayerSettings();
+    PlayerSettings* temp = new PlayerSettings();
+    temp->Default();
+    OriginalPlayerSettings = temp;
     *OriginalPlayerSettings =
         *FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions());
 }
