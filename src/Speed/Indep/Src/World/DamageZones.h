@@ -46,6 +46,10 @@ struct Info {
         Value |= (level & 7) << (id * 3);
     }
 
+    unsigned int Get(ID id) const {
+        return (Value >> (id * 3)) & 7;
+    }
+
     void Clear() {
         Value = 0;
     }
