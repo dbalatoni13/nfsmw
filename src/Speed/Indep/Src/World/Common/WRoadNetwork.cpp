@@ -1463,6 +1463,277 @@ int WRoadNav::FetchAvoidables(IBody **avoidables, const int listsize) const {
     return num_avoidables;
 }
 
+void WRoadNav::HolePunchAvoidables(NavCookie *cookies, int num_cookies, float current_offset, float delta_offset) {
+    if (num_cookies == 0) return;
+
+    IVehicleAI *my_ai = pAIVehicle;
+    if (!my_ai) return;
+
+    IBody *avoidables[32];
+    int num_avoidables = FetchAvoidables(avoidables, 32);
+    if (num_avoidables == 0) return;
+
+    IRigidBody *my_body;
+    my_ai->QueryInterface(&my_body);
+
+    const UMath::Vector3 &my_position = my_body->GetPosition();
+
+    int my_cookie_index = ClosestCookieAhead(my_position, cookies, num_cookies, nullptr);
+    if (my_cookie_index < 0) return;
+
+    const NavCookie &my_cookie = cookies[my_cookie_index];
+
+    bool is_racer = false;
+    int closest_avoidable = num_cookies;
+
+    const UMath::Vector3 &my_velocity = my_body->GetLinearVelocity();
+
+    UMath::Vector3 my_right;
+    my_body->GetRightVector(my_right);
+    UMath::Vector3 my_forward;
+    my_body->GetForwardVector(my_forward);
+    UMath::Vector3 my_dimension;
+    my_body->GetDimension(my_dimension);
+
+    float my_speed = my_body->GetSpeed();
+
+    bVector2 nav_forward(fForwardVector.x, fForwardVector.z);
+    bNormalize(&nav_forward, &nav_forward);
+
+    if (GetPathType() == kPathRacer || GetPathType() == kPathPlayer) {
+        is_racer = true;
+    }
+
+    bool is_traffic = GetNavType() == kTypeTraffic;
+    bool is_drag = GRaceStatus::IsDragRace();
+
+    for (int i = 0; i < num_avoidables; i++) {
+        IBody *avoidable_body = avoidables[i];
+
+        UMath::Matrix4 tranform;
+        avoidable_body->GetTransform(tranform);
+
+        const UMath::Vector3 &avoidable_forward = UMath::Vector4To3(tranform.v2);
+        const UMath::Vector3 &avoidable_right = UMath::Vector4To3(tranform.v0);
+
+        UMath::Vector3 avoidable_position;
+        avoidable_position.y = tranform.v3.y;
+        avoidable_position.z = tranform.v3.z;
+        avoidable_position.x = tranform.v3.x;
+
+        float elevation = avoidable_position.y - my_cookie.Centre.y;
+        if (bClamp(elevation, -5.0f, 5.0f) != elevation) continue;
+
+        UMath::Vector3 avoidable_dimension;
+        avoidable_body->GetDimension(avoidable_dimension);
+
+        IVehicle *his_vehicle;
+        DriverClass his_class;
+        if (!avoidable_body->QueryInterface(&his_vehicle)) {
+            his_class = DRIVER_NONE;
+        } else {
+            his_class = his_vehicle->GetDriverClass();
+        }
+
+        bool he_is_traffic = false;
+        if (his_vehicle && (his_class == DRIVER_TRAFFIC || his_class == DRIVER_NONE)) {
+            he_is_traffic = true;
+        }
+
+        if (is_racer && he_is_traffic) {
+            float facing = avoidable_right.x * my_cookie.Forward.x + avoidable_right.z * my_cookie.Forward.y;
+            if (facing < 0.0f) {
+                facing = -facing;
+            }
+            if (facing > 0.707f && his_vehicle && his_vehicle->GetVehicleClass() == VehicleClass::TRAILER) {
+                UMath::ScaleAdd(avoidable_forward, -6.0f, avoidable_position, avoidable_position);
+                avoidable_dimension.x = 1.8f;
+                avoidable_dimension.z = 1.8f;
+            }
+        }
+
+        UMath::Vector3 avoidable_to_me;
+        UMath::Sub(avoidable_position, my_position, avoidable_to_me);
+
+        float dot_fwd = avoidable_forward.x * my_cookie.Forward.x + avoidable_forward.z * my_cookie.Forward.y;
+        if (dot_fwd < 0.0f) dot_fwd = -dot_fwd;
+        float dot_right = avoidable_right.x * my_cookie.Forward.x + avoidable_right.z * my_cookie.Forward.y;
+        if (dot_right < 0.0f) dot_right = -dot_right;
+        float his_extent = dot_right * avoidable_dimension.x + dot_fwd * avoidable_dimension.z + avoidable_dimension.x + 0.5f;
+
+        float dist_ahead = avoidable_to_me.x * my_cookie.Forward.x + avoidable_to_me.z * my_cookie.Forward.y;
+
+        float my_extent = my_dimension.x + 0.5f + my_dimension.z;
+
+        float dot_my_fwd = UMath::Abs(UMath::Dot(my_right, avoidable_forward));
+        float dot_my_right = UMath::Abs(UMath::Dot(my_right, avoidable_right));
+        float extent_side = dot_my_right * avoidable_dimension.x + dot_my_fwd * avoidable_dimension.z + my_dimension.x;
+
+        float dist_side = UMath::Abs(UMath::Dot(avoidable_to_me, my_right));
+
+        unsigned int cut_flags = 0;
+
+        if (is_traffic || my_speed < 20.0f) {
+            if (dist_ahead + his_extent < my_extent) {
+                cut_flags = 2;
+            }
+        } else {
+            if (dist_ahead - his_extent <= my_extent) {
+                cut_flags = 2;
+            }
+        }
+
+        float combined_extent = my_extent + his_extent;
+
+        if (dist_ahead < -combined_extent) continue;
+        if (dist_ahead + his_extent < 0.0f && dist_side < extent_side) continue;
+
+        UMath::Vector3 his_velocity;
+        avoidable_body->GetLinearVelocity(his_velocity);
+
+        float gap_ahead = UMath::Max(0.0f, dist_ahead - combined_extent);
+
+        UMath::Vector3 my_nose;
+        my_nose.x = my_position.x;
+        my_nose.y = my_position.y;
+        my_nose.z = my_position.z;
+
+        float my_nose_ahead = UMath::Min(my_extent, gap_ahead);
+        my_nose.x += my_cookie.Forward.x * my_nose_ahead;
+        my_nose.z += my_cookie.Forward.y * my_nose_ahead;
+
+        float his_nose_ahead = UMath::Min(his_extent, gap_ahead);
+
+        UMath::Vector3 his_nose;
+        his_nose.y = avoidable_position.y;
+        his_nose.x = avoidable_position.x - my_cookie.Forward.x * his_nose_ahead;
+        his_nose.z = avoidable_position.z - my_cookie.Forward.y * his_nose_ahead;
+
+        float closing_speed = 0.0f;
+        float approach_time = TimeToClosestApproach(my_nose, my_velocity, his_nose, his_velocity, &closing_speed);
+
+        bool blocked_traffic = false;
+        if (cut_flags == 0) {
+            if (closing_speed <= 0.0f) {
+                float trailing_speed = combined_extent;
+                if (is_traffic) {
+                    trailing_speed = combined_extent + my_speed * 0.5f + my_extent + my_extent;
+                }
+                if (dist_ahead > trailing_speed) continue;
+                if (is_traffic && dist_side > extent_side + 1.0f) continue;
+            }
+            blocked_traffic = is_traffic;
+        }
+
+        if (blocked_traffic || approach_time < 3.0f) {
+            UMath::Vector3 point_of_impact;
+            point_of_impact.x = avoidable_position.x;
+            point_of_impact.y = avoidable_position.y;
+            point_of_impact.z = avoidable_position.z;
+
+            float closing_along = his_velocity.x * my_cookie.Forward.x + his_velocity.z * my_cookie.Forward.y;
+            float time_offset = approach_time * closing_along - combined_extent;
+            point_of_impact.z += my_cookie.Forward.y * time_offset;
+            point_of_impact.x += my_cookie.Forward.x * time_offset;
+
+            int closest_cookie = ClosestCookieAhead(point_of_impact, cookies, num_cookies, nullptr);
+            if (closest_cookie > -1) {
+                const NavCookie &cookie = cookies[closest_cookie];
+
+                UMath::Vector3 right;
+                UMath::Scale(avoidable_right, avoidable_dimension.x, right);
+                UMath::Vector3 forward;
+                UMath::Scale(avoidable_forward, avoidable_dimension.z, forward);
+
+                bVector2 left_diagonal(forward.x - right.x, forward.z - right.z);
+                bVector2 right_diagonal(forward.x + right.x, forward.z + right.z);
+                bVector2 avoidable_velocity(his_velocity.x, his_velocity.z);
+
+                float avoidable_delta_offset = bCross(&avoidable_velocity, reinterpret_cast<const bVector2 *>(&cookie.Forward));
+
+                if (closest_cookie < closest_avoidable && dist_ahead > combined_extent) {
+                    fOccludingTrailSpeed = closing_along;
+                    closest_avoidable = closest_cookie;
+                }
+
+                UMath::Vector3 cut_to_position;
+                cut_to_position.x = point_of_impact.x;
+                cut_to_position.y = point_of_impact.y;
+                cut_to_position.z = point_of_impact.z;
+
+                float lateral_projection = bClamp(approach_time, 0.0f, 1.0f);
+                float offset_change = avoidable_delta_offset * lateral_projection;
+
+                cut_to_position.x += offset_change * cookie.Forward.y * 0.8f;
+                cut_to_position.z -= offset_change * cookie.Forward.x * 0.8f;
+
+                bVector2 cookie_to_avoidable(cut_to_position.x - cookie.Centre.x, cut_to_position.z - cookie.Centre.z);
+
+                float extra_width = offset_change * 0.2f;
+
+                bVector2 cookie_to_me(my_position.x - cookie.Centre.x, my_position.z - cookie.Centre.z);
+
+                float my_d = bDot(&cookie_to_me, reinterpret_cast<const bVector2 *>(&cookie.Forward));
+                float avoidable_d = bDot(&cookie_to_avoidable, reinterpret_cast<const bVector2 *>(&cookie.Forward));
+
+                float close_factor = UMath::Ramp(avoidable_d - my_d, -6.0f, 12.0f);
+
+                float right_projection = bCross(&right_diagonal, reinterpret_cast<const bVector2 *>(&cookie.Forward));
+                float left_projection = bCross(&left_diagonal, reinterpret_cast<const bVector2 *>(&cookie.Forward));
+                float avoidable_half_width = bAbs(right_projection);
+                float tmp = bAbs(left_projection);
+                avoidable_half_width = bMax(avoidable_half_width, tmp);
+
+                float adjusted_width = extra_width * close_factor + avoidable_half_width;
+
+                float nav_cross = bCross(reinterpret_cast<const bVector2 *>(&nav_forward), reinterpret_cast<const bVector2 *>(&cookie.Forward));
+                float new_current_offset = lateral_projection * close_factor * delta_offset * 0.2f + current_offset + nav_cross + nav_cross;
+
+                float hole_punch_safety_margin = close_factor;
+                if (is_drag) {
+                    hole_punch_safety_margin = close_factor * 0.8f;
+                }
+
+                float avoidable_offset = bCross(&cookie_to_avoidable, reinterpret_cast<const bVector2 *>(&cookie.Forward));
+
+                float gap_left = avoidable_offset - adjusted_width - cookie.LeftOffset;
+                float gap_right = cookie.RightOffset - avoidable_offset - adjusted_width;
+                float gap_required = hole_punch_safety_margin + fVehicleHalfWidth;
+
+                bool fit_left = gap_left > gap_required;
+                bool fit_right = gap_right > gap_required;
+
+                bool pass_left = new_current_offset < avoidable_offset;
+                if (fit_right && !fit_left) {
+                    pass_left = false;
+                } else if (!fit_right && fit_left) {
+                    pass_left = true;
+                }
+
+                float total_width = adjusted_width + fVehicleHalfWidth + hole_punch_safety_margin;
+
+                int i = closest_cookie;
+                if (closest_cookie < num_cookies) {
+                    while (true) {
+                        NavCookie &this_cookie = cookies[i];
+                        int result = CookieCutter(this_cookie, cut_to_position, total_width, pass_left, cut_flags);
+                        if (result == 0 && i == closest_cookie) break;
+
+                        UMath::Vector2 delta;
+                        delta.x = point_of_impact.x - this_cookie.Centre.x;
+                        delta.y = point_of_impact.y - this_cookie.Centre.y;
+                        float dist_to_tail = bDot(reinterpret_cast<const bVector2 *>(&delta), reinterpret_cast<const bVector2 *>(&this_cookie.Forward)) + combined_extent + combined_extent;
+                        if (dist_to_tail < 0.0f) break;
+                        i++;
+                        if (i >= num_cookies) break;
+                    }
+                }
+            }
+        }
+    }
+
+    ClampCookieCentres(cookies, num_cookies);
+}
 
 void WRoadNetwork::GetPointAndVecOnSegment(const WRoadSegment &segment, float d, UMath::Vector3 &point, UMath::Vector3 &vec) {
     WRoadNetwork &roadNetwork = Get();

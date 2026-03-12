@@ -214,6 +214,7 @@ class WRoadNav {
     void IncNavPosition(float dist, const UMath::Vector3 &to, float max_lookahead);
     void PrivateIncNavPosition(float dist, const UMath::Vector3 &to);
     void ClampCookieCentres(NavCookie *cookies, int num_cookies);
+    void HolePunchAvoidables(NavCookie *cookies, int num_cookies, float current_offset, float delta_offset);
     int FetchAvoidables(IBody **avoidables, const int listsize) const;
     bool IsWrongWay() const;
     bool IsOnShortcut();
