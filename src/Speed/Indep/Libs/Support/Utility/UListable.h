@@ -106,11 +106,11 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
             _buckets[idx].push_back(t);
         }
 
-        void _remove(iterator t, std::size_t idx) {
-            List &bucket = _buckets[idx];
-            typename List::iterator newend = std::remove(bucket.begin(), bucket.end(), t);
-            if (newend != bucket.end()) {
-                bucket.erase(newend, bucket.end());
+        void _remove(const_pointer t, std::size_t idx) {
+            const List &bucket = _buckets[idx];
+            typename List::const_iterator pos = std::find(bucket.begin(), bucket.end(), t);
+            if (pos != bucket.end()) {
+                _buckets[idx].erase(_buckets[idx].begin() + (pos - bucket.begin()));
             }
         }
 
@@ -133,7 +133,7 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
 
     void UnList() {
         for (std::size_t i = 0; i < EnumMax; i++) {
-            _mLists._remove(static_cast<iterator>(this), i);
+            _mLists._remove(static_cast<const_pointer>(this), i);
         }
     }
 
