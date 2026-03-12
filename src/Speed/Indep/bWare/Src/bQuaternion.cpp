@@ -4,29 +4,31 @@ bQuaternion bIdentityQuaternion(0.0f, 0.0f, 0.0f, 1.0f);
 
 // UNSOLVED
 bQuaternion &bQuaternion::Slerp(bQuaternion &r, const bQuaternion &target, float t) const {
-    float dot = this->x * target.x + this->y * target.y + this->z * target.z + this->w * target.w;
-    float scale0 = 1.0f - t;
-    float scale1 = t;
+    float cos_theta = bDot(reinterpret_cast<const bVector4 *>(this), reinterpret_cast<const bVector4 *>(&target));
+    float scale1 = 1.0f - t;
+    float scale2 = t;
 
-    if ((1.0f - bAbs(dot)) > 0.0001f) {
-        unsigned short angle = static_cast<unsigned short>(0x4000 - bASin(dot));
-        float sin_angle = bSin(angle);
-        float fangle = static_cast<float>(angle);
+    if ((1.0f - bAbs(cos_theta)) > 0.0001f) {
+        unsigned short theta = bACos(bAbs(cos_theta));
+        float sin_theta = bSin(theta);
+        unsigned short a1 = static_cast<unsigned short>(static_cast<int>((1.0f - t) * static_cast<float>(theta)) & 0xffff);
+        unsigned short a2 = static_cast<unsigned short>(static_cast<int>(t * static_cast<float>(theta)) & 0xffff);
 
-        scale0 = bSin(static_cast<unsigned short>(static_cast<int>((1.0f - t) * fangle) & 0xffff)) / sin_angle;
-        scale1 = bSin(static_cast<unsigned short>(static_cast<int>(t * fangle) & 0xffff)) / sin_angle;
+        scale1 = bSin(a1) / sin_theta;
+        scale2 = bSin(a2) / sin_theta;
     }
 
-    if (dot < 0.0f) {
-        scale0 = -scale0;
+    if (cos_theta < 0.0f) {
+        scale1 = -scale1;
     }
 
-    bVector4 temp(this->x * scale0, this->y * scale0, this->z * scale0, this->w * scale0);
-    bScaleAdd(&temp, &temp, reinterpret_cast<const bVector4 *>(&target), scale1);
-    r.x = temp.x;
-    r.y = temp.y;
-    r.z = temp.z;
-    r.w = temp.w;
+    bQuaternion qtemp;
+    bScale(reinterpret_cast<bVector4 *>(&qtemp), reinterpret_cast<const bVector4 *>(this), scale1);
+    bScaleAdd(reinterpret_cast<bVector4 *>(&qtemp), reinterpret_cast<const bVector4 *>(&qtemp), reinterpret_cast<const bVector4 *>(&target), scale2);
+    r.x = qtemp.x;
+    r.y = qtemp.y;
+    r.z = qtemp.z;
+    r.w = qtemp.w;
     return r;
 }
 
