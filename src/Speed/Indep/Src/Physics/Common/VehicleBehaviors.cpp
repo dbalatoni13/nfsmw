@@ -18,30 +18,6 @@ class RBCop {
   public:
     static Behavior *Construct(const BehaviorParams &params);
 };
-class EffectsVehicle {
-  public:
-    static Behavior *Construct(const BehaviorParams &params);
-};
-class EffectsCar {
-  public:
-    static Behavior *Construct(const BehaviorParams &params);
-};
-class EffectsPlayer {
-  public:
-    static Behavior *Construct(const BehaviorParams &params);
-};
-class EffectsSmackable {
-  public:
-    static Behavior *Construct(const BehaviorParams &params);
-};
-class EffectsFragment {
-  public:
-    static Behavior *Construct(const BehaviorParams &params);
-};
-class DamageVehicle {
-  public:
-    static Behavior *Construct(const BehaviorParams &params);
-};
 class DamageRacer {
   public:
     static Behavior *Construct(const BehaviorParams &params);
