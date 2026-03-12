@@ -242,7 +242,7 @@ float Cubic1D::GetVal(float t) const {
 }
 
 float Cubic1D::GetdVal(float t) const {
-    return (Coeff[0] * (t * 3.0f) + (Coeff[1] + Coeff[1])) * t + Coeff[2];
+    return (Coeff[0] * 3.0f * t + (Coeff[1] + Coeff[1])) * t + Coeff[2];
 }
 
 float Cubic1D::GetddVal(float t) const {
