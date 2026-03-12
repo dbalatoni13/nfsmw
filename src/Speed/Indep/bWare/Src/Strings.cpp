@@ -75,15 +75,29 @@ unsigned short *bStrCpy(unsigned short *to, const char *from) {
 }
 
 char *bStrNCpy(char *to, const char *from, int m) {
+    int remaining = m - 1;
     int n = 0;
-    while ((n < m) && (from[n] != '\0')) {
-        to[n] = from[n];
-        n++;
+
+    if (m == 0) {
+        return to;
     }
-    while (n < m) {
-        to[n] = '\0';
-        n++;
+
+    char c = *from;
+    *to = c;
+    if (c != '\0') {
+        do {
+            bool done = remaining == 0;
+            n = n + 1;
+            remaining = remaining - 1;
+            if (done) {
+                return to;
+            }
+
+            c = from[n];
+            to[n] = c;
+        } while (c != '\0');
     }
+
     return to;
 }
 
@@ -101,15 +115,29 @@ unsigned short *bStrNCpy(unsigned short *to, const unsigned short *from, int m) 
 }
 
 unsigned short *bStrNCpy(unsigned short *to, const char *from, int m) {
+    int remaining = m - 1;
     int n = 0;
-    while ((n < m) && (from[n] != '\0')) {
-        to[n] = static_cast<unsigned char>(from[n]);
-        n++;
+
+    if (m == 0) {
+        return to;
     }
-    while (n < m) {
-        to[n] = 0;
-        n++;
+
+    char c = *from;
+    *to = static_cast<unsigned char>(c);
+    if (c != '\0') {
+        do {
+            bool done = remaining == 0;
+            n = n + 1;
+            remaining = remaining - 1;
+            if (done) {
+                return to;
+            }
+
+            c = from[n];
+            to[n] = static_cast<unsigned char>(c);
+        } while (c != '\0');
     }
+
     return to;
 }
 
@@ -715,11 +743,9 @@ char *bStrIStr(const char *s1, const char *s2) {
             return nullptr;
         }
         if (bStrNICmp(s1, s2, len) == 0) {
-            break;
+            return const_cast<char *>(s1);
         }
-        s1++;
+        s1 = s1 + 1;
         c = *s1;
     }
-
-    return const_cast<char *>(s1);
 }
