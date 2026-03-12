@@ -751,7 +751,8 @@ void PVehicle::OnBeginMode(PhysicsMode mode) {
         if (mCollisionBody != nullptr) {
             mCollisionBody->DisableTriggering();
         }
-        DetachEntity();
+        Reset();
+    } else if (mode == PHYSICS_MODE_EMULATED) {
     } else if (mode == PHYSICS_MODE_SIMULATED) {
         if (mCollisionBody != nullptr) {
             mCollisionBody->EnableModeling();
