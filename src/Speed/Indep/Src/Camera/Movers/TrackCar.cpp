@@ -131,6 +131,7 @@ void TrackCarCameraMover::Init() {
 
     UMath::Vector4 carPos;
     eUnSwizzleWorldVector(*CarToFollow->GetGeometryPosition(), reinterpret_cast<bVector3 &>(carPos));
+    carPos.w = 1.0f;
 
     UMath::Vector4 carDir;
     eUnSwizzleWorldVector(*CarToFollow->GetForwardVector(), reinterpret_cast<bVector3 &>(carDir));
@@ -162,12 +163,9 @@ void TrackCarCameraMover::Init() {
         UMath::Lerp(nav.GetLeftPosition(), nav.GetPosition(), sideLerp, leftPos);
         FixWorldHeight(&leftPos, CameraType);
 
-        if (!IsSomethingInBetween(UMath::Vector4Make(leftPos, 1.0f),
-                                  UMath::Vector4Make(reinterpret_cast<UMath::Vector3 &>(carPos), 1.0f))) {
-            if (IsSomethingInBetween(UMath::Vector4Make(leftPos, 1.0f), carPosQuarterTime) && CameraType == 2) {
-            } else {
-                focal_error = 1;
-            }
+        if (!IsSomethingInBetween(UMath::Vector4Make(leftPos, 1.0f), carPos) ||
+            (!IsSomethingInBetween(UMath::Vector4Make(leftPos, 1.0f), carPosQuarterTime) && CameraType != 2)) {
+            focal_error = 1;
         }
 
         if (focal_error) {
@@ -189,12 +187,9 @@ void TrackCarCameraMover::Init() {
         UMath::Lerp(nav.GetRightPosition(), nav.GetPosition(), sideLerp, rightPos);
         FixWorldHeight(&rightPos, CameraType);
 
-        if (!IsSomethingInBetween(UMath::Vector4Make(rightPos, 1.0f),
-                                  UMath::Vector4Make(reinterpret_cast<UMath::Vector3 &>(carPos), 1.0f))) {
-            if (IsSomethingInBetween(UMath::Vector4Make(rightPos, 1.0f), carPosQuarterTime) && CameraType == 2) {
-            } else {
-                focal_error = 1;
-            }
+        if (!IsSomethingInBetween(UMath::Vector4Make(rightPos, 1.0f), carPos) ||
+            (!IsSomethingInBetween(UMath::Vector4Make(rightPos, 1.0f), carPosQuarterTime) && CameraType != 2)) {
+            focal_error = 1;
         }
 
         if (focal_error) {
@@ -214,12 +209,9 @@ void TrackCarCameraMover::Init() {
         FixWorldHeight(&pos, 3);
         vLeftHigh.z = pos.y;
 
-        if (!IsSomethingInBetween(UMath::Vector4Make(pos, 1.0f),
-                                  UMath::Vector4Make(reinterpret_cast<UMath::Vector3 &>(carPos), 1.0f))) {
-            if (IsSomethingInBetween(UMath::Vector4Make(pos, 1.0f), carPosQuarterTime) && CameraType == 2) {
-            } else {
-                visible = true;
-            }
+        if (!IsSomethingInBetween(UMath::Vector4Make(pos, 1.0f), carPos) ||
+            (!IsSomethingInBetween(UMath::Vector4Make(pos, 1.0f), carPosQuarterTime) && CameraType != 2)) {
+            visible = true;
         }
 
         if (visible && bDistBetween(&PreviousEye, &vLeftHigh) > 3.0f) {
@@ -233,12 +225,9 @@ void TrackCarCameraMover::Init() {
         FixWorldHeight(&pos, 3);
         vRightHigh.z = pos.y;
 
-        if (!IsSomethingInBetween(UMath::Vector4Make(pos, 1.0f),
-                                  UMath::Vector4Make(reinterpret_cast<UMath::Vector3 &>(carPos), 1.0f))) {
-            if (IsSomethingInBetween(UMath::Vector4Make(pos, 1.0f), carPosQuarterTime) && CameraType == 2) {
-            } else {
-                visible = true;
-            }
+        if (!IsSomethingInBetween(UMath::Vector4Make(pos, 1.0f), carPos) ||
+            (!IsSomethingInBetween(UMath::Vector4Make(pos, 1.0f), carPosQuarterTime) && CameraType != 2)) {
+            visible = true;
         }
 
         if (visible && bDistBetween(&PreviousEye, &vRightHigh) > 3.0f) {
