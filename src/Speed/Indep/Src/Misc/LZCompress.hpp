@@ -15,7 +15,14 @@ class LZHeader {
 };
 
 int32 LZDecompress(uint8 *pSrc, uint8 *pDst);
+int JLZDecompress(unsigned char *pSrc, unsigned char *pDst);
+int JLZCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst);
+int OldLZDecompress(unsigned char *pSrc, unsigned char *pDst);
+int LZCompress(unsigned char *pSrc, unsigned int SrcSize, unsigned char *pDst);
 int LZValidHeader(LZHeader *header);
+void LZByteSwapHeader(LZHeader *header);
 unsigned int LZGetMaxCompressedSize(unsigned int source_data_size);
+int RAWCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst);
+int HUFFCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst);
 
 #endif
