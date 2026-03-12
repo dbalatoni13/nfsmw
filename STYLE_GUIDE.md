@@ -36,6 +36,7 @@ __asm__ volatile("" : : : "memory");
 ## 3. Null Pointer
 
 Use `nullptr` exclusively. Never use `NULL` or `0` as a null pointer.
+Write `if (ptr)` instead of `if (ptr != nullptr)`.
 
 ## 4. Include Guards
 

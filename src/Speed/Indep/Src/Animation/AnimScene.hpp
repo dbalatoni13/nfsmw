@@ -36,21 +36,23 @@ struct NisScene {
 };
 
 // total size: 0x14
-class CAnimEntityData : public bTNode<CAnimEntityData> {
-  public:
-    void *operator new(size_t size) { return ::operator new[](size); }
+struct CAnimEntityData : public bTNode<CAnimEntityData> {
+    CAnimEntityData(unsigned int type, void *data, int size)
+        : mType(type),
+          mData(data),
+          mSize(size) {}
+    ~CAnimEntityData() {}
+    int GetType() { return mType; }
+    void *GetData() { return mData; }
+    int GetSize() { return mSize; }
 
-  private:
     int mType;   // offset 0x8, size 0x4
     void *mData; // offset 0xC, size 0x4
     int mSize;   // offset 0x10, size 0x4
 };
 
 // total size: 0x1C
-class CAnimSceneData : public bTNode<CAnimSceneData> {
-  public:
-    void *operator new(size_t size) { return ::operator new[](size); }
-
+struct CAnimSceneData : public bTNode<CAnimSceneData> {
     bChunk *GetChunk() {
         return mChunk;
     }
@@ -77,7 +79,6 @@ class CAnimSceneData : public bTNode<CAnimSceneData> {
     void AddEntityData(void *data, int size);
     void RemoveAllEntityData();
 
-  private:
     bChunk *mChunk;                              // offset 0x8, size 0x4
     NisScene *mNisScene;                         // offset 0xC, size 0x4
     bTList<CAnimEntityData> mAnimEntityDataList; // offset 0x10, size 0x8
@@ -162,8 +163,8 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
     float GetTimeTotalLength() override;
     bool IsControllingCamera() override;
     bool IsCameraFixingElevation() override;
-    bMatrix4 &GetSceneRotationMatrix() override;
-    bMatrix4 &GetSceneTransformMatrix() override;
+    const bMatrix4 &GetSceneRotationMatrix() override;
+    const bMatrix4 &GetSceneTransformMatrix() override;
 
   private:
     static int mHandleCounter;
@@ -237,8 +238,8 @@ struct CAnimMomentScene : public ICEScene {
     float GetTimeStart() override { return 0.0f; }
     float GetTimeTotalLength() override { return mTotalTime; }
     float GetTimeElapsed() override { return mTimeElapsed; }
-    bMatrix4 &GetSceneRotationMatrix() override { return mSceneRotationMatrix; }
-    bMatrix4 &GetSceneTransformMatrix() override { return mSceneTransformMatrix; }
+    const bMatrix4 &GetSceneRotationMatrix() override { return mSceneRotationMatrix; }
+    const bMatrix4 &GetSceneTransformMatrix() override { return mSceneTransformMatrix; }
 
     unsigned int mSceneHash;        // offset 0x4, size 0x4
     int mCamera_track_number;       // offset 0x8, size 0x4

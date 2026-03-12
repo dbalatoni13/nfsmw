@@ -174,9 +174,9 @@ bool CAnimPlayer::Load(unsigned int anim_id, int camera_track_number, bool Disab
         return false;
     }
 
+    unsigned int scene_count = TheAnimDirectory->GetSceneCount();
     bool scene_found = false;
     unsigned int scene_slot = 0;
-    unsigned int scene_count = TheAnimDirectory->GetSceneCount();
 
     if (scene_slot < scene_count) {
         do {
