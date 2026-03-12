@@ -26,7 +26,8 @@ WGridManagedDynamicElem::WGridManagedDynamicElem(UMath::Vector4 *dstPosRad, cons
 }
 
 void WGridManagedDynamicElem::Update() {
-    if (fType == 1) {
+    switch (fType) {
+    case 1: {
         UMath::Vector4To3(*fDstPosRad) = UMath::Vector4To3(*fSrcPosRad);
 
         if (UMath::Abs(fPosRad->x - fLastPosRad.x) <= 0.01f) {
@@ -41,7 +42,9 @@ void WGridManagedDynamicElem::Update() {
             WCollider::InvalidateIntersectingColliders(tempPosRad);
             fLastPosRad = tempPosRad;
         }
-    } else if (fType == 2) {
+        break;
+    }
+    case 2: {
         {
             UMath::Matrix4 m;
             m[0] = fPosRad[0];
@@ -66,7 +69,9 @@ void WGridManagedDynamicElem::Update() {
                 fLastPosRad = tempPosRad;
             }
         }
-    } else if (fType == 3) {
+        break;
+    }
+    case 3: {
         {
             UMath::Matrix4 m;
             m[0] = fPosRad[0];
@@ -101,6 +106,8 @@ void WGridManagedDynamicElem::Update() {
                 fLastPosRad = tempPosRad;
             }
         }
+        break;
+    }
     }
 }
 
