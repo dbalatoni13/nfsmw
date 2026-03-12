@@ -11,6 +11,13 @@ Your goal is to decompile a specific function: writing C++ source that compiles 
 
 Collect data from **all** of these sources in parallel where possible.
 
+If the function was not already chosen for you, pick it with the ranking wrapper first:
+
+```sh
+python tools/decomp-workflow.py next --unit main/Path/To/TU --limit 10
+python tools/decomp-workflow.py next --category game --strategy quick-wins --limit 10
+```
+
 ### 1a. decomp-context.py
 
 Preferred shortcut:
@@ -20,6 +27,9 @@ python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName
 python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName --brief
 python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
 ```
+
+If the shared unit object is missing, the wrapper now rebuilds it automatically before
+running `function` / `diff`.
 
 If you only need one Ghidra view, add `--ghidra-version gc` or `--ghidra-version ps2`
 to keep the context run faster and shorter.

@@ -55,8 +55,17 @@ Determine the file path (e.g. `src/Speed/Indep/SourceLists/zWorld2`). The game u
 Preferred shortcut:
 
 ```sh
+python tools/decomp-workflow.py next --unit main/Path/To/TU --limit 10
 python tools/decomp-workflow.py unit -u main/Path/To/TU --limit 20
 ```
+
+Use `next` first when you want the wrapper to rank the most useful targets instead of
+following raw objdiff order. `--strategy balanced` is the default and is usually the best
+starting point. Use `--strategy impact` when you only care about the biggest unmatched-byte
+wins, or `--strategy quick-wins` when you want already-implemented functions in mature units.
+
+If the shared unit object is missing, the wrapper now rebuilds it automatically before
+running `unit`.
 
 If you need the raw tools instead of the wrapper, run `decomp-status.py` and
 `decomp-diff.py` directly against the shared build output.
