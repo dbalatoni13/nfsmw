@@ -2,6 +2,10 @@ extern void SNDAEMS_removemodulebank(int handle);
 extern void SubscribeEventSys();
 extern int SNDmemlargestunused(int *start);
 extern void SNDmemlimits(int lower, int upper);
+extern "C" void BankSlotSystem_DestroySlots(void *slots) asm("DestroySlots__14BankSlotSystem");
+extern "C" void SndAssetQueue_clear(void *queue) asm(
+    "clear__Q24_STLt10_List_base2Z15stSndAssetQueueZQ33UTL3Stdt9Allocator2Z15stSndAssetQueueZ19_type_SndAssetQueue");
+extern stSndDataLoadParams g_SndAssetList[];
 extern Timer WorldTimer;
 
 void EAXAemsManager::ResolvePendingAsyncLoads() {}
@@ -57,4 +61,52 @@ void EAXAemsManager::CompleteAsyncLoad() {
     SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
     *reinterpret_cast<int *>(reinterpret_cast<char *>(m_pCurrentlyLoading) + 0x64) =
         *reinterpret_cast<int *>(&WorldTimer);
+}
+
+void EAXAemsManager::ResetBankLoadParams() {
+    m_nCurLoadedBankIndex = -1;
+    m_nEndOfList = 0;
+    SndAssetQueue_clear(reinterpret_cast<char *>(this) + 0xBC);
+    DestroySlots(true);
+}
+
+void EAXAemsManager::DestroySlots(bool bDoPFSlot) {
+    if (bDoPFSlot == true) {
+        BankSlotSystem_DestroySlots(reinterpret_cast<char *>(this) + 0xAC);
+    }
+    BankSlotSystem_DestroySlots(reinterpret_cast<char *>(this) + 0xA4);
+    m_SPUMainAllocsEnd = m_SPU_UpperAddress;
+    SNDmemlimits(-1, m_SPU_UpperAddress);
+    bMemSet(EAXAemsManager::m_RequiredSlots, 0, 0x10);
+}
+
+int EAXAemsManager::IsAssetInList(Attrib::StringKey filename) {
+    int n = 0;
+    int nEndOfList = m_nEndOfList;
+    if (n < nEndOfList) {
+        do {
+            bool bAssetMatch = false;
+            if (*reinterpret_cast<unsigned int *>(&filename) ==
+                *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(&g_SndAssetList[n]) + 0x8)) {
+                bAssetMatch = *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(&filename) + 0x4) ==
+                              *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(&g_SndAssetList[n]) + 0xC);
+            }
+            if (bAssetMatch) {
+                return n;
+            }
+            n++;
+        } while (n < nEndOfList);
+    }
+    return -1;
+}
+
+int EAXAemsManager::IsAssetLoaded(Attrib::StringKey filename) {
+    int n = IsAssetInList(filename);
+    int nLoadedAsset = -1;
+    if (n != -1) {
+        if (*reinterpret_cast<int *>(reinterpret_cast<char *>(&g_SndAssetList[n]) + 0x3C) != 0) {
+            nLoadedAsset = n;
+        }
+    }
+    return nLoadedAsset;
 }

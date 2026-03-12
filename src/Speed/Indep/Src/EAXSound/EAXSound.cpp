@@ -62,6 +62,11 @@ struct EAXSND8Wrapper : public AudioMemBase {
 struct stSndDataLoadParams {
     /* 0x00 */ char _pad0[0x34];
     /* 0x34 */ int Handle;
+    /* 0x38 */ int bResolvedAsync;
+    /* 0x3c */ int bResolvedSync;
+    /* 0x40 */ char _pad40[0x20];
+    /* 0x60 */ int t_req;
+    /* 0x64 */ int t_load;
 };
 
 enum eBANK_SLOT_TYPE {
@@ -98,6 +103,8 @@ struct stBankSlot {
 };
 
 struct EAXAemsManager : public AudioMemBase {
+    static int m_RequiredSlots[4];
+
     /* 0x004 */ char _pad0[0x9c - 0x4];
     /* 0x09c */ int m_nCurLoadedBankIndex;
     /* 0x0a0 */ int m_nEndOfList;
@@ -124,6 +131,9 @@ struct EAXAemsManager : public AudioMemBase {
     void ResolvePendingAsyncLoads();
     void InitSPUram();
     void ResetBankLoadParams();
+    void DestroySlots(bool bDoPFSlot);
+    int IsAssetInList(Attrib::StringKey filename);
+    int IsAssetLoaded(Attrib::StringKey filename);
     void CompleteAsyncLoad();
 };
 
