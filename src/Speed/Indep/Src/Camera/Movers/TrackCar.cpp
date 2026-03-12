@@ -2,7 +2,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Libs/Support/Utility/UVector.h"
 
-extern float TrackCarEyeOffsetZ[];
+static float TrackCarEyeOffsetZ[4] = {0.1f, 3.0f, 3.5f, 2.0f};
 
 static bool IsAnyCopNear(CameraAnchor *pCar) {
     IVehicle *const *iter = IVehicle::GetList(VEHICLE_AICOPS).begin();
