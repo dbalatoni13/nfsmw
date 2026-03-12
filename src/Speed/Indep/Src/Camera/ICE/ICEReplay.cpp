@@ -70,24 +70,24 @@ static bool ReplayCornerMirror(ICEAnchor *) {
 }
 
 static float ReplayBurnoutScore(ICEAnchor *p_car) {
-    float speed = p_car->GetVelocityMagnitude();
+    float ret = 0.0f;
+    float forward_speed = p_car->GetVelocityMagnitude();
 
-    if (speed != bClamp(speed, -10.0f, 20.0f)) {
-        return 0.0f;
+    if (forward_speed != UMath::Clamp(forward_speed, -10.0f, 20.0f)) {
+        return ret;
     }
 
-    {
-        float score = bClamp(p_car->GetForwardSlip() * 0.1f - 1.0f, 0.0f, 1.0f);
+    float forward_slip = p_car->GetForwardSlip();
+    ret = UMath::Clamp(forward_slip * 0.1f - 1.0f, 0.0f, 1.0f);
 
-        if (speed != bClamp(speed, -1.0f, 1.0f)) {
-            return score;
-        }
-        if (p_car->GetRPM() <= 3000.0f) {
-            return score;
-        }
-
-        return score + 10.9999895f;
+    if (forward_speed != UMath::Clamp(forward_speed, -1.0f, 1.0f)) {
+        return ret;
     }
+    if (p_car->GetRPM() <= 3000.0f) {
+        return ret;
+    }
+
+    return ret + 10.9999895f;
 }
 
 static bool ReplayBurnoutMirror(ICEAnchor *) {
@@ -95,18 +95,20 @@ static bool ReplayBurnoutMirror(ICEAnchor *) {
 }
 
 static float ReplayPowerSlideScore(ICEAnchor *p_car) {
+    float ret = 0.0f;
+
     if (p_car->GetVelocityMagnitude() <= 4.0f) {
-        return 0.0f;
+        return ret;
     }
 
     {
-        float score = (bAbs(p_car->GetSlipAngle()) * 360.0f - 5.0f) * 0.025f;
+        float yaw = (UMath::Abs(p_car->GetSlipAngle()) * 360.0f - 5.0f) * 0.025f;
 
-        if (score <= 0.0f) {
-            return 0.0f;
+        if (yaw <= ret) {
+            return ret;
         }
 
-        return bClamp(score + 0.1f, 0.0f, 1.0f);
+        return UMath::Clamp(yaw + 0.1f, 0.0f, 1.0f);
     }
 }
 
