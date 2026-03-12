@@ -68,7 +68,7 @@ static float GetDropTimer(const Attrib::Gen::smackable &attributes) {
 
 bool Smackable::Simplify() {
     if (mCollisionBody != nullptr && !mPersistant) {
-        const UMath::Vector3 &pos = static_cast< ISimable * >(this)->GetPosition();
+        const UMath::Vector3 &pos = static_cast<ISimable *>(this)->GetPosition();
         if (Sim::CanSpawnSimpleRigidBody(pos, true)) {
             IRigidBody *irb = GetRigidBody();
             UMath::Vector3 position = irb->GetPosition();
@@ -150,7 +150,7 @@ Smackable::Smackable(const UMath::Matrix4 &matrix, const Attrib::Gen::smackable 
     , IExplodeable(this) //
     , EventSequencer::IContext(this) //
     , mAttributes(attributes) //
-    , mRBSpecs(static_cast< ISimable * >(this), 0) //
+    , mRBSpecs(static_cast<ISimable *>(this), 0) //
 {
     mSimplifyWeight = 0.0f;
     mAge = 0.0f;
@@ -205,7 +205,7 @@ Smackable::~Smackable() {
     }
     ReleaseBehavior(UCrc32(BEHAVIOR_MECHANIC_EFFECTS));
     ReleaseBehavior(UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY));
-    Sim::Collision::RemoveListener(static_cast< Sim::Collision::IListener * >(this));
+    Sim::Collision::RemoveListener(static_cast<Sim::Collision::IListener *>(this));
 }
 
 bool Smackable::SetDynamicData(const EventSequencer::System *system, EventDynamicData *data) {
@@ -234,7 +234,7 @@ bool Smackable::OnExplosion(const UMath::Vector3 &normal, const UMath::Vector3 &
         UMath::Scale(impactvel, irb->GetMass() / dT, force);
         irb->ResolveForce(force, position);
     }
-    EventSequencer::IEngine *sequencer = static_cast< ISimable * >(this)->GetEventSequencer();
+    EventSequencer::IEngine *sequencer = static_cast<ISimable *>(this)->GetEventSequencer();
     if (sequencer != nullptr) {
         sequencer->ProcessStimulus(0xab556d39, Sim::GetTime(), nullptr,
                                    EventSequencer::QUEUE_ALLOW);
@@ -243,10 +243,10 @@ bool Smackable::OnExplosion(const UMath::Vector3 &normal, const UMath::Vector3 &
                                        EventSequencer::QUEUE_ALLOW);
         }
     }
-    if (!static_cast< ISimable * >(this)->GetCausality() && explosion->GetCausality()) {
+    if (!static_cast<ISimable *>(this)->GetCausality() && explosion->GetCausality()) {
         ICause *cause = ICause::FindInstance(explosion->GetCausality());
         if (cause != nullptr) {
-            cause->OnCausedExplosion(explosion, static_cast< ISimable * >(this));
+            cause->OnCausedExplosion(explosion, static_cast<ISimable *>(this));
         }
     }
     return true;
@@ -255,7 +255,7 @@ bool Smackable::OnExplosion(const UMath::Vector3 &normal, const UMath::Vector3 &
 void Smackable::OnBehaviorChange(const UCrc32 &mechanic) {
     PhysicsObject::OnBehaviorChange(mechanic);
     if (mechanic == UCrc32(BEHAVIOR_MECHANIC_RIGIDBODY)) {
-        if (static_cast< ISimable * >(this)->QueryInterface(&mCollisionBody)) {
+        if (static_cast<ISimable *>(this)->QueryInterface(&mCollisionBody)) {
             float detach = mAttributes.DETACH_FORCE();
             if (mVirgin && detach != 0.0f) {
                 mCollisionBody->AttachedToWorld(true, UMath::Max(0.0f, detach));
@@ -270,7 +270,7 @@ void Smackable::OnBehaviorChange(const UCrc32 &mechanic) {
                 mCollisionBody->DistributeMass();
             }
         }
-        if (static_cast< ISimable * >(this)->QueryInterface(&mSimpleBody)) {
+        if (static_cast<ISimable *>(this)->QueryInterface(&mSimpleBody)) {
             mSimpleBody->ModifyFlags(0, 0x20b);
             ReleaseBehavior(UCrc32(BEHAVIOR_MECHANIC_EFFECTS));
         }
@@ -279,16 +279,16 @@ void Smackable::OnBehaviorChange(const UCrc32 &mechanic) {
 
 void Smackable::DoImpactStimulus(unsigned int systemid, float intensity) {
     float time = Sim::GetTime();
-    EventSequencer::IEngine *iev = static_cast< ISimable * >(this)->GetEventSequencer();
+    EventSequencer::IEngine *iev = static_cast<ISimable *>(this)->GetEventSequencer();
     if (iev != nullptr) {
         EventSequencer::System *system = iev->FindSystem(systemid);
         if (system != nullptr) {
             intensity = UMath::Clamp(intensity, 0.0f, 1.0f);
-            unsigned int level = static_cast< unsigned int >(intensity * 6.0f);
+            unsigned int level = static_cast<unsigned int>(intensity * 6.0f);
             for (unsigned int i = 0; i < level + 1; i++) {
                 UCrc32 stimulus = DamageZone::GetImpactStimulus(i);
                 system->ProcessStimulus(stimulus.GetValue(), time,
-                                        static_cast< EventSequencer::IContext * >(this),
+                                        static_cast<EventSequencer::IContext *>(this),
                                         EventSequencer::QUEUE_ALLOW);
             }
         }
@@ -298,7 +298,7 @@ void Smackable::DoImpactStimulus(unsigned int systemid, float intensity) {
 void Smackable::OnImpact(float acceleration, float speed,
                          Sim::Collision::Info::CollisionType type, ISimable *iother) {
     Sim::GetTime();
-    EventSequencer::IEngine *iev = static_cast< ISimable * >(this)->GetEventSequencer();
+    EventSequencer::IEngine *iev = static_cast<ISimable *>(this)->GetEventSequencer();
     if (iev != nullptr) {
         switch (type) {
         case Sim::Collision::Info::OBJECT:
@@ -326,7 +326,7 @@ void Smackable::OnImpact(float acceleration, float speed,
 }
 
 void Smackable::OnCollision(const Sim::Collision::Info &cinfo) {
-    EventSequencer::IEngine *iev = static_cast< ISimable * >(this)->GetEventSequencer();
+    EventSequencer::IEngine *iev = static_cast<ISimable *>(this)->GetEventSequencer();
     if (iev == nullptr) {
         return;
     }
@@ -335,13 +335,13 @@ void Smackable::OnCollision(const Sim::Collision::Info &cinfo) {
         return;
     }
     mLastCollisionPosition = UMath::Vector4Make(cinfo.position, 0.0f);
-    HSIMABLE myHandle = static_cast< ISimable * >(this)->GetInstanceHandle();
+    HSIMABLE myHandle = static_cast<ISimable *>(this)->GetInstanceHandle();
     if (cinfo.objA == myHandle) {
         UMath::Vector3 normal = cinfo.normal;
         mLastImpactSpeed = cinfo.objAVel;
         float impact_acceleration = cinfo.impulseA;
         Sim::Collision::Info::CollisionType collisionType =
-            static_cast< Sim::Collision::Info::CollisionType >(cinfo.type);
+            static_cast<Sim::Collision::Info::CollisionType>(cinfo.type);
         ISimable *other = ISimable::FindInstance(cinfo.objB);
         OnImpact(impact_acceleration, speed, collisionType, other);
     } else if (cinfo.objB == myHandle) {
@@ -350,7 +350,7 @@ void Smackable::OnCollision(const Sim::Collision::Info &cinfo) {
         mLastImpactSpeed = cinfo.objBVel;
         float impact_acceleration = cinfo.impulseB;
         Sim::Collision::Info::CollisionType collisionType =
-            static_cast< Sim::Collision::Info::CollisionType >(cinfo.type);
+            static_cast<Sim::Collision::Info::CollisionType>(cinfo.type);
         ISimable *other = ISimable::FindInstance(cinfo.objA);
         OnImpact(impact_acceleration, speed, collisionType, other);
     }
@@ -419,8 +419,8 @@ bool Smackable::Dropout() {
 }
 
 bool Smackable::ValidateWorld() {
-    const UMath::Vector3 &pos = static_cast< ISimable * >(this)->GetPosition();
-    WWorldPos &wpos = static_cast< ISimable * >(this)->GetWPos();
+    const UMath::Vector3 &pos = static_cast<ISimable *>(this)->GetPosition();
+    WWorldPos &wpos = static_cast<ISimable *>(this)->GetWPos();
     wpos.FindClosestFace(pos, true);
     if (!wpos.OnValidFace()) {
         goto fail;
@@ -498,9 +498,9 @@ void Smackable::ProcessDeath(float dT) {
                     ITriggerableModel *itrigger = nullptr;
                     if (mModel->QueryInterface(&itrigger)) {
                         UMath::Matrix4 mat;
-                        static_cast< ISimable * >(this)->GetTransform(mat);
+                        static_cast<ISimable *>(this)->GetTransform(mat);
                         itrigger->PlaceTrigger(mat, true);
-                        static_cast< ISimable * >(this)->Detach(mModel);
+                        static_cast<ISimable *>(this)->Detach(mModel);
                         mModel = nullptr;
                     }
                 }
@@ -509,7 +509,7 @@ void Smackable::ProcessDeath(float dT) {
                 mModel = nullptr;
             }
         }
-        static_cast< ISimable * >(this)->Kill();
+        static_cast<ISimable *>(this)->Kill();
         return;
     }
     mLife = 0.125f;
@@ -522,7 +522,7 @@ bool Smackable::ProcessDropout(float dT) {
         float dropspeed = mAttributes.DROPOUT(1);
         irb->ModifyYPos(-dropspeed * dT);
         if (mDropTimer <= 0.0f) {
-            static_cast< ISimable * >(this)->Kill();
+            static_cast<ISimable *>(this)->Kill();
             mDropTimer = 0.0f;
         }
         return true;
@@ -541,7 +541,7 @@ void Smackable::ProcessOffWorld(float dT) {
                 mModel->ReleaseModel();
                 mModel = nullptr;
             }
-            static_cast< ISimable * >(this)->Kill();
+            static_cast<ISimable *>(this)->Kill();
         }
     } else {
         mOffWorldTimer = 0.0f;
@@ -560,7 +560,7 @@ void Smackable::OnDetached(IAttachable *pOther) {
     if (UTL::COM::ComparePtr(pOther, mModel)) {
         mModel = nullptr;
         if (!UTL::Collections::GarbageNode< PhysicsObject, 160 >::IsDirty()) {
-            static_cast< ISimable * >(this)->Kill();
+            static_cast<ISimable *>(this)->Kill();
         }
     }
     PhysicsObject::OnDetached(pOther);
@@ -570,12 +570,12 @@ void Smackable::CalcSimplificationWeight() {
     if (mCollisionBody == nullptr || mPersistant) {
         mSimplifyWeight = -1.0f;
     }
-    const UMath::Vector3 &pos = static_cast< ISimable * >(this)->GetPosition();
+    const UMath::Vector3 &pos = static_cast<ISimable *>(this)->GetPosition();
     float dist = Sim::DistanceToCamera(pos);
     IRigidBody *irb = GetRigidBody();
     float radius = irb->GetRadius();
-    float baseweight = static_cast< float >(mAttributes.CAN_SIMPLIFY());
-    if (!static_cast< IRenderable * >(this)->IsRenderable()) {
+    float baseweight = static_cast<float>(mAttributes.CAN_SIMPLIFY());
+    if (!static_cast<IRenderable *>(this)->IsRenderable()) {
         baseweight += baseweight;
     }
     mSimplifyWeight = (dist + baseweight) / radius;
@@ -691,15 +691,15 @@ HeirarchyModel::HeirarchyModel(bHash32 rendermesh, const CollisionGeometry::Boun
                                UCrc32 nodename, HeirarchyModel *parent,
                                const Attrib::Collection *attribs, const ModelHeirarchy *heirarchy,
                                unsigned int child_index, bool visible)
-    : Sim::Model(parent != nullptr ? static_cast< IModel * >(parent) : nullptr, geometry,
+    : Sim::Model(parent != nullptr ? static_cast<IModel *>(parent) : nullptr, geometry,
                  nodename, 6) //
     , IBody(this) //
     , ITriggerableModel(this) //
     , Attrib::Gen::smackable(attribs, 0, nullptr) //
 {
     mTriggerAvoid = UMath::Vector4::kZero;
-    mHeirarchy = const_cast< ModelHeirarchy * >(heirarchy);
-    mHeirarchyNode = static_cast< unsigned short >(child_index);
+    mHeirarchy = const_cast<ModelHeirarchy *>(heirarchy);
+    mHeirarchyNode = static_cast<unsigned short>(child_index);
     mRenderMesh = rendermesh;
     mOffScreenTimer = 10.0f;
     mChildVisibility = 0xFFFFFFFF;
@@ -724,15 +724,15 @@ HeirarchyModel::HeirarchyModel(bHash32 rendermesh, const CollisionGeometry::Boun
 
 void HeirarchyModel::SetCameraAvoidable(bool b) {
     bool is_avoidable = mFlags & 1;
-    if (static_cast< unsigned short >(b) != is_avoidable) {
+    if (static_cast<unsigned short>(b) != is_avoidable) {
         if (b) {
             if (!CAMERA_AVOIDABLE()) {
                 return;
             }
-            CameraAI::AddAvoidable(static_cast< IBody * >(this));
+            CameraAI::AddAvoidable(static_cast<IBody *>(this));
             mFlags = mFlags | 1;
         } else {
-            CameraAI::RemoveAvoidable(static_cast< IBody * >(this));
+            CameraAI::RemoveAvoidable(static_cast<IBody *>(this));
             mFlags = mFlags & 0xFFFE;
         }
     }
@@ -740,7 +740,7 @@ void HeirarchyModel::SetCameraAvoidable(bool b) {
 
 bool HeirarchyModel::OnRemoveOffScreen(float dT) {
     if (0.0f < mOffScreenTimer) {
-        IModel *model = static_cast< IModel * >(this);
+        IModel *model = static_cast<IModel *>(this);
         if (!model->InView()) {
             float timer = mOffScreenTimer - dT;
             mOffScreenTimer = timer;
@@ -820,7 +820,7 @@ IModel *HeirarchyModel::SpawnModel(UCrc32 rendernode, UCrc32 collisionnode, UCrc
                 if (attribs != nullptr) {
                     const ModelHeirarchy::Node *nodes = mHeirarchy->GetNodes();
                     eModel *emodel =
-                        reinterpret_cast< eModel * >(nodes[childindex].mModel);
+                        reinterpret_cast<eModel *>(nodes[childindex].mModel);
                     if (emodel != nullptr) {
                         bHash32 meshname(emodel->GetNameHash());
                         HeirarchyModel *child = new HeirarchyModel(
@@ -828,7 +828,7 @@ IModel *HeirarchyModel::SpawnModel(UCrc32 rendernode, UCrc32 collisionnode, UCrc
                             childindex, true);
                         IModel *result = nullptr;
                         if (child != nullptr) {
-                            result = static_cast< IModel * >(child);
+                            result = static_cast<IModel *>(child);
                         }
                         return result;
                     }
@@ -858,13 +858,13 @@ void HeirarchyModel::OnBeginDraw() {
 void HeirarchyModel::OnEndDraw() {
     mOffScreenTimer = 0.0f;
     if ((mFlags & 1) != 0) {
-        CameraAI::RemoveAvoidable(static_cast< IBody * >(this));
+        CameraAI::RemoveAvoidable(static_cast<IBody *>(this));
         mFlags = mFlags & 0xFFFE;
     }
 }
 
 void HeirarchyModel::GetTransform(UMath::Matrix4 &matrix) const {
-    IModel *model = const_cast< IModel * >(static_cast< const IModel * >(this));
+    IModel *model = const_cast<IModel *>(static_cast<const IModel *>(this));
     ISimable *simable = model->GetSimable();
     if (simable != nullptr) {
         ISimable *sim = model->GetSimable();
@@ -879,7 +879,7 @@ void HeirarchyModel::GetTransform(UMath::Matrix4 &matrix) const {
 }
 
 void HeirarchyModel::GetAngularVelocity(UMath::Vector3 &velocity) const {
-    IModel *model = const_cast< IModel * >(static_cast< const IModel * >(this));
+    IModel *model = const_cast<IModel *>(static_cast<const IModel *>(this));
     ISimable *simable = model->GetSimable();
     if (simable != nullptr) {
         ISimable *sim = model->GetSimable();
@@ -926,12 +926,12 @@ void HeirarchyModel::SetTrigger(const UMath::Matrix4 &matrix, bool virgin) {
 bool HeirarchyModel::OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) {
     if (mTrigger != nullptr && mTrigger->IsEnabled()) {
         if (0.0f < mTriggerAvoid.w) {
-            pos = *reinterpret_cast< const UMath::Vector3 * >(&mTriggerAvoid);
+            pos = *reinterpret_cast<const UMath::Vector3 *>(&mTriggerAvoid);
             sweep = mTriggerAvoid.w;
             return true;
         }
     } else {
-        IModel *model = static_cast< IModel * >(this);
+        IModel *model = static_cast<IModel *>(this);
         ISimable *simable = model->GetSimable();
         if (simable != nullptr) {
             ISimable *sim = model->GetSimable();
@@ -956,17 +956,17 @@ void HeirarchyModel::PlaceTrigger(const UMath::Matrix4 &matrix, bool enable) {
 
 void HeirarchyModel::OnEndSimulation() {
     if (mAvoidable != nullptr) {
-        mAvoidable->SetAvoidableObject(static_cast< IBody * >(this));
+        mAvoidable->SetAvoidableObject(static_cast<IBody *>(this));
     }
 }
 
 void HeirarchyModel::OnBeginSimulation() {
     DisableTrigger();
     if (mAvoidable != nullptr) {
-        IModel *model = static_cast< IModel * >(this);
+        IModel *model = static_cast<IModel *>(this);
         mAvoidable->SetAvoidableObject(model->GetSimable());
     }
-    IModel *model = static_cast< IModel * >(this);
+    IModel *model = static_cast<IModel *>(this);
     RenderConn::Pkt_Smackable_Open pkt(mRenderMesh, model->GetWorldID(),
                                        model->GetCollisionGeometry(), mHeirarchy,
                                        mHeirarchyNode);
@@ -975,7 +975,7 @@ void HeirarchyModel::OnBeginSimulation() {
 
 bool HeirarchyModel::OnDraw(Sim::Packet *service) {
     RenderConn::Pkt_Smackable_Service *pss =
-        static_cast< RenderConn::Pkt_Smackable_Service * >(service);
+        static_cast<RenderConn::Pkt_Smackable_Service *>(service);
     UpdateVisibility(pss->mVisible, pss->mDistanceToView);
     pss->mChildVisibility = mChildVisibility;
     return true;
@@ -992,7 +992,7 @@ PlaceableScenery::PlaceableScenery(bHash32 rendermesh,
 }
 
 void PlaceableScenery::ReleaseModel() {
-    static_cast< IPlaceableScenery * >(this)->Destroy();
+    static_cast<IPlaceableScenery *>(this)->Destroy();
 }
 
 PlaceableScenery *PlaceableScenery::Construct(const char *name, unsigned int attributes) {
@@ -1039,7 +1039,7 @@ void PlaceableScenery::PickUp() {
 }
 
 bool PlaceableScenery::Place(const UMath::Matrix4 &transform, bool snap_to_ground) {
-    static_cast< IPlaceableScenery * >(this)->Destroy();
+    static_cast<IPlaceableScenery *>(this)->Destroy();
     UMath::Matrix4 mat;
     UMath::Copy(transform, mat);
     if (snap_to_ground) {
@@ -1053,11 +1053,11 @@ bool PlaceableScenery::Place(const UMath::Matrix4 &transform, bool snap_to_groun
         mat.v3.y = worldHeight + dim.y;
     }
     PlaceTrigger(mat, false);
-    SmackableParams sp(mat, true, static_cast< IModel * >(this), false);
+    SmackableParams sp(mat, true, static_cast<IModel *>(this), false);
     ISimable *physics = UTL::COM::Factory< Sim::Param, ISimable, UCrc32 >::CreateInstance(
         UCrc32("Smackable"), sp);
     if (physics == nullptr) {
-        static_cast< IPlaceableScenery * >(this)->Destroy();
+        static_cast<IPlaceableScenery *>(this)->Destroy();
         return false;
     }
     return true;
@@ -1066,12 +1066,12 @@ bool PlaceableScenery::Place(const UMath::Matrix4 &transform, bool snap_to_groun
 SmackableAvoidable::SmackableAvoidable(HeirarchyModel *model)
     : AIAvoidable(
           mModel != nullptr
-              ? static_cast< UTL::COM::IUnknown * >(static_cast< IModel * >(mModel))
+              ? static_cast<UTL::COM::IUnknown *>(static_cast<IModel *>(mModel))
               : nullptr) //
     , mModel(model) //
 {
     SetAvoidableObject(model != nullptr
-                           ? static_cast< UTL::COM::IUnknown * >(static_cast< IBody * >(model))
+                           ? static_cast<UTL::COM::IUnknown *>(static_cast<IBody *>(model))
                            : nullptr);
 }
 
@@ -1105,8 +1105,8 @@ void HeirarchyModel::GetDimension(UMath::Vector3 &dim) const {
 }
 
 const Attrib::Instance &HeirarchyModel::GetAttributes() const {
-    return *static_cast< const Attrib::Instance * >(
-        static_cast< const Attrib::Gen::smackable * >(this));
+    return *static_cast<const Attrib::Instance *>(
+        static_cast<const Attrib::Gen::smackable *>(this));
 }
 
 unsigned int HeirarchyModel::GetWorldID() const {

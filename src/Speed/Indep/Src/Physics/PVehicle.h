@@ -59,20 +59,6 @@ struct VehicleParams : public Sim::Param {
     }
 };
 
-struct LaunchState {
-    float Time;
-    float Amount;
-    void Clear() { Time = 0.0f; Amount = 0.0f; }
-    bool IsSet() const { return Time > 0.0f; }
-    void Set(float time) { Time = time; Amount = 0.0f; }
-    void Tick(float dT) {
-        Time -= dT;
-        if (Time <= 0.0f) {
-            Clear();
-        }
-    }
-};
-
 class PVehicle : public PhysicsObject,
                  public bTNode<PVehicle>,
                  public IVehicle,
@@ -81,45 +67,72 @@ class PVehicle : public PhysicsObject,
                  public IExplodeable,
                  public IAttributeable {
   public:
+    struct LaunchState {
+        float Time;  // offset 0x0, size 0x4
+        float Amount; // offset 0x4, size 0x4
+        LaunchState() : Time(0.0f), Amount(0.0f) {}
+        void Clear() { Time = 0.0f; Amount = 0.0f; }
+        bool IsSet() const { return Time > 0.0f; }
+        void Set(float time) { Time = time; Amount = 0.0f; }
+        void Tick(float dT) {
+            Time -= dT;
+            if (Time <= 0.0f) {
+                Clear();
+            }
+        }
+    };
+
     struct Resource {
-        CarType Type;
-        unsigned int Cost;
-        unsigned int Flags;
+        enum eFlags {
+            VALID = 1,
+            SPOOL = 2,
+            NEEDS_COMPOSITING = 4,
+        };
+
+        CarType Type;        // offset 0x0, size 0x4
+        unsigned int Cost;   // offset 0x4, size 0x4
+        unsigned int Flags;  // offset 0x8, size 0x4
+
         Resource() : Type(CARTYPE_NONE), Cost(0), Flags(0) {}
-        Resource(const Attrib::Gen::pvehicle &attribs, bool compositing, bool valid);
-        bool NeedsCompositing() const { return (Flags & 2) != 0; }
-        bool IsValid() const { return (Flags & 1) != 0; }
-        bool IsSpooled() const { return (Flags & 2) != 0; }
-        void Invalidate() { Flags &= ~1; }
+        Resource(const Attrib::Gen::pvehicle &pvehicle, bool spool, bool is_player);
+        bool NeedsCompositing() const { return (Flags & NEEDS_COMPOSITING) != 0; }
+        bool IsValid() const { return (Flags & VALID) != 0; }
+        bool IsSpooled() const { return (Flags & SPOOL) != 0; }
+        void Invalidate() { Flags &= ~VALID; }
     };
 
     struct ManageNode {
-        PVehicle *vehicle;
-        Resource resource;
-        eVehicleCacheResult result;
-        unsigned int instancecount;
+        PVehicle *vehicle;            // offset 0x0, size 0x4
+        Resource resource;            // offset 0x4, size 0xC
+        eVehicleCacheResult result;   // offset 0x10, size 0x4
+        unsigned int instancecount;   // offset 0x14, size 0x4
 
-        static bool sort_remove_resources(const ManageNode &a, const ManageNode &b) {
-            if (a.result != b.result) {
-                return a.result > b.result;
+        ManageNode() {}
+        static void print(const ManageNode &n) {}
+        static bool sort_remove_resources(const ManageNode &lhs, const ManageNode &rhs) {
+            if (lhs.result != rhs.result) {
+                return lhs.result > rhs.result;
             }
-            return a.resource.Cost > b.resource.Cost;
+            return lhs.resource.Cost > rhs.resource.Cost;
         }
-        static bool sort_remove_instances(const ManageNode &a, const ManageNode &b) {
-            if (a.result != b.result) {
-                return a.result > b.result;
+        static bool sort_remove_instances(const ManageNode &lhs, const ManageNode &rhs) {
+            if (lhs.result != rhs.result) {
+                return lhs.result > rhs.result;
             }
-            return a.instancecount > b.instancecount;
+            return lhs.instancecount > rhs.instancecount;
         }
-        static bool sort_by_keep(const ManageNode &a, const ManageNode &b) {
-            return a.result < b.result;
+        static bool sort_by_keep(const ManageNode &lhs, const ManageNode &rhs) {
+            return lhs.result < rhs.result;
         }
-        static bool is_kept(const ManageNode &a) {
-            return a.result == VCR_WANT;
+        static bool is_kept(const ManageNode &h) {
+            return h.result == VCR_WANT;
         }
     };
 
     struct ManagementList : public UTL::FixedVector<ManageNode, 10, 16> {};
+
+    typedef UTL::Std::list<Resource, _type_list> ResourceList;
+    typedef UTL::Std::map<UCrc32, UCrc32, _type_ID_PVehicleChangeReq> ChangeRequest;
 
 
     PVehicle(DriverClass dc, const Attrib::Gen::pvehicle &attribs, const UMath::Vector3 &initialPos,

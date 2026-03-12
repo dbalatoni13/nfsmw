@@ -216,7 +216,7 @@ void PVehicle::ForceStopOff(char forceStopBits) {
 
 void PVehicle::OnDisableModeling() {
     IEffects *ieff;
-    if (static_cast< ISimable * >(this)->QueryInterface(&ieff)) {
+    if (static_cast<ISimable *>(this)->QueryInterface(&ieff)) {
         ieff->Purge();
     }
 }
@@ -301,7 +301,7 @@ bool PVehicle::OnTask(HSIMTASK htask, float dT) {
 }
 
 void PVehicle::SetStaging(bool staging) {
-    if (static_cast< unsigned int >(staging) != static_cast< unsigned int >(mStaging)) {
+    if (static_cast<unsigned int>(staging) != static_cast<unsigned int>(mStaging)) {
         mStaging = staging;
         if (staging) {
             SetSpeed(0.0f);
@@ -368,7 +368,7 @@ void PVehicle::ReloadBehaviors() {
 }
 
 void PVehicle::SetAnimating(bool animate) {
-    if (static_cast< unsigned int >(animate) != static_cast< unsigned int >(mAnimating)) {
+    if (static_cast<unsigned int>(animate) != static_cast<unsigned int>(mAnimating)) {
         mBehaviorOverrides.clear();
         mAnimating = animate;
         ReloadBehaviors();
@@ -938,10 +938,10 @@ void PVehicle::UpdateListing() {
     }
 }
 
-PVehicle::Resource::Resource(const Attrib::Gen::pvehicle &attribs, bool spool, bool is_player) {
+PVehicle::Resource::Resource(const Attrib::Gen::pvehicle &pvehicle, bool spool, bool is_player) {
     Flags = 0;
     CarPartDatabase &db = CarPartDB;
-    const char *text = attribs.MODEL().GetString();
+    const char *text = pvehicle.MODEL().GetString();
     if (text == nullptr) {
         text = "";
     }
@@ -1372,7 +1372,7 @@ ISimable *PVehicle::Construct(Sim::Param params) {
     UTL::Std::list< Resource, _type_list > resources;
     resources.push_back(resource);
     Attrib::RefSpec trailer_ref;
-    const Attrib::RefSpec *src = reinterpret_cast< const Attrib::RefSpec * >(
+    const Attrib::RefSpec *src = reinterpret_cast<const Attrib::RefSpec *>(
         attributes.GetAttributePointer(0x9a5537fe, 0));
     if (src != nullptr) {
         trailer_ref = *src;
@@ -1405,7 +1405,7 @@ ISimable *PVehicle::Construct(Sim::Param params) {
     }
     ISimable *result = nullptr;
     if (pv != nullptr) {
-        result = static_cast< ISimable * >(pv);
+        result = static_cast<ISimable *>(pv);
     }
     return result;
 }

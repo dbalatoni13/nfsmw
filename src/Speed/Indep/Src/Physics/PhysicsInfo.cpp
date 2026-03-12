@@ -9,7 +9,6 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
-using namespace Attrib::Gen;
 
 static PerfStats top_stats;
 static PerfStats bottom_stats;
@@ -17,11 +16,11 @@ static PerformanceMaps TheStockCars;
 static int Physics_Info_initialized;
 Physics::Info::Performance Physics::Info::PerformanceWeights[7];
 
-float Physics::Info::AerodynamicDownforce(const chassis &chassis, const float speed) {
+float Physics::Info::AerodynamicDownforce(const Attrib::Gen::chassis &chassis, const float speed) {
     return speed * 2 * chassis.AERO_COEFFICIENT() * 1000.0f;
 }
 
-float Physics::Info::EngineInertia(const engine &engine, const bool loaded) {
+float Physics::Info::EngineInertia(const Attrib::Gen::engine &engine, const bool loaded) {
     float scale;
     if (loaded)
         scale = 1.f;
@@ -30,12 +29,12 @@ float Physics::Info::EngineInertia(const engine &engine, const bool loaded) {
     return scale * (engine.FLYWHEEL_MASS() * 0.025f + 0.25f);
 }
 
-Physics::Info::eInductionType Physics::Info::InductionType(const pvehicle &pvehicle) {
-    const induction ind(pvehicle.induction(0), 0, nullptr);
+Physics::Info::eInductionType Physics::Info::InductionType(const Attrib::Gen::pvehicle &pvehicle) {
+    const Attrib::Gen::induction ind(pvehicle.induction(0), 0, nullptr);
     return InductionType(ind);
 }
 
-Physics::Info::eInductionType Physics::Info::InductionType(const induction &induction) {
+Physics::Info::eInductionType Physics::Info::InductionType(const Attrib::Gen::induction &induction) {
     if (induction.HIGH_BOOST() > 0.0f || induction.LOW_BOOST() > 0.0f) {
         // turbochargers don't produce significant boost until above the boost threshold (the lowest engine RPM at which it will spool up)
         // meanwhile superchargers apply boost proportionally to the engine RPM, so this param isn't needed there
@@ -49,8 +48,8 @@ Physics::Info::eInductionType Physics::Info::InductionType(const induction &indu
     }
 }
 
-bool Physics::Info::HasNos(const pvehicle &pvehicle) {
-    const nos n(pvehicle.nos(0), 0, nullptr);
+bool Physics::Info::HasNos(const Attrib::Gen::pvehicle &pvehicle) {
+    const Attrib::Gen::nos n(pvehicle.nos(0), 0, nullptr);
     bool result = false;
     if (n.TORQUE_BOOST() > 0.0f) {
         result = n.NOS_CAPACITY() > 0.0f;
@@ -58,11 +57,11 @@ bool Physics::Info::HasNos(const pvehicle &pvehicle) {
     return result;
 }
 
-bool Physics::Info::HasRunflatTires(const pvehicle &pvehicle) {
+bool Physics::Info::HasRunflatTires(const Attrib::Gen::pvehicle &pvehicle) {
     return false;
 }
 
-float Physics::Info::NosBoost(const nos &nos, const Tunings *tunings) {
+float Physics::Info::NosBoost(const Attrib::Gen::nos &nos, const Tunings *tunings) {
     float torque_scale = 1.0f;
     float boost = nos.TORQUE_BOOST();
     if (tunings) {
@@ -71,7 +70,7 @@ float Physics::Info::NosBoost(const nos &nos, const Tunings *tunings) {
     return boost + torque_scale;
 }
 
-float Physics::Info::NosCapacity(const nos &nos, const Tunings *tunings) {
+float Physics::Info::NosCapacity(const Attrib::Gen::nos &nos, const Tunings *tunings) {
     float capacity = nos.NOS_CAPACITY();
     if (tunings) {
         capacity -= capacity * tunings->Value[Physics::Tunings::NOS] * 0.25f;
@@ -79,7 +78,7 @@ float Physics::Info::NosCapacity(const nos &nos, const Tunings *tunings) {
     return capacity;
 }
 
-float Physics::Info::InductionRPM(const engine &engine, const induction &induction, const Tunings *tunings) {
+float Physics::Info::InductionRPM(const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction, const Tunings *tunings) {
     float spool = induction.SPOOL();
 
     // tune the (normalized) RPM at which forced induction kicks in
@@ -98,7 +97,7 @@ float Physics::Info::InductionRPM(const engine &engine, const induction &inducti
     return spool * (engine.RED_LINE() - engine.IDLE()) + engine.IDLE();
 }
 
-float Physics::Info::InductionBoost(const engine &engine, const induction &induction, float rpm, float spool, const Tunings *tunings, float *psi) {
+float Physics::Info::InductionBoost(const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction, float rpm, float spool, const Tunings *tunings, float *psi) {
     if (psi) {
         *psi = 0.0f;
     }
@@ -156,19 +155,19 @@ float Physics::Info::Torque(const Attrib::Gen::engine &engine, float rpm) {
     return 0.0f;
 }
 
-float Physics::Info::WheelDiameter(const tires &tires, bool front) {
+float Physics::Info::WheelDiameter(const Attrib::Gen::tires &tires, bool front) {
     int axle = front ? 0 : 1;
     float diameter = INCH2METERS(tires.RIM_SIZE().At(axle));
     return diameter + tires.SECTION_WIDTH().At(axle) * 0.001f * 2.0f * (tires.ASPECT_RATIO().At(axle) * 0.01f);
 }
 
-float Physics::Info::WheelDiameter(const pvehicle &pvehicle, bool front) {
-    const tires t(pvehicle.tires(0), 0, nullptr);
+float Physics::Info::WheelDiameter(const Attrib::Gen::pvehicle &pvehicle, bool front) {
+    const Attrib::Gen::tires t(pvehicle.tires(0), 0, nullptr);
     return WheelDiameter(t, front);
 }
 
 // NON_MATCHING: register allocation swap f31/f30 for rpm/converter_ratio
-bool Physics::Info::ShiftPoints(const transmission &transmission, const engine &engine, const induction &induction, float *shift_up,
+bool Physics::Info::ShiftPoints(const Attrib::Gen::transmission &transmission, const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction, float *shift_up,
                                 float *shift_down, unsigned int numpts) {
     for (int i = 0; i < numpts; ++i) {
         shift_up[i] = 0.0f;
@@ -249,9 +248,9 @@ Mps Physics::Info::Speedometer(const Attrib::Gen::transmission &transmission, co
     return speed;
 }
 
-float Physics::Info::MaxInductedPower(const pvehicle &pvehicle, const Tunings *tunings) {
-    engine eng(pvehicle.engine(0), 0, nullptr);
-    induction ind(pvehicle.induction(0), 0, nullptr);
+float Physics::Info::MaxInductedPower(const Attrib::Gen::pvehicle &pvehicle, const Tunings *tunings) {
+    Attrib::Gen::engine eng(pvehicle.engine(0), 0, nullptr);
+    Attrib::Gen::induction ind(pvehicle.induction(0), 0, nullptr);
 
     if (eng.Num_TORQUE() < 2) {
         return 0.0f;
@@ -273,7 +272,7 @@ float Physics::Info::MaxInductedPower(const pvehicle &pvehicle, const Tunings *t
     return result;
 }
 
-float Physics::Info::AvgInductedTorque(const engine &eng, const induction &ind, const transmission &trans, bool from_peak, const Tunings *tunings) {
+float Physics::Info::AvgInductedTorque(const Attrib::Gen::engine &eng, const Attrib::Gen::induction &ind, const Attrib::Gen::transmission &trans, bool from_peak, const Tunings *tunings) {
     unsigned int num_torque = eng.Num_TORQUE();
     if (num_torque < 2) {
         return 0.0f;
@@ -309,7 +308,7 @@ float Physics::Info::AvgInductedTorque(const engine &eng, const induction &ind, 
     return 0.0f;
 }
 
-float Physics::Info::MaxInductedTorque(const engine &eng, const induction &ind, float &atrpm, const Tunings *tunings) {
+float Physics::Info::MaxInductedTorque(const Attrib::Gen::engine &eng, const Attrib::Gen::induction &ind, float &atrpm, const Tunings *tunings) {
     if (eng.Num_TORQUE() < 2) {
         atrpm = eng.IDLE();
         return 0.0f;
@@ -333,13 +332,13 @@ float Physics::Info::MaxInductedTorque(const engine &eng, const induction &ind, 
     return torque;
 }
 
-float Physics::Info::MaxInductedTorque(const pvehicle &pvehicle, float &atrpm, const Tunings *tunings) {
-    const engine eng(pvehicle.engine(0), 0, nullptr);
-    const induction ind(pvehicle.induction(0), 0, nullptr);
+float Physics::Info::MaxInductedTorque(const Attrib::Gen::pvehicle &pvehicle, float &atrpm, const Tunings *tunings) {
+    const Attrib::Gen::engine eng(pvehicle.engine(0), 0, nullptr);
+    const Attrib::Gen::induction ind(pvehicle.induction(0), 0, nullptr);
     return MaxInductedTorque(eng, ind, atrpm, tunings);
 }
 
-float Physics::Info::MaxTorque(const engine &eng, float &atrpm) {
+float Physics::Info::MaxTorque(const Attrib::Gen::engine &eng, float &atrpm) {
     float torque = 0.0f;
     int max_pt = 0;
     unsigned int num_torque = eng.Num_TORQUE();
@@ -366,16 +365,16 @@ float Physics::Info::MaxTorque(const engine &eng, float &atrpm) {
     return torque;
 }
 
-float Physics::Info::Redline(const engine &engine) {
+float Physics::Info::Redline(const Attrib::Gen::engine &engine) {
     return engine.RED_LINE();
 }
 
-float Physics::Info::Redline(const pvehicle &pvehicle) {
-    const engine eng(pvehicle.engine(0), 0, nullptr);
+float Physics::Info::Redline(const Attrib::Gen::pvehicle &pvehicle) {
+    const Attrib::Gen::engine eng(pvehicle.engine(0), 0, nullptr);
     return Redline(eng);
 }
 
-unsigned int Physics::Info::NumFowardGears(const transmission &transmission) {
+unsigned int Physics::Info::NumFowardGears(const Attrib::Gen::transmission &transmission) {
     unsigned int num_ratios = transmission.Num_GEAR_RATIO();
     if (num_ratios > 2) {
         return num_ratios - 2;
@@ -383,29 +382,29 @@ unsigned int Physics::Info::NumFowardGears(const transmission &transmission) {
     return 0;
 }
 
-unsigned int Physics::Info::NumFowardGears(const pvehicle &pvehicle) {
-    const transmission trans(pvehicle.transmission(0), 0, nullptr);
+unsigned int Physics::Info::NumFowardGears(const Attrib::Gen::pvehicle &pvehicle) {
+    const Attrib::Gen::transmission trans(pvehicle.transmission(0), 0, nullptr);
     return NumFowardGears(trans);
 }
 
-bool Physics::Info::HasPerformanceRatings(const pvehicle &pvehicle) {
+bool Physics::Info::HasPerformanceRatings(const Attrib::Gen::pvehicle &pvehicle) {
     float base_handling = pvehicle.HandlingRating(0);
     float top_handling = pvehicle.HandlingRating(1);
     return base_handling < top_handling && 0.0f < top_handling;
 }
 
-bool PerfStats::Fetch(const pvehicle &vehicle, bVector2 *graph_data, int *num_data) {
+bool PerfStats::Fetch(const Attrib::Gen::pvehicle &vehicle, bVector2 *graph_data, int *num_data) {
     Time0To100 = 0.0f;
     TopSpeed = 0.0f;
     HandlingRating = 0.0f;
 
-    engine eng(vehicle.engine(0), 0, nullptr);
-    induction ind(vehicle.induction(0), 0, nullptr);
-    transmission trans(vehicle.transmission(0), 0, nullptr);
-    chassis chas(vehicle.chassis(0), 0, nullptr);
-    tires tir(vehicle.tires(0), 0, nullptr);
-    brakes bra(vehicle.brakes(0).GetCollection(), 0, nullptr);
-    nos n(vehicle.nos(0), 0, nullptr);
+    Attrib::Gen::engine eng(vehicle.engine(0), 0, nullptr);
+    Attrib::Gen::induction ind(vehicle.induction(0), 0, nullptr);
+    Attrib::Gen::transmission trans(vehicle.transmission(0), 0, nullptr);
+    Attrib::Gen::chassis chas(vehicle.chassis(0), 0, nullptr);
+    Attrib::Gen::tires tir(vehicle.tires(0), 0, nullptr);
+    Attrib::Gen::brakes bra(vehicle.brakes(0).GetCollection(), 0, nullptr);
+    Attrib::Gen::nos n(vehicle.nos(0), 0, nullptr);
 
     float max_torque_rpm;
     Physics::Info::MaxTorque(eng, max_torque_rpm);
@@ -553,7 +552,7 @@ void PerfLevel::Rate() {
     Stock.TopSpeed = UMath::Ramp(Stats.TopSpeed, bottom_stats.TopSpeed, top_stats.TopSpeed);
 }
 
-bool PerfLevel::Analyze(const pvehicle &vehicle) {
+bool PerfLevel::Analyze(const Attrib::Gen::pvehicle &vehicle) {
     Analyzed = false;
     if (!Stats.Fetch(vehicle, nullptr, nullptr)) {
         return false;
@@ -586,14 +585,14 @@ void PerformanceMaps::FindLimits(float direction, PerfStats &out) const {
 }
 
 void Physics::Info::Init() {
-    const Attrib::Class *aclass = Attrib::Database::Get().GetClass(pvehicle::ClassKey());
+    const Attrib::Class *aclass = Attrib::Database::Get().GetClass(Attrib::Gen::pvehicle::ClassKey());
     unsigned int key = aclass->GetFirstCollection();
 
     PerformanceMaps all_cars;
     PerformanceMaps upgraded_cars;
 
     while (key != 0) {
-        pvehicle vehicle(key, 0, nullptr);
+        Attrib::Gen::pvehicle vehicle(key, 0, nullptr);
         if (vehicle.MODEL().GetHash32() != UCrc32::kNull.GetValue() && !vehicle.IsDynamic()) {
             if (HasPerformanceRatings(vehicle)) {
                 PerfLevel performance(key);
@@ -609,7 +608,7 @@ void Physics::Info::Init() {
 
     for (PerformanceMaps::iterator iter = TheStockCars.begin(); iter != TheStockCars.end(); iter++) {
         PerfLevel &p = *iter;
-        pvehicle vehicle(p.Key, 0, nullptr);
+        Attrib::Gen::pvehicle vehicle(p.Key, 0, nullptr);
         if (Physics::Upgrades::SetMaximum(vehicle)) {
             PerfLevel performance(p.Key);
             if (performance.Analyze(vehicle)) {
@@ -658,12 +657,12 @@ void Physics::Info::Init() {
     Physics_Info_initialized = 1;
 }
 
-bool Physics::Info::ComputeAccelerationTable(const pvehicle &vehicle, float &top_speed, float *table, int num_entries) {
-    transmission trans(vehicle.transmission(0), 0, nullptr);
-    tires tir(vehicle.tires(0), 0, nullptr);
-    chassis chas(vehicle.chassis(0), 0, nullptr);
-    engine eng(vehicle.engine(0), 0, nullptr);
-    induction ind(vehicle.induction(0), 0, nullptr);
+bool Physics::Info::ComputeAccelerationTable(const Attrib::Gen::pvehicle &vehicle, float &top_speed, float *table, int num_entries) {
+    Attrib::Gen::transmission trans(vehicle.transmission(0), 0, nullptr);
+    Attrib::Gen::tires tir(vehicle.tires(0), 0, nullptr);
+    Attrib::Gen::chassis chas(vehicle.chassis(0), 0, nullptr);
+    Attrib::Gen::engine eng(vehicle.engine(0), 0, nullptr);
+    Attrib::Gen::induction ind(vehicle.induction(0), 0, nullptr);
 
     float avg_torque = AvgInductedTorque(eng, ind, trans, true, nullptr);
     avg_torque = avg_torque * FTLB2NM(1.0f);
@@ -737,7 +736,7 @@ bool Physics::Info::ComputeAccelerationTable(const pvehicle &vehicle, float &top
     return true;
 }
 
-bool Physics::Info::EstimatePerformance(const pvehicle &vehicle, Performance &perf) {
+bool Physics::Info::EstimatePerformance(const Attrib::Gen::pvehicle &vehicle, Performance &perf) {
     Performance stock;
     Performance upgraded;
 
@@ -832,7 +831,7 @@ bool Physics::Info::EstimatePerformance(const pvehicle &vehicle, Performance &pe
     return result;
 }
 
-bool Physics::Info::ComputePerformance(const pvehicle &vehicle, Performance &perf) {
+bool Physics::Info::ComputePerformance(const Attrib::Gen::pvehicle &vehicle, Performance &perf) {
     if (!HasPerformanceRatings(vehicle)) {
         return false;
     }
@@ -854,7 +853,7 @@ bool Physics::Info::ComputePerformance(const pvehicle &vehicle, Performance &per
     return true;
 }
 
-bool Physics::Info::GetStockPerformance(const pvehicle &vehicle, Performance &perf) {
+bool Physics::Info::GetStockPerformance(const Attrib::Gen::pvehicle &vehicle, Performance &perf) {
     if (!HasPerformanceRatings(vehicle)) {
         return false;
     }
@@ -875,7 +874,7 @@ bool Physics::Info::GetStockPerformance(const pvehicle &vehicle, Performance &pe
     return false;
 }
 
-bool Physics::Info::GetMaximumPerformance(const pvehicle &vehicle, Performance &perf) {
+bool Physics::Info::GetMaximumPerformance(const Attrib::Gen::pvehicle &vehicle, Performance &perf) {
     if (!HasPerformanceRatings(vehicle)) {
         return false;
     }

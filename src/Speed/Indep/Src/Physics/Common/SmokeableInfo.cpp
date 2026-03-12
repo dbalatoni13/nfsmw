@@ -166,7 +166,7 @@ void SceneryModel::OnEndSimulation() {
 }
 
 SceneryModel *SceneryModel::Construct(SmokeableSpawner *data, const Attrib::Collection *attributes, bool hidden) {
-    if (static_cast< unsigned int >(mSceneryCount) < 256) {
+    if (static_cast<unsigned int>(mSceneryCount) < 256) {
         const CollisionGeometry::Collection *col = CollisionGeometry::Lookup(data->GetCollisionName());
         if (col != nullptr) {
             const CollisionGeometry::Bounds *bounds = col->GetRoot();
@@ -223,16 +223,16 @@ static const Attrib::Class *TheSmackableClass;
 
 void SmokeableSpawnerPack::OnUnload() {
     int n = 0;
-    SmokeableSection *section = TheSmokeableSections.FindOrAdd(static_cast< int >(ScenerySectionNumber));
+    SmokeableSection *section = TheSmokeableSections.FindOrAdd(static_cast<int>(ScenerySectionNumber));
     section->LastLoadTime = Sim::GetTime();
 
     for (; n < NumSmokeableSpawners; n++) {
         SmokeableSpawner *spawner = &SmokeableSpawners[n];
-        if (static_cast< unsigned int >(n) < 256) {
+        if (static_cast<unsigned int>(n) < 256) {
             if (!spawner->IsInstanceVisible()) {
-                section->Rebuilds.Set(static_cast< unsigned int >(n));
+                section->Rebuilds.Set(static_cast<unsigned int>(n));
             } else {
-                section->Rebuilds.Clear(static_cast< unsigned int >(n));
+                section->Rebuilds.Clear(static_cast<unsigned int>(n));
             }
         }
         spawner->OnUnload();
@@ -259,7 +259,7 @@ void SmokeableSpawnerPack::OnMoved() {
 }
 
 void SmokeableSpawnerPack::OnLoad(unsigned int exclude_flags) {
-    SmokeableSection *section = TheSmokeableSections.Find(static_cast< int >(ScenerySectionNumber));
+    SmokeableSection *section = TheSmokeableSections.Find(static_cast<int>(ScenerySectionNumber));
 
     if (!GRaceStatus::Exists() || !GRaceStatus::Get().GetActivelyRacing()) {
         if (section != nullptr) {
@@ -271,12 +271,12 @@ void SmokeableSpawnerPack::OnLoad(unsigned int exclude_flags) {
     }
 
     if (section == nullptr || !section->Rebuilds.Test()) {
-        GManager::Get().RestorePursuitBreakerIcons(static_cast< int >(ScenerySectionNumber));
+        GManager::Get().RestorePursuitBreakerIcons(static_cast<int>(ScenerySectionNumber));
     }
 
     for (int n = 0; n < NumSmokeableSpawners; n++) {
         bool ignore = false;
-        if (section != nullptr && static_cast< unsigned int >(n) < 256 && section->Rebuilds.Test(static_cast< unsigned int >(n))) {
+        if (section != nullptr && static_cast<unsigned int>(n) < 256 && section->Rebuilds.Test(static_cast<unsigned int>(n))) {
             ignore = true;
         }
         SmokeableSpawners[n].OnLoad(exclude_flags, ignore);
@@ -318,9 +318,9 @@ void SmokeableSpawner::OnUnload() {
 const ModelHeirarchy *SmokeableSpawner::GetRenderHeirarchy() const {
     SceneryOverrideInfo *info = GetSceneryOverrideInfo(mSceneryOverrideInfoNumber);
     if (info != nullptr) {
-        ScenerySectionHeader *section_header = GetScenerySectionHeader(static_cast< int >(info->SectionNumber));
+        ScenerySectionHeader *section_header = GetScenerySectionHeader(static_cast<int>(info->SectionNumber));
         if (section_header != nullptr) {
-            SceneryInstance *scenery_instance = section_header->GetSceneryInstance(static_cast< int >(info->InstanceNumber));
+            SceneryInstance *scenery_instance = section_header->GetSceneryInstance(static_cast<int>(info->InstanceNumber));
             if (scenery_instance != nullptr) {
                 SceneryInfo *sinfo = section_header->GetSceneryInfo(scenery_instance);
                 if (sinfo != nullptr) {
@@ -335,9 +335,9 @@ const ModelHeirarchy *SmokeableSpawner::GetRenderHeirarchy() const {
 bHash32 SmokeableSpawner::GetRenderMesh() const {
     SceneryOverrideInfo *soi = GetSceneryOverrideInfo(mSceneryOverrideInfoNumber);
     if (soi != nullptr) {
-        ScenerySectionHeader *section_header = GetScenerySectionHeader(static_cast< int >(soi->SectionNumber));
+        ScenerySectionHeader *section_header = GetScenerySectionHeader(static_cast<int>(soi->SectionNumber));
         if (section_header != nullptr) {
-            SceneryInstance *scenery_instance = section_header->GetSceneryInstance(static_cast< int >(soi->InstanceNumber));
+            SceneryInstance *scenery_instance = section_header->GetSceneryInstance(static_cast<int>(soi->InstanceNumber));
             if (scenery_instance != nullptr) {
                 SceneryInfo *scenery_info = section_header->GetSceneryInfo(scenery_instance);
                 if (scenery_info != nullptr) {
@@ -400,13 +400,13 @@ void SmokeableSpawner::OnLoad(unsigned int exclude_flags, bool ignore) {
 
 int SmokeableSpawnerPack::Loader(bChunk *chunk) {
     if (chunk->GetID() == 0x34027) {
-        SmokeableSpawnerPack *spawner_pack = reinterpret_cast< SmokeableSpawnerPack * >(chunk->GetAlignedData(16));
+        SmokeableSpawnerPack *spawner_pack = reinterpret_cast<SmokeableSpawnerPack *>(chunk->GetAlignedData(16));
         if (AreChunksBeingMoved()) {
             spawner_pack->OnMoved();
         } else {
             spawner_pack->EndianSwap();
             if (Sim::Exists()) {
-                unsigned int exclude_flags = static_cast< unsigned int >(Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN);
+                unsigned int exclude_flags = static_cast<unsigned int>(Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN);
                 if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing) {
                     exclude_flags |= 4;
                 }
@@ -421,7 +421,7 @@ int SmokeableSpawnerPack::Loader(bChunk *chunk) {
 int SmokeableSpawnerPack::Unloader(bChunk *chunk) {
     if (chunk->GetID() == 0x34027) {
         if (!AreChunksBeingMoved() && Sim::Exists()) {
-            SmokeableSpawnerPack *pack = reinterpret_cast< SmokeableSpawnerPack * >(chunk->GetAlignedData(16));
+            SmokeableSpawnerPack *pack = reinterpret_cast<SmokeableSpawnerPack *>(chunk->GetAlignedData(16));
             pack->OnUnload();
         }
         return 1;

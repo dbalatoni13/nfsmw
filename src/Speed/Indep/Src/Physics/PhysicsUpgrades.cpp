@@ -13,10 +13,9 @@ using Attrib::AttributeIterator;
 using Attrib::Database;
 using Attrib::Key;
 using Attrib::RefSpec;
-using namespace Attrib::Gen;
 
 struct PUJunkNode : Attrib::Instance {
-    PUJunkNode(const RefSpec &collection, const junkman &junkman, unsigned int junkkey);
+    PUJunkNode(const RefSpec &collection, const Attrib::Gen::junkman &junkman, unsigned int junkkey);
 
     void operator delete(void *ptr, std::size_t bytes) {
         Attrib::Free(ptr, bytes, "Attrib::Instance");
@@ -47,21 +46,20 @@ struct tPartMap {
 } // namespace Upgrades
 } // namespace Physics
 
-using namespace Physics::Upgrades;
 
-static tPartMap put_maps[] = {
-    {PUT_TIRES, "tires", 0x570E7E24, 0x3F16D2B1, 0x65E52BDE, 0xC5860F58, 0x5F4A69DB},
-    {PUT_BRAKES, "brakes", 0x2DD1F36A, 0xA2AEA57C, 0xC316DCD1, 0x56C63B6F, 0xE6C23DE6},
-    {PUT_CHASSIS, "chassis", 0xF4E2FAD0, 0x20F6C9D5, 0x58CCF9F1, 0xB6495C9E, 0x21DD95EB},
-    {PUT_TRANSMISSION, "transmission", 0x07A7A3E5, 0x0CB3C7E5, 0x170D5554, 0x25AE629A, 0x3DF99C50},
-    {PUT_ENGINE, "engine", 0x5B862C53, 0x0CA4AD56, 0x5F8AFDDB, 0x9206EFD2, 0x3A93C8C7},
-    {PUT_INDUCTION, "induction", 0xC92A0142, 0x99FCA5D3, 0x4DFC0A63, 0x7546359E, 0xFC61F3A5},
-    {PUT_NOS, "nos", 0xD7B2D8F2, 0x2C48F8EC, 0x1D79C9A4, 0x452D2634, 0xEABB55C5},
-    {(Type)0, nullptr, 0, 0, 0, 0, 0},
+static Physics::Upgrades::tPartMap put_maps[] = {
+    {Physics::Upgrades::PUT_TIRES, "tires", 0x570E7E24, 0x3F16D2B1, 0x65E52BDE, 0xC5860F58, 0x5F4A69DB},
+    {Physics::Upgrades::PUT_BRAKES, "brakes", 0x2DD1F36A, 0xA2AEA57C, 0xC316DCD1, 0x56C63B6F, 0xE6C23DE6},
+    {Physics::Upgrades::PUT_CHASSIS, "chassis", 0xF4E2FAD0, 0x20F6C9D5, 0x58CCF9F1, 0xB6495C9E, 0x21DD95EB},
+    {Physics::Upgrades::PUT_TRANSMISSION, "transmission", 0x07A7A3E5, 0x0CB3C7E5, 0x170D5554, 0x25AE629A, 0x3DF99C50},
+    {Physics::Upgrades::PUT_ENGINE, "engine", 0x5B862C53, 0x0CA4AD56, 0x5F8AFDDB, 0x9206EFD2, 0x3A93C8C7},
+    {Physics::Upgrades::PUT_INDUCTION, "induction", 0xC92A0142, 0x99FCA5D3, 0x4DFC0A63, 0x7546359E, 0xFC61F3A5},
+    {Physics::Upgrades::PUT_NOS, "nos", 0xD7B2D8F2, 0x2C48F8EC, 0x1D79C9A4, 0x452D2634, 0xEABB55C5},
+    {(Physics::Upgrades::Type)0, nullptr, 0, 0, 0, 0, 0},
 };
 
-static const tPartMap *FindPartMap(Type type) {
-    const tPartMap *type_map = put_maps;
+static const Physics::Upgrades::tPartMap *FindPartMap(Physics::Upgrades::Type type) {
+    const Physics::Upgrades::tPartMap *type_map = put_maps;
     if (type_map->key == 0) {
         goto not_found;
     }
@@ -79,12 +77,12 @@ not_found:
     return nullptr;
 }
 
-static void DownGradeInternal(pvehicle &vehicle, Type type) {
+static void DownGradeInternal(Attrib::Gen::pvehicle &vehicle, Physics::Upgrades::Type type) {
     if (!vehicle.IsDynamic()) {
         return;
     }
 
-    const tPartMap *t = FindPartMap(type);
+    const Physics::Upgrades::tPartMap *t = FindPartMap(type);
     if (t == nullptr) {
         return;
     }
@@ -166,7 +164,7 @@ void ScalePart<int>(Attribute &attrib, unsigned int index, float scale) {
     attrib.Set(index, new_data);
 }
 
-float Physics::Upgrades::GetPercent(const pvehicle &vehicle, Type type) {
+float Physics::Upgrades::GetPercent(const Attrib::Gen::pvehicle &vehicle, Physics::Upgrades::Type type) {
     int max_level = GetMaxLevel(vehicle, type);
     if (max_level == 0) {
         return 0.0f;
@@ -178,20 +176,20 @@ float Physics::Upgrades::GetPercent(const pvehicle &vehicle, Type type) {
     return static_cast<float>(cur_level) / static_cast<float>(max_level);
 }
 
-int Physics::Upgrades::GetLevel(const pvehicle &vehicle, Type type) {
+int Physics::Upgrades::GetLevel(const Attrib::Gen::pvehicle &vehicle, Physics::Upgrades::Type type) {
     Attribute attrib;
-    const tPartMap *t = FindPartMap(type);
+    const Physics::Upgrades::tPartMap *t = FindPartMap(type);
     if (t == nullptr || !vehicle.Lookup(t->currentkey, attrib)) {
         return 0;
     }
     return attrib.Get< int >(0u);
 }
 
-void Physics::Upgrades::GetPackage(const pvehicle &vehicle, Package &package) {
+void Physics::Upgrades::GetPackage(const Attrib::Gen::pvehicle &vehicle, Package &package) {
     package.Default();
 
-    for (int i = 0; i < PUT_MAX; i++) {
-        Type type = static_cast<Type>(i);
+    for (int i = 0; i < Physics::Upgrades::PUT_MAX; i++) {
+        Physics::Upgrades::Type type = static_cast<Physics::Upgrades::Type>(i);
         package.Part[i] = GetLevel(vehicle, type);
         if (GetJunkman(vehicle, type)) {
             package.Junkman |= (1 << type);
@@ -199,16 +197,16 @@ void Physics::Upgrades::GetPackage(const pvehicle &vehicle, Package &package) {
     }
 }
 
-bool Physics::Upgrades::SetPackage(pvehicle &vehicle, const Package &package) {
-    pvehicle newvehicle(vehicle);
+bool Physics::Upgrades::SetPackage(Attrib::Gen::pvehicle &vehicle, const Package &package) {
+    Attrib::Gen::pvehicle newvehicle(vehicle);
     Clear(newvehicle);
 
     if (!Validate(newvehicle)) {
         return false;
     }
 
-    for (int i = 0; i < PUT_MAX; i++) {
-        Type type = static_cast<Type>(i);
+    for (int i = 0; i < Physics::Upgrades::PUT_MAX; i++) {
+        Physics::Upgrades::Type type = static_cast<Physics::Upgrades::Type>(i);
         int mask = 1 << type;
 
         if (!SetLevel(newvehicle, type, package.Part[i])) {
@@ -232,7 +230,7 @@ bool Physics::Upgrades::SetPackage(pvehicle &vehicle, const Package &package) {
     return true;
 }
 
-bool Physics::Upgrades::GetJunkman(const pvehicle &vehicle, Type type) {
+bool Physics::Upgrades::GetJunkman(const Attrib::Gen::pvehicle &vehicle, Physics::Upgrades::Type type) {
     int junkman_current = vehicle.junkman_current();
     bool result = true;
     if (((junkman_current >> type) & 1) == 0) {
@@ -241,8 +239,8 @@ bool Physics::Upgrades::GetJunkman(const pvehicle &vehicle, Type type) {
     return result;
 }
 
-bool Physics::Upgrades::CanInstallJunkman(const pvehicle &vehicle, Type type) {
-    const tPartMap *p = FindPartMap(type);
+bool Physics::Upgrades::CanInstallJunkman(const Attrib::Gen::pvehicle &vehicle, Physics::Upgrades::Type type) {
+    const Physics::Upgrades::tPartMap *p = FindPartMap(type);
     if (p == nullptr) {
         return false;
     }
@@ -250,17 +248,17 @@ bool Physics::Upgrades::CanInstallJunkman(const pvehicle &vehicle, Type type) {
         return false;
     }
 
-    if (type == PUT_INDUCTION) {
+    if (type == Physics::Upgrades::PUT_INDUCTION) {
         if (Physics::Info::InductionType(vehicle) == Physics::Info::INDUCTION_NONE) {
             return false;
         }
-    } else if (type == PUT_NOS) {
+    } else if (type == Physics::Upgrades::PUT_NOS) {
         if (!Physics::Info::HasNos(vehicle)) {
             return false;
         }
     }
 
-    junkman junkman(vehicle.junkman(), 0, nullptr);
+    Attrib::Gen::junkman junkman(vehicle.junkman(), 0, nullptr);
     Attribute junk_attribute;
     bool found = junkman.Lookup(p->junkkey, junk_attribute);
     if (found && junk_attribute.GetType() == 0x51ead18d) {
@@ -271,8 +269,8 @@ bool Physics::Upgrades::CanInstallJunkman(const pvehicle &vehicle, Type type) {
     return false;
 }
 
-bool Physics::Upgrades::SetJunkman(pvehicle &vehicle, Type type) {
-    pvehicle newvehicle(vehicle);
+bool Physics::Upgrades::SetJunkman(Attrib::Gen::pvehicle &vehicle, Physics::Upgrades::Type type) {
+    Attrib::Gen::pvehicle newvehicle(vehicle);
 
     if (GetJunkman(vehicle, type)) {
         return true;
@@ -282,7 +280,7 @@ bool Physics::Upgrades::SetJunkman(pvehicle &vehicle, Type type) {
         return false;
     }
 
-    const tPartMap *p = FindPartMap(type);
+    const Physics::Upgrades::tPartMap *p = FindPartMap(type);
     if (p == nullptr) {
         return false;
     }
@@ -307,7 +305,7 @@ bool Physics::Upgrades::SetJunkman(pvehicle &vehicle, Type type) {
 
     RefSpec basepart(part_attribute.Get< RefSpec >(0));
 
-    junkman junkman_inst(newvehicle.junkman(), 0, nullptr);
+    Attrib::Gen::junkman junkman_inst(newvehicle.junkman(), 0, nullptr);
     PUJunkNode node(basepart, junkman_inst, junk_key);
 
     if (!node.IsValid()) {
@@ -340,7 +338,7 @@ bool Physics::Upgrades::SetJunkman(pvehicle &vehicle, Type type) {
     return true;
 }
 
-bool Physics::Upgrades::ApplyPreset(pvehicle &vehicle, const presetride &presetride) {
+bool Physics::Upgrades::ApplyPreset(Attrib::Gen::pvehicle &vehicle, const Attrib::Gen::presetride &presetride) {
     if (!presetride.IsValid()) {
         return false;
     }
@@ -348,12 +346,12 @@ bool Physics::Upgrades::ApplyPreset(pvehicle &vehicle, const presetride &presetr
         return false;
     }
 
-    pvehicle newvehicle(vehicle);
+    Attrib::Gen::pvehicle newvehicle(vehicle);
     Clear(newvehicle);
 
-    for (int i = 0; i < PUT_MAX; i++) {
-        Type type = static_cast<Type>(i);
-        const tPartMap *part = FindPartMap(type);
+    for (int i = 0; i < Physics::Upgrades::PUT_MAX; i++) {
+        Physics::Upgrades::Type type = static_cast<Physics::Upgrades::Type>(i);
+        const Physics::Upgrades::tPartMap *part = FindPartMap(type);
         if (part == nullptr) {
             continue;
         }
@@ -379,7 +377,7 @@ bool Physics::Upgrades::ApplyPreset(pvehicle &vehicle, const presetride &presetr
     return true;
 }
 
-void Physics::Upgrades::RemovePart(pvehicle &vehicle, Type type) {
+void Physics::Upgrades::RemovePart(Attrib::Gen::pvehicle &vehicle, Physics::Upgrades::Type type) {
     if (!vehicle.IsDynamic()) {
         return;
     }
@@ -388,7 +386,7 @@ void Physics::Upgrades::RemovePart(pvehicle &vehicle, Type type) {
         return;
     }
 
-    const tPartMap *t = FindPartMap(type);
+    const Physics::Upgrades::tPartMap *t = FindPartMap(type);
     if (t == nullptr || t->key == 0) {
         return;
     }
@@ -400,12 +398,12 @@ void Physics::Upgrades::RemovePart(pvehicle &vehicle, Type type) {
     }
 }
 
-void Physics::Upgrades::RemoveJunkman(pvehicle &vehicle, Type type) {
+void Physics::Upgrades::RemoveJunkman(Attrib::Gen::pvehicle &vehicle, Physics::Upgrades::Type type) {
     if (!vehicle.IsDynamic()) {
         return;
     }
 
-    const tPartMap *t = FindPartMap(type);
+    const Physics::Upgrades::tPartMap *t = FindPartMap(type);
     if (t == nullptr || t->key == 0) {
         return;
     }
@@ -421,7 +419,7 @@ void Physics::Upgrades::RemoveJunkman(pvehicle &vehicle, Type type) {
     }
 }
 
-bool Physics::Upgrades::Validate(const pvehicle &vehicle, Type type) {
+bool Physics::Upgrades::Validate(const Attrib::Gen::pvehicle &vehicle, Physics::Upgrades::Type type) {
     if (GetJunkman(vehicle, type)) {
         if (!CanInstallJunkman(vehicle, type)) {
             return false;
@@ -432,12 +430,12 @@ bool Physics::Upgrades::Validate(const pvehicle &vehicle, Type type) {
     int max_level = GetMaxLevel(vehicle, type);
 
     if (current == 0 && max_level != 0) {
-        const tPartMap *t = FindPartMap(type);
+        const Physics::Upgrades::tPartMap *t = FindPartMap(type);
         if (t == nullptr) {
             return false;
         }
 
-        pvehicle base(vehicle);
+        Attrib::Gen::pvehicle base(vehicle);
         Clear(base);
         Attribute attrib;
         if (!base.Lookup(t->key, attrib) || attrib.GetLength() < 2) {
@@ -448,38 +446,38 @@ bool Physics::Upgrades::Validate(const pvehicle &vehicle, Type type) {
     return current <= max_level;
 }
 
-bool Physics::Upgrades::Validate(const pvehicle &vehicle) {
-    for (int i = 0; i < PUT_MAX; i++) {
-        if (!Validate(vehicle, static_cast<Type>(i))) {
+bool Physics::Upgrades::Validate(const Attrib::Gen::pvehicle &vehicle) {
+    for (int i = 0; i < Physics::Upgrades::PUT_MAX; i++) {
+        if (!Validate(vehicle, static_cast<Physics::Upgrades::Type>(i))) {
             return false;
         }
     }
     return true;
 }
 
-int Physics::Upgrades::GetMaxLevel(const pvehicle &vehicle, Type type) {
+int Physics::Upgrades::GetMaxLevel(const Attrib::Gen::pvehicle &vehicle, Physics::Upgrades::Type type) {
     Attribute attrib;
-    const tPartMap *t = FindPartMap(type);
+    const Physics::Upgrades::tPartMap *t = FindPartMap(type);
     if (t == nullptr || !vehicle.Lookup(t->countkey, attrib)) {
         return 0;
     }
     return attrib.Get< int >(0u);
 }
 
-bool Physics::Upgrades::SetMaximum(pvehicle &pvehicle) {
+bool Physics::Upgrades::SetMaximum(Attrib::Gen::pvehicle &pvehicle) {
     Package package;
     package.Default();
 
-    for (int i = 0; i < PUT_MAX; i++) {
-        Type type = static_cast<Type>(i);
+    for (int i = 0; i < Physics::Upgrades::PUT_MAX; i++) {
+        Physics::Upgrades::Type type = static_cast<Physics::Upgrades::Type>(i);
         package.Part[i] = GetMaxLevel(pvehicle, type);
     }
 
     return SetPackage(pvehicle, package);
 }
 
-static bool UpgradeInternal(pvehicle &vehicle, Type type, int level, float weight) {
-    pvehicle newvehicle(vehicle);
+static bool UpgradeInternal(Attrib::Gen::pvehicle &vehicle, Physics::Upgrades::Type type, int level, float weight) {
+    Attrib::Gen::pvehicle newvehicle(vehicle);
 
     if (weight <= 0.0f) {
         RemovePart(vehicle, type);
@@ -491,7 +489,7 @@ static bool UpgradeInternal(pvehicle &vehicle, Type type, int level, float weigh
         return false;
     }
 
-    const tPartMap *p = FindPartMap(type);
+    const Physics::Upgrades::tPartMap *p = FindPartMap(type);
     if (p == nullptr) {
         return false;
     }
@@ -561,8 +559,8 @@ static bool UpgradeInternal(pvehicle &vehicle, Type type, int level, float weigh
     return true;
 }
 
-bool Physics::Upgrades::SetLevel(pvehicle &vehicle, Type type, int level) {
-    pvehicle newvehicle(vehicle);
+bool Physics::Upgrades::SetLevel(Attrib::Gen::pvehicle &vehicle, Physics::Upgrades::Type type, int level) {
+    Attrib::Gen::pvehicle newvehicle(vehicle);
 
     int cur_level = GetLevel(vehicle, type);
     if (cur_level == level) {
@@ -588,14 +586,14 @@ bool Physics::Upgrades::SetLevel(pvehicle &vehicle, Type type, int level) {
     return true;
 }
 
-void Physics::Upgrades::Clear(pvehicle &vehicle) {
+void Physics::Upgrades::Clear(Attrib::Gen::pvehicle &vehicle) {
     if (vehicle.IsDynamic()) {
         vehicle.Unmodify();
     }
 }
 
-bool Physics::Upgrades::MatchPerformance(pvehicle &vehicle, const Physics::Info::Performance &matched_performance) {
-    pvehicle newvehicle(vehicle);
+bool Physics::Upgrades::MatchPerformance(Attrib::Gen::pvehicle &vehicle, const Physics::Info::Performance &matched_performance) {
+    Attrib::Gen::pvehicle newvehicle(vehicle);
 
     Clear(newvehicle);
 
@@ -639,30 +637,30 @@ bool Physics::Upgrades::MatchPerformance(pvehicle &vehicle, const Physics::Info:
         match_line.Handling = 0.0f;
     }
 
-    for (int i = 0; i < PUT_MAX; i++) {
-        Type type = static_cast<Type>(i);
+    for (int i = 0; i < Physics::Upgrades::PUT_MAX; i++) {
+        Physics::Upgrades::Type type = static_cast<Physics::Upgrades::Type>(i);
         float weight;
 
         switch (type) {
-        case PUT_TIRES:
+        case Physics::Upgrades::PUT_TIRES:
             weight = match_line.Handling;
             break;
-        case PUT_BRAKES:
+        case Physics::Upgrades::PUT_BRAKES:
             weight = (match_line.Handling + match_line.TopSpeed) * 0.5f;
             break;
-        case PUT_CHASSIS:
+        case Physics::Upgrades::PUT_CHASSIS:
             weight = match_line.Handling;
             break;
-        case PUT_TRANSMISSION:
+        case Physics::Upgrades::PUT_TRANSMISSION:
             weight = (match_line.Acceleration + match_line.TopSpeed) * 0.5f;
             break;
-        case PUT_ENGINE:
+        case Physics::Upgrades::PUT_ENGINE:
             weight = (match_line.Acceleration + match_line.TopSpeed) * 0.5f;
             break;
-        case PUT_INDUCTION:
+        case Physics::Upgrades::PUT_INDUCTION:
             weight = match_line.Acceleration;
             break;
-        case PUT_NOS:
+        case Physics::Upgrades::PUT_NOS:
             weight = match_line.Acceleration;
             break;
         default:
@@ -692,7 +690,7 @@ void Physics::Upgrades::Flush() {
     Database::Get().CollectGarbage();
 }
 
-PUJunkNode::PUJunkNode(const RefSpec &collection, const junkman &junkman, unsigned int junkkey)
+PUJunkNode::PUJunkNode(const RefSpec &collection, const Attrib::Gen::junkman &junkman, unsigned int junkkey)
     : Instance(collection, 0, nullptr) {
     Attribute junk_attribute;
     if (junkman.Lookup(junkkey, junk_attribute)) {
@@ -789,7 +787,7 @@ template void ScalePart<float>(Attribute &, unsigned int, float);
 
 namespace Attrib {
 namespace Gen {
-const pvehicle &pvehicle::operator=(const Instance &rhs) {
+const Attrib::Gen::pvehicle &pvehicle::operator=(const Instance &rhs) {
     Instance::operator=(rhs);
     return *this;
 }
