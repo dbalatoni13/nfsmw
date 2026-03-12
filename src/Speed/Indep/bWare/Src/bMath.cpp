@@ -429,26 +429,42 @@ void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src) {
 
 // UNSOLVED
 float fDeterminant(bMatrix4 *m) {
-    float value =
-        m->v0.x * m->v1.y * m->v2.z * m->v3.w +
-        (((m->v0.z * m->v1.x * m->v2.y * m->v3.w + m->v0.y * m->v1.z * m->v2.x * m->v3.w +
-           (((m->v0.y * m->v1.x * m->v2.w * m->v3.z + m->v0.x * m->v1.w * m->v2.y * m->v3.z +
-              (((m->v0.w * m->v1.y * m->v2.x * m->v3.z + m->v0.x * m->v1.z * m->v2.w * m->v3.y +
-                 (((m->v0.w * m->v1.x * m->v2.z * m->v3.y + m->v0.z * m->v1.w * m->v2.x * m->v3.y +
-                    (((m->v0.z * m->v1.y * m->v2.w * m->v3.x + m->v0.y * m->v1.w * m->v2.z * m->v3.x +
-                       ((m->v0.w * m->v1.z * m->v2.y * m->v3.x - m->v0.z * m->v1.w * m->v2.y * m->v3.x) - m->v0.w * m->v1.y * m->v2.z * m->v3.x)) -
-                      m->v0.y * m->v1.z * m->v2.w * m->v3.x) -
-                     m->v0.w * m->v1.z * m->v2.x * m->v3.y)) -
-                   m->v0.x * m->v1.w * m->v2.z * m->v3.y) -
-                  m->v0.z * m->v1.x * m->v2.w * m->v3.y)) -
-                m->v0.y * m->v1.w * m->v2.x * m->v3.z) -
-               m->v0.w * m->v1.x * m->v2.y * m->v3.z)) -
-             m->v0.x * m->v1.y * m->v2.w * m->v3.z) -
-            m->v0.z * m->v1.y * m->v2.x * m->v3.w)) -
-          m->v0.x * m->v1.z * m->v2.y * m->v3.w) -
-         m->v0.y * m->v1.x * m->v2.z * m->v3.w);
+    float *param_1 = reinterpret_cast<float *>(m);
+    float fVar1 = param_1[2];
+    float fVar2 = param_1[7];
+    float fVar3 = param_1[9];
+    float fVar4 = param_1[3];
+    float fVar5 = param_1[6];
+    float fVar6 = param_1[5];
+    float fVar7 = param_1[0xc];
+    float fVar8 = param_1[10];
+    float fVar9 = param_1[1];
+    float fVar10 = param_1[0xb];
+    float fVar11 = param_1[8];
+    float fVar12 = param_1[0xd];
+    float fVar13 = param_1[4];
+    float fVar14 = param_1[0];
+    float fVar15 = param_1[0xe];
+    float fVar16 = param_1[0xf];
 
-    return value;
+    return fVar14 * fVar6 * fVar8 * fVar16 +
+           (((fVar1 * fVar13 * fVar3 * fVar16 + fVar9 * fVar5 * fVar11 * fVar16 +
+              (((fVar9 * fVar13 * fVar10 * fVar15 + fVar14 * fVar2 * fVar3 * fVar15 +
+                 (((fVar4 * fVar6 * fVar11 * fVar15 + fVar14 * fVar5 * fVar10 * fVar12 +
+                    (((fVar4 * fVar13 * fVar8 * fVar12 + fVar1 * fVar2 * fVar11 * fVar12 +
+                       (((fVar1 * fVar6 * fVar10 * fVar7 + fVar9 * fVar2 * fVar8 * fVar7 +
+                          ((fVar4 * fVar5 * fVar3 * fVar7 - fVar1 * fVar2 * fVar3 * fVar7) -
+                           fVar4 * fVar6 * fVar8 * fVar7)) -
+                         fVar9 * fVar5 * fVar10 * fVar7) -
+                        fVar4 * fVar5 * fVar11 * fVar12)) -
+                       fVar14 * fVar2 * fVar8 * fVar12) -
+                      fVar1 * fVar13 * fVar10 * fVar12)) -
+                    fVar9 * fVar2 * fVar11 * fVar15) -
+                   fVar4 * fVar13 * fVar3 * fVar15)) -
+                 fVar14 * fVar6 * fVar10 * fVar15) -
+               fVar1 * fVar6 * fVar11 * fVar16)) -
+             fVar14 * fVar5 * fVar3 * fVar16) -
+            fVar9 * fVar13 * fVar8 * fVar16);
 }
 
 void fInvertMatrix(bMatrix4 *d, bMatrix4 *s) {
@@ -516,32 +532,68 @@ void fInvertMatrix(bMatrix4 *d, bMatrix4 *s) {
 }
 
 void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float u4) {
-    bMatrix4 u;
-    bMatrix4 inv_u;
-    bMatrix4 e;
-    bMatrix4 h;
-    bMatrix4 temp;
-    bMatrix4 temp2;
+    bMatrix4 U;
+    bMatrix4 iU;
+    bMatrix4 Mf;
+    bMatrix4 iMf;
+    bMatrix4 K;
+    bMatrix4 Nf;
 
-    u.v0 = bVector4(u1 * u1 * u1, u1 * u1, u1, 1.0f);
-    u.v1 = bVector4(u2 * u2 * u2, u2 * u2, u2, 1.0f);
-    u.v2 = bVector4(u3 * u3 * u3, u3 * u3, u3, 1.0f);
-    u.v3 = bVector4(u4 * u4 * u4, u4 * u4, u4, 1.0f);
+    U.v0.x = u1 * u1 * u1;
+    U.v0.y = u1 * u1;
+    U.v0.z = u1;
+    U.v0.w = 1.0f;
+    U.v1.x = u2 * u2 * u2;
+    U.v1.y = u2 * u2;
+    U.v1.z = u2;
+    U.v1.w = 1.0f;
+    U.v2.x = u3 * u3 * u3;
+    U.v2.y = u3 * u3;
+    U.v2.z = u3;
+    U.v2.w = 1.0f;
+    U.v3.x = u4 * u4 * u4;
+    U.v3.y = u4 * u4;
+    U.v3.z = u4;
+    U.v3.w = 1.0f;
 
-    h.v0 = bVector4(2.0f, -2.0f, 1.0f, 1.0f);
-    h.v1 = bVector4(-3.0f, 3.0f, -2.0f, -1.0f);
-    h.v2 = bVector4(0.0f, 0.0f, 1.0f, 0.0f);
-    h.v3 = bVector4(1.0f, 0.0f, 0.0f, 0.0f);
+    Mf.v0.x = 2.0f;
+    Mf.v0.y = -2.0f;
+    Mf.v0.z = 1.0f;
+    Mf.v0.w = 1.0f;
+    Mf.v1.x = -3.0f;
+    Mf.v1.y = 3.0f;
+    Mf.v1.z = -2.0f;
+    Mf.v1.w = -1.0f;
+    Mf.v2.x = 0.0f;
+    Mf.v2.y = 0.0f;
+    Mf.v2.z = 1.0f;
+    Mf.v2.w = 0.0f;
+    Mf.v3.x = 1.0f;
+    Mf.v3.y = 0.0f;
+    Mf.v3.z = 0.0f;
+    Mf.v3.w = 0.0f;
 
-    e.v0 = bVector4(0.0f, 0.0f, 0.0f, 1.0f);
-    e.v1 = bVector4(1.0f, 1.0f, 1.0f, 1.0f);
-    e.v2 = bVector4(0.0f, 0.0f, 1.0f, 0.0f);
-    e.v3 = bVector4(3.0f, 2.0f, 1.0f, 0.0f);
+    iMf.v0.x = 0.0f;
+    iMf.v0.y = 0.0f;
+    iMf.v0.z = 0.0f;
+    iMf.v0.w = 1.0f;
+    iMf.v1.x = 1.0f;
+    iMf.v1.y = 1.0f;
+    iMf.v1.z = 1.0f;
+    iMf.v1.w = 1.0f;
+    iMf.v2.x = 0.0f;
+    iMf.v2.y = 0.0f;
+    iMf.v2.z = 1.0f;
+    iMf.v2.w = 0.0f;
+    iMf.v3.x = 3.0f;
+    iMf.v3.y = 2.0f;
+    iMf.v3.z = 1.0f;
+    iMf.v3.w = 0.0f;
 
-    fInvertMatrix(&inv_u, &u);
-    bMulMatrix(&temp, &e, &inv_u);
-    bMulMatrix(&temp2, &h, &temp);
-    bMulMatrix(b, &temp2, p);
+    fInvertMatrix(&iU, &U);
+    bMulMatrix(&K, &iMf, &iU);
+    bMulMatrix(&Nf, &Mf, &K);
+    bMulMatrix(b, &Nf, p);
 }
 
 void hermite_parameter(bVector4 *dest, const bMatrix4 *b, float t) {
