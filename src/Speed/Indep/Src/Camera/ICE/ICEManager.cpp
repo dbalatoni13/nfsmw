@@ -153,26 +153,34 @@ int ICETrack::GetKeyNumber(float f_param) {
 }
 
 float ICETrack::GetParameter() {
-    float parameter = 0.0f;
+    float f_param = 0.0f;
     int context = GetContext();
 
-    if (context == 0) {
+    switch (context) {
+    case 0: {
         ICEScene *scene = ICE::FindAnimScene();
 
         if (scene != 0) {
-            parameter = (scene->GetTimeElapsed() - scene->GetTimeStart()) / (scene->GetTimeTotalLength() - scene->GetTimeStart());
+            f_param = (scene->GetTimeElapsed() - scene->GetTimeStart()) / (scene->GetTimeTotalLength() - scene->GetTimeStart());
         }
-    } else if (context == 1 || context == 2 || context == 3) {
+        break;
+    }
+    case 1:
+    case 3:
         if (0.0f < Length) {
-            parameter = (TheICEManager.GetTimerSeconds() - Start) / Length;
-
-            if (1.0f < parameter) {
-                parameter = 1.0f;
-            }
+            float t = (TheICEManager.GetTimerSeconds() - Start) / Length;
+            f_param = bMin(1.0f, t);
         }
+        break;
+    case 2:
+        if (Length > f_param) {
+            float t = (TheICEManager.GetTimerSeconds() - Start) / Length;
+            f_param = bMin(1.0f, t);
+        }
+        break;
     }
 
-    return parameter;
+    return f_param;
 }
 
 ICEData *ICETrack::GetCameraData(float *p_start, float *p_end, float *p_current) {
