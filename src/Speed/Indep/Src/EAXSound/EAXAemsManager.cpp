@@ -5,7 +5,8 @@ extern int SNDmemlargestunused(int *start);
 void EAXAemsManager::ResolvePendingAsyncLoads() {}
 
 void *EAXAemsManager::GetCallbackEventSys() {
-    return m_pEvtSystems_start[m_nCallbackEvtSys];
+    int offset = m_nCallbackEvtSys << 2;
+    return *reinterpret_cast<void **>(reinterpret_cast<char *>(m_pEvtSystems_start) + offset);
 }
 
 void EAXAemsManager::EvtSysLoadCallback(int param, int error_status) {
