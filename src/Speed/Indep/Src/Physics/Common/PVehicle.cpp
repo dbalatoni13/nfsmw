@@ -797,7 +797,7 @@ void PVehicle::OnEndMode(PhysicsMode mode) {
         if (mCollisionBody != nullptr) {
             mCollisionBody->EnableTriggering();
         }
-        DetachEntity();
+        Reset();
         IVehicle::UnList(VEHICLE_INACTIVE);
     } else if (mode == PHYSICS_MODE_EMULATED) {
     } else if (mode == PHYSICS_MODE_SIMULATED) {
