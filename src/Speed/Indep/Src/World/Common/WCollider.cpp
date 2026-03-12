@@ -329,3 +329,6 @@ void WCollisionInstance::MakeMatrix(UMath::Matrix4 &m, bool addXLate) const {
         m.v3.w = 1.0f;
     }
 }
+
+template class UTL::Vector<WCollider *, 16>;
+template class UTL::FixedVector<WCollider *, 100, 16>;
