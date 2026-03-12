@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRivalFlow.hpp"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
@@ -101,8 +102,26 @@ void uiRepSheetRival::Setup() {
     pTagImg = FEngFindImage(GetPackageName(), 0xf5a2a087);
     pBGImg = FEngFindImage(GetPackageName(), 0x2cbe1dd0);
     RivalStreamer.Init(iCurrentViewBin, pRivalImg, pTagImg, pBGImg);
-    FEngSetInvisible(reinterpret_cast<FEObject*>(pDefeatedImg));
-    FEngSetInvisible(reinterpret_cast<FEObject*>(pDefeatedImgBG));
+    FEngSetInvisible(reinterpret_cast< FEObject* >(pDefeatedImg));
+    FEngSetInvisible(reinterpret_cast< FEObject* >(pDefeatedImgBG));
+    unsigned int defeatedTexture = GetDefeatedTexture();
+    FEngSetTextureHash(pDefeatedImg, defeatedTexture);
+    FEngSetTextureHash(pDefeatedImgBG, defeatedTexture);
+    eLoadStreamingTexture(&defeatedTexture, 1,
+        reinterpret_cast< void (*)(void*) >(TextureLoadedCallback),
+        reinterpret_cast< void* >(this), 0);
+    if (bIsInGame && bMidRivalFlow) {
+        cFEng::Get()->QueuePackageMessage(0x34297cb0, GetPackageName(), nullptr);
+    } else {
+        if (FEDatabase->IsPostRivalMode()) {
+            CarViewer::HideAllCars();
+            iCurrentViewBin = FEDatabase->GetCareerSettings()->GetCurrentBin();
+            cFEng::Get()->QueuePackageMessage(0x0b21a45f, GetPackageName(), nullptr);
+            cFEng::Get()->QueuePackageMessage(0xb4c144b1, GetPackageName(), nullptr);
+        } else {
+            cFEng::Get()->QueuePackageMessage(0xaf922178, GetPackageName(), nullptr);
+        }
+    }
     RefreshHeader();
 }
 

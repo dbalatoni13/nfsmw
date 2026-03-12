@@ -141,6 +141,7 @@ enum eCarViewerWhichCar {
 struct CarViewer {
     static void ShowCarScreen();
     static void ShowAllCars();
+    static void HideAllCars();
     static void SetRideInfo(RideInfo* ride, eSetRideInfoReasons reason, eCarViewerWhichCar which_car);
     static bool haveLoadedOnce;
 };
