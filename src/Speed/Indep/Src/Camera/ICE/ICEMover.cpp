@@ -562,12 +562,12 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
                 pDutch->SetVal(pCameraData->fDutch[0]);
                 pDutch->SetdVal(f_dutch_slope[0]);
                 pDutch->SetValDesired(pCameraData->fDutch[1]);
-                pDutch->SetdValDesired(f_dutch_slope[1]);
+                pDutch->dValDesired = f_dutch_slope[1];
 
                 pFov->SetVal(static_cast<float>(ConvertLensLengthToFovAngle(pCameraData->fLens[0])));
                 pFov->SetdVal(ConvertLensDeltaToFovDelta(pCameraData->fLens[0], f_lens_slope[0]));
                 pFov->SetValDesired(static_cast<float>(ConvertLensLengthToFovAngle(pCameraData->fLens[1])));
-                pFov->SetdValDesired(ConvertLensDeltaToFovDelta(pCameraData->fLens[1], f_lens_slope[1]));
+                pFov->dValDesired = ConvertLensDeltaToFovDelta(pCameraData->fLens[1], f_lens_slope[1]);
 
                 if (flush) {
                     PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mHybridToWorld));
