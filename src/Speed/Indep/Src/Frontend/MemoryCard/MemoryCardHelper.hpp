@@ -6,6 +6,7 @@
 #endif
 
 #include <types.h>
+#include <string.h>
 
 #include "RealmcIface.hpp"
 #include "Speed/Indep/Src/Misc/Joylog.hpp"
@@ -49,6 +50,15 @@ struct MyThread : public IThread {
     int mPriority;                   // offset 0x32C, size 0x4
     bool mActive;                    // offset 0x330, size 0x1
 
+    MyThread() {
+        mRefcount = 1;
+        mStackSize = 0x1000;
+        mStackBuffer = nullptr;
+        memset(&mThreadData, 0, sizeof(THREAD));
+        mPriority = 0;
+        mActive = false;
+    }
+
     ~MyThread() {
         if (mActive) {
             WaitForEnd(0);
@@ -72,6 +82,12 @@ struct MyThread : public IThread {
 struct MyMutex : public IMutex {
     MUTEX mMutex;  // offset 0x4, size 0x1C
     int mRefcount; // offset 0x20, size 0x4
+
+    MyMutex() {
+        memset(&mMutex, 0, sizeof(MUTEX));
+        mRefcount = 1;
+        MUTEX_create(&mMutex);
+    }
 
     ~MyMutex() {
         MUTEX_destroy(&mMutex);
