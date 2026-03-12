@@ -16,6 +16,7 @@ FEImage* FEngFindImage(const char* pkg_name, int hash);
 void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned int lang_hash);
 unsigned int FEngHashString(const char* format, ...);
 int FEPrintf(const char* pkg_name, int hash, const char* fmt, ...);
+int FEngSNPrintf(char* buffer, int buf_size, const char* fmt, ...);
 const char* GetLocalizedString(unsigned int hash);
 
 extern unsigned int iCurrentViewBin;
@@ -104,16 +105,29 @@ void uiRepSheetRivalBio::NotificationMessage(unsigned long msg, FEObject* obj, u
 }
 
 void uiRepSheetRivalBio::RefreshHeader() {
+    char buf[32];
+    if (bIsInGame) {
+        FEngSNPrintf(buf, 32, GetLocalizedString(0x96ca2471), iCurrentViewBin);
+    } else {
+        FEngSNPrintf(buf, 32, GetLocalizedString(0x3a64de21), iCurrentViewBin);
+    }
+    FEPrintf(GetPackageName(), 0x242657ce, "%s", buf);
+    const char* pkgName;
+    pkgName = GetPackageName();
     unsigned int hash = FEngHashString("BL_NAME_%d", iCurrentViewBin);
-    FEngSetLanguageHash(GetPackageName(), 0x7ac3d0c9, hash);
+    FEngSetLanguageHash(pkgName, 0x7ac3d0c9, hash);
+    pkgName = GetPackageName();
     hash = FEngHashString("BL_RIDE_%d", iCurrentViewBin);
-    FEngSetLanguageHash(GetPackageName(), 0xb1f2748d, hash);
+    FEngSetLanguageHash(pkgName, 0xb1f2748d, hash);
+    pkgName = GetPackageName();
     hash = FEngHashString("BL_BIO_1_%d", iCurrentViewBin);
-    FEngSetLanguageHash(GetPackageName(), 0x27e1d6d8, hash);
+    FEngSetLanguageHash(pkgName, 0x27e1d6d8, hash);
+    pkgName = GetPackageName();
     hash = FEngHashString("BL_BIO_2_%d", iCurrentViewBin);
-    FEngSetLanguageHash(GetPackageName(), 0xcb5bf41a, hash);
+    FEngSetLanguageHash(pkgName, 0xcb5bf41a, hash);
+    pkgName = GetPackageName();
     hash = FEngHashString("BL_BIO_3_%d", iCurrentViewBin);
-    FEngSetLanguageHash(GetPackageName(), 0xa6f07bf3, hash);
+    FEngSetLanguageHash(pkgName, 0xa6f07bf3, hash);
 }
 
 void uiRepSheetRivalBio::Setup() {
