@@ -6,12 +6,16 @@
 #endif
 
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
 
 struct SFXCTL_Tunnel : public SFXCTL {
   protected:
     static TypeInfo s_TypeInfo;
 
   public:
+    /* 0x28 */ char _pad_tun0[0x7c - 0x28];
+    /* 0x7c */ cInterpLine ReflRamp;
+
     ~SFXCTL_Tunnel() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
@@ -19,6 +23,8 @@ struct SFXCTL_Tunnel : public SFXCTL {
     void AttachController(SFXCTL *psfxctl) override;
     void SetupSFX(CSTATE_Base *_StateBase) override;
     void Destroy() override;
+
+    void EndTunnelVerb();
 };
 
 #endif

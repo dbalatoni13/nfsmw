@@ -1,6 +1,14 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
+#include "Speed/Indep/Src/Misc/Hermes.h"
 
-SFXCTL_Physics::~SFXCTL_Physics() {}
+SFXCTL_Physics::~SFXCTL_Physics() {
+    if (mMsgRevEngine) {
+        Hermes::Handler::Destroy(mMsgRevEngine);
+    }
+    if (mMsgRevOff) {
+        Hermes::Handler::Destroy(mMsgRevOff);
+    }
+}
 
 SFXCTL_AIPhysics::~SFXCTL_AIPhysics() {}
 

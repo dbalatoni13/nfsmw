@@ -62,8 +62,10 @@ struct SFXCTL_Shifting : public SFXCTL {
     /* 0xb8 */ cInterpLine m_InterpShiftVol;
     /* 0xd4 */ char _pad_shifting0[0x120 - 0xd4]; // 0xd4 to 0x120
     /* 0x120 */ int m_nPostShiftFXLevel;
-    /* 0x124 */ char _pad_shifting1[0x15c - 0x124]; // 0x124 to 0x15c
+    /* 0x124 */ cInterpLine m_Shift_RPM_AMP_DECAY;
+    /* 0x140 */ cInterpLine m_Shift_VOL_AMP_DECAY;
     /* 0x15c */ FX_POST_SHIFT_LFO eShift_LFO;
+    /* 0x160 */ cInterpLine m_VisualRPM;
 
     ~SFXCTL_Shifting() override;
     TypeInfo *GetTypeInfo() const override;

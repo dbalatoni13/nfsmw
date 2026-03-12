@@ -2,9 +2,17 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_AccelTrans.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
+#include "Speed/Indep/Src/Misc/Hermes.h"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DCarPos.hpp"
 
-SFXCTL_Engine::~SFXCTL_Engine() {}
+SFXCTL_Engine::~SFXCTL_Engine() {
+    if (mmsgMVehicleDestroyed) {
+        Hermes::Handler::Destroy(mmsgMVehicleDestroyed);
+    }
+    if (mmsgMVehicleDestroyed2) {
+        Hermes::Handler::Destroy(mmsgMVehicleDestroyed2);
+    }
+}
 
 SndBase::TypeInfo *SFXCTL_Engine::GetTypeInfo() const { return &s_TypeInfo; }
 

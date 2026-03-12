@@ -6,9 +6,10 @@
 #endif
 
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL.hpp"
+#include "Speed/Indep/Src/Misc/Table.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXAIUtils.hpp"
 
 struct EngRevDataPoint;
-struct Average;
 struct MAIEngineRev;
 
 enum Gear {};
@@ -19,7 +20,11 @@ enum NIS_ENGINE_REVING_STATE {
     NIS_MERGE_WITH_PHYSICS = 3
 };
 
-typedef int HHANDLER;
+namespace Hermes {
+struct _h_HHANDLER__;
+} // namespace Hermes
+typedef Hermes::_h_HHANDLER__ *HHANDLER;
+
 struct bMatrix4;
 
 struct SFXCTL_Physics : public SFXCTL {
@@ -38,7 +43,7 @@ struct SFXCTL_Physics : public SFXCTL {
     /* 0x48 */ float m_fThrottle;
     /* 0x4c */ float m_OldThrottle;
     /* 0x50 */ float m_OldDesiredSpeed;
-    /* 0x54 */ char m_fDeltaDesiredSpeed_pad[0x28]; // Average m_fDeltaDesiredSpeed
+    /* 0x54 */ Average m_fDeltaDesiredSpeed;
     /* 0x7c */ float m_tHoldDecel;
     /* 0x80 */ bool IsAccelerating;
     /* 0x84 */ float t_Last_Deccel;
@@ -80,6 +85,7 @@ struct SFXCTL_AIPhysics : public SFXCTL_Physics {
 
   public:
     /* 0xd0 */ SFXCTL_Shifting *m_pShiftCtl;
+    /* 0xd4 */ SndAIStateManager AIStateManager;
 
     ~SFXCTL_AIPhysics() override;
     TypeInfo *GetTypeInfo() const override;

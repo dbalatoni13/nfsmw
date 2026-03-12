@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL.hpp"
+#include "Speed/Indep/Src/Misc/Table.hpp"
 
 struct SFXCTL_Engine;
 struct SFXCTL_Shifting;
@@ -23,7 +24,9 @@ struct SFXCTL_HybridMotor : public SFXCTL {
     /* 0x38 */ int m_EngVolAEMS;
     /* 0x3c */ int m_EngVolAccelGinsu;
     /* 0x40 */ int m_EngVolDecelGinsu;
-    /* 0x44 */ char _pad_hm0[0xd4 - 0x44]; // rest of fields
+    /* 0x44 */ char _pad_hm0[0x88 - 0x44]; // Graph, CrossFades, etc
+    /* 0x88 */ Average m_AvgDeltaRPM;
+    /* 0xb0 */ char _pad_hm1[0xd4 - 0xb0]; // remaining fields
 
     ~SFXCTL_HybridMotor() override;
     TypeInfo *GetTypeInfo() const override;
