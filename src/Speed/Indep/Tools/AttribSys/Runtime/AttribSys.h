@@ -349,6 +349,8 @@ class Array {
     // TODO is this really overriden?
     void operator delete(void *ptr) {}
 
+    void operator delete(void *mem, void *ptr) {}
+
     ~Array() {
         if (IsReferences()) {
             ITypeHandler *typeHandler = GetTypeDesc().GetHandler();
