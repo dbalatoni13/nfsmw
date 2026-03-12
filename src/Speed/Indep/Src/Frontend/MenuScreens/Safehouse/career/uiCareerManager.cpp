@@ -53,16 +53,16 @@ void uiCareerManager::NotificationMessage(unsigned long msg, FEObject* pobj, uns
 void uiCareerManager::Setup() {
     IconOption* pLoadOption;
 
-    if (!FEDatabase->GetCareerSettings()->HasCareerStarted()) {
-        CStartNewCareer* startNew = new CStartNewCareer(0xE7353BE7, 0x6005281E, 0);
-        startNew->SetReactImmediately(true);
-        AddOption(startNew);
-    } else {
+    if (FEDatabase->GetCareerSettings()->HasCareerStarted()) {
         if (!FEDatabase->GetCareerSettings()->IsGameOver()) {
             AddOption(new CResumeCareer(0xC1C089CE, 0xE072DB21, 0));
         }
 
         CStartNewCareer* startNew = new CStartNewCareer(0xE7353BE7, 0x17E18F87, 0);
+        startNew->SetReactImmediately(true);
+        AddOption(startNew);
+    } else {
+        CStartNewCareer* startNew = new CStartNewCareer(0xE7353BE7, 0x6005281E, 0);
         startNew->SetReactImmediately(true);
         AddOption(startNew);
     }
@@ -75,13 +75,21 @@ void uiCareerManager::Setup() {
     if (FEDatabase->GetCareerSettings()->IsGameOver()) {
         int index = Options.GetOptionIndex(pLoadOption);
         if (bFadeInIconsImmediately) {
-            SetInitialOption(index);
+            Options.bFadingIn = true;
+            Options.bDelayUpdate = false;
+            Options.bFadingOut = false;
+            Options.fCurFadeTime = 0.0f;
         }
+        Options.SetInitialPos(index);
     } else {
         int lastButton = FEngGetLastButton(GetPackageName());
         if (bFadeInIconsImmediately) {
-            SetInitialOption(lastButton);
+            Options.bFadingIn = true;
+            Options.bDelayUpdate = false;
+            Options.bFadingOut = false;
+            Options.fCurFadeTime = 0.0f;
         }
+        Options.SetInitialPos(lastButton);
     }
 
     FEngSetLanguageHash(GetPackageName(), 0x3C458C1, 0x8FFF61F2);
