@@ -21,13 +21,21 @@ enum GameFlowState {
 // total size: 0x24
 class GameFlowManager {
   public:
-    void LoadFrontend();
-    void Service();
-    void CheckForDemoDiscTimeout();
-
+    GameFlowManager();
     ~GameFlowManager() {}
 
-    void SetSingleFunction(void (*function)(), const char *debug_name) {}
+    void SetSingleFunction(void (*function)(int), const char *debug_name, int param);
+    void SetWaitingForCallback(const char *name, int phase);
+    void ClearWaitingForCallback();
+    void Service();
+    void SetState(GameFlowState state);
+    void LoadFrontend();
+    void UnloadFrontend();
+    void LoadTrack();
+    void ReloadTrack();
+    void UnloadTrack();
+    void CheckForDemoDiscTimeout();
+    bool IsPaused();
 
     GameFlowState GetState() {
         return this->CurrentGameFlowState;
