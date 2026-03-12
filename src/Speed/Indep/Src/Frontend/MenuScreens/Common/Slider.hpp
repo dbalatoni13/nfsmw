@@ -25,7 +25,7 @@ protected:
 
 public:
     cSlider();
-    virtual ~cSlider();
+    virtual ~cSlider() {}
     virtual bool Update(unsigned long msg);
     virtual void Init(const char* pkg_name, const char* name, float min, float max, float inc, float cur, float range);
     virtual void InitObjects(const char* pkg_name, const char* name);

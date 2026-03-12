@@ -22,7 +22,7 @@ unsigned int FEngHashString(const char* format, ...);
 const char* GetLocalizedString(unsigned int hash);
 int GetCurrentLanguage();
 void eUnloadStreamingTexture(unsigned int* textures, int count);
-void eWaitForStreamingTexturePackLoading(const char* name);
+void WaitForResourceLoadingComplete();
 unsigned char FEngGetLastButton(const char* pkg_name);
 
 extern unsigned int iCurrentViewBin;
@@ -60,11 +60,9 @@ uiRepSheetMain::uiRepSheetMain(ScreenConstructorData* sd)
 }
 
 uiRepSheetMain::~uiRepSheetMain() {
-    eWaitForStreamingTexturePackLoading(nullptr);
     unsigned int tex = DefeatedTextureHash;
-    if (tex != 0) {
-        eUnloadStreamingTexture(&tex, 1);
-    }
+    eUnloadStreamingTexture(&tex, 1);
+    WaitForResourceLoadingComplete();
 }
 
 eMenuSoundTriggers uiRepSheetMain::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {

@@ -188,7 +188,7 @@ protected:
 
 public:
     FESliderWidget(bool enabled);
-    ~FESliderWidget() override;
+    ~FESliderWidget() override {}
     void Act(const char* parent_pkg, unsigned int data) override;
     void Draw() override;
     void Position() override;
