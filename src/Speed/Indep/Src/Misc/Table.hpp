@@ -151,8 +151,11 @@ template <class T> class tAverage : public AverageBase {
         for (int i = 0; i < nSamples; i++) {
             Total += pData[i];
         }
-        float fRecip = 1.0f / static_cast<float>(bMax(1, static_cast<int>(nSamples)));
-        Average = Total * fRecip;
+        int n = static_cast<int>(nSamples);
+        if (n == 0) n = 1;
+        float fRecip = 1.0f / static_cast<float>(n);
+        bVector3 result = Total * fRecip;
+        Average = result;
     }
 
     T *pData;     // offset 0x8, size 0x4

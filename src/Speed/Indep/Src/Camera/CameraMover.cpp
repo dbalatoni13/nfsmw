@@ -59,14 +59,14 @@ inline void espSetCameraPositionFix(const LongVector *eye, const LongVector *tar
 inline void espCentrePlaneView(const bVector3 *pos) {}
 int bFunkDoesServerExist(const char *server_name);
 
-extern bVector4 CameraNoiseHandheldFrequency;
-extern bVector4 CameraNoiseHandheldAmplitude;
-extern bVector4 CameraNoiseChopperFrequency;
-extern bVector4 CameraNoiseChopperAmplitude;
-extern bVector4 CameraNoiseSpeedFrequency;
-extern bVector4 CameraNoiseSpeedAmplitude;
-extern bVector4 CameraNoiseTerrainFrequency;
-extern bVector4 CameraNoiseTerrainAmplitude;
+static const bVector4 CameraNoiseHandheldFrequency(0.213f, 0.175f, 0.153f, 0.192f);
+static const bVector4 CameraNoiseHandheldAmplitude(0.01f, 0.01f, 0.03f, 0.03f);
+static const bVector4 CameraNoiseChopperFrequency(3.141f, 2.971f, 0.84234f, 0.92345f);
+static const bVector4 CameraNoiseChopperAmplitude(0.01f, 0.05f, 1.1f, 2.7f);
+static const bVector4 CameraNoiseSpeedFrequency(1.8f, 2.0f, 2.125f, 2.0f);
+static const bVector4 CameraNoiseSpeedAmplitude(0.03f, 0.025f, 0.68f, 0.28f);
+static const bVector4 CameraNoiseTerrainFrequency(3.0f, 5.0f, 7.0f, 5.5f);
+static const bVector4 CameraNoiseTerrainAmplitude(0.007f, 0.01f, 0.3f, 0.4f);
 extern bVector4 CameraNoiseSpeedData[5];
 extern float CameraAccelerationCurve[5];
 extern bVector2 CameraSpeedHugData[5];
@@ -218,8 +218,8 @@ CameraAnchor::CameraAnchor(int model)
     mPOV.Height = mCameraInfoAttributes.HEIGHT(0);
     mPOV.LatOffset = mCameraInfoAttributes.LATOFFSET(0);
     mPOV.Fov = bDegToAng(mCameraInfoAttributes.FOV(0));
-    mPOV.Stiffness = mCameraInfoAttributes.STIFFNESS(0);
     mPOV.AllowTilting = mCameraInfoAttributes.TILTING(0);
+    mPOV.Stiffness = mCameraInfoAttributes.STIFFNESS(0);
     SetModel(model);
     bIdentity(&mGeomRot);
 }
