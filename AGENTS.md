@@ -138,7 +138,7 @@ python tools/decomp-workflow.py health
 python tools/decomp-workflow.py health --smoke-build main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py health --smoke-dtk main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py next --category game --limit 10
-python tools/decomp-workflow.py next --unit main/Speed/Indep/SourceLists/zAnim --strategy quick-wins --limit 5
+python tools/decomp-workflow.py next --unit main/Speed/Indep/SourceLists/zAnim --limit 5
 python tools/decomp-workflow.py build -u main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py diff -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin
@@ -154,15 +154,26 @@ repeated command chaining and to standardize routine worktree preflight checks f
 once when that output is missing, so wrapper-first inspection works more often on
 half-prepared worktrees.
 
+In normal agent work, use the wrapper commands first. Drop to the raw backend tools only
+when you specifically need a backend-only flag, are debugging a wrapper/backend discrepancy,
+or are doing a final exhaustive check that the wrapper does not expose directly.
+
 When you do not already have a specific target in mind, start with `next` or `unit`
 instead of picking functions in raw objdiff order. `next` is the fastest way to answer
 "what should I work on now?":
 
-- `--strategy balanced` favors high-impact functions while de-prioritizing obvious
-  init/setup sinkholes and preferring targets with usable source context.
+- `--strategy balanced` favors functions with large remaining gains, penalizes
+  high-match cleanup work, de-prioritizes obvious init/setup sinkholes, and prefers
+  targets with usable source context.
 - `--strategy impact` is the blunt "largest unmatched byte loss first" view.
-- `--strategy quick-wins` favors mature units and existing implementations where agents
-  are more likely to land progress quickly.
+- `--strategy quick-wins` is a cleanup-oriented mode for deliberate polish passes on
+  already-implemented functions. Do not use it as the default scouting mode.
+
+When choosing what to work on next, bias toward low-match, high-remaining functions.
+As a rule of thumb, getting a function from 0% to 80% is usually much faster and higher
+leverage than pushing a function from 90% to 100%.
+Leave 85%+ cleanup and refiner-style polish for deliberate cleanup passes unless the
+user explicitly wants that work or the function is directly blocking something else.
 
 `function` is the preferred context-gathering entrypoint: it bundles source excerpt,
 objdiff status/diff, compact GC DWARF function lookup, and Ghidra output in one run.
@@ -216,11 +227,11 @@ If it finds a match, include that header instead of redeclaring.
 
 ### dtk (decomp-toolkit)
 
-Dump the dwarf of your own implementation of a function after rebuilding the unit normally:
+Dump the dwarf of your own implementation of a function after rebuilding the unit normally (ignore dwarf specific errors):
 
 ```sh
 python tools/decomp-workflow.py build -u main/Speed/Indep/SourceLists/zAnim
-dtk dwarf dump build/GOWE69/src/Speed/Indep/SourceLists/zAnim.o -o /tmp/zAnim_check.nothpp
+build/tools/dtk dwarf dump build/GOWE69/src/Speed/Indep/SourceLists/zAnim.o -o /tmp/zAnim_check.nothpp
 ```
 
 Demangle a symbol (you probably won't need this):
@@ -256,7 +267,7 @@ This is a **C++98** codebase compiled with ProDG GC 3.9.3 (GCC 2.95 under the ho
 - Omit the `this` pointer.
 - Use `nullptr` and `override`. If they are missing, you need to include `types.h`.
 - Omit `struct` when declaring variables or parameters, we are not in C land.
-- Avoid using `using namespace` at all cost. Since the game uses jumbo builds, they leak through files.
+- Avoid using `using` directives at all cost. Since the game uses jumbo builds, they leak through files.
 
 ## Committing Progress
 

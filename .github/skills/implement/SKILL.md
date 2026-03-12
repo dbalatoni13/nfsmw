@@ -15,8 +15,14 @@ If the function was not already chosen for you, pick it with the ranking wrapper
 
 ```sh
 python tools/decomp-workflow.py next --unit main/Path/To/TU --limit 10
-python tools/decomp-workflow.py next --category game --strategy quick-wins --limit 10
+python tools/decomp-workflow.py next --category game --limit 10
 ```
+
+Prefer low-match, high-remaining targets here. Do not default to near-finished cleanup
+functions unless the user explicitly wants a cleanup/refiner pass.
+
+Use the wrapper flow first throughout this skill. Drop to raw `decomp-context.py` or
+`decomp-diff.py` only when the wrapper is missing a specific flag or you are debugging.
 
 ### 1a. decomp-context.py
 
@@ -40,7 +46,7 @@ need the full DWARF body with locals and nested inline info.
 Add `--brief` when you want a shorter helper view; it trims suggested commands and
 related-source hints while keeping the core source/status/diff context.
 
-Equivalent manual form:
+Equivalent manual fallback:
 
 ```sh
 python tools/decomp-context.py -u main/Path/To/TU -f FunctionName
@@ -104,7 +110,7 @@ and assembly:
 
 Utilize the dwarf information that you get from the lookup skill heavily.
 
-Don't add any comments.
+Don't add explanatory comments during implementation unless you need to document a remaining DWARF mismatch.
 
 Don't use any temporary local variables that don't exist in the dwarf.
 
@@ -138,10 +144,10 @@ If the build fails, fix compilation errors first.
 
 ```sh
 # Quick status
-python tools/decomp-diff.py -u main/Path/To/TU --search FunctionName
+python tools/decomp-workflow.py diff -u main/Path/To/TU --search FunctionName --limit 20
 
 # Full instruction diff
-python tools/decomp-diff.py -u main/Path/To/TU -d FunctionName
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
 ```
 
 ### Interpreting the diff
@@ -161,9 +167,9 @@ After writing your code, occasionally run the dwarf dump on the compiled output 
 due to work on other functions, query the unmangled name instead.
 
 ```bash
-# Rebuild the unit, then dump the shared object file's DWARF:
+# Rebuild the unit, then dump the shared object file's DWARF (ignore dwarf specific errors):
 python tools/decomp-workflow.py build -u main/Path/To/TU
-dtk dwarf dump build/GOWE69/src/Path/To/TU.o -o /tmp/my_unit_dump.nothpp
+build/tools/dtk dwarf dump build/GOWE69/src/Path/To/TU.o -o /tmp/my_unit_dump.nothpp
 # Then look up the same function in your output:
 python tools/lookup.py --file /tmp/my_unit_dump.nothpp function "EPerfectLaunch::~EPerfectLaunch(void)"
 # Compare with the original:
@@ -178,7 +184,7 @@ Repeat the build-diff cycle until the diff shows 100% match with no `~` lines:
 
 ```sh
 python tools/decomp-workflow.py build -u main/Path/To/TU
-python tools/decomp-diff.py -u main/Path/To/TU -d FunctionName
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
 ```
 
 Every mismatched instruction is a signal — don't settle for "close enough".
