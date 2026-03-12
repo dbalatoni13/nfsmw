@@ -1356,9 +1356,7 @@ void RearViewMirrorCameraMover::Update(float dT) {
         rvm_matrix.v3.x += RVMOffsetInCar.x;
         rvm_matrix.v3.y += RVMOffsetInCar.y;
         rvm_matrix.v3.z += RVMOffsetInCar.z;
-        if (Camera::StopUpdating == 0) {
-            GetCamera()->SetFieldOfView(20000);
-        }
+        GetCamera()->SetFieldOfView(20000);
         GetCamera()->SetNearZ(RVMnearz);
         GetCamera()->SetFarZ(RVMfarz);
         ApplyCameraShake(ViewID, &rvm_matrix);
@@ -1377,12 +1375,8 @@ TrackCarCameraMover::TrackCarCameraMover(int nView, CameraAnchor *pCar, bool foc
 
 TrackCarCameraMover::~TrackCarCameraMover() {
     GetCamera()->SetSimTimeMultiplier(1.0f);
-    if (Camera::StopUpdating == 0) {
-        GetCamera()->SetFocalDistance(0.0f);
-    }
-    if (Camera::StopUpdating == 0) {
-        GetCamera()->SetDepthOfField(0.0f);
-    }
+    GetCamera()->SetFocalDistance(0.0f);
+    GetCamera()->SetDepthOfField(0.0f);
     GetCamera()->ClearVelocity();
 }
 
@@ -1409,9 +1403,7 @@ void TrackCarCameraMover::Update(float dT) {
             if (fov_limit > 0x332c) {
                 fov_limit = 0x332c;
             }
-            if (Camera::StopUpdating == 0) {
-                GetCamera()->SetFieldOfView(static_cast<unsigned short>(fov_limit));
-            }
+            GetCamera()->SetFieldOfView(static_cast<unsigned short>(fov_limit));
         }
 
         Look = *CarToFollow->GetGeometryPosition();
@@ -1434,9 +1426,7 @@ void TrackCarCameraMover::Update(float dT) {
         bMatrix4 m;
         eCreateLookAtMatrix(&m, Eye, Look, up);
         float focal_dist = bDistBetween(CarToFollow->GetGeometryPosition(), &Eye);
-        if (Camera::StopUpdating == 0) {
-            GetCamera()->SetTargetDistance(focal_dist);
-        }
+        GetCamera()->SetTargetDistance(focal_dist);
 
         FocalDistCubic.dValDesired = FocalDistCubic.Val * 0.1f;
         SplineSeek(&FocalDistCubic, dT, vert_comp, vert_comp);
@@ -1446,12 +1436,8 @@ void TrackCarCameraMover::Update(float dT) {
         }
 
         if (FocusEffects) {
-            if (Camera::StopUpdating == 0) {
-                GetCamera()->SetFocalDistance(focal_dist + FocalDistCubic.Val);
-            }
-            if (Camera::StopUpdating == 0) {
-                GetCamera()->SetDepthOfField(2.0f);
-            }
+            GetCamera()->SetFocalDistance(focal_dist + FocalDistCubic.Val);
+            GetCamera()->SetDepthOfField(2.0f);
         }
 
         GetCamera()->SetCameraMatrix(m, dT);
@@ -1476,12 +1462,8 @@ TrackCopCameraMover::TrackCopCameraMover(int nView, CameraAnchor *pCar, bool foc
 TrackCopCameraMover::~TrackCopCameraMover() {
     TrackCopCameraMover_IdleSim = false;
     GetCamera()->SetSimTimeMultiplier(1.0f);
-    if (Camera::StopUpdating == 0) {
-        GetCamera()->SetFocalDistance(0.0f);
-    }
-    if (Camera::StopUpdating == 0) {
-        GetCamera()->SetDepthOfField(0.0f);
-    }
+    GetCamera()->SetFocalDistance(0.0f);
+    GetCamera()->SetDepthOfField(0.0f);
     GetCamera()->ClearVelocity();
 }
 
@@ -1515,9 +1497,7 @@ void TrackCopCameraMover::Update(float dT) {
         }
         ZoomSpline.GetPoint(reinterpret_cast<bVector3 *>(&offset), ZoomSplineParam);
 
-        if (Camera::StopUpdating == 0) {
-            GetCamera()->SetFieldOfView(static_cast<unsigned short>(bDegToAng(offset.x)));
-        }
+        GetCamera()->SetFieldOfView(static_cast<unsigned short>(bDegToAng(offset.x)));
 
         displacement = eye - look;
         float distance = bLength(&displacement);
@@ -1538,9 +1518,7 @@ void TrackCopCameraMover::Update(float dT) {
 
         eCreateLookAtMatrix(&camera_matrix, eye, look, world_up);
         focal_distance = bDistBetween(CarToFollow->GetGeomPos(), &eye);
-        if (Camera::StopUpdating == 0) {
-            GetCamera()->SetTargetDistance(focal_distance);
-        }
+        GetCamera()->SetTargetDistance(focal_distance);
 
         FocalDistCubic.dValDesired = FocalDistCubic.Val * 0.1f;
         SplineSeek(&FocalDistCubic, dT, 0.0f, 0.0f);
@@ -1550,12 +1528,8 @@ void TrackCopCameraMover::Update(float dT) {
         }
 
         if (FocusEffects) {
-            if (Camera::StopUpdating == 0) {
-                GetCamera()->SetFocalDistance(focal_distance + FocalDistCubic.Val);
-            }
-            if (Camera::StopUpdating == 0) {
-                GetCamera()->SetDepthOfField(2.0f);
-            }
+            GetCamera()->SetFocalDistance(focal_distance + FocalDistCubic.Val);
+            GetCamera()->SetDepthOfField(2.0f);
         }
 
         GetCamera()->SetCameraMatrix(camera_matrix, dT);

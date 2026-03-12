@@ -182,12 +182,8 @@ void SelectCarCameraMover::Update(float dT) {
     bMatrix4 camera_matrix;
     CreateCameraMatrix(&camera_matrix, camera_data);
     screen_print_x = bDegToAng(camera_data->FOV);
-    if (Camera::StopUpdating == 0) {
-        GetCamera()->SetFieldOfView(static_cast<unsigned short>(screen_print_x));
-    }
-    if (Camera::StopUpdating == 0) {
-        GetCamera()->SetTargetDistance(camera_data->Radius);
-    }
+    GetCamera()->SetFieldOfView(static_cast<unsigned short>(screen_print_x));
+    GetCamera()->SetTargetDistance(camera_data->Radius);
     GetCamera()->SetCameraMatrix(camera_matrix, dT);
 }
 

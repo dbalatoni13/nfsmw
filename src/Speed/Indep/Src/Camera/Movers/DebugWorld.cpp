@@ -257,9 +257,7 @@ void DebugWorldCameraMover::Update(float dT) {
     ComputeBankedUpVector(&up, &Eye, &Look, bank);
     eCreateLookAtMatrix(&m, Eye, Look, up);
 
-    if (Camera::StopUpdating == 0) {
-        unsigned short fov = 0x32dc;
-        GetCamera()->SetFieldOfView(fov);
-    }
+    unsigned short fov = 0x32dc;
+    GetCamera()->SetFieldOfView(fov);
     GetCamera()->SetCameraMatrix(m, dT);
 }

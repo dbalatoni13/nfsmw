@@ -188,12 +188,8 @@ void TrackCopCameraMover::Init() {
     FocalDistCubic.SetValDesired(0.0f);
 
     if (FocusEffects == 0) {
-        if (Camera::StopUpdating == 0) {
-            GetCamera()->SetFocalDistance(0.0f);
-        }
-        if (Camera::StopUpdating == 0) {
-            GetCamera()->SetDepthOfField(0.0f);
-        }
+        GetCamera()->SetFocalDistance(0.0f);
+        GetCamera()->SetDepthOfField(0.0f);
     }
 
     if (!copFound) {

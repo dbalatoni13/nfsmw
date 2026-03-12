@@ -462,24 +462,16 @@ void CubicCameraMover::Update(float dT) {
     pEye->SetDuration(eye_duration);
 
     float target_dist = bDistBetween(GetCamera()->GetPosition(), pCar->GetGeometryPosition());
-    if (Camera::StopUpdating == 0) {
-        GetCamera()->SetTargetDistance(target_dist);
-    }
+    GetCamera()->SetTargetDistance(target_dist);
 
     float fSign;
     if (!bPerfectFocus) {
-        if (Camera::StopUpdating == 0) {
-            GetCamera()->SetFocalDistance(40.0f);
-        }
+        GetCamera()->SetFocalDistance(40.0f);
         fSign = 100.0f;
     } else {
-        if (Camera::StopUpdating == 0) {
-            GetCamera()->SetFocalDistance(0.0f);
-        }
+        GetCamera()->SetFocalDistance(0.0f);
     }
-    if (Camera::StopUpdating == 0) {
-        GetCamera()->SetDepthOfField(fSign);
-    }
+    GetCamera()->SetDepthOfField(fSign);
 
     bMatrix4 mCarToWorld;
     SetDesired(&mCarToWorld, pov, &pov_data, bSnapNext);
@@ -593,24 +585,16 @@ void CubicCameraMover::Update(float dT) {
     bOutside = OutsidePovType(pov->Type);
 
     target_dist = bDistBetween(GetCamera()->GetPosition(), pCar->GetGeometryPosition());
-    if (Camera::StopUpdating == 0) {
-        GetCamera()->SetTargetDistance(target_dist);
-    }
+    GetCamera()->SetTargetDistance(target_dist);
 
     fSign = 0.0f;
     if (!bPerfectFocus) {
-        if (Camera::StopUpdating == 0) {
-            GetCamera()->SetFocalDistance(40.0f);
-        }
+        GetCamera()->SetFocalDistance(40.0f);
         fSign = 100.0f;
     } else {
-        if (Camera::StopUpdating == 0) {
-            GetCamera()->SetFocalDistance(0.0f);
-        }
+        GetCamera()->SetFocalDistance(0.0f);
     }
-    if (Camera::StopUpdating == 0) {
-        GetCamera()->SetDepthOfField(fSign);
-    }
+    GetCamera()->SetDepthOfField(fSign);
 
     if (GRaceStatus::Exists() && pCar->IsDragRace()) {
         float seconds = GRaceStatus::Get().GetRaceTimeElapsed();
@@ -630,9 +614,7 @@ void CubicCameraMover::Update(float dT) {
     float f_tan_fov = bTan(a_fov >> 1);
     unsigned short a_new_fov = bATan(1.0f, f_tan_fov) << 1;
 
-    if (Camera::StopUpdating == 0) {
-        GetCamera()->SetFieldOfView(a_new_fov);
-    }
+    GetCamera()->SetFieldOfView(a_new_fov);
 
     bMatrix4 mWorldToCamera;
     eCreateLookAtMatrix(&mWorldToCamera, vEye, vLook, vUp);

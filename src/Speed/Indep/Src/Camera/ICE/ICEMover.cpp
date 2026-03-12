@@ -774,12 +774,8 @@ ICEMover::~ICEMover() {
     delete pAccelOffset;
     GetCamera()->SetSimTimeMultiplier(1.0f);
     GetCamera()->SetLetterBox(0.0f);
-    if (!Camera::StopUpdating) {
-        GetCamera()->SetDepthOfField(0.0f);
-    }
-    if (!Camera::StopUpdating) {
-        GetCamera()->SetFocalDistance(0.0f);
-    }
+    GetCamera()->SetDepthOfField(0.0f);
+    GetCamera()->SetFocalDistance(0.0f);
     GetCamera()->ClearVelocity();
 }
 
@@ -913,7 +909,7 @@ void ICEMover::Update(float dT) {
     }
 
     unsigned short a_fov = GetFOV(f_param);
-    if (a_fov != 0 && !Camera::StopUpdating) {
+    if (a_fov != 0) {
         GetCamera()->SetFieldOfView(a_fov);
     }
 
@@ -1157,9 +1153,7 @@ void ICEMover::Update(float dT) {
 
     float aperture = pAperture->GetVal(f_param);
     if (aperture < 0.0f || 37.0f <= aperture) {
-        if (!Camera::StopUpdating) {
-            GetCamera()->SetFocalDistance(0.0f);
-        }
+        GetCamera()->SetFocalDistance(0.0f);
     } else {
         float focal = pFocalDistance->GetVal(f_param);
         if (focal < 1.0f) {
@@ -1180,19 +1174,13 @@ void ICEMover::Update(float dT) {
         if (dofFar < dofNear) {
             dofFar = dofNear + 1.0f;
         }
-        if (!Camera::StopUpdating) {
-            GetCamera()->SetFocalDistance((dofFar + dofNear) * 0.5f);
-        }
+        GetCamera()->SetFocalDistance((dofFar + dofNear) * 0.5f);
         float dof = dofFar - dofNear;
     }
-    if (!Camera::StopUpdating) {
-        GetCamera()->SetDepthOfField(0.0f);
-    }
+    GetCamera()->SetDepthOfField(0.0f);
 
     float targetDist = bDistBetween(reinterpret_cast<const bVector3 *>(&vEye), reinterpret_cast<const bVector3 *>(&vLook));
-    if (!Camera::StopUpdating) {
-        GetCamera()->SetTargetDistance(targetDist);
-    }
+    GetCamera()->SetTargetDistance(targetDist);
 
     GetCamera()->SetCameraMatrix(*reinterpret_cast<const bMatrix4 *>(&mWorldToCamera), dT * simspeed);
 }

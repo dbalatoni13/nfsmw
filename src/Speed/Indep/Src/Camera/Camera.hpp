@@ -134,19 +134,27 @@ class Camera {
     }
 
     void SetTargetDistance(float f) {
-        CurrentKey.TargetDistance = f;
+        if (!StopUpdating) {
+            CurrentKey.TargetDistance = f;
+        }
     }
 
     void SetFocalDistance(float f) {
-        CurrentKey.FocalDistance = f;
+        if (!StopUpdating) {
+            CurrentKey.FocalDistance = f;
+        }
     }
 
     void SetDepthOfField(float f) {
-        CurrentKey.DepthOfField = f;
+        if (!StopUpdating) {
+            CurrentKey.DepthOfField = f;
+        }
     }
 
     void SetFieldOfView(unsigned short fov) {
-        CurrentKey.FieldOfView = fov;
+        if (!StopUpdating) {
+            CurrentKey.FieldOfView = fov;
+        }
     }
 
     void SetNoiseFrequency1(float x, float y, float z, float w) {
