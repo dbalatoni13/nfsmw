@@ -200,11 +200,11 @@ If it finds a match, include that header instead of redeclaring.
 
 ### dtk (decomp-toolkit)
 
-Dump the dwarf of your own implementation of a function after rebuilding the unit normally:
+Dump the dwarf of your own implementation of a function after rebuilding the unit normally (ignore dwarf specific errors):
 
 ```sh
 python tools/decomp-workflow.py build -u main/Speed/Indep/SourceLists/zAnim
-dtk dwarf dump build/GOWE69/src/Speed/Indep/SourceLists/zAnim.o -o /tmp/zAnim_check.nothpp
+build/tools/dtk dwarf dump build/GOWE69/src/Speed/Indep/SourceLists/zAnim.o -o /tmp/zAnim_check.nothpp
 ```
 
 Demangle a symbol (you probably won't need this):
@@ -240,7 +240,7 @@ This is a **C++98** codebase compiled with ProDG GC 3.9.3 (GCC 2.95 under the ho
 - Omit the `this` pointer.
 - Use `nullptr` and `override`. If they are missing, you need to include `types.h`.
 - Omit `struct` when declaring variables or parameters, we are not in C land.
-- Avoid using `using namespace` at all cost. Since the game uses jumbo builds, they leak through files.
+- Avoid using `using` directives at all cost. Since the game uses jumbo builds, they leak through files.
 
 ## Committing Progress
 

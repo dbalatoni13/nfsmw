@@ -11,7 +11,7 @@ structs, because the GameCube ones were missing.
 You should do the following tasks:
 
 1. Make sure the dol builds using `ninja`.
-2. Get rid of `using namespace` and qualify the full names instead.
+2. Get rid of `using` directives and qualify the full names instead.
 3. Apply STYLE_GUIDE.md to zPhysics.
-4. Look at all the functions and struct/classes that were created in all the latest Copilot commits and make sure that the dwarf matches the original (dtk dump + lookup skill).
+4. Look at all the functions and struct/classes that were created in all the latest Copilot commits and make sure that the dwarf matches the original (dtk dump + lookup skill). Ignore the fact that some inlines are duplicated inside struct bodies in the original dwarf.
 5. Look at all the structs/classes that were created in all the latest Copilot commits and depending on the line info decide whether they are defined in the right place (lookup skill + line_lookup skill). Move them if they aren't.

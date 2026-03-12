@@ -151,9 +151,9 @@ After writing your code, occasionally run the dwarf dump on the compiled output 
 due to work on other functions, query the unmangled name instead.
 
 ```bash
-# Rebuild the unit, then dump the shared object file's DWARF:
+# Rebuild the unit, then dump the shared object file's DWARF (ignore dwarf specific errors):
 python tools/decomp-workflow.py build -u main/Path/To/TU
-dtk dwarf dump build/GOWE69/src/Path/To/TU.o -o /tmp/my_unit_dump.nothpp
+build/tools/dtk dwarf dump build/GOWE69/src/Path/To/TU.o -o /tmp/my_unit_dump.nothpp
 # Then look up the same function in your output:
 python tools/lookup.py --file /tmp/my_unit_dump.nothpp function "EPerfectLaunch::~EPerfectLaunch(void)"
 # Compare with the original:

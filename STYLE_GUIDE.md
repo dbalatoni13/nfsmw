@@ -79,9 +79,9 @@ Member variable naming reflects what the original DWARF says. Some classes use `
 (no underscore), others use `m_variable` (with underscore). Follow the DWARF dump. Do not
 invent naming prefixes.
 
-## 8. `using namespace`
+## 8. `using` directives
 
-Never add `using namespace` directives. Qualify all names fully.
+Never add `using` directives. Qualify all names fully.
 
 ## 9. Namespace-qualified Types
 

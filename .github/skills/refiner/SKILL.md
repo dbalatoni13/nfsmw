@@ -112,9 +112,9 @@ After any instruction match, verify the DWARF also matches.
 Use the rebuilt shared object from Phase 1 (or rebuild again if you've changed the source):
 
 ```bash
-# Rebuild the unit, then dump its DWARF
+# Rebuild the unit, then dump its DWARF (ignore dwarf specific errors)
 python tools/decomp-workflow.py build -u main/Path/To/TU
-dtk dwarf dump build/GOWE69/src/Path/To/TU.o -o /tmp/refiner_<func>_check.nothpp
+build/tools/dtk dwarf dump build/GOWE69/src/Path/To/TU.o -o /tmp/refiner_<func>_check.nothpp
 
 # Compare your function's DWARF against the original
 python tools/lookup.py --file /tmp/refiner_<func>_check.nothpp function "ClassName::FunctionName(void)"
