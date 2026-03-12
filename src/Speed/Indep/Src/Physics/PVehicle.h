@@ -106,19 +106,37 @@ class PVehicle : public PhysicsObject,
         ManageNode() {}
         static void print(const ManageNode &n) {}
         static bool sort_remove_resources(const ManageNode &lhs, const ManageNode &rhs) {
-            if (lhs.result != rhs.result) {
-                return lhs.result > rhs.result;
+            if (rhs.resource.Type != lhs.resource.Type) {
+                if (lhs.instancecount < rhs.instancecount) {
+                    return true;
+                }
+                if (lhs.resource.Cost > rhs.resource.Cost) {
+                    return true;
+                }
             }
-            return lhs.resource.Cost > rhs.resource.Cost;
+            return lhs.resource.Type < rhs.resource.Type;
         }
         static bool sort_remove_instances(const ManageNode &lhs, const ManageNode &rhs) {
-            if (lhs.result != rhs.result) {
-                return lhs.result > rhs.result;
+            if (rhs.resource.Type != lhs.resource.Type) {
+                if (lhs.instancecount > rhs.instancecount) {
+                    return true;
+                }
+                if (lhs.resource.Cost > rhs.resource.Cost) {
+                    return true;
+                }
             }
-            return lhs.instancecount > rhs.instancecount;
+            return lhs.resource.Type < rhs.resource.Type;
         }
         static bool sort_by_keep(const ManageNode &lhs, const ManageNode &rhs) {
-            return lhs.result < rhs.result;
+            if (rhs.resource.Type == lhs.resource.Type) {
+                if (lhs.result == VCR_WANT) {
+                    if (rhs.result == VCR_DONTCARE) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return lhs.resource.Type < rhs.resource.Type;
         }
         static bool is_kept(const ManageNode &h) {
             return h.result == VCR_WANT;
