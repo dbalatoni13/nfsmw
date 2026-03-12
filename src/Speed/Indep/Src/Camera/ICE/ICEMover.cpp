@@ -485,16 +485,14 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
         hard_cut = (ICE::KeysShared(pOldCameraData, 1, pCameraData, 0) == 0);
     }
 
-    int es = 0;
+    bool flush = hard_cut;
     if (pCameraData != 0 && pICEData == 0 && !(pCameraData->bSmooth & 1)) {
-        es = 1;
+        flush = true;
     }
-    int ls = 0;
     if (pICEData != 0 && pCameraData == 0 && !(pICEData->bSmooth & 1)) {
-        ls = 1;
+        flush = true;
     }
 
-    int flush = hard_cut | es | ls;
     pICEData = pCameraData;
 
     if (flush) {
@@ -580,7 +578,7 @@ void ICEMover::SetDesired(bool b_snap, bool b_refresh) {
                 fov.SetValDesired(static_cast<float>(fov1));
                 fov.SetdValDesired(fov1_slope);
 
-                if (hard_cut || es || ls) {
+                if (flush) {
                     PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mHybridToWorld));
                     ICE::Vector3 *carPos = pCar->GetGeometryPosition();
                     bCopy(reinterpret_cast<bMatrix4 *>(&mHybridToWorld),
@@ -842,7 +840,7 @@ ICEAnchor *GetICEAnchor() {
 
 void ICEMover::Update(float dT) {
     ICETrack *p_track = TheICEManager.GetPlaybackTrack();
-    bool bLerpLag = false;
+    bool bLerpLag;
     UMath::Matrix4 mSceneToWorld;
 
     float realTime = TheICEManager.IsUsingRealTime();
@@ -850,17 +848,16 @@ void ICEMover::Update(float dT) {
         return;
     }
 
+    bLerpLag = false;
     if (p_track != nullptr) {
-        int context = p_track->GetContext();
-        bLerpLag = (context == 3);
+        bLerpLag = (p_track->GetContext() == 3);
         if (p_track->GetContext() != 2) {
             bMirrorICEData = false;
         }
     }
 
     bViolatesTopology = false;
-    bool b_refresh = TheICEManager.RefreshCameraSplines();
-    SetDesired(false, b_refresh);
+    SetDesired(false, TheICEManager.RefreshCameraSplines());
 
     PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&mSceneToWorld));
 
@@ -880,10 +877,9 @@ void ICEMover::Update(float dT) {
         f_route_param = TheICEManager.GetParameter();
     }
 
-    float f_range = fParameter1 - fParameter0;
     float f_param = 0.0f;
-    if (0.0001f < bAbs(f_range)) {
-        f_param = (f_route_param - fParameter0) / f_range;
+    if (0.0001f < bAbs(fParameter1 - fParameter0)) {
+        f_param = (f_route_param - fParameter0) / (fParameter1 - fParameter0);
     }
 
     if (1.0f <= f_route_param) {
@@ -1022,8 +1018,7 @@ void ICEMover::Update(float dT) {
     }
 
     n_state = TheICEManager.GetState();
-    float dutchVal = GetDutch(f_param);
-    unsigned short dutch = static_cast<unsigned short>(static_cast<int>(dutchVal * 65536.0f) & 0xffff);
+    unsigned short dutch = static_cast<unsigned short>(static_cast<int>(GetDutch(f_param) * 65536.0f) & 0xffff);
 
     UMath::Matrix4 mWorldToCamera;
     CreateLookAtMatrix(reinterpret_cast<ICE::Matrix4 *>(&mWorldToCamera),
@@ -1174,12 +1169,10 @@ void ICEMover::Update(float dT) {
             dofFar = dofNear + 1.0f;
         }
         GetCamera()->SetFocalDistance((dofFar + dofNear) * 0.5f);
-        float dof = dofFar - dofNear;
     }
     GetCamera()->SetDepthOfField(0.0f);
 
-    float targetDist = bDistBetween(reinterpret_cast<const bVector3 *>(&vEye), reinterpret_cast<const bVector3 *>(&vLook));
-    GetCamera()->SetTargetDistance(targetDist);
+    GetCamera()->SetTargetDistance(bDistBetween(reinterpret_cast<const bVector3 *>(&vEye), reinterpret_cast<const bVector3 *>(&vLook)));
 
     GetCamera()->SetCameraMatrix(*reinterpret_cast<const bMatrix4 *>(&mWorldToCamera), dT * simspeed);
 }

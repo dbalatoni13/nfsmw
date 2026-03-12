@@ -513,7 +513,6 @@ void CubicCameraMover::Update(float dT) {
     bVector3 vLook(fSign * (*pLook).x.Val, fSign * (*pLook).y.Val, (*pLook).z.Val);
 
     {
-        float impact;
         if (vCameraImpcat.x > 0.0f) {
             if (0.0f < vCameraImpcatTimer.x) {
                 tTable<float> envelope(CameraImpcatCurveH, 5, 0.0f, 1.0f);
@@ -530,6 +529,15 @@ void CubicCameraMover::Update(float dT) {
             clearH:
                 vCameraImpcat.x = 0.0f;
             }
+        } else {
+            if (vCameraImpcatTimer.x > 0.0f) {
+                vCameraImpcatTimer.x -= dT;
+                if (vCameraImpcatTimer.x > 0.0f) {
+                    goto doneH;
+                }
+            }
+            vCameraImpcat.x = 0.0f;
+        doneH:;
         }
     }
 
@@ -548,6 +556,15 @@ void CubicCameraMover::Update(float dT) {
             clearV:
                 vCameraImpcat.y = 0.0f;
             }
+        } else {
+            if (vCameraImpcatTimer.y > 0.0f) {
+                vCameraImpcatTimer.y -= dT;
+                if (vCameraImpcatTimer.y > 0.0f) {
+                    goto doneV;
+                }
+            }
+            vCameraImpcat.y = 0.0f;
+        doneV:;
         }
     }
 
