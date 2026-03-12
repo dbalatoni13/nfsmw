@@ -603,10 +603,10 @@ void CubicCameraMover::Update(float dT) {
     bMatrix4 mWorldToCamera;
     eCreateLookAtMatrix(&mWorldToCamera, vEye, vLook, vUp);
 
-    ApplyCameraShake(0, &mWorldToCamera);
+    ApplyCameraShake(ViewID, &mWorldToCamera);
     HandheldNoise(&mWorldToCamera, PovHandheldNoiseScale[nPovTypeUsed], true);
 
-    if (!AmIinATunnel(eGetView(0, false), 1)) {
+    if (!AmIinATunnel(&eViews[ViewID], 1)) {
         float speed_attenuation = bClamp(pCar->GetVelMag() * 0.01f, 0.0f, 1.0f);
         float f_chopper_scale = PovHandheldChopperScale[nPovTypeUsed] * (1.0f - speed_attenuation * 0.5f);
         ChopperNoise(&mWorldToCamera, f_chopper_scale, true);
