@@ -73,14 +73,14 @@ static float ReplayBurnoutScore(ICEAnchor *p_car) {
     float ret = 0.0f;
     float forward_speed = p_car->GetVelocityMagnitude();
 
-    if (forward_speed != UMath::Clamp(forward_speed, -10.0f, 20.0f)) {
+    if (forward_speed != bClamp(forward_speed, -10.0f, 20.0f)) {
         return ret;
     }
 
     float forward_slip = p_car->GetForwardSlip();
-    ret = UMath::Clamp(forward_slip * 0.1f - 1.0f, 0.0f, 1.0f);
+    ret = bClamp(forward_slip * 0.1f - 1.0f, 0.0f, 1.0f);
 
-    if (forward_speed != UMath::Clamp(forward_speed, -1.0f, 1.0f)) {
+    if (forward_speed != bClamp(forward_speed, -1.0f, 1.0f)) {
         return ret;
     }
     if (p_car->GetRPM() <= 3000.0f) {
@@ -108,7 +108,7 @@ static float ReplayPowerSlideScore(ICEAnchor *p_car) {
             return ret;
         }
 
-        return UMath::Clamp(yaw + 0.1f, 0.0f, 1.0f);
+        return bClamp(yaw + 0.1f, 0.0f, 1.0f);
     }
 }
 

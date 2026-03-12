@@ -36,6 +36,7 @@ struct WWorldPos {
         fMissCount = 0;
         fUsageCount = 0;
         fYOffset = yOffset;
+        fSurface = nullptr;
     }
 
     ~WWorldPos() {}

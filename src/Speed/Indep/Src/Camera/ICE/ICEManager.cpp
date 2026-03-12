@@ -186,7 +186,7 @@ float ICETrack::GetParameter() {
 ICEData *ICETrack::GetCameraData(float *p_start, float *p_end, float *p_current) {
     float f_param = GetParameter();
 
-    if (f_param != UMath::Clamp(f_param, 0.0f, 1.0f)) {
+    if (f_param != bClamp(f_param, 0.0f, 1.0f)) {
         return 0;
     }
 

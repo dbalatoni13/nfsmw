@@ -406,11 +406,11 @@ inline void Matrix4ToQuaternion(const Matrix4 &m, Vector4 &q) {
 }
 
 inline int Clamp(const int a, const int amin, const int amax) {
-    return bClamp(a, amin, amax);
+    return a < amin ? amin : (a > amax ? amax : a);
 }
 
 inline float Clamp(const float a, const float amin, const float amax) {
-    return bClamp(a, amin, amax);
+    return VU0_floatmax(amin, VU0_floatmin(a, amax));
 }
 
 inline float Abs(const float a) {
