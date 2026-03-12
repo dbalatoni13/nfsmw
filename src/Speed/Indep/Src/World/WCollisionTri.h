@@ -77,9 +77,15 @@ struct WCollisionTriList : public WCollisionVector<WCollisionTriBlock *> {
     ~WCollisionTriList() { clear_all(); }
 
     inline void clear_all() {
+#ifdef _MSC_VER
+        for (unsigned int i = 0; i < size(); ++i) {
+            delete (*this)[i];
+        }
+#else
         for (WCollisionTriBlock **i = begin(); i != end(); ++i) {
             delete *i;
         }
+#endif
         clear();
         mCurrBlock = nullptr;
     }

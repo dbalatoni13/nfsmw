@@ -40,6 +40,10 @@ inline float Cosr(const float a) {
 inline float ASinr(const float x) {
     return ANGLE2RAD(VU0_ASin(x));
 }
+#else
+inline float ASinr(const float x) {
+    return asinf(x);
+}
 #endif
 
 void BuildRotate(Matrix4 &m, float r, float x, float y, float z);
