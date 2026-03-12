@@ -63,13 +63,13 @@ void uiRepSheetRivalFlow::Next() {
             cFEng::Get()->QueuePackagePop(-1);
             cFEng::Get()->QueuePackagePush("SafeHouseReputationOverview.fng", 0, 0, false);
             mStage = -1;
-        } else if (FEDatabase->GetCareerSettings()->HasRapSheet() || bin != 13) {
-            RaceStarterStartCareerFreeRoam();
-        } else {
+        } else if (!FEDatabase->GetCareerSettings()->HasRapSheet() && bin == 13) {
             mStage = old_stage;
             FEDatabase->GetCareerSettings()->SetHasRapSheet();
             FEAnyMovieScreen::SetMovieName("blacklist_13");
             cFEng::Get()->QueuePackageSwitch(FEAnyMovieScreen::GetFEngPackageName(), 0, 0, false);
+        } else {
+            RaceStarterStartCareerFreeRoam();
         }
     } else if (mStage == 7) {
         UCrc32 kind(0x20d60dbf);

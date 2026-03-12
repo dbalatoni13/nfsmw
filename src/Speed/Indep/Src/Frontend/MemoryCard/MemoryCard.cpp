@@ -43,8 +43,10 @@ const char* LOCALE_getstrA(void* data, int strID);
 
 bool FEngIsScriptSet(const char* pkg_name, unsigned long obj_hash, unsigned long script_hash);
 
-void CaptureJoyOp(MemoryCardJoyLoggableEvents op) {
-    Joylog::AddData(op, 8, JOYLOG_CHANNEL_MEMORY_CARD);
+inline void CaptureJoyOp(MemoryCardJoyLoggableEvents op) {
+    if (Joylog::IsCapturing()) {
+        Joylog::AddData(op, 8, JOYLOG_CHANNEL_MEMORY_CARD);
+    }
 }
 
 int ReplayJoyOp() {
