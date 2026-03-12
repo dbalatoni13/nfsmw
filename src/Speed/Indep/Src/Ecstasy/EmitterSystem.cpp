@@ -609,35 +609,23 @@ const Attrib::Gen::emitterdata &Emitter::GetAttributes() const {
     return this->mDynamicData->GetAttributes();
 }
 
-// UNSOLVED
 bool EmitterGroup::MakeOneShot(bool force_all) {
     bool at_least_one_was_oneshot = false;
-    bool bVar2;
 
-    Emitter *emitter = this->mEmitters.GetHead();
-    do {
-        if (emitter == (Emitter *)&this->mEmitters) {
-            bVar2 = false;
-            if ((force_all) || (at_least_one_was_oneshot)) {
-                bVar2 = true;
-            }
-            return bVar2;
-        }
-        if (force_all) {
-        LAB_80111078:
-            emitter->mFlags = emitter->mFlags | 1;
-        } else {
-            const Attrib::Gen::emitterdata atr = emitter->GetAttributes();
-            bool one_shot = force_all;
+    for (Emitter *emitter = mEmitters.GetHead(); emitter != mEmitters.EndOfList(); emitter = emitter->GetNext()) {
+        bool one_shot = force_all;
+        if (!one_shot) {
+            const Attrib::Gen::emitterdata &atr = emitter->GetAttributes();
             if (atr.IsValid() && atr.IsOneShot()) {
                 at_least_one_was_oneshot = true;
                 one_shot = true;
             }
-            if (one_shot)
-                goto LAB_80111078;
         }
-        emitter = emitter->GetNext();
-    } while (true);
+        if (one_shot) {
+            emitter->MakeOneShot();
+        }
+    }
+    return force_all || at_least_one_was_oneshot;
 }
 
 void EmitterGroup::SetLocalWorld(const bMatrix4 *m) {
