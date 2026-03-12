@@ -34,6 +34,67 @@ template <> void tGraph<float>::Blend(float *dest, float *a, float *b, const flo
     *dest = *a * blend_a + *b * (1.0f - blend_a);
 }
 
+template <> void tTable<float>::Blend(float *dest, float *a, float *b, float blend_a) {
+    *dest = *a * blend_a + *b * (1.0f - blend_a);
+}
+
+template <> void tTable<bVector2>::Blend(bVector2 *dest, bVector2 *a, bVector2 *b, float blend_a) {
+    dest->y = a->y * blend_a;
+    dest->x = a->x * blend_a;
+    bScaleAdd(dest, dest, b, 1.0f - blend_a);
+}
+
+template <> void tTable<bVector4>::Blend(bVector4 *dest, bVector4 *a, bVector4 *b, float blend_a) {
+    float w = a->w;
+    float y = a->y;
+    float z = a->z;
+    dest->x = a->x * blend_a;
+    dest->y = y * blend_a;
+    dest->z = z * blend_a;
+    dest->w = w * blend_a;
+    bScaleAdd(dest, dest, b, 1.0f - blend_a);
+}
+
+float Graph::GetValue(float x) {
+    int num = NumPoints;
+    if (num > 1) {
+        bVector2 *pts = Points;
+        if (x <= pts[0].x) {
+            return pts[0].y;
+        }
+        if (pts[num - 1].x <= x) {
+            return pts[num - 1].y;
+        }
+        int i = 0;
+        if (num - 1 > 0) {
+            do {
+                float px = pts[i].x;
+                if (px <= x && x < pts[i + 1].x) {
+                    float y0 = pts[i].y;
+                    float dx = pts[i + 1].x - px;
+                    if (1e-06f < bAbs(dx)) {
+                        return (static_cast<float>(x - px) / dx) * (pts[i + 1].y - y0) + y0;
+                    }
+                    return (pts[i + 1].y - y0) * 0.5f + y0;
+                }
+                i = i + 1;
+            } while (i < num - 1);
+        }
+    }
+    return Points[0].y;
+}
+
+float Average::GetLastRecordedValue() const {
+    if (nSamples != 0) {
+        int idx = nCurrentSlot - 1;
+        if (idx < 0) {
+            idx = nSlots - 1;
+        }
+        return pData[idx];
+    }
+    return 0.0f;
+}
+
 AverageBase::AverageBase(int size, int slots)
     : nSize(size),   //
       nSlots(slots), //

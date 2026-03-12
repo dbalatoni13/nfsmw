@@ -56,6 +56,9 @@ template <typename T> class tTable : public TableBase {
     T *pTable;
 
   public:
+    tTable() : TableBase(0, 0.0f, 1.0f) {}
+
+    static void Blend(T *dest, T *a, T *b, float blend_a);
 };
 
 class AverageBase {
@@ -120,6 +123,8 @@ class Average : public AverageBase {
     float GetTotal() {
         return fTotal;
     }
+
+    float GetLastRecordedValue() const;
 
   protected:
     float fTotal;
