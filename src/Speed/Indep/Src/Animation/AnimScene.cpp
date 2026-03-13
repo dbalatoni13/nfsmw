@@ -3,6 +3,7 @@
 #include "AnimEntity_BasicCharacter.hpp"
 #include "AnimEntityCreationContext.hpp"
 #include "AnimLocator.hpp"
+#include "AnimPlayer.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/Simables/INISCarControl.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
@@ -13,38 +14,49 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
-class IVehicle;
-
-
-
-struct CarAnimationState {
-    CarAnimationState();
-    CAnimCtrl *AnimCtrl;   // offset 0x0
-    IVehicle *mIVehicle;   // offset 0x4
-    int HaveLastCarPosition; // offset 0x8
-    int CarIndex;          // offset 0xC
-};
-
-extern CarAnimationState gCarAnimationStates[16];
-
 extern AnimDirectory *TheAnimDirectory;
-extern int bEnableNisTextDisplay;
 // mIsRaceStart is CAnimEntityCreationContext::mIsRaceStart
-extern unsigned int skel_ROOT_hash;
+unsigned int skel_ROOT_hash;
 extern int AnimCfg_DebugOutput;
-extern char Car_Name[16][16];
 extern float NISCopCarDoorOpenAmount[4];
-extern float gCopCarDoorAnim_CurrentTime[4];
-extern float gCopCarDoorAnim_AnimLength[4];
-extern float gCopCarDoorAnim_Delta[4];
-extern float gCopCarDoorAnim_StartPos[4];
 
 void bConvertToBond(bMatrix4 &dest, const bMatrix4 &v);
 CAnimSkeleton *GetSkeletonFromList(unsigned int namehash);
 void DumpAnimBanks();
 
 bTList<CAnimSceneData> g_loadedAnimSceneDataList;
+CarAnimationState gCarAnimationStates[16];
+
+float gCopCarDoorAnim_CurrentTime[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+float gCopCarDoorAnim_AnimLength[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+float gCopCarDoorAnim_StartPos[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+float gCopCarDoorAnim_Delta[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+SlotPool *AnimPartSlotPool = nullptr;
+
+int bEnableNisTextDisplay = 0;
+
+bool CAnimEntityCreationContext::mIsRaceStart = false;
 int CAnimScene::mHandleCounter = 0;
+
+char Car_Name[16][16] = {
+    "ZPM_Car1",
+    "ZPM_Car2",
+    "ZPM_Car3",
+    "ZPM_Car4",
+    "ZPM_Car5",
+    "ZPM_Car6",
+    "ZPM_Car7",
+    "ZPM_Car8",
+    "ZPM_Cop1",
+    "ZPM_Cop2",
+    "ZPM_Cop3",
+    "ZPM_Cop4",
+    "ZPM_Cop5",
+    "ZPM_Cop6",
+    "ZPM_Cop7",
+    "ZPM_Cop8",
+};
 
 CarAnimationState::CarAnimationState() {
     AnimCtrl = nullptr;

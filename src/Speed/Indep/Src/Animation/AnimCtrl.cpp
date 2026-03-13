@@ -5,7 +5,7 @@
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
-SlotPool *AnimCtrlSlotPool;
+SlotPool *AnimCtrlSlotPool = nullptr;
 
 CAnimCtrl::CAnimCtrl() {
     Clear();

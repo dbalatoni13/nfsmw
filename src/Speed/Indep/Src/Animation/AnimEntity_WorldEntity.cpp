@@ -12,13 +12,13 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "WorldAnimInstanceDirectory.hpp"
 
-static int NumWorldAnimEntities;           // size: 0x4, address: 0x804156F4
-static int MaxNumWorldAnimEntities;        // size: 0x4, address: 0x804156F8
+static int NumWorldAnimEntities = 0;           // size: 0x4, address: 0x804156F4
+static int MaxNumWorldAnimEntities = 0;        // size: 0x4, address: 0x804156F8
 // TODO move? they are static though
-static int NumWorldAnimEntityTrees;        // size: 0x4, address: 0x804156FC
-static int MaxNumWorldAnimEntityTrees;     // size: 0x4, address: 0x80415700
-static int NumWorldAnimEntityTreeInfos;    // size: 0x4, address: 0x80415704
-static int MaxNumWorldAnimEntityTreeInfos; // size: 0x4, address: 0x80415708
+static int NumWorldAnimEntityTrees = 0;        // size: 0x4, address: 0x804156FC
+static int MaxNumWorldAnimEntityTrees = 0;     // size: 0x4, address: 0x80415700
+static int NumWorldAnimEntityTreeInfos = 0;    // size: 0x4, address: 0x80415704
+static int MaxNumWorldAnimEntityTreeInfos = 0; // size: 0x4, address: 0x80415708
 
 void *CWorldAnimEntity::operator new(size_t size, const char *debug_name) {
     NumWorldAnimEntities++;
