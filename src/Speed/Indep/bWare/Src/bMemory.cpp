@@ -166,10 +166,9 @@ void *MemoryPool::AllocateMemory(int size, int alignment, int alignment_offset, 
     int best_align_adjust = 0;
     int best_remaining = 0x7fffffff;
 
-    if (start_from_top == 0) {
-        for (FreeBlock *block = this->FreeBlockList.GetTail(); block != this->FreeBlockList.EndOfList(); block = block->GetPrev()) {
-            int align_adjust =
-                GetAlignmentAdjustBottom(reinterpret_cast<intptr_t>(block) + (block->Size - actual_size), alignment, alignment_offset);
+    if (start_from_top != 0) {
+        for (FreeBlock *block = this->FreeBlockList.GetHead(); block != this->FreeBlockList.EndOfList(); block = block->GetNext()) {
+            int align_adjust = GetAlignmentAdjustTop(reinterpret_cast<intptr_t>(block), alignment, alignment_offset);
             int remaining = block->Size - (actual_size + align_adjust);
 
             if (((remaining == 0) || (remaining > 0xf)) && (remaining < best_remaining)) {
@@ -182,8 +181,9 @@ void *MemoryPool::AllocateMemory(int size, int alignment, int alignment_offset, 
             }
         }
     } else {
-        for (FreeBlock *block = this->FreeBlockList.GetHead(); block != this->FreeBlockList.EndOfList(); block = block->GetNext()) {
-            int align_adjust = GetAlignmentAdjustTop(reinterpret_cast<intptr_t>(block), alignment, alignment_offset);
+        for (FreeBlock *block = this->FreeBlockList.GetTail(); block != this->FreeBlockList.EndOfList(); block = block->GetPrev()) {
+            int align_adjust =
+                GetAlignmentAdjustBottom(reinterpret_cast<intptr_t>(block) + (block->Size - actual_size), alignment, alignment_offset);
             int remaining = block->Size - (actual_size + align_adjust);
 
             if (((remaining == 0) || (remaining > 0xf)) && (remaining < best_remaining)) {
@@ -240,10 +240,10 @@ void *MemoryPool::AllocateMemory(int size, int alignment, int alignment_offset, 
     }
 
     if (this->DebugFillEnabled) {
-        if (bMemoryRandomFillPattern == 0) {
-            bMemSet(best_block, 0xaa, allocated_size);
-        } else {
+        if (bMemoryRandomFillPattern != 0) {
             bMemSet(best_block, bGetTicker(), allocated_size);
+        } else {
+            bMemSet(best_block, 0xaa, allocated_size);
         }
     }
 
