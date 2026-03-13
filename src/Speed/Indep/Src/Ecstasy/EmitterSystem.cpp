@@ -743,34 +743,32 @@ void EmitterLibraryHeader::EndianSwap() {
     this->EndianSwapped = true;
 }
 
-// UNSOLVED (lazy)
+// UNSOLVED (EmitterParticle ctor)
 EmitterParticle *EmitterSystem::GetNewParticle(Emitter *spawning_emitter) {
-    unsigned short num_emitters;
-    EmitterGroup *this_00;
-
     if (this->mTotalNumParticles == 1024) {
         bool high_priority = spawning_emitter->GetEmitterGroup()->GetFlags() & 0x40000;
         if (high_priority) {
-            bool done = false; // r29
-            EmitterGroup *grp = this->mEmitterGroups.GetHead();
-            while (!done && grp != mEmitterGroups.EndOfList()) {
+            bool done = false;
+            for (EmitterGroup *grp = this->mEmitterGroups.GetHead(); !done && grp != mEmitterGroups.EndOfList();) {
                 EmitterGroup *grpnext = grp->GetNext();
-                if (grp->GetNumParticles() != 0 && 
-                    ((grp->GetFlags() & 0x8000000) != 0) && 
-                    ((grp->GetFlags() & 0x40000) == 0) &&
-                    ((grp->GetFlags() & 0x4000000) == 0)) {
+                if (grp->GetNumParticles() != 0 && (((grp->GetFlags() & 0x8000000) != 0) &&  // CreationContextFlags::WORLD_EFFECT?
+                                                    ((grp->GetFlags() & 0x40000) == 0) &&    // CreationContextFlags::GAMEPLAY_EFFECT?
+                                                    ((grp->GetFlags() & 0x4000000) == 0))) { // CreationContextFlags::TRIGGERED_EFFECT?
                     done = true;
                     delete grp;
                 }
                 grp = grpnext;
             }
-            while (!done && grp != mEmitterGroups.EndOfList()) {
-                EmitterGroup *grpnext = grp->GetNext();
-                if ((grp->GetFlags() & 0x40000) == 0) {
-                    done = true;
-                    delete grp;
+            // if above failed, try with only one flag
+            if (!done) {
+                for (EmitterGroup *grp = this->mEmitterGroups.GetHead(); !done && grp != mEmitterGroups.EndOfList();) {
+                    EmitterGroup *grpnext = grp->GetNext();
+                    if ((grp->GetFlags() & 0x40000) == 0) { // CreationContextFlags::GAMEPLAY_EFFECT?
+                        done = true;
+                        delete grp;
+                    }
+                    grp = grpnext;
                 }
-                grp = grpnext;
             }
         }
     }
