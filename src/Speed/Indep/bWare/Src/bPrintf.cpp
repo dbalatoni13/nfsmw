@@ -382,12 +382,12 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                 }
 
                 if (radix == 16 && width != 0) {
-                    int shift_amount = 64 - size;
-                    int bits = width * 4;
-                    long long shifted = (tempNumber << shift_amount) >> shift_amount;
-                    shifted >>= bits;
-                    if (shifted == -1LL) {
-                        unsigned long long mask = (1ULL << bits) - 1;
+                    long long nn;
+                    int shift = width * 4;
+                    nn = (tempNumber << (64 - size)) >> (64 - size);
+                    nn >>= shift;
+                    if (nn == -1LL) {
+                        unsigned long long mask = (1ULL << shift) - 1;
                         tempNumber = static_cast<long long>(static_cast<unsigned long long>(tempNumber) & mask);
                     }
                 }

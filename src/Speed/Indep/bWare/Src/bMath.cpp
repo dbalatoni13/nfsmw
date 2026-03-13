@@ -281,7 +281,7 @@ unsigned short bATan(float x, float y) {
             float r = y;
             int i = static_cast<int>((x / r) * 65536.0f);
             const unsigned short *table = &bFastATanTable[i >> 8];
-            a = bDegToAng(90.0f) - (((table[1] - table[0]) * (i & 0xFF)) >> 8) - table[0];
+            a = bDegToAng(90.0f) - (table[0] + (((table[1] - table[0]) * (i & 0xFF)) >> 8));
         } else if (y == 0.0f) {
             a = 0;
         } else {
