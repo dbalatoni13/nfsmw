@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/CTextScroller.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feScrollerina.hpp"
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
@@ -80,6 +81,25 @@ struct TuningSlider : public FEToggleWidget {
     void InitSliderObjects(const char *pkg_name, const char *name);
     void SetSliderValues(float min, float max, float inc, float cur);
 };
+
+CustomTuningScreen::CustomTuningScreen(ScreenConstructorData *sd)
+    : UIWidgetMenu(sd) //
+    , HelpTextScroller(nullptr) //
+    , HelpScrollBar(nullptr) //
+    , TuningRecord(nullptr) //
+    , TempTuningRecord() //
+    , CurrentTuningType(0) //
+    , HelpVisible(false) //
+    , ExitWithStart(false) {
+    HelpScrollBar = new (__FILE__, __LINE__) FEScrollBar(sd->PackageFilename, lbl_803E89FC, true, true, false);
+    bHasScrollBar = false;
+    iMaxWidgetsOnScreen = 8;
+    Setup();
+}
+
+CustomTuningScreen::~CustomTuningScreen() {
+    delete HelpScrollBar;
+}
 
 TuningSlider::TuningSlider(Physics::Tunings::Path path, unsigned int title, unsigned int help_blurb, bool active)
     : FEToggleWidget(true) //
@@ -520,4 +540,8 @@ unsigned int CustomTuningScreen::GetHelpForPath(Physics::Tunings::Path path, boo
     default:
         return 0;
     }
+}
+
+static MenuScreen *CreateCustomTuningScreen(ScreenConstructorData *sd) {
+    return new (__FILE__, __LINE__) CustomTuningScreen(sd);
 }

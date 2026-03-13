@@ -14,6 +14,7 @@ class FEScrollBar;
 class CustomTuningScreen : public UIWidgetMenu {
   public:
     CustomTuningScreen(ScreenConstructorData *sd);
+    ~CustomTuningScreen() override;
     void NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) override;
     static bool IsTuningAvailable(FEPlayerCarDB *stable, FECarRecord *record, Physics::Tunings::Path path);
     void ScrollTypes(eScrollDir dir);
