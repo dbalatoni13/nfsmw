@@ -744,40 +744,44 @@ void AIActionRace::Update(float dT) {
         if (!road_nav->FindingPath()) {
             AITarget *target = GetAI()->GetTarget();
             IVehicleAI *targetai;
+            target->QueryInterface(&targetai);
             UMath::Vector3 findPosition;
 
-            if (target->QueryInterface(&targetai)) {
+            if (bIsFleeMode) {
                 UMath::Vector3 fleecenter;
                 UMath::Vector3 fleeforward;
                 IPlayer *iplayer = IPlayer::First(PLAYER_LOCAL);
                 UMath::Vector3 offset;
                 float offlen;
 
-                if (!bDontSeekAhead) {
-                    fleecenter = target->GetPosition();
-                    fleeforward = UVector3(fleecenter) - car_position;
+                if (iplayer) {
+                    fleecenter = iplayer->GetSimable()->GetPosition();
+                    iplayer->GetSimable()->GetLinearVelocity(fleeforward);
+                    fleeforward.y = 0.0f;
                     offlen = UMath::Normalize(fleeforward);
-                }
-
-                if (bIsFleeMode) {
-                    fleecenter = target->GetPosition();
-                    fleeforward = UVector3(fleecenter) - car_position;
-                    offlen = UMath::Normalize(fleeforward);
-
-                    ISimable *target_simable = target->GetSimable();
-                    UMath::Sub(fleecenter, car_position, offset);
-                    float dist = UMath::Length(offset);
-                    UMath::Scale(fleeforward, dist * 0.5f, offset);
-                    UMath::ScaleAdd(offset, 1.0f, fleecenter, findPosition);
-
-                    if (UMath::Distance(findPosition, car_position) < 50.0f) {
-                        findPosition = mLastFindPosition;
-                    }
-                    if (UMath::Distance(target->GetPosition(), car_position) < 100.0f) {
-                        findPosition = mLastFindPosition;
+                    if (offlen < 5.0f) {
+                        iplayer->GetSimable()->GetRigidBody()->GetForwardVector(fleeforward);
                     }
                 } else {
-                    findPosition = target->GetPosition();
+                    fleecenter = target->GetPosition();
+                    fleeforward = target->GetLinearVelocity();
+                    fleeforward.y = 0.0f;
+                    offlen = UMath::Normalize(fleeforward);
+                    if (offlen < 5.0f) {
+                        target->GetSimable()->GetRigidBody()->GetForwardVector(fleeforward);
+                    }
+                }
+
+                UMath::Sub(fleecenter, car_position, offset);
+                float dist = UMath::Length(offset);
+                UMath::Scale(fleeforward, dist * 0.5f, offset);
+                UMath::ScaleAdd(offset, 1.0f, fleecenter, findPosition);
+
+                if (UMath::Distance(findPosition, car_position) < 50.0f) {
+                    findPosition = mLastFindPosition;
+                }
+                if (UMath::Distance(target->GetPosition(), car_position) < 100.0f) {
+                    findPosition = mLastFindPosition;
                 }
             } else {
                 findPosition = target->GetPosition();
