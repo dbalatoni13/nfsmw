@@ -223,7 +223,7 @@ int Joylog::ReadAheadFromChannel(void *buf, int size, int channel_number) {
             if (entry.ChannelNumber == channel_number) {
                 for (int byte_num = 0; byte_num < entry.DataSize; byte_num++) {
                     static_cast<unsigned char *>(buf)[num_read] =
-                        static_cast<unsigned char>(entry.Data >> ((byte_num & 7) * 8));
+                        static_cast<unsigned char>(entry.Data >> (byte_num * 8));
                     num_read++;
                 }
             }

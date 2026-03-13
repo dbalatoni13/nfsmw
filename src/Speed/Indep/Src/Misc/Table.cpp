@@ -242,14 +242,14 @@ void AverageWindow::Record(const float fValue, const float fTimeNow) {
 }
 
 void PidError::Record(float fError, float fTime, bool bZeroDerivative, bool bZeroIntegral) {
-    float diff = fError - fPreviousError;
+    float diff = fError - fCurrentError;
+    fPreviousError = fCurrentError;
     fCurrentError = fError;
-    fPreviousError = fError;
     float integral_value;
     if (bZeroIntegral) {
         integral_value = 0.0f;
     } else {
-        integral_value = diff * fTime * fFrequency;
+        integral_value = fTime * fError;
     }
     float derivative_value;
     if (bZeroDerivative) {
