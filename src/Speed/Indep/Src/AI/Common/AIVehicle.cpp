@@ -1,4 +1,6 @@
 #include "Speed/Indep/Src/AI/AIVehicle.h"
+#include "Speed/Indep/Src/AI/path_spot.h"
+#include "Speed/Indep/Src/AI/road_walker.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/AI/AIGoal.h"
@@ -1716,4 +1718,48 @@ void AIPerpVehicle::Update(float dT) {
         mWasInZoneLastUpdate = false;
         mHiddenZoneTimer = 0.0f;
     }
+}
+
+// Range: 0x80020438 -> 0x80020604
+void path_spot::init_nav(WRoadNav &nav) const {
+    WRoadNetwork &roadnetwork = WRoadNetwork::Get();
+    const WRoadSegment *segment = roadnetwork.GetSegment(segmentindex);
+    float tparam = param;
+    UMath::Vector3 dir;
+    UMath::Vector3 point;
+
+    roadnetwork.GetSegmentForwardVector(*segment, dir);
+    if (nodeind == 0) {
+        UMath::Negate(dir);
+        tparam = 1.0f - param;
+    }
+
+    segment->GetStartControl(point);
+
+    nav.SetPathType(WRoadNav::kPathCop);
+    nav.SetNavType(WRoadNav::kTypeDirection);
+    nav.SetLaneType(WRoadNav::kLaneCop);
+    nav.InitAtSegment(segmentindex, tparam, point, dir, true);
+    nav.ChangeLanes(laneoffset, 0.0f);
+}
+
+// Range: 0x80020604 -> 0x800206F8
+void path_spot::init_nav(WRoadNav &nav, const UMath::Vector3 &point) const {
+    WRoadNetwork &roadnetwork = WRoadNetwork::Get();
+    const WRoadSegment *segment = roadnetwork.GetSegment(segmentindex);
+    float tparam = param;
+    UMath::Vector3 dir;
+
+    roadnetwork.GetSegmentForwardVector(*segment, dir);
+    if (nodeind == 0) {
+        UMath::Negate(dir);
+        tparam = 1.0f - param;
+    }
+
+    nav.SetPathType(WRoadNav::kPathCop);
+    nav.SetNavType(WRoadNav::kTypeDirection);
+    nav.SetLaneType(WRoadNav::kLaneCop);
+    nav.InitAtSegment(segmentindex, tparam, point, dir, false);
+    float snapped = nav.SnapToSelectableLane(nav.GetLaneOffset());
+    nav.ChangeLanes(snapped, 0.0f);
 }
