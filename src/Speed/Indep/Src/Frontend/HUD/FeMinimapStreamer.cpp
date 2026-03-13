@@ -14,13 +14,6 @@ void ChoppedMiniMapManager::Init() {
 }
 
 ChoppedMiniMapManager::ChoppedMiniMapManager(int numSections) {
-    UncompressedMiniMap *p = &UncompressedMiniMaps[0];
-    for (int i = 8; i >= 0; i--) {
-        p->ChopNum = 0;
-        p->Chunks = nullptr;
-        p->SizeofChunks = 0;
-        p++;
-    }
     LoadingChopNum = 0;
     NumSections = numSections;
     for (int i = 0; i <= 63; i++) {

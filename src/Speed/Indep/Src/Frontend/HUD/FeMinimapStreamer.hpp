@@ -13,6 +13,10 @@ struct UncompressedMiniMap {
     int ChopNum;         // offset 0x0
     bChunk *Chunks;      // offset 0x4
     int SizeofChunks;    // offset 0x8
+
+    UncompressedMiniMap() : ChopNum(0) //
+        , Chunks(nullptr) //
+        , SizeofChunks(0) {}
 };
 
 // total size: 0x1B4
