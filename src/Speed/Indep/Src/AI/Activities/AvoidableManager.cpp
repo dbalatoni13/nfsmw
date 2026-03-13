@@ -36,15 +36,14 @@ AIAvoidable::AIAvoidable(UTL::COM::IUnknown *pUnkPersist) : mGridNode(nullptr), 
     mAll.push_back(this);
 }
 
-// what?...
-// AIAvoidable::~AIAvoidable() {
-//     for (Neighbors::const_iterator iter = mNeighbors.begin(); iter != mNeighbors.end(); iter++) {
-//         AIAvoidable *pavoid = *iter;
-//         mNeighbors.erase(std::find(mNeighbors.begin(), mNeighbors.end(), this));
-//     }
-//     mAll.erase(std::find(mAll.begin(), mAll.end(), this));
-//     delete mGridNode;
-// }
+AIAvoidable::~AIAvoidable() {
+    for (Neighbors::const_iterator iter = mNeighbors.begin(); iter != mNeighbors.end(); ++iter) {
+        AIAvoidable *pavoid = *iter;
+        pavoid->mNeighbors.erase(std::find(pavoid->mNeighbors.begin(), pavoid->mNeighbors.end(), this));
+    }
+    mAll.erase(std::find(mAll.begin(), mAll.end(), this));
+    delete mGridNode;
+}
 
 void AIAvoidable::OnOverLap(AIAvoidable &a0, AIAvoidable &a1, float dT) {
     a0.mNeighbors.push_back(&a1);
