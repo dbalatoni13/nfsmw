@@ -83,6 +83,17 @@ originates from, use this script against the compiler-generated debug line mappi
 
 See `.github/skills/line_lookup/SKILL.md` for the full workflow.
 
+### code-style — Repo-local style guidance
+
+When you are writing code, polishing code you already touched, or doing a style-review pass,
+consult `.github/skills/code_style/SKILL.md` first. It captures repo-specific formatting and
+cleanup rules, including jumbo include spacing, initializer-list comment markers, declaration
+placement, pointer style, and how to keep style work safe in match-sensitive code.
+
+Use `python tools/code_style.py audit --base origin/main` before a branch-wide style pass.
+It classifies changed files, reports repo-specific findings, and only treats safer C/C++ files
+as clang-format candidates by default.
+
 ### decomp-diff.py — Diff & symbol overview
 
 Overview mode lists all symbols in a translation unit with match status:
@@ -92,10 +103,12 @@ python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s nonmatching -t function
 python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s missing -t function
 python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim --search RemoveIOWin
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin --reloc-diffs all
 ```
 
 Filters: `-t function,object` (type), `-s missing|matching|nonmatching|extra` (status),
-`--section .text`, `--search <pattern>` (fuzzy name match).
+`--section .text`, `--search <pattern>` (fuzzy name match), `--reloc-diffs none|name_address|data_value|all`
+(surface relocation-only mismatches when needed; default: `none`).
 
 Diff mode shows side-by-side instruction comparison:
 
@@ -143,6 +156,7 @@ python tools/decomp-workflow.py build -u main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py diff -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --brief
+python tools/decomp-workflow.py verify -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --ghidra-version gc
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --lookup-mode full
 python tools/decomp-workflow.py unit -u main/Speed/Indep/SourceLists/zAnim --search FindIOWin --limit 20
@@ -183,6 +197,31 @@ falls back to the GC debug-line-mapped repo source file when that file exists an
 real content.
 Add `--brief` when you want to keep the helper sections compact; it trims suggested
 commands and related-source hints without hiding the core status/diff/source data.
+
+For every function you touch, treat DWARF as a first-class completion gate, not a
+secondary polish pass. After each meaningful code/build iteration, run the wrapper's
+combined verification flow:
+
+```sh
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+```
+
+`verify` fails unless **both** checks are exact for that function:
+
+- objdiff instruction match is 100%
+- normalized DWARF block match is exact
+
+If the combined check fails, then inspect the DWARF diff directly with:
+
+```sh
+python tools/decomp-workflow.py dwarf -u main/Path/To/TU -f FunctionName
+```
+
+It compares the original and rebuilt DWARF blocks for one function, prints a normalized
+DWARF match percentage, and shows a diff-like view of what still differs. Use it
+whenever `verify` says the function is still failing the DWARF gate. This is the
+fastest way to see whether you are still missing locals, have the wrong inline body, or
+changed signature/type details even when the instruction diff already looks good.
 
 When working with these tools, do not just work around recurring friction silently. If you
 notice a clear, safe workflow or tooling improvement that would make future decomp work
@@ -262,11 +301,18 @@ This is a **C++98** codebase compiled with ProDG GC 3.9.3 (GCC 2.95 under the ho
 
 - No `auto`, range-for, `enum class`, lambdas, or any C++11+
 - Enum values use prefix: `enum EFoo { kF_Value1, kF_Value2 }` (not `enum class`)
-- Use C++ casts (`static_cast< T >(expr)`) instead of C-style casts
-- Header guards: `#ifndef _CLASSNAME` / `#define _CLASSNAME` (not `#pragma once`)
+- Use C++ casts (`static_cast<T>(expr)`) instead of C-style casts
+- Header guards should use `#ifndef` / `#define` together with the `EA_PRAGMA_ONCE_SUPPORTED` block when writing repo headers
 - Constructors use initializer list style with leading `, ` on each line, add empty comments at the end of these lines (except the last) to stop clang-format from putting them all on the same line
+- Inline assembly is acceptable when needed to reproduce dead code or compiler scheduling that source alone cannot express cleanly
+- Preserve the original `class` vs `struct` kind. Check existing headers first, then Dwarf / PS2 info when needed. Even forward declarations and local partial declarations should use the accurate keyword when known.
+- Prefer including the real repo header over introducing a local forward declaration for a project type. If a type already has a header in `src/`, include it instead of redeclaring it locally.
+- If a subsystem already has a stub owner header and the debug line info points back at that subsystem, fill the owner header instead of keeping a recovered project type declaration in a `.cpp`.
+- Preserve original member names, types, order, and proven layout comments. Do not invent `pad`, `unk`, or `field_XXXX` members just to satisfy a guessed size or offset; verify the real members with `find-symbol.py`, GC Dwarf, and PS2 data, and leave a short TODO if a layout detail is still uncertain.
+- Follow DWARF member naming exactly (`mMember` vs `m_member`) instead of normalizing names
 - Omit the `this` pointer.
 - Use `nullptr` and `override`. If they are missing, you need to include `types.h`.
+- Prefer `if (ptr)` / `if (!ptr)` over explicit `nullptr` comparisons. In match-sensitive translation units, if you choose to normalize many of them, do it as one mechanical TU-wide pass and then rebuild / re-check that unit instead of assuming a piecemeal cleanup is free.
 - Omit `struct` when declaring variables or parameters, we are not in C land.
 - Avoid using `using` directives at all cost. Since the game uses jumbo builds, they leak through files.
 
@@ -313,6 +359,10 @@ You should take the Ghidra decompiler output for the initial translation step, g
 You may use sub-agents to gather read-only context during this process, but they must not
 edit files. Treat their output as analysis input for the main worker, not as a path to
 delegate source changes.
+
+A function is only done when both objdiff and normalized DWARF are exact. Treat a
+100% instruction match with a DWARF mismatch as unfinished work, not a near-complete
+result.
 
 The dwarf of your structs doesn't have to neccessarily match the original due to various reasons, just make sure that you copied everything correctly.
 

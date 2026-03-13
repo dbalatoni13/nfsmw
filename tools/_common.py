@@ -14,9 +14,8 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 BUILD_NINJA = os.path.join(ROOT_DIR, "build.ninja")
 OBJDIFF_JSON = os.path.join(ROOT_DIR, "objdiff.json")
+RELOC_DIFF_CHOICES = ("none", "name_address", "data_value", "all")
 OBJDIFF_DEFAULT_CONFIG_ARGS = [
-    "-c",
-    "functionRelocDiffs=none",
     "-c",
     "ppc.calculatePoolRelocations=false",
 ]
@@ -53,6 +52,15 @@ def ensure_project_prereqs(require_build_ninja: bool = False) -> None:
     ensure_exists(OBJDIFF_JSON, "Run: python configure.py")
     if require_build_ninja:
         ensure_exists(BUILD_NINJA, "Run: python configure.py")
+
+
+def build_objdiff_config_args(reloc_diffs: str = "none") -> List[str]:
+    if reloc_diffs not in RELOC_DIFF_CHOICES:
+        raise ToolError(
+            f"Invalid relocation diff mode: {reloc_diffs} "
+            f"(expected one of {', '.join(RELOC_DIFF_CHOICES)})"
+        )
+    return ["-c", f"functionRelocDiffs={reloc_diffs}", *OBJDIFF_DEFAULT_CONFIG_ARGS]
 
 
 def load_json_file(path: str, description: str) -> Any:
@@ -262,12 +270,13 @@ def run_objdiff_json(
     *,
     base_obj: Optional[str] = None,
     extra_args: Optional[Sequence[str]] = None,
+    reloc_diffs: str = "none",
     root_dir: str = ROOT_DIR,
 ) -> Dict[str, Any]:
     ensure_project_prereqs()
 
     cmd = [objdiff_cli, "diff"]
-    cmd.extend(OBJDIFF_DEFAULT_CONFIG_ARGS)
+    cmd.extend(build_objdiff_config_args(reloc_diffs))
     if extra_args:
         cmd.extend(extra_args)
     cmd.extend(["-u", unit_name, "-o", "-", "--format", "json"])

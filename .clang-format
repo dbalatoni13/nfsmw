@@ -3,3 +3,4 @@ ColumnLimit: 150
 AllowShortFunctionsOnASingleLine: Empty
 IndentWidth: 4
 IndentCaseLabels: true
+SortIncludes: Never

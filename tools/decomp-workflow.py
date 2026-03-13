@@ -14,6 +14,10 @@ most common agent flows:
   python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zCamera -f UpdateAll --lookup-mode full
   python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zCamera -f UpdateAll --no-lookup
   python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zCamera -f UpdateAll --no-source
+  python tools/decomp-workflow.py diff -u main/Speed/Indep/SourceLists/zCamera -d UpdateAll --reloc-diffs all
+  python tools/decomp-workflow.py dwarf -u main/Speed/Indep/SourceLists/zCamera -f UpdateAll
+  python tools/decomp-workflow.py dwarf -u main/Speed/Indep/SourceLists/zAttribSys -f 'Attrib::Class::RemoveCollection(Attrib::Collection *)' --full-diff
+  python tools/decomp-workflow.py verify -u main/Speed/Indep/SourceLists/zCamera -f UpdateAll
   python tools/decomp-workflow.py unit -u main/Speed/Indep/SourceLists/zCamera
 """
 
@@ -29,12 +33,15 @@ from typing import Any, Dict, List, Optional, Sequence
 from _common import (
     BUILD_NINJA,
     OBJDIFF_JSON,
+    RELOC_DIFF_CHOICES,
     ROOT_DIR,
     ToolError,
+    build_objdiff_symbol_rows,
     ensure_exists,
     find_objdiff_unit,
     load_objdiff_config,
     make_abs,
+    run_objdiff_json,
 )
 
 
@@ -224,6 +231,77 @@ def describe_path(path: str) -> str:
     if os.path.islink(path):
         return "shared-symlink"
     return "present"
+
+
+def fuzzy_match(pattern: str, name: str) -> bool:
+    return pattern.lower() in name.lower()
+
+
+def find_objdiff_rows_for_function(
+    unit_name: str, function_name: str, reloc_diffs: str = "none"
+) -> List[Dict[str, Any]]:
+    data = run_objdiff_json(
+        OBJDIFF_CLI,
+        unit_name,
+        reloc_diffs=reloc_diffs,
+        root_dir=ROOT_DIR,
+    )
+    rows = [
+        row
+        for row in build_objdiff_symbol_rows(data)
+        if row["type"] == "function"
+    ]
+
+    exact_matches = [
+        row
+        for row in rows
+        if function_name in row["name"] or function_name in row["symbol_name"]
+    ]
+    if exact_matches:
+        return exact_matches
+
+    return [
+        row
+        for row in rows
+        if fuzzy_match(function_name, row["name"])
+        or fuzzy_match(function_name, row["symbol_name"])
+    ]
+
+
+def choose_objdiff_row(unit_name: str, function_name: str, reloc_diffs: str = "none") -> Dict[str, Any]:
+    matches = find_objdiff_rows_for_function(unit_name, function_name, reloc_diffs=reloc_diffs)
+    if not matches:
+        raise WorkflowError(
+            f"objdiff: function '{function_name}' not found in {unit_name}.\n"
+            "Hint: run `python tools/decomp-workflow.py unit -u "
+            f"{unit_name} --search {shlex.quote(function_name)}` to inspect nearby symbols."
+        )
+
+    if len(matches) > 1:
+        preview = "\n".join(f"  - {row['name']}" for row in matches[:8])
+        extra = ""
+        if len(matches) > 8:
+            extra = f"\n  ... {len(matches) - 8} more"
+        raise WorkflowError(
+            f"objdiff: function query '{function_name}' matched multiple symbols in {unit_name}.\n"
+            f"Use a more specific function name.\n{preview}{extra}"
+        )
+    return matches[0]
+
+
+def load_dwarf_report(
+    unit_name: str,
+    function_name: str,
+    rebuilt_dwarf_file: Optional[str] = None,
+) -> Dict[str, Any]:
+    cmd: List[str] = python_tool("dwarf-compare.py", "-u", unit_name, "-f", function_name, "--json")
+    if rebuilt_dwarf_file:
+        cmd.extend(["--rebuilt-dwarf-file", rebuilt_dwarf_file])
+    result = run_capture(cmd)
+    try:
+        return json.loads(result.stdout)
+    except json.JSONDecodeError as e:
+        raise WorkflowError(f"dwarf-compare.py returned invalid JSON: {e}")
 
 
 def lookup_symbol_address(symbols_file: str, mangled_name: str) -> Optional[str]:
@@ -507,7 +585,15 @@ def command_function(args: argparse.Namespace) -> None:
         cmd.extend(["--ghidra-version", args.ghidra_version])
     if args.brief:
         cmd.append("--brief")
+    if args.reloc_diffs != "none":
+        cmd.extend(["--reloc-diffs", args.reloc_diffs])
     run_stream(cmd)
+    print(flush=True)
+    print(
+        "Required completion check: python tools/decomp-workflow.py verify "
+        f"-u {shlex.quote(args.unit)} -f {shlex.quote(args.function)}",
+        flush=True,
+    )
 
 
 def command_unit(args: argparse.Namespace) -> None:
@@ -526,6 +612,8 @@ def command_unit(args: argparse.Namespace) -> None:
     )
 
     common_args: List[str] = ["-u", args.unit, "-t", "function"]
+    if args.reloc_diffs != "none":
+        common_args.extend(["--reloc-diffs", args.reloc_diffs])
     if args.search:
         common_args.extend(["--search", args.search])
     if args.limit is not None:
@@ -624,6 +712,8 @@ def command_diff(args: argparse.Namespace) -> None:
     ensure_shared_unit_output(args.unit)
 
     cmd: List[str] = python_tool("decomp-diff.py", "-u", args.unit)
+    if args.reloc_diffs != "none":
+        cmd.extend(["--reloc-diffs", args.reloc_diffs])
     if args.diff:
         cmd.extend(["-d", args.diff])
     if args.type:
@@ -643,6 +733,88 @@ def command_diff(args: argparse.Namespace) -> None:
     if args.no_collapse:
         cmd.append("--no-collapse")
     run_stream(cmd)
+
+
+def command_dwarf(args: argparse.Namespace) -> None:
+    ensure_decomp_prereqs()
+    print_section(f"DWARF Workflow: {args.unit} / {args.function}")
+    if not args.rebuilt_dwarf_file:
+        ensure_shared_unit_output(args.unit)
+
+    cmd: List[str] = python_tool("dwarf-compare.py", "-u", args.unit, "-f", args.function)
+    if args.summary:
+        cmd.append("--summary")
+    if args.json:
+        cmd.append("--json")
+    if args.context is not None:
+        cmd.extend(["-C", str(args.context)])
+    if args.no_collapse:
+        cmd.append("--no-collapse")
+    if args.require_exact:
+        cmd.append("--require-exact")
+    if args.rebuilt_dwarf_file:
+        cmd.extend(["--rebuilt-dwarf-file", args.rebuilt_dwarf_file])
+    run_stream(cmd)
+
+
+def command_verify(args: argparse.Namespace) -> None:
+    ensure_decomp_prereqs()
+    print_section(f"Verify Workflow: {args.unit} / {args.function}")
+    ensure_shared_unit_output(args.unit)
+
+    objdiff_row = choose_objdiff_row(args.unit, args.function, reloc_diffs=args.reloc_diffs)
+    dwarf_report = load_dwarf_report(
+        args.unit,
+        args.function,
+        rebuilt_dwarf_file=args.rebuilt_dwarf_file,
+    )
+
+    objdiff_exact = (
+        objdiff_row["status"] == "match"
+        and objdiff_row["match_percent"] is not None
+        and float(objdiff_row["match_percent"]) >= 100.0
+    )
+    dwarf_exact = bool(dwarf_report["normalized_exact_match"])
+    overall_ok = objdiff_exact and dwarf_exact
+
+    objdiff_percent = (
+        f"{float(objdiff_row['match_percent']):.1f}%"
+        if objdiff_row["match_percent"] is not None
+        else "-"
+    )
+    dwarf_percent = f"{float(dwarf_report['match_percent']):.1f}%"
+
+    print(
+        f"objdiff: {'PASS' if objdiff_exact else 'FAIL'} | "
+        f"{objdiff_percent} | status={objdiff_row['status']} | "
+        f"unmatched~{objdiff_row['unmatched_bytes_est']}B"
+    )
+    print(
+        f"DWARF:  {'PASS' if dwarf_exact else 'FAIL'} | "
+        f"{dwarf_percent} | normalized exact={'yes' if dwarf_exact else 'no'} | "
+        f"change groups={dwarf_report['changed_groups']}"
+    )
+    print(f"Overall: {'PASS' if overall_ok else 'FAIL'}")
+    print("Done means both objdiff and normalized DWARF are exact for the function.")
+
+    if overall_ok:
+        return
+
+    print(flush=True)
+    print("Follow-up commands:", flush=True)
+    print(
+        f"  python tools/decomp-workflow.py diff -u {shlex.quote(args.unit)} "
+        f"-d {shlex.quote(args.function)}",
+        flush=True,
+    )
+    print(
+        f"  python tools/decomp-workflow.py dwarf -u {shlex.quote(args.unit)} "
+        f"-f {shlex.quote(args.function)}",
+        flush=True,
+    )
+    raise WorkflowError(
+        "Verification failed: the function is not complete until both objdiff and DWARF match."
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -717,6 +889,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Trim helper sections like related-source hints and suggested commands",
     )
+    function.add_argument(
+        "--reloc-diffs",
+        choices=RELOC_DIFF_CHOICES,
+        default="none",
+        help="Pass through objdiff relocation diff mode to decomp-context.py",
+    )
     function.set_defaults(func=command_function)
 
     unit = subparsers.add_parser(
@@ -729,6 +907,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--limit",
         type=int,
         help="Limit each symbol list to the first N matching rows",
+    )
+    unit.add_argument(
+        "--reloc-diffs",
+        choices=RELOC_DIFF_CHOICES,
+        default="none",
+        help="Pass through objdiff relocation diff mode to decomp-diff.py",
     )
     unit.set_defaults(func=command_unit)
 
@@ -804,7 +988,72 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Don't collapse matching instruction runs",
     )
+    diff.add_argument(
+        "--reloc-diffs",
+        choices=RELOC_DIFF_CHOICES,
+        default="none",
+        help="Pass through objdiff relocation diff mode to decomp-diff.py",
+    )
     diff.set_defaults(func=command_diff)
+
+    dwarf = subparsers.add_parser(
+        "dwarf",
+        help="Compare original vs rebuilt DWARF for one function",
+    )
+    dwarf.add_argument("-u", "--unit", required=True, help="Translation unit name")
+    dwarf.add_argument("-f", "--function", required=True, help="Function name to compare")
+    dwarf.add_argument(
+        "--summary",
+        action="store_true",
+        help="Print only the DWARF summary without the diff view",
+    )
+    dwarf.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the DWARF comparison report as JSON",
+    )
+    dwarf.add_argument(
+        "-C",
+        "--context",
+        type=int,
+        default=3,
+        help="Context lines around collapsed matching DWARF runs (default: 3)",
+    )
+    dwarf.add_argument(
+        "--no-collapse",
+        "--full-diff",
+        dest="no_collapse",
+        action="store_true",
+        help="Show the whole normalized DWARF block with diff markers instead of collapsing matching runs",
+    )
+    dwarf.add_argument(
+        "--rebuilt-dwarf-file",
+        help="Use an existing rebuilt DWARF dump instead of dumping the unit object",
+    )
+    dwarf.add_argument(
+        "--require-exact",
+        action="store_true",
+        help="Exit non-zero unless the normalized DWARF block matches exactly",
+    )
+    dwarf.set_defaults(func=command_dwarf)
+
+    verify = subparsers.add_parser(
+        "verify",
+        help="Fail unless one function matches in both objdiff and DWARF",
+    )
+    verify.add_argument("-u", "--unit", required=True, help="Translation unit name")
+    verify.add_argument("-f", "--function", required=True, help="Function name to verify")
+    verify.add_argument(
+        "--reloc-diffs",
+        choices=RELOC_DIFF_CHOICES,
+        default="none",
+        help="Pass through objdiff relocation diff mode when checking instruction match",
+    )
+    verify.add_argument(
+        "--rebuilt-dwarf-file",
+        help="Use an existing rebuilt DWARF dump instead of dumping the unit object",
+    )
+    verify.set_defaults(func=command_verify)
 
     return parser
 
