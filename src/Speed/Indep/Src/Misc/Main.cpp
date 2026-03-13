@@ -123,10 +123,10 @@ void SeedRandomNumber() {
 
 void InitBigFiles() {
     if (bFileExists("NFS\\ZDIR.BIN")) {
-#ifdef EA_PLATFORM_PLAYSTATION2
-        DisculatorDriver *driver = DisculatorDriver::Create("NFS\\ZDIR.BIN", "NFS\\ZZDATA");
-        if (driver) {
-            RealFile::AddDevice(driver);
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(MILESTONE_OPT)
+        RealFile::DeviceDriver *device = DisculatorDriver::Create("NFS\\ZDIR.BIN", "NFS\\ZZDATA");
+        if (device != nullptr) {
+            RealFile::AddDevice(device);
             RealFile::AddSearchLocation("DVDV:\\", true);
         }
 #else
