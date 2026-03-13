@@ -203,9 +203,15 @@ void eLoadStreamingTexture(unsigned int *, int, void (*)(void *), void *, int);
 int eIsWidescreen();
 void bBreak();
 
-namespace Attrib { class Vault; }
 Attrib::Vault *InitializeSingleAttributeVault(void *, const char *, unsigned char **, unsigned int);
 extern Attrib::Vault *gDatabaseVault;
+
+static Attrib::Vault *sFrontEndVault;
+static unsigned char *sFrontEndVaultData;
+static int sFrontEndVaultHigh;
+
+bool RemoveDepFile(const char *);
+void RemoveVault(const char *);
 
 #include "Speed/Indep/Src/Misc/EasterEggs.hpp"
 extern EasterEggs gEasterEggs;
@@ -376,6 +382,49 @@ void GameFlowManager::Service() {
 
 void GameFlowManager::SetState(GameFlowState state) {
     CurrentGameFlowState = state;
+}
+
+void LoadFrontEndVault(bool allocHigh) {
+    if (sFrontEndVault != nullptr) return;
+    int buf_size;
+    void *buf = bGetFile("GLOBAL\\FE_ATTRIB.BIN", &buf_size, (-(int)(!allocHigh) & 0x40) | 0x1000);
+    unsigned int allocFlagsBin = 0;
+    if (allocHigh) {
+        allocFlagsBin = 0x40;
+    }
+    allocFlagsBin |= GetVirtualMemoryAllocParams();
+    HighAttribAlloc highAllocator;
+    sFrontEndVaultHigh = allocHigh;
+    IAttribAllocator *oldAllocator = nullptr;
+    if (allocHigh) {
+        oldAllocator = AttribAlloc::OverrideAllocator(&highAllocator);
+    }
+    sFrontEndVault = InitializeSingleAttributeVault(buf, "frontend", &sFrontEndVaultData, allocFlagsBin);
+    if (oldAllocator != nullptr) {
+        AttribAlloc::OverrideAllocator(oldAllocator);
+    }
+    bFree(buf);
+}
+
+void UnloadFrontEndVault() {
+    HighAttribAlloc highAllocator;
+    IAttribAllocator *oldAllocator = nullptr;
+    if (sFrontEndVaultHigh != 0) {
+        oldAllocator = AttribAlloc::OverrideAllocator(&highAllocator);
+    }
+    gDatabaseVault->Clean();
+    sFrontEndVault->Deinitialize();
+    Attrib::Database::Get().CollectGarbage();
+    sFrontEndVault->Release();
+    sFrontEndVault = nullptr;
+    RemoveDepFile("frontend.bin");
+    RemoveVault("frontend.vlt");
+    bFree(sFrontEndVaultData);
+    sFrontEndVaultData = nullptr;
+    if (oldAllocator != nullptr) {
+        AttribAlloc::OverrideAllocator(oldAllocator);
+    }
+    sFrontEndVaultHigh = 0;
 }
 
 void GameFlowManager::LoadFrontend() {
