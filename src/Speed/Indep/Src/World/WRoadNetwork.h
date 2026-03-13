@@ -365,6 +365,14 @@ class WRoadNav {
         return fDeadEnd;
     }
 
+    const UMath::Vector3 &GetApexPosition() const {
+        return fApexPosition;
+    }
+
+    float GetOccludingTrailSpeed() const {
+        return fOccludingTrailSpeed;
+    }
+
     float GetSegmentTime() const {
         return fSegTime;
     }

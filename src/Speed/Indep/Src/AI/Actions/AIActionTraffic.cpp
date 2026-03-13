@@ -3,7 +3,9 @@
 #include "Speed/Indep/Src/Interfaces/IListener.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
+#include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
@@ -199,6 +201,69 @@ void AIActionTraffic::BeginAction(float dT) {
 }
 
 void AIActionTraffic::FinishAction(float dT) {}
+
+float GetSpeedLimitForCurvature(float friction, float curvature, float top_speed);
+extern Table aAIStoppingDistTable;
+
+float AIActionTraffic::ComputeSpeed(float current_speed, float dT) {
+    WRoadNav *road_nav = GetAI()->GetDriveToNav();
+
+    if (road_nav->HitDeadEnd()) {
+        return 0.0f;
+    }
+
+    road_nav = GetAI()->GetDriveToNav();
+    WRoadNetwork &roadNetwork = WRoadNetwork::Get();
+    const WRoadSegment *segment = roadNetwork.GetSegment(road_nav->GetSegmentInd());
+    bool is_cop = GetVehicle()->GetDriverClass() == DRIVER_COP;
+
+    int numLanes = roadNetwork.GetSegmentNumTrafficLanes(*segment);
+    float posted_speed;
+    if (numLanes >= 4) {
+        posted_speed = mTargetSpeedHighway;
+    } else {
+        posted_speed = mTargetSpeedDefault;
+    }
+    float desired_speed = posted_speed;
+
+    if (!mFixedSpeed) {
+        float curvature = GetAI()->GetDriveToNav()->CookieTrailCurvature(
+            mRigidBody->GetPosition(), mRigidBody->GetLinearVelocity());
+        float friction = 0.6f;
+        if (is_cop) {
+            friction = 1.6f;
+        }
+        float speed_limit = GetSpeedLimitForCurvature(friction, curvature, posted_speed);
+        desired_speed = bMin(posted_speed, speed_limit);
+
+        if (road_nav->IsOccludedByAvoidable() && !road_nav->IsOccludedFromBehind()) {
+            float mass = mRigidBody->GetMass();
+            if (mIsTractor) {
+                mass = mass + mass;
+            }
+            float my_length = mRigidBody->GetRadius();
+            my_length = my_length + my_length;
+            float dist_to_occlusion = UMath::Distance(road_nav->GetApexPosition(),
+                                                       mRigidBody->GetPosition());
+            dist_to_occlusion = UMath::Max(0.0f, dist_to_occlusion - my_length);
+            float speed_factor = UMath::Max(mass * 0.0005f, 1.0f);
+            float stopping_distance = aAIStoppingDistTable.GetValue(current_speed * speed_factor);
+
+            if (dist_to_occlusion < stopping_distance) {
+                float ratio = road_nav->GetOccludingTrailSpeed() * dist_to_occlusion /
+                              stopping_distance;
+                ratio = bClamp(ratio, 0.0f, desired_speed);
+                desired_speed = bMin(ratio, current_speed);
+            }
+        }
+    }
+
+    if (!is_cop) {
+        desired_speed = bMin(desired_speed, current_speed + (dT + dT));
+    }
+
+    return desired_speed;
+}
 
 bool AIActionTraffic::ShouldPullOver(const UMath::Vector3 &my_position, WRoadNav *road_nav) {
     return false;
