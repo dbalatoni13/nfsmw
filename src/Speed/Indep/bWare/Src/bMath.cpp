@@ -591,9 +591,9 @@ void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float
     iMf.v3.w = 0.0f;
 
     fInvertMatrix(&iU, &U);
-    bMulMatrix(&K, &iMf, &iU);
-    bMulMatrix(&Nf, &Mf, &K);
-    bMulMatrix(b, &Nf, p);
+    eMulMatrix(&K, &iMf, &iU);
+    eMulMatrix(&Nf, &Mf, &K);
+    eMulMatrix(b, &Nf, p);
 }
 
 void hermite_parameter(bVector4 *dest, const bMatrix4 *b, float t) {

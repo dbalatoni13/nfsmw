@@ -57,8 +57,6 @@ void bMemSet(void *dest, unsigned char c, unsigned int numbytes) {
     fill = fill + (c << 16);
     fill = fill + (c << 8);
     fill = fill + c;
-    int fill2 = fill;
-    int fill3 = fill;
 
     if ((reinterpret_cast<uintptr_t>(idest) & 3) == 0) {
         while (((reinterpret_cast<uintptr_t>(idest) & 0xf) != 0) && (numbytes > 3)) {
@@ -69,13 +67,15 @@ void bMemSet(void *dest, unsigned char c, unsigned int numbytes) {
     }
 
     if ((reinterpret_cast<uintptr_t>(idest) & 7) == 0) {
+        volatile unsigned long long convert64;
+        reinterpret_cast<volatile int *>(&convert64)[0] = fill;
+        reinterpret_cast<volatile int *>(&convert64)[1] = fill;
+        unsigned long long pattern64 = convert64;
+
         while (numbytes > 0xf) {
-            int t0 = fill2;
-            idest[0] = t0;
-            idest[1] = fill3;
+            *reinterpret_cast<unsigned long long *>(&idest[0]) = pattern64;
             numbytes -= 0x10;
-            idest[2] = t0;
-            idest[3] = fill3;
+            *reinterpret_cast<unsigned long long *>(&idest[2]) = pattern64;
             idest += 4;
         }
     }
