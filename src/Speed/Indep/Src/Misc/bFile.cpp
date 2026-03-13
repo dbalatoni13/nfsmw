@@ -687,8 +687,7 @@ void bFile::HandleCompletedCallbacks() {
             bFileSlotPool->Free(cb);
         }
         if (shouldDelete && file != nullptr) {
-            file->~bFile();
-            bFileSlotPool->Free(file);
+            delete file;
         }
     }
     RealFile::Mutex::Unlock(&bFileMutex);

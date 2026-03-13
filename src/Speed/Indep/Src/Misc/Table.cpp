@@ -187,9 +187,9 @@ AverageWindow::AverageWindow(float f_timewindow, float f_frequency)
     : Average(f_timewindow * f_frequency + 0.5f), //
       fTimeWindow(f_timewindow),                  //
       iOldestValue(0),                            //
-      AllocSize(4 * nSize) {
+      AllocSize(4 * nSlots) {
     pTimeData = (float *)Allocate(AllocSize, "AverageWindow::TimeData");
-    bMemSet(pTimeData, 0, AllocSize);
+    bMemSet(pTimeData, 0, nSlots * 4);
 }
 
 AverageWindow::~AverageWindow() {
@@ -197,17 +197,13 @@ AverageWindow::~AverageWindow() {
 }
 
 void AverageWindow::Reset(float fValue) {
-    int i = 0;
-    if (nSlots != 0) {
-        do {
-            pData[i] = fValue;
-            pTimeData[i] = 0.0f;
-            i = i + 1;
-        } while (i < static_cast<int>(static_cast<unsigned int>(nSlots)));
+    for (int i = 0; i < nSlots; i++) {
+        pData[i] = fValue;
+        pTimeData[i] = 0.0f;
     }
-    nCurrentSlot = 0;
-    fAverage = 0.0f;
     nSamples = 0;
+    fAverage = 0.0f;
+    nCurrentSlot = 0;
     iOldestValue = 0;
     fTotal = fValue * static_cast<float>(static_cast<int>(static_cast<unsigned int>(nSlots)));
 }
