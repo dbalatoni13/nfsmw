@@ -23,6 +23,7 @@ bool THREAD_iscurrent(void *thread);
 int FILESYS_completeop(int fop);
 int FILESYS_open(const char *filename, int flags, void (*callback)(int, int, void *), void *userdata);
 int FILESYS_read(int fop, void *buf, int nbytes, void (*callback)(int, int, void *), void *userdata);
+int FILESYS_read(int filehandle, int offset, void *buffer, int bytes, int priority, void *userdata);
 int FILESYS_opensync(const char *filename, unsigned int flags, int timeout);
 void FILESYS_closesync(int handle, int timeout);
 int FILESYS_writesync(int handle, int offset, void *buf, int nbytes, int timeout);
@@ -630,14 +631,14 @@ void bFile::CallbackFunctionOpen(int fop, int status, void *userdata) {
     } else {
         cb[8] = handle;
     }
-    if (file->FileHandle == 0) {
+    if (file->FileHandle != 0) {
+        int readFop = FILESYS_read(handle, cb[4], reinterpret_cast<void *>(cb[3]), cb[5], 0x64, cb);
+        FILESYS_callbackop(readFop, bFile::CallbackFunctionRead);
+    } else {
         RealFile::Mutex::Lock(&bFileMutex);
         _5bFile_PendingCallbackList.Remove(reinterpret_cast<bTNode<void> *>(cb));
         _5bFile_CompletedCallbackList.AddTail(reinterpret_cast<bTNode<void> *>(cb));
         RealFile::Mutex::Unlock(&bFileMutex);
-    } else {
-        int readFop = FILESYS_read(handle, reinterpret_cast<void *>(cb[3]), cb[5], nullptr, cb);
-        FILESYS_callbackop(readFop, bFile::CallbackFunctionRead);
     }
 }
 
