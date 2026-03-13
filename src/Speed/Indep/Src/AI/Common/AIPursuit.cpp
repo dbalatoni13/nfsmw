@@ -1173,13 +1173,7 @@ bool AIPursuit::OnTask(HSIMTASK htask, float dT) {
                 heat = heat + dT / timePerHeatLevel;
             }
 
-            // Clamp heat
-            if (heat - mBaseHeat < 0.0f) {
-                heat = mBaseHeat;
-            }
-            if (mMaximumHeat - heat < 0.0f) {
-                heat = mMaximumHeat;
-            }
+            heat = bClamp(heat, mBaseHeat, mMaximumHeat);
 
             iperp->SetHeat(heat);
 

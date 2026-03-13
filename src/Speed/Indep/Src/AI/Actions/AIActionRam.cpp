@@ -270,7 +270,7 @@ void AIActionRam::Update(float dT) {
         max_speed = bMin(max_speed, targetai->GetTopSpeed() * speedmult);
         float max_accel = targetai->GetAcceleration(speed) * accelmult;
 
-        mLimiter.update(speed, max_speed, max_accel, dT);
+        mLimiter.update(max_speed, speed, max_accel, dT);
         desired_speed = bMin(desired_speed, mLimiter.get_speed_limit());
     }
 
