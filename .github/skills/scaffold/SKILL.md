@@ -31,6 +31,22 @@ Collect data from **all** of these sources in parallel where possible:
 
 Copy and cleanup the header that you got from running the `lookup` skill using the `symbols/Dwarf` folder. Fix visibility, function order and vtable related things based on using `lookup` on the PS2 types.
 
+For formatting and local cleanup while writing the header, consult
+`.github/skills/code_style/SKILL.md`. Use it for member-comment alignment, declaration
+grouping, TODO placement, and other repo-specific style decisions.
+
+Preserve the real `class` / `struct` kind while scaffolding. Check existing headers first,
+then use Dwarf plus PS2 visibility / vtable info to decide the type kind. Even temporary
+forward declarations should match the known original kind.
+
+If the repo already has a header for a type you need, include that header instead of
+adding a new local forward declaration. Only forward-declare when no canonical repo header
+exists yet and you have verified that the ownership is still unresolved.
+
+Preserve real member names, types, order, and offset comments while scaffolding. Do not
+fill gaps with invented `pad`, `unk`, or `field_XXXX` members for game types; verify the
+layout from Dwarf / PS2 data and leave a TODO over the type if a field is still uncertain.
+
 Only create headers if it's really necessary (the struct doesn't have inlines so you can't determine in which header file it goes and it's thematically very different from the other structs that use it), otherwise put it into the one you determined to be correct.
 
 The dwarf often has duplicated inlines, clean those up according to the order in the PS2 info.
