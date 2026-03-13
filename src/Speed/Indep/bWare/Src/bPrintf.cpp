@@ -388,8 +388,7 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                     shifted >>= bits;
                     if (shifted == -1LL) {
                         unsigned long long mask = (1ULL << bits) - 1;
-                        number = static_cast<unsigned long long>(tempNumber) & mask;
-                        goto skip_sign_check;
+                        tempNumber = static_cast<long long>(static_cast<unsigned long long>(tempNumber) & mask);
                     }
                 }
 
@@ -399,8 +398,6 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                 } else {
                     number = static_cast<unsigned long long>(tempNumber);
                 }
-
-            skip_sign_check:
 
                 if (precision < 0) {
                     precision = 1;
@@ -423,34 +420,25 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                 }
 
                 {
-                    long long nn;
-                    int shift;
-                    nn = static_cast<long long>(number);
-                    if (static_cast<unsigned int>(nn >> 32) == 0) {
-                        shift = 0;
-                    } else {
-                        shift = 32;
-                    }
+                    char *cvtbuf_base = cvtbuf;
                     do {
-                        digit = static_cast<char>(number % radix);
-                        number = number / radix;
-                        digit_count++;
-                        if (group_flag && digit_count >= g_locale.group_len) {
-                            *--p = g_locale.group_char;
-                            digit_count = 0;
+                        if (group_flag) {
+                            digit_count++;
+                            if (digit_count > g_locale.group_len) {
+                                *p = g_locale.group_char;
+                                p--;
+                                digit_count = 1;
+                            }
                         }
-                        if (digit > 9) {
+                        digit = static_cast<char>((number % radix) + '0');
+                        number = number / radix;
+                        if (digit > '9') {
                             digit = static_cast<char>(digit + hexAdd);
                         }
-                        *--p = static_cast<char>('0' + digit);
-                    } while (number != 0);
-                }
-
-                size = static_cast<int>((cvtbuf + 63) - p);
-
-                while (size < precision) {
-                    *--p = '0';
-                    size++;
+                        *p = digit;
+                        p--;
+                    } while (precision-- > 0 || number != 0);
+                    size = static_cast<int>(cvtbuf_base - (p - 63));
                 }
 
                 if ((flags & FL_FORCEOCTAL) && *p != '0') {
