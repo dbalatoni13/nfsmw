@@ -982,8 +982,8 @@ void WaitForSimulation() {
 
 void FinishedGameLoading() {
     TheGameFlowManager.SetState(GAMEFLOW_STATE_RACING);
-    if (iRam804a73bc != 0) {
-        while (iRam804a73bc != 0) {
+    if (TheCarLoader.IsLoadingInProgress()) {
+        while (TheCarLoader.IsLoadingInProgress()) {
             bThreadYield(8);
             ServiceResourceLoading();
         }
@@ -998,8 +998,8 @@ void FinishedGameLoading() {
         cFEng::mInstance->IsPackageInControl(loadingPackage)) {
         GameFlowClearFEngLoadingScreen();
     }
-    TheDemoDiscManager.LastActivityTime = _RealTimer;
-    uRam8048df4c = 0;
+    TheDemoDiscManager.StartPlayTime = _RealTimer;
+    TheDemoDiscManager.SuspendedPlayTime.ResetLow();
     int **table = __Q33UTL11Collectionst8Listable2Z4IHudi2__mTable;
     for (int *p = *table; p != *(table + iRam80481afc); p++) {
         int *obj = reinterpret_cast<int *>(*p);

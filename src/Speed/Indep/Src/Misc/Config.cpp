@@ -18,13 +18,13 @@ extern int UnlockAllThings;
 extern int EmergencySaveMemory;
 extern char SkipFERaceID[];
 
-bool IsSoundEnabled = true;
-bool IsAudioStreamingEnabled = true;
-bool IsSpeechEnabled = true;
-bool IsNISAudioEnabled = true;
+int IsSoundEnabled = 1;
+int IsAudioStreamingEnabled = 1;
+int IsSpeechEnabled = 1;
+int IsNISAudioEnabled = 1;
 bool ShutJosieUp = true;
-bool IsMemcardEnabled = true;
-bool IsAutoSaveEnabled = true;
+int IsMemcardEnabled = 1;
+int IsAutoSaveEnabled = 1;
 
 void InitConfig() {
     if (SkipFETrackNumber != -1) {

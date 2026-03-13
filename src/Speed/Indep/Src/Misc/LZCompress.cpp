@@ -254,10 +254,13 @@ int JLZDecompress(unsigned char *pSrc, unsigned char *pDst) {
 
 int OldLZDecompress(unsigned char *pSrc, unsigned char *pDst) {
     int *header = reinterpret_cast<int *>(pSrc);
-    if (header == nullptr || pDst == nullptr || header[0] != 0x504d4f43) {
+    if (header == nullptr || pDst == nullptr) {
         return 0;
     }
     int packed_size = header[3];
+    if (header[0] != 0x504d4f43) {
+        return 0;
+    }
     unsigned char *src_end = pSrc + packed_size;
     unsigned char *src = reinterpret_cast<unsigned char *>(&header[4]);
     unsigned char *threshold = src_end - 0x20;
