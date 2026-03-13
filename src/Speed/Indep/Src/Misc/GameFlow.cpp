@@ -949,8 +949,11 @@ void CodeOverlayLoadingGame() {
             int n = 0;
         overlay_loop:
             if (n >= size - 8) goto overlay_done;
-            *reinterpret_cast<int *>(_overlay_start + n) = static_cast<int>(0xdeadbeef);
-            *reinterpret_cast<int *>(_overlay_start + n + 4) = static_cast<int>(0xdeadbeef);
+            {
+                int *p = reinterpret_cast<int *>(_overlay_start + n);
+                p[0] = static_cast<int>(0xdeadbeef);
+                p[1] = static_cast<int>(0xdeadbeef);
+            }
             n += 8;
             goto overlay_loop;
         overlay_done:
