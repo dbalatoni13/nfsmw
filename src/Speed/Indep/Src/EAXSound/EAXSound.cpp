@@ -72,6 +72,9 @@ struct stSndDataLoadParams {
     /* 0x64 */ int t_load;
 };
 
+struct stAssetDescription;
+struct stSndAssetQueue;
+
 enum eBANK_SLOT_TYPE {
     eBANK_SLOT_NONE = -1,
     eBANK_SLOT_AI_AEMS_ENGINE = 0,
@@ -158,6 +161,11 @@ struct EAXAemsManager : public AudioMemBase {
     void RegisterSlots(eBANK_SLOT_TYPE Type, int NumSlots, int SizePerSlotSPU, int SizePerSlotMainMem, bool bDoPFSlot);
     void ResetBankLoadParams();
     void RemoveBankListing(int index);
+    int AddBankListing(stAssetDescription &asset);
+    void QueueFileLoad(stSndAssetQueue &queueitem, eBANK_SLOT_TYPE SlotType);
+    static void *AsyncResidentAllocCB(int size);
+    static void *ResidentAllocCB(void *pbank, int residentsize, int totalsize);
+    static void DataLoadCB(int param, int error_status);
     void DestroySlots(bool bDoPFSlot);
     int IsAssetInList(Attrib::StringKey filename);
     int IsAssetLoaded(Attrib::StringKey filename);
@@ -218,6 +226,7 @@ extern bool g_bWasLastNISaStart;
 unsigned int bRandom(int range, unsigned int *seed);
 float bRandom(float range, unsigned int *seed);
 int bSPrintf(char *destString, const char *fmt, ...);
+int bStrICmp(const char *s1, const char *s2);
 void SoundPause(bool on, eSNDPAUSE_REASON reason);
 void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller);
 
@@ -660,6 +669,35 @@ void UnloadAemsInGame() {
     if (IsSoundEnabled == 1) {
         g_pEAXSound->UnLoadInGameSoundBanks();
     }
+}
+
+void FESoundControl(bool bOn, const char *name) {
+    if (g_pEAXSound == nullptr) {
+        return;
+    }
+
+    eSndGameMode gameMode = static_cast<eSndGameMode>(*reinterpret_cast<int *>(reinterpret_cast<char *>(g_pEAXSound) + 0x84));
+    bool inGameMode = gameMode != SND_FRONTEND && gameMode != SND_LOADING_SCREEN;
+    if (!inGameMode) {
+        return;
+    }
+
+    const char *reason = nullptr;
+    if (bStrICmp(name, "Pause_Main.fng") == 0 || bStrICmp(name, "Pause_Options.fng") == 0) {
+        reason = "PauseMenu";
+    } else if (bStrICmp(name, "InGamePhotoMaster.fng") == 0) {
+        reason = "PhotoScreen";
+    } else if (bStrICmp(name, "Pause_Controller.fng") == 0 || bStrICmp(name, "EA_Trax.fng") == 0 ||
+               bStrICmp(name, "FadeScreen.fng") == 0) {
+        return;
+    } else if (bStrICmp(name, "SixDaysLater.fng") == 0) {
+        reason = "SixDaysLater";
+    } else {
+        SetSoundControlState(bOn, SNDSTATE_FE_UPSCREEN, "IG FE Screen");
+        return;
+    }
+
+    SetSoundControlState(bOn, SNDSTATE_PAUSE, reason);
 }
 
 void CloseSound() {
