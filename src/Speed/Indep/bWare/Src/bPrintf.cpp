@@ -1,8 +1,12 @@
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 #include <stdio.h>
 #include <stdarg.h>
+
+int bIsValidPointer(void *p, int size);
 
 char *_nan_table[4] = {
     "-1.#INF",
@@ -161,262 +165,511 @@ void _stuff_str(bOutputInfo *output_info, const char *str, int strLen, int *outL
     }
 }
 
-static void _stuff_pad(bOutputInfo *output_info, char pad, int count, int *outLen) {
-    while (count > 0) {
-        _stuff_char(output_info, pad, outLen);
-        count--;
-    }
-}
+enum {
+    ST_NORMAL,
+    ST_PERCENT,
+    ST_FLAG,
+    ST_WIDTH,
+    ST_DOT,
+    ST_PRECIS,
+    ST_SIZE,
+    ST_TYPE
+};
+
+#define FL_SIGN      0x0001
+#define FL_SIGNSP    0x0002
+#define FL_LEFT      0x0004
+#define FL_LEADZERO  0x0008
+#define FL_LONG      0x0010
+#define FL_SHORT     0x0020
+#define FL_ALTERNATE 0x0080
+#define FL_NEGATIVE  0x0100
+#define FL_FORCEOCTAL 0x0200
+#define FL_SIGNED    0x0400
+#define FL_NOOUTPUT  0x1000
+#define FL_GROUP     0x2000
+#define FL_LONG64    0x4000
+
+static const unsigned char statetable[91] = {
+    0x06, 0x00, 0x00, 0x06, 0x06, 0x01, 0x00, 0x00, 0x10, 0x00, 0x03, 0x06, 0x00, 0x06, 0x02, 0x10,
+    0x04, 0x45, 0x45, 0x45, 0x05, 0x05, 0x05, 0x05, 0x05, 0x35, 0x30, 0x00, 0x50, 0x00, 0x00, 0x00,
+    0x00, 0x20, 0x28, 0x38, 0x50, 0x58, 0x07, 0x08, 0x00, 0x37, 0x30, 0x30, 0x57, 0x50, 0x07, 0x00,
+    0x00, 0x20, 0x20, 0x08, 0x00, 0x00, 0x00, 0x00, 0x08, 0x60, 0x60, 0x60, 0x60, 0x60, 0x60, 0x00,
+    0x00, 0x70, 0x78, 0x78, 0x78, 0x78, 0x78, 0x08, 0x07, 0x08, 0x00, 0x00, 0x07, 0x00, 0x08, 0x08,
+    0x08, 0x00, 0x00, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08
+};
 
 int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
-    int outLen = 0;
+    unsigned int flags;
+    int state;
+    int outLen;
+    int width;
+    int precision;
+    char ch;
+    char *stringOut;
+    int stringLength;
+    char prefix[2];
+    int prefixSz;
+    int padding;
+    char cvtbuf[64];
+
+    outLen = 0;
+    stringLength = 0;
+    stringOut = nullptr;
+    flags = 0;
+    width = 0;
+    precision = 0;
+    prefixSz = 0;
+    state = ST_NORMAL;
+    cvtbuf[63] = '\0';
 
     if (output_info->StdOut) {
         bBufferedTerminalChannel = static_cast<char>(output_info->TerminalChannel);
     }
 
-    while (*fmt != '\0') {
-        if (*fmt != '%') {
-            _stuff_char(output_info, *fmt, &outLen);
-            fmt++;
-            continue;
-        }
+    ch = *fmt++;
 
-        fmt++;
-
-        bool left_justify = false;
-        bool force_sign = false;
-        bool space_sign = false;
-        bool alt_form = false;
-        bool zero_pad = false;
-
-        while (true) {
-            if (*fmt == '-') {
-                left_justify = true;
-            } else if (*fmt == '+') {
-                force_sign = true;
-            } else if (*fmt == ' ') {
-                space_sign = true;
-            } else if (*fmt == '#') {
-                alt_form = true;
-            } else if (*fmt == '0') {
-                zero_pad = true;
-            } else {
-                break;
-            }
-            fmt++;
-        }
-
-        int width = 0;
-        int precision = -1;
-        bool short_arg = false;
-        bool long64_arg = false;
-
-        if (*fmt == '*') {
-            width = va_arg(argList, int);
-            if (width < 0) {
-                left_justify = true;
-                width = -width;
-            }
-            fmt++;
+    while (ch != '\0') {
+        unsigned int ci = static_cast<unsigned char>(ch - 0x20);
+        int charType;
+        if (ci > 0x5A) {
+            charType = 0;
         } else {
-            while ((*fmt >= '0') && (*fmt <= '9')) {
-                width = width * 10 + (*fmt - '0');
-                fmt++;
-            }
+            charType = statetable[ci] & 0x0F;
         }
 
-        if (*fmt == '.') {
-            fmt++;
-            precision = 0;
-            if (*fmt == '*') {
-                precision = va_arg(argList, int);
-                fmt++;
-            } else {
-                while ((*fmt >= '0') && (*fmt <= '9')) {
-                    precision = precision * 10 + (*fmt - '0');
-                    fmt++;
-                }
-            }
+        state = static_cast<signed char>(statetable[charType * 8 + state]) >> 4;
 
-            if (precision < 0) {
-                precision = -1;
-            }
-        }
-
-        if (*fmt == 'h') {
-            short_arg = true;
-            fmt++;
-        } else if ((*fmt == 'I') && (fmt[1] == '6') && (fmt[2] == '4')) {
-            long64_arg = true;
-            fmt += 3;
-        }
-
-        char spec = *fmt;
-        if (spec == '\0') {
+        switch (state) {
+        case ST_NORMAL:
+            _stuff_char(output_info, ch, &outLen);
             break;
-        }
-        fmt++;
 
-        if (spec == '%') {
-            _stuff_char(output_info, '%', &outLen);
-            continue;
-        }
+        case ST_PERCENT:
+            width = 0;
+            flags = 0;
+            prefixSz = 0;
+            stringOut = cvtbuf;
+            precision = -1;
+            break;
 
-        if (spec == 'n') {
-            int *written = va_arg(argList, int *);
-            *written = outLen;
-            continue;
-        }
+        case ST_FLAG:
+            switch (ch) {
+            case ' ': flags |= FL_SIGNSP; break;
+            case '#': flags |= FL_ALTERNATE; break;
+            case '$': flags |= FL_GROUP; break;
+            case '+': flags |= FL_SIGN; break;
+            case '-': flags |= FL_LEFT; break;
+            case '0': flags |= FL_LEADZERO; break;
+            }
+            break;
 
-        if (spec == 'c') {
-            char temp[2];
-            temp[0] = static_cast<char>(va_arg(argList, int));
-            temp[1] = '\0';
+        case ST_WIDTH:
+            if (ch == '*') {
+                width = va_arg(argList, int);
+                if (width < 0) {
+                    flags |= FL_LEFT;
+                    width = -width;
+                }
+            } else {
+                width = width * 10 + (ch - '0');
+            }
+            break;
 
-            if (!left_justify) {
-                _stuff_pad(output_info, ' ', width - 1, &outLen);
-            }
-            _stuff_char(output_info, temp[0], &outLen);
-            if (left_justify) {
-                _stuff_pad(output_info, ' ', width - 1, &outLen);
-            }
-            continue;
-        }
+        case ST_DOT:
+            precision = 0;
+            break;
 
-        if (spec == 's') {
-            char *str = va_arg(argList, char *);
-            if (str == nullptr) {
-                str = nullstr;
-            } else if (bIsValidPointer(str, 1) == 0) {
-                str = badptr;
+        case ST_PRECIS:
+            if (ch == '*') {
+                precision = va_arg(argList, int);
+                if (precision < 0) {
+                    precision = -1;
+                }
+            } else {
+                precision = precision * 10 + (ch - '0');
             }
+            break;
 
-            int strLen = bStrLen(str);
-            if ((precision >= 0) && (precision < strLen)) {
-                strLen = precision;
+        case ST_SIZE:
+            if (ch == 'h') {
+                flags |= FL_SHORT;
+            } else if (ch == 'i' || ch == 'I') {
+                if (fmt[0] == '6' && fmt[1] == '4') {
+                    flags |= FL_LONG64;
+                    fmt += 2;
+                }
+            } else {
+                flags |= FL_LONG;
             }
+            break;
 
-            if (!left_justify) {
-                _stuff_pad(output_info, ' ', width - strLen, &outLen);
-            }
-            _stuff_str(output_info, str, strLen, &outLen);
-            if (left_justify) {
-                _stuff_pad(output_info, ' ', width - strLen, &outLen);
-            }
-            continue;
-        }
+        case ST_TYPE: {
+            int hexAdd = 0;
+            int radix;
 
-        if (spec == 'v') {
-            int len = bStrLen(badptr);
-            _stuff_str(output_info, badptr, len, &outLen);
-            if ((*fmt >= '2') && (*fmt <= '4')) {
-                fmt++;
-            }
-            continue;
-        }
-
-        if (spec == 'z') {
-            char temp[64];
-            unsigned int fixed = va_arg(argList, unsigned int);
-            sprintf(temp, "%u.%02u", fixed >> 16, ((fixed & 0xffff) * 100U) >> 16);
-            int len = bStrLen(temp);
-            if (!left_justify) {
-                _stuff_pad(output_info, ' ', width - len, &outLen);
-            }
-            _stuff_str(output_info, temp, len, &outLen);
-            if (left_justify) {
-                _stuff_pad(output_info, ' ', width - len, &outLen);
-            }
-            continue;
-        }
-
-        {
-            char format[32];
-            char temp[256];
-            int pos = 0;
-
-            format[pos++] = '%';
-            if (alt_form) {
-                format[pos++] = '#';
-            }
-            if (force_sign) {
-                format[pos++] = '+';
-            } else if (space_sign) {
-                format[pos++] = ' ';
-            }
-            if (left_justify) {
-                format[pos++] = '-';
-            } else if (zero_pad) {
-                format[pos++] = '0';
+            switch (ch) {
+            case 'c': {
+                cvtbuf[0] = static_cast<char>(va_arg(argList, int));
+                stringLength = 1;
+                goto OUTPUT;
             }
 
-            if (width > 0) {
-                pos += sprintf(format + pos, "%d", width);
-            }
-            if (precision >= 0) {
-                format[pos++] = '.';
-                pos += sprintf(format + pos, "%d", precision);
-            }
-            if (short_arg) {
-                format[pos++] = 'h';
-            } else if (long64_arg) {
-                format[pos++] = 'l';
-                format[pos++] = 'l';
-            }
+            case 'x':
+                hexAdd = 0x27;
+                goto GENERIC_HEX;
+            case 'p':
+                precision = 8;
+            case 'X':
+                hexAdd = 7;
+            GENERIC_HEX:
+                if (flags & FL_ALTERNATE) {
+                    prefixSz = 2;
+                    prefix[1] = static_cast<char>(hexAdd + 0x51);
+                    prefix[0] = '0';
+                }
+                radix = 16;
+                goto GENERIC_INT;
 
-            format[pos++] = spec;
-            format[pos] = '\0';
+            case 'b':
+                radix = 2;
+                goto GENERIC_INT;
 
-            temp[0] = '\0';
-            switch (spec) {
+            case 'o':
+                radix = 8;
+                if (flags & FL_ALTERNATE) {
+                    flags |= FL_FORCEOCTAL;
+                }
+                goto GENERIC_INT;
+
             case 'd':
             case 'i':
-                if (long64_arg) {
-                    sprintf(temp, format, va_arg(argList, long long));
-                } else {
-                    sprintf(temp, format, va_arg(argList, int));
-                }
-                break;
-
+                flags |= FL_SIGNED;
             case 'u':
-            case 'o':
-            case 'x':
-            case 'X':
-                if (long64_arg) {
-                    sprintf(temp, format, va_arg(argList, unsigned long long));
-                } else {
-                    sprintf(temp, format, va_arg(argList, unsigned int));
-                }
-                break;
+                radix = 10;
 
-            case 'p':
-                sprintf(temp, format, va_arg(argList, void *));
-                break;
+            GENERIC_INT: {
+                char *p;
+                unsigned long long number;
+                long long tempNumber;
+                char digit;
+                int size;
+                int digit_count;
+                bool group_flag;
+
+                if (flags & FL_LONG64) {
+                    tempNumber = va_arg(argList, long long);
+                } else if (flags & FL_SHORT) {
+                    if (flags & FL_SIGNED) {
+                        tempNumber = static_cast<short>(va_arg(argList, int));
+                    } else {
+                        tempNumber = static_cast<unsigned short>(va_arg(argList, int));
+                    }
+                } else {
+                    if (flags & FL_SIGNED) {
+                        tempNumber = va_arg(argList, int);
+                    } else {
+                        tempNumber = va_arg(argList, unsigned int);
+                    }
+                }
+
+                if ((flags & FL_SIGNED) && tempNumber < 0) {
+                    number = static_cast<unsigned long long>(-tempNumber);
+                    flags |= FL_NEGATIVE;
+                } else {
+                    number = static_cast<unsigned long long>(tempNumber);
+                }
+
+                if (precision < 0) {
+                    precision = 1;
+                }
+
+                p = cvtbuf + 63;
+                digit_count = 0;
+                group_flag = (flags & FL_GROUP) != 0;
+
+                {
+                    long long nn;
+                    int shift;
+                    if (static_cast<unsigned int>(number >> 32) == 0) {
+                        shift = 0;
+                    } else {
+                        shift = 32;
+                    }
+                    do {
+                        digit = static_cast<char>(number % radix);
+                        number = number / radix;
+                        digit_count++;
+                        if (group_flag && digit_count >= g_locale.group_len) {
+                            *--p = g_locale.group_char;
+                            digit_count = 0;
+                        }
+                        if (digit > 9) {
+                            digit = static_cast<char>(digit + hexAdd);
+                        }
+                        *--p = static_cast<char>('0' + digit);
+                    } while (number != 0);
+                }
+
+                size = static_cast<int>((cvtbuf + 63) - p);
+
+                while (size < precision) {
+                    *--p = '0';
+                    size++;
+                }
+
+                if ((flags & FL_FORCEOCTAL) && *p != '0') {
+                    *--p = '0';
+                    size++;
+                }
+
+                stringOut = p;
+                stringLength = size;
+                goto OUTPUT;
+            }
 
             case 'e':
             case 'E':
+            GENERIC_FLOAT: {
+                double d;
+                double number;
+                int count;
+                char digit;
+                char *p;
+                unsigned int offset;
+
+                d = va_arg(argList, double);
+
+                {
+                    int digit_pos;
+                    bool group_flag;
+                    char decimalChr;
+
+                    char fmtbuf[8];
+                    fmtbuf[0] = '%';
+                    int pos = 1;
+                    if (precision >= 0) {
+                        fmtbuf[pos++] = '.';
+                        fmtbuf[pos++] = '*';
+                    }
+                    fmtbuf[pos++] = ch;
+                    fmtbuf[pos] = '\0';
+
+                    if (precision >= 0) {
+                        stringLength = sprintf(cvtbuf, fmtbuf, precision, d);
+                    } else {
+                        stringLength = sprintf(cvtbuf, fmtbuf, d);
+                    }
+                    stringOut = cvtbuf;
+                }
+                goto OUTPUT;
+            }
+
             case 'f':
             case 'g':
             case 'G':
-                sprintf(temp, format, va_arg(argList, double));
-                break;
+                goto GENERIC_FLOAT;
 
-            default:
-                temp[0] = spec;
-                temp[1] = '\0';
+            case 'v':
+            case 'w': {
+                char tempBuffer[64];
+                int vectType;
+                vectType = ch - 'v';
+                if (vectType == 0) {
+                    vectType = 2;
+                }
+
+                {
+                    bVector4 *vect;
+                    vect = va_arg(argList, bVector4 *);
+                    if (vect == nullptr) {
+                        vect = va_arg(argList, bVector4 *);
+                    }
+                    stringLength = 0;
+                    if (vectType >= 2) {
+                        stringLength = sprintf(tempBuffer, "%.3f, %.3f", vect->x, vect->y);
+                    }
+                    if (vectType >= 3) {
+                        stringLength += sprintf(tempBuffer + stringLength, ", %.3f", vect->z);
+                    }
+                    if (vectType >= 4) {
+                        stringLength += sprintf(tempBuffer + stringLength, ", %.3f", vect->w);
+                    }
+                }
+                stringOut = tempBuffer;
+                _stuff_str(output_info, stringOut, stringLength, &outLen);
                 break;
             }
 
-            _stuff_str(output_info, temp, bStrLen(temp), &outLen);
+            case 'z':
+            case 't':
+            case 'y': {
+                unsigned int tempNumber;
+                unsigned int upperVal;
+                unsigned int lowerVal;
+                char digit;
+                int desiredPrecision;
+                unsigned int divisor;
+                char *p;
+
+                tempNumber = va_arg(argList, unsigned int);
+                upperVal = tempNumber >> 16;
+                lowerVal = tempNumber & 0xFFFF;
+                desiredPrecision = (precision < 0) ? 2 : precision;
+
+                p = cvtbuf;
+                if (ch == 'y') {
+                    if (upperVal == 0 && lowerVal == 0) {
+                        *p++ = '0';
+                    } else {
+                        if (upperVal > 0) {
+                            p += sprintf(p, "%d", upperVal);
+                        }
+                        divisor = 10000;
+                        {
+                            int goesInto;
+                            bool started = (upperVal > 0);
+                            while (divisor > 0) {
+                                goesInto = lowerVal * 10 / 65536;
+                                lowerVal = lowerVal * 10 - goesInto * 65536;
+                                if (started || goesInto > 0) {
+                                    if (!started) {
+                                        *p++ = '.';
+                                    }
+                                    *p++ = static_cast<char>('0' + goesInto);
+                                    started = true;
+                                }
+                                divisor /= 10;
+                            }
+                        }
+                    }
+                } else {
+                    p += sprintf(p, "%u", upperVal);
+                    *p++ = '.';
+                    divisor = 10;
+                    while (desiredPrecision > 0) {
+                        {
+                            int goesInto;
+                            goesInto = (lowerVal * divisor) >> 16;
+                            lowerVal = lowerVal - ((goesInto << 16) / divisor);
+                            *p++ = static_cast<char>('0' + goesInto);
+                        }
+                        divisor *= 10;
+                        desiredPrecision--;
+                    }
+                }
+
+                *p = '\0';
+                stringOut = cvtbuf;
+                stringLength = static_cast<int>(p - cvtbuf);
+                goto OUTPUT;
+            }
+
+            case 's':
+            case 'S':
+            case 'B': {
+                const char *p;
+                int i;
+
+                stringOut = va_arg(argList, char *);
+                if (stringOut == nullptr) {
+                    stringOut = nullstr;
+                } else if (!bIsValidPointer(stringOut, 1)) {
+                    stringOut = badptr;
+                }
+                stringLength = bStrLen(stringOut);
+                if (precision >= 0 && precision < stringLength) {
+                    stringLength = precision;
+                }
+                goto OUTPUT;
+            }
+
+            case 'n': {
+                int *addr;
+                addr = va_arg(argList, int *);
+                *addr = outLen;
+                flags |= FL_NOOUTPUT;
+                goto OUTPUT;
+            }
+
+            default:
+                break;
+            }
+            break;
+
+        OUTPUT:
+            if (flags & FL_NOOUTPUT) {
+                break;
+            }
+
+            if (flags & FL_SIGNED) {
+                if (flags & FL_NEGATIVE) {
+                    prefix[1] = prefix[1];
+                    prefixSz = 1;
+                    prefix[0] = '-';
+                } else if (flags & FL_SIGN) {
+                    prefix[1] = prefix[1];
+                    prefixSz = 1;
+                    prefix[0] = '+';
+                } else if (flags & FL_SIGNSP) {
+                    prefix[1] = prefix[1];
+                    prefixSz = 1;
+                    prefix[0] = ' ';
+                }
+            }
+
+            padding = width - stringLength - prefixSz;
+            if (padding < 0) {
+                padding = 0;
+            }
+
+            if (padding > 0 && !(flags & (FL_LEFT | FL_LEADZERO))) {
+                do {
+                    _stuff_char(output_info, ' ', &outLen);
+                    padding--;
+                } while (padding != 0);
+            }
+
+            if (prefixSz > 0) {
+                _stuff_str(output_info, prefix, prefixSz, &outLen);
+            }
+
+            if (padding > 0 && !(flags & FL_LEFT)) {
+                do {
+                    _stuff_char(output_info, '0', &outLen);
+                    padding--;
+                } while (padding != 0);
+            }
+
+            _stuff_str(output_info, stringOut, stringLength, &outLen);
+
+            if (padding > 0) {
+                padding--;
+                if (padding != 0) {
+                    do {
+                        _stuff_char(output_info, ' ', &outLen);
+                        padding--;
+                    } while (padding != 0);
+                }
+            }
+            break;
+        }
+        }
+
+        ch = *fmt++;
+        if (outLen < 0) {
+            break;
         }
     }
 
-    if ((output_info->DestString != nullptr) && (output_info->DestStringLen > 0)) {
-        *output_info->DestString = '\0';
-    }
     if (output_info->StdOut) {
         bFlushBufferedPutChar();
+    }
+
+    if (output_info->DestString != nullptr) {
+        if (outLen != -1) {
+            *output_info->DestString = '\0';
+        }
     }
 
     return outLen;
