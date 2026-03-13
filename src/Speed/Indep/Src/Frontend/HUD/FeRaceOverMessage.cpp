@@ -88,88 +88,80 @@ void RaceOverMessage::RequestRaceOverMessage(IPlayer *player) {
 
     if (was_vehicle_totalled != 0) {
         bShowTotalledMessage = 1;
-    } else if (RACEOVER_FIELD(int, info, 0x24) == 0) {
-        if (RACEOVER_FIELD(int, info, 0x20) == 0) {
-            if (RACEOVER_FIELD(int, info, 0x1C) == 0) {
-                if (0.0f < race_time_limit && race_time_limit < racer_time && rank_by_points == 0.0f &&
-                    is_completed_challenge_race == 0) {
-                    Timer time_limit;
-                    char race_time_str[16];
-                    IGenericMessage *igenericmessage;
-
-                    time_limit.SetTime(race_time_limit);
-                    time_limit.PrintToString(race_time_str, 4);
-
-                    if (player->GetHud()->QueryInterface(&igenericmessage)) {
-                        igenericmessage->RequestGenericMessage(
-                            GetTranslatedString(0x556ED1B2), false, 0x9D73BC15, 0, 0, GenericMessage_Priority_1);
-                    }
-                } else {
-                    if (GRaceStatus::IsChallengeRace() != 0 && RACEOVER_FIELD(int, info, 0x2C) == 0) {
-                        char race_over_message[64];
-                        IGenericMessage *igenericmessage;
-
-                        bSNPrintf(
-                            race_over_message, 64, lbl_803E4CF4, GetTranslatedString(0x82E4DAFD),
-                            GetTranslatedString(0xF8ED7926));
-
-                        if (player->GetHud()->QueryInterface(&igenericmessage)) {
-                            igenericmessage->RequestGenericMessage(
-                                race_over_message, false, 0x8AB83EDB, 0, 0, GenericMessage_Priority_1);
-                        }
-                    } else {
-                        Timer race_time;
-                        char race_time_str[16];
-                        char bot_message_string[48];
-                        char message_string[64];
-                        unsigned int finish_hash;
-                        IGenericMessage *igenericmessage;
-                        int rank = RACEOVER_FIELD(int, info, 0x10);
-
-                        race_time.SetTime(racer_time);
-                        race_time.PrintToString(race_time_str, 4);
-
-                        if (rank < 2 || rank != race_status.GetRacerCount()) {
-                            finish_hash = RaceOverFinishStrings[rank - 1];
-                        } else {
-                            finish_hash = 0xEAC720D3;
-                        }
-
-                        bSPrintf(bot_message_string, GetLocalizedString(0xC2878EBC), race_time_str);
-                        bSPrintf(message_string, lbl_803E4CF4, GetTranslatedString(finish_hash), bot_message_string);
-
-                        if (player->GetHud()->QueryInterface(&igenericmessage)) {
-                            igenericmessage->RequestGenericMessage(
-                                message_string, false, 0x8AB83EDB, 0, 0, GenericMessage_Priority_1);
-                        }
-                    }
-                }
-            } else {
-                char race_over_message[64];
-                IGenericMessage *igenericmessage;
-
-                bSNPrintf(race_over_message, 64, lbl_803E4CF4, GetTranslatedString(0x82E4DAFD),
-                          GetTranslatedString(0x1B59940C));
-
-                if (player->GetHud()->QueryInterface(&igenericmessage)) {
-                    igenericmessage->RequestGenericMessage(
-                        race_over_message, false, 0x8AB83EDB, 0, 0, GenericMessage_Priority_1);
-                }
-            }
-        } else {
-            IGenericMessage *igenericmessage;
-
-            if (player->GetHud()->QueryInterface(&igenericmessage)) {
-                igenericmessage->RequestGenericMessage(
-                    GetTranslatedString(0x4BA0D22F), false, 0x8AB83EDB, 0, 0, GenericMessage_Priority_1);
-            }
-        }
-    } else {
+    } else if (RACEOVER_FIELD(int, info, 0x24) != 0) {
         IGenericMessage *igenericmessage;
 
         if (player->GetHud()->QueryInterface(&igenericmessage)) {
             igenericmessage->RequestGenericMessage(
                 GetTranslatedString(0x7449D26D), false, 0x8AB83EDB, 0, 0, GenericMessage_Priority_1);
+        }
+    } else if (RACEOVER_FIELD(int, info, 0x20) != 0) {
+        IGenericMessage *igenericmessage;
+
+        if (player->GetHud()->QueryInterface(&igenericmessage)) {
+            igenericmessage->RequestGenericMessage(
+                GetTranslatedString(0x4BA0D22F), false, 0x8AB83EDB, 0, 0, GenericMessage_Priority_1);
+        }
+    } else if (RACEOVER_FIELD(int, info, 0x1C) != 0) {
+        char race_over_message[64];
+        IGenericMessage *igenericmessage;
+
+        bSNPrintf(race_over_message, 64, lbl_803E4CF4, GetTranslatedString(0x82E4DAFD),
+                  GetTranslatedString(0x1B59940C));
+
+        if (player->GetHud()->QueryInterface(&igenericmessage)) {
+            igenericmessage->RequestGenericMessage(
+                race_over_message, false, 0x8AB83EDB, 0, 0, GenericMessage_Priority_1);
+        }
+    } else if (0.0f < race_time_limit && race_time_limit < racer_time && rank_by_points == 0.0f &&
+               is_completed_challenge_race == 0) {
+        Timer time_limit;
+        char race_time_str[16];
+        IGenericMessage *igenericmessage;
+
+        time_limit.SetTime(race_time_limit);
+        time_limit.PrintToString(race_time_str, 4);
+
+        if (player->GetHud()->QueryInterface(&igenericmessage)) {
+            igenericmessage->RequestGenericMessage(
+                GetTranslatedString(0x556ED1B2), false, 0x9D73BC15, 0, 0, GenericMessage_Priority_1);
+        }
+    } else if (GRaceStatus::IsChallengeRace() != 0 && RACEOVER_FIELD(int, info, 0x2C) == 0) {
+        char race_over_message[64];
+        IGenericMessage *igenericmessage;
+
+        bSNPrintf(
+            race_over_message, 64, lbl_803E4CF4, GetTranslatedString(0x82E4DAFD),
+            GetTranslatedString(0xF8ED7926));
+
+        if (player->GetHud()->QueryInterface(&igenericmessage)) {
+            igenericmessage->RequestGenericMessage(
+                race_over_message, false, 0x8AB83EDB, 0, 0, GenericMessage_Priority_1);
+        }
+    } else {
+        Timer race_time;
+        char race_time_str[16];
+        char bot_message_string[48];
+        char message_string[64];
+        unsigned int finish_hash;
+        IGenericMessage *igenericmessage;
+        int rank = RACEOVER_FIELD(int, info, 0x10);
+
+        race_time.SetTime(racer_time);
+        race_time.PrintToString(race_time_str, 4);
+
+        if (rank < 2 || rank != race_status.GetRacerCount()) {
+            finish_hash = RaceOverFinishStrings[rank - 1];
+        } else {
+            finish_hash = 0xEAC720D3;
+        }
+
+        bSPrintf(bot_message_string, GetLocalizedString(0xC2878EBC), race_time_str);
+        bSPrintf(message_string, lbl_803E4CF4, GetTranslatedString(finish_hash), bot_message_string);
+
+        if (player->GetHud()->QueryInterface(&igenericmessage)) {
+            igenericmessage->RequestGenericMessage(
+                message_string, false, 0x8AB83EDB, 0, 0, GenericMessage_Priority_1);
         }
     }
 
