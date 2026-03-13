@@ -141,12 +141,12 @@ void MemoryPool::AddFreeMemory(void *p, int size, const char *debug_name) {
         }
 
         if (this->DebugFillEnabled) {
-            unsigned int fill_size = reinterpret_cast<char *>(fill_end) - reinterpret_cast<char *>(fill_start);
-
-            if (bMemoryRandomFillPattern == 0) {
-                bMemSet(fill_start, 0xee, fill_size);
+            if (bMemoryRandomFillPattern != 0) {
+                bMemSet(fill_start, bGetTicker(),
+                        reinterpret_cast<char *>(fill_end) - reinterpret_cast<char *>(fill_start));
             } else {
-                bMemSet(fill_start, bGetTicker(), fill_size);
+                bMemSet(fill_start, 0xee,
+                        reinterpret_cast<char *>(fill_end) - reinterpret_cast<char *>(fill_start));
             }
         }
 
