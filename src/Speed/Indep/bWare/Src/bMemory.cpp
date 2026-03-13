@@ -183,8 +183,7 @@ void *MemoryPool::AllocateMemory(int size, int alignment, int alignment_offset, 
         }
     } else {
         for (FreeBlock *block = this->FreeBlockList.GetTail(); block != this->FreeBlockList.EndOfList(); block = block->GetPrev()) {
-            mem_bottom = reinterpret_cast<char *>(block) + block->Size;
-            int align_adjust = GetAlignmentAdjustBottom(reinterpret_cast<intptr_t>(mem_bottom) - actual_size, alignment, alignment_offset);
+            int align_adjust = GetAlignmentAdjustBottom(reinterpret_cast<intptr_t>(reinterpret_cast<char *>(block) + block->Size) - actual_size, alignment, alignment_offset);
             int remaining = block->Size - (actual_size + align_adjust);
 
             if (((remaining == 0) || (remaining > 0xf)) && (remaining < best_remaining)) {
