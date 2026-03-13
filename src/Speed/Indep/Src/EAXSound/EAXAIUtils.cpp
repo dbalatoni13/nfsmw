@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/EAXSound/EAXAIUtils.hpp"
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
 #include <types.h>
 
 extern "C" void Average_Record(Average *avg, float value) asm("Record__7Averagef");
@@ -77,4 +78,121 @@ void SndAIStateManager::SwitchState(SND_AI_STATE NewState) {
     bTransition = true;
     m_tLastSwitch = SndBase::m_fRunningTime;
     CurState = NewState;
+}
+
+SndAIStateManager::SndAIStateManager()
+    : SteeringMonitorLeft() //
+    , SteeringMonitorRight() //
+    , AccelMonitor() //
+    , DeccelMonitor() //
+    , ThrottleMonitor() {
+    m_pPhysicsCTL = nullptr;
+    CurState = SND_AI_STATE_UNKNOWN;
+    PrevState = SND_AI_STATE_UNKNOWN;
+    bTransition = 0;
+    m_tLastSwitch = 0.0f;
+}
+
+SndAIStateManager::~SndAIStateManager() {}
+
+void SndAIStateManager::Initialize(SFXCTL_Physics *pPhys) {
+    m_pPhysicsCTL = pPhys;
+
+    SteeringMonitorLeft.Initialize(8);
+    SteeringMonitorLeft.fSign = 1.0f;
+    SteeringMonitorLeft.m_fThreshold = 0.25f;
+    SteeringMonitorLeft.m_fAutoTrigger = 0.65f;
+    SteeringMonitorLeft.t_fSustain = 0.2f;
+    SteeringMonitorLeft.t_TriggerLength = 0.4f;
+
+    SteeringMonitorRight.Initialize(8);
+    SteeringMonitorRight.fSign = 1.0f;
+    SteeringMonitorRight.m_fThreshold = 0.25f;
+    SteeringMonitorRight.m_fAutoTrigger = 0.65f;
+    SteeringMonitorRight.t_fSustain = 0.2f;
+    SteeringMonitorRight.t_TriggerLength = 0.4f;
+
+    AccelMonitor.Initialize(8);
+    AccelMonitor.fSign = 1.0f;
+    AccelMonitor.m_fThreshold = 0.2f;
+    AccelMonitor.m_fAutoTrigger = 0.6f;
+    AccelMonitor.t_fSustain = 0.1f;
+    AccelMonitor.t_TriggerLength = 0.4f;
+
+    DeccelMonitor.Initialize(8);
+    DeccelMonitor.fSign = 1.0f;
+    DeccelMonitor.m_fThreshold = 0.2f;
+    DeccelMonitor.m_fAutoTrigger = 0.6f;
+    DeccelMonitor.t_fSustain = 0.1f;
+    DeccelMonitor.t_TriggerLength = 0.4f;
+
+    ThrottleMonitor.Initialize(8);
+    ThrottleMonitor.fSign = 1.0f;
+    ThrottleMonitor.m_fThreshold = 0.2f;
+    ThrottleMonitor.m_fAutoTrigger = 0.55f;
+    ThrottleMonitor.t_fSustain = 0.15f;
+    ThrottleMonitor.t_TriggerLength = 0.4f;
+
+    CurState = SND_AI_STATE_IDLE;
+    PrevState = SND_AI_STATE_UNKNOWN;
+    bTransition = 0;
+    m_tLastSwitch = 0.0f;
+}
+
+void SndAIStateManager::GeneratePotentialStates(bool *pPotentialStates) {
+    for (int i = 0; i < MAX_NUM_SND_AI_STATE; i++) {
+        pPotentialStates[i] = false;
+    }
+
+    pPotentialStates[SND_AI_STATE_IDLE] = true;
+    pPotentialStates[SND_AI_STATE_ACCEL] = AccelMonitor.bTrigger || ThrottleMonitor.bTrigger;
+    pPotentialStates[SND_AI_STATE_DECEL] = DeccelMonitor.bTrigger;
+    pPotentialStates[SND_AI_STATE_CORNER_LEFT] = SteeringMonitorLeft.bTrigger;
+    pPotentialStates[SND_AI_STATE_CORNER_RIGHT] = SteeringMonitorRight.bTrigger;
+
+    if (m_pPhysicsCTL != nullptr && m_pPhysicsCTL->eCurNisRevingState != NIS_DISABLED) {
+        pPotentialStates[SND_AI_STATE_PRERACE] = true;
+    }
+}
+
+void SndAIStateManager::UpdateState(float t) {
+    bool potentialStates[MAX_NUM_SND_AI_STATE];
+    GeneratePotentialStates(potentialStates);
+
+    SND_AI_STATE newState = SND_AI_STATE_IDLE;
+    if (potentialStates[SND_AI_STATE_PRERACE]) {
+        newState = SND_AI_STATE_PRERACE;
+    } else if (potentialStates[SND_AI_STATE_CORNER_LEFT]) {
+        newState = SND_AI_STATE_CORNER_LEFT;
+    } else if (potentialStates[SND_AI_STATE_CORNER_RIGHT]) {
+        newState = SND_AI_STATE_CORNER_RIGHT;
+    } else if (potentialStates[SND_AI_STATE_ACCEL]) {
+        newState = SND_AI_STATE_ACCEL;
+    } else if (potentialStates[SND_AI_STATE_DECEL]) {
+        newState = SND_AI_STATE_DECEL;
+    }
+
+    if (newState != CurState) {
+        SwitchState(newState);
+    } else if (bTransition && (SndBase::m_fRunningTime - m_tLastSwitch > t)) {
+        bTransition = 0;
+    }
+}
+
+void SndAIStateManager::Update(float t) {
+    if (m_pPhysicsCTL == nullptr) {
+        return;
+    }
+
+    float throttle = m_pPhysicsCTL->m_fThrottle;
+    float oldThrottle = m_pPhysicsCTL->m_OldThrottle;
+    float desiredSpeedDelta = m_pPhysicsCTL->m_OldDesiredSpeed;
+
+    SteeringMonitorLeft.Update(-desiredSpeedDelta, t);
+    SteeringMonitorRight.Update(desiredSpeedDelta, t);
+    AccelMonitor.Update(throttle, t);
+    DeccelMonitor.Update(-throttle, t);
+    ThrottleMonitor.Update(oldThrottle, t);
+
+    UpdateState(t);
 }

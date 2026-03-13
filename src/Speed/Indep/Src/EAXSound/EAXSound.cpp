@@ -91,6 +91,17 @@ enum eEVTSYS {
 
 enum eSNDDATAPATH {
     SNDPATH_EVTSYS = 0,
+    SNDPATH_GLOBAL = 1,
+    SNDPATH_INGAME = 2,
+    SNDPATH_ENGINE = 3,
+    SNDPATH_FXEDIT = 4,
+};
+
+enum eSNDDATATYPE {
+    EAXSND_DT_INVALID = 0,
+    EAXSND_DT_AEMS_MAINMEM = 1,
+    EAXSND_DT_GENERIC_DATA = 2,
+    EAXSND_DT_AEMS_ASYNCSPUMEM = 3,
 };
 
 struct stBankSlot {
@@ -233,6 +244,15 @@ void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller);
 
 bool g_EAXIsPaused() {
     return (g_ActiveCtlStates & 0x3483b) != 0;
+}
+
+void g_LoadSndAsset(Attrib::StringKey filename, eSNDDATAPATH path, eSNDDATATYPE type) {
+    char assetBytes[0x1C];
+    *reinterpret_cast<int *>(assetBytes + 0x0) = static_cast<int>(type);
+    *reinterpret_cast<int *>(assetBytes + 0x4) = static_cast<int>(path);
+    *reinterpret_cast<Attrib::StringKey *>(assetBytes + 0x8) = filename;
+    *reinterpret_cast<bool *>(assetBytes + 0x18) = false;
+    gAEMSMgr.AddBankListing(*reinterpret_cast<stAssetDescription *>(assetBytes));
 }
 
 void EAXSound::START_321Countdown() {
