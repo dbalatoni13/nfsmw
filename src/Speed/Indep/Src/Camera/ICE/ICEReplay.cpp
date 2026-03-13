@@ -193,7 +193,7 @@ bool CameraCutIsGood(ICEData *camera, float param, ICEAnchor *p_car) {
     bool is_it_good = false;
     char sStat[5] = "....";
 
-    if (old_cam == nullptr) {
+    if (!old_cam) {
         return is_it_good;
     }
 

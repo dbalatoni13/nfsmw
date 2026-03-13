@@ -47,9 +47,9 @@ DebugWorldCameraMover::DebugWorldCameraMover(int view_id, const bVector3 *start_
 }
 
 DebugWorldCameraMover::~DebugWorldCameraMover() {
-    if (mActionQ != nullptr) {
+    if (mActionQ) {
         GetCamera()->SetNearZ(PrevNearZ);
-        if (mActionQ != nullptr) {
+        if (mActionQ) {
             delete mActionQ;
         }
         mActionQ = nullptr;
@@ -57,7 +57,7 @@ DebugWorldCameraMover::~DebugWorldCameraMover() {
 }
 
 void DebugWorldCameraMover::JoyHandler() {
-    if (mActionQ == nullptr) {
+    if (!mActionQ) {
         return;
     }
 
@@ -122,9 +122,9 @@ void DebugWorldCameraMover::JoyHandler() {
             eUnSwizzleWorldVector(*GetPosition(), simpos);
             {
                 IPlayer *player = IPlayer::First(PLAYER_LOCAL);
-                if (player != nullptr) {
+                if (player) {
                     ISimable *sim = player->GetSimable();
-                    if (sim != nullptr) {
+                    if (sim) {
                         WCollisionMgr(0, 3).GetWorldHeightAtPoint(
                             reinterpret_cast<const UMath::Vector3 &>(simpos), simpos.y, nullptr);
                         simpos.y += 3.0f;

@@ -17,7 +17,7 @@ static bool IsAnyCopNear(CameraAnchor *pCar) {
 
     while (iter != IVehicle::GetList(VEHICLE_AICOPS).end()) {
         IVehicle *p_car = *iter;
-        if (p_car != nullptr && p_car->IsActive()) {
+        if (p_car && p_car->IsActive()) {
             UVector3 ucoppos(p_car->GetPosition());
             bVector3 coppos;
             bVector3 copdir;
@@ -43,9 +43,9 @@ static bool IsBeingPursued(int nView) {
         IPlayer *ip = *iter;
         if (ip->GetControllerPort() == nView) {
             ISimable *simable = ip->GetSimable();
-            if (simable != nullptr) {
+            if (simable) {
                 simable->QueryInterface(&iperp);
-                if (iperp != nullptr) {
+                if (iperp) {
                     if (!iperp->IsBeingPursued()) {
                         return false;
                     }

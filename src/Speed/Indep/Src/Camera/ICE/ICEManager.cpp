@@ -324,7 +324,7 @@ ICEShakeTrack *ICEManager::GetShakeTrack(unsigned int shake_type) {
 }
 
 int ICEManager::GetCameraIndex(float f_param, ICETrack *track) {
-    if (track != nullptr) {
+    if (track) {
         return track->GetKeyNumber(f_param);
     }
 
@@ -385,7 +385,7 @@ int ICEManager::GetNumSceneCameraTrack(unsigned int scene_hash) {
     int available_tracks = 0;
     ICEGroup *group = GetNisCameraGroup(scene_hash);
 
-    if (group != nullptr) {
+    if (group) {
         available_tracks = group->NumTracks;
     }
 
@@ -1031,7 +1031,7 @@ ICEScene *FindAnimScene() {
 
 unsigned int GetSceneCount() {
     unsigned int sceneCount = 0;
-    if (TheAnimDirectory != nullptr) {
+    if (TheAnimDirectory) {
         sceneCount = TheAnimDirectory->GetSceneCount();
     }
     return sceneCount;

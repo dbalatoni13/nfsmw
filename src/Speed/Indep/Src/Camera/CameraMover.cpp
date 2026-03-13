@@ -242,7 +242,7 @@ void CameraAnchor::SetModel(int model) {
         CarTypeInfo *info = GetCarTypeInfoFromHash(model);
         const char *name;
 
-        if (info != nullptr) {
+        if (info) {
             name = info->CarTypeName;
         } else {
             name = "";
@@ -287,7 +287,7 @@ POV *CameraAnchor::GetPov(int pov_type) {
     {
         const Attrib::RefSpec *refspec = reinterpret_cast<const Attrib::RefSpec *>(mModelAttributes.GetAttributePointer(attrib_key, 0));
 
-        if (refspec == nullptr) {
+        if (!refspec) {
             refspec = reinterpret_cast<const Attrib::RefSpec *>(Attrib::DefaultDataArea(sizeof(Attrib::RefSpec)));
         }
 
@@ -355,7 +355,7 @@ void RenderCameraMovers(eView *view) {
     if (!no_camera_mover) {
         camera_mover = head;
     }
-    if (camera_mover != nullptr) {
+    if (camera_mover) {
         camera_mover = nullptr;
         if (!no_camera_mover) {
             camera_mover = head;
@@ -371,7 +371,7 @@ void CameraMoverRestartRace() {
     for (int view_id = 1; view_id < 4; view_id++) {
         eView *view = eGetView(view_id, false);
 
-        if (view == nullptr) {
+        if (!view) {
             continue;
         }
 
@@ -384,9 +384,9 @@ void CameraMoverRestartRace() {
 
 Camera *GetCurrentCamera() {
     eView *view = eGetView(1, false);
-    if (view != nullptr) {
+    if (view) {
         Camera *c = view->GetCamera();
-        if (c != nullptr) {
+        if (c) {
             return c;
         }
     }
@@ -401,7 +401,7 @@ void UpdateCameraMovers(float dT) {
         eView *view = eGetView(view_id, false);
         CameraMover *m = view->GetCameraMover();
 
-        if (m != nullptr) {
+        if (m) {
             m->Update(dT);
         }
     }
@@ -415,14 +415,14 @@ void UpdateCameraMovers(float dT) {
         eView *view = eGetView(1, false);
         Camera *camera = view->GetCamera();
 
-        if (JR2ServerExists != 0 && camera != nullptr) {
+        if (JR2ServerExists != 0 && camera) {
             if (bAbs(RealTime - LastUpdateTimeJR2) > 0x10) {
                 LastUpdateTimeJR2 = RealTime;
                 camera->CommunicateWithJollyRancher(const_cast<char *>("Player1Camera"));
             }
         }
 
-        if (RemoteCaffeinating != 0 && DisableCommunication == 0 && camera != nullptr) {
+        if (RemoteCaffeinating != 0 && DisableCommunication == 0 && camera) {
             if (bAbs(RealTime - LastUpdateTimeCaffeine) > 0x10) {
                 LongVector fix_eye;
                 LongVector fix_look;
@@ -461,7 +461,7 @@ void UpdateCameraMovers(float dT) {
             if (view->Active != 0) {
                 CameraMover *camera_mover = view->GetCameraMover();
 
-                if (camera_mover != nullptr) {
+                if (camera_mover) {
                     if (!set_any_positions) {
                         TheTrackStreamer.ClearStreamingPositions();
                         set_any_positions = true;
@@ -477,7 +477,7 @@ void UpdateCameraMovers(float dT) {
 
                     if (bStreamingPositionFromICE != 0) {
                         INIS *nis = INIS::Get();
-                        if (nis != nullptr) {
+                        if (nis) {
                             bConvertFromBond(pos, reinterpret_cast<const bVector3 &>(*nis->GetStartLocation()));
                         }
 
@@ -767,7 +767,7 @@ void CameraMover::ChopperNoise(bMatrix4 *world_to_camera, float f_scale, bool us
 }
 
 void CameraMover::TerrainVelocityNoise(bMatrix4 *world_to_camera, CameraAnchor *p_car, float f_speed_scale, float f_terrain_scale) {
-    if (p_car == nullptr) {
+    if (!p_car) {
         return;
     }
 
@@ -1140,7 +1140,7 @@ void CameraMover::EyeCubicInit(tCubic3D *pEye, bMatrix4 *pMatrix, bVector3 *pVel
     bVector3 vEye;
     bScaleAdd(&vEye, pCamera->GetPosition(), pCamera->GetVelocityPosition(), 1.0f / 30.0f);
 
-    if (pMatrix != nullptr) {
+    if (pMatrix) {
         bMulMatrix(&vEye, pMatrix, &vEye);
     }
 
@@ -1148,7 +1148,7 @@ void CameraMover::EyeCubicInit(tCubic3D *pEye, bMatrix4 *pMatrix, bVector3 *pVel
 
     bVector3 vEyeRel(*pCamera->GetVelocityPosition());
 
-    if (pVelocity != nullptr) {
+    if (pVelocity) {
         bSub(&vEyeRel, &vEyeRel, pVelocity);
     }
 
@@ -1156,7 +1156,7 @@ void CameraMover::EyeCubicInit(tCubic3D *pEye, bMatrix4 *pMatrix, bVector3 *pVel
     bScale(reinterpret_cast<bVector3 *>(&vEyeVel), &vEyeRel, pEye->x.duration);
     vEyeVel.w = 0.0f;
 
-    if (pMatrix != nullptr) {
+    if (pMatrix) {
         bMulMatrix(&vEyeVel, pMatrix, &vEyeVel);
     }
 
@@ -1167,7 +1167,7 @@ void CameraMover::LookCubicInit(tCubic3D *pLook, bMatrix4 *pMatrix, bVector3 *pV
     bVector3 vLook;
     bScaleAdd(&vLook, pCamera->GetTarget(), pCamera->GetVelocityTarget(), 1.0f / 30.0f);
 
-    if (pMatrix != nullptr) {
+    if (pMatrix) {
         bMulMatrix(&vLook, pMatrix, &vLook);
     }
 
@@ -1175,7 +1175,7 @@ void CameraMover::LookCubicInit(tCubic3D *pLook, bMatrix4 *pMatrix, bVector3 *pV
 
     bVector3 vLookRel(*pCamera->GetVelocityTarget());
 
-    if (pVelocity != nullptr) {
+    if (pVelocity) {
         bSub(&vLookRel, &vLookRel, pVelocity);
     }
 
@@ -1183,7 +1183,7 @@ void CameraMover::LookCubicInit(tCubic3D *pLook, bMatrix4 *pMatrix, bVector3 *pV
     bScale(reinterpret_cast<bVector3 *>(&vLookVel), &vLookRel, pLook->x.duration);
     vLookVel.w = 0.0f;
 
-    if (pMatrix != nullptr) {
+    if (pMatrix) {
         bMulMatrix(&vLookVel, pMatrix, &vLookVel);
     }
 
@@ -1248,7 +1248,7 @@ bool CubicCameraMover::IsHoodCamera() {
 }
 
 void CubicCameraMover::SetForward(POV *pov, bool bSnap) {
-    if (pov != nullptr && OutsidePovType(pov->Type)) {
+    if (pov && OutsidePovType(pov->Type)) {
         if (!bSnap && HighliteMode()) {
             return;
         }
@@ -1277,7 +1277,7 @@ void CubicCameraMover::SetForward(POV *pov, bool bSnap) {
             return;
         }
     } else {
-        if (pCar == nullptr) {
+        if (!pCar) {
             return;
         }
         pForward->SetValDesired(pCar->GetForwardVector());
@@ -1384,7 +1384,7 @@ Bezier::Bezier()
 }
 
 void Bezier::GetPoint(bVector3 *pPoint, float parameter) {
-    if (pControlPoints != nullptr) {
+    if (pControlPoints) {
         bVector4 basis;
         bVector4 v;
         float t = 1.0f - parameter;
@@ -1542,7 +1542,7 @@ TrackCopCameraMover::~TrackCopCameraMover() {
 }
 
 void TrackCopCameraMover::Update(float dT) {
-    if (FEManager::Get() == nullptr || !FEManager::ShouldPauseSimulation(true)) {
+    if (!FEManager::Get() || !FEManager::ShouldPauseSimulation(true)) {
         bVector3 world_up(0.0f, 0.0f, 1.0f);
         bVector3 eye;
         bVector3 look;
@@ -1620,7 +1620,7 @@ CameraAnchor *TrackCarCameraMover::GetAnchor() {
 
 bVector3 *TrackCarCameraMover::GetTarget() {
     CameraAnchor *car = CarToFollow;
-    if (car != nullptr) {
+    if (car) {
         return car->GetGeomPos();
     }
     return GetCamera()->GetTarget();
@@ -1636,7 +1636,7 @@ bool TrackCopCameraMover::RenderCarPOV() {
 
 bVector3 *TrackCopCameraMover::GetTarget() {
     CameraAnchor *car = CarToFollow;
-    if (car != nullptr) {
+    if (car) {
         return car->GetGeomPos();
     }
     return GetCamera()->GetTarget();

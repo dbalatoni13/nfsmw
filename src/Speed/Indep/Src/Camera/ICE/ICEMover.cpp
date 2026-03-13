@@ -876,7 +876,7 @@ void ICEMover::Update(float dT) {
     }
 
     bLerpLag = false;
-    if (p_track != nullptr) {
+    if (p_track) {
         bLerpLag = (p_track->GetContext() == 3);
         if (p_track->GetContext() != 2) {
             bMirrorICEData = false;
@@ -898,7 +898,7 @@ void ICEMover::Update(float dT) {
     }
 
     float f_route_param;
-    if (p_track != nullptr) {
+    if (p_track) {
         f_route_param = p_track->GetParameter();
     } else {
         f_route_param = TheICEManager.GetParameter();
@@ -1069,7 +1069,7 @@ void ICEMover::Update(float dT) {
         GetCamera()->SetNoiseFrequency2(0.0f, 0.0f, 0.0f, 0.0f);
 
         float routeLen;
-        if (p_track != nullptr) {
+        if (p_track) {
             routeLen = p_track->GetLength();
         } else {
             routeLen = TheICEManager.GetParameterLength();
@@ -1081,7 +1081,7 @@ void ICEMover::Update(float dT) {
         ICEShakeTrack *shake_track = TheICEManager.GetShakeTrack(pICEData->nShakeType);
         if (shake_track != 0) {
             float routeLen;
-            if (p_track != nullptr) {
+            if (p_track) {
                 routeLen = p_track->GetLength();
             } else {
                 routeLen = TheICEManager.GetParameterLength();
@@ -1138,7 +1138,7 @@ void ICEMover::Update(float dT) {
         }
     }
 
-    if (p_track == nullptr || p_track->GetContext() != 2) {
+    if (!p_track || p_track->GetContext() != 2) {
         bool constrain_to_topology = false;
         if (pICEData != 0 && pICEData->bConstrainToWorld != 0) {
             constrain_to_topology = (n_state < 9);

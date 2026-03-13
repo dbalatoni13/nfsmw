@@ -55,16 +55,16 @@ CameraAI::Action *CDActionIce::Construct(CameraAI::Director *director) {
         }
     }
 
-    if (player == nullptr) {
+    if (!player) {
         return nullptr;
     }
 
-    if (player->GetSettings() == nullptr) {
+    if (!player->GetSettings()) {
         return nullptr;
     }
 
     ISimable *isimable = player->GetSimable();
-    if (isimable == nullptr) {
+    if (!isimable) {
         return nullptr;
     }
 
@@ -94,9 +94,9 @@ CDActionIce::CDActionIce(CameraAI::Director *director, IPlayer *player)
     mAttachments->Attach(mPlayer);
 
     CameraMover *m = director->GetMover();
-    if (m != nullptr) {
+    if (m) {
         CameraAnchor *prevAnchor = m->GetAnchor();
-        if (prevAnchor != nullptr) {
+        if (prevAnchor) {
             // mPrev from prevAnchor
         }
     }
@@ -110,7 +110,7 @@ CDActionIce::CDActionIce(CameraAI::Director *director, IPlayer *player)
 
         ICollisionBody *irbc = nullptr;
         mVehicle->QueryInterface(&irbc);
-        if (irbc != nullptr) {
+        if (irbc) {
             IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
             UVector3 cg(irbc->GetCenterOfGravity());
             irb->ConvertLocalToWorld(cg, false);
@@ -148,7 +148,7 @@ void CDActionIce::OnDetached(IAttachable *pOther) {
 }
 
 void CDActionIce::ReleaseCar(bool detach) {
-    if (mVehicle != nullptr) {
+    if (mVehicle) {
         if (detach) {
             Detach(mVehicle);
         }
@@ -162,19 +162,19 @@ void CDActionIce::AquireCar() {
     ITransmission *itrans;
     ISuspension *isuspension;
 
-    if (mPlayer == nullptr) {
+    if (!mPlayer) {
         return;
     }
 
     if (!ComparePtr(mPlayer->GetSimable(), mVehicle)) {
         ReleaseCar(true);
     }
-    if (mVehicle != nullptr) {
+    if (mVehicle) {
         return;
     }
 
     isimable = mPlayer->GetSimable();
-    if (isimable == nullptr) {
+    if (!isimable) {
         return;
     }
 
@@ -209,7 +209,7 @@ void CDActionIce::Update(float dT) {
         mActionQ.PopAction();
     }
 
-    if (mPlayer == nullptr) {
+    if (!mPlayer) {
         ReleaseCar(true);
     } else {
         AquireCar();
@@ -220,7 +220,7 @@ void CDActionIce::Update(float dT) {
             float forward_slip;
             ISuspension *isuspension;
 
-            if (mVehicle != nullptr && mVehicle->QueryInterface(&irbc)) {
+            if (mVehicle && mVehicle->QueryInterface(&irbc)) {
                 IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
                 UVector3 cg(irbc->GetCenterOfGravity());
                 irb->ConvertLocalToWorld(cg, false);
@@ -229,7 +229,7 @@ void CDActionIce::Update(float dT) {
             }
 
             mAnchor->SetSlipAngle(0.0f);
-            if (mVehicle != nullptr) {
+            if (mVehicle) {
                 mAnchor->SetSlipAngle(mVehicle->GetSlipAngle());
             }
 
@@ -237,7 +237,7 @@ void CDActionIce::Update(float dT) {
             mAnchor->SetNosEngaged(false);
             mAnchor->SetNosPercentageLeft(0.0f);
 
-            if (mVehicle != nullptr && mVehicle->QueryInterface(&isimable)) {
+            if (mVehicle && mVehicle->QueryInterface(&isimable)) {
                 IEngine *iengine;
                 if (isimable->QueryInterface(&iengine)) {
                     mAnchor->SetRPM(iengine->GetRPM());
@@ -247,7 +247,7 @@ void CDActionIce::Update(float dT) {
             }
 
             forward_slip = 0.0f;
-            if (mVehicle != nullptr && mVehicle->QueryInterface(&isuspension)) {
+            if (mVehicle && mVehicle->QueryInterface(&isuspension)) {
                 for (unsigned int i = 0; i < isuspension->GetNumWheels(); i++) {
                     if (isuspension->GetWheelSlip(i) > 0.0f) {
                         forward_slip += isuspension->GetWheelSlip(i);

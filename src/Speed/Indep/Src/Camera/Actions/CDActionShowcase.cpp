@@ -113,17 +113,17 @@ CameraAI::Action *CDActionShowcase::Construct(CameraAI::Director *director) {
         }
     }
 
-    if (player == nullptr) {
+    if (!player) {
         goto null_return;
     }
 
-    if (player->GetSettings() == nullptr) {
+    if (!player->GetSettings()) {
         goto null_return;
     }
 
     {
         ISimable *isimable = player->GetSimable();
-        if (isimable == nullptr) {
+        if (!isimable) {
             goto null_return;
         }
 
@@ -158,7 +158,7 @@ CDActionShowcase::CDActionShowcase(CameraAI::Director *director, IPlayer *player
         bMatrix4 mat(*mTarget.GetMatrix());
 
         ICollisionBody *irbc = nullptr;
-        if (mVehicle != nullptr && mVehicle->QueryInterface(&irbc)) {
+        if (mVehicle && mVehicle->QueryInterface(&irbc)) {
             IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
             UVector3 cg(irbc->GetCenterOfGravity());
             irb->ConvertLocalToWorld(cg, false);
@@ -208,28 +208,28 @@ void CDActionShowcase::OnCarDetached() {
 void CDActionShowcase::AquireCar() {
     ISimable *isimable;
 
-    if (mPlayer == nullptr) {
+    if (!mPlayer) {
         return;
     }
 
     if (!ComparePtr(mPlayer->GetSimable(), mVehicle)) {
-        if (mVehicle != nullptr) {
+        if (mVehicle) {
             Detach(mVehicle);
             mVehicle = nullptr;
         }
     }
-    if (mVehicle != nullptr) {
+    if (mVehicle) {
         return;
     }
     isimable = mPlayer->GetSimable();
-    if (isimable != nullptr) {
+    if (isimable) {
         mTarget.Set(isimable->GetWorldID());
         if (mTarget.IsValid()) {
             if (isimable->QueryInterface(&mVehicle)) {
                 Attach(mVehicle);
                 CameraAnchor *anchor = mAnchor;
                 const char *model_str = mVehicle->GetVehicleAttributes().MODEL().GetString();
-                if (model_str == nullptr) {
+                if (!model_str) {
                     model_str = "";
                 }
                 anchor->SetModel(bStringHash(model_str));
@@ -240,8 +240,8 @@ void CDActionShowcase::AquireCar() {
 }
 
 void CDActionShowcase::Update(float dT) {
-    if (mPlayer == nullptr) {
-        if (mVehicle != nullptr) {
+    if (!mPlayer) {
+        if (mVehicle) {
             Detach(mVehicle);
             mVehicle = nullptr;
         }
@@ -256,7 +256,7 @@ void CDActionShowcase::Update(float dT) {
     bMatrix4 mat(*mTarget.GetMatrix());
 
     ICollisionBody *irbc;
-    if (mVehicle != nullptr) {
+    if (mVehicle) {
         if (mVehicle->QueryInterface(&irbc)) {
             IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
             UVector3 cg(irbc->GetCenterOfGravity());

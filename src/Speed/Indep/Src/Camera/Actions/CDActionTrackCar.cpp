@@ -47,17 +47,17 @@ CameraAI::Action *CDActionTrackCar::Construct(CameraAI::Director *director) {
         }
     }
 
-    if (player == nullptr) {
+    if (!player) {
         goto null_return;
     }
 
-    if (player->GetSettings() == nullptr) {
+    if (!player->GetSettings()) {
         goto null_return;
     }
 
     {
         ISimable *isimable = player->GetSimable();
-        if (isimable == nullptr) {
+        if (!isimable) {
             goto null_return;
         }
 
@@ -92,7 +92,7 @@ CDActionTrackCar::CDActionTrackCar(CameraAI::Director *director, IPlayer *player
         bMatrix4 mat(*mTarget.GetMatrix());
 
         ICollisionBody *irbc = nullptr;
-        if (mVehicle != nullptr && mVehicle->QueryInterface(&irbc)) {
+        if (mVehicle && mVehicle->QueryInterface(&irbc)) {
             IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
             UVector3 cg(irbc->GetCenterOfGravity());
             irb->ConvertLocalToWorld(cg, false);
@@ -142,28 +142,28 @@ void CDActionTrackCar::OnCarDetached() {
 void CDActionTrackCar::AquireCar() {
     ISimable *isimable;
 
-    if (mPlayer == nullptr) {
+    if (!mPlayer) {
         return;
     }
 
     if (!ComparePtr(mPlayer->GetSimable(), mVehicle)) {
-        if (mVehicle != nullptr) {
+        if (mVehicle) {
             Detach(mVehicle);
             mVehicle = nullptr;
         }
     }
-    if (mVehicle != nullptr) {
+    if (mVehicle) {
         return;
     }
     isimable = mPlayer->GetSimable();
-    if (isimable != nullptr) {
+    if (isimable) {
         mTarget.Set(isimable->GetWorldID());
         if (mTarget.IsValid()) {
             if (isimable->QueryInterface(&mVehicle)) {
                 Attach(mVehicle);
                 CameraAnchor *anchor = mAnchor;
                 const char *model_str = mVehicle->GetVehicleAttributes().MODEL().GetString();
-                if (model_str == nullptr) {
+                if (!model_str) {
                     model_str = "";
                 }
                 anchor->SetModel(bStringHash(model_str));
@@ -178,8 +178,8 @@ void CDActionTrackCar::AquireCar() {
 }
 
 void CDActionTrackCar::Update(float dT) {
-    if (mPlayer == nullptr) {
-        if (mVehicle != nullptr) {
+    if (!mPlayer) {
+        if (mVehicle) {
             Detach(mVehicle);
             mVehicle = nullptr;
         }
@@ -194,7 +194,7 @@ void CDActionTrackCar::Update(float dT) {
     bMatrix4 mat(*mTarget.GetMatrix());
 
     ICollisionBody *irbc;
-    if (mVehicle != nullptr) {
+    if (mVehicle) {
         if (mVehicle->QueryInterface(&irbc)) {
             IRigidBody *irb = mVehicle->GetSimable()->GetRigidBody();
             UVector3 cg(irbc->GetCenterOfGravity());
@@ -210,7 +210,7 @@ void CDActionTrackCar::Update(float dT) {
 
 bool CDActionTrackCar::GetTrafficBasis(UMath::Matrix4 &matrix, UMath::Vector3 &velocity) {
     IBody *ibody;
-    if (mVehicle == nullptr) {
+    if (!mVehicle) {
         return false;
     }
     if (!mVehicle->QueryInterface(&ibody)) {

@@ -69,7 +69,7 @@ CameraAI::Director::~Director() {
 }
 
 void CameraAI::Director::ReleaseAction() {
-    if (mAction != nullptr) {
+    if (mAction) {
         delete mAction;
         mAction = nullptr;
     }
@@ -81,7 +81,7 @@ void CameraAI::Director::Reset() {
     mPursuitStartTime = 0.0f;
     mCinematicSlowdownSeconds = 0.0f;
     SetAction(Attrib::StringKey("DRIVE"));
-    if (mAction != nullptr) {
+    if (mAction) {
         mAction->Reset();
     }
 }
@@ -105,7 +105,7 @@ void CameraAI::Director::EndPursuitStart() {
 }
 
 CameraMover *CameraAI::Director::GetMover() {
-    if (mAction != nullptr) {
+    if (mAction) {
         return mAction->GetMover();
     }
     return nullptr;
@@ -119,11 +119,11 @@ void CameraAI::Director::Update(float dT) {
         mPursuitStartTime -= dT;
     }
     SelectAction();
-    if (mAction != nullptr) {
+    if (mAction) {
         if (mAction->GetName() == Attrib::StringKey("DRIVE")) {
             mAction->SetSpecial(mCinematicSlowdownSeconds);
         }
-        if (mAction != nullptr) {
+        if (mAction) {
             mAction->Update(dT);
         }
     }
@@ -132,12 +132,12 @@ void CameraAI::Director::Update(float dT) {
 void CameraAI::Director::SetAction(Attrib::StringKey desiredMode) {
     Action *action;
     mDesiredMode = desiredMode;
-    if (mAction != nullptr) {
+    if (mAction) {
         const Attrib::StringKey &key = mAction->GetNext();
         if (!key.IsEmpty()) {
             mDesiredMode = key;
         }
-        if (mAction != nullptr) {
+        if (mAction) {
             if (mAction->GetName() == mDesiredMode) {
                 return;
             }
@@ -145,7 +145,7 @@ void CameraAI::Director::SetAction(Attrib::StringKey desiredMode) {
     }
     if (!mDesiredMode.IsEmpty()) {
         action = Action::CreateInstance(UCrc32(mDesiredMode), this);
-        if (action != nullptr) {
+        if (action) {
             ReleaseAction();
             mAction = action;
             SetNewSndCamAction(mDesiredMode, mViewID);
@@ -174,11 +174,11 @@ void CameraAI::Director::SelectAction() {
 
         if (!gGameBreakerCamera) {
             eView *view = &eViews[mViewID];
-            if (view != nullptr) {
+            if (view) {
                 CameraMover *cm = view->GetCameraMover();
-                if (cm != nullptr && cm->GetType() == CM_DRIVE_CUBIC) {
+                if (cm && cm->GetType() == CM_DRIVE_CUBIC) {
                     CameraAnchor *anchor = cm->GetAnchor();
-                    if (anchor != nullptr) {
+                    if (anchor) {
                         if (AreMomentCamerasEnabled() &&
                             (anchor->GetVelocityMagnitude() > kJumpSpeedHigh ||
                              (anchor->GetVelocityMagnitude() > kJumpSpeedLow && anchor->IsTouchingGround())) &&
@@ -197,10 +197,10 @@ void CameraAI::Director::SelectAction() {
 
         bool isICEPlaying = false;
         INIS *nis = UTL::Collections::Singleton<INIS>::Get();
-        if (nis != nullptr) {
+        if (nis) {
             if (nis->IsPlaying()) {
                 ICEScene *scene = nis->GetScene();
-                if (scene != nullptr) {
+                if (scene) {
                     isICEPlaying = scene->IsControllingCamera();
                     mIsCinematicMomement = nis->IsWorldMomement();
                 }
@@ -212,11 +212,11 @@ void CameraAI::Director::SelectAction() {
             mJumpTime = 0.0f;
             mPursuitStartTime = 0.0f;
         } else {
-            if (mAction != nullptr && mAction->GetName() == Attrib::StringKey("ICE")) {
+            if (mAction && mAction->GetName() == Attrib::StringKey("ICE")) {
                 TheICEManager.SetUseRealTime(false);
                 mDesiredMode = Attrib::StringKey("DRIVE");
                 INIS *nis2 = UTL::Collections::Singleton<INIS>::Get();
-                if (nis2 != nullptr) {
+                if (nis2) {
                     nis2->FireEventTag("CameraFinished");
                 }
                 MICECameraFinished().Post(UCrc32(0x20d60dbf));
@@ -224,12 +224,12 @@ void CameraAI::Director::SelectAction() {
         }
     }
 
-    if (mAction != nullptr) {
+    if (mAction) {
         const Attrib::StringKey &key = mAction->GetNext();
         if (!key.IsEmpty()) {
             mDesiredMode = key;
         }
-        if (mAction != nullptr) {
+        if (mAction) {
             if (mAction->GetName() == mDesiredMode) {
                 return;
             }
@@ -237,7 +237,7 @@ void CameraAI::Director::SelectAction() {
     }
     if (!mDesiredMode.IsEmpty()) {
         Action *action = Action::CreateInstance(UCrc32(mDesiredMode), this);
-        if (action != nullptr) {
+        if (action) {
             mIsCinematicMomement = false;
             mCinematicSlowdownSeconds = 0.0f;
             ReleaseAction();
@@ -295,9 +295,9 @@ CameraAI::Director *FindDirector(unsigned int id) {
     for (CameraAI::Director *const *iter = CameraAI::Director::GetList().begin(); iter != CameraAI::Director::GetList().end(); ++iter) {
         CameraAI::Director *cd = *iter;
         IPlayer *iplayer = FindPlayer(cd->GetViewID());
-        if (iplayer != nullptr) {
+        if (iplayer) {
             ISimable *isimable = iplayer->GetSimable();
-            if (isimable != nullptr && isimable->GetWorldID() == id) {
+            if (isimable && isimable->GetWorldID() == id) {
                 return cd;
             }
         }
@@ -328,11 +328,11 @@ void CameraAI::Update(float dT) {
         EVIEW_ID viewID = static_cast<EVIEW_ID>(++player);
         IPlayer *iplayer = FindPlayer(viewID);
         Director *cd = FindDirector(viewID);
-        if (cd != nullptr && iplayer == nullptr) {
+        if (cd && !iplayer) {
             delete cd;
             continue;
         }
-        if (iplayer != nullptr && cd == nullptr) {
+        if (iplayer && !cd) {
             cd = new (static_cast<const char *>(0)) Director(viewID);
         }
     } while (player <= static_cast<unsigned int>(PLAYER_LOCAL));
@@ -360,14 +360,14 @@ void CameraAI::SetAction(EVIEW_ID viewID, const char *desiredMode) {
 
 void CameraAI::MaybeKillPursuitCam(unsigned int id) {
     Director *cd = FindDirector(id);
-    if (cd != nullptr) {
+    if (cd) {
         cd->EndPursuitStart();
     }
 }
 
 static float AverageAir(ISimable *isimable, float fSeconds, float *pHighest, float *pLongest) {
     IRigidBody *irb = isimable->GetRigidBody();
-    if (irb == nullptr) return 0.0f;
+    if (!irb) return 0.0f;
 
     ICollisionBody *irbc;
     if (!isimable->QueryInterface(&irbc)) return 0.0f;
@@ -456,10 +456,10 @@ static float AverageAir(ISimable *isimable, float fSeconds, float *pHighest, flo
         }
     }
 
-    if (pHighest != nullptr) {
+    if (pHighest) {
         *pHighest = fAirMax;
     }
-    if (pLongest != nullptr) {
+    if (pLongest) {
         *pLongest = fFuture;
     }
 
@@ -468,7 +468,7 @@ static float AverageAir(ISimable *isimable, float fSeconds, float *pHighest, flo
 
 void CameraAI::MaybeKillJumpCam(unsigned int id) {
     Director *cd = FindDirector(id);
-    if (cd != nullptr) {
+    if (cd) {
         cd->EndJumping();
     }
 }
@@ -481,7 +481,7 @@ void CameraAI::Init() {
 
 void CameraAI::Shutdown() {
 #ifndef EA_PLATFORM_PLAYSTATION2
-    if (TheAvoidables != nullptr) {
+    if (TheAvoidables) {
         delete TheAvoidables;
     }
     TheAvoidables = nullptr;
@@ -489,7 +489,7 @@ void CameraAI::Shutdown() {
     Director::List copy(Director::GetList());
     for (Director *const *iter = copy.begin(); iter != copy.end(); ++iter) {
         Director *cd = *iter;
-        if (cd != nullptr) {
+        if (cd) {
             delete cd;
         }
     }
@@ -518,7 +518,7 @@ void CameraAI::StartCinematicSlowdown(EVIEW_ID viewID, float seconds) {
         Director *cd = *iter;
         if (cd->GetViewID() == viewID) {
             Action *action = cd->GetAction();
-            if (action != nullptr && action->GetName() == Attrib::StringKey("DRIVE")) {
+            if (action && action->GetName() == Attrib::StringKey("DRIVE")) {
                 cd->SetCinematicSlowdown(seconds);
             }
         }
@@ -545,11 +545,11 @@ void CameraAI::MaybeDoPursuitCam(IVehicle *ivehicle) {
         return;
     }
     INIS *nis = UTL::Collections::Singleton<INIS>::Get();
-    if (nis != nullptr) {
+    if (nis) {
         return;
     }
     GRaceParameters *parms = GRaceStatus::Get().GetRaceParameters();
-    if (parms != nullptr) {
+    if (parms) {
         if (parms->GetIsPursuitRace()) {
             return;
         }
@@ -561,11 +561,11 @@ void CameraAI::MaybeDoPursuitCam(IVehicle *ivehicle) {
         return;
     }
     ISimable *isimable = ivehicle->GetSimable();
-    if (isimable == nullptr) {
+    if (!isimable) {
         return;
     }
     Director *cd = FindDirector(isimable->GetWorldID());
-    if (cd == nullptr) {
+    if (!cd) {
         return;
     }
     if (gGameBreakerCamera) {
@@ -583,7 +583,7 @@ void CameraAI::MaybeDoJumpCam(ISimable *isimable) {
     if (!AreMomentCamerasEnabled()) {
         return;
     }
-    if (UTL::Collections::Singleton<INIS>::Get() != nullptr) {
+    if (UTL::Collections::Singleton<INIS>::Get()) {
         return;
     }
     IVehicle *ivehicle;
@@ -593,7 +593,7 @@ void CameraAI::MaybeDoJumpCam(ISimable *isimable) {
         }
     }
     Director *cd = FindDirector(isimable->GetWorldID());
-    if (cd == nullptr) {
+    if (!cd) {
         return;
     }
     if (cd->IsJumping()) {
@@ -614,7 +614,7 @@ void CameraAI::MaybeDoJumpCam(ISimable *isimable) {
         reinterpret_cast<const bVector2 *>(
             &bConvertFromBond(position, isimable->GetPosition())),
         TRACK_PATH_ZONE_JUMP_CAM, nullptr);
-    if (zone != nullptr) {
+    if (zone) {
         set = 1;
     }
     float highest = 0.0f;
@@ -641,9 +641,9 @@ void CameraAI::MaybeDoJumpCam(ISimable *isimable) {
     }
     if (avg > 1.0f) {
         SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-        if (ai != nullptr) {
+        if (ai) {
             Observer *observer = ai->GetObserver();
-            if (observer != nullptr) {
+            if (observer) {
                 observer->NotifyAirborne(highest, longest);
             }
         }

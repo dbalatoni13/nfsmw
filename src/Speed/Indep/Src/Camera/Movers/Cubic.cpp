@@ -180,7 +180,7 @@ bool CubicCameraMover::IsUnderVehicle() {
         }
 
         ISimable *isimable = ivehicle->GetSimable();
-        if (isimable == nullptr) {
+        if (!isimable) {
             continue;
         }
 
@@ -189,7 +189,7 @@ bool CubicCameraMover::IsUnderVehicle() {
         }
 
         IRigidBody *irb = isimable->GetRigidBody();
-        if (irb == nullptr) {
+        if (!irb) {
             continue;
         }
 

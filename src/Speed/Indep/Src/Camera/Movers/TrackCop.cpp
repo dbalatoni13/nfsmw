@@ -16,7 +16,7 @@ bool TrackCopCameraMover::FindPursuitVehiclePosition(bVector3 *copPos) {
     for (IVehicle *const *iter = IVehicle::GetList(VEHICLE_AICOPS).begin();
          iter != IVehicle::GetList(VEHICLE_AICOPS).end(); ++iter) {
         IVehicle *p_car = *iter;
-        if (p_car == nullptr) continue;
+        if (!p_car) continue;
         if (!p_car->IsActive()) continue;
         if (!(p_car->GetVehicleClass() == VehicleClass::CAR)) continue;
 
@@ -24,11 +24,11 @@ bool TrackCopCameraMover::FindPursuitVehiclePosition(bVector3 *copPos) {
         if (!p_car->QueryInterface(&p_vehicleai)) continue;
 
         AITarget *p_target = p_vehicleai->GetTarget();
-        if (p_target == nullptr) continue;
+        if (!p_target) continue;
         if (!p_target->IsValid()) continue;
 
         ISimable *p_targetsimable = p_target->GetSimable();
-        if (p_targetsimable == nullptr) continue;
+        if (!p_targetsimable) continue;
         if (p_targetsimable->GetWorldID() != CarToFollow->GetWorldID()) continue;
 
         IPursuitAI *p_pursuitai;
