@@ -380,55 +380,59 @@ char *bToUpper(char *s) {
 
 int bStrToLong(const char *s) {
     if ((s[0] == '0') && (s[1] == 'x')) {
-        const unsigned char *p = reinterpret_cast<const unsigned char *>(s + 2);
-        unsigned char c = *p;
-        int value = 0;
+        int n;
+        {
+            char c;
+            int value;
 
-        do {
-            if (c == '\0') {
-                return value;
-            }
+            s += 2;
+            c = *s;
+            n = 0;
 
-            unsigned int digit = static_cast<int>(static_cast<char>(c)) - '0';
-            if ((digit & 0xff) > 9) {
-                if (static_cast<unsigned int>(static_cast<int>(static_cast<char>(c)) - 'a') < 0x1aU) {
-                    c &= 0x5f;
+            while (c != '\0') {
+                value = c - '0';
+                if (!bIsDigit(c)) {
+                    c = bToUpper(c);
+                    if (static_cast<unsigned int>(c - 'A') > 5U) {
+                        return n;
+                    }
+                    value = c - '7';
                 }
-                if (static_cast<unsigned int>(static_cast<int>(static_cast<char>(c)) - 'A') > 5U) {
-                    return value;
-                }
-                digit = static_cast<int>(static_cast<char>(c)) - '7';
+                c = *++s;
+                n = n * 16 + value;
             }
-
-            p = p + 1;
-            c = *p;
-            value = value * 16 + digit;
-        } while (true);
+        }
+        return n;
     }
 
-    bool negative = false;
+    bool negate = false;
     if (*s == '-') {
-        negative = true;
+        negate = true;
     } else if (*s != '+') {
         goto parse_decimal;
     }
     s = s + 1;
 
 parse_decimal:
-    int value = 0;
-    char c = *s;
+    {
+        int n = 0;
+        char c = *s;
 
-    while ((c != '\0') && ((static_cast<unsigned int>(c - '0')) < 10U)) {
-        s = s + 1;
-        value = value * 10 + c - '0';
-        c = *s;
+        if (c != '\0') {
+            do {
+                if (!bIsDigit(c)) {
+                    break;
+                }
+                n = n * 10 + c - '0';
+                c = *++s;
+            } while (c != '\0');
+        }
+
+        if (negate) {
+            return -n;
+        }
+        return n;
     }
-
-    if (negative) {
-        return -value;
-    }
-
-    return value;
 }
 
 float bStrToFloat(const char *s) {

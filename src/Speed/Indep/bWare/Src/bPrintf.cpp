@@ -230,12 +230,12 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
     ch = *fmt++;
 
     while (ch != '\0') {
-        unsigned int ci = static_cast<unsigned char>(ch - 0x20);
+        int ci = ch - 0x20;
         int charType;
-        if (ci > 0x5A) {
-            charType = 0;
-        } else {
+        if (static_cast<unsigned char>(ci) <= 0x5A) {
             charType = statetable[ci] & 0x0F;
+        } else {
+            charType = 0;
         }
 
         state = static_cast<signed char>(statetable[charType * 8 + state]) >> 4;
@@ -255,12 +255,12 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
 
         case ST_FLAG:
             switch (ch) {
+            case '-': flags |= FL_LEFT; break;
+            case '+': flags |= FL_SIGN; break;
             case ' ': flags |= FL_SIGNSP; break;
             case '#': flags |= FL_ALTERNATE; break;
-            case '$': flags |= FL_GROUP; break;
-            case '+': flags |= FL_SIGN; break;
-            case '-': flags |= FL_LEFT; break;
             case '0': flags |= FL_LEADZERO; break;
+            case '$': flags |= FL_GROUP; break;
             }
             break;
 
@@ -292,15 +292,20 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
             break;
 
         case ST_SIZE:
-            if (ch == 'h') {
+            switch (ch) {
+            case 'l':
+                flags |= FL_LONG;
+                break;
+            case 'h':
                 flags |= FL_SHORT;
-            } else if (ch == 'i' || ch == 'I') {
+                break;
+            case 'i':
+            case 'I':
                 if (fmt[0] == '6' && fmt[1] == '4') {
                     flags |= FL_LONG64;
                     fmt += 2;
                 }
-            } else {
-                flags |= FL_LONG;
+                break;
             }
             break;
 
@@ -429,7 +434,9 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
             }
 
             case 'e':
-            case 'E':
+                if (precision < 0) {
+                    precision = 6;
+                }
             GENERIC_FLOAT: {
                 double d;
                 double number;
@@ -447,63 +454,37 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
 
                     char fmtbuf[8];
                     fmtbuf[0] = '%';
-                    int pos = 1;
-                    if (precision >= 0) {
-                        fmtbuf[pos++] = '.';
-                        fmtbuf[pos++] = '*';
-                    }
-                    fmtbuf[pos++] = ch;
-                    fmtbuf[pos] = '\0';
+                    fmtbuf[1] = '.';
+                    fmtbuf[2] = '*';
+                    fmtbuf[3] = ch;
+                    fmtbuf[4] = '\0';
 
-                    if (precision >= 0) {
-                        stringLength = sprintf(cvtbuf, fmtbuf, precision, d);
-                    } else {
-                        stringLength = sprintf(cvtbuf, fmtbuf, d);
-                    }
+                    stringLength = sprintf(cvtbuf, fmtbuf, precision, d);
                     stringOut = cvtbuf;
                 }
                 goto OUTPUT;
             }
 
-            case 'f':
             case 'g':
-            case 'G':
+                if (precision < 0) {
+                    precision = 1;
+                }
                 goto GENERIC_FLOAT;
 
-            case 'v':
-            case 'w': {
-                char tempBuffer[64];
-                int vectType;
-                vectType = ch - 'v';
-                if (vectType == 0) {
-                    vectType = 2;
+            case 'G':
+            case 'E':
+                if (precision < 0) {
+                    precision = 6;
                 }
+                goto GENERIC_FLOAT;
 
-                {
-                    bVector4 *vect;
-                    vect = va_arg(argList, bVector4 *);
-                    if (vect == nullptr) {
-                        vect = va_arg(argList, bVector4 *);
-                    }
-                    stringLength = 0;
-                    if (vectType >= 2) {
-                        stringLength = sprintf(tempBuffer, "%.3f, %.3f", vect->x, vect->y);
-                    }
-                    if (vectType >= 3) {
-                        stringLength += sprintf(tempBuffer + stringLength, ", %.3f", vect->z);
-                    }
-                    if (vectType >= 4) {
-                        stringLength += sprintf(tempBuffer + stringLength, ", %.3f", vect->w);
-                    }
+            case 'f':
+                if (precision < 0) {
+                    precision = 6;
                 }
-                stringOut = tempBuffer;
-                _stuff_str(output_info, stringOut, stringLength, &outLen);
-                break;
-            }
+                goto GENERIC_FLOAT;
 
-            case 'z':
-            case 't':
-            case 'y': {
+            case 'z': {
                 unsigned int tempNumber;
                 unsigned int upperVal;
                 unsigned int lowerVal;
@@ -565,12 +546,37 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                 goto OUTPUT;
             }
 
-            case 's':
-            case 'S':
-            case 'B': {
-                const char *p;
-                int i;
+            case 'v': {
+                char tempBuffer[64];
+                int vectType;
+                vectType = ch - 'v';
+                if (vectType == 0) {
+                    vectType = 2;
+                }
 
+                {
+                    bVector4 *vect;
+                    vect = va_arg(argList, bVector4 *);
+                    if (vect == nullptr) {
+                        vect = va_arg(argList, bVector4 *);
+                    }
+                    stringLength = 0;
+                    if (vectType >= 2) {
+                        stringLength = sprintf(tempBuffer, "%.3f, %.3f", vect->x, vect->y);
+                    }
+                    if (vectType >= 3) {
+                        stringLength += sprintf(tempBuffer + stringLength, ", %.3f", vect->z);
+                    }
+                    if (vectType >= 4) {
+                        stringLength += sprintf(tempBuffer + stringLength, ", %.3f", vect->w);
+                    }
+                }
+                stringOut = tempBuffer;
+                _stuff_str(output_info, stringOut, stringLength, &outLen);
+                break;
+            }
+
+            case 's': {
                 stringOut = va_arg(argList, char *);
                 if (stringOut == nullptr) {
                     stringOut = nullstr;
