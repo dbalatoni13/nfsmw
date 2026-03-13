@@ -358,18 +358,17 @@ void MemoryPool::PrintAllocationsByAddress(int from_allocation, int to_allocatio
     AllocationHeader *prev = nullptr;
     for (AllocationHeader *header = this->AllocationHeaderList.GetHead(); header != this->AllocationHeaderList.EndOfList(); header = header->GetNext()) {
         int allocation_number = 0;
-        AllocationHeader *bottom = reinterpret_cast<AllocationHeader *>(header->GetBottomAddress());
 
         if (allocation_number >= from_allocation && allocation_number < to_allocation) {
             if (prev != nullptr) {
                 char *prev_bottom = reinterpret_cast<char *>(prev->GetBottomAddress());
-                char *curr_bottom = reinterpret_cast<char *>(bottom);
+                char *curr_bottom = reinterpret_cast<char *>(header->GetBottomAddress());
                 if ((curr_bottom - prev_bottom) != prev->Size) {
                     bReleasePrintf("   *** gap in allocations ***");
                 }
             }
 
-            bReleasePrintf("    %5d        0x%08x %7d   %s", allocation_number, bottom, header->Size, header->GetDebugText());
+            bReleasePrintf("    %5d        0x%08x %7d   %s", allocation_number, header->GetBottomAddress(), header->Size, header->GetDebugText());
             bReleasePrintf("\n");
             prev = header;
         } else {
