@@ -388,8 +388,9 @@ unsigned short bFixATan(int x) {
 }
 
 unsigned short bFixATan(int x, int y) {
-    unsigned char quad = static_cast<unsigned char>(x < 0);
+    unsigned char quad = 0;
     if (x < 0) {
+        quad = 1;
         x = -x;
     }
 
@@ -398,24 +399,21 @@ unsigned short bFixATan(int x, int y) {
         y = -y;
     }
 
-    short angle;
-    if ((y >> 0xe) < x) {
-        angle = static_cast<short>(bFixATan(bDiv(y, x)));
-    } else {
+    int angle;
+    if (x <= (y >> 0xe)) {
         angle = 0x4000;
+    } else {
+        angle = bFixATan(bDiv(y, x));
     }
 
     if (quad == 1) {
-        angle = static_cast<short>(-0x8000 - angle);
+        angle = -0x8000 - angle;
+    } else if (quad == 0) {
+        // no modification
+    } else if (quad == 2) {
+        angle += -0x8000;
     } else {
-        if (quad < 2) {
-            if (quad == 0) {
-                return static_cast<unsigned short>(angle);
-            }
-        } else if (quad == 2) {
-            return static_cast<unsigned short>(angle - 0x8000);
-        }
-        angle = static_cast<short>(-angle);
+        angle = -angle;
     }
 
     return static_cast<unsigned short>(angle);
