@@ -2,18 +2,16 @@
 #include "Speed/Indep/Src/FEng/FEGroup.h"
 #include "Speed/Indep/Src/FEng/FEObject.h"
 #include "Speed/Indep/Src/FEng/FEPackage.h"
-#include "Speed/Indep/Src/FEng/FETypes.h"
+#include "Speed/Indep/Src/FEng/FEMath.h"
+#include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEObjectCallbacks.hpp"
 #include "Speed/Indep/Src/Frontend/FEPackageManager.hpp"
 #include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
-
-struct FEMatrix4 {
-    float data[16];
-    void Identify();
-};
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 struct RenderContext;
 class FEngine;
@@ -36,11 +34,6 @@ extern int FEngPleaseRenderSinglePackage;
 
 void GetBaseName(char *dst, const char *src);
 void bToUpper(char *s);
-unsigned int bStringHash(const char *s);
-void *bMalloc(int size, int param);
-void bStrNCpy(char *dst, const char *src, int size);
-void bFree(void *ptr);
-unsigned int FEHashUpper(const char *name);
 FEPackageRenderInfo *HACK_FEPkgMgr_GetPackageRenderInfo(FEPackage *pkg);
 bool FEngTestForIntersection(float x, float y, FEObject *obj);
 
