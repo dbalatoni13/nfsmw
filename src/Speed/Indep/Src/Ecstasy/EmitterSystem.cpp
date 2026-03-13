@@ -1007,18 +1007,18 @@ void EmitterSystem::UpdateParticles(float dt) {
                     UMath::Vector4 col;
                     if (particle->mLife > time_step) {
                         if (texture_animation) {
-                            // TODO
-                            // const unsigned int i_num_frames;
+                            const uint32 i_num_frames = ((uint32)anim_type * (uint32)anim_type);
                             const float f_num_frames = dt * fAnimFPS;
-                            const float f_max_frame_index = ((uint32)anim_type * (uint32)anim_type);
-                            uint32 frame_index = (int32)((f_num_frames / f_max_frame_index) * 65535.0f);
+                            uint32 frame_index = (int32) ((f_num_frames / i_num_frames) * 65535.0f);
+                            const float f_max_frame_index = (i_num_frames - 1.0f);
                             uint32 cur_frame = particle->mAnimFrame;
                             cur_frame += frame_index;
                             uint32 delta_frames = cur_frame + frame_index;
                             if (delta_frames > 65535) {
-                                cur_frame =(cur_frame - 65535);
+                                cur_frame -= 65535;
                             }
-                            frame_index = (int)((float)((uint16)cur_frame) * (f_max_frame_index - 1.0f) / 65535.0f);
+                            cur_frame = (uint16)cur_frame;
+                            frame_index = (int32)((float)cur_frame / 65535.0f * f_max_frame_index);
                             em->GetStandardUVs(&particle->mUVStart, &particle->mUVEnd);
                             GetAnimatedUVs(anim_type, frame_index, &particle->mUVStart, &particle->mUVEnd);
                             particle->mAnimFrame = cur_frame;
@@ -1054,7 +1054,7 @@ void EmitterSystem::UpdateParticles(float dt) {
                         RotateTranslate(t, *reinterpret_cast<const UMath::Matrix4 *>(ExtraBasis), extra_params);
                         particle->mSize = extra_params.x;
                         unsigned short pangle = static_cast<unsigned int>(particle->mInitialAngle) * 257.0f;
-                        unsigned short adelta = extra_params.y / 255 * static_cast<float>(particle->mRotOffset) + extra_params.y;
+                        unsigned short adelta = extra_params.y + static_cast<float>(particle->mRotOffset) / 255.0f * extra_params.y;
                         if (pangle % 2 == 0) {
                             pangle += adelta;
                         } else {
@@ -1074,10 +1074,10 @@ void EmitterSystem::UpdateParticles(float dt) {
                             particle = particle->GetNext();
                             continue;
                         }
-                        EmitterParticle *to_kill = particle;
-                        particle = particle->GetNext();
-                        this->KillParticle(em, to_kill);
                     }
+                    EmitterParticle *to_kill = particle;
+                    particle = particle->GetNext();
+                    this->KillParticle(em, to_kill);
                 }
             }
         }
