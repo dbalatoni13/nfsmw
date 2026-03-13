@@ -63,8 +63,8 @@ Use `next` first when you want the wrapper to rank the most useful targets inste
 following raw objdiff order. `--strategy balanced` is the default and is usually the best
 starting point because it now favors large remaining gains and penalizes near-finished
 cleanup work. Use `--strategy impact` when you only care about the biggest unmatched-byte
-wins, or `--strategy quick-wins` only when you intentionally want a cleanup pass on
-already-implemented functions.
+wins. Use `--strategy quick-wins` when you want lower-match functions where the first big
+chunk of progress is likely to come faster than late cleanup.
 
 Stay in the wrapper flow by default. Only drop to raw `decomp-status.py` / `decomp-diff.py`
 when you need an option the wrapper does not expose yet.

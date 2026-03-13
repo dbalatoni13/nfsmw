@@ -52,11 +52,12 @@ DEFAULT_SMOKE_UNIT = "main/Speed/Indep/SourceLists/zCamera"
 DEBUG_SYMBOL_PROBE_MANGLED = "UpdateAll__6Cameraf"
 DEBUG_SYMBOL_PROBE_DEMANGLED = "Camera::UpdateAll(float)"
 DEBUG_SYMBOL_PROBE_GC_ADDR = "0x80065A84"
+LOW_MATCH_PRIORITY_THRESHOLD = 60.0
+VERY_LOW_MATCH_PRIORITY_THRESHOLD = 40.0
+HIGH_MATCH_CLEANUP_THRESHOLD = 85.0
+VERY_HIGH_MATCH_CLEANUP_THRESHOLD = 95.0
 
 SHARED_ASSET_REQUIREMENTS = [
-    ("NFSMWRELEASE.ELF", "GameCube ELF"),
-    ("NFS.ELF", "PS2 ELF"),
-    ("NFS.MAP", "PS2 MAP"),
     (os.path.join("build", "tools"), "downloaded tooling"),
     (os.path.join("orig", "GOWE69", "NFSMWRELEASE.ELF"), "GameCube original ELF"),
     (os.path.join("orig", "SLES-53558-A124", "NFS.ELF"), "PS2 original ELF"),
@@ -256,12 +257,16 @@ def command_health(args: argparse.Namespace) -> None:
     report(
         os.path.exists(BUILD_NINJA),
         "build.ninja",
-        BUILD_NINJA if os.path.exists(BUILD_NINJA) else "missing (run: python configure.py)",
+        BUILD_NINJA
+        if os.path.exists(BUILD_NINJA)
+        else "missing (run: python tools/share_worktree_assets.py bootstrap)",
     )
     report(
         os.path.exists(OBJDIFF_JSON),
         "objdiff.json",
-        OBJDIFF_JSON if os.path.exists(OBJDIFF_JSON) else "missing (run: python configure.py)",
+        OBJDIFF_JSON
+        if os.path.exists(OBJDIFF_JSON)
+        else "missing (run: python tools/share_worktree_assets.py bootstrap)",
     )
 
     print_section("Shared Assets")
@@ -341,7 +346,10 @@ def command_health(args: argparse.Namespace) -> None:
             output_path = build_shared_unit(args.smoke_build)
             report(True, "build", output_path)
         except WorkflowError as e:
-            report(False, "build", str(e))
+            detail = str(e)
+            if "objdiff.json" in detail or "build.ninja" in detail:
+                detail += "\nHint: Run: python tools/share_worktree_assets.py bootstrap"
+            report(False, "build", detail)
 
     if args.smoke_dtk:
         print_section("DTK Smoke Test")
@@ -384,25 +392,67 @@ def build_next_candidates(
                 score = float(unmatched)
 
                 if strategy == "balanced":
-                    if status == "nonmatching":
+                    if status == "missing":
                         score *= 1.15
-                        reason = "large remaining win with an existing implementation"
+                        reason = "whole implementation still missing; high remaining gain"
+                    elif status == "nonmatching":
+                        score *= 1.05
+                        reason = "large remaining win"
+
+                    if match_percent is not None:
+                        if match_percent >= VERY_HIGH_MATCH_CLEANUP_THRESHOLD:
+                            score *= 0.2
+                            reason = (
+                                "near-finished cleanup deprioritized in favor of larger remaining gains"
+                            )
+                        elif match_percent >= HIGH_MATCH_CLEANUP_THRESHOLD:
+                            score *= 0.45
+                            reason = (
+                                "high-match cleanup deprioritized in favor of larger remaining gains"
+                            )
+                        elif match_percent <= VERY_LOW_MATCH_PRIORITY_THRESHOLD:
+                            score *= 1.25
+                            reason = "low match % leaves a large amount of work and upside"
+                        elif match_percent <= LOW_MATCH_PRIORITY_THRESHOLD:
+                            score *= 1.1
+                            reason = "plenty of unmatched work remains here"
+
                     if has_source:
-                        score *= 1.1
-                        reason += " and source available"
+                        score *= 1.08
+                        if "source available" not in reason and "deprioritized" not in reason:
+                            reason += " with source available"
                     if is_initializer:
                         score *= 0.3
                         reason = (
                             "large remaining win, but likely lower-priority init/setup work"
                         )
                 elif strategy == "quick-wins":
-                    score = min(float(unmatched), 768.0)
-                    if status == "nonmatching":
-                        score *= 1.3
-                        reason = "existing implementation makes this a likely quick win"
-                    if match_percent is not None and match_percent >= 90.0:
+                    score = min(float(unmatched), 1024.0)
+                    if status == "missing":
+                        score *= 1.05
+                        reason = "whole implementation missing; early progress should come quickly"
+                    elif status == "nonmatching":
+                        score *= 1.1
+                        reason = "partial implementation exists, but this is still early-progress work"
+
+                    if match_percent is None:
+                        score *= 1.35
+                        reason = "0% function; early implementation progress is usually fastest"
+                    elif match_percent <= VERY_LOW_MATCH_PRIORITY_THRESHOLD:
+                        score *= 1.35
+                        reason = "very low match % leaves fast early-progress gains"
+                    elif match_percent <= LOW_MATCH_PRIORITY_THRESHOLD:
                         score *= 1.2
-                        reason = "high match % makes this a likely quick cleanup"
+                        reason = "low match % usually moves faster than cleanup"
+                    elif match_percent >= VERY_HIGH_MATCH_CLEANUP_THRESHOLD:
+                        score *= 0.12
+                        reason = "near-finished cleanup is slower than fresh early-progress work"
+                    elif match_percent >= HIGH_MATCH_CLEANUP_THRESHOLD:
+                        score *= 0.35
+                        reason = "high-match cleanup deprioritized; quicker gains exist earlier"
+                    elif match_percent >= 70.0:
+                        score *= 0.75
+                        reason = "mid/high-match work is less likely to be a quick win"
                     if has_source:
                         score *= 1.05
                         if "source" not in reason:
@@ -429,7 +479,13 @@ def build_next_candidates(
                 )
 
     candidates.sort(
-        key=lambda c: (-c["score"], -c["unmatched_bytes_est"], -c["size"], c["function"].lower())
+        key=lambda c: (
+            -c["score"],
+            c["match_percent"] if c["match_percent"] is not None else -1.0,
+            -c["unmatched_bytes_est"],
+            -c["size"],
+            c["function"].lower(),
+        )
     )
     return candidates
 
@@ -692,7 +748,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--strategy",
         choices=["impact", "balanced", "quick-wins"],
         default="balanced",
-        help="Ranking strategy for recommendations (default: balanced)",
+        help=(
+            "Ranking strategy for recommendations (default: balanced; quick-wins favors "
+            "low-match functions where early progress is fastest)"
+        ),
     )
     next_cmd.add_argument(
         "--command-only",
