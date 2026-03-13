@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 
 namespace SAP {
@@ -33,11 +35,11 @@ template <typename T> class Grid {
                 Node *node = root;
                 Node *head = nullptr;
 
-                if (mPosition > node->mPosition) {
+                if (node->mPosition < mPosition) {
                     do {
                         head = node;
                         node = node->mTail;
-                    } while (node && mPosition > node->mPosition);
+                    } while (node && node->mPosition < mPosition);
                 }
 
                 if (head) {
@@ -219,6 +221,16 @@ template <typename T> class Grid {
     };
 
     typedef typename Axis::Node Node;
+
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
+    void operator delete(void *mem, std::size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
 
     ~Grid();
 
