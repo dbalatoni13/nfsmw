@@ -10,6 +10,8 @@
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPKg_PostRace.cpp"
 
+#include "Speed/Indep/Src/Frontend/HUD/FeHudElement.cpp"
+
 #include "Speed/Indep/Src/Frontend/HUD/FeRaceOverMessage.cpp"
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/CustomTuning.cpp"
