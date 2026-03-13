@@ -54,6 +54,10 @@ struct eView : public eViewPlatInterface {
     void AttachCameraMover(CameraMover *camera_mover);
     void UnattachCameraMover(CameraMover *camera_mover);
 
+    int IsActive() const {
+        return Active;
+    }
+
     int GetID() {
         return this->ID;
     }
