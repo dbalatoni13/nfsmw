@@ -305,7 +305,11 @@ int gFramesToSkip = 0;
 
 // UNSOLVED
 void Main_SkipFrame(int numToSkip) {
-    gFramesToSkip = bMax(gFramesToSkip, numToSkip);
+    int current = gFramesToSkip;
+    if (numToSkip > current) {
+        current = numToSkip;
+    }
+    gFramesToSkip = current;
 }
 
 int RenderTimingStart;
