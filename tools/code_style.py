@@ -585,7 +585,7 @@ def audit_match_sensitive_cpp(
                     path,
                     idx,
                     "INFO",
-                    "pointer-null comparison is a candidate for `if (ptr)` cleanup, but verify the affected TU first",
+                    "pointer-null comparison is a candidate for `if (ptr)` cleanup; in match-sensitive code, prefer a mechanical full-TU pass and then rebuild/status-check that unit",
                 )
             )
     return findings
