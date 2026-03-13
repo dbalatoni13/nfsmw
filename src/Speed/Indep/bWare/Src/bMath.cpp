@@ -156,26 +156,25 @@ void bSinCos(float *presult_sin, float *presult_cos, unsigned short angle) {
         a -= pi;
     }
 
-    float result_sin = a;
-    float result_cos = 1.0f;
     float a2 = a * a;
     float a3 = a * a2;
+    float result_cos = 1.0f;
+    float result_sin = a;
+    result_cos -= a2 * 0.5f;
+    result_sin -= a3 * 0.16666667f;
     float a4 = a2 * a2;
     float a5 = a3 * a2;
+    result_cos += a4 * 0.041666668f;
+    result_sin += a5 * 0.008333334f;
     float a6 = a4 * a2;
     float a7 = a5 * a2;
+    result_cos -= a6 * 0.0013888889f;
+    result_sin -= a7 * 0.0001984127f;
     float a8 = a6 * a2;
     float a9 = a7 * a2;
-    float a10 = a8 * a2;
-
-    result_sin -= a3 * 0.16666667f;
-    result_cos -= a2 * 0.5f;
-    result_sin += a5 * 0.008333334f;
-    result_cos += a4 * 0.041666668f;
-    result_sin -= a7 * 0.0001984127f;
-    result_cos -= a6 * 0.0013888889f;
-    result_sin += a9 * 0.0000027557319f;
     result_cos += a8 * 0.000024801588f;
+    result_sin += a9 * 0.0000027557319f;
+    float a10 = a8 * a2;
     result_cos -= a10 * 0.00000027557319f;
 
     *presult_sin = result_sin * flip_sign;
