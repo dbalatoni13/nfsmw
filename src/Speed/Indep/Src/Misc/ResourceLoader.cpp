@@ -559,7 +559,11 @@ int ServiceResourceLoading() {
 }
 
 int IsResourceLoadingComplete() {
-    return NumResourcesBeingLoaded == 0;
+    int result = 0;
+    if (NumResourcesBeingLoaded == 0) {
+        result = NumDelayedResourceCallbacks == 0;
+    }
+    return result;
 }
 
 void WaitForResourceLoadingComplete() {

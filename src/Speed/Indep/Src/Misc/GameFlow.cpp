@@ -314,7 +314,18 @@ void CheckLeakDetector(const char *) {}
 
 void MaybeDoMemoryProfile() {}
 
-void SetLeakDetector() {}
+extern int LeakDetectorFreeMemory;
+extern int LeakDetectorAllocationNumber;
+extern int LeakDetectorLargestAlloc;
+int bCountFreeMemory(int);
+int bMemoryGetAllocationNumber();
+int bLargestMalloc(int);
+
+void SetLeakDetector() {
+    LeakDetectorFreeMemory = bCountFreeMemory(0);
+    LeakDetectorAllocationNumber = bMemoryGetAllocationNumber();
+    LeakDetectorLargestAlloc = bLargestMalloc(0);
+}
 
 // Forward declarations (first block already at top)
 void BeginGameFlowUnloadingFrontEnd();

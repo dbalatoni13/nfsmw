@@ -457,7 +457,7 @@ bFile::bFile(const char *filename, bFileOpenMode open_mode) {
             FileHandle = entry->FileSize;
         } else {
             OpenLowLevel();
-            if (FileHandle > -1) {
+            if (FileHandle >= 0) {
                 if (OpenMode == BOPEN_MODE_APPEND) {
                     Position = FileHandle;
                 }
