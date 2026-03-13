@@ -30,6 +30,15 @@ struct FEKeyboard : public MenuScreen {
     int IsKeyButton(FEObject *pObj);
     void AppendSpace();
     void AppendChar(char c);
+    void Initialize();
+    void UpdateVisuals();
+    void UpdateStringVisual();
+    void MoveCursor(int nDelta);
+    bool IsSymbol(char character);
+    bool IsNotOkForEmail(char character);
+    bool IsEmailSymbol(char character);
+    void AppendBackspace();
+    void ToggleSpecialCharacters();
 
     int mnLetterMapIndex;           // offset 0x2C
     int mnCursorIndex;              // offset 0x30
