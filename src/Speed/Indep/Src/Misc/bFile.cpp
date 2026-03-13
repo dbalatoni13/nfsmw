@@ -26,6 +26,7 @@ int FILESYS_read(int fop, void *buf, int nbytes, void (*callback)(int, int, void
 int FILESYS_read(int filehandle, int offset, void *buffer, int bytes, int priority, void *userdata);
 int FILESYS_opensync(const char *filename, unsigned int flags, int timeout);
 void FILESYS_closesync(int handle, int timeout);
+int FILESYS_close(int handle, int timeout, void *param);
 int FILESYS_writesync(int handle, int offset, void *buf, int nbytes, int timeout);
 int FILESYS_waitop(int fop);
 int FILESYS_size(int handle, int timeout, void *param);
@@ -139,8 +140,8 @@ void AsyncCloseFileCallback(int fop, int status, void *userdata) {
 }
 
 void AsyncCloseFile(int file_handle) {
-    int fop = FILESYS_open(nullptr, 0, nullptr, nullptr);
-    FILESYS_read(fop, nullptr, 0, AsyncCloseFileCallback, nullptr);
+    int fop = FILESYS_close(file_handle, 100, nullptr);
+    FILESYS_callbackop(fop, AsyncCloseFileCallback);
 }
 
 CachedRealFileHandle *CachedRealFileHandle::FindHandle(const char *filename) {

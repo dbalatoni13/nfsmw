@@ -266,7 +266,7 @@ void Joylog::AddData(int data, int data_size_bits, JoylogChannel channel_number)
 
 void Joylog::AddData(const void *data, int data_size_bytes, JoylogChannel channel_number) {
     for (int n = 0; n < data_size_bytes; n++) {
-        AddData(static_cast<int>(static_cast<const unsigned char *>(data)[n]), 8, channel_number);
+        AddData(static_cast<int>(static_cast<const char *>(data)[n]), 8, channel_number);
     }
 }
 

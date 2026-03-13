@@ -238,10 +238,10 @@ void QueuedFileBundle::ReadCallbackBridge(void *param, int error_status) {
 
 void CheckQueuedFileCallbacks() {
     bServiceFileSystem();
-    QueuedFile *qf = static_cast<QueuedFile *>(ReadingQueuedFileList.GetHead());
     if (QueuedFileNumReadsInProgress == 0) {
         return;
     }
+    QueuedFile *qf = static_cast<QueuedFile *>(ReadingQueuedFileList.GetHead());
     QueuedFileStatus status = qf->GetStatus();
     if (QueuedFileJoylogEnabled) {
         if (Joylog::IsReplaying()) {
