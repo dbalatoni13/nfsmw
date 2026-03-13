@@ -601,9 +601,10 @@ void bSharedStringPool::Free(const char *s) {
     }
 
     intptr_t index = (reinterpret_cast<const char *>(s) - reinterpret_cast<const char *>(this->StringTable)) >> 3;
-    short string_index = -1;
-
-    if ((index >= 0) && (index < this->StringTableSize)) {
+    short string_index;
+    if ((index < 0) || (this->StringTableSize <= index)) {
+        string_index = -1;
+    } else {
         string_index = static_cast<short>(index);
     }
 
@@ -612,50 +613,53 @@ void bSharedStringPool::Free(const char *s) {
     }
 
     bSharedString *table_start = this->StringTable;
-    bSharedString *table_end = reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(table_start) + this->StringTableSizeBytes);
-    bSharedString *string = reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(this->StringTable) + string_index * 8);
+    bSharedString *string = table_start + string_index;
 
     this->Mutex.Lock();
 
     unsigned short count = string->Count;
     string->Count = count - 1;
 
-    if (static_cast<unsigned short>(count - 1) == 0) {
-        int hash_index = static_cast<int>(bStringHash(s) & 0x7ff);
+    if (static_cast<unsigned short>(count - 1) != 0) {
+        this->Mutex.Unlock();
+        return;
+    }
 
-        if (this->FastLookupTable[hash_index] == string) {
-            this->FastLookupTable[hash_index] = nullptr;
+    int hash_index = static_cast<int>(bStringHash(s) & 0x7ff);
+
+    if (this->FastLookupTable[hash_index] == string) {
+        this->FastLookupTable[hash_index] = 0;
+    }
+
+    this->FastLookupTableCount[hash_index] = this->FastLookupTableCount[hash_index] - 1;
+    string->String[0] = 0;
+    this->NumBytesAllocated -= string->Size * 8;
+    this->NumStringsAllocated--;
+
+    bSharedString *table_end = table_start + this->StringTableSize;
+    unsigned short size = string->Size;
+    bSharedString *next_string = string + size;
+
+    if ((next_string != table_end) && (next_string->Count == 0)) {
+        string->Size = string->Size + next_string->Size;
+        next_string = next_string + next_string->Size;
+        if (next_string != table_end) {
+            next_string->Prev = static_cast<unsigned short>(next_string - string);
         }
+    }
 
-        this->FastLookupTableCount[hash_index] = this->FastLookupTableCount[hash_index] - 1;
-        string->String[0] = '\0';
-        this->NumBytesAllocated -= string->Size * 8;
-        this->NumStringsAllocated--;
-
-        unsigned int size = string->Size;
-        bSharedString *next_string = reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(string) + size * 8);
-
-        if ((next_string != table_end) && (next_string->Count == 0)) {
-            string->Size = string->Size + next_string->Size;
-            next_string = reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(next_string) + next_string->Size * 8);
-            if (next_string != table_end) {
-                next_string->Prev = static_cast<unsigned short>((reinterpret_cast<char *>(next_string) - reinterpret_cast<char *>(string)) >> 3);
-            }
+    bSharedString *prev_string = string - string->Prev;
+    if ((string != table_start) && (prev_string->Count == 0)) {
+        prev_string->Size = prev_string->Size + string->Size;
+        next_string = string + string->Size;
+        string = prev_string;
+        if (next_string != table_end) {
+            next_string->Prev = static_cast<unsigned short>(next_string - prev_string);
         }
+    }
 
-        bSharedString *prev_string = reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(string) - string->Prev * 8);
-        if ((string != table_start) && (prev_string->Count == 0)) {
-            prev_string->Size = prev_string->Size + string->Size;
-            next_string = reinterpret_cast<bSharedString *>(reinterpret_cast<char *>(string) + string->Size * 8);
-            string = prev_string;
-            if (next_string != table_end) {
-                next_string->Prev = static_cast<unsigned short>((reinterpret_cast<char *>(next_string) - reinterpret_cast<char *>(prev_string)) >> 3);
-            }
-        }
-
-        if (string->Size > this->LargestFreeString->Size) {
-            this->LargestFreeString = string;
-        }
+    if (this->LargestFreeString->Size < string->Size) {
+        this->LargestFreeString = string;
     }
 
     this->Mutex.Unlock();
