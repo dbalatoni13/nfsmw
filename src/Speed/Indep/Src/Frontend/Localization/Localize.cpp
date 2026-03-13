@@ -18,7 +18,7 @@ void LoadCurrentLanguage() {
 }
 
 bool DoesStringExist(unsigned int hash) {
-    return SearchForString(hash) != 0;
+    return SearchForString(hash) != nullptr;
 }
 
 char *GetTranslatedString(int id) {

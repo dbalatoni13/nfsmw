@@ -22,7 +22,7 @@ unsigned short CareerSettings::GetSMSSortOrder() {
 }
 
 void CareerSettings::SpendCash(int amount) {
-    if (CurrentCash < static_cast<unsigned int>(amount)) {
+    if (static_cast<unsigned int>(amount) > CurrentCash) {
         CurrentCash = 0;
         return;
     }

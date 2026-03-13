@@ -86,7 +86,7 @@ void PursuitBoard::SetPursuitDuration(float time) {
 
 void PursuitBoard::SetNumCopsDamaged(int numCops) {
     if (mNumCopsDamaged != numCops) {
-        if (mNumCopsDamaged < numCops) {
+        if (numCops > mNumCopsDamaged) {
             if (!FEngIsScriptSet(mpDataCopsDamaged, 0x4f90cf9b)) {
                 FEngSetScript(mpDataCopsDamaged, 0x4f90cf9b, true);
             }
@@ -97,7 +97,7 @@ void PursuitBoard::SetNumCopsDamaged(int numCops) {
 
 void PursuitBoard::SetNumCopsInPursuit(int numCops) {
     if (mNumCopsFullyEngaged != numCops) {
-        if (mNumCopsFullyEngaged < numCops) {
+        if (numCops > mNumCopsFullyEngaged) {
             if (!FEngIsScriptRunning(pPackageName, 0x3787231c, 0x4f90cf9b)) {
                 FEngSetScript(pPackageName, 0x3787231c, 0x4f90cf9b, true);
             }
@@ -105,7 +105,7 @@ void PursuitBoard::SetNumCopsInPursuit(int numCops) {
             if (!FEngIsScriptSet(pPackageName, 0x3787231c, 0xfb12d252)) {
                 FEngSetScript(pPackageName, 0x3787231c, 0xfb12d252, true);
             }
-            if (numCops < mNumCopsFullyEngaged) {
+            if (mNumCopsFullyEngaged > numCops) {
                 if (!FEngIsScriptSet(pPackageName, 0x3b9919a8, 0x579dbc92)) {
                     FEngSetScript(pPackageName, 0x3b9919a8, 0x579dbc92, true);
                 }

@@ -263,8 +263,8 @@ void FEImpoundData::BecomeImpounded(eImpoundReasons reason) {
 }
 
 void FEImpoundData::NotifyPlayerPaidToRelease() {
-    ImpoundedState = 0;
     TimesBusted = 0;
+    ImpoundedState = 0;
     DaysBeforeRelease = 0;
 }
 
@@ -293,9 +293,8 @@ bool FEImpoundData::NotifyEvade() {
     bool impounded = ImpoundedState != 0;
 
     if (!impounded) {
-        char evadeCount = EvadeCount + 1;
-        EvadeCount = evadeCount;
-        if (evadeCount > 2) {
+        EvadeCount = EvadeCount + 1;
+        if (EvadeCount > 2) {
             EvadeCount = 0;
             TimesBusted--;
         }

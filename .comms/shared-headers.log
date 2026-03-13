@@ -1,0 +1,4 @@
+# Shared Headers Modification Log
+# Format: YYYY-MM-DD HH:MM | agent | header | action
+# Check this before modifying shared headers to avoid conflicts
+

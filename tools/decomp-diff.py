@@ -19,6 +19,7 @@ import os
 import sys
 from typing import Any, Dict, List, Optional, Tuple
 from _common import (
+    RELOC_DIFF_CHOICES,
     ROOT_DIR,
     ToolError,
     build_objdiff_symbol_rows,

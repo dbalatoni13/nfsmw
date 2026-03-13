@@ -31,7 +31,7 @@ void FEKeyboard::MoveCursor(int nDelta) {
 
 bool FEKeyboard::IsSymbol(char character) {
     char symbols[28] = "!@#$%^&*-_=+[{]}\\|;:'\",<.>/";
-    for (int i = 0; i <= 0x1B; i++) {
+    for (unsigned int i = 0; i <= 0x1B; i++) {
         if (character == symbols[i]) {
             return true;
         }

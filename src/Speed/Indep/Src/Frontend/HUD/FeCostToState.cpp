@@ -53,7 +53,7 @@ void CostToState::SetCostToState(int cost) {
     if (!mInPursuit) {
         return;
     }
-    if (mCostToState < cost) {
+    if (cost > mCostToState) {
         mCostToState = cost;
         mNumFramesLeftToShow = 0x78;
         return;
