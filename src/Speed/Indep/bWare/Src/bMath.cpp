@@ -545,23 +545,6 @@ void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float
     bMatrix4 K;
     bMatrix4 Nf;
 
-    U.v0.x = u1 * u1 * u1;
-    U.v0.y = u1 * u1;
-    U.v0.z = u1;
-    U.v0.w = 1.0f;
-    U.v1.x = u2 * u2 * u2;
-    U.v1.y = u2 * u2;
-    U.v1.z = u2;
-    U.v1.w = 1.0f;
-    U.v2.x = u3 * u3 * u3;
-    U.v2.y = u3 * u3;
-    U.v2.z = u3;
-    U.v2.w = 1.0f;
-    U.v3.x = u4 * u4 * u4;
-    U.v3.y = u4 * u4;
-    U.v3.z = u4;
-    U.v3.w = 1.0f;
-
     Mf.v0.x = 2.0f;
     Mf.v0.y = -2.0f;
     Mf.v0.z = 1.0f;
@@ -595,6 +578,23 @@ void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float
     iMf.v3.y = 2.0f;
     iMf.v3.z = 1.0f;
     iMf.v3.w = 0.0f;
+
+    U.v0.x = u1 * u1 * u1;
+    U.v0.y = u1 * u1;
+    U.v0.z = u1;
+    U.v0.w = 1.0f;
+    U.v1.x = u2 * u2 * u2;
+    U.v1.y = u2 * u2;
+    U.v1.z = u2;
+    U.v1.w = 1.0f;
+    U.v2.x = u3 * u3 * u3;
+    U.v2.y = u3 * u3;
+    U.v2.z = u3;
+    U.v2.w = 1.0f;
+    U.v3.x = u4 * u4 * u4;
+    U.v3.y = u4 * u4;
+    U.v3.z = u4;
+    U.v3.w = 1.0f;
 
     fInvertMatrix(&iU, &U);
     eMulMatrix(&K, &iMf, &iU);
