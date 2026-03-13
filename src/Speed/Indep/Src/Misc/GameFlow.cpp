@@ -1139,10 +1139,11 @@ void BeginGameFlowUnloadingFrontEnd() {
     eRemoveFEEnvMapPlat();
     CleanUpGarageCarLoaders();
     UnloadEverything__9CarLoader(&TheCarLoader);
-    if (TheTrackStreamer.PermFileLoading) {
+    TrackStreamer *streamer = &TheTrackStreamer;
+    if (streamer->PermFileLoading) {
         new EFadeScreenOn(true);
     while_check:
-        if (TheTrackStreamer.PermFileLoading) {
+        if (streamer->PermFileLoading) {
             MiniMainLoop();
             goto while_check;
         }
