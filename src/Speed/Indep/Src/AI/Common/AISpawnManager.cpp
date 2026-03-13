@@ -13,7 +13,7 @@
 AISpawnManager::AISpawnManager(float minSpawnDist, float maxSpawnDist)
     : mMinSpawnDist(minSpawnDist) //
     , mMaxSpawnDist(maxSpawnDist) {
-    mMaxGatherDist = UMath::Max(mMaxGatherDist, maxSpawnDist);
+    mMaxGatherDist = UMath::Max(maxSpawnDist, mMaxGatherDist);
     for (int i = 0; i < 50; i++) {
         mSpawnSegment[i] = -1;
     }

@@ -761,12 +761,13 @@ void AIPursuit::AssignChopperGoal(IPursuitAI *pursuitChopper) {
     IVehicleAI *via;
     pursuitChopper->QueryInterface(&via);
 
-    if (via->IsCurrentGoal("AIGoalHeliExit") == false) {
-        pursuitChopper->SetInPositionGoal("AIGoalHeliPursuit");
-        pursuitChopper->SetInFormation(true);
-        if (!via->IsCurrentGoal(pursuitChopper->GetInPositionGoal())) {
-            pursuitChopper->DoInPositionGoal();
-        }
+    if (via->IsCurrentGoal("AIGoalHeliExit"))
+        return;
+
+    pursuitChopper->SetInPositionGoal("AIGoalHeliPursuit");
+    pursuitChopper->SetInFormation(true);
+    if (!via->IsCurrentGoal(pursuitChopper->GetInPositionGoal())) {
+        pursuitChopper->DoInPositionGoal();
     }
 }
 
