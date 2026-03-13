@@ -10,8 +10,8 @@
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-struct FEString;
-struct FEObject;
+class FEString;
+class FEObject;
 
 int GetCurrentLanguage();
 void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);

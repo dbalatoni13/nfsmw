@@ -5,8 +5,9 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRivalFlow.hpp"
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
-struct FEMovie;
-struct GarageMainScreen {
+class FEMovie;
+class GarageMainScreen {
+  public:
     static GarageMainScreen *GetInstance();
     bool IsVisable();
     void NotificationMessage(unsigned long, unsigned long, unsigned long, unsigned long);

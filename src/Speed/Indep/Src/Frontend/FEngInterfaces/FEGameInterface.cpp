@@ -16,9 +16,10 @@ struct FEMatrix4 {
 };
 
 struct RenderContext;
-struct FEngine;
+class FEngine;
 
-struct cFEngRender {
+class cFEngRender {
+  public:
     static cFEngRender *mInstance;
     RenderContext *GetRenderContext(unsigned short renderContext);
     void GenerateRenderContext(unsigned short groupContext, FEObject *pObject);

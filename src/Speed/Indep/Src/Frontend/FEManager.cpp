@@ -18,7 +18,7 @@
 #include "Speed/Indep/Src/World/CarInfo.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
-struct cFEngRender;
+class cFEngRender;
 struct EasterEggs;
 
 void InitFEngMemoryPool();

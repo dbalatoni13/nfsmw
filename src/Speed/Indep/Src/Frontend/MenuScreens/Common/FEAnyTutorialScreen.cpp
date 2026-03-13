@@ -4,7 +4,7 @@
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
-struct FEMovie;
+class FEMovie;
 FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
 void FEngSetMovieName(FEMovie *movie, const char *name);
 void DismissChyron();

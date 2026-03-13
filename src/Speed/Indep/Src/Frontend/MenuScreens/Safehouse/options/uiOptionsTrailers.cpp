@@ -3,7 +3,8 @@
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 
-struct GarageMainScreen {
+class GarageMainScreen {
+  public:
     static GarageMainScreen *GetInstance();
     void CancelCameraPush();
 };
