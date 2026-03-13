@@ -146,7 +146,7 @@ unsigned int JoylogBuffer::GetData(int data_size, int channel_number) {
 int JoylogBuffer::AddEntry(JoylogBufferEntry *entry, int position) {
     int buffer_index = (position - BufferStartPosition) + 0x118;
     unsigned char *pbuf = reinterpret_cast<unsigned char *>(this) + buffer_index;
-    pbuf[0] = static_cast<unsigned char>(entry->ChannelNumber + entry->DataSize * 16);
+    pbuf[0] = static_cast<unsigned char>(entry->ChannelNumber + static_cast<unsigned char>(entry->DataSize) * 16);
     unsigned int data = entry->Data;
     pbuf++;
     for (int byte_num = 0; byte_num < entry->DataSize; byte_num++) {
