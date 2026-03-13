@@ -658,9 +658,9 @@ static void HUFF_analysis(HuffEncodeContext *EC, unsigned int opt, unsigned int 
 static void HUFF_pack(HuffEncodeContext *EC, HUFFMemStruct *dest, unsigned int opt);
 
 static int HUFF_packfile(HuffEncodeContext *ctx, HUFFMemStruct *src, HUFFMemStruct *dst, int uncompressedSize) {
-    ctx->masks[0] = 0;
     ctx->packbits = 0;
     ctx->workpattern = 0;
+    ctx->masks[0] = 0;
     unsigned int i = 1;
     do {
         int prev = i - 1;
@@ -675,11 +675,20 @@ static int HUFF_packfile(HuffEncodeContext *ctx, HUFFMemStruct *src, HUFFMemStru
     ctx->ulen = bufLen;
     ctx->bufptr = reinterpret_cast<unsigned char *>(bufStart + bufLen);
     dst->len = 0;
-    ctx->plen = 0;
     ctx->packbits = 0;
     ctx->workpattern = 0;
+    ctx->plen = 0;
     HUFF_analysis(ctx, 0x39, 0xf);
-    if (uncompressedSize < 0x1000000) {
+    if (uncompressedSize >= 0x1000000) {
+        if (uncompressedSize == src->len) {
+            HUFF_writebits(ctx, dst, 0xb0fb, 0x10);
+            HUFF_writebits(ctx, dst, uncompressedSize, 0x20);
+        } else {
+            HUFF_writebits(ctx, dst, 0xb1fb, 0x10);
+            HUFF_writebits(ctx, dst, uncompressedSize, 0x20);
+            HUFF_writebits(ctx, dst, src->len, 0x20);
+        }
+    } else {
         if (uncompressedSize == src->len) {
             HUFF_writebits(ctx, dst, 0x30fb, 0x10);
             HUFF_writebits(ctx, dst, src->len, 0x18);
@@ -688,15 +697,6 @@ static int HUFF_packfile(HuffEncodeContext *ctx, HUFFMemStruct *src, HUFFMemStru
             HUFF_writebits(ctx, dst, uncompressedSize, 0x18);
             HUFF_writebits(ctx, dst, src->len, 0x18);
         }
-    } else {
-        if (uncompressedSize == src->len) {
-            HUFF_writebits(ctx, dst, 0xb0fb, 0x10);
-            HUFF_writebits(ctx, dst, uncompressedSize, 0x20);
-        } else {
-            HUFF_writebits(ctx, dst, 0xb1fb, 0x10);
-            HUFF_writebits(ctx, dst, uncompressedSize, 0x20);
-        }
-        HUFF_writebits(ctx, dst, src->len, 0x20);
     }
     HUFF_pack(ctx, dst, 0x39);
     return dst->len;
