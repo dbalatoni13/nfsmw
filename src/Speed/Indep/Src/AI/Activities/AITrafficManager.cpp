@@ -13,7 +13,10 @@
 #include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficCenter.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficMgr.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Interfaces/SimModels/IModel.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Misc/Table.hpp"
@@ -23,6 +26,14 @@
 #include "Speed/Indep/Src/World/TrackPath.hpp"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+
+extern Table TrafficOffScreenTime;
+extern Table TrafficOffScreenDistance;
+
+struct PartChecker : public IModel::Enumerator {
+    bool Valid;
+    PartChecker() : Valid(false) {}
+};
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
@@ -465,7 +476,46 @@ bool AITrafficManager::ChoosePattern() {
 }
 
 bool AITrafficManager::ValidateVehicle(IVehicle *ivehicle, float density) const {
-    return true;
+    if (!ivehicle) {
+        return false;
+    }
+
+    bool invalid = ivehicle->IsOffWorld();
+
+    if (!invalid) {
+        float offscreen_time = TrafficOffScreenTime.GetValue(density);
+        float offscreen_dist = TrafficOffScreenDistance.GetValue(density);
+        if (ivehicle->GetOffscreenTime() > offscreen_time) {
+            const UMath::Vector3 &pos = ivehicle->GetPosition();
+            invalid = Sim::DistanceToCamera(pos) > offscreen_dist;
+        }
+    }
+
+    if (invalid) {
+        IArticulatedVehicle *iarticulate;
+        if (ivehicle->QueryInterface(&iarticulate)) {
+            IVehicle *trailer = iarticulate->GetTrailer();
+            if (trailer) {
+                if (ValidateVehicle(trailer, density)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    if (invalid) {
+        ISimable *isimable = ivehicle->GetSimable();
+        IModel *imodel = isimable->GetModel();
+        if (imodel) {
+            PartChecker pc;
+            imodel->EnumerateChildren(&pc);
+            if (pc.Valid) {
+                return true;
+            }
+        }
+    }
+
+    return !invalid;
 }
 
 float AITrafficManager::ComputeDensity() const {
