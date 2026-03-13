@@ -1669,23 +1669,25 @@ void AIPerpVehicle::Update(float dT) {
         bool simple = IsSimplePhysicsActive();
         bool catchup = GRaceStatus::Get().ComputeCatchUpSkill(racer_info, pGlueError, &fGlueOutput, &fGlueSkill, simple);
 
-        if (!catchup) {
-            fGlueSkill = 0.0f;
-            fGlueOutput = 0.0f;
-        } else if (!simple) {
-            if (fGlueSkill > 0.0f) {
-                if (GRaceStatus::IsSpeedTrapRace()) {
-                    fGlueSkill *= 0.5f;
-                } else {
-                    fGlueSkill *= CatchupGlueTable.GetValue(fBaseSkill);
-                }
-            } else if (fGlueSkill < 0.0f) {
-                if (GRaceStatus::IsSpeedTrapRace()) {
-                    fGlueSkill *= 0.5f;
-                } else {
-                    fGlueSkill *= SlowDownGlueTable.GetValue(fBaseSkill);
+        if (catchup) {
+            if (!simple) {
+                if (fGlueSkill > 0.0f) {
+                    if (GRaceStatus::IsSpeedTrapRace()) {
+                        fGlueSkill *= 0.5f;
+                    } else {
+                        fGlueSkill *= CatchupGlueTable.GetValue(fBaseSkill);
+                    }
+                } else if (fGlueSkill < 0.0f) {
+                    if (GRaceStatus::IsSpeedTrapRace()) {
+                        fGlueSkill *= 0.5f;
+                    } else {
+                        fGlueSkill *= SlowDownGlueTable.GetValue(fBaseSkill);
+                    }
                 }
             }
+        } else {
+            fGlueSkill = 0.0f;
+            fGlueOutput = 0.0f;
         }
     }
 

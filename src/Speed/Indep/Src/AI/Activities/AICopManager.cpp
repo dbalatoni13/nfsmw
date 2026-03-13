@@ -48,6 +48,8 @@
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+
 #include <algorithm>
 #include <cfloat>
 
@@ -652,6 +654,139 @@ UMath::Vector3 rand_point_in_circle() {
     r.z = UMath::Cosr(angle) * radius;
 
     return r;
+}
+
+bool AICopManager::SpawnPursuitIVehicle(IPursuit *ipursuit, IVehicle *availableCopCar) {
+    bool RaceOn = GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing;
+    IVehicleAI *ivehicleAI = availableCopCar->GetAIVehiclePtr();
+    float rand = Sim::GetRandom()._SimRandom_Float();
+    bool bNewWayWorksWell = false;
+
+    if (ipursuit->GetPursuitStatus() == PS_COOL_DOWN) {
+        short segInd = 0;
+        char laneInd = 0;
+        float timeStep = 0.0f;
+        if (GetSpawnLocation(segInd, laneInd, timeStep)) {
+            IPursuitAI *ipv;
+            if (ivehicleAI->QueryInterface(&ipv)) {
+                ivehicleAI->ResetVehicleToRoadNav(segInd, laneInd, timeStep);
+                availableCopCar->Activate();
+                ivehicleAI->SetSpawned();
+                ipursuit->AddVehicle(availableCopCar);
+                mNumActiveCopCars++;
+                return true;
+            }
+        }
+    } else if (!RaceOn) {
+        AITarget *pursuitTarget = ipursuit->GetTarget();
+        IVehicleAI *targetai;
+        pursuitTarget->QueryInterface(&targetai);
+
+        IPursuit *ipursuit = targetai->GetPursuit();
+        bool in_cooldown = false;
+        if (ipursuit) {
+            in_cooldown = ipursuit->GetPursuitStatus() == PS_COOL_DOWN;
+        }
+        bool bSetCopFilter = in_cooldown;
+
+        if (!GManager::Get().GetIsWarping()) {
+            UMath::Vector3 seekPoint = targetai->GetSeekAheadPosition();
+            UMath::Vector3 targetposition = pursuitTarget->GetPosition();
+            UMath::Vector3 seek2Perp;
+            UMath::Sub(seekPoint, targetposition, seek2Perp);
+            float dist = UMath::Length(seek2Perp);
+
+            float rotate = DEG2ANGLE(60.0f);
+            if (Sim::GetRandom()._SimRandom_Float() > 0.5f) {
+                rotate = -rotate;
+            }
+            UMath::RotateInXZ(rotate, seek2Perp, seek2Perp);
+
+            WRoadNav testNav;
+            testNav.SetPathType(WRoadNav::kPathCop);
+            testNav.SetNavType(WRoadNav::kTypeDirection);
+
+            {
+                const WRoadNav *perpNav = targetai->GetCurrentRoad();
+                if (!in_cooldown && perpNav && perpNav->GetSegment()->ShouldCopsConsider()) {
+                    bSetCopFilter = true;
+                }
+            }
+
+            testNav.SetCopFilter(bSetCopFilter);
+            testNav.InitAtPoint(targetposition, seek2Perp, false, 0.0f);
+
+            if (testNav.IsValid()) {
+                testNav.SetCopFilter(testNav.GetSegment()->ShouldCopsConsider());
+                testNav.IncNavPosition(dist, seek2Perp, 0.0f);
+                UMath::Vector3 spawnposition = testNav.GetPosition();
+                if (CheckSpawnPosition(spawnposition, false, 0, 0, true)) {
+                    testNav.Reverse();
+                    if (ivehicleAI->ResetVehicleToRoadNav(&testNav)) {
+                        bNewWayWorksWell = true;
+                    }
+                }
+            }
+        }
+
+        if (!bNewWayWorksWell) {
+            AITarget *pursuitTarget = ipursuit->GetTarget();
+            UMath::Vector3 targetposition = pursuitTarget->GetPosition();
+            UMath::Vector3 targetforward = pursuitTarget->GetLinearVelocity();
+            targetforward.y = 0.0f;
+
+            float speed = UMath::Length(targetforward);
+            if (speed >= 1.0f) {
+                UMath::Normalize(targetforward);
+            } else {
+                IRigidBody *targetbody;
+                if (pursuitTarget->QueryInterface(&targetbody)) {
+                    targetbody->GetForwardVector(targetforward);
+                }
+            }
+
+            UMath::Vector3 spawncenter;
+            UMath::ScaleAdd(targetforward, 200.0f, targetposition, spawncenter);
+
+            UMath::Vector3 circlepoint = rand_point_in_circle();
+            UMath::Scale(circlepoint, 190.0f, circlepoint);
+            UMath::Add(circlepoint, spawncenter);
+
+            WRoadNav testNav;
+            testNav.SetPathType(WRoadNav::kPathCop);
+            testNav.SetNavType(WRoadNav::kTypeDirection);
+            testNav.SetCopFilter(bSetCopFilter);
+            testNav.InitAtPoint(circlepoint, targetforward, false, 0.0f);
+
+            if (testNav.IsValid() &&
+                CheckSpawnPosition(testNav.GetPosition(), false, 0, 0, true) &&
+                ivehicleAI->ResetVehicleToRoadNav(&testNav)) {
+                bNewWayWorksWell = true;
+            }
+        }
+
+        if (bNewWayWorksWell) {
+            availableCopCar->Activate();
+            ivehicleAI->SetSpawned();
+            ipursuit->AddVehicle(availableCopCar);
+            mNumActiveCopCars++;
+            return true;
+        }
+    } else {
+        UMath::Vector3 spawnPosition;
+        UMath::Vector3 spawnInitialVec;
+        if (GetSpawnPositionAheadOfTarget(ipursuit, spawnPosition, spawnInitialVec, mCopMinSpawnDist + 80.0f) &&
+            ivehicleAI->ResetVehicleToRoadPos(spawnPosition, spawnInitialVec)) {
+            availableCopCar->Activate();
+            ivehicleAI->SetSpawned();
+            ipursuit->AddVehicle(availableCopCar);
+            mNumActiveCopCars++;
+            return true;
+        }
+        return false;
+    }
+
+    return false;
 }
 
 bool AICopManager::SpawnPursuitCarByName(IPursuit *ipursuit, const char *name) {
