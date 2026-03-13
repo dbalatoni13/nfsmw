@@ -37,6 +37,7 @@
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
+#include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WRoadElem.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
@@ -903,6 +904,29 @@ void AIVehicle::UpdateTargeting() {
     }
     ProfileNode profile_node("TODO", 0);
     mDrivableToTargetPos = !WorldCollision(GetPosition(), mTarget->GetPosition());
+}
+
+bool AIVehicle::WorldCollision(const UMath::Vector3 &pos, const UMath::Vector3 &dest) {
+    if (UMath::DistanceSquare(pos, dest) > 90000.0f) {
+        return true;
+    }
+
+    UMath::Vector4 posToDest[2];
+    posToDest[0] = UMath::Vector4Make(pos, 1.0f);
+    posToDest[0].y = pos.y + 1.0f;
+    posToDest[1] = UMath::Vector4Make(dest, 1.0f);
+    posToDest[1].y = dest.y + 1.0f;
+
+    WCollisionMgr::WorldCollisionInfo cInfo;
+    WCollisionMgr collMgr(0, 0);
+    int hit = collMgr.CheckHitWorld(posToDest, cInfo, 3);
+    if (hit != 0) {
+        if (1.0f < UMath::DistanceSquarexyz(posToDest[1], cInfo.fCollidePt)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void AIVehicle::OnCollision(const COLLISION_INFO &cinfo) {}
