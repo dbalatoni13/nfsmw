@@ -944,6 +944,67 @@ bool AIVehicle::WorldCollision(const UMath::Vector3 &pos, const UMath::Vector3 &
 
 void AIVehicle::OnCollision(const COLLISION_INFO &cinfo) {}
 
+bool AIVehicle::GetWorldAvoidanceInfo(float dT, UMath::Vector3 &leftCollNormal, UMath::Vector3 &rightCollNormal) const {
+    if (mITransmission && mITransmission->IsReversing()) {
+        return false;
+    }
+
+    bool foundCollision = false;
+    ISimable *isimable = GetSimable();
+    IRigidBody *irb = isimable->GetRigidBody();
+    const UMath::Vector3 &position = irb->GetPosition();
+    UMath::Vector3 forwardVector;
+    irb->GetForwardVector(forwardVector);
+    UMath::Vector3 rightVector;
+    irb->GetRightVector(rightVector);
+    UMath::Vector3 dimension;
+    irb->GetDimension(dimension);
+
+    leftCollNormal = UMath::Vector3::kZero;
+    rightCollNormal = UMath::Vector3::kZero;
+
+    float kRightStart = -3.0f;
+    float kTimeScale = 1.5f;
+    float kSpeedOffset = 5.0f;
+    float kRightEnd = 3.0f;
+    float kRightStep = 6.0f;
+
+    for (float i = kRightStart; i <= kRightEnd; i += kRightStep) {
+        UMath::Vector3 collVec;
+        UMath::Scale(rightVector, i, collVec);
+        UMath::Vector3 boundPos;
+        UMath::ScaleAdd(collVec, dimension.x, position, boundPos);
+        UMath::ScaleAdd(forwardVector, dimension.z, boundPos, boundPos);
+
+        UMath::Scale(rightVector, i * kTimeScale, collVec);
+        UMath::Add(forwardVector, collVec, collVec);
+        UMath::Unit(collVec, collVec);
+
+        float minDistance = UMath::Max(irb->GetRadius() + kSpeedOffset, irb->GetSpeedXZ() * kTimeScale + irb->GetRadius());
+
+        UMath::Vector3 collPos;
+        UMath::ScaleAdd(collVec, minDistance, position, collPos);
+
+        UMath::Vector4 posToDest[2];
+        posToDest[0] = UMath::Vector4Make(boundPos, kRightEnd);
+        posToDest[1] = UMath::Vector4Make(collPos, kRightEnd);
+
+        WCollisionMgr::WorldCollisionInfo cInfo;
+        WCollisionMgr collMgr(0, 3);
+
+        if (collMgr.CheckHitWorld(posToDest, cInfo, 2)) {
+            foundCollision = true;
+            if (i < 0.0f) {
+                rightCollNormal = Vector4To3(cInfo.fNormal);
+            } else {
+                leftCollNormal = Vector4To3(cInfo.fNormal);
+            }
+        }
+    }
+
+    return foundCollision;
+}
+
 WRoadNav *AIVehicle::GetCollNav(const UMath::Vector3 &forwardVector, float predictTime) {
     mCollNav->SetNavType(WRoadNav::kTypeDirection);
 

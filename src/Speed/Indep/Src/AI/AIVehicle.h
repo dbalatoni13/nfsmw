@@ -125,6 +125,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     }
 
     WRoadNav *GetCollNav(const UMath::Vector3 &forwardVector, float predictTime) override;
+    bool GetWorldAvoidanceInfo(float dT, UMath::Vector3 &leftCollNormal, UMath::Vector3 &rightCollNormal) const override;
     WRoadNav *GetCurrentRoad() override;
     WRoadNav *GetFutureRoad() override;
     const UMath::Vector3 &GetFarFuturePosition() override;
