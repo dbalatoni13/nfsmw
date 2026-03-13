@@ -170,6 +170,10 @@ class VisibleSectionManager {
     static int GetGroupInfo(const char *name);
     void EnableGroup(unsigned int hash);
 
+    void DisableAllGroups() {
+        bMemSet(EnabledGroups, 0, 0x400);
+    }
+
     VisibleSectionUserInfo *GetUserInfo(int section_number) {
         return this->UserInfoTable[section_number];
     }

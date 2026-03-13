@@ -923,7 +923,7 @@ void CloseTopologyAndSceneryGroups() {
 
 void TrackLoader::CloseTopologyAndSceneryGroups() {
     TheTrackPathManager.DisableAllBarriers();
-    bMemSet(TheVisibleSectionManager.EnabledGroups, 0, 0x400);
+    TheVisibleSectionManager.DisableAllGroups();
     DisableAllSceneryGroups();
 }
 
