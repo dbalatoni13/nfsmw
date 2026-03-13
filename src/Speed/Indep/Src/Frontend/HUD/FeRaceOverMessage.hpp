@@ -15,7 +15,7 @@ class RaceOverMessage : public HudElement, public IRaceOverMessage {
     void Update(IPlayer *player) override;
     void RequestRaceOverMessage(IPlayer *player) override;
     void DismissRaceOverMessage() override;
-    bool ShouldShowRaceOverMessage() override;
+    int ShouldShowRaceOverMessage() override;
 
   private:
     int bShowMessage;

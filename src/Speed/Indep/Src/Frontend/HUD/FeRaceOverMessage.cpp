@@ -5,6 +5,10 @@
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 
+HINTERFACE IRaceOverMessage::_IHandle() {
+    return (HINTERFACE)_IHandle;
+}
+
 RaceOverMessage::RaceOverMessage(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
     : HudElement(pkg_name, 4) //
     , IRaceOverMessage(pOutter) //
@@ -26,7 +30,7 @@ void RaceOverMessage::Update(IPlayer *player) {
             bShowTotalledMessage = 0;
 
             IGenericMessage *igenericmessage;
-            if (player->QueryInterface(&igenericmessage)) {
+            if (player->GetHud()->QueryInterface(&igenericmessage)) {
                 igenericmessage->RequestGenericMessage(
                     GetTranslatedString(0x4BA0D22F), false, 0x8AB83EDB, 0, 0, GenericMessage_Priority_1);
             }
@@ -35,10 +39,10 @@ void RaceOverMessage::Update(IPlayer *player) {
 }
 
 void RaceOverMessage::DismissRaceOverMessage() {
-    bShowTotalledMessage = 0;
     bShowMessage = 0;
+    bShowTotalledMessage = 0;
 }
 
-bool RaceOverMessage::ShouldShowRaceOverMessage() {
+int RaceOverMessage::ShouldShowRaceOverMessage() {
     return bShowMessage;
 }

@@ -18,25 +18,7 @@ HudElement::HudElement(const char *pkg_name, unsigned long long mask)
     , CurrentHudFeatures(0) //
     , mCurrentlySetVisible(false) {}
 
-HudElement::~HudElement() {
-    while (true) {
-        bPNode *node = static_cast< bPNode * >(Objects.GetHead());
-
-        if (node == Objects.EndOfList()) {
-            break;
-        }
-
-        bNode *next_node = node->Next;
-        bNode *prev_node = node->Prev;
-
-        prev_node->Next = next_node;
-        next_node->Prev = prev_node;
-
-        if (node != nullptr) {
-            bPNode::Free(node);
-        }
-    }
-}
+HudElement::~HudElement() {}
 
 void HudElement::Update(IPlayer *player) {}
 
@@ -84,7 +66,8 @@ FEGroup *HudElement::RegisterGroup(unsigned int hash) {
     FEGroup *group = static_cast< FEGroup * >(FEngFindGroup(pPackageName, hash));
 
     if (group != nullptr) {
-        for (FEObject *object = group->GetFirstChild(); object != nullptr; object = object->GetNext()) {
+        for (FEObject *object = group->GetFirstChild(); object != nullptr;
+             object = static_cast< FEObject * >(object->FEMinNode::GetNext())) {
             if (object->Type == FE_Group) {
                 RegisterGroup(object->NameHash);
             } else {
@@ -97,16 +80,23 @@ FEGroup *HudElement::RegisterGroup(unsigned int hash) {
 }
 
 void HudElement::Toggle(unsigned long long hud_features) {
+    unsigned long long mask = Mask;
+    int is_visible = 0;
+
     CurrentHudFeatures = hud_features;
+
+    if ((hud_features & mask) != 0) {
+        is_visible = 1;
+    }
 
     for (bPNode *node = static_cast< bPNode * >(Objects.GetHead()); node != Objects.EndOfList();
          node = static_cast< bPNode * >(node->GetNext())) {
         FEObject *object = static_cast< FEObject * >(node->GetpObject());
 
-        if ((hud_features & Mask) == 0) {
-            FEngSetInvisible(object);
-        } else {
+        if (is_visible != 0) {
             FEngSetVisible(object);
+        } else {
+            FEngSetInvisible(object);
         }
     }
 }
