@@ -532,7 +532,9 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
 
     // Overrides: IPursuit
     bool AttemptingToReAquire() const override {
-        return !mIsPerpInSight && !mIsPerpBusted ? !mIsPursuitBailed : false;
+        if (mIsPerpInSight) return false;
+        if (mIsPerpBusted) return false;
+        return !mIsPursuitBailed;
     }
 
     // Overrides: IPursuit

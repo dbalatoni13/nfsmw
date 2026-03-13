@@ -396,8 +396,7 @@ class AIGoalRacer : public AIGoal {
     }
 
     AIGoalRacer(ISimable *isimable);
-    void Update(float dT) override;
-
+    void Update(float dT) override { AIGoal::Update(dT); }
     ~AIGoalRacer() override {}
 };
 

@@ -56,6 +56,8 @@ AIAction *AIActionJackKnife::Construct(AIActionParams *params) {
     return new AIActionJackKnife(params, 1.0f);
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionJackKnife("AIActionJackKnife", AIActionJackKnife::Construct);
+
 AIActionJackKnife::AIActionJackKnife(AIActionParams *params, float score) : AIAction(params, score) {
     params->mOwner->QueryInterface(&mIVehicle);
     params->mOwner->QueryInterface(&mIInput);

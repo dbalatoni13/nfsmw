@@ -112,6 +112,8 @@ AIAction *AIActionTraffic::Construct(AIActionParams *params) {
     return new AIActionTraffic(params, 0.1f);
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionTraffic("AIActionTraffic", AIActionTraffic::Construct);
+
 void AIActionTraffic::OnBehaviorChange(const UCrc32 &mechanic) {
     if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {
         GetOwner()->QueryInterface(&mRigidBody);

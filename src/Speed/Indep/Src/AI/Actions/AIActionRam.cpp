@@ -78,6 +78,8 @@ AIAction *AIActionRam::Construct(AIActionParams *params) {
     return new AIActionRam(params, 0.1f);
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionRam("AIActionRam", AIActionRam::Construct);
+
 bool AIActionRam::ShouldDoIt() {
     if (!mIVehicleAI->GetDrivableToTargetPos()) {
         return false;

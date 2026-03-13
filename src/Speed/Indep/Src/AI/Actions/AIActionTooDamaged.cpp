@@ -51,6 +51,8 @@ AIAction *AIActionTooDamaged::Construct(AIActionParams *params) {
     return new AIActionTooDamaged(params, 1.0f);
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionTooDamaged("AIActionTooDamaged", AIActionTooDamaged::Construct);
+
 bool AIActionTooDamaged::CanBeAttempted(float dT) {
     if (mIVehicle && mIInput) {
         return mIVehicle->IsDestroyed();

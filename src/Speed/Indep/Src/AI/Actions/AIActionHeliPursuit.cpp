@@ -129,6 +129,8 @@ AIAction *AIActionHeliPursuit::Construct(AIActionParams *params) {
     return new AIActionHeliPursuit(params, 0.0f);
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionHeliPursuit("AIActionHeliPursuit", AIActionHeliPursuit::Construct);
+
 bool AIActionHeliPursuit::IsFinished() {
     return mPursuitTime > 10.0f;
 }

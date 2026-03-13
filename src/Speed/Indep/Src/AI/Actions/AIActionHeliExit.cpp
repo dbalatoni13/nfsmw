@@ -69,6 +69,8 @@ AIAction *AIActionHeliExit::Construct(AIActionParams *params) {
     return new AIActionHeliExit(params, 0.0f);
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionHeliExit("AIActionHeliExit", AIActionHeliExit::Construct);
+
 float Exit_Height;
 
 bool AIActionHeliExit::IsFinished() {

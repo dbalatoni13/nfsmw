@@ -177,6 +177,8 @@ AIAction *AIActionPursuitOffRoad::Construct(AIActionParams *params) {
     return new AIActionPursuitOffRoad(params, 0.01f);
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionPursuitOffRoad("AIActionPursuitOffRoad", AIActionPursuitOffRoad::Construct);
+
 bool AIActionPursuitOffRoad::ShouldDoIt() {
     AITarget *target = mIVehicleAI->GetTarget();
     UMath::Vector3 targetPosition = target->GetPosition();

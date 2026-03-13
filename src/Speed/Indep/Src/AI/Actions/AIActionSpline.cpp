@@ -32,4 +32,6 @@ AIAction *AIActionSpline::Construct(AIActionParams *params) {
     return new AIActionSpline(params, 0.0f);
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionSpline("AIActionSpline", AIActionSpline::Construct);
+
 void AIActionSpline::Update(float dT) {}

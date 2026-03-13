@@ -134,6 +134,8 @@ AIAction *AIActionRace::Construct(AIActionParams *params) {
     return new AIActionRace(params, 0.0f);
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionRace("AIActionRace", AIActionRace::Construct);
+
 bool AIActionRace::CanBeAttempted(float dT) {
     if (!mIRigidBody) {
         return false;
