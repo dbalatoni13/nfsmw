@@ -186,6 +186,10 @@ inline void Add(const Vector3 &a, const Vector3 &b, Vector3 &r) {
 #endif
 }
 
+inline void Add(Vector3 &r, const Vector3 &b) {
+    VU0_v3add(r, b, r);
+}
+
 inline void Add(const Vector4 &a, const Vector4 &b, Vector4 &r) {
     VU0_v4add(a, b, r);
 }

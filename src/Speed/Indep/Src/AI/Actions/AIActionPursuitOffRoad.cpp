@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/AI/AIAction.h"
 #include "Speed/Indep/Src/AI/AISteer.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
@@ -309,6 +310,186 @@ void AIActionPursuitOffRoad::UpdateAvoidWalls(UMath::Vector3 &avoid) {
     }
     float strength = (collidedot * collidedot * KPH2MPS(10.0f)) / (collidetime * collidetime);
     Scale(collidenormal, strength, avoid);
+}
+
+void AIActionPursuitOffRoad::UpdateSeek(UMath::Vector3 &seek) {
+    const UMath::Vector3 &position = mIRigidBody->GetPosition();
+    UMath::Vector3 forwardVector;
+    mIRigidBody->GetForwardVector(forwardVector);
+
+    AITarget *target = mIVehicleAI->GetTarget();
+    UMath::Vector3 targetPosition = target->GetPosition();
+    UMath::Vector3 targetVelocity = target->GetLinearVelocity();
+    UMath::Vector3 targetDirection = targetVelocity;
+
+    if (target->GetSpeed() >= 1.0f) {
+        UMath::Normalize(targetDirection);
+    } else {
+        targetDirection = target->GetDirection();
+    }
+
+    IPerpetrator *iperp;
+    target->QueryInterface(&iperp);
+    IVehicleAI *itargetai;
+    target->QueryInterface(&itargetai);
+
+    WRoadNav *startnav = itargetai->GetCurrentRoad();
+    WRoadNav *endnav = itargetai->GetFutureRoad();
+
+    UMath::Vector3 seekcenter;
+    UMath::Vector3 seekdirection;
+    UMath::Vector3 seekfuturecenter;
+
+    if (!startnav->IsValid() || !endnav->IsValid()) {
+        seekcenter = targetPosition;
+        seekdirection = targetDirection;
+        UMath::Add(targetPosition, targetVelocity, seekfuturecenter);
+    } else {
+        seekcenter = startnav->GetPosition();
+        seekfuturecenter = endnav->GetPosition();
+        UMath::Vector3 offset = UVector3(seekfuturecenter) - seekcenter;
+        seekdirection = offset;
+    }
+
+    const UMath::Vector3 &offset = mIPursuitAI->GetPursuitOffset();
+
+    UMath::Vector3 seekside = UMath::Vector3Make(seekdirection.z, 0.0f, -seekdirection.x);
+
+    UMath::Normalize(seekside);
+    UMath::Normalize(seekdirection);
+
+    UMath::Vector3 seekPosition;
+    UMath::ScaleAdd(seekdirection, offset.z, seekcenter, seekPosition);
+    UMath::ScaleAdd(seekside, offset.x, seekPosition, seekPosition);
+
+    UMath::Vector3 seekFuturePosition;
+    UMath::ScaleAdd(seekdirection, offset.z, seekfuturecenter, seekFuturePosition);
+    UMath::ScaleAdd(seekside, offset.x, seekFuturePosition, seekFuturePosition);
+
+    float delay_time = iperp->GetPursuitLevelAttrib()->SpeedReactionTime(0);
+    float delay_speed = mSpeedDelay.get_sample(delay_time);
+
+    UMath::Vector3 roadoff;
+    UMath::Sub(seekFuturePosition, seekPosition, roadoff);
+    float roadlen = UMath::Length(roadoff);
+    if (0.001f < roadlen) {
+        UMath::Scale(roadoff, delay_speed / roadlen);
+    }
+
+    UMath::Vector3 simpleoff = targetVelocity;
+    float simplelen = UMath::Length(targetVelocity);
+    if (0.001f < simplelen) {
+        UMath::Scale(simpleoff, delay_speed / simplelen);
+    }
+
+    UMath::Vector3 seekoff;
+    UMath::Sub(seekPosition, position, seekoff);
+    float seeklen = UMath::Length(seekoff);
+
+    {
+        if (0.001f < seeklen) {
+            float seekdir = UMath::Dot(seekoff, seekdirection);
+            float rscale = bMax(KPH2MPS(100.0f) * 2.0f, delay_speed * 0.5f);
+            float fscale = (seekdir / seeklen) * 0.5f;
+            fscale = bClamp(fscale, -1.0f, 1.0f);
+            float slide = bClamp(rscale / seeklen, 0.0f, 1.0f);
+            fscale = fscale * 0.5f + 0.5f;
+            float seekscale = fscale * 0.7f;
+
+            if (0.001f <= roadlen) {
+                UMath::Vector3 paraseek;
+                float pardot = UMath::Dot(seekoff, roadoff);
+                UMath::Scale(roadoff, pardot / (roadlen * roadlen), paraseek);
+                UMath::Vector3 perpseek = UVector3(seekoff) - paraseek;
+                UMath::ScaleAdd(paraseek, seekscale + (1.0f - seekscale) * slide, perpseek, seekoff);
+            }
+        }
+    }
+
+    bool resetdrivenav = true;
+
+    float tether_weight = mIVehicleAI->GetAttributes().TETHER_WEIGHT();
+
+    UMath::Vector3 blendedpos;
+    Lerp(simpleoff, roadoff, tether_weight, blendedpos);
+    UMath::Add(blendedpos, seekoff);
+    UMath::Add(blendedpos, position);
+
+    WRoadNav *drivenav = mIVehicleAI->GetDriveToNav();
+    drivenav->SetRaceFilter(iperp->IsRacing());
+
+    if (drivenav->IsValid()) {
+        WRoadNav::ELaneType laneType = WRoadNav::kLaneCop;
+        if (iperp->GetHeat() >= 3.5f) {
+            laneType = WRoadNav::kLaneCopReckless;
+        }
+        drivenav->SetLaneType(laneType);
+
+        UMath::Vector3 drivepos = drivenav->GetPosition();
+        UMath::Vector3 drivedir = drivenav->GetForwardVector();
+        float incdelta = UMath::Normalize(drivedir);
+
+        UMath::Vector3 endoff;
+        UMath::Sub(blendedpos, drivepos, endoff);
+        float seekdir = UMath::Dot(endoff, seekdirection);
+
+        if (seekdir > 15.0f) {
+            do {
+                drivenav->IncNavPosition(15.0f, seekdirection, 0.0f);
+                drivepos = drivenav->GetPosition();
+                drivedir = drivenav->GetForwardVector();
+                UMath::Normalize(drivedir);
+                UMath::Sub(blendedpos, drivepos, endoff);
+                seekdir = UMath::Dot(endoff, seekdirection);
+            } while (15.0f < seekdir);
+        }
+
+        incdelta = UMath::Max(seekdir, 5.0f);
+
+        {
+            UMath::Vector3 enddir = drivedir;
+            const float inc_quantum = 15.0f;
+            UMath::Vector3 driveside = UMath::Vector3Make(drivedir.z, 0.0f, -drivedir.x);
+            UMath::Normalize(driveside);
+
+            float lanedelta = UMath::Dot(endoff, driveside);
+            float laneoffset = lanedelta + drivenav->GetLaneOffset();
+            float snaplaneoffset = drivenav->SnapToSelectableLane(laneoffset);
+
+            if (bAbs(snaplaneoffset - laneoffset) < 2.0f) {
+                drivenav->ChangeLanes(snaplaneoffset, 0.0f);
+                resetdrivenav = false;
+                drivenav->IncNavPosition(incdelta, seekdirection, 0.0f);
+                drivenav->UpdateOccludedPosition(true);
+
+                const UMath::Vector3 *drivePtr = &drivepos;
+                if (drivenav->IsOccluded()) {
+                    drivePtr = &drivenav->GetOccludedPosition();
+                }
+
+                UMath::Vector3 occludedpos = *drivePtr;
+                UMath::Vector3 occludedoff;
+                UMath::Sub(occludedpos, position, occludedoff);
+                float occludedlength = UMath::Length(occludedoff);
+
+                if (0.001f < occludedlength) {
+                    float blenddist = UMath::Distance(blendedpos, position);
+                    UMath::Scale(occludedoff, blenddist / occludedlength);
+                }
+                UMath::Add(occludedoff, position, blendedpos);
+            }
+        }
+    }
+
+    UMath::Sub(blendedpos, position, seek);
+
+    if (resetdrivenav) {
+        drivenav->SetNavType(WRoadNav::kTypeDirection);
+        drivenav->SetLaneType(WRoadNav::kLaneCop);
+        drivenav->SetCookieTrail(true);
+        drivenav->ResetCookieTrail();
+        mIVehicleAI->ResetDriveToNav(SELECT_VALID_LANE);
+    }
 }
 
 void AIActionPursuitOffRoad::Update(float dT) {
