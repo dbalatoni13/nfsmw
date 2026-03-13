@@ -256,7 +256,6 @@ void CheckQueuedFileCallbacks() {
         qf->Remove();
         QueuedFileNumReadsInProgress--;
         if (qf->NumRead == qf->NumBytes) {
-            bStrCopy(LastQueuedFilename, qf->Filename);
             qf->CallDoneCallback(0);
             delete qf;
         } else {
