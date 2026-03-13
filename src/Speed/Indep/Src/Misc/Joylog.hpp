@@ -55,13 +55,13 @@ struct JoylogBuffer {
 
     char *GetFilename() { return Filename; }
 
-    // int GetTotalSize() {}
+    int GetTotalSize() { return TopPosition; }
 
     int IsMoreData() {
         return CurrentPosition < TopPosition;
     }
 
-    // int GetPosition() {}
+    int GetPosition() { return CurrentPosition; }
 
     void SetPosition(int position) {}
 
@@ -159,6 +159,12 @@ struct JoylogChannelInfo {
     char YieldRepeatCount;       // offset 0x8, size 0x1
     char ReadAheadOnly;          // offset 0x9, size 0x1
 };
+
+extern JoylogChannelInfo NFSJoylogChannelInfoTable[14];
+
+inline JoylogChannelInfo *GetJoylogChannelInfo(int channel_number) {
+    return &NFSJoylogChannelInfoTable[channel_number];
+}
 
 void InitJoylog();
 void ServiceJoylog();

@@ -904,23 +904,22 @@ void CodeOverlayLoadingGame() {
         if (CodeOverlayFirstTime != 0) {
             CodeOverlayFirstTime = 0;
         }
-        if (EnableCodeOverlayDebuggingOnly == 0) {
-            if (EnableCodeOverlay != 0) {
-                void *overlay_addr[2];
-                overlay_addr[0] = _overlay_start;
-                overlay_addr[1] = _overlay_end;
-                bFunkCallSync("_overlay_start", 0x37, overlay_addr, 8, nullptr, 0);
-                CodeOverlayMemoryPoolNumber = bGetFreeMemoryPoolNum();
-                bInitMemoryPool(CodeOverlayMemoryPoolNumber, _overlay_start, 0x24998, "Overlay");
-                FlushCaches();
-                bMemorySetOverflowPoolNumber(0, CodeOverlayMemoryPoolNumber);
-            }
-        } else {
-            for (int i = 0; i < 0x24990; i += 8) {
+        if (EnableCodeOverlayDebuggingOnly != 0) {
+            int size = _overlay_end - _overlay_start;
+            for (int i = 0; i < size - 8; i += 8) {
                 *reinterpret_cast<int *>(_overlay_start + i) = 0xdeadbeef;
                 *reinterpret_cast<int *>(_overlay_start + i + 4) = 0xdeadbeef;
             }
             FlushCaches();
+        } else if (EnableCodeOverlay != 0) {
+            void *overlay_addr[2] = {0, 0};
+            overlay_addr[0] = _overlay_start;
+            overlay_addr[1] = _overlay_end;
+            bFunkCallSync("_overlay_start", 0x37, overlay_addr, 8, nullptr, 0);
+            CodeOverlayMemoryPoolNumber = bGetFreeMemoryPoolNum();
+            bInitMemoryPool(CodeOverlayMemoryPoolNumber, _overlay_start, _overlay_end - _overlay_start, "Overlay");
+            FlushCaches();
+            bMemorySetOverflowPoolNumber(0, CodeOverlayMemoryPoolNumber);
         }
     }
 }

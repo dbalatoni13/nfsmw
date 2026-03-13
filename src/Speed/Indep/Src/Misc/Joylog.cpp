@@ -109,6 +109,40 @@ void JoylogBuffer::AddData(int data, int data_size, int channel_number) {
     }
 }
 
+unsigned int JoylogBuffer::GetData(int data_size, int channel_number) {
+    JoylogBufferEntry buffer_entry;
+    int prev_position = CurrentPosition;
+
+    do {
+        if (CurrentLoadPosition - CurrentPosition < 0x100 && CurrentLoadPosition != TopPosition) {
+            LoadBuffer(CurrentPosition);
+        }
+        CurrentPosition = GetEntry(&buffer_entry, CurrentPosition);
+    } while (GetJoylogChannelInfo(buffer_entry.ChannelNumber)->ReadAheadOnly != 0);
+
+    int lookahead_pos = CurrentPosition;
+    while (IsMoreData()) {
+        if (CurrentLoadPosition - CurrentPosition < 0x100 && CurrentLoadPosition != TopPosition) {
+            LoadBuffer(CurrentPosition);
+        }
+        JoylogBufferEntry lookahead_buffer_entry;
+        lookahead_pos = GetEntry(&lookahead_buffer_entry, lookahead_pos);
+        if (GetJoylogChannelInfo(lookahead_buffer_entry.ChannelNumber)->ReadAheadOnly == 0) {
+            break;
+        }
+        CurrentPosition = lookahead_pos;
+    }
+
+    if (buffer_entry.ChannelNumber != channel_number) {
+        int percent_complete = CurrentPosition * 100 / GetTotalSize();
+        PrintNearbyJoylogEntries(prev_position);
+        bBreak();
+        CurrentPosition = TopPosition;
+    }
+
+    return buffer_entry.Data;
+}
+
 int JoylogBuffer::AddEntry(JoylogBufferEntry *entry, int position) {
     int buffer_index = (position - BufferStartPosition) + 0x118;
     unsigned char *pbuf = reinterpret_cast<unsigned char *>(this) + buffer_index;
