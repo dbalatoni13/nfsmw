@@ -22,6 +22,7 @@ bool THREAD_iscurrent(void *thread);
 
 int FILESYS_completeop(int fop);
 int FILESYS_open(const char *filename, int flags, void (*callback)(int, int, void *), void *userdata);
+int FILESYS_open(const char *filename, unsigned int flags, int timeout, void *callback);
 int FILESYS_read(int fop, void *buf, int nbytes, void (*callback)(int, int, void *), void *userdata);
 int FILESYS_read(int filehandle, int offset, void *buffer, int bytes, int priority, void *userdata);
 int FILESYS_opensync(const char *filename, unsigned int flags, int timeout);
@@ -502,15 +503,15 @@ void bFile::OpenLowLevel() {
         }
     }
     if (flags == 1) {
-        unsigned long long sizeOut;
         unsigned int dummy;
-        int result = GetInfoFastByName(Filename, 1, &sizeOut, &dummy);
+        unsigned long long sizeOut;
+        int result = GetInfoFastByName(Filename, 1, &dummy, &sizeOut);
         if (result != 0) {
             FileSize = static_cast<int>(sizeOut);
         }
     } else {
         bGetTicker();
-        int fop = FILESYS_opensync(Filename, flags, 100);
+        int fop = FILESYS_open(Filename, flags, 100, nullptr);
         int status = FILESYS_waitop(fop);
         int handle = FILESYS_completeop(fop);
         if (status == 1) {
@@ -587,7 +588,7 @@ void bFile::ReadAsync(void *buf, int num_bytes, void (*callback)(void *), void *
     RealFile::Mutex::Unlock(&bFileMutex);
     if (FileHandle == 0) {
         int flags = GetRealFileOpenFlags(OpenMode);
-        int fop = FILESYS_open(Filename, flags, nullptr, cb);
+        int fop = FILESYS_open(Filename, flags, static_cast<void (*)(int, int, void *)>(nullptr), cb);
         FILESYS_callbackop(fop, bFile::CallbackFunctionOpen);
         MaybeAddCachedHandle();
     } else {
