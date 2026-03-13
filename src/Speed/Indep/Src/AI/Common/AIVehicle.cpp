@@ -52,6 +52,10 @@
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/bWare/Inc/bDebug.hpp"
+#include "Speed/Indep/Src/World/Common/WGrid.h"
+#include "Speed/Indep/Src/Misc/Profiler.hpp"
+#include <algorithm>
 
 const char *GetCaffeineLayerName(int driver_class) {
     switch (driver_class) {
@@ -1762,4 +1766,324 @@ void path_spot::init_nav(WRoadNav &nav, const UMath::Vector3 &point) const {
     nav.InitAtSegment(segmentindex, tparam, point, dir, false);
     float snapped = nav.SnapToSelectableLane(nav.GetLaneOffset());
     nav.ChangeLanes(snapped, 0.0f);
+}
+
+road_walker::start_record::start_record(float s, WRoadNav &nav)
+    : score(s) {
+    spot.segmentindex = nav.GetSegmentInd();
+    spot.nodeind = nav.GetNodeInd();
+    spot.param = nav.GetSegmentTime();
+    spot.laneoffset = nav.GetLaneOffset();
+    point = nav.GetPosition();
+}
+
+const int road_walker::walk_limit = 32;
+const int road_walker::evaluate_limit = 10;
+
+float TotalWalkPathTime;
+
+// Range: 0x800206F8 -> 0x800212C8
+bool road_walker::walk_road(const UMath::Vector3 &start, const UMath::Vector3 &dir,
+                            float futuredist, float targetdist, short prevfuture,
+                            int prevnodeind) {
+    ProfileNode profile_node;
+    unsigned int ticks = bGetTicker();
+    const WGrid &grid = WGrid::Get();
+    WRoadNetwork &roadnetwork = WRoadNetwork::Get();
+    UTL::Std::set<short, _type_set> segments;
+    UTL::FastVector<unsigned int, 16> nodes;
+    WRoadNav startnav;
+    start_vector sortedstarts;
+
+    direction = dir;
+    previousfutures[1] = -1;
+    previousfutures[0] = prevfuture;
+    futurescale = futuredist / targetdist;
+
+    if (prevfuture > -1) {
+        const WRoadNode *node =
+            roadnetwork.GetNode(roadnetwork.GetSegment(prevfuture)->fNodeIndex[prevnodeind]);
+        const WRoadSegment *checksegment = GetAttachedDirectionalSegment(node, prevfuture);
+        if (checksegment) {
+            previousfutures[1] = checksegment->fIndex;
+        }
+    }
+
+    UMath::Normalize(direction);
+    UMath::ScaleAdd(dir, futuredist, start, futurepoint);
+    UMath::ScaleAdd(dir, targetdist, start, targetpoint);
+
+    grid.FindNodes(start, node_find_radius(), nodes);
+
+    for (unsigned int *it = nodes.begin(); it != nodes.end(); ++it) {
+        WGridNode *gridnode = grid.GetNode(*it);
+        if (gridnode) {
+            int count = gridnode->GetElemTypeCount(WGrid_kRoadSegment);
+            for (int j = 0; j < count; j++) {
+                short segInd =
+                    static_cast<short>(gridnode->GetElemType(j, WGrid_kRoadSegment));
+                if (!raceroutes || roadnetwork.GetSegment(segInd)->IsInRace()) {
+                    segments.insert(segInd);
+                }
+            }
+        }
+    }
+
+    startnav.SetPathType(WRoadNav::kPathCop);
+    startnav.SetNavType(WRoadNav::kTypeDirection);
+    startnav.SetLaneType(WRoadNav::kLaneCop);
+
+    int reservesize = 33;
+    if (static_cast<int>(segments.size()) > reservesize) {
+        reservesize = segments.size();
+    }
+    sortedstarts.reserve(reservesize);
+
+    for (UTL::Std::set<short, _type_set>::iterator sit = segments.begin();
+         sit != segments.end(); ++sit) {
+        if (*sit < static_cast<short>(roadnetwork.GetNumSegments())) {
+            startnav.InitAtSegment(*sit, start, direction, false);
+
+            if ((roadnetwork.GetSegment(startnav.GetSegmentInd())->fFlags & 0x40) &&
+                startnav.GetNodeInd() == 0) {
+                startnav.Reverse();
+            }
+
+            float snapped = startnav.SnapToSelectableLane(startnav.GetLaneOffset());
+            if (snapped != startnav.GetLaneOffset()) {
+                startnav.ChangeLanes(snapped, 0.0f);
+            }
+
+            float dx = start.x - startnav.GetPosition().x;
+            float dz = start.z - startnav.GetPosition().z;
+            float horizDist = UMath::Sqrt(dx * dx + dz * dz) - 10.0f;
+            if (horizDist < 0.0f) {
+                horizDist = 0.0f;
+            }
+
+            float heightDiff = bAbs(start.y - startnav.GetPosition().y) - 10.0f;
+            if (heightDiff < 0.0f) {
+                heightDiff = 0.0f;
+            }
+
+            UMath::Vector3 fwd = startnav.GetForwardVector();
+            UMath::Normalize(fwd);
+            float dot = UMath::Dot(direction, fwd);
+            float dirScore = 1.0f - dot;
+
+            float score = horizDist + heightDiff * 5.0f + dirScore + dirScore;
+
+            start_record rec(score, startnav);
+            sortedstarts.push_back(rec);
+        }
+    }
+
+    if (sortedstarts.begin() == sortedstarts.end()) {
+        TotalWalkPathTime += bGetTickerDifference(ticks);
+        return false;
+    }
+
+    std::sort(sortedstarts.begin(), sortedstarts.end());
+
+    float oldscore = bestscore;
+    bestscore = 1e30f;
+    numevaluates = 0;
+    numwalkallpaths = 0;
+
+    for (start_record *it = sortedstarts.begin();
+         numevaluates < evaluate_limit && numwalkallpaths < walk_limit &&
+         it != sortedstarts.end() && (startscore = it->score, it->score < bestscore);
+         ++it) {
+        startspot = it->spot;
+        startpoint = it->point;
+        walk_all_paths(it->spot, futuredist, targetdist, false);
+    }
+
+    TotalWalkPathTime += bGetTickerDifference(ticks);
+    return bestscore < oldscore;
+}
+
+// Range: 0x800212C8 -> 0x80021620
+void road_walker::walk_all_paths(const path_spot &start, float futuredist, float targetdist,
+                                 bool coppenalty) {
+    WRoadNetwork &roadnetwork = WRoadNetwork::Get();
+    numwalkallpaths++;
+
+    short segInd = start.segmentindex;
+    int nodeind = start.nodeind;
+    const WRoadSegment *segment = roadnetwork.GetSegment(segInd);
+    float param = start.param;
+    bool first = true;
+
+    for (;;) {
+        unsigned short flags = segment->fFlags;
+
+        if ((flags & 0x40) && nodeind == 0) {
+            return;
+        }
+
+        float segdist = segment->GetLength();
+
+        if (first) {
+            first = false;
+            if (!coppenalty) {
+                coppenalty = !segment->ShouldCopsConsider();
+            }
+        } else {
+            coppenalty = true;
+        }
+
+        if (futuredist > 0.0f) {
+            float futparam = param + futuredist / segdist;
+            if (futparam <= 1.0f) {
+                futurespot.segmentindex = segInd;
+                futurespot.nodeind = nodeind;
+                futurespot.param = futparam;
+                futurespot.laneoffset = 0.0f;
+            }
+        }
+
+        float tgtparam = param + targetdist / segdist;
+        if (tgtparam <= 1.0f) {
+            path_spot targetspot;
+            targetspot.segmentindex = segInd;
+            targetspot.nodeind = nodeind;
+            targetspot.param = tgtparam;
+            targetspot.laneoffset = 0.0f;
+            evaluate_end(targetspot, coppenalty);
+            return;
+        }
+
+        float remaining = segdist * (1.0f - param);
+        targetdist -= remaining;
+        futuredist -= remaining;
+
+        const WRoadNode *nextNode =
+            roadnetwork.GetNode(segment->fNodeIndex[nodeind]);
+        const WRoadSegment *nextSeg =
+            GetAttachedDirectionalSegment(nextNode, segInd);
+        param = 0.0f;
+
+        if (nextSeg == nullptr) {
+            int i = 0;
+            if (numevaluates < evaluate_limit && numwalkallpaths < walk_limit &&
+                nextNode->fNumSegments > 0) {
+                do {
+                    unsigned short branchSegInd = nextNode->fSegmentIndex[i];
+                    if (static_cast<short>(branchSegInd) != segInd) {
+                        unsigned short bflags =
+                            roadnetwork.GetSegment(branchSegInd)->fFlags;
+                        if (!(bflags & 0x1000) && !((bflags >> 13) & 1)) {
+                            if (!raceroutes || (static_cast<short>(bflags) < 0)) {
+                                path_spot branchStart;
+                                branchStart.segmentindex = branchSegInd;
+                                branchStart.nodeind =
+                                    (roadnetwork.GetNode(
+                                         roadnetwork.GetSegment(branchSegInd)
+                                             ->fNodeIndex[0]) ==
+                                     nextNode)
+                                        ? 1
+                                        : 0;
+                                branchStart.param = 0.0f;
+                                branchStart.laneoffset = 0.0f;
+                                walk_all_paths(branchStart, futuredist, targetdist,
+                                               coppenalty);
+                            }
+                        }
+                    }
+                    i++;
+                } while (numevaluates < evaluate_limit &&
+                         numwalkallpaths < walk_limit &&
+                         i < static_cast<int>(nextNode->fNumSegments));
+            }
+            return;
+        }
+
+        segInd = nextSeg->fIndex;
+        nodeind = (nextNode == roadnetwork.GetNode(nextSeg->fNodeIndex[0])) ? 1 : 0;
+        segment = nextSeg;
+    }
+}
+
+// Range: 0x80021620 -> 0x80021A28
+void road_walker::evaluate_end(const path_spot &targetspot, bool coppenalty) {
+    numevaluates++;
+
+    float score = startscore;
+    if (coppenalty) {
+        score += 3.0f;
+    }
+
+    if (score < bestscore) {
+        WRoadNav nav1;
+        targetspot.init_nav(nav1, targetpoint);
+
+        UMath::Vector3 toStart;
+        UMath::Sub(nav1.GetPosition(), startpoint, toStart);
+        UMath::Vector3 normToStart;
+        normToStart = toStart;
+        normToStart.y = 0.0f;
+        float len = UMath::Normalize(normToStart);
+        if (len != 0.0f) {
+            // already normalized
+        }
+        float dot = UMath::Dot(normToStart, direction);
+        score += (1.0f - dot) * 0.5f;
+
+        if (score < bestscore) {
+            float s = futurescale;
+            UMath::Vector3 interpPos;
+            interpPos.x =
+                ((nav1.GetPosition().x - startpoint.x) * s + startpoint.x - futurepoint.x) * s +
+                futurepoint.x;
+            interpPos.y =
+                ((nav1.GetPosition().y - startpoint.y) * s + startpoint.y - futurepoint.y) * s +
+                futurepoint.y;
+            interpPos.z =
+                ((nav1.GetPosition().z - startpoint.z) * s + startpoint.z - futurepoint.z) * s +
+                futurepoint.z;
+
+            WRoadNav nav2;
+            futurespot.init_nav(nav2, interpPos);
+
+            UMath::Vector3 toStart2;
+            UMath::Sub(nav2.GetPosition(), startpoint, toStart2);
+            UMath::Vector3 normToStart2;
+            normToStart2 = toStart2;
+            normToStart2.y = 0.0f;
+            float len2 = UMath::Normalize(normToStart2);
+            if (len2 != 0.0f) {
+            }
+
+            float dot2 = UMath::Dot(normToStart2, direction);
+            float futureScore = (1.0f - dot2) * 1.0f;
+
+            UMath::Vector3 fwd;
+            fwd = nav1.GetForwardVector();
+            fwd.y = 0.0f;
+            float lenFwd = UMath::Normalize(fwd);
+            if (lenFwd != 0.0f) {
+            }
+            float dot3 = UMath::Dot(fwd, direction);
+            score += futureScore + (1.0f - dot3) + (1.0f - dot3);
+
+            if (nav2.GetSegmentInd() != previousfutures[0] &&
+                nav2.GetSegmentInd() != previousfutures[1]) {
+                score += 5.0f;
+            }
+
+            if (score < bestscore) {
+                beststartspot = startspot;
+                bestfuturespot.segmentindex = nav2.GetSegmentInd();
+                bestfuturespot.nodeind = nav2.GetNodeInd();
+                bestfuturespot.param = nav2.GetSegmentTime();
+                bestfuturespot.laneoffset = nav2.GetLaneOffset();
+                besttargetspot.segmentindex = nav1.GetSegmentInd();
+                besttargetspot.nodeind = nav1.GetNodeInd();
+                besttargetspot.param = nav1.GetSegmentTime();
+                besttargetspot.laneoffset = nav1.GetLaneOffset();
+                bestscore = score;
+            }
+        }
+    }
 }
