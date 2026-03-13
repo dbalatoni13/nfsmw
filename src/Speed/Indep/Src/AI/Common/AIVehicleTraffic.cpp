@@ -33,6 +33,8 @@ Behavior *AIVehicleTraffic::Construct(const BehaviorParams &bp) {
     return new AIVehicleTraffic(bp);
 }
 
+UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::Prototype __AIVehicleTraffic("AIVehicleTraffic", AIVehicleTraffic::Construct);
+
 AIVehicleTraffic::AIVehicleTraffic(const BehaviorParams &bp)
     : AIVehicle(bp, 0.1f, mStagger, Sim::TASK_FRAME_VARIABLE), //
       ITrafficAI(bp.fowner) {

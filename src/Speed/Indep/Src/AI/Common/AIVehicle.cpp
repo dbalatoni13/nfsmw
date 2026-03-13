@@ -76,6 +76,8 @@ Behavior *AIVehicleEmpty::Construct(const BehaviorParams &bp) {
     return new AIVehicleEmpty(bp);
 }
 
+UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::Prototype __AIVehicleEmpty("AIVehicleEmpty", AIVehicleEmpty::Construct);
+
 AIVehicleHuman::AIVehicleHuman(const BehaviorParams &bp) : AIVehicleRacecar(bp), IHumanAI(bp.fowner) {
     MakeDebugable(DBG_AI);
     fMomentRadius = 0.0f;
@@ -86,6 +88,8 @@ AIVehicleHuman::AIVehicleHuman(const BehaviorParams &bp) : AIVehicleRacecar(bp),
 Behavior *AIVehicleHuman::Construct(const BehaviorParams &bp) {
     return new AIVehicleHuman(bp);
 }
+
+UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::Prototype __AIVehicleHuman("AIVehicleHuman", AIVehicleHuman::Construct);
 
 AIVehicleHuman::~AIVehicleHuman() {
     int player_num = 0;
@@ -317,6 +321,8 @@ void AIVehicleHuman::Update(float dT) {
 Behavior *AIVehicle::Construct(const BehaviorParams &bp) {
     return new AIVehicle(bp, 1.0f, 0.0f, Sim::TASK_FRAME_VARIABLE);
 }
+
+UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::Prototype __AIVehicle("AIVehicle", AIVehicle::Construct);
 
 AIVehicle::AIVehicle(const BehaviorParams &bp, float update_rate, float stagger, Sim::TaskMode taskmode)
     : VehicleBehavior(bp, 0),                                   //

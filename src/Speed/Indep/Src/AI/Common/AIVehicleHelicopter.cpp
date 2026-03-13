@@ -147,6 +147,9 @@ Behavior *AIVehicleHelicopter::Construct(const BehaviorParams &bp) {
     return new AIVehicleHelicopter(bp);
 }
 
+UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::Prototype __AIVehicleHelicopter("AIVehicleHelicopter",
+                                                                                             AIVehicleHelicopter::Construct);
+
 void AIVehicleHelicopter::SetFuelFull() {
     gHeliVehicle = this;
     ISimable *simable = IPlayer::First(PLAYER_LOCAL)->GetSimable();

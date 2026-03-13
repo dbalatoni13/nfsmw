@@ -19,6 +19,8 @@ Sim::IActivity *Gps::Construct(Sim::Param params) {
     return result;
 }
 
+UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _Gps("Gps", Gps::Construct);
+
 Gps::Gps()
     : Activity(0) //
     , mRoadNav() //

@@ -22,6 +22,8 @@ Behavior *AIVehicleCopCar::Construct(const BehaviorParams &bp) {
     return new AIVehicleCopCar(bp);
 }
 
+UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::Prototype __AIVehicleCopCar("AIVehicleCopCar", AIVehicleCopCar::Construct);
+
 void AIVehicleCopCar::Update(float dT) {
     ProfileNode profile_node("TODO", 0);
 

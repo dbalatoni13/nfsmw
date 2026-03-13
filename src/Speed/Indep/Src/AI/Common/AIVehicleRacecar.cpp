@@ -400,6 +400,8 @@ Behavior *AIVehicleRacecar::Construct(const BehaviorParams &bp) {
     return new AIVehicleRacecar(bp);
 }
 
+UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::Prototype __AIVehicleRacecar("AIVehicleRacecar", AIVehicleRacecar::Construct);
+
 // Functionally matching
 bool AIVehicleRacecar::ShouldDoSimplePhysics() const {
     if (GetVehicle()->IsAnimating())
