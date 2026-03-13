@@ -33,7 +33,9 @@ struct eModel : public bTNode<eModel> {
     ePositionMarker *GetPostionMarker(ePositionMarker *prev_marker);
     ePositionMarker *GetPostionMarker(unsigned int namehash);
 
-    static void * operator new(size_t size) {}
+    static void *operator new(size_t size) {
+        return bOMalloc(eModelSlotPool);
+    }
 
     void operator delete(void * ptr) {
         bFree(eModelSlotPool, ptr);

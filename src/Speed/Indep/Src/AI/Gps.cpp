@@ -30,13 +30,15 @@ Gps::Gps()
     mTarget = UMath::Vector3::kZero;
     mPosition = UMath::Vector3::kZero;
     mDirection = UMath::Vector3::kZero;
-    mRoadNav.SetNavType(WRoadNav::kTypeNone);
-    mRoadNav.SetLaneType(WRoadNav::kLaneAny);
+    mRoadNav.SetNavType(WRoadNav::kTypePath);
+    mRoadNav.SetPathType(WRoadNav::kPathGPS);
+    mRoadNav.SetLaneType(WRoadNav::kLaneRacing);
     mPathDist = 0.0f;
     mDrawn = false;
     mMaxDeviation = 200.0f;
     mScale = 0.0f;
     mAngle = 0.0f;
+    mDeviation = 0.0f;
 }
 
 Gps::~Gps() {

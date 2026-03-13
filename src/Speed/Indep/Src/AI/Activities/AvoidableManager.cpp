@@ -3,6 +3,8 @@
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 
+UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _AvoidableManager("AvoidableManager", AvoidableManager::Construct);
+
 AvoidableManager::AvoidableManager(Sim::Param params) : Sim::Activity(0) {
     mSimulateTask = AddTask("AvoidableManager", 0.25f, 0.0f, Sim::TASK_FRAME_FIXED);
     Sim::ProfileTask(mSimulateTask, "AvoidableManager");
