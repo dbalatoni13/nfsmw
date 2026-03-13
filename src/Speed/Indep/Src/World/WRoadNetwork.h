@@ -72,7 +72,7 @@ class WRoadNetwork : public Debugable {
 
     // bool IsValid() {}
 
-    // bool HasValidTrafficRoads() {}
+    bool HasValidTrafficRoads() { return fValidTrafficRoads; }
 
     const WRoadNode *GetNode(int index) {
         return &fNodes[index];
@@ -108,7 +108,7 @@ class WRoadNetwork : public Debugable {
 
     short GetSegRoadInd(int index) { return fSegments[index].fRoadID; }
 
-    // void IncSegmentStamp() {}
+    void IncSegmentStamp() { fSegmentStamp++; }
 
     // unsigned long GetSegmentStamp() {}
 
@@ -371,6 +371,10 @@ class WRoadNav {
 
     char GetLaneInd() const {
         return fLaneInd;
+    }
+
+    char GetToLaneInd() const {
+        return fToLaneInd;
     }
 
     void SetLaneInd(char ind) {
