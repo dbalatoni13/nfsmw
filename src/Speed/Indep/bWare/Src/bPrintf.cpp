@@ -186,6 +186,7 @@ enum {
 #define FL_NEGATIVE  0x0100
 #define FL_FORCEOCTAL 0x0200
 #define FL_SIGNED    0x0400
+#define FL_EXPONENTIAL 0x0800
 #define FL_NOOUTPUT  0x1000
 #define FL_GROUP     0x2000
 #define FL_LONG64    0x4000
@@ -434,9 +435,25 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
             }
 
             case 'e':
-                if (precision < 0) {
-                    precision = 6;
-                }
+                *reinterpret_cast<unsigned short *>(prefix) =
+                    static_cast<unsigned short>(prefix[1] | 0x6500);
+                flags |= FL_EXPONENTIAL;
+                goto GENERIC_FLOAT;
+
+            case 'g':
+                *reinterpret_cast<unsigned short *>(prefix) =
+                    static_cast<unsigned short>(prefix[1] | 0x6500);
+                flags |= FL_EXPONENTIAL;
+                goto GENERIC_FLOAT;
+
+            case 'G':
+            case 'E':
+                *reinterpret_cast<unsigned short *>(prefix) =
+                    static_cast<unsigned short>(prefix[1] | 0x4500);
+                flags |= FL_EXPONENTIAL;
+                goto GENERIC_FLOAT;
+
+            case 'f':
             GENERIC_FLOAT: {
                 double d;
                 double number;
@@ -445,44 +462,193 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                 char *p;
                 unsigned int offset;
 
+                flags |= FL_SIGNED;
                 d = va_arg(argList, double);
+
+                number = d;
+                stringOut = nullptr;
+                offset = reinterpret_cast<unsigned int *>(&number)[1];
+                if ((offset & 0x7FF00000) == 0x7FF00000) {
+                    if (offset == 0xFFF00000) {
+                        stringOut = _nan_table[0];
+                    } else if (offset == 0x7FF00000) {
+                        stringOut = _nan_table[1];
+                    } else {
+                        stringOut = _nan_table[2];
+                    }
+                    stringLength = 7;
+                }
+
+                if (stringOut != nullptr) {
+                    goto OUTPUT;
+                }
 
                 {
                     int digit_pos;
                     bool group_flag;
                     char decimalChr;
 
-                    char fmtbuf[8];
-                    fmtbuf[0] = '%';
-                    fmtbuf[1] = '.';
-                    fmtbuf[2] = '*';
-                    fmtbuf[3] = ch;
-                    fmtbuf[4] = '\0';
+                    stringOut = cvtbuf + 1;
+                    cvtbuf[0] = '0';
+                    d = 1.0;
+                    p = stringOut;
 
-                    stringLength = sprintf(cvtbuf, fmtbuf, precision, d);
-                    stringOut = cvtbuf;
+                    if ((flags & FL_SIGNED) && number < 0.0) {
+                        flags |= FL_NEGATIVE;
+                        number = -number;
+                    }
+
+                    if (precision == -1) {
+                        precision = 3;
+                    }
+
+                    count = 0;
+                    int savedPrecision = precision - 1;
+
+                    if (flags & FL_EXPONENTIAL) {
+                        if (number != 0.0) {
+                            if (number >= 1.0) {
+                                do {
+                                    number *= 0.1;
+                                    count++;
+                                } while (number >= 1.0);
+                                if (number >= 1.0) goto positioned;
+                            }
+                            do {
+                                count--;
+                                number *= 10.0;
+                            } while (number < 1.0);
+                        }
+                    } else {
+                        if (d < number) {
+                            do {
+                                d *= 10.0;
+                                count++;
+                            } while (d < number);
+                        }
+                        if (d > number) {
+                            d *= 0.1;
+                            count--;
+                        }
+                    }
+
+                positioned:
+                    digit_pos = count + 1;
+                    group_flag = false;
+
+                    if (flags & FL_GROUP) {
+                        if (g_locale.group_len > 0) {
+                            group_flag = true;
+                        }
+                        decimalChr = g_locale.decimal_char;
+                    } else {
+                        decimalChr = '.';
+                    }
+
+                    if (d >= 1.0) {
+                        int initialDigitPos = digit_pos;
+
+                        do {
+                            if (group_flag) {
+                                int groupLen = static_cast<int>(
+                                    static_cast<signed char>(g_locale.group_len));
+                                int mod = (digit_pos / groupLen) * groupLen;
+                                if (digit_pos == mod && digit_pos != initialDigitPos) {
+                                    *p++ = g_locale.group_char;
+                                }
+                            }
+                            digit_pos--;
+
+                            int digitInt = static_cast<int>(number / d);
+                            digit = static_cast<char>(digitInt);
+                            double digitDouble =
+                                static_cast<double>(static_cast<int>(digit));
+                            number -= digitDouble * d;
+                            d *= 0.1;
+
+                            *p++ = '0' + digit;
+                        } while (d >= 1.0);
+                    }
+
+                    if (p == stringOut) {
+                        *stringOut = '0';
+                        p = stringOut + 1;
+                    }
+
+                    if (precision != 0 || (flags & FL_ALTERNATE)) {
+                        *p++ = decimalChr;
+                    }
+
+                    precision = savedPrecision;
+                    if (precision != -1) {
+                        do {
+                            number *= 10.0;
+                            int digitInt = static_cast<int>(number);
+                            digit = static_cast<char>(digitInt);
+                            double digitDouble =
+                                static_cast<double>(static_cast<int>(digit));
+                            number -= digitDouble;
+                            *p++ = '0' + digit;
+                        } while (precision-- != 0);
+                    }
+
+                    if (number * 10.0 >= 0.5) {
+                        {
+                            char *q;
+                            q = p - 1;
+                            for (;;) {
+                                char c = *q;
+                                q--;
+                                if (c == '9') {
+                                    *(q + 1) = '0';
+                                    continue;
+                                }
+                                if (c == decimalChr) {
+                                    continue;
+                                }
+                                if (group_flag) {
+                                    if (g_locale.group_len > 0) {
+                                        if (c == g_locale.group_char) {
+                                            continue;
+                                        }
+                                    }
+                                }
+                                *(q + 1) = static_cast<char>(c + 1);
+                                if (q + 1 < stringOut) {
+                                    stringOut--;
+                                }
+                                break;
+                            }
+                        }
+                    }
+
+                    if (flags & FL_EXPONENTIAL) {
+                        *p++ = static_cast<char>(
+                            *reinterpret_cast<short *>(prefix) >> 8);
+                        prefixSz = 0;
+
+                        if (count < 0) {
+                            count = -count;
+                            *p++ = '-';
+                        } else {
+                            *p++ = '+';
+                        }
+
+                        int hundreds = count / 100;
+                        *p++ = '0' + static_cast<char>(hundreds);
+                        count -= hundreds * 100;
+
+                        int tens = count / 10;
+                        *p++ = '0' + static_cast<char>(tens);
+                        count -= tens * 10;
+
+                        *p++ = '0' + static_cast<char>(count);
+                    }
+
+                    stringLength = static_cast<int>(p - stringOut);
                 }
                 goto OUTPUT;
             }
-
-            case 'g':
-                if (precision < 0) {
-                    precision = 1;
-                }
-                goto GENERIC_FLOAT;
-
-            case 'G':
-            case 'E':
-                if (precision < 0) {
-                    precision = 6;
-                }
-                goto GENERIC_FLOAT;
-
-            case 'f':
-                if (precision < 0) {
-                    precision = 6;
-                }
-                goto GENERIC_FLOAT;
 
             case 'z': {
                 unsigned int tempNumber;
