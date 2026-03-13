@@ -735,11 +735,9 @@ void PostRaceResultsScreen::SetupStat_SpeedBehind() {
     GRacerInfo &racerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer);
 
     if (mIndexOfWinner >= 0) {
-        GRacerInfo &winnerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfWinner);
         unsigned int speed_units = 0x8569A25F;
-        float speed = bAbs(
-            *reinterpret_cast< const float * >(reinterpret_cast< const char * >(&winnerInfo) + 0x134) -
-            *reinterpret_cast< const float * >(reinterpret_cast< const char * >(&racerInfo) + 0x134));
+        GRacerInfo &winnerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfWinner);
+        float speed = bAbs(winnerInfo.GetPointTotal() - racerInfo.GetPointTotal());
 
         if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 0) {
             speed_units = 0x8569AB44;
@@ -831,12 +829,6 @@ void PostRaceResultsScreen::SetupRacerStats(int index, GRacerInfo *racer_info) {
 }
 
 void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info) {
-    if (!GRaceStatus::Exists() || racer_info == nullptr) {
-        return;
-    }
-
-    GRaceStatus &race_status = GRaceStatus::Get();
-    StatsPanel &panel = RacerStats[racerIndex];
     FEObject *obj = nullptr;
 
     FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0x8159A0B2);
@@ -893,7 +885,10 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
         break;
     }
 
-    panel.RacerName = GetRacerName(racer_info);
+    RacerStats[racerIndex].RacerName = ReadField< const char * >(racer_info, 0x8);
+
+    GRaceStatus &race_status = GRaceStatus::Get();
+    StatsPanel &panel = RacerStats[racerIndex];
 
     switch (mRaceType) {
     case GRace::kRaceType_P2P:

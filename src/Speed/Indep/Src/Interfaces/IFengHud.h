@@ -58,4 +58,21 @@ class IGenericMessage : public UTL::COM::IUnknown {
     virtual GenericMessage_Priority GetCurrentGenericMessagePriority();
 };
 
+class IRaceOverMessage : public UTL::COM::IUnknown {
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+    IRaceOverMessage(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+  protected:
+    virtual ~IRaceOverMessage() {}
+
+  public:
+    virtual void RequestRaceOverMessage(class IPlayer *player);
+    virtual void DismissRaceOverMessage();
+    virtual bool ShouldShowRaceOverMessage();
+};
+
 #endif
