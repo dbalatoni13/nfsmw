@@ -615,10 +615,10 @@ void bSharedStringPool::Free(const char *s) {
 
     this->Mutex.Lock();
 
-    unsigned short count = string->Count;
-    string->Count = count - 1;
+    unsigned short count = string->Count - 1;
+    string->Count = count;
 
-    if (static_cast<unsigned short>(count - 1) != 0) {
+    if (count != 0) {
         this->Mutex.Unlock();
         return;
     }
