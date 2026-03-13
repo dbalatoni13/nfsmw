@@ -12,6 +12,7 @@
 #include "Speed/Indep/Src/Generated/Events/ERestartRace.hpp"
 #include "Speed/Indep/Src/Generated/Events/EUnPause.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyRaceAbandoned.h"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/CustomTuning.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 
 struct FEObject;
@@ -22,11 +23,6 @@ void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned i
 unsigned char FEngGetLastButton(const char* pkg_name);
 FEObject* FEngFindObject(const char* pkg_name, unsigned int hash);
 void FEngSetInvisible(FEObject* obj);
-
-
-struct CustomTuningScreen {
-    static bool IsTuningAvailable(FEPlayerCarDB* stable, FECarRecord* record, int path);
-};
 
 unsigned long PauseMenu::mSelectionHash;
 
@@ -156,7 +152,7 @@ bool PauseMenu::IsTuningAvailable() {
     FECustomizationRecord* custom = stable->GetCustomizationRecordByHandle(record->Customization);
     if (custom != nullptr) {
         for (int i = 0; i <= 6; i++) {
-            avail = avail | CustomTuningScreen::IsTuningAvailable(stable, record, i);
+            avail = avail | CustomTuningScreen::IsTuningAvailable(stable, record, static_cast< Physics::Tunings::Path >(i));
         }
     }
     return avail;
