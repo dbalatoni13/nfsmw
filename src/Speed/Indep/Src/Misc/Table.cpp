@@ -222,21 +222,21 @@ void AverageWindow::Record(const float fValue, const float fTimeNow) {
     fTotal = fTotal + fValue;
     pData[nCurrentSlot] = fValue;
     pTimeData[nCurrentSlot] = fTimeNow;
-    float sentinel = 0.0f;
-    if (fTimeWindow < fTimeNow - pTimeData[iOldestValue]) {
+    if (fTimeNow - pTimeData[iOldestValue] > fTimeWindow) {
+        float sentinel = 0.0f;
         do {
             int oldest_offset = iOldestValue * 4;
-            if (sentinel < *(reinterpret_cast<float *>(reinterpret_cast<int>(pTimeData) + oldest_offset))) {
+            if (*(reinterpret_cast<float *>(reinterpret_cast<int>(pTimeData) + oldest_offset)) > sentinel) {
                 fTotal = fTotal - pData[iOldestValue];
                 pData[iOldestValue] = sentinel;
                 pTimeData[iOldestValue] = sentinel;
                 nSamples = nSamples - 1;
             }
             iOldestValue = iOldestValue + 1;
-            if (static_cast<int>(static_cast<unsigned int>(nSlots)) <= iOldestValue) {
+            if (iOldestValue >= static_cast<int>(static_cast<unsigned int>(nSlots))) {
                 iOldestValue = 0;
             }
-        } while (fTimeWindow < fTimeNow - pTimeData[iOldestValue]);
+        } while (fTimeNow - pTimeData[iOldestValue] > fTimeWindow);
     }
     unsigned char slot = nCurrentSlot + 1;
     nCurrentSlot = slot;
