@@ -753,12 +753,12 @@ int bFileSize(const char *filename) {
 int bFileExists(const char *filename) {
     bGetTicker();
     bFile *f = bOpen(filename, 1, 0);
-    int result = 0;
-    if (f != nullptr) {
-        result = f->FileSize + 1;
-        bClose(f);
+    if (f == nullptr) {
+        return 0;
     }
-    return result;
+    int size = f->FileSize;
+    bClose(f);
+    return size + 1;
 }
 
 void bRead(bFile *f, void *buf, int numbytes) {
