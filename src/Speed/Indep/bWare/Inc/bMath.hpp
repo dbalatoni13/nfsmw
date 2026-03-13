@@ -217,7 +217,7 @@ struct bVector2 {
 
     bVector2(const bVector2 &v) {}
 
-    bVector2 operator-(const bVector2 &v);
+    bVector2 operator-(const bVector2 &v) const;
 
     bVector2 &operator=(const bVector2 &v) {}
 
@@ -254,7 +254,7 @@ inline bVector2::bVector2(float _x, float _y) {
     bFill(this, _x, _y);
 }
 
-inline bVector2 bVector2::operator-(const bVector2 &v) {
+inline bVector2 bVector2::operator-(const bVector2 &v) const {
     float x1 = this->x;
     float y1 = this->y;
     float x2 = v.x;
