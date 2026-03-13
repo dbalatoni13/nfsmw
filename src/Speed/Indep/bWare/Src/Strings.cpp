@@ -634,7 +634,7 @@ void bSharedStringPool::Free(const char *s) {
     this->NumBytesAllocated -= string->Size * 8;
     this->NumStringsAllocated--;
 
-    bSharedString *table_end = table_start + this->StringTableSize;
+    bSharedString *table_end = this->StringTable + this->StringTableSize;
     unsigned short size = string->Size;
     bSharedString *next_string = string + size;
 
@@ -647,7 +647,7 @@ void bSharedStringPool::Free(const char *s) {
     }
 
     bSharedString *prev_string = string - string->Prev;
-    if ((string != table_start) && (prev_string->Count == 0)) {
+    if ((string != this->StringTable) && (prev_string->Count == 0)) {
         prev_string->Size = prev_string->Size + string->Size;
         next_string = string + string->Size;
         string = prev_string;
