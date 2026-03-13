@@ -106,6 +106,7 @@ class HudResourceManager {
     static const char *GetHudFengName(ePlayerHudType ht);
     void LoadRequiredResources(ePlayerHudType ht, const char *pkg_name);
     void UnloadRequiredResources(ePlayerHudType ht);
+    bool AreResourcesLoaded(ePlayerHudType ht);
 
   private:
     HudResourceLoadStates mHudResourcesState; // offset 0x0, size 0x4

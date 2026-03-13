@@ -317,3 +317,39 @@ void FEngHud::Update(IPlayer *player, float dT) {
 
     JoyHandle(player);
 }
+
+void FEngHud::SetInPursuit(bool inPursuit) {
+    if (mInPursuit != inPursuit) {
+        mInPursuit = inPursuit;
+    }
+}
+
+void FEngHud::SetHasTurbo(bool hasTurbo) {
+    mHasTurbo = hasTurbo;
+}
+
+bool FEngHud::IsHudVisible() {
+    return CurrentHudFeatures != 0;
+}
+
+void FEngHud::HideAll() {
+    SetHudFeatures(0);
+}
+
+void FEngHud::Release() {
+    delete this;
+}
+
+bool FEngHud::AreResourcesLoaded() {
+    return TheHudResourceManager.AreResourcesLoaded(mPlayerHudType);
+}
+
+void FEngHud::RefreshMiniMapItems() {
+    if (pMinimap) {
+        static_cast< Minimap * >(pMinimap)->RefreshMapItems();
+    }
+}
+
+OnlineHUDSupport *FEngHud::GetOnlineHUDSupport() {
+    return static_cast< OnlineHUDSupport * >(pOnlineSupport);
+}
