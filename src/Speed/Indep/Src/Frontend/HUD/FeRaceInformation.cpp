@@ -40,3 +40,10 @@ void RaceInformation::SetPlayerTollboothsCrossed(int num) {
 void RaceInformation::SetNumTollbooths(int num) {
     mNumTollbooths = num;
 }
+
+void RaceInformation::SetPlayerLapNumber(int lap) {
+    if (lap > mNumLaps) {
+        lap = mNumLaps;
+    }
+    mPlayerLapNumber = lap;
+}

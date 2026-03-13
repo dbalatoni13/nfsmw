@@ -259,20 +259,20 @@ class IInfractions : public UTL::COM::IUnknown {
     virtual void RequestInfraction(unsigned int type, int count);
 };
 
-enum RadarTarget {
-    RADAR_TARGET_NONE = 0,
-    RADAR_TARGET_COP = 1,
-    RADAR_TARGET_CAMERA = 2,
-};
-
 class IRadarDetector : public UTL::COM::IUnknown {
   public:
+    enum RadarTarget {
+        RADAR_TARGET_NONE = 0,
+        RADAR_TARGET_COP = 1,
+        RADAR_TARGET_CAMERA = 2,
+    };
+
     static HINTERFACE _IHandle() { return (HINTERFACE)_IHandle; }
     IRadarDetector(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
   protected:
     virtual ~IRadarDetector() {}
   public:
-    virtual void SetTarget(float range, float direction, RadarTarget targetType);
+    virtual void SetTarget(RadarTarget targetType, float range, float direction);
     virtual void SetInPursuit(bool inPursuit);
     virtual void SetIsCoolingDown(bool coolingDown);
 };

@@ -145,3 +145,15 @@ static bool IsCollectorsEdition;
 bool GetIsCollectorsEdition() {
     return IsCollectorsEdition;
 }
+
+bool PlayerSettings::operator==(const PlayerSettings& rhs) const {
+    return bMemCmp(this, &rhs, 0x2C) == 0;
+}
+
+bool GameplaySettings::operator==(const GameplaySettings& rhs) const {
+    return bMemCmp(this, &rhs, 0x20) == 0;
+}
+
+bool VideoSettings::operator==(const VideoSettings& rhs) const {
+    return bMemCmp(this, &rhs, 0x10) == 0;
+}

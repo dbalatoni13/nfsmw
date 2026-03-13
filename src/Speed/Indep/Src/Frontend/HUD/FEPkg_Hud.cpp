@@ -490,7 +490,8 @@ void FEngHud::SetWideScreenMode() {
 
 void HideEverySingleHud() {
     const UTL::Collections::Listable<IHud, 2>::List &list = UTL::Collections::Listable<IHud, 2>::GetList();
-    for (IHud *const *iter = list.begin(); iter != list.end(); iter++) {
+    IHud *const *end = list.end();
+    for (IHud *const *iter = list.begin(); iter != end; iter++) {
         (*iter)->HideAll();
     }
 }

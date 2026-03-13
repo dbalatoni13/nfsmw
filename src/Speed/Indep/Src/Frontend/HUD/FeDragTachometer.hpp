@@ -23,6 +23,7 @@ class DragTachometer : public HudElement, public ITachometer, public ITachometer
     }
     void SetInPerfectLaunchRange(bool inRange) override;
     void SetShifting(bool shifting) override;
+    void SetGear(GearID gear, ShiftPotential potential, bool hasGoodEnoughTraction);
     float CalcAngleForRPMDrag(float rpm, float redline);
 
   private:

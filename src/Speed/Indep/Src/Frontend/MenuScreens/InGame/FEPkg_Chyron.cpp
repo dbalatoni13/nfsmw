@@ -8,7 +8,27 @@ extern MenuScreen *FEngFindScreen(const char *name);
 
 extern const char lbl_803E59BC[];
 
-void DismissChyron();
+static MenuScreen *ChyronScreenPtr;
+
+Chyron::Chyron(ScreenConstructorData *sd)
+    : MenuScreen(sd) //
+    , mDelayTimer(0)
+{
+}
+
+void InitChyron() {
+}
+
+MenuScreen *CreateChyronScreen(ScreenConstructorData *sd) {
+    ChyronScreenPtr = new (ChyronScreenPtr) Chyron(sd);
+    return ChyronScreenPtr;
+}
+
+void DismissChyron() {
+    if (cFEng::Get()->IsPackagePushed(lbl_803E59BC)) {
+        cFEng::Get()->PopNoControlPackage(lbl_803E59BC);
+    }
+}
 
 void SummonChyron(char *title, char *artist, char *album) {
     if (!TheICEManager.IsEditorOn()) {

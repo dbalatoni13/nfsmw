@@ -15,6 +15,7 @@ class BustedMeter : public HudElement, public IBustedMeter {
     void SetInPursuit(bool inPursuit) override;
     void SetIsHiding(bool isHiding) override;
     void SetTimeUntilBusted(float time) override;
+    void SetIsBusted(bool isBusted) override;
 
   private:
     bool mInPursuit;

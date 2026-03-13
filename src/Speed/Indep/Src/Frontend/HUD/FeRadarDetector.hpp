@@ -16,6 +16,7 @@ class RadarDetector : public HudElement, public IRadarDetector {
     void Update(IPlayer *player) override;
     void SetInPursuit(bool inPursuit) override;
     void SetIsCoolingDown(bool coolingDown) override;
+    void SetTarget(RadarTarget targetType, float range, float direction) override;
 
   private:
     FEGroup * mpDataRadarDetectorGroup;

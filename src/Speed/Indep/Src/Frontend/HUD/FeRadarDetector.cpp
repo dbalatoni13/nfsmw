@@ -16,3 +16,9 @@ void RadarDetector::SetInPursuit(bool inPursuit) {
 void RadarDetector::SetIsCoolingDown(bool coolingDown) {
     mIsCoolingDown = coolingDown;
 }
+
+void RadarDetector::SetTarget(RadarTarget targetType, float range, float direction) {
+    mTargetType = targetType;
+    mRange = range;
+    mDirection = direction;
+}

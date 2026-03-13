@@ -40,3 +40,9 @@ void DragTachometer::SetInPerfectLaunchRange(bool inRange) {
 void DragTachometer::SetShifting(bool shifting) {
     mGearShifting = shifting;
 }
+
+void DragTachometer::SetGear(GearID gear, ShiftPotential potential, bool hasGoodEnoughTraction) {
+    if (gear != mGear) {
+        mGear = gear;
+    }
+}

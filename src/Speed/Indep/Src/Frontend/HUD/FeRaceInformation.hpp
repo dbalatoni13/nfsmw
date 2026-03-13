@@ -22,6 +22,7 @@ class RaceInformation : public HudElement, public IRaceInformation {
     void SetPlayerPercentComplete(float percent) override;
     void SetPlayerTollboothsCrossed(int num) override;
     void SetNumTollbooths(int num) override;
+    void SetPlayerLapNumber(int lap) override;
 
   private:
     int mNumRacers;

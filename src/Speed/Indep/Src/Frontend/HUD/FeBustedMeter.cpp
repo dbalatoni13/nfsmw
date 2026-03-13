@@ -20,3 +20,12 @@ void BustedMeter::SetIsHiding(bool isHiding) {
 void BustedMeter::SetTimeUntilBusted(float time) {
     mTimeUntilBusted = time;
 }
+
+void BustedMeter::SetIsBusted(bool isBusted) {
+    mIsBusted = isBusted;
+    if (!isBusted) {
+        if (mBustedFlasherShown) {
+            mBustedFlasherShown = false;
+        }
+    }
+}

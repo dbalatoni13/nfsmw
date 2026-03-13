@@ -21,6 +21,9 @@ class FERenderEPoly : public bTNode<FERenderEPoly> {
 
 // total size: 0x64
 class FERenderObject : public bTNode<FERenderObject> {
+  public:
+    void SetTransform(bMatrix4 *pMatrix);
+
   private:
     FEObject *mpobOwner;               // offset 0x8, size 0x4
     unsigned int mulFlags;             // offset 0xC, size 0x4
