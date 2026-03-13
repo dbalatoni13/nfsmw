@@ -1796,3 +1796,69 @@ void HerdFormation::Update(float dT, IPursuit *pursuit) {
         it->mOffset.x = -crowdDist;
     }
 }
+
+void AIPursuit::UpdateOutOfFormationOffsets() {
+    IRigidBody *targetRB;
+    mTarget->QueryInterface(&targetRB);
+
+    Pursuers assignCopList;
+    Vector3List copRelativePositions;
+    assignCopList.reserve(mIVehicleList.size());
+    copRelativePositions.reserve(mIVehicleList.size());
+
+    for (IVehicle::List::iterator iter = mIVehicleList.begin(); iter != mIVehicleList.end(); ++iter) {
+        IVehicle *ivehicle = *iter;
+        if (ivehicle->GetVehicleClass() != VehicleClass::CHOPPER) {
+            IPursuitAI *ipv;
+            if (ivehicle->GetSimable()->QueryInterface(&ipv) && !ipv->GetInFormation() && !IsSupportVehicle(ivehicle)) {
+                ISimable *simable = ivehicle->GetSimable();
+                UMath::Vector3 relPos = simable->GetPosition();
+                UMath::Sub(relPos, mTarget->GetPosition(), relPos);
+                if (targetRB) {
+                    targetRB->ConvertWorldToLocal(relPos, false);
+                }
+                ipv->SetInPosition(false);
+                assignCopList.push_back(ipv);
+                copRelativePositions.push_back(relPos);
+            }
+        }
+    }
+
+    if (assignCopList.size() == 0) {
+        return;
+    }
+
+    int i = 0;
+    FormationTargetList formationOffsets;
+    formationOffsets.reserve(assignCopList.size());
+
+    const float spacing = 6.0f;
+    const float baseDistance = 12.0f;
+    const float distScale = 6.0f;
+    const float zero = 0.0f;
+
+    for (Pursuers::iterator it = assignCopList.begin(); it != assignCopList.end(); ++it) {
+        float xOffset = static_cast< float >((i / 2 + 1) % 3 - 1) * spacing;
+        float yOffset = zero;
+        float zOffset = static_cast< float >((i % 2) * -2 + 1) * (static_cast< float >(i / 6) * distScale + baseDistance);
+
+        UMath::Vector3 offset;
+        offset.x = xOffset;
+        offset.y = yOffset;
+        offset.z = zOffset;
+        UMath::Vector3 inPosOffset;
+        inPosOffset.x = zero;
+        inPosOffset.y = zero;
+        inPosOffset.z = zero;
+
+        FormationTarget target(offset, inPosOffset, UCrc32::kNull);
+        formationOffsets.push_back(target);
+
+        ++i;
+    }
+
+    EvenOutOffsets(copRelativePositions, formationOffsets);
+    if (copRelativePositions.size() != 0 && formationOffsets.size() != 0) {
+        AssignClosestOffsets(copRelativePositions, assignCopList, formationOffsets, false);
+    }
+}
