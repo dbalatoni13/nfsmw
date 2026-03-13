@@ -755,10 +755,13 @@ def generate_build_ninja(
     gnu_as_implicit = None
     ld_cmd = None
     ld_implicit = None
+    # macOS has a very low default soft fd limit (256) which is not enough
+    # for linking hundreds of objects through wibo/wine.
+    ld_prefix = "ulimit -n 65536 && " if sys.platform == "darwin" else ""
     if config.platform == Platform.GC_WII:
         # NGCLD
         ngcld = compiler_path / "ngcld.exe"
-        ld_cmd = f"{wrapper_cmd}{ngcld} $ldflags -o $out @$out.rsp"
+        ld_cmd = f"{ld_prefix}{wrapper_cmd}{ngcld} $ldflags -o $out @$out.rsp"
         ld_implicit: List[Optional[Path]] = [
             compilers_implicit or ngcld,
             wrapper_implicit,
@@ -776,7 +779,7 @@ def generate_build_ninja(
     elif config.platform == Platform.X360:
         # MSVC linker
         msvc_link = compiler_path / "link.exe"
-        ld_cmd = f"{wrapper_cmd}{msvc_link} $ldflags /OUT:$out @$out.rsp"
+        ld_cmd = f"{ld_prefix}{wrapper_cmd}{msvc_link} $ldflags /OUT:$out @$out.rsp"
         ld_implicit: List[Optional[Path]] = [
             compilers_implicit or msvc_link,
             wrapper_implicit,
@@ -795,7 +798,7 @@ def generate_build_ninja(
     else:
         # GNU linker
         gnu_ld = binutils / f"mips-linux-gnu-ld{EXE}"
-        ld_cmd = f"{wrapper_cmd}{gnu_ld} $ldflags -o $out @$out.rsp"
+        ld_cmd = f"{ld_prefix}{wrapper_cmd}{gnu_ld} $ldflags -o $out @$out.rsp"
         ld_implicit: List[Optional[Path]] = [
             compilers_implicit or gnu_ld,
             wrapper_implicit,
