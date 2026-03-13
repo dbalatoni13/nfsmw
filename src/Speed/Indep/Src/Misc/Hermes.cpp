@@ -25,12 +25,12 @@ void PortMessage::UnregisterHandler(HHANDLER key) {
 }
 
 void PortMessage::SetIDFilter(HHANDLER key, bool enabled) {
+    bool noFilter = !enabled;
     for (Handlers::iterator i = mHandlers.begin(); i != mHandlers.end(); i++) {
         Handler &handler = *i;
-        if (handler.mKey == key) {
-            handler.mNoFilter = !enabled;
-            break;
-        }
+        if (handler.mKey != key) continue;
+        handler.mNoFilter = noFilter;
+        break;
     }
 }
 

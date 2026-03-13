@@ -375,24 +375,26 @@ int RAWCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst) {
 
 int RAWDecompress(unsigned char *pSrc, unsigned char *pDst) {
     int *header = reinterpret_cast<int *>(pSrc);
-    if (header[0] == 0x57574152 && *reinterpret_cast<char *>(&header[1]) == '\x01') {
-        memcpy(pDst, &header[4], header[2]);
-        return header[2];
-    } else {
-        return 0;
-    }
+    if (header[0] != 0x57574152) goto done;
+    if (*reinterpret_cast<char *>(&header[1]) == '\x01') goto decode;
+done:
+    return 0;
+decode:
+    memcpy(pDst, &header[4], header[2]);
+    return header[2];
 }
 
 int HUFF_encode(void *dest, const void *src, int size);
 
 int HUFFDecompress(unsigned char *pSrc, unsigned char *pDst) {
     int *header = reinterpret_cast<int *>(pSrc);
-    if (header[0] == 0x46465548 && *reinterpret_cast<char *>(&header[1]) == '\x01') {
-        HUFF_decode(pDst, &header[4]);
-        return header[2];
-    } else {
-        return 0;
-    }
+    if (header[0] != 0x46465548) goto done;
+    if (*reinterpret_cast<char *>(&header[1]) == '\x01') goto decode;
+done:
+    return 0;
+decode:
+    HUFF_decode(pDst, &header[4]);
+    return header[2];
 }
 
 int HUFFCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst) {

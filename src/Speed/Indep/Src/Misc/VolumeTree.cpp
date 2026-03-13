@@ -31,12 +31,12 @@ struct vAABBTree {
 };
 
 int vAABB::Contains(float x, float y, float z) {
-    if (bAbs(x - PositionX) < ExtentX &&
-        bAbs(y - PositionY) < ExtentY &&
-        bAbs(z - PositionZ) < ExtentZ) {
-        return 1;
+    if (bAbs(x - PositionX) >= ExtentX ||
+        bAbs(y - PositionY) >= ExtentY ||
+        bAbs(z - PositionZ) >= ExtentZ) {
+        return 0;
     }
-    return 0;
+    return 1;
 }
 
 void vAABBTree::SwapEndian() {

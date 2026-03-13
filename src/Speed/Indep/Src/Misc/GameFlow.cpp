@@ -946,10 +946,14 @@ void CodeOverlayLoadingGame() {
         }
         if (EnableCodeOverlayDebuggingOnly != 0) {
             int size = _overlay_end - _overlay_start;
-            for (int i = 0; i < size - 8; i += 8) {
-                *reinterpret_cast<int *>(_overlay_start + i) = 0xdeadbeef;
-                *reinterpret_cast<int *>(_overlay_start + i + 4) = 0xdeadbeef;
-            }
+            int n = 0;
+        overlay_loop:
+            if (n >= size - 8) goto overlay_done;
+            *reinterpret_cast<int *>(_overlay_start + n) = static_cast<int>(0xdeadbeef);
+            *reinterpret_cast<int *>(_overlay_start + n + 4) = static_cast<int>(0xdeadbeef);
+            n += 8;
+            goto overlay_loop;
+        overlay_done:
             FlushCaches();
         } else if (EnableCodeOverlay != 0) {
             void *overlay_addr[2] = {0, 0};
