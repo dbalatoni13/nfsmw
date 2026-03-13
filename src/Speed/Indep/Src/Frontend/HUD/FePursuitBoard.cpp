@@ -3,6 +3,8 @@
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
 void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
 void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool start_at_beginning);
@@ -361,4 +363,50 @@ void PursuitBoard::SetNumCopsInPursuit(int numCops) {
         }
         mNumCopsFullyEngaged = numCops;
     }
+}
+
+void PursuitBoard::SetNumCopsDestroyed(int numCops, UCrc32 lastCopDestroyedType,
+                                       int lastCopDestroyedMultiplier,
+                                       int lastCopDestroyedRep) {
+    if (mNumCopsDestroyed == numCops) {
+        return;
+    }
+    if (numCops > mNumCopsDestroyed) {
+        const char *pCopString = nullptr;
+        if (lastCopDestroyedType == UCrc32("copcross")) {
+            pCopString = GetLocalizedString(0x8fe02b9f);
+        } else if (lastCopDestroyedType == UCrc32("copsport")) {
+            pCopString = GetLocalizedString(0x8fe02b9f);
+        } else if (lastCopDestroyedType == UCrc32("copmidsize")) {
+            pCopString = GetLocalizedString(0xf49a550a);
+        } else if (lastCopDestroyedType == UCrc32("copghost")) {
+            pCopString = GetLocalizedString(0x902311da);
+        } else if (lastCopDestroyedType == UCrc32("copgto")) {
+            pCopString = GetLocalizedString(0x9bfd379f);
+        } else if (lastCopDestroyedType == UCrc32("copgtoghost")) {
+            pCopString = GetLocalizedString(0x65e97524);
+        } else if (lastCopDestroyedType == UCrc32("copsporthench")) {
+            pCopString = GetLocalizedString(0x4ee07213);
+        } else if (lastCopDestroyedType == UCrc32("copsportghost")) {
+            pCopString = GetLocalizedString(0x4ed00512);
+        } else if (lastCopDestroyedType == UCrc32("copsuv")) {
+            pCopString = GetLocalizedString(0x9bfd6ad3);
+        } else if (lastCopDestroyedType == UCrc32("copsuvpatrol")) {
+            pCopString = GetLocalizedString(0x9bfd6ad3);
+        } else if (lastCopDestroyedType == UCrc32("copsuvl")) {
+            pCopString = GetLocalizedString(0x1baac57f);
+        }
+        if (pCopString) {
+            char copCarString[64];
+            bSNPrintf(copCarString, 64, pCopString, lastCopDestroyedRep * lastCopDestroyedMultiplier);
+            IGenericMessage *igenericmessage;
+            if (IPlayer::First(PLAYER_LOCAL)->GetSimable()->QueryInterface(&igenericmessage)) {
+                igenericmessage->RequestGenericMessage(
+                    copCarString, false, 0x8ab83edb,
+                    bStringHash("COPS_TAKENOUT_ICON"), 0x13ff94,
+                    GenericMessage_Priority_4);
+            }
+        }
+    }
+    mNumCopsDestroyed = numCops;
 }
