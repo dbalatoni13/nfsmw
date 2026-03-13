@@ -140,13 +140,9 @@ Average::~Average() {
 }
 
 void Average::Recalculate() {
-    int i = 0;
     fTotal = 0.0f;
-    if (nSlots != 0) {
-        do {
-            fTotal = fTotal + pData[i];
-            i = i + 1;
-        } while (i < static_cast<int>(static_cast<unsigned int>(nSlots)));
+    for (int i = 0; i < static_cast<int>(static_cast<unsigned int>(nSlots)); i++) {
+        fTotal = fTotal + pData[i];
     }
     unsigned int num = static_cast<unsigned int>(nSamples);
     if (num == 0) {
