@@ -13,6 +13,7 @@
 
 import argparse
 import os
+import re
 from platform import uname
 
 wineprefix = os.path.join(os.environ["HOME"], ".wine")
@@ -27,17 +28,11 @@ def in_wsl() -> bool:
 
 def import_d_file(in_file: str) -> str:
     out_text = ""
+    build_root = os.getcwd()
 
     with open(in_file) as file:
         for idx, line in enumerate(file):
             if idx == 0:
-                targets_and_deps = line[:-1] if line.endswith("\n") else line
-                targets, sep, deps = targets_and_deps.rpartition(":")
-                if sep:
-                    target_parts = targets.split()
-                    if len(target_parts) > 1:
-                        targets_and_deps = target_parts[-1] + sep + deps
-                        line = targets_and_deps + ("\n" if line.endswith("\n") else "")
                 if line.endswith(" \\\n"):
                     out_text += line[:-3].replace("\\", "/") + " \\\n"
                 else:
@@ -49,27 +44,26 @@ def import_d_file(in_file: str) -> str:
                     path = line.lstrip()[:-3]
                 else:
                     path = line.strip()
-                if not path:
-                    out_text += "\n"
-                    continue
-                if "/" in path and "\\" not in path and not (
-                    len(path) > 1 and path[1] == ":"
-                ):
-                    out_text += "\t" + path + suffix + "\n"
-                    continue
-                # lowercase drive letter
-                path = path[0].lower() + path[1:]
-                if path[0] == "z":
-                    # shortcut for z:
-                    path = path[2:].replace("\\", "/")
-                elif in_wsl():
-                    path = path[0:1] + path[2:]
-                    path = os.path.join("/mnt", path.replace("\\", "/"))
+                path = path.replace("\\", "/")
+                if re.match(r"^[A-Za-z]:", path):
+                    # lowercase drive letter for Windows-style absolute paths
+                    path = path[0].lower() + path[1:]
+                    if path[0] == "z":
+                        # shortcut for z:
+                        path = path[2:]
+                    elif in_wsl():
+                        path = path[0:1] + path[2:]
+                        path = os.path.join("/mnt", path)
+                    else:
+                        # use $WINEPREFIX/dosdevices to resolve path
+                        path = os.path.realpath(os.path.join(winedevices, path))
+                elif os.path.isabs(path):
+                    path = os.path.realpath(path)
                 else:
-                    # use $WINEPREFIX/dosdevices to resolve path
-                    path = os.path.realpath(
-                        os.path.join(winedevices, path.replace("\\", "/"))
-                    )
+                    # ProDG often emits repo-relative includes like src\Foo.h.
+                    # Keep them anchored to the current build root instead of
+                    # incorrectly treating them as Wine drive roots.
+                    path = os.path.realpath(os.path.join(build_root, path))
                 out_text += "\t" + path + suffix + "\n"
 
     return out_text
