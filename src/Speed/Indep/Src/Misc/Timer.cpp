@@ -343,7 +343,9 @@ void Timer::PrintToString(char *string, int flags) {
     if (PackedTime != 0 && PackedTime != 0x7fffffff) {
         valid = true;
     }
-    if (valid) {
+    if (!valid) {
+        ::PrintToString(string, flags, 0, 0, 0, 0);
+    } else {
         int hours, minutes, seconds, thousandths_seconds;
         if (PackedTime < 0) {
             PackedTime = -PackedTime;
@@ -356,7 +358,5 @@ void Timer::PrintToString(char *string, int flags) {
             flags = flags | 1;
         }
         ::PrintToString(string, flags, hours, minutes, seconds, thousandths_seconds / 10);
-    } else {
-        ::PrintToString(string, flags, 0, 0, 0, 0);
     }
 }
