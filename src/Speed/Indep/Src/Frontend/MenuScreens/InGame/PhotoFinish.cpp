@@ -73,6 +73,7 @@ extern const char lbl_803E61E0[];
 extern const char lbl_803E61F0[];
 extern const char lbl_803E4744[];
 extern const float lbl_803E60C4;
+extern const float lbl_803E61B8;
 extern const float lbl_803E61BC;
 extern const float lbl_803E61C0;
 extern const float lbl_803E6200;
@@ -93,16 +94,23 @@ PhotoFinishScreen::PhotoFinishScreen(ScreenConstructorData *sd)
     , fResultType(static_cast< FERESULTTYPE >(sd->Arg)) //
     , mPhotoHash(0) //
     , StreamTex(lbl_803E6080) {
-    if (sd->Arg == 0 && GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() != nullptr) {
-        const char *photo_texture = lbl_803E60A4;
+    if (fResultType == FERESULTTYPE_RACE) {
+        if (GRaceStatus::Exists()) {
+            GRaceStatus &race_status = GRaceStatus::Get();
+            GRaceParameters *race_parameters = race_status.GetRaceParameters();
 
-        if (GRaceStatus::Get().GetRaceContext() != GRace::kRaceContext_Career ||
-            !GRaceStatus::Get().GetRaceParameters()->GetIsBossRace()) {
-            photo_texture = GRaceStatus::Get().GetRaceParameters()->GetPhotoFinishTexture();
+            if (race_parameters != nullptr) {
+                const char *photo_texture = lbl_803E60A4;
+
+                if (race_status.GetRaceContext() != GRace::kRaceContext_Career ||
+                    !race_parameters->GetIsBossRace()) {
+                    photo_texture = race_parameters->GetPhotoFinishTexture();
+                }
+
+                mPhotoHash = bStringHash(photo_texture);
+                StreamTex.Load(mPhotoHash, FEngFindImage(GetPackageName(), 0x286A9CD4));
+            }
         }
-
-        mPhotoHash = bStringHash(photo_texture);
-        StreamTex.Load(mPhotoHash, FEngFindImage(GetPackageName(), 0x286A9CD4));
     }
 
     mSlowdownTimer = RealTimer;
@@ -215,57 +223,65 @@ void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsig
         case 0x406415E3:
             if (fResultType == FERESULTTYPE_SPEEDTRAP) {
                 UCrc32 kind(0x20D60DBF);
-                MFlowReadyForOutro outro_message;
 
                 new EUnPause();
                 new EAutoSave();
+
+                MFlowReadyForOutro outro_message;
                 outro_message.Post(kind);
                 SoundPause(false, static_cast< eSNDPAUSE_REASON >(0xA));
                 SetSoundControlState(false, static_cast< eSNDCTLSTATE >(0xC), lbl_803E60D4);
                 return;
             }
 
-            if (FEngIsScriptSet(GetPackageName(), 0x286A9CD4, 0x0016A259) ||
-                FEngIsScriptRunning(GetPackageName(), 0x286A9CD4, 0x5079C8F8)) {
+            if (FEngIsScriptSet(GetPackageName(), 0x286A9CD4, 0x0016A259)) {
+                return;
+            }
+
+            if (FEngIsScriptRunning(GetPackageName(), 0x286A9CD4, 0x5079C8F8)) {
                 return;
             }
 
             if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
                 GRaceParameters *race_parameters = GRaceStatus::Get().GetRaceParameters();
                 if (race_parameters->GetIsBossRace()) {
-                    GRaceDatabase &race_database = GRaceDatabase::Get();
                     unsigned char current_bin = FEDatabase->GetCareerSettings()->GetCurrentBin();
-                    GRaceBin *race_bin = race_database.GetBinNumber(current_bin);
+                    GRaceBin *race_bin = GRaceDatabase::Get().GetBinNumber(current_bin);
                     int remaining_races = 0;
 
                     for (unsigned int i = 0; i < race_bin->GetBossRaceCount(); ++i) {
-                        if (!race_database.CheckRaceScoreFlags(race_bin->GetBossRaceHash(i),
-                                                               GRaceDatabase::kCompleted_ContextCareer)) {
+                        if (!GRaceDatabase::Get().CheckRaceScoreFlags(race_bin->GetBossRaceHash(i),
+                                                                      GRaceDatabase::kCompleted_ContextCareer)) {
                             ++remaining_races;
                         }
                     }
 
                     new EFadeScreenOn(false);
 
-                    if (current_bin == 1 && remaining_races == 1) {
+                    if (current_bin != 1) {
+                        if (remaining_races == 0) {
+                            new EQuitToFE(GARAGETYPE_CAREER_SAFEHOUSE, lbl_803E60E0);
+                            return;
+                        }
+                    } else if (remaining_races == 1) {
                         UCrc32 kind(0x20D60DBF);
-                        MFlowReadyForOutro outro_message;
+                        cFEng::Get()->QueuePackagePop(1);
 
-                        cFEng::Get()->QueuePackagePop(1);
+                        MFlowReadyForOutro outro_message;
                         outro_message.Post(kind);
-                    } else if (current_bin != 1 && remaining_races == 0) {
-                        new EQuitToFE(GARAGETYPE_CAREER_SAFEHOUSE, lbl_803E60E0);
-                    } else {
-                        cFEng::Get()->QueuePackagePop(1);
-                        new ERaceSheetOn(2);
+                        return;
                     }
+
+                    cFEng::Get()->QueuePackagePop(1);
+                    new ERaceSheetOn(2);
                     return;
                 }
 
                 UCrc32 kind(0x20D60DBF);
-                MFlowReadyForOutro outro_message;
 
                 new EUnPause();
+
+                MFlowReadyForOutro outro_message;
                 outro_message.Post(kind);
                 return;
             }
@@ -298,14 +314,20 @@ void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsig
             new EUnPause();
             return;
         case 0xC98356BA: {
+            int active = 0;
             int packed_time = mSlowdownTimer.GetPackedTime();
-            if (packed_time != 0 && packed_time != 0x7FFFFFFF &&
-                RealTimer.GetSeconds() - mSlowdownTimer.GetSeconds() >= lbl_803E61BC) {
+            if (packed_time != 0 && packed_time != 0x7FFFFFFF) {
+                active = 1;
+            }
+
+            if (active != 0 &&
+                static_cast< float >(RealTimer.GetPackedTime() - packed_time) * lbl_803E61B8 >= lbl_803E61BC) {
                 mSlowdownTimer = Timer();
                 mIceCamTimer = RealTimer;
 
                 HideEverySingleHud();
                 FEManager::RequestPauseSimulation(GetPackageName());
+                *reinterpret_cast< unsigned int * >(reinterpret_cast< char * >(&TheICEManager) + 0x7C) = 1;
 
                 if (fResultType == FERESULTTYPE_PURSUIT) {
                     new ECinematicMoment(lbl_803E611C, lbl_803E6128, lbl_803E61C0);
@@ -318,9 +340,14 @@ void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsig
                 return;
             }
 
+            active = 0;
             packed_time = mIceCamTimer.GetPackedTime();
-            if (packed_time != 0 && packed_time != 0x7FFFFFFF &&
-                RealTimer.GetSeconds() - mIceCamTimer.GetSeconds() >= lbl_803E61BC) {
+            if (packed_time != 0 && packed_time != 0x7FFFFFFF) {
+                active = 1;
+            }
+
+            if (active != 0 &&
+                static_cast< float >(RealTimer.GetPackedTime() - packed_time) * lbl_803E61B8 >= lbl_803E61BC) {
                 mIceCamTimer = Timer();
 
                 if (!FEngIsScriptSet(GetPackageName(), 0x47FF4E7C, 0x0013C37B)) {
@@ -349,6 +376,7 @@ void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsig
                 }
 
                 Setup();
+                *reinterpret_cast< unsigned int * >(reinterpret_cast< char * >(&TheICEManager) + 0x7C) = 0;
 
                 MMiscSound sound_message(2);
                 sound_message.Send(Attrib::StringHash32(lbl_803E485C));
