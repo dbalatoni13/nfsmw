@@ -28,6 +28,37 @@ extern const char lbl_803E4F04[];
 extern const float lbl_803E4F10;
 extern const char lbl_803E4F14[];
 
+namespace FEngHud {
+float ChooseMaxRpmTextureNumber(float redline);
+}
+
+extern const float lbl_803E4EA4;
+extern const float lbl_803E4EA8;
+extern const float lbl_803E4EAC;
+extern const float lbl_803E4EB0;
+extern const float lbl_803E4EB4;
+
+static float CalcAngleForRPM(float rpm, float redline) {
+    float factor = rpm / FEngHud::ChooseMaxRpmTextureNumber(redline);
+    if (factor < lbl_803E4EA4) {
+        factor = lbl_803E4EA4;
+    }
+    if (factor > lbl_803E4EA8) {
+        factor = lbl_803E4EA8;
+    }
+    float min_angle = lbl_803E4EAC;
+    float fRange = lbl_803E4EB0 - lbl_803E4EAC;
+    float max_angle = lbl_803E4EB4;
+    float angle = factor * fRange + min_angle;
+    if (angle > max_angle) {
+        angle = angle - max_angle;
+    }
+    if (angle < lbl_803E4EA4) {
+        angle = max_angle - angle;
+    }
+    return angle;
+}
+
 Tachometer::Tachometer(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
     : HudElement(pkg_name, 2) //
     , ITachometer(pOutter) //

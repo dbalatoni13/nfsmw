@@ -1,13 +1,5 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeMinimap.hpp"
-
-struct bChunk;
-
-struct ChoppedMiniMapManager {
-    void Loader(bChunk *chunk);
-    void Unloader(bChunk *chunk);
-};
-
-extern ChoppedMiniMapManager *gChoppedMiniMapManager;
+#include "Speed/Indep/Src/Frontend/HUD/FeMinimapStreamer.hpp"
 
 void LoaderMiniMap(bChunk *chunk) {
     gChoppedMiniMapManager->Loader(chunk);
