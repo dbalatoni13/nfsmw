@@ -11,7 +11,6 @@
 class RaceOverMessage : public HudElement, public IRaceOverMessage {
   public:
     RaceOverMessage(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
-    ~RaceOverMessage() override;
     void Update(IPlayer *player) override;
     void RequestRaceOverMessage(IPlayer *player) override;
     void DismissRaceOverMessage() override;
