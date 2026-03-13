@@ -12,6 +12,7 @@
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/aivehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/collisionreactions.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
 #include "Speed/Indep/Src/Generated/Events/EEnableAIPhysics.hpp"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
@@ -24,6 +25,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
+#include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
@@ -1271,4 +1273,47 @@ bool AIPerpVehicle::OnClearCausality(float start_time) {
 
 float AIPerpVehicle::GetLastTrafficHitTime() const {
     return LastTrafficHitTime;
+}
+
+static const float Tweak_AdaptiveSkillUp[] = {0.0f, 0.3f, 0.5f};
+static const float Tweak_AdaptiveSkillDown[] = {0.0f, 0.3f, 0.5f};
+static const float Tweak_QuickRaceSkills[] = {0.0f, 0.5f, 1.0f};
+static const float Tweak_QuickRaceSkillsNoGlue[] = {0.0f, 0.5f, 1.0f};
+
+static Table AdaptiveSkillUpTable(Tweak_AdaptiveSkillUp, 3, 0.0f, 1.0f);
+static Table AdaptiveSkillDownTable(Tweak_AdaptiveSkillDown, 3, 0.0f, 1.0f);
+
+void AIPerpVehicle::ComputeSkill() {
+    fBaseSkill = 0.0f;
+    if (GRaceStatus::Exists()) {
+        GRace::Context context = GRaceStatus::Get().GetRaceContext();
+        if (context == GRace::kRaceContext_QuickRace) {
+            GRaceParameters *params = GRaceStatus::Get().GetRaceParameters();
+            if (params == nullptr || GRaceStatus::Get().GetRaceParameters()->GetCatchUp()) {
+                GRace::Difficulty difficulty = GRaceStatus::Get().GetRaceParameters()->GetDifficulty();
+                fBaseSkill = Tweak_QuickRaceSkills[difficulty];
+            } else {
+                GRace::Difficulty difficulty = GRaceStatus::Get().GetRaceParameters()->GetDifficulty();
+                fBaseSkill = Tweak_QuickRaceSkillsNoGlue[difficulty];
+            }
+        } else if (context == GRace::kRaceContext_Career) {
+            if (pRacerInfo != nullptr) {
+                GCharacter *character = pRacerInfo->GetGameCharacter();
+                if (character != nullptr) {
+                    float character_skill = static_cast< float >(character->SkillLevel(0)) * 0.01f;
+                    character_skill = UMath::Clamp(character_skill, 0.0f, 1.0f);
+                    float difficulty = GRaceStatus::Get().GetAdaptiveDifficutly();
+                    Table *table;
+                    if (difficulty > 0.0f) {
+                        table = &AdaptiveSkillUpTable;
+                    } else {
+                        table = &AdaptiveSkillDownTable;
+                    }
+                    float adjustment = table->GetValue(character_skill);
+                    character_skill = character_skill + difficulty * adjustment;
+                    fBaseSkill = UMath::Clamp(character_skill, 0.0f, 1.0f);
+                }
+            }
+        }
+    }
 }

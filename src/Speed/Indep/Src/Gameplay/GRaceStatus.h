@@ -248,7 +248,7 @@ class GRaceParameters {
 
     int GetTrafficDensity() const;
 
-    // enum Difficulty GetDifficulty() const;
+    GRace::Difficulty GetDifficulty() const;
 
     // enum CopDensity GetCopDensity() const;
 
