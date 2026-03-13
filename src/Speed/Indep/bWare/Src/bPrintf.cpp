@@ -361,7 +361,7 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                 char digit;
                 int size;
                 int digit_count;
-                bool group_flag;
+                volatile int group_flag;
 
                 if (flags & FL_SHORT) {
                     if (flags & FL_SIGNED) {
@@ -411,18 +411,18 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
 
                 p = cvtbuf + 63;
                 digit_count = 0;
-                group_flag = false;
+                group_flag = 0;
 
                 if (flags & FL_GROUP) {
                     if (g_locale.group_len > 0) {
-                        group_flag = true;
+                        group_flag = 1;
                     }
                 }
 
                 {
                     char *cvtbuf_base = cvtbuf;
-                    do {
-                        if (group_flag) {
+                    while (precision-- > 0 || number != 0) {
+                        if (group_flag != 0) {
                             digit_count++;
                             if (digit_count > g_locale.group_len) {
                                 *p = g_locale.group_char;
@@ -437,7 +437,7 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                         }
                         *p = digit;
                         p--;
-                    } while (precision-- > 0 || number != 0);
+                    }
                     size = static_cast<int>(cvtbuf_base - (p - 63));
                 }
 
