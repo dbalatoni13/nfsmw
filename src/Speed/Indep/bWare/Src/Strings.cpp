@@ -54,14 +54,12 @@ int bStrLen(const unsigned short *s) {
 
 // UNSOLVED
 char *bStrCpy(char *to, const char *from) {
-    char c = *from;
     int n = 0;
 
-    *to = c;
-    while (c != '\0') {
-        n = n + 1;
-        c = from[n];
-        to[n] = c;
+    if ((*to = *from) != '\0') {
+        do {
+            n++;
+        } while ((to[n] = from[n]) != '\0');
     }
     return to;
 }
@@ -91,25 +89,16 @@ unsigned short *bStrCpy(unsigned short *to, const char *from) {
 }
 
 char *bStrNCpy(char *to, const char *from, int m) {
-    int remaining = m - 1;
     int n = 0;
-
-    if (m != 0) {
-        char c = *from;
-        *to = c;
-        if (c != '\0') {
-            do {
-                if (remaining == 0) {
-                    return to;
-                }
-                n = n + 1;
-                remaining = remaining - 1;
-                c = from[n];
-                to[n] = c;
-            } while (c != '\0');
-        }
+    m = m - 1;
+    if (m + 1 == 0) return to;
+    if ((*to = *from) != '\0') {
+        do {
+            n = n + 1;
+            if (m-- == 0) return to;
+            if ((to[n] = from[n]) == '\0') break;
+        } while (true);
     }
-
     return to;
 }
 
@@ -718,20 +707,15 @@ int bMatchNameWithWildcard(const char *wild, const char *string) {
 
 char *bStrStr(const char *s1, const char *s2) {
     int len = bStrLen(s2);
-    char c = *s1;
 
-    while (true) {
-        if (c == '\0') {
-            return nullptr;
-        }
-        if ((c == *s2) && (bStrNCmp(s1, s2, len) == 0)) {
-            break;
+    while (*s1 != '\0') {
+        if ((*s1 == *s2) && (bStrNCmp(s1, s2, len) == 0)) {
+            return const_cast<char *>(s1);
         }
         s1++;
-        c = *s1;
     }
 
-    return const_cast<char *>(s1);
+    return nullptr;
 }
 
 char *bStrIStr(const char *s1, const char *s2) {
