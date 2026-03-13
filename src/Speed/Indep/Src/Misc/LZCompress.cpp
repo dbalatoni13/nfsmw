@@ -1761,12 +1761,12 @@ int vAABB::Contains(float x, float y, float z) {
     float ax = bAbs(delta_x);
     float ex = ExtentX;
     float ay = bAbs(delta_y);
-    float ez = ExtentZ;
-    float az = bAbs(delta_z);
     float ey = ExtentY;
-    if (ax >= ex) return 0;
-    if (ay >= ey) return 0;
-    if (az >= ez) return 0;
+    float az = bAbs(delta_z);
+    float ez = ExtentZ;
+    if (ax >= ex || ay >= ey || az >= ez) {
+        return 0;
+    }
     return 1;
 }
 
