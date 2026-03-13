@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/AI/AIVehicleHelicopter.h"
 #include "Speed/Indep/Src/Camera/CameraAI.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_PostRace.hpp"
 #include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
@@ -12,10 +13,17 @@
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitlevels.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitsupport.h"
+#include "Speed/Indep/Src/Generated/Messages/MNotifyPursuitLength.h"
+#include "Speed/Indep/Src/Generated/Messages/MPerpBusted.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
-#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRBVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/Speech/SoundAI.h"
@@ -1069,6 +1077,671 @@ void AIPursuit::AssignCopsInCircle(CopAndAngle *copangles, int num, float radius
         copangles[index].cop->SetInPositionGoal(kPullOverGoal);
         copangles[index].cop->DoInPositionGoal();
     }
+}
+
+extern float kBustedHUDTime;
+
+bool AIPursuit::OnTask(HSIMTASK htask, float dT) {
+    // Busted timer task handler
+    if (htask == mBustedTimerTask) {
+        float timer = mBustedTimer + mBustedIncrement;
+        mBustedTimer = timer;
+        if (timer < 0.0f) {
+            mBustedTimer = 0.0f;
+        }
+        return true;
+    }
+
+    if (htask != mSimulateTask || !mTarget->IsValid()) {
+        return true;
+    }
+
+    // mAllowStatsToAccumulate
+    bool allowStats = false;
+    if (!GRaceStatus::Exists() ||
+        GRaceStatus::Get().GetPlayMode() != GRaceStatus::kPlayMode_Racing ||
+        (GRaceStatus::Get().GetRaceParameters() != nullptr &&
+         GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace())) {
+        allowStats = true;
+    }
+    mAllowStatsToAccumulate = allowStats;
+
+    UpdateJerk(dT);
+    UpdateFormation(dT);
+
+    Attrib::Gen::pursuitlevels *pursuitLevelAttrib = nullptr;
+    float pursuitTimeBeforeUpdate = mTotalPursuitTime;
+    bool is_player_perp = IsPlayerPursuit();
+
+    IPerpetrator *iperp = nullptr;
+    bool hasPerp = mTarget->QueryInterface(&iperp);
+
+    if (iperp) {
+        pursuitLevelAttrib = iperp->GetPursuitLevelAttrib();
+
+        if (mNumCopsRequiredToEvade == 0) {
+            LockInPursuitAttribs();
+        }
+
+        ePursuitStatus status = GetPursuitStatus();
+
+        if (status != PS_COOL_DOWN) {
+            if (mAllowStatsToAccumulate) {
+                mTotalPursuitTime += dT;
+                GManager::Get().TrackValue("total_pursuit_time", mTotalPursuitTime);
+            }
+
+            if (static_cast<int>(pursuitTimeBeforeUpdate) != static_cast<int>(mTotalPursuitTime)) {
+                HSIMABLE perpHandle = mTarget->GetSimable()->GetOwnerHandle();
+                MNotifyPursuitLength msg(perpHandle, mTotalPursuitTime);
+                UCrc32 channel(0x20d60dbf);
+                msg.Post(channel);
+            }
+
+            float heat = iperp->GetHeat();
+
+            if (pursuitLevelAttrib) {
+                float timePerHeatLevel = pursuitLevelAttrib->TimePerHeatLevel();
+                mCoolDownTimeRequired = pursuitLevelAttrib->evadetimeout();
+
+                if (FEDatabase->CurrentUserProfiles[0] != nullptr) {
+                    bool isChallenge = false;
+                    if (GRaceStatus::Exists()) {
+                        GRace::Type raceType;
+                        if (GRaceStatus::Get().GetRaceParameters() == nullptr) {
+                            raceType = static_cast<GRace::Type>(-1);
+                        } else {
+                            raceType = GRaceStatus::Get().GetRaceParameters()->GetRaceType();
+                        }
+                        if (raceType == GRace::kRaceType_Challenge) {
+                            isChallenge = true;
+                        }
+                    }
+
+                    unsigned char bucket;
+                    if (isChallenge) {
+                        bucket = 14;
+                    } else {
+                        bucket = FEDatabase->GetCareerSettings()->GetCurrentBin();
+                    }
+                    if (bucket > 14) {
+                        bucket = 14;
+                    }
+                    timePerHeatLevel = timePerHeatLevel * pursuitLevelAttrib->ScaleEscalationPerBucket(bucket);
+                }
+
+                heat = heat + dT / timePerHeatLevel;
+            }
+
+            // Clamp heat
+            if (heat - mBaseHeat < 0.0f) {
+                heat = mBaseHeat;
+            }
+            if (mMaximumHeat - heat < 0.0f) {
+                heat = mMaximumHeat;
+            }
+
+            iperp->SetHeat(heat);
+
+            heat = iperp->GetHeat();
+            int newLevel = static_cast<int>(heat);
+            if (newLevel != mCurrentPursuitLevel) {
+                mCurrentPursuitLevel = newLevel;
+                mActiveFormationTime = 0.0f;
+                mSupportPriorityCheckDone = false;
+                pursuitLevelAttrib = iperp->GetPursuitLevelAttrib();
+                mRepPointsPerMinute = pursuitLevelAttrib->RepPointsPerMinute();
+            }
+        }
+
+        pursuitLevelAttrib = iperp->GetPursuitLevelAttrib();
+    }
+
+    // Timer decrements
+    mRoadBlockTimer -= dT;
+    mActiveFormationTime -= dT;
+    mSpawnCopTimer -= dT;
+    mSpawnHeliTimer -= dT;
+    mSupportCheckTimer -= dT;
+    mCopDestroyedBonusTimer -= dT;
+    mPursuitMeterModeTimer += dT;
+
+    mGroundSupportRequest.Update(dT);
+
+    // SoundAI speech check
+    if (SoundAI::Exists() && SoundAI::Get()->GetFocus() == 1) {
+        mTimeSinceSetupSpeech = WorldTimer;
+    }
+
+    // Speech timer
+    bool pursuitRace = false;
+    float t_speech_finished = (WorldTimer - mTimeSinceSetupSpeech).GetSeconds();
+    if (GRaceStatus::Get().GetRaceParameters() != nullptr) {
+        pursuitRace = GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace();
+    }
+
+    bool speech_finished;
+    if (!pursuitRace && IsSpeechEnabled) {
+        speech_finished = 5.0f < t_speech_finished;
+    } else {
+        speech_finished = true;
+    }
+
+    bool hasPursuitLevelAttrib = pursuitLevelAttrib != nullptr;
+
+    // Formation selection
+    if (mActiveFormationTime <= 0.0f && hasPursuitLevelAttrib &&
+        !IsFinisherActive() &&
+        !mIsPerpBusted && !mIsPursuitBailed && speech_finished) {
+
+        int numFormations = pursuitLevelAttrib->Num_CopFormations();
+
+        if (numFormations > 0) {
+            float staggerDuration = pursuitLevelAttrib->StaggerFormationTime(0);
+            FormationType formationType = STAGGER_FOLLOW;
+
+            bool doRandom;
+            if (mRoadBlock == nullptr ||
+                mRoadBlock->GetDodged() ||
+                mRoadBlock->GetNumCopsDamaged() ||
+                mRoadBlock->GetNumCopsDestroyed()) {
+                if ((mFormationAttemptCount & 1) != 0) {
+                    // Accumulate total frequency
+                    float totalFreq = 0.0f;
+                    for (int i = 0; i < numFormations; i++) {
+                        const CopFormationRecord &rec = pursuitLevelAttrib->CopFormations(i);
+                        totalFreq += rec.Frequency;
+                    }
+
+                    // Weighted random selection
+                    float randVal = Sim::GetRandom()._SimRandom_FloatRange(totalFreq);
+
+                    for (int i = 0; i < numFormations; i++) {
+                        const CopFormationRecord &rec = pursuitLevelAttrib->CopFormations(i);
+                        randVal -= rec.Frequency;
+                        if (randVal <= 0.0f) {
+                            staggerDuration = rec.Duration;
+                            formationType = rec.Formation;
+                            break;
+                        }
+                    }
+                }
+                doRandom = true;
+            } else {
+                formationType = FOLLOW;
+                doRandom = false;
+            }
+
+            mFormationAttemptCount++;
+
+            if (formationType != mActiveFormation) {
+                mActiveFormation = formationType;
+                int numCops = GetNumCops();
+                InitFormation(numCops);
+            }
+
+            float staggerRandom = Sim::GetRandom()._SimRandom_FloatRange(2.0f);
+            mActiveFormationTime = staggerRandom + staggerDuration;
+        }
+    }
+
+    RemoveUnwantedVehicles();
+
+    // Vehicle iteration
+    float MinDistanceToTarget3 = 999999.0f;
+    mTimeSinceAnyCopSawPerp += dT;
+    float heightThreshold = 50.0f;
+    float engageRadius = 100.0f;
+    if (hasPursuitLevelAttrib) {
+        engageRadius = pursuitLevelAttrib->FullEngagementRadius();
+    }
+
+    int numVehiclesInRadius = 0;
+    IVehicle **vehicles = mIVehicleList.begin();
+    float MinDistanceToTargetxz = MinDistanceToTarget3;
+
+    for (IVehicle **it = vehicles; it != vehicles + mIVehicleList.size(); it++) {
+        IVehicle *vehicle = *it;
+
+        if (!vehicle->IsActive()) {
+            vehicles = mIVehicleList.begin();
+            continue;
+        }
+        if (vehicle->IsDestroyed()) {
+            vehicles = mIVehicleList.begin();
+            continue;
+        }
+
+        IPursuitAI *pursuitAI = nullptr;
+        vehicle->QueryInterface(&pursuitAI);
+
+        if (pursuitAI) {
+            float timeSinceTargetSeen = pursuitAI->GetTimeSinceTargetSeen();
+            if (timeSinceTargetSeen < mTimeSinceAnyCopSawPerp) {
+                mTimeSinceAnyCopSawPerp = timeSinceTargetSeen;
+            }
+        }
+
+        const UMath::Vector3 &vehiclePos = vehicle->GetPosition();
+        float vehicleY = vehiclePos.y;
+        float targetY = mTarget->GetPosition().y;
+
+        const UMath::Vector3 &vehiclePos2 = vehicle->GetPosition();
+
+        UMath::Vector3 diff;
+        UMath::Sub(vehiclePos2, mTarget->GetPosition(), diff);
+        float dist3d = VU0_sqrt(UMath::LengthSquare(diff));
+
+        const UMath::Vector3 *vehiclePos3 = &vehicle->GetPosition();
+        float dxz_x = vehiclePos3->x - mTarget->GetPosition().x;
+        float dxz_z = vehiclePos3->z - mTarget->GetPosition().z;
+        float distXZ = VU0_sqrt(dxz_x * dxz_x + dxz_z * dxz_z);
+
+        if (bAbs(vehicleY - targetY) < heightThreshold && distXZ < MinDistanceToTargetxz) {
+            MinDistanceToTargetxz = distXZ;
+        }
+
+        if (dist3d < MinDistanceToTarget3) {
+            MinDistanceToTarget3 = dist3d;
+        }
+
+        if (dist3d < engageRadius) {
+            if (!IsSupportVehicle(vehicle)) {
+                numVehiclesInRadius++;
+            }
+            if (pursuitAI && mPursuitStatus != PS_COOL_DOWN) {
+                pursuitAI->SetWithinEngagementRadius();
+            }
+        }
+
+        vehicles = mIVehicleList.begin();
+    }
+
+    mNumCopsFullyEngaged = numVehiclesInRadius;
+
+    // Cop count / evade logic
+    int remainingCopsToEvade = mNumCopsRequiredToEvade - mNumFullyEngagedCopsEvaded;
+    if (remainingCopsToEvade < 1) {
+        remainingCopsToEvade++;
+        mNumCopsRequiredToEvade++;
+    }
+
+    int dif = mNumCopsFullyEngaged - remainingCopsToEvade;
+    if (dif > 0) {
+        mNumCopsRequiredToEvade += dif;
+    }
+
+    if (mNumCopsRequiredToEvade != 0 && mPursuitStatus == PS_INITIAL_CHASE &&
+        remainingCopsToEvade <= mNumCopsToTriggerBackupTime) {
+        mPursuitStatus = PS_BACKUP_REQUESTED;
+        mBackupCountdownTimer = pursuitLevelAttrib->BackupCallTimer();
+    }
+
+    // Epic pursuit race check
+    if (GRaceStatus::IsFinalEpicPursuit()) {
+        mTimeSinceAnyCopSawPerp = 0.0f;
+    }
+
+    // Roadblock handling
+    if (mRoadBlock == nullptr) {
+        mNearestCopInRoadblock = nullptr;
+        mDistanceToNearestCopInRoadblock = 0.0f;
+    } else {
+        if (!iperp->IsHiddenFromCars()) {
+            float distxz;
+            float rbDist = mRoadBlock->GetMinDistanceToTarget(dT, distxz, &mNearestCopInRoadblock);
+            if (rbDist < MinDistanceToTarget3 && rbDist < 100.0f) {
+                mIsPerpInSight = true;
+                mTimeSinceAnyCopSawPerp = 0.0f;
+            }
+            if (distxz < MinDistanceToTargetxz) {
+                MinDistanceToTargetxz = distxz;
+            }
+            mDistanceToNearestCopInRoadblock = rbDist;
+        }
+
+        if (mRoadBlock->IsPerpCheating() && mNumRBCopsAdded == 0 &&
+            mNearestCopInRoadblock != nullptr && mRoadBlock->GetDodged()) {
+            AddVehicle(mNearestCopInRoadblock);
+            mNumCopsRequiredToEvade++;
+            mNumRBCopsAdded++;
+        }
+    }
+
+    mMinDistanceToTarget = MinDistanceToTarget3;
+
+    // Busted speed limit
+    float bustedSpeedLimit = KPH2MPS(pursuitLevelAttrib->BustSpeed(0));
+
+    float bustedIncrement;
+    if (!mIsPerpBusted && mIsPerpInSight && !mIsPursuitBailed) {
+        // Check if target is in IRBVehicle with manual reset invulnerability
+        bool isInvulnerable = false;
+        IRBVehicle *irbVehicle = nullptr;
+        mTarget->QueryInterface(&irbVehicle);
+
+        if (irbVehicle && irbVehicle->GetInvulnerability() == INVULNERABLE_FROM_MANUAL_RESET) {
+            isInvulnerable = true;
+        }
+
+        float closeDistance = KPH2MPS(5.0f);
+        if (!isInvulnerable) {
+            float targetSpeed = mTarget->GetSpeed();
+            if (targetSpeed < bustedSpeedLimit) {
+                goto speed_below_limit;
+            }
+            bustedIncrement = dT * 1.0f;
+        } else {
+            closeDistance = closeDistance * KPH2MPS(1.0f);
+speed_below_limit:
+            if (closeDistance <= MinDistanceToTargetxz) {
+                bustedIncrement = dT * 1.0f;
+            } else {
+                float increment = dT * 0.0f;
+                mBustedIncrement = increment;
+                if (isInvulnerable) {
+                    bustedIncrement = increment * 2.0f;
+                    goto set_busted_increment;
+                }
+                goto after_busted_increment;
+            }
+        }
+set_busted_increment:
+        mBustedIncrement = bustedIncrement;
+after_busted_increment:
+
+        // INIS check - zero busted increment during world movement
+        if (INIS::Exists() && INIS::Get()->IsWorldMomement()) {
+            mBustedIncrement = 0.0f;
+        }
+
+        // Rep points per minute - check if minute boundary crossed
+        int currentMinute = static_cast<int>(mTotalPursuitTime / 60.0f);
+        if (static_cast<int>(pursuitTimeBeforeUpdate / 60.0f) != currentMinute) {
+            iperp->AddToPendingRepPointsNormal(mRepPointsPerMinute);
+        }
+
+        // Backup countdown timer
+        if (mPursuitStatus == PS_BACKUP_REQUESTED) {
+            float newTimer = mBackupCountdownTimer - dT;
+            mBackupCountdownTimer = newTimer;
+            if (newTimer < 0.0f) {
+                mPursuitStatus = PS_INITIAL_CHASE;
+                EndPursuitEnteringSafehouse();
+            }
+        }
+    } else {
+        mBustedIncrement = dT * bustedIncrement;
+    }
+
+    // Busted check
+    if (!mIsPerpBusted) {
+        if (!mIsPursuitBailed && 1.0f < mBustedTimer) {
+            mIsPerpBusted = true;
+            mPursuitStatus = PS_BUSTED;
+
+            if (!is_player_perp) {
+                BailPursuit();
+
+                GRacerInfo *racerInfo = nullptr;
+                if (GRaceStatus::Exists()) {
+                    racerInfo = GRaceStatus::Get().GetRacerInfo(mTarget->GetSimable());
+                }
+                if (racerInfo) {
+                    racerInfo->Busted();
+                    racerInfo->ForceStop();
+                }
+
+                HSIMABLE perpHandle = mTarget->GetSimable()->GetOwnerHandle();
+                MPerpBusted msg(perpHandle);
+                UCrc32 channel("MPerpBusted");
+                msg.Post(channel);
+            } else {
+                // Player pursuit busted - iterate all vehicles
+                IVehicle **vehBegin = mIVehicleList.begin();
+                for (IVehicle **vit = vehBegin; vit != vehBegin + mIVehicleList.size(); vit++) {
+                    IVehicle *veh = *vit;
+
+                    if (!veh->IsActive()) {
+                        vehBegin = mIVehicleList.begin();
+                        continue;
+                    }
+                    if (veh->IsDestroyed()) {
+                        vehBegin = mIVehicleList.begin();
+                        continue;
+                    }
+
+                    IPursuitAI *copAI = UTL::COM::QueryInterface<IPursuitAI>(veh);
+                    if (copAI) {
+                        veh->GlareOff(LIGHT_COPS);
+                        UCrc32 bustedGoal("busted");
+                        copAI->SetInPositionGoal(bustedGoal);
+                        copAI->DoInPositionGoal();
+                    }
+
+                    vehBegin = mIVehicleList.begin();
+                }
+
+                HSIMABLE perpHandle = mTarget->GetSimable()->GetOwnerHandle();
+                MPerpBusted msg(perpHandle);
+                UCrc32 channel(0x20d60dbf);
+                msg.Post(channel);
+            }
+        }
+    } else if (is_player_perp) {
+        // Already busted - HUD timer
+        float prevHUDTime = mBustedHUDTime;
+        float newHUDTime = prevHUDTime + dT;
+        mBustedHUDTime = newHUDTime;
+        if (prevHUDTime <= kBustedHUDTime && kBustedHUDTime < newHUDTime) {
+            HSIMABLE perpHandle = mTarget->GetSimable()->GetOwnerHandle();
+            MPerpBusted msg(perpHandle);
+            UCrc32 channel(0xfea34c0a);
+            msg.Post(channel);
+        }
+    }
+
+    // Bailed pursuit - all cops flee
+    if (mIsPursuitBailed) {
+        IVehicle **vehBegin = mIVehicleList.begin();
+        for (IVehicle **vit = vehBegin; vit != vehBegin + mIVehicleList.size(); vit++) {
+            IVehicle *veh = *vit;
+
+            if (!veh->IsActive()) {
+                vehBegin = mIVehicleList.begin();
+                continue;
+            }
+            if (veh->IsDestroyed()) {
+                vehBegin = mIVehicleList.begin();
+                continue;
+            }
+
+            IPursuitAI *copAI = UTL::COM::QueryInterface<IPursuitAI>(veh);
+            if (copAI) {
+                copAI->StartFlee();
+            }
+
+            vehBegin = mIVehicleList.begin();
+        }
+    }
+
+    // Update mIsPerpInSight
+    mIsPerpInSight = mTimeSinceAnyCopSawPerp < 3.0f;
+
+    // Hidden zone / cooldown handling
+    if (iperp) {
+        bool perpIsHidden = false;
+        if (iperp->IsHiddenFromCars() || iperp->IsHiddenFromHelicopters()) {
+            perpIsHidden = true;
+        }
+
+        if (perpIsHidden) {
+            if (!mIsPerpInSight) {
+                float multiplier = 2.0f;
+                if (hasPursuitLevelAttrib) {
+                    multiplier = pursuitLevelAttrib->HiddenZoneTimeMultiplier(0);
+                }
+                mHiddenZoneTime += dT * multiplier;
+                goto cooldown_logic;
+            }
+        } else {
+            if (!mIsPerpInSight) {
+                goto cooldown_logic;
+            }
+        }
+
+        // In sight - reset hidden zone and update last known location
+        mHiddenZoneTime = 0.0f;
+        mLastKnownLocation.x = mTarget->GetPosition().x;
+        mLastKnownLocation.z = mTarget->GetPosition().z;
+        mLastKnownLocation.y = mTarget->GetPosition().y;
+    }
+
+cooldown_logic:
+    float sumTimeElapsed = mTimeSinceAnyCopSawPerp + mHiddenZoneTime;
+
+    if (mTimeSinceAnyCopSawPerp > 3.0f) {
+        // Evade mode
+        bool fullyEvaded = false;
+        float ratio = sumTimeElapsed / mCoolDownTimeRequired;
+        mPursuitMeter = -1.0f;
+        mEvadeLevel = ratio;
+        float meterThreshold = 0.5f;
+
+        if (!mCoolDownMeterDisplayed) {
+            mEvadeLevel = 0.0f;
+            if (meterThreshold < mPursuitMeterModeTimer) {
+                mPursuitStatus = PS_COOL_DOWN;
+                mPursuitMeterModeTimer = 0.0f;
+                mCoolDownMeterDisplayed = true;
+
+                float timeBetweenCopSpawn = pursuitLevelAttrib->TimeBetweenCopSpawn();
+                mBackupCountdownTimer = 0.0f;
+                mDoTestForHeliSearch = true;
+
+                if (mSpawnCopTimer - timeBetweenCopSpawn < 0.0f) {
+                    timeBetweenCopSpawn = mSpawnCopTimer;
+                }
+                mSpawnCopTimer = timeBetweenCopSpawn;
+
+                if (IsPlayerPursuit()) {
+                    GInfractionManager::Get().ReportInfraction(GInfractionManager::kInfraction_Resist);
+                }
+            }
+        } else {
+            if (ratio < 0.25f) {
+                mEvadeLevel = 0.25f;
+            }
+            if (1.0f <= ratio) {
+                fullyEvaded = true;
+            }
+        }
+
+        if (fullyEvaded) {
+            mPursuitStatus = PS_EVADED;
+            mEvadeLevel = 1.0f;
+
+            if (IsPlayerPursuit() && ICopMgr::Exists()) {
+                ICopMgr::Get()->LockoutCops(true);
+            }
+        }
+    } else {
+        if (mTimeSinceAnyCopSawPerp > 1.5f) {
+            // Transition zone
+            float scale = mTimeSinceAnyCopSawPerp * 0.5f;
+            float meterVal = 1.0f - scale;
+            float clampMin = -1.0f;
+            if (meterVal - clampMin < 0.0f) {
+                meterVal = clampMin;
+            }
+            if (1.0f - meterVal < 0.0f) {
+                meterVal = 1.0f;
+            }
+            mPursuitMeter = meterVal;
+        } else if (hasPursuitLevelAttrib) {
+            // Active pursuit meter calculation
+            float deadZoneBustedDist = pursuitLevelAttrib->MeterDeadZoneBustedDistance(0);
+            float deadZoneEvadeDist = pursuitLevelAttrib->MeterDeadZoneEvadeDist();
+
+            mPursuitMeter = 0.0f;
+
+            if (deadZoneEvadeDist < MinDistanceToTarget3) {
+                float frontLOSDist = pursuitLevelAttrib->frontLOSdistance();
+                float meterDist = (MinDistanceToTarget3 - deadZoneEvadeDist) / (frontLOSDist - deadZoneEvadeDist) * -2.0f;
+                float speedScale = 1.0f;
+                float clampMin = -1.0f;
+
+                if (1.0f - meterDist < 0.0f) {
+                    meterDist = 1.0f;
+                }
+
+                mPursuitMeter = meterDist;
+            } else if (MinDistanceToTarget3 < deadZoneBustedDist) {
+                float targetSpeed = mTarget->GetSpeed();
+
+                if (targetSpeed <= KPH2MPS(200.0f)) {
+                    float distRatio = (deadZoneBustedDist - MinDistanceToTarget3) / (deadZoneBustedDist - 5.0f);
+                    if (distRatio < 0.0f) {
+                        distRatio = 0.0f;
+                    }
+                    float maxDist = 1.0f;
+                    if (maxDist - distRatio < 0.0f) {
+                        distRatio = maxDist;
+                    }
+
+                    float speedLimit = KPH2MPS(80.0f);
+                    float speedTargetSpeed = mTarget->GetSpeed();
+                    float speedRatio = (speedLimit - speedTargetSpeed) / (speedLimit - bustedSpeedLimit);
+                    if (speedRatio < 0.0f) {
+                        speedRatio = 0.0f;
+                    }
+                    if (maxDist - speedRatio < 0.0f) {
+                        speedRatio = maxDist;
+                    }
+
+                    mPursuitMeter = (distRatio * 0.3f + speedRatio * 0.7f) * -2.0f + 1.0f / 60.0f;
+                } else {
+                    mPursuitMeter = 0.0f;
+                }
+            }
+        }
+
+        // Cooldown meter decay
+        if (!mCoolDownMeterDisplayed) {
+            mEvadeLevel = 0.0f;
+        } else {
+            float newLevel = mEvadeLevel * 0.95f;
+            mEvadeLevel = newLevel;
+            if (newLevel < 0.25f) {
+                mEvadeLevel = 0.25f;
+            }
+
+            if (0.5f < mPursuitMeterModeTimer) {
+                mDoTestForHeliSearch = false;
+                mPursuitMeterModeTimer = 0.0f;
+                mCoolDownMeterDisplayed = false;
+                mPursuitStatus = PS_INITIAL_CHASE;
+            }
+        }
+    }
+
+    // Final cooldown time
+    float cooldownRemaining = mCoolDownTimeRequired - sumTimeElapsed;
+    if (cooldownRemaining < 0.0f) {
+        cooldownRemaining = 0.0f;
+    }
+    mCoolDownTimeRemaining = cooldownRemaining;
+
+    float virtCooldown = GetCoolDownTimeRemaining();
+    if (virtCooldown < mCoolDownTimeRemaining) {
+        mCoolDownTimeRemaining = GetCoolDownTimeRemaining();
+    }
+
+    if (mIsPerpBusted || mIsPursuitBailed) {
+        mEvadeLevel = 0.0f;
+    }
+
+    return true;
 }
 
 bool AIPursuit::IsPlayerPursuit() const {

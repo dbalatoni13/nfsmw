@@ -33,6 +33,9 @@ struct GRacerInfo {
         mNumTrafficCarsHit++;
     }
 
+    void Busted();
+    void ForceStop();
+
   private:
     HSIMABLE mhSimable;              // offset 0x0, size 0x4
     GCharacter *mGameCharacter;      // offset 0x4, size 0x4
