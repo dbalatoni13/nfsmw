@@ -414,6 +414,16 @@ void bFileFlushCacheFile(const char *filename) {
     CachedRealFileHandle::FlushUnusedHandle(filename);
 }
 
+DisculatorDriver::~DisculatorDriver() {}
+
+bool DisculatorDriver::Remove(const char *name) {
+    return false;
+}
+
+unsigned long long DisculatorDriver::Getspace() {
+    return 0;
+}
+
 bFile::bFile(const char *filename, bFileOpenMode open_mode) {
     bFileList.AddTail(this);
     bFileNumInstances++;

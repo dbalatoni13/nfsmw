@@ -322,6 +322,17 @@ bool GameFlowManager::IsPaused() {
     return Sim::GetState() == Sim::STATE_IDLE;
 }
 
+extern unsigned char bin_globala_bun[];
+void bOverlappedMemCpy(void *dst, const void *src, int size);
+void LoadEmbeddedChunks(void *data, int size, const char *name);
+void WaitForResourceLoadingComplete();
+
+void LoadGlobalAChunks() {
+    bOverlappedMemCpy(reinterpret_cast<void *>(0x8041f900), bin_globala_bun, 0x15df4);
+    LoadEmbeddedChunks(reinterpret_cast<void *>(0x8041f900), 0x15df4, "globala");
+    WaitForResourceLoadingComplete();
+}
+
 // TODO
 void GetBuildVersionName(char *build_version_name) {
 #ifdef MILESTONE_OPT
@@ -382,6 +393,11 @@ int TrackStreamerLoadingBarUp;
 
 void BeginGameFlowLoadRegion() {
     TheRegionLoader.BeginLoading();
+}
+
+void CheckForHolesInMemory() {
+    bCountFreeMemory(0);
+    bLargestMalloc(0);
 }
 
 void RegionLoader::LoadHandler(int) {

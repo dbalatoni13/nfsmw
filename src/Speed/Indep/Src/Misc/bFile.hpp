@@ -138,20 +138,20 @@ struct DeviceDriver {
     char mDeviceName[16];   // offset 0x0, size 0x10
 
     DeviceDriver(const char *name);
-    virtual ~DeviceDriver();
-    virtual bool Init();
-    virtual void Restore();
-    virtual int Open(const char *name, int oflags, int *pParentFileHandle);
-    virtual void Close(int h);
-    virtual unsigned int Read(int h, void *buf, unsigned int bufsize, DeviceDriver *ddParent, int ddFileHandle);
-    virtual unsigned int Write(int h, const void *buf, unsigned int bufsize, DeviceDriver *ddParent, int ddFileHandle);
-    virtual unsigned long long Seek(int h, unsigned long long offset, int whence, DeviceDriver *ddParent, int ddFileHandle);
-    virtual unsigned long long Getsize(int h);
-    virtual unsigned long long QueryLocation(int h);
-    virtual bool Remove(const char *name);
-    virtual unsigned long long Getspace();
-    virtual const char *GetName();
-    virtual unsigned int GetOptimalReadSize();
+    virtual ~DeviceDriver() {}
+    virtual bool Init() { return false; }
+    virtual void Restore() {}
+    virtual int Open(const char *name, int oflags, int *pParentFileHandle) { return 0; }
+    virtual void Close(int h) {}
+    virtual unsigned int Read(int h, void *buf, unsigned int bufsize, DeviceDriver *ddParent, int ddFileHandle) { return 0; }
+    virtual unsigned int Write(int h, const void *buf, unsigned int bufsize, DeviceDriver *ddParent, int ddFileHandle) { return 0; }
+    virtual unsigned long long Seek(int h, unsigned long long offset, int whence, DeviceDriver *ddParent, int ddFileHandle) { return 0; }
+    virtual unsigned long long Getsize(int h) { return 0; }
+    virtual unsigned long long QueryLocation(int h) { return 0; }
+    virtual bool Remove(const char *name) { return false; }
+    virtual unsigned long long Getspace() { return 0; }
+    virtual const char *GetName() { return nullptr; }
+    virtual unsigned int GetOptimalReadSize() { return 0; }
 };
 
 void AddDevice(DeviceDriver *device);
@@ -203,8 +203,8 @@ struct DisculatorDriver : public RealFile::DeviceDriver {
     unsigned long long Seek(int h, unsigned long long offset, int whence, RealFile::DeviceDriver *ddParent, int ddFileHandle) override;
     unsigned long long Getsize(int h) override;
     unsigned long long QueryLocation(int h) override;
-    bool Remove(const char *name) override { return false; }
-    unsigned long long Getspace() override { return 0; }
+    bool Remove(const char *name) override;
+    unsigned long long Getspace() override;
 
     bool LoadGiantFiles(const char *giant_dir_filename, const char *giant_data_filename_base);
     bFileDirectoryEntry *FindDirectoryEntry(const char *filename);
