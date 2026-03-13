@@ -93,7 +93,7 @@ void SlotPool::ExpandSlotPool(int num_extra_slots) {
     }
     last_slot_pool->NextSlotPool = new_slot_pool;
 
-    SlotPoolEntry *last_slot = &new_slot_pool->Slots[((num_extra_slots - 1) * SlotSize) / sizeof(SlotPoolEntry *)];
+    SlotPoolEntry *last_slot = &new_slot_pool->Slots[((num_extra_slots - 1) * SlotSize) / 4];
     last_slot->Next = FreeSlots;
 
     FreeSlots = new_slot_pool->FreeSlots;
@@ -322,8 +322,10 @@ void SlotPoolManager::DeleteSlotPool(SlotPool *slot_pool) {
         void *leaky_slot = slot_pool->GetAllocatedSlot(0);
         slot_pool->GetSlotNumber(leaky_slot);
     }
-    for (SlotPool *next_pool = slot_pool; next_pool; next_pool = next_pool->NextSlotPool) {
-        SlotPool::DeleteSlotPool(next_pool);
+    while (slot_pool) {
+        SlotPool *next = slot_pool->NextSlotPool;
+        SlotPool::DeleteSlotPool(slot_pool);
+        slot_pool = next;
     }
 }
 

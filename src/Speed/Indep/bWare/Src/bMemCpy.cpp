@@ -50,6 +50,52 @@ int bMemCmp(const void *s1, const void *s2, unsigned int numbytes) {
     return *reinterpret_cast<const unsigned char *>(s1) - *reinterpret_cast<const unsigned char *>(s2);
 }
 
+void bMemSet(void *dest, unsigned char c, unsigned int numbytes) {
+    int *idest = reinterpret_cast<int *>(dest);
+    int fill = c << 24;
+
+    fill = fill + (c << 16);
+    fill = fill + (c << 8);
+    fill = fill + c;
+
+    if ((reinterpret_cast<uintptr_t>(idest) & 3) == 0) {
+        while (((reinterpret_cast<uintptr_t>(idest) & 0xf) != 0) && (numbytes > 3)) {
+            *idest = fill;
+            idest++;
+            numbytes -= 4;
+        }
+    }
+
+    if ((reinterpret_cast<uintptr_t>(idest) & 7) == 0) {
+        volatile unsigned long long convert64;
+        reinterpret_cast<volatile int *>(&convert64)[0] = fill;
+        reinterpret_cast<volatile int *>(&convert64)[1] = fill;
+        unsigned long long pattern64 = convert64;
+
+        while (numbytes > 0xf) {
+            *reinterpret_cast<unsigned long long *>(&idest[0]) = pattern64;
+            numbytes -= 0x10;
+            *reinterpret_cast<unsigned long long *>(&idest[2]) = pattern64;
+            idest += 4;
+        }
+    }
+
+    if ((reinterpret_cast<uintptr_t>(idest) & 3) == 0) {
+        while (numbytes > 7) {
+            idest[0] = fill;
+            idest[1] = fill;
+            idest += 2;
+            numbytes -= 8;
+        }
+    }
+
+    while (numbytes != 0) {
+        *reinterpret_cast<unsigned char *>(idest) = c;
+        idest = reinterpret_cast<int *>(reinterpret_cast<char *>(idest) + 1);
+        numbytes--;
+    }
+}
+
 void bOverlappedMemCpy(void *dest, const void *src, unsigned int numbytes) {
     char *cdest = reinterpret_cast<char *>(dest);
     const char *csrc = reinterpret_cast<const char *>(src);

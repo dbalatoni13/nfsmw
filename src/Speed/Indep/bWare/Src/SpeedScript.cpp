@@ -8,8 +8,14 @@
 
 #include <stdarg.h>
 
-// TODO
-bool IsWhiteSpace(char c) {}
+bool IsWhiteSpace(char c) {
+    if (c == ' ') return true;
+    if (c == '\n') return true;
+    if (c == '\t') return true;
+    if (c == '=') return true;
+    if (c == ',') return true;
+    return c == '\r';
+}
 
 SpeedScript::SpeedScript(const char *filename, BOOL enable_fatal_error) {
     this->ErrorFunction = nullptr;
@@ -228,14 +234,12 @@ char *SpeedScript::GetNextCommand() {
 // UNSOLVED
 char *SpeedScript::GetNextCommand(const char *command) {
     char *s;
-
-    do {
-        s = this->GetNextCommand();
-        if (!s) {
-            return nullptr;
+    while ((s = GetNextCommand()) != nullptr) {
+        if (bStrICmp(s, command) == 0) {
+            return s;
         }
-    } while (bStrICmp(s, command) != 0);
-    return s;
+    }
+    return nullptr;
 }
 
 // TODO fake match, isArg doesn't exist

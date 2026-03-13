@@ -186,6 +186,10 @@ class bMemoryAllocator : public EA::Allocator::IAllocator {
     int PoolNumber; // offset 0x8, size 0x4
 
   public:
+    bMemoryAllocator()
+        : mRefcount(1) //
+        , PoolNumber(0) {}
+
     virtual void *Alloc(unsigned int size, const EA::TagValuePair &flags);
     virtual void Free(void *pBlock, unsigned int size);
     virtual int AddRef();
