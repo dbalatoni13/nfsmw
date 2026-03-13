@@ -19,7 +19,7 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 class cFEngRender;
-struct EasterEggs;
+class EasterEggs;
 
 void InitFEngMemoryPool();
 void InitLoadingScreen();

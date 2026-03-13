@@ -5,7 +5,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRivalFlow.hpp"
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
-class FEMovie;
+struct FEMovie;
 class GarageMainScreen {
   public:
     static GarageMainScreen *GetInstance();
