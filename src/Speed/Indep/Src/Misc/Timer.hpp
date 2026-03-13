@@ -8,7 +8,9 @@
 // total size: 0x4
 class Timer {
   public:
-    Timer() {}
+    Timer() {
+        this->PackedTime = 0;
+    }
 
     Timer(float seconds) {
         this->PackedTime = static_cast<int>(seconds * 4000);

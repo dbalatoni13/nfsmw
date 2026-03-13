@@ -102,7 +102,7 @@ static float ReplayPowerSlideScore(ICEAnchor *p_car) {
     }
 
     {
-        float yaw = (UMath::Abs(p_car->GetSlipAngle()) * 360.0f - 5.0f) * 0.025f;
+        float yaw = (bAbs(p_car->GetSlipAngle()) * 360.0f - 5.0f) * 0.025f;
 
         if (yaw <= ret) {
             return ret;

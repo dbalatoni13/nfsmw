@@ -56,13 +56,13 @@ namespace ICE {
 bool KeysSharedSpace(ICEData *p1, int n1, ICEData *p2, int n2);
 
 bool KeysShared(ICEData *p1, int n1, ICEData *p2, int n2) {
-    if (UMath::Abs(p1->fTangentLength[n1] - p2->fTangentLength[n2]) > 0.001f) {
+    if (bAbs(p1->fTangentLength[n1] - p2->fTangentLength[n2]) > 0.001f) {
         return false;
     }
-    if (UMath::Abs(p1->fDutch[n1] - p2->fDutch[n2]) > 0.001f) {
+    if (bAbs(p1->fDutch[n1] - p2->fDutch[n2]) > 0.001f) {
         return false;
     }
-    if (UMath::Abs(p1->fLens[n1] - p2->fLens[n2]) > 0.001f) {
+    if (bAbs(p1->fLens[n1] - p2->fLens[n2]) > 0.001f) {
         return false;
     }
     return KeysSharedSpace(p1, n1, p2, n2);
@@ -79,10 +79,10 @@ bool KeysSharedSpace(ICEData *p1, int n1, ICEData *p2, int n2) {
         return false;
     }
     for (int i = 0; i < 3; i++) {
-        if (UMath::Abs(p1->vEye[n1][i] - p2->vEye[n2][i]) > 0.001f) {
+        if (bAbs(p1->vEye[n1][i] - p2->vEye[n2][i]) > 0.001f) {
             return false;
         }
-        if (UMath::Abs(p1->vLook[n1][i] - p2->vLook[n2][i]) > 0.001f) {
+        if (bAbs(p1->vLook[n1][i] - p2->vLook[n2][i]) > 0.001f) {
             return false;
         }
     }

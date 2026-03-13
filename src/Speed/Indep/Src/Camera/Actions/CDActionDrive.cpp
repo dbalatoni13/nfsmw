@@ -530,7 +530,7 @@ void CDActionDrive::Update(float dT) {
 
         float drift = 0.0f;
         if (mAnchor->IsTouchingGround() && mVehicle != nullptr) {
-            float slipangle = UMath::Abs(mVehicle->GetSlipAngle());
+            float slipangle = bAbs(mVehicle->GetSlipAngle());
             slipangle = ANGLE2DEG(slipangle);
             drift = UMath::Ramp(slipangle, 5.0f, 45.0f);
             float speedFactor = UMath::Ramp(mVehicle->GetAbsoluteSpeed() - 10.0f, 0.0f, 10.0f);
