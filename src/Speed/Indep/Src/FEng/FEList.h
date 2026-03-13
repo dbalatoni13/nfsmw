@@ -6,13 +6,17 @@
 // total size: 0xC
 struct FEMinNode {
     friend class FERefList;
+    friend class FEMinList;
 
 protected:
     FEMinNode* next; // offset 0x0, size 0x4
     FEMinNode* prev; // offset 0x4, size 0x4
 
 public:
-    inline FEMinNode() : next(nullptr), prev(nullptr) {}
+    inline FEMinNode()
+        : next(reinterpret_cast<FEMinNode*>(0xABADCAFE)), //
+          prev(reinterpret_cast<FEMinNode*>(0xABADCAFE)) {
+    }
     virtual ~FEMinNode();
 
     inline FEMinNode* GetNext() const { return next; }

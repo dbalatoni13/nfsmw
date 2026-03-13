@@ -71,6 +71,7 @@ struct FENode : public FEMinNode {
 
 // total size: 0x10
 struct FEList : public FEMinList {
+    FENode* FindNode(const char* pName, FENode* node) const;
     FENode* FindNode(const char* pName) const;
 };
 

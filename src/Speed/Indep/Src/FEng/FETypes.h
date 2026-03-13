@@ -52,6 +52,8 @@ struct FEColor {
     FEColor(unsigned long Col);
     operator unsigned long() const;
     FEColor& operator=(const FEColor& rhs);
+    FEColor& operator+=(const FEColor& rhs);
+    FEColor operator-(const FEColor& rhs) const;
 };
 
 // total size: 0x10
