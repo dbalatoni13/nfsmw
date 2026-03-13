@@ -16,6 +16,16 @@ FEKeyboard::FEKeyboard(ScreenConstructorData *sd)
     UpdateVisuals();
 }
 
+int FEKeyboard::GetCase() {
+    if (mbShift) {
+        return !mbCaps;
+    }
+    if (!mbCaps) {
+        return 0;
+    }
+    return 1;
+}
+
 void FEKeyboard::MoveCursor(int nDelta) {
     mbIsFirstKey = false;
     mnCursorIndex = mnCursorIndex + nDelta;
@@ -57,6 +67,11 @@ bool FEKeyboard::IsEmailSymbol(char character) {
         }
     }
     return false;
+}
+
+void FEKeyboard::AppendLetter(int nButton) {
+    char letter = GetLetterMap(nButton);
+    AppendChar(letter);
 }
 
 void FEKeyboard::AppendBackspace() {

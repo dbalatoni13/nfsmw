@@ -1,7 +1,10 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 
 extern unsigned int FEngHashString(const char *, ...);
+extern eLanguages GetCurrentLanguage();
+extern EAXSound *g_pEAXSound;
 
 const char* UserProfile::GetProfileName() {}
 
@@ -146,8 +149,54 @@ bool GetIsCollectorsEdition() {
     return IsCollectorsEdition;
 }
 
+void PlayerSettings::Default() {
+    Handling = 1;
+    CurCam = PSC_DEFAULT;
+    Transmission = 0;
+    GaugesOn = 1;
+    PositionOn = 1;
+    LapInfoOn = 1;
+    ScoreOn = 1;
+    LeaderboardOn = 1;
+    TransmissionPromptOn = 1;
+    Rumble = 1;
+    DriveWithAnalog = 1;
+    Config = CC_CONFIG_1;
+    SplitTimeType = 0;
+}
+
 bool PlayerSettings::operator==(const PlayerSettings& rhs) const {
     return bMemCmp(this, &rhs, 0x2C) == 0;
+}
+
+void PlayerSettings::DefaultFromOptionsScreen() {
+    int savedDriveWithAnalog = DriveWithAnalog;
+    eControllerConfig savedConfig = Config;
+    int savedRumble = Rumble;
+    Default();
+    Rumble = savedRumble;
+    DriveWithAnalog = savedDriveWithAnalog;
+    Config = savedConfig;
+}
+
+void GameplaySettings::Default() {
+    AutoSaveOn = 1;
+    RearviewOn = 1;
+    Damage = 1;
+    RacingMiniMapMode = 1;
+    LastMapZoom = 1;
+    JumpCam = 1;
+    MapItems = static_cast<unsigned int>(-1);
+    LastPursuitMapZoom = 2;
+    LastMapView = 0;
+    HighlightCam = 127.5f;
+    ExploringMiniMapMode = 0;
+    eLanguages lang = GetCurrentLanguage();
+    if (lang) {
+        SpeedoUnits = 1;
+    } else {
+        SpeedoUnits = 0;
+    }
 }
 
 bool GameplaySettings::operator==(const GameplaySettings& rhs) const {
@@ -156,4 +205,73 @@ bool GameplaySettings::operator==(const GameplaySettings& rhs) const {
 
 bool VideoSettings::operator==(const VideoSettings& rhs) const {
     return bMemCmp(this, &rhs, 0x10) == 0;
+}
+
+void AudioSettings::Default() {
+    AudioMode = 2;
+    IGMusicVol = 0.8f;
+    SpeedVol = 1.0f;
+    MasterVol = 1.0f;
+    SpeechVol = 1.0f;
+    FEMusicVol = 0.8f;
+    SoundEffectsVol = 1.0f;
+    EngineVol = 1.0f;
+    CarVol = 1.0f;
+    AmbientVol = 1.0f;
+    AudioMode = g_pEAXSound->GetDefaultPlatformAudioMode();
+    PlayState = 0;
+    EATraxMode = 1;
+    InteractiveMusicMode = 1;
+}
+
+void OptionsSettings::Default() {
+    CurrentCategory = static_cast<eOptionsCategory>(0);
+    TheVideoSettings.Default();
+    TheAudioSettings.Default();
+    TheGameplaySettings.Default();
+    ThePlayerSettings[0].Default();
+    ThePlayerSettings[1].Default();
+}
+
+char *SaveSomeData(void *save_to, void *save_from, int bytes, void *maxptr) {
+    if (reinterpret_cast<unsigned int>(save_to) + bytes <= reinterpret_cast<unsigned int>(maxptr)) {
+        bMemCpy(save_to, save_from, bytes);
+        save_to = static_cast<char *>(save_to) + bytes;
+    }
+    return static_cast<char *>(save_to);
+}
+
+char *LoadSomeData(void *load_to, void *load_from, int bytes, void *maxptr) {
+    if (reinterpret_cast<unsigned int>(load_from) + bytes <= reinterpret_cast<unsigned int>(maxptr)) {
+        bMemCpy(load_to, load_from, bytes);
+    }
+    return static_cast<char *>(load_from) + bytes;
+}
+
+FEKeyboardSettings::FEKeyboardSettings() {
+    AcceptCallbackHash = 0xAE83B9DB;
+    DeclineCallbackHash = 0x6A97B51F;
+    MaxTextLength = 64;
+    Buffer[0] = 0;
+    DefaultTextHash = 0;
+    Mode = 0;
+}
+
+unsigned int cFrontendDatabase::GetMilestoneHeaderHash(unsigned int tag) {
+    return FEngHashString("BLACKLIST_PURSUIT_MILESTONES_%02d_SHORT", tag);
+}
+
+unsigned int cFrontendDatabase::GetMilestoneDescHash(unsigned int tag) {
+    return FEngHashString("BLACKLIST_PURSUIT_MILESTONES_%02d", tag);
+}
+
+bool cFrontendDatabase::IsMilestoneTimeFormat(int typeKey) const {
+    if (typeKey == 0x33fa23a || typeKey == 0x5392e4fd) {
+        return true;
+    }
+    return false;
+}
+
+GameCompletionStats::GameCompletionStats() {
+    bMemSet(this, 0, sizeof(GameCompletionStats));
 }

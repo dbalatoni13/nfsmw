@@ -13,6 +13,11 @@ struct FEPackageRenderInfo;
 struct FEGroup;
 struct FEModel;
 struct FERenderObject;
+struct FEMovie;
+struct FEColoredImage;
+struct FEImage;
+struct FEMultiImage;
+struct FEString;
 
 struct FEClipInfo {
     bVector3 normals[4]; // offset 0x0, size 0x40
@@ -49,6 +54,13 @@ struct cFEngRender {
     void RemoveCachedRender(FEObject* obj, FEPackageRenderInfo* info);
     FERenderObject* FindCachedRender(FEObject* obj);
     void RenderModel(FEModel* model, FERenderObject* renderObj);
+    void RenderMovie(FEMovie* movie, FERenderObject* cached, FEPackageRenderInfo* pkg_render_info);
+    void RenderImage(FEImage* image, FERenderObject* cached, FEPackageRenderInfo* pkg_render_info);
+    void RenderCBVImage(FEColoredImage* image, FERenderObject* cached, FEPackageRenderInfo* pkg_render_info);
+    void RenderMultiImage(FEMultiImage* image, FERenderObject* cached, FEPackageRenderInfo* pkg_render_info);
+    void RenderString(FEString* string, FERenderObject* cached, FEPackageRenderInfo* pkg_render_info);
+    void RenderObject(FEObject* obj, FEPackageRenderInfo* pkg_render_info);
+    FERenderObject* CreateCachedRender(FEObject* object, struct TextureInfo* texture_info);
 };
 
 #endif

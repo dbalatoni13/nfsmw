@@ -174,6 +174,8 @@ class AudioSettings {
 // total size: 0xC0
 class OptionsSettings {
   public:
+    void Default();
+
     eOptionsCategory CurrentCategory;     // offset 0x0, size 0x4
     VideoSettings TheVideoSettings;       // offset 0x4, size 0x10
     GameplaySettings TheGameplaySettings; // offset 0x14, size 0x20
@@ -332,6 +334,8 @@ struct RaceSettings {
 
 // total size: 0x14C
 struct FEKeyboardSettings {
+    FEKeyboardSettings();
+
     int AcceptCallbackHash;  // offset 0x0, size 0x4
     int DeclineCallbackHash; // offset 0x4, size 0x4
     int DefaultTextHash;     // offset 0x8, size 0x4
@@ -343,6 +347,8 @@ struct FEKeyboardSettings {
 
 // total size: 0x6
 struct GameCompletionStats {
+    GameCompletionStats();
+
     unsigned char m_nOverall;                // offset 0x0, size 0x1
     unsigned char m_nCareer;                 // offset 0x1, size 0x1
     unsigned char m_nRapSheetRankings;       // offset 0x2, size 0x1

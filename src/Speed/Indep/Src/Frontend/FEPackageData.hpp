@@ -19,6 +19,8 @@ class FEPackageData : public bTNode<FEPackageData> {
 
     bool IsCompressedChunk() { return DataChunk != nullptr; }
 
+    void *GetDataChunk() { return DataChunk; }
+
     bool IsActive() { return pScreen != nullptr; }
 
     void SetPermanent(int flag) { IsPermanent = flag; }
@@ -42,6 +44,9 @@ class FEPackageData : public bTNode<FEPackageData> {
     void ClearHotchunk() { bWasSetupForHotchunk = false; }
 
     struct MenuScreen *GetScreen() { return pScreen; }
+
+    void NotificationMessage(unsigned long Message, struct FEObject *pObject, unsigned long Param1, unsigned long Param2);
+    void NotifySoundMessage(unsigned long msg, struct FEObject *obj, unsigned long control_mask, unsigned long pkg_ptr);
 
     // struct FEPackageRenderInfo *GetRenderInfo() {}
 

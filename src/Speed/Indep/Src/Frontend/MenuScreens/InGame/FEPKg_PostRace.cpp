@@ -1183,6 +1183,22 @@ const GMilestone *const PursuitData::GetMilestone(int index) const {
     return mMilestonesCompleted[index];
 }
 
+void PursuitData::ClearData() {
+    mNumMilestonesThisPursuit = 0;
+    mPursuitLength = 0.0f;
+    mPursuitIsActive = false;
+    mNumCopsDamaged = 0;
+    mNumCopsDestroyed = 0;
+    mNumSpikeStripsDodged = 0;
+    mNumRoadblocksDodged = 0;
+    mCostToStateAchieved = 0;
+    mRepAchievedNormal = 0;
+    mRepAchievedCopDestruction = 0;
+    for (int i = 0; i <= 0x1F; i++) {
+        mMilestonesCompleted[i] = nullptr;
+    }
+}
+
 FEImage *FEngFindImage(const char *pkg_name, int name_hash);
 
 PostRaceMilestonesScreen::PostRaceMilestonesScreen(ScreenConstructorData *sd)

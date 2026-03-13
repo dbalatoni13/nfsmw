@@ -1,3 +1,6 @@
+#include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+
 static const char* gLoadinScreenPackageName;
 
 void SetLoadingScreenPackageName(const char* name) {
@@ -6,6 +9,34 @@ void SetLoadingScreenPackageName(const char* name) {
 
 const char* GetLoadingScreenPackageName() {
     return gLoadinScreenPackageName;
+}
+
+struct ScreenButtonDatum {
+    unsigned int ScreenHash; // offset 0x0, size 0x4
+    unsigned char LastButton; // offset 0x4, size 0x1
+    unsigned int GameMode; // offset 0x8, size 0x4
+};
+
+extern unsigned long FEHashUpper(const char *str);
+extern ScreenButtonDatum *FindScreenButtonDatum(unsigned int hash);
+
+static ScreenButtonDatum ScreenButtonData[0x32];
+
+static ScreenButtonDatum *FindAvailableButtonDatum() {
+    for (int i = 0; i <= 0x31; i++) {
+        if (ScreenButtonData[i].ScreenHash == 0) {
+            return &ScreenButtonData[i];
+        }
+    }
+    return nullptr;
+}
+
+unsigned char FEngGetLastButton(const char *pkg_name) {
+    ScreenButtonDatum *sd = FindScreenButtonDatum(FEHashUpper(pkg_name));
+    if (!sd) {
+        return 0;
+    }
+    return sd->LastButton;
 }
 
 struct UIMain : MenuScreen { UIMain(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x144]; };
@@ -353,3 +384,15 @@ static ScreenCreateFunc ScreenFactoryData[] = {
     CreateUIEATraxScreen,
     CreateOptionsControllerScreen,
 };
+
+void FEPackageData::NotificationMessage(unsigned long Message, FEObject *pObject, unsigned long Param1, unsigned long Param2) {
+    if (pScreen) {
+        pScreen->BaseNotify(Message, pObject, Param1, Param2);
+    }
+}
+
+void FEPackageData::NotifySoundMessage(unsigned long msg, FEObject *obj, unsigned long control_mask, unsigned long pkg_ptr) {
+    if (pScreen) {
+        pScreen->BaseNotifySound(msg, obj, control_mask, pkg_ptr);
+    }
+}

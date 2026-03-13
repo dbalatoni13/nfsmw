@@ -128,6 +128,8 @@ class EAXSound : public AudioMemBase {
 
     void UpdateVolumes(AudioSettings *paudiosettings, float NewValue);
 
+    int GetDefaultPlatformAudioMode();
+
   private:
     int ncompiletest;                            // offset 0x4, size 0x4
     int m_nCopAIStateParam;                      // offset 0x8, size 0x4

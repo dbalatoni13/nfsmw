@@ -21,22 +21,6 @@ struct FEngTextInputObject {
     char *GetEditedString();
 };
 
-struct KeyboardEditString {
-    char InitialString[256];
-    unsigned short EditStringUCS2[256];
-    int CursorPosUCS2;
-    char EditStringPacked[256];
-    unsigned int ModeFlags;
-    int KeysProcessed;
-    int MaxTextLength;
-    bool mEnabled;
-    FEngTextInputObject *TextInputObject;
-
-    bool IsCapturing() {
-        return mEnabled && TextInputObject != nullptr;
-    }
-};
-
 extern KeyboardEditString gKeyboardManager;
 extern MenuScreen *g_pOLCurrentScreen;
 

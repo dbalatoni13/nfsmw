@@ -9,6 +9,14 @@
 
 #include <string.h>
 
+void FixDot(char *buf, int size) {
+    for (int i = 0; i < size; i++) {
+        if (buf[i] == '.') {
+            buf[i] = '_';
+        }
+    }
+}
+
 unsigned int GetFECarNameHashFromFEKey(unsigned int fekey);
 
 namespace {
