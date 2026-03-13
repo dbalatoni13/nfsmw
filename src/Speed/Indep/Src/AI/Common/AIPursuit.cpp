@@ -1985,8 +1985,10 @@ bool AIPursuit::ShouldEnd() const {
     if (mPursuitStatus == PS_EVADED) {
         return true;
     }
-    if ((mIsPerpBusted || mIsPursuitBailed) && GetNumCops() == 0) {
-        return true;
+    if (mIsPerpBusted || mIsPursuitBailed) {
+        if (GetNumCops() == 0) {
+            return true;
+        }
     }
     return false;
 }
@@ -2053,10 +2055,10 @@ void AIPursuit::AddRoadBlock(IRoadBlock *roadblock) {
 
 bool AIPursuit::IsSupportVehicle(IVehicle *iv) {
     IPursuitAI *ipv;
-    if (iv->QueryInterface(&ipv)) {
-        return ipv->GetSupportGoal() != (const char *)nullptr;
+    if (!iv->QueryInterface(&ipv)) {
+        return false;
     }
-    return false;
+    return ipv->GetSupportGoal() != static_cast< const char * >(nullptr);
 }
 
 void AIPursuit::ClearGroundSupportRequest() {
