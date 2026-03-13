@@ -110,8 +110,8 @@ cleanup rules, including jumbo include spacing, initializer-list comment markers
 placement, pointer style, and how to keep style work safe in match-sensitive code.
 
 Use `python tools/code_style.py audit --base origin/main` before a branch-wide style pass.
-It classifies changed files, reports repo-specific findings, and only treats safer C/C++ files
-as clang-format candidates by default.
+It classifies changed files, reports repo-specific findings, and only treats a narrow
+allowlisted subset of C/C++ files as clang-format candidates by default.
 
 ### decomp-diff.py — Diff & symbol overview
 
@@ -237,6 +237,10 @@ python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
 
 - objdiff instruction match is 100%
 - normalized DWARF block match is exact
+
+Pass the normal demangled function name to `verify`. The objdiff side matches against both
+the demangled and symbol-name fields, and the DWARF side reuses the demangled-name lookup
+matching that also tolerates omitted leading namespaces when that information is inconsistent.
 
 If the combined check fails, then inspect the DWARF diff directly with:
 

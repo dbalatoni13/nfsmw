@@ -26,7 +26,9 @@ ps2_types_path = os.path.join(root_dir, "symbols", "PS2", "PS2_types.nothpp")
 CPP_EXTS = {".c", ".cc", ".cpp", ".h", ".hh", ".hpp"}
 HEADER_EXTS = {".h", ".hh", ".hpp"}
 
-SAFE_CPP_PREFIXES = (
+# Default clang-format allowlist. This is about limiting churn, not guaranteeing
+# byte-match safety.
+DEFAULT_FORMAT_CPP_PREFIXES = (
     "src/Speed/Indep/Src/Frontend/",
     "src/Speed/Indep/Src/FEng/",
 )
@@ -132,7 +134,7 @@ def path_category(path: str) -> str:
         return "tooling"
     if path.startswith(JUMBO_PREFIX):
         return "jumbo-source-list"
-    if any(path.startswith(prefix) for prefix in SAFE_CPP_PREFIXES):
+    if any(path.startswith(prefix) for prefix in DEFAULT_FORMAT_CPP_PREFIXES):
         return "safe-cpp" if ext in CPP_EXTS else "safe-other"
     if any(path.startswith(prefix) for prefix in MATCH_SENSITIVE_PREFIXES):
         return "match-sensitive-cpp" if ext in CPP_EXTS else "match-sensitive-other"
@@ -692,14 +694,14 @@ def command_audit(args: argparse.Namespace) -> int:
         print(f"  {category}: {len(by_category[category])}")
     print()
 
-    safe_format_candidates = [
+    default_format_candidates = [
         path
         for path in paths
         if path_category(path) == "safe-cpp" and os.path.splitext(path)[1] in CPP_EXTS
     ]
-    if safe_format_candidates:
-        print("Safe clang-format candidates:")
-        for path in safe_format_candidates:
+    if default_format_candidates:
+        print("Default clang-format candidates:")
+        for path in default_format_candidates:
             print(f"  {path}")
         print()
 
@@ -923,7 +925,7 @@ def build_parser() -> argparse.ArgumentParser:
     fmt = subparsers.add_parser(
         "format",
         parents=[shared],
-        help="Run clang-format on safe files by default",
+        help="Run clang-format on the default allowlisted files by default",
     )
     fmt.add_argument(
         "--category",
