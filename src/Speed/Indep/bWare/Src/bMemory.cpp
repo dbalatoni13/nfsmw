@@ -813,6 +813,7 @@ int bMemoryAllocator::Release() {
 }
 
 void bMemoryInit() {
+#ifdef EA_PLATFORM_GAMECUBE
     if (MemoryInitialized == 0) {
         int main_pool_size = PlatformMemoryINIT();
         void *arena_lo = OSGetArenaLo();
@@ -846,6 +847,9 @@ void bMemoryInit() {
                         GetVirtualMemoryPoolName());
         MemoryInitialized = 1;
     }
+#else
+    // TODO
+#endif
 }
 
 void bMemoryCreatePersistentPool(int size) {
