@@ -66,12 +66,17 @@ struct SFXCTL_Physics : public SFXCTL {
     /* 0xc8 */ float NISRPM;
     /* 0xcc */ float NISTRQ;
 
+    SFXCTL_Physics();
     ~SFXCTL_Physics() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
+    static SndBase *CreateObject(unsigned int allocator);
     void SetupSFX(CSTATE_Base *_StateBase) override;
     void InitSFX() override;
+    void UpdateParams(float t) override;
+    void UpdateMixerOutputs() override;
 
+    void MsgRevEngine(const MAIEngineRev &message);
     void MsgRevOff(const MAIEngineRev &message);
     void UpdateNIS(float t, float dt);
 
@@ -86,6 +91,7 @@ struct SFXCTL_AIPhysics : public SFXCTL_Physics {
     static TypeInfo s_TypeInfo;
 
   public:
+    SFXCTL_AIPhysics();
     /* 0xd0 */ SFXCTL_Shifting *m_pShiftCtl;
     /* 0xd4 */ SndAIStateManager AIStateManager;
     /* 0x268 */ char _pad_ai[0x20]; // padding for intermediate fields
@@ -95,11 +101,18 @@ struct SFXCTL_AIPhysics : public SFXCTL_Physics {
     ~SFXCTL_AIPhysics() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
+    static SndBase *CreateObject(unsigned int allocator);
     int GetController(int Index) override;
     void SetupSFX(CSTATE_Base *_StateBase) override;
     void InitSFX() override;
+    void UpdateParams(float t) override;
     void AttachController(SFXCTL *) override;
+    void GenDeltaRPM();
+    void UpdateRPM(float t);
     void UpdateTorque(float t);
+    void UpdateAccel(float t);
+    int SuggestGear();
+    void UpdateGear();
     void Destroy() override;
     void UpdateMixerOutputs() override;
 };
@@ -109,6 +122,7 @@ struct SFXCTL_TruckPhysics : public SFXCTL_AIPhysics {
     static TypeInfo s_TypeInfo;
 
   public:
+    static SndBase *CreateObject(unsigned int allocator);
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
 };

@@ -4,6 +4,16 @@ SFXCTL_3DColPos::~SFXCTL_3DColPos() {}
 
 SFXCTL_3DScrapePos::~SFXCTL_3DScrapePos() {}
 
+SndBase *SFXCTL_3DColPos::CreateObject(unsigned int allocator) {
+    (void)allocator;
+    return new SFXCTL_3DColPos();
+}
+
+SndBase *SFXCTL_3DScrapePos::CreateObject(unsigned int allocator) {
+    (void)allocator;
+    return new SFXCTL_3DScrapePos();
+}
+
 SndBase::TypeInfo *SFXCTL_3DColPos::GetTypeInfo() const { return &s_TypeInfo; }
 
 char *SFXCTL_3DColPos::GetTypeName() const { return s_TypeInfo.typeName; }

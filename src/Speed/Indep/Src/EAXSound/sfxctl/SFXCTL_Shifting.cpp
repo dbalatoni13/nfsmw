@@ -1,11 +1,62 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Engine.hpp"
 
+SFXCTL_Shifting::SFXCTL_Shifting()
+    : m_pEngineCtl(nullptr) //
+    , m_bNeed_ShiftGearSnd(false) //
+    , m_bNeed_DisengageSnd(false) //
+    , m_bNeed_EngageSnd(false) //
+    , m_bNeed_AccelSnd(false) //
+    , m_bNeed_DeccelSnd(false) //
+    , m_bShouldBeWhining(false) //
+    , m_bBrakePedalMashed(false) //
+    , m_pShiftingPatternData(nullptr) //
+    , eShiftState(SHFT_NONE) //
+    , eShiftStageChanged(SHFT_NONE) //
+    , m_VOL_LFO_AMP(0) //
+    , m_VOL_LFO_FRQ(0) //
+    , m_TRQ_LFO_AMP(0) //
+    , m_TRQ_LFO_FRQ(0) //
+    , m_RPM_LFO_AMP(0) //
+    , m_RPM_LFO_FRQ(0) //
+    , m_bPendingNeedShiftSound(false) //
+    , ShiftType(static_cast< AEMS_SHIFTING_SAMPLES >(0)) //
+    , tShiftDelay(0.0f) //
+    , t_Last_Shift(0.0f) //
+    , RPM_AtShift(0.0f) //
+    , m_nPostShiftFXLevel(0) //
+    , eShift_LFO(SHIFT_LFO_NONE) {}
+
+SndBase *SFXCTL_Shifting::CreateObject(unsigned int allocator) {
+    (void)allocator;
+    return new SFXCTL_Shifting();
+}
+
 SFXCTL_Shifting::~SFXCTL_Shifting() {}
 
 SndBase::TypeInfo *SFXCTL_Shifting::GetTypeInfo() const { return &s_TypeInfo; }
 
 char *SFXCTL_Shifting::GetTypeName() const { return s_TypeInfo.typeName; }
+
+void SFXCTL_Shifting::InitSFX() {
+    SFXCTL::InitSFX();
+    CleanUpShiftFX();
+    m_bNeed_ShiftGearSnd = false;
+    m_bNeed_DisengageSnd = false;
+    m_bNeed_EngageSnd = false;
+    m_bNeed_AccelSnd = false;
+    m_bNeed_DeccelSnd = false;
+    m_bPendingNeedShiftSound = false;
+    tShiftDelay = 0.0f;
+}
+
+void SFXCTL_Shifting::UpdateParams(float t) {
+    SFXCTL::UpdateParams(t);
+    UpdateGearShiftState(t);
+    UpdateRPM(t);
+    UpdateTorque(t);
+    PostShiftFX_Update(t);
+}
 
 int SFXCTL_Shifting::GetController(int Index) {
     if (Index != 0) {
@@ -100,4 +151,48 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
         eShiftState = SHFT_NONE;
         eShiftStageChanged = SHFT_NONE;
     }
+}
+
+void SFXCTL_Shifting::UpdateTorque(float t) {
+    (void)t;
+    if (m_pEngineCtl == nullptr) {
+        return;
+    }
+    m_InterpShiftTorque.Update(SndBase::m_fDeltaTime, m_pEngineCtl->GetSmoothedEngTorque());
+}
+
+void SFXCTL_Shifting::UpdateRPM(float t) {
+    (void)t;
+    if (m_pEngineCtl == nullptr) {
+        return;
+    }
+    m_InterpShiftRPM.Update(SndBase::m_fDeltaTime, m_pEngineCtl->GetSmoothedEngRPM());
+}
+
+void SFXCTL_Shifting::BeginUpShift() {
+    eShiftState = SHFT_UP_DISENGAGE;
+    eShiftStageChanged = SHFT_UP_DISENGAGE;
+    m_bPendingNeedShiftSound = true;
+    tShiftDelay = 0.1f;
+}
+
+void SFXCTL_Shifting::BeginDownShift() {
+    eShiftState = SHFT_DOWN_DISENGAGE;
+    eShiftStageChanged = SHFT_DOWN_DISENGAGE;
+    m_bPendingNeedShiftSound = true;
+    tShiftDelay = 0.1f;
+}
+
+void SFXCTL_Shifting::PostShiftFX_Update(float t) {
+    if (t <= 0.0f) {
+        return;
+    }
+    m_Shift_VOL_AMP_DECAY.Update(t);
+    m_Shift_RPM_AMP_DECAY.Update(t);
+}
+
+void SFXCTL_Shifting::PostShiftFX_Init() {
+    PostShiftFX_End();
+    m_Shift_VOL_AMP_DECAY.Initialize(0.0f, 0.0f, 0.0f, LINEAR);
+    m_Shift_RPM_AMP_DECAY.Initialize(0.0f, 0.0f, 0.0f, LINEAR);
 }

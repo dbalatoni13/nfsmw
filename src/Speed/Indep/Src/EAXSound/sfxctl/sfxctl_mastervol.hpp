@@ -12,10 +12,13 @@ struct SFXCTL_MasterVol : public SFXCTL {
     static TypeInfo s_TypeInfo;
 
   public:
+    SFXCTL_MasterVol();
     ~SFXCTL_MasterVol() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
+    static SndBase *CreateObject(unsigned int allocator);
     void InitSFX() override;
+    void UpdateParams(float t) override;
 };
 
 struct SFXCTL_GameState : public SFXCTL {
@@ -23,8 +26,11 @@ struct SFXCTL_GameState : public SFXCTL {
     static TypeInfo s_TypeInfo;
 
   public:
+    SFXCTL_GameState();
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
+    static SndBase *CreateObject(unsigned int allocator);
+    void UpdateMixerOutputs() override;
 };
 
 #endif

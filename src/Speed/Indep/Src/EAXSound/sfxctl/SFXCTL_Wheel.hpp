@@ -16,6 +16,7 @@ struct SFXCTL_Wheel : public SFXCTL {
     static TypeInfo s_TypeInfo;
 
   public:
+    SFXCTL_Wheel();
     /* 0x28 */ char _pad_whl0[0x78 - 0x28]; // bVector2/float arrays
     /* 0x78 */ Attrib::Gen::simsurface LeftSideTerrain;
     /* 0x8c */ Attrib::Gen::simsurface RightSideTerrain;
@@ -25,7 +26,12 @@ struct SFXCTL_Wheel : public SFXCTL {
     ~SFXCTL_Wheel() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
+    static SndBase *CreateObject(unsigned int allocator);
+    void InitSFX() override;
     void UpdateParams(float t) override;
+    bVector3 *GetWheelPos(int wheelID, int numtires);
+    void GenerateWheelPosition();
+    void GenerateTerrainTypes();
 
     void UpdateTireParams();
 };

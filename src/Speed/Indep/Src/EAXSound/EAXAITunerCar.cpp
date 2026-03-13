@@ -121,6 +121,10 @@ EAXAITunerCar::EAXAITunerCar() {
     mPhysicsChangedGear = 0;
 }
 
+EAXAITunerCar::~EAXAITunerCar() {
+    emRemoveHandler(ProcessEvent);
+}
+
 int EAXAITunerCar::SFXMessage(eSFXMessageType SFXMessageType, unsigned int param1, unsigned int param2) {
     if (SFXMessageType == SFX_CHANGEGEAR) {
         mPhysicsChangedGear = 1;
@@ -131,6 +135,16 @@ int EAXAITunerCar::SFXMessage(eSFXMessageType SFXMessageType, unsigned int param
 
 void EAXAITunerCar::UpdateCarPhysics() {
     g_EAXIsPaused();
+}
+
+void EAXAITunerCar::UpdatAIDriveBy(float t) {
+    (void)t;
+    if (m_pCar == nullptr) {
+        return;
+    }
+    if (mPhysicsChangedGear != 0) {
+        mPhysicsChangedGear = 0;
+    }
 }
 
 void EAXAITunerCar::UpdateParams(float t) {
@@ -177,6 +191,10 @@ CSTATE_Base *EAXCopCar::CreateState(unsigned int allocator) {
         return new (gAudioMemoryManager.AllocateMemory(
             sizeof(EAXCopCar), s_StateInfo.stateName, true)) EAXCopCar;
     }
+}
+
+void EAXCopCar::Attach(void *pAttachment) {
+    EAXAITunerCar::Attach(pAttachment);
 }
 
 struct EAXTruck : public EAXAITunerCar {

@@ -23,8 +23,12 @@ struct EngRevDataSet {
 // total size: 0x98
 class NIS_RevManager : public AudioMemBase {
   public:
+    NIS_RevManager();
     void OpenNISRevData(unsigned int anim_id);
     void StartNISReving();
+    void Start321Reving();
+    void CloseNIS();
+    void Update(float t);
 
     int *pRevData;                     // offset 0x4, size 0x4
     EngRevDataSet m_EngineDataSet[16]; // offset 0x8, size 0x80

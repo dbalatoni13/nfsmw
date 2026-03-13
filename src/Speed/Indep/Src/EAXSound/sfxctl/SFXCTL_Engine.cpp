@@ -4,6 +4,33 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
 #include "Speed/Indep/Src/Misc/Hermes.h"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DCarPos.hpp"
+#include "Speed/Indep/Src/Generated/Messages/MNotifyVehicleDestroyed.h"
+
+SFXCTL_Engine::SFXCTL_Engine()
+    : m_pShiftCtl(nullptr) //
+    , m_pAccelTransitionCtl(nullptr) //
+    , m_pPhysicsCtl(nullptr) //
+    , m_p3DCarPosCtl(nullptr) //
+    , tMergeWithPhysicsOffStart(0.0f) //
+    , bPreRace(0) //
+    , m_iEngineVol(0) //
+    , bIsRedlining(false) //
+    , m_fEng_RPM(0.0f) //
+    , m_fPrevRPM(0.0f) //
+    , m_fSmoothedEng_RPM(0.0f) //
+    , m_fEng_Trq(0.0f) //
+    , m_fSmoothedEng_Trq(0.0f) //
+    , m_Rotation(0) //
+    , m_bIsEngineBlown(false) //
+    , m_DistanceFltr(0) //
+    , bClutchStateOn(false) //
+    , mmsgMVehicleDestroyed(nullptr) //
+    , mmsgMVehicleDestroyed2(nullptr) {}
+
+SndBase *SFXCTL_Engine::CreateObject(unsigned int allocator) {
+    (void)allocator;
+    return new SFXCTL_Engine();
+}
 
 SFXCTL_Engine::~SFXCTL_Engine() {
     if (mmsgMVehicleDestroyed) {
@@ -17,6 +44,34 @@ SFXCTL_Engine::~SFXCTL_Engine() {
 SndBase::TypeInfo *SFXCTL_Engine::GetTypeInfo() const { return &s_TypeInfo; }
 
 char *SFXCTL_Engine::GetTypeName() const { return s_TypeInfo.typeName; }
+
+void SFXCTL_Engine::InitSFX() {
+    SFXCTL::InitSFX();
+    m_iEngineVol = 0;
+    bIsRedlining = false;
+    m_fEng_RPM = 0.0f;
+    m_fPrevRPM = 0.0f;
+    m_fSmoothedEng_RPM = 0.0f;
+    m_fEng_Trq = 0.0f;
+    m_fSmoothedEng_Trq = 0.0f;
+}
+
+void SFXCTL_Engine::UpdateParams(float t) {
+    SFXCTL::UpdateParams(t);
+    UpdateRPM(t);
+    UpdateTorque(t);
+    UpdateCompression(t);
+    UpdateRedlining(t);
+    UpdateVolume(t);
+    UpdateFilterFX();
+    UpdateEngineLFO_FX(t);
+    UpdateClutchState();
+}
+
+void SFXCTL_Engine::MessageVehicleDestroyed(const MNotifyVehicleDestroyed &message) {
+    (void)message;
+    m_bIsEngineBlown = true;
+}
 
 float SFXCTL_Engine::GetEngRPM() { return m_fEng_RPM; }
 
@@ -33,6 +88,54 @@ void SFXCTL_Engine::MsgCountdownDone(const MCountdownDone &message) {
 
 void SFXCTL_Engine::UpdateClutchState() {
     bClutchStateOn = ShouldTurnOnClutch();
+}
+
+bool SFXCTL_Engine::ShouldTurnOnClutch() {
+    return m_pPhysicsCtl != nullptr && m_pPhysicsCtl->m_CurGear <= 0;
+}
+
+void SFXCTL_Engine::UpdateFilterFX() {
+    m_DistanceFltr = (m_p3DCarPosCtl != nullptr) ? 1 : 0;
+}
+
+void SFXCTL_Engine::UpdateCompression(float t) {
+    (void)t;
+}
+
+void SFXCTL_Engine::UpdateRedlining(float t) {
+    (void)t;
+    bIsRedlining = (m_fEng_RPM > 0.95f);
+}
+
+void SFXCTL_Engine::UpdateVolume(float t) {
+    (void)t;
+    m_iEngineVol = static_cast< int >(m_fSmoothedEng_RPM * 32767.0f);
+    if (m_iEngineVol < 0) {
+        m_iEngineVol = 0;
+    } else if (m_iEngineVol > 32767) {
+        m_iEngineVol = 32767;
+    }
+    SetDMIX_Input(DMX_VOL, m_iEngineVol);
+}
+
+void SFXCTL_Engine::UpdateRPM(float t) {
+    (void)t;
+    if (m_pPhysicsCtl != nullptr) {
+        m_fEng_RPM = m_pPhysicsCtl->PhysicsRPM;
+    }
+    m_fSmoothedEng_RPM = m_fEng_RPM;
+}
+
+void SFXCTL_Engine::UpdateTorque(float t) {
+    (void)t;
+    if (m_pPhysicsCtl != nullptr) {
+        m_fEng_Trq = m_pPhysicsCtl->PhysicsTRQ;
+    }
+    m_fSmoothedEng_Trq = m_fEng_Trq;
+}
+
+void SFXCTL_Engine::UpdateEngineLFO_FX(float t) {
+    (void)t;
 }
 
 void SFXCTL_Engine::SetupSFX(CSTATE_Base *_StateBase) {

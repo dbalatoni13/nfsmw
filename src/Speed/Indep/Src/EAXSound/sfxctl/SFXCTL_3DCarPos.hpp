@@ -16,6 +16,8 @@ struct SFXCTL_3DCarPos : public SFXCTL_3DObjPos {
     ~SFXCTL_3DCarPos() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
+    static SndBase *CreateObject(unsigned int allocator);
+    void InitSFX() override;
 };
 
 #endif

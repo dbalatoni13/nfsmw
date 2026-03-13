@@ -67,9 +67,13 @@ struct SFXCTL_Shifting : public SFXCTL {
     /* 0x15c */ FX_POST_SHIFT_LFO eShift_LFO;
     /* 0x160 */ cInterpLine m_VisualRPM;
 
+    SFXCTL_Shifting();
     ~SFXCTL_Shifting() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
+    static SndBase *CreateObject(unsigned int allocator);
+    void InitSFX() override;
+    void UpdateParams(float t) override;
     int GetController(int Index) override;
 
     float GetShiftingRPM();
@@ -83,6 +87,12 @@ struct SFXCTL_Shifting : public SFXCTL {
     void AttachController(SFXCTL *) override;
     void UpdateMixerOutputs() override;
     void UpdateGearShiftState(float t);
+    void UpdateTorque(float t);
+    void UpdateRPM(float t);
+    void BeginUpShift();
+    void BeginDownShift();
+    void PostShiftFX_Update(float t);
+    void PostShiftFX_Init();
 
     bool IsDownShifting() {
         return static_cast<unsigned int>(eShiftState - SHFT_DOWN_DISENGAGE) < 4u;

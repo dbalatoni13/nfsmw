@@ -2,6 +2,21 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Engine.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 
+SFXCTL_AccelTrans::SFXCTL_AccelTrans()
+    : m_pEngineCtl(nullptr) //
+    , m_pShiftCtl(nullptr) //
+    , eAccelTransFxState(0) //
+    , t_LastAccelTrans(0.0f) //
+    , IsAccelerating(false) //
+    , OldIsAccelerating(false) //
+    , m_pAccelTransDataSet(nullptr) //
+    , PlayEngOffSweet(false) {}
+
+SndBase *SFXCTL_AccelTrans::CreateObject(unsigned int allocator) {
+    (void)allocator;
+    return new SFXCTL_AccelTrans();
+}
+
 SFXCTL_AccelTrans::~SFXCTL_AccelTrans() {}
 
 SndBase::TypeInfo *SFXCTL_AccelTrans::GetTypeInfo() const { return &s_TypeInfo; }
@@ -53,4 +68,56 @@ void SFXCTL_AccelTrans::AttachController(SFXCTL *ctrl) {
     } else {
         m_pShiftCtl = static_cast<SFXCTL_Shifting *>(ctrl);
     }
+}
+
+void SFXCTL_AccelTrans::UpdateParams(float t) {
+    SFXCTL::UpdateParams(t);
+    UpdateState(t);
+    UpdateRPM(t);
+    UpdateTRQ(t);
+}
+
+void SFXCTL_AccelTrans::UpdateRPM(float t) {
+    (void)t;
+    float rpm = (m_pEngineCtl != nullptr) ? m_pEngineCtl->GetSmoothedEngRPM() : 0.0f;
+    m_InterpEngRPM.Update(SndBase::m_fDeltaTime, rpm);
+}
+
+void SFXCTL_AccelTrans::UpdateTRQ(float t) {
+    (void)t;
+    float trq = (m_pEngineCtl != nullptr) ? m_pEngineCtl->GetSmoothedEngTorque() : 0.0f;
+    m_InterpEngTorque.Update(SndBase::m_fDeltaTime, trq);
+}
+
+void SFXCTL_AccelTrans::UpdateState(float t) {
+    (void)t;
+    OldIsAccelerating = IsAccelerating;
+    IsAccelerating = (m_pEngineCtl != nullptr) ? (m_pEngineCtl->GetSmoothedEngTorque() > 0.0f) : false;
+    if (ShouldBeginAccelTrans()) {
+        BeginAccelTrans();
+    } else if (ShouldBeginAccelTrans_Idle()) {
+        BeginAccelTrans_Idle();
+    }
+}
+
+void SFXCTL_AccelTrans::BeginAccelTrans() {
+    eAccelTransFxState = 1;
+    t_LastAccelTrans = 0.0f;
+}
+
+void SFXCTL_AccelTrans::BeginAccelTrans_Idle() {
+    eAccelTransFxState = 2;
+    t_LastAccelTrans = 0.0f;
+}
+
+bool SFXCTL_AccelTrans::ShouldBeginAccelTrans_Idle() {
+    return !IsAccelerating && OldIsAccelerating;
+}
+
+bool SFXCTL_AccelTrans::ShouldBeginAccelTrans() {
+    return IsAccelerating && !OldIsAccelerating;
+}
+
+bool SFXCTL_AccelTrans::ShouldPlayEngOffSweet() {
+    return PlayEngOffSweet;
 }

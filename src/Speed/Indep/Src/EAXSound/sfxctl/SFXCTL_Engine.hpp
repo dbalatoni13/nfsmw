@@ -13,6 +13,7 @@ struct SFXCTL_Shifting;
 struct SFXCTL_AccelTrans;
 struct SFXCTL_3DCarPos;
 struct MCountdownDone;
+class MNotifyVehicleDestroyed;
 
 struct SFXCTL_Engine : public SFXCTL {
   protected:
@@ -49,9 +50,21 @@ struct SFXCTL_Engine : public SFXCTL {
     /* 0x1dc */ HHANDLER mmsgMVehicleDestroyed;
     /* 0x1e0 */ HHANDLER mmsgMVehicleDestroyed2;
 
+    SFXCTL_Engine();
     ~SFXCTL_Engine() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
+    static SndBase *CreateObject(unsigned int allocator);
+    void InitSFX() override;
+    void UpdateParams(float t) override;
+    void MessageVehicleDestroyed(const MNotifyVehicleDestroyed &message);
+    void UpdateFilterFX();
+    void UpdateCompression(float t);
+    void UpdateRedlining(float t);
+    void UpdateVolume(float t);
+    void UpdateRPM(float t);
+    void UpdateTorque(float t);
+    void UpdateEngineLFO_FX(float t);
 
     virtual float GetEngRPM();
     virtual float GetSmoothedEngRPM();

@@ -1,13 +1,19 @@
 #include "./EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Pathfinder.hpp"
+#include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.h"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Base.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_NISReving.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Gameplay/GRace.h"
+#include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
+#include "Speed/Indep/Src/Main/Scheduler.h"
 #include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/Src/Misc/QueuedFile.hpp"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 
 enum SpeechModuleIndex {
     NISSFX_MODULE = 0,
@@ -29,10 +35,18 @@ enum eSFXOBJ_MAIN_TYPES {
 namespace Speech {
 struct Cache {
     void Dump();
+    void Init(int size);
+    void Validate();
 };
-struct Module;
+struct Module {
+    virtual void ReleaseResource();
+};
 struct Manager {
     static void ClearPlayback();
+    static void Init(int mode);
+    static void Destroy();
+    static void Deduce();
+    static void Update(float dt);
     static Module *GetSpeechModule(int id);
     static void AttachSFXOBJ(SpeechModuleIndex module, SFX_Base *psb, eSFXOBJ_MAIN_TYPES type);
 };
@@ -53,6 +67,7 @@ struct EAXSND8Wrapper : public AudioMemBase {
 
     EAXSND8Wrapper();
     virtual ~EAXSND8Wrapper();
+    bool Initialize();
     eSndAudioMode GetDefaultPlatformAudioMode();
     eSndAudioMode SetAudioModeFromMemoryCard(eSndAudioMode mode);
     eSndAudioMode SetAudioRenderMode(eSndAudioMode mode);
@@ -190,6 +205,7 @@ struct CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<
     char _pad_target[0x10]; // Reference mTarget
 
     CarSoundConn(const Sim::ConnectionData &data);
+    ~CarSoundConn() override;
     void OnReceive(Sim::Packet *) override;
     void OnClose() override;
     Sim::ConnStatus OnStatusCheck() override;
@@ -204,15 +220,36 @@ struct HeliSoundConn : public Sim::Connection, public UTL::Collections::Listable
     char _pad_target[0x10]; // Reference mTarget
 
     HeliSoundConn(const Sim::ConnectionData &data);
+    ~HeliSoundConn() override;
     void OnReceive(Sim::Packet *) override;
     void OnClose() override;
     Sim::ConnStatus OnStatusCheck() override;
+    void UpdateState(float dT);
     static Sim::Connection *Construct(const Sim::ConnectionData &data);
 };
 
 struct CSTATEMGR_CarState : public CSTATEMGR_Base {
     static void ResolveCarBanks();
+    static void ResetCarBanks();
     static void DestroyCar(EAX_CarState *pCar);
+};
+
+struct CSTATEMGR_AICar {
+    static void QueueSlots();
+};
+
+enum eRaceMixType {
+    eRACE_CIRCUIT = 0,
+    eRACE_DRAG = 1,
+    eRACE_TWODRG = 2,
+    eRACE_TWOCIRC = 3,
+};
+
+struct NFSMixMaster {
+    bool m_bMapReady;
+    void CreateMainMainMap(eRaceMixType type);
+    void DestroyMainMainMap();
+    void InitMixMap(int mode);
 };
 
 struct EAX_CarState {
@@ -234,6 +271,27 @@ extern bool bIsMapInQueuedFileLoad;
 extern unsigned int g_ActiveCtlStates;
 extern unsigned int g_laststartanimid;
 extern bool g_bWasLastNISaStart;
+extern bool IsAudioStreamingEnabled;
+extern bool IsSpeechEnabled;
+extern int _RUN_SOUND_STATE;
+extern unsigned int g_ActiveSFXStates;
+extern unsigned int g_PrevActiveCtlStates;
+extern unsigned int g_PrevActiveSFXStates;
+extern unsigned int g_CtlStateActions[18];
+extern const char *csfxedit[];
+extern bool bHasStartNewGameOccured;
+extern bool gbHasStartNewGamePlayBeenProcessed;
+extern bool bIsAnFEToIngameTransition;
+extern bool bHasDataLoadOccured;
+extern int gIsPauseForPause;
+extern int gnHasStartLoadFEBeenProcessed;
+extern int gb_DORESTART_RACE;
+extern int gb_Is321;
+extern int SkipFE;
+extern int SkipFELanguage;
+extern int GetCurrentLanguage();
+void RegisterStates();
+void RegisterSFX();
 
 unsigned int bRandom(int range, unsigned int *seed);
 float bRandom(float range, unsigned int *seed);
@@ -272,7 +330,35 @@ bool EAXSound::AreResourceLoadsPending() {
     return gAEMSMgr.AreResourceLoadsPending();
 }
 
-// QueueNISButtonThrough, QueueNISStream go here when implemented
+void EAXSound::QueueNISButtonThrough(unsigned int anim_id, int camera_track_number) {
+    if (!IsSoundEnabled || !IsAudioStreamingEnabled) {
+        return;
+    }
+
+    SFXObj_NISStream *pnis = static_cast<SFXObj_NISStream *>(GetSFXBase_Object(0x40000050));
+    if (pnis == nullptr) {
+        return;
+    }
+
+    if (camera_track_number == -1) {
+        if (g_laststartanimid == 0x0D0E5A9D || g_laststartanimid == 0xCBFF6594) {
+            goto clear_playback;
+        }
+        anim_id = g_laststartanimid;
+    } else if (!g_bWasLastNISaStart) {
+        pnis->StopStream();
+        goto clear_playback;
+    }
+
+    pnis->QueueNISStream(anim_id, camera_track_number, true, false);
+
+clear_playback:
+    Speech::Manager::ClearPlayback();
+    Speech::Module *module = Speech::Manager::GetSpeechModule(COPSPEECH_MODULE);
+    if (module != nullptr) {
+        module->ReleaseResource();
+    }
+}
 
 void EAXSound::QueueNISStream(unsigned int anim_id, int camera_track_number, void (*setmstimecb)(unsigned int, int)) {
     if (IsSoundEnabled && IsAudioStreamingEnabled) {
@@ -555,7 +641,240 @@ float EAXSound::Random(float range) {
 
 void EAXSound::UpdateSongInfo() {}
 
-// InitializeDriver, RefreshLocalAttr, etc. go here when implemented
+void EAXSound::InitializeDriver() {
+    if (!IsSoundEnabled) {
+        return;
+    }
+
+    m_pEAXSND8Wrapper = new EAXSND8Wrapper();
+    if (m_pEAXSND8Wrapper == nullptr || !m_pEAXSND8Wrapper->Initialize()) {
+        IsSoundEnabled = false;
+        return;
+    }
+
+    gAEMSMgr.InitSPUram();
+    m_pNFSMixMaster = new NFSMixMaster();
+    m_pSTICH_Playback = new cSTICH_PlayBack();
+    g_pNISRevMgr = new NIS_RevManager();
+
+    for (int n = 0; n < 13; n++) {
+        m_pStateMgr[n] = nullptr;
+    }
+}
+
+void EAXSound::RefreshLocalAttr() {
+    if (mLocalAttr != nullptr) {
+        delete mLocalAttr;
+        mLocalAttr = nullptr;
+    }
+
+    int language = SkipFELanguage;
+    if (SkipFE == 0) {
+        language = GetCurrentLanguage();
+    }
+
+    unsigned int localeIndex = 0;
+    switch (language) {
+    case 1:
+        localeIndex = 1;
+        break;
+    case 2:
+        localeIndex = 2;
+        break;
+    case 3:
+        localeIndex = 3;
+        break;
+    case 4:
+        localeIndex = 4;
+        break;
+    case 5:
+        localeIndex = 5;
+        break;
+    default:
+        localeIndex = 0;
+        break;
+    }
+
+    if (mAttributes != nullptr) {
+        mLocalAttr = new Attrib::Gen::audiosystem(mAttributes->Locales(localeIndex).GetCollectionWithDefault(), 0, nullptr);
+    }
+}
+
+void EAXSound::StartNewGamePlay() {
+    if (!IsSoundEnabled) {
+        return;
+    }
+
+    SetSoundControlState(true, SNDSTATE_STOP_MUSIC, "RestartRace");
+
+    if (bHasStartNewGameOccured) {
+        if (m_pCmnSnd != nullptr) {
+            delete m_pCmnSnd;
+            m_pCmnSnd = nullptr;
+        }
+
+        if (m_pStreamManager != nullptr) {
+            for (int i = 0; i < 4; i++) {
+                EAXS_StreamChannel *channel = m_pStreamManager->GetStreamChannel(i);
+                if (channel != nullptr && i != 1) {
+                    channel->Stop();
+                    channel->PurgeStream();
+                }
+            }
+        }
+
+        for (int i = 0; i < 13; i++) {
+            if (i == 1) {
+                if (m_pStateMgr[i] != nullptr) {
+                    m_pStateMgr[i]->DisconnectMixMap();
+                }
+            } else if (m_pStateMgr[i] != nullptr) {
+                m_pStateMgr[i]->ExitWorld();
+            }
+        }
+
+        if (m_pNFSMixMaster != nullptr && m_pNFSMixMaster->m_bMapReady) {
+            m_pNFSMixMaster->DestroyMainMainMap();
+        }
+
+        gAEMSMgr.DestroySlots(false);
+    }
+
+    if (m_ePlayerMixMode != EAXS3D_TWO_PLAYER_MIX) {
+        EAXAemsManager::m_RequiredSlots[3]++;
+    }
+
+    CSTATEMGR_AICar::QueueSlots();
+    gAEMSMgr.InitializeSlots(!bHasStartNewGameOccured);
+    bHasStartNewGameOccured = true;
+
+    if (!bIsMapInQueuedFileLoad) {
+        bIsMapInQueuedFileLoad = true;
+
+        GRaceParameters *race = nullptr;
+        if (GRaceStatus::Exists()) {
+            race = GRaceStatus::Get().GetRaceParameters();
+        } else if (GRaceDatabase::Exists()) {
+            GRaceCustom *startupRace = GRaceDatabase::Get().GetStartupRace();
+            race = startupRace;
+        }
+
+        if (race == nullptr) {
+            m_prevSndGameMode = m_eSndGameMode;
+            m_eSndGameMode = SND_FREEROAM;
+            if (m_pNFSMixMaster != nullptr) {
+                if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
+                    m_pNFSMixMaster->CreateMainMainMap(eRACE_TWOCIRC);
+                } else {
+                    m_pNFSMixMaster->CreateMainMainMap(eRACE_CIRCUIT);
+                }
+            }
+        } else {
+            GRace::Type raceType = race->GetRaceType();
+            if (raceType == GRace::kRaceType_Drag) {
+                m_prevSndGameMode = m_eSndGameMode;
+                m_eSndGameMode = SND_DRAGRACE;
+                if (m_pNFSMixMaster != nullptr) {
+                    if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
+                        m_pNFSMixMaster->CreateMainMainMap(eRACE_TWODRG);
+                    } else {
+                        m_pNFSMixMaster->CreateMainMainMap(eRACE_DRAG);
+                    }
+                }
+            } else {
+                m_prevSndGameMode = m_eSndGameMode;
+                m_eSndGameMode = (raceType == GRace::kRaceType_Challenge) ? SND_CHALLENGERACE : SND_STREETRACE;
+                if (m_pNFSMixMaster != nullptr) {
+                    if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
+                        m_pNFSMixMaster->CreateMainMainMap(eRACE_TWOCIRC);
+                    } else {
+                        m_pNFSMixMaster->CreateMainMainMap(eRACE_CIRCUIT);
+                    }
+                }
+            }
+        }
+    }
+
+    InitializeInGame();
+
+    if (m_pNFSMixMaster != nullptr) {
+        m_pNFSMixMaster->InitMixMap(0);
+    }
+
+    SFXObj_Pathfinder *ppf = static_cast<SFXObj_Pathfinder *>(GetSFXBase_Object(0x40010010));
+    if (ppf != nullptr) {
+        if (m_ePlayerMixMode == EAXS3D_TWO_PLAYER_MIX) {
+            ppf->m_Flags |= 2;
+        } else {
+            ppf->m_Flags &= ~2u;
+        }
+
+        if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() != nullptr &&
+            GRaceStatus::Get().GetRaceParameters()->GetRaceType() != GRace::kRaceType_Drag) {
+            ppf->m_Flags |= 1;
+        }
+    }
+
+    gbHasStartNewGamePlayBeenProcessed = true;
+}
+
+void EAXSound::InitializeFrontEnd() {
+    if (!IsSoundEnabled) {
+        return;
+    }
+
+    if (mAttributes == nullptr) {
+        mAttributes = new Attrib::Gen::audiosystem(0x7e4b0ed2, 0, nullptr);
+    }
+
+    if (mLocalAttr == nullptr && mAttributes != nullptr) {
+        mLocalAttr = new Attrib::Gen::audiosystem(mAttributes->Locales(0).GetCollectionWithDefault(), 0, nullptr);
+    }
+
+    m_pCmnSnd = new EAXCommon();
+    m_pFESnd = new EAXFrontEnd();
+    RefreshLocalAttr();
+    Speech::Manager::Init(0);
+    SoundRandomSeed = bRandom(-1, &SoundRandomSeed);
+    m_pCurAudioSettings = &FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheAudioSettings;
+    EAXAemsManager::m_RequiredSlots[3]++;
+    gAEMSMgr.InitializeSlots(true);
+
+    if (m_pStateMgr[0] != nullptr) {
+        m_pStateMgr[0]->EnterWorld(m_eSndGameMode);
+    }
+    if (m_pStateMgr[1] != nullptr) {
+        m_pStateMgr[1]->EnterWorld(m_eSndGameMode);
+    }
+
+    InitEATRAX();
+}
+
+void EAXSound::InitializeInGame() {
+    if (!IsSoundEnabled) {
+        return;
+    }
+
+    int skipState = -1;
+    m_pCmnSnd = new EAXCommon();
+    if (m_pCmnSnd != nullptr) {
+        m_pCmnSnd->Initialize();
+    }
+
+    SoundRandomSeed = bRandom(-1, &SoundRandomSeed);
+    if (!bIsAnFEToIngameTransition) {
+        skipState = 1;
+    }
+    bIsAnFEToIngameTransition = false;
+
+    for (int n = 0; n < 13; n++) {
+        if (n != skipState && m_pStateMgr[n] != nullptr) {
+            m_pStateMgr[n]->EnterWorld(m_eSndGameMode);
+        }
+    }
+
+    mEventID = Scheduler::Get().fSchedule_OncePerGameLoop->AddTask(-0x0D2EF66E, &mData, 6, true, 0, 0);
+}
 
 void EAXSound::MixMapReadyCallback() {
     bIsMapInQueuedFileLoad = false;
@@ -567,7 +886,32 @@ void EAXSound::MixMapReadyCallback() {
     g_pEAXSound->AttachPlayerCars();
 }
 
-// AttachPlayerCars goes here when implemented
+void EAXSound::AttachPlayerCars() {
+    if (m_pStateMgr[eMM_PLAYERCAR] == nullptr) {
+        return;
+    }
+
+    int attachedCount = 0;
+    for (int n = 0; n < 32; n++) {
+        CSTATE_Base *state = m_pStateMgr[eMM_PLAYERCAR]->GetStateObj(n);
+        if (state == nullptr) {
+            continue;
+        }
+
+        if (!state->IsAttached()) {
+            continue;
+        }
+
+        attachedCount++;
+        if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
+            if (attachedCount >= 2) {
+                return;
+            }
+        } else if (attachedCount >= 1) {
+            return;
+        }
+    }
+}
 
 void EAXSound::InitEATRAX() {
     UpdateSongInfo();
@@ -652,7 +996,158 @@ void EAXSound::DestroyEAXCar(EAX_CarState *pCar) {
     CSTATEMGR_CarState::DestroyCar(pCar);
 }
 
-// LoadFrontEndSoundBanks, etc. go here when implemented
+void LoadCommonIngameFiles() {
+    Attrib::Gen::audiosystem *attributes =
+        *reinterpret_cast<Attrib::Gen::audiosystem **>(reinterpret_cast<char *>(g_pEAXSound) + 0xA8);
+    if (attributes == nullptr) {
+        return;
+    }
+
+    g_LoadSndAsset(attributes->AEMS_FEBanks(1), SNDPATH_GLOBAL, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(attributes->AEMS_EnvBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(attributes->AEMS_MiscBanks(5), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(attributes->AEMS_MiscBanks(4), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(attributes->AEMS_MiscBanks(3), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(attributes->AEMS_MiscBanks(1), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(attributes->AEMS_RNBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(Attrib::StringKey("SIREN_MB.abk"), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(attributes->AEMS_StitchBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(attributes->AEMS_StitchBanks(2), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(attributes->AEMS_StitchBanks(1), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(attributes->AEMS_MiscBanks(2), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(attributes->AEMS_WNBanks(0), SNDPATH_INGAME, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(attributes->AEMS_MiscBanks(6), SNDPATH_ENGINE, EAXSND_DT_AEMS_ASYNCSPUMEM);
+    g_LoadSndAsset(attributes->AEMS_MiscBanks(7), SNDPATH_ENGINE, EAXSND_DT_AEMS_ASYNCSPUMEM);
+
+    for (int n = 0; n < 12; n++) {
+        g_LoadSndAsset(Attrib::StringKey(csfxedit[n]), SNDPATH_FXEDIT, EAXSND_DT_GENERIC_DATA);
+    }
+}
+
+void EAXSound::InitializeSoundBootLoad() {
+    if (!IsSoundEnabled) {
+        return;
+    }
+
+    mAttributes = new Attrib::Gen::audiosystem(0x7e4b0ed2, 0, nullptr);
+    RefreshLocalAttr();
+    gAEMSMgr.Init();
+    gSpeechCache.Init(0x1B000);
+    CSTATEMGR_Base::ClearClassLists();
+    RegisterStates();
+    RegisterSFX();
+}
+
+void EAXSound::LoadFrontEndSoundBanks(void (*callback)(int), int callback_param) {
+    if (!IsSoundEnabled) {
+        return;
+    }
+
+    if (IsSpeechEnabled) {
+        gSpeechCache.Validate();
+    }
+
+    gIsPauseForPause = 0;
+    bSyncTaskRun();
+    gnHasStartLoadFEBeenProcessed = 2;
+    m_prevSndGameMode = m_eSndGameMode;
+    m_eSndGameMode = SND_FRONTEND;
+    gAEMSMgr.ResetBankLoadParams();
+    m_pStreamManager = new EAXS_StreamManager();
+    if (m_pStreamManager != nullptr) {
+        m_pStreamManager->InitializeStreams(SNDGM_FRONTEND);
+    }
+
+    if ((g_ActiveCtlStates & 0x20000) == 0) {
+        g_ActiveCtlStates = 0;
+        g_PrevActiveCtlStates = 0;
+        g_ActiveSFXStates = 0;
+        g_PrevActiveSFXStates = 0;
+    }
+
+    InitializeFrontEnd();
+
+    if (m_pCmnSnd != nullptr) {
+        m_pCmnSnd->Initialize();
+    }
+    if (m_pFESnd != nullptr) {
+        m_pFESnd->Initialize();
+    }
+
+    if (m_pNFSMixMaster != nullptr) {
+        m_pNFSMixMaster->CreateMainMainMap(eRACE_CIRCUIT);
+        m_pNFSMixMaster->InitMixMap(0);
+    }
+
+    *reinterpret_cast<void (**)(int)>(reinterpret_cast<char *>(&gAEMSMgr) + 0x130) = callback;
+    *reinterpret_cast<int *>(reinterpret_cast<char *>(&gAEMSMgr) + 0x134) = callback_param;
+
+    ReInitMasterVolumes();
+    bSyncTaskRun();
+
+    if (IsSpeechEnabled) {
+        gSpeechCache.Validate();
+    }
+}
+
+void EAXSound::UnloadFrontEndSoundBanks() {
+    if (!IsSoundEnabled) {
+        return;
+    }
+
+    if (IsSpeechEnabled) {
+        gSpeechCache.Validate();
+    }
+
+    gIsPauseForPause = 0;
+    while (AreResourceLoadsPending()) {
+        Update(0.0f);
+        ServiceQueuedFiles();
+    }
+
+    Speech::Manager::Destroy();
+
+    if (m_pFESnd != nullptr) {
+        m_pFESnd->DestroyAllDriveOnSnds();
+    }
+
+    for (int n = 0; n < 13; n++) {
+        if (m_pStateMgr[n] != nullptr) {
+            m_pStateMgr[n]->ExitWorld();
+        }
+    }
+
+    if (m_pStreamManager != nullptr) {
+        delete m_pStreamManager;
+        m_pStreamManager = nullptr;
+    }
+
+    if (m_pNFSMixMaster != nullptr) {
+        m_pNFSMixMaster->DestroyMainMainMap();
+    }
+
+    if (m_pFESnd != nullptr) {
+        delete m_pFESnd;
+        m_pFESnd = nullptr;
+    }
+
+    if (m_pCmnSnd != nullptr) {
+        delete m_pCmnSnd;
+        m_pCmnSnd = nullptr;
+    }
+
+    while (gAEMSMgr.m_nEndOfList != 0) {
+        gAEMSMgr.UnloadSndData(0);
+    }
+
+    gAEMSMgr.DestroySlots(false);
+    gAEMSMgr.ResetBankLoadParams();
+    bSyncTaskRun();
+
+    if (IsSpeechEnabled) {
+        gSpeechCache.Validate();
+    }
+}
 
 void InitializeSoundLoad() {
     g_pEAXSound->InitializeSoundBootLoad();
@@ -677,6 +1172,120 @@ void EAXSound::StopSND11() {}
 void EAXSound::StartSND11() {}
 
 // LoadInGameSoundBanks, etc. go here when implemented
+
+void EAXSound::LoadInGameSoundBanks(void (*callback)(int), int callback_param) {
+    if (!IsSoundEnabled) {
+        return;
+    }
+
+    if (IsSpeechEnabled) {
+        gSpeechCache.Validate();
+    }
+
+    gIsPauseForPause = 0;
+    bIsAnFEToIngameTransition = true;
+    m_pStreamManager = new EAXS_StreamManager();
+
+    bool splitScreen = FEDatabase->IsSplitScreenMode() && FEDatabase->iNumPlayers == 2;
+    if (m_pStreamManager != nullptr) {
+        if (splitScreen) {
+            m_pStreamManager->InitializeStreams(SNDGM_SPLITSCREEN);
+            m_ePlayerMixMode = EAXS3D_TWO_PLAYER_MIX;
+        } else {
+            m_pStreamManager->InitializeStreams(SNDGM_FREEROAM);
+            m_ePlayerMixMode = EAXS3D_SINGLE_PLAYER_MIX;
+        }
+    }
+
+    bHasDataLoadOccured = true;
+    bHasStartNewGameOccured = false;
+    m_pCurAudioSettings = &FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheAudioSettings;
+    if (m_pEAXSND8Wrapper != nullptr) {
+        m_pEAXSND8Wrapper->ReInit();
+    }
+
+    m_prevSndGameMode = m_eSndGameMode;
+    m_eSndGameMode = SND_STREETRACE;
+    gAEMSMgr.ResetBankLoadParams();
+    CSTATEMGR_CarState::ResetCarBanks();
+    RefreshLocalAttr();
+
+    if (m_ePlayerMixMode == EAXS3D_TWO_PLAYER_MIX) {
+        IsSpeechEnabled = false;
+        Speech::Manager::Init(2);
+    } else {
+        IsSpeechEnabled = true;
+        Speech::Manager::Init(1);
+    }
+
+    LoadCommonIngameFiles();
+
+    if ((g_ActiveCtlStates & 0x20000) == 0) {
+        g_ActiveCtlStates = 0;
+        g_PrevActiveCtlStates = 0;
+        g_ActiveSFXStates = 0;
+        g_PrevActiveSFXStates = 0;
+    }
+
+    *reinterpret_cast<void (**)(int)>(reinterpret_cast<char *>(&gAEMSMgr) + 0x130) = callback;
+    *reinterpret_cast<int *>(reinterpret_cast<char *>(&gAEMSMgr) + 0x134) = callback_param;
+
+    if (IsSpeechEnabled) {
+        gSpeechCache.Validate();
+    }
+}
+
+void EAXSound::UnLoadInGameSoundBanks() {
+    if (!IsSoundEnabled) {
+        return;
+    }
+
+    IsSpeechEnabled = true;
+    gIsPauseForPause = 0;
+    while (AreResourceLoadsPending()) {
+        Update(0.0f);
+        ServiceQueuedFiles();
+    }
+
+    bHasDataLoadOccured = false;
+    if (mmsgMRestartRace != nullptr) {
+        Hermes::Handler::Destroy(mmsgMRestartRace);
+        mmsgMRestartRace = nullptr;
+    }
+
+    if (IsSpeechEnabled) {
+        gSpeechCache.Validate();
+    }
+
+    Speech::Manager::Destroy();
+    bSyncTaskRun();
+
+    if (m_pNFSMixMaster != nullptr) {
+        m_pNFSMixMaster->DestroyMainMainMap();
+    }
+
+    if (m_pStateMgr[0] != nullptr) {
+        m_pStateMgr[0]->ExitWorld();
+    }
+
+    if (m_pStreamManager != nullptr) {
+        delete m_pStreamManager;
+        m_pStreamManager = nullptr;
+    }
+
+    if (m_pCmnSnd != nullptr) {
+        delete m_pCmnSnd;
+        m_pCmnSnd = nullptr;
+    }
+
+    while (gAEMSMgr.m_nEndOfList != 0) {
+        gAEMSMgr.UnloadSndData(0);
+    }
+
+    gAEMSMgr.DestroySlots(true);
+    gAEMSMgr.ResetBankLoadParams();
+    bSyncTaskRun();
+}
 
 void LoadAemsInGame(void (*callback)(int), int callback_param) {
     if (IsSoundEnabled == 1) {
@@ -721,10 +1330,152 @@ void FESoundControl(bool bOn, const char *name) {
     SetSoundControlState(bOn, SNDSTATE_PAUSE, reason);
 }
 
+void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
+    if (_RUN_SOUND_STATE == 0 || g_pEAXSound == nullptr || !IsSoundEnabled) {
+        return;
+    }
+
+    bool turningOff = !on;
+    bool pauseMainFNG = (*reinterpret_cast<int *>(reinterpret_cast<char *>(g_pEAXSound) + 0x38) != 0);
+    if (pauseMainFNG && turningOff && state != SNDSTATE_MINILOAD && !(state > SNDSTATE_FE_SMS_MESSAGE && state < SNDSTATE_FMV)) {
+        return;
+    }
+
+    unsigned int stateBit = 1u << (state & 0x1F);
+    if ((g_ActiveCtlStates & stateBit) == 0) {
+        if (turningOff) {
+            return;
+        }
+    } else if (!turningOff) {
+        return;
+    }
+
+    g_PrevActiveCtlStates = g_ActiveCtlStates;
+    g_PrevActiveSFXStates = g_ActiveSFXStates;
+
+    if (turningOff) {
+        g_ActiveCtlStates &= ~stateBit;
+    } else {
+        g_ActiveCtlStates |= stateBit;
+    }
+
+    g_ActiveSFXStates = 0;
+    for (int n = 0; n < 18; n++) {
+        if ((g_ActiveCtlStates & (1u << (n & 0x1F))) != 0) {
+            g_ActiveSFXStates |= g_CtlStateActions[n];
+        }
+    }
+
+    EAXS_StreamManager *streamManager =
+        *reinterpret_cast<EAXS_StreamManager **>(reinterpret_cast<char *>(g_pEAXSound) + 0x94);
+
+    for (unsigned int s = 0; s < 13; s++) {
+        unsigned int sBit = 1u << (s & 0x1F);
+        unsigned int cur = g_ActiveSFXStates & sBit;
+        if (cur == (g_PrevActiveSFXStates & sBit) || streamManager == nullptr) {
+            continue;
+        }
+
+        int channel = -1;
+        if (s == 1) {
+            channel = 0;
+        } else if (s == 0) {
+            channel = 1;
+        } else if (s == 2) {
+            channel = 2;
+        }
+
+        if (channel >= 0) {
+            EAXS_StreamChannel *streamChannel = streamManager->GetStreamChannel(channel);
+            if (streamChannel != nullptr) {
+                if (cur != 0) {
+                    streamChannel->Pause();
+                } else {
+                    streamChannel->Resume();
+                }
+            }
+        }
+    }
+
+    if (state == SNDSTATE_ERROR) {
+        g_pEAXSound->Update(0.0f);
+    }
+}
+
 void CloseSound() {
     if (IsSoundEnabled) {
         g_pEAXSound->CloseSound();
     }
+}
+
+void EAXSound::CloseSound() {
+    bHasDataLoadOccured = false;
+
+    for (int n = 0; n < 13; n++) {
+        if (m_pStateMgr[n] != nullptr) {
+            m_pStateMgr[n]->ExitWorld();
+        }
+    }
+
+    while (AreResourceLoadsPending()) {
+        Update(0.0f);
+        ServiceQueuedFiles();
+    }
+
+    if (m_pNFSMixMaster != nullptr) {
+        m_pNFSMixMaster->DestroyMainMainMap();
+    }
+
+    bSyncTaskRun();
+}
+
+void EAXSound::ReStartRace(bool bfullrestart) {
+    if (!IsSoundEnabled) {
+        return;
+    }
+
+    SetSoundControlState(true, SNDSTATE_STOP_MUSIC, "RestartRace");
+
+    if (m_pStreamManager != nullptr) {
+        for (int n = 0; n < 4; n++) {
+            EAXS_StreamChannel *channel = m_pStreamManager->GetStreamChannel(n);
+            if (channel != nullptr) {
+                channel->Stop();
+                channel->PurgeStream();
+                channel->Resume();
+            }
+        }
+    }
+
+    if (m_pCmnSnd != nullptr) {
+        delete m_pCmnSnd;
+        m_pCmnSnd = nullptr;
+    }
+
+    for (int i = 0; i < 13; i++) {
+        if (i == 1) {
+            if (m_pStateMgr[1] != nullptr) {
+                m_pStateMgr[1]->DisconnectMixMap();
+            }
+        } else if (m_pStateMgr[i] != nullptr) {
+            m_pStateMgr[i]->ExitWorld();
+        }
+    }
+
+    gb_DORESTART_RACE = 1;
+    gb_Is321 = bfullrestart ? 1 : 0;
+}
+
+void InitializeSoundDriver() {
+    int poolSize = 0x4000;
+    if (IsSoundEnabled) {
+        poolSize = 0x11F000;
+    }
+
+    gAudioMemoryManager.InitMemoryPool(AUD_MAIN_MEM_POOL, poolSize);
+    void *mem = gAudioMemoryManager.AllocateMemory(0xBC, "AUD:EAXSound", false);
+    g_pEAXSound = new (mem) EAXSound();
+    g_pEAXSound->InitializeDriver();
 }
 
 eSndAudioMode EAXSound::GetDefaultPlatformAudioMode() {

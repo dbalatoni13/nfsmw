@@ -16,6 +16,7 @@ struct SFXCTL_AccelTrans : public SFXCTL {
     static TypeInfo s_TypeInfo;
 
   public:
+    SFXCTL_AccelTrans();
     /* 0x28 */ SFXCTL_Engine *m_pEngineCtl;
     /* 0x2c */ SFXCTL_Shifting *m_pShiftCtl;
     /* 0x30 */ cInterpLine m_InterpEngRPM;
@@ -31,11 +32,21 @@ struct SFXCTL_AccelTrans : public SFXCTL {
     ~SFXCTL_AccelTrans() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
+    static SndBase *CreateObject(unsigned int allocator);
     int GetController(int Index) override;
     void Destroy() override;
     void SetupSFX(CSTATE_Base *_StateBase) override;
     void InitSFX() override;
+    void UpdateParams(float t) override;
     void AttachController(SFXCTL *) override;
+    void UpdateRPM(float t);
+    void UpdateTRQ(float t);
+    void UpdateState(float t);
+    void BeginAccelTrans();
+    void BeginAccelTrans_Idle();
+    bool ShouldBeginAccelTrans_Idle();
+    bool ShouldBeginAccelTrans();
+    bool ShouldPlayEngOffSweet();
 };
 
 #endif
