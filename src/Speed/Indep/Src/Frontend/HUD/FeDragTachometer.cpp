@@ -9,3 +9,15 @@ DragTachometer::DragTachometer(UTL::COM::Object *pOutter, const char *pkg_name, 
 
 void DragTachometer::Update(IPlayer *player) {
 }
+
+void DragTachometer::SetRpm(float rpm) {
+    mRpm = rpm;
+}
+
+void DragTachometer::SetInPerfectLaunchRange(bool inRange) {
+    mInPerfectLaunchRange = inRange;
+}
+
+void DragTachometer::SetShifting(bool shifting) {
+    mGearShifting = shifting;
+}

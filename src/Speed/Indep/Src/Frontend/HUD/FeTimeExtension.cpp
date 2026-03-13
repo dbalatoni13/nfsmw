@@ -8,3 +8,7 @@ TimeExtension::TimeExtension(UTL::COM::Object *pOutter, const char *pkg_name, in
 
 void TimeExtension::Update(IPlayer *player) {
 }
+
+void TimeExtension::SetPlayerLapTime(float lapTime) {
+    mPlayerLapTime = lapTime;
+}

@@ -14,6 +14,7 @@ class PursuitBoard : public HudElement, public IPursuitBoard {
   public:
     PursuitBoard(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
+    void SetCooldownTimeRequired(float time) override;
 
   private:
     bool mInPursuit;

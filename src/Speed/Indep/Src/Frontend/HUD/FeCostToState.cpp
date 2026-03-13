@@ -63,3 +63,7 @@ void CostToState::SetCostToState(int cost) {
     }
     mCostToState = 0;
 }
+
+void CostToState::SetInPursuit(bool inPursuit) {
+    mInPursuit = inPursuit;
+}

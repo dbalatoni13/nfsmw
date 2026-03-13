@@ -21,6 +21,7 @@ class ICostToState : public UTL::COM::IUnknown {
 
   public:
     virtual void SetCostToState(int cost);
+    virtual void SetInPursuit(bool inPursuit);
 };
 
 // total size: 0x48
@@ -29,6 +30,7 @@ class CostToState : public HudElement, public ICostToState {
     CostToState(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
     void SetCostToState(int cost) override;
+    void SetInPursuit(bool inPursuit) override;
 
   private:
     bool mCostToStateOn;             // offset 0x30

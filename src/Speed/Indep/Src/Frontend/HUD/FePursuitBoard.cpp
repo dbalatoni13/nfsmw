@@ -8,3 +8,7 @@ PursuitBoard::PursuitBoard(UTL::COM::Object *pOutter, const char *pkg_name, int 
 
 void PursuitBoard::Update(IPlayer *player) {
 }
+
+void PursuitBoard::SetCooldownTimeRequired(float time) {
+    mCooldownTimeRequired = time;
+}

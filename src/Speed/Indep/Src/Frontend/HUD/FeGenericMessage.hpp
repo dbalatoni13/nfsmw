@@ -12,12 +12,13 @@ class GenericMessage : public HudElement, public IGenericMessage {
   public:
     GenericMessage(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
+    GenericMessage_Priority GetCurrentGenericMessagePriority() override;
 
   private:
     FEObject * mpMessageFirstLine;
     FEObject * mpMessageSecondLine;
     FEObject * mpIcon;
-    int mPriority;
+    GenericMessage_Priority mPriority;
     unsigned int mNumFramesPlayed;
     char mStringBuffer[64];
     unsigned int mFengHash;

@@ -8,3 +8,15 @@ BustedMeter::BustedMeter(UTL::COM::Object *pOutter, const char *pkg_name, int pl
 
 void BustedMeter::Update(IPlayer *player) {
 }
+
+void BustedMeter::SetInPursuit(bool inPursuit) {
+    mInPursuit = inPursuit;
+}
+
+void BustedMeter::SetIsHiding(bool isHiding) {
+    mIsHiding = isHiding;
+}
+
+void BustedMeter::SetTimeUntilBusted(float time) {
+    mTimeUntilBusted = time;
+}

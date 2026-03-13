@@ -14,6 +14,14 @@ class RaceInformation : public HudElement, public IRaceInformation {
   public:
     RaceInformation(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
+    void SetNumRacers(int numRacers) override;
+    void SetNumLaps(int numLaps) override;
+    void SetPlayerPosition(int position) override;
+    void SetPlayerLapTime(float lapTime) override;
+    void SetSuddenDeathMode(bool suddenDeath) override;
+    void SetPlayerPercentComplete(float percent) override;
+    void SetPlayerTollboothsCrossed(int num) override;
+    void SetNumTollbooths(int num) override;
 
   private:
     int mNumRacers;

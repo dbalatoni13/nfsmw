@@ -20,6 +20,12 @@ class ITachometer : public UTL::COM::IUnknown {
 
     ITachometer(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
+    virtual void SetRpm(float rpm);
+    virtual void SetRevLimiter(float redline, float maxRpm);
+    virtual void SetGear(int gear, int shiftPotential);
+    virtual void SetShifting(bool shifting);
+    virtual void SetInPerfectLaunchRange(bool inRange);
+
   protected:
     virtual ~ITachometer() {}
 };
@@ -29,6 +35,9 @@ class Tachometer : public HudElement, public ITachometer {
   public:
     Tachometer(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
+    void SetRpm(float rpm) override;
+    void SetShifting(bool shifting) override;
+    void SetInPerfectLaunchRange(bool inRange) override;
 
     static char GetLetterForGear(GearID gear);
 

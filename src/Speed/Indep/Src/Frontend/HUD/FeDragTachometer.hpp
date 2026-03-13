@@ -16,6 +16,9 @@ class DragTachometer : public HudElement, public ITachometer, public ITachometer
   public:
     DragTachometer(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
+    void SetRpm(float rpm) override;
+    void SetInPerfectLaunchRange(bool inRange) override;
+    void SetShifting(bool shifting) override;
 
   private:
     FEImage * TachNeedle;

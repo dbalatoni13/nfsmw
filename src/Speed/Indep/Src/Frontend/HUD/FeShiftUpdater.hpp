@@ -14,6 +14,8 @@ class ShiftUpdater : public HudElement, public IShiftUpdater {
   public:
     ShiftUpdater(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
+    void SetEngineBlown(bool blown) override;
+    void SetEngineTemp(float temp) override;
 
   private:
     FEImage * pShiftIndicator;

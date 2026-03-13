@@ -8,3 +8,11 @@ ShiftUpdater::ShiftUpdater(UTL::COM::Object *pOutter, const char *pkg_name, int 
 
 void ShiftUpdater::Update(IPlayer *player) {
 }
+
+void ShiftUpdater::SetEngineBlown(bool blown) {
+    mIsEngineBlown = blown;
+}
+
+void ShiftUpdater::SetEngineTemp(float temp) {
+    mEngineTemp = temp;
+}

@@ -16,6 +16,8 @@ class IGetAwayMeter : public UTL::COM::IUnknown {
 
     IGetAwayMeter(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
+    virtual void SetGetAwayDistance(float distance);
+
   protected:
     virtual ~IGetAwayMeter() {}
 };
@@ -25,6 +27,7 @@ class GetAwayMeter : public HudElement, public IGetAwayMeter {
   public:
     GetAwayMeter(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
+    void SetGetAwayDistance(float distance) override;
 
   private:
     float mGetawayDistance;               // offset 0x30

@@ -62,3 +62,7 @@ void Speedometer::Update(IPlayer *player) {
         FEngSetLanguageHash(SpeedUnits, 0x61E0FBED);
     }
 }
+
+void Speedometer::SetSpeed(float speed) {
+    mSpeed = speed;
+}

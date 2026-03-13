@@ -57,6 +57,18 @@ Tachometer::Tachometer(UTL::COM::Object *pOutter, const char *pkg_name, int play
 
 void Tachometer::Update(IPlayer *player) {}
 
+void Tachometer::SetRpm(float rpm) {
+    mRpm = rpm;
+}
+
+void Tachometer::SetShifting(bool shifting) {
+    mIsShifting = shifting;
+}
+
+void Tachometer::SetInPerfectLaunchRange(bool inRange) {
+    mInPerfectLaunchRange = inRange;
+}
+
 char Tachometer::GetLetterForGear(GearID gear) {
     switch (gear) {
     case G_REVERSE:

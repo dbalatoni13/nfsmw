@@ -8,3 +8,7 @@ GenericMessage::GenericMessage(UTL::COM::Object *pOutter, const char *pkg_name, 
 
 void GenericMessage::Update(IPlayer *player) {
 }
+
+GenericMessage_Priority GenericMessage::GetCurrentGenericMessagePriority() {
+    return mPriority;
+}

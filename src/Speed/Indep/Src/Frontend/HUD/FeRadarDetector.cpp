@@ -8,3 +8,11 @@ RadarDetector::RadarDetector(UTL::COM::Object *pOutter, const char *pkg_name, in
 
 void RadarDetector::Update(IPlayer *player) {
 }
+
+void RadarDetector::SetInPursuit(bool inPursuit) {
+    mInPursuit = inPursuit;
+}
+
+void RadarDetector::SetIsCoolingDown(bool coolingDown) {
+    mIsCoolingDown = coolingDown;
+}

@@ -14,6 +14,8 @@ class RadarDetector : public HudElement, public IRadarDetector {
   public:
     RadarDetector(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
+    void SetInPursuit(bool inPursuit) override;
+    void SetIsCoolingDown(bool coolingDown) override;
 
   private:
     FEGroup * mpDataRadarDetectorGroup;

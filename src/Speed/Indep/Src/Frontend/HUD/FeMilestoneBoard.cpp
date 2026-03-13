@@ -8,3 +8,15 @@ MilestoneBoard::MilestoneBoard(UTL::COM::Object *pOutter, const char *pkg_name, 
 
 void MilestoneBoard::Update(IPlayer *player) {
 }
+
+void MilestoneBoard::SetInPursuit(bool inPursuit) {
+    mInPursuit = inPursuit;
+}
+
+void MilestoneBoard::SetChallengeSeries(bool challenge) {
+    mChallengeSeries = challenge;
+}
+
+void MilestoneBoard::SetNumberOfMilestones(int num) {
+    mNumMilestones = num;
+}

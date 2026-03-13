@@ -21,3 +21,7 @@ GetAwayMeter::GetAwayMeter(UTL::COM::Object *pOutter, const char *pkg_name, int 
 }
 
 void GetAwayMeter::Update(IPlayer *player) {}
+
+void GetAwayMeter::SetGetAwayDistance(float distance) {
+    mGetawayDistance = distance;
+}

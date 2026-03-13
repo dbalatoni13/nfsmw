@@ -16,6 +16,8 @@ class ISpeedometer : public UTL::COM::IUnknown {
 
     ISpeedometer(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
+    virtual void SetSpeed(float speed);
+
   protected:
     virtual ~ISpeedometer() {}
 };
@@ -25,6 +27,7 @@ class Speedometer : public HudElement, public ISpeedometer {
   public:
     Speedometer(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
+    void SetSpeed(float speed) override;
 
   private:
     FEString *mpSpeedDigit1;                   // offset 0x30

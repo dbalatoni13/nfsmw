@@ -23,6 +23,9 @@ class MilestoneBoard : public HudElement, public IMilestoneBoard {
   public:
     MilestoneBoard(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
+    void SetInPursuit(bool inPursuit) override;
+    void SetChallengeSeries(bool challenge) override;
+    void SetNumberOfMilestones(int num) override;
 
   private:
     bool mInPursuit;
