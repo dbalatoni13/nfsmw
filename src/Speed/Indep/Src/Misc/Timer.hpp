@@ -67,7 +67,7 @@ class Timer {
 
     void ResetHigh() {}
 
-    void UnSet() {}
+    void UnSet() { PackedTime = 0; }
 
     int IsSet() {}
 

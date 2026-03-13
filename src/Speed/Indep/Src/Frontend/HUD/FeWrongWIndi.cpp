@@ -39,16 +39,16 @@ void WrongWIndi::Update(IPlayer *player) {
     }
 }
 
-void WrongWIndi::SetWrongWay(bool wrong_way) {
-    if (mIsWrongWay == wrong_way) {
+void WrongWIndi::SetWrongWay(bool isWrongWay) {
+    if (mIsWrongWay == isWrongWay) {
         return;
     }
-    if (wrong_way) {
-        mTimeBeforeClosing = Timer(0);
+    if (isWrongWay) {
         mTimeBeforeDisplaying = WorldTimer;
+        mTimeBeforeClosing.UnSet();
     } else {
-        mTimeBeforeDisplaying = Timer(0);
         mTimeBeforeClosing = WorldTimer;
+        mTimeBeforeDisplaying.UnSet();
     }
-    mIsWrongWay = wrong_way;
+    mIsWrongWay = isWrongWay;
 }

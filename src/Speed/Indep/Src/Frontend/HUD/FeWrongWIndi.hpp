@@ -21,7 +21,7 @@ class IWrongWay : public UTL::COM::IUnknown {
     virtual ~IWrongWay() {}
 
   public:
-    virtual void SetWrongWay(bool wrong_way);
+    virtual void SetWrongWay(bool isWrongWay);
 };
 
 // total size: 0x40
@@ -29,7 +29,7 @@ class WrongWIndi : public HudElement, public IWrongWay {
   public:
     WrongWIndi(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
-    void SetWrongWay(bool wrong_way) override;
+    void SetWrongWay(bool isWrongWay) override;
 
   private:
     FEImage *mpWrongWayImage;                  // offset 0x30
