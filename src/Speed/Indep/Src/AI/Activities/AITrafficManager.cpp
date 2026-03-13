@@ -27,8 +27,11 @@
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
-extern Table TrafficOffScreenTime;
-extern Table TrafficOffScreenDistance;
+static const float Tweak_TrafficOffScreenTime[11] = {12.0f, 10.0f, 9.0f, 8.0f, 7.0f, 6.5f, 6.0f, 5.5f, 5.0f, 4.5f, 4.0f};
+static Table TrafficOffScreenTime(Tweak_TrafficOffScreenTime, 11, 0.0f, 1.0f);
+
+static const float Tweak_TrafficOffScreenDistance[11] = {130.0f, 120.0f, 110.0f, 100.0f, 90.0f, 80.0f, 70.0f, 60.0f, 55.0f, 45.0f, 40.0f};
+static Table TrafficOffScreenDistance(Tweak_TrafficOffScreenDistance, 11, 0.0f, 1.0f);
 
 struct PartChecker : public IModel::Enumerator {
     bool Valid;

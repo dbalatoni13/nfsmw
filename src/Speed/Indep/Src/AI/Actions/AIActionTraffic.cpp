@@ -205,7 +205,8 @@ void AIActionTraffic::BeginAction(float dT) {
 void AIActionTraffic::FinishAction(float dT) {}
 
 float GetSpeedLimitForCurvature(float friction, float curvature, float top_speed);
-extern Table aAIStoppingDistTable;
+float aAIStoppingDist[2] = {3.0f, 50.0f};
+Table aAIStoppingDistTable(aAIStoppingDist, 2, 0.0f, 1.0f);
 
 float AIActionTraffic::ComputeSpeed(float current_speed, float dT) {
     WRoadNav *road_nav = GetAI()->GetDriveToNav();
