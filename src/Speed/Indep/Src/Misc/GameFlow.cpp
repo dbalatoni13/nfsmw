@@ -1,5 +1,6 @@
 #include "GameFlow.hpp"
 #include "AttribAlloc.h"
+#include "AttribVaultPack.h"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
@@ -203,7 +204,6 @@ void eLoadStreamingTexture(unsigned int *, int, void (*)(void *), void *, int);
 int eIsWidescreen();
 void bBreak();
 
-Attrib::Vault *InitializeSingleAttributeVault(void *, const char *, unsigned char **, unsigned int);
 extern Attrib::Vault *gDatabaseVault;
 
 static Attrib::Vault *sFrontEndVault;
@@ -212,6 +212,8 @@ static int sFrontEndVaultHigh;
 
 bool RemoveDepFile(const char *);
 void RemoveVault(const char *);
+bool AddDepFile(const char *, void *, unsigned int);
+Attrib::Vault *AddVault(const char *, void *, unsigned int);
 
 #include "Speed/Indep/Src/Misc/EasterEggs.hpp"
 extern EasterEggs gEasterEggs;
@@ -382,6 +384,29 @@ void GameFlowManager::Service() {
 
 void GameFlowManager::SetState(GameFlowState state) {
     CurrentGameFlowState = state;
+}
+
+Attrib::Vault *InitializeSingleAttributeVault(void *buf, const char *name,
+                                              unsigned char **outPermBuffer,
+                                              unsigned int allocFlags) {
+    char nameBuf[64];
+    bGetTicker();
+    AttribVaultPackImage *pack = static_cast<AttribVaultPackImage *>(buf);
+    pack->EndianSwap();
+    int index = pack->GetVaultIndex(name);
+    AttribVaultPackEntry &entry = pack->GetEntry(index);
+    unsigned char *vltData = pack->GetData(entry.mVltOffset);
+    bSPrintf(nameBuf, "%s.bin", name);
+    unsigned char *binData = static_cast<unsigned char *>(bMalloc(entry.mBinSize, allocFlags));
+    bMemCpy(binData, pack->GetData(entry.mBinOffset), entry.mBinSize);
+    bSPrintf(nameBuf, "%s.dep", name);
+    AddDepFile(nameBuf, binData, entry.mBinSize);
+    bSPrintf(nameBuf, "%s", name);
+    Attrib::Vault *result = AddVault(nameBuf, vltData, entry.mVltSize);
+    if (outPermBuffer != nullptr) {
+        *outPermBuffer = binData;
+    }
+    return result;
 }
 
 void LoadFrontEndVault(bool allocHigh) {

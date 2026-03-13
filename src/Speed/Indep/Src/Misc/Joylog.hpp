@@ -133,7 +133,9 @@ class Joylog {
         return *reinterpret_cast<float *>(&data);
     }
 
-    static void AddData(float data, JoylogChannel channel_number) {}
+    static void AddData(float data, JoylogChannel channel_number) {
+        AddData(*reinterpret_cast<int *>(&data), 32, channel_number);
+    }
 
     static void RewindReadAheadBuffer() {}
 
