@@ -30,6 +30,7 @@ class Minimap : public HudElement {
     void SetupMinimap(IPlayer *player);
     void RefreshMapItems();
     void AdjustForWidescreen();
+    static void InitStaticMiniMapItems();
 
   private:
     bTList<MiniMapItem> StaticMiniMapItems;

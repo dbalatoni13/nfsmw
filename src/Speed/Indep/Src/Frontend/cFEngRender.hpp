@@ -11,6 +11,8 @@ struct FEObject;
 struct FEPackage;
 struct FEPackageRenderInfo;
 struct FEGroup;
+struct FEModel;
+struct FERenderObject;
 
 struct FEClipInfo {
     bVector3 normals[4]; // offset 0x0, size 0x40
@@ -45,6 +47,8 @@ struct cFEngRender {
     void PackageFinished(FEPackage* pkg);
     void AddToRenderList(FEObject* obj);
     void RemoveCachedRender(FEObject* obj, FEPackageRenderInfo* info);
+    FERenderObject* FindCachedRender(FEObject* obj);
+    void RenderModel(FEModel* model, FERenderObject* renderObj);
 };
 
 #endif

@@ -41,7 +41,7 @@ class FEngHud : public UTL::COM::Object, public IHud {
     bool AreResourcesLoaded();
     bool IsHudVisible();
     void HideAll();
-    void FadeAll();
+    void FadeAll(bool fadeIn);
     void SetInPursuit(bool inPursuit);
     bool IsInPursuit();
     void SetHasTurbo(bool hasTurbo);

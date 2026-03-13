@@ -7,3 +7,5 @@ Minimap::Minimap(const char *pkg_name, int player_number)
 
 void Minimap::Update(IPlayer *player) {
 }
+
+void Minimap::InitStaticMiniMapItems() {}

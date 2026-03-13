@@ -28,6 +28,7 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeTurboMeter.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeWrongWIndi.hpp"
 #include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
@@ -352,4 +353,119 @@ void FEngHud::RefreshMiniMapItems() {
 
 OnlineHUDSupport *FEngHud::GetOnlineHUDSupport() {
     return static_cast< OnlineHUDSupport * >(pOnlineSupport);
+}
+
+extern const char lbl_803E4E0C[];
+extern const char lbl_803E572C[];
+
+void FEngHud::FadeAll(bool fadeIn) {
+    if (fadeIn) {
+        cFEng::Get()->QueuePackageMessage(0xBCC00F05, pPackageName, nullptr);
+        cFEng::Get()->QueuePackageMessage(FEHashUpper(lbl_803E572C), pPackageName, nullptr);
+    } else {
+        cFEng::Get()->QueuePackageMessage(0x54C20A66, pPackageName, nullptr);
+        cFEng::Get()->QueuePackageMessage(FEHashUpper(lbl_803E4E0C), pPackageName, nullptr);
+    }
+}
+
+void FEngHud::SetHudFeatures(unsigned long long hud_features) {
+    unsigned long long diff = CurrentHudFeatures ^ hud_features;
+    if (pSpeedometer != nullptr && (diff & 0x8000000)) {
+        pSpeedometer->Toggle(hud_features);
+    }
+    if (pTachometer != nullptr && (diff & 0x2)) {
+        pTachometer->Toggle(hud_features);
+    }
+    if (pTachometerDrag != nullptr && (diff & 0x2)) {
+        pTachometerDrag->Toggle(hud_features);
+    }
+    if (pShiftUpdater != nullptr && (diff & 0x20000000)) {
+        pShiftUpdater->Toggle(hud_features);
+    }
+    if (pTurboMeter != nullptr && (diff & 0x20000)) {
+        pTurboMeter->Toggle(hud_features);
+    }
+    if (pEngineTemp != nullptr && (diff & 0x40)) {
+        pEngineTemp->Toggle(hud_features);
+    }
+    if (pNitrous != nullptr && (diff & 0x800)) {
+        pNitrous->Toggle(hud_features);
+    }
+    if (pSpeedBreakerMeter != nullptr && (diff & 0x40000)) {
+        pSpeedBreakerMeter->Toggle(hud_features);
+    }
+    if (pHeatMeter != nullptr && (diff & 0x4000)) {
+        pHeatMeter->Toggle(hud_features);
+    }
+    if (pMinimap != nullptr && (diff & 0x10000)) {
+        pMinimap->Toggle(hud_features);
+    }
+    if (pGetAwayMeter != nullptr && (diff & 0x200)) {
+        pGetAwayMeter->Toggle(hud_features);
+    }
+    if (pMenuZoneTrigger != nullptr && (diff & 0x400000)) {
+        pMenuZoneTrigger->Toggle(hud_features);
+    }
+    if (pRaceInformation != nullptr && (diff & 0x4000000)) {
+        pRaceInformation->Toggle(hud_features);
+    }
+    if (pLeaderBoard != nullptr) {
+        if ((diff & 0x8) || (diff & 0x10)) {
+            pLeaderBoard->Toggle(hud_features);
+        }
+    }
+    if (pPursuitBoard != nullptr && (diff & 0x100000)) {
+        pPursuitBoard->Toggle(hud_features);
+    }
+    if (pMilestoneBoard != nullptr && (diff & 0x400000000ULL)) {
+        pMilestoneBoard->Toggle(hud_features);
+    }
+    if (pBustedMeter != nullptr && (diff & 0x800000)) {
+        pBustedMeter->Toggle(hud_features);
+    }
+    if (pTimeExtension != nullptr && (diff & 0x2000000)) {
+        pTimeExtension->Toggle(hud_features);
+    }
+    if (pCostToState != nullptr && (diff & 0x1000)) {
+        pCostToState->Toggle(hud_features);
+    }
+    if (pReputation != nullptr && (diff & 0x1000)) {
+        pReputation->Toggle(hud_features);
+    }
+    if (pWrongWIndi != nullptr && (diff & 0x20)) {
+        pWrongWIndi->Toggle(hud_features);
+    }
+    if (pRaceOverMessage != nullptr && (diff & 0x4)) {
+        pRaceOverMessage->Toggle(hud_features);
+    }
+    if (pGenericMessage != nullptr && (diff & 0x1000000)) {
+        pGenericMessage->Toggle(hud_features);
+    }
+    if (pRadarDetector != nullptr && (diff & 0x200000)) {
+        pRadarDetector->Toggle(hud_features);
+    }
+    if (p321Go != nullptr && (diff & 0x400)) {
+        p321Go->Toggle(hud_features);
+    }
+    if (pInfractions != nullptr && (diff & 0x200000000ULL)) {
+        pInfractions->Toggle(hud_features);
+    }
+    CurrentHudFeatures = hud_features;
+}
+
+void FEngHud::JoyEnable() {
+    int port = pPlayer->GetControllerPort();
+    if (!mActionQ.IsEnabled()) {
+        mActionQ.SetPort(port);
+        mActionQ.Enable(true);
+        mActionQ.Flush();
+    }
+}
+
+void FEngHud::JoyDisable() {
+    pPlayer->GetControllerPort();
+    if (mActionQ.IsEnabled()) {
+        mActionQ.Enable(false);
+        mActionQ.Flush();
+    }
 }

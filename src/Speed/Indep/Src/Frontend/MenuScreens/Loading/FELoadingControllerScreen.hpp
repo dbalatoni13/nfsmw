@@ -5,8 +5,18 @@
 #pragma once
 #endif
 
-struct LoadingControllerScreen {
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+
+struct GameTipInfo;
+
+struct LoadingControllerScreen : public MenuScreen {
     static void InitLoadingControllerScreen();
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
+
+  private:
+    int LoadingFinished;                  // offset 0x2C
+    GameTipInfo *GameTipToShow;           // offset 0x30
+    unsigned int WhichControllerTexture;  // offset 0x34
 };
 
 #endif

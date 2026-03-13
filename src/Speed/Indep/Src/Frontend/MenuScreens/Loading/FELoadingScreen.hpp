@@ -5,8 +5,11 @@
 #pragma once
 #endif
 
-struct LoadingScreen {
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+
+struct LoadingScreen : public MenuScreen {
     static void InitLoadingScreen();
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
 };
 
 #endif

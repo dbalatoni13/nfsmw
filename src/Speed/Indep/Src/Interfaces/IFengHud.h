@@ -27,6 +27,7 @@ class IHud : public UTL::COM::IUnknown, public UTL::Collections::Listable<IHud, 
     virtual void SetHasTurbo(bool hasTurbo);
     virtual void JoyEnable();
     virtual void JoyDisable();
+    virtual void FadeAll(bool fadeIn);
     virtual void RefreshMiniMapItems();
 };
 
