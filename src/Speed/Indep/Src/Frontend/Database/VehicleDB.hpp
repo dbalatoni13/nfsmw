@@ -12,6 +12,7 @@
 
 // total size: 0x14
 struct FECarRecord {
+    FECarRecord();
     unsigned int Handle;         // offset 0x0, size 0x4
     unsigned int FEKey;          // offset 0x4, size 0x4
     unsigned int VehicleKey;     // offset 0x8, size 0x4
@@ -20,9 +21,17 @@ struct FECarRecord {
     unsigned char CareerHandle;  // offset 0x11, size 0x1
     unsigned short Padd;         // offset 0x12, size 0x2
     bool IsValid() { return Handle != 0xFFFFFFFF; }
+    FECarRecord &operator=(const FECarRecord &other_record);
     void Default();
     bool MatchesFilter(int theFilter);
+    unsigned int GetCost();
+    const char *GetDebugName();
     unsigned int GetNameHash();
+    const char *GetManufacturerName();
+    unsigned int GetLogoHash();
+    unsigned int GetManuLogoHash();
+    unsigned int GetReleaseFromImpoundCost();
+    CarType GetType();
 };
 
 // total size: 0x198

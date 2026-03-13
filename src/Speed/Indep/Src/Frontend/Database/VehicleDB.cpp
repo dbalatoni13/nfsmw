@@ -1,6 +1,8 @@
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/fecooling.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/frontend.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitlevels.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 #include "types.h"
@@ -8,6 +10,14 @@
 #include <string.h>
 
 extern int g_MaximumMaximumTimesBusted;
+extern float g_fImpoundPercentageOfOriginalCost;
+
+class CarPartDatabase {
+  public:
+    CarType GetCarType(unsigned int key);
+};
+
+extern CarPartDatabase CarPartDB;
 
 namespace {
 
@@ -39,6 +49,8 @@ bool IsCareerRecordValid(const FECareerRecord &record) {
     return record.Handle != 0xFF;
 }
 
+const unsigned int kHeatAdjustCollectionKey = 0xEEC2271A;
+
 } // namespace
 
 FEPlayerCarDB::FEPlayerCarDB() {
@@ -46,6 +58,22 @@ FEPlayerCarDB::FEPlayerCarDB() {
 }
 
 FEPlayerCarDB::~FEPlayerCarDB() {}
+
+FECarRecord::FECarRecord() {
+    Handle = 0xFFFFFFFF;
+    CareerHandle = 0xFF;
+    FilterBits = 0;
+    FEKey = 0;
+    VehicleKey = 0;
+    Customization = 0xFF;
+}
+
+FECarRecord &FECarRecord::operator=(const FECarRecord &other_record) {
+    FEKey = other_record.FEKey;
+    VehicleKey = other_record.VehicleKey;
+    FilterBits = other_record.FilterBits;
+    return *this;
+}
 
 void FECarRecord::Default() {
     Customization = 0xFF;
@@ -86,8 +114,31 @@ bool FECarRecord::MatchesFilter(int theFilter) {
     return (FilterBits & static_cast< unsigned int >(theFilter)) == static_cast< unsigned int >(theFilter);
 }
 
+unsigned int FECarRecord::GetCost() {
+    Attrib::Gen::frontend frontend(FEKey, 0, 0);
+
+    return frontend.Cost();
+}
+
+const char *FECarRecord::GetDebugName() {
+    Attrib::Gen::pvehicle vehicle(VehicleKey, 0, 0);
+    const unsigned char *vehicleLayout = reinterpret_cast< const unsigned char * >(vehicle.GetLayoutPointer());
+
+    return *reinterpret_cast< const char * const * >(vehicleLayout + 0x24);
+}
+
 unsigned int FECarRecord::GetNameHash() {
     return FEKey;
+}
+
+unsigned int FECarRecord::GetReleaseFromImpoundCost() {
+    return static_cast< unsigned int >(static_cast< float >(GetCost()) * g_fImpoundPercentageOfOriginalCost);
+}
+
+CarType FECarRecord::GetType() {
+    Attrib::Gen::pvehicle vehicle(VehicleKey, 0, 0);
+
+    return CarPartDB.GetCarType(vehicle.MODEL().GetHash32());
 }
 
 void FECustomizationRecord::Default() {
@@ -280,6 +331,78 @@ void FECareerRecord::SetVehicleHeat(float h) {
 
 float FECareerRecord::GetVehicleHeat() {
     return VehicleHeat;
+}
+
+void FECareerRecord::AdjustHeatOnEventWin() {
+    Attrib::Gen::pursuitlevels pursuitLevels(kHeatAdjustCollectionKey, 0, 0);
+
+    VehicleHeat = VehicleHeat * pursuitLevels.EventWinHeatAdjust();
+}
+
+void FECareerRecord::AdjustHeatOnEvadePursuit() {
+    Attrib::Gen::pursuitlevels pursuitLevels(kHeatAdjustCollectionKey, 0, 0);
+
+    VehicleHeat = VehicleHeat * pursuitLevels.EvadeSuccessHeatAdjust();
+}
+
+void FECareerRecord::AdjustHeatOnDecalApplied(float extraAdjust) {
+    Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
+
+    VehicleHeat = VehicleHeat * cooling.NewDecal() * extraAdjust;
+}
+
+void FECareerRecord::AdjustHeatOnPaintApplied(float extraAdjust) {
+    Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
+
+    VehicleHeat = VehicleHeat * cooling.NewPaint() * extraAdjust;
+}
+
+void FECareerRecord::AdjustHeatOnVinylApplied(float extraAdjust) {
+    Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
+
+    VehicleHeat = VehicleHeat * cooling.NewVinyl() * extraAdjust;
+}
+
+void FECareerRecord::AdjustHeatOnBodyKitApplied(float extraAdjust) {
+    Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
+
+    VehicleHeat = VehicleHeat * cooling.NewBodyKit() * extraAdjust;
+}
+
+void FECareerRecord::AdjustHeatOnHoodApplied(float extraAdjust) {
+    Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
+
+    VehicleHeat = VehicleHeat * cooling.NewHood() * extraAdjust;
+}
+
+void FECareerRecord::AdjustHeatOnRimApplied(float extraAdjust) {
+    Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
+
+    VehicleHeat = VehicleHeat * cooling.NewRim() * extraAdjust;
+}
+
+void FECareerRecord::AdjustHeatOnRimPaintApplied(float extraAdjust) {
+    Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
+
+    VehicleHeat = VehicleHeat * cooling.NewRimPaint() * extraAdjust;
+}
+
+void FECareerRecord::AdjustHeatOnRoofScoopApplied(float extraAdjust) {
+    Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
+
+    VehicleHeat = VehicleHeat * cooling.NewRoofScoop() * extraAdjust;
+}
+
+void FECareerRecord::AdjustHeatOnSpoilerApplied(float extraAdjust) {
+    Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
+
+    VehicleHeat = VehicleHeat * cooling.NewSpoiler() * extraAdjust;
+}
+
+void FECareerRecord::AdjustHeatOnWindowTintApplied(float extraAdjust) {
+    Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
+
+    VehicleHeat = VehicleHeat * cooling.NewWindowTint() * extraAdjust;
 }
 
 void FECareerRecord::CommitPursuitCarData(unsigned int infractions, unsigned int accumulated_bounty, bool pursuit_evaded) {
