@@ -459,7 +459,7 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
     }
 
     // Overrides: IPursuit
-    bool IsPerpBusted() const override {
+    int IsPerpBusted() const override {
         return mIsPerpBusted;
     }
 
@@ -501,12 +501,12 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
     }
 
     // Overrides: IPursuit
-    bool IsPerpInSight() const override {
+    int IsPerpInSight() const override {
         return mIsPerpInSight;
     }
 
     // Overrides: IPursuit
-    bool IsPursuitBailed() const override {
+    int IsPursuitBailed() const override {
         return mIsPursuitBailed;
     }
 

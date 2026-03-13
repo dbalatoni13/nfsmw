@@ -62,6 +62,8 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
         mProfile = Sim::Profile::Create();
     }
 
+    virtual void Reset() {}
+
     virtual const int GetPriority() const {
         return mPriority;
     }
