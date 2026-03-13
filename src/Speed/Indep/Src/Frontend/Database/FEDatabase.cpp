@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 
 extern unsigned int FEngHashString(const char *, ...);
 
@@ -108,6 +109,29 @@ unsigned int cFrontendDatabase::GetBountyHeaderHash(unsigned int index) {
 
 unsigned int cFrontendDatabase::GetBountyDescHash(unsigned int index) {
     return FEngHashString("BOUNTY_DESCRIPTION_%d", index);
+}
+
+void RaceSettings::Default() {
+    NumOpponents = 3;
+    CatchUp = true;
+    TrafficDensity = 1;
+    NumLaps = 2;
+    IsLapKO = false;
+    AISkill = 1;
+    CopDensity = 1;
+    CopsOn = false;
+    TrackDirection = 0;
+    for (int i = 0; i < 2; i++) {
+        SelectedCar[i] = 0;
+    }
+    RegionFilterBits = 3;
+}
+
+void cFrontendDatabase::SetPlayersJoystickPort(int player, signed char port) {
+    if (port == -1 && PlayerJoyports[player] != -1) {
+        cFEngJoyInput::mInstance->SetRequiredJoy(static_cast<JoystickPort>(PlayerJoyports[player]), false);
+    }
+    PlayerJoyports[player] = port;
 }
 
 static int MikeMannBuild;

@@ -307,6 +307,8 @@ class UserProfile {
 
 // total size: 0x24
 struct RaceSettings {
+    void Default();
+
     unsigned int GetSelectedCar(int player_num) {
         return SelectedCar[player_num];
     }

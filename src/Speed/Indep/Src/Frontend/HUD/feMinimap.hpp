@@ -10,6 +10,8 @@
 #include "Speed/Indep/Src/FEng/FEMultiImage.h"
 
 struct TrackInfo;
+struct IVehicle;
+struct GIcon;
 
 struct COORD2 {
     float x;
@@ -26,9 +28,20 @@ struct MiniMapItem : public bTNode<MiniMapItem> {
 class Minimap : public HudElement {
   public:
     Minimap(const char *pkg_name, int player_number);
+    ~Minimap();
     void Update(IPlayer *player) override;
     void SetupMinimap(IPlayer *player);
     void RefreshMapItems();
+    void ConvertPos(bVector2 &out, bVector2 &in, TrackInfo *track);
+    void UpdateTrackMapArt();
+    void UpdateElementArt(bVector2 *pos, bVector2 *dir, FEObject *element, bool visible);
+    void UpdateCopElements(IVehicle *vehicle);
+    void UpdateAiRacerElements();
+    void UpdatePlayer2Element();
+    void UpdateIconElement(FEImage *icon, GIcon *gicon);
+    void UpdateRaceElements();
+    void UpdateMiniMapItems();
+    void UpdateGameplayIcons(IPlayer *player);
     void AdjustForWidescreen(bool widescreen);
     static void InitStaticMiniMapItems();
 
