@@ -258,13 +258,12 @@ void CheckQueuedFileCallbacks() {
     }
     if (status == QDONE) {
         qf->Remove();
+        QueuedFileNumReadsInProgress--;
         if (qf->NumRead == qf->NumBytes) {
-            QueuedFileNumReadsInProgress--;
             bStrCopy(LastQueuedFilename, qf->Filename);
             qf->CallDoneCallback(0);
             delete qf;
         } else {
-            QueuedFileNumReadsInProgress--;
             qf->SetStatus(QWAITING);
             WaitingQueuedFileList.AddTail(qf);
         }

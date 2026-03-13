@@ -336,7 +336,15 @@ int LZValidHeader(LZHeader *header) {
 }
 
 int LZCompress(unsigned char *pSrc, unsigned int SrcSize, unsigned char *pDst) {
-    return JLZCompress(pSrc, SrcSize, pDst);
+    int huffSize = HUFFCompress(pSrc, SrcSize, pDst);
+    int jlzSize = JLZCompress(pSrc, SrcSize, pDst);
+    if (huffSize > jlzSize) {
+        return jlzSize;
+    }
+    if (huffSize > SrcSize + 0x10) {
+        return RAWCompress(pSrc, SrcSize, pDst);
+    }
+    return HUFFCompress(pSrc, SrcSize, pDst);
 }
 
 int32 LZDecompress(uint8 *pSrc, uint8 *pDst) {
