@@ -559,12 +559,10 @@ FECarRecord *FEPlayerCarDB::GetCarRecordByHandle(unsigned int handle) {
 }
 
 FECustomizationRecord *FEPlayerCarDB::GetCustomizationRecordByHandle(unsigned char handle) {
-    for (int i = 0; i < 75; i++) {
-        if (Customizations[i].Handle == handle) {
-            return &Customizations[i];
-        }
+    if (handle > 75) {
+        return nullptr;
     }
-    return nullptr;
+    return &Customizations[handle];
 }
 
 FECarRecord *FEPlayerCarDB::GetCarByIndex(int index) {
@@ -843,13 +841,13 @@ int FEPlayerCarDB::GetNumAvailableCareerCars() {
 
 void FEPlayerCarDB::DeleteAllCars() {
     for (int i = 0; i < 200; i++) {
-        DefaultCarRecord(CarTable[i]);
+        CarTable[i].Handle = 0xFFFFFFFF;
     }
 }
 
 void FEPlayerCarDB::DeleteAllCustomizations() {
     for (int i = 0; i < 75; i++) {
-        DefaultCustomizationRecord(Customizations[i]);
+        Customizations[i].Handle = 0xFF;
     }
 }
 

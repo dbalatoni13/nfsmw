@@ -21,6 +21,12 @@ class FEScript : public FEMinNode {
     FEEventList Events;       // offset 0x24, size 0x8
     char *pName;              // offset 0x2C, size 0x4
     unsigned long ID;         // offset 0x30, size 0x4
+
+    inline const char* GetName() const { return pName; }
+    inline FEScript* GetNext() const { return static_cast<FEScript*>(FEMinNode::GetNext()); }
+    inline FEScript* GetPrev() const { return static_cast<FEScript*>(FEMinNode::GetPrev()); }
+
+    void Init();
 };
 
 #endif

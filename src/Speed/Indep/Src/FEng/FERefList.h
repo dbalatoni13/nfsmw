@@ -10,6 +10,25 @@
 // total size: 0x10
 class FERefList {
   public:
+    FERefList() : bIsReference(false), head(nullptr), tail(nullptr) {}
+    virtual ~FERefList() {}
+
+    inline bool IsReference() const { return bIsReference; }
+    inline FERefList* GetRefSource() { return pRef; }
+    inline FEMinNode* GetHead() const { return bIsReference ? pRef->GetHead() : head; }
+    inline FEMinNode* GetTail() const { return bIsReference ? pRef->GetTail() : tail; }
+    inline bool IsListEmpty() const { return GetHead() == nullptr; }
+
+    void ReferenceList(FERefList* pList);
+    void AddNode(FEMinNode* insertpoint, FEMinNode* node);
+    bool IsInList(FEMinNode* node) const;
+    int ElementNumber(FEMinNode* node);
+    FEMinNode* RemNode(FEMinNode* node);
+    FEMinNode* RemHead();
+    FEMinNode* RemTail();
+    FEMinNode* FindNode(unsigned long ordinalnumber) const;
+    unsigned long GetNumElements();
+
   private:
     bool bIsReference; // offset 0x0, size 0x1
   protected:
