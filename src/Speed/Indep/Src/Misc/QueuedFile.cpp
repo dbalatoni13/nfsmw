@@ -121,7 +121,8 @@ void QueuedFile::BeginRead() {
 
 void QueuedFile::ReadDoneCallback() {
     if (Params.Compressed) {
-        DecompressionTable[DecompressionTableTop % 32] = this;
+        int table_pos = DecompressionTableTop % 32;
+        DecompressionTable[table_pos] = this;
         DecompressionTableTop++;
         return;
     }
@@ -345,10 +346,11 @@ void InitQueuedFiles() {
 }
 
 int IsQueuedFileBusy() {
-    if (QueuedFileNumReadsInProgress == 0 && WaitingQueuedFileList.IsEmpty()) {
-        return 0;
+    int result = 0;
+    if (QueuedFileNumReadsInProgress != 0 || !WaitingQueuedFileList.IsEmpty()) {
+        result = 1;
     }
-    return 1;
+    return result;
 }
 
 void BlockWhileQueuedFileBusy() {
