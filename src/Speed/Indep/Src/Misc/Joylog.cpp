@@ -420,10 +420,10 @@ void Joylog::Init() {
         pCapturingBuffer = new JoylogBuffer("joylog.bin", 0);
         CapturingFlag = 1;
         bFile *f = bOpen("joylog.bin", 6, 1);
-        if (f == nullptr) {
-            CapturingFlag = 0;
-        } else {
+        if (f != nullptr) {
             bClose(f);
+        } else {
+            CapturingFlag = 0;
         }
     }
 }
