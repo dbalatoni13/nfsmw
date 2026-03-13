@@ -165,6 +165,7 @@ void *MemoryPool::AllocateMemory(int size, int alignment, int alignment_offset, 
     FreeBlock *best_block = nullptr;
     int best_align_adjust = 0;
     int best_remaining = 0x7fffffff;
+    void *mem_bottom;
 
     if (start_from_top != 0) {
         for (FreeBlock *block = this->FreeBlockList.GetHead(); block != this->FreeBlockList.EndOfList(); block = block->GetNext()) {
@@ -172,9 +173,9 @@ void *MemoryPool::AllocateMemory(int size, int alignment, int alignment_offset, 
             int remaining = block->Size - (actual_size + align_adjust);
 
             if (((remaining == 0) || (remaining > 0xf)) && (remaining < best_remaining)) {
-                best_block = block;
-                best_align_adjust = align_adjust;
                 best_remaining = remaining;
+                best_align_adjust = align_adjust;
+                best_block = block;
                 if (use_best_fit == 0) {
                     break;
                 }
@@ -182,14 +183,14 @@ void *MemoryPool::AllocateMemory(int size, int alignment, int alignment_offset, 
         }
     } else {
         for (FreeBlock *block = this->FreeBlockList.GetTail(); block != this->FreeBlockList.EndOfList(); block = block->GetPrev()) {
-            int align_adjust =
-                GetAlignmentAdjustBottom(reinterpret_cast<intptr_t>(block) + (block->Size - actual_size), alignment, alignment_offset);
+            mem_bottom = reinterpret_cast<char *>(block) + block->Size;
+            int align_adjust = GetAlignmentAdjustBottom(reinterpret_cast<intptr_t>(mem_bottom) - actual_size, alignment, alignment_offset);
             int remaining = block->Size - (actual_size + align_adjust);
 
             if (((remaining == 0) || (remaining > 0xf)) && (remaining < best_remaining)) {
-                best_block = block;
-                best_align_adjust = align_adjust;
                 best_remaining = remaining;
+                best_align_adjust = align_adjust;
+                best_block = block;
                 if (use_best_fit == 0) {
                     break;
                 }
@@ -203,21 +204,19 @@ void *MemoryPool::AllocateMemory(int size, int alignment, int alignment_offset, 
     }
 
     int allocated_size = actual_size + best_align_adjust;
-    FreeBlock *allocated_block;
 
     if (start_from_top == 0) {
         int remaining = best_block->Size - allocated_size;
-        allocated_block = reinterpret_cast<FreeBlock *>(reinterpret_cast<char *>(best_block) + remaining);
+        mem_bottom = reinterpret_cast<char *>(best_block) + remaining;
         best_block->Size = remaining;
 
         if (remaining == 0) {
             best_block->Remove();
-            this->CheckFancyStompDetector(allocated_block + 1, allocated_size - 0x10);
-            best_block = allocated_block;
+            this->CheckFancyStompDetector(reinterpret_cast<FreeBlock *>(mem_bottom) + 1, allocated_size - 0x10);
         } else {
-            this->CheckFancyStompDetector(allocated_block, allocated_size);
-            best_block = allocated_block;
+            this->CheckFancyStompDetector(mem_bottom, allocated_size);
         }
+        best_block = reinterpret_cast<FreeBlock *>(mem_bottom);
     } else {
         this->CheckFancyStompDetector(best_block + 1, allocated_size - 0x10);
 
