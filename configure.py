@@ -241,7 +241,7 @@ if config.platform == Platform.GC_WII:
     # TODO move some of these to the game flags
     cflags_base_prodg = [
         "-O1",
-        "-gdwarf",
+        "-gdwarf+",
         # "-Wa,-L",
         # "-Wall",
         # "-Wreturn-type", # enable at some point

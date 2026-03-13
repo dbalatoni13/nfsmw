@@ -26,11 +26,6 @@ functions unless the user explicitly wants a cleanup/refiner pass.
 Use the wrapper flow first throughout this skill. Drop to raw `decomp-context.py` or
 `decomp-diff.py` only when the wrapper is missing a specific flag or you are debugging.
 
-Before doing any local readability/style cleanup in code you are editing, consult
-`.github/skills/code_style/SKILL.md`. Follow it for formatting, declaration placement,
-pointer-style cleanup, and match-safe polish. Do not trade away match behavior for a
-style preference.
-
 ### 1a. decomp-context.py
 
 Preferred shortcut:
@@ -217,7 +212,7 @@ Repeat the build-diff cycle until the diff shows 100% match with no `~` lines:
 
 ```sh
 python tools/decomp-workflow.py build -u main/Path/To/TU
-python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
 ```
 
 Every mismatched instruction is a signal — don't settle for "close enough".

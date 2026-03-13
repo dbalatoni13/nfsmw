@@ -26,7 +26,6 @@ import sys
 from typing import Any, Dict, List, Optional, Tuple
 from _common import (
     ROOT_DIR,
-    RELOC_DIFF_CHOICES,
     ToolError,
     build_objdiff_symbol_rows,
     fail,
