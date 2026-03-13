@@ -3,14 +3,26 @@
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Ecstasy/EcstasyData.hpp"
+#include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
+#include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.hpp"
+#include "Speed/Indep/Src/Generated/Events/EAutoSave.hpp"
+#include "Speed/Indep/Src/Generated/Events/ECinematicMoment.hpp"
 #include "Speed/Indep/Src/Generated/Events/ECameraPhotoFinish.hpp"
+#include "Speed/Indep/Src/Generated/Events/EFadeScreenOn.hpp"
 #include "Speed/Indep/Src/Generated/Events/EMomentStrm.hpp"
+#include "Speed/Indep/Src/Generated/Events/EQuitToFE.hpp"
+#include "Speed/Indep/Src/Generated/Events/ERaceSheetOn.hpp"
 #include "Speed/Indep/Src/Generated/Events/ERestartRace.hpp"
 #include "Speed/Indep/Src/Generated/Events/ESndGameState.hpp"
+#include "Speed/Indep/Src/Generated/Events/EUnPause.hpp"
+#include "Speed/Indep/Src/Generated/Messages/MFlowReadyForOutro.h"
+#include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
+#include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
@@ -23,16 +35,35 @@ extern FEImage *FEngFindImage(const char *pkg_name, int hash);
 extern FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
 extern void FEngSetInvisible(FEObject *obj);
 extern bool FEngIsScriptSet(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash);
+extern bool FEngIsScriptRunning(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash);
+extern void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash,
+                          bool start_at_beginning);
+extern void HideEverySingleHud();
+extern void SoundPause(bool pause, eSNDPAUSE_REASON reason);
 extern void StartCinematicSlowdown(EVIEW_ID view_id, float amount);
 
+extern const char lbl_803E485C[];
 extern const char lbl_803E43DC[];
 extern const char lbl_803E6080[];
 extern const char lbl_803E60A4[];
 extern const char lbl_803E60B8[];
 extern const char lbl_803E60C8[];
+extern const char lbl_803E60D4[];
+extern const char lbl_803E60E0[];
+extern const char lbl_803E60FC[];
+extern const char lbl_803E610C[];
+extern const char lbl_803E611C[];
+extern const char lbl_803E6128[];
+extern const char lbl_803E6138[];
+extern const char lbl_803E6148[];
+extern const char lbl_803E6158[];
+extern const char lbl_803E6164[];
+extern const char lbl_803E619C[];
 extern const char lbl_803E4CF0[];
 extern const char lbl_803E4FF8[];
 extern const char lbl_803E5084[];
+extern const char lbl_803E5EEC[];
+extern const char lbl_803E5F18[];
 extern const char lbl_803E5FD8[];
 extern const char lbl_803E617C[];
 extern const char lbl_803E6190[];
@@ -42,6 +73,8 @@ extern const char lbl_803E61E0[];
 extern const char lbl_803E61F0[];
 extern const char lbl_803E4744[];
 extern const float lbl_803E60C4;
+extern const float lbl_803E61BC;
+extern const float lbl_803E61C0;
 extern const float lbl_803E6200;
 extern const float lbl_803E6204;
 extern const float lbl_803E6208;
@@ -174,6 +207,159 @@ void PhotoFinishScreen::Setup() {
         DialogInterface::ShowOneButton(GetPackageName(), lbl_803E43DC, static_cast< eDialogTitle >(1),
                                        0x417B2601, 0x1FAB5998, 0x4C54B7EA);
         FEDatabase->GetCareerSettings()->SpecialFlags |= 0x2000;
+    }
+}
+
+void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsigned long, unsigned long) {
+    switch (msg) {
+        case 0x406415E3:
+            if (fResultType == FERESULTTYPE_SPEEDTRAP) {
+                UCrc32 kind(0x20D60DBF);
+                MFlowReadyForOutro outro_message;
+
+                new EUnPause();
+                new EAutoSave();
+                outro_message.Post(kind);
+                SoundPause(false, static_cast< eSNDPAUSE_REASON >(0xA));
+                SetSoundControlState(false, static_cast< eSNDCTLSTATE >(0xC), lbl_803E60D4);
+                return;
+            }
+
+            if (FEngIsScriptSet(GetPackageName(), 0x286A9CD4, 0x0016A259) ||
+                FEngIsScriptRunning(GetPackageName(), 0x286A9CD4, 0x5079C8F8)) {
+                return;
+            }
+
+            if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
+                GRaceParameters *race_parameters = GRaceStatus::Get().GetRaceParameters();
+                if (race_parameters->GetIsBossRace()) {
+                    GRaceDatabase &race_database = GRaceDatabase::Get();
+                    unsigned char current_bin = FEDatabase->GetCareerSettings()->GetCurrentBin();
+                    GRaceBin *race_bin = race_database.GetBinNumber(current_bin);
+                    int remaining_races = 0;
+
+                    for (unsigned int i = 0; i < race_bin->GetBossRaceCount(); ++i) {
+                        if (!race_database.CheckRaceScoreFlags(race_bin->GetBossRaceHash(i),
+                                                               GRaceDatabase::kCompleted_ContextCareer)) {
+                            ++remaining_races;
+                        }
+                    }
+
+                    new EFadeScreenOn(false);
+
+                    if (current_bin == 1 && remaining_races == 1) {
+                        UCrc32 kind(0x20D60DBF);
+                        MFlowReadyForOutro outro_message;
+
+                        cFEng::Get()->QueuePackagePop(1);
+                        outro_message.Post(kind);
+                    } else if (current_bin != 1 && remaining_races == 0) {
+                        new EQuitToFE(GARAGETYPE_CAREER_SAFEHOUSE, lbl_803E60E0);
+                    } else {
+                        cFEng::Get()->QueuePackagePop(1);
+                        new ERaceSheetOn(2);
+                    }
+                    return;
+                }
+
+                UCrc32 kind(0x20D60DBF);
+                MFlowReadyForOutro outro_message;
+
+                new EUnPause();
+                outro_message.Post(kind);
+                return;
+            }
+
+            if ((FEDatabase->GetGameMode() & 0x2) && MemoryCard::GetInstance()->ShouldDoAutoSave(false)) {
+                MemcardEnter(nullptr, nullptr, 0x100B1, nullptr, nullptr, 0, 0);
+            } else {
+                new EQuitToFE(GARAGETYPE_MAIN_FE, nullptr);
+            }
+            return;
+        case 0xC519BFC3:
+            if (fResultType != FERESULTTYPE_SPEEDTRAP) {
+                cFEng::Get()->QueuePackageMessage(bStringHash(lbl_803E60FC), GetPackageName(), nullptr);
+                if (!cFEng::Get()->IsPackagePushed(lbl_803E5F18)) {
+                    cFEng::Get()->QueuePackagePush(lbl_803E5F18, 0, 0, false);
+                }
+                new EShowResults(fResultType, false);
+            }
+            return;
+        case 0xC519BFC4:
+            if (fResultType != FERESULTTYPE_SPEEDTRAP) {
+                DialogInterface::ShowTwoButtons(GetPackageName(), lbl_803E5EEC, static_cast< eDialogTitle >(1),
+                                                0x417B2601, 0x1A294DAD, 0xE1A57D51, 0xB4623F67, 0xB4623F67,
+                                                static_cast< eDialogFirstButtons >(1), 0x4D3399A8);
+            }
+            return;
+        case 0xE1A57D51:
+            cFEng::Get()->QueuePackageMessage(bStringHash(lbl_803E610C), GetPackageName(), nullptr);
+            mRestartSelected = true;
+            new EUnPause();
+            return;
+        case 0xC98356BA: {
+            int packed_time = mSlowdownTimer.GetPackedTime();
+            if (packed_time != 0 && packed_time != 0x7FFFFFFF &&
+                RealTimer.GetSeconds() - mSlowdownTimer.GetSeconds() >= lbl_803E61BC) {
+                mSlowdownTimer = Timer();
+                mIceCamTimer = RealTimer;
+
+                HideEverySingleHud();
+                FEManager::RequestPauseSimulation(GetPackageName());
+
+                if (fResultType == FERESULTTYPE_PURSUIT) {
+                    new ECinematicMoment(lbl_803E611C, lbl_803E6128, lbl_803E61C0);
+                } else if (fResultType == FERESULTTYPE_SPEEDTRAP) {
+                    new ECinematicMoment(lbl_803E611C, lbl_803E6138, lbl_803E61C0);
+                } else {
+                    new ECinematicMoment(lbl_803E611C, GRaceStatus::Get().GetRaceParameters()->GetPhotoFinishCamera(),
+                                         lbl_803E61C0);
+                }
+                return;
+            }
+
+            packed_time = mIceCamTimer.GetPackedTime();
+            if (packed_time != 0 && packed_time != 0x7FFFFFFF &&
+                RealTimer.GetSeconds() - mIceCamTimer.GetSeconds() >= lbl_803E61BC) {
+                mIceCamTimer = Timer();
+
+                if (!FEngIsScriptSet(GetPackageName(), 0x47FF4E7C, 0x0013C37B)) {
+                    FEngSetScript(GetPackageName(), 0x47FF4E7C, 0x0013C37B, true);
+                }
+
+                if (fResultType == FERESULTTYPE_SPEEDTRAP) {
+                    if (!FEngIsScriptSet(GetPackageName(), 0x857FB472, 0x5079C8F8)) {
+                        FEngSetScript(GetPackageName(), 0x857FB472, 0x5079C8F8, true);
+                    }
+
+                    FEngSetScript(GetPackageName(), bStringHash(lbl_803E6148), 0x5079C8F8, true);
+                    cFEng::Get()->QueuePackageMessage(bStringHash(lbl_803E6158), GetPackageName(), nullptr);
+                } else {
+                    if (mPhotoHash == bStringHash(lbl_803E6164)) {
+                        FEngSetScript(GetPackageName(), bStringHash(lbl_803E617C), 0x5079C8F8, true);
+                    } else if (mPhotoHash == bStringHash(lbl_803E60A4)) {
+                        FEngSetScript(GetPackageName(), bStringHash(lbl_803E6190), 0x5079C8F8, true);
+                    } else {
+                        FEngSetScript(GetPackageName(), bStringHash(lbl_803E619C), 0x5079C8F8, true);
+                    }
+
+                    if (!FEngIsScriptSet(GetPackageName(), 0x286A9CD4, 0x5079C8F8)) {
+                        FEngSetScript(GetPackageName(), 0x286A9CD4, 0x5079C8F8, true);
+                    }
+                }
+
+                Setup();
+
+                MMiscSound sound_message(2);
+                sound_message.Send(Attrib::StringHash32(lbl_803E485C));
+
+                new ESndGameState(7, true);
+                SoundPause(true, static_cast< eSNDPAUSE_REASON >(0xA));
+                SetSoundControlState(false, static_cast< eSNDCTLSTATE >(0xF), lbl_803E60B8);
+                SetSoundControlState(true, static_cast< eSNDCTLSTATE >(1), lbl_803E60D4);
+            }
+            return;
+        }
     }
 }
 
