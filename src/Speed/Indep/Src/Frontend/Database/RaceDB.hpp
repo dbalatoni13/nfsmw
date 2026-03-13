@@ -73,12 +73,14 @@ enum RAP_CTS_ITEM { RAP_CTS_HELI_SPAWN=0,RAP_CTS_SUPPORT_VEHICLE_DEPLOYED=1,RAP_
 // total size: 0xBD8
 class HighScoresDatabase {
   public:
+    void Default();
     int GetCareerPursuitScore(ePursuitDetailTypes type) const { return CareerPursuitDetails.GetValue(type); }
     const TopEvadedPursuitDetail &GetTopEvadedPursuitScores(unsigned short index) const { return TopEvadedPursuitScores[index]; }
     const PursuitScore &GetBestPursuitScore(ePursuitDetailTypes type) const { return BestPursuitRankings[type]; }
     int CalcPursuitRank(ePursuitDetailTypes type, bool career_rank);
     unsigned int GetPreviouslyPursuedCarNameHash() const;
     void GetCareerCST(RAP_CTS_ITEM item, int &quantity, unsigned int &value) const;
+    void CommitHighScoresPauseQuit();
     TrackHighScore TrackHighScoreTable[320];          // offset 0x0, size 0xA00
     float TotalOdometer;                              // offset 0xA00, size 0x4
     int TotalStarts;                                  // offset 0xA04, size 0x4

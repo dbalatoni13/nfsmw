@@ -20,6 +20,7 @@ struct FECarRecord {
     unsigned char CareerHandle;  // offset 0x11, size 0x1
     unsigned short Padd;         // offset 0x12, size 0x2
     bool IsValid() { return Handle != 0xFFFFFFFF; }
+    void Default();
     bool MatchesFilter(int theFilter);
     unsigned int GetNameHash();
 };
@@ -32,6 +33,7 @@ struct FECustomizationRecord {
     Physics::eCustomTuningType ActiveTuning;     // offset 0x18C, size 0x4
     int Preset;                                  // offset 0x190, size 0x4
     unsigned char Handle;                        // offset 0x194, size 0x1
+    void Default();
 };
 
 // total size: 0x8
@@ -50,6 +52,15 @@ struct FEImpoundData {
     char EvadeCount;                 // offset 0x4, size 0x1
     char Pad1;                       // offset 0x5, size 0x1
     short Pad2;                      // offset 0x6, size 0x2
+    void Default();
+    void BecomeImpounded(eImpoundReasons reason);
+    void NotifyPlayerPaidToRelease();
+    void NotifyPlayerUsedMarkerToRelease();
+    bool NotifyWin();
+    bool NotifyBusted();
+    bool NotifyEvade();
+    bool CanAddMaxBusted();
+    void AddMaxBusted();
     bool IsImpounded() const { return ImpoundedState != 0; }
 };
 
@@ -63,8 +74,12 @@ struct FEInfractionsData {
     unsigned short Damage;    // offset 0xA, size 0x2
     unsigned short Resist;    // offset 0xC, size 0x2
     unsigned short OffRoad;   // offset 0xE, size 0x2
+    FEInfractionsData(unsigned int infractions = 0);
+    void operator+=(const FEInfractionsData &rhs);
+    unsigned short GetValue(GInfractionManager::InfractionType type) const;
+    unsigned short NumInfractions() const;
     unsigned int GetFineValue() const;
-    unsigned short GetTotalInfractions() const;
+    unsigned short GetTotalInfractions() const { return NumInfractions(); }
 };
 
 // total size: 0x38
@@ -115,7 +130,7 @@ class FECareerRecord {
     void CommitPursuitCarData(unsigned int infractions, unsigned int accumulated_bounty, bool pursuit_evaded);
     void WaiveIncractions(unsigned int infractions);
     void ServeAllIncractions();
-    // unsigned int GetNumInfraction(InfractionType type, bool get_unserved) const;
+    unsigned int GetNumInfraction(GInfractionManager::InfractionType type, bool get_unserved) const;
 
     unsigned char Handle;         // offset 0x0, size 0x1
     FEImpoundData TheImpoundData; // offset 0x2, size 0x8
@@ -135,6 +150,8 @@ class FEPlayerCarDB {
     // total size: 0x4
     class MyCallback {};
 
+    FEPlayerCarDB();
+    ~FEPlayerCarDB();
     void BuildRideForPlayer(unsigned int car, int player, RideInfo *ride);
     FECarRecord *GetCarRecordByHandle(unsigned int handle);
     FECustomizationRecord *GetCustomizationRecordByHandle(unsigned char handle);
