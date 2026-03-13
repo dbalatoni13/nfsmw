@@ -46,6 +46,13 @@ extern const float lbl_803E5E64;
 extern const float lbl_803E5E68;
 extern const float lbl_803E5E6C;
 extern const float lbl_803E5E70;
+extern const float lbl_803E5E74;
+extern const double lbl_803E5E78;
+extern const float lbl_803E5E88;
+extern const double lbl_803E5E90;
+extern const float lbl_803E5E98;
+extern const float lbl_803E5E9C;
+extern const float lbl_803E5EA0;
 extern const char lbl_803E5DB0[];
 extern const char lbl_803E5DCC[];
 extern const char lbl_803E5DDC[];
@@ -608,9 +615,16 @@ void PostRaceResultsScreen::SetupStat_StageVariance() {
 }
 
 void PostRaceResultsScreen::SetupStat_TrafficCollisions() {
-    GetActiveStatsPanel().AddGenericStat(static_cast< float >(GetRacerTrafficCollisions(mPlayerRacerInfo)), 0, 0,
-                                         "%.0f");
-    ++mNumberOfStats;
+    GRacerInfo &racerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer);
+
+    if (GRaceStatusGetRaceTimeElapsed(&GRaceStatus::Get()) > lbl_803E5E74) {
+        RacerStats[mIndexOfCurrentRacer].AddGenericStat(
+            static_cast< float >(*reinterpret_cast< const int * >(reinterpret_cast< const char * >(&racerInfo) + 0x12C)),
+            0x094BFDFC, 0, lbl_803E5E44);
+        return;
+    }
+
+    RacerStats[mIndexOfCurrentRacer].AddInfoStat(0x094BFDFC, 0x0FC1BF40);
 }
 
 void PostRaceResultsScreen::SetupStat_ZeroToSixty() {
@@ -624,14 +638,34 @@ void PostRaceResultsScreen::SetupStat_QuarterMile() {
 }
 
 void PostRaceResultsScreen::SetupStat_PerfectShifts() {
-    GetActiveStatsPanel().AddGenericStat(static_cast< float >(GetRacerPerfectShifts(mPlayerRacerInfo)), 0, 0,
-                                         "%.0f");
-    ++mNumberOfStats;
+    GRacerInfo &racerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer);
+
+    if (GRaceStatusGetRaceTimeElapsed(&GRaceStatus::Get()) > lbl_803E5E88 && GRacerInfoAreStatsReady(&racerInfo)) {
+        RacerStats[mIndexOfCurrentRacer].AddGenericStat(
+            static_cast< float >(*reinterpret_cast< const int * >(reinterpret_cast< const char * >(&racerInfo) + 0x128)),
+            0x680AC597, 0, lbl_803E5E44);
+        return;
+    }
+
+    RacerStats[mIndexOfCurrentRacer].AddInfoStat(0x680AC597, 0x0FC1BF40);
 }
 
 void PostRaceResultsScreen::SetupStat_AccumulatedSpeed() {
-    GetActiveStatsPanel().AddGenericStat(GetRacerDistanceDriven(mPlayerRacerInfo), 0, 0, "%.1f");
-    ++mNumberOfStats;
+    GRacerInfo &racerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer);
+    unsigned int speedUnits = 0x8569A25F;
+    float speed = *reinterpret_cast< const float * >(reinterpret_cast< const char * >(&racerInfo) + 0x134);
+
+    if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 0) {
+        speedUnits = 0x8569AB44;
+        speed = (speed * lbl_803E5E98) * lbl_803E5E9C;
+    }
+
+    if (GRaceStatusGetRaceTimeElapsed(&GRaceStatus::Get()) > lbl_803E5EA0) {
+        RacerStats[mIndexOfCurrentRacer].AddGenericStat(speed, 0xD57E02AB, speedUnits, lbl_803E5E44);
+        return;
+    }
+
+    RacerStats[mIndexOfCurrentRacer].AddInfoStat(0xD57E02AB, 0x0FC1BF40);
 }
 
 void PostRaceResultsScreen::SetupStat_SpeedVariance() {
