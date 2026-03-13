@@ -174,20 +174,74 @@ void AISpawnManager::RefreshSpawnData() {
         return;
     }
 
+    WRoadNetwork::Get().IncSegmentStamp();
+
+    int numSegments = WRoadNetwork::Get().GetNumSegments();
+    int nextSegmentIndex = UMath::Min(numSegments, currentSegmentIndex + 20);
+    float maxDistSpawn = mMaxGatherDist;
+
     UMath::Vector3 basePos;
     GetBasePosition(basePos);
 
-    int numSegments = WRoadNetwork::Get().GetNumSegments();
-    int numChecked = UMath::Min(numSegments, 200);
+    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+    UMath::Vector3 linearVelocity;
 
-    WRoadNetwork::Get().IncSegmentStamp();
+    if (player && player->GetSimable()) {
+        const UMath::Vector3 &pos = player->GetSimable()->GetRigidBody()->GetPosition();
+        linearVelocity.x = pos.x;
+        linearVelocity.y = 0.0f;
+        linearVelocity.z = pos.z;
+    } else {
+        linearVelocity.x = UMath::Vector3::kZero.x;
+        linearVelocity.y = 0.0f;
+        linearVelocity.z = UMath::Vector3::kZero.z;
+    }
 
-    for (int i = 0; i < numChecked; i++) {
-        if (currentSegmentIndex >= numSegments) {
-            currentSegmentIndex = 0;
+    UMath::Add(basePos, linearVelocity, basePos);
+
+    for (int i = currentSegmentIndex; i < nextSegmentIndex; i++) {
+        const WRoadSegment *segment = WRoadNetwork::Get().GetSegment(i);
+        if (!segment->IsTrafficAllowed()) {
+            continue;
         }
-        const WRoadSegment *segment = WRoadNetwork::Get().GetSegment(currentSegmentIndex);
-        if (WRoadNetwork::Get().GetSegRoadInd(currentSegmentIndex) >= 0) {
+        if (segment->IsDecision()) {
+            continue;
+        }
+        if (segment->GetLength() < 10.0f) {
+            continue;
+        }
+        const WRoadNode *node0 = WRoadNetwork::Get().GetNode(segment->fNodeIndex[0]);
+        const WRoadNode *node1 = WRoadNetwork::Get().GetNode(segment->fNodeIndex[1]);
+        UMath::Vector3 node0pos;
+        node0pos.x = node0->fPosition.x;
+        node0pos.y = node0->fPosition.y;
+        node0pos.z = node0->fPosition.z;
+        UMath::Vector3 node1pos;
+        node1pos.x = node1->fPosition.x;
+        node1pos.y = node1->fPosition.y;
+        node1pos.z = node1->fPosition.z;
+        float node0Distance = UMath::Distance(basePos, node0pos);
+        float node1Distance = UMath::Distance(basePos, node1pos);
+        if (node0Distance <= maxDistSpawn + 50.0f || node1Distance <= maxDistSpawn + 50.0f) {
+            mSpawnSegment[spawnSegmentIndex] = i;
+            int nextSpawnIndex = spawnSegmentIndex + 1;
+            mNumSpawnSegments = UMath::Max(nextSpawnIndex, mNumSpawnSegments);
+            spawnSegmentIndex = nextSpawnIndex;
+            if (spawnSegmentIndex > 49) {
+                spawnSegmentIndex = 0;
+            }
+        }
+    }
+
+    currentSegmentIndex = nextSegmentIndex;
+    if (currentSegmentIndex >= numSegments) {
+        currentSegmentIndex = 0;
+    }
+
+    int numToCheck = UMath::Min(currentSpawnIndex + 5, 50);
+    for (int i = currentSpawnIndex; i < numToCheck; i++) {
+        if (mSpawnSegment[i] >= 0) {
+            const WRoadSegment *segment = WRoadNetwork::Get().GetSegment(mSpawnSegment[i]);
             const WRoadNode *node0 = WRoadNetwork::Get().GetNode(segment->fNodeIndex[0]);
             const WRoadNode *node1 = WRoadNetwork::Get().GetNode(segment->fNodeIndex[1]);
             UMath::Vector3 node0pos;
@@ -198,20 +252,16 @@ void AISpawnManager::RefreshSpawnData() {
             node1pos.x = node1->fPosition.x;
             node1pos.y = node1->fPosition.y;
             node1pos.z = node1->fPosition.z;
-            float dist0 = UMath::Distancexz(basePos, node0pos);
-            float dist1 = UMath::Distancexz(basePos, node1pos);
-            float minDist = UMath::Min(dist0, dist1);
-            if (minDist < mMaxGatherDist) {
-                if (spawnSegmentIndex >= 50) {
-                    spawnSegmentIndex = 0;
-                }
-                mSpawnSegment[spawnSegmentIndex] = currentSegmentIndex;
-                spawnSegmentIndex++;
-                if (spawnSegmentIndex > mNumSpawnSegments) {
-                    mNumSpawnSegments = spawnSegmentIndex;
-                }
+            float node0Distance = UMath::Distance(basePos, node0pos);
+            float node1Distance = UMath::Distance(basePos, node1pos);
+            if (node0Distance > maxDistSpawn + 50.0f && node1Distance > maxDistSpawn + 50.0f) {
+                mSpawnSegment[i] = -1;
             }
         }
-        currentSegmentIndex++;
+    }
+
+    currentSpawnIndex = numToCheck;
+    if (currentSpawnIndex > 49) {
+        currentSpawnIndex = 0;
     }
 }
