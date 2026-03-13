@@ -39,6 +39,9 @@ enum CarRenderUsage {
 class RideInfo {
   public:
     void Init(CarType type, CarRenderUsage usage, int has_dash, int can_be_vertex_damaged);
+    void SetStockParts();
+    void SetRandomPaint();
+    void FillWithPreset(unsigned int preset);
 
     RideInfo() {
         Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);

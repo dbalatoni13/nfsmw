@@ -43,6 +43,8 @@ struct FECustomizationRecord {
     int Preset;                                  // offset 0x190, size 0x4
     unsigned char Handle;                        // offset 0x194, size 0x1
     void Default();
+    void WriteRideIntoRecord(const RideInfo *ride);
+    void WritePhysicsIntoRecord(const Attrib::Gen::pvehicle &attributes);
 };
 
 // total size: 0x8

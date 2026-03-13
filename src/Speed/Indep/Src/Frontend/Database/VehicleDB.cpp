@@ -1,6 +1,10 @@
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/FEng/FEList.h"
+#include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/fecooling.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/frontend.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/presetride.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitlevels.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
@@ -12,12 +16,35 @@
 extern int g_MaximumMaximumTimesBusted;
 extern float g_fImpoundPercentageOfOriginalCost;
 
+struct PresetCar {
+    unsigned int Pad0[2];
+    char CarTypeName[32];
+    char PresetName[32];
+    unsigned long long FEKey;
+    unsigned long long VehicleKey;
+    unsigned int FilterBits;
+    int PhysicsLevel;
+    int PartNameHashes[139];
+};
+
 class CarPartDatabase {
   public:
     CarType GetCarType(unsigned int key);
 };
 
 extern CarPartDatabase CarPartDB;
+PresetCar *FindFEPresetCar(unsigned int key);
+
+namespace Physics {
+
+namespace Upgrades {
+
+bool ApplyPreset(Attrib::Gen::pvehicle &vehicle, const Attrib::Gen::presetride &preset);
+void Clear(Attrib::Gen::pvehicle &vehicle);
+
+} // namespace Upgrades
+
+} // namespace Physics
 
 namespace {
 
@@ -700,4 +727,160 @@ FECareerRecord *FEPlayerCarDB::GetCareerRecordByHandle(unsigned char handle) {
         }
     }
     return nullptr;
+}
+
+FECarRecord *FEPlayerCarDB::CreateNewCustomCar(unsigned int fromCar) {
+    if (GetNumQuickRaceCars() < 20) {
+        return CreateCar(fromCar, 0xF0004);
+    }
+    return nullptr;
+}
+
+FECarRecord *FEPlayerCarDB::AwardRivalCar(unsigned int preset) {
+    if (preset == 0x03A94520) {
+        FEDatabase->GetCareerSettings()->SpecialFlags |= 0x100000;
+    }
+
+    PresetCar *presetCar = FindFEPresetCar(preset);
+    FECarRecord *presetRecord = GetCarRecordByHandle(preset);
+    if (presetRecord == nullptr) {
+        presetRecord = CreateNewPresetCar(presetCar->PresetName);
+    }
+
+    FECarRecord *car = CreateNewCareerCar(presetRecord->Handle);
+    FECustomizationRecord *customization = GetCustomizationRecordByHandle(car->Customization);
+    RideInfo ride;
+
+    car->FilterBits |= 0x40;
+    ride.Init(static_cast< CarType >(-1), CarRenderUsage_Player, 0, 0);
+    ride.FillWithPreset(FEHashUpper(presetCar->PresetName));
+    customization->WriteRideIntoRecord(&ride);
+
+    Attrib::Gen::presetride ridePreset(Attrib::StringToLowerCaseKey(presetCar->PresetName), 0, nullptr);
+    if (ridePreset.IsValid() && customization != nullptr) {
+        Attrib::Gen::pvehicle vehicle(car->VehicleKey, 0, nullptr);
+        if (Physics::Upgrades::ApplyPreset(vehicle, ridePreset)) {
+            customization->WritePhysicsIntoRecord(vehicle);
+        }
+    }
+
+    return car;
+}
+
+FECarRecord *FEPlayerCarDB::CreateNewCareerCar(unsigned int fromCar) {
+    FECarRecord *car = nullptr;
+
+    if (GetNumCareerCars() < 0x19) {
+        car = CreateCar(fromCar, 0xF0002);
+        if (car != nullptr) {
+            FECareerRecord *careerRecord = CreateNewCareerRecord();
+            if (careerRecord == nullptr) {
+                GetCustomizationRecordByHandle(car->Customization)->Handle = 0xFF;
+                car->Handle = 0xFFFFFFFF;
+                car = nullptr;
+            } else {
+                car->CareerHandle = careerRecord->Handle;
+            }
+        }
+    }
+
+    return car;
+}
+
+FECarRecord *FEPlayerCarDB::CreateNewPresetCar(const char *preset_name) {
+    unsigned int presetHash = FEHashUpper(preset_name);
+    PresetCar *preset = FindFEPresetCar(presetHash);
+    Attrib::Gen::pvehicle vehicle(static_cast< unsigned int >(preset->VehicleKey), 0, nullptr);
+
+    if (!vehicle.IsValid() || preset == nullptr) {
+        return nullptr;
+    }
+
+    FECarRecord *car = CreateNewCarRecord();
+    if (car == nullptr) {
+        return nullptr;
+    }
+
+    car->Handle = presetHash;
+    FECustomizationRecord *customization = CreateNewCustomizationRecord();
+    if (customization == nullptr) {
+        car->Handle = 0xFFFFFFFF;
+        return nullptr;
+    }
+
+    car->Customization = customization->Handle;
+    SetCarToPreset(car->Handle, preset);
+
+    Attrib::Gen::presetride ridePreset(Attrib::StringToLowerCaseKey(preset->PresetName), 0, nullptr);
+    if (ridePreset.IsValid()) {
+        Attrib::Gen::pvehicle vehicleWithPreset(vehicle);
+        if (Physics::Upgrades::ApplyPreset(vehicleWithPreset, ridePreset)) {
+            customization->WritePhysicsIntoRecord(vehicleWithPreset);
+        }
+        Physics::Upgrades::Clear(vehicleWithPreset);
+    }
+
+    car->FilterBits = 0xF0010;
+    return car;
+}
+
+FECarRecord *FEPlayerCarDB::CreateCar(unsigned int fromCar, int FilterBits) {
+    FECarRecord *source = GetCarRecordByHandle(fromCar);
+    if (source == nullptr) {
+        return nullptr;
+    }
+
+    FECarRecord *car = CreateNewCarRecord();
+    if (car == nullptr) {
+        return nullptr;
+    }
+
+    *car = *source;
+    FECustomizationRecord *customization = CreateNewCustomizationRecord();
+    if (customization == nullptr) {
+        car->Handle = 0xFFFFFFFF;
+        return nullptr;
+    }
+
+    car->Customization = customization->Handle;
+    car->FilterBits = (car->FilterBits & 0xFFFF0000) | static_cast< unsigned int >(FilterBits);
+
+    RideInfo ride;
+    ride.Init(static_cast< CarType >(-1), CarRenderUsage_Player, 0, 0);
+    ride.Init(car->GetType(), CarRenderUsage_Player, 0, 0);
+    ride.SetRandomPaint();
+    ride.SetStockParts();
+    customization->WriteRideIntoRecord(&ride);
+    return car;
+}
+
+void FEPlayerCarDB::DeleteCustomCar(unsigned int handle) {
+    DeleteCar(handle, 4, false);
+}
+
+void FEPlayerCarDB::DeleteCareerCar(unsigned int handle, bool was_sold) {
+    DeleteCar(handle, 2, was_sold);
+}
+
+bool FEPlayerCarDB::DeleteCar(unsigned int handle, unsigned int filter, bool was_sold) {
+    FECarRecord *car = GetCarRecordByHandle(handle);
+    if (car == nullptr || car->Handle == 0xFFFFFFFF || (car->FilterBits & filter) == 0) {
+        return false;
+    }
+
+    if (was_sold) {
+        BackupSoldCarHistory(car->CareerHandle);
+    }
+
+    car->Handle = 0xFFFFFFFF;
+
+    if (car->Customization != 0xFF) {
+        GetCustomizationRecordByHandle(car->Customization)->Handle = 0xFF;
+    }
+
+    if (car->CareerHandle != 0xFF) {
+        GetCareerRecordByHandle(car->CareerHandle)->Handle = 0xFF;
+    }
+
+    return true;
 }
