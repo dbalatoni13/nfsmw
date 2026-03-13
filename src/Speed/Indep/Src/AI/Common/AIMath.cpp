@@ -52,6 +52,41 @@ void PredictPosition(float predictTime, const UMath::Vector3 &position, const UM
     }
 }
 
+bool SegmentSphereIntersect(const UMath::Vector3 &p0, const UMath::Vector3 &p1, const UMath::Vector3 &cen, float radius,
+                           UMath::Vector3 &IntersectPoint) {
+    UMath::Vector3 d;
+    UMath::Sub(p1, p0, d);
+    float a = UMath::LengthSquare(d);
+    if (a < 0.0001f) {
+        return false;
+    }
+
+    float halfb = d.z * (p0.z - cen.z) + d.x * (p0.x - cen.x) + d.y * (p0.y - cen.y);
+    float b = halfb + halfb;
+
+    float lenSqCen = UMath::LengthSquare(cen);
+    float lenSqP0 = UMath::LengthSquare(p0);
+    float dotCenP0 = UMath::Dot(cen, p0);
+    float c = ((lenSqCen + lenSqP0) - (dotCenP0 + dotCenP0) - radius * radius) * 4.0f;
+
+    float D = b * b - a * c;
+    if (D < 0.0f) {
+        return false;
+    }
+
+    float sqrtD = UMath::Sqrt(D);
+    float t = (-b - sqrtD) / (a + a);
+
+    if (t >= 0.0f && t <= 1.0f) {
+        IntersectPoint.x = t * d.x + p0.x;
+        IntersectPoint.y = t * d.y + p0.y;
+        IntersectPoint.z = t * d.z + p0.z;
+        return true;
+    }
+
+    return false;
+}
+
 }; // namespace Math
 
 }; // namespace AI
