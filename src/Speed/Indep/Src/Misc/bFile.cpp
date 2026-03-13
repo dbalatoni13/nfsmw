@@ -475,15 +475,13 @@ bFile::~bFile() {
     }
     bTNode<bFile>::Remove();
     bFileNumInstances--;
-    if (FileHandle > -1) {
-        if (pCachedRealFileHandle == nullptr) {
-            if (FileHandle != 0) {
-                AsyncCloseFile(FileHandle);
-            }
-        } else {
+    if (FileSize >= 0) {
+        if (pCachedRealFileHandle != nullptr) {
             pCachedRealFileHandle->RemoveReference();
+        } else if (FileHandle != 0) {
+            AsyncCloseFile(FileHandle);
         }
-        FileHandle = -1;
+        FileSize = -1;
     }
     bFreeSharedString(Filename);
 }
@@ -754,10 +752,8 @@ int bFileExists(const char *filename) {
 }
 
 void bRead(bFile *f, void *buf, int numbytes) {
-    if (f != nullptr && f->FileSize > -1) {
-        f->ReadAsync(buf, numbytes, nullptr, nullptr);
-        bWaitUntilAsyncDone(f);
-    }
+    bReadAsync(f, buf, numbytes, nullptr, nullptr);
+    bWaitUntilAsyncDone(f);
 }
 
 void bReadAsync(bFile *f, void *buf, int numbytes, void (*callback)(void *), void *param) {
