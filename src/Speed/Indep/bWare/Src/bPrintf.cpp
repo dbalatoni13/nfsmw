@@ -7,6 +7,7 @@
 #include <stdarg.h>
 
 int bIsValidPointer(void *p, int size);
+void *memset(void *, int, unsigned long, ...);
 
 char *_nan_table[4] = {
     "-1.#INF",
@@ -791,30 +792,46 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
             case 'v': {
                 char tempBuffer[64];
                 int vectType;
-                vectType = ch - 'v';
-                if (vectType == 0) {
-                    vectType = 2;
+
+                if (precision < 0) {
+                    if (width == 0) {
+                        precision = 2;
+                        width = 8;
+                    }
+                }
+
+                memset(tempBuffer, 0, 64);
+
+                {
+                    char c = *fmt;
+                    vectType = c - '0';
+                    if (static_cast<unsigned int>(c - '2') > 2) {
+                        goto VECT_OUTPUT;
+                    }
                 }
 
                 {
                     bVector4 *vect;
                     vect = va_arg(argList, bVector4 *);
-                    if (vect == nullptr) {
-                        vect = va_arg(argList, bVector4 *);
-                    }
-                    stringLength = 0;
-                    if (vectType >= 2) {
-                        stringLength = sprintf(tempBuffer, "%.3f, %.3f", vect->x, vect->y);
-                    }
-                    if (vectType >= 3) {
-                        stringLength += sprintf(tempBuffer + stringLength, ", %.3f", vect->z);
-                    }
-                    if (vectType >= 4) {
-                        stringLength += sprintf(tempBuffer + stringLength, ", %.3f", vect->w);
+
+                    if (bIsValidPointer(vect, 1)) {
+                        if (vectType == 2) {
+                            bSPrintf(tempBuffer, "%*.*f, %*.*f", width, precision, vect->x, width, precision, vect->y);
+                        } else if (vectType == 3) {
+                            bSPrintf(tempBuffer, "%*.*f, %*.*f, %*.*f", width, precision, vect->x, width, precision, vect->y, width, precision, vect->z);
+                        } else if (vectType == 4) {
+                            bSPrintf(tempBuffer, "%*.*f, %*.*f, %*.*f, %*.*f", width, precision, vect->x, width, precision, vect->y, width, precision, vect->z, width, precision, vect->w);
+                        }
+                    } else {
+                        bStrCpy(tempBuffer, badptr);
                     }
                 }
-                stringOut = tempBuffer;
-                _stuff_str(output_info, stringOut, stringLength, &outLen);
+
+                VECT_OUTPUT:
+                flags |= FL_NOOUTPUT;
+                stringLength = bStrLen(tempBuffer);
+                fmt++;
+                _stuff_str(output_info, tempBuffer, stringLength, &outLen);
                 break;
             }
 
@@ -825,9 +842,19 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                 } else if (!bIsValidPointer(stringOut, 1)) {
                     stringOut = badptr;
                 }
-                stringLength = bStrLen(stringOut);
-                if (precision >= 0 && precision < stringLength) {
-                    stringLength = precision;
+                {
+                    const char *p = stringOut;
+                    int i = precision;
+                    if (precision < 0) {
+                        i = 0x7fffffff;
+                    }
+                    do {
+                        if (*p++ == '\0') break;
+                    } while (i-- != 0);
+                    if (p == stringOut) {
+                        goto OUTPUT;
+                    }
+                    stringLength = static_cast<int>(p - stringOut) - 1;
                 }
                 goto OUTPUT;
             }
