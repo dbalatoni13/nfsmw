@@ -166,8 +166,9 @@ instead of picking functions in raw objdiff order. `next` is the fastest way to 
   high-match cleanup work, de-prioritizes obvious init/setup sinkholes, and prefers
   targets with usable source context.
 - `--strategy impact` is the blunt "largest unmatched byte loss first" view.
-- `--strategy quick-wins` is a cleanup-oriented mode for deliberate polish passes on
-  already-implemented functions. Do not use it as the default scouting mode.
+- `--strategy quick-wins` biases toward low-match functions where getting the first
+  40-60% tends to be much faster than squeezing a polished function from 95% to 100%.
+  It should not be treated as a cleanup/polish mode.
 
 When choosing what to work on next, bias toward low-match, high-remaining functions.
 As a rule of thumb, getting a function from 0% to 80% is usually much faster and higher
