@@ -30,6 +30,9 @@ struct GRacerInfo {
     }
 
     ISimable *GetSimable() const;
+    float GetFinishingSpeed() const { return mFinishingSpeed; }
+    float GetPointTotal() const { return mPointTotal; }
+    const GTimer &GetRaceTimer() const { return mRaceTimer; }
 
     bool GetIsKnockedOut() const { return mKnockedOut; }
     bool GetIsTotalled() const { return mTotalled; }
