@@ -736,52 +736,59 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                     *p = '.';
                     p--;
 
-                    if (lowerVal != 0) {
-                        {
-                            int goesInto = 0;
-                            if (divisor > lowerVal) {
-                                lowerVal *= 10;
-                            }
-                            while (divisor * static_cast<unsigned int>(goesInto) <= lowerVal) {
-                                goesInto++;
-                            }
-                            goesInto--;
+                    {
+                        char *intSavedP = p - 1;
 
-                            if (goesInto > 4) {
-                                {
-                                    char *q = pSaved;
-                                    while (*q == '9') {
-                                        *q = '0';
-                                        q--;
-                                        if (*q == '.') {
-                                            upperVal++;
-                                            goto Z_INT;
+                        if (lowerVal != 0) {
+                            {
+                                int goesInto = 0;
+                                if (divisor > lowerVal) {
+                                    lowerVal *= 10;
+                                }
+                                while (divisor * static_cast<unsigned int>(goesInto) <= lowerVal) {
+                                    goesInto++;
+                                }
+                                goesInto--;
+
+                                if (goesInto > 4) {
+                                    {
+                                        unsigned char *q = reinterpret_cast<unsigned char *>(pSaved);
+                                        while (true) {
+                                            int c = *q;
+                                            if (c != '9') {
+                                                *q = static_cast<unsigned char>(c + 1);
+                                                break;
+                                            }
+                                            unsigned char *tmp = q;
+                                            int prevC = *(--tmp);
+                                            *q = '0';
+                                            if (prevC == '.') {
+                                                upperVal++;
+                                                goto Z_INT;
+                                            }
+                                            q = tmp;
                                         }
                                     }
-                                    *q = static_cast<char>(*q + 1);
                                 }
                             }
+                        }
+
+                    Z_INT:
+                        if (upperVal != 0) {
+                            do {
+                                *p = static_cast<char>('0' + (upperVal % 10));
+                                upperVal /= 10;
+                                p--;
+                            } while (upperVal != 0);
+                        } else {
+                            *p = '0';
+                            p = intSavedP;
                         }
                     }
                 }
 
-            Z_INT:
-                {
-                    char *savedP = p - 1;
-                    if (lowerVal == 0 && upperVal == 0) {
-                        *p = '0';
-                        p = savedP;
-                    } else {
-                        do {
-                            *p = static_cast<char>('0' + (upperVal % 10));
-                            upperVal /= 10;
-                            p--;
-                        } while (upperVal != 0);
-                    }
-                }
-
                 stringOut = p + 1;
-                stringLength = static_cast<int>(&cvtbuf[62] - p);
+                stringLength = static_cast<int>((&cvtbuf[63] - p) - 1);
                 goto OUTPUT;
             }
 
