@@ -2115,13 +2115,13 @@ void AIPursuit::UpdateJerk(float dt) {
         } else {
             jerkfactor = 0.0f;
         }
-        if (!mIsAJerk) {
-            if (jerkfactor >= 3.0f) {
-                mIsAJerk = true;
-            }
-        } else {
+        if (mIsAJerk) {
             if (jerkfactor <= 1.75f) {
                 mIsAJerk = false;
+            }
+        } else {
+            if (jerkfactor >= 3.0f) {
+                mIsAJerk = true;
             }
         }
     }

@@ -9,6 +9,8 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+struct eModel;
+
 enum EVIEW_ID {
     NUM_RVM_VIEWS = 1,
     NUM_PLAYER_VIEWS = 3,
@@ -212,6 +214,7 @@ class eViewPlatInterface {
     static eViewPlatInfo *GimmeMyViewPlatInfo(int view_id);
     eVisibleState GetVisibleStateGB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
     eVisibleState GetVisibleStateSB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
+    void Render(eModel *model, bMatrix4 *matrix, struct eLightContext *light_context, unsigned int flags, unsigned int flags2);
 };
 
 #endif

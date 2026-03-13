@@ -274,6 +274,10 @@ class cFrontendDatabase {
         return CurrentUserProfiles[0]->GetCareer();
     }
 
+    GameplaySettings *GetGameplaySettings() {
+        return &CurrentUserProfiles[0]->GetOptions()->TheGameplaySettings;
+    }
+
     bool IsSplitScreenMode() {
         return FEGameMode & 4;
     }

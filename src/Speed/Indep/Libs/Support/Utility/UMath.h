@@ -560,6 +560,8 @@ inline float Limit(const float a, const float l) {
     return retval;
 }
 
+float Mod(const float x, const float e);
+
 } // namespace UMath
 
 struct UQuat : public UMath::Vector4 {
