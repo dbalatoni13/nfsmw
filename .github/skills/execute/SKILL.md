@@ -115,6 +115,7 @@ For each missing or nonmatching function, follow the implementation workflow in
   implementing the next function reveals patterns that make the previous one click.
 - **Mismatch triage:**
   - `@stringBase0` offset mismatches often resolve as more string literals are added
+    - If you need to inspect the original string or rodata at a virtual address, use `python tools/elf_lookup.py 0xADDR`
   - Register swaps and stack layout issues require direct intervention
   - Branch structure mismatches indicate wrong control flow (if/switch/loop)
 - **Match percentage is misleading.** The last few percent are often the hardest.
