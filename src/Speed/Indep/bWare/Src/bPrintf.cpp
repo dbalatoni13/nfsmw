@@ -456,20 +456,20 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
 
             case 'e':
                 *reinterpret_cast<unsigned short *>(prefix) =
-                    static_cast<unsigned short>(prefix[1] | 0x6500);
+                    static_cast<unsigned short>(static_cast<unsigned char>(prefix[1]) | 0x6500);
                 flags |= FL_EXPONENTIAL;
                 goto GENERIC_FLOAT;
 
             case 'g':
                 *reinterpret_cast<unsigned short *>(prefix) =
-                    static_cast<unsigned short>(prefix[1] | 0x6500);
+                    static_cast<unsigned short>(static_cast<unsigned char>(prefix[1]) | 0x6500);
                 flags |= FL_EXPONENTIAL;
                 goto GENERIC_FLOAT;
 
             case 'G':
             case 'E':
                 *reinterpret_cast<unsigned short *>(prefix) =
-                    static_cast<unsigned short>(prefix[1] | 0x4500);
+                    static_cast<unsigned short>(static_cast<unsigned char>(prefix[1]) | 0x4500);
                 flags |= FL_EXPONENTIAL;
                 goto GENERIC_FLOAT;
 
