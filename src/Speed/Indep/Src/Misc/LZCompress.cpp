@@ -274,9 +274,8 @@ int OldLZDecompress(unsigned char *pSrc, unsigned char *pDst) {
     }
     while (src != src_end) {
         if (flags == 1) {
-            unsigned char b0 = *src;
-            unsigned char b1 = *(src + 1);
-            src += 2;
+            unsigned char b0 = *src++;
+            unsigned char b1 = *src++;
             flags = b0 | 0x10000 | static_cast<unsigned int>(b1) << 8;
         }
         int count = 1;

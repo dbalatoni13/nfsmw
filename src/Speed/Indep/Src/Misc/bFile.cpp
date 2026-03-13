@@ -382,24 +382,26 @@ bFileDirectoryEntry *DisculatorDriver::FindDirectoryEntry(const char *filename) 
         return nullptr;
     }
     unsigned int hash = bFileGetFilenameHash(filename);
-    int high = NumDirectoryEntries;
     int result = -1;
-    int low = 0;
-    if (NumDirectoryEntries != 0 && high > -1) {
-        do {
-            result = (low + high) >> 1;
-            unsigned int entryHash = pDirectoryEntryTable[result].Hash;
-            if (entryHash == hash &&
-                (result == 0 || pDirectoryEntryTable[result - 1].Hash != hash)) {
-                break;
-            }
-            if (entryHash < hash) {
-                low = result + 1;
-            } else {
-                high = result - 1;
-            }
-            result = -1;
-        } while (low <= high);
+    if (NumDirectoryEntries != 0) {
+        int high = NumDirectoryEntries;
+        int low = 0;
+        if (low <= high) {
+            do {
+                int mid = (low + high) >> 1;
+                unsigned int entryHash = pDirectoryEntryTable[mid].Hash;
+                if (entryHash == hash &&
+                    (mid == 0 || pDirectoryEntryTable[mid - 1].Hash != hash)) {
+                    result = mid;
+                    break;
+                }
+                if (entryHash >= hash) {
+                    high = mid - 1;
+                } else {
+                    low = mid + 1;
+                }
+            } while (low <= high);
+        }
     }
     if (result < 0) {
         return nullptr;

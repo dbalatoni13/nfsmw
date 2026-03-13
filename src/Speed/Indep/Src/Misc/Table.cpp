@@ -149,11 +149,11 @@ void Average::Recalculate() {
     for (int i = 0; i < static_cast<int>(static_cast<unsigned int>(nSlots)); i++) {
         fTotal = fTotal + pData[i];
     }
-    unsigned int num = static_cast<unsigned int>(nSamples);
-    if (num == 0) {
+    int num = nSamples;
+    if (nSamples == 0) {
         num = 1;
     }
-    fAverage = fTotal * (1.0f / static_cast<float>(static_cast<int>(num)));
+    fAverage = fTotal * (1.0f / static_cast<float>(num));
 }
 
 void Average::Record(float fValue) {
