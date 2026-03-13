@@ -3,7 +3,9 @@
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/FEng/FEImage.h"
 #include "Speed/Indep/Src/Generated/Events/ETuneVehicle.hpp"
+#include "Speed/Indep/Src/Generated/Events/EUnPause.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/CTextScroller.hpp"
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
@@ -17,6 +19,7 @@ extern FEString *FEngFindString(const char *, int);
 extern void FEngGetSize(FEObject *, float &, float &);
 extern void FEngGetTopLeft(FEObject *, float &, float &);
 extern FEngFont *FindFont(unsigned int);
+extern const char *GetLocalizedString(unsigned int);
 extern void FEngSetCurrentButton(const char *, unsigned int);
 extern void FEngSetLanguageHash(FEString *, unsigned int);
 extern void FEngSetLanguageHash(const char *, unsigned int, unsigned int);
@@ -32,6 +35,8 @@ extern const char lbl_803E89FC[];
 extern const char lbl_803E8A28[];
 extern const char lbl_803E8A38[];
 extern const char lbl_803E8A18[];
+extern const char lbl_803E4CFC[];
+extern const char lbl_803E5EEC[];
 extern const float lbl_803E89B4;
 extern const float lbl_803E89C0;
 extern const float lbl_803E89D8;
@@ -187,6 +192,84 @@ void CustomTuningScreen::ScrollTypes(eScrollDir dir) {
     if (next_type != CurrentTuningType) {
         CurrentTuningType = next_type;
         SetSlidersForType();
+    }
+}
+
+void CustomTuningScreen::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+    if (HelpVisible) {
+        HelpTextScroller->HandleNotificationMessage(msg);
+    }
+
+    if (msg == 0x35F8620B) {
+        for (FEWidget *option = Options.GetHead(); option != Options.EndOfList(); option = option->GetNext()) {
+            option->UnsetFocus();
+        }
+    }
+
+    if (!HelpVisible || (msg != 0x9120409E && msg != 0xB5971BF1 && msg != 0x72619778 && msg != 0x911C0A4B)) {
+        UIWidgetMenu::NotificationMessage(msg, pobj, param1, param2);
+    }
+
+    switch (msg) {
+    case 0xB5AF2461:
+        if (!HelpVisible) {
+            ExitWithStart = true;
+        } else {
+            return;
+        }
+    case 0x406415E3:
+        if (!HelpVisible) {
+            StoreSettings();
+            cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), nullptr);
+        }
+        break;
+    case 0x9120409E:
+    case 0xB5971BF1:
+        if (!HelpVisible) {
+            TempTuningRecord.Tunings[CurrentTuningType].Value[static_cast< TuningSlider * >(pCurrentOption)->TuningPath] =
+                static_cast< TuningSlider * >(pCurrentOption)->Current;
+        }
+        break;
+    case 0x5073EF13:
+        ScrollTypes(eSD_PREV);
+        break;
+    case 0xD9FEEC59:
+        ScrollTypes(eSD_NEXT);
+        break;
+    case 0xC519BFC4:
+        if (!HelpVisible) {
+            ShowHelpBlurb();
+        }
+        break;
+    case 0x911AB364:
+        if (HelpVisible) {
+            HideHelpBlurb();
+        } else if (SettingsDidNotChange()) {
+            cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), nullptr);
+        } else {
+            DialogInterface::ShowTwoButtons(
+                GetPackageName(),
+                lbl_803E5EEC,
+                static_cast< eDialogTitle >(1),
+                0x70E01038,
+                0x417B25E4,
+                0x775DBA97,
+                0x34DC1BCF,
+                0x34DC1BCF,
+                static_cast< eDialogFirstButtons >(1),
+                GetLocalizedString(0xE9CB802F));
+        }
+        break;
+    case 0x775DBA97:
+        cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), nullptr);
+        break;
+    case 0xE1FDE1D1:
+        if (ExitWithStart) {
+            new EUnPause();
+        } else {
+            cFEng::Get()->QueuePackageSwitch(lbl_803E4CFC, 0, 0, false);
+        }
+        break;
     }
 }
 
