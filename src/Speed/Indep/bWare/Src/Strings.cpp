@@ -600,7 +600,7 @@ void bSharedStringPool::Free(const char *s) {
 
     intptr_t index = (reinterpret_cast<const char *>(s) - reinterpret_cast<const char *>(this->StringTable)) >> 3;
     short string_index;
-    if ((index < 0) || (this->StringTableSize <= index)) {
+    if ((index < 0) || (index >= this->StringTableSize)) {
         string_index = -1;
     } else {
         string_index = static_cast<short>(index);
@@ -656,7 +656,7 @@ void bSharedStringPool::Free(const char *s) {
         }
     }
 
-    if (this->LargestFreeString->Size < string->Size) {
+    if (string->Size > this->LargestFreeString->Size) {
         this->LargestFreeString = string;
     }
 
