@@ -15,6 +15,9 @@ class Countdown : public HudElement, public ICountdown {
   public:
     Countdown(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
+    void BeginCountdown() override;
+    bool IsActive() override;
+    float GetSecondsBeforeRaceStart() override;
 
   private:
     FEGroup * pMessageGroup;

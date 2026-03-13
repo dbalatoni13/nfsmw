@@ -20,3 +20,18 @@ void LeaderBoard::SetNumLaps(int numLaps) {
 void LeaderBoard::SetPlayerIndex(int index) {
     mPlayerIndex = index;
 }
+
+void LeaderBoard::SetRacerNum(int pos, int num) {
+    if (pos > 3) return;
+    mTopRacers[pos].mRacerNum = num;
+}
+
+void LeaderBoard::SetRacerTotalPoints(int pos, float points) {
+    if (pos > 3) return;
+    mTopRacers[pos].mTotalPoints = points;
+}
+
+void LeaderBoard::SetRacerHasHeadset(int pos, bool racerHasHeadset) {
+    if (pos > 3) return;
+    mTopRacers[pos].mHasHeadset = racerHasHeadset;
+}

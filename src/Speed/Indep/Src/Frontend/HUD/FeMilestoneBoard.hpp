@@ -26,6 +26,17 @@ class MilestoneBoard : public HudElement, public IMilestoneBoard {
     void SetInPursuit(bool inPursuit) override;
     void SetChallengeSeries(bool challenge) override;
     void SetNumberOfMilestones(int num) override;
+    void SetMilestoneIconHash(int milestoneNum, int hash) override {}
+    void SetMilestoneType(int milestoneNum, unsigned int type) override {}
+    void SetMilestoneGoal(int milestoneNum, float goal) override {}
+    void SetMilestoneHeaderHash(int milestoneNum, int hash) override {}
+    void SetMilestoneComplete(int milestoneNum, bool complete) override;
+    void SetMilestoneCurrValue(int milestoneNum, float currVal) override;
+    bool GetIsMilestoneComplete(int index) const;
+    int GetNumIncompleteMilestones() const;
+    int GetNumCompleteMilestones() const;
+    int GetNextVisibleMilestone() const;
+    int GetFirstIncompleteMilestone() const;
 
   private:
     bool mInPursuit;

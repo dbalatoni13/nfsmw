@@ -31,6 +31,15 @@ class LeaderBoard : public HudElement, public ILeaderBoard {
     void SetNumRacers(int numRacers) override;
     void SetNumLaps(int numLaps) override;
     void SetPlayerIndex(int index) override;
+    void SetRacerIsBusted(int pos, bool busted) override {}
+    void SetRacerIsKoed(int pos, bool koed) override {}
+    void SetRacerName(int pos, const char *name) override;
+    void SetRacerNum(int pos, int num) override;
+    void SetRacerTotalPoints(int pos, float points) override;
+    void SetRacerNumLapsCompleted(int pos, int numLaps, float time, IPlayer *player) override;
+    void SetRacerPercentComplete(int pos, float percent, float time, IPlayer *player) override;
+    void SetRacerHasHeadset(int pos, bool racerHasHeadset) override;
+    bool ShowLapTime(IPlayer *player) const;
 
   private:
     int mNumRacers;                            // offset 0x30

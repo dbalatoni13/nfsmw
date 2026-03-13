@@ -13,6 +13,9 @@ class GenericMessage : public HudElement, public IGenericMessage {
     GenericMessage(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
     GenericMessage_Priority GetCurrentGenericMessagePriority() override;
+    bool RequestGenericMessage(const char *string, bool singleFrame, unsigned int fengHash, unsigned int iconTextureHash, unsigned int iconFengHash, GenericMessage_Priority priority) override;
+    void RequestGenericMessageZoomOut(unsigned int fengHash) override;
+    bool IsGenericMessageShowing() override;
 
   private:
     FEObject * mpMessageFirstLine;

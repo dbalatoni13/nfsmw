@@ -20,3 +20,7 @@ void MilestoneBoard::SetChallengeSeries(bool challenge) {
 void MilestoneBoard::SetNumberOfMilestones(int num) {
     mNumMilestones = num;
 }
+
+void MilestoneBoard::SetMilestoneComplete(int milestoneNum, bool complete) {
+    mMilestones[milestoneNum].mComplete = complete;
+}

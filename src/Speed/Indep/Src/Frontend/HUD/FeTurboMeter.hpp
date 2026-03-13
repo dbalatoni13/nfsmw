@@ -13,6 +13,8 @@ class TurboMeter : public HudElement, public ITurbometer {
   public:
     TurboMeter(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
+    void SetInductionPsi(float psi) override;
+    float CalcNeedleAngle(float psi, float min_angle, float max_angle);
 
   private:
     bool mUpdated;

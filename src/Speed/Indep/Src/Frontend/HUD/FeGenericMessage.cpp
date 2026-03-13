@@ -12,3 +12,7 @@ void GenericMessage::Update(IPlayer *player) {
 GenericMessage_Priority GenericMessage::GetCurrentGenericMessagePriority() {
     return mPriority;
 }
+
+bool GenericMessage::IsGenericMessageShowing() {
+    return mPriority > 0;
+}
