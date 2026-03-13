@@ -676,13 +676,13 @@ void MoveFileIntoVirtualMemoryThenLoadChunks(int param, int err) {
             old_memory = nullptr;
             if (sizeofchunks != 0) {
                 int allocation_params = GetVirtualMemoryAllocParams();
-                old_memory = bMalloc(sizeofchunks, allocation_params);
+                old_memory = bMalloc(sizeofchunks, "TODO", __LINE__, allocation_params);
                 LZDecompress(compressed_data, static_cast<uint8 *>(old_memory));
             }
             bFree(compressed_data);
         }
     }
-    void *new_mem = bMalloc(sizeofchunks, GetVirtualMemoryAllocParams());
+    void *new_mem = bMalloc(sizeofchunks, "TODO", __LINE__, GetVirtualMemoryAllocParams());
     bMemCpy(new_mem, old_memory, sizeofchunks);
     vm_file->mVirtMemAddr = new_mem;
     if (vm_file->mUsedTrackPool) {
