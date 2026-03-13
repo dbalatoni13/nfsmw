@@ -1101,8 +1101,9 @@ void BeginGameFlowLoadingFrontEnd() {
     TheRaceParameters.InitWithDefaults();
     new ELoadingScreenOn(0);
     FEManager *mgr = FEManager::Get();
+    int *slots = reinterpret_cast<int *>(reinterpret_cast<char *>(mgr) + 8);
     for (int i = 0; i < 8; i++) {
-        reinterpret_cast<int *>(reinterpret_cast<char *>(mgr) + 8)[i] = 0;
+        slots[i] = 0;
     }
     MiniMainLoop();
     SetLoadingMode__9CarLoaderQ29CarLoader12eLoadingModei(&TheCarLoader, 0, 0);
@@ -1115,8 +1116,9 @@ void BeginGameFlowLoadingFrontEnd() {
                                          reinterpret_cast<void (*)(void *)>(GameFlowLoadingFrontEndPart1),
                                          nullptr, 0, 0);
     res->SetAllocationParams(0x2007, "FrontA.bun");
+    const char *gcName = "FrontA_gc.bun";
     bFreeSharedString(res->GetFilename());
-    *reinterpret_cast<const char **>(reinterpret_cast<char *>(res) + 0x1c) = bAllocateSharedString("FrontA_gc.bun");
+    *reinterpret_cast<const char **>(reinterpret_cast<char *>(res) + 0x1c) = bAllocateSharedString(gcName);
 }
 
 void EndGameFlowLoadingFrontEnd() {

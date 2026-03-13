@@ -31,7 +31,7 @@ float tCubic1D::GetDerivative(float t) {
 float tCubic1D::GetSecondDerivative(float t) {
     float inv = 1.0f / duration;
     float dd = GetddVal(t * inv);
-    return dd * inv * inv;
+    return dd * (inv * inv);
 }
 
 void tCubic1D::ClampDerivative(float maxDeriv) {

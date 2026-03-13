@@ -160,7 +160,7 @@ void Average::Record(float fValue) {
     unsigned char slot = nCurrentSlot + 1;
     nCurrentSlot = slot;
     fAverage = fTotal / static_cast<float>(static_cast<int>(static_cast<unsigned int>(nSamples)));
-    if (nSlots <= slot) {
+    if (slot >= nSlots) {
         nCurrentSlot = 0;
     }
 }
