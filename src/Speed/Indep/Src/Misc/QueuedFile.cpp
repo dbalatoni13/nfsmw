@@ -55,10 +55,7 @@ QueuedFile::QueuedFile(void *buf, const char *filename, int file_pos, int num_by
     this->NumRead = 0;
 
     if (params) {
-        this->Params.UncompressedSize = params->UncompressedSize;
-        this->Params.BlockSize = params->BlockSize;
-        this->Params.Compressed = params->Compressed;
-        this->Params.Priority = params->Priority;
+        Params = *params;
     }
     this->Filename = bAllocateSharedString(filename);
     this->CallbackFunction = callback_function;
