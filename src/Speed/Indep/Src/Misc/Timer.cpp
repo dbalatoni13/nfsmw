@@ -164,13 +164,13 @@ void AdvanceRealTime() {
 
 void ResetWorldTime() {
     WorldTimer.SetTime(Sim::GetTime());
-    WorldTimeElapsed = 0.0f;
-    WorldTimeFramesElapsed = 0;
-    WorldTimeSeconds = WorldTimer.GetSeconds();
-    WorldTime = 1;
-    WorldLoopCounter = 0;
-    WorldTimeElapsedFrame = 0.0f;
     WorldTimeFrames = 1;
+    WorldTimeElapsedFrame = 0.0f;
+    WorldLoopCounter = 0;
+    WorldTime = 1;
+    WorldTimeSeconds = WorldTimer.GetSeconds();
+    WorldTimeFramesElapsed = 0;
+    WorldTimeElapsed = 0.0f;
 }
 
 void PrepareWorldTimestep(float elapsed_time) {
