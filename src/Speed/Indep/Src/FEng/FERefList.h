@@ -11,7 +11,7 @@
 class FERefList {
   public:
     FERefList() : bIsReference(false), head(nullptr), tail(nullptr) {}
-    virtual ~FERefList() {}
+    virtual ~FERefList();
 
     inline bool IsReference() const { return bIsReference; }
     inline FERefList* GetRefSource() { return pRef; }

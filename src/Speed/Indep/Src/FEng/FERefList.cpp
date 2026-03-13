@@ -19,9 +19,9 @@ void FERefList::ReferenceList(FERefList* pList) {
         pRef = pList;
         bIsReference = true;
     } else {
-        tail = nullptr;
-        pRef = pList;
-        bIsReference = false;
+        *reinterpret_cast<unsigned long*>(this) = reinterpret_cast<unsigned long>(pList);
+        *reinterpret_cast<FERefList**>(reinterpret_cast<char*>(this) + 0x4) = pList;
+        *reinterpret_cast<FEMinNode**>(reinterpret_cast<char*>(this) + 0x8) = nullptr;
     }
 }
 
@@ -117,5 +117,11 @@ void FERefList::Purge() {
 
     while ((n = RemHead()) != nullptr) {
         delete n;
+    }
+}
+
+FERefList::~FERefList() {
+    if (!bIsReference) {
+        Purge();
     }
 }
