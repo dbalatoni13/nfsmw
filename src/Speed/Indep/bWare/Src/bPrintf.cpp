@@ -655,15 +655,16 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                             *p++ = '+';
                         }
 
-                        int hundreds = count / 100;
-                        *p++ = '0' + static_cast<char>(hundreds);
+                        char hundreds = static_cast<char>(count / 100);
+                        *p++ = static_cast<char>('0' + hundreds);
                         count -= hundreds * 100;
 
-                        int tens = count / 10;
-                        *p++ = '0' + static_cast<char>(tens);
+                        char tens = static_cast<char>(count / 10);
+                        *p++ = static_cast<char>('0' + tens);
                         count -= tens * 10;
 
-                        *p++ = '0' + static_cast<char>(count % 10);
+                        char ones = static_cast<char>(count % 10);
+                        *p++ = static_cast<char>('0' + ones);
                     }
 
                     stringLength = static_cast<int>(p - stringOut);
@@ -680,56 +681,107 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                 unsigned int divisor;
                 char *p;
 
+                p = &cvtbuf[62];
+                char *pSaved = p;
+                flags |= FL_SIGNED;
+
                 tempNumber = va_arg(argList, unsigned int);
+
+                if (tempNumber > 0x7FFFFFFEu) {
+                    tempNumber = ~tempNumber + 1;
+                    flags |= FL_NEGATIVE;
+                }
+
                 upperVal = tempNumber >> 16;
                 lowerVal = tempNumber & 0xFFFF;
-                desiredPrecision = (precision < 0) ? 2 : precision;
+                divisor = 0x10000u;
 
-                p = cvtbuf;
-                if (ch == 'y') {
-                    if (upperVal == 0 && lowerVal == 0) {
-                        *p++ = '0';
-                    } else {
-                        if (upperVal > 0) {
-                            p += sprintf(p, "%d", upperVal);
-                        }
-                        divisor = 10000;
+                if (precision < 0) {
+                    precision = 2;
+                }
+
+                if (lowerVal != 0 || precision > 0) {
+                    p -= (precision - 1);
+                    int fracSize = precision + 1;
+
+                    while (precision > 0) {
                         {
-                            int goesInto;
-                            bool started = (upperVal > 0);
-                            while (divisor > 0) {
-                                goesInto = lowerVal * 10 / 65536;
-                                lowerVal = lowerVal * 10 - goesInto * 65536;
-                                if (started || goesInto > 0) {
-                                    if (!started) {
-                                        *p++ = '.';
-                                    }
-                                    *p++ = static_cast<char>('0' + goesInto);
-                                    started = true;
-                                }
-                                divisor /= 10;
+                            int goesInto = 0;
+                            precision--;
+                            if (divisor > lowerVal) {
+                                lowerVal *= 10;
+                            }
+                            while (divisor * static_cast<unsigned int>(goesInto) <= lowerVal) {
+                                goesInto++;
+                            }
+                            goesInto--;
+                            *p = static_cast<char>('0' + goesInto);
+                            lowerVal -= divisor * static_cast<unsigned int>(goesInto);
+                            p++;
+                        }
+                    }
+
+                    if (lowerVal == 0) {
+                        if (precision > 0) {
+                            while (precision > 0) {
+                                *p = '0';
+                                precision--;
+                                p++;
                             }
                         }
                     }
-                } else {
-                    p += sprintf(p, "%u", upperVal);
-                    *p++ = '.';
-                    divisor = 10;
-                    while (desiredPrecision > 0) {
+
+                    *p = '\0';
+                    p -= fracSize;
+                    *p = '.';
+                    p--;
+
+                    if (lowerVal != 0) {
                         {
-                            int goesInto;
-                            goesInto = (lowerVal * divisor) >> 16;
-                            lowerVal = lowerVal - ((goesInto << 16) / divisor);
-                            *p++ = static_cast<char>('0' + goesInto);
+                            int goesInto = 0;
+                            if (divisor > lowerVal) {
+                                lowerVal *= 10;
+                            }
+                            while (divisor * static_cast<unsigned int>(goesInto) <= lowerVal) {
+                                goesInto++;
+                            }
+                            goesInto--;
+
+                            if (goesInto > 4) {
+                                {
+                                    char *q = pSaved;
+                                    while (*q == '9') {
+                                        *q = '0';
+                                        q--;
+                                        if (*q == '.') {
+                                            upperVal++;
+                                            goto Z_INT;
+                                        }
+                                    }
+                                    *q = static_cast<char>(*q + 1);
+                                }
+                            }
                         }
-                        divisor *= 10;
-                        desiredPrecision--;
                     }
                 }
 
-                *p = '\0';
-                stringOut = cvtbuf;
-                stringLength = static_cast<int>(p - cvtbuf);
+            Z_INT:
+                {
+                    char *savedP = p - 1;
+                    if (lowerVal == 0 && upperVal == 0) {
+                        *p = '0';
+                        p = savedP;
+                    } else {
+                        do {
+                            *p = static_cast<char>('0' + (upperVal % 10));
+                            upperVal /= 10;
+                            p--;
+                        } while (upperVal != 0);
+                    }
+                }
+
+                stringOut = p + 1;
+                stringLength = static_cast<int>(&cvtbuf[62] - p);
                 goto OUTPUT;
             }
 
