@@ -13,6 +13,7 @@
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Gameplay/GTimer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 extern FEString *FEngFindString(const char *pkg_name, int hash);
 extern FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
@@ -539,19 +540,21 @@ void PostRaceResultsScreen::SetupStat_TimeBehind() {
 }
 
 void PostRaceResultsScreen::SetupStat_LapVariance() {
-    if (GRaceStatus::Exists() && mIndexOfCurrentRacer >= 0) {
-        GRaceStatus &race_status = GRaceStatus::Get();
-        GetActiveStatsPanel().AddTimerStat(
-            race_status.GetWorstLapTime(mIndexOfCurrentRacer) - race_status.GetBestLapTime(mIndexOfCurrentRacer), 0);
+    GRaceStatus &race_status = GRaceStatus::Get();
+    GRacerInfo &racerInfo = race_status.GetRacerInfo(mIndexOfCurrentRacer);
+
+    if (ReadField< int >(&racerInfo, 0x3C) <= 1) {
+        RacerStats[mIndexOfCurrentRacer].AddInfoStat(0x4121E8C4, 0x0FC1BF40);
     } else {
-        GetActiveStatsPanel().AddTimerStat(0.0f, 0);
+        float bestLapTime = race_status.GetBestLapTime(mIndexOfCurrentRacer);
+        float worstLapTime = race_status.GetWorstLapTime(mIndexOfCurrentRacer);
+
+        RacerStats[mIndexOfCurrentRacer].AddTimerStat(worstLapTime - bestLapTime, 0x4121E8C4);
     }
-    ++mNumberOfStats;
 }
 
 void PostRaceResultsScreen::SetupStat_StageVariance() {
-    GetActiveStatsPanel().AddTimerStat(0.0f, 0);
-    ++mNumberOfStats;
+    GRacerInfo &racerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer);
 }
 
 void PostRaceResultsScreen::SetupStat_TrafficCollisions() {
@@ -582,15 +585,24 @@ void PostRaceResultsScreen::SetupStat_AccumulatedSpeed() {
 }
 
 void PostRaceResultsScreen::SetupStat_SpeedVariance() {
-    if (GRaceStatus::Exists() && mIndexOfCurrentRacer >= 0) {
-        GRaceStatus &race_status = GRaceStatus::Get();
-        GetActiveStatsPanel().AddGenericStat(
-            race_status.GetBestLapTime(mIndexOfCurrentRacer) - race_status.GetWorstLapTime(mIndexOfCurrentRacer), 0,
-            0, "%.2f");
+    GRaceStatus &race_status = GRaceStatus::Get();
+    GRacerInfo &racerInfo = race_status.GetRacerInfo(mIndexOfCurrentRacer);
+    float bestSpeed = race_status.GetBestSpeedTrapSpeed(mIndexOfCurrentRacer);
+    float worstSpeed = race_status.GetWorstSpeedTrapSpeed(mIndexOfCurrentRacer);
+
+    if (bestSpeed <= 0.0f || worstSpeed <= 0.0f) {
+        RacerStats[mIndexOfCurrentRacer].AddInfoStat(0x6EEABE8C, 0x0FC1BF40);
     } else {
-        GetActiveStatsPanel().AddGenericStat(0.0f, 0, 0, "%.2f");
+        unsigned int speed_units = 0x8569A25F;
+        float speed = worstSpeed - bestSpeed;
+
+        if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 0) {
+            speed_units = 0x8569AB44;
+            speed = MPS2MPH(KPH2MPS(speed));
+        }
+
+        RacerStats[mIndexOfCurrentRacer].AddGenericStat(speed, 0x6EEABE8C, speed_units, "%.2f");
     }
-    ++mNumberOfStats;
 }
 
 void PostRaceResultsScreen::SetupStat_SpeedBehind() {
@@ -939,9 +951,14 @@ void PostRaceResultsScreen::NotificationMessage(unsigned long msg, FEObject *pOb
         }
         return;
     case 0xE1FDE1D1: {
-        unsigned int fe_flags = ReadField< unsigned int >(FEDatabase, 0x1C0);
+        unsigned int fe_flags =
+            *reinterpret_cast< const unsigned int * >(reinterpret_cast< const char * >(FEDatabase) + 0x1C0);
 
-        if ((fe_flags & 0x40) != 0 || (fe_flags & 8) != 0) {
+        if ((fe_flags & 0x40) != 0) {
+            return;
+        }
+
+        if ((fe_flags & 8) != 0) {
             return;
         }
 
