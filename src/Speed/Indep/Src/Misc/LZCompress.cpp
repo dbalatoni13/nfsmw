@@ -255,59 +255,62 @@ int OldLZDecompress(unsigned char *pSrc, unsigned char *pDst) {
     if (header == nullptr || pDst == nullptr || header[0] != 0x504d4f43) {
         return 0;
     }
-    unsigned char *src_end = pSrc + header[3];
+    int packed_size = header[3];
+    unsigned char *src_end = pSrc + packed_size;
     unsigned char *src = reinterpret_cast<unsigned char *>(&header[4]);
-    unsigned int flags = 1;
+    unsigned char *threshold = src_end - 0x20;
     unsigned char *dst = pDst;
-    if (*reinterpret_cast<short *>(pSrc + 6) == 1) {
-        int size = header[3] - 0x10;
-        memcpy(pDst, src, size);
-    } else {
-        while (src != src_end) {
-            if (flags == 1) {
-                unsigned char b0 = *src;
-                unsigned char b1 = src[1];
-                src = src + 2;
-                flags = b0 | 0x10000 | static_cast<unsigned int>(b1) << 8;
-            }
-            int count = 1;
-            if (src <= src_end - 0x20) {
-                count = 0x10;
-            }
-            int i = count - 1;
-            if (count != 0) {
-                do {
-                    if ((flags & 1) == 0) {
-                        *dst = *src;
-                        src = src + 1;
-                        dst = dst + 1;
-                    } else {
-                        unsigned char byte0 = *src;
-                        unsigned char byte1 = src[1];
-                        src = src + 2;
-                        unsigned char *ref = dst - ((byte0 & 0xf0) << 4 | static_cast<unsigned int>(byte1));
-                        unsigned int extra = byte0 & 0xf;
-                        *dst = *ref;
-                        dst[1] = ref[1];
-                        ref = ref + 2;
-                        dst[2] = *ref;
-                        dst = dst + 3;
-                        if (extra != 0) {
-                            do {
-                                ref = ref + 1;
-                                *dst = *ref;
-                                dst = dst + 1;
-                                extra = extra - 1;
-                            } while (extra != 0);
-                        }
+    unsigned int flags = 1;
+    if (*reinterpret_cast<unsigned short *>(pSrc + 6) == 1) {
+        packed_size -= 0x10;
+        memcpy(pDst, src, packed_size);
+        return packed_size;
+    }
+    while (src != src_end) {
+        if (flags == 1) {
+            unsigned char b0 = *src;
+            unsigned char b1 = *(src + 1);
+            src += 2;
+            flags = b0 | 0x10000 | static_cast<unsigned int>(b1) << 8;
+        }
+        int count = 1;
+        if (src <= threshold) {
+            count = 0x10;
+        }
+        int i = count - 1;
+        if (count != 0) {
+            do {
+                if ((flags & 1) != 0) {
+                    unsigned char byte0 = *src;
+                    unsigned char byte1 = *(src + 1);
+                    src += 2;
+                    unsigned char *ref = dst - (((byte0 & 0xf0) << 4) | static_cast<unsigned int>(byte1));
+                    unsigned int extra = byte0 & 0xf;
+                    *dst = *ref;
+                    ref++; dst++;
+                    *dst = *ref;
+                    ref++; dst++;
+                    *dst = *ref;
+                    ref++; dst++;
+                    if (extra != 0) {
+                        do {
+                            *dst = *ref;
+                            ref++;
+                            dst++;
+                            extra--;
+                        } while (extra != 0);
                     }
-                    flags = flags >> 1;
-                    i = i - 1;
-                } while (i >= 0);
-            }
+                } else {
+                    *dst = *src;
+                    src++;
+                    dst++;
+                }
+                flags >>= 1;
+                i--;
+            } while (i != -1);
         }
     }
-    return header[2];
+    return static_cast<int>(dst - pDst);
 }
 
 void LZByteSwapHeader(LZHeader *header) {
