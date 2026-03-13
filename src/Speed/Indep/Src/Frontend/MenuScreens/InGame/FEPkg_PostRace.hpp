@@ -216,4 +216,16 @@ struct PursuitResultsDatum : public ArrayDatum {
     void NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) override {}
 };
 
+struct PostRaceMilestonesScreen : MenuScreen {
+    PostRaceMilestonesScreen(ScreenConstructorData *);
+    ~PostRaceMilestonesScreen() override;
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
+    void StartMilestoneDoneAnimations();
+    FEImage *mpDataBigIcon;          // offset 0x2C
+    float mBountyEarned;             // offset 0x30
+    bool mCopDestructionBountyShown; // offset 0x34
+    int mCurrMilestoneIndex;         // offset 0x38
+    int mCurrMilestoneScriptHash;    // offset 0x3C
+};
+
 #endif

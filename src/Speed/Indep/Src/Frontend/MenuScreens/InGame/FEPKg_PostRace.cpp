@@ -1182,3 +1182,17 @@ const GMilestone *const PursuitData::GetMilestone(int index) const {
     }
     return mMilestonesCompleted[index];
 }
+
+FEImage *FEngFindImage(const char *pkg_name, int name_hash);
+
+PostRaceMilestonesScreen::PostRaceMilestonesScreen(ScreenConstructorData *sd)
+    : MenuScreen(sd) //
+    , mBountyEarned(0.0f) //
+    , mCurrMilestoneIndex(-1) //
+    , mCurrMilestoneScriptHash(0) //
+    , mCopDestructionBountyShown(false) //
+{
+    mpDataBigIcon = FEngFindImage(GetPackageName(), 0x14564FB9);
+}
+
+PostRaceMilestonesScreen::~PostRaceMilestonesScreen() {}

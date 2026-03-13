@@ -53,8 +53,6 @@ struct CustomizePaint : MenuScreen { CustomizePaint(ScreenConstructorData *); vo
 struct CustomizeRims : MenuScreen { CustomizeRims(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x1C4]; };
 struct CustomizeSpoiler : MenuScreen { CustomizeSpoiler(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x1CC]; };
 struct CustomizePerformance : MenuScreen { CustomizePerformance(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x29C]; };
-struct BustedOverlayScreen : MenuScreen { BustedOverlayScreen(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} };
-struct PostRaceMilestonesScreen : MenuScreen { PostRaceMilestonesScreen(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x14]; };
 struct uiCredits : MenuScreen { uiCredits(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x1C]; };
 struct UIEATraxScreen : MenuScreen { UIEATraxScreen(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0xF4]; };
 struct UIOptionsController : MenuScreen { UIOptionsController(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x128]; };

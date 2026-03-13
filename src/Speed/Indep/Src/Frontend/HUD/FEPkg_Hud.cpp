@@ -39,7 +39,8 @@
 struct FadeScreen : MenuScreen {
     static bool IsFadeScreenOn();
     FadeScreen(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    ~FadeScreen() override;
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
 };
 
 extern bool bIsRestartingRace;
