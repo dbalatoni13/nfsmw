@@ -196,12 +196,15 @@ void MenuScreen::BaseNotifySound(u32 msg, FEObject * /* obj */, u32 /* controlle
 
     switch (msg) {
     case 0x00B06E92: soundToPlay = static_cast< eMenuSoundTriggers >(0x8c); break;
+    case 0x01CD9276: soundToPlay = static_cast< eMenuSoundTriggers >(0x72); break;
     case 0x0217C99F: soundToPlay = static_cast< eMenuSoundTriggers >(0x92); break;
+    case 0x08464444: soundToPlay = static_cast< eMenuSoundTriggers >(0x72); break;
     case 0x0A888DDC: soundToPlay = static_cast< eMenuSoundTriggers >(0x6B); break;
     case 0x0BDDC0D2: soundToPlay = static_cast< eMenuSoundTriggers >(0x8e); break;
     case 0x145B13C0: soundToPlay = static_cast< eMenuSoundTriggers >(0x58); break;
     case 0x14C293B4: soundToPlay = static_cast< eMenuSoundTriggers >(0x83); break;
     case 0x14C85C88: soundToPlay = static_cast< eMenuSoundTriggers >(0x7e); break;
+    case 0x1ABBE49B: soundToPlay = static_cast< eMenuSoundTriggers >(0x67); break;
     case 0x1B325F9D: soundToPlay = static_cast< eMenuSoundTriggers >(0x8a); break;
     case 0x1CA2354C: soundToPlay = static_cast< eMenuSoundTriggers >(0x94); break;
     case 0x1CFAD52B: soundToPlay = static_cast< eMenuSoundTriggers >(0x14); break;
@@ -215,15 +218,21 @@ void MenuScreen::BaseNotifySound(u32 msg, FEObject * /* obj */, u32 /* controlle
     case 0x3159062B: soundToPlay = static_cast< eMenuSoundTriggers >(0x28); break;
     case 0x334F3B79: soundToPlay = static_cast< eMenuSoundTriggers >(0x1b); break;
     case 0x334F3B7A: soundToPlay = static_cast< eMenuSoundTriggers >(0x1C); break;
+    case 0x3A62513E: soundToPlay = static_cast< eMenuSoundTriggers >(0x6F); break;
     case 0x3B7FAC4C: soundToPlay = static_cast< eMenuSoundTriggers >(0x70); break;
+    case 0x3B7FF2AB: soundToPlay = static_cast< eMenuSoundTriggers >(0x75); break;
     case 0x40927E58: soundToPlay = static_cast< eMenuSoundTriggers >(0x74); break;
+    case 0x43BE891A: soundToPlay = static_cast< eMenuSoundTriggers >(0x1A); break;
     case 0x44D43738: soundToPlay = static_cast< eMenuSoundTriggers >(0x91); break;
+    case 0x4688F23F: soundToPlay = static_cast< eMenuSoundTriggers >(0x73); break;
     case 0x46BB84C6: soundToPlay = static_cast< eMenuSoundTriggers >(0x29); break;
     case 0x478FFB47: soundToPlay = static_cast< eMenuSoundTriggers >(0x59); break;
     case 0x480C9A58: soundToPlay = static_cast< eMenuSoundTriggers >(5); break;
     case 0x480DF13F: soundToPlay = static_cast< eMenuSoundTriggers >(0x67); break;
+    case 0x4810A91B: soundToPlay = static_cast< eMenuSoundTriggers >(0x1C); break;
     case 0x48ED7349: soundToPlay = static_cast< eMenuSoundTriggers >(0x90); break;
     case 0x4949060A: soundToPlay = static_cast< eMenuSoundTriggers >(0x6A); break;
+    case 0x4A7ACC5A: soundToPlay = static_cast< eMenuSoundTriggers >(5); break;
     case 0x4A7E0941: soundToPlay = static_cast< eMenuSoundTriggers >(0x85); break;
     case 0x4A805994: soundToPlay = static_cast< eMenuSoundTriggers >(2); break;
     case 0x4B680587: soundToPlay = static_cast< eMenuSoundTriggers >(0x9b); break;
@@ -231,6 +240,7 @@ void MenuScreen::BaseNotifySound(u32 msg, FEObject * /* obj */, u32 /* controlle
     case 0x4E1DA7E5: soundToPlay = static_cast< eMenuSoundTriggers >(0x55); break;
     case 0x4E7CCC80: soundToPlay = static_cast< eMenuSoundTriggers >(0x12); break;
     case 0x4F072ECA: soundToPlay = static_cast< eMenuSoundTriggers >(0x9d); break;
+    case 0x4FB99CCD: soundToPlay = static_cast< eMenuSoundTriggers >(0x1A); break;
     case 0x4FB99CCE: soundToPlay = static_cast< eMenuSoundTriggers >(0x29); break;
     case 0x4FBFB02B: soundToPlay = static_cast< eMenuSoundTriggers >(0x4A); break;
     case 0x50B3FA79: soundToPlay = static_cast< eMenuSoundTriggers >(0x87); break;
@@ -238,6 +248,7 @@ void MenuScreen::BaseNotifySound(u32 msg, FEObject * /* obj */, u32 /* controlle
     case 0x52F69B81: soundToPlay = static_cast< eMenuSoundTriggers >(7); break;
     case 0x54EBD897: soundToPlay = static_cast< eMenuSoundTriggers >(0x7b); break;
     case 0x56D0CB98: soundToPlay = static_cast< eMenuSoundTriggers >(0x27); break;
+    case 0x59E562D8: soundToPlay = static_cast< eMenuSoundTriggers >(0x6D); break;
     case 0x5A0FDF7C: soundToPlay = static_cast< eMenuSoundTriggers >(0x18); break;
     case 0x5A0FDF7D: soundToPlay = static_cast< eMenuSoundTriggers >(0x19); break;
     case 0x5C928AC2: soundToPlay = static_cast< eMenuSoundTriggers >(0xe); break;
@@ -246,16 +257,23 @@ void MenuScreen::BaseNotifySound(u32 msg, FEObject * /* obj */, u32 /* controlle
     case 0x672DFAFD: soundToPlay = static_cast< eMenuSoundTriggers >(0x86); break;
     case 0x6A95F040: soundToPlay = static_cast< eMenuSoundTriggers >(0xf); break;
     case 0x6A9AA0EA: soundToPlay = static_cast< eMenuSoundTriggers >(0x10); break;
+    case 0x6B283007: soundToPlay = static_cast< eMenuSoundTriggers >(0xA); break;
     case 0x6BC1CD5D: soundToPlay = static_cast< eMenuSoundTriggers >(0xA); break;
     case 0x6E437A7B: soundToPlay = static_cast< eMenuSoundTriggers >(0x9f); break;
     case 0x7238782D: soundToPlay = static_cast< eMenuSoundTriggers >(0x68); break;
     case 0x746D7CDB: soundToPlay = static_cast< eMenuSoundTriggers >(0x98); break;
+    case 0x7B6B89D7: soundToPlay = static_cast< eMenuSoundTriggers >(4); break;
     case 0x7C002DCA: soundToPlay = static_cast< eMenuSoundTriggers >(0x99); break;
+    case 0x7D35DA25: soundToPlay = static_cast< eMenuSoundTriggers >(0xC); break;
     case 0x7F63059B: soundToPlay = static_cast< eMenuSoundTriggers >(0x88); break;
     case 0x80F21152: soundToPlay = static_cast< eMenuSoundTriggers >(0x9c); break;
+    case 0x81DA4B22: soundToPlay = static_cast< eMenuSoundTriggers >(0x6C); break;
     case 0x84D07AF9: soundToPlay = static_cast< eMenuSoundTriggers >(0x73); break;
+    case 0x8C40ED95: soundToPlay = static_cast< eMenuSoundTriggers >(0x59); break;
+    case 0x8E2658C6: soundToPlay = static_cast< eMenuSoundTriggers >(0x70); break;
     case 0x8E269F25: soundToPlay = static_cast< eMenuSoundTriggers >(0x75); break;
     case 0x90429475: soundToPlay = static_cast< eMenuSoundTriggers >(0x2e); break;
+    case 0x905FB857: soundToPlay = static_cast< eMenuSoundTriggers >(0xC); break;
     case 0x91970159: soundToPlay = static_cast< eMenuSoundTriggers >(0x15); break;
     case 0x958E0BD3: soundToPlay = static_cast< eMenuSoundTriggers >(0x97); break;
     case 0x97B397B0: soundToPlay = static_cast< eMenuSoundTriggers >(0x72); break;
@@ -264,12 +282,14 @@ void MenuScreen::BaseNotifySound(u32 msg, FEObject * /* obj */, u32 /* controlle
     case 0x9B59E056: soundToPlay = static_cast< eMenuSoundTriggers >(7); break;
     case 0x9F032957: soundToPlay = static_cast< eMenuSoundTriggers >(0x89); break;
     case 0xA07F7EA9: soundToPlay = static_cast< eMenuSoundTriggers >(0x84); break;
+    case 0xA3CC3462: soundToPlay = static_cast< eMenuSoundTriggers >(0x6B); break;
     case 0xA6362B4B: soundToPlay = static_cast< eMenuSoundTriggers >(0x8b); break;
     case 0xAB7A5FC7: soundToPlay = static_cast< eMenuSoundTriggers >(0x69); break;
     case 0xAC57BDB2: soundToPlay = static_cast< eMenuSoundTriggers >(0x13); break;
     case 0xAD0FBB98: soundToPlay = static_cast< eMenuSoundTriggers >(0x82); break;
     case 0xADCE9EEC: soundToPlay = static_cast< eMenuSoundTriggers >(0x7d); break;
     case 0xB11FB113: soundToPlay = static_cast< eMenuSoundTriggers >(0x93); break;
+    case 0xB1BF9795: soundToPlay = static_cast< eMenuSoundTriggers >(0x67); break;
     case 0xB205316C: soundToPlay = static_cast< eMenuSoundTriggers >(0x67); break;
     case 0xB25C8563: soundToPlay = static_cast< eMenuSoundTriggers >(0x56); break;
     case 0xB4FF8CD3: soundToPlay = static_cast< eMenuSoundTriggers >(0x7c); break;
@@ -277,14 +297,18 @@ void MenuScreen::BaseNotifySound(u32 msg, FEObject * /* obj */, u32 /* controlle
     case 0xB86367CB: soundToPlay = static_cast< eMenuSoundTriggers >(0x9a); break;
     case 0xB8AFE646: soundToPlay = static_cast< eMenuSoundTriggers >(0x35); break;
     case 0xBA0159B3: soundToPlay = static_cast< eMenuSoundTriggers >(0x81); break;
+    case 0xC45AF53B: soundToPlay = static_cast< eMenuSoundTriggers >(0x19); break;
     case 0xC477473A: soundToPlay = static_cast< eMenuSoundTriggers >(0x16); break;
     case 0xC4A06D0F: soundToPlay = static_cast< eMenuSoundTriggers >(0x59); break;
     case 0xC989909F: soundToPlay = static_cast< eMenuSoundTriggers >(0xA); break;
+    case 0xCAF4D21E: soundToPlay = static_cast< eMenuSoundTriggers >(0x74); break;
     case 0xD15F7512: soundToPlay = static_cast< eMenuSoundTriggers >(0x6D); break;
+    case 0xD792FF31: soundToPlay = static_cast< eMenuSoundTriggers >(0x6E); break;
     case 0xD93BCF6E: soundToPlay = static_cast< eMenuSoundTriggers >(0x8d); break;
     case 0xDC49A694: soundToPlay = static_cast< eMenuSoundTriggers >(6); break;
     case 0xDDD9C41E: soundToPlay = static_cast< eMenuSoundTriggers >(0x31); break;
     case 0xDEDF0B4C: soundToPlay = static_cast< eMenuSoundTriggers >(0x4B); break;
+    case 0xE28CAC90: soundToPlay = static_cast< eMenuSoundTriggers >(0x6A); break;
     case 0xE2A0904F: soundToPlay = static_cast< eMenuSoundTriggers >(0x71); break;
     case 0xE7DAFAEE: soundToPlay = static_cast< eMenuSoundTriggers >(0); break;
     case 0xE9B28A67: soundToPlay = static_cast< eMenuSoundTriggers >(0x68); break;
@@ -292,8 +316,10 @@ void MenuScreen::BaseNotifySound(u32 msg, FEObject * /* obj */, u32 /* controlle
     case 0xED78878C: soundToPlay = static_cast< eMenuSoundTriggers >(0x34); break;
     case 0xEE0EEA7E: soundToPlay = static_cast< eMenuSoundTriggers >(0x8f); break;
     case 0xEE54C987: soundToPlay = static_cast< eMenuSoundTriggers >(0xd); break;
+    case 0xF4B32D4D: soundToPlay = static_cast< eMenuSoundTriggers >(0xB); break;
     case 0xF9545D5C: soundToPlay = static_cast< eMenuSoundTriggers >(0x6C); break;
     case 0xFA274177: soundToPlay = static_cast< eMenuSoundTriggers >(0x80); break;
+    case 0xFABBBF40: soundToPlay = static_cast< eMenuSoundTriggers >(0xB); break;
     case 0xFC543E69: soundToPlay = static_cast< eMenuSoundTriggers >(4); break;
     }
 
