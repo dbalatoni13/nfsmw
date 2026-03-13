@@ -340,8 +340,8 @@ int LZValidHeader(LZHeader *header) {
 }
 
 int LZCompress(unsigned char *pSrc, unsigned int SrcSize, unsigned char *pDst) {
-    int huffSize = HUFFCompress(pSrc, SrcSize, pDst);
-    int jlzSize = JLZCompress(pSrc, SrcSize, pDst);
+    unsigned int huffSize = HUFFCompress(pSrc, SrcSize, pDst);
+    unsigned int jlzSize = JLZCompress(pSrc, SrcSize, pDst);
     if (huffSize > jlzSize) {
         return jlzSize;
     }

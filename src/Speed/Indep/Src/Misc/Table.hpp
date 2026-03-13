@@ -58,7 +58,7 @@ template <typename T> class tTable : public TableBase {
   public:
     tTable() : TableBase(0, 0.0f, 1.0f) {}
 
-    static void Blend(T *dest, T *a, T *b, float blend_a);
+    void Blend(T *dest, T *a, T *b, float blend_a);
 };
 
 class AverageBase {
