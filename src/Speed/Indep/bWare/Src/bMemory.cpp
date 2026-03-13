@@ -355,24 +355,25 @@ void MemoryPool::PrintAllocationsByAddress(int from_allocation, int to_allocatio
     bReleasePrintf("AllocationNumber Address      Size    Debug Text (& Line)\n");
     bReleasePrintf("=========================================================\n");
 
-    AllocationHeader *prev = nullptr;
+    AllocationHeader *prev_header = nullptr;
     for (AllocationHeader *header = this->AllocationHeaderList.GetHead(); header != this->AllocationHeaderList.EndOfList(); header = header->GetNext()) {
-        int allocation_number = 0;
+        int free_mem = 0;
 
-        if (allocation_number >= from_allocation && allocation_number < to_allocation) {
-            if (prev != nullptr) {
-                char *prev_bottom = reinterpret_cast<char *>(prev->GetBottomAddress());
-                char *curr_bottom = reinterpret_cast<char *>(header->GetBottomAddress());
-                if ((curr_bottom - prev_bottom) != prev->Size) {
+        if (free_mem >= from_allocation && free_mem < to_allocation) {
+            if (prev_header != nullptr) {
+                unsigned char *prev_header_bot = static_cast<unsigned char *>(prev_header->GetBottomAddress());
+                unsigned char *header_bot = static_cast<unsigned char *>(header->GetBottomAddress());
+                int block_size = header_bot - prev_header_bot;
+                if (block_size != prev_header->Size) {
                     bReleasePrintf("   *** gap in allocations ***");
                 }
             }
 
-            bReleasePrintf("    %5d        0x%08x %7d   %s", allocation_number, header->GetBottomAddress(), header->Size, header->GetDebugText());
+            bReleasePrintf("    %5d        0x%08x %7d   %s", free_mem, header->GetBottomAddress(), header->Size, header->GetDebugText());
             bReleasePrintf("\n");
-            prev = header;
+            prev_header = header;
         } else {
-            prev = nullptr;
+            prev_header = nullptr;
         }
     }
 }

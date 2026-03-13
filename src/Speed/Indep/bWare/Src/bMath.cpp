@@ -67,7 +67,7 @@ int bDiv(int a, int b) {
         return -0x80000000;
     } else {
         int half_inverse_b = 0x7fffffff / b;
-        return ((((long long)a * half_inverse_b) >> 32) << 16 | (unsigned int)((long long)a * half_inverse_b) >> 16) << 1;
+        return bMult(a, half_inverse_b);
     }
 }
 

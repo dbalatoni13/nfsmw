@@ -128,6 +128,10 @@ inline int bAbs(int a) {
     return a;
 }
 
+inline int bMult(int a, int b) {
+    return ((((long long)a * b) >> 32) << 16 | (unsigned int)((long long)a * b) >> 16) << 1;
+}
+
 inline float bAbs(float a) {
 #ifdef EA_PLATFORM_GAMECUBE
     float f_abs;
