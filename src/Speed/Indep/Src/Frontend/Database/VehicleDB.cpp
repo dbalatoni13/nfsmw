@@ -30,6 +30,8 @@ struct PresetCar {
 class CarPartDatabase {
   public:
     CarType GetCarType(unsigned int key);
+    struct CarPart *GetCarPartByIndex(int index);
+    int GetPartIndex(struct CarPart *part);
 };
 
 extern CarPartDatabase CarPartDB;
@@ -41,6 +43,8 @@ namespace Upgrades {
 
 bool ApplyPreset(Attrib::Gen::pvehicle &vehicle, const Attrib::Gen::presetride &preset);
 void Clear(Attrib::Gen::pvehicle &vehicle);
+bool SetPackage(Attrib::Gen::pvehicle &vehicle, const Package &package);
+void GetPackage(const Attrib::Gen::pvehicle &vehicle, Package &package);
 
 } // namespace Upgrades
 
@@ -179,6 +183,48 @@ void FECustomizationRecord::Default() {
     }
     Preset = 0;
     ActiveTuning = static_cast< Physics::eCustomTuningType >(0);
+}
+
+FECustomizationRecord::FECustomizationRecord() {
+    bMemSet(&InstalledPhysics, 0, sizeof(InstalledPhysics));
+    ActiveTuning = static_cast< Physics::eCustomTuningType >(0);
+    for (int i = 0; i < 3; i++) {
+        bMemSet(&Tunings[i], 0, sizeof(Tunings[i]));
+    }
+    Handle = 0xFF;
+    Default();
+}
+
+bool FECustomizationRecord::WriteRecordIntoPhysics(Attrib::Gen::pvehicle &attributes) const {
+    return Physics::Upgrades::SetPackage(attributes, InstalledPhysics);
+}
+
+void FECustomizationRecord::WritePhysicsIntoRecord(const Attrib::Gen::pvehicle &attributes) {
+    Physics::Upgrades::GetPackage(attributes, InstalledPhysics);
+}
+
+struct CarPart *FECustomizationRecord::GetInstalledPart(CarType cartype, int carslotid) const {
+    return CarPartDB.GetCarPartByIndex(InstalledPartIndices[carslotid]);
+}
+
+void FECustomizationRecord::SetInstalledPart(int carslotid, struct CarPart *part) {
+    if (part != nullptr) {
+        InstalledPartIndices[carslotid] = static_cast< short >(CarPartDB.GetPartIndex(part));
+    } else {
+        InstalledPartIndices[carslotid] = -1;
+    }
+}
+
+void FECustomizationRecord::WriteRecordIntoRide(RideInfo *ride) const {
+    for (int i = 0; i <= 0x8A; i++) {
+        ride->SetPart(i, GetInstalledPart(ride->Type, i), true);
+    }
+}
+
+void FECustomizationRecord::WriteRideIntoRecord(const RideInfo *ride) {
+    for (int i = 0; i <= 0x8A; i++) {
+        SetInstalledPart(i, ride->GetPart(i));
+    }
 }
 
 void FEImpoundData::Default() {
@@ -883,4 +929,63 @@ bool FEPlayerCarDB::DeleteCar(unsigned int handle, unsigned int filter, bool was
     }
 
     return true;
+}
+
+int FEPlayerCarDB::GetNumQuickRaceCars() {
+    return GetNumCars(0xF0004);
+}
+
+int FEPlayerCarDB::GetNumCareerCars() {
+    return GetNumCars(0xF0002);
+}
+
+char *FEPlayerCarDB::SaveToBuffer(char *buffer, int bufsize) {
+    bMemCpy(buffer, this, 0x8CC8);
+    return buffer + 0x8CC8;
+}
+
+char *FEPlayerCarDB::LoadFromBuffer(char *buffer, int bufsize) {
+    bMemCpy(this, buffer, 0x8CC8);
+    return buffer + 0x8CC8;
+}
+
+int FEPlayerCarDB::GetSaveBufferSize() {
+    return 0x8CC8;
+}
+
+void FEPlayerCarDB::SetCarToPreset(unsigned int car, PresetCar *preset) {
+    FECarRecord *record = GetCarRecordByHandle(car);
+
+    record->FEKey = static_cast< unsigned int >(preset->FEKey);
+    record->VehicleKey = static_cast< unsigned int >(preset->VehicleKey);
+    record->FilterBits = preset->FilterBits;
+
+    FECustomizationRecord *customization = GetCustomizationRecordByHandle(record->Customization);
+    if (customization != nullptr) {
+        customization->BecomePreset(preset);
+    }
+}
+
+void FEPlayerCarDB::BuildRideForPlayer(unsigned int car, int player, RideInfo *ride) {
+    FECarRecord *record = GetCarRecordByHandle(car);
+
+    ride->Init(record->GetType(), CarRenderUsage_Player, 0, 0);
+    FECustomizationRecord *customization = GetCustomizationRecordByHandle(record->Customization);
+    if (customization != nullptr) {
+        customization->WriteRecordIntoRide(ride);
+    } else {
+        ride->SetRandomPaint();
+        ride->SetStockParts();
+    }
+}
+
+bool FEPlayerCarDB::WriteRecordIntoPhysics(unsigned int car, Attrib::Gen::pvehicle &attributes) {
+    FECarRecord *record = GetCarRecordByHandle(car);
+    if (record != nullptr) {
+        FECustomizationRecord *customization = GetCustomizationRecordByHandle(record->Customization);
+        if (customization != nullptr) {
+            return customization->WriteRecordIntoPhysics(attributes);
+        }
+    }
+    return false;
 }

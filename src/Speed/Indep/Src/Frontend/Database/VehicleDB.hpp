@@ -34,16 +34,24 @@ struct FECarRecord {
     CarType GetType();
 };
 
+struct PresetCar;
+
 // total size: 0x198
 struct FECustomizationRecord {
+    FECustomizationRecord();
     short InstalledPartIndices[139];             // offset 0x0, size 0x116
     Physics::Upgrades::Package InstalledPhysics; // offset 0x118, size 0x20
     Physics::Tunings Tunings[3];                 // offset 0x138, size 0x54
     Physics::eCustomTuningType ActiveTuning;     // offset 0x18C, size 0x4
     int Preset;                                  // offset 0x190, size 0x4
     unsigned char Handle;                        // offset 0x194, size 0x1
+    void BecomePreset(PresetCar *preset);
     void Default();
+    bool WriteRecordIntoPhysics(Attrib::Gen::pvehicle &attributes) const;
     void WriteRideIntoRecord(const RideInfo *ride);
+    struct CarPart *GetInstalledPart(CarType cartype, int carslotid) const;
+    void SetInstalledPart(int carslotid, struct CarPart *part);
+    void WriteRecordIntoRide(RideInfo *ride) const;
     void WritePhysicsIntoRecord(const Attrib::Gen::pvehicle &attributes);
 };
 

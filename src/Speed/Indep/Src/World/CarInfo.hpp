@@ -42,6 +42,8 @@ class RideInfo {
     void SetStockParts();
     void SetRandomPaint();
     void FillWithPreset(unsigned int preset);
+    struct CarPart *GetPart(int carslotid) const;
+    void SetPart(int carslotid, struct CarPart *part, bool enabled);
 
     RideInfo() {
         Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
