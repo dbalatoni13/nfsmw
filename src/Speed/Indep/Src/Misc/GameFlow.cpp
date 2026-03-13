@@ -58,6 +58,12 @@ class EmitterSystem;
 struct SlotPoolManager;
 extern EmitterSystem gEmitterSystem;
 extern SlotPoolManager TheSlotPoolManager;
+void HibernateStreamingSections__13TrackStreamer(TrackStreamer *);
+void UnloadEverything__13TrackStreamer(TrackStreamer *);
+void MakeSpaceInPool__13TrackStreamerib(TrackStreamer *, int, bool);
+void Close__6WWorld(WWorld *);
+extern WWorld *_6WWorld_fgWorld;
+void InitRegion__13TrackStreamerPCcb(TrackStreamer *, const char *, bool);
 void KillEverything__13EmitterSystem(EmitterSystem *);
 void CleanupExpandedSlotPools__15SlotPoolManager(SlotPoolManager *);
 
@@ -158,6 +164,26 @@ extern int FinishedLoadingGlobalSuccesful;
 extern char TheAnimPlayer[];
 void WaitForResourceLoadingComplete();
 unsigned int GetVirtualMemoryAllocParams();
+void ServiceQueuedFiles();
+void LoadPrecullerBooBooScripts();
+void LoadAemsInGame(void (*)(int), int);
+void UnloadAemsInGame();
+void InitSkyHash(void (*)(int), int);
+void UnloadSkyTextures();
+void eUnloadAllStreamingTextures(const char *);
+int bFileSize(const char *);
+void bCacheCodeineDirs(char *, int, int);
+void ResetCapturedLoadingTimes();
+void CodeOverlayUnloadingGame();
+void CheckLeakDetector(const char *);
+int AreResourceLoadsPending__8EAXSound(EAXSound *);
+void Update__8EAXSoundf(EAXSound *, float);
+extern const char *HudDragTexturePackFilename;
+extern const char *HudSingleRaceTexturePackFilename;
+extern const char *HudSplitScreenTexturePackFilename;
+extern const char *HudDragSplitScreenTexturePackFilename;
+extern const char *DynamicTexturePackFilename;
+extern int dummy_32338;
 
 #include "Speed/Indep/Src/Misc/EasterEggs.hpp"
 extern EasterEggs gEasterEggs;
@@ -436,6 +462,39 @@ void CheckForHolesInMemory() {
     bLargestMalloc(0);
 }
 
+void RegionLoader::BeginLoading() {
+    TheGameFlowManager.SetState(GAMEFLOW_STATE_LOADING_REGION);
+    TrackInfo::SetLoadedTrackInfo(TheRaceParameters.TrackNumber);
+    SetLeakDetector();
+    CheckForHolesInMemory();
+    InGameMemoryFile = LoadMemoryFile("InGame.mem");
+    CodeOverlayLoadingGame();
+    WWorld::Init();
+    bool two_player = CalculateSimMode() == Sim::USER_SPLIT_SCREEN;
+    int pool_size = CarLoaderPoolSizes[0];
+    if (two_player) {
+        pool_size = CarLoaderPoolSizes[1];
+    }
+    if (EmergencySaveMemory != 0) {
+        pool_size -= 0x100;
+    }
+    if (two_player) {
+        GRaceCustom *startupRace = GRaceDatabase::Get().GetStartupRace();
+        bool loadingDrag = false;
+        if (startupRace != nullptr) {
+            loadingDrag = startupRace->GetRaceType() == GRace::kRaceType_Drag;
+        }
+        if (loadingDrag && pool_size < 0x73a) {
+            pool_size = 0x73a;
+        }
+    }
+    SetMemoryPoolSize__9CarLoaderi(&TheCarLoader, pool_size << 10);
+    SetLoadingMode__9CarLoaderQ29CarLoader12eLoadingModei(&TheCarLoader, 2, two_player);
+    new ELoadingScreenOn(1);
+    Phase = 0;
+    LoadHandler();
+}
+
 int NeedsSeperateTODStreamingFile(const char *);
 const char *GetTimeOfDaySuffix(eTimeOfDay);
 char *bStrStr(const char *, const char *);
@@ -452,6 +511,108 @@ void GetTODFilename(eTimeOfDay tod, const char *base, char *out, int) {
 
 void RegionLoader::LoadHandler(int) {
     TheRegionLoader.LoadHandler();
+}
+
+extern "C" void LoadHandler__12RegionLoaderi(int);
+
+void RegionLoader::LoadHandler() {
+    Phase++;
+    TheGameFlowManager.ClearWaitingForCallback();
+    TheGameFlowManager.SetWaitingForCallback("RegionLoader::LoadHandler", Phase);
+    if (Phase == 1) {
+        LoadLanguageResources(true, false, true, false);
+        int ingamea_allocation_params = 0x2000;
+        if (TheOnlineManager.IsOnlineRace()) {
+            int filesize = bFileSize("InGameA_online_gc.bun");
+            ingamea_allocation_params = 0x2047;
+            MakeSpaceInPool__13TrackStreamerib(&TheTrackStreamer, filesize, true);
+        }
+        ResourceFile *res = CreateResourceFile("InGameA_online_gc.bun", 3, 0, 0, 0);
+        pResourceInGameA = res;
+        res->SetAllocationParams(ingamea_allocation_params, "InGameA_online_gc.bun");
+        pResourceInGameA->BeginLoading(nullptr, nullptr);
+        pResourceInGameSplitScreen = nullptr;
+        bool load_frontend = FEDatabase->IsSplitScreenMode() && FEDatabase->iNumPlayers == 2;
+        if (load_frontend) {
+            pResourceInGameSplitScreen = LoadResourceFile("InGameSplitScreen_gc.bun", 3, 0, nullptr, nullptr, 0, 0);
+        }
+        ResourceFile *ingameB = LoadResourceFile("InGameB_gc.bun", 3, 9, reinterpret_cast<void (*)(void *)>(LoadHandler__12RegionLoaderi), reinterpret_cast<void *>(this), 0, 0);
+        pResourceInGameB = ingameB;
+        ingameB->ChangeFilenameForHotChunking("InGameB_gc_hot.bun");
+    } else if (Phase == 2) {
+        char basefilename[32];
+        char filename[32];
+        bSPrintf(basefilename, "TRACKS\\%s\\", TrackInfo::GetLoadedTrackInfo()->RegionName);
+        GetTODFilename(GetCurrentTimeOfDay(), basefilename, filename, 0x20);
+        pResourceRegion = LoadResourceFile(filename, 4, 1, reinterpret_cast<void (*)(void *)>(LoadHandler__12RegionLoaderi), reinterpret_cast<void *>(this), 0, 0);
+        char vm_basefilename[48];
+        char vm_filename[48];
+        bSPrintf(vm_basefilename, "TRACKS\\%s\\_VM", TrackInfo::GetLoadedTrackInfo()->RegionName);
+        GetTODFilename(GetCurrentTimeOfDay(), vm_basefilename, vm_filename, 0x30);
+        pResourceRegion_VM = LoadFileIntoVirtualMemory(vm_filename, false, true);
+    } else if (Phase == 3) {
+        LoadPrecullerBooBooScripts();
+        LoadAemsInGame(LoadHandler__12RegionLoaderi, reinterpret_cast<int>(this));
+    } else if (Phase == 4) {
+        InitSkyHash(LoadHandler__12RegionLoaderi, reinterpret_cast<int>(this));
+    } else if (Phase == 5) {
+        TheGameFlowManager.ClearWaitingForCallback();
+        FinishedLoading();
+    }
+}
+
+void BeginGameFlowLoadTrack();
+
+void RegionLoader::FinishedLoading() {
+    char baseregion_filename[64];
+    char region_filename[64];
+    bSPrintf(baseregion_filename, "TRACKS\\%s\\", TrackInfo::GetLoadedTrackInfo()->RegionName);
+    GetTODFilename(GetCurrentTimeOfDay(), baseregion_filename, region_filename, 0x40);
+    EstablishRemoteCaffeineConnection();
+    bool load_frontend = FEDatabase->IsSplitScreenMode() && FEDatabase->iNumPlayers == 2;
+    InitRegion__13TrackStreamerPCcb(&TheTrackStreamer, region_filename, load_frontend);
+    TheGameFlowManager.SetSingleFunction(reinterpret_cast<void (*)(int)>(BeginGameFlowLoadTrack), "LoadTrack", 0);
+}
+
+void RegionLoader::Unload() {
+    TheGameFlowManager.SetState(GAMEFLOW_STATE_UNLOADING_REGION);
+    HibernateStreamingSections__13TrackStreamer(&TheTrackStreamer);
+    UnloadEverything__13TrackStreamer(&TheTrackStreamer);
+    KillEverything__13EmitterSystem(&gEmitterSystem);
+    Close__6WWorld(_6WWorld_fgWorld);
+    while (AreResourceLoadsPending__8EAXSound(g_pEAXSound)) {
+        Update__8EAXSoundf(g_pEAXSound, 0.1f);
+        ServiceQueuedFiles();
+    }
+    UnloadAemsInGame();
+    UnloadSkyTextures();
+    eUnloadAllStreamingTextures(HudDragTexturePackFilename);
+    eUnloadAllStreamingTextures(HudSingleRaceTexturePackFilename);
+    eUnloadAllStreamingTextures(HudSplitScreenTexturePackFilename);
+    eUnloadAllStreamingTextures(HudDragSplitScreenTexturePackFilename);
+    eUnloadAllStreamingTextures(DynamicTexturePackFilename);
+    UnloadResourceFile(pResourceRegion);
+    UnloadResourceFile(pResourceInGameB);
+    if (pResourceInGameSplitScreen != nullptr) {
+        UnloadResourceFile(pResourceInGameSplitScreen);
+    }
+    UnloadResourceFile(pResourceInGameA);
+    pResourceRegion = nullptr;
+    pResourceInGameB = nullptr;
+    pResourceInGameSplitScreen = nullptr;
+    pResourceInGameA = nullptr;
+    UnloadFileFromVirtualMemory(pResourceRegion_VM);
+    UnloadFileFromVirtualMemory(pResourceInGameB_VM);
+    pResourceInGameB_VM = nullptr;
+    pResourceRegion_VM = nullptr;
+    MakeSpaceInPool__13TrackStreamerib(&TheTrackStreamer, 1, true);
+    LoadLanguageResources(true, false, false, false);
+    TrackInfo::SetLoadedTrackInfo(0);
+    CleanupExpandedSlotPools__15SlotPoolManager(&TheSlotPoolManager);
+    CodeOverlayUnloadingGame();
+    bFileFlushCachedFiles();
+    CheckLeakDetector("In-Game");
+    dummy_32338++;
 }
 
 void BeginGameFlowLoadTrack() {
@@ -485,7 +646,7 @@ void BeginWorldLoad();
 void TrackLoader::BeginLoading() {
     TheGameFlowManager.SetState(GAMEFLOW_STATE_LOADING_TRACK);
     Phase = 0;
-    LoadedTrackInfo = TrackInfo::GetTrackInfo(TheRaceParameters.TrackNumber);
+    TrackInfo::SetLoadedTrackInfo(TheRaceParameters.TrackNumber);
     LoadHandler();
 }
 

@@ -28,6 +28,9 @@ enum eTrackDifficulty {
     TRACK_DIFFICULTY_HARD = 2,
 };
 
+class TrackInfo;
+extern TrackInfo *LoadedTrackInfo;
+
 class TrackInfo {
   public:
     // total size: 0x120
@@ -77,13 +80,15 @@ class TrackInfo {
     float TrackMapZoomWidth;                         // offset 0x118, size 0x4
     char TrackMapStartZoomed;                        // offset 0x11C, size 0x1
 
-    const char *GetLoadedTrackInfo() {
-        return this->RegionName;
+    static TrackInfo *GetTrackInfo(int track_number);
+
+    static void SetLoadedTrackInfo(int track_number) {
+        LoadedTrackInfo = GetTrackInfo(track_number);
     }
 
-    static TrackInfo *GetTrackInfo(int track_number);
+    static TrackInfo *GetLoadedTrackInfo() {
+        return LoadedTrackInfo;
+    }
 };
-
-extern TrackInfo *LoadedTrackInfo;
 
 #endif
