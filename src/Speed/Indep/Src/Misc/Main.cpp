@@ -70,7 +70,7 @@ void WriteFreekerBaseAddressBeacon();
 
 bool bInitDisculatorDriver(const char *dir_filename, const char *data_filename);
 
-#ifdef MILESTONE_OPT
+#ifdef EA_PLATFORM_PLAYSTATION2
 void bMonitorService();
 
 extern bool gJuiceEnabled;
@@ -123,7 +123,7 @@ void SeedRandomNumber() {
 
 void InitBigFiles() {
     if (bFileExists("NFS\\ZDIR.BIN")) {
-#ifdef MILESTONE_OPT
+#ifdef EA_PLATFORM_PLAYSTATION2
         DisculatorDriver *driver = DisculatorDriver::Create("NFS\\ZDIR.BIN", "NFS\\ZZDATA");
         if (driver) {
             RealFile::AddDevice(driver);
@@ -234,7 +234,7 @@ void VerifyJoylogChecksum() {
     if (!Joylog::IsCapturing() && !Joylog::IsReplaying()) {
         return;
     }
-#ifndef MILESTONE_OPT
+#ifndef EA_PLATFORM_PLAYSTATION2
     if (Joylog::IsCapturing()) {
         Joylog::AddData(bDefaultSeed, 32, JOYLOG_CHANNEL_RANDOM);
     } else if (Joylog::IsReplaying()) {
@@ -258,7 +258,7 @@ void VerifyJoylogChecksum() {
         random_seed_checksum = 0;
     }
     uint16 real_loop_counter_checksum = RealLoopCounter;
-#ifndef MILESTONE_OPT
+#ifndef EA_PLATFORM_PLAYSTATION2
     uint16 current_checksum;
     int checksum_error = 0;
     if (Joylog::IsReplaying()) {
@@ -410,18 +410,18 @@ void MiniMainLoop() {
     static int recursion_checker = 0;
     static int previous_ticks = 0;
 
-#ifdef MILESTONE_OPT
+#ifdef EA_PLATFORM_PLAYSTATION2
     bMonitorService();
 #endif
     bThreadYield(8);
-#ifndef MILESTONE_OPT
+#ifndef EA_PLATFORM_PLAYSTATION2
     Sim::Suspend();
 #endif
     float dt = bGetTickerDifference(previous_ticks);
     previous_ticks = bGetTicker();
     PrepareRealTimestep(dt * 0.001f);
     ServiceResourceLoading();
-#ifndef MILESTONE_OPT
+#ifndef EA_PLATFORM_PLAYSTATION2
     ServiceFileStats();
     MainLoopCheckForFatalDiscError();
 #endif
@@ -429,7 +429,7 @@ void MiniMainLoop() {
     FEManager::Get()->Update();
     TheTrackStreamer.ServiceGameState();
     TheTrackStreamer.ServiceNonGameState();
-#ifndef MILESTONE_OPT
+#ifndef EA_PLATFORM_PLAYSTATION2
     if (g_pEAXSound) {
         g_pEAXSound->Update(RealTimeElapsed);
     }
