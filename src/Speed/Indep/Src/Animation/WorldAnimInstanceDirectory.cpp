@@ -12,11 +12,11 @@ void InitAnimControlScenarios(IControlScenario **arr_ptrs);
 void CleanControlScenarios(IControlScenario **arr_ptrs);
 
 WorldAnimInstanceDirectory TheWorldAnimInstanceDirectory; // size: 0x50, address: 0x80457718
-bool PrintWorldAnimationStuff;                            // size: 0x1, address: 0x8041589C
-bool DisableWorldAnimations;                              // size: 0x1, address: 0x804156F0
+bool PrintWorldAnimationStuff = false;                    // size: 0x1, address: 0x8041589C
+bool DisableWorldAnimations = false;                      // size: 0x1, address: 0x804156F0
 
-static int NumWorldAnimInstanceEntries;  // size: 0x4, address: 0x80415898
-static int MaxWorldAnimInstances;        // size: 0x4, address: 0x80415894
+static int NumWorldAnimInstanceEntries = 0;  // size: 0x4, address: 0x80415898
+static int MaxWorldAnimInstances = 0;        // size: 0x4, address: 0x80415894
 
 void *WorldAnimInstanceEntry::operator new(size_t size, const char *debug_name) {
     NumWorldAnimInstanceEntries++;
