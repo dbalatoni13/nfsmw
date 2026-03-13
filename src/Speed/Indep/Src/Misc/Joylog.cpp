@@ -356,12 +356,12 @@ void DumpJoylogPrint() {
     while (Joylog::ReadAheadFromChannel(string + len, 1, JOYLOG_CHANNEL_PRINTF) != 0) {
         if (len == 510) {
             len = 511;
-            string[511] = 0;
+            string[len] = 0;
         }
-        if (string[len] == 0) {
-            len = 0;
-        } else {
+        if (string[len] != 0) {
             len++;
+        } else {
+            len = 0;
         }
     }
     Joylog::FreeReadAheadBuffer();
