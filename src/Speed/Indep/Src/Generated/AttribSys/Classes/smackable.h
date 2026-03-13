@@ -13,6 +13,18 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 
+enum eDRIVE_BY_TYPE {
+    DRIVE_BY_UNKNOWN = 0,
+    DRIVE_BY_TREE = 1,
+    DRIVE_BY_LAMPPOST = 2,
+    DRIVE_BY_SMOKABLE = 3,
+    DRIVE_BY_TUNNEL_IN = 4,
+    DRIVE_BY_TUNNEL_OUT = 5,
+    DRIVE_BY_OVERPASS_IN = 6,
+    DRIVE_BY_OVERPASS_OUT = 7,
+    DRIVE_BY_AI_CAR = 8,
+};
+
 namespace Attrib {
 namespace Gen {
 

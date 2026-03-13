@@ -87,6 +87,58 @@ bool SegmentSphereIntersect(const UMath::Vector3 &p0, const UMath::Vector3 &p1, 
     return false;
 }
 
+namespace WWorldMath {
+void NearestPointLine2D(const UMath::Vector4 &pt, const UMath::Vector4 *line, UMath::Vector4 &nearPt);
+}; // namespace WWorldMath
+
+float TimeToImpactXZ(const UMath::Vector3 &pos0, const UMath::Vector3 &vel0, float rad0,
+                     const UMath::Vector3 &pos1, const UMath::Vector3 &vel1, float rad1) {
+    UMath::Vector3 p0;
+    memset(&p0, 0, sizeof(p0));
+    p0.x = pos0.x;
+    p0.z = pos0.z;
+
+    UMath::Vector3 p1;
+    memset(&p1, 0, sizeof(p1));
+    p1.x = pos1.x;
+    p1.z = pos1.z;
+
+    UMath::Vector3 v0;
+    memset(&v0, 0, sizeof(v0));
+    v0.x = vel0.x;
+    v0.z = vel0.z;
+
+    UMath::Vector3 v1;
+    memset(&v1, 0, sizeof(v1));
+    v1.x = vel1.x;
+    v1.z = vel1.z;
+
+    float timetoimpact = TimeToIntercept(p0, v0, p1, v1);
+
+    if (timetoimpact < 999.0f) {
+        UMath::Vector3 relSpeed;
+        UMath::Sub(v0, v1, relSpeed);
+
+        UMath::Vector4 line[2];
+        line[0] = UMath::Vector4Make(p0, 0.0f);
+
+        UMath::ScaleAdd(relSpeed, timetoimpact, p0, UMath::Vector4To3(line[1]));
+        line[1].w = 0.0f;
+
+        UMath::Vector4 test = UMath::Vector4Make(p1, 0.0f);
+        UMath::Vector4 nearpt = UMath::Vector4Make(p1, 0.0f);
+
+        WWorldMath::NearestPointLine2D(test, line, nearpt);
+
+        float lateraldistance = UMath::Distancexz(UMath::Vector4To3(nearpt), UMath::Vector4To3(test));
+        if (lateraldistance <= rad0 + rad1) {
+            return timetoimpact;
+        }
+    }
+
+    return 999.0f;
+}
+
 }; // namespace Math
 
 }; // namespace AI

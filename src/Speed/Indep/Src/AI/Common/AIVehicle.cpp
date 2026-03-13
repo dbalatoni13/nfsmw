@@ -13,6 +13,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/aivehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/collisionreactions.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/smackable.h"
 #include "Speed/Indep/Src/Generated/Events/EEnableAIPhysics.hpp"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
@@ -21,9 +22,11 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ICause.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICheater.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IExplosion.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRBVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Interfaces/SimModels/IModel.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/Physics/Behavior.h"
@@ -1316,4 +1319,44 @@ void AIPerpVehicle::ComputeSkill() {
             }
         }
     }
+}
+
+void AIPerpVehicle::OnCausedExplosion(IExplosion *explosion, ISimable *to) {
+    float chain_start_time = explosion->GetCausalityTime();
+    float sim_time = Sim::GetTime();
+    int cost_to_state = 0;
+
+    if (sim_time - chain_start_time <= 0.5f) {
+        SimableType type = to->GetSimableType();
+        IModel *model = to->GetModel();
+        bool bIsRootModel = false;
+        if (model != nullptr && model->IsRootModel()) {
+            bIsRootModel = true;
+        }
+
+        if (type == SIMABLE_SMACKABLE && bIsRootModel) {
+            Attrib::Instance attribs(to->GetAttributes());
+            const unsigned int *resultptr =
+                reinterpret_cast< const unsigned int * >(attribs.GetAttributePointer(0x6db7d192, 0));
+            if (!resultptr) {
+                resultptr = reinterpret_cast< const unsigned int * >(Attrib::DefaultDataArea(sizeof(unsigned int)));
+            }
+            cost_to_state = *resultptr;
+        } else if (type == SIMABLE_VEHICLE) {
+            IVehicle *ivehicle;
+            to->QueryInterface(&ivehicle);
+            if (!ivehicle->IsDestroyed()) {
+                IPursuitAI *ipursuitVehicle;
+                if (to->QueryInterface(&ipursuitVehicle)) {
+                    cost_to_state = 2000;
+                }
+            }
+        }
+
+        if (cost_to_state != 0 && GetPursuit() != nullptr) {
+            AddCostToState(cost_to_state);
+        }
+    }
+
+    to->SetCausality(static_cast< ICause * >(this)->GetInstanceHandle(), chain_start_time);
 }
