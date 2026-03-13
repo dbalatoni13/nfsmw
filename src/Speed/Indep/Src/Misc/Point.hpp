@@ -19,8 +19,8 @@ struct cPoint {
     int mCBParam1;                        // offset 0x16C, size 0x4
     int mCBParam2;                        // offset 0x170, size 0x4
 
-    void SplineSeek(tCubic1D *cubic, float dt, float maxDeriv, float maxSecondDeriv);
-    void SplineSeek(tCubic2D *cubic, float dt);
+    static void SplineSeek(tCubic1D *cubic, float dt, float maxDeriv, float maxSecondDeriv);
+    static void SplineSeek(tCubic2D *cubic, float dt);
 };
 
 #endif
