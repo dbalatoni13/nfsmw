@@ -1711,3 +1711,88 @@ const char *AIPursuit::CopRequest() {
     }
     return request;
 }
+
+void HerdFormation::Update(float dT, IPursuit *pursuit) {
+    AITarget *target = pursuit->GetTarget();
+    if (target == nullptr) {
+        return;
+    }
+
+    ISimable *simable = target->GetSimable();
+    IVehicleAI *ivehicleAI;
+    if (simable == nullptr || !simable->QueryInterface(&ivehicleAI)) {
+        return;
+    }
+    WRoadNav *currentRoad = ivehicleAI->GetCurrentRoad();
+    if (currentRoad == nullptr) {
+        return;
+    }
+
+    WRoadNav queryNav;
+    UMath::Vector3 targetDir = target->GetDirection();
+    queryNav.InitAtPoint(target->GetPosition(), targetDir, true, 0.0f);
+
+    UMath::Vector3 roadPos;
+    roadPos = queryNav.GetPosition();
+    UMath::Vector3 roadDir;
+    roadDir = queryNav.GetForwardVector();
+
+    float sqLen = VU0_v3lengthsquare(roadDir);
+    float len = VU0_sqrt(sqLen);
+    if (len != 0.0f) {
+        VU0_v3scale(roadDir, 1.0f / len, roadDir);
+    }
+
+    UMath::Vector3 perpDir;
+    perpDir.x = roadDir.z;
+    perpDir.y = roadDir.y;
+    perpDir.z = -roadDir.x;
+
+    UMath::Vector3 delta;
+    UMath::Sub(target->GetPosition(), roadPos, delta);
+    float dotProduct = UMath::Dot(delta, perpDir);
+
+    const WRoadSegment *segment = queryNav.GetSegment();
+    const WRoadProfile *profile = WRoadNetwork::Get().GetSegmentProfile(*segment, queryNav.GetNodeInd());
+    if (profile == nullptr || profile->fNumZones == 0) {
+        return;
+    }
+
+    UMath::Vector3 segForward;
+    WRoadNetwork::Get().GetSegmentForwardVector(queryNav.GetSegmentInd(), segForward);
+    float segDot = UMath::Dot(segForward, targetDir);
+
+    int numLanes;
+    if (segDot < 0.0f) {
+        numLanes = profile->fMiddleZone;
+    } else {
+        numLanes = profile->fNumZones - profile->fMiddleZone;
+    }
+
+    float maxOffset = 0.0f;
+    for (int i = 0; i < numLanes; i++) {
+        int laneIdx = i;
+        if (segDot < 0.0f) {
+            laneIdx = profile->fNumZones - i - 1;
+        }
+        int laneType = profile->mLanes[laneIdx].GetType();
+        if (laneType == 1) {
+            int idx = i;
+            if (segDot < 0.0f) {
+                idx = profile->fNumZones - i - 1;
+            }
+            float offset = profile->mLanes[idx].GetOffset();
+            if (offset > maxOffset) {
+                maxOffset = offset;
+            }
+        }
+    }
+
+    float crowdDist = static_cast< float >(dotProduct - maxOffset) + 3.0f;
+    crowdDist = UMath::Min(crowdDist, 8.0f);
+    crowdDist = UMath::Max(crowdDist, 1.0f);
+
+    for (TargetOffsetList::iterator it = mTargetOffsets.begin(); it != mTargetOffsets.end(); ++it) {
+        it->mOffset.x = -crowdDist;
+    }
+}
