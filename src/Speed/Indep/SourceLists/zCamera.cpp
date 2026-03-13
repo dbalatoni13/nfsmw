@@ -27,3 +27,11 @@
 #include "Speed/Indep/Src/Camera/ICE/ICERender.cpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEOverlays.cpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.cpp"
+
+namespace _STL {
+template IVehicle *const *find<IVehicle *const *, IVehicle const *>(
+    IVehicle *const *,
+    IVehicle *const *,
+    IVehicle const *const &
+);
+}
