@@ -227,19 +227,19 @@ int bStrNICmp(const char *s1, const char *s2, int n) {
         }
     }
 
-    if (n < 0) {
-        return 0;
-    }
+    if (n >= 0) {
+        if (*s1 == '\0') {
+            if (*s2 == '\0') {
+                return bToUpper(s1[-1]) - bToUpper(s2[-1]);
+            }
 
-    if (*s1 == '\0') {
-        if (*s2 == '\0') {
-            return bToUpper(s1[-1]) - bToUpper(s2[-1]);
+            return -1;
         }
 
-        return -1;
+        return 1;
     }
 
-    return 1;
+    return 0;
 }
 
 int bStrNCmp(const char *s1, const char *s2, int n) {

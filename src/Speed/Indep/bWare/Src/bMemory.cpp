@@ -821,8 +821,10 @@ void bMemoryInit() {
         eARAMMM.Init();
         eARAMMM.Alloc();
 
-        uintptr_t heap_lo = (reinterpret_cast<uintptr_t>(OSGetArenaLo()) + 0x1fU) & 0xffffffe0;
-        uintptr_t heap_hi = reinterpret_cast<uintptr_t>(OSGetArenaHi()) & 0xffffffe0;
+        void *new_lo = OSGetArenaLo();
+        void *new_hi = OSGetArenaHi();
+        uintptr_t heap_hi = reinterpret_cast<uintptr_t>(new_hi) & 0xffffffe0;
+        uintptr_t heap_lo = (reinterpret_cast<uintptr_t>(new_lo) + 0x1fU) & 0xffffffe0;
         int available_size = heap_hi - heap_lo;
 
         if ((main_pool_size < 1) || (available_size <= main_pool_size)) {
@@ -837,7 +839,7 @@ void bMemoryInit() {
             bFunkGameCube("CODEINE", 24, 0, 0);
         }
 
-        void *main_memory = OSAllocFromHeap(heap, main_pool_size - 0x40000);
+        void *main_memory = OSAlloc(main_pool_size - 0x40000);
         bInitMemoryPool(0, main_memory, main_pool_size - 0x40000, "Main Pool");
         bInitMemoryPool(GetVirtualMemoryPoolNumber(), reinterpret_cast<void *>(eARAMMM.mVirtualBaseAddr), eARAMMM.mARamSize,
                         GetVirtualMemoryPoolName());
