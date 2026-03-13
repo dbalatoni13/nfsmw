@@ -148,11 +148,13 @@ int JoylogBuffer::AddEntry(JoylogBufferEntry *entry, int position) {
     unsigned char *pbuf = reinterpret_cast<unsigned char *>(this) + buffer_index;
     pbuf[0] = static_cast<unsigned char>(entry->ChannelNumber + entry->DataSize * 16);
     unsigned int data = entry->Data;
+    pbuf++;
     for (int byte_num = 0; byte_num < entry->DataSize; byte_num++) {
-        pbuf[1 + byte_num] = static_cast<unsigned char>(data);
+        pbuf[byte_num] = static_cast<unsigned char>(data);
         data >>= 8;
     }
-    return position + entry->DataSize + 1;
+    int result = entry->DataSize + 1;
+    return position + result;
 }
 
 int JoylogBuffer::GetEntry(JoylogBufferEntry *entry, int position) {
