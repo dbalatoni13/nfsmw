@@ -105,9 +105,9 @@ void BoxInFormation::getPosition(int idx, float scale, UMath::Vector3 &pos) {
 
 // Functionally matching
 void BoxInFormation::Update(float dT, IPursuit *pursuit) {
-    float finisher = pursuit->TimeToFinisherAttempt();
+    float scale = pursuit->TimeToFinisherAttempt() / GetTimeToFinisher();
     float ftight = (tightness * 0.2f) + 0.2f;
-    float scale = (finisher / GetTimeToFinisher() * ftight) + (1.0f - ftight);
+    scale = scale * ftight + (1.0f - ftight);
 
     for (int i = 0; i < 4; i++) {
         UMath::Vector3 pos;
@@ -160,9 +160,9 @@ void RollingBlockFormation::getPosition(int idx, float scale, UMath::Vector3 &po
 
 // Functionally matching
 void RollingBlockFormation::Update(float dT, IPursuit *pursuit) {
-    float finisher = pursuit->TimeToFinisherAttempt();
+    float scale = pursuit->TimeToFinisherAttempt() / GetTimeToFinisher();
     float ftight = tightness * 0.4f;
-    float scale = (finisher / GetTimeToFinisher() * ftight) + (1.0f - ftight);
+    scale = scale * ftight + (1.0f - ftight);
 
     for (int i = 0; i < 5; i++) {
         UMath::Vector3 pos;
@@ -2035,9 +2035,9 @@ void AIPursuit::OnDebugDraw() {
 }
 
 void AIPursuit::EndPursuitEnteringSafehouse() {
+    mEvadeLevel = 1.0f;
     mPursuitStatus = PS_EVADED;
     mEnterSafehouseOnDestruct = true;
-    mEvadeLevel = 1.0f;
 }
 
 void AIPursuit::AddRoadBlock(IRoadBlock *roadblock) {

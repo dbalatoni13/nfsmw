@@ -42,7 +42,6 @@ Gps::~Gps() {
     mRoadNav.CancelPathFinding();
     RemoveTask(mTask);
     if (mArrowModel) {
-        mArrowModel->UnInit();
         delete mArrowModel;
     }
     mArrowModel = nullptr;
