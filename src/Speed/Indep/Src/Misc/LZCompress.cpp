@@ -17,7 +17,7 @@ unsigned int LZGetMaxCompressedSize(unsigned int source_data_size) {
 }
 
 static int GetTableHash(unsigned char *pData) {
-    return ((pData[0] << 6) ^ (pData[1] << 3) ^ pData[2]) & 0x1fff;
+    return (((pData[2] << 8) ^ (pData[1] << 4) ^ pData[0]) * 0x9e5f) & 0x1fff;
 }
 
 static int Compare(unsigned char *a, unsigned char *b, int max) {
