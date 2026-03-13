@@ -70,6 +70,26 @@ void WriteFreekerBaseAddressBeacon();
 
 bool bInitDisculatorDriver(const char *dir_filename, const char *data_filename);
 
+#ifdef MILESTONE_OPT
+void bMonitorService();
+
+extern bool gJuiceEnabled;
+
+namespace Juice {
+class GameHook {
+  public:
+    static GameHook *Instance();
+    void AssertLog(int error_type, const char *message0, const char *message1, const char *message2, const char *message3);
+};
+
+class ReplayManager {
+  public:
+    static ReplayManager *Instance();
+    void StopReplaying();
+};
+} // namespace Juice
+#endif
+
 class RaceStarter {
   public:
     static void StartSkipFERace();
@@ -103,7 +123,15 @@ void SeedRandomNumber() {
 
 void InitBigFiles() {
     if (bFileExists("NFS\\ZDIR.BIN")) {
+#ifdef MILESTONE_OPT
+        DisculatorDriver *driver = DisculatorDriver::Create("NFS\\ZDIR.BIN", "NFS\\ZZDATA");
+        if (driver) {
+            RealFile::AddDevice(driver);
+            RealFile::AddSearchLocation("DVDV:\\", true);
+        }
+#else
         bInitDisculatorDriver("NFS\\ZDIR.BIN", "NFS\\ZZDATA");
+#endif
     }
 }
 
@@ -206,11 +234,13 @@ void VerifyJoylogChecksum() {
     if (!Joylog::IsCapturing() && !Joylog::IsReplaying()) {
         return;
     }
+#ifndef MILESTONE_OPT
     if (Joylog::IsCapturing()) {
         Joylog::AddData(bDefaultSeed, 32, JOYLOG_CHANNEL_RANDOM);
     } else if (Joylog::IsReplaying()) {
         bDefaultSeed = Joylog::GetData(32, JOYLOG_CHANNEL_RANDOM);
     }
+#endif
     uint16 world_checksum = 0;
     {
         const IVehicle::List &vehicles = IVehicle::GetList(VEHICLE_ALL);
@@ -228,6 +258,7 @@ void VerifyJoylogChecksum() {
         random_seed_checksum = 0;
     }
     uint16 real_loop_counter_checksum = RealLoopCounter;
+#ifndef MILESTONE_OPT
     uint16 current_checksum;
     int checksum_error = 0;
     if (Joylog::IsReplaying()) {
@@ -255,6 +286,38 @@ void VerifyJoylogChecksum() {
         bBreak();
         Joylog::StopReplaying();
     }
+#else
+    char checksum_error;
+    if (!Joylog::IsReplaying()) {
+        Joylog::AddData(world_checksum, 16, JOYLOG_CHANNEL_CHECKSUM);
+        Joylog::AddData(menu_checksum, 16, JOYLOG_CHANNEL_CHECKSUM);
+        Joylog::AddData(random_seed_checksum, 16, JOYLOG_CHANNEL_CHECKSUM);
+        Joylog::AddData(real_loop_counter_checksum, 16, JOYLOG_CHANNEL_CHECKSUM);
+        checksum_error = '\0';
+    } else {
+        uint16 prev_world_checksum = Joylog::GetData(16, JOYLOG_CHANNEL_CHECKSUM);
+        uint16 prev_menu_checksum = Joylog::GetData(16, JOYLOG_CHANNEL_CHECKSUM);
+        checksum_error = world_checksum != prev_world_checksum;
+        if (menu_checksum != prev_menu_checksum) {
+            checksum_error = static_cast<char>(checksum_error + 1);
+        }
+        if (random_seed_checksum != Joylog::GetData(16, JOYLOG_CHANNEL_CHECKSUM)) {
+            checksum_error = static_cast<char>(checksum_error + 1);
+        }
+        if (real_loop_counter_checksum != Joylog::GetData(16, JOYLOG_CHANNEL_CHECKSUM)) {
+            checksum_error = static_cast<char>(checksum_error + 1);
+        }
+    }
+    if (checksum_error != '\0') {
+        if (!gJuiceEnabled) {
+            bBreak();
+            Joylog::StopReplaying();
+        } else {
+            Juice::GameHook::Instance()->AssertLog(0, "VerifyJoylogChecksum", "Replay", "Checksum mismatch", "");
+            Juice::ReplayManager::Instance()->StopReplaying();
+        }
+    }
+#endif
 }
 
 int TweakerPauseCamera = 0;
@@ -347,21 +410,30 @@ void MiniMainLoop() {
     static int recursion_checker = 0;
     static int previous_ticks = 0;
 
+#ifdef MILESTONE_OPT
+    bMonitorService();
+#endif
     bThreadYield(8);
+#ifndef MILESTONE_OPT
     Sim::Suspend();
+#endif
     float dt = bGetTickerDifference(previous_ticks);
     previous_ticks = bGetTicker();
     PrepareRealTimestep(dt * 0.001f);
     ServiceResourceLoading();
+#ifndef MILESTONE_OPT
     ServiceFileStats();
     MainLoopCheckForFatalDiscError();
+#endif
     IOModule::GetIOModule().Update();
     FEManager::Get()->Update();
     TheTrackStreamer.ServiceGameState();
     TheTrackStreamer.ServiceNonGameState();
+#ifndef MILESTONE_OPT
     if (g_pEAXSound) {
         g_pEAXSound->Update(RealTimeElapsed);
     }
+#endif
     eDisplayFrame();
     AdvanceRealTime();
     recursion_checker--;

@@ -525,14 +525,22 @@ int ServiceResourceLoading() {
 
     while (NumDelayedResourceCallbacks != 0) {
         ProfileNode profile_node("TODO2", 0);
+#ifdef EA_PLATFORM_GAMECUBE
         void (*pCallback)(void *) = DelayedResourceCallbacks[0].pCallback;
         void *callbackParam = DelayedResourceCallbacks[0].Param;
+#else
+        DelayedResourceCallback drc = DelayedResourceCallbacks[0];
+#endif
         if (NumDelayedResourceCallbacks > 1) {
             bOverlappedMemCpy(&DelayedResourceCallbacks[0], &DelayedResourceCallbacks[1],
                               NumDelayedResourceCallbacks * sizeof(DelayedResourceCallback));
         }
         NumDelayedResourceCallbacks--;
+#ifdef EA_PLATFORM_GAMECUBE
         pCallback(callbackParam);
+#else
+        drc.pCallback(drc.Param);
+#endif
     }
     ServiceQueuedFiles();
     if (NumResourcesBeingLoaded != 0) {
