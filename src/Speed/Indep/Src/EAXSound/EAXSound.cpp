@@ -182,6 +182,7 @@ struct CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<
     void OnReceive(Sim::Packet *) override;
     void OnClose() override;
     Sim::ConnStatus OnStatusCheck() override;
+    void UpdateState(float dT);
     static Sim::Connection *Construct(const Sim::ConnectionData &data);
 };
 

@@ -73,6 +73,7 @@ struct SFXCTL_Physics : public SFXCTL {
     void InitSFX() override;
 
     void MsgRevOff(const MAIEngineRev &message);
+    void UpdateNIS(float t, float dt);
 
     float GetPhysTRQ() { return PhysicsTRQ; }
 };

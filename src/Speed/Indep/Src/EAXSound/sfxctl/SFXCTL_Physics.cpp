@@ -68,3 +68,44 @@ void SFXCTL_AIPhysics::UpdateTorque(float t) {
 SndBase::TypeInfo *SFXCTL_TruckPhysics::GetTypeInfo() const { return &s_TypeInfo; }
 
 char *SFXCTL_TruckPhysics::GetTypeName() const { return s_TypeInfo.typeName; }
+
+void SFXCTL_Physics::UpdateNIS(float t, float dt) {
+    if (!NISRevingEnabled || !bPlayerEngEnable) {
+        eCurNisRevingState = NIS_DISABLED;
+        TimeIntoRev = 0.0f;
+        NISRPM = 0.0f;
+        NISTRQ = 0.0f;
+        return;
+    }
+
+    switch (eCurNisRevingState) {
+    case NIS_OFF:
+        TimeIntoRev = 0.0f;
+        NISRPM = PhysicsRPM;
+        NISTRQ = PhysicsTRQ;
+        if (PattternPlay) {
+            eCurNisRevingState = NIS_PATTERN_ON;
+        }
+        break;
+    case NIS_PATTERN_ON:
+        TimeIntoRev += t;
+        NISRPM += dt * 1000.0f;
+        NISTRQ += dt * 100.0f;
+        if (TimeIntoRev > 1.0f) {
+            eCurNisRevingState = NIS_MERGE_WITH_PHYSICS;
+        }
+        break;
+    case NIS_MERGE_WITH_PHYSICS:
+        TimeIntoRev += t;
+        NISRPM += (PhysicsRPM - NISRPM) * (t * 2.0f);
+        NISTRQ += (PhysicsTRQ - NISTRQ) * (t * 2.0f);
+        if (TimeIntoRev > 2.0f) {
+            eCurNisRevingState = NIS_OFF;
+            TimeIntoRev = 0.0f;
+        }
+        break;
+    default:
+        eCurNisRevingState = NIS_OFF;
+        break;
+    }
+}

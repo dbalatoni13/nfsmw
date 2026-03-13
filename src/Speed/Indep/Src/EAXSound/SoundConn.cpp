@@ -29,3 +29,17 @@ Sim::Connection *CarSoundConn::Construct(const Sim::ConnectionData &data) {
 Sim::Connection *HeliSoundConn::Construct(const Sim::ConnectionData &data) {
     return new HeliSoundConn(data);
 }
+
+void CarSoundConn::UpdateState(float dT) {
+    if (mState == nullptr) {
+        mConnected = false;
+        return;
+    }
+
+    if (!mState->mAssetsLoaded) {
+        mConnected = false;
+        return;
+    }
+
+    mConnected = true;
+}

@@ -34,6 +34,7 @@ struct SFXCTL_HybridMotor : public SFXCTL {
     int GetController(int Index) override;
     void InitSFX() override;
     void AttachController(SFXCTL *) override;
+    void UpdateDualMixEng(float t);
 };
 
 #endif

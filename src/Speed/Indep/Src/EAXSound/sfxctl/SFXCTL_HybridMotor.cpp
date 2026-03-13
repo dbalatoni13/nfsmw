@@ -43,3 +43,27 @@ void SFXCTL_HybridMotor::AttachController(SFXCTL *ctrl) {
         break;
     }
 }
+
+void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
+    float shiftVol = 0.0f;
+    float accelVol = 0.0f;
+    float engineTrq = 0.0f;
+
+    if (m_pShiftingCtl != nullptr) {
+        shiftVol = m_pShiftingCtl->GetShiftingVOL();
+    }
+    if (m_pAccelTranCtl != nullptr) {
+        accelVol = m_pAccelTranCtl->m_InterpEngVol.CurValue;
+    }
+    if (m_pEngineCtl != nullptr) {
+        engineTrq = m_pEngineCtl->m_fEng_Trq;
+    }
+
+    m_EngVolAEMS = static_cast<int>(shiftVol);
+    m_EngVolAccelGinsu = static_cast<int>(accelVol);
+    m_EngVolDecelGinsu = static_cast<int>(engineTrq);
+
+    SetDMIX_Input(DMX_VOL, m_EngVolAEMS);
+    SetDMIX_Input(DMX_FREQ, m_EngVolAccelGinsu);
+    SetDMIX_Input(DMX_PITCH, m_EngVolDecelGinsu);
+}

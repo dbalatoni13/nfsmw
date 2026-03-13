@@ -62,3 +62,42 @@ void SFXCTL_Shifting::UpdateMixerOutputs() {
     int downShifting = IsDownShifting() ? 0x7FFF : 0;
     SetDMIX_Input(2, downShifting);
 }
+
+void SFXCTL_Shifting::UpdateGearShiftState(float t) {
+    if (m_pEngineCtl == nullptr || m_pEngineCtl->m_pPhysicsCtl == nullptr) {
+        CleanUpShiftFX();
+        return;
+    }
+
+    Gear curGear = GetCurGear();
+    Gear lastGear = GetLastGear();
+    if (curGear != lastGear) {
+        eShiftState = (curGear > lastGear) ? SHFT_UP_DISENGAGE : SHFT_DOWN_DISENGAGE;
+        eShiftStageChanged = eShiftState;
+        m_bPendingNeedShiftSound = true;
+        tShiftDelay = 0.1f;
+        RPM_AtShift = m_pEngineCtl->m_pPhysicsCtl->PhysicsRPM;
+    }
+
+    if (tShiftDelay > 0.0f) {
+        tShiftDelay -= t;
+        if (tShiftDelay <= 0.0f) {
+            eShiftState = IsDownShifting() ? SHFT_DOWN_ENGAGING_RISE : SHFT_UP_ENGAGING;
+            eShiftStageChanged = eShiftState;
+        }
+    }
+
+    m_InterpShiftRPM.Update(t, m_pEngineCtl->m_fEng_RPM);
+    m_InterpShiftTorque.Update(t, IsDownShifting() ? 0.5f : 1.0f);
+    m_InterpShiftVol.Update(t, IsDownShifting() ? 0.6f : 1.0f);
+
+    if (m_bPendingNeedShiftSound && tShiftDelay <= 0.0f) {
+        m_bNeed_ShiftGearSnd = true;
+        m_bPendingNeedShiftSound = false;
+    }
+
+    if (eShiftState == SHFT_UP_ENGAGING || eShiftState == SHFT_DOWN_ENGAGING_REATTACH) {
+        eShiftState = SHFT_NONE;
+        eShiftStageChanged = SHFT_NONE;
+    }
+}

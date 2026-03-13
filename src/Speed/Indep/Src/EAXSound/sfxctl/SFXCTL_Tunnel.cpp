@@ -15,3 +15,10 @@ void SFXCTL_Tunnel::Destroy() {}
 void SFXCTL_Tunnel::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
 }
+
+void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
+    float target = (m_pEAXCar != nullptr) ? 1.0f : 0.0f;
+    ReflRamp.Update(t, target);
+    SetDMIX_Input(DMX_VOL, static_cast<int>(ReflRamp.GetValue() * 32767.0f));
+    SetDMIX_Input(DMX_PITCH, static_cast<int>(ReflRamp.GetValue() * 4096.0f));
+}

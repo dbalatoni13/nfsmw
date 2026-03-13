@@ -82,6 +82,7 @@ struct SFXCTL_Shifting : public SFXCTL {
     void SetupSFX(CSTATE_Base *_StateBase) override;
     void AttachController(SFXCTL *) override;
     void UpdateMixerOutputs() override;
+    void UpdateGearShiftState(float t);
 
     bool IsDownShifting() {
         return static_cast<unsigned int>(eShiftState - SHFT_DOWN_DISENGAGE) < 4u;

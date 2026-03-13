@@ -25,6 +25,7 @@ struct SFXCTL_Tunnel : public SFXCTL {
     void Destroy() override;
 
     void EndTunnelVerb();
+    void UpdateDriveBySnds(float t);
 };
 
 #endif
