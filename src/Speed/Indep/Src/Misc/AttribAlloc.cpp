@@ -25,6 +25,8 @@ void DefaultAttribAllocator::Free(void *ptr, std::size_t bytes, const char *name
     gFastMem.Free(ptr, bytes, name);
 }
 
+static DefaultAttribAllocator sDefaultAttribAlloc;
+
 class HighAttribAlloc : public IAttribAllocator {
   public:
     void *Allocate(std::size_t bytes, const char *name) override;

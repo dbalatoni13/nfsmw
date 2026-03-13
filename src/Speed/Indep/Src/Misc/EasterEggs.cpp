@@ -12,6 +12,8 @@ extern int MikeMannBuild;
 extern EAXSound *g_pEAXSound;
 extern EasterEggs::EasterEggsData StaticEasterEggsTable[];
 
+EasterEggs gEasterEggs;
+
 EasterEggs::EasterEggs() {
     NumberOfCurrentButtons = 0;
     UnlockMessage = 0;

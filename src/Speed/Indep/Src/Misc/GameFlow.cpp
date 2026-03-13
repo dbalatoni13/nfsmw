@@ -29,6 +29,7 @@
 #include "bFile.hpp"
 
 GameFlowManager TheGameFlowManager; // size: 0x24
+static Timer last_any_joy;
 
 void RenderTrackMarkers(eView *view) {}
 

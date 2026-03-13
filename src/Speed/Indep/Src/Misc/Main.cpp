@@ -76,6 +76,8 @@ class RaceStarter {
 };
 extern int SkipFE;
 
+FastMem gFastMem;
+
 Timer RealTimer;
 
 extern bool twkDumpProfileMarks;
