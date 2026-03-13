@@ -879,17 +879,14 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
 
             if (flags & FL_SIGNED) {
                 if (flags & FL_NEGATIVE) {
-                    prefix[1] = prefix[1];
                     prefixSz = 1;
-                    prefix[0] = '-';
+                    *reinterpret_cast<unsigned short *>(prefix) = 0x2d00 | static_cast<unsigned char>(prefix[1]);
                 } else if (flags & FL_SIGN) {
-                    prefix[1] = prefix[1];
                     prefixSz = 1;
-                    prefix[0] = '+';
+                    *reinterpret_cast<unsigned short *>(prefix) = 0x2b00 | static_cast<unsigned char>(prefix[1]);
                 } else if (flags & FL_SIGNSP) {
-                    prefix[1] = prefix[1];
                     prefixSz = 1;
-                    prefix[0] = ' ';
+                    *reinterpret_cast<unsigned short *>(prefix) = 0x2000 | static_cast<unsigned char>(prefix[1]);
                 }
             }
 
@@ -899,10 +896,10 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
             }
 
             if (padding > 0 && !(flags & (FL_LEFT | FL_LEADZERO))) {
-                do {
+                while (padding != 0) {
                     _stuff_char(output_info, ' ', &outLen);
                     padding--;
-                } while (padding != 0);
+                }
             }
 
             if (prefixSz > 0) {
@@ -910,10 +907,10 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
             }
 
             if (padding > 0 && !(flags & FL_LEFT)) {
-                do {
+                while (padding != 0) {
                     _stuff_char(output_info, '0', &outLen);
                     padding--;
-                } while (padding != 0);
+                }
             }
 
             _stuff_str(output_info, stringOut, stringLength, &outLen);
