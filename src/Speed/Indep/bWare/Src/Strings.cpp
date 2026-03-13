@@ -225,23 +225,25 @@ int bStrNICmp(const char *s1, const char *s2, int n) {
         return 1;
     }
 
-    while (n-- != 0) {
+    for (;;) {
+        if (n-- == 0) {
+            break;
+        }
         char c1 = *s1;
-        unsigned int c2;
 
         if (c1 == '\0') {
             break;
         }
 
-        c2 = static_cast<unsigned char>(*s2);
-        if (c2 == 0) {
+        char c2 = *s2;
+        if (c2 == '\0') {
             break;
         }
 
         s1 = s1 + 1;
         c1 = bToUpper(c1);
         s2 = s2 + 1;
-        c2 = static_cast<unsigned char>(bToUpper(static_cast<char>(c2)));
+        c2 = bToUpper(c2);
         if (c1 != c2) {
             break;
         }
