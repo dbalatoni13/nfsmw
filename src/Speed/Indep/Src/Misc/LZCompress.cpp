@@ -633,21 +633,21 @@ static void HUFF_init(HuffEncodeContext *ctx) {
 
 static int HUFF_minrep(HuffEncodeContext *ctx, unsigned int value, unsigned int level) {
     int result;
-    if (level == 0) {
-        result = 0;
-        if (value != 0) {
-            result = 0x14;
-            if (value < 0xfc) {
-                result = ctx->bitsarray[ctx->clue] + ctx->repbits[value] * 2 + 3;
-            }
-        }
-    } else {
+    if (level != 0) {
         result = HUFF_minrep(ctx, value, level - 1);
         if (ctx->count[ctx->clue + level] != 0) {
             int alt = HUFF_minrep(ctx, value - (value / level) * level, level - 1);
             alt = alt + ctx->bitsarray[ctx->clue + level] * static_cast<int>(value / level);
             if (alt < result) {
                 result = alt;
+            }
+        }
+    } else {
+        result = 0;
+        if (value != 0) {
+            result = 0x14;
+            if (value < 0xfc) {
+                result = ctx->bitsarray[ctx->clue] + ctx->repbits[value] * 2 + 3;
             }
         }
     }
