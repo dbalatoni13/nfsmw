@@ -14,4 +14,24 @@
 
 #include "Speed/Indep/Src/Frontend/HUD/FeRaceOverMessage.cpp"
 
+#include "Speed/Indep/Src/Frontend/HUD/FeGetawayMeter.cpp"
+
+#include "Speed/Indep/Src/Frontend/HUD/FeHeatMeter.cpp"
+
+#include "Speed/Indep/Src/Frontend/HUD/FeCostToState.cpp"
+
+#include "Speed/Indep/Src/Frontend/HUD/FeReputation.cpp"
+
+#include "Speed/Indep/Src/Frontend/HUD/FeNitrousGauge.cpp"
+
+#include "Speed/Indep/Src/Frontend/HUD/FESpeedBreakerMeter.cpp"
+
+#include "Speed/Indep/Src/Frontend/HUD/FeEngineTempGauge.cpp"
+
+#include "Speed/Indep/Src/Frontend/HUD/FeSpeedometer.cpp"
+
+#include "Speed/Indep/Src/Frontend/HUD/FeTachometer.cpp"
+
+#include "Speed/Indep/Src/Frontend/HUD/FeWrongWIndi.cpp"
+
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/CustomTuning.cpp"
