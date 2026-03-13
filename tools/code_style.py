@@ -26,8 +26,9 @@ ps2_types_path = os.path.join(root_dir, "symbols", "PS2", "PS2_types.nothpp")
 CPP_EXTS = {".c", ".cc", ".cpp", ".h", ".hh", ".hpp"}
 HEADER_EXTS = {".h", ".hh", ".hpp"}
 
-# Default clang-format allowlist. This is about limiting churn, not guaranteeing
-# byte-match safety.
+# Seed default for branch-wide clang-format probes: keep the automatic bucket tiny
+# and limited to the UI-heavy Frontend/FEng directories. Broader C/C++ stays
+# audit-first and opt-in.
 DEFAULT_FORMAT_CPP_PREFIXES = (
     "src/Speed/Indep/Src/Frontend/",
     "src/Speed/Indep/Src/FEng/",
@@ -925,7 +926,7 @@ def build_parser() -> argparse.ArgumentParser:
     fmt = subparsers.add_parser(
         "format",
         parents=[shared],
-        help="Run clang-format on the default allowlisted files by default",
+        help="Run clang-format on the tiny Frontend/FEng default allowlist by default",
     )
     fmt.add_argument(
         "--category",
