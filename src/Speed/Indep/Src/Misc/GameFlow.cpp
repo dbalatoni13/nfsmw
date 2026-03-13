@@ -183,7 +183,29 @@ extern const char *HudSingleRaceTexturePackFilename;
 extern const char *HudSplitScreenTexturePackFilename;
 extern const char *HudDragSplitScreenTexturePackFilename;
 extern const char *DynamicTexturePackFilename;
+extern const char *CarTexturePackFilename;
+extern const char *WheelsTexturePackFilename;
+extern const char *WheelsModelPackFilename;
+extern const char *SpoilerModelPackFilename;
+extern const char *SpoilerCarreraModelPackFilename;
+extern const char *SpoilerHatchModelPackFilename;
+extern const char *SpoilerPorschesModelPackFilename;
+extern const char *RoofScoopModelPackFilename;
+extern const char *BrakesModelPackFilename;
+extern const char *BrakesTexturePackFilename;
 extern int dummy_32338;
+
+void eLoadStreamingTexturePack(const char *, void (*)(void *), void *, int);
+void eLoadStreamingSolidPack(const char *, void (*)(void *), void *, int);
+void eWaitForStreamingTexturePackLoading(const char *);
+void eWaitForStreamingSolidPackLoading(const char *);
+void eLoadStreamingTexture(unsigned int *, int, void (*)(void *), void *, int);
+int eIsWidescreen();
+void bBreak();
+
+namespace Attrib { class Vault; }
+Attrib::Vault *InitializeSingleAttributeVault(void *, const char *, unsigned char **, unsigned int);
+extern Attrib::Vault *gDatabaseVault;
 
 #include "Speed/Indep/Src/Misc/EasterEggs.hpp"
 extern EasterEggs gEasterEggs;
@@ -449,6 +471,73 @@ void UnloadMemoryFile(void *mem) {
     }
 }
 
+void LoadGlobalChunks() {
+    GlobalMemoryFile = LoadMemoryFile("Global\\GlobalMemoryFile.bin");
+    BlockUntilMemoryFileLoaded(GlobalMemoryFile);
+    InitLocalization();
+    int buf_size;
+    void *buf = bGetFile("GLOBAL\\ATTRIBUTES.BIN", &buf_size, 0x1040);
+    unsigned int allocFlags = GetVirtualMemoryAllocParams();
+    gDatabaseVault = InitializeSingleAttributeVault(buf, "db", nullptr, allocFlags);
+    bFree(buf);
+    ResourceFile *r = LoadResourceFile("GLOBAL\\GLOBALB.LZC", 1, 9, nullptr, nullptr, 0, 0);
+    r->ChangeFilenameForHotChunking("GLOBAL\\GLOBALB.BUN");
+    LoadFileIntoVirtualMemory("GLOBAL\\GLOBALB_VM_NGC.LZC", true, false);
+    LoadResourceFile(BrakesModelPackFilename, 6, 0, nullptr, nullptr, 0, 0);
+    LoadResourceFile(BrakesTexturePackFilename, 6, 0, nullptr, nullptr, 0, 0);
+    WaitForResourceLoadingComplete();
+    eLoadStreamingTexturePack(DynamicTexturePackFilename, nullptr, nullptr, 0);
+    eWaitForStreamingTexturePackLoading(DynamicTexturePackFilename);
+    LoadCurrentLanguage();
+    if (eIsWidescreen() == 0) {
+        LoadResourceFile("GLOBAL\\THINSCREEN_GLOBAL.BUN", 1, 0, nullptr, nullptr, 0, 0);
+    } else {
+        LoadResourceFile("GLOBAL\\WIDESCREEN_GLOBAL.BUN", 1, 0, nullptr, nullptr, 0, 0);
+    }
+    if (GetTextureInfo(0xab0e817d, 0, 0) == nullptr) {
+        unsigned int hash = 0xab0e817d;
+        eLoadStreamingTexture(&hash, 1, nullptr, nullptr, 0);
+    }
+    WaitForResourceLoadingComplete();
+    eDisplayFrame();
+    eLoadStreamingTexturePack(CarTexturePackFilename, nullptr, nullptr, 0);
+    eLoadStreamingTexturePack(WheelsTexturePackFilename, nullptr, nullptr, 0);
+    eLoadStreamingSolidPack(WheelsModelPackFilename, nullptr, nullptr, 0);
+    eLoadStreamingSolidPack(SpoilerModelPackFilename, nullptr, nullptr, 0);
+    eLoadStreamingSolidPack(SpoilerCarreraModelPackFilename, nullptr, nullptr, 0);
+    eLoadStreamingSolidPack(SpoilerHatchModelPackFilename, nullptr, nullptr, 0);
+    eLoadStreamingSolidPack(SpoilerPorschesModelPackFilename, nullptr, nullptr, 0);
+    eLoadStreamingSolidPack(RoofScoopModelPackFilename, nullptr, nullptr, 0);
+    eWaitForStreamingTexturePackLoading(nullptr);
+    eWaitForStreamingSolidPackLoading(nullptr);
+    WaitForResourceLoadingComplete();
+    FinishedLoadingGlobalSuccesful = 1;
+    GenerateMissingCarParts();
+    int size = 0x4cf400;
+    int car_loader_size = CarLoaderPoolSizes[0] * 0x400;
+    if (EmergencySaveMemory != 0) {
+        car_loader_size -= 0x40000;
+        size = 0x48f400;
+    }
+    InitMemoryPool__13TrackStreameri(&TheTrackStreamer, size + car_loader_size);
+    AllowCompressedStreamingTexturesInThisPoolNum = 7;
+    SetMemoryPoolSize__9CarLoaderi(&TheCarLoader, car_loader_size);
+    InitializeSoundLoad();
+    BlockWhileQueuedFileBusy();
+    UnloadMemoryFile(GlobalMemoryFile);
+    GlobalMemoryFile = nullptr;
+    bool sunset_exists = bFileExists("TRACKS/L2RA_Sunset.BUN") != 0;
+    if (Joylog::IsCapturing() != 0) {
+        Joylog::AddData(static_cast<int>(sunset_exists), 8, static_cast<JoylogChannel>(1));
+    } else if (Joylog::IsReplaying() != 0) {
+        bool prev_sunset_exists = Joylog::GetData(8, static_cast<JoylogChannel>(1)) != 0;
+        if (prev_sunset_exists != sunset_exists) {
+            bBreak();
+        }
+    }
+    LoadFrontEndVault(true);
+}
+
 RegionLoader TheRegionLoader;
 TrackLoader TheTrackLoader;
 int TrackStreamerLoadingBarUp;
@@ -531,6 +620,7 @@ void RegionLoader::LoadHandler() {
         pResourceInGameA = res;
         res->SetAllocationParams(ingamea_allocation_params, "InGameA_online_gc.bun");
         pResourceInGameA->BeginLoading(nullptr, nullptr);
+        pResourceInGameB_VM = LoadFileIntoVirtualMemory("GLOBAL\\INGAMEB_VM_NGC.BUN", false, false);
         pResourceInGameSplitScreen = nullptr;
         bool load_frontend = FEDatabase->IsSplitScreenMode() && FEDatabase->iNumPlayers == 2;
         if (load_frontend) {

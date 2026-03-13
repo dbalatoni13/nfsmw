@@ -78,8 +78,8 @@ void EasterEggs::ActivateEasterEgg(int egg) {
         if (type == EASTER_EGG_CARS) {
             UnlockAllThings = 1;
         } else if (type == EASTER_EGG_VISUAL_PARTS) {
-            SkipCareerIntro = 1;
             SkipDDayRaces = 1;
+            SkipCareerIntro = 1;
         } else if (type == EASTER_EGG_PERF_PARTS) {
             MikeMannBuild = 0;
         } else if (type == EASTER_EGG_DRIFT_PHYSICS) {
