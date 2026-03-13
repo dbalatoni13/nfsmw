@@ -5,6 +5,10 @@
 #include "Speed/Indep/Src/World/CarLoader.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/Src/Misc/Config.h"
+
+bool gPlayAnimStream = IsSoundEnabled ? true : false;
+CAnimPlayer TheAnimPlayer;
 
 struct CAnimMarker {
     static unsigned int mMarkerHash_StartCountdown;
@@ -13,12 +17,6 @@ struct CAnimMarker {
 extern AnimDirectory *TheAnimDirectory;
 void AnimLoader_NextStep();
 extern int AnimCfg_DisableWorldAnimations;
-
-enum eNISMemoryPool {
-    Main = 0,
-    TrackStream = 1,
-    CarPool = 2,
-};
 
 struct AnimDirectoryLayout {
     unsigned int mAnimSceneCount;
@@ -32,30 +30,41 @@ struct CAnimSceneNodeLayout {
     int mHandle;
 };
 
-struct CAnimResourceFileProxy : public bTNode<CAnimResourceFileProxy> {
-    ResourceFile *mResourceFile; // offset 0x8
-    void *mMemPointer;          // offset 0xC
-    eNISMemoryPool mMemoryPool;     // offset 0x10
+class CAnimResourceFileProxy : public bTNode<CAnimResourceFileProxy> {
+  public:
+    enum MemoryPool {
+        Main = 0,
+        TrackStream = 1,
+        CarPool = 2,
+    };
 
-    CAnimResourceFileProxy(ResourceFile *res_file_ptr, void *mem_ptr, eNISMemoryPool mem_pool_used)
-        : mResourceFile(res_file_ptr), //
-          mMemPointer(mem_ptr),        //
+    CAnimResourceFileProxy(ResourceFile *res_file_ptr, void *mem_ptr, MemoryPool mem_pool_used)
+        : mResourceFile(res_file_ptr),
+          mMemPointer(mem_ptr),
           mMemoryPool(mem_pool_used) {}
+    ~CAnimResourceFileProxy() {}
+
+    ResourceFile *mResourceFile;
+    void *mMemPointer;
+    MemoryPool mMemoryPool;
 };
 
-extern bTList<CAnimResourceFileProxy> gAnimLoader_ResourceFileList;
-extern AnimSceneLoadInfo gAnimLoader_Info;
-static bool gAnimLoader_InProgress;
-static int gAnimLoader_CurSharedFilePosition;
-static int gAnimLoader_CurSceneFilePosition;
-static void *gAnimLoader_MemPointer;
-static void *gAnimLoader_MovingPointer;
-static eNISMemoryPool gAnimLoader_UsingMemoryPool;
-extern int gAnimCfg_Small_NIS_Size;
+bTList<CAnimResourceFileProxy> gAnimLoader_ResourceFileList;
+
+bool CAnimPlayer::m_audioQueued = false;
+bool CAnimSettings::mDebugPrintEnabled = false;
+unsigned int CAnimMarker::mMarkerHash_StartCountdown = 0;
+
+AnimSceneLoadInfo gAnimLoader_Info;
+static bool gAnimLoader_InProgress = 0;
+static int gAnimLoader_CurSharedFilePosition = 0;
+static int gAnimLoader_CurSceneFilePosition = 0;
+static void *gAnimLoader_MemPointer = 0;
+static void *gAnimLoader_MovingPointer = 0;
+static CAnimResourceFileProxy::MemoryPool gAnimLoader_UsingMemoryPool = CAnimResourceFileProxy::Main;
+int gAnimCfg_Small_NIS_Size = 20000;
 extern int CarLoaderMemoryPoolNumber;
 void UpdateCopDoorPositions(float time_step);
-
-bool CAnimSettings::mDebugPrintEnabled = false;
 
 bool CAnimSettings::IsDebugPrintEnabled() {
     return mDebugPrintEnabled;
@@ -204,14 +213,14 @@ bool CAnimPlayer::Load(unsigned int anim_id, int camera_track_number, bool Disab
         TheTrackStreamer.BlockUntilLoadingComplete();
         TheTrackStreamer.MakeSpaceInPool(size_needed, true);
         gAnimLoader_MemPointer = TheTrackStreamer.AllocateUserMemory(size_needed, "NISMemory", 0);
-        gAnimLoader_UsingMemoryPool = CarPool;
+        gAnimLoader_UsingMemoryPool = CAnimResourceFileProxy::CarPool;
         if (gAnimLoader_MemPointer == nullptr) {
             TheCarLoader.MakeSpaceInPool(size_needed);
             gAnimLoader_MemPointer = bMalloc(size_needed, CarLoaderMemoryPoolNumber & 0xF | 0x2000);
-            gAnimLoader_UsingMemoryPool = TrackStream;
+            gAnimLoader_UsingMemoryPool = CAnimResourceFileProxy::TrackStream;
         }
     } else {
-        gAnimLoader_UsingMemoryPool = Main;
+        gAnimLoader_UsingMemoryPool = CAnimResourceFileProxy::Main;
         gAnimLoader_MemPointer = bMalloc(size_needed, 0x2000);
     }
 
@@ -237,12 +246,12 @@ bool CAnimPlayer::Unload(unsigned int anim_id) {
             CAnimResourceFileProxy *next_proxy = proxy->GetNext();
             if (proxy->mResourceFile != nullptr) {
                 UnloadResourceFile(proxy->mResourceFile);
-                if (proxy->mMemoryPool == TrackStream) {
+                if (proxy->mMemoryPool == CAnimResourceFileProxy::TrackStream) {
                     void *mem = proxy->mResourceFile->GetMemory();
                     if (mem != nullptr) {
                         TheTrackStreamer.FreeUserMemory(mem);
                     }
-                } else if (proxy->mMemoryPool == CarPool) {
+                } else if (proxy->mMemoryPool == CAnimResourceFileProxy::CarPool) {
                     void *mem = proxy->mResourceFile->GetMemory();
                     if (mem != nullptr) {
                         bFree(mem);

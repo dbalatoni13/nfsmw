@@ -19,6 +19,11 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+float g_TriggerMomentNISTime = 0;
+bool Tweak_TriggerMomentAlways = 0;
+
+int lbl_80415678[2] = { 0, 0x3DA3D70A };
+
 void ChooseArrestAnimation(int *cameraTrack, char *sceneName, int strLen) {
     IVehicle *playerVehicle = IVehicle::First(VEHICLE_PLAYERS);
     int heatLevel;

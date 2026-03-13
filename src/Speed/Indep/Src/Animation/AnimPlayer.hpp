@@ -1,12 +1,14 @@
 #ifndef ANIMATION_ANIMPLAYER_H
 #define ANIMATION_ANIMPLAYER_H
 
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
 #include "AnimScene.hpp"
 #include "AnimWorldScene.hpp"
+#include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 
 // total size: 0x1
 class CAnimSettings {
@@ -133,6 +135,15 @@ class CAnimPlayer {
     CAnimWorldScene *mWorldAnimScene;           // offset 0x8, size 0x4
 };
 
+struct CarAnimationState {
+    CarAnimationState();
+    CAnimCtrl *AnimCtrl;   // offset 0x0
+    IVehicle *mIVehicle;   // offset 0x4
+    int HaveLastCarPosition; // offset 0x8
+    int CarIndex;          // offset 0xC
+};
+
 extern CAnimPlayer TheAnimPlayer;
+extern CarAnimationState gCarAnimationStates[16];
 
 #endif

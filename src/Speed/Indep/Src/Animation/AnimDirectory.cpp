@@ -4,7 +4,7 @@
 #include "Speed/Indep/Src/Misc/SpeedChunks.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 
-AnimDirectory *TheAnimDirectory;
+AnimDirectory *TheAnimDirectory = nullptr;
 
 void LoadSceneCandidateData(bChunk *chunk) {
     CAnimSettings::IsDebugPrintEnabled();

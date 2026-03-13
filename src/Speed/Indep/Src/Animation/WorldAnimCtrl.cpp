@@ -4,8 +4,8 @@
 #include "Speed/Indep/Src/EAGL4Anim/MemoryPoolManager.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-static int NumWorldAnimCtrls;
-static int MaxNumWorldAnimCtrls;
+static int NumWorldAnimCtrls = 0;
+static int MaxNumWorldAnimCtrls = 0;
 
 struct WorldAnimInstanceDirectoryLayout {
     SlotPool *WorldAnimEntitySlotPool;
