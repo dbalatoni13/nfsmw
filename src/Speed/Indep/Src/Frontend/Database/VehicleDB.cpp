@@ -2,11 +2,13 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
+#include "Speed/Indep/Src/Misc/EasterEggs.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/fecooling.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/frontend.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/presetride.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitlevels.h"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 #include "types.h"
@@ -32,10 +34,12 @@ class CarPartDatabase {
     CarType GetCarType(unsigned int key);
     struct CarPart *GetCarPartByIndex(int index);
     int GetPartIndex(struct CarPart *part);
+    struct CarPart *NewGetCarPart(CarType cartype, int slot, unsigned int part_name_hash, struct CarPart *fallback, int index);
 };
 
 extern CarPartDatabase CarPartDB;
 PresetCar *FindFEPresetCar(unsigned int key);
+unsigned int bStringHashUpper(const char *text);
 
 namespace Physics {
 
@@ -225,6 +229,21 @@ void FECustomizationRecord::WriteRideIntoRecord(const RideInfo *ride) {
     for (int i = 0; i <= 0x8A; i++) {
         SetInstalledPart(i, ride->GetPart(i));
     }
+}
+
+void FECustomizationRecord::BecomePreset(PresetCar *preset) {
+    Default();
+
+    CarType cartype = CarPartDB.GetCarType(bStringHash(preset->CarTypeName));
+    for (int i = 0; i <= 0x8A; i++) {
+        unsigned int part_name_hash = preset->PartNameHashes[i];
+        if (part_name_hash > 1) {
+            struct CarPart *part = CarPartDB.NewGetCarPart(cartype, i, part_name_hash, nullptr, -1);
+            InstalledPartIndices[i] = static_cast< short >(CarPartDB.GetPartIndex(part));
+        }
+    }
+
+    Preset = bStringHashUpper(preset->PresetName);
 }
 
 void FEImpoundData::Default() {
@@ -610,29 +629,42 @@ FECareerRecord *FEPlayerCarDB::CreateNewCareerRecord() {
     return nullptr;
 }
 
+FEPlayerCarDB::MyCallback::~MyCallback() {}
+
 unsigned short FEPlayerCarDB::GetNumInfraction(GInfractionManager::InfractionType type, bool get_unserved) {
-    unsigned short total = 0;
-
-    for (int i = 0; i < 25; i++) {
-        if (IsCareerRecordValid(CareerRecords[i])) {
-            total += static_cast< unsigned short >(CareerRecords[i].GetNumInfraction(type, get_unserved));
+    struct NumInfraction : public MyCallback {
+        virtual unsigned int Callback(const FECareerRecord &record) const {
+            return record.GetNumInfraction(type, get_unserved);
         }
-    }
 
-    total += GetInfractionValue(get_unserved ? SoldHistoryUnservedInfractions : SoldHistoryServedInfractions, type);
+        GInfractionManager::InfractionType type;
+        bool get_unserved;
+    };
+
+    unsigned short total =
+        static_cast< unsigned short >((get_unserved ? SoldHistoryUnservedInfractions : SoldHistoryServedInfractions).GetValue(type));
+    NumInfraction callback;
+
+    callback.type = type;
+    callback.get_unserved = get_unserved;
+    total += static_cast< unsigned short >(ForAllCareerRecordsSum(callback));
     return total;
 }
 
 unsigned int FEPlayerCarDB::GetTotalNumInfractions(bool get_unserved) {
-    unsigned int total = 0;
-
-    for (int i = 0; i < 25; i++) {
-        if (IsCareerRecordValid(CareerRecords[i])) {
-            total += GetInfractionCount(get_unserved ? CareerRecords[i].GetInfractions(true) : CareerRecords[i].GetInfractions(false));
+    struct TotalNumInfractions : public MyCallback {
+        virtual unsigned int Callback(const FECareerRecord &record) const {
+            return record.GetInfractions(get_unserved).NumInfractions();
         }
-    }
 
-    total += GetInfractionCount(get_unserved ? SoldHistoryUnservedInfractions : SoldHistoryServedInfractions);
+        bool get_unserved;
+    };
+
+    unsigned int total = (get_unserved ? SoldHistoryUnservedInfractions : SoldHistoryServedInfractions).NumInfractions();
+    TotalNumInfractions callback;
+
+    callback.get_unserved = get_unserved;
+    total += ForAllCareerRecordsSum(callback);
     return total;
 }
 
@@ -652,63 +684,88 @@ unsigned short FEPlayerCarDB::GetNumInfractionsOnCar(unsigned int car_handle, bo
 }
 
 unsigned int FEPlayerCarDB::GetTotalBounty() {
-    unsigned int total = SoldHistoryBounty;
-
-    for (int i = 0; i < 25; i++) {
-        if (IsCareerRecordValid(CareerRecords[i])) {
-            total += CareerRecords[i].GetBounty();
+    struct Bounty : public MyCallback {
+        virtual unsigned int Callback(const FECareerRecord &record) const {
+            return record.GetBounty();
         }
-    }
+    };
 
-    return total;
+    Bounty callback;
+    return ForAllCareerRecordsSum(callback) + SoldHistoryBounty;
 }
 
 unsigned int FEPlayerCarDB::GetTotalEvadedPursuits() {
-    unsigned int total = SoldHistoryNumEvadedPursuits;
-
-    for (int i = 0; i < 25; i++) {
-        if (IsCareerRecordValid(CareerRecords[i])) {
-            total += CareerRecords[i].GetNumEvadedPursuits();
+    struct EvadedPursuits : public MyCallback {
+        virtual unsigned int Callback(const FECareerRecord &record) const {
+            return record.GetNumEvadedPursuits();
         }
-    }
+    };
 
-    return total;
+    EvadedPursuits callback;
+    return ForAllCareerRecordsSum(callback) + SoldHistoryNumEvadedPursuits;
 }
 
 unsigned int FEPlayerCarDB::GetTotalBustedPursuits() {
-    unsigned int total = SoldHistoryNumBustedPursuits;
-
-    for (int i = 0; i < 25; i++) {
-        if (IsCareerRecordValid(CareerRecords[i])) {
-            total += CareerRecords[i].GetNumBustedPursuits();
+    struct BustedPursuits : public MyCallback {
+        virtual unsigned int Callback(const FECareerRecord &record) const {
+            return record.GetNumBustedPursuits();
         }
-    }
+    };
 
-    return total;
+    BustedPursuits callback;
+    return ForAllCareerRecordsSum(callback) + SoldHistoryNumBustedPursuits;
 }
 
 unsigned int FEPlayerCarDB::GetNumImpoundedCars() {
-    unsigned int total = 0;
-
-    for (int i = 0; i < 25; i++) {
-        if (IsCareerRecordValid(CareerRecords[i]) && CareerRecords[i].TheImpoundData.IsImpounded()) {
-            total++;
+    struct IsImpounded : public MyCallback {
+        virtual unsigned int Callback(const FECareerRecord &record) const {
+            return record.TheImpoundData.IsImpounded();
         }
-    }
+    };
 
-    return total;
+    IsImpounded callback;
+    return ForAllCareerRecordsSum(callback);
+}
+
+unsigned int FEPlayerCarDB::GetTotalFines(bool get_unserved) {
+    struct Fines : public MyCallback {
+        virtual unsigned int Callback(const FECareerRecord &record) const {
+            return record.GetInfractions(get_unserved).GetFineValue();
+        }
+
+        bool get_unserved;
+    };
+
+    Fines callback;
+    callback.get_unserved = get_unserved;
+    return ForAllCareerRecordsSum(callback);
 }
 
 unsigned int FEPlayerCarDB::GetNumCareerCarsWithARecord() {
-    unsigned int total = 0;
+    struct NumCars : public MyCallback {
+        virtual unsigned int Callback(const FECareerRecord &record) const {
+            return 1;
+        }
+    };
+
+    NumCars callback;
+    return ForAllCareerRecordsSum(callback);
+}
+
+unsigned int FEPlayerCarDB::ForAllCareerRecordsSum(const MyCallback &callback) {
+    unsigned int val = 0;
 
     for (int i = 0; i < 200; i++) {
-        if (CarTable[i].IsValid() && CarTable[i].CareerHandle != 0xFF) {
-            total++;
+        FECarRecord *fe_car = GetCarByIndex(i);
+        if (fe_car->IsValid() && fe_car->MatchesFilter(0xF0002)) {
+            const FECareerRecord *record = GetCareerRecordByHandle(fe_car->CareerHandle);
+            if (record != nullptr) {
+                val += callback.Callback(*record);
+            }
         }
     }
 
-    return total;
+    return val;
 }
 
 void FEPlayerCarDB::BackupSoldCarHistory(unsigned char sold_car) {
@@ -724,12 +781,62 @@ void FEPlayerCarDB::BackupSoldCarHistory(unsigned char sold_car) {
     AddInfractions(SoldHistoryServedInfractions, careerRecord->GetInfractions(false));
 }
 
+unsigned int FEPlayerCarDB::GetPreferedCarName() {
+    unsigned int max_pursuits = 0;
+    unsigned int name = 0;
+
+    for (int i = 0; i < 200; i++) {
+        FECarRecord *fe_car = GetCarByIndex(i);
+        if (fe_car->IsValid() && fe_car->MatchesFilter(0xF0002)) {
+            FECareerRecord *career_record = GetCareerRecordByHandle(fe_car->CareerHandle);
+            if (career_record != nullptr) {
+                unsigned int pursuits = career_record->GetNumEvadedPursuits() + career_record->GetNumBustedPursuits();
+                if (pursuits > max_pursuits) {
+                    max_pursuits = pursuits;
+                    name = fe_car->GetNameHash();
+                }
+            }
+        }
+    }
+
+    return name;
+}
+
 int FEPlayerCarDB::GetNumCars(unsigned int filter) {
     int total = 0;
 
     for (int i = 0; i < 200; i++) {
         if (CarTable[i].IsValid() && CarTable[i].MatchesFilter(filter)) {
             total++;
+        }
+    }
+
+    return total;
+}
+
+int FEPlayerCarDB::GetNumPurchasedCars() {
+    int total = 0;
+
+    for (int i = 0; i < 200; i++) {
+        FECarRecord *record = &CarTable[i];
+        if (record->IsValid() && record->MatchesFilter(0xF0002) && (record->FilterBits & 0x40) == 0) {
+            total++;
+        }
+    }
+
+    return total;
+}
+
+int FEPlayerCarDB::GetNumAvailableCareerCars() {
+    int total = 0;
+
+    for (int i = 0; i < 200; i++) {
+        FECarRecord *record = &CarTable[i];
+        if (record->IsValid() && record->CareerHandle != 0xFF) {
+            FECareerRecord *career_record = GetCareerRecordByHandle(record->CareerHandle);
+            if (!career_record->TheImpoundData.IsImpounded()) {
+                total++;
+            }
         }
     }
 
@@ -764,6 +871,24 @@ void FEPlayerCarDB::Default() {
     SoldHistoryNumBustedPursuits = 0;
     ClearInfractions(SoldHistoryUnservedInfractions);
     ClearInfractions(SoldHistoryServedInfractions);
+}
+
+bool FEPlayerCarDB::IsBonusCar(const char *preset_name) {
+    unsigned int hash = FEHashUpper(preset_name);
+
+    if (hash == 0x03A94520) {
+        return true;
+    }
+
+    if (hash >= 0x0000965F && hash <= 0x00009666) {
+        return true;
+    }
+
+    if (hash >= 0x0013624E && hash <= 0x00136253) {
+        return true;
+    }
+
+    return hash == 0x2CF385B2 || hash == 0x2CF370F0 || hash == 0x34498EB2 || hash == 0xCB6AAF2F;
 }
 
 FECareerRecord *FEPlayerCarDB::GetCareerRecordByHandle(unsigned char handle) {
@@ -951,6 +1076,15 @@ char *FEPlayerCarDB::LoadFromBuffer(char *buffer, int bufsize) {
 
 int FEPlayerCarDB::GetSaveBufferSize() {
     return 0x8CC8;
+}
+
+void FEPlayerCarDB::AwardBonusCars() {
+    if (gEasterEggs.IsEasterEggUnlocked(EASTER_EGG_CASTROL)) {
+        unsigned int flags = FEDatabase->GetCareerSettings()->SpecialFlags;
+        if ((flags & 0x00040000) == 0) {
+            FEDatabase->GetCareerSettings()->SpecialFlags = flags | 0x00040000;
+        }
+    }
 }
 
 void FEPlayerCarDB::SetCarToPreset(unsigned int car, PresetCar *preset) {

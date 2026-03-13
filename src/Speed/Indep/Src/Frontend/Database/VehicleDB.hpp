@@ -167,7 +167,11 @@ class FECareerRecord {
 class FEPlayerCarDB {
   public:
     // total size: 0x4
-    class MyCallback {};
+    class MyCallback {
+      public:
+        virtual ~MyCallback();
+        virtual unsigned int Callback(const FECareerRecord &record) const = 0;
+    };
 
     FEPlayerCarDB();
     ~FEPlayerCarDB();
