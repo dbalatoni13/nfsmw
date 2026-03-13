@@ -351,13 +351,21 @@ int LZCompress(unsigned char *pSrc, unsigned int SrcSize, unsigned char *pDst) {
     return HUFFCompress(pSrc, SrcSize, pDst);
 }
 
-int32 LZDecompress(uint8 *pSrc, uint8 *pDst) {
+int HUFFDecompress(unsigned char *pSrc, unsigned char *pDst);
+int RAWDecompress(unsigned char *pSrc, unsigned char *pDst);
+
+unsigned int LZDecompress(uint8 *pSrc, uint8 *pDst) {
     LZHeader *header = reinterpret_cast<LZHeader *>(pSrc);
-    if (header->ID == 0x5a4c444a) {
+    switch (header->ID) {
+    case 0x5a4c444a:
         return JLZDecompress(pSrc, pDst);
-    } else if (header->ID == 0x504d4f43) {
+    case 0x504d4f43:
         return OldLZDecompress(pSrc, pDst);
-    } else {
+    case 0x46465548:
+        return HUFFDecompress(pSrc, pDst);
+    case 0x57574152:
+        return RAWDecompress(pSrc, pDst);
+    default:
         return 0;
     }
 }
