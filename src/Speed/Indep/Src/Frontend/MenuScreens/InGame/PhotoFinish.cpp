@@ -394,7 +394,7 @@ PhotoFinishScreen::~PhotoFinishScreen() {
 
     TheICEManager.SetGenericCameraToPlay(lbl_803E43DC, lbl_803E43DC);
     new ESndGameState(7, false);
-    SetSoundControlState(true, static_cast< eSNDCTLSTATE >(7), lbl_803E60C8);
+    SetSoundControlState(false, static_cast< eSNDCTLSTATE >(1), lbl_803E60C8);
     mActive = false;
 }
 

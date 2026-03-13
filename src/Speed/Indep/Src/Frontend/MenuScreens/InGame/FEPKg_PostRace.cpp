@@ -200,7 +200,7 @@ void StageStat::Draw() {
         return;
     }
 
-    char text[40];
+    char text[32];
     FEPrintf(Position, lbl_803E4CB4, PosNum);
     Time.PrintToString(text, 0);
     FEPrintf(GetDataObject(), lbl_803E4CF0, text);
@@ -241,7 +241,7 @@ void TollboothStat::Draw() {
         return;
     }
 
-    char text[40];
+    char text[32];
     FEPrintf(Position, lbl_803E4CB4, PosNum);
     Time.PrintToString(text, 0);
     FEPrintf(GetDataObject(), lbl_803E5084, text);
@@ -267,7 +267,7 @@ FEString *StatsPanel::GetCurrentString(const char *name) {
 
 void StatsPanel::Reset() {
     TheStats.DeleteAllElements();
-    iWidgetToAdd = 0;
+    iWidgetToAdd = 1;
 }
 
 void StatsPanel::Draw(unsigned int numPlayers) {

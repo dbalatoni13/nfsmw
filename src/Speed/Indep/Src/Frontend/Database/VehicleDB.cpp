@@ -257,15 +257,15 @@ void FEImpoundData::Default() {
 }
 
 void FEImpoundData::BecomeImpounded(eImpoundReasons reason) {
-    DaysBeforeRelease = 5;
-    ImpoundedState = reason;
     TimesBusted = MaxBusted;
+    ImpoundedState = reason;
+    DaysBeforeRelease = 5;
 }
 
 void FEImpoundData::NotifyPlayerPaidToRelease() {
-    DaysBeforeRelease = 0;
-    TimesBusted = 0;
     ImpoundedState = 0;
+    TimesBusted = 0;
+    DaysBeforeRelease = 0;
 }
 
 void FEImpoundData::NotifyPlayerUsedMarkerToRelease() {
@@ -400,7 +400,7 @@ unsigned short FEInfractionsData::GetValue(GInfractionManager::InfractionType ty
 }
 
 unsigned short FEInfractionsData::NumInfractions() const {
-    return OffRoad + Resist + Damage + HitAndRun + Assault + Reckless + Speeding + Racing;
+    return Racing + Speeding + Reckless + Assault + HitAndRun + Damage + Resist + OffRoad;
 }
 
 void FECareerRecord::Default() {
@@ -440,61 +440,61 @@ void FECareerRecord::AdjustHeatOnEvadePursuit() {
 void FECareerRecord::AdjustHeatOnDecalApplied(float extraAdjust) {
     Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
 
-    VehicleHeat = VehicleHeat * cooling.NewDecal() * extraAdjust;
+    VehicleHeat *= cooling.NewDecal() * extraAdjust;
 }
 
 void FECareerRecord::AdjustHeatOnPaintApplied(float extraAdjust) {
     Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
 
-    VehicleHeat = VehicleHeat * cooling.NewPaint() * extraAdjust;
+    VehicleHeat *= cooling.NewPaint() * extraAdjust;
 }
 
 void FECareerRecord::AdjustHeatOnVinylApplied(float extraAdjust) {
     Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
 
-    VehicleHeat = VehicleHeat * cooling.NewVinyl() * extraAdjust;
+    VehicleHeat *= cooling.NewVinyl() * extraAdjust;
 }
 
 void FECareerRecord::AdjustHeatOnBodyKitApplied(float extraAdjust) {
     Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
 
-    VehicleHeat = VehicleHeat * cooling.NewBodyKit() * extraAdjust;
+    VehicleHeat *= cooling.NewBodyKit() * extraAdjust;
 }
 
 void FECareerRecord::AdjustHeatOnHoodApplied(float extraAdjust) {
     Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
 
-    VehicleHeat = VehicleHeat * cooling.NewHood() * extraAdjust;
+    VehicleHeat *= cooling.NewHood() * extraAdjust;
 }
 
 void FECareerRecord::AdjustHeatOnRimApplied(float extraAdjust) {
     Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
 
-    VehicleHeat = VehicleHeat * cooling.NewRim() * extraAdjust;
+    VehicleHeat *= cooling.NewRim() * extraAdjust;
 }
 
 void FECareerRecord::AdjustHeatOnRimPaintApplied(float extraAdjust) {
     Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
 
-    VehicleHeat = VehicleHeat * cooling.NewRimPaint() * extraAdjust;
+    VehicleHeat *= cooling.NewRimPaint() * extraAdjust;
 }
 
 void FECareerRecord::AdjustHeatOnRoofScoopApplied(float extraAdjust) {
     Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
 
-    VehicleHeat = VehicleHeat * cooling.NewRoofScoop() * extraAdjust;
+    VehicleHeat *= cooling.NewRoofScoop() * extraAdjust;
 }
 
 void FECareerRecord::AdjustHeatOnSpoilerApplied(float extraAdjust) {
     Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
 
-    VehicleHeat = VehicleHeat * cooling.NewSpoiler() * extraAdjust;
+    VehicleHeat *= cooling.NewSpoiler() * extraAdjust;
 }
 
 void FECareerRecord::AdjustHeatOnWindowTintApplied(float extraAdjust) {
     Attrib::Gen::fecooling cooling(kHeatAdjustCollectionKey, 0, 0);
 
-    VehicleHeat = VehicleHeat * cooling.NewWindowTint() * extraAdjust;
+    VehicleHeat *= cooling.NewWindowTint() * extraAdjust;
 }
 
 void FECareerRecord::CommitPursuitCarData(unsigned int infractions, unsigned int accumulated_bounty, bool pursuit_evaded) {
