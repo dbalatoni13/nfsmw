@@ -710,10 +710,9 @@ bFile *bOpen(const char *filename, int open_mode, int warn_if_cant_open) {
     if (bFileSlotPool == nullptr) {
         bInitFileSystem();
     }
-    bFile *f = new (bFileSlotPool->Malloc()) bFile(filename, static_cast<bFileOpenMode>(open_mode));
-    if (f->FileSize < 0) {
-        f->~bFile();
-        bFileSlotPool->Free(f);
+    bFile *f = new bFile(filename, static_cast<bFileOpenMode>(open_mode));
+    if (!f->IsOpen()) {
+        delete f;
         f = nullptr;
     }
     return f;
@@ -721,11 +720,10 @@ bFile *bOpen(const char *filename, int open_mode, int warn_if_cant_open) {
 
 void bClose(bFile *f) {
     if (f != nullptr) {
-        if (f->NumPendingCallbacks < 1) {
-            f->~bFile();
-            bFileSlotPool->Free(f);
-        } else {
+        if (f->NumPendingCallbacks > 0) {
             f->CloseAfterCallbacks = 1;
+        } else {
+            delete f;
         }
     }
 }

@@ -8,6 +8,8 @@
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
+extern SlotPool *bFileSlotPool;
+
 enum bFileOpenMode {
     BOPEN_MODE_APPEND = 2,
     BOPEN_MODE_WRITE = 6,
@@ -72,6 +74,16 @@ struct bFile : public bTNode<bFile> {
     // total size: 0x38
     bFile(const char *filename, bFileOpenMode open_mode);
     ~bFile();
+
+    static void *operator new(unsigned int size) {
+        return bFileSlotPool->Malloc();
+    }
+
+    static void operator delete(void *ptr) {
+        bFileSlotPool->Free(ptr);
+    }
+
+    bool IsOpen() { return FileSize >= 0; }
 
     void OpenLowLevel();
     void MaybeAddCachedHandle();
