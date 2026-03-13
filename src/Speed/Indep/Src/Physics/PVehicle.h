@@ -87,7 +87,7 @@ class PVehicle : public PhysicsObject,
             NEEDS_COMPOSITING = 4,
         };
 
-        Resource() : Type(CARTYPE_NONE), Cost(0), Flags(0) {}
+        Resource() {}
         Resource(const Attrib::Gen::pvehicle &pvehicle, bool spool, bool is_player);
         bool NeedsCompositing() const { return (Flags & NEEDS_COMPOSITING) != 0; }
         bool IsValid() const { return (Flags & VALID) != 0; }
