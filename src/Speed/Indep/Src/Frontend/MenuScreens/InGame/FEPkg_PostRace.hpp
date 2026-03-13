@@ -47,8 +47,11 @@ struct PursuitData {
     GMilestone *mMilestonesCompleted[32]; // offset 0x2C
 };
 
-struct PostRacePursuitScreen {
+struct PostRacePursuitScreen : MenuScreen {
+    PostRacePursuitScreen(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
     static PursuitData mPursuitData;
+    char _pad[0xC4];
 
     static PursuitData &GetPursuitData() {
         return mPursuitData;

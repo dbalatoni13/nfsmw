@@ -36,8 +36,10 @@
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
 
-struct FadeScreen {
+struct FadeScreen : MenuScreen {
     static bool IsFadeScreenOn();
+    FadeScreen(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
 };
 
 extern bool bIsRestartingRace;

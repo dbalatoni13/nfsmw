@@ -33,6 +33,8 @@ class RadarDetector : public HudElement, public IRadarDetector {
     bool mInPursuit;
     bool mIsCoolingDown;
     Timer mTimeCycleStarted;
+
+    static float mStaticRange;
 };
 
 #endif

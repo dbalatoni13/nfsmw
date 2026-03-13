@@ -20,8 +20,7 @@ void InitChyron() {
 }
 
 MenuScreen *CreateChyronScreen(ScreenConstructorData *sd) {
-    ChyronScreenPtr = new (ChyronScreenPtr) Chyron(sd);
-    return ChyronScreenPtr;
+    return new (ChyronScreenPtr) Chyron(sd);
 }
 
 void DismissChyron() {

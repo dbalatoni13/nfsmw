@@ -118,3 +118,7 @@ void FEKeyboard::AppendSpace() {
         AppendChar(0x20);
     }
 }
+
+MenuScreen *CreateFEKeyboard(ScreenConstructorData *sd) {
+    return new ("", 0) FEKeyboard(sd);
+}
