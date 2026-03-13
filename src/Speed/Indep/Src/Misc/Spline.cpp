@@ -15,11 +15,11 @@ float tCubic1D::GetVal(float t) {
 }
 
 float tCubic1D::GetdVal(float t) {
-    return (Coeff[0] * (t * 3.0f) + Coeff[1] + Coeff[1]) * t + Coeff[2];
+    return (Coeff[1] + Coeff[1] + Coeff[0] * (t * 3.0f)) * t + Coeff[2];
 }
 
 float tCubic1D::GetddVal(float t) {
-    return Coeff[0] * (t * 6.0f) + Coeff[1] + Coeff[1];
+    return Coeff[1] + Coeff[1] + Coeff[0] * (t * 6.0f);
 }
 
 float tCubic1D::GetDerivative(float t) {
