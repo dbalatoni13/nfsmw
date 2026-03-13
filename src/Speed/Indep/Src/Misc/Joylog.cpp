@@ -382,9 +382,9 @@ void WriteJoylogFileHeader() {
         bReleasePrintf("Joylog CL: %s\n", changelist_name);
     }
     bReleasePrintf("Build CL: %s\n", BuildVersionChangelistName);
-    bStrCpy(build_version_name, bGetPlatformName());
-    bStrCat(build_version_name, "_RELEASE");
-    bStrCat(build_version_name, "_USA");
+    bStrCpy(build_version_name, "NGC");
+    bStrCat(build_version_name, build_version_name, "_RELEASE");
+    bStrCat(build_version_name, build_version_name, "_USA");
     if (Joylog::IsCapturing()) {
         Joylog::AddOrGetData(build_version_name, JOYLOG_CHANNEL_CONFIG);
     } else if (Joylog::IsReplaying()) {
