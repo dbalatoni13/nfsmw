@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeMenuZoneTrigger.hpp"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
@@ -25,4 +26,8 @@ void MenuZoneTrigger::ExitTrigger() {
 
 bool MenuZoneTrigger::IsType(const char *t) {
     return bStrCmp(mZoneType, t) == 0;
+}
+
+bool MenuZoneTrigger::ShouldSeeMenuZoneCluster() {
+    return *reinterpret_cast<int *>(reinterpret_cast<char *>(&GRaceStatus::Get()) + 0x1AA4) == 0;
 }

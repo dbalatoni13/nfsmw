@@ -1166,3 +1166,19 @@ eMenuSoundTriggers PostRaceResultsScreen::NotifySoundMessage(unsigned long msg, 
 static MenuScreen *CreatePostRaceResultsScreen(ScreenConstructorData *sd) {
     return new ("", 0) PostRaceResultsScreen(sd);
 }
+
+bool PursuitData::AddMilestone(GMilestone *milestone) {
+    if (mNumMilestonesThisPursuit < 0x20) {
+        mMilestonesCompleted[mNumMilestonesThisPursuit] = milestone;
+        mNumMilestonesThisPursuit = mNumMilestonesThisPursuit + 1;
+        return true;
+    }
+    return false;
+}
+
+const GMilestone *const PursuitData::GetMilestone(int index) const {
+    if (index > 0x1F) {
+        return 0;
+    }
+    return mMilestonesCompleted[index];
+}

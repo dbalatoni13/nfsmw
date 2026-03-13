@@ -103,6 +103,9 @@ class HudResourceManager {
         HRM_UNLOADING_IN_PROGRESS = 3,
     };
 
+    HudResourceManager();
+    virtual ~HudResourceManager() {}
+
     static const char *GetHudFengName(ePlayerHudType ht);
     void LoadRequiredResources(ePlayerHudType ht, const char *pkg_name);
     void UnloadRequiredResources(ePlayerHudType ht);

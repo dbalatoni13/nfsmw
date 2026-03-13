@@ -239,9 +239,11 @@ class CareerSettings {
     int GetCash() {
         return CurrentCash;
     }
-    SMSMessage* GetSMSMessage(unsigned int index) {
-        return &SMSMessages[index];
-    }
+    SMSMessage *GetSMSMessage(unsigned int index);
+    unsigned short GetSMSSortOrder();
+    void SpendCash(int amount);
+    void SetPlayerHasBeatenTheGame();
+    int GetSaveBufferSize(bool bExcludeGameplay);
     void ResumeCareer();
     void StartNewCareer(bool bEnterGameplay);
 
@@ -485,6 +487,8 @@ class cFrontendDatabase {
 
     void GetGameCompletionStats(GameCompletionStats* stats);
 
+    unsigned int GetChallengeHeaderHash(unsigned int index);
+    unsigned int GetChallengeDescHash(unsigned int index);
     unsigned int GetBountyIconHash(unsigned int index);
     unsigned int GetBountyHeaderHash(unsigned int index);
     unsigned int GetBountyDescHash(unsigned int index);

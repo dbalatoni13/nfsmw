@@ -13,6 +13,10 @@ struct LoadingControllerScreen : public MenuScreen {
     LoadingControllerScreen(ScreenConstructorData *sd) : MenuScreen(sd) {}
     static void InitLoadingControllerScreen();
     void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
+    void ShowControllerConfig();
+    void FinishLoadingControllerTextureCallback(unsigned int p);
+
+    static void *mLoadingControllerScreenPtr;
 
   private:
     int LoadingFinished;                  // offset 0x2C

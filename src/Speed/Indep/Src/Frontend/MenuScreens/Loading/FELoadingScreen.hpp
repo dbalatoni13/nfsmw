@@ -11,6 +11,8 @@ struct LoadingScreen : public MenuScreen {
     LoadingScreen(ScreenConstructorData *sd) : MenuScreen(sd) {}
     static void InitLoadingScreen();
     void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
+
+    static void *mLoadingScreenPtr;
 };
 
 #endif

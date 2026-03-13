@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeLeaderBoard.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FEPkg_Hud.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 LeaderBoard::LeaderBoard(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
@@ -40,4 +41,9 @@ void LeaderBoard::SetRacerHasHeadset(int pos, bool racerHasHeadset) {
 void LeaderBoard::SetRacerName(int pos, const char *name) {
     if (pos > 3) return;
     bStrCpy(mTopRacers[pos].mRacerName, name);
+}
+
+HudResourceManager::HudResourceManager() {
+    mHudResourcesState = HRM_NOT_LOADED;
+    pHudTextures = nullptr;
 }

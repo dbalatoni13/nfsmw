@@ -5,3 +5,8 @@ BootFlowManager *BootFlowManager::mInstance;
 BootFlowManager *BootFlowManager::Get() {
     return mInstance;
 }
+
+void BootFlowManager::JumpToHead() {
+    CurrentScreen = BootFlowScreens.GetHead();
+    JumpToScreen(CurrentScreen->Name);
+}
