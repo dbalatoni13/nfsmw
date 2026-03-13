@@ -25,7 +25,9 @@ BOOL bMemoryTracing = false;                   // size: 0x4, address: 0x80416438
 int bMemoryBreakOnAllocationNumber = -1;       // size: 0x4, address: 0x8041643C
 int bMemoryAllocationNumber = 0;               // size: 0x4, address: 0x80416440
 bMemoryAllocator TheMemoryAllocator;           // size: 0xC, address: 0x8045790C
+EA::Allocator::IAllocator &gMemoryAllocator = TheMemoryAllocator; // size: 0x4, address: 0x80457918
 bMemoryAllocator TheMemoryPersistentAllocator; // size: 0xC, address: 0x8045791C
+EA::Allocator::IAllocator &gMemoryPersistentAllocator = TheMemoryPersistentAllocator; // size: 0x4, address: 0x80457928
 // static const int bMemoryEnableFancyStompDetector; // size: 0x4
 const char *pTraceDebugText = nullptr;  // size: 0x4, address: 0x80416450
 int TraceDebugLine = 0;                 // size: 0x4, address: 0x80416454
