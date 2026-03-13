@@ -1262,9 +1262,441 @@ static void HUFF_pack(HuffEncodeContext *EC, HUFFMemStruct *dest, unsigned int o
     HUFF_writebits(EC, dest, 0, 7);
 }
 
-static void HUFF_decompress(unsigned char *pSrc, unsigned char *pDst) {
-    // TODO: 3392B decompressor - extremely complex
+static int ZERO;
+
+#define HUFF_REFILL() \
+    if (bitsleft < 0) { \
+        bitsunshifted = (bitsunshifted << 8) | *qs; \
+        bitsunshifted = (bitsunshifted << 8) | *(qs + 1); \
+        bits = bitsunshifted << static_cast<unsigned int>(-bitsleft); \
+        qs += 2; \
+        bitsleft += 16; \
+    }
+
+#define HUFF_READNUM(dest) \
+    if (static_cast<int>(bits) < 0) { \
+        unsigned int t; \
+        t = bits >> 29; \
+        bitsleft -= 3; \
+        bits <<= 3; \
+        HUFF_REFILL() \
+        dest = t - 4; \
+    } else { \
+        int n; \
+        unsigned int v1; \
+        if ((bits >> 16) == 0) { \
+            n = 2; \
+            do { \
+                dest = -(static_cast<int>(bits) >> 31); \
+                n++; \
+                bits <<= 1; \
+                bitsleft--; \
+                HUFF_REFILL() \
+            } while (dest == 0); \
+        } else { \
+            n = 2; \
+            do { \
+                v1 = bits; \
+                n++; \
+                bits = v1 << 1; \
+            } while (static_cast<int>(bits) >= 0); \
+            bitsleft = bitsleft + 1 - n; \
+            bits = v1 << 2; \
+            if (ZERO != 0) { \
+                bitsleft -= ZERO; \
+                dest = bits >> (32 - ZERO); \
+                bits <<= ZERO; \
+            } \
+            HUFF_REFILL() \
+        } \
+        if (n < 17) { \
+            if (n != 0) { \
+                bitsleft -= n; \
+                dest = bits >> (32 - n); \
+                bits <<= n; \
+            } \
+            HUFF_REFILL() \
+            dest = dest + (1 << n) - 4; \
+        } else { \
+            unsigned int _hi = bits >> (48 - n); \
+            bits = bits << (n - 16); \
+            bitsleft = bitsleft + 16 - n; \
+            HUFF_REFILL() \
+            unsigned int _mid = bits >> 16; \
+            bitsleft -= 16; \
+            bits <<= 16; \
+            HUFF_REFILL() \
+            dest = (_mid | (_hi << 16)) + (1 << n) - 4; \
+        } \
+    }
+
+static int HUFF_decompress(unsigned char *packbuf, unsigned char *unpackbuf) {
+    unsigned int type;
+    unsigned char clue;
+    int ulen = 0;
+    int bitnum = 0;
+    int cluelen = 0;
+    unsigned char *qs = packbuf;
+    unsigned char *qd = unpackbuf;
+    unsigned int bits = 0;
+    unsigned int bitsunshifted = 0;
+    int bitsleft;
+    unsigned int v = 0;
+
+    if (qs == 0) {
+        return ulen;
+    }
+
+    bitsleft = -16;
+    if (ZERO != 0) {
+        bitsleft = -16 - ZERO;
+    }
+    bits = 0;
+
+    // Read type (16 bits)
+    HUFF_REFILL()
+    type = bits >> 16;
+    bitsleft -= 16;
+    bits <<= 16;
+    HUFF_REFILL()
+
+    // Read cmp/v based on type flags
+    if (type & 0x8000) {
+        if (type & 0x100) {
+            bits <<= 16;
+            bitsleft -= 16;
+            HUFF_REFILL()
+            bits <<= 16;
+            bitsleft -= 16;
+            HUFF_REFILL()
+        }
+        v = bits >> 16;
+        type &= ~0x100u;
+        bits <<= 16;
+        bitsleft -= 16;
+    } else {
+        if (type & 0x100) {
+            bits <<= 8;
+            bitsleft -= 8;
+            HUFF_REFILL()
+            bits <<= 16;
+            bitsleft -= 16;
+            HUFF_REFILL()
+        }
+        v = bits >> 24;
+        type &= ~0x100u;
+        bits <<= 8;
+        bitsleft -= 8;
+    }
+    HUFF_REFILL()
+
+    // Read ulen (16 bits + upper from v)
+    ulen = bits >> 16;
+    bitsleft -= 16;
+    bits <<= 16;
+    HUFF_REFILL()
+    ulen |= v << 16;
+
+    // Read clue (8 bits)
+    v = bits >> 24;
+    bitsleft -= 8;
+    bits <<= 8;
+    HUFF_REFILL()
+    clue = static_cast<unsigned char>(v);
+
+    // Tree building
+    {
+        int mostbits;
+        int i;
+        int bitnumtbl[16];
+        unsigned int deltatbl[16];
+        unsigned int cmptbl[16];
+        unsigned char codetbl[256];
+        unsigned char quickcodetbl[256];
+        unsigned char quicklentbl[256];
+
+        int numchars = 0;
+        int basecmp = 0;
+        unsigned int cmpval;
+        i = 1;
+        do {
+            mostbits = i;
+            bitnumtbl[mostbits] = basecmp * 2 - numchars;
+
+            HUFF_READNUM(bitnum)
+
+            numchars += bitnum;
+            deltatbl[mostbits] = bitnum;
+            basecmp = basecmp * 2 + bitnum;
+            cmpval = 0;
+            if (bitnum != 0) {
+                cmpval = (basecmp << (16 - mostbits)) & 0xffff;
+            }
+            cmptbl[mostbits] = cmpval;
+            i = mostbits + 1;
+        } while (bitnum == 0 || cmpval != 0);
+
+        // Set sentinel
+        cmptbl[mostbits] = 0xffffffff;
+
+        // Code table building
+        {
+            signed char leap[256];
+            unsigned char nextchar;
+
+            // Zero leap array
+            {
+                int loopI = 16;
+                int intval = 0;
+                int *lptr = reinterpret_cast<int *>(leap);
+                do {
+                    lptr[0] = intval;
+                    lptr[1] = intval;
+                    lptr[2] = intval;
+                    lptr[3] = intval;
+                    lptr += 4;
+                    loopI--;
+                } while (loopI != 0);
+            }
+
+            // Read code values
+            nextchar = 0xff;
+            int charIdx = 0;
+            int nextIdx;
+            if (numchars > 0) {
+                do {
+                    int leapdelta;
+                    HUFF_READNUM(leapdelta)
+                    nextIdx = charIdx + 1;
+                    int count = leapdelta - 3;
+                    do {
+                        unsigned int nc = nextchar + 1;
+                        nextchar = nc & 0xff;
+                        if (leap[nextchar] == 0) {
+                            count--;
+                        }
+                    } while (count != 0);
+                    leap[nextchar] = 1;
+                    codetbl[charIdx] = nextchar;
+                    charIdx = nextIdx;
+                } while (nextIdx < numchars);
+            }
+        }
+
+        // Fill quicklentbl with 0x40
+        {
+            int loopI = 16;
+            int intval = 0x40404040;
+            int *lptr = reinterpret_cast<int *>(quicklentbl);
+            do {
+                lptr[0] = intval;
+                lptr[1] = intval;
+                lptr[2] = intval;
+                lptr[3] = intval;
+                lptr += 4;
+                loopI--;
+            } while (loopI != 0);
+        }
+
+        // Fill quick decode tables
+        {
+            int bitsIdx = 1;
+            int numbitentries;
+            int nextcode;
+            int nextlen;
+            int idx;
+            unsigned char *codeptr = codetbl;
+            unsigned char *quickcodeptr = quickcodetbl;
+            unsigned char *quicklenptr = quicklentbl;
+            if (mostbits > 0) {
+                numbitentries = deltatbl[1];
+                do {
+                    nextcode = 1 << (8 - bitsIdx);
+                    nextlen = bitsIdx + 1;
+                    idx = numbitentries - 1;
+                    if (numbitentries != 0) {
+                        do {
+                            unsigned char code = *codeptr++;
+                            unsigned int len = bitsIdx;
+                            if (code == clue) {
+                                cluelen = bitsIdx;
+                                len = 0x60;
+                            }
+                            int j = 0;
+                            idx--;
+                            if (nextcode > 0) {
+                                do {
+                                    *quickcodeptr++ = code;
+                                    *quicklenptr++ = static_cast<unsigned char>(len);
+                                    j++;
+                                } while (j < nextcode);
+                            }
+                        } while (idx != -1);
+                    }
+                } while (nextlen <= mostbits && (numbitentries = deltatbl[nextlen], bitsIdx = nextlen, nextlen < 9));
+            }
+        }
+
+        // Main decode loop
+        {
+            unsigned char *quickcodeptr;
+            unsigned char *quicklenptr;
+
+        nextloop:
+            unsigned int len = quicklentbl[bits >> 24];
+            unsigned char *dst = qd;
+            for (bitsleft = bitsleft - len; qd = dst, bitsleft > -1; bitsleft = bitsleft - len) {
+                unsigned int idx = bits >> 24;
+                bits <<= len;
+                unsigned int idx2 = bits >> 24;
+                *dst = quickcodetbl[idx];
+                qd = dst + 1;
+                len = quicklentbl[idx2];
+                bitsleft -= len;
+                if (bitsleft < 0) break;
+
+                bits <<= len;
+                idx = bits >> 24;
+                *qd = quickcodetbl[idx2];
+                qd = dst + 2;
+                len = quicklentbl[idx];
+                bitsleft -= len;
+                if (bitsleft < 0) break;
+
+                bits <<= len;
+                idx2 = bits >> 24;
+                *qd = quickcodetbl[idx];
+                qd = dst + 3;
+                len = quicklentbl[idx2];
+                bitsleft -= len;
+                if (bitsleft < 0) break;
+
+                bits <<= len;
+                *qd = quickcodetbl[idx2];
+                dst = dst + 4;
+                len = quicklentbl[bits >> 24];
+            }
+
+            // Refill after decode loop
+            bitsleft += 16;
+            if (bitsleft > -1) {
+                *qd = quickcodetbl[bits >> 24];
+                qd++;
+                bitsunshifted = (bitsunshifted << 8) | *qs;
+                bitsunshifted = (bitsunshifted << 8) | *(qs + 1);
+                qs += 2;
+                bits = bitsunshifted << static_cast<unsigned int>(16 - bitsleft);
+                goto nextloop;
+            }
+
+            // Slow decode (len > 8 bits)
+            {
+                unsigned char code;
+                unsigned int slowlen;
+                if (len != 0x60) {
+                    slowlen = 8;
+                    do {
+                        slowlen++;
+                    } while (cmptbl[slowlen] <= (bits >> 16));
+                } else {
+                    slowlen = cluelen;
+                }
+
+                unsigned int codeIdx = bits >> (32 - slowlen);
+                bits <<= slowlen;
+                bitsleft = bitsleft + (len - 16) - slowlen;
+                code = codetbl[codeIdx - bitnumtbl[slowlen]];
+
+                if (code != clue) {
+                    if (bitsleft < 0) {
+                        HUFF_REFILL()
+                    }
+                    if (code != clue) {
+                        *qd = code;
+                        qd++;
+                        bitsleft = bitsleft;
+                        goto nextloop;
+                    }
+                }
+
+                // Escape code handling
+                if (bitsleft < 0) {
+                    HUFF_REFILL()
+                }
+
+                // Read run length
+                {
+                    int runlen;
+                    HUFF_READNUM(runlen)
+
+                    if (runlen != 0) {
+                        // RLE: copy previous byte
+                        unsigned char *d = qd;
+                        unsigned char *dest = qd + runlen;
+                        unsigned char prev = *(qd - 1);
+                        do {
+                            *qd = prev;
+                            qd++;
+                        } while (qd < dest);
+                        goto nextloop;
+                    }
+
+                    // End of data marker
+                    bitsleft--;
+                    int shiftedBits = bits << 1;
+                    if (bitsleft < 0) {
+                        bitsunshifted = (bitsunshifted << 8) | *qs;
+                        bitsunshifted = (bitsunshifted << 8) | *(qs + 1);
+                        qs += 2;
+                        shiftedBits = bitsunshifted << static_cast<unsigned int>(-bitsleft);
+                        bitsleft += 16;
+                    }
+                    if (static_cast<int>(bits) >= 0) {
+                        // Read raw byte
+                        unsigned int t;
+                        code = static_cast<unsigned char>(shiftedBits >> 24);
+                        bitsleft -= 8;
+                        bits = shiftedBits << 8;
+                        if (bitsleft < 0) {
+                            HUFF_REFILL()
+                        }
+                        *qd = code;
+                        qd++;
+                        goto nextloop;
+                    }
+                }
+            }
+        }
+
+        // Post-processing
+        {
+            int i;
+            int nextchar;
+            if (type == 0x32fb || type == 0xb2fb) {
+                unsigned char prev = 0;
+                unsigned char *end = unpackbuf + ulen;
+                for (; unpackbuf < end; unpackbuf++) {
+                    prev += *unpackbuf;
+                    *unpackbuf = prev;
+                }
+            } else if (type == 0x34fb || type == 0xb4fb) {
+                char delta = 0;
+                unsigned char accum = 0;
+                unsigned char *end = unpackbuf + ulen;
+                for (; unpackbuf < end; unpackbuf++) {
+                    delta += *unpackbuf;
+                    accum += delta;
+                    *unpackbuf = accum;
+                }
+            }
+        }
+    }
+
+    return ulen;
 }
+
+#undef HUFF_REFILL
+#undef HUFF_READNUM
 
 void HUFF_decode(void *dest, const void *src) {
     HUFF_decompress(static_cast<unsigned char *>(const_cast<void *>(src)),
