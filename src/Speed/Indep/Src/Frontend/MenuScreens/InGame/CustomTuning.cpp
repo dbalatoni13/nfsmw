@@ -1,18 +1,27 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/CustomTuning.hpp"
 
+#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/FEng/FEImage.h"
 #include "Speed/Indep/Src/Generated/Events/ETuneVehicle.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/CTextScroller.hpp"
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
+#include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 
 extern int FEPrintf(FEString *, const char *, ...);
 extern unsigned int FEngHashString(const char *, ...);
 extern FEObject *FEngFindObject(const char *, unsigned int);
+extern FEString *FEngFindString(const char *, int);
 extern void FEngGetSize(FEObject *, float &, float &);
 extern void FEngGetTopLeft(FEObject *, float &, float &);
+extern FEngFont *FindFont(unsigned int);
 extern void FEngSetCurrentButton(const char *, unsigned int);
 extern void FEngSetLanguageHash(FEString *, unsigned int);
 extern void FEngSetLanguageHash(const char *, unsigned int, unsigned int);
 extern void FEngSetScript(FEObject *, unsigned int, bool);
+extern int FEngSNPrintf(char *, int, const char *, ...);
 extern int bSNPrintf(char *, int, const char *, ...);
 
 extern const char lbl_803E5088[];
@@ -20,6 +29,8 @@ extern const char lbl_803E89B8[];
 extern const char lbl_803E89C4[];
 extern const char lbl_803E89CC[];
 extern const char lbl_803E89FC[];
+extern const char lbl_803E8A28[];
+extern const char lbl_803E8A38[];
 extern const char lbl_803E8A18[];
 extern const float lbl_803E89B4;
 extern const float lbl_803E89C0;
@@ -27,6 +38,17 @@ extern const float lbl_803E89D8;
 extern const float lbl_803E89DC;
 extern const float lbl_803E89E0;
 extern const float lbl_803E89E4;
+extern const float lbl_803E8A24;
+
+namespace Physics {
+namespace Upgrades {
+void SetLevel(Attrib::Gen::pvehicle &vehicle, int type, int level);
+}
+
+namespace Info {
+eInductionType InductionType(const Attrib::Gen::pvehicle &vehicle);
+}
+}
 
 struct TuningSlider : public FEToggleWidget {
     FEObject *pSliderGroup;
@@ -164,6 +186,7 @@ void CustomTuningScreen::ScrollTypes(eScrollDir dir) {
 
     if (next_type != CurrentTuningType) {
         CurrentTuningType = next_type;
+        SetSlidersForType();
     }
 }
 
@@ -179,6 +202,112 @@ void CustomTuningScreen::DrawSettingName(unsigned int tuning_type) {
         FEngSetLanguageHash(GetPackageName(), 0x05CDDED4, 0x40230065);
         break;
     }
+}
+
+unsigned int CustomTuningScreen::AddTuningSlider(FEPlayerCarDB *stable, FECarRecord *record, Physics::Tunings::Path path, bool turbo) {
+    char object_name[64];
+    float button_width;
+    float x;
+    float y;
+    float width;
+    float height;
+    bool active = IsTuningAvailable(stable, record, path);
+    TuningSlider *slider = new TuningSlider(path, GetNameForPath(path, turbo), GetHelpForPath(path, active, turbo), active);
+
+    slider->SetTitleObject(GetCurrentFEString(pTitleName));
+    slider->SetDataObject(GetCurrentFEString(pDataName));
+    slider->SetBacking(GetCurrentFEObject(pBackingName));
+    FEngSNPrintf(object_name, 64, lbl_803E5088, pSliderName, iIndexToAdd);
+    slider->InitSliderObjects(GetPackageName(), object_name);
+    FEngSNPrintf(object_name, 64, lbl_803E8A18, pSliderName, iIndexToAdd);
+    slider->SetSliderGroup(GetPackageName(), FEngHashString(object_name));
+    slider->SetLeftImage(GetCurrentFEImage(pLeftArrowName));
+    slider->SetRightImage(GetCurrentFEImage(pRightArrowName));
+    Options.AddTail(slider);
+    iIndexToAdd++;
+    IncrementStartPos();
+    FEngGetTopLeft(slider->GetRightImage(), x, y);
+    FEngGetSize(slider->GetRightImage(), width, height);
+    button_width = (x + width) - x;
+    if (button_width < 0.0f) {
+        button_width = -button_width;
+    }
+    slider->SetWidth(button_width);
+    return iIndexToAdd - 1;
+}
+
+void CustomTuningScreen::Setup() {
+    unsigned int current_car;
+    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
+    FECarRecord *record;
+
+    if (FEDatabase->IsCareerMode()) {
+        current_car = FEDatabase->GetCareerSettings()->GetCurrentCar();
+    } else {
+        current_car = FEDatabase->GetQuickRaceSettings(static_cast< GRace::Type >(0xB))->GetSelectedCar(0);
+    }
+
+    record = stable->GetCarRecordByHandle(current_car);
+    TuningRecord = stable->GetCustomizationRecordByHandle(record->Customization);
+    if (TuningRecord != nullptr) {
+        TempTuningRecord = *TuningRecord;
+        CurrentTuningType = TuningRecord->ActiveTuning;
+    }
+
+    AddTuningSlider(stable, record, Physics::Tunings::STEERING, false);
+    AddTuningSlider(stable, record, Physics::Tunings::HANDLING, false);
+    AddTuningSlider(stable, record, Physics::Tunings::BRAKES, false);
+    AddTuningSlider(stable, record, Physics::Tunings::RIDEHEIGHT, false);
+    AddTuningSlider(stable, record, Physics::Tunings::AERODYNAMICS, false);
+    AddTuningSlider(stable, record, Physics::Tunings::NOS, false);
+
+    Attrib::Gen::pvehicle vehicle(record->VehicleKey, 0, 0);
+
+    Physics::Upgrades::SetLevel(vehicle, 5, 1);
+    AddTuningSlider(stable, record, Physics::Tunings::INDUCTION, Physics::Info::InductionType(vehicle) == 1);
+    SetSlidersForType();
+    SetInitialOption(1);
+}
+
+void CustomTuningScreen::SetSlidersForType() {
+    DrawSettingName(CurrentTuningType);
+
+    for (FEWidget *option = Options.GetHead(); option != Options.EndOfList(); option = option->GetNext()) {
+        TuningSlider *slider = static_cast< TuningSlider * >(option);
+        float lower = Physics::Tunings::LowerLimit(slider->TuningPath);
+        float upper = Physics::Tunings::UpperLimit(slider->TuningPath);
+
+        slider->SetSliderValues(
+            lower,
+            upper,
+            (upper - lower) * lbl_803E8A24,
+            TempTuningRecord.Tunings[CurrentTuningType].Value[slider->TuningPath]);
+        slider->Draw();
+    }
+}
+
+void CustomTuningScreen::ShowHelpBlurb() {
+    cFEng::Get()->QueuePackageMessage(0x89D332A9, GetPackageName(), nullptr);
+    pCurrentOption->UnsetFocus();
+    if (HelpTextScroller == nullptr) {
+        FEString *help_text = FEngFindString(GetPackageName(), FEHashUpper(lbl_803E8A28));
+
+        HelpTextScroller = new CTextScroller();
+        HelpTextScroller->Initialise(this, help_text->MaxWidth, 7, const_cast< char * >(lbl_803E8A38), FindFont(help_text->Handle));
+        HelpTextScroller->UseScrollBar(HelpScrollBar);
+        HelpTextScroller->SetTextHash(static_cast< TuningSlider * >(pCurrentOption)->HelpBlurb);
+    }
+    HelpVisible = true;
+}
+
+void CustomTuningScreen::HideHelpBlurb() {
+    cFEng::Get()->QueuePackageMessage(0x950AD1C2, GetPackageName(), nullptr);
+    pCurrentOption->SetFocus(GetPackageName());
+    if (HelpTextScroller != nullptr) {
+        delete HelpTextScroller;
+        HelpTextScroller = nullptr;
+    }
+    HelpVisible = false;
 }
 
 void CustomTuningScreen::StoreSettings() {

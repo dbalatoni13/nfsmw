@@ -19,6 +19,11 @@ class CustomTuningScreen : public UIWidgetMenu {
     void DrawSettingName(unsigned int tuning_type);
     unsigned int GetNameForPath(Physics::Tunings::Path path, bool turbo);
     unsigned int GetHelpForPath(Physics::Tunings::Path path, bool active, bool turbo);
+    unsigned int AddTuningSlider(FEPlayerCarDB *stable, FECarRecord *record, Physics::Tunings::Path path, bool turbo);
+    void Setup() override;
+    void SetSlidersForType();
+    void ShowHelpBlurb();
+    void HideHelpBlurb();
     void StoreSettings();
     bool SettingsDidNotChange();
 
