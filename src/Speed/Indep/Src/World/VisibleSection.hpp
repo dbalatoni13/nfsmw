@@ -160,13 +160,14 @@ class VisibleSectionManager {
     VisibleSectionUserInfo UserInfoStorageTable[512];                  // offset 0x2C24, size 0x3800
     bTList<UnallocatedVisibleSectionUserInfo> UnallocatedUserInfoList; // offset 0x6424, size 0x8
     VisibleSectionBitTable *VisibleBitTables;                          // offset 0x642C, size 0x4
-    unsigned int EnabledGroups[256];                                   // offset 0x6430, size 0x40
 
   public:
+    unsigned int EnabledGroups[256];                                   // offset 0x6430, size 0x40
+
     void UnallocateUserInfo(int section_number);
     DrivableScenerySection *FindDrivableSection(const bVector2 *point);
     DrivableScenerySection *FindDrivableSection(int section_number /* r4 */);
-    int GetGroupInfo(const char *name);
+    static int GetGroupInfo(const char *name);
     void EnableGroup(unsigned int hash);
 
     VisibleSectionUserInfo *GetUserInfo(int section_number) {

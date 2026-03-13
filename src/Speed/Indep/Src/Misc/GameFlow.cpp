@@ -529,8 +529,8 @@ void DeactivateMemorySponge() {
     RealTimeFramesEnteringGame = 0;
 }
 
-void LoadMemoryFileCallback(int, int) {
-    AddMemoryFile(nullptr);
+void LoadMemoryFileCallback(int param, int) {
+    AddMemoryFile(reinterpret_cast<void *>(param));
 }
 
 void *LoadMemoryFile(const char *filename) {
@@ -895,10 +895,9 @@ void TrackLoader::Unload() {
 void EnableSceneryGroup(unsigned int hash, bool enable);
 
 void EnableBarrierSceneryGroup(const char *name, bool enable) {
-    VisibleSectionManager *vsm = &TheVisibleSectionManager;
-    if (vsm->GetGroupInfo(name) != 0) {
+    if (VisibleSectionManager::GetGroupInfo(name) != 0) {
         unsigned int hash = bStringHash(name);
-        vsm->EnableGroup(hash);
+        TheVisibleSectionManager.EnableGroup(hash);
         EnableSceneryGroup(hash, enable);
         TheTrackPathManager.EnableBarriers(name);
     }
@@ -922,7 +921,7 @@ void CloseTopologyAndSceneryGroups() {
 
 void TrackLoader::CloseTopologyAndSceneryGroups() {
     TheTrackPathManager.DisableAllBarriers();
-    bMemSet(reinterpret_cast<void *>(0x804a48b0), 0, 0x400);
+    bMemSet(TheVisibleSectionManager.EnabledGroups, 0, 0x400);
     DisableAllSceneryGroups();
 }
 
