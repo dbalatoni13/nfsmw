@@ -363,19 +363,33 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                 int digit_count;
                 bool group_flag;
 
-                if (flags & FL_LONG64) {
-                    tempNumber = va_arg(argList, long long);
-                } else if (flags & FL_SHORT) {
+                if (flags & FL_SHORT) {
                     if (flags & FL_SIGNED) {
                         tempNumber = static_cast<short>(va_arg(argList, int));
                     } else {
                         tempNumber = static_cast<unsigned short>(va_arg(argList, int));
                     }
+                } else if (flags & FL_LONG64) {
+                    size = 64;
+                    tempNumber = va_arg(argList, long long);
                 } else {
+                    size = 32;
                     if (flags & FL_SIGNED) {
                         tempNumber = va_arg(argList, int);
                     } else {
                         tempNumber = va_arg(argList, unsigned int);
+                    }
+                }
+
+                if (radix == 16 && width != 0) {
+                    int shift_amount = 64 - size;
+                    int bits = width * 4;
+                    long long shifted = (tempNumber << shift_amount) >> shift_amount;
+                    shifted >>= bits;
+                    if (shifted == -1LL) {
+                        unsigned long long mask = (1ULL << bits) - 1;
+                        number = static_cast<unsigned long long>(tempNumber) & mask;
+                        goto skip_sign_check;
                     }
                 }
 
@@ -385,6 +399,8 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                 } else {
                     number = static_cast<unsigned long long>(tempNumber);
                 }
+
+            skip_sign_check:
 
                 if (precision < 0) {
                     precision = 1;
