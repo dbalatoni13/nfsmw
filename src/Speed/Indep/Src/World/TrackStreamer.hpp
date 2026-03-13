@@ -178,7 +178,10 @@ class TrackStreamer {
     int NumSectionsMoved;                                 // offset 0x2C, size 0x4
     char StreamFilenames[2][64];                          // offset 0x30, size 0x80
     bool SplitScreen;                                     // offset 0xB0, size 0x1
+  public:
     bool PermFileLoading;                                 // offset 0xB4, size 0x1
+
+  private:
     const char *PermFilename;                             // offset 0xB8, size 0x4
     bChunk *PermFileChunks;                               // offset 0xBC, size 0x4
     int PermFileSize;                                     // offset 0xC0, size 0x4

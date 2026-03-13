@@ -838,18 +838,14 @@ void TrackLoader::LoadHandler() {
     TheGameFlowManager.SetWaitingForCallback("TrackLoader", Phase);
     if (Phase == 1) {
         TheGameFlowManager.SetState(GAMEFLOW_STATE_LOADING_TRACK);
+        LoadHandler();
     } else if (Phase == 2) {
         LoadHandler();
-        return;
     } else if (Phase == 3) {
         InitWorldModels();
         TheGameFlowManager.ClearWaitingForCallback();
         FinishedLoading();
-        return;
-    } else {
-        return;
     }
-    LoadHandler();
 }
 
 void TrackLoader::FinishedLoading() {
@@ -1140,10 +1136,12 @@ void BeginGameFlowUnloadingFrontEnd() {
     eRemoveFEEnvMapPlat();
     CleanUpGarageCarLoaders();
     UnloadEverything__9CarLoader(&TheCarLoader);
-    if (iRam8049d7dc != 0) {
+    if (TheTrackStreamer.PermFileLoading) {
         new EFadeScreenOn(true);
-        while (iRam8049d7dc != 0) {
+    while_check:
+        if (TheTrackStreamer.PermFileLoading) {
             MiniMainLoop();
+            goto while_check;
         }
         if (cFEng::mInstance->IsPackagePushed("ScreenFade.fng")) {
             cFEng::mInstance->PopNoControlPackage("ScreenFade.fng");
