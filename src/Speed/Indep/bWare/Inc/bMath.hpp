@@ -524,9 +524,9 @@ struct bVector4 {
 
     int operator==(const bVector4 &v) {}
 
-    float &operator[](int index) {}
+    float &operator[](int index) { return reinterpret_cast<float *>(this)[index]; }
 
-    const float &operator[](int index) const {}
+    const float &operator[](int index) const { return reinterpret_cast<const float *>(this)[index]; }
 
     bVector4 operator+(const bVector4 &v) {
         bVector4 *pv;
@@ -816,9 +816,9 @@ struct bMatrix4 {
     bMatrix4(const bMatrix4 &m);
     bMatrix4 &operator=(const bMatrix4 &m);
 
-    bVector4 &operator[](int index) {}
+    bVector4 &operator[](int index) { return reinterpret_cast<bVector4 *>(this)[index]; }
 
-    const bVector4 &operator[](int index) const {}
+    const bVector4 &operator[](int index) const { return reinterpret_cast<const bVector4 *>(this)[index]; }
 };
 
 inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v) {

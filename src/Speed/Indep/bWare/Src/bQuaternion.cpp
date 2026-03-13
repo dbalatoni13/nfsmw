@@ -33,47 +33,37 @@ bQuaternion &bQuaternion::Slerp(bQuaternion &r, const bQuaternion &target, float
 }
 
 void bMatrixToQuaternion(bQuaternion &quat, const bMatrix4 &m) {
-    float *param_1 = reinterpret_cast<float *>(&quat);
-    float *param_2 = const_cast<float *>(reinterpret_cast<const float *>(&m));
-    float afStack_10[4];
-    float fVar5 = *param_2 + param_2[5] + param_2[10];
+    float tr = m[0][0] + m[1][1] + m[2][2];
 
-    if (fVar5 > 0.0f) {
-        fVar5 = bSqrt(fVar5 + 1.0f);
-        float fVar6 = 0.5f / fVar5;
-        param_1[3] = fVar5 * 0.5f;
-        *param_1 = (param_2[6] - param_2[9]) * fVar6;
-        param_1[1] = (param_2[8] - param_2[2]) * fVar6;
-        param_1[2] = (param_2[1] - param_2[4]) * fVar6;
+    if (tr > 0.0f) {
+        float t = bSqrt(tr + 1.0f);
+        quat.w = t * 0.5f;
+        t = 0.5f / t;
+        quat.x = (m[1][2] - m[2][1]) * t;
+        quat.y = (m[2][0] - m[0][2]) * t;
+        quat.z = (m[0][1] - m[1][0]) * t;
     } else {
-        int uVar3 = *param_2 < param_2[5];
-        int uVar1 = uVar3 + 1;
-        int iVar2 = uVar3 * 0x10;
-        int iVar4 = uVar3 * 4;
-
-        if (param_2[10] > *(float *)((int)param_2 + iVar4 + iVar2)) {
-            iVar2 = 0x20;
-            iVar4 = 8;
-            uVar1 = 3;
+        int i = 0;
+        if (m[1][1] > m[0][0]) {
+            i = 1;
         }
-
-        uVar1 = uVar1 % 3;
-        uVar3 = (uVar1 + 1) % 3;
-        fVar5 = bSqrt(((*(float *)((int)param_2 + iVar4 + iVar2) - *(float *)((int)param_2 + uVar1 * 4 + uVar1 * 0x10)) -
-                       *(float *)((int)param_2 + uVar3 * 4 + uVar3 * 0x10)) +
-                      1.0f);
-        *(float *)((int)afStack_10 + iVar4) = fVar5 * 0.5f;
-        if (fVar5 != 0.0f) {
-            fVar5 = 0.5f / fVar5;
+        if (m[2][2] > m[i][i]) {
+            i = 2;
         }
-
-        afStack_10[3] = (param_2[uVar1 * 4 + uVar3] - param_2[uVar3 * 4 + uVar1]) * fVar5;
-        afStack_10[uVar1] =
-            (*(float *)((int)param_2 + uVar1 * 4 + iVar2) + *(float *)((int)param_2 + iVar4 + uVar1 * 0x10)) * fVar5;
-        afStack_10[uVar3] = (*(float *)((int)param_2 + uVar3 * 4 + iVar2) + *(float *)((int)param_2 + iVar4 + uVar3 * 0x10)) * fVar5;
-        param_1[0] = afStack_10[0];
-        param_1[1] = afStack_10[1];
-        param_1[2] = afStack_10[2];
-        param_1[3] = afStack_10[3];
+        int j = (i + 1) % 3;
+        int k = (j + 1) % 3;
+        float q[4];
+        float t = bSqrt((m[i][i] - m[j][j] - m[k][k]) + 1.0f);
+        q[i] = t * 0.5f;
+        if (t != 0.0f) {
+            t = 0.5f / t;
+        }
+        q[3] = (m[j][k] - m[k][j]) * t;
+        q[j] = (m[i][j] + m[j][i]) * t;
+        q[k] = (m[i][k] + m[k][i]) * t;
+        quat.x = q[0];
+        quat.y = q[1];
+        quat.z = q[2];
+        quat.w = q[3];
     }
 }
