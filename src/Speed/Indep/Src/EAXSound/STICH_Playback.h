@@ -63,13 +63,19 @@ struct SND_Params {
     {}
 };
 
+struct AEMS_StichCollision;
+struct AEMS_StichWoosh;
+struct AEMS_StichStatic;
+
 struct cSampleWarpper {
     char _pad[4];                 // offset 0x0, from empty ListableSet base
     int m_eIsPlaying;             // offset 0x4, size 0x4
     SND_SampleRef *SampleRefData; // offset 0x8, size 0x4
-    void *AEMS_ActiveSampleCol;   // offset 0xC, size 0x4
-    void *AEMS_ActiveSampleWsh;   // offset 0x10, size 0x4
-    void *AEMS_ActiveSampleStatic; // offset 0x14, size 0x4
+    AEMS_StichCollision *AEMS_ActiveSampleCol; // offset 0xC, size 0x4
+    AEMS_StichWoosh *AEMS_ActiveSampleWsh;     // offset 0x10, size 0x4
+    AEMS_StichStatic *AEMS_ActiveSampleStatic; // offset 0x14, size 0x4
+    int m_nLocalVolume;                        // offset 0x18, size 0x4
+    int m_nLocalPitch;                         // offset 0x1C, size 0x4
 
     cSampleWarpper(SND_SampleRef &NewRef);
     ~cSampleWarpper();
@@ -82,8 +88,10 @@ struct cSampleWarpper {
     static void operator delete(void *ptr);
 
     void Initialize();
+    void Update(const SND_Params *params);
     void Play(const SND_Params *params);
     void Destroy();
+    static int Prune(STICH_TYPE type, int priority, int num_to_clear);
 };
 
 // total size: 0x6C
