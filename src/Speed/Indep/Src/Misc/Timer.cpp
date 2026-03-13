@@ -185,9 +185,9 @@ void AdvanceWorldTime() {
     if (NeedToPrepareWorldTimestep == 0 && (NeedToPrepareWorldTimestep = 1, WorldTimeElapsed != 0.0f)) {
         int frames_elapsed_60hz = static_cast<int>((WorldTimeElapsedFrame + WorldTimeElapsed) * 60.0f);
         WorldTimeFramesElapsed = frames_elapsed_60hz;
-        WorldTime = WorldTimeFrames + frames_elapsed_60hz;
+        WorldTimeFrames = WorldTimeFrames + frames_elapsed_60hz;
+        WorldTime = WorldTimeFrames;
         WorldTimeElapsedFrame = (WorldTimeElapsedFrame + WorldTimeElapsed) - static_cast<float>(frames_elapsed_60hz) * (1.0f / 60.0f);
-        WorldTimeFrames = WorldTime;
         WorldTimer.SetTime(Sim::GetTime());
         WorldLoopCounter = WorldLoopCounter + 1;
         WorldTimeElapsed = 0.0f;

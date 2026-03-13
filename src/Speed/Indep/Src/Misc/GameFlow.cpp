@@ -227,6 +227,7 @@ class IVisualTreatment {
 class ELoadingScreenOn : public Event {
   public:
     ELoadingScreenOn(int);
+    int fParam;
 };
 
 class EFadeScreenOn : public Event {

@@ -13,13 +13,13 @@ extern EAXSound *g_pEAXSound;
 extern EasterEggs::EasterEggsData StaticEasterEggsTable[];
 
 EasterEggs::EasterEggs() {
+    CurrentStartButton = 0;
     EasterEggsTable = StaticEasterEggsTable;
     NumberOfEasterEggs = 2;
-    CurrentStartButton = 0;
-    NumberOfCurrentButtons = 0;
-    UnlockMessage = 0;
-    HaveUnlockMessage = false;
     ButtonsEnabled = false;
+    HaveUnlockMessage = false;
+    UnlockMessage = 0;
+    NumberOfCurrentButtons = 0;
 }
 
 EasterEggs::~EasterEggs() {

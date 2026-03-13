@@ -42,9 +42,8 @@ struct CachedRealFileHandle : public bTNode<CachedRealFileHandle> {
 
     CachedRealFileHandle(const char *filename, int file_handle, int file_size)
         : NumReferences(0), //
-          FileHandle(file_handle), //
           FileSize(file_size), //
-          Filename(filename) {}
+          FileHandle(file_handle) {}
 
     ~CachedRealFileHandle() {}
 
@@ -139,7 +138,7 @@ struct DeviceDriver {
 
     DeviceDriver(const char *name);
     virtual ~DeviceDriver() {}
-    virtual bool Init() { return false; }
+    virtual bool Init() { return true; }
     virtual void Restore() {}
     virtual int Open(const char *name, int oflags, int *pParentFileHandle) { return 0; }
     virtual void Close(int h) {}
@@ -150,7 +149,7 @@ struct DeviceDriver {
     virtual unsigned long long QueryLocation(int h) { return 0; }
     virtual bool Remove(const char *name) { return false; }
     virtual unsigned long long Getspace() { return 0; }
-    virtual const char *GetName() { return nullptr; }
+    virtual const char *GetName() { return mDeviceName; }
     virtual unsigned int GetOptimalReadSize() { return 0; }
 };
 
