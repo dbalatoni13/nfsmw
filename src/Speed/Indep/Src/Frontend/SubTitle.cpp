@@ -3,6 +3,7 @@
 #include <types.h>
 
 #include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/FEng/FEObject.h"
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
@@ -11,7 +12,6 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 class FEString;
-class FEObject;
 
 int GetCurrentLanguage();
 void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
