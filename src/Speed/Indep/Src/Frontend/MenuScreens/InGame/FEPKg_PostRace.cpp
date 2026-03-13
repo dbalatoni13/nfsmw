@@ -818,10 +818,13 @@ void PostRaceResultsScreen::NotificationMessage(unsigned long msg, FEObject *pOb
                                                 unsigned long Param2) {
     switch (msg) {
     case 0x35F8620B: {
-        unsigned int fe_flags = ReadField< unsigned int >(FEDatabase, 0x1C0);
+        unsigned int fe_flags =
+            *reinterpret_cast< const unsigned int * >(reinterpret_cast< const char * >(FEDatabase) + 0x1C0);
 
-        if ((fe_flags & 0x40) == 0 && (fe_flags & 8) == 0) {
-            return;
+        if ((fe_flags & 0x40) == 0) {
+            if ((fe_flags & 8) == 0) {
+                return;
+            }
         }
 
         FEngSetScript(GetPackageName(), 0x812A09D4, 0x0016A259, true);
@@ -869,15 +872,21 @@ void PostRaceResultsScreen::NotificationMessage(unsigned long msg, FEObject *pOb
         Setup();
         return;
     case 0xC519BFC4: {
-        unsigned int fe_flags = ReadField< unsigned int >(FEDatabase, 0x1C0);
+        unsigned int fe_flags =
+            *reinterpret_cast< const unsigned int * >(reinterpret_cast< const char * >(FEDatabase) + 0x1C0);
 
-        if ((fe_flags & 0x40) != 0 || (fe_flags & 8) != 0) {
+        if ((fe_flags & 0x40) != 0) {
+            return;
+        }
+
+        if ((fe_flags & 8) != 0) {
             return;
         }
 
         DialogInterface::ShowTwoButtons(GetPackageName(), lbl_803E5EEC, static_cast< eDialogTitle >(1), 0x417B2601,
                                         0x1A294DAD, 0xE1A57D51, 0xB4623F67, 0xB4623F67,
-                                        static_cast< eDialogFirstButtons >(1), 0x4D3399A8);
+                                        static_cast< eDialogFirstButtons >(1),
+                                        static_cast< unsigned int >(0x4D3399A8));
         return;
     }
     case 0xE1A57D51:
@@ -892,12 +901,6 @@ void PostRaceResultsScreen::NotificationMessage(unsigned long msg, FEObject *pOb
     case 0xB4623F67:
         cFEng::Get()->QueuePackageMessage(0xC6341FF6, GetPackageName(), nullptr);
         return;
-    case 0x30ED2368:
-    set_continue_script:
-        if (!FEngIsScriptSet(GetPackageName(), 0x47FF4E7C, 0x001335F0)) {
-            FEngSetScript(GetPackageName(), 0x47FF4E7C, 0x001335F0, true);
-        }
-        return;
     case 0x406415E3: {
         if (FEngIsScriptSet(GetPackageName(), 0x57EFB2FB, 0x0016A259)) {
             return;
@@ -906,25 +909,35 @@ void PostRaceResultsScreen::NotificationMessage(unsigned long msg, FEObject *pOb
         if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career &&
             GRaceStatus::Get().GetRaceParameters()->GetIsBossRace()) {
             bool show_dialog = false;
+            const char *player_racer_info = reinterpret_cast< const char * >(mPlayerRacerInfo);
 
-            if (mPlayerRacerInfo != nullptr) {
-                if (ReadField< int >(mPlayerRacerInfo, 0x30) != 0 || ReadField< int >(mPlayerRacerInfo, 0x20) != 0 ||
-                    ReadField< int >(mPlayerRacerInfo, 0x24) != 0 || ReadField< int >(mPlayerRacerInfo, 0x1C) != 0 ||
-                    ReadField< int >(mPlayerRacerInfo, 0x28) != 0) {
+            if (player_racer_info != nullptr) {
+                if (*reinterpret_cast< const int * >(player_racer_info + 0x30) != 0 ||
+                    *reinterpret_cast< const int * >(player_racer_info + 0x20) != 0 ||
+                    *reinterpret_cast< const int * >(player_racer_info + 0x24) != 0 ||
+                    *reinterpret_cast< const int * >(player_racer_info + 0x1C) != 0 ||
+                    *reinterpret_cast< const int * >(player_racer_info + 0x28) != 0) {
                     show_dialog = true;
                 }
             }
 
-            if (show_dialog && GetRacerRanking(mPlayerRacerInfo) != 1) {
+            if (show_dialog && *reinterpret_cast< const int * >(player_racer_info + 0x10) != 1) {
                 DialogInterface::ShowTwoButtons(GetPackageName(), lbl_803E5EEC, static_cast< eDialogTitle >(1),
                                                 0x417B2601, 0x1A294DAD, 0x30ED2368, 0xB4623F67, 0xB4623F67,
-                                                static_cast< eDialogFirstButtons >(1), 0x9887EB98);
+                                                static_cast< eDialogFirstButtons >(1),
+                                                static_cast< unsigned int >(0x9887EB98));
                 return;
             }
         }
 
         goto set_continue_script;
     }
+    case 0x30ED2368:
+    set_continue_script:
+        if (!FEngIsScriptSet(GetPackageName(), 0x47FF4E7C, 0x001335F0)) {
+            FEngSetScript(GetPackageName(), 0x47FF4E7C, 0x001335F0, true);
+        }
+        return;
     case 0xE1FDE1D1: {
         unsigned int fe_flags = ReadField< unsigned int >(FEDatabase, 0x1C0);
 
@@ -941,10 +954,13 @@ void PostRaceResultsScreen::NotificationMessage(unsigned long msg, FEObject *pOb
         }
 
         bool has_race_data = false;
-        if (mPlayerRacerInfo != nullptr) {
-            if (ReadField< int >(mPlayerRacerInfo, 0x30) != 0 || ReadField< int >(mPlayerRacerInfo, 0x20) != 0 ||
-                ReadField< int >(mPlayerRacerInfo, 0x24) != 0 || ReadField< int >(mPlayerRacerInfo, 0x1C) != 0 ||
-                ReadField< int >(mPlayerRacerInfo, 0x28) != 0) {
+        const char *player_racer_info = reinterpret_cast< const char * >(mPlayerRacerInfo);
+        if (player_racer_info != nullptr) {
+            if (*reinterpret_cast< const int * >(player_racer_info + 0x30) != 0 ||
+                *reinterpret_cast< const int * >(player_racer_info + 0x20) != 0 ||
+                *reinterpret_cast< const int * >(player_racer_info + 0x24) != 0 ||
+                *reinterpret_cast< const int * >(player_racer_info + 0x1C) != 0 ||
+                *reinterpret_cast< const int * >(player_racer_info + 0x28) != 0) {
                 has_race_data = true;
             }
         }
@@ -975,9 +991,6 @@ void PostRaceResultsScreen::NotificationMessage(unsigned long msg, FEObject *pOb
         }
         return;
     }
-    case 0xC98356BA:
-        Setup();
-        return;
     default:
         return;
     }
