@@ -80,20 +80,18 @@ void tCubic1D::Update(float dt, float maxDeriv, float maxSecondDeriv) {
             ClampSecondDerivative(maxSecondDeriv);
         }
     }
-    float t;
     if (duration > 1e-05f) {
-        t = time + dt / duration;
+        time = time + dt / duration;
     } else {
-        t = 1.0f;
+        time = 1.0f;
     }
-    time = t;
     if (time > 1.0f) {
         time = 1.0f;
         Val = ValDesired;
         dVal = dValDesired;
         state = 0;
     }
-    t = time;
+    float t = time;
     Val = GetVal(t);
     dVal = GetdVal(t);
 }
