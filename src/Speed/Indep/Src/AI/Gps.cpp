@@ -59,8 +59,8 @@ bool Gps::Engage(const UMath::Vector3 &target, float maxDeviation) {
     mTarget = target;
     mRoadNav.CancelPathFinding();
     mDrawn = false;
-    mDeviation = 0.0f;
     mScale = 0.0f;
+    mDeviation = 0.0f;
     if (maxDeviation < 0.1f) {
         mMaxDeviation = 200.0f;
     } else {

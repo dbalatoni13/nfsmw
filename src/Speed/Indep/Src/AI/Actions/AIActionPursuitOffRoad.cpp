@@ -529,7 +529,7 @@ void AIActionPursuitOffRoad::Update(float dT) {
             }
         }
 
-        max_speed = bMin(targetai->GetTopSpeed() * speedmult, max_speed);
+        max_speed = bMin(max_speed, targetai->GetTopSpeed() * speedmult);
         float max_accel = targetai->GetAcceleration(speed) * accelmult;
 
         UMath::Vector3 forward;
@@ -547,7 +547,7 @@ void AIActionPursuitOffRoad::Update(float dT) {
         max_speed = mLimiter.get_speed_limit();
     }
 
-    if (max_speed < seek_speed) {
+        if (seek_speed > max_speed) {
         UMath::Scale(seek, max_speed / seek_speed, seek);
     }
 

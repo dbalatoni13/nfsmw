@@ -1818,7 +1818,7 @@ void AIPursuit::NotifyCopDamaged(IVehicle *ivehicle) {
         mNumCopsDamaged++;
         if (mRoadBlock) {
             if (mRoadBlock->IsComprisedOf(ivehicle->GetSimable()->GetOwnerHandle())) {
-                mRoadBlock->IncNumCopsDestroyed();
+                mRoadBlock->IncNumCopsDamaged();
             }
         }
         GManager::Get().IncValue("cops_damaged");
