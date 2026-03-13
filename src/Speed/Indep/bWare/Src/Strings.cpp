@@ -648,12 +648,12 @@ void bSharedStringPool::Free(const char *s) {
 
     bSharedString *prev_string = string - string->Prev;
     if ((string != this->StringTable) && (prev_string->Count == 0)) {
-        prev_string->Size = prev_string->Size + string->Size;
+        prev_string->Size = string->Size + prev_string->Size;
         next_string = string + string->Size;
-        string = prev_string;
         if (next_string != table_end) {
             next_string->Prev = static_cast<unsigned short>(next_string - prev_string);
         }
+        string = prev_string;
     }
 
     if (string->Size > this->LargestFreeString->Size) {
