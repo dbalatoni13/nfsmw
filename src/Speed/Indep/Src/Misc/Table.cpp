@@ -254,7 +254,7 @@ void PidError::Record(float fError, float fTime, bool bZeroDerivative, bool bZer
     if (bZeroIntegral) {
         integral_value = 0.0f;
     } else {
-        integral_value = fTime * fError;
+        integral_value = fTime * (diff + fCurrentError);
     }
     float derivative_value;
     if (bZeroDerivative) {
