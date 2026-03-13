@@ -241,6 +241,56 @@ This file contains bChunk chunk IDs.
 
 Just tell your favourite clanker to reference `AGENTS.md` to decompile a translation unit of your choice, for example `main/Speed/Indep/SourceLists/zEAXSound`.
 
+When introducing or forward-declaring a type, preserve the original `class` / `struct`
+kind. Check existing headers first with `python tools/find-symbol.py <TypeName>`, then use
+GC Dwarf and PS2 type info when the real declaration is missing or incomplete.
+
+Preserve real member names, types, order, and offset comments too. For recovered game
+types, do not invent `pad`, `unk`, or `field_XXXX` members to force a guessed layout; use
+the debug data and leave a short TODO when a field is still unresolved.
+
+If a project type already has a header in `src/`, include that header instead of adding a
+local forward declaration.
+
+## Style tooling
+
+The repo ships with a decomp-aware style helper:
+
+```sh
+python tools/code_style.py audit --base origin/main
+```
+
+Use `audit` to classify branch changes into safer vs match-sensitive buckets and to flag repo-specific issues such as jumbo include spacing, stray top-level declarations in `SourceLists` files, touched `class` / `struct` declarations that disagree with known headers or the PS2 visibility rule, touched project forward declarations that should be replaced by real includes, touched type members that look like invented padding or placeholder names, and touched style-guide issues that clang-format cannot fix for you (`using namespace`, `NULL`, bad cast spacing, or missing `EA_PRAGMA_ONCE_SUPPORTED` guard blocks).
+Repeated findings are grouped by file so large branch audits stay readable.
+
+Useful focused passes:
+
+```sh
+python tools/code_style.py audit --base origin/main --category safe-cpp
+python tools/code_style.py audit --base origin/main --category match-sensitive-cpp
+python tools/code_style.py format --check --base origin/main --category safe-cpp
+```
+
+If you have `clang-format` installed locally, you can also use:
+
+```sh
+python tools/code_style.py format --check src/Speed/Indep/Src/Frontend/FEManager.cpp
+```
+
+The formatter wrapper only targets safer C/C++ files by default. It intentionally skips match-sensitive code unless you explicitly pass `--include-match-sensitive` and verify the affected unit afterwards.
+`SourceLists/z*.cpp` files remain audit-only and are never formatter targets.
+`format --check` now distinguishes whitespace-only formatter deltas from more invasive output such as include reordering.
+Files that use the repo's initializer-list guard comments (`//`) are skipped by default because clang-format fights that convention; override only if you are deliberately inspecting that output.
+For declaration-kind checks, header declarations are treated as the repo source of truth; otherwise the helper falls back to the PS2 dump rule (`public:` / `private:` / `protected:` means `class`, no visibility labels means `struct`).
+
+`clang-format` is optional. Recommended installs:
+
+- macOS: `brew install clang-format`
+- Linux: `sudo apt install clang-format`
+- Windows: `winget install LLVM.LLVM`
+
+If your binary lives outside `PATH`, set `CLANG_FORMAT` to the executable path before running `tools/code_style.py format`.
+
 # Contributors
 
 Special thanks to [Brawltendo](https://github.com/Brawltendo) for helping with tooling and letting me use his partial decomp.

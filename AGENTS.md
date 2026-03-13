@@ -83,6 +83,17 @@ originates from, use this script against the compiler-generated debug line mappi
 
 See `.github/skills/line_lookup/SKILL.md` for the full workflow.
 
+### code-style — Repo-local style guidance
+
+When you are writing code, polishing code you already touched, or doing a style-review pass,
+consult `.github/skills/code_style/SKILL.md` first. It captures repo-specific formatting and
+cleanup rules, including jumbo include spacing, initializer-list comment markers, declaration
+placement, pointer style, and how to keep style work safe in match-sensitive code.
+
+Use `python tools/code_style.py audit --base origin/main` before a branch-wide style pass.
+It classifies changed files, reports repo-specific findings, and only treats safer C/C++ files
+as clang-format candidates by default.
+
 ### decomp-diff.py — Diff & symbol overview
 
 Overview mode lists all symbols in a translation unit with match status:
@@ -92,10 +103,12 @@ python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s nonmatching -t function
 python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s missing -t function
 python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim --search RemoveIOWin
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin --reloc-diffs all
 ```
 
 Filters: `-t function,object` (type), `-s missing|matching|nonmatching|extra` (status),
-`--section .text`, `--search <pattern>` (fuzzy name match).
+`--section .text`, `--search <pattern>` (fuzzy name match), `--reloc-diffs none|name_address|data_value|all`
+(surface relocation-only mismatches when needed; default: `none`).
 
 Diff mode shows side-by-side instruction comparison:
 
@@ -261,9 +274,14 @@ This is a **C++98** codebase compiled with ProDG GC 3.9.3 (GCC 2.95 under the ho
 
 - No `auto`, range-for, `enum class`, lambdas, or any C++11+
 - Enum values use prefix: `enum EFoo { kF_Value1, kF_Value2 }` (not `enum class`)
-- Use C++ casts (`static_cast< T >(expr)`) instead of C-style casts
-- Header guards: `#ifndef _CLASSNAME` / `#define _CLASSNAME` (not `#pragma once`)
+- Use C++ casts (`static_cast<T>(expr)`) instead of C-style casts
+- Header guards should use `#ifndef` / `#define` together with the `EA_PRAGMA_ONCE_SUPPORTED` block when writing repo headers
 - Constructors use initializer list style with leading `, ` on each line, add empty comments at the end of these lines (except the last) to stop clang-format from putting them all on the same line
+- Inline assembly is acceptable when needed to reproduce dead code or compiler scheduling that source alone cannot express cleanly
+- Preserve the original `class` vs `struct` kind. Check existing headers first, then Dwarf / PS2 info when needed. Even forward declarations and local partial declarations should use the accurate keyword when known.
+- Prefer including the real repo header over introducing a local forward declaration for a project type. If a type already has a header in `src/`, include it instead of redeclaring it locally.
+- Preserve original member names, types, order, and proven layout comments. Do not invent `pad`, `unk`, or `field_XXXX` members just to satisfy a guessed size or offset; verify the real members with `find-symbol.py`, GC Dwarf, and PS2 data, and leave a short TODO if a layout detail is still uncertain.
+- Follow DWARF member naming exactly (`mMember` vs `m_member`) instead of normalizing names
 - Omit the `this` pointer.
 - Use `nullptr` and `override`. If they are missing, you need to include `types.h`.
 - Omit `struct` when declaring variables or parameters, we are not in C land.

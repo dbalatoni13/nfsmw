@@ -26,6 +26,7 @@ import sys
 from typing import Any, Dict, List, Optional, Tuple
 from _common import (
     ROOT_DIR,
+    RELOC_DIFF_CHOICES,
     ToolError,
     build_objdiff_symbol_rows,
     fail,
@@ -68,11 +69,16 @@ def find_unit(config: Dict[str, Any], unit_name: str) -> Optional[Dict[str, Any]
     return None
 
 
-def run_objdiff(unit_name: str, base_obj: Optional[str] = None) -> Optional[Dict[str, Any]]:
+def run_objdiff(
+    unit_name: str,
+    base_obj: Optional[str] = None,
+    reloc_diffs: str = "none",
+) -> Optional[Dict[str, Any]]:
     return run_objdiff_json(
         OBJDIFF_CLI,
         unit_name,
         base_obj=base_obj,
+        reloc_diffs=reloc_diffs,
         root_dir=root_dir,
     )
 
@@ -1089,6 +1095,15 @@ def main():
             "Use this .o file as the decomp base instead of the one from objdiff.json."
         ),
     )
+    parser.add_argument(
+        "--reloc-diffs",
+        choices=RELOC_DIFF_CHOICES,
+        default="none",
+        help=(
+            "Control relocation-only mismatches in objdiff "
+            "(default: none; use all to surface relocation diffs)"
+        ),
+    )
     args = parser.parse_args()
 
     if args.ghidra_check:
@@ -1108,7 +1123,9 @@ def main():
     source_path = meta.get("source_path", "")
 
     # === objdiff Status (run first so we have line numbers for source scoping) ===
-    diff_data = run_objdiff(args.unit, base_obj=args.base_obj)
+    diff_data = run_objdiff(
+        args.unit, base_obj=args.base_obj, reloc_diffs=args.reloc_diffs
+    )
     left_sym = right_sym = None
 
     if diff_data:
@@ -1253,6 +1270,8 @@ def main():
                     args.unit,
                     "-d",
                     args.function,
+                    "--reloc-diffs",
+                    args.reloc_diffs,
                 ]
                 if args.base_obj:
                     diff_cmd += ["--base-obj", args.base_obj]
