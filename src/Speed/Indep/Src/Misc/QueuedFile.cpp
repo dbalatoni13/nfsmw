@@ -101,12 +101,12 @@ void QueuedFile::BeginRead() {
             Status = QERROR;
         } else {
             int readSize = NumBytes - NumRead;
-            if (Params.BlockSize < readSize) {
+            if (readSize > Params.BlockSize) {
                 readSize = Params.BlockSize;
             }
             int fileSize = bFileSize(f);
             int seekPos = FilePos + NumRead;
-            if (fileSize < seekPos + readSize) {
+            if (seekPos + readSize > fileSize) {
                 Status = QERROR;
             } else {
                 Status = QREADING;
@@ -129,7 +129,7 @@ void QueuedFile::ReadDoneCallback() {
 }
 
 int QueuedFile::SortByPriority(QueuedFile *before, QueuedFile *after) {
-    return after->Params.Priority <= before->Params.Priority;
+    return before->Params.Priority >= after->Params.Priority;
 }
 
 extern int CarLoaderMemoryPoolNumber;

@@ -768,8 +768,8 @@ void RegionLoader::Unload() {
     pResourceInGameA = nullptr;
     UnloadFileFromVirtualMemory(pResourceRegion_VM);
     UnloadFileFromVirtualMemory(pResourceInGameB_VM);
-    pResourceInGameB_VM = nullptr;
     pResourceRegion_VM = nullptr;
+    pResourceInGameB_VM = nullptr;
     MakeSpaceInPool__13TrackStreamerib(&TheTrackStreamer, 1, true);
     LoadLanguageResources(true, false, false, false);
     TrackInfo::SetLoadedTrackInfo(0);
@@ -1038,10 +1038,10 @@ void BeginWorldLoad() {
 }
 
 void DelayWaitForLoadingScreen() {
-    if (_11LoadingTips_mDoneShowingLoadingTips == 0) {
-        TheGameFlowManager.SetSingleFunction(reinterpret_cast<void (*)(int)>(DelayWaitForLoadingScreen), "DelayWaitForLoadingScreen", 0);
-    } else {
+    if (_11LoadingTips_mDoneShowingLoadingTips != 0) {
         TheGameFlowManager.SetSingleFunction(reinterpret_cast<void (*)(int)>(EndGameFlowLoadingFrontEnd), "EndGameFlowLoadingFrontEnd", 0);
+    } else {
+        TheGameFlowManager.SetSingleFunction(reinterpret_cast<void (*)(int)>(DelayWaitForLoadingScreen), "DelayWaitForLoadingScreen", 0);
     }
 }
 

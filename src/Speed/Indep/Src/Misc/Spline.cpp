@@ -36,7 +36,7 @@ float tCubic1D::GetSecondDerivative(float t) {
 
 void tCubic1D::ClampDerivative(float maxDeriv) {
     float d = GetDerivative(duration);
-    if (maxDeriv < bAbs(d)) {
+    if (bAbs(d) > maxDeriv) {
         dValDesired = (bAbs(d) / d) * maxDeriv * duration;
     }
 }

@@ -203,8 +203,8 @@ void Joylog::StopReplaying() {
     if (ReplayingFlag == 0) {
         return;
     }
-    ReplayingFlag = 0;
     pReplayingBuffer = nullptr;
+    ReplayingFlag = 0;
 }
 
 void Joylog::LoadReadAheadBuffer() {
@@ -232,8 +232,8 @@ int Joylog::ReadAheadFromChannel(void *buf, int size, int channel_number) {
 
 void Joylog::FreeReadAheadBuffer() {
     bFree(ReadAheadBuffer);
-    ReadAheadBufferSize = 0;
     ReadAheadBuffer = nullptr;
+    ReadAheadBufferSize = 0;
 }
 
 unsigned int Joylog::GetData(int data_size, JoylogChannel channel_number) {

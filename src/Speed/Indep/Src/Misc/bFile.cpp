@@ -238,8 +238,8 @@ DisculatorDriver *DisculatorDriver::Create(const char *dir_filename, const char 
 
 bool DisculatorDriver::Init() {
     OpenDisculatorFileSlotPool = bNewSlotPool(0x28, 0x44, "OpenDisculatorFile", 0);
-    TotalDeltaSector = 0;
     CurrentSector = 0;
+    TotalDeltaSector = 0;
     return true;
 }
 
@@ -604,10 +604,10 @@ void bFile::Write(const void *buf, int num_bytes) {
     if (WriteBufferPos + WriteBufferNumBytes != Position) {
         FlushWriteBuffer();
     }
-    if (WriteBufferSize < WriteBufferNumBytes + num_bytes) {
+    if (WriteBufferNumBytes + num_bytes > WriteBufferSize) {
         FlushWriteBuffer();
     }
-    if (WriteBufferSize < num_bytes) {
+    if (num_bytes > WriteBufferSize) {
         FILESYS_writesync(FileHandle, Position, const_cast<void *>(buf), num_bytes, 100);
     } else {
         if (WriteBufferNumBytes == 0) {
@@ -617,7 +617,7 @@ void bFile::Write(const void *buf, int num_bytes) {
         WriteBufferNumBytes = WriteBufferNumBytes + num_bytes;
     }
     Position = Position + num_bytes;
-    if (FileSize < Position) {
+    if (Position > FileSize) {
         FileSize = Position;
     }
 }
@@ -763,7 +763,7 @@ void bRead(bFile *f, void *buf, int numbytes) {
 }
 
 void bReadAsync(bFile *f, void *buf, int numbytes, void (*callback)(void *), void *param) {
-    if (f != nullptr && f->FileSize > -1) {
+    if (f != nullptr && f->FileSize >= 0) {
         f->ReadAsync(buf, numbytes, callback, param);
     }
 }
