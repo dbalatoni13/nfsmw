@@ -404,11 +404,23 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
 
                 if (precision < 0) {
                     precision = 1;
+                } else {
+                    flags &= ~FL_LEADZERO;
+                }
+
+                if (number == 0) {
+                    prefixSz = 0;
                 }
 
                 p = cvtbuf + 63;
                 digit_count = 0;
-                group_flag = (flags & FL_GROUP) != 0;
+                group_flag = false;
+
+                if (flags & FL_GROUP) {
+                    if (g_locale.group_len > 0) {
+                        group_flag = true;
+                    }
+                }
 
                 {
                     long long nn;
