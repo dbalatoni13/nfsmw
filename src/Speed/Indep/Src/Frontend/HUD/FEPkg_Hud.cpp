@@ -134,3 +134,66 @@ FEngHud::FEngHud(ePlayerHudType ht, const char *pkg_name, IPlayer *player, int p
     SetHudFeatures(0);
     JoyEnable();
 }
+
+FEngHud::~FEngHud() {
+    delete pSpeedometer;
+    pSpeedometer = nullptr;
+    delete pTachometer;
+    pTachometer = nullptr;
+    delete pTachometerDrag;
+    pTachometerDrag = nullptr;
+    delete pShiftUpdater;
+    pShiftUpdater = nullptr;
+    delete pTurboMeter;
+    pTurboMeter = nullptr;
+    delete pEngineTemp;
+    pEngineTemp = nullptr;
+    delete pNitrous;
+    pNitrous = nullptr;
+    delete pSpeedBreakerMeter;
+    pSpeedBreakerMeter = nullptr;
+    delete pRaceOverMessage;
+    pRaceOverMessage = nullptr;
+    delete pGenericMessage;
+    pGenericMessage = nullptr;
+    delete pRaceInformation;
+    pRaceInformation = nullptr;
+    delete pLeaderBoard;
+    pLeaderBoard = nullptr;
+    delete pPursuitBoard;
+    pPursuitBoard = nullptr;
+    delete pMilestoneBoard;
+    pMilestoneBoard = nullptr;
+    delete pBustedMeter;
+    pBustedMeter = nullptr;
+    delete pTimeExtension;
+    pTimeExtension = nullptr;
+    delete pCostToState;
+    pCostToState = nullptr;
+    delete pReputation;
+    pReputation = nullptr;
+    delete pHeatMeter;
+    pHeatMeter = nullptr;
+    delete pWrongWIndi;
+    pWrongWIndi = nullptr;
+    delete pOnlineSupport;
+    pOnlineSupport = nullptr;
+    delete p321Go;
+    p321Go = nullptr;
+    delete pRadarDetector;
+    pRadarDetector = nullptr;
+    delete pMinimap;
+    pMinimap = nullptr;
+    delete pGetAwayMeter;
+    pGetAwayMeter = nullptr;
+    delete pMenuZoneTrigger;
+    pMenuZoneTrigger = nullptr;
+    delete pInfractions;
+    pInfractions = nullptr;
+
+    cFEng::mInstance->PopNoControlPackage(pPackageName);
+
+    if (mPlayerHudType != PHT_SPLIT2 && mPlayerHudType != PHT_DRAG_SPLIT2) {
+        TheHudResourceManager.UnloadRequiredResources(mPlayerHudType);
+    }
+}
