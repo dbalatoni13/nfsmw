@@ -698,7 +698,7 @@ bool AICopManager::SpawnPursuitIVehicle(IPursuit *ipursuit, IVehicle *availableC
 
             float rotate = DEG2ANGLE(60.0f);
             if (Sim::GetRandom()._SimRandom_Float() > 0.5f) {
-                rotate = -rotate;
+                rotate *= -1.0f;
             }
             UMath::RotateInXZ(rotate, seek2Perp, seek2Perp);
 
@@ -706,9 +706,9 @@ bool AICopManager::SpawnPursuitIVehicle(IPursuit *ipursuit, IVehicle *availableC
             testNav.SetPathType(WRoadNav::kPathCop);
             testNav.SetNavType(WRoadNav::kTypeDirection);
 
-            {
+            if (!in_cooldown) {
                 const WRoadNav *perpNav = targetai->GetCurrentRoad();
-                if (!in_cooldown && perpNav && perpNav->GetSegment()->ShouldCopsConsider()) {
+                if (perpNav && perpNav->GetSegment()->ShouldCopsConsider()) {
                     bSetCopFilter = true;
                 }
             }
@@ -736,13 +736,13 @@ bool AICopManager::SpawnPursuitIVehicle(IPursuit *ipursuit, IVehicle *availableC
             targetforward.y = 0.0f;
 
             float speed = UMath::Length(targetforward);
-            if (speed >= 1.0f) {
-                UMath::Normalize(targetforward);
-            } else {
+            if (speed < 1.0f) {
                 IRigidBody *targetbody;
                 if (pursuitTarget->QueryInterface(&targetbody)) {
                     targetbody->GetForwardVector(targetforward);
                 }
+            } else {
+                UMath::Normalize(targetforward);
             }
 
             UMath::Vector3 spawncenter;
