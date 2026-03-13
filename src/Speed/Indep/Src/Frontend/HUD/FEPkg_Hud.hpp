@@ -37,7 +37,7 @@ class FEngHud : public UTL::COM::Object, public IHud {
     void Update(IPlayer *player, float dt) override;
     void JoyEnable();
     void JoyDisable();
-    void JoyHandle();
+    void JoyHandle(IPlayer *player);
     bool AreResourcesLoaded();
     bool IsHudVisible();
     void HideAll();

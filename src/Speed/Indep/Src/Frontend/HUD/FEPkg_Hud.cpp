@@ -28,7 +28,18 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeTurboMeter.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeWrongWIndi.hpp"
 #include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
+#include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
+
+struct FadeScreen {
+    static bool IsFadeScreenOn();
+};
+
+extern bool bIsRestartingRace;
 
 extern FEString *FEngFindString(const char *, int);
 
@@ -196,4 +207,113 @@ FEngHud::~FEngHud() {
     if (mPlayerHudType != PHT_SPLIT2 && mPlayerHudType != PHT_DRAG_SPLIT2) {
         TheHudResourceManager.UnloadRequiredResources(mPlayerHudType);
     }
+}
+
+void FEngHud::Update(IPlayer *player, float dT) {
+    ProfileNode profile_node("FEngHud::Update", 0);
+
+    unsigned long long hudFeatures = DetermineHudFeatures(player);
+    if (hudFeatures != CurrentHudFeatures) {
+        SetHudFeatures(hudFeatures);
+    }
+
+    if (mActionQ.IsEnabled()) {
+        bool loading = TheGameFlowManager.IsLoading();
+        if (!loading && !bIsRestartingRace && !UTL::Collections::Singleton< INIS >::Get()
+            && FadeScreen::IsFadeScreenOn()) {
+            new EFadeScreenOff(0x14035fb);
+        }
+    }
+
+    SetWideScreenMode();
+
+    if (hudFeatures != 0) {
+        if (pSpeedometer && pSpeedometer->IsElementVisible()) {
+            pSpeedometer->Update(player);
+        }
+        if (pTachometer && pTachometer->IsElementVisible()) {
+            pTachometer->Update(player);
+        }
+        if (pTachometerDrag && pTachometerDrag->IsElementVisible()) {
+            pTachometerDrag->Update(player);
+        }
+        if (pShiftUpdater && pShiftUpdater->IsElementVisible()) {
+            pShiftUpdater->Update(player);
+        }
+        if (pMinimap && pMinimap->IsElementVisible()) {
+            pMinimap->Update(player);
+        }
+        if (pRaceInformation && pRaceInformation->IsElementVisible()) {
+            pRaceInformation->Update(player);
+        }
+        if (pLeaderBoard && pLeaderBoard->IsElementVisible()) {
+            pLeaderBoard->Update(player);
+        }
+        if (pPursuitBoard && pPursuitBoard->IsElementVisible()) {
+            pPursuitBoard->Update(player);
+        }
+        if (pMilestoneBoard && pMilestoneBoard->IsElementVisible()) {
+            pMilestoneBoard->Update(player);
+        }
+        if (pBustedMeter && pBustedMeter->IsElementVisible()) {
+            pBustedMeter->Update(player);
+        }
+        if (pTimeExtension && pTimeExtension->IsElementVisible()) {
+            pTimeExtension->Update(player);
+        }
+        if (pCostToState && pCostToState->IsElementVisible()) {
+            pCostToState->Update(player);
+        }
+        if (pReputation && pReputation->IsElementVisible()) {
+            pReputation->Update(player);
+        }
+        if (pHeatMeter && pHeatMeter->IsElementVisible()) {
+            pHeatMeter->Update(player);
+        }
+        if (pNitrous && pNitrous->IsElementVisible()) {
+            pNitrous->Update(player);
+        }
+        if (pSpeedBreakerMeter && pSpeedBreakerMeter->IsElementVisible()) {
+            pSpeedBreakerMeter->Update(player);
+        }
+        if (pGetAwayMeter && pGetAwayMeter->IsElementVisible()) {
+            pGetAwayMeter->Update(player);
+        }
+        if (pRaceOverMessage && pRaceOverMessage->IsElementVisible()) {
+            pRaceOverMessage->Update(player);
+        }
+        if (pGenericMessage && pGenericMessage->IsElementVisible()) {
+            pGenericMessage->Update(player);
+        }
+        if (pTurboMeter && pTurboMeter->IsElementVisible()) {
+            pTurboMeter->Update(player);
+        }
+        if (pEngineTemp && pEngineTemp->IsElementVisible()) {
+            pEngineTemp->Update(player);
+        }
+        if (p321Go && p321Go->IsElementVisible()) {
+            p321Go->Update(player);
+        }
+        if (pRadarDetector && pRadarDetector->IsElementVisible()) {
+            pRadarDetector->Update(player);
+        }
+        if (pMenuZoneTrigger && pMenuZoneTrigger->IsElementVisible()) {
+            pMenuZoneTrigger->Update(player);
+        }
+        if (pWrongWIndi && pWrongWIndi->IsElementVisible()) {
+            pWrongWIndi->Update(player);
+        }
+        if (pOnlineSupport) {
+            pOnlineSupport->Update(player);
+        }
+        if (pInfractions && pInfractions->IsElementVisible()) {
+            pInfractions->Update(player);
+        }
+
+        if (MemoryCard::s_pThis->m_bAutoSaveRequested) {
+            MemoryCard::s_pThis->m_bHUDLoaded = true;
+        }
+    }
+
+    JoyHandle(player);
 }
