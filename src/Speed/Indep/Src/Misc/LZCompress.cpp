@@ -1302,9 +1302,10 @@ struct vAABBTree {
 };
 
 int vAABB::Contains(float x, float y, float z) {
-    if (bAbs(x - PositionX) < ExtentX &&
-        bAbs(y - PositionY) < ExtentY &&
-        bAbs(z - PositionZ) < ExtentZ) {
+    float delta_x = x - PositionX;
+    float delta_y = y - PositionY;
+    float delta_z = z - PositionZ;
+    if (bAbs(delta_x) < ExtentX && bAbs(delta_y) < ExtentY && bAbs(delta_z) < ExtentZ) {
         return 1;
     }
     return 0;
@@ -1332,25 +1333,23 @@ void vAABBTree::SwapEndian() {
 }
 
 vAABB *vAABBTree::QueryLeafHelper(vAABB *aabb, float x, float y, float z) {
-    if (aabb->NumChildren == 0) {
-        return aabb;
-    }
-    for (int i = 0; i < aabb->NumChildren; i++) {
-        vAABB *child = &NodeArray[aabb->ChildrenIndicies[i]];
+    int num_children = aabb->NumChildren;
+    vAABB *root = NodeArray;
+    for (int i = 0; i < num_children; i++) {
+        vAABB *child = &root[aabb->ChildrenIndicies[i]];
         if (child->Contains(x, y, z)) {
-            return QueryLeafHelper(child, x, y, z);
+            if (child->NumChildren <= 0) return child;
+            child = QueryLeafHelper(child, x, y, z);
+            if (child != nullptr) return child;
         }
     }
     return nullptr;
 }
 
 vAABB *vAABBTree::QueryLeaf(float x, float y, float z) {
-    if (TotalNodes == 0) {
-        return nullptr;
-    }
-    vAABB *root = &NodeArray[TotalNodes - 1];
-    if (root->Contains(x, y, z)) {
-        return QueryLeafHelper(root, x, y, z);
-    }
-    return nullptr;
+    vAABB *root = NodeArray;
+    if (root == nullptr) return nullptr;
+    if (!root->Contains(x, y, z)) return nullptr;
+    if (root->NumChildren <= 0) return root;
+    return QueryLeafHelper(root, x, y, z);
 }
