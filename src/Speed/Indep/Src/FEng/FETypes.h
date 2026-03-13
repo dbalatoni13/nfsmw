@@ -91,6 +91,8 @@ struct FEObjData {
 struct FEImageData : public FEObjData {
     FEVector2 UpperLeft;  // offset 0x44, size 0x8
     FEVector2 LowerRight; // offset 0x4C, size 0x8
+
+    FEImageData();
 };
 
 // total size: 0x90
