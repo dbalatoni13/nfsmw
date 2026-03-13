@@ -206,24 +206,20 @@ void QueuedFileBundle::BeginRead() {
 }
 
 void QueuedFileBundle::ReadCallback(int error_status) {
-    int i = 0;
-    if (NumQueuedFiles > 0) {
-        do {
-            QueuedFile *qf = QueuedFiles[i];
-            bMemCpy(qf->pBuf, ReadBuffer + (qf->FilePos - ReadBufferBot), qf->NumBytes);
-            void *callback = qf->CallbackFunction;
-            if (callback != nullptr) {
-                if (qf->CallbackModeUseParam2 == 0) {
-                    ((void (*)(void *, int))callback)(qf->CallbackParam, error_status);
-                } else {
-                    ((void (*)(void *, int, void *))callback)(qf->CallbackParam, error_status, qf->CallbackParam2);
-                }
+    for (int i = 0; i < NumQueuedFiles; i++) {
+        QueuedFile *qf = QueuedFiles[i];
+        bMemCpy(qf->pBuf, ReadBuffer + (qf->FilePos - ReadBufferBot), qf->NumBytes);
+        void *callback = qf->CallbackFunction;
+        if (callback != nullptr) {
+            if (qf->CallbackModeUseParam2 != 0) {
+                ((void (*)(void *, int, void *))callback)(qf->CallbackParam, error_status, qf->CallbackParam2);
+            } else {
+                ((void (*)(void *, int))callback)(qf->CallbackParam, error_status);
             }
-            if (qf != nullptr) {
-                delete qf;
-            }
-            i++;
-        } while (i < NumQueuedFiles);
+        }
+        if (qf != nullptr) {
+            delete qf;
+        }
     }
 }
 
