@@ -1,7 +1,14 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPKg_PostRace.hpp"
 
 #include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/PhotoFinish.hpp"
+#include "Speed/Indep/Src/Generated/Events/EQuitToFE.hpp"
+#include "Speed/Indep/Src/Generated/Events/ERestartRace.hpp"
+#include "Speed/Indep/Src/Generated/Events/EUnPause.hpp"
+#include "Speed/Indep/Src/Generated/Messages/MNotifyRaceAbandoned.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Gameplay/GTimer.h"
@@ -31,6 +38,9 @@ extern const char lbl_803E5DCC[];
 extern const char lbl_803E5DDC[];
 extern const char lbl_803E5E04[];
 extern const char lbl_803E5E24[];
+extern const char lbl_803E5EEC[];
+extern const char lbl_803E5F00[];
+extern const char lbl_803E5F18[];
 
 template <typename T> static T ReadField(const void *base, int offset) {
     return *reinterpret_cast< const T * >(reinterpret_cast< const char * >(base) + offset);
@@ -804,16 +814,195 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
     }
 }
 
-void PostRaceResultsScreen::NotificationMessage(unsigned long msg, FEObject *pObject, unsigned long Param1, unsigned long Param2) {
-    MenuScreen::NotificationMessage(msg, pObject, Param1, Param2);
+void PostRaceResultsScreen::NotificationMessage(unsigned long msg, FEObject *pObject, unsigned long Param1,
+                                                unsigned long Param2) {
+    switch (msg) {
+    case 0x35F8620B: {
+        unsigned int fe_flags = ReadField< unsigned int >(FEDatabase, 0x1C0);
 
-    if (msg == 0xC98356BA) {
+        if ((fe_flags & 0x40) == 0 && (fe_flags & 8) == 0) {
+            return;
+        }
+
+        FEngSetScript(GetPackageName(), 0x812A09D4, 0x0016A259, true);
+        FEngSetScript(GetPackageName(), 0x05D85A9F, 0x5079C8F8, true);
+        return;
+    }
+    case 0x5073EF13:
+        if (mPostRaceScreenMode == POSTRACESCREENMODE_RESULTS) {
+            return;
+        }
+
+        --mIndexOfCurrentRacer;
+        if (mIndexOfCurrentRacer < 0) {
+            mIndexOfCurrentRacer = mNumberOfRacers - 1;
+        }
+
         Setup();
+        return;
+    case 0xD9FEEC59:
+        if (mPostRaceScreenMode == POSTRACESCREENMODE_RESULTS) {
+            return;
+        }
+
+        ++mIndexOfCurrentRacer;
+        if (mIndexOfCurrentRacer >= mNumberOfRacers) {
+            mIndexOfCurrentRacer = 0;
+        }
+
+        Setup();
+        return;
+    case 0xC519BFC3:
+        if (mRaceType == GRace::kRaceType_Tollbooth) {
+            if (mPostRaceScreenMode == POSTRACESCREENMODE_LAPSTATS) {
+                mPostRaceScreenMode = POSTRACESCREENMODE_STATS;
+            } else {
+                mPostRaceScreenMode = POSTRACESCREENMODE_LAPSTATS;
+            }
+        } else {
+            mPostRaceScreenMode = static_cast< PostRaceScreenMode >(mPostRaceScreenMode + 1);
+            if (mPostRaceScreenMode == POSTRACESCREENMODE_NUMMODES) {
+                mPostRaceScreenMode = POSTRACESCREENMODE_RESULTS;
+            }
+        }
+
+        Setup();
+        return;
+    case 0xC519BFC4: {
+        unsigned int fe_flags = ReadField< unsigned int >(FEDatabase, 0x1C0);
+
+        if ((fe_flags & 0x40) != 0 || (fe_flags & 8) != 0) {
+            return;
+        }
+
+        DialogInterface::ShowTwoButtons(GetPackageName(), lbl_803E5EEC, static_cast< eDialogTitle >(1), 0x417B2601,
+                                        0x1A294DAD, 0xE1A57D51, 0xB4623F67, 0xB4623F67,
+                                        static_cast< eDialogFirstButtons >(1), 0x4D3399A8);
+        return;
+    }
+    case 0xE1A57D51:
+        new EUnPause();
+        if (cFEng::Get()->IsPackagePushed(lbl_803E5F00)) {
+            PhotoFinishScreen::mRestartSelected = true;
+            return;
+        }
+
+        new ERestartRace();
+        return;
+    case 0xB4623F67:
+        cFEng::Get()->QueuePackageMessage(0xC6341FF6, GetPackageName(), nullptr);
+        return;
+    case 0x30ED2368:
+    set_continue_script:
+        if (!FEngIsScriptSet(GetPackageName(), 0x47FF4E7C, 0x001335F0)) {
+            FEngSetScript(GetPackageName(), 0x47FF4E7C, 0x001335F0, true);
+        }
+        return;
+    case 0x406415E3: {
+        if (FEngIsScriptSet(GetPackageName(), 0x57EFB2FB, 0x0016A259)) {
+            return;
+        }
+
+        if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career &&
+            GRaceStatus::Get().GetRaceParameters()->GetIsBossRace()) {
+            bool show_dialog = false;
+
+            if (mPlayerRacerInfo != nullptr) {
+                if (ReadField< int >(mPlayerRacerInfo, 0x30) != 0 || ReadField< int >(mPlayerRacerInfo, 0x20) != 0 ||
+                    ReadField< int >(mPlayerRacerInfo, 0x24) != 0 || ReadField< int >(mPlayerRacerInfo, 0x1C) != 0 ||
+                    ReadField< int >(mPlayerRacerInfo, 0x28) != 0) {
+                    show_dialog = true;
+                }
+            }
+
+            if (show_dialog && GetRacerRanking(mPlayerRacerInfo) != 1) {
+                DialogInterface::ShowTwoButtons(GetPackageName(), lbl_803E5EEC, static_cast< eDialogTitle >(1),
+                                                0x417B2601, 0x1A294DAD, 0x30ED2368, 0xB4623F67, 0xB4623F67,
+                                                static_cast< eDialogFirstButtons >(1), 0x9887EB98);
+                return;
+            }
+        }
+
+        goto set_continue_script;
+    }
+    case 0xE1FDE1D1: {
+        unsigned int fe_flags = ReadField< unsigned int >(FEDatabase, 0x1C0);
+
+        if ((fe_flags & 0x40) != 0 || (fe_flags & 8) != 0) {
+            return;
+        }
+
+        if (cFEng::Get()->IsPackagePushed(lbl_803E5F00)) {
+            cFEng::Get()->QueuePackagePop(1);
+            if (cFEng::Get()->IsPackagePushed(lbl_803E5F18)) {
+                cFEng::Get()->QueuePackagePop(1);
+            }
+            return;
+        }
+
+        bool has_race_data = false;
+        if (mPlayerRacerInfo != nullptr) {
+            if (ReadField< int >(mPlayerRacerInfo, 0x30) != 0 || ReadField< int >(mPlayerRacerInfo, 0x20) != 0 ||
+                ReadField< int >(mPlayerRacerInfo, 0x24) != 0 || ReadField< int >(mPlayerRacerInfo, 0x1C) != 0 ||
+                ReadField< int >(mPlayerRacerInfo, 0x28) != 0) {
+                has_race_data = true;
+            }
+        }
+
+        bool is_dday_race = false;
+        if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() != nullptr &&
+            GRaceStatus::Get().GetRaceParameters()->GetIsDDayRace()) {
+            is_dday_race = true;
+        }
+
+        if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career &&
+            !is_dday_race) {
+            if (has_race_data) {
+                GRaceStatus::Get().RaceAbandoned();
+
+                MNotifyRaceAbandoned abandoned;
+                abandoned.Post(MNotifyRaceAbandoned::_GetKind());
+            }
+
+            new EUnPause();
+            return;
+        }
+
+        if (has_race_data) {
+            new EQuitToFE(GARAGETYPE_MAIN_FE, nullptr);
+        } else {
+            new EUnPause();
+        }
+        return;
+    }
+    case 0xC98356BA:
+        Setup();
+        return;
+    default:
+        return;
     }
 }
 
 eMenuSoundTriggers PostRaceResultsScreen::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
-    return MenuScreen::NotifySoundMessage(msg, maybe);
+    if (msg != 0x7B6B89D7) {
+        if (msg < 0x7B6B89D8) {
+            if (msg != 0x4A805994) {
+                return maybe;
+            }
+        } else if (msg != 0x9AFA53A7) {
+            return maybe;
+        }
+
+        if (mNumberOfRacers < 2 || mPostRaceScreenMode == POSTRACESCREENMODE_RESULTS) {
+            return static_cast< eMenuSoundTriggers >( -1 );
+        }
+    }
+
+    if (FEngIsScriptSet(GetPackageName(), 0x57EFB2FB, 0x0016A259)) {
+        return static_cast< eMenuSoundTriggers >( -1 );
+    }
+
+    return maybe;
 }
 
 static MenuScreen *CreatePostRaceResultsScreen(ScreenConstructorData *sd) {

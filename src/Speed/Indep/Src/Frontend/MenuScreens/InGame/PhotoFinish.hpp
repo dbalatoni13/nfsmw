@@ -47,9 +47,9 @@ class PhotoFinishScreen : public MenuScreen {
     void NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) override;
     void Setup();
     static MenuScreen *Create(ScreenConstructorData *sd);
+    static bool mRestartSelected;
 
   protected:
-    static bool mRestartSelected;
     static float mSpeedtrapSpeed;
     static float mSpeedtrapBounty;
     static bool mActive;
