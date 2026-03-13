@@ -5,78 +5,160 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feArrayScrollerMenu.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
+#include "Speed/Indep/Src/Gameplay/GRace.h"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 
-enum PostPursuitScreenMode {
-    POSTPURSUITSCREENMODE_PURSUIT = 0,
-    POSTPURSUITSCREENMODE_INFRACTIONS = 1,
-    POSTPURSUITSCREENMODE_MILESTONES = 2,
+struct GRacerInfo;
+
+typedef int dialog_handle;
+
+enum PostRaceScreenMode {
+    POSTRACESCREENMODE_RESULTS = 0,
+    POSTRACESCREENMODE_STATS = 1,
+    POSTRACESCREENMODE_LAPSTATS = 2,
+    POSTRACESCREENMODE_NUMMODES = 3,
 };
 
-// TODO MOVE PursuitData, idk where
-
-// total size: 0xAC
-class PursuitData {
-  public:
-    PursuitData() {}
-
-    // int GetNumMilestones() {}
-
-    // void PopulateData(struct IPursuit *ipursuit, struct IPerpetrator *iperpetrator, int exitToSafehouse);
-
-    // bool AddMilestone(struct GMilestone *milestone);
-
-    // const struct GMilestone *const GetMilestone(const int index) const;
-
+struct PursuitData {
     void ClearData();
 
-  private:
-    static const int mMaxNumMilestones; // size: 0x4, address: 0xFFFFFFFF
-
-  public:
-
-    bool mPursuitIsActive;                       // offset 0x0, size 0x1
-    float mPursuitLength;                        // offset 0x4, size 0x4
-    int mNumCopsDamaged;                         // offset 0x8, size 0x4
-    int mNumCopsDestroyed;                       // offset 0xC, size 0x4
-    int mNumSpikeStripsDodged;                   // offset 0x10, size 0x4
-    int mNumRoadblocksDodged;                    // offset 0x14, size 0x4
-    int mCostToStateAchieved;                    // offset 0x18, size 0x4
-    int mRepAchievedNormal;                      // offset 0x1C, size 0x4
-    int mRepAchievedCopDestruction;              // offset 0x20, size 0x4
-    int mExitToSafehouse;                        // offset 0x24, size 0x4
-    int mNumMilestonesThisPursuit;               // offset 0x28, size 0x4
-    struct GMilestone *mMilestonesCompleted[32]; // offset 0x2C, size 0x80
+    bool mPursuitIsActive;
 };
 
-// total size: 0xF0
-class PostRacePursuitScreen : public ArrayScrollerMenu {
-  public:
-    static PursuitData &GetPursuitData() {
-        return mPursuitData;
+struct PostRacePursuitScreen {
+    static PursuitData &GetPursuitData();
+};
+
+struct RaceStat : public FEStatWidget {
+    RaceStat(FEString *title, FEString *data);
+    ~RaceStat() override;
+};
+
+struct ResultStat : public RaceStat {
+    ResultStat(FEString *name_str, FEString *data, FEString *pos, GRacerInfo *racer_info)
+        : RaceStat(name_str, data) //
+        , Position(pos) //
+        , RacerInfo(racer_info) {}
+
+    ~ResultStat() override {}
+
+    FEString *Position;
+    GRacerInfo *RacerInfo;
+};
+
+struct RaceResultStat : public ResultStat {
+    RaceResultStat(FEString *name_str, FEString *time, FEString *pos, GRacerInfo *info)
+        : ResultStat(name_str, time, pos, info) {}
+
+    ~RaceResultStat() override;
+    void Draw() override;
+};
+
+struct StageStat : public ResultStat {
+    StageStat(FEString *stage, FEString *time, FEString *pos, int stage_num, float seconds, int pos_num)
+        : ResultStat(stage, time, pos, nullptr) //
+        , StageNum(stage_num) //
+        , Time(seconds) //
+        , PosNum(pos_num) {}
+
+    ~StageStat() override;
+    void Draw() override;
+
+    int StageNum;
+    Timer Time;
+    int PosNum;
+};
+
+struct TollboothStat : public ResultStat {
+    TollboothStat(FEString *tollbooth, FEString *time, FEString *pos, int tollbooth_num, float seconds, int pos_num)
+        : ResultStat(tollbooth, time, pos, nullptr) //
+        , TollboothNum(tollbooth_num) //
+        , Time(seconds) //
+        , PosNum(pos_num) {}
+
+    ~TollboothStat() override;
+    void Draw() override;
+
+    int TollboothNum;
+    Timer Time;
+    int PosNum;
+};
+
+struct StatsPanel {
+    StatsPanel();
+    virtual ~StatsPanel();
+
+    void SetParentPkg(const char *parent_pkg) {
+        ParentPkg = parent_pkg;
     }
 
-    PostRacePursuitScreen(ScreenConstructorData *sd);
+    void SetRacerName(const char *name) {
+        RacerName = name;
+    }
 
-    // Overrides: MenuScreen
-    ~PostRacePursuitScreen() override;
+    FEString *GetCurrentString(const char *name);
+    int GetNumStats() {
+        return TheStats.CountElements();
+    }
 
-    void Initialize();
+    void Reset();
+    void Draw(unsigned int numPlayers);
+    void AddStat(RaceStat *stat);
+    void AddInfoStat(unsigned int title, unsigned int info);
+    void AddGenericStat(float stat_data, unsigned int title_hash, unsigned int units_hash, const char *format);
+    void AddTimerStat(float seconds, unsigned int title_hash);
 
-    void SetupInfractions();
+    bTList<FEWidget> TheStats;
+    int iWidgetToAdd;
+    const char *RacerName;
+    const char *ParentPkg;
+};
 
-    void SetupMilestones();
-
-    void SetupPursuit();
-
-    // Overrides: MenuScreen
-    void NotificationMessage(u32 msg, FEObject *pObject, u32 Param1, u32 Param2) override;
+struct PostRaceResultsScreen : public MenuScreen {
+  public:
+    PostRaceResultsScreen(ScreenConstructorData *sd);
+    ~PostRaceResultsScreen() override;
+    void NotificationMessage(unsigned long msg, FEObject *pObject, unsigned long Param1, unsigned long Param2) override;
+    eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override;
 
   private:
-    static PursuitData mPursuitData; // size: 0xAC, address: 0x8047306C
+    void Setup();
+    void SetupResults();
+    void SetupStat_NosUsed();
+    void SetupStat_TopSpeed();
+    void SetupStat_AverageSpeed();
+    void SetupStat_TimeBehind();
+    void SetupStat_LapVariance();
+    void SetupStat_StageVariance();
+    void SetupStat_TrafficCollisions();
+    void SetupStat_ZeroToSixty();
+    void SetupStat_QuarterMile();
+    void SetupStat_PerfectShifts();
+    void SetupStat_AccumulatedSpeed();
+    void SetupStat_SpeedVariance();
+    void SetupStat_SpeedBehind();
+    void SetupRacerStats(int index, GRacerInfo *racer_info);
+    void SetupLapStats(int racerIndex, GRacerInfo *racer_info);
 
-    PostPursuitScreenMode mPostPursuitScreenMode; // offset 0xE8, size 0x4
-    unsigned int m_RaceButtonHash;                // offset 0xEC, size 0x4
+    StatsPanel RacerStats[16];
+    StatsPanel RaceResults;
+    // TODO: PS2 type info shows a dialog_handle at 0x1C4, but GC ctor/diffs clearly use
+    // this GameCube layout instead. Reconcile once NotificationMessage/upload paths are in.
+    int mNumberOfRacers;
+    int mIndexOfWinner;
+    int mIndexOfCurrentRacer;
+    int mNumberOfLaps;
+    int mNumberOfStats;
+    GRace::Type mRaceType;
+    PostRaceScreenMode mPostRaceScreenMode;
+    GRacerInfo *mPlayerRacerInfo;
+    int mMaxSlotsLeftSide;
+    unsigned int m_RaceButtonHash;
+    int m_lastErrorKind;
+    int m_lastErrorCode;
+    bool m_raceResultsUploaded;
 };
 
 #endif
