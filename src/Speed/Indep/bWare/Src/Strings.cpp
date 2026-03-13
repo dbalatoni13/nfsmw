@@ -218,10 +218,10 @@ int bStrNICmp(const char *s1, const char *s2, int n) {
             break;
         }
 
-        s1 = s1 + 1;
         c1 = bToUpper(c1);
-        s2 = s2 + 1;
         c2 = bToUpper(c2);
+        s1++;
+        s2++;
         if (c1 != c2) {
             break;
         }
