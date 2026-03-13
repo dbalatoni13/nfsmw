@@ -21,12 +21,39 @@ enum ePlayerHudType {
     PHT_DRAG_SPLIT2 = 6,
 };
 
+class Minimap;
+class OnlineHUDSupport;
+class AutoSaveIcon;
+
+void FEngSetAllObjectsInPackageVisibility(const char *pPackageName, bool visible);
+void FEngSetInvisible(FEObject *pObject);
+
 // total size: 0x348
 class FEngHud : public UTL::COM::Object, public IHud {
   public:
     FEngHud(ePlayerHudType ht, const char *pkg_name, IPlayer *player, int player_number);
+    ~FEngHud();
+    void Release() override;
+    void Update(IPlayer *player, float dt) override;
+    void JoyEnable();
+    void JoyDisable();
+    void JoyHandle();
+    bool AreResourcesLoaded();
+    bool IsHudVisible();
+    void HideAll();
+    void FadeAll();
+    void SetInPursuit(bool inPursuit);
+    bool IsInPursuit();
+    void SetHasTurbo(bool hasTurbo);
+    bool DoesHaveTurbo();
+    bool IsSplitScreen();
+    void RefreshMiniMapItems();
+    OnlineHUDSupport *GetOnlineHUDSupport();
 
   private:
+    void SetHudFeatures(unsigned long long features);
+    unsigned long long DetermineHudFeatures(IPlayer *player);
+    void SetWideScreenMode();
     unsigned long long CurrentHudFeatures; // offset 0x20, size 0x8
     ePlayerHudType mPlayerHudType;         // offset 0x28, size 0x4
     const char *pPackageName;              // offset 0x2C, size 0x4
@@ -77,10 +104,14 @@ class HudResourceManager {
     };
 
     static const char *GetHudFengName(ePlayerHudType ht);
+    void LoadRequiredResources(ePlayerHudType ht, const char *pkg_name);
+    void UnloadResources();
 
   private:
     HudResourceLoadStates mHudResourcesState; // offset 0x0, size 0x4
     ResourceFile *pHudTextures;               // offset 0x4, size 0x4
 };
+
+extern HudResourceManager TheHudResourceManager;
 
 #endif

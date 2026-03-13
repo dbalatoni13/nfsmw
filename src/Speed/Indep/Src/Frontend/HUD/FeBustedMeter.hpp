@@ -5,6 +5,23 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
+#include "Speed/Indep/Src/Interfaces/IFengHud.h"
 
+class BustedMeter : public HudElement, public IBustedMeter {
+  public:
+    BustedMeter(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
+    void Update(IPlayer *player) override;
+
+  private:
+    bool mInPursuit;
+    float mTimeUntilBusted;
+    bool mIsHiding;
+    FEObject * mpDataBustedCountdownGroup;
+    FEObject * mpDataBustedCountdownBar;
+    float mBustedCountdownBarOriginalWidth;
+    bool mIsBusted;
+    bool mBustedFlasherShown;
+};
 
 #endif
