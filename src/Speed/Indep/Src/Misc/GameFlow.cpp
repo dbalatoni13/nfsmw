@@ -126,6 +126,41 @@ void DisableAllSceneryGroups();
 unsigned int bStringHash(const char *);
 unsigned int stringhash32(const char *);
 
+void Synchronize__9SchedulerG5Timer(Scheduler *, Timer *);
+void SoundPause(bool, int);
+void SetSoundControlState(bool, int, const char *);
+void ServiceSpaceNodes();
+void SunTrackUnloader();
+void CloseSound();
+void CloseWorldModels();
+void CloseVisualTreatment();
+void ResetRenderEggs();
+void KillWorldAnimScene__11CAnimPlayerbT1(void *, bool, bool);
+void InitServices__9WorldConnv();
+void InitServices__10RenderConnv();
+void InitServices__9SoundConnv();
+void RestoreServices__9WorldConnv();
+void RestoreServices__10RenderConnv();
+void RestoreServices__9SoundConnv();
+extern unsigned int bDefaultSeed;
+void GenerateMissingCarParts();
+void InitializeSoundLoad();
+void LoadCurrentLanguage();
+void InitLocalization();
+extern int AllowCompressedStreamingTexturesInThisPoolNum;
+extern int EmergencySaveMemory;
+extern int CarLoaderPoolSizes[];
+void InitMemoryPool__13TrackStreameri(void *, int);
+void SetMemoryPoolSize__9CarLoaderi(CarLoader *, int);
+extern void *GlobalMemoryFile;
+extern int FinishedLoadingGlobalSuccesful;
+extern void *TheAnimPlayer;
+void WaitForResourceLoadingComplete();
+unsigned int GetVirtualMemoryAllocParams();
+
+#include "Speed/Indep/Src/Misc/EasterEggs.hpp"
+extern EasterEggs gEasterEggs;
+
 class IVisualTreatment {
   public:
     static IVisualTreatment *Get();
@@ -464,7 +499,43 @@ void TrackLoader::FinishedLoading() {
 }
 
 void TrackLoader::Unload() {
-    // TODO: implement fully
+    TheGameFlowManager.SetState(GAMEFLOW_STATE_UNLOADING_TRACK);
+    SoundPause(false, 8);
+    SetSoundControlState(false, 0, "TrackLoaderUnload");
+    cFEng::mInstance->QueuePackagePop(0);
+    cFEng::mInstance->ServiceFengOnly();
+    DeactivateMemorySponge();
+    g_pEAXSound->StopSND11();
+    KillWorldAnimScene__11CAnimPlayerbT1(TheAnimPlayer, true, false);
+    ServiceSpaceNodes();
+    ServiceSpaceNodes();
+    IVisualTreatment *vt = IVisualTreatment::Get();
+    vt->Reset();
+    *reinterpret_cast<int *>(vt) = 2;
+    CloseVisualTreatment();
+    Sim::Shutdown();
+    RestoreServices__9SoundConnv();
+    RestoreServices__10RenderConnv();
+    if (pCurrentWorld != nullptr) {
+        delete pCurrentWorld;
+    }
+    pCurrentWorld = nullptr;
+    UnloadEverything__9CarLoader(&TheCarLoader);
+    eWaitUntilRenderingDone();
+    CloseWorldModels();
+    SunTrackUnloader();
+    NotifySkyUnloader();
+    CloseTopologyAndSceneryGroups();
+    CloseSound();
+    RestoreServices__9WorldConnv();
+    CleanupExpandedSlotPools__15SlotPoolManager(&TheSlotPoolManager);
+    bWaitUntilAsyncDone(nullptr);
+    SkipFE = 0;
+    bDefaultSeed = Joylog::AddOrGetData(bDefaultSeed, 0x20, JOYLOG_CHANNEL_RANDOM);
+    if (iRam804a5fa0 == 0 && iRam804a5fa4 == 0) {
+        ResetRenderEggs();
+        gEasterEggs.ClearNonPersistent();
+    }
 }
 
 void InitTopologyAndSceneryGroups() {
@@ -545,11 +616,73 @@ void WaitForSimulation() {
 }
 
 void FinishedGameLoading() {
-    // TODO: implement (364B)
+    TheGameFlowManager.SetState(GAMEFLOW_STATE_RACING);
+    if (iRam804a73bc != 0) {
+        while (iRam804a73bc != 0) {
+            bThreadYield(8);
+            ServiceResourceLoading();
+        }
+    }
+    UnloadMemoryFile(InGameMemoryFile);
+    InGameMemoryFile = nullptr;
+    DefragmentPool__9CarLoader(&TheCarLoader);
+    Timer t = _RealTimer;
+    Synchronize__9SchedulerG5Timer(_9Scheduler_fgScheduler, &t);
+    const char *loadingPackage = GetLoadingScreenPackageName();
+    if (cFEng::mInstance->IsPackageInControl(LoadingControllerScreenPackageName) ||
+        cFEng::mInstance->IsPackageInControl(loadingPackage)) {
+        GameFlowClearFEngLoadingScreen();
+    }
+    TheDemoDiscManager.LastActivityTime = _RealTimer;
+    uRam8048df4c = 0;
+    int **table = __Q33UTL11Collectionst8Listable2Z4IHudi2__mTable;
+    for (int *p = *table; p != *(table + iRam80481afc); p++) {
+        int *obj = reinterpret_cast<int *>(*p);
+        int *vtbl = reinterpret_cast<int *>(*(obj + 1));
+        void (*func)(void *) = reinterpret_cast<void (*)(void *)>(*(vtbl + 0x54 / 4));
+        func(reinterpret_cast<void *>(reinterpret_cast<char *>(obj) + *reinterpret_cast<short *>(reinterpret_cast<char *>(vtbl) + 0x50)));
+    }
+    if (CodeOverlayMemoryPoolNumber != 0) {
+        bMemorySetOverflowPoolNumber(0, -1);
+    }
+    ActivateMemorySponge();
 }
 
 void BeginWorldLoad() {
-    // TODO: implement (396B)
+    if (SkipFE != 0 && cFEng::mInstance->IsPackageInControl(LoadingBootName)) {
+        cFEng::mInstance->QueuePackagePop(1);
+    }
+    eFixUpTables();
+    EstablishRemoteCaffeineConnection();
+    TheTrackLoader.InitTopologyAndSceneryGroups();
+    SunTrackLoader();
+    WeHaveCheckedIfJR2ServerExists = 0;
+    if (iRam804a5fa0 == 0 && iRam804a5fa4 == 0) {
+        ActivateAnyRenderEggs();
+    }
+    InitServices__9WorldConnv();
+    InitServices__10RenderConnv();
+    InitServices__9SoundConnv();
+    g_pEAXSound->StartSND11();
+    StartWorldAnimations();
+    DisableSoundUpdate = 0;
+    new char[0xe8];
+    Sim::eUserMode simMode = CalculateSimMode();
+    const char *trackName = "open";
+    if (SkipFE == 0) {
+        bool isSplitScreen = FEDatabase->IsSplitScreenMode();
+        if (!isSplitScreen && FEDatabase->iNumPlayers == 2) {
+            trackName = "open_split";
+        }
+    }
+    UCrc32 trackCrc(stringhash32(trackName));
+    Sim::Init(trackCrc, simMode);
+    SimpleModelAnim::Reset();
+    OpenVisualTreatment();
+    IVisualTreatment *vt = IVisualTreatment::Get();
+    vt->Reset();
+    *reinterpret_cast<int *>(vt) = 0;
+    TheGameFlowManager.SetSingleFunction(reinterpret_cast<void (*)(int)>(WaitForSimulation), "WaitForSimulation", 0);
 }
 
 void DelayWaitForLoadingScreen() {

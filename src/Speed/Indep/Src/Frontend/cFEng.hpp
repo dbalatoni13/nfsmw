@@ -19,6 +19,7 @@ public:
     bool IsPackageInControl(const char *name);
     void PopNoControlPackage(const char *name);
     void QueuePackagePop(int all);
+    void ServiceFengOnly();
 
     static cFEng *mInstance;
 };
