@@ -28,15 +28,18 @@ NitrousGauge::NitrousGauge(UTL::COM::Object *pOutter, const char *pkg_name, int 
 
 void NitrousGauge::Update(IPlayer *player) {
     if (mpNosMeterBar != nullptr) {
-        float maxAngle = lbl_803E4D30;
-        if (bStrICmp(pPackageName, lbl_803E4D20) != 0) {
-            if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
-                maxAngle = lbl_803E4D38;
-            }
-        } else {
-            maxAngle = lbl_803E4D34;
+        float min_angle = lbl_803E4D30;
+        if (bStrICmp(GetPackageName(), lbl_803E4D20) == 0) {
+            min_angle = lbl_803E4D34;
+        } else if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
+            min_angle = lbl_803E4D38;
         }
-        FEngSetMultiImageRot(mpNosMeterBar, mNos * -maxAngle + maxAngle);
+        const float max_angle = min_angle;
+        const float min_nos = min_angle;
+        const float max_nos = min_angle;
+        const float frac = mNos;
+        const float angle = frac * -max_angle + max_angle;
+        FEngSetMultiImageRot(mpNosMeterBar, angle);
     }
 }
 
