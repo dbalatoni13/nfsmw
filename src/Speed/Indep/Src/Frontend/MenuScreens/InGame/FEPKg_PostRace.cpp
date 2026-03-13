@@ -2,7 +2,9 @@
 
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/Gameplay/GTimer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 
 extern FEString *FEngFindString(const char *pkg_name, int hash);
@@ -12,12 +14,23 @@ extern void FEngSetVisible(FEObject *obj);
 extern bool FEngIsScriptSet(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash);
 extern void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash,
                           bool start_at_beginning);
+extern void FEngSetLanguageHash(FEString *text, unsigned int hash);
 extern void FEngSetLanguageHash(const char *pkg_name, unsigned int object_hash, unsigned int language_hash);
 extern unsigned int FEngHashString(const char *, ...);
 extern int FEPrintf(FEString *text, const char *fmt, ...);
+extern const char *GetLocalizedPercentSign();
 
+extern const char lbl_803E4CB4[];
+extern const char lbl_803E4CF0[];
+extern const char lbl_803E5074[];
+extern const char lbl_803E507C[];
+extern const char lbl_803E5084[];
+extern const char lbl_803E5088[];
 extern const char lbl_803E5DB0[];
+extern const char lbl_803E5DCC[];
+extern const char lbl_803E5DDC[];
 extern const char lbl_803E5E04[];
+extern const char lbl_803E5E24[];
 
 template <typename T> static T ReadField(const void *base, int offset) {
     return *reinterpret_cast< const T * >(reinterpret_cast< const char * >(base) + offset);
@@ -59,6 +72,56 @@ static float GetRacerQuarterMile(const GRacerInfo *info) {
     return info != nullptr ? ReadField< float >(info, 0x13C) : 0.0f;
 }
 
+static float GetRacerStageTime(const GRacerInfo *info, int index) {
+    return info != nullptr ? ReadField< float >(info, 0x140 + index * 4) : 0.0f;
+}
+
+static int GetRacerStagePosition(const GRacerInfo *info, int index) {
+    return info != nullptr ? ReadField< int >(info, 0x150 + index * 4) : 0;
+}
+
+static float GetRacerTotalStageTime(const GRacerInfo *info) {
+    if (info == nullptr || ReadField< int >(info, 0x30) == 0) {
+        return 0.0f;
+    }
+
+    return ReadField< const GTimer >(info, 0x160).GetTime();
+}
+
+static FEString *GetPanelString(StatsPanel &panel, const char *label) {
+    return FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, label, panel.RacerName));
+}
+
+struct LapStat : public ResultStat {
+    LapStat(FEString *lap, FEString *time, FEString *pos, int lap_num, float seconds, int pos_num)
+        : ResultStat(lap, time, pos, nullptr) //
+        , LapNum(lap_num) //
+        , Time(seconds) //
+        , PosNum(pos_num) {}
+
+    ~LapStat() override;
+    void Draw() override;
+
+    int LapNum;
+    Timer Time;
+    int PosNum;
+};
+
+struct SpeedStat : public ResultStat {
+    SpeedStat(FEString *speedtrap, FEString *speed, FEString *pos, int trap_num, float trap_speed, int pos_num)
+        : ResultStat(speedtrap, speed, pos, nullptr) //
+        , TrapNum(trap_num) //
+        , Speed(trap_speed) //
+        , PosNum(pos_num) {}
+
+    ~SpeedStat() override;
+    void Draw() override;
+
+    int TrapNum;
+    float Speed;
+    int PosNum;
+};
+
 RaceStat::RaceStat(FEString *title, FEString *data)
     : FEStatWidget(true) {
     SetTitleObject(title);
@@ -73,16 +136,83 @@ void RaceResultStat::Draw() {
     FEStatWidget::Draw();
 }
 
+LapStat::~LapStat() {}
+
+void LapStat::Draw() {
+    FEPrintf(GetTitleObject(), lbl_803E4CB4, LapNum);
+    if (static_cast< float >(PosNum) == 0.0f) {
+        FEngSetLanguageHash(Position, 0x5D82DBA2);
+        FEngSetLanguageHash(GetDataObject(), 0x5D82DBA2);
+        return;
+    }
+
+    if (Time.GetSeconds() == 0.0f) {
+        FEngSetLanguageHash(Position, 0x0FC1BF40);
+        FEngSetLanguageHash(GetDataObject(), 0x0FC1BF40);
+        return;
+    }
+
+    char text[40];
+    FEPrintf(Position, lbl_803E4CB4, PosNum);
+    Time.PrintToString(text, 0);
+    FEPrintf(GetDataObject(), lbl_803E4CF0, text);
+}
+
 StageStat::~StageStat() {}
 
 void StageStat::Draw() {
-    FEStatWidget::Draw();
+    FEPrintf(GetTitleObject(), lbl_803E5074, (StageNum + 1) * 0x14, GetLocalizedPercentSign());
+    if (Time.GetSeconds() == 0.0f) {
+        FEngSetLanguageHash(Position, 0x0FC1BF40);
+        FEngSetLanguageHash(GetDataObject(), 0x0FC1BF40);
+        return;
+    }
+
+    char text[40];
+    FEPrintf(Position, lbl_803E4CB4, PosNum);
+    Time.PrintToString(text, 0);
+    FEPrintf(GetDataObject(), lbl_803E4CF0, text);
+}
+
+SpeedStat::~SpeedStat() {}
+
+void SpeedStat::Draw() {
+    FEPrintf(GetTitleObject(), lbl_803E4CB4, TrapNum);
+    if (Speed == 0.0f) {
+        FEngSetLanguageHash(Position, 0x0FC1BF40);
+        FEngSetLanguageHash(GetDataObject(), 0x0FC1BF40);
+        return;
+    }
+
+    float scale = 2.23699f;
+    if (ReadField< unsigned char >(ReadField< void * >(FEDatabase, 0x20), 0x44) == 1) {
+        scale = 3.6f;
+    }
+
+    FEPrintf(Position, lbl_803E4CB4, PosNum);
+    FEPrintf(GetDataObject(), lbl_803E507C, Speed * scale);
 }
 
 TollboothStat::~TollboothStat() {}
 
 void TollboothStat::Draw() {
-    FEStatWidget::Draw();
+    FEPrintf(GetTitleObject(), lbl_803E4CB4, TollboothNum);
+    if (static_cast< float >(PosNum) == 1.0f) {
+        FEngSetLanguageHash(Position, 0x5D82DBA2);
+        FEngSetLanguageHash(GetDataObject(), 0x5D82DBA2);
+        return;
+    }
+
+    if (Time.GetSeconds() == 0.0f) {
+        FEngSetLanguageHash(Position, 0x0FC1BF40);
+        FEngSetLanguageHash(GetDataObject(), 0x0FC1BF40);
+        return;
+    }
+
+    char text[40];
+    FEPrintf(Position, lbl_803E4CB4, PosNum);
+    Time.PrintToString(text, 0);
+    FEPrintf(GetDataObject(), lbl_803E5084, text);
 }
 
 StatsPanel::StatsPanel()
@@ -549,6 +679,7 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
     }
 
     GRaceStatus &race_status = GRaceStatus::Get();
+    StatsPanel &panel = RacerStats[racerIndex];
     FEObject *obj = nullptr;
 
     FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0x8159A0B2);
@@ -605,20 +736,71 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
         break;
     }
 
-    RaceResults.Reset();
+    panel.RacerName = GetRacerName(racer_info);
 
-    for (int i = 0; i < mNumberOfLaps; ++i) {
-        switch (mRaceType) {
-        case GRace::kRaceType_Tollbooth:
-            RaceResults.AddStat(new ("", 0) TollboothStat(nullptr, nullptr, nullptr, i + 1, race_status.GetRaceTollboothTime(i, racerIndex), 0));
-            break;
-        case GRace::kRaceType_SpeedTrap:
-            RaceResults.AddGenericStat(race_status.GetRaceSpeedTrapSpeed(i, racerIndex), 0, 0, "%.1f");
-            break;
-        default:
-            RaceResults.AddStat(new ("", 0) StageStat(nullptr, nullptr, nullptr, i + 1, race_status.GetLapTime(i, racerIndex, false), race_status.GetLapPosition(i, racerIndex, false)));
-            break;
+    switch (mRaceType) {
+    case GRace::kRaceType_P2P:
+    case GRace::kRaceType_Drag:
+        for (int i = 0; i < 4; ++i) {
+            panel.AddStat(new ("", 0)
+                              StageStat(GetPanelString(panel, lbl_803E5DCC), GetPanelString(panel, lbl_803E5DDC),
+                                        GetPanelString(panel, lbl_803E5E24), i, GetRacerStageTime(racer_info, i),
+                                        GetRacerStagePosition(racer_info, i)));
         }
+
+        panel.AddStat(new ("", 0)
+                          StageStat(GetPanelString(panel, lbl_803E5DCC), GetPanelString(panel, lbl_803E5DDC),
+                                    GetPanelString(panel, lbl_803E5E24), 4, GetRacerTotalStageTime(racer_info),
+                                    GetRacerRanking(racer_info)));
+        break;
+    case GRace::kRaceType_Circuit:
+    case GRace::kRaceType_Knockout:
+        for (int i = 0; i < race_status.GetRaceParameters()->GetNumLaps(); ++i) {
+            int lap_position = race_status.GetLapPosition(i, racerIndex, true);
+
+            if (ReadField< int >(racer_info, 0x1C) != 0 && lap_position < 2) {
+                lap_position = -1;
+            }
+
+            panel.AddStat(new ("", 0)
+                              LapStat(GetPanelString(panel, lbl_803E5DCC), GetPanelString(panel, lbl_803E5DDC),
+                                      GetPanelString(panel, lbl_803E5E24), i + 1,
+                                      race_status.GetLapTime(i, racerIndex, false), lap_position));
+        }
+        break;
+    case GRace::kRaceType_Tollbooth: {
+        unsigned int num_booths =
+            race_status.GetRaceParameters() != nullptr ? race_status.GetRaceParameters()->GetNumCheckpoints() : 0;
+
+        for (unsigned int i = 0; i < num_booths; ++i) {
+            panel.AddStat(new ("", 0)
+                              TollboothStat(GetPanelString(panel, lbl_803E5DCC), GetPanelString(panel, lbl_803E5DDC),
+                                            GetPanelString(panel, lbl_803E5E24), i + 1,
+                                            race_status.GetRaceTollboothTime(i, racerIndex), 1));
+        }
+
+        panel.AddStat(new ("", 0)
+                          TollboothStat(GetPanelString(panel, lbl_803E5DCC), GetPanelString(panel, lbl_803E5DDC),
+                                        GetPanelString(panel, lbl_803E5E24), num_booths + 1,
+                                        ReadField< int >(racer_info, 0x30) != 0 ? race_status.GetRaceTimeRemaining()
+                                                                                : 0.0f,
+                                        1));
+        break;
+    }
+    case GRace::kRaceType_SpeedTrap: {
+        unsigned int num_traps = GManager::Exists() ? GManager::Get().GetNumSpeedTraps() : 0;
+
+        for (unsigned int i = 0; i < num_traps; ++i) {
+            panel.AddStat(new ("", 0)
+                              SpeedStat(GetPanelString(panel, lbl_803E5DCC), GetPanelString(panel, lbl_803E5DDC),
+                                        GetPanelString(panel, lbl_803E5E24), i + 1,
+                                        race_status.GetRaceSpeedTrapSpeed(i, racerIndex),
+                                        race_status.GetRaceSpeedTrapPosition(i, racerIndex)));
+        }
+        break;
+    }
+    default:
+        break;
     }
 }
 

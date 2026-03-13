@@ -28,7 +28,11 @@ struct PursuitData {
 };
 
 struct PostRacePursuitScreen {
-    static PursuitData &GetPursuitData();
+    static PursuitData mPursuitData;
+
+    static PursuitData &GetPursuitData() {
+        return mPursuitData;
+    }
 };
 
 struct RaceStat : public FEStatWidget {
