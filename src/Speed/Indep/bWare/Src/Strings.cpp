@@ -465,7 +465,7 @@ float bStrToFloat(const char *s) {
         }
 
         if (fractional_part != 0.0f) {
-            fractional_part = static_cast<float>(static_cast<int>(fractional_part) + 1);
+            *reinterpret_cast<int *>(&fractional_part) += 1;
         }
 
         value = value + fractional_part;
