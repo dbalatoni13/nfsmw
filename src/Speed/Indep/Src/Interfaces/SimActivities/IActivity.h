@@ -36,10 +36,10 @@ class IActivity : public UTL::COM::IUnknown,
     virtual ~IActivity() {}
 
   public:
-    virtual void Release();
-    virtual bool Attach(IUnknown *object);
-    virtual bool Detach(IUnknown *object);
-    virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const;
+    virtual void Release() = 0;
+    virtual bool Attach(IUnknown *object) = 0;
+    virtual bool Detach(IUnknown *object) = 0;
+    virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const = 0;
 };
 
 }; // namespace Sim

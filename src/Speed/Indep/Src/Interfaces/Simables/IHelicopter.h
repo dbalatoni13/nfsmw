@@ -20,11 +20,11 @@ class ISimpleChopper : public UTL::COM::IUnknown {
     ~ISimpleChopper() override {}
 
   public:
-    virtual void SetDesiredVelocity(const UMath::Vector3 &vel);
-    virtual void GetDesiredVelocity(UMath::Vector3 &vel);
-    virtual void MaxDeceleration(bool t);
-    virtual void SetDesiredFacingVector(const UMath::Vector3 &facingDir);
-    virtual void GetDesiredFacingVector(UMath::Vector3 &facingDir);
+    virtual void SetDesiredVelocity(const UMath::Vector3 &vel) = 0;
+    virtual void GetDesiredVelocity(UMath::Vector3 &vel) = 0;
+    virtual void MaxDeceleration(bool t) = 0;
+    virtual void SetDesiredFacingVector(const UMath::Vector3 &facingDir) = 0;
+    virtual void GetDesiredFacingVector(UMath::Vector3 &facingDir) = 0;
 };
 
 #endif

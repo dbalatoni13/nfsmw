@@ -19,12 +19,12 @@ class IBody : public UTL::COM::IUnknown {
 
     virtual ~IBody() {}
 
-    virtual void GetTransform(UMath::Matrix4 &) const;
-    virtual void GetLinearVelocity(UMath::Vector3 &) const;
-    virtual void GetAngularVelocity(UMath::Vector3 &) const;
-    virtual void GetDimension(UMath::Vector3 &dim) const;
-    virtual const Attrib::Instance &GetAttributes() const;
-    virtual unsigned int GetWorldID() const;
+    virtual void GetTransform(UMath::Matrix4 &) const = 0;
+    virtual void GetLinearVelocity(UMath::Vector3 &) const = 0;
+    virtual void GetAngularVelocity(UMath::Vector3 &) const = 0;
+    virtual void GetDimension(UMath::Vector3 &dim) const = 0;
+    virtual const Attrib::Instance &GetAttributes() const = 0;
+    virtual unsigned int GetWorldID() const = 0;
 };
 
 #endif

@@ -19,7 +19,7 @@ class ITrafficMgr : public UTL::COM::IUnknown, public UTL::Collections::Singleto
 
     virtual ~ITrafficMgr() {}
 
-    virtual void FlushAllTraffic(bool release);
+    virtual void FlushAllTraffic(bool release) = 0;
 };
 
 #endif

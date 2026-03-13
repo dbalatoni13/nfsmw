@@ -29,7 +29,7 @@ class ICause : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<
     virtual ~ICause() {}
 
     // virtual void OnCausedCollision(const COLLISION_INFO &cinfo, ISimable *from, ISimable *to);
-    virtual void OnCausedExplosion(IExplosion *explosion, ISimable *to);
+    virtual void OnCausedExplosion(IExplosion *explosion, ISimable *to) = 0;
 };
 
 #endif

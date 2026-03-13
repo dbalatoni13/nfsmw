@@ -33,15 +33,15 @@ class IEntity : public UTL::COM::IUnknown,
 
     virtual ~IEntity() {}
 
-    virtual void AttachPhysics(ISimable *object);
-    virtual void DetachPhysics();
-    virtual ISimable *GetSimable() const;
-    virtual const UMath::Vector3 &GetPosition() const;
-    virtual bool SetPosition(UMath::Vector3 &position);
-    virtual void Kill();
-    virtual bool Attach(IUnknown *object);
-    virtual bool Detach(IUnknown *object);
-    virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const;
+    virtual void AttachPhysics(ISimable *object) = 0;
+    virtual void DetachPhysics() = 0;
+    virtual ISimable *GetSimable() const = 0;
+    virtual const UMath::Vector3 &GetPosition() const = 0;
+    virtual bool SetPosition(UMath::Vector3 &position) = 0;
+    virtual void Kill() = 0;
+    virtual bool Attach(IUnknown *object) = 0;
+    virtual bool Detach(IUnknown *object) = 0;
+    virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const = 0;
 };
 
 }; // namespace Sim

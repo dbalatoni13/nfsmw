@@ -43,6 +43,20 @@ class Activity : public Sim::Object, public UTL::Collections::GarbageNode<Sim::A
 
     void OnDetached(IAttachable *pOther) override {}
 
+    bool IsAttached(const IUnknown *pOther) const override {
+        if (mAttachments) {
+            return mAttachments->IsAttached(pOther);
+        }
+        return false;
+    }
+
+    const IAttachable::List *GetAttachments() const override {
+        if (mAttachments) {
+            return &mAttachments->GetList();
+        }
+        return nullptr;
+    }
+
   private:
     Attachments *mAttachments; // offset 0x48, size 0x4
 };
