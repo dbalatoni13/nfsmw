@@ -39,18 +39,19 @@ template <> void tTable<float>::Blend(float *dest, float *a, float *b, float ble
 }
 
 template <> void tTable<bVector2>::Blend(bVector2 *dest, bVector2 *a, bVector2 *b, float blend_a) {
-    float ay = a->y;
     float ax = a->x;
-    dest->y = ay * blend_a;
+    float ay = a->y;
     dest->x = ax * blend_a;
+    dest->y = ay * blend_a;
     bScaleAdd(dest, dest, b, 1.0f - blend_a);
 }
 
 template <> void tTable<bVector4>::Blend(bVector4 *dest, bVector4 *a, bVector4 *b, float blend_a) {
-    float w = a->w;
+    float x = a->x;
     float y = a->y;
     float z = a->z;
-    dest->x = a->x * blend_a;
+    float w = a->w;
+    dest->x = x * blend_a;
     dest->y = y * blend_a;
     dest->z = z * blend_a;
     dest->w = w * blend_a;
