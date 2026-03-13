@@ -680,14 +680,15 @@ void RegionLoader::BeginLoading() {
 int NeedsSeperateTODStreamingFile(const char *);
 const char *GetTimeOfDaySuffix(eTimeOfDay);
 char *bStrStr(const char *, const char *);
+inline char *bGetPlatformName() { return "GC"; }
 
-void GetTODFilename(eTimeOfDay tod, const char *base, char *out, int) {
-    bStrCpy(out, base);
-    if (NeedsSeperateTODStreamingFile(base) != 0) {
-        char *dot = bStrStr(base, ".");
-        char *out_dot = bStrStr(out, ".");
+void GetTODFilename(eTimeOfDay tod, const char *filename_in, char *filename_out, int bufsize_out) {
+    bStrCpy(filename_out, filename_in);
+    if (NeedsSeperateTODStreamingFile(bGetPlatformName()) != 0) {
+        char *extension_in = bStrStr(filename_in, ".");
+        char *extension_out = bStrStr(filename_out, ".");
         const char *suffix = GetTimeOfDaySuffix(tod);
-        bSPrintf(out_dot, "_%s%s", suffix, dot);
+        bSPrintf(extension_out, "_%s%s", suffix, extension_in);
     }
 }
 

@@ -198,7 +198,7 @@ bool QueuedFileBundle::TestAddQueuedFile(QueuedFile *q) {
 
 void QueuedFileBundle::BeginRead() {
     int size = ReadBufferTop - ReadBufferBot;
-    ReadBuffer = static_cast<signed char *>(bMalloc(size, MemoryPoolNumber | 0x1040));
+    ReadBuffer = static_cast<signed char *>(bMalloc(size, (static_cast<unsigned short>(MemoryPoolNumber) & 0xF) | 0x1040));
     AddQueuedFile(ReadBuffer, QueuedFiles[0]->Filename, ReadBufferBot, size, ReadCallbackBridge, this, nullptr);
     QueuedFile *qf = static_cast<QueuedFile *>(WaitingQueuedFileList.GetTail());
     WaitingQueuedFileList.Remove(qf);
