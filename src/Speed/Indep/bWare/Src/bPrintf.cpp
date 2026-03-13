@@ -118,8 +118,10 @@ int bVSNPrintf(char *destString, int max_len, const char *fmt, va_list argList) 
 }
 
 void _stuff_char(bOutputInfo *output_info, const char ch, int *outLen) {
-    if (!output_info->StdOut) {
-        if (output_info->DestStringLen - 1 <= *outLen) {
+    if (output_info->StdOut) {
+        bBufferedPutChar(ch);
+    } else {
+        if (*outLen >= output_info->DestStringLen - 1) {
             return;
         }
 
@@ -128,8 +130,6 @@ void _stuff_char(bOutputInfo *output_info, const char ch, int *outLen) {
             *dest = ch;
             output_info->DestString = dest + 1;
         }
-    } else {
-        bBufferedPutChar(ch);
     }
 
     *outLen = *outLen + 1;
