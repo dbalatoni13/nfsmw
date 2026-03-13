@@ -5,7 +5,7 @@
 unsigned int bDefaultSeed = 0x12345678;
 
 void bEndianSwap64(void *value) {
-    unsigned long long temp = *reinterpret_cast<unsigned long long *>(value);
+    long long temp = *reinterpret_cast<long long *>(value);
     *reinterpret_cast<unsigned char *>(value) = temp;
     *(reinterpret_cast<unsigned char *>(value) + 1) = temp >> 8;
     *(reinterpret_cast<unsigned char *>(value) + 2) = temp >> 16;
@@ -345,8 +345,9 @@ unsigned short bASin(float x) {
 }
 
 unsigned short bFixATan(int x) {
-    bool negative = x < 0;
-    if (negative) {
+    int negate = 0;
+    if (x < 0) {
+        negate = 1;
         x = -x;
     }
 
@@ -356,20 +357,17 @@ unsigned short bFixATan(int x) {
 
     if (x < 0x200000) {
         const unsigned short *table;
-        int index;
 
         if (x < 0x40000) {
-            index = x >> 0xb;
-            table = bFixATanTableLow;
+            table = bFixATanTableLow + (x >> 0xb);
             fraction = (x << 5) & 0xffff;
         } else {
-            index = x >> 0xe;
-            table = bFixATanTableHigh;
+            table = bFixATanTableHigh + (x >> 0xe);
             fraction = (x << 2) & 0xffff;
         }
 
-        hi = table[index + 1];
-        lo = table[index];
+        lo = table[0];
+        hi = table[1];
     } else if (x < 0x1000000) {
         fraction = x >> 8;
         hi = 0x3fd7;
@@ -381,10 +379,10 @@ unsigned short bFixATan(int x) {
     }
 
     unsigned int result = lo + (static_cast<int>((hi - lo) * fraction) >> 16);
-    if (!negative) {
-        return static_cast<unsigned short>(result & 0xffff);
+    if (negate) {
+        return static_cast<unsigned short>((-static_cast<int>(result)) & 0xffff);
     }
-    return static_cast<unsigned short>((-static_cast<int>(result)) & 0xffff);
+    return static_cast<unsigned short>(result & 0xffff);
 }
 
 unsigned short bFixATan(int x, int y) {
