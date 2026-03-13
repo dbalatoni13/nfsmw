@@ -179,19 +179,19 @@ void MD5::_Final() {
     } while (uIndex != 56);
 
     unsigned int count = uCount;
-    strData[57] = 0;
-    strData[58] = 0;
-    strData[59] = 0;
-    strData[56] = static_cast<unsigned char>(count << 3);
-    strData[57] = static_cast<unsigned char>(count >> 5);
-    strData[58] = static_cast<unsigned char>(count >> 13);
     strData[59] = static_cast<unsigned char>(count >> 21);
+    strData[57] = static_cast<unsigned char>(count >> 5);
     strData[60] = static_cast<unsigned char>(count >> 29);
+    strData[58] = static_cast<unsigned char>(count >> 13);
+    strData[56] = static_cast<unsigned char>(count << 3);
+    strData[62] = 0;
+    strData[61] = 0;
+    strData[63] = 0;
 
     _Transform();
 
     unsigned char *raw = rawMD5;
-    unsigned char *str = strMD5 + 1;
+    unsigned char *str = strMD5;
     unsigned int uData = 0;
 
     int uIndex2 = 0;
@@ -200,14 +200,14 @@ void MD5::_Final() {
             uData = uRegs[uIndex2 >> 2];
         }
         *raw = static_cast<unsigned char>(uData);
-        str[-1] = hexChars[(uData >> 4) & 0xF];
-        str[0] = hexChars[uData & 0xF];
+        str[0] = hexChars[(uData >> 4) & 0xF];
+        str[1] = hexChars[uData & 0xF];
         uIndex2++;
         raw++;
         uData >>= 8;
         str += 2;
-    } while (uIndex2 < 16);
+    } while (uIndex2 <= 15);
 
-    strMD5[32] = '\0';
+    *str = '\0';
     computed = true;
 }
