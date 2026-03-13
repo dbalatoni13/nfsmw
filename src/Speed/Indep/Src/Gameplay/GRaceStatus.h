@@ -484,6 +484,10 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         return mTrafficPattern;
     }
 
+    int GetTrafficDensity() const {
+        return mTrafficDensity;
+    }
+
     bool GetActivelyRacing() const {
         return mActivelyRacing;
     }

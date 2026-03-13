@@ -468,7 +468,31 @@ bool AITrafficManager::ValidateVehicle(IVehicle *ivehicle, float density) const 
     return true;
 }
 
-// float AITrafficManager::ComputeDensity() const {}
+float AITrafficManager::ComputeDensity() const {
+    float result = 0.0f;
+
+    if (!INIS::Exists() && (!ICopMgr::Exists() || !ICopMgr::Get()->IsPlayerPursuitActive())) {
+        if (SkipFE && !SkipFEDisableTraffic) {
+            result = UMath::Clamp(static_cast<float>(SkipFETrafficDensity) * 0.01f, 0.0f, 1.0f);
+        } else {
+            result = 1.0f;
+            if (GRaceStatus::Exists()) {
+                GRaceStatus::PlayMode mode = GRaceStatus::Get().GetPlayMode();
+                if (mode == GRaceStatus::kPlayMode_Roaming) {
+                    GRaceStatus &race = GRaceStatus::Get();
+                    result = UMath::Clamp(static_cast<float>(race.GetTrafficDensity()) * 0.01f, 0.0f, 1.0f);
+                } else if (mode == GRaceStatus::kPlayMode_Racing) {
+                    result = 1.0f;
+                }
+            }
+        }
+        if (UTL::Collections::Listable<IPursuit, 8>::GetList().size() != 0) {
+            result *= 0.5f;
+        }
+    }
+
+    return result;
+}
 
 // TODO move?
 static const float Tweak_TrafficDensitySpawnRates[11] = {0.0f, 0.05f, 0.1f, 0.125f, 0.2f, 0.4f, 0.6f, 1.0f, 3.0f, 5.0f, 8.0f};
