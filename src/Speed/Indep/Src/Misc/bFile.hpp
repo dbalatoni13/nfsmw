@@ -72,10 +72,18 @@ struct CachedRealFileHandle : public bTNode<CachedRealFileHandle> {
 struct bFile : public bTNode<bFile> {
     // total size: 0x38
     bFile(const char *filename, bFileOpenMode open_mode);
+    ~bFile();
 
     void OpenLowLevel();
     void MaybeAddCachedHandle();
+    void Seek(int position, int mode);
     void ReadAsync(void *buf, int num_bytes, void (*callback)(void *), void *callback_param);
+    void FlushWriteBuffer();
+    void Write(const void *buf, int num_bytes);
+
+    static void CallbackFunctionOpen(int fop, int status, void *userdata);
+    static void CallbackFunctionRead(int fop, int status, void *userdata);
+    static void HandleCompletedCallbacks();
 
     bFileOpenMode OpenMode;                             // offset 0x8, size 0x4
     int FileSize;                                       // offset 0xC, size 0x4
@@ -118,5 +126,100 @@ void bSyncTaskRun();
 void bFileRunTimingTest();
 void bReadAsync(bFile *f, void *buf, int numbytes, void (*callback)(void *), void *param);
 void bServiceFileSystem();
+void bWrite(bFile *f, const void *buf, int num_bytes);
+bool bIsAsyncDone(bFile *f);
+void bWaitUntilAsyncDone(bFile *f);
+void bInitFileSystem();
+
+namespace RealFile {
+
+// total size: 0x14
+struct DeviceDriver {
+    char mDeviceName[16];   // offset 0x0, size 0x10
+
+    DeviceDriver(const char *name);
+    virtual ~DeviceDriver();
+    virtual bool Init();
+    virtual void Restore();
+    virtual int Open(const char *name, int oflags, int *pParentFileHandle);
+    virtual void Close(int h);
+    virtual unsigned int Read(int h, void *buf, unsigned int bufsize, DeviceDriver *ddParent, int ddFileHandle);
+    virtual unsigned int Write(int h, const void *buf, unsigned int bufsize, DeviceDriver *ddParent, int ddFileHandle);
+    virtual unsigned long long Seek(int h, unsigned long long offset, int whence, DeviceDriver *ddParent, int ddFileHandle);
+    virtual unsigned long long Getsize(int h);
+    virtual unsigned long long QueryLocation(int h);
+    virtual bool Remove(const char *name);
+    virtual unsigned long long Getspace();
+    virtual const char *GetName();
+    virtual unsigned int GetOptimalReadSize();
+};
+
+void AddDevice(DeviceDriver *device);
+void AddSearchLocation(const char *location, bool recursive);
+
+} // namespace RealFile
+
+// total size: 0x18
+struct bFileDirectoryEntry {
+    unsigned int Hash;            // offset 0x0, size 0x4
+    int FileNumber;               // offset 0x4, size 0x4
+    int LocalSectorOffset;        // offset 0x8, size 0x4
+    int TotalSectorOffset;        // offset 0xC, size 0x4
+    int Size;                     // offset 0x10, size 0x4
+    unsigned int Checksum;        // offset 0x14, size 0x4
+};
+
+// total size: 0x28
+struct OpenDisculatorFile {
+    static void *operator new(unsigned int size);
+    static void operator delete(void *ptr);
+    const char *filename;         // offset 0x0, size 0x4
+    int nameHash;                 // offset 0x4, size 0x4
+    int giantFileNum;             // offset 0x8, size 0x4
+    int localSectorOffset;        // offset 0xC, size 0x4
+    int totalSectorOffset;        // offset 0x10, size 0x4
+    unsigned long long size;      // offset 0x18, size 0x8
+    unsigned long long seekPos;   // offset 0x20, size 0x8
+};
+
+// total size: 0x81C
+struct DisculatorDriver : public RealFile::DeviceDriver {
+    DisculatorDriver() : DeviceDriver("DVDV") {}
+
+    static DisculatorDriver *Get() { return sDisculatorDriver; }
+
+    char *GetGiantDataFileName(int file_number) {
+        return GiantDataFileName[file_number];
+    }
+
+    ~DisculatorDriver() override;
+    static DisculatorDriver *Create(const char *dir_filename, const char *data_filename);
+    bool Init() override;
+    void Restore() override;
+    int Open(const char *name, int oflags, int *pParentFileHandle) override;
+    void Close(int h) override;
+    unsigned int Read(int h, void *buf, unsigned int bufsize, RealFile::DeviceDriver *ddParent, int ddFileHandle) override;
+    unsigned int Write(int h, const void *buf, unsigned int bufsize, RealFile::DeviceDriver *ddParent, int ddFileHandle) override;
+    unsigned long long Seek(int h, unsigned long long offset, int whence, RealFile::DeviceDriver *ddParent, int ddFileHandle) override;
+    unsigned long long Getsize(int h) override;
+    unsigned long long QueryLocation(int h) override;
+    bool Remove(const char *name) override { return false; }
+    unsigned long long Getspace() override { return 0; }
+
+    bool LoadGiantFiles(const char *giant_dir_filename, const char *giant_data_filename_base);
+    bFileDirectoryEntry *FindDirectoryEntry(const char *filename);
+
+    static DisculatorDriver *sDisculatorDriver;
+
+    bFileDirectoryEntry *pDirectoryEntryTable;     // offset 0x14, size 0x4
+    int NumDirectoryEntries;                        // offset 0x18, size 0x4
+    char GiantDataFileName[30][64];                 // offset 0x1C, size 0x780
+    int GiantDataFileHandle[30];                    // offset 0x79C, size 0x78
+    int CurrentSector;                              // offset 0x814, size 0x4
+    int TotalDeltaSector;                           // offset 0x818, size 0x4
+};
+
+bool bInitDisculatorDriver(const char *dir_filename, const char *data_filename);
+extern SlotPool *OpenDisculatorFileSlotPool;
 
 #endif

@@ -529,11 +529,11 @@ void WaitForSimulation() {
 }
 
 void FinishedGameLoading() {
-    // TODO: implement
+    // TODO: implement (364B)
 }
 
 void BeginWorldLoad() {
-    // TODO: implement
+    // TODO: implement (396B)
 }
 
 void DelayWaitForLoadingScreen() {
