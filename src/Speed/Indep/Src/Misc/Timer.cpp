@@ -84,7 +84,11 @@ void PrepareRealTimestep(float video_time_elapsed) {
     int quantized_video_time_elapsed;
     float start_video_time_elapsed;
 
-    if (!Joylog::IsReplaying()) {
+    if (Joylog::IsReplaying()) {
+        quantized_video_time_elapsed = Joylog::GetData(16, JOYLOG_CHANNEL_TIMESTEP);
+        Joylog::GetData(4, JOYLOG_CHANNEL_LOOP_COUNTER);
+        start_video_time_elapsed = video_time_elapsed;
+    } else {
         float max_time = MaxTicksPerTimestep * GetVideoFrameTime(GetVideoMode());
         start_video_time_elapsed = bMin(video_time_elapsed + RealTimeElapsedError, max_time);
         quantized_video_time_elapsed = GetQuantizedRealTimeElapsed(start_video_time_elapsed);
@@ -92,10 +96,6 @@ void PrepareRealTimestep(float video_time_elapsed) {
         RealTimeElapsedError = start_video_time_elapsed - t.GetSeconds();
         Joylog::AddData(quantized_video_time_elapsed, 16, JOYLOG_CHANNEL_TIMESTEP);
         Joylog::AddData(current_loop_counter, 4, JOYLOG_CHANNEL_LOOP_COUNTER);
-    } else {
-        quantized_video_time_elapsed = Joylog::GetData(16, JOYLOG_CHANNEL_TIMESTEP);
-        Joylog::GetData(4, JOYLOG_CHANNEL_LOOP_COUNTER);
-        start_video_time_elapsed = video_time_elapsed;
     }
     RealTimeElapsedQuantized = quantized_video_time_elapsed;
     RealTimeElapsed = GetRealTimeElapsedFromQuantized(quantized_video_time_elapsed);

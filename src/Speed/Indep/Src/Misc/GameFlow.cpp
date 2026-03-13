@@ -249,12 +249,12 @@ Sim::eUserMode CalculateSimMode() {
             mode = Sim::USER_SPLIT_SCREEN;
         }
     } else {
-        if (TheOnlineManager.IsOnlineRace()) {
-            mode = Sim::USER_ONLINE;
-        } else if (FEDatabase->IsSplitScreenMode() && FEDatabase->iNumPlayers == 2) {
+        int isSplit = 0;
+        if (FEDatabase->IsSplitScreenMode()) {
+            isSplit = (FEDatabase->iNumPlayers == 2);
+        }
+        if (isSplit) {
             mode = Sim::USER_SPLIT_SCREEN;
-        } else {
-            mode = Sim::USER_SINGLE;
         }
     }
     return mode;
