@@ -234,14 +234,12 @@ char *SpeedScript::GetNextCommand() {
 // UNSOLVED
 char *SpeedScript::GetNextCommand(const char *command) {
     char *s;
-
-    do {
-        s = this->GetNextCommand();
-        if (!s) {
-            return nullptr;
+    while ((s = GetNextCommand()) != nullptr) {
+        if (bStrICmp(s, command) == 0) {
+            return s;
         }
-    } while (bStrICmp(s, command) != 0);
-    return s;
+    }
+    return nullptr;
 }
 
 // TODO fake match, isArg doesn't exist
