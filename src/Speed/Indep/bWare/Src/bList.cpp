@@ -82,24 +82,25 @@ void bList::MergeSort(SortFunc cmp) {
             int qsize = insize;
             while (true) {
                 bNode *e;
+                bNode *next = q;
                 if (psize < 1) {
-                    if ((qsize < 1) || (q == nullptr)) {
+                    if ((qsize < 1) || (next == nullptr)) {
                         break;
                     }
 
                     qsize--;
-                    e = q;
-                    p = q->Next;
-                    if (p == list) {
-                        p = nullptr;
+                    e = next;
+                    q = next->Next;
+                    if (q == list) {
+                        q = nullptr;
                     }
                 } else {
-                    if ((qsize != 0) && (q != nullptr) && (cmp(p, q) > 0)) {
+                    if ((qsize != 0) && (next != nullptr) && (cmp(p, next) > 0)) {
                         qsize--;
-                        e = q;
-                        p = q->Next;
-                        if (p == list) {
-                            p = nullptr;
+                        e = next;
+                        q = next->Next;
+                        if (q == list) {
+                            q = nullptr;
                         }
                     } else {
                         psize--;
@@ -121,6 +122,8 @@ void bList::MergeSort(SortFunc cmp) {
 
                 tail = e;
             }
+
+            p = q;
         }
 
         tail->Next = old_tail;
