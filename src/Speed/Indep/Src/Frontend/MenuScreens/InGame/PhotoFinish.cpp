@@ -98,12 +98,11 @@ PhotoFinishScreen::PhotoFinishScreen(ScreenConstructorData *sd)
         if (GRaceStatus::Exists()) {
             GRaceStatus &race_status = GRaceStatus::Get();
             GRaceParameters *race_parameters = race_status.GetRaceParameters();
-
             if (race_parameters != nullptr) {
+                bool is_boss_race = race_parameters->GetIsBossRace();
                 const char *photo_texture = lbl_803E60A4;
 
-                if (race_status.GetRaceContext() != GRace::kRaceContext_Career ||
-                    !race_parameters->GetIsBossRace()) {
+                if (race_status.GetRaceContext() != GRace::kRaceContext_Career || !is_boss_race) {
                     photo_texture = race_parameters->GetPhotoFinishTexture();
                 }
 
@@ -117,16 +116,12 @@ PhotoFinishScreen::PhotoFinishScreen(ScreenConstructorData *sd)
 
     StartCinematicSlowdown(static_cast< EVIEW_ID >(1), lbl_803E60C4);
     SetSoundControlState(true, static_cast< eSNDCTLSTATE >(0xF), lbl_803E60B8);
-    new ESndGameState(7, true);
-    new ECameraPhotoFinish();
     new EMomentStrm(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, nullptr, 0x9FE1EE17);
-
-    mRestartSelected = false;
-    mActive = true;
 }
 
 void PhotoFinishScreen::Setup() {
-    FEManager::Get();
+    FEManager *fe_manager = FEManager::Get();
+    reinterpret_cast< unsigned int * >(fe_manager)[1] = 1;
 
     unsigned int locale_hash = 0x8569AB44;
     if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
@@ -136,9 +131,9 @@ void PhotoFinishScreen::Setup() {
     if (fResultType == FERESULTTYPE_SPEEDTRAP) {
         float display_speed = mSpeedtrapSpeed * (locale_hash == 0x8569A25F ? lbl_803E6200 : lbl_803E6204);
         unsigned int speed_hash = bStringHash(lbl_803E61C4);
-        unsigned int bounty_hash = bStringHash(lbl_803E61D4);
 
         FEPrintf(GetPackageName(), speed_hash, lbl_803E4FF8, GetTranslatedString(locale_hash), display_speed);
+        unsigned int bounty_hash = bStringHash(lbl_803E61D4);
         FEPrintf(GetPackageName(), bounty_hash, GetTranslatedString(0x060C058A), static_cast< int >(mSpeedtrapBounty));
         return;
     }
@@ -222,11 +217,10 @@ void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsig
     switch (msg) {
         case 0x406415E3:
             if (fResultType == FERESULTTYPE_SPEEDTRAP) {
-                UCrc32 kind(0x20D60DBF);
-
                 new EUnPause();
                 new EAutoSave();
 
+                UCrc32 kind(0x20D60DBF);
                 MFlowReadyForOutro outro_message;
                 outro_message.Post(kind);
                 SoundPause(false, static_cast< eSNDPAUSE_REASON >(0xA));
@@ -264,9 +258,9 @@ void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsig
                             return;
                         }
                     } else if (remaining_races == 1) {
-                        UCrc32 kind(0x20D60DBF);
                         cFEng::Get()->QueuePackagePop(1);
 
+                        UCrc32 kind(0x20D60DBF);
                         MFlowReadyForOutro outro_message;
                         outro_message.Post(kind);
                         return;
@@ -277,10 +271,9 @@ void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsig
                     return;
                 }
 
-                UCrc32 kind(0x20D60DBF);
-
                 new EUnPause();
 
+                UCrc32 kind(0x20D60DBF);
                 MFlowReadyForOutro outro_message;
                 outro_message.Post(kind);
                 return;
