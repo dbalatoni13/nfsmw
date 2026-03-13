@@ -23,8 +23,10 @@ AISpawnManager::~AISpawnManager() {
 }
 
 void AISpawnManager::GetBasePosition(UMath::Vector3 &basePos) {
-    eView *view = eGetView(0, false);
-    if (view->IsActive()) {
+    eView *view = eGetView(1, false);
+    if (!view->IsActive()) {
+        basePos = UMath::Vector3::kZero;
+    } else {
         bVector3 cPos(*view->GetCamera()->GetPosition());
         bVector3 posV3;
         eUnSwizzleWorldVector(cPos, posV3);
@@ -35,8 +37,10 @@ void AISpawnManager::GetBasePosition(UMath::Vector3 &basePos) {
 }
 
 void AISpawnManager::GetBaseForwardVector(UMath::Vector3 &baseForwardVec) {
-    eView *view = eGetView(0, false);
-    if (view->IsActive()) {
+    eView *view = eGetView(1, false);
+    if (!view->IsActive()) {
+        baseForwardVec = UMath::Vector3::kZero;
+    } else {
         bVector3 cPos(*view->GetCamera()->GetDirection());
         bVector3 posV3;
         eUnSwizzleWorldVector(cPos, posV3);

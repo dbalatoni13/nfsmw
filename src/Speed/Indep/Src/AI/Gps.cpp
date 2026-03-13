@@ -12,10 +12,11 @@ Sim::IActivity *Gps::Construct(Sim::Param params) {
     if (!gps) {
         gps = new Gps();
     }
+    Sim::IActivity *result = nullptr;
     if (gps) {
-        return static_cast<Sim::IActivity *>(gps);
+        result = static_cast<Sim::IActivity *>(gps);
     }
-    return nullptr;
+    return result;
 }
 
 Gps::Gps()
