@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 // TODO are these two maybe in AIAction.h?
 // total size: 0x1
@@ -16,9 +17,11 @@ class speed_delay_traits {
     typedef float value_type;
     typedef float value_arg;
 
-    time_type maximum_delay() const {}
+    time_type maximum_delay() const { return 1.0f; }
 
-    value_type lerp(value_type a, value_type b, value_type l) const {}
+    value_type lerp(value_type a, value_type b, value_type l) const {
+        return a + l * (b - a);
+    }
 
     // Static members
     static const size_t sample_count;
@@ -26,15 +29,20 @@ class speed_delay_traits {
 
 template <typename T> class time_delay_filter {
     typedef T traits_type;
-    typedef typename T::value_type value_type; // TODO use these
+    typedef typename T::value_type value_type;
     typedef typename T::value_arg value_arg;
     typedef typename T::time_type time_type;
 
   public:
     void reset(float init);
 
-    const float &at(unsigned int off) const {}
-    inline float resolution() const {}
+    const float &at(unsigned int off) const {
+        return samples[(cursor - off) & 0xF];
+    }
+
+    float resolution() const {
+        return traits.maximum_delay() / 16;
+    }
 
     float get_sample(time_type delay) const;
     void add_sample(float sample, time_type dt);
@@ -53,6 +61,48 @@ template <typename T> class time_delay_filter {
     float offset;        // offset 0x48, size 0x4
     unsigned int cursor; // offset 0x4C, size 0x4
 };
+
+template <typename T>
+void time_delay_filter<T>::reset(float init) {
+    cursor = 0;
+    offset = 0.0f;
+    lastsample = init;
+    for (unsigned int i = 0; i < 16; i++) {
+        samples[i] = init;
+    }
+}
+
+template <typename T>
+float time_delay_filter<T>::get_sample(time_type delay) const {
+    if (offset < delay) {
+        float res = resolution();
+        unsigned int o = static_cast< unsigned int >(bFloor((delay - offset) / res));
+        if (o + 1 < 16) {
+            float frac = (static_cast< float >(o + 1) * res - delay + offset) / res;
+            return traits.lerp(at(o + 1), at(o), frac);
+        } else {
+            return at(15);
+        }
+    } else if (offset >= resolution()) {
+        float frac = (offset - delay) / offset;
+        return traits.lerp(at(0), lastsample, frac);
+    } else {
+        return lastsample;
+    }
+}
+
+template <typename T>
+void time_delay_filter<T>::add_sample(float sample, time_type dt) {
+    float res = resolution();
+    unsigned int count = static_cast< unsigned int >(bFloor((dt + offset) / res));
+    for (unsigned int i = 0; i < count; i++) {
+        cursor = (cursor + 1) & 0xF;
+        float l = (static_cast< float >(i + 1) * res - offset) / dt;
+        samples[cursor] = traits.lerp(lastsample, sample, l);
+    }
+    lastsample = sample;
+    offset = offset + (dt - static_cast< float >(count) * res);
+}
 
 // total size: 0x48
 class AIActionPursuitOffRoad : public AIAction, public Debugable {
