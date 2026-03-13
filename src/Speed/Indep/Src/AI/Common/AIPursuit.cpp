@@ -1079,6 +1079,215 @@ void AIPursuit::AssignCopsInCircle(CopAndAngle *copangles, int num, float radius
     }
 }
 
+void AIPursuit::UpdateFormation(float dT) {
+    if (!mTarget->IsValid()) {
+        return;
+    }
+
+    IVehicleAI *targetvehicleai;
+    if (!mTarget->QueryInterface(&targetvehicleai)) {
+        return;
+    }
+
+    IRigidBody *itargetRB;
+    if (!mTarget->QueryInterface(&itargetRB)) {
+        return;
+    }
+
+    mFormation->Update(dT, this);
+
+    Pursuers assignCopList;
+    Vector3List copRelativePositions;
+    assignCopList.reserve(mIVehicleList.size());
+    copRelativePositions.reserve(mIVehicleList.size());
+
+    float grossDistanceToTarget = UMath::Distance(mTarget->GetPosition(), targetvehicleai->GetCurrentRoad()->GetPosition());
+    float formationCandidateLimit = 60.0f;
+
+    for (IVehicle *const *vehicleIter = mIVehicleList.begin(); vehicleIter != mIVehicleList.end(); vehicleIter++) {
+        IVehicle *ivehicle = *vehicleIter;
+        IPursuitAI *ipv;
+        if (!ivehicle->QueryInterface(&ipv)) {
+            continue;
+        }
+        if (IsSupportVehicle(ivehicle)) {
+            continue;
+        }
+
+        bool bIsChopper = ivehicle->GetVehicleClass() == VehicleClass::CHOPPER;
+        ISimable *simable = ivehicle->GetSimable();
+        UMath::Vector3 targetRelativePos = simable->GetPosition();
+        UMath::Sub(targetRelativePos, mTarget->GetPosition(), targetRelativePos);
+
+        ipv->SetInFormation(false);
+
+        if (bIsChopper) {
+            if (!mIsPerpBusted && !mIsPursuitBailed) {
+                AssignChopperGoal(ipv);
+            }
+        } else {
+            IVehicleAI *ivai = ivehicle->GetAIVehiclePtr();
+            if (ivai->GetDrivableToTargetPos()) {
+                float dist = UMath::Length(targetRelativePos);
+                if (dist <= grossDistanceToTarget + formationCandidateLimit) {
+                    itargetRB->ConvertWorldToLocal(targetRelativePos, false);
+                    assignCopList.push_back(ipv);
+                    copRelativePositions.push_back(targetRelativePos);
+                }
+            }
+        }
+    }
+
+    FormationTargetList formationOffsets;
+    formationOffsets.reserve(mFormation->GetTargetOffsets().size());
+
+    EvenOutOffsets(copRelativePositions, formationOffsets);
+
+    if (copRelativePositions.size() != 0 && formationOffsets.size() != 0) {
+        AssignClosestOffsets(copRelativePositions, assignCopList, formationOffsets, true);
+    }
+
+    int i = 0;
+    int countInFormation = 0;
+    unsigned int countInPosition = 0;
+    UpdateOutOfFormationOffsets();
+
+    float averageDistanceToTarget = 0.0f;
+    for (IPursuitAI *const *pursuitIter = assignCopList.begin(); pursuitIter != assignCopList.end(); pursuitIter++, i++) {
+        IPursuitAI *ipv = *pursuitIter;
+        if (!ipv->GetInFormation()) {
+            ipv->SetInPosition(false);
+        } else {
+            countInFormation++;
+            UMath::Vector3 copRelativePosition = copRelativePositions[i];
+            UMath::Vector3 copOffset = ipv->GetPursuitOffset();
+            float distanceToTarget = UMath::Distancexz(copOffset, copRelativePosition);
+            if (distanceToTarget < 4.0f) {
+                averageDistanceToTarget += distanceToTarget;
+                countInPosition++;
+                ipv->SetInPosition(true);
+            } else {
+                ipv->SetInPosition(false);
+            }
+        }
+    }
+
+    IPerpetrator *iperp;
+    Attrib::Gen::pursuitlevels *pursuitLevelAttrib = nullptr;
+    if (mTarget->QueryInterface(&iperp)) {
+        pursuitLevelAttrib = iperp->GetPursuitLevelAttrib();
+    }
+
+    float collapsespeed = KPH2MPS(pursuitLevelAttrib->CollapseSpeed());
+    if (mIsAJerk) {
+        collapsespeed = KPH2MPS(125.0f);
+    }
+
+    if (mBreakerTimer >= 0.0f) {
+        float finisherTime = mFormation->GetFinisherTime();
+        if (mBreakerTimer < finisherTime && !mIsPerpBusted && !mIsPursuitBailed) {
+            mBreakerTimer += dT;
+            goto finisherCheck;
+        }
+    }
+
+    // collapseCheck
+    if (pursuitLevelAttrib == nullptr || mTarget->GetSpeed() >= collapsespeed || countInFormation < 1) {
+        goto noCollapse;
+    }
+
+    if (mIsPerpBusted) {
+        mInFormationTimer = 0.0f;
+    } else if (mIsPerpInSight && !mIsPursuitBailed) {
+        int maxCopsCollapsing = pursuitLevelAttrib->MaxCopsCollapsing(0);
+        float innerRadius = static_cast<float>(pursuitLevelAttrib->CollapseInnerRadius(0));
+        float outerRadius = pursuitLevelAttrib->CollapseOuterRadius();
+        mCollapseActive = SetupCollapse(assignCopList, maxCopsCollapsing, innerRadius, outerRadius);
+        if (mCollapseActive && mGroundSupportRequest.mSupportRequestStatus == GroundSupportRequest::ACTIVE && mGroundSupportRequest.mHeavySupport != nullptr) {
+            for (IVehicle *const *iter = mIVehicleList.begin(); iter != mIVehicleList.end(); iter++) {
+                IVehicle *ivehicle = *iter;
+                if (IsSupportVehicle(ivehicle)) {
+                    IPursuitAI *ipursuitai;
+                    if (ivehicle->QueryInterface(&ipursuitai)) {
+                        ipursuitai->StartFlee();
+                    }
+                }
+            }
+            mGroundSupportRequest.Reset();
+        }
+    } else {
+        goto noCollapse;
+    }
+    goto cleanup;
+
+noCollapse: {
+    if (!mIsPerpBusted && (mBreakerTimer >= 0.0f || mCollapseActive)) {
+        mCollapseActive = false;
+        float zero = 0.0f;
+        mInFormationTimer = zero;
+        mBreakerTimer = -1.0f;
+        for (IPursuitAI *const *pursuitIter = assignCopList.begin(); pursuitIter != assignCopList.end(); pursuitIter++) {
+            IPursuitAI *ipv = *pursuitIter;
+            if (ipv != nullptr) {
+                ipv->SetInPositionGoal(UCrc32::kNull);
+                ipv->StartPursuit(mTarget, nullptr);
+            }
+        }
+        for (IVehicle *const *iter = mIVehicleList.begin(); iter != mIVehicleList.end(); iter++) {
+            IVehicle *ivehicle = *iter;
+            IPursuitAI *ipv;
+            if (!ivehicle->QueryInterface(&ipv)) {
+                continue;
+            }
+            IVehicleAI *ivai = ivehicle->GetAIVehiclePtr();
+            UCrc32 goal = ivai->GetGoalName();
+            UCrc32 inpositiongoal = ipv->GetInPositionGoal();
+            if (goal == inpositiongoal || goal == kPullOverGoal) {
+                ipv->SetInPositionGoal(UCrc32::kNull);
+                ipv->StartPursuit(mTarget, nullptr);
+            }
+        }
+    }
+    goto cleanup;
+}
+
+finisherCheck: {
+    PursuitFormation *pf = mFormation;
+    if (!pf->GetHasFinisher() || countInPosition == 0 || mCollapseActive || countInFormation != 0 || mIsPursuitBailed) {
+        mInFormationTimer = 0.0f;
+    } else {
+        float disttolerance = mFormation->GetFinisherTolerance();
+        float averageDist = static_cast<float>(countInPosition);
+        float formationrate = disttolerance * 4.0f;
+        formationrate = ((formationrate + formationrate) - averageDistanceToTarget / averageDist) / formationrate;
+        formationrate = bClamp(formationrate, -1.0f, 1.0f);
+        float newTimer = mInFormationTimer + formationrate * dT;
+        mInFormationTimer = newTimer;
+        if (newTimer < 0.0f) {
+            mInFormationTimer = 0.0f;
+        }
+        float timeToFinisher = mFormation->GetTimeToFinisher();
+        if (mInFormationTimer < timeToFinisher) {
+            goto cleanup;
+        }
+        if (countInPosition < mFormation->GetMinFinisherCops()) {
+            mInFormationTimer = mFormation->GetTimeToFinisher() - 0.01f;
+        } else {
+            mBreakerTimer = 0.0f;
+            for (IPursuitAI *const *pursuitIter = assignCopList.begin(); pursuitIter != assignCopList.end(); pursuitIter++) {
+                IPursuitAI *ipv = *pursuitIter;
+                if (ipv != nullptr && ipv->GetInFormation() && ipv->GetInPositionGoal() != UCrc32::kNull) {
+                    ipv->DoInPositionGoal();
+                }
+            }
+        }
+    }
+}
+
+cleanup:
+    ;
+}
+
 extern float kBustedHUDTime;
 
 bool AIPursuit::OnTask(HSIMTASK htask, float dT) {
