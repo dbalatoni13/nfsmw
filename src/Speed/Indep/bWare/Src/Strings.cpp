@@ -67,9 +67,13 @@ char *bStrCpy(char *to, const char *from) {
 }
 
 unsigned short *bStrCpy(unsigned short *to, const unsigned short *from) {
-    unsigned short *dest = to;
+    int n = 0;
 
-    while ((*dest++ = *from++) != 0) {}
+    to[n] = from[n];
+    while (to[n] != 0) {
+        n++;
+        to[n] = from[n];
+    }
     return to;
 }
 
@@ -148,14 +152,13 @@ unsigned short *bStrNCpy(unsigned short *to, const char *from, int m) {
 char *bSafeStrCpy(char *to, const char *from, int max_size) {
     int n = 0;
 
-    if (max_size > 0) {
+    if (from) {
         while ((n < max_size - 1) && (from[n] != '\0')) {
             to[n] = from[n];
             n++;
         }
-        to[n] = '\0';
     }
-
+    to[n] = '\0';
     return to;
 }
 
@@ -167,19 +170,19 @@ int bStrCmp(const char *s1, const char *s2) {
         return 0;
     }
 
-    if (s2 != nullptr) {
-        char c1;
-        char c2;
-
-        do {
-            c1 = *s1++;
-            c2 = *s2++;
-        } while ((c1 != '\0') && (c2 != '\0') && (c1 == c2));
-
-        return c1 - c2;
+    if (s2 == nullptr) {
+        return 1;
     }
 
-    return 1;
+    char c1;
+    char c2;
+
+    do {
+        c1 = *s1++;
+        c2 = *s2++;
+    } while ((c1 != '\0') && (c2 != '\0') && (c1 == c2));
+
+    return c1 - c2;
 }
 
 void bSharedStringPool::Init(int size) {

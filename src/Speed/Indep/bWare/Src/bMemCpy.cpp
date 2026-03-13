@@ -52,14 +52,13 @@ int bMemCmp(const void *s1, const void *s2, unsigned int numbytes) {
 
 void bMemSet(void *dest, unsigned char c, unsigned int numbytes) {
     int *idest = reinterpret_cast<int *>(dest);
-    int fill = c << 16;
-    int pair[2];
+    int fill = c << 24;
 
-    fill = fill + (c << 24);
+    fill = fill + (c << 16);
     fill = fill + (c << 8);
     fill = fill + c;
-    pair[0] = fill;
-    pair[1] = fill;
+    int fill2 = fill;
+    int fill3 = fill;
 
     if ((reinterpret_cast<uintptr_t>(idest) & 3) == 0) {
         while (((reinterpret_cast<uintptr_t>(idest) & 0xf) != 0) && (numbytes > 3)) {
@@ -71,11 +70,12 @@ void bMemSet(void *dest, unsigned char c, unsigned int numbytes) {
 
     if ((reinterpret_cast<uintptr_t>(idest) & 7) == 0) {
         while (numbytes > 0xf) {
-            idest[0] = pair[0];
-            idest[1] = pair[1];
+            int t0 = fill2;
+            idest[0] = t0;
+            idest[1] = fill3;
             numbytes -= 0x10;
-            idest[2] = pair[0];
-            idest[3] = pair[1];
+            idest[2] = t0;
+            idest[3] = fill3;
             idest += 4;
         }
     }
