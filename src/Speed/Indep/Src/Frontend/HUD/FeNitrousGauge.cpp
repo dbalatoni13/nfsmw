@@ -22,7 +22,7 @@ NitrousGauge::NitrousGauge(UTL::COM::Object *pOutter, const char *pkg_name, int 
     , mNos(lbl_803E4D1C) //
 {
     RegisterGroup(0x87C38E97);
-    mpDataNosMeterIcon = FEngFindObject(pkg_name, 0x27DDF583);
+    mpDataNosMeterIcon = FEngFindObject(GetPackageName(), 0x27DDF583);
     mpNosMeterBar = RegisterMultiImage(0xEDFB6D37);
 }
 

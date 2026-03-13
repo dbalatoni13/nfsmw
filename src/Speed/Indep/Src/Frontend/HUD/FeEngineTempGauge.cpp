@@ -29,7 +29,7 @@ EngineTempGauge::EngineTempGauge(UTL::COM::Object *pOutter, const char *pkg_name
     , mEngineTempChanged(true) //
 {
     RegisterGroup(FEHashUpper(lbl_803E4DB0));
-    mpWarningLight = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4DC8));
+    mpWarningLight = FEngFindObject(GetPackageName(), FEHashUpper(lbl_803E4DC8));
     mpEngineTempGaugeBar = RegisterMultiImage(FEHashUpper(lbl_803E4DE0));
 }
 
