@@ -429,26 +429,31 @@ float bStrToFloat(const char *s) {
     }
 
     float value = 0.0f;
-    char current = *s;
+    char current;
 
-    while (bIsDigit(current)) {
+    for (;;) {
+        current = *s;
+        if (!bIsDigit(current)) {
+            break;
+        }
         s++;
         value = value * 10.0f + static_cast<float>(current - '0');
-        current = *s;
     }
 
     if (current == '.') {
         float fractional_part = 0.0f;
         float fraction = 1.0f;
+        s++;
 
-        while (true) {
-            current = *++s;
+        for (;;) {
+            current = *s;
             if (!bIsDigit(current)) {
                 break;
             }
 
             fraction = fraction * 0.1f;
             fractional_part = static_cast<float>(current - '0') * fraction + fractional_part;
+            s++;
         }
 
         if (fractional_part != 0.0f) {
