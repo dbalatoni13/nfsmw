@@ -29,6 +29,8 @@ from _common import (
 root_dir = ROOT_DIR
 OBJDIFF_CLI = os.path.join(root_dir, "build", "tools", "objdiff-cli")
 
+RELOC_DIFF_CHOICES = ["none", "name_address", "data_value", "all"]
+
 
 def run_objdiff(
     unit: str, base_obj: Optional[str] = None, reloc_diffs: str = "none"

@@ -55,8 +55,16 @@ struct WRoadLane {
         return GetBits(0, 4);
     }
 
-    unsigned int GetBits(int n_offset, int n_bits) const;
-    int GetBitsSigned(int n_offset, int n_bits) const;
+    unsigned int GetBits(int n_offset, int n_bits) const {
+        unsigned int n_mask = ~0u << n_bits;
+        return (nBits >> n_offset) & ~n_mask;
+    }
+
+    int GetBitsSigned(int n_offset, int n_bits) const {
+        int extra_high_bits = 32 - (n_offset + n_bits);
+        int bits = n_offset + extra_high_bits;
+        return static_cast< int >(nBits << extra_high_bits) >> bits;
+    }
 
     float GetWidth() const {
         return static_cast< float >(GetBitsSigned(4, 14)) * (100.0f / 8191.0f);

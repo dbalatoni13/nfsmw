@@ -233,7 +233,7 @@ class IPursuit : public UTL::COM::IUnknown, public UTL::Collections::Listable<IP
     virtual float GetEvadeLevel() const;
     virtual float GetCoolDownTimeRemaining() const;
     virtual float GetCoolDownTimeRequired() const;
-    virtual bool IsPerpInSight() const;
+    virtual ePursuitStatus GetPursuitStatus() const;
     virtual bool IsPursuitBailed() const;
     virtual bool IsCollapseActive() const;
     virtual bool AttemptingToReAquire() const;
@@ -245,7 +245,7 @@ class IPursuit : public UTL::COM::IUnknown, public UTL::Collections::Listable<IP
     virtual bool IsSupportVehicle(IVehicle *iv);
     virtual const char *CopRequest();
     virtual bool PendingRoadBlockRequest() const;
-    virtual bool IsFinisherActive() const;
+    virtual bool IsHeliInPursuit() const;
     virtual float TimeToFinisherAttempt() const;
     virtual float TimeUntilBusted() const;
     virtual bool PursuitMeterCanShowBusted() const;
@@ -257,7 +257,7 @@ class IPursuit : public UTL::COM::IUnknown, public UTL::Collections::Listable<IP
     virtual bool RemoveVehicle(IVehicle *vehicle);
     virtual void AddRoadBlock(IRoadBlock *roadblock);
     virtual int RequestRoadBlock();
-    virtual bool IsHeliInPursuit() const;
+    virtual bool IsFinisherActive() const;
     virtual bool IsPlayerPursuit() const;
     virtual bool ContingentHasActiveCops() const;
     virtual int GetNumCopsDamaged() const;
@@ -292,7 +292,7 @@ class IPursuit : public UTL::COM::IUnknown, public UTL::Collections::Listable<IP
     virtual void NotifyCopCarDeployed();
     virtual void NotifySupportVehicleDeployed();
     virtual void BailPursuit();
-    virtual ePursuitStatus GetPursuitStatus() const;
+    virtual bool IsPerpInSight() const;
     virtual float GetTimeToBackupSpawned() const;
     virtual bool SkidHitEnabled() const;
     virtual float GetBackupETA() const;

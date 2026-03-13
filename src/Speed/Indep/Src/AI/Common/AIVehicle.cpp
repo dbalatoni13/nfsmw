@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/AI/road_walker.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Libs/Support/Utility/UVector.h"
 #include "Speed/Indep/Src/AI/AIGoal.h"
 #include "Speed/Indep/Src/AI/AIMath.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
@@ -1081,6 +1082,132 @@ bool AIVehicle::CanRespawn(bool respawnAvailable) {
         rv = true;
     }
     return rv;
+}
+
+static const float Tweak_OffWorldAccel[2] = {0.5f, 1.0f};
+static const float Tweak_OffWorldSpeed[2] = {0.75f, 1.0f};
+
+void AIVehicle::UpdateSimplePhysics(float dT) {
+    if (!IsSimplePhysicsActive()) {
+        return;
+    }
+
+    ISimable *isimable = GetSimable();
+    IVehicle *ivehicle = GetVehicle();
+    IRigidBody *irigidbody = isimable->GetRigidBody();
+    const UMath::Vector3 &position = irigidbody->GetPosition();
+
+    UMath::Vector3 newPosition = position;
+    UMath::Matrix4 vehicleMat;
+    UMath::Init(vehicleMat, 1.0f, 1.0f, 1.0f);
+
+    UMath::Vector3 destPos = mDest;
+    destPos.y += 1.0f;
+
+    UMath::Vector3 dirVector = UVector3(destPos) - position;
+    UMath::Unit(dirVector, dirVector);
+
+    float skill = GetSkill();
+    float driveSpeed = irigidbody->GetSpeed();
+
+    if (driveSpeed > mDriveSpeed) {
+        driveSpeed -= dT * 30.0f;
+        driveSpeed = UMath::Max(driveSpeed, mDriveSpeed);
+    } else {
+        float accel = GetAcceleration(driveSpeed);
+        driveSpeed += accel * dT * UMath::Lerp(Tweak_OffWorldAccel[0], Tweak_OffWorldAccel[1], skill);
+        driveSpeed = UMath::Min(driveSpeed, mDriveSpeed);
+    }
+
+    float topSpeed = GetTopSpeed();
+    float speedLimit = topSpeed * UMath::Lerp(Tweak_OffWorldSpeed[0], Tweak_OffWorldSpeed[1], skill);
+
+    driveSpeed = UMath::Max(driveSpeed, 0.0f);
+    driveSpeed = UMath::Min(driveSpeed, speedLimit);
+
+    if (GetTransmission()->IsReversing()) {
+        driveSpeed *= -0.5f;
+    }
+
+    UMath::ScaleAdd(dirVector, driveSpeed * dT, newPosition, newPosition);
+
+    bool up_valid = false;
+    WWorldPos &wpos = isimable->GetWPos();
+    wpos.FindClosestFace(position, true);
+
+    UMath::Vector4 newUpVector;
+    memset(&newUpVector, 0, sizeof(UMath::Vector4));
+    newUpVector.y = 1.0f;
+
+    if (!ivehicle->IsAnimating()) {
+        UMath::Vector4 worldNormal;
+        memset(&worldNormal, 0, sizeof(UMath::Vector4));
+        worldNormal.y = 1.0f;
+
+        wpos.UNormal(&UMath::Vector4To3(worldNormal));
+        UMath::Unitxyz(worldNormal, worldNormal);
+        worldNormal.w = 0.0f;
+
+        if (VU0_v4lengthsquare(worldNormal) > 0.0f && worldNormal.y >= 0.7071f) {
+            up_valid = true;
+            newUpVector = worldNormal;
+        }
+    }
+
+    vehicleMat.v2.x = dirVector.x;
+    vehicleMat.v2.y = dirVector.y;
+    vehicleMat.v2.z = dirVector.z;
+    vehicleMat.v3.x = 0.0f;
+    vehicleMat.v3.y = 0.0f;
+    vehicleMat.v3.z = 0.0f;
+    vehicleMat.v3.w = 1.0f;
+
+    UMath::Cross(UMath::Vector4To3(newUpVector), UMath::Vector4To3(vehicleMat.v2), UMath::Vector4To3(vehicleMat.v0));
+    UMath::Unit(UMath::Vector4To3(vehicleMat.v0), UMath::Vector4To3(vehicleMat.v0));
+
+    if (up_valid) {
+        vehicleMat.v1 = newUpVector;
+        UMath::Cross(UMath::Vector4To3(vehicleMat.v0), UMath::Vector4To3(newUpVector), UMath::Vector4To3(vehicleMat.v2));
+        UMath::Unit(UMath::Vector4To3(vehicleMat.v2), UMath::Vector4To3(vehicleMat.v2));
+    } else {
+        UMath::Cross(UMath::Vector4To3(vehicleMat.v2), UMath::Vector4To3(vehicleMat.v0), UMath::Vector4To3(vehicleMat.v1));
+        UMath::Unit(UMath::Vector4To3(vehicleMat.v1), UMath::Vector4To3(vehicleMat.v1));
+    }
+
+    vehicleMat.v0.w = 0.0f;
+    vehicleMat.v2.w = 0.0f;
+    vehicleMat.v1.w = 0.0f;
+
+    float elevation = destPos.y;
+
+    WRoadNav *road_nav = GetDriveToNav();
+    if (road_nav && road_nav->HasCookieTrail()) {
+        elevation = road_nav->GetCurrentCookie().Centre.y + 1.0f;
+    }
+
+    if (!ivehicle->IsAnimating()) {
+        elevation = wpos.HeightAtPoint(position);
+    }
+
+    UMath::Vector3 dimension;
+    irigidbody->GetDimension(dimension);
+
+    float rideheight = 0.0f;
+    if (GetSuspension()) {
+        for (int i = 0; i <= 3; i++) {
+            rideheight = UMath::Max(rideheight, GetSuspension()->GetRideHeight(i));
+        }
+    }
+
+    newPosition.y = elevation + rideheight + dimension.y;
+
+    irigidbody->SetPosition(newPosition);
+    irigidbody->SetOrientation(vehicleMat);
+
+    UMath::Vector3 linearVelocity;
+    UMath::Scale(dirVector, driveSpeed, linearVelocity);
+    irigidbody->SetLinearVelocity(linearVelocity);
+    irigidbody->SetAngularVelocity(UMath::Vector3::kZero);
 }
 
 void AIVehicle::EnableSimplePhysics() {
