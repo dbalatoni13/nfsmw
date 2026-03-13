@@ -517,9 +517,11 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
 
     // Overrides: IPursuit
     bool AttemptingToReAquire() const override {
-        if (mIsPerpInSight) return false;
-        if (mIsPerpBusted) return false;
-        return !mIsPursuitBailed;
+        bool result = false;
+        if (!mIsPerpInSight && !mIsPerpBusted) {
+            result = !mIsPursuitBailed;
+        }
+        return result;
     }
 
     // Overrides: IPursuit
@@ -757,8 +759,8 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
     float mBustedTimer;                         // offset 0x108, size 0x4
     float mBustedIncrement;                     // offset 0x10C, size 0x4
     float mBustedHUDTime;                       // offset 0x110, size 0x4
-    bool mIsPerpBusted;                         // offset 0x114, size 0x1
-    bool mIsPursuitBailed;                      // offset 0x118, size 0x1
+    int mIsPerpBusted;                         // offset 0x114, size 0x1
+    int mIsPursuitBailed;                      // offset 0x118, size 0x1
     float mCopDestroyedBonusTimer;              // offset 0x11C, size 0x4
     int mCopDestroyedBonusMultiplier;           // offset 0x120, size 0x4
     int mMostRecentCopDestroyedRepPoints;       // offset 0x124, size 0x4
@@ -769,7 +771,7 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
     float mPercentOfContingentEngaged;          // offset 0x138, size 0x4
     int mNumCopsFullyEngaged;                   // offset 0x13C, size 0x4
     float mPursuitMeter;                        // offset 0x140, size 0x4
-    bool mIsPerpInSight;                        // offset 0x144, size 0x1
+    int mIsPerpInSight;                        // offset 0x144, size 0x1
     UMath::Vector3 mLastKnownLocation;          // offset 0x148, size 0xC
     float mHiddenZoneTime;                      // offset 0x154, size 0x4
     float mTimeSinceAnyCopSawPerp;              // offset 0x158, size 0x4

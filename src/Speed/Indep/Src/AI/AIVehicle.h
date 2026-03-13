@@ -635,11 +635,12 @@ class AIVehicleHuman : public AIVehicleRacecar, public IHumanAI {
 
     // Overrides: IHumanAI
     bool IsPlayerSteering() override {
-        if (bAiControl) {
-            return false;
-        } else {
-            return IsDragSteering() == false;
+        bool result = false;
+        if (!bAiControl) {
+            int drag = IsDragSteering();
+            result = !drag;
         }
+        return result;
     }
 
     // Overrides: IHumanAI
