@@ -202,52 +202,54 @@ int JLZCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst) {
 
 int JLZDecompress(unsigned char *pSrc, unsigned char *pDst) {
     int *header = reinterpret_cast<int *>(pSrc);
-    if (header[0] == 0x5a4c444a && *reinterpret_cast<char *>(&header[1]) == '\x02') {
-        unsigned char *src = pSrc + 0x12;
-        int remaining = header[3] - 0x12;
-        unsigned char *end = pDst + header[2];
-        unsigned int flags1 = *reinterpret_cast<unsigned char *>(&header[4]) | 0x100;
-        unsigned int flags2 = *(pSrc + 0x11) | 0x100;
-        while (remaining != 0) {
-            if ((flags1 & 1) != 0) {
-                int len;
-                if ((flags2 & 1) != 0) {
-                    len = ((*src & 0xf0) << 4 | static_cast<unsigned int>(src[1])) + 3;
-                    ShortMove(pDst, pDst - ((*src & 0xf) + 1), len);
-                } else {
-                    len = (*src & 0x1f) + 3;
-                    ShortMove(pDst, pDst - (((*src & 0xe0) << 3 | static_cast<unsigned int>(src[1])) + 0x11), len);
-                }
-                pDst = pDst + len;
-                src = src + 2;
-                remaining = remaining - 2;
-                flags2 = static_cast<int>(flags2) >> 1;
-            } else {
-                if (pDst < end) {
-                    *pDst = *src;
-                    src = src + 1;
-                    pDst = pDst + 1;
-                }
-                remaining = remaining - 1;
-            }
-            flags1 = static_cast<int>(flags1) >> 1;
-            if (flags1 == 1) {
-                unsigned char b = *src;
-                remaining = remaining - 1;
-                src = src + 1;
-                flags1 = b | 0x100;
-            }
-            if (flags2 == 1) {
-                unsigned char b = *src;
-                remaining = remaining - 1;
-                src = src + 1;
-                flags2 = b | 0x100;
-            }
-        }
-        return header[2];
-    } else {
+    if (header[0] != 0x5a4c444a) {
         return 0;
     }
+    if (*reinterpret_cast<unsigned char *>(&header[1]) != 2) {
+        return 0;
+    }
+    int remaining = header[3] - 0x12;
+    unsigned char *src = pSrc + 0x12;
+    unsigned char *end = pDst + header[2];
+    unsigned int flags1 = *(pSrc + 0x10) | 0x100;
+    unsigned int flags2 = *(pSrc + 0x11) | 0x100;
+    while (remaining != 0) {
+        if ((flags1 & 1) != 0) {
+            int len;
+            if ((flags2 & 1) != 0) {
+                len = ((*src & 0xf0) << 4 | static_cast<unsigned int>(src[1])) + 3;
+                ShortMove(pDst, pDst - ((*src & 0xf) + 1), len);
+            } else {
+                len = (*src & 0x1f) + 3;
+                ShortMove(pDst, pDst - (((*src & 0xe0) << 3 | static_cast<unsigned int>(src[1])) + 0x11), len);
+            }
+            pDst = pDst + len;
+            src = src + 2;
+            remaining = remaining - 2;
+            flags2 = static_cast<int>(flags2) >> 1;
+        } else {
+            if (pDst < end) {
+                *pDst = *src;
+                src = src + 1;
+                pDst = pDst + 1;
+            }
+            remaining = remaining - 1;
+        }
+        flags1 = static_cast<int>(flags1) >> 1;
+        if (flags1 == 1) {
+            unsigned char b = *src;
+            remaining = remaining - 1;
+            src = src + 1;
+            flags1 = b | 0x100;
+        }
+        if (flags2 == 1) {
+            unsigned char b = *src;
+            remaining = remaining - 1;
+            src = src + 1;
+            flags2 = b | 0x100;
+        }
+    }
+    return header[2];
 }
 
 int OldLZDecompress(unsigned char *pSrc, unsigned char *pDst) {
@@ -321,20 +323,16 @@ void LZByteSwapHeader(LZHeader *header) {
 }
 
 int LZValidHeader(LZHeader *header) {
-    unsigned int id = header->ID;
-    if (id != 0x504d4f43) {
-        if (id < 0x504d4f44) {
-            if (id != 0x46465548) {
-                return false;
-            }
-        } else if (id != 0x57574152) {
-            if (id != 0x5a4c444a) {
-                return false;
-            }
-            return header->Version == 2;
-        }
+    switch (header->ID) {
+    case 0x504d4f43:
+    case 0x46465548:
+    case 0x57574152:
+        return header->Version == 1;
+    case 0x5a4c444a:
+        return header->Version == 2;
+    default:
+        return false;
     }
-    return header->Version == 1;
 }
 
 int LZCompress(unsigned char *pSrc, unsigned int SrcSize, unsigned char *pDst) {
