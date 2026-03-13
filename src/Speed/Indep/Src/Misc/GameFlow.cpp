@@ -687,8 +687,7 @@ void GetTODFilename(eTimeOfDay tod, const char *filename_in, char *filename_out,
     if (NeedsSeperateTODStreamingFile(bGetPlatformName()) != 0) {
         char *extension_in = bStrStr(filename_in, ".");
         char *extension_out = bStrStr(filename_out, ".");
-        const char *suffix = GetTimeOfDaySuffix(tod);
-        bSPrintf(extension_out, "_%s%s", suffix, extension_in);
+        bSPrintf(extension_out, "_%s%s", GetTimeOfDaySuffix(tod), extension_in);
     }
 }
 
