@@ -202,13 +202,14 @@ int JLZCompress(unsigned char *pSrc, int SrcSize, unsigned char *pDst) {
 
 int JLZDecompress(unsigned char *pSrc, unsigned char *pDst) {
     int *header = reinterpret_cast<int *>(pSrc);
+    int remaining = header[3];
     if (header[0] != 0x5a4c444a) {
         return 0;
     }
     if (*reinterpret_cast<unsigned char *>(&header[1]) != 2) {
         return 0;
     }
-    int remaining = header[3] - 0x12;
+    remaining -= 0x12;
     unsigned char *src = pSrc + 0x12;
     unsigned char *end = pDst + header[2];
     unsigned int flags1 = *(pSrc + 0x10) | 0x100;

@@ -213,12 +213,11 @@ void OpenDisculatorFile::operator delete(void *ptr) {
 
 bool bInitDisculatorDriver(const char *dir_filename, const char *data_filename) {
     DisculatorDriver *driver = DisculatorDriver::Create(dir_filename, data_filename);
-    if (driver != nullptr) {
-        RealFile::AddDevice(driver);
-        RealFile::AddSearchLocation("DVDV:\\", true);
-        bFileRunTimingTest();
-    }
-    return driver != nullptr;
+    if (driver == nullptr) return false;
+    RealFile::AddDevice(driver);
+    RealFile::AddSearchLocation("DVDV:\\", true);
+    bFileRunTimingTest();
+    return true;
 }
 
 DisculatorDriver *DisculatorDriver::Create(const char *dir_filename, const char *data_filename) {
