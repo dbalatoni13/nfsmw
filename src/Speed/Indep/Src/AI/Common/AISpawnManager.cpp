@@ -53,12 +53,12 @@ void AISpawnManager::GetBaseForwardVector(UMath::Vector3 &baseForwardVec) {
 bool AISpawnManager::RespawnAvailable(const UMath::Vector3 &position, float radius) {
     UMath::Vector3 basePos;
     GetBasePosition(basePos);
-    float distToBase = UMath::Distancexz(basePos, position);
-    if (mMinSpawnDist < distToBase) {
-        if ((mMinSpawnDist + mMaxSpawnDist) * 0.5f < distToBase) {
+    float distToBase = UMath::Distancexz(position, basePos);
+    if (distToBase > mMinSpawnDist) {
+        if (distToBase > (mMaxSpawnDist + mMinSpawnDist) * 0.5f) {
             return true;
         }
-        if (mMinSpawnDist < distToBase) {
+        if (distToBase > mMinSpawnDist) {
             eView *view = eGetView(0, false);
             if (view->IsActive()) {
                 UMath::Vector3 baseForwardVec;

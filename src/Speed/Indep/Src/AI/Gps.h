@@ -55,7 +55,7 @@ private:
 };
 
 void GPS_Disengage();
-void GPS_Engage(const UMath::Vector3 &target, float maxDeviation);
+bool GPS_Engage(const UMath::Vector3 &target, float maxDeviation);
 bool GPS_IsEngaged();
 void RenderGpsArrows(eView *view);
 

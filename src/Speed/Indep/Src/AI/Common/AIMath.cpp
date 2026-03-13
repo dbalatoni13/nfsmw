@@ -22,14 +22,12 @@ float TimeToIntercept(const UMath::Vector3 &p0, const UMath::Vector3 &v0, const 
     UMath::Sub(p1, p0, dir);
     float distance = UMath::Normalize(dir);
     float timetointercept = 0.0f;
-    if (distance != 0.0f) {
-        if (distance > 0.0f) {
-            UMath::Vector3 relSpeed;
-            UMath::Sub(v0, v1, relSpeed);
-            float closingspeed = UMath::Dot(relSpeed, dir);
-            if (closingspeed > 0.0f) {
-                return distance / closingspeed;
-            }
+    if (distance > 0.0f) {
+        UMath::Vector3 relSpeed;
+        UMath::Sub(v0, v1, relSpeed);
+        float closingspeed = UMath::Dot(relSpeed, dir);
+        if (closingspeed > 0.0f) {
+            return distance / closingspeed;
         }
     }
     return timetointercept;

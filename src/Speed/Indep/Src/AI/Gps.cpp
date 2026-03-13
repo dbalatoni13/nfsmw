@@ -189,11 +189,12 @@ void GPS_Disengage() {
     }
 }
 
-void GPS_Engage(const UMath::Vector3 &target, float maxDeviation) {
+bool GPS_Engage(const UMath::Vector3 &target, float maxDeviation) {
     Gps *gps = Gps::Get();
     if (gps) {
-        gps->Engage(target, maxDeviation);
+        return gps->Engage(target, maxDeviation);
     }
+    return false;
 }
 
 bool GPS_IsEngaged() {
