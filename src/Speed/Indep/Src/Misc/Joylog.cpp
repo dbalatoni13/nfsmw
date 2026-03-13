@@ -337,12 +337,13 @@ int Joylog::IsReplaying() {
 static int total_captured;
 
 int JoylogPutStringFunction(int terminal_channel, const char *s) {
-    if (bIsMainThread()) {
-        int len = bStrLen(s);
-        total_captured += len;
-        if (len < 0x40000) {
-            Joylog::AddData(s, len + 1, JOYLOG_CHANNEL_PRINTF);
-        }
+    if (!bIsMainThread()) {
+        return 0;
+    }
+    int len = bStrLen(s);
+    total_captured += len;
+    if (len < 0x40000) {
+        Joylog::AddData(s, len + 1, JOYLOG_CHANNEL_PRINTF);
     }
     return 0;
 }
