@@ -1758,10 +1758,16 @@ int vAABB::Contains(float x, float y, float z) {
     float delta_x = x - PositionX;
     float delta_y = y - PositionY;
     float delta_z = z - PositionZ;
-    if (bAbs(delta_x) < ExtentX && bAbs(delta_y) < ExtentY && bAbs(delta_z) < ExtentZ) {
-        return 1;
-    }
-    return 0;
+    float ax = bAbs(delta_x);
+    float ex = ExtentX;
+    float ay = bAbs(delta_y);
+    float ez = ExtentZ;
+    float az = bAbs(delta_z);
+    float ey = ExtentY;
+    if (ax >= ex) return 0;
+    if (ay >= ey) return 0;
+    if (az >= ez) return 0;
+    return 1;
 }
 
 void vAABBTree::SwapEndian() {

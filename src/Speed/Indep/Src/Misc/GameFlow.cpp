@@ -751,8 +751,9 @@ void RegionLoader::FinishedLoading() {
     bSPrintf(baseregion_filename, "TRACKS\\%s\\", TrackInfo::GetLoadedTrackInfo()->RegionName);
     GetTODFilename(GetCurrentTimeOfDay(), baseregion_filename, region_filename, 0x40);
     EstablishRemoteCaffeineConnection();
+    TrackStreamer *streamer = &TheTrackStreamer;
     bool load_frontend = FEDatabase->IsSplitScreenMode() && FEDatabase->iNumPlayers == 2;
-    InitRegion__13TrackStreamerPCcb(&TheTrackStreamer, region_filename, load_frontend);
+    InitRegion__13TrackStreamerPCcb(streamer, region_filename, load_frontend);
     TheGameFlowManager.SetSingleFunction(reinterpret_cast<void (*)(int)>(BeginGameFlowLoadTrack), "LoadTrack", 0);
 }
 
