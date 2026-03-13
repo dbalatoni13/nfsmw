@@ -45,6 +45,8 @@
 #include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
@@ -1225,6 +1227,12 @@ float AIPerpVehicle::GetSkill() const {
 static const float Tweak_CatchupCheatSkill[3] = {0.5f, 0.5f, 0.5f};
 Table CatchupCheatTable(Tweak_CatchupCheatSkill, 3, 0.0f, 1.0f);
 
+static const float Tweak_CatchupGlue = 1.0f;
+Table CatchupGlueTable(&Tweak_CatchupGlue, 1, 0.0f, 1.0f);
+
+static const float Tweak_SlowDownGlue = 1.0f;
+Table SlowDownGlueTable(&Tweak_SlowDownGlue, 1, 0.0f, 1.0f);
+
 float AIPerpVehicle::GetCatchupCheat() const {
     return UMath::Clamp(fBaseSkill + fGlueSkill - 1.0f, 0.0f, 1.0f) * CatchupCheatTable.GetValue(fBaseSkill);
 }
@@ -1521,4 +1529,191 @@ void AIPerpVehicle::OnCausedCollision(const Sim::Collision::Info &cinfo, ISimabl
     }
 
     to->SetCausality(static_cast< ICause * >(this)->GetInstanceHandle(), chain_start_time);
+}
+
+struct FindAvgComplete {
+    float mTotal;
+    float mCount;
+
+    FindAvgComplete() : mTotal(0.0f), mCount(0.0f) {}
+
+    void operator()(IVehicle *vehicle) {
+        IPerpetrator *ai;
+        if (vehicle->QueryInterface(&ai)) {
+            GRacerInfo *info = ai->GetRacerInfo();
+            if (info != nullptr) {
+                mTotal += info->GetPctRaceComplete();
+                mCount += 1.0f;
+            }
+        }
+    }
+
+    float Result() const {
+        if (mCount > 0.0f) {
+            return mTotal / mCount;
+        }
+        return 0.0f;
+    }
+};
+
+void AIPerpVehicle::Update(float dT) {
+    ProfileNode profile_node("AIPerpVehicle::Update", 0);
+
+    static int car_hash = bStringHash("car");
+    static int heli_hash = bStringHash("heli");
+
+    m911CallTimer -= dT;
+    AIVehicle::Update(dT);
+
+    mDriveToNav->SetRaceFilter(IsRacing() && WRoadNetwork::Get().IsRaceFilterValid());
+
+    fGlueSkill = 0.0f;
+    fGlueOutput = 0.0f;
+
+    bool off_world = false;
+    if (IsRacing()) {
+        off_world = !GetVehicle()->IsStaging();
+    }
+
+    GRacerInfo *racer_info = GetRacerInfo();
+
+    if (off_world && racer_info != nullptr && !GetOwner()->IsPlayer()) {
+        IVehicle *player = IVehicle::First(VEHICLE_PLAYERS);
+
+        fGlueTimer += dT;
+
+        if (fGlueTimer > 1.0f && player != nullptr) {
+            float percent_complete = racer_info->GetPctRaceComplete();
+            FindAvgComplete avg;
+            avg = IVehicle::ForEach(VEHICLE_AI, avg);
+            float average_complete = avg.Result();
+
+            float glue_error = GRaceStatus::Get().GetRaceLength() * (average_complete - percent_complete) * 10.0f;
+
+            Physics::Info::Performance perf;
+            if (player->GetPerformance(perf)) {
+                glue_error *= (1.0f - perf.TopSpeed) * 0.5f + 1.0f;
+            }
+
+            pGlueError->Record(glue_error, fGlueTimer, false, false);
+            fGlueTimer -= 1.0f;
+        }
+
+        bool simple = IsSimplePhysicsActive();
+        bool catchup = GRaceStatus::Get().ComputeCatchUpSkill(racer_info, pGlueError, &fGlueOutput, &fGlueSkill, simple);
+
+        if (!catchup) {
+            fGlueSkill = 0.0f;
+            fGlueOutput = 0.0f;
+        } else if (!simple) {
+            if (fGlueSkill > 0.0f) {
+                if (GRaceStatus::IsSpeedTrapRace()) {
+                    fGlueSkill *= 0.5f;
+                } else {
+                    fGlueSkill *= CatchupGlueTable.GetValue(fBaseSkill);
+                }
+            } else if (fGlueSkill < 0.0f) {
+                if (GRaceStatus::IsSpeedTrapRace()) {
+                    fGlueSkill *= 0.5f;
+                } else {
+                    fGlueSkill *= SlowDownGlueTable.GetValue(fBaseSkill);
+                }
+            }
+        }
+    }
+
+    IRigidBody *rigid_body = GetSimable()->GetRigidBody();
+    const UMath::Vector3 &bodyPos = rigid_body->GetPosition();
+    UMath::Vector3 dim = rigid_body->GetDimension();
+
+    bVector3 nfspos;
+    eSwizzleWorldVector(reinterpret_cast< const bVector3 & >(bodyPos), nfspos);
+
+    UMath::Vector3 myPos;
+    myPos.x = nfspos.x;
+    myPos.y = nfspos.y - dim.y;
+    myPos.z = nfspos.z;
+
+    mHiddenFromCars = false;
+    mHiddenFromHelicopters = false;
+
+    bVector2 pos2(nfspos.x, nfspos.z);
+
+    IPursuit *ip = GetPursuit();
+    bool NotSeenRightNow = true;
+
+    if (ip == nullptr) {
+        mPursuitZoneCheck--;
+        if (mPursuitZoneCheck < 0) {
+            mPursuitZoneCheck = 10;
+            if (ICopMgr::Exists() && ICopMgr::Get()->VehicleSpawningEnabled(false) &&
+                (!GRaceStatus::Exists() || GRaceStatus::Get().GetPlayMode() == 0)) {
+                TrackPathZone *azone = TheTrackPathManager.FindZone(&pos2, TRACK_PATH_ZONE_PURSUIT_START, nullptr);
+                if (azone != nullptr) {
+                    ICopMgr::Get()->LockoutCops(false);
+                    MForcePursuitStart msg(static_cast< int >(GetHeat()));
+                    UCrc32 port("gameplay");
+                    msg.Post(port);
+                }
+            }
+        }
+    } else {
+        NotSeenRightNow = ip->GetEvadeLevel() >= 0.5f;
+
+        if (ip->IsPerpBusted()) {
+            IInput *ii;
+            if (GetOwner()->QueryInterface(&ii)) {
+                ii->SetControlGas(0.0f);
+                ii->SetControlBrake(1.0f);
+                ii->SetControlSteering(0.0f);
+                ii->SetControlSteeringVertical(0.0f);
+                ii->SetControlHandBrake(1.0f);
+                ii->SetControlNOS(false);
+            }
+        }
+    }
+
+    int zoneCount = 0;
+    TrackPathZone *azone = TheTrackPathManager.FindZone(&pos2, TRACK_PATH_ZONE_HIDDEN, nullptr);
+    while (azone != nullptr) {
+        float elevation = azone->GetElevation();
+
+        if (elevation == 0.0f || UMath::Abs(myPos.y - elevation) < 10.0f) {
+            if (!mWasInZoneLastUpdate) {
+                mWasInZoneLastUpdate = true;
+                if (NotSeenRightNow) {
+                    mHiddenZoneLatchTime = 0.5f;
+                } else {
+                    mHiddenZoneLatchTime = 2.0f;
+                }
+            } else if (mHiddenZoneLatchTime <= 5.0f) {
+                mHiddenZoneTimer += dT;
+            } else {
+                mHiddenZoneTimer = 0.0f;
+            }
+
+            if (mHiddenZoneLatchTime < mHiddenZoneTimer) {
+                int data = azone->GetData(0);
+                if (data != car_hash) {
+                    if (data == heli_hash) {
+                        mHiddenFromHelicopters = true;
+                    } else {
+                        mHiddenFromHelicopters = true;
+                        mHiddenFromCars = true;
+                    }
+                } else {
+                    mHiddenFromCars = true;
+                }
+            }
+
+            zoneCount++;
+        }
+
+        azone = TheTrackPathManager.FindZone(&pos2, TRACK_PATH_ZONE_HIDDEN, azone);
+    }
+
+    if (zoneCount == 0) {
+        mWasInZoneLastUpdate = false;
+        mHiddenZoneTimer = 0.0f;
+    }
 }

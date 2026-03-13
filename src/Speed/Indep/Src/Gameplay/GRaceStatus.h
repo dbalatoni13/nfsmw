@@ -392,6 +392,10 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     float GetAdaptiveDifficutly() const;
 
+    float GetRaceLength() {
+        return fRaceLength;
+    }
+
     void SyncronizeAdaptiveBonus();
 
     // void UpdateAdaptiveDifficulty(enum eAdaptiveGainReason reason, struct ISimable *who);
@@ -478,6 +482,10 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     static bool IsDragRace() {
         return Exists() && Get().GetRaceType() == GRace::kRaceType_Drag;
+    }
+
+    static bool IsSpeedTrapRace() {
+        return Exists() && Get().GetRaceType() == GRace::kRaceType_SpeedTrap;
     }
 
     PlayMode GetPlayMode() {
