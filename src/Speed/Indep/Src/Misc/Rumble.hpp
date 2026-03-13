@@ -53,10 +53,8 @@ class tShaker {
 
     ~tShaker() {}
 
-    inline void Reset() {
-        vShake.x = 0.0f;
-        vShake.y = 0.0f;
-        vShake.z = 0.0f;
+    void Reset() {
+        bFill(&vShake, 0.0f, 0.0f, 0.0f);
         pAmplitude = nullptr;
         fTime = 0.0f;
         fDuration = 1.0f;

@@ -58,6 +58,11 @@ template <> void tTable<bVector4>::Blend(bVector4 *dest, bVector4 *a, bVector4 *
     bScaleAdd(dest, dest, b, 1.0f - blend_a);
 }
 
+Graph::Graph(bVector2 *points, int num_points) {
+    Points = points;
+    NumPoints = num_points;
+}
+
 float Graph::GetValue(float x) {
     int num = NumPoints;
     if (num > 1) {

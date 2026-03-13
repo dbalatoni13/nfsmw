@@ -167,10 +167,7 @@ class Graph {
 
     static void operator delete(void *mem, std::size_t size) {}
 
-    Graph(bVector2 *points, int num_points) {
-        Points = points;
-        NumPoints = num_points;
-    }
+    Graph(bVector2 *points, int num_points);
 
     float GetValue(float x);
 
