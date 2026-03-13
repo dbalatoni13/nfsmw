@@ -130,9 +130,7 @@ void AIActionTraffic::OnAccident(HSIMABLE hobject, const UMath::Vector3 &speed, 
     IVehicle *vehicle;
     if (object && object->QueryInterface(&vehicle) && (vehicle->GetAbsoluteSpeed() >= MPH2MPS(5.0f) || mAccident != ACCIDENT_OVER)) {
         switch (vehicle->GetDriverClass()) {
-            // TODO
             case DRIVER_HUMAN:
-            case DRIVER_TRAFFIC:
             case DRIVER_COP:
             case DRIVER_RACER:
                 if (mIsTractor) {

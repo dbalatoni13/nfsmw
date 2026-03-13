@@ -24,6 +24,7 @@ class IModel : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<
   public:
     // total size: 0x4
     struct Enumerator {
+        virtual ~Enumerator() {}
         virtual bool OnModel(IModel *model);
     };
 

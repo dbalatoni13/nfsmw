@@ -33,6 +33,14 @@ extern Table TrafficOffScreenDistance;
 struct PartChecker : public IModel::Enumerator {
     bool Valid;
     PartChecker() : Valid(false) {}
+    ~PartChecker() override {}
+    bool OnModel(IModel *model) override {
+        if (model->InView()) {
+            Valid = true;
+            return false;
+        }
+        return true;
+    }
 };
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
@@ -43,6 +51,9 @@ struct PartChecker : public IModel::Enumerator {
 extern BOOL SkipFETrafficDensity; // size: 0x4
 extern BOOL SkipFEDisableTraffic; // size: 0x4
 extern BOOL SkipFE;               // size: 0x4
+
+float AITrafficManager::mTrafficMinSpawnDist;
+float AITrafficManager::mTrafficMaxSpawnDist;
 
 UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _AITrafficManager("AITrafficManager", AITrafficManager::Construct);
 
@@ -139,6 +150,10 @@ eVehicleCacheResult AITrafficManager::OnQueryVehicleCache(const IVehicle *remove
 }
 
 void AITrafficManager::OnRemovedVehicleCache(IVehicle *ivehicle) {}
+
+const char *AITrafficManager::GetCacheName() const {
+    return "AITrafficManager";
+}
 
 void AITrafficManager::OnAttached(IAttachable *pOther) {
     IVehicle *ivehicle;
