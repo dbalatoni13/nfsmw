@@ -122,7 +122,7 @@ void SeedRandomNumber() {
 }
 
 void InitBigFiles() {
-#ifdef EA_PLATFORM_PLAYSTATION2
+#if defined(EA_PLATFORM_PLAYSTATION2) || defined(EA_PLATFORM_XENON)
     if (!bFileExists("NFS\\ZDIR.BIN")) {
         return;
     }
