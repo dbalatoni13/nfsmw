@@ -145,6 +145,10 @@ void AsyncCloseFile(int file_handle) {
     FILESYS_callbackop(fop, AsyncCloseFileCallback);
 }
 
+void CachedRealFileHandle::operator delete(void *ptr) {
+    CachedRealFileHandleSlotPool->Free(ptr);
+}
+
 CachedRealFileHandle *CachedRealFileHandle::FindHandle(const char *filename) {
     CachedRealFileHandle *handle = HandleList.GetHead();
     while (handle != HandleList.EndOfList()) {

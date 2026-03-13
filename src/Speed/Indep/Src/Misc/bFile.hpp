@@ -37,10 +37,7 @@ struct CachedRealFileHandle : public bTNode<CachedRealFileHandle> {
     static void *operator new(unsigned int size) {
         return CachedRealFileHandleSlotPool->Malloc();
     }
-
-    static void operator delete(void *ptr) {
-        CachedRealFileHandleSlotPool->Free(ptr);
-    }
+    static void operator delete(void *ptr);
 
     CachedRealFileHandle(const char *filename, int file_handle, int file_size)
         : NumReferences(0), //
