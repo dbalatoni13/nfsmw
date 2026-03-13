@@ -32,9 +32,13 @@ the main worker after reviewing the read-only findings.
 Before any work begins, establish a regression baseline:
 
 ```sh
+python tools/decomp-workflow.py health --full main/Path/To/TU
 ninja           # ensure clean build
 ninja baseline  # snapshot current match state
 ```
+
+Add `--timings` to the `health --full` command when you are investigating slow worktrees
+or unexpectedly expensive build/tool startup.
 
 After modifying shared headers, check `ninja changes` to verify no regressions were
 introduced. An empty changeset means no regressions. If regressions appear, the shared

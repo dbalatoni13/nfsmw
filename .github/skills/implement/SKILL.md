@@ -26,6 +26,15 @@ functions unless the user explicitly wants a cleanup/refiner pass.
 Use the wrapper flow first throughout this skill. Drop to raw `decomp-context.py` or
 `decomp-diff.py` only when the wrapper is missing a specific flag or you are debugging.
 
+On a new, suspicious, or recently updated worktree, start with:
+
+```sh
+python tools/decomp-workflow.py health --full main/Path/To/TU
+```
+
+Add `--timings` when you need to understand why wrapper/tool startup or the shared build
+smoke is slow.
+
 ### 1a. decomp-context.py
 
 Preferred shortcut:
@@ -188,6 +197,11 @@ python tools/decomp-workflow.py dwarf -u main/Path/To/TU -f FunctionName
 
 This gives you a normalized DWARF match percentage plus a diff-like report of what still
 differs between the original and rebuilt DWARF blocks for that function.
+
+Pay attention to the `Range source ownership` summary there as well. It compares the
+debug-line owner files for each DWARF `// Range:` block, which makes it much easier to
+spot inlines that are coming from the wrong header or owner file. Exact line-number
+agreement is a useful secondary hint, but file ownership is the first thing to check.
 
 Manual fallback:
 

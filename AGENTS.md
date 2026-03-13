@@ -83,6 +83,11 @@ originates from, use this script against the compiler-generated debug line mappi
 
 See `.github/skills/line_lookup/SKILL.md` for the full workflow.
 
+`line_lookup.py` now accepts both the original `0xADDR:` debug-line format and rebuilt
+object exports written as bare `ADDR:` lines, so you can point it at
+`symbols/debug_lines.txt` or at a rebuilt `debug_lines.txt` from
+`tools/dwarf1_gcc_line_info.py`.
+
 ### code-style — Repo-local style guidance
 
 When you are writing code, polishing code you already touched, or doing a style-review pass,
@@ -148,6 +153,8 @@ Prefer this wrapper for routine agent-driven flows instead of manually chaining
 
 ```sh
 python tools/decomp-workflow.py health
+python tools/decomp-workflow.py health --full main/Speed/Indep/SourceLists/zAnim
+python tools/decomp-workflow.py health --full main/Speed/Indep/SourceLists/zAnim --timings
 python tools/decomp-workflow.py health --smoke-build main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py health --smoke-dtk main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py next --category game --limit 10
@@ -167,6 +174,12 @@ repeated command chaining and to standardize routine worktree preflight checks f
 `next --unit`, `function`, `unit`, and `diff` now also auto-build the unit's shared `.o`
 once when that output is missing, so wrapper-first inspection works more often on
 half-prepared worktrees.
+
+Use `health --full <unit>` when you want one end-to-end tooling smoke test for a worktree.
+It reuses a single shared build for the build smoke, DTK dump, rebuilt debug-line export,
+and rebuilt `line_lookup.py` check, so it is faster and more representative than chaining
+`--smoke-build` and `--smoke-dtk` separately. Add `--timings` when you are diagnosing a
+slow worktree or compiler/tool startup.
 
 In normal agent work, use the wrapper commands first. Drop to the raw backend tools only
 when you specifically need a backend-only flag, are debugging a wrapper/backend discrepancy,
@@ -222,6 +235,11 @@ DWARF match percentage, and shows a diff-like view of what still differs. Use it
 whenever `verify` says the function is still failing the DWARF gate. This is the
 fastest way to see whether you are still missing locals, have the wrong inline body, or
 changed signature/type details even when the instruction diff already looks good.
+
+It also compares the debug-line ownership of each `// Range:` block. Treat the
+`Range source ownership` summary as the fast inline-placement check: file mismatches are
+strong evidence that an inline body came from the wrong header or owner file. The exact
+file+line count is stricter and mainly useful as a secondary hint, not as the main gate.
 
 When working with these tools, do not just work around recurring friction silently. If you
 notice a clear, safe workflow or tooling improvement that would make future decomp work
