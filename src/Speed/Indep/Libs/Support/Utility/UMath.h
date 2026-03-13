@@ -500,6 +500,12 @@ inline void Lerp(const Vector2 &a, const Vector2 &b, const float t, Vector2 &r) 
     r.y = a.y * u + b.y * t;
 }
 
+inline void Lerp(const Vector3 &a, const Vector3 &b, const float t, Vector3 &r) {
+    r.x = Lerp(a.x, b.x, t);
+    r.y = Lerp(a.y, b.y, t);
+    r.z = Lerp(a.z, b.z, t);
+}
+
 inline void Negate(Vector3 &r) {
     VU0_v3negate(r);
 }

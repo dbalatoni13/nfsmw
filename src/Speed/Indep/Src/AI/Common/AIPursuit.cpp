@@ -1072,3 +1072,179 @@ void AIPursuit::AssignCopsInCircle(CopAndAngle *copangles, int num, float radius
 bool AIPursuit::IsPlayerPursuit() const {
     return GetTarget() && GetTarget()->GetSimable() && GetTarget()->GetSimable()->GetPlayer();
 }
+
+AITarget *AIPursuit::GetTarget() const {
+    return mTarget;
+}
+
+bool AIPursuit::IsTarget(AITarget *aitarget) const {
+    return mTarget->IsTarget(aitarget);
+}
+
+bool AIPursuit::ContingentHasActiveCops() const {
+    for (ContingentVector::const_iterator j = mCopContingent.begin(); j != mCopContingent.end(); ++j) {
+        if (j->mCount != 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool AIPursuit::IsHeliInPursuit() const {
+    for (IVehicle::List::const_iterator iter = mIVehicleList.begin(); iter != mIVehicleList.end(); ++iter) {
+        IVehicle *ivehicle = *iter;
+        if (ivehicle->GetVehicleClass() == VehicleClass::CHOPPER) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool AIPursuit::ShouldEnd() const {
+    if (!mTarget->IsValid()) {
+        return true;
+    }
+    if (mEvadeLevel >= 1.0f) {
+        return true;
+    }
+    if (mPursuitStatus == PS_EVADED) {
+        return true;
+    }
+    if ((mIsPerpBusted || mIsPursuitBailed) && GetNumCops() == 0) {
+        return true;
+    }
+    return false;
+}
+
+bool AIPursuit::IsFinisherActive() const {
+    return mBreakerTimer >= 0.0f;
+}
+
+float AIPursuit::TimeToFinisherAttempt() const {
+    return mFormation->GetTimeToFinisher() - mInFormationTimer;
+}
+
+void AIPursuit::BailPursuit() {
+    mIsPursuitBailed = true;
+    ICopMgr::Get()->PursuitIsEvaded(this);
+}
+
+float AIPursuit::TimeUntilBusted() const {
+    if (mBustedTimer > 0.03f) {
+        float rv = UMath::Min(mBustedTimer * 0.2f, 1.0f);
+        return (1.0f - mPursuitMeter) * rv + mPursuitMeter;
+    }
+    if (mEvadeLevel >= 0.05f) {
+        return -1.0f;
+    }
+    return mPursuitMeter;
+}
+
+bool AIPursuit::IsAttemptingRoadBlock() const {
+    return mRoadBlock != nullptr;
+}
+
+void AIPursuit::NotifyCopDamaged(IVehicle *ivehicle) {
+    if (mAllowStatsToAccumulate) {
+        mNumCopsDamaged++;
+        if (mRoadBlock) {
+            if (mRoadBlock->IsComprisedOf(ivehicle->GetSimable()->GetOwnerHandle())) {
+                mRoadBlock->IncNumCopsDestroyed();
+            }
+        }
+        GManager::Get().IncValue("cops_damaged");
+    }
+}
+
+void AIPursuit::OnDebugDraw() {
+}
+
+void AIPursuit::EndPursuitEnteringSafehouse() {
+    mPursuitStatus = PS_EVADED;
+    mEnterSafehouseOnDestruct = true;
+    mEvadeLevel = 1.0f;
+}
+
+void AIPursuit::AddRoadBlock(IRoadBlock *roadblock) {
+    mRoadBlock = roadblock;
+    Attach(roadblock);
+    mNumRBCopsAdded = 0;
+    if (mActiveFormation != FOLLOW) {
+        if (!IsHeliInPursuit()) {
+            EndCurrentFormation();
+        }
+    }
+}
+
+bool AIPursuit::IsSupportVehicle(IVehicle *iv) {
+    IPursuitAI *ipv;
+    if (iv->QueryInterface(&ipv)) {
+        return ipv->GetSupportGoal() != (const char *)nullptr;
+    }
+    return false;
+}
+
+void AIPursuit::ClearGroundSupportRequest() {
+    mGroundSupportRequest.Reset();
+}
+
+bool AIPursuit::SkidHitEnabled() const {
+    Attrib::Gen::pursuitsupport *ps = GetPursuitSupportAttrib();
+    for (int i = 0; i < static_cast<int>(ps->Num_AirSupportOptions()); i++) {
+        const AirSupport &airSupport = ps->AirSupportOptions(i);
+        if (airSupport.HeliStrategy == SKID_HIT) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void AIPursuit::SpikesHit(IVehicleAI *ivai) {
+    if (!ivai) {
+        return;
+    }
+    if (mNumRBCopsAdded != 0) {
+        return;
+    }
+    for (int i = 0; i < 3; i++) {
+        IRoadBlock *iroadblock = GetRoadBlock();
+        if (iroadblock) {
+            IVehicle *ivehicleNear = nullptr;
+            float dummy;
+            iroadblock->GetMinDistanceToTarget(0.0f, dummy, &ivehicleNear);
+            if (ivehicleNear) {
+                if (iroadblock->GetNumCops()) {
+                    AddVehicle(ivehicleNear);
+                    mNumRBCopsAdded++;
+                }
+            }
+        }
+    }
+}
+
+void AIPursuit::UpdateJerk(float dt) {
+    if (mTarget->IsValid()) {
+        float jerklerp = dt * 0.1f;
+        const UMath::Vector3 &pos = mTarget->GetPosition();
+        UMath::Lerp(mJerkLagPosition, pos, jerklerp, mJerkLagPosition);
+        float distance = UMath::Distance(pos, mJerkLagPosition);
+        mJerkLagDistance = UMath::Lerp(mJerkLagDistance, distance, jerklerp);
+        float speed = mTarget->GetSpeed();
+        mJerkLagSpeed = UMath::Lerp(mJerkLagSpeed, speed, jerklerp * 0.5f);
+        float jerkfactor;
+        if (mJerkLagDistance > 0.01f) {
+            jerkfactor = (mJerkLagSpeed * 10.0f) / mJerkLagDistance;
+        } else {
+            jerkfactor = 0.0f;
+        }
+        if (!mIsAJerk) {
+            if (jerkfactor >= 3.0f) {
+                mIsAJerk = true;
+            }
+        } else {
+            if (jerkfactor <= 1.75f) {
+                mIsAJerk = false;
+            }
+        }
+    }
+}
