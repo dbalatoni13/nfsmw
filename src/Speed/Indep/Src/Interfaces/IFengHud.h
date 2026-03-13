@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 
 class IHud : public UTL::COM::IUnknown, public UTL::Collections::Listable<IHud, 2> {
@@ -184,14 +185,14 @@ class IPursuitBoard : public UTL::COM::IUnknown {
     virtual void SetInPursuit(bool inPursuit);
     virtual void SetIsHiding(bool isHiding);
     virtual void SetTimeUntilHidden(float time);
-    virtual void SetTimeUntilBusted(float time);
+    virtual void SetTimeUntilBusted(float time, bool bIsBusted);
     virtual void SetTimeUntilBackup(float time);
     virtual void SetIsInView(bool inView);
     virtual void SetPursuitDuration(float duration);
     virtual void SetCooldownTimeRemaining(float time);
     virtual void SetCooldownTimeRequired(float time);
     virtual void SetNumCopsInPursuit(int num);
-    virtual void SetNumCopsDestroyed(int num);
+    virtual void SetNumCopsDestroyed(int numCops, UCrc32 lastCopDestroyedType, int lastCopDestroyedMultiplier, int lastCopDestroyedRep);
     virtual void SetNumCopsDamaged(int num);
     virtual void SetTotalNumCopsInvolved(int num);
     virtual void SetHeliInvolvedInPursuit(bool involved);

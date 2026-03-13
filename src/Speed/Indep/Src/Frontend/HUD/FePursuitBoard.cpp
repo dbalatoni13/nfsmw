@@ -1,5 +1,7 @@
 #include "Speed/Indep/Src/Frontend/HUD/FePursuitBoard.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
 void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
@@ -261,6 +263,26 @@ void PursuitBoard::SetIsHiding(bool isHiding) {
 void PursuitBoard::SetTimeUntilHidden(float time) {
     if (mTimeUntilHidden != time) {
         mTimeUntilHidden = time;
+    }
+}
+
+void PursuitBoard::SetTimeUntilBusted(float time, bool bIsBusted) {
+    if (bIsBusted) {
+        time = 1.0f;
+    } else {
+        if (time > 0.99f) {
+            time = 0.99f;
+        }
+    }
+    if (mTimeUntilBusted != time) {
+        mTimeUntilBusted = time;
+        if (time >= 1.0f) {
+            IGenericMessage *igenericmessage;
+            if (IPlayer::First(PLAYER_LOCAL)->GetSimable()->QueryInterface(&igenericmessage)) {
+                igenericmessage->RequestGenericMessage(
+                    GetTranslatedString(0x532b5186), false, 0x9d73bc15, 0, 0, GenericMessage_Priority_1);
+            }
+        }
     }
 }
 
