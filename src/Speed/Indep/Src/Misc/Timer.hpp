@@ -71,9 +71,7 @@ class Timer {
 
     int IsSet() {}
 
-    void SetTime(float seconds) {
-        PackedTime = static_cast< int >(seconds * 4000.0f + 0.5f);
-    }
+    void SetTime(float seconds);
 
     float GetSeconds() {
         return this->PackedTime / 4000.0f;
