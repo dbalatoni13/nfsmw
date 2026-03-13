@@ -61,28 +61,40 @@ void bList::MergeSort(SortFunc cmp) {
     list->Prev = this->HeadNode.Prev;
     this->HeadNode.Prev->Next = list;
 
+    bNode *p;
+    bNode *q;
+    bNode *e;
+    bNode *tail;
+    bNode *oldhead;
+    int nmerges;
+    int psize;
+    int qsize;
+
     while (true) {
-        bNode *oldhead = nullptr;
-        bNode *tail = nullptr;
-        int nmerges = 0;
-        bNode *p = list;
+        oldhead = nullptr;
+        tail = nullptr;
+        nmerges = 0;
+        p = list;
 
         while (p != nullptr) {
             nmerges++;
 
-            int psize = 0;
-            bNode *q = p;
-            for (int i = 0; i < insize; i++) {
-                psize++;
-                q = q->Next;
-                if (q == list) {
-                    q = nullptr;
-                    break;
+            psize = 0;
+            q = p;
+            {
+                int i = 0;
+                while (i < insize) {
+                    psize++;
+                    q = q->Next;
+                    i++;
+                    if (q == list) {
+                        q = nullptr;
+                        break;
+                    }
                 }
             }
-            int qsize = insize;
+            qsize = insize;
             while (psize > 0 || (qsize > 0 && q != nullptr)) {
-                bNode *e;
                 if (psize > 0 && (qsize == 0 || q == nullptr || cmp(p, q) > 0)) {
                     psize--;
                     e = p;
