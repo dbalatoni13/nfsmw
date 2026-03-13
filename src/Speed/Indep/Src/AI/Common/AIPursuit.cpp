@@ -1432,3 +1432,68 @@ const char *GetRandomValidCopCar() {
     }
     return nullptr;
 }
+
+void AIPursuit::GetAdjustedCopCounts(CopCountRecord *counts, int &numcounts) {
+    numcounts = 0;
+    Attrib::Gen::pursuitlevels *pursuitLevelAttrib = GetGlobalPursuitLevelAttrib();
+    if (!pursuitLevelAttrib) {
+        return;
+    }
+    int max_cops = 0x7ffffffd;
+    bool is_player_pursuit = IsPlayerPursuit();
+    if (!is_player_pursuit) {
+        max_cops = 3;
+        if (ICopMgr::Get()->IsPlayerPursuitActive()) {
+            max_cops = 2;
+        }
+    }
+
+    int nominal_cops;
+    int min_cops;
+    if (mPursuitStatus == PS_COOL_DOWN) {
+        Attrib::Gen::pursuitlevels *myLevelAttrib = GetPursuitLevelAttrib();
+        nominal_cops = bMin(myLevelAttrib->NumPatrolCars(), max_cops);
+    } else {
+        nominal_cops = mNumCopsRequiredToEvade - mNumFullyEngagedCopsEvaded;
+        if (nominal_cops < 0) {
+            nominal_cops = 0;
+        }
+        if (max_cops < nominal_cops) {
+            nominal_cops = max_cops;
+        }
+    }
+
+    min_cops = 0;
+    for (unsigned int i = 0; i < pursuitLevelAttrib->Num_cops(); i++) {
+        const CopCountRecord &copcount = pursuitLevelAttrib->cops(i);
+        if (copcount.CopType.GetHash32() != heliHash1.GetValue()) {
+            min_cops += copcount.Count;
+        }
+    }
+
+    if (min_cops > nominal_cops) {
+        nominal_cops = min_cops;
+    }
+    if (nominal_cops > max_cops) {
+        nominal_cops = max_cops;
+    }
+
+    int want_cops = nominal_cops;
+    for (unsigned int i = 0; i < pursuitLevelAttrib->Num_cops(); i++) {
+        const CopCountRecord &copcount = pursuitLevelAttrib->cops(i);
+        if (copcount.CopType.GetHash32() != heliHash1.GetValue()) {
+            int count = copcount.Count;
+            int adjustedcount = count;
+            if (!is_player_pursuit && count > 0) {
+                adjustedcount = bMax(1, count / 2);
+            }
+            adjustedcount = bMin(adjustedcount, want_cops);
+            if (adjustedcount > 0) {
+                want_cops -= adjustedcount;
+                counts[numcounts] = copcount;
+                counts[numcounts].Count = adjustedcount;
+                numcounts++;
+            }
+        }
+    }
+}
