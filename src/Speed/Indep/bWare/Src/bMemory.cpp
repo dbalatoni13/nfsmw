@@ -379,16 +379,17 @@ void MemoryPool::PrintAllocationsByAddress(int from_allocation, int to_allocatio
     }
 }
 
-// UNSOLVED
 void MemoryPool::PrintAllocations(int from_allocation, int to_allocation) {
     this->AllocationHeaderList.Sort(CheckFlipMemoryByAllocationNumber);
-    bReleasePrintf("\nMemoryPool: \"%s\"\n");
+    bReleasePrintf("\nMemoryPool: \"%s\"\n", this->pDebugName);
     bReleasePrintf("AllocationNumber Address      Size    Debug Text (& Line)\n");
     bReleasePrintf("=========================================================\n");
     for (AllocationHeader *header = this->AllocationHeaderList.GetHead(); header != this->AllocationHeaderList.EndOfList();
          header = header->GetNext()) {
-        if ((from_allocation < 1) && (to_allocation > 0)) {
-            bReleasePrintf("    %5d        0x%08x %7d   %s");
+        int allocation_number = 0;
+        if ((allocation_number >= from_allocation) && (allocation_number < to_allocation)) {
+            AllocationHeader *bottom = reinterpret_cast<AllocationHeader *>(header->GetBottomAddress());
+            bReleasePrintf("    %5d        0x%08x %7d   %s", allocation_number, bottom, header->Size, header->GetDebugText());
             bReleasePrintf("\n");
         }
     }
