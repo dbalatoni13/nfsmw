@@ -182,9 +182,9 @@ void Average::Flush(float fValue) {
     for (int i = 0; i < nSlots; i++) {
         pData[i] = fValue;
     }
+    fTotal = fValue * static_cast<float>(static_cast<int>(static_cast<unsigned int>(nSlots)));
     fAverage = fValue;
     nSamples = nSlots;
-    fTotal = fValue * static_cast<float>(static_cast<int>(static_cast<unsigned int>(nSlots)));
 }
 
 AverageWindow::AverageWindow(float f_timewindow, float f_frequency)
