@@ -446,24 +446,32 @@ float fDeterminant(bMatrix4 *m) {
     float fVar15 = param_1[0xe];
     float fVar16 = param_1[0xf];
 
-    return fVar14 * fVar6 * fVar8 * fVar16 +
-           (((fVar1 * fVar13 * fVar3 * fVar16 + fVar9 * fVar5 * fVar11 * fVar16 +
-              (((fVar9 * fVar13 * fVar10 * fVar15 + fVar14 * fVar2 * fVar3 * fVar15 +
-                 (((fVar4 * fVar6 * fVar11 * fVar15 + fVar14 * fVar5 * fVar10 * fVar12 +
-                    (((fVar4 * fVar13 * fVar8 * fVar12 + fVar1 * fVar2 * fVar11 * fVar12 +
-                       (((fVar1 * fVar6 * fVar10 * fVar7 + fVar9 * fVar2 * fVar8 * fVar7 +
-                          ((fVar4 * fVar5 * fVar3 * fVar7 - fVar1 * fVar2 * fVar3 * fVar7) -
-                           fVar4 * fVar6 * fVar8 * fVar7)) -
-                         fVar9 * fVar5 * fVar10 * fVar7) -
-                        fVar4 * fVar5 * fVar11 * fVar12)) -
-                       fVar14 * fVar2 * fVar8 * fVar12) -
-                      fVar1 * fVar13 * fVar10 * fVar12)) -
-                    fVar9 * fVar2 * fVar11 * fVar15) -
-                   fVar4 * fVar13 * fVar3 * fVar15)) -
-                 fVar14 * fVar6 * fVar10 * fVar15) -
-               fVar1 * fVar6 * fVar11 * fVar16)) -
-             fVar14 * fVar5 * fVar3 * fVar16) -
-            fVar9 * fVar13 * fVar8 * fVar16);
+    float value =
+        fVar14 * fVar6 * fVar8 * fVar16 -
+        fVar9 * fVar13 * fVar8 * fVar16 -
+        fVar14 * fVar5 * fVar3 * fVar16 +
+        fVar1 * fVar13 * fVar3 * fVar16 +
+        fVar9 * fVar5 * fVar11 * fVar16 -
+        fVar1 * fVar6 * fVar11 * fVar16 -
+        fVar14 * fVar6 * fVar10 * fVar15 +
+        fVar9 * fVar13 * fVar10 * fVar15 +
+        fVar14 * fVar2 * fVar3 * fVar15 -
+        fVar4 * fVar13 * fVar3 * fVar15 -
+        fVar9 * fVar2 * fVar11 * fVar15 +
+        fVar4 * fVar6 * fVar11 * fVar15 +
+        fVar14 * fVar5 * fVar10 * fVar12 -
+        fVar1 * fVar13 * fVar10 * fVar12 -
+        fVar14 * fVar2 * fVar8 * fVar12 +
+        fVar4 * fVar13 * fVar8 * fVar12 +
+        fVar1 * fVar2 * fVar11 * fVar12 -
+        fVar4 * fVar5 * fVar11 * fVar12 +
+        fVar1 * fVar6 * fVar10 * fVar7 -
+        fVar9 * fVar5 * fVar10 * fVar7 +
+        fVar9 * fVar2 * fVar8 * fVar7 -
+        fVar1 * fVar2 * fVar3 * fVar7 +
+        fVar4 * fVar5 * fVar3 * fVar7 -
+        fVar4 * fVar6 * fVar8 * fVar7;
+    return value;
 }
 
 void fInvertMatrix(bMatrix4 *d, bMatrix4 *s) {
