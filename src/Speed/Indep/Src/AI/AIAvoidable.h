@@ -38,8 +38,9 @@ class ALIGN_16 AIAvoidable {
 
         // void operator delete(void *mem, unsigned int size, const char *name) {}
 
-        Grid(); // TODO delete
-        // Grid(AIAvoidable &owner, const UMath::Vector3 &position, float radius) : SAP::Grid() {}
+        Grid(AIAvoidable &owner, const UMath::Vector3 &position, float radius)
+            : SAP::Grid<AIAvoidable>(owner, position, radius) {
+        }
 
         ~Grid() {}
     };

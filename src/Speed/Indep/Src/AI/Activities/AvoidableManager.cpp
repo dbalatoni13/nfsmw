@@ -1,5 +1,6 @@
 #include "AvoidableManager.hpp"
 #include "Speed/Indep/Src/AI/AIAvoidable.h"
+#include "Speed/Indep/Libs/Support/Utility/UVector.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 
@@ -55,4 +56,37 @@ void AIAvoidable::OnOverLap(AIAvoidable &a0, AIAvoidable &a1, float dT) {
 void AIAvoidable::DrawAll() {}
 
 // later when we have SAP::Grid inlines
-// void AIAvoidable::UpdateAllAvoidables(float dT) {}
+void AIAvoidable::UpdateAllAvoidables(float dT) {
+    unsigned int overlapx = 0;
+    unsigned int overlapz = 0;
+
+    for (AvoidableList::const_iterator iter = mAll.begin(); iter != mAll.end(); ++iter) {
+        AIAvoidable *pavoid = *iter;
+        UVector3 pos(UMath::Vector3::kZero);
+        float sweep = 0.0f;
+
+        if (pavoid->OnUpdateAvoidable(pos, sweep)) {
+            if (!pavoid->mGridNode) {
+                pavoid->mGridNode = new Grid(*pavoid, pos, sweep);
+            } else {
+                pavoid->mGridNode->SetPosition(pos, sweep);
+                if (pavoid->mGridNode->GetX().Overlaps()) {
+                    overlapx++;
+                }
+                if (pavoid->mGridNode->GetZ().Overlaps()) {
+                    overlapz++;
+                }
+            }
+        } else {
+            if (pavoid->mGridNode) {
+                delete pavoid->mGridNode;
+                pavoid->mGridNode = nullptr;
+            }
+        }
+
+        pavoid->mNeighbors.clear();
+    }
+
+    Grid::Sweep();
+    Grid::Prune(overlapz <= overlapx, OnOverLap, dT);
+}
