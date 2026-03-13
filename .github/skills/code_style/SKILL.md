@@ -27,14 +27,14 @@ Use the repo-local helper before doing a style pass:
 python tools/code_style.py audit --base origin/main
 ```
 
-- `audit` classifies changed files into safe vs match-sensitive buckets and reports repo-specific findings.
+- `audit` classifies changed files into default-format vs match-sensitive buckets and reports repo-specific findings.
 - `audit` also checks touched `class` / `struct` declarations against known header declarations and, when no header exists, against the PS2 visibility rule.
 - `audit` warns on touched local forward declarations when the repo already has a header for that type.
 - `audit` warns on touched type members that look like invented padding or placeholder names such as `pad`, `unk`, or `field_1234`.
 - `audit` also checks touched style-guide rules that clang-format cannot enforce for you, such as cast spacing, `using namespace`, `NULL`, and missing `EA_PRAGMA_ONCE_SUPPORTED` guard blocks when a header's guard region is touched.
 - `audit` groups repeated findings by file so branch-wide output stays readable.
-- Use `audit --category safe-cpp` for frontend/support cleanup passes and `audit --category match-sensitive-cpp` when you want a conservative review queue for decomp code.
-- `format --check` is an opt-in wrapper around the repo's `.clang-format`, but it only targets safe C/C++ files by default.
+- Use `audit --category safe-cpp` for the tool's default-format frontend/support bucket and `audit --category match-sensitive-cpp` when you want a conservative review queue for decomp code.
+- `format --check` is an opt-in wrapper around the repo's `.clang-format`, but it only targets the tool's default allowlisted C/C++ files by default.
 - Use `format --check --base origin/main --category safe-cpp` when you want a branch-level formatter probe instead of spelling every file path out.
 - `format --check` labels whitespace-only formatter output separately from more invasive changes such as include reordering.
 - `format` never targets `SourceLists/z*.cpp`; those files stay audit-only even when you opt into risky formatting.
@@ -56,7 +56,7 @@ Examples:
 
 For these files, style cleanup must be conservative and verified.
 
-### 1b. Safer support / frontend / tooling code
+### 1b. Default-format support / frontend / tooling code
 
 Examples:
 

@@ -287,7 +287,7 @@ If you have `clang-format` installed locally, you can also use:
 python tools/code_style.py format --check src/Speed/Indep/Src/Frontend/FEManager.cpp
 ```
 
-The formatter wrapper only targets safer C/C++ files by default. It intentionally skips match-sensitive code unless you explicitly pass `--include-match-sensitive` and verify the affected unit afterwards.
+The formatter wrapper only targets a narrow allowlisted subset of C/C++ files by default. That allowlist is about limiting churn, not about whitespace changing codegen by itself. The risky cases are formatter-driven changes such as include reordering and files that rely on the repo's initializer-list guard comments, so match-sensitive code is still skipped unless you explicitly pass `--include-match-sensitive` and verify the affected unit afterwards.
 `SourceLists/z*.cpp` files remain audit-only and are never formatter targets.
 `format --check` now distinguishes whitespace-only formatter deltas from more invasive output such as include reordering.
 Files that use the repo's initializer-list guard comments (`//`) are skipped by default because clang-format fights that convention; override only if you are deliberately inspecting that output.

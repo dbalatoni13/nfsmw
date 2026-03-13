@@ -32,9 +32,13 @@ the main worker after reviewing the read-only findings.
 Before any work begins, establish a regression baseline:
 
 ```sh
+python tools/decomp-workflow.py health --full main/Path/To/TU
 ninja           # ensure clean build
 ninja baseline  # snapshot current match state
 ```
+
+Add `--timings` to the `health --full` command when you are investigating slow worktrees
+or unexpectedly expensive build/tool startup.
 
 After modifying shared headers, check `ninja changes` to verify no regressions were
 introduced. An empty changeset means no regressions. If regressions appear, the shared
@@ -111,6 +115,7 @@ For each missing or nonmatching function, follow the implementation workflow in
   implementing the next function reveals patterns that make the previous one click.
 - **Mismatch triage:**
   - `@stringBase0` offset mismatches often resolve as more string literals are added
+    - If you need to inspect the original string or rodata at a virtual address, use `python tools/elf_lookup.py 0xADDR`
   - Register swaps and stack layout issues require direct intervention
   - Branch structure mismatches indicate wrong control flow (if/switch/loop)
 - **Match percentage is misleading.** The last few percent are often the hardest.
