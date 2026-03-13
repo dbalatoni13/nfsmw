@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/AI/AIAction.h"
+#include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/Generated/Messages/MSetTrafficSpeed.h"
 #include "Speed/Indep/Src/Interfaces/IListener.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
@@ -10,6 +11,7 @@
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/Sim/Util.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 // total size: 0x48
@@ -263,6 +265,53 @@ float AIActionTraffic::ComputeSpeed(float current_speed, float dT) {
     }
 
     return desired_speed;
+}
+
+void AIActionTraffic::UpdateNavPos(float lookAheadDistance) {
+    WRoadNav *nav_point = GetAI()->GetDriveToNav();
+    bool pull_over = nPullOverState == 0;
+
+    if (pull_over) {
+        if (!nav_point->HitDeadEnd()) {
+            UMath::Vector3 navPos = nav_point->GetPosition();
+            UMath::Vector3 carPosition = mRigidBody->GetPosition();
+            UMath::Vector3 carToNav;
+            UMath::Vector3 navForwardVector = nav_point->GetForwardVector();
+            UMath::Unit(navForwardVector, navForwardVector);
+            UMath::Sub(navPos, carPosition, carToNav);
+            float distToNav = UMath::Normalize(carToNav);
+            float dot = UMath::Dot(navForwardVector, carToNav);
+
+            UMath::Vector3 targetVec = UMath::Vector3::kZero;
+            AITarget *aitarget = GetAI()->GetTarget();
+            if (aitarget != nullptr && aitarget->IsValid()) {
+                UMath::Vector3 targetPos = aitarget->GetPosition();
+                UMath::Sub(targetPos, carPosition, targetVec);
+                UMath::Normalize(targetVec);
+            }
+
+            if (distToNav * dot < lookAheadDistance) {
+                nav_point->IncNavPosition(lookAheadDistance - distToNav * dot, targetVec,
+                                          lookAheadDistance);
+            }
+        }
+        nav_point->UpdateOccludedPosition(true);
+    }
+
+    UMath::Copy(UMath::Matrix4::kIdentity, mNavMatrix);
+
+    UMath::Vector3 nav_direction = nav_point->GetForwardVector();
+    float length = UMath::Normalize(nav_direction);
+
+    if (length > 0.01f) {
+        UMath::Matrix4 orientMat = Util_GenerateMatrix(nav_direction, nullptr);
+        UMath::Copy(orientMat, mNavMatrix);
+
+        const UMath::Vector3 &pos = pull_over
+            ? nav_point->GetOccludedPosition()
+            : nav_point->GetPosition();
+        mNavMatrix.v3 = UMath::Vector4Make(pos, 1.0f);
+    }
 }
 
 bool AIActionTraffic::ShouldPullOver(const UMath::Vector3 &my_position, WRoadNav *road_nav) {
