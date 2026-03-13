@@ -99,6 +99,7 @@ Foo::Foo()
 
 - Prefer including the owning repo header over adding a local forward declaration for a project type.
 - If the repo already has a header declaration/definition for a type, include that header instead of redeclaring the type locally.
+- If the repo only has an empty or stub owner header, and line info / surrounding source clearly points at that header's subsystem, prefer populating that owner header over leaving a recovered project type declaration inside a `.cpp`.
 - Only keep a local forward declaration when no canonical repo header exists yet and you have verified that the ownership is still unresolved.
 - Prefer moving helper template declarations next to their real use site instead of leaving them in an unrelated file.
 

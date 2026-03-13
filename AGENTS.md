@@ -280,6 +280,7 @@ This is a **C++98** codebase compiled with ProDG GC 3.9.3 (GCC 2.95 under the ho
 - Inline assembly is acceptable when needed to reproduce dead code or compiler scheduling that source alone cannot express cleanly
 - Preserve the original `class` vs `struct` kind. Check existing headers first, then Dwarf / PS2 info when needed. Even forward declarations and local partial declarations should use the accurate keyword when known.
 - Prefer including the real repo header over introducing a local forward declaration for a project type. If a type already has a header in `src/`, include it instead of redeclaring it locally.
+- If a subsystem already has a stub owner header and the debug line info points back at that subsystem, fill the owner header instead of keeping a recovered project type declaration in a `.cpp`.
 - Preserve original member names, types, order, and proven layout comments. Do not invent `pad`, `unk`, or `field_XXXX` members just to satisfy a guessed size or offset; verify the real members with `find-symbol.py`, GC Dwarf, and PS2 data, and leave a short TODO if a layout detail is still uncertain.
 - Follow DWARF member naming exactly (`mMember` vs `m_member`) instead of normalizing names
 - Omit the `this` pointer.
