@@ -12,8 +12,8 @@ void MD5::Update(const void *buffer, int length) {
         uRegs[1] = 0xEFCDAB89;
         uRegs[2] = 0x98BADCFE;
         uRegs[3] = 0x10325476;
-        computed = false;
         uCount = 0;
+        computed = false;
     }
 
     if (length < 0) {

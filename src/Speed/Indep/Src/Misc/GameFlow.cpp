@@ -232,6 +232,7 @@ class ELoadingScreenOn : public Event {
 class EFadeScreenOn : public Event {
   public:
     EFadeScreenOn(bool);
+    bool fLoadingBarOnly;
 };
 
 class SimpleModelAnim {
@@ -563,10 +564,10 @@ void LoadGlobalChunks() {
     eLoadStreamingTexturePack(DynamicTexturePackFilename, nullptr, nullptr, 0);
     eWaitForStreamingTexturePackLoading(DynamicTexturePackFilename);
     LoadCurrentLanguage();
-    if (eIsWidescreen() == 0) {
-        LoadResourceFile("GLOBAL\\THINSCREEN_GLOBAL.BUN", 1, 0, nullptr, nullptr, 0, 0);
-    } else {
+    if (eIsWidescreen() != 0) {
         LoadResourceFile("GLOBAL\\WIDESCREEN_GLOBAL.BUN", 1, 0, nullptr, nullptr, 0, 0);
+    } else {
+        LoadResourceFile("GLOBAL\\THINSCREEN_GLOBAL.BUN", 1, 0, nullptr, nullptr, 0, 0);
     }
     if (GetTextureInfo(0xab0e817d, 0, 0) == nullptr) {
         unsigned int hash = 0xab0e817d;
