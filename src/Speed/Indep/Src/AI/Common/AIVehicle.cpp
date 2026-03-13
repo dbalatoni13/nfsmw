@@ -1247,6 +1247,120 @@ bool AIVehicle::IsSimplePhysicsActive() {
     return GetVehicle()->GetPhysicsMode() == PHYSICS_MODE_EMULATED;
 }
 
+void AIVehicle::UpdateRoads() {
+    ProfileNode profile_node("UpdateRoads", 0);
+
+    ICollisionBody *ibody;
+    GetOwner()->QueryInterface(&ibody);
+
+    UMath::Vector3 currentoff;
+    UMath::Sub(ibody->GetPosition(), mCurrentRoad.GetPosition(), currentoff);
+    float distance = UMath::Length(currentoff);
+
+    bool isvalid = false;
+    if (distance < 20.0f && mCurrentRoad.IsValid() && mFutureRoad.IsValid()) {
+        isvalid = true;
+    }
+
+    float timeSinceIncrement = Sim::GetTime() - mRoadIncrementTimer;
+    if (!isvalid || timeSinceIncrement >= 0.02f) {
+        UMath::Vector3 velocity;
+        GetSimable()->GetLinearVelocity(velocity);
+        float speed = UMath::Length(velocity);
+
+        IPerpetrator *iperp;
+        bool bRaceRouteOnly = false;
+        if (GetOwner()->QueryInterface(&iperp) && iperp->IsRacing()) {
+            bRaceRouteOnly = true;
+        }
+
+        mCurrentRoad.SetRaceFilter(bRaceRouteOnly);
+        mFutureRoad.SetRaceFilter(bRaceRouteOnly);
+
+        float timeSinceUpdate = Sim::GetTime() - mRoadUpdateTimer;
+        if (isvalid && timeSinceUpdate < 0.33f) {
+            // Incremental road update
+            mRoadIncrementTimer = Sim::GetTime();
+
+            UMath::Vector3 road_direction;
+            UMath::Unit(mCurrentRoad.GetForwardVector(), road_direction);
+
+            UMath::Vector3 road_side = UMath::Vector3Make(road_direction.z, 0.0f, -road_direction.x);
+            UMath::Normalize(road_side);
+
+            float lanedelta = UMath::Dot(road_side, currentoff);
+            float dist = UMath::Dot(road_direction, currentoff);
+
+            if (dist > 0.05f) {
+                float laneoffset = mCurrentRoad.SnapToSelectableLane(mCurrentRoad.GetLaneOffset() + lanedelta);
+                mCurrentRoad.ChangeLanes(laneoffset, 0.0f);
+                mCurrentRoad.IncNavPosition(dist, mCurrentRoad.GetForwardVector(), 0.0f);
+            }
+
+            speed = UMath::Length(velocity);
+
+            dist = speed - UMath::Distance(mFutureRoad.GetPosition(), mCurrentRoad.GetPosition());
+
+            if (dist > 0.05f) {
+                UVector3 pos(mFarFuturePosition);
+                UMath::Vector3 incdir = pos - mFutureRoad.GetPosition();
+                UMath::Normalize(incdir);
+
+                UMath::Unit(mFutureRoad.GetForwardVector(), road_direction);
+                road_side = UMath::Vector3Make(road_direction.z, 0.0f, -road_direction.x);
+
+                float lanedelta = UMath::Dot(velocity, road_side) * dist / speed;
+                float laneoffset = mFutureRoad.SnapToSelectableLane(mFutureRoad.GetLaneOffset() + lanedelta);
+                dist *= UMath::Dot(incdir, road_direction);
+                mFutureRoad.ChangeLanes(laneoffset, 0.0f);
+                mFutureRoad.IncNavPosition(dist, incdir, 0.0f);
+            }
+        } else {
+            // Full road update
+            mRoadUpdateTimer = Sim::GetTime();
+
+            UMath::Vector3 position;
+            position = ibody->GetPosition();
+
+            if (speed < 1.0f) {
+                velocity = ibody->GetForwardVector();
+                speed = UMath::Length(velocity);
+            }
+
+            UMath::Vector3 direction;
+            UMath::Scale(velocity, 1.0f / speed, direction);
+
+            float futuredistance = UMath::Max(1.0f, 2.0f / speed);
+            float targetdistance = UMath::Max(2.0f, 90.0f / speed);
+
+            road_walker walker;
+            walker.set_race_routes(bRaceRouteOnly);
+
+            if (walker.walk_road(position, direction, speed * futuredistance, speed * targetdistance,
+                                 mLastFutureSegment, mLastFutureNodeInd)) {
+                mCurrentRoad.SetRaceFilter(bRaceRouteOnly);
+                mCurrentRoad.SetTrafficFilter(false);
+                mCurrentRoad.SetCopFilter(false);
+                mFutureRoad.SetRaceFilter(bRaceRouteOnly);
+                mFutureRoad.SetTrafficFilter(false);
+                mFutureRoad.SetCopFilter(false);
+
+                walker.get_best_start_spot().init_nav(mCurrentRoad);
+                walker.get_best_future_spot().init_nav(mFutureRoad);
+
+                mLastFutureSegment = mFutureRoad.GetSegmentInd();
+                mLastFutureNodeInd = static_cast<short>(mFutureRoad.GetNodeInd());
+
+                WRoadNav targetnav;
+                walker.get_best_target_spot().init_nav(targetnav);
+
+                mFarFuturePosition = targetnav.GetPosition();
+                UMath::Unit(targetnav.GetForwardVector(), mFarFutureDirection);
+            }
+        }
+    }
+}
+
 WRoadNav *AIVehicle::GetCurrentRoad() {
     UpdateRoads();
     return &mCurrentRoad;
