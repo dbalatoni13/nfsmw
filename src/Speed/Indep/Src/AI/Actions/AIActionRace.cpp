@@ -2,6 +2,7 @@
 #include "Speed/Indep/Src/AI/AIAction.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/Debug/Debugable.h"
+#include "Speed/Indep/Src/Gameplay/GTrigger.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/rigidbodyspecs.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICheater.h"
@@ -683,6 +684,43 @@ float AIActionRace::UpdateNavPos(float lookAheadDistance, const UMath::Vector3 &
 
     road_nav->UpdateOccludedPosition(true);
     return nav_distance;
+}
+
+bool AIActionRace::CheckSpeedTraps(float speed, float skill, float potential_nos, bool was_nos) const {
+    if (mPerpetrator && GRaceStatus::Get().GetActivelyRacing()) {
+        if (!GRaceStatus::IsSpeedTrapRace()) {
+            return false;
+        }
+        GRacerInfo *info = mPerpetrator->GetRacerInfo();
+        if (info && speed >= 10.0f) {
+            if (!was_nos && speed > fSpeedLimit - 5.0f) {
+                return false;
+            }
+            const UMath::Vector3 &my_position = mIRigidBody->GetPosition();
+            UMath::Vector3 my_direction;
+            mIRigidBody->GetForwardVector(my_direction);
+            int num_speed_traps = GRaceStatus::Get().GetNumRaceSpeedTraps();
+            for (int i = 0; i < num_speed_traps; i++) {
+                GTrigger *trap = GRaceStatus::Get().GetRaceSpeedTrap(i);
+                if (trap->IsEnabled()) {
+                    UMath::Vector3 position;
+                    trap->GetPosition(position);
+                    float look_ahead = speed * (skill + skill + 1.0f);
+                    if (UMath::DistanceSquare(position, my_position) < look_ahead * look_ahead) {
+                        UMath::Vector3 relative_position;
+                        UMath::Sub(position, my_position, relative_position);
+                        float distance = UMath::Normalize(relative_position);
+                        float time_ahead = distance / speed;
+                        if ((time_ahead < potential_nos || was_nos) &&
+                            UMath::Dot(my_direction, relative_position) > 0.85f) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return false;
 }
 
 void AIActionRace::Update(float dT) {}

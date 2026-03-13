@@ -512,6 +512,14 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         return GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceParameters()->GetIsEpicPursuitRace();
     }
 
+    int GetNumRaceSpeedTraps() {
+        return nSpeedTraps;
+    }
+
+    GTrigger *GetRaceSpeedTrap(int n) {
+        return aSpeedTraps[n];
+    }
+
     float GetBinBaseHeat() const {
         return mRaceBin->GetBaseOpenWorldHeat();
     }
