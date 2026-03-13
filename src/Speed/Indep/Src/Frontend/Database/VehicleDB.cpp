@@ -257,8 +257,8 @@ void FEImpoundData::Default() {
 }
 
 void FEImpoundData::BecomeImpounded(eImpoundReasons reason) {
-    TimesBusted = MaxBusted;
     ImpoundedState = reason;
+    TimesBusted = MaxBusted;
     DaysBeforeRelease = 5;
 }
 
@@ -273,7 +273,8 @@ void FEImpoundData::NotifyPlayerUsedMarkerToRelease() {
 }
 
 bool FEImpoundData::NotifyWin() {
-    if (ImpoundedState != 0 && ((DaysBeforeRelease == 0 || --DaysBeforeRelease == 0) && ImpoundedState != IMPOUND_RELEASED)) {
+    bool impounded = ImpoundedState != 0;
+    if (impounded && ((DaysBeforeRelease == 0 || --DaysBeforeRelease == 0) && ImpoundedState != IMPOUND_RELEASED)) {
         ImpoundedState = IMPOUND_RELEASED;
         return true;
     }
@@ -400,7 +401,7 @@ unsigned short FEInfractionsData::GetValue(GInfractionManager::InfractionType ty
 }
 
 unsigned short FEInfractionsData::NumInfractions() const {
-    return Racing + Speeding + Reckless + Assault + HitAndRun + Damage + Resist + OffRoad;
+    return Speeding + Racing + Reckless + Assault + HitAndRun + Damage + Resist + OffRoad;
 }
 
 void FECareerRecord::Default() {
@@ -611,7 +612,7 @@ FECustomizationRecord *FEPlayerCarDB::CreateNewCustomizationRecord() {
             FECustomizationRecord *record = &Customizations[i];
 
             record->Default();
-            record->Handle = i;
+            Customizations[i].Handle = i;
             return record;
         }
     }
