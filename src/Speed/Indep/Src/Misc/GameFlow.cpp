@@ -659,9 +659,11 @@ void RegionLoader::BeginLoading() {
     }
     if (two_player) {
         GRaceCustom *startupRace = GRaceDatabase::Get().GetStartupRace();
-        bool loadingDrag = false;
+        bool loadingDrag;
         if (startupRace != nullptr) {
             loadingDrag = startupRace->GetRaceType() == GRace::kRaceType_Drag;
+        } else {
+            loadingDrag = false;
         }
         if (loadingDrag && pool_size < 0x73a) {
             pool_size = 0x73a;
