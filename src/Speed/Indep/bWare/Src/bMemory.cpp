@@ -613,9 +613,9 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
         header->MagicNumber = 0x22;
         header->FrontPadding = front_padding;
 
-        bool break_on_allocation = bMemoryAllocationNumber == bMemoryBreakOnAllocationNumber;
-        header->RequestedSize = size;
+        bool break_on_allocation = bMemoryBreakOnAllocationNumber == bMemoryAllocationNumber;
         header->Size = new_size;
+        header->RequestedSize = size;
         if (break_on_allocation) {
             bBreak();
         }
