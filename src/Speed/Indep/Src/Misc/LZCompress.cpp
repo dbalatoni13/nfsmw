@@ -1334,18 +1334,18 @@ static int HUFF_decompress(unsigned char *packbuf, unsigned char *unpackbuf) {
     unsigned int type;
     unsigned char clue;
     int ulen = 0;
+    unsigned int cmp;
     int bitnum = 0;
     int cluelen = 0;
     unsigned char *qs = packbuf;
     unsigned char *qd = unpackbuf;
     unsigned int bits = 0;
     unsigned int bitsunshifted = 0;
+    int numbits;
     int bitsleft;
     unsigned int v = 0;
 
-    if (qs == 0) {
-        return ulen;
-    }
+    if (qs != 0) {
 
     bitsleft = -16;
     if (ZERO != 0) {
@@ -1417,7 +1417,6 @@ static int HUFF_decompress(unsigned char *packbuf, unsigned char *unpackbuf) {
 
         int numchars = 0;
         int basecmp = 0;
-        unsigned int cmpval;
         i = 1;
         do {
             mostbits = i;
@@ -1428,13 +1427,13 @@ static int HUFF_decompress(unsigned char *packbuf, unsigned char *unpackbuf) {
             numchars += bitnum;
             deltatbl[mostbits] = bitnum;
             basecmp = basecmp * 2 + bitnum;
-            cmpval = 0;
+            cmp = 0;
             if (bitnum != 0) {
-                cmpval = (basecmp << (16 - mostbits)) & 0xffff;
+                cmp = (basecmp << (16 - mostbits)) & 0xffff;
             }
-            cmptbl[mostbits] = cmpval;
+            cmptbl[mostbits] = cmp;
             i = mostbits + 1;
-        } while (bitnum == 0 || cmpval != 0);
+        } while (bitnum == 0 || cmp != 0);
 
         // Set sentinel
         cmptbl[mostbits] = 0xffffffff;
@@ -1462,12 +1461,10 @@ static int HUFF_decompress(unsigned char *packbuf, unsigned char *unpackbuf) {
             // Read code values
             nextchar = 0xff;
             int charIdx = 0;
-            int nextIdx;
             if (numchars > 0) {
                 do {
                     int leapdelta;
                     HUFF_READNUM(leapdelta)
-                    nextIdx = charIdx + 1;
                     int count = leapdelta - 3;
                     do {
                         unsigned int nc = nextchar + 1;
@@ -1478,8 +1475,8 @@ static int HUFF_decompress(unsigned char *packbuf, unsigned char *unpackbuf) {
                     } while (count != 0);
                     leap[nextchar] = 1;
                     codetbl[charIdx] = nextchar;
-                    charIdx = nextIdx;
-                } while (nextIdx < numchars);
+                    charIdx++;
+                } while (charIdx < numchars);
             }
         }
 
@@ -1690,6 +1687,7 @@ static int HUFF_decompress(unsigned char *packbuf, unsigned char *unpackbuf) {
                 }
             }
         }
+    }
     }
 
     return ulen;

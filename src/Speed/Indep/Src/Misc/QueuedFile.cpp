@@ -289,10 +289,52 @@ void StartQueuedFileReading() {
         if (QueuedFileNumReadsInProgress > 0 && bStrCmp(qf->Filename, LastQueuedFilename) != 0) {
             return;
         }
+        if (EnableQueuedFileBundle != 0) {
+            QueuedFileBundle *bundle = new QueuedFileBundle();
+            bundle->ReadBuffer = 0;
+            bundle->ReadBufferBot = 0;
+            bundle->ReadBufferTop = 0;
+            bundle->NumBytesQueued = 0;
+            bundle->NumQueuedFiles = 0;
+            bundle->MemoryPoolNumber = 0;
+            QueuedFile *iter = static_cast<QueuedFile *>(WaitingQueuedFileList.GetHead());
+            if (iter != reinterpret_cast<QueuedFile *>(&WaitingQueuedFileList)) {
+                do {
+                    if (!bundle->TestAddQueuedFile(iter)) {
+                        break;
+                    }
+                    iter = static_cast<QueuedFile *>(iter->GetNext());
+                } while (iter != reinterpret_cast<QueuedFile *>(&WaitingQueuedFileList));
+            }
+            if (bundle->NumQueuedFiles <= 1) {
+                if (bundle != 0) {
+                    if (bundle->ReadBuffer != 0) {
+                        bFree(bundle->ReadBuffer);
+                    }
+                    delete bundle;
+                }
+            } else {
+                bundle->BeginRead();
+                for (int i = 0; i < bundle->NumQueuedFiles; i++) {
+                    bundle->QueuedFiles[i]->Remove();
+                }
+            }
+        }
+        qf = static_cast<QueuedFile *>(WaitingQueuedFileList.GetHead());
+        if (qf->Params.Priority < QueuedFileMinPriority) {
+            break;
+        }
+        QueuedFileMinPriorityTimeoutCounter = 0;
+        bSafeStrCpy(LastQueuedFilename, qf->Filename, 0x64);
+        qf->BeginRead();
         qf->Remove();
         ReadingQueuedFileList.AddTail(qf);
         QueuedFileNumReadsInProgress = QueuedFileNumReadsInProgress + 1;
-        qf->BeginRead();
+    }
+    if (QueuedFileNumReadsInProgress == 0) {
+        if (QueuedFileMinPriorityTimeoutCounter++ > 10) {
+            QueuedFileMinPriority = 0;
+        }
     }
 }
 
