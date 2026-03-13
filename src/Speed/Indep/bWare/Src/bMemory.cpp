@@ -557,7 +557,7 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
 
     if (info->OverflowPoolNumber != -1) {
         int overflow_params = (allocation_params & ~0xf) | (info->OverflowPoolNumber & 0xf);
-        if (size < bLargestMalloc(overflow_params)) {
+        if (bLargestMalloc(overflow_params) > size) {
             info = &MemoryPoolInfoTable[info->OverflowPoolNumber];
             allocation_params = overflow_params;
         }
@@ -597,39 +597,40 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
     void *memory =
         pool->AllocateMemory(size + 0x14, alignment, allocation_header_offset, allocation_params & 0x40, allocation_params & 0x80, &new_size);
 
-    if (memory == nullptr) {
-        bReleasePrintf("ERROR:  Out of memory in pool %s allocating %s (size = %d).  Largest possible = %d  Total = %d", pool->GetName(),
-                       debug_text, size, bLargestMalloc(allocation_params), bCountFreeMemory(pool_num));
-        bMemoryPrintAllocationsByAddress(pool_num, 0, 0x7fffffff);
-        bBreak();
-        return nullptr;
+    if (memory != nullptr) {
+        int front_padding = 0;
+        if ((allocation_params & 0x40) != 0) {
+            front_padding = GetAlignmentAdjustTop(reinterpret_cast<intptr_t>(memory), alignment, allocation_header_offset);
+        }
+
+        AllocationHeader *tail = pool->AllocationHeaderList.GetTail();
+        AllocationHeader *header = reinterpret_cast<AllocationHeader *>(reinterpret_cast<char *>(memory) + front_padding);
+        AllocationHeader *head = pool->AllocationHeaderList.EndOfList();
+
+        tail->Next = header;
+        pool->AllocationHeaderList.HeadNode.Prev = header;
+        header->Prev = tail;
+        header->Next = head;
+        header->PoolNum = pool_num;
+        header->MagicNumber = 0x22;
+        header->FrontPadding = front_padding;
+
+        bool break_on_allocation = bMemoryAllocationNumber == bMemoryBreakOnAllocationNumber;
+        header->RequestedSize = size;
+        header->Size = new_size;
+        if (break_on_allocation) {
+            bBreak();
+        }
+
+        bMemoryAllocationNumber++;
+        return &header[1];
     }
 
-    int front_padding = 0;
-    if ((allocation_params & 0x40) != 0) {
-        front_padding = GetAlignmentAdjustTop(reinterpret_cast<intptr_t>(memory), alignment, allocation_header_offset);
-    }
-
-    AllocationHeader *tail = pool->AllocationHeaderList.GetTail();
-    AllocationHeader *header = reinterpret_cast<AllocationHeader *>(reinterpret_cast<char *>(memory) + front_padding);
-    AllocationHeader *head = pool->AllocationHeaderList.EndOfList();
-
-    tail->Next = header;
-    pool->AllocationHeaderList.HeadNode.Prev = header;
-    header->Prev = tail;
-    header->Next = head;
-    header->PoolNum = pool_num;
-    header->MagicNumber = 0x22;
-    header->FrontPadding = front_padding;
-    header->RequestedSize = size;
-    header->Size = new_size;
-
-    if (bMemoryAllocationNumber == bMemoryBreakOnAllocationNumber) {
-        bBreak();
-    }
-
-    bMemoryAllocationNumber++;
-    return &header[1];
+    bReleasePrintf("ERROR:  Out of memory in pool %s allocating %s (size = %d).  Largest possible = %d  Total = %d", pool->GetName(),
+                   debug_text, size, bLargestMalloc(allocation_params), bCountFreeMemory(pool_num));
+    bMemoryPrintAllocationsByAddress(pool_num, 0, 0x7fffffff);
+    bBreak();
+    return nullptr;
 }
 
 void bFree(void *ptr) {
