@@ -739,9 +739,15 @@ def generate_build_ninja(
     ee_gcc = compiler_path / "bin" / "ee-gcc.exe"
     # Workaround because otherwise the dependency files are all placed into the root folder
     if is_windows():
-        ee_gcc_cmd = f"{CHAIN}set DEPENDENCIES_OUTPUT=$basefile.d&& {ee_gcc} $cflags -c -o $out $in"
+        ee_gcc_cmd = (
+            f"{CHAIN}set DEPENDENCIES_OUTPUT=$basefile.d $out&& "
+            f"{ee_gcc} $cflags -c -o $out $in"
+        )
     else:
-        ee_gcc_cmd = f"env DEPENDENCIES_OUTPUT=$basefile.d {wrapper_cmd}{ee_gcc} $cflags -c -o $out $in"
+        ee_gcc_cmd = (
+            f"env 'DEPENDENCIES_OUTPUT=$basefile.d $out' "
+            f"{wrapper_cmd}{ee_gcc} $cflags -c -o $out $in"
+        )
     ee_gcc_implicit: List[Optional[Path]] = [
         compilers_implicit or ee_gcc,
         binutils,
