@@ -673,9 +673,9 @@ void bFile::HandleCompletedCallbacks() {
         int *cb = reinterpret_cast<int *>(_5bFile_CompletedCallbackList.GetHead());
         bool shouldDelete = false;
         _5bFile_CompletedCallbackList.Remove(reinterpret_cast<bTNode<void> *>(cb));
-        _5bFile_TotalNumPendingCallbacks--;
         bFile *file = reinterpret_cast<bFile *>(cb[2]);
         file->NumPendingCallbacks--;
+        _5bFile_TotalNumPendingCallbacks--;
         file->MaybeAddCachedHandle();
         if (file->CloseAfterCallbacks != 0) {
             shouldDelete = file->NumPendingCallbacks == 0;
