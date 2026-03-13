@@ -1,5 +1,145 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/CustomTuning.hpp"
 
+#include "Speed/Indep/Src/FEng/FEString.h"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
+
+extern int FEPrintf(FEString *, const char *, ...);
+extern unsigned int FEngHashString(const char *, ...);
+extern FEObject *FEngFindObject(const char *, unsigned int);
+extern void FEngGetSize(FEObject *, float &, float &);
+extern void FEngGetTopLeft(FEObject *, float &, float &);
+extern void FEngSetCurrentButton(const char *, unsigned int);
+extern void FEngSetLanguageHash(FEString *, unsigned int);
+extern void FEngSetScript(FEObject *, unsigned int, bool);
+extern int bSNPrintf(char *, int, const char *, ...);
+
+extern const char lbl_803E5088[];
+extern const char lbl_803E89B8[];
+extern const char lbl_803E89C4[];
+extern const char lbl_803E89CC[];
+extern const char lbl_803E8A18[];
+extern const float lbl_803E89B4;
+extern const float lbl_803E89C0;
+extern const float lbl_803E89D8;
+extern const float lbl_803E89DC;
+extern const float lbl_803E89E0;
+extern const float lbl_803E89E4;
+
+struct TuningSlider : public FEToggleWidget {
+    FEObject *pSliderGroup;
+    cSlider Negative;
+    cSlider Positive;
+    unsigned int Title;
+    unsigned int HelpBlurb;
+    float Min;
+    float Max;
+    float Current;
+    float Increment;
+    bool bActive;
+    Physics::Tunings::Path TuningPath;
+
+    TuningSlider(Physics::Tunings::Path path, unsigned int title, unsigned int help_blurb, bool active);
+    ~TuningSlider() override {}
+    void Act(const char *parent_pkg, unsigned int data) override;
+    void CheckMouse(const char *parent_pkg, float mouse_x, float mouse_y) override;
+    void Draw() override;
+    void Position() override;
+    void SetFocus(const char *parent_pkg) override;
+    void UnsetFocus() override;
+    void SetSliderGroup(const char *pkg_name, unsigned int group_name);
+    void InitSliderObjects(const char *pkg_name, const char *name);
+    void SetSliderValues(float min, float max, float inc, float cur);
+};
+
+TuningSlider::TuningSlider(Physics::Tunings::Path path, unsigned int title, unsigned int help_blurb, bool active)
+    : FEToggleWidget(true) //
+{
+    Title = title;
+    HelpBlurb = help_blurb;
+    bActive = active;
+    TuningPath = path;
+    bMovedLastUpdate = true;
+    BlinkArrows(0);
+}
+
+void TuningSlider::Act(const char * /* parent_pkg */, unsigned int data) {
+    if (!bActive) {
+        return;
+    }
+
+    if (data == 0xB5971BF1) {
+        Current += Increment;
+    } else if (data == 0x9120409E) {
+        Current -= Increment;
+    }
+
+    Current = Current < Min ? Min : Current;
+    Current = Current > Max ? Max : Current;
+    Negative.SetValue((Max + Min) * lbl_803E89B4 + Min - Current);
+    Positive.SetValue(Current);
+    Update(data);
+}
+
+void TuningSlider::CheckMouse(const char * /* parent_pkg */, float /* mouse_x */, float /* mouse_y */) {}
+
+void TuningSlider::Draw() {
+    FEngSetLanguageHash(GetTitleObject(), Title);
+    FEPrintf(GetDataObject(), lbl_803E89B8, ((Current - Min) / (Max - Min)) * lbl_803E89C0);
+    if (bActive) {
+        FEngSetScript(GetTitleObject(), 0x7AB5521A, true);
+        FEngSetScript(pSliderGroup, 0x001744B3, true);
+    } else {
+        FEngSetScript(GetTitleObject(), 0x00163C76, true);
+        FEngSetScript(pSliderGroup, 0x00163C76, true);
+    }
+    Negative.Draw();
+    Positive.Draw();
+}
+
+void TuningSlider::Position() {}
+
+void TuningSlider::SetFocus(const char *parent_pkg) {
+    FEngSetCurrentButton(parent_pkg, GetTitleObject()->NameHash);
+    if (bActive) {
+        FEngSetScript(GetTitleObject(), 0x7AB5521A, true);
+        FEngSetScript(pSliderGroup, 0x001744B3, true);
+    }
+}
+
+void TuningSlider::UnsetFocus() {
+    if (bActive) {
+        FEngSetScript(GetTitleObject(), 0x7AB5521A, true);
+        FEngSetScript(pSliderGroup, 0x001744B3, true);
+    } else {
+        FEngSetScript(GetTitleObject(), 0x00163C76, true);
+        FEngSetScript(pSliderGroup, 0x00163C76, true);
+    }
+}
+
+void TuningSlider::SetSliderGroup(const char *pkg_name, unsigned int group_name) {
+    pSliderGroup = FEngFindObject(pkg_name, group_name);
+}
+
+void TuningSlider::InitSliderObjects(const char *pkg_name, const char *name) {
+    char slider_name[32];
+
+    bSNPrintf(slider_name, 32, lbl_803E89C4, name);
+    Negative.InitObjects(pkg_name, slider_name);
+    bSNPrintf(slider_name, 32, lbl_803E89CC, name);
+    Positive.InitObjects(pkg_name, slider_name);
+}
+
+void TuningSlider::SetSliderValues(float min, float max, float inc, float cur) {
+    float middle = (max + min) * lbl_803E89D8;
+
+    Increment = inc;
+    Min = min;
+    Max = max;
+    Current = cur;
+    Negative.InitValues(min, middle, lbl_803E89DC, middle + min - cur, lbl_803E89E0);
+    Positive.InitValues((Max + Min) * lbl_803E89D8, Max, lbl_803E89DC, Current, lbl_803E89E4);
+}
+
 bool CustomTuningScreen::IsTuningAvailable(FEPlayerCarDB *stable, FECarRecord *record, Physics::Tunings::Path path) {
     if (record == nullptr) {
         return false;
