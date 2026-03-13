@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/AI/AIAction.h"
 #include "Speed/Indep/Src/AI/AISteer.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
@@ -308,6 +309,127 @@ void AIActionPursuitOffRoad::UpdateAvoidWalls(UMath::Vector3 &avoid) {
     }
     float strength = (collidedot * collidedot * KPH2MPS(10.0f)) / (collidetime * collidetime);
     Scale(collidenormal, strength, avoid);
+}
+
+void AIActionPursuitOffRoad::Update(float dT) {
+    UMath::Vector3 steer = UMath::Vector3::kZero;
+    UMath::Vector3 separation = UMath::Vector3::kZero;
+    UMath::Vector3 affinity = UMath::Vector3::kZero;
+    UMath::Vector3 seek = UMath::Vector3::kZero;
+
+    AITarget *target = mIVehicleAI->GetTarget();
+    mSpeedDelay.add_sample(target->GetSpeed(), dT);
+
+    bool bUserNOSLastTime = mUserNOSLastTime;
+
+    IInput *targetIInput;
+    if (target->QueryInterface(&targetIInput)) {
+        mUserNOSLastTime = targetIInput->GetControls().fNOS;
+    }
+
+    UMath::Vector3 avoid = UMath::Vector3::kZero;
+    UpdateAvoidWalls(avoid);
+    UpdateSeek(seek);
+
+    float seek_speed = UMath::Length(seek);
+    float max_speed = KPH2MPS(mIVehicleAI->GetAttributes().MAXIMUM_AI_SPEED());
+
+    IVehicleAI *targetai;
+    if (mIVehicleAI->GetPursuit()->GetTarget()->QueryInterface(&targetai)) {
+        float speed = mIVehicle->GetSpeed();
+        float speedmult = mIVehicleAI->GetAttributes().TopSpeedMultiplier();
+        float accelmult = mIVehicleAI->GetAttributes().AccelerationMultiplier();
+
+        if (mIVehicleAI->GetPursuit()) {
+            if (mIVehicleAI->GetPursuit()->GetIsAJerk()) {
+                speedmult *= 1.2f;
+                accelmult *= 1.5f;
+                max_speed *= 1.1f;
+            }
+        }
+
+        max_speed = bMin(targetai->GetTopSpeed() * speedmult, max_speed);
+        float max_accel = targetai->GetAcceleration(speed) * accelmult;
+
+        UMath::Vector3 forward;
+        mIRigidBody->GetForwardVector(forward);
+        const float Gravity = 9.81f;
+        float grade = forward.y;
+        max_accel = max_accel + grade * Gravity;
+
+        IEngine *targetengine;
+        if (targetai->QueryInterface(&targetengine) && targetengine->IsNOSEngaged()) {
+            max_accel *= 1.3f;
+        }
+
+        mLimiter.update(speed, max_speed, max_accel, dT);
+        max_speed = mLimiter.get_speed_limit();
+    }
+
+    if (max_speed < seek_speed) {
+        UMath::Scale(seek, max_speed / seek_speed, seek);
+    }
+
+    UpdateSeparation(separation);
+    UpdateRoadAffinity(affinity);
+
+    UMath::Add(avoid, separation, steer);
+    UMath::Add(affinity, steer, steer);
+
+    float steerdotseek = UMath::Dot(steer, seek);
+    float steercounterseek = UMath::Length(seek);
+
+    if (-steerdotseek / steercounterseek > KPH2MPS(100.0f)) {
+        float longweight = (KPH2MPS(150.0f) - (-steerdotseek / steercounterseek)) / (KPH2MPS(200.0f));
+        longweight = bClamp(longweight, 0.0f, 1.0f);
+
+        float steerlength2 = UMath::Dot(steer, steer);
+        UMath::Vector3 seeklong;
+        UMath::Scale(steer, steerdotseek / steerlength2, seeklong);
+        UMath::Vector3 seeklat;
+        UMath::Sub(seek, seeklong, seeklat);
+        UMath::Scale(seeklong, longweight, seek);
+        UMath::Add(seek, seeklat, seek);
+    }
+
+    UMath::Add(steer, seek, steer);
+
+    {
+        const UMath::Vector3 &v = mIRigidBody->GetLinearVelocity();
+        float lv = UMath::Length(v);
+        float ls = UMath::Length(steer);
+
+        if (lv > KPH2MPS(10.0f) && ls > KPH2MPS(10.0f)) {
+            float dot = UMath::Dot(v, steer);
+            float dist = UMath::Length(steer);
+            float curvature = (1.0f - dot / (lv * ls)) * lv / dist;
+            float limit = KPH2MPS(200.0f) - curvature * KPH2MPS(100.0f);
+            limit = bMax(KPH2MPS(30.0f), limit);
+            if (limit < ls) {
+                UMath::Scale(steer, limit / ls);
+            }
+        }
+    }
+
+    float totalLength = UMath::Length(steer);
+    mIVehicleAI->SetDriveSpeed(totalLength);
+
+    UMath::Add(mIRigidBody->GetPosition(), steer, steer);
+    mIVehicleAI->SetDriveTarget(steer);
+    mIVehicleAI->DoDriving(7);
+
+    if (mNOSCountDown > 0.0f) {
+        mNOSCountDown -= dT;
+        mIInput->SetControlNOS(false);
+    } else {
+        InputControls &controls = mIInput->GetControls();
+        bool isnos = controls.fNOS == false;
+        if (isnos && mUserNOSLastTime == true && bUserNOSLastTime == false) {
+            mNOSCountDown = 1.5f;
+        } else {
+            mIVehicleAI->DoNOS();
+        }
+    }
 }
 
 void AIActionPursuitOffRoad::OnDebugDraw() {}
