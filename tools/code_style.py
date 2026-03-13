@@ -695,14 +695,14 @@ def command_audit(args: argparse.Namespace) -> int:
         print(f"  {category}: {len(by_category[category])}")
     print()
 
-    default_format_candidates = [
+    safe_cpp_candidates = [
         path
         for path in paths
         if path_category(path) == "safe-cpp" and os.path.splitext(path)[1] in CPP_EXTS
     ]
-    if default_format_candidates:
-        print("Default clang-format candidates:")
-        for path in default_format_candidates:
+    if safe_cpp_candidates:
+        print("Focused safe-cpp subset:")
+        for path in safe_cpp_candidates:
             print(f"  {path}")
         print()
 
@@ -785,12 +785,12 @@ def find_clang_format() -> str:
 
 
 def format_paths(paths: Iterable[str], include_match_sensitive: bool) -> List[str]:
-    allowed = {"safe-cpp", "match-sensitive-cpp"}
+    del include_match_sensitive
 
     return [
         relpath(path)
         for path in paths
-        if path_category(path) in allowed and os.path.splitext(path)[1] in CPP_EXTS
+        if os.path.splitext(path)[1] in CPP_EXTS
     ]
 
 
@@ -911,7 +911,7 @@ def build_parser() -> argparse.ArgumentParser:
     fmt = subparsers.add_parser(
         "format",
         parents=[shared],
-        help="Run clang-format on changed C/C++ files by default (SourceLists stay excluded)",
+        help="Run clang-format on changed C/C++ files by default",
     )
     fmt.add_argument(
         "--category",

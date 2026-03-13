@@ -111,7 +111,7 @@ placement, pointer style, and how to keep style work safe in match-sensitive cod
 
 Use `python tools/code_style.py audit --base origin/main` before a branch-wide style pass.
 It classifies changed files, reports repo-specific findings, and can run clang-format
-across eligible changed C/C++ files by default (excluding `SourceLists/z*.cpp`).
+across eligible changed C/C++ files by default.
 
 ### decomp-diff.py — Diff & symbol overview
 

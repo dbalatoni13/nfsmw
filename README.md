@@ -274,11 +274,11 @@ python tools/code_style.py format --check --base origin/main --category safe-cpp
 If you have `clang-format` installed locally, you can also use:
 
 ```sh
+python tools/code_style.py format --check --base origin/main
 python tools/code_style.py format --check src/Speed/Indep/Src/Frontend/FEManager.cpp
 ```
 
 The formatter wrapper targets eligible changed C/C++ files by default, including match-sensitive code. If you want a smaller focused pass, restrict it with `--category safe-cpp`, which currently maps to `src/Speed/Indep/Src/Frontend/` and `src/Speed/Indep/Src/FEng/`.
-`SourceLists/z*.cpp` files remain audit-only and are never formatter targets.
 `format --check` now distinguishes whitespace-only formatter deltas from other non-whitespace output changes.
 Files that use the repo's initializer-list guard comments (`//`) are formatter targets too. If a formatting pass touches match-sensitive code, rebuild and verify the affected unit afterwards instead of assuming the change is automatically byte-stable.
 For declaration-kind checks, header declarations are treated as the repo source of truth; otherwise the helper falls back to the PS2 dump rule (`public:` / `private:` / `protected:` means `class`, no visibility labels means `struct`).
