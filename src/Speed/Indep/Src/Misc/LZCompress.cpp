@@ -457,21 +457,21 @@ struct HUFFMemStruct {
 };
 
 static void HUFF_writebits(HuffEncodeContext *ctx, HUFFMemStruct *mem, unsigned int pattern, unsigned int bits) {
-    if (bits < 0x11) {
+    if (bits >= 0x11) {
+        HUFF_writebits(ctx, mem, pattern >> 0x10, bits - 0x10);
+        HUFF_writebits(ctx, mem, pattern, 0x10);
+    } else {
         unsigned int total = ctx->packbits + bits;
         ctx->packbits = total;
         ctx->workpattern = ctx->workpattern + ((pattern & ctx->masks[bits]) << (0x18 - total));
         while (total > 7) {
             mem->ptr[mem->len] = static_cast<char>(*reinterpret_cast<unsigned short *>(&ctx->workpattern));
             mem->len = mem->len + 1;
-            total = ctx->packbits - 8;
             ctx->workpattern = ctx->workpattern << 8;
+            total = ctx->packbits - 8;
             ctx->plen = ctx->plen + 1;
             ctx->packbits = total;
         }
-    } else {
-        HUFF_writebits(ctx, mem, pattern >> 0x10, bits - 0x10);
-        HUFF_writebits(ctx, mem, pattern, 0x10);
     }
 }
 
