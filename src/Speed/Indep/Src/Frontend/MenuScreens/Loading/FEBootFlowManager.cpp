@@ -1,12 +1,12 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FEBootFlowManager.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 
 extern bool BuildRegion_IsPal();
 extern bool eIsWidescreen();
 extern char *bStrStr(const char *s1, const char *s2);
-extern void ShowAllCars();
-extern void PlayFEMusic(int);
 
 extern const char *sBootFlowNTSC[];
 extern const char *sBootFlowPAL[];
@@ -34,31 +34,47 @@ void BootFlowManager::Destroy() {
     if (mInstance != nullptr) {
         delete mInstance;
         mInstance = nullptr;
-        ShowAllCars();
+        CarViewer::ShowAllCars();
     }
-    PlayFEMusic(-1);
+    g_pEAXSound->PlayFEMusic(-1);
 }
 
 BootFlowManager::BootFlowManager() {
-    const char **bootFlow;
-    if (BuildRegion_IsPal()) {
+    if (!BuildRegion_IsPal()) {
         if (eIsWidescreen()) {
-            bootFlow = sBootFlowPALWidescreen;
+            for (int i = 0; i < 7; i++) {
+                if (*sBootFlowWideScreen[i] != '\0') {
+                    BootFlowScreen *screen = new BootFlowScreen();
+                    screen->Name = sBootFlowWideScreen[i];
+                    BootFlowScreens.AddTail(screen);
+                }
+            }
         } else {
-            bootFlow = sBootFlowPAL;
+            for (int i = 0; i < 7; i++) {
+                if (*sBootFlowNTSC[i] != '\0') {
+                    BootFlowScreen *screen = new BootFlowScreen();
+                    screen->Name = sBootFlowNTSC[i];
+                    BootFlowScreens.AddTail(screen);
+                }
+            }
         }
     } else {
         if (eIsWidescreen()) {
-            bootFlow = sBootFlowWideScreen;
+            for (int i = 0; i < 7; i++) {
+                if (*sBootFlowPALWidescreen[i] != '\0') {
+                    BootFlowScreen *screen = new BootFlowScreen();
+                    screen->Name = sBootFlowPALWidescreen[i];
+                    BootFlowScreens.AddTail(screen);
+                }
+            }
         } else {
-            bootFlow = sBootFlowNTSC;
-        }
-    }
-    for (int i = 0; i < 7; i++) {
-        if (*bootFlow[i] != '\0') {
-            BootFlowScreen *screen = new BootFlowScreen();
-            screen->Name = bootFlow[i];
-            BootFlowScreens.AddTail(screen);
+            for (int i = 0; i < 7; i++) {
+                if (*sBootFlowPAL[i] != '\0') {
+                    BootFlowScreen *screen = new BootFlowScreen();
+                    screen->Name = sBootFlowPAL[i];
+                    BootFlowScreens.AddTail(screen);
+                }
+            }
         }
     }
     CurrentScreen = BootFlowScreens.GetHead();
