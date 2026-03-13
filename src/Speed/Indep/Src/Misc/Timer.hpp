@@ -13,7 +13,7 @@ class Timer {
     }
 
     Timer(float seconds) {
-        this->PackedTime = static_cast<int>(seconds * 4000);
+        SetTime(seconds);
     }
 
     Timer(int packed_time) {

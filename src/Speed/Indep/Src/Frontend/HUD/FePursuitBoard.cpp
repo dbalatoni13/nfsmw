@@ -16,6 +16,51 @@ void FEngSetTopLeft(FEObject *object, float x, float y);
 void FEngGetSize(FEObject *object, float &x, float &y);
 void FEngSetSize(FEObject *object, float x, float y);
 
+inline float FEngGetTopLeftX(FEObject *obj) {
+    float x, y;
+    FEngGetTopLeft(obj, x, y);
+    return x;
+}
+
+inline float FEngGetTopLeftY(FEObject *obj) {
+    float x, y;
+    FEngGetTopLeft(obj, x, y);
+    return y;
+}
+
+inline float FEngGetBottomRightX(FEObject *obj) {
+    float x, y;
+    FEngGetBottomRight(obj, x, y);
+    return x;
+}
+
+inline float FEngGetBottomRightY(FEObject *obj) {
+    float x, y;
+    FEngGetBottomRight(obj, x, y);
+    return y;
+}
+
+inline float FEngGetSizeY(FEObject *obj) {
+    float x, y;
+    FEngGetSize(obj, x, y);
+    return y;
+}
+
+inline void FEngSetSizeX(FEObject *obj, float x) {
+    float y = FEngGetSizeY(obj);
+    FEngSetSize(obj, x, y);
+}
+
+inline void FEngSetTopLeftX(FEObject *obj, float x) {
+    float y = FEngGetTopLeftY(obj);
+    FEngSetTopLeft(obj, x, y);
+}
+
+inline void FEngSetBottomRightX(FEObject *obj, float x) {
+    float y = FEngGetBottomRightY(obj);
+    FEngSetBottomRight(obj, x, y);
+}
+
 PursuitBoard::PursuitBoard(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
     : HudElement(pkg_name, 0) //
     , IPursuitBoard(pOutter)
@@ -26,16 +71,12 @@ void PursuitBoard::Update(IPlayer *player) {
     if (mInPursuit) {
         Timer timer;
         char timeToPrint[16];
-        float x, y;
-        float originalRightX;
-        float originalLeftX;
-        float bustedBarTime;
 
         if (!FEngIsScriptSet(mpDataPursuitBoardGroup, 0x5079c8f8)) {
             FEngSetScript(mpDataPursuitBoardGroup, 0x5079c8f8, true);
         }
 
-        timer.SetTime(mPursuitDuration);
+        timer = Timer(mPursuitDuration);
         timer.PrintToString(timeToPrint, 4);
         FEPrintf(mpDataPursuitTimer, "%s", timeToPrint);
         FEPrintf(mpDataPursuitSummaryTotal, "%$d", mPursuitRep);
@@ -45,18 +86,16 @@ void PursuitBoard::Update(IPlayer *player) {
         }
 
         if (mTimeUntilBusted <= -1.0f) {
+            float originalLeftX;
+
             if (!FEngIsScriptSet(mpDataPursuitCooldownMeterGroup, 0x13f51124)) {
                 FEngSetScript(mpDataPursuitMeterGroup, 0x92975065, true);
                 g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0xc));
             }
 
-            FEngGetTopLeft(mpDataCooldownBar, x, y);
-            originalLeftX = x;
-            float cooldownAmount = 1.0f - mCooldownTimeRemaining / mCooldownTimeRequired;
-            FEngGetSize(mpDataCooldownBar, x, y);
-            FEngSetSize(mpDataCooldownBar, mCooldownBarOriginalWidth * cooldownAmount, y);
-            FEngGetTopLeft(mpDataCooldownBar, x, y);
-            FEngSetTopLeft(mpDataCooldownBar, originalLeftX, y);
+            originalLeftX = FEngGetTopLeftX(mpDataCooldownBar);
+            FEngSetSizeX(mpDataCooldownBar, mCooldownBarOriginalWidth * (1.0f - mCooldownTimeRemaining / mCooldownTimeRequired));
+            FEngSetTopLeftX(mpDataCooldownBar, originalLeftX);
 
             if (mTimeUntilHidden > 0.0f) {
                 if (!FEngIsScriptSet(mpDataHidingBacking, 0x5079c8f8)) {
@@ -68,6 +107,11 @@ void PursuitBoard::Update(IPlayer *player) {
                 }
             }
         } else {
+            int numCopsToReport;
+            float originalLeftX;
+            float originalRightX;
+            float bustedBarTime;
+
             if (FEngIsScriptSet(mpDataPursuitCooldownMeterGroup, 0x13f51124)) {
                 FEngSetScript(mpDataPursuitCooldownMeterGroup, 0x92975065, true);
                 g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0xc));
@@ -82,7 +126,7 @@ void PursuitBoard::Update(IPlayer *player) {
                 FEngSetScript(mpDataHidingBacking, 0x33113ac, true);
             }
 
-            int numCopsToReport = mNumCopsFullyEngaged;
+            numCopsToReport = mNumCopsFullyEngaged;
             if (mHeliInvolved) {
                 numCopsToReport = numCopsToReport - 1;
             }
@@ -100,7 +144,7 @@ void PursuitBoard::Update(IPlayer *player) {
                         FEngSetScript(mpDataBackupBacking, 0x26ded57, true);
                     }
                 }
-                timer.SetTime(mTimeUntilBackup);
+                timer = Timer(mTimeUntilBackup);
                 timer.PrintToString(timeToPrint, 4);
                 FEPrintf(mpDataBackupTimer, "%s", timeToPrint);
             } else {
@@ -109,17 +153,15 @@ void PursuitBoard::Update(IPlayer *player) {
                 }
             }
 
-            FEngGetBottomRight(mpDataBustedBar0, x, y);
-            originalRightX = x;
+            originalLeftX = 0.0f;
+            originalRightX = FEngGetBottomRightX(mpDataBustedBar0);
             if (mTimeUntilBusted > 0.5f) {
                 bustedBarTime = (mTimeUntilBusted - 0.5f) * 2.0f;
             } else {
-                bustedBarTime = 0.0f;
+                bustedBarTime = originalLeftX;
             }
-            FEngGetSize(mpDataBustedBar0, x, y);
-            FEngSetSize(mpDataBustedBar0, bustedBarTime * mBustedBarOriginalWidth0, y);
-            FEngGetBottomRight(mpDataBustedBar0, x, y);
-            FEngSetBottomRight(mpDataBustedBar0, originalRightX, y);
+            FEngSetSizeX(mpDataBustedBar0, bustedBarTime * mBustedBarOriginalWidth0);
+            FEngSetBottomRightX(mpDataBustedBar0, originalRightX);
 
             if (mTimeUntilBusted > 0.5f) {
                 if (!FEngIsScriptSet(mpDataBustedBar0, 0x26ded57)) {
@@ -131,8 +173,7 @@ void PursuitBoard::Update(IPlayer *player) {
                 }
             }
 
-            FEngGetBottomRight(mpDataBustedBar1, x, y);
-            originalRightX = x;
+            originalRightX = FEngGetBottomRightX(mpDataBustedBar1);
             if (mTimeUntilBusted > 0.5f) {
                 bustedBarTime = 0.9f;
             } else if (mTimeUntilBusted > 0.1f) {
@@ -140,46 +181,38 @@ void PursuitBoard::Update(IPlayer *player) {
             } else {
                 bustedBarTime = 0.0f;
             }
-            FEngGetSize(mpDataBustedBar1, x, y);
-            FEngSetSize(mpDataBustedBar1, bustedBarTime * mBustedBarOriginalWidth1, y);
-            FEngGetBottomRight(mpDataBustedBar1, x, y);
-            FEngSetBottomRight(mpDataBustedBar1, originalRightX, y);
+            FEngSetSizeX(mpDataBustedBar1, bustedBarTime * mBustedBarOriginalWidth1);
+            FEngSetBottomRightX(mpDataBustedBar1, originalRightX);
 
-            if (mTimeUntilBusted >= 0.1f || mTimeUntilBusted <= -0.1f) {
-                if (!FEngIsScriptSet(mpDataBustedBar2, 0x1ca7c0)) {
-                    FEngSetScript(mpDataBustedBar2, 0x1ca7c0, true);
-                }
-            } else {
+            if (mTimeUntilBusted < 0.1f && mTimeUntilBusted > -0.1f) {
                 if (!FEngIsScriptSet(mpDataBustedBar2, 0x3826a28)) {
                     FEngSetScript(mpDataBustedBar2, 0x3826a28, true);
                 }
-            }
-
-            FEngGetTopLeft(mpDataBustedBar3, x, y);
-            originalLeftX = x;
-            bustedBarTime = 1.0f;
-            if (mTimeUntilBusted >= -0.5f) {
-                if (mTimeUntilBusted < -0.1f) {
-                    bustedBarTime = (-mTimeUntilBusted * 2.0f) - 0.1f;
-                } else {
-                    bustedBarTime = 0.0f;
+            } else {
+                if (!FEngIsScriptSet(mpDataBustedBar2, 0x1ca7c0)) {
+                    FEngSetScript(mpDataBustedBar2, 0x1ca7c0, true);
                 }
             }
-            FEngGetSize(mpDataBustedBar3, x, y);
-            FEngSetSize(mpDataBustedBar3, bustedBarTime * mBustedBarOriginalWidth3, y);
-            FEngGetTopLeft(mpDataBustedBar3, x, y);
-            FEngSetTopLeft(mpDataBustedBar3, originalLeftX, y);
 
-            FEngGetTopLeft(mpDataBustedBar4, x, y);
-            originalLeftX = x;
-            bustedBarTime = 0.0f;
+            originalLeftX = FEngGetTopLeftX(mpDataBustedBar3);
+            if (mTimeUntilBusted < -0.5f) {
+                bustedBarTime = 1.0f;
+            } else if (mTimeUntilBusted < -0.1f) {
+                bustedBarTime = (-mTimeUntilBusted * 2.0f) - 0.1f;
+            } else {
+                bustedBarTime = 0.0f;
+            }
+            FEngSetSizeX(mpDataBustedBar3, bustedBarTime * mBustedBarOriginalWidth3);
+            FEngSetTopLeftX(mpDataBustedBar3, originalLeftX);
+
+            originalLeftX = FEngGetTopLeftX(mpDataBustedBar4);
             if (mTimeUntilBusted < -0.5f) {
                 bustedBarTime = -(mTimeUntilBusted + 0.5f) * 2.0f;
+            } else {
+                bustedBarTime = 0.0f;
             }
-            FEngGetSize(mpDataBustedBar4, x, y);
-            FEngSetSize(mpDataBustedBar4, bustedBarTime * mBustedBarOriginalWidth4, y);
-            FEngGetTopLeft(mpDataBustedBar4, x, y);
-            FEngSetTopLeft(mpDataBustedBar4, originalLeftX, y);
+            FEngSetSizeX(mpDataBustedBar4, bustedBarTime * mBustedBarOriginalWidth4);
+            FEngSetTopLeftX(mpDataBustedBar4, originalLeftX);
 
             if (mTimeUntilBusted < -0.5f) {
                 if (!FEngIsScriptSet(mpDataBustedBar4, 0x26ded57)) {
