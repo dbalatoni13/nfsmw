@@ -558,13 +558,13 @@ void bFile::Seek(int position, int mode) {
 
 void bFile::ReadAsync(void *buf, int num_bytes, void (*callback)(void *), void *callback_param) {
     bGetTicker();
-    if (FileSize < Position + num_bytes) {
+    if (Position + num_bytes > FileSize) {
         num_bytes = FileSize - Position;
     }
     MemoryFileEntry *entry = FindMemoryFileEntry(Filename);
     if (entry != nullptr) {
-        if (Position < entry->FileSize) {
-            int overflow = (Position + num_bytes) - entry->FileSize;
+        if (Position < entry->MemorySize) {
+            int overflow = (Position + num_bytes) - entry->MemorySize;
             if (overflow > 0) {
                 bMemSet(static_cast<char *>(buf) + num_bytes - overflow, 0x21, overflow);
                 num_bytes = num_bytes - overflow;
@@ -593,13 +593,14 @@ void bFile::ReadAsync(void *buf, int num_bytes, void (*callback)(void *), void *
     RealFile::Mutex::Unlock(&bFileMutex);
     if (FileHandle == 0) {
         int flags = GetRealFileOpenFlags(OpenMode);
-        int fop = FILESYS_open(Filename, flags, static_cast<void (*)(int, int, void *)>(nullptr), cb);
+        int fop = FILESYS_open(Filename, flags, 100, cb);
         FILESYS_callbackop(fop, bFile::CallbackFunctionOpen);
         MaybeAddCachedHandle();
     } else {
-        int fop = FILESYS_read(FileHandle, buf, num_bytes, nullptr, cb);
+        int fop = FILESYS_read(FileHandle, Position, buf, num_bytes, 0x64, cb);
         FILESYS_callbackop(fop, bFile::CallbackFunctionRead);
     }
+    Position = Position + num_bytes;
 }
 
 void bFile::FlushWriteBuffer() {
