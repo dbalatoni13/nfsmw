@@ -215,7 +215,9 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     // const signed char NumRoadBlocks() {}
 
-    // const int NumPursuits() {}
+    const int NumPursuits() {
+        return mPursuitCount;
+    }
 
     // const struct pvehicle &GetPlayerSpecs() {}
 
@@ -229,7 +231,9 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     // enum SpeechObservations GetLastObservation() {}
 
-    // const int GetFocus() {}
+    const int GetFocus() {
+        return mFocus;
+    }
 
     // void SetFocus(enum MachineState s) {}
 
@@ -253,7 +257,9 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     // enum RoadNames GetLastKnownRoad() {}
 
-    // const float GetPursuitDuration() {}
+    const float GetPursuitDuration() {
+        return mPursuitDuration;
+    }
 
     // const float GetPlayerStopTime() {}
 

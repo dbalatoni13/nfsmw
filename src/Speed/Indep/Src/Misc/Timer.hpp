@@ -47,6 +47,8 @@ class Timer {
 
     Timer operator+(const Timer &t) const {}
 
+    Timer operator-(const Timer &t) const {}
+
     Timer operator*(const Timer &t) const {}
 
     Timer &operator+=(const Timer &t) {}
