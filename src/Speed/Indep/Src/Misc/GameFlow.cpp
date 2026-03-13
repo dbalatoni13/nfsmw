@@ -280,7 +280,22 @@ void CodeOverlayLoadingFrontend(void (*callback)(int), int param) {
     if (EnableCodeOverlay != 0 || EnableCodeOverlayDebuggingOnly != 0) {
         GetBuildVersionName(build_version);
         bSPrintf(overlay_path, "%s.ovl", build_version);
-        if (CodeOverlayFirstTime == 0) {
+        if (CodeOverlayFirstTime != 0) {
+            int filesize[1];
+            filesize[0] = 0;
+            void *data = nullptr;
+            if (bFileExists(overlay_path)) {
+                data = bGetFile(overlay_path, filesize, 0);
+            }
+            int crc1 = bCalculateCrc32(data, filesize[0], 0xFFFFFFFF);
+            int crc2 = bCalculateCrc32(_overlay_start, _overlay_end - _overlay_start, 0xFFFFFFFF);
+            if (crc1 != crc2) {
+                EnableCodeOverlay = 0;
+                EnableCodeOverlayDebuggingOnly = 0;
+            }
+            bFree(data);
+            CodeOverlayFirstTime = 0;
+        } else {
             CodeOverlayCallback = callback;
             int size = GetQueuedFileSize(overlay_path);
             AddQueuedFile(_overlay_start, overlay_path, 0, size,
@@ -288,20 +303,6 @@ void CodeOverlayLoadingFrontend(void (*callback)(int), int param) {
                           reinterpret_cast<void *>(param), nullptr);
             return;
         }
-        int filesize[1];
-        filesize[0] = 0;
-        void *data = nullptr;
-        if (bFileExists(overlay_path)) {
-            data = bGetFile(overlay_path, filesize, 0);
-        }
-        int crc1 = bCalculateCrc32(data, filesize[0], 0xFFFFFFFF);
-        int crc2 = bCalculateCrc32(_overlay_start, 0x24998, 0xFFFFFFFF);
-        if (crc1 != crc2) {
-            EnableCodeOverlay = 0;
-            EnableCodeOverlayDebuggingOnly = 0;
-        }
-        bFree(data);
-        CodeOverlayFirstTime = 0;
     }
     if (callback != nullptr) {
         callback(param);
