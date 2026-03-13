@@ -11,14 +11,19 @@ Examples:
 """
 
 import argparse
+import contextlib
 import difflib
+import io
 import json
 import os
 import re
+import shutil
 import sys
+import tempfile
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from _common import ROOT_DIR, ToolError, find_objdiff_unit, load_objdiff_config, make_abs
+from dwarf1_gcc_line_info import process_file as export_debug_lines
 from lookup import (
     _candidate_func_names,
     _normalise_func_name,
@@ -33,6 +38,10 @@ TOOLS_DIR = os.path.join(ROOT_DIR, "tools")
 GC_DWARF = os.path.join(ROOT_DIR, "symbols", "Dwarf")
 DTK = os.path.join(ROOT_DIR, "build", "tools", "dtk")
 HEX_RE = re.compile(r"0x[0-9A-Fa-f]+")
+RANGE_RE = re.compile(r"^(\s*)// Range:\s*(0x[0-9A-Fa-f]+)\s*->\s*(0x[0-9A-Fa-f]+)")
+DEBUG_LINE_RE = re.compile(
+    r"^\s*(?:0x)?([0-9A-Fa-f]+):\s*(.+?)\s+\(line\s+(\d+)(?:,\s+column\s+(\d+))?\)\s*$"
+)
 
 
 class DwarfCompareError(RuntimeError):
@@ -227,6 +236,269 @@ def normalize_block(block: str) -> List[str]:
     return [normalize_line(line) for line in block.splitlines()]
 
 
+def canonical_debug_path(debug_path: str) -> str:
+    normalized = debug_path.replace("\\", "/").strip()
+    lowered = normalized.lower().replace("\\", "/")
+    if "/src/" in lowered:
+        src_index = lowered.index("/src/")
+        suffix = normalized[src_index + len("/src/") :].lstrip("/")
+        return os.path.normpath("src/" + suffix).replace("\\", "/")
+    if "/speed/indep/" in lowered:
+        indep_index = lowered.index("/speed/indep/")
+        suffix = normalized[indep_index + len("/speed/indep/") :].lstrip("/")
+        return os.path.normpath("src/Speed/Indep/" + suffix.lstrip("/")).replace("\\", "/")
+    return os.path.normpath(normalized).replace("\\", "/")
+
+
+def normalize_source_location(path: str, line_number: int) -> str:
+    normalized = os.path.normpath(path.replace("\\", "/")).replace("\\", "/").lower()
+    return f"{normalized}:{line_number}"
+
+
+def parse_debug_lines_file(path: str) -> Dict[int, List[Dict[str, Any]]]:
+    entries: Dict[int, List[Dict[str, Any]]] = {}
+    with open(path) as f:
+        for raw_line in f:
+            line = raw_line.rstrip("\n")
+            match = DEBUG_LINE_RE.match(line)
+            if match is None:
+                continue
+            address = int(match.group(1), 16)
+            debug_path = match.group(2)
+            line_number = int(match.group(3))
+            display_path = canonical_debug_path(debug_path)
+            entries.setdefault(address, []).append(
+                {
+                    "address": address,
+                    "debug_path": debug_path,
+                    "display_path": display_path,
+                    "line_number": line_number,
+                    "normalized_file": os.path.normpath(display_path.replace("\\", "/"))
+                    .replace("\\", "/")
+                    .lower(),
+                    "normalized": normalize_source_location(display_path, line_number),
+                }
+            )
+    return entries
+
+
+def dedupe_source_locations(locations: Sequence[Dict[str, Any]]) -> List[str]:
+    deduped: List[str] = []
+    seen = set()
+    for entry in locations:
+        rendered = f"{entry['display_path']}:{entry['line_number']}"
+        if rendered in seen:
+            continue
+        seen.add(rendered)
+        deduped.append(rendered)
+    return deduped
+
+
+def dedupe_source_files(locations: Sequence[Dict[str, Any]]) -> List[str]:
+    deduped: List[str] = []
+    seen = set()
+    for entry in locations:
+        normalized_file = entry["normalized_file"]
+        if normalized_file in seen:
+            continue
+        seen.add(normalized_file)
+        deduped.append(entry["display_path"])
+    return deduped
+
+
+def render_list(items: Sequence[str], limit: int = 6) -> str:
+    if not items:
+        return "<none>"
+    if len(items) <= limit:
+        return ", ".join(items)
+    hidden = len(items) - limit
+    return f"{', '.join(items[:limit])}, ... (+{hidden} more)"
+
+
+def build_debug_lines_file_for_object(obj_path: str) -> str:
+    temp_dir = tempfile.mkdtemp(prefix="nfsmw_debug_lines_")
+    with contextlib.redirect_stdout(io.StringIO()):
+        export_debug_lines(obj_path, temp_dir)
+    debug_lines_path = os.path.join(temp_dir, "debug_lines.txt")
+    if not os.path.exists(debug_lines_path):
+        raise DwarfCompareError("failed to export rebuilt debug lines")
+    return debug_lines_path
+
+
+def collect_range_entries(block: str) -> List[Dict[str, Any]]:
+    lines = block.splitlines()
+    entries: List[Dict[str, Any]] = []
+    for idx, line in enumerate(lines):
+        match = RANGE_RE.match(line)
+        if match is None:
+            continue
+        signature = ""
+        for follow in lines[idx + 1 :]:
+            stripped = follow.strip()
+            if not stripped or stripped.startswith("//"):
+                continue
+            signature = stripped.split("{")[0].strip()
+            break
+        entries.append(
+            {
+                "line_index": idx + 1,
+                "indent": len(match.group(1)) // 4,
+                "start_address": int(match.group(2), 16),
+                "end_address": int(match.group(3), 16),
+                "signature": signature,
+            }
+        )
+    return entries
+
+
+def normalized_signature_key(signature: str) -> str:
+    signature = signature.strip()
+    if not signature:
+        return "<anonymous>"
+    return normalize_line(signature)
+
+
+def align_range_entries(
+    original_entries: Sequence[Dict[str, Any]],
+    rebuilt_entries: Sequence[Dict[str, Any]],
+) -> List[Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]]:
+    original_keys = [
+        f"{entry['indent']}|{normalized_signature_key(entry['signature'])}" for entry in original_entries
+    ]
+    rebuilt_keys = [
+        f"{entry['indent']}|{normalized_signature_key(entry['signature'])}" for entry in rebuilt_entries
+    ]
+    matcher = difflib.SequenceMatcher(a=original_keys, b=rebuilt_keys)
+    aligned: List[Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]] = []
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "equal":
+            for orig, reb in zip(original_entries[i1:i2], rebuilt_entries[j1:j2]):
+                aligned.append((orig, reb))
+        elif tag == "replace":
+            max_len = max(i2 - i1, j2 - j1)
+            for offset in range(max_len):
+                orig = original_entries[i1 + offset] if i1 + offset < i2 else None
+                reb = rebuilt_entries[j1 + offset] if j1 + offset < j2 else None
+                aligned.append((orig, reb))
+        elif tag == "delete":
+            for orig in original_entries[i1:i2]:
+                aligned.append((orig, None))
+        elif tag == "insert":
+            for reb in rebuilt_entries[j1:j2]:
+                aligned.append((None, reb))
+    return aligned
+
+
+def build_range_source_summary(
+    original_block: FunctionBlock,
+    rebuilt_block: FunctionBlock,
+    rebuilt_debug_lines_path: Optional[str],
+) -> Dict[str, Any]:
+    if not rebuilt_debug_lines_path or not os.path.exists(rebuilt_debug_lines_path):
+        return {"available": False}
+    original_debug_lines_path = os.path.join(ROOT_DIR, "symbols", "debug_lines.txt")
+    if not os.path.exists(original_debug_lines_path):
+        return {"available": False}
+
+    original_entries = collect_range_entries(original_block[3])
+    rebuilt_entries = collect_range_entries(rebuilt_block[3])
+    aligned_entries = align_range_entries(original_entries, rebuilt_entries)
+    original_debug_lines = parse_debug_lines_file(original_debug_lines_path)
+    rebuilt_debug_lines = parse_debug_lines_file(rebuilt_debug_lines_path)
+
+    rows: List[Dict[str, Any]] = []
+    file_match_count = 0
+    exact_match_count = 0
+    for original_entry, rebuilt_entry in aligned_entries:
+        original_items = (
+            original_debug_lines.get(int(original_entry["start_address"]), [])
+            if original_entry is not None
+            else []
+        )
+        rebuilt_items = (
+            rebuilt_debug_lines.get(int(rebuilt_entry["start_address"]), [])
+            if rebuilt_entry is not None
+            else []
+        )
+        original_locations = (
+            dedupe_source_locations(original_items) if original_entry is not None else []
+        )
+        rebuilt_locations = (
+            dedupe_source_locations(rebuilt_items) if rebuilt_entry is not None else []
+        )
+        original_files_display = (
+            dedupe_source_files(original_items) if original_entry is not None else []
+        )
+        rebuilt_files_display = (
+            dedupe_source_files(rebuilt_items) if rebuilt_entry is not None else []
+        )
+        original_norm = {
+            item["normalized"]
+            for item in original_items
+        } if original_entry is not None else set()
+        original_files = {
+            item["normalized_file"]
+            for item in original_items
+        } if original_entry is not None else set()
+        rebuilt_norm = {
+            item["normalized"]
+            for item in rebuilt_items
+        } if rebuilt_entry is not None else set()
+        rebuilt_files = {
+            item["normalized_file"]
+            for item in rebuilt_items
+        } if rebuilt_entry is not None else set()
+        common_files = [
+            path
+            for path in original_files_display
+            if os.path.normpath(path.replace("\\", "/")).replace("\\", "/").lower()
+            in rebuilt_files
+        ]
+        original_only_files = [
+            path
+            for path in original_files_display
+            if os.path.normpath(path.replace("\\", "/")).replace("\\", "/").lower()
+            not in rebuilt_files
+        ]
+        rebuilt_only_files = [
+            path
+            for path in rebuilt_files_display
+            if os.path.normpath(path.replace("\\", "/")).replace("\\", "/").lower()
+            not in original_files
+        ]
+        if original_entry is not None and rebuilt_entry is not None and original_files == rebuilt_files:
+            file_status = "match"
+            file_match_count += 1
+        else:
+            file_status = "mismatch"
+        if original_entry is not None and rebuilt_entry is not None and original_norm == rebuilt_norm:
+            exact_status = "match"
+            exact_match_count += 1
+        else:
+            exact_status = "mismatch"
+        rows.append(
+            {
+                "file_status": file_status,
+                "exact_status": exact_status,
+                "indent": (original_entry or rebuilt_entry or {}).get("indent", 0),
+                "line_number": (original_entry or rebuilt_entry or {}).get("line_index"),
+                "signature": (original_entry or rebuilt_entry or {}).get("signature", "<missing>"),
+                "original_locations": original_locations,
+                "rebuilt_locations": rebuilt_locations,
+                "common_files": common_files,
+                "original_only_files": original_only_files,
+                "rebuilt_only_files": rebuilt_only_files,
+            }
+        )
+    return {
+        "available": True,
+        "rows": rows,
+        "total": len(rows),
+        "file_matches": file_match_count,
+        "exact_matches": exact_match_count,
+    }
+
+
 def count_lines_for_opcodes(opcodes: Sequence[Tuple[str, int, int, int, int]]) -> Dict[str, int]:
     matching = 0
     original_only = 0
@@ -297,6 +569,7 @@ def build_report(
     rebuilt_block: FunctionBlock,
     collapse: bool,
     context: int,
+    rebuilt_debug_lines_path: Optional[str],
 ) -> Dict[str, Any]:
     original_raw = original_block[3].splitlines()
     rebuilt_raw = rebuilt_block[3].splitlines()
@@ -345,6 +618,12 @@ def build_report(
             f"- {original_span} -> {rebuilt_span}: {detail}"
         )
 
+    range_sources = build_range_source_summary(
+        original_block,
+        rebuilt_block,
+        rebuilt_debug_lines_path=rebuilt_debug_lines_path,
+    )
+
     return {
         "unit": unit_name,
         "function": function_name,
@@ -364,6 +643,7 @@ def build_report(
         "original_range": [original_block[0], original_block[1]],
         "rebuilt_range": [rebuilt_block[0], rebuilt_block[1]],
         "mismatch_summaries": mismatch_summaries,
+        "range_sources": range_sources,
         "diff_lines": diff_lines,
     }
 
@@ -392,6 +672,17 @@ def print_summary(report: Dict[str, Any]) -> None:
         "Address-only range differences are normalized out so the percentage tracks "
         "structural/function-body DWARF changes."
     )
+    if report["range_sources"].get("available"):
+        line_drifts = report["range_sources"]["file_matches"] - report["range_sources"]["exact_matches"]
+        print(
+            f"Range source ownership: files agree {report['range_sources']['file_matches']}/"
+            f"{report['range_sources']['total']}"
+            f" | file mismatches {report['range_sources']['total'] - report['range_sources']['file_matches']}/"
+            f"{report['range_sources']['total']}"
+            f" | line drifts {line_drifts}/{report['range_sources']['total']}"
+        )
+    else:
+        print("Range source ownership: unavailable (missing debug-line export data)")
     if not report["signature_match"]:
         print()
         print("Original signature:")
@@ -401,6 +692,55 @@ def print_summary(report: Dict[str, Any]) -> None:
 
 
 def print_diff(report: Dict[str, Any]) -> None:
+    if not report["range_sources"].get("available"):
+        file_mismatches = []
+        line_drifts = []
+    elif report["range_sources"]["rows"]:
+        file_mismatches = [
+            row for row in report["range_sources"]["rows"] if row["file_status"] != "match"
+        ]
+        line_drifts = [
+            row
+            for row in report["range_sources"]["rows"]
+            if row["file_status"] == "match" and row["exact_status"] != "match"
+        ]
+    else:
+        file_mismatches = []
+        line_drifts = []
+
+    if file_mismatches:
+        print_section("Range Source Ownership")
+        for row in file_mismatches:
+            location = f"L{row['line_number']:04d}" if row["line_number"] else "L????"
+            print(f"- {location} {row['signature']}")
+            if row["common_files"]:
+                print(f"  common files:        {render_list(row['common_files'])}")
+            if row["original_only_files"]:
+                print(
+                    f"  original-only files: {render_list(row['original_only_files'])}"
+                )
+            if row["rebuilt_only_files"]:
+                print(
+                    f"  rebuilt-only files:  {render_list(row['rebuilt_only_files'])}"
+                )
+            print(
+                f"  original lines:      {render_list(row['original_locations'])}"
+            )
+            print(
+                f"  rebuilt lines:       {render_list(row['rebuilt_locations'])}"
+            )
+        if line_drifts:
+            print()
+            print(
+                f"Additionally, {len(line_drifts)}/{report['range_sources']['total']} ranges keep "
+                "the same source files but drift on line numbers."
+            )
+    elif line_drifts:
+        print_section("Range Source Ownership")
+        print(
+            "All range starts resolve to the same source files; line numbers drift "
+            f"for {len(line_drifts)}/{report['range_sources']['total']} ranges."
+        )
     if report["mismatch_summaries"]:
         print_section("Mismatch Summary")
         for line in report["mismatch_summaries"]:
@@ -463,12 +803,14 @@ def main() -> None:
     args = parser.parse_args()
 
     rebuilt_dwarf_path: Optional[str] = None
+    rebuilt_debug_lines_path: Optional[str] = None
     cleanup_rebuilt_dwarf = False
+    cleanup_rebuilt_debug_lines_dir = False
     try:
+        obj_path = get_unit_build_output(args.unit)
         if args.rebuilt_dwarf_file:
             rebuilt_dwarf_path = os.path.abspath(args.rebuilt_dwarf_file)
         else:
-            obj_path = get_unit_build_output(args.unit)
             if not os.path.exists(obj_path):
                 raise DwarfCompareError(
                     f"Missing built object for {args.unit}: {obj_path}\n"
@@ -477,6 +819,13 @@ def main() -> None:
                 )
             rebuilt_dwarf_path = dtk_dwarf_dump(obj_path)
             cleanup_rebuilt_dwarf = True
+
+        if os.path.exists(obj_path):
+            try:
+                rebuilt_debug_lines_path = build_debug_lines_file_for_object(obj_path)
+                cleanup_rebuilt_debug_lines_dir = True
+            except Exception:
+                rebuilt_debug_lines_path = None
 
         original_funcs = load_function_blocks(GC_DWARF, folder_mode=True)
         rebuilt_funcs = load_function_blocks(rebuilt_dwarf_path, folder_mode=False)
@@ -491,6 +840,7 @@ def main() -> None:
             rebuilt_block,
             collapse=not args.no_collapse,
             context=args.context,
+            rebuilt_debug_lines_path=rebuilt_debug_lines_path,
         )
 
         if args.json:
@@ -511,6 +861,8 @@ def main() -> None:
     finally:
         if cleanup_rebuilt_dwarf:
             maybe_remove(rebuilt_dwarf_path)
+        if cleanup_rebuilt_debug_lines_dir and rebuilt_debug_lines_path:
+            shutil.rmtree(os.path.dirname(rebuilt_debug_lines_path), ignore_errors=True)
 
 
 if __name__ == "__main__":

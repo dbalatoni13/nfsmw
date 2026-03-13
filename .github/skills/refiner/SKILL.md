@@ -46,7 +46,7 @@ Read every instruction pair. Categorize each mismatch:
 | **Stack frame size** | Wrong frame size in prologue | Count locals in DWARF; remove temporaries not in DWARF |
 | **Float vs int sequence** | `xoris` present → field is `int`; absent → `uint` | Check field type in DWARF; change cast |
 | **`fmuls` operand order** | `fmuls fX, fX, fY` or `fmuls fX, fY, fX` | Try `v *= fY` vs `fY * v` explicitly |
-| **Relocation offset** | `@stringBase0` or data offset differs | More string literals will shift this; add them in order |
+| **Relocation offset** | `@stringBase0` or data offset differs | More string literals will shift this; add them in order. Use `python tools/elf_lookup.py 0xADDR` when you need to confirm the original string/rodata at a virtual address |
 | **Virtual vs direct call** | `bl` vs indirect through vtable | Check const-qualifier; use `GetFoo()` vs `Foo()` |
 | **Inline vs outlined** | Extra call to helper vs inlined sequence | Force inline by rewriting the expression without calling the helper |
 | **Loop structure** | Guarded `do/while` from Ghidra or mismatched loop branches | Rewrite to the natural source form suggested by the control flow; in particular, a guarded `do/while` often needs to become a plain `for` loop |

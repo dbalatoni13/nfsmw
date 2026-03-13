@@ -26,10 +26,12 @@ import json
 import re
 import os
 import shlex
+import shutil
 import subprocess
 import sys
 import tempfile
-from typing import Any, Dict, List, Optional, Sequence
+import time
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 from _common import (
     BUILD_NINJA,
     OBJDIFF_JSON,
@@ -59,6 +61,7 @@ DEFAULT_SMOKE_UNIT = "main/Speed/Indep/SourceLists/zCamera"
 DEBUG_SYMBOL_PROBE_MANGLED = "UpdateAll__6Cameraf"
 DEBUG_SYMBOL_PROBE_DEMANGLED = "Camera::UpdateAll(float)"
 DEBUG_SYMBOL_PROBE_GC_ADDR = "0x80065A84"
+REBUILT_DEBUG_LINE_RE = re.compile(r"^\s*([0-9A-Fa-f]+)\s*:")
 LOW_MATCH_PRIORITY_THRESHOLD = 60.0
 VERY_LOW_MATCH_PRIORITY_THRESHOLD = 40.0
 HIGH_MATCH_CLEANUP_THRESHOLD = 85.0
@@ -321,6 +324,11 @@ def lookup_symbol_address(symbols_file: str, mangled_name: str) -> Optional[str]
 
 def command_health(args: argparse.Namespace) -> None:
     failures = 0
+    timings: List[Tuple[str, float]] = []
+    build_cache: Dict[str, str] = {}
+
+    smoke_build_unit = args.smoke_build or args.full
+    smoke_dtk_unit = args.smoke_dtk or args.full
 
     print_section("Worktree Health")
     print(f"Root: {ROOT_DIR}")
@@ -331,6 +339,20 @@ def command_health(args: argparse.Namespace) -> None:
         print(f"{status} {label}: {detail}", flush=True)
         if not ok:
             failures += 1
+
+    def timed(label: str, func):
+        start = time.monotonic()
+        try:
+            return func()
+        finally:
+            timings.append((label, time.monotonic() - start))
+
+    def build_shared_unit_cached(unit: str) -> str:
+        if unit in build_cache:
+            return build_cache[unit]
+        output_path = timed(f"build {unit}", lambda: build_shared_unit(unit))
+        build_cache[unit] = output_path
+        return output_path
 
     report(
         os.path.exists(BUILD_NINJA),
@@ -368,7 +390,7 @@ def command_health(args: argparse.Namespace) -> None:
         DTK if os.path.exists(DTK) else "missing (seed build/tools in this worktree)",
     )
     try:
-        run_capture(python_tool("decomp-context.py", "--ghidra-check"))
+        timed("ghidra-check", lambda: run_capture(python_tool("decomp-context.py", "--ghidra-check")))
         report(True, "ghidra", "GC + PS2 programs available")
     except WorkflowError as e:
         report(False, "ghidra", str(e))
@@ -418,10 +440,10 @@ def command_health(args: argparse.Namespace) -> None:
     except WorkflowError as e:
         report(False, "debug-lines", str(e))
 
-    if args.smoke_build:
+    if smoke_build_unit:
         print_section("Build Smoke Test")
         try:
-            output_path = build_shared_unit(args.smoke_build)
+            output_path = build_shared_unit_cached(smoke_build_unit)
             report(True, "build", output_path)
         except WorkflowError as e:
             detail = str(e)
@@ -429,17 +451,65 @@ def command_health(args: argparse.Namespace) -> None:
                 detail += "\nHint: Run: python tools/share_worktree_assets.py bootstrap"
             report(False, "build", detail)
 
-    if args.smoke_dtk:
+    if smoke_dtk_unit:
         print_section("DTK Smoke Test")
         dump_path = None
+        debug_lines_dir = None
         try:
-            obj_path = build_shared_unit(args.smoke_dtk)
-            dump_path = dtk_dwarf_dump(obj_path)
+            obj_path = build_shared_unit_cached(smoke_dtk_unit)
+            dump_path = timed(f"dtk dump {smoke_dtk_unit}", lambda: dtk_dwarf_dump(obj_path))
             report(True, "dtk", dump_path)
         except WorkflowError as e:
             report(False, "dtk", str(e))
+        else:
+            try:
+                debug_lines_dir = tempfile.mkdtemp(prefix="nfsmw_health_debug_lines_")
+                timed(
+                    f"debug-line export {smoke_dtk_unit}",
+                    lambda: run_capture(
+                        python_tool("dwarf1_gcc_line_info.py", obj_path, debug_lines_dir)
+                    ),
+                )
+                rebuilt_debug_lines = os.path.join(debug_lines_dir, "debug_lines.txt")
+                if not os.path.exists(rebuilt_debug_lines):
+                    raise WorkflowError(
+                        "rebuilt debug-line export did not produce debug_lines.txt"
+                    )
+                first_address = None
+                with open(rebuilt_debug_lines) as f:
+                    for raw_line in f:
+                        match = REBUILT_DEBUG_LINE_RE.match(raw_line)
+                        if match is not None:
+                            first_address = match.group(1)
+                            break
+                if first_address is None:
+                    raise WorkflowError(
+                        "rebuilt debug-line export produced no address entries"
+                    )
+                result = timed(
+                    f"rebuilt line lookup {smoke_dtk_unit}",
+                    lambda: run_capture(
+                        python_tool("line_lookup.py", rebuilt_debug_lines, first_address)
+                    ),
+                )
+                ok = "Exact match found" in result.stdout
+                detail = (
+                    f"rebuilt line export ok ({first_address})"
+                    if ok
+                    else "rebuilt line lookup output did not contain an exact match"
+                )
+                report(ok, "rebuilt-debug-lines", detail)
+            except WorkflowError as e:
+                report(False, "rebuilt-debug-lines", str(e))
         finally:
             maybe_remove(dump_path)
+            if debug_lines_dir is not None:
+                shutil.rmtree(debug_lines_dir, ignore_errors=True)
+
+    if args.timings and timings:
+        print_section("Timings")
+        for label, elapsed in timings:
+            print(f"{elapsed:7.2f}s  {label}")
 
     if failures:
         raise WorkflowError(f"Health check failed with {failures} issue(s)")
@@ -830,6 +900,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Check whether the current worktree is ready for GC and PS2 decomp work",
     )
     health.add_argument(
+        "--full",
+        metavar="UNIT",
+        nargs="?",
+        const=DEFAULT_SMOKE_UNIT,
+        help=(
+            "Run the full smoke path for one unit: shared build, dtk dump, rebuilt "
+            f"debug-line export, and rebuilt line lookup. If UNIT is omitted, uses {DEFAULT_SMOKE_UNIT}"
+        ),
+    )
+    health.add_argument(
         "--smoke-build",
         metavar="UNIT",
         nargs="?",
@@ -838,6 +918,11 @@ def build_parser() -> argparse.ArgumentParser:
             "Also build the unit's shared output as a smoke test. If UNIT is omitted, uses "
             f"{DEFAULT_SMOKE_UNIT}"
         ),
+    )
+    health.add_argument(
+        "--timings",
+        action="store_true",
+        help="Show wall-clock timings for the heavier health-check steps",
     )
     health.add_argument(
         "--smoke-dtk",

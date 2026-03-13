@@ -26,10 +26,14 @@ functions unless the user explicitly wants a cleanup/refiner pass.
 Use the wrapper flow first throughout this skill. Drop to raw `decomp-context.py` or
 `decomp-diff.py` only when the wrapper is missing a specific flag or you are debugging.
 
-Before doing any local readability/style cleanup in code you are editing, consult
-`.github/skills/code_style/SKILL.md`. Follow it for formatting, declaration placement,
-pointer-style cleanup, and match-safe polish. Do not trade away match behavior for a
-style preference.
+On a new, suspicious, or recently updated worktree, start with:
+
+```sh
+python tools/decomp-workflow.py health --full main/Path/To/TU
+```
+
+Add `--timings` when you need to understand why wrapper/tool startup or the shared build
+smoke is slow.
 
 ### 1a. decomp-context.py
 
@@ -194,6 +198,11 @@ python tools/decomp-workflow.py dwarf -u main/Path/To/TU -f FunctionName
 This gives you a normalized DWARF match percentage plus a diff-like report of what still
 differs between the original and rebuilt DWARF blocks for that function.
 
+Pay attention to the `Range source ownership` summary there as well. It compares the
+debug-line owner files for each DWARF `// Range:` block, which makes it much easier to
+spot inlines that are coming from the wrong header or owner file. Exact line-number
+agreement is a useful secondary hint, but file ownership is the first thing to check.
+
 Manual fallback:
 
 After writing your code, you can also run the dwarf dump on the compiled output and then query your output dump with lookup.py to compare your decompiled functions against the originals. Since the address of the function you're working on can keep changing
@@ -217,7 +226,7 @@ Repeat the build-diff cycle until the diff shows 100% match with no `~` lines:
 
 ```sh
 python tools/decomp-workflow.py build -u main/Path/To/TU
-python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
 ```
 
 Every mismatched instruction is a signal — don't settle for "close enough".
