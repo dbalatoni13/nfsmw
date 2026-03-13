@@ -123,7 +123,7 @@ void SeedRandomNumber() {
 
 void InitBigFiles() {
     if (bFileExists("NFS\\ZDIR.BIN")) {
-#if defined(EA_PLATFORM_PLAYSTATION2) || defined(MILESTONE_OPT)
+#ifdef EA_PLATFORM_PLAYSTATION2
         RealFile::DeviceDriver *device = DisculatorDriver::Create("NFS\\ZDIR.BIN", "NFS\\ZZDATA");
         if (device != nullptr) {
             RealFile::AddDevice(device);
