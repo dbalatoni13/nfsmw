@@ -110,8 +110,8 @@ cleanup rules, including jumbo include spacing, initializer-list comment markers
 placement, pointer style, and how to keep style work safe in match-sensitive code.
 
 Use `python tools/code_style.py audit --base origin/main` before a branch-wide style pass.
-It classifies changed files, reports repo-specific findings, and only treats a narrow
-allowlisted subset of C/C++ files as clang-format candidates by default.
+It classifies changed files, reports repo-specific findings, and only treats the tiny
+Frontend/FEng default bucket as clang-format candidates by default.
 
 ### decomp-diff.py — Diff & symbol overview
 

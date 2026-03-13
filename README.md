@@ -287,10 +287,10 @@ If you have `clang-format` installed locally, you can also use:
 python tools/code_style.py format --check src/Speed/Indep/Src/Frontend/FEManager.cpp
 ```
 
-The formatter wrapper only targets a narrow allowlisted subset of C/C++ files by default. That allowlist is about limiting churn, not about whitespace changing codegen by itself. The risky cases are formatter-driven changes such as include reordering and files that rely on the repo's initializer-list guard comments, so match-sensitive code is still skipped unless you explicitly pass `--include-match-sensitive` and verify the affected unit afterwards.
+The formatter wrapper only targets a tiny default C/C++ bucket by default: currently `src/Speed/Indep/Src/Frontend/` and `src/Speed/Indep/Src/FEng/`. Nothing magical happens in those directories; they are just the initial low-churn UI-heavy areas chosen for branch-wide formatter probes, while the rest of `src/` stays opt-in because most of this repo is match-sensitive decomp code.
 `SourceLists/z*.cpp` files remain audit-only and are never formatter targets.
-`format --check` now distinguishes whitespace-only formatter deltas from more invasive output such as include reordering.
-Files that use the repo's initializer-list guard comments (`//`) are skipped by default because clang-format fights that convention; override only if you are deliberately inspecting that output.
+`format --check` now distinguishes whitespace-only formatter deltas from other non-whitespace output changes.
+Files that use the repo's initializer-list guard comments (`//`) are skipped by default because clang-format fights that convention by reflowing the guarded initializer layout. That is a source-layout concern, not a claim that whitespace by itself changes codegen; if you override it, verify the affected unit afterwards.
 For declaration-kind checks, header declarations are treated as the repo source of truth; otherwise the helper falls back to the PS2 dump rule (`public:` / `private:` / `protected:` means `class`, no visibility labels means `struct`).
 
 `clang-format` is optional. Recommended installs:
