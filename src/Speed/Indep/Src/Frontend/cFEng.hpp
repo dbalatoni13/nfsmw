@@ -20,6 +20,7 @@ public:
     void PopNoControlPackage(const char *name);
     void QueuePackagePop(int all);
     void ServiceFengOnly();
+    void QueuePackageSwitch(const char *name, int param2, unsigned int param3, bool param4);
 
     static cFEng *mInstance;
 };

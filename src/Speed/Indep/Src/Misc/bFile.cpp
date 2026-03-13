@@ -2,6 +2,7 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include <types.h>
 
 extern bTList<bFile> bFileList;
@@ -784,6 +785,47 @@ bool bIsAsyncDone(bFile *f) {
 
 void bWrite(bFile *f, const void *buf, int num_bytes) {
     f->Write(buf, num_bytes);
+}
+
+void *bGetFile(const char *filename, int *size_out, int flags) {
+    bFile *f = bOpen(filename, 1, 1);
+    if (f == nullptr) {
+        return nullptr;
+    }
+    if (size_out != nullptr) {
+        *size_out = bFileSize(f);
+    }
+    unsigned int pool = (flags >> 6) & 0x1ffc;
+    if (pool == 0) {
+        pool = 0x10;
+    }
+    if (pool == 0x10) {
+        flags = flags | 0x2000;
+    }
+    void *buf = bMalloc(bFileSize(f), flags);
+    bReadAsync(f, buf, bFileSize(f), nullptr, nullptr);
+    while (!bIsAsyncDone(f)) {
+        DVDErrorTask(nullptr, 0);
+        bThreadYield(8);
+    }
+    bClose(f);
+    return buf;
+}
+
+int bFPrintf(bFile *f, const char *fmt, ...) {
+    int result;
+    va_list ap;
+    va_start(ap, fmt);
+    if (f == nullptr) {
+        result = bVPrintf(fmt, &ap);
+    } else {
+        char *buf = static_cast<char *>(bMalloc(0x2000, 0));
+        result = bVSPrintf(buf, fmt, &ap);
+        f->Write(buf, result);
+        bFree(buf);
+    }
+    va_end(ap);
+    return result;
 }
 
 void bAppendToFile(const char *filename, void *buf, int num_bytes) {

@@ -166,6 +166,8 @@ class VisibleSectionManager {
     void UnallocateUserInfo(int section_number);
     DrivableScenerySection *FindDrivableSection(const bVector2 *point);
     DrivableScenerySection *FindDrivableSection(int section_number /* r4 */);
+    int GetGroupInfo(const char *name);
+    void EnableGroup(unsigned int hash);
 
     VisibleSectionUserInfo *GetUserInfo(int section_number) {
         return this->UserInfoTable[section_number];

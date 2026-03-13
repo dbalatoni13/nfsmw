@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Frontend/cFEng.hpp"
 #include "Speed/Indep/Src/Generated/Events/ELoadingScreenOff.hpp"
+#include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 #include "Speed/Indep/Src/Main/Event.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
@@ -17,6 +18,7 @@
 #include "Speed/Indep/Src/World/TrackInfo.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/Src/World/World.hpp"
+#include "Speed/Indep/Src/World/VisibleSection.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
@@ -119,7 +121,6 @@ void StartWorldAnimations();
 void OpenVisualTreatment();
 void MiniMainLoop();
 void eWaitUntilRenderingDone();
-void EnableBarrierSceneryGroup(const char *, bool);
 int FindSceneryGroup(unsigned int);
 void CloseAllGarageDoors();
 void DisableAllSceneryGroups();
@@ -154,7 +155,7 @@ void InitMemoryPool__13TrackStreameri(void *, int);
 void SetMemoryPoolSize__9CarLoaderi(CarLoader *, int);
 extern void *GlobalMemoryFile;
 extern int FinishedLoadingGlobalSuccesful;
-extern void *TheAnimPlayer;
+extern char TheAnimPlayer[];
 void WaitForResourceLoadingComplete();
 unsigned int GetVirtualMemoryAllocParams();
 
@@ -435,6 +436,20 @@ void CheckForHolesInMemory() {
     bLargestMalloc(0);
 }
 
+int NeedsSeperateTODStreamingFile(const char *);
+const char *GetTimeOfDaySuffix(eTimeOfDay);
+char *bStrStr(const char *, const char *);
+
+void GetTODFilename(eTimeOfDay tod, const char *base, char *out, int) {
+    bStrCpy(out, base);
+    if (NeedsSeperateTODStreamingFile(base) != 0) {
+        char *dot = bStrStr(base, ".");
+        char *out_dot = bStrStr(out, ".");
+        const char *suffix = GetTimeOfDaySuffix(tod);
+        bSPrintf(out_dot, "_%s%s", suffix, dot);
+    }
+}
+
 void RegionLoader::LoadHandler(int) {
     TheRegionLoader.LoadHandler();
 }
@@ -506,7 +521,7 @@ void TrackLoader::Unload() {
     cFEng::mInstance->ServiceFengOnly();
     DeactivateMemorySponge();
     g_pEAXSound->StopSND11();
-    KillWorldAnimScene__11CAnimPlayerbT1(TheAnimPlayer, true, false);
+    KillWorldAnimScene__11CAnimPlayerbT1(reinterpret_cast<void *>(TheAnimPlayer), true, false);
     ServiceSpaceNodes();
     ServiceSpaceNodes();
     IVisualTreatment *vt = IVisualTreatment::Get();
@@ -532,9 +547,21 @@ void TrackLoader::Unload() {
     bWaitUntilAsyncDone(nullptr);
     SkipFE = 0;
     bDefaultSeed = Joylog::AddOrGetData(bDefaultSeed, 0x20, JOYLOG_CHANNEL_RANDOM);
-    if (iRam804a5fa0 == 0 && iRam804a5fa4 == 0) {
+    if (TheRaceParameters.AIDemoMode == 0 && TheRaceParameters.ReplayDemoMode == 0) {
         ResetRenderEggs();
         gEasterEggs.ClearNonPersistent();
+    }
+}
+
+void EnableSceneryGroup(unsigned int hash, bool enable);
+
+void EnableBarrierSceneryGroup(const char *name, bool enable) {
+    VisibleSectionManager *vsm = &TheVisibleSectionManager;
+    if (vsm->GetGroupInfo(name) != 0) {
+        unsigned int hash = bStringHash(name);
+        vsm->EnableGroup(hash);
+        EnableSceneryGroup(hash, enable);
+        TheTrackPathManager.EnableBarriers(name);
     }
 }
 
@@ -657,7 +684,7 @@ void BeginWorldLoad() {
     TheTrackLoader.InitTopologyAndSceneryGroups();
     SunTrackLoader();
     WeHaveCheckedIfJR2ServerExists = 0;
-    if (iRam804a5fa0 == 0 && iRam804a5fa4 == 0) {
+    if (TheRaceParameters.AIDemoMode == 0 && TheRaceParameters.ReplayDemoMode == 0) {
         ActivateAnyRenderEggs();
     }
     InitServices__9WorldConnv();
@@ -798,4 +825,37 @@ void BeginGameFlowUnloadingFrontEnd() {
     bFileFlushCachedFiles();
     CheckLeakDetector("Unload Frontend");
     TheGameFlowManager.LoadTrack();
+}
+
+void eDisplayFrame();
+FEObject *FEngFindObject(const char *, unsigned int);
+void FEngSetInvisible(FEObject *);
+int IsAmerica();
+
+void HandleTrackStreamerLoadingBar() {
+    if (TrackStreamerLoadingBarUp == 0) {
+        if (Sim::GetState() == Sim::STATE_ACTIVE && TheTrackStreamer.CheckLoadingBar() != 0) {
+            TrackStreamerLoadingBarUp = 1;
+            FEManager::RequestPauseSimulation("TrackStreamer");
+            new EFadeScreenOn(true);
+        }
+    } else {
+        if (TheTrackStreamer.CheckLoadingBar() == 0) {
+            TrackStreamerLoadingBarUp = 0;
+            new EFadeScreenOff(0x16a259);
+            FEManager::RequestUnPauseSimulation("TrackStreamer");
+        }
+    }
+}
+
+void BootLoadingScreen() {
+    if (!cFEng::mInstance->IsPackagePushed(LoadingBootName)) {
+        cFEng::mInstance->QueuePackageSwitch(LoadingBootName, 0, 0, false);
+        if (IsAmerica() == 0) {
+            FEObject *obj = FEngFindObject(LoadingBootName, 0x855f83ba);
+            FEngSetInvisible(obj);
+        }
+    }
+    FEManager::Get()->Update();
+    eDisplayFrame();
 }
