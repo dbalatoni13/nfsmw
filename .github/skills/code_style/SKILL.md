@@ -93,6 +93,7 @@ Foo::Foo()
 - Spell casts without spaces inside the angle brackets: `static_cast<Type *>(expr)`, not `static_cast< Type * >(expr)`.
 - Use `nullptr` exclusively for null pointers.
 - Prefer `if (ptr)` / `if (!ptr)` over explicit null comparisons when the change is local and verified safe.
+- When a match-sensitive TU has many explicit `nullptr` checks and you decide to normalize them, prefer one mechanical full-TU pass over piecemeal cleanup. Rebuild the unit and re-check its status before keeping the rewrite.
 - Inline assembly is acceptable when it is needed to preserve dead-code compares, ordering, or other compiler behavior that source alone cannot reproduce.
 
 ### Forward declarations and local prototypes
