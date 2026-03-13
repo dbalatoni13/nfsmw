@@ -80,8 +80,11 @@ FEWideString &FEWideString::operator=(const char *pcString) {
     return *this;
 }
 
-bool DoesStringExist(unsigned int hash) {
-    return SearchForString(hash) != nullptr;
+bool DoesStringExist(unsigned int label) {
+    if (!SearchForString(label)) {
+        return false;
+    }
+    return true;
 }
 
 const char *GetLocalizedString(unsigned int id) {

@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "FEObject.h"
 #include "FEEvent.h"
 #include "FEKeyTrack.h"
 #include "FEList.h"
@@ -27,6 +28,8 @@ class FEScript : public FEMinNode {
     inline FEScript* GetPrev() const { return static_cast<FEScript*>(FEMinNode::GetPrev()); }
 
     void Init();
+    FEKeyTrack* FindTrack(FEKeyTrack_Indices TrackIndex) const;
+    void SetName(const char* pNewName);
 };
 
 #endif

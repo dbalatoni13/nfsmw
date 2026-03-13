@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
-
+void* FEngMalloc(unsigned int size, const char* pFilename, int Line);
+void FEngStrCpy(char* pDest, const char* pSrc);
+int FEngStrLen(const char* pSrc);
 
 #endif

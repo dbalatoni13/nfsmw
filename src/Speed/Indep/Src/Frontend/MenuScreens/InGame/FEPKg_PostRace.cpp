@@ -1184,9 +1184,8 @@ const GMilestone *const PursuitData::GetMilestone(int index) const {
 }
 
 void PursuitData::ClearData() {
-    mNumMilestonesThisPursuit = 0;
-    mPursuitLength = 0.0f;
     mPursuitIsActive = false;
+    mPursuitLength = 0.0f;
     mNumCopsDamaged = 0;
     mNumCopsDestroyed = 0;
     mNumSpikeStripsDodged = 0;
@@ -1194,6 +1193,7 @@ void PursuitData::ClearData() {
     mCostToStateAchieved = 0;
     mRepAchievedNormal = 0;
     mRepAchievedCopDestruction = 0;
+    mNumMilestonesThisPursuit = 0;
     for (int i = 0; i <= 0x1F; i++) {
         mMilestonesCompleted[i] = nullptr;
     }
