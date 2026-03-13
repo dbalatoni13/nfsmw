@@ -190,27 +190,56 @@ def remove_temp_worktree(path: str) -> None:
         shutil.rmtree(path, ignore_errors=True)
 
 
-def merge_into_branch(branch: str, base: str, path: str) -> MergeResult:
-    before = run_capture(["git", "rev-parse", "HEAD"], cwd=path).stdout.strip()
-    merge_message = f"Merge {base} into {branch}\n\n{TRAILER}"
+def merge_in_progress(path: str) -> bool:
     result = subprocess.run(
-        ["git", "merge", "--no-ff", base, "-m", merge_message],
+        ["git", "rev-parse", "-q", "--verify", "MERGE_HEAD"],
+        cwd=path,
+        text=True,
+        capture_output=True,
+    )
+    return result.returncode == 0
+
+
+def merge_into_branch(branch: str, base: str, path: str, allow_dirty: bool) -> MergeResult:
+    before = run_capture(["git", "rev-parse", "HEAD"], cwd=path).stdout.strip()
+    dirty_before = worktree_dirty(path)
+    merge_message = f"Merge {base} into {branch}\n\n{TRAILER}"
+    cmd = ["git", "merge", "--no-ff"]
+    if allow_dirty and dirty_before:
+        cmd.append("--autostash")
+    cmd.extend([base, "-m", merge_message])
+    result = subprocess.run(
+        cmd,
         cwd=path,
         text=True,
         capture_output=True,
     )
     if result.returncode != 0:
-        subprocess.run(["git", "merge", "--abort"], cwd=path, text=True, capture_output=True)
+        if merge_in_progress(path):
+            subprocess.run(["git", "merge", "--abort"], cwd=path, text=True, capture_output=True)
+            return MergeResult(
+                branch=branch,
+                status="conflict",
+                detail=(result.stderr.strip() or result.stdout.strip() or "merge failed"),
+            )
         return MergeResult(
             branch=branch,
-            status="conflict",
+            status="restore-conflict" if dirty_before else "failed",
             detail=(result.stderr.strip() or result.stdout.strip() or "merge failed"),
         )
 
     after = run_capture(["git", "rev-parse", "HEAD"], cwd=path).stdout.strip()
     if before == after:
-        return MergeResult(branch=branch, status="up-to-date", detail="already contained base")
-    return MergeResult(branch=branch, status="merged", detail=after)
+        status = "up-to-date-dirty" if dirty_before else "up-to-date"
+        detail = "already contained base"
+        if dirty_before and allow_dirty:
+            detail += " (dirty changes preserved with autostash)"
+        return MergeResult(branch=branch, status=status, detail=detail)
+    status = "merged-dirty" if dirty_before else "merged"
+    detail = after
+    if dirty_before and allow_dirty:
+        detail += " (dirty changes preserved with autostash)"
+    return MergeResult(branch=branch, status=status, detail=detail)
 
 
 def rollout(
@@ -218,6 +247,7 @@ def rollout(
     recent_hours: float,
     pr_repos: Sequence[str],
     dry_run: bool,
+    dirty_mode: str,
 ) -> List[MergeResult]:
     targets = discover_targets(base, recent_hours, pr_repos)
     worktrees = get_worktrees()
@@ -242,7 +272,8 @@ def rollout(
         path = existing_path
         try:
             if existing_path:
-                if worktree_dirty(existing_path):
+                dirty = worktree_dirty(existing_path)
+                if dirty and dirty_mode == "skip":
                     results.append(
                         MergeResult(
                             branch=branch,
@@ -252,22 +283,41 @@ def rollout(
                     )
                     continue
             else:
+                if dry_run:
+                    location = f"<temporary worktree> ({reason_text})"
+                    results.append(
+                        MergeResult(branch=branch, status="would-merge", detail=location)
+                    )
+                    continue
                 temp_path = ensure_temp_worktree(branch, temp_root)
                 path = temp_path
 
             assert path is not None
             if dry_run:
-                location = existing_path if existing_path else temp_path
+                dirty = worktree_dirty(path)
+                if dirty and dirty_mode == "autostash":
+                    status = "would-merge-dirty"
+                    location = f"{path} ({reason_text}; autostash)"
+                else:
+                    status = "would-merge"
+                    location = f"{path} ({reason_text})"
                 results.append(
                     MergeResult(
                         branch=branch,
-                        status="would-merge",
-                        detail=f"{location} ({reason_text})",
+                        status=status,
+                        detail=location,
                     )
                 )
                 continue
 
-            results.append(merge_into_branch(branch, base, path))
+            results.append(
+                merge_into_branch(
+                    branch,
+                    base,
+                    path,
+                    allow_dirty=(dirty_mode == "autostash"),
+                )
+            )
         finally:
             if temp_path is not None:
                 remove_temp_worktree(temp_path)
@@ -304,6 +354,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Discover and print targets without merging",
     )
+    parser.add_argument(
+        "--dirty-mode",
+        choices=["autostash", "skip"],
+        default="autostash",
+        help="How to handle dirty checked-out worktrees (default: autostash)",
+    )
     return parser
 
 
@@ -316,6 +372,7 @@ def main() -> None:
             recent_hours=args.recent_hours,
             pr_repos=args.pr_repo,
             dry_run=args.dry_run,
+            dirty_mode=args.dirty_mode,
         )
         print_results(results)
     except RolloutError as e:
