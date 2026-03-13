@@ -598,9 +598,7 @@ void PostRaceResultsScreen::SetupStat_AverageSpeed() {
 void PostRaceResultsScreen::SetupStat_TimeBehind() {
     GRacerInfo &racerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer);
 
-    if (mIndexOfWinner < 0 || mIndexOfWinner == mIndexOfCurrentRacer) {
-        RacerStats[mIndexOfCurrentRacer].AddInfoStat(0xAB44ED8B, 0x0FC1BF40);
-    } else {
+    if (mIndexOfWinner >= 0 && mIndexOfWinner != mIndexOfCurrentRacer) {
         GRacerInfo &winnerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfWinner);
         float winnerTime =
             reinterpret_cast< const GTimer * >(reinterpret_cast< const char * >(&winnerInfo) + 0x160)->GetTime();
@@ -608,7 +606,10 @@ void PostRaceResultsScreen::SetupStat_TimeBehind() {
             reinterpret_cast< const GTimer * >(reinterpret_cast< const char * >(&racerInfo) + 0x160)->GetTime();
 
         RacerStats[mIndexOfCurrentRacer].AddTimerStat(bAbs(winnerTime - racerTime), 0xAB44ED8B);
+        return;
     }
+
+    RacerStats[mIndexOfCurrentRacer].AddInfoStat(0xAB44ED8B, 0x0FC1BF40);
 }
 
 void PostRaceResultsScreen::SetupStat_LapVariance() {
@@ -650,13 +651,14 @@ void PostRaceResultsScreen::SetupStat_ZeroToSixty() {
         speedUnits = 0xB8CF16FC;
     }
 
-    if (*reinterpret_cast< const float * >(reinterpret_cast< const char * >(&racerInfo) + 0x138) <= lbl_803E5E80 ||
-        !GRacerInfoAreStatsReady(&racerInfo)) {
-        RacerStats[mIndexOfCurrentRacer].AddInfoStat(speedUnits, 0x0FC1BF40);
-    } else {
+    if (*reinterpret_cast< const float * >(reinterpret_cast< const char * >(&racerInfo) + 0x138) > lbl_803E5E80 &&
+        GRacerInfoAreStatsReady(&racerInfo)) {
         RacerStats[mIndexOfCurrentRacer].AddTimerStat(
             *reinterpret_cast< const float * >(reinterpret_cast< const char * >(&racerInfo) + 0x138), speedUnits);
+        return;
     }
+
+    RacerStats[mIndexOfCurrentRacer].AddInfoStat(speedUnits, 0x0FC1BF40);
 }
 
 void PostRaceResultsScreen::SetupStat_QuarterMile() {
@@ -667,13 +669,14 @@ void PostRaceResultsScreen::SetupStat_QuarterMile() {
         timeUnits = 0x1C6F2A82;
     }
 
-    if (*reinterpret_cast< const float * >(reinterpret_cast< const char * >(&racerInfo) + 0x13C) <= lbl_803E5E84 ||
-        !GRacerInfoAreStatsReady(&racerInfo)) {
-        RacerStats[mIndexOfCurrentRacer].AddInfoStat(timeUnits, 0x0FC1BF40);
-    } else {
+    if (*reinterpret_cast< const float * >(reinterpret_cast< const char * >(&racerInfo) + 0x13C) > lbl_803E5E84 &&
+        GRacerInfoAreStatsReady(&racerInfo)) {
         RacerStats[mIndexOfCurrentRacer].AddTimerStat(
             *reinterpret_cast< const float * >(reinterpret_cast< const char * >(&racerInfo) + 0x13C), timeUnits);
+        return;
     }
+
+    RacerStats[mIndexOfCurrentRacer].AddInfoStat(timeUnits, 0x0FC1BF40);
 }
 
 void PostRaceResultsScreen::SetupStat_PerfectShifts() {
@@ -731,9 +734,7 @@ void PostRaceResultsScreen::SetupStat_SpeedVariance() {
 void PostRaceResultsScreen::SetupStat_SpeedBehind() {
     GRacerInfo &racerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer);
 
-    if (mIndexOfWinner < 0) {
-        RacerStats[mIndexOfCurrentRacer].AddInfoStat(0x2E54B7ED, 0x0FC1BF40);
-    } else {
+    if (mIndexOfWinner >= 0) {
         GRacerInfo &winnerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfWinner);
         unsigned int speed_units = 0x8569A25F;
         float speed = bAbs(
@@ -746,7 +747,10 @@ void PostRaceResultsScreen::SetupStat_SpeedBehind() {
         }
 
         RacerStats[mIndexOfCurrentRacer].AddGenericStat(speed, 0x2E54B7ED, speed_units, lbl_803E5E44);
+        return;
     }
+
+    RacerStats[mIndexOfCurrentRacer].AddInfoStat(0x2E54B7ED, 0x0FC1BF40);
 }
 
 void PostRaceResultsScreen::SetupRacerStats(int index, GRacerInfo *racer_info) {
