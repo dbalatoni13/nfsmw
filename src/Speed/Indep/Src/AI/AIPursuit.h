@@ -171,9 +171,6 @@ class BoxInFormation : public PursuitFormation {
     void Update(float dT, IPursuit *pursuit) override;
 
     // Overrides: PursuitFormation
-    ~BoxInFormation() override {}
-
-    // Overrides: PursuitFormation
     float GetFinisherTime() override {
         return finishertime;
     }
@@ -194,9 +191,6 @@ class RollingBlockFormation : public PursuitFormation {
     void Update(float dT, IPursuit *pursuit) override;
 
     // Overrides: PursuitFormation
-    ~RollingBlockFormation() override {}
-
-    // Overrides: PursuitFormation
     float GetFinisherTime() override {
         return finishertime;
     }
@@ -214,18 +208,12 @@ class RollingBlockFormation : public PursuitFormation {
 class FollowFormation : public PursuitFormation {
   public:
     FollowFormation(int copcount);
-
-    // Overrides: PursuitFormation
-    ~FollowFormation() override {}
 };
 
 // total size: 0x20
 class PitFormation : public PursuitFormation {
   public:
     PitFormation(int copcount);
-
-    // Overrides: PursuitFormation
-    ~PitFormation() override {}
 
     // Overrides: PursuitFormation
     float GetTimeToFinisher() override {
@@ -245,9 +233,6 @@ class HerdFormation : public PursuitFormation {
 
     // Overrides: PursuitFormation
     void Update(float dT, struct IPursuit *pursuit) override;
-
-    // Overrides: PursuitFormation
-    ~HerdFormation() override {}
 };
 
 // total size: 0xC

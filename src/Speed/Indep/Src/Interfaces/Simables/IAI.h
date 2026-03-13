@@ -33,7 +33,7 @@ struct IPursuit;
 
 class IRoadBlock : public UTL::COM::IUnknown, public UTL::Collections::Listable<IRoadBlock, 8> {
   protected:
-    ~IRoadBlock() override;
+    ~IRoadBlock() override {}
 
   public:
     static HINTERFACE _IHandle() {

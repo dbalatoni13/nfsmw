@@ -22,6 +22,7 @@ AIRoadBlock::AIRoadBlock(Sim::Param params)
 }
 
 AIRoadBlock::~AIRoadBlock() {
+    DetachAll();
 }
 
 Sim::IActivity *AIRoadBlock::Construct(Sim::Param params) {

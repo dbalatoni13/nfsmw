@@ -200,9 +200,6 @@ FollowFormation::FollowFormation(int copcount) {
 class StaggerFollowFormation : public PursuitFormation {
   public:
     StaggerFollowFormation(int copcount);
-
-    // Overrides: PursuitFormation
-    inline ~StaggerFollowFormation() override {}
 };
 
 StaggerFollowFormation::StaggerFollowFormation(int copcount) {
