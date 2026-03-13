@@ -26,7 +26,7 @@ class HudElement {
     FEString *RegisterString(const char *name);
     FEImage *RegisterImage(const char *name);
     FEObject *RegisterObject(const char *name);
-    const char *GetPackageName();
+    const char *GetPackageName() { return pPackageName; }
     bool IsElementVisible() { return (CurrentHudFeatures & Mask) != 0; }
 
     Car *GetHudCar(Player *player);
