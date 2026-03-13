@@ -40,6 +40,11 @@
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WRoadElem.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
+#include "Speed/Indep/Src/World/TrackPath.hpp"
+#include "Speed/Indep/Src/Generated/Messages/MForcePursuitStart.h"
+#include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
+#include "Speed/Indep/Src/Gameplay/GManager.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
@@ -1378,6 +1383,139 @@ void AIPerpVehicle::OnCausedExplosion(IExplosion *explosion, ISimable *to) {
         }
 
         if (cost_to_state != 0 && GetPursuit() != nullptr) {
+            AddCostToState(cost_to_state);
+        }
+    }
+
+    to->SetCausality(static_cast< ICause * >(this)->GetInstanceHandle(), chain_start_time);
+}
+
+void AIPerpVehicle::OnCausedCollision(const Sim::Collision::Info &cinfo, ISimable *from, ISimable *to) {
+    float sim_time = Sim::GetTime();
+    bool directhit = UTL::COM::ComparePtr(GetOwner(), from);
+    SimableType type = to->GetSimableType();
+    float chain_start_time;
+    if (directhit) {
+        chain_start_time = sim_time;
+    } else {
+        chain_start_time = from->GetCausalityTime();
+    }
+    bool break_chain = false;
+    int cost_to_state = 0;
+    bool intentionalhit = false;
+
+    if (type == SIMABLE_SMACKABLE) {
+        HSIMABLE toHandle = to->GetInstanceHandle();
+        if ((toHandle == cinfo.objA && cinfo.objAImmobile) ||
+            (toHandle == cinfo.objB && cinfo.objBImmobile)) {
+            break_chain = true;
+        }
+    }
+
+    if (!break_chain && sim_time - chain_start_time <= 0.5f) {
+        IPursuit *ipursuit = GetPursuit();
+
+        if (type == SIMABLE_SMACKABLE) {
+            Attrib::Instance attribs(to->GetAttributes());
+            const unsigned int *resultptr =
+                reinterpret_cast< const unsigned int * >(attribs.GetAttributePointer(0x6db7d192, 0));
+            if (!resultptr) {
+                resultptr = reinterpret_cast< const unsigned int * >(Attrib::DefaultDataArea(sizeof(unsigned int)));
+            }
+            cost_to_state = *resultptr;
+
+            IModel *model = to->GetModel();
+            if (model != nullptr && model->IsRootModel() && directhit &&
+                ipursuit != nullptr && ipursuit->IsPerpInSight() &&
+                ipursuit->IsPlayerPursuit() &&
+                ipursuit->TimeToFinisherAttempt() < 30.0f) {
+                GInfractionManager::Get().ReportDamageToProperty();
+            }
+        } else if (type == SIMABLE_VEHICLE) {
+            float closing_speed = UMath::Length(cinfo.closingVel);
+            bool causalityhit = !directhit;
+
+            {
+                bool i_am_a = cinfo.objA == GetOwner()->GetInstanceHandle();
+                float normal_dir = i_am_a ? 1.0f : -1.0f;
+                const UMath::Vector3 &my_vel = i_am_a ? cinfo.objAVel : cinfo.objBVel;
+                const UMath::Vector3 &his_vel = i_am_a ? cinfo.objBVel : cinfo.objAVel;
+                float my_closing_speed = UMath::Dot(my_vel, cinfo.normal);
+                float his_closing_speed = UMath::Dot(his_vel, cinfo.normal);
+                intentionalhit = normal_dir * my_closing_speed < normal_dir * -his_closing_speed;
+            }
+
+            IVehicle *ivehicle;
+            to->QueryInterface(&ivehicle);
+            IPursuitAI *ipursuitVehicle;
+            to->QueryInterface(&ipursuitVehicle);
+
+            if (ipursuitVehicle != nullptr) {
+                bool wasDamagedByPerp = ipursuitVehicle->GetDamagedByPerp();
+                if (!wasDamagedByPerp && !directhit && 5.0f < closing_speed) {
+                    ipursuitVehicle->SetDamagedByPerp(true);
+                    if (ipursuit != nullptr) {
+                        ipursuit->NotifyCopDamaged(ivehicle);
+                        if (ipursuit->IsPlayerPursuit() && intentionalhit) {
+                            GInfractionManager::Get().ReportAssaultingPoliceOfficer();
+                        }
+                    }
+                }
+
+                if (!ivehicle->IsDestroyed()) {
+                    if (intentionalhit) {
+                        cost_to_state = 2000;
+                    } else if (directhit) {
+                        cost_to_state = 500;
+                    }
+
+                    if (cost_to_state != 0) {
+                        float amount = UMath::Ramp(closing_speed, 5.0f, 40.0f);
+                        cost_to_state = UMath::Max(static_cast< int >(static_cast< float >(cost_to_state / 50) * amount) * 50, 50);
+                    }
+
+                    if (!directhit && !ipursuitVehicle->GetInPursuit()) {
+                        IVehicleAI *ivehicleai;
+                        to->QueryInterface(&ivehicleai);
+                        if (ivehicleai != nullptr && !ivehicleai->GetTarget()->IsValid()) {
+                            IVehicle *myVehicle = GetVehicle();
+                            DriverClass driverclass = myVehicle->GetDriverClass();
+                            if (driverclass == DRIVER_HUMAN || driverclass == DRIVER_REMOTE ||
+                                (ICopMgr::Exists() && ICopMgr::Get()->CanPursueRacers())) {
+                                if (intentionalhit) {
+                                    ivehicleai->GetTarget()->Aquire(from);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            ITrafficAI *itrafficVehicle;
+            if (5.0f < closing_speed && intentionalhit && to->QueryInterface(&itrafficVehicle)) {
+                LastTrafficHitTime = sim_time;
+                GManager::Get().IncValue("TrafficCarsHit");
+                if (ipursuit != nullptr) {
+                    ipursuit->NotifyTrafficCarHit();
+                }
+                if (GRaceStatus::Exists()) {
+                    GRacerInfo *racerInfo = GRaceStatus::Get().GetRacerInfo(from);
+                    if (racerInfo != nullptr) {
+                        racerInfo->NotifyTrafficCollision();
+                    }
+                }
+
+                if (intentionalhit && ipursuit != nullptr &&
+                    ipursuit->IsPerpInSight() &&
+                    ipursuit->IsPlayerPursuit() &&
+                    ipursuit->TimeToFinisherAttempt() < 30.0f) {
+                    GInfractionManager::Get().ReportHitAndRun();
+                }
+            }
+            break_chain = !intentionalhit;
+        }
+
+        if (cost_to_state != 0 && ipursuit != nullptr) {
             AddCostToState(cost_to_state);
         }
     }

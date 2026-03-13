@@ -29,6 +29,10 @@ struct GRacerInfo {
         return mPctRaceComplete;
     }
 
+    void NotifyTrafficCollision() {
+        mNumTrafficCarsHit++;
+    }
+
   private:
     HSIMABLE mhSimable;              // offset 0x0, size 0x4
     GCharacter *mGameCharacter;      // offset 0x4, size 0x4
