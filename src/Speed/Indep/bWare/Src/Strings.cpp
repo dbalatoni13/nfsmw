@@ -385,12 +385,11 @@ int bStrToLong(const char *s) {
         int value = 0;
 
         do {
-            unsigned int digit = static_cast<int>(static_cast<char>(c)) - '0';
-
             if (c == '\0') {
                 return value;
             }
 
+            unsigned int digit = static_cast<int>(static_cast<char>(c)) - '0';
             if ((digit & 0xff) > 9) {
                 if (static_cast<unsigned int>(static_cast<int>(static_cast<char>(c)) - 'a') < 0x1aU) {
                     c &= 0x5f;
@@ -408,17 +407,16 @@ int bStrToLong(const char *s) {
     }
 
     bool negative = false;
-    char c = *s;
-
-    if (c == '-') {
+    if (*s == '-') {
         negative = true;
-    } else if (c != '+') {
+    } else if (*s != '+') {
         goto parse_decimal;
     }
     s = s + 1;
+
 parse_decimal:
     int value = 0;
-    c = *s;
+    char c = *s;
 
     while ((c != '\0') && ((static_cast<unsigned int>(c - '0')) < 10U)) {
         s = s + 1;
