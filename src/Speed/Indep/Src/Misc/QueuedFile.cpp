@@ -7,6 +7,8 @@
 #include "bFile.hpp"
 #include "Platform.h"
 
+int bStrNICmp(const char *s1, const char *s2, int n);
+
 // static const int PrintQueuedFiles;
 // static const int PrintQueuedFileChecksum;
 int QueuedFileMinPriority = 0;
@@ -128,6 +130,110 @@ void QueuedFile::ReadDoneCallback() {
 
 int QueuedFile::SortByPriority(QueuedFile *before, QueuedFile *after) {
     return after->Params.Priority <= before->Params.Priority;
+}
+
+extern int CarLoaderMemoryPoolNumber;
+
+bool QueuedFileBundle::TestAddQueuedFile(QueuedFile *q) {
+    if (NumQueuedFiles >= 10) {
+        return false;
+    }
+    if (q->NumRead != 0) {
+        return false;
+    }
+    if (q->Params.Compressed != 0) {
+        return false;
+    }
+    if (NumQueuedFiles >= 1) {
+        if (bStrCmp(q->Filename, QueuedFiles[0]->Filename) != 0) {
+            return false;
+        }
+    }
+    int numBytes = q->NumBytes;
+    int numBytesQueued = NumBytesQueued;
+    int top = q->FilePos + numBytes;
+    unsigned int bot = q->FilePos & 0xFFFFF800;
+    if (NumQueuedFiles > 0) {
+        if (static_cast<int>(ReadBufferBot) < static_cast<int>(bot)) {
+            bot = ReadBufferBot;
+        }
+        if (top < ReadBufferTop) {
+            top = ReadBufferTop;
+        }
+    }
+    int totalSize = top - bot;
+    if (totalSize >= 0x40001) {
+        return false;
+    }
+    if (totalSize - (ReadBufferTop - ReadBufferBot) - numBytes > 0x8000) {
+        return false;
+    }
+    int freeMem = bLargestMalloc(0);
+    short poolNum = 0;
+    bool tooBig = freeMem - 0x10000 < totalSize * 2;
+    if (tooBig) {
+        if (bStrNICmp(q->Filename, "Track", 5) == 0) {
+            freeMem = bLargestMalloc(CarLoaderMemoryPoolNumber);
+            tooBig = freeMem < totalSize;
+            poolNum = static_cast<short>(CarLoaderMemoryPoolNumber);
+        }
+    }
+    int joylogResult = Joylog::AddOrGetData(tooBig, 1, JOYLOG_CHANNEL_QUEUEDFILE_STATUS);
+    if ((joylogResult != 0) != tooBig) {
+        tooBig = joylogResult != 0;
+    }
+    if (!tooBig) {
+        MemoryPoolNumber = poolNum;
+        ReadBufferBot = bot;
+        ReadBufferTop = top;
+        NumBytesQueued = numBytes + numBytesQueued;
+        QueuedFiles[NumQueuedFiles] = q;
+        NumQueuedFiles = NumQueuedFiles + 1;
+        return true;
+    }
+    return false;
+}
+
+void QueuedFileBundle::BeginRead() {
+    int size = ReadBufferTop - ReadBufferBot;
+    ReadBuffer = static_cast<signed char *>(bMalloc(size, MemoryPoolNumber | 0x1040));
+    AddQueuedFile(ReadBuffer, QueuedFiles[0]->Filename, ReadBufferBot, size, ReadCallbackBridge, this, nullptr);
+    QueuedFile *qf = static_cast<QueuedFile *>(WaitingQueuedFileList.GetTail());
+    WaitingQueuedFileList.Remove(qf);
+    ReadingQueuedFileList.AddTail(qf);
+}
+
+void QueuedFileBundle::ReadCallback(int error_status) {
+    int i = 0;
+    if (NumQueuedFiles > 0) {
+        do {
+            QueuedFile *qf = QueuedFiles[i];
+            bMemCpy(qf->pBuf, ReadBuffer + (qf->FilePos - ReadBufferBot), qf->NumBytes);
+            void *callback = qf->CallbackFunction;
+            if (callback != nullptr) {
+                if (qf->CallbackModeUseParam2 == 0) {
+                    ((void (*)(void *, int))callback)(qf->CallbackParam, error_status);
+                } else {
+                    ((void (*)(void *, int, void *))callback)(qf->CallbackParam, error_status, qf->CallbackParam2);
+                }
+            }
+            if (qf != nullptr) {
+                delete qf;
+            }
+            i++;
+        } while (i < NumQueuedFiles);
+    }
+}
+
+void QueuedFileBundle::ReadCallbackBridge(void *param, int error_status) {
+    QueuedFileBundle *bundle = static_cast<QueuedFileBundle *>(param);
+    bundle->ReadCallback(error_status);
+    if (bundle != nullptr) {
+        if (bundle->ReadBuffer != nullptr) {
+            bFree(bundle->ReadBuffer);
+        }
+        delete bundle;
+    }
 }
 
 void CheckQueuedFileCallbacks() {
