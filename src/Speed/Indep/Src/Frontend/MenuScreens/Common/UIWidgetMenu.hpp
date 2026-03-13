@@ -88,7 +88,7 @@ struct UIWidgetMenu : public MenuScreen {
 
     unsigned int GetNumWidgets();
 
-    virtual void Setup() {}
+    virtual void Setup();
 
     void SetWidgetStartPos(bVector2& pos) {
         vWidgetStartPos = pos;

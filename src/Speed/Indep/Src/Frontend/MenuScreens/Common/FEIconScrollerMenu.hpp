@@ -122,4 +122,9 @@ public:
 
 inline void IconOption::SetReactImmediately(bool b) { bReactImmediately = b; }
 
+struct FEScrollyBookEnd : public IconOption {
+    FEScrollyBookEnd(unsigned int tex_hash) : IconOption(tex_hash, 0, 0) {}
+    void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override {}
+};
+
 #endif

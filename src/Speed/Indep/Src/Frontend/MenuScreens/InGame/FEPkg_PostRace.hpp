@@ -7,10 +7,12 @@
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feArrayScrollerMenu.hpp"
 #include "Speed/Indep/Src/Gameplay/GRace.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
 struct GRacerInfo;
+struct GMilestone;
 
 typedef int dialog_handle;
 
@@ -21,10 +23,28 @@ enum PostRaceScreenMode {
     POSTRACESCREENMODE_NUMMODES = 3,
 };
 
+// total size: 0xAC
 struct PursuitData {
     void ClearData();
+    void PopulateData(struct IPursuit *ipursuit, struct IPerpetrator *iperpetrator, int exitToSafehouse);
+    bool AddMilestone(GMilestone *milestone);
+    const GMilestone *const GetMilestone(int index) const;
+    int GetNumMilestones() { return mNumMilestonesThisPursuit; }
 
-    bool mPursuitIsActive;
+    static const int mMaxNumMilestones;
+
+    bool mPursuitIsActive;             // offset 0x0
+    float mPursuitLength;              // offset 0x4
+    int mNumCopsDamaged;               // offset 0x8
+    int mNumCopsDestroyed;             // offset 0xC
+    int mNumSpikeStripsDodged;         // offset 0x10
+    int mNumRoadblocksDodged;          // offset 0x14
+    int mCostToStateAchieved;          // offset 0x18
+    int mRepAchievedNormal;            // offset 0x1C
+    int mRepAchievedCopDestruction;    // offset 0x20
+    int mExitToSafehouse;              // offset 0x24
+    int mNumMilestonesThisPursuit;     // offset 0x28
+    GMilestone *mMilestonesCompleted[32]; // offset 0x2C
 };
 
 struct PostRacePursuitScreen {
@@ -171,6 +191,26 @@ struct PostRaceResultsScreen : public MenuScreen {
     int m_lastErrorKind;
     int m_lastErrorCode;
     bool m_raceResultsUploaded;
+};
+
+// total size: 0x38
+struct PursuitResultsDatum : public ArrayDatum {
+    enum PursuitResultsDatumType {
+        PursuitResultsDatumType_Number = 0,
+        PursuitResultsDatumType_Time = 1,
+        PursuitResultsDatumType_Milestone_Number = 2,
+        PursuitResultsDatumType_Milestone_Time = 3,
+        PursuitResultsDatumType_Milestone_Time_PursuitRemaining = 4,
+        PursuitResultsDatumType_Check = 5,
+    };
+    enum PursuitResultsDatumCheckType {
+        PursuitResultsDatumCheckType_Off = 0,
+        PursuitResultsDatumCheckType_On = 1,
+        PursuitResultsDatumCheckType_Greyed = 2,
+    };
+
+    PursuitResultsDatum(PursuitResultsDatumType type, unsigned int headerHash, int value, float fvalue, PursuitResultsDatumCheckType checkType);
+    void NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) override {}
 };
 
 #endif
