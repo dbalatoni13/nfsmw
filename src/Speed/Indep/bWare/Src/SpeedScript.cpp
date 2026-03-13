@@ -9,13 +9,12 @@
 #include <stdarg.h>
 
 bool IsWhiteSpace(char c) {
-    if ((c != ' ') && (c != '\n') && (c != '\t') && (c != '=')) {
-        if (c != ',') {
-            return c == '\r';
-        }
-        return true;
-    }
-    return true;
+    if (c == ' ') return true;
+    if (c == '\n') return true;
+    if (c == '\t') return true;
+    if (c == '=') return true;
+    if (c == ',') return true;
+    return c == '\r';
 }
 
 SpeedScript::SpeedScript(const char *filename, BOOL enable_fatal_error) {
