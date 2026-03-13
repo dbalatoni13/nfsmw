@@ -1,6 +1,10 @@
 #include "Speed/Indep/Src/AI/AIRoadBlock.h"
 
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Src/AI/AITarget.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitlevels.h"
 #include "Speed/Indep/Src/Interfaces/SimModels/IPlaceableScenery.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 
 AIRoadBlock::AIRoadBlock(Sim::Param params)
@@ -106,4 +110,66 @@ void AIRoadBlock::AddSmackable(IPlaceableScenery *smackable, bool isSpikeStrip) 
     if (isSpikeStrip) {
         mNumSpikeStrips++;
     }
+}
+
+float AIRoadBlock::GetMinDistanceToTarget(float dT, float &distxz, IVehicle **minDistVehicle) {
+    IPursuit *pursuit = GetPursuit();
+    if (pursuit == nullptr) {
+        return -1.0f;
+    }
+    AITarget *target = pursuit->GetTarget();
+    if (target == nullptr) {
+        return -1.0f;
+    }
+    const UMath::Vector3 &targpos = target->GetPosition();
+    Attrib::Gen::pursuitlevels *pursuitLevelAttrib = pursuit->GetPursuitLevelAttrib();
+    float engageRadius = pursuitLevelAttrib->FullEngagementRadius();
+    float min3 = 100000.0f;
+    float minxz = engageRadius;
+
+    for (IVehicle *const *iter = VehicleList.begin(); iter != VehicleList.end(); ++iter) {
+        IVehicle *ivehicle = *iter;
+        if (ivehicle->IsActive() && !ivehicle->IsDestroyed()) {
+            UMath::Vector3 &pos = ivehicle->GetPosition();
+            float distanceY = bAbs(pos.y - targpos.y);
+            float distance3 = UMath::Distance(pos, targpos);
+            float distancexz = UMath::Distancexz(pos, targpos);
+            if (distance3 < min3) {
+                min3 = distance3;
+                if (minDistVehicle != nullptr) {
+                    *minDistVehicle = ivehicle;
+                }
+            }
+            if (distanceY < 10.0f && distancexz < minxz) {
+                minxz = distancexz;
+            }
+            if (distance3 < engageRadius) {
+                IPursuitAI *ipursuitai;
+                if (ivehicle->QueryInterface(&ipursuitai)) {
+                    ipursuitai->SetWithinEngagementRadius();
+                }
+            }
+        }
+    }
+
+    distxz = minxz;
+    if (0.0f < dT) {
+        mPerpCheating = false;
+        if (minxz < engageRadius + -1.0f) {
+            float d2perpPoint = UMath::DistanceSquare(targpos, mRoadBlockCentre);
+            if (d2perpPoint >= 100.0f) {
+                mPerpCheatPoint = targpos;
+                mPerpCheatTime = 0.0f;
+            } else {
+                mPerpCheatTime += dT;
+                if (mPerpCheatTime > 5.0f) {
+                    if (pursuit->GetPursuitStatus() == PS_COOL_DOWN) {
+                        mPerpCheating = true;
+                    }
+                }
+            }
+        }
+    }
+
+    return min3;
 }
