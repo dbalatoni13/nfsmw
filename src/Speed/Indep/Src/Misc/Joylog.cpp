@@ -164,11 +164,12 @@ int JoylogBuffer::GetEntry(JoylogBufferEntry *entry, int position) {
 }
 
 int JoylogBuffer::GetEntry(JoylogBufferEntry *entry, uint8 *pbuf) {
-    entry->ChannelNumber = pbuf[0] & 0xF;
     entry->DataSize = pbuf[0] >> 4;
+    entry->ChannelNumber = pbuf[0] & 0xF;
+    pbuf++;
     unsigned int data = 0;
     for (int byte_num = 0; byte_num < entry->DataSize; byte_num++) {
-        data |= static_cast<unsigned int>(pbuf[1 + byte_num]) << (byte_num * 8);
+        data = (data << 8) | static_cast<unsigned int>(pbuf[entry->DataSize - byte_num - 1]);
     }
     entry->Data = data;
     return entry->DataSize + 1;
