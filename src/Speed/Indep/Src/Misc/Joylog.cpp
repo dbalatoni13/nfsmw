@@ -336,7 +336,7 @@ int Joylog::IsReplaying() {
 
 static int total_captured;
 
-bool JoylogPutStringFunction(int terminal_channel, const char *s) {
+int JoylogPutStringFunction(int terminal_channel, const char *s) {
     if (bIsMainThread()) {
         int len = bStrLen(s);
         total_captured += len;
@@ -344,7 +344,7 @@ bool JoylogPutStringFunction(int terminal_channel, const char *s) {
             Joylog::AddData(s, len + 1, JOYLOG_CHANNEL_PRINTF);
         }
     }
-    return false;
+    return 0;
 }
 
 void DumpJoylogPrint() {
@@ -369,7 +369,7 @@ void DumpJoylogPrint() {
 extern const char *BuildVersionChangelistName;
 extern char *bGetPlatformName();
 extern int bStrICmp(const char *s1, const char *s2);
-void bSetUserPutStringFunction(bool (*func)(int, const char *));
+void bSetUserPutStringFunction(int (*func)(int, const char *));
 void LoadConfigItems();
 void SaveConfigItems();
 

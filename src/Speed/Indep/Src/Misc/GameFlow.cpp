@@ -1077,7 +1077,6 @@ void GameFlowLoadingFrontEndPart2(int) {
 
 void GameFlowLoadGarageScreen(void (*callback)(int), int param) {
     char garage_name[128];
-    FEManager::Get();
     const char *name = FEManager::Get()->GetGarageNameFromType();
     bStrCpy(garage_name, name);
     int mgr_addr = reinterpret_cast<int>(FEManager::Get());
