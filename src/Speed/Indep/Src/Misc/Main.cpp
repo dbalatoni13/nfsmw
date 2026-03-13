@@ -122,17 +122,20 @@ void SeedRandomNumber() {
 }
 
 void InitBigFiles() {
-    if (bFileExists("NFS\\ZDIR.BIN")) {
 #ifdef EA_PLATFORM_PLAYSTATION2
-        RealFile::DeviceDriver *device = DisculatorDriver::Create("NFS\\ZDIR.BIN", "NFS\\ZZDATA");
-        if (device != nullptr) {
-            RealFile::AddDevice(device);
-            RealFile::AddSearchLocation("DVDV:\\", true);
-        }
-#else
-        bInitDisculatorDriver("NFS\\ZDIR.BIN", "NFS\\ZZDATA");
-#endif
+    if (!bFileExists("NFS\\ZDIR.BIN")) {
+        return;
     }
+    DisculatorDriver *device = DisculatorDriver::Create("NFS\\ZDIR.BIN", "NFS\\ZZDATA");
+    if (device != nullptr) {
+        RealFile::AddDevice(device);
+        RealFile::AddSearchLocation("DVDV:\\", true);
+    }
+#else
+    if (bFileExists("NFS\\ZDIR.BIN")) {
+        bInitDisculatorDriver("NFS\\ZDIR.BIN", "NFS\\ZZDATA");
+    }
+#endif
 }
 
 static void Main_MyAssert(const char *format, ...) {}
