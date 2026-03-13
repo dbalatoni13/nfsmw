@@ -62,23 +62,25 @@ float Graph::GetValue(float x) {
         if (x <= pts[0].x) {
             return pts[0].y;
         }
-        if (pts[num - 1].x <= x) {
+        if (x >= pts[num - 1].x) {
             return pts[num - 1].y;
         }
+        int upper = num - 1;
         int i = 0;
-        if (num - 1 > 0) {
+        if (i < upper) {
             do {
                 float px = pts[i].x;
-                if (px <= x && x < pts[i + 1].x) {
+                if (x >= px && x < pts[i + 1].x) {
                     float y0 = pts[i].y;
                     float dx = pts[i + 1].x - px;
-                    if (1e-06f < bAbs(dx)) {
-                        return (static_cast<float>(x - px) / dx) * (pts[i + 1].y - y0) + y0;
+                    float dy = pts[i + 1].y - y0;
+                    if (bAbs(dx) > 1e-06f) {
+                        return ((x - px) / dx) * dy + y0;
                     }
-                    return (pts[i + 1].y - y0) * 0.5f + y0;
+                    return dy * 0.5f + y0;
                 }
                 i = i + 1;
-            } while (i < num - 1);
+            } while (i < upper);
         }
     }
     return Points[0].y;
