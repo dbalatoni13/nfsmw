@@ -24,6 +24,11 @@ functions unless the user explicitly wants a cleanup/refiner pass.
 Use the wrapper flow first throughout this skill. Drop to raw `decomp-context.py` or
 `decomp-diff.py` only when the wrapper is missing a specific flag or you are debugging.
 
+Before doing any local readability/style cleanup in code you are editing, consult
+`.github/skills/code_style/SKILL.md`. Follow it for formatting, declaration placement,
+pointer-style cleanup, and match-safe polish. Do not trade away match behavior for a
+style preference.
+
 ### 1a. decomp-context.py
 
 Preferred shortcut:
@@ -70,6 +75,10 @@ Reference the skill for the usage. It gives info based on the virtual address of
 
 - Read the headers for class layout, member types, field offsets and the source files for existing implementations and includes (both are in `src/.../*.cpp`).
 - Check parent class headers for inherited members/methods used in the function
+- Before adding any new declaration, partial declaration, or forward declaration, check whether the type already exists with `python tools/find-symbol.py <TypeName>`.
+- If a repo header already exists for the type, include that header instead of introducing a local forward declaration.
+- Preserve the original `class` vs `struct` kind. If the existing header is missing or incomplete, verify the type kind from GC Dwarf and PS2 info before writing a local declaration.
+- Preserve real member names and field types too. Do not introduce `pad`, `unk`, or `field_XXXX` members as placeholders for guessed layout; verify the member list from GC Dwarf / PS2 data and leave a TODO when something is still uncertain.
 
 ### 1e. Assembly reference
 

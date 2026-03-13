@@ -14,6 +14,7 @@ most common agent flows:
   python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zCamera -f UpdateAll --lookup-mode full
   python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zCamera -f UpdateAll --no-lookup
   python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zCamera -f UpdateAll --no-source
+  python tools/decomp-workflow.py diff -u main/Speed/Indep/SourceLists/zCamera -d UpdateAll --reloc-diffs all
   python tools/decomp-workflow.py unit -u main/Speed/Indep/SourceLists/zCamera
 """
 
@@ -29,6 +30,7 @@ from typing import Any, Dict, List, Optional, Sequence
 from _common import (
     BUILD_NINJA,
     OBJDIFF_JSON,
+    RELOC_DIFF_CHOICES,
     ROOT_DIR,
     ToolError,
     ensure_exists,
@@ -500,6 +502,8 @@ def command_function(args: argparse.Namespace) -> None:
         cmd.extend(["--ghidra-version", args.ghidra_version])
     if args.brief:
         cmd.append("--brief")
+    if args.reloc_diffs != "none":
+        cmd.extend(["--reloc-diffs", args.reloc_diffs])
     run_stream(cmd)
 
 
@@ -519,6 +523,8 @@ def command_unit(args: argparse.Namespace) -> None:
     )
 
     common_args: List[str] = ["-u", args.unit, "-t", "function"]
+    if args.reloc_diffs != "none":
+        common_args.extend(["--reloc-diffs", args.reloc_diffs])
     if args.search:
         common_args.extend(["--search", args.search])
     if args.limit is not None:
@@ -617,6 +623,8 @@ def command_diff(args: argparse.Namespace) -> None:
     ensure_shared_unit_output(args.unit)
 
     cmd: List[str] = python_tool("decomp-diff.py", "-u", args.unit)
+    if args.reloc_diffs != "none":
+        cmd.extend(["--reloc-diffs", args.reloc_diffs])
     if args.diff:
         cmd.extend(["-d", args.diff])
     if args.type:
@@ -710,6 +718,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Trim helper sections like related-source hints and suggested commands",
     )
+    function.add_argument(
+        "--reloc-diffs",
+        choices=RELOC_DIFF_CHOICES,
+        default="none",
+        help="Pass through objdiff relocation diff mode to decomp-context.py",
+    )
     function.set_defaults(func=command_function)
 
     unit = subparsers.add_parser(
@@ -722,6 +736,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--limit",
         type=int,
         help="Limit each symbol list to the first N matching rows",
+    )
+    unit.add_argument(
+        "--reloc-diffs",
+        choices=RELOC_DIFF_CHOICES,
+        default="none",
+        help="Pass through objdiff relocation diff mode to decomp-diff.py",
     )
     unit.set_defaults(func=command_unit)
 
@@ -796,6 +816,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-collapse",
         action="store_true",
         help="Don't collapse matching instruction runs",
+    )
+    diff.add_argument(
+        "--reloc-diffs",
+        choices=RELOC_DIFF_CHOICES,
+        default="none",
+        help="Pass through objdiff relocation diff mode to decomp-diff.py",
     )
     diff.set_defaults(func=command_diff)
 
