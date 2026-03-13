@@ -27,18 +27,18 @@ void InitLoadingTipsScreen();
 void InitLoadingControllerScreen();
 void InitChyron();
 void DismissChyron();
-void SummonChyron(char*, char*, char*);
+void SummonChyron(char *, char *, char *);
 void ChoppedMiniMapManager_Init();
-void PlayFEMusic_EAXSound(EAXSound* sound, int id);
+void PlayFEMusic_EAXSound(EAXSound *sound, int id);
 void SteeringWheels_StopAllForces();
 void UpdateGarageCarLoaders();
 unsigned long FEngMapJoyportToJoyParam(int port);
 int FadeScreen_IsOn();
 void BootFlowManager_Init();
 void BootFlowManager_Destroy();
-void EasterEggs_HandleJoy(EasterEggs* eggs);
+void EasterEggs_HandleJoy(EasterEggs *eggs);
 
-extern cFEngRender* cFEngRender_mInstance;
+extern cFEngRender *cFEngRender_mInstance;
 extern int DrawFEng;
 extern int DoScreenPrintf;
 extern int SummonChyronNow;
@@ -47,13 +47,13 @@ extern bool CarViewer_haveLoadedOnce;
 extern EasterEggs gEasterEggs;
 
 void ShowCarScreen_CarViewer();
-void BuildCurrentRideForPlayer_cFrontendDatabase(cFrontendDatabase* db, int player, RideInfo* ride);
-void SetRideInfo_CarViewer(RideInfo* ride, int reason, int which_car);
+void BuildCurrentRideForPlayer_cFrontendDatabase(cFrontendDatabase *db, int player, RideInfo *ride);
+void SetRideInfo_CarViewer(RideInfo *ride, int reason, int which_car);
 void ShowAllCars_CarViewer();
 
-FEManager* FEManager::mInstance = nullptr;
+FEManager *FEManager::mInstance = nullptr;
 int FEManager::mPauseRequest = 0;
-const char* FEManager::mPauseReason[8] = {};
+const char *FEManager::mPauseReason[8] = {};
 
 FEManager::FEManager() {
     mFirstScreenMask = 0xff;
@@ -93,7 +93,7 @@ void FEManager::InitInput() {
     cFEngJoyInput::mInstance = new cFEngJoyInput();
 }
 
-FEManager* FEManager::Get() {
+FEManager *FEManager::Get() {
     return mInstance;
 }
 
@@ -107,7 +107,7 @@ void FEManager::SetGarageType(eGarageType pGarageType) {
     mPreviousGarageType = old;
 }
 
-const char* FEManager::GetGarageNameFromType() {
+const char *FEManager::GetGarageNameFromType() {
     switch (mGarageType) {
     case GARAGETYPE_NONE: return "";
     case GARAGETYPE_MAIN_FE: return "FE_Garage";

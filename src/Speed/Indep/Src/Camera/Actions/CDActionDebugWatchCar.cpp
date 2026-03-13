@@ -9,6 +9,8 @@ extern eVehicleList mToggleCarList;
 
 extern bool CameraDebugWatchCar;
 
+// TODO: Confirm the original home and linkage of these camera-debug globals.
+
 template <>
 UTL::Collections::Listable<IDebugWatchCar, 2>::List
     UTL::Collections::Listable<IDebugWatchCar, 2>::_mTable;
@@ -40,7 +42,7 @@ void CDActionDebugWatchCar::ReleaseTarget() {
 
 void CDActionDebugWatchCar::AquireTarget() {
     ISimable *isim = ISimable::FindInstance(mhSimable);
-    if (isim == nullptr) {
+    if (!isim) {
         ReleaseTarget();
     }
 
@@ -48,14 +50,14 @@ void CDActionDebugWatchCar::AquireTarget() {
         int count = IVehicle::Count(mToggleCarList);
         if (count != 0) {
             IVehicle *ivehicle = IVehicle::GetList(mToggleCarList)[static_cast<unsigned int>(mToggleCar % count)];
-            if (ivehicle != nullptr) {
+            if (ivehicle) {
                 if (ivehicle->GetSimable()->GetInstanceHandle() != mhSimable) {
                     unsigned int world_id = ivehicle->GetSimable()->GetWorldID();
                     if (world_id != 0) {
                         ReleaseTarget();
                         CameraAnchor *anchor = mAnchor;
                         const char *model_str = ivehicle->GetVehicleAttributes().MODEL().GetString();
-                        if (model_str == nullptr) {
+                        if (!model_str) {
                             model_str = "";
                         }
                         anchor->SetModel(bStringHash(model_str));

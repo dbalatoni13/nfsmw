@@ -31,10 +31,10 @@ CDActionDebug::CDActionDebug(CameraAI::Director *director)
     bVector3 start_direction(0.0f, 0.0f, 1.0f);
     Action *prev_action = director->GetAction();
 
-    if (prev_action != nullptr) {
+    if (prev_action) {
         mPrev = prev_action->GetName();
         CameraMover *prev_mover = prev_action->GetMover();
-        if (prev_mover != nullptr) {
+        if (prev_mover) {
             start_position = *prev_mover->GetPosition();
             start_direction = *prev_mover->GetDirection();
         }

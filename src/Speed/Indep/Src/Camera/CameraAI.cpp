@@ -22,6 +22,14 @@
 #include "Speed/Indep/Src/Speech/SoundAI.h"
 #include "Speed/Indep/Src/World/TrackPath.hpp"
 
+namespace _STL {
+template IVehicle *const *find<IVehicle *const *, IVehicle const *>(
+    IVehicle *const *,
+    IVehicle *const *,
+    IVehicle const *const &
+);
+}
+
 #ifndef EA_PLATFORM_PLAYSTATION2
 extern Avoidables *TheAvoidables;
 #endif
