@@ -397,7 +397,8 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                 {
                     long long nn;
                     int shift;
-                    if (static_cast<unsigned int>(number >> 32) == 0) {
+                    nn = static_cast<long long>(number);
+                    if (static_cast<unsigned int>(nn >> 32) == 0) {
                         shift = 0;
                     } else {
                         shift = 32;
@@ -503,10 +504,11 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                     }
 
                     count = 0;
-                    int savedPrecision = precision - 1;
+                    int savedPrecision;
 
                     if (flags & FL_EXPONENTIAL) {
                         if (number != 0.0) {
+                            savedPrecision = precision - 1;
                             if (number >= 1.0) {
                                 do {
                                     number *= 0.1;
@@ -518,18 +520,22 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                                 count--;
                                 number *= 10.0;
                             } while (number < 1.0);
+                            goto positioned;
                         }
+                    }
+
+                    savedPrecision = precision - 1;
+                    if (d >= number) {
+                        // already positioned
                     } else {
-                        if (d < number) {
-                            do {
-                                d *= 10.0;
-                                count++;
-                            } while (d < number);
-                        }
-                        if (d > number) {
-                            d *= 0.1;
-                            count--;
-                        }
+                        do {
+                            d *= 10.0;
+                            count++;
+                        } while (d < number);
+                    }
+                    if (d > number) {
+                        d *= 0.1;
+                        count--;
                     }
 
                 positioned:
@@ -595,26 +601,22 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                     if (number * 10.0 >= 0.5) {
                         {
                             char *q;
-                            q = p - 1;
-                            for (;;) {
+                            for (q = p - 1; ; q--) {
                                 char c = *q;
-                                q--;
                                 if (c == '9') {
-                                    *(q + 1) = '0';
+                                    *q = '0';
                                     continue;
                                 }
                                 if (c == decimalChr) {
                                     continue;
                                 }
                                 if (group_flag) {
-                                    if (g_locale.group_len > 0) {
-                                        if (c == g_locale.group_char) {
-                                            continue;
-                                        }
+                                    if (c == g_locale.group_char) {
+                                        continue;
                                     }
                                 }
-                                *(q + 1) = static_cast<char>(c + 1);
-                                if (q + 1 < stringOut) {
+                                *q = static_cast<char>(c + 1);
+                                if (q < stringOut) {
                                     stringOut--;
                                 }
                                 break;
@@ -642,7 +644,7 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                         *p++ = '0' + static_cast<char>(tens);
                         count -= tens * 10;
 
-                        *p++ = '0' + static_cast<char>(count);
+                        *p++ = '0' + static_cast<char>(count % 10);
                     }
 
                     stringLength = static_cast<int>(p - stringOut);
