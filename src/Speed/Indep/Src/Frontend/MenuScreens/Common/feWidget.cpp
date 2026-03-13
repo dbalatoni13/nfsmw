@@ -16,3 +16,7 @@ void FEStatWidget::UnsetFocus() {}
 
 void FEToggleWidget::CheckMouse(const char* parent_pkg, const float mouse_x, const float mouse_y) {}
 void FEToggleWidget::BlinkArrows(unsigned int data) {}
+
+void FESliderWidget::Enable() {
+    FEWidget::Enable();
+}

@@ -11,6 +11,8 @@ struct BootFlowManager {
     static BootFlowManager *Get();
     virtual ~BootFlowManager();
     void JumpToHead();
+
+    static BootFlowManager *mInstance;
 };
 
 #endif

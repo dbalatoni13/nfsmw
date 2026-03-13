@@ -14,6 +14,9 @@ class MenuZoneTrigger : public HudElement, public IMenuZoneTrigger {
   public:
     MenuZoneTrigger(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
+    void RequestCingularLogo() override {
+        mbCingularQueued = true;
+    }
 
   private:
     FEGroup * mEngageMechanic;

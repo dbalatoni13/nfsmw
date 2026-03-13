@@ -61,7 +61,9 @@ struct IconScroller : public IconPanel {
     void UpdateArrows();
     void PulseSelected();
 
-    IconOption* GetHead() override;
+    IconOption* GetHead() override {
+        return static_cast< IconOption * >(HeadBookEnd->GetNext());
+    }
     bool IsHead(IconOption* option) override;
     bool IsTail(IconOption* option) override;
     bool IsEndOfList(IconOption* opt) override;

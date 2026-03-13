@@ -36,6 +36,10 @@ class Tachometer : public HudElement, public ITachometer {
     Tachometer(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
     void SetRpm(float rpm) override;
+    void SetRevLimiter(float redline, float maxRpm) override {
+        mRedline = redline;
+        mMaxRpm = maxRpm;
+    }
     void SetShifting(bool shifting) override;
     void SetInPerfectLaunchRange(bool inRange) override;
 
