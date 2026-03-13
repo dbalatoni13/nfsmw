@@ -208,8 +208,8 @@ void AverageWindow::Reset(float fValue) {
     }
     nSamples = 0;
     fAverage = 0.0f;
-    nCurrentSlot = 0;
     iOldestValue = 0;
+    nCurrentSlot = 0;
     fTotal = fValue * static_cast<float>(static_cast<int>(static_cast<unsigned int>(nSlots)));
 }
 
