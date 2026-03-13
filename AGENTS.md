@@ -88,6 +88,20 @@ object exports written as bare `ADDR:` lines, so you can point it at
 `symbols/debug_lines.txt` or at a rebuilt `debug_lines.txt` from
 `tools/dwarf1_gcc_line_info.py`.
 
+### elf_lookup.py — Resolve strings / rodata by virtual address
+
+When you have a virtual address inside the original ELF and need to know which string or
+rodata bytes live there, use:
+
+```sh
+python tools/elf_lookup.py 0x803E58F4
+python tools/elf_lookup.py 0x803E58F4 --mode bytes --length 32
+python tools/elf_lookup.py 0x002F1234 --game ps2
+```
+
+This is the preferred replacement for ad-hoc Python snippets that manually parse the ELF
+to chase `@stringBase0` or other rodata/data references.
+
 ### code-style — Repo-local style guidance
 
 When you are writing code, polishing code you already touched, or doing a style-review pass,
@@ -434,6 +448,8 @@ It's very important that you use math inlines from bMath and UMath as shown in t
 - When you have to use a constant that looks like an address, it's possible that the splitter thought it was
   an allocation and it shows up as a diff because the left side has a symbol and the right side has a constant.
   In this case you need to figure out the virtual address of the instruction and block the relocation in config.yml.
+- When you need to confirm what lives at a rodata/data address from the original ELF, use
+  `python tools/elf_lookup.py 0xADDR` instead of writing a one-off Python script.
 
 ### PPC EABI calling convention
 
