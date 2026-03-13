@@ -3,6 +3,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
+#include "Speed/Indep/Src/AI/AIVehicleHelicopter.h"
 #include "Speed/Indep/Src/Camera/CameraAI.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_PostRace.hpp"
 #include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
@@ -17,6 +18,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/Speech/SoundAI.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
@@ -1353,7 +1355,7 @@ GroundSupportRequest *AIPursuit::RequestGroundSupport() {
     return nullptr;
 }
 
-static const UCrc32 heliHash1("YOURHELICOPTERVEHICLETYPE");
+static const UCrc32 heliHash1("copheli");
 
 Attrib::Gen::pursuitlevels *GetGlobalPursuitLevelAttrib() {
     Attrib::Gen::pursuitlevels *pl = nullptr;
@@ -1618,4 +1620,94 @@ void AIPursuit::RemoveUnwantedVehicles() {
         }
         mGroundSupportRequest.Reset();
     }
+}
+
+const char *AIPursuit::CopRequest() {
+    if (mIsPerpBusted || mSpawnCopTimer >= 0.0f || mIsPursuitBailed) {
+        return nullptr;
+    }
+
+    Attrib::Gen::pursuitlevels *plevels = GetPursuitLevelAttrib();
+    Attrib::Gen::pursuitsupport *ps = GetPursuitSupportAttrib();
+
+    bool allowHeli = false;
+    if (mSpawnHeliTimer < 0.0f && ps != nullptr && mTotalPursuitTime >= ps->MinimumSupportDelay(0)) {
+        allowHeli = true;
+    }
+
+    if (allowHeli && mDoTestForHeliSearch) {
+        mDoTestForHeliSearch = false;
+        if (!mIsPerpInSight && !HeliVehicleActive()) {
+            float heliSearchChance = plevels->SearchModeHeliSpawnChance(0);
+            float rand = Sim::GetRandom()._SimRandom_FloatRange(100.0f);
+            if (rand < heliSearchChance) {
+                mForceHeliSpawnNext = true;
+                SoundAI *copspeech = SoundAI::Get();
+                if (copspeech != nullptr && copspeech->GetHeli() != nullptr) {
+                    copspeech->GetHeli()->Quadrant();
+                }
+            }
+        }
+    }
+
+    if (mForceHeliSpawnNext) {
+        mForceHeliSpawnNext = false;
+        return "copheli";
+    }
+
+    int numCopTypesToChooseFrom = 0;
+    CopCountRecord adjustedCounts[8];
+    GetAdjustedCopCounts(adjustedCounts, numCopTypesToChooseFrom);
+
+    struct {
+        unsigned int typeHash;
+        int countNeeded;
+        int Chance;
+    } currentlyActive[10];
+
+    int totalNeeded = 0;
+    for (int i = 0; i < numCopTypesToChooseFrom; i++) {
+        const CopCountRecord &copcount = adjustedCounts[i];
+        unsigned int hash = copcount.CopType.GetHash32();
+        int countNeeded = static_cast< int >(copcount.Count);
+        for (const CopContingent *j = mCopContingent.begin(); j != mCopContingent.end(); ++j) {
+            if (j->mType.GetValue() == hash) {
+                countNeeded = bMax(0, countNeeded - static_cast< int >(j->mCount));
+            }
+        }
+        currentlyActive[i].typeHash = hash;
+        currentlyActive[i].countNeeded = countNeeded;
+        currentlyActive[i].Chance = copcount.Chance;
+        totalNeeded += countNeeded;
+    }
+
+    mNumCopsNeeded = totalNeeded;
+    if (totalNeeded <= 0) {
+        return nullptr;
+    }
+
+    int totalWeight = 0;
+    for (int i = 0; i < numCopTypesToChooseFrom; i++) {
+        const CopCountRecord &copcount = adjustedCounts[i];
+        if (copcount.CopType.GetHash32() != heliHash1.GetValue() || allowHeli) {
+            if (currentlyActive[i].countNeeded > 0) {
+                totalWeight += currentlyActive[i].Chance;
+            }
+        }
+    }
+
+    int rand = Sim::GetRandom()._SimRandom_IntRange(totalWeight);
+    const char *request = nullptr;
+    for (int i = 0; i < numCopTypesToChooseFrom; i++) {
+        if (currentlyActive[i].countNeeded > 0) {
+            if (currentlyActive[i].typeHash != heliHash1.GetValue() || allowHeli) {
+                rand -= currentlyActive[i].Chance;
+                if (rand < 0) {
+                    request = adjustedCounts[i].CopType.GetString();
+                    break;
+                }
+            }
+        }
+    }
+    return request;
 }
