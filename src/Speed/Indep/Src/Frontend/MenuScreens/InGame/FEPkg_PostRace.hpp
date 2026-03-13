@@ -37,7 +37,7 @@ struct PostRacePursuitScreen {
 
 struct RaceStat : public FEStatWidget {
     RaceStat(FEString *title, FEString *data);
-    ~RaceStat() override;
+    ~RaceStat() override {}
 };
 
 struct ResultStat : public RaceStat {

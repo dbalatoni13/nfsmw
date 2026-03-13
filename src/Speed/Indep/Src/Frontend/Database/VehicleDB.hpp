@@ -169,7 +169,7 @@ class FEPlayerCarDB {
     // total size: 0x4
     class MyCallback {
       public:
-        virtual ~MyCallback();
+        virtual ~MyCallback() {}
         virtual unsigned int Callback(const FECareerRecord &record) const = 0;
     };
 

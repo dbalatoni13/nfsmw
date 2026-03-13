@@ -18,8 +18,6 @@ HudElement::HudElement(const char *pkg_name, unsigned long long mask)
     , CurrentHudFeatures(0) //
     , mCurrentlySetVisible(false) {}
 
-HudElement::~HudElement() {}
-
 void HudElement::Update(IPlayer *player) {}
 
 FEString *HudElement::RegisterString(unsigned int hash) {

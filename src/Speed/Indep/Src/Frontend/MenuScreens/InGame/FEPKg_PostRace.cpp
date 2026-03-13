@@ -162,8 +162,6 @@ RaceStat::RaceStat(FEString *title, FEString *data)
     SetDataObject(data);
 }
 
-RaceStat::~RaceStat() {}
-
 RaceResultStat::~RaceResultStat() {}
 
 void RaceResultStat::Draw() {

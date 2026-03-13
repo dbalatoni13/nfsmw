@@ -20,7 +20,7 @@ class IPlayer;
 class HudElement {
   public:
     HudElement(const char *pkg_name, unsigned long long mask);
-    virtual ~HudElement();
+    virtual ~HudElement() {}
     virtual void Update(IPlayer *player);
 
     FEString *RegisterString(const char *name);

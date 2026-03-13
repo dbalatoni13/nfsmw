@@ -64,13 +64,17 @@ void RaceOverMessage::RequestRaceOverMessage(IPlayer *player) {
 
     bShowMessage = 1;
 
-    GRaceStatus &race_status = GRaceStatus::Get();
-    GRacerInfo *info = race_status.GetRacerInfo(player->GetSimable());
+    GRacerInfo *info;
+    {
+        ISimable *player_simable = player->GetSimable();
+        info = GRaceStatus::Get().GetRacerInfo(player_simable);
+    }
     float racer_time = info->GetRaceTimer().GetTime();
-    float race_time_limit = race_status.GetRaceParameters()->GetTimeLimit();
-    float rank_by_points = race_status.GetRaceParameters()->GetRankPlayersByPoints();
+    float race_time_limit = GRaceStatus::Get().GetRaceParameters()->GetTimeLimit();
+    float rank_by_points = GRaceStatus::Get().GetRaceParameters()->GetRankPlayersByPoints();
     int was_vehicle_totalled = 0;
     IVehicle *ivehicle;
+    char race_over_message[64];
 
     if (RACEOVER_FIELD(int, info, 0x0) != 0) {
         ISimable *simable = ISimable::FindInstance(reinterpret_cast< HSIMABLE >(RACEOVER_FIELD(int, info, 0x0)));
@@ -103,7 +107,6 @@ void RaceOverMessage::RequestRaceOverMessage(IPlayer *player) {
                 GetTranslatedString(0x4BA0D22F), false, 0x8AB83EDB, 0, 0, GenericMessage_Priority_1);
         }
     } else if (RACEOVER_FIELD(int, info, 0x1C) != 0) {
-        char race_over_message[64];
         IGenericMessage *igenericmessage;
 
         bSNPrintf(race_over_message, 64, lbl_803E4CF4, GetTranslatedString(0x82E4DAFD),
@@ -113,7 +116,7 @@ void RaceOverMessage::RequestRaceOverMessage(IPlayer *player) {
             igenericmessage->RequestGenericMessage(
                 race_over_message, false, 0x8AB83EDB, 0, 0, GenericMessage_Priority_1);
         }
-    } else if (0.0f < race_time_limit && race_time_limit < racer_time && rank_by_points == 0.0f &&
+    } else if (0.0f < race_time_limit && racer_time > race_time_limit && rank_by_points == 0.0f &&
                is_completed_challenge_race == 0) {
         Timer time_limit;
         char race_time_str[16];
@@ -127,7 +130,6 @@ void RaceOverMessage::RequestRaceOverMessage(IPlayer *player) {
                 GetTranslatedString(0x556ED1B2), false, 0x9D73BC15, 0, 0, GenericMessage_Priority_1);
         }
     } else if (GRaceStatus::IsChallengeRace() != 0 && RACEOVER_FIELD(int, info, 0x2C) == 0) {
-        char race_over_message[64];
         IGenericMessage *igenericmessage;
 
         bSNPrintf(
@@ -145,15 +147,17 @@ void RaceOverMessage::RequestRaceOverMessage(IPlayer *player) {
         char message_string[64];
         unsigned int finish_hash;
         IGenericMessage *igenericmessage;
-        int rank = RACEOVER_FIELD(int, info, 0x10);
 
         race_time.SetTime(racer_time);
         race_time.PrintToString(race_time_str, 4);
 
-        if (rank < 2 || rank != race_status.GetRacerCount()) {
-            finish_hash = RaceOverFinishStrings[rank - 1];
-        } else {
+        int racer_count = GRaceStatus::Get().GetRacerCount();
+        int rank = RACEOVER_FIELD(int, info, 0x10);
+
+        if (rank > 1 && rank == racer_count) {
             finish_hash = 0xEAC720D3;
+        } else {
+            finish_hash = RaceOverFinishStrings[rank - 1];
         }
 
         bSPrintf(bot_message_string, GetLocalizedString(0xC2878EBC), race_time_str);

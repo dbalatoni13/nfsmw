@@ -629,8 +629,6 @@ FECareerRecord *FEPlayerCarDB::CreateNewCareerRecord() {
     return nullptr;
 }
 
-FEPlayerCarDB::MyCallback::~MyCallback() {}
-
 unsigned short FEPlayerCarDB::GetNumInfraction(GInfractionManager::InfractionType type, bool get_unserved) {
     struct NumInfraction : public MyCallback {
         virtual unsigned int Callback(const FECareerRecord &record) const {
