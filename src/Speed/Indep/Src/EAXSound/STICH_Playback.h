@@ -109,10 +109,7 @@ struct cStichWrapper : public AudioMemBase {
 
     void Play(int Vol, int Pitch, int Azimuth);
     void Play(const SND_Params *params);
-
-    const SND_Stich &GetData() const {
-        return *StichData;
-    }
+    void Update(const SND_Params *params);
 
     void Destroy();
 };

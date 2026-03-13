@@ -70,7 +70,8 @@ struct AEMS_StichStatic {
 
 enum eSTITCH_PLAY_STATUS {
     eSTITCH_PLAY_STATUS_OFF = 0,
-    eSTITCH_PLAY_STATUS_PLAYING = 1,
+    eSTITCH_PLAY_STATUS_QUEUED = 1,
+    eSTITCH_PLAY_STATUS_PLAYING = 2,
 };
 
 typedef UTL::Collections::ListableSet<cSampleWarpper, 25, STICH_TYPE, MAX_NUM_STICH_TYPE> cSampleListSet;
@@ -128,12 +129,12 @@ cSTICH_PlayBack::~cSTICH_PlayBack() {
 }
 
 void cSTICH_PlayBack::QueueSampleRequest(struct SampleQueueItem &samplereq) {
-    STICH_TYPE type = static_cast<STICH_TYPE>(samplereq.pStitch->GetData().eStichType);
+    STICH_TYPE type = static_cast<STICH_TYPE>(samplereq.pStitch->StichData->eStichType);
     GetQueueList(type).push_back(samplereq);
 }
 
 void cSTICH_PlayBack::RemoveFromList(struct SampleQueueItem sampleitem) {
-    STICH_TYPE type = static_cast<STICH_TYPE>(sampleitem.pStitch->GetData().eStichType);
+    STICH_TYPE type = static_cast<STICH_TYPE>(sampleitem.pStitch->StichData->eStichType);
     for (SampleQueueItem *iter = mQueuedSampleList[type].begin();
          iter != mQueuedSampleList[type].end(); ++iter) {
         SampleQueueItem compareto = *iter;
@@ -222,7 +223,7 @@ cSampleWarpper::cSampleWarpper(SND_SampleRef &NewRef) {
 }
 
 void cSampleWarpper::Initialize() {
-    m_eIsPlaying = 1;
+    m_eIsPlaying = eSTITCH_PLAY_STATUS_QUEUED;
 }
 
 void *cSampleWarpper::operator new(unsigned int obj_size) {
@@ -436,4 +437,99 @@ void cStichWrapper::Play(int Vol, int Pitch, int Azimuth) {
     SndParams.Az = Azimuth;
     SndParams.Pitch = Pitch;
     Play(&SndParams);
+}
+
+void cStichWrapper::Play(const SND_Params *Params) {
+    STICH_TYPE stitchType = static_cast<STICH_TYPE>(StichData->eStichType);
+
+    if (Params != nullptr) {
+        SndParams.ID = Params->ID;
+        SndParams.Vol = Params->Vol;
+        SndParams.Pitch = Params->Pitch;
+        SndParams.Az = Params->Az;
+        SndParams.Mag = Params->Mag;
+        SndParams.RVerb = Params->RVerb;
+        SndParams.Vol = SndParams.Vol * 0x7FFF >> 0xF;
+    }
+
+    for (int i = 0; i < static_cast<int>(StichData->Num_SampleRefs); i++) {
+        cSampleWarpper *sample = new cSampleWarpper(StichData->pSampleRefList[i]);
+        ActiveSamplesRefs[i] = sample;
+
+        if (sample != nullptr) {
+            sample->Initialize();
+
+            SampleQueueItem samplereq;
+            samplereq.pSample = sample;
+            samplereq.pStitch = this;
+            cSTICH_PlayBack::QueueSampleRequest(samplereq);
+        }
+    }
+
+    bIsPlaying = true;
+
+    int numToClear = cSTICH_PlayBack::mQueuedSampleList[stitchType].size() + cSampleListSet::GetList(stitchType).size() - 25;
+    if (numToClear > 0) {
+        int priority = 0;
+        bool keepPruning = true;
+        while (keepPruning) {
+            int numQueuePruned = cSTICH_PlayBack::Prune(stitchType, priority, numToClear);
+            int numListPruned = cSampleWarpper::Prune(stitchType, priority, numToClear - numQueuePruned);
+            numToClear = (numToClear - numQueuePruned) - numListPruned;
+            if (numToClear == 0 || priority == 10) {
+                keepPruning = false;
+            } else {
+                priority++;
+            }
+        }
+    }
+}
+
+void cStichWrapper::Update(const SND_Params *Params) {
+    if (!bIsPlaying) {
+        return;
+    }
+
+    if (Params != nullptr) {
+        SndParams.ID = Params->ID;
+        SndParams.Vol = Params->Vol;
+        SndParams.Pitch = Params->Pitch;
+        SndParams.Az = Params->Az;
+        SndParams.Mag = Params->Mag;
+        SndParams.RVerb = Params->RVerb;
+    }
+
+    bIsPlaying = false;
+    for (int i = 0; i < static_cast<int>(StichData->Num_SampleRefs); i++) {
+        if (ActiveSamplesRefs[i] != nullptr) {
+            ActiveSamplesRefs[i]->Update(&SndParams);
+            if (ActiveSamplesRefs[i]->m_eIsPlaying == eSTITCH_PLAY_STATUS_OFF) {
+                delete ActiveSamplesRefs[i];
+                ActiveSamplesRefs[i] = nullptr;
+            } else {
+                bIsPlaying = true;
+            }
+        }
+    }
+}
+
+void cStichWrapper::Destroy() {
+    for (int i = 0; i < 18; i++) {
+        cSampleWarpper *sample = ActiveSamplesRefs[i];
+        if (sample != nullptr) {
+            if (sample->m_eIsPlaying == eSTITCH_PLAY_STATUS_QUEUED) {
+                SampleQueueItem sampleitem;
+                sampleitem.pSample = sample;
+                sampleitem.pStitch = this;
+                cSTICH_PlayBack::RemoveFromList(sampleitem);
+            }
+
+            if (ActiveSamplesRefs[i] != nullptr) {
+                delete ActiveSamplesRefs[i];
+            }
+            ActiveSamplesRefs[i] = nullptr;
+        }
+    }
+
+    bIsPlaying = false;
 }
