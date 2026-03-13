@@ -306,6 +306,11 @@ if config.platform == Platform.GC_WII:
         # # "-fcaller-saves",
         # # "-ffloat-store",
         # # "-funroll-all-loops",
+        # "-fno-sched-spec",
+        # "-fno-keep-static-consts",
+        # "-fno-common",
+        # "-fno-argument-alias",
+        # "-fno-ident",
         "-DLUA_NUMBER=float",
     ]
 
