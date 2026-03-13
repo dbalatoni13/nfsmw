@@ -6,9 +6,20 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRBVehicle.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
+#include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+
+extern Graph HeadingErrorModelGraph;
+extern Table PidIntegralTable;
+extern Table PidProportionalTable;
+extern Table PidDerivativeTable;
 
 int nThrottleIntegralTerms = 4;
 int nThrottleDerivativeTerms = 4;
@@ -139,7 +150,136 @@ void AIVehiclePid::OnGasBrake(float dT) {
     input->SetControlBrake(bClamp(-mThrottleBrake, 0.0f, 1.0f));
 }
 
-// void AIVehiclePid::OnSteering(float dT) {}
+void AIVehiclePid::OnSteering(float dT) {
+    GetVehicle()->GetDriverStyle();
+
+    if (GetReverseOverride()) {
+        AIVehicle::OnSteering(dT);
+        return;
+    }
+
+    if ((GetDriveFlags() & 1) == 0) {
+        return;
+    }
+
+    IInput *input = GetInput();
+    ISuspension *suspension = GetSuspension();
+
+    if (!input) {
+        return;
+    }
+    if (!suspension) {
+        return;
+    }
+
+    input->SetControlSteering(0.0f);
+    input->SetControlSteeringVertical(0.0f);
+
+    ISimable *simable = GetSimable();
+    IRigidBody *rigid_body = simable->GetRigidBody();
+
+    float currentSpeed = rigid_body->GetSpeedXZ();
+
+    if (mDriveSpeed == 0.0f && currentSpeed < 1.0f) {
+        return;
+    }
+
+    UMath::Vector3 dirVector;
+    UMath::Sub(mDest, simable->GetPosition(), dirVector);
+    dirVector.y = 0.0f;
+    UMath::Unit(dirVector, dirVector);
+
+    UMath::Vector3 forwardVector;
+    rigid_body->GetForwardVector(forwardVector);
+    forwardVector.y = 0.0f;
+    UMath::Unit(forwardVector, forwardVector);
+
+    const UMath::Vector3 &vel = rigid_body->GetLinearVelocity();
+    UMath::Vector3 velocity;
+    velocity.x = vel.x;
+    velocity.y = vel.y;
+    velocity.z = vel.z;
+    velocity.y = 0.0f;
+    if (currentSpeed > 1.0f) {
+        UMath::Unit(velocity, velocity);
+    }
+
+    float velocity_blend = UMath::Clamp(currentSpeed, 0.0f, 1.0f);
+
+    UMath::Vector3 heading;
+    UMath::Scale(forwardVector, 1.0f - velocity_blend, heading);
+    UMath::ScaleAdd(velocity, velocity_blend, heading, heading);
+    UMath::Unit(heading, heading);
+
+    UMath::Vector3 steerProd;
+    UMath::Cross(forwardVector, dirVector, steerProd);
+    float body_error = UMath::ASinr(UMath::Clamp(steerProd.y, -1.0f, 1.0f));
+    pBodyError->Record(body_error, dT, false, false);
+
+    UMath::Vector3 headingProd;
+    UMath::Cross(heading, dirVector, headingProd);
+    float heading_error = UMath::ASinr(UMath::Clamp(headingProd.y, -1.0f, 1.0f));
+    pHeadingError->Record(heading_error, dT, false, false);
+
+    float angle_error = pBodyError->GetError();
+
+    float body_integral = pBodyError->GetErrorIntegral();
+    float heading_integral = pHeadingError->GetErrorIntegral();
+    float body_derivative = pBodyError->GetErrorDerivative();
+    float heading_derivative = pHeadingError->GetErrorDerivative();
+
+    float angle_error_derivative = 1.0f * body_derivative + 0.0f * heading_derivative;
+    float angle_error_integral = 1.0f * body_integral + 0.0f * heading_integral;
+
+    angle_error_derivative = UMath::Clamp(angle_error_derivative, -0.5f, 10.0f);
+    angle_error_integral = UMath::Clamp(angle_error_integral, -0.01f, 0.5f);
+
+    float angle_error_abs_derivative;
+    if (angle_error * angle_error_derivative >= 0.0f) {
+        angle_error_abs_derivative = bAbs(angle_error_derivative);
+    } else {
+        angle_error_abs_derivative = -bAbs(angle_error_derivative);
+    }
+
+    pSteeringController->SetTerm(eP_TERM, angle_error);
+    pSteeringController->SetTerm(eI_TERM, angle_error_integral);
+    pSteeringController->SetTerm(eD_TERM, angle_error_derivative);
+
+    float model_behaviour_value = HeadingErrorModelGraph.GetValue(bAbs(angle_error * bRadToDeg(1.0f)));
+    pSteeringController->Update(model_behaviour_value, angle_error_abs_derivative * bRadToDeg(1.0f), dT, 0.0f);
+
+    if (currentSpeed < 10.0f) {
+        float i_coefficient = PidIntegralTable.GetValue(currentSpeed);
+        float p_coefficient = PidProportionalTable.GetValue(currentSpeed);
+        float d_coefficient = PidDerivativeTable.GetValue(currentSpeed);
+        pSteeringController->ForceCoefficient(eP_TERM, p_coefficient);
+        pSteeringController->ForceCoefficient(eI_TERM, i_coefficient);
+        pSteeringController->ForceCoefficient(eD_TERM, d_coefficient);
+    }
+
+    float steer = pSteeringController->GetOutput();
+    float maxAngle = ANGLE2RAD(GetSuspension()->GetMaxSteering());
+    steer = steer / maxAngle;
+    steer = GetOverSteerCorrection(steer);
+
+    mSteeringBehind = false;
+
+    if (GetTransmission() && GetTransmission()->IsReversing()) {
+        float speed = GetVehicle()->GetSpeed();
+        if (speed >= 0.0f) {
+            steer = 0.0f;
+        } else {
+            if (steer >= 0.0f) {
+                steer = -1.0f;
+            } else {
+                steer = 1.0f;
+            }
+        }
+    }
+
+    steer = UMath::Clamp(steer, -1.0f, 1.0f);
+    input->SetControlSteering(steer);
+}
 
 AIVehicleRacecar::AIVehicleRacecar(const BehaviorParams &bp)
     : AIPerpVehicle(bp), //

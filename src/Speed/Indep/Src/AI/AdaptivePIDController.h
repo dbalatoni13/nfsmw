@@ -146,6 +146,10 @@ class AdaptivePIDControllerComplicated : public AdaptivePIDControllerBase {
     // Overrides: AdaptivePIDControllerBase
     ~AdaptivePIDControllerComplicated() override {}
 
+    void SetTerm(ePIDTerm term, float value) {
+        CurrentTermValue[term] = value;
+    }
+
     void Update(float model_behaviour_value, float actual_behaviour_value, float timestep, float desired_process_value);
 
     // Overrides: AdaptivePIDControllerBase
