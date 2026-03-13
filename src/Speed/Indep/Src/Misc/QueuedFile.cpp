@@ -242,45 +242,37 @@ void CheckQueuedFileCallbacks() {
     if (QueuedFileNumReadsInProgress == 0) {
         return;
     }
-    int status = qf->GetStatus();
+    QueuedFileStatus status = qf->GetStatus();
     if (QueuedFileJoylogEnabled) {
-        if (!Joylog::IsReplaying()) {
-            Joylog::AddData(status, 4, JOYLOG_CHANNEL_QUEUEDFILE_STATUS);
-        } else {
-            status = Joylog::GetData(4, JOYLOG_CHANNEL_QUEUEDFILE_STATUS);
+        if (Joylog::IsReplaying()) {
+            status = static_cast<QueuedFileStatus>(Joylog::GetData(4, JOYLOG_CHANNEL_QUEUEDFILE_STATUS));
             if (status != QREADING) {
                 while (qf->GetStatus() == QREADING) {
                     bThreadYield(8);
                     bServiceFileSystem();
                 }
             }
+        } else {
+            Joylog::AddData(status, 4, JOYLOG_CHANNEL_QUEUEDFILE_STATUS);
         }
     }
     if (status == QDONE) {
         qf->Remove();
-        if (qf->NumRead != qf->NumBytes) {
-            QueuedFileNumReadsInProgress = QueuedFileNumReadsInProgress - 1;
-            qf->Status = QWAITING;
-            WaitingQueuedFileList.AddTail(qf);
-            return;
-        }
-        QueuedFileNumReadsInProgress = QueuedFileNumReadsInProgress - 1;
-        bStrCopy(LastQueuedFilename, qf->Filename);
-        if (qf->CallbackModeUseParam2) {
-            ((void (*)(void *, int, void *))qf->CallbackFunction)(qf->CallbackParam, 0, qf->CallbackParam2);
+        if (qf->NumRead == qf->NumBytes) {
+            QueuedFileNumReadsInProgress--;
+            bStrCopy(LastQueuedFilename, qf->Filename);
+            qf->CallDoneCallback(0);
+            delete qf;
         } else {
-            ((void (*)(void *, int))qf->CallbackFunction)(qf->CallbackParam, 0);
+            QueuedFileNumReadsInProgress--;
+            qf->SetStatus(QWAITING);
+            WaitingQueuedFileList.AddTail(qf);
         }
-        bFree(QueuedFileSlotPool, qf);
     } else if (status == QERROR) {
         qf->Remove();
-        QueuedFileNumReadsInProgress = QueuedFileNumReadsInProgress - 1;
-        if (qf->CallbackModeUseParam2) {
-            ((void (*)(void *, int, void *))qf->CallbackFunction)(qf->CallbackParam, 1, qf->CallbackParam2);
-        } else {
-            ((void (*)(void *, int))qf->CallbackFunction)(qf->CallbackParam, 1);
-        }
-        bFree(QueuedFileSlotPool, qf);
+        QueuedFileNumReadsInProgress--;
+        qf->CallDoneCallback(1);
+        delete qf;
     }
 }
 

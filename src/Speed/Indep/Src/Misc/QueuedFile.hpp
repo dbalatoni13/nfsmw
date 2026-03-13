@@ -75,7 +75,7 @@ class QueuedFile : public bTNode<QueuedFile> {
 
     // QueuedFileStatus GetStatus() {}
 
-    void SetStatus(QueuedFileStatus status) {}
+    void SetStatus(QueuedFileStatus status) { Status = status; }
 
     // int IsFinishedAllReading() {}
 
@@ -85,7 +85,15 @@ class QueuedFile : public bTNode<QueuedFile> {
 
     void SetCallbackParam2(void *param) { CallbackParam2 = param; }
 
-    void CallDoneCallback(int error_status) {}
+    void CallDoneCallback(int error_status) {
+        if (CallbackFunction != nullptr) {
+            if (CallbackModeUseParam2) {
+                ((void (*)(void *, int, void *))CallbackFunction)(CallbackParam, error_status, CallbackParam2);
+            } else {
+                ((void (*)(void *, int))CallbackFunction)(CallbackParam, error_status);
+            }
+        }
+    }
 
     QueuedFileStatus GetStatus() { return Status; }
 
