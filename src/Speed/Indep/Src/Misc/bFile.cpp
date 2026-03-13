@@ -770,8 +770,10 @@ void bSeek(bFile *f, int position, int mode) {
 
 bool bIsAsyncDone(bFile *f) {
     bServiceFileSystem();
-    int count = _5bFile_TotalNumPendingCallbacks;
-    if (f != nullptr) {
+    int count;
+    if (f == nullptr) {
+        count = _5bFile_TotalNumPendingCallbacks;
+    } else {
         count = f->NumPendingCallbacks;
     }
     return count == 0;
@@ -808,17 +810,20 @@ void *bGetFile(const char *filename, int *size_out, int flags) {
 
 int bFPrintf(bFile *f, const char *fmt, ...) {
     int result;
-    va_list ap;
-    va_start(ap, fmt);
     if (f == nullptr) {
+        va_list ap;
+        va_start(ap, fmt);
         result = bVPrintf(fmt, &ap);
+        va_end(ap);
     } else {
-        char *buf = static_cast<char *>(bMalloc(0x2000, 0));
+        char *buf = new char[0x2000];
+        va_list ap;
+        va_start(ap, fmt);
         result = bVSPrintf(buf, fmt, &ap);
-        f->Write(buf, result);
-        bFree(buf);
+        va_end(ap);
+        bWrite(f, buf, result);
+        delete[] buf;
     }
-    va_end(ap);
     return result;
 }
 
