@@ -88,14 +88,16 @@ unsigned int bFileGetFilenameHash(const char *filename) {
 void ServiceFileStats() {}
 
 int GetRealFileOpenFlags(bFileOpenMode open_mode) {
-    switch (open_mode) {
-    case BOPEN_MODE_WRITE:
-        return 6;
-    case BOPEN_MODE_APPEND:
-        return 2;
-    default:
+    if (open_mode == BOPEN_MODE_READONLY) {
         return 1;
     }
+    if (open_mode == BOPEN_MODE_WRITE) {
+        return 6;
+    }
+    if (open_mode == BOPEN_MODE_APPEND) {
+        return 2;
+    }
+    return 1;
 }
 
 void AddMemoryFile(void *pmemory_file) {
@@ -255,10 +257,13 @@ int DisculatorDriver::Open(const char *name, int oflags, int *pParentFileHandle)
         c = *name;
     }
     bFileDirectoryEntry *entry = FindDirectoryEntry(name);
-    if (entry == nullptr || GiantDataFileHandle[entry->FileNumber] == -1) {
+    if (entry == nullptr) {
         return -1;
     }
-    OpenDisculatorFile *file = new OpenDisculatorFile();
+    if (GiantDataFileHandle[entry->FileNumber] == -1) {
+        return -1;
+    }
+    OpenDisculatorFile *file = static_cast<OpenDisculatorFile *>(bOMalloc(OpenDisculatorFileSlotPool));
     file->filename = bAllocateSharedString(name);
     file->nameHash = entry->Hash;
     file->giantFileNum = entry->FileNumber;
