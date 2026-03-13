@@ -1,6 +1,9 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/AI/AIAction.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/Debug/Debugable.h"
 #include "Speed/Indep/Src/Gameplay/GTrigger.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/rigidbodyspecs.h"
@@ -606,6 +609,9 @@ float AIActionRace::GetPotentialNOS(float speed, bool was_on, float skill) const
 float aAiNavLookAheadData[2] = {30.0f, 100.0f};
 Table AiNavLookAheadTable(aAiNavLookAheadData, 2, 0.0f, 100.0f);
 
+float aAiDragNavLookAheadData[2] = {30.0f, 100.0f};
+Table AiDragNavLookAheadTable(aAiDragNavLookAheadData, 2, 0.0f, 100.0f);
+
 void AIActionRace::CheckOffPath(float dT) {
     WRoadNav *road_nav = GetAI()->GetDriveToNav();
     if (!road_nav) {
@@ -725,6 +731,260 @@ bool AIActionRace::CheckSpeedTraps(float speed, float skill, float potential_nos
     return false;
 }
 
-void AIActionRace::Update(float dT) {}
+void AIActionRace::Update(float dT) {
+    bool need_to_stop = GetVehicle()->IsDestroyed();
+    bool drag_racing = GetVehicle()->GetDriverStyle() == 1;
+    bool is_staging = GetVehicle()->IsStaging();
+    WRoadNav *road_nav = GetAI()->GetDriveToNav();
+    UMath::Vector3 desired_direction = UMath::Vector3::kZero;
+    const UMath::Vector3 &car_position = mIRigidBody->GetPosition();
+
+    if (bIsPursuitMode) {
+        road_nav->SetLaneType(WRoadNav::kLaneRacing);
+        if (!road_nav->FindingPath()) {
+            AITarget *target = GetAI()->GetTarget();
+            IVehicleAI *targetai;
+            UMath::Vector3 findPosition;
+
+            if (target->QueryInterface(&targetai)) {
+                UMath::Vector3 fleecenter;
+                UMath::Vector3 fleeforward;
+                IPlayer *iplayer = IPlayer::First(PLAYER_LOCAL);
+                UMath::Vector3 offset;
+                float offlen;
+
+                if (!bDontSeekAhead) {
+                    fleecenter = target->GetPosition();
+                    fleeforward = UVector3(fleecenter) - car_position;
+                    offlen = UMath::Normalize(fleeforward);
+                }
+
+                if (bIsFleeMode) {
+                    fleecenter = target->GetPosition();
+                    fleeforward = UVector3(fleecenter) - car_position;
+                    offlen = UMath::Normalize(fleeforward);
+
+                    ISimable *target_simable = target->GetSimable();
+                    UMath::Sub(fleecenter, car_position, offset);
+                    float dist = UMath::Length(offset);
+                    UMath::Scale(fleeforward, dist * 0.5f, offset);
+                    UMath::ScaleAdd(offset, 1.0f, fleecenter, findPosition);
+
+                    if (UMath::Distance(findPosition, car_position) < 50.0f) {
+                        findPosition = mLastFindPosition;
+                    }
+                    if (UMath::Distance(target->GetPosition(), car_position) < 100.0f) {
+                        findPosition = mLastFindPosition;
+                    }
+                } else {
+                    findPosition = target->GetPosition();
+                }
+            } else {
+                findPosition = target->GetPosition();
+            }
+
+            mLastFindPosition = findPosition;
+            road_nav->FindPath(&findPosition, nullptr, nullptr);
+        }
+
+        UMath::Vector3 temp = UVector3(mLastFindPosition) - car_position;
+        desired_direction = temp;
+    } else {
+        WRoadNav::ELaneType lane = WRoadNav::kLaneRacing;
+        if (drag_racing) {
+            lane = WRoadNav::kLaneDrag;
+        }
+        road_nav->SetLaneType(lane);
+
+        if (GRaceStatus::Exists() &&
+            GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing &&
+            GRaceStatus::Get().GetRaceParameters() &&
+            GRaceStatus::Get().GetRaceParameters()->HasFinishLine()) {
+            AITarget *target = GetAI()->GetTarget();
+            if (!target->IsValid() || GRaceStatus::Get().GetRaceRouteError()) {
+                need_to_stop = true;
+            } else {
+                const UMath::Vector3 &target_position = target->GetPosition();
+                UMath::Vector3 car_to_target = UVector3(target_position) - car_position;
+                WRoadNav *rn = GetAI()->GetDriveToNav();
+                if (rn->GetNavType() != WRoadNav::kTypePath && !rn->FindingPath()) {
+                    bool find_path = true;
+                    if (UMath::DistanceSquare(target_position, mLastFindPosition) < 10000.0f) {
+                        if (rn->IsGoalInCookieTrail()) {
+                            find_path = false;
+                        } else {
+                            find_path = UMath::LengthSquare(car_to_target) > 0.0f;
+                        }
+                    }
+                    if (find_path) {
+                        UMath::Vector3 target_direction = target->GetDirection();
+                        rn->FindPath(&target_position, &target_direction, nullptr);
+                        mLastFindPosition = target_position;
+                    }
+                }
+            }
+        }
+    }
+
+    Table &nav_look_ahead_table = drag_racing ? AiDragNavLookAheadTable : AiNavLookAheadTable;
+    float look_ahead_distance = nav_look_ahead_table.GetValue(fSpeedLimit);
+    UpdateNavPos(look_ahead_distance, desired_direction);
+    GetAI()->SetAvoidableRadius(look_ahead_distance);
+
+    WRoadNav *nav = GetAI()->GetDriveToNav();
+    const UMath::Vector3 *nav_pos_ptr;
+    if (nav->IsOccluded()) {
+        nav_pos_ptr = &nav->GetOccludedPosition();
+    } else {
+        const UMath::Vector3 &apex = nav->GetApexPosition();
+        nav_pos_ptr = &apex;
+    }
+
+    UMath::Vector3 car_velocity;
+    mIRigidBody->GetForwardVector(car_velocity);
+    float curvature = nav->CookieTrailCurvature(car_position, car_velocity);
+
+    const float skill = GetAI()->GetSkill();
+    fPotentialSpeed = GetPotentialSpeed(curvature, skill, drag_racing);
+    const float actual_speed = mIRigidBody->GetSpeed();
+    const float nos_capacity = mIEngine->GetNOSCapacity();
+    InputControls &controls = mIInput->GetControls();
+    const bool was_nos = controls.fNOS && nos_capacity > 0.0f;
+
+    float drive_speed = fSpeedLimit;
+    if (fSpeedLimit < actual_speed) {
+        drive_speed = actual_speed;
+    }
+
+    const float potential_acceleration = GetPotentialAcceleration(drive_speed, skill, was_nos, drag_racing);
+    float last_speed = mLastSpeed;
+    mLastSpeed = actual_speed;
+    const float actual_acceleration = (actual_speed - last_speed) / dT;
+    mLastAccel = actual_acceleration;
+
+    if (actual_acceleration >= 0.0f) {
+        if (fSpeedLimit < fPotentialSpeed) {
+            float t = UMath::Ramp(actual_speed, 0.0f, fPotentialSpeed);
+            float exp = UMath::Lerp(1.0f, 3.0f, skill);
+            float delta_acc = UMath::Pow(t, exp);
+            delta_acc = UMath::Clamp(potential_acceleration - actual_acceleration * delta_acc,
+                                     0.0f, potential_acceleration);
+            fSpeedLimit += delta_acc * dT;
+        }
+    } else {
+        if (actual_speed < fSpeedLimit) {
+            float delta_acc = UMath::Min(potential_acceleration + actual_acceleration, 0.0f);
+            fSpeedLimit += delta_acc * dT;
+        }
+        if (fSpeedLimit < fPotentialSpeed) {
+            float t = UMath::Ramp(actual_speed, 0.0f, fPotentialSpeed);
+            float exp = UMath::Lerp(1.0f, 3.0f, skill);
+            float delta_acc = UMath::Pow(t, exp);
+            delta_acc = UMath::Clamp(
+                potential_acceleration - actual_acceleration * delta_acc,
+                0.0f, potential_acceleration);
+            fSpeedLimit += delta_acc * dT;
+        }
+    }
+
+    fSpeedLimit = UMath::Max(fSpeedLimit, 0.0f);
+    drive_speed = UMath::Clamp(fSpeedLimit, 0.0f, fPotentialSpeed);
+
+    if (is_staging) {
+        mUnstageTimer = 2.0f;
+        drive_speed = 0.0f;
+    } else {
+        if (mUnstageTimer > 0.0f) {
+            drive_speed = UMath::Lerp(0.3f, 0.7f, skill) * mTopSpeed;
+            float t = mUnstageTimer - dT;
+            mUnstageTimer = UMath::Max(t, 0.0f);
+        }
+    }
+
+    drive_speed = UMath::Lerp(drive_speed, drive_speed * MPH2MPS(1.0f), mUnstageTimer * 0.5f);
+
+    UMath::Vector3 drive_target;
+    if (nav->IsOccluded()) {
+        drive_target = nav->GetOccludedPosition();
+    } else {
+        drive_target = nav->GetPosition();
+    }
+
+    if (need_to_stop) {
+        drive_speed = 0.0f;
+    }
+
+    mTurnAroundActive = false;
+    {
+        const float kTurnAroundSpeed = KPH2MPS(30.0f);
+        if (mIRigidBody->GetSpeed() > kTurnAroundSpeed && bIsPursuitMode) {
+            UMath::Vector3 race_steer;
+            UMath::Sub(drive_target, car_position, race_steer);
+            float dirdot = UMath::Dot(car_velocity, race_steer);
+            float dist = UMath::Length(race_steer);
+
+            if (dirdot < mIRigidBody->GetSpeed() * dist * -0.5f) {
+                WRoadNav *future_nav = GetAI()->GetFutureRoad();
+                drive_target = future_nav->GetPosition();
+                drive_speed = 0.0f;
+                mTurnAroundActive = true;
+            }
+        }
+    }
+
+    GetAI()->SetDriveTarget(drive_target);
+    GetAI()->SetDriveSpeed(drive_speed);
+    fDriveSpeed = drive_speed;
+
+    float potential_nos = GetPotentialNOS(actual_speed, was_nos, skill);
+    bool want_nos = false;
+    if (!mTurnAroundActive && !need_to_stop && !is_staging) {
+        want_nos = potential_nos > 0.0f;
+    }
+
+    int nos_flag = 0;
+    if (want_nos && !GetOwner()->IsPlayer()) {
+        float skill_scale = AiNosScaleTable.GetValue(skill);
+        bool speed_trap = CheckSpeedTraps(actual_speed, skill, potential_nos, was_nos);
+        if (speed_trap) {
+            skill_scale += 1.0f;
+        }
+
+        float speed_gap = skill_scale * (fPotentialSpeed - actual_speed);
+        float accel_gap = skill_scale * (potential_acceleration - actual_acceleration);
+
+        if (was_nos) {
+            nos_flag = 1;
+            float time_on = UMath::Lerp(1.0f, 3.0f, skill);
+            if (time_on < mNOSTimer &&
+                (speed_gap < 0.5f || accel_gap < potential_acceleration * 0.25f)) {
+                nos_flag = 0;
+            }
+        } else {
+            float time_off = -(UMath::Lerp(1.0f, 3.0f, skill));
+            if (mNOSTimer < time_off) {
+                bool on_road = false;
+                if (nav->HasCookieTrail() && nav->IsOccluded()) {
+                    on_road = true;
+                }
+                if (!on_road && speed_gap > 5.0f &&
+                    potential_acceleration * 0.5f < accel_gap) {
+                    nos_flag = 1;
+                }
+            }
+        }
+    }
+
+    if (nos_flag != 0) {
+        float t = mNOSTimer + dT;
+        mNOSTimer = UMath::Max(t, 0.0f);
+    } else {
+        float t = mNOSTimer - dT;
+        mNOSTimer = UMath::Min(t, 0.0f);
+    }
+
+    mIInput->SetControlNOS(nos_flag);
+    GetAI()->DoDriving(0);
+}
 
 void AIActionRace::OnDebugDraw() {}

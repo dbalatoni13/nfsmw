@@ -230,6 +230,10 @@ class WRoadNav {
     bool IsPointInCookieTrail(const UMath::Vector3 &position_3d, float margin);
     bool IsSegmentInCookieTrail(int segment_number, bool use_whole_path);
     bool IsSegmentInPath(int segment_number);
+
+    bool IsGoalInCookieTrail() {
+        return IsSegmentInCookieTrail(nPathGoalSegment, true);
+    }
     void PullOver();
     void SetVehicle(class AIVehicle *ai_vehicle);
     void UpdateOccludedPosition(bool occlude_avoidables);
@@ -440,6 +444,10 @@ class WRoadNav {
         bCrossedPathGoal = false;
         nPathGoalSegment = segment_number;
         fPathGoalParam = param;
+    }
+
+    unsigned short GetPathGoalSegment() const {
+        return nPathGoalSegment;
     }
 
     unsigned short GetPathSegment(int n) {

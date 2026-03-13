@@ -504,6 +504,10 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         return mActivelyRacing;
     }
 
+    bool GetRaceRouteError() const {
+        return bRaceRouteError;
+    }
+
     GRace::Context GetRaceContext() const {
         return mRaceContext;
     }
