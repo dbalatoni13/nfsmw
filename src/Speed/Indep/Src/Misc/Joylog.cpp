@@ -181,10 +181,10 @@ void JoylogBuffer::PrintNearbyJoylogEntries(int error_pos) {
         while (CurrentLoadPosition == 0 || pos < CurrentLoadPosition) {
             JoylogBufferEntry buffer_entry;
             int new_pos = GetEntry(&buffer_entry, pos);
-            if (TopPosition <= new_pos) {
+            if (new_pos >= TopPosition) {
                 return;
             }
-            if (CurrentPosition + range <= new_pos) {
+            if (new_pos >= CurrentPosition + range) {
                 return;
             }
             pos = new_pos;
