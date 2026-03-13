@@ -758,12 +758,29 @@ inline bVector4 bVector4::operator-(const bVector4 &v) {
     return bVector4(_x, _y, _z, _w);
 }
 
-// inline bVector4 &bConvertToBond(bVector4 &dest, const struct bVector4 &v) {
-//     float w; // f13
-//     float z; // f9
-//     float y; // f10
-//     float x; // f0
-// }
+inline bVector4 &bConvertToBond(bVector4 &dest, const bVector4 &v) {
+    float x = v.y;
+    float y = v.z;
+    float z = v.x;
+    float w = v.w;
+    dest.x = -x;
+    dest.y = y;
+    dest.z = z;
+    dest.w = w;
+    return dest;
+}
+
+inline bVector4 &bConvertFromBond(bVector4 &dest, const bVector4 &v) {
+    float x = v.z;
+    float y = v.x;
+    float z = v.y;
+    float w = v.w;
+    dest.x = x;
+    dest.y = -y;
+    dest.z = z;
+    dest.w = w;
+    return dest;
+}
 
 inline bVector3 &bConvertFromBond(bVector3 &dest, const bVector3 &v) {
     float x = v.z;

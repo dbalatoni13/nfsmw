@@ -628,75 +628,35 @@ bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m) {
 }
 
 void bConvertToBond(bMatrix4 &dest, const bMatrix4 &m) {
-    const float *src = reinterpret_cast<const float *>(&m);
-    float *dst = reinterpret_cast<float *>(&dest);
-    float fVar4 = src[6];
-    float fVar5 = src[4];
-    float uVar1 = src[10];
-    float uVar2 = src[8];
-    float uVar3 = src[11];
+    float v1x = m.v1.y;
+    float v1y = m.v1.z;
+    float v1z = m.v1.x;
+    float v1w = m.v1.w;
 
-    dst[4] = -src[9];
-    dst[7] = uVar3;
-    dst[5] = uVar1;
-    dst[6] = uVar2;
+    bConvertToBond(dest.v1, m.v2);
+    bConvertToBond(dest.v2, m.v0);
 
-    uVar3 = src[0];
-    uVar1 = src[3];
-    uVar2 = src[2];
-    dst[8] = -src[1];
-    dst[11] = uVar1;
-    dst[9] = uVar2;
-    dst[10] = uVar3;
+    dest.v0.x = v1x;
+    dest.v0.y = -v1y;
+    dest.v0.z = -v1z;
+    dest.v0.w = v1w;
 
-    dst[0] = src[5];
-    dst[1] = -fVar4;
-    dst[2] = -fVar5;
-    dst[3] = src[7];
-
-    uVar3 = src[12];
-    uVar1 = src[15];
-    uVar2 = src[14];
-    dst[12] = -src[13];
-    dst[15] = uVar1;
-    dst[13] = uVar2;
-    dst[14] = uVar3;
+    bConvertToBond(dest.v3, m.v3);
 }
 
 void bConvertFromBond(bMatrix4 &dest, const bMatrix4 &m) {
-    const float *src = reinterpret_cast<const float *>(&m);
-    float *dst = reinterpret_cast<float *>(&dest);
-    float fVar1 = src[8];
-    float uVar2 = src[9];
-    float uVar3 = src[11];
-    float fVar4 = src[2];
-    float fVar5 = src[1];
-    float uVar6 = src[0];
-    float uVar7 = src[3];
+    float v0x = m.v0.z;
+    float v0y = m.v0.x;
+    float v0z = m.v0.y;
+    float v0w = m.v0.w;
 
-    dst[0] = src[10];
-    dst[1] = -fVar1;
-    dst[2] = uVar2;
-    dst[3] = uVar3;
+    bConvertFromBond(dest.v0, m.v2);
+    bConvertFromBond(dest.v2, m.v1);
 
-    fVar1 = src[4];
-    uVar2 = src[7];
-    uVar3 = src[5];
-    dst[8] = src[6];
-    dst[9] = -fVar1;
-    dst[10] = uVar3;
-    dst[11] = uVar2;
+    dest.v1.x = -v0x;
+    dest.v1.y = v0y;
+    dest.v1.z = -v0z;
+    dest.v1.w = v0w;
 
-    dst[4] = -fVar4;
-    dst[5] = uVar6;
-    dst[6] = -fVar5;
-    dst[7] = uVar7;
-
-    fVar1 = src[12];
-    uVar2 = src[14];
-    uVar3 = src[13];
-    dst[15] = src[15];
-    dst[12] = uVar2;
-    dst[13] = -fVar1;
-    dst[14] = uVar3;
+    bConvertFromBond(dest.v3, m.v3);
 }
