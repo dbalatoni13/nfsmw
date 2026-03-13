@@ -464,7 +464,8 @@ static void HUFF_writebits(HuffEncodeContext *ctx, HUFFMemStruct *mem, unsigned 
         ctx->packbits = total;
         ctx->workpattern = ctx->workpattern + ((pattern & ctx->masks[bits]) << (0x18 - total));
         while (total > 7) {
-            mem->ptr[mem->len] = static_cast<char>(*reinterpret_cast<unsigned short *>(&ctx->workpattern));
+            unsigned short hw = *reinterpret_cast<unsigned short *>(&ctx->workpattern);
+            mem->ptr[mem->len] = static_cast<char>(hw);
             mem->len = mem->len + 1;
             ctx->workpattern = ctx->workpattern << 8;
             total = ctx->packbits - 8;
