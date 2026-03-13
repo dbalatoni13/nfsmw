@@ -94,7 +94,7 @@ void bList::MergeSort(SortFunc cmp) {
                         p = nullptr;
                     }
                 } else {
-                    if ((qsize != 0) && (q != nullptr) && (cmp(p, q) < 1)) {
+                    if ((qsize != 0) && (q != nullptr) && (cmp(p, q) > 0)) {
                         qsize--;
                         e = q;
                         p = q->Next;
@@ -120,7 +120,6 @@ void bList::MergeSort(SortFunc cmp) {
                 }
 
                 tail = e;
-                list = old_tail;
             }
         }
 

@@ -8,8 +8,15 @@
 
 #include <stdarg.h>
 
-// TODO
-bool IsWhiteSpace(char c) {}
+bool IsWhiteSpace(char c) {
+    if ((c != ' ') && (c != '\n') && (c != '\t') && (c != '=')) {
+        if (c != ',') {
+            return c == '\r';
+        }
+        return true;
+    }
+    return true;
+}
 
 SpeedScript::SpeedScript(const char *filename, BOOL enable_fatal_error) {
     this->ErrorFunction = nullptr;
