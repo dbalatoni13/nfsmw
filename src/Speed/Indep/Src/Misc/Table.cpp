@@ -166,24 +166,16 @@ void Average::Record(float fValue) {
 }
 
 void Average::Reset(float fValue) {
-    int i = 0;
-    if (nSlots != 0) {
-        do {
-            pData[i] = fValue;
-            i = i + 1;
-        } while (i < static_cast<int>(static_cast<unsigned int>(nSlots)));
+    for (int i = 0; i < nSlots; i++) {
+        pData[i] = fValue;
     }
     nSamples = 0;
     fTotal = fValue * static_cast<float>(static_cast<int>(static_cast<unsigned int>(nSlots)));
 }
 
 void Average::Flush(float fValue) {
-    int i = 0;
-    if (nSlots != 0) {
-        do {
-            pData[i] = fValue;
-            i = i + 1;
-        } while (i < static_cast<int>(static_cast<unsigned int>(nSlots)));
+    for (int i = 0; i < nSlots; i++) {
+        pData[i] = fValue;
     }
     fAverage = fValue;
     nSamples = nSlots;
