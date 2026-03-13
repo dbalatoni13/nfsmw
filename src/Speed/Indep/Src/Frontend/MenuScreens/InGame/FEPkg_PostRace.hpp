@@ -124,6 +124,14 @@ struct PostRaceResultsScreen : public MenuScreen {
     eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override;
 
   private:
+    StatsPanel &GetActiveStatsPanel() {
+        if (mPostRaceScreenMode != POSTRACESCREENMODE_RESULTS && mIndexOfCurrentRacer >= 0 && mIndexOfCurrentRacer < 16) {
+            return RacerStats[mIndexOfCurrentRacer];
+        }
+
+        return RaceResults;
+    }
+
     void Setup();
     void SetupResults();
     void SetupStat_NosUsed();
