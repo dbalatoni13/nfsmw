@@ -29,7 +29,7 @@ class Minimap : public HudElement {
     void Update(IPlayer *player) override;
     void SetupMinimap(IPlayer *player);
     void RefreshMapItems();
-    void AdjustForWidescreen();
+    void AdjustForWidescreen(bool widescreen);
     static void InitStaticMiniMapItems();
 
   private:

@@ -469,3 +469,21 @@ void FEngHud::JoyDisable() {
         mActionQ.Flush();
     }
 }
+
+void FEngHud::SetWideScreenMode() {
+    int widescreen = FEDatabase->GetVideoSettings()->WideScreen;
+    if (mCurrentWidescreenSetting != widescreen) {
+        mCurrentWidescreenSetting = widescreen;
+        if (widescreen != 0) {
+            cFEng::Get()->QueuePackageMessage(0x62ED04EC, pPackageName, nullptr);
+            if (pMinimap) {
+                static_cast< Minimap * >(pMinimap)->AdjustForWidescreen(true);
+            }
+        } else {
+            cFEng::Get()->QueuePackageMessage(0x53EC068C, pPackageName, nullptr);
+            if (pMinimap) {
+                static_cast< Minimap * >(pMinimap)->AdjustForWidescreen(false);
+            }
+        }
+    }
+}

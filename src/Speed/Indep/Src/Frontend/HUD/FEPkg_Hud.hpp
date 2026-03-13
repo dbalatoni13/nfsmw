@@ -90,7 +90,7 @@ class FEngHud : public UTL::COM::Object, public IHud {
     HudElement *pGetAwayMeter;             // offset 0x338, size 0x4
     HudElement *pMenuZoneTrigger;          // offset 0x33C, size 0x4
     HudElement *pInfractions;              // offset 0x340, size 0x4
-    bool mCurrentWidescreenSetting;        // offset 0x344, size 0x1
+        int mCurrentWidescreenSetting;        // offset 0x344, size 0x4
 };
 
 // total size: 0xC
