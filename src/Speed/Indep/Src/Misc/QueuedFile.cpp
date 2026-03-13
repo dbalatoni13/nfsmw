@@ -122,7 +122,7 @@ void QueuedFile::BeginRead() {
 void QueuedFile::ReadDoneCallback() {
     if (Params.Compressed) {
         DecompressionTable[DecompressionTableTop % 32] = this;
-        DecompressionTableTop = DecompressionTableTop + 1;
+        DecompressionTableTop++;
         return;
     }
     Status = QDONE;

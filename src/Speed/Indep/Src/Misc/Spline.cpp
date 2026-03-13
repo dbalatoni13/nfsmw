@@ -41,22 +41,25 @@ void tCubic1D::ClampDerivative(float maxDeriv) {
     }
 }
 
-void tCubic1D::ClampSecondDerivative(float maxSecondDeriv) {
-    float dd0 = GetSecondDerivative(0);
-    float abs_dd0 = bAbs(dd0);
-    float dd1 = GetSecondDerivative(duration);
-    float abs_dd1 = bAbs(dd1);
-    if (maxSecondDeriv < abs_dd0) {
-        dd0 = (abs_dd0 / dd0) * maxSecondDeriv;
+void tCubic1D::ClampSecondDerivative(float fMag) {
+    float fAcc0 = GetSecondDerivative(0);
+    float fAcc0Abs = bAbs(fAcc0);
+    float fAcc1 = GetSecondDerivative(duration);
+    float fAcc1Abs = bAbs(fAcc1);
+    int bNeedFix = 0;
+    if (fAcc0Abs > fMag) {
+        fAcc0 = (fAcc0Abs / fAcc0) * fMag;
+        bNeedFix = 1;
     }
-    if (maxSecondDeriv < abs_dd1) {
-        dd1 = (abs_dd1 / dd1) * maxSecondDeriv;
+    if (fAcc1Abs > fMag) {
+        fAcc1 = (fAcc1Abs / fAcc1) * fMag;
+        bNeedFix = 1;
     }
-    if (maxSecondDeriv < abs_dd1 || maxSecondDeriv < abs_dd0) {
+    if (bNeedFix) {
         float dur_sq = duration * duration;
-        float c1 = dd0 * dur_sq;
+        float c1 = fAcc0 * dur_sq;
         Coeff[1] = c1 * 0.5f;
-        Coeff[0] = (dd1 * dur_sq - c1) * 0.16666667f;
+        Coeff[0] = (fAcc1 * dur_sq - c1) * 0.16666667f;
     }
 }
 
