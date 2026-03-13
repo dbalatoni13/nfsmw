@@ -619,26 +619,22 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
 
                     if (number * 10.0 >= 0.5) {
                         {
-                            char *q;
-                            for (q = p - 1; ; q--) {
-                                char c = *q;
+                            char *q = p - 1;
+                            char c = *q;
+                            while (true) {
                                 if (c == '9') {
                                     *q = '0';
-                                    continue;
-                                }
-                                if (c == decimalChr) {
-                                    continue;
-                                }
-                                if (group_flag) {
-                                    if (c == g_locale.group_char) {
-                                        continue;
+                                } else if (c != decimalChr) {
+                                    if (!group_flag || c != g_locale.group_char) {
+                                        *q = static_cast<char>(c + 1);
+                                        if (q < stringOut) {
+                                            stringOut--;
+                                        }
+                                        break;
                                     }
                                 }
-                                *q = static_cast<char>(c + 1);
-                                if (q < stringOut) {
-                                    stringOut--;
-                                }
-                                break;
+                                q--;
+                                c = *q;
                             }
                         }
                     }
