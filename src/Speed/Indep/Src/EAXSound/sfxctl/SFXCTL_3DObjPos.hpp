@@ -32,9 +32,14 @@ struct SFXCTL_3DObjPos : public SFXCTL {
     ~SFXCTL_3DObjPos() override;
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
+    static SndBase *CreateObject(unsigned int);
     void Detach() override;
+    void SetCameraAngle();
+    void UpdateParams(float t) override;
+    void UpdateDoppler(int outIndex, float t);
 
-    virtual void Generate3DParams() {}
+    virtual void Generate3DParams(int) {}
+    void GenerateSinglePlayerMix();
     virtual void AssignPositionVector(bVector3 *pV3ObjPos);
     virtual void AssignDirectionVector(const bVector3 *pV3ObjDir);
     virtual void AssignVelocityVector(const bVector3 *pV3ObjVel);

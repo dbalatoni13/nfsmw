@@ -17,6 +17,7 @@ struct SFXCTL_HybridMotor : public SFXCTL {
     static TypeInfo s_TypeInfo;
 
   public:
+    SFXCTL_HybridMotor();
     /* 0x28 */ SFXCTL_Engine *m_pEngineCtl;
     /* 0x2c */ SFXCTL_Shifting *m_pShiftingCtl;
     /* 0x30 */ SFXCTL_AccelTrans *m_pAccelTranCtl;
@@ -32,9 +33,16 @@ struct SFXCTL_HybridMotor : public SFXCTL {
     TypeInfo *GetTypeInfo() const override;
     char *GetTypeName() const override;
     int GetController(int Index) override;
+    static SndBase *CreateObject(unsigned int);
+    void SetupSFX(CSTATE_Base *_StateBase) override;
     void InitSFX() override;
     void AttachController(SFXCTL *) override;
+    void UpdateDeltaRPM();
+    void UpdateParams(float t) override;
     void UpdateDualMixEng(float t);
+    void UpdateSingleMixEng(float t);
+    void UpdateVolumeRedlining();
+    void UpdateMixerOutputs() override;
 };
 
 #endif

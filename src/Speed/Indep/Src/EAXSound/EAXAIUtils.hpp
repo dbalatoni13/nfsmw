@@ -39,6 +39,7 @@ struct SndAITrigger {
     SndAITrigger();
     ~SndAITrigger();
     void Initialize(int AvgSize);
+    void Update(float UpdateVal, float t);
 };
 
 struct SndAIStateManager : public AudioMemBase {
