@@ -442,6 +442,8 @@ bFile::bFile(const char *filename, bFileOpenMode open_mode) {
     bFileList.AddTail(this);
     bFileNumInstances++;
     Filename = bAllocateSharedString(filename);
+    FileSize = -1;
+    WriteBuffer = nullptr;
     WriteBufferSize = 0;
     WriteBufferNumBytes = 0;
     WriteBufferPos = 0;
@@ -451,10 +453,8 @@ bFile::bFile(const char *filename, bFileOpenMode open_mode) {
     Position = 0;
     OpenMode = open_mode;
     pCachedRealFileHandle = nullptr;
-    FileSize = -1;
-    WriteBuffer = nullptr;
     if (open_mode == BOPEN_MODE_WRITE || open_mode == BOPEN_MODE_APPEND) {
-        bFileFlushCacheFile(filename);
+        bFileFlushCacheFile(Filename);
         WriteBufferSize = 0x2000;
         WriteBuffer = static_cast<unsigned char *>(bMalloc(0x2000, 0));
     }
