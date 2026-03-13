@@ -7,6 +7,12 @@
 
 #include "Speed/Indep/Src/Main/Event.h"
 
+enum FERESULTTYPE {
+    FERESULTTYPE_RACE = 0,
+    FERESULTTYPE_PURSUIT = 1,
+    FERESULTTYPE_SPEEDTRAP = 2,
+};
+
 // total size: 0x10
 class EShowResults : public Event {
   public:
