@@ -4,19 +4,19 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 
 struct GarageMainScreen {
-    static GarageMainScreen* GetInstance();
+    static GarageMainScreen *GetInstance();
     void CancelCameraPush();
 };
 
-void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned int language);
-int FEngGetLastButton(const char* pkg_name);
+void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int language);
+int FEngGetLastButton(const char *pkg_name);
 
-UIOptionsTrailers::UIOptionsTrailers(ScreenConstructorData* sd)
+UIOptionsTrailers::UIOptionsTrailers(ScreenConstructorData *sd)
     : IconScrollerMenu(sd) {
     Setup();
 }
 
-void UIOptionsTrailers::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1,
+void UIOptionsTrailers::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1,
                                             unsigned long param2) {
     if (msg != 0xC407210) {
         IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);

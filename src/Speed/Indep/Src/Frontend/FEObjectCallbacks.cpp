@@ -11,21 +11,21 @@ extern int SkipMovies;
 
 enum eLanguages;
 
-int GetMovieNameEnum(const char* name);
+int GetMovieNameEnum(const char *name);
 eLanguages GetCurrentLanguage();
-void CalculateMovieFilename(char* buffer, int size, const char* name, eLanguages lang);
-bool bFileExists(const char* filename);
-void bStrNCpy(char* dst, const char* src, int size);
+void CalculateMovieFilename(char *buffer, int size, const char *name, eLanguages lang);
+bool bFileExists(const char *filename);
+void bStrNCpy(char *dst, const char *src, int size);
 
-void FEngSetInvisible(FEObject* obj);
-void FEngSetVisibility(FEObject* obj, bool visible);
+void FEngSetInvisible(FEObject *obj);
+void FEngSetVisibility(FEObject *obj, bool visible);
 
-bool FEngMovieStarter::Callback(FEObject* obj) {
+bool FEngMovieStarter::Callback(FEObject *obj) {
     if (obj->Type == FE_Movie) {
         if (SkipMovies) {
             cFEng::Get()->QueueGameMessagePkg(0xC3960EB9, pPackage);
         }
-        const char* movie_name = reinterpret_cast<const char*>(obj->Handle);
+        const char *movie_name = reinterpret_cast<const char*>(obj->Handle);
         char buffer[64];
         int movieID = GetMovieNameEnum(movie_name);
         eLanguages lang = GetCurrentLanguage();
@@ -60,7 +60,7 @@ bool FEngMovieStarter::Callback(FEObject* obj) {
     return true;
 }
 
-bool FEngMovieStopper::Callback(FEObject* obj) {
+bool FEngMovieStopper::Callback(FEObject *obj) {
     if (obj->Type == FE_Movie) {
         if (gMoviePlayer) {
             gMoviePlayer->Stop();
@@ -71,7 +71,7 @@ bool FEngMovieStopper::Callback(FEObject* obj) {
     return true;
 }
 
-bool FEngHidePCObjects::Callback(FEObject* obj) {
+bool FEngHidePCObjects::Callback(FEObject *obj) {
     if (obj->Flags & 0x8) {
         FEngSetInvisible(obj);
         if (obj->Flags & 0x10000000) {
@@ -82,10 +82,10 @@ bool FEngHidePCObjects::Callback(FEObject* obj) {
     return true;
 }
 
-bool FEngTransferFlagsToChildren::Callback(FEObject* obj) {
+bool FEngTransferFlagsToChildren::Callback(FEObject *obj) {
     if ((obj->Flags & FlagToTransfer) && obj->Type == FE_Group) {
-        FEGroup* group = static_cast<FEGroup*>(obj);
-        FEObject* child = group->GetFirstChild();
+        FEGroup *group = static_cast<FEGroup*>(obj);
+        FEObject *child = group->GetFirstChild();
         int num = group->GetNumChildren();
         for (int i = 0; i < num; i++) {
             child->Flags |= FlagToTransfer;
@@ -96,12 +96,12 @@ bool FEngTransferFlagsToChildren::Callback(FEObject* obj) {
     return true;
 }
 
-bool RenderObjectDisconnect::Callback(FEObject* pObj) {
+bool RenderObjectDisconnect::Callback(FEObject *pObj) {
     pObj->Cached = nullptr;
     return true;
 }
 
-bool ObjectDirtySetter::Callback(FEObject* obj) {
+bool ObjectDirtySetter::Callback(FEObject *obj) {
     obj->Cached = nullptr;
     return true;
 }

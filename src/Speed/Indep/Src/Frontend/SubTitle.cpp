@@ -14,18 +14,18 @@ struct FEString;
 struct FEObject;
 
 int GetCurrentLanguage();
-void FEngSetScript(FEObject* object, unsigned int script_hash, bool start_at_beginning);
-void FEngSetLanguageHash(FEString* text, unsigned int hash);
-int FEPrintf(FEString* text, const char* fmt, ...);
-FEString* FEngFindString(const char* pkg_name, int name_hash);
-FEObject* FEngFindObject(const char* pkg_name, unsigned int hash);
-void FEngGetTopLeft(FEObject* object, float& x, float& y);
-void FEngSetTopLeft(FEObject* object, float x, float y);
-unsigned int FEngHashString(const char* str, ...);
+void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
+void FEngSetLanguageHash(FEString *text, unsigned int hash);
+int FEPrintf(FEString *text, const char *fmt, ...);
+FEString *FEngFindString(const char *pkg_name, int name_hash);
+FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
+void FEngGetTopLeft(FEObject *object, float& x, float& y);
+void FEngSetTopLeft(FEObject *object, float x, float y);
+unsigned int FEngHashString(const char *str, ...);
 bool DoesStringExist(unsigned int hash);
-const char* GetLocalizedString(unsigned int hash);
+const char *GetLocalizedString(unsigned int hash);
 
-SubTitler* SubTitler::gCurrentSubtitler_;
+SubTitler *SubTitler::gCurrentSubtitler_;
 
 SubTitler::SubTitler() {
     next_ = 0;
@@ -45,7 +45,7 @@ SubTitler::~SubTitler() {
     gCurrentSubtitler_ = nullptr;
 }
 
-bool SubTitler::ShouldShowSubTitles(const char* movie_name) {
+bool SubTitler::ShouldShowSubTitles(const char *movie_name) {
     int lang = GetCurrentLanguage();
     if (lang != 0 || mIsTutorial) {
         return true;
@@ -53,14 +53,14 @@ bool SubTitler::ShouldShowSubTitles(const char* movie_name) {
     return false;
 }
 
-void SubTitler::BeginningMovie(const char* moviename, const char* packagename) {
+void SubTitler::BeginningMovie(const char *moviename, const char *packagename) {
     SetIsTutorialMovie(moviename);
     if (ShouldShowSubTitles(moviename)) {
         Load(moviename, packagename);
     }
 }
 
-void SubTitler::Load(const char* movieName, const char* packageName) {
+void SubTitler::Load(const char *movieName, const char *packageName) {
     char filename[64];
     Unload();
     if (movieName != nullptr) {
@@ -150,7 +150,7 @@ void SubTitler::NotifyFirstFrame() {
 void SubTitler::RefreshText() {
     if (mIsTutorial == false) {
         if (data_[next_].stringHash != 0x1A20BA) {
-            const char* str = GetLocalizedString(data_[next_].stringHash);
+            const char *str = GetLocalizedString(data_[next_].stringHash);
             if (bStrCmp("", str) != 0) {
                 FEngSetLanguageHash(str_, data_[next_].stringHash);
                 float x1, y1;
@@ -183,7 +183,7 @@ void SubTitler::RefreshText() {
     }
 }
 
-void SubTitler::SetIsTutorialMovie(const char* movieName) {
+void SubTitler::SetIsTutorialMovie(const char *movieName) {
     if (bStrCmp(movieName, "NIS_tutorial_1") == 0 ||
         bStrCmp(movieName, "NIS_tutorial_2") == 0 ||
         bStrCmp(movieName, "NIS_tutorial_3") == 0 ||

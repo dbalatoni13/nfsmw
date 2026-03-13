@@ -7,18 +7,18 @@
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 struct FEMovie;
 struct GarageMainScreen {
-    static GarageMainScreen* GetInstance();
+    static GarageMainScreen *GetInstance();
     bool IsVisable();
     void NotificationMessage(unsigned long, unsigned long, unsigned long, unsigned long);
 };
-FEObject* FEngFindObject(const char* pkg_name, unsigned int hash);
-void FEngSetMovieName(FEMovie* movie, const char* name);
+FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
+void FEngSetMovieName(FEMovie *movie, const char *name);
 void DismissChyron();
-void bStrNCpy(char* dst, const char* src, int size);
+void bStrNCpy(char *dst, const char *src, int size);
 bool eIsWidescreen();
 char FEAnyMovieScreen::MovieFilename[64] = {};
 char FEAnyMovieScreen::ReturnToPackageName[64] = {};
-FEAnyMovieScreen::FEAnyMovieScreen(ScreenConstructorData* sd)
+FEAnyMovieScreen::FEAnyMovieScreen(ScreenConstructorData *sd)
     : MenuScreen(sd) //
     , mSubtitler() //
     , bHidGarage(false) //
@@ -26,27 +26,27 @@ FEAnyMovieScreen::FEAnyMovieScreen(ScreenConstructorData* sd)
 {
     bAllowingControllerErrors = FEManager::Get()->IsAllowingControllerError();
     FEManager::Get()->AllowControllerError(false);
-    FEMovie* movie = static_cast<FEMovie*>(FEngFindObject(GetPackageName(), 0x348FF9F));
+    FEMovie *movie = static_cast<FEMovie*>(FEngFindObject(GetPackageName(), 0x348FF9F));
     FEngSetMovieName(movie, MovieFilename);
     mSubtitler.BeginningMovie(MovieFilename, GetPackageName());
     DismissChyron();
-    EFadeScreenOff* evt = new EFadeScreenOff(0x14035FB);
-    GarageMainScreen* gs = GarageMainScreen::GetInstance();
+    EFadeScreenOff *evt = new EFadeScreenOff(0x14035FB);
+    GarageMainScreen *gs = GarageMainScreen::GetInstance();
     if (gs && !gs->IsVisable()) { gs->NotificationMessage(0xAD4BBDC, 0, 0, 0); bHidGarage = true; }
 }
 FEAnyMovieScreen::~FEAnyMovieScreen() {
-    if (bHidGarage) { GarageMainScreen* gs = GarageMainScreen::GetInstance(); if (gs) gs->NotificationMessage(0x18883F75, 0, 0, 0); }
+    if (bHidGarage) { GarageMainScreen *gs = GarageMainScreen::GetInstance(); if (gs) gs->NotificationMessage(0x18883F75, 0, 0, 0); }
     FEManager::Get()->SetEATraxSecondButton();
     FEManager::Get()->AllowControllerError(bAllowingControllerErrors);
 }
-MenuScreen* FEAnyMovieScreen::Create(ScreenConstructorData* sd) { return new(__FILE__, __LINE__) FEAnyMovieScreen(sd); }
-void FEAnyMovieScreen::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) {
+MenuScreen *FEAnyMovieScreen::Create(ScreenConstructorData *sd) { return new(__FILE__, __LINE__) FEAnyMovieScreen(sd); }
+void FEAnyMovieScreen::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
     mSubtitler.Update(msg);
     if (msg == 0xB5AF2461 || msg == 0x406415E3) {
         if (FEDatabase->IsDDay() || MoviePlayer_Bypass()) { mSubtitler.Update(0xC3960EB9); DismissMovie(); }
     } else if (msg == 0xC3960EB9) { DismissMovie(); }
 }
-void FEAnyMovieScreen::LaunchMovie(const char* return_to_pkg, const char* filename) {
+void FEAnyMovieScreen::LaunchMovie(const char *return_to_pkg, const char *filename) {
     bStrNCpy(ReturnToPackageName, return_to_pkg, 64); SetMovieName(filename);
     cFEng::Get()->QueuePackageSwitch(GetFEngPackageName(), 0, 0, false);
 }
@@ -62,8 +62,8 @@ void FEAnyMovieScreen::DismissMovie() {
         else cFEng::Get()->QueuePackagePop(1);
     }
 }
-void FEAnyMovieScreen::SetMovieName(const char* filename) { bStrNCpy(MovieFilename, filename, 64); }
-const char* FEAnyMovieScreen::GetFEngPackageName() {
+void FEAnyMovieScreen::SetMovieName(const char *filename) { bStrNCpy(MovieFilename, filename, 64); }
+const char *FEAnyMovieScreen::GetFEngPackageName() {
     if (eIsWidescreen()) return "FeMovieWide.fng";
     return "FeMovie.fng";
 }

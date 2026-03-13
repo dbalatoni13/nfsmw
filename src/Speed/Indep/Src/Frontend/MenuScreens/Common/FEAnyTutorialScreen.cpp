@@ -5,20 +5,20 @@
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 struct FEMovie;
-FEObject* FEngFindObject(const char* pkg_name, unsigned int hash);
-void FEngSetMovieName(FEMovie* movie, const char* name);
+FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
+void FEngSetMovieName(FEMovie *movie, const char *name);
 void DismissChyron();
-void bStrNCpy(char* dst, const char* src, int size);
-int bStrCmp(const char* a, const char* b);
+void bStrNCpy(char *dst, const char *src, int size);
+int bStrCmp(const char *a, const char *b);
 bool eIsWidescreen();
-unsigned int FEngHashString(const char* s);
-void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned int lang_hash);
-unsigned int bStringHash(const char* s, unsigned int hash);
-static const char* FEAnyTutorialScreenName = "FeTutorial.fng";
+unsigned int FEngHashString(const char *s);
+void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int lang_hash);
+unsigned int bStringHash(const char *s, unsigned int hash);
+static const char *FEAnyTutorialScreenName = "FeTutorial.fng";
 char FEAnyTutorialScreen::MovieFilename[64] = {};
 char FEAnyTutorialScreen::PackageFilename[64] = {};
 bool FEAnyTutorialScreen::PackageSet = false;
-FEAnyTutorialScreen::FEAnyTutorialScreen(ScreenConstructorData* sd)
+FEAnyTutorialScreen::FEAnyTutorialScreen(ScreenConstructorData *sd)
     : MenuScreen(sd) //
     , LastTime(0) //
     , TimeElapsed(0.0f) //
@@ -27,10 +27,10 @@ FEAnyTutorialScreen::FEAnyTutorialScreen(ScreenConstructorData* sd)
     , mSubtitler()
 {
     DismissChyron();
-    FEMovie* movie = static_cast<FEMovie*>(FEngFindObject(GetPackageName(), 0x348FF9F));
+    FEMovie *movie = static_cast<FEMovie*>(FEngFindObject(GetPackageName(), 0x348FF9F));
     FEngSetMovieName(movie, MovieFilename);
     if (eIsWidescreen()) cFEng::Get()->QueuePackageMessage(0x70D2183B, GetPackageName(), nullptr);
-    CareerSettings* career = FEDatabase->GetCareerSettings();
+    CareerSettings *career = FEDatabase->GetCareerSettings();
     unsigned int str_hash = 0;
     bool mSkipable = true;
     unsigned int label_hash;
@@ -63,16 +63,16 @@ skip_labels:
         FEngSetLanguageHash(GetPackageName(), 0x07D2EA5D, einput);
     }
     mSubtitler.BeginningMovie(MovieFilename, GetPackageName());
-    EFadeScreenOff* evt = new EFadeScreenOff(0x14035FB);
+    EFadeScreenOff *evt = new EFadeScreenOff(0x14035FB);
 }
-MenuScreen* FEAnyTutorialScreen::Create(ScreenConstructorData* sd) { return new(__FILE__, __LINE__) FEAnyTutorialScreen(sd); }
+MenuScreen *FEAnyTutorialScreen::Create(ScreenConstructorData *sd) { return new(__FILE__, __LINE__) FEAnyTutorialScreen(sd); }
 FEAnyTutorialScreen::~FEAnyTutorialScreen() { FEManager::Get()->SetEATraxSecondButton(); }
-void FEAnyTutorialScreen::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) {
+void FEAnyTutorialScreen::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
     mSubtitler.Update(msg);
     if (msg == 0xB5AF2461 || msg == 0x406415E3) { DismissMovie(true); mSubtitler.Update(0xC3960EB9); }
     else if (msg == 0xC3960EB9) { DismissMovie(false); }
 }
-void FEAnyTutorialScreen::LaunchMovie(const char* filename, const char* packageName) {
+void FEAnyTutorialScreen::LaunchMovie(const char *filename, const char *packageName) {
     PackageSet = false; SetMovieName(filename);
     if (packageName) SetPackageName(packageName);
     cFEng::Get()->QueuePackagePush(FEAnyTutorialScreenName, 0, 0, false);
@@ -81,5 +81,5 @@ void FEAnyTutorialScreen::DismissMovie(bool send_message) {
     cFEng::Get()->QueuePackagePop(1);
     if (send_message) cFEng::Get()->QueueGameMessage(0xC3960EB9, PackageFilename, 0xFF);
 }
-void FEAnyTutorialScreen::SetMovieName(const char* filename) { bStrNCpy(MovieFilename, filename, 64); }
-void FEAnyTutorialScreen::SetPackageName(const char* packageName) { PackageSet = true; bStrNCpy(PackageFilename, packageName, 64); }
+void FEAnyTutorialScreen::SetMovieName(const char *filename) { bStrNCpy(MovieFilename, filename, 64); }
+void FEAnyTutorialScreen::SetPackageName(const char *packageName) { PackageSet = true; bStrNCpy(PackageFilename, packageName, 64); }

@@ -119,7 +119,7 @@ const char *FEManager::GetGarageNameFromType() {
     }
 }
 
-const char* FEManager::GetGaragePrefixFromType(eGarageType pGarageType) {
+const char *FEManager::GetGaragePrefixFromType(eGarageType pGarageType) {
     switch (pGarageType) {
     case GARAGETYPE_NONE: return "";
     case GARAGETYPE_MAIN_FE: return "FE";
@@ -144,12 +144,12 @@ bool FEManager::ShouldPauseSimulation(bool useControllerErrors) {
     return mPauseRequest != 0;
 }
 
-void FEManager::RequestPauseSimulation(const char* reason) {
+void FEManager::RequestPauseSimulation(const char *reason) {
     mPauseReason[mPauseRequest] = reason;
     mPauseRequest++;
 }
 
-void FEManager::RequestUnPauseSimulation(const char* reason) {
+void FEManager::RequestUnPauseSimulation(const char *reason) {
     mPauseRequest--;
 }
 
@@ -212,7 +212,7 @@ void FEManager::Update() {
                 }
                 IOModule& iomod = IOModule::GetIOModule();
                 for (int d = 0; d < iomod.fNumDevices; d++) {
-                    InputDevice* dev = iomod.GetDevice(d);
+                    InputDevice *dev = iomod.GetDevice(d);
                     if (dev != nullptr) dev->PollDevices();
                 }
                     unsigned long jp = FEngMapJoyportToJoyParam(port);
