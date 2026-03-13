@@ -7,6 +7,8 @@ description: Workflow for decompiling and iterating on a function.
 
 Your goal is to decompile a specific function: writing C++ source that compiles to byte-identical object code against the original retail binary, verified via `decomp-diff.py`.
 
+A function is not done until it is exact in both objdiff and normalized DWARF.
+
 ## Phase 1: Gather Context
 
 Collect data from **all** of these sources in parallel where possible.
@@ -145,6 +147,7 @@ For a rebuild plus a standardized diff run, use:
 ```sh
 python tools/decomp-workflow.py build -u main/Path/To/TU
 python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
 ```
 
 If the build fails, fix compilation errors first.
@@ -172,7 +175,28 @@ Refer to the **Matching Tips** section in
 AGENTS.md for detailed patterns on resolving instruction mismatches, register allocation
 issues, stack frame differences, and symbol naming.
 
-After writing your code, occasionally run the dwarf dump on the compiled output and then query your output dump with lookup.py to compare your decompiled functions against the originals. Since the address of the function you're working on can keep changing
+After each meaningful edit/build iteration, run the combined verification gate first:
+
+Preferred shortcut:
+
+```sh
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+```
+
+This fails unless both the instruction diff and normalized DWARF are exact.
+
+If the verify gate fails because of DWARF, inspect the DWARF block diff directly:
+
+```sh
+python tools/decomp-workflow.py dwarf -u main/Path/To/TU -f FunctionName
+```
+
+This gives you a normalized DWARF match percentage plus a diff-like report of what still
+differs between the original and rebuilt DWARF blocks for that function.
+
+Manual fallback:
+
+After writing your code, you can also run the dwarf dump on the compiled output and then query your output dump with lookup.py to compare your decompiled functions against the originals. Since the address of the function you're working on can keep changing
 due to work on other functions, query the unmangled name instead.
 
 ```bash
@@ -193,17 +217,19 @@ Repeat the build-diff cycle until the diff shows 100% match with no `~` lines:
 
 ```sh
 python tools/decomp-workflow.py build -u main/Path/To/TU
-python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
 ```
 
 Every mismatched instruction is a signal — don't settle for "close enough".
-Reaching 100% matching status is not enough, also make sure that the dwarf of the function matches the original.
+Reaching 100% instruction matching status is not enough. Stay in the loop until `verify`
+passes, which means the DWARF of the function also matches after normalization.
 
 ## Phase 5: Report
 
 Summarize:
 
 - Final match status (percentage, instruction count)
+- Final DWARF status (exact or remaining mismatch summary)
 - What the function does (brief description)
 - Key decisions or tricky patterns used to achieve the match
 - If not fully matching, document remaining mismatches and theories

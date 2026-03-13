@@ -115,7 +115,23 @@ sequences on PPC (see `xoris` pattern in AGENTS.md). Check all casts.
 
 ## Phase 3: DWARF verification
 
-After any instruction match, verify the DWARF also matches.
+After any instruction match, verify the DWARF also matches. The function is not done
+until both objdiff and normalized DWARF are exact.
+
+Preferred shortcut:
+
+```bash
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+```
+
+If the combined gate fails because of DWARF, inspect the DWARF diff directly with:
+
+```bash
+python tools/decomp-workflow.py dwarf -u main/Path/To/TU -f FunctionName
+```
+
+Manual fallback:
+
 Use the rebuilt shared object from Phase 1 (or rebuild again if you've changed the source):
 
 ```bash
@@ -143,5 +159,5 @@ Summarize:
 - What was blocking the match (the root cause category from Phase 1)
 - The specific source change that resolved it
 - Any new generalizable assembly pattern discovered (add to AGENTS.md if so)
-- DWARF match status
+- DWARF match status and whether `verify` passes
 - If still not matching: the exact diff lines that remain and your best theory

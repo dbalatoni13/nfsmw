@@ -156,6 +156,7 @@ python tools/decomp-workflow.py build -u main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py diff -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --brief
+python tools/decomp-workflow.py verify -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --ghidra-version gc
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --lookup-mode full
 python tools/decomp-workflow.py unit -u main/Speed/Indep/SourceLists/zAnim --search FindIOWin --limit 20
@@ -196,6 +197,31 @@ falls back to the GC debug-line-mapped repo source file when that file exists an
 real content.
 Add `--brief` when you want to keep the helper sections compact; it trims suggested
 commands and related-source hints without hiding the core status/diff/source data.
+
+For every function you touch, treat DWARF as a first-class completion gate, not a
+secondary polish pass. After each meaningful code/build iteration, run the wrapper's
+combined verification flow:
+
+```sh
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+```
+
+`verify` fails unless **both** checks are exact for that function:
+
+- objdiff instruction match is 100%
+- normalized DWARF block match is exact
+
+If the combined check fails, then inspect the DWARF diff directly with:
+
+```sh
+python tools/decomp-workflow.py dwarf -u main/Path/To/TU -f FunctionName
+```
+
+It compares the original and rebuilt DWARF blocks for one function, prints a normalized
+DWARF match percentage, and shows a diff-like view of what still differs. Use it
+whenever `verify` says the function is still failing the DWARF gate. This is the
+fastest way to see whether you are still missing locals, have the wrong inline body, or
+changed signature/type details even when the instruction diff already looks good.
 
 When working with these tools, do not just work around recurring friction silently. If you
 notice a clear, safe workflow or tooling improvement that would make future decomp work
@@ -333,6 +359,10 @@ You should take the Ghidra decompiler output for the initial translation step, g
 You may use sub-agents to gather read-only context during this process, but they must not
 edit files. Treat their output as analysis input for the main worker, not as a path to
 delegate source changes.
+
+A function is only done when both objdiff and normalized DWARF are exact. Treat a
+100% instruction match with a DWARF mismatch as unfinished work, not a near-complete
+result.
 
 The dwarf of your structs doesn't have to neccessarily match the original due to various reasons, just make sure that you copied everything correctly.
 

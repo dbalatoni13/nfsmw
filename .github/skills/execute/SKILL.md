@@ -9,6 +9,8 @@ Your goal is to decompile a full translation unit: understand the current state,
 scaffold any missing classes if needed, then match the unit function by function until
 the produced C++ compiles to byte-identical object code against the original retail binary.
 
+For each function, "done" means both objdiff and normalized DWARF are exact.
+
 ## Overview
 
 This workflow combines several smaller workflows:
@@ -113,6 +115,7 @@ For each missing or nonmatching function, follow the implementation workflow in
   - Branch structure mismatches indicate wrong control flow (if/switch/loop)
 - **Match percentage is misleading.** The last few percent are often the hardest.
   Treat 95% as unfinished; the goal is 100%.
+- **DWARF is equally mandatory.** A 100% objdiff function with a DWARF mismatch is still unfinished.
 
 ### 3d. Collect and propagate matching tips
 
@@ -134,6 +137,15 @@ and use a local workaround instead.
 Use `python tools/decomp-workflow.py function ...` or
 `python tools/decomp-workflow.py diff ...` when you want a shorter, wrapper-first
 view for one function.
+
+After each function-level edit pass, run:
+
+```sh
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+```
+
+If it fails, follow up with `decomp-workflow.py diff` and `decomp-workflow.py dwarf`
+until both checks pass.
 
 ### 3g. Periodic reassessment
 
@@ -170,6 +182,8 @@ fallback.
 
 For any remaining nonmatching functions, make one final pass using the implementation
 or refiner workflow with all context accumulated during the session.
+
+Do not report a function as complete unless its per-function `verify` check also passes.
 
 ## Phase 5: Report
 
