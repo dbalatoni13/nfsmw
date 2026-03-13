@@ -277,10 +277,10 @@ If you have `clang-format` installed locally, you can also use:
 python tools/code_style.py format --check src/Speed/Indep/Src/Frontend/FEManager.cpp
 ```
 
-The formatter wrapper only targets a tiny default C/C++ bucket by default: currently `src/Speed/Indep/Src/Frontend/` and `src/Speed/Indep/Src/FEng/`. Nothing magical happens in those directories; they are just the initial low-churn UI-heavy areas chosen for branch-wide formatter probes, while the rest of `src/` stays opt-in because most of this repo is match-sensitive decomp code.
+The formatter wrapper targets eligible changed C/C++ files by default, including match-sensitive code. If you want a smaller focused pass, restrict it with `--category safe-cpp`, which currently maps to `src/Speed/Indep/Src/Frontend/` and `src/Speed/Indep/Src/FEng/`.
 `SourceLists/z*.cpp` files remain audit-only and are never formatter targets.
 `format --check` now distinguishes whitespace-only formatter deltas from other non-whitespace output changes.
-Files that use the repo's initializer-list guard comments (`//`) are skipped by default because clang-format fights that convention by reflowing the guarded initializer layout. That is a source-layout concern, not a claim that whitespace by itself changes codegen; if you override it, verify the affected unit afterwards.
+Files that use the repo's initializer-list guard comments (`//`) are formatter targets too. If a formatting pass touches match-sensitive code, rebuild and verify the affected unit afterwards instead of assuming the change is automatically byte-stable.
 For declaration-kind checks, header declarations are treated as the repo source of truth; otherwise the helper falls back to the PS2 dump rule (`public:` / `private:` / `protected:` means `class`, no visibility labels means `struct`).
 
 `clang-format` is optional. Recommended installs:

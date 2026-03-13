@@ -26,10 +26,10 @@ ps2_types_path = os.path.join(root_dir, "symbols", "PS2", "PS2_types.nothpp")
 CPP_EXTS = {".c", ".cc", ".cpp", ".h", ".hh", ".hpp"}
 HEADER_EXTS = {".h", ".hh", ".hpp"}
 
-# Seed default for branch-wide clang-format probes: keep the automatic bucket tiny
-# and limited to the UI-heavy Frontend/FEng directories. Broader C/C++ stays
-# audit-first and opt-in.
-DEFAULT_FORMAT_CPP_PREFIXES = (
+# Small focused C/C++ subset for targeted probes. The format command itself
+# now covers all eligible changed C/C++ files by default; this bucket remains
+# useful when a caller explicitly wants a narrower Frontend/FEng-only pass.
+SAFE_CPP_PREFIXES = (
     "src/Speed/Indep/Src/Frontend/",
     "src/Speed/Indep/Src/FEng/",
 )
@@ -135,7 +135,7 @@ def path_category(path: str) -> str:
         return "tooling"
     if path.startswith(JUMBO_PREFIX):
         return "jumbo-source-list"
-    if any(path.startswith(prefix) for prefix in DEFAULT_FORMAT_CPP_PREFIXES):
+    if any(path.startswith(prefix) for prefix in SAFE_CPP_PREFIXES):
         return "safe-cpp" if ext in CPP_EXTS else "safe-other"
     if any(path.startswith(prefix) for prefix in MATCH_SENSITIVE_PREFIXES):
         return "match-sensitive-cpp" if ext in CPP_EXTS else "match-sensitive-other"
@@ -785,9 +785,7 @@ def find_clang_format() -> str:
 
 
 def format_paths(paths: Iterable[str], include_match_sensitive: bool) -> List[str]:
-    allowed = {"safe-cpp"}
-    if include_match_sensitive:
-        allowed.add("match-sensitive-cpp")
+    allowed = {"safe-cpp", "match-sensitive-cpp"}
 
     return [
         relpath(path)
@@ -808,16 +806,10 @@ def command_format(args: argparse.Namespace) -> int:
     clang_format = find_clang_format()
     changed: List[str] = []
     changed_summaries: Dict[str, str] = {}
-    skipped_initializer_guards: List[str] = []
-
     for path in selected:
         abs_path = os.path.join(root_dir, path)
         with open(abs_path, encoding="utf-8", errors="ignore") as f:
             before = f.read()
-
-        if has_initializer_guard_comments(before) and not args.include_initializer_guards:
-            skipped_initializer_guards.append(path)
-            continue
 
         if args.check:
             result = subprocess.run(
@@ -836,13 +828,6 @@ def command_format(args: argparse.Namespace) -> int:
             if result.returncode != 0:
                 return result.returncode
             changed.append(path)
-
-    if skipped_initializer_guards:
-        print("Skipped files with initializer-list guard comments:")
-        for path in skipped_initializer_guards:
-            print(f"  {path}")
-        print("  clang-format fights this repo convention; inspect these manually or override explicitly.")
-        print()
 
     if args.check:
         if changed:
@@ -926,7 +911,7 @@ def build_parser() -> argparse.ArgumentParser:
     fmt = subparsers.add_parser(
         "format",
         parents=[shared],
-        help="Run clang-format on the tiny Frontend/FEng default allowlist by default",
+        help="Run clang-format on changed C/C++ files by default (SourceLists stay excluded)",
     )
     fmt.add_argument(
         "--category",
@@ -942,12 +927,12 @@ def build_parser() -> argparse.ArgumentParser:
     fmt.add_argument(
         "--include-match-sensitive",
         action="store_true",
-        help="Also format match-sensitive C/C++ files (dangerous; verify afterwards). SourceLists files stay excluded.",
+        help="Deprecated no-op kept for compatibility; eligible match-sensitive C/C++ files are already included by default.",
     )
     fmt.add_argument(
         "--include-initializer-guards",
         action="store_true",
-        help="Also format files that use initializer-list guard comments (`//`). Disabled by default because clang-format fights that repo convention.",
+        help="Deprecated no-op kept for compatibility; files with initializer-list guard comments are formatted by default.",
     )
     fmt.set_defaults(func=command_format)
 
