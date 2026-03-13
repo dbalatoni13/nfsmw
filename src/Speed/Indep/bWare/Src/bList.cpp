@@ -1,6 +1,7 @@
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
 
 bNode *bList::GetNode(int ordinal_number) {
     int n = 0;
