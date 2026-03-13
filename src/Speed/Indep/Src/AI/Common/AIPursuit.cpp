@@ -1248,3 +1248,187 @@ void AIPursuit::UpdateJerk(float dt) {
         }
     }
 }
+
+// TODO: RemoveUnwantedVehicles - complex function using GetAdjustedCopCounts, SimRandom, etc.
+// TODO: FleeCopOfType - complex function iterating IVehicle list, tracking furthest cops
+
+int AIPursuit::RequestRoadBlock() {
+    if (mIsPerpBusted || mIsPursuitBailed || mRoadBlock) {
+        return 0;
+    }
+    if (mRoadBlockTimer >= 30.0f) {
+        return 0;
+    }
+    Attrib::Gen::pursuitsupport *ps = GetPursuitSupportAttrib();
+    if (!ps) {
+        return 0;
+    }
+    if (ps->MinimumSupportDelay(0) > mTotalPursuitTime) {
+        return 0;
+    }
+    Attrib::Gen::pursuitlevels *pursuitLevelAttrib = GetPursuitLevelAttrib();
+    if (!pursuitLevelAttrib) {
+        return 0;
+    }
+    float randVal = Sim::GetRandom()._SimRandom_FloatRange(1.0f);
+    mRoadBlockTimer = randVal * 30.0f + 10.0f;
+    int rv = 0;
+    if (mNextRoadblockRequest) {
+        rv = 4;
+    }
+    float probability;
+    if (mPursuitStatus == PS_BACKUP_REQUESTED) {
+        probability = pursuitLevelAttrib->roadblockprobability();
+    } else {
+        float radius = pursuitLevelAttrib->SearchModeRoadblockRadius();
+        float d = UMath::Distance(mLastKnownLocation, mTarget->GetPosition());
+        probability = (pursuitLevelAttrib->SearchModeRoadblockChance() * (radius - d)) / radius;
+    }
+    float simProb = Sim::GetRandom()._SimRandom_FloatRange(1.0f);
+    mNextRoadblockRequest = simProb < probability;
+    return rv;
+}
+
+GroundSupportRequest *AIPursuit::RequestGroundSupport() {
+    if (mIsPerpBusted || !mIsPerpInSight || mIsPursuitBailed) {
+        return nullptr;
+    }
+    if (mGroundSupportRequest.mSupportRequestStatus != GroundSupportRequest::NOT_ACTIVE) {
+        return &mGroundSupportRequest;
+    }
+    if (mSupportCheckTimer >= 5.0f) {
+        return nullptr;
+    }
+    mSupportCheckTimer = 15.0f;
+    Attrib::Gen::pursuitsupport *ps = GetPursuitSupportAttrib();
+    if (ps->MinimumSupportDelay(0) > mTotalPursuitTime) {
+        return nullptr;
+    }
+    unsigned int rand = Sim::GetRandom()._SimRandom_IntRange(100);
+    if (!mSupportPriorityCheckDone) {
+        for (int i = 0; i < static_cast<int>(ps->Num_LeaderSupportOptions()); i++) {
+            const LeaderSupport &leaderSupport = ps->LeaderSupportOptions(i);
+            if (leaderSupport.PriorityTime < mTotalPursuitTime) {
+                mSupportPriorityCheckDone = true;
+                if (rand < leaderSupport.PriorityChance) {
+                    mGroundSupportRequest.mLeaderSupport = &leaderSupport;
+                    mGroundSupportRequest.mSupportRequestStatus = GroundSupportRequest::PENDING;
+                    mGroundSupportRequest.mSupportTimer = leaderSupport.Duration;
+                    break;
+                }
+            }
+        }
+    }
+    if (mGroundSupportRequest.mSupportRequestStatus != GroundSupportRequest::PENDING) {
+        rand = Sim::GetRandom()._SimRandom_IntRange(100);
+        if (!mRoadBlock) {
+            for (int i = 0; i < static_cast<int>(ps->Num_HeavySupportOptions()); i++) {
+                const HeavySupport &heavySupport = ps->HeavySupportOptions(i);
+                rand -= heavySupport.Chance;
+                if (static_cast<int>(rand) < 0) {
+                    mGroundSupportRequest.mHeavySupport = &heavySupport;
+                    mGroundSupportRequest.mSupportRequestStatus = GroundSupportRequest::PENDING;
+                    mGroundSupportRequest.mSupportTimer = heavySupport.Duration;
+                    mRoadBlockTimer = 60.0f;
+                    break;
+                }
+            }
+        }
+        if (static_cast<int>(rand) >= 0) {
+            for (int i = 0; i < static_cast<int>(ps->Num_LeaderSupportOptions()); i++) {
+                const LeaderSupport &leaderSupport = ps->LeaderSupportOptions(i);
+                rand -= leaderSupport.Chance;
+                if (static_cast<int>(rand) < 0) {
+                    mGroundSupportRequest.mLeaderSupport = &leaderSupport;
+                    mGroundSupportRequest.mSupportRequestStatus = GroundSupportRequest::PENDING;
+                    mGroundSupportRequest.mSupportTimer = leaderSupport.Duration;
+                    break;
+                }
+            }
+        }
+    }
+    if (mGroundSupportRequest.mSupportRequestStatus != GroundSupportRequest::NOT_ACTIVE) {
+        return &mGroundSupportRequest;
+    }
+    return nullptr;
+}
+
+static const UCrc32 heliHash1("YOURHELICOPTERVEHICLETYPE");
+
+Attrib::Gen::pursuitlevels *GetGlobalPursuitLevelAttrib() {
+    Attrib::Gen::pursuitlevels *pl = nullptr;
+    for (IVehicle *const *iter = IVehicle::GetList(VEHICLE_PLAYERS).begin();
+         iter != IVehicle::GetList(VEHICLE_PLAYERS).end(); ++iter) {
+        IVehicle *itargetVehicle = *iter;
+        IPerpetrator *iperp;
+        IVehicleAI *ivehicleai;
+        if (itargetVehicle->QueryInterface(&iperp) && itargetVehicle->QueryInterface(&ivehicleai)) {
+            bool ispursued = iperp->IsBeingPursued();
+            if (!pl || ispursued) {
+                pl = iperp->GetPursuitLevelAttrib();
+                if (ispursued) {
+                    return pl;
+                }
+            }
+        }
+    }
+    for (IVehicle *const *iter = IVehicle::GetList(VEHICLE_RACERS).begin();
+         iter != IVehicle::GetList(VEHICLE_RACERS).end(); ++iter) {
+        IVehicle *itargetVehicle = *iter;
+        DriverClass driverclass = itargetVehicle->GetDriverClass();
+        if (driverclass != DRIVER_HUMAN && driverclass != DRIVER_REMOTE) {
+            IPerpetrator *iperp;
+            IVehicleAI *ivehicleai;
+            if (itargetVehicle->QueryInterface(&iperp) && itargetVehicle->QueryInterface(&ivehicleai)) {
+                bool ispursued = iperp->IsBeingPursued();
+                if (!pl || ispursued) {
+                    pl = iperp->GetPursuitLevelAttrib();
+                    if (ispursued) {
+                        return pl;
+                    }
+                }
+            }
+        }
+    }
+    return pl;
+}
+
+bool IsValidPursuitCarName(const char *name) {
+    Attrib::Gen::pursuitlevels *pursuitlevels = GetGlobalPursuitLevelAttrib();
+    if (!pursuitlevels) {
+        return false;
+    }
+    UCrc32 nameHash(name);
+    for (unsigned int i = 0; i < pursuitlevels->Num_cops(); i++) {
+        const CopCountRecord &copcount = pursuitlevels->cops(i);
+        if (UCrc32(copcount.CopType) == nameHash) {
+            return true;
+        }
+    }
+    return false;
+}
+
+const char *GetRandomValidCopCar() {
+    Attrib::Gen::pursuitlevels *pursuitlevels = GetGlobalPursuitLevelAttrib();
+    if (!pursuitlevels) {
+        return nullptr;
+    }
+    int totalRequested = 0;
+    for (unsigned int i = 0; i < pursuitlevels->Num_cops(); i++) {
+        const CopCountRecord &copcount = pursuitlevels->cops(i);
+        if (heliHash1 != UCrc32(copcount.CopType)) {
+            totalRequested += copcount.Count;
+        }
+    }
+    int rand = Sim::GetRandom()._SimRandom_IntRange(totalRequested);
+    for (unsigned int i = 0; i < pursuitlevels->Num_cops(); i++) {
+        const CopCountRecord &copcount = pursuitlevels->cops(i);
+        if (heliHash1 != UCrc32(copcount.CopType)) {
+            rand -= copcount.Count;
+            if (rand < 0) {
+                return copcount.CopType.GetString();
+            }
+        }
+    }
+    return nullptr;
+}

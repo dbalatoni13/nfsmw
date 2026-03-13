@@ -52,6 +52,10 @@ class StringKey {
         return mString != nullptr;
     }
 
+    const char *GetString() const {
+        return mString;
+    }
+
   private:
     // total size: 0x10
     unsigned long long mHash64; // offset 0x0, size 0x8
