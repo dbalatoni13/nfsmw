@@ -441,13 +441,16 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                     size = static_cast<int>(cvtbuf_base - (p - 63));
                 }
 
-                if ((flags & FL_FORCEOCTAL) && *p != '0') {
-                    *--p = '0';
-                    size++;
+                stringLength = size - 1;
+                if (flags & FL_FORCEOCTAL) {
+                    if (stringLength == 0 || *(p + 1) != '0') {
+                        stringLength = size;
+                        *p = '0';
+                        p--;
+                    }
                 }
 
-                stringOut = p;
-                stringLength = size;
+                stringOut = p + 1;
                 goto OUTPUT;
             }
 
