@@ -150,11 +150,11 @@ bool QueuedFileBundle::TestAddQueuedFile(QueuedFile *q) {
         }
     }
     int numBytes = q->NumBytes;
-    int numBytesQueued = NumBytesQueued;
     int top = q->FilePos + numBytes;
+    int newTotalQueued = numBytes + NumBytesQueued;
     unsigned int bot = q->FilePos & 0xFFFFF800;
     if (NumQueuedFiles > 0) {
-        if (static_cast<int>(ReadBufferBot) < static_cast<int>(bot)) {
+        if (static_cast<int>(bot) > ReadBufferBot) {
             bot = ReadBufferBot;
         }
         if (top < ReadBufferTop) {
@@ -169,29 +169,31 @@ bool QueuedFileBundle::TestAddQueuedFile(QueuedFile *q) {
         return false;
     }
     int freeMem = bLargestMalloc(0);
-    short poolNum = 0;
-    bool tooBig = freeMem - 0x10000 < totalSize * 2;
+    int poolNum = 0;
+    bool tooBig = totalSize * 2 > freeMem - 0x10000;
     if (tooBig) {
         if (bStrNICmp(q->Filename, "Track", 5) == 0) {
             freeMem = bLargestMalloc(CarLoaderMemoryPoolNumber);
-            tooBig = freeMem < totalSize;
-            poolNum = static_cast<short>(CarLoaderMemoryPoolNumber);
+            tooBig = totalSize > freeMem;
+            poolNum = CarLoaderMemoryPoolNumber;
         }
     }
     int joylogResult = Joylog::AddOrGetData(tooBig, 1, JOYLOG_CHANNEL_QUEUEDFILE_STATUS);
-    if ((joylogResult != 0) != tooBig) {
-        tooBig = joylogResult != 0;
+    bool fromJoylog = joylogResult != 0;
+    if (fromJoylog != tooBig) {
+        tooBig = fromJoylog;
     }
-    if (!tooBig) {
-        MemoryPoolNumber = poolNum;
-        ReadBufferBot = bot;
-        ReadBufferTop = top;
-        NumBytesQueued = numBytes + numBytesQueued;
-        QueuedFiles[NumQueuedFiles] = q;
-        NumQueuedFiles = NumQueuedFiles + 1;
-        return true;
+    if (tooBig) {
+        return false;
     }
-    return false;
+    MemoryPoolNumber = static_cast<short>(poolNum);
+    ReadBufferBot = bot;
+    ReadBufferTop = top;
+    NumBytesQueued = newTotalQueued;
+    short idx = NumQueuedFiles;
+    QueuedFiles[idx] = q;
+    NumQueuedFiles = idx + 1;
+    return true;
 }
 
 void QueuedFileBundle::BeginRead() {
