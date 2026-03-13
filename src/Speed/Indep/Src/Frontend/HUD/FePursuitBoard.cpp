@@ -1,11 +1,13 @@
 #include "Speed/Indep/Src/Frontend/HUD/FePursuitBoard.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/FEng/FETypes.h"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
+FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
 void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
 void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool start_at_beginning);
 bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
@@ -66,9 +68,51 @@ inline void FEngSetBottomRightX(FEObject *obj, float x) {
 }
 
 PursuitBoard::PursuitBoard(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0) //
-    , IPursuitBoard(pOutter)
+    : HudElement(pkg_name, 0x100000) //
+    , IPursuitBoard(pOutter) //
+    , mInPursuit(false) //
+    , mIsHiding(false) //
+    , mTimeUntilHidden(0.0f) //
+    , mTimeUntilBusted(0.0f) //
+    , mTimeUntilBackup(0.0f) //
+    , mPursuitDuration(0.0f) //
+    , mCooldownTimeRemaining(0.0f) //
+    , mCooldownTimeRequired(60.0f) //
+    , mNumCopsFullyEngaged(0) //
+    , mNumCopsDestroyed(0) //
+    , mNumCopsDamaged(0) //
+    , mTotalNumCopsInvolved(0) //
+    , mHeliInvolved(false) //
+    , mPursuitRep(0)
 {
+    mpDataPursuitBoardGroup = RegisterGroup(0xde89e070);
+    mpDataPursuitMeterGroup = RegisterGroup(0x7b422ba3);
+    mpDataPursuitIconsGroup = RegisterGroup(0xe0b1430b);
+    mpDataPursuitSummaryGroup = RegisterGroup(0x8674e6d4);
+    mpDataPursuitCooldownMeterGroup = RegisterGroup(0x84a226ec);
+    mpDataBackupTimerTextGroup = RegisterGroup(0x6a144066);
+    RegisterString(0x3c165f39);
+    RegisterString(0xbee44775);
+    mpDataPursuitTimer = static_cast<FEString *>(FEngFindObject(GetPackageName(), 0xfc39cb0a));
+    mpDataBackupTimer = static_cast<FEString *>(FEngFindObject(GetPackageName(), 0xbee44775));
+    mpDataPursuitCopsNumbers = static_cast<FEString *>(FEngFindObject(GetPackageName(), 0x814918ca));
+    mpDataCopsTakenOut = static_cast<FEString *>(FEngFindObject(GetPackageName(), 0xa16f9f1e));
+    mpDataCopsDamaged = static_cast<FEString *>(FEngFindObject(GetPackageName(), 0x5fa70d4c));
+    mpDataPursuitSummaryTotal = static_cast<FEString *>(FEngFindObject(GetPackageName(), 0x875e92eb));
+    mpDataBustedBar0 = FEngFindObject(GetPackageName(), 0xe0e0169b);
+    mpDataBustedBar1 = FEngFindObject(GetPackageName(), 0x8eeebd33);
+    mpDataBustedBar2 = FEngFindObject(GetPackageName(), 0x47a4e2a9);
+    mpDataBustedBar3 = FEngFindObject(GetPackageName(), 0x8e3653a6);
+    mpDataBustedBar4 = FEngFindObject(GetPackageName(), 0x30f39a6f);
+    mpDataCooldownBar = FEngFindObject(GetPackageName(), 0xcf817638);
+    mpDataBackupBacking = FEngFindObject(GetPackageName(), 0x8c20a763);
+    mpDataHidingBacking = FEngFindObject(GetPackageName(), 0x5c2a4f20);
+    mBustedBarOriginalWidth0 = mpDataBustedBar0->GetObjData()->Size.x;
+    mBustedBarOriginalWidth1 = mpDataBustedBar1->GetObjData()->Size.x;
+    mBustedBarOriginalWidth2 = mpDataBustedBar2->GetObjData()->Size.x;
+    mBustedBarOriginalWidth3 = mpDataBustedBar3->GetObjData()->Size.x;
+    mBustedBarOriginalWidth4 = mpDataBustedBar4->GetObjData()->Size.x;
+    mCooldownBarOriginalWidth = mpDataCooldownBar->GetObjData()->Size.x;
 }
 
 void PursuitBoard::Update(IPlayer *player) {

@@ -66,7 +66,7 @@ struct FEObject : public FEMinNode {
     FEScript* pCurrentScript;     // offset 0x54, size 0x4
     FERenderObject* Cached;       // offset 0x58, size 0x4
 
-    inline FEObjData* GetObjData() const;
+    inline FEObjData* GetObjData() const { return reinterpret_cast<FEObjData*>(pData); }
     inline FEScript* GetFirstScript() const;
     inline unsigned long GetNumScripts() const;
     inline FEScript* GetScript(unsigned long Index) const;
