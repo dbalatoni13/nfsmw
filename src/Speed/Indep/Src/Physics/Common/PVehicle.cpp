@@ -40,11 +40,15 @@
 #include "Speed/Indep/Src/World/WWorldPos.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
+class OnlineRacer;
+
 class IOnlinePlayer : public UTL::COM::IUnknown {
   public:
     static HINTERFACE _IHandle() { return (HINTERFACE)_IHandle; }
     IOnlinePlayer(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
     virtual ~IOnlinePlayer() {}
+    virtual void SetOnlineRacer();
+    virtual OnlineRacer *GetOnlineRacer();
     virtual void SendSetVehicleOnGround();
 };
 
@@ -1238,71 +1242,80 @@ bool PVehicle::SetVehicleOnGround(const UMath::Vector3 &resetPos, const UMath::V
     }
     bool success = true;
     MJumpCut msg(static_cast<ISimable *>(this)->GetWorldID());
-    UCrc32 port("CameraMessagePort");
-    msg.Send(port);
-    UMath::Vector3 dim;
-    rigid_body->GetDimension(dim);
-    UMath::Vector3 position;
-    position.x = resetPos.x;
-    position.y = resetPos.y + dim.y;
-    position.z = resetPos.z;
+    msg.Send(UCrc32("CameraMessagePort"));
+    const UMath::Vector3 dim = rigid_body->GetDimension();
+    UMath::Vector3 position = resetPos;
+    position.y += dim.y;
     UMath::Matrix4 orientMat = Util_GenerateMatrix(initialVec, nullptr);
     rigid_body->SetLinearVelocity(UMath::Vector3::kZero);
     rigid_body->SetAngularVelocity(UMath::Vector3::kZero);
     float load = mCollisionBody->GetGravity() * rigid_body->GetMass();
-    float worldHeight = 0.0f;
-    WCollisionMgr mgr(0, 3);
-    bool found = mgr.GetWorldHeightAtPointRigorous(position, worldHeight, nullptr);
-    if (found) {
-        if (mSuspension == nullptr) {
-            position.x = resetPos.x;
-            position.y = worldHeight + dim.y;
-            position.z = resetPos.z;
-        } else {
-            WWorldPos wpos(dim.y);
-            wpos.SetTolerance(1.0f);
-            float wheelHeights[4];
-            position.y = worldHeight;
-            for (unsigned int i = 0; i < 4; i++) {
-                const UMath::Vector3 &wheelPos = mSuspension->GetWheelLocalPos(i);
-                UMath::Vector3 localPos;
-                localPos.x = wheelPos.x;
-                localPos.y = 0.0f;
-                localPos.z = wheelPos.z;
-                UMath::Vector3 worldPos;
-                UMath::Rotate(localPos, orientMat, worldPos);
-                worldPos.x += position.x;
-                worldPos.y += position.y;
-                worldPos.z += position.z;
-                wpos.FindClosestFace(worldPos, true);
-                if (wpos.OnValidFace()) {
-                    float compression = mSuspension->GuessCompression(i, load);
-                    float ride = mSuspension->GetRideHeight(i);
-                    float faceHeight = wpos.HeightAtPoint(worldPos);
-                    wheelHeights[i] = dim.y + faceHeight + (ride - compression);
-                } else {
-                    wheelHeights[i] = position.y;
-                    success = false;
-                }
-            }
-            if (!success) {
-                position = resetPos;
-            } else {
-                float avg_y = (wheelHeights[0] + wheelHeights[1] + wheelHeights[2] + wheelHeights[3]) * 0.25f;
-                position.x = resetPos.x;
-                position.y = avg_y;
-                position.z = resetPos.z;
-            }
-        }
-    } else {
+    float worldHeight;
+    if (!WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(position, worldHeight, nullptr)) {
         position = resetPos;
         success = false;
+    } else if (mSuspension == nullptr) {
+        position = resetPos;
+        position.y = worldHeight + dim.y;
+    } else {
+        WWorldPos wpos(dim.y);
+        wpos.SetTolerance(1.0f);
+        UMath::Vector4 plane[4];
+        UMath::Vector4 axle_center = UMath::Vector4::kZero;
+        position.y = worldHeight;
+        UMath::Vector4 p4 = UMath::Vector4Make(position, 1.0f);
+        for (unsigned int i = 0; i < 4; i++) {
+            UMath::Vector4 &this_corner = plane[i];
+            const UMath::Vector3 &wheelPos = mSuspension->GetWheelLocalPos(i);
+            this_corner = UMath::Vector4Make(wheelPos, 0.0f);
+            this_corner.y = 0.0f;
+            UMath::ScaleAdd(this_corner, 0.25f, axle_center, axle_center);
+            UMath::Rotate(this_corner, orientMat, this_corner);
+            UMath::Add(this_corner, p4, this_corner);
+            wpos.FindClosestFace(UMath::Vector4To3(this_corner), true);
+            if (wpos.OnValidFace()) {
+                float compression = mSuspension->GuessCompression(i, load);
+                float ride = mSuspension->GetRideHeight(i);
+                this_corner.y = dim.y + wpos.HeightAtPoint(UMath::Vector4To3(this_corner)) + (ride - compression);
+            } else {
+                success = false;
+            }
+        }
+        if (!success) {
+            position = resetPos;
+        } else {
+            UMath::Vector4 front;
+            UMath::Vector4 rear;
+            UMath::Vector4 right;
+            UMath::Vector4 left;
+            UMath::Vector4 world_axle;
+            UMath::Vector4 p0;
+            UMath::Vector4 p1;
+            UMath::AddScale(plane[0], plane[1], 0.5f, front);
+            UMath::AddScale(plane[2], plane[3], 0.5f, rear);
+            UMath::AddScale(plane[0], plane[2], 0.5f, left);
+            UMath::AddScale(plane[1], plane[3], 0.5f, right);
+            UMath::Subxyz(front, rear, orientMat.v2);
+            UMath::Unitxyz(orientMat.v2);
+            UMath::Subxyz(right, left, orientMat.v0);
+            UMath::Unitxyz(orientMat.v0);
+            UnitCrossxyz(orientMat.v2, orientMat.v0, orientMat.v1);
+            UnitCrossxyz(orientMat.v1, orientMat.v2, orientMat.v0);
+            UMath::Rotate(axle_center, orientMat, world_axle);
+            AddScalexyz(front, rear, 0.5f, p0);
+            AddScalexyz(right, left, 0.5f, p1);
+            AddScalexyz(p0, p1, 0.5f, p4);
+            UMath::Subxyz(p4, world_axle, p4);
+            position = UMath::Vector4To3(p4);
+        }
     }
     rigid_body->PlaceObject(orientMat, position);
-    IPlayer *player = nullptr;
-    IOnlinePlayer *online = nullptr;
-    if (static_cast<ISimable *>(this)->QueryInterface(&online)) {
-        online->SendSetVehicleOnGround();
+    IPlayer *player = static_cast<ISimable *>(this)->GetPlayer();
+    if (player != nullptr) {
+        IOnlinePlayer *online = nullptr;
+        if (player->QueryInterface(&online)) {
+            online->SendSetVehicleOnGround();
+        }
     }
     if (mArticulation != nullptr && !mArticulation->Pose()) {
         success = false;
@@ -1311,6 +1324,7 @@ bool PVehicle::SetVehicleOnGround(const UMath::Vector3 &resetPos, const UMath::V
     ResetBehavior(UCrc32(BEHAVIOR_MECHANIC_ENGINE));
     ResetBehavior(UCrc32(BEHAVIOR_MECHANIC_AI));
     ResetBehavior(UCrc32(BEHAVIOR_MECHANIC_RESET));
+    static_cast<IVehicle *>(this)->SetSpeed(0.0f);
     mOffWorld = !success;
     AITarget::Track(static_cast<const ISimable *>(this));
     return success;
