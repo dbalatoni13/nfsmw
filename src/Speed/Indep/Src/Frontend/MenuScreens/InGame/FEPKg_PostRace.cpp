@@ -5,6 +5,9 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 
 extern FEString *FEngFindString(const char *pkg_name, int hash);
+extern FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
+extern void FEngSetVisible(FEObject *obj);
+extern void FEngSetLanguageHash(const char *pkg_name, unsigned int object_hash, unsigned int language_hash);
 extern int FEPrintf(FEString *text, const char *fmt, ...);
 
 template <typename T> static T ReadField(const void *base, int offset) {
@@ -257,6 +260,25 @@ void PostRaceResultsScreen::SetupResults() {
     }
 
     GRaceStatus &race_status = GRaceStatus::Get();
+    FEObject *obj = FEngFindObject(GetPackageName(), 0x586AB4A6);
+    FEngSetVisible(obj);
+    obj = FEngFindObject(GetPackageName(), 0x44AC8987);
+    FEngSetVisible(obj);
+    obj = FEngFindObject(GetPackageName(), 0x30EE5E68);
+    FEngSetVisible(obj);
+
+    if (mRaceType >= GRace::kRaceType_P2P && mRaceType <= GRace::kRaceType_Knockout) {
+        FEngSetLanguageHash(GetPackageName(), 0x586AB4A6, 0x96B05F47);
+        FEngSetLanguageHash(GetPackageName(), 0x44AC8987, 0xCE678AD3);
+        FEngSetLanguageHash(GetPackageName(), 0x30EE5E68, 0xB67DA102);
+    } else if (mRaceType == GRace::kRaceType_SpeedTrap) {
+        FEngSetLanguageHash(GetPackageName(), 0x586AB4A6, 0x96B05F47);
+        FEngSetLanguageHash(GetPackageName(), 0x44AC8987, 0xCE678AD3);
+        FEngSetLanguageHash(GetPackageName(), 0x30EE5E68, 0x7540FB04);
+    }
+
+    FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0xFF115FFF);
+    FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xD0B8AA33);
     mNumberOfStats = 0;
     RaceResults.Reset();
 
@@ -390,6 +412,62 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
     }
 
     GRaceStatus &race_status = GRaceStatus::Get();
+    FEObject *obj = nullptr;
+
+    FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0x8159A0B2);
+    switch (mRaceType) {
+    case GRace::kRaceType_P2P:
+    case GRace::kRaceType_Drag:
+        FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0x34BA50FF);
+        obj = FEngFindObject(GetPackageName(), 0x586AB4A6);
+        FEngSetVisible(obj);
+        obj = FEngFindObject(GetPackageName(), 0x44AC8987);
+        FEngSetVisible(obj);
+        obj = FEngFindObject(GetPackageName(), 0x30EE5E68);
+        FEngSetVisible(obj);
+        FEngSetLanguageHash(GetPackageName(), 0x586AB4A6, 0xE8B7D527);
+        FEngSetLanguageHash(GetPackageName(), 0x44AC8987, 0x96B05F47);
+        FEngSetLanguageHash(GetPackageName(), 0x30EE5E68, 0xB67DA102);
+        break;
+    case GRace::kRaceType_Circuit:
+    case GRace::kRaceType_Knockout:
+        FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0x9C8D7FE8);
+        obj = FEngFindObject(GetPackageName(), 0x586AB4A6);
+        FEngSetVisible(obj);
+        obj = FEngFindObject(GetPackageName(), 0x44AC8987);
+        FEngSetVisible(obj);
+        obj = FEngFindObject(GetPackageName(), 0x30EE5E68);
+        FEngSetVisible(obj);
+        FEngSetLanguageHash(GetPackageName(), 0x586AB4A6, 0x0000BF9C);
+        FEngSetLanguageHash(GetPackageName(), 0x44AC8987, 0x96B05F47);
+        FEngSetLanguageHash(GetPackageName(), 0x30EE5E68, 0xB67DA102);
+        break;
+    case GRace::kRaceType_SpeedTrap:
+        FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0xECD0E6A6);
+        obj = FEngFindObject(GetPackageName(), 0x586AB4A6);
+        FEngSetVisible(obj);
+        obj = FEngFindObject(GetPackageName(), 0x44AC8987);
+        FEngSetVisible(obj);
+        obj = FEngFindObject(GetPackageName(), 0x30EE5E68);
+        FEngSetVisible(obj);
+        FEngSetLanguageHash(GetPackageName(), 0x586AB4A6, 0xEE1EDC76);
+        FEngSetLanguageHash(GetPackageName(), 0x44AC8987, 0x96B05F47);
+        FEngSetLanguageHash(GetPackageName(), 0x30EE5E68, 0x7540FB04);
+        break;
+    case GRace::kRaceType_Tollbooth:
+        FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0xD10A8EA2);
+        obj = FEngFindObject(GetPackageName(), 0x586AB4A6);
+        FEngSetVisible(obj);
+        obj = FEngFindObject(GetPackageName(), 0x30EE5E68);
+        FEngSetVisible(obj);
+        FEngSetLanguageHash(GetPackageName(), 0x586AB4A6, 0xA15E4505);
+        FEngSetLanguageHash(GetPackageName(), 0x30EE5E68, 0xB67DA102);
+        FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xD0B8AA33);
+        break;
+    default:
+        break;
+    }
+
     RaceResults.Reset();
 
     for (int i = 0; i < mNumberOfLaps; ++i) {
