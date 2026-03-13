@@ -23,6 +23,11 @@ class SimRandom {
         return rf / 65536.0f;
     }
 
+    float _SimRandom_Float() {
+        int r = SimRandom_Generate();
+        return static_cast<float>(r) / 65536.0f;
+    }
+
   private:
     int SimRandom_Generate();
 

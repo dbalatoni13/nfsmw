@@ -1497,3 +1497,125 @@ void AIPursuit::GetAdjustedCopCounts(CopCountRecord *counts, int &numcounts) {
         }
     }
 }
+
+void AIPursuit::FleeCopOfType(UCrc32 type, int fleecount) {
+    UCrc32 fleegoal("AIGoalFlee");
+    IVehicle *furthest = nullptr;
+    IVehicle *secondfurthest = nullptr;
+    int num_can_see_you = 0;
+    int already_fleeing = 0;
+    float d2 = 0.0f;
+    float distance = 0.0f;
+
+    IVehicle *const *iter = mIVehicleList.begin();
+    for (; iter != mIVehicleList.end(); iter++) {
+        IVehicle *ivehicle = *iter;
+        if (ivehicle->GetVehicleClass() == VehicleClass::CHOPPER) {
+            continue;
+        }
+        IPursuitAI *ipursuitai;
+        if (ivehicle->QueryInterface(&ipursuitai) && ipursuitai->GetInPursuit()) {
+            continue;
+        }
+        IVehicleAI *iai;
+        if (ivehicle->QueryInterface(&iai) && iai->GetGoalName() == fleegoal) {
+            already_fleeing++;
+            continue;
+        }
+        float dist = ipursuitai->GetTimeSinceTargetSeen();
+        bool can_see_you = dist <= 0.0f;
+        if (can_see_you) {
+            num_can_see_you++;
+        }
+        UCrc32 vehicleTypeName(ivehicle->GetVehicleName());
+        if (vehicleTypeName == type) {
+            float distToTarget = UMath::Distance(ivehicle->GetPosition(), mTarget->GetPosition());
+            if (!can_see_you) {
+                distToTarget += 40.0f;
+            }
+            if (distToTarget > distance) {
+                secondfurthest = furthest;
+                d2 = distance;
+                furthest = ivehicle;
+                distance = distToTarget;
+            } else if (furthest && distToTarget > d2) {
+                secondfurthest = ivehicle;
+                d2 = distToTarget;
+            }
+        }
+    }
+
+    if (furthest) {
+        IPursuitAI *ipursuitai;
+        if (furthest->QueryInterface(&ipursuitai) && already_fleeing < fleecount) {
+            bool can_see_you = ipursuitai->GetTimeSinceTargetSeen() <= 0.0f;
+            if (!can_see_you || num_can_see_you > 2) {
+                if (can_see_you) {
+                    num_can_see_you--;
+                }
+                ipursuitai->EndPursuit();
+            }
+        }
+    }
+
+    if (secondfurthest) {
+        IPursuitAI *ipursuitai;
+        if (secondfurthest->QueryInterface(&ipursuitai) && already_fleeing + 1 < fleecount) {
+            bool can_see_you = ipursuitai->GetTimeSinceTargetSeen() <= 0.0f;
+            if (!can_see_you || num_can_see_you > 2) {
+                ipursuitai->EndPursuit();
+            }
+        }
+    }
+}
+
+void AIPursuit::RemoveUnwantedVehicles() {
+    CopCountRecord adjustedCounts[8];
+    int numAdjustedCounts;
+    GetAdjustedCopCounts(adjustedCounts, numAdjustedCounts);
+
+    int typecount = 0;
+    int fleecount = 0;
+    UCrc32 fleetype = UCrc32::kNull;
+
+    const CopContingent *j = mCopContingent.begin();
+    for (; j != mCopContingent.end(); j++) {
+        int num_this_type_to_flee = j->mCount;
+        for (int i = 0; i < numAdjustedCounts; i++) {
+            const CopCountRecord &copcount = adjustedCounts[i];
+            if (UCrc32(copcount.CopType) == j->mType) {
+                num_this_type_to_flee = j->mCount - copcount.Count;
+                break;
+            }
+        }
+        if (num_this_type_to_flee < 1) {
+            continue;
+        }
+        typecount += num_this_type_to_flee;
+        float prob = static_cast<float>(fleecount) / static_cast<float>(typecount);
+        if (prob <= Sim::GetRandom()._SimRandom_Float()) {
+            fleetype = j->mType;
+            fleecount = num_this_type_to_flee;
+        }
+    }
+
+    if (fleetype != UCrc32::kNull) {
+        fleecount = bMin(fleecount, 2);
+        FleeCopOfType(fleetype, fleecount);
+    }
+
+    if (!mIsPerpInSight && mGroundSupportRequest.mSupportRequestStatus == GroundSupportRequest::ACTIVE &&
+        mGroundSupportRequest.mHeavySupport != nullptr) {
+        IVehicle *const *iter = mIVehicleList.begin();
+        for (; iter != mIVehicleList.end(); iter++) {
+            IVehicle *ivehicle = *iter;
+            if (IsSupportVehicle(ivehicle)) {
+                IPursuitAI *ipursuitai;
+                if (ivehicle->QueryInterface(&ipursuitai)) {
+                    ipursuitai->EndPursuit();
+                }
+            }
+        }
+        mGroundSupportRequest.Reset();
+    }
+}
