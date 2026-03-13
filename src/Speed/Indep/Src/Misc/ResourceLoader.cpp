@@ -21,19 +21,14 @@ bChunkLoaderFunction UnloaderTable[LOADER_AMOUNT];
 
 // UNSOLVED
 int LoaderStub(bChunk *chunk) {
-    // TODO magic, put those into SpeedChunks.hpp
-    if (chunk->ID != BCHUNK_STYLE_MOMENTS_INFO) {
-        if (chunk->ID < BCHUNK_STYLE_PARTITIONS) {
-            if (chunk->ID != BCHUNK_SMOKEABLES) {
-                return 0;
-            }
-        } else if (chunk->ID != 0x34b00) {
+    switch (chunk->ID) {
+        case BCHUNK_SMOKEABLES:
+        case BCHUNK_STYLE_MOMENTS_INFO:
+        case 0x34b00:
+            return 1;
+        default:
             return 0;
-        }
-    } else {
-        return 1;
     }
-    return 0;
 }
 
 int CallChunkLoader(bChunk *chunk) {

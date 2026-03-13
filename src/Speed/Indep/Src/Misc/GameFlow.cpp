@@ -500,8 +500,10 @@ void LoadEmbeddedChunks(void *data, int size, const char *name);
 void WaitForResourceLoadingComplete();
 
 void LoadGlobalAChunks() {
-    bOverlappedMemCpy(reinterpret_cast<void *>(0x8041f900), bin_globala_bun, 0x15df4);
-    LoadEmbeddedChunks(reinterpret_cast<void *>(0x8041f900), 0x15df4, "globala");
+    char *base = reinterpret_cast<char *>(bin_globala_bun);
+    void *dest = reinterpret_cast<void *>((reinterpret_cast<unsigned int>(base) + 0x80) & ~0x7F);
+    bOverlappedMemCpy(dest, base + 1, 0x15df4);
+    LoadEmbeddedChunks(dest, 0x15df4, "globala");
     WaitForResourceLoadingComplete();
 }
 
