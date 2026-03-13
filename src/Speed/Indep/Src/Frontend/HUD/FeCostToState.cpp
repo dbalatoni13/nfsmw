@@ -33,18 +33,18 @@ void CostToState::Update(IPlayer *player) {
         return;
     }
 
-    if (mNumFramesLeftToShow < 1) {
-        if (mCostToStateOn) {
-            mCostToStateOn = false;
-            FEngSetScript(pPackageName, FEHashUpper(lbl_803E48B4), FEHashUpper(lbl_803E48D4), true);
-        }
-    } else {
+    if (mNumFramesLeftToShow >= 1) {
         mNumFramesLeftToShow = mNumFramesLeftToShow - 1;
         FEngSetLanguageHash(mDataTitle, 0x3DD874C5);
         FEPrintf(mDataCostToState, lbl_803E48C8, mCostToState);
         if (!mCostToStateOn) {
             mCostToStateOn = true;
-            FEngSetScript(pPackageName, FEHashUpper(lbl_803E48B4), FEHashUpper(lbl_803E48CC), true);
+            FEngSetScript(GetPackageName(), FEHashUpper(lbl_803E48B4), FEHashUpper(lbl_803E48CC), true);
+        }
+    } else {
+        if (mCostToStateOn) {
+            mCostToStateOn = false;
+            FEngSetScript(GetPackageName(), FEHashUpper(lbl_803E48B4), FEHashUpper(lbl_803E48D4), true);
         }
     }
 }

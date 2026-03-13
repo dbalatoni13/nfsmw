@@ -27,16 +27,16 @@ void Reputation::Update(IPlayer *player) {
         return;
     }
 
-    if (mNumFramesLeftToShow < 1) {
-        if (FEngIsScriptSet(mDataReputationGrp, 0x5079C8F8)) {
-            FEngSetScript(mDataReputationGrp, 0x33113AC, true);
-        }
-    } else {
+    if (mNumFramesLeftToShow >= 1) {
         mNumFramesLeftToShow = mNumFramesLeftToShow - 1;
         FEngSetLanguageHash(mDataTitle, 0x7D0171E4);
         FEPrintf(mDataReputationCareer, lbl_803E48C8, mReputationCareer);
         if (!FEngIsScriptSet(mDataReputationGrp, 0x5079C8F8)) {
             FEngSetScript(mDataReputationGrp, 0x5079C8F8, true);
+        }
+    } else {
+        if (FEngIsScriptSet(mDataReputationGrp, 0x5079C8F8)) {
+            FEngSetScript(mDataReputationGrp, 0x33113AC, true);
         }
     }
 }
