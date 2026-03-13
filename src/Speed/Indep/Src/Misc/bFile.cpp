@@ -232,13 +232,13 @@ DisculatorDriver *DisculatorDriver::Create(const char *dir_filename, const char 
     if (sDisculatorDriver == nullptr) {
         DisculatorDriver *d = new DisculatorDriver();
         sDisculatorDriver = d;
-        if (!d->LoadGiantFiles(dir_filename, data_filename)) {
+        if (d->LoadGiantFiles(dir_filename, data_filename)) {
+            return sDisculatorDriver;
+        } else {
             if (sDisculatorDriver != nullptr) {
                 delete sDisculatorDriver;
             }
             sDisculatorDriver = nullptr;
-        } else {
-            return sDisculatorDriver;
         }
     }
     return nullptr;
