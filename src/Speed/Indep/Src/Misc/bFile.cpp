@@ -440,17 +440,17 @@ bFile::bFile(const char *filename, bFileOpenMode open_mode) {
     bFileList.AddTail(this);
     bFileNumInstances++;
     Filename = bAllocateSharedString(filename);
-    WriteBuffer = nullptr;
-    FileHandle = -1;
     WriteBufferSize = 0;
-    CloseAfterCallbacks = 0;
-    OpenMode = open_mode;
-    Position = 0;
-    FileSize = 0;
-    pCachedRealFileHandle = nullptr;
-    NumPendingCallbacks = 0;
-    WriteBufferPos = 0;
     WriteBufferNumBytes = 0;
+    WriteBufferPos = 0;
+    NumPendingCallbacks = 0;
+    CloseAfterCallbacks = 0;
+    FileHandle = 0;
+    Position = 0;
+    OpenMode = open_mode;
+    pCachedRealFileHandle = nullptr;
+    FileSize = -1;
+    WriteBuffer = nullptr;
     if (open_mode == BOPEN_MODE_WRITE || open_mode == BOPEN_MODE_APPEND) {
         bFileFlushCacheFile(filename);
         WriteBufferSize = 0x2000;
@@ -459,18 +459,17 @@ bFile::bFile(const char *filename, bFileOpenMode open_mode) {
     CachedRealFileHandle *c = CachedRealFileHandle::FindHandle(filename);
     if (c != nullptr && OpenMode == BOPEN_MODE_READONLY) {
         c->AddReference();
+        FileHandle = c->GetFileHandle();
         FileSize = c->GetFileSize();
         pCachedRealFileHandle = c;
-        FileHandle = c->GetFileHandle();
     } else {
-        MemoryFileEntry *entry = FindMemoryFileEntry(Filename);
-        if (entry != nullptr) {
-            FileHandle = entry->FileSize;
+        if (FindMemoryFileEntry(Filename) != nullptr) {
+            FileSize = FindMemoryFileEntry(Filename)->FileSize;
         } else {
             OpenLowLevel();
-            if (FileHandle >= 0) {
+            if (FileSize >= 0) {
                 if (OpenMode == BOPEN_MODE_APPEND) {
-                    Position = FileHandle;
+                    Position = FileSize;
                 }
                 MaybeAddCachedHandle();
             }
