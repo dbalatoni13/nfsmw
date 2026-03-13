@@ -17,10 +17,10 @@ Minimap::Minimap(const char *pkg_name, int player_number)
 void Minimap::Update(IPlayer *player) {
 }
 
-void Minimap::ConvertPos(bVector2 &out, bVector2 &in, TrackInfo *track) {
-    out.x = (in.x - *reinterpret_cast<float *>(reinterpret_cast<char *>(track) + 0xAC)) /
+void Minimap::ConvertPos(bVector2 &worldPos, bVector2 &minimapPos, TrackInfo *track) {
+    minimapPos.x = (worldPos.x - *reinterpret_cast<float *>(reinterpret_cast<char *>(track) + 0xAC)) /
             *reinterpret_cast<float *>(reinterpret_cast<char *>(track) + 0xB4);
-    out.y = (*reinterpret_cast<float *>(reinterpret_cast<char *>(track) + 0xB0) - in.y) /
+    minimapPos.y = (*reinterpret_cast<float *>(reinterpret_cast<char *>(track) + 0xB0) - worldPos.y) /
             *reinterpret_cast<float *>(reinterpret_cast<char *>(track) + 0xB4) + 1.0f;
 }
 

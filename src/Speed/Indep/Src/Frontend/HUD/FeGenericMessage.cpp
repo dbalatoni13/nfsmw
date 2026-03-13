@@ -8,9 +8,17 @@ extern void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned 
 extern char *bStrCpy(char *dst, const char *src);
 
 GenericMessage::GenericMessage(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0) //
+    : HudElement(pkg_name, 0x01000000ULL) //
     , IGenericMessage(pOutter)
 {
+    mPriority = GenericMessage_Priority_None;
+    mNumFramesPlayed = 0;
+    mFengHash = 0;
+    mPlayOneFrame = false;
+    bStrCpy(mStringBuffer, "");
+    mpMessageFirstLine = RegisterGroup(0x32a7a521);
+    mpIcon = RegisterObject(0x6dd754ec);
+    RegisterObject(0xcaec9d04);
 }
 
 void GenericMessage::Update(IPlayer *player) {

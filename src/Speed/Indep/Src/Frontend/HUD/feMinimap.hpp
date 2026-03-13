@@ -32,7 +32,7 @@ class Minimap : public HudElement {
     void Update(IPlayer *player) override;
     void SetupMinimap(IPlayer *player);
     void RefreshMapItems();
-    void ConvertPos(bVector2 &out, bVector2 &in, TrackInfo *track);
+    static void ConvertPos(bVector2 &worldPos, bVector2 &minimapPos, TrackInfo *track);
     void UpdateTrackMapArt();
     void UpdateElementArt(bVector2 *pos, bVector2 *dir, FEObject *element, bool visible);
     void UpdateCopElements(IVehicle *vehicle);

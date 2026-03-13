@@ -15,7 +15,7 @@ class FERefList {
 
     inline bool IsReference() const { return bIsReference; }
     inline FERefList* GetRefSource() { return pRef; }
-    inline FEMinNode* GetHead() const { return bIsReference ? pRef->GetHead() : head; }
+    FEMinNode* GetHead() const;
     inline FEMinNode* GetTail() const { return bIsReference ? pRef->GetTail() : tail; }
     inline bool IsListEmpty() const { return GetHead() == nullptr; }
 
@@ -27,6 +27,7 @@ class FERefList {
     FEMinNode* RemHead();
     FEMinNode* RemTail();
     FEMinNode* FindNode(unsigned long ordinalnumber) const;
+    void Purge();
     unsigned long GetNumElements();
 
   private:

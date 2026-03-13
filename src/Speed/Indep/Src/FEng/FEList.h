@@ -5,6 +5,8 @@
 
 // total size: 0xC
 struct FEMinNode {
+    friend class FERefList;
+
 protected:
     FEMinNode* next; // offset 0x0, size 0x4
     FEMinNode* prev; // offset 0x4, size 0x4
