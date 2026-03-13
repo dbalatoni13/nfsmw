@@ -525,16 +525,14 @@ int ServiceResourceLoading() {
 
     while (NumDelayedResourceCallbacks != 0) {
         ProfileNode profile_node("TODO2", 0);
-        // TODO registers instead of stack
-        DelayedResourceCallback drc = DelayedResourceCallbacks[0];
-        // drc.pCallback = DelayedResourceCallbacks[0].pCallback;
-        // drc.Param = DelayedResourceCallbacks[0].Param;
+        void (*pCallback)(void *) = DelayedResourceCallbacks[0].pCallback;
+        void *callbackParam = DelayedResourceCallbacks[0].Param;
         if (NumDelayedResourceCallbacks > 1) {
             bOverlappedMemCpy(&DelayedResourceCallbacks[0], &DelayedResourceCallbacks[1],
                               NumDelayedResourceCallbacks * sizeof(DelayedResourceCallback));
         }
         NumDelayedResourceCallbacks--;
-        drc.pCallback(drc.Param);
+        pCallback(callbackParam);
     }
     ServiceQueuedFiles();
     if (NumResourcesBeingLoaded != 0) {
