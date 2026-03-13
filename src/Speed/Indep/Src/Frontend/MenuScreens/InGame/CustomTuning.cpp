@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/CustomTuning.hpp"
 
+#include "Speed/Indep/Src/Generated/Events/ETuneVehicle.hpp"
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
 
@@ -10,6 +11,7 @@ extern void FEngGetSize(FEObject *, float &, float &);
 extern void FEngGetTopLeft(FEObject *, float &, float &);
 extern void FEngSetCurrentButton(const char *, unsigned int);
 extern void FEngSetLanguageHash(FEString *, unsigned int);
+extern void FEngSetLanguageHash(const char *, unsigned int, unsigned int);
 extern void FEngSetScript(FEObject *, unsigned int, bool);
 extern int bSNPrintf(char *, int, const char *, ...);
 
@@ -17,6 +19,7 @@ extern const char lbl_803E5088[];
 extern const char lbl_803E89B8[];
 extern const char lbl_803E89C4[];
 extern const char lbl_803E89CC[];
+extern const char lbl_803E89FC[];
 extern const char lbl_803E8A18[];
 extern const float lbl_803E89B4;
 extern const float lbl_803E89C0;
@@ -138,6 +141,67 @@ void TuningSlider::SetSliderValues(float min, float max, float inc, float cur) {
     Current = cur;
     Negative.InitValues(min, middle, lbl_803E89DC, middle + min - cur, lbl_803E89E0);
     Positive.InitValues((Max + Min) * lbl_803E89D8, Max, lbl_803E89DC, Current, lbl_803E89E4);
+}
+
+void CustomTuningScreen::ScrollTypes(eScrollDir dir) {
+    if (HelpVisible) {
+        return;
+    }
+
+    int next_type = CurrentTuningType;
+
+    if (dir == eSD_NEXT) {
+        next_type++;
+        if (next_type > 2) {
+            next_type = 0;
+        }
+    } else if (dir == eSD_PREV) {
+        next_type--;
+        if (next_type < 0) {
+            next_type = 2;
+        }
+    }
+
+    if (next_type != CurrentTuningType) {
+        CurrentTuningType = next_type;
+    }
+}
+
+void CustomTuningScreen::DrawSettingName(unsigned int tuning_type) {
+    switch (tuning_type) {
+    case 0:
+        FEngSetLanguageHash(GetPackageName(), 0x05CDDED4, 0x40230063);
+        break;
+    case 1:
+        FEngSetLanguageHash(GetPackageName(), 0x05CDDED4, 0x40230064);
+        break;
+    case 2:
+        FEngSetLanguageHash(GetPackageName(), 0x05CDDED4, 0x40230065);
+        break;
+    }
+}
+
+void CustomTuningScreen::StoreSettings() {
+    for (int tuning = 0; tuning < Physics::NUM_CUSTOM_TUNINGS; tuning++) {
+        for (int path = 0; path < Physics::Tunings::MAX_TUNINGS; path++) {
+            TuningRecord->Tunings[tuning].Value[path] = TempTuningRecord.Tunings[tuning].Value[path];
+        }
+    }
+
+    TuningRecord->ActiveTuning = static_cast< Physics::eCustomTuningType >(CurrentTuningType);
+    new ETuneVehicle(0, reinterpret_cast< const Tunings * >(&TuningRecord->Tunings[TuningRecord->ActiveTuning]));
+}
+
+bool CustomTuningScreen::SettingsDidNotChange() {
+    for (int tuning = 0; tuning < Physics::NUM_CUSTOM_TUNINGS; tuning++) {
+        for (int path = 0; path < Physics::Tunings::MAX_TUNINGS; path++) {
+            if (TuningRecord->Tunings[tuning].Value[path] != TempTuningRecord.Tunings[tuning].Value[path]) {
+                return false;
+            }
+        }
+    }
+
+    return CurrentTuningType == TuningRecord->ActiveTuning;
 }
 
 bool CustomTuningScreen::IsTuningAvailable(FEPlayerCarDB *stable, FECarRecord *record, Physics::Tunings::Path path) {
