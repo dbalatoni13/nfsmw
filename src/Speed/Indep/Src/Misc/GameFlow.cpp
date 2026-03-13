@@ -71,7 +71,7 @@ void CleanupExpandedSlotPools__15SlotPoolManager(SlotPoolManager *);
 
 extern TrackPathManager TheTrackPathManager;
 extern Scheduler *_9Scheduler_fgScheduler;
-extern Timer _RealTimer;
+extern Timer RealTimer;
 extern void *InGameMemoryFile;
 extern VMFile *pFrontEndVirtualMemBundle;
 extern const char *LoadingControllerScreenPackageName;
@@ -999,14 +999,14 @@ void FinishedGameLoading() {
     UnloadMemoryFile(InGameMemoryFile);
     InGameMemoryFile = nullptr;
     DefragmentPool__9CarLoader(&TheCarLoader);
-    Timer t = _RealTimer;
+    Timer t = RealTimer;
     Synchronize__9SchedulerG5Timer(_9Scheduler_fgScheduler, &t);
     const char *loadingPackage = GetLoadingScreenPackageName();
     if (cFEng::mInstance->IsPackageInControl(LoadingControllerScreenPackageName) ||
         cFEng::mInstance->IsPackageInControl(loadingPackage)) {
         GameFlowClearFEngLoadingScreen();
     }
-    TheDemoDiscManager.StartPlayTime = _RealTimer;
+    TheDemoDiscManager.StartPlayTime = RealTimer;
     TheDemoDiscManager.SuspendedPlayTime.ResetLow();
     int **table = __Q33UTL11Collectionst8Listable2Z4IHudi2__mTable;
     for (int *p = *table; p != *(table + iRam80481afc); p++) {
