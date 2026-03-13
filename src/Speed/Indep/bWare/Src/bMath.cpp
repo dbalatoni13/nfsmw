@@ -331,8 +331,7 @@ unsigned short bASin(float x) {
 
         int table_index = (fix_x - (table_top - table_spacing)) >> (0xbU - table_number);
         int entry = (table_number * 0x10 + table_index) * 8;
-        double table_value = static_cast<double>(
-            static_cast<float>(static_cast<float>(table_top - table_spacing + table_index * (table_spacing >> 4)) * 1.5258789e-05f));
+        float table_value = static_cast<float>(table_top - table_spacing + table_index * (table_spacing >> 4)) * 1.5258789e-05f;
         a = (static_cast<unsigned int>(*reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(bASinTable) + entry)) +
              static_cast<int>(static_cast<float>(x - table_value) * *reinterpret_cast<float *>(reinterpret_cast<char *>(bASinTable) + entry + 4) * 65536.0f)) &
             0xffff;
