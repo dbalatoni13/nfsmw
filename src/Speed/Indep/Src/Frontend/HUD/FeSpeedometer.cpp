@@ -29,10 +29,10 @@ Speedometer::Speedometer(UTL::COM::Object *pOutter, const char *pkg_name, int pl
     , mSpeed(lbl_803E4E7C) //
 {
     RegisterGroup(FEHashUpper(lbl_803E4E24));
-    mpSpeedDigit1 = static_cast< FEString * >(FEngFindObject(pPackageName, FEHashUpper(lbl_803E4E38)));
-    mpSpeedDigit2 = static_cast< FEString * >(FEngFindObject(pPackageName, FEHashUpper(lbl_803E4E48)));
-    mpSpeedDigit3 = static_cast< FEString * >(FEngFindObject(pPackageName, FEHashUpper(lbl_803E4E58)));
-    SpeedUnits = static_cast< FEString * >(FEngFindObject(pPackageName, FEHashUpper(lbl_803E4E68)));
+    mpSpeedDigit1 = static_cast< FEString * >(FEngFindObject(pkg_name, FEHashUpper(lbl_803E4E38)));
+    mpSpeedDigit2 = static_cast< FEString * >(FEngFindObject(pkg_name, FEHashUpper(lbl_803E4E48)));
+    mpSpeedDigit3 = static_cast< FEString * >(FEngFindObject(pkg_name, FEHashUpper(lbl_803E4E58)));
+    SpeedUnits = static_cast< FEString * >(FEngFindObject(pkg_name, FEHashUpper(lbl_803E4E68)));
 }
 
 void Speedometer::Update(IPlayer *player) {

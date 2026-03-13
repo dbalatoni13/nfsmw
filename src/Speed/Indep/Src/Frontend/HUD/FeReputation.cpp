@@ -18,8 +18,8 @@ Reputation::Reputation(UTL::COM::Object *pOutter, const char *pkg_name, int play
 {
     mDataReputationGrp = RegisterGroup(0xEA903012);
     FEngSetScript(mDataReputationGrp, 0x16A259, true);
-    mDataReputationCareer = FEngFindString(pPackageName, 0x9B0AC8CA);
-    mDataTitle = FEngFindString(pPackageName, 0x41A55ECF);
+    mDataReputationCareer = FEngFindString(pkg_name, 0x9B0AC8CA);
+    mDataTitle = FEngFindString(pkg_name, 0x41A55ECF);
 }
 
 void Reputation::Update(IPlayer *player) {

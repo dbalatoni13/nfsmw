@@ -43,11 +43,11 @@ Tachometer::Tachometer(UTL::COM::Object *pOutter, const char *pkg_name, int play
     , mNeedleColourSetToPerfectLaunch(false) //
 {
     RegisterGroup(FEHashUpper(lbl_803E4EB8));
-    TachNeedle = FEngFindObject(pPackageName, FEHashUpper(lbl_803E4ED0));
-    pRPM_bar = FEngFindObject(pPackageName, FEHashUpper(lbl_803E4EDC));
-    pGearString = static_cast< FEString * >(FEngFindObject(pPackageName, FEHashUpper(lbl_803E4EEC)));
-    pShiftIndicator = FEngFindObject(pPackageName, FEHashUpper(lbl_803E4EF8));
-    pRedline = FEngFindObject(pPackageName, FEHashUpper(lbl_803E4F04));
+    TachNeedle = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4ED0));
+    pRPM_bar = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4EDC));
+    pGearString = static_cast< FEString * >(FEngFindObject(pkg_name, FEHashUpper(lbl_803E4EEC)));
+    pShiftIndicator = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4EF8));
+    pRedline = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4F04));
     if (TachNeedle != nullptr) {
         float x, y;
         FEngGetSize(TachNeedle, x, y);
@@ -59,8 +59,6 @@ void Tachometer::Update(IPlayer *player) {}
 
 char Tachometer::GetLetterForGear(GearID gear) {
     switch (gear) {
-    case G_NEUTRAL:
-        return 'N';
     case G_REVERSE:
         return 'R';
     case G_FIRST:
@@ -79,6 +77,7 @@ char Tachometer::GetLetterForGear(GearID gear) {
         return '7';
     case G_EIGHTH:
         return '8';
+    default:
+        return 'N';
     }
-    return '?';
 }

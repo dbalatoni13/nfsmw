@@ -23,9 +23,9 @@ CostToState::CostToState(UTL::COM::Object *pOutter, const char *pkg_name, int pl
     , mNumFramesLeftToShow(0) //
 {
     RegisterGroup(FEHashUpper(lbl_803E48B4));
-    FEngSetScript(pPackageName, FEHashUpper(lbl_803E48B4), FEHashUpper(lbl_803E48C0), true);
-    mDataCostToState = FEngFindString(pPackageName, 0x3FF5F33C);
-    mDataTitle = FEngFindString(pPackageName, 0x64247241);
+    FEngSetScript(pkg_name, FEHashUpper(lbl_803E48B4), FEHashUpper(lbl_803E48C0), true);
+    mDataCostToState = FEngFindString(pkg_name, 0x3FF5F33C);
+    mDataTitle = FEngFindString(pkg_name, 0x64247241);
 }
 
 void CostToState::Update(IPlayer *player) {

@@ -29,8 +29,8 @@ HeatMeter::HeatMeter(UTL::COM::Object *pOutter, const char *pkg_name, int player
     , mVehicleHeat(lbl_803E4888) //
 {
     RegisterGroup(0xC46A80A9);
-    mpDataHeatMultiplier = FEngFindObject(pPackageName, 0x7F91DA62);
-    mpDataHeatMeterIcon = FEngFindObject(pPackageName, 0x6F85ED55);
+    mpDataHeatMultiplier = FEngFindObject(pkg_name, 0x7F91DA62);
+    mpDataHeatMeterIcon = FEngFindObject(pkg_name, 0x6F85ED55);
     mpHeatMeterBar = RegisterMultiImage(0x862824C9);
     mpHeatMeterBar2 = RegisterMultiImage(0x4B2CBE1B);
 }

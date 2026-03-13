@@ -28,17 +28,27 @@ void WrongWIndi::Update(IPlayer *player) {
         } else {
             FEngSetInvisible(mpWrongWayImage);
         }
-        mTimeBeforeDisplaying.SetTime(lbl_803E4F28);
+        mTimeBeforeDisplaying = WorldTimer;
     } else {
         if (mTimeBeforeDisplaying > Timer(0)) {
             mTimeBeforeDisplaying -= dt;
         } else {
             FEngSetVisible(mpWrongWayImage);
-            mTimeBeforeClosing.SetTime(lbl_803E4F28);
+            mTimeBeforeClosing = WorldTimer;
         }
     }
 }
 
 void WrongWIndi::SetWrongWay(bool wrong_way) {
+    if (mIsWrongWay == wrong_way) {
+        return;
+    }
+    if (wrong_way) {
+        mTimeBeforeClosing = Timer(0);
+        mTimeBeforeDisplaying = WorldTimer;
+    } else {
+        mTimeBeforeDisplaying = Timer(0);
+        mTimeBeforeClosing = WorldTimer;
+    }
     mIsWrongWay = wrong_way;
 }
