@@ -194,7 +194,9 @@ inline float bCos(float angle) {
     return bSin(angle + bDegToRad(90.0f));
 }
 
-inline float bRadToDeg(float radians) {}
+inline float bRadToDeg(float radians) {
+    return radians * 57.29578f;
+}
 
 inline float bAngToRad(short angle) {}
 

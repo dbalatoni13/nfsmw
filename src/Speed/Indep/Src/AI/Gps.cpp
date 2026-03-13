@@ -49,11 +49,9 @@ Gps::~Gps() {
 }
 
 bool Gps::OnTask(HSIMTASK htask, float dT) {
-    bool matched = htask == mTask;
-    if (matched) {
-        Update(dT);
-    }
-    return matched;
+    if (htask != mTask) return false;
+    Update(dT);
+    return true;
 }
 
 bool Gps::Engage(const UMath::Vector3 &target, float maxDeviation) {
