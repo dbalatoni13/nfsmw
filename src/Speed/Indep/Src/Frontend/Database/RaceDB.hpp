@@ -14,6 +14,8 @@ enum ePursuitDetailTypes {
 
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
+class IPursuit;
+
 // total size: 0x8
 struct TrackHighScore {
     short TrackNumber; // offset 0x0, size 0x2
@@ -30,6 +32,8 @@ struct RaceTypeHighScores {
 
 // total size: 0x38
 struct TopEvadedPursuitDetail {
+    void GeneratePursuitID();
+
     char PursuitName[12];     // offset 0x0, size 0xC
     unsigned int CarFEKey;    // offset 0xC, size 0x4
     int Bounty;               // offset 0x10, size 0x4
@@ -47,6 +51,7 @@ struct TopEvadedPursuitDetail {
 // total size: 0x20
 struct CareerPursuitScores {
     int GetValue(ePursuitDetailTypes type) const;
+    void IncValue(ePursuitDetailTypes type, int amount);
 
     int Value[8]; // offset 0x0, size 0x20
 };
@@ -81,6 +86,7 @@ class HighScoresDatabase {
     unsigned int GetPreviouslyPursuedCarNameHash() const;
     void GetCareerCST(RAP_CTS_ITEM item, int &quantity, unsigned int &value) const;
     void CommitHighScoresPauseQuit();
+    void CommitPursuitInfo(IPursuit *iPursuit, unsigned int car_FEKey, int bounty, unsigned int num_infractions);
     TrackHighScore TrackHighScoreTable[320];          // offset 0x0, size 0xA00
     float TotalOdometer;                              // offset 0xA00, size 0x4
     int TotalStarts;                                  // offset 0xA04, size 0x4
