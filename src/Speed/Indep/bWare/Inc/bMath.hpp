@@ -46,7 +46,11 @@ inline float bTan(unsigned short angle) {
 inline float bSqrt(float x) {
     const float bSqrtEPS = 5e-11f;
 
+#ifdef EA_PLATFORM_GAMECUBE
     float y0;
+#else
+    float y0 = 0.0f;
+#endif
     float y1;
     float t0;
     float t1;

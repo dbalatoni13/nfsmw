@@ -31,6 +31,13 @@ def import_d_file(in_file: str) -> str:
     with open(in_file) as file:
         for idx, line in enumerate(file):
             if idx == 0:
+                targets_and_deps = line[:-1] if line.endswith("\n") else line
+                targets, sep, deps = targets_and_deps.rpartition(":")
+                if sep:
+                    target_parts = targets.split()
+                    if len(target_parts) > 1:
+                        targets_and_deps = target_parts[-1] + sep + deps
+                        line = targets_and_deps + ("\n" if line.endswith("\n") else "")
                 if line.endswith(" \\\n"):
                     out_text += line[:-3].replace("\\", "/") + " \\\n"
                 else:
@@ -42,6 +49,14 @@ def import_d_file(in_file: str) -> str:
                     path = line.lstrip()[:-3]
                 else:
                     path = line.strip()
+                if not path:
+                    out_text += "\n"
+                    continue
+                if "/" in path and "\\" not in path and not (
+                    len(path) > 1 and path[1] == ":"
+                ):
+                    out_text += "\t" + path + suffix + "\n"
+                    continue
                 # lowercase drive letter
                 path = path[0].lower() + path[1:]
                 if path[0] == "z":
