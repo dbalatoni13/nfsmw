@@ -420,16 +420,64 @@ void CareerSettings::Default() {
     SMSSortOrder = 0;
 }
 
-void CareerSettings::GenerateCaseFileName() {
-    const int SCOTTS_RAND_CASE_FILE_NUMBER_RANGE = 0x19B3;
-    const int SCOTTS_RAND_CASE_FILE_NUMBER_START = 0x42D;
-    unsigned int num = bRandom(SCOTTS_RAND_CASE_FILE_NUMBER_RANGE) + SCOTTS_RAND_CASE_FILE_NUMBER_START;
-    const char *profile_name = FEDatabase->GetUserProfile(0)->GetProfileName();
-    bSNPrintf(CaseFileName, 13, "%d%s", num, profile_name);
-    bToUpper(CaseFileName);
-}
-
 extern bool SkipDDayRaces;
+extern bool SkipCareerIntro;
+
+void CareerSettings::StartNewCareer(bool bEnterGameplay) {
+    Default();
+    CurrentCar = FEDatabase->GetDefaultCar();
+    GenerateCaseFileName();
+    SpecialFlags |= 1;
+
+    if (SkipCareerIntro && SkipDDayRaces) {
+        CurrentBin = 0xF;
+        GRaceDatabase::Get().SimulateDDayComplete();
+        FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
+        FECarRecord *rec = stable->CreateNewCareerCar(0x2CF385B2);
+        CurrentCar = rec->Handle;
+        rec = stable->CreateNewCareerCar(0x03A94520);
+        CurrentCar = rec->Handle;
+    }
+
+    TryAwardDemoMarker();
+
+    if (!bEnterGameplay) {
+        return;
+    }
+
+    FEDatabase->ResetGameMode();
+    FEDatabase->SetGameMode(eFE_GAME_MODE_CAREER);
+
+    if (SkipDDayRaces) {
+        FEManager::Get()->SetGarageType(GARAGETYPE_CAREER_SAFEHOUSE);
+        FEDatabase->ClearGameMode(eFE_GAME_MODE_CAREER_MANAGER);
+        if (SkipCareerIntro) {
+            CurrentBin = 0xF;
+        }
+    } else {
+        unsigned int hash = FEHashUpper("M3GTRCAREERSTART");
+        FEDatabase->GetCareerSettings()->SetCurrentCar(hash);
+        FEDatabase->GetQuickRaceSettings(GRace::kRaceType_NumTypes)->SetSelectedCar(hash, 0);
+        gMemcardSetup.mPreviousCommand = 0;
+        gMemcardSetup.mPreviousPrompt = 0;
+        gMemcardSetup.mOp = 0;
+        gMemcardSetup.mMemScreen = nullptr;
+        gMemcardSetup.mToScreen = nullptr;
+        gMemcardSetup.mFromScreen = nullptr;
+        gMemcardSetup.mTermFunc = nullptr;
+        gMemcardSetup.mTermFuncParam = nullptr;
+        gMemcardSetup.mLastMessage = 0;
+        gMemcardSetup.mSuccessMsg = 0;
+        gMemcardSetup.mFailedMsg = 0;
+        gMemcardSetup.mInBootFlow = false;
+        const char *firstDDayRace = GRaceDatabase::Get().GetDDayStartRace();
+        GRaceParameters *parms = GRaceDatabase::Get().GetRaceFromName(firstDDayRace);
+        GRaceCustom *race = GRaceDatabase::Get().AllocCustomRace(parms);
+        GRaceDatabase::Get().SetStartupRace(race, kRaceContext_Career);
+        GRaceDatabase::Get().FreeCustomRace(race);
+        RaceStarter::StartCareerFreeRoam();
+    }
+}
 
 void CareerSettings::ResumeCareer() {
     bool bDDayCompleted = false;
@@ -481,6 +529,15 @@ void CareerSettings::ResumeCareer() {
         FEDatabase->ClearGameMode(eFE_GAME_MODE_CAREER_MANAGER);
     }
     FEDatabase->SetGameMode(eFE_GAME_MODE_CAREER);
+}
+
+void CareerSettings::GenerateCaseFileName() {
+    const int SCOTTS_RAND_CASE_FILE_NUMBER_RANGE = 0x19B3;
+    const int SCOTTS_RAND_CASE_FILE_NUMBER_START = 0x42D;
+    unsigned int num = bRandom(SCOTTS_RAND_CASE_FILE_NUMBER_RANGE) + SCOTTS_RAND_CASE_FILE_NUMBER_START;
+    const char *profile_name = FEDatabase->GetUserProfile(0)->GetProfileName();
+    bSNPrintf(CaseFileName, 13, "%d%s", num, profile_name);
+    bToUpper(CaseFileName);
 }
 
 extern int FEngSNPrintf(char *, int, const char *, ...);

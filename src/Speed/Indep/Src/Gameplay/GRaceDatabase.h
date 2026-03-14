@@ -149,6 +149,10 @@ class GRaceDatabase {
         return CheckRaceScoreFlags(eventHash, kCompleted_ContextCareer);
     }
 
+    const char *GetDDayStartRace() const {
+        return sDDayRaces[0];
+    }
+
     const char *GetDDayEndRace() const {
         return sDDayRaces[7];
     }

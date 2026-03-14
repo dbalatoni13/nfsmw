@@ -300,7 +300,7 @@ class CareerSettings {
     char *SaveGameplayData(void *save_to, void *maxptr);
     char *LoadRaceData(void *load_from, void *maxptr);
     char *LoadGameplayData(void *load_from, void *maxptr);
-    void SetCurrentCar(unsigned int car);
+    void SetCurrentCar(unsigned int car) { CurrentCar = car; }
     bool HasBeenAwardedDemoMarker();
     void SetAwardedDemoMarker();
 
