@@ -20,6 +20,7 @@ import sys
 from typing import Any, Dict, List, Optional, Tuple
 from _common import (
     ROOT_DIR,
+    RELOC_DIFF_CHOICES,
     ToolError,
     build_objdiff_symbol_rows,
     fail,
@@ -37,6 +38,7 @@ def run_objdiff(
         OBJDIFF_CLI,
         unit,
         base_obj=base_obj,
+        reloc_diffs=reloc_diffs,
         root_dir=root_dir,
     )
 

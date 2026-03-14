@@ -14,6 +14,9 @@
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Misc/QueuedFile.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/World/WorldConn.h"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/bWare/Inc/bDebug.hpp"
 
 enum SpeechModuleIndex {
     NISSFX_MODULE = 0,
@@ -53,6 +56,15 @@ struct Manager {
 } // namespace Speech
 
 extern Speech::Cache gSpeechCache;
+
+namespace Sound {
+enum Context {
+    kRaceContext_QuickRace = GRace::kRaceContext_QuickRace,
+    kRaceContext_TimeTrial = GRace::kRaceContext_TimeTrial,
+    kRaceContext_Career = GRace::kRaceContext_Career,
+    kRaceContext_Count = GRace::kRaceContext_Count,
+};
+}
 
 #include "Speed/Indep/Src/EAXSound/EAXCommon.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXFrontEnd.hpp"
@@ -194,7 +206,7 @@ struct EAXAemsManager : public AudioMemBase {
 struct CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<CarSoundConn, 10> {
     bool mConnected; // offset 0x14, size 0x1
     EAX_CarState *mState; // offset 0x18, size 0x4
-    char _pad_target[0x10]; // Reference mTarget
+    WorldConn::Reference mTarget; // offset 0x1C, size 0x10
 
     CarSoundConn(const Sim::ConnectionData &data);
     ~CarSoundConn() override;
@@ -206,11 +218,26 @@ struct CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<
     static void SetAssetsLoaded(CarSoundConn *conn);
 };
 
-struct EAX_HeliState;
+struct EAX_HeliState : public UTL::Collections::Listable<EAX_HeliState, 10> {
+    bMatrix4 mMatrix; // offset 0x4
+    bVector3 mVel0; // offset 0x44
+    bVector3 mVel1; // offset 0x54
+    bVector3 mAccel; // offset 0x64
+    float mFWSpeed; // offset 0x74
+    int mMovementMode; // offset 0x78
+    int mPlayerZone; // offset 0x7C
+    Attrib::Instance mAttributes; // offset 0x80
+    Sound::Context mContext; // offset 0x94
+    bool mSimUpdating; // offset 0x98
+    char _pad_sim[3];
+    const unsigned int mWorldID; // offset 0x9C
+
+    EAX_HeliState(const Attrib::Collection *atr, unsigned int wuid);
+};
 
 struct HeliSoundConn : public Sim::Connection, public UTL::Collections::Listable<HeliSoundConn, 10> {
     EAX_HeliState *mState; // offset 0x18, size 0x4
-    char _pad_target[0x10]; // Reference mTarget
+    WorldConn::Reference mTarget; // offset 0x18, size 0x10
 
     HeliSoundConn(const Sim::ConnectionData &data);
     ~HeliSoundConn() override;
@@ -243,14 +270,43 @@ struct NFSMixMaster {
     void CreateMainMainMap(eRaceMixType type);
     void DestroyMainMainMap();
     void InitMixMap(int mode);
+    void ProcessMixMap(float dt, int cam_state);
 };
 
-struct EAX_CarState {
-    char _pad_context[0x210];
-    GRace::Context mContext;
-    char _pad_assets[0x04];
+struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
+    char _pad_context[0x20C];
+    Sound::Context mContext;
+    bool mSimUpdating; // offset 0x214
+    char _pad_sim[3];
     bool mAssetsLoaded; // offset 0x218
+    char _pad_assets[3];
+    unsigned int mWorldID; // offset 0x21C
+    HSIMABLE__ *mHandle; // offset 0x220
+    unsigned int mTrailerID; // offset 0x224
+    float mOversteer; // offset 0x228
+    float mUndersteer; // offset 0x22C
+    float mSlipAngle; // offset 0x230
+    float mVisualRPM; // offset 0x234
+    float mTimeSinceSeen; // offset 0x238
+    int mNISCarID; // offset 0x23C
+    float mDesiredSpeed; // offset 0x240
+    int mControlSource; // offset 0x244
+
+    EAX_CarState(const Attrib::Collection *atr, Sound::Context context, unsigned int wuid, HSIMABLE__ *handle);
 };
+
+template <>
+UTL::Collections::Listable<CarSoundConn, 10>::List UTL::Collections::Listable<CarSoundConn, 10>::_mTable =
+    UTL::Collections::Listable<CarSoundConn, 10>::List();
+template <>
+UTL::Collections::Listable<HeliSoundConn, 10>::List UTL::Collections::Listable<HeliSoundConn, 10>::_mTable =
+    UTL::Collections::Listable<HeliSoundConn, 10>::List();
+template <>
+UTL::Collections::Listable<EAX_CarState, 10>::List UTL::Collections::Listable<EAX_CarState, 10>::_mTable =
+    UTL::Collections::Listable<EAX_CarState, 10>::List();
+template <>
+UTL::Collections::Listable<EAX_HeliState, 10>::List UTL::Collections::Listable<EAX_HeliState, 10>::_mTable =
+    UTL::Collections::Listable<EAX_HeliState, 10>::List();
 
 extern EAXAemsManager gAEMSMgr;
 extern unsigned int SoundRandomSeed;
@@ -282,6 +338,18 @@ extern int gb_DORESTART_RACE;
 extern int gb_Is321;
 extern int SkipFE;
 extern int SkipFELanguage;
+extern int DisableSoundUpdate;
+extern bool gbAudioInterruptsWorldDataRead;
+extern bool gbWorldDataBlocksAudioRead;
+extern bool bReadCallbackToggle;
+extern bool bStreamBlockState;
+extern bool bAudioInterrupt;
+extern bool bStreamReadTiming;
+extern unsigned int uStreamBlockTicks;
+extern unsigned int uStreamReadTicks;
+extern unsigned int uAudioInterruptTicks;
+extern int GameFlowSndState[];
+extern void SNDSYS_service();
 extern int GetCurrentLanguage();
 void RegisterStates();
 void RegisterSFX();
@@ -292,6 +360,11 @@ int bSPrintf(char *destString, const char *fmt, ...);
 int bStrICmp(const char *s1, const char *s2);
 void SoundPause(bool on, eSNDPAUSE_REASON reason);
 void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller);
+
+namespace SndCamera {
+void UpdateCameras();
+extern int m_CurCamState[2];
+}
 
 bool g_EAXIsPaused() {
     return (g_ActiveCtlStates & 0x3483b) != 0;
@@ -915,7 +988,194 @@ void EAXSound::PlayFEMusic(int nIndex) {
     msg.Send(UCrc32("Pathfinder5"));
 }
 
-// Update goes here when implemented
+EAX_HeliState::EAX_HeliState(const Attrib::Collection *atr, unsigned int wuid)
+    : mFWSpeed(0.0f) //
+    , mMovementMode(1) //
+    , mPlayerZone(0) //
+    , mAttributes(atr, 0, nullptr) //
+    , mContext(Sound::kRaceContext_QuickRace) //
+    , mSimUpdating(true) //
+    , mWorldID(wuid) {
+    mVel0 = bVector3(0.0f, 0.0f, 0.0f);
+    mVel1 = mVel0;
+    mAccel = bVector3(0.0f, 0.0f, 0.0f);
+    PSMTX44Identity((Mtx44)&mMatrix);
+}
+
+EAX_CarState::EAX_CarState(const Attrib::Collection *atr, Sound::Context context, unsigned int wuid, HSIMABLE__ *handle)
+    : mContext(context) //
+    , mSimUpdating(true) //
+    , mAssetsLoaded(false) //
+    , mWorldID(wuid) //
+    , mHandle(handle) //
+    , mTrailerID(0) //
+    , mOversteer(0.0f) //
+    , mUndersteer(0.0f) //
+    , mSlipAngle(0.0f) //
+    , mVisualRPM(0.0f) //
+    , mTimeSinceSeen(0.0f) //
+    , mNISCarID(-1) //
+    , mDesiredSpeed(0.0f) //
+    , mControlSource(0) {
+    (void)atr;
+
+    bMemSet(_pad_context, '\0', sizeof(_pad_context));
+    PSMTX44Identity((Mtx44)(_pad_context + 0x14));
+}
+
+template class UTL::Collections::Listable<EAX_CarState, 10>::List;
+template class UTL::Vector<EAX_HeliState *, 16>;
+
+void EAXSound::Update(float t) {
+    if (!IsSoundEnabled || t < 0.0f) {
+        return;
+    }
+
+    if (gnHasStartLoadFEBeenProcessed != 0) {
+        gnHasStartLoadFEBeenProcessed--;
+        if (gnHasStartLoadFEBeenProcessed < 0) {
+            gnHasStartLoadFEBeenProcessed = 0;
+        }
+        return;
+    }
+
+    if (gbHasStartNewGamePlayBeenProcessed != 0) {
+        gbHasStartNewGamePlayBeenProcessed = 0;
+        return;
+    }
+
+    if (DisableSoundUpdate != 0) {
+        return;
+    }
+
+    if (!bReadCallbackToggle) {
+        if (!bStreamReadTiming) {
+            bStreamReadTiming = true;
+            unsigned int cur = bGetTicker();
+            bGetTickerDifference(uStreamReadTicks, cur);
+            uStreamReadTicks = cur;
+        }
+    } else if (bStreamReadTiming) {
+        unsigned int cur = bGetTicker();
+        bGetTickerDifference(uStreamReadTicks, cur);
+        uStreamReadTicks = cur;
+        bStreamReadTiming = false;
+    }
+
+    if (gbWorldDataBlocksAudioRead) {
+        if (!bStreamBlockState) {
+            bStreamBlockState = true;
+            uStreamBlockTicks = bGetTicker();
+        }
+    } else if (bStreamBlockState) {
+        unsigned int cur = bGetTicker();
+        bGetTickerDifference(uStreamBlockTicks, cur);
+        bStreamBlockState = false;
+    }
+
+    if (gbAudioInterruptsWorldDataRead) {
+        if (!bAudioInterrupt) {
+            uAudioInterruptTicks = bGetTicker();
+        }
+        bAudioInterrupt = true;
+    } else if (bAudioInterrupt) {
+        bGetTickerDifference(uAudioInterruptTicks);
+        bAudioInterrupt = false;
+    } else {
+        bAudioInterrupt = false;
+    }
+
+    if (gb_DORESTART_RACE == 0) {
+        if (gb_Is321 != 0) {
+            QueueNISButtonThrough(bStringHash("RESTART_FAKE"), -1);
+            if (g_pNISRevMgr != nullptr) {
+                g_pNISRevMgr->Start321Reving();
+            }
+            gb_Is321 = 0;
+        }
+
+        if (GameFlowSndState[13] != 0) {
+            Speech::Manager::Deduce();
+        }
+
+        gAEMSMgr.Update();
+        SndCamera::UpdateCameras();
+        if (m_pEAXSND8Wrapper != nullptr) {
+            m_pEAXSND8Wrapper->Update();
+        }
+        if (g_pNISRevMgr != nullptr) {
+            g_pNISRevMgr->Update(t);
+        }
+
+        if (m_pNFSMixMaster != nullptr && m_pNFSMixMaster->m_bMapReady) {
+            if (m_pSTICH_Playback != nullptr) {
+                m_pSTICH_Playback->Update(t);
+            }
+            Speech::Manager::Update(t);
+
+            if (m_pFESnd != nullptr) {
+                m_pFESnd->Update(nullptr);
+            }
+
+            SndBase::m_fRunningTime += t;
+            SndBase::m_fDeltaTime = t;
+            for (int n = 0; n < 13; n++) {
+                CSTATEMGR_Base *mgr = m_pStateMgr[n];
+                if (mgr != nullptr) {
+                    mgr->UpdateParams(g_EAXIsPaused() ? 0.0f : t);
+                }
+            }
+
+            m_pNFSMixMaster->ProcessMixMap(t, SndCamera::m_CurCamState[0]);
+
+            for (int n = 0; n < 13; n++) {
+                CSTATEMGR_Base *mgr = m_pStateMgr[n];
+                if (mgr != nullptr) {
+                    mgr->ProcessUpdate();
+                }
+            }
+
+            if (m_pCmnSnd != nullptr) {
+                m_pCmnSnd->Update(nullptr);
+            }
+        }
+
+        m_prevSndGameMode = m_eSndGameMode;
+        if (!AreResourceLoadsPending()) {
+            UTL::Collections::Listable<CarSoundConn, 10>::ForEach(CarSoundConn::SetAssetsLoaded);
+        }
+        SNDSYS_service();
+    } else {
+        if (m_pNFSMixMaster != nullptr) {
+            m_pNFSMixMaster->DestroyMainMainMap();
+        }
+        InitializeInGame();
+        if (m_pNFSMixMaster != nullptr) {
+            m_pNFSMixMaster->InitMixMap(0);
+        }
+
+        Speech::Module *module = Speech::Manager::GetSpeechModule(1);
+        if (module != nullptr) {
+            module = Speech::Manager::GetSpeechModule(1);
+            if (module != nullptr) {
+                module->ReleaseResource();
+            }
+        }
+
+        SFXObj_Pathfinder *ppf = static_cast<SFXObj_Pathfinder *>(GetSFXBase_Object(0x40010010));
+        if (ppf != nullptr) {
+            if (m_ePlayerMixMode == EAXS3D_TWO_PLAYER_MIX) {
+                ppf->m_Flags |= 2;
+            } else {
+                ppf->m_Flags &= ~2u;
+            }
+        }
+
+        bMemSet(GameFlowSndState, '\0', 0x3C);
+        gb_DORESTART_RACE = 0;
+        SetSoundControlState(false, SNDSTATE_PAUSE, "PauseMenu");
+    }
+}
 
 void EAXSound::CommitAssets() {
     CSTATEMGR_CarState::ResolveCarBanks();
@@ -1299,28 +1559,160 @@ void FESoundControl(bool bOn, const char *name) {
         return;
     }
 
+    unsigned int hash = Attrib::StringHash32(name);
+    Attrib::StringKey FengList[37] = {
+        "Pause_Main.fng",
+        "Pause_Options.fng",
+        "Pause_Controller.fng",
+        "InGamePhotoMaster.fng",
+        "EA_Trax.fng",
+        "FadeScreen.fng",
+        "SMS_Message.fng",
+        "BUSTED_OVERLAY.fng",
+        "SixDaysLater.fng",
+        "InGame_MC_Main_GC.fng",
+        "InGameAnyMovie.fng",
+        "Pause_Performance_Tuning.fng",
+        "InGame_MC_Main.fng",
+        "InGameDialog.fng",
+        "WS_InGameAnyMovie.fng",
+        "InGameAnyMovie.fng",
+        "InGameAnyTutorial.fng",
+        "FEAnyMovie.fng",
+        "WS_FEAnyMovie.fng",
+        "FEAnyTutorial.fng",
+        "InGameAnyTutorial.fng",
+        "LS_EALogo.fng",
+        "LS_EA_hidef.fng",
+        "LS_PSA.fng",
+        "MW_LS_IntroFMV.fng",
+        "MW_LS_AttractFMV.fng",
+        "WS_LS_EALogo.fng",
+        "WS_LS_EA_hidef.fng",
+        "WS_LS_PSA.fng",
+        "WS_LS_IntroFMV.fng",
+        "WS_MW_LS_AttractFMV.fng",
+        "PostRace_MilestoneRewards.fng",
+        "PostRace_Pursuit.fng",
+        "Game_StartRace",
+        "InGameMilestones.fng",
+        "InGameBounty.fng",
+        "InGameRaceSheet.fng",
+    };
+
+    bStringHash(name);
+    int index;
+    int iVar1 = 0;
+    do {
+        index = iVar1;
+        if (hash == static_cast<unsigned int>(FengList[index])) {
+            break;
+        }
+        int n = index + 1;
+        index = -1;
+        iVar1 = n;
+    } while (iVar1 < 37);
+
     eSndGameMode gameMode = static_cast<eSndGameMode>(*reinterpret_cast<int *>(reinterpret_cast<char *>(g_pEAXSound) + 0x84));
-    bool inGameMode = gameMode != SND_FRONTEND && gameMode != SND_LOADING_SCREEN;
-    if (!inGameMode) {
+    if (gameMode == SND_FRONTEND) {
+        if (index != 10 && index < 14) {
+            return;
+        }
+        SetSoundControlState(bOn, SNDSTATE_FMV, "name");
         return;
     }
 
-    const char *reason = nullptr;
-    if (bStrICmp(name, "Pause_Main.fng") == 0 || bStrICmp(name, "Pause_Options.fng") == 0) {
-        reason = "PauseMenu";
-    } else if (bStrICmp(name, "InGamePhotoMaster.fng") == 0) {
-        reason = "PhotoScreen";
-    } else if (bStrICmp(name, "Pause_Controller.fng") == 0 || bStrICmp(name, "EA_Trax.fng") == 0 ||
-               bStrICmp(name, "FadeScreen.fng") == 0) {
-        return;
-    } else if (bStrICmp(name, "SixDaysLater.fng") == 0) {
-        reason = "SixDaysLater";
+    if (index < 16) {
+        if (index < 14) {
+            if (index == 8) {
+                SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
+                SetSoundControlState(bOn, SNDSTATE_OFF, name);
+                return;
+            }
+
+            if (index < 9) {
+                if (index != 3) {
+                    if (index > 3) {
+                        return;
+                    }
+                    if (index < 0) {
+                        goto FE_UPSCREEN;
+                    }
+
+                    *reinterpret_cast<int *>(reinterpret_cast<char *>(g_pEAXSound) + 0x38) = static_cast<int>(bOn);
+                    SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
+                    return;
+                }
+            }
+
+            if (index == 11) {
+                *reinterpret_cast<int *>(reinterpret_cast<char *>(g_pEAXSound) + 0x38) = static_cast<int>(bOn);
+                SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
+                return;
+            }
+
+            if (index < 12) {
+                if (index != 9) {
+                    if (index != 10) {
+                        goto FE_UPSCREEN;
+                    }
+                    goto FMV_STATE;
+                }
+            } else if (index != 12) {
+                if (index == 13) {
+                    return;
+                }
+                goto FE_UPSCREEN;
+            }
+
+            if (*reinterpret_cast<int *>(reinterpret_cast<char *>(g_pEAXSound) + 0x38) != 0) {
+                return;
+            }
+            SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
+            return;
+        }
     } else {
-        SetSoundControlState(bOn, SNDSTATE_FE_UPSCREEN, "IG FE Screen");
-        return;
+        if (index > 30) {
+            if (index != 33) {
+                if (index < 33) {
+                    SetSoundControlState(bOn, SNDSTATE_FE_SMS_MESSAGE, name);
+                    return;
+                }
+
+                if (index < 37) {
+                    Speech::Module *module = Speech::Manager::GetSpeechModule(1);
+                    if (module != nullptr) {
+                        module = Speech::Manager::GetSpeechModule(1);
+                        if (module != nullptr) {
+                            module->ReleaseResource();
+                        }
+                    }
+                }
+                goto FE_UPSCREEN;
+            }
+            goto STOP_MUSIC;
+        }
+
+        if (index < 21 && (index > 19 || index < 17)) {
+            SetSoundControlState(bOn, SNDSTATE_FMV, name);
+            goto STOP_MUSIC;
+        }
     }
 
-    SetSoundControlState(bOn, SNDSTATE_PAUSE, reason);
+FMV_STATE:
+    if (bOn) {
+        SetSoundControlState(bOn, SNDSTATE_FMV, name);
+        return;
+    }
+    SetSoundControlState(false, SNDSTATE_FMV, name);
+    bOn = true;
+
+STOP_MUSIC:
+    SetSoundControlState(bOn, SNDSTATE_STOP_MUSIC, name);
+    return;
+
+FE_UPSCREEN:
+    SetSoundControlState(bOn, SNDSTATE_FE_UPSCREEN, name);
 }
 
 void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {

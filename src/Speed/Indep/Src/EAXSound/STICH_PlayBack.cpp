@@ -96,12 +96,12 @@ static int NormalizeStichAzimuth(int az) {
     return normalized;
 }
 
-static void AddToSampleList(cSampleWarpper *sample, STICH_TYPE to) {
+static inline void AddToSampleList(cSampleWarpper *sample, STICH_TYPE to) {
     cSampleListSet::List &samplelist = const_cast<cSampleListSet::List &>(cSampleListSet::GetList(to));
     samplelist.push_back(sample);
 }
 
-static void RemoveFromSampleList(cSampleWarpper *sample, STICH_TYPE from) {
+static inline void RemoveFromSampleList(cSampleWarpper *sample, STICH_TYPE from) {
     cSampleListSet::List &samplelist = const_cast<cSampleListSet::List &>(cSampleListSet::GetList(from));
     cSampleListSet::List::iterator newend = std::remove(samplelist.begin(), samplelist.end(), sample);
     if (newend != samplelist.end()) {
@@ -214,7 +214,7 @@ void KillSample(cSampleWarpper *sampleref) {
 
 cSampleWarpper::cSampleWarpper(SND_SampleRef &NewRef) {
     SampleRefData = &NewRef;
-    m_eIsPlaying = 0;
+    m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
     AEMS_ActiveSampleWsh = nullptr;
     AEMS_ActiveSampleCol = nullptr;
     AEMS_ActiveSampleStatic = nullptr;
@@ -533,3 +533,10 @@ void cStichWrapper::Destroy() {
 
     bIsPlaying = false;
 }
+
+template <>
+UTL::Collections::ListableSet<cSampleWarpper, 25, STICH_TYPE, MAX_NUM_STICH_TYPE>::_ListSet
+    UTL::Collections::ListableSet<cSampleWarpper, 25, STICH_TYPE, MAX_NUM_STICH_TYPE>::_mLists =
+        UTL::Collections::ListableSet<cSampleWarpper, 25, STICH_TYPE, MAX_NUM_STICH_TYPE>::_ListSet();
+
+template class UTL::Collections::ListableSet<cSampleWarpper, 25, STICH_TYPE, MAX_NUM_STICH_TYPE>::List;

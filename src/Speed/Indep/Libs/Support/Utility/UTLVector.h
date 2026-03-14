@@ -5,11 +5,10 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include <cstddef>
 
 namespace UTL {
-template <typename T, unsigned int Alignment = 16> class Vector {
+template <typename T, int Alignment = 16> class Vector {
   public:
     typedef T value_type;
     typedef value_type *pointer;
@@ -20,8 +19,8 @@ template <typename T, unsigned int Alignment = 16> class Vector {
     typedef const value_type &const_reference;
     typedef const value_type *const_iterator;
     typedef const value_type *const_reverse_iterator;
-    typedef std::size_t size_type;
-    typedef std::ptrdiff_t difference_type;
+    typedef unsigned int size_type;
+    typedef int difference_type;
 
   public:
     void Init() {}
@@ -154,12 +153,17 @@ template <typename T, unsigned int Alignment = 16> class Vector {
     virtual void FreeVectorSpace(pointer buffer, size_type num) {}
 
     virtual size_type GetGrowSize(size_type minSize) const {
-        return UMath::Max(minSize, mCapacity + ((mCapacity + 1) >> 1)); // TODO is this right?
+        size_type result = minSize;
+        size_type grown = mCapacity + ((mCapacity + 1) >> 1);
+        if (result < grown) {
+            result = grown;
+        }
+        return result;
     }
 
     // Unfinished
     virtual size_type GetMaxCapacity() const {
-        return 0;
+        return 0x7fffffff;
     }
 
     virtual void OnGrowRequest(size_type newSize) {}
@@ -171,7 +175,7 @@ template <typename T, unsigned int Alignment = 16> class Vector {
     size_type mSize;     // offset 0x8, size 0x4
 };
 
-template <typename T, std::size_t Size, unsigned int Alignment = 16> class FixedVector : public Vector<T, Alignment> {
+template <typename T, int Size, int Alignment = 16> class FixedVector : public Vector<T, Alignment> {
   public:
     FixedVector() {}
 
@@ -184,20 +188,23 @@ template <typename T, std::size_t Size, unsigned int Alignment = 16> class Fixed
 
   protected:
     // Unfinished
-    virtual std::size_t GetGrowSize(std::size_t minSize) const {
-        return 0;
+    virtual unsigned int GetGrowSize(unsigned int minSize) const {
+        (void)minSize;
+        return Size;
     }
 
     // Unfinished
-    virtual typename Vector<T, Alignment>::pointer AllocVectorSpace(std::size_t num, unsigned int alignment) {
-        return nullptr;
+    virtual typename Vector<T, Alignment>::pointer AllocVectorSpace(unsigned int num, unsigned int alignment) {
+        (void)num;
+        (void)alignment;
+        return reinterpret_cast<typename Vector<T, Alignment>::pointer>(mVectorSpace);
     }
 
-    virtual void FreeVectorSpace(typename Vector<T, Alignment>::pointer buffer, std::size_t) {}
+    virtual void FreeVectorSpace(typename Vector<T, Alignment>::pointer buffer, unsigned int) {}
 
     // Unfinished
-    virtual std::size_t GetMaxCapacity() const {
-        return 0;
+    virtual unsigned int GetMaxCapacity() const {
+        return Size;
     }
 
   private:
