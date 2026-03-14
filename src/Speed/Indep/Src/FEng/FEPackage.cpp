@@ -629,3 +629,19 @@ void FEPackage::BuildMouseObjectStateList() {
         ForAllObjects(the_builder);
     }
 }
+
+FEObjectMouseState::FEObjectMouseState()
+    : pObject(nullptr) //
+    , Flags(0) {
+}
+
+FEObjectMouseState::~FEObjectMouseState() {}
+
+FEMsgTargetList* FEPackage::GetMessageTargets(unsigned long MsgID) {
+    for (unsigned long i = 0; i < NumMsgTargets; i++) {
+        if (pMsgTargets[i].GetMsgID() == MsgID) {
+            return &pMsgTargets[i];
+        }
+    }
+    return nullptr;
+}

@@ -6,10 +6,10 @@
 #endif
 
 #include "FEObject.h"
+#include "FEListBox.h"
 #include "FETypes.h"
 
 struct FEGameInterface;
-struct FEListBoxCell;
 struct FEPoint;
 
 // total size: 0xC8
@@ -51,7 +51,7 @@ struct FECodeListBox : public FEObject {
     void SetTotalNumColumns(unsigned long ulNumColumns);
     void SetTotalNumRows(unsigned long ulNumRows);
     void AllocateStrings(unsigned long ulNumStrings, unsigned long ulStringSize);
-    void ScrollSelection(int lColumnNum, int lRowNum);
+    void ScrollSelection(long lColumnNum, long lRowNum);
     void Update(float fNumTicks);
     static void DefaultSelectCallback(FECodeListBox* pList);
     short* AllocateString();

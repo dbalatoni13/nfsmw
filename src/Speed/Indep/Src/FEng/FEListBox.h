@@ -94,7 +94,7 @@ struct FEListBox : public FEObject {
     unsigned long GetLastVisibleColumn() const;
     unsigned long GetLastVisibleRow() const;
     bool GetCellInfo(unsigned long ulColumn, unsigned long ulRow, FERect& stCellRect, FERect& stClippedCellRect, FEListBoxCell& stCellInfo, unsigned long& ulJustification) const;
-    void ScrollSelection(int lColumnNum, int lRowNum);
+    void ScrollSelection(long lColumnNum, long lRowNum);
     void Update(float fNumTicks);
     void SetAutoWrap(bool bStopWrap);
     static void InitializeListEntry(FEListEntryData* pstEntries, unsigned long ulNumEntries);

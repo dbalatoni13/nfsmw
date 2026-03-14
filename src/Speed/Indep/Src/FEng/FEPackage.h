@@ -150,6 +150,7 @@ struct FEPackage : public FENode {
     inline FEMessageResponse* GetResponse(unsigned long Index) { return reinterpret_cast<FEMessageResponse*>(Responses.FindNode(Index)); }
     inline const FEMsgTargetList* GetMessageTargetList(unsigned long Index) const { return &pMsgTargets[Index]; }
 
+    FEMsgTargetList* GetMessageTargets(unsigned long MsgID);
     FEObject* FindObjectByHash(unsigned long NameHash);
     FEObject* FindObjectByGUID(unsigned long GUID);
     FEMessageResponse* FindResponse(unsigned long MsgID);

@@ -12,19 +12,13 @@
 #include "FEListBox.h"
 #include "FECodeListBox.h"
 #include "FEGroup.h"
+#include "FESimpleImage.h"
+#include "FEAnimImage.h"
+#include "FEColoredImage.h"
 #include "FETypes.h"
 #include "FEKeyTrack.h"
 #include "FEngStandard.h"
 #include "fengine.h"
-
-struct FEColoredImage : public FEImage {
-};
-
-struct FEAnimImage : public FEImage {
-};
-
-struct FESimpleImage : public FEObject {
-};
 
 inline unsigned long BSwap32(unsigned long v) {
     return (v >> 24) | (v << 24) | ((v & 0xFF00) << 8) | ((v >> 8) & 0xFF00);
