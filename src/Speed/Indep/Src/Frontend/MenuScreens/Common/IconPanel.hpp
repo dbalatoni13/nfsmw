@@ -35,21 +35,24 @@ struct IconPanel {
     IconPanel(const char* pkg_name, const char* master, const char* fe_button, const char* scroll_region, bool wrap);
     virtual ~IconPanel() {}
 
+    virtual void Update();
     virtual FEImage* AddOption(IconOption* option);
+    virtual void RemoveAll();
     virtual void Act(unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2);
-    IconOption* GetOption(int to_find);
+    virtual IconOption* GetHead();
+    virtual bool IsHead(IconOption* option);
+    virtual bool IsTail(IconOption* option);
+    virtual bool IsEndOfList(IconOption* opt);
     virtual int GetOptionIndex(IconOption* to_find);
     virtual bool SetSelection(IconOption* option);
     virtual void SetInitialPos();
     virtual void Scroll(eScrollDir dir);
     virtual void ScrollWrapped(eScrollDir dir);
-    virtual void Update();
+
+    IconOption* GetOption(int to_find);
     void AnimateList();
     void AnimateSelected(float& list_width, float& list_height);
     void ResizeList(float list_width, float list_height);
-    virtual void RemoveAll();
-
-    virtual IconOption* GetHead();
 
     IconOption* GetCurrentOption() {
         return pCurrentNode;
@@ -62,10 +65,6 @@ struct IconPanel {
     bool AtHead();
     bool AtTail();
 
-    virtual bool IsHead(IconOption* option);
-    virtual bool IsTail(IconOption* option);
-    virtual bool IsEndOfList(IconOption* opt);
-
     unsigned int GetCurrentDesc();
     unsigned int GetCurrentName();
     bool CurrentReactsImmediately();
@@ -74,7 +73,12 @@ struct IconPanel {
         return iIndexToAdd;
     }
 
-    int GetCurrentIndex();
+    int GetCurrentIndex() {
+        if (pCurrentNode) {
+            return GetOptionIndex(pCurrentNode);
+        }
+        return 0;
+    }
 
     void ScrollNext();
     void ScrollPrev();

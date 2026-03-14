@@ -441,4 +441,162 @@ unsigned int GetNumMarkersFromCategory(eCustomizeCategory cat) {
         static_cast<FEMarkerManager::ePossibleMarker>(TranslateCustomizeCatToMarker(cat)), 0);
 }
 
+void CustomizeSub::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+    unsigned int to_cat = static_cast<unsigned short>(
+        static_cast<CustomizeMainOption *>(Options.GetCurrentOption())->Category);
+
+    if (Category != 0x803 || to_cat != 0x303 || msg != 0xc407210) {
+        CustomizeCategoryScreen::NotificationMessage(msg, pobj, param1, param2);
+    }
+
+    switch (msg) {
+    case 0x5a928018: {
+        CustomizeMainOption *opt = FindInCartOption();
+        if (!opt) return;
+        int slot_id = 0;
+        switch (opt->Category) {
+        case 0x103:
+            slot_id = 0x42;
+            break;
+        case 0x302:
+            slot_id = 0x4d;
+            break;
+        }
+        if (slot_id == 0) return;
+        if (gCarCustomizeManager.IsPartTypeInCart(slot_id)) return;
+        InCartPartOptionIndex = 0;
+        RefreshHeader();
+        break;
+    }
+    case 0xc407210: {
+        if (to_cat <= 0x506) {
+            if (to_cat >= 0x501) {
+                CustomizeDecals::CurrentDecalLocation = to_cat;
+            }
+        }
+
+        SetStockPartOption *copt = static_cast<SetStockPartOption *>(Options.GetCurrentOption());
+        copt->IsStockOption();
+        bool stockOption = copt->IsStockOption();
+
+        if (stockOption &&
+            (copt->ThePart->GetPartState() & CPS_PLAYER_STATE_MASK) == CPS_INSTALLED &&
+            InCartPartOptionIndex != 0) {
+            int slot_id = 0;
+            switch (static_cast<unsigned short>(copt->Category)) {
+            case 0x701:
+                slot_id = 0x42;
+                break;
+            case 0x401:
+                slot_id = 0x4d;
+                for (int i = 0; i <= 2; i++) {
+                    ShoppingCartItem *item = gCarCustomizeManager.IsPartTypeInCart(i + 0x4f);
+                    if (item) {
+                        gCarCustomizeManager.RemoveFromCart(item);
+                    }
+                }
+                break;
+            }
+            if (slot_id != 0) {
+                ShoppingCartItem *item = gCarCustomizeManager.IsPartTypeInCart(slot_id);
+                if (item) {
+                    gCarCustomizeManager.RemoveFromCart(item);
+                    InCartPartOptionIndex = 0;
+                    RefreshHeader();
+                }
+            }
+        }
+
+        if (bStrICmp(GetPackageName(), g_pCustomizeSubTopPkg) != 0 &&
+            bStrICmp(GetPackageName(), g_pCustomizeSubPkg) != 0) {
+            return;
+        }
+
+        bool ok_to_leave = false;
+        switch (Category) {
+        case 0x803:
+            if (to_cat == 0x303) {
+                CarPart *stock_rim = gCarCustomizeManager.GetStockCarPart(0x42);
+                CarPart *installed = gCarCustomizeManager.GetInstalledCarPart(0x42);
+                if (stock_rim == installed) {
+                    DialogInterface::ShowOneButton(GetPackageName(), "",
+                        static_cast<eDialogTitle>(1), 0x417b2601u, 0xb4edeb6du, 0xbdb19a9fu);
+                } else {
+                    CustomizeMainOption *opt2 = static_cast<CustomizeMainOption *>(Options.GetCurrentOption());
+                    cFEng::Get()->QueuePackageSwitch(opt2->ToPkg, opt2->Category, 0, false);
+                    ok_to_leave = true;
+                }
+            }
+            break;
+        case 0x103:
+            if (Options.GetCurrentIndex() == 1) {
+                ShoppingCartItem *item = gCarCustomizeManager.IsPartTypeInCart(0x42);
+                if (item) {
+                    unsigned int brandHash = item->GetBuyingPart()->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0);
+                    InCartPartOptionIndex = GetRimBrandIndex(brandHash);
+                }
+                CarPart *installed2 = gCarCustomizeManager.GetInstalledCarPart(0x42);
+                if (installed2) {
+                    unsigned int brandHash = installed2->GetAppliedAttributeUParam(0xebb03e66, 0);
+                    InstalledPartOptionIndex = GetRimBrandIndex(brandHash);
+                }
+                Options.SetReactToInput(true);
+                RefreshHeader();
+            } else {
+                ok_to_leave = true;
+            }
+            break;
+        case 0x302:
+            if (Options.GetCurrentIndex() == 1) {
+                ShoppingCartItem *item = gCarCustomizeManager.IsPartTypeInCart(0x4d);
+                if (item) {
+                    CarPart *car_part = item->GetBuyingPart()->GetPart();
+                    if (car_part) {
+                        InCartPartOptionIndex = GetVinylGroupIndex(car_part->GetGroupNumber() & 0x1f);
+                    } else {
+                        InCartPartOptionIndex = 1;
+                    }
+                }
+                CarPart *installed3 = gCarCustomizeManager.GetInstalledCarPart(0x4d);
+                if (installed3) {
+                    InstalledPartOptionIndex = GetVinylGroupIndex(installed3->GetGroupNumber() & 0x1f);
+                } else {
+                    InstalledPartOptionIndex = 1;
+                }
+                Options.SetReactToInput(true);
+                RefreshHeader();
+            } else {
+                ok_to_leave = true;
+            }
+            break;
+        default:
+            ok_to_leave = true;
+            break;
+        }
+        if (!ok_to_leave) return;
+        cFEng::Get()->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
+        break;
+    }
+    case 0xc519bfc3:
+        if (gCarCustomizeManager.IsCareerMode()) return;
+        if (Category != 0x802) return;
+        DialogInterface::ShowTwoButtons(GetPackageName(), "",
+            static_cast<eDialogTitle>(3), 0x70e01038u, 0x417b25e4u, 0x6820e23eu, 0xb4edeb6du,
+            static_cast<eDialogFirstButtons>(0), 0x892cb612u);
+        RefreshHeader();
+        break;
+    case 0x6820e23e:
+        gCarCustomizeManager.MaxOutPerformance();
+        RefreshHeader();
+        break;
+    case 0xb4edeb6d:
+        Options.SetReactToInput(true);
+        RefreshHeader();
+        break;
+    case 0xcf91aacd:
+        CustomizeShoppingCart::ExitShoppingCart();
+        return;
+    }
+}
+
 CustomizeSub::~CustomizeSub() {}
