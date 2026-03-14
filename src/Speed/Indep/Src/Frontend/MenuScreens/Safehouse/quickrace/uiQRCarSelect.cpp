@@ -50,8 +50,9 @@ QRCarSelectBustedManager::QRCarSelectBustedManager(const char *pkg_name, int fla
 QRCarSelectBustedManager::~QRCarSelectBustedManager() {}
 
 bool QRCarSelectBustedManager::IsImpoundInfoVisible() {
-    if (!FEDatabase->IsCareerMode()) return false;
-    return !FEDatabase->IsCarLotMode();
+    unsigned int mode = FEDatabase->GetGameMode();
+    if (!(mode & 1)) return false;
+    return !(mode & 0x8000);
 }
 
 bool QRCarSelectBustedManager::ShowImpoundedTexture() {
@@ -763,11 +764,11 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
 }
 
 eMenuSoundTriggers UIQRCarSelect::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
-    if (msg == 0xf18e2bee || msg == 0x5fba7cbb) {
-        return static_cast<eMenuSoundTriggers>(0x1e);
-    }
-    if (msg == 0x1fe68f0d || msg == 0x1aae03ee) {
-        return static_cast<eMenuSoundTriggers>(0x1e);
+    if (msg == 0x72619778 || msg == 0x911c0a4b || msg == 0xb205316c || msg == 0x480df13f) {
+        unsigned int mode = FEDatabase->GetGameMode();
+        if ((mode & 0x20) || (mode & 0x8000) || (mode & 1)) {
+            return static_cast<eMenuSoundTriggers>(-1);
+        }
     }
     return MenuScreen::NotifySoundMessage(msg, maybe);
 }

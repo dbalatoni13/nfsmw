@@ -1512,6 +1512,30 @@ void CustomizePerformance::NotificationMessage(unsigned long msg, FEObject *pobj
 }
 
 eMenuSoundTriggers CustomizePerformance::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
+    if (maybe == static_cast<eMenuSoundTriggers>(4)) {
+        switch (Category) {
+        case 0x201:
+            maybe = static_cast<eMenuSoundTriggers>(0x31);
+            break;
+        case 0x202:
+            maybe = static_cast<eMenuSoundTriggers>(0x35);
+            break;
+        case 0x204:
+            maybe = static_cast<eMenuSoundTriggers>(0x34);
+            break;
+        case 0x205:
+            maybe = static_cast<eMenuSoundTriggers>(0x36);
+            break;
+        case 0x203:
+        case 0x206:
+            maybe = static_cast<eMenuSoundTriggers>(0x32);
+            break;
+        case 0x207:
+            maybe = static_cast<eMenuSoundTriggers>(0x33);
+            break;
+        }
+        return maybe;
+    }
     if (msg == 0x406415e3) {
         return static_cast<eMenuSoundTriggers>(0);
     }
