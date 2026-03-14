@@ -67,28 +67,21 @@ struct ResourceConnector : public FEObjectCallback {
 unsigned long FEngine::SysGUID;
 
 FEngine::FEngine()
-    : bExecuting(true) //
-    , bMouseActive(false) //
-    , bLoadObjectNames(false) //
-    , bLoadScriptNames(false) //
-    , pJoyPad(nullptr) //
-    , FastRep(0) //
-    , FastRepCache(0) //
-    , PadHoldRegistered(0) //
-    , WrapMode(Wrap_None) //
-    , NumJoyPads(0) //
-    , pInterface(nullptr) //
-    , CurrentPackageRecordIndex(0) //
-    , NextButtonRecordIndex(0) //
-    , bErrorScreenMode(false) //
-    , bRenderedRecently(false) //
-    , bDebugMessages(false) //
 {
     bExecuting = true;
+    bRenderedRecently = false;
+    NumJoyPads = 0;
+    pJoyPad = nullptr;
+    FastRepCache = 0;
+    FastRep = 0;
+    WrapMode = Wrap_None;
     bMouseActive = false;
-    FEngMemSet(HoldDecrement, 0, sizeof(HoldDecrement));
+    bErrorScreenMode = false;
+    bDebugMessages = false;
+    bLoadObjectNames = true;
+    bLoadScriptNames = true;
     FEngMemSet(HeldButtons, 0, sizeof(HeldButtons));
-    Sorter.Zero();
+    CurrentPackageRecordIndex = 0;
     FEngMemSet(RecordedPackageNames, 0, sizeof(RecordedPackageNames));
     NextButtonRecordIndex = 0;
     FEngMemSet(RecordedPackageButtons, 0, sizeof(RecordedPackageButtons));
