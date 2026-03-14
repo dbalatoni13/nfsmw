@@ -71,6 +71,16 @@ bool FESlotPool::Free(unsigned char* pSlot) {
     return true;
 }
 
+FESlotNode::~FESlotNode() {
+    if (pData) {
+        delete[] pData;
+    }
+}
+
+FESlotPool::~FESlotPool() {
+    Slots.Purge();
+}
+
 unsigned char* FEMultiPool::Alloc(unsigned long Size) {
     if (Size == 0) {
         return nullptr;

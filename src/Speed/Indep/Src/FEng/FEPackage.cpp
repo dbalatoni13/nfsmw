@@ -562,6 +562,54 @@ FEMessageResponse* FEPackage::FindResponse(unsigned long MsgID) {
     return nullptr;
 }
 
+bool ResourceConnector::Callback(FEObject* pObj) {
+    if (pObj->Type == FE_List) {
+        ConnectListBoxResources(static_cast<FEListBox*>(pObj));
+    } else if ((pObj->Type < FE_List || pObj->Type > FE_CodeList) && pObj->ResourceIndex != 0xFFFF) {
+        unsigned long idx = static_cast<unsigned long>(pObj->ResourceIndex);
+        FEResourceRequest* pReq = &(*pReqList)[idx];
+        pObj->Handle = pReq->Handle;
+        pObj->UserParam = pReq->UserParam;
+    }
+    return true;
+}
+
+void ResourceConnector::ConnectListBoxResources(FEListBox* pList) {
+    pList->mulCurrentColumn = 0;
+    pList->mulCurrentRow = 0;
+    unsigned long ulRows = pList->mulNumRows;
+    unsigned long ulCols = pList->mulNumColumns;
+    unsigned long row = 0;
+    if (ulRows != 0) {
+        do {
+            unsigned long col = 0;
+            row++;
+            if (ulCols != 0) {
+                do {
+                    FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
+                    if (pCell->stResource.ResourceIndex == 0xFFFFFFFF) {
+                        pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
+                        pCell->stResource.ResourceIndex = 0xFFFFFFFF;
+                        pCell->stResource.Handle = 0;
+                        pCell->stResource.UserParam = 0;
+                    } else {
+                        unsigned long resIdx = pCell->stResource.ResourceIndex;
+                        FEResourceRequest* pReq = &(*pReqList)[resIdx];
+                        unsigned long userParam = pReq->UserParam;
+                        unsigned long handle = pReq->Handle;
+                        pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
+                        pCell->stResource.ResourceIndex = resIdx;
+                        pCell->stResource.Handle = handle;
+                        pCell->stResource.UserParam = userParam;
+                    }
+                    col++;
+                    pList->IncrementCellByColumn();
+                } while (col < ulCols);
+            }
+        } while (row < ulRows);
+    }
+}
+
 void FEPackage::ConnectObjectResources() {
     ResourceConnector resConnector;
     resConnector.pPack = this;
