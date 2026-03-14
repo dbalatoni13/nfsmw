@@ -1290,6 +1290,53 @@ PostRaceMilestonesScreen::PostRaceMilestonesScreen(ScreenConstructorData *sd)
 
 PostRaceMilestonesScreen::~PostRaceMilestonesScreen() {}
 
+extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
+extern unsigned long FEHashUpper(const char *str);
+extern const char *GetTranslatedString(unsigned int hash);
+int FEPrintf(const char *pkg_name, int object_hash, const char *fmt, ...);
+
+void PostRaceMilestonesScreen::StartMilestoneDoneAnimations() {
+    FEngSetScript(mpDataBigIcon, 0x16a259, true);
+    FEngSetScript(GetPackageName(), 0xe526d0d2, 0x33113ac, true);
+    FEngSetScript(GetPackageName(), 0xe1045a4f, 0x33113ac, true);
+    unsigned int posHash = FEHashUpper("POS2");
+    FEngSetScript(GetPackageName(), 0x962b9c62, posHash, true);
+    posHash = FEHashUpper("POS2");
+    FEngSetScript(GetPackageName(), 0xec85c7e4, posHash, true);
+}
+
+void PostRaceMilestonesScreen::StartAnimations(bool isMilestone, int typeKey, float bountyEarned, const char *descriptionStr) {
+    mBountyEarned += bountyEarned;
+    SetMilestoneAnimationScriptHash(isMilestone, typeKey);
+    unsigned int iconHash = FEDatabase->GetMilestoneIconHash(typeKey, isMilestone);
+    FEngSetTextureHash(mpDataBigIcon, iconHash);
+    FEPrintf(GetPackageName(), 0xe526d0d2, "%s", descriptionStr);
+    if (bountyEarned > 0.0f) {
+        FEngSetVisible(FEngFindObject(GetPackageName(), 0xe1045a4f));
+    } else {
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0xe1045a4f));
+    }
+    const char *bountyStr = GetTranslatedString(0x29b1b96a);
+    FEPrintf(GetPackageName(), 0xe1045a4f, "%s: %$0.0f", bountyStr, bountyEarned);
+    const char *totalStr = GetTranslatedString(0x5ccf949a);
+    FEPrintf(GetPackageName(), 0x324f7792, "%s: %$0.0f", totalStr, mBountyEarned);
+    FEngSetScript(mpDataBigIcon, 0x5079c8f8, true);
+}
+
+bool PostRaceMilestonesScreen::StartBountyAnimations(bool copDestruction) {
+    char buf[64];
+    if (!copDestruction) {
+        const char *str = GetTranslatedString(0x4d64888d);
+        bSNPrintf(buf, 64, "%s", str);
+        StartAnimations(false, 0x33fa23a, static_cast<float>(PostRacePursuitScreen::mPursuitData.mRepAchievedNormal), buf);
+    } else {
+        const char *str = GetTranslatedString(0x23f6e732);
+        bSNPrintf(buf, 64, "%s: %$d", str, PostRacePursuitScreen::mPursuitData.mNumCopsDestroyed);
+        StartAnimations(false, 0x4fc942ca, static_cast<float>(PostRacePursuitScreen::mPursuitData.mRepAchievedCopDestruction), buf);
+    }
+    return true;
+}
+
 PursuitResultsDatum::PursuitResultsDatum(PursuitResultsDatumType type, unsigned int itemName, float itemNumber, float itemGoal, PursuitResultsDatumCheckType itemChecked)
     : ArrayDatum(0, 0) //
     , mType(type) //

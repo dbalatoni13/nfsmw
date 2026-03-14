@@ -13,6 +13,8 @@ struct LoadingControllerScreen : public MenuScreen {
     LoadingControllerScreen(ScreenConstructorData *sd);
     static void InitLoadingControllerScreen();
     void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
+    void PrepToShowControllerConfig();
+    void SetupControllerConfig();
     void ShowControllerConfig();
     void HideControllerConfig();
     void ClearLoadedControllerTexture();

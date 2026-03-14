@@ -30,6 +30,32 @@
 extern void SetSoundControlState(bool set, eSNDCTLSTATE state, const char *name);
 static int IsDebugPlayMovie;
 
+struct FEMovie;
+extern FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
+extern void FEngSetMovieName(FEMovie *movie, const char *name);
+extern int bStrICmp(const char *a, const char *b);
+
+struct MovieEntry {
+    const char *package_name;
+    const char *movie_name;
+    unsigned int fng_obj_hash;
+    int sound_state;
+    int has_subtitle;
+};
+
+static MovieEntry MovieData[10] = {
+    {"LS_EALogo.fng",           "ealogo",        0x58BCF5B6, 0, 0},
+    {"LS_EA_hidef.fng",         "eahd_bumper",   0x58BCF5B6, 0, 0},
+    {"LS_PSA.fng",              "psa",           0x58BCF5B6, 1, 1},
+    {"MW_LS_IntroFMV.fng",      "intro_movie",   0x72CF9F38, 1, 0},
+    {"MW_LS_AttractFMV.fng",    "attract_movie", 0x72CF9F38, 1, 0},
+    {"WS_LS_EALogo.fng",        "ealogo",        0x58BCF5B6, 0, 0},
+    {"WS_LS_EA_hidef.fng",      "eahd_bumper",   0x58BCF5B6, 0, 0},
+    {"WS_LS_PSA.fng",           "psa",           0x58BCF5B6, 1, 1},
+    {"WS_LS_IntroFMV.fng",      "intro_movie",   0x58BCF5B6, 1, 0},
+    {"WS_MW_LS_AttractFMV.fng", "attract_movie", 0x72CF9F38, 1, 0},
+};
+
 static const char* gLoadinScreenPackageName;
 
 void SetLoadingScreenPackageName(const char* name) {
@@ -782,6 +808,22 @@ void nsEngageEventDialog::EngageEventDialog::NotificationMessage(unsigned long m
 
 // MovieScreen destructor
 MovieScreen::~MovieScreen() {
+}
+
+// MovieScreen constructor
+MovieScreen::MovieScreen(ScreenConstructorData *sd) : MenuScreen(sd), mSoundState(0), mSubtitler() {
+    new ESndGameState(1, true);
+    SetSoundControlState(true, static_cast<eSNDCTLSTATE>(0xb), "MovieScreen");
+    for (int i = 0; i < 10; i++) {
+        if (bStrICmp(GetPackageName(), MovieData[i].package_name) == 0) {
+            mSoundState = MovieData[i].sound_state;
+            FEMovie *movie = reinterpret_cast<FEMovie *>(FEngFindObject(GetPackageName(), MovieData[i].fng_obj_hash));
+            FEngSetMovieName(movie, MovieData[i].movie_name);
+            if (MovieData[i].has_subtitle) {
+                mSubtitler.BeginningMovie(MovieData[i].movie_name, GetPackageName());
+            }
+        }
+    }
 }
 
 // MovieScreen NotificationMessage

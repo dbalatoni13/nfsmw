@@ -1,10 +1,24 @@
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/FEng/FEPackage.h"
+#include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 
 #include <stdarg.h>
 
 extern int bVSPrintf(char *buf, const char *fmt, va_list args);
 extern unsigned int bStringHash(const char *str);
+extern bool IsJoystickTypeWheel(JoystickPort port);
+extern unsigned int Button_Action_Hashes_GAMECUBE[][5];
+extern unsigned int Button_Action_Hashes_GAMECUBE_Wheel[][5];
+
+unsigned int FindButtonNameHashForFEString(int config, int string_number, JoystickPort player) {
+    unsigned int (*hashes)[5];
+    if (IsJoystickTypeWheel(player)) {
+        hashes = Button_Action_Hashes_GAMECUBE_Wheel;
+    } else {
+        hashes = Button_Action_Hashes_GAMECUBE;
+    }
+    return hashes[string_number][config];
+}
 
 extern int bStrLen(const unsigned short *s);
 
