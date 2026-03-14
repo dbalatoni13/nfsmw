@@ -75,7 +75,6 @@ FESlotNode::~FESlotNode() {
 }
 
 FESlotPool::~FESlotPool() {
-    Slots.Purge();
 }
 
 unsigned char* FEMultiPool::Alloc(unsigned long Size) {

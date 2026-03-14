@@ -74,7 +74,7 @@ bool Close(float x, float y, float epsilon) {
 }
 
 bool Close(long x, long y, long epsilon) {
-    return y <= x + epsilon && x - epsilon <= y;
+    return x + epsilon >= y && x - epsilon <= y;
 }
 
 void FEInterpLinear(FEKeyTrack* pTrack, long tTime, void* pOutDataPtr) {

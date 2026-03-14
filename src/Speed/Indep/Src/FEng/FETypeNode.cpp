@@ -3,7 +3,11 @@
 
 extern const unsigned long FEKeyTypeSize[];
 
-FEFieldNode::~FEFieldNode() {}
+FEFieldNode::~FEFieldNode() {
+    if (pDefault) {
+        delete[] pDefault;
+    }
+}
 
 void FEFieldNode::SetDefault(void* pSrc) {
     if (!pDefault) {

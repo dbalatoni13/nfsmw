@@ -94,10 +94,11 @@ void FEScript::SetTrackCount(long Count) {
 
 FEScript::FEScript(FEScript& Src, bool bReference) {
     Init();
+    SetName(Src.pName);
+    ID = Src.ID;
     Length = Src.Length;
-    CurTime = 0;
+    CurTime = Src.CurTime;
     Flags = Src.Flags;
-    pChainTo = Src.pChainTo;
     SetTrackCount(Src.TrackCount);
     if (bReference) {
         unsigned long i = 0;
