@@ -8,6 +8,29 @@
 
 extern void FEngSetVisible(FEObject *obj);
 extern void FEngSetInvisible(FEObject *obj);
+extern FEObject *FEngFindObject(const char *pkg, unsigned int hash);
+extern FEImage *FEngFindImage(const char *pkg, unsigned int hash);
+extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
+extern int CustomizeIsInBackRoom();
+extern void CustomizeSetInParts(bool b);
+extern void CustomizeSetInPerformance(bool b);
+extern int GetCurrentLanguage();
+extern const char *GetLocalizedString(unsigned int hash);
+extern void FEPrintf(const char *pkg, unsigned int hash, const char *fmt, ...);
+extern int bSNPrintf(char *buf, int size, const char *fmt, ...);
+
+extern const char *g_pCustomizeMainPkg;
+extern const char *g_pCustomizeSubPkg;
+extern const char *g_pCustomizeSubTopPkg;
+extern const char *g_pCustomizePartsPkg;
+extern const char *g_pCustomizePerfPkg;
+extern const char *g_pCustomizeDecalsPkg;
+extern const char *g_pCustomizePaintPkg;
+extern const char *g_pCustomizeRimsPkg;
+extern const char *g_pCustomizeHudPkg;
+extern const char *g_pCustomizeSpoilerPkg;
+
+extern CarCustomizeManager gCarCustomizeManager;
 
 // --- CustomizeMeter ---
 
@@ -61,4 +84,242 @@ void CustomizeParts::LoadHudTextures() {
 
 void CustomizePaint::SetupBasePaint() {
     BuildSwatchList(0x4C);
+}
+
+// --- CustomizeSub Setup functions ---
+
+void CustomizeSub::Setup() {
+    unsigned int cat = Category;
+    if (cat == 0x103) {
+        SetupRimBrands();
+    } else if (cat == 0x302) {
+        SetupVinylGroups();
+    } else if (cat == 0x305) {
+        SetupDecalLocations();
+    } else if (cat >= 0x501 && cat < 0x507) {
+        SetupDecalPositions();
+    } else if (cat == 0x801) {
+        SetupParts();
+    } else if (cat == 0x802) {
+        SetupPerformance();
+    } else if (cat == 0x803) {
+        SetupVisual();
+    }
+    RefreshHeader();
+}
+
+void CustomizeSub::SetupParts() {
+    if (CustomizeIsInBackRoom()) {
+        TitleHash = 0x5d285ae7;
+    } else {
+        TitleHash = 0x055dce1a;
+    }
+    CustomizeSetInParts(true);
+    BackToPkg = g_pCustomizeMainPkg;
+    if (!CustomizeIsInBackRoom()) {
+        AddCustomOption(g_pCustomizePartsPkg, 0x028c24f6, 0x6134c218, 0x101);
+        AddCustomOption(g_pCustomizeSpoilerPkg, 0xbb034ea6, 0x94e73021, 0x102);
+        AddCustomOption(g_pCustomizeSubTopPkg, 0x0294d2a3, 0xf868eb0b, 0x103);
+        AddCustomOption(g_pCustomizePartsPkg, 0x028f7092, 0x04d4a88d, 0x104);
+        AddCustomOption(g_pCustomizePartsPkg, 0x79165861, 0x61e8f83c, 0x105);
+    } else {
+        AddCustomOption(g_pCustomizePartsPkg, 0xaf393dba, 0x6134c218, 0x101);
+        AddCustomOption(g_pCustomizeSpoilerPkg, 0xc51a4f62, 0x94e73021, 0x102);
+        AddCustomOption(g_pCustomizeSubTopPkg, 0xc19491cc, 0xf868eb0b, 0x103);
+        AddCustomOption(g_pCustomizePartsPkg, 0xf375276e, 0x04d4a88d, 0x104);
+        AddCustomOption(g_pCustomizePartsPkg, 0x25a4375e, 0x61e8f83c, 0x105);
+    }
+    if (bFadeInIconsImmediately) {
+        Options.bFadingIn = true;
+        Options.bFadingOut = false;
+        Options.bDelayUpdate = false;
+        Options.fMaxFadeTime = 0.0f;
+    }
+    SetInitialOption(FromCategory & 0xFF);
+}
+
+void CustomizeSub::SetupPerformance() {
+    if (CustomizeIsInBackRoom()) {
+        TitleHash = 0xbfd5b50f;
+    } else {
+        TitleHash = 0xbaef8282;
+    }
+    BackToPkg = g_pCustomizeMainPkg;
+    CustomizeSetInPerformance(true);
+    if (!CustomizeIsInBackRoom()) {
+        AddCustomOption(g_pCustomizePerfPkg, 0xc15c94e6, 0x9853d9a6, 0x201);
+        AddCustomOption(g_pCustomizePerfPkg, 0x01a29ffa, 0x29aa74ba, 0x202);
+        AddCustomOption(g_pCustomizePerfPkg, 0x178475e7, 0x6e101aa7, 0x203);
+        AddCustomOption(g_pCustomizePerfPkg, 0x9701bde4, 0x4ce19aa4, 0x204);
+        AddCustomOption(g_pCustomizePerfPkg, 0x06e8e477, 0x05aa9137, 0x205);
+        AddCustomOption(g_pCustomizePerfPkg, 0xbaa23a28, 0x91997ee8, 0x206);
+        if (gCarCustomizeManager.IsTurbo()) {
+            AddCustomOption(g_pCustomizePerfPkg, 0x06ef789c, 0x05b1255c, 0x207);
+        } else {
+            AddCustomOption(g_pCustomizePerfPkg, 0x93603dfb, 0xbb6812bb, 0x207);
+        }
+    } else {
+        AddCustomOption(g_pCustomizePerfPkg, 0x4f424e0f, 0x9853d9a6, 0x201);
+        AddCustomOption(g_pCustomizePerfPkg, 0xd142d3e3, 0x29aa74ba, 0x202);
+        AddCustomOption(g_pCustomizePerfPkg, 0x00190eb6, 0x6e101aa7, 0x203);
+        AddCustomOption(g_pCustomizePerfPkg, 0x6fea04c8, 0x4ce19aa4, 0x204);
+        AddCustomOption(g_pCustomizePerfPkg, 0x7373f1ef, 0x05aa9137, 0x205);
+        AddCustomOption(g_pCustomizePerfPkg, 0x4887f351, 0x91997ee8, 0x206);
+        if (gCarCustomizeManager.IsTurbo()) {
+            AddCustomOption(g_pCustomizePerfPkg, 0x12fe30a5, 0x05b1255c, 0x207);
+        } else {
+            AddCustomOption(g_pCustomizePerfPkg, 0x630071e4, 0xbb6812bb, 0x207);
+        }
+    }
+    if (bFadeInIconsImmediately) {
+        Options.bFadingIn = true;
+        Options.bFadingOut = false;
+        Options.bDelayUpdate = false;
+        Options.fMaxFadeTime = 0.0f;
+    }
+    SetInitialOption(FromCategory & 0xFF);
+}
+
+void CustomizeSub::SetupVisual() {
+    if (CustomizeIsInBackRoom()) {
+        TitleHash = 0x10c3fe31;
+    } else {
+        TitleHash = 0xbfa7d7c4;
+    }
+    BackToPkg = g_pCustomizeMainPkg;
+    if (!CustomizeIsInBackRoom()) {
+        AddCustomOption(g_pCustomizePaintPkg, 0xa3b76154, 0x055da70c, 0x301);
+        AddCustomOption(g_pCustomizeSubTopPkg, 0x55778e5a, 0xbfa52c55, 0x302);
+        if (!gCarCustomizeManager.IsHeroCar()) {
+            AddCustomOption(g_pCustomizePaintPkg, 0xd223f84a, 0xe126ff53, 0x303);
+        }
+        AddCustomOption(g_pCustomizePartsPkg, 0x3f23165c, 0xd32729a6, 0x304);
+        AddCustomOption(g_pCustomizeSubTopPkg, 0xda1dae54, 0x955980bc, 0x305);
+        AddCustomOption("FeCustomize_ToolBox", 0x45a1c644, 0x6857e5ac, 0x306);
+        AddCustomOption(g_pCustomizeHudPkg, 0x028f88bc, 0x78980a6b, 0x307);
+    } else {
+        AddCustomOption(g_pCustomizePaintPkg, 0x0db89e17, 0x055da70c, 0x301);
+        AddCustomOption(g_pCustomizeSubTopPkg, 0xd35f04c0, 0xbfa52c55, 0x302);
+        AddCustomOption(g_pCustomizeSubTopPkg, 0xa9135927, 0x955980bc, 0x305);
+        AddCustomOption(g_pCustomizeHudPkg, 0x8ba602fc, 0x78980a6b, 0x307);
+    }
+    if (bFadeInIconsImmediately) {
+        Options.bFadingIn = true;
+        Options.bFadingOut = false;
+        Options.bDelayUpdate = false;
+        Options.fMaxFadeTime = 0.0f;
+    }
+    SetInitialOption(FromCategory & 0xFF);
+}
+
+void CustomizeSub::SetupDecalLocations() {
+    TitleHash = 0x9de6e6e1;
+    BackToPkg = g_pCustomizeSubPkg;
+    AddCustomOption(g_pCustomizeDecalsPkg, 0x52ded91d, 0x301dedd3, 0x501);
+    AddCustomOption(g_pCustomizeDecalsPkg, 0xac7937b4, 0x48e6ca49, 0x502);
+    AddCustomOption(g_pCustomizeSubTopPkg, 0xda88b711, 0x34367c86, 0x503);
+    AddCustomOption(g_pCustomizeSubTopPkg, 0xc9a967c4, 0xddf80259, 0x504);
+    AddCustomOption(g_pCustomizeDecalsPkg, 0x2c710c4d, 0x8a7697d6, 0x505);
+    AddCustomOption(g_pCustomizeDecalsPkg, 0xffa7d360, 0xb1f9b0c9, 0x506);
+    if (FromCategory == 0x803) {
+        if (bFadeInIconsImmediately) {
+            Options.bFadingIn = true;
+            Options.bFadingOut = false;
+            Options.bDelayUpdate = false;
+            Options.fMaxFadeTime = 0.0f;
+        }
+        SetInitialOption(1);
+    } else {
+        if (bFadeInIconsImmediately) {
+            Options.bFadingIn = true;
+            Options.bFadingOut = false;
+            Options.bDelayUpdate = false;
+            Options.fMaxFadeTime = 0.0f;
+        }
+        SetInitialOption(FromCategory & 0xFF);
+    }
+    if (FromCategory - 0x501u < 6u) {
+        FromCategory = 0x803;
+    }
+}
+
+void CustomizeSub::SetupDecalPositions() {
+    TitleHash = 0x74d1887d;
+    BackToPkg = g_pCustomizeSubTopPkg;
+    if (Category == 0x503) {
+        AddCustomOption(g_pCustomizeDecalsPkg, 0xfe957f48, 0x7d212cfa, 0x601);
+        AddCustomOption(g_pCustomizeDecalsPkg, 0xfe957f49, 0x7d212cfb, 0x602);
+        AddCustomOption(g_pCustomizeDecalsPkg, 0xfe957f4a, 0x7d212cfc, 0x603);
+        AddCustomOption(g_pCustomizeDecalsPkg, 0xfe957f4b, 0x7d212cfd, 0x604);
+        AddCustomOption(g_pCustomizeDecalsPkg, 0xfe957f4c, 0x7d212cfe, 0x605);
+        AddCustomOption(g_pCustomizeDecalsPkg, 0xfe957f4d, 0x7d212cff, 0x606);
+    } else if (Category == 0x504) {
+        AddCustomOption(g_pCustomizeDecalsPkg, 0x2e40eadb, 0x7d212cfa, 0x601);
+        AddCustomOption(g_pCustomizeDecalsPkg, 0x2e40eadc, 0x7d212cfb, 0x602);
+        AddCustomOption(g_pCustomizeDecalsPkg, 0x2e40eadd, 0x7d212cfc, 0x603);
+        AddCustomOption(g_pCustomizeDecalsPkg, 0x2e40eade, 0x7d212cfd, 0x604);
+        AddCustomOption(g_pCustomizeDecalsPkg, 0x2e40eadf, 0x7d212cfe, 0x605);
+        AddCustomOption(g_pCustomizeDecalsPkg, 0x2e40eae0, 0x7d212cff, 0x606);
+    }
+    if (FromCategory == 0x305) {
+        if (bFadeInIconsImmediately) {
+            Options.bFadingIn = true;
+            Options.bFadingOut = false;
+            Options.bDelayUpdate = false;
+            Options.fMaxFadeTime = 0.0f;
+        }
+        SetInitialOption(1);
+    } else {
+        if (bFadeInIconsImmediately) {
+            Options.bFadingIn = true;
+            Options.bFadingOut = false;
+            Options.bDelayUpdate = false;
+            Options.fMaxFadeTime = 0.0f;
+        }
+        SetInitialOption(FromCategory & 0xFF);
+        FromCategory = 0x305;
+    }
+}
+
+void CustomizeSub::RefreshHeader() {
+    CustomizeCategoryScreen::RefreshHeader();
+    const char *title_str = GetLocalizedString(TitleHash);
+    char buf[64];
+    bSNPrintf(buf, 64, "%s", title_str);
+    int lang = GetCurrentLanguage();
+    if (lang != 2 && lang != 13) {
+        int i = 0;
+        while (buf[i] != 0) {
+            char c = buf[i];
+            if (static_cast<unsigned int>(c - 'A') < 26u) {
+                c = c | 0x20;
+            }
+            buf[i] = c;
+            i++;
+        }
+    }
+    FEPrintf(GetPackageName(), 0xb71b576d, "%s", buf);
+    if (Category == 0x103 || Category == 0x302) {
+        int sel = 0;
+        IconOption *cur = Options.GetCurrentOption();
+        if (cur) {
+            sel = Options.GetOptionIndex(cur);
+        }
+        if (sel == InCartPartOptionIndex) {
+            FEngSetVisible(FEngFindObject(GetPackageName(), 0xd0582feb));
+            FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xd0582feb), 0x1a777e25);
+        } else if (sel == InstalledPartOptionIndex) {
+            FEngSetVisible(FEngFindObject(GetPackageName(), 0xd0582feb));
+            FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xd0582feb), 0x696ae039);
+        } else {
+            FEngSetInvisible(FEngFindObject(GetPackageName(), 0xd0582feb));
+        }
+    } else {
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0xd0582feb));
+    }
+    if (!gCarCustomizeManager.IsCareerMode() && Category == 0x802) {
+        FEngSetVisible(FEngFindObject(GetPackageName(), 0x5aec8d91));
+    } else {
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x5aec8d91));
+    }
 }
