@@ -2,10 +2,6 @@
 
 static FEMinNode* const kRemovedNode = reinterpret_cast<FEMinNode*>(0xABADCAFE);
 
-FEMinNode* FERefList::GetHead() const {
-    return bIsReference ? pRef->GetHead() : head;
-}
-
 void FERefList::ReferenceList(FERefList* pList) {
     FEMinNode* n;
 

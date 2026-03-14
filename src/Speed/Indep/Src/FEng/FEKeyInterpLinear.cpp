@@ -95,7 +95,7 @@ void FEInterpLinear(FEKeyTrack* pTrack, long tTime, void* pOutDataPtr) {
                 pPrevKey = pKey->GetPrev();
                 if (pPrevKey && tTime < pKey->tTime) {
                     float div = static_cast<float>(pKey->tTime - pPrevKey->tTime);
-                    if (div > 0.0f) {
+                    if (div > 0.00001f) {
                         t = static_cast<float>(tTime - pPrevKey->tTime) / div;
                     }
                 } else {
@@ -111,24 +111,21 @@ void FEInterpLinear(FEKeyTrack* pTrack, long tTime, void* pOutDataPtr) {
                 if (pKey->tTime < tTime) {
                     FEKeyNode* pFirstKey = pTrack->GetFirstDeltaKey();
                     float div = static_cast<float>((pTrack->Length - pKey->tTime) + pFirstKey->tTime);
-                    if (div <= 0.0f) {
-                        t = 0.0f;
-                        pKey = pFirstKey;
-                    } else {
+                    if (div > 0.00001f) {
                         t = static_cast<float>(tTime - pKey->tTime) / div;
-                        pKey = pFirstKey;
                     }
+                    pKey = pFirstKey;
                 } else if (pKey->tTime != tTime) {
                     pPrevKey = pKey->GetPrev();
                     if (!pPrevKey) {
                         pPrevKey = pTrack->GetKeyAt(pTrack->Length);
                         float div = static_cast<float>((pTrack->Length - pPrevKey->tTime) + pKey->tTime);
-                        if (div > 0.0f) {
+                        if (div > 0.00001f) {
                             t = static_cast<float>((tTime + pTrack->Length) - pPrevKey->tTime) / div;
                         }
                     } else {
                         float div = static_cast<float>(pKey->tTime - pPrevKey->tTime);
-                        if (div > 0.0f) {
+                        if (div > 0.00001f) {
                             t = static_cast<float>(tTime - pPrevKey->tTime) / div;
                         }
                     }
@@ -137,7 +134,7 @@ void FEInterpLinear(FEKeyTrack* pTrack, long tTime, void* pOutDataPtr) {
             }
             case 2: {
                 // Ping-pong
-                if (pTrack->Length < tTime) {
+                if (tTime > pTrack->Length) {
                     tTime = pTrack->Length * 2 - tTime;
                 }
                 pKey = pTrack->GetDeltaKeyAt(tTime);

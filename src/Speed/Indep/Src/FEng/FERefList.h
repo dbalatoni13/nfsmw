@@ -15,7 +15,7 @@ class FERefList {
 
     inline bool IsReference() const { return bIsReference; }
     inline FERefList* GetRefSource() { return pRef; }
-    FEMinNode* GetHead() const;
+    inline FEMinNode* GetHead() const { return bIsReference ? pRef->GetHead() : head; }
     inline FEMinNode* GetTail() const { return bIsReference ? pRef->GetTail() : tail; }
     inline bool IsListEmpty() const { return GetHead() == nullptr; }
 
