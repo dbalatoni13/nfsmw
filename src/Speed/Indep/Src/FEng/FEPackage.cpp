@@ -481,12 +481,12 @@ finalize:
         UpdateGroup(static_cast<FEGroup*>(pObj), tDeltaTicks);
     } else if (pObj->Type > 5) {
         if (pObj->Type == 6) {
-            static_cast<FECodeListBox*>(pObj)->Update(static_cast<float>(tDeltaTicks));
+            static_cast<FEListBox*>(pObj)->Update(static_cast<float>(tDeltaTicks));
         } else if (pObj->Type == 7 && bExecuting) {
             static_cast<FEMovie*>(pObj)->Update(tDeltaTicks);
         }
     } else if (pObj->Type == 4) {
-        static_cast<FEListBox*>(pObj)->Update(static_cast<float>(tDeltaTicks));
+        static_cast<FECodeListBox*>(pObj)->Update(static_cast<float>(tDeltaTicks));
     }
 
     if (bExecuting == true && OldCurTime == pScript->CurTime &&

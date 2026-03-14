@@ -86,7 +86,14 @@ struct FEQuaternion {
     inline FEQuaternion& operator=(const FEQuaternion& q) { x = q.x; y = q.y; z = q.z; w = q.w; return *this; }
     inline void Conjugate() { x = -x; y = -y; z = -z; }
     inline FEQuaternion& operator*=(const FEQuaternion& q) { *this = *this * q; return *this; }
-    FEQuaternion operator*(const FEQuaternion& q1);
+    inline FEQuaternion operator*(const FEQuaternion& q1) {
+        FEQuaternion qRet;
+        qRet.x = (q1.y * z - q1.z * y) + q1.x * w + x * q1.w;
+        qRet.y = (q1.z * x - q1.x * z) + q1.y * w + y * q1.w;
+        qRet.z = (q1.x * y - q1.y * x) + q1.z * w + z * q1.w;
+        qRet.w = q1.w * w - (q1.z * z + q1.x * x + q1.y * y);
+        return qRet;
+    }
     void GetMatrix(FEMatrix4* pMatrix);
 };
 
@@ -134,10 +141,11 @@ inline float QuaternionMagnitude(const FEQuaternion& q) {
 inline void NormalizeQuaternion(FEQuaternion& q) {
     float fMagnitude = QuaternionMagnitude(q);
     if (fMagnitude > 0.0f) {
-        q.x /= fMagnitude;
-        q.y /= fMagnitude;
-        q.z /= fMagnitude;
-        q.w /= fMagnitude;
+        float fInvMagnitude = 1.0f / fMagnitude;
+        q.x *= fInvMagnitude;
+        q.y *= fInvMagnitude;
+        q.z *= fInvMagnitude;
+        q.w *= fInvMagnitude;
     }
 }
 
