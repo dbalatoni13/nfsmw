@@ -573,7 +573,10 @@ def write_attention_file(agent, event):
 
 
 def check_inbox(agent):
-    """Print the latest unread direct message in compact form. Returns count."""
+    """Print the latest unread direct message in compact form. Returns count.
+
+    Marks all displayed messages as read (note_acked) so they don't re-appear.
+    """
     pending = collect_inbox_events(agent)
     if not pending:
         print("(no messages for %s)" % agent)
@@ -588,12 +591,20 @@ def check_inbox(agent):
     print("Reply: python tools/comms.py reply %s \"your reply here\"" % agent)
     if len(pending) > 1:
         print("(%d more unread — run: python tools/comms.py inbox %s)" % (len(pending) - 1, agent))
+
+    # Mark all pending messages as read now that the agent has seen them.
+    max_seq = max(int(e.get("seq", 0)) for e in pending)
+    note_acked(agent, max_seq)
     return len(pending)
 
 
 def show_inbox(agent):
+    pending = collect_inbox_events(agent)
     path = write_agent_inbox(agent)
     print(path.read_text().rstrip())
+    if pending:
+        max_seq = max(int(e.get("seq", 0)) for e in pending)
+        note_acked(agent, max_seq)
 
 
 def interactive_chat(agent):
@@ -1024,19 +1035,20 @@ def agent_loop(agent):
                             if event_id and event_id not in sent_receipts and should_auto_receipt(agent, event):
                                 send_auto_receipt(sock, agent, event)
                                 sent_receipts.add(event_id)
+                            seq = int(event.get("seq", 0))
                             if not event.get("requires_ack"):
-                                seq = int(event.get("seq", 0))
+                                # Broker-level delivery ack only — do NOT call note_acked here.
+                                # note_acked is only called when the agent AI explicitly reads
+                                # the message via check / inbox / chat / reply.
                                 send_json(sock, {"type": "ack", "agent": agent, "seq": seq})
-                                note_acked(agent, seq)
                             else:
-                                seq = int(event.get("seq", 0))
                                 pending_alerts[seq] = {
                                     "event": event,
                                     "last_alert": time.time(),
                                 }
                         elif msg_type == "ack":
-                            seq = int(msg.get("seq", 0))
-                            note_acked(agent, seq)
+                            # Broker confirmed delivery ack — no local state update.
+                            # note_acked is only called when agent explicitly reads.
                             prune_pending_alerts(agent, pending_alerts)
                         elif msg_type == "published":
                             pass
@@ -1219,7 +1231,9 @@ def broker_handle_message(selector, clients, client, payload, next_seq_ref):
     if payload_type == "ack":
         agent = payload.get("agent") or client.agent or "unknown"
         seq = int(payload.get("seq", next_seq_ref[0] - 1))
-        note_acked(agent, seq)
+        # Broker-level delivery ack: do NOT call note_acked here.
+        # note_acked tracks "the agent AI has read this", which only happens
+        # when the agent explicitly calls check / inbox / chat / reply.
         heartbeat(agent)
         send_json(client.sock, {"type": "ack", "agent": agent, "seq": seq})
         return
