@@ -2709,4 +2709,367 @@ eMenuSoundTriggers CustomizePaint::NotifySoundMessage(unsigned long msg, eMenuSo
     return maybe;
 }
 
+void CustomizePaint::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+    if (msg == 0x9120409e || msg == 0xb5971bf1) {
+        // left/right handled below
+    } else if (msg == 0x406415e3) {
+        if (Category == 0x301 || Category == 0x303) {
+            CustomizationScreen::NotificationMessage(0x406415e3, pobj, param1, param2);
+        }
+    } else {
+        CustomizationScreen::NotificationMessage(msg, pobj, param1, param2);
+    }
+
+    ThePaints.NotificationMessage(msg, pobj, param1, param2);
+
+    if (msg == 0x911c0a4b) {
+        RefreshHeader();
+        return;
+    }
+    if (msg == 0x9120409e || msg == 0xb5971bf1) {
+        RefreshHeader();
+        return;
+    }
+    if (msg == 0xc519bfbf) {
+        Showcase_FromFilter = TheFilter;
+        Showcase_FromIndex = ThePaints.GetCurrentDatumNum();
+        for (int i = 0; i < 3; i++) {
+            (&_8Showcase_FromColor)[i] = VinylColors[i];
+        }
+        return;
+    }
+    if (msg == 0xcf91aacd) {
+        for (int i = 0; i < 3; i++) {
+            if (VinylColors[i]) {
+                delete VinylColors[i];
+            }
+            VinylColors[i] = nullptr;
+        }
+        return;
+    }
+    if (msg == 0xd9feec59) {
+        ScrollFilters(static_cast<eScrollDir>(1));
+        return;
+    }
+    if (msg == 0x5073ef13) {
+        ScrollFilters(static_cast<eScrollDir>(-1));
+        return;
+    }
+    if (msg == 0x5a928018) {
+        SelectablePart *part = GetSelectedPart();
+        if (part && !gCarCustomizeManager.IsPartInCart(part)) {
+            part->UnSetInCart();
+            RefreshHeader();
+        }
+        RefreshHeader();
+        return;
+    }
+    if (msg == 0x406415e3) {
+        if (Category == 0x301 || Category == 0x303) {
+            return;
+        }
+        CarPart *installed = gCarCustomizeManager.GetTempColoredPart()->GetPart();
+        if (VinylColors[TheFilter]) {
+            delete VinylColors[TheFilter];
+        }
+        int savedFilter = TheFilter;
+        bool add_to_cart = false;
+        SelectablePart *newPart = new SelectablePart(gCarCustomizeManager.GetTempColoredPart());
+        VinylColors[savedFilter] = newPart;
+        if (installed != gCarCustomizeManager.GetActivePartFromSlot(0x4d)) {
+            add_to_cart = true;
+        } else {
+            for (int i = 0; i < NumRemapColors; i++) {
+                CarPart *active = gCarCustomizeManager.GetActivePartFromSlot(i + 0x4f);
+                if (VinylColors[i] && active != VinylColors[i]->GetPart()) {
+                    add_to_cart = true;
+                    break;
+                }
+            }
+        }
+        if (!add_to_cart) {
+            return;
+        }
+        AddVinylAndColorsToCart();
+    } else if (msg == 0x72619778) {
+        RefreshHeader();
+        return;
+    } else if (msg == 0x911ab364) {
+        if (Category == 0x301 || Category == 0x303) {
+            unsigned int cat = Category | (FromCategory << 16);
+            cFEng::Get()->QueuePackageSwitch(g_pCustomizeSubPkg, cat, 0, false);
+            return;
+        }
+        for (int i = 0; i < 3; i++) {
+            if (VinylColors[i]) {
+                delete VinylColors[i];
+            }
+            VinylColors[i] = nullptr;
+            (&_8Showcase_FromColor)[i] = nullptr;
+        }
+        gCarCustomizeManager.ResetPreview();
+    } else {
+        return;
+    }
+    unsigned int cat = Category | (FromCategory << 16);
+    cFEng::Get()->QueuePackageSwitch(g_pCustomizePartsPkg, cat, 0, false);
+}
+
+void CustomizePaint::ScrollFilters(eScrollDir dir) {
+    int maxFilter;
+    if (Category == 0x301) {
+        maxFilter = 2;
+    } else if (Category == 0x303) {
+        return;
+    } else {
+        maxFilter = NumRemapColors - 1;
+        if (maxFilter != 0) {
+            SelectablePart *current = GetSelectedPart();
+            if (current != VinylColors[TheFilter]) {
+                if (VinylColors[TheFilter]) {
+                    delete VinylColors[TheFilter];
+                }
+                int savedFilter = TheFilter;
+                SelectablePart *newPart = new SelectablePart(gCarCustomizeManager.GetTempColoredPart());
+                VinylColors[savedFilter] = newPart;
+            }
+        }
+    }
+    int cur = TheFilter;
+    int next;
+    if (dir == static_cast<eScrollDir>(-1)) {
+        next = cur - 1;
+        if (next < 0) {
+            next = maxFilter;
+        }
+    } else if (dir == static_cast<eScrollDir>(1)) {
+        next = cur + 1;
+        if (next > maxFilter) {
+            next = 0;
+        }
+    } else {
+        next = cur;
+    }
+    if (next != cur) {
+        SelectedIndex[TheFilter] = ThePaints.GetCurrentDatumNum() - 1;
+        TheFilter = next;
+        if (Category == 0x301 || Category == 0x303) {
+            SelectablePart *sel = GetSelectedPart();
+            BuildSwatchList(sel->GetSlotID());
+        } else {
+            BuildSwatchList(next + 0x4f);
+        }
+        RefreshHeader();
+    }
+}
+
+void CustomizePaint::SetupVinylColor() {
+    unsigned int slot = 0x4f;
+    if (Showcase_FromFilter != -1) {
+        if (Showcase_FromFilter == 1) {
+            slot = 0x50;
+        } else if (Showcase_FromFilter == 2) {
+            slot = 0x51;
+        }
+        Showcase_FromFilter = -1;
+    }
+    BuildSwatchList(slot);
+    CarPart *activePart = gCarCustomizeManager.GetActivePartFromSlot(0x4d);
+    NumRemapColors = activePart->GetAppliedAttributeUParam(0x6212682b, 0);
+    if (NumRemapColors < 2) {
+        FEObject *obj = FEngFindObject(PackageFilename, 0x2c3cc2d3);
+        FEngSetInvisible(obj);
+        obj = FEngFindObject(PackageFilename, 0x53639a10);
+        FEngSetInvisible(obj);
+    } else {
+        cFEng::Get()->QueuePackageMessage(0x1a7240f3, PackageFilename, nullptr);
+    }
+    for (int i = 0; i < 3; i++) {
+        int slotID = i + 0x4f;
+        if ((&_8Showcase_FromColor)[i] == nullptr) {
+            CarPart *active = gCarCustomizeManager.GetActivePartFromSlot(slotID);
+            if (!active) {
+                VinylColors[i] = nullptr;
+            } else {
+                SelectablePart *sp = new SelectablePart(
+                    active, slotID, active->GetUpgradeLevel(), static_cast<GRace::Type>(7),
+                    false, static_cast<eCustomizePartState>(1), 0, false);
+                VinylColors[i] = sp;
+            }
+        } else {
+            VinylColors[i] = (&_8Showcase_FromColor)[i];
+            (&_8Showcase_FromColor)[i] = nullptr;
+        }
+    }
+}
+
+struct CustomizePaintDatum : public ArrayDatum {
+    CustomizePaintDatum(SelectablePart *part, unsigned int unlock_blurb)
+        : ArrayDatum(0xc6afdd7e, 0) //
+        , ThePart(part) //
+        , UnlockBlurb(unlock_blurb) {}
+
+    ~CustomizePaintDatum() override;
+
+    SelectablePart *ThePart;     // offset 0x24, size 0x4
+    unsigned int UnlockBlurb;    // offset 0x28, size 0x4
+};
+
+void CustomizePaint::BuildSwatchList(unsigned int slot) {
+    CarPart *matchPart = nullptr;
+    ThePaints.ClearData();
+    if (slot > 0x4e && slot < 0x52) {
+        int colorIndex = 0;
+        if (slot == 0x50) {
+            colorIndex = 1;
+        } else if (slot == 0x51) {
+            colorIndex = 2;
+        }
+        if ((&_8Showcase_FromColor)[colorIndex] && !VinylColors[colorIndex]) {
+            matchPart = (&_8Showcase_FromColor)[colorIndex]->GetPart();
+        }
+    }
+    if (!matchPart) {
+        matchPart = gCarCustomizeManager.GetActivePartFromSlot(slot);
+    }
+    unsigned int brand = CalcBrandHash(matchPart);
+    if (TheFilter == -1) {
+        int filterVal = 0;
+        if (brand == 0x2daab07) {
+            filterVal = 0;
+        } else if (brand == 0x3437a52) {
+            filterVal = 1;
+        } else if (brand == 0x3797533) {
+            filterVal = 2;
+        }
+        TheFilter = filterVal;
+    }
+    bTList<SelectablePart> partList;
+    gCarCustomizeManager.GetCarPartList(slot, partList, 0);
+    int datumIndex = 0;
+    while (partList.GetHead() != partList.EndOfList()) {
+        SelectablePart *sp = static_cast<SelectablePart *>(partList.GetHead());
+        unsigned int partBrand = sp->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0);
+        if (partBrand == brand) {
+            sp->Remove();
+            unsigned int unlockHash = gCarCustomizeManager.GetUnlockHash(
+                static_cast<eCustomizeCategory>(Category), sp->GetPart()->GetUpgradeLevel());
+            CustomizePaintDatum *datum = new CustomizePaintDatum(sp, unlockHash);
+            if (SelectedIndex[TheFilter] == -1 && matchPart == sp->GetPart()) {
+                SelectedIndex[TheFilter] = datumIndex;
+            }
+            ThePaints.AddDatum(datum);
+            ArraySlot *aslot = ThePaints.GetSlotAt(datumIndex);
+            if (aslot) {
+                CarPart *part = sp->GetPart();
+                int r = part->GetAppliedAttributeIParam(bStringHash("RED"), 0);
+                int g = part->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
+                int b = part->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
+                FEngSetColor(aslot->GetFEngObject(), 0xff000000 | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff));
+            }
+            datumIndex++;
+        } else {
+            sp->Remove();
+            delete sp;
+        }
+    }
+    if (Showcase_FromIndex == 0) {
+        if (SelectedIndex[TheFilter] == -1) {
+            SelectedIndex[TheFilter] = 0;
+        }
+        ThePaints.SetInitialPosition(SelectedIndex[TheFilter]);
+    } else {
+        int idx = Showcase_FromIndex - 1;
+        SelectedIndex[TheFilter] = idx;
+        ThePaints.SetInitialPosition(idx);
+        Showcase_FromIndex = 0;
+    }
+    RefreshHeader();
+    while (partList.GetHead() != partList.EndOfList()) {
+        SelectablePart *sp = static_cast<SelectablePart *>(partList.GetHead());
+        sp->Remove();
+        delete sp;
+    }
+}
+
+void CustomizePaint::RefreshHeader() {
+    DisplayHelper.DrawTitle();
+    ThePaints.RefreshHeader();
+    int filter = TheFilter;
+    unsigned int hash = 0;
+    if (filter == 1) {
+        if (Category == 0x301) {
+            hash = 0x452b5481;
+        } else if (NumRemapColors == 2) {
+            hash = 0x5198be57;
+        } else if (NumRemapColors == 3) {
+            hash = 0x5198be58;
+        }
+    } else if (filter == 0) {
+        if (Category == 0x301) {
+            hash = 0xb6763cde;
+        } else if (NumRemapColors == 2) {
+            hash = 0x5198ba16;
+        } else if (NumRemapColors == 3) {
+            hash = 0x5198ba17;
+        } else {
+            hash = 0xd8ee1a80;
+        }
+    } else if (filter == 2) {
+        if (Category == 0x301) {
+            hash = 0xb715070a;
+        } else if (NumRemapColors == 3) {
+            hash = 0x5198c299;
+        }
+    }
+    FEngSetLanguageHash(PackageFilename, 0x78008599, hash);
+    if (Category == 0x301) {
+        SelectablePart *sel = GetSelectedPart();
+        int slotID = sel->GetSlotID();
+        sel = GetSelectedPart();
+        gCarCustomizeManager.PreviewPart(slotID, sel->GetPart());
+    } else if (Category == 0x303) {
+        SelectablePart *sel = GetSelectedPart();
+        int slotID = sel->GetSlotID();
+        sel = GetSelectedPart();
+        gCarCustomizeManager.PreviewPart(slotID, sel->GetPart());
+        FEObject *obj = FEngFindObject(PackageFilename, 0x2c526172);
+        FEngSetInvisible(obj);
+        FEngSetLanguageHash(PackageFilename, 0x78008599, 0xb3100a3e);
+    } else {
+        gCarCustomizeManager.PreviewPart(
+            gCarCustomizeManager.GetTempColoredPart()->GetSlotID(),
+            gCarCustomizeManager.GetTempColoredPart()->GetPart());
+        if (NumRemapColors == 1) {
+            FEObject *obj = FEngFindObject(PackageFilename, 0x2c526172);
+            FEngSetInvisible(obj);
+        }
+        for (int i = 0; i < 3; i++) {
+            if (i < NumRemapColors && VinylColors[i]) {
+                gCarCustomizeManager.PreviewPart(VinylColors[i]->GetSlotID(), VinylColors[i]->GetPart());
+            }
+        }
+        SelectablePart *sel = GetSelectedPart();
+        int slotID = sel->GetSlotID();
+        sel = GetSelectedPart();
+        gCarCustomizeManager.PreviewPart(slotID, sel->GetPart());
+    }
+    SelectablePart *sel = GetSelectedPart();
+    DisplayHelper.SetCareerStuff(sel, Category, 0);
+    sel = GetSelectedPart();
+    unsigned int unlockBlurb = static_cast<CustomizePaintDatum *>(ThePaints.GetCurrentDatum())->UnlockBlurb;
+    int curNum = ThePaints.GetCurrentDatumNum();
+    int totalNum = ThePaints.GetCurrentDatumNum();
+    DisplayHelper.SetPartStatus(sel, unlockBlurb, curNum, totalNum);
+}
+
+CustomizePaint::~CustomizePaint() {
+}
+
+CustomizePaintDatum::~CustomizePaintDatum() {
+    if (ThePart) {
+        delete ThePart;
+    }
+}
+
 #endif // FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE____CUSTOMIZE_CARCUSTOMIZE_H
