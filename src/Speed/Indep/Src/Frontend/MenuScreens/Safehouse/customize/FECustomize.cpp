@@ -1518,6 +1518,119 @@ eMenuSoundTriggers CustomizePerformance::NotifySoundMessage(unsigned long msg, e
     return CustomizationScreen::NotifySoundMessage(msg, maybe);
 }
 
+void CustomizePerformance::Setup() {
+    if (!gCarCustomizeManager.IsCareerMode()) {
+        cFEng::Get()->QueuePackageMessage(0xde511657, GetPackageName(), nullptr);
+    }
+
+    for (int i = 0; i < 3; i++) {
+        int lineNum = i + 1;
+        DescLines[i] = FEngFindString(GetPackageName(), FEngHashString("DETAIL_TEXT_LINE%d", lineNum));
+        DescBullets[i] = FEngFindImage(GetPackageName(), FEngHashString("PERFORMANCE_DETAILS_ICON%d", lineNum));
+    }
+
+    float accelPreview = gCarCustomizeManager.GetPerformanceRating(PRT_ACCELERATION, true);
+    float accelBase = gCarCustomizeManager.GetPerformanceRating(PRT_ACCELERATION, false);
+    AccelSlider.Init(GetPackageName(), "ACCELERATION", 0.0f, 10.0f, 0.0f, accelPreview, accelBase, 1.0f);
+
+    float handlingPreview = gCarCustomizeManager.GetPerformanceRating(PRT_HANDLING, true);
+    float handlingBase = gCarCustomizeManager.GetPerformanceRating(PRT_HANDLING, false);
+    HandlingSlider.Init(GetPackageName(), "HANDLING", 0.0f, 10.0f, 0.0f, handlingPreview, handlingBase, 1.0f);
+
+    float topspeedPreview = gCarCustomizeManager.GetPerformanceRating(PRT_TOP_SPEED, true);
+    float topspeedBase = gCarCustomizeManager.GetPerformanceRating(PRT_TOP_SPEED, false);
+    TopSpeedSlider.Init(GetPackageName(), "TOPSPEED", 0.0f, 10.0f, 0.0f, topspeedPreview, topspeedBase, 1.0f);
+
+    int type = 4; // kType_Tires
+    switch (Category) {
+    case CC_ENGINE:
+        SetTitleHash(0x9853d9a6);
+        break;
+    case CC_TRANSMISSION:
+        type = 3; // kType_Nitrous
+        SetTitleHash(0x29aa74ba);
+        break;
+    case CC_SUSPENSION:
+        type = 2; // kType_Chassis
+        SetTitleHash(0x6e101aa7);
+        break;
+    case CC_NITROUS:
+        type = 6; // kType_Induction
+        SetTitleHash(0x4ce19aa4);
+        break;
+    case CC_TIRES:
+        type = 0; // kType_Engine
+        SetTitleHash(0x5aa9137);
+        break;
+    case CC_BRAKES:
+        type = 1; // kType_Transmission
+        SetTitleHash(0x91997ee8);
+        break;
+    case CC_FORCED_INDUCTION:
+        type = 5; // kType_Brakes
+        if (gCarCustomizeManager.IsTurbo()) {
+            SetTitleHash(0x5b1255c);
+        } else {
+            SetTitleHash(0xbb6812bb);
+        }
+        break;
+    }
+
+    bTList<SelectablePart> part_list;
+
+    if (!CustomizeIsInBackRoom() || !gCarCustomizeManager.IsCareerMode() || gCarCustomizeManager.IsHeroCar()) {
+        gCarCustomizeManager.GetPerformancePartsList(static_cast<Physics::Upgrades::Type>(type), part_list);
+    } else {
+        unsigned int unlock_hash = 0;
+        if (!CustomizeIsInBackRoom()) {
+            unlock_hash = gCarCustomizeManager.GetUnlockHash(static_cast<eCustomizeCategory>(Category), 7);
+        }
+        SelectablePart *part = new SelectablePart(nullptr, 0, 7, static_cast<GRace::Type>(type), true, static_cast<eCustomizePartState>(1), 0, true);
+        AddPartOption(part, 0xb8c8c0d4, 7, 0, unlock_hash, false);
+        if (gCarCustomizeManager.IsPartInstalled(part)) {
+            part->SetInstalled();
+        } else if (gCarCustomizeManager.IsPartInCart(part)) {
+            part->SetInCart();
+        }
+    }
+
+    int j = 1;
+    while (!part_list.IsEmpty()) {
+        SelectablePart *part = part_list.RemoveHead();
+        int maxPkgs = gCarCustomizeManager.GetMaxPackages(static_cast<Physics::Upgrades::Type>(type));
+        int numPkgs = gCarCustomizeManager.GetNumPackages(static_cast<Physics::Upgrades::Type>(type));
+        unsigned int unlock_hash = gCarCustomizeManager.GetUnlockHash(static_cast<eCustomizeCategory>(Category), (maxPkgs - numPkgs) + part->GetUpgradeLevel());
+        bool is_locked = gCarCustomizeManager.IsPartLocked(part, 0);
+        AddPartOption(part, 0xb8c8c0d4, j, 0, unlock_hash, is_locked);
+        j++;
+    }
+
+    if (((FEDatabase->GetCareerSettings()->HasBeenAwardedBKReward() && !FEDatabase->IsCareerMode()) ||
+         (FEDatabase->GetUserProfile(0)->CareerModeHasBeenCompletedAtLeastOnce && !gCarCustomizeManager.IsHeroCar())) &&
+        gCarCustomizeManager.CanInstallJunkman(static_cast<Physics::Upgrades::Type>(type))) {
+        SelectablePart *part = new SelectablePart(nullptr, 0, 7, static_cast<GRace::Type>(type), true, static_cast<eCustomizePartState>(1), 0, true);
+        AddPartOption(part, 0xb8c8c0d4, 7, 0, 0, false);
+        if (gCarCustomizeManager.IsPartInstalled(part)) {
+            part->SetInstalled();
+        } else if (gCarCustomizeManager.IsPartInCart(part)) {
+            part->SetInCart();
+        }
+    }
+
+    if (!CustomizeIsInBackRoom() || !gCarCustomizeManager.IsCareerMode()) {
+        int installed_index = gCarCustomizeManager.GetInstalledPerfPkg(static_cast<Physics::Upgrades::Type>(type));
+        ShoppingCartItem *item = gCarCustomizeManager.IsPartTypeInCart(static_cast<Physics::Upgrades::Type>(type));
+        if (item) {
+            installed_index = item->GetBuyingPart()->GetUpgradeLevel();
+        }
+        SetInitialOption(installed_index);
+    } else {
+        SetInitialOption(1);
+    }
+
+    RefreshHeader();
+}
+
 // --- CustomizeHUDColor ---
 
 HUDLayerOption::HUDLayerOption(unsigned int layer, unsigned int icon_hash, unsigned int name_hash)
