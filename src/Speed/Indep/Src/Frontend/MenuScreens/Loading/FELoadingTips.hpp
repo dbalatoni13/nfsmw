@@ -6,9 +6,9 @@
 #endif
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingScreen.hpp"
 
 enum eGameTips {};
-enum LoadingScreenTypes {};
 
 struct GameTipInfo {
     char *Name;          // offset 0x0
@@ -28,6 +28,12 @@ struct LoadingTips : public MenuScreen {
     static void InitLoadingTipsScreen();
     void FinishLoadingTexCallback(unsigned int p);
     static void CloseLoadingTipsScreen();
+    void AllowInput();
+    static eGameTips WhatTipScreenShouldIUseToday(LoadingScreen::LoadingScreenTypes loading_direction);
+    static eGameTips GetARandomTipScreen(LoadingScreen::LoadingScreenTypes loading_direction);
+    static bool TipTestLastCarWithTwoStrikes(LoadingScreen::LoadingScreenTypes loading_direction);
+    static bool TipTestFirstTimeOutOfSafeHouse(LoadingScreen::LoadingScreenTypes loading_direction);
+    static bool TipTestFirstTimeIntoSafeHouse(LoadingScreen::LoadingScreenTypes loading_direction);
 
     void *operator new(size_t, void *ptr) { return ptr; }
 

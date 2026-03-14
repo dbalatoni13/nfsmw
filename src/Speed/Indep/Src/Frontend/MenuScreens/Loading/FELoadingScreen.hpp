@@ -8,6 +8,11 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 
 struct LoadingScreen : public MenuScreen {
+    enum LoadingScreenTypes {
+        LS_LOADING_FE = 0,
+        LS_LOADING_GAME_FROM_FE = 1,
+    };
+
     LoadingScreen(ScreenConstructorData *sd);
     static void InitLoadingScreen();
     void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;

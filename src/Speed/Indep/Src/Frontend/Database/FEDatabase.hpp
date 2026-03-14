@@ -264,6 +264,15 @@ class CareerSettings {
     void SetHasDoneCareerIntro() {
         SpecialFlags |= 0x20;
     }
+    bool HasDoneCareerIntro() {
+        return SpecialFlags & 0x20;
+    }
+    bool HasDoneMapLoadigTip() {
+        return SpecialFlags & 0x80000;
+    }
+    void SetHasDoneMapLoadigTip() {
+        SpecialFlags |= 0x80000;
+    }
     bool HasBeatenCareer() {
         return SpecialFlags & 0x4000;
     }

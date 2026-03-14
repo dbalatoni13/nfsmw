@@ -117,7 +117,9 @@ class FECareerRecord {
         return NumBustedPursuits;
     }
 
-    // int GetTimesBusted() {}
+    int GetTimesBusted() { return TheImpoundData.TimesBusted; }
+
+    int GetMaxBusted() { return TheImpoundData.MaxBusted; }
 
     const FEInfractionsData& GetInfractions(bool get_unserved) const {
         if (get_unserved) {
