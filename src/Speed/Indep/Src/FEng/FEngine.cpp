@@ -1304,19 +1304,17 @@ void FEngine::ProcessMessageQueue() {
             FEPackage* pPack = PackList.GetFirstPackage();
             while (pPack) {
                 if (pPack == pNode->pFromPackage) {
-                    if (pPack) {
-                        ProcessGlobalMessage(pPack, pNode->MsgID, pNode->ControlMask);
-                        FEMsgTargetList* pTargets = pPack->GetMessageTargets(pNode->MsgID);
-                        if (pTargets) {
-                            unsigned long Count = pTargets->Count;
+                    ProcessGlobalMessage(pPack, pNode->MsgID, pNode->ControlMask);
+                    FEMsgTargetList* pTargets = pPack->GetMessageTargets(pNode->MsgID);
+                    if (pTargets) {
+                        unsigned long Count = pTargets->Count;
+                        if (Count != 0) {
                             unsigned long i = 0;
                             unsigned long MsgID = pNode->MsgID;
-                            if (Count != 0) {
-                                do {
-                                    ProcessObjectMessage(pTargets->pTargets[i], pPack, MsgID, pNode->ControlMask);
-                                    i++;
-                                } while (i < Count);
-                            }
+                            do {
+                                ProcessObjectMessage(pTargets->pTargets[i], pPack, MsgID, pNode->ControlMask);
+                                i++;
+                            } while (i < Count);
                         }
                     }
                     break;
@@ -1359,9 +1357,9 @@ void FEngine::ProcessMessageQueue() {
             break;
         case 0xFFFFFFFA:
             if (pNode->MsgID == 0x59bed120) {
-                SetProcessInput(pNode->pFromPackage, true);
-            } else if (pNode->MsgID == 0x5d4ce32d) {
                 SetProcessInput(pNode->pFromPackage, false);
+            } else if (pNode->MsgID == 0x5d4ce32d) {
+                SetProcessInput(pNode->pFromPackage, true);
             }
             break;
         default:
@@ -1376,18 +1374,11 @@ void FEngine::ProcessMessageQueue() {
 }
 
 void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEPackage* pPack, unsigned long uControlMask) {
-    unsigned long i = 0;
     unsigned long NumActions = pRespList->Count;
-    if (NumActions == 0) {
-        return;
-    }
-    do {
+    for (unsigned long i = 0; i < NumActions; i++) {
         unsigned long Action = pRespList->pResponseList[i].ResponseID;
         FEResponse* pAction = &pRespList->pResponseList[i];
         switch (Action) {
-        case 0x108:
-            QueuePackageUserTransfer(pPack, false, 0xFF);
-            break;
         case 0:
             if (pObj) {
                 FEScript* pScript = pObj->FindScript(pAction->ResponseParam);
@@ -1452,8 +1443,6 @@ void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEP
             pPack->SetCurrentButton(pButton, bFound);
             break;
         }
-        case 0x104:
-            break;
         case 0x105:
             QueuePackageUserTransfer(pPack, true, uControlMask);
             break;
@@ -1462,6 +1451,9 @@ void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEP
             break;
         case 0x107:
             QueuePackageUserTransfer(pPack, false, uControlMask);
+            break;
+        case 0x108:
+            QueuePackageUserTransfer(pPack, false, 0xFF);
             break;
         case 0x200:
             QueuePackageSwitch(reinterpret_cast<const char*>(pAction->ResponseParam), pPack->Controllers);
@@ -1512,8 +1504,7 @@ void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEP
             i = pRespList->FindConditionBranchTarget(i);
             break;
         }
-        i++;
-    } while (i < NumActions);
+    }
 }
 
 void FEngine::ProcessPackageCommands() {
