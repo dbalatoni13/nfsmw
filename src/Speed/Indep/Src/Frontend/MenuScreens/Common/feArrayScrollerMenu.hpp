@@ -130,6 +130,19 @@ class ArrayDatum : public bTNode<ArrayDatum> {
     bool checked;   // offset 0x1C, size 0x1
 };
 
+// total size: 0x28
+struct CarDatum : public ArrayDatum {
+    CarDatum(uint32 hash, uint32 desc, uint32 handle)
+        : ArrayDatum(hash, desc) //
+        , Handle(handle) {}
+
+    ~CarDatum() override {}
+
+    void NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 param2) override;
+
+    uint32 Handle; // offset 0x24, size 0x4
+};
+
 // total size: 0x14
 class ArraySlot : public bTNode<ArraySlot> {
   public:
@@ -241,7 +254,7 @@ class ArrayScroller {
         return &scripts;
     }
 
-  private:
+  protected:
     bool bShouldPlaySound;     // offset 0x0, size 0x1
     bTList<ArraySlot> slots;   // offset 0x4, size 0x8
     bTList<ArrayDatum> data;   // offset 0xC, size 0x8

@@ -552,6 +552,10 @@ class cFrontendDatabase {
     void RestoreFromBackupDB();
     void DeallocBackupDB();
     void RefreshCurrentRide();
+    void NotifyDeleteCar(unsigned int handle);
+    void BackupCarStable();
+    bool IsCarStableDirty();
+    bool IsDirty();
 
     bool MatchesGameMode(unsigned int mode) {
         return FEGameMode & mode;
