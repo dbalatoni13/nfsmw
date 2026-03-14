@@ -744,11 +744,22 @@ bool FEPackageReader::ReadObjectTags(FETag* pTag, unsigned long Length) {
     while (pTag < pEnd) {
         unsigned short tagID = BSwap16(pTag->GetID());
         switch (tagID) {
+            case 0x744f:
+                pObj = CreateObject(BSwap32(pTag->Getu32(0)));
+                break;
+            case 0x6e4f:
+                if (bLoadObjectNames) {
+                    pObj->SetName(reinterpret_cast<const char*>(pTag->Data()));
+                }
+                break;
+            case 0x684f:
+                pObj->NameHash = BSwap32(pTag->Getu32(0));
+                break;
             case 0x504f: {
                 pObj->GUID = BSwap32(pTag->Getu32(0));
                 pObj->NameHash = BSwap32(pTag->Getu32(1));
                 pObj->Flags = BSwap32(pTag->Getu32(2));
-                pObj->ResourceIndex = BSwap16(pTag->Getu16(6));
+                pObj->ResourceIndex = static_cast<unsigned short>(BSwap32(pTag->Getu32(3)));
 
                 if (pObj->Flags & 0x100000) {
                     if (!FindReferencedObject(pObj->GUID, &pRefObj, &pRefPack)) {
@@ -761,7 +772,7 @@ bool FEPackageReader::ReadObjectTags(FETag* pTag, unsigned long Length) {
                     bIsReference = true;
                     pObj->Flags |= pRefObj->Flags;
 
-                    if (static_cast<short>(pObj->ResourceIndex) == -1) {
+                    if (pObj->ResourceIndex == 0xFFFF) {
                         pObj->Handle = pRefObj->Handle;
                         pObj->UserParam = pRefObj->UserParam;
                     }
@@ -820,17 +831,6 @@ bool FEPackageReader::ReadObjectTags(FETag* pTag, unsigned long Length) {
                 }
                 break;
             }
-            case 0x6e4f:
-                if (bLoadObjectNames) {
-                    pObj->SetName(reinterpret_cast<const char*>(pTag->Data()));
-                }
-                break;
-            case 0x684f:
-                pObj->NameHash = pTag->Getu32(0);
-                break;
-            case 0x744f:
-                pObj = CreateObject(BSwap32(pTag->Getu32(0)));
-                break;
             default:
                 if (pObj) {
                     switch (pObj->Type) {

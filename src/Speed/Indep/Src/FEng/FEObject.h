@@ -80,7 +80,7 @@ struct FEObject : public FEMinNode {
     FERenderObject* Cached;       // offset 0x58, size 0x4
 
     inline FEObjData* GetObjData() const { return reinterpret_cast<FEObjData*>(pData); }
-    inline FEScript* GetFirstScript() const;
+    inline FEScript* GetFirstScript() const { return reinterpret_cast<FEScript*>(Scripts.GetHead()); }
     inline unsigned long GetNumScripts() const;
     inline FEScript* GetScript(unsigned long Index) const;
     inline FEMessageResponse* GetFirstResponse() const;
