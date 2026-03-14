@@ -99,6 +99,6 @@ char *GetTranslatedString(int id) {
     return const_cast<char *>(GetLocalizedString(static_cast<unsigned int>(id)));
 }
 
-void FormatMessage(char *buf, int size, const char *fmt, va_list *args) {
-    bVSPrintf(buf, fmt, args);
+void FormatMessage(char *buf, int size, const char *fmt, __va_list_tag *args) {
+    bVSPrintf(buf, fmt, reinterpret_cast<va_list *>(args));
 }

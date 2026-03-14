@@ -42,6 +42,18 @@ MenuScreen *FEPackageManager::FindScreen(const char *pkg_name) {
     return data->GetScreen();
 }
 
+MenuScreen *FEngFindScreen(const char *package_name) {
+    return FEPackageManager::Get()->FindScreen(package_name);
+}
+
+FEPackageRenderInfo *HACK_FEPkgMgr_GetPackageRenderInfo(FEPackage *pkg) {
+    unsigned long userParam = pkg->GetUserParam();
+    if (userParam == 0) {
+        return nullptr;
+    }
+    return reinterpret_cast<FEPackageRenderInfo *>(userParam + 0x28);
+}
+
 FEPackageData *FEPackageManager::FindFEPackageData(bChunk *chunk) {
     for (FEPackageData *f = ScreenList.GetHead(); f != ScreenList.EndOfList(); f = f->GetNext()) {
         if (f->GetChunk() == chunk) {

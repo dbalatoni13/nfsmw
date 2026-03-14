@@ -174,9 +174,9 @@ void PlayerSettings::DefaultFromOptionsScreen() {
     eControllerConfig savedConfig = Config;
     int savedRumble = Rumble;
     Default();
-    Rumble = savedRumble;
-    DriveWithAnalog = savedDriveWithAnalog;
     Config = savedConfig;
+    DriveWithAnalog = savedDriveWithAnalog;
+    Rumble = savedRumble;
 }
 
 void GameplaySettings::Default() {
@@ -209,15 +209,15 @@ bool VideoSettings::operator==(const VideoSettings& rhs) const {
 
 void AudioSettings::Default() {
     AudioMode = 2;
-    IGMusicVol = 0.8f;
-    SpeedVol = 1.0f;
-    MasterVol = 1.0f;
-    SpeechVol = 1.0f;
-    FEMusicVol = 0.8f;
-    SoundEffectsVol = 1.0f;
-    EngineVol = 1.0f;
-    CarVol = 1.0f;
     AmbientVol = 1.0f;
+    CarVol = 1.0f;
+    EngineVol = 1.0f;
+    SoundEffectsVol = 1.0f;
+    FEMusicVol = 0.8f;
+    SpeechVol = 1.0f;
+    MasterVol = 1.0f;
+    SpeedVol = 1.0f;
+    IGMusicVol = 0.8f;
     AudioMode = g_pEAXSound->GetDefaultPlatformAudioMode();
     PlayState = 0;
     EATraxMode = 1;
