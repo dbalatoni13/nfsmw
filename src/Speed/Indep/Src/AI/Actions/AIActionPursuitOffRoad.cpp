@@ -189,8 +189,8 @@ bool AIActionPursuitOffRoad::ShouldDoIt() {
     float distancelimit = 60.0f;
 
     IVehicleAI *targetvehicleai;
-    if (target->GetSimable() && target->GetSimable()->QueryInterface(&targetvehicleai)) {
-        distancelimit += UMath::Distance(targetPosition, targetvehicleai->GetCurrentRoad()->GetPosition());
+    if (target->QueryInterface(&targetvehicleai)) {
+        distancelimit = UMath::Distance(targetPosition, targetvehicleai->GetCurrentRoad()->GetPosition()) + distancelimit;
     }
 
     if (distanceToTarget > distancelimit) {
