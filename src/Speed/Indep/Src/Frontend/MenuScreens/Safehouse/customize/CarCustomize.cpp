@@ -440,3 +440,5 @@ unsigned int GetNumMarkersFromCategory(eCustomizeCategory cat) {
     return TheFEMarkerManager.GetNumMarkers(
         static_cast<FEMarkerManager::ePossibleMarker>(TranslateCustomizeCatToMarker(cat)), 0);
 }
+
+CustomizeSub::~CustomizeSub() {}

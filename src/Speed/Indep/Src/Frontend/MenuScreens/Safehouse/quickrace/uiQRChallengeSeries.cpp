@@ -62,48 +62,63 @@ eMenuSoundTriggers UIQRChallengeSeries::NotifySoundMessage(unsigned long msg, eM
 
 void UIQRChallengeSeries::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
     ArrayScrollerMenu::NotificationMessage(msg, obj, param1, param2);
-    if (msg == 0x5f5e3886) {
+    switch (msg) {
+    case 0x5f5e3886:
         FEDatabase->GetPlayerSettings(0)->Transmission = 1;
-    } else if (msg == 0x1a2826e1) {
+        {
+            GRaceCustom *race = GRaceDatabase::Get().AllocCustomRace(theChallengeRace);
+            GRaceDatabase::Get().SetStartupRace(race, kRaceContext_QuickRace);
+            GRaceDatabase::Get().FreeCustomRace(race);
+            RaceStarter::StartRace();
+        }
+        break;
+    case 0x1a2826e1:
         FEDatabase->GetPlayerSettings(0)->Transmission = 0;
-    } else if (msg == 0xc407210) {
+        {
+            GRaceCustom *race = GRaceDatabase::Get().AllocCustomRace(theChallengeRace);
+            GRaceDatabase::Get().SetStartupRace(race, kRaceContext_QuickRace);
+            GRaceDatabase::Get().FreeCustomRace(race);
+            RaceStarter::StartRace();
+        }
+        break;
+    case 0xc407210:
         if (!theChallengeRace) {
             g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(7));
             return;
         }
         DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1),
             0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf, static_cast<eDialogFirstButtons>(1), 0x77cf03c5);
-        return;
-    } else if (msg == 0xc519bfc3) {
+        break;
+    case 0xc519bfc3:
         if (theChallengeRace->GetChallengeType() != 0) {
             return;
         }
         FEngSetScript(GetPackageName(), 0x99344537, 0x16a259, true);
         FEAnyTutorialScreen_LaunchMovie(gTUTORIAL_MOVIE_TOLLBOOTH, GetPackageName());
-        return;
-    } else if (msg == 0xc3960eb9) {
+        break;
+    case 0xc3960eb9:
         FEngSetScript(GetPackageName(), 0x99344537, 0x1744b3, true);
-        return;
-    } else if (msg == 0x911ab364) {
+        break;
+    case 0x911ab364:
         cFEng::Get()->QueuePackageSwitch("FeQrPkg", 0, 0, false);
-        return;
-    } else if (msg == 0xc98356ba) {
+        break;
+    case 0xc98356ba:
         TrackMapStreamer.UpdateAnimation();
-        return;
-    } else if (msg == 0xd05fc3a3) {
+        break;
+    case 0xd05fc3a3: {
         signed char port = static_cast<signed char>(FEngMapJoyParamToJoyport(param2));
         FEDatabase->SetPlayersJoystickPort(0, port);
         if (FEDatabase->GetPlayerSettings(0)->Transmission != 0) {
             ChooseTransmission();
             return;
         }
-    } else {
-        return;
+        GRaceCustom *race = GRaceDatabase::Get().AllocCustomRace(theChallengeRace);
+        GRaceDatabase::Get().SetStartupRace(race, kRaceContext_QuickRace);
+        GRaceDatabase::Get().FreeCustomRace(race);
+        RaceStarter::StartRace();
+        break;
     }
-    GRaceCustom *race = GRaceDatabase::Get().AllocCustomRace(theChallengeRace);
-    GRaceDatabase::Get().SetStartupRace(race, kRaceContext_QuickRace);
-    GRaceDatabase::Get().FreeCustomRace(race);
-    RaceStarter::StartRace();
+    }
 }
 
 void UIQRChallengeSeries::ChooseTransmission() {

@@ -22,28 +22,29 @@ void uiQRPressStart::Setup() {
 }
 
 void uiQRPressStart::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
-    if (msg == 0xe1fde1d1) {
+    switch (msg) {
+    case 0xe1fde1d1:
         cFEng::Get()->QueuePackageSwitch("Car_Select.fng", iPlayerNum, param, false);
-    } else if (msg < 0xe1fde1d2u) {
-        if (msg == 0x911ab364) {
-            if (iPlayerNum == 1) {
-                unsigned int joyParam = FEngMapJoyportToJoyParam(static_cast<int>(FEDatabase->GetPlayersJoystickPort(0)));
-                cFEng::Get()->QueuePackageSwitch("Car_Select.fng", 0, joyParam, false);
-            } else {
-                bool isSplitQR = false;
-                if ((FEDatabase->GetGameMode() & 4) != 0) {
-                    isSplitQR = FEDatabase->iNumPlayers == 2;
-                }
-                const char *pkg;
-                if (isSplitQR && (FEDatabase->RaceMode == GRace::kRaceType_Drag || FEDatabase->RaceMode == GRace::kRaceType_P2P || FEDatabase->RaceMode == GRace::kRaceType_SpeedTrap)) {
-                    pkg = "Track_Select.fng";
-                } else {
-                    pkg = "Track_Options.fng";
-                }
-                cFEng::Get()->QueuePackageSwitch(pkg, 0, 0, false);
+        break;
+    case 0x911ab364:
+        if (iPlayerNum == 1) {
+            unsigned int joyParam = FEngMapJoyportToJoyParam(static_cast<int>(FEDatabase->GetPlayersJoystickPort(0)));
+            cFEng::Get()->QueuePackageSwitch("Car_Select.fng", 0, joyParam, false);
+        } else {
+            bool isSplitQR = false;
+            if ((FEDatabase->GetGameMode() & 4) != 0) {
+                isSplitQR = FEDatabase->iNumPlayers == 2;
             }
+            const char *pkg;
+            if (isSplitQR && (FEDatabase->RaceMode == GRace::kRaceType_Drag || FEDatabase->RaceMode == GRace::kRaceType_P2P || FEDatabase->RaceMode == GRace::kRaceType_SpeedTrap)) {
+                pkg = "Track_Select.fng";
+            } else {
+                pkg = "Track_Options.fng";
+            }
+            cFEng::Get()->QueuePackageSwitch(pkg, 0, 0, false);
         }
-    } else if (msg == 0xebfcda65) {
+        break;
+    case 0xebfcda65: {
         int joyport = FEngMapJoyParamToJoyport(param2);
         if (iPlayerNum != 1 || joyport != FEDatabase->GetPlayersJoystickPort(0)) {
             FEDatabase->SetPlayersJoystickPort(iPlayerNum, static_cast<char>(joyport));
@@ -63,5 +64,7 @@ void uiQRPressStart::NotificationMessage(unsigned long msg, FEObject *obj, unsig
             FEManager::Get()->AllowControllerError(true);
             cFEng::Get()->QueuePackageMessage(0x587c018b, PackageFilename, nullptr);
         }
+        break;
+    }
     }
 }

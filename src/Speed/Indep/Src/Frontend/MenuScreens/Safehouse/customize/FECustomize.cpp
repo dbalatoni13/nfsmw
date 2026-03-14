@@ -705,23 +705,32 @@ SelectablePart *CustomizationScreen::FindInCartPart() {
 
 void CustomizationScreen::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     if (msg == 0x35f8620b) {
-        bNeedsRefresh = true;
+        DisplayHelper.SetInitComplete(true);
         RefreshHeader();
     }
     if (msg == 0x9120409e || msg == 0xb5971bf1) {
         ScrollTime.SetPackedTime(RealTimer.GetPackedTime());
     }
     IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
-    if (msg == 0xb5af2461) {
-        CustomizeShoppingCart::ShowShoppingCart(GetPackageName());
-        return;
-    }
-    if (msg == 0x5e6ea975) {
+    switch (msg) {
+    case 0xc98356ba:
+        if (!bNeedsRefresh) {
+            return;
+        }
+        {
+            float elapsed = static_cast<float>(static_cast<double>(RealTimer.GetPackedTime() - ScrollTime.GetPackedTime())) * 0.001f;
+            if (elapsed <= 0.25f) {
+                return;
+            }
+        }
+        bNeedsRefresh = false;
+        RefreshHeader();
+        break;
+    case 0x5e6ea975:
         Options.SetAllowFade(true);
         Options.bDelayUpdate = false;
-        return;
-    }
-    if (msg == 0x406415e3) {
+        break;
+    case 0x406415e3: {
         CustomizePartOption *curOpt = static_cast<CustomizePartOption *>(Options.GetCurrentOption());
         if (curOpt) {
             eCustomizePartState state = curOpt->GetPart()->GetPartState();
@@ -752,9 +761,9 @@ void CustomizationScreen::NotificationMessage(unsigned long msg, FEObject *pobj,
             pReplacingOption = FindMatchingOption(inCart->GetBuyingPart());
         }
         cFEng_mInstance->QueueGameMessage(0x91dfdf84, GetPackageName(), 0xFF);
-        return;
+        break;
     }
-    if (msg == 0x91dfdf84) {
+    case 0x91dfdf84: {
         if (pReplacingOption) {
             SelectablePart *rp = pReplacingOption->GetPart();
             rp->PartState = static_cast<eCustomizePartState>(rp->PartState & 0xF);
@@ -765,9 +774,12 @@ void CustomizationScreen::NotificationMessage(unsigned long msg, FEObject *pobj,
         curOpt = static_cast<CustomizePartOption *>(Options.GetCurrentOption());
         curOpt->GetPart()->PartState = static_cast<eCustomizePartState>((curOpt->GetPart()->PartState & 0xF) | CPS_IN_CART);
         RefreshHeader();
-        return;
+        break;
     }
-    if (msg == 0xc519bfbf) {
+    case 0xcf91aacd:
+        CustomizeShoppingCart::ExitShoppingCart();
+        break;
+    case 0xc519bfbf: {
         unsigned int cat = Category;
         if (cat > 0x200 && cat < 0x208) {
             return;
@@ -783,23 +795,11 @@ void CustomizationScreen::NotificationMessage(unsigned long msg, FEObject *pobj,
         Showcase_FromPackage = GetPackageName();
         Showcase_FromArgs = Category | (FromCategory << 16);
         cFEng_mInstance->QueuePackageSwitch(g_pCustomizeShowcasePkg, 0, 0, false);
-        return;
+        break;
     }
-    if (msg == 0xcf91aacd) {
-        CustomizeShoppingCart::ExitShoppingCart();
-        return;
-    }
-    if (msg == 0xc98356ba) {
-        if (!bNeedsRefresh) {
-            return;
-        }
-        float elapsed = static_cast<float>(static_cast<double>(RealTimer.GetPackedTime() - ScrollTime.GetPackedTime())) * 0.001f;
-        if (elapsed <= 0.25f) {
-            return;
-        }
-        bNeedsRefresh = false;
-        RefreshHeader();
-        return;
+    case 0xb5af2461:
+        CustomizeShoppingCart::ShowShoppingCart(GetPackageName());
+        break;
     }
 }
 
@@ -830,7 +830,8 @@ void CustomizeShoppingCart::ClearUncheckedItems() {
 
 void CustomizeShoppingCart::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     UIWidgetMenu::NotificationMessage(msg, pobj, param1, param2);
-    if (msg == 0x406415e3) {
+    switch (msg) {
+    case 0x406415e3:
         if (gCarCustomizeManager.DoesCartHaveActiveParts()) {
             if (CanCheckout()) {
                 unsigned int dialog_hash;
@@ -855,37 +856,36 @@ void CustomizeShoppingCart::NotificationMessage(unsigned long msg, FEObject *pob
             cFEng_mInstance->QueueGameMessage(0xcf91aacd, pParentPkg, 0xFF);
             cFEng_mInstance->QueuePackagePop(1);
         }
-        return;
-    }
-    if (msg == 0x72619778) {
+        break;
+    case 0x72619778:
         gCarCustomizeManager.EmptyCart();
         gCarCustomizeManager.ResetPreview();
         gCarCustomizeManager.ResetPreview();
         cFEng_mInstance->QueueGameMessage(0xcf91aacd, pParentPkg, 0xFF);
         cFEng_mInstance->QueuePackagePop(1);
-        return;
-    }
-    if (msg == 0x911ab364) {
+        break;
+    case 0x911ab364:
         ClearUncheckedItems();
         cFEng_mInstance->QueueGameMessage(0x5a928018, pParentPkg, 0xFF);
         cFEng_mInstance->QueuePackagePop(1);
-        return;
-    }
-    if (msg == 0xc519bfc4) {
+        break;
+    case 0xc519bfc4:
         UncheckAllItems();
-    } else if (msg == 0xc519bfc3) {
+        RefreshHeader();
+        break;
+    case 0xc519bfc3:
         ToggleChecked();
-    } else if (msg == 0xd05fc3a3) {
+        RefreshHeader();
+        break;
+    case 0xd05fc3a3:
         gCarCustomizeManager.Checkout();
         cFEng_mInstance->QueueGameMessage(0xcf91aacd, pParentPkg, 0xFF);
         cFEng_mInstance->QueuePackagePop(1);
-        return;
-    } else if (msg == 0x911c0a4b) {
-        // fall through to RefreshHeader
-    } else {
-        return;
+        break;
+    case 0x911c0a4b:
+        RefreshHeader();
+        break;
     }
-    RefreshHeader();
 }
 
 void CustomizeShoppingCart::RefreshHeader() {
@@ -1006,34 +1006,31 @@ int CustomizeCategoryScreen::AddCustomOption(const char *to_pkg, unsigned int te
 
 void CustomizeCategoryScreen::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
-    if (msg == 0xb4edeb6d) {
+    switch (msg) {
+    case 0xb4edeb6d:
         bBackingOut = true;
-        return;
-    }
-    if (msg == 0xc519bfbf) {
+        break;
+    case 0xc519bfbf:
         Showcase_FromPackage = GetPackageName();
         Showcase_FromArgs = Category | (Options.GetCurrentIndex() << 16);
         cFEng_mInstance->QueuePackageSwitch(g_pCustomizeShowcasePkg, 0, 0, false);
-        return;
-    }
-    if (msg == 0xe1fde1d1) {
+        break;
+    case 0xe1fde1d1:
         if (!bBackingOut) {
             return;
         }
         cFEng_mInstance->QueuePackageSwitch(BackToPkg, Category | (FromCategory << 16), 0, false);
-        return;
-    }
-    if (msg == 0xb5af2461 || msg == 0x1720b124) {
+        break;
+    case 0xb5af2461:
+    case 0x1720b124:
         CustomizeShoppingCart::ShowShoppingCart(GetPackageName());
-        return;
-    }
-    if (msg == 0x7a318ee0) {
+        break;
+    case 0x7a318ee0:
         gCarCustomizeManager.EmptyCart();
         gCarCustomizeManager.ResetPreview();
         cFEng_mInstance->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
-        return;
-    }
-    if (msg == 0x911ab364) {
+        break;
+    case 0x911ab364: {
         bool shouldPop = true;
         if (Category > 0x800 && Category < 0x804) {
             if (gCarCustomizeManager.DoesCartHaveActiveParts()) {
@@ -1048,7 +1045,8 @@ void CustomizeCategoryScreen::NotificationMessage(unsigned long msg, FEObject *p
             bBackingOut = true;
             cFEng_mInstance->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
         }
-        return;
+        break;
+    }
     }
 }
 
@@ -1112,12 +1110,14 @@ void CustomizeMain::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
     if (!gCarCustomizeManager.IsCareerMode() || msg != 0x911ab364) {
         CustomizeCategoryScreen::NotificationMessage(msg, pobj, param1, param2);
     }
-    if (msg == 0x34dc1bec) {
+    switch (msg) {
+    case 0x34dc1bec:
         if (invalidMarkers < TheFEMarkerManager.GetNumCustomizeMarkers()) {
             SwitchRooms();
         }
         invalidMarkers = 0;
-    } else if (msg == 0x1265ece9) {
+        break;
+    case 0x1265ece9: {
         GarageMainScreen *gms = GetInstance_GarageMainScreen();
         gms->UpdateCurrentCameraView(false);
         unsigned int qmsg;
@@ -1127,7 +1127,9 @@ void CustomizeMain::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
             qmsg = 0x5c01c5;
         }
         cFEng_mInstance->QueuePackageMessage(qmsg, GetPackageName(), nullptr);
-    } else if (msg == 0x911ab364) {
+        break;
+    }
+    case 0x911ab364:
         if (!gCarCustomizeManager.IsCareerMode()) {
             cFEng_mInstance->QueuePackageMessage(0x6d5d86a1, GetPackageName(), nullptr);
         } else {
@@ -1147,7 +1149,8 @@ void CustomizeMain::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
             StartCareerFreeRoam();
         }
         gCarCustomizeManager.RelinquishControl();
-    } else if (msg == 0xc519bfc4) {
+        break;
+    case 0xc519bfc4:
         if ((!gCarCustomizeManager.IsCareerMode() || TheFEMarkerManager.GetNumCustomizeMarkers() != 0) &&
             gCarCustomizeManager.IsCareerMode() && !CustomizeIsInBackRoom() && !gCarCustomizeManager.IsHeroCar()) {
             invalidMarkers = 0;
@@ -1166,6 +1169,7 @@ void CustomizeMain::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
                     0x417b2601, 0x34dc1bec, 0x3b3e83);
             }
         }
+        break;
     }
 }
 
@@ -1299,23 +1303,20 @@ void CustomizeMain::BuildOptionsList() {
 
 void CustomizeSpoiler::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     CustomizationScreen::NotificationMessage(msg, pobj, param1, param2);
-    if (msg == 0x5073ef13) {
+    switch (msg) {
+    case 0x5073ef13:
         ScrollFilters(eSD_PREV);
-        return;
-    }
-    if (msg == 0xd9feec59) {
+        break;
+    case 0xd9feec59:
         ScrollFilters(eSD_NEXT);
-        return;
-    }
-    if (msg == 0x911ab364) {
+        break;
+    case 0x911ab364:
         cFEng_mInstance->QueuePackageSwitch(g_pCustomizeSubPkg, FromCategory | (Category << 16), 0, false);
-        return;
-    }
-    if (msg == 0xc519bfbf) {
+        break;
+    case 0xc519bfbf:
         Showcase_FromFilter = TheFilter;
-        return;
-    }
-    if (msg == 0x5a928018) {
+        break;
+    case 0x5a928018: {
         SelectablePart *sel = GetSelectedPart();
         if (!sel) {
             return;
@@ -1325,10 +1326,12 @@ void CustomizeSpoiler::NotificationMessage(unsigned long msg, FEObject *pobj, un
         }
         sel->SetPartState(sel->GetPartState() & CPS_GAME_STATE_MASK);
         RefreshHeader();
-        return;
+        break;
     }
-    if (msg == 0x9120409e || msg == 0xb5971bf1) {
+    case 0x9120409e:
+    case 0xb5971bf1:
         SelectedIndex[TheFilter] = Options.GetCurrentIndex();
+        break;
     }
 }
 
@@ -1431,10 +1434,13 @@ void CustomizeSpoiler::BuildPartOptionListFromFilter(CarPart *activePart) {
 
 void CustomizePerformance::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     CustomizationScreen::NotificationMessage(msg, pobj, param1, param2);
-    if (msg == 0x406415e3) {
+    switch (msg) {
+    case 0x406415e3:
         cFEng_mInstance->QueuePackageSwitch(g_pCustomizeSubPkg, FromCategory | (Category << 16), 0, false);
-    } else if (msg == 0xc407210) {
+        break;
+    case 0xc407210:
         cFEng_mInstance->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
+        break;
     }
 }
 
@@ -1477,7 +1483,8 @@ void CustomizeParts::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
     if (msg != 0x406415e3) {
         CustomizationScreen::NotificationMessage(msg, pobj, param1, param2);
     }
-    if (msg == 0x5a928018) {
+    switch (msg) {
+    case 0x5a928018: {
         SelectablePart *sel = GetSelectedPart();
         if (!sel) {
             return;
@@ -1487,9 +1494,9 @@ void CustomizeParts::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
         }
         sel->SetPartState(sel->GetPartState() & CPS_GAME_STATE_MASK);
         RefreshHeader();
-        return;
+        break;
     }
-    if (msg == 0x406415e3) {
+    case 0x406415e3:
         if (Category == 0x307) {
             if (!TexturePackLoaded) {
                 return;
@@ -1523,9 +1530,8 @@ void CustomizeParts::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
             CustomizationScreen::NotificationMessage(0x406415e3, pobj, param1, param2);
             return;
         }
-        return;
-    }
-    if (msg == 0x911ab364) {
+        break;
+    case 0x911ab364:
         if (Category == 0x307) {
             if (!TexturePackLoaded) {
                 return;
@@ -1538,9 +1544,8 @@ void CustomizeParts::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
         } else {
             cFEng_mInstance->QueuePackageSwitch(g_pCustomizeSubPkg, FromCategory | (Category << 16), 0, false);
         }
-        return;
-    }
-    if (msg == 0xcf91aacd) {
+        break;
+    case 0xcf91aacd:
         if (Category != 0x307) {
             return;
         }
@@ -1548,7 +1553,7 @@ void CustomizeParts::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
             return;
         }
         bTexturesNeedUnload = true;
-        return;
+        break;
     }
 }
 
@@ -1841,20 +1846,19 @@ void CustomizeHUDColor::NotificationMessage(unsigned long msg, FEObject *pobj, u
     if (msg != 0x91dfdf84) {
         CustomizationScreen::NotificationMessage(msg, pobj, param1, param2);
     }
-    if (msg == 0x9120409e || msg == 0xb5971bf1) {
+    switch (msg) {
+    case 0x9120409e:
+    case 0xb5971bf1:
         BuildColorOptions();
         RefreshHeader();
-    } else if (msg == 0x72619778) {
+        break;
+    case 0x72619778:
         ScrollColors(eSD_PREV);
-    } else if (msg == 0x911c0a4b) {
+        break;
+    case 0x911c0a4b:
         ScrollColors(eSD_NEXT);
-    } else if (msg == 0x911ab364) {
-        gCarCustomizeManager.ClearTempColoredPart();
-        cFEng_mInstance->QueuePackageSwitch(g_pCustomizeHudPkg, Category | (FromCategory << 16), 0, false);
-    } else if (msg == 0xcf91aacd) {
-        gCarCustomizeManager.ClearTempColoredPart();
-        bNeedsRefresh = true;
-    } else if (msg == 0x91dfdf84) {
+        break;
+    case 0x91dfdf84: {
         SelectablePart *temp = gCarCustomizeManager.GetTempColoredPart();
         ShoppingCartItem *inCart = gCarCustomizeManager.IsPartTypeInCart(0x84u);
         if (inCart && temp->ThePart == inCart->GetBuyingPart()->ThePart) {
@@ -1875,6 +1879,16 @@ void CustomizeHUDColor::NotificationMessage(unsigned long msg, FEObject *pobj, u
             node = static_cast<HUDColorOption *>(node->Next);
         }
         cFEng_mInstance->QueuePackageSwitch(g_pCustomizeHudPkg, Category | (FromCategory << 16), 0, false);
+        break;
+    }
+    case 0x911ab364:
+        gCarCustomizeManager.ClearTempColoredPart();
+        cFEng_mInstance->QueuePackageSwitch(g_pCustomizeHudPkg, Category | (FromCategory << 16), 0, false);
+        break;
+    case 0xcf91aacd:
+        gCarCustomizeManager.ClearTempColoredPart();
+        bNeedsRefresh = true;
+        break;
     }
 }
 
@@ -2111,20 +2125,27 @@ void CustomizeHUDColor::SetInitialColors() {
 
 void CustomizeRims::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     CustomizationScreen::NotificationMessage(msg, pobj, param1, param2);
-    if (msg == 0x5a928018) {
+    switch (msg) {
+    case 0x5a928018: {
         SelectablePart *sel = GetSelectedPart();
         if (sel && !gCarCustomizeManager.IsPartInCart(sel)) {
             sel->UnSetInCart();
             RefreshHeader();
         }
-    } else if (msg == 0x5073ef13) {
+        break;
+    }
+    case 0x5073ef13:
         ScrollRimSizes(eSD_PREV);
-    } else if (msg == 0xc519bfbf) {
+        break;
+    case 0xc519bfbf:
         Showcase_FromFilter = InnerRadius;
-    } else if (msg == 0x911ab364) {
+        break;
+    case 0x911ab364:
         cFEng_mInstance->QueuePackageSwitch(g_pCustomizeSubTopPkg, Category | (FromCategory << 16), 0, false);
-    } else if (msg == 0xd9feec59) {
+        break;
+    case 0xd9feec59:
         ScrollRimSizes(eSD_NEXT);
+        break;
     }
 }
 
@@ -2501,7 +2522,24 @@ void CustomizeNumbers::Setup() {
 }
 
 void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
-    if (msg == 0x9120409e || msg == 0xb5971bf1) {
+    switch (msg) {
+    case 0x35f8620b:
+        bLeft = 1;
+        FEngSetCurrentButton(GetPackageName(), 0x2a08ba92);
+        break;
+    case 0xc519bfbf:
+        Showcase_FromFilter = static_cast<int>(RightDisplayValue);
+        Showcase_FromIndex = static_cast<int>(LeftDisplayValue);
+        Showcase_FromArgs = Category | (FromCategory << 16);
+        Showcase_FromPackage = GetPackageName();
+        bShowcaseOn = 1;
+        cFEng_mInstance->QueuePackageSwitch("Showcase.fng", gCarCustomizeManager.TuningCar->FEKey, 0, false);
+        break;
+    case 0xb5af2461:
+        CustomizeShoppingCart::ShowShoppingCart(GetPackageName());
+        break;
+    case 0x9120409e:
+    case 0xb5971bf1: {
         unsigned int newSide;
         newSide = bLeft ^ 1;
         bLeft = newSide;
@@ -2512,84 +2550,35 @@ void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, un
             hash = 0x1a88dc05;
         }
         FEngSetCurrentButton(GetPackageName(), hash);
-    } else if (msg == 0x5a928018) {
-        ShoppingCartItem *leftInCart = gCarCustomizeManager.IsPartTypeInCart(0x69u);
-        ShoppingCartItem *rightInCart = gCarCustomizeManager.IsPartTypeInCart(0x6au);
-        if (!leftInCart && !rightInCart) {
-            SelectablePart *lnode = static_cast<SelectablePart *>(LeftNumberList.GetHead());
-            while (lnode != reinterpret_cast<SelectablePart *>(&LeftNumberList)) {
-                if ((lnode->PartState & CPS_PLAYER_STATE_MASK) == CPS_IN_CART) {
-                    lnode->PartState = static_cast<eCustomizePartState>(lnode->PartState & CPS_GAME_STATE_MASK);
-                    break;
-                }
-                lnode = static_cast<SelectablePart *>(lnode->Next);
-            }
-            SelectablePart *rnode = static_cast<SelectablePart *>(RightNumberList.GetHead());
-            while (rnode != reinterpret_cast<SelectablePart *>(&RightNumberList)) {
-                if ((rnode->PartState & CPS_PLAYER_STATE_MASK) == CPS_IN_CART) {
-                    rnode->PartState = static_cast<eCustomizePartState>(rnode->PartState & CPS_GAME_STATE_MASK);
-                    break;
-                }
-                rnode = static_cast<SelectablePart *>(rnode->Next);
-            }
-        }
-        RefreshHeader();
-    } else if (msg == 0x35f8620b) {
-        bLeft = 1;
-        FEngSetCurrentButton(GetPackageName(), 0x2a08ba92);
-    } else if (msg == 0x406415e3) {
+        break;
+    }
+    case 0x72619778:
+        ScrollNumbers(eSD_NEXT);
+        break;
+    case 0x911c0a4b:
+        ScrollNumbers(eSD_PREV);
+        break;
+    case 0x406415e3:
         if (LeftDisplayValue == -1 || RightDisplayValue == -1) return;
         if (!TheLeftNumber || !TheRightNumber) return;
-        eCustomizePartState leftState = TheLeftNumber->PartState;
-        eCustomizePartState rightState = TheRightNumber->PartState;
-        eCustomizePartState status;
-        if ((leftState & CPS_GAME_STATE_MASK) == CPS_LOCKED && (rightState & CPS_GAME_STATE_MASK) == CPS_LOCKED) {
-            status = CPS_LOCKED;
-        } else if ((leftState & CPS_IN_CART) != 0 && (rightState & CPS_IN_CART) != 0) {
-            status = CPS_IN_CART;
-        } else if ((leftState & CPS_INSTALLED) != 0 && (rightState & CPS_INSTALLED) != 0) {
-            status = CPS_INSTALLED;
-        } else {
-            cFEng_mInstance->QueueGameMessage(0x91dfdf84, GetPackageName(), 0xff);
-            return;
+        {
+            eCustomizePartState leftState = TheLeftNumber->PartState;
+            eCustomizePartState rightState = TheRightNumber->PartState;
+            eCustomizePartState status;
+            if ((leftState & CPS_GAME_STATE_MASK) == CPS_LOCKED && (rightState & CPS_GAME_STATE_MASK) == CPS_LOCKED) {
+                status = CPS_LOCKED;
+            } else if ((leftState & CPS_IN_CART) != 0 && (rightState & CPS_IN_CART) != 0) {
+                status = CPS_IN_CART;
+            } else if ((leftState & CPS_INSTALLED) != 0 && (rightState & CPS_INSTALLED) != 0) {
+                status = CPS_INSTALLED;
+            } else {
+                cFEng_mInstance->QueueGameMessage(0x91dfdf84, GetPackageName(), 0xff);
+                return;
+            }
+            DisplayHelper.FlashStatusIcon(status, true);
         }
-        DisplayHelper.FlashStatusIcon(status, true);
-    } else if (msg == 0x72619778) {
-        ScrollNumbers(eSD_NEXT);
-    } else if (msg == 0x911ab364) {
-        bShowcaseOn = 0;
-        cFEng_mInstance->QueuePackageSwitch(g_pCustomizeSubPkg, FromCategory | (Category << 16), 0, false);
-    } else if (msg == 0x911c0a4b) {
-        ScrollNumbers(eSD_PREV);
-    } else if (msg == 0x91dfdf84) {
-        UnsetShoppingCart();
-        TheLeftNumber->PartState = static_cast<eCustomizePartState>(TheLeftNumber->PartState | CPS_IN_CART);
-        TheRightNumber->PartState = static_cast<eCustomizePartState>(TheRightNumber->PartState | CPS_IN_CART);
-        gCarCustomizeManager.AddToCart(TheLeftNumber);
-        gCarCustomizeManager.AddToCart(TheRightNumber);
-        SelectablePart *copyLeft = new SelectablePart(TheLeftNumber);
-        SelectablePart *copyRight = new SelectablePart(TheRightNumber);
-        copyLeft->Price = 0;
-        copyLeft->PartState = static_cast<eCustomizePartState>((copyLeft->PartState & CPS_GAME_STATE_MASK) | CPS_IN_CART);
-        copyRight->PartState = static_cast<eCustomizePartState>((copyRight->PartState & CPS_GAME_STATE_MASK) | CPS_IN_CART);
-        copyLeft->CarSlotID = 0x69;
-        copyRight->CarSlotID = 0x6a;
-        copyRight->Price = 0;
-        gCarCustomizeManager.AddToCart(copyLeft);
-        gCarCustomizeManager.AddToCart(copyRight);
-        delete copyLeft;
-        delete copyRight;
-        RefreshHeader();
-    } else if (msg == 0xb5af2461) {
-        CustomizeShoppingCart::ShowShoppingCart(GetPackageName());
-    } else if (msg == 0xc519bfbf) {
-        Showcase_FromFilter = static_cast<int>(RightDisplayValue);
-        Showcase_FromIndex = static_cast<int>(LeftDisplayValue);
-        Showcase_FromArgs = Category | (FromCategory << 16);
-        Showcase_FromPackage = GetPackageName();
-        bShowcaseOn = 1;
-        cFEng_mInstance->QueuePackageSwitch("Showcase.fng", gCarCustomizeManager.TuningCar->FEKey, 0, false);
-    } else if (msg == 0xc519bfc3) {
+        break;
+    case 0xc519bfc3: {
         CarPart *installed = gCarCustomizeManager.GetInstalledCarPart(0x71);
         if (!installed) {
             if ((TheLeftNumber->PartState & CPS_PLAYER_STATE_MASK) == CPS_IN_CART ||
@@ -2623,7 +2612,31 @@ void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, un
         TheRightNumber = static_cast<SelectablePart *>(RightNumberList.GetHead());
         LeftDisplayValue = -1;
         RefreshHeader();
-    } else if (msg == 0xcf91aacd) {
+        break;
+    }
+    case 0x91dfdf84:
+        UnsetShoppingCart();
+        TheLeftNumber->PartState = static_cast<eCustomizePartState>(TheLeftNumber->PartState | CPS_IN_CART);
+        TheRightNumber->PartState = static_cast<eCustomizePartState>(TheRightNumber->PartState | CPS_IN_CART);
+        gCarCustomizeManager.AddToCart(TheLeftNumber);
+        gCarCustomizeManager.AddToCart(TheRightNumber);
+        {
+            SelectablePart *copyLeft = new SelectablePart(TheLeftNumber);
+            SelectablePart *copyRight = new SelectablePart(TheRightNumber);
+            copyLeft->Price = 0;
+            copyLeft->PartState = static_cast<eCustomizePartState>((copyLeft->PartState & CPS_GAME_STATE_MASK) | CPS_IN_CART);
+            copyRight->PartState = static_cast<eCustomizePartState>((copyRight->PartState & CPS_GAME_STATE_MASK) | CPS_IN_CART);
+            copyLeft->CarSlotID = 0x69;
+            copyRight->CarSlotID = 0x6a;
+            copyRight->Price = 0;
+            gCarCustomizeManager.AddToCart(copyLeft);
+            gCarCustomizeManager.AddToCart(copyRight);
+            delete copyLeft;
+            delete copyRight;
+        }
+        RefreshHeader();
+        break;
+    case 0xcf91aacd: {
         SelectablePart *lnode = static_cast<SelectablePart *>(LeftNumberList.GetHead());
         while (lnode != reinterpret_cast<SelectablePart *>(&LeftNumberList)) {
             CarPart *lpart = lnode->ThePart;
@@ -2643,6 +2656,36 @@ void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, un
             rnode = static_cast<SelectablePart *>(rnode->Next);
         }
         CustomizeShoppingCart::ExitShoppingCart();
+        break;
+    }
+    case 0x5a928018: {
+        ShoppingCartItem *leftInCart = gCarCustomizeManager.IsPartTypeInCart(0x69u);
+        ShoppingCartItem *rightInCart = gCarCustomizeManager.IsPartTypeInCart(0x6au);
+        if (!leftInCart && !rightInCart) {
+            SelectablePart *lnode = static_cast<SelectablePart *>(LeftNumberList.GetHead());
+            while (lnode != reinterpret_cast<SelectablePart *>(&LeftNumberList)) {
+                if ((lnode->PartState & CPS_PLAYER_STATE_MASK) == CPS_IN_CART) {
+                    lnode->PartState = static_cast<eCustomizePartState>(lnode->PartState & CPS_GAME_STATE_MASK);
+                    break;
+                }
+                lnode = static_cast<SelectablePart *>(lnode->Next);
+            }
+            SelectablePart *rnode = static_cast<SelectablePart *>(RightNumberList.GetHead());
+            while (rnode != reinterpret_cast<SelectablePart *>(&RightNumberList)) {
+                if ((rnode->PartState & CPS_PLAYER_STATE_MASK) == CPS_IN_CART) {
+                    rnode->PartState = static_cast<eCustomizePartState>(rnode->PartState & CPS_GAME_STATE_MASK);
+                    break;
+                }
+                rnode = static_cast<SelectablePart *>(rnode->Next);
+            }
+        }
+        RefreshHeader();
+        break;
+    }
+    case 0x911ab364:
+        bShowcaseOn = 0;
+        cFEng_mInstance->QueuePackageSwitch(g_pCustomizeSubPkg, FromCategory | (Category << 16), 0, false);
+        break;
     }
 }
 
@@ -2783,9 +2826,11 @@ void CustomizeDecals::BuildDecalList(unsigned int selected_name_hash) {
 
 void CustomizeDecals::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     CustomizationScreen::NotificationMessage(msg, pobj, param1, param2);
-    if (msg == 0x911ab364) {
+    switch (msg) {
+    case 0x911ab364:
         cFEng::Get()->QueuePackageSwitch(g_pCustomizeSubTopPkg, FromCategory | Category << 16, 0, false);
-    } else if (msg == 0x5a928018) {
+        break;
+    case 0x5a928018: {
         SelectablePart *sel = GetSelectedPart();
         if (sel) {
             if (gCarCustomizeManager.IsPartInCart(sel)) {
@@ -2794,24 +2839,28 @@ void CustomizeDecals::NotificationMessage(unsigned long msg, FEObject *pobj, uns
             sel->PartState = static_cast<eCustomizePartState>(sel->PartState & 0xf);
             RefreshHeader();
         }
-    } else if (msg == 0x5073ef13) {
-        // do nothing
-    } else if (msg == 0xc519bfbf) {
+        break;
+    }
+    case 0x5073ef13:
+        break;
+    case 0xc519bfbf:
         Showcase_FromFilter = bIsBlack;
-    } else if (msg == 0xc519bfc3) {
+        break;
+    case 0xc519bfc3:
         return;
-    } else if (msg == 0xd9feec59) {
+    case 0xd9feec59:
         bIsBlack ^= 1;
-        CustomizePartOption *opt = GetSelectedOption();
-        if (!opt->GetPart()) {
-            BuildDecalList(0);
-        } else {
-            unsigned int nameHash = opt->GetPart()->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0);
-            BuildDecalList(nameHash);
+        {
+            CustomizePartOption *opt = GetSelectedOption();
+            if (!opt->GetPart()) {
+                BuildDecalList(0);
+            } else {
+                unsigned int nameHash = opt->GetPart()->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0);
+                BuildDecalList(nameHash);
+            }
         }
         RefreshHeader();
-    } else {
-        return;
+        break;
     }
 }
 
@@ -2917,79 +2966,82 @@ void CustomizePaint::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
 
     ThePaints.NotificationMessage(msg, pobj, param1, param2);
 
-    if (msg == 0x911c0a4b) {
+    switch (msg) {
+    case 0x9120409e:
+    case 0xb5971bf1:
         RefreshHeader();
-        return;
-    }
-    if (msg == 0x9120409e || msg == 0xb5971bf1) {
+        break;
+    case 0x406415e3:
+        if (Category == 0x301 || Category == 0x303) {
+            return;
+        }
+        {
+            CarPart *installed = gCarCustomizeManager.GetTempColoredPart()->GetPart();
+            if (VinylColors[TheFilter]) {
+                delete VinylColors[TheFilter];
+            }
+            int savedFilter = TheFilter;
+            bool add_to_cart = false;
+            SelectablePart *newPart = new SelectablePart(gCarCustomizeManager.GetTempColoredPart());
+            VinylColors[savedFilter] = newPart;
+            if (installed != gCarCustomizeManager.GetActivePartFromSlot(0x4d)) {
+                add_to_cart = true;
+            } else {
+                for (int i = 0; i < NumRemapColors; i++) {
+                    CarPart *active = gCarCustomizeManager.GetActivePartFromSlot(i + 0x4f);
+                    if (VinylColors[i] && active != VinylColors[i]->GetPart()) {
+                        add_to_cart = true;
+                        break;
+                    }
+                }
+            }
+            if (!add_to_cart) {
+                return;
+            }
+            AddVinylAndColorsToCart();
+        }
+        {
+            unsigned int cat = Category | (FromCategory << 16);
+            cFEng::Get()->QueuePackageSwitch(g_pCustomizePartsPkg, cat, 0, false);
+        }
+        break;
+    case 0x911c0a4b:
         RefreshHeader();
-        return;
-    }
-    if (msg == 0xc519bfbf) {
+        break;
+    case 0xc519bfbf:
         Showcase_FromFilter = TheFilter;
         Showcase_FromIndex = ThePaints.GetCurrentDatumNum();
         for (int i = 0; i < 3; i++) {
             (&_8Showcase_FromColor)[i] = VinylColors[i];
         }
-        return;
-    }
-    if (msg == 0xcf91aacd) {
+        break;
+    case 0xcf91aacd:
         for (int i = 0; i < 3; i++) {
             if (VinylColors[i]) {
                 delete VinylColors[i];
             }
             VinylColors[i] = nullptr;
         }
-        return;
-    }
-    if (msg == 0xd9feec59) {
+        break;
+    case 0xd9feec59:
         ScrollFilters(static_cast<eScrollDir>(1));
-        return;
-    }
-    if (msg == 0x5073ef13) {
+        break;
+    case 0x5073ef13:
         ScrollFilters(static_cast<eScrollDir>(-1));
-        return;
-    }
-    if (msg == 0x5a928018) {
+        break;
+    case 0x5a928018: {
         SelectablePart *part = GetSelectedPart();
         if (part && !gCarCustomizeManager.IsPartInCart(part)) {
             part->UnSetInCart();
             RefreshHeader();
         }
         RefreshHeader();
-        return;
+        break;
     }
-    if (msg == 0x406415e3) {
-        if (Category == 0x301 || Category == 0x303) {
-            return;
-        }
-        CarPart *installed = gCarCustomizeManager.GetTempColoredPart()->GetPart();
-        if (VinylColors[TheFilter]) {
-            delete VinylColors[TheFilter];
-        }
-        int savedFilter = TheFilter;
-        bool add_to_cart = false;
-        SelectablePart *newPart = new SelectablePart(gCarCustomizeManager.GetTempColoredPart());
-        VinylColors[savedFilter] = newPart;
-        if (installed != gCarCustomizeManager.GetActivePartFromSlot(0x4d)) {
-            add_to_cart = true;
-        } else {
-            for (int i = 0; i < NumRemapColors; i++) {
-                CarPart *active = gCarCustomizeManager.GetActivePartFromSlot(i + 0x4f);
-                if (VinylColors[i] && active != VinylColors[i]->GetPart()) {
-                    add_to_cart = true;
-                    break;
-                }
-            }
-        }
-        if (!add_to_cart) {
-            return;
-        }
-        AddVinylAndColorsToCart();
-    } else if (msg == 0x72619778) {
+    case 0x72619778:
         RefreshHeader();
-        return;
-    } else if (msg == 0x911ab364) {
+        break;
+    case 0x911ab364:
         if (Category == 0x301 || Category == 0x303) {
             unsigned int cat = Category | (FromCategory << 16);
             cFEng::Get()->QueuePackageSwitch(g_pCustomizeSubPkg, cat, 0, false);
@@ -3003,11 +3055,12 @@ void CustomizePaint::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
             (&_8Showcase_FromColor)[i] = nullptr;
         }
         gCarCustomizeManager.ResetPreview();
-    } else {
-        return;
+        {
+            unsigned int cat = Category | (FromCategory << 16);
+            cFEng::Get()->QueuePackageSwitch(g_pCustomizePartsPkg, cat, 0, false);
+        }
+        break;
     }
-    unsigned int cat = Category | (FromCategory << 16);
-    cFEng::Get()->QueuePackageSwitch(g_pCustomizePartsPkg, cat, 0, false);
 }
 
 void CustomizePaint::ScrollFilters(eScrollDir dir) {

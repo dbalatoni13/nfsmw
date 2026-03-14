@@ -63,7 +63,7 @@ struct CustomizeMain : public CustomizeCategoryScreen {
 // total size: 0x1D8
 struct CustomizeSub : public CustomizeCategoryScreen {
     CustomizeSub(ScreenConstructorData *sd);
-    ~CustomizeSub() override {}
+    ~CustomizeSub() override;
 
     void NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) override;
     void RefreshHeader() override;
