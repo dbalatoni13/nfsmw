@@ -19,6 +19,7 @@ extern unsigned int FEngHashString(const char *, ...);
 void MemcardEnter(const char *from, const char *to, unsigned int op,
                   void (*termFunc)(void *), void *termParam,
                   unsigned int successMsg, unsigned int failedMsg);
+extern void BeginCarCustomize(eCustomizeEntryPoint entry, FECarRecord *car);
 
 MyCarsManager::MyCarsManager(ScreenConstructorData *sd)
     : ArrayScrollerMenu(sd, 5, 2, true) //
@@ -226,6 +227,24 @@ void MyCarsManager::UpdateCar() {
                 pSelectedCar = carDB->GetCarRecordByHandle(handle);
             }
             tCarLoadTimer = RealTimer;
+        }
+    }
+}
+
+void CarDatum::NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 param2) {
+    if (msg == 0xc407210 || msg == 0x406415e3) {
+        if (Handle == 0xFFFFFFFF) {
+            FEDatabase->SetGameMode(static_cast<eFEGameModes>(FEDatabase->GetGameMode() | 0x20));
+            cFEng::Get()->QueuePackageSwitch("Car_Select.fng", 0, 0, false);
+        } else {
+            FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
+            FECarRecord *carRecord = stable->GetCarRecordByHandle(Handle);
+            if (carRecord) {
+                if (!carRecord->IsCustomized()) {
+                    carRecord = stable->CreateNewCustomCar(carRecord->VehicleKey);
+                }
+                BeginCarCustomize(static_cast<eCustomizeEntryPoint>(1), carRecord);
+            }
         }
     }
 }

@@ -156,7 +156,7 @@ void DebugCarCustomizeScreen::InstallPreviewingPart() {
 }
 
 void DebugCarCustomizeScreen::DumpPresetRide() {
-    const FECarRecord *car = gCarCustomizeManager.GetTuningCar();
+    FECarRecord *car = const_cast<FECarRecord *>(gCarCustomizeManager.GetTuningCar());
     RideInfo ride;
     ride.Init(car->GetType(), static_cast<CarRenderUsage>(0), 0, 0);
     gCarCustomizeManager.GetPreviewRecord()->WriteRecordIntoRide(&ride);

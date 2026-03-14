@@ -1,6 +1,7 @@
 // OWNED BY zFeOverlay AGENT - DO NOT MODIFY OR EMPTY
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CarCustomize.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeManager.hpp"
+#include "Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/FEng/feimage.h"
@@ -31,6 +32,7 @@ extern const char *g_pCustomizeHudPkg;
 extern const char *g_pCustomizeSpoilerPkg;
 
 extern CarCustomizeManager gCarCustomizeManager;
+extern FEMarkerManager TheFEMarkerManager;
 
 // --- CustomizeMeter ---
 
@@ -322,4 +324,119 @@ void CustomizeSub::RefreshHeader() {
     } else {
         FEngSetInvisible(FEngFindObject(GetPackageName(), 0x5aec8d91));
     }
+}
+
+// --- Free functions ---
+
+int TranslateCustomizeCatToMarker(eCustomizeCategory cat) {
+    switch (cat) {
+    case CC_BODY_KIT:      return FEMarkerManager::MARKER_BODY;
+    case CC_SPOILERS:      return FEMarkerManager::MARKER_SPOILER;
+    case CC_RIM_BRANDS:    return FEMarkerManager::MARKER_RIMS;
+    case CC_HOODS:         return FEMarkerManager::MARKER_HOOD;
+    case CC_ROOF_SCOOPS:   return FEMarkerManager::MARKER_ROOF_SCOOP;
+    case CC_ENGINE:        return FEMarkerManager::MARKER_ENGINE;
+    case CC_TRANSMISSION:  return FEMarkerManager::MARKER_TRANSMISSION;
+    case CC_SUSPENSION:    return FEMarkerManager::MARKER_CHASSIS;
+    case CC_NITROUS:       return FEMarkerManager::MARKER_NOS;
+    case CC_TIRES:         return FEMarkerManager::MARKER_TIRES;
+    case CC_BRAKES:        return FEMarkerManager::MARKER_BRAKES;
+    case CC_FORCED_INDUCTION: return FEMarkerManager::MARKER_INDUCTION;
+    case CC_PAINT:         return FEMarkerManager::MARKER_PAINT;
+    case CC_VINYL_TYPES:   return FEMarkerManager::MARKER_VINYL;
+    case CC_RIM_PAINT:     return FEMarkerManager::MARKER_PAINT;
+    case CC_DECAL_LOCATION: return FEMarkerManager::MARKER_DECAL;
+    case CC_CUSTOM_HUD:    return FEMarkerManager::MARKER_CUSTOM_HUD;
+    default:
+        if (static_cast<unsigned int>(cat) > 0x401 && static_cast<unsigned int>(cat) < 0x40a) {
+            return FEMarkerManager::MARKER_VINYL;
+        }
+        if (static_cast<unsigned int>(cat) > 0x500 && static_cast<unsigned int>(cat) < 0x507) {
+            return FEMarkerManager::MARKER_DECAL;
+        }
+        if (static_cast<unsigned int>(cat) > 0x600 && static_cast<unsigned int>(cat) < 0x607) {
+            return FEMarkerManager::MARKER_DECAL;
+        }
+        if (static_cast<unsigned int>(cat) > 0x701 && static_cast<unsigned int>(cat) < 0x70c) {
+            return FEMarkerManager::MARKER_RIMS;
+        }
+        return 0;
+    }
+}
+
+unsigned int GetMarkerNameFromCategory(eCustomizeCategory cat) {
+    switch (cat) {
+    case CC_BODY_KIT:      return 0x7c50498c;
+    case CC_SPOILERS:      return 0x52012995;
+    case CC_RIM_BRANDS:    return 0x8a4bfbf2;
+    case CC_HOODS:         return 0x8a4699e1;
+    case CC_ROOF_SCOOPS:   return 0x830100f0;
+    case CC_ENGINE:        return 0x2f3ec04d;
+    case CC_TRANSMISSION:  return 0xd1e77ca1;
+    case CC_SUSPENSION:    return 0xb7cbfcce;
+    case CC_NITROUS:       return 0xc129562b;
+    case CC_TIRES:         return 0xd3efbefe;
+    case CC_BRAKES:        return 0x2884658f;
+    case CC_FORCED_INDUCTION:
+        if (gCarCustomizeManager.IsTurbo()) {
+            return 0xd3f65323;
+        }
+        return 0x63a51aa2;
+    case CC_PAINT:         return 0xd3a2d4d3;
+    case CC_VINYL_TYPES:   return 0xd413e189;
+    case CC_RIM_PAINT:     return 0xd3a2d4d3;
+    case CC_DECAL_LOCATION: return 0xd2cbc510;
+    case CC_CUSTOM_HUD:    return 0xc253ec92;
+    default:
+        if (static_cast<unsigned int>(cat) > 0x401 && static_cast<unsigned int>(cat) < 0x40a) {
+            return 0xd413e189;
+        }
+        if (static_cast<unsigned int>(cat) > 0x500 && static_cast<unsigned int>(cat) < 0x507) {
+            return 0xd2cbc510;
+        }
+        if (static_cast<unsigned int>(cat) > 0x600 && static_cast<unsigned int>(cat) < 0x607) {
+            return 0xd2cbc510;
+        }
+        if (static_cast<unsigned int>(cat) > 0x701 && static_cast<unsigned int>(cat) < 0x70c) {
+            return 0x8a4bfbf2;
+        }
+        if (static_cast<unsigned int>(cat) == 0x801) {
+            return 0xd3a2fbe1;
+        }
+        if (static_cast<unsigned int>(cat) == 0x802) {
+            return 0x3c27a989;
+        }
+        if (static_cast<unsigned int>(cat) == 0x803) {
+            return 0x5692be6b;
+        }
+        return 0;
+    }
+}
+
+unsigned int GetNumMarkersFromCategory(eCustomizeCategory cat) {
+    unsigned int ucat = static_cast<unsigned int>(cat);
+    if (ucat == 0x802) {
+        int total = GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x201))
+            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x202))
+            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x203))
+            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x204))
+            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x205))
+            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x206));
+        return total + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x207));
+    }
+    if (ucat == 0x801) {
+        int total = GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x101))
+            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x102))
+            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x103))
+            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x104))
+            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x105));
+        return total + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x307));
+    }
+    if (ucat == 0x803) {
+        int total = GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x301))
+            + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x302));
+        return total + GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(0x305));
+    }
+    return TheFEMarkerManager.GetNumMarkers(
+        static_cast<FEMarkerManager::ePossibleMarker>(TranslateCustomizeCatToMarker(cat)), 0);
 }
