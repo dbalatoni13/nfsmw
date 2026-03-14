@@ -76,6 +76,9 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     void TrackValue(const char *valueName, float value);
     void IncValue(const char *valueName);
     float GetValue(const char *valueName);
+    float GetValue(unsigned int valueKey);
+    float GetBestValue(const char *valueName);
+    float GetBestValue(unsigned int valueKey);
 
     void RegisterInstance(GRuntimeInstance *instance);
     void UnregisterInstance(GRuntimeInstance *instance);

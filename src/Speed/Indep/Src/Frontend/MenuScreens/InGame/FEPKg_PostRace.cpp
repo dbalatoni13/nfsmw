@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/PhotoFinish.hpp"
 #include "Speed/Indep/Src/Generated/Events/EQuitToFE.hpp"
 #include "Speed/Indep/Src/Generated/Events/ERestartRace.hpp"
+#include "Speed/Indep/Src/Generated/Events/EShowResults.hpp"
 #include "Speed/Indep/Src/Generated/Events/EUnPause.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyRaceAbandoned.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
@@ -20,6 +21,7 @@ extern FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
 extern void FEngSetInvisible(FEObject *obj);
 extern void FEngSetVisible(FEObject *obj);
 extern bool FEngIsScriptSet(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash);
+extern bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
 extern void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash,
                           bool start_at_beginning);
 extern void FEngSetScript(FEObject *obj, unsigned int script_hash, bool start_at_beginning);
@@ -1335,6 +1337,104 @@ bool PostRaceMilestonesScreen::StartBountyAnimations(bool copDestruction) {
         StartAnimations(false, 0x4fc942ca, static_cast<float>(PostRacePursuitScreen::mPursuitData.mRepAchievedCopDestruction), buf);
     }
     return true;
+}
+
+bool PostRaceMilestonesScreen::SetMilestoneAnimationScriptHash(bool isMilestone, int type) {
+    const char *posStr;
+    if (type == 0x2377e50d) {
+        posStr = "POS1";
+    } else if (type == static_cast<int>(0xA61CAC24)) {
+        posStr = "POS2";
+    } else if (type == static_cast<int>(0xFD989A3A)) {
+        posStr = "POS3";
+    } else if (type == static_cast<int>(0xEB45F99D)) {
+        posStr = "POS4";
+    } else if (type == static_cast<int>(0xCDF36FC2)) {
+        posStr = "POS5";
+    } else if (type == static_cast<int>(0x850A64BC)) {
+        posStr = "POS6";
+    } else if (type == 0x33fa23a) {
+        posStr = isMilestone ? "POS7" : "POS0";
+    } else if (type == 0x5392e4fd) {
+        posStr = "POS8";
+    } else if (type == 0x4fc942ca) {
+        posStr = "POS00";
+    } else {
+        mCurrMilestoneScriptHash = 0;
+        return false;
+    }
+    mCurrMilestoneScriptHash = FEHashUpper(posStr);
+    return mCurrMilestoneScriptHash != 0;
+}
+
+bool PostRaceMilestonesScreen::StartMilestoneAnimations() {
+    mCurrMilestoneIndex++;
+    const GMilestone *milestone = PostRacePursuitScreen::GetPursuitData().GetMilestone(mCurrMilestoneIndex);
+    if (milestone) {
+        char descStr[32];
+        char outputStr[64];
+        unsigned int typeKey = milestone->GetTypeKey();
+        FEDatabase->SetMilestoneDescriptionString(descStr, 0, milestone->GetRequiredValue(), 0.0f, false);
+        const char *header = GetLocalizedString(FEDatabase->GetMilestoneHeaderHash(typeKey));
+        bSNPrintf(outputStr, 64, "%s: %s", header, descStr);
+        StartAnimations(true, typeKey, milestone->GetBounty(), outputStr);
+    } else {
+        StartMilestoneDoneAnimations();
+    }
+    return milestone != nullptr;
+}
+
+bool PostRaceMilestonesScreen::StartChallengeAnimations() {
+    mCurrMilestoneIndex++;
+    if (mCurrMilestoneIndex < 1 && GRaceStatus::Exists()) {
+        GRaceParameters *raceParams = GRaceStatus::Get().GetRaceParameters();
+        if (raceParams && raceParams->GetIsPursuitRace() && !FEDatabase->IsFinalEpicChase()) {
+            float currVal = GManager::Get().GetBestValue(raceParams->GetChallengeType());
+            float goalVal = raceParams->GetChallengeGoal();
+            char descStr[32];
+            char outputStr[64];
+            FEDatabase->SetMilestoneDescriptionString(descStr, 0, currVal, goalVal, false);
+            const char *header = GetLocalizedString(FEDatabase->GetMilestoneHeaderHash(raceParams->GetChallengeType()));
+            bSNPrintf(outputStr, 64, "%s: %s", header, descStr);
+            StartAnimations(false, raceParams->GetChallengeType(), 0.0f, outputStr);
+            return true;
+        }
+    }
+    StartMilestoneDoneAnimations();
+    return false;
+}
+
+extern bool FEngIsScriptRunning(FEObject *obj, unsigned int script_hash);
+
+void PostRaceMilestonesScreen::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+    if (msg == 0x35f8620b) {
+        StartBountyAnimations(false);
+    } else if (msg < 0x35f8620bu) {
+        if (msg == 0xd3c3de7) {
+            if (!mCopDestructionBountyShown) {
+                mCopDestructionBountyShown = true;
+                if (PostRacePursuitScreen::mPursuitData.mNumCopsDestroyed > 0) {
+                    StartBountyAnimations(true);
+                    return;
+                }
+            }
+            if (!GRaceStatus::Exists() || !GRaceStatus::Get().GetRaceParameters() ||
+                !GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace() ||
+                FEDatabase->IsFinalEpicChase()) {
+                StartMilestoneAnimations();
+            } else {
+                StartChallengeAnimations();
+            }
+        }
+    } else if (msg == 0x406415e3) {
+        cFEng::mInstance->QueuePackagePop(1);
+        new EShowResults(FERESULTTYPE_PURSUIT, false);
+    } else if (msg == 0xc98356ba) {
+        if (FEngIsScriptSet(mpDataBigIcon, 0x5079c8f8) &&
+            !FEngIsScriptRunning(mpDataBigIcon, 0x5079c8f8)) {
+            FEngSetScript(mpDataBigIcon, mCurrMilestoneScriptHash, true);
+        }
+    }
 }
 
 PursuitResultsDatum::PursuitResultsDatum(PursuitResultsDatumType type, unsigned int itemName, float itemNumber, float itemGoal, PursuitResultsDatumCheckType itemChecked)
