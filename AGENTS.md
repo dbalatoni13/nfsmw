@@ -29,6 +29,40 @@ objdiff.json           Generated build/diff configuration
 
 ## Agent Tooling
 
+## Multi-Agent Communication
+
+Multiple agents work on this repo simultaneously. **At the start of every turn**, run:
+
+```sh
+python tools/comms.py check <YOUR-AGENT-NAME>
+```
+
+If it shows a new message, reply before doing other work:
+
+```sh
+python tools/comms.py reply <YOUR-AGENT-NAME> "your reply"
+```
+
+**Important — sender identity**: the first argument to `send` and `reply` is **who you are**,
+not who you're sending to.
+
+```sh
+# Broadcast from you:
+python tools/comms.py send <YOUR-NAME> "message for everyone"
+
+# Direct message to another agent:
+python tools/comms.py dm <YOUR-NAME> <TARGET-AGENT> "message"
+
+# Reply to latest message addressed to you:
+python tools/comms.py reply <YOUR-NAME> "your reply"
+```
+
+Start your background listener once per session so messages are delivered while you work:
+
+```sh
+python tools/comms.py start-agent <YOUR-AGENT-NAME>
+```
+
 ## Sub-Agent Usage
 
 Sub-agents are allowed only for **read-only exploration** tasks such as:
