@@ -2,34 +2,21 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeManager.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Misc/EasterEggs.hpp"
+#include "Speed/Indep/Src/Physics/PhysicsUpgrades.hpp"
 
 namespace Physics {
 namespace Upgrades {
-    typedef int Type;
     int GetMaxLevel(const void *pvehicle, Type type);
     bool CanInstallJunkman(const void *pvehicle, Type type);
 }
 }
 
-// total size: 0xD0
-struct CarTypeInfo {
-    char pad[0x5C];                    // offset 0x0
-    char WheelOuterRadius;             // offset 0x5C
-    char WheelInnerRadiusMin;          // offset 0x5D
-    char WheelInnerRadiusMax;          // offset 0x5E
-};
-
-typedef int CarType;
 extern CarTypeInfo *GetCarTypeInfo(CarType type);
 
 struct FEMarkerManager {
     int GetNumCustomizeMarkers();
 };
 extern FEMarkerManager TheFEMarkerManager;
-
-struct FEPlayerCarDB {
-    void *GetCustomizationRecordByHandle(unsigned char handle);
-};
 
 extern int g_bTestCareerCustomization;
 
@@ -50,17 +37,17 @@ bool CarCustomizeManager::IsHeroCar() {
 }
 
 int CarCustomizeManager::GetNumCustomizeMarkers() {
-    if (!g_bTestCareerCustomization) {
-        return TheFEMarkerManager.GetNumCustomizeMarkers();
+    if (g_bTestCareerCustomization) {
+        return 1;
     }
-    return 1;
+    return TheFEMarkerManager.GetNumCustomizeMarkers();
 }
 
 bool CarCustomizeManager::IsCastrolCar() {
-    if (TuningCar->GetType() != 0x34) {
-        return false;
+    if (TuningCar->GetType() == 0x34) {
+        return gEasterEggs.IsEasterEggUnlocked(EASTER_EGG_CASTROL);
     }
-    return gEasterEggs.IsEasterEggUnlocked(EASTER_EGG_CASTROL);
+    return false;
 }
 
 bool CarCustomizeManager::IsRotaryCar() {
@@ -73,16 +60,18 @@ bool CarCustomizeManager::IsRotaryCar() {
 
 int CarCustomizeManager::GetMinInnerRadius() {
     CarTypeInfo *info = GetCarTypeInfo(TuningCar->GetType());
-    if (!info)
-        return 0;
-    return info->WheelInnerRadiusMin;
+    if (info) {
+        return info->WheelInnerRadiusMin;
+    }
+    return 0;
 }
 
 int CarCustomizeManager::GetMaxInnerRadius() {
     CarTypeInfo *info = GetCarTypeInfo(TuningCar->GetType());
-    if (!info)
-        return 0;
-    return info->WheelInnerRadiusMax;
+    if (info) {
+        return info->WheelInnerRadiusMax;
+    }
+    return 0;
 }
 
 int CarCustomizeManager::GetMaxPackages(Physics::Upgrades::Type type) {
@@ -99,9 +88,8 @@ int CarCustomizeManager::GetMaxPackages(Physics::Upgrades::Type type) {
 }
 
 int CarCustomizeManager::GetInstalledPerfPkg(Physics::Upgrades::Type type) {
-    FEPlayerCarDB *db = static_cast<FEPlayerCarDB *>(FEDatabase->GetPlayerCarDB());
-    unsigned char handle = TuningCar->GetHandle();
-    void *record = db->GetCustomizationRecordByHandle(handle);
-    int *installed = reinterpret_cast<int *>(reinterpret_cast<char *>(record) + 0x118);
-    return installed[type];
+    FEPlayerCarDB *db = FEDatabase->GetPlayerCarStable(0);
+    FECustomizationRecord *record = db->GetCustomizationRecordByHandle(TuningCar->Customization);
+    const Physics::Upgrades::Package *pkg = &record->InstalledPhysics;
+    return pkg->Part[type];
 }

@@ -6,9 +6,9 @@ extern GRaceParameters *theChallengeRace;
 void ChallengeDatum::NotificationMessage(unsigned long msg, FEObject *pObj, unsigned long param1, unsigned long param2) {
     if (msg != 0x0C407210)
         return;
-    if (IsLocked()) {
-        theChallengeRace = nullptr;
-    } else {
+    if (!IsLocked()) {
         theChallengeRace = race;
+    } else {
+        theChallengeRace = nullptr;
     }
 }

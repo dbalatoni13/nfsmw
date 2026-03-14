@@ -8,8 +8,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeTypes.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include <types.h>
-
-namespace Physics { namespace Upgrades { typedef int Type; } }
+#include "Speed/Indep/Src/Physics/PhysicsUpgrades.hpp"
 
 struct FECarRecord;
 struct CarPart;
