@@ -1,5 +1,8 @@
 // OWNED BY zFeOverlay AGENT - DO NOT MODIFY OR EMPTY
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/FECustomize.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeTypes.hpp"
+
+struct FECarRecord;
 
 static bool gInBackRoom;
 static bool gInPerformance;
@@ -11,6 +14,20 @@ bool CustomizeIsInPerformance() { return gInPerformance; }
 void CustomizeSetInPerformance(bool b) { gInPerformance = b; }
 bool CustomizeIsInParts() { return gInParts; }
 void CustomizeSetInParts(bool b) { gInParts = b; }
+
+extern int g_TheCustomizeEntryPoint;
+extern FECarRecord *g_pCustomizeCarRecordToUse;
+
+void BeginCarCustomize(eCustomizeEntryPoint entry_point, FECarRecord *theCustomCar) {
+    CustomizeSetInBackRoom(false);
+    CustomizeSetInPerformance(false);
+    CustomizeSetInParts(false);
+    if (entry_point) {
+        cFEng::Get()->QueuePackageSwitch("CustomizeMain.fng", 0, 0, false);
+    }
+    g_TheCustomizeEntryPoint = entry_point;
+    g_pCustomizeCarRecordToUse = theCustomCar;
+}
 
 #ifdef FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE____CUSTOMIZE_CARCUSTOMIZE_H
 // The rest of this file only compiles when CarCustomize.hpp has been
@@ -495,6 +512,32 @@ void CustomizeShoppingCart::UncheckAllItems() {
 // --- CustomizeParts ---
 
 static void UnLoadCustomHUDPacksAndTextures();
+
+CustomizeParts::CustomizeParts(ScreenConstructorData *sd) : CustomizationScreen(sd) {
+    bTexturesNeedUnload = false;
+    if (Category == 0x307) {
+        if (!TexturePackLoaded) {
+            for (int i = 0; i < 11; i++) {
+                CustomizeHUDTexPackResources[i] = 0;
+                for (unsigned int j = 0; j < 5; j++) {
+                    CustomizeHUDTexTextureResources[i * 5 + j] = 0;
+                }
+            }
+        }
+        TachRPM = static_cast<int>(Physics::Info::Redline(gCarCustomizeManager.ThePVehicle));
+        if (TachRPM >= 0x251d) {
+            TachRPM = 10000;
+        } else if (TachRPM >= 0x2135) {
+            TachRPM = 9000;
+        } else if (TachRPM <= 0x1d4c) {
+            TachRPM = 7000;
+        } else {
+            TachRPM = 8000;
+        }
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0xdee8632b));
+    }
+    Setup();
+}
 
 CustomizeParts::~CustomizeParts() {
     if (TexturePackLoaded && bTexturesNeedUnload) {

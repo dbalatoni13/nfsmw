@@ -146,6 +146,7 @@ struct FEPackage : public FENode {
     inline unsigned long GetVersion() const { return VersionNumber; }
     inline char* GetFilename() { return pFilename; }
     inline unsigned long GetNumParentObjects() { return Objects.GetNumElements(); }
+    inline void SetTickIncrement(int tDeltaTicks) { iTickIncrement = tDeltaTicks; }
     inline void SetExecute(bool bExec) { bExecuting = bExec; }
     inline void SetUseIdleList(bool bUseIdle) { bUseIdleList = bUseIdle; }
     inline bool UsesIdleList() { return bUseIdleList; }
