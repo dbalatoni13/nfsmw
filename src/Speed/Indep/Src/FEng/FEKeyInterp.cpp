@@ -8,26 +8,18 @@ void FEInterpNone(FEScript* pScript, unsigned char TrackNum, long tTime, void* p
 void FEKeyInterp(FEScript* pScript, unsigned char TrackNum, long tTime, FEObject* pOutObj) {
     unsigned char InterpType = *(reinterpret_cast<unsigned char*>(pScript->pTracks + TrackNum) + 2);
 
-    if (InterpType == 2) {
-        return;
+    switch (InterpType) {
+    case 0:
+        FEInterpNone(pScript, TrackNum, tTime, pOutObj->pData);
+        break;
+    case 1:
+    case 3:
+        FEInterpLinear(pScript, TrackNum, tTime, pOutObj->pData);
+        break;
+    case 2:
+    default:
+        break;
     }
-
-    if (InterpType > 2) {
-        if (InterpType != 3) {
-            return;
-        }
-    } else {
-        if (InterpType == 0) {
-            FEInterpNone(pScript, TrackNum, tTime, pOutObj->pData);
-            return;
-        }
-
-        if (InterpType != 1) {
-            return;
-        }
-    }
-
-    FEInterpLinear(pScript, TrackNum, tTime, pOutObj->pData);
 }
 
 void FEInterpLinear(FEKeyTrack* pTrack, long tTime, void* pOutData);
@@ -36,26 +28,18 @@ void FEInterpNone(FEKeyTrack* pTrack, long tTime, void* pOutData);
 void FEKeyInterp(FEKeyTrack* pTrack, long tTime, void* pOutData) {
     int InterpType = pTrack->InterpType;
 
-    if (InterpType == 2) {
-        return;
+    switch (InterpType) {
+    case 0:
+        FEInterpNone(pTrack, tTime, pOutData);
+        break;
+    case 1:
+    case 3:
+        FEInterpLinear(pTrack, tTime, pOutData);
+        break;
+    case 2:
+    default:
+        break;
     }
-
-    if (InterpType > 2) {
-        if (InterpType != 3) {
-            return;
-        }
-    } else {
-        if (InterpType == 0) {
-            FEInterpNone(pTrack, tTime, pOutData);
-            return;
-        }
-
-        if (InterpType != 1) {
-            return;
-        }
-    }
-
-    FEInterpLinear(pTrack, tTime, pOutData);
 }
 
 void FEKeyInterpFast(FEKeyTrack* pTrack, long tTime, void* pOutData) {
@@ -65,19 +49,17 @@ void FEKeyInterpFast(FEKeyTrack* pTrack, long tTime, void* pOutData) {
 
     int InterpType = pTrack->InterpType;
 
-    if (InterpType == 2) {
-    } else if (InterpType > 2) {
-        if (InterpType != 3) {
-        } else {
-            FEInterpLinear(pTrack, tTime, pOutData);
-        }
-    } else {
-        if (InterpType == 0) {
-            FEInterpNone(pTrack, tTime, pOutData);
-        } else if (InterpType != 1) {
-        } else {
-            FEInterpLinear(pTrack, tTime, pOutData);
-        }
+    switch (InterpType) {
+    case 0:
+        FEInterpNone(pTrack, tTime, pOutData);
+        break;
+    case 1:
+    case 3:
+        FEInterpLinear(pTrack, tTime, pOutData);
+        break;
+    case 2:
+    default:
+        break;
     }
 
     if (pTrack->DeltaKeys.GetNumElements() == 0) {

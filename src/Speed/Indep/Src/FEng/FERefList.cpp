@@ -92,13 +92,7 @@ FEMinNode* FERefList::RemHead() {
 
 unsigned long FERefList::GetNumElements() {
     unsigned long Count = 0;
-    FEMinNode* pNode;
-
-    if (bIsReference) {
-        pNode = pRef->GetHead();
-    } else {
-        pNode = head;
-    }
+    FEMinNode* pNode = GetHead();
 
     while (pNode) {
         pNode = pNode->GetNext();
