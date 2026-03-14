@@ -46,18 +46,19 @@ FETypeNode* FETypeLib::CreateBaseObjectType(const char* pName) {
 }
 
 FETypeNode* FETypeLib::CreateImageObjectType(const char* pName) {
-    FETypeNode* pType = CreateBaseObjectType(pName);
-
     FEVector2 ZeroVect;
-    FEVector2 OneVect(1.0f, 1.0f);
+    FEVector2 OneVect;
+
+    FETypeNode* pType = CreateBaseObjectType(pName);
 
     pType->AddField("Upper Left", 3);
     pType->AddField("Lower Right", 3);
 
+    ZeroVect = FEVector2(0.0f, 0.0f);
     FEFieldNode* pField = pType->GetField("Upper Left");
     pField->SetDefault(&ZeroVect);
-    pField = pType->GetField("Lower Right");
-    pField->SetDefault(&OneVect);
+    OneVect = FEVector2(1.0f, 1.0f);
+    pField->GetNext()->SetDefault(&OneVect);
 
     return pType;
 }
