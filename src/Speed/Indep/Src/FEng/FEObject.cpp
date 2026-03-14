@@ -141,6 +141,56 @@ void FEObject::SetCurrentScript(FEScript* pScript) {
     }
 }
 
+void FEObject::SetupMoveToTracks() {
+    unsigned long NumTracks = pCurrentScript->TrackCount;
+    FEKeyTrack* pTrack = pCurrentScript->pTracks;
+
+    for (unsigned long i = 0; i < NumTracks; i++) {
+        pTrack[i].InterpAction &= 0x7F;
+
+        if (pTrack[i].InterpType - 3 < 2) {
+            float* pfData = reinterpret_cast<float*>(pData + pTrack[i].LongOffset * 4);
+            FEKeyNode* pBase = pTrack[i].GetBaseKey();
+            FEKeyNode* pKey = pTrack[i].GetFirstDeltaKey();
+
+            if (pKey) {
+                switch (pTrack[i].ParamType) {
+                case 1: {
+                    *static_cast<long*>(pKey->Val) = *reinterpret_cast<long*>(pfData) - *reinterpret_cast<long*>(static_cast<unsigned char*>(pBase->Val));
+                    break;
+                }
+                case 2: {
+                    *reinterpret_cast<float*>(static_cast<unsigned char*>(pKey->Val)) = *reinterpret_cast<float*>(pfData) - *reinterpret_cast<float*>(static_cast<unsigned char*>(pBase->Val));
+                    break;
+                }
+                case 3: {
+                    FEVector2 diff = *reinterpret_cast<FEVector2*>(pfData) - *reinterpret_cast<FEVector2*>(static_cast<unsigned char*>(pBase->Val));
+                    pKey->Val = diff;
+                    break;
+                }
+                case 4: {
+                    FEVector3 diff3 = *reinterpret_cast<FEVector3*>(pfData) - *reinterpret_cast<FEVector3*>(static_cast<unsigned char*>(pBase->Val));
+                    pKey->Val = diff3;
+                    break;
+                }
+                case 5: {
+                    FEQuaternion BaseQuat = *static_cast<FEQuaternion*>(pBase->Val);
+                    BaseQuat.Conjugate();
+                    FEQuaternion qRet = *reinterpret_cast<FEQuaternion*>(pfData) * BaseQuat;
+                    pKey->Val = qRet;
+                    break;
+                }
+                case 6: {
+                    FEColor colorDiff = *reinterpret_cast<FEColor*>(pfData) - *reinterpret_cast<FEColor*>(static_cast<unsigned char*>(pBase->Val));
+                    pKey->Val = colorDiff;
+                    break;
+                }
+                }
+            }
+        }
+    }
+}
+
 FEMessageResponse* FEObject::FindResponse(unsigned long MsgID) const {
     FEMessageResponse* pResp = static_cast<FEMessageResponse*>(Responses.GetHead());
     while (pResp) {
