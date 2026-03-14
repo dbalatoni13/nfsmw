@@ -2,15 +2,35 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Misc/EasterEggs.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
 
 extern int UnlockAllThings;
 extern char TheUnlockData[0x1c8];
 extern char gMaxPartLevels[NUM_UNLOCKABLES];
+extern EasterEggs gEasterEggs;
+
+struct CarPart {
+    unsigned short PartNameHashBot;
+    unsigned short PartNameHashTop;
+    char PartID;
+    unsigned char GroupNumber_UpgradeLevel;
+    char BaseModelNameHashSelector;
+    unsigned char CarTypeNameHashIndex;
+    unsigned short NameOffset;
+    unsigned short AttributeTableOffset;
+    unsigned short ModelNameHashTableOffset;
+
+    char GetUpgradeLevel() { return GroupNumber_UpgradeLevel >> 5; }
+};
 
 bool GetIsCollectorsEdition();
 eUnlockableEntity MapCarPartToUnlockable(int carslot, CarPart *part);
 eUnlockableEntity MapPerfPkgToUnlockable(Physics::Upgrades::Type type);
 const FECarPartInfo *LookupFEPartInfo(eUnlockableEntity unlockable, int level);
+eUnlockableEntity ConvertBigBangUpgradeAward(const char *partname);
+char *SaveSomeData(void *save_to, void *save_from, int bytes, void *maxptr);
+char *LoadSomeData(void *load_to, void *load_from, int bytes, void *maxptr);
 
 // ============================================================
 // Free functions
@@ -432,4 +452,294 @@ char *FEMarkerManager::SaveToBuffer(char *buffer) {
 char *FEMarkerManager::LoadFromBuffer(char *buffer) {
     bMemCpy(this, buffer, 0x2F4);
     return buffer + 0x2F4;
+}
+
+// ============================================================
+// CareerSettings Save/Load unlock data
+// ============================================================
+
+char *CareerSettings::SaveUnlockData(void *save_to, void *maxptr) {
+    char *buf = static_cast<char *>(save_to);
+    for (unsigned int i = 0; i < 0x39; i++) {
+        buf = SaveSomeData(buf, &TheUnlockData[i * 8], 8, maxptr);
+    }
+    return buf;
+}
+
+char *CareerSettings::LoadUnlockData(void *load_from, void *maxptr) {
+    char *buf = static_cast<char *>(load_from);
+    for (unsigned int i = 0; i < 0x39; i++) {
+        buf = LoadSomeData(&TheUnlockData[i * 8], buf, 8, maxptr);
+    }
+    return buf;
+}
+
+// ============================================================
+// More free functions
+// ============================================================
+
+void MarkUnlockableThingSeen(eUnlockableEntity entity, unsigned int filter) {
+    if (filter & 1) {
+        char count = TheUnlockData[static_cast<int>(entity) * 8 + 7]++;
+        if (count + 1 >= 4) {
+            TheUnlockData[static_cast<int>(entity) * 8 + 7] = 0;
+            TheUnlockData[static_cast<int>(entity) * 8 + 6] = -1;
+        }
+        return;
+    }
+    if (filter & 2) {
+        char count = TheUnlockData[static_cast<int>(entity) * 8 + 3]++;
+        if (count + 1 >= 4) {
+            TheUnlockData[static_cast<int>(entity) * 8 + 2] = -1;
+            TheUnlockData[static_cast<int>(entity) * 8 + 3] = 0;
+        }
+    }
+}
+
+eUnlockableEntity MapPerfPkgToUnlockable(Physics::Upgrades::Type pkg_type) {
+    switch (pkg_type) {
+    case Physics::Upgrades::kType_Tires: return UNLOCKABLE_THING_PUT_TIRES;
+    case Physics::Upgrades::kType_Brakes: return UNLOCKABLE_THING_PUT_BRAKES;
+    case Physics::Upgrades::kType_Chassis: return UNLOCKABLE_THING_PUT_CHASSIS;
+    case Physics::Upgrades::kType_Transmission: return UNLOCKABLE_THING_PUT_TRANSMISSION;
+    case Physics::Upgrades::kType_Engine: return UNLOCKABLE_THING_PUT_ENGINE;
+    case Physics::Upgrades::kType_Induction: return UNLOCKABLE_THING_PUT_INDUCTION;
+    case Physics::Upgrades::kType_Nitrous: return UNLOCKABLE_THING_PUT_NOS;
+    default: return UNLOCKABLE_THING_UNKNOWN;
+    }
+}
+
+eUnlockableEntity MapCarPartToUnlockable(int carslot, CarPart *part) {
+    switch (carslot) {
+    case 0x17: return UNLOCKABLE_THING_BODY_KIT;
+    case 0x2c: return UNLOCKABLE_THING_SPOILERS;
+    case 0x3e: return UNLOCKABLE_THING_ROOF_SCOOPS;
+    case 0x3f: return UNLOCKABLE_THING_HOODS;
+    case 0x42: return UNLOCKABLE_THING_RIM_BRANDS;
+    case 0x43: return UNLOCKABLE_THING_RIM_BRANDS;
+    case 0x45: return UNLOCKABLE_THING_LICENSE_PLATE;
+    case 0x4c: return UNLOCKABLE_THING_PAINTABLE_BODY;
+    case 0x4d: return UNLOCKABLE_VINYLS_GROUP_BODY;
+    case 0x4e: return UNLOCKABLE_THING_PAINTABLE_BODY;
+    case 0x53: return UNLOCKABLE_DECAL_REAR_WINDOW;
+    case 0x5b: return UNLOCKABLE_DECAL_REAR_WINDOW;
+    case 99: return UNLOCKABLE_DECAL_LEFT_DOOR;
+    case 100: return UNLOCKABLE_DECAL_LEFT_DOOR;
+    case 0x65: return UNLOCKABLE_DECAL_LEFT_DOOR;
+    case 0x66: return UNLOCKABLE_DECAL_LEFT_DOOR;
+    case 0x67: return UNLOCKABLE_DECAL_LEFT_DOOR;
+    case 0x68: return UNLOCKABLE_DECAL_LEFT_DOOR;
+    case 0x69: return UNLOCKABLE_DECAL_NUMBERS;
+    case 0x6b: return UNLOCKABLE_DECAL_LEFT_DOOR;
+    case 0x6c: return UNLOCKABLE_DECAL_LEFT_DOOR;
+    case 0x6d: return UNLOCKABLE_DECAL_LEFT_DOOR;
+    case 0x6e: return UNLOCKABLE_DECAL_LEFT_DOOR;
+    case 0x6f: return UNLOCKABLE_DECAL_LEFT_DOOR;
+    case 0x70: return UNLOCKABLE_DECAL_LEFT_DOOR;
+    case 0x71: return UNLOCKABLE_DECAL_NUMBERS;
+    case 0x73: return UNLOCKABLE_DECAL_LEFT_QP;
+    case 0x7b: return UNLOCKABLE_DECAL_LEFT_QP;
+    case 0x83: return UNLOCKABLE_THING_WINDOW_TINT;
+    case 0x84: return UNLOCKABLE_THING_CUSTOM_HUD;
+    default: return UNLOCKABLE_THING_UNKNOWN;
+    }
+}
+
+const FECarPartInfo *LookupFEPartInfo(eUnlockableEntity unlockable, int upgrade_level) {
+    const Attrib::Class *feclass = Attrib::Database::Get().GetClass(0x85885722);
+    unsigned int key = feclass->GetFirstCollection();
+    Attrib::Gen::frontend carparts(Attrib::StringToKey("carparts"), 0, nullptr);
+    do {
+        if (!key) {
+            return nullptr;
+        }
+        Attrib::Gen::frontend part(key, 0, nullptr);
+        if (part.GetParent() == Attrib::StringToKey("carparts")) {
+            if (static_cast<int>(part.feCarPartName()) == static_cast<int>(unlockable)) {
+                for (unsigned int i = 0; i < part.Num_feCarPartInfo(); i++) {
+                    if (static_cast<int>(part.feCarPartInfo(i).Level) == upgrade_level) {
+                        return &part.feCarPartInfo(i);
+                    }
+                }
+            }
+        }
+        key = feclass->GetNextCollection(key);
+    } while (true);
+}
+
+int UnlockSystem::GetPerfPackageCost(eUnlockFilters filter, Physics::Upgrades::Type pkg_type, int level, int player) {
+    eUnlockableEntity unlockable = MapPerfPkgToUnlockable(pkg_type);
+    float price = 0.0f;
+    if (unlockable != UNLOCKABLE_THING_UNKNOWN) {
+        const FECarPartInfo *info = LookupFEPartInfo(unlockable, level);
+        if (info) {
+            price = info->Cost;
+        }
+    }
+    return static_cast<int>(price);
+}
+
+int UnlockSystem::GetCarPartCost(eUnlockFilters filter, int carslot, CarPart *part, int player) {
+    eUnlockableEntity unlockable = MapCarPartToUnlockable(carslot, part);
+    float price = 0.0f;
+    if (unlockable != UNLOCKABLE_THING_UNKNOWN) {
+        const FECarPartInfo *info = LookupFEPartInfo(unlockable, part->GetUpgradeLevel());
+        if (info) {
+            price = info->Cost;
+        }
+    }
+    return static_cast<int>(price);
+}
+
+bool UnlockSystem::IsEventAvailable(unsigned int event_hash) {
+    if (event_hash == Attrib::StringHash32("99.1.1")) {
+        return false;
+    }
+    if (event_hash == Attrib::StringHash32("21.1.1")
+        || event_hash == Attrib::StringHash32("21.2.1")
+        || event_hash == Attrib::StringHash32("21.2.2")
+        || event_hash == Attrib::StringHash32("19.9.70")) {
+        if (GetIsCollectorsEdition()) {
+            return true;
+        }
+    } else {
+        if (event_hash != Attrib::StringHash32("19.8.31")) {
+            return true;
+        }
+        if (gEasterEggs.IsEasterEggUnlocked(EASTER_EGG_BURGER_KING)
+            && !FEDatabase->GetCareerSettings()->HasBeenAwardedBKReward()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool UnlockSystem::IsBonusCarCEOnly(unsigned int name_hash) {
+    switch (name_hash) {
+    case 0x02d642b8:
+    case 0x03d3401a:
+    case 0x03d8a6d1:
+    case 0x363a1fea:
+    case 0x54653c71:
+    case 0x54655133:
+    case 0x582f21d9:
+    case 0x634d1bd2:
+    case 0xe1075862:
+    case 0xe115ead0:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool UnlockSystem::IsUnlockableAvailable(unsigned int part_name_hash) {
+    if (part_name_hash > 0x13d0c7 && part_name_hash < 0x13d0cb) {
+        return GetIsCollectorsEdition();
+    }
+    return true;
+}
+
+// ============================================================
+// CareerUnlocker remaining
+// ============================================================
+
+bool CareerUnlocker::IsCarPartUnlocked(eUnlockFilters filter, int carslot, CarPart *part, bool backroom) {
+    bool answer = UnlockAllThings != 0;
+    eUnlockableEntity unlockable = MapCarPartToUnlockable(carslot, part);
+    int unlocked = CareerUnlocker::IsUnlockableUnlocked(filter, unlockable, part->GetUpgradeLevel(), backroom);
+    return part->GetUpgradeLevel() == 0 | answer | unlocked;
+}
+
+bool CareerUnlocker::IsCarUnlocked(eUnlockFilters filter, unsigned int car) {
+    bool answer = UnlockAllThings != 0;
+    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
+    FECarRecord *fe_car = stable->GetCarRecordByHandle(car);
+    Attrib::Gen::frontend CarAttribs(fe_car->FEKey, 0, nullptr);
+    unsigned char unlockedAt = CarAttribs.UnlockedAt();
+    unsigned char currentBin = FEDatabase->GetCareerSettings()->GetCurrentBin();
+    return currentBin >= unlockedAt | answer;
+}
+
+bool CareerUnlocker::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEntity ent, int level) {
+    bool answer = UnlockAllThings != 0;
+    FEMarkerManager::ePossibleMarker marker = FEMarkerManager::MARKER_NONE;
+    switch (ent) {
+    case UNLOCKABLE_THING_PUT_TIRES:        marker = FEMarkerManager::MARKER_TIRES; break;
+    case UNLOCKABLE_THING_PUT_BRAKES:       marker = FEMarkerManager::MARKER_BRAKES; break;
+    case UNLOCKABLE_THING_PUT_CHASSIS:      marker = FEMarkerManager::MARKER_CHASSIS; break;
+    case UNLOCKABLE_THING_PUT_TRANSMISSION: marker = FEMarkerManager::MARKER_TRANSMISSION; break;
+    case UNLOCKABLE_THING_PUT_ENGINE:       marker = FEMarkerManager::MARKER_ENGINE; break;
+    case UNLOCKABLE_THING_PUT_INDUCTION:    marker = FEMarkerManager::MARKER_INDUCTION; break;
+    case UNLOCKABLE_THING_PUT_NOS:          marker = FEMarkerManager::MARKER_NOS; break;
+    case UNLOCKABLE_THING_BODY_KIT:         marker = FEMarkerManager::MARKER_BODY; break;
+    case UNLOCKABLE_THING_SPOILERS:         marker = FEMarkerManager::MARKER_SPOILER; break;
+    case UNLOCKABLE_THING_RIM_BRANDS:       marker = FEMarkerManager::MARKER_RIMS; break;
+    case UNLOCKABLE_THING_HOODS:            marker = FEMarkerManager::MARKER_HOOD; break;
+    case UNLOCKABLE_THING_ROOF_SCOOPS:      marker = FEMarkerManager::MARKER_ROOF_SCOOP; break;
+    case UNLOCKABLE_THING_CUSTOM_HUD:       marker = FEMarkerManager::MARKER_CUSTOM_HUD; break;
+    case UNLOCKABLE_THING_PAINTABLE_BODY:   marker = FEMarkerManager::MARKER_PAINT; break;
+    case UNLOCKABLE_VINYLS_GROUP_BODY:      marker = FEMarkerManager::MARKER_VINYL; break;
+    default: break;
+    }
+    if (marker == FEMarkerManager::MARKER_NONE) {
+        return answer;
+    }
+    if (!CareerUnlocker::IsUnlockableUnlocked(filter, ent, level, false)) {
+        if (TheFEMarkerManager.IsMarkerAvailable(marker, 0)) {
+            return true;
+        }
+    }
+    return answer;
+}
+
+// ============================================================
+// QuickRaceUnlocker::IsCarUnlocked
+// ============================================================
+
+bool QuickRaceUnlocker::IsCarUnlocked(eUnlockFilters filter, unsigned int car, int player) {
+    bool answer = UnlockAllThings != 0;
+    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
+    FECarRecord *fe_car = stable->GetCarRecordByHandle(car);
+    Attrib::Gen::frontend CarAttribs(fe_car->FEKey, 0, nullptr);
+    unsigned char unlockedAt = CarAttribs.UnlockedAt();
+    bool hasBeaten = FEDatabase->GetUserProfile(0)->GetCareer()->HasBeatenCareer();
+    bool completedOnce = FEDatabase->GetUserProfile(player)->CareerModeHasBeenCompletedAtLeastOnce;
+    unsigned char currentBin = FEDatabase->GetCareerSettings()->GetCurrentBin();
+    return currentBin >= unlockedAt | answer | hasBeaten | completedOnce;
+}
+
+void ClearAllNewStatus() {
+    for (int i = 0; i < 0x39; i++) {
+        UnlockSystem::ClearNewUnlock(static_cast<eUnlockableEntity>(i), 2);
+        UnlockSystem::ClearNewUnlock(static_cast<eUnlockableEntity>(i), 1);
+    }
+}
+
+bool DoesCategoryHaveNewUnlock(eUnlockableEntity ent) {
+    bool hasNew = false;
+    for (int i = 0; i <= gMaxPartLevels[static_cast<int>(ent)]; i++) {
+        if (UnlockSystem::IsUnlockableNew(static_cast<eUnlockFilters>(7), ent, i)) {
+            hasNew = true;
+        }
+    }
+    return hasNew;
+}
+
+void AwardUnlockUpgrade(Attrib::Gen::gameplay &inst) {
+    const char *upgradePartName = inst.UpgradePartName(0);
+    const char *upgradePartID = inst.UpgradePartID(0);
+    int upgradeLevel = inst.UpgradeLevel(0);
+    eUnlockableEntity entity = ConvertBigBangUpgradeAward(upgradePartID);
+    if (entity != UNLOCKABLE_THING_UNKNOWN) {
+        if (entity == static_cast<eUnlockableEntity>(0x32)) {
+            if (upgradeLevel == 2) {
+                entity = static_cast<eUnlockableEntity>(0x2e);
+            } else if (upgradeLevel == 1) {
+                entity = static_cast<eUnlockableEntity>(0x2c);
+            } else if (upgradeLevel == 3) {
+                entity = static_cast<eUnlockableEntity>(0x30);
+            }
+        }
+        UnlockUnlockableThing(entity, 2, upgradeLevel, "");
+    }
 }

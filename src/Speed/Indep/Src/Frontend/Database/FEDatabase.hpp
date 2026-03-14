@@ -13,6 +13,8 @@
 
 #include <types.h>
 
+class GRaceCustom;
+
 #if ONLINE_SUPPORT
 #include "Speed/Indep/Src/Online/OnlineCfg.hpp"
 #endif
@@ -278,6 +280,12 @@ class CareerSettings {
     int GetSaveBufferSize(bool bExcludeGameplay);
     void ResumeCareer();
     void StartNewCareer(bool bEnterGameplay);
+    char *SaveUnlockData(void *save_to, void *maxptr);
+    char *LoadUnlockData(void *load_from, void *maxptr);
+
+    bool HasBeenAwardedBKReward() {
+        return GetCurrentBin() >= 16;
+    }
 
   public:
     uint32 CurrentCar;           // offset 0x0, size 0x4
@@ -395,6 +403,8 @@ struct GameCompletionStats {
 class cFrontendDatabase {
   public:
     RaceSettings *GetQuickRaceSettings(GRace::Type type);
+    void DefaultRaceSettings();
+    void FillCustomRace(GRaceCustom *parms, RaceSettings *race);
 
     PlayerSettings *GetPlayerSettings(int player) {
         return &CurrentUserProfiles[0]->GetOptions()->ThePlayerSettings[player];
