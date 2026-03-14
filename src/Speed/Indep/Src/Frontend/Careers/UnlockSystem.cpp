@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Misc/EasterEggs.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
+#include "Speed/Indep/Src/Misc/MD5.hpp"
 
 extern int UnlockAllThings;
 extern char TheUnlockData[0x1c8];
@@ -12,6 +13,8 @@ extern EasterEggs gEasterEggs;
 extern bool gVerboseTesterOutput;
 extern int SkipFE;
 extern int SkipFESplitScreen;
+
+void GetLocalizedString(char *buf, unsigned int maxlen, unsigned int hash);
 
 // GRaceDatabase inline methods (can't add bodies to header - DWARF crash)
 inline GRaceSaveInfo *GRaceDatabase::GetScoreInfo() {
@@ -977,4 +980,109 @@ void cFrontendDatabase::RefreshCurrentRide() {
         stable->BuildRideForPlayer(handle, 0, &ride);
     }
     CarViewer::SetRideInfo(&ride, static_cast<eSetRideInfoReasons>(2), static_cast<eCarViewerWhichCar>(0));
+}
+
+// ==================== UserProfile implementations ====================
+
+void UserProfile::SetProfileName(const char *pName, bool isP1) {
+    bool named = false;
+    if (pName && bStrLen(pName) > 0) {
+        named = true;
+    }
+    bMemSet(m_aProfileName, 0, 0x20);
+    if (named) {
+        bStrNCpy(m_aProfileName, pName, 0x20);
+        m_bNamed = true;
+    } else {
+        char defaultName[32];
+        if (isP1) {
+            GetLocalizedString(defaultName, 0x20, 0x7b070984);
+        } else {
+            GetLocalizedString(defaultName, 0x20, 0x7b070985);
+        }
+        bStrNCpy(m_aProfileName, defaultName, 0x20);
+        m_bNamed = false;
+    }
+}
+
+void UserProfile::WriteProfileHash(void *bufferToHash, void *bufferToWrite, int bytes, void *maxptr) {
+    MD5 md5;
+    md5.Reset();
+    md5.Update(bufferToHash, bytes);
+    md5.GetRaw();
+    SaveSomeData(bufferToWrite, md5.GetRaw(), 0x10, maxptr);
+}
+
+bool UserProfile::VerifyProfileHash(void *bufferToHash, void *bufferHash, int bytes) {
+    MD5 md5;
+    md5.Reset();
+    md5.Update(bufferToHash, bytes);
+    md5.GetRaw();
+    return bMemCmp(md5.GetRaw(), bufferHash, 0x10) == 0;
+}
+
+void UserProfile::SaveToBuffer(void *buffer, int size) {
+    char *buf = static_cast<char *>(buffer);
+    char *maxbuf = buf + size;
+    bMemSet(buf, 0, size);
+    char aVersion[16];
+    bMemSet(aVersion, 0, 0x10);
+    buf = SaveSomeData(buf, aVersion, 0x10, maxbuf);
+    buf = TheCareerSettings.SaveToBuffer(buf, maxbuf);
+    buf = SaveSomeData(buf, &FEDatabase->iDefaultStableHash, 4, maxbuf);
+    buf = SaveSomeData(buf, m_aProfileName, 0x20, maxbuf);
+    buf = SaveSomeData(buf, Playlist, 0xF0, maxbuf);
+    buf = SaveSomeData(buf, &TheOptionsSettings, 0xC0, maxbuf);
+    int stableSize = PlayersCarStable.GetSaveBufferSize();
+    buf = PlayersCarStable.SaveToBuffer(buf, stableSize);
+    buf = SaveSomeData(buf, &CareerModeHasBeenCompletedAtLeastOnce, 4, maxbuf);
+    buf = SaveSomeData(buf, &HighScores, 0xBD8, maxbuf);
+    for (int i = 0; i < 11; i++) {
+        RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(i));
+        unsigned int h = settings->GetSelectedCar(0);
+        buf = SaveSomeData(buf, &h, 4, maxbuf);
+    }
+    WriteProfileHash(static_cast<char *>(buffer) + 0x10, buf, size - 0x20, maxbuf);
+}
+
+bool UserProfile::LoadFromBuffer(void *buffer, int size, bool commit_changes, int player_id) {
+    char *buf = static_cast<char *>(buffer);
+    char *maxbuf = buf + size;
+    char aVersion[16];
+    buf = LoadSomeData(aVersion, buf, 0x10, maxbuf);
+    if (commit_changes) {
+        buf = TheCareerSettings.LoadFromBuffer(buf, maxbuf);
+        TheCareerSettings.TryAwardDemoMarker();
+    } else {
+        int careerSize = TheCareerSettings.GetSaveBufferSize(false);
+        buf = buf + careerSize;
+    }
+    unsigned int version;
+    buf = LoadSomeData(&version, buf, 4, maxbuf);
+    if (version != FEDatabase->iDefaultStableHash) {
+        return false;
+    }
+    buf = LoadSomeData(m_aProfileName, buf, 0x20, maxbuf);
+    if (commit_changes) {
+        buf = LoadSomeData(Playlist, buf, 0xF0, maxbuf);
+    } else {
+        buf = buf + 0xF0;
+    }
+    buf = LoadSomeData(&TheOptionsSettings, buf, 0xC0, maxbuf);
+    int stableSize = PlayersCarStable.GetSaveBufferSize();
+    buf = PlayersCarStable.LoadFromBuffer(buf, stableSize);
+    PlayersCarStable.AwardBonusCars();
+    buf = LoadSomeData(&CareerModeHasBeenCompletedAtLeastOnce, buf, 4, maxbuf);
+    buf = LoadSomeData(&HighScores, buf, 0xBD8, maxbuf);
+    for (int i = 0; i < 11; i++) {
+        unsigned int h;
+        buf = LoadSomeData(&h, buf, 4, maxbuf);
+        RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(i));
+        settings->SelectedCar[player_id] = h;
+    }
+    if (VerifyProfileHash(static_cast<char *>(buffer) + 0x10, buf, size - 0x20)) {
+        m_bNamed = true;
+        return true;
+    }
+    return false;
 }
