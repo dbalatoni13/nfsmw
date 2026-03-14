@@ -62,3 +62,10 @@ FEPackageData *FEPackageManager::FindFEPackageData(bChunk *chunk) {
     }
     return nullptr;
 }
+
+void FEPackageManager::PackageWillBeUnloaded(FEPackage *pkg) {
+    FEPackageData *data = FindFEPackageData(pkg->GetName());
+    if (data) {
+        data->UnActivate();
+    }
+}

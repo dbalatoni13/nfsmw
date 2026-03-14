@@ -51,14 +51,14 @@ int CareerSettings::GetSaveBufferSize(bool bExcludeGameplay) {
     return 0x59F9;
 }
 
-bool GameplaySettings::IsMapItemEnabled(unsigned int type) {
+bool GameplaySettings::IsMapItemEnabled(eWorldMapItemType type) {
     if ((MapItems & type) != 0) {
         return true;
     }
     return false;
 }
 
-void GameplaySettings::SetMapItem(unsigned int type, bool enabled) {
+void GameplaySettings::SetMapItem(eWorldMapItemType type, bool enabled) {
     if (enabled) {
         MapItems = MapItems | type;
         return;
@@ -274,4 +274,11 @@ bool cFrontendDatabase::IsMilestoneTimeFormat(int typeKey) const {
 
 GameCompletionStats::GameCompletionStats() {
     bMemSet(this, 0, sizeof(GameCompletionStats));
+}
+
+void cFrontendDatabase::NotifyExitRaceToFrontend(eExitRacePlaces from_where) {
+    PostRaceOptionChosen = static_cast<ePostRaceOptions>(1);
+    if (from_where == EXIT_RACE_FROM_PAUSE) {
+        CurrentUserProfiles[0]->CommitHighScoresPauseQuit();
+    }
 }

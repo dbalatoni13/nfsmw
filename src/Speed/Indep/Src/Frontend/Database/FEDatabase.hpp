@@ -92,13 +92,37 @@ enum eLoadSaveGame {
     eLOADSAVE_SAVE = 1,
 };
 
+enum eExitRacePlaces {
+    EXIT_RACE_FROM_PAUSE = 0,
+    EXIT_RACE_FROM_POSTRACE = 1,
+};
+
+enum eWorldMapItemType {
+    WMIT_NONE = 0,
+    WMIT_PLAYER_CAR = 1,
+    WMIT_AI_RACE_CAR = 2,
+    WMIT_COP_CAR = 4,
+    WMIT_COP_HELI = 8,
+    WMIT_TRAFFIC_CAR = 16,
+    WMIT_ROADBLOCK = 32,
+    WMIT_CHECKPOINT = 64,
+    WMIT_CIRCUIT_RACE = 128,
+    WMIT_SPRINT_RACE = 256,
+    WMIT_LAP_KO_RACE = 512,
+    WMIT_DRAG_RACE = 1024,
+    WMIT_SPEED_TRAP_RACE = 2048,
+    WMIT_TOLLBOOTH_RACE = 4096,
+    WMIT_MULTIPOINT_RACE = 8192,
+    WMIT_CELL_PHONE_RACE = 16384,
+};
+
 // total size: 0x20
 class GameplaySettings {
   public:
     void Default();
     bool operator==(const GameplaySettings& rhs) const;
-    bool IsMapItemEnabled(unsigned int type);
-    void SetMapItem(unsigned int type, bool enabled);
+    bool IsMapItemEnabled(eWorldMapItemType type);
+    void SetMapItem(eWorldMapItemType type, bool enabled);
 
     int AutoSaveOn;                     // offset 0x0, size 0x1
     int RearviewOn;                     // offset 0x4, size 0x1
@@ -512,6 +536,7 @@ class cFrontendDatabase {
     bool IsFinalEpicChase();
     unsigned int GetUserProfileSaveSize(bool bExcludeGameplay);
     void SaveUserProfileToBuffer(void* buffer, unsigned int size);
+    void NotifyExitRaceToFrontend(eExitRacePlaces from_where);
     void AllocBackupDB(bool b);
     void DefaultProfile();
     bool LoadUserProfileFromBuffer(void* buffer, int size, int player);

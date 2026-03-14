@@ -47,6 +47,7 @@ class FEPackageData : public bTNode<FEPackageData> {
 
     void NotificationMessage(unsigned long Message, struct FEObject *pObject, unsigned long Param1, unsigned long Param2);
     void NotifySoundMessage(unsigned long msg, struct FEObject *obj, unsigned long control_mask, unsigned long pkg_ptr);
+    void UnActivate();
 
     // struct FEPackageRenderInfo *GetRenderInfo() {}
 
