@@ -1016,11 +1016,11 @@ void AICopManager::UpdatePatrols() {
         if (removeHim) {
             RemoveActiveCopVehicle(ivehicle);
             MUnspawnCop(ivehicle->GetSimable()->GetOwnerHandle(), 6).Send("SoundAI");
-        } else {
-            if (!offWorld && !ivehicle->IsDestroyed() && !ipursuitVehicle->PursuitRequest()) {
-                mPursuitRequestVehicle = ivehicle;
-                break; // TODO this break is correct but breaks the order
-            }
+            continue;
+        }
+        if (!offWorld && !ivehicle->IsDestroyed() && !ipursuitVehicle->PursuitRequest()) {
+            mPursuitRequestVehicle = ivehicle;
+            break; // TODO this break is correct but breaks the order
         }
     }
 }

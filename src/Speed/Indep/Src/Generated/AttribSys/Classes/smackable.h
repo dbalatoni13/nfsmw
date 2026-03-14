@@ -55,6 +55,10 @@ struct smackable : Instance {
         SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
+    smackable(const Instance &src) : Instance(src) {
+        SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
     smackable(const smackable &src) : Instance(src) {
         SetDefaultLayout(sizeof(_LayoutStruct));
     }

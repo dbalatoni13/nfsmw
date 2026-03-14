@@ -1686,13 +1686,8 @@ void AIPerpVehicle::OnCausedExplosion(IExplosion *explosion, ISimable *to) {
         }
 
         if (type == SIMABLE_SMACKABLE && bIsRootModel) {
-            Attrib::Instance attribs(to->GetAttributes());
-            const unsigned int *resultptr =
-                reinterpret_cast< const unsigned int * >(attribs.GetAttributePointer(0x6db7d192, 0));
-            if (!resultptr) {
-                resultptr = reinterpret_cast< const unsigned int * >(Attrib::DefaultDataArea(sizeof(unsigned int)));
-            }
-            cost_to_state = *resultptr;
+            Attrib::Gen::smackable attribs(to->GetAttributes());
+            cost_to_state = attribs.COST_TO_STATE();
         } else if (type == SIMABLE_VEHICLE) {
             IVehicle *ivehicle;
             to->QueryInterface(&ivehicle);
@@ -1738,13 +1733,8 @@ void AIPerpVehicle::OnCausedCollision(const Sim::Collision::Info &cinfo, ISimabl
         IPursuit *ipursuit = GetPursuit();
 
         if (type == SIMABLE_SMACKABLE) {
-            Attrib::Instance attribs(to->GetAttributes());
-            const unsigned int *resultptr =
-                reinterpret_cast< const unsigned int * >(attribs.GetAttributePointer(0x6db7d192, 0));
-            if (!resultptr) {
-                resultptr = reinterpret_cast< const unsigned int * >(Attrib::DefaultDataArea(sizeof(unsigned int)));
-            }
-            cost_to_state = *resultptr;
+            Attrib::Gen::smackable attribs(to->GetAttributes());
+            cost_to_state = attribs.COST_TO_STATE();
 
             IModel *model = to->GetModel();
             if (model != nullptr && model->IsRootModel() && directhit &&
