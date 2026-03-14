@@ -60,11 +60,7 @@ struct WRoadLane {
         return (nBits >> n_offset) & ~n_mask;
     }
 
-    int GetBitsSigned(int n_offset, int n_bits) const {
-        int extra_high_bits = 32 - (n_offset + n_bits);
-        int bits = n_offset + extra_high_bits;
-        return static_cast< int >(nBits << extra_high_bits) >> bits;
-    }
+    int GetBitsSigned(int n_offset, int n_bits) const;
 
     float GetWidth() const {
         return static_cast< float >(GetBitsSigned(4, 14)) * (100.0f / 8191.0f);
@@ -76,6 +72,11 @@ struct WRoadLane {
 
     unsigned int nBits; // offset 0x0, size 0x4
 };
+
+inline int WRoadLane::GetBitsSigned(int n_offset, int n_bits) const {
+    int extra_high_bits = 32 - (n_offset + n_bits);
+    return static_cast< int >(nBits << extra_high_bits) >> (n_offset + extra_high_bits);
+}
 
 // total size: 0x40
 struct WRoadProfile {
