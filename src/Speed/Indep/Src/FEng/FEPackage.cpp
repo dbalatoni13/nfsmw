@@ -707,7 +707,7 @@ void FEPackage::AddMouseObjectState(FEObject* pObj) {
                 offset.h = 0.0f;
                 offset.v = 0.0f;
                 if (OffsetCalculatron(NameHash, pChild, offset)) {
-                    FEObjectMouseState* pState = MouseObjectStates + NumMouseObjectsCounter;
+                    FEObjectMouseState* pState = MouseObjectStates + NumMouseObjects;
                     pState->Offset.h = offset.h;
                     pState->Offset.v = offset.v;
                     break;
@@ -718,7 +718,7 @@ void FEPackage::AddMouseObjectState(FEObject* pObj) {
             offset.h = 0.0f;
             offset.v = 0.0f;
             if (OffsetCalculatron(NameHash, pChild, offset)) {
-                FEObjectMouseState* pState = MouseObjectStates + NumMouseObjectsCounter;
+                FEObjectMouseState* pState = MouseObjectStates + NumMouseObjects;
                 pState->Offset.h = offset.h;
                 pState->Offset.v = offset.v;
                 break;
@@ -726,8 +726,8 @@ void FEPackage::AddMouseObjectState(FEObject* pObj) {
         }
         pChild = static_cast<FEObject*>(pChild->GetNext());
     }
-    MouseObjectStates[NumMouseObjectsCounter].pObject = pObj;
-    NumMouseObjectsCounter++;
+    MouseObjectStates[NumMouseObjects].pObject = pObj;
+    NumMouseObjects++;
 }
 
 void FEPackage::UpdateMouseObjectOffsets(FEObject* pObj) {

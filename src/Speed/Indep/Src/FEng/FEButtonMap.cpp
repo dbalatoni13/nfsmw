@@ -5,8 +5,23 @@
 #include "Speed/Indep/Src/FEng/FEGameInterface.h"
 
 static unsigned long PassWrapMode[5] = { 3, 1, 1, 2, 2 };
-static FEVector2 DirectionVectors[8];
-static FEVector2 PassOffsets[5];
+static FEVector2 DirectionVectors[8] = {
+    FEVector2(0.0f, -1.0f),
+    FEVector2(0.707110f, -0.707110f),
+    FEVector2(1.0f, 0.0f),
+    FEVector2(0.707110f, 0.707110f),
+    FEVector2(0.0f, 1.0f),
+    FEVector2(-0.707110f, 0.707110f),
+    FEVector2(-1.0f, 0.0f),
+    FEVector2(-0.707110f, -0.707110f),
+};
+static FEVector2 PassOffsets[5] = {
+    FEVector2(0.0f, 0.0f),
+    FEVector2(-640.0f, 0.0f),
+    FEVector2(640.0f, 0.0f),
+    FEVector2(0.0f, -480.0f),
+    FEVector2(0.0f, 480.0f),
+};
 
 void FEButtonMap::SetCount(unsigned long NewCount) {
     if (pList) {

@@ -214,8 +214,8 @@ FEPackage* FEngine::FindLibraryPackage(unsigned long NameHash) const {
 
 void FEngine::QueueMessage(unsigned long MsgID, FEObject* pFrom, FEPackage* pFromPackage, FEObject* pTo, unsigned long ControlMask) {
     FEMessageNode* pNode = static_cast<FEMessageNode*>(FEngMalloc(sizeof(FEMessageNode), nullptr, 0));
-    pNode->prev = reinterpret_cast<FEMinNode*>(0xABADCAFE);
     pNode->next = reinterpret_cast<FEMinNode*>(0xABADCAFE);
+    pNode->prev = reinterpret_cast<FEMinNode*>(0xABADCAFE);
     pNode->MsgID = MsgID;
     pNode->pMsgFrom = pFrom;
     pNode->pFromPackage = pFromPackage;
