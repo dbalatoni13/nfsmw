@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_AccelTrans.hpp"
 #include "Speed/Indep/Src/EAXSound/OldSoundTemplates.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/engineaudio.h"
 
 SFXCTL_HybridMotor::SFXCTL_HybridMotor()
     : m_pEngineCtl(nullptr) //
@@ -11,7 +12,24 @@ SFXCTL_HybridMotor::SFXCTL_HybridMotor()
     , tSteadyDuration(0.0f) //
     , m_EngVolAEMS(0) //
     , m_EngVolAccelGinsu(0) //
-    , m_EngVolDecelGinsu(0) {
+    , m_EngVolDecelGinsu(0) //
+    , DecelCrossfadeMix(CrossFadesPoints, 5) //
+    , m_EngVolRedLine(0) //
+    , mPrevDeltaRPM(0) //
+    , m_GinsuLPFVal(0.0f) //
+    , m_bAEMSLPF(false) //
+    , SteadyFrameCnt(0) //
+    , m_CurPhyDeltaRPMVal(0.0f) //
+    , m_CurAudDeltaRPMVal(0.0f) //
+    , PrevRPM(0.0f) //
+    , m_GinsuScaledRPM(0.0f) //
+    , mPrevPhyDeltaRPM(0.0f) //
+    , PercentOfAccelThreshold(0.0f) //
+    , PercentOfDecelThreshold(0.0f) {
+    m_EngineMix.Aems = 0.0f;
+    m_EngineMix.Cutoff = 0;
+    m_EngineMix.AccelGinsu = 0.0f;
+    m_EngineMix.DecelGinsu = 0.0f;
     m_AvgDeltaRPM.Reset(0.0f);
 }
 
@@ -83,87 +101,107 @@ void SFXCTL_HybridMotor::UpdateParams(float t) {
 }
 
 void SFXCTL_HybridMotor::UpdateDualMixEng(float t) {
-    float shiftVol = 0.0f;
-    float accelVol = 0.0f;
-    float engineTrq = 0.0f;
+    (void)t;
+    bool bDoSmooth = true;
+    Slope TrqThreshold(0.0f, 1.0f, 0.0f, 35.0f);
+    float trqWeight = TrqThreshold.GetValue(m_pEngineCtl->Trq.GetValue());
 
-    if (m_pShiftingCtl != nullptr) {
-        shiftVol = m_pShiftingCtl->GetShiftingVOL();
+    Attrib::Gen::engineaudio *engineInfo =
+        reinterpret_cast<Attrib::Gen::engineaudio *>(reinterpret_cast<char *>(m_pEAXCar) + 0xC4);
+
+    float deltaRPM = bAbs(m_AvgDeltaRPM.GetValue() + 10.0f);
+    float accelThresholdRange = engineInfo->AccelDeltaRPMThreshold();
+    float accelPct = 1.0f - (accelThresholdRange - deltaRPM) / accelThresholdRange;
+    if (accelPct < 0.0f) {
+        accelPct = 0.0f;
     }
-    if (m_pAccelTranCtl != nullptr) {
-        accelVol = m_pAccelTranCtl->m_InterpEngVol.CurValue;
-    }
-    if (m_pEngineCtl != nullptr) {
-        engineTrq = m_pEngineCtl->m_fEng_Trq;
-    }
-
-    m_EngVolAEMS = static_cast<int>(shiftVol);
-    m_EngVolAccelGinsu = static_cast<int>(accelVol);
-    m_EngVolDecelGinsu = static_cast<int>(engineTrq);
-
-    SetDMIX_Input(DMX_VOL, m_EngVolAEMS);
-    SetDMIX_Input(DMX_FREQ, m_EngVolAccelGinsu);
-    SetDMIX_Input(DMX_PITCH, m_EngVolDecelGinsu);
-}
-
-void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
-    float avgDeltaRpm = m_AvgDeltaRPM.GetValue() + 1.0f;
-    if (avgDeltaRpm < 0.0f) {
-        avgDeltaRpm = -avgDeltaRpm;
+    PercentOfAccelThreshold = accelPct;
+    if (PercentOfAccelThreshold > 1.0f) {
+        PercentOfAccelThreshold = 1.0f;
     }
 
-    float accelThreshold = 0.0f;
-    float decelThreshold = 0.0f;
-    int targetCutoff = 0;
-    float engineVolScale = 0.0f;
+    float decelThresholdRange = engineInfo->DecelDeltaRPMThreshold();
+    float decelPct = 1.0f - (decelThresholdRange - deltaRPM) / decelThresholdRange;
+    if (decelPct < 0.0f) {
+        decelPct = 0.0f;
+    }
+    PercentOfDecelThreshold = decelPct;
+    if (PercentOfDecelThreshold > 1.0f) {
+        PercentOfDecelThreshold = 1.0f;
+    }
 
-    if (m_pEngineCtl != nullptr) {
-        float trqBase = m_pEngineCtl->m_fEng_Trq;
-        if (trqBase < 0.01f) {
-            trqBase = 0.01f;
+    SFXCTL_Physics *physicsCtl =
+        *reinterpret_cast<SFXCTL_Physics **>(reinterpret_cast<char *>(m_pEAXCar) + 0x5C);
+    if (*reinterpret_cast<int *>(reinterpret_cast<char *>(physicsCtl) + 0xB4) == 0) {
+        bool bDisableSmooth = false;
+        EAX_CarState *stateCar =
+            m_pStateBase != nullptr ? *reinterpret_cast<EAX_CarState **>(reinterpret_cast<char *>(m_pStateBase) + 0x34) : nullptr;
+        int gearShiftFlag = stateCar != nullptr ? *reinterpret_cast<int *>(reinterpret_cast<char *>(stateCar) + 0x1D8) : 0;
+        if (gearShiftFlag == 0 && m_pShiftingCtl->eShiftState == SHFT_NONE) {
+            int accelState = m_pAccelTranCtl->eAccelTransFxState;
+            if (accelState != 0) {
+                bDisableSmooth = (accelState == 1);
+            }
+        } else {
+            bDisableSmooth = (m_pShiftingCtl->eShiftState == SHFT_UP_ENGAGING);
         }
-        float rpmBase = m_pEngineCtl->m_fSmoothedEng_RPM;
-        if (rpmBase < 0.01f) {
-            rpmBase = 0.01f;
-        }
-
-        accelThreshold = 1.0f - (trqBase - avgDeltaRpm) / trqBase;
-        decelThreshold = 1.0f - (rpmBase - avgDeltaRpm) / rpmBase;
-        if (accelThreshold < 0.0f) {
-            accelThreshold = 0.0f;
-        } else if (accelThreshold > 1.0f) {
-            accelThreshold = 1.0f;
-        }
-        if (decelThreshold < 0.0f) {
-            decelThreshold = 0.0f;
-        } else if (decelThreshold > 1.0f) {
-            decelThreshold = 1.0f;
-        }
-
-        targetCutoff = m_pEngineCtl->m_DistanceFltr;
-        engineVolScale = static_cast<float>(m_pEngineCtl->m_iEngineVol) * (1.0f / 32767.0f);
-    }
-
-    bool smoothEngineMix = true;
-    if (m_pShiftingCtl != nullptr) {
-        SHIFT_STAGE shiftState = m_pShiftingCtl->eShiftState;
-        if (shiftState != SHFT_NONE && shiftState != SHFT_UP_LFO) {
-            smoothEngineMix = false;
+        if (bDisableSmooth) {
+            bDoSmooth = false;
         }
     }
-    if (m_pAccelTranCtl != nullptr && m_pAccelTranCtl->eAccelTransFxState == 1) {
-        smoothEngineMix = false;
+
+    float accelAemsMix =
+        PercentOfAccelThreshold * (engineInfo->AEMSMix_L_RPM() - engineInfo->AEMSMix_S_RPM()) + engineInfo->AEMSMix_S_RPM();
+    float accelGinsuMix =
+        PercentOfAccelThreshold * (engineInfo->GINSUMix_L_RPM() - engineInfo->GINSUMix_S_RPM()) + engineInfo->GINSUMix_S_RPM();
+    float decelAemsMix = PercentOfDecelThreshold * (engineInfo->DECEL_AEMSMix_L_RPM() - engineInfo->DECEL_AEMSMix_S_RPM()) +
+                         engineInfo->DECEL_AEMSMix_S_RPM();
+    float decelGinsuMix = PercentOfDecelThreshold * (engineInfo->DECEL_GINSUMix_L_RPM() - engineInfo->DECEL_GINSUMix_S_RPM()) +
+                          engineInfo->DECEL_GINSUMix_S_RPM();
+
+    float crossfade = DecelCrossfadeMix.GetValue(m_GinsuScaledRPM);
+    decelAemsMix = crossfade * decelAemsMix + (1.0f - crossfade);
+    decelGinsuMix = DecelCrossfadeMix.GetValue(m_GinsuScaledRPM) * decelGinsuMix;
+
+    float accelGinsuNegMix = engineInfo->Ginsu_ACL_Neg_S_RPM();
+    unsigned int lowPassCutoff = m_pEngineCtl->m_DistanceFltr;
+    if (engineInfo->GINSU_LowPassCutoff() < lowPassCutoff) {
+        lowPassCutoff = engineInfo->GINSU_LowPassCutoff();
     }
 
-    float mixAems = accelThreshold;
-    float mixAccel = accelThreshold;
-    float mixDecel = decelThreshold;
+    *reinterpret_cast<int *>(&m_bAEMSLPF) = 0;
+    int targetCutoff = static_cast<int>((static_cast<float>(25000 - lowPassCutoff)) * trqWeight + static_cast<float>(lowPassCutoff));
+    float targetAems = (accelAemsMix - decelAemsMix) * trqWeight + decelAemsMix;
+    float targetDecelGinsu = (0.0f - decelGinsuMix) * trqWeight + decelGinsuMix;
+    float targetAccelGinsu = (accelGinsuMix - accelGinsuNegMix) * trqWeight + accelGinsuNegMix;
 
-    int targetAemsVol = static_cast<int>(mixAems * engineVolScale * 25000.0f);
-    int targetAccelVol = static_cast<int>(mixAccel * engineVolScale * 25000.0f);
-    int targetDecelVol = static_cast<int>(mixDecel * engineVolScale * 25000.0f);
+    if (!bDoSmooth) {
+        m_EngineMix.Aems = targetAems;
+        m_EngineMix.Cutoff = targetCutoff;
+        m_EngineMix.AccelGinsu = targetAccelGinsu;
+        m_EngineMix.DecelGinsu = targetDecelGinsu;
+    } else {
+        m_EngineMix.Aems = smooth(m_EngineMix.Aems, targetAems, 0.2f);
+        m_EngineMix.AccelGinsu = smooth(m_EngineMix.AccelGinsu, targetAccelGinsu, 0.2f);
+        m_EngineMix.DecelGinsu = smooth(m_EngineMix.DecelGinsu, targetDecelGinsu, 0.2f);
+        m_EngineMix.Cutoff = smooth(m_EngineMix.Cutoff, targetCutoff, 6000);
+    }
 
-    if (!smoothEngineMix) {
+    int curveOutput = NFSMixShape::GetCurveOutput(static_cast<NFSMixShape::eMIXTABLEID>(7), m_EngineMix.Cutoff, true);
+    m_GinsuLPFVal = static_cast<float>(curveOutput);
+
+    unsigned int mixedCutoff = m_pEngineCtl->m_DistanceFltr;
+    if (static_cast<unsigned int>(m_EngineMix.Cutoff) < mixedCutoff) {
+        mixedCutoff = static_cast<unsigned int>(m_EngineMix.Cutoff);
+    }
+    m_GinsuLPFVal = static_cast<float>(mixedCutoff);
+
+    float engineVolScale = static_cast<float>(m_pEngineCtl->m_iEngineVol) * 3.051851e-05f;
+    int targetAemsVol = static_cast<int>(m_EngineMix.Aems * static_cast<float>(engineInfo->AEMSVol()) * engineVolScale);
+    int targetAccelVol = static_cast<int>(m_EngineMix.AccelGinsu * static_cast<float>(engineInfo->GINSUAccelVol()) * engineVolScale);
+    int targetDecelVol = static_cast<int>(m_EngineMix.DecelGinsu * static_cast<float>(engineInfo->GinsuDecelVol()) * engineVolScale);
+
+    if (!bDoSmooth) {
         m_EngVolAEMS = targetAemsVol;
         m_EngVolAccelGinsu = targetAccelVol;
         m_EngVolDecelGinsu = targetDecelVol;
@@ -171,13 +209,119 @@ void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
         m_EngVolAEMS = smooth(m_EngVolAEMS, targetAemsVol, 7000);
         m_EngVolAccelGinsu = smooth(m_EngVolAccelGinsu, targetAccelVol, 7000);
         m_EngVolDecelGinsu = smooth(m_EngVolDecelGinsu, targetDecelVol, 7000);
-        targetCutoff = smooth(targetCutoff, targetCutoff, 6000);
     }
 
-    SetDMIX_Input(DMX_VOL, m_EngVolAEMS);
-    SetDMIX_Input(DMX_FREQ, m_EngVolAccelGinsu);
-    SetDMIX_Input(DMX_PITCH, m_EngVolDecelGinsu);
-    SetDMIX_Input(DMX_AZIM, targetCutoff);
+    m_EngVolRedLine = static_cast<int>(static_cast<float>(engineInfo->AEMSVol()) * engineVolScale);
+}
+
+void SFXCTL_HybridMotor::UpdateSingleMixEng(float t) {
+    (void)t;
+    bool bDoSmooth = true;
+    Slope TrqThreshold(0.0f, 1.0f, 0.0f, 35.0f);
+
+    float trqValue = m_pEngineCtl->Trq.GetValue();
+    float trqWeight = TrqThreshold.GetValue(trqValue);
+
+    Attrib::Gen::engineaudio *engineInfo =
+        reinterpret_cast<Attrib::Gen::engineaudio *>(reinterpret_cast<char *>(m_pEAXCar) + 0xC4);
+
+    float deltaRPM = m_AvgDeltaRPM.GetValue() + 10.0f;
+    float accelThresholdRange = engineInfo->AccelDeltaRPMThreshold();
+    float accelPct = 1.0f - (accelThresholdRange - bAbs(deltaRPM)) / accelThresholdRange;
+    if (accelPct < 0.0f) {
+        accelPct = 0.0f;
+    }
+    if (accelPct > 1.0f) {
+        accelPct = 1.0f;
+    }
+    PercentOfAccelThreshold = accelPct;
+
+    float decelThresholdRange = engineInfo->DecelDeltaRPMThreshold();
+    float decelPct = 1.0f - (decelThresholdRange - bAbs(deltaRPM)) / decelThresholdRange;
+    if (decelPct < 0.0f) {
+        decelPct = 0.0f;
+    }
+    if (decelPct > 1.0f) {
+        decelPct = 1.0f;
+    }
+    PercentOfDecelThreshold = decelPct;
+
+    EAX_CarState *stateCar =
+        m_pStateBase != nullptr ? *reinterpret_cast<EAX_CarState **>(reinterpret_cast<char *>(m_pStateBase) + 0x34) : nullptr;
+    int gearShiftFlag = stateCar != nullptr ? *reinterpret_cast<int *>(reinterpret_cast<char *>(stateCar) + 0x1D8) : 0;
+    SHIFT_STAGE shiftState = m_pShiftingCtl->eShiftState;
+
+    if (gearShiftFlag == 0 && shiftState == SHFT_NONE) {
+        int accelState = m_pAccelTranCtl->eAccelTransFxState;
+        if (accelState != 0 && accelState == 1) {
+            bDoSmooth = false;
+        }
+    } else {
+        if (shiftState != SHFT_UP_LFO) {
+            if (static_cast<int>(shiftState) < 4) {
+                if (shiftState == SHFT_UP_ENGAGING) {
+                    bDoSmooth = false;
+                }
+            } else if (shiftState != SHFT_DOWN_ENGAGING_RISE && shiftState == SHFT_DOWN_ENGAGING_REATTACH &&
+                       *reinterpret_cast<bool *>(reinterpret_cast<char *>(m_pEAXCar) + 0x68)) {
+                bDoSmooth = false;
+            }
+        }
+    }
+
+    float accelAemsMix =
+        PercentOfAccelThreshold * (engineInfo->AEMSMix_L_RPM() - engineInfo->AEMSMix_S_RPM()) + engineInfo->AEMSMix_S_RPM();
+    float accelGinsuMix =
+        PercentOfAccelThreshold * (engineInfo->GINSUMix_L_RPM() - engineInfo->GINSUMix_S_RPM()) + engineInfo->GINSUMix_S_RPM();
+    float decelAemsMix = PercentOfDecelThreshold * (engineInfo->DECEL_AEMSMix_L_RPM() - engineInfo->DECEL_AEMSMix_S_RPM()) +
+                         engineInfo->DECEL_AEMSMix_S_RPM();
+    float decelGinsuMix = PercentOfDecelThreshold * (engineInfo->Ginsu_ACL_Neg_S_RPM() - engineInfo->Ginsu_ACL_Neg_L_RPM()) +
+                          engineInfo->Ginsu_ACL_Neg_S_RPM();
+
+    unsigned int lowPassCutoff = m_pEngineCtl->m_DistanceFltr;
+    if (engineInfo->GINSU_LowPassCutoff() < lowPassCutoff) {
+        lowPassCutoff = engineInfo->GINSU_LowPassCutoff();
+    }
+
+    int targetCutoff = static_cast<int>((static_cast<float>(m_pEngineCtl->m_DistanceFltr) - static_cast<float>(lowPassCutoff)) *
+                                            trqWeight +
+                                        static_cast<float>(lowPassCutoff));
+    float targetAems = (accelAemsMix - decelAemsMix) * trqWeight + decelAemsMix;
+    float targetAccelGinsu = (accelGinsuMix - decelGinsuMix) * trqWeight + decelGinsuMix;
+    float targetDecelGinsu = 0.0f;
+
+    if (bDoSmooth) {
+        m_EngineMix.Aems = smooth(m_EngineMix.Aems, targetAems, 0.2f);
+        m_EngineMix.AccelGinsu = smooth(m_EngineMix.AccelGinsu, targetAccelGinsu, 0.2f);
+        m_EngineMix.DecelGinsu = smooth(m_EngineMix.DecelGinsu, targetDecelGinsu, 0.2f);
+        m_EngineMix.Cutoff = smooth(m_EngineMix.Cutoff, targetCutoff, 6000);
+    } else {
+        m_EngineMix.Aems = targetAems;
+        m_EngineMix.AccelGinsu = targetAccelGinsu;
+        m_EngineMix.DecelGinsu = targetDecelGinsu;
+        m_EngineMix.Cutoff = targetCutoff;
+    }
+
+    int curveOutput = NFSMixShape::GetCurveOutput(
+        static_cast<NFSMixShape::eMIXTABLEID>(7), static_cast<int>(static_cast<float>(m_EngineMix.Cutoff) * 1.3106799f), true);
+    m_GinsuLPFVal = static_cast<float>(25000 - curveOutput);
+
+    float engineVolScale = static_cast<float>(m_pEngineCtl->m_iEngineVol) * 3.051851e-05f;
+    int targetAemsVol = static_cast<int>(m_EngineMix.Aems * static_cast<float>(engineInfo->AEMSVol()) * engineVolScale);
+    int targetAccelVol = static_cast<int>(m_EngineMix.AccelGinsu * static_cast<float>(engineInfo->GINSUAccelVol()) * engineVolScale);
+    int targetDecelVol = static_cast<int>(m_EngineMix.DecelGinsu * static_cast<float>(engineInfo->GinsuDecelVol()) * engineVolScale);
+
+    if (bDoSmooth) {
+        m_EngVolAEMS = smooth(m_EngVolAEMS, targetAemsVol, 7000);
+        m_EngVolAccelGinsu = smooth(m_EngVolAccelGinsu, targetAccelVol, 7000);
+        m_EngVolDecelGinsu = smooth(m_EngVolDecelGinsu, targetDecelVol, 7000);
+    } else {
+        m_EngVolAEMS = targetAemsVol;
+        m_EngVolAccelGinsu = targetAccelVol;
+        m_EngVolDecelGinsu = targetDecelVol;
+    }
+
+    m_EngVolRedLine = static_cast<int>(static_cast<float>(engineInfo->AEMSVol()) * engineVolScale);
 }
 
 void SFXCTL_HybridMotor::UpdateVolumeRedlining() {

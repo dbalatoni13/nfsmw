@@ -43,6 +43,7 @@ struct Cache {
 };
 struct Module {
     virtual void ReleaseResource();
+    void PurgeSpeech();
 };
 struct Manager {
     static void ClearPlayback();
@@ -1559,7 +1560,7 @@ void FESoundControl(bool bOn, const char *name) {
         return;
     }
 
-    unsigned int hash = Attrib::StringHash32(name);
+    unsigned int uVar2 = Attrib::StringHash32(name);
     Attrib::StringKey FengList[37] = {
         "Pause_Main.fng",
         "Pause_Options.fng",
@@ -1601,11 +1602,11 @@ void FESoundControl(bool bOn, const char *name) {
     };
 
     bStringHash(name);
-    int index;
+    int index = -1;
     int iVar1 = 0;
     do {
         index = iVar1;
-        if (hash == static_cast<unsigned int>(FengList[index])) {
+        if (uVar2 == static_cast<unsigned int>(FengList[index])) {
             break;
         }
         int n = index + 1;
@@ -1613,8 +1614,7 @@ void FESoundControl(bool bOn, const char *name) {
         iVar1 = n;
     } while (iVar1 < 37);
 
-    eSndGameMode gameMode = static_cast<eSndGameMode>(*reinterpret_cast<int *>(reinterpret_cast<char *>(g_pEAXSound) + 0x84));
-    if (gameMode == SND_FRONTEND) {
+    if (static_cast<eSndGameMode>(*reinterpret_cast<int *>(reinterpret_cast<char *>(g_pEAXSound) + 0x84)) == SND_FRONTEND) {
         if (index != 10 && index < 14) {
             return;
         }
@@ -1639,14 +1639,18 @@ void FESoundControl(bool bOn, const char *name) {
                         goto FE_UPSCREEN;
                     }
 
-                    *reinterpret_cast<int *>(reinterpret_cast<char *>(g_pEAXSound) + 0x38) = static_cast<int>(bOn);
+                    *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(g_pEAXSound) + 0x38) =
+                        static_cast<unsigned int>(bOn);
                     SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
                     return;
                 }
+                SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
+                return;
             }
 
             if (index == 11) {
-                *reinterpret_cast<int *>(reinterpret_cast<char *>(g_pEAXSound) + 0x38) = static_cast<int>(bOn);
+                *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(g_pEAXSound) + 0x38) =
+                    static_cast<unsigned int>(bOn);
                 SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
                 return;
             }
@@ -1680,11 +1684,11 @@ void FESoundControl(bool bOn, const char *name) {
                 }
 
                 if (index < 37) {
-                    Speech::Module *module = Speech::Manager::GetSpeechModule(1);
-                    if (module != nullptr) {
-                        module = Speech::Manager::GetSpeechModule(1);
-                        if (module != nullptr) {
-                            module->ReleaseResource();
+                    Speech::Module *pMVar3 = Speech::Manager::GetSpeechModule(1);
+                    if (pMVar3 != nullptr) {
+                        pMVar3 = Speech::Manager::GetSpeechModule(1);
+                        if (pMVar3 != nullptr) {
+                            pMVar3->PurgeSpeech();
                         }
                     }
                 }

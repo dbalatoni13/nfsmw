@@ -2,6 +2,18 @@
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 
 extern Slope g_WooshVol_vs_Vel;
+extern float GetFloatFromHundredthsdB__11NFSMixShapei(int ndB);
+
+struct stREVERB_PARAMS {
+    int GinsuWet;
+    int GinsuDry;
+    int AemsWet;
+    int AemsDry;
+    int FadeOut;
+    int FadeIn;
+};
+
+extern stREVERB_PARAMS g_REVERBFXMODULES[];
 
 namespace {
 enum eDRIVE_BY_TYPE {
@@ -135,7 +147,96 @@ void SFXCTL_Tunnel::AdjustReverbOffset(int reverboffset) {
 }
 
 void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
+    *reinterpret_cast<int *>(&bIsReadyForSwitch) = 0;
     ReflRamp.Update(t);
+
+    eREVERBFX targetType = m_TargetType;
+    int isFadingOut = *reinterpret_cast<int *>(&bFadingOut);
+    if (isFadingOut == 0) {
+        if (*reinterpret_cast<int *>(&bFadingIn) != 0 && *reinterpret_cast<int *>(&ReflRamp.bComplete) != 0) {
+            m_CurWetGinsu = m_CurWetGinsuTarget;
+            m_CurDryGinsu = m_CurDryGinsuTarget;
+            m_CurWetAems = m_CurWetAemsTarget;
+            m_CurDryAems = m_CurDryAemsTarget;
+            *reinterpret_cast<int *>(&bFadingIn) = 0;
+        }
+    } else if (*reinterpret_cast<int *>(&ReflRamp.bComplete) != 0 && *reinterpret_cast<int *>(&bIsTunnelRamping) == 0) {
+        *reinterpret_cast<int *>(&bFadingOut) = 0;
+        *reinterpret_cast<int *>(&bFadingIn) = 1;
+        int fadeIn = g_REVERBFXMODULES[targetType].FadeIn;
+        *reinterpret_cast<int *>(&bIsReadyForSwitch) = 1;
+        m_ReverbType = targetType;
+        ReflRamp.Initialize(0.0f, 1.0f, fadeIn, LINEAR);
+        m_CurWetAems = m_CurWetAemsTarget;
+
+        int aemsWetDb = g_REVERBFXMODULES[m_ReverbType].AemsWet + static_cast<int>(m_ReverbOffset);
+        int ginsuWetDb = g_REVERBFXMODULES[m_ReverbType].GinsuWet + static_cast<int>(m_ReverbOffset);
+        if (aemsWetDb < -10000) {
+            aemsWetDb = -10000;
+        } else if (aemsWetDb > 0) {
+            aemsWetDb = 0;
+        }
+        if (ginsuWetDb < -10000) {
+            ginsuWetDb = -10000;
+        } else if (ginsuWetDb > 0) {
+            ginsuWetDb = 0;
+        }
+
+        m_CurWetGinsu = m_CurWetGinsuTarget;
+        m_CurDryGinsu = m_CurDryGinsuTarget;
+        m_CurDryAems = m_CurDryAemsTarget;
+        m_CurWetGinsuTarget = GetFloatFromHundredthsdB__11NFSMixShapei(ginsuWetDb);
+        m_CurWetAemsTarget = GetFloatFromHundredthsdB__11NFSMixShapei(aemsWetDb);
+        m_CurDryGinsuTarget = GetFloatFromHundredthsdB__11NFSMixShapei(g_REVERBFXMODULES[m_ReverbType].GinsuDry);
+        m_CurDryAemsTarget = GetFloatFromHundredthsdB__11NFSMixShapei(g_REVERBFXMODULES[m_ReverbType].AemsDry);
+        isFadingOut = *reinterpret_cast<int *>(&bFadingOut);
+    }
+
+    float wetAems;
+    float wetGinsu;
+    float dryAems;
+    float dryGinsu;
+    if (isFadingOut == 0 && *reinterpret_cast<int *>(&bFadingIn) == 0) {
+        m_CurWetGinsu = smooth(m_CurWetGinsu, m_CurWetGinsuTarget, 0.25f);
+        m_CurDryGinsu = smooth(m_CurDryGinsu, m_CurDryGinsuTarget, 0.25f);
+        m_CurWetAems = smooth(m_CurWetAems, m_CurWetAemsTarget, 0.25f);
+        m_CurDryAems = smooth(m_CurDryAems, m_CurDryAemsTarget, 0.25f);
+        wetAems = m_CurWetAems;
+        wetGinsu = m_CurWetGinsu;
+        dryAems = m_CurDryAems;
+        dryGinsu = m_CurDryGinsu;
+    } else {
+        float ramp = ReflRamp.CurValue;
+        wetAems = (m_CurWetAemsTarget - m_CurWetAems) * ramp + m_CurWetAems;
+        wetGinsu = (m_CurWetGinsuTarget - m_CurWetGinsu) * ramp + m_CurWetGinsu;
+        dryAems = (m_CurDryAemsTarget - m_CurDryAems) * ramp + m_CurDryAems;
+        dryGinsu = (m_CurDryGinsuTarget - m_CurDryGinsu) * ramp + m_CurDryGinsu;
+    }
+
+    m_GinsuDryVol = static_cast<int>(dryGinsu * 32767.0f);
+    m_AEMSDryVol = static_cast<int>(dryAems * 32767.0f);
+    m_GinsuWetVol = static_cast<int>(wetGinsu * 32767.0f);
+    m_AEMSWetVol = static_cast<int>(wetAems * 32767.0f);
+
+    if (*reinterpret_cast<int *>(&bToggleOffset) != 0) {
+        int aemsWet = m_AEMSWetVol + 1;
+        int ginsuWet = m_GinsuWetVol + 1;
+        if (aemsWet < 0) {
+            aemsWet = 0;
+        } else if (aemsWet > 0x7FFF) {
+            aemsWet = 0x7FFF;
+        }
+        if (ginsuWet < 0) {
+            ginsuWet = 0;
+        } else if (ginsuWet > 0x7FFF) {
+            ginsuWet = 0x7FFF;
+        }
+        m_AEMSWetVol = aemsWet;
+        m_GinsuWetVol = ginsuWet;
+    }
+
+    *reinterpret_cast<int *>(&bToggleOffset) = (*reinterpret_cast<int *>(&bToggleOffset) == 0);
+    *reinterpret_cast<int *>(&bIsTunnelRamping) = *reinterpret_cast<int *>(&ReflRamp.bComplete) ^ 1;
 }
 
 void SFXCTL_Tunnel::UpdateOcclusion(float t) {
@@ -157,7 +258,8 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
         tTimeToWaitBeforeAnotherExitDriveBy = 0.0f;
     }
 
-    EAX_CarState *car = GetCarStateFromEAXCar(m_pEAXCar);
+    EAX_CarState *car =
+        m_pEAXCar != nullptr ? *reinterpret_cast<EAX_CarState **>(reinterpret_cast<char *>(m_pEAXCar) + 0x34) : nullptr;
     if (car == nullptr) {
         return;
     }
@@ -165,24 +267,26 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
     FutureZoneType = TRACK_PATH_ZONE_RESET;
 
     bVector2 unNormalizedCurCarDir;
-    unNormalizedCurCarDir.x = GetCarStateFloat(car, 0x14);
-    unNormalizedCurCarDir.y = GetCarStateFloat(car, 0x18);
+    unNormalizedCurCarDir.x = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x14);
+    unNormalizedCurCarDir.y = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x18);
 
     bVector2 curCarDir;
     bNormalize(&curCarDir, &unNormalizedCurCarDir);
 
-    float futureDistance = GetCarStateFloat(car, 0x90) * 0.4f;
+    float futureDistance = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x90) * 0.4f;
     bVector2 futureCarDir;
     futureCarDir.x = curCarDir.x * futureDistance;
     futureCarDir.y = curCarDir.y * futureDistance;
 
     bVector3 futureCarPos;
-    futureCarPos.x = GetCarStateFloat(car, 0x44) + futureCarDir.x;
-    futureCarPos.y = GetCarStateFloat(car, 0x48) + futureCarDir.y;
+    futureCarPos.x = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x44) + futureCarDir.x;
+    futureCarPos.y = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x48) + futureCarDir.y;
 
     EAX_CarState *stateCar =
         m_pStateBase != nullptr ? *reinterpret_cast<EAX_CarState **>(reinterpret_cast<char *>(m_pStateBase) + 0x34) : nullptr;
-    futureCarPos.z = stateCar != nullptr ? GetCarStateFloat(stateCar, 0x4C) : GetCarStateFloat(car, 0x4C);
+    futureCarPos.z = stateCar != nullptr
+                         ? *reinterpret_cast<float *>(reinterpret_cast<char *>(stateCar) + 0x4C)
+                         : *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x4C);
 
     FutureZoneType = TRACK_PATH_ZONE_TUNNEL;
     TrackPathZone *futureZone = GetTunnelType(futureCarPos, TRACK_PATH_ZONE_TUNNEL);
@@ -206,7 +310,10 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
         }
 
         if (shouldCheckDriveBy) {
-            float wooshIntensity = g_WooshVol_vs_Vel.GetValue(GetCarSpeedMagnitude(car));
+            float vx = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x54);
+            float vy = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x58);
+            float vz = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x5C);
+            float wooshIntensity = g_WooshVol_vs_Vel.GetValue(bSqrt(vx * vx + vy * vy + vz * vz));
             if (wooshIntensity > 0.01f) {
                 bPlayDriveBy = true;
                 tTimeToWaitBeforeAnotherDriveBy = 3.0f;
@@ -214,16 +321,29 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
 
                 vDriveByLoc.x = futureCarPos.x;
                 vDriveByLoc.y = futureCarPos.y;
-                vDriveByLoc.z = GetCarStateFloat(car, 0x4C) + 10.0f;
-                m_fIntensity = g_WooshVol_vs_Vel.GetValue(GetCarSpeedMagnitude(car));
+                vDriveByLoc.z = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x4C) + 10.0f;
+                m_fIntensity = g_WooshVol_vs_Vel.GetValue(bSqrt(vx * vx + vy * vy + vz * vz));
 
                 stDriveByInfo driveByInfo;
                 driveByInfo.eDriveByType = DRIVE_BY_TUNNEL_IN;
                 driveByInfo.pEAXCar = m_pEAXCar;
-                driveByInfo.ClosingVelocity = stateCar != nullptr ? GetCarSpeedMagnitude(stateCar) : 0.0f;
+                if (stateCar != nullptr) {
+                    float stateVx = *reinterpret_cast<float *>(reinterpret_cast<char *>(stateCar) + 0x54);
+                    float stateVy = *reinterpret_cast<float *>(reinterpret_cast<char *>(stateCar) + 0x58);
+                    float stateVz = *reinterpret_cast<float *>(reinterpret_cast<char *>(stateCar) + 0x5C);
+                    driveByInfo.ClosingVelocity = bSqrt(stateVx * stateVx + stateVy * stateVy + stateVz * stateVz);
+                } else {
+                    driveByInfo.ClosingVelocity = 0.0f;
+                }
                 driveByInfo.vLocation = vDriveByLoc;
                 driveByInfo.UniqueID = 0;
-                DispatchDriveByEvent(driveByInfo);
+                CSTATEMGR_Base *driveByMgr = EAXSound::m_pStateMgr[eMM_DRIVEBY];
+                if (driveByMgr != nullptr) {
+                    CSTATE_Base *state = driveByMgr->GetFreeState(&driveByInfo);
+                    if (state != nullptr) {
+                        state->Attach(&driveByInfo);
+                    }
+                }
             }
         }
     }
@@ -236,7 +356,10 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
         }
 
         if (shouldCheckExitDriveBy) {
-            float exitIntensity = g_WooshVol_vs_Vel.GetValue(GetCarSpeedMagnitude(car));
+            float vx = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x54);
+            float vy = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x58);
+            float vz = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x5C);
+            float exitIntensity = g_WooshVol_vs_Vel.GetValue(bSqrt(vx * vx + vy * vy + vz * vz));
             if (exitIntensity > 0.01f) {
                 bPlayTunnelExit = true;
                 tTimeToWaitBeforeAnotherExitDriveBy = 3.0f;
@@ -244,16 +367,29 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
 
                 vDriveByLoc.x = futureCarPos.x;
                 vDriveByLoc.y = futureCarPos.y;
-                vDriveByLoc.z = GetCarStateFloat(car, 0x4C) + 10.0f;
-                m_fExitIntensity = g_WooshVol_vs_Vel.GetValue(GetCarSpeedMagnitude(car));
+                vDriveByLoc.z = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x4C) + 10.0f;
+                m_fExitIntensity = g_WooshVol_vs_Vel.GetValue(bSqrt(vx * vx + vy * vy + vz * vz));
 
                 stDriveByInfo driveByInfo;
                 driveByInfo.eDriveByType = DRIVE_BY_TUNNEL_OUT;
                 driveByInfo.pEAXCar = m_pEAXCar;
-                driveByInfo.ClosingVelocity = stateCar != nullptr ? GetCarSpeedMagnitude(stateCar) : 0.0f;
+                if (stateCar != nullptr) {
+                    float stateVx = *reinterpret_cast<float *>(reinterpret_cast<char *>(stateCar) + 0x54);
+                    float stateVy = *reinterpret_cast<float *>(reinterpret_cast<char *>(stateCar) + 0x58);
+                    float stateVz = *reinterpret_cast<float *>(reinterpret_cast<char *>(stateCar) + 0x5C);
+                    driveByInfo.ClosingVelocity = bSqrt(stateVx * stateVx + stateVy * stateVy + stateVz * stateVz);
+                } else {
+                    driveByInfo.ClosingVelocity = 0.0f;
+                }
                 driveByInfo.vLocation = vDriveByLoc;
                 driveByInfo.UniqueID = 0;
-                DispatchDriveByEvent(driveByInfo);
+                CSTATEMGR_Base *driveByMgr = EAXSound::m_pStateMgr[eMM_DRIVEBY];
+                if (driveByMgr != nullptr) {
+                    CSTATE_Base *state = driveByMgr->GetFreeState(&driveByInfo);
+                    if (state != nullptr) {
+                        state->Attach(&driveByInfo);
+                    }
+                }
             }
         }
     }
