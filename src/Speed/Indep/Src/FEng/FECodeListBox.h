@@ -73,7 +73,7 @@ struct FECodeListBox : public FEObject {
     long GetRealRow(long lRow) const;
     bool CheckMovement(long lTargetColumn, long lTargetRow, long lOldColumn, long lOldRow, long lFlags);
     bool MakeMove(long lDirection, unsigned long& ulVirtual, unsigned long& ulTarget, unsigned long ulTotal, unsigned long ulVisible);
-    void ScrollSelection(long lDirection, unsigned long& ulVirtual, unsigned long& ulTarget, unsigned long ulTotal, unsigned long ulVisible, bool bIsColumn);
+    bool ScrollSelection(long lDirection, unsigned long& ulVirtual, unsigned long& ulTarget, unsigned long ulTotal, unsigned long ulVisible, bool bIsColumn);
     unsigned long CalculateCurrentFromTarget(unsigned long ulTarget, unsigned long ulTotal, unsigned long ulVisible);
     void SetCellColor(unsigned long ulColumn, unsigned long ulRow, unsigned long ulColor, unsigned long ulNumColumns, unsigned long ulNumRows);
     void SetCellScale(unsigned long ulColumn, unsigned long ulRow, const FEPoint& stScale, unsigned long ulNumColumns, unsigned long ulNumRows);
