@@ -1,5 +1,47 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feScrollerina.hpp"
 
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+
+extern EAXSound *g_pEAXSound;
+extern FEImage *FEngFindImage(const char *pkg_name, int hash);
+extern void FEngGetTopLeft(FEObject *object, float &x, float &y);
+extern void FEngGetSize(FEObject *object, float &x, float &y);
+extern unsigned long FEHashUpper(const char *string);
+extern int FEPrintf(FEString *text, const char *fmt, ...);
+extern void FEngSetLanguageHash(FEString *text, unsigned int hash);
+
+Scrollerina::Scrollerina(const char *parent_pkg, const char *backing, const char *scrollbar,
+                          bool vert, bool resize, bool wrapped, bool alwaysShowBacking)
+    : pParentPkg(parent_pkg) //
+    , iNumSlots(0) //
+    , iNumData(0) //
+    , iViewHeadDataIndex(0) //
+    , SelectedDatum(nullptr) //
+    , TopDatum(nullptr) //
+    , SelectedSlot(nullptr) //
+    , pBacking(nullptr) //
+    , ScrollBar(parent_pkg, scrollbar, vert, resize, false) //
+    , vTopLeft(0.0f, 0.0f) //
+    , vSize(0.0f, 0.0f) //
+    , bHasScrollBar(true) //
+    , bViewNeedsSync(false) //
+    , bWrapped(wrapped) //
+    , bAlwaysShowBacking(alwaysShowBacking) //
+    , bVertical(vert) //
+    , mouseDownMsg(0x406415e3) //
+    , bInClickToSelectMode(false)
+    , pScrollRegion(nullptr)
+{
+    if (!backing) {
+        bHasScrollBar = false;
+    } else {
+        unsigned int hash = FEHashUpper(backing);
+        pBacking = FEngFindImage(parent_pkg, hash);
+        FEngGetTopLeft(pBacking, vTopLeft.x, vTopLeft.y);
+        FEngGetSize(pBacking, vSize.x, vSize.y);
+    }
+}
+
 unsigned int Scrollerina::GetNodeIndex(ScrollerDatum* datum) {
     ScrollerDatum* node = Data.GetHead();
     unsigned int index = 1;
@@ -152,14 +194,11 @@ void Scrollerina::Enable(ScrollerDatum *datum) {
 }
 
 extern FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
-extern unsigned long FEHashUpper(const char *str);
 extern int FEngSNPrintf(char *dest, int size, const char *fmt, ...);
 extern void FEngSetVisible(FEObject *obj);
 extern void FEngSetInvisible(FEObject *obj);
 extern void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
-extern void FEngGetTopLeft(FEObject *object, float &x, float &y);
 extern void FEngSetTopLeft(FEObject *object, float x, float y);
-extern void FEngGetSize(FEObject *object, float &x, float &y);
 extern void FEngSetSize(FEObject *object, float x, float y);
 
 FEScrollBar::FEScrollBar(const char *parent_pkg, const char *name, bool vert, bool resize, bool arrows_only) {
@@ -330,4 +369,316 @@ void FEScrollBar::SetPosResized(int num_view_items, int num_list_items, int view
             FEngSetTopLeftX(pHandle, view_dist_to_head);
         }
     }
+}
+
+void Scrollerina::ScrollNext() {
+    if (bWrapped) {
+        g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0));
+        ScrollWrapped(eSD_NEXT);
+    } else {
+        eMenuSoundTriggers snd = static_cast<eMenuSoundTriggers>(0);
+        if (SelectedDatum == GetLastDatum()) {
+            snd = static_cast<eMenuSoundTriggers>(7);
+        }
+        g_pEAXSound->PlayUISoundFX(snd);
+        Scroll(eSD_NEXT);
+    }
+}
+
+void Scrollerina::ScrollPrev() {
+    if (bWrapped) {
+        g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0));
+        ScrollWrapped(eSD_PREV);
+    } else {
+        eMenuSoundTriggers snd = static_cast<eMenuSoundTriggers>(0);
+        if (SelectedDatum == GetFirstDatum()) {
+            snd = static_cast<eMenuSoundTriggers>(7);
+        }
+        g_pEAXSound->PlayUISoundFX(snd);
+        Scroll(eSD_PREV);
+    }
+}
+
+bool Scrollerina::Scroll(eScrollDir dir) {
+    bool ret = false;
+    if (Slots.IsEmpty() || Data.IsEmpty()) {
+        return false;
+    }
+
+    if (bViewNeedsSync) {
+        SyncViewToSelection();
+    } else {
+        ScrollerDatum *new_datum = SelectedDatum;
+        ScrollerDatum *new_view = TopDatum;
+        unsigned int new_view_head = iViewHeadDataIndex;
+
+        if (dir == eSD_NEXT) {
+            do {
+                if (new_datum == GetLastDatum()) return false;
+                new_datum = new_datum->GetNext();
+                unsigned int idx = GetNodeIndex(new_datum);
+                if (idx >= new_view_head + iNumSlots) {
+                    new_view = new_view->GetNext();
+                    new_view_head++;
+                }
+            } while (!new_datum->bEnabled);
+        } else if (dir == eSD_PREV) {
+            do {
+                if (new_datum == GetFirstDatum()) return false;
+                new_datum = new_datum->GetPrev();
+                if (new_datum == new_view->GetPrev()) {
+                    new_view_head--;
+                    new_view = new_datum;
+                }
+            } while (!new_datum->bEnabled);
+        }
+
+        if (new_datum != SelectedDatum) {
+            SelectedDatum = new_datum;
+            iViewHeadDataIndex = new_view_head;
+            TopDatum = new_view;
+            ret = true;
+            ScrollSelection(dir);
+            SetDisabledScripts();
+        }
+    }
+    Update(true);
+    return ret;
+}
+
+bool Scrollerina::ScrollWrapped(eScrollDir dir) {
+    bool ret = false;
+    if (Slots.IsEmpty() || Data.IsEmpty()) {
+        return false;
+    }
+
+    if (bViewNeedsSync) {
+        SyncViewToSelection();
+    } else {
+        ScrollerDatum *new_datum = SelectedDatum;
+        ScrollerDatum *new_view = TopDatum;
+        unsigned int new_view_head = iViewHeadDataIndex;
+
+        if (dir == eSD_NEXT) {
+            do {
+                if (new_datum == GetLastDatum()) {
+                    new_view = GetFirstDatum();
+                    new_view_head = 1;
+                    new_datum = new_view;
+                } else {
+                    new_datum = new_datum->GetNext();
+                    unsigned int idx = GetNodeIndex(new_datum);
+                    if (idx >= new_view_head + iNumSlots) {
+                        new_view = new_view->GetNext();
+                        new_view_head++;
+                    }
+                }
+            } while (!new_datum->bEnabled);
+        } else if (dir == eSD_PREV) {
+            do {
+                if (new_datum == GetFirstDatum()) {
+                    new_datum = GetLastDatum();
+                    new_view_head = iNumData - iNumSlots + 1;
+                    new_view = new_datum;
+                } else {
+                    new_datum = new_datum->GetPrev();
+                    if (new_datum == new_view->GetPrev()) {
+                        new_view_head--;
+                        new_view = new_datum;
+                    }
+                }
+            } while (!new_datum->bEnabled);
+        }
+
+        if (new_datum != SelectedDatum) {
+            SelectedDatum = new_datum;
+            iViewHeadDataIndex = new_view_head;
+            TopDatum = new_view;
+            ret = true;
+            ScrollSelection(dir);
+            SetDisabledScripts();
+        }
+    }
+    Update(true);
+    return ret;
+}
+
+bool Scrollerina::MoveSelected(eScrollDir dir, bool bprint) {
+    bool ret = false;
+    if (Slots.IsEmpty() || Data.IsEmpty()) {
+        return false;
+    }
+
+    if (bViewNeedsSync) {
+        SyncViewToSelection();
+    } else {
+        if (dir == eSD_NEXT) {
+            eMenuSoundTriggers snd = static_cast<eMenuSoundTriggers>(0);
+            if (SelectedDatum == GetLastDatum()) {
+                snd = static_cast<eMenuSoundTriggers>(7);
+            }
+            g_pEAXSound->PlayUISoundFX(snd);
+            ScrollerDatum *nextDatum = SelectedDatum;
+            if (nextDatum == GetLastDatum()) return false;
+            ScrollerDatum *removedDatum = nextDatum;
+            removedDatum->Remove();
+            nextDatum = SelectedDatum;
+            removedDatum->AddAfter(nextDatum);
+            if (TopDatum == SelectedDatum) {
+                TopDatum = SelectedDatum->GetPrev();
+            } else {
+                unsigned int idx = GetNodeIndex(SelectedDatum);
+                if (idx >= iViewHeadDataIndex + iNumSlots) {
+                    iViewHeadDataIndex++;
+                    TopDatum = TopDatum->GetNext();
+                }
+            }
+        } else if (dir == eSD_PREV) {
+            eMenuSoundTriggers snd = static_cast<eMenuSoundTriggers>(0);
+            if (SelectedDatum == GetFirstDatum()) {
+                snd = static_cast<eMenuSoundTriggers>(7);
+            }
+            g_pEAXSound->PlayUISoundFX(snd);
+            ScrollerDatum *removedDatum = SelectedDatum;
+            if (removedDatum == GetFirstDatum()) return false;
+            removedDatum->Remove();
+            ScrollerDatum *nextDatum = SelectedDatum;
+            removedDatum->AddBefore(nextDatum);
+            if (TopDatum == SelectedDatum) {
+                TopDatum = SelectedDatum;
+                iViewHeadDataIndex--;
+            } else {
+                ScrollerDatum *prev = TopDatum->GetPrev();
+                if (prev != SelectedDatum) {
+                    TopDatum = prev;
+                }
+            }
+        }
+        ScrollSelection(dir);
+        ret = true;
+    }
+    Update(bprint);
+    return ret;
+}
+
+bool Scrollerina::ScrollSelection(eScrollDir dir) {
+    bool ret = false;
+    ScrollerSlot *slot = SelectedSlot;
+
+    if (dir == eSD_NEXT) {
+        if (slot == Slots.GetTail()) {
+            return false;
+        }
+        ScrollerDatum *datum = FindDatumInSlot(slot);
+        do {
+            datum = datum->GetNext();
+            slot = slot->GetNext();
+            if (!slot || slot == Slots.EndOfList()) break;
+        } while (!datum->bEnabled);
+    } else if (dir == eSD_PREV) {
+        if (slot == Slots.GetHead()) {
+            return false;
+        }
+        ScrollerDatum *datum = FindDatumInSlot(slot);
+        do {
+            datum = datum->GetPrev();
+            slot = slot->GetPrev();
+            if (!slot || slot == Slots.GetHead()) break;
+        } while (!datum->bEnabled);
+    }
+
+    ScrollerSlot *old_slot = SelectedSlot;
+    if (slot != old_slot) {
+        old_slot->SetScript(0x7ab5521a);
+        SelectedSlot = slot;
+        slot->SetScript(0x249db7b7);
+    }
+    return slot != old_slot;
+}
+
+void Scrollerina::SyncViewToSelection() {
+    if (Data.IsEmpty() || Slots.IsEmpty()) {
+        return;
+    }
+    if (iNumSlots >= iNumData) {
+        return;
+    }
+
+    unsigned int idx = GetNodeIndex(SelectedDatum);
+    if (idx > iNumData - iNumSlots + 1) {
+        TopDatum = Data.GetNode(iNumData - iNumSlots);
+        SelectedSlot = FindSlotWithDatum(SelectedDatum);
+    } else {
+        TopDatum = SelectedDatum;
+        SelectedSlot = Slots.GetHead();
+    }
+
+    bViewNeedsSync = false;
+    SetDisabledScripts();
+    if (SelectedSlot) {
+        SelectedSlot->SetScript(0x249db7b7);
+    }
+    CountListIndices();
+}
+
+void Scrollerina::Print() {
+    ScrollerDatum *datum = TopDatum;
+    ScrollerSlot *slot = Slots.GetHead();
+
+    while (slot != Slots.EndOfList()) {
+        if (!datum || datum == Data.EndOfList()) {
+            slot->Hide();
+        } else {
+            slot->Show();
+            ScrollerDatumNode *dnode = datum->Strings.GetHead();
+            ScrollerSlotNode *snode = slot->FEStrings.GetHead();
+            while (snode != slot->FEStrings.EndOfList()) {
+                if (!dnode->LanguageHash) {
+                    FEPrintf(static_cast<FEString *>(snode->String), "%s", dnode->String);
+                } else {
+                    FEngSetLanguageHash(static_cast<FEString *>(snode->String), dnode->LanguageHash);
+                }
+                dnode = dnode->GetNext();
+                snode = snode->GetNext();
+                if (dnode == datum->Strings.EndOfList() || snode == slot->FEStrings.EndOfList()) break;
+            }
+            datum = datum->GetNext();
+        }
+        slot = slot->GetNext();
+    }
+}
+
+void Scrollerina::CountListIndices() {
+    bool found_view = false;
+    iNumSlots = 0;
+    iViewHeadDataIndex = 1;
+    iNumData = 0;
+    ScrollerSlot *slot = Slots.GetHead();
+    while (slot != Slots.EndOfList()) {
+        iNumSlots++;
+        slot = slot->GetNext();
+    }
+    ScrollerDatum *datum = Data.GetHead();
+    while (datum != Data.EndOfList()) {
+        iNumData++;
+        if (!found_view && datum != TopDatum) {
+            iViewHeadDataIndex++;
+        } else {
+            found_view = true;
+        }
+        datum = datum->GetNext();
+    }
+}
+
+void Scrollerina::SetSelected(ScrollerSlot *slot) {
+    if (!slot) return;
+    if (!slot->IsEnabled()) return;
+    ScrollerDatum *datum = FindDatumInSlot(slot);
+    if (!datum) return;
+    UnHighlightSelected();
+    SelectedDatum = datum;
+    SelectedSlot = slot;
+    HighlightSelected();
+    Update(true);
+    bViewNeedsSync = false;
 }

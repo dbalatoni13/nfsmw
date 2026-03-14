@@ -122,6 +122,7 @@ unsigned int FERenderObject::ClipAligned(FEClipInfo *pClipInfo, bVector3 *v, bVe
     return num_verts;
 }
 
+extern void *bOMalloc(SlotPool *pool);
 extern void bMemSet(void *dst, int val, unsigned int size);
 
 cFEngRender::cFEngRender() {
@@ -131,7 +132,8 @@ cFEngRender::cFEngRender() {
 }
 
 FERenderObject *cFEngRender::CreateCachedRender(FEObject *object, TextureInfo *texture_info) {
-    FERenderObject *ret = new (mpobFERenderObjectSlotPool->Malloc()) FERenderObject(object, texture_info);
+    void *mem = bOMalloc(mpobFERenderObjectSlotPool);
+    FERenderObject *ret = new (mem) FERenderObject(object, texture_info);
     object->Cached = ret;
     return ret;
 }
@@ -160,6 +162,9 @@ void cFEngRender::RenderObject(FEObject *object, FEPackageRenderInfo *pkg_render
             case 1:
                 RenderImage(reinterpret_cast<FEImage *>(object), cached, pkg_render_info);
                 break;
+            case 9:
+                RenderCBVImage(reinterpret_cast<FEColoredImage *>(object), cached, pkg_render_info);
+                break;
             case 2:
                 RenderString(reinterpret_cast<FEString *>(object), cached, pkg_render_info);
                 break;
@@ -168,9 +173,6 @@ void cFEngRender::RenderObject(FEObject *object, FEPackageRenderInfo *pkg_render
                 break;
             case 7:
                 RenderMovie(reinterpret_cast<FEMovie *>(object), cached, pkg_render_info);
-                break;
-            case 9:
-                RenderCBVImage(reinterpret_cast<FEColoredImage *>(object), cached, pkg_render_info);
                 break;
             case 12:
                 RenderMultiImage(reinterpret_cast<FEMultiImage *>(object), cached, pkg_render_info);
