@@ -1562,8 +1562,10 @@ bool AICopManager::CreateRoadBlock(IPursuit *ipursuit, int cop_count, IVehicle *
     AITarget *target = ipursuit->GetTarget();
 
     IPerpetrator *iperp;
-    target->QueryInterface(&iperp);
-    Attrib::Gen::pursuitlevels *pursuitLevelAttrib = iperp->GetPursuitLevelAttrib();
+    Attrib::Gen::pursuitlevels *pursuitLevelAttrib = nullptr;
+    if (target->QueryInterface(&iperp)) {
+        pursuitLevelAttrib = iperp->GetPursuitLevelAttrib();
+    }
     if (!pursuitLevelAttrib) {
         return false;
     }

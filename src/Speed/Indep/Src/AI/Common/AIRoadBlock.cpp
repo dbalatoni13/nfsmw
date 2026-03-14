@@ -27,10 +27,11 @@ AIRoadBlock::~AIRoadBlock() {
 
 Sim::IActivity *AIRoadBlock::Construct(Sim::Param params) {
     AIRoadBlock *rb = new AIRoadBlock(params);
+    Sim::IActivity *result = nullptr;
     if (rb) {
-        return static_cast<Sim::IActivity *>(rb);
+        result = static_cast<Sim::IActivity *>(rb);
     }
-    return nullptr;
+    return result;
 }
 
 bool AIRoadBlock::AddVehicle(IVehicle *vehicle) {

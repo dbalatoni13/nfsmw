@@ -2091,7 +2091,7 @@ void AIPursuit::SpikesHit(IVehicleAI *ivai) {
             float dummy;
             iroadblock->GetMinDistanceToTarget(0.0f, dummy, &ivehicleNear);
             if (ivehicleNear) {
-                if (iroadblock->GetNumCops()) {
+                if (iroadblock->RemoveVehicle(ivehicleNear)) {
                     AddVehicle(ivehicleNear);
                     mNumRBCopsAdded++;
                 }
