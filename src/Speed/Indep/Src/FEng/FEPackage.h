@@ -2,15 +2,33 @@
 #define FENG_FEPACKAGE_H
 
 #include "FEObject.h"
+#include "FEMessageResponse.h"
 
 struct FEObjectCallback;
 struct FEGroup;
 struct FEngine;
 struct FEGameInterface;
 struct FEResourceRequest;
-struct FEMsgTargetList;
+// total size: 0x10
+struct FEMsgTargetList {
+    unsigned long MsgID;       // offset 0x0, size 0x4
+    unsigned long Alloc;       // offset 0x4, size 0x4
+    unsigned long Count;       // offset 0x8, size 0x4
+    FEObject** pTargets;       // offset 0xC, size 0x4
+
+    inline FEMsgTargetList() : MsgID(0), Alloc(0), Count(0), pTargets(nullptr) {}
+    inline ~FEMsgTargetList() {}
+    inline void SetMsgID(unsigned long NewID) { MsgID = NewID; }
+    inline unsigned long GetMsgID() const { return MsgID; }
+    inline unsigned long GetCount() const { return Count; }
+    inline FEObject* GetTarget(unsigned long Index) { return pTargets[Index]; }
+    inline const FEObject* GetTarget(unsigned long Index) const { return pTargets[Index]; }
+
+    void Allocate(unsigned long NewAlloc);
+    void AppendTarget(FEObject* pObject);
+};
 struct FELibraryRef;
-struct FEMessageResponse;
+#include "FEMessageResponse.h"
 struct FEPackageRenderInfo;
 struct FEListBox;
 struct FEPoint;
@@ -117,9 +135,38 @@ struct FEPackage : public FENode {
     inline FEPackage* GetNext() { return static_cast<FEPackage*>(FENode::GetNext()); }
     inline FEPackage* GetPrev() { return static_cast<FEPackage*>(FENode::GetPrev()); }
     inline unsigned long GetControlMask() const { return Controllers; }
+    inline void SetControlMask(unsigned long ControlMask) { Controllers = ControlMask; }
+    inline unsigned long GetOldControlMask() const { return OldControllers; }
+    inline void SetOldControlMask(unsigned long ControlMask) { OldControllers = ControlMask; }
     inline void SetErrorScreen(bool b) { bErrorScreen = b; }
     inline bool IsInputEnabled() const { return bInputEnabled; }
+    inline void SetInputEnabled(bool b) { bInputEnabled = b; }
     inline bool IsErrorScreen() const { return bErrorScreen; }
+    inline int GetPriority() const { return Priority; }
+    inline void SetPriority(int NewPri) { Priority = NewPri; }
+    inline bool IsLibrary() const { return bIsLibrary; }
+    inline void SetStartEqualsAccept(bool bVal) { bStartEqualsAccept = bVal; }
+    inline bool StartEqualsAccept() const { return bStartEqualsAccept; }
+    inline unsigned long GetUserParam() const { return UserParam; }
+    inline void SetUserParam(unsigned long NewParam) { UserParam = NewParam; }
+    inline void SetParentPackage(FEPackage* pPack) { pParentPackage = pPack; }
+    inline FEPackage* GetParentPackage() { return pParentPackage; }
+    inline unsigned long GetVersion() const { return VersionNumber; }
+    inline char* GetFilename() { return pFilename; }
+    inline unsigned long GetNumParentObjects() { return Objects.GetNumElements(); }
+    inline void SetExecute(bool bExec) { bExecuting = bExec; }
+    inline void SetUseIdleList(bool bUseIdle) { bUseIdleList = bUseIdle; }
+    inline bool UsesIdleList() { return bUseIdleList; }
+    inline FEObject* GetLastObject() { return static_cast<FEObject*>(Objects.GetTail()); }
+    inline void AddObject(FEObject* pObject) { Objects.AddTail(static_cast<FEMinNode*>(pObject)); }
+    inline void AddObjectAfter(FEObject* pObject, FEObject* pAddAfter) { Objects.AddNode(static_cast<FEMinNode*>(pAddAfter), static_cast<FEMinNode*>(pObject)); }
+    inline void RemoveObject(FEObject* pObject) { Objects.RemNode(static_cast<FEMinNode*>(pObject)); }
+    inline unsigned long GetNumResponses() { return Responses.GetNumElements(); }
+    inline void AddResponse(FEMessageResponse* pResp) { Responses.AddTail(static_cast<FEMinNode*>(pResp)); }
+    inline void PurgeResponses() { Responses.Purge(); }
+    inline void RemoveResponse(FEMessageResponse* pResp) { Responses.RemNode(static_cast<FEMinNode*>(pResp)); }
+    inline FEMessageResponse* GetResponse(unsigned long Index) { return static_cast<FEMessageResponse*>(Responses.FindNode(Index)); }
+    inline const FEMsgTargetList* GetMessageTargetList(unsigned long Index) const { return &pMsgTargets[Index]; }
 
     FEObject* FindObjectByHash(unsigned long NameHash);
     FEObject* FindObjectByGUID(unsigned long GUID);
@@ -132,6 +179,7 @@ struct FEPackage : public FENode {
     FELibraryRef* FindLibraryReference(unsigned long ObjGUID) const;
     void ConnectObjectResources();
     void BuildMouseObjectStateList();
+    bool Startup(FEGameInterface* pGameInterface);
 
     void IssueScriptMessages(FEngine* pEngine, FEObject* pObj, FEScript* pScript, long tOldTime, long tNewTime);
     void UpdateObject(FEObject* pObj, long tDeltaTicks);

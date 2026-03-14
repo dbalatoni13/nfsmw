@@ -1,21 +1,83 @@
 // OWNED BY zFeOverlay AGENT - DO NOT MODIFY OR EMPTY
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp"
 #include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/FEng/FEPackage.h"
 #include "Speed/Indep/Src/Frontend/FECarLoader.hpp"
 #include "Speed/Indep/Src/World/CarLoader.hpp"
+#include "Speed/Indep/Src/World/CarRender.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
-
-struct FrontEndRenderingCar {
-    char _pad[0x574];
-    int Visible;
-};
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/frontend.h"
+#include "Speed/Indep/Src/Generated/Events/EFadeScreenOn.hpp"
+#include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Ecstasy/EmitterSystem.h"
+#include "Speed/Indep/Src/Ecstasy/eModel.hpp"
+#include "Speed/Indep/Src/Ecstasy/EcstasyData.hpp"
+#include "Speed/Indep/Src/Input/ActionQueue.h"
+#include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+#include "Speed/Indep/Src/World/CarInfo.hpp"
 
 extern MenuScreen *FEngFindScreen(const char *name);
+extern FEString *FEngFindString(const char *pkg_name, int hash);
+extern void FEngSetLanguageHash(FEString *text, unsigned int hash);
+extern int FEPrintf(FEString *text, const char *fmt, ...);
+extern int FEngSNPrintf(char *, int, const char *, ...);
+extern unsigned int FEHashUpper(const char *str);
+extern int FEngMapJoyParamToJoyport(int feng_param);
+
+extern void SetSelectCarLighting(int view_id, float f, int);
+extern void eRotateZ(bMatrix4 *, bMatrix4 *, unsigned short);
+extern void eRotateX(bMatrix4 *, bMatrix4 *, unsigned short);
+extern void eRotateY(bMatrix4 *, bMatrix4 *, unsigned short);
+extern void eMulVector(bVector3 *, const bMatrix4 *, const bVector3 *);
+extern void PSMTX44Identity(void *mtx);
+extern void PSMTX44Copy(const void *src, void *dst);
+extern void eInitFEEnvMapPlat();
+extern void eRemoveFEEnvMapPlat();
+extern void GameFlowLoadGarageScreen(void (*callback)(int), int param);
+extern void AddScreenEffect(ScreenEffectDB *db, ScreenEffectType type, float a, float b, float c, float d);
 
 extern RideInfo TopOrFullScreenRide;
 extern eSetRideInfoReasons TopOrFullScreenLoadingReason;
 
 extern CarLoader TheCarLoader;
+
+extern EmitterSystem gEmitterSystem;
+extern float RealTimeElapsed;
+extern unsigned int FrameMallocFailed;
+extern unsigned int FrameMallocFailAmount;
+
+extern float carPosX;
+extern float carPosY;
+extern float CarSelectTireSteerAngle;
+extern int CarTypeInfoArrayUpdated;
+
+struct SelectCarCameraMover;
+extern void SetHRotateSpeed(SelectCarCameraMover *mover, float speed);
+extern void SetVRotateSpeed(SelectCarCameraMover *mover, float speed);
+extern void SetZoomSpeed(SelectCarCameraMover *mover, float speed);
+extern void SetCurrentOrientation(SelectCarCameraMover *mover, bVector3 *target, float roll, float fov, bVector3 *lookat);
+extern void SetDesiredOrientation(SelectCarCameraMover *mover, bVector3 *target, float roll, float fov, float anim_speed, float damping, bVector3 *lookat, int periods);
+extern SelectCarCameraMover *NewSelectCarCameraMover(int view_id);
+extern void SelectCarCameraMover_SetTime(SelectCarCameraMover *mover, float time);
+
+struct EAXFrontEnd;
+extern void DestroyAllDriveOnSnds(EAXFrontEnd *fe_snd);
+extern void SetFEDrivingCarState(EAXFrontEnd *fe_snd, bVector3 *pos, bVector3 *vel, void *camera, int view_id);
+
+extern eSolidListHeader *SolidList;
+
+extern float cam_blur;
+extern int CarGuysCamera;
+extern float CarRotateSpeed;
+
+static int sNumTicksSinceUserMovedCamera;
+static int sNumTicksBeforeCamMovesBackToScreenPosition;
+static int bAutoMovement;
+static int bPass1;
+static float zoomIn;
+static float zoomOut;
 
 static const char lbl_GarageMain[] = "GarageMain.fng";
 
@@ -240,10 +302,99 @@ void CarViewer::ShowCarScreen() {
 
 bool CarViewer::haveLoadedOnce;
 
-// --- Camera Info functions ---
+// --- Free functions ---
 
-// FindGarageCameraInfo is defined later in this TU
-unsigned int FindGarageCameraInfo(const char *prefix);
+unsigned int FindScreenInfo(const char *pkg_name, int category) {
+    char name[128];
+    char prefix[128];
+    if (!pkg_name) {
+        bStrCpy(name, "");
+    } else {
+        bStrCpy(name, pkg_name);
+    }
+    int len = bStrLen(name);
+    if (len > 3) {
+        name[len - 4] = 0;
+        bMemSet(prefix, 0, 128);
+        unsigned int flags = FEDatabase->mUserFlags;
+        if (flags & 0x20) {
+            bStrCat(prefix, "customize_", name);
+            if (category > -1) {
+                bSPrintf(prefix, "%s_%d", prefix, category);
+            }
+            unsigned int key = Attrib::StringToLowerCaseKey(prefix);
+            Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
+            if (inst.GetLayoutPointer()) {
+                inst.~frontend();
+                return key;
+            }
+            if (category > -1) {
+                unsigned int fallback = FindScreenInfo(pkg_name, -1);
+                inst.~frontend();
+                return fallback;
+            }
+            inst.~frontend();
+        } else if (flags & 0x8000) {
+            bStrCat(prefix, "carlot_", name);
+        } else if (flags & 1) {
+            bStrCat(prefix, "career_", name);
+        } else if ((flags & 4) && (flags & 0x400)) {
+            bStrCat(prefix, "quickrace_", name);
+        } else if (flags & 4) {
+            bStrCat(prefix, "quickracemain_", name);
+        } else if ((flags & 8) || (flags & 0x40)) {
+            bStrCat(prefix, "quickracemain_", name);
+        } else if (flags & 0x10) {
+            bStrCat(prefix, "options_", name);
+        } else if (flags & 0x100) {
+            bStrCat(prefix, "career_", "manager");
+        } else {
+            bStrCat(prefix, "", name);
+        }
+        unsigned int key = Attrib::StringToLowerCaseKey(prefix);
+        {
+            Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
+            if (inst.GetLayoutPointer()) {
+                inst.~frontend();
+                return key;
+            }
+            inst.~frontend();
+        }
+    }
+    return 0x3b5aea62;
+}
+
+unsigned int FindGarageCameraInfo(const char *prefix) {
+    char buf[64];
+    bStrCpy(buf, prefix);
+    const char *garage_name = GetCurrentGarageName();
+    bStrCat(buf, buf, garage_name);
+    unsigned int key = Attrib::StringToLowerCaseKey(buf);
+    {
+        Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
+        if (!inst.GetLayoutPointer()) {
+            inst.~frontend();
+            return 0xf907e767;
+        }
+        inst.~frontend();
+    }
+    return key;
+}
+
+unsigned int FindScreenCameraInfo(unsigned int screen_key) {
+    {
+        Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), screen_key), 0, nullptr);
+        if (!inst.GetLayoutPointer()) {
+            inst.~frontend();
+            return 0xf907e767;
+        }
+        Attrib::Gen::frontend cam_inst(reinterpret_cast<Attrib::Gen::frontend::_LayoutStruct *>(inst.GetLayoutPointer())->cam_angle, 0, nullptr);
+        unsigned int result = cam_inst.GetCollection();
+        cam_inst.~frontend();
+        inst.~frontend();
+        return result;
+    }
+}
 
 static unsigned int FindGarageEntryCameraInfo() {
     return FindGarageCameraInfo("angle_entry_");

@@ -11,7 +11,7 @@ namespace Upgrades {
 }
 }
 
-extern CarTypeInfo *GetCarTypeInfo(CarType type);
+extern CarTypeInfo *GetCarTypeInfoFromHash(unsigned int hash);
 
 struct FEMarkerManager {
     int GetNumCustomizeMarkers();

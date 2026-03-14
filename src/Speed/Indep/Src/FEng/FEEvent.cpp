@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/FEng/FEEvent.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
+#include "types.h"
 
 FEEventList& FEEventList::operator=(FEEventList& Src) {
     SetCount(Src.Count);

@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/Src/FEng/FEMultiImage.h"
 #include "Speed/Indep/Src/FEng/FEString.h"
+#include "Speed/Indep/Src/FEng/FETypes.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 
 void FEngSetMultiImageRot(FEMultiImage *image, float angle_degrees);
@@ -16,6 +17,9 @@ void FEngSetRotationZ(FEObject *obj, float angle);
 void FEngGetTopLeft(FEObject *obj, float &x, float &y);
 void FEngGetSize(FEObject *obj, float &w, float &h);
 void FEngSetSize(FEObject *obj, float w, float h);
+void FEngSetTopLeft(FEObject *obj, float x, float y);
+void FEngSetColor(FEObject *obj, unsigned int color);
+FEColor FEngGetObjectColor(FEObject *obj);
 int bStrICmp(const char *s1, const char *s2);
 
 extern const char lbl_803E4D20[];
@@ -84,7 +88,66 @@ Tachometer::Tachometer(UTL::COM::Object *pOutter, const char *pkg_name, int play
     }
 }
 
-void Tachometer::Update(IPlayer *player) {}
+void Tachometer::Update(IPlayer *player) {
+    if (Sim::GetUserMode() == 1) {
+        float topX, topY;
+        FEngGetTopLeft(TachNeedle, topX, topY);
+        float needleWidth = mRpm / mMaxRpm;
+        float sizeW, sizeH;
+        needleWidth = needleWidth * mOriginalNeedleWidth;
+        FEngGetSize(TachNeedle, sizeW, sizeH);
+        FEngSetSize(TachNeedle, needleWidth, sizeH);
+        float topX2, topY2;
+        FEngGetTopLeft(TachNeedle, topX2, topY2);
+        FEngSetTopLeft(TachNeedle, topX, topY2);
+        if (mRpm >= mRedline) {
+            FEngSetScript(TachNeedle, 0x61D30442, true);
+        } else {
+            FEngSetScript(TachNeedle, 0x001744B3, true);
+        }
+    } else {
+        FEngSetRotationZ(TachNeedle, CalcAngleForRPM(mRpm, mMaxRpm));
+    }
+
+    if (pGearString) {
+        FEPrintf(pGearString, lbl_803E4F14, GetLetterForGear(mGear));
+
+        if (Sim::GetUserMode() != 1) {
+            FEColor normalColor(0xFF000000);
+            FEColor redColor(0x88000000);
+
+            if (mIsShifting) {
+                FEngSetColor(pGearString, static_cast<unsigned long>(redColor));
+            } else {
+                FEngSetColor(pGearString, static_cast<unsigned long>(normalColor));
+            }
+        }
+    }
+
+    if (mShiftPotential > 1) {
+        if (!FEngIsScriptSet(pShiftIndicator, 0x02DDC8F0)) {
+            FEngSetScript(pShiftIndicator, 0x02DDC8F0, true);
+        }
+    } else {
+        if (!FEngIsScriptSet(pShiftIndicator, 0x001744B3)) {
+            FEngSetScript(pShiftIndicator, 0x001744B3, true);
+        }
+    }
+
+    if (mInPerfectLaunchRange) {
+        if (!mNeedleColourSetToPerfectLaunch) {
+            mNeedleColourSetToPerfectLaunch = true;
+            FEColor col = FEngGetObjectColor(TachNeedle);
+            FEngSetColor(TachNeedle, (~static_cast<unsigned long>(col)) | 0xFF000000);
+        }
+    } else {
+        if (mNeedleColourSetToPerfectLaunch) {
+            mNeedleColourSetToPerfectLaunch = false;
+            FEColor col = FEngGetObjectColor(TachNeedle);
+            FEngSetColor(TachNeedle, (~static_cast<unsigned long>(col)) | 0xFF000000);
+        }
+    }
+}
 
 void Tachometer::SetRpm(float rpm) {
     mRpm = rpm;
@@ -99,26 +162,32 @@ void Tachometer::SetInPerfectLaunchRange(bool inRange) {
 }
 
 char Tachometer::GetLetterForGear(GearID gear) {
-    switch (gear) {
-    case G_REVERSE:
-        return 'R';
-    case G_FIRST:
+    if (gear == G_FIRST) {
         return '1';
-    case G_SECOND:
-        return '2';
-    case G_THIRD:
-        return '3';
-    case G_FOURTH:
-        return '4';
-    case G_FIFTH:
-        return '5';
-    case G_SIXTH:
-        return '6';
-    case G_SEVENTH:
-        return '7';
-    case G_EIGHTH:
-        return '8';
-    default:
-        return 'N';
     }
+    if (gear == G_SECOND) {
+        return '2';
+    }
+    if (gear == G_THIRD) {
+        return '3';
+    }
+    if (gear == G_FOURTH) {
+        return '4';
+    }
+    if (gear == G_FIFTH) {
+        return '5';
+    }
+    if (gear == G_SIXTH) {
+        return '6';
+    }
+    if (gear == G_SEVENTH) {
+        return '7';
+    }
+    if (gear == G_EIGHTH) {
+        return '8';
+    }
+    if (gear == G_REVERSE) {
+        return 'R';
+    }
+    return 'N';
 }

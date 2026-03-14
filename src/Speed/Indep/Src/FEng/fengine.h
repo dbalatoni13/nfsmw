@@ -12,6 +12,7 @@ struct FEGameInterface;
 struct FEObjectMouseState;
 struct FEMessageResponse;
 struct FEMatrix4;
+struct FEPackageCommand;
 
 struct FEPackageList {
     FEList Packages; // offset 0x0, size 0x10
@@ -100,7 +101,7 @@ struct FEngine {
     void ProcessObjectMessage(FEObject* pObj, FEPackage* pPack, unsigned long MsgID, unsigned long uControlMask);
     void ProcessGlobalMessage(FEPackage* pPack, unsigned long MsgID, unsigned long uControlMask);
     FEPackage* FindLibraryPackage(unsigned long NameHash) const;
-    FEPackage* FindQueuedNodeWithControl();
+    FEPackageCommand* FindQueuedNodeWithControl();
     void PopPackage();
     void RemovePackage(FEPackage* pPack);
     void RecordLastPackageButton(unsigned long PackHash, unsigned long ButtonGUID);

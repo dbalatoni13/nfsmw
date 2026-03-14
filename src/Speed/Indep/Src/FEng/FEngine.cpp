@@ -240,11 +240,11 @@ void FEngine::QueuePackagePop() {
     QueuePackageCommand(1, 0, nullptr);
 }
 
-FEPackage* FEngine::FindQueuedNodeWithControl() {
+FEPackageCommand* FEngine::FindQueuedNodeWithControl() {
     FEPackageCommand* pCmd = static_cast<FEPackageCommand*>(PackageCommands.GetTail());
     while (pCmd) {
         if (pCmd->iCommand & 2) {
-            return pCmd->pPackage;
+            return pCmd;
         }
         pCmd = static_cast<FEPackageCommand*>(pCmd->GetPrev());
     }
@@ -537,8 +537,8 @@ void FEngine::RenderObject(FEObject* pObj, FEMatrix4& mParent, unsigned short Re
     }
 }
 
-void FEngine::QueuePackageCommand(int command, unsigned long ControlMask, const char* pPackageName) {
-    FEPackage* pPackageWithControl = FindPackageWithControl(ControlMask);
+void FEngine::QueuePackageCommand(long command, unsigned long ControlMask, const char* pPackageName) {
+    FEPackage* pPackageWithControl = FindPackageWithControl();
     FEPackageCommand* Node = static_cast<FEPackageCommand*>(
         static_cast<FENode*>(new (FEngMalloc(sizeof(FEPackageCommand), nullptr, 0)) FENode()));
     Node->iCommand = 0;
@@ -553,7 +553,7 @@ void FEngine::QueuePackageCommand(int command, unsigned long ControlMask, const 
         pPackageWithControl->SetOldControlMask(pPackageWithControl->GetControlMask());
         pPackageWithControl->SetControlMask(0);
     } else {
-        FEPackageCommand* pCom = FindQueuedNodeWithControl(ControlMask);
+        FEPackageCommand* pCom = FindQueuedNodeWithControl();
         if (pCom) {
             if (ControlMask == 0) {
                 Node->uControlMask = pCom->uControlMask;
@@ -578,8 +578,8 @@ void FEngine::Update(const long tDeltaTicks, unsigned int lock) {
         pInterface->DebugMessageBeginUpdate();
     }
     if (bExecuting) {
-        DisabledMask = 0;
-        if (bMouseEnabled) {
+        PadHoldRegistered = 0;
+        if (bMouseActive) {
             FEMouseInfo Info;
             pInterface->GetMouseInfo(Info);
             Mouse.Update(Info, tDeltaTicks);
@@ -588,7 +588,7 @@ void FEngine::Update(const long tDeltaTicks, unsigned int lock) {
         if (NumJoyPads != 0) {
             do {
                 unsigned long mask = pInterface->GetJoyPadMask(PadIndex);
-                JoyPads[PadIndex].Update(mask, tDeltaTicks);
+                pJoyPad[PadIndex].Update(mask, tDeltaTicks);
                 PadIndex = PadIndex + 1;
             } while (PadIndex < NumJoyPads);
         }
@@ -596,7 +596,7 @@ void FEngine::Update(const long tDeltaTicks, unsigned int lock) {
             if (pPackage->IsInputEnabled() &&
                 (!bErrorScreenMode || pPackage->IsErrorScreen())) {
                 ProcessPadsForPackage(pPackage);
-                if (bMouseEnabled) {
+                if (bMouseActive) {
                     ProcessMouseForPackage(pPackage);
                 }
             }
@@ -604,23 +604,23 @@ void FEngine::Update(const long tDeltaTicks, unsigned int lock) {
         unsigned long i = 0;
         unsigned long MaskBit = 1;
         do {
-            if ((DisabledMask & MaskBit) != 0) {
+            if ((PadHoldRegistered & MaskBit) != 0) {
                 unsigned char PadIdx = 0;
                 if (NumJoyPads != 0) {
                     do {
-                        JoyPads[PadIdx].DecrementHold(MaskBit, HoldTimers[i]);
+                        pJoyPad[PadIdx].DecrementHold(MaskBit, HoldDecrement[i]);
                         PadIdx = PadIdx + 1;
                     } while (PadIdx < NumJoyPads);
                 }
             }
-            HoldTimers[i] = 0;
+            HoldDecrement[i] = 0;
             i++;
             MaskBit <<= 1;
         } while (i < 19);
-        LastButton = CurrentButton;
+        FastRep = FastRepCache;
     }
     if (bExecuting) {
-        if (bHoldAllDirtyFlags) {
+        if (!bRenderedRecently) {
             FEPackage::uHoldDirtyFlags = 0xFFFFFFFF;
         } else {
             FEPackage::uHoldDirtyFlags = 0;
@@ -640,7 +640,7 @@ void FEngine::Update(const long tDeltaTicks, unsigned int lock) {
         if (MsgQ.GetHead()) {
             ProcessMessageQueue();
         }
-        bHoldAllDirtyFlags = false;
+        bRenderedRecently = false;
     } else {
         for (pPackage = PackList.GetFirstPackage(); pPackage; pPackage = pPackage->GetNext()) {
             if (!bErrorScreenMode || pPackage->IsErrorScreen()) {

@@ -17,24 +17,7 @@ struct FELibraryRef {
     unsigned long LibGUID;       // offset 0x8, size 0x4
 };
 
-// total size: 0x10
-struct FEMsgTargetList {
-    unsigned long MsgID;       // offset 0x0, size 0x4
-    unsigned long Alloc;       // offset 0x4, size 0x4
-    unsigned long Count;       // offset 0x8, size 0x4
-    FEObject** pTargets;       // offset 0xC, size 0x4
-
-    inline FEMsgTargetList() : MsgID(0), Alloc(0), Count(0), pTargets(nullptr) {}
-    inline ~FEMsgTargetList() {}
-    inline void SetMsgID(unsigned long NewID) { MsgID = NewID; }
-    inline unsigned long GetMsgID() const { return MsgID; }
-    inline unsigned long GetCount() const { return Count; }
-    inline FEObject* GetTarget(unsigned long Index) { return pTargets[Index]; }
-    inline const FEObject* GetTarget(unsigned long Index) const { return pTargets[Index]; }
-
-    void Allocate(unsigned long NewAlloc);
-    void AppendTarget(FEObject* pObject);
-};
+// FEMsgTargetList defined in FEPackage.h
 
 // total size: 0x18
 struct FEResourceRequest {
@@ -582,7 +565,7 @@ FEMessageResponse* FEPackage::FindResponse(unsigned long MsgID) {
 void FEPackage::ConnectObjectResources() {
     ResourceConnector resConnector;
     resConnector.pPack = this;
-    resConnector.pResList = pRequests;
+    resConnector.pReqList = &pRequests;
     ForAllObjects(resConnector);
 }
 
@@ -630,12 +613,12 @@ void FEPackage::BuildMouseObjectStateList() {
     }
     NumMouseObjects = 0;
     MouseStateObjectCounter the_counter;
-    the_counter.pPack = this;
+    the_counter.NumMouseObjects = 0;
     ForAllObjects(the_counter);
-    if (the_counter.Count > 0) {
+    if (the_counter.NumMouseObjects > 0) {
         MouseObjectStates = static_cast<FEObjectMouseState*>(
-            FEngMalloc(the_counter.Count * sizeof(FEObjectMouseState) + 8, nullptr, 0));
-        for (unsigned long i = 0; i < the_counter.Count; i++) {
+            FEngMalloc(the_counter.NumMouseObjects * sizeof(FEObjectMouseState) + 8, nullptr, 0));
+        for (int i = 0; i < the_counter.NumMouseObjects; i++) {
             MouseObjectStates[i].pObject = nullptr;
             MouseObjectStates[i].Offset.h = 0.0f;
             MouseObjectStates[i].Offset.v = 0.0f;

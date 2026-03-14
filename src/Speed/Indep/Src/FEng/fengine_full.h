@@ -14,6 +14,7 @@ struct FEGameInterface;
 struct FEObjectMouseState;
 struct FEMessageResponse;
 struct FEScript;
+struct FEPackageCommand;
 
 // total size: 0x28
 struct FETypeNode : public FENode {
@@ -214,7 +215,7 @@ struct FEngine {
     void ProcessObjectMessage(FEObject* pObj, FEPackage* pPack, unsigned long MsgID, unsigned long uControlMask);
     void ProcessGlobalMessage(FEPackage* pPack, unsigned long MsgID, unsigned long uControlMask);
     FEPackage* FindLibraryPackage(unsigned long NameHash) const;
-    FEPackage* FindQueuedNodeWithControl();
+    FEPackageCommand* FindQueuedNodeWithControl();
     void PopPackage();
     void RemovePackage(FEPackage* pPack);
     void RecordLastPackageButton(unsigned long PackHash, unsigned long ButtonGUID);

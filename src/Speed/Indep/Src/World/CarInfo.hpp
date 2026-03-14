@@ -143,4 +143,10 @@ struct CarTypeInfo {
     int DefaultBasePaint;                       // offset 0xCC, size 0x4
 };
 
+extern CarTypeInfo *CarTypeInfoArray;
+
+inline CarTypeInfo *GetCarTypeInfo(CarType type) {
+    return &CarTypeInfoArray[type];
+}
+
 #endif
