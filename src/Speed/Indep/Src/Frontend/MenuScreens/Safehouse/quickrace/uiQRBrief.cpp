@@ -203,22 +203,6 @@ void UIQRBrief::UpdateSliders() {
 
 void UIQRBrief::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     switch (msg) {
-    case 0xc519bfc4:
-        pSelectedCar = GetRandomCar();
-        pSelectedTrack = GetRandomTrack();
-        randomCount = 30;
-        GarageMainScreen::GetInstance()->DisableCarRendering();
-        cFEng::Get()->QueuePackageMessage(0xa05a328e, nullptr, nullptr);
-        FEngSetScript(PackageFilename, 0xfe8fdbf7, 0x16a259, true);
-        break;
-    case 0x406415e3: {
-        char port = FEngMapJoyParamToJoyport(param2);
-        FEDatabase->SetPlayersJoystickPort(0, port);
-        break;
-    }
-    case 0x911ab364:
-        cFEng::Get()->QueuePackageSwitch("FeQuickRaceMainMenu.fng", 0, 0, false);
-        break;
     case 0xc98356ba: {
         if (randomCount < 1) return;
         SelectableCar *next_car = static_cast<SelectableCar *>(pSelectedCar->GetNext());
@@ -258,6 +242,11 @@ void UIQRBrief::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned 
         SetRideInfo(&ride, static_cast<eSetRideInfoReasons>(1), static_cast<eCarViewerWhichCar>(0));
         break;
     }
+    case 0x406415e3: {
+        char port = FEngMapJoyParamToJoyport(param2);
+        FEDatabase->SetPlayersJoystickPort(0, port);
+        break;
+    }
     case 0xe1fde1d1: {
         RaceSettings *qr_settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
         qr_settings->SelectedCar[0] = 0x12345678;
@@ -280,5 +269,16 @@ void UIQRBrief::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned 
         StartRace();
         break;
     }
+    case 0xc519bfc4:
+        pSelectedCar = GetRandomCar();
+        pSelectedTrack = GetRandomTrack();
+        randomCount = 30;
+        GarageMainScreen::GetInstance()->DisableCarRendering();
+        cFEng::Get()->QueuePackageMessage(0xa05a328e, nullptr, nullptr);
+        FEngSetScript(PackageFilename, 0xfe8fdbf7, 0x16a259, true);
+        break;
+    case 0x911ab364:
+        cFEng::Get()->QueuePackageSwitch("FeQuickRaceMainMenu.fng", 0, 0, false);
+        break;
     }
 }
