@@ -36,13 +36,13 @@ protected:
 
 public:
     inline FEMinList() : numElements(0), head(nullptr), tail(nullptr) {}
-    virtual ~FEMinList();
+    virtual ~FEMinList() { Purge(); }
 
     inline FEMinNode* GetHead() const { return head; }
     inline FEMinNode* GetTail() const { return tail; }
     inline void AddHead(FEMinNode* n);
     inline void AddTail(FEMinNode* n);
-    inline void Purge();
+    void Purge();
     inline bool IsListEmpty() const { return numElements == 0; }
     inline unsigned long GetNumElements() const { return numElements; }
 

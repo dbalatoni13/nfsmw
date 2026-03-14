@@ -91,6 +91,13 @@ bool FENode::SetName(const char* theName) {
     return result;
 }
 
+void FEMinList::Purge() {
+    FEMinNode* cmn;
+    while ((cmn = RemHead()) != nullptr) {
+        delete cmn;
+    }
+}
+
 void FEMinList::AddNode(FEMinNode* insertpoint, FEMinNode* node) {
     if (!node) {
         return;

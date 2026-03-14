@@ -27,7 +27,13 @@ class FEScript : public FEMinNode {
     inline FEScript* GetNext() const { return static_cast<FEScript*>(FEMinNode::GetNext()); }
     inline FEScript* GetPrev() const { return static_cast<FEScript*>(FEMinNode::GetPrev()); }
 
+    static void* operator new(unsigned int);
+    static void operator delete(void* pNode);
+
     void Init();
+    ~FEScript() override;
+    FEScript(FEScript& Src, bool bReference);
+    void SetTrackCount(long Count);
     FEKeyTrack* FindTrack(FEKeyTrack_Indices TrackIndex) const;
     void SetName(const char* pNewName);
 };

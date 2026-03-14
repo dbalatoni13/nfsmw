@@ -8,7 +8,12 @@ struct FEScript;
 struct FERenderObject;
 struct FEObjData;
 struct FEMessageResponse;
-struct FEObjectDestructorCallback;
+struct FEObject;
+
+struct FEObjectDestructorCallback {
+    virtual ~FEObjectDestructorCallback();
+    virtual void OnDestroy(FEObject* pObject) = 0;
+};
 struct FEVector2;
 struct FEVector3;
 struct FEColor;

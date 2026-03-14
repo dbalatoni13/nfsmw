@@ -25,6 +25,8 @@ struct FEPackageList {
 };
 
 struct FEngine {
+    static unsigned long SysGUID;
+
     bool bExecuting;            // offset 0x0
     bool bMouseActive;          // offset 0x4
     bool bLoadObjectNames;      // offset 0x8
