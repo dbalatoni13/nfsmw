@@ -296,13 +296,13 @@ CustomizePartOption *CustomizationScreen::FindMatchingOption(SelectablePart *to_
 // --- FEShoppingCartItem ---
 
 void FEShoppingCartItem::SetFocus(const char *parent_pkg) {
-    FEngSetCurrentButton(parent_pkg, pBacking->NameHash);
-    FEngSetScript(pBacking, 0x249db7b7, true);
+    FEngSetCurrentButton(parent_pkg, pTitle->NameHash);
+    FEngSetScript(pTitle, 0x249db7b7, true);
     FEngSetScript(pData, 0x249db7b7, true);
     FEngSetScript(pTradeInPrice, 0x249db7b7, true);
-    if (pCheckIcon) {
-        FEngSetVisible(pCheckIcon);
-        FEngSetScript(pCheckIcon, 0x249db7b7, true);
+    if (pBacking) {
+        FEngSetVisible(pBacking);
+        FEngSetScript(pBacking, 0x249db7b7, true);
     }
 }
 
@@ -311,20 +311,20 @@ void FEShoppingCartItem::UnsetFocus() {
     if (!TheItem->IsActive()) {
         script = 0x163c76;
     }
-    FEngSetScript(pBacking, script, true);
+    FEngSetScript(pTitle, script, true);
     FEngSetScript(pData, script, true);
     FEngSetScript(pTradeInPrice, script, true);
-    if (pCheckIcon) {
-        FEngSetInvisible(pCheckIcon);
-        FEngSetScript(pCheckIcon, 0x7ab5521a, true);
+    if (pBacking) {
+        FEngSetInvisible(pBacking);
+        FEngSetScript(pBacking, 0x7ab5521a, true);
     }
 }
 
 void FEShoppingCartItem::SetCheckScripts() {
     if (!TheItem->IsActive()) {
-        FEngSetScript(pCheckIcon, 0x77cdc4e9, true);
-    } else {
         FEngSetScript(pCheckIcon, 0xe6361f46, true);
+    } else {
+        FEngSetScript(pCheckIcon, 0x77cdc4e9, true);
     }
 }
 
@@ -447,7 +447,7 @@ unsigned int FEShoppingCartItem::GetCarPartCatHash(unsigned int slot_id) {
 // --- CustomizeShoppingCart ---
 
 CustomizeShoppingCart::CustomizeShoppingCart(ScreenConstructorData *sd) : UIWidgetMenu(sd) {
-    iMaxWidgetsOnScreen = 0;
+    bScrollWrapped = false;
     if (gCarCustomizeManager.IsCareerMode()) {
         iMaxWidgetsOnScreen = 4;
     } else {
@@ -685,9 +685,9 @@ void CustomizationScreenHelper::SetCareerStatusIcon(eCustomizePartState state) {
 
 void CustomizationScreenHelper::SetCashVisibility(bool visible) {
     if (visible) {
-        FEngSetVisible(FEngFindObject(pPackageName, 0x9ea22e0b));
+        FEngSetVisible(FEngFindObject(pPackageName, 0x8d1559a4));
     } else {
-        FEngSetInvisible(FEngFindObject(pPackageName, 0x9ea22e0b));
+        FEngSetInvisible(FEngFindObject(pPackageName, 0x8d1559a4));
     }
 }
 
@@ -1308,7 +1308,22 @@ void CustomizeParts::ShowHudObjects() {
 // --- CustomizeNumbers helpers ---
 
 void CustomizeNumbers::UnsetShoppingCart() {
-    // TODO: iterate number parts and clear cart state
+    SelectablePart *cur = LeftNumberList.GetHead();
+    while (cur != reinterpret_cast<SelectablePart *>(&LeftNumberList)) {
+        if ((cur->PartState & 0xF0) == CPS_IN_CART) {
+            cur->PartState = static_cast<eCustomizePartState>(cur->PartState & ~CPS_IN_CART);
+            break;
+        }
+        cur = static_cast<SelectablePart *>(cur->Next);
+    }
+    cur = RightNumberList.GetHead();
+    while (cur != reinterpret_cast<SelectablePart *>(&RightNumberList)) {
+        if ((cur->PartState & 0xF0) == CPS_IN_CART) {
+            cur->PartState = static_cast<eCustomizePartState>(cur->PartState & ~CPS_IN_CART);
+            return;
+        }
+        cur = static_cast<SelectablePart *>(cur->Next);
+    }
 }
 
 // --- CustomizeMain additional ---

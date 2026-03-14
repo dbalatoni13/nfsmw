@@ -908,9 +908,9 @@ GarageCarLoader *GetGarageCarLoader() {
 
 void GarageCarLoader::Init() {
     IsCurrentRide = false;
-    LoadingCar = 0;
-    CurrentCar = 0;
     IsLoadingRide = false;
+    CurrentCar = 0;
+    LoadingCar = 0;
 }
 
 void GarageCarLoader::Switch() {
@@ -938,9 +938,9 @@ void GarageCarLoader::CleanUp() {
         TheCarLoader.Unload(CurrentCar);
     }
     IsCurrentRide = false;
-    LoadingCar = 0;
-    CurrentCar = 0;
     IsLoadingRide = false;
+    CurrentCar = 0;
+    LoadingCar = 0;
 }
 
 void InitGarageCarLoaders() {

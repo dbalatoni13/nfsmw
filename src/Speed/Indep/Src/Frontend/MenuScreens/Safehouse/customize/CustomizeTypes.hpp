@@ -216,7 +216,10 @@ struct ShoppingCartItem : public bTNode<ShoppingCartItem> {
         , TradeIn(trade_in) //
         , bActive(true) {}
 
-    virtual ~ShoppingCartItem() {}
+    virtual ~ShoppingCartItem() {
+        delete ToBuy;
+        delete TradeIn;
+    }
 
     SelectablePart *GetBuyingPart() { return ToBuy; }
     SelectablePart *GetTradeInPart() { return TradeIn; }

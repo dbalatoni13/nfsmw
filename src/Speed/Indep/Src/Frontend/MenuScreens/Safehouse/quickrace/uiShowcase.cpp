@@ -80,7 +80,7 @@ void Showcase::NotificationMessage(unsigned long msg, FEObject *pObj, unsigned l
             car->Handle = 0xFFFFFFFF;
             GarageMainScreen::GetInstance()->DisableCarRendering();
         }
-        BlackListNumber = 0;
         FromArgs = 0;
+        BlackListNumber = 0;
     }
 }

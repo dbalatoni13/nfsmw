@@ -64,9 +64,9 @@ struct TrackDirection : public FEToggleWidget {
 };
 
 UIQRTrackOptions::UIQRTrackOptions(ScreenConstructorData *sd) : UIWidgetMenu(sd) {
-    m_boDisconnectPercAvail = false;
-    m_code = 0;
     msgHandle = 0;
+    m_code = 0;
+    m_boDisconnectPercAvail = false;
     race = GRaceDatabase_mObj->GetRaceFromHash(FEDatabase->GetQuickRaceSettings(FEDatabase->RaceMode)->EventHash);
     iMaxWidgetsOnScreen = 9;
     Setup();
@@ -457,10 +457,10 @@ void CatchUp::Act(const char *parent_pkg, unsigned int data) {
 
 void CatchUp::Draw() {
     RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
-    if (!settings->CatchUp) {
-        FEngSetLanguageHash(pData, 0x70dfe5c2);
-    } else {
+    if (settings->CatchUp) {
         FEngSetLanguageHash(pData, 0x417b2604);
+    } else {
+        FEngSetLanguageHash(pData, 0x70dfe5c2);
     }
     FEngSetLanguageHash(pTitle, 0x8b8e913a);
 }
