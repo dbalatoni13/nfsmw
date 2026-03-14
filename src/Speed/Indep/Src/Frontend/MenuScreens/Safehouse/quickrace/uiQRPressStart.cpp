@@ -6,6 +6,8 @@
 extern int FEngMapJoyParamToJoyport(int param);
 extern unsigned int FEngMapJoyportToJoyParam(int port);
 
+uiQRPressStart::~uiQRPressStart() {}
+
 uiQRPressStart::uiQRPressStart(ScreenConstructorData *sd) : MenuScreen(sd) {
     iPlayerNum = sd->Arg;
     param = 0;

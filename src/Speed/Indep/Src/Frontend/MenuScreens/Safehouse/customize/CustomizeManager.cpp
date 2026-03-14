@@ -238,13 +238,9 @@ ShoppingCartItem *CarCustomizeManager::IsPartTypeInCart(unsigned int slot_id) {
     return nullptr;
 }
 
-ShoppingCartItem *CarCustomizeManager::IsPartTypeInCart(GRace::Type type) {
-    for (ShoppingCartItem *item = GetFirstCartItem(); item != reinterpret_cast<ShoppingCartItem *>(&ShoppingCart); item = item->GetNext()) {
-        if (item->GetBuyingPart()->GetPhysicsType() == type) {
-            return item;
-        }
-    }
-    return nullptr;
+ShoppingCartItem *CarCustomizeManager::IsPartTypeInCart(Physics::Upgrades::Type type) {
+    SelectablePart test_part(nullptr, 0, 0, static_cast<GRace::Type>(static_cast<int>(type)), true, CPS_AVAILABLE, 0, false);
+    return IsPartTypeInCart(&test_part);
 }
 
 ShoppingCartItem *CarCustomizeManager::IsPartInCart(SelectablePart *to_find) {

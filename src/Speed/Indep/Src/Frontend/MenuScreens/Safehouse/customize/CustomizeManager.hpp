@@ -39,7 +39,7 @@ struct CarCustomizeManager {
     void AddRemovalCarPart(unsigned int slot_id);
     ShoppingCartItem *IsPartTypeInCart(SelectablePart *to_find);
     ShoppingCartItem *IsPartTypeInCart(unsigned int slot_id);
-    ShoppingCartItem *IsPartTypeInCart(GRace::Type type);
+    ShoppingCartItem *IsPartTypeInCart(Physics::Upgrades::Type type);
     ShoppingCartItem *IsPartInCart(SelectablePart *to_find);
     CarPart *GetActivePartFromSlot(unsigned int slot_id);
     int GetCartTotal(eCustomizeCartTotals type);

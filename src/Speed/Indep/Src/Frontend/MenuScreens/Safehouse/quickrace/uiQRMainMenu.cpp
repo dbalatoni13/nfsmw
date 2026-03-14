@@ -42,6 +42,8 @@ struct SplitScreenOption : public IconOption {
     }
 };
 
+UIQRMainMenu::~UIQRMainMenu() {}
+
 UIQRMainMenu::UIQRMainMenu(ScreenConstructorData *sd) : IconScrollerMenu(sd) {
     Setup();
     RefreshHeader();

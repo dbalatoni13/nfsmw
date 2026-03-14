@@ -13,11 +13,17 @@
 extern cFrontendDatabase *FEDatabase;
 extern CarCustomizeManager gCarCustomizeManager;
 extern int gLookupCarSlotID;
-extern int SortCarsByName(DebugCar *, DebugCar *);
 extern const char *GetCarSlotNameFromID(int id);
 extern CarPart *GetCarPartFromSlot(int slot_id);
 extern const char *GetCarPartNameFromID(int id);
 extern unsigned int bStringHash(const char *text);
+
+int SortCarsByName(DebugCar *before, DebugCar *after) {
+    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
+    const char *before_name = stable->GetCarRecordByHandle(before->mHandle)->GetDebugName();
+    const char *after_name = stable->GetCarRecordByHandle(after->mHandle)->GetDebugName();
+    return bStrCmp(before_name, after_name) <= 0;
+}
 
 DebugCarCustomizeScreen::DebugCarOption::DebugCarOption(const char *name, int value)
     : Intval(value) {

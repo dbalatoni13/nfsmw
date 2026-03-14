@@ -774,6 +774,59 @@ static unsigned int FindGarageFinalCameraInfo() {
 
 // --- GarageCarLoader ---
 
+GarageCarLoader::GarageCarLoader() {
+    reinterpret_cast<RideInfo *>(_pad_ride0)->Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
+    reinterpret_cast<RideInfo *>(_pad_ride1)->Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
+    IsDifferent = false;
+    UseFirstDummyTexturesForNextLoad = true;
+    IsLoadingRide = false;
+    IsCurrentRide = false;
+    LoadingCar = 0;
+    CurrentCar = 0;
+}
+
+GarageCarLoader::~GarageCarLoader() {
+    CleanUp();
+}
+
+void GarageCarLoader::LoadRideInfo(RideInfo *ride_info) {
+    if (IsLoadingRide) {
+        TheCarLoader.Unload(LoadingCar);
+    }
+    int dummy_texture_number = 1;
+    if (UseFirstDummyTexturesForNextLoad == 0) {
+        dummy_texture_number = 2;
+    }
+    ride_info->SetCompositeNameHash(dummy_texture_number);
+    LoadingCar = TheCarLoader.Load(ride_info);
+    TheCarLoader.BeginLoading(nullptr, 0);
+    IsLoadingRide = true;
+    *reinterpret_cast<RideInfo *>(_pad_ride0) = *ride_info;
+    IsDifferent = false;
+}
+
+RideInfo *GarageCarLoader::GetLoadingRideInfo() {
+    if (IsLoadingRide) {
+        return reinterpret_cast<RideInfo *>(_pad_ride0);
+    }
+    return nullptr;
+}
+
+void GarageCarLoader::Update() {
+    if (IsLoadingRide && TheCarLoader.IsLoaded(LoadingCar)) {
+        if (IsCurrentRide) {
+            TheCarLoader.Unload(CurrentCar);
+        }
+        IsCurrentRide = true;
+        CurrentCar = LoadingCar;
+        *reinterpret_cast<RideInfo *>(_pad_ride1) = *reinterpret_cast<RideInfo *>(_pad_ride0);
+        IsDifferent = true;
+        IsLoadingRide = false;
+        LoadingCar = 0;
+        UseFirstDummyTexturesForNextLoad = (UseFirstDummyTexturesForNextLoad != 1);
+    }
+}
+
 GarageCarLoader *GetGarageCarLoader() {
     static GarageCarLoader TheGarageCarLoader;
     return &TheGarageCarLoader;

@@ -29,6 +29,8 @@ void MSOption::React(const char *pkg_name, unsigned int data, FEObject *obj, uns
     }
 }
 
+UIQRModeSelect::~UIQRModeSelect() {}
+
 UIQRModeSelect::UIQRModeSelect(ScreenConstructorData *sd) : IconScrollerMenu(sd) {
     Setup();
     RefreshHeader();

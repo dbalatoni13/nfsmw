@@ -1611,6 +1611,46 @@ void CustomizeMeter::Init(const char *pkg_name, const char *name, float min, flo
     }
 }
 
+void CustomizeMeter::Draw() {
+    float stage_size = 1.0f;
+    float multiplier = 5.0f;
+    float stage_bottom = Min;
+    while (Preview - stage_bottom >= stage_size) {
+        stage_bottom = stage_bottom + stage_size;
+        multiplier = multiplier + stage_size;
+    }
+    float heat_level = bMin(multiplier, 5.0f);
+    unsigned int hash = FEngHashString("HEAT_X%.0f", heat_level);
+    FEngSetTextureHash(pMultiplier, hash);
+    hash = FEngHashString("HEAT_X%.0f", heat_level);
+    FEngSetTextureHash(pMultiplierZoom, hash);
+    if (Preview != PreviousPreview) {
+        FEngSetScript(pMultiplierZoom, 0x209c24, true);
+    }
+    float segment_bottom = stage_bottom + stage_size;
+    float segment_size = 0.1f;
+    if (stage_bottom <= segment_bottom) {
+        int cur_icon = 10;
+        do {
+            float current_segment = segment_bottom - stage_size * segment_size;
+            segment_bottom = current_segment;
+            int icon_idx = cur_icon - 1;
+            unsigned int script;
+            if (current_segment + 0.0005f < Current) {
+                script = 0x63c;
+                if (Preview <= current_segment + 0.0005f) {
+                    script = 0x13ff6c;
+                }
+            } else {
+                script = 0xccfa;
+            }
+            FEngSetScript(pBases[cur_icon - 1], script, true);
+            if (stage_bottom > current_segment || icon_idx <= -1) break;
+            cur_icon = icon_idx;
+        } while (true);
+    }
+}
+
 // --- CustomizeSub ---
 
 int CustomizeSub::GetRimBrandIndex(unsigned int brand) {
