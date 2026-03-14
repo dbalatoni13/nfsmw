@@ -43,7 +43,7 @@ class ActionQueue : public UTL::Collections::Listable<ActionQueue, 20> {
 
     // void operator delete(void *mem, void *ptr) {}
 
-    // const char *GetName() {}
+    const char *GetName() const { return mQueueName; }
 
     // bool IsRequired() const {}
 
@@ -54,6 +54,8 @@ class ActionQueue : public UTL::Collections::Listable<ActionQueue, 20> {
     unsigned int GetConfig() const {
         return mConfig;
     }
+
+    Timer LastActionTime() const { return mActionTime; }
 
   private:
     UCircularQueue<ActionData, 50> fQueue; // offset 0x4, size 0x268

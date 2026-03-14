@@ -8,6 +8,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingControllerScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingTips.hpp"
+#include "Speed/Indep/Src/Input/ActionQueue.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiCareerMain.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiCareerManager.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsMain.hpp"
@@ -872,4 +873,24 @@ SplashScreen::~SplashScreen() {
     gEasterEggs.UnActivate();
     MControlPathfinder msg(false, 9, 0, 0);
     msg.Send("Event");
+}
+
+extern int bStrICmp(const char *s1, const char *s2);
+
+Timer SplashScreen::CalculateLastJoyEventTime() {
+    Timer lowesttimer;
+    lowesttimer.ResetLow();
+    for (ActionQueue *const *iter = UTL::Collections::Listable<ActionQueue, 20>::GetList().begin();
+         iter != UTL::Collections::Listable<ActionQueue, 20>::GetList().end(); ++iter) {
+        ActionQueue *q = *iter;
+        if (q->IsConnected() && q->IsEnabled() && bStrICmp(q->GetName(), "FEng") == 0) {
+            if (!lowesttimer.IsSet() || q->LastActionTime() > lowesttimer) {
+                lowesttimer = q->LastActionTime();
+            }
+        }
+    }
+    if (SplashStartedTimer > lowesttimer) {
+        lowesttimer = SplashStartedTimer;
+    }
+    return lowesttimer;
 }
