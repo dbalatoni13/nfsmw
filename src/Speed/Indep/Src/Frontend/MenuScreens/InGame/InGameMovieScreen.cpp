@@ -5,6 +5,7 @@ static bool gInGameMoviePlaying;
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyMovieFinished.h"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOn.hpp"
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
@@ -14,6 +15,17 @@ struct ScreenConstructorData;
 
 extern int SkipMovies;
 extern const char *GetLoadingScreenPackageName();
+extern void MiniMainLoop();
+extern void DismissChyron();
+extern void FEngSetMovieName(const char *pkg_name, unsigned int obj_hash, const char *name);
+extern bool TrackStreamerIsLoadingInProgress() asm("IsLoadingInProgress__13TrackStreamer");
+
+struct CarLoader {
+    char _pad[0x14]; //
+    int LoadingInProgress; //
+    int IsLoadingInProgress() { return LoadingInProgress; }
+};
+extern CarLoader TheCarLoader;
 
 struct InGameAnyMovieScreen : MenuScreen {
     InGameAnyMovieScreen(ScreenConstructorData *sd);
@@ -52,6 +64,19 @@ const char *InGameAnyMovieScreen::GetFEngPackageName() {
 
 MenuScreen *InGameAnyMovieScreen::Create(ScreenConstructorData *sd) {
     return new ("", 0) InGameAnyMovieScreen(sd);
+}
+
+InGameAnyMovieScreen::InGameAnyMovieScreen(ScreenConstructorData *sd) : MenuScreen(sd) {
+    bAllowingControllerErrors = FEManager::Get()->IsAllowingControllerError();
+    FEManager::Get()->AllowControllerError(false);
+    while (TheCarLoader.IsLoadingInProgress() || TrackStreamerIsLoadingInProgress() ||
+           g_pEAXSound->AreResourceLoadsPending()) {
+        MiniMainLoop();
+    }
+    DismissChyron();
+    FEngSetMovieName(GetPackageName(), 0x348ff9f, MovieFilename);
+    mSubtitler.BeginningMovie(MovieFilename, GetPackageName());
+    new EFadeScreenOff(0x14035fb);
 }
 
 InGameAnyMovieScreen::~InGameAnyMovieScreen() {

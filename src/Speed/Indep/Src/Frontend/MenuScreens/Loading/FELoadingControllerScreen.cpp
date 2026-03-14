@@ -71,3 +71,49 @@ void LoadingControllerScreen::InitLoadingControllerScreen() {
 MenuScreen *CreateLoadingControllerScreen(ScreenConstructorData *sd) {
     return new (LoadingControllerScreen::mLoadingControllerScreenPtr) LoadingControllerScreen(sd);
 }
+
+extern unsigned int FindButtonNameHashForFEString(int config, int string_number, JoystickPort player);
+extern int FEngSNPrintf(char *, int, const char *, ...);
+extern unsigned long FEHashUpper(const char *name);
+extern void FEngSetVisible(const char *pkg_name, unsigned int obj_hash);
+extern void FEngSetInvisible(const char *pkg_name, unsigned int obj_hash);
+extern void FEngSetLanguageHash(const char *pkg_name, unsigned int object_hash, unsigned int language_hash);
+extern void FEngSetTextureHash(const char *pkg_name, unsigned int obj_hash, unsigned int texture_hash);
+
+void LoadingControllerScreen::SetupControllerConfig() {
+    if (!FEDatabase->IsCareerMode()) {
+        cFEng::Get()->QueuePackageMessage(0xde511657, GetPackageName(), nullptr);
+    }
+    JoystickPort port = static_cast<JoystickPort>(FEDatabase->GetPlayersJoystickPort(0));
+    int config = FEDatabase->GetPlayerSettings(0)->Config;
+    for (int i = 0; i < 17; i++) {
+        char sztemp[32];
+        FEngSNPrintf(sztemp, 0x20, "BUTTON%d", i + 1);
+        unsigned int obj_hash = FEHashUpper(sztemp);
+        FEngSNPrintf(sztemp, 0x20, "BUTTON%d_I", i + 1);
+        unsigned int img_hash = FEHashUpper(sztemp);
+        unsigned int button_hash = FindButtonNameHashForFEString(config, i, port);
+        if (button_hash == 0) {
+            FEngSetInvisible(GetPackageName(), obj_hash);
+            FEngSetInvisible(GetPackageName(), img_hash);
+        } else {
+            FEngSetVisible(GetPackageName(), obj_hash);
+            FEngSetLanguageHash(GetPackageName(), obj_hash, button_hash);
+            FEngSetVisible(GetPackageName(), img_hash);
+        }
+    }
+    if (FEDatabase->GetPlayerSettings(0)->DriveWithAnalog == 0) {
+        FEngSetTextureHash(GetPackageName(), 0x4592229c, 0xb30961b);
+    } else {
+        FEngSetTextureHash(GetPackageName(), 0x4592229c, 0x148e38);
+    }
+    FEngSetInvisible(GetPackageName(), 0xf274b86);
+    FEngSetInvisible(GetPackageName(), 0x673d77bc);
+    FEngSetInvisible(GetPackageName(), 0x351ae442);
+    FEImage *img0 = FEngFindImage(GetPackageName(), 0x81b57400);
+    FEngSetTextureHash(img0, 0x2959349);
+    FEImage *img1 = FEngFindImage(GetPackageName(), 0x81b57401);
+    FEngSetTextureHash(img1, 0x6851aaf5);
+    FEImage *img2 = FEngFindImage(GetPackageName(), 0x81b57402);
+    FEngSetTextureHash(img2, 0x3b7f86d);
+}

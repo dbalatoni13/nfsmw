@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 
 struct FECareerRecord;
 void eUnloadStreamingTexture(unsigned int *textures, int count);
@@ -41,4 +42,39 @@ PostPursuitInfractionsScreen::~PostPursuitInfractionsScreen() {
 
 void PostPursuitInfractionsScreen::NotifyBustedTextureLoaded() {
     FEngSetVisible(FEngFindObject(GetPackageName(), 0x2347122A));
+}
+
+extern eLanguages GetCurrentLanguage();
+
+unsigned int PostPursuitInfractionsScreen::CalcBustedTexture() {
+    switch (GetCurrentLanguage()) {
+    case 1:
+        return 0xb419f122;
+    case 2:
+        return 0xb419f3c3;
+    case 3:
+        return 0xb419fe23;
+    case 4:
+        return 0xb41a2829;
+    case 5:
+        return 0xb419e912;
+    case 6:
+        return 0xb41a2914;
+    case 7:
+        return 0xb419e678;
+    case 8:
+        return 0xb41a0611;
+    case 9:
+        return 0xb419e319;
+    case 10:
+        return 0xb41a0000;
+    case 11:
+        return 0xb41a2b62;
+    case 12:
+        return 0xb41a1b50;
+    case 13:
+        return 0xb419f002;
+    default:
+        return 0xb419ec5f;
+    }
 }
