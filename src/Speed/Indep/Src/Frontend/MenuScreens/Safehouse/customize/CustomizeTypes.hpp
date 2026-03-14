@@ -7,6 +7,8 @@
 #endif
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
+#include "Speed/Indep/Src/FEng/cFEng.h"
+extern cFEng *cFEng_mInstance;
 #include "Speed/Indep/Src/Gameplay/GRace.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include <types.h>
@@ -258,13 +260,61 @@ struct CustomizeMainOption : public IconOption {
 
     ~CustomizeMainOption() override {}
 
-    void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override {}
+    void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override {
+        if (data == 0xc407210) {
+            cFEng_mInstance->QueuePackageSwitch(ToPkg, Category, 0, false);
+        }
+    }
 
     virtual bool IsStockOption() { return false; }
 
     const char *ToPkg;                     // offset 0x5C, size 0x4
     unsigned int Category;                 // offset 0x60, size 0x4
     eCustomizePartState UnlockStatus;      // offset 0x64, size 0x4
+};
+
+// total size: 0x6C
+struct SetStockPartOption : public CustomizeMainOption {
+    SetStockPartOption(SelectablePart *part, unsigned int icon, unsigned int to_cat)
+        : CustomizeMainOption(nullptr, icon, 0, to_cat, 0) //
+        , ThePart(part) {}
+
+    ~SetStockPartOption() override {}
+
+    void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override;
+    bool IsStockOption() override { return true; }
+
+    SelectablePart *ThePart; // offset 0x68, size 0x4
+};
+
+// total size: 0x74
+struct HUDLayerOption : public CustomizePartOption {
+    HUDLayerOption(unsigned int layer, unsigned int icon_hash, unsigned int name_hash)
+        : CustomizePartOption(nullptr, icon_hash, name_hash, 0, 0) //
+        , Layer(layer) {}
+
+    ~HUDLayerOption() override {}
+
+    void React(const char *parent_pkg, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override {}
+
+    unsigned int GetLayer() { return Layer; }
+
+    unsigned int Layer; // offset 0x70, size 0x4
+};
+
+// total size: 0x64
+struct HUDColorOption : public IconOption {
+    HUDColorOption(SelectablePart *part)
+        : IconOption(0, 0, 0) //
+        , ThePart(part) //
+        , color(0) {}
+
+    ~HUDColorOption() override {}
+
+    void React(const char *parent_pkg, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override {}
+
+    SelectablePart *ThePart; // offset 0x5C, size 0x4
+    unsigned int color;      // offset 0x60, size 0x4
 };
 
 // total size: 0x64
