@@ -1,5 +1,8 @@
 #include "./Config.h"
 
+float DefaultLimitMinimumVideoTimeElapsed = 0.016666668f;
+float LimitMinimumVideoTimeElapsed;
+
 bool IsSoundEnabled = true;
 bool IsAudioStreamingEnabled = true;
 bool IsSpeechEnabled = true;
