@@ -276,7 +276,6 @@ StatsPanel::StatsPanel()
     , ParentPkg(nullptr) {}
 
 StatsPanel::~StatsPanel() {
-    Reset();
 }
 
 FEString *StatsPanel::GetCurrentString(const char *name) {

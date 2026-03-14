@@ -96,11 +96,11 @@ void ShiftUpdater::Update(IPlayer *player) {
 void ShiftUpdater::SetGear(GearID gear, ShiftStatus status, ShiftPotential potential, bool hasGoodEnoughTraction) {
     if (gear != mGear) {
         int dir = -1;
-        if (mGear < gear) {
+        if (gear > mGear) {
             dir = 1;
         }
-        mGearChanged = dir;
         mGear = gear;
+        mGearChanged = dir;
         mShiftPotential = SHIFT_POTENTIAL_NONE;
         if (hasGoodEnoughTraction) {
             mLastShiftStatus = status;
