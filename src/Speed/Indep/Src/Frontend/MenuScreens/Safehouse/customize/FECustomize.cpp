@@ -1452,4 +1452,120 @@ void CustomizeHUDColor::Setup() {
 }
 
 
+// --- CustomizeParts ---
+
+void CustomizeParts::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+    if (msg != 0x406415e3) {
+        CustomizationScreen::NotificationMessage(msg, pobj, param1, param2);
+    }
+    if (msg == 0x5a928018) {
+        SelectablePart *sel = GetSelectedPart();
+        if (!sel) {
+            return;
+        }
+        if (gCarCustomizeManager.IsPartInCart(sel)) {
+            return;
+        }
+        sel->SetPartState(sel->GetPartState() & CPS_GAME_STATE_MASK);
+        RefreshHeader();
+        return;
+    }
+    if (msg == 0x406415e3) {
+        if (Category == 0x307) {
+            if (!TexturePackLoaded) {
+                return;
+            }
+            SelectablePart *sel = GetSelectedPart();
+            if (sel && (sel->GetPartState() & CPS_GAME_STATE_MASK) == CPS_LOCKED) {
+                DisplayHelper.FlashStatusIcon(CPS_LOCKED, true);
+                return;
+            }
+            if (gCarCustomizeManager.GetTempColoredPart()) {
+                gCarCustomizeManager.ClearTempColoredPart();
+            }
+            SelectablePart *copy = new SelectablePart(sel);
+            gCarCustomizeManager.SetTempColoredPart(copy);
+            cFEng_mInstance->QueuePackageSwitch(g_pCustomizeHudColorPkg, Category | (FromCategory << 16), 0, false);
+        } else if (Category >= 0x402 && Category <= 0x409) {
+            SelectablePart *sel = GetSelectedPart();
+            if (sel && (sel->GetPartState() & CPS_GAME_STATE_MASK) == CPS_LOCKED) {
+                DisplayHelper.FlashStatusIcon(CPS_LOCKED, true);
+                return;
+            }
+            unsigned int tunable = sel->GetPart()->GetAppliedAttributeUParam(0x6212682b, 0);
+            if (tunable == 0) {
+                CustomizationScreen::NotificationMessage(0x406415e3, pobj, param1, param2);
+                return;
+            }
+            SelectablePart *copy = new SelectablePart(sel);
+            gCarCustomizeManager.SetTempColoredPart(copy);
+            cFEng_mInstance->QueuePackageSwitch(g_pCustomizePaintPkg, Category | (FromCategory << 16), 0, false);
+        } else {
+            CustomizationScreen::NotificationMessage(0x406415e3, pobj, param1, param2);
+            return;
+        }
+        return;
+    }
+    if (msg == 0x911ab364) {
+        if (Category == 0x307) {
+            if (!TexturePackLoaded) {
+                return;
+            }
+            bTexturesNeedUnload = true;
+            cFEng_mInstance->QueuePackageSwitch(g_pCustomizeSubPkg, FromCategory | (0x307 << 16), 0, false);
+        } else if (Category >= 0x402 && Category <= 0x409) {
+            gCarCustomizeManager.ClearTempColoredPart();
+            cFEng_mInstance->QueuePackageSwitch(g_pCustomizeSubTopPkg, Category | (FromCategory << 16), 0, false);
+        } else {
+            cFEng_mInstance->QueuePackageSwitch(g_pCustomizeSubPkg, FromCategory | (Category << 16), 0, false);
+        }
+        return;
+    }
+    if (msg == 0xcf91aacd) {
+        if (Category != 0x307) {
+            return;
+        }
+        if (!TexturePackLoaded) {
+            return;
+        }
+        bTexturesNeedUnload = true;
+        return;
+    }
+}
+
+void CustomizeParts::RefreshHeader() {
+    CustomizationScreen::RefreshHeader();
+    int numOpts = Options.Options.TraversebList(nullptr);
+    if (numOpts != Options.iNumBookEnds) {
+        CustomizePartOption *opt = GetSelectedOption();
+        CarPart *part = opt->GetPart()->GetPart();
+        if (part->HasAppliedAttribute(0x6212682b)) {
+            unsigned int tunable = part->GetAppliedAttributeUParam(0x6212682b, 0);
+            if (tunable == 0) {
+                FEngSetLanguageHash(GetPackageName(), 0xb94139f4, 0x649f4a65);
+            } else {
+                FEngSetLanguageHash(GetPackageName(), 0xb94139f4, 0x8098a54c);
+            }
+        }
+        if (Category == 0x307) {
+            SetHUDTextures();
+            SetHUDColors();
+        } else {
+            int timeDiff = RealTimer.GetPackedTime() - ScrollTime.GetPackedTime();
+            if (static_cast<float>(static_cast<double>(timeDiff ^ 0x80000000 | 0x4330000000000000ULL) - 4503599627370496.0) * 0.001f <= 0.25f) {
+                bNeedsRefresh = true;
+            } else {
+                gCarCustomizeManager.PreviewPart(opt->GetPart()->GetSlotID(), opt->GetPart()->GetPart());
+            }
+        }
+        if (!part->HasAppliedAttribute(bStringHash("BRAND_NAME"))) {
+            FEPrintf(GetPackageName(), 0x5e7b09c9, "%s", part->GetName());
+        } else {
+            unsigned int brandHash = part->GetAppliedAttributeUParam(bStringHash("BRAND_NAME"), 0);
+            FEngSetLanguageHash(GetPackageName(), 0x5e7b09c9, brandHash);
+        }
+    }
+}
+
+
 #endif // FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE____CUSTOMIZE_CARCUSTOMIZE_H

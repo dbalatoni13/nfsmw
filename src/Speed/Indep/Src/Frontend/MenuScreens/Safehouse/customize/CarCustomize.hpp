@@ -151,7 +151,7 @@ struct CustomizeParts : public CustomizationScreen {
 // total size: 0x324
 struct CustomizePaint : public CustomizationScreen {
     CustomizePaint(ScreenConstructorData *sd);
-    ~CustomizePaint() override {}
+    ~CustomizePaint() override;
 
     eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override;
     void NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) override;
