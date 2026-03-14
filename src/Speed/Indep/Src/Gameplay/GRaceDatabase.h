@@ -106,6 +106,8 @@ class GRaceBin {
     BinStats mStats;                  // offset 0x18, size 0x4
 };
 
+class GActivity;
+
 // total size: 0x40
 class GRaceDatabase {
   public:
@@ -125,6 +127,7 @@ class GRaceDatabase {
     void SetStartupRace(GRaceCustom *custom, Context context);
     void FreeCustomRace(GRaceCustom *custom);
     GRaceParameters *GetRaceFromHash(unsigned int hash);
+    GRaceParameters *GetRaceFromActivity(GActivity *activity);
     GRaceCustom *AllocCustomRace(GRaceParameters *parms);
 
     unsigned int GetRaceCount() const;
