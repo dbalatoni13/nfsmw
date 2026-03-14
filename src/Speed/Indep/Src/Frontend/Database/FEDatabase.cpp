@@ -212,16 +212,6 @@ void PlayerSettings::DefaultFromOptionsScreen() {
     Rumble = savedRumble;
 }
 
-enum POVTypes {
-    kPOV_Far = 0,
-    kPOV_Close = 1,
-    kPOV_Bumper = 2,
-    kPOV_Hood = 3,
-    kPOV_Drift = 4,
-    kPOV_Pursuit = 5,
-    kPOV_Pullback = 6
-};
-
 POVTypes GetPOVTypeFromPlayerCamera(ePlayerSettingsCameras cam);
 bool IsPlayerCameraSelectable(POVTypes pov);
 
