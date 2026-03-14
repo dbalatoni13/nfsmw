@@ -281,14 +281,11 @@ bool FEPackageReader::ReadLibraryRefsChunk() {
     pPack->SetNumLibraryRefs(Count);
     unsigned long i = 0;
     FELibraryRef* pRef = pPack->pLibRefs;
-    if (Count != 0) {
-        do {
-            unsigned long idx = i * 3;
-            i++;
-            pRef[i - 1].ObjGUID = BSwap32(pData[idx]);
-            pRef[i - 1].PackNameHash = BSwap32(pData[idx + 1]);
-            pRef[i - 1].LibGUID = BSwap32(pData[idx + 2]);
-        } while (i < Count);
+    for (; i < Count; i++) {
+        pRef[i].ObjGUID = BSwap32(pData[0]);
+        pRef[i].PackNameHash = BSwap32(pData[1]);
+        pRef[i].LibGUID = BSwap32(pData[2]);
+        pData += 3;
     }
     return true;
 }
