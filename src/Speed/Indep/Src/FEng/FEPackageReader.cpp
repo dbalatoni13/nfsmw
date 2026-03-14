@@ -19,9 +19,14 @@
 #include "FEKeyTrack.h"
 #include "FEngStandard.h"
 #include "fengine.h"
+#include "fengine.h"
 
 inline unsigned long BSwap32(unsigned long v) {
     return (v >> 24) | (v << 24) | ((v & 0xFF00) << 8) | ((v >> 8) & 0xFF00);
+}
+
+inline unsigned short BSwap16(unsigned short v) {
+    return static_cast<unsigned short>((v >> 8) | (v << 8));
 }
 
 FEPackageReader::FEPackageReader() {
@@ -222,4 +227,26 @@ set_data:
     pObject->Type = static_cast<FEObjType>(ObjectType);
     pObject->SetDataSize(GetTypeSize(ObjectType));
     return pObject;
+}
+
+void FEPackageReader::ProcessImageTag(FETag* pTag) {
+    if (BSwap16(pTag->GetID()) != 0x6649) {
+        return;
+    }
+    static_cast<FEImage*>(pObj)->ImageFlags = BSwap32(pTag->Getu32(0));
+}
+
+bool FEPackageReader::FindReferencedObject(unsigned long ObjGUID, FEObject** pRefObj, FEPackage** pRefPack) {
+    *pRefObj = nullptr;
+    *pRefPack = nullptr;
+    FELibraryRef* pRef = pPack->FindLibraryReference(ObjGUID);
+    if (!pRef) {
+        return false;
+    }
+    *pRefPack = pEngine->FindLibraryPackage(pRef->PackNameHash);
+    if (!*pRefPack) {
+        return false;
+    }
+    *pRefObj = (*pRefPack)->FindObjectByGUID(pRef->LibGUID);
+    return *pRefObj != nullptr;
 }

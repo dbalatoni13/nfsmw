@@ -3,6 +3,10 @@
 #include "Speed/Indep/Src/FEng/FECodeListBox.h"
 #include "Speed/Indep/Src/FEng/FEListBox.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
+#include "Speed/Indep/Src/FEng/FEGameInterface.h"
+
+template <class T> void CopyString(short* pDst, const T* pSrc);
+template <class T> void CopyString(short* pDst, const T* pSrc, unsigned long ulMaxLength);
 
 void (*FECodeListBox::mpDefaultCallback)(FECodeListBox*) = FECodeListBox::DefaultSelectCallback;
 
@@ -45,6 +49,217 @@ FECodeListBox::~FECodeListBox() {
     if (mpsStrings) {
         delete[] mpsStrings;
         mpsStrings = nullptr;
+    }
+}
+
+void FECodeListBox::CopyProperties(const FECodeListBox& Object) {
+    unsigned long ulNumCells;
+    mulFlags |= Object.mulFlags & 0xE;
+    mstViewDimensions = Object.mstViewDimensions;
+    mulNumTotalColumns = Object.mulNumTotalColumns;
+    mulNumTotalRows = Object.mulNumTotalRows;
+    Initialize(Object.mulNumVisibleColumns, Object.mulNumVisibleRows);
+    if (mppsStringData) {
+        delete[] mppsStringData;
+        mppsStringData = nullptr;
+    }
+    if (mpsStrings) {
+        delete[] mpsStrings;
+        mpsStrings = nullptr;
+    }
+    mulStringSize = 0;
+    mulNumStrings = 0;
+    mulCurrentString = 0;
+    AllocateStrings(Object.mulNumStrings, Object.mulStringSize);
+    ulNumCells = mulNumVisibleColumns * mulNumVisibleRows;
+    for (unsigned long i = 0; i < ulNumCells; i++) {
+        mpstCells[i].ulColor = Object.mpstCells[i].ulColor;
+        mpstCells[i].ulJustification = Object.mpstCells[i].ulJustification;
+        mpstCells[i].stScale = Object.mpstCells[i].stScale;
+        mpstCells[i].stResource = Object.mpstCells[i].stResource;
+        mpstCells[i].ulType = Object.mpstCells[i].ulType;
+        if (mpstCells[i].ulType == 2) {
+            short* psString = Object.mpstCells[i].u.string.pStr;
+            if (!psString) {
+                return;
+            }
+            mpstCells[i].u.string.pStr = AllocateString();
+            CopyString(mpstCells[i].u.string.pStr, psString);
+        }
+        if (mpstCells[i].ulType == 1) {
+            mpstCells[i].SetUV() = Object.mpstCells[i].GetUV();
+        }
+    }
+}
+
+void FECodeListBox::Initialize(unsigned long ulNumVisCols, unsigned long ulNumVisRows) {
+    FEListBoxCell* pstOldCells = mpstCells;
+    unsigned long ulOldNumVisibleColumns = mulNumVisibleColumns;
+    unsigned long ulOldNumVisibleRows = mulNumVisibleRows;
+    mulNumVisibleColumns = ulNumVisCols;
+    mulNumVisibleRows = ulNumVisRows;
+    long ulNumCells = ulNumVisCols * ulNumVisRows;
+    mpstCells = static_cast<FEListBoxCell*>(FEngMalloc(ulNumCells * sizeof(FEListBoxCell), 0, 0));
+    unsigned long* puVar3 = reinterpret_cast<unsigned long*>(mpstCells);
+    for (long n = ulNumCells; n != 0; n--) {
+        puVar3[0] = 0;
+        puVar3[1] = 0x3F800000;
+        puVar3[2] = 0x3F800000;
+        puVar3[3] = 0;
+        puVar3[4] = 0;
+        puVar3[5] = 0;
+        puVar3[6] = 0;
+        puVar3[8] = 0;
+        puVar3[9] = 0xFFFFFFFF;
+        puVar3 += 12;
+    }
+    FEListBox::InitializeCell(mpstCells, mulNumVisibleRows * mulNumVisibleColumns);
+    SetTotalNumColumns(mulNumVisibleColumns);
+    SetTotalNumRows(mulNumVisibleRows);
+    if (mulFlags & 1) {
+        unsigned long ulNumColumns = ulOldNumVisibleColumns;
+        if (mulNumVisibleColumns < ulOldNumVisibleColumns) {
+            ulNumColumns = mulNumVisibleColumns;
+        }
+        unsigned long ulNumRows = ulOldNumVisibleRows;
+        if (mulNumVisibleRows < ulOldNumVisibleRows) {
+            ulNumRows = mulNumVisibleRows;
+        }
+        if (pstOldCells) {
+            unsigned long i = 0;
+            if (ulNumRows != 0) {
+                do {
+                    FEngMemCpy(mpstCells + i * mulNumVisibleColumns, pstOldCells + i * ulOldNumVisibleColumns, mulNumVisibleColumns * sizeof(FEListBoxCell));
+                    for (unsigned long j = ulNumColumns; j < ulOldNumVisibleColumns; j++) {
+                        FEListBoxCell* pOldCell = &pstOldCells[i * ulOldNumVisibleColumns + j];
+                        if (pOldCell->ulType == 2) {
+                            DeallocateString(pOldCell->u.string.pStr);
+                        }
+                    }
+                    i++;
+                } while (i < ulNumRows);
+            }
+            while (ulNumRows < ulOldNumVisibleRows) {
+                unsigned long j = 0;
+                unsigned long ulNextRow = ulNumRows + 1;
+                if (ulOldNumVisibleColumns != 0) {
+                    do {
+                        FEListBoxCell* pOldCell = &pstOldCells[ulNumRows * ulOldNumVisibleColumns + j];
+                        if (pOldCell->ulType == 2) {
+                            DeallocateString(pOldCell->u.string.pStr);
+                        }
+                        j++;
+                    } while (j < ulOldNumVisibleColumns);
+                }
+                ulNumRows = ulNextRow;
+            }
+            if (pstOldCells) {
+                delete[] pstOldCells;
+            }
+        }
+    }
+    mulFlags |= 1;
+}
+
+void FECodeListBox::FillAllCells() {
+    unsigned long ulNumTotalCols = mulNumTotalColumns;
+    unsigned long ulNumTotalRows = mulNumTotalRows;
+    unsigned long ulNumVisRows = mulNumVisibleRows;
+    unsigned long ulNumVisCols = mulNumVisibleColumns;
+    if (!ulNumTotalCols || !ulNumTotalRows || !ulNumVisRows || !ulNumVisCols) {
+        return;
+    }
+    int lStartColumn = mulCurrentVirtualColumn;
+    int lRow = mulCurrentVirtualRow;
+    if (ulNumTotalRows < ulNumVisRows) {
+        ulNumVisRows = ulNumTotalRows;
+    }
+    if (ulNumTotalCols < ulNumVisCols) {
+        ulNumVisCols = ulNumTotalCols;
+    }
+    if (!mpSetCellCallback) {
+        if (mpobRenderer) {
+            for (unsigned long i = 0; i < ulNumVisRows; i++) {
+                int lColumn = lStartColumn;
+                for (unsigned long j = 0; j < ulNumVisCols; j++) {
+                    mpobRenderer->SetCellData(this, lColumn, lRow);
+                    lColumn = GetValidIndex(lColumn + 1, mulNumTotalColumns);
+                }
+                lRow = GetValidIndex(lRow + 1, mulNumTotalRows);
+            }
+        }
+    } else {
+        for (unsigned long i = 0; i < ulNumVisRows; i++) {
+            int lColumn = lStartColumn;
+            for (unsigned long j = 0; j < ulNumVisCols; j++) {
+                mpSetCellCallback(mpvCallbackData, this, lColumn, lRow);
+                lColumn = GetValidIndex(lColumn + 1, mulNumTotalColumns);
+            }
+            lRow = GetValidIndex(lRow + 1, mulNumTotalRows);
+        }
+    }
+}
+
+void FECodeListBox::AllocateStrings(unsigned long ulNumStrings, unsigned long ulStringSize) {
+    short* psOldStrings = mpsStrings;
+    short** ppsOldStringData = mppsStringData;
+    mulNumStrings = 0;
+    mulCurrentString = 0;
+    mulStringSize = 0;
+    mppsStringData = nullptr;
+    mpsStrings = nullptr;
+    if (ulNumStrings == 0 || ulStringSize == 0) {
+        unsigned long i = 0;
+        if (mulNumVisibleRows != 0) {
+            do {
+                unsigned long j = 0;
+                i++;
+                if (mulNumVisibleColumns != 0) {
+                    do {
+                        j++;
+                    } while (j < mulNumVisibleColumns);
+                }
+            } while (i < mulNumVisibleRows);
+        }
+    } else {
+        mpsStrings = static_cast<short*>(FEngMalloc(ulNumStrings * ulStringSize * 2, 0, 0));
+        mppsStringData = static_cast<short**>(FEngMalloc(ulNumStrings * 4, 0, 0));
+        FEngMemSet(mpsStrings, 0, ulNumStrings * ulStringSize * 2);
+        for (unsigned long i = 0; i < ulNumStrings; i++) {
+            mppsStringData[i] = mpsStrings + i * ulStringSize;
+        }
+        mulNumStrings = ulNumStrings;
+        mulStringSize = ulStringSize;
+        if (!psOldStrings) {
+            goto cleanup_ptrs;
+        }
+        if (ppsOldStringData) {
+            unsigned long i = 0;
+            if (mulNumVisibleRows != 0) {
+                do {
+                    unsigned long j = 0;
+                    if (mulNumVisibleColumns != 0) {
+                        do {
+                            FEListBoxCell* pstCell = GetRealCellData(j, i);
+                            if (pstCell->ulType == 2) {
+                                short* psString = pstCell->u.string.pStr;
+                                pstCell->u.string.pStr = AllocateString();
+                                CopyString(pstCell->u.string.pStr, psString, ulStringSize);
+                            }
+                            j++;
+                        } while (j < mulNumVisibleColumns);
+                    }
+                    i++;
+                } while (i < mulNumVisibleRows);
+            }
+        }
+    }
+    if (psOldStrings) {
+        delete[] psOldStrings;
+    }
+cleanup_ptrs:
+    if (ppsOldStringData) {
+        delete[] ppsOldStringData;
     }
 }
 
@@ -141,4 +356,105 @@ void FECodeListBox::CalculateCurrentFromTarget(unsigned long ulTarget, unsigned 
     if (ulTarget > ulMax) {
         ulTarget = ulMax;
     }
+}
+
+void FECodeListBox::Update(float fNumTicks) {
+    if (mpSelectionCallback) {
+        mpSelectionCallback(this);
+    }
+    float fAlpha = mfCurrentAlpha + mfAlphaDelta * fNumTicks;
+    mfCurrentAlpha = fAlpha;
+    if (fAlpha < 0.0f || fAlpha > 1.0f) {
+        mfCurrentAlpha = fAlpha < 0.0f ? 0.0f : 1.0f;
+        mfAlphaDelta = -mfAlphaDelta;
+    }
+}
+
+void FECodeListBox::SetCellColor(unsigned long ulStartColumn, unsigned long ulStartRow, unsigned long ulColor, unsigned long ulNumColumns, unsigned long ulNumRows) {
+    for (unsigned long i = ulStartRow; i < ulStartRow + ulNumRows; i++) {
+        for (unsigned long j = ulStartColumn; j < ulStartColumn + ulNumColumns; j++) {
+            long lCIndex = GetRealColumn(j);
+            long lRIndex = GetRealRow(i);
+            mpstCells[lRIndex * mulNumVisibleColumns + lCIndex].ulColor = ulColor;
+        }
+    }
+}
+
+void FECodeListBox::SetCellScale(unsigned long ulStartColumn, unsigned long ulStartRow, const FEPoint& stScale, unsigned long ulNumColumns, unsigned long ulNumRows) {
+    for (unsigned long i = ulStartRow; i < ulStartRow + ulNumRows; i++) {
+        for (unsigned long j = ulStartColumn; j < ulStartColumn + ulNumColumns; j++) {
+            long lCIndex = GetRealColumn(j);
+            long lRIndex = GetRealRow(i);
+            mpstCells[lRIndex * mulNumVisibleColumns + lCIndex].stScale = stScale;
+        }
+    }
+}
+
+void FECodeListBox::SetCellJustification(unsigned long ulStartColumn, unsigned long ulStartRow, unsigned long ulJustification, unsigned long ulNumColumns, unsigned long ulNumRows) {
+    for (unsigned long i = ulStartRow; i < ulStartRow + ulNumRows; i++) {
+        for (unsigned long j = ulStartColumn; j < ulStartColumn + ulNumColumns; j++) {
+            long lCIndex = GetRealColumn(j);
+            long lRIndex = GetRealRow(i);
+            mpstCells[lRIndex * mulNumVisibleColumns + lCIndex].ulJustification = ulJustification;
+        }
+    }
+}
+
+bool FECodeListBox::CheckMovement(long lNumMove, long lCurrentVirtual, long lTarget, long lNumTotal, long lNumVis) {
+    if ((mulFlags & 4) && lNumVis >= lNumTotal) {
+        mpobRenderer->NotificationMessage(FEHashUpper("ListBound"), this, 0xFF, 0);
+    } else if (mulFlags & 2) {
+        if (!(mulFlags & 4)) {
+            if (lCurrentVirtual + lNumMove < 0) {
+                mpobRenderer->NotificationMessage(FEHashUpper("ListBound"), this, 0xFF, 0);
+            } else if (lCurrentVirtual + lNumMove < lNumTotal) {
+                return true;
+            }
+        } else {
+            if (lTarget + lNumMove < 0) {
+                mpobRenderer->NotificationMessage(FEHashUpper("ListBound"), this, 0xFF, 0);
+            } else if (lTarget + lNumMove < lNumTotal - lNumVis) {
+                return true;
+            }
+        }
+    } else {
+        return true;
+    }
+    mpobRenderer->NotificationMessage(FEHashUpper("ListEnd"), this, 0xFF, 0);
+    return false;
+}
+
+bool FECodeListBox::MakeMove(long lNumMove, unsigned long& ulCurrentVirtual, unsigned long& ulTarget, unsigned long ulNumTotal, unsigned long ulNumVis) {
+    if (mulFlags & 8) {
+        long lIndex = static_cast<long>(ulCurrentVirtual) + lNumMove;
+        ulCurrentVirtual = GetValidIndex(lIndex, ulNumTotal);
+    } else if ((mulFlags & 6) == 6) {
+        long lIndex = static_cast<long>(ulCurrentVirtual) + lNumMove;
+        ulCurrentVirtual = GetValidIndex(lIndex, ulNumTotal);
+    } else {
+        unsigned long ulOldTarget = ulTarget;
+        long lIndex = static_cast<long>(ulTarget) + lNumMove;
+        ulTarget = GetValidIndex(lIndex, ulNumTotal);
+        if (lNumMove < 0) {
+            if (ulCurrentVirtual == ulOldTarget) {
+                ulCurrentVirtual = GetValidIndex(static_cast<long>(ulCurrentVirtual) + lNumMove, ulNumTotal);
+                return true;
+            }
+        } else {
+            unsigned long ulDifference;
+            if (ulCurrentVirtual < ulTarget) {
+                ulDifference = ulTarget - ulCurrentVirtual;
+            } else {
+                ulDifference = ulTarget + ulNumTotal - ulCurrentVirtual;
+            }
+            if (ulDifference < ulNumVis) {
+                return false;
+            }
+            long lNewIndex = static_cast<long>(ulCurrentVirtual) + lNumMove;
+            ulCurrentVirtual = GetValidIndex(lNewIndex, ulNumTotal);
+            return true;
+        }
+        ulCurrentVirtual = ulTarget;
+    }
+    return true;
 }

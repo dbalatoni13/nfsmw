@@ -12,6 +12,16 @@
 struct FEGameInterface;
 struct FEPoint;
 
+inline int GetValidIndex(int lIndex, int lRange) {
+    if (lIndex < 0) {
+        if (lRange > 1) {
+            return lRange - (-lIndex - (-lIndex / lRange) * lRange);
+        }
+        return 0;
+    }
+    return lIndex - (lIndex / lRange) * lRange;
+}
+
 // total size: 0xC8
 struct FECodeListBox : public FEObject {
     static void (*mpDefaultCallback)(FECodeListBox*);
@@ -58,8 +68,8 @@ struct FECodeListBox : public FEObject {
     void DeallocateString(short* psString);
     long GetRealColumn(long lColumn) const;
     long GetRealRow(long lRow) const;
-    void CheckMovement(long lTargetColumn, long lTargetRow, long lOldColumn, long lOldRow, long lFlags);
-    void MakeMove(long lDirection, unsigned long& ulVirtual, unsigned long& ulTarget, unsigned long ulTotal, unsigned long ulVisible);
+    bool CheckMovement(long lTargetColumn, long lTargetRow, long lOldColumn, long lOldRow, long lFlags);
+    bool MakeMove(long lDirection, unsigned long& ulVirtual, unsigned long& ulTarget, unsigned long ulTotal, unsigned long ulVisible);
     void ScrollSelection(long lDirection, unsigned long& ulVirtual, unsigned long& ulTarget, unsigned long ulTotal, unsigned long ulVisible, bool bIsColumn);
     void CalculateCurrentFromTarget(unsigned long ulTarget, unsigned long ulTotal, unsigned long ulVisible);
     void SetCellColor(unsigned long ulColumn, unsigned long ulRow, unsigned long ulColor, unsigned long ulNumColumns, unsigned long ulNumRows);
@@ -73,6 +83,7 @@ struct FECodeListBox : public FEObject {
     inline unsigned long GetCurrentVirtualColumn() const { return mulCurrentVirtualColumn; }
     inline unsigned long GetCurrentVirtualRow() const { return mulCurrentVirtualRow; }
     inline FEListBoxCell* GetCellData(unsigned long ulColumn, unsigned long ulRow) { return &mpstCells[ulRow * mulNumVisibleColumns + ulColumn]; }
+    inline FEListBoxCell* GetRealCellData(long lColumnIndex, long lRowIndex) { return &mpstCells[GetRealRow(lRowIndex) * mulNumVisibleColumns + GetRealColumn(lColumnIndex)]; }
     inline void SetSelectionCallback(void (*pCallback)(FECodeListBox*)) { mpSelectionCallback = pCallback; }
     inline void SetSetCellCallback(void (*pCallback)(void*, FECodeListBox*, unsigned long, unsigned long), void* pData) { mpSetCellCallback = pCallback; mpvCallbackData = pData; }
     inline void SetSelectionColor(const FEColor& stColor) { mstSelectionColor = stColor; }
