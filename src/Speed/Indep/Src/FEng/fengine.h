@@ -95,8 +95,8 @@ struct FEngine {
     void UpdateMouseState(FEPackage* pPack, FEObjectMouseState* pState, float mx, float my);
     void ProcessMessageQueue();
     void ProcessPackageCommands();
-    void ProcessListBoxResponses(FEObject* pObj, FEPackage* pPack, unsigned long uControlMask);
-    void ProcessCodeListBoxResponses(FEObject* pObj, FEPackage* pPack, unsigned long uControlMask);
+    bool ProcessListBoxResponses(FEObject* pObj, unsigned long MsgID);
+    bool ProcessCodeListBoxResponses(FEObject* pObj, unsigned long MsgID);
     void ProcessObjectMessage(FEObject* pObj, FEPackage* pPack, unsigned long MsgID, unsigned long uControlMask);
     void ProcessGlobalMessage(FEPackage* pPack, unsigned long MsgID, unsigned long uControlMask);
     FEPackage* FindLibraryPackage(unsigned long NameHash) const;

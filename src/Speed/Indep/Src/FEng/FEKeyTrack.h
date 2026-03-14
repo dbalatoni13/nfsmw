@@ -12,6 +12,10 @@
 struct FEKeyNode : public FEMinNode {
     int tTime;        // offset 0xC, size 0x4
     FEGenericVal Val; // offset 0x10, size 0x10
+
+    inline FEKeyNode* GetNext() const { return static_cast<FEKeyNode*>(FEMinNode::GetNext()); }
+    inline FEKeyNode* GetPrev() const { return static_cast<FEKeyNode*>(FEMinNode::GetPrev()); }
+    inline FEGenericVal* GetKeyData() { return &Val; }
 };
 
 // total size: 0x38
@@ -24,6 +28,13 @@ struct FEKeyTrack {
     int LongOffset : 8;         // offset 0x4, size 0x4
     FEKeyNode BaseKey;          // offset 0x8, size 0x20
     FERefList DeltaKeys;        // offset 0x28, size 0x10
+
+    inline FEKeyNode* GetBaseKey() { return &BaseKey; }
+    inline FEKeyNode* GetFirstDeltaKey() { return static_cast<FEKeyNode*>(DeltaKeys.GetHead()); }
+    inline bool IsReference() const { return DeltaKeys.IsReference(); }
+
+    FEKeyNode* GetKeyAt(int tTime);
+    FEKeyNode* GetDeltaKeyAt(int tTime);
 };
 
 #endif

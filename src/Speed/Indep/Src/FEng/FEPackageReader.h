@@ -45,6 +45,10 @@ struct FEPackageReader {
     unsigned long ButtonCount;      // offset 0x50, size 0x4
     unsigned long CurButton;        // offset 0x54, size 0x4
 
+    FEPackageReader();
+    ~FEPackageReader();
+    void Reset();
+    FEPackage* Load(const void* pDataPtr, FEGameInterface* pInt, FEngine* pEng, bool bLoadObjNames, bool bLoadScrNames, bool bLibrary);
     void Read(FEPackage* pPackage, FEChunk* pData, FEngine* pEng);
     void ReadChunk(FEChunk* pChunk);
     void ReadObject(FEChunk* pChunk);

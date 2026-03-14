@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/FEng/fengine_full.h"
 #include "Speed/Indep/Src/FEng/FEJoyPad.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
+#include "Speed/Indep/Src/FEng/FEPackageReader.h"
 
 // Callback structs used by both FEngine and FEPackage.
 // Defined here because FEngine.cpp comes before FEPackage.cpp in the jumbo build.
@@ -300,4 +301,77 @@ void FEngine::ClearPackageMarkers() {
         i++;
     } while (i < 16);
     CurrentPackageRecordIndex = 0;
+}
+
+FEPackage* FEngine::LoadPackage(const void* pPackageData, bool bLoadAsLibrary) {
+    FEPackageReader reader;
+    FEPackage* pPack = reader.Load(pPackageData, pInterface, this, bLoadObjectNames, bLoadScriptNames, bLoadAsLibrary);
+    if (!pPack) {
+        return nullptr;
+    }
+    return pPack;
+}
+
+void FEngine::QueuePackageUserTransfer(FEPackage* pPack, bool bPush, unsigned long ControlMask) {
+    FEPackageCommand* pCmd = static_cast<FEPackageCommand*>(FEngMalloc(sizeof(FEPackageCommand), nullptr, 0));
+    pCmd->prev = reinterpret_cast<FEMinNode*>(0xABADCAFE);
+    pCmd->next = reinterpret_cast<FEMinNode*>(0xABADCAFE);
+    pCmd->uControlMask = 0;
+    pCmd->iCommand = 0;
+    pCmd->pPackage = pPack;
+    pCmd->uControlMask = pPack->Controllers & ControlMask;
+    int cmd = 4;
+    if (bPush) {
+        cmd = 8;
+    }
+    pCmd->iCommand = cmd;
+    PackageCommands.AddNode(PackageCommands.GetTail(), pCmd);
+}
+
+int FEngine::GetNumPackagesBelowPriority(unsigned char priority) {
+    int count = 0;
+    FEPackage* pPack = PackList.GetFirstPackage();
+    while (pPack) {
+        if (pPack->Priority < priority) {
+            count++;
+        }
+        pPack = pPack->GetNext();
+    }
+    FEPackageCommand* pCmd = static_cast<FEPackageCommand*>(PackageCommands.GetHead());
+    while (pCmd) {
+        unsigned long cmd = pCmd->iCommand;
+        if (count == 0 && (cmd & 3)) {
+            count = 1;
+        } else if (cmd & 2) {
+            count++;
+        } else if (cmd & 1) {
+            count--;
+        }
+        pCmd = static_cast<FEPackageCommand*>(pCmd->GetNext());
+    }
+    return count;
+}
+
+void FEngine::ProcessObjectMessage(FEObject* pObj, FEPackage* pPack, unsigned long MsgID, unsigned long uControlMask) {
+    if (pObj->Type == FE_List) {
+        if (ProcessListBoxResponses(pObj, MsgID)) {
+            return;
+        }
+    }
+    if (pObj->Type == FE_CodeList) {
+        if (ProcessCodeListBoxResponses(pObj, MsgID)) {
+            return;
+        }
+    }
+    FEMessageResponse* pResp = pObj->FindResponse(MsgID);
+    if (pResp) {
+        ProcessResponses(pResp, pObj, pPack, uControlMask);
+    }
+}
+
+void FEngine::ProcessGlobalMessage(FEPackage* pPack, unsigned long MsgID, unsigned long uControlMask) {
+    FEMessageResponse* pResp = pPack->FindResponse(MsgID);
+    if (pResp) {
+        ProcessResponses(pResp, nullptr, pPack, uControlMask);
+    }
 }

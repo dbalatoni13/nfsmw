@@ -87,8 +87,8 @@ struct FEObject : public FEMinNode {
     inline unsigned long GetNumResponses() const;
     inline FEMessageResponse* GetResponse(unsigned long Index) const;
     inline void SetNameHash(const unsigned long nameHash);
-    inline FEObject* GetNext() const;
-    inline FEObject* GetPrev() const;
+    inline FEObject* GetNext() const { return static_cast<FEObject*>(FEMinNode::GetNext()); }
+    inline FEObject* GetPrev() const { return static_cast<FEObject*>(FEMinNode::GetPrev()); }
 
     FEObject();
     FEObject(const FEObject& Object, bool bReference);

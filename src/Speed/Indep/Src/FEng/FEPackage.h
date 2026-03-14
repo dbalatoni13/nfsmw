@@ -100,9 +100,12 @@ struct FEPackage : public FENode {
     inline FEPackage* GetPrev() { return static_cast<FEPackage*>(FENode::GetPrev()); }
     inline unsigned long GetControlMask() const { return Controllers; }
     inline void SetErrorScreen(bool b) { bErrorScreen = b; }
+    inline bool IsInputEnabled() const { return bInputEnabled; }
+    inline bool IsErrorScreen() const { return bErrorScreen; }
 
     FEObject* FindObjectByHash(unsigned long NameHash);
     FEObject* FindObjectByGUID(unsigned long GUID);
+    FEMessageResponse* FindResponse(unsigned long MsgID);
     void SetCurrentButton(FEObject* pNewButton, bool bSendMsgs);
     bool ForAllChildren(FEGroup* pGroup, FEObjectCallback& Callback);
     bool ForAllObjects(FEObjectCallback& Callback);

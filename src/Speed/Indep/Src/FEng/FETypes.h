@@ -56,6 +56,8 @@ struct FEColor {
     FEColor operator-(const FEColor& rhs) const;
 };
 
+struct FEMatrix4;
+
 // total size: 0x10
 struct FEQuaternion {
     float x; // offset 0x0, size 0x4
@@ -66,6 +68,7 @@ struct FEQuaternion {
     inline FEQuaternion() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
     inline FEQuaternion(float X, float Y, float Z, float W) : x(X), y(Y), z(Z), w(W) {}
     inline FEQuaternion& operator=(const FEQuaternion& q) { x = q.x; y = q.y; z = q.z; w = q.w; return *this; }
+    void GetMatrix(FEMatrix4* pMatrix) const;
 };
 
 // total size: 0x10
@@ -114,5 +117,38 @@ struct FEPoint {
     inline FEPoint(float H, float V) : h(H), v(V) {}
     inline FEPoint& operator=(const FEPoint& p) { h = p.h; v = p.v; return *this; }
 };
+
+// total size: 0x40
+struct FEMatrix4 {
+    float m11; // offset 0x0
+    float m12; // offset 0x4
+    float m13; // offset 0x8
+    float m14; // offset 0xC
+    float m21; // offset 0x10
+    float m22; // offset 0x14
+    float m23; // offset 0x18
+    float m24; // offset 0x1C
+    float m31; // offset 0x20
+    float m32; // offset 0x24
+    float m33; // offset 0x28
+    float m34; // offset 0x2C
+    float m41; // offset 0x30
+    float m42; // offset 0x34
+    float m43; // offset 0x38
+    float m44; // offset 0x3C
+
+    inline FEMatrix4& operator=(const FEMatrix4& m) {
+        m11 = m.m11; m12 = m.m12; m13 = m.m13; m14 = m.m14;
+        m21 = m.m21; m22 = m.m22; m23 = m.m23; m24 = m.m24;
+        m31 = m.m31; m32 = m.m32; m33 = m.m33; m34 = m.m34;
+        m41 = m.m41; m42 = m.m42; m43 = m.m43; m44 = m.m44;
+        return *this;
+    }
+
+    void Identify();
+};
+
+void FEMultMatrix(FEMatrix4* dest, const FEMatrix4* a, const FEMatrix4* b);
+void FEMultMatrix(FEVector3* dest, const FEMatrix4* m, const FEVector3* v);
 
 #endif

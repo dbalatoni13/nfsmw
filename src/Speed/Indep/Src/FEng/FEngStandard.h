@@ -11,5 +11,10 @@ void FEngMemSet(void* pDest, int Value, int Length);
 void FEngStrCpy(char* pDest, const char* pSrc);
 int FEngStrLen(const char* pSrc);
 int FEngStrICmp(const char* pStr1, const char* pStr2);
+void InitFEngMemoryPool();
+float FEngAbs(float x);
+float FEngSqrt(float x);
+float FEngSin(float x);
+float FEngACos(float x);
 
 #endif

@@ -541,3 +541,19 @@ finalize:
         pObj->Flags = Flags | 0x2000000;
     }
 }
+
+void FEPackage::Update(FEngine* pEngine, long tDeltaTicks) {
+    FEObject* pObject = static_cast<FEObject*>(Objects.GetHead());
+    pEnginePtr = pEngine;
+    iTickIncrement = tDeltaTicks;
+    while (pObject) {
+        UpdateObject(pObject, tDeltaTicks);
+        pObject = pObject->GetNext();
+    }
+    if (NumMouseObjects > 0) {
+        NumMouseObjectsCounter = 0;
+        MouseStateArrayOffsetUpdater the_udater;
+        the_udater.pPack = this;
+        ForAllObjects(the_udater);
+    }
+}
