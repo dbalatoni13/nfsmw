@@ -1574,50 +1574,64 @@ void SetStockPartOption::React(const char *pkg_name, unsigned int data, FEObject
 // --- CustomizeMain additional ---
 
 void CustomizeMain::SetTitle(bool isInBackroom) {
-    unsigned int title;
-    if (isInBackroom) {
-        title = 0xa1caff8d;
+    char local_48[64];
+    if (!isInBackroom) {
+        const char *str = GetLocalizedString(0x1f242e03);
+        bSNPrintf(local_48, 0x40, "%s", str);
     } else {
-        title = 0x5c01c5;
+        const char *str = GetLocalizedString(0x92fcdbf0);
+        bSNPrintf(local_48, 0x40, "%s", str);
     }
-    FEngSetLanguageHash(GetPackageName(), 0x50fe8b76, title);
-    if (gCarCustomizeManager.IsCareerMode()) {
-        FEngSetVisible(FEngFindObject(GetPackageName(), 0x23d918fe));
-        FEPrintf(GetPackageName(), 0x23d918fe, "%d", TheFEMarkerManager.GetNumCustomizeMarkers());
-    } else {
-        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x23d918fe));
+    int lang = GetCurrentLanguage();
+    if (lang != 2 && lang != 0xd) {
+        int i = 0;
+        while (local_48[i] != 0) {
+            unsigned char c = local_48[i];
+            if (static_cast<unsigned int>(static_cast<char>(c) - 0x41) < 0x1a) {
+                c = c | 0x20;
+            }
+            local_48[i] = c;
+            i++;
+        }
     }
+    FEPrintf(GetPackageName(), 0xb71b576d, "%s", local_48);
 }
 
 void CustomizeMain::RefreshHeader() {
-    IconScrollerMenu::RefreshHeader();
-    CustomizeMainOption *curOpt = static_cast<CustomizeMainOption *>(Options.GetCurrentOption());
-    int status = curOpt ? curOpt->UnlockStatus : 0;
-    if (status == CPS_LOCKED) {
-        FEngSetVisible(FEngFindObject(GetPackageName(), 0xcffb7033));
-        FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xcffb7033), 0xf0574bb2);
-    } else if (status == CPS_NEW) {
-        FEngSetVisible(FEngFindObject(GetPackageName(), 0xcffb7033));
-        FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xcffb7033), 0xcffb7033);
+    CustomizeCategoryScreen::RefreshHeader();
+    int isCareer = gCarCustomizeManager.IsCareerMode();
+    if (!isCareer || gCarCustomizeManager.IsHeroCar()) {
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0xdc6ee739));
     } else {
-        FEngSetInvisible(FEngFindObject(GetPackageName(), 0xcffb7033));
+        int inBackRoom = CustomizeIsInBackRoom();
+        if (!inBackRoom && gCarCustomizeManager.GetNumCustomizeMarkers() > 0) {
+            FEngSetVisible(FEngFindObject(GetPackageName(), 0xdc6ee739));
+        } else {
+            FEngSetInvisible(FEngFindObject(GetPackageName(), 0xdc6ee739));
+        }
+    }
+    if (Options.GetCurrentOption()) {
+        gCarCustomizeManager.IsCategoryNew(static_cast<CustomizeMainOption *>(Options.GetCurrentOption())->Category);
     }
 }
 
 void CustomizeMain::SwitchRooms() {
-    if (CustomizeIsInBackRoom()) {
-        CustomizeSetInBackRoom(false);
+    bool newState = CustomizeIsInBackRoom() ^ 1;
+    CustomizeSetInBackRoom(newState);
+    SetTitle(newState);
+    if (!newState) {
+        cFEng_mInstance->QueuePackageMessage(0x5c01c5, GetPackageName(), nullptr);
+        FEManager::Get()->SetGarageType(static_cast<eGarageType>(3));
     } else {
-        CustomizeSetInBackRoom(true);
+        cFEng_mInstance->QueuePackageMessage(0xa1caff8d, GetPackageName(), nullptr);
+        FEManager::Get()->SetGarageType(static_cast<eGarageType>(4));
     }
-    GarageMainScreen *gms = GetInstance_GarageMainScreen();
-    gms->UpdateCurrentCameraView(false);
-    SetTitle(CustomizeIsInBackRoom());
-    BuildOptionsList();
     SetScreenNames();
-    bFadeInIconsImmediately = true;
     Options.RemoveAll();
-    Setup();
+    Options.AddInitialBookEnds();
+    BuildOptionsList();
+    Options.SetInitialPos(0);
+    RefreshHeader();
 }
 
 void CustomizeMain::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
