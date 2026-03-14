@@ -49,7 +49,7 @@ struct CarPart {
     float GetAppliedAttributeFParam(unsigned int namehash, float default_value);
     int GetAppliedAttributeIParam(unsigned int namehash, int default_value);
     unsigned int GetAppliedAttributeUParam(unsigned int namehash, unsigned int default_value);
-    unsigned int GetBrandNameHash();
+    unsigned int GetBrandNameHash() { return GetAppliedAttributeUParam(0xebb03e66, 0); }
 };
 
 int CarCustomizeManager::GetNumPackages(Physics::Upgrades::Type type) {
@@ -937,52 +937,71 @@ bool CarCustomizeManager::IsCategoryLocked(unsigned int cat, bool backroom) {
 }
 
 bool CarCustomizeManager::IsRimCategoryLocked(unsigned int cat, bool backroom) {
-    int marker_param = -1;
-    if (cat == 0x703) marker_param = 3;
-    else if (cat == 0x704) marker_param = 4;
-    else if (cat == 0x705) marker_param = 5;
-    else if (cat == 0x706) marker_param = 6;
-    else if (cat == 0x707) marker_param = 7;
-    if (marker_param == -1) return false;
-    bTList<SelectablePart> parts;
-    GetCarPartList(0x35, parts, 0);
-    SelectablePart *sp = parts.GetHead();
-    while (sp != parts.EndOfList()) {
-        unsigned int brand = sp->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0u);
-        if ((brand >> 5) == cat) {
-            if (backroom) {
-                eUnlockFilters filter = GetUnlockFilter();
-                if (UnlockSystem::IsCarPartUnlocked(filter, sp->GetSlotID(), sp->GetPart(), 0, true)) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        }
-        sp = static_cast<SelectablePart *>(sp->GetNext());
+    unsigned int brand_name = 0;
+    switch (cat) {
+        case 0x702: brand_name = 0x352d08d1; break;
+        case 0x703: brand_name = 0x9136; break;
+        case 0x704: brand_name = 0x9536; break;
+        case 0x705: brand_name = 0x2b77feb; break;
+        case 0x706: brand_name = 0x324ac97; break;
+        case 0x707: brand_name = 0x48e25793; break;
+        case 0x708: brand_name = 0xdd544a02; break;
+        case 0x709: brand_name = 0x648; break;
+        case 0x70a: brand_name = 0x1e6a3b; break;
+        case 0x70b: brand_name = 0x1c386b; break;
     }
-    if (!backroom) return true;
-    return !TheFEMarkerManager.HasMarker(FEMarkerManager::MARKER_RIMS, marker_param);
+    bTList<SelectablePart> list;
+    GetCarPartList(0x42, list, brand_name);
+    bool locked = true;
+    SelectablePart *part = list.GetHead();
+    while (part != list.EndOfList()) {
+        if (part->GetPart()->GetBrandNameHash() == brand_name && !IsPartLocked(part, 0)) {
+            locked = false;
+            break;
+        }
+        part = static_cast<SelectablePart *>(part->GetNext());
+    }
+    list.DeleteAllElements();
+    if (backroom && !locked) {
+        locked = true;
+        if (TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_RIMS, 0) > 0) {
+            locked = false;
+        }
+    }
+    return locked;
 }
 
 bool CarCustomizeManager::IsVinylCategoryLocked(unsigned int cat, bool backroom) {
-    unsigned int vinyl_group = cat;
-    int marker_param = -1;
-    if (vinyl_group == 1) marker_param = 1;
-    else if (vinyl_group == 2) marker_param = 2;
-    if (marker_param == -1) return false;
-    bTList<SelectablePart> parts;
-    GetCarPartList(0x28, parts, 0);
-    SelectablePart *sp = parts.GetHead();
-    while (sp != parts.EndOfList()) {
-        if ((sp->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0u) & 0x1f) == vinyl_group
-            && sp->GetPartState() != CPS_LOCKED) {
-            return false;
-        }
-        sp = static_cast<SelectablePart *>(sp->GetNext());
+    unsigned int group = 0;
+    switch (cat) {
+        case 0x402: break;
+        case 0x403: group = 1; break;
+        case 0x404: group = 2; break;
+        case 0x405: group = 3; break;
+        case 0x406: group = 4; break;
+        case 0x407: group = 5; break;
+        case 0x408: group = 6; break;
+        case 0x409: group = 7; break;
     }
-    if (!backroom) return true;
-    return !TheFEMarkerManager.HasMarker(FEMarkerManager::MARKER_VINYL, marker_param);
+    bTList<SelectablePart> list;
+    GetCarPartList(0x4d, list, group);
+    bool locked = true;
+    SelectablePart *part = list.GetHead();
+    while (part != list.EndOfList()) {
+        if (part->GetPart()->GetGroupNumber() == group && !IsPartLocked(part, 0)) {
+            locked = false;
+            break;
+        }
+        part = static_cast<SelectablePart *>(part->GetNext());
+    }
+    list.DeleteAllElements();
+    if (backroom && !locked) {
+        locked = true;
+        if (TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_VINYL, 0) > 0) {
+            locked = false;
+        }
+    }
+    return locked;
 }
 
 void CarCustomizeManager::UpdateHeatOnVehicle(SelectablePart *part, FECareerRecord *record) {
