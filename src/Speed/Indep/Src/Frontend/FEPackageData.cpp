@@ -37,6 +37,7 @@ struct ScreenButtonDatum {
 };
 
 extern unsigned long FEHashUpper(const char *str);
+extern int bStrICmp(const char *, const char *);
 extern ScreenButtonDatum *FindScreenButtonDatum(unsigned int hash);
 extern void HackClearCache(FEPackage *pkg);
 extern FEPackageRenderInfo *HACK_FEPkgMgr_GetPackageRenderInfo(FEPackage *pkg);
@@ -546,6 +547,16 @@ static ScreenFactoryDatum *FindScreenCreateData(unsigned int hash) {
         }
     }
     return nullptr;
+}
+
+void FEngSetCreateCallback(const char *abstract_pkg_name, MenuScreen *(*function)(ScreenConstructorData *)) {
+    for (int i = 0; i < kScreenFactoryDataCount; i++) {
+        ScreenFactoryDatum &sfd = ScreenFactoryData[i];
+        if (bStrICmp(abstract_pkg_name, sfd.Name) == 0) {
+            sfd.CreateFunc = function;
+            return;
+        }
+    }
 }
 
 static MenuScreen *ScreenFactory(unsigned int hash, FEPackage *pkg, int arg) {

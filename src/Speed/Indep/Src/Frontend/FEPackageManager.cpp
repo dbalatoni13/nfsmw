@@ -7,6 +7,7 @@ extern unsigned long FEHashUpper(const char *str);
 extern unsigned int bStringHash(const char *str);
 extern cFEng *cFEng_mInstance;
 extern void HackClearCache(FEPackage *pkg);
+extern bool IsCurrentlyHotChunking();
 
 FEPackageManager *FEPackageManager::mInstance;
 int FEPackageData::mInScreenConstructor;
@@ -229,4 +230,20 @@ bool FEPackageManager::GetVisibility(const char *pkg_name) {
         return false;
     }
     return data->GetVisibility();
+}
+
+int LoaderFEngPackage(bChunk *chunk) {
+    if (chunk->GetID() == 0x30203 || chunk->GetID() == 0x30210) {
+        FEPackageManager::Get()->Loader(chunk, IsCurrentlyHotChunking());
+        return 1;
+    }
+    return 0;
+}
+
+int UnloaderFEngPackage(bChunk *chunk) {
+    if (chunk->GetID() == 0x30203 || chunk->GetID() == 0x30210) {
+        FEPackageManager::Get()->UnLoader(chunk, IsCurrentlyHotChunking());
+        return 1;
+    }
+    return 0;
 }
