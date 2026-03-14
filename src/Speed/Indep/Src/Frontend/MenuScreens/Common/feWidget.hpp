@@ -39,30 +39,30 @@ public:
     virtual void SetPosX(float x) { SetTopLeftX(x); }
     virtual void SetPosY(float y) { SetTopLeftY(y); }
 
-    bool IsEnabled();
-    bool IsHidden();
-    void GetTopLeft(bVector2& top_left);
+    bool IsEnabled() { return bEnabled; }
+    bool IsHidden() { return bHidden; }
+    void GetTopLeft(bVector2& top_left) { top_left.x = vTopLeft.x; top_left.y = vTopLeft.y; }
     float GetTopLeftX() { return vTopLeft.x; }
     float GetTopLeftY() { return vTopLeft.y; }
-    void GetSize(bVector2& size);
-    float GetWidth();
-    float GetHeight();
+    void GetSize(bVector2& size) { size.x = vSize.x; size.y = vSize.y; }
+    float GetWidth() { return vSize.x; }
+    float GetHeight() { return vSize.y; }
     void SetTopLeft(bVector2& top_left) { vTopLeft.x = top_left.x; vTopLeft.y = top_left.y; }
     void SetTopLeftX(float x) { vTopLeft.x = x; }
     void SetTopLeftY(float y) { vTopLeft.y = y; }
-    void SetSize(bVector2& size);
-    void SetWidth(float width);
-    void SetHeight(float height);
-    void SetBacking(FEObject* obj);
-    FEObject* GetBacking();
-    void GetBackingOffset(bVector2& offset);
-    float GetBackingOffsetX();
-    float GetBackingOffsetY();
-    void SetBackingOffset(bVector2& offset);
-    void SetBackingOffset(float x, float y);
-    void SetBackingOffsetX(float x);
-    void SetBackingOffsetY(float y);
-    bool MovedLastUpdate();
+    void SetSize(bVector2& size) { vSize = size; }
+    void SetWidth(float width) { vSize.x = width; }
+    void SetHeight(float height) { vSize.y = height; }
+    void SetBacking(FEObject* obj) { pBacking = obj; }
+    FEObject* GetBacking() { return pBacking; }
+    void GetBackingOffset(bVector2& offset) { offset.x = vBackingOffset.x; offset.y = vBackingOffset.y; }
+    float GetBackingOffsetX() { return vBackingOffset.x; }
+    float GetBackingOffsetY() { return vBackingOffset.y; }
+    void SetBackingOffset(bVector2& offset) { vBackingOffset = offset; }
+    void SetBackingOffset(float x, float y) { vBackingOffset.x = x; vBackingOffset.y = y; }
+    void SetBackingOffsetX(float x) { vBackingOffset.x = x; }
+    void SetBackingOffsetY(float y) { vBackingOffset.y = y; }
+    bool MovedLastUpdate() { return bMovedLastUpdate; }
 };
 
 // 0x40
