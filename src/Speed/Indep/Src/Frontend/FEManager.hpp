@@ -140,14 +140,10 @@ enum eCarViewerWhichCar {
 };
 
 struct CarViewer {
-    static GarageMainScreen *FindWhichScreenToUpdate(eCarViewerWhichCar which_car);
-    static void SetRideInfo(RideInfo *ride, eSetRideInfoReasons reason, eCarViewerWhichCar which_car);
-    static void CancelCarLoad(eCarViewerWhichCar which_car);
-    static RideInfo *GetRideInfo(eCarViewerWhichCar which_car);
-    static void HideAllCars();
-    static void ShowAllCars();
     static void ShowCarScreen();
-    static void UnshowCarScreen();
+    static void ShowAllCars();
+    static void HideAllCars();
+    static void SetRideInfo(RideInfo* ride, eSetRideInfoReasons reason, eCarViewerWhichCar which_car);
     static bool haveLoadedOnce;
 };
 

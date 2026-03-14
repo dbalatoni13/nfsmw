@@ -2,7 +2,6 @@
 
 #include "Speed/Indep/Src/FEng/FEGroup.h"
 #include "Speed/Indep/Src/FEng/FEMultiImage.h"
-#include "Speed/Indep/Src/FEng/FETypes.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 
 void FEngSetMultiImageRot(FEMultiImage *image, float angle_degrees);
@@ -31,12 +30,14 @@ SpeedBreakerMeter::SpeedBreakerMeter(UTL::COM::Object *pOutter, const char *pkg_
     , mPursuitLevel(lbl_803E4D9C) //
 {
     RegisterGroup(FEHashUpper(lbl_803E4D40));
-    mpSpeedBreakerMeterIcon = FEngFindObject(GetPackageName(), FEHashUpper(lbl_803E4D5C));
+    mpSpeedBreakerMeterIcon = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4D5C));
     mpSpeedBreakerMeterBar = RegisterMultiImage(FEHashUpper(lbl_803E4D7C));
     mpSpeedBreakerGroup = RegisterGroup(0x82D60021);
-    mpSpeedBreakerBar = FEngFindObject(GetPackageName(), 0x1FDAF669);
+    mpSpeedBreakerBar = FEngFindObject(pkg_name, 0x1FDAF669);
     if (mpSpeedBreakerBar != nullptr) {
-        mSpeedBreakerBarOriginalWidth = mpSpeedBreakerBar->GetObjData()->Size.x;
+        float w, h;
+        FEngGetSize(mpSpeedBreakerBar, w, h);
+        mSpeedBreakerBarOriginalWidth = w;
     }
 }
 

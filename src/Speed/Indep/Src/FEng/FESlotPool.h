@@ -14,6 +14,16 @@ struct FESlotNode : public FEMinNode {
     unsigned char SlotMask[4];  // offset 0x10, size 0x4
     unsigned char* pData;       // offset 0x14, size 0x4
 
+    inline FESlotNode(unsigned short Size)
+        : SlotSize(Size) //
+        , SlotsUsed(0) //
+        , pData(nullptr) {
+    }
+
+    inline bool IsEmpty() { return SlotsUsed == 0; }
+    inline bool IsFull() { return SlotsUsed == 0x20; }
+    inline FESlotNode* GetNext() { return static_cast<FESlotNode*>(FEMinNode::GetNext()); }
+
     ~FESlotNode() override;
     unsigned char* AllocBlock();
     void FreeBlock(unsigned char* pSlot);
@@ -23,6 +33,10 @@ struct FESlotNode : public FEMinNode {
 struct FESlotPool : public FEMinNode {
     FEMinList Slots;       // offset 0xC, size 0x10
     unsigned long SlotSize; // offset 0x1C, size 0x4
+
+    inline FESlotPool(unsigned long Size) : SlotSize(Size) {}
+    inline bool IsEmpty() { return Slots.GetNumElements() == 0; }
+    inline FESlotPool* GetNext() { return static_cast<FESlotPool*>(FEMinNode::GetNext()); }
 
     ~FESlotPool() override;
     unsigned char* Alloc();

@@ -69,7 +69,7 @@ class Timer {
 
     void UnSet() { PackedTime = 0; }
 
-    int IsSet() { return PackedTime != 0 && PackedTime != 0x7fffffff; }
+    int IsSet() {}
 
     void SetTime(float seconds);
 
