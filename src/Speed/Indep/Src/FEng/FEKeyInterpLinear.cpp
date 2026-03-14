@@ -67,10 +67,11 @@ void FELerpColor(FEColor& c1, FEColor& c2, float t, FEColor* pOffset, FEColor* p
 }
 
 bool Close(float x, float y, float epsilon) {
-    if (x + epsilon < y) {
-        return false;
+    bool result = false;
+    if (x + epsilon >= y) {
+        result = x - epsilon <= y;
     }
-    return x - epsilon <= y;
+    return result;
 }
 
 bool Close(long x, long y, long epsilon) {

@@ -29,8 +29,7 @@ bool Close(long a, long b, long epsilon);
 FEObjectDestructorCallback* FEObject::pDestructorCallback;
 
 FEObject::FEObject()
-    : GUID(FEngine::SysGUID++) //
-    , NameHash(0) //
+    : NameHash(0) //
     , pName(nullptr) //
     , Flags(0) //
     , RenderContext(0) //
@@ -40,11 +39,11 @@ FEObject::FEObject()
     , DataSize(0) //
     , Cached(nullptr) //
 {
+    GUID = FEngine::SysGUID++;
 }
 
 FEObject::FEObject(const FEObject& Object, bool bReference)
-    : GUID(FEngine::SysGUID++) //
-    , NameHash(0) //
+    : NameHash(0) //
     , pName(nullptr) //
     , Flags(0) //
     , RenderContext(0) //
@@ -55,6 +54,7 @@ FEObject::FEObject(const FEObject& Object, bool bReference)
     , pCurrentScript(nullptr) //
     , Cached(nullptr) //
 {
+    GUID = FEngine::SysGUID++;
     SetDataSize(Object.DataSize);
     FEngMemSet(pData, 0, DataSize);
     Type = Object.Type;
@@ -122,7 +122,7 @@ void FEObject::SetName(const char* pNewName) {
     NameHash = -1;
     if (pNewName) {
         int len = FEngStrLen(pNewName);
-        pName = new char[len + 1];
+        pName = static_cast<char*>(FEngMalloc(len + 1, nullptr, 0));
         FEngStrCpy(pName, pNewName);
         NameHash = FEHashUpper(pName);
     }
@@ -236,10 +236,15 @@ unsigned long FEObject::GetDataOffset(FEKeyTrack_Indices track) {
         return 0x44;
     case FETrack_LowerRight:
         return 0x4C;
+    case FETrack_Color1:
+        return 0x54;
+    case FETrack_Color2:
+        return 0x64;
+    case FETrack_Color3:
+        return 0x74;
+    case FETrack_Color4:
+        return 0x84;
     default:
-        if (track >= FETrack_Color1 && track <= FETrack_Color4) {
-            return (track - FETrack_Color1) * 0x10;
-        }
         return 0;
     }
 }
