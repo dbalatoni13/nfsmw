@@ -28,7 +28,7 @@ FEColor::FEColor(unsigned long Col) {
 }
 
 FEColor::operator unsigned long() const {
-    int rv, gv, bv, av;
+    unsigned char rv, gv, bv, av;
 
     if (r >= 0) {
         if (r > 255) {
