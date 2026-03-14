@@ -1,12 +1,6 @@
 #include "Speed/Indep/Src/FEng/FETypes.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
 
-FEVector2& FEVector2::operator=(const FEVector2& v) {
-    x = v.x;
-    y = v.y;
-    return *this;
-}
-
 void FEMatrix4::Identify() {
     m11 = 1.0f; m12 = 0.0f; m13 = 0.0f; m14 = 0.0f;
     m21 = 0.0f; m22 = 1.0f; m23 = 0.0f; m24 = 0.0f;

@@ -120,10 +120,7 @@ struct FEPackageButtonRec {
     unsigned long ButtonGUID;  // offset 0x4, size 0x4
 };
 
-enum FEButtonWrapMode {
-    kFBW_Wrap = 0,
-    kFBW_NoWrap = 1
-};
+// FEButtonWrapMode defined in FEPackage.h
 
 struct FEPackageList {
     FEList Packages; // offset 0x0, size 0x10

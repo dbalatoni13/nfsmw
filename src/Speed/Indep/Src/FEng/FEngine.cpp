@@ -75,7 +75,7 @@ FEngine::FEngine()
     , FastRep(0) //
     , FastRepCache(0) //
     , PadHoldRegistered(0) //
-    , WrapMode(kFBW_Wrap) //
+    , WrapMode(Wrap_None) //
     , NumJoyPads(0) //
     , pInterface(nullptr) //
     , CurrentPackageRecordIndex(0) //

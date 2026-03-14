@@ -14,6 +14,14 @@ struct FEMessageResponse;
 struct FEPackageRenderInfo;
 struct FEListBox;
 #include "FETypes.h"
+
+enum FEButtonWrapMode {
+    Wrap_None = 0,
+    Wrap_Horizontal = 1,
+    Wrap_Vertical = 2,
+    Wrap_Both = 3,
+};
+
 struct FEObjectMouseState {
     FEObject* pObject;    // offset 0x0, size 0x4
     FEPoint Offset;       // offset 0x4, size 0x8
@@ -65,7 +73,7 @@ struct FEButtonMap {
     inline FEObject* GetButton(unsigned long Index) { return pList[Index]; }
 
     void SetCount(unsigned long NewCount);
-    FEObject* GetButtonFrom(FEObject* pButton, long Direction, FEGameInterface* pInterface, int WrapMode);
+    FEObject* GetButtonFrom(FEObject* pButton, long Direction, FEGameInterface* pInterface, FEButtonWrapMode WrapMode);
     void ComputeButtonLocation(FEObject* pObj, FEGameInterface* pInterface, FEVector2& Loc);
 };
 
