@@ -102,6 +102,8 @@ enum eSNDCTLSTATE {
     SNDSTATE_OFF = 0,
 };
 
+struct EAXFrontEnd;
+
 // total size: 0xBC
 class EAXSound : public AudioMemBase {
   public:
@@ -129,6 +131,8 @@ class EAXSound : public AudioMemBase {
     void UpdateVolumes(AudioSettings *paudiosettings, float NewValue);
 
     int GetDefaultPlatformAudioMode();
+
+    EAXFrontEnd *GetFrontEnd() { return m_pFESnd; }
 
   private:
     int ncompiletest;                            // offset 0x4, size 0x4
