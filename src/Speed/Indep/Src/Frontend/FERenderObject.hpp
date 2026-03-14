@@ -40,9 +40,9 @@ class FERenderObject : public bTNode<FERenderObject> {
     void SetTransform(bMatrix4 *pMatrix);
     void Render();
     void Clear(FEPackageRenderInfo *pkg_render_info);
-    void AddPoly(float x0, float y0, float x1, float y1, float z,
-                 float s0, float t0, float s1, float t1,
-                 unsigned int *in_colors, FEPackageRenderInfo *pkg_render_info);
+    FERenderEPoly *AddPoly(float x0, float y0, float x1, float y1, float z,
+                           float s0, float t0, float s1, float t1,
+                           unsigned int *in_colors, FEPackageRenderInfo *pkg_render_info);
     void AddPoly(float x0, float y0, float x1, float y1, float z,
                  float s0, float t0, float s1, float t1,
                  unsigned int *in_colors, TextureInfo *texture, FEPackageRenderInfo *pkg_render_info);

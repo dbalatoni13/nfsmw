@@ -122,6 +122,69 @@ unsigned int FERenderObject::ClipAligned(FEClipInfo *pClipInfo, bVector3 *v, bVe
     return num_verts;
 }
 
+FERenderEPoly *FERenderObject::AddPoly(float x0, float y0, float x1, float y1, float z,
+                                       float s0, float t0, float s1, float t1,
+                                       unsigned int *colors, FEPackageRenderInfo *pkg_render_info) {
+    FERenderEPoly *render = new FERenderEPoly();
+    ePoly *pPoly = &render->EPoly;
+    render->pTextureMask = nullptr;
+    render->pTexture = nullptr;
+    mobPolyList.AddTail(render);
+    mPolyCount++;
+
+    pPoly->Vertices[0].x = x0;
+    pPoly->Vertices[0].y = y0;
+    pPoly->Vertices[0].z = z;
+    pPoly->Vertices[1].x = x1;
+    pPoly->Vertices[1].y = y0;
+    pPoly->Vertices[1].z = z;
+    pPoly->Vertices[2].x = x1;
+    pPoly->Vertices[2].y = y1;
+    pPoly->Vertices[2].z = z;
+    pPoly->Vertices[3].x = x0;
+    pPoly->Vertices[3].y = y1;
+    pPoly->Vertices[3].z = z;
+
+    bMulMatrix(&pPoly->Vertices[0], &mstTransform, &pPoly->Vertices[0]);
+    bMulMatrix(&pPoly->Vertices[1], &mstTransform, &pPoly->Vertices[1]);
+    bMulMatrix(&pPoly->Vertices[2], &mstTransform, &pPoly->Vertices[2]);
+    bMulMatrix(&pPoly->Vertices[3], &mstTransform, &pPoly->Vertices[3]);
+
+    pPoly->Vertices[0].z = z;
+    pPoly->Vertices[1].z = z;
+    pPoly->Vertices[2].z = z;
+    pPoly->Vertices[3].z = z;
+
+    pPoly->UVs[0][0] = s0;
+    pPoly->UVs[0][1] = t0;
+    pPoly->UVs[0][2] = s1;
+    pPoly->UVs[0][3] = t0;
+    pPoly->UVs[1][0] = s1;
+    pPoly->UVs[1][1] = t1;
+    pPoly->UVs[1][2] = s0;
+    pPoly->UVs[1][3] = t1;
+
+    reinterpret_cast<unsigned int *>(pPoly->Colours)[0] = colors[0];
+    reinterpret_cast<unsigned int *>(pPoly->Colours)[1] = colors[1];
+    reinterpret_cast<unsigned int *>(pPoly->Colours)[2] = colors[2];
+    reinterpret_cast<unsigned int *>(pPoly->Colours)[3] = colors[3];
+
+    pPoly->SetFlailer(1);
+    pPoly->SetFlags(1);
+
+    return render;
+}
+
+void FERenderObject::AddPoly(float x0, float y0, float x1, float y1, float z,
+                             float s0, float t0, float s1, float t1,
+                             unsigned int *colors, TextureInfo *texture,
+                             FEPackageRenderInfo *pkg_render_info) {
+    FERenderEPoly *render = AddPoly(x0, y0, x1, y1, z, s0, t0, s1, t1, colors, pkg_render_info);
+    if (render) {
+        render->pTexture = texture;
+    }
+}
+
 extern void *bOMalloc(SlotPool *pool);
 extern void bMemSet(void *dst, int val, unsigned int size);
 
