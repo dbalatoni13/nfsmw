@@ -54,9 +54,9 @@ void Minimap::AdjustForWidescreen(bool moveOutwards) {
         MinimapPivotX = offset;
         MinimapDispX = -0.9375f;
     } else {
+        offset = 120.0f;
         MinimapPivotX = 0.0f;
         MinimapDispX = 0.9375f;
-        offset = 120.0f;
     }
     mTrackMapCentre.x += offset;
     for (unsigned int i = 0; i < 4; i++) {

@@ -106,6 +106,38 @@ void VideoSettings::Default() {
     WideScreen = 0;
 }
 
+void cFrontendDatabase::FillCustomRace(GRaceCustom *parms, RaceSettings *race) {
+    if (!race) {
+        return;
+    }
+    if (!parms) {
+        return;
+    }
+    parms->SetCatchUp(race->CatchUp);
+    parms->SetCopsEnabled(race->CopsOn);
+    if (race->CopsOn) {
+        parms->SetHeatLevel(race->CopDensity);
+    }
+    parms->SetDifficulty(static_cast<GRace::Difficulty>(race->AISkill));
+    parms->SetNumLaps(race->NumLaps);
+    parms->SetNumOpponents(race->NumOpponents);
+    switch (race->TrafficDensity) {
+    case 1:
+        parms->SetTrafficDensity(10);
+        break;
+    case 2:
+        parms->SetTrafficDensity(30);
+        break;
+    case 3:
+        parms->SetTrafficDensity(50);
+        break;
+    default:
+        parms->SetTrafficDensity(0);
+        break;
+    }
+    parms->SetReversed(race->TrackDirection == 1);
+}
+
 RaceSettings *cFrontendDatabase::GetQuickRaceSettings(GRace::Type type) {
     if (static_cast<int>(type) < 11) {
         return &TheQuickRaceSettings[type];

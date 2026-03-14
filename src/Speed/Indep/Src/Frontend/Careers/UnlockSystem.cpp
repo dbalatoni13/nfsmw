@@ -189,8 +189,7 @@ bool CareerUnlocker::IsUnlockableUnlocked(eUnlockFilters filter, eUnlockableEnti
 bool CareerUnlocker::IsPerfPackageUnlocked(eUnlockFilters filter, Physics::Upgrades::Type pkg_type, int level, bool backroom) {
     bool answer = UnlockAllThings != 0;
     eUnlockableEntity unlockable = MapPerfPkgToUnlockable(pkg_type);
-    bool unlocked = CareerUnlocker::IsUnlockableUnlocked(filter, unlockable, level, backroom);
-    return static_cast<bool>(answer | unlocked);
+    return static_cast<bool>(answer | CareerUnlocker::IsUnlockableUnlocked(filter, unlockable, level, backroom));
 }
 
 bool CareerUnlocker::IsTrackUnlocked(eUnlockFilters filter, int event_hash) {
@@ -529,8 +528,8 @@ eUnlockableEntity MapPerfPkgToUnlockable(Physics::Upgrades::Type pkg_type) {
     case Physics::Upgrades::kType_Engine: return UNLOCKABLE_THING_PUT_ENGINE;
     case Physics::Upgrades::kType_Induction: return UNLOCKABLE_THING_PUT_INDUCTION;
     case Physics::Upgrades::kType_Nitrous: return UNLOCKABLE_THING_PUT_NOS;
-    default: return UNLOCKABLE_THING_UNKNOWN;
     }
+    return UNLOCKABLE_THING_UNKNOWN;
 }
 
 eUnlockableEntity MapCarPartToUnlockable(int carslot, CarPart *part) {

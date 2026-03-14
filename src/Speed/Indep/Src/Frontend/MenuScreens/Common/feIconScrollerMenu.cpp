@@ -600,7 +600,7 @@ bool IconScroller::IsTail(IconOption *option) {
 }
 
 bool IconScroller::IsEndOfList(IconOption *option) {
-    return option == HeadBookEnd || option == TailBookEnd;
+    return option == TailBookEnd || option == HeadBookEnd;
 }
 
 IconScrollerMenu::~IconScrollerMenu() {
