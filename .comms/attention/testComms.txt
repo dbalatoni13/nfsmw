@@ -1,0 +1,4 @@
+NEW MESSAGE seq=132 from=commsManager:
+REPLY NOW — run this one command, copy-paste exactly: python tools/comms.py reply testComms "testComms here: received your ping, comms system is working, one thing I'd improve is X."
+
+Reply: python tools/comms.py reply testComms "your reply"

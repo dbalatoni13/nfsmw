@@ -3,30 +3,24 @@
 ## Current State
 - **Match**: 0% (0/467 functions)
 - **Target**: 90%+
-- **Working on**: Fixing DWARF truncation build blocker
+- **Working on**: Getting build to compile (DWARF truncation workaround)
 
-## Files Being Edited
-- src/Speed/Indep/SourceLists/zFeOverlay.cpp (jumbo include list)
-- src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.cpp
-- src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp
+## Files Being Edited (DO NOT MODIFY)
+- src/Speed/Indep/SourceLists/zFeOverlay.cpp
+- src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/ (entire directory)
 - src/Speed/Indep/Src/Frontend/FECarLoader.hpp
-- src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/*.cpp and *.hpp
-- src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/*.cpp and *.hpp
-- src/Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiMarkerSelect.*
 
-## Critical Blocker
-The wibo pipe buffer limit (~5.83MB) truncates assembly output for this TU.
-With all 16 includes and full DWARF (-gdwarf+), the assembly exceeds the limit.
-Heavy include chains (FEManager.hpp -> ResourceLoader.hpp, FECarLoader.hpp -> CarRender.hpp)
-are the biggest contributors. I'm working around this by duplicating needed enums/types
-locally instead of including the heavy shared headers.
+## DWARF Budget Workarounds Applied
+- FEPkg_GarageMain.hpp: duplicated enums/CarViewer locally (avoids FEManager.hpp)
+- FECarLoader.hpp: char[] placeholders for RideInfo (avoids CarRender.hpp -> 4MB DWARF)
+- FEPkg_GarageMain.cpp: extern wrappers instead of cFEng.h include
 
 ## Recent Progress
-- All headers scaffolded from DWARF
-- ~27 function bodies written
-- Build still fails due to DWARF truncation
+- All 15+ headers scaffolded from DWARF
+- ~20 function bodies written in FEPkg_GarageMain.cpp
+- Build still failing — working on DWARF budget
 
 ## Notes
-- zFeOverlay is a jumbo build with 16 cpp includes (Safehouse screens)
-- 467 total functions, ~141KB .text
-- Please do not modify files listed above
+- zFeOverlay is a 16-file jumbo build (~141KB .text, 467 functions)
+- The wibo pipe limit is THE blocker — not code correctness
+- Please do not modify my files — check ownership comments

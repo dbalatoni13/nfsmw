@@ -2,6 +2,10 @@
 #include "Speed/Indep/Src/FEng/FEJoyPad.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
 #include "Speed/Indep/Src/FEng/FEPackageReader.h"
+#include "Speed/Indep/Src/FEng/FEGameInterface.h"
+#include "Speed/Indep/Src/FEng/FEGroup.h"
+#include "Speed/Indep/Src/FEng/FEListBox.h"
+#include "Speed/Indep/Src/FEng/FECodeListBox.h"
 
 // Callback structs used by both FEngine and FEPackage.
 // Defined here because FEngine.cpp comes before FEPackage.cpp in the jumbo build.
@@ -373,5 +377,162 @@ void FEngine::ProcessGlobalMessage(FEPackage* pPack, unsigned long MsgID, unsign
     FEMessageResponse* pResp = pPack->FindResponse(MsgID);
     if (pResp) {
         ProcessResponses(pResp, nullptr, pPack, uControlMask);
+    }
+}
+
+bool FEngine::ProcessListBoxResponses(FEObject* pObj, unsigned long MsgID) {
+    FEListBox* pList = static_cast<FEListBox*>(pObj);
+    long lCol;
+    long lRow;
+    if (MsgID == 0xe10814a6) {
+        lCol = 0;
+        lRow = 1;
+    } else if (MsgID == 0x030471ac) {
+        lCol = 1;
+        lRow = 0;
+    } else if (MsgID == 0xe10c4af9) {
+        lCol = -1;
+        lRow = 0;
+    } else if (MsgID == 0xfb814f13) {
+        lCol = 0;
+        lRow = -1;
+    } else {
+        return false;
+    }
+    pList->ScrollSelection(lCol, lRow);
+    return true;
+}
+
+bool FEngine::ProcessCodeListBoxResponses(FEObject* pObj, unsigned long MsgID) {
+    FECodeListBox* pList = static_cast<FECodeListBox*>(pObj);
+    long lCol;
+    long lRow;
+    if (MsgID == 0xe10814a6) {
+        lCol = 0;
+        lRow = 1;
+    } else if (MsgID == 0x030471ac) {
+        lCol = 1;
+        lRow = 0;
+    } else if (MsgID == 0xe10c4af9) {
+        lCol = -1;
+        lRow = 0;
+    } else if (MsgID == 0xfb814f13) {
+        lCol = 0;
+        lRow = -1;
+    } else {
+        return false;
+    }
+    pList->ScrollSelection(lCol, lRow);
+    return true;
+}
+
+void FEngine::UnloadLibraryPackage(FEPackage* pLibPack) {
+    bool bDelete = pInterface->UnloadUnreferencedLibrary(pLibPack);
+    if (bDelete) {
+        RemoveFromLibraryList(pLibPack);
+        bool bOwnsMemory;
+        if (!pInterface) {
+            bOwnsMemory = true;
+        } else {
+            bOwnsMemory = pInterface->PackageWillUnload(pLibPack);
+        }
+        pLibPack->Shutdown(pInterface);
+        if (bOwnsMemory && pLibPack) {
+            pLibPack->~FEPackage();
+        }
+    }
+}
+
+void FEngine::Render() {
+    FEMatrix4 mIdentity;
+    mIdentity.Identify();
+    FEMatrix4 mView;
+    pInterface->GetViewTransformation(&mView);
+    FEPackage* aPackages[32];
+    int numPackages = 0;
+    for (FEPackage* pPack = PackList.GetFirstPackage(); pPack; pPack = pPack->GetNext()) {
+        aPackages[numPackages] = pPack;
+        numPackages++;
+    }
+    int i;
+    for (i = 0; i < numPackages; i++) {
+        PackList.RemovePackage(aPackages[i]);
+    }
+    for (i = 0; i < numPackages; i++) {
+        PackList.AddPackage(aPackages[i]);
+    }
+    FEPackage* pPack = PackList.GetFirstPackage();
+    uGroupContext = 0;
+    while (pPack) {
+        pInterface->BeginPackageRendering(pPack);
+        FEObject* pObj = pPack->GetFirstObject();
+        Sorter.Zero();
+        while (pObj) {
+            if (pObj->Type == FE_Group) {
+                RenderGroup(static_cast<FEGroup*>(pObj), mIdentity, mView, 0);
+            } else {
+                RenderObject(pObj, mView, 0);
+            }
+            pObj = pObj->GetNext();
+        }
+        Sorter.SortObjects();
+        pInterface->RenderObjectList(reinterpret_cast<FEObjectListEntry*>(Sorter.GetListPtr()), Sorter.GetNumObjects());
+        pInterface->EndPackageRendering(pPack);
+        pPack = pPack->GetNext();
+    }
+    bRenderedRecently = bExecuting;
+}
+
+void FEngine::RenderGroup(FEGroup* pGroup, FEMatrix4& mParent, FEMatrix4& mAccum, unsigned short RenderContext) {
+    FEObjData* pData = pGroup->GetObjData();
+    FEVector3 pivot(0.0f);
+    FEVector3 neg(0.0f);
+    if (pData->Col.a != 0) {
+        if (bExecuting || static_cast<int>(pGroup->Flags) > -1) {
+            FEMatrix4 mRot;
+            pData->Rot.GetMatrix(&mRot);
+            neg.x = -pData->Pivot.x;
+            neg.y = -pData->Pivot.y;
+            neg.z = -pData->Pivot.z;
+            FEMultMatrix(&pivot, &mRot, &neg);
+            FEMatrix4 mLocal;
+            mLocal.m41 = pivot.x + pData->Pivot.x + pData->Pos.x;
+            mLocal.m42 = pivot.y + pData->Pivot.y + pData->Pos.y;
+            mLocal.m43 = pivot.z + pData->Pivot.z + pData->Pos.z;
+            FEMatrix4 mCombined;
+            FEMultMatrix(&mCombined, &mRot, &mParent);
+            FEMatrix4 mFinal;
+            FEMultMatrix(&mFinal, &mCombined, &mAccum);
+            unsigned short ctx = uGroupContext + 1;
+            uGroupContext = ctx;
+            pGroup->RenderContext = RenderContext;
+            pInterface->GenerateRenderContext(ctx, pGroup);
+            FEObject* pObj = pGroup->GetFirstChild();
+            while (pObj) {
+                if (pObj->Type == FE_Group) {
+                    RenderGroup(static_cast<FEGroup*>(pObj), mCombined, mAccum, ctx);
+                } else {
+                    RenderObject(pObj, mFinal, ctx);
+                }
+                pObj = pObj->GetNext();
+            }
+        }
+    }
+}
+
+void FEngine::RenderObject(FEObject* pObj, FEMatrix4& mParent, unsigned short RenderContext) {
+    FEObjData* pData = pObj->GetObjData();
+    if (pData->Col.a != 0) {
+        FEVector3 pos;
+        pos = pData->Pivot;
+        FEVector3 result(0.0f);
+        pos.x = pos.x + pData->Pos.x;
+        pos.y = pos.y + pData->Pos.y;
+        pos.z = pos.z + pData->Pos.z;
+        FEMultMatrix(&result, &mParent, &pos);
+        pObj->RenderContext = RenderContext;
+        if (result.z > 0.0f) {
+            Sorter.AddObject(pObj, result.z);
+        }
     }
 }

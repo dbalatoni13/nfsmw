@@ -596,6 +596,40 @@ def show_inbox(agent):
     print(path.read_text().rstrip())
 
 
+def interactive_chat(agent):
+    """Interactive chat session: shows pending messages then reads replies from stdin.
+
+    Designed for async bash mode — an agent runs this, sees what's waiting, and
+    types a reply. Single empty line or EOF exits.
+    """
+    print("=== comms chat: %s ===" % agent)
+    print("Pending messages shown below. Type reply + Enter. Empty line or Ctrl-C to exit.")
+    print("")
+
+    pending = collect_inbox_events(agent)
+    if pending:
+        print("--- %d pending message(s) ---" % len(pending))
+        for event in pending:
+            print(format_event_line(event))
+        print("")
+    else:
+        print("(no pending messages for %s)" % agent)
+        print("")
+
+    try:
+        while True:
+            try:
+                line = input("[%s]> " % agent)
+            except EOFError:
+                break
+            if not line.strip():
+                break
+            send_reply(agent, line.strip())
+            print("Sent.")
+    except KeyboardInterrupt:
+        print("\nExiting chat.")
+
+
 def read_log(n=20):
     events = list(iter_events())
     if events:
@@ -1347,6 +1381,12 @@ def build_parser():
     )
     check_parser.add_argument("agent")
 
+    chat_parser = subparsers.add_parser(
+        "chat",
+        help="Interactive chat: shows pending messages then reads replies from stdin (async bash mode).",
+    )
+    chat_parser.add_argument("agent")
+
     read_parser = subparsers.add_parser("read")
     read_group = read_parser.add_mutually_exclusive_group()
     read_group.add_argument("--since", type=int, default=20)
@@ -1428,6 +1468,8 @@ def main():
     elif args.command == "check":
         count = check_inbox(args.agent)
         sys.exit(0 if count == 0 else 1)
+    elif args.command == "chat":
+        interactive_chat(args.agent)
     elif args.command == "read":
         if args.new:
             read_new(args.new)

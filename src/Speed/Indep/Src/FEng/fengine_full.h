@@ -99,6 +99,12 @@ struct FEPackageList {
         return static_cast<FEPackage*>(Packages.FindNode(pName));
     }
     inline unsigned long GetCount() const { return Packages.GetNumElements(); }
+
+    void AddPackage(FEPackage* pPack);
+    void AddPackageAfter(FEPackage* pPack, FEPackage* pAfter);
+    FEPackage* FindPackage(const char* pName, unsigned char ControllerIndex) const;
+    bool RemovePackage(FEPackage* pPack);
+    void ReplaceParentLinks(const FEPackage* pParent, const FEPackage* pReplacement);
 };
 
 // total size: 0x40

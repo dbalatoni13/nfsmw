@@ -9,6 +9,8 @@
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include <types.h>
 
+namespace Physics { namespace Upgrades { typedef int Type; } }
+
 struct FECarRecord;
 struct CarPart;
 
@@ -55,12 +57,12 @@ struct CarCustomizeManager {
     void ClearVinylColors();
     float GetHeatFromParts();
     CarPart *GetInstalledCarPart(int slot_id);
-    void PreviewPerfPkg(GRace::Type part_type, int level);
-    void InstallPerfPkg(GRace::Type part_type, int level);
-    bool IsJunkmanInstalled(GRace::Type type);
-    int GetInstalledPerfPkg(GRace::Type type);
-    int GetMaxPackages(GRace::Type type);
-    int GetNumPackages(GRace::Type type);
+    void PreviewPerfPkg(Physics::Upgrades::Type part_type, int level);
+    void InstallPerfPkg(Physics::Upgrades::Type part_type, int level);
+    bool IsJunkmanInstalled(Physics::Upgrades::Type type);
+    int GetInstalledPerfPkg(Physics::Upgrades::Type type);
+    int GetMaxPackages(Physics::Upgrades::Type type);
+    int GetNumPackages(Physics::Upgrades::Type type);
     void MaxOutPerformance();
     float GetPerformanceRating(ePerformanceRatingType type, bool preview);
     void UpdateHeatOnVehicle(SelectablePart *part, FECarRecord *record);
@@ -75,8 +77,8 @@ struct CarCustomizeManager {
     int GetMinInnerRadius();
     int GetMaxInnerRadius();
     void GetCarPartList(int car_slot, bTList<SelectablePart> &the_list, unsigned int param);
-    void GetPerformancePartsList(GRace::Type type, bTList<SelectablePart> &the_list);
-    bool CanInstallJunkman(GRace::Type type);
+    void GetPerformancePartsList(Physics::Upgrades::Type type, bTList<SelectablePart> &the_list);
+    bool CanInstallJunkman(Physics::Upgrades::Type type);
     bool IsCareerMode();
     bool IsTurbo();
     float GetActualHeat();

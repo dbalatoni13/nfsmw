@@ -91,6 +91,7 @@ struct FEPackage : public FENode {
     ~FEPackage() override;
 
     bool InitializePackage();
+    void Shutdown(FEGameInterface* pGameInterface);
     void Update(FEngine* pEngine, long tDeltaTicks);
 
     inline FEObject* GetCurrentButton() { return pCurrentButton; }

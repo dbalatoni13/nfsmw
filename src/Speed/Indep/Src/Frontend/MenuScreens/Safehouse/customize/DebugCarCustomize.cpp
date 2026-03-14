@@ -1,2 +1,2 @@
-// OWNED BY zFeOverlay AGENT - do not empty or overwrite
+// OWNED BY zFeOverlay AGENT - DO NOT MODIFY OR EMPTY
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/DebugCarCustomize.hpp"

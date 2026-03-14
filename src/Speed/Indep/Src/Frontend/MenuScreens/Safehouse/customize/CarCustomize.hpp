@@ -101,7 +101,7 @@ struct CustomizationScreen : public IconScrollerMenu {
 
     void SetCareerStatusIcon(eCustomizePartState state) { DisplayHelper.SetCareerStatusIcon(state); }
     void SetPlayerCarStatusIcon(eCustomizePartState state) { DisplayHelper.SetPlayerCarStatusIcon(state); }
-    CustomizePartOption *GetSelectedOption() { return static_cast<CustomizePartOption *>(Options.GetSelected()); }
+    CustomizePartOption *GetSelectedOption() { return static_cast<CustomizePartOption *>(Options.GetCurrentOption()); }
     virtual SelectablePart *GetSelectedPart() { return GetSelectedOption() ? GetSelectedOption()->GetPart() : nullptr; }
     void SetTitleHash(unsigned int title_hash) { DisplayHelper.SetTitleHash(title_hash); }
     unsigned int GetCategory() { return Category; }
@@ -190,8 +190,8 @@ struct CustomizePerformance : public CustomizationScreen {
     void RefreshHeader() override;
     void Setup() override;
 
-    unsigned int GetPerfPkgDesc(enum Type type, int level, int line, bool turbo);
-    unsigned int GetPerfPkgBrand(enum Type type, int level, int line);
+    unsigned int GetPerfPkgDesc(GRace::Type type, int level, int line, bool turbo);
+    unsigned int GetPerfPkgBrand(GRace::Type type, int level, int line);
 
     FEString *DescLines[3];              // offset 0x1E4, size 0xC
     FEImage *DescBullets[3];             // offset 0x1F0, size 0xC
@@ -302,6 +302,32 @@ struct CustomizeRims : public CustomizationScreen {
     int MaxRadius;     // offset 0x1EC, size 0x4
 };
 
+// total size: 0x60
+struct FEShoppingCartItem : public FEStatWidget {
+    FEShoppingCartItem(ShoppingCartItem *item);
+    ~FEShoppingCartItem() override {}
+
+    void SetCheckIcon(FEImage *img) { pCheckIcon = img; }
+    void SetTradeInString(FEString *string) { pTradeInPrice = string; }
+    ShoppingCartItem *GetItem() { return TheItem; }
+
+    void Show() override;
+    void Hide() override;
+    void Draw() override;
+    void Position() override;
+    void SetFocus(const char *parent_pkg) override;
+    void UnsetFocus() override;
+    void SetCheckScripts();
+    void SetActiveScripts();
+    void DrawPartName();
+    unsigned int GetPerfPkgCatHash(Physics::Upgrades::Type phys_type);
+    unsigned int GetPerfPkgLevelHash(int level);
+    unsigned int GetCarPartCatHash(unsigned int slot_id);
+
+    FEImage *pCheckIcon;            // offset 0x54, size 0x4
+    FEString *pTradeInPrice;        // offset 0x58, size 0x4
+    ShoppingCartItem *TheItem;      // offset 0x5C, size 0x4
+};
 // total size: 0x188
 struct CustomizeShoppingCart : public UIWidgetMenu {
     CustomizeShoppingCart(ScreenConstructorData *sd);
@@ -333,6 +359,5 @@ struct CustomizeShoppingCart : public UIWidgetMenu {
     CustomizeMeter HeatMeter;  // offset 0x138, size 0x50
 };
 
-struct FEShoppingCartItem;
 
 #endif

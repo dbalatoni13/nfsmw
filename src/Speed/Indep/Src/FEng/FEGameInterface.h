@@ -6,13 +6,13 @@
 #endif
 
 #include <types.h>
+#include "FECodeListBox.h"
 
 struct FEPackage;
 struct FEObject;
 struct FEObjectListEntry;
 struct FEMouse;
 struct FEMouseInfo;
-struct FECodeListBox;
 struct FEResourceRequest;
 struct FEMatrix4;
 enum FEng_WarningLevel {

@@ -6,12 +6,12 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/Src/FEng/feimage.h"
-#include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRivalStreamer.hpp"
-
 #include <types.h>
+
+struct FECarRecord;
+struct FEImage;
 
 // total size: 0x70
 struct Showcase : public MenuScreen {

@@ -17,7 +17,7 @@ struct FEImage;
 struct FEString;
 struct FECarRecord;
 struct SelectableCar;
-struct CustomizeMeter;
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeTypes.hpp"
 struct TwoStageSlider;
 
 // total size: 0x1C

@@ -6,12 +6,13 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/Src/FEng/feimage.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconScrollerMenu.hpp"
+#include "Speed/Indep/Src/Gameplay/GRace.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
-
 #include <types.h>
+
+struct FEImage;
+struct FEObject;
 
 struct CarPart;
 
@@ -156,7 +157,7 @@ struct SelectablePart : public bTNode<SelectablePart> {
         , Price(part->Price) //
         , JunkmanPart(part->JunkmanPart) {}
 
-    SelectablePart(CarPart *part, int slot_id, unsigned int lvl, enum Type phys_type, bool is_perf, eCustomizePartState state, int price, bool junkman)
+    SelectablePart(CarPart *part, int slot_id, unsigned int lvl, GRace::Type phys_type, bool is_perf, eCustomizePartState state, int price, bool junkman)
         : ThePart(part) //
         , CarSlotID(slot_id) //
         , UpgradeLevel(lvl) //
@@ -171,7 +172,7 @@ struct SelectablePart : public bTNode<SelectablePart> {
     CarPart *GetPart() { return ThePart; }
     int GetSlotID() { return CarSlotID; }
     unsigned int GetUpgradeLevel() { return UpgradeLevel; }
-    enum Type GetPhysicsType() { return PhysicsType; }
+    GRace::Type GetPhysicsType() { return PhysicsType; }
     bool IsPerformancePkg() { return PerformancePkg; }
     eCustomizePartState GetPartState() { return PartState; }
     int GetPrice() { return Price; }
@@ -198,7 +199,7 @@ struct SelectablePart : public bTNode<SelectablePart> {
     CarPart *ThePart;               // offset 0x8, size 0x4
     int CarSlotID;                  // offset 0xC, size 0x4
     unsigned int UpgradeLevel;      // offset 0x10, size 0x4
-    enum Type PhysicsType;          // offset 0x14, size 0x4
+    GRace::Type PhysicsType;          // offset 0x14, size 0x4
     bool PerformancePkg;            // offset 0x18, size 0x1
     eCustomizePartState PartState;  // offset 0x1C, size 0x4
     int Price;                      // offset 0x20, size 0x4

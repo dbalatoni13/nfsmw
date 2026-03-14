@@ -6,11 +6,11 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/Src/FEng/feimage.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRivalStreamer.hpp"
-
 #include <types.h>
+
+struct FEImage;
 
 enum ePossibleMarker {
     PM_NONE = 0,
@@ -26,7 +26,7 @@ enum ePossibleMarker {
     PM_MILESTONE = 10,
 };
 
-enum eUnlockableEntity;
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/frontend.h"
 
 // total size: 0xC8 (from DWARF: 0xC0 data + 0x8 for possible trailing alignment)
 struct FEMarkerSelection : public MenuScreen {
