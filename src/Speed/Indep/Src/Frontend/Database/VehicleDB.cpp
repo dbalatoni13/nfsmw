@@ -18,6 +18,7 @@
 
 extern int g_MaximumMaximumTimesBusted;
 extern float g_fImpoundPercentageOfOriginalCost;
+extern TextureInfo *GetTextureInfo(unsigned int hash, int, int);
 
 struct PresetCar {
     unsigned int Pad0[2];
@@ -177,6 +178,33 @@ CarType FECarRecord::GetType() {
     Attrib::Gen::pvehicle vehicle(VehicleKey, 0, 0);
 
     return CarPartDB.GetCarType(vehicle.MODEL().GetHash32());
+}
+
+unsigned int FECarRecord::GetLogoHash() {
+    const char *manu = GetManufacturerName();
+    if (bStrCmp(manu, "")) {
+        char buf[128];
+        Attrib::Gen::frontend frontend(FEKey, 0, 0);
+        FEngSNPrintf(buf, 0x80, "SECONDARY_LOGO_%s", frontend.CollectionName());
+        unsigned int texHash = FEHashUpper(buf);
+        if (GetTextureInfo(texHash, 0, 0)) {
+            return texHash;
+        }
+    }
+    return FEHashUpper("GENERIC_LOGO_256");
+}
+
+unsigned int FECarRecord::GetManuLogoHash() {
+    const char *manu = GetManufacturerName();
+    if (bStrCmp(manu, "")) {
+        char buf[128];
+        FEngSNPrintf(buf, 0x80, "CARSELECT_MANUFACTURER_%s", manu);
+        unsigned int texHash = FEHashUpper(buf);
+        if (GetTextureInfo(texHash, 0, 0)) {
+            return texHash;
+        }
+    }
+    return FEHashUpper("GENERIC_LOGO_128");
 }
 
 void FECustomizationRecord::Default() {
