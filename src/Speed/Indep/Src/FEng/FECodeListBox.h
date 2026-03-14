@@ -27,6 +27,18 @@ inline int GetValidIndex(int lIndex, int lRange) {
     return result;
 }
 
+inline int GetRealValue(int i, int lNumTotal, int lCurrentVirtual, int lNumVisible) {
+    if (lNumTotal == 0) return -1;
+    if (i >= lNumTotal) {
+        i = i % lNumTotal;
+    }
+    int lRet = i - lCurrentVirtual;
+    if (lRet < 0) {
+        lRet += lNumTotal;
+    }
+    return GetValidIndex(lRet, lNumVisible);
+}
+
 // total size: 0xC8
 struct FECodeListBox : public FEObject {
     static void (*mpDefaultCallback)(FECodeListBox*);

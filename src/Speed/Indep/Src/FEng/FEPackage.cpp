@@ -545,9 +545,8 @@ bool ResourceConnector::Callback(FEObject* pObj) {
         ConnectListBoxResources(static_cast<FEListBox*>(pObj));
     } else if ((pObj->Type < FE_List || pObj->Type > FE_CodeList) && pObj->ResourceIndex != 0xFFFF) {
         unsigned long idx = static_cast<unsigned long>(pObj->ResourceIndex);
-        FEResourceRequest* pReq = &(*pReqList)[idx];
-        pObj->Handle = pReq->Handle;
-        pObj->UserParam = pReq->UserParam;
+        pObj->UserParam = (*pReqList)[idx].UserParam;
+        pObj->Handle = (*pReqList)[idx].Handle;
     }
     return true;
 }

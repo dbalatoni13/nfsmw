@@ -328,8 +328,8 @@ bool FECodeListBox::ScrollSelection(long lNumMove, unsigned long& ulCurrentVirtu
             if (0 < lNumMove) {
                 unsigned long NumColumns = mulNumVisibleColumns;
                 int colIdx = GetValidIndex(static_cast<int>(mulCurrentVirtualColumn) + static_cast<int>(NumColumns) - 1, static_cast<int>(mulNumTotalColumns));
-                if (mpSetCellCallback == nullptr) {
-                    if (mpobRenderer && mulNumVisibleRows != 0) {
+                if (mpSetCellCallback != nullptr) {
+                    if (mulNumVisibleRows != 0) {
                         unsigned long r = 0;
                         do {
                             unsigned long c = 0;
@@ -342,11 +342,11 @@ bool FECodeListBox::ScrollSelection(long lNumMove, unsigned long& ulCurrentVirtu
                                 } while (c < NumColumns - 1);
                             }
                             mpstCells[r * mulNumVisibleColumns + c].u.string.pStr = psString;
-                            mpobRenderer->SetCellData(this, colIdx, GetValidIndex(static_cast<int>(mulCurrentVirtualRow) + static_cast<int>(r), static_cast<int>(mulNumTotalRows)));
+                            mpSetCellCallback(mpvCallbackData, this, colIdx, GetValidIndex(static_cast<int>(mulCurrentVirtualRow) + static_cast<int>(r), static_cast<int>(mulNumTotalRows)));
                             r++;
                         } while (r < mulNumVisibleRows);
                     }
-                } else if (mulNumVisibleRows != 0) {
+                } else if (mpobRenderer && mulNumVisibleRows != 0) {
                     unsigned long r = 0;
                     do {
                         unsigned long c = 0;
@@ -359,12 +359,12 @@ bool FECodeListBox::ScrollSelection(long lNumMove, unsigned long& ulCurrentVirtu
                             } while (c < NumColumns - 1);
                         }
                         mpstCells[r * mulNumVisibleColumns + c].u.string.pStr = psString;
-                        mpSetCellCallback(mpvCallbackData, this, colIdx, GetValidIndex(static_cast<int>(mulCurrentVirtualRow) + static_cast<int>(r), static_cast<int>(mulNumTotalRows)));
+                        mpobRenderer->SetCellData(this, colIdx, GetValidIndex(static_cast<int>(mulCurrentVirtualRow) + static_cast<int>(r), static_cast<int>(mulNumTotalRows)));
                         r++;
                     } while (r < mulNumVisibleRows);
                 }
-            } else if (mpSetCellCallback == nullptr) {
-                if (mpobRenderer && mulNumVisibleRows != 0) {
+            } else if (mpSetCellCallback != nullptr) {
+                if (mulNumVisibleRows != 0) {
                     unsigned long r = 0;
                     do {
                         unsigned long NumColumns = mulNumVisibleColumns;
@@ -375,11 +375,11 @@ bool FECodeListBox::ScrollSelection(long lNumMove, unsigned long& ulCurrentVirtu
                             FEngMemCpy(&mpstCells[Index], &mpstCells[Index - 1], sizeof(FEListBoxCell));
                         }
                         mpstCells[r * mulNumVisibleColumns].u.string.pStr = psString;
-                        mpobRenderer->SetCellData(this, mulCurrentVirtualColumn, GetValidIndex(static_cast<int>(mulCurrentVirtualRow) + static_cast<int>(r), static_cast<int>(mulNumTotalRows)));
+                        mpSetCellCallback(mpvCallbackData, this, mulCurrentVirtualColumn, GetValidIndex(static_cast<int>(mulCurrentVirtualRow) + static_cast<int>(r), static_cast<int>(mulNumTotalRows)));
                         r++;
                     } while (r < mulNumVisibleRows);
                 }
-            } else if (mulNumVisibleRows != 0) {
+            } else if (mpobRenderer && mulNumVisibleRows != 0) {
                 unsigned long r = 0;
                 do {
                     unsigned long NumColumns = mulNumVisibleColumns;
@@ -390,15 +390,15 @@ bool FECodeListBox::ScrollSelection(long lNumMove, unsigned long& ulCurrentVirtu
                         FEngMemCpy(&mpstCells[Index], &mpstCells[Index - 1], sizeof(FEListBoxCell));
                     }
                     mpstCells[r * mulNumVisibleColumns].u.string.pStr = psString;
-                    mpSetCellCallback(mpvCallbackData, this, mulCurrentVirtualColumn, GetValidIndex(static_cast<int>(mulCurrentVirtualRow) + static_cast<int>(r), static_cast<int>(mulNumTotalRows)));
+                    mpobRenderer->SetCellData(this, mulCurrentVirtualColumn, GetValidIndex(static_cast<int>(mulCurrentVirtualRow) + static_cast<int>(r), static_cast<int>(mulNumTotalRows)));
                     r++;
                 } while (r < mulNumVisibleRows);
             }
         } else if (0 < lNumMove) {
             unsigned long NumRows = mulNumVisibleRows;
             int rowIdx = GetValidIndex(static_cast<int>(mulCurrentVirtualRow) + static_cast<int>(NumRows) - 1, static_cast<int>(mulNumTotalRows));
-            if (mpSetCellCallback == nullptr) {
-                if (mpobRenderer && mulNumVisibleColumns != 0) {
+            if (mpSetCellCallback != nullptr) {
+                if (mulNumVisibleColumns != 0) {
                     unsigned long c = 0;
                     do {
                         unsigned long r = 0;
@@ -411,11 +411,11 @@ bool FECodeListBox::ScrollSelection(long lNumMove, unsigned long& ulCurrentVirtu
                             } while (r < NumRows - 1);
                         }
                         mpstCells[r * mulNumVisibleColumns + c].u.string.pStr = psString;
-                        mpobRenderer->SetCellData(this, GetValidIndex(static_cast<int>(mulCurrentVirtualColumn) + static_cast<int>(c), static_cast<int>(mulNumTotalColumns)), rowIdx);
+                        mpSetCellCallback(mpvCallbackData, this, GetValidIndex(static_cast<int>(mulCurrentVirtualColumn) + static_cast<int>(c), static_cast<int>(mulNumTotalColumns)), rowIdx);
                         c++;
                     } while (c < mulNumVisibleColumns);
                 }
-            } else if (mulNumVisibleColumns != 0) {
+            } else if (mpobRenderer && mulNumVisibleColumns != 0) {
                 unsigned long c = 0;
                 do {
                     unsigned long r = 0;
@@ -428,31 +428,11 @@ bool FECodeListBox::ScrollSelection(long lNumMove, unsigned long& ulCurrentVirtu
                         } while (r < NumRows - 1);
                     }
                     mpstCells[r * mulNumVisibleColumns + c].u.string.pStr = psString;
-                    mpSetCellCallback(mpvCallbackData, this, GetValidIndex(static_cast<int>(mulCurrentVirtualColumn) + static_cast<int>(c), static_cast<int>(mulNumTotalColumns)), rowIdx);
+                    mpobRenderer->SetCellData(this, GetValidIndex(static_cast<int>(mulCurrentVirtualColumn) + static_cast<int>(c), static_cast<int>(mulNumTotalColumns)), rowIdx);
                     c++;
                 } while (c < mulNumVisibleColumns);
             }
-        } else if (mpSetCellCallback == nullptr) {
-            if (mpobRenderer) {
-                unsigned long NumColumns = mulNumVisibleColumns;
-                unsigned long c = 0;
-                if (NumColumns != 0) {
-                    do {
-                        long r = mulNumVisibleRows - 1;
-                        short* psString = mpstCells[r * NumColumns + c].u.string.pStr;
-                        while (r != 0) {
-                            unsigned long Index = r * mulNumVisibleColumns + c;
-                            FEngMemCpy(&mpstCells[Index], &mpstCells[Index - mulNumVisibleColumns], sizeof(FEListBoxCell));
-                            r--;
-                        }
-                        mpstCells[c].u.string.pStr = psString;
-                        mpobRenderer->SetCellData(this, mulCurrentVirtualColumn, GetValidIndex(static_cast<int>(mulCurrentVirtualRow), static_cast<int>(mulNumTotalRows)));
-                        NumColumns = mulNumVisibleColumns;
-                        c++;
-                    } while (c < NumColumns);
-                }
-            }
-        } else {
+        } else if (mpSetCellCallback != nullptr) {
             unsigned long NumColumns = mulNumVisibleColumns;
             if (NumColumns != 0) {
                 unsigned long c = 0;
@@ -466,6 +446,24 @@ bool FECodeListBox::ScrollSelection(long lNumMove, unsigned long& ulCurrentVirtu
                     }
                     mpstCells[c].u.string.pStr = psString;
                     mpSetCellCallback(mpvCallbackData, this, mulCurrentVirtualColumn, GetValidIndex(static_cast<int>(mulCurrentVirtualRow), static_cast<int>(mulNumTotalRows)));
+                    NumColumns = mulNumVisibleColumns;
+                    c++;
+                } while (c < NumColumns);
+            }
+        } else if (mpobRenderer) {
+            unsigned long NumColumns = mulNumVisibleColumns;
+            unsigned long c = 0;
+            if (NumColumns != 0) {
+                do {
+                    long r = mulNumVisibleRows - 1;
+                    short* psString = mpstCells[r * NumColumns + c].u.string.pStr;
+                    while (r != 0) {
+                        unsigned long Index = r * mulNumVisibleColumns + c;
+                        FEngMemCpy(&mpstCells[Index], &mpstCells[Index - mulNumVisibleColumns], sizeof(FEListBoxCell));
+                        r--;
+                    }
+                    mpstCells[c].u.string.pStr = psString;
+                    mpobRenderer->SetCellData(this, mulCurrentVirtualColumn, GetValidIndex(static_cast<int>(mulCurrentVirtualRow), static_cast<int>(mulNumTotalRows)));
                     NumColumns = mulNumVisibleColumns;
                     c++;
                 } while (c < NumColumns);
