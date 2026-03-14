@@ -54,6 +54,9 @@ class QuickGame : public Sim::Activity, public Sim::ITimeManager, Sim::IStateMan
     // IVehicleCache
     eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override;
     void OnRemovedVehicleCache(IVehicle *ivehicle) override;
+    const char *GetCacheName() const override {
+        return "QuickGame";
+    }
 
     // IGameState
     void RaceReset() override;

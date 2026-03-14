@@ -189,11 +189,6 @@ inline float VU0_v3lengthsquare(const UMath::Vector3 &a) {
     return result;
 }
 
-inline void VU0_v3unit(const UMath::Vector3 &a, UMath::Vector3 &result) {
-    float rlen = VU0_rsqrt(VU0_v3lengthsquare(a));
-    VU0_v3scale(a, rlen, result);
-}
-
 inline void VU0_v4scaleadd(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result) {}
 
 inline void VU0_v4scaleaddxyz(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result) {}

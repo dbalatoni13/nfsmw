@@ -21,6 +21,14 @@ struct DebugVehicleSelection : public UTL::COM::Object, public IVehicleCache {
     void InitSelectionList();
     bool SwitchPlayerVehicle(const char *attribname);
 
+    void OnRemovedVehicleCache(IVehicle *ivehicle) override {}
+    eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override {
+        return VCR_DONTCARE;
+    }
+    const char *GetCacheName() const override {
+        return "DebugVehicleSelection";
+    }
+
     static DebugVehicleSelection &Get() {
         return *mThis;
     }

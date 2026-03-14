@@ -1102,7 +1102,7 @@ void AIPursuit::UpdateFormation(float dT) {
     float grossDistanceToTarget = UMath::Distance(mTarget->GetPosition(), targetvehicleai->GetCurrentRoad()->GetPosition());
     float formationCandidateLimit = 60.0f;
 
-    for (IVehicle *const *vehicleIter = mIVehicleList.begin(); vehicleIter != mIVehicleList.end(); vehicleIter++) {
+    for (IVehicle::List::const_iterator vehicleIter = mIVehicleList.begin(); vehicleIter != mIVehicleList.end(); ++vehicleIter) {
         IVehicle *ivehicle = *vehicleIter;
         IPursuitAI *ipv;
         if (!ivehicle->QueryInterface(&ipv)) {
@@ -1151,7 +1151,7 @@ void AIPursuit::UpdateFormation(float dT) {
     UpdateOutOfFormationOffsets();
 
     float averageDistanceToTarget = 0.0f;
-    for (IPursuitAI *const *pursuitIter = assignCopList.begin(); pursuitIter != assignCopList.end(); pursuitIter++, i++) {
+    for (Pursuers::const_iterator pursuitIter = assignCopList.begin(); pursuitIter != assignCopList.end(); ++pursuitIter, ++i) {
         IPursuitAI *ipv = *pursuitIter;
         if (!ipv->GetInFormation()) {
             ipv->SetInPosition(false);
@@ -1202,7 +1202,7 @@ void AIPursuit::UpdateFormation(float dT) {
         float outerRadius = pursuitLevelAttrib->CollapseOuterRadius();
         mCollapseActive = SetupCollapse(assignCopList, maxCopsCollapsing, innerRadius, outerRadius);
         if (mCollapseActive && mGroundSupportRequest.mSupportRequestStatus == GroundSupportRequest::ACTIVE && mGroundSupportRequest.mHeavySupport != nullptr) {
-            for (IVehicle *const *iter = mIVehicleList.begin(); iter != mIVehicleList.end(); iter++) {
+            for (IVehicle::List::const_iterator iter = mIVehicleList.begin(); iter != mIVehicleList.end(); ++iter) {
                 IVehicle *ivehicle = *iter;
                 if (IsSupportVehicle(ivehicle)) {
                     IPursuitAI *ipursuitai;
@@ -1224,14 +1224,14 @@ noCollapse: {
         float zero = 0.0f;
         mInFormationTimer = zero;
         mBreakerTimer = -1.0f;
-        for (IPursuitAI *const *pursuitIter = assignCopList.begin(); pursuitIter != assignCopList.end(); pursuitIter++) {
+        for (Pursuers::const_iterator pursuitIter = assignCopList.begin(); pursuitIter != assignCopList.end(); ++pursuitIter) {
             IPursuitAI *ipv = *pursuitIter;
             if (ipv != nullptr) {
                 ipv->SetInPositionGoal(UCrc32::kNull);
                 ipv->StartPursuit(mTarget, nullptr);
             }
         }
-        for (IVehicle *const *iter = mIVehicleList.begin(); iter != mIVehicleList.end(); iter++) {
+        for (IVehicle::List::const_iterator iter = mIVehicleList.begin(); iter != mIVehicleList.end(); ++iter) {
             IVehicle *ivehicle = *iter;
             IPursuitAI *ipv;
             if (!ivehicle->QueryInterface(&ipv)) {
@@ -1272,7 +1272,7 @@ finisherCheck: {
             mInFormationTimer = mFormation->GetTimeToFinisher() - 0.01f;
         } else {
             mBreakerTimer = 0.0f;
-            for (IPursuitAI *const *pursuitIter = assignCopList.begin(); pursuitIter != assignCopList.end(); pursuitIter++) {
+            for (Pursuers::const_iterator pursuitIter = assignCopList.begin(); pursuitIter != assignCopList.end(); ++pursuitIter) {
                 IPursuitAI *ipv = *pursuitIter;
                 if (ipv != nullptr && ipv->GetInFormation() && ipv->GetInPositionGoal() != UCrc32::kNull) {
                     ipv->DoInPositionGoal();
@@ -1498,18 +1498,27 @@ bool AIPursuit::OnTask(HSIMTASK htask, float dT) {
     }
 
     int numVehiclesInRadius = 0;
-    IVehicle **vehicles = mIVehicleList.begin();
     float MinDistanceToTargetxz = MinDistanceToTarget3;
 
+#ifdef _MSC_VER
+    for (unsigned int vehicleIndex = 0; vehicleIndex < mIVehicleList.size(); ++vehicleIndex) {
+        IVehicle *vehicle = mIVehicleList[vehicleIndex];
+#else
+    IVehicle **vehicles = mIVehicleList.begin();
     for (IVehicle **it = vehicles; it != vehicles + mIVehicleList.size(); it++) {
         IVehicle *vehicle = *it;
+#endif
 
         if (!vehicle->IsActive()) {
+#ifndef _MSC_VER
             vehicles = mIVehicleList.begin();
+#endif
             continue;
         }
         if (vehicle->IsDestroyed()) {
+#ifndef _MSC_VER
             vehicles = mIVehicleList.begin();
+#endif
             continue;
         }
 
@@ -1555,7 +1564,9 @@ bool AIPursuit::OnTask(HSIMTASK htask, float dT) {
             }
         }
 
+#ifndef _MSC_VER
         vehicles = mIVehicleList.begin();
+#endif
     }
 
     mNumCopsFullyEngaged = numVehiclesInRadius;
@@ -1699,6 +1710,27 @@ after_busted_increment:
                 msg.Post(channel);
             } else {
                 // Player pursuit busted - iterate all vehicles
+#ifdef _MSC_VER
+                for (unsigned int vehicleIndex = 0; vehicleIndex < mIVehicleList.size(); ++vehicleIndex) {
+                    IVehicle *veh = mIVehicleList[vehicleIndex];
+
+                    if (!veh->IsActive()) {
+                        continue;
+                    }
+                    if (veh->IsDestroyed()) {
+                        continue;
+                    }
+
+                    IPursuitAI *copAI = UTL::COM::QueryInterface<IPursuitAI>(veh);
+                    if (copAI) {
+                        veh->GlareOff(LIGHT_COPS);
+                        UCrc32 bustedGoal("busted");
+                        copAI->SetInPositionGoal(bustedGoal);
+                        copAI->DoInPositionGoal();
+                    }
+
+                }
+#else
                 IVehicle **vehBegin = mIVehicleList.begin();
                 for (IVehicle **vit = vehBegin; vit != vehBegin + mIVehicleList.size(); vit++) {
                     IVehicle *veh = *vit;
@@ -1722,6 +1754,7 @@ after_busted_increment:
 
                     vehBegin = mIVehicleList.begin();
                 }
+#endif
 
                 HSIMABLE perpHandle = mTarget->GetSimable()->GetOwnerHandle();
                 MPerpBusted msg(perpHandle);
@@ -1744,6 +1777,24 @@ after_busted_increment:
 
     // Bailed pursuit - all cops flee
     if (mIsPursuitBailed) {
+#ifdef _MSC_VER
+        for (unsigned int vehicleIndex = 0; vehicleIndex < mIVehicleList.size(); ++vehicleIndex) {
+            IVehicle *veh = mIVehicleList[vehicleIndex];
+
+            if (!veh->IsActive()) {
+                continue;
+            }
+            if (veh->IsDestroyed()) {
+                continue;
+            }
+
+            IPursuitAI *copAI = UTL::COM::QueryInterface<IPursuitAI>(veh);
+            if (copAI) {
+                copAI->StartFlee();
+            }
+
+        }
+#else
         IVehicle **vehBegin = mIVehicleList.begin();
         for (IVehicle **vit = vehBegin; vit != vehBegin + mIVehicleList.size(); vit++) {
             IVehicle *veh = *vit;
@@ -1764,6 +1815,7 @@ after_busted_increment:
 
             vehBegin = mIVehicleList.begin();
         }
+#endif
     }
 
     // Update mIsPerpInSight
@@ -2235,7 +2287,7 @@ static const UCrc32 heliHash1("copheli");
 
 Attrib::Gen::pursuitlevels *GetGlobalPursuitLevelAttrib() {
     Attrib::Gen::pursuitlevels *pl = nullptr;
-    for (IVehicle *const *iter = IVehicle::GetList(VEHICLE_PLAYERS).begin();
+    for (IVehicle::List::const_iterator iter = IVehicle::GetList(VEHICLE_PLAYERS).begin();
          iter != IVehicle::GetList(VEHICLE_PLAYERS).end(); ++iter) {
         IVehicle *itargetVehicle = *iter;
         IPerpetrator *iperp;
@@ -2250,7 +2302,7 @@ Attrib::Gen::pursuitlevels *GetGlobalPursuitLevelAttrib() {
             }
         }
     }
-    for (IVehicle *const *iter = IVehicle::GetList(VEHICLE_RACERS).begin();
+    for (IVehicle::List::const_iterator iter = IVehicle::GetList(VEHICLE_RACERS).begin();
          iter != IVehicle::GetList(VEHICLE_RACERS).end(); ++iter) {
         IVehicle *itargetVehicle = *iter;
         DriverClass driverclass = itargetVehicle->GetDriverClass();
@@ -2385,7 +2437,7 @@ void AIPursuit::FleeCopOfType(UCrc32 type, int fleecount) {
     float d2 = 0.0f;
     float distance = 0.0f;
 
-    IVehicle *const *iter = mIVehicleList.begin();
+    IVehicle::List::const_iterator iter = mIVehicleList.begin();
     for (; iter != mIVehicleList.end(); iter++) {
         IVehicle *ivehicle = *iter;
         if (ivehicle->GetVehicleClass() == VehicleClass::CHOPPER) {
@@ -2456,7 +2508,7 @@ void AIPursuit::RemoveUnwantedVehicles() {
     int fleecount = 0;
     UCrc32 fleetype = UCrc32::kNull;
 
-    const CopContingent *j = mCopContingent.begin();
+    ContingentVector::const_iterator j = mCopContingent.begin();
     for (; j != mCopContingent.end(); j++) {
         int num_this_type_to_flee = j->mCount;
         for (int i = 0; i < numAdjustedCounts; i++) {
@@ -2484,7 +2536,7 @@ void AIPursuit::RemoveUnwantedVehicles() {
 
     if (!mIsPerpInSight && mGroundSupportRequest.mSupportRequestStatus == GroundSupportRequest::ACTIVE &&
         mGroundSupportRequest.mHeavySupport != nullptr) {
-        IVehicle *const *iter = mIVehicleList.begin();
+        IVehicle::List::const_iterator iter = mIVehicleList.begin();
         for (; iter != mIVehicleList.end(); iter++) {
             IVehicle *ivehicle = *iter;
             if (IsSupportVehicle(ivehicle)) {
@@ -2546,7 +2598,7 @@ const char *AIPursuit::CopRequest() {
         const CopCountRecord &copcount = adjustedCounts[i];
         unsigned int hash = copcount.CopType.GetHash32();
         int countNeeded = static_cast< int >(copcount.Count);
-        for (const CopContingent *j = mCopContingent.begin(); j != mCopContingent.end(); ++j) {
+        for (ContingentVector::const_iterator j = mCopContingent.begin(); j != mCopContingent.end(); ++j) {
             if (j->mType.GetValue() == hash) {
                 countNeeded = bMax(0, countNeeded - static_cast< int >(j->mCount));
             }

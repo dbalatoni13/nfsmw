@@ -49,7 +49,7 @@ bool AIRoadBlock::RemoveVehicle(IVehicle *vehicle) {
 }
 
 void AIRoadBlock::ReleaseAllSmackables() {
-    for (IPlaceableScenery *const *iter = RoadblockSmackableList.begin();
+    for (IRoadBlock::Smackables::const_iterator iter = RoadblockSmackableList.begin();
          iter != RoadblockSmackableList.end(); ++iter) {
         IPlaceableScenery *smckble = *iter;
         smckble->Destroy();
@@ -86,14 +86,18 @@ void AIRoadBlock::OnDetached(IAttachable *pOther) {
     } else {
         IVehicle *ivehicle;
         if (pOther->QueryInterface(&ivehicle)) {
+#ifdef _MSC_VER
+            VehicleList.erase(std::find(VehicleList.begin(), VehicleList.end(), ivehicle));
+#else
             VehicleList.erase(_STL::find(VehicleList.begin(), VehicleList.end(), ivehicle));
+#endif
         }
     }
 }
 
 IVehicle *AIRoadBlock::IsComprisedOf(HSIMABLE obj) {
     if (!VehicleList.empty()) {
-        for (IVehicle *const *iter = VehicleList.begin(); iter != VehicleList.end(); ++iter) {
+        for (IRoadBlock::Vehicles::const_iterator iter = VehicleList.begin(); iter != VehicleList.end(); ++iter) {
             IVehicle *car = *iter;
             if (car->GetSimable()->GetOwnerHandle() == obj) {
                 return car;
@@ -125,7 +129,7 @@ float AIRoadBlock::GetMinDistanceToTarget(float dT, float &distxz, IVehicle **mi
     float min3 = 100000.0f;
     float minxz = engageRadius;
 
-    for (IVehicle *const *iter = VehicleList.begin(); iter != VehicleList.end(); ++iter) {
+    for (IRoadBlock::Vehicles::const_iterator iter = VehicleList.begin(); iter != VehicleList.end(); ++iter) {
         IVehicle *ivehicle = *iter;
         if (ivehicle->IsActive() && !ivehicle->IsDestroyed()) {
             UMath::Vector3 &pos = ivehicle->GetPosition();
