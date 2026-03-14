@@ -8,8 +8,8 @@
 // total size: 0x90
 class MD5 {
   public:
-    MD5();
-    virtual ~MD5();
+    MD5() { /* vtable set by compiler */ }
+    virtual ~MD5() {}
     void Reset();
     void Update(const void *buffer, int length);
     void *GetRaw();
