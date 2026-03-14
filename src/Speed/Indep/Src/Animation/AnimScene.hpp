@@ -8,6 +8,7 @@
 #include "AnimCtrl.hpp"
 #include "AnimEntity.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEAnimScene.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -40,6 +41,16 @@ class CAnimProperty : public bTNode<CAnimProperty> {
   private:
     eAnimProperty mType; // offset 0x8, size 0x4
     int mEnabled;        // offset 0xC, size 0x4
+};
+
+// total size: 0x10
+struct CarAnimationState {
+    CarAnimationState();
+
+    CAnimCtrl *AnimCtrl;   // offset 0x0, size 0x4
+    IVehicle *mIVehicle;   // offset 0x4, size 0x4
+    int HaveLastCarPosition; // offset 0x8, size 0x4
+    int CarIndex;          // offset 0xC, size 0x4
 };
 
 // total size: 0x110

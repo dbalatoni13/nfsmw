@@ -1,10 +1,25 @@
 #include "AnimDirectory.hpp"
 #include "AnimCandidates.hpp"
 #include "AnimPlayer.hpp"
+#include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/Misc/SpeedChunks.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 
+struct CAnimResourceFileProxy : public bTNode<CAnimResourceFileProxy> {
+    enum MemoryPool {
+        Main = 0,
+        TrackStream = 1,
+        CarPool = 2,
+    };
+
+    ResourceFile *mResourceFile; // offset 0x8, size 0x4
+    void *mMemPointer;           // offset 0xC, size 0x4
+    MemoryPool mMemoryPool;      // offset 0x10, size 0x4
+};
+
 AnimDirectory *TheAnimDirectory;
+AnimSceneLoadInfo gAnimLoader_Info;
+bTList<CAnimResourceFileProxy> gAnimLoader_ResourceFileList;
 
 void LoadSceneCandidateData(bChunk *chunk) {
     CAnimSettings::IsDebugPrintEnabled();
