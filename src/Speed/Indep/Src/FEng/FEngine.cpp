@@ -383,7 +383,7 @@ bool FEngine::UnloadPackage(FEPackage* pPackage) {
 FEPackage* FEngine::PushPackage(const char* pPackageName, const unsigned char Level, const unsigned long ControlMask) {
     FEPackage* pPack = FindIdlePackage(pPackageName);
     if (!pPack) {
-        int len = FEngStrLen(pPackageName);
+        char len = static_cast<char>(FEngStrLen(pPackageName));
         const char* pBaseName = pPackageName + len - 1;
         char c = *pBaseName;
         while (c != '/' && c != '\\' && len > 0) {
@@ -395,30 +395,27 @@ FEPackage* FEngine::PushPackage(const char* pPackageName, const unsigned char Le
             pBaseName++;
         }
         pPack = FindIdlePackage(pBaseName);
-        if (!pPack) {
-            unsigned char* pBlockStart;
-            bool bDeleteBlock;
-            unsigned char* pPackData = pInterface->GetPackageData(pPackageName, &pBlockStart, bDeleteBlock);
-            if (!pPackData) {
-                return nullptr;
-            }
-            pPack = LoadPackage(pPackData, false);
-            if (bDeleteBlock && pBlockStart) {
-                delete[] pBlockStart;
-            }
-            if (!pPack) {
-                return nullptr;
-            }
-            goto loaded;
-        }
     }
-    {
+    if (pPack) {
         PackageInitStateCB cb;
         pPack->bUseIdleList = true;
         pPack->ForAllObjects(cb);
         IdleList.RemNode(pPack);
+    } else {
+        unsigned char* pBlockStart;
+        bool bDeleteBlock;
+        unsigned char* pPackData = pInterface->GetPackageData(pPackageName, &pBlockStart, bDeleteBlock);
+        if (!pPackData) {
+            return nullptr;
+        }
+        pPack = LoadPackage(pPackData, false);
+        if (bDeleteBlock && pBlockStart) {
+            delete[] pBlockStart;
+        }
+        if (!pPack) {
+            return nullptr;
+        }
     }
-loaded:
     pPack->Controllers = ControlMask;
     pPack->Priority = Level;
     pPack->bExecuting = bExecuting;
