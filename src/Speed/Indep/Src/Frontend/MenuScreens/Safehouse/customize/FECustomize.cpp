@@ -1431,11 +1431,28 @@ void CustomizeShoppingCart::SetMarkerAmounts() {
 }
 
 void CustomizeShoppingCart::SetMarkerData(int idx, ShoppingCartItem *item, int spending) {
-    // TODO: implement marker data
+    const char *pkg = GetPackageName();
+    unsigned int hash = FEngHashString("MARKER_GROUP_%d", idx);
+    unsigned int script = 0x6ebbfb68;
+    if (spending == 0) {
+        script = 0x163c76;
+    }
+    FEngSetScript(pkg, hash, script, true);
+
+    hash = FEngHashString("MARKER_NUM_%d", idx);
+    FEPrintf(GetPackageName(), hash, "%$d", spending);
+
+    hash = FEngHashString("MARKER_BLOOM_%d", idx);
+    FEPrintf(GetPackageName(), hash, "%$d", spending);
 }
 
 int CustomizeShoppingCart::GetNumMarkersSpending(unsigned int marker) {
-    return 0;
+    int result = 0;
+    ShoppingCartItem *item = gCarCustomizeManager.IsPartTypeInCart(marker);
+    if (item && item->IsActive()) {
+        result = 1;
+    }
+    return result;
 }
 
 void CustomizeShoppingCart::SetMarkerImages() {

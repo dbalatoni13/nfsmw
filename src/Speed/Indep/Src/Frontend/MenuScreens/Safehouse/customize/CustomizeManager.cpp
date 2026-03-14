@@ -221,10 +221,20 @@ bool CarCustomizeManager::RemoveFromCart(ShoppingCartItem *item) {
 }
 
 ShoppingCartItem *CarCustomizeManager::IsPartTypeInCart(SelectablePart *to_find) {
-    for (ShoppingCartItem *item = GetFirstCartItem(); item != reinterpret_cast<ShoppingCartItem *>(&ShoppingCart); item = item->GetNext()) {
-        if (item->GetBuyingPart()->GetSlotID() == to_find->GetSlotID()) {
-            return item;
+    if (!to_find) return nullptr;
+    ShoppingCartItem *item = GetFirstCartItem();
+    while (item != reinterpret_cast<ShoppingCartItem *>(&ShoppingCart)) {
+        SelectablePart *buying = item->GetBuyingPart();
+        if (to_find->IsPerformancePkg()) {
+            if (buying->GetPhysicsType() == to_find->GetPhysicsType()) {
+                return item;
+            }
+        } else {
+            if (buying->GetSlotID() == to_find->GetSlotID()) {
+                return item;
+            }
         }
+        item = item->GetNext();
     }
     return nullptr;
 }
@@ -559,46 +569,45 @@ bool CarCustomizeManager::IsPartInstalled(SelectablePart *part) {
 
 bool CarCustomizeManager::IsPartLocked(SelectablePart *part, int perf_unlock_level) {
     bool unlocked;
+    int slot;
     if (part->IsPerformancePkg()) {
         eUnlockFilters filter = GetUnlockFilter();
         bool backroom = CustomizeIsInBackRoom();
         unlocked = UnlockSystem::IsPerfPackageUnlocked(filter, static_cast<Physics::Upgrades::Type>(static_cast<int>(part->GetPhysicsType())), perf_unlock_level, 0, backroom);
-    } else {
-        int slot = part->GetSlotID();
-        if (slot < 0x69) {
-            if (slot > 0x62) {
+        goto done;
+    }
+    slot = part->GetSlotID();
+    if (slot < 0x69) {
+        if (slot > 0x62) {
+shared_unlockable_2e:
+            {
                 eUnlockFilters filter = GetUnlockFilter();
                 bool backroom = CustomizeIsInBackRoom();
                 unlocked = UnlockSystem::IsUnlockableUnlocked(filter, static_cast<eUnlockableEntity>(0x2e), 2, 0, backroom);
-            } else if (slot == 0x53 || slot == 0x5b) {
-                eUnlockFilters filter = GetUnlockFilter();
-                bool backroom = CustomizeIsInBackRoom();
-                unlocked = UnlockSystem::IsUnlockableUnlocked(filter, static_cast<eUnlockableEntity>(0x2c), 1, 0, backroom);
-            } else {
-                eUnlockFilters filter = GetUnlockFilter();
-                bool backroom = CustomizeIsInBackRoom();
-                unlocked = UnlockSystem::IsCarPartUnlocked(filter, part->GetSlotID(), part->GetPart(), 0, backroom);
             }
-        } else if (slot > 0x6a) {
-            if (slot < 0x71) {
-                eUnlockFilters filter = GetUnlockFilter();
-                bool backroom = CustomizeIsInBackRoom();
-                unlocked = UnlockSystem::IsUnlockableUnlocked(filter, static_cast<eUnlockableEntity>(0x2e), 2, 0, backroom);
-            } else if (slot == 0x73 || slot == 0x7b) {
-                eUnlockFilters filter = GetUnlockFilter();
-                bool backroom = CustomizeIsInBackRoom();
-                unlocked = UnlockSystem::IsUnlockableUnlocked(filter, static_cast<eUnlockableEntity>(0x30), 3, 0, backroom);
-            } else {
-                eUnlockFilters filter = GetUnlockFilter();
-                bool backroom = CustomizeIsInBackRoom();
-                unlocked = UnlockSystem::IsCarPartUnlocked(filter, part->GetSlotID(), part->GetPart(), 0, backroom);
-            }
-        } else {
+            goto done;
+        }
+        if (slot == 0x53 || slot == 0x5b) {
             eUnlockFilters filter = GetUnlockFilter();
             bool backroom = CustomizeIsInBackRoom();
-            unlocked = UnlockSystem::IsCarPartUnlocked(filter, part->GetSlotID(), part->GetPart(), 0, backroom);
+            unlocked = UnlockSystem::IsUnlockableUnlocked(filter, static_cast<eUnlockableEntity>(0x2c), 1, 0, backroom);
+            goto done;
+        }
+    } else if (slot > 0x6a) {
+        if (slot < 0x71) goto shared_unlockable_2e;
+        if (slot == 0x73 || slot == 0x7b) {
+            eUnlockFilters filter = GetUnlockFilter();
+            bool backroom = CustomizeIsInBackRoom();
+            unlocked = UnlockSystem::IsUnlockableUnlocked(filter, static_cast<eUnlockableEntity>(0x30), 3, 0, backroom);
+            goto done;
         }
     }
+    {
+        eUnlockFilters filter = GetUnlockFilter();
+        bool backroom = CustomizeIsInBackRoom();
+        unlocked = UnlockSystem::IsCarPartUnlocked(filter, part->GetSlotID(), part->GetPart(), 0, backroom);
+    }
+done:
     return unlocked ^ true;
 }
 
@@ -1006,24 +1015,65 @@ bool CarCustomizeManager::IsVinylCategoryLocked(unsigned int cat, bool backroom)
 
 void CarCustomizeManager::UpdateHeatOnVehicle(SelectablePart *part, FECareerRecord *record) {
     if (!part) return;
-    if (part->IsPerformancePkg()) {
-        Physics::Upgrades::Type ptype = static_cast<Physics::Upgrades::Type>(static_cast<int>(part->GetPhysicsType()));
-        int level = static_cast<int>(part->GetUpgradeLevel());
-        if (part->IsJunkmanPart()) {
-            level = GetMaxPackages(ptype) + 1;
-        }
-        int installed = GetInstalledPerfPkg(ptype);
-        if (level > installed) {
-            record->SetVehicleHeat(record->GetVehicleHeat() + Physics::Upgrades::GetHeat(ThePVehicle, ptype, level));
-        }
-    } else {
-        int slot = part->GetSlotID();
-        CarPart *installed = GetInstalledCarPart(slot);
-        CarPart *buying = part->GetPart();
-        if (buying && buying != installed) {
-            record->SetVehicleHeat(record->GetVehicleHeat() + 2.0f);
-        }
+    if (!record) return;
+    if (part->IsPerformancePkg()) return;
+    if (!IsCareerMode()) return;
+
+    register float heat_factor = 1.0f;
+    if (CustomizeIsInBackRoom()) {
+        heat_factor = 0.75f;
     }
+
+    int slot = part->GetSlotID();
+    if (slot != 0x53) {
+        if (slot < 0x54) {
+            if (slot == 0x3f) goto call_hood;
+            if (slot > 0x3f) {
+                if (slot == 0x4c) goto call_paint;
+                if (slot > 0x4c) {
+                    if (slot == 0x4d) goto call_vinyl;
+                    if (slot != 0x4e) return;
+                    goto call_rimpaint;
+                }
+                if (slot != 0x42) return;
+                goto call_rim;
+            }
+            if (slot == 0x2c) goto call_spoiler;
+            if (slot > 0x2c) {
+                if (slot != 0x3e) return;
+                goto call_roofscoop;
+            }
+            if (slot != 0x17) return;
+            goto call_bodykit;
+        }
+        if (slot < 0x71) {
+            if (slot >= 0x6b) goto call_decal;
+            if (slot > 0x68) {
+                if (slot != 0x69) return;
+                goto call_bodykit;
+            }
+            if (slot >= 0x63) goto call_decal;
+            if (slot == 0x5b) goto call_decal;
+            return;
+        }
+        if (slot == 0x7b) goto call_decal;
+        if (slot > 0x7b) {
+            if (slot != 0x83) return;
+            goto call_windowtint;
+        }
+        if (slot != 0x73) return;
+    }
+    goto call_decal;
+call_spoiler: record->AdjustHeatOnSpoilerApplied(heat_factor); return;
+call_hood: record->AdjustHeatOnHoodApplied(heat_factor); return;
+call_roofscoop: record->AdjustHeatOnRoofScoopApplied(heat_factor); return;
+call_rim: record->AdjustHeatOnRimApplied(heat_factor); return;
+call_windowtint: record->AdjustHeatOnWindowTintApplied(heat_factor); return;
+call_paint: record->AdjustHeatOnPaintApplied(heat_factor); return;
+call_rimpaint: record->AdjustHeatOnRimPaintApplied(heat_factor); return;
+call_vinyl: record->AdjustHeatOnVinylApplied(heat_factor); return;
+call_bodykit: record->AdjustHeatOnBodyKitApplied(heat_factor); return;
+call_decal: record->AdjustHeatOnDecalApplied(heat_factor); return;
 }
 
 unsigned int CarCustomizeManager::GetUnlockHash(eCustomizeCategory cat, int upgrade_lvl) {
