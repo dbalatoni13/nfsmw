@@ -1,11 +1,6 @@
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
-
-enum eCustomizeEntryPoint {
-    CEP_GAMEPLAY = 0,
-    CEP_MAIN_MENU = 1,
-    CEP_ONLINE_MENU = 2,
-};
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeTypes.hpp"
 
 extern bool g_bCustomizeInBackRoom;
 extern bool g_bCustomizeInPerformance;

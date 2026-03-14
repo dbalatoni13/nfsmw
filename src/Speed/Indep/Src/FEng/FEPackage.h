@@ -2,6 +2,8 @@
 #define FENG_FEPACKAGE_H
 
 #include "FEObject.h"
+#include "FEObjectCallback.h"
+#include "FETypes.h"
 
 struct FEObjectCallback;
 struct FEGroup;
@@ -10,9 +12,51 @@ struct FEGameInterface;
 struct FEResourceRequest;
 struct FEMsgTargetList;
 struct FELibraryRef;
-struct FEObjectMouseState;
 struct FEMessageResponse;
 struct FEPackageRenderInfo;
+struct FEListBox;
+
+// total size: 0xC
+struct FELibraryRef {
+    unsigned long ObjGUID;       // offset 0x0, size 0x4
+    unsigned long PackNameHash;  // offset 0x4, size 0x4
+    unsigned long LibGUID;       // offset 0x8, size 0x4
+};
+
+// total size: 0x10
+struct FEMsgTargetList {
+    unsigned long MsgID;       // offset 0x0, size 0x4
+    unsigned long Alloc;       // offset 0x4, size 0x4
+    unsigned long Count;       // offset 0x8, size 0x4
+    FEObject** pTargets;       // offset 0xC, size 0x4
+
+    inline FEMsgTargetList() : MsgID(0), Alloc(0), Count(0), pTargets(nullptr) {}
+    inline ~FEMsgTargetList() {}
+    inline void SetMsgID(unsigned long NewID) { MsgID = NewID; }
+    inline unsigned long GetMsgID() const { return MsgID; }
+    inline unsigned long GetCount() const { return Count; }
+    inline FEObject* GetTarget(unsigned long Index) { return pTargets[Index]; }
+    inline const FEObject* GetTarget(unsigned long Index) const { return pTargets[Index]; }
+
+    void Allocate(unsigned long NewAlloc);
+    void AppendTarget(FEObject* pObject);
+};
+
+// total size: 0x10
+struct FEObjectMouseState {
+    FEObject* pObject;   // offset 0x0, size 0x4
+    FEPoint Offset;      // offset 0x4, size 0x8
+    unsigned long Flags;  // offset 0xC, size 0x4
+
+    FEObjectMouseState();
+    ~FEObjectMouseState();
+
+    inline bool GetBit(unsigned long bit) { return (Flags & bit) != 0; }
+    inline void SetBit(unsigned long bit, bool state) {
+        if (state) Flags |= bit;
+        else Flags &= ~bit;
+    }
+};
 
 // total size: 0x18
 struct FEResourceRequest {
@@ -140,9 +184,68 @@ struct FEPackage : public FENode {
     inline void SetErrorScreen(bool b) { bErrorScreen = b; }
 
     FEObject* FindObjectByHash(unsigned long NameHash);
+    FEObject* FindObjectByGUID(unsigned long GUID);
     void SetCurrentButton(FEObject* pNewButton, bool bSendMsgs);
     bool ForAllChildren(FEGroup* pGroup, FEObjectCallback& Callback);
     bool ForAllObjects(FEObjectCallback& Callback);
+
+    void IssueScriptMessages(FEngine* pEngine, FEObject* pObj, FEScript* pScript, long tOldTime, long tNewTime);
+    void UpdateObject(FEObject* pObj, long tDeltaTicks);
+    void UpdateObjectTracks(FEObject* pObj, FEScript* pScript);
+
+    void AddMouseObjectState(FEObject* pObj);
+    void UpdateMouseObjectOffsets(FEObject* pObj);
+};
+
+// total size: 0x4
+struct PackageInitStateCB : public FEObjectCallback {
+    bool Callback(FEObject* pObj) override;
+};
+
+// total size: 0xC
+struct FEFindByHash : public FEObjectCallback {
+    unsigned long Hash;      // offset 0x4, size 0x4
+    FEObject* pFound;        // offset 0x8, size 0x4
+
+    bool Callback(FEObject* pObj) override;
+};
+
+// total size: 0xC
+struct FEFindByGUID : public FEObjectCallback {
+    unsigned long GUID;      // offset 0x4, size 0x4
+    FEObject* pFound;        // offset 0x8, size 0x4
+
+    bool Callback(FEObject* pObj) override;
+};
+
+// total size: 0x8
+struct MouseStateObjectCounter : public FEObjectCallback {
+    int NumMouseObjects;     // offset 0x4, size 0x4
+
+    bool Callback(FEObject* pObj) override;
+};
+
+// total size: 0x8
+struct MouseStateArrayBuilder : public FEObjectCallback {
+    FEPackage* pPack;        // offset 0x4, size 0x4
+
+    bool Callback(FEObject* pObj) override;
+};
+
+// total size: 0x8
+struct MouseStateArrayOffsetUpdater : public FEObjectCallback {
+    FEPackage* pPack;        // offset 0x4, size 0x4
+
+    bool Callback(FEObject* pObj) override;
+};
+
+// total size: 0xC
+struct ResourceConnector : public FEObjectCallback {
+    FEPackage* pPack;                // offset 0x4, size 0x4
+    FEResourceRequest** pReqList;    // offset 0x8, size 0x4
+
+    bool Callback(FEObject* pObj) override;
+    void ConnectListBoxResources(FEListBox* pList);
 };
 
 #endif

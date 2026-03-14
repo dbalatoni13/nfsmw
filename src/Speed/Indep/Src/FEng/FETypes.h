@@ -104,4 +104,15 @@ struct FEMultiImageData : public FEImageData {
     FEVector3 PivotRot;         // offset 0x84, size 0xC
 };
 
+// total size: 0x8
+struct FEPoint {
+    float h; // offset 0x0, size 0x4
+    float v; // offset 0x4, size 0x4
+
+    inline FEPoint() : h(0.0f), v(0.0f) {}
+    inline FEPoint(float Value) : h(Value), v(Value) {}
+    inline FEPoint(float H, float V) : h(H), v(V) {}
+    inline FEPoint& operator=(const FEPoint& p) { h = p.h; v = p.v; return *this; }
+};
+
 #endif
