@@ -43,6 +43,7 @@ struct CarPart {
     unsigned int GetPartNameHash();
     char GetPartID();
     char GetUpgradeLevel();
+    unsigned int GetAppliedAttributeUParam(unsigned int namehash, unsigned int default_value);
 };
 
 int CarCustomizeManager::GetNumPackages(Physics::Upgrades::Type type) {
@@ -503,5 +504,468 @@ float CarCustomizeManager::GetPerformanceRating(ePerformanceRatingType type, boo
         case 1: return perf.Handling;
         case 2: return perf.Acceleration;
         default: return perf.Handling;
+    }
+}
+
+extern eUnlockableEntity MapCarPartToUnlockable(int slot_id, CarPart *part);
+extern eUnlockableEntity MapPerfPkgToUnlockable(Physics::Upgrades::Type type);
+extern unsigned int FEngHashString(const char *fmt, ...);
+extern bool DoesStringExist(unsigned int hash);
+extern int FEngSNPrintf(char *buf, int size, const char *fmt, ...);
+extern void bMemSet(void *dst, int value, unsigned int size);
+
+struct CarPartDatabase {
+    CarType GetCarType(unsigned int model_hash);
+    CarPart *GetCarPartByIndex(int index);
+    int GetPartIndex(CarPart *part);
+    CarPart *NewGetCarPart(CarType cartype, int slot, unsigned int part_name_hash, CarPart *fallback, int index);
+    CarPart *NewGetFirstCarPart(CarType car_type, int car_slot_id, unsigned int car_part_namehash, int upg_level);
+    CarPart *NewGetNextCarPart(CarPart *car_part, CarType car_type, int car_slot_id, unsigned int car_part_namehash, int upg_level);
+};
+extern CarPartDatabase CarPartDB;
+
+namespace Physics {
+namespace Upgrades {
+extern float GetHeat(Attrib::Gen::pvehicle pvehicle, Type type, int level);
+}
+}
+
+bool CarCustomizeManager::IsPartInstalled(SelectablePart *part) {
+    if (part) {
+        if (!part->IsPerformancePkg()) {
+            CarPart *installed = GetInstalledCarPart(part->GetSlotID());
+            if (installed == part->GetPart()) {
+                return true;
+            }
+        } else {
+            if (part->IsJunkmanPart()) {
+                return IsJunkmanInstalled(static_cast<Physics::Upgrades::Type>(static_cast<int>(part->GetPhysicsType())));
+            }
+            int lvl = GetInstalledPerfPkg(static_cast<Physics::Upgrades::Type>(static_cast<int>(part->GetPhysicsType())));
+            if (static_cast<int>(part->GetUpgradeLevel()) == lvl) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool CarCustomizeManager::IsPartLocked(SelectablePart *part, int perf_unlock_level) {
+    bool unlocked;
+    if (part->IsPerformancePkg()) {
+        eUnlockFilters filter = GetUnlockFilter();
+        bool backroom = CustomizeIsInBackRoom();
+        unlocked = UnlockSystem::IsPerfPackageUnlocked(filter, static_cast<Physics::Upgrades::Type>(static_cast<int>(part->GetPhysicsType())), perf_unlock_level, 0, backroom);
+    } else {
+        int slot = part->GetSlotID();
+        if (slot < 0x69) {
+            if (slot > 0x62) {
+                eUnlockFilters filter = GetUnlockFilter();
+                bool backroom = CustomizeIsInBackRoom();
+                unlocked = UnlockSystem::IsUnlockableUnlocked(filter, static_cast<eUnlockableEntity>(0x2e), 2, 0, backroom);
+            } else if (slot == 0x53 || slot == 0x5b) {
+                eUnlockFilters filter = GetUnlockFilter();
+                bool backroom = CustomizeIsInBackRoom();
+                unlocked = UnlockSystem::IsUnlockableUnlocked(filter, static_cast<eUnlockableEntity>(0x2c), 1, 0, backroom);
+            } else {
+                eUnlockFilters filter = GetUnlockFilter();
+                bool backroom = CustomizeIsInBackRoom();
+                unlocked = UnlockSystem::IsCarPartUnlocked(filter, part->GetSlotID(), part->GetPart(), 0, backroom);
+            }
+        } else if (slot > 0x6a) {
+            if (slot < 0x71) {
+                eUnlockFilters filter = GetUnlockFilter();
+                bool backroom = CustomizeIsInBackRoom();
+                unlocked = UnlockSystem::IsUnlockableUnlocked(filter, static_cast<eUnlockableEntity>(0x2e), 2, 0, backroom);
+            } else if (slot == 0x73 || slot == 0x7b) {
+                eUnlockFilters filter = GetUnlockFilter();
+                bool backroom = CustomizeIsInBackRoom();
+                unlocked = UnlockSystem::IsUnlockableUnlocked(filter, static_cast<eUnlockableEntity>(0x30), 3, 0, backroom);
+            } else {
+                eUnlockFilters filter = GetUnlockFilter();
+                bool backroom = CustomizeIsInBackRoom();
+                unlocked = UnlockSystem::IsCarPartUnlocked(filter, part->GetSlotID(), part->GetPart(), 0, backroom);
+            }
+        } else {
+            eUnlockFilters filter = GetUnlockFilter();
+            bool backroom = CustomizeIsInBackRoom();
+            unlocked = UnlockSystem::IsCarPartUnlocked(filter, part->GetSlotID(), part->GetPart(), 0, backroom);
+        }
+    }
+    return unlocked ^ true;
+}
+
+bool CarCustomizeManager::IsPartNew(SelectablePart *part, int perf_unlock_level) {
+    eUnlockableEntity ent;
+    eUnlockFilters filter;
+    if (!part->IsPerformancePkg()) {
+        ent = MapCarPartToUnlockable(part->GetSlotID(), part->GetPart());
+        filter = GetUnlockFilter();
+        perf_unlock_level = static_cast<int>(part->GetUpgradeLevel());
+    } else {
+        ent = MapPerfPkgToUnlockable(static_cast<Physics::Upgrades::Type>(static_cast<int>(part->GetPhysicsType())));
+        filter = GetUnlockFilter();
+    }
+    return UnlockSystem::IsUnlockableNew(filter, ent, perf_unlock_level);
+}
+
+bool CarCustomizeManager::IsCategoryNew(unsigned int cat) {
+    eUnlockableEntity ent;
+    if (cat < 0x208) {
+        if (cat < 0x105) {
+            if (cat == 0x101) {
+                ent = static_cast<eUnlockableEntity>(0x23);
+            } else if (cat > 0x101) {
+                if (cat == 0x103) {
+                    ent = static_cast<eUnlockableEntity>(0x2b);
+                } else if (cat == 0x104) {
+                    ent = static_cast<eUnlockableEntity>(0x22);
+                } else {
+                    return false;
+                }
+            } else if (cat == 0x100) {
+                ent = static_cast<eUnlockableEntity>(0x20);
+            } else {
+                return false;
+            }
+        } else if (cat == 0x105) {
+            ent = static_cast<eUnlockableEntity>(0x24);
+        } else if (cat > 0x105) {
+            if (cat == 0x201) {
+                ent = static_cast<eUnlockableEntity>(0x25);
+            } else if (cat == 0x202) {
+                ent = static_cast<eUnlockableEntity>(0x26);
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else if (cat < 0x302) {
+        if (cat == 0x208) {
+            ent = static_cast<eUnlockableEntity>(0x2a);
+        } else if (cat > 0x208) {
+            if (cat == 0x301) {
+                ent = static_cast<eUnlockableEntity>(0x27);
+            } else {
+                return false;
+            }
+        } else if (cat == 0x203) {
+            ent = static_cast<eUnlockableEntity>(0x29);
+        } else {
+            return false;
+        }
+    } else if (cat == 0x302) {
+        ent = static_cast<eUnlockableEntity>(0x28);
+    } else if (cat > 0x302) {
+        if (cat == 0x801) {
+            ent = static_cast<eUnlockableEntity>(0x21);
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+    eUnlockFilters filter = GetUnlockFilter();
+    return UnlockSystem::IsUnlockableNew(filter, ent, 0);
+}
+
+bool CarCustomizeManager::IsCategoryLocked(unsigned int cat, bool) {
+    eUnlockableEntity ent;
+    int level = 0;
+    if (cat < 0x208) {
+        if (cat < 0x105) {
+            if (cat == 0x101) {
+                ent = static_cast<eUnlockableEntity>(0x23);
+            } else if (cat > 0x101) {
+                if (cat == 0x103) {
+                    ent = static_cast<eUnlockableEntity>(0x2b);
+                } else if (cat == 0x104) {
+                    ent = static_cast<eUnlockableEntity>(0x22);
+                } else {
+                    return false;
+                }
+            } else if (cat == 0x100) {
+                ent = static_cast<eUnlockableEntity>(0x20);
+            } else {
+                return false;
+            }
+        } else if (cat == 0x105) {
+            ent = static_cast<eUnlockableEntity>(0x24);
+        } else if (cat > 0x105) {
+            if (cat == 0x201) {
+                ent = static_cast<eUnlockableEntity>(0x25);
+            } else if (cat == 0x202) {
+                ent = static_cast<eUnlockableEntity>(0x26);
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else if (cat < 0x302) {
+        if (cat == 0x208) {
+            ent = static_cast<eUnlockableEntity>(0x2a);
+        } else if (cat > 0x208) {
+            if (cat == 0x301) {
+                ent = static_cast<eUnlockableEntity>(0x27);
+            } else {
+                return false;
+            }
+        } else if (cat == 0x203) {
+            ent = static_cast<eUnlockableEntity>(0x29);
+        } else {
+            return false;
+        }
+    } else if (cat == 0x302) {
+        ent = static_cast<eUnlockableEntity>(0x28);
+    } else if (cat > 0x302) {
+        if (cat == 0x801) {
+            ent = static_cast<eUnlockableEntity>(0x21);
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+    eUnlockFilters filter = GetUnlockFilter();
+    bool backroom = CustomizeIsInBackRoom();
+    return !UnlockSystem::IsUnlockableUnlocked(filter, ent, level, 0, backroom);
+}
+
+bool CarCustomizeManager::IsRimCategoryLocked(unsigned int cat, bool backroom) {
+    int marker_param = -1;
+    if (cat == 0x703) marker_param = 3;
+    else if (cat == 0x704) marker_param = 4;
+    else if (cat == 0x705) marker_param = 5;
+    else if (cat == 0x706) marker_param = 6;
+    else if (cat == 0x707) marker_param = 7;
+    if (marker_param == -1) return false;
+    bTList<SelectablePart> parts;
+    GetCarPartList(0x35, parts, 0);
+    SelectablePart *sp = parts.GetHead();
+    while (sp != parts.EndOfList()) {
+        unsigned int brand = sp->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0u);
+        if ((brand >> 5) == cat) {
+            if (backroom) {
+                eUnlockFilters filter = GetUnlockFilter();
+                if (UnlockSystem::IsCarPartUnlocked(filter, sp->GetSlotID(), sp->GetPart(), 0, true)) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        sp = static_cast<SelectablePart *>(sp->GetNext());
+    }
+    if (!backroom) return true;
+    return !TheFEMarkerManager.HasMarker(FEMarkerManager::MARKER_RIMS, marker_param);
+}
+
+bool CarCustomizeManager::IsVinylCategoryLocked(unsigned int cat, bool backroom) {
+    unsigned int vinyl_group = cat;
+    int marker_param = -1;
+    if (vinyl_group == 1) marker_param = 1;
+    else if (vinyl_group == 2) marker_param = 2;
+    if (marker_param == -1) return false;
+    bTList<SelectablePart> parts;
+    GetCarPartList(0x28, parts, 0);
+    SelectablePart *sp = parts.GetHead();
+    while (sp != parts.EndOfList()) {
+        if ((sp->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0u) & 0x1f) == vinyl_group
+            && sp->GetPartState() != CPS_LOCKED) {
+            return false;
+        }
+        sp = static_cast<SelectablePart *>(sp->GetNext());
+    }
+    if (!backroom) return true;
+    return !TheFEMarkerManager.HasMarker(FEMarkerManager::MARKER_VINYL, marker_param);
+}
+
+void CarCustomizeManager::UpdateHeatOnVehicle(SelectablePart *part, FECareerRecord *record) {
+    if (!part) return;
+    if (part->IsPerformancePkg()) {
+        Physics::Upgrades::Type ptype = static_cast<Physics::Upgrades::Type>(static_cast<int>(part->GetPhysicsType()));
+        int level = static_cast<int>(part->GetUpgradeLevel());
+        if (part->IsJunkmanPart()) {
+            level = GetMaxPackages(ptype) + 1;
+        }
+        int installed = GetInstalledPerfPkg(ptype);
+        if (level > installed) {
+            record->SetVehicleHeat(record->GetVehicleHeat() + Physics::Upgrades::GetHeat(ThePVehicle, ptype, level));
+        }
+    } else {
+        int slot = part->GetSlotID();
+        CarPart *installed = GetInstalledCarPart(slot);
+        CarPart *buying = part->GetPart();
+        if (buying && buying != installed) {
+            record->SetVehicleHeat(record->GetVehicleHeat() + 2.0f);
+        }
+    }
+}
+
+unsigned int CarCustomizeManager::GetUnlockHash(unsigned int cat) {
+    unsigned int returnHash = 0;
+    switch (cat) {
+        case 0x100: returnHash = FEngHashString("MARKER_BODYKIT"); break;
+        case 0x101: returnHash = FEngHashString("MARKER_SPOILER"); break;
+        case 0x103: returnHash = FEngHashString("MARKER_RIM"); break;
+        case 0x104: returnHash = FEngHashString("MARKER_HOOD"); break;
+        case 0x105: returnHash = FEngHashString("MARKER_ROOFSCOOP"); break;
+        case 0x201: returnHash = FEngHashString("MARKER_PAINT"); break;
+        case 0x202: returnHash = FEngHashString("MARKER_VINYL"); break;
+        case 0x203: returnHash = FEngHashString("MARKER_DECAL"); break;
+        case 0x208: returnHash = FEngHashString("MARKER_NUMBERS"); break;
+        case 0x301: returnHash = FEngHashString("MARKER_WINDOW_TINT"); break;
+        case 0x302: returnHash = FEngHashString("MARKER_NEON"); break;
+        case 0x801: returnHash = FEngHashString("MARKER_PERFORMANCE"); break;
+        default: break;
+    }
+    if (returnHash != 0) {
+        if (DoesStringExist(returnHash)) {
+            return returnHash;
+        }
+    }
+    return 0x9bb9ccc3;
+}
+
+void CarCustomizeManager::GetCarPartList(int car_slot, bTList<SelectablePart> &the_list, unsigned int param) {
+    CarType cartype = TuningCar->GetType();
+    CarPart *part = CarPartDB.NewGetNextCarPart(nullptr, cartype, car_slot, 0, -1);
+    while (part) {
+        eUnlockableEntity unlockable = MapCarPartToUnlockable(car_slot, part);
+        bool should_add = false;
+        if (car_slot == 0x2e || car_slot == 0x2c || car_slot == 0x30) {
+            int level = 0;
+            if (car_slot == 0x2e) level = 2;
+            else if (car_slot == 0x30) level = 3;
+            else if (car_slot == 0x2c) level = 1;
+            bool br = CustomizeIsInBackRoom();
+            if (!br || UnlockSystem::IsUnlockableUnlocked(UNLOCK_CAREER_MODE, unlockable, level, 0, true)) {
+                should_add = true;
+            }
+        } else {
+            bool br = CustomizeIsInBackRoom();
+            if (!br) {
+                if ((FEDatabase->GetGameMode() & 0x4000) != 0 || (part->GetAppliedAttributeUParam(0xebb03e66, 0u) >> 5) != 7) {
+                    should_add = true;
+                }
+            } else {
+                if (UnlockSystem::IsCarPartUnlocked(UNLOCK_CAREER_MODE, car_slot, part, 0, true)) {
+                    should_add = true;
+                }
+            }
+        }
+        if (should_add) {
+            SelectablePart *sp = new SelectablePart(part, car_slot, part->GetAppliedAttributeUParam(0xebb03e66, 0u) >> 5, static_cast<GRace::Type>(7), false, CPS_AVAILABLE, 0, false);
+            eCustomizePartState state = CPS_AVAILABLE;
+            if (IsPartLocked(sp, 0)) {
+                state = CPS_LOCKED;
+            } else if (IsPartNew(sp, 0)) {
+                state = CPS_NEW;
+            }
+            if (IsPartInstalled(sp)) {
+                state = static_cast<eCustomizePartState>(state | CPS_INSTALLED);
+            } else if (IsPartInCart(sp)) {
+                state = static_cast<eCustomizePartState>(state | CPS_IN_CART);
+            }
+            sp->SetPartState(state);
+            int price = GetPartPrice(sp);
+            sp->SetPrice(price);
+            the_list.AddTail(sp);
+        }
+        part = CarPartDB.NewGetNextCarPart(part, cartype, car_slot, 0, -1);
+    }
+}
+
+void CarCustomizeManager::GetPerformancePartsList(Physics::Upgrades::Type type, bTList<SelectablePart> &the_list) {
+    int max_level = GetMaxPackages(type);
+    if (max_level > 0) {
+        int i = 0;
+        do {
+            int level = i + 1;
+            SelectablePart *sp = new SelectablePart(nullptr, 0, static_cast<unsigned int>(level), static_cast<GRace::Type>(static_cast<int>(type)), true, CPS_AVAILABLE, 0, false);
+            eCustomizePartState state = CPS_AVAILABLE;
+            int remaining = GetMaxPackages(type) - GetNumPackages(type);
+            int perf_unlock_level = remaining + i + 1;
+            if (IsPartLocked(sp, perf_unlock_level)) {
+                state = CPS_LOCKED;
+            } else if (IsPartNew(sp, perf_unlock_level)) {
+                state = CPS_NEW;
+            }
+            if (IsPartInstalled(sp)) {
+                state = static_cast<eCustomizePartState>(state | CPS_INSTALLED);
+            } else if (IsPartInCart(sp)) {
+                state = static_cast<eCustomizePartState>(state | CPS_IN_CART);
+            }
+            sp->SetPartState(state);
+            int price = GetPartPrice(sp);
+            sp->SetPrice(price);
+            the_list.AddTail(sp);
+            i = level;
+        } while (i < max_level);
+    }
+}
+
+float CarCustomizeManager::GetPreviewHeat(SelectablePart *part) {
+    if (!DoesCartHaveActiveParts() || !IsCareerMode()) {
+        return GetActualHeat();
+    }
+    FECareerRecord tempRecord;
+    FECareerRecord tempRecord2;
+    bMemSet(&tempRecord, 0, sizeof(FECareerRecord));
+    bMemSet(&tempRecord2, 0, sizeof(FECareerRecord));
+    FECareerRecord *record = FEDatabase->GetPlayerCarStable(0)->GetCareerRecordByHandle(TuningCar->CareerHandle);
+    if (!record) return 0.0f;
+    float heat = record->GetVehicleHeat();
+    tempRecord.SetVehicleHeat(heat);
+    if (part && part->GetPart() != GetInstalledCarPart(part->GetSlotID())) {
+        UpdateHeatOnVehicle(part, &tempRecord);
+    }
+    ShoppingCartItem *item = ShoppingCart.GetHead();
+    while (item != ShoppingCart.EndOfList()) {
+        if (!part) {
+            if (item->IsActive()) {
+                UpdateHeatOnVehicle(item->GetBuyingPart(), &tempRecord);
+            }
+        } else if (part->GetSlotID() != item->GetBuyingPart()->GetSlotID() && item->IsActive()) {
+            UpdateHeatOnVehicle(item->GetBuyingPart(), &tempRecord);
+        }
+        item = static_cast<ShoppingCartItem *>(item->GetNext());
+    }
+    return tempRecord.GetVehicleHeat();
+}
+
+float CarCustomizeManager::GetCartHeat() {
+    if (!DoesCartHaveActiveParts() || !IsCareerMode()) {
+        return GetActualHeat();
+    }
+    FECareerRecord tempRecord;
+    FECareerRecord tempRecord2;
+    bMemSet(&tempRecord, 0, sizeof(FECareerRecord));
+    bMemSet(&tempRecord2, 0, sizeof(FECareerRecord));
+    FECareerRecord *record = FEDatabase->GetPlayerCarStable(0)->GetCareerRecordByHandle(TuningCar->CareerHandle);
+    if (!record) return 0.0f;
+    float heat = record->GetVehicleHeat();
+    tempRecord.SetVehicleHeat(heat);
+    ShoppingCartItem *item = ShoppingCart.GetHead();
+    while (item != ShoppingCart.EndOfList()) {
+        if (item->IsActive()) {
+            UpdateHeatOnVehicle(item->GetBuyingPart(), &tempRecord);
+        }
+        item = static_cast<ShoppingCartItem *>(item->GetNext());
+    }
+    return tempRecord.GetVehicleHeat();
+}
+
+void CarCustomizeManager::MaxOutPerformance() {
+    for (int i = 0; i < 7; i++) {
+        Physics::Upgrades::Type type = static_cast<Physics::Upgrades::Type>(i);
+        int max_level = GetMaxPackages(type);
+        int installed = GetInstalledPerfPkg(type);
+        for (int level = installed + 1; level <= max_level; level++) {
+            SelectablePart *sp = new SelectablePart(nullptr, 0, static_cast<unsigned int>(level), static_cast<GRace::Type>(static_cast<int>(type)), true, CPS_AVAILABLE, 0, false);
+            AddToCart(sp);
+        }
     }
 }

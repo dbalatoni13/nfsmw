@@ -19,12 +19,6 @@ extern CarPart *GetCarPartFromSlot(int slot_id);
 extern const char *GetCarPartNameFromID(int id);
 extern unsigned int bStringHash(const char *text);
 
-struct CarPartDatabase {
-    CarPart *NewGetFirstCarPart(CarType car_type, int car_slot_id, unsigned int car_part_namehash, int upg_level);
-    CarPart *NewGetNextCarPart(CarPart *car_part, CarType car_type, int car_slot_id, unsigned int car_part_namehash, int upg_level);
-};
-extern CarPartDatabase CarPartDB;
-
 DebugCarCustomizeScreen::DebugCarOption::DebugCarOption(const char *name, int value)
     : Intval(value) {
     bStrNCpy(String, name, 0x40);

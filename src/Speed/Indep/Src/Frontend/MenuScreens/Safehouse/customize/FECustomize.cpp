@@ -232,10 +232,6 @@ CustomizeSub::CustomizeSub(ScreenConstructorData *sd) : CustomizeCategoryScreen(
     gCarCustomizeManager.ResetPreview();
 }
 
-// CustomizeSub::Setup, RefreshHeader, SetupParts, SetupPerformance, SetupVisual,
-// SetupRimBrands, SetupVinylGroups, SetupDecalLocations, SetupDecalPositions
-// are implemented in CarCustomize.cpp
-
 int CustomizeSub::GetRimBrandIndex(unsigned int hash) {
     return 0;
 }

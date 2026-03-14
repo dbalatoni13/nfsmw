@@ -114,6 +114,15 @@ struct FEMarkerManager {
     char *LoadFromBuffer(char *buffer);
 
     inline int GetNumTempMarkers() { return iNumTempMarkers; }
+    inline bool HasMarker(ePossibleMarker marker, int param) {
+        for (int i = 0; i < 63; i++) {
+            if (OwnedMarkers[i].Marker == marker && OwnedMarkers[i].Param == param
+                && OwnedMarkers[i].State == MARKER_STATE_OWNED) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     OwnedMarker OwnedMarkers[63];           // offset 0x0
     OwnedMarker TempSelectionMarkers[6];     // offset 0x2F4
