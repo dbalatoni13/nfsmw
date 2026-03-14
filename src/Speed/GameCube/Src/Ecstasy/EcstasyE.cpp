@@ -11,12 +11,15 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "dolphin.h"
 
+#ifndef VIDEO_MODE_DEFINED
+#define VIDEO_MODE_DEFINED
 enum VIDEO_MODE {
     MODE_PAL = 0,
     MODE_PAL60 = 1,
     MODE_NTSC = 2,
     NUM_VIDEO_MODES = 3,
 };
+#endif
 
 // TODO put these in correct headers
 unsigned int bGetTicker();

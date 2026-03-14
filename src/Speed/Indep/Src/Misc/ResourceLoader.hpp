@@ -101,7 +101,10 @@ class ResourceFile : public bTNode<ResourceFile> {
         return Type;
     }
 
-    // void ChangeFilenameForHotChunking(const char *filename) {}
+    void ChangeFilenameForHotChunking(const char *filename) {
+        bFreeSharedString(Filename);
+        Filename = bAllocateSharedString(filename);
+    }
 
     // void SetHotFileNumber(int number) {}
 
