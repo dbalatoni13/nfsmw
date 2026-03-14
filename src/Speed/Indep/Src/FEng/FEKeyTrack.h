@@ -49,6 +49,7 @@ struct FEKeyTrack {
 
     FEKeyNode* GetKeyAt(long tTime);
     FEKeyNode* GetDeltaKeyAt(long tTime);
+    void operator=(FEKeyTrack& Src);
 };
 
 #endif

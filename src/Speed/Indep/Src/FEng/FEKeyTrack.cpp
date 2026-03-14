@@ -47,3 +47,32 @@ FEKeyNode* FEKeyTrack::GetDeltaKeyAt(long tTime) {
     }
     return pPrev;
 }
+
+void FEKeyTrack::operator=(FEKeyTrack& Src) {
+    FEKeyNode* pKey;
+    while ((pKey = static_cast<FEKeyNode*>(DeltaKeys.RemHead())) != nullptr) {
+        delete pKey;
+    }
+
+    ParamType = Src.ParamType;
+    ParamSize = Src.ParamSize;
+    InterpType = Src.InterpType;
+    InterpAction = Src.InterpAction;
+    Length = Src.Length;
+    LongOffset = Src.LongOffset;
+    BaseKey.tTime = Src.BaseKey.tTime;
+    BaseKey.Val = Src.BaseKey.Val;
+
+    if (Src.IsReference()) {
+        DeltaKeys.ReferenceList(Src.DeltaKeys.GetRefSource());
+    } else {
+        FEKeyNode* pSrcKey = Src.GetFirstDeltaKey();
+        while (pSrcKey) {
+            pKey = new FEKeyNode();
+            pKey->tTime = pSrcKey->tTime;
+            pKey->Val = pSrcKey->Val;
+            DeltaKeys.AddTail(pKey);
+            pSrcKey = pSrcKey->GetNext();
+        }
+    }
+}

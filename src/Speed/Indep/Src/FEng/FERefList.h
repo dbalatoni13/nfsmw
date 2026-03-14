@@ -20,6 +20,7 @@ class FERefList {
     inline bool IsListEmpty() const { return GetHead() == nullptr; }
 
     void ReferenceList(FERefList* pList);
+    inline void AddTail(FEMinNode* n) { AddNode(tail, n); }
     void AddNode(FEMinNode* insertpoint, FEMinNode* node);
     bool IsInList(FEMinNode* node) const;
     int ElementNumber(FEMinNode* node);
