@@ -66,19 +66,17 @@ void FEMessageResponse::SetCount(unsigned long NewCount) {
         } else {
             FEResponse* pNew = new FEResponse[NewCount];
             unsigned long copyCount = Count;
-            if (NewCount < Count) {
+            if (copyCount > NewCount) {
                 copyCount = NewCount;
             }
             unsigned long i = 0;
-            if (copyCount != 0) {
-                do {
-                    pNew[i] = pResponseList[i];
-                    i++;
-                } while (i < copyCount);
+            while (i < copyCount) {
+                pNew[i] = pResponseList[i];
+                i++;
             }
-            PurgeResponses();
-            Count = NewCount;
+            delete[] pResponseList;
             pResponseList = pNew;
+            Count = NewCount;
         }
     }
 }
