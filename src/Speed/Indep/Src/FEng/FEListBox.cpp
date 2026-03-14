@@ -57,13 +57,12 @@ void FEListBox::InitializeListEntry(FEListEntryData* pstEntries, unsigned long u
 void FEListBox::InitializeCell(FEListBoxCell* pstCells, unsigned long ulNumCells) {
     for (unsigned long i = 0; i < ulNumCells; i++) {
         pstCells[i].ulColor = 0xFFFFFFFF;
-        pstCells[i].stScale.h = 1.0f;
-        pstCells[i].stScale.v = 1.0f;
+        pstCells[i].stScale = FEPoint(1.0f, 1.0f);
+        pstCells[i].ulJustification = 0;
         pstCells[i].stResource.Handle = 0;
         pstCells[i].stResource.UserParam = 0;
         pstCells[i].stResource.ResourceIndex = 0;
         pstCells[i].ulType = 0;
-        pstCells[i].ulJustification = 0;
         pstCells[i].u.rect.uv_left = 0.0f;
         pstCells[i].u.rect.uv_top = 0.0f;
         pstCells[i].u.rect.uv_right = 1.0f;
