@@ -72,3 +72,31 @@ int IconPanel::GetOptionIndex(IconOption *to_find) {
     }
     return -1;
 }
+
+IconOption *IconPanel::GetHead() {
+    return Options.GetHead();
+}
+
+bool IconPanel::IsHead(IconOption *option) {
+    return option == Options.GetHead();
+}
+
+bool IconPanel::IsTail(IconOption *option) {
+    return option == Options.GetTail();
+}
+
+bool IconPanel::IsEndOfList(IconOption *opt) {
+    return opt == Options.EndOfList();
+}
+
+bool IconScroller::IsHead(IconOption *option) {
+    return option == static_cast<IconOption *>(HeadBookEnd->GetNext());
+}
+
+bool IconScroller::IsTail(IconOption *option) {
+    return option == static_cast<IconOption *>(TailBookEnd->GetPrev());
+}
+
+bool IconScroller::IsEndOfList(IconOption *option) {
+    return option == HeadBookEnd || option == TailBookEnd;
+}

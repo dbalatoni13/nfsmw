@@ -113,6 +113,15 @@ class HudResourceManager {
     void UnloadRequiredResources(ePlayerHudType ht);
     bool AreResourcesLoaded(ePlayerHudType ht);
 
+    void LoadingCompleteCallback();
+    void LoadedCustomHudTexturePackCallback();
+    void LoadedCustomHudTexturesCallback();
+
+    static void LoadingCompleteCallbackBridge(int param);
+    static void LoadingCompleteCallbackBridge(unsigned int param);
+    static void LoadedCustomHudTexturePackCallbackBridge(unsigned int param);
+    static void LoadedCustomHudTexturesCallbackBridge(unsigned int param);
+
     static ePlayerHudType LoadingResourcesForHudType;
 
   private:
@@ -121,5 +130,18 @@ class HudResourceManager {
 };
 
 extern HudResourceManager TheHudResourceManager;
+
+inline void HudResourceManager::LoadingCompleteCallbackBridge(int param) {
+    TheHudResourceManager.LoadingCompleteCallback();
+}
+inline void HudResourceManager::LoadingCompleteCallbackBridge(unsigned int param) {
+    TheHudResourceManager.LoadingCompleteCallback();
+}
+inline void HudResourceManager::LoadedCustomHudTexturePackCallbackBridge(unsigned int param) {
+    TheHudResourceManager.LoadedCustomHudTexturePackCallback();
+}
+inline void HudResourceManager::LoadedCustomHudTexturesCallbackBridge(unsigned int param) {
+    TheHudResourceManager.LoadedCustomHudTexturesCallback();
+}
 
 #endif
