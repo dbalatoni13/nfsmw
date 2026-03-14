@@ -619,167 +619,168 @@ bool CarCustomizeManager::IsPartNew(SelectablePart *part, int perf_unlock_level)
 bool CarCustomizeManager::IsCategoryNew(unsigned int cat) {
     eUnlockableEntity titty;
 
-    if (cat == 0x406) {
-        titty = static_cast<eUnlockableEntity>(0x27);
-    } else if (cat < 0x407) {
-        if (cat == 0x207) {
-            titty = static_cast<eUnlockableEntity>(9);
-        } else if (cat < 0x208) {
-            if (cat == 0x201) {
-                titty = static_cast<eUnlockableEntity>(8);
-            } else if (cat < 0x202) {
-                if (cat == 0x103) {
-                    for (unsigned int i = 0x702; i < 0x70c; i++) {
-                        if (IsCategoryNew(i)) return true;
-                    }
-                    return false;
-                }
-                if (cat < 0x104) {
-                    if (cat == 0x101) {
-                        titty = static_cast<eUnlockableEntity>(0xb);
-                    } else {
-                        if (cat != 0x102) return true;
-                        titty = static_cast<eUnlockableEntity>(0xc);
-                    }
-                } else if (cat == 0x104) {
-                    titty = static_cast<eUnlockableEntity>(0xe);
-                } else {
-                    if (cat != 0x105) return true;
-                    titty = static_cast<eUnlockableEntity>(0xf);
-                }
-            } else if (cat == 0x204) {
-                titty = static_cast<eUnlockableEntity>(10);
-            } else if (cat < 0x205) {
-                if (cat == 0x202) {
-                    titty = static_cast<eUnlockableEntity>(7);
-                } else {
-                    if (cat != 0x203) return true;
-                    titty = static_cast<eUnlockableEntity>(6);
-                }
-            } else if (cat == 0x205) {
-                titty = static_cast<eUnlockableEntity>(4);
-            } else {
-                if (cat != 0x206) return true;
-                titty = static_cast<eUnlockableEntity>(5);
-            }
-        } else if (cat == 0x306) {
-            titty = static_cast<eUnlockableEntity>(0x2b);
-        } else if (cat < 0x307) {
-            if (cat == 0x303) {
-                titty = static_cast<eUnlockableEntity>(0x18);
-            } else if (cat < 0x304) {
-                if (cat != 0x301) {
-                    if (cat == 0x302) {
-                        for (unsigned int i = 0x402; i <= 0x409; i++) {
-                            if (IsCategoryNew(i)) return true;
-                        }
-                    }
-                    return true;
-                }
-                titty = static_cast<eUnlockableEntity>(0x17);
-            } else {
-                if (cat != 0x304) {
-                    if (cat != 0x305) return true;
-                    if (IsCategoryNew(0x501)) return true;
-                    if (IsCategoryNew(0x505)) return true;
-                    if (IsCategoryNew(0x503)) return true;
-                    return false;
-                }
-                titty = static_cast<eUnlockableEntity>(0x12);
-            }
-        } else if (cat == 0x403) {
-            titty = static_cast<eUnlockableEntity>(0x24);
-        } else if (cat < 0x404) {
-            if (cat == 0x307) {
-                titty = static_cast<eUnlockableEntity>(0x11);
-            } else {
-                if (cat != 0x402) return true;
-                titty = static_cast<eUnlockableEntity>(0x23);
-            }
-        } else if (cat == 0x404) {
-            titty = static_cast<eUnlockableEntity>(0x25);
-        } else {
-            if (cat != 0x405) return true;
-            titty = static_cast<eUnlockableEntity>(0x26);
+    switch (cat) {
+    case 0x101:
+        titty = static_cast<eUnlockableEntity>(0xb);
+        break;
+    case 0x102:
+        titty = static_cast<eUnlockableEntity>(0xc);
+        break;
+    case 0x103: {
+        for (unsigned int i = 0x702; i < 0x70c; i++) {
+            if (IsCategoryNew(i)) return true;
         }
-    } else if (cat == 0x702) {
-        titty = static_cast<eUnlockableEntity>(0x19);
-    } else if (cat < 0x703) {
-        if (cat < 0x505) {
-            if (cat < 0x503) {
-                if (cat == 0x409) {
-                    titty = static_cast<eUnlockableEntity>(0x2a);
-                } else if (cat < 0x40a) {
-                    if (cat == 0x407) {
-                        titty = static_cast<eUnlockableEntity>(0x28);
-                    } else {
-                        if (cat != 0x408) return true;
-                        titty = static_cast<eUnlockableEntity>(0x29);
-                    }
-                } else {
-                    if (cat < 0x501) return true;
-                    titty = static_cast<eUnlockableEntity>(0x2c);
-                }
-                goto common;
-            }
-        } else {
-            if (cat < 0x507) {
-                titty = static_cast<eUnlockableEntity>(0x30);
-                goto common;
-            }
-            if (cat > 0x606) return true;
-            if (cat < 0x601) return true;
-        }
-        titty = static_cast<eUnlockableEntity>(0x2e);
-    } else if (cat == 0x708) {
-        titty = static_cast<eUnlockableEntity>(0x1f);
-    } else if (cat < 0x709) {
-        if (cat == 0x705) {
-            titty = static_cast<eUnlockableEntity>(0x1c);
-        } else if (cat < 0x706) {
-            if (cat == 0x703) {
-                titty = static_cast<eUnlockableEntity>(0x1a);
-            } else {
-                if (cat != 0x704) return true;
-                titty = static_cast<eUnlockableEntity>(0x1b);
-            }
-        } else if (cat == 0x706) {
-            titty = static_cast<eUnlockableEntity>(0x1d);
-        } else {
-            if (cat != 0x707) return true;
-            titty = static_cast<eUnlockableEntity>(0x1e);
-        }
-    } else if (cat == 0x70b) {
-        titty = static_cast<eUnlockableEntity>(0x22);
-    } else {
-        if (cat > 0x70b) {
-            if (cat == 0x802) {
-                for (unsigned int i = 0x201; i < 0x208; i++) {
-                    if (IsCategoryNew(i)) return true;
-                }
-                return false;
-            }
-            if (cat < 0x803) {
-                if (cat != 0x801) return true;
-                for (unsigned int i = 0x101; i < 0x106; i++) {
-                    if (IsCategoryNew(i)) return true;
-                }
-                return false;
-            }
-            if (cat != 0x803) return true;
-            for (unsigned int i = 0x301; i < 0x308; i++) {
-                if (IsCategoryNew(i)) return true;
-            }
-            return false;
-        }
-        if (cat == 0x709) {
-            titty = static_cast<eUnlockableEntity>(0x20);
-        } else {
-            if (cat != 0x70a) return true;
-            titty = static_cast<eUnlockableEntity>(0x21);
-        }
+        return false;
     }
-common:
+    case 0x104:
+        titty = static_cast<eUnlockableEntity>(0xe);
+        break;
+    case 0x105:
+        titty = static_cast<eUnlockableEntity>(0xf);
+        break;
+    case 0x201:
+        titty = static_cast<eUnlockableEntity>(8);
+        break;
+    case 0x202:
+        titty = static_cast<eUnlockableEntity>(7);
+        break;
+    case 0x203:
+        titty = static_cast<eUnlockableEntity>(6);
+        break;
+    case 0x204:
+        titty = static_cast<eUnlockableEntity>(10);
+        break;
+    case 0x205:
+        titty = static_cast<eUnlockableEntity>(4);
+        break;
+    case 0x206:
+        titty = static_cast<eUnlockableEntity>(5);
+        break;
+    case 0x207:
+        titty = static_cast<eUnlockableEntity>(9);
+        break;
+    case 0x301:
+        titty = static_cast<eUnlockableEntity>(0x17);
+        break;
+    case 0x302: {
+        for (unsigned int i = 0x402; i <= 0x409; i++) {
+            if (IsCategoryNew(i)) return true;
+        }
+        return true;
+    }
+    case 0x303:
+        titty = static_cast<eUnlockableEntity>(0x18);
+        break;
+    case 0x304:
+        titty = static_cast<eUnlockableEntity>(0x12);
+        break;
+    case 0x305:
+        if (IsCategoryNew(0x501)) return true;
+        if (IsCategoryNew(0x505)) return true;
+        if (IsCategoryNew(0x503)) return true;
+        return false;
+    case 0x306:
+        titty = static_cast<eUnlockableEntity>(0x2b);
+        break;
+    case 0x307:
+        titty = static_cast<eUnlockableEntity>(0x11);
+        break;
+    case 0x402:
+        titty = static_cast<eUnlockableEntity>(0x23);
+        break;
+    case 0x403:
+        titty = static_cast<eUnlockableEntity>(0x24);
+        break;
+    case 0x404:
+        titty = static_cast<eUnlockableEntity>(0x25);
+        break;
+    case 0x405:
+        titty = static_cast<eUnlockableEntity>(0x26);
+        break;
+    case 0x406:
+        titty = static_cast<eUnlockableEntity>(0x27);
+        break;
+    case 0x407:
+        titty = static_cast<eUnlockableEntity>(0x28);
+        break;
+    case 0x408:
+        titty = static_cast<eUnlockableEntity>(0x29);
+        break;
+    case 0x409:
+        titty = static_cast<eUnlockableEntity>(0x2a);
+        break;
+    case 0x501:
+    case 0x502:
+        titty = static_cast<eUnlockableEntity>(0x2c);
+        break;
+    case 0x503:
+    case 0x504:
+        titty = static_cast<eUnlockableEntity>(0x2e);
+        break;
+    case 0x505:
+    case 0x506:
+        titty = static_cast<eUnlockableEntity>(0x30);
+        break;
+    case 0x601:
+    case 0x602:
+    case 0x603:
+    case 0x604:
+    case 0x605:
+    case 0x606:
+        titty = static_cast<eUnlockableEntity>(0x2e);
+        break;
+    case 0x702:
+        titty = static_cast<eUnlockableEntity>(0x19);
+        break;
+    case 0x703:
+        titty = static_cast<eUnlockableEntity>(0x1a);
+        break;
+    case 0x704:
+        titty = static_cast<eUnlockableEntity>(0x1b);
+        break;
+    case 0x705:
+        titty = static_cast<eUnlockableEntity>(0x1c);
+        break;
+    case 0x706:
+        titty = static_cast<eUnlockableEntity>(0x1d);
+        break;
+    case 0x707:
+        titty = static_cast<eUnlockableEntity>(0x1e);
+        break;
+    case 0x708:
+        titty = static_cast<eUnlockableEntity>(0x1f);
+        break;
+    case 0x709:
+        titty = static_cast<eUnlockableEntity>(0x20);
+        break;
+    case 0x70a:
+        titty = static_cast<eUnlockableEntity>(0x21);
+        break;
+    case 0x70b:
+        titty = static_cast<eUnlockableEntity>(0x22);
+        break;
+    case 0x801: {
+        for (unsigned int i = 0x101; i < 0x106; i++) {
+            if (IsCategoryNew(i)) return true;
+        }
+        return false;
+    }
+    case 0x802: {
+        for (unsigned int i = 0x201; i < 0x208; i++) {
+            if (IsCategoryNew(i)) return true;
+        }
+        return false;
+    }
+    case 0x803: {
+        for (unsigned int i = 0x301; i < 0x308; i++) {
+            if (IsCategoryNew(i)) return true;
+        }
+        return false;
+    }
+    default:
+        return true;
+    }
+
     eUnlockFilters filter = GetUnlockFilter();
     return UnlockSystem::IsUnlockableNew(filter, titty, -2);
 }
@@ -788,124 +789,143 @@ bool CarCustomizeManager::IsCategoryLocked(unsigned int cat, bool backroom) {
     eUnlockableEntity titty;
     int level = 0;
 
-    if (cat == 0x305) {
+    switch (cat) {
+    case 0x101:
+        titty = static_cast<eUnlockableEntity>(0xb);
+        break;
+    case 0x102:
+        titty = static_cast<eUnlockableEntity>(0xc);
+        break;
+    case 0x103: {
+        for (unsigned int i = 0x702; i < 0x70c; i++) {
+            if (!IsRimCategoryLocked(i, backroom)) return false;
+        }
+        return true;
+    }
+    case 0x104:
+        titty = static_cast<eUnlockableEntity>(0xe);
+        break;
+    case 0x105:
+        titty = static_cast<eUnlockableEntity>(0xf);
+        break;
+    case 0x201:
+        if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(4))) return true;
+        titty = static_cast<eUnlockableEntity>(8);
+        break;
+    case 0x202:
+        if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(3))) return true;
+        titty = static_cast<eUnlockableEntity>(7);
+        break;
+    case 0x203:
+        if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(2))) return true;
+        titty = static_cast<eUnlockableEntity>(6);
+        break;
+    case 0x204:
+        if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(6))) return true;
+        titty = static_cast<eUnlockableEntity>(10);
+        break;
+    case 0x205:
+        if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(0))) return true;
+        titty = static_cast<eUnlockableEntity>(4);
+        break;
+    case 0x206:
+        if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(1))) return true;
+        titty = static_cast<eUnlockableEntity>(5);
+        break;
+    case 0x207:
+        if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(5))) return true;
+        titty = static_cast<eUnlockableEntity>(9);
+        break;
+    case 0x301:
+        titty = static_cast<eUnlockableEntity>(0x17);
+        break;
+    case 0x302: {
+        for (unsigned int i = 0x402; i < 0x40a; i++) {
+            if (!IsVinylCategoryLocked(i, backroom)) return false;
+        }
+        return true;
+    }
+    case 0x303:
+        titty = static_cast<eUnlockableEntity>(0x18);
+        break;
+    case 0x304:
+        titty = static_cast<eUnlockableEntity>(0x12);
+        break;
+    case 0x305:
         if (!IsCategoryLocked(0x501, backroom)) return false;
         if (!IsCategoryLocked(0x505, backroom)) return false;
         if (!IsCategoryLocked(0x503, backroom)) return false;
         return true;
-    }
-    if (cat < 0x306) {
-        if (cat == 0x203) {
-            if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(2))) return true;
-            titty = static_cast<eUnlockableEntity>(6);
-        } else if (cat < 0x204) {
-            if (cat == 0x104) {
-                titty = static_cast<eUnlockableEntity>(0xe);
-            } else if (cat < 0x105) {
-                if (cat == 0x102) {
-                    titty = static_cast<eUnlockableEntity>(0xc);
-                } else if (cat > 0x102) {
-                    for (unsigned int i = 0x702; i < 0x70c; i++) {
-                        if (!IsRimCategoryLocked(i, backroom)) return false;
-                    }
-                    return true;
-                } else if (cat == 0x101) {
-                    titty = static_cast<eUnlockableEntity>(0xb);
-                } else {
-                    return true;
-                }
-            } else if (cat == 0x201) {
-                if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(4))) return true;
-                titty = static_cast<eUnlockableEntity>(8);
-            } else if (cat < 0x202) {
-                if (cat != 0x105) return true;
-                titty = static_cast<eUnlockableEntity>(0xf);
-            } else {
-                if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(3))) return true;
-                titty = static_cast<eUnlockableEntity>(7);
-            }
-        } else if (cat == 0x207) {
-            if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(5))) return true;
-            titty = static_cast<eUnlockableEntity>(9);
-        } else if (cat < 0x208) {
-            if (cat == 0x205) {
-                if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(0))) return true;
-                titty = static_cast<eUnlockableEntity>(4);
-            } else if (cat < 0x206) {
-                if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(6))) return true;
-                titty = static_cast<eUnlockableEntity>(10);
-            } else {
-                if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(1))) return true;
-                titty = static_cast<eUnlockableEntity>(5);
-            }
-        } else {
-            if (cat == 0x302) {
-                for (unsigned int i = 0x402; i < 0x40a; i++) {
-                    if (!IsVinylCategoryLocked(i, backroom)) return false;
-                }
-                return true;
-            }
-            if (cat < 0x303) {
-                if (cat != 0x301) return true;
-                titty = static_cast<eUnlockableEntity>(0x17);
-            } else if (cat == 0x303) {
-                titty = static_cast<eUnlockableEntity>(0x18);
-            } else {
-                if (cat != 0x304) return true;
-                titty = static_cast<eUnlockableEntity>(0x12);
-            }
-        }
-    } else if (cat < 0x507) {
-        if (cat > 0x504) {
-            level = 3;
-            titty = static_cast<eUnlockableEntity>(0x30);
-        } else if (cat < 0x40a) {
-            if (cat > 0x401) {
-                return IsVinylCategoryLocked(cat, backroom);
-            }
-            if (cat == 0x306) {
-                titty = static_cast<eUnlockableEntity>(0x2b);
-            } else {
-                if (cat != 0x307) return true;
-                titty = static_cast<eUnlockableEntity>(0x11);
-            }
-        } else if (cat < 0x501) {
-            return true;
-        } else if (cat < 0x503) {
-            level = 1;
-            titty = static_cast<eUnlockableEntity>(0x2c);
-        } else {
-            level = 2;
-            titty = static_cast<eUnlockableEntity>(0x2e);
-        }
-    } else {
-        if (cat > 0x70b) {
-            if (cat == 0x802) {
-                for (unsigned int i = 0x201; i < 0x208; i++) {
-                    if (!IsCategoryLocked(i, backroom)) return false;
-                }
-                return true;
-            }
-            if (cat < 0x803) {
-                if (cat != 0x801) return true;
-                for (unsigned int i = 0x101; i < 0x106; i++) {
-                    if (!IsCategoryLocked(i, backroom)) return false;
-                }
-                return true;
-            }
-            if (cat != 0x803) return true;
-            for (unsigned int i = 0x301; i < 0x308; i++) {
-                if (!IsCategoryLocked(i, backroom)) return false;
-            }
-            return true;
-        }
-        if (cat > 0x701) {
-            return IsRimCategoryLocked(cat, backroom);
-        }
-        if (cat > 0x606) return true;
-        if (cat < 0x601) return true;
+    case 0x306:
+        titty = static_cast<eUnlockableEntity>(0x2b);
+        break;
+    case 0x307:
+        titty = static_cast<eUnlockableEntity>(0x11);
+        break;
+    case 0x402:
+    case 0x403:
+    case 0x404:
+    case 0x405:
+    case 0x406:
+    case 0x407:
+    case 0x408:
+    case 0x409:
+        return IsVinylCategoryLocked(cat, backroom);
+    case 0x501:
+    case 0x502:
+        level = 1;
+        titty = static_cast<eUnlockableEntity>(0x2c);
+        break;
+    case 0x503:
+    case 0x504:
         level = 2;
         titty = static_cast<eUnlockableEntity>(0x2e);
+        break;
+    case 0x505:
+    case 0x506:
+        level = 3;
+        titty = static_cast<eUnlockableEntity>(0x30);
+        break;
+    case 0x601:
+    case 0x602:
+    case 0x603:
+    case 0x604:
+    case 0x605:
+    case 0x606:
+        level = 2;
+        titty = static_cast<eUnlockableEntity>(0x2e);
+        break;
+    case 0x702:
+    case 0x703:
+    case 0x704:
+    case 0x705:
+    case 0x706:
+    case 0x707:
+    case 0x708:
+    case 0x709:
+    case 0x70a:
+    case 0x70b:
+        return IsRimCategoryLocked(cat, backroom);
+    case 0x801: {
+        for (unsigned int i = 0x101; i < 0x106; i++) {
+            if (!IsCategoryLocked(i, backroom)) return false;
+        }
+        return true;
+    }
+    case 0x802: {
+        for (unsigned int i = 0x201; i < 0x208; i++) {
+            if (!IsCategoryLocked(i, backroom)) return false;
+        }
+        return true;
+    }
+    case 0x803: {
+        for (unsigned int i = 0x301; i < 0x308; i++) {
+            if (!IsCategoryLocked(i, backroom)) return false;
+        }
+        return true;
+    }
+    default:
+        return true;
     }
 
     eUnlockFilters filter = GetUnlockFilter();

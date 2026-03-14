@@ -360,14 +360,14 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
                     return;
                 }
                 if (FEDatabase->GetCareerSettings()->GetCurrentBin() > 15) {
-                    char price_buf[16];
-                    bSNPrintf(price_buf, 0x10, "%d", cost >> 1);
+                    char cost_str[16];
+                    bSNPrintf(cost_str, 0x10, "%d", cost >> 1);
                     const char *fmt = GetLocalizedString(0xb4a40135);
-                    char dialog_buf[512];
-                    bSNPrintf(dialog_buf, 0x200, fmt, price_buf);
+                    char buf[512];
+                    bSNPrintf(buf, 0x200, fmt, cost_str);
                     DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1),
                         0x70e01038, 0x417b25e4, 0xa46253ba, 0x34dc1bcf, 0x34dc1bcf,
-                        static_cast<eDialogFirstButtons>(1), dialog_buf);
+                        static_cast<eDialogFirstButtons>(1), buf);
                     return;
                 }
                 DialogInterface::ShowThreeButtons(GetPackageName(), "", static_cast<eDialogTitle>(1),
@@ -614,14 +614,14 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
             return;
         }
         unsigned int cost = car->GetCost();
-        char price_buf[16];
-        bSNPrintf(price_buf, 0x10, "%d", cost >> 1);
+        char cost_str[16];
+        bSNPrintf(cost_str, 0x10, "%d", cost >> 1);
         const char *fmt = GetLocalizedString(0xb4a40135);
-        char dialog_buf[512];
-        bSNPrintf(dialog_buf, 0x200, fmt, price_buf);
+        char buf[512];
+        bSNPrintf(buf, 0x200, fmt, cost_str);
         DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1),
             0x70e01038, 0x417b25e4, 0xa46253ba, 0x34dc1bcf, 0x34dc1bcf,
-            static_cast<eDialogFirstButtons>(1), dialog_buf);
+            static_cast<eDialogFirstButtons>(1), buf);
         return;
     }
     case 0xc98356ba: {
