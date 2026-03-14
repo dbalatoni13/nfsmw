@@ -30,7 +30,20 @@ struct FEngFont : public bTNode<FEngFont> {
     ~FEngFont();
 
     void NotifyTextureLoading(TexturePack *texture_pack, bool loading);
+
+    static bool IsJoyEventTexture(const short *pInputString, unsigned long Flags);
+    static const short *SkipJoyEventTexture(const short *pInputString, unsigned long Flags);
+    float GetJoyEventTextureWidth(const short *pInputString);
+    const TextureInfo *GetJoyEventTextureInfo(const short *pInputString);
+    const short *HandleJoyEventTexture(const short *input, float fX, float fY, unsigned int *render_colors, FERenderObject *cached, float &advance, FEPackageRenderInfo *pkg_render_info);
+
     void RenderString(const FEColor &Color, const short *pcString, FEString *obj, bMatrix4 *matrix, FERenderObject *cached, FEPackageRenderInfo *pkg_render_info);
+
+    float GetNextWordWidth(const short *pcString, unsigned long flags);
+    float GetCharacterWidth(short Char, short PrevChar, unsigned long Flags);
+    float GetLineWidth(const short *pcString, unsigned long flags, unsigned long maxWidth, bool word_wrap);
+
+    unsigned short ConvertCharacter(unsigned short c);
 
     TextureInfo *GetTextureInfo() { return pTextureInfo; }
     unsigned int GetHashID() { return FontHash; }
