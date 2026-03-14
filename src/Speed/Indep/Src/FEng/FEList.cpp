@@ -60,8 +60,6 @@ int FEStricmp(const char* s1, const char* s2) {
     return c1 - c2;
 }
 
-FEMinNode::~FEMinNode() {}
-
 FENode::FENode()
     : name(nullptr), //
       nameHash(0) {

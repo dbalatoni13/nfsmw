@@ -21,7 +21,7 @@ public:
         : next(reinterpret_cast<FEMinNode*>(0xABADCAFE)), //
           prev(reinterpret_cast<FEMinNode*>(0xABADCAFE)) {
     }
-    virtual ~FEMinNode();
+    virtual ~FEMinNode() {}
 
     inline FEMinNode* GetNext() const { return next; }
     inline FEMinNode* GetPrev() const { return prev; }

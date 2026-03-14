@@ -678,9 +678,11 @@ void FEPackage::BuildMouseObjectStateList() {
     }
 }
 
-FEObjectMouseState::FEObjectMouseState()
-    : pObject(nullptr) //
-    , Flags(0) {
+FEObjectMouseState::FEObjectMouseState() {
+    pObject = nullptr;
+    Offset.h = 0.0f;
+    Offset.v = 0.0f;
+    Flags = 0;
 }
 
 FEObjectMouseState::~FEObjectMouseState() {}

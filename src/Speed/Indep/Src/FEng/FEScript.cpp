@@ -41,17 +41,20 @@ void FEScript::Init() {
 
 FEKeyTrack* FEScript::FindTrack(FEKeyTrack_Indices TrackIndex) const {
     unsigned long i = 0;
+    unsigned long count = TrackCount;
+    int offset = static_cast<int>(FETrackOffsets[TrackIndex]);
 
-    if (TrackCount != 0) {
+    if (i < count) {
+        FEKeyTrack* pBase = pTracks;
         do {
-            FEKeyTrack* pTrack = pTracks + i;
+            FEKeyTrack* pTrack = pBase + i;
 
-            if (*(reinterpret_cast<unsigned char*>(pTrack) + 7) == FETrackOffsets[TrackIndex]) {
+            if (pTrack->LongOffset == offset) {
                 return pTrack;
             }
 
             i++;
-        } while (i < TrackCount);
+        } while (i < count);
     }
 
     return nullptr;
