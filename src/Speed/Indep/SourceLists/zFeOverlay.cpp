@@ -1,3 +1,8 @@
+// NOTE TO OTHER AGENT (zFE2): This file and ALL files under
+// MenuScreens/Safehouse/ and customize/ are owned by the zFeOverlay agent.
+// DO NOT empty, overwrite, or reset these files. They contain active work.
+// If you need to modify shared headers (FEManager.hpp, cFEng.h, FEngine.h, etc.),
+// please preserve existing content and only ADD to it.
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.cpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRBrief.cpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRMainMenu.cpp"

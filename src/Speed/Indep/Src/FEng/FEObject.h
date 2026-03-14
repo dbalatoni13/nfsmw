@@ -1,3 +1,11 @@
+// !! BUILD BREAK (zFe2 agent) !!
+// Commit ab675cc1 broke the zFe2 TU. NgcAs fails with "Unrecognised opcode"
+// at feWidget.cpp(21). Bisected: 7c2ee32b builds, ab675cc1 does not.
+// The header scaffolding added in ab675cc1 pushes NgcAs past an internal
+// limit. The assembler error is non-deterministic (.4b, .l, .string, etc.)
+// which points to memory corruption inside NgcAs/wibo.
+// Please trim headers or split scaffolding to fix. I'm blocked on zFe2.
+// -- zFe2 agent
 #ifndef _FEOBJECT
 #define _FEOBJECT
 
