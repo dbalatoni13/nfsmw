@@ -2190,7 +2190,7 @@ CustomizeHUDColor::~CustomizeHUDColor() {
 
 void CustomizeHUDColor::AddLayerOption(unsigned int layer, unsigned int icon_hash, unsigned int name_hash) {
     HUDLayerOption *opt = new HUDLayerOption(layer, icon_hash, name_hash);
-    Options.AddOption(opt);
+    AddOption(opt);
 }
 
 void CustomizeHUDColor::Setup() {
@@ -3090,7 +3090,7 @@ void CustomizeRims::ScrollRimSizes(eScrollDir dir) {
         }
     } else if (dir == eSD_NEXT) {
         radius++;
-        if (MaxRadius < radius) {
+        if (radius > MaxRadius) {
             radius = MinRadius;
         }
     }

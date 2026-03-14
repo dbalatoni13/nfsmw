@@ -1138,11 +1138,44 @@ float CarCustomizeManager::GetCartHeat() {
 void CarCustomizeManager::MaxOutPerformance() {
     for (int i = 0; i < 7; i++) {
         Physics::Upgrades::Type type = static_cast<Physics::Upgrades::Type>(i);
-        int max_level = GetMaxPackages(type);
-        int installed = GetInstalledPerfPkg(type);
-        for (int level = installed + 1; level <= max_level; level++) {
-            SelectablePart *sp = new SelectablePart(nullptr, 0, static_cast<unsigned int>(level), static_cast<GRace::Type>(static_cast<int>(type)), true, CPS_AVAILABLE, 0, false);
+        int num_packages = GetNumPackages(type);
+        int best_level = 0;
+
+        for (int j = 0; j < num_packages; j++) {
+            SelectablePart sp(nullptr, 0, static_cast<unsigned int>(j + 1), static_cast<GRace::Type>(static_cast<int>(type)), true, CPS_AVAILABLE, 0, false);
+            int level_param = GetMaxPackages(type) - GetNumPackages(type) + j + 1;
+            if (!IsPartLocked(&sp, level_param)) {
+                best_level = j + 1;
+            }
+        }
+
+        if (best_level > 0) {
+            ShoppingCartItem *existing = IsPartTypeInCart(type);
+            if (existing) {
+                RemoveFromCart(existing);
+            }
+
+            SelectablePart *sp = new SelectablePart(nullptr, 0, static_cast<unsigned int>(best_level), static_cast<GRace::Type>(static_cast<int>(type)), true, CPS_AVAILABLE, 0, false);
+
+            eCustomizePartState status = CPS_AVAILABLE;
+            int level_param = GetMaxPackages(type) - GetNumPackages(type) + best_level + 1;
+            if (IsPartLocked(sp, level_param)) {
+                status = CPS_LOCKED;
+            } else if (IsPartNew(sp, level_param)) {
+                status = CPS_NEW;
+            }
+
+            if (IsPartInstalled(sp)) {
+                status = static_cast<eCustomizePartState>(status | CPS_INSTALLED);
+            } else if (IsPartInCart(sp)) {
+                status = static_cast<eCustomizePartState>(status | CPS_IN_CART);
+            }
+
+            sp->SetPartState(static_cast<unsigned int>(status));
+            sp->SetPrice(gCarCustomizeManager.GetPartPrice(sp));
+
             AddToCart(sp);
+            delete sp;
         }
     }
 }

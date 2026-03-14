@@ -236,7 +236,7 @@ bool UIQRChallengeSeries::IsRaceValidForMike(GRaceParameters *parms) {
         if (bStrCmp(parms->GetEventID(), "16_1_3_drag") == 0) return true;
         if (bStrCmp(parms->GetEventID(), "16_1_4_lap_ko") == 0) return true;
         return bStrCmp(parms->GetEventID(), "16_1_5_tollbooth") == 0;
-    } else if (build == 2) {
+    } else if (GetMikeMannBuild() == 2) {
         if (bStrICmp(parms->GetEventID(), "16_1_4_lap_ko") == 0) return true;
         return bStrICmp(parms->GetEventID(), "16_1_6_speedtrap") == 0;
     }
