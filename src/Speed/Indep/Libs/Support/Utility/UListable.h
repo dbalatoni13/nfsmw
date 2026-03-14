@@ -163,6 +163,20 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
     static _ListSet _mLists;
 };
 
+template <class T, int EnumMax, typename Enum, unsigned int U>
+int ListableSet<T, EnumMax, Enum, U>::Count(Enum idx) {
+    return _mLists._buckets[idx].size();
+}
+
+template <class T, int EnumMax, typename Enum, unsigned int U>
+T *ListableSet<T, EnumMax, Enum, U>::First(Enum idx) {
+    const List &list = _mLists._buckets[idx];
+    if (list.size() != 0) {
+        return *list.begin();
+    }
+    return nullptr;
+}
+
 template <typename T> class Countable {
     static int _mCount;
 
