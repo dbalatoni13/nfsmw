@@ -3072,4 +3072,141 @@ CustomizePaintDatum::~CustomizePaintDatum() {
     }
 }
 
+unsigned int CustomizePerformance::GetPerfPkgDesc(Physics::Upgrades::Type type, int level, int num_packages, bool has_turbo) {
+    if (level == 0) {
+        switch (type) {
+        case static_cast<Physics::Upgrades::Type>(0): return 0xe5c1020c;
+        case static_cast<Physics::Upgrades::Type>(1): return 0x927db4fd;
+        case static_cast<Physics::Upgrades::Type>(2): return 0x8c96b853;
+        case static_cast<Physics::Upgrades::Type>(3): return 0x2f525e4f;
+        case static_cast<Physics::Upgrades::Type>(4): return 0xe74dedbb;
+        case static_cast<Physics::Upgrades::Type>(5):
+            if (has_turbo) return 0x5317eb31;
+            return 0x704a6d50;
+        case static_cast<Physics::Upgrades::Type>(6): return 0x9a0ef8f9;
+        default: return 0;
+        }
+    }
+    const char *fmt;
+    switch (type) {
+    case static_cast<Physics::Upgrades::Type>(0): fmt = "PD_TIRES_%d_%d"; break;
+    case static_cast<Physics::Upgrades::Type>(1): fmt = "PD_BRAKES_%d_%d"; break;
+    case static_cast<Physics::Upgrades::Type>(2): fmt = "PD_CHASSIS_%d_%d"; break;
+    case static_cast<Physics::Upgrades::Type>(3): fmt = "PD_TRANSMISSION_%d_%d"; break;
+    case static_cast<Physics::Upgrades::Type>(4):
+        if (gCarCustomizeManager.IsCastrolCar() && level == 4 && num_packages == 3) {
+            return FEngHashString("PD_ENGINE_%d_%d_CASTROL", 4, 3);
+        }
+        if (gCarCustomizeManager.IsRotaryCar() && (level == 2 || level == 4) && num_packages == 1) {
+            return FEngHashString("PD_ENGINE_%d_%d_ROTARY", level, 1);
+        }
+        fmt = "PD_ENGINE_%d_%d";
+        break;
+    case static_cast<Physics::Upgrades::Type>(5):
+        if (!has_turbo) {
+            fmt = "PD_SUPERCHARGER_%d_%d";
+        } else {
+            fmt = "PD_TURBO_%d_%d";
+        }
+        break;
+    case static_cast<Physics::Upgrades::Type>(6): fmt = "PD_NITROUS_%d_%d"; break;
+    default: return 0;
+    }
+    return FEngHashString(fmt, level, num_packages);
+}
+
+unsigned int CustomizePerformance::GetPerfPkgBrand(Physics::Upgrades::Type type, int level, int num_packages) {
+    unsigned int hash = 0;
+    Attrib::Instance inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), gCarCustomizeManager.GetTuningCar()->FEKey), 0, nullptr);
+    inst.SetDefaultLayout(100);
+    unsigned int key = 0;
+    switch (type) {
+    case static_cast<Physics::Upgrades::Type>(0):
+        switch (level) {
+        case 0: hash = 0xad6a0504; goto done;
+        case 1: key = 0xf0c7c400; break;
+        case 2: key = 0x1e6ddf1; break;
+        case 3: key = 0x92378a0a; break;
+        case 4: key = 0x16b700d6; break;
+        default: goto done;
+        }
+        break;
+    case static_cast<Physics::Upgrades::Type>(1):
+        switch (level) {
+        case 0: hash = 0xa1a5e9e5; goto done;
+        case 1: key = 0xe4af1260; break;
+        case 2: key = 0x70b14851; break;
+        case 3: key = 0x8e8b78e1; break;
+        case 4: key = 0xb4df5439; break;
+        default: goto done;
+        }
+        break;
+    case static_cast<Physics::Upgrades::Type>(2):
+        switch (level) {
+        case 0: hash = 0xad6a0504; goto done;
+        case 1: key = 0x37ea2169; break;
+        case 2: key = 0xe5650914; break;
+        case 3: key = 0xe321687d; break;
+        case 4: key = 0xfb1ef23f; break;
+        default: goto done;
+        }
+        break;
+    case static_cast<Physics::Upgrades::Type>(3):
+        switch (level) {
+        case 0: hash = 0x98ed935e; goto done;
+        case 1: key = 0x1e823f0b; break;
+        case 2: key = 0x79c8d7e9; break;
+        case 3: key = 0xa1b53a33; break;
+        case 4: key = 0xf424c06d; break;
+        default: goto done;
+        }
+        break;
+    case static_cast<Physics::Upgrades::Type>(4):
+        if (gCarCustomizeManager.IsCastrolCar() && level == 4 && num_packages == 2) {
+            inst.~Instance();
+            return 0xb95d4df;
+        }
+        switch (level) {
+        case 0: hash = 0x7d0ac98f; goto done;
+        case 1: key = 0x512303af; break;
+        case 2: key = 0xdb8a8a1d; break;
+        case 3: key = 0x4f56a655; break;
+        case 4: key = 0x85ab21da; break;
+        default: goto done;
+        }
+        break;
+    case static_cast<Physics::Upgrades::Type>(5):
+        switch (level) {
+        case 0: hash = 0x9e8f71ad; goto done;
+        case 1: key = 0xe141cde; break;
+        case 2: key = 0x4d3b62f3; break;
+        case 3: key = 0xea7f3fe4; break;
+        case 4: key = 0xb6be1d52; break;
+        default: goto done;
+        }
+        break;
+    case static_cast<Physics::Upgrades::Type>(6):
+        switch (level) {
+        case 0: hash = 0x98ed935e; goto done;
+        case 1: key = 0x7f6e85a3; break;
+        case 2: key = 0xd810d2dc; break;
+        case 3: key = 0xa459ecef; break;
+        case 4: key = 0x8da087a4; break;
+        default: goto done;
+        }
+        break;
+    default: goto done;
+    }
+    {
+        unsigned int *ptr = static_cast<unsigned int *>(inst.GetAttributePointer(key, num_packages));
+        if (!ptr) {
+            ptr = static_cast<unsigned int *>(Attrib::DefaultDataArea(4));
+        }
+        hash = *ptr;
+    }
+done:
+    inst.~Instance();
+    return hash;
+}
+
 #endif // FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE____CUSTOMIZE_CARCUSTOMIZE_H

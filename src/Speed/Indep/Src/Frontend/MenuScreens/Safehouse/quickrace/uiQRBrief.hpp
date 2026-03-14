@@ -45,7 +45,7 @@ struct SelectableTrack : public bTNode<SelectableTrack> {
 // total size: 0x138
 struct UIQRBrief : public MenuScreen {
     UIQRBrief(ScreenConstructorData *sd);
-    ~UIQRBrief() override {}
+    ~UIQRBrief() override;
 
     void NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) override;
 

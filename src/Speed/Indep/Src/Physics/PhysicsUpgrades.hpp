@@ -30,6 +30,7 @@ struct Package {
 
 int GetMaxLevel(const Attrib::Gen::pvehicle &vehicle, Type type);
 int GetLevel(const Attrib::Gen::pvehicle &vehicle, Type type);
+void SetLevel(Attrib::Gen::pvehicle &vehicle, Type type, int level);
 
 }; // namespace Upgrades
 
