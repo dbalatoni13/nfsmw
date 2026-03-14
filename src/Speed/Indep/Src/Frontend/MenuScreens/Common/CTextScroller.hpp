@@ -32,12 +32,16 @@ struct CTextScroller {
     ~CTextScroller();
     void Initialise(MenuScreen* pOwner, int ViewWidth, int ViewLines, char* pTextDisplayNameTempl, FEngFont* pFont);
     void SetTextHash(unsigned int language_hash);
+    void SetText(short* pText);
     void Scroll(int Amount);
     bool HandleNotificationMessage(unsigned int Msg);
     void Display(int TopLine);
     void AddLine(short *pLine, int Size);
-    void UpdateScrollBar();
+    void WordWrapCountLinesAndChars(short* pTextStart, short* pTextEnd, int& NumLines, int& NumChars);
+    int WordWrapAddLines(short* pTextStart, short* pTextEnd, bool bCountOnly, int* pNumCharsOut);
+    short* FindCR(short* pText);
     short *FindEND(short *pText);
+    void UpdateScrollBar();
 };
 
 #endif

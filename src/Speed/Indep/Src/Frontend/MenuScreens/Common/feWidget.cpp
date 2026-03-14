@@ -311,3 +311,86 @@ short *CTextScroller::FindEND(short *pText) {
     }
     return pText;
 }
+
+extern char *bStrNCpy(char *dst, const char *src, int n);
+
+CTextScroller::CTextScroller() {
+    m_TopLine = 0;
+    m_ScrollDownMsg = 0x911C0A4B;
+    m_ScrollUpMsg = 0x72619778;
+    m_pOwner = nullptr;
+    m_pFont = nullptr;
+    m_pScrollBar = nullptr;
+    m_NumAddedLines = 0;
+    m_pLines = nullptr;
+    m_pRawDataBlock = nullptr;
+}
+
+CTextScroller::~CTextScroller() {
+    if (m_pRawDataBlock) {
+        delete[] m_pRawDataBlock;
+    }
+}
+
+void CTextScroller::Initialise(MenuScreen *pOwner, int ViewWidth, int ViewLines, char *pTextDisplayNameTempl, FEngFont *pFont) {
+    m_pOwner = pOwner;
+    m_ViewWidth = ViewWidth;
+    m_ViewVisibleLines = ViewLines;
+    bStrNCpy(m_TextBoxNameTemplate, pTextDisplayNameTempl, 31);
+    m_pFont = pFont;
+}
+
+void CTextScroller::Scroll(int Amount) {
+    if (m_NumAddedLines <= m_ViewVisibleLines) {
+        return;
+    }
+    int top = m_TopLine + Amount;
+    if (top < 0) {
+        top = 0;
+    } else {
+        int maxTop = m_NumAddedLines - m_ViewVisibleLines;
+        if (top + m_ViewVisibleLines > m_NumAddedLines) {
+            top = maxTop;
+        }
+    }
+    m_TopLine = top;
+    Display(top);
+}
+
+bool CTextScroller::HandleNotificationMessage(unsigned int Msg) {
+    if (Msg == m_ScrollUpMsg) {
+        Scroll(-1);
+        UpdateScrollBar();
+        return true;
+    }
+    if (Msg != m_ScrollDownMsg) {
+        return false;
+    }
+    Scroll(1);
+    UpdateScrollBar();
+    return true;
+}
+
+short *CTextScroller::FindCR(short *pText) {
+    short c = *pText;
+    if (c == 0) {
+        return nullptr;
+    }
+    if (c == '\n' || c == '^') {
+        return pText;
+    }
+    pText++;
+    c = *pText;
+    while (c != 0) {
+        if (c == '\n' || c == '^') {
+            return pText;
+        }
+        pText++;
+        c = *pText;
+    }
+    return nullptr;
+}
+
+void CTextScroller::WordWrapCountLinesAndChars(short *pTextStart, short *pTextEnd, int &NumLines, int &NumChars) {
+    NumChars = WordWrapAddLines(pTextStart, pTextEnd, true, nullptr);
+}
