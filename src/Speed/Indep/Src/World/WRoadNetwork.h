@@ -16,32 +16,53 @@
 
 extern class WRoadNetwork *fgRoadNetwork;
 
+class WRoadNav;
+struct TrackPathBarrier;
+class IBody;
+
 // total size: 0x1
 class WRoadNetwork : public Debugable {
   public:
-    // static inline void *operator new(unsigned int size, void *ptr) {}
-
-    // static inline void operator delete(void *mem, void *ptr) {}
-
-    // static inline void *operator new(unsigned int size) {}
-
-    // static inline void operator delete(void *mem, unsigned int size) {}
-
-    // static inline void *operator new(unsigned int size, const char *name) {}
-
-    // static inline void operator delete(void *mem, const char *name) {}
-
-    // static inline void operator delete(void *mem, unsigned int size, const char *name) {}
+    static void *operator new(unsigned int size) { return gFastMem.Alloc(size, nullptr); }
 
     static WRoadNetwork &Get() {
         return *fgRoadNetwork;
     }
 
-    // static unsigned int GetTotalMemoryUsage() {}
-
     WRoadNetwork() {}
 
     ~WRoadNetwork() {}
+
+    static void Init();
+    static void Shutdown();
+    void ResetRaceSegments();
+    void ResetBarriers();
+    void GetSegmentNodes(const WRoadSegment &segment, const WRoadNode **node);
+    const WRoadProfile *GetSegmentProfile(const WRoadSegment &segment, int node_index);
+    void GetSegmentForwardVector(int segInd, UMath::Vector3 &forwardVector);
+    void GetSegmentForwardVector(const WRoadSegment &segment, UMath::Vector3 &forwardVector);
+    const WRoadNode *GetSegmentOppNode(int segInd, const WRoadNode *node);
+    const WRoadNode *GetSegmentOppNode(const WRoadSegment &segment, const WRoadNode *node);
+    unsigned char GetSegmentShortcutNumber(const WRoadSegment *segment);
+    bool GetSegmentTrafficLaneRightSide(const WRoadSegment &segment, int laneInd);
+    int GetRightMostTrafficEntrance(int node_number, int onto_segment);
+    bool GetSegmentProfiles(const WRoadSegment &segment, const WRoadProfile **profile);
+    int GetSegmentNumTrafficLanes(const WRoadSegment &segment);
+    int GetSegmentTrafficLaneInd(const WRoadSegment &segment, int lane_count);
+    void GetSegmentEndPoints(const WRoadSegment &segment, UMath::Vector3 &start, UMath::Vector3 &end);
+    void GetPointOnSegment(const WRoadSegment &segment, float d, UMath::Vector3 &point);
+    void GetPointOnSegment(const UMath::Vector3 &start, const UMath::Vector3 &end, const WRoadSegment &segment, float d, UMath::Vector3 &point);
+    void GetSegmentCurveStep(const UMath::Vector3 &start, const UMath::Vector3 &end, const WRoadSegment &segment, float d, UMath::Vector3 &point);
+    void FlagSegmentRaceDirection(int FirstSegIndex, int SecondSegIndex);
+    void AddRaceSegments(WRoadNav *road_nav);
+    void ResetShortcuts();
+    void ResolveShortcuts();
+    void ResolveBarriers();
+    void GetPointAndVecOnSegment(const WRoadSegment &segment, float d, UMath::Vector3 &point, UMath::Vector3 &vec);
+    float GetSegmentPointIntersect(const WRoadSegment &segment, const UMath::Vector3 &pt, UMath::Vector3 &intersect, bool checkBound);
+    float GetLinePointIntersect(const UMath::Vector3 &start, const UMath::Vector3 &end, const UMath::Vector3 &pt, UMath::Vector3 &intersect, bool checkBound);
+    void BuildSegmentSpline(const WRoadSegment &segment, USpline &spline);
+    bool SegmentCrossesBarrier(WRoadSegment *segment, TrackPathBarrier *barrier);
 
     // void SetRaceFilterValid(bool b) {}
 
@@ -51,13 +72,17 @@ class WRoadNetwork : public Debugable {
 
     // bool IsValid() {}
 
-    // bool HasValidTrafficRoads() {}
+    bool HasValidTrafficRoads() { return fValidTrafficRoads; }
 
-    // const WRoadNode *GetNode(int index) {}
+    const WRoadNode *GetNode(int index) {
+        return &fNodes[index];
+    }
 
-    // const WRoad *GetRoad(int index) {}
+    const WRoad *GetRoad(int index) const { return &fRoads[index]; }
 
-    // const WRoadProfile *GetProfile(int index) {}
+    const WRoadProfile *GetProfile(int index) {
+        return &fProfiles[index];
+    }
 
     const WRoadSegment *GetSegment(int index) {
         return &fSegments[index];
@@ -65,19 +90,25 @@ class WRoadNetwork : public Debugable {
 
     // const WRoad *GetSegmentRoad(int segment_index) {}
 
-    // WRoad *GetRoadNonConst(int index) {}
+    WRoad *GetRoadNonConst(int index) { return &fRoads[index]; }
 
-    // WRoadSegment *GetSegmentNonConst(int index) {}
+    WRoadSegment *GetSegmentNonConst(int index) {
+        return &fSegments[index];
+    }
 
-    // unsigned int GetNumRoads() {}
+    unsigned int GetNumSegments() {
+        return fNumSegments;
+    }
+
+    unsigned int GetNumRoads() {
+        return fNumRoads;
+    }
 
     // unsigned int GetNumNodes() {}
 
-    // unsigned int GetNumSegments() {}
+    short GetSegRoadInd(int index) { return fSegments[index].fRoadID; }
 
-    // short GetSegRoadInd(int index) {}
-
-    // void IncSegmentStamp() {}
+    void IncSegmentStamp() { fSegmentStamp++; }
 
     // unsigned long GetSegmentStamp() {}
 
@@ -121,9 +152,8 @@ class WRoadNav {
         kPathRacer = 0x0002,
         kPathGPS = 0x0003,
         kPathPlayer = 0x0004,
-        kPathPathy = 0x0005,
-        kPathChopper = 0x0006,
-        kPathRaceRoute = 0x0007,
+        kPathChopper = 0x0005,
+        kPathRaceRoute = 0x0006,
     };
 
     enum ELaneType {
@@ -166,6 +196,7 @@ class WRoadNav {
     bool OnPath() const;
     float GetSegmentCentreShift(int segment_number, int which_node);
     short GetNextOffset(const UMath::Vector3 &to, float &nextLaneOffset, char &nodeInd, bool &useOldStartPos);
+    short GetNextTraffic(const UMath::Vector3 &to, float &nextLaneOffset, char &nodeInd, bool &useOldStartPos);
 
     void SnapToSelectableLane();
     float SnapToSelectableLane(float input_offset);
@@ -173,6 +204,7 @@ class WRoadNav {
 
     void InitAtPoint(const UMath::Vector3 &pos, const UMath::Vector3 &dir, bool forceCenterLane, float dirWeight);
     void InitFromOtherNav(WRoadNav *other_nav, bool flip_direction);
+    void InitLaneOffset(const UMath::Vector3 &vehicle_pos);
     void InitAtSegment(short segInd, char laneInd, float timeStep);
     void InitAtSegment(short segInd, float timeStep, const UMath::Vector3 &pos, const UMath::Vector3 &dir, bool forceCenterLane);
     void InitAtSegment(short segInd, const UMath::Vector3 &pos, const UMath::Vector3 &dir, bool forceCenterLane);
@@ -182,12 +214,15 @@ class WRoadNav {
     void IncNavPosition(float dist, const UMath::Vector3 &to, float max_lookahead);
     void PrivateIncNavPosition(float dist, const UMath::Vector3 &to);
     void ClampCookieCentres(NavCookie *cookies, int num_cookies);
+    void HolePunchAvoidables(NavCookie *cookies, int num_cookies, float current_offset, float delta_offset);
+    int FetchAvoidables(IBody **avoidables, const int listsize) const;
     bool IsWrongWay() const;
     bool IsOnShortcut();
     unsigned char GetShortcutNumber();
     bool IsOnLegalRoad();
     bool MakeShortcutDecision(int shortcut_number, unsigned int *cached, unsigned int *allowed);
     void CancelPathFinding();
+    unsigned char FirstShortcutInPath();
     bool FindPath(const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, char *shortcut_allowed);
     bool FindPathNow(const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, char *shortcut_allowed);
     bool FindingPath();
@@ -195,12 +230,22 @@ class WRoadNav {
     bool IsPointInCookieTrail(const UMath::Vector3 &position_3d, float margin);
     bool IsSegmentInCookieTrail(int segment_number, bool use_whole_path);
     bool IsSegmentInPath(int segment_number);
+
+    bool IsGoalInCookieTrail() {
+        return IsSegmentInCookieTrail(nPathGoalSegment, true);
+    }
     void PullOver();
     void SetVehicle(class AIVehicle *ai_vehicle);
     void UpdateOccludedPosition(bool occlude_avoidables);
     void ChangeDragLanes(int left_right);
+    bool ChangeDragDecision(int left_right);
+    void SetStartEndControls(const WRoadSegment &segment);
+    void SetControlPos(const WRoadSegment &segment, bool is_start);
+    void UpdateCookieTrail(float time);
+    bool IsDrivable(int lane_type) const;
+    bool IsSelectable(int lane_type) const;
 
-    bool IsValid() {
+    bool IsValid() const {
         return fValid;
     }
 
@@ -218,6 +263,10 @@ class WRoadNav {
 
     UMath::Vector3 &GetForwardVector() {
         return fForwardVector;
+    }
+
+    float GetCurvature() {
+        return fCurvature;
     }
 
     const NavCookie &GetCurrentCookie() {
@@ -250,6 +299,14 @@ class WRoadNav {
 
     EPathType GetPathType() const {
         return fPathType;
+    }
+
+    bool RespectFullBarriers() {
+        return fPathType != kPathCop && fPathType != kPathChopper;
+    }
+
+    bool RespectDriveThroughBarriers() {
+        return fPathType == kPathRacer || fPathType == kPathPlayer || fPathType == kPathGPS || fPathType == kPathRaceRoute;
     }
 
     ENavType GetNavType() const {
@@ -285,7 +342,11 @@ class WRoadNav {
     }
 
     bool IsOccluded() const {
-        return bOccludedFromBehind;
+        return bCookieTrail && (nRoadOcclusion != 0 || nAvoidableOcclusion != 0);
+    }
+
+    bool IsOccludedFromBehind() const {
+        return IsOccludedByAvoidable() != 0 && bOccludedFromBehind;
     }
 
     const WRoadSegment *GetSegment() const {
@@ -296,8 +357,51 @@ class WRoadNav {
         return fSegmentInd;
     }
 
+    short GetRoadInd() const {
+        return WRoadNetwork::Get().GetSegRoadInd(fSegmentInd);
+    }
+
+    char GetNodeInd() const {
+        return fNodeInd;
+    }
+
     char HitDeadEnd() const {
         return fDeadEnd;
+    }
+
+    const UMath::Vector3 &GetApexPosition() const {
+        return fApexPosition;
+    }
+
+    float GetOccludingTrailSpeed() const {
+        return fOccludingTrailSpeed;
+    }
+
+    float GetSegmentTime() const {
+        return fSegTime;
+    }
+
+    char GetLaneInd() const {
+        return fLaneInd;
+    }
+
+    char GetToLaneInd() const {
+        return fToLaneInd;
+    }
+
+    void SetLaneInd(char ind) {
+        fToLaneInd = ind;
+        fLaneInd = ind;
+    }
+
+    float GetLaneOffset() const {
+        return fLaneOffset;
+    }
+
+    void SetLaneOffset(float offset) {
+        fLaneOffset = offset;
+        fToLaneOffset = offset;
+        fFromLaneOffset = offset;
     }
 
     float GetOutOfBounds() {
@@ -307,6 +411,67 @@ class WRoadNav {
     void DetermineDragLane() {
         ChangeDragLanes(0);
     }
+
+    bool HasCookieTrail() const {
+        return pCookieTrail != nullptr;
+    }
+
+    AIVehicle *GetVehicle() {
+        return pAIVehicle;
+    }
+
+    float GetVehicleHalfWidth() {
+        return fVehicleHalfWidth;
+    }
+
+    int GetNumPathSegments() {
+        return nPathSegments;
+    }
+
+    void SetNumPathSegments(int n) {
+        nPathSegments = n;
+    }
+
+    int GetMaxPathSegments() {
+        return 0x3FC / sizeof(unsigned short);
+    }
+
+    unsigned short *GetPathSegments() {
+        return pPathSegments;
+    }
+
+    void SetPathGoal(unsigned short segment_number, float param) {
+        bCrossedPathGoal = false;
+        nPathGoalSegment = segment_number;
+        fPathGoalParam = param;
+    }
+
+    unsigned short GetPathGoalSegment() const {
+        return nPathGoalSegment;
+    }
+
+    unsigned short GetPathSegment(int n) {
+        return pPathSegments[n];
+    }
+
+    void ChangeLanes(float newOffset, float dist);
+    bool IncLane(int direction);
+    bool UpdateLaneChange(float distance);
+    void InitAtPath(const UMath::Vector3 &position, bool forceCenterLane);
+    int FindClosestOnPath(const UMath::Vector3 &position, UMath::Vector3 *found_position, UMath::Vector3 *found_direction, unsigned short *found_segment, float *found_interval) const;
+    float FindClosestOnSpline(const UMath::Vector3 &point, UMath::Vector3 &intersectPoint, float &timeStep, float incStep, int segInd);
+    void RebuildSplines(const WRoadSegment *segment);
+    void EvaluateSplines(const WRoadSegment *segment);
+
+    void DetermineVehicleHalfWidth();
+    void SetBoundPos(const WRoadSegment &segment, float offset, bool start);
+    void SetStartEndPos(const WRoadSegment &segment, float startOffset, float endOffset);
+
+    void SetStartEndPos(const WRoadSegment &segment, float offset) {
+        SetStartEndPos(segment, offset, offset);
+    }
+    int FindClosestSegmentInd(const UMath::Vector3 &point, const UMath::Vector3 &dir, float dirWeight, UMath::Vector3 &closestPoint, float &time);
+    unsigned int GetRoadSpeechId();
 
   private:                                      // total size: 0x2F0
     int nCookieIndex;                           // offset 0x0, size 0x4
@@ -498,5 +663,7 @@ enum RoadNames {
     offroad_Hydro_Plant = 106,
     MAX_ROADNAMES = 107,
 };
+
+const WRoadSegment *GetAttachedDirectionalSegment(const WRoadNode *node, short segInd);
 
 #endif

@@ -8,7 +8,11 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
+#include "Speed/Indep/Src/World/Rain.hpp"
+#include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
+
+extern float kHeliVisualSphere;
 
 bool HeliVehicleActive() {
     if (gHeliVehicle) {
@@ -41,9 +45,110 @@ AIVehicleHelicopter::~AIVehicleHelicopter() {
     gHeliVehicle = nullptr;
 }
 
+bool AIVehicleHelicopter::CanSeeTarget(AITarget *target) {
+    bool isperphidden = false;
+    IPerpetrator *iperp;
+    target->QueryInterface(&iperp);
+    if (iperp && iperp->IsHiddenFromHelicopters()) {
+        isperphidden = true;
+    }
+
+    if (isperphidden && mPerpHiddenFromMe) {
+        return false;
+    }
+
+    mPerpHiddenFromMe = false;
+
+    IPursuit *ipursuit = GetPursuit();
+
+    float dist = kHeliVisualSphere;
+
+    if (ipursuit && iperp) {
+        Attrib::Gen::pursuitlevels *pursuitLevels = iperp->GetPursuitLevelAttrib();
+        if (pursuitLevels) {
+            dist = pursuitLevels->heliLOSdistance();
+        }
+    }
+
+    if (dist < 1.0f) {
+        dist = 500.0f;
+    }
+
+    const UMath::Vector3 &targetPosition = target->GetPosition();
+
+    IRigidBody *irb = GetOwner()->GetRigidBody();
+    const UMath::Vector3 &position = irb->GetPosition();
+
+    UMath::Vector3 forwardVec;
+    GetOwner()->GetRigidBody()->GetForwardVector(forwardVec);
+
+    UMath::Vector3 heli2Perp;
+    UMath::Sub(targetPosition, position, heli2Perp);
+    float distanceToTarget = UMath::LengthSquare(heli2Perp);
+    distanceToTarget = VU0_sqrt(distanceToTarget);
+
+    if (distanceToTarget != 1.0f) {
+        UMath::Scale(heli2Perp, 1.0f / distanceToTarget, heli2Perp);
+    }
+
+    bool isinsight = distanceToTarget <= kHeliVisualSphere;
+    if (!isinsight) {
+        if (distanceToTarget < dist) {
+            float dot = UMath::Dot(forwardVec, heli2Perp);
+            isinsight = 1.0f < dot;
+        }
+        if (!isinsight) goto after_collision;
+    }
+
+    {
+        UMath::Vector4 posToDest[2];
+        posToDest[0] = UMath::Vector4Make(position, 0.0f);
+        posToDest[1] = UMath::Vector4Make(targetPosition, 0.0f);
+
+        eView *view = eGetView(1, false);
+
+        if (AmIinATunnel(view, 1) == 0) {
+            WCollisionMgr::WorldCollisionInfo cInfo;
+            WCollisionMgr collMgr(0, 3);
+            if (collMgr.CheckHitWorld(posToDest, cInfo, 1) != 0) {
+                isinsight = false;
+            }
+
+            if (isinsight) {
+                mLastPlaceHeliSawPerp.x = targetPosition.x;
+                mLastPlaceHeliSawPerp.y = targetPosition.y;
+                mLastPlaceHeliSawPerp.z = targetPosition.z;
+            }
+        } else {
+            isinsight = false;
+        }
+
+        if (isinsight) {
+            return true;
+        }
+    }
+
+after_collision:
+    if (!isperphidden) {
+        if (distanceToTarget < kHeliVisualSphere + kHeliVisualSphere) {
+            float distSQFromLastKnown = UMath::DistanceSquare(targetPosition, mLastPlaceHeliSawPerp);
+            if (distSQFromLastKnown < 400.0f) {
+                return true;
+            }
+        }
+    } else {
+        mPerpHiddenFromMe = true;
+    }
+
+    return false;
+}
+
 Behavior *AIVehicleHelicopter::Construct(const BehaviorParams &bp) {
     return new AIVehicleHelicopter(bp);
 }
+
+UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::Prototype __AIVehicleHelicopter("AIVehicleHelicopter",
+                                                                                             AIVehicleHelicopter::Construct);
 
 void AIVehicleHelicopter::SetFuelFull() {
     gHeliVehicle = this;

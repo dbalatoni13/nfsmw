@@ -54,6 +54,10 @@ struct eView : public eViewPlatInterface {
     void AttachCameraMover(CameraMover *camera_mover);
     void UnattachCameraMover(CameraMover *camera_mover);
 
+    int IsActive() const {
+        return Active;
+    }
+
     int GetID() {
         return this->ID;
     }
@@ -102,6 +106,10 @@ inline eView *eGetView(int view_id, bool doAssert) {
 
 inline void eSwizzleWorldVector(const bVector3 &inVec, bVector3 &outVec) {
     bConvertFromBond(outVec, inVec);
+}
+
+inline void eSwizzleWorldMatrix(const bMatrix4 &inMat, bMatrix4 &outMat) {
+    bConvertFromBond(outMat, inMat);
 }
 
 inline void eUnSwizzleWorldVector(const bVector3 &inVec, bVector3 &outVec) {

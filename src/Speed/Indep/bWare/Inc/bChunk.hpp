@@ -109,6 +109,10 @@ class bChunkLoader {
 
 class bChunkCarpHeader {
     // total size: 0x10
+    enum kCarpHeaderFlags {
+        kResolved = 1,
+    };
+
     int mCrpSize;                   // offset 0x0, size 0x4
     int mSectionNumber;             // offset 0x4, size 0x4
     int mFlags;                     // offset 0x8, size 0x4
@@ -121,25 +125,31 @@ class bChunkCarpHeader {
 
     ~bChunkCarpHeader() {}
 
-    int GetCarpSize() {
+    int GetCarpSize() const {
         return mCrpSize;
     }
 
-    int GetSectionNumber() {
+    int GetSectionNumber() const {
         return mSectionNumber;
     }
 
-    int GetFlags() {
+    int GetFlags() const {
         return mFlags;
     }
 
-    bool IsResolved() {}
+    bool IsResolved() const {
+        return (mFlags & kResolved) != 0;
+    }
 
-    void SetResolved() {}
+    void SetResolved() {
+        mFlags |= kResolved;
+    }
 
-    void SetNotResolved() {}
+    void SetNotResolved() {
+        mFlags &= ~kResolved;
+    }
 
-    bChunkCarpHeader *GetLastAddress() {
+    bChunkCarpHeader *GetLastAddress() const {
         return this->mLastAddress;
     }
 

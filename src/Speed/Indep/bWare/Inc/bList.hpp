@@ -282,6 +282,18 @@ template <typename T> class bTList : public bList {
     }
 };
 
+template <typename T>
+T *bTList<T>::AddSorted(SortFuncT check_flip, T *node) {
+    T *current = static_cast<T *>(HeadNode.Next);
+    while (current != reinterpret_cast<T *>(&HeadNode)) {
+        if (check_flip(node, current) == 0) {
+            return static_cast<T *>(node->AddBefore(current));
+        }
+        current = static_cast<T *>(current->Next);
+    }
+    return AddTail(node);
+}
+
 // total size: 0xC
 class bPNode : public bTNode<bPNode> {
   public:

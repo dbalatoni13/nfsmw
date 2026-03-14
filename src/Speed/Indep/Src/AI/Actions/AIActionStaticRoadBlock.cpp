@@ -48,6 +48,8 @@ AIAction *AIActionStaticRoadBlock::Construct(AIActionParams *params) {
     return new AIActionStaticRoadBlock(params, 1.0f);
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionStaticRoadBlock("AIActionStaticRoadBlock", AIActionStaticRoadBlock::Construct);
+
 bool AIActionStaticRoadBlock::CanBeAttempted(float dT) {
     if (!mIVehicle) {
         return false;

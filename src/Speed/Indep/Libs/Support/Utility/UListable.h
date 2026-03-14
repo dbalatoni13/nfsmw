@@ -21,6 +21,7 @@ template <typename T, int U> class Listable {
     typedef value_type *pointer;
     typedef value_type const *const_pointer;
 
+#if MILESTONE_OPT
     class List : public FixedVector<pointer, U> {
       public:
         typedef T value_type;
@@ -28,11 +29,25 @@ template <typename T, int U> class Listable {
         typedef value_type const *const_pointer;
 
         // List(const List &);
-        List();
-        virtual ~List();
+        List() {}
+        ~List() override {}
 
         // List &operator=(List &);
     };
+#else
+    class List : public _Storage<pointer, U> {
+      public:
+        typedef T value_type;
+        typedef value_type *pointer;
+        typedef value_type const *const_pointer;
+
+        // List(const List &);
+        List() { this->reserve(U); }
+        ~List() override {}
+
+        // List &operator=(List &);
+    };
+#endif
 
     typedef void (*ForEachFunc)(pointer);
     typedef bool (*ComparisonFunc)(pointer, pointer);
@@ -147,6 +162,20 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
   private:
     static _ListSet _mLists;
 };
+
+template <class T, int EnumMax, typename Enum, unsigned int U>
+int ListableSet<T, EnumMax, Enum, U>::Count(Enum idx) {
+    return _mLists._buckets[idx].size();
+}
+
+template <class T, int EnumMax, typename Enum, unsigned int U>
+T *ListableSet<T, EnumMax, Enum, U>::First(Enum idx) {
+    const List &list = _mLists._buckets[idx];
+    if (list.size() != 0) {
+        return *list.begin();
+    }
+    return nullptr;
+}
 
 template <typename T> class Countable {
     static int _mCount;

@@ -6,6 +6,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
@@ -30,14 +31,35 @@ class WCollider : public UTL::Collections::Listable<WCollider, 100> {
         // total size: 0x10
     };
 
+    WCollider(eColliderShape colliderShape, unsigned int typeMask, unsigned int exclusionMask);
+    ~WCollider();
+
+    static WCollider *Get(unsigned int wuid);
+    static WCollider *Create(unsigned int wuid, eColliderShape shape, unsigned int typeCheckMask, unsigned int exclusionMask);
     static void Destroy(WCollider *col);
+    static void InvalidateIntersectingColliders(const UMath::Vector4 &posRad);
+    static void InvalidateAllCachedData();
 
     void Clear();
     bool IsEmpty() const;
     void Refresh(const UMath::Vector3 &pt, float radius, bool predictiveSizing);
 
+    void AddRef() { ++fRefCount; }
+    void RemoveRef() { --fRefCount; }
+
+    static void *operator new(unsigned int size) { return gFastMem.Alloc(size, nullptr); }
+    static void operator delete(void *mem, unsigned int size) { if (mem) gFastMem.Free(mem, size, nullptr); }
+
     WCollisionInstanceCacheList &GetInstanceList() {
         return fInstanceCacheList;
+    }
+
+    const WCollisionTriList &GetTriList() const {
+        return fTriList;
+    }
+
+    WCollisionTriList &GetTriList() {
+        return fTriList;
     }
 
     ALIGN_16 UMath::Vector3 fRequestedPosition;     // offset 0x4, size 0xC
@@ -57,6 +79,17 @@ class WCollider : public UTL::Collections::Listable<WCollider, 100> {
     unsigned int fRefCount;                         // offset 0x90, size 0x4
     unsigned int fWorldID;                          // offset 0x94, size 0x4
     unsigned int fExclusionFlags;                   // offset 0x98, size 0x4
+
+    static UTL::Std::map<unsigned int, WCollider *, _type_map> fWuidMap;
+
+  private:
+    void PrepareRegion(unsigned int updateMask);
+    void ClearLists(unsigned int typeMask);
+    void EmptyLists(unsigned int typeMask);
+    void ReserveLists(unsigned int typeMask);
+    unsigned int Validate() const;
+    unsigned int GetUpdateMask(const UMath::Vector3 &pt, float radius);
+    bool InRegion(const UMath::Vector3 &pt, float radius) const;
 };
 
 #endif

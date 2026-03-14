@@ -17,6 +17,10 @@ class CareerGame : public QuickGame {
     // Virtual functions
     // IUnknown
     ~CareerGame() override;
+
+    const char *GetCacheName() const override {
+        return "CareerGame";
+    }
 };
 
 #endif

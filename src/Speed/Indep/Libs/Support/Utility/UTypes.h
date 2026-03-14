@@ -123,6 +123,10 @@ inline Vector2 Vector2Make(float x, float y) {
     return c;
 }
 
+inline float Cross(const Vector2 &a, const Vector2 &b) {
+    return a.x * b.y - a.y * b.x;
+}
+
 inline UMath::Vector3 Vector3Make(float x, float y, float z) {
     Vector3 c;
 
@@ -130,6 +134,15 @@ inline UMath::Vector3 Vector3Make(float x, float y, float z) {
     c.y = y;
     c.z = z;
 
+    return c;
+}
+
+inline Vector4 Vector4Make(float x, float y, float z, float w) {
+    Vector4 c;
+    c.x = x;
+    c.y = y;
+    c.z = z;
+    c.w = w;
     return c;
 }
 
@@ -146,5 +159,10 @@ inline Vector4 Vector4Make(const Vector3 &c, float w) {
 typedef Vector4 Quaternion;
 
 } // namespace UMath
+
+inline UMath::Vector3 &bConvertToBond(UMath::Vector3 &dest, const bVector3 &v) {
+    bConvertToBond(reinterpret_cast<bVector3 &>(dest), v);
+    return dest;
+}
 
 #endif

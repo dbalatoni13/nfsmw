@@ -168,9 +168,19 @@ class PortMessage {
         return gFastMem.Alloc(size, nullptr); // TODO
     }
 
-    // static void operator delete(void *mem, const char *name) {}
+#ifdef _MSC_VER
+    static void operator delete(void *mem, const char *name) {
+        if (mem) {
+            gFastMem.Free(mem, sizeof(PortMessage), nullptr);
+        }
+    }
 
-    // static void operator delete(void *mem, unsigned int size, const char *name) {}
+    static void operator delete(void *mem, unsigned int size, const char *name) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+#endif
 
     void RegisterHandler(Handler &handler);
     void UnregisterHandler(HHANDLER key);

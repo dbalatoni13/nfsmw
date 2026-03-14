@@ -34,7 +34,7 @@ class WCollisionMgr {
               fPad(0),                               //
               fCInst(nullptr) {}
 
-        bool HitSomething() const {}
+        bool HitSomething() const { return fType != 0; }
     };
 
     class ICollisionHandler {
@@ -79,6 +79,18 @@ class WCollisionMgr {
     void GetBarrierList(WCollisionBarrierList &barrierList, const UMath::Vector3 &pos, float radius);
     bool GetBarrierNormal(const WCollisionBarrierList &barrierList, const UMath::Vector4 *testSegment, WorldCollisionInfo &cInfo);
     void GetTriList(const WCollisionInstanceCacheList &instList, const UMath::Vector3 &pt, float radius, WCollisionTriList &triList);
+
+    bool StripPassesExclusion(const WCollisionStrip &strip) const {
+        return (fSurfaceExclusionMask & strip.Flags()) == 0;
+    }
+
+    bool InstancePassesExclusion(const WCollisionInstance &inst) const {
+        return (fSurfaceExclusionMask & inst.fFlags) == 0;
+    }
+
+    bool SurfacePassesExclusion(const WSurface &surface) const {
+        return (fSurfaceExclusionMask & surface.fFlags) == 0;
+    }
 
     WCollisionMgr(unsigned int surfaceExclMask, unsigned int primitiveExclMask) {
         this->fSurfaceExclusionMask = surfaceExclMask;

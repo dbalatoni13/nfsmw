@@ -19,8 +19,8 @@ class IReputation : public UTL::COM::IUnknown {
     virtual ~IReputation() {}
 
   public:
-    virtual void SetReputationCareer(int rep);
-    virtual void SetReputationPursuit(int rep);
+    virtual void SetReputationCareer(int rep) = 0;
+    virtual void SetReputationPursuit(int rep) = 0;
 };
 
 #endif

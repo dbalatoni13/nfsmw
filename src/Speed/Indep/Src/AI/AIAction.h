@@ -53,13 +53,13 @@ class AIAction : public Sim::Object, public UTL::COM::Factory<AIActionParams *, 
         }
     }
 
-    // Virtual functions
-    virtual bool CanBeAttempted(float dT);
-    virtual bool IsFinished();
-    virtual void OnBehaviorChange(const UCrc32 &mechanic);
-    virtual void BeginAction(float dT);
-    virtual void FinishAction(float dT);
-    virtual void Update(float dT);
+    // Virtual functions - default inline implementations
+    virtual bool CanBeAttempted(float dT) { return true; }
+    virtual bool IsFinished() { return true; }
+    virtual void OnBehaviorChange(const UCrc32 &mechanic) {}
+    virtual void BeginAction(float dT) {}
+    virtual void FinishAction(float dT) {}
+    virtual void Update(float dT) {}
 
     ISimable *GetOwner() const {
         return mActionParams.mOwner;

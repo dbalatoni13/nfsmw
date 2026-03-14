@@ -34,4 +34,6 @@ AIAction *AIActionStrafe::Construct(AIActionParams *params) {
     return new AIActionStrafe(params, 0.0f);
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionStrafe("AIActionStrafe", AIActionStrafe::Construct);
+
 void AIActionStrafe::Update(float dT) {}

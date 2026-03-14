@@ -1,6 +1,9 @@
 #include "Speed/Indep/Src/AI/AIVehicle.h"
+#include "Speed/Indep/Src/AI/path_spot.h"
+#include "Speed/Indep/Src/AI/road_walker.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Libs/Support/Utility/UVector.h"
 #include "Speed/Indep/Src/AI/AIGoal.h"
 #include "Speed/Indep/Src/AI/AIMath.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
@@ -12,6 +15,8 @@
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/aivehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/collisionreactions.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/smackable.h"
 #include "Speed/Indep/Src/Generated/Events/EEnableAIPhysics.hpp"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
@@ -20,10 +25,13 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ICause.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICheater.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IExplosion.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRBVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Interfaces/SimModels/IModel.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
+#include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
@@ -32,11 +40,23 @@
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
+#include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WRoadElem.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
+#include "Speed/Indep/Src/World/TrackPath.hpp"
+#include "Speed/Indep/Src/Generated/Messages/MForcePursuitStart.h"
+#include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
+#include "Speed/Indep/Src/Gameplay/GManager.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/bWare/Inc/bDebug.hpp"
+#include "Speed/Indep/Src/World/Common/WGrid.h"
+#include "Speed/Indep/Src/Misc/Profiler.hpp"
+#include <algorithm>
 
 const char *GetCaffeineLayerName(int driver_class) {
     switch (driver_class) {
@@ -57,6 +77,8 @@ Behavior *AIVehicleEmpty::Construct(const BehaviorParams &bp) {
     return new AIVehicleEmpty(bp);
 }
 
+UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::Prototype __AIVehicleEmpty("AIVehicleEmpty", AIVehicleEmpty::Construct);
+
 AIVehicleHuman::AIVehicleHuman(const BehaviorParams &bp) : AIVehicleRacecar(bp), IHumanAI(bp.fowner) {
     MakeDebugable(DBG_AI);
     fMomentRadius = 0.0f;
@@ -67,6 +89,8 @@ AIVehicleHuman::AIVehicleHuman(const BehaviorParams &bp) : AIVehicleRacecar(bp),
 Behavior *AIVehicleHuman::Construct(const BehaviorParams &bp) {
     return new AIVehicleHuman(bp);
 }
+
+UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::Prototype __AIVehicleHuman("AIVehicleHuman", AIVehicleHuman::Construct);
 
 AIVehicleHuman::~AIVehicleHuman() {
     int player_num = 0;
@@ -299,6 +323,8 @@ Behavior *AIVehicle::Construct(const BehaviorParams &bp) {
     return new AIVehicle(bp, 1.0f, 0.0f, Sim::TASK_FRAME_VARIABLE);
 }
 
+UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::Prototype __AIVehicle("AIVehicle", AIVehicle::Construct);
+
 AIVehicle::AIVehicle(const BehaviorParams &bp, float update_rate, float stagger, Sim::TaskMode taskmode)
     : VehicleBehavior(bp, 0),                                   //
       IVehicleAI(bp.fowner),                                    //
@@ -341,7 +367,7 @@ AIVehicle::AIVehicle(const BehaviorParams &bp, float update_rate, float stagger,
     WRoadNav::EPathType path_type = WRoadNav::kPathNone;
 
     if (v->GetVehicleClass() == VehicleClass::CHOPPER) {
-        path_type = WRoadNav::kPathPathy;
+        path_type = WRoadNav::kPathChopper;
     } else {
         switch (GetVehicle()->GetDriverClass()) {
             case DRIVER_COP:
@@ -612,6 +638,19 @@ void AIVehicle::ResetDriveToNav(eLaneSelection lane_selection) {
     }
     UpdateRoadNavInfo();
 }
+
+#ifdef EA_BUILD_A124
+void AIVehicle::ResetDriveToNav(UMath::Vector3 &target) {
+    UMath::Vector3 forwardVector;
+    GetVehicle()->ComputeHeading(&forwardVector);
+
+    const float dir_weight = 1.0f;
+    WRoadNav *road_nav = GetDriveToNav();
+    road_nav->InitAtPoint(target, forwardVector, false, dir_weight);
+    road_nav->CancelPathFinding();
+    UpdateRoadNavInfo();
+}
+#endif
 
 bool AIVehicle::ResetVehicleToRoadNav(WRoadNav *other_nav) {
     WRoadNav *road_nav = GetDriveToNav();
@@ -900,7 +939,91 @@ void AIVehicle::UpdateTargeting() {
     mDrivableToTargetPos = !WorldCollision(GetPosition(), mTarget->GetPosition());
 }
 
+bool AIVehicle::WorldCollision(const UMath::Vector3 &pos, const UMath::Vector3 &dest) {
+    if (UMath::DistanceSquare(pos, dest) > 90000.0f) {
+        return true;
+    }
+
+    UMath::Vector4 posToDest[2];
+    posToDest[0] = UMath::Vector4Make(pos, 1.0f);
+    posToDest[0].y = pos.y + 1.0f;
+    posToDest[1] = UMath::Vector4Make(dest, 1.0f);
+    posToDest[1].y = dest.y + 1.0f;
+
+    WCollisionMgr::WorldCollisionInfo cInfo;
+    WCollisionMgr collMgr(0, 0);
+    int hit = collMgr.CheckHitWorld(posToDest, cInfo, 3);
+    if (hit != 0) {
+        if (1.0f < UMath::DistanceSquarexyz(posToDest[1], cInfo.fCollidePt)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void AIVehicle::OnCollision(const COLLISION_INFO &cinfo) {}
+
+bool AIVehicle::GetWorldAvoidanceInfo(float dT, UMath::Vector3 &leftCollNormal, UMath::Vector3 &rightCollNormal) const {
+    if (mITransmission && mITransmission->IsReversing()) {
+        return false;
+    }
+
+    bool foundCollision = false;
+    ISimable *isimable = GetSimable();
+    IRigidBody *irb = isimable->GetRigidBody();
+    const UMath::Vector3 &position = irb->GetPosition();
+    UMath::Vector3 forwardVector;
+    irb->GetForwardVector(forwardVector);
+    UMath::Vector3 rightVector;
+    irb->GetRightVector(rightVector);
+    UMath::Vector3 dimension;
+    irb->GetDimension(dimension);
+
+    leftCollNormal = UMath::Vector3::kZero;
+    rightCollNormal = UMath::Vector3::kZero;
+
+    float kRightStart = -3.0f;
+    float kTimeScale = 1.5f;
+    float kSpeedOffset = 5.0f;
+    float kRightEnd = 3.0f;
+    float kRightStep = 6.0f;
+
+    for (float i = kRightStart; i <= kRightEnd; i += kRightStep) {
+        UMath::Vector3 collVec;
+        UMath::Scale(rightVector, i, collVec);
+        UMath::Vector3 boundPos;
+        UMath::ScaleAdd(collVec, dimension.x, position, boundPos);
+        UMath::ScaleAdd(forwardVector, dimension.z, boundPos, boundPos);
+
+        UMath::Scale(rightVector, i * kTimeScale, collVec);
+        UMath::Add(forwardVector, collVec, collVec);
+        UMath::Unit(collVec, collVec);
+
+        float minDistance = UMath::Max(irb->GetRadius() + kSpeedOffset, irb->GetSpeedXZ() * kTimeScale + irb->GetRadius());
+
+        UMath::Vector3 collPos;
+        UMath::ScaleAdd(collVec, minDistance, position, collPos);
+
+        UMath::Vector4 posToDest[2];
+        posToDest[0] = UMath::Vector4Make(boundPos, kRightEnd);
+        posToDest[1] = UMath::Vector4Make(collPos, kRightEnd);
+
+        WCollisionMgr::WorldCollisionInfo cInfo;
+        WCollisionMgr collMgr(0, 3);
+
+        if (collMgr.CheckHitWorld(posToDest, cInfo, 2)) {
+            foundCollision = true;
+            if (i < 0.0f) {
+                rightCollNormal = Vector4To3(cInfo.fNormal);
+            } else {
+                leftCollNormal = Vector4To3(cInfo.fNormal);
+            }
+        }
+    }
+
+    return foundCollision;
+}
 
 WRoadNav *AIVehicle::GetCollNav(const UMath::Vector3 &forwardVector, float predictTime) {
     mCollNav->SetNavType(WRoadNav::kTypeDirection);
@@ -974,6 +1097,132 @@ bool AIVehicle::CanRespawn(bool respawnAvailable) {
     return rv;
 }
 
+static const float Tweak_OffWorldAccel[2] = {0.5f, 1.0f};
+static const float Tweak_OffWorldSpeed[2] = {0.75f, 1.0f};
+
+void AIVehicle::UpdateSimplePhysics(float dT) {
+    if (!IsSimplePhysicsActive()) {
+        return;
+    }
+
+    ISimable *isimable = GetSimable();
+    IVehicle *ivehicle = GetVehicle();
+    IRigidBody *irigidbody = isimable->GetRigidBody();
+    const UMath::Vector3 &position = irigidbody->GetPosition();
+
+    UMath::Vector3 newPosition = position;
+    UMath::Matrix4 vehicleMat;
+    UMath::Init(vehicleMat, 1.0f, 1.0f, 1.0f);
+
+    UMath::Vector3 destPos = mDest;
+    destPos.y += 1.0f;
+
+    UMath::Vector3 dirVector = UVector3(destPos) - position;
+    UMath::Unit(dirVector, dirVector);
+
+    float skill = GetSkill();
+    float driveSpeed = irigidbody->GetSpeed();
+
+    if (driveSpeed > mDriveSpeed) {
+        driveSpeed -= dT * 30.0f;
+        driveSpeed = UMath::Max(driveSpeed, mDriveSpeed);
+    } else {
+        float accel = GetAcceleration(driveSpeed);
+        driveSpeed += accel * dT * UMath::Lerp(Tweak_OffWorldAccel[0], Tweak_OffWorldAccel[1], skill);
+        driveSpeed = UMath::Min(driveSpeed, mDriveSpeed);
+    }
+
+    float topSpeed = GetTopSpeed();
+    float speedLimit = topSpeed * UMath::Lerp(Tweak_OffWorldSpeed[0], Tweak_OffWorldSpeed[1], skill);
+
+    driveSpeed = UMath::Max(driveSpeed, 0.0f);
+    driveSpeed = UMath::Min(driveSpeed, speedLimit);
+
+    if (GetTransmission()->IsReversing()) {
+        driveSpeed *= -0.5f;
+    }
+
+    UMath::ScaleAdd(dirVector, driveSpeed * dT, newPosition, newPosition);
+
+    bool up_valid = false;
+    WWorldPos &wpos = isimable->GetWPos();
+    wpos.FindClosestFace(position, true);
+
+    UMath::Vector4 newUpVector;
+    memset(&newUpVector, 0, sizeof(UMath::Vector4));
+    newUpVector.y = 1.0f;
+
+    if (!ivehicle->IsAnimating()) {
+        UMath::Vector4 worldNormal;
+        memset(&worldNormal, 0, sizeof(UMath::Vector4));
+        worldNormal.y = 1.0f;
+
+        wpos.UNormal(&UMath::Vector4To3(worldNormal));
+        UMath::Unitxyz(worldNormal, worldNormal);
+        worldNormal.w = 0.0f;
+
+        if (VU0_v4lengthsquare(worldNormal) > 0.0f && worldNormal.y >= 0.7071f) {
+            up_valid = true;
+            newUpVector = worldNormal;
+        }
+    }
+
+    vehicleMat.v2.x = dirVector.x;
+    vehicleMat.v2.y = dirVector.y;
+    vehicleMat.v2.z = dirVector.z;
+    vehicleMat.v3.x = 0.0f;
+    vehicleMat.v3.y = 0.0f;
+    vehicleMat.v3.z = 0.0f;
+    vehicleMat.v3.w = 1.0f;
+
+    UMath::Cross(UMath::Vector4To3(newUpVector), UMath::Vector4To3(vehicleMat.v2), UMath::Vector4To3(vehicleMat.v0));
+    UMath::Unit(UMath::Vector4To3(vehicleMat.v0), UMath::Vector4To3(vehicleMat.v0));
+
+    if (up_valid) {
+        vehicleMat.v1 = newUpVector;
+        UMath::Cross(UMath::Vector4To3(vehicleMat.v0), UMath::Vector4To3(newUpVector), UMath::Vector4To3(vehicleMat.v2));
+        UMath::Unit(UMath::Vector4To3(vehicleMat.v2), UMath::Vector4To3(vehicleMat.v2));
+    } else {
+        UMath::Cross(UMath::Vector4To3(vehicleMat.v2), UMath::Vector4To3(vehicleMat.v0), UMath::Vector4To3(vehicleMat.v1));
+        UMath::Unit(UMath::Vector4To3(vehicleMat.v1), UMath::Vector4To3(vehicleMat.v1));
+    }
+
+    vehicleMat.v0.w = 0.0f;
+    vehicleMat.v2.w = 0.0f;
+    vehicleMat.v1.w = 0.0f;
+
+    float elevation = destPos.y;
+
+    WRoadNav *road_nav = GetDriveToNav();
+    if (road_nav && road_nav->HasCookieTrail()) {
+        elevation = road_nav->GetCurrentCookie().Centre.y + 1.0f;
+    }
+
+    if (!ivehicle->IsAnimating()) {
+        elevation = wpos.HeightAtPoint(position);
+    }
+
+    UMath::Vector3 dimension;
+    irigidbody->GetDimension(dimension);
+
+    float rideheight = 0.0f;
+    if (GetSuspension()) {
+        for (int i = 0; i <= 3; i++) {
+            rideheight = UMath::Max(rideheight, GetSuspension()->GetRideHeight(i));
+        }
+    }
+
+    newPosition.y = elevation + rideheight + dimension.y;
+
+    irigidbody->SetPosition(newPosition);
+    irigidbody->SetOrientation(vehicleMat);
+
+    UMath::Vector3 linearVelocity;
+    UMath::Scale(dirVector, driveSpeed, linearVelocity);
+    irigidbody->SetLinearVelocity(linearVelocity);
+    irigidbody->SetAngularVelocity(UMath::Vector3::kZero);
+}
+
 void AIVehicle::EnableSimplePhysics() {
     if (IsSimplePhysicsActive()) {
         return;
@@ -1009,6 +1258,120 @@ void AIVehicle::DisableSimplePhysics() {
 
 bool AIVehicle::IsSimplePhysicsActive() {
     return GetVehicle()->GetPhysicsMode() == PHYSICS_MODE_EMULATED;
+}
+
+void AIVehicle::UpdateRoads() {
+    ProfileNode profile_node("UpdateRoads", 0);
+
+    ICollisionBody *ibody;
+    GetOwner()->QueryInterface(&ibody);
+
+    UMath::Vector3 currentoff;
+    UMath::Sub(ibody->GetPosition(), mCurrentRoad.GetPosition(), currentoff);
+    float distance = UMath::Length(currentoff);
+
+    bool isvalid = false;
+    if (distance < 20.0f && mCurrentRoad.IsValid() && mFutureRoad.IsValid()) {
+        isvalid = true;
+    }
+
+    float timeSinceIncrement = Sim::GetTime() - mRoadIncrementTimer;
+    if (!isvalid || timeSinceIncrement >= 0.02f) {
+        UMath::Vector3 velocity;
+        GetSimable()->GetLinearVelocity(velocity);
+        float speed = UMath::Length(velocity);
+
+        IPerpetrator *iperp;
+        bool bRaceRouteOnly = false;
+        if (GetOwner()->QueryInterface(&iperp) && iperp->IsRacing()) {
+            bRaceRouteOnly = true;
+        }
+
+        mCurrentRoad.SetRaceFilter(bRaceRouteOnly);
+        mFutureRoad.SetRaceFilter(bRaceRouteOnly);
+
+        float timeSinceUpdate = Sim::GetTime() - mRoadUpdateTimer;
+        if (isvalid && timeSinceUpdate < 0.33f) {
+            // Incremental road update
+            mRoadIncrementTimer = Sim::GetTime();
+
+            UMath::Vector3 road_direction;
+            UMath::Unit(mCurrentRoad.GetForwardVector(), road_direction);
+
+            UMath::Vector3 road_side = UMath::Vector3Make(road_direction.z, 0.0f, -road_direction.x);
+            UMath::Normalize(road_side);
+
+            float lanedelta = UMath::Dot(road_side, currentoff);
+            float dist = UMath::Dot(road_direction, currentoff);
+
+            if (dist > 0.05f) {
+                float laneoffset = mCurrentRoad.SnapToSelectableLane(mCurrentRoad.GetLaneOffset() + lanedelta);
+                mCurrentRoad.ChangeLanes(laneoffset, 0.0f);
+                mCurrentRoad.IncNavPosition(dist, mCurrentRoad.GetForwardVector(), 0.0f);
+            }
+
+            speed = UMath::Length(velocity);
+
+            dist = speed - UMath::Distance(mFutureRoad.GetPosition(), mCurrentRoad.GetPosition());
+
+            if (dist > 0.05f) {
+                UVector3 pos(mFarFuturePosition);
+                UMath::Vector3 incdir = pos - mFutureRoad.GetPosition();
+                UMath::Normalize(incdir);
+
+                UMath::Unit(mFutureRoad.GetForwardVector(), road_direction);
+                road_side = UMath::Vector3Make(road_direction.z, 0.0f, -road_direction.x);
+
+                float lanedelta = UMath::Dot(velocity, road_side) * dist / speed;
+                float laneoffset = mFutureRoad.SnapToSelectableLane(mFutureRoad.GetLaneOffset() + lanedelta);
+                dist *= UMath::Dot(incdir, road_direction);
+                mFutureRoad.ChangeLanes(laneoffset, 0.0f);
+                mFutureRoad.IncNavPosition(dist, incdir, 0.0f);
+            }
+        } else {
+            // Full road update
+            mRoadUpdateTimer = Sim::GetTime();
+
+            UMath::Vector3 position;
+            position = ibody->GetPosition();
+
+            if (speed < 1.0f) {
+                velocity = ibody->GetForwardVector();
+                speed = UMath::Length(velocity);
+            }
+
+            UMath::Vector3 direction;
+            UMath::Scale(velocity, 1.0f / speed, direction);
+
+            float futuredistance = UMath::Max(1.0f, 2.0f / speed);
+            float targetdistance = UMath::Max(2.0f, 90.0f / speed);
+
+            road_walker walker;
+            walker.set_race_routes(bRaceRouteOnly);
+
+            if (walker.walk_road(position, direction, speed * futuredistance, speed * targetdistance,
+                                 mLastFutureSegment, mLastFutureNodeInd)) {
+                mCurrentRoad.SetRaceFilter(bRaceRouteOnly);
+                mCurrentRoad.SetTrafficFilter(false);
+                mCurrentRoad.SetCopFilter(false);
+                mFutureRoad.SetRaceFilter(bRaceRouteOnly);
+                mFutureRoad.SetTrafficFilter(false);
+                mFutureRoad.SetCopFilter(false);
+
+                walker.get_best_start_spot().init_nav(mCurrentRoad);
+                walker.get_best_future_spot().init_nav(mFutureRoad);
+
+                mLastFutureSegment = mFutureRoad.GetSegmentInd();
+                mLastFutureNodeInd = static_cast<short>(mFutureRoad.GetNodeInd());
+
+                WRoadNav targetnav;
+                walker.get_best_target_spot().init_nav(targetnav);
+
+                mFarFuturePosition = targetnav.GetPosition();
+                UMath::Unit(targetnav.GetForwardVector(), mFarFutureDirection);
+            }
+        }
+    }
 }
 
 WRoadNav *AIVehicle::GetCurrentRoad() {
@@ -1191,6 +1554,12 @@ float AIPerpVehicle::GetSkill() const {
 static const float Tweak_CatchupCheatSkill[3] = {0.5f, 0.5f, 0.5f};
 Table CatchupCheatTable(Tweak_CatchupCheatSkill, 3, 0.0f, 1.0f);
 
+static const float Tweak_CatchupGlue = 1.0f;
+Table CatchupGlueTable(&Tweak_CatchupGlue, 1, 0.0f, 1.0f);
+
+static const float Tweak_SlowDownGlue = 1.0f;
+Table SlowDownGlueTable(&Tweak_SlowDownGlue, 1, 0.0f, 1.0f);
+
 float AIPerpVehicle::GetCatchupCheat() const {
     return UMath::Clamp(fBaseSkill + fGlueSkill - 1.0f, 0.0f, 1.0f) * CatchupCheatTable.GetValue(fBaseSkill);
 }
@@ -1271,4 +1640,771 @@ bool AIPerpVehicle::OnClearCausality(float start_time) {
 
 float AIPerpVehicle::GetLastTrafficHitTime() const {
     return LastTrafficHitTime;
+}
+
+static const float Tweak_AdaptiveSkillUp[] = {0.0f, 0.3f, 0.5f};
+static const float Tweak_AdaptiveSkillDown[] = {0.0f, 0.3f, 0.5f};
+static const float Tweak_QuickRaceSkills[] = {0.0f, 0.5f, 1.0f};
+static const float Tweak_QuickRaceSkillsNoGlue[] = {0.0f, 0.5f, 1.0f};
+
+static Table AdaptiveSkillUpTable(Tweak_AdaptiveSkillUp, 3, 0.0f, 1.0f);
+static Table AdaptiveSkillDownTable(Tweak_AdaptiveSkillDown, 3, 0.0f, 1.0f);
+
+void AIPerpVehicle::ComputeSkill() {
+    fBaseSkill = 0.0f;
+    if (GRaceStatus::Exists()) {
+        GRace::Context context = GRaceStatus::Get().GetRaceContext();
+        if (context == GRace::kRaceContext_QuickRace) {
+            GRaceParameters *params = GRaceStatus::Get().GetRaceParameters();
+            if (params == nullptr || GRaceStatus::Get().GetRaceParameters()->GetCatchUp()) {
+                GRace::Difficulty difficulty = GRaceStatus::Get().GetRaceParameters()->GetDifficulty();
+                fBaseSkill = Tweak_QuickRaceSkills[difficulty];
+            } else {
+                GRace::Difficulty difficulty = GRaceStatus::Get().GetRaceParameters()->GetDifficulty();
+                fBaseSkill = Tweak_QuickRaceSkillsNoGlue[difficulty];
+            }
+        } else if (context == GRace::kRaceContext_Career) {
+            if (pRacerInfo != nullptr) {
+                GCharacter *character = pRacerInfo->GetGameCharacter();
+                if (character != nullptr) {
+                    float character_skill = static_cast< float >(character->SkillLevel(0)) * 0.01f;
+                    character_skill = UMath::Clamp(character_skill, 0.0f, 1.0f);
+                    float difficulty = GRaceStatus::Get().GetAdaptiveDifficutly();
+                    Table *table;
+                    if (difficulty > 0.0f) {
+                        table = &AdaptiveSkillUpTable;
+                    } else {
+                        table = &AdaptiveSkillDownTable;
+                    }
+                    float adjustment = table->GetValue(character_skill);
+                    character_skill = character_skill + difficulty * adjustment;
+                    fBaseSkill = UMath::Clamp(character_skill, 0.0f, 1.0f);
+                }
+            }
+        }
+    }
+}
+
+void AIPerpVehicle::OnCausedExplosion(IExplosion *explosion, ISimable *to) {
+    float chain_start_time = explosion->GetCausalityTime();
+    float sim_time = Sim::GetTime();
+    int cost_to_state = 0;
+
+    if (sim_time - chain_start_time <= 0.5f) {
+        SimableType type = to->GetSimableType();
+        IModel *model = to->GetModel();
+        bool bIsRootModel = false;
+        if (model != nullptr && model->IsRootModel()) {
+            bIsRootModel = true;
+        }
+
+        if (type == SIMABLE_SMACKABLE && bIsRootModel) {
+            Attrib::Gen::smackable attribs(to->GetAttributes());
+            cost_to_state = attribs.COST_TO_STATE();
+        } else if (type == SIMABLE_VEHICLE) {
+            IVehicle *ivehicle;
+            to->QueryInterface(&ivehicle);
+            if (!ivehicle->IsDestroyed()) {
+                IPursuitAI *ipursuitVehicle;
+                if (to->QueryInterface(&ipursuitVehicle)) {
+                    cost_to_state = 2000;
+                }
+            }
+        }
+
+        if (cost_to_state != 0 && GetPursuit() != nullptr) {
+            AddCostToState(cost_to_state);
+        }
+    }
+
+    to->SetCausality(static_cast< ICause * >(this)->GetInstanceHandle(), chain_start_time);
+}
+
+void AIPerpVehicle::OnCausedCollision(const Sim::Collision::Info &cinfo, ISimable *from, ISimable *to) {
+    float sim_time = Sim::GetTime();
+    bool directhit = UTL::COM::ComparePtr(GetOwner(), from);
+    SimableType type = to->GetSimableType();
+    float chain_start_time;
+    if (directhit) {
+        chain_start_time = sim_time;
+    } else {
+        chain_start_time = from->GetCausalityTime();
+    }
+    bool break_chain = false;
+    int cost_to_state = 0;
+    bool intentionalhit = false;
+
+    if (type == SIMABLE_SMACKABLE) {
+        HSIMABLE toHandle = to->GetInstanceHandle();
+        if ((toHandle == cinfo.objA && cinfo.objAImmobile) ||
+            (toHandle == cinfo.objB && cinfo.objBImmobile)) {
+            break_chain = true;
+        }
+    }
+
+    if (!break_chain && sim_time - chain_start_time <= 0.5f) {
+        IPursuit *ipursuit = GetPursuit();
+
+        if (type == SIMABLE_SMACKABLE) {
+            Attrib::Gen::smackable attribs(to->GetAttributes());
+            cost_to_state = attribs.COST_TO_STATE();
+
+            IModel *model = to->GetModel();
+            if (model != nullptr && model->IsRootModel() && directhit &&
+                ipursuit != nullptr && ipursuit->IsPerpInSight() &&
+                ipursuit->IsPlayerPursuit() &&
+                ipursuit->TimeToFinisherAttempt() < 30.0f) {
+                GInfractionManager::Get().ReportDamageToProperty();
+            }
+        } else if (type == SIMABLE_VEHICLE) {
+            float closing_speed = UMath::Length(cinfo.closingVel);
+            bool causalityhit = !directhit;
+
+            {
+                bool i_am_a = cinfo.objA == GetOwner()->GetInstanceHandle();
+                float normal_dir = i_am_a ? 1.0f : -1.0f;
+                const UMath::Vector3 &my_vel = i_am_a ? cinfo.objAVel : cinfo.objBVel;
+                const UMath::Vector3 &his_vel = i_am_a ? cinfo.objBVel : cinfo.objAVel;
+                float my_closing_speed = UMath::Dot(my_vel, cinfo.normal);
+                float his_closing_speed = UMath::Dot(his_vel, cinfo.normal);
+                intentionalhit = normal_dir * my_closing_speed < normal_dir * -his_closing_speed;
+            }
+
+            IVehicle *ivehicle;
+            to->QueryInterface(&ivehicle);
+            IPursuitAI *ipursuitVehicle;
+            to->QueryInterface(&ipursuitVehicle);
+
+            if (ipursuitVehicle != nullptr) {
+                bool wasDamagedByPerp = ipursuitVehicle->GetDamagedByPerp();
+                if (!wasDamagedByPerp && !directhit && 5.0f < closing_speed) {
+                    ipursuitVehicle->SetDamagedByPerp(true);
+                    if (ipursuit != nullptr) {
+                        ipursuit->NotifyCopDamaged(ivehicle);
+                        if (ipursuit->IsPlayerPursuit() && intentionalhit) {
+                            GInfractionManager::Get().ReportAssaultingPoliceOfficer();
+                        }
+                    }
+                }
+
+                if (!ivehicle->IsDestroyed()) {
+                    if (intentionalhit) {
+                        cost_to_state = 2000;
+                    } else if (directhit) {
+                        cost_to_state = 500;
+                    }
+
+                    if (cost_to_state != 0) {
+                        float amount = UMath::Ramp(closing_speed, 5.0f, 40.0f);
+                        cost_to_state = UMath::Max(static_cast< int >(static_cast< float >(cost_to_state / 50) * amount) * 50, 50);
+                    }
+
+                    if (!directhit && !ipursuitVehicle->GetInPursuit()) {
+                        IVehicleAI *ivehicleai;
+                        to->QueryInterface(&ivehicleai);
+                        if (ivehicleai != nullptr && !ivehicleai->GetTarget()->IsValid()) {
+                            IVehicle *myVehicle = GetVehicle();
+                            DriverClass driverclass = myVehicle->GetDriverClass();
+                            if (driverclass == DRIVER_HUMAN || driverclass == DRIVER_REMOTE ||
+                                (ICopMgr::Exists() && ICopMgr::Get()->CanPursueRacers())) {
+                                if (intentionalhit) {
+                                    ivehicleai->GetTarget()->Aquire(from);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            ITrafficAI *itrafficVehicle;
+            if (5.0f < closing_speed && intentionalhit && to->QueryInterface(&itrafficVehicle)) {
+                LastTrafficHitTime = sim_time;
+                GManager::Get().IncValue("TrafficCarsHit");
+                if (ipursuit != nullptr) {
+                    ipursuit->NotifyTrafficCarHit();
+                }
+                if (GRaceStatus::Exists()) {
+                    GRacerInfo *racerInfo = GRaceStatus::Get().GetRacerInfo(from);
+                    if (racerInfo != nullptr) {
+                        racerInfo->NotifyTrafficCollision();
+                    }
+                }
+
+                if (intentionalhit && ipursuit != nullptr &&
+                    ipursuit->IsPerpInSight() &&
+                    ipursuit->IsPlayerPursuit() &&
+                    ipursuit->TimeToFinisherAttempt() < 30.0f) {
+                    GInfractionManager::Get().ReportHitAndRun();
+                }
+            }
+            break_chain = !intentionalhit;
+        }
+
+        if (cost_to_state != 0 && ipursuit != nullptr) {
+            AddCostToState(cost_to_state);
+        }
+    }
+
+    to->SetCausality(static_cast< ICause * >(this)->GetInstanceHandle(), chain_start_time);
+}
+
+struct FindAvgComplete {
+    float mTotal;
+    float mCount;
+
+    FindAvgComplete() : mTotal(0.0f), mCount(0.0f) {}
+
+    void operator()(IVehicle *vehicle) {
+        IPerpetrator *ai;
+        if (vehicle->QueryInterface(&ai)) {
+            GRacerInfo *info = ai->GetRacerInfo();
+            if (info != nullptr) {
+                mTotal += info->GetPctRaceComplete();
+                mCount += 1.0f;
+            }
+        }
+    }
+
+    float Result() const {
+        if (mCount > 0.0f) {
+            return mTotal / mCount;
+        }
+        return 0.0f;
+    }
+};
+
+void AIPerpVehicle::Update(float dT) {
+    ProfileNode profile_node("AIPerpVehicle::Update", 0);
+
+    static int car_hash = bStringHash("car");
+    static int heli_hash = bStringHash("heli");
+
+    m911CallTimer -= dT;
+    AIVehicle::Update(dT);
+
+    mDriveToNav->SetRaceFilter(IsRacing() && WRoadNetwork::Get().IsRaceFilterValid());
+
+    fGlueSkill = 0.0f;
+    fGlueOutput = 0.0f;
+
+    bool off_world = false;
+    if (IsRacing()) {
+        off_world = !GetVehicle()->IsStaging();
+    }
+
+    GRacerInfo *racer_info = GetRacerInfo();
+
+    if (off_world && racer_info != nullptr && !GetOwner()->IsPlayer()) {
+        IVehicle *player = IVehicle::First(VEHICLE_PLAYERS);
+
+        fGlueTimer += dT;
+
+        if (fGlueTimer > 1.0f && player != nullptr) {
+            float percent_complete = racer_info->GetPctRaceComplete();
+            FindAvgComplete avg;
+            avg = IVehicle::ForEach(VEHICLE_AI, avg);
+            float average_complete = avg.Result();
+
+            float glue_error = GRaceStatus::Get().GetRaceLength() * (average_complete - percent_complete) * 10.0f;
+
+            Physics::Info::Performance perf;
+            if (player->GetPerformance(perf)) {
+                glue_error *= (1.0f - perf.TopSpeed) * 0.5f + 1.0f;
+            }
+
+            pGlueError->Record(glue_error, fGlueTimer, false, false);
+            fGlueTimer -= 1.0f;
+        }
+
+        bool simple = IsSimplePhysicsActive();
+        bool catchup = GRaceStatus::Get().ComputeCatchUpSkill(racer_info, pGlueError, &fGlueOutput, &fGlueSkill, simple);
+
+        if (catchup) {
+            if (!simple) {
+                if (fGlueSkill > 0.0f) {
+                    if (GRaceStatus::IsSpeedTrapRace()) {
+                        fGlueSkill *= 0.5f;
+                    } else {
+                        fGlueSkill *= CatchupGlueTable.GetValue(fBaseSkill);
+                    }
+                } else if (fGlueSkill < 0.0f) {
+                    if (GRaceStatus::IsSpeedTrapRace()) {
+                        fGlueSkill *= 0.5f;
+                    } else {
+                        fGlueSkill *= SlowDownGlueTable.GetValue(fBaseSkill);
+                    }
+                }
+            }
+        } else {
+            fGlueSkill = 0.0f;
+            fGlueOutput = 0.0f;
+        }
+    }
+
+    IRigidBody *rigid_body = GetSimable()->GetRigidBody();
+    const UMath::Vector3 &bodyPos = rigid_body->GetPosition();
+    UMath::Vector3 dim = rigid_body->GetDimension();
+
+    bVector3 nfspos;
+    eSwizzleWorldVector(reinterpret_cast< const bVector3 & >(bodyPos), nfspos);
+
+    UMath::Vector3 myPos;
+    myPos.x = nfspos.x;
+    myPos.y = nfspos.y - dim.y;
+    myPos.z = nfspos.z;
+
+    mHiddenFromCars = false;
+    mHiddenFromHelicopters = false;
+
+    bVector2 pos2(nfspos.x, nfspos.z);
+
+    IPursuit *ip = GetPursuit();
+    bool NotSeenRightNow = true;
+
+    if (ip == nullptr) {
+        mPursuitZoneCheck--;
+        if (mPursuitZoneCheck < 0) {
+            mPursuitZoneCheck = 10;
+#ifdef EA_BUILD_A124
+            if (ICopMgr::Exists() && (!GRaceStatus::Exists() || GRaceStatus::Get().GetPlayMode() == 0)) {
+#else
+            if (ICopMgr::Exists() && ICopMgr::Get()->VehicleSpawningEnabled(false) &&
+                (!GRaceStatus::Exists() || GRaceStatus::Get().GetPlayMode() == 0)) {
+#endif
+                TrackPathZone *azone = TheTrackPathManager.FindZone(&pos2, TRACK_PATH_ZONE_PURSUIT_START, nullptr);
+                if (azone != nullptr) {
+                    ICopMgr::Get()->LockoutCops(false);
+                    MForcePursuitStart msg(static_cast< int >(GetHeat()));
+                    UCrc32 port("gameplay");
+                    msg.Post(port);
+                }
+            }
+        }
+    } else {
+        NotSeenRightNow = ip->GetEvadeLevel() >= 0.5f;
+
+        if (ip->IsPerpBusted()) {
+            IInput *ii;
+            if (GetOwner()->QueryInterface(&ii)) {
+                ii->SetControlGas(0.0f);
+                ii->SetControlBrake(1.0f);
+                ii->SetControlSteering(0.0f);
+                ii->SetControlSteeringVertical(0.0f);
+                ii->SetControlHandBrake(1.0f);
+                ii->SetControlNOS(false);
+            }
+        }
+    }
+
+    int zoneCount = 0;
+    TrackPathZone *azone = TheTrackPathManager.FindZone(&pos2, TRACK_PATH_ZONE_HIDDEN, nullptr);
+    while (azone != nullptr) {
+        float elevation = azone->GetElevation();
+
+        if (elevation == 0.0f || UMath::Abs(myPos.y - elevation) < 10.0f) {
+            if (!mWasInZoneLastUpdate) {
+                mWasInZoneLastUpdate = true;
+                if (NotSeenRightNow) {
+                    mHiddenZoneLatchTime = 0.5f;
+                } else {
+                    mHiddenZoneLatchTime = 2.0f;
+                }
+            } else if (mHiddenZoneLatchTime <= 5.0f) {
+                mHiddenZoneTimer += dT;
+            } else {
+                mHiddenZoneTimer = 0.0f;
+            }
+
+            if (mHiddenZoneLatchTime < mHiddenZoneTimer) {
+                int data = azone->GetData(0);
+                if (data != car_hash) {
+                    if (data == heli_hash) {
+                        mHiddenFromHelicopters = true;
+                    } else {
+                        mHiddenFromHelicopters = true;
+                        mHiddenFromCars = true;
+                    }
+                } else {
+                    mHiddenFromCars = true;
+                }
+            }
+
+            zoneCount++;
+        }
+
+        azone = TheTrackPathManager.FindZone(&pos2, TRACK_PATH_ZONE_HIDDEN, azone);
+    }
+
+    if (zoneCount == 0) {
+        mWasInZoneLastUpdate = false;
+        mHiddenZoneTimer = 0.0f;
+    }
+}
+
+// Range: 0x80020438 -> 0x80020604
+void path_spot::init_nav(WRoadNav &nav) const {
+    WRoadNetwork &roadnetwork = WRoadNetwork::Get();
+    const WRoadSegment *segment = roadnetwork.GetSegment(segmentindex);
+    float tparam = param;
+    UMath::Vector3 dir;
+    UMath::Vector3 point;
+
+    roadnetwork.GetSegmentForwardVector(*segment, dir);
+    if (nodeind == 0) {
+        UMath::Negate(dir);
+        tparam = 1.0f - param;
+    }
+
+    segment->GetStartControl(point);
+
+    nav.SetPathType(WRoadNav::kPathCop);
+    nav.SetNavType(WRoadNav::kTypeDirection);
+    nav.SetLaneType(WRoadNav::kLaneCop);
+    nav.InitAtSegment(segmentindex, tparam, point, dir, true);
+    nav.ChangeLanes(laneoffset, 0.0f);
+}
+
+// Range: 0x80020604 -> 0x800206F8
+void path_spot::init_nav(WRoadNav &nav, const UMath::Vector3 &point) const {
+    WRoadNetwork &roadnetwork = WRoadNetwork::Get();
+    const WRoadSegment *segment = roadnetwork.GetSegment(segmentindex);
+    float tparam = param;
+    UMath::Vector3 dir;
+
+    roadnetwork.GetSegmentForwardVector(*segment, dir);
+    if (nodeind == 0) {
+        UMath::Negate(dir);
+        tparam = 1.0f - param;
+    }
+
+    nav.SetPathType(WRoadNav::kPathCop);
+    nav.SetNavType(WRoadNav::kTypeDirection);
+    nav.SetLaneType(WRoadNav::kLaneCop);
+    nav.InitAtSegment(segmentindex, tparam, point, dir, false);
+    float snapped = nav.SnapToSelectableLane(nav.GetLaneOffset());
+    nav.ChangeLanes(snapped, 0.0f);
+}
+
+road_walker::start_record::start_record(float s, WRoadNav &nav)
+    : score(s) {
+    spot.segmentindex = nav.GetSegmentInd();
+    spot.nodeind = nav.GetNodeInd();
+    spot.param = nav.GetSegmentTime();
+    spot.laneoffset = nav.GetLaneOffset();
+    point = nav.GetPosition();
+}
+
+const int road_walker::walk_limit = 32;
+const int road_walker::evaluate_limit = 10;
+
+float TotalWalkPathTime;
+
+// Range: 0x800206F8 -> 0x800212C8
+bool road_walker::walk_road(const UMath::Vector3 &start, const UMath::Vector3 &dir,
+                            float futuredist, float targetdist, short prevfuture,
+                            int prevnodeind) {
+    ProfileNode profile_node;
+    unsigned int ticks = bGetTicker();
+    const WGrid &grid = WGrid::Get();
+    WRoadNetwork &roadnetwork = WRoadNetwork::Get();
+    UTL::Std::set<short, _type_set> segments;
+    UTL::FastVector<unsigned int, 16> nodes;
+    WRoadNav startnav;
+    start_vector sortedstarts;
+
+    direction = dir;
+    previousfutures[1] = -1;
+    previousfutures[0] = prevfuture;
+    futurescale = futuredist / targetdist;
+
+    if (prevfuture > -1) {
+        const WRoadNode *node =
+            roadnetwork.GetNode(roadnetwork.GetSegment(prevfuture)->fNodeIndex[prevnodeind]);
+        const WRoadSegment *checksegment = GetAttachedDirectionalSegment(node, prevfuture);
+        if (checksegment) {
+            previousfutures[1] = checksegment->fIndex;
+        }
+    }
+
+    UMath::Normalize(direction);
+    UMath::ScaleAdd(dir, futuredist, start, futurepoint);
+    UMath::ScaleAdd(dir, targetdist, start, targetpoint);
+
+    grid.FindNodes(start, node_find_radius(), nodes);
+
+    for (unsigned int *it = nodes.begin(); it != nodes.end(); ++it) {
+        WGridNode *gridnode = grid.GetNode(*it);
+        if (gridnode) {
+            int count = gridnode->GetElemTypeCount(WGrid_kRoadSegment);
+            for (int j = 0; j < count; j++) {
+                short segInd =
+                    static_cast<short>(gridnode->GetElemType(j, WGrid_kRoadSegment));
+                if (!raceroutes || roadnetwork.GetSegment(segInd)->IsInRace()) {
+                    segments.insert(segInd);
+                }
+            }
+        }
+    }
+
+    startnav.SetPathType(WRoadNav::kPathCop);
+    startnav.SetNavType(WRoadNav::kTypeDirection);
+    startnav.SetLaneType(WRoadNav::kLaneCop);
+
+    int reservesize = 33;
+    if (static_cast<int>(segments.size()) > reservesize) {
+        reservesize = segments.size();
+    }
+    sortedstarts.reserve(reservesize);
+
+    for (UTL::Std::set<short, _type_set>::iterator sit = segments.begin();
+         sit != segments.end(); ++sit) {
+        if (*sit < static_cast<short>(roadnetwork.GetNumSegments())) {
+            startnav.InitAtSegment(*sit, start, direction, false);
+
+            if ((roadnetwork.GetSegment(startnav.GetSegmentInd())->fFlags & 0x40) &&
+                startnav.GetNodeInd() == 0) {
+                startnav.Reverse();
+            }
+
+            float snapped = startnav.SnapToSelectableLane(startnav.GetLaneOffset());
+            if (snapped != startnav.GetLaneOffset()) {
+                startnav.ChangeLanes(snapped, 0.0f);
+            }
+
+            float dx = start.x - startnav.GetPosition().x;
+            float dz = start.z - startnav.GetPosition().z;
+            float horizDist = UMath::Sqrt(dx * dx + dz * dz) - 10.0f;
+            if (horizDist < 0.0f) {
+                horizDist = 0.0f;
+            }
+
+            float heightDiff = bAbs(start.y - startnav.GetPosition().y) - 10.0f;
+            if (heightDiff < 0.0f) {
+                heightDiff = 0.0f;
+            }
+
+            UMath::Vector3 fwd = startnav.GetForwardVector();
+            UMath::Normalize(fwd);
+            float dot = UMath::Dot(direction, fwd);
+            float dirScore = 1.0f - dot;
+
+            float score = horizDist + heightDiff * 5.0f + dirScore + dirScore;
+
+            start_record rec(score, startnav);
+            sortedstarts.push_back(rec);
+        }
+    }
+
+    if (sortedstarts.begin() == sortedstarts.end()) {
+        TotalWalkPathTime += bGetTickerDifference(ticks);
+        return false;
+    }
+
+    std::sort(sortedstarts.begin(), sortedstarts.end());
+
+    float oldscore = bestscore;
+    bestscore = 1e30f;
+    numevaluates = 0;
+    numwalkallpaths = 0;
+
+#ifdef _MSC_VER
+    for (start_vector::iterator it = sortedstarts.begin();
+#else
+    for (start_record *it = sortedstarts.begin();
+#endif
+         numevaluates < evaluate_limit && numwalkallpaths < walk_limit &&
+         it != sortedstarts.end() && (startscore = it->score, it->score < bestscore);
+         ++it) {
+        startspot = it->spot;
+        startpoint = it->point;
+        walk_all_paths(it->spot, futuredist, targetdist, false);
+    }
+
+    TotalWalkPathTime += bGetTickerDifference(ticks);
+    return bestscore < oldscore;
+}
+
+// Range: 0x800212C8 -> 0x80021620
+void road_walker::walk_all_paths(const path_spot &start, float futuredist, float targetdist,
+                                 bool coppenalty) {
+    WRoadNetwork &roadnetwork = WRoadNetwork::Get();
+    numwalkallpaths++;
+
+    short segInd = start.segmentindex;
+    int nodeind = start.nodeind;
+    const WRoadSegment *segment = roadnetwork.GetSegment(segInd);
+    float param = start.param;
+    bool first = true;
+
+    for (;;) {
+        unsigned short flags = segment->fFlags;
+
+        if ((flags & 0x40) && nodeind == 0) {
+            return;
+        }
+
+        float segdist = segment->GetLength();
+
+        if (first) {
+            first = false;
+            if (!coppenalty) {
+                coppenalty = !segment->ShouldCopsConsider();
+            }
+        } else {
+            coppenalty = true;
+        }
+
+        if (futuredist > 0.0f) {
+            float futparam = param + futuredist / segdist;
+            if (futparam <= 1.0f) {
+                futurespot.segmentindex = segInd;
+                futurespot.nodeind = nodeind;
+                futurespot.param = futparam;
+                futurespot.laneoffset = 0.0f;
+            }
+        }
+
+        float tgtparam = param + targetdist / segdist;
+        if (tgtparam <= 1.0f) {
+            path_spot targetspot;
+            targetspot.segmentindex = segInd;
+            targetspot.nodeind = nodeind;
+            targetspot.param = tgtparam;
+            targetspot.laneoffset = 0.0f;
+            evaluate_end(targetspot, coppenalty);
+            return;
+        }
+
+        float remaining = segdist * (1.0f - param);
+        targetdist -= remaining;
+        futuredist -= remaining;
+
+        const WRoadNode *nextNode =
+            roadnetwork.GetNode(segment->fNodeIndex[nodeind]);
+        const WRoadSegment *nextSeg =
+            GetAttachedDirectionalSegment(nextNode, segInd);
+        param = 0.0f;
+
+        if (nextSeg == nullptr) {
+            int i = 0;
+            if (numevaluates < evaluate_limit && numwalkallpaths < walk_limit &&
+                nextNode->fNumSegments > 0) {
+                do {
+                    unsigned short branchSegInd = nextNode->fSegmentIndex[i];
+                    if (static_cast<short>(branchSegInd) != segInd) {
+                        unsigned short bflags =
+                            roadnetwork.GetSegment(branchSegInd)->fFlags;
+                        if (!(bflags & 0x1000) && !((bflags >> 13) & 1)) {
+                            if (!raceroutes || (static_cast<short>(bflags) < 0)) {
+                                path_spot branchStart;
+                                branchStart.segmentindex = branchSegInd;
+                                branchStart.nodeind =
+                                    (roadnetwork.GetNode(
+                                         roadnetwork.GetSegment(branchSegInd)
+                                             ->fNodeIndex[0]) ==
+                                     nextNode)
+                                        ? 1
+                                        : 0;
+                                branchStart.param = 0.0f;
+                                branchStart.laneoffset = 0.0f;
+                                walk_all_paths(branchStart, futuredist, targetdist,
+                                               coppenalty);
+                            }
+                        }
+                    }
+                    i++;
+                } while (numevaluates < evaluate_limit &&
+                         numwalkallpaths < walk_limit &&
+                         i < static_cast<int>(nextNode->fNumSegments));
+            }
+            return;
+        }
+
+        segInd = nextSeg->fIndex;
+        nodeind = (nextNode == roadnetwork.GetNode(nextSeg->fNodeIndex[0])) ? 1 : 0;
+        segment = nextSeg;
+    }
+}
+
+// Range: 0x80021620 -> 0x80021A28
+void road_walker::evaluate_end(const path_spot &targetspot, bool coppenalty) {
+    numevaluates++;
+
+    float score = startscore;
+    if (coppenalty) {
+        score += 3.0f;
+    }
+
+    if (score < bestscore) {
+        WRoadNav nav1;
+        targetspot.init_nav(nav1, targetpoint);
+
+        UMath::Vector3 toStart;
+        UMath::Sub(nav1.GetPosition(), startpoint, toStart);
+        UMath::Vector3 normToStart;
+        normToStart = toStart;
+        normToStart.y = 0.0f;
+        float len = UMath::Normalize(normToStart);
+        if (len != 0.0f) {
+            // already normalized
+        }
+        float dot = UMath::Dot(normToStart, direction);
+        score += (1.0f - dot) * 0.5f;
+
+        if (score < bestscore) {
+            float s = futurescale;
+            UMath::Vector3 interpPos;
+            interpPos.x =
+                ((nav1.GetPosition().x - startpoint.x) * s + startpoint.x - futurepoint.x) * s +
+                futurepoint.x;
+            interpPos.y =
+                ((nav1.GetPosition().y - startpoint.y) * s + startpoint.y - futurepoint.y) * s +
+                futurepoint.y;
+            interpPos.z =
+                ((nav1.GetPosition().z - startpoint.z) * s + startpoint.z - futurepoint.z) * s +
+                futurepoint.z;
+
+            WRoadNav nav2;
+            futurespot.init_nav(nav2, interpPos);
+
+            UMath::Vector3 toStart2;
+            UMath::Sub(nav2.GetPosition(), startpoint, toStart2);
+            UMath::Vector3 normToStart2;
+            normToStart2 = toStart2;
+            normToStart2.y = 0.0f;
+            float len2 = UMath::Normalize(normToStart2);
+            if (len2 != 0.0f) {
+            }
+
+            float dot2 = UMath::Dot(normToStart2, direction);
+            float futureScore = (1.0f - dot2) * 1.0f;
+
+            UMath::Vector3 fwd;
+            fwd = nav1.GetForwardVector();
+            fwd.y = 0.0f;
+            float lenFwd = UMath::Normalize(fwd);
+            if (lenFwd != 0.0f) {
+            }
+            float dot3 = UMath::Dot(fwd, direction);
+            score += futureScore + (1.0f - dot3) + (1.0f - dot3);
+
+            if (nav2.GetSegmentInd() != previousfutures[0] &&
+                nav2.GetSegmentInd() != previousfutures[1]) {
+                score += 5.0f;
+            }
+
+            if (score < bestscore) {
+                beststartspot = startspot;
+                bestfuturespot.segmentindex = nav2.GetSegmentInd();
+                bestfuturespot.nodeind = nav2.GetNodeInd();
+                bestfuturespot.param = nav2.GetSegmentTime();
+                bestfuturespot.laneoffset = nav2.GetLaneOffset();
+                besttargetspot.segmentindex = nav1.GetSegmentInd();
+                besttargetspot.nodeind = nav1.GetNodeInd();
+                besttargetspot.param = nav1.GetSegmentTime();
+                besttargetspot.laneoffset = nav1.GetLaneOffset();
+                bestscore = score;
+            }
+        }
+    }
 }

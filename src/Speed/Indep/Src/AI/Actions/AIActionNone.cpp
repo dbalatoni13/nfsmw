@@ -31,3 +31,5 @@ class AIActionNone : public AIAction {
 AIAction *AIActionNone::Construct(AIActionParams *params) {
     return new AIActionNone(params, 0.0f);
 }
+
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionNone("AIActionNone", AIActionNone::Construct);

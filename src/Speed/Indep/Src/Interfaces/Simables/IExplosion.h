@@ -9,6 +9,11 @@
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 
+struct HCAUSE__;
+typedef HCAUSE__ *HCAUSE;
+struct HMODEL__;
+typedef HMODEL__ *HMODEL;
+
 class IExplosion : public UTL::COM::IUnknown, public UTL::Collections::Listable<IExplosion, 96> {
   public:
     static HINTERFACE _IHandle() {
@@ -23,7 +28,11 @@ class IExplosion : public UTL::COM::IUnknown, public UTL::Collections::Listable<
     virtual float GetExpansionSpeed() const;
     virtual float GetMaximumRadius() const;
     virtual float GetRadius() const;
-    // TODO rest, why isn't GetCausality in the dwarf?
+    virtual HCAUSE GetCausality() const = 0;
+    virtual float GetCausalityTime() const = 0;
+    virtual bool HasDamage() const = 0;
+    virtual unsigned int GetTargets() const = 0;
+    virtual HMODEL GetSource() const = 0;
 };
 
 #endif

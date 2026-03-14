@@ -62,7 +62,7 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
         mProfile = Sim::Profile::Create();
     }
 
-    virtual void Reset();
+    virtual void Reset() {}
 
     virtual const int GetPriority() const {
         return mPriority;
@@ -75,12 +75,12 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
     }
 
   protected:
-    virtual void OnTaskSimulate(float dT);
+    virtual void OnTaskSimulate(float dT) {}
 
     virtual void OnBehaviorChange(const UCrc32 &mechanic) {}
 
-    virtual void OnPause();
-    virtual void OnUnPause();
+    virtual void OnPause() {}
+    virtual void OnUnPause() {}
 
     virtual ~Behavior() {
         // TODO

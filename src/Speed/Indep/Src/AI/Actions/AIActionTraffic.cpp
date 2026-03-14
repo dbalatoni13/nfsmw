@@ -1,13 +1,17 @@
 #include "Speed/Indep/Src/AI/AIAction.h"
+#include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/Generated/Messages/MSetTrafficSpeed.h"
 #include "Speed/Indep/Src/Interfaces/IListener.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
+#include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/Sim/Util.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 // total size: 0x48
@@ -108,6 +112,8 @@ AIAction *AIActionTraffic::Construct(AIActionParams *params) {
     return new AIActionTraffic(params, 0.1f);
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionTraffic("AIActionTraffic", AIActionTraffic::Construct);
+
 void AIActionTraffic::OnBehaviorChange(const UCrc32 &mechanic) {
     if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {
         GetOwner()->QueryInterface(&mRigidBody);
@@ -124,9 +130,7 @@ void AIActionTraffic::OnAccident(HSIMABLE hobject, const UMath::Vector3 &speed, 
     IVehicle *vehicle;
     if (object && object->QueryInterface(&vehicle) && (vehicle->GetAbsoluteSpeed() >= MPH2MPS(5.0f) || mAccident != ACCIDENT_OVER)) {
         switch (vehicle->GetDriverClass()) {
-            // TODO
             case DRIVER_HUMAN:
-            case DRIVER_TRAFFIC:
             case DRIVER_COP:
             case DRIVER_RACER:
                 if (mIsTractor) {
@@ -137,11 +141,7 @@ void AIActionTraffic::OnAccident(HSIMABLE hobject, const UMath::Vector3 &speed, 
                     mAccidentTimer = 3.0f;
                 }
                 break;
-            case DRIVER_NONE:
-                break;
-            case DRIVER_NIS:
-                break;
-            case DRIVER_REMOTE:
+            default:
                 break;
         }
     }
@@ -199,6 +199,117 @@ void AIActionTraffic::BeginAction(float dT) {
 }
 
 void AIActionTraffic::FinishAction(float dT) {}
+
+float GetSpeedLimitForCurvature(float friction, float curvature, float top_speed);
+float aAIStoppingDist[2] = {3.0f, 50.0f};
+Table aAIStoppingDistTable(aAIStoppingDist, 2, 0.0f, 1.0f);
+
+float AIActionTraffic::ComputeSpeed(float current_speed, float dT) {
+    WRoadNav *road_nav = GetAI()->GetDriveToNav();
+
+    if (road_nav->HitDeadEnd()) {
+        return 0.0f;
+    }
+
+    road_nav = GetAI()->GetDriveToNav();
+    WRoadNetwork &roadNetwork = WRoadNetwork::Get();
+    const WRoadSegment *segment = roadNetwork.GetSegment(road_nav->GetSegmentInd());
+    bool is_cop = GetVehicle()->GetDriverClass() == DRIVER_COP;
+
+    int numLanes = roadNetwork.GetSegmentNumTrafficLanes(*segment);
+    float posted_speed;
+    if (numLanes >= 4) {
+        posted_speed = mTargetSpeedHighway;
+    } else {
+        posted_speed = mTargetSpeedDefault;
+    }
+    float desired_speed = posted_speed;
+
+    if (!mFixedSpeed) {
+        float curvature = GetAI()->GetDriveToNav()->CookieTrailCurvature(
+            mRigidBody->GetPosition(), mRigidBody->GetLinearVelocity());
+        float friction = 0.6f;
+        if (is_cop) {
+            friction = 1.6f;
+        }
+        float speed_limit = GetSpeedLimitForCurvature(friction, curvature, posted_speed);
+        desired_speed = bMin(posted_speed, speed_limit);
+
+        if (road_nav->IsOccludedByAvoidable() && !road_nav->IsOccludedFromBehind()) {
+            float mass = mRigidBody->GetMass();
+            if (mIsTractor) {
+                mass = mass + mass;
+            }
+            float my_length = mRigidBody->GetRadius();
+            my_length = my_length + my_length;
+            float dist_to_occlusion = UMath::Distance(road_nav->GetApexPosition(),
+                                                       mRigidBody->GetPosition());
+            dist_to_occlusion = UMath::Max(0.0f, dist_to_occlusion - my_length);
+            float speed_factor = UMath::Max(mass * 0.0005f, 1.0f);
+            float stopping_distance = aAIStoppingDistTable.GetValue(current_speed * speed_factor);
+
+            if (dist_to_occlusion < stopping_distance) {
+                float ratio = road_nav->GetOccludingTrailSpeed() * dist_to_occlusion /
+                              stopping_distance;
+                ratio = bClamp(ratio, 0.0f, desired_speed);
+                desired_speed = bMin(ratio, current_speed);
+            }
+        }
+    }
+
+    if (!is_cop) {
+        desired_speed = bMin(desired_speed, current_speed + (dT + dT));
+    }
+
+    return desired_speed;
+}
+
+void AIActionTraffic::UpdateNavPos(float lookAheadDistance) {
+    WRoadNav *nav_point = GetAI()->GetDriveToNav();
+    bool pull_over = nPullOverState == 0;
+
+    if (pull_over) {
+        if (!nav_point->HitDeadEnd()) {
+            UMath::Vector3 navPos = nav_point->GetPosition();
+            UMath::Vector3 carPosition = mRigidBody->GetPosition();
+            UMath::Vector3 carToNav;
+            UMath::Vector3 navForwardVector = nav_point->GetForwardVector();
+            UMath::Unit(navForwardVector, navForwardVector);
+            UMath::Sub(navPos, carPosition, carToNav);
+            float distToNav = UMath::Normalize(carToNav);
+            float dot = UMath::Dot(navForwardVector, carToNav);
+
+            UMath::Vector3 targetVec = UMath::Vector3::kZero;
+            AITarget *aitarget = GetAI()->GetTarget();
+            if (aitarget != nullptr && aitarget->IsValid()) {
+                UMath::Vector3 targetPos = aitarget->GetPosition();
+                UMath::Sub(targetPos, carPosition, targetVec);
+                UMath::Normalize(targetVec);
+            }
+
+            if (distToNav * dot < lookAheadDistance) {
+                nav_point->IncNavPosition(lookAheadDistance - distToNav * dot, targetVec,
+                                          lookAheadDistance);
+            }
+        }
+        nav_point->UpdateOccludedPosition(true);
+    }
+
+    UMath::Copy(UMath::Matrix4::kIdentity, mNavMatrix);
+
+    UMath::Vector3 nav_direction = nav_point->GetForwardVector();
+    float length = UMath::Normalize(nav_direction);
+
+    if (length > 0.01f) {
+        UMath::Matrix4 orientMat = Util_GenerateMatrix(nav_direction, nullptr);
+        UMath::Copy(orientMat, mNavMatrix);
+
+        const UMath::Vector3 &pos = pull_over
+            ? nav_point->GetOccludedPosition()
+            : nav_point->GetPosition();
+        mNavMatrix.v3 = UMath::Vector4Make(pos, 1.0f);
+    }
+}
 
 bool AIActionTraffic::ShouldPullOver(const UMath::Vector3 &my_position, WRoadNav *road_nav) {
     return false;

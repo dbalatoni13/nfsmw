@@ -19,14 +19,14 @@ class IDamageable : public UTL::COM::IUnknown {
 
     virtual ~IDamageable() {}
 
-    virtual void SetInShock(float scale);
-    virtual void SetShockForce(float f);
-    virtual float InShock() const;
-    virtual void ResetDamage();
-    virtual float GetHealth() const;
-    virtual bool IsDestroyed() const;
-    virtual void Destroy();
-    virtual struct DamageZone::Info GetZoneDamage() const;
+    virtual void SetInShock(float scale) = 0;
+    virtual void SetShockForce(float f) = 0;
+    virtual float InShock() const = 0;
+    virtual void ResetDamage() = 0;
+    virtual float GetHealth() const = 0;
+    virtual bool IsDestroyed() const = 0;
+    virtual void Destroy() = 0;
+    virtual struct DamageZone::Info GetZoneDamage() const = 0;
 };
 
 class IDamageableVehicle : public UTL::COM::IUnknown {
@@ -39,8 +39,8 @@ class IDamageableVehicle : public UTL::COM::IUnknown {
 
     virtual ~IDamageableVehicle() {}
 
-    virtual bool IsLightDamaged(VehicleFX::ID idx) const;
-    virtual void DamageLight(VehicleFX::ID idx, bool b);
+    virtual bool IsLightDamaged(VehicleFX::ID idx) const = 0;
+    virtual void DamageLight(VehicleFX::ID idx, bool b) = 0;
 };
 
 #endif

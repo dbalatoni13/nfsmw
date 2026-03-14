@@ -15,6 +15,15 @@
 #include "Speed/Indep/Src/Sim/SimActivity.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 
+static unsigned int WAM_START_TRIGGER;
+static unsigned int WAM_STOP_TRIGGER;
+static unsigned int WAM_FIRST_FRAME;
+static unsigned int WAM_LAST_FRAME;
+static unsigned int WAM_SOUND_TRIGGER_START;
+static unsigned int WAM_SOUND_TRIGGER_STOP;
+static unsigned int WAM_NIS_GENERIC_CONTROL_MSG;
+static unsigned int WAM_FWD_REV_TRACK_CONTROL_MSG;
+
 void ChooseArrestAnimation(int *cameraTrack, char *sceneName, int strLen) {}
 
 bool ChooseArrestLocation(UMath::Vector3 &position, float &angle) {
@@ -71,6 +80,9 @@ struct NISListenerActivity : public Sim::Activity, public INISLISTENER {
 
     Hermes::HHANDLER mMessageBusted; // offset 0x54, size 0x4
 };
+
+UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _NISListenerActivity("NISListenerActivity",
+                                                                                        NISListenerActivity::Construct);
 
 NISListenerActivity::NISListenerActivity() : Sim::Activity(1), INISLISTENER(this) {
     // TODO magic

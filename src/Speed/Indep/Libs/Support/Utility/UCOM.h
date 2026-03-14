@@ -139,6 +139,7 @@ template <typename T, typename U, typename V> class Factory {
         Prototype(const _PRODUCT_SIGNATURE &classsig, _CONSTRUCTOR constructor) {
             mSignature = classsig;
             mConstructor = constructor;
+            mTail = mHead;
             mHead = this;
         }
 
@@ -163,16 +164,24 @@ template <typename T, typename U, typename V> class Factory {
     ~Factory() {}
 
     static _PRODUCT CreateInstance(_PRODUCT_SIGNATURE sig, _BUILD_PARAMETERS params);
-    // TODO
-    //  {
-    //     for (const Prototype *f = Prototype::GetHead(); f != nullptr; f = f->GetNext()) {
-    //         if (f->mSignature == sig) {
-    //             return f->mConstructor(params);
-    //         }
-    //     }
-    //     return nullptr;
-    // }
 };
+
+template <class _BUILD_PARAMETERS, class _PRODUCT, class _PRODUCT_SIGNATURE>
+_PRODUCT *Factory<_BUILD_PARAMETERS, _PRODUCT, _PRODUCT_SIGNATURE>::CreateInstance(
+    _PRODUCT_SIGNATURE sig, _BUILD_PARAMETERS params) {
+    for (const Prototype *f = Prototype::GetHead(); f != nullptr; f = f->GetNext()) {
+        if (f->mSignature == sig) {
+            return f->mConstructor(params);
+        }
+    }
+    return nullptr;
+}
+
+#ifdef _MSC_VER
+template <class _BUILD_PARAMETERS, class _PRODUCT, class _PRODUCT_SIGNATURE>
+typename Factory<_BUILD_PARAMETERS, _PRODUCT, _PRODUCT_SIGNATURE>::Prototype *
+    Factory<_BUILD_PARAMETERS, _PRODUCT, _PRODUCT_SIGNATURE>::Prototype::mHead = nullptr;
+#endif
 
 } // namespace COM
 } // namespace UTL

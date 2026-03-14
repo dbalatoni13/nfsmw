@@ -6,8 +6,11 @@
 #endif
 
 #include "./WCollision.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+
+void v3unit(const UMath::Vector3 *v, UMath::Vector3 *result);
 
 struct WCollisionTri {
     // total size: 0x30
@@ -18,6 +21,33 @@ struct WCollisionTri {
     UMath::Vector3 fPt2;                  // offset 0x20, size 0xC
     WSurface fSurface;                    // offset 0x2C, size 0x2
     unsigned short PAD;                   // offset 0x2E, size 0x2
+
+    WCollisionTri() {}
+
+    float MinY() const {
+        float minY = UMath::Min(fPt0.y, fPt1.y);
+        return UMath::Min(minY, fPt2.y);
+    }
+
+    inline void GetNormal(UMath::Vector3 *norm) const {
+        UMath::Vector3 vecX;
+        UMath::Vector3 vecZ;
+        vecZ.x = fPt1.x - fPt0.x;
+        vecZ.y = fPt1.y - fPt0.y;
+        vecZ.z = fPt1.z - fPt0.z;
+        vecX.x = fPt0.x - fPt2.x;
+        vecX.y = fPt0.y - fPt2.y;
+        vecX.z = fPt0.z - fPt2.z;
+        UMath::Vector3 normal;
+        UMath::Cross(vecZ, vecX, normal);
+        if (normal.x == 0.0f && normal.y == 0.0f && normal.z == 0.0f) {
+            norm->x = 0.0f;
+            norm->y = 1.0f;
+            norm->z = 0.0f;
+        } else {
+            v3unit(&normal, norm);
+        }
+    }
 };
 
 DECLARE_CONTAINER_TYPE(WCollisionWarnVector);
@@ -36,9 +66,40 @@ struct WCollisionBarrierList : public WCollisionVector<WCollisionBarrierListEntr
     // total size: 0x10
 };
 
-struct WCollisionTriBlock : public WCollisionVector<WCollisionTri> {};
+struct WCollisionTriBlock : public WCollisionVector<WCollisionTri> {
+    static void *operator new(unsigned int size) { return gFastMem.Alloc(size, nullptr); }
+    static void operator delete(void *mem, unsigned int size) { if (mem) gFastMem.Free(mem, size, nullptr); }
+};
 
-struct WCollisionTriList : public WCollisionVector<WCollisionTriBlock *> {};
+struct WCollisionTriList : public WCollisionVector<WCollisionTriBlock *> {
+    // total size: 0x14
+    WCollisionTriList() : mCurrBlock(nullptr) {}
+    ~WCollisionTriList() { clear_all(); }
+
+    inline void clear_all() {
+#ifdef _MSC_VER
+        for (unsigned int i = 0; i < size(); ++i) {
+            delete (*this)[i];
+        }
+#else
+        for (WCollisionTriBlock **i = begin(); i != end(); ++i) {
+            delete *i;
+        }
+#endif
+        clear();
+        mCurrBlock = nullptr;
+    }
+    inline void add_tri(const WCollisionTri &tri) {
+        if (mCurrBlock == nullptr || mCurrBlock->size() == mCurrBlock->capacity()) {
+            mCurrBlock = new WCollisionTriBlock();
+            mCurrBlock->reserve(0x15);
+            push_back(mCurrBlock);
+        }
+        mCurrBlock->push_back(tri);
+    }
+
+    WCollisionTriBlock *mCurrBlock; // offset 0x10, size 0x4
+};
 
 struct WCollisionObjectList : public WCollisionVector<const WCollisionObject *> {};
 

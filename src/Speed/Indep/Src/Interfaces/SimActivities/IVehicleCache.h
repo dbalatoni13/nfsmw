@@ -27,9 +27,9 @@ class IVehicleCache : public UTL::COM::IUnknown, public UTL::Collections::Listab
     virtual ~IVehicleCache() {}
 
   public:
-    virtual void OnRemovedVehicleCache(IVehicle *ivehicle);
-    virtual eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const;
-    virtual const char *GetCacheName() const;
+    virtual void OnRemovedVehicleCache(IVehicle *ivehicle) = 0;
+    virtual eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const = 0;
+    virtual const char *GetCacheName() const = 0;
 };
 
 #endif

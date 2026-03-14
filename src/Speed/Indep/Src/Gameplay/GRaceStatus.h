@@ -29,6 +29,13 @@ struct GRacerInfo {
         return mPctRaceComplete;
     }
 
+    void NotifyTrafficCollision() {
+        mNumTrafficCarsHit++;
+    }
+
+    void Busted();
+    void ForceStop();
+
   private:
     HSIMABLE mhSimable;              // offset 0x0, size 0x4
     GCharacter *mGameCharacter;      // offset 0x4, size 0x4
@@ -248,7 +255,7 @@ class GRaceParameters {
 
     int GetTrafficDensity() const;
 
-    // enum Difficulty GetDifficulty() const;
+    GRace::Difficulty GetDifficulty() const;
 
     // enum CopDensity GetCopDensity() const;
 
@@ -388,6 +395,10 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     float GetAdaptiveDifficutly() const;
 
+    float GetRaceLength() {
+        return fRaceLength;
+    }
+
     void SyncronizeAdaptiveBonus();
 
     // void UpdateAdaptiveDifficulty(enum eAdaptiveGainReason reason, struct ISimable *who);
@@ -472,6 +483,14 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         return Exists() && Get().GetRaceType() == GRace::kRaceType_Challenge;
     }
 
+    static bool IsDragRace() {
+        return Exists() && Get().GetRaceType() == GRace::kRaceType_Drag;
+    }
+
+    static bool IsSpeedTrapRace() {
+        return Exists() && Get().GetRaceType() == GRace::kRaceType_SpeedTrap;
+    }
+
     PlayMode GetPlayMode() {
         return mPlayMode;
     }
@@ -480,8 +499,16 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         return mTrafficPattern;
     }
 
+    int GetTrafficDensity() const {
+        return mTrafficDensity;
+    }
+
     bool GetActivelyRacing() const {
         return mActivelyRacing;
+    }
+
+    bool GetRaceRouteError() const {
+        return bRaceRouteError;
     }
 
     GRace::Context GetRaceContext() const {
@@ -490,6 +517,14 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     static bool IsFinalEpicPursuit() {
         return GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceParameters()->GetIsEpicPursuitRace();
+    }
+
+    int GetNumRaceSpeedTraps() {
+        return nSpeedTraps;
+    }
+
+    GTrigger *GetRaceSpeedTrap(int n) {
+        return aSpeedTraps[n];
     }
 
     float GetBinBaseHeat() const {

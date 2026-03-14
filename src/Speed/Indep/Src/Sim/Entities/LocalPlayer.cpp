@@ -35,6 +35,12 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+static Sim::IEntity *ConstructLocalPlayer(Sim::Param params) {
+    return new LocalPlayer(Sim::Param(params));
+}
+
+UTL::COM::Factory<Sim::Param, Sim::IEntity, UCrc32>::Prototype _LocalPlayer("LocalPlayer", ConstructLocalPlayer);
+
 LocalPlayer::LocalPlayer(Sim::Param params)
     : IPlayer(this),            //
       mSettingIndex(-1),        //

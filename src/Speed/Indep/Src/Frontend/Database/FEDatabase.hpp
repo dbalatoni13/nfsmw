@@ -162,6 +162,10 @@ class CareerSettings {
         return CurrentCar;
     }
 
+    unsigned char GetCurrentBin() {
+        return CurrentBin;
+    }
+
   private:
     uint32 CurrentCar;           // offset 0x0, size 0x4
     uint32 SpecialFlags;         // offset 0x4, size 0x4
@@ -268,6 +272,10 @@ class cFrontendDatabase {
 
     CareerSettings *GetCareerSettings() {
         return CurrentUserProfiles[0]->GetCareer();
+    }
+
+    GameplaySettings *GetGameplaySettings() {
+        return &CurrentUserProfiles[0]->GetOptions()->TheGameplaySettings;
     }
 
     bool IsSplitScreenMode() {

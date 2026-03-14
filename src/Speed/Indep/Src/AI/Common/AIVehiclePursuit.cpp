@@ -1,12 +1,16 @@
 #include "Speed/Indep/Src/AI/AIVehiclePursuit.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/AI/AIVehicle.h"
+#include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
+#include "Speed/Indep/Src/Speech/SoundAI.h"
 
 float AIVehiclePursuit::mStagger = 0.0f;
 
@@ -144,7 +148,7 @@ AITarget *AIVehiclePursuit::PursuitRequest() {
 void AIVehiclePursuit::Update(float dT) {
     ProfileNode profile_node("TODO", 0);
     AIVehicle::Update(dT);
-    UpdateSiren(dT); // TODO
+    UpdateSiren(dT);
 
     if (!mInPursuit || !GetTarget()->IsValid()) {
         mTimeSinceTargetSeen = 0.25f;
@@ -159,5 +163,154 @@ void AIVehiclePursuit::Update(float dT) {
         if (CanSeeTarget(GetTarget())) {
             mTimeSinceTargetSeen = -0.25f;
         }
+    }
+}
+
+void AIVehiclePursuit::UpdateSiren(float dT) {
+    IPursuit *ipursuit = GetPursuit();
+    SoundAI *soundai = SoundAI::Get();
+    IVehicle *cop_car = GetVehicle();
+
+    bool pursuitRace = false;
+    bool is_dday = false;
+    bool is_in_rb = false;
+    bool doAI = true;
+
+    if (GRaceStatus::Get().GetRaceParameters()) {
+        pursuitRace = GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace();
+        is_dday = GRaceStatus::Get().GetRaceParameters()->GetIsDDayRace();
+    }
+
+    const UTL::Collections::Listable<IRoadBlock, 8>::List &blocks =
+        UTL::Collections::Listable<IRoadBlock, 8>::GetList();
+    for (IRoadBlock *const *i = blocks.begin(); i != blocks.end(); ++i) {
+        IRoadBlock *rb = *i;
+        if (rb) {
+            IVehicle *vehicle = rb->IsComprisedOf(GetSimable()->GetOwnerHandle());
+            if (GetVehicle() == vehicle) {
+                is_in_rb = true;
+                break;
+            }
+        }
+    }
+
+    if (!soundai || !ipursuit || !mInPursuit || !soundai->GetPursuitSpecs().IsValid()) {
+        mSirenState = SIREN_OFF;
+    } else {
+        const Attrib::Gen::pursuitlevels &pursuitatr = soundai->GetPursuitSpecs();
+
+        if (ipursuit->IsPlayerPursuit() && !is_dday && soundai->NumPursuits() < 2) {
+            if (soundai->GetFocus() != SoundAI::kPursuitFlow ||
+                soundai->GetPursuitDuration() >= 5.0f) {
+                if (soundai->GetFocus() == SoundAI::kLost) {
+                    mSirenState = SIREN_OFF;
+                    doAI = false;
+                    mT_siren[0] = WorldTimer;
+                }
+            } else {
+                doAI = false;
+                float dt = (WorldTimer - mT_siren[0]).GetSeconds();
+                {
+                    static float variation;
+                    static bool __tmp_40;
+                    if (!__tmp_40) {
+                        variation = pursuitatr.SirenInitMinPeriod() +
+                                    bRandom(pursuitatr.SirenInitVariation());
+                        __tmp_40 = true;
+                    }
+                    if (variation < dt && mSirenState == SIREN_OFF) {
+                        mSirenState = SIREN_YELP;
+                        mT_siren[1] = WorldTimer;
+                    }
+                    if (mSirenState == SIREN_YELP) {
+                        float t_bleeping = (WorldTimer - mT_siren[1]).GetSeconds();
+                        if (t_bleeping > pursuitatr.SirenInitMinPeriod()) {
+                            mSirenState = SIREN_OFF;
+                            variation = pursuitatr.SirenInitMinPeriod() +
+                                        bRandom(pursuitatr.SirenInitVariation());
+                            doAI = false;
+                            mT_siren[0] = WorldTimer;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!cop_car->IsGlareOn(LIGHT_COPS)) {
+            if (!cop_car->IsDestroyed()) {
+                mSirenState = SIREN_OFF;
+            } else {
+                mSirenState = SIREN_DIE;
+            }
+        }
+
+        if (doAI) {
+            float t_start = (WorldTimer - mT_siren[0]).GetSeconds();
+            bool high_heat = soundai->IsHighIntensity();
+            bool siren_initializing = t_start < 10.0f;
+
+            if (!siren_initializing && mSirenInit) {
+                mT_siren[1] = WorldTimer;
+                if (!high_heat) {
+                    mSirenState = SIREN_WAIL;
+                } else {
+                    mSirenState = SIREN_YELP;
+                }
+            }
+            mSirenInit = siren_initializing;
+
+            if (siren_initializing) {
+                if (!high_heat) {
+                    mSirenState = SIREN_YELP;
+                } else {
+                    mSirenState = SIREN_SCREAM;
+                    if (t_start >= 5.0f) {
+                        mSirenState = SIREN_YELP;
+                    }
+                }
+            } else {
+                if ((ipursuit->IsCollapseActive() ||
+                     ipursuit->IsFinisherActive() ||
+                     Speech::Manager::IsCopSpeechPlaying(
+                         160) ||
+                     Speech::Manager::IsCopSpeechPlaying(
+                         214) ||
+                     Speech::Manager::IsCopSpeechPlaying(
+                         222) ||
+                     Speech::Manager::IsCopSpeechPlaying(
+                         64)) &&
+                    mInFormation) {
+                    if (!high_heat) {
+                        mSirenState = SIREN_YELP;
+                    } else {
+                        float t_screaming = (WorldTimer - mT_siren[2]).GetSeconds();
+                        if (mSirenState == SIREN_SCREAM ||
+                            t_screaming <= pursuitatr.SirenScreamPeriod()) {
+                            if (pursuitatr.SirenMaxScreamTime() < t_screaming) {
+                                mSirenState = SIREN_YELP;
+                                mT_siren[2] = WorldTimer;
+                            }
+                        } else {
+                            mSirenState = SIREN_SCREAM;
+                            mT_siren[2] = WorldTimer;
+                        }
+                    }
+                    mT_siren[1] = WorldTimer;
+                } else {
+                    float t_constant = (WorldTimer - mT_siren[1]).GetSeconds();
+                    float sirenWailPeriod = pursuitatr.SirenWailPeriod();
+                    if (sirenWailPeriod + pursuitatr.SirenMaxYelpTime() < t_constant) {
+                        mSirenState = SIREN_WAIL;
+                        mT_siren[1] = WorldTimer;
+                    } else if (t_constant > sirenWailPeriod) {
+                        mSirenState = SIREN_YELP;
+                    }
+                }
+            }
+        }
+    }
+
+    if (is_in_rb) {
+        mSirenState = SIREN_WAIL;
     }
 }

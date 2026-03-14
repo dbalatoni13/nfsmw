@@ -21,6 +21,7 @@
 DECLARE_CONTAINER_TYPE(AICopManagerSpawnRequests);
 DECLARE_CONTAINER_TYPE(AICopManagerPursuits);
 DECLARE_CONTAINER_TYPE(AICopManagerRoadBlocks);
+DECLARE_CONTAINER_TYPE(AICopManagerCreateRoadBlockVehicles);
 
 // total size: 0x130
 class AICopManager : public Sim::Activity, public AISpawnManager, public ICopMgr, public IVehicleCache, public Debugable {

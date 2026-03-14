@@ -48,7 +48,9 @@ class Camera {
 
     // unsigned short GetFieldOfView() {}
 
-    // bMatrix4 *GetWorldToCameraMatrix() {}
+    bMatrix4 *GetWorldToCameraMatrix() {
+        return &this->CurrentKey.Matrix;
+    }
 
     bVector3 *GetPosition() {
         return &this->CurrentKey.Position;
@@ -60,7 +62,9 @@ class Camera {
 
     // bVector3 *GetTarget() {}
 
-    // unsigned short GetFov() {}
+    unsigned short GetFov() {
+        return CurrentKey.FieldOfView;
+    }
 
     bVector3 GetPositionSimSpace() {
         bVector3 vec(CurrentKey.Position);
@@ -77,7 +81,9 @@ class Camera {
 
     // unsigned short GetPreviousFov() {}
 
-    // bVector3 *GetVelocityPosition() {}
+    bVector3 *GetVelocityPosition() {
+        return &this->VelocityKey.Position;
+    }
 
     // bVector3 *GetVelocityDirection() {}
 

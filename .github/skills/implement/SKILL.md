@@ -7,19 +7,69 @@ description: Workflow for decompiling and iterating on a function.
 
 Your goal is to decompile a specific function: writing C++ source that compiles to byte-identical object code against the original retail binary, verified via `decomp-diff.py`.
 
+A function is not done until it is exact in both objdiff and normalized DWARF.
+
 ## Phase 1: Gather Context
 
 Collect data from **all** of these sources in parallel where possible.
 
-### 1a. decomp-context.py
+If the function was not already chosen for you, pick it with the ranking wrapper first:
 
 ```sh
-python scripts/decomp-context.py -u main/Path/To/TU -f FunctionName
+python tools/decomp-workflow.py next --unit main/Path/To/TU --limit 10
+python tools/decomp-workflow.py next --category game --limit 10
+```
+
+Prefer low-match, high-remaining targets here. Do not default to near-finished cleanup
+functions unless the user explicitly wants a cleanup/refiner pass.
+
+Use the wrapper flow first throughout this skill. Drop to raw `decomp-context.py` or
+`decomp-diff.py` only when the wrapper is missing a specific flag or you are debugging.
+
+On a new, suspicious, or recently updated worktree, start with:
+
+```sh
+python tools/decomp-workflow.py health --full main/Path/To/TU
+```
+
+Add `--timings` when you need to understand why wrapper/tool startup or the shared build
+smoke is slow.
+
+### 1a. decomp-context.py
+
+Preferred shortcut:
+
+```sh
+python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName
+python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName --brief
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
+```
+
+If the shared unit object is missing, the wrapper now rebuilds it automatically before
+running `next --unit` / `function` / `diff`.
+
+If you only need one Ghidra view, add `--ghidra-version gc` or `--ghidra-version ps2`
+to keep the context run faster and shorter.
+
+The wrapper defaults to compact GC DWARF signatures. Add `--lookup-mode full` when you
+need the full DWARF body with locals and nested inline info.
+
+Add `--brief` when you want a shorter helper view; it trims suggested commands and
+related-source hints while keeping the core source/status/diff context.
+
+Equivalent manual fallback:
+
+```sh
+python tools/decomp-context.py -u main/Path/To/TU -f FunctionName
 ```
 
 This provides in one shot:
 
 - Current source code (if any exists)
+- A fallback source excerpt from the GC debug-line-mapped repo file when the metadata
+  source path is empty or otherwise unhelpful
+- Related source-file hints when the unit metadata source is empty or unhelpful
+- Compact GC DWARF signature by default, or full DWARF body with `--lookup-mode full`
 - objdiff status and instruction-level diff
 - Ghidra decompilation of the original
 
@@ -29,18 +79,23 @@ Reference the skill for the usage. It gives info based on the virtual address of
 
 ### 1c. Existing source and header
 
-- Read the header (`include/.../*.hpp`) for class layout, member types, field offsets
-- Read the source (`src/.../*.cpp`) for existing implementations and includes
+- Read the headers for class layout, member types, field offsets and the source files for existing implementations and includes (both are in `src/.../*.cpp`).
 - Check parent class headers for inherited members/methods used in the function
+- Before adding any new declaration, partial declaration, or forward declaration, check whether the type already exists with `python tools/find-symbol.py <TypeName>`.
+- If a repo header already exists for the type, include that header instead of introducing a local forward declaration.
+- Preserve the original `class` vs `struct` kind. If the existing header is missing or incomplete, verify the type kind from GC Dwarf and PS2 info before writing a local declaration.
+- Preserve real member names and field types too. Do not introduce `pad`, `unk`, or `field_XXXX` members as placeholders for guessed layout; verify the member list from GC Dwarf / PS2 data and leave a TODO when something is still uncertain.
 
 ### 1e. Assembly reference
 
-If these doesn't provide enough detail, check the generated assembly:
+If these don't provide enough detail, check the generated assembly. Use the Read tool
+to open the relevant `.s` file (prefer this over dumping the whole file):
 
-```sh
-# Look at the target disassembly
-cat build/GOWE69/asm/Path/To/TU.s
 ```
+build/GOWE69/asm/Path/To/TU.s
+```
+
+Search for the function label (mangled name) to navigate directly to its section.
 
 ### 1f. Related functions
 
@@ -70,7 +125,7 @@ and assembly:
 
 Utilize the dwarf information that you get from the lookup skill heavily.
 
-Don't add any comments.
+Don't add explanatory comments during implementation unless you need to document a remaining DWARF mismatch.
 
 Don't use any temporary local variables that don't exist in the dwarf.
 
@@ -88,8 +143,15 @@ The game uses stlport, so you'll often encounter \_STL, but in the code it must 
 
 ### Initial build
 
+Rebuild the shared object the normal way before diffing. If you just need the
+standard context flow, prefer
+`python tools/decomp-workflow.py function -u main/Path/To/TU -f FunctionName`.
+For a rebuild plus a standardized diff run, use:
+
 ```sh
-ninja
+python tools/decomp-workflow.py build -u main/Path/To/TU
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
 ```
 
 If the build fails, fix compilation errors first.
@@ -98,10 +160,10 @@ If the build fails, fix compilation errors first.
 
 ```sh
 # Quick status
-python scripts/decomp-diff.py -u main/Path/To/TU --search FunctionName
+python tools/decomp-workflow.py diff -u main/Path/To/TU --search FunctionName --limit 20
 
 # Full instruction diff
-python scripts/decomp-diff.py -u main/Path/To/TU -d FunctionName
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
 ```
 
 ### Interpreting the diff
@@ -117,30 +179,66 @@ Refer to the **Matching Tips** section in
 AGENTS.md for detailed patterns on resolving instruction mismatches, register allocation
 issues, stack frame differences, and symbol naming.
 
-After writing your code, occasionally run the dwarf dump on the compiled output and then query your output dump with lookup.py to compare your decompiled functions against the originals. Since the address of the function you're working on can keep changing
+After each meaningful edit/build iteration, run the combined verification gate first:
+
+Preferred shortcut:
+
+```sh
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+```
+
+This fails unless both the instruction diff and normalized DWARF are exact.
+
+If the verify gate fails because of DWARF, inspect the DWARF block diff directly:
+
+```sh
+python tools/decomp-workflow.py dwarf -u main/Path/To/TU -f FunctionName
+```
+
+This gives you a normalized DWARF match percentage plus a diff-like report of what still
+differs between the original and rebuilt DWARF blocks for that function.
+
+Pay attention to the `Range source ownership` summary there as well. It compares the
+debug-line owner files for each DWARF `// Range:` block, which makes it much easier to
+spot inlines that are coming from the wrong header or owner file. Exact line-number
+agreement is a useful secondary hint, but file ownership is the first thing to check.
+
+Manual fallback:
+
+After writing your code, you can also run the dwarf dump on the compiled output and then query your output dump with lookup.py to compare your decompiled functions against the originals. Since the address of the function you're working on can keep changing
 due to work on other functions, query the unmangled name instead.
 
 ```bash
-# Dump your compiled unit (see dwarf dump tool)
+# Rebuild the unit, then dump the shared object file's DWARF (ignore dwarf specific errors):
+python tools/decomp-workflow.py build -u main/Path/To/TU
+build/tools/dtk dwarf dump build/GOWE69/src/Path/To/TU.o -o /tmp/my_unit_dump.nothpp
 # Then look up the same function in your output:
-python lookup.py --file /tmp/my_unit_dump.nothpp function EPerfectLaunch::~EPerfectLaunch(void)
+python tools/lookup.py --file /tmp/my_unit_dump.nothpp function "EPerfectLaunch::~EPerfectLaunch(void)"
 # Compare with the original:
-python lookup.py ./symbols/Dwarf function 0x801DE9AC
+python tools/lookup.py ./symbols/Dwarf function 0x801DE9AC
 ```
 
-If you can't figure out the source address using objdiff, find the function in the temporary file manually.
+If you can't figure out the source address using objdiff, find the function in the rebuilt object file manually.
 
 ### Iterate
 
-Repeat the build-diff cycle until the diff shows 100% match with no `~` lines.
+Repeat the build-diff cycle until the diff shows 100% match with no `~` lines:
+
+```sh
+python tools/decomp-workflow.py build -u main/Path/To/TU
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
+```
+
 Every mismatched instruction is a signal — don't settle for "close enough".
-Reaching 100% matching status is not enough, also make sure that the dwarf of the function matches the original.
+Reaching 100% instruction matching status is not enough. Stay in the loop until `verify`
+passes, which means the DWARF of the function also matches after normalization.
 
 ## Phase 5: Report
 
 Summarize:
 
 - Final match status (percentage, instruction count)
+- Final DWARF status (exact or remaining mismatch summary)
 - What the function does (brief description)
 - Key decisions or tricky patterns used to achieve the match
 - If not fully matching, document remaining mismatches and theories

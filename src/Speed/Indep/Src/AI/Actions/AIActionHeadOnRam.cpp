@@ -76,6 +76,8 @@ AIAction *AIActionHeadOnRam::Construct(AIActionParams *params) {
     return new AIActionHeadOnRam(params, 0.1f);
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionHeadOnRam("AIActionHeadOnRam", AIActionHeadOnRam::Construct);
+
 bool AIActionHeadOnRam::CanBeAttempted(float dT) {
     if (mIVehicleAI && mIPursuitAI && mITransmission && mIRigidBody) {
         if (!mIVehicleAI->GetDrivableToTargetPos()) {

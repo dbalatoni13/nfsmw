@@ -5,6 +5,8 @@
 
 static Attrib::Class *TheSurfaceClass = nullptr;
 
+const SimSurface SimSurface::kNull;
+
 const Attrib::Collection *SimSurface::mUnknown = nullptr;
 const Attrib::Collection *SimSurface::mNullSpec = nullptr;
 

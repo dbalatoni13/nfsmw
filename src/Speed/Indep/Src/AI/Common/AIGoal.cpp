@@ -396,9 +396,7 @@ class AIGoalRacer : public AIGoal {
     }
 
     AIGoalRacer(ISimable *isimable);
-    void Update(float dT) override;
-
-    ~AIGoalRacer() override {}
+    void Update(float dT) override { AIGoal::Update(dT); }
 };
 
 UTL::COM::Factory<ISimable *, AIGoal, UCrc32>::Prototype _AIGoalRacer("AIGoalRacer", AIGoalRacer::Construct);

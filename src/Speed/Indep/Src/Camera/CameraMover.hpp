@@ -82,6 +82,14 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
         return Type;
     }
 
+    bool IsDriveCamera() {
+        return Type == CM_DRIVE_CUBIC;
+    }
+
+    Camera *GetCamera() {
+        return pCamera;
+    }
+
     bVector3 *GetPosition() {
         return pCamera->GetPosition();
     }

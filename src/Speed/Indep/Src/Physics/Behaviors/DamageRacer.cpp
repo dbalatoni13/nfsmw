@@ -82,7 +82,7 @@ void DamageRacer::OnTaskSimulate(float dT) {
             }
         }
     }
-    Behavior::OnTaskSimulate(dT);
+    DamageVehicle::OnTaskSimulate(dT);
 }
 
 void DamageRacer::OnBehaviorChange(const UCrc32 &mechanic) {

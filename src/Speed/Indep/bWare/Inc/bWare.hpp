@@ -21,6 +21,12 @@ inline void *bMalloc(int size, const char *debug_text, int debug_line, int alloc
 
 #endif
 
+#ifdef EA_PLATFORM_PLAYSTATION2
+inline void *bMalloc(unsigned int size, int allocation_params) {
+    return bMalloc(static_cast<int>(size), allocation_params);
+}
+#endif
+
 void *bMalloc(SlotPool *slot_pool);
 void *bMalloc(SlotPool *slot_pool, int num_slots, void **last_slot);
 void bFree(void *ptr);

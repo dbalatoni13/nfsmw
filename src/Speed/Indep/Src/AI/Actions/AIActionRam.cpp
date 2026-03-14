@@ -78,6 +78,8 @@ AIAction *AIActionRam::Construct(AIActionParams *params) {
     return new AIActionRam(params, 0.1f);
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionRam("AIActionRam", AIActionRam::Construct);
+
 bool AIActionRam::ShouldDoIt() {
     if (!mIVehicleAI->GetDrivableToTargetPos()) {
         return false;
@@ -268,7 +270,7 @@ void AIActionRam::Update(float dT) {
         max_speed = bMin(max_speed, targetai->GetTopSpeed() * speedmult);
         float max_accel = targetai->GetAcceleration(speed) * accelmult;
 
-        mLimiter.update(speed, max_speed, max_accel, dT);
+        mLimiter.update(max_speed, speed, max_accel, dT);
         desired_speed = bMin(desired_speed, mLimiter.get_speed_limit());
     }
 

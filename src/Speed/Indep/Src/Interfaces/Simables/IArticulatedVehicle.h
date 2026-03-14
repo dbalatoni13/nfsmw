@@ -18,10 +18,10 @@ class IArticulatedVehicle : public UTL::COM::IUnknown {
 
     virtual ~IArticulatedVehicle() {}
 
-    virtual IVehicle *GetTrailer() const;
-    virtual void SetHitch(bool hitched);
-    virtual bool Pose();
-    virtual bool IsHitched() const;
+    virtual IVehicle *GetTrailer() const = 0;
+    virtual void SetHitch(bool hitched) = 0;
+    virtual bool Pose() = 0;
+    virtual bool IsHitched() const = 0;
 };
 
 #endif

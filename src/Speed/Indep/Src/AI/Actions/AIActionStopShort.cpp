@@ -34,6 +34,8 @@ AIAction *AIActionStopShort::Construct(AIActionParams *params) {
     return new AIActionStopShort(params, 0.0f);
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionStopShort("AIActionStopShort", AIActionStopShort::Construct);
+
 AIActionStopShort::AIActionStopShort(AIActionParams *params, float score)
     : AIAction(params, score) //
 {

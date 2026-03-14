@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 
 enum WGridNode_ElemType {
@@ -17,6 +18,11 @@ enum WGridNode_ElemType {
 
 // total size: 0x8
 struct WGridNodeElem {
+    WGridNodeElem() {}
+    WGridNodeElem(unsigned int ind, WGridNode_ElemType type)
+        : fInd(ind), //
+          fType(type) {}
+
     unsigned int fInd;        // offset 0x0, size 0x4
     WGridNode_ElemType fType; // offset 0x4, size 0x4
 };
@@ -24,9 +30,24 @@ struct WGridNodeElem {
 // total size: 0x40
 class WGridManagedDynamicElem {
   public:
+    WGridManagedDynamicElem();
+    WGridManagedDynamicElem(UMath::Vector4 *dstPosRad, const UMath::Vector4 *srcPosRad, const WGridNodeElem &elem);
+    WGridManagedDynamicElem(struct CollisionInstance *dst, const WGridNodeElem &elem);
+    WGridManagedDynamicElem(struct Trigger *dst, const UMath::Vector4 &offsetVec, const WGridNodeElem &elem);
+
+    void Update();
+
+    static void AddElem(const UMath::Vector4 *oldPosRad, const UMath::Vector4 *newPosRad, WGridNode_ElemType type, unsigned int dataInd);
+    static void Init() { fgManagedDynamicElemList.clear(); }
+    static void Shutdown();
     static void UpdateElems();
 
-  private:
+    static std::list<WGridManagedDynamicElem, UTL::Std::Allocator<WGridManagedDynamicElem, _type_list> > &DynamicElemList() {
+        return fgManagedDynamicElemList;
+    }
+
+    static std::list<WGridManagedDynamicElem, UTL::Std::Allocator<WGridManagedDynamicElem, _type_list> > fgManagedDynamicElemList;
+
     unsigned int fType;                  // offset 0x0, size 0x4
     const UMath::Vector4 *fPosRad;       // offset 0x4, size 0x4
     UMath::Vector4 fOffsetVec;           // offset 0x8, size 0x10

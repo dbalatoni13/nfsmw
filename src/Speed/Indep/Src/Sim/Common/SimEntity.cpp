@@ -4,6 +4,11 @@
 #include "Speed/Indep/Src/Interfaces/SimEntities/IEntity.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 
+template <>
+UTL::Collections::GarbageNode<Sim::Entity, 8>::Collector
+    UTL::Collections::GarbageNode<Sim::Entity, 8>::_mCollector =
+        UTL::Collections::GarbageNode<Sim::Entity, 8>::Collector();
+
 namespace Sim {
 
 // UNSOLVED

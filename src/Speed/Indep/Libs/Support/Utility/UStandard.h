@@ -26,6 +26,10 @@ DECLARE_CONTAINER_TYPE(list);
 DECLARE_CONTAINER_TYPE(map);
 DECLARE_CONTAINER_TYPE(set);
 
+#ifdef _MSC_VER
+inline void operator delete(void *mem, const char *, int) {}
+#endif
+
 namespace UTL {
 namespace Std {
 

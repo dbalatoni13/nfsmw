@@ -363,6 +363,11 @@ class Array {
         return ptr;
     }
 
+#ifdef _MSC_VER
+    void operator delete(void *, void *) {}
+#endif
+
+  private:
     uint16_t mAlloc;
     uint16_t mCount;
     uint16_t mSize;
@@ -386,6 +391,10 @@ class Node {
     void *operator new(std::size_t, void *ptr) {
         return ptr;
     }
+
+#ifdef _MSC_VER
+    void operator delete(void *, void *) {}
+#endif
 
     Node() : mKey(0), mTypeIndex(0), mMax(0), mFlags(0), mPtr(this) {}
 
@@ -608,6 +617,9 @@ class RefSpec {
     const Collection *GetCollection() const;
     const Collection *GetCollectionWithDefault() const;
     RefSpec &operator=(const RefSpec &rhs);
+#ifdef _MSC_VER
+    RefSpec &operator=(int rhs) { mClassKey = 0; mCollectionKey = 0; mCollectionPtr = nullptr; return *this; }
+#endif
     void Clean() const;
 
     void operator delete(void *ptr, std::size_t bytes) {
@@ -908,10 +920,11 @@ template <typename t> class TAttrib : public Attribute {
         Free(ptr, bytes, "Attrib::TAttrib");
     }
 
+    TAttrib() {}
     TAttrib(const Attribute &src) : Attribute(src) {}
     ~TAttrib() {}
 
-    bool &Get(unsigned int index) const;
+    const t &Get(unsigned int index) const;
 };
 
 } // namespace Attrib

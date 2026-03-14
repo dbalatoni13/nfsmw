@@ -5,6 +5,12 @@
 #pragma once
 #endif
 
-void TickOverTimeOfday() {}
+#include "Speed/Indep/Src/World/World.hpp"
+
+void TickOverTimeOfday();
+void ApplyTimeOfDayTickOver();
+void SetCurrentTimeOfDay(float tod);
+const char* GetTimeOfDaySuffix(eTimeOfDay tod);
+bool NeedsSeperateTODStreamingFile(const char* platform_name);
 
 #endif

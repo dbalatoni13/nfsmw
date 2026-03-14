@@ -13,6 +13,7 @@ class Manager {
   public:
     static Module *GetSpeechModule(int nindex);
     static void ClearPlayback();
+    static bool IsCopSpeechPlaying(int event_id);
 
   private:
 };

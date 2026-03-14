@@ -39,6 +39,8 @@ AIAction *AIActionAirborne::Construct(AIActionParams *params) {
     return new AIActionAirborne(params, 0.0f);
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionAirborne("AIActionAirborne", AIActionAirborne::Construct);
+
 AIActionAirborne::AIActionAirborne(AIActionParams *params, float score) : AIAction(params, score) {
     mIsAirborne = false;
     mAirborneTimer = 0.0f;

@@ -46,6 +46,8 @@ AIAction *AIActionGetUnstuck::Construct(AIActionParams *params) {
     return new AIActionGetUnstuck(params, 1.0f);
 }
 
+UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::Prototype _AIActionGetUnstuck("AIActionGetUnstuck", AIActionGetUnstuck::Construct);
+
 bool AIActionGetUnstuck::CanBeAttempted(float dT) {
     if (!GetVehicle() || !GetAI() || !mIInput || GetAI()->GetReverseOverride()) {
         return false;

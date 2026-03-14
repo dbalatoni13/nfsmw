@@ -15,7 +15,14 @@ class SubSystem {
     void ValidateHeap(bool before, bool initializing);
 
     SubSystem(const char *name, void (* initcb)(), void (* restorecb)()) {
-        
+#if !defined(EA_PLATFORM_GAMECUBE) && !MILESTONE_OPT
+        mInit = initcb;
+        mRestore = restorecb;
+        mSig = UCrc32(name);
+        mNext = mHead;
+        mHead = this;
+        mName = name;
+#endif
     }
 
     static void Init(const UCrc32 &sig) {

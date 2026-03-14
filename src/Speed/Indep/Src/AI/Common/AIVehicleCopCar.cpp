@@ -1,11 +1,14 @@
 #include "Speed/Indep/Src/AI/AIVehicleCopCar.h"
 #include "Speed/Indep/Src/AI/AITarget.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitlevels.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 AIVehicleCopCar::AIVehicleCopCar(const BehaviorParams &bp)
@@ -18,6 +21,8 @@ AIVehicleCopCar::~AIVehicleCopCar() {}
 Behavior *AIVehicleCopCar::Construct(const BehaviorParams &bp) {
     return new AIVehicleCopCar(bp);
 }
+
+UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32>::Prototype __AIVehicleCopCar("AIVehicleCopCar", AIVehicleCopCar::Construct);
 
 void AIVehicleCopCar::Update(float dT) {
     ProfileNode profile_node("TODO", 0);
@@ -71,6 +76,87 @@ bool AIVehicleCopCar::IsTetheredToTarget(UTL::COM::IUnknown *object) {
 
     float headingToTarget = UMath::Dot(GetTarget()->GetDirTo(), forwardVector);
     return headingToTarget < -0.2f;
+}
+
+bool AIVehicleCopCar::CanSeeTarget(AITarget *target) {
+    bool isperphidden = false;
+    IPerpetrator *iperp;
+    target->QueryInterface(&iperp);
+    if (iperp && iperp->IsHiddenFromCars()) {
+        isperphidden = true;
+    }
+
+    if (isperphidden) {
+        if (mPerpHiddenFromMe) {
+            return false;
+        }
+    }
+
+    mPerpHiddenFromMe = false;
+
+    IPursuit *ipursuit = GetPursuit();
+
+    float frontDist = 175.0f;
+    float rearDist = frontDist;
+
+    if (ipursuit && iperp) {
+        Attrib::Gen::pursuitlevels *pursuitLevels = iperp->GetPursuitLevelAttrib();
+        if (pursuitLevels) {
+            frontDist = pursuitLevels->frontLOSdistance();
+            rearDist = pursuitLevels->rearLOSdistance();
+        }
+    }
+
+    if (frontDist < 1.0f) {
+        frontDist = 250.0f;
+        rearDist = 300.0f;
+    }
+
+    UMath::Vector3 targetPosition = target->GetPosition();
+
+    UMath::Vector3 forwardVector;
+    GetOwner()->GetRigidBody()->GetForwardVector(forwardVector);
+    UMath::Vector3 position = GetOwner()->GetRigidBody()->GetPosition();
+
+    UMath::Vector3 dirToTarget;
+    UMath::Sub(targetPosition, position, dirToTarget);
+    UMath::Unit(dirToTarget, dirToTarget);
+    float distanceToTarget = UMath::Distance(position, targetPosition);
+
+    bool isoutofsight = false;
+    if (distanceToTarget >= frontDist ||
+        (distanceToTarget >= rearDist && UMath::Dot(forwardVector, dirToTarget) <= mLOSAngleFront)) {
+        isoutofsight = true;
+    }
+
+    if (ipursuit) {
+        bool was_out = isoutofsight;
+        isoutofsight = false;
+        if (was_out || !ipursuit->PursuitMeterCanShowBusted()) {
+            isoutofsight = true;
+        }
+    }
+
+    if (!isoutofsight) {
+        UMath::Vector4 posToDest[2];
+        WCollisionMgr::WorldCollisionInfo cInfo;
+
+        posToDest[0] = UMath::Vector4Make(position, 0.0f);
+        posToDest[1] = UMath::Vector4Make(targetPosition, 0.0f);
+        posToDest[0].y += 1.5f;
+        posToDest[1].y += 1.5f;
+
+        WCollisionMgr collMgr(0, 3);
+        if (collMgr.CheckHitWorld(posToDest, cInfo, 3) == 0) {
+            return true;
+        }
+    }
+
+    if (isperphidden) {
+        mPerpHiddenFromMe = true;
+    }
+
+    return false;
 }
 
 void AIVehicleCopCar::WatchForPerps() {

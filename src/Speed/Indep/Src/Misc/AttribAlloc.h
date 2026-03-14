@@ -14,6 +14,14 @@ class IAttribAllocator {
     virtual void Free(void *ptr, std::size_t bytes, const char *name);
 };
 
+class DefaultAttribAllocator : public IAttribAllocator {
+  public:
+    DefaultAttribAllocator();
+
+    void *Allocate(std::size_t bytes, const char *name) override;
+    void Free(void *ptr, std::size_t bytes, const char *name) override;
+};
+
 class AttribAlloc {
   public:
     static IAttribAllocator *OverrideAllocator(IAttribAllocator *newAllocator);

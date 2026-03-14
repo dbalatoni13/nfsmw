@@ -14,6 +14,50 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "SpeedChunks.hpp"
 
+struct VMFile;
+
+struct RegionLoader {
+    RegionLoader() {}
+
+    static void LoadHandler(void *object) {}
+    static void LoadHandler(int object) {}
+    static void LoadHandler(unsigned int object) {}
+
+    void BeginLoading();
+    void LoadHandler();
+    void FinishedLoading();
+    void Unload();
+
+    int Phase;
+    ResourceFile *pResourceInGameA;
+    ResourceFile *pResourceInGameB;
+    ResourceFile *pResourceInGameSplitScreen;
+    ResourceFile *pResourceRegion;
+    VMFile *pResourceGlobalB_VM;
+    VMFile *pResourceInGameB_VM;
+    VMFile *pResourceRegion_VM;
+};
+
+struct TrackLoader {
+    TrackLoader() {}
+
+    static void LoadHandler(void *object) {}
+    static void LoadHandler(int object) {}
+    static void LoadHandler(unsigned int object) {}
+
+    void BeginLoading();
+    void LoadHandler();
+    void FinishedLoading();
+    void Unload();
+    void InitTopologyAndSceneryGroups();
+    void CloseTopologyAndSceneryGroups();
+
+    int Phase;
+};
+
+RegionLoader TheRegionLoader;
+TrackLoader TheTrackLoader;
+
 #define LOADER_AMOUNT (26)
 
 bChunkLoaderFunction LoaderTable[LOADER_AMOUNT];

@@ -13,7 +13,10 @@
 #include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficCenter.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficMgr.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Interfaces/SimModels/IModel.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Misc/Table.hpp"
@@ -23,6 +26,25 @@
 #include "Speed/Indep/Src/World/TrackPath.hpp"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+
+static const float Tweak_TrafficOffScreenTime[11] = {12.0f, 10.0f, 9.0f, 8.0f, 7.0f, 6.5f, 6.0f, 5.5f, 5.0f, 4.5f, 4.0f};
+static Table TrafficOffScreenTime(Tweak_TrafficOffScreenTime, 11, 0.0f, 1.0f);
+
+static const float Tweak_TrafficOffScreenDistance[11] = {130.0f, 120.0f, 110.0f, 100.0f, 90.0f, 80.0f, 70.0f, 60.0f, 55.0f, 45.0f, 40.0f};
+static Table TrafficOffScreenDistance(Tweak_TrafficOffScreenDistance, 11, 0.0f, 1.0f);
+
+struct PartChecker : public IModel::Enumerator {
+    bool Valid;
+    PartChecker() : Valid(false) {}
+    ~PartChecker() override {}
+    bool OnModel(IModel *model) override {
+        if (model->InView()) {
+            Valid = true;
+            return false;
+        }
+        return true;
+    }
+};
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
@@ -32,6 +54,9 @@
 extern BOOL SkipFETrafficDensity; // size: 0x4
 extern BOOL SkipFEDisableTraffic; // size: 0x4
 extern BOOL SkipFE;               // size: 0x4
+
+float AITrafficManager::mTrafficMinSpawnDist = 150.0f;
+float AITrafficManager::mTrafficMaxSpawnDist = 400.0f;
 
 UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _AITrafficManager("AITrafficManager", AITrafficManager::Construct);
 
@@ -128,6 +153,10 @@ eVehicleCacheResult AITrafficManager::OnQueryVehicleCache(const IVehicle *remove
 }
 
 void AITrafficManager::OnRemovedVehicleCache(IVehicle *ivehicle) {}
+
+const char *AITrafficManager::GetCacheName() const {
+    return "AITrafficManager";
+}
 
 void AITrafficManager::OnAttached(IAttachable *pOther) {
     IVehicle *ivehicle;
@@ -304,6 +333,11 @@ static bool RandomSortTC(ITrafficCenter *c0, ITrafficCenter *c1) {
     return c1 < c0;
 }
 
+const Attrib::Gen::trafficpattern &Attrib::Gen::trafficpattern::operator=(const Attrib::Instance &rhs) {
+    Instance::operator=(rhs);
+    return *this;
+}
+
 void AITrafficManager::SetTrafficPattern(Attrib::Key pattern_key) {
     if (pattern_key == mPattern.GetCollection()) {
         return;
@@ -465,10 +499,72 @@ bool AITrafficManager::ChoosePattern() {
 }
 
 bool AITrafficManager::ValidateVehicle(IVehicle *ivehicle, float density) const {
-    return true;
+    if (!ivehicle) {
+        return false;
+    }
+
+    bool invalid = ivehicle->IsOffWorld();
+
+    if (!invalid) {
+        float offscreen_time = TrafficOffScreenTime.GetValue(density);
+        float offscreen_dist = TrafficOffScreenDistance.GetValue(density);
+        if (ivehicle->GetOffscreenTime() > offscreen_time) {
+            const UMath::Vector3 &pos = ivehicle->GetPosition();
+            invalid = Sim::DistanceToCamera(pos) > offscreen_dist;
+        }
+    }
+
+    if (invalid) {
+        IArticulatedVehicle *iarticulate;
+        if (ivehicle->QueryInterface(&iarticulate)) {
+            IVehicle *trailer = iarticulate->GetTrailer();
+            if (trailer) {
+                if (ValidateVehicle(trailer, density)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    if (invalid) {
+        ISimable *isimable = ivehicle->GetSimable();
+        IModel *imodel = isimable->GetModel();
+        if (imodel) {
+            PartChecker pc;
+            if (static_cast<PartChecker *>(imodel->EnumerateChildren(&pc))->Valid) {
+                return true;
+            }
+        }
+    }
+
+    return !invalid;
 }
 
-// float AITrafficManager::ComputeDensity() const {}
+float AITrafficManager::ComputeDensity() const {
+    float result = 0.0f;
+
+    if (!INIS::Exists() && (!ICopMgr::Exists() || !ICopMgr::Get()->IsPlayerPursuitActive())) {
+        if (SkipFE && !SkipFEDisableTraffic) {
+            result = UMath::Clamp(static_cast<float>(SkipFETrafficDensity) * 0.01f, 0.0f, 1.0f);
+        } else {
+            result = 1.0f;
+            if (GRaceStatus::Exists()) {
+                GRaceStatus::PlayMode mode = GRaceStatus::Get().GetPlayMode();
+                if (mode == GRaceStatus::kPlayMode_Roaming) {
+                    GRaceStatus &race = GRaceStatus::Get();
+                    result = UMath::Clamp(static_cast<float>(race.GetTrafficDensity()) * 0.01f, 0.0f, 1.0f);
+                } else if (mode == GRaceStatus::kPlayMode_Racing) {
+                    result = 1.0f;
+                }
+            }
+        }
+        if (UTL::Collections::Listable<IPursuit, 8>::GetList().size() != 0) {
+            result *= 0.5f;
+        }
+    }
+
+    return result;
+}
 
 // TODO move?
 static const float Tweak_TrafficDensitySpawnRates[11] = {0.0f, 0.05f, 0.1f, 0.125f, 0.2f, 0.4f, 0.6f, 1.0f, 3.0f, 5.0f, 8.0f};

@@ -28,6 +28,36 @@ class PInput : public Behavior, public IInput {
 
     // IInput
     void ClearInput() override;
+    InputControls &GetControls() const override {
+        return const_cast<InputControls &>(mControls);
+    }
+    float GetControlHandBrake() const override {
+        return mControls.fHandBrake;
+    }
+    bool GetControlActionButton() const override {
+        return mControls.fActionButton;
+    }
+    void SetControlSteering(float steer) override {
+        mControls.fSteering = steer;
+    }
+    void SetControlGas(float gas) override {
+        mControls.fGas = gas;
+    }
+    void SetControlBrake(float brake) override {
+        mControls.fBrake = brake;
+    }
+    void SetControlNOS(bool nos_on) override {
+        mControls.fNOS = nos_on;
+    }
+    void SetControlHandBrake(float hbrake) override {
+        mControls.fHandBrake = hbrake;
+    }
+    void SetControlActionButton(bool hAction) override {
+        mControls.fActionButton = hAction;
+    }
+    void SetControlSteeringVertical(float steer) override {
+        mControls.fSteeringVertical = steer;
+    }
 
     // Virtual methods
     virtual void SetControlStrafeVertical(float steer) {
@@ -88,6 +118,9 @@ class InputPlayer : public PInput, public IInputPlayer {
     // IInputPlayer
     void FlushInput() override;
     void BlockInput(bool block) override;
+    bool IsBlocked() const override {
+        return mBlocked;
+    }
     void FetchInput() override;
 
     // Virtual methods

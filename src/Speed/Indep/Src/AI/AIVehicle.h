@@ -104,6 +104,9 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     }
 
     void ResetDriveToNav(eLaneSelection lane_selection) override;
+#ifdef EA_BUILD_A124
+    void ResetDriveToNav(UMath::Vector3 &target) override;
+#endif
     bool ResetVehicleToRoadNav(short segInd, char laneInd, float timeStep) override;
     bool ResetVehicleToRoadNav(WRoadNav *other_nav) override;
     bool ResetVehicleToRoadPos(const UMath::Vector3 &position, const UMath::Vector3 &forwardVector) override;
@@ -125,6 +128,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     }
 
     WRoadNav *GetCollNav(const UMath::Vector3 &forwardVector, float predictTime) override;
+    bool GetWorldAvoidanceInfo(float dT, UMath::Vector3 &leftCollNormal, UMath::Vector3 &rightCollNormal) const override;
     WRoadNav *GetCurrentRoad() override;
     WRoadNav *GetFutureRoad() override;
     const UMath::Vector3 &GetFarFuturePosition() override;
@@ -634,11 +638,12 @@ class AIVehicleHuman : public AIVehicleRacecar, public IHumanAI {
 
     // Overrides: IHumanAI
     bool IsPlayerSteering() override {
-        if (bAiControl) {
-            return false;
-        } else {
-            return IsDragSteering() == false;
+        bool result = false;
+        if (!bAiControl) {
+            int drag = IsDragSteering();
+            result = !drag;
         }
+        return result;
     }
 
     // Overrides: IHumanAI
