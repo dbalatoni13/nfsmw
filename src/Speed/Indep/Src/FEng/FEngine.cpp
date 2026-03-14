@@ -812,6 +812,379 @@ void FEngine::Update(const long tDeltaTicks, unsigned int lock) {
     }
 }
 
+struct ImpulseDirEntry {
+    unsigned char dir0;
+    unsigned char dir1;
+    unsigned short directionIndex;
+};
+
+static unsigned long PadButtonHash[19] = {
+    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
+    0x406415E3u, 0x911AB364u, 0xB5AF2461u, 0x5073EF13u,
+    0xD9FEEC59u, 0xC519BFBFu, 0xC519BFC0u, 0xC519BFC1u,
+    0xC519BFC2u, 0xC519BFC3u, 0xC519BFC4u, 0xC519BFC5u,
+    0xC519BFC6u, 0xC519BFC7u, 0xC519BFC8u,
+};
+
+static unsigned long PadButtonHeldHash[2] = {
+    0x447315AFu, 0x20AD4EB5u,
+};
+
+static unsigned long PadReleasedHash[19] = {
+    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
+    0xC12E9E27u, 0xC2F8FCC8u, 0xEBFCDA65u, 0x091DCD57u,
+    0x7A39195Du, 0xD4671F83u, 0xD871B0A4u, 0xDC7C41C5u,
+    0xE086D2E6u, 0xE4916407u, 0xE89BF528u, 0xECA68649u,
+    0xF0B1176Au, 0xF4BBA88Bu, 0xF8C639ACu,
+};
+
+unsigned long FEDirection_Message[8] = {
+    0x72619778u, 0x6FD81B16u, 0xB5971BF1u, 0xAB1A49C9u,
+    0x911C0A4Bu, 0x79891376u, 0x9120409Eu, 0x6FFB6F23u,
+};
+
+static ImpulseDirEntry ImpulseDir[8] = {
+    {0x00, 0x02, 0x0007}, {0x00, 0x03, 0x0001}, {0x01, 0x02, 0x0005}, {0x01, 0x03, 0x0003},
+    {0x00, 0xFF, 0x0000}, {0x02, 0xFF, 0x0006}, {0x01, 0xFF, 0x0004}, {0x03, 0xFF, 0x0002},
+};
+
+inline int FEFramesToTicks(int Frames) { return Frames * 16; }
+
+void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
+    if (pPackage->GetControlMask() == 0) {
+        return;
+    }
+
+    bool bSomethingActive = false;
+    unsigned long i = 0;
+    if (NumJoyPads != 0) {
+        do {
+            if ((pPackage->GetControlMask() & (1 << (i & 0x3F))) != 0) {
+                bSomethingActive = bSomethingActive || pJoyPad[i].WasActive();
+            }
+            i = (i + 1) & 0xFF;
+        } while (i < NumJoyPads);
+    }
+    if (!bSomethingActive) {
+        return;
+    }
+
+    unsigned long HeldFor[19];
+    unsigned char FromPadHeld[19];
+    unsigned char FromPadPressed[19];
+    unsigned char FromPadReleased[19];
+    FEngMemSet(HeldFor, 0, sizeof(HeldFor));
+    FEngMemSet(FromPadHeld, 0, 19);
+    FEngMemSet(FromPadPressed, 0, 19);
+    FEngMemSet(FromPadReleased, 0, 19);
+
+    unsigned long Pressed;
+    unsigned long Released;
+    unsigned long Held;
+    unsigned long JoyMask;
+
+    i = 4;
+    while (i < 19 && pPackage->IsInputEnabled()) {
+        unsigned long Mask = pPackage->GetControlMask();
+        unsigned long ButtonMask = 1 << (i & 0x3F);
+        Pressed = 0;
+        Released = 0;
+        Held = 0;
+        unsigned char PadIndex = 0;
+        bool bAcceptButton = (i == 4);
+        if (NumJoyPads != 0) {
+            do {
+                unsigned long PadBit = 1 << (PadIndex & 0x3F);
+                if ((Mask & PadBit) != 0) {
+                    int padOff = PadIndex * sizeof(FEJoyPad);
+                    if (pJoyPad[PadIndex].WasPressed(ButtonMask)) {
+                        Pressed = Pressed | ButtonMask;
+                        FromPadPressed[i] = FromPadPressed[i] | static_cast<unsigned char>(PadBit);
+                    }
+                    if (pJoyPad[PadIndex].WasReleased(ButtonMask)) {
+                        Released = Released | ButtonMask;
+                        FromPadReleased[i] = FromPadReleased[i] | static_cast<unsigned char>(PadBit);
+                    }
+                    if (pJoyPad[PadIndex].WasHeld(ButtonMask)) {
+                        Held = Held | ButtonMask;
+                        unsigned long hf = pJoyPad[PadIndex].HeldFor(ButtonMask);
+                        if (HeldFor[i] <= hf) {
+                            HeldFor[i] = pJoyPad[PadIndex].HeldFor(ButtonMask);
+                        }
+                        FromPadHeld[i] = FromPadHeld[i] | static_cast<unsigned char>(1 << (PadIndex & 0x3F));
+                    }
+                }
+                PadIndex = (PadIndex + 1) & 0xFF;
+            } while (PadIndex < NumJoyPads);
+        }
+
+        if (bAcceptButton && pPackage->StartEqualsAccept()) {
+            PadIndex = 0;
+            if (NumJoyPads != 0) {
+                do {
+                    unsigned long PadBit = 1 << (PadIndex & 0x3F);
+                    if ((Mask & PadBit) != 0) {
+                        if (pJoyPad[PadIndex].WasPressed(0x40)) {
+                            Pressed = Pressed | ButtonMask;
+                            FromPadPressed[4] = FromPadPressed[4] | static_cast<unsigned char>(PadBit);
+                        }
+                        if (pJoyPad[PadIndex].WasReleased(0x40)) {
+                            Released = Released | ButtonMask;
+                            FromPadReleased[4] = FromPadReleased[4] | static_cast<unsigned char>(PadBit);
+                        }
+                        if (pJoyPad[PadIndex].WasHeld(0x40)) {
+                            Held = Held | ButtonMask;
+                            unsigned long hf = pJoyPad[PadIndex].HeldFor(0x40);
+                            if (HeldFor[4] <= hf) {
+                                HeldFor[4] = pJoyPad[PadIndex].HeldFor(0x40);
+                            }
+                            FromPadHeld[4] = FromPadHeld[4] | static_cast<unsigned char>(1 << (PadIndex & 0x3F));
+                        }
+                    }
+                    PadIndex = (PadIndex + 1) & 0xFF;
+                } while (PadIndex < NumJoyPads);
+            }
+        }
+
+        if (Held != 0 || Released != 0 || Pressed != 0) {
+            FEObject* pCurButton = pPackage->GetCurrentButton();
+
+            if (i < 9) {
+                if (i > 6) {
+                    // Held button hash
+                    if ((Held & ButtonMask) != 0) {
+                        unsigned char pad = FromPadPressed[i];
+                        unsigned long MsgID = PadButtonHeldHash[i - 7];
+                        if (pCurButton == nullptr || pCurButton->FindResponse(MsgID) == nullptr) {
+                            if (pPackage->FindResponse(MsgID) != nullptr) {
+                                QueueMessage(MsgID, nullptr, pPackage, nullptr, 0xFFFFFFFDu);
+                                QueueMessage(MsgID, nullptr, pPackage, nullptr, 0xFFFFFFFBu);
+                            }
+                        } else {
+                            QueueMessage(MsgID, nullptr, pPackage, pCurButton, pad);
+                            QueueMessage(MsgID, pCurButton, pPackage, nullptr, 0xFFFFFFFBu);
+                        }
+                    }
+                    goto check_released;
+                }
+                if (bAcceptButton) {
+                    if ((Pressed & 0x10) == 0) goto check_released;
+                    HeldButtons[0] = pCurButton;
+                    if (pCurButton == nullptr || pCurButton->FindResponse(0x0C407210u) == nullptr) {
+                        if (pPackage->FindResponse(0x406415E3u) == nullptr) goto check_released;
+                        QueueMessage(0x406415E3u, nullptr, pPackage, nullptr, 0xFFFFFFFDu);
+                        QueueMessage(0x406415E3u, nullptr, pPackage, nullptr, 0xFFFFFFFBu);
+                    } else {
+                        QueueMessage(0x0C407210u, nullptr, pPackage, pPackage->GetCurrentButton(), FromPadPressed[4]);
+                        QueueMessage(0x0C407210u, pPackage->GetCurrentButton(), pPackage, nullptr, 0xFFFFFFFBu);
+                    }
+                    goto check_released;
+                }
+                if (i > 3) goto check_released;
+            } else {
+                if (i > 18) goto check_released;
+            }
+
+            // Regular button press
+            if ((Pressed & ButtonMask) != 0) {
+                unsigned char pad = FromPadPressed[i];
+                HeldButtons[i] = pCurButton;
+                unsigned long MsgID = PadButtonHash[i];
+                if (pCurButton == nullptr || pCurButton->FindResponse(MsgID) == nullptr) {
+                    if (pPackage->FindResponse(MsgID) != nullptr) {
+                        QueueMessage(MsgID, nullptr, pPackage, nullptr, 0xFFFFFFFDu);
+                        QueueMessage(MsgID, nullptr, pPackage, nullptr, 0xFFFFFFFBu);
+                    }
+                } else {
+                    QueueMessage(MsgID, nullptr, pPackage, pCurButton, pad);
+                    QueueMessage(MsgID, pCurButton, pPackage, nullptr, 0xFFFFFFFBu);
+                }
+            }
+
+        check_released:
+            if ((Released & ButtonMask) != 0) {
+                unsigned char pad = FromPadReleased[i];
+                unsigned long MsgID = PadReleasedHash[i];
+                if (HeldButtons[i] == pCurButton && pCurButton != nullptr) {
+                    HeldButtons[i] = nullptr;
+                    if (bAcceptButton) {
+                        MsgID = 0x936A6A7Fu;
+                    }
+                    FEMessageResponse* pResp = pCurButton->FindResponse(MsgID);
+                    if (pResp != nullptr) {
+                        QueueMessage(MsgID, nullptr, pPackage, pCurButton, pad);
+                        QueueMessage(MsgID, pCurButton, pPackage, nullptr, 0xFFFFFFFBu);
+                    }
+                }
+                pad = FromPadReleased[i];
+                if (pPackage->FindResponse(MsgID) != nullptr) {
+                    QueueMessage(MsgID, nullptr, pPackage, nullptr, 0xFFFFFFFDu);
+                    QueueMessage(MsgID, nullptr, pPackage, nullptr, 0xFFFFFFFBu);
+                }
+            }
+
+            if (MsgQ.GetNumElements() != 0) {
+                ProcessMessageQueue();
+            }
+        }
+        i = i + 1;
+    }
+
+    // Direction pad processing (first 4 buttons = DPAD)
+    unsigned long DirMask = pPackage->GetControlMask();
+    Pressed = 0;
+    i = 0;
+    while (i < 4 && pPackage->IsInputEnabled()) {
+        Released = 0;
+        unsigned long ButtonMask = 1 << (i & 0x3F);
+        unsigned char PadIndex = 0;
+        if (NumJoyPads != 0) {
+            do {
+                unsigned long PadBit = 1 << (PadIndex & 0x3F);
+                if ((DirMask & PadBit) != 0) {
+                    if (pJoyPad[PadIndex].WasPressed(ButtonMask)) {
+                        Pressed = Pressed | ButtonMask;
+                        FromPadPressed[i] = FromPadPressed[i] | static_cast<unsigned char>(PadBit);
+                    }
+                    pJoyPad[PadIndex].WasReleased(ButtonMask);
+                    if (pJoyPad[PadIndex].WasHeld(ButtonMask)) {
+                        unsigned long hf = pJoyPad[PadIndex].HeldFor(ButtonMask);
+                        if (HeldFor[i] <= hf) {
+                            HeldFor[i] = pJoyPad[PadIndex].HeldFor(ButtonMask);
+                        }
+                        FromPadHeld[i] = FromPadHeld[i] | static_cast<unsigned char>(1 << (PadIndex & 0x3F));
+                    }
+                }
+                PadIndex = (PadIndex + 1) & 0xFF;
+            } while (PadIndex < NumJoyPads);
+        }
+        i = i + 1;
+    }
+
+    // Impulse direction processing
+    i = 0;
+    FEObject* pCurButton;
+    unsigned long heldTime;
+    unsigned long dirResult;
+    unsigned char fromPad;
+    unsigned long impulseMask;
+    unsigned long threshold;
+    bool bNoHold;
+    while (true) {
+        if (i > 7) {
+            return;
+        }
+        if (!pPackage->IsInputEnabled()) {
+            return;
+        }
+
+        pCurButton = pPackage->GetCurrentButton();
+
+        if (ImpulseDir[i].dir1 == 0xFF) {
+            unsigned long d0 = ImpulseDir[i].dir0;
+            dirResult = Pressed >> (d0 & 0x3F);
+            heldTime = HeldFor[d0];
+            fromPad = FromPadPressed[d0] | FromPadHeld[d0];
+        } else {
+            unsigned long d0 = ImpulseDir[i].dir0;
+            unsigned long d1 = ImpulseDir[i].dir1;
+            heldTime = HeldFor[d1];
+            if (HeldFor[d0] < HeldFor[d1]) {
+                heldTime = HeldFor[d0];
+            }
+            dirResult = (Pressed >> (d0 & 0x3F)) & (Pressed >> (d1 & 0x3F));
+            fromPad = (FromPadPressed[d0] & FromPadPressed[d1]) | (FromPadHeld[d0] & FromPadHeld[d1]);
+        }
+
+        unsigned long impulseMask = 1 << (i & 0x3F);
+        unsigned long threshold = 0x140;
+        if ((FastRep & impulseMask) != 0) {
+            threshold = 0x78;
+        }
+        bool bNoHold = (heldTime == 0);
+        if (threshold <= heldTime) {
+            break;
+        }
+        if ((dirResult & 1) == 0) {
+            if (bNoHold) {
+                FastRepCache = FastRepCache & ~impulseMask;
+            }
+        } else if (bNoHold) {
+            break;
+        }
+        if (MsgQ.GetNumElements() != 0) {
+            ProcessMessageQueue();
+        }
+        i = i + 1;
+    }
+
+    // Fire direction message
+    if (!bNoHold) {
+        FastRepCache = FastRepCache | impulseMask;
+    }
+    HoldDecrement[ImpulseDir[i].dir0] = threshold;
+    if (ImpulseDir[i].dir1 != 0xFF) {
+        HoldDecrement[ImpulseDir[i].dir1] = threshold;
+        unsigned long d1 = ImpulseDir[i].dir1;
+        if (d1 != 0xFF) {
+            unsigned char d0 = ImpulseDir[i].dir0;
+            HeldFor[d0] = 0;
+            HeldFor[d1] = 0;
+            PadHoldRegistered = PadHoldRegistered | (1 << (d0 & 0x3F)) | (1 << (d1 & 0x3F));
+            goto fire_direction;
+        }
+    }
+    {
+        unsigned char d0 = ImpulseDir[i].dir0;
+        HeldFor[d0] = 0;
+        PadHoldRegistered = PadHoldRegistered | (1 << (d0 & 0x3F));
+    }
+
+fire_direction:
+    if (pCurButton == nullptr) {
+        unsigned long MsgID = FEDirection_Message[ImpulseDir[i].directionIndex];
+        if (pPackage->FindResponse(MsgID) != nullptr) {
+            QueueMessage(MsgID, nullptr, pPackage, nullptr, 0xFFFFFFFDu);
+            QueueMessage(MsgID, nullptr, pPackage, nullptr, 0xFFFFFFFBu);
+        }
+    } else {
+        FEObject* pNewButton = nullptr;
+        unsigned long MsgID = FEDirection_Message[ImpulseDir[i].directionIndex];
+        FEMessageResponse* pResp = pCurButton->FindResponse(MsgID);
+        if (pResp == nullptr) {
+            if ((pCurButton->Flags & 0x80000) == 0) {
+                pNewButton = pPackage->GetButtonMap()->GetButtonFrom(pCurButton, ImpulseDir[i].directionIndex, pInterface, WrapMode);
+            }
+            QueueMessage(MsgID, nullptr, pPackage, nullptr, 0xFFFFFFFDu);
+        } else {
+            QueueMessage(MsgID, nullptr, pPackage, pCurButton, fromPad);
+            if ((pCurButton->Flags & 0x80000) == 0) {
+                if (pResp->FindResponse(0x104) == -1) {
+                    pNewButton = pPackage->GetButtonMap()->GetButtonFrom(pCurButton, ImpulseDir[i].directionIndex, pInterface, WrapMode);
+                }
+            }
+        }
+        QueueMessage(MsgID, pCurButton, pPackage, nullptr, 0xFFFFFFFBu);
+        if (pNewButton != nullptr) {
+            for (unsigned long j = 4; j < 19; j++) {
+                if (HeldButtons[j] != nullptr && pCurButton != nullptr) {
+                    HeldButtons[j] = nullptr;
+                    unsigned char relPad = FromPadReleased[j];
+                    unsigned long relMsgID = PadReleasedHash[j];
+                    if (j == 4) {
+                        relMsgID = 0x936A6A7Fu;
+                    }
+                    if (pCurButton->FindResponse(relMsgID) != nullptr) {
+                        QueueMessage(relMsgID, nullptr, pPackage, pCurButton, relPad);
+                        QueueMessage(relMsgID, pCurButton, pPackage, nullptr, 0xFFFFFFFBu);
+                    }
+                }
+            }
+            pPackage->SetCurrentButton(pNewButton, true);
+        }
+    }
+}
+
 void FEngine::ProcessMouseForPackage(FEPackage* pPackage) {
     if (pPackage->Controllers != 0 && (pPackage->Controllers & 1) && pPackage->NumMouseObjects != 0) {
         int NumMO = pPackage->NumMouseObjects;

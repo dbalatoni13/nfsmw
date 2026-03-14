@@ -65,6 +65,8 @@ struct FEButtonMap {
     inline FEObject* GetButton(unsigned long Index) { return pList[Index]; }
 
     void SetCount(unsigned long NewCount);
+    FEObject* GetButtonFrom(FEObject* pButton, long Direction, FEGameInterface* pInterface, int WrapMode);
+    void ComputeButtonLocation(FEObject* pObj, FEGameInterface* pInterface, FEVector2& Loc);
 };
 
 // total size: 0xC4
