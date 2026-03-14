@@ -1379,24 +1379,24 @@ void CustomizeShoppingCart::SetMarkerAmounts() {
         }
         SetMarkerData(1, item, num);
 
+        int spending = GetNumMarkersSpending(0x53);
+        spending += GetNumMarkersSpending(0x5b);
+        spending += GetNumMarkersSpending(99);
+        spending += GetNumMarkersSpending(100);
+        spending += GetNumMarkersSpending(0x65);
+        spending += GetNumMarkersSpending(0x66);
+        spending += GetNumMarkersSpending(0x67);
+        spending += GetNumMarkersSpending(0x68);
+        spending += GetNumMarkersSpending(0x6b);
+        spending += GetNumMarkersSpending(0x6c);
+        spending += GetNumMarkersSpending(0x6d);
+        spending += GetNumMarkersSpending(0x6e);
+        spending += GetNumMarkersSpending(0x6f);
+        spending += GetNumMarkersSpending(0x70);
+        spending += GetNumMarkersSpending(0x73);
+        spending += GetNumMarkersSpending(0x7b);
         int numDecals = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_DECAL, 0);
-        SetMarkerData(2, item, numDecals
-            - (GetNumMarkersSpending(0x53)
-            + GetNumMarkersSpending(0x5b)
-            + GetNumMarkersSpending(99)
-            + GetNumMarkersSpending(100)
-            + GetNumMarkersSpending(0x65)
-            + GetNumMarkersSpending(0x66)
-            + GetNumMarkersSpending(0x67)
-            + GetNumMarkersSpending(0x68)
-            + GetNumMarkersSpending(0x6b)
-            + GetNumMarkersSpending(0x6c)
-            + GetNumMarkersSpending(0x6d)
-            + GetNumMarkersSpending(0x6e)
-            + GetNumMarkersSpending(0x6f)
-            + GetNumMarkersSpending(0x70)
-            + GetNumMarkersSpending(0x73)
-            + GetNumMarkersSpending(0x7b)));
+        SetMarkerData(2, item, numDecals - spending);
 
         item = gCarCustomizeManager.IsPartTypeInCart(static_cast<unsigned int>(0x4c));
         num = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_PAINT, 0);
