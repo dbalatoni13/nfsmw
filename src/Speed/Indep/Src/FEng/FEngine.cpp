@@ -6,6 +6,9 @@
 #include "Speed/Indep/Src/FEng/FEGroup.h"
 #include "Speed/Indep/Src/FEng/FEListBox.h"
 #include "Speed/Indep/Src/FEng/FECodeListBox.h"
+#include "Speed/Indep/Src/FEng/cFEng.h"
+
+void FEngGetCenter(FEObject* pObj, float& cx, float& cy);
 
 // Callback structs used by both FEngine and FEPackage.
 // Defined here because FEngine.cpp comes before FEPackage.cpp in the jumbo build.
@@ -822,6 +825,97 @@ void FEngine::ProcessMouseForPackage(FEPackage* pPackage) {
             } while (i < NumMO);
         }
     }
+}
+
+void FEngine::UpdateMouseState(FEPackage* pPackage, FEObjectMouseState* pState, float mx, float my) {
+    FEObject* pObj = pState->pObject;
+    if (pObj && (pObj->Flags & 0x14000000) == 0x14000000) {
+        return;
+    }
+    float cx, cy;
+    FEngGetCenter(pObj, cx, cy);
+    bool bTouching = pInterface->DoesPointTouchObject(
+        mx - (static_cast<float>(pState->Offset.h) - cx),
+        my - (static_cast<float>(pState->Offset.v) - cy),
+        pObj);
+    bool bLeftDown = Mouse.IsDown(1);
+    bool bRightDown = Mouse.IsDown(2);
+    unsigned long flags = pState->Flags;
+    bool bWasOver = (flags & 1) != 0;
+    bool bWasLeftDown = (flags & 2) != 0;
+    bool bWasRightDown = (flags & 4) != 0;
+
+    if (!bTouching) {
+        if (bWasOver) {
+            cFEng::mInstance->QueuePackageMessage(0xb30793c1, pPackage->GetFilename(), pObj);
+        }
+    } else {
+        unsigned int msg = 0x13f4bd45;
+        if (bWasOver) {
+            msg = 0xb30d0683;
+        }
+        cFEng::mInstance->QueuePackageMessage(msg, pPackage->GetFilename(), pObj);
+    }
+
+    if (!bLeftDown) {
+        if (bWasLeftDown && bTouching) {
+            cFEng::mInstance->QueuePackageMessage(0x7eabca56, pPackage->GetFilename(), pObj);
+        }
+    } else {
+        if (!bWasLeftDown) {
+            if (!bTouching) {
+                goto skip_left;
+            }
+            cFEng::mInstance->QueuePackageMessage(0xf459b307, pPackage->GetFilename(), pObj);
+        } else {
+            cFEng::mInstance->QueuePackageMessage(0x1e646b2e, pPackage->GetFilename(), pObj);
+        }
+    }
+skip_left:
+
+    if (!bRightDown) {
+        if (bWasRightDown) {
+            if (!bTouching) {
+                goto set_not_over;
+            }
+            cFEng::mInstance->QueuePackageMessage(0x98adf589, pPackage->GetFilename(), pObj);
+        }
+        if (!bTouching) {
+            goto set_not_over;
+        }
+        flags = pState->Flags | 1;
+    } else {
+        if (bWasRightDown) {
+            cFEng::mInstance->QueuePackageMessage(0x0da2f4e1, pPackage->GetFilename(), pObj);
+        } else if (bTouching) {
+            cFEng::mInstance->QueuePackageMessage(0xce59c3da, pPackage->GetFilename(), pObj);
+        } else {
+            goto set_not_over;
+        }
+        if (!bTouching) {
+            goto set_not_over;
+        }
+        flags = pState->Flags | 1;
+        goto set_flags;
+    }
+    goto set_flags;
+
+set_not_over:
+    flags = pState->Flags & ~1u;
+set_flags:
+    pState->Flags = flags;
+    if (!bLeftDown) {
+        flags = pState->Flags & ~2u;
+    } else {
+        flags = pState->Flags | 2;
+    }
+    pState->Flags = flags;
+    if (!bRightDown) {
+        flags = pState->Flags & ~4u;
+    } else {
+        flags = pState->Flags | 4;
+    }
+    pState->Flags = flags;
 }
 
 void FEngine::ProcessMessageQueue() {

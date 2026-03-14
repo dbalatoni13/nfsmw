@@ -25,32 +25,32 @@ enum FEng_WarningLevel {
 struct FEGameInterface {
     virtual ~FEGameInterface() {}
 
-    virtual bool UnloadUnreferencedLibrary(FEPackage*) { return false; }
-    virtual void RenderObjectList(FEObjectListEntry* pList, unsigned long Count) {}
-    virtual void DrawMousePointer(FEMouse&) {}
-    virtual bool SetCellData(FECodeListBox*, unsigned long, unsigned long) { return false; }
-    virtual void OutputWarning(const char* pString, FEng_WarningLevel) {}
-    virtual void DebugMessageQueued(unsigned long, FEObject*, FEPackage*, FEObject*, unsigned long) {}
-    virtual void DebugMessageProcessed(unsigned long, FEObject*, FEObject*, FEPackage*, unsigned long) {}
-    virtual void DebugMessageBeginUpdate() {}
-    virtual void DebugMessageEndUpdate() {}
-
-    virtual bool LoadResources(FEPackage*, long, FEResourceRequest*) = 0;
-    virtual bool UnloadResources(FEPackage*, long, FEResourceRequest*) = 0;
-    virtual void NotificationMessage(unsigned long, FEObject*, unsigned long, unsigned long) = 0;
-    virtual void NotifySoundMessage(unsigned long, FEObject*, unsigned long, unsigned long) = 0;
-    virtual void GenerateRenderContext(unsigned short, FEObject*) = 0;
-    virtual bool GetContextTransform(unsigned short, FEMatrix4&) = 0;
-    virtual void RenderObject(FEObject*) = 0;
-    virtual void GetViewTransformation(FEMatrix4*) = 0;
-    virtual void BeginPackageRendering(FEPackage*) = 0;
-    virtual void EndPackageRendering(FEPackage*) = 0;
-    virtual void PackageWasLoaded(FEPackage*) = 0;
-    virtual bool PackageWillUnload(FEPackage*) = 0;
-    virtual unsigned char* GetPackageData(const char*, unsigned char**, bool&) = 0;
-    virtual unsigned long GetJoyPadMask(unsigned char) = 0;
-    virtual void GetMouseInfo(FEMouseInfo&) = 0;
-    virtual bool DoesPointTouchObject(float, float, FEObject*) = 0;
+    // vtable order must match PS2 dump (GCC 2.95 uses declaration order)
+    virtual unsigned char* GetPackageData(const char*, unsigned char**, bool&) = 0;            // [1]
+    virtual bool LoadResources(FEPackage*, long, FEResourceRequest*) = 0;                      // [2]
+    virtual bool UnloadResources(FEPackage*, long, FEResourceRequest*) = 0;                    // [3]
+    virtual void PackageWasLoaded(FEPackage*) = 0;                                             // [4]
+    virtual bool PackageWillUnload(FEPackage*) = 0;                                            // [5]
+    virtual bool UnloadUnreferencedLibrary(FEPackage*) { return false; }                       // [6]
+    virtual void NotificationMessage(unsigned long, FEObject*, unsigned long, unsigned long) = 0; // [7]
+    virtual void NotifySoundMessage(unsigned long, FEObject*, unsigned long, unsigned long) = 0;  // [8]
+    virtual void BeginPackageRendering(FEPackage*) = 0;                                        // [9]
+    virtual void EndPackageRendering(FEPackage*) = 0;                                          // [10]
+    virtual void GenerateRenderContext(unsigned short, FEObject*) = 0;                         // [11]
+    virtual bool GetContextTransform(unsigned short, FEMatrix4&) = 0;                          // [12]
+    virtual void RenderObjectList(FEObjectListEntry* pList, unsigned long Count) {}             // [13]
+    virtual void RenderObject(FEObject*) = 0;                                                  // [14]
+    virtual void DrawMousePointer(FEMouse&) {}                                                 // [15]
+    virtual void GetViewTransformation(FEMatrix4*) = 0;                                        // [16]
+    virtual unsigned long GetJoyPadMask(unsigned char) = 0;                                    // [17]
+    virtual void GetMouseInfo(FEMouseInfo&) = 0;                                               // [18]
+    virtual bool DoesPointTouchObject(float, float, FEObject*) = 0;                            // [19]
+    virtual bool SetCellData(FECodeListBox*, unsigned long, unsigned long) { return false; }    // [20]
+    virtual void OutputWarning(const char* pString, FEng_WarningLevel) {}                      // [21]
+    virtual void DebugMessageQueued(unsigned long, FEObject*, FEPackage*, FEObject*, unsigned long) {} // [22]
+    virtual void DebugMessageProcessed(unsigned long, FEObject*, FEObject*, FEPackage*, unsigned long) {} // [23]
+    virtual void DebugMessageBeginUpdate() {}                                                  // [24]
+    virtual void DebugMessageEndUpdate() {}                                                    // [25]
 };
 
 // total size: 0xC
