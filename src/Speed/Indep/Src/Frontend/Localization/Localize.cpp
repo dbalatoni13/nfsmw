@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/Src/FEng/FEWideString.h"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 extern void GC_GetOSLanguage();
 extern void SetCurrentLanguage(eLanguages lang);
@@ -101,4 +102,27 @@ char *GetTranslatedString(int id) {
 
 void FormatMessage(char *buf, int size, const char *fmt, __va_list_tag *args) {
     bVSPrintf(buf, fmt, reinterpret_cast<va_list *>(args));
+}
+
+void GetLocalizedString(char *buffer, unsigned int bufsize, unsigned int string_label) {
+    char *str = const_cast<char *>(GetLocalizedString(string_label));
+    bStrNCpy(buffer, str, static_cast<int>(bufsize));
+}
+
+bool GetLocalizedWideString(short *wide_string, int wide_string_buffer_size, unsigned int string_label) {
+    const char *str = SearchForString(string_label);
+    if (str) {
+        PackedStringToWideString(reinterpret_cast<unsigned short *>(wide_string), wide_string_buffer_size, str);
+        return true;
+    }
+    return false;
+}
+
+const char *GetLocalizedPercentSign() {
+    const char *szPercentUnit = "%";
+    eLanguages currLang = GetCurrentLanguage();
+    if (currLang == eLANGUAGE_DANISH || currLang == eLANGUAGE_FINNISH || currLang == eLANGUAGE_FRENCH || currLang == eLANGUAGE_GERMAN || currLang == eLANGUAGE_SWEDISH) {
+        szPercentUnit = " %";
+    }
+    return szPercentUnit;
 }
