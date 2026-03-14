@@ -181,6 +181,29 @@ void UIWidgetMenu::Reposition() {
     UpdateCursorPos();
 }
 
+void UIWidgetMenu::SyncViewToSelection() {
+    if (Options.IsEmpty()) {
+        return;
+    }
+    if (!pCurrentOption && !pDone) {
+        Reset();
+        return;
+    }
+    if (static_cast< unsigned int >(iIndexToAdd - 1) > iMaxWidgetsOnScreen &&
+        GetWidgetIndex(pCurrentOption) <= static_cast< unsigned int >(iIndexToAdd - iMaxWidgetsOnScreen)) {
+        pViewTop = pCurrentOption;
+    } else {
+        int node_index = iIndexToAdd - iMaxWidgetsOnScreen;
+        node_index = node_index - 1;
+        if (node_index < 0) {
+            node_index = 0;
+        }
+        pViewTop = static_cast< FEWidget * >(Options.GetNode(node_index));
+    }
+    Reposition();
+    bViewNeedsSync = false;
+}
+
 unsigned int UIWidgetMenu::AddButtonOption(FEButtonWidget *option) {
     option->SetTitleObject(GetCurrentFEString(pTitleName));
     option->SetBacking(GetCurrentFEObject(pBackingName));
