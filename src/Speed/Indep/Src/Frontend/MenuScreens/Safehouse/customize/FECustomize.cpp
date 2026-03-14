@@ -1009,7 +1009,31 @@ int CustomizeShoppingCart::GetNumMarkersSpending(unsigned int marker) {
 }
 
 void CustomizeShoppingCart::SetMarkerImages() {
-    // TODO: implement marker images
+    if (CustomizeIsInPerformance()) {
+        FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xeb957471), 0x4887f351);
+        FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xeb957472), 0x4f424e0f);
+        FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xeb957473), 0x6fea04c8);
+        FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xeb957474), 0x8e284227);
+        FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xeb957475), 0x190eb6);
+        FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xeb957476), 0x7373f1ef);
+        FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xeb957477), 0xd142d3e3);
+    } else if (CustomizeIsInParts()) {
+        FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xeb957471), 0xaf393dba);
+        FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xeb957472), 0xf375276e);
+        FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xeb957473), 0xc51a4f62);
+        FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xeb957474), 0xc19491cc);
+        FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xeb957475), 0x25a4375e);
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x47df0e22));
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x47df0e23));
+    } else {
+        FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xeb957471), 0xd35f04c0);
+        FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xeb957472), 0xa9135927);
+        FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xeb957473), 0xdb89e17);
+        FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xeb957474), 0x8ba602fc);
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x47df0e21));
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x47df0e22));
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x47df0e23));
+    }
 }
 
 void CustomizeShoppingCart::Setup() {

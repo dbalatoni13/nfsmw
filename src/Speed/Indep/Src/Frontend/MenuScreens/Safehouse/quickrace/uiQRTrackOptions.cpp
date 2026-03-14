@@ -75,26 +75,6 @@ UIQRTrackOptions::UIQRTrackOptions(ScreenConstructorData *sd) : UIWidgetMenu(sd)
 void UIQRTrackOptions::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     UIWidgetMenu::NotificationMessage(msg, pobj, param1, param2);
     switch (msg) {
-    case 0x911ab364:
-        cFEng_mInstance->QueuePackageSwitch("FeQR_TrackSelect.fng", 0, 0, false);
-        break;
-    case 0xd05fc3a3:
-        FEDatabase->DefaultRaceSettings();
-        {
-            int count = Options.TraversebList(nullptr);
-            for (int i = 0; i < count; i++) {
-                FEWidget *w = static_cast<FEWidget *>(Options.GetNode(i));
-                w->Draw();
-            }
-        }
-        break;
-    case 0xc519bfc4: {
-        const char *locStr = GetLocalizedString(0x8aef5ae8);
-        DialogInterface::ShowTwoButtons(GetPackageName(), "FeQR_TrackOptions.fng", dialog_alert, 0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf, static_cast<eDialogFirstButtons>(1), locStr);
-        break;
-    }
-    case 0x34dc1bcf:
-        break;
     case 0x406415e3:
         if (!(FEDatabase->GetGameMode() & eFE_GAME_MODE_ONLINE) && !(FEDatabase->GetGameMode() & eFE_GAME_MODE_LAN)) {
             GRaceCustom *custom = GRaceDatabase_mObj->AllocCustomRace(race);
@@ -117,11 +97,31 @@ void UIQRTrackOptions::NotificationMessage(unsigned long msg, FEObject *pobj, un
                 isSplitScreen = FEDatabase->iNumPlayers == 2;
             }
             if (isSplitScreen) {
-                cFEng_mInstance->QueuePackageSwitch("FeQR_SplitScreenLobby.fng", 0, 0, false);
+                cFEng_mInstance->QueuePackageSwitch("PressStart.fng", 0, 0, false);
             } else {
-                cFEng_mInstance->QueuePackageSwitch("FE_Loading.fng", 0, 0, false);
+                cFEng_mInstance->QueuePackageSwitch("Car_Select.fng", 0, 0, false);
             }
         }
+        break;
+    case 0x911ab364:
+        cFEng_mInstance->QueuePackageSwitch("Track_Select.fng", 0, 0, false);
+        break;
+    case 0xc519bfc4: {
+        const char *locStr = GetLocalizedString(0x8aef5ae8);
+        DialogInterface::ShowTwoButtons(GetPackageName(), "", dialog_alert, 0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf, static_cast<eDialogFirstButtons>(1), locStr);
+        break;
+    }
+    case 0xd05fc3a3:
+        FEDatabase->DefaultRaceSettings();
+        {
+            int count = Options.TraversebList(nullptr);
+            for (int i = 0; i < count; i++) {
+                FEWidget *w = static_cast<FEWidget *>(Options.GetNode(i));
+                w->Draw();
+            }
+        }
+        break;
+    case 0x34dc1bcf:
         break;
     }
 }
