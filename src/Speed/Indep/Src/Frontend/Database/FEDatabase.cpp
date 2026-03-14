@@ -304,3 +304,27 @@ unsigned int GetFECarNameHashFromFEKey(unsigned int feKey) {
     rec.FEKey = feKey;
     return rec.GetNameHash();
 }
+
+void cFrontendDatabase::AllocBackupDB(bool bForce) {
+    if (!m_pDBBackup && bForce) {
+        m_pDBBackup = static_cast<char *>(bMalloc(GetUserProfileSaveSize(false), 0x40));
+        SaveUserProfileToBuffer(m_pDBBackup, GetUserProfileSaveSize(false));
+    }
+}
+
+void cFrontendDatabase::BackupCarStable() {
+    if (!m_pCarStableBackup) {
+        m_pCarStableBackup = static_cast<char *>(bMalloc(GetPlayerCarStable(0)->GetSaveBufferSize(), 0));
+        bMemCpy(m_pCarStableBackup, GetPlayerCarStable(0), GetPlayerCarStable(0)->GetSaveBufferSize());
+    }
+}
+
+bool cFrontendDatabase::IsCarStableDirty() {
+    if (!m_pCarStableBackup) {
+        return false;
+    }
+    bool result = bMemCmp(m_pCarStableBackup, GetPlayerCarStable(0), GetPlayerCarStable(0)->GetSaveBufferSize()) != 0;
+    bFree(m_pCarStableBackup);
+    m_pCarStableBackup = nullptr;
+    return result;
+}
