@@ -67,7 +67,11 @@ struct FEButtonMap {
     unsigned long Count; // offset 0x4, size 0x4
 
     inline FEButtonMap() : pList(nullptr), Count(0) {}
-    inline ~FEButtonMap() {}
+    inline ~FEButtonMap() {
+        if (pList) {
+            delete[] pList;
+        }
+    }
     inline unsigned long GetCount() { return Count; }
     inline void SetButton(unsigned long Index, FEObject* pButton) { pList[Index] = pButton; }
     inline FEObject* GetButton(unsigned long Index) { return pList[Index]; }

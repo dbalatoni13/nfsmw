@@ -18,6 +18,14 @@ struct FELibraryRef {
     unsigned long LibGUID;       // offset 0x8, size 0x4
 };
 
+// total size: 0x14
+struct FEObjectComment : public FEMinNode {
+    unsigned long ObjectGUID; // offset 0xC, size 0x4
+    char* pStr;               // offset 0x10, size 0x4
+
+    inline ~FEObjectComment() override {}
+};
+
 // FEMsgTargetList defined in FEPackage.h
 
 // total size: 0x18
@@ -66,42 +74,23 @@ FEPackage::~FEPackage() {
         delete[] pRequests;
     }
     if (pMsgTargets) {
-        FEMsgTargetList* pEnd = pMsgTargets + NumMsgTargets;
-        FEMsgTargetList* p = pEnd;
-        if (pMsgTargets != pEnd) {
-            do {
-                p--;
-                if (p->pTargets) {
-                    delete[] p->pTargets;
-                }
-            } while (pMsgTargets != p);
-        }
         delete[] pMsgTargets;
     }
     if (pResourceNames) {
         delete[] pResourceNames;
     }
     if (MouseObjectStates) {
-        FEObjectMouseState* pEnd = MouseObjectStates + NumMouseObjects;
-        FEObjectMouseState* p = pEnd;
-        if (MouseObjectStates != pEnd) {
-            do {
-                p--;
-                p->~FEObjectMouseState();
-            } while (MouseObjectStates != p);
-        }
-        delete[] reinterpret_cast<char*>(MouseObjectStates);
+        delete[] MouseObjectStates;
     }
-    FEMinNode* node;
-    while ((node = Comments.RemHead()) != nullptr) {
-        // TODO: Comments node has a string field
-        delete node;
+    FEObjectComment* pComment;
+    while ((pComment = static_cast<FEObjectComment*>(Comments.RemHead())) != nullptr) {
+        if (pComment->pStr) {
+            delete[] pComment->pStr;
+        }
+        delete pComment;
     }
     if (pLibRefs) {
         delete[] pLibRefs;
-    }
-    if (ButtonMap.pList) {
-        delete[] ButtonMap.pList;
     }
 }
 

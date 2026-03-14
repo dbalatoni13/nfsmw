@@ -16,7 +16,11 @@ struct FEMsgTargetList {
 
     inline FEMsgTargetList() : MsgID(0), Alloc(0), Count(0), pTargets(nullptr) {}
     inline FEMsgTargetList(unsigned long NewID) : MsgID(NewID), Alloc(0), Count(0), pTargets(nullptr) {}
-    inline ~FEMsgTargetList() {}
+    inline ~FEMsgTargetList() {
+        if (pTargets) {
+            delete[] pTargets;
+        }
+    }
 
     inline void SetMsgID(unsigned long NewID) { MsgID = NewID; }
     inline unsigned long GetMsgID() const { return MsgID; }
