@@ -266,10 +266,11 @@ void FEObject::SetTrackValue(FEKeyTrack_Indices track, const FEVector3& value, b
         }
         pScript = pScript->GetNext();
     }
-    unsigned long offset = GetDataOffset(track);
     if (bRelative) {
+        unsigned long offset = GetDataOffset(track);
         reinterpret_cast<FEVector3*>(pData + offset)->operator+=(value);
     } else {
+        unsigned long offset = GetDataOffset(track);
         *reinterpret_cast<FEVector3*>(pData + offset) = value;
     }
 }
@@ -288,10 +289,11 @@ void FEObject::SetTrackValue(FEKeyTrack_Indices track, const FEVector2& value, b
         }
         pScript = pScript->GetNext();
     }
-    unsigned long offset = GetDataOffset(track);
     if (bRelative) {
+        unsigned long offset = GetDataOffset(track);
         reinterpret_cast<FEVector2*>(pData + offset)->operator+=(value);
     } else {
+        unsigned long offset = GetDataOffset(track);
         *reinterpret_cast<FEVector2*>(pData + offset) = value;
     }
 }
@@ -310,10 +312,11 @@ void FEObject::SetTrackValue(FEKeyTrack_Indices track, const FEColor& value, boo
         }
         pScript = pScript->GetNext();
     }
-    unsigned long offset = GetDataOffset(track);
     if (bRelative) {
+        unsigned long offset = GetDataOffset(track);
         *reinterpret_cast<FEColor*>(pData + offset) += value;
     } else {
+        unsigned long offset = GetDataOffset(track);
         *reinterpret_cast<FEColor*>(pData + offset) = value;
     }
 }

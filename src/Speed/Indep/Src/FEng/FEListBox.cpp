@@ -33,7 +33,7 @@ FEListBox::~FEListBox() {
 }
 
 void FEListBox::Terminate() {
-    if (mulFlags & 1) {
+    if (!(mulFlags & 1)) {
         return;
     }
     mulFlags &= ~1;

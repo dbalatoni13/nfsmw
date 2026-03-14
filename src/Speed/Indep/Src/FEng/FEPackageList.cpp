@@ -3,7 +3,7 @@
 void FEPackageList::AddPackage(FEPackage* pPack) {
     FEPackage* pNode = GetLastPackage();
     while (pNode) {
-        if (pPack->GetPriority() >= pNode->GetPriority()) {
+        if (pNode->GetPriority() <= pPack->GetPriority()) {
             break;
         }
         pNode = pNode->GetPrev();
