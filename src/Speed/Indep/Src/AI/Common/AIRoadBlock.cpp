@@ -80,15 +80,12 @@ void AIRoadBlock::OnAttached(IAttachable *pOther) {
 }
 
 void AIRoadBlock::OnDetached(IAttachable *pOther) {
-    if (UTL::COM::ComparePtr(Pursuit, pOther)) {
+    if (UTL::COM::ComparePtr(pOther, Pursuit)) {
         Pursuit = nullptr;
     } else {
         IVehicle *ivehicle;
         if (pOther->QueryInterface(&ivehicle)) {
-            IVehicle **it = _STL::find(VehicleList.begin(), VehicleList.end(), ivehicle);
-            if (it != VehicleList.end()) {
-                VehicleList.erase(it);
-            }
+            VehicleList.erase(_STL::find(VehicleList.begin(), VehicleList.end(), ivehicle));
         }
     }
 }
@@ -97,9 +94,7 @@ IVehicle *AIRoadBlock::IsComprisedOf(HSIMABLE obj) {
     if (!VehicleList.empty()) {
         for (IVehicle *const *iter = VehicleList.begin(); iter != VehicleList.end(); ++iter) {
             IVehicle *car = *iter;
-            ISimable *isim;
-            car->QueryInterface(&isim);
-            if (isim->GetOwnerHandle() == obj) {
+            if (car->GetSimable()->GetOwnerHandle() == obj) {
                 return car;
             }
         }
