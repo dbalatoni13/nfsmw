@@ -1,4 +1,17 @@
 #include "Speed/Indep/Src/FEng/FEKeyTrack.h"
+#include "Speed/Indep/Src/FEng/ObjectPool.h"
+
+ObjectPool<FEKeyNode, 256> FEKeyNode::NodePool;
+
+void* FEKeyNode::operator new(unsigned int) {
+    FEKeyNode* pNode = NodePool.AllocSingle();
+    pNode->Init();
+    return pNode;
+}
+
+void FEKeyNode::operator delete(void* pNode) {
+    NodePool.FreeSingle(static_cast<FEKeyNode*>(pNode));
+}
 
 FEKeyNode* FEKeyTrack::GetKeyAt(long tTime) {
     if (tTime > -1) {

@@ -8,14 +8,28 @@
 #include "FEGenericVal.h"
 #include "FERefList.h"
 
+template <class T, int N> struct ObjectPool;
+
 // total size: 0x20
 struct FEKeyNode : public FEMinNode {
     int tTime;        // offset 0xC, size 0x4
     FEGenericVal Val; // offset 0x10, size 0x10
 
+    inline void Init() {
+        next = reinterpret_cast<FEMinNode*>(0xABADCAFE);
+        prev = reinterpret_cast<FEMinNode*>(0xABADCAFE);
+    }
+    inline FEKeyNode() { Init(); }
+    ~FEKeyNode() override {}
+
+    static void* operator new(unsigned int);
+    static void operator delete(void* pNode);
+
     inline FEKeyNode* GetNext() const { return static_cast<FEKeyNode*>(FEMinNode::GetNext()); }
     inline FEKeyNode* GetPrev() const { return static_cast<FEKeyNode*>(FEMinNode::GetPrev()); }
     inline FEGenericVal* GetKeyData() { return &Val; }
+
+    static ObjectPool<FEKeyNode, 256> NodePool;
 };
 
 // total size: 0x38

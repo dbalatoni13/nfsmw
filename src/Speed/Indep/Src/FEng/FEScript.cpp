@@ -1,6 +1,19 @@
 #include "Speed/Indep/Src/FEng/FEScript.h"
 #include "Speed/Indep/Src/FEng/FESlotPool.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
+#include "Speed/Indep/Src/FEng/ObjectPool.h"
+
+ObjectPool<FEScript, 32> FEScript::NodePool;
+
+void* FEScript::operator new(unsigned int) {
+    FEScript* pNode = NodePool.AllocSingle();
+    pNode->Init();
+    return pNode;
+}
+
+void FEScript::operator delete(void* pNode) {
+    NodePool.FreeSingle(static_cast<FEScript*>(pNode));
+}
 
 extern const unsigned long FETrackOffsets[11] = {
     0x00000000,
@@ -115,12 +128,4 @@ FEScript::FEScript(FEScript& Src, bool bReference) {
     Events = Src.Events;
 }
 
-static FESlotPool ScriptPool(sizeof(FEScript));
-
-void* FEScript::operator new(unsigned int) {
-    return ScriptPool.Alloc();
-}
-
-void FEScript::operator delete(void* pNode) {
-    ScriptPool.Free(static_cast<unsigned char*>(pNode));
-}
+// Pool removed - using ObjectPool template

@@ -7,6 +7,8 @@
 
 #include "FEList.h"
 
+template <class T, int N> struct ObjectPool;
+
 // total size: 0xC
 struct FEResponse {
     unsigned long ResponseID;     // offset 0x0, size 0x4
@@ -36,6 +38,10 @@ struct FEMessageResponse : public FEMinNode {
     unsigned long Count;             // offset 0x10, size 0x4
     FEResponse* pResponseList;       // offset 0x14, size 0x4
 
+    inline void Init() {
+        next = reinterpret_cast<FEMinNode*>(0xABADCAFE);
+        prev = reinterpret_cast<FEMinNode*>(0xABADCAFE);
+    }
     inline FEMessageResponse() : MsgID(0), Count(0), pResponseList(nullptr) {}
     ~FEMessageResponse() override;
 
@@ -53,6 +59,8 @@ struct FEMessageResponse : public FEMinNode {
     inline FEResponse* GetResponse(int Index) const { return &pResponseList[Index]; }
     inline FEMessageResponse* GetNext() { return static_cast<FEMessageResponse*>(FEMinNode::GetNext()); }
     inline FEMessageResponse* GetPrev() { return static_cast<FEMessageResponse*>(FEMinNode::GetPrev()); }
+
+    static ObjectPool<FEMessageResponse, 64> NodePool;
 };
 
 #endif

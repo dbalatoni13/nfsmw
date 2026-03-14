@@ -1,6 +1,19 @@
 #include "FEMessageResponse.h"
 #include "FESlotPool.h"
 #include "FEngStandard.h"
+#include "ObjectPool.h"
+
+ObjectPool<FEMessageResponse, 64> FEMessageResponse::NodePool;
+
+void* FEMessageResponse::operator new(unsigned int) {
+    FEMessageResponse* pNode = NodePool.AllocSingle();
+    pNode->Init();
+    return pNode;
+}
+
+void FEMessageResponse::operator delete(void* pNode) {
+    NodePool.FreeSingle(static_cast<FEMessageResponse*>(pNode));
+}
 
 FEResponse::~FEResponse() {
     ReleaseParam();
