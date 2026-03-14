@@ -1056,13 +1056,38 @@ void CustomizationScreenHelper::SetPartStatus(SelectablePart *part, unsigned int
 
 void CustomizationScreen::RefreshHeader() {
     IconScrollerMenu::RefreshHeader();
-    CustomizePartOption *opt = static_cast<CustomizePartOption *>(Options.GetCurrentOption());
-    if (opt) {
-        SelectablePart *part = opt->GetPart();
-        DisplayHelper.SetCareerStuff(part, 0, 0);
-        DisplayHelper.SetUnlockOverlayState(part->GetPartState() == CPS_LOCKED, 0);
-    }
     DisplayHelper.DrawTitle();
+    int count = Options.CountElements();
+    if (count != Options.iNumBookEnds) {
+        unsigned int tradeInValue = 0;
+        if (gCarCustomizeManager.IsCareerMode()) {
+            if (!CustomizeIsInBackRoom()) {
+                SelectablePart *part = GetSelectedPart();
+                if (part) {
+                    if (gCarCustomizeManager.CanTradeIn(part)) {
+                        CarPart *installed = gCarCustomizeManager.GetInstalledCarPart(part->GetSlotID());
+                        if (installed) {
+                            eUnlockFilters filter = gCarCustomizeManager.GetUnlockFilter();
+                            tradeInValue = UnlockSystem::GetCarPartCost(filter, part->GetSlotID(), installed, 0);
+                        }
+                        tradeInValue = static_cast<unsigned int>(static_cast<float>(static_cast<int>(tradeInValue)) * gTradeInFactor);
+                    }
+                }
+            }
+        }
+        SelectablePart *selPart = GetSelectedPart();
+        DisplayHelper.SetCareerStuff(selPart, Category, tradeInValue);
+        SelectablePart *selPart2 = GetSelectedPart();
+        unsigned int unlockBlurb = static_cast<CustomizePartOption *>(Options.GetCurrentOption())->UnlockBlurb;
+        int partNum;
+        if (!Options.pCurrentNode) {
+            partNum = 0;
+        } else {
+            partNum = Options.GetOptionIndex(Options.pCurrentNode);
+        }
+        int numParts = Options.CountElements();
+        DisplayHelper.SetPartStatus(selPart2, unlockBlurb, partNum, numParts - Options.iNumBookEnds);
+    }
 }
 
 SelectablePart *CustomizationScreen::FindInCartPart() {
@@ -1861,27 +1886,27 @@ void CustomizeSpoiler::NotificationMessage(unsigned long msg, FEObject *pobj, un
     case 0xd9feec59:
         ScrollFilters(eSD_NEXT);
         break;
-    case 0x911ab364:
-        cFEng_mInstance->QueuePackageSwitch(g_pCustomizeSubPkg, FromCategory | (Category << 16), 0, false);
+    case 0x9120409e:
+    case 0xb5971bf1:
+        SelectedIndex[TheFilter] = Options.GetCurrentIndex();
         break;
     case 0xc519bfbf:
         Showcase_FromFilter = TheFilter;
         break;
     case 0x5a928018: {
-        SelectablePart *sel = GetSelectedPart();
+        SelectablePart *sel = FindInCartPart();
         if (!sel) {
             return;
         }
         if (gCarCustomizeManager.IsPartInCart(sel)) {
             return;
         }
-        sel->SetPartState(sel->GetPartState() & CPS_GAME_STATE_MASK);
+        sel->PartState = static_cast<eCustomizePartState>(sel->PartState & 0xF);
         RefreshHeader();
         break;
     }
-    case 0x9120409e:
-    case 0xb5971bf1:
-        SelectedIndex[TheFilter] = Options.GetCurrentIndex();
+    case 0x911ab364:
+        cFEng_mInstance->QueuePackageSwitch(g_pCustomizeSubPkg, FromCategory | (Category << 16), 0, false);
         break;
     }
 }
@@ -3897,16 +3922,24 @@ void CustomizeDecals::NotificationMessage(unsigned long msg, FEObject *pobj, uns
 }
 
 void CustomizeDecals::RefreshHeader() {
-    DisplayHelper.DrawTitle();
     CustomizationScreen::RefreshHeader();
-    CustomizePartOption *opt = GetSelectedOption();
-    if (opt) {
-        SelectablePart *sel = opt->GetPart();
-        if (sel) {
-            gCarCustomizeManager.PreviewPart(sel->CarSlotID, sel->GetPart());
-        } else {
-            gCarCustomizeManager.PreviewPart(GetSlotIDFromCategory(), nullptr);
-        }
+    SelectablePart *sel = GetSelectedPart();
+    if (sel->GetPart() == nullptr) {
+        FEngSetLanguageHash(GetPackageName(), 0x5e7b09c9, Options.GetCurrentName());
+    } else {
+        FEPrintf(GetPackageName(), 0x5e7b09c9, "%s", sel->GetPart()->GetName());
+    }
+    unsigned int hash = 0x436a98e9;
+    if (bIsBlack) {
+        hash = 0x41f0a3a5;
+    }
+    FEngSetLanguageHash(GetPackageName(), 0x889bacb6, hash);
+    if ((RealTimer - ScrollTime).GetSeconds() <= 0.3f) {
+        bNeedsRefresh = true;
+    } else {
+        unsigned int slotId = GetSlotIDFromCategory();
+        SelectablePart *cur = GetSelectedPart();
+        gCarCustomizeManager.PreviewPart(slotId, cur->GetPart());
     }
 }
 
