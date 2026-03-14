@@ -550,8 +550,11 @@ void FECodeListBox::Update(float fNumTicks) {
     }
     float fAlpha = mfCurrentAlpha + mfAlphaDelta * fNumTicks;
     mfCurrentAlpha = fAlpha;
-    if (fAlpha < 0.0f || fAlpha > 1.0f) {
-        mfCurrentAlpha = fAlpha < 0.0f ? 0.0f : 1.0f;
+    if (fAlpha < 0.0f) {
+        mfCurrentAlpha = 0.0f;
+        mfAlphaDelta = -mfAlphaDelta;
+    } else if (fAlpha > 1.0f) {
+        mfCurrentAlpha = 1.0f;
         mfAlphaDelta = -mfAlphaDelta;
     }
 }
