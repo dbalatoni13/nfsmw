@@ -6,8 +6,8 @@
 #endif
 
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/Src/Frontend/RealFontOld.hpp"
 
-struct Font;
 struct bChunk;
 struct FEColor;
 struct FEString;
@@ -15,7 +15,6 @@ struct FERenderObject;
 struct FEPackageRenderInfo;
 struct TextureInfo;
 struct TexturePack;
-struct Glyph;
 struct bMatrix4;
 
 // total size: 0x30
@@ -48,8 +47,8 @@ struct FEngFont : public bTNode<FEngFont> {
     TextureInfo *GetTextureInfo() { return pTextureInfo; }
     unsigned int GetHashID() { return FontHash; }
 
-    TextureInfo *pTextureInfo; // offset 0x8, size 0x4
-    Font *pFont;               // offset 0xC, size 0x4
+    TextureInfo *pTextureInfo;          // offset 0x8, size 0x4
+    RealFontOld::Font *pFont;           // offset 0xC, size 0x4
     float mfZValue;            // offset 0x10, size 0x4
     unsigned int FontHash;     // offset 0x14, size 0x4
     unsigned int TextureHash;  // offset 0x18, size 0x4

@@ -141,13 +141,9 @@ void FEStatWidget::Hide() {
     }
 }
 
-void FEStatWidget::SetFocus(const char* parent_pkg) {
-    FEWidget::SetFocus(parent_pkg);
-}
+void FEStatWidget::SetFocus(const char* parent_pkg) {}
 
-void FEStatWidget::UnsetFocus() {
-    FEWidget::UnsetFocus();
-}
+void FEStatWidget::UnsetFocus() {}
 
 void FEStatWidget::SetPos(bVector2& pos) {
     SetPosX(pos.x);
@@ -373,22 +369,26 @@ bool CTextScroller::HandleNotificationMessage(unsigned int Msg) {
 
 short *CTextScroller::FindCR(short *pText) {
     short c = *pText;
+    short *result = nullptr;
     if (c == 0) {
-        return nullptr;
+        return result;
     }
-    if (c == '\n' || c == '^') {
-        return pText;
-    }
-    pText++;
-    c = *pText;
-    while (c != 0) {
+    do {
+        bool found = false;
         if (c == '\n' || c == '^') {
-            return pText;
+            found = true;
+        }
+        if (found) {
+            result = pText;
         }
         pText++;
         c = *pText;
-    }
-    return nullptr;
+        if (c == 0) break;
+        if (result) {
+            return result;
+        }
+    } while (true);
+    return result;
 }
 
 void CTextScroller::WordWrapCountLinesAndChars(short *pTextStart, short *pTextEnd, int &NumLines, int &NumChars) {
