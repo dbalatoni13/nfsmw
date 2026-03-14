@@ -268,6 +268,9 @@ class CareerSettings {
     int GetCash() {
         return CurrentCash;
     }
+    void AddCash(int amount) {
+        CurrentCash += amount;
+    }
     SMSMessage *GetSMSMessage(unsigned int index);
     unsigned short GetSMSSortOrder();
     void SpendCash(int amount);
