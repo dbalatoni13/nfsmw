@@ -743,34 +743,32 @@ void EmitterLibraryHeader::EndianSwap() {
     this->EndianSwapped = true;
 }
 
-// UNSOLVED (lazy)
+// UNSOLVED (EmitterParticle ctor)
 EmitterParticle *EmitterSystem::GetNewParticle(Emitter *spawning_emitter) {
-    unsigned short num_emitters;
-    EmitterGroup *this_00;
-
     if (this->mTotalNumParticles == 1024) {
         bool high_priority = spawning_emitter->GetEmitterGroup()->GetFlags() & 0x40000;
         if (high_priority) {
-            bool done = false; // r29
-            EmitterGroup *grp = this->mEmitterGroups.GetHead();
-            while (!done && grp != mEmitterGroups.EndOfList()) {
+            bool done = false;
+            for (EmitterGroup *grp = this->mEmitterGroups.GetHead(); !done && grp != mEmitterGroups.EndOfList();) {
                 EmitterGroup *grpnext = grp->GetNext();
-                if (grp->GetNumParticles() != 0 && 
-                    ((grp->GetFlags() & 0x8000000) != 0) && 
-                    ((grp->GetFlags() & 0x40000) == 0) &&
-                    ((grp->GetFlags() & 0x4000000) == 0)) {
+                if (grp->GetNumParticles() != 0 && (((grp->GetFlags() & 0x8000000) != 0) &&  // CreationContextFlags::WORLD_EFFECT?
+                                                    ((grp->GetFlags() & 0x40000) == 0) &&    // CreationContextFlags::GAMEPLAY_EFFECT?
+                                                    ((grp->GetFlags() & 0x4000000) == 0))) { // CreationContextFlags::TRIGGERED_EFFECT?
                     done = true;
                     delete grp;
                 }
                 grp = grpnext;
             }
-            while (!done && grp != mEmitterGroups.EndOfList()) {
-                EmitterGroup *grpnext = grp->GetNext();
-                if ((grp->GetFlags() & 0x40000) == 0) {
-                    done = true;
-                    delete grp;
+            // if above failed, try with only one flag
+            if (!done) {
+                for (EmitterGroup *grp = this->mEmitterGroups.GetHead(); !done && grp != mEmitterGroups.EndOfList();) {
+                    EmitterGroup *grpnext = grp->GetNext();
+                    if ((grp->GetFlags() & 0x40000) == 0) { // CreationContextFlags::GAMEPLAY_EFFECT?
+                        done = true;
+                        delete grp;
+                    }
+                    grp = grpnext;
                 }
-                grp = grpnext;
             }
         }
     }
@@ -958,24 +956,25 @@ void EmitterSystem::UpdateParticles(float dt) {
     if (!EnableParticleSystem || this->mTotalNumParticles == 0) {
         return;
     }
-    int time_step = static_cast<int>(dt * 1024.0f);
-    float ed_drag = 0.0f;
-    float ed_gravity = 0.0f;
-    float ed_life = 0.0f;
-    const bMatrix4 *ExtraBasis = nullptr;
-    const bMatrix4 *ColourBasis = nullptr;
-    bool texture_animation = false;
-    EffectParticleAnimation anim_type = ANIMATE_PARTICLE_NONE;
-    float fAnimFPS = 0.0f;
-    const EmitterDataAttribWrapper *last_emitter_data = nullptr;
+    int time_step = static_cast<int>(dt * 1024.0f); // r19
+    float ed_drag = 0.0f; // f26
+    float ed_gravity = 0.0f; // f27
+    float ed_life = 0.0f; // f24
+    const bMatrix4 *ExtraBasis = nullptr; // r14
+    const bMatrix4 *ColourBasis = nullptr; // 15
+    bool texture_animation = false; // r16
+    EffectParticleAnimation anim_type = ANIMATE_PARTICLE_NONE; // r18
+    float fAnimFPS = 0.0f; // f23
+    const EmitterDataAttribWrapper *last_emitter_data = nullptr; // sp68
 
     for (EmitterGroup *grp = this->mEmitterGroups.GetHead(); grp != this->mEmitterGroups.EndOfList(); grp = grp->GetNext()) {
-        bTList<Emitter> &emitters = grp->GetEmitters();
         if (!this->IsCloseEnough(grp, 0, 0.7f)) {
+            bTList<Emitter> &emitters = grp->GetEmitters();
             for (Emitter *em = emitters.GetHead(); em != emitters.EndOfList(); em = em->GetNext()) {
                 gEmitterSystem.KillParticlesFromThisEmitter(em);
             }
         } else {
+            bTList<Emitter> &emitters = grp->GetEmitters();
             for (Emitter *em = emitters.GetHead(); em != emitters.EndOfList(); em = em->GetNext()) {
                 bTList<EmitterParticle> &particles = em->GetParticles();
                 if (particles.IsEmpty()) {
@@ -987,10 +986,10 @@ void EmitterSystem::UpdateParticles(float dt) {
                 if (emitter_data_switch) {
                     ed_drag = this_emitter_data_atr->Drag();
                     ed_gravity = this_emitter_data_atr->Gravity();
-                    texture_animation = true;
                     ed_life = this_emitter_data_atr->Life();
                     ExtraBasis = this_emmiter_data->GetExtraBasis();
                     ColourBasis = this_emmiter_data->GetColourBasis();
+                    texture_animation = true;
                     const ParticleAnimationInfo &animinfo = this_emitter_data_atr->TextureAnimation();
                     if (animinfo.AnimType == ANIMATE_PARTICLE_NONE) {
                         texture_animation = false;
@@ -999,27 +998,27 @@ void EmitterSystem::UpdateParticles(float dt) {
                     fAnimFPS = animinfo.FPS;
                     last_emitter_data = this_emmiter_data;
                 }
-                for (EmitterParticle *particle = particles.GetHead(); particle != particles.EndOfList(); particle = particle->GetNext()) {
+                for (EmitterParticle *particle = particles.GetHead(); particle != particles.EndOfList();) {
                     bVector3 pvel;
                     bVector3 pacc;
                     bVector3 ppos;
                     UMath::Vector4 t;
                     UMath::Vector4 extra_params;
                     UMath::Vector4 col;
-                    if (time_step < particle->mLife) {
+                    if (particle->mLife > time_step) {
                         if (texture_animation) {
-                            // TODO
-                            // const unsigned int i_num_frames;
+                            const uint32 i_num_frames = ((uint32)anim_type * (uint32)anim_type);
                             const float f_num_frames = dt * fAnimFPS;
-                            const float f_max_frame_index = anim_type * anim_type;
-                            unsigned int frame_index = (int)((f_num_frames / f_max_frame_index) * 65535.0f);
-                            unsigned int cur_frame = particle->mAnimFrame;
+                            uint32 frame_index = (int32) ((f_num_frames / i_num_frames) * 65535.0f);
+                            const float f_max_frame_index = (i_num_frames - 1.0f);
+                            uint32 cur_frame = particle->mAnimFrame;
                             cur_frame += frame_index;
-                            unsigned int delta_frames = cur_frame + frame_index;
+                            uint32 delta_frames = cur_frame + frame_index;
                             if (delta_frames > 65535) {
                                 cur_frame -= 65535;
                             }
-                            frame_index = (int)((float)((unsigned short)cur_frame) * (f_max_frame_index - 1.0f) / 65535.0f);
+                            cur_frame = (uint16)cur_frame;
+                            frame_index = (int32)((float)cur_frame / 65535.0f * f_max_frame_index);
                             em->GetStandardUVs(&particle->mUVStart, &particle->mUVEnd);
                             GetAnimatedUVs(anim_type, frame_index, &particle->mUVStart, &particle->mUVEnd);
                             particle->mAnimFrame = cur_frame;
@@ -1055,34 +1054,30 @@ void EmitterSystem::UpdateParticles(float dt) {
                         RotateTranslate(t, *reinterpret_cast<const UMath::Matrix4 *>(ExtraBasis), extra_params);
                         particle->mSize = extra_params.x;
                         unsigned short pangle = static_cast<unsigned int>(particle->mInitialAngle) * 257.0f;
-                        unsigned short adelta = extra_params.y / 255 * static_cast<float>(particle->mRotOffset) + extra_params.y;
+                        unsigned short adelta = extra_params.y + static_cast<float>(particle->mRotOffset) / 255.0f * extra_params.y;
                         if (pangle % 2 == 0) {
                             pangle += adelta;
                         } else {
                             pangle -= adelta;
                         }
-                        RotateTranslate(t, *reinterpret_cast<const UMath::Matrix4 *>(ColourBasis), col);
                         particle->mAngle = pangle;
+                        RotateTranslate(t, *reinterpret_cast<const UMath::Matrix4 *>(ColourBasis), col);
                         Scale(col, 255.0f, col);
-                        unsigned int r = bClamp(static_cast<int>(col.x), 0, 255);
-                        unsigned int g = bClamp(static_cast<int>(col.y), 0, 255);
-                        unsigned int b = bClamp(static_cast<int>(col.z), 0, 255);
-                        unsigned int a = bClamp(static_cast<int>(col.w), 0, 255);
+                        uint32 r = bClamp(static_cast<int>(col.x), 0, 255);
+                        uint32 g = bClamp(static_cast<int>(col.y), 0, 255);
+                        uint32 b = bClamp(static_cast<int>(col.z), 0, 255);
+                        uint32 a = bClamp(static_cast<int>(col.w), 0, 255);
                         particle->mColour = r << 24 | g << 16 | b << 8 | a;
-                        // unsigned int alpha_value_to_kill_at = em->GetAttributes().AlphaToKillAt();
-                        if (!em->GetAttributes().NoKillAtAlpha() && (em->GetAttributes().AlphaToKillAt() > a)) {
-                            // EmitterParticle *to_kill = particle;
-                            // particle = particle->GetNext();
-                            // this->KillParticle(em, to_kill);
-                            // TODO according to the dwarf they wrote the same thing twice
-                            // but if not, gotta change the branching
+                        bool ignore_programmer_badness = em->GetAttributes().NoKillAtAlpha() ;
+                        unsigned int alpha_value_to_kill_at = em->GetAttributes().AlphaToKillAt();
+                        if (ignore_programmer_badness || (a > alpha_value_to_kill_at)) {
+                            particle = particle->GetNext();
                             continue;
                         }
-                    } else {
-                        EmitterParticle *to_kill = particle;
-                        particle = particle->GetNext();
-                        this->KillParticle(em, to_kill);
                     }
+                    EmitterParticle *to_kill = particle;
+                    particle = particle->GetNext();
+                    this->KillParticle(em, to_kill);
                 }
             }
         }

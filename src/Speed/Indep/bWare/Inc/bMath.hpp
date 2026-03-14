@@ -90,7 +90,11 @@ inline float bSqrt(float x) {
 }
 
 inline int bMin(int a, int b) {
-    return a > b ? b : a;
+    if (b < a) {
+        return b;
+    } else {
+        return a;
+    }
 }
 
 inline float bMin(float a, float b) {
@@ -106,7 +110,11 @@ inline float bMin(float a, float b) {
 }
 
 inline int bMax(int a, int b) {
-    return a > b ? a : b;
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
 }
 
 inline float bMax(float a, float b) {
