@@ -212,6 +212,44 @@ void PlayerSettings::DefaultFromOptionsScreen() {
     Rumble = savedRumble;
 }
 
+enum POVTypes {
+    kPOV_Far = 0,
+    kPOV_Close = 1,
+    kPOV_Bumper = 2,
+    kPOV_Hood = 3,
+    kPOV_Drift = 4,
+    kPOV_Pursuit = 5,
+    kPOV_Pullback = 6
+};
+
+POVTypes GetPOVTypeFromPlayerCamera(ePlayerSettingsCameras cam);
+bool IsPlayerCameraSelectable(POVTypes pov);
+
+void PlayerSettings::ScrollDriveCam(int dir) {
+    int cam = CurCam;
+    if (dir == 1) {
+        do {
+            cam++;
+            if (cam > 6) {
+                cam = 0;
+            }
+        } while (!IsPlayerCameraSelectable(
+            GetPOVTypeFromPlayerCamera(static_cast< ePlayerSettingsCameras >(cam))));
+        CurCam = static_cast< ePlayerSettingsCameras >(cam);
+    } else if (dir == -1) {
+        do {
+            cam--;
+            if (cam < 0) {
+                cam = 6;
+            }
+        } while (!IsPlayerCameraSelectable(
+            GetPOVTypeFromPlayerCamera(static_cast< ePlayerSettingsCameras >(cam))));
+        CurCam = static_cast< ePlayerSettingsCameras >(cam);
+    } else {
+        CurCam = static_cast< ePlayerSettingsCameras >(cam);
+    }
+}
+
 void GameplaySettings::Default() {
     AutoSaveOn = 1;
     RearviewOn = 1;
@@ -389,6 +427,60 @@ void CareerSettings::GenerateCaseFileName() {
     const char *profile_name = FEDatabase->GetUserProfile(0)->GetProfileName();
     bSNPrintf(CaseFileName, 13, "%d%s", num, profile_name);
     bToUpper(CaseFileName);
+}
+
+extern bool SkipDDayRaces;
+
+void CareerSettings::ResumeCareer() {
+    bool bDDayCompleted = false;
+    if (SkipDDayRaces ||
+        GRaceDatabase::Get().CheckRaceScoreFlags(
+            GRaceDatabase::Get()
+                .GetRaceFromHash(Attrib::StringHash32("16.2.1"))
+                ->GetEventHash(),
+            GRaceDatabase::kCompleted_ContextCareer)) {
+        bDDayCompleted = true;
+    }
+
+    bool bTutorialCompleted = false;
+    if (!(SpecialFlags & 0x4000)) {
+        if (GRaceDatabase::Get().CheckRaceScoreFlags(
+                GRaceDatabase::Get()
+                    .GetRaceFromHash(Attrib::StringHash32("1.2.3"))
+                    ->GetEventHash(),
+                GRaceDatabase::kCompleted_ContextCareer)) {
+            bTutorialCompleted = true;
+        }
+    }
+
+    if (CurrentBin == 0x10) {
+        if (!bDDayCompleted) {
+            unsigned int carHash = FEHashUpper("M3GTRCAREERSTART");
+            FEDatabase->GetCareerSettings()->CurrentCar = carHash;
+            FEDatabase->GetQuickRaceSettings(GRace::kRaceType_NumTypes)->SelectedCar[0] = carHash;
+            const char *nextRace = GRaceDatabase::Get().GetNextDDayRace();
+            GRaceParameters *parms =
+                GRaceDatabase::Get().GetRaceFromHash(Attrib::StringHash32(nextRace));
+            GRaceCustom *custom = GRaceDatabase::Get().AllocCustomRace(parms);
+            GRaceDatabase::Get().SetStartupRace(custom, kRaceContext_Career);
+            GRaceDatabase::Get().FreeCustomRace(custom);
+            if (bStrCmp(nextRace, "16.1.0") != 0) {
+                MemoryCard::s_pThis->m_bCancelNextAutoSave = true;
+            }
+        }
+        RaceStarter::StartCareerFreeRoam();
+    } else if (bTutorialCompleted) {
+        GRaceParameters *parms = GRaceDatabase::Get().GetRaceFromHash(Attrib::StringHash32("1.8.1"));
+        GRaceCustom *custom = GRaceDatabase::Get().AllocCustomRace(parms);
+        GRaceDatabase::Get().SetStartupRace(custom, kRaceContext_Career);
+        GRaceDatabase::Get().FreeCustomRace(custom);
+        RaceStarter::StartCareerFreeRoam();
+        MemoryCard::s_pThis->m_bCancelNextAutoSave = true;
+    } else {
+        FEManager::Get()->SetGarageType(static_cast< eGarageType >(2));
+        FEDatabase->ClearGameMode(eFE_GAME_MODE_CAREER_MANAGER);
+    }
+    FEDatabase->SetGameMode(eFE_GAME_MODE_CAREER);
 }
 
 extern int FEngSNPrintf(char *, int, const char *, ...);

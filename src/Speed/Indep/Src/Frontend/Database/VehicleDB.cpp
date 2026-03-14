@@ -1151,16 +1151,6 @@ bool FEPlayerCarDB::WriteRecordIntoPhysics(unsigned int car, Attrib::Gen::pvehic
     return false;
 }
 
-enum POVTypes {
-    kPOV_Far = 0,
-    kPOV_Close = 1,
-    kPOV_Bumper = 2,
-    kPOV_Hood = 3,
-    kPOV_Drift = 4,
-    kPOV_Pursuit = 5,
-    kPOV_Pullback = 6
-};
-
 POVTypes GetPOVTypeFromPlayerCamera(ePlayerSettingsCameras cam) {
     switch (cam) {
     case 0: return static_cast<POVTypes>(0);
