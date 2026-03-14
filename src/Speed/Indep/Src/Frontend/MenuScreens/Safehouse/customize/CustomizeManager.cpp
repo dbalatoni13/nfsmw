@@ -330,7 +330,12 @@ bool CarCustomizeManager::DoesCartHaveActiveParts() {
         SelectablePart *buy = item->GetBuyingPart();
         if (buy && !buy->IsPerformancePkg()) {
             int slot = buy->GetSlotID();
-            if ((slot >= 0x4f && slot <= 0x52) || (slot >= 0x85 && slot <= 0x87)) continue;
+            if (slot >= 0x4f) {
+                if (slot <= 0x52) continue;
+                if (slot <= 0x87) {
+                    if (slot >= 0x85) continue;
+                }
+            }
         }
         if (item->IsActive()) return true;
     }

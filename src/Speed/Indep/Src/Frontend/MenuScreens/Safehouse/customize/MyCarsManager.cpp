@@ -118,12 +118,13 @@ void MyCarsManager::Setup() {
 }
 
 bool MyCarsManager::CanAddMoreCars() {
-    FEPlayerCarDB *carDB = FEDatabase->GetPlayerCarStable(0);
-    if (carDB->GetNumQuickRaceCars() < 20 &&
-        carDB->CanCreateNewCustomizationRecord()) {
-        return carDB->CanCreateNewCarRecord();
+    if (FEDatabase->GetPlayerCarStable(0)->GetNumQuickRaceCars() > 19) {
+        return false;
     }
-    return false;
+    if (!FEDatabase->GetPlayerCarStable(0)->CanCreateNewCustomizationRecord()) {
+        return false;
+    }
+    return FEDatabase->GetPlayerCarStable(0)->CanCreateNewCarRecord() != false;
 }
 
 void MyCarsManager::RefreshCarList() {

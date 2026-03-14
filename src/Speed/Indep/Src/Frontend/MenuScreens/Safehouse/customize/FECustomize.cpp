@@ -1167,9 +1167,11 @@ void CustomizationScreen::NotificationMessage(unsigned long msg, FEObject *pobj,
 
 // --- CustomizeShoppingCart additional ---
 
+extern const char *g_pCustomizeShoppingCartPkg;
+
 void CustomizeShoppingCart::ShowShoppingCart(const char *pkg) {
     pParentPkg = pkg;
-    cFEng_mInstance->QueuePackageMessage(0x911c0a4b, pkg, nullptr);
+    cFEng_mInstance->QueuePackagePush(g_pCustomizeShoppingCartPkg, 0, 0, false);
 }
 
 void CustomizeShoppingCart::ExitShoppingCart() {
@@ -2425,14 +2427,14 @@ void CustomizeParts::RefreshHeader() {
 
 CustomizeMeter::CustomizeMeter()
     : Min(0.0f) //
-    , Max(0.0f) //
+    , Max(1.0f) //
     , Current(0.0f) //
     , Preview(0.0f) //
     , PreviousPreview(0.0f) //
     , NumStages(5) //
+    , pMultiplier(nullptr) //
     , pMeterGroup(nullptr) //
 {
-    pMultiplier = nullptr;
     pMultiplierZoom = nullptr;
     for (int i = 0; i < 10; i++) {
         pBases[i] = nullptr;

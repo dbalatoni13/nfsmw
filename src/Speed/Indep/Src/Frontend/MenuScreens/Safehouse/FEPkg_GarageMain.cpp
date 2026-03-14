@@ -123,21 +123,22 @@ static bool HaveAttributesChanged(Attrib::Gen::frontend &) {
 static const char *GetCurrentGarageName() {
     eGarageType type = FEManager::Get()->GetGarageType();
     switch (type) {
-        case GARAGETYPE_CUSTOMIZATION_SHOP:
-            return "customization_shop";
-        case GARAGETYPE_CAREER_SAFEHOUSE:
-            return "career_safehouse";
         case GARAGETYPE_CUSTOMIZATION_SHOP_BACKROOM:
             return "backroom";
+        case GARAGETYPE_CAREER_SAFEHOUSE:
+            return "career_safehouse";
+        case GARAGETYPE_CUSTOMIZATION_SHOP:
+            return "customization_shop";
         case GARAGETYPE_CAR_LOT:
             return "car_lot";
+        case GARAGETYPE_MAIN_FE:
         default:
             break;
     }
-    if (FEDatabase->IsCareerManagerMode()) {
-        return "career_manager";
+    if (!(FEDatabase->GetGameMode() & 0x100)) {
+        return "main_fe";
     }
-    return "main_fe";
+    return "career_manager";
 }
 
 // --- FEGeometryModels ---
@@ -460,9 +461,8 @@ void GarageMainScreen::UpdateCurrentCameraView(bool bForce) {
 }
 
 void GarageMainScreen::RefreshBackground() {
-    FEManager *mgr = FEManager::Get();
-    const char *garageName = mgr->GetGarageNameFromType();
-    ResourceFile *bg = mgr->GetGarageBackground();
+    const char *garageName = FEManager::Get()->GetGarageNameFromType();
+    ResourceFile *bg = FEManager::Get()->GetGarageBackground();
     char name[128];
     bStrCpy(name, bg->GetFilename());
     char *dot = bStrIStr(name, ".");
