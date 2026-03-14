@@ -37,6 +37,34 @@ FECodeListBox::FECodeListBox()
     Type = FE_CodeList;
 }
 
+FECodeListBox::FECodeListBox(const FECodeListBox& Object, bool bReference)
+    : FEObject(Object, bReference) //
+    , mpobRenderer(Object.mpobRenderer) //
+    , mulNumVisibleColumns(0) //
+    , mulNumVisibleRows(0) //
+    , mulFlags(Object.mulFlags) //
+    , mulNumTotalColumns(Object.mulNumTotalColumns) //
+    , mulNumTotalRows(Object.mulNumTotalRows) //
+    , mulCurrentVirtualColumn(0) //
+    , mulCurrentVirtualRow(0) //
+    , mulTargetColumn(0) //
+    , mulTargetRow(0) //
+    , mstViewDimensions(Object.mstViewDimensions) //
+    , mpstCells(nullptr) //
+    , mulNumStrings(0) //
+    , mulStringSize(0) //
+    , mulCurrentString(0) //
+    , mppsStringData(nullptr) //
+    , mpsStrings(nullptr) //
+    , mfCurrentAlpha(1.0f) //
+    , mfAlphaDelta(-0.001389f) //
+    , mstSelectionColor(0xFFFFFFFF) //
+    , mpSelectionCallback(Object.mpSelectionCallback) //
+    , mpSetCellCallback(Object.mpSetCellCallback) //
+    , mpvCallbackData(Object.mpvCallbackData) {
+    CopyProperties(Object);
+}
+
 FECodeListBox::~FECodeListBox() {
     if (mpstCells) {
         delete[] mpstCells;

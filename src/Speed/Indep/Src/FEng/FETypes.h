@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+float FEngSqrt(float x);
+
 // total size: 0x8
 struct FEVector2 {
     float x; // offset 0x0, size 0x4
@@ -24,6 +26,18 @@ struct FEVector2 {
     inline FEVector2& operator+=(FEVector2 v) { x += v.x; y += v.y; return *this; }
     inline FEVector2& operator-=(FEVector2 v) { x -= v.x; y -= v.y; return *this; }
     inline FEVector2& operator*=(float f) { x *= f; y *= f; return *this; }
+
+    inline float Dot(const FEVector2& v) const { return x * v.x + y * v.y; }
+    inline float Length() const { return FEngSqrt(Dot(*this)); }
+    inline float Normalize() {
+        float ret = Length();
+        if (ret >= 0.1f) {
+            float oof = 1.0f / ret;
+            x *= oof;
+            y *= oof;
+        }
+        return ret;
+    }
 };
 
 // total size: 0xC

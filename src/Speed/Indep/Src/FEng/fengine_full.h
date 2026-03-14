@@ -67,10 +67,11 @@ struct SFERadixKey {
 };
 
 // total size: 0x4004
+template <int N>
 struct FEObjectSorter {
     unsigned long mulNumObjects;          // offset 0x0, size 0x4
-    SFERadixKey mastFinalList[1024];      // offset 0x4, size 0x2000
-    SFERadixKey mastScratchList[1024];    // offset 0x2004, size 0x2000
+    SFERadixKey mastFinalList[N];         // offset 0x4, size 0x2000
+    SFERadixKey mastScratchList[N];       // offset 0x2004, size 0x2000
 
     inline void Zero() { mulNumObjects = 0; }
     inline FEObjectSorter() { Zero(); }
@@ -83,6 +84,8 @@ struct FEObjectSorter {
     }
     void SortObjects();
 };
+
+#include "Speed/Indep/Src/FEng/FEObjectSorter.h"
 
 // total size: 0x14
 struct FETypeLib {
@@ -168,7 +171,7 @@ struct FEngine {
     FEList IdleList;                         // offset 0xF8, size 0x10
     FEList LibraryList;                      // offset 0x108, size 0x10
     FEGameInterface* pInterface;             // offset 0x118, size 0x4
-    FEObjectSorter Sorter;                   // offset 0x11C, size 0x4004
+    FEObjectSorter<1024> Sorter;              // offset 0x11C, size 0x4004
     FEMinList MsgQ;                          // offset 0x4120, size 0x10
     FEList PackageCommands;                  // offset 0x4130, size 0x10
     FETypeLib TypeLib;                       // offset 0x4140, size 0x14
@@ -188,7 +191,7 @@ struct FEngine {
     inline void SetInterface(FEGameInterface* pNewInterface) { pInterface = pNewInterface; }
     inline void ToggleErrorScreenMode(bool b) { bErrorScreenMode = b; }
     inline bool IsErrorScreenMode() { return bErrorScreenMode; }
-    inline FEObjectSorter& GetSorter() { return Sorter; }
+    inline FEObjectSorter<1024>& GetSorter() { return Sorter; }
     inline FEJoyPad* GetJoyPad(unsigned char Index) { return &pJoyPad[Index]; }
     inline void SetUseMouse(bool bUseMouse) { bMouseActive = bUseMouse; }
     inline FEMouse* GetMouse() { return &Mouse; }

@@ -299,6 +299,166 @@ void FEListBox::SetNumRows(unsigned long ulNumRows) {
     }
 }
 
+void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
+    unsigned long flags = mulFlags;
+    if ((flags & 0x60) == 0x60) {
+        return;
+    }
+    bool bColumnAllowed = (flags & 0x20) == 0;
+    if (!bColumnAllowed) {
+        lColumnNum = 0;
+    }
+    if ((flags & 0x40) != 0) {
+        lRowNum = 0;
+    }
+    if (lColumnNum == 0) {
+        if (lRowNum == 0) {
+            return;
+        }
+    } else if (bColumnAllowed) {
+        unsigned long ulCurrentColumn = mulCurrentColumn;
+        unsigned long ulNewColumn = ulCurrentColumn + lColumnNum;
+        if ((flags & 4) == 0) {
+            if (static_cast<long>(ulNewColumn) < 0) {
+                unsigned long numCols = mulNumColumns;
+                unsigned long i = numCols + ulNewColumn;
+                mstCurrentLocation.h = mpstColumnData[i].fCummulativeValue;
+                mstTargetLocation.h = mpstColumnData[i].fCummulativeValue;
+                do {
+                    mstCurrentLocation.h = mstCurrentLocation.h + mpstColumnData[i].fValue;
+                    i = (i + 1) - ((i + 1) / numCols) * numCols;
+                } while (i != ulCurrentColumn);
+            } else {
+                unsigned long numCols = mulNumColumns;
+                if (static_cast<long>(ulNewColumn) < static_cast<long>(numCols)) {
+                    goto set_column;
+                }
+                mstTargetLocation.h = mstCurrentLocation.h;
+                do {
+                    long idx = ulCurrentColumn - (ulCurrentColumn / numCols) * numCols;
+                    ulCurrentColumn = ulCurrentColumn + 1;
+                    mstTargetLocation.h = mstTargetLocation.h + mpstColumnData[idx].fValue;
+                } while (ulCurrentColumn != ulNewColumn);
+            }
+            mulFlags = mulFlags | 8;
+            mulCurrentColumn = ulNewColumn - (ulNewColumn / mulNumColumns) * mulNumColumns;
+        } else {
+            if (static_cast<long>(mulNumColumns) <= static_cast<long>(ulNewColumn)) {
+                ulNewColumn = mulNumColumns - 1;
+            }
+            if (static_cast<long>(ulNewColumn) < 0) {
+                ulNewColumn = 0;
+            }
+        set_column:
+            mulCurrentColumn = ulNewColumn;
+            mstTargetLocation.h = mpstColumnData[ulNewColumn].fCummulativeValue;
+        }
+
+        unsigned long i = mulCurrentColumn;
+        float fViewWidth = mstViewDimensions.h;
+        float fNewWidth = 0.0f;
+        if (i < mulNumColumns) {
+            do {
+                long idx = i * 0xC;
+                i = i + 1;
+                fNewWidth = fNewWidth + *reinterpret_cast<float*>(reinterpret_cast<char*>(mpstColumnData) + idx);
+            } while (i < mulNumColumns);
+        }
+
+        if ((mulFlags & 4) == 0) {
+            if (fNewWidth < fViewWidth) {
+                mulFlags = mulFlags | 8;
+            }
+        } else {
+            if (fNewWidth < fViewWidth) {
+                mstTargetLocation.h = mstTargetLocation.h - (fViewWidth - fNewWidth);
+            }
+        }
+        mulFlags = mulFlags | 0x20;
+    }
+
+    if (lRowNum == 0 || (mulFlags & 0x40) != 0) {
+        goto compute_direction;
+    }
+
+    {
+        unsigned long ulCurrentRow = mulCurrentRow;
+        unsigned long ulNewRow = ulCurrentRow + lRowNum;
+        if ((mulFlags & 4) == 0) {
+            if (static_cast<long>(ulNewRow) < 0) {
+                unsigned long numRows = mulNumRows;
+                unsigned long i = numRows + ulNewRow;
+                mstCurrentLocation.v = mpstRowData[i].fCummulativeValue;
+                mstTargetLocation.v = mpstRowData[i].fCummulativeValue;
+                do {
+                    mstCurrentLocation.v = mstCurrentLocation.v + mpstRowData[i].fValue;
+                    i = (i + 1) - ((i + 1) / numRows) * numRows;
+                } while (i != ulCurrentRow);
+            } else {
+                unsigned long numRows = mulNumRows;
+                if (static_cast<long>(ulNewRow) < static_cast<long>(numRows)) {
+                    goto set_row;
+                }
+                mstTargetLocation.v = mstCurrentLocation.v;
+                do {
+                    long idx = ulCurrentRow - (ulCurrentRow / numRows) * numRows;
+                    ulCurrentRow = ulCurrentRow + 1;
+                    mstTargetLocation.v = mstTargetLocation.v + mpstRowData[idx].fValue;
+                } while (ulCurrentRow != ulNewRow);
+            }
+            mulFlags = mulFlags | 8;
+            mulCurrentRow = ulNewRow - (ulNewRow / mulNumRows) * mulNumRows;
+        } else {
+            if (static_cast<long>(mulNumRows) <= static_cast<long>(ulNewRow)) {
+                ulNewRow = mulNumRows - 1;
+            }
+            if (static_cast<long>(ulNewRow) < 0) {
+                ulNewRow = 0;
+            }
+        set_row:
+            mulCurrentRow = ulNewRow;
+            mstTargetLocation.v = mpstRowData[ulNewRow].fCummulativeValue;
+        }
+
+        unsigned long i = mulCurrentRow;
+        float fViewHeight = mstViewDimensions.v;
+        float fNewHeight = 0.0f;
+        if (i < mulNumRows) {
+            do {
+                long idx = i * 0xC;
+                i = i + 1;
+                fNewHeight = fNewHeight + *reinterpret_cast<float*>(reinterpret_cast<char*>(mpstRowData) + idx);
+            } while (i < mulNumRows);
+        }
+
+        if ((mulFlags & 4) == 0) {
+            if (fNewHeight < fViewHeight) {
+                mulFlags = mulFlags | 0x10;
+            }
+        } else {
+            if (fNewHeight < fViewHeight) {
+                mstTargetLocation.v = mstTargetLocation.v - (fViewHeight - fNewHeight);
+            }
+        }
+        mulFlags = mulFlags | 0x40;
+    }
+
+compute_direction:
+    FEVector2 obDirection;
+    obDirection = reinterpret_cast<FEVector2&>(mstTargetLocation) - reinterpret_cast<FEVector2&>(mstCurrentLocation);
+    mulFlags = mulFlags | 2;
+    reinterpret_cast<FEVector2&>(mstDirection) = obDirection;
+    float fLength = obDirection.Length();
+    if (fLength >= 0.1f) {
+        FEVector2 dir;
+        dir = reinterpret_cast<FEVector2&>(mstDirection);
+        dir.Normalize();
+        reinterpret_cast<FEVector2&>(mstDirection) = dir;
+    } else {
+        CompleteScroll();
+    }
+}
+
 void FEListBox::Update(float dt) {
     float alpha = mfCurrentAlpha + mfAlphaDelta * dt;
     mfCurrentAlpha = alpha;
