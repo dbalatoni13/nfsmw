@@ -289,11 +289,7 @@ struct SetStockPartOption : public CustomizeMainOption {
 
 // total size: 0x74
 struct HUDLayerOption : public CustomizePartOption {
-    HUDLayerOption(unsigned int layer, unsigned int icon_hash, unsigned int name_hash)
-        : CustomizePartOption(nullptr, icon_hash, name_hash, 0, 0) //
-        , HUDLayer(layer) //
-        , SelectedPart(nullptr) {}
-
+    HUDLayerOption(unsigned int layer, unsigned int icon_hash, unsigned int name_hash);
     ~HUDLayerOption() override {}
 
     void React(const char *parent_pkg, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override {}

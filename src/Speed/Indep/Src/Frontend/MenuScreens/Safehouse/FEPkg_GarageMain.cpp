@@ -12,6 +12,7 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/EmitterSystem.h"
 #include "Speed/Indep/Src/Ecstasy/eModel.hpp"
+#include "Speed/Indep/Src/Ecstasy/eSolid.hpp"
 #include "Speed/Indep/Src/Ecstasy/EcstasyData.hpp"
 #include "Speed/Indep/Src/Input/ActionQueue.h"
 #include "Speed/Indep/Src/Input/ActionRef.h"
@@ -71,7 +72,7 @@ struct EAXFrontEnd;
 extern void DestroyAllDriveOnSnds(EAXFrontEnd *fe_snd);
 extern void SetFEDrivingCarState(EAXFrontEnd *fe_snd, bVector3 *pos, bVector3 *vel, void *camera, int view_id);
 
-extern eSolidListHeader *SolidList;
+extern bTList<eSolid> SolidList;
 
 extern float cam_blur;
 extern int CarGuysCamera;
@@ -90,6 +91,7 @@ extern DemoDiscManager TheDemoDiscManager;
 extern ScreenEffectDB *iRam80462020;
 
 extern char *bStrIStr(const char *, const char *);
+extern int bStrNICmp(const char *, const char *, int);
 
 #ifndef ABS
 #define ABS(x) ((x) < 0 ? -(x) : (x))
@@ -101,6 +103,7 @@ static int bAutoMovement;
 static int bPass1;
 static float zoomIn;
 static float zoomOut;
+static bool RenderLookAtPoint = false;
 
 static const char lbl_GarageMain[] = "GarageMain.fng";
 
@@ -135,6 +138,77 @@ static const char *GetCurrentGarageName() {
         return "career_manager";
     }
     return "main_fe";
+}
+
+// --- FEGeometryModels ---
+
+void FEGeometryModels::Init(char *filterPrefix) {
+    const int kMaxModels = 32;
+    eSolid *SolidTable[kMaxModels];
+    int filterPrefixSize;
+
+    mNumModels = 0;
+    filterPrefixSize = bStrLen(filterPrefix);
+    for (eSolid *solid = SolidList.GetHead(); solid != SolidList.EndOfList(); solid = solid->GetNext()) {
+        if (bStrNICmp(solid->GetName(), filterPrefix, filterPrefixSize) == 0) {
+            SolidTable[mNumModels] = solid;
+            mNumModels++;
+        }
+    }
+
+    if (mNumModels != 0) {
+        mModels = new eModel[mNumModels];
+        for (int i = 0; i < mNumModels; i++) {
+            mModels[i].Init(SolidTable[i]->NameHash);
+            if (bStrIStr(mModels[i].GetSolid()->GetName(), "CAST_SHADOW_MAP")) {
+                mModelCastsShadowMapFlags |= 1 << i;
+            }
+            if (bStrIStr(mModels[i].GetSolid()->GetName(), "CURRGEN")) {
+                mModelCurrGenOnly |= 1 << i;
+            }
+            if (bStrIStr(mModels[i].GetSolid()->GetName(), "NEXTGEN")) {
+                mModelNextGenOnly |= 1 << i;
+            }
+        }
+    }
+}
+
+void FEGeometryModels::UnInit() {
+    if (mModels) {
+        int count = *reinterpret_cast<int *>(reinterpret_cast<char *>(mModels) - 8);
+        eModel *end = mModels + count;
+        while (mModels != end) {
+            end--;
+            end->UnInit();
+        }
+        ::operator delete[](reinterpret_cast<char *>(mModels) - 8);
+    }
+    mModels = nullptr;
+    mModelCastsShadowMapFlags = 0;
+    mModelCurrGenOnly = 0;
+    mModelNextGenOnly = 0;
+}
+
+void FEGeometryModels::Render(eView *view, bMatrix4 *local, unsigned int render_flags) {
+    for (int i = 0; i < mNumModels; i++) {
+        bool renderModel = true;
+        if ((render_flags & 4) != 0) {
+            if ((1 << i & mModelCastsShadowMapFlags) == 0) {
+                renderModel = false;
+            }
+        }
+        if ((render_flags & 1) != 0) {
+            if ((1 << i & mModelNextGenOnly) != 0) {
+                renderModel = false;
+            }
+        }
+        if ((render_flags & 2) != 0 && (1 << i & mModelCurrGenOnly) != 0) {
+            renderModel = false;
+        }
+        if (renderModel) {
+            view->Render(&mModels[i], local, nullptr, 4, nullptr);
+        }
+    }
 }
 
 // --- GarageMainScreen ---

@@ -102,7 +102,7 @@ struct CustomizationScreen : public IconScrollerMenu {
     void SetCareerStatusIcon(eCustomizePartState state) { DisplayHelper.SetCareerStatusIcon(state); }
     void SetPlayerCarStatusIcon(eCustomizePartState state) { DisplayHelper.SetPlayerCarStatusIcon(state); }
     CustomizePartOption *GetSelectedOption() { return static_cast<CustomizePartOption *>(Options.GetCurrentOption()); }
-    virtual SelectablePart *GetSelectedPart() { return GetSelectedOption() ? GetSelectedOption()->GetPart() : nullptr; }
+    virtual SelectablePart *GetSelectedPart() { return GetSelectedOption()->GetPart(); }
     void SetTitleHash(unsigned int title_hash) { DisplayHelper.SetTitleHash(title_hash); }
     unsigned int GetCategory() { return Category; }
     unsigned int GetFromCategory() { return FromCategory; }

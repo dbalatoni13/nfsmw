@@ -62,8 +62,8 @@ extern cFrontendDatabase *FEDatabase;
 extern cFEng *cFEng_mInstance;
 
 extern const char *g_pCustomizeMainPkg;
-extern const char *g_pCustomizeSubPkg;
-extern const char *g_pCustomizeSubTopPkg;
+const char *g_pCustomizeSubPkg = nullptr;
+const char *g_pCustomizeSubTopPkg = nullptr;
 extern const char *g_pCustomizePartsPkg;
 extern const char *g_pCustomizePerfPkg;
 extern const char *g_pCustomizeDecalsPkg;
@@ -1446,6 +1446,13 @@ eMenuSoundTriggers CustomizePerformance::NotifySoundMessage(unsigned long msg, e
 }
 
 // --- CustomizeHUDColor ---
+
+HUDLayerOption::HUDLayerOption(unsigned int layer, unsigned int icon_hash, unsigned int name_hash)
+    : CustomizePartOption(nullptr, icon_hash, name_hash, 0, 0) //
+    , HUDLayer(layer) //
+    , SelectedPart(nullptr) {
+    gCarCustomizeManager.GetCarPartList(layer, TheColors, 0);
+}
 
 CustomizeHUDColor::~CustomizeHUDColor() {
 }

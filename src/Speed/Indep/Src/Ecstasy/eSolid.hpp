@@ -52,6 +52,8 @@ struct eSolid : public eSolidPlatInterface, public bTNode<eSolid> {
     void ReplaceLightMaterial(unsigned int old_name_hash, eLightMaterial *new_light_material);
     ePositionMarker *GetPostionMarker(ePositionMarker *prev_marker);
     ePositionMarker *GetPostionMarker(unsigned int namehash);
+
+    const char *GetName() { return Name; }
 };
 
 struct eLoadedSolidStats {
