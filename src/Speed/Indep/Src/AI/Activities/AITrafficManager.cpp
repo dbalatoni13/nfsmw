@@ -55,8 +55,8 @@ extern BOOL SkipFETrafficDensity; // size: 0x4
 extern BOOL SkipFEDisableTraffic; // size: 0x4
 extern BOOL SkipFE;               // size: 0x4
 
-float AITrafficManager::mTrafficMinSpawnDist;
-float AITrafficManager::mTrafficMaxSpawnDist;
+float AITrafficManager::mTrafficMinSpawnDist = 150.0f;
+float AITrafficManager::mTrafficMaxSpawnDist = 400.0f;
 
 UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _AITrafficManager("AITrafficManager", AITrafficManager::Construct);
 
@@ -331,6 +331,11 @@ static bool RandomSortTC(ITrafficCenter *c0, ITrafficCenter *c1) {
         return c0 < c1;
     }
     return c1 < c0;
+}
+
+const Attrib::Gen::trafficpattern &Attrib::Gen::trafficpattern::operator=(const Attrib::Instance &rhs) {
+    Instance::operator=(rhs);
+    return *this;
 }
 
 void AITrafficManager::SetTrafficPattern(Attrib::Key pattern_key) {
