@@ -68,8 +68,60 @@ struct FEQuaternion {
     inline FEQuaternion() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
     inline FEQuaternion(float X, float Y, float Z, float W) : x(X), y(Y), z(Z), w(W) {}
     inline FEQuaternion& operator=(const FEQuaternion& q) { x = q.x; y = q.y; z = q.z; w = q.w; return *this; }
+    FEQuaternion operator*(const FEQuaternion& q1);
     void GetMatrix(FEMatrix4* pMatrix) const;
 };
+
+inline FEQuaternion operator+(const FEQuaternion& q0, const FEQuaternion& q1) {
+    FEQuaternion q;
+    q.x = q0.x + q1.x;
+    q.y = q0.y + q1.y;
+    q.z = q0.z + q1.z;
+    q.w = q0.w + q1.w;
+    return q;
+}
+
+inline FEQuaternion operator-(const FEQuaternion& q0, const FEQuaternion& q1) {
+    FEQuaternion q;
+    q.x = q0.x - q1.x;
+    q.y = q0.y - q1.y;
+    q.z = q0.z - q1.z;
+    q.w = q0.w - q1.w;
+    return q;
+}
+
+inline FEQuaternion operator*(const FEQuaternion& q, float fScaler) {
+    FEQuaternion r;
+    r.x = q.x * fScaler;
+    r.y = q.y * fScaler;
+    r.z = q.z * fScaler;
+    r.w = q.w * fScaler;
+    return r;
+}
+
+inline float QuaternionDot(const FEQuaternion& q0, const FEQuaternion& q1) {
+    return q0.x * q1.x + q0.y * q1.y + q0.z * q1.z + q0.w * q1.w;
+}
+
+inline float QuaternionNorm(const FEQuaternion& q) {
+    return q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
+}
+
+float FEngSqrt(float x);
+
+inline float QuaternionMagnitude(const FEQuaternion& q) {
+    return FEngSqrt(QuaternionNorm(q));
+}
+
+inline void NormalizeQuaternion(FEQuaternion& q) {
+    float fMagnitude = QuaternionMagnitude(q);
+    if (fMagnitude > 0.0f) {
+        q.x /= fMagnitude;
+        q.y /= fMagnitude;
+        q.z /= fMagnitude;
+        q.w /= fMagnitude;
+    }
+}
 
 // total size: 0x10
 struct FERect {
