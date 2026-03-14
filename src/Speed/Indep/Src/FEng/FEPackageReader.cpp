@@ -868,7 +868,7 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                 pScript = new FEScript();
                 pScript->Init();
                 pScript->CurTime = 0;
-                if (bLoadObjectNames) {
+                if (bLoadScriptNames) {
                     pScript->SetName(reinterpret_cast<const char*>(pTag->Data()));
                 }
                 CurTrack = static_cast<unsigned long>(-1);
@@ -922,7 +922,7 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                 break;
             }
             case 0x6f54: {
-                pTrack->LongOffset = pTag->Data()[0];
+                pTrack->LongOffset = pTag->Getu16(0) >> 8;
                 break;
             }
             case 0x6954: {

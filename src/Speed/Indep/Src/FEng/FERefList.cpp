@@ -110,8 +110,4 @@ void FERefList::Purge() {
     }
 }
 
-FERefList::~FERefList() {
-    if (!bIsReference) {
-        Purge();
-    }
-}
+// destructor moved to header for inlining

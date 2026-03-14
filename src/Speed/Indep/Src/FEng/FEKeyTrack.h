@@ -7,6 +7,7 @@
 
 #include "FEGenericVal.h"
 #include "FERefList.h"
+#include "FEngStandard.h"
 
 template <class T, int N> struct ObjectPool;
 
@@ -54,6 +55,10 @@ struct FEKeyTrack {
         , InterpAction(0) //
         , Length(0)
         , LongOffset(0) {
+    }
+
+    static inline void* operator new[](unsigned int size) {
+        return FEngMalloc(size, nullptr, 0);
     }
 
     FEKeyNode* GetKeyAt(long tTime);
