@@ -1373,9 +1373,11 @@ void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEP
     do {
         unsigned long Action = pRespList->pResponseList[i].ResponseID;
         FEResponse* pAction = &pRespList->pResponseList[i];
-        if (Action == 0x108) {
+        switch (Action) {
+        case 0x108:
             QueuePackageUserTransfer(pPack, false, 0xFF);
-        } else if (Action == 0) {
+            break;
+        case 0:
             if (pObj) {
                 FEScript* pScript = pObj->FindScript(pAction->ResponseParam);
                 if (pScript) {
@@ -1383,17 +1385,22 @@ void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEP
                     pScript->CurTime = 0;
                 }
             }
-        } else if (Action == 1) {
+            break;
+        case 1: {
             FEObject* pTo = reinterpret_cast<FEObject*>(pAction->ResponseTarget);
             if (reinterpret_cast<unsigned long>(pTo) != 0xFFFFFFFC && reinterpret_cast<unsigned long>(pTo) != 0xFFFFFFFF) {
                 pTo = pPack->FindObjectByGUID(pAction->ResponseTarget);
             }
             QueueMessage(pAction->ResponseParam, pObj, pPack, pTo, uControlMask);
-        } else if (Action == 2) {
+            break;
+        }
+        case 2:
             QueueMessage(pAction->ResponseParam, pObj, pPack, reinterpret_cast<FEObject*>(0xFFFFFFFF), uControlMask);
-        } else if (Action == 3) {
+            break;
+        case 3:
             QueueMessage(pAction->ResponseParam, pObj, pPack, reinterpret_cast<FEObject*>(0xFFFFFFFB), uControlMask);
-        } else if (Action == 0x100) {
+            break;
+        case 0x100: {
             FEObject* pButton = nullptr;
             if (pAction->ResponseParam != 0) {
                 pButton = pPack->FindObjectByGUID(pAction->ResponseParam);
@@ -1402,15 +1409,19 @@ void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEP
             if (bFound || pAction->ResponseParam == 0) {
                 pPack->SetCurrentButton(pButton, bFound);
             }
-        } else if (Action == 0x101) {
+            break;
+        }
+        case 0x101:
             SetProcessInput(pPack, pAction->ResponseParam == 1);
-        } else if (Action == 0x102) {
+            break;
+        case 0x102:
             if (!pPack->pCurrentButton) {
                 RecordLastPackageButton(pPack->nameHash, 0);
             } else {
                 RecordLastPackageButton(pPack->nameHash, pPack->pCurrentButton->GUID);
             }
-        } else if (Action == 0x103) {
+            break;
+        case 0x103: {
             FEObject* pButton = nullptr;
             unsigned long recalled = RecallLastPackageButton(pPack->nameHash);
             if (recalled != 0) {
@@ -1423,53 +1434,73 @@ void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEP
                 }
                 bFound = pButton != nullptr;
                 if (!bFound && pAction->ResponseParam != 0) {
-                    goto next;
+                    break;
                 }
             }
             bFound = bFound;
             pPack->SetCurrentButton(pButton, bFound);
-        } else if (Action == 0x104) {
-        } else if (Action == 0x106) {
+            break;
+        }
+        case 0x104:
+            break;
+        case 0x105:
+            QueuePackageUserTransfer(pPack, true, uControlMask);
+            break;
+        case 0x106:
             QueuePackageUserTransfer(pPack, true, 0xFF);
-        } else if (Action == 0x105 || Action == 0x107) {
-            QueuePackageUserTransfer(pPack, Action < 0x107, uControlMask);
-        } else if (Action == 0x200) {
+            break;
+        case 0x107:
+            QueuePackageUserTransfer(pPack, false, uControlMask);
+            break;
+        case 0x200:
             QueuePackageSwitch(reinterpret_cast<const char*>(pAction->ResponseParam), pPack->Controllers);
-        } else if (Action == 0x201) {
+            break;
+        case 0x201:
             QueuePackagePush(reinterpret_cast<const char*>(pAction->ResponseParam), pPack->Controllers);
-        } else if (Action == 0x202) {
+            break;
+        case 0x202: {
             unsigned long pad = 0;
             do {
-                if (uControlMask & (1 << (pad & 0x3f))) {
+                if (uControlMask & (1 << pad)) {
                     QueuePackagePush(reinterpret_cast<const char*>(pAction->ResponseParam), uControlMask);
                 }
                 pad++;
             } while (pad < 8);
-        } else if (Action == 0x203) {
-            QueuePackagePop();
-        } else if (Action == 0x204) {
+            break;
+        }
+        case 0x204:
             QueuePackagePush(reinterpret_cast<const char*>(pAction->ResponseParam), 0);
-        } else if (Action == 0x2c0) {
-            RecordPackageMarker(pPack->pFilename);
-        } else if (Action == 0x2c1) {
+            break;
+        case 0x203:
+            QueuePackagePop();
+            break;
+        case 0x2c0:
+            RecordPackageMarker(pPack->name);
+            break;
+        case 0x2c1: {
             const char* pMarker = RecallPackageMarker();
             if (pMarker) {
                 QueuePackageSwitch(pMarker, pPack->Controllers);
             }
-        } else if (Action == 0x2c2) {
-            ClearPackageMarkers();
-        } else if (Action == 0x300) {
-            if (pObj->pCurrentScript->CurTime != static_cast<int>(pAction->ResponseParam)) {
-                i = pRespList->FindConditionBranchTarget(i);
-            }
-        } else if (Action == 0x301) {
-            if (pObj->pCurrentScript->CurTime == static_cast<int>(pAction->ResponseParam)) {
-                i = pRespList->FindConditionBranchTarget(i);
-            }
-        } else if (Action == 0x500) {
-            i = pRespList->FindConditionBranchTarget(i);
+            break;
         }
-    next:
+        case 0x2c2:
+            ClearPackageMarkers();
+            break;
+        case 0x300:
+            if (pObj->pCurrentScript->ID != pAction->ResponseParam) {
+                i = pRespList->FindConditionBranchTarget(i);
+            }
+            break;
+        case 0x301:
+            if (pObj->pCurrentScript->ID == pAction->ResponseParam) {
+                i = pRespList->FindConditionBranchTarget(i);
+            }
+            break;
+        case 0x500:
+            i = pRespList->FindConditionBranchTarget(i);
+            break;
+        }
         i++;
     } while (i < NumActions);
 }
