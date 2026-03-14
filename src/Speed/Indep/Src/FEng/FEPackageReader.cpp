@@ -77,8 +77,9 @@ unsigned long FEPackageReader::GetTypeSize(unsigned long TypeID) {
 bool FEPackageReader::ReadTypeSizes() {
     FEChunk* pChild = FindChild(pChunk, 0x53707954);
     if (pChild) {
+        unsigned long Size = pChild->GetSize();
         TypeSizeList = reinterpret_cast<FETypeSize*>(pChild->GetData());
-        TypeSizeCount = BSwap32(pChild->GetSize()) >> 3;
+        TypeSizeCount = BSwap32(Size) >> 3;
     }
     return true;
 }
@@ -200,10 +201,11 @@ FEObject* FEPackageReader::CreateObject(unsigned long ObjectType) {
 }
 
 void FEPackageReader::ProcessImageTag(FETag* pTag) {
+    FEImage* pImage = static_cast<FEImage*>(pObj);
     if (BSwap16(pTag->GetID()) != 0x6649) {
         return;
     }
-    static_cast<FEImage*>(pObj)->ImageFlags = BSwap32(pTag->Getu32(0));
+    pImage->ImageFlags = BSwap32(pTag->Getu32(0));
 }
 
 bool FEPackageReader::FindReferencedObject(unsigned long ObjGUID, FEObject** ppRefObj, FEPackage** ppRefPack) {
