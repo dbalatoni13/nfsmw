@@ -27,6 +27,22 @@ extern void SetNumOpponents(void *custom, int num);
 extern void SetCopsEnabled(void *custom, bool enabled);
 extern const char *gOnlineMainMenu;
 
+struct GRaceSaveInfo {
+    unsigned int mRaceHash;
+    unsigned int mFlags;
+    float mHighScores;
+    unsigned short mTopSpeed;
+    unsigned short mAverageSpeed;
+};
+
+inline void FEngSetVisible(const char *pkg_name, unsigned int obj_hash) {
+    FEngSetVisible(FEngFindObject(pkg_name, obj_hash));
+}
+
+inline void FEngSetInvisible(const char *pkg_name, unsigned int obj_hash) {
+    FEngSetInvisible(FEngFindObject(pkg_name, obj_hash));
+}
+
 UIQRTrackSelect::UIQRTrackSelect(ScreenConstructorData *sd) : MenuScreen(sd) {
     TrackMapStreamer.Init(nullptr, nullptr, 0, 0);
     Tracks.InitList();
@@ -203,7 +219,130 @@ void UIQRTrackSelect::ScrollRegions(eScrollDir dir) {
 }
 
 void UIQRTrackSelect::RefreshHeader() {
-    // Stub - complex function, implement later
+    FEImage *img;
+    img = FEngFindImage(PackageFilename, 0x91c4a50);
+    FEngSetButtonTexture(img, 0x5bc);
+    img = FEngFindImage(PackageFilename, 0x2d145be3);
+    FEngSetButtonTexture(img, 0x682);
+
+    RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+    unsigned int hash;
+    switch (settings->RegionFilterBits) {
+    case 0:
+        hash = 0xa6850651;
+        break;
+    case 1:
+        hash = 0xa5c20e7d;
+        break;
+    case 2:
+        hash = 0x8663faef;
+        break;
+    case 3:
+        hash = 0x632dd19b;
+        break;
+    default:
+        hash = 0;
+        break;
+    }
+    FEngSetLanguageHash(PackageFilename, 0x78008599, hash);
+    FEngSetLanguageHash(PackageFilename, 0x4510987f, hash);
+    FEPrintf(PackageFilename, 0x6f25a248, "%d", Tracks.GetNodeNumber(pCurrentNode));
+    FEPrintf(PackageFilename, 0xb2037bdc, "%d", Tracks.CountElements());
+
+    FEngSetLanguageHash(PackageFilename, 0xb5154998,
+                        FEDatabase->GetRaceNameHash(FEDatabase->RaceMode));
+
+    FEngSetVisible(PackageFilename, 0x6b67d70b);
+
+    if (!pCurrentTrack) {
+        FEPrintf(PackageFilename, 0x6f25a248, "0");
+        FEPrintf(PackageFilename, 0xb2037bdc, "0");
+        FEPrintf(PackageFilename, 0x5e7b09c9, "");
+        FEPrintf(PackageFilename, 0xdfb7a2e, "");
+        FEPrintf(PackageFilename, 0xb5154999, "--");
+        FEPrintf(PackageFilename, 0xb515499c, "%s", GetLocalizedString(0x472aa00a));
+        FEngSetLanguageHash(PackageFilename, 0x68215623, 0xf9c0519a);
+        FEngSetInvisible(PackageFilename, 0xe08434fc);
+    } else {
+        if (!pCurrentNode->bLocked) {
+            FEngSetInvisible(PackageFilename, 0x6b67d70b);
+            FEngSetVisible(PackageFilename, 0xe08434fc);
+        } else {
+            char buf[128];
+            FEngSNPrintf(buf, 0x80, "blacklist_rival_%02d_aka", pCurrentNode->bin);
+            const char *rival_label = GetLocalizedString(0xbd563be5);
+            unsigned int aka_hash = FEHashUpper(buf);
+            const char *aka_name = GetLocalizedString(aka_hash);
+            FEPrintf(PackageFilename, 0x68215623, rival_label, aka_name, pCurrentNode->bin);
+            FEngSetInvisible(PackageFilename, 0xe08434fc);
+        }
+
+        unsigned int trackNameHash = CalcLanguageHash("TRACKNAME_", pCurrentTrack);
+        if (!DoesStringExist(trackNameHash)) {
+            FEPrintf(PackageFilename, 0x5e7b09c9, pCurrentTrack->GetEventID());
+            FEPrintf(PackageFilename, 0xdfb7a2e, pCurrentTrack->GetEventID());
+        } else {
+            FEngSetLanguageHash(PackageFilename, 0x5e7b09c9, trackNameHash);
+            FEngSetLanguageHash(PackageFilename, 0xdfb7a2e, trackNameHash);
+        }
+
+        FEngSetInvisible(PackageFilename, 0xbbf970cd);
+
+        const char *distUnits;
+        unsigned int speedHash;
+        bool kph;
+        if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
+            distUnits = GetLocalizedString(0x8569a26a);
+            speedHash = 0x8569a25f;
+            kph = true;
+        } else {
+            distUnits = GetLocalizedString(0x867dcfd9);
+            speedHash = 0x8569ab44;
+            kph = false;
+        }
+        const char *speedUnits = GetLocalizedString(speedHash);
+
+        float distConv = 0.000621371f;
+        if (kph) {
+            distConv = 0.001f;
+        }
+        float distance = pCurrentTrack->GetRaceLengthMeters() * distConv;
+        FEPrintf(PackageFilename, 0xb5154999, "%$0.1f %s", distance, distUnits);
+
+        GRaceSaveInfo *info = GRaceDatabase::Get().GetScoreInfo(pCurrentTrack->GetEventHash());
+
+        GRace::Type raceType = pCurrentTrack->GetRaceType();
+        if (raceType == GRace::kRaceType_P2P ||
+            pCurrentTrack->GetRaceType() == GRace::kRaceType_Circuit ||
+            pCurrentTrack->GetRaceType() == GRace::kRaceType_Drag ||
+            pCurrentTrack->GetRaceType() == GRace::kRaceType_Knockout ||
+            pCurrentTrack->GetRaceType() == GRace::kRaceType_Tollbooth) {
+            Timer t;
+            t.SetTime(info->mHighScores);
+            char timeBuf[128];
+            t.PrintToString(timeBuf, 0);
+            FEPrintf(PackageFilename, 0xb515499c, "%s", timeBuf);
+        } else if (pCurrentTrack->GetRaceType() == GRace::kRaceType_SpeedTrap) {
+            float bestSpeed;
+            if (kph) {
+                bestSpeed = info->mHighScores;
+            } else {
+                bestSpeed = info->mHighScores * 0.27778f * 2.237f;
+            }
+            FEngSetLanguageHash(PackageFilename, 0x28462c64, 0x512e823);
+            FEPrintf(PackageFilename, 0xb515499c, "%$0.0f %s", bestSpeed, speedUnits);
+        } else {
+            FEPrintf(PackageFilename, 0xb515499c, "%s", GetLocalizedString(0x472aa00a));
+        }
+
+        if (pCurrentTrack->GetRaceType() == GRace::kRaceType_Circuit ||
+            pCurrentTrack->GetRaceType() == GRace::kRaceType_Knockout) {
+            FEngSetLanguageHash(PackageFilename, 0x28462c64, 0xc5b5a177);
+        }
+
+        img = FEngFindImage(PackageFilename, 0x8007b4c);
+        FEngSetTextureHash(img, FEDatabase->GetRaceIconHash(pCurrentTrack->GetRaceType()));
+    }
 }
 
 void UIQRTrackSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
