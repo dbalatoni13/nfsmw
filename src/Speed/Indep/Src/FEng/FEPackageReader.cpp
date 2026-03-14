@@ -301,38 +301,29 @@ bool FEPackageReader::ReadResourceChunk() {
     if (BSwap32(pNameChunk->GetID()) != 0x6d4e7352) {
         return false;
     }
-    FEChunk* pResReqChunk = reinterpret_cast<FEChunk*>(reinterpret_cast<char*>(pNameChunk) + 8 + BSwap32(pNameChunk->GetSize()));
+    FEChunk* pResReqChunk = pNameChunk->GetNext();
     if (BSwap32(pResReqChunk->GetID()) != 0x71527352) {
         return false;
     }
-    unsigned long* pData = reinterpret_cast<unsigned long*>(pResReqChunk->GetData() + 8);
-    unsigned long NumRequests = BSwap32(*(reinterpret_cast<unsigned long*>(pResReqChunk->GetData()) + 2));
+    unsigned long* pData = reinterpret_cast<unsigned long*>(pResReqChunk->GetData()) + 1;
+    unsigned long NumRequests = BSwap32(*reinterpret_cast<unsigned long*>(pResReqChunk->GetData()));
     pPack->NumRequests = NumRequests;
     if (NumRequests != 0) {
         pPack->pRequests = static_cast<FEResourceRequest*>(FEngMalloc(NumRequests * sizeof(FEResourceRequest), nullptr, 0));
         pPack->pResourceNames = static_cast<char*>(FEngMalloc(BSwap32(pNameChunk->GetSize()), nullptr, 0));
-        unsigned long i = 0;
-        if (NumRequests != 0) {
-            do {
-                unsigned long offset = i * 6;
-                i++;
-                FEResourceRequest* pReq = &pPack->pRequests[i - 1];
-                pReq->ID = BSwap32(pData[offset]);
-                pReq->pFilename = reinterpret_cast<const char*>(BSwap32(pData[offset + 1]));
-                pReq->Type = BSwap32(pData[offset + 2]);
-                pReq->Flags = BSwap32(pData[offset + 3]);
-                pReq->Handle = BSwap32(pData[offset + 4]);
-                pReq->UserParam = BSwap32(pData[offset + 5]);
-            } while (i < NumRequests);
+        char* nameData = pNameChunk->GetData();
+        for (unsigned long Index = 0; Index < NumRequests; Index++) {
+            pPack->pRequests[Index].ID = BSwap32(pData[0]);
+            pPack->pRequests[Index].pFilename = reinterpret_cast<const char*>(BSwap32(pData[1]));
+            pPack->pRequests[Index].Type = BSwap32(pData[2]);
+            pPack->pRequests[Index].Flags = BSwap32(pData[3]);
+            pPack->pRequests[Index].Handle = BSwap32(pData[4]);
+            pPack->pRequests[Index].UserParam = BSwap32(pData[5]);
+            pData += 6;
         }
-        FEngMemCpy(pPack->pResourceNames, reinterpret_cast<char*>(pNameChunk) + 8, BSwap32(pNameChunk->GetSize()));
-        i = 0;
-        if (NumRequests != 0) {
-            do {
-                FEResourceRequest* pReq = &pPack->pRequests[i];
-                i++;
-                pReq->pFilename = pReq->pFilename + reinterpret_cast<unsigned long>(pPack->pResourceNames);
-            } while (i < NumRequests);
+        FEngMemCpy(pPack->pResourceNames, nameData, BSwap32(pNameChunk->GetSize()));
+        for (unsigned long i = 0; i < NumRequests; i++) {
+            pPack->pRequests[i].pFilename = pPack->pRequests[i].pFilename + reinterpret_cast<unsigned long>(pPack->pResourceNames);
         }
     }
     return true;
