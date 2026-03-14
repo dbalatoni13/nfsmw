@@ -17,6 +17,46 @@ void UpdateServices(float dT) {
     }
 }
 
+Pkt_Car_Service::~Pkt_Car_Service() {}
+
+UCrc32 Pkt_Car_Service::ConnectionClass() {
+    static UCrc32 hash = "CarSoundConn";
+    return hash;
+}
+
+unsigned int Pkt_Car_Service::Size() {
+    return sizeof(*this);
+}
+
+unsigned int Pkt_Car_Service::Type() {
+    return SType();
+}
+
+unsigned int Pkt_Car_Service::SType() {
+    static UCrc32 hash = "Pkt_Car_Service";
+    return hash.GetValue();
+}
+
+Pkt_Heli_Service::~Pkt_Heli_Service() {}
+
+UCrc32 Pkt_Heli_Service::ConnectionClass() {
+    static UCrc32 hash = "HeliSoundConn";
+    return hash;
+}
+
+unsigned int Pkt_Heli_Service::Size() {
+    return sizeof(*this);
+}
+
+unsigned int Pkt_Heli_Service::Type() {
+    return SType();
+}
+
+unsigned int Pkt_Heli_Service::SType() {
+    static UCrc32 hash = "Pkt_Heli_Service";
+    return hash.GetValue();
+}
+
 } // namespace SoundConn
 
 CarSoundConn::CarSoundConn(const Sim::ConnectionData &data)
@@ -62,6 +102,12 @@ Sim::Connection *CarSoundConn::Construct(const Sim::ConnectionData &data) {
 
 Sim::Connection *HeliSoundConn::Construct(const Sim::ConnectionData &data) {
     return new HeliSoundConn(data);
+}
+
+void CarSoundConn::SetAssetsLoaded(CarSoundConn *conn) {
+    if (conn != nullptr && conn->mState != nullptr) {
+        conn->mState->mAssetsLoaded = true;
+    }
 }
 
 void CarSoundConn::UpdateState(float dT) {

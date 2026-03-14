@@ -85,6 +85,8 @@ struct stSndDataLoadParams {
     /* 0x40 */ char _pad40[0x20];
     /* 0x60 */ int t_req;
     /* 0x64 */ int t_load;
+
+    void Clear();
 };
 
 struct stAssetDescription;
@@ -130,17 +132,7 @@ struct stBankSlot {
     /* 0x1c */ unsigned char Index;
     /* 0x20 */ stSndDataLoadParams *pAssetParams;
 
-    void Clear() {
-        Type = static_cast<eBANK_SLOT_TYPE>(-1);
-        BANKmemLocation = 0;
-        MAINmemLocation = nullptr;
-        pLastAlloc = nullptr;
-        MAINmemSize = 0;
-        BANKMemSize = 0;
-        LoadFailed = 0;
-        Index = 0;
-        pAssetParams = nullptr;
-    }
+    void Clear();
 };
 
 struct EAXAemsManager : public AudioMemBase {
@@ -211,6 +203,7 @@ struct CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<
     Sim::ConnStatus OnStatusCheck() override;
     void UpdateState(float dT);
     static Sim::Connection *Construct(const Sim::ConnectionData &data);
+    static void SetAssetsLoaded(CarSoundConn *conn);
 };
 
 struct EAX_HeliState;

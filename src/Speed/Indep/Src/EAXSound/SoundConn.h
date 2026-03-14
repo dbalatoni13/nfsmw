@@ -9,6 +9,9 @@
 #include "Speed/Indep/Src/World/WorldTypes.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 
+struct CarSoundConn;
+struct HeliSoundConn;
+
 namespace SoundConn {
 
 // total size: 0x10
@@ -39,6 +42,32 @@ class Pkt_Heli_Open : public Sim::Packet {
   private:
     const Attrib::Collection *m_VehicleSpec; // offset 0x4, size 0x4
     WUID mWorldID;                           // offset 0x8, size 0x4
+};
+
+class Pkt_Car_Service : public Sim::Packet {
+  public:
+    explicit Pkt_Car_Service(CarSoundConn *conn) : mConn(conn) {}
+    ~Pkt_Car_Service() override;
+    UCrc32 ConnectionClass() override;
+    unsigned int Size() override;
+    unsigned int Type() override;
+    static unsigned int SType();
+
+  private:
+    CarSoundConn *mConn;
+};
+
+class Pkt_Heli_Service : public Sim::Packet {
+  public:
+    explicit Pkt_Heli_Service(HeliSoundConn *conn) : mConn(conn) {}
+    ~Pkt_Heli_Service() override;
+    UCrc32 ConnectionClass() override;
+    unsigned int Size() override;
+    unsigned int Type() override;
+    static unsigned int SType();
+
+  private:
+    HeliSoundConn *mConn;
 };
 
 void UpdateServices(float dT);

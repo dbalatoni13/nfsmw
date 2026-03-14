@@ -1,5 +1,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Engine.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UBezierLite.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 SFXCTL_Shifting::SFXCTL_Shifting()
     : m_pEngineCtl(nullptr) //
@@ -195,4 +197,16 @@ void SFXCTL_Shifting::PostShiftFX_Init() {
     PostShiftFX_End();
     m_Shift_VOL_AMP_DECAY.Initialize(0.0f, 0.0f, 0.0f, LINEAR);
     m_Shift_RPM_AMP_DECAY.Initialize(0.0f, 0.0f, 0.0f, LINEAR);
+}
+
+void FillGraphFromSpline(const UMath::Matrix4 &matrix, bVector2 *points, int num_points, float XScale, float YScale) {
+    if (num_points > 0) {
+        float denom = static_cast<float>(num_points - 1);
+        for (int n = 0; n < num_points; ++n) {
+            UMath::Vector4 point;
+            UBezierLite::Evaluate(matrix, static_cast<float>(n) / denom, point);
+            points[n].x = point.x * XScale;
+            points[n].y = point.y * YScale;
+        }
+    }
 }

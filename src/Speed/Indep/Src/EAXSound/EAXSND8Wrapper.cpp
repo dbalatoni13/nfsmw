@@ -1,26 +1,81 @@
 #include <types.h>
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
+#include "Speed/Indep/bWare/Inc/bMemory.hpp"
 
 struct SlotPool;
 class EAXSound;
+struct PF_Allocator : EA::Allocator::IAllocator {
+    virtual ~PF_Allocator();
+    virtual void *Alloc(unsigned int size, const EA::TagValuePair &flags);
+    virtual void Free(void *pBlock, unsigned int size);
+    virtual int AddRef();
+    virtual int Release();
+};
+
+struct CSISCoreAllocator {
+    void *Alloc(unsigned int size, const char *name, unsigned int flags);
+    void *Alloc(unsigned int size, const char *name, unsigned int flags, unsigned int alignment, unsigned int offset);
+    void Free(void *pBlock, unsigned int size);
+};
 
 extern SlotPool *pCsisSlotPools[];
 extern int nCsisSlotPoolSizes[];
 extern void bDeleteSlotPool(SlotPool *slotpool);
+extern SlotPool *bNewSlotPool(int slot_size, int reserve_count, const char *name, int pool);
+extern int AudioMemoryPool;
+extern int MAIN_SAMPLERATE;
+extern CSISCoreAllocator g_CSISCoreAllocator;
+extern AudioMemoryManager gAudioMemoryManager;
 extern bool IsAudioStreamingEnabled;
 extern bool IsNISAudioEnabled;
 extern bool IsSpeechEnabled;
 extern EAXSound *g_pEAXSound;
-extern "C" void SndSystem_ReInit() asm("ReInit__Q23Snd6System");
-extern "C" void SndSystem_SetOutputMode(int mode) asm("SetOutputMode__Q23Snd6SystemQ23Snd10OutputMode");
 extern void SNDSYS_service();
 
-enum eSndOutputMode {
+namespace EA {
+namespace Allocator {
+class ICoreAllocator;
+}
+} // namespace EA
+
+namespace Csis {
+namespace System {
+void SetAllocator(EA::Allocator::ICoreAllocator *allocator);
+void Init();
+}
+} // namespace Csis
+
+namespace Snd {
+enum Device {
+    DEVICE_MAIN = 0,
+    DEVICE_IOP = 1,
+};
+
+enum OutputMode {
     OUTPUTMODE_MONO = 0,
     OUTPUTMODE_STEREO = 1,
     OUTPUTMODE_PROLOGIC2 = 8,
 };
+
+namespace System {
+void ReInit();
+void Init(int memsize);
+void SetOutputMode(OutputMode mode);
+void SetOutputSampleRate(Device device, int rate);
+void SetVoices(Device device, int voices);
+void SetSndInitsAram(bool enabled);
+void SetMaxBanks(int maxBanks);
+void VectorToCsisMutex();
+void VectorToReal6();
+} // namespace System
+
+namespace Memory {
+void SetHeap(Device device, void *heap, int size);
+void SetHeapThreshold(Device device, float threshold);
+} // namespace Memory
+} // namespace Snd
 
 EAXSND8Wrapper::EAXSND8Wrapper() {
     m_pSoundHeap = nullptr;
@@ -34,6 +89,40 @@ EAXSND8Wrapper::~EAXSND8Wrapper() {
     pCsisSlotPools[0] = nullptr;
 }
 
+bool EAXSND8Wrapper::Initialize() {
+    if (IsSoundEnabled == 0) {
+        IsAudioStreamingEnabled = IsSoundEnabled;
+        IsNISAudioEnabled = IsSoundEnabled;
+        IsSpeechEnabled = IsSoundEnabled;
+        return false;
+    }
+
+    pCsisSlotPools[0] = static_cast<SlotPool *>(bNewSlotPool(nCsisSlotPoolSizes[0], 0x100, "AUD:Csis SlotPools", AudioMemoryPool));
+    Csis::System::SetAllocator(reinterpret_cast<EA::Allocator::ICoreAllocator *>(&g_CSISCoreAllocator));
+    Csis::System::Init();
+    Snd::System::VectorToCsisMutex();
+    Snd::System::VectorToReal6();
+    Snd::System::SetMaxBanks(0x20);
+
+    m_nHeapSize = 0x33000;
+    m_pSoundHeap = gAudioMemoryManager.AllocateMemoryChar(m_nHeapSize, "SND Heap", false);
+    Snd::System::SetOutputSampleRate(Snd::DEVICE_MAIN, MAIN_SAMPLERATE);
+
+    eSndAudioMode mode = GetDefaultPlatformAudioMode();
+    m_eCurrentAudioMode = mode;
+    m_eLastAudioMode = mode;
+    SetAudioRenderMode(mode);
+
+    Snd::System::SetVoices(Snd::DEVICE_MAIN, 8);
+    Snd::System::SetOutputSampleRate(Snd::DEVICE_IOP, 32000);
+    Snd::System::SetOutputSampleRate(Snd::DEVICE_MAIN, MAIN_SAMPLERATE);
+    Snd::System::SetSndInitsAram(true);
+    Snd::Memory::SetHeap(Snd::DEVICE_MAIN, m_pSoundHeap, m_nHeapSize);
+    Snd::Memory::SetHeapThreshold(Snd::DEVICE_MAIN, 1.0f);
+    Snd::System::Init(0x90600);
+    return true;
+}
+
 void EAXSND8Wrapper::ReInit() {
     if (IsSoundEnabled == 0) {
         IsAudioStreamingEnabled = IsSoundEnabled;
@@ -44,7 +133,7 @@ void EAXSND8Wrapper::ReInit() {
         eSndAudioMode mode = static_cast<eSndAudioMode>(settings->AudioMode);
         m_eCurrentAudioMode = mode;
         SetSnd8RenderMode(mode);
-        SndSystem_ReInit();
+        Snd::System::ReInit();
     }
 }
 
@@ -110,15 +199,15 @@ eSndAudioMode EAXSND8Wrapper::SetSnd8RenderMode(eSndAudioMode mode) {
         IsNISAudioEnabled = IsSoundEnabled;
         IsSpeechEnabled = IsSoundEnabled;
     } else if (mode == AUDIO_MODE_STEREO) {
-        SndSystem_SetOutputMode(OUTPUTMODE_PROLOGIC2);
+        Snd::System::SetOutputMode(Snd::OUTPUTMODE_PROLOGIC2);
     } else if (static_cast<int>(mode) < 2) {
         if (mode == AUDIO_MODE_MIN) {
-            SndSystem_SetOutputMode(OUTPUTMODE_STEREO);
+            Snd::System::SetOutputMode(Snd::OUTPUTMODE_STEREO);
             SNDSYS_service();
-            SndSystem_SetOutputMode(OUTPUTMODE_MONO);
+            Snd::System::SetOutputMode(Snd::OUTPUTMODE_MONO);
         }
     } else if (mode == AUDIO_MODE_MAX) {
-        SndSystem_SetOutputMode(OUTPUTMODE_PROLOGIC2);
+        Snd::System::SetOutputMode(Snd::OUTPUTMODE_PROLOGIC2);
     }
 
     return mode;
@@ -147,3 +236,39 @@ ReturnMode:
 }
 
 void EAXSND8Wrapper::STUPID() {}
+
+PF_Allocator::~PF_Allocator() {}
+
+void *PF_Allocator::Alloc(unsigned int size, const EA::TagValuePair &flags) {
+    (void)flags;
+    return bMalloc(size, "PF_Allocator", 0, AudioMemoryPool);
+}
+
+void PF_Allocator::Free(void *pBlock, unsigned int size) {
+    (void)size;
+    bFree(pBlock);
+}
+
+int PF_Allocator::AddRef() {
+    return 1;
+}
+
+int PF_Allocator::Release() {
+    return 0;
+}
+
+void *CSISCoreAllocator::Alloc(unsigned int size, const char *name, unsigned int flags) {
+    (void)flags;
+    return bMalloc(size, name, 0, AudioMemoryPool);
+}
+
+void *CSISCoreAllocator::Alloc(unsigned int size, const char *name, unsigned int flags, unsigned int alignment, unsigned int offset) {
+    (void)alignment;
+    (void)offset;
+    return Alloc(size, name, flags);
+}
+
+void CSISCoreAllocator::Free(void *pBlock, unsigned int size) {
+    (void)size;
+    bFree(pBlock);
+}

@@ -1,8 +1,12 @@
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+#include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
+#include "Speed/Indep/Src/World/TrackStreamer.hpp"
+
 extern void SNDAEMS_removemodulebank(int handle);
 extern int SNDAEMS_addmodulebank(void *pmem, char *chunk, int offset, void *(*cb)(void *, int, int));
 extern int SNDAEMS_asyncloadmodulebankdone();
 extern int SNDAEMS_asyncloadmodulebankmemdone();
-extern void SubscribeEventSys();
+void SubscribeEventSys();
 extern char *g_DataPaths[];
 extern int DISABLE_SLOT_LOADING;
 extern int SNDmemlargestunused(int *start);
@@ -15,27 +19,14 @@ extern void bFree(void *ptr);
 struct QueuedFileParams;
 extern void AddQueuedFile(void *buf, const char *filename, int file_pos, int num_bytes, void (*callback)(int, int), int callback_param,
                           QueuedFileParams *params);
-class FastMem;
-class AudioMemoryManager;
-class TrackStreamer;
-extern FastMem gFastMem;
-extern AudioMemoryManager gAudioMemoryManager;
-extern TrackStreamer TheTrackStreamer;
-extern "C" void *FastMem_Alloc(FastMem *mem, unsigned int bytes, const char *kind) asm("Alloc__7FastMemUiPCc");
-extern "C" void FastMem_Free(FastMem *mem, void *ptr, unsigned int bytes, const char *kind) asm("Free__7FastMemPvUiPCc");
-extern "C" void *AudioMemoryManager_AllocateMemory(AudioMemoryManager *mgr, int size, const char *debug_name, bool fromTop) asm(
-    "AllocateMemory__18AudioMemoryManageriPCcb");
-extern "C" char *AudioMemoryManager_AllocateMemoryChar(AudioMemoryManager *mgr, int size, const char *debug_name, bool fromTop) asm(
-    "AllocateMemoryChar__18AudioMemoryManageriPCcb");
-extern "C" void AudioMemoryManager_FreeMemory(AudioMemoryManager *mgr, void *mem) asm("FreeMemory__18AudioMemoryManagerPv");
-extern "C" void TrackStreamer_FreeUserMemory(TrackStreamer *streamer, void *mem) asm("FreeUserMemory__13TrackStreamerPv");
-extern "C" void DataLoadCB_EAXAemsManager(int param, int error_status) asm("DataLoadCB__14EAXAemsManagerii");
-extern "C" void *ResidentAllocCB_EAXAemsManager(void *ptr, int reqsize, int maxsize) asm("ResidentAllocCB__14EAXAemsManagerPvii");
-extern "C" void BankSlotSystem_DestroySlots(void *slots) asm("DestroySlots__14BankSlotSystem");
-extern "C" void SndAssetQueue_clear(void *queue) asm(
-    "clear__Q24_STLt10_List_base2Z15stSndAssetQueueZQ33UTL3Stdt9Allocator2Z15stSndAssetQueueZ19_type_SndAssetQueue");
 extern stSndDataLoadParams g_SndAssetList[];
 extern Timer WorldTimer;
+
+namespace Csis {
+namespace System {
+void Subscribe(void *desc);
+}
+} // namespace Csis
 
 struct stAssetDescription {
     int eDataType;
@@ -43,6 +34,8 @@ struct stAssetDescription {
     Attrib::StringKey FileName;
     bool bLoadToTop;
     char _pad[3];
+
+    void Clear();
 };
 
 struct stSndAssetQueue {
@@ -51,18 +44,45 @@ struct stSndAssetQueue {
     EAX_CarState *pCar;
 };
 
-namespace {
-struct ListNodeBankSlot {
-    ListNodeBankSlot *next;
-    ListNodeBankSlot *prev;
+struct BankSlotNode {
+    BankSlotNode *next;
+    BankSlotNode *prev;
     stBankSlot data;
 };
+
+class BankSlotSystem {
+  public:
+    stBankSlot *GetFreeSlot(eBANK_SLOT_TYPE Type);
+    void DestroySlots();
+
+  private:
+    BankSlotNode *mNode;
+};
+
+namespace {
+typedef BankSlotNode ListNodeBankSlot;
 
 struct ListNodeQueue {
     ListNodeQueue *next;
     ListNodeQueue *prev;
     stSndAssetQueue data;
 };
+
+void ClearSndAssetQueue(ListNodeQueue *head) {
+    if (head == nullptr) {
+        return;
+    }
+
+    ListNodeQueue *node = head->next;
+    while (node != head) {
+        ListNodeQueue *next = node->next;
+        gFastMem.Free(node, 0x30, nullptr);
+        node = next;
+    }
+
+    head->next = head;
+    head->prev = head;
+}
 
 enum eTEMPALLOCLOCATION {
     TMP_ALLOC_INVALID = 0,
@@ -78,6 +98,82 @@ enum eSndDataType {
     SDT_AEMS_ASYNCSPU = 3,
 };
 } // namespace
+
+void stAssetDescription::Clear() {
+    eDataType = -1;
+    DataPath = 0;
+    FileName = Attrib::StringKey("");
+    bLoadToTop = false;
+    _pad[0] = 0;
+    _pad[1] = 0;
+    _pad[2] = 0;
+}
+
+void stBankSlot::Clear() {
+    Type = static_cast<eBANK_SLOT_TYPE>(-1);
+    BANKmemLocation = 0;
+    MAINmemLocation = nullptr;
+    pLastAlloc = nullptr;
+    MAINmemSize = 0;
+    BANKMemSize = 0;
+    LoadFailed = 0;
+    Index = 0;
+    pAssetParams = nullptr;
+}
+
+void stSndDataLoadParams::Clear() {
+    char *base = reinterpret_cast<char *>(this);
+    reinterpret_cast<stAssetDescription *>(base)->Clear();
+    *reinterpret_cast<stBankSlot **>(base + 0x24) = nullptr;
+    *reinterpret_cast<void **>(base + 0x28) = nullptr;
+    *reinterpret_cast<void **>(base + 0x2C) = nullptr;
+    *reinterpret_cast<int *>(base + 0x30) = 0;
+    Handle = -1;
+    bResolvedAsync = 0;
+    bResolvedSync = 0;
+    *reinterpret_cast<void **>(base + 0x44) = *reinterpret_cast<void **>(base + 0x40);
+    *reinterpret_cast<void **>(base + 0x54) = *reinterpret_cast<void **>(base + 0x50);
+    t_req = 0;
+    t_load = 0;
+}
+
+stBankSlot *BankSlotSystem::GetFreeSlot(eBANK_SLOT_TYPE Type) {
+    BankSlotNode *head = mNode;
+    if (head == nullptr) {
+        return nullptr;
+    }
+    for (BankSlotNode *node = head->next; node != head; node = node->next) {
+        if (node->data.Type == Type && node->data.pAssetParams == nullptr) {
+            return &node->data;
+        }
+    }
+
+    return nullptr;
+}
+
+void BankSlotSystem::DestroySlots() {
+    BankSlotNode *head = mNode;
+    if (head == nullptr) {
+        return;
+    }
+    BankSlotNode *node = head->next;
+
+    while (node != head) {
+        BankSlotNode *next = node->next;
+        if (node->data.LoadFailed == 0 && node->data.pAssetParams != nullptr) {
+            stAssetDescription *asset = reinterpret_cast<stAssetDescription *>(node->data.pAssetParams);
+            gAEMSMgr.UnloadSndData(asset->FileName);
+        }
+        if (node->data.MAINmemLocation != nullptr) {
+            AudioMemoryManager_FreeMemory(&gAudioMemoryManager, node->data.MAINmemLocation);
+        }
+        FastMem_Free(&gFastMem, node, 0x2C, nullptr);
+        node = next;
+    }
+
+    head->next = head;
+    head->prev = head;
+}
 
 EAXAemsManager::EAXAemsManager() {
     ListNodeBankSlot *bankSlots = reinterpret_cast<ListNodeBankSlot *>(FastMem_Alloc(&gFastMem, 0x2C, nullptr));
@@ -577,6 +673,15 @@ void EAXAemsManager::ResolvePendingAsyncLoads() {}
 void *EAXAemsManager::GetCallbackEventSys() {
     int offset = m_nCallbackEvtSys << 2;
     return *reinterpret_cast<void **>(reinterpret_cast<char *>(m_pEvtSystems_start) + offset);
+}
+
+void SubscribeEventSys() {
+    if (IsSoundEnabled == 1) {
+        void *system_desc = gAEMSMgr.GetCallbackEventSys();
+        if (system_desc != nullptr) {
+            CsisSystem_Subscribe(system_desc);
+        }
+    }
 }
 
 void EAXAemsManager::EvtSysLoadCallback(int param, int error_status) {
