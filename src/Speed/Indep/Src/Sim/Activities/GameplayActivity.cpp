@@ -10,6 +10,7 @@
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Sim/SimActivity.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 
 // total size: 0x50
 class GameplayActivity : public Sim::Activity {
@@ -27,6 +28,9 @@ class GameplayActivity : public Sim::Activity {
   private:
     HSIMTASK mUpdateTask; // offset 0x4C, size 0x4
 };
+
+UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _GameplayActivity("GameplayActivity",
+                                                                                    GameplayActivity::Construct);
 
 GameplayActivity::GameplayActivity(Sim::Param params) : Sim::Activity(0) {
     mUpdateTask = AddTask("GameplayActivity", 1.0f, 0.0f, Sim::TASK_FRAME_FIXED);

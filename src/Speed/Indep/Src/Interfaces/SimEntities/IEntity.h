@@ -37,7 +37,7 @@ class IEntity : public UTL::COM::IUnknown,
     virtual void DetachPhysics() = 0;
     virtual ISimable *GetSimable() const = 0;
     virtual const UMath::Vector3 &GetPosition() const = 0;
-    virtual bool SetPosition(UMath::Vector3 &position) = 0;
+    virtual bool SetPosition(const UMath::Vector3 &position) = 0;
     virtual void Kill() = 0;
     virtual bool Attach(IUnknown *object) = 0;
     virtual bool Detach(IUnknown *object) = 0;

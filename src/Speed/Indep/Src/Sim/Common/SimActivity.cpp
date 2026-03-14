@@ -2,6 +2,11 @@
 #include "Speed/Indep/Src/Interfaces/IAttachable.h"
 #include "Speed/Indep/Src/Sim/SimAttachable.h"
 
+template <>
+UTL::Collections::GarbageNode<Sim::Activity, 40>::Collector
+    UTL::Collections::GarbageNode<Sim::Activity, 40>::_mCollector =
+        UTL::Collections::GarbageNode<Sim::Activity, 40>::Collector();
+
 namespace Sim {
 
 // UNSOLVED stack too small and two regswaps

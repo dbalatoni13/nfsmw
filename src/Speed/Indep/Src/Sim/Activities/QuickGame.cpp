@@ -17,6 +17,8 @@
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 
+UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _QuickGame("QuickGame", QuickGame::Construct);
+
 QuickGame::QuickGame(Sim::Param params)
     : Sim::Activity(4),                      //
       Sim::ITimeManager(this),               //
