@@ -86,11 +86,7 @@ void AIRoadBlock::OnDetached(IAttachable *pOther) {
     } else {
         IVehicle *ivehicle;
         if (pOther->QueryInterface(&ivehicle)) {
-#ifdef _MSC_VER
             VehicleList.erase(std::find(VehicleList.begin(), VehicleList.end(), ivehicle));
-#else
-            VehicleList.erase(_STL::find(VehicleList.begin(), VehicleList.end(), ivehicle));
-#endif
         }
     }
 }

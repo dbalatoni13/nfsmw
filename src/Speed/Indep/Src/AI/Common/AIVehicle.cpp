@@ -639,6 +639,19 @@ void AIVehicle::ResetDriveToNav(eLaneSelection lane_selection) {
     UpdateRoadNavInfo();
 }
 
+#ifdef EA_BUILD_A124
+void AIVehicle::ResetDriveToNav(UMath::Vector3 &target) {
+    UMath::Vector3 forwardVector;
+    GetVehicle()->ComputeHeading(&forwardVector);
+
+    const float dir_weight = 1.0f;
+    WRoadNav *road_nav = GetDriveToNav();
+    road_nav->InitAtPoint(target, forwardVector, false, dir_weight);
+    road_nav->CancelPathFinding();
+    UpdateRoadNavInfo();
+}
+#endif
+
 bool AIVehicle::ResetVehicleToRoadNav(WRoadNav *other_nav) {
     WRoadNav *road_nav = GetDriveToNav();
     road_nav->InitFromOtherNav(other_nav, false);

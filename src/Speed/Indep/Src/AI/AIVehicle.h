@@ -104,6 +104,9 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     }
 
     void ResetDriveToNav(eLaneSelection lane_selection) override;
+#ifdef EA_BUILD_A124
+    void ResetDriveToNav(UMath::Vector3 &target) override;
+#endif
     bool ResetVehicleToRoadNav(short segInd, char laneInd, float timeStep) override;
     bool ResetVehicleToRoadNav(WRoadNav *other_nav) override;
     bool ResetVehicleToRoadPos(const UMath::Vector3 &position, const UMath::Vector3 &forwardVector) override;
