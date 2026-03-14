@@ -387,5 +387,79 @@ void UIWidgetMenu::Scroll(eScrollDir dir) {
     }
 }
 
+void UIWidgetMenu::ScrollWrapped(eScrollDir dir) {
+    if (Options.IsEmpty()) return;
+
+    if (bViewNeedsSync) {
+        SyncViewToSelection();
+        return;
+    }
+
+    FEWidget *new_option = pCurrentOption;
+    FEWidget *new_view = pViewTop;
+
+    if (dir == eSD_NEXT) {
+        do {
+            if (!new_option ||
+                (new_option == Options.GetTail() && !pDone)) {
+                new_view = Options.GetHead();
+                new_option = new_view;
+            } else if (new_option == Options.GetTail() && pDone) {
+                new_option = nullptr;
+                FEngSetCurrentButton(GetPackageName(), pDone->NameHash);
+            } else {
+                unsigned int idx = iLastSelectedIndex + 1;
+                new_option = new_option->GetNext();
+                iLastSelectedIndex = idx;
+                if (idx > iIndexToAdd - 1) {
+                    iLastSelectedIndex = 1;
+                }
+            }
+        } while (new_option && !new_option->IsEnabled());
+
+        unsigned int sel_idx = GetWidgetIndex(new_option);
+        int view_idx = GetWidgetIndex(pViewTop);
+        if (sel_idx >= static_cast<unsigned int>(view_idx + iMaxWidgetsOnScreen)) {
+            new_view = pViewTop->GetNext();
+        }
+    } else {
+        do {
+            if (!new_option ||
+                (new_option == Options.GetHead() && !pDone)) {
+                new_option = Options.GetTail();
+                int idx = bMax(0, static_cast<int>(iIndexToAdd - iMaxWidgetsOnScreen) - 1);
+                new_view = Options.GetNode(idx);
+            } else if (new_option == Options.GetHead() && pDone) {
+                new_option = nullptr;
+                FEngSetCurrentButton(GetPackageName(), pDone->NameHash);
+            } else {
+                new_option = new_option->GetPrev();
+                int idx = iLastSelectedIndex - 1;
+                iLastSelectedIndex = idx;
+                if (idx == 0) {
+                    iLastSelectedIndex = iIndexToAdd - 1;
+                }
+            }
+        } while (new_option && !new_option->IsEnabled());
+
+        if (iIndexToAdd - 1 > iMaxWidgetsOnScreen &&
+            new_option == pViewTop->GetPrev()) {
+            new_view = new_option;
+        }
+    }
+
+    if (pViewTop != new_view) {
+        pViewTop = new_view;
+        Reposition();
+    }
+    if (pCurrentOption != new_option) {
+        SetOption(new_option);
+        if (bHasScrollBar && pCurrentOption) {
+            ScrollBar.Update(iMaxWidgetsOnScreen, iIndexToAdd - 1,
+                             GetWidgetIndex(pViewTop), GetWidgetIndex(pCurrentOption));
+        }
+    }
+}
+
 UIWidgetMenu::~UIWidgetMenu() {
 }
