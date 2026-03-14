@@ -574,6 +574,7 @@ class cFrontendDatabase {
     unsigned int GetMilestoneDescHash(unsigned int tag);
     unsigned int GetMilestoneHeaderHash(unsigned int tag);
     unsigned int GetMilestoneIconHash(unsigned int typeKey, bool active);
+    void SetMilestoneDescriptionString(char *buf, int value, float number, float goal, bool isTime) const;
     bool IsMilestoneTimeFormat(int typeKey) const;
     unsigned int GetRaceIconHash(GRace::Type type);
     unsigned int GetRaceNameHash(GRace::Type type);

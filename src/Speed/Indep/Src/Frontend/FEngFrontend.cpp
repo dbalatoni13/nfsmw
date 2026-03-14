@@ -1,6 +1,11 @@
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/FEng/FEPackage.h"
 
+#include <stdarg.h>
+
+extern int bVSPrintf(char *buf, const char *fmt, va_list args);
+extern unsigned int bStringHash(const char *str);
+
 extern int bStrLen(const unsigned short *s);
 
 void FEngSNMakeHidden(char *outBuffer, int out_buf_size, const char *strInput) {
@@ -55,4 +60,15 @@ void FEngTickSinglePackage(const char *pkg_name, unsigned int ticks) {
             pObject = pObject->GetNext();
         }
     }
+}
+
+unsigned int FEngHashString(const char *fmt, ...) {
+    unsigned int result;
+    char buffer[256];
+    va_list args;
+    va_start(args, fmt);
+    bVSPrintf(buffer, fmt, args);
+    va_end(args);
+    result = bStringHash(buffer);
+    return result;
 }

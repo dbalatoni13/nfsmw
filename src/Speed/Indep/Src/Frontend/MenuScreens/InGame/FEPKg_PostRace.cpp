@@ -22,6 +22,7 @@ extern void FEngSetVisible(FEObject *obj);
 extern bool FEngIsScriptSet(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash);
 extern void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash,
                           bool start_at_beginning);
+extern void FEngSetScript(FEObject *obj, unsigned int script_hash, bool start_at_beginning);
 extern void FEngSetLanguageHash(FEString *text, unsigned int hash);
 extern void FEngSetLanguageHash(const char *pkg_name, unsigned int object_hash, unsigned int language_hash);
 extern unsigned int FEngHashString(const char *, ...);
@@ -1298,3 +1299,89 @@ PursuitResultsDatum::PursuitResultsDatum(PursuitResultsDatumType type, unsigned 
     , mGoal(itemGoal) //
     , mChecked(itemChecked) //
 {}
+
+PursuitResultsArraySlot::PursuitResultsArraySlot(FEObject *obj, FEString *itemName, FEString *itemNumber, FEImage *itemChecked, FEImage *itemEmpty)
+    : ArraySlot(obj) //
+    , mLine(obj) //
+    , mItemName(itemName) //
+    , mItemNumber(itemNumber) //
+    , mItemChecked(itemChecked) //
+    , mItemEmpty(itemEmpty) //
+{}
+
+void PursuitResultsArraySlot::Update(ArrayDatum *datum, bool isSelected) {
+    ArraySlot::Update(datum, isSelected);
+    if (!datum) {
+        return;
+    }
+
+    PursuitResultsDatum *data = static_cast<PursuitResultsDatum *>(datum);
+
+    FEngSetScript(mItemChecked, 0x16A259, true);
+    FEngSetScript(mItemEmpty, 0x16A259, true);
+    FEngSetScript(mLine, 0x1744B3, true);
+
+    if (mItemName) {
+        FEngSetScript(mItemName, 0x1744B3, true);
+        FEngSetLanguageHash(mItemName, data->mName);
+    }
+
+    PursuitResultsDatum::PursuitResultsDatumType type = data->mType;
+
+    if (type == PursuitResultsDatum::PursuitResultsDatumType_Number) {
+        FEPrintf(mItemNumber, lbl_803E4CB4, static_cast<int>(data->mNumber));
+        FEngSetScript(mItemNumber, 0x1744B3, true);
+        if (data->mChecked == PursuitResultsDatum::PursuitResultsDatumCheckType_On) {
+            FEngSetScript(mItemChecked, 0x1CA7C0, true);
+        } else if (data->mChecked == PursuitResultsDatum::PursuitResultsDatumCheckType_Greyed) {
+            FEngSetScript(mItemChecked, 0x163C76, true);
+        } else {
+            FEngSetScript(mItemChecked, 0x16A259, true);
+        }
+    } else if (type == PursuitResultsDatum::PursuitResultsDatumType_Time) {
+        Timer timer;
+        timer.SetTime(data->mNumber);
+        char text[32];
+        timer.PrintToString(text, 0);
+        FEPrintf(mItemNumber, lbl_803E4CF0, text);
+        FEngSetScript(mItemNumber, 0x1744B3, true);
+        if (data->mChecked == PursuitResultsDatum::PursuitResultsDatumCheckType_On) {
+            FEngSetScript(mItemChecked, 0x1CA7C0, true);
+        } else if (data->mChecked == PursuitResultsDatum::PursuitResultsDatumCheckType_Greyed) {
+            FEngSetScript(mItemChecked, 0x163C76, true);
+        } else {
+            FEngSetScript(mItemChecked, 0x16A259, true);
+        }
+    } else if (type == PursuitResultsDatum::PursuitResultsDatumType_Milestone_Number) {
+        char text[32];
+        FEDatabase->SetMilestoneDescriptionString(text, -1, data->mNumber, data->mGoal, false);
+        FEPrintf(mItemNumber, lbl_803E4CF0, text);
+        FEngSetScript(mItemNumber, 0x1744B3, true);
+        if (data->mChecked == PursuitResultsDatum::PursuitResultsDatumCheckType_On) {
+            FEngSetScript(mItemChecked, 0x1CA7C0, true);
+        } else if (data->mChecked == PursuitResultsDatum::PursuitResultsDatumCheckType_Greyed) {
+            FEngSetScript(mItemChecked, 0x163C76, true);
+        } else {
+            FEngSetScript(mItemChecked, 0x16A259, true);
+        }
+    } else if (type == PursuitResultsDatum::PursuitResultsDatumType_Milestone_Time) {
+        char text[32];
+        FEDatabase->SetMilestoneDescriptionString(text, -1, data->mNumber, data->mGoal, true);
+        FEPrintf(mItemNumber, lbl_803E4CF0, text);
+        FEngSetScript(mItemNumber, 0x1744B3, true);
+        if (data->mChecked == PursuitResultsDatum::PursuitResultsDatumCheckType_On) {
+            FEngSetScript(mItemChecked, 0x1CA7C0, true);
+        } else if (data->mChecked == PursuitResultsDatum::PursuitResultsDatumCheckType_Greyed) {
+            FEngSetScript(mItemChecked, 0x163C76, true);
+        } else {
+            FEngSetScript(mItemChecked, 0x16A259, true);
+        }
+    } else if (type == PursuitResultsDatum::PursuitResultsDatumType_Milestone_Time_PursuitRemaining) {
+        FEngSetScript(mItemNumber, 0x16A259, true);
+        if (data->mChecked == PursuitResultsDatum::PursuitResultsDatumCheckType_On) {
+            FEngSetScript(mItemChecked, 0x163C76, true);
+        } else {
+            FEngSetScript(mItemChecked, 0x163C76, true);
+        }
+    }
+}
