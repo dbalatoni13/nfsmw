@@ -14,6 +14,56 @@ extern void FEngGetSize(FEObject *object, float &x, float &y);
 extern void FEngSetSize(FEObject *object, float x, float y);
 extern char *bStrCat(char *dest, const char *src1, const char *src2);
 extern unsigned int FEngHashString(const char *, ...);
+extern void FEngSetCurrentButton(const char *pkg_name, unsigned int hash);
+
+extern char *bStrNCpy(char *dest, const char *src, int n);
+
+UIWidgetMenu::UIWidgetMenu(ScreenConstructorData *sd)
+    : MenuScreen(sd) //
+    , pCurrentOption(nullptr) //
+    , pViewTop(nullptr) //
+    , pTitleMaster(nullptr) //
+    , pDataMaster(nullptr) //
+    , pPrevButtonObj(nullptr) //
+    , pDone(nullptr) //
+{
+    ScrollBar.~FEScrollBar();
+    new (&ScrollBar) FEScrollBar(GetPackageName(), "scrollbar", true, false, false);
+    iIndexToAdd = 1;
+    iLastSelectedIndex = 1;
+    bScrollWrapped = true;
+    pTitleName = "OPTION_NAME_";
+    pDataName = "OPTION_DATA_";
+    pDataImageName = "OPTION_IMAGE_";
+    pBackingName = "OPTION_BACKING_";
+    pLeftArrowName = "LEFT_ARROW_";
+    pRightArrowName = "RIGHT_ARROW_";
+    pSliderName = "SLIDER_";
+    vWidgetStartPos = bVector2(0.0f, 0.0f);
+    vLastWidgetPos = bVector2(0.0f, 0.0f);
+    vWidgetSize = bVector2(0.0f, 0.0f);
+    vMaxTitleSize = bVector2(175.0f, 24.0f);
+    vMaxDataSize = bVector2(175.0f, 24.0f);
+    vDataPos = bVector2(0.0f, 0.0f);
+    vWidgetSpacing = bVector2(4.0f, 0.0f);
+    iMaxWidgetsOnScreen = 7;
+    iPrevButtonMessage = 0;
+    iPrevParam1 = 0;
+    iPrevParam2 = 0;
+    bCurrentOptionSet = false;
+    bHasScrollBar = true;
+    bViewNeedsSync = false;
+    bAllowScroll = true;
+    pTitleMaster = FEngFindObject(GetPackageName(), 0xA753C46C);
+    pDataMaster = FEngFindObject(GetPackageName(), 0xC128B184);
+    pCursor = FEngFindObject(GetPackageName(), 0x06745352);
+    pDoneText = FEngFindString(GetPackageName(), 0xF16CF3A9);
+    pDone = FEngFindObject(GetPackageName(), 0xD79B07A0);
+    if (pTitleMaster && pDataMaster) {
+        SetInitialPositions();
+        mPlaySound = false;
+    }
+}
 
 void UIWidgetMenu::Setup() {
 }
