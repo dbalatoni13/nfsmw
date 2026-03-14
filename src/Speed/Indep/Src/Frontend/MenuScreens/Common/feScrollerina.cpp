@@ -10,6 +10,12 @@ extern unsigned long FEHashUpper(const char *string);
 extern int FEPrintf(FEString *text, const char *fmt, ...);
 extern void FEngSetLanguageHash(FEString *text, unsigned int hash);
 
+inline float FEngGetSizeX(FEObject *obj) {
+    float x, y;
+    FEngGetSize(obj, x, y);
+    return x;
+}
+
 Scrollerina::Scrollerina(const char *parent_pkg, const char *backing, const char *scrollbar,
                           bool vert, bool resize, bool wrapped, bool alwaysShowBacking)
     : pParentPkg(parent_pkg) //
@@ -113,6 +119,23 @@ void ScrollerSlot::SetScript(unsigned int script_hash) {
     if (pBacking) {
         FEngSetScript(pBacking, script_hash, true);
     }
+}
+
+void ScrollerSlot::FindSize() {
+    float top = 0.0f;
+    float left = 0.0f;
+    float right = 0.0f;
+    float bottom = 0.0f;
+    if (pBacking) {
+        top = FEngGetTopLeftY(pBacking);
+        left = FEngGetTopLeftX(pBacking);
+        right = left + FEngGetSizeX(pBacking);
+        bottom = top + FEngGetSizeY(pBacking);
+    }
+    vTopLeft.x = left;
+    vSize.x = bAbs(left - right);
+    vSize.y = bAbs(top - bottom);
+    vTopLeft.y = top;
 }
 
 void ScrollerSlot::Show() {
@@ -327,12 +350,6 @@ void FEScrollBar::SetArrow2Dim(bool dim) {
         hash = 0x9E99;
     }
     FEngSetScript(arrow, hash, true);
-}
-
-inline float FEngGetSizeX(FEObject *obj) {
-    float x, y;
-    FEngGetSize(obj, x, y);
-    return x;
 }
 
 inline void FEngSetSizeY(FEObject *obj, float y) {

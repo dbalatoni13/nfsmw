@@ -14,6 +14,7 @@
 // total size: 0x64
 class FEScrollBar {
   public:
+    FEScrollBar() {}
     FEScrollBar(const char *parent_pkg, const char *name, bool vert, bool resize, bool arrows_only);
 
     ~FEScrollBar() {}

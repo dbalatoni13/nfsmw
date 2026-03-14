@@ -31,6 +31,7 @@ struct IconPanel {
     bool bJustScrolled;         // offset 0x2C, size 0x1
     bool bReactToInput;         // offset 0x30, size 0x1
 
+    IconPanel() {}
     IconPanel(const char* pkg_name, const char* master, const char* fe_button, const char* scroll_region, bool wrap);
     virtual ~IconPanel() {}
 

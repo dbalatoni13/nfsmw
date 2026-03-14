@@ -42,6 +42,7 @@ struct IconScroller : public IconPanel {
     unsigned int IdleColor;                     // offset 0x114, size 0x4
     unsigned int FadeColor;                     // offset 0x118, size 0x4
 
+    IconScroller() {}
     IconScroller(const char* pkg_name, const char* master, const char* fe_button, const char* scroll_region, float width);
     ~IconScroller() override {}
 
