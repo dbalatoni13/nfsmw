@@ -11,14 +11,23 @@
 
 #include <types.h>
 
+struct CarPart;
+struct FECustomizationRecord;
+
+// total size: 0xC
+struct DebugCar : public bTNode<DebugCar> {
+    DebugCar(unsigned int handle)
+        : mHandle(handle) {}
+    ~DebugCar() {}
+
+    unsigned int mHandle; // offset 0x8, size 0x4
+};
+
 // total size: 0x80
 struct DebugCarCustomizeScreen : public MenuScreen {
     // total size: 0x4C
     struct DebugCarOption : public bTNode<DebugCarOption> {
-        DebugCarOption(const char *name, int value)
-            : Intval(value) {
-            // strncpy String from name
-        }
+        DebugCarOption(const char *name, int value);
 
         int GetValue() { return Intval; }
         char *GetString() { return String; }
@@ -37,29 +46,26 @@ struct DebugCarCustomizeScreen : public MenuScreen {
     void BuildOptionsLists();
     void LoadCurrentCar();
     void RebuildPartsList();
-    void ApplyCurrentSelection();
-    void ScrollParts(enum eScrollDir dir);
-    void ScrollOptions(enum eScrollDir dir);
+    void NewPreviewPart();
+    void InstallPreviewingPart();
+    void DumpPresetRide();
+    void Redraw();
 
-    int currentPart;                       // offset 0x2C, size 0x4
-    int currentOption;                     // offset 0x30, size 0x4
-    bTList<DebugCarOption> parts;          // offset 0x34, size 0x8
-    bTList<DebugCarOption> options;        // offset 0x3C, size 0x8
-    int numParts;                          // offset 0x44, size 0x4
-    int numOptions;                        // offset 0x48, size 0x4
-    DebugCarOption *currentPartNode;       // offset 0x4C, size 0x4
-    DebugCarOption *currentOptionNode;     // offset 0x50, size 0x4
-    FEString *partString;                  // offset 0x54, size 0x4
-    FEString *optionString;                // offset 0x58, size 0x4
-    FEString *slotString;                  // offset 0x5C, size 0x4
-    int partSlotId;                        // offset 0x60, size 0x4
-    unsigned int currentCarHandle;         // offset 0x64, size 0x4
-    unsigned int originalCarHandle;        // offset 0x68, size 0x4
-    int currentCarSlot;                    // offset 0x6C, size 0x4
-    int numCars;                           // offset 0x70, size 0x4
-    bool editingCar;                       // offset 0x74, size 0x1
-    bool showStock;                        // offset 0x78, size 0x1
-    bool showAllCars;                      // offset 0x7C, size 0x1
+    bTList<DebugCar> FilteredCarsList;                // offset 0x2C, size 0x8
+    DebugCar *pDebugCar;                              // offset 0x34, size 0x4
+    bTList<DebugCarOption> CarTypeNameHashes;          // offset 0x38, size 0x8
+    DebugCarOption *CurrentCarTypeNameHash;            // offset 0x40, size 0x4
+    bTList<DebugCarOption> LookupCarSlotIDs;           // offset 0x44, size 0x8
+    DebugCarOption *CurrentLookupSlotID;               // offset 0x4C, size 0x4
+    bTList<DebugCarOption> CarPartNameHashes;          // offset 0x50, size 0x8
+    DebugCarOption *CurrentPartNameHash;               // offset 0x58, size 0x4
+    bTList<DebugCarOption> InstallCarPartIDs;          // offset 0x5C, size 0x8
+    DebugCarOption *CurrentInstallPartID;              // offset 0x64, size 0x4
+    bPList<CarPart> InstallableParts;                  // offset 0x68, size 0x8
+    bPNode *CurrentInstallablePart;                    // offset 0x70, size 0x4
+    FECustomizationRecord *custom;                     // offset 0x74, size 0x4
+    bool wasCarCustomized;                             // offset 0x78, size 0x1
+    int iFastScroll;                                   // offset 0x7C, size 0x4
 };
 
 #endif

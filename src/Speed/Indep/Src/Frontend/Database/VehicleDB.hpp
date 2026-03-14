@@ -26,13 +26,13 @@ struct FECarRecord {
     void Default();
     bool MatchesFilter(int theFilter);
     unsigned int GetCost();
-    const char *GetDebugName();
+    const char *GetDebugName() const;
     unsigned int GetNameHash();
     const char *GetManufacturerName();
     unsigned int GetLogoHash();
     unsigned int GetManuLogoHash();
     unsigned int GetReleaseFromImpoundCost();
-    CarType GetType();
+    CarType GetType() const;
 };
 
 struct PresetCar;

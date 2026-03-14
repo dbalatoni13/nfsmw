@@ -57,6 +57,9 @@ struct CarCustomizeManager {
     void ClearVinylColors();
     float GetHeatFromParts();
     CarPart *GetInstalledCarPart(int slot_id);
+    void PreviewPart(int slot_id, CarPart *part);
+    void InstallPart(int slot_id, CarPart *part);
+    void ResetPreview();
     void PreviewPerfPkg(Physics::Upgrades::Type part_type, int level);
     void InstallPerfPkg(Physics::Upgrades::Type part_type, int level);
     bool IsJunkmanInstalled(Physics::Upgrades::Type type);

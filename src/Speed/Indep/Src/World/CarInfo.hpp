@@ -41,6 +41,8 @@ class RideInfo {
     void Init(CarType type, CarRenderUsage usage, int has_dash, int can_be_vertex_damaged);
     void SetStockParts();
     void SetRandomPaint();
+    void SetRandomParts();
+    void DumpForPreset(struct FECarRecord *car);
     void FillWithPreset(unsigned int preset);
     struct CarPart *GetPart(int carslotid) const;
     void SetPart(int carslotid, struct CarPart *part, bool enabled);
