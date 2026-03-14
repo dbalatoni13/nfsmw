@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/FEng/FEScript.h"
+#include "Speed/Indep/Src/FEng/FESlotPool.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
 
 extern const unsigned long FETrackOffsets[11] = {
@@ -55,4 +56,71 @@ void FEScript::SetName(const char* pNewName) {
         FEngStrCpy(pName, pNewName);
         ID = FEHashUpper(pName);
     }
+}
+
+FEScript::~FEScript() {
+    delete[] pTracks;
+    pTracks = nullptr;
+    delete[] pName;
+    pName = nullptr;
+    delete[] Events.pEvent;
+    Events.pEvent = nullptr;
+}
+
+void FEScript::SetTrackCount(long Count) {
+    delete[] pTracks;
+    TrackCount = Count;
+    pTracks = nullptr;
+    if (Count != 0) {
+        pTracks = new FEKeyTrack[Count];
+    }
+}
+
+FEScript::FEScript(FEScript& Src, bool bReference) {
+    Init();
+    Length = Src.Length;
+    CurTime = 0;
+    Flags = Src.Flags;
+    pChainTo = Src.pChainTo;
+    SetTrackCount(Src.TrackCount);
+    if (bReference) {
+        unsigned long i = 0;
+        if (TrackCount != 0) {
+            do {
+                pTracks[i] = Src.pTracks[i];
+                i++;
+            } while (i < TrackCount);
+        }
+    } else {
+        unsigned long i = 0;
+        if (TrackCount != 0) {
+            do {
+                FEKeyTrack* pDst = &pTracks[i];
+                FEKeyTrack* pSrc = &Src.pTracks[i];
+                pDst->ParamType = pSrc->ParamType;
+                pDst->ParamSize = pSrc->ParamSize;
+                pDst->InterpType = pSrc->InterpType;
+                pDst->InterpAction = pSrc->InterpAction;
+                *reinterpret_cast<unsigned long*>(reinterpret_cast<char*>(pDst) + 4) =
+                    (*reinterpret_cast<unsigned long*>(reinterpret_cast<char*>(pSrc) + 4) & 0xFFFFFF00) |
+                    (*reinterpret_cast<unsigned long*>(reinterpret_cast<char*>(pDst) + 4) & 0xFF);
+                *reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(pDst) + 7) =
+                    *reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(pSrc) + 7);
+                pDst->BaseKey = pSrc->BaseKey;
+                pDst->DeltaKeys.ReferenceList(&pSrc->DeltaKeys);
+                i++;
+            } while (i < TrackCount);
+        }
+    }
+    Events = Src.Events;
+}
+
+static FESlotPool ScriptPool(sizeof(FEScript));
+
+void* FEScript::operator new(unsigned int) {
+    return ScriptPool.Alloc();
+}
+
+void FEScript::operator delete(void* pNode) {
+    ScriptPool.Free(static_cast<unsigned char*>(pNode));
 }
