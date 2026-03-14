@@ -655,7 +655,7 @@ bool FEPackageReader::ReadObjectChunk() {
     FEChunk* pLast = pObjList->GetLastChunk();
     FEChunk* pObjChunk = pObjList->GetFirstChunk();
 
-    if (!pObjChunk || pLast == reinterpret_cast<FEChunk*>(-8)) {
+    if (!pObjChunk || !pLast) {
         return true;
     }
 

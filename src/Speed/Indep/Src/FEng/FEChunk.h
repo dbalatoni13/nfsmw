@@ -5,6 +5,10 @@
 #pragma once
 #endif
 
+inline unsigned long FEChunkBSwap32(unsigned long v) {
+    return (v >> 24) | (v << 24) | ((v & 0xFF00) << 8) | ((v >> 8) & 0xFF00);
+}
+
 // total size: 0x4
 struct FETag {
     unsigned short ID;   // offset 0x0, size 0x2
@@ -32,8 +36,8 @@ struct FEChunk {
     inline bool IsDataChunk() { return (ID & 0x10000) == 0; }
     inline char* GetData() { return reinterpret_cast<char*>(this) + 8; }
     inline FEChunk* GetFirstChunk() { return reinterpret_cast<FEChunk*>(GetData()); }
-    inline FEChunk* GetLastChunk() { return reinterpret_cast<FEChunk*>(reinterpret_cast<char*>(this) + Size); }
-    inline FEChunk* GetNext() { return reinterpret_cast<FEChunk*>(reinterpret_cast<char*>(this) + Size + 8); }
+    inline FEChunk* GetLastChunk() { return reinterpret_cast<FEChunk*>(reinterpret_cast<char*>(this) + FEChunkBSwap32(Size) + 8); }
+    inline FEChunk* GetNext() { return reinterpret_cast<FEChunk*>(reinterpret_cast<char*>(this) + FEChunkBSwap32(Size) + 8); }
 
     inline unsigned long CountChildren() {
         unsigned long count = 0;
