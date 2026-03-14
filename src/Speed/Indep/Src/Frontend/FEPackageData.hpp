@@ -8,6 +8,14 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
+struct SlotPool;
+
+// total size: 0x8
+struct FEPackageRenderInfo {
+    SlotPool *EpolySlotPool; // offset 0x0, size 0x4
+    bool AllowOverflows;     // offset 0x4, size 0x1
+};
+
 // total size: 0x38
 class FEPackageData : public bTNode<FEPackageData> {
   public:
@@ -19,9 +27,16 @@ class FEPackageData : public bTNode<FEPackageData> {
 
     bool IsCompressedChunk() { return DataChunk != nullptr; }
 
-    void *GetDataChunk() { return DataChunk; }
+    void *GetDataChunk();
+
+    unsigned int GetNameHash();
 
     bool IsActive() { return pScreen != nullptr; }
+
+    FEPackageData(bChunk *chunk);
+    virtual ~FEPackageData();
+    void Activate(struct FEPackage *pkg, int arg);
+    void Close();
 
     void SetPermanent(int flag) { IsPermanent = flag; }
 
@@ -64,8 +79,7 @@ class FEPackageData : public bTNode<FEPackageData> {
     int16 IsPermanent;                     // offset 0x20, size 0x2
     int16 IsVisible;                       // offset 0x22, size 0x2
     struct ScreenFactoryDatum *CreateData; // offset 0x24, size 0x4
-    // TODO
-    // struct FEPackageRenderInfo RenderInfo; // offset 0x28, size 0x8
+    struct FEPackageRenderInfo RenderInfo; // offset 0x28, size 0x8
     int mArg; // offset 0x30, size 0x4
 };
 
