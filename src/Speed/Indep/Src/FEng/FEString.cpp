@@ -3,10 +3,6 @@
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
 
-struct FELabelCallback {
-    virtual void OnLabelChanged(FEString* text) = 0;
-};
-
 FELabelCallback* FEString::pLabelCallback;
 
 FEString::FEString(const FEString& String, bool bReference)

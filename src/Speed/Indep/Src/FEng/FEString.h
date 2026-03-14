@@ -40,4 +40,16 @@ public:
     static inline void SetLabelCallback(FELabelCallback* pCallback);
 };
 
+struct FELabelCallback {
+    virtual void OnLabelChanged(FEString* text) = 0;
+};
+
+inline void FEString::SetLabelHash(unsigned long Hash) {
+    Flags |= 0x400000;
+    LabelHash = Hash;
+    if (pLabelCallback) {
+        pLabelCallback->OnLabelChanged(this);
+    }
+}
+
 #endif

@@ -19,7 +19,8 @@
 #include "FEKeyTrack.h"
 #include "FEngStandard.h"
 #include "fengine.h"
-#include "fengine.h"
+#include "FEMsgTargetList.h"
+#include "FEWideString.h"
 
 inline unsigned long BSwap32(unsigned long v) {
     return (v >> 24) | (v << 24) | ((v & 0xFF00) << 8) | ((v >> 8) & 0xFF00);
@@ -236,17 +237,299 @@ void FEPackageReader::ProcessImageTag(FETag* pTag) {
     static_cast<FEImage*>(pObj)->ImageFlags = BSwap32(pTag->Getu32(0));
 }
 
-bool FEPackageReader::FindReferencedObject(unsigned long ObjGUID, FEObject** pRefObj, FEPackage** pRefPack) {
-    *pRefObj = nullptr;
-    *pRefPack = nullptr;
+bool FEPackageReader::FindReferencedObject(unsigned long ObjGUID, FEObject** ppRefObj, FEPackage** ppRefPack) {
+    *ppRefObj = nullptr;
+    *ppRefPack = nullptr;
     FELibraryRef* pRef = pPack->FindLibraryReference(ObjGUID);
     if (!pRef) {
         return false;
     }
-    *pRefPack = pEngine->FindLibraryPackage(pRef->PackNameHash);
-    if (!*pRefPack) {
+    *ppRefPack = pEngine->FindLibraryPackage(pRef->PackNameHash);
+    if (!*ppRefPack) {
         return false;
     }
-    *pRefObj = (*pRefPack)->FindObjectByGUID(pRef->LibGUID);
-    return *pRefObj != nullptr;
+    *ppRefObj = (*ppRefPack)->FindObjectByGUID(pRef->LibGUID);
+    return *ppRefObj != nullptr;
+}
+
+bool FEPackageReader::ReadReferencedPackagesChunk() {
+    FEChunk* pRefChunk = FindChild(pChunk, 0x4C62694C);
+    if (pRefChunk) {
+        char* pStrings = pRefChunk->GetData();
+        unsigned long* pData = reinterpret_cast<unsigned long*>(pStrings);
+        unsigned long NumRefs = BSwap32(pData[0]);
+        FEList& LibList = pPack->LibrariesUsed;
+        unsigned long i = 0;
+        if (NumRefs != 0) {
+            do {
+                FENode* pNode = new FENode();
+                unsigned long Offset = BSwap32(pData[1 + i]);
+                i++;
+                pNode->SetName(pStrings + Offset);
+                LibList.AddNode(LibList.GetTail(), pNode);
+            } while (i < NumRefs);
+        }
+        FENode* pLibNode = static_cast<FENode*>(LibList.GetHead());
+        while (pLibNode) {
+            FEPackage* pLibPack = pEngine->FindLibraryPackage(pLibNode->GetNameHash());
+            if (!pLibPack) {
+                bool bDeleteBlock;
+                unsigned char* pBlockStart;
+                unsigned char* pPackData = pInterface->GetPackageData(pLibNode->GetName(), &pBlockStart, bDeleteBlock);
+                if (!pPackData) {
+                    return false;
+                }
+                pLibPack = pEngine->LoadPackage(pPackData, true);
+                if (bDeleteBlock && pBlockStart) {
+                    delete[] pBlockStart;
+                }
+                if (!pLibPack) {
+                    return false;
+                }
+                pInterface->PackageWasLoaded(pLibPack);
+                pLibPack->SetPriority(1);
+                pEngine->AddToLibraryList(pLibPack);
+            } else {
+                pLibPack->SetPriority(pLibPack->GetPriority() + 1);
+            }
+            pLibNode = pLibNode->GetNext();
+        }
+    }
+    return true;
+}
+
+bool FEPackageReader::ReadLibraryRefsChunk() {
+    FEChunk* pChild = FindChild(pChunk, 0x5262694C);
+    if (!pChild) {
+        return pPack->LibrariesUsed.GetNumElements() == 0;
+    }
+    unsigned long ChunkSize = BSwap32(pChild->GetSize());
+    unsigned long Count = ChunkSize / sizeof(FELibraryRef);
+    if (ChunkSize != Count * sizeof(FELibraryRef)) {
+        return false;
+    }
+    unsigned long* pData = reinterpret_cast<unsigned long*>(pChild->GetData());
+    pPack->SetNumLibraryRefs(Count);
+    unsigned long i = 0;
+    FELibraryRef* pRef = pPack->pLibRefs;
+    if (Count != 0) {
+        do {
+            unsigned long idx = i * 3;
+            i++;
+            pRef[i - 1].ObjGUID = BSwap32(pData[idx]);
+            pRef[i - 1].PackNameHash = BSwap32(pData[idx + 1]);
+            pRef[i - 1].LibGUID = BSwap32(pData[idx + 2]);
+        } while (i < Count);
+    }
+    return true;
+}
+
+bool FEPackageReader::ReadResourceChunk() {
+    FEChunk* pChild = FindChild(pChunk, 0xcc736552);
+    if (!pChild) {
+        return false;
+    }
+    FEChunk* pNameChunk = pChild->GetFirstChunk();
+    if (BSwap32(pNameChunk->GetID()) != 0x6d4e7352) {
+        return false;
+    }
+    FEChunk* pResReqChunk = reinterpret_cast<FEChunk*>(reinterpret_cast<char*>(pNameChunk) + 8 + BSwap32(pNameChunk->GetSize()));
+    if (BSwap32(pResReqChunk->GetID()) != 0x71527352) {
+        return false;
+    }
+    unsigned long* pData = reinterpret_cast<unsigned long*>(pResReqChunk->GetData() + 8);
+    unsigned long NumRequests = BSwap32(*(reinterpret_cast<unsigned long*>(pResReqChunk->GetData()) + 2));
+    pPack->NumRequests = NumRequests;
+    if (NumRequests != 0) {
+        pPack->pRequests = static_cast<FEResourceRequest*>(FEngMalloc(NumRequests * sizeof(FEResourceRequest), nullptr, 0));
+        pPack->pResourceNames = static_cast<char*>(FEngMalloc(BSwap32(pNameChunk->GetSize()), nullptr, 0));
+        unsigned long i = 0;
+        if (NumRequests != 0) {
+            do {
+                unsigned long offset = i * 6;
+                i++;
+                FEResourceRequest* pReq = &pPack->pRequests[i - 1];
+                pReq->ID = BSwap32(pData[offset]);
+                pReq->pFilename = reinterpret_cast<const char*>(BSwap32(pData[offset + 1]));
+                pReq->Type = BSwap32(pData[offset + 2]);
+                pReq->Flags = BSwap32(pData[offset + 3]);
+                pReq->Handle = BSwap32(pData[offset + 4]);
+                pReq->UserParam = BSwap32(pData[offset + 5]);
+            } while (i < NumRequests);
+        }
+        FEngMemCpy(pPack->pResourceNames, reinterpret_cast<char*>(pNameChunk) + 8, BSwap32(pNameChunk->GetSize()));
+        i = 0;
+        if (NumRequests != 0) {
+            do {
+                FEResourceRequest* pReq = &pPack->pRequests[i];
+                i++;
+                pReq->pFilename = pReq->pFilename + reinterpret_cast<unsigned long>(pPack->pResourceNames);
+            } while (i < NumRequests);
+        }
+    }
+    return true;
+}
+
+void FEPackageReader::ProcessMultiImageTag(FETag* pTag) {
+    FEMultiImage* pImage = static_cast<FEMultiImage*>(pObj);
+    unsigned short tagID = BSwap16(pTag->GetID());
+    if (tagID == 0x314d) {
+        pImage->hTexture[0] = BSwap32(pTag->Getu32(0));
+    } else if (tagID == 0x324d) {
+        pImage->hTexture[1] = BSwap32(pTag->Getu32(0));
+    } else if (tagID == 0x334d) {
+        pImage->hTexture[2] = BSwap32(pTag->Getu32(0));
+    } else if (tagID == 0x614d) {
+        pImage->TextureFlags[0] = BSwap32(pTag->Getu32(0));
+    } else if (tagID == 0x624d) {
+        pImage->TextureFlags[1] = BSwap32(pTag->Getu32(0));
+    } else if (tagID == 0x634d) {
+        pImage->TextureFlags[2] = BSwap32(pTag->Getu32(0));
+    }
+}
+
+void FEPackageReader::ProcessStringTag(FETag* pTag) {
+    FEString* pString = static_cast<FEString*>(pObj);
+    unsigned short tagID = BSwap16(pTag->GetID());
+    if (tagID == 0x4853) {
+        pString->SetLabelHash(BSwap32(pTag->Getu32(0)));
+    } else if (tagID == 0x4c53) {
+        if (bLoadObjectNames) {
+            pString->SetLabel(reinterpret_cast<const char*>(pTag->Data()));
+        }
+    } else if (tagID == 0x6253) {
+        pString->string.SetLength(BSwap32(pTag->Getu32(0)));
+    } else if (tagID == 0x6a53) {
+        pString->Format = BSwap32(pTag->Getu32(0));
+    } else if (tagID == 0x6c53) {
+        pString->Leading = BSwap32(pTag->Getu32(0));
+    } else if (tagID == 0x7453) {
+        pString->string = reinterpret_cast<short*>(pTag->Data());
+        short* pStr = pString->string.mpsString;
+        while (*pStr) {
+            *pStr = BSwap16(*pStr);
+            pStr++;
+        }
+    } else if (tagID == 0x7753) {
+        pString->MaxWidth = BSwap32(pTag->Getu32(0));
+    }
+}
+
+void FEPackageReader::ProcessCodeListBoxTag(FETag* pTag) {
+    FECodeListBox* pList = static_cast<FECodeListBox*>(pObj);
+    unsigned short tagID = BSwap16(pTag->GetID());
+    if (tagID == 0x444c) {
+        pList->Initialize(BSwap32(pTag->Getu32(0)), BSwap32(pTag->Getu32(1)));
+    } else if (tagID == 0x4953) {
+        pList->AllocateStrings(BSwap32(pTag->Getu32(0)), BSwap32(pTag->Getu32(1)));
+    } else if (tagID == 0x6343) {
+        pList->SetCellColor(0, 0, BSwap32(pTag->Getu32(0)), pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
+    } else if (tagID == 0x6a4c) {
+        pList->SetCellJustification(0, 0, BSwap32(pTag->Getu32(0)), pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
+    } else if (tagID == 0x7343) {
+        FEPoint scale;
+        unsigned long sh = BSwap32(pTag->Getu32(0));
+        unsigned long sv = BSwap32(pTag->Getu32(1));
+        scale.h = *reinterpret_cast<float*>(&sh);
+        scale.v = *reinterpret_cast<float*>(&sv);
+        pList->SetCellScale(0, 0, scale, pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
+    } else if (tagID == 0x744c) {
+        pList->mulFlags = (pList->mulFlags & 1) | (BSwap32(pTag->Getu32(0)) & 0xFFFFFFFE);
+    } else if (tagID == 0x764c) {
+        unsigned long vh = BSwap32(pTag->Getu32(0));
+        unsigned long vv = BSwap32(pTag->Getu32(1));
+        pList->mstViewDimensions.h = *reinterpret_cast<float*>(&vh);
+        pList->mstViewDimensions.v = *reinterpret_cast<float*>(&vv);
+    }
+}
+
+bool FEPackageReader::ReadMessageResponseTags(FETag* pTag, unsigned long Length, bool bPackage) {
+    FETag* pEnd = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + Length);
+    FEMessageResponse* pMsgResp = nullptr;
+    int CurResponse = -1;
+    FEResponse* pResp = nullptr;
+    while (pTag < pEnd) {
+        unsigned short tagID = BSwap16(pTag->GetID());
+        if (tagID == 0x694d) {
+            unsigned long MsgID = BSwap32(pTag->Getu32(0));
+            pMsgResp = nullptr;
+            if (!bPackage && pObj) {
+                pMsgResp = pObj->FindResponse(MsgID);
+            }
+            if (!pMsgResp) {
+                pMsgResp = new FEMessageResponse();
+                pMsgResp->SetMsgID(MsgID);
+                if (!bPackage) {
+                    pObj->Responses.AddNode(pObj->Responses.GetTail(), pMsgResp);
+                } else {
+                    pPack->Responses.AddNode(pPack->Responses.GetTail(), pMsgResp);
+                }
+            } else {
+                pMsgResp->PurgeResponses();
+            }
+            CurResponse = -1;
+        } else if (tagID == 0x434d) {
+            pMsgResp->SetCount(BSwap32(pTag->Getu32(0)));
+        } else if (tagID == 0x6952) {
+            CurResponse++;
+            pResp = pMsgResp->GetResponse(CurResponse);
+            pResp->SetID(BSwap32(pTag->Getu32(0)));
+        } else if (tagID == 0x7352) {
+            pResp->SetParam(reinterpret_cast<const char*>(pTag->Data()));
+        } else if (tagID == 0x7452) {
+            pResp->ResponseTarget = BSwap32(pTag->Getu32(0));
+        } else if (tagID == 0x7552) {
+            pResp->ResponseParam = BSwap32(pTag->Getu32(0));
+        }
+        pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + BSwap16(pTag->GetSize()) + 4);
+    }
+    return true;
+}
+
+bool FEPackageReader::ReadMessageTargetListChunk() {
+    FEChunk* pChild = FindChild(pChunk, 0x67726154);
+    if (pChild) {
+        FETag* pTag = reinterpret_cast<FETag*>(pChild->GetData());
+        FETag* pEnd = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + BSwap32(pChild->GetSize()));
+        int idx = 0;
+        while (pTag < pEnd) {
+            unsigned short tagID = BSwap16(pTag->GetID());
+            if (tagID == 0x6354) {
+                unsigned long NumTargets = BSwap32(pTag->Getu32(0));
+                pPack->NumMsgTargets = NumTargets;
+                unsigned long* pMem = static_cast<unsigned long*>(FEngMalloc(NumTargets * 0x10 + 0x10, nullptr, 0));
+                FEMsgTargetList* pEntries = reinterpret_cast<FEMsgTargetList*>(pMem + 4);
+                *pMem = NumTargets;
+                unsigned long i = NumTargets;
+                if (i != 0) {
+                    FEMsgTargetList* pCur = pEntries;
+                    do {
+                        i--;
+                        pCur->MsgID = 0;
+                        pCur->Alloc = 0;
+                        pCur->Count = 0;
+                        pCur->pTargets = nullptr;
+                        pCur++;
+                    } while (i != 0);
+                }
+                pPack->pMsgTargets = pEntries;
+            } else if (tagID == 0x744d) {
+                FEMsgTargetList* pCurTarget = &pPack->pMsgTargets[idx];
+                pCurTarget->MsgID = BSwap32(pTag->Getu32(0));
+                unsigned long NumObjs = (BSwap16(pTag->GetSize()) >> 2) - 1;
+                pCurTarget->Allocate(NumObjs);
+                idx++;
+                unsigned long i = 0;
+                if (NumObjs != 0) {
+                    do {
+                        FEObject* pTarget = pPack->FindObjectByGUID(BSwap32(pTag->Getu32(1 + i)));
+                        pCurTarget->AppendTarget(pTarget);
+                        i++;
+                    } while (i < NumObjs);
+                }
+            }
+            pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + BSwap16(pTag->GetSize()) + 4);
+        }
+    }
+    return true;
 }
