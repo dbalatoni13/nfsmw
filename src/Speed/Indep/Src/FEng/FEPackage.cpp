@@ -548,7 +548,7 @@ FEMessageResponse* FEPackage::FindResponse(unsigned long MsgID) {
         }
         pNode = pNode->GetNext();
     }
-    return nullptr;
+    return pNode;
 }
 
 bool ResourceConnector::Callback(FEObject* pObj) {

@@ -41,7 +41,6 @@ FEPackageReader::~FEPackageReader() {
 }
 
 void FEPackageReader::Reset() {
-    ButtonCount = 0;
     pChunk = nullptr;
     pPack = nullptr;
     pObj = nullptr;
@@ -52,6 +51,7 @@ void FEPackageReader::Reset() {
     ObjectCount = 0;
     ResourceCount = 0;
     CurButton = 0;
+    ButtonCount = 0;
 }
 
 FEChunk* FEPackageReader::FindChild(FEChunk* pCh, unsigned long ID) {
