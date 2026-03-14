@@ -18,8 +18,10 @@ class FEEventList {
     int Count;              // offset 0x0, size 0x4
     FEEvent* pEvent;        // offset 0x4, size 0x4
 
+    inline FEEventList() : Count(0), pEvent(nullptr) {}
     FEEventList& operator=(FEEventList& rhs);
     void SetCount(long NewCount);
+    inline FEEvent& operator[](int Index) { return pEvent[Index]; }
 };
 
 #endif

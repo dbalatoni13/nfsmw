@@ -32,6 +32,7 @@ struct FETypeNode : public FENode {
     void UpdateOffsets();
     unsigned long GetTypeSize();
     FEFieldNode* GetField(const char* pName);
+    inline FEFieldNode* GetField(int Index);
 };
 
 // total size: 0x24
@@ -59,6 +60,10 @@ struct FEFieldNode : public FENode {
 };
 
 inline FEFieldNode* FETypeNode::GetFirstField() { return static_cast<FEFieldNode*>(Fields.GetHead()); }
+
+inline FEFieldNode* FETypeNode::GetField(int Index) {
+    return static_cast<FEFieldNode*>(Fields.FindNode(static_cast<unsigned long>(Index)));
+}
 
 // total size: 0x8
 struct SFERadixKey {

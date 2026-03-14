@@ -19,6 +19,7 @@
 #include "FEKeyTrack.h"
 #include "FEngStandard.h"
 #include "fengine.h"
+#include "fengine_full.h"
 #include "FEMsgTargetList.h"
 #include "FEWideString.h"
 
@@ -856,6 +857,222 @@ bool FEPackageReader::ReadObjectTags(FETag* pTag, unsigned long Length) {
                 break;
         }
         pTag = pTag->Next();
+    }
+    return true;
+}
+
+bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
+    FETag* pEnd = reinterpret_cast<FETag*>(reinterpret_cast<unsigned char*>(pTag) + Length);
+    unsigned long CurTrack = static_cast<unsigned long>(-1);
+    FEScript* pScript = nullptr;
+    FEKeyTrack* pTrack = nullptr;
+    int RunningTrackOffset = 0;
+
+    while (pTag < pEnd) {
+        unsigned short tagID = BSwap16(pTag->GetID());
+        switch (tagID) {
+            case 0x6e53: {
+                pScript = new FEScript();
+                pScript->Init();
+                pScript->CurTime = 0;
+                if (bLoadObjectNames) {
+                    pScript->SetName(reinterpret_cast<const char*>(pTag->Data()));
+                }
+                CurTrack = static_cast<unsigned long>(-1);
+                RunningTrackOffset = 0;
+                break;
+            }
+            case 0x6853: {
+                if (!pScript) {
+                    CurTrack = static_cast<unsigned long>(-1);
+                    pScript = new FEScript();
+                    RunningTrackOffset = 0;
+                    pScript->Init();
+                    pScript->CurTime = 0;
+                }
+                pScript->ID = BSwap32(pTag->Getu32(0));
+                pScript->Length = static_cast<int>(BSwap32(pTag->Getu32(1)));
+                pScript->Flags = BSwap32(pTag->Getu32(2));
+                pScript->SetTrackCount(static_cast<long>(BSwap32(pTag->Getu32(3))));
+                break;
+            }
+            case 0x6353: {
+                pScript->pChainTo = reinterpret_cast<FEScript*>(BSwap32(pTag->Getu32(0)));
+                break;
+            }
+            case 0x4953: {
+                pTrack = nullptr;
+                pScript = pObj->FindScript(BSwap32(pTag->Getu32(0)));
+                break;
+            }
+            case 0x6c53: {
+                pScript->Length = static_cast<int>(BSwap32(pTag->Getu32(0)));
+                break;
+            }
+            case 0x6653: {
+                if (pScript) {
+                    pScript->Flags = BSwap32(pTag->Getu32(0));
+                }
+                break;
+            }
+            case 0x4946: {
+                CurTrack++;
+                pTrack = &pScript->pTracks[CurTrack];
+                pTrack->ParamType = pTag->Data()[0];
+                unsigned char paramSize = pTag->Data()[1];
+                pTrack->ParamSize = paramSize;
+                pTrack->InterpType = pTag->Data()[2];
+                pTrack->InterpAction = pTag->Data()[3];
+                pTrack->Length = static_cast<int>(BSwap32(pTag->Getu32(1)));
+                pTrack->LongOffset = RunningTrackOffset;
+                RunningTrackOffset += paramSize >> 2;
+                break;
+            }
+            case 0x6f54: {
+                pTrack->LongOffset = pTag->Data()[0];
+                break;
+            }
+            case 0x6954: {
+                if (pScript) {
+                    unsigned short Index = BSwap16(pTag->Getu16(0));
+                    pTrack = pScript->FindTrack(static_cast<FEKeyTrack_Indices>(Index));
+                    if (!pTrack) {
+                        unsigned long trackCount = pScript->TrackCount;
+                        FEKeyTrack* pNewArray = new FEKeyTrack[trackCount + 1];
+                        FETypeNode* pTypeNode = pEngine->GetTypeLib().FindType(pObj->NameHash);
+                        FEFieldNode* pField = pTypeNode->GetField(static_cast<int>(Index));
+                        unsigned long SrcIndex = 0;
+                        FEKeyTrack* pSrcTrack = pScript->pTracks;
+                        {
+                            unsigned long DestIndex = 0;
+                            do {
+                                if (!pSrcTrack || pScript->TrackCount <= SrcIndex) {
+                                insert_track:
+                                    pNewArray[DestIndex].ParamType = static_cast<unsigned char>(pField->GetType());
+                                    pTrack = &pNewArray[DestIndex];
+                                    pTrack->InterpType = 1;
+                                    pTrack->ParamSize = static_cast<unsigned char>(pField->GetSize());
+                                    pTrack->InterpAction = 0;
+                                    pTrack->Length = pScript->Length;
+                                    pTrack->LongOffset = static_cast<int>(pField->GetOffset() >> 2);
+                                    pField = nullptr;
+                                } else {
+                                    if (pField) {
+                                        int fieldOffset = static_cast<int>(pField->GetOffset());
+                                        if (fieldOffset < 0) {
+                                            fieldOffset += 3;
+                                        }
+                                        if ((fieldOffset >> 2) <= pSrcTrack[SrcIndex].LongOffset) {
+                                            goto insert_track;
+                                        }
+                                    }
+                                    pNewArray[DestIndex] = pSrcTrack[SrcIndex];
+                                    SrcIndex++;
+                                }
+                                DestIndex++;
+                            } while (DestIndex <= pScript->TrackCount);
+                        }
+                        delete[] pScript->pTracks;
+                        pScript->pTracks = pNewArray;
+                        pScript->TrackCount++;
+                    }
+                }
+                break;
+            }
+            case 0x7454: {
+                if (pScript) {
+                    pTrack->InterpType = pTag->Data()[0];
+                }
+                break;
+            }
+            case 0x6154: {
+                if (pScript) {
+                    pTrack->InterpAction = pTag->Data()[0];
+                }
+                break;
+            }
+            case 0x6254: {
+                {
+                    unsigned long KeyLongs = pTrack->ParamSize >> 2;
+                    pTrack->BaseKey.tTime = static_cast<int>(BSwap32(pTag->Getu32(0)));
+                    {
+                        unsigned long i = 0;
+                        if (KeyLongs != 0) {
+                            do {
+                                reinterpret_cast<unsigned long*>(&pTrack->BaseKey.Val)[i] = BSwap32(pTag->Getu32(i + 1));
+                                i++;
+                            } while (i < KeyLongs);
+                        }
+                    }
+                }
+                break;
+            }
+            case 0x644b: {
+                {
+                    unsigned long CurKey = 0;
+                    unsigned long KeySize = pTrack->ParamSize + 4;
+                    unsigned long NumKeys = BSwap16(pTag->GetSize()) / KeySize;
+                    unsigned char* pKeyData = pTag->Data();
+                    FEKeyNode* pKey;
+                    unsigned long* pSrc;
+                    unsigned long Count;
+                    unsigned long Index;
+
+                    if (pTrack->IsReference()) {
+                        pTrack->DeltaKeys.ReferenceList(nullptr);
+                    }
+
+                    do {
+                        if (CurKey == 0) {
+                            pKey = &pTrack->BaseKey;
+                        } else {
+                            pKey = new FEKeyNode();
+                        }
+                        pSrc = reinterpret_cast<unsigned long*>(pKeyData);
+                        Index = 0;
+                        pKey->tTime = static_cast<int>(BSwap32(*pSrc));
+                        Count = (KeySize >> 2) - 1;
+                        if (Count != 0) {
+                            do {
+                                reinterpret_cast<unsigned long*>(&pKey->Val)[Index] = BSwap32(pSrc[Index + 1]);
+                                Index++;
+                            } while (Index < Count);
+                        }
+                        if (CurKey != 0) {
+                            pTrack->DeltaKeys.AddTail(pKey);
+                        }
+                        CurKey++;
+                        pKeyData += KeySize;
+                    } while (CurKey < NumKeys);
+                }
+                break;
+            }
+            case 0x5645: {
+                {
+                    unsigned long NumEvents = BSwap16(pTag->GetSize()) / sizeof(FEEvent);
+                    pScript->Events.SetCount(static_cast<long>(NumEvents));
+                    FEEvent* pEvent = &pScript->Events[0];
+                    unsigned long* pData = reinterpret_cast<unsigned long*>(pTag->Data());
+                    do {
+                        NumEvents--;
+                        pEvent->EventID = BSwap32(*pData);
+                        pEvent->Target = BSwap32(pData[1]);
+                        pEvent->tTime = BSwap32(pData[2]);
+                        pData += 3;
+                        pEvent++;
+                    } while (NumEvents != 0);
+                }
+                break;
+            }
+        }
+        pTag = reinterpret_cast<FETag*>(reinterpret_cast<unsigned char*>(pTag) + BSwap16(pTag->GetSize()) + 4);
+    }
+
+    if (!bIsReference) {
+        pObj->Scripts.AddTail(pScript);
+    }
+    if (pScript->ID == 0x1744b3) {
+        pObj->pCurrentScript = pScript;
     }
     return true;
 }
