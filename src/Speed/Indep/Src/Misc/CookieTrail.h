@@ -7,7 +7,6 @@
 
 #include <cstddef>
 
-#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
 // total size: 0x810
@@ -85,7 +84,12 @@ struct NavCookie {
     unsigned short SegmentNodeInd : 1; // offset 0x3E, size 0x2
 
     void SetSegmentParameter(float t) {
-        SegmentParameter = static_cast< short >(bClamp(t, 0.0f, 1.0f) * 65535.0f);
+        if (t < 0.0f) {
+            t = 0.0f;
+        } else if (t > 1.0f) {
+            t = 1.0f;
+        }
+        SegmentParameter = static_cast< short >(t * 65535.0f);
     }
 
     float GetSegmentParameter() const {

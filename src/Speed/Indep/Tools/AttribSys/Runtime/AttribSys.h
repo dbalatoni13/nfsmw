@@ -620,7 +620,9 @@ class RefSpec {
     const Collection *GetCollection() const;
     const Collection *GetCollectionWithDefault() const;
     RefSpec &operator=(const RefSpec &rhs);
+#ifdef _MSC_VER
     RefSpec &operator=(int rhs) { mClassKey = 0; mCollectionKey = 0; mCollectionPtr = nullptr; return *this; }
+#endif
     void Clean() const;
 
     void operator delete(void *ptr, std::size_t bytes) {
