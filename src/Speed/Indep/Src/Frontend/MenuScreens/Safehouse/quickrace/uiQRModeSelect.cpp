@@ -39,12 +39,11 @@ UIQRModeSelect::UIQRModeSelect(ScreenConstructorData *sd) : IconScrollerMenu(sd)
 void UIQRModeSelect::RefreshHeader() {
     IconScrollerMenu::RefreshHeader();
     unsigned int hash = 0x1f203817;
-    unsigned int gameMode = FEDatabase->GetGameMode();
-    if ((gameMode & 8) != 0 || (gameMode & 0x40) != 0) {
+    if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
         hash = 0x6703b807;
     } else {
         bool isSplitQR = false;
-        if ((gameMode & 4) != 0) {
+        if (FEDatabase->IsQuickRaceMode()) {
             isSplitQR = FEDatabase->iNumPlayers == 2;
         }
         if (isSplitQR) {
@@ -55,28 +54,7 @@ void UIQRModeSelect::RefreshHeader() {
 }
 
 void UIQRModeSelect::Setup() {
-    if (!GetMikeMannBuild()) {
-        MSOption *opt;
-        opt = new MSOption(0xe9638d3e, 0x34fa2c1, GRace::kRaceType_Circuit);
-        AddOption(opt);
-        opt = new MSOption(0x2521e5eb, 0xb94fd70e, GRace::kRaceType_P2P);
-        AddOption(opt);
-        opt = new MSOption(0xaaab31e9, 0x6f547e4c, GRace::kRaceType_Drag);
-        AddOption(opt);
-        unsigned int gameMode = FEDatabase->GetGameMode();
-        if ((gameMode & 8) == 0 && (gameMode & 0x40) == 0) {
-            bool isSplitQR = false;
-            if ((gameMode & 4) != 0) {
-                isSplitQR = FEDatabase->iNumPlayers == 2;
-            }
-            if (!isSplitQR) {
-                opt = new MSOption(0x3a015595, 0x4930f5fc, GRace::kRaceType_Knockout);
-                AddOption(opt);
-            }
-            opt = new MSOption(0x66c9a7b6, 0xee1edc76, GRace::kRaceType_SpeedTrap);
-            AddOption(opt);
-        }
-    } else {
+    if (GetMikeMannBuild()) {
         MSOption *opt;
         opt = new MSOption(0xe9638d3e, 0x34fa2c1, GRace::kRaceType_Circuit);
         AddOption(opt);
@@ -86,6 +64,26 @@ void UIQRModeSelect::Setup() {
             opt = new MSOption(0xaaab31e9, 0x6f547e4c, GRace::kRaceType_Drag);
             AddOption(opt);
             opt = new MSOption(0x1a091045, 0xa15e4505, GRace::kRaceType_Tollbooth);
+            AddOption(opt);
+        }
+    } else {
+        MSOption *opt;
+        opt = new MSOption(0xe9638d3e, 0x34fa2c1, GRace::kRaceType_Circuit);
+        AddOption(opt);
+        opt = new MSOption(0x2521e5eb, 0xb94fd70e, GRace::kRaceType_P2P);
+        AddOption(opt);
+        opt = new MSOption(0xaaab31e9, 0x6f547e4c, GRace::kRaceType_Drag);
+        AddOption(opt);
+        if (!FEDatabase->IsOnlineMode() && !FEDatabase->IsLANMode()) {
+            bool isSplitQR = false;
+            if (FEDatabase->IsQuickRaceMode()) {
+                isSplitQR = FEDatabase->iNumPlayers == 2;
+            }
+            if (!isSplitQR) {
+                opt = new MSOption(0x3a015595, 0x4930f5fc, GRace::kRaceType_Knockout);
+                AddOption(opt);
+            }
+            opt = new MSOption(0x66c9a7b6, 0xee1edc76, GRace::kRaceType_SpeedTrap);
             AddOption(opt);
         }
     }
@@ -103,7 +101,7 @@ void UIQRModeSelect::Setup() {
 void UIQRModeSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
     if (param1 == 0x911ab364) {
-        if ((FEDatabase->GetGameMode() & 8) != 0 || (FEDatabase->GetGameMode() & 0x40) != 0) {
+        if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
             cFEng::Get()->QueuePackageMessage(0x587c018b, PackageFilename, nullptr);
         }
     } else if (param1 == 0xe1fde1d1) {

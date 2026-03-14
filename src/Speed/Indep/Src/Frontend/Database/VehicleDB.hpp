@@ -95,7 +95,8 @@ struct FEInfractionsData {
     unsigned short Damage;    // offset 0xA, size 0x2
     unsigned short Resist;    // offset 0xC, size 0x2
     unsigned short OffRoad;   // offset 0xE, size 0x2
-    FEInfractionsData(unsigned int infractions = 0);
+    FEInfractionsData() { bMemSet(this, 0, sizeof(FEInfractionsData)); }
+    FEInfractionsData(unsigned int infractions);
     void operator+=(const FEInfractionsData &rhs);
     unsigned short GetValue(GInfractionManager::InfractionType type) const;
     unsigned short NumInfractions() const;

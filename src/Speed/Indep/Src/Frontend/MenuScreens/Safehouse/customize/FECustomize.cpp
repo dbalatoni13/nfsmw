@@ -848,10 +848,10 @@ CustomizeParts::CustomizeParts(ScreenConstructorData *sd) : CustomizationScreen(
             TachRPM = 10000;
         } else if (TachRPM >= 0x2135) {
             TachRPM = 9000;
-        } else if (TachRPM <= 0x1d4c) {
-            TachRPM = 7000;
-        } else {
+        } else if (TachRPM > 0x1d4c) {
             TachRPM = 8000;
+        } else {
+            TachRPM = 7000;
         }
         FEngSetInvisible(FEngFindObject(GetPackageName(), 0xdee8632b));
     }

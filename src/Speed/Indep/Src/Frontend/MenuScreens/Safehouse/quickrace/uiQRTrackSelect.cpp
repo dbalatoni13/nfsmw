@@ -128,12 +128,11 @@ void UIQRTrackSelect::BuildPresetTrackList() {
         delete node;
     }
     int unlockFilter = 0;
-    unsigned int gameMode = FEDatabase->GetGameMode();
-    if ((gameMode & 1) != 0) {
+    if (FEDatabase->IsCareerMode()) {
         unlockFilter = 2;
-    } else if ((gameMode & 4) != 0) {
+    } else if (FEDatabase->IsQuickRaceMode()) {
         unlockFilter = 1;
-    } else if ((gameMode & 8) != 0 || (gameMode & 0x40) != 0) {
+    } else if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
         unlockFilter = 4;
     }
     int binIdx = 0x15;
@@ -372,7 +371,7 @@ void UIQRTrackSelect::NotificationMessage(unsigned long msg, FEObject *pobj, uns
         RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
         settings->EventHash = 0;
         const char *pkg;
-        if ((FEDatabase->GetGameMode() & 8) == 0 && (FEDatabase->GetGameMode() & 0x40) == 0) {
+        if (!FEDatabase->IsOnlineMode() && !FEDatabase->IsLANMode()) {
             pkg = "MainMenu_Sub.fng";
         } else {
             pkg = "OL_MAIN.fng";
