@@ -18,6 +18,7 @@ extern cFEng *cFEng_mInstance;
 
 extern unsigned long FEHashUpper(const char *str);
 extern void FEngSetLanguageHash(const char *pkg, unsigned int obj_hash, unsigned int lang_hash);
+extern void FEngSetLanguageHash(FEString *text, unsigned int hash);
 extern const char *GetLocalizedString(unsigned int hash);
 
 struct NumOpponents : public FEToggleWidget {
@@ -343,4 +344,221 @@ void UIQRTrackOptions::SetupTollbooth() {
             AddToggleOption(td, true);
         }
     }
+}
+
+// --- Widget Destructors ---
+
+NumOpponents::~NumOpponents() {}
+AISkill::~AISkill() {}
+CatchUp::~CatchUp() {}
+TrafficLevel::~TrafficLevel() {}
+NumLaps::~NumLaps() {}
+TrackDirection::~TrackDirection() {}
+
+// --- SplitScreen ---
+
+struct SplitScreen : public IconOption {
+    SplitScreen(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
+        : IconOption(tex_hash, name_hash, desc_hash) {}
+    ~SplitScreen() override;
+    void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override;
+};
+
+SplitScreen::~SplitScreen() {}
+
+void SplitScreen::React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) {
+    if (data == 0xc407210) {
+        _SetQRMode(2);
+    }
+}
+
+// --- NumOpponents ---
+
+void NumOpponents::Act(const char *parent_pkg, unsigned int data) {
+    RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+    unsigned int val = settings->NumOpponents;
+    if (data == 0x9120409e) {
+        val = val - 1;
+        if (static_cast<int>(val) < 1) {
+            val = 4 - FEDatabase->iNumPlayers;
+        }
+    } else if (data == 0xb5971bf1) {
+        val = val + 1;
+        if (static_cast<int>(4 - FEDatabase->iNumPlayers) < static_cast<int>(val)) {
+            val = 1;
+        }
+    }
+    settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+    settings->NumOpponents = static_cast<uint8>(val);
+    if (FEDatabase->RaceMode == static_cast<GRace::Type>(3)) {
+        settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+        settings->NumLaps = static_cast<uint8>(val);
+        cFEng_mInstance->QueueGameMessage(0x92b703b5, parent_pkg, 0xff);
+    }
+    bMovedLastUpdate = true;
+    BlinkArrows(data);
+    Draw();
+}
+
+void NumOpponents::Draw() {
+    FEngSetLanguageHash(pTitle, 0x3384a679);
+    RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+    FEPrintf(pData, "%d", settings->NumOpponents);
+}
+
+// --- AISkill ---
+
+void AISkill::Act(const char *parent_pkg, unsigned int data) {
+    RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+    unsigned int val = settings->AISkill;
+    if (data == 0x9120409e) {
+        val = val - 1;
+        if (static_cast<int>(val) < 0) {
+            val = 2;
+        }
+    } else if (data == 0xb5971bf1) {
+        val = val + 1;
+        if (val > 2) {
+            val = 0;
+        }
+    }
+    settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+    settings->AISkill = static_cast<uint8>(val);
+    bMovedLastUpdate = true;
+    BlinkArrows(data);
+    Draw();
+}
+
+void AISkill::Draw() {
+    unsigned int hash = 0;
+    RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+    unsigned char skill = settings->AISkill;
+    if (skill == 1) {
+        hash = 0x3747f6d0;
+    } else if (skill < 1) {
+        if (skill == 0) {
+            hash = 0x61973e01;
+        }
+    } else if (skill == 2) {
+        hash = 0x6198e2ee;
+    }
+    FEngSetLanguageHash(pTitle, 0x4d156786);
+    FEngSetLanguageHash(pData, hash);
+}
+
+// --- CatchUp ---
+
+void CatchUp::Act(const char *parent_pkg, unsigned int data) {
+    if (data == 0x9120409e || data == 0xb5971bf1) {
+        RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+        RaceSettings *settings2 = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+        settings->CatchUp = !settings2->CatchUp;
+    }
+    bMovedLastUpdate = true;
+    BlinkArrows(data);
+    Draw();
+}
+
+void CatchUp::Draw() {
+    RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+    if (!settings->CatchUp) {
+        FEngSetLanguageHash(pData, 0x70dfe5c2);
+    } else {
+        FEngSetLanguageHash(pData, 0x417b2604);
+    }
+    FEngSetLanguageHash(pTitle, 0x8b8e913a);
+}
+
+// --- TrafficLevel ---
+
+void TrafficLevel::Act(const char *parent_pkg, unsigned int data) {
+    RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+    unsigned int val = settings->TrafficDensity;
+    if (data == 0x9120409e) {
+        val = val - 1;
+        if (static_cast<int>(val) < 0) {
+            val = 3;
+        }
+    } else if (data == 0xb5971bf1) {
+        val = val + 1;
+        if (val > 3) {
+            val = 0;
+        }
+    }
+    settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+    settings->TrafficDensity = static_cast<uint8>(val);
+    bMovedLastUpdate = true;
+    BlinkArrows(data);
+    Draw();
+}
+
+void TrafficLevel::Draw() {
+    unsigned int hash = 0;
+    RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+    unsigned char level = settings->TrafficDensity;
+    if (level == 1) {
+        hash = 0x73c615a3;
+    } else if (level < 1) {
+        if (level == 0) {
+            hash = 0x8cdc3937;
+        }
+    } else if (level == 2) {
+        hash = 0xa2cca838;
+    } else if (level == 3) {
+        hash = 0x61d1c5a5;
+    }
+    FEngSetLanguageHash(pData, hash);
+    FEngSetLanguageHash(pTitle, 0xeb9dfc09);
+}
+
+// --- NumLaps ---
+
+void NumLaps::Act(const char *parent_pkg, unsigned int data) {
+    RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+    unsigned int val = settings->NumLaps;
+    if (data == 0x9120409e) {
+        val = val - 1;
+        if (static_cast<int>(val) < 1) {
+            val = 8;
+        }
+    } else if (data == 0xb5971bf1) {
+        val = val + 1;
+        if (val > 8) {
+            val = 1;
+        }
+    }
+    settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+    settings->NumLaps = static_cast<uint8>(val);
+    bMovedLastUpdate = true;
+    BlinkArrows(data);
+    Draw();
+}
+
+void NumLaps::Draw() {
+    RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+    FEPrintf(pData, "%d", settings->NumLaps);
+    FEngSetLanguageHash(pTitle, 0x48494e83);
+}
+
+// --- TrackDirection ---
+
+void TrackDirection::Act(const char *parent_pkg, unsigned int data) {
+    if (data == 0x9120409e || data == 0xb5971bf1) {
+        RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+        RaceSettings *settings2 = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+        settings->TrackDirection = (settings2->TrackDirection == 0);
+    }
+    bMovedLastUpdate = true;
+    BlinkArrows(data);
+    Draw();
+}
+
+void TrackDirection::Draw() {
+    RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+    if (settings->TrackDirection == 0) {
+        FEngSetLanguageHash(pData, 0xde6eff34);
+    } else {
+        FEngSetLanguageHash(pData, 0xa1cd823e);
+    }
+    FEngSetLanguageHash(pTitle, 0xa88ffeb4);
 }
