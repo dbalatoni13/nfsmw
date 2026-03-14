@@ -27,7 +27,7 @@ class tEnvelope {
     tEnvelope() {}
 
     tEnvelope(sEnvelopePoint *p, int n) {
-        p = pPoints;
+        pPoints = p;
         nPoints = n;
     }
 
