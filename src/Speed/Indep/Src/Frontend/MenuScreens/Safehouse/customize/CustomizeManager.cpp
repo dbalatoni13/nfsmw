@@ -43,7 +43,13 @@ struct CarPart {
     unsigned int GetPartNameHash();
     char GetPartID();
     char GetUpgradeLevel();
+    char GetGroupNumber() { return GroupNumber_UpgradeLevel & 0x1f; }
+    int HasAppliedAttribute(unsigned int namehash);
+    const char *GetAppliedAttributeString(unsigned int namehash, const char *default_string);
+    float GetAppliedAttributeFParam(unsigned int namehash, float default_value);
+    int GetAppliedAttributeIParam(unsigned int namehash, int default_value);
     unsigned int GetAppliedAttributeUParam(unsigned int namehash, unsigned int default_value);
+    unsigned int GetBrandNameHash();
 };
 
 int CarCustomizeManager::GetNumPackages(Physics::Upgrades::Type type) {
@@ -804,7 +810,7 @@ void CarCustomizeManager::UpdateHeatOnVehicle(SelectablePart *part, FECareerReco
     }
 }
 
-unsigned int CarCustomizeManager::GetUnlockHash(unsigned int cat) {
+unsigned int CarCustomizeManager::GetUnlockHash(eCustomizeCategory cat, int upgrade_lvl) {
     unsigned int returnHash = 0;
     switch (cat) {
         case 0x100: returnHash = FEngHashString("MARKER_BODYKIT"); break;

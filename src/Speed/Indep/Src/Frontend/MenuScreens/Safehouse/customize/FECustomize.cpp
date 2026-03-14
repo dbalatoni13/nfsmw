@@ -760,7 +760,7 @@ void CustomizationScreen::NotificationMessage(unsigned long msg, FEObject *pobj,
         if (cat > 0x200 && cat < 0x208) {
             return;
         }
-        if (cat == CC_CUSTOM_HUD) {
+        if (cat == 0x307) {
             return;
         }
         if (Options.pCurrentNode == nullptr) {
@@ -1227,5 +1227,229 @@ void CustomizeParts::ShowHudObjects() {
 void CustomizeNumbers::UnsetShoppingCart() {
     // TODO: iterate number parts and clear cart state
 }
+
+// --- CustomizeMain additional ---
+
+extern const char *g_pCustomizeHudColorPkg;
+extern const char *g_pCustomizeShoppingCartPkg;
+extern int Showcase_FromFilter;
+
+void CustomizeMain::SetScreenNames() {
+    if (!CustomizeIsInBackRoom()) {
+        g_pCustomizeSubPkg = "CustomizeCategory.fng";
+        g_pCustomizeSubTopPkg = "CustomizeGenericTop.fng";
+        g_pCustomizePartsPkg = "CustomizeParts.fng";
+        g_pCustomizePerfPkg = "CustomizePerformance.fng";
+        g_pCustomizeDecalsPkg = "Decals.fng";
+        g_pCustomizePaintPkg = "Paint.fng";
+        g_pCustomizeRimsPkg = "Rims.fng";
+        g_pCustomizeHudColorPkg = "CustomHUDColor.fng";
+        if (!gCarCustomizeManager.IsCareerMode()) {
+            g_pCustomizeShoppingCartPkg = "ShoppingCart_QR.fng";
+        } else {
+            g_pCustomizeShoppingCartPkg = "ShoppingCart.fng";
+        }
+        g_pCustomizeHudPkg = "CustomHUD.fng";
+        g_pCustomizeSpoilerPkg = "Spoilers.fng";
+    } else {
+        g_pCustomizeSubPkg = "CustomizeCategory_BACKROOM.fng";
+        g_pCustomizeSubTopPkg = "CustomizeGenericTop_BACKROOM.fng";
+        g_pCustomizePartsPkg = "CustomizeParts_BACKROOM.fng";
+        g_pCustomizePerfPkg = "CustomizePerformance_BACKROOM.fng";
+        g_pCustomizeDecalsPkg = "Decals_BACKROOM.fng";
+        g_pCustomizePaintPkg = "Paint_BACKROOM.fng";
+        g_pCustomizeRimsPkg = "Rims_BACKROOM.fng";
+        g_pCustomizeHudColorPkg = "CustomHUDColor_BACKROOM.fng";
+        g_pCustomizeShoppingCartPkg = "ShoppingCart_BACKROOM.fng";
+        g_pCustomizeHudPkg = "CustomHUD_BACKROOM.fng";
+        g_pCustomizeSpoilerPkg = "Spoilers_BACKROOM.fng";
+    }
+}
+
+void CustomizeMain::BuildOptionsList() {
+    int isHero = gCarCustomizeManager.IsHeroCar();
+    if (!CustomizeIsInBackRoom()) {
+        if (!isHero) {
+            AddCustomOption(g_pCustomizeSubPkg, 0x6e0ca66c, 0x55dce1a, 0x801);
+            invalidMarkers = AddCustomOption(g_pCustomizeSubPkg, 0x3987d054, 0xbaef8282, 0x802);
+        }
+        AddCustomOption(g_pCustomizeSubPkg, 0x3e31ba56, 0xbfa7d7c4, 0x803);
+    } else {
+        if (!isHero) {
+            AddCustomOption(g_pCustomizeSubPkg, 0x73272ed2, 0x55dce1a, 0x801);
+            AddCustomOption(g_pCustomizeSubPkg, 0xc61c8d3a, 0xbaef8282, 0x802);
+        }
+        AddCustomOption(g_pCustomizeSubPkg, 0xe69d4f7c, 0xbfa7d7c4, 0x803);
+    }
+}
+
+// --- CustomizeSpoiler ---
+
+void CustomizeSpoiler::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+    CustomizationScreen::NotificationMessage(msg, pobj, param1, param2);
+    if (msg == 0x5073ef13) {
+        ScrollFilters(eSD_PREV);
+        return;
+    }
+    if (msg == 0xd9feec59) {
+        ScrollFilters(eSD_NEXT);
+        return;
+    }
+    if (msg == 0x911ab364) {
+        cFEng_mInstance->QueuePackageSwitch(g_pCustomizeSubPkg, FromCategory | (Category << 16), 0, false);
+        return;
+    }
+    if (msg == 0xc519bfbf) {
+        Showcase_FromFilter = TheFilter;
+        return;
+    }
+    if (msg == 0x5a928018) {
+        SelectablePart *sel = GetSelectedPart();
+        if (!sel) {
+            return;
+        }
+        if (gCarCustomizeManager.IsPartInCart(sel)) {
+            return;
+        }
+        sel->SetPartState(sel->GetPartState() & CPS_GAME_STATE_MASK);
+        RefreshHeader();
+        return;
+    }
+    if (msg == 0x9120409e || msg == 0xb5971bf1) {
+        SelectedIndex[TheFilter] = Options.GetCurrentIndex();
+    }
+}
+
+void CustomizeSpoiler::Setup() {
+    SetTitleHash(0x94e73021);
+    FEImage *img1 = FEngFindImage(GetPackageName(), 0x91c4a50);
+    FEngSetButtonTexture(img1, 0x5bc);
+    FEImage *img2 = FEngFindImage(GetPackageName(), 0x2d145be3);
+    FEngSetButtonTexture(img2, 0x682);
+    CarPart *activePart = gCarCustomizeManager.GetActivePartFromSlot(0x2c);
+    if (Showcase_FromFilter == -1) {
+        if (activePart) {
+            unsigned int filter = activePart->GetGroupNumber();
+            if (filter != 4) {
+                TheFilter = filter;
+            }
+        }
+    } else {
+        TheFilter = Showcase_FromFilter;
+        Showcase_FromFilter = -1;
+    }
+    BuildPartOptionListFromFilter(activePart);
+    RefreshHeader();
+}
+
+void CustomizeSpoiler::RefreshHeader() {
+    CustomizationScreen::RefreshHeader();
+    int filter = TheFilter;
+    if (filter == 1) {
+        FEngSetLanguageHash(GetPackageName(), 0x78008599, 0x205b328);
+    } else if (filter == 0) {
+        FEngSetLanguageHash(GetPackageName(), 0x78008599, 0x1f0e2b2);
+    } else if (filter == 2) {
+        FEngSetLanguageHash(GetPackageName(), 0x78008599, 0x9912746);
+    } else if (filter == 3) {
+        FEngSetLanguageHash(GetPackageName(), 0x78008599, 0xe7416fc);
+    }
+    CustomizePartOption *opt = GetSelectedOption();
+    Timer scrollDelay;
+    scrollDelay.SetTime(0.25f);
+    if (scrollDelay.GetPackedTime() < RealTimer.GetPackedTime() - ScrollTime.GetPackedTime()) {
+        gCarCustomizeManager.PreviewPart(opt->GetPart()->GetSlotID(), opt->GetPart()->GetPart());
+    } else {
+        bNeedsRefresh = true;
+    }
+    CarPart *part = opt->GetPart()->GetPart();
+    if (!part->HasAppliedAttribute(bStringHash("BRAND_NAME"))) {
+        FEPrintf(GetPackageName(), 0x5e7b09c9, "%s", part->GetName());
+    } else {
+        unsigned int brandHash = part->GetAppliedAttributeUParam(bStringHash("BRAND_NAME"), 0);
+        FEngSetLanguageHash(GetPackageName(), 0x5e7b09c9, brandHash);
+    }
+}
+
+void CustomizeSpoiler::BuildPartOptionListFromFilter(CarPart *activePart) {
+    Options.RemoveAll();
+    int activeIdx = 1;
+    Options.AddInitialBookEnds();
+    bTList<SelectablePart> partList;
+    gCarCustomizeManager.GetCarPartList(0x2c, partList, 0);
+    while (!partList.IsEmpty()) {
+        SelectablePart *cur = static_cast<SelectablePart *>(partList.GetHead());
+        cur->Remove();
+        unsigned int groupNum = cur->GetPart()->GetGroupNumber();
+        if (groupNum == static_cast<unsigned int>(TheFilter) || groupNum == 4) {
+            unsigned int texHash = 0xbb034ea6;
+            unsigned int unlockHash = gCarCustomizeManager.GetUnlockHash(static_cast<eCustomizeCategory>(Category), cur->GetUpgradeLevel());
+            if (CustomizeIsInBackRoom()) {
+                texHash = 0xc51a4f62;
+            }
+            CarPart *cpart = cur->GetPart();
+            if (cpart->GetAppliedAttributeIParam(bStringHash("SPOILER_TYPE"), 0) != 0) {
+                texHash = 0x4d1c18ba;
+                if (CustomizeIsInBackRoom()) {
+                    texHash = 0x611d142a;
+                }
+            }
+            bool locked = gCarCustomizeManager.IsPartLocked(cur, 0);
+            AddPartOption(cur, texHash, cpart->GetUpgradeLevel(), 0, unlockHash, locked);
+            if (SelectedIndex[TheFilter] == 1) {
+                if (activePart && cur->GetPart() == activePart) {
+                    SelectedIndex[TheFilter] = activeIdx;
+                }
+                activeIdx++;
+            }
+        } else {
+            delete cur;
+        }
+    }
+    if (Showcase_FromIndex == 0) {
+        Options.SetInitialPos(SelectedIndex[TheFilter]);
+    } else {
+        SelectedIndex[TheFilter] = Showcase_FromIndex;
+        Options.SetInitialPos(Showcase_FromIndex);
+        Showcase_FromIndex = 0;
+    }
+}
+
+// --- CustomizePerformance ---
+
+void CustomizePerformance::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+    CustomizationScreen::NotificationMessage(msg, pobj, param1, param2);
+    if (msg == 0x406415e3) {
+        cFEng_mInstance->QueuePackageSwitch(g_pCustomizeSubPkg, FromCategory | (Category << 16), 0, false);
+    } else if (msg == 0xc407210) {
+        cFEng_mInstance->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
+    }
+}
+
+eMenuSoundTriggers CustomizePerformance::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
+    if (msg == 0x406415e3) {
+        return static_cast<eMenuSoundTriggers>(0);
+    }
+    return CustomizationScreen::NotifySoundMessage(msg, maybe);
+}
+
+// --- CustomizeHUDColor ---
+
+CustomizeHUDColor::~CustomizeHUDColor() {
+}
+
+void CustomizeHUDColor::AddLayerOption(unsigned int layer, unsigned int icon_hash, unsigned int name_hash) {
+    HUDLayerOption *opt = new HUDLayerOption(layer, icon_hash, name_hash);
+    Options.AddOption(opt);
+}
+
+void CustomizeHUDColor::Setup() {
+    AddLayerOption(0xb98c46c3, 0xa1faff6e, 0x74acecbf);
+    AddLayerOption(0x93e1e0ee, 0xc0f8c27, 0x66126b05);
+    AddLayerOption(0xa2c44293, 0xd094b1c2, 0x17d84e58);
+    SetInitialColors();
+    RefreshHeader();
+}
+
 
 #endif // FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE____CUSTOMIZE_CARCUSTOMIZE_H
