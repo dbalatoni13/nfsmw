@@ -8,7 +8,24 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 
 struct FEPackage;
-struct FEngTextInputObject;
+struct FEString;
+
+// total size: 0xC
+struct FEngTextInputObject {
+    FEString *DisplayString;              // offset 0x0, size 0x4
+    MenuScreen *ParentPackage;            // offset 0x4, size 0x4
+    int mBlinkTime;                       // offset 0x8, size 0x4
+    static int sCursorBlinkCycleTime;
+
+    FEngTextInputObject(MenuScreen *pkg, FEString *obj, unsigned int mode, const char *start_string,
+                        unsigned int max_text_length);
+    ~FEngTextInputObject();
+    void Notify(unsigned int msg);
+    void ReturnPressed();
+    void EscapePressed();
+    void RedrawString(bool pIncludeCursor);
+    char *GetEditedString();
+};
 
 // total size: 0x418
 struct KeyboardEditString {
@@ -30,6 +47,8 @@ struct KeyboardEditString {
     void SyncEditIntoPacked();
     char *GetEditedString();
     void EndCapture();
+    unsigned int GetModeFlags() { return ModeFlags; }
+
     void GetStringForDisplay(char *buffer, int size);
     void RevertToOriginalString();
 };

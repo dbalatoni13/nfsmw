@@ -42,3 +42,24 @@ void KeyboardEditString::RevertToOriginalString() {
     PackedStringToWideString(EditStringUCS2, 0x200, InitialString);
     SyncEditIntoPacked();
 }
+
+void FEngTextInputObject::ReturnPressed() {
+    if (gKeyboardManager.GetModeFlags() == 6) {
+        if (bStrLen(gKeyboardManager.GetEditedString()) == 0) {
+            return;
+        }
+    }
+    cFEngJoyInput::Get()->FlushActions();
+    RedrawString(false);
+    ParentPackage->NotificationMessage(0xda5b8712, DisplayString, 0, 0);
+    gKeyboardManager.EndCapture();
+    ParentPackage->FEngEndTextInput();
+}
+
+void FEngTextInputObject::EscapePressed() {
+    gKeyboardManager.RevertToOriginalString();
+    RedrawString(false);
+    ParentPackage->NotificationMessage(0xc9d30688, DisplayString, 0, 0);
+    gKeyboardManager.EndCapture();
+    ParentPackage->FEngEndTextInput();
+}

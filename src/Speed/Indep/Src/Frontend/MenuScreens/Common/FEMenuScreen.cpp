@@ -6,21 +6,6 @@
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 
-struct FEngTextInputObject {
-    FEString *DisplayString;
-    MenuScreen *ParentPackage;
-    int mBlinkTime;
-    static int sCursorBlinkCycleTime;
-
-    FEngTextInputObject(MenuScreen *pkg, FEString *obj, unsigned int mode, const char *start_string,
-                        unsigned int max_text_length);
-    ~FEngTextInputObject();
-    void Notify(unsigned int msg);
-    void ReturnPressed();
-    void EscapePressed();
-    char *GetEditedString();
-};
-
 extern KeyboardEditString gKeyboardManager;
 extern MenuScreen *g_pOLCurrentScreen;
 
