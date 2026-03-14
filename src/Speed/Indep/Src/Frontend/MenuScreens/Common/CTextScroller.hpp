@@ -32,7 +32,11 @@ struct CTextScroller {
     ~CTextScroller();
     void Initialise(MenuScreen* pOwner, int ViewWidth, int ViewLines, char* pTextDisplayNameTempl, FEngFont* pFont);
     void SetTextHash(unsigned int language_hash);
+    void Scroll(int Amount);
     bool HandleNotificationMessage(unsigned int Msg);
+    void Display(int TopLine);
+    void AddLine(short *pLine, int Size);
+    void UpdateScrollBar();
     short *FindEND(short *pText);
 };
 
