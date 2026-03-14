@@ -3,6 +3,8 @@
 
 extern const unsigned long FEKeyTypeSize[];
 
+FEFieldNode::~FEFieldNode() {}
+
 void FEFieldNode::SetDefault(void* pSrc) {
     if (!pDefault) {
         pDefault = new (FEngMalloc(Size, nullptr, 0)) unsigned char[Size];
@@ -16,12 +18,13 @@ void FEFieldNode::GetDefault(void* pDest) {
     }
 }
 
-void FETypeNode::AddField(const char* pName, int Type) {
-    FEFieldNode* pField = new (FEngMalloc(sizeof(FEFieldNode), nullptr, 0)) FEFieldNode();
+void FETypeNode::AddField(const char* pName, int iType) {
+    FEFieldNode* pField;
+    pField = new (static_cast<FEFieldNode*>(FEngMalloc(sizeof(FEFieldNode), nullptr, 0))) FEFieldNode();
     pField->SetName(pName);
-    pField->SetType(Type);
-    pField->SetSize(FEKeyTypeSize[Type]);
-    AppendField(pField);
+    pField->SetType(iType);
+    pField->SetSize(FEKeyTypeSize[iType]);
+    Fields.AddTail(pField);
     UpdateOffsets();
 }
 

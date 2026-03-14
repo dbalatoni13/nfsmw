@@ -15,6 +15,7 @@ struct FEObjectMouseState;
 struct FEMessageResponse;
 struct FEScript;
 struct FEPackageCommand;
+struct FEFieldNode;
 
 // total size: 0x28
 struct FETypeNode : public FENode {
@@ -23,7 +24,41 @@ struct FETypeNode : public FENode {
 
     inline FETypeNode* GetNext() { return static_cast<FETypeNode*>(FENode::GetNext()); }
     inline FETypeNode* GetPrev() { return static_cast<FETypeNode*>(FENode::GetPrev()); }
+    inline FEFieldNode* GetFirstField();
+    inline unsigned long GetID() { return TypeID; }
+    inline void SetID(unsigned long ID) { TypeID = ID; }
+
+    void AddField(const char* pName, int Type);
+    void UpdateOffsets();
+    unsigned long GetTypeSize();
+    FEFieldNode* GetField(const char* pName);
 };
+
+// total size: 0x24
+struct FEFieldNode : public FENode {
+    int Type;              // offset 0x14, size 0x4
+    unsigned long Size;    // offset 0x18, size 0x4
+    unsigned long Offset;  // offset 0x1C, size 0x4
+    unsigned char* pDefault; // offset 0x20, size 0x4
+
+    inline FEFieldNode() : Type(0), Size(0), Offset(0), pDefault(nullptr) {}
+    ~FEFieldNode() override;
+
+    inline int GetType() const { return Type; }
+    inline void SetType(int NewType) { Type = NewType; }
+    inline unsigned long GetSize() const { return Size; }
+    inline void SetSize(unsigned long Val) { Size = Val; }
+    inline unsigned long GetOffset() const { return Offset; }
+    inline void SetOffset(unsigned long Val) { Offset = Val; }
+    inline const void* GetDefaultPtr() { return pDefault; }
+    inline FEFieldNode* GetNext() const { return static_cast<FEFieldNode*>(FENode::GetNext()); }
+    inline FEFieldNode* GetPrev() const { return static_cast<FEFieldNode*>(FENode::GetPrev()); }
+
+    void SetDefault(void* pSrc);
+    void GetDefault(void* pDest);
+};
+
+inline FEFieldNode* FETypeNode::GetFirstField() { return static_cast<FEFieldNode*>(Fields.GetHead()); }
 
 // total size: 0x8
 struct SFERadixKey {
@@ -60,8 +95,8 @@ struct FETypeLib {
     inline void SetAutoCreateHide(bool bValue) { bAutoCreateHideScripts = bValue; }
     inline bool GetAutoCreateHide() const { return bAutoCreateHideScripts; }
     inline FETypeNode* FindType(const char* pName) { return static_cast<FETypeNode*>(List.FindNode(pName)); }
-    inline void AddType(FETypeNode* pNode) { List.AddNode(nullptr, static_cast<FEMinNode*>(static_cast<FENode*>(pNode))); }
-    inline void RemoveType(FETypeNode* pNode) { List.RemNode(static_cast<FEMinNode*>(static_cast<FENode*>(pNode))); }
+    inline void AddType(FETypeNode* pNode) { List.AddTail(pNode); }
+    inline void RemoveType(FETypeNode* pNode) { List.RemNode(pNode); }
     inline FETypeNode* GetFirstType() { return static_cast<FETypeNode*>(List.GetHead()); }
     inline const FEList* GetList() { return &List; }
 

@@ -2,36 +2,18 @@
 #define FENG_FEPACKAGE_H
 
 #include "FEObject.h"
-#include "FEMessageResponse.h"
+#include "FEMsgTargetList.h"
 
 struct FEObjectCallback;
 struct FEGroup;
 struct FEngine;
 struct FEGameInterface;
 struct FEResourceRequest;
-// total size: 0x10
-struct FEMsgTargetList {
-    unsigned long MsgID;       // offset 0x0, size 0x4
-    unsigned long Alloc;       // offset 0x4, size 0x4
-    unsigned long Count;       // offset 0x8, size 0x4
-    FEObject** pTargets;       // offset 0xC, size 0x4
-
-    inline FEMsgTargetList() : MsgID(0), Alloc(0), Count(0), pTargets(nullptr) {}
-    inline ~FEMsgTargetList() {}
-    inline void SetMsgID(unsigned long NewID) { MsgID = NewID; }
-    inline unsigned long GetMsgID() const { return MsgID; }
-    inline unsigned long GetCount() const { return Count; }
-    inline FEObject* GetTarget(unsigned long Index) { return pTargets[Index]; }
-    inline const FEObject* GetTarget(unsigned long Index) const { return pTargets[Index]; }
-
-    void Allocate(unsigned long NewAlloc);
-    void AppendTarget(FEObject* pObject);
-};
 struct FELibraryRef;
-#include "FEMessageResponse.h"
+struct FEMessageResponse;
 struct FEPackageRenderInfo;
 struct FEListBox;
-struct FEPoint;
+#include "FETypes.h"
 struct FEObjectMouseState {
     FEObject* pObject;    // offset 0x0, size 0x4
     FEPoint Offset;       // offset 0x4, size 0x8
@@ -131,7 +113,7 @@ struct FEPackage : public FENode {
     inline FEObject* GetCurrentButton() { return pCurrentButton; }
     inline FEButtonMap* GetButtonMap() { return &ButtonMap; }
     inline FEObject* GetFirstObject() { return static_cast<FEObject*>(Objects.GetHead()); }
-    inline FEMessageResponse* GetFirstResponse() { return static_cast<FEMessageResponse*>(Responses.GetHead()); }
+    inline FEMessageResponse* GetFirstResponse() { return reinterpret_cast<FEMessageResponse*>(Responses.GetHead()); }
     inline FEPackage* GetNext() { return static_cast<FEPackage*>(FENode::GetNext()); }
     inline FEPackage* GetPrev() { return static_cast<FEPackage*>(FENode::GetPrev()); }
     inline unsigned long GetControlMask() const { return Controllers; }
@@ -162,10 +144,10 @@ struct FEPackage : public FENode {
     inline void AddObjectAfter(FEObject* pObject, FEObject* pAddAfter) { Objects.AddNode(static_cast<FEMinNode*>(pAddAfter), static_cast<FEMinNode*>(pObject)); }
     inline void RemoveObject(FEObject* pObject) { Objects.RemNode(static_cast<FEMinNode*>(pObject)); }
     inline unsigned long GetNumResponses() { return Responses.GetNumElements(); }
-    inline void AddResponse(FEMessageResponse* pResp) { Responses.AddTail(static_cast<FEMinNode*>(pResp)); }
+    inline void AddResponse(FEMessageResponse* pResp) { Responses.AddTail(reinterpret_cast<FEMinNode*>(pResp)); }
     inline void PurgeResponses() { Responses.Purge(); }
-    inline void RemoveResponse(FEMessageResponse* pResp) { Responses.RemNode(static_cast<FEMinNode*>(pResp)); }
-    inline FEMessageResponse* GetResponse(unsigned long Index) { return static_cast<FEMessageResponse*>(Responses.FindNode(Index)); }
+    inline void RemoveResponse(FEMessageResponse* pResp) { Responses.RemNode(reinterpret_cast<FEMinNode*>(pResp)); }
+    inline FEMessageResponse* GetResponse(unsigned long Index) { return reinterpret_cast<FEMessageResponse*>(Responses.FindNode(Index)); }
     inline const FEMsgTargetList* GetMessageTargetList(unsigned long Index) const { return &pMsgTargets[Index]; }
 
     FEObject* FindObjectByHash(unsigned long NameHash);
