@@ -1,27 +1,23 @@
 #include "Speed/Indep/Src/FEng/FETypes.h"
 
 FEImageData::FEImageData() {
-    Pivot.x = 0.0f;
-    Pivot.y = 0.0f;
-    Pivot.z = 0.0f;
+    LowerRight.x = 0.0f;
+    Rot.z = 0.0f;
+    Rot.y = 0.0f;
+    Rot.x = 0.0f;
     Pos.x = 0.0f;
     Pos.y = 0.0f;
     Pos.z = 0.0f;
-    Rot.x = 0.0f;
-    Rot.y = 0.0f;
-    Rot.z = 0.0f;
+    Pivot.x = 0.0f;
+    Pivot.y = 0.0f;
+    Pivot.z = 0.0f;
     Rot.w = 1.0f;
+    LowerRight.y = 0.0f;
+    UpperLeft.x = 0.0f;
+    UpperLeft.y = 0.0f;
     Size.x = 0.0f;
     Size.y = 0.0f;
     Size.z = 0.0f;
-    UpperLeft.x = 0.0f;
-    UpperLeft.y = 0.0f;
-    LowerRight.x = 0.0f;
-    LowerRight.y = 0.0f;
-    Col.r = 0;
-    Col.g = 0;
-    Col.b = 0;
-    Col.a = 0;
 }
 
 FEColor::FEColor(unsigned long Col) {

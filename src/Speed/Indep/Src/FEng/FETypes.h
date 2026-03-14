@@ -64,7 +64,7 @@ struct FEColor {
     int r; // offset 0x8, size 0x4
     int a; // offset 0xC, size 0x4
 
-    inline FEColor() : b(0), g(0), r(0), a(0) {}
+    inline FEColor() {}
     FEColor(unsigned long Col);
     operator unsigned long() const;
     FEColor& operator=(const FEColor& rhs);
@@ -163,6 +163,7 @@ struct FERect {
 
 // total size: 0x44
 struct FEObjData {
+    inline FEObjData() {}
     FEColor Col;       // offset 0x0, size 0x10
     FEVector3 Pivot;   // offset 0x10, size 0xC
     FEVector3 Pos;     // offset 0x1C, size 0xC

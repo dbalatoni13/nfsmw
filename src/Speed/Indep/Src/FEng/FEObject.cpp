@@ -107,6 +107,9 @@ FEObject::~FEObject() {
 void FEObject::SetDataSize(unsigned long Size) {
     DataSize = Size;
     if (Size != 0) {
+        if (pData) {
+            ObjDataPool.Free(pData);
+        }
         pData = ObjDataPool.Alloc(Size);
     }
 }
@@ -116,20 +119,22 @@ void FEObject::SetName(const char* pNewName) {
         delete[] pName;
         pName = nullptr;
     }
+    NameHash = -1;
     if (pNewName) {
         int len = FEngStrLen(pNewName);
         pName = new char[len + 1];
         FEngStrCpy(pName, pNewName);
+        NameHash = FEHashUpper(pName);
     }
 }
 
 FEScript* FEObject::FindScript(unsigned long ID) const {
     FEScript* pScript = static_cast<FEScript*>(Scripts.GetHead());
-    while (pScript) {
-        if (pScript->ID == ID) {
-            return pScript;
+    if (pScript) {
+        while (pScript->ID != ID) {
+            pScript = pScript->GetNext();
+            if (!pScript) break;
         }
-        pScript = pScript->GetNext();
     }
     return pScript;
 }
@@ -240,8 +245,10 @@ unsigned long FEObject::GetDataOffset(FEKeyTrack_Indices track) {
 }
 
 FEObject* FEObject::Clone(bool bReference) {
-    FEObject* pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEObject), 0, 0));
-    new (pObject) FEObject(*this, bReference);
+    FEObject* pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEObject), nullptr, 0));
+    if (pObject) {
+        new (pObject) FEObject(*this, bReference);
+    }
     return pObject;
 }
 

@@ -100,7 +100,14 @@ void FEngine::SetNumJoyPads(unsigned char Count) {
         delete[] pJoyPad;
     }
     if (Count) {
-        pJoyPad = new FEJoyPad[Count];
+        FEJoyPad* pPads = static_cast<FEJoyPad*>(FEngMalloc(Count * sizeof(FEJoyPad), nullptr, 0));
+        long i = Count - 1;
+        FEJoyPad* pCur = pPads;
+        do {
+            new (pCur) FEJoyPad();
+            pCur++;
+        } while (i-- != 0);
+        pJoyPad = pPads;
     }
     NumJoyPads = Count;
     FEngMemSet(HoldDecrement, 0, sizeof(HoldDecrement));
@@ -301,12 +308,12 @@ bool FEngine::RecordPackageMarker(const char* pName) {
 }
 
 const char* FEngine::RecallPackageMarker() {
-    if (CurrentPackageRecordIndex != 0) {
-        int idx = CurrentPackageRecordIndex - 1;
-        CurrentPackageRecordIndex = idx;
-        return RecordedPackageNames[idx];
+    if (CurrentPackageRecordIndex == 0) {
+        return nullptr;
     }
-    return nullptr;
+    int idx = CurrentPackageRecordIndex - 1;
+    CurrentPackageRecordIndex = idx;
+    return RecordedPackageNames[idx];
 }
 
 void FEngine::ClearPackageMarkers() {
