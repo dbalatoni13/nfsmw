@@ -804,3 +804,246 @@ void FEngine::Update(const long tDeltaTicks, unsigned int lock) {
         pInterface->DebugMessageEndUpdate();
     }
 }
+
+void FEngine::ProcessMouseForPackage(FEPackage* pPackage) {
+    if (pPackage->Controllers != 0 && (pPackage->Controllers & 1) && pPackage->NumMouseObjects != 0) {
+        int NumMO = pPackage->NumMouseObjects;
+        int i = 0;
+        float mx = static_cast<float>(Mouse.XPos);
+        float my = static_cast<float>(Mouse.YPos);
+        if (NumMO > 0) {
+            do {
+                UpdateMouseState(pPackage, pPackage->MouseObjectStates + i, mx, my);
+                i++;
+            } while (i < NumMO);
+        }
+    }
+}
+
+void FEngine::ProcessMessageQueue() {
+    FEMessageNode* pNode = static_cast<FEMessageNode*>(MsgQ.RemHead());
+    while (pNode) {
+        if (bDebugMessages) {
+            pInterface->DebugMessageProcessed(pNode->MsgID, pNode->pMsgTarget, pNode->pMsgFrom, pNode->pFromPackage, pNode->ControlMask);
+        }
+        FEObject* pTarget = pNode->pMsgTarget;
+        unsigned long target = reinterpret_cast<unsigned long>(pTarget);
+        if (target == 0xFFFFFFFC) {
+            FEPackage* pPack = PackList.GetFirstPackage();
+            while (pPack) {
+                if (pPack == pNode->pFromPackage) {
+                    if (pPack) {
+                        ProcessGlobalMessage(pPack, pNode->MsgID, pNode->ControlMask);
+                        FEMsgTargetList* pTargets = pPack->GetMessageTargets(pNode->MsgID);
+                        if (pTargets) {
+                            unsigned long Count = pTargets->Count;
+                            unsigned long i = 0;
+                            unsigned long MsgID = pNode->MsgID;
+                            if (Count != 0) {
+                                do {
+                                    ProcessObjectMessage(pTargets->pTargets[i], pPack, MsgID, pNode->ControlMask);
+                                    i++;
+                                } while (i < Count);
+                            }
+                        }
+                    }
+                    break;
+                }
+                pPack = pPack->GetNext();
+            }
+        } else if (target == 0) {
+            for (FEPackage* pPack = PackList.GetFirstPackage(); pPack; pPack = pPack->GetNext()) {
+                ProcessGlobalMessage(pPack, pNode->MsgID, pNode->ControlMask);
+                FEMsgTargetList* pTargets = pPack->GetMessageTargets(pNode->MsgID);
+                if (pTargets) {
+                    unsigned long Count = pTargets->Count;
+                    unsigned long i = 0;
+                    unsigned long MsgID = pNode->MsgID;
+                    if (Count != 0) {
+                        do {
+                            ProcessObjectMessage(pTargets->pTargets[i], pPack, MsgID, pNode->ControlMask);
+                            i++;
+                        } while (i < Count);
+                    }
+                }
+            }
+        } else if (target == 0xFFFFFFFB) {
+            pInterface->NotificationMessage(pNode->MsgID, pNode->pMsgFrom, pNode->ControlMask, reinterpret_cast<unsigned long>(pNode->pFromPackage));
+        } else if (target == 0xFFFFFFFE) {
+            for (FEPackage* pPack = PackList.GetFirstPackage(); pPack; pPack = pPack->GetNext()) {
+                ProcessGlobalMessage(pPack, pNode->MsgID, pNode->ControlMask);
+            }
+        } else if (target == 0xFFFFFFFF) {
+            pInterface->NotifySoundMessage(pNode->MsgID, pNode->pMsgFrom, pNode->ControlMask, reinterpret_cast<unsigned long>(pNode->pFromPackage));
+        } else if (target == 0xFFFFFFFD) {
+            ProcessGlobalMessage(pNode->pFromPackage, pNode->MsgID, pNode->ControlMask);
+        } else if (target == 0xFFFFFFFA) {
+            if (pNode->MsgID == 0x59bed120) {
+                SetProcessInput(pNode->pFromPackage, true);
+            } else if (pNode->MsgID == 0x5d4ce32d) {
+                SetProcessInput(pNode->pFromPackage, false);
+            }
+        } else {
+            ProcessObjectMessage(pTarget, pNode->pFromPackage, pNode->MsgID, pNode->ControlMask);
+        }
+        if (pNode) {
+            delete pNode;
+        }
+        pNode = static_cast<FEMessageNode*>(MsgQ.RemHead());
+    }
+}
+
+void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEPackage* pPack, unsigned long uControlMask) {
+    unsigned long i = 0;
+    unsigned long NumActions = pRespList->Count;
+    if (NumActions == 0) {
+        return;
+    }
+    do {
+        unsigned long Action = pRespList->pResponseList[i].ResponseID;
+        FEResponse* pAction = &pRespList->pResponseList[i];
+        if (Action == 0x108) {
+            QueuePackageUserTransfer(pPack, false, 0xFF);
+        } else if (Action == 0) {
+            if (pObj) {
+                FEScript* pScript = pObj->FindScript(pAction->ResponseParam);
+                if (pScript) {
+                    pObj->SetCurrentScript(pScript);
+                    pScript->CurTime = 0;
+                }
+            }
+        } else if (Action == 1) {
+            FEObject* pTo = reinterpret_cast<FEObject*>(pAction->ResponseTarget);
+            if (reinterpret_cast<unsigned long>(pTo) != 0xFFFFFFFC && reinterpret_cast<unsigned long>(pTo) != 0xFFFFFFFF) {
+                pTo = pPack->FindObjectByGUID(pAction->ResponseTarget);
+            }
+            QueueMessage(pAction->ResponseParam, pObj, pPack, pTo, uControlMask);
+        } else if (Action == 2) {
+            QueueMessage(pAction->ResponseParam, pObj, pPack, reinterpret_cast<FEObject*>(0xFFFFFFFF), uControlMask);
+        } else if (Action == 3) {
+            QueueMessage(pAction->ResponseParam, pObj, pPack, reinterpret_cast<FEObject*>(0xFFFFFFFB), uControlMask);
+        } else if (Action == 0x100) {
+            FEObject* pButton = nullptr;
+            if (pAction->ResponseParam != 0) {
+                pButton = pPack->FindObjectByGUID(pAction->ResponseParam);
+            }
+            bool bFound = pButton != nullptr;
+            if (bFound || pAction->ResponseParam == 0) {
+                pPack->SetCurrentButton(pButton, bFound);
+            }
+        } else if (Action == 0x101) {
+            SetProcessInput(pPack, pAction->ResponseParam == 1);
+        } else if (Action == 0x102) {
+            if (!pPack->pCurrentButton) {
+                RecordLastPackageButton(pPack->nameHash, 0);
+            } else {
+                RecordLastPackageButton(pPack->nameHash, pPack->pCurrentButton->GUID);
+            }
+        } else if (Action == 0x103) {
+            FEObject* pButton = nullptr;
+            unsigned long recalled = RecallLastPackageButton(pPack->nameHash);
+            if (recalled != 0) {
+                pButton = pPack->FindObjectByGUID(recalled);
+            }
+            bool bFound = pButton != nullptr;
+            if (!bFound) {
+                if (pAction->ResponseParam != 0) {
+                    pButton = pPack->FindObjectByGUID(pAction->ResponseParam);
+                }
+                bFound = pButton != nullptr;
+                if (!bFound && pAction->ResponseParam != 0) {
+                    goto next;
+                }
+            }
+            bFound = bFound;
+            pPack->SetCurrentButton(pButton, bFound);
+        } else if (Action == 0x104) {
+        } else if (Action == 0x106) {
+            QueuePackageUserTransfer(pPack, true, 0xFF);
+        } else if (Action == 0x105 || Action == 0x107) {
+            QueuePackageUserTransfer(pPack, Action < 0x107, uControlMask);
+        } else if (Action == 0x200) {
+            QueuePackageSwitch(reinterpret_cast<const char*>(pAction->ResponseParam), pPack->Controllers);
+        } else if (Action == 0x201) {
+            QueuePackagePush(reinterpret_cast<const char*>(pAction->ResponseParam), pPack->Controllers);
+        } else if (Action == 0x202) {
+            unsigned long pad = 0;
+            do {
+                if (uControlMask & (1 << (pad & 0x3f))) {
+                    QueuePackagePush(reinterpret_cast<const char*>(pAction->ResponseParam), uControlMask);
+                }
+                pad++;
+            } while (pad < 8);
+        } else if (Action == 0x203) {
+            QueuePackagePop();
+        } else if (Action == 0x204) {
+            QueuePackagePush(reinterpret_cast<const char*>(pAction->ResponseParam), 0);
+        } else if (Action == 0x2c0) {
+            RecordPackageMarker(pPack->pFilename);
+        } else if (Action == 0x2c1) {
+            const char* pMarker = RecallPackageMarker();
+            if (pMarker) {
+                QueuePackageSwitch(pMarker, pPack->Controllers);
+            }
+        } else if (Action == 0x2c2) {
+            ClearPackageMarkers();
+        } else if (Action == 0x300) {
+            if (pObj->pCurrentScript->CurTime != static_cast<int>(pAction->ResponseParam)) {
+                i = pRespList->FindConditionBranchTarget(i);
+            }
+        } else if (Action == 0x301) {
+            if (pObj->pCurrentScript->CurTime == static_cast<int>(pAction->ResponseParam)) {
+                i = pRespList->FindConditionBranchTarget(i);
+            }
+        } else if (Action == 0x500) {
+            i = pRespList->FindConditionBranchTarget(i);
+        }
+    next:
+        i++;
+    } while (i < NumActions);
+}
+
+void FEngine::ProcessPackageCommands() {
+    FEPackageCommand* pCmd = static_cast<FEPackageCommand*>(PackageCommands.GetHead());
+    while (pCmd) {
+        FEPackageCommand* pNext = static_cast<FEPackageCommand*>(pCmd->GetNext());
+        long cmd = pCmd->iCommand;
+        if (cmd & 1) {
+            UnloadPackage(pCmd->pPackage);
+            PackageCommands.RemNode(pCmd);
+            if (pCmd) {
+                delete pCmd;
+            }
+        } else if (cmd & 2) {
+            FEPackage* pPack = PushPackage(pCmd->GetName(), 0, pCmd->uControlMask);
+            if (pPack) {
+                PackageCommands.RemNode(pCmd);
+                if (pCmd) {
+                    delete pCmd;
+                }
+            }
+        } else if (cmd & 4) {
+            FEPackage* pPack = pCmd->pPackage;
+            if (pPack) {
+                PackageCommands.RemNode(pCmd);
+                UnloadPackage(pPack);
+                if (pCmd) {
+                    delete pCmd;
+                }
+            }
+        } else if (cmd & 8) {
+            FEPackage* pPack = pCmd->pPackage;
+            if (pPack) {
+                PackageCommands.RemNode(pCmd);
+                IdleList.RemNode(pPack);
+                pPack->bExecuting = bExecuting;
+                pPack->Controllers = pCmd->uControlMask;
+                PackList.AddPackage(pPack);
+                if (pCmd) {
+                    delete pCmd;
+                }
+            }
+        }
+        pCmd = pNext;
+    }
+}
