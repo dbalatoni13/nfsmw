@@ -59,19 +59,19 @@ void DialogInterface::DismissDialog(int handle) {
 
 int DialogInterface::ShowDialog(feDialogConfig *conf) {
     const char *user_passed = conf->DialogPackage;
-    if (!user_passed || *user_passed == '\0') {
-        if (IsGameFlowInGame()) {
-            conf->DialogPackage = "InGameDialog.fng";
-        } else {
-            conf->DialogPackage = "Dialog.fng";
-        }
-    } else {
+    if (user_passed && *user_passed != '\0') {
         if (bStrCmp(user_passed, "animating") == 0) {
             conf->DialogPackage = "OL_Dialog.fng";
         } else if (bStrCmp(user_passed, "3button") == 0) {
             conf->DialogPackage = "Dialog.fng";
         } else if (bStrCmp(user_passed, "3buttons_stacked") == 0) {
             conf->DialogPackage = "OL_Dialog_Stacked_Buttons.fng";
+        }
+    } else {
+        if (IsGameFlowInGame()) {
+            conf->DialogPackage = "InGameDialog.fng";
+        } else {
+            conf->DialogPackage = "Dialog.fng";
         }
     }
 
@@ -179,19 +179,21 @@ int DialogInterface::ShowTwoButtons(const char *from_pkg, const char *dlg_pkg, e
     conf.NumButtons = 2;
     conf.Title = title;
     conf.Button1TextHash = button1_text_hash;
-    conf.Button2TextHash = button2_text_hash;
     conf.Button1PressedMessage = button1_pressed_message;
+    conf.Button2TextHash = button2_text_hash;
     conf.Button2PressedMessage = button2_pressed_message;
     conf.DialogCancelledMessage = cancel_message;
     conf.FirstButton = first_button;
-    conf.ParentPackage = from_pkg;
     conf.DialogPackage = dlg_pkg;
+    conf.ParentPackage = from_pkg;
     conf.bIsDismissable = dismissable;
-    {
-        FEPackage *pkg = cFEng::Get()->FindPackageWithControl();
-        conf.bDetectController = true;
+    if (dismissable) {
+        FEPackage *pkg = cFEng::Get()->FindPackage(from_pkg);
         if (pkg) {
             unsigned long mask = pkg->GetControlMask();
+            if (mask != 0xff) {
+                conf.bDetectController = true;
+            }
         }
     }
     return ShowDialog(&conf);
