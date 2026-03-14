@@ -82,21 +82,29 @@ void UIQRMainMenu::Setup() {
 void UIQRMainMenu::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
     if (msg == 0xe1fde1d1) {
-        if (PrevButtonMessage == 0xc407210) {
+        switch (PrevButtonMessage) {
+        case 0xc407210: {
             FEDatabase->iNumPlayers = 1;
             cFEng *feng = cFEng::Get();
-            if (QRMode == 1) {
+            switch (QRMode) {
+            case 1:
                 FEDatabase->SetGameMode(static_cast<eFEGameModes>(FEDatabase->GetGameMode() | 0x400));
                 feng->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
-            } else if (QRMode == 0) {
+                break;
+            case 0:
                 cFEng::Get()->QueuePackageSwitch("Quick_Race_Brief.fng", 0, 0, false);
-            } else if (QRMode == 2) {
+                break;
+            case 2:
                 FEDatabase->iNumPlayers = 2;
                 FEDatabase->SetGameMode(static_cast<eFEGameModes>(FEDatabase->GetGameMode() | 0x400));
                 feng->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+                break;
             }
-        } else if (PrevButtonMessage == 0x911ab364) {
+            break;
+        }
+        case 0x911ab364:
             cFEng::Get()->QueuePackageSwitch("MainMenu.fng", 0, 0, false);
+            break;
         }
     }
 }

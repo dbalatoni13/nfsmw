@@ -100,21 +100,28 @@ void UIQRModeSelect::Setup() {
 
 void UIQRModeSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
-    if (param1 == 0x911ab364) {
+    switch (msg) {
+    case 0x911ab364:
         if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
             cFEng::Get()->QueuePackageMessage(0x587c018b, PackageFilename, nullptr);
         }
-    } else if (param1 == 0xe1fde1d1) {
-        if (PrevButtonMessage == 0xc407210) {
+        break;
+    case 0xe1fde1d1:
+        switch (PrevButtonMessage) {
+        case 0xc407210:
             cFEng::Get()->QueuePackageSwitch("Track_Select.fng", 0, 0, false);
-        } else if (PrevButtonMessage == 0x911ab364) {
+            break;
+        case 0x911ab364: {
             unsigned int gm = FEDatabase->GetGameMode();
             FEDatabase->SetGameMode(static_cast<eFEGameModes>(gm & ~0x400));
-            if ((gm & 8) != 0 || (gm & 0x40) != 0) {
+            if (gm & 0x48) {
                 cFEng::Get()->QueuePackageSwitch(gOnlineMainMenu, 0, 0, false);
             } else {
                 cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
             }
+            break;
         }
+        }
+        break;
     }
 }
