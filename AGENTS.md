@@ -83,6 +83,36 @@ originates from, use this script against the compiler-generated debug line mappi
 
 See `.github/skills/line_lookup/SKILL.md` for the full workflow.
 
+`line_lookup.py` now accepts both the original `0xADDR:` debug-line format and rebuilt
+object exports written as bare `ADDR:` lines, so you can point it at
+`symbols/debug_lines.txt` or at a rebuilt `debug_lines.txt` from
+`tools/dwarf1_gcc_line_info.py`.
+
+### elf_lookup.py — Resolve strings / rodata by virtual address
+
+When you have a virtual address inside the original ELF and need to know which string or
+rodata bytes live there, use:
+
+```sh
+python tools/elf_lookup.py 0x803E58F4
+python tools/elf_lookup.py 0x803E58F4 --mode bytes --length 32
+python tools/elf_lookup.py 0x002F1234 --game ps2
+```
+
+This is the preferred replacement for ad-hoc Python snippets that manually parse the ELF
+to chase `@stringBase0` or other rodata/data references.
+
+### code-style — Repo-local style guidance
+
+When you are writing code, polishing code you already touched, or doing a style-review pass,
+consult `.github/skills/code_style/SKILL.md` first. It captures repo-specific formatting and
+cleanup rules, including jumbo include spacing, initializer-list comment markers, declaration
+placement, pointer style, and how to keep style work safe in match-sensitive code.
+
+Use `python tools/code_style.py audit --base origin/main` before a branch-wide style pass.
+It classifies changed files, reports repo-specific findings, and can run clang-format
+across eligible changed C/C++ files by default.
+
 ### decomp-diff.py — Diff & symbol overview
 
 Overview mode lists all symbols in a translation unit with match status:
@@ -92,10 +122,12 @@ python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s nonmatching -t function
 python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s missing -t function
 python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim --search RemoveIOWin
+python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin --reloc-diffs all
 ```
 
 Filters: `-t function,object` (type), `-s missing|matching|nonmatching|extra` (status),
-`--section .text`, `--search <pattern>` (fuzzy name match).
+`--section .text`, `--search <pattern>` (fuzzy name match), `--reloc-diffs none|name_address|data_value|all`
+(surface relocation-only mismatches when needed; default: `none`).
 
 Diff mode shows side-by-side instruction comparison:
 
@@ -135,6 +167,8 @@ Prefer this wrapper for routine agent-driven flows instead of manually chaining
 
 ```sh
 python tools/decomp-workflow.py health
+python tools/decomp-workflow.py health --full main/Speed/Indep/SourceLists/zAnim
+python tools/decomp-workflow.py health --full main/Speed/Indep/SourceLists/zAnim --timings
 python tools/decomp-workflow.py health --smoke-build main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py health --smoke-dtk main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py next --category game --limit 10
@@ -143,6 +177,7 @@ python tools/decomp-workflow.py build -u main/Speed/Indep/SourceLists/zAnim
 python tools/decomp-workflow.py diff -u main/Speed/Indep/SourceLists/zAnim -d FindIOWin
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --brief
+python tools/decomp-workflow.py verify -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --ghidra-version gc
 python tools/decomp-workflow.py function -u main/Speed/Indep/SourceLists/zAnim -f FindIOWin --lookup-mode full
 python tools/decomp-workflow.py unit -u main/Speed/Indep/SourceLists/zAnim --search FindIOWin --limit 20
@@ -153,6 +188,12 @@ repeated command chaining and to standardize routine worktree preflight checks f
 `next --unit`, `function`, `unit`, and `diff` now also auto-build the unit's shared `.o`
 once when that output is missing, so wrapper-first inspection works more often on
 half-prepared worktrees.
+
+Use `health --full <unit>` when you want one end-to-end tooling smoke test for a worktree.
+It reuses a single shared build for the build smoke, DTK dump, rebuilt debug-line export,
+and rebuilt `line_lookup.py` check, so it is faster and more representative than chaining
+`--smoke-build` and `--smoke-dtk` separately. Add `--timings` when you are diagnosing a
+slow worktree or compiler/tool startup.
 
 In normal agent work, use the wrapper commands first. Drop to the raw backend tools only
 when you specifically need a backend-only flag, are debugging a wrapper/backend discrepancy,
@@ -183,6 +224,40 @@ falls back to the GC debug-line-mapped repo source file when that file exists an
 real content.
 Add `--brief` when you want to keep the helper sections compact; it trims suggested
 commands and related-source hints without hiding the core status/diff/source data.
+
+For every function you touch, treat DWARF as a first-class completion gate, not a
+secondary polish pass. After each meaningful code/build iteration, run the wrapper's
+combined verification flow:
+
+```sh
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+```
+
+`verify` fails unless **both** checks are exact for that function:
+
+- objdiff instruction match is 100%
+- normalized DWARF block match is exact
+
+Pass the normal demangled function name to `verify`. The objdiff side matches against both
+the demangled and symbol-name fields, and the DWARF side reuses the demangled-name lookup
+matching that also tolerates omitted leading namespaces when that information is inconsistent.
+
+If the combined check fails, then inspect the DWARF diff directly with:
+
+```sh
+python tools/decomp-workflow.py dwarf -u main/Path/To/TU -f FunctionName
+```
+
+It compares the original and rebuilt DWARF blocks for one function, prints a normalized
+DWARF match percentage, and shows a diff-like view of what still differs. Use it
+whenever `verify` says the function is still failing the DWARF gate. This is the
+fastest way to see whether you are still missing locals, have the wrong inline body, or
+changed signature/type details even when the instruction diff already looks good.
+
+It also compares the debug-line ownership of each `// Range:` block. Treat the
+`Range source ownership` summary as the fast inline-placement check: file mismatches are
+strong evidence that an inline body came from the wrong header or owner file. The exact
+file+line count is stricter and mainly useful as a secondary hint, not as the main gate.
 
 When working with these tools, do not just work around recurring friction silently. If you
 notice a clear, safe workflow or tooling improvement that would make future decomp work
@@ -262,11 +337,18 @@ This is a **C++98** codebase compiled with ProDG GC 3.9.3 (GCC 2.95 under the ho
 
 - No `auto`, range-for, `enum class`, lambdas, or any C++11+
 - Enum values use prefix: `enum EFoo { kF_Value1, kF_Value2 }` (not `enum class`)
-- Use C++ casts (`static_cast< T >(expr)`) instead of C-style casts
-- Header guards: `#ifndef _CLASSNAME` / `#define _CLASSNAME` (not `#pragma once`)
+- Use C++ casts (`static_cast<T>(expr)`) instead of C-style casts
+- Header guards should use `#ifndef` / `#define` together with the `EA_PRAGMA_ONCE_SUPPORTED` block when writing repo headers
 - Constructors use initializer list style with leading `, ` on each line, add empty comments at the end of these lines (except the last) to stop clang-format from putting them all on the same line
+- Inline assembly is acceptable when needed to reproduce dead code or compiler scheduling that source alone cannot express cleanly
+- Preserve the original `class` vs `struct` kind. Check existing headers first, then Dwarf / PS2 info when needed. Even forward declarations and local partial declarations should use the accurate keyword when known.
+- Prefer including the real repo header over introducing a local forward declaration for a project type. If a type already has a header in `src/`, include it instead of redeclaring it locally.
+- If a subsystem already has a stub owner header and the debug line info points back at that subsystem, fill the owner header instead of keeping a recovered project type declaration in a `.cpp`.
+- Preserve original member names, types, order, and proven layout comments. Do not invent `pad`, `unk`, or `field_XXXX` members just to satisfy a guessed size or offset; verify the real members with `find-symbol.py`, GC Dwarf, and PS2 data, and leave a short TODO if a layout detail is still uncertain.
+- Follow DWARF member naming exactly (`mMember` vs `m_member`) instead of normalizing names
 - Omit the `this` pointer.
 - Use `nullptr` and `override`. If they are missing, you need to include `types.h`.
+- Prefer `if (ptr)` / `if (!ptr)` over explicit `nullptr` comparisons. In match-sensitive translation units, if you choose to normalize many of them, do it as one mechanical TU-wide pass and then rebuild / re-check that unit instead of assuming a piecemeal cleanup is free.
 - Omit `struct` when declaring variables or parameters, we are not in C land.
 - Avoid using `using` directives at all cost. Since the game uses jumbo builds, they leak through files.
 
@@ -313,6 +395,10 @@ You should take the Ghidra decompiler output for the initial translation step, g
 You may use sub-agents to gather read-only context during this process, but they must not
 edit files. Treat their output as analysis input for the main worker, not as a path to
 delegate source changes.
+
+A function is only done when both objdiff and normalized DWARF are exact. Treat a
+100% instruction match with a DWARF mismatch as unfinished work, not a near-complete
+result.
 
 The dwarf of your structs doesn't have to neccessarily match the original due to various reasons, just make sure that you copied everything correctly.
 
@@ -366,6 +452,8 @@ It's very important that you use math inlines from bMath and UMath as shown in t
 - When you have to use a constant that looks like an address, it's possible that the splitter thought it was
   an allocation and it shows up as a diff because the left side has a symbol and the right side has a constant.
   In this case you need to figure out the virtual address of the instruction and block the relocation in config.yml.
+- When you need to confirm what lives at a rodata/data address from the original ELF, use
+  `python tools/elf_lookup.py 0xADDR` instead of writing a one-off Python script.
 
 ### PPC EABI calling convention
 

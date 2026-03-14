@@ -11,6 +11,7 @@ Usage:
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s nonmatching
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d __9CAnimBank
+  python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d __9CAnimBank --reloc-diffs all
 """
 
 import argparse
@@ -29,7 +30,9 @@ root_dir = ROOT_DIR
 OBJDIFF_CLI = os.path.join(root_dir, "build", "tools", "objdiff-cli")
 
 
-def run_objdiff(unit: str, base_obj: Optional[str] = None) -> Dict[str, Any]:
+def run_objdiff(
+    unit: str, base_obj: Optional[str] = None, reloc_diffs: str = "none"
+) -> Dict[str, Any]:
     return run_objdiff_json(
         OBJDIFF_CLI,
         unit,
@@ -438,11 +441,22 @@ def main():
             "Use this .o file as the decomp base instead of the one from objdiff.json."
         ),
     )
+    parser.add_argument(
+        "--reloc-diffs",
+        choices=RELOC_DIFF_CHOICES,
+        default="none",
+        help=(
+            "Control relocation-only mismatches in objdiff "
+            "(default: none; use all to surface relocation diffs)"
+        ),
+    )
 
     args = parser.parse_args()
 
     try:
-        data = run_objdiff(args.unit, base_obj=args.base_obj)
+        data = run_objdiff(
+            args.unit, base_obj=args.base_obj, reloc_diffs=args.reloc_diffs
+        )
     except ToolError as e:
         fail(str(e))
 
