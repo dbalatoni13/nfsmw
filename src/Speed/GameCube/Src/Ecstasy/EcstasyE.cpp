@@ -433,17 +433,18 @@ bool IsSunInFrustrum(eView *player_view) {
     if (!sun_info) {
         return false;
     }
-    bVector2 sunpos_xy(sun_info->PositionX, sun_info->PositionY);
-    bVector2 campos_xy(player_view->GetCamera()->GetPosition()->x, player_view->GetCamera()->GetPosition()->y);
-
-    bVector2 to_pt_xy_un = sunpos_xy - campos_xy;
+    bVector2 to_pt_xy_un(sun_info->PositionX - player_view->GetCamera()->GetPosition()->x,
+                         sun_info->PositionY - player_view->GetCamera()->GetPosition()->y);
     bVector2 cam_dir_xy_un(player_view->GetCamera()->GetDirection()->x, player_view->GetCamera()->GetDirection()->y);
-    bVector2 to_pt_xy = bNormalize(to_pt_xy_un);
-    bVector2 cam_dir_xy = bNormalize(cam_dir_xy_un);
+    bVector2 cam_dir_xy;
+    bVector2 cam_dir_xy_norm;
+    bVector2 to_pt_xy;
 
-    float dotp = bDot(&to_pt_xy, &cam_dir_xy);
+    bNormalize(&cam_dir_xy, &cam_dir_xy_un);
+    cam_dir_xy_norm = cam_dir_xy;
+    bNormalize(&to_pt_xy, &to_pt_xy_un);
 
-    return dotp > 0.5f;
+    return 0.5f < cam_dir_xy_norm.x * to_pt_xy.x + cam_dir_xy_norm.y * to_pt_xy.y;
 }
 
 float GetVifTime() {
