@@ -1631,7 +1631,89 @@ void CustomizePerformance::Setup() {
     RefreshHeader();
 }
 
-// --- CustomizeHUDColor ---
+void CustomizePerformance::RefreshHeader() {
+    int num_lines = 3;
+
+    SelectablePart *sel = GetSelectedPart();
+    int phys_type = sel->GetPhysicsType();
+    int upg_level = GetSelectedPart()->GetUpgradeLevel();
+
+    gCarCustomizeManager.PreviewPerfPkg(static_cast<Physics::Upgrades::Type>(phys_type), upg_level);
+
+    AccelSlider.SetValue(gCarCustomizeManager.GetPerformanceRating(PRT_ACCELERATION, true));
+    HandlingSlider.SetValue(gCarCustomizeManager.GetPerformanceRating(PRT_HANDLING, true));
+    TopSpeedSlider.SetValue(gCarCustomizeManager.GetPerformanceRating(PRT_TOP_SPEED, true));
+
+    AccelSlider.Draw();
+    HandlingSlider.Draw();
+    TopSpeedSlider.Draw();
+
+    sel = GetSelectedPart();
+    phys_type = sel->GetPhysicsType();
+    int level = GetSelectedPart()->GetUpgradeLevel();
+
+    int maxPkgs = gCarCustomizeManager.GetMaxPackages(static_cast<Physics::Upgrades::Type>(phys_type));
+    int numPkgs = gCarCustomizeManager.GetNumPackages(static_cast<Physics::Upgrades::Type>(phys_type));
+    int pkg_index = (maxPkgs - numPkgs) + level;
+
+    if (CustomizeIsInBackRoom() || level == 7) {
+        level = 0;
+        pkg_index = 0;
+        num_lines = 1;
+    }
+
+    int i = 0;
+    if (num_lines > 0) {
+        int line_idx = i;
+        do {
+            i = line_idx + 1;
+            unsigned int desc_hash = GetPerfPkgDesc(static_cast<Physics::Upgrades::Type>(phys_type), pkg_index, i, gCarCustomizeManager.IsTurbo());
+            if (!DoesStringExist(desc_hash)) {
+                FEngSetInvisible(DescLines[line_idx]);
+                FEngSetInvisible(DescBullets[line_idx]);
+            } else {
+                FEngSetVisible(DescLines[line_idx]);
+                FEngSetVisible(DescBullets[line_idx]);
+                FEngSetLanguageHash(GetPackageName(), DescLines[line_idx]->NameHash, desc_hash);
+            }
+
+            Attrib::Instance inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), gCarCustomizeManager.GetTuningCar()->FEKey), 0, nullptr);
+            inst.SetDefaultLayout(100);
+
+            unsigned int brand_hash = GetPerfPkgBrand(static_cast<Physics::Upgrades::Type>(phys_type), pkg_index, line_idx);
+            unsigned int brand_icon_hash = FEngHashString("BRAND_ICON_%d", i);
+
+            if (!GetTextureInfo(brand_hash, 0, 0)) {
+                FEngSetInvisible(FEngFindObject(GetPackageName(), brand_icon_hash));
+            } else {
+                FEngSetVisible(FEngFindObject(GetPackageName(), brand_icon_hash));
+                FEngSetTextureHash(FEngFindImage(GetPackageName(), brand_icon_hash), brand_hash);
+            }
+
+            line_idx = i;
+        } while (i < num_lines);
+    }
+
+    while (i < 3) {
+        int offset = i * 4;
+        i++;
+        FEngSetInvisible(DescLines[offset / 4]);
+        FEngSetInvisible(DescBullets[offset / 4]);
+        unsigned int icon_hash = FEngHashString("BRAND_ICON_%d", i);
+        FEngSetInvisible(FEngFindObject(GetPackageName(), icon_hash));
+    }
+
+    CustomizationScreen::RefreshHeader();
+
+    unsigned int level_hash;
+    if (GetSelectedPart()->GetUpgradeLevel() == 7) {
+        level_hash = 0xedd14807;
+    } else {
+        int num = gCarCustomizeManager.GetNumPackages(static_cast<Physics::Upgrades::Type>(phys_type));
+        level_hash = FEngHashString("PN_LEVEL_%d", (level + 6) - num);
+    }
+    FEngSetLanguageHash(pOptionName, level_hash);
+}
 
 HUDLayerOption::HUDLayerOption(unsigned int layer, unsigned int icon_hash, unsigned int name_hash)
     : CustomizePartOption(nullptr, icon_hash, name_hash, 0, 0) //
