@@ -272,6 +272,25 @@ void PlayerSettings::ScrollDriveCam(int dir) {
     }
 }
 
+extern unsigned int HudConfigs[];
+extern unsigned int DriveConfigs[];
+
+unsigned int PlayerSettings::GetControllerAttribs(eControllerAttribs type, bool wheel_connected) const {
+    int analog = DriveWithAnalog != 0;
+    int config = Config;
+    if (wheel_connected) {
+        config = 0;
+        analog = 1;
+    }
+    if (type != CA_HUD) {
+        if (type == CA_DRIVING) {
+            return DriveConfigs[analog + config * 2];
+        }
+        return 0;
+    }
+    return HudConfigs[analog + config * 2];
+}
+
 void GameplaySettings::Default() {
     AutoSaveOn = 1;
     RearviewOn = 1;
@@ -298,6 +317,22 @@ bool GameplaySettings::operator==(const GameplaySettings& rhs) const {
 
 bool VideoSettings::operator==(const VideoSettings& rhs) const {
     return bMemCmp(this, &rhs, 0x10) == 0;
+}
+
+bool AudioSettings::operator==(const AudioSettings& rhs) const {
+    if (MasterVol != rhs.MasterVol) return false;
+    if (SpeechVol != rhs.SpeechVol) return false;
+    if (FEMusicVol != rhs.FEMusicVol) return false;
+    if (IGMusicVol != rhs.IGMusicVol) return false;
+    if (SoundEffectsVol != rhs.SoundEffectsVol) return false;
+    if (EngineVol != rhs.EngineVol) return false;
+    if (CarVol != rhs.CarVol) return false;
+    if (AmbientVol != rhs.AmbientVol) return false;
+    if (SpeedVol != rhs.SpeedVol) return false;
+    if (InteractiveMusicMode != rhs.InteractiveMusicMode) return false;
+    if (EATraxMode != rhs.EATraxMode) return false;
+    if (PlayState != rhs.PlayState) return false;
+    return AudioMode == rhs.AudioMode;
 }
 
 void AudioSettings::Default() {

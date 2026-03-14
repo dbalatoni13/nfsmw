@@ -33,6 +33,10 @@ struct WideCharHistogram {
     void PackString(char *packed, int size, const unsigned short *wide);
     void UnpackString(unsigned short *wide, int size, const char *packed);
     void PlatEndianSwap();
+
+  protected:
+    int NumEntries;                       // offset 0x0, size 0x4
+    unsigned short EntryTable[3072];      // offset 0x4, size 0x1800
 };
 
 extern WideCharHistogram *pWideCharHistogram;
