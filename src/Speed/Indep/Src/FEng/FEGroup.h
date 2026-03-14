@@ -7,7 +7,7 @@
 struct FEGroup : public FEObject {
     FEMinList Children; // offset 0x5C, size 0x10
 
-    inline FEGroup();
+    inline FEGroup() : FEObject(), Children() {}
     FEGroup(const FEGroup& Object, bool bCloneChildren, bool bReference);
     ~FEGroup() override;
 

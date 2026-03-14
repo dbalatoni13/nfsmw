@@ -20,7 +20,16 @@ public:
     int Leading;               // offset 0x70, size 0x4
     unsigned long MaxWidth;    // offset 0x74, size 0x4
 
-    inline FEString();
+    inline FEString()
+        : FEObject() //
+        , pLabelName(nullptr) //
+        , string() //
+        , Format(0) //
+        , Leading(0) //
+        , MaxWidth(0)
+    {
+        SetLabelHash(0xFFFFFFFF);
+    }
     FEString(const FEString& String, bool bReference);
     ~FEString() override;
 

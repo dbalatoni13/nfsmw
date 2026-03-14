@@ -9,7 +9,7 @@ struct FEImageData;
 struct FEImage : public FEObject {
     unsigned long ImageFlags; // offset 0x5C, size 0x4
 
-    inline FEImage();
+    inline FEImage() : FEObject(), ImageFlags(0) {}
     inline FEImage(const FEImage& Object, bool bReference);
     ~FEImage() override;
 

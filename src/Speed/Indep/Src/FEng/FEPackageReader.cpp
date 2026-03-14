@@ -147,88 +147,58 @@ FEPackage* FEPackageReader::Load(const void* pDataPtr, FEGameInterface* pInt, FE
 
 FEObject* FEPackageReader::CreateObject(unsigned long ObjectType) {
     FEObject* pObject;
-    if (ObjectType == FE_CodeList) {
+    switch (ObjectType) {
+    case FE_None:
+        return nullptr;
+    case FE_Image:
+        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEImage), 0, 0));
+        new (static_cast<FEImage*>(pObject)) FEImage();
+        break;
+    case FE_String:
+        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEString), 0, 0));
+        new (static_cast<FEString*>(pObject)) FEString();
+        break;
+    case FE_List:
+        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEListBox), 0, 0));
+        new (static_cast<FEListBox*>(pObject)) FEListBox();
+        break;
+    case FE_Group:
+        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEGroup), 0, 0));
+        new (static_cast<FEGroup*>(pObject)) FEGroup();
+        break;
+    case FE_CodeList:
         pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FECodeListBox), 0, 0));
         new (static_cast<FECodeListBox*>(pObject)) FECodeListBox();
         static_cast<FECodeListBox*>(pObject)->mpobRenderer = pInterface;
-    } else if (ObjectType < FE_CodeList) {
-        if (ObjectType == FE_String) {
-            pObject = static_cast<FEObject*>(FEngMalloc(0x78, 0, 0));
-            new (pObject) FEObject();
-            pObject->pData = nullptr;
-            static_cast<FEString*>(pObject)->SetLabelHash(0xFFFFFFFF);
-            new (&static_cast<FEString*>(pObject)->string) FEWideString();
-            static_cast<FEString*>(pObject)->MaxWidth = 0;
-            static_cast<FEString*>(pObject)->Leading = 0;
-            static_cast<FEString*>(pObject)->Format = 0;
-            pObject->Type = static_cast<FEObjType>(ObjectType);
-        } else if (ObjectType < FE_String) {
-            if (ObjectType == FE_None) {
-                return nullptr;
-            }
-            if (ObjectType == FE_Image) {
-                pObject = static_cast<FEObject*>(FEngMalloc(0x60, 0, 0));
-                new (pObject) FEObject();
-                pObject->pData = nullptr;
-                pObject->Type = static_cast<FEObjType>(ObjectType);
-            } else {
-                goto make_default;
-            }
-        } else {
-            if (ObjectType == FE_List) {
-                pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEListBox), 0, 0));
-                new (static_cast<FEListBox*>(pObject)) FEListBox();
-            } else if (ObjectType == FE_Group) {
-                pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEGroup), 0, 0));
-                new (pObject) FEObject();
-                pObject->pData = nullptr;
-                pObject->Type = static_cast<FEObjType>(ObjectType);
-            } else {
-                goto make_default;
-            }
-        }
-    } else {
-        if (ObjectType == FE_AnimImage) {
-            pObject = static_cast<FEObject*>(FEngMalloc(0x60, 0, 0));
-            new (pObject) FEObject();
-            pObject->pData = nullptr;
-            pObject->Type = static_cast<FEObjType>(ObjectType);
-        } else if (ObjectType > FE_AnimImage) {
-            if (ObjectType == FE_SimpleImage) {
-                pObject = static_cast<FEObject*>(FEngMalloc(0x5C, 0, 0));
-                new (pObject) FEObject();
-                pObject->Type = static_cast<FEObjType>(ObjectType);
-            } else if (ObjectType == FE_MultiImage) {
-                pObject = static_cast<FEObject*>(FEngMalloc(0x78, 0, 0));
-                new (pObject) FEObject();
-                pObject->pData = nullptr;
-                pObject->Type = static_cast<FEObjType>(ObjectType);
-            } else {
-                goto make_default;
-            }
-        } else {
-            if (ObjectType == FE_Movie) {
-                pObject = static_cast<FEObject*>(FEngMalloc(0x60, 0, 0));
-                new (pObject) FEObject();
-                pObject->pData = nullptr;
-                pObject->Type = static_cast<FEObjType>(ObjectType);
-            } else if (ObjectType == FE_ColoredImage) {
-                pObject = static_cast<FEObject*>(FEngMalloc(0x60, 0, 0));
-                new (pObject) FEObject();
-                pObject->pData = nullptr;
-                pObject->Type = static_cast<FEObjType>(ObjectType);
-            } else {
-                goto make_default;
-            }
-        }
+        break;
+    case FE_Movie:
+        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEMovie), 0, 0));
+        new (static_cast<FEMovie*>(pObject)) FEMovie();
+        break;
+    case FE_ColoredImage:
+        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEColoredImage), 0, 0));
+        new (static_cast<FEColoredImage*>(pObject)) FEColoredImage();
+        break;
+    case FE_AnimImage:
+        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEAnimImage), 0, 0));
+        new (static_cast<FEAnimImage*>(pObject)) FEAnimImage();
+        break;
+    case FE_SimpleImage:
+        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FESimpleImage), 0, 0));
+        new (static_cast<FESimpleImage*>(pObject)) FESimpleImage();
+        break;
+    case FE_MultiImage:
+        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEMultiImage), 0, 0));
+        new (static_cast<FEMultiImage*>(pObject)) FEMultiImage();
+        break;
+    default:
+        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEObject), 0, 0));
+        new (pObject) FEObject();
+        break;
     }
-    goto set_data;
-make_default:
-    pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEObject), 0, 0));
-    new (pObject) FEObject();
-set_data:
     pObject->Type = static_cast<FEObjType>(ObjectType);
-    pObject->SetDataSize(GetTypeSize(ObjectType));
+    unsigned long Size = GetTypeSize(ObjectType);
+    pObject->SetDataSize(Size);
     return pObject;
 }
 

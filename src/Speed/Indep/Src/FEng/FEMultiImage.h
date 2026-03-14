@@ -10,7 +10,12 @@ struct FEMultiImage : public FEImage {
     unsigned long hTexture[3];     // offset 0x60, size 0xC
     unsigned long TextureFlags[3]; // offset 0x6C, size 0xC
 
-    inline FEMultiImage();
+    inline FEMultiImage() : FEImage() {
+        for (int i = 0; i <= 2; i++) {
+            hTexture[i] = 0;
+            TextureFlags[i] = 1;
+        }
+    }
     inline FEMultiImage(const FEMultiImage& Object, bool bReference);
     ~FEMultiImage() override;
 
