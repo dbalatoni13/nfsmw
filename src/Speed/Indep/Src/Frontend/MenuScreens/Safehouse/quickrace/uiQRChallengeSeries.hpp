@@ -39,6 +39,9 @@ struct UIQRChallengeSeries : public ArrayScrollerMenu {
     void Setup();
     void RefreshHeader() override;
     void BuildSeriesList();
+    void AddRace(GRaceParameters *race);
+    bool IsRaceValidForMike(GRaceParameters *parms);
+    void ChooseTransmission();
 
     UITrackMapStreamer TrackMapStreamer;     // offset 0xE8, size 0xDC
     FEMultiImage *TrackMap;                // offset 0x1C4, size 0x4

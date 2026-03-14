@@ -127,6 +127,9 @@ class GRaceDatabase {
     GRaceParameters *GetRaceFromHash(unsigned int hash);
     GRaceCustom *AllocCustomRace(GRaceParameters *parms);
 
+    unsigned int GetRaceCount() const;
+    GRaceParameters *GetRaceParameters(unsigned int index) const;
+
     static GRaceDatabase &Get() {
         return *mObj;
     }

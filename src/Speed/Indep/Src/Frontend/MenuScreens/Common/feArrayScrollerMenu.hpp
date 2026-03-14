@@ -278,4 +278,13 @@ class ArrayScrollerMenu : public MenuScreen, public ArrayScroller {
     void RefreshHeader() override;
 };
 
+// total size: 0x14
+class ImageArraySlot : public ArraySlot {
+  public:
+    ImageArraySlot(FEImage *img);
+    ~ImageArraySlot() override {}
+    void Update(ArrayDatum *datum, bool isSelected) override;
+    void SetTexture(unsigned int tex_hash);
+};
+
 #endif

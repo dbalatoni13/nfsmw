@@ -6,6 +6,7 @@
 #endif
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeTypes.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include <types.h>
 #include "Speed/Indep/Src/Physics/PhysicsUpgrades.hpp"
@@ -90,13 +91,13 @@ struct CarCustomizeManager {
 
     eCustomizeEntryPoint EntryPoint;              // offset 0x0, size 0x4
     FECarRecord *TuningCar;                       // offset 0x4, size 0x4
-    char ThePVehicle[0x14];                       // offset 0x8, size 0x14
+    Attrib::Gen::pvehicle ThePVehicle;              // offset 0x8, size 0x14
     FECustomizationRecord PreviewRecord;          // offset 0x1C, size 0x198
     bTList<ShoppingCartItem> ShoppingCart;         // offset 0x1B4, size 0x8
     int NumPartsInCart;                            // offset 0x1BC, size 0x4
     SelectablePart *TheTempColoredPart;            // offset 0x1C0, size 0x4
 };
 
-extern CarCustomizeManager *TheCustomizeManager;
+extern CarCustomizeManager gCarCustomizeManager;
 
 #endif

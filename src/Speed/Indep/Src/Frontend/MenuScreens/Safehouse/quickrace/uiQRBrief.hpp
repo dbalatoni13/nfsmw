@@ -16,26 +16,6 @@
 struct SelectableCar;
 struct SelectableTrack;
 
-// total size: 0x44
-struct TwoStageSlider : public cSlider {
-    TwoStageSlider() {}
-
-    ~TwoStageSlider() override {}
-
-    float GetPreviewValue() { return fPreviewValue; }
-
-    void SetPreviewValue(float preview_value) { fPreviewValue = preview_value; }
-
-    virtual void Init(const char *pkg_name, const char *name, float min, float max, float inc, float cur, float preview, float range);
-    void InitObjects(const char *pkg_name, const char *name) override;
-    virtual void InitValues(float min, float max, float inc, float cur, float preview, float range);
-    void ToggleVisible(bool bOn) override;
-    void Draw() override;
-
-    FEImage *pPreviewBar; // offset 0x3C, size 0x4
-    float fPreviewValue;  // offset 0x40, size 0x4
-};
-
 // total size: 0x10
 struct SelectableCar : public bTNode<SelectableCar> {
     SelectableCar(unsigned int handle, bool locked)

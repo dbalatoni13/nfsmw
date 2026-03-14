@@ -250,6 +250,9 @@ class CareerSettings {
     bool IsGameOver() {
         return SpecialFlags & 0x800;
     }
+    void SetGameOver() {
+        SpecialFlags |= 0x800;
+    }
     bool HasRapSheet() {
         return SpecialFlags & 0x10;
     }
@@ -337,6 +340,10 @@ struct RaceSettings {
 
     unsigned int GetSelectedCar(int player_num) {
         return SelectedCar[player_num];
+    }
+
+    void SetSelectedCar(unsigned int car, int player_num) {
+        SelectedCar[player_num] = car;
     }
 
     uint32 EventHash;            // offset 0x0, size 0x4
@@ -500,6 +507,8 @@ class cFrontendDatabase {
         return CurrentUserProfiles[player];
     }
     UserProfile* GetUserProfile(int player) { return CurrentUserProfiles[player]; }
+    void CreateMultiplayerProfile(int player);
+    void DeleteMultiplayerProfile(int player);
 
     OptionsSettings* GetOptionsSettings() {
         return CurrentUserProfiles[0]->GetOptions();
