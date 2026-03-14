@@ -430,14 +430,16 @@ void AISkill::Draw() {
     unsigned int hash = 0;
     RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
     unsigned char skill = settings->AISkill;
-    if (skill == 1) {
+    switch (skill) {
+    case 0:
+        hash = 0x61973e01;
+        break;
+    case 1:
         hash = 0x3747f6d0;
-    } else if (skill < 1) {
-        if (skill == 0) {
-            hash = 0x61973e01;
-        }
-    } else if (skill == 2) {
+        break;
+    case 2:
         hash = 0x6198e2ee;
+        break;
     }
     FEngSetLanguageHash(pTitle, 0x4d156786);
     FEngSetLanguageHash(pData, hash);
@@ -493,16 +495,19 @@ void TrafficLevel::Draw() {
     unsigned int hash = 0;
     RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
     unsigned char level = settings->TrafficDensity;
-    if (level == 1) {
+    switch (level) {
+    case 0:
+        hash = 0x8cdc3937;
+        break;
+    case 1:
         hash = 0x73c615a3;
-    } else if (level < 1) {
-        if (level == 0) {
-            hash = 0x8cdc3937;
-        }
-    } else if (level == 2) {
+        break;
+    case 2:
         hash = 0xa2cca838;
-    } else if (level == 3) {
+        break;
+    case 3:
         hash = 0x61d1c5a5;
+        break;
     }
     FEngSetLanguageHash(pData, hash);
     FEngSetLanguageHash(pTitle, 0xeb9dfc09);

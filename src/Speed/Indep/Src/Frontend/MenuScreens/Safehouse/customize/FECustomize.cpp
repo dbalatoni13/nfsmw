@@ -776,13 +776,13 @@ CustomizeShoppingCart::CustomizeShoppingCart(ScreenConstructorData *sd) : UIWidg
 }
 
 bool CustomizeShoppingCart::CanCheckout() {
-    if (!gCarCustomizeManager.IsCareerMode()) {
-        return true;
+    if (gCarCustomizeManager.IsCareerMode()) {
+        if (CustomizeIsInBackRoom()) {
+            return true;
+        }
+        return gCarCustomizeManager.GetCartTotal(CCT_TOTAL) <= FEDatabase->GetCareerSettings()->GetCash();
     }
-    if (CustomizeIsInBackRoom()) {
-        return true;
-    }
-    return gCarCustomizeManager.GetCartTotal(CCT_TOTAL) <= FEDatabase->GetCareerSettings()->GetCash();
+    return true;
 }
 
 void CustomizeShoppingCart::ToggleAllNumberDecals() {
@@ -1177,7 +1177,10 @@ void CustomizeShoppingCart::ExitShoppingCart() {
 }
 
 bool CustomizeShoppingCart::IsSlotIDNumberDecal(int slot_id) {
-    return slot_id == 0x53 || slot_id == 0x4e || slot_id == 0x4f;
+    if (slot_id == 0x71 || slot_id == 0x72 || slot_id == 0x69 || slot_id == 0x6a) {
+        return true;
+    }
+    return false;
 }
 
 void CustomizeShoppingCart::ClearUncheckedItems() {

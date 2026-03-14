@@ -654,6 +654,8 @@ float GarageMainScreen::GetGeometryZAngle() {
         case GARAGETYPE_CUSTOMIZATION_SHOP:
         case GARAGETYPE_CAR_LOT:
             return 0.0f;
+        case GARAGETYPE_NONE:
+        case GARAGETYPE_MAIN_FE:
         default:
             return 134.41250610351562f;
     }
@@ -662,13 +664,15 @@ float GarageMainScreen::GetGeometryZAngle() {
 float GarageMainScreen::GetGeometryXPos() {
     eGarageType type = FEManager::Get()->GetGarageType();
     switch (type) {
+        case GARAGETYPE_NONE:
+        case GARAGETYPE_MAIN_FE:
+        default:
+            return 0.0f;
         case GARAGETYPE_CAREER_SAFEHOUSE:
             return 0.0f;
         case GARAGETYPE_CUSTOMIZATION_SHOP:
             return 0.0f;
         case GARAGETYPE_CAR_LOT:
-            return 0.0f;
-        default:
             return 0.0f;
     }
 }
@@ -676,12 +680,12 @@ float GarageMainScreen::GetGeometryXPos() {
 float GarageMainScreen::GetGeometryYPos() {
     eGarageType type = FEManager::Get()->GetGarageType();
     switch (type) {
-        case GARAGETYPE_CAREER_SAFEHOUSE:
-            return 0.0f;
-        case GARAGETYPE_CUSTOMIZATION_SHOP:
-            return 0.0f;
         case GARAGETYPE_CAR_LOT:
             return 0.07500000298023224f;
+        case GARAGETYPE_CAREER_SAFEHOUSE:
+        case GARAGETYPE_CUSTOMIZATION_SHOP:
+        case GARAGETYPE_NONE:
+        case GARAGETYPE_MAIN_FE:
         default:
             return 0.0f;
     }
@@ -690,13 +694,15 @@ float GarageMainScreen::GetGeometryYPos() {
 float GarageMainScreen::GetGeometryZPos() {
     eGarageType type = FEManager::Get()->GetGarageType();
     switch (type) {
+        case GARAGETYPE_NONE:
+        case GARAGETYPE_MAIN_FE:
+        default:
+            return 0.0f;
         case GARAGETYPE_CAREER_SAFEHOUSE:
             return 0.0f;
         case GARAGETYPE_CUSTOMIZATION_SHOP:
             return 0.0f;
         case GARAGETYPE_CAR_LOT:
-            return 0.0f;
-        default:
             return 0.0f;
     }
 }
