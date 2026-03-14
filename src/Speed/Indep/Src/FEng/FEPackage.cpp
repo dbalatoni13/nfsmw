@@ -603,13 +603,15 @@ void FEPackage::SetNumLibraryRefs(unsigned long NewCount) {
         pLibRefs = nullptr;
     } else {
         FELibraryRef* pNewList = static_cast<FELibraryRef*>(FEngMalloc(NewCount * sizeof(FELibraryRef), nullptr, 0));
+        FELibraryRef* p = pNewList;
         for (unsigned long i = 0; i < NewCount; i++) {
-            pNewList[i].ObjGUID = 0;
-            pNewList[i].PackNameHash = 0xFFFFFFFF;
-            pNewList[i].LibGUID = 0;
+            p->ObjGUID = 0;
+            p->PackNameHash = 0xFFFFFFFF;
+            p->LibGUID = 0;
+            p++;
         }
         unsigned long CopyCount = NewCount;
-        if (NumLibRefs < NewCount) {
+        if (NewCount > NumLibRefs) {
             CopyCount = NumLibRefs;
         }
         if (CopyCount != 0) {
@@ -618,8 +620,8 @@ void FEPackage::SetNumLibraryRefs(unsigned long NewCount) {
         if (pLibRefs) {
             delete[] reinterpret_cast<char*>(pLibRefs);
         }
-        NumLibRefs = NewCount;
         pLibRefs = pNewList;
+        NumLibRefs = NewCount;
     }
 }
 

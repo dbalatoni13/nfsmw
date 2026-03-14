@@ -298,8 +298,8 @@ void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
     if ((flags & 0x60) == 0x60) {
         return;
     }
-    bool bColumnAllowed = (flags & 0x20) == 0;
-    if (!bColumnAllowed) {
+    unsigned long colDisabled = flags & 0x20;
+    if (colDisabled) {
         lColumnNum = 0;
     }
     if ((flags & 0x40) != 0) {
@@ -309,10 +309,20 @@ void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
         if (lRowNum == 0) {
             return;
         }
-    } else if (bColumnAllowed) {
+    } else if (!colDisabled) {
         unsigned long ulCurrentColumn = mulCurrentColumn;
         unsigned long ulNewColumn = ulCurrentColumn + lColumnNum;
-        if ((flags & 4) == 0) {
+        if (flags & 4) {
+            if (static_cast<long>(ulNewColumn) >= static_cast<long>(mulNumColumns)) {
+                ulNewColumn = mulNumColumns - 1;
+            }
+            if (static_cast<long>(ulNewColumn) < 0) {
+                ulNewColumn = 0;
+            }
+        set_column:
+            mulCurrentColumn = ulNewColumn;
+            mstTargetLocation.h = mpstColumnData[ulNewColumn].fCummulativeValue;
+        } else {
             if (static_cast<long>(ulNewColumn) < 0) {
                 unsigned long numCols = mulNumColumns;
                 unsigned long i = numCols + ulNewColumn;
@@ -336,16 +346,6 @@ void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
             }
             mulFlags = mulFlags | 8;
             mulCurrentColumn = ulNewColumn - (ulNewColumn / mulNumColumns) * mulNumColumns;
-        } else {
-            if (static_cast<long>(mulNumColumns) <= static_cast<long>(ulNewColumn)) {
-                ulNewColumn = mulNumColumns - 1;
-            }
-            if (static_cast<long>(ulNewColumn) < 0) {
-                ulNewColumn = 0;
-            }
-        set_column:
-            mulCurrentColumn = ulNewColumn;
-            mstTargetLocation.h = mpstColumnData[ulNewColumn].fCummulativeValue;
         }
 
         unsigned long i = mulCurrentColumn;
@@ -378,7 +378,17 @@ void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
     {
         unsigned long ulCurrentRow = mulCurrentRow;
         unsigned long ulNewRow = ulCurrentRow + lRowNum;
-        if ((mulFlags & 4) == 0) {
+        if (mulFlags & 4) {
+            if (static_cast<long>(ulNewRow) >= static_cast<long>(mulNumRows)) {
+                ulNewRow = mulNumRows - 1;
+            }
+            if (static_cast<long>(ulNewRow) < 0) {
+                ulNewRow = 0;
+            }
+        set_row:
+            mulCurrentRow = ulNewRow;
+            mstTargetLocation.v = mpstRowData[ulNewRow].fCummulativeValue;
+        } else {
             if (static_cast<long>(ulNewRow) < 0) {
                 unsigned long numRows = mulNumRows;
                 unsigned long i = numRows + ulNewRow;
@@ -402,16 +412,6 @@ void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
             }
             mulFlags = mulFlags | 8;
             mulCurrentRow = ulNewRow - (ulNewRow / mulNumRows) * mulNumRows;
-        } else {
-            if (static_cast<long>(mulNumRows) <= static_cast<long>(ulNewRow)) {
-                ulNewRow = mulNumRows - 1;
-            }
-            if (static_cast<long>(ulNewRow) < 0) {
-                ulNewRow = 0;
-            }
-        set_row:
-            mulCurrentRow = ulNewRow;
-            mstTargetLocation.v = mpstRowData[ulNewRow].fCummulativeValue;
         }
 
         unsigned long i = mulCurrentRow;

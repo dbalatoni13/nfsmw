@@ -540,8 +540,8 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
             pList->SetNumColumns(BSwap32(pTag->Getu32(0)));
             pList->SetNumRows(BSwap32(pTag->Getu32(1)));
             CurListRow = 0xFFFFFFFF;
-            CurListCell = 0xFFFFFFFF;
             CurListCol = 0xFFFFFFFF;
+            CurListCell = 0xFFFFFFFF;
             {
                 unsigned long col = 0;
                 if (pList->mulNumColumns == 0) {
