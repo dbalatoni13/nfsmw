@@ -65,7 +65,7 @@ class Timer {
         this->PackedTime = 0;
     }
 
-    void ResetHigh() {}
+    void ResetHigh() { PackedTime = 0x7fffffff; }
 
     void UnSet() { PackedTime = 0; }
 
@@ -81,7 +81,7 @@ class Timer {
         return this->PackedTime;
     }
 
-    void SetPackedTime(int packed_time) {}
+    void SetPackedTime(int packed_time) { PackedTime = packed_time; }
 
     void PrintToString(char*, int);
 

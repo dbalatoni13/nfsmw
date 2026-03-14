@@ -24,6 +24,7 @@ struct LoadingTips : public MenuScreen {
 
     void ShowTipInfo();
     GameTipInfo *GetGameTip(eGameTips tip);
+    void StartLoadingTipImage();
     static void InitLoadingTipsScreen();
     void FinishLoadingTexCallback(unsigned int p);
     static void CloseLoadingTipsScreen();
