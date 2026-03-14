@@ -245,7 +245,7 @@ class IPursuit : public UTL::COM::IUnknown, public UTL::Collections::Listable<IP
     virtual bool IsSupportVehicle(IVehicle *iv) = 0;
     virtual const char *CopRequest() = 0;
     virtual bool PendingRoadBlockRequest() const = 0;
-    virtual bool IsFinisherActive() const = 0;
+    virtual bool IsHeliInPursuit() const = 0;
     virtual float TimeToFinisherAttempt() const = 0;
     virtual float TimeUntilBusted() const = 0;
     virtual bool PursuitMeterCanShowBusted() const = 0;
@@ -257,7 +257,7 @@ class IPursuit : public UTL::COM::IUnknown, public UTL::Collections::Listable<IP
     virtual bool RemoveVehicle(IVehicle *vehicle) = 0;
     virtual void AddRoadBlock(IRoadBlock *roadblock) = 0;
     virtual int RequestRoadBlock() = 0;
-    virtual bool IsHeliInPursuit() const = 0;
+    virtual bool IsFinisherActive() const = 0;
     virtual bool IsPlayerPursuit() const = 0;
     virtual bool ContingentHasActiveCops() const = 0;
     virtual int GetNumCopsDamaged() const = 0;
