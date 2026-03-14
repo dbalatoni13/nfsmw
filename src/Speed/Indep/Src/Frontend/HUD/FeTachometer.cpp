@@ -191,3 +191,16 @@ char Tachometer::GetLetterForGear(GearID gear) {
     }
     return 'N';
 }
+
+void Tachometer::SetGear(GearID gear, ShiftPotential potential, bool hasGoodEnoughTraction) {
+    if (gear != mGear) {
+        mGear = gear;
+        mShiftPotential = static_cast<ShiftPotential>(0);
+        return;
+    }
+    if (hasGoodEnoughTraction) {
+        mShiftPotential = potential;
+        return;
+    }
+    mShiftPotential = static_cast<ShiftPotential>(0);
+}

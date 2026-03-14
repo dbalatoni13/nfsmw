@@ -75,6 +75,66 @@ struct ResultStat : public RaceStat {
     GRacerInfo *RacerInfo;
 };
 
+struct GenericStat : public RaceStat {
+    GenericStat(FEString *title, FEString *data, float stat_data, unsigned int title_hash,
+                unsigned int units_hash, const char *format)
+        : RaceStat(title, data) //
+        , StatData(stat_data) //
+        , TitleHash(title_hash) //
+        , UnitsHash(units_hash) //
+        , Format(format) {}
+
+    ~GenericStat() override {}
+    void Draw() override;
+
+    float StatData;
+    unsigned int TitleHash;
+    unsigned int UnitsHash;
+    const char *Format;
+};
+
+struct InfoStat : public RaceStat {
+    InfoStat(FEString *title, FEString *info, unsigned int title_hash, unsigned int info_hash)
+        : RaceStat(title, info) //
+        , TitleHash(title_hash) //
+        , InfoHash(info_hash) {}
+
+    ~InfoStat() override {}
+    void Draw() override;
+
+    unsigned int TitleHash;
+    unsigned int InfoHash;
+};
+
+struct TimerStat : public RaceStat {
+    TimerStat(FEString *title, FEString *data, float seconds, unsigned int title_hash)
+        : RaceStat(title, data) //
+        , Seconds(seconds) //
+        , TitleHash(title_hash) {}
+
+    ~TimerStat() override {}
+    void Draw() override;
+
+    float Seconds;
+    unsigned int TitleHash;
+};
+
+struct GenericResult : public ResultStat {
+    GenericResult(FEString *name, FEString *data, FEString *pos, unsigned int units_hash,
+                  float fdata, const char *format, GRacerInfo *racer_info)
+        : ResultStat(name, data, pos, racer_info) //
+        , UnitsHash(units_hash) //
+        , FData(fdata) //
+        , Format(format) {}
+
+    ~GenericResult() override {}
+    void Draw() override;
+
+    unsigned int UnitsHash;
+    float FData;
+    const char *Format;
+};
+
 struct RaceResultStat : public ResultStat {
     RaceResultStat(FEString *name_str, FEString *time, FEString *pos, GRacerInfo *info)
         : ResultStat(name_str, time, pos, info) {}

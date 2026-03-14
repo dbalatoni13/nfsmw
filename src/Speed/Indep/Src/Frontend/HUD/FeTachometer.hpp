@@ -22,7 +22,7 @@ class ITachometer : public UTL::COM::IUnknown {
 
     virtual void SetRpm(float rpm);
     virtual void SetRevLimiter(float redline, float maxRpm);
-    virtual void SetGear(int gear, int shiftPotential);
+    virtual void SetGear(GearID gear, ShiftPotential potential, bool hasGoodEnoughTraction);
     virtual void SetShifting(bool shifting);
     virtual void SetInPerfectLaunchRange(bool inRange);
 
@@ -42,6 +42,7 @@ class Tachometer : public HudElement, public ITachometer {
     }
     void SetShifting(bool shifting) override;
     void SetInPerfectLaunchRange(bool inRange) override;
+    void SetGear(GearID gear, ShiftPotential potential, bool hasGoodEnoughTraction) override;
 
     static char GetLetterForGear(GearID gear);
 
