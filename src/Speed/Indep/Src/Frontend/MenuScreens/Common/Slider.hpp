@@ -47,4 +47,23 @@ public:
     virtual void Draw();
 };
 
+struct TwoStageSlider : public cSlider {
+    TwoStageSlider() {}
+
+    ~TwoStageSlider() override {}
+
+    float GetPreviewValue() { return fPreviewValue; }
+
+    void SetPreviewValue(float preview_value) { fPreviewValue = preview_value; }
+
+    virtual void Init(const char *pkg_name, const char *name, float min, float max, float inc, float cur, float preview, float range);
+    void InitObjects(const char *pkg_name, const char *name) override;
+    virtual void InitValues(float min, float max, float inc, float cur, float preview, float range);
+    void ToggleVisible(bool bOn) override;
+    void Draw() override;
+
+    FEImage *pPreviewBar; // offset 0x3C
+    float fPreviewValue;  // offset 0x40
+};
+
 #endif
