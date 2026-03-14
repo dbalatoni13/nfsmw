@@ -87,8 +87,8 @@ void FEListBox::CleanupColumns() {
         if (mpstColumnData) {
             delete[] mpstColumnData;
         }
-        mulNumColumns = 0;
         mpstColumnData = nullptr;
+        mulNumColumns = 0;
     }
 }
 
@@ -97,8 +97,8 @@ void FEListBox::CleanupRows() {
         if (mpstRowData) {
             delete[] mpstRowData;
         }
-        mulNumRows = 0;
         mpstRowData = nullptr;
+        mulNumRows = 0;
     }
 }
 

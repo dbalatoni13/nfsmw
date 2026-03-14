@@ -55,8 +55,8 @@ FEMessageResponse::~FEMessageResponse() {
 
 void FEMessageResponse::PurgeResponses() {
     delete[] pResponseList;
-    Count = 0;
     pResponseList = nullptr;
+    Count = 0;
 }
 
 void FEMessageResponse::SetCount(unsigned long NewCount) {
