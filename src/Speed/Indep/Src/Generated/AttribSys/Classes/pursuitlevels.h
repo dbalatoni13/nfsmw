@@ -33,7 +33,14 @@ struct CopFormationRecord {
 
 // total size: 0x18
 struct CopCountRecord {
-    CopCountRecord &operator=(const CopCountRecord &_ctor_arg) {}
+    CopCountRecord &operator=(const CopCountRecord &_ctor_arg) {
+#ifdef _MSC_VER
+        CopType = _ctor_arg.CopType;
+        Count = _ctor_arg.Count;
+        Chance = _ctor_arg.Chance;
+        return *this;
+#endif
+    }
 
     // Members
     Attrib::StringKey CopType; // offset 0x0, size 0x10

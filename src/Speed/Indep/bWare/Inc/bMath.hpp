@@ -79,7 +79,7 @@ inline float bSqrt(float x) {
         y0 = 0.0f;
     }
 #elif defined(EA_PLATFORM_XENON)
-// TODO
+    y0 = x > bSqrtEPS ? sqrtf(x) : 0.0f;
 #elif defined(EA_PLATFORM_PLAYSTATION2)
 // TODO
 #else

@@ -47,7 +47,11 @@ class Timer {
 
     Timer operator+(const Timer &t) const {}
 
-    Timer operator-(const Timer &t) const {}
+    Timer operator-(const Timer &t) const {
+#ifdef _MSC_VER
+        return Timer(this->PackedTime - t.PackedTime);
+#endif
+    }
 
     Timer operator*(const Timer &t) const {}
 

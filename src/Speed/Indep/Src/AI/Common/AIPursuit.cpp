@@ -1625,7 +1625,11 @@ bool AIPursuit::OnTask(HSIMTASK htask, float dT) {
     // Busted speed limit
     float bustedSpeedLimit = KPH2MPS(pursuitLevelAttrib->BustSpeed(0));
 
+#ifdef _MSC_VER
+    float bustedIncrement = 0.0f;
+#else
     float bustedIncrement;
+#endif
     if (!mIsPerpBusted && mIsPerpInSight && !mIsPursuitBailed) {
         // Check if target is in IRBVehicle with manual reset invulnerability
         bool isInvulnerable = false;
