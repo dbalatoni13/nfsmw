@@ -2207,7 +2207,11 @@ bool road_walker::walk_road(const UMath::Vector3 &start, const UMath::Vector3 &d
     numevaluates = 0;
     numwalkallpaths = 0;
 
+#ifdef _MSC_VER
+    for (start_vector::iterator it = sortedstarts.begin();
+#else
     for (start_record *it = sortedstarts.begin();
+#endif
          numevaluates < evaluate_limit && numwalkallpaths < walk_limit &&
          it != sortedstarts.end() && (startscore = it->score, it->score < bestscore);
          ++it) {
