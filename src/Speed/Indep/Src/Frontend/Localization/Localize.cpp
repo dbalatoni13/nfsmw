@@ -1,11 +1,14 @@
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/Src/FEng/FEWideString.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/bWare/Inc/bChunk.hpp"
 
 extern void GC_GetOSLanguage();
 extern void SetCurrentLanguage(eLanguages lang);
-extern const char *SearchForString(unsigned int hash);
 extern const char *GetLocalizedString(unsigned int id);
 
 struct FontNameInfo;
@@ -13,6 +16,7 @@ struct bPrintfLocaleInfo;
 struct WideCharHistogram {
     void PackString(char *packed, int size, const unsigned short *wide);
     void UnpackString(unsigned short *wide, int size, const char *packed);
+    void PlatEndianSwap();
 };
 
 extern WideCharHistogram *pWideCharHistogram;
@@ -28,6 +32,31 @@ struct LanguageInfo {
 };
 
 extern LanguageInfo LanguageInfoTable[];
+
+struct StringRecord {
+    unsigned int Hash;            // offset 0x0, size 0x4
+    unsigned char *PackedString;  // offset 0x4, size 0x4
+};
+
+static unsigned int NumStringRecords;
+static unsigned char *PackedStringTable;
+static StringRecord *RecordTable;
+
+extern cFrontendDatabase *FEDatabase;
+eLanguages GetCurrentLanguage();
+
+void LanguageHasChanged(eLanguages new_language) {
+    EAXSound::ChangeLanguage(new_language);
+    if (FEDatabase) {
+        eLanguages lang = GetCurrentLanguage();
+        if (lang != eLANGUAGE_ENGLISH) {
+            FEDatabase->GetGameplaySettings()->SpeedoUnits = 1;
+        } else {
+            FEDatabase->GetGameplaySettings()->SpeedoUnits = 0;
+        }
+    }
+    cFEng::Get()->MakeLoadedPackagesDirty();
+}
 
 LanguageInfo *GetLanguageInfo(eLanguages language) {
     for (int i = 0; i <= 9; i++) {
@@ -58,9 +87,79 @@ eLanguages GetCurrentLanguage() {
 }
 
 struct WideCharHistogram;
-extern WideCharHistogram *pWideCharHistogram;
 
-extern void bStrCpy(unsigned short *dst, const char *src);
+void WideToCharString(char *dest, unsigned int destlen, const short *src) {
+    if (!dest) {
+        return;
+    }
+    if (!src) {
+        return;
+    }
+    unsigned int bytes = 0;
+    unsigned short ch = *reinterpret_cast<const unsigned short *>(src);
+    if (ch != 0) {
+        destlen = destlen - 1;
+        if (bytes < destlen) {
+            do {
+                if (ch < 0x100) {
+                    bytes++;
+                    *dest = reinterpret_cast<const char *>(src)[1];
+                    src++;
+                    dest++;
+                } else {
+                    src++;
+                }
+                ch = *reinterpret_cast<const unsigned short *>(src);
+            } while (ch != 0 && bytes < destlen);
+        }
+    }
+    *dest = 0;
+}
+
+static const char *SearchForString(unsigned int string_label) {
+    if (!RecordTable) {
+        return nullptr;
+    }
+    unsigned int top = NumStringRecords - 1;
+    unsigned int bot = 0;
+    while (true) {
+        unsigned int mid = (bot + top) >> 1;
+        unsigned int hash = RecordTable[mid].Hash;
+        if (hash == string_label) {
+            return reinterpret_cast<const char *>(RecordTable[mid].PackedString);
+        }
+        if (top - bot < 3) {
+            if (RecordTable[bot].Hash == string_label) {
+                return reinterpret_cast<const char *>(RecordTable[bot].PackedString);
+            }
+            if (RecordTable[top].Hash == string_label) {
+                return reinterpret_cast<const char *>(RecordTable[top].PackedString);
+            }
+            break;
+        }
+        if (mid == bot) {
+            return nullptr;
+        }
+        if (hash > string_label) {
+            top = mid;
+        }
+        if (hash < string_label) {
+            bot = mid;
+        }
+    }
+    return nullptr;
+}
+
+int UnloaderLanguage(bChunk *chunk) {
+    if (chunk->GetID() == 0x39000) {
+        RecordTable = nullptr;
+        PackedStringTable = nullptr;
+        pWideCharHistogram = nullptr;
+        NumStringRecords = 0;
+        return 1;
+    }
+    return 0;
+}
 
 void PackedStringToWideString(unsigned short *wide_string, int wide_string_buffer_size, const char *packed_string) {
     if (!pWideCharHistogram) {

@@ -132,6 +132,8 @@ class EAXSound : public AudioMemBase {
 
     int GetDefaultPlatformAudioMode();
 
+    static void ChangeLanguage(int new_language) {}
+
     EAXFrontEnd *GetFrontEnd() { return m_pFESnd; }
 
   private:
