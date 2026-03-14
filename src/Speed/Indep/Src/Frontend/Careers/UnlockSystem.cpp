@@ -1050,7 +1050,7 @@ bool UserProfile::LoadFromBuffer(void *buffer, int size, bool commit_changes, in
     char *maxbuf = buf + size;
     char aVersion[16];
     buf = LoadSomeData(aVersion, buf, 0x10, maxbuf);
-    if (commit_changes) {
+    if (!player_id) {
         buf = TheCareerSettings.LoadFromBuffer(buf, maxbuf);
         TheCareerSettings.TryAwardDemoMarker();
     } else {
@@ -1063,7 +1063,7 @@ bool UserProfile::LoadFromBuffer(void *buffer, int size, bool commit_changes, in
         return false;
     }
     buf = LoadSomeData(m_aProfileName, buf, 0x20, maxbuf);
-    if (commit_changes) {
+    if (!player_id) {
         buf = LoadSomeData(Playlist, buf, 0xF0, maxbuf);
     } else {
         buf = buf + 0xF0;
@@ -1080,9 +1080,9 @@ bool UserProfile::LoadFromBuffer(void *buffer, int size, bool commit_changes, in
         RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(i));
         settings->SelectedCar[player_id] = h;
     }
-    if (VerifyProfileHash(static_cast<char *>(buffer) + 0x10, buf, size - 0x20)) {
-        m_bNamed = true;
-        return true;
+    if (!VerifyProfileHash(static_cast<char *>(buffer) + 0x10, buf, size - 0x20)) {
+        return false;
     }
-    return false;
+    m_bNamed = true;
+    return true;
 }
