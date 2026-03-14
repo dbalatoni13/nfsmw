@@ -277,17 +277,23 @@ GarageMainScreen::GarageMainScreen(ScreenConstructorData *sd, int eview_id, Ride
     mCustomizationCategory = -1;
     LoadingReason = static_cast<eSetRideInfoReasons>(1);
     RenderingCar = nullptr;
-    mGeometryModels = FEGeometryModels();
-    mOrbitV = 0.0f;
-    mOrbitH = 0.0f;
+    mGeometryModels.mModelCastsShadowMapFlags = 0;
+    mGeometryModels.mModelCurrGenOnly = 0;
+    mGeometryModels.mModelNextGenOnly = 0;
+    mGeometryModels.mNumModels = 0;
+    mGeometryModels.mModels = nullptr;
     Player = player;
     CameraPushRequested = false;
     mScreenKeyCamIsSetTo = 0;
+    mOrbitV = 0.0f;
+    mOrbitH = 0.0f;
 
-    for (int i = 0; i < 2; i++) {
+    int i = 0;
+    do {
         mActionQ[i] = new ActionQueue(i, 0x82d21520, "GarageMainScreen", false);
         mActionQ[i]->Enable(true);
-    }
+        i++;
+    } while (i < 2);
 
     if (player == 0) {
         pCarName = FEngFindString(GetPackageName(), 0xdb8ccef6);
@@ -307,8 +313,7 @@ GarageMainScreen::GarageMainScreen(ScreenConstructorData *sd, int eview_id, Ride
     mGeometryModels.Init("BACKDROP");
 
     char sztemp[32];
-    CarTypeInfo *cti = GetCarTypeInfo(start_ride->Type);
-    FEngSNPrintf(sztemp, 32, "CAR_NAME_%s", cti->CarTypeName);
+    FEngSNPrintf(sztemp, 0x20, "CAR_NAME_%s", CarTypeInfoArray + start_ride->Type * sizeof(CarTypeInfo));
     FEngSetLanguageHash(pCarName, FEHashUpper(sztemp));
     SetSelectCarLighting(ViewID, 1.0f, 0);
     HandleTick(0);
@@ -563,7 +568,6 @@ void GarageMainScreen::BackgroundLoaded(int param) {
 
 void GarageMainScreen::HandleRender(unsigned int render_flags) {
     if (HideEntireScreen == 0) {
-        int view_id = ViewID;
         bMatrix4 *local = reinterpret_cast<bMatrix4 *>(CurrentBufferPos);
         if (CurrentBufferEnd <= CurrentBufferPos + 0x40) {
             FrameMallocFailed = 1;
@@ -579,7 +583,7 @@ void GarageMainScreen::HandleRender(unsigned int render_flags) {
             local->v3.x = GetGeometryXPos();
             local->v3.y = GetGeometryYPos();
             local->v3.z = GetGeometryZPos();
-            mGeometryModels.Render(&eViews[view_id], local, render_flags);
+            mGeometryModels.Render(&eViews[ViewID], local, render_flags);
         }
         gEmitterSystem.Update(RealTimeElapsed);
     }

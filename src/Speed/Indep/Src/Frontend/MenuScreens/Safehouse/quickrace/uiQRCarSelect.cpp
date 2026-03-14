@@ -38,6 +38,8 @@ extern int Showcase_FromFilter;
 extern int bSNPrintf(char *buf, int size, const char *fmt, ...);
 extern const char *GetLocalizedString(unsigned int hash);
 extern unsigned long FEHashUpper(const char *str);
+extern FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
+extern void FEngSetInvisible(FEObject *obj);
 
 void MemcardEnter(const char *from, const char *to, unsigned int op, void (*pTermFunc)(void *),
                   void *pTermFuncParam, unsigned int msgSuccess, unsigned int msgFailed);
@@ -832,25 +834,95 @@ eMenuSoundTriggers UIQRCarSelect::NotifySoundMessage(unsigned long msg, eMenuSou
 }
 
 void UIQRCarSelect::Setup() {
-    if (FEDatabase->IsCarLotMode()) {
-        filter = LIST_STOCK;
-    }
-    RefreshCarList();
-    RefreshBonusCarList();
-    if (ForceCar != 0) {
-        SelectableCar *node = FilteredCarsList.GetHead();
-        while (node != FilteredCarsList.EndOfList()) {
-            if (node->mHandle == ForceCar) {
-                pSelectedCar = node;
-                break;
-            }
-            node = static_cast<SelectableCar *>(node->GetNext());
+    unsigned int mode = FEDatabase->GetGameMode();
+    unsigned int pkgMsg;
+
+    if ((mode & 0x8000) != 0) {
+        if (FEDatabase->GetCareerSettings()->GetCurrentBin() > 15) {
+            pkgMsg = 0x3a12d2f5;
+        } else {
+            pkgMsg = 0x5415e304;
         }
-        ForceCar = 0;
+        goto queue_msg;
     }
-    SetupForPlayer(iPlayerNum);
+
+    {
+        bool isSplit = (mode & 4) != 0;
+        if (isSplit) {
+            bool isTwoPlayer = false;
+            if (isSplit) {
+                isTwoPlayer = FEDatabase->iNumPlayers == 2;
+            }
+            if (isTwoPlayer) {
+                pkgMsg = 0x2cf6c390;
+            } else {
+                pkgMsg = 0xde511657;
+            }
+            goto queue_msg;
+        }
+        if ((mode & 8) != 0) {
+        online_lan:
+            pkgMsg = 0x70fbb1e4;
+            goto queue_msg;
+        }
+        if ((mode & 0x40) != 0) goto online_lan;
+        if ((mode & 0x20) != 0) {
+            pkgMsg = 0xa936c3a2;
+            goto queue_msg;
+        }
+        if ((mode & 1) != 0) {
+            cFEng::Get()->QueuePackageMessage(0x5415c3f1, GetPackageName(), nullptr);
+        }
+        goto after_queue;
+    }
+
+queue_msg:
+    cFEng::Get()->QueuePackageMessage(pkgMsg, GetPackageName(), nullptr);
+
+after_queue:
+
+    FEngSetInvisible(FEngFindObject(GetPackageName(), 0x64f6d21f));
+
+    if ((FEDatabase->GetGameMode() & 1) == 0) {
+        RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+        originalCar = settings->GetSelectedCar(iPlayerNum);
+        if ((FEDatabase->GetGameMode() & 0x20) == 0 && originalCar != 0x12345678) {
+            unsigned int m3gtrHash = FEHashUpper("M3GTRCAREERSTART");
+            if (originalCar != m3gtrHash) {
+                FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(iPlayerNum);
+                if (stable) {
+                    FECarRecord *car = stable->GetCarRecordByHandle(originalCar);
+                    if (car) {
+                        filter = (car->FilterBits & 0x3f) | 0xf0000;
+                        goto init_list_handles;
+                    }
+                }
+            }
+        }
+        filter = 0xf0001;
+    } else {
+        originalCar = FEDatabase->GetCareerSettings()->GetCurrentCar();
+        if ((FEDatabase->GetGameMode() & 0x8000) != 0) {
+            filter = 0xf0001;
+            UserProfile *profile = FEDatabase->GetUserProfile(0);
+            if ((profile->GetCareer()->SpecialFlags & 2) == 0) {
+                cFEng::Get()->QueuePackageMessage(FEHashUpper("DISABLE_INPUTS"), GetPackageName(), nullptr);
+                MemoryCard::GetInstance()->StartListingOldSaveFiles();
+            }
+            goto init_list_handles;
+        }
+        filter = 0xf0002;
+    }
+
+init_list_handles:
+    int i = 0;
+    do {
+        ListHandles[i] = 0xFFFFFFFF;
+        i++;
+    } while (i < 6);
+
+    RefreshCarList();
     RefreshHeader();
-    UpdateSliders();
 }
 
 void UIQRCarSelect::InitStatsSliders() {
@@ -860,17 +932,63 @@ void UIQRCarSelect::InitStatsSliders() {
 }
 
 void UIQRCarSelect::UpdateSliders() {
-    FECarRecord *car = GetSelectedCarRecord();
-    if (!car) return;
+    Physics::Info::Performance perf1;
+    Physics::Info::Performance perf2;
 
-    Physics::Info::Performance performance;
-    Physics::Info::EstimatePerformance(performance);
+    if (pSelectedCar != nullptr) {
+        FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(iPlayerNum);
+        if (stable != nullptr) {
+            FECarRecord *car = stable->GetCarRecordByHandle(pSelectedCar->mHandle);
+            if (car != nullptr) {
+                Attrib::Gen::pvehicle pveh(Attrib::FindCollection(Attrib::Gen::pvehicle::ClassKey(), car->VehicleKey), 0, nullptr);
+                pveh.SetDefaultLayout(0x50);
+                if (car->Customization != 0xff) {
+                    FECustomizationRecord *cust = stable->GetCustomizationRecordByHandle(car->Customization);
+                    cust->WriteRecordIntoPhysics(pveh);
+                }
+                Physics::Info::EstimatePerformance(pveh, perf1);
+            }
+            if ((FEDatabase->GetGameMode() & 1) != 0) {
+                car = stable->GetCarRecordByHandle(originalCar);
+            }
+            if (car != nullptr) {
+                Attrib::Gen::pvehicle pveh2(Attrib::FindCollection(Attrib::Gen::pvehicle::ClassKey(), car->VehicleKey), 0, nullptr);
+                pveh2.SetDefaultLayout(0x50);
+                if (car->Customization != 0xff) {
+                    FECustomizationRecord *cust = stable->GetCustomizationRecordByHandle(car->Customization);
+                    cust->WriteRecordIntoPhysics(pveh2);
+                }
+                Physics::Info::EstimatePerformance(pveh2, perf2);
+            }
+        }
+    }
 
-    AccelerationSlider.SetValue(performance.Acceleration);
-    TopSpeedSlider.SetValue(performance.TopSpeed);
-    HandlingSlider.SetValue(performance.Handling);
+    if (FEDatabase->GetCareerSettings()->GetCurrentBin() > 15) {
+        perf2 = perf1;
+    }
+
+    AccelerationSlider.SetValue(perf1.Acceleration);
+    float acc_val = perf2.Acceleration;
+    if (acc_val - AccelerationSlider.GetMin() < 0.0f) acc_val = AccelerationSlider.GetMin();
+    float acc_preview = AccelerationSlider.GetMax();
+    if (acc_val - AccelerationSlider.GetMax() < 0.0f) acc_preview = acc_val;
+    AccelerationSlider.SetPreviewValue(acc_preview);
     AccelerationSlider.Draw();
+
+    TopSpeedSlider.SetValue(perf1.TopSpeed);
+    float top_val = perf2.TopSpeed;
+    if (top_val - TopSpeedSlider.GetMin() < 0.0f) top_val = TopSpeedSlider.GetMin();
+    float top_preview = TopSpeedSlider.GetMax();
+    if (top_val - TopSpeedSlider.GetMax() < 0.0f) top_preview = top_val;
+    TopSpeedSlider.SetPreviewValue(top_preview);
     TopSpeedSlider.Draw();
+
+    HandlingSlider.SetValue(perf1.Handling);
+    float hdl_val = perf2.Handling;
+    if (hdl_val - HandlingSlider.GetMin() < 0.0f) hdl_val = HandlingSlider.GetMin();
+    float hdl_preview = HandlingSlider.GetMax();
+    if (hdl_val - HandlingSlider.GetMax() < 0.0f) hdl_preview = hdl_val;
+    HandlingSlider.SetPreviewValue(hdl_preview);
     HandlingSlider.Draw();
 }
 
