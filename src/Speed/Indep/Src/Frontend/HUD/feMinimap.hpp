@@ -49,7 +49,7 @@ class Minimap : public HudElement {
     bTList<MiniMapItem> StaticMiniMapItems;
     FEObject *TrackmapLayout;
     FEMultiImage *TrackmapArt[4];
-    FEVector2 TrackmapArtUVs[4][2];
+    FEVector2 TrackmapArtUVs[2][4];
     FEImage *TrackmapNorth;
     FEImage *mPlayerCarIndicator;
     FEImage *mPlayerCarIndicator2;
@@ -67,7 +67,7 @@ class Minimap : public HudElement {
     FEImage *mRacerElementArt[8];
     FEImage *mCheckpointElementArt;
     FEImage *mGPSSelectionElementArt;
-    FEImage *mGameplayIcons[15][8];
+    FEImage *mGameplayIcons[8][17];
 };
 
 #endif
