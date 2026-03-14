@@ -9,6 +9,7 @@
 
 struct Chyron : public MenuScreen {
     Chyron(ScreenConstructorData *sd);
+    ~Chyron() override;
     void NotificationMessage(unsigned long msg, FEObject *pobject, unsigned long param1, unsigned long param2) override;
     void Start();
 

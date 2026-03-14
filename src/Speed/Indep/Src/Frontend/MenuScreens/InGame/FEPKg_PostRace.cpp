@@ -168,7 +168,25 @@ RaceStat::RaceStat(FEString *title, FEString *data)
 RaceResultStat::~RaceResultStat() {}
 
 void RaceResultStat::Draw() {
-    FEStatWidget::Draw();
+    char text[0x20];
+
+    FEPrintf(GetTitleObject(), lbl_803E4CF0, RacerInfo->GetName());
+
+    if (RacerInfo->GetIsEngineBlown()) {
+        FEngSetLanguageHash(GetDataObject(), 0x01E66364);
+    } else if (RacerInfo->GetIsTotalled()) {
+        FEngSetLanguageHash(GetDataObject(), 0xB7B75185);
+    } else if (RacerInfo->GetIsKnockedOut()) {
+        FEngSetLanguageHash(GetDataObject(), 0x5D82DBA2);
+    } else if (!RacerInfo->IsFinishedRacing()) {
+        FEngSetLanguageHash(GetDataObject(), 0x0FC1BF40);
+    } else {
+        Timer t(RacerInfo->GetRaceTimer().GetTime());
+        t.PrintToString(text, 0);
+        FEPrintf(GetDataObject(), lbl_803E4CF0, text);
+    }
+
+    FEPrintf(Position, lbl_803E4CB4, RacerInfo->GetRanking());
 }
 
 LapStat::~LapStat() {}

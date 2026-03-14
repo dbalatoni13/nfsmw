@@ -38,7 +38,6 @@ struct ScreenButtonDatum {
 
 extern unsigned long FEHashUpper(const char *str);
 extern int bStrICmp(const char *, const char *);
-extern ScreenButtonDatum *FindScreenButtonDatum(unsigned int hash);
 extern void HackClearCache(FEPackage *pkg);
 extern FEPackageRenderInfo *HACK_FEPkgMgr_GetPackageRenderInfo(FEPackage *pkg);
 extern cFEng *cFEng_mInstance;
@@ -58,12 +57,40 @@ static ScreenButtonDatum *FindAvailableButtonDatum() {
     return nullptr;
 }
 
+ScreenButtonDatum *FindScreenButtonDatum(unsigned int screen_filename_hash) {
+    cFrontendDatabase *db = FEDatabase;
+    for (int i = 0; i <= 0x31; i++) {
+        if (screen_filename_hash == ScreenButtonData[i].ScreenHash) {
+            if (ScreenButtonData[i].GameMode == 0xFFFFFFFF ||
+                db->MatchesGameMode(ScreenButtonData[i].GameMode)) {
+                return &ScreenButtonData[i];
+            }
+        }
+    }
+    return nullptr;
+}
+
 unsigned char FEngGetLastButton(const char *pkg_name) {
     ScreenButtonDatum *sd = FindScreenButtonDatum(FEHashUpper(pkg_name));
     if (!sd) {
         return 0;
     }
     return sd->LastButton;
+}
+
+void FEngSetLastButton(const char *pkg_name, unsigned char button_hash) {
+    unsigned int hash = FEHashUpper(pkg_name);
+    ScreenButtonDatum *sd = FindScreenButtonDatum(hash);
+    if (sd) {
+        sd->LastButton = button_hash;
+    } else {
+        ScreenButtonDatum *avail = FindAvailableButtonDatum();
+        if (avail) {
+            avail->ScreenHash = FEHashUpper(pkg_name);
+            avail->LastButton = button_hash;
+            avail->GameMode = FEDatabase->GetGameMode();
+        }
+    }
 }
 
 struct UIMain : MenuScreen { UIMain(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x144]; };

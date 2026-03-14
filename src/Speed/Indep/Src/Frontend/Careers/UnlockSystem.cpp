@@ -749,6 +749,41 @@ bool DoesCategoryHaveNewUnlock(eUnlockableEntity ent) {
     return hasNew;
 }
 
+struct UnlockTypeEntry {
+    const char *mPartName;
+    eUnlockableEntity mUnlockable;
+};
+
+static UnlockTypeEntry unlockType[18] = {
+    { "brakes", UNLOCKABLE_THING_PUT_BRAKES },
+    { "chassis", UNLOCKABLE_THING_PUT_CHASSIS },
+    { "engine", UNLOCKABLE_THING_PUT_ENGINE },
+    { "induction", UNLOCKABLE_THING_PUT_INDUCTION },
+    { "nos", UNLOCKABLE_THING_PUT_NOS },
+    { "tires", UNLOCKABLE_THING_PUT_TIRES },
+    { "transmission", UNLOCKABLE_THING_PUT_TRANSMISSION },
+    { "bodykit", UNLOCKABLE_THING_BODY_KIT },
+    { "decals", static_cast< eUnlockableEntity >(50) },
+    { "hood", UNLOCKABLE_THING_HOODS },
+    { "hud", UNLOCKABLE_THING_CUSTOM_HUD },
+    { "numbers", static_cast< eUnlockableEntity >(43) },
+    { "paint", UNLOCKABLE_THING_PAINTABLE_BODY },
+    { "rims", UNLOCKABLE_THING_RIM_BRANDS },
+    { "roofscoop", UNLOCKABLE_THING_ROOF_SCOOPS },
+    { "spoiler", UNLOCKABLE_THING_SPOILERS },
+    { "tint", UNLOCKABLE_THING_WINDOW_TINT },
+    { "vinyls", static_cast< eUnlockableEntity >(40) },
+};
+
+eUnlockableEntity ConvertBigBangUpgradeAward(const char *partname) {
+    for (unsigned int onPart = 0; onPart < 18; onPart++) {
+        if (bStrCmp(partname, unlockType[onPart].mPartName) == 0) {
+            return unlockType[onPart].mUnlockable;
+        }
+    }
+    return UNLOCKABLE_THING_UNKNOWN;
+}
+
 void AwardUnlockUpgrade(Attrib::Gen::gameplay &inst) {
     const char *upgradePartName = inst.UpgradePartName(0);
     const char *upgradePartID = inst.UpgradePartID(0);
