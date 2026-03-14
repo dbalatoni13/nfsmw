@@ -346,6 +346,7 @@ class Array {
         }
     }
 
+  public:
     // TODO is this really overriden?
     void operator delete(void *ptr) {}
 
@@ -365,6 +366,7 @@ class Array {
 
     void operator delete(void *, void *) {}
 
+  private:
     uint16_t mAlloc;
     uint16_t mCount;
     uint16_t mSize;

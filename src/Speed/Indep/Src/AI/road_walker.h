@@ -6,6 +6,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 
 DECLARE_CONTAINER_TYPE(_type_set);
+DECLARE_CONTAINER_TYPE(start_vector);
 
 // total size: 0x9C
 class road_walker {
@@ -23,7 +24,11 @@ class road_walker {
         }
     };
 
+#ifdef EA_BUILD_A124
+    typedef UTL::Std::vector<start_record, _type_start_vector> start_vector;
+#else
     typedef _STL::vector<start_record, _STL::allocator<start_record> > start_vector;
+#endif
 
     road_walker()
         : raceroutes(false) //

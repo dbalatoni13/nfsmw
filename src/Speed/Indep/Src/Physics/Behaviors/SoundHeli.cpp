@@ -6,6 +6,7 @@
 
 // total size: 0x64
 class SoundHeli : public VehicleBehavior, public IAudible {
+  public:
     static Behavior *Construct(const BehaviorParams &params);
 
     SoundHeli(const BehaviorParams &params);
