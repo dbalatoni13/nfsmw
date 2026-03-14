@@ -993,31 +993,68 @@ void UIQRCarSelect::UpdateSliders() {
 }
 
 int UIQRCarSelect::GetFilterType() {
-    if (FEDatabase->IsCareerMode()) return LIST_CAREER;
-    if (FEDatabase->IsCarLotMode()) return LIST_STOCK;
-    return filter;
+    unsigned short f = static_cast<unsigned short>(filter);
+    switch (f) {
+    case 1: return 0;
+    case 2: return 1;
+    case 4: return 2;
+    case 8: return 3;
+    case 0x10: return 4;
+    case 0x20: return 5;
+    default: return 0;
+    }
 }
 
 void UIQRCarSelect::SetupForPlayer(int player) {
-    if (FEDatabase->IsSplitScreenMode()) {
-        RaceSettings *settings = FEDatabase->GetQuickRaceSettings(FEDatabase->RaceMode);
-        unsigned int selectedCar = settings->SelectedCar[player];
-        SelectableCar *node = FilteredCarsList.GetHead();
-        while (node != FilteredCarsList.EndOfList()) {
-            if (node->mHandle == selectedCar) {
-                pSelectedCar = node;
-                return;
+    SelectableCar *found = nullptr;
+    SelectableCar *node = FilteredCarsList.GetHead();
+    for (; node != FilteredCarsList.EndOfList(); node = static_cast<SelectableCar *>(node->GetNext())) {
+        found = node;
+        if (ForceCar == 0xFFFFFFFF) {
+            int ft = GetFilterType();
+            unsigned int nodeHandle = node->mHandle;
+            if (nodeHandle == ListHandles[ft]) break;
+            unsigned int targetHandle;
+            if ((FEDatabase->GetGameMode() & 1) == 0) {
+                RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+                nodeHandle = node->mHandle;
+                targetHandle = settings->SelectedCar[iPlayerNum];
+            } else {
+                targetHandle = FEDatabase->CurrentUserProfiles[0]->GetCareer()->CurrentCar;
             }
-            node = static_cast<SelectableCar *>(node->GetNext());
+            if (nodeHandle == targetHandle) break;
+        } else {
+            if (node->mHandle == ForceCar) break;
         }
     }
-    pSelectedCar = FilteredCarsList.GetHead();
+    if ((FEDatabase->GetGameMode() & 0x8000) != 0 && ForceCar == 0xFFFFFFFF) {
+        CarViewer::CancelCarLoad(eCARVIEWER_PLAYER1_CAR);
+        found = FilteredCarsList.GetHead();
+        originalCar = found->mHandle;
+    }
+    ForceCar = 0xFFFFFFFF;
+    if (found == nullptr && FilteredCarsList.GetHead() != FilteredCarsList.EndOfList()) {
+        found = FilteredCarsList.GetHead();
+    }
+    SetSelectedCar(found, iPlayerNum);
+    RefreshHeader();
 }
 
 int UIQRCarSelect::GetBonusUnlockText(FECarRecord *fe_car) {
-    if (!fe_car) return 0;
-    Attrib::Gen::frontend fe_attrib(fe_car->FEKey, 0, nullptr);
-    return fe_attrib.UnlockedAt();
+    unsigned int handle = fe_car->Handle;
+    if (handle < 0x136254u) {
+        if (handle > 0x13624du || (handle < 0x9667u && handle > 0x965eu)) {
+            return 0x4ef2a115;
+        }
+    } else {
+        switch (handle) {
+        case 0x2cf370f0u: return 0xbd8bac94;
+        case 0x03a94520u: return 0xbd8bac93;
+        case 0x2cf385b2u: return 0xbd8bac92;
+        case 0xcb6aaf2fu: return 0xbd8bac91;
+        }
+    }
+    return 0;
 }
 
 int UIQRCarSelect::GetBonusUnlockBinNumber(FECarRecord *fe_car) {
@@ -1343,17 +1380,39 @@ void UIQRCarSelect::RefreshBonusCarList() {
 
 void UIQRCarSelect::RefreshCarList() {
     ClearCarList();
-    FEPlayerCarDB *carDB = FEDatabase->GetPlayerCarStable(0);
-    int filterType = GetFilterType();
-    int numCars = carDB->GetNumCars(0xFFFFFFFF);
-    for (int i = 0; i < numCars; i++) {
-        FECarRecord *car = carDB->GetCarByIndex(i);
-        if (!car || !car->IsValid()) continue;
-        if (!car->MatchesFilter(filterType)) continue;
-        SelectableCar *newCar = new SelectableCar(car->Handle, false);
-        FilteredCarsList.AddTail(newCar);
+    if ((filter & 8) != 0) {
+        RefreshBonusCarList();
+        return;
     }
-    pSelectedCar = FilteredCarsList.GetHead();
+    FEPlayerCarDB *carDB = FEDatabase->GetPlayerCarStable(iPlayerNum);
+    unsigned int mode = FEDatabase->GetGameMode();
+    unsigned int unlockFilter;
+    if ((mode & 1) == 0) {
+        if ((mode & 4) == 0 && ((mode & 8) != 0 || (mode & 0x40) != 0)) {
+            unlockFilter = 7;
+        } else {
+            unlockFilter = 1;
+        }
+    } else {
+        unlockFilter = 2;
+    }
+    int i = 0;
+    do {
+        FECarRecord *car = carDB->GetCarByIndex(i);
+        if (car->Handle != 0xFFFFFFFF && car->MatchesFilter(filter)) {
+            bool unlocked = UnlockSystem::IsCarUnlocked(static_cast<eUnlockFilters>(unlockFilter), car->Handle, iPlayerNum);
+            if (!GetMikeMannBuild() || IsValidMikeMannCar(car, filter)) {
+                SelectableCar *newCar = new SelectableCar(car->Handle, !unlocked);
+                FilteredCarsList.AddTail(newCar);
+            }
+        }
+        i++;
+    } while (i < 200);
+    unsigned short f = static_cast<unsigned short>(filter);
+    if (f == 1 || f == 2 || f == 8 || f == 0x10) {
+        FilteredCarsList.Sort(SortCarsByUnlock);
+    }
+    SetupForPlayer(iPlayerNum);
 }
 
 void UIQRCarSelect::ClearCarList() {
@@ -1362,16 +1421,20 @@ void UIQRCarSelect::ClearCarList() {
 }
 
 void UIQRCarSelect::ScrollCars(eScrollDir dir) {
+    if (pSelectedCar == nullptr) return;
+    SelectableCar *newCar = static_cast<SelectableCar *>(pSelectedCar->GetPrev());
+    if (newCar == FilteredCarsList.EndOfList()) {
+        newCar = FilteredCarsList.GetTail();
+    }
     if (dir == eSD_NEXT) {
-        pSelectedCar = static_cast<SelectableCar *>(pSelectedCar->GetNext());
-        if (pSelectedCar == FilteredCarsList.EndOfList()) {
-            pSelectedCar = FilteredCarsList.GetHead();
+        newCar = static_cast<SelectableCar *>(pSelectedCar->GetNext());
+        if (newCar == FilteredCarsList.EndOfList()) {
+            newCar = FilteredCarsList.GetHead();
         }
-    } else {
-        pSelectedCar = static_cast<SelectableCar *>(pSelectedCar->GetPrev());
-        if (pSelectedCar == FilteredCarsList.EndOfList()) {
-            pSelectedCar = FilteredCarsList.GetTail();
-        }
+    }
+    if (newCar != pSelectedCar) {
+        SetSelectedCar(newCar, iPlayerNum);
+        RefreshHeader();
     }
 }
 
@@ -1388,11 +1451,8 @@ void UIQRCarSelect::ScrollLists(eScrollDir dir) {
 }
 
 void UIQRCarSelect::OnlineActOnSelect() {
-    FECarRecord *car = GetSelectedCarRecord();
-    if (!car) return;
-    if (FEDatabase->IsCareerMode() && IsCarImpounded(car->Handle)) {
-        TheBustedManager.MaybeReleaseCar();
-        return;
-    }
-    ChooseTransmission();
+    unsigned int handle = pSelectedCar->mHandle;
+    FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(1))->SetSelectedCar(handle, 0);
+    FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0))->SetSelectedCar(handle, 0);
+    FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(2))->SetSelectedCar(handle, 0);
 }
