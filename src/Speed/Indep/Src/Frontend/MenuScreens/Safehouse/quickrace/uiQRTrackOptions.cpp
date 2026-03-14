@@ -76,7 +76,7 @@ void UIQRTrackOptions::NotificationMessage(unsigned long msg, FEObject *pobj, un
     UIWidgetMenu::NotificationMessage(msg, pobj, param1, param2);
     switch (msg) {
     case 0x406415e3:
-        if (!(FEDatabase->GetGameMode() & eFE_GAME_MODE_ONLINE) && !(FEDatabase->GetGameMode() & eFE_GAME_MODE_LAN)) {
+        if (!(FEDatabase->IsOnlineMode()) && !(FEDatabase->IsLANMode())) {
             GRaceCustom *custom = GRaceDatabase_mObj->AllocCustomRace(race);
             GRaceCustom_SetCopsEnabled(custom, false);
             RaceSettings *settings = FEDatabase->GetQuickRaceSettings(race->GetRaceType());
@@ -148,7 +148,7 @@ void UIQRTrackOptions::Setup() {
         SetupCircuit();
     }
     SetInitialOption(0);
-    if ((FEDatabase->GetGameMode() & eFE_GAME_MODE_ONLINE) || (FEDatabase->GetGameMode() & eFE_GAME_MODE_LAN)) {
+    if ((FEDatabase->IsOnlineMode()) || (FEDatabase->IsLANMode())) {
         FEngSetLanguageHash(GetPackageName(), 0x42adb44c, 0x7dadee33);
         return;
     }
@@ -245,7 +245,7 @@ void UIQRTrackOptions::SetupDrag() {
 }
 
 void UIQRTrackOptions::SetupKnockout() {
-    if (!(FEDatabase->GetGameMode() & eFE_GAME_MODE_ONLINE) && !(FEDatabase->GetGameMode() & eFE_GAME_MODE_LAN)) {
+    if (!(FEDatabase->IsOnlineMode()) && !(FEDatabase->IsLANMode())) {
         if (race->GetCanBeReversed()) {
             TrackDirection *td = new TrackDirection(true);
             AddToggleOption(td, true);
@@ -283,7 +283,7 @@ void UIQRTrackOptions::SetupKnockout() {
 }
 
 void UIQRTrackOptions::SetupSpeedTrap() {
-    if (!(FEDatabase->GetGameMode() & eFE_GAME_MODE_ONLINE) && !(FEDatabase->GetGameMode() & eFE_GAME_MODE_LAN)) {
+    if (!(FEDatabase->IsOnlineMode()) && !(FEDatabase->IsLANMode())) {
         if (race->GetCanBeReversed()) {
             TrackDirection *td = new TrackDirection(true);
             AddToggleOption(td, true);
@@ -319,7 +319,7 @@ void UIQRTrackOptions::SetupSpeedTrap() {
 }
 
 void UIQRTrackOptions::SetupTollbooth() {
-    if (!(FEDatabase->GetGameMode() & eFE_GAME_MODE_ONLINE) && !(FEDatabase->GetGameMode() & eFE_GAME_MODE_LAN)) {
+    if (!(FEDatabase->IsOnlineMode()) && !(FEDatabase->IsLANMode())) {
         if (race->GetCanBeReversed()) {
             TrackDirection *td = new TrackDirection(true);
             AddToggleOption(td, true);

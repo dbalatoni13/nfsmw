@@ -1321,7 +1321,101 @@ void CustomizeShoppingCart::RefreshHeader() {
 }
 
 void CustomizeShoppingCart::SetMarkerAmounts() {
-    // TODO: implement marker tracking
+    if (CustomizeIsInPerformance()) {
+        static Physics::Upgrades::Type phys_type[7] = {
+            Physics::Upgrades::kType_Transmission,
+            Physics::Upgrades::kType_Tires,
+            Physics::Upgrades::kType_Induction,
+            Physics::Upgrades::kType_Brakes,
+            Physics::Upgrades::kType_Chassis,
+            Physics::Upgrades::kType_Engine,
+            Physics::Upgrades::kType_Nitrous,
+        };
+        static int markers[7] = {
+            FEMarkerManager::MARKER_BRAKES,
+            FEMarkerManager::MARKER_ENGINE,
+            FEMarkerManager::MARKER_NOS,
+            FEMarkerManager::MARKER_INDUCTION,
+            FEMarkerManager::MARKER_CHASSIS,
+            FEMarkerManager::MARKER_TIRES,
+            FEMarkerManager::MARKER_TRANSMISSION,
+        };
+        int i = 0;
+        do {
+            ShoppingCartItem *item = gCarCustomizeManager.IsPartTypeInCart(phys_type[i]);
+            int num = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(markers[i]), 0);
+            if (item && item->IsActive()) {
+                num--;
+            }
+            i++;
+            SetMarkerData(i, item, num);
+        } while (i < 7);
+    } else if (CustomizeIsInParts()) {
+        static unsigned int slot_id[5] = {0x17, 0x3F, 0x2C, 0x42, 0x3E};
+        static int markers[5] = {
+            FEMarkerManager::MARKER_BODY,
+            FEMarkerManager::MARKER_HOOD,
+            FEMarkerManager::MARKER_SPOILER,
+            FEMarkerManager::MARKER_RIMS,
+            FEMarkerManager::MARKER_ROOF_SCOOP,
+        };
+        int i = 0;
+        do {
+            ShoppingCartItem *item = gCarCustomizeManager.IsPartTypeInCart(slot_id[i]);
+            int num = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(markers[i]), 0);
+            if (item && item->IsActive()) {
+                num--;
+            }
+            i++;
+            SetMarkerData(i, item, num);
+        } while (i < 5);
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x47df0e22));
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x47df0e23));
+    } else {
+        ShoppingCartItem *item = gCarCustomizeManager.IsPartTypeInCart(static_cast<unsigned int>(0x4d));
+        int num = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_VINYL, 0);
+        if (item && item->IsActive()) {
+            num--;
+        }
+        SetMarkerData(1, item, num);
+
+        int numDecals = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_DECAL, 0);
+        SetMarkerData(2, item, numDecals
+            - (GetNumMarkersSpending(0x53)
+            + GetNumMarkersSpending(0x5b)
+            + GetNumMarkersSpending(99)
+            + GetNumMarkersSpending(100)
+            + GetNumMarkersSpending(0x65)
+            + GetNumMarkersSpending(0x66)
+            + GetNumMarkersSpending(0x67)
+            + GetNumMarkersSpending(0x68)
+            + GetNumMarkersSpending(0x6b)
+            + GetNumMarkersSpending(0x6c)
+            + GetNumMarkersSpending(0x6d)
+            + GetNumMarkersSpending(0x6e)
+            + GetNumMarkersSpending(0x6f)
+            + GetNumMarkersSpending(0x70)
+            + GetNumMarkersSpending(0x73)
+            + GetNumMarkersSpending(0x7b)));
+
+        item = gCarCustomizeManager.IsPartTypeInCart(static_cast<unsigned int>(0x4c));
+        num = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_PAINT, 0);
+        if (item && item->IsActive()) {
+            num--;
+        }
+        SetMarkerData(3, item, num);
+
+        item = gCarCustomizeManager.IsPartTypeInCart(static_cast<unsigned int>(0x84));
+        num = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_CUSTOM_HUD, 0);
+        if (item && item->IsActive()) {
+            num--;
+        }
+        SetMarkerData(4, item, num);
+
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x47df0e21));
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x47df0e22));
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x47df0e23));
+    }
 }
 
 void CustomizeShoppingCart::SetMarkerData(int idx, ShoppingCartItem *item, int spending) {
