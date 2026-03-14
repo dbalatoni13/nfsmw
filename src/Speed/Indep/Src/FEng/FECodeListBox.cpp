@@ -87,16 +87,16 @@ void FECodeListBox::CopyProperties(const FECodeListBox& Object) {
     mulNumTotalColumns = Object.mulNumTotalColumns;
     mulNumTotalRows = Object.mulNumTotalRows;
     Initialize(Object.mulNumVisibleColumns, Object.mulNumVisibleRows);
-    if (mppsStringData) {
-        delete[] mppsStringData;
-        mppsStringData = nullptr;
-    }
     if (mpsStrings) {
         delete[] mpsStrings;
         mpsStrings = nullptr;
     }
-    mulStringSize = 0;
+    if (mppsStringData) {
+        delete[] mppsStringData;
+        mppsStringData = nullptr;
+    }
     mulNumStrings = 0;
+    mulStringSize = 0;
     mulCurrentString = 0;
     AllocateStrings(Object.mulNumStrings, Object.mulStringSize);
     ulNumCells = mulNumVisibleColumns * mulNumVisibleRows;

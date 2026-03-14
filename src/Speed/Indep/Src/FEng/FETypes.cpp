@@ -91,10 +91,10 @@ FEColor& FEColor::operator+=(const FEColor& rhs) {
 
 FEColor FEColor::operator-(const FEColor& rhs) const {
     FEColor c;
-    c.a = a - rhs.a;
     c.r = r - rhs.r;
     c.g = g - rhs.g;
     c.b = b - rhs.b;
+    c.a = a - rhs.a;
     return c;
 }
 

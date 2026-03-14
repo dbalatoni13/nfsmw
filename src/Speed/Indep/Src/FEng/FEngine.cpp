@@ -495,32 +495,24 @@ void FEngine::ProcessGlobalMessage(FEPackage* pPack, unsigned long MsgID, unsign
 
 bool FEngine::ProcessListBoxResponses(FEObject* pObj, FEPackage* pPack, unsigned long MsgID) {
     FEListBox* pList = static_cast<FEListBox*>(pObj);
-    long lCol;
-    long lRow;
     switch (MsgID) {
-        case 0xe10c4af9: lCol = -1; lRow = 0; break;
-        case 0x030471ac: lCol = 1; lRow = 0; break;
-        case 0xfb814f13: lCol = 0; lRow = -1; break;
-        case 0xe10814a6: lCol = 0; lRow = 1; break;
-        default: return false;
+        case 0xe10c4af9: pList->ScrollSelection(-1, 0); return true;
+        case 0x030471ac: pList->ScrollSelection(1, 0); return true;
+        case 0xfb814f13: pList->ScrollSelection(0, -1); return true;
+        case 0xe10814a6: pList->ScrollSelection(0, 1); return true;
     }
-    pList->ScrollSelection(lCol, lRow);
-    return true;
+    return false;
 }
 
 bool FEngine::ProcessCodeListBoxResponses(FEObject* pObj, FEPackage* pPack, unsigned long MsgID) {
     FECodeListBox* pList = static_cast<FECodeListBox*>(pObj);
-    long lCol;
-    long lRow;
     switch (MsgID) {
-        case 0xe10c4af9: lCol = -1; lRow = 0; break;
-        case 0x030471ac: lCol = 1; lRow = 0; break;
-        case 0xfb814f13: lCol = 0; lRow = -1; break;
-        case 0xe10814a6: lCol = 0; lRow = 1; break;
-        default: return false;
+        case 0xe10c4af9: pList->ScrollSelection(-1, 0); return true;
+        case 0x030471ac: pList->ScrollSelection(1, 0); return true;
+        case 0xfb814f13: pList->ScrollSelection(0, -1); return true;
+        case 0xe10814a6: pList->ScrollSelection(0, 1); return true;
     }
-    pList->ScrollSelection(lCol, lRow);
-    return true;
+    return false;
 }
 
 void FEngine::UnloadLibraryPackage(FEPackage* pLibPack) {
