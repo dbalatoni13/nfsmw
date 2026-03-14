@@ -7,7 +7,6 @@ void FEInterpNone(FEScript* pScript, unsigned char TrackNum, long tTime, void* p
 
 void FEKeyInterp(FEScript* pScript, unsigned char TrackNum, long tTime, FEObject* pOutObj) {
     unsigned char InterpType = *(reinterpret_cast<unsigned char*>(pScript->pTracks + TrackNum) + 2);
-    void* pOutData = pOutObj->pData;
 
     if (InterpType == 2) {
         return;
@@ -19,7 +18,7 @@ void FEKeyInterp(FEScript* pScript, unsigned char TrackNum, long tTime, FEObject
         }
     } else {
         if (InterpType == 0) {
-            FEInterpNone(pScript, TrackNum, tTime, pOutData);
+            FEInterpNone(pScript, TrackNum, tTime, pOutObj->pData);
             return;
         }
 
@@ -28,7 +27,7 @@ void FEKeyInterp(FEScript* pScript, unsigned char TrackNum, long tTime, FEObject
         }
     }
 
-    FEInterpLinear(pScript, TrackNum, tTime, pOutData);
+    FEInterpLinear(pScript, TrackNum, tTime, pOutObj->pData);
 }
 
 void FEInterpLinear(FEKeyTrack* pTrack, long tTime, void* pOutData);

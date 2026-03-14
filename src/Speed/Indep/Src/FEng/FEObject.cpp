@@ -17,9 +17,9 @@ inline bool CloseEnoughPosition(const FEVector3& vector1, const FEVector3& vecto
 }
 
 inline bool CloseEnoughColor(const FEColor& color1, const FEColor& color2) {
-    return Close(static_cast<long>(color1.b), static_cast<long>(color2.b), 1L) &&
+    return Close(static_cast<long>(color1.r), static_cast<long>(color2.r), 1L) &&
            Close(static_cast<long>(color1.g), static_cast<long>(color2.g), 1L) &&
-           Close(static_cast<long>(color1.r), static_cast<long>(color2.r), 1L) &&
+           Close(static_cast<long>(color1.b), static_cast<long>(color2.b), 1L) &&
            Close(static_cast<long>(color1.a), static_cast<long>(color2.a), 1L);
 }
 
@@ -319,26 +319,27 @@ void FEObject::SetTrackValue(FEKeyTrack_Indices track, const FEColor& value, boo
 }
 
 void FEObject::SetPosition(const FEVector3& position, bool bRelative) {
-    if (GUID > 0xFF) {
+    if (Type > 0xFF) {
+        return;
+    }
+    if (bRelative) {
         FEVector3 zero(0.0f, 0.0f, 0.0f);
-        if (!bRelative) {
-            if (CloseEnoughPosition(position, GetObjData()->Pos)) {
-                return;
-            }
-        } else {
-            if (CloseEnoughPosition(position, zero)) {
-                return;
-            }
+        if (!CloseEnoughPosition(position, zero)) {
+            Flags |= 0x400000;
         }
-        Flags |= 0x400000;
+    } else {
+        if (!CloseEnoughPosition(position, GetObjData()->Pos)) {
+            Flags |= 0x400000;
+        }
     }
     SetTrackValue(FETrack_Position, position, bRelative);
 }
 
 void FEObject::SetRotation(const FEQuaternion& rotation, bool bRelative) {
-    if (GUID < 0x100) {
-        Flags |= 0x400000;
+    if (Type > 0xFF) {
+        return;
     }
+    Flags |= 0x400000;
     FEScript* pScript = static_cast<FEScript*>(Scripts.GetHead());
     while (pScript) {
         FEKeyTrack* pTrack = pScript->FindTrack(FETrack_Rotation);
@@ -360,18 +361,18 @@ void FEObject::SetRotation(const FEQuaternion& rotation, bool bRelative) {
 }
 
 void FEObject::SetColor(const FEColor& color, bool bRelative) {
-    if (GUID > 0xFF) {
-        FEColor zero;
-        if (!bRelative) {
-            if (CloseEnoughColor(color, GetObjData()->Col)) {
-                return;
-            }
-        } else {
-            if (CloseEnoughColor(color, zero)) {
-                return;
-            }
+    if (Type > 0xFF) {
+        return;
+    }
+    if (bRelative) {
+        FEColor zero(0);
+        if (!CloseEnoughColor(color, zero)) {
+            Flags |= 0x400000;
         }
-        Flags |= 0x400000;
+    } else {
+        if (!CloseEnoughColor(color, GetObjData()->Col)) {
+            Flags |= 0x400000;
+        }
     }
     SetTrackValue(FETrack_Color, color, bRelative);
 }

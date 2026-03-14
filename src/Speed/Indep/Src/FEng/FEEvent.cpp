@@ -2,10 +2,9 @@
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
 #include "types.h"
 
-FEEventList& FEEventList::operator=(FEEventList& Src) {
+void FEEventList::operator=(FEEventList& Src) {
     SetCount(Src.Count);
     FEngMemCpy(pEvent, Src.pEvent, Count * sizeof(FEEvent));
-    return *this;
 }
 
 void FEEventList::SetCount(long NewCount) {

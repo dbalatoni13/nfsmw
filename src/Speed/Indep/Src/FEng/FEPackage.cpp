@@ -111,8 +111,7 @@ FEPackage::~FEPackage() {
 
 bool FEPackage::InitializePackage() {
     PackageInitStateCB cb;
-    ForAllObjects(cb);
-    return true;
+    return ForAllObjects(cb);
 }
 
 FEObject* FEPackage::FindObjectByHash(unsigned long NameHash) {
@@ -530,7 +529,10 @@ void FEPackage::SetFilename(const char* pName) {
 }
 
 bool FEPackage::Startup(FEGameInterface* pGameInterface) {
-    bool bResult = pGameInterface->LoadResources(this, NumRequests, pRequests);
+    bool bResult = true;
+    if (!pGameInterface->LoadResources(this, NumRequests, pRequests)) {
+        bResult = false;
+    }
     ConnectObjectResources();
     BuildMouseObjectStateList();
     return bResult;
