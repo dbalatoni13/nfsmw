@@ -403,7 +403,7 @@ float FEngFont::GetTextWidth(const short *pcString, unsigned long flags) {
             }
             {
                 float newWidth = GetLineWidth(pcString, 0, 0, false);
-                if (width < newWidth) {
+                if (newWidth > width) {
                     width = newWidth;
                 }
             }
