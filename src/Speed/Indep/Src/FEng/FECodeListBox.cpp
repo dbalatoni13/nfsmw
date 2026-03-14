@@ -501,16 +501,9 @@ void FECodeListBox::DeallocateString(short* psString) {
 }
 
 void FECodeListBox::DefaultSelectCallback(FECodeListBox* pList) {
-    unsigned long col = pList->mulCurrentVirtualColumn;
-    unsigned long row = pList->mulCurrentVirtualRow;
-    if (col >= pList->mulNumVisibleColumns) {
-        col = col % pList->mulNumVisibleColumns;
-    }
-    if (row >= pList->mulNumVisibleRows) {
-        row = row % pList->mulNumVisibleRows;
-    }
-    FEListBoxCell* pCell = &pList->mpstCells[row * pList->mulNumVisibleColumns + col];
-    pCell->ulColor = static_cast<unsigned long>(pList->mstSelectionColor);
+    FEColor stColor = pList->GetSelectionColor();
+    stColor.a = static_cast<int>(pList->GetAlphaHilite() * 255.0f);
+    pList->SetSelectionColor(stColor);
 }
 
 long FECodeListBox::GetRealColumn(long lColumn) const {

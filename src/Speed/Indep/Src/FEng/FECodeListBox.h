@@ -89,8 +89,11 @@ struct FECodeListBox : public FEObject {
     inline FEListBoxCell* GetRealCellData(long lColumnIndex, long lRowIndex) { return &mpstCells[GetRealRow(lRowIndex) * mulNumVisibleColumns + GetRealColumn(lColumnIndex)]; }
     inline void SetSelectionCallback(void (*pCallback)(FECodeListBox*)) { mpSelectionCallback = pCallback; }
     inline void SetSetCellCallback(void (*pCallback)(void*, FECodeListBox*, unsigned long, unsigned long), void* pData) { mpSetCellCallback = pCallback; mpvCallbackData = pData; }
+    inline const FEColor& GetSelectionColor() const { return mstSelectionColor; }
     inline void SetSelectionColor(const FEColor& stColor) { mstSelectionColor = stColor; }
     inline float GetAlphaHilite() const { return mfCurrentAlpha; }
+    inline unsigned long GetVisualSelectionColumn() { return mulCurrentVirtualColumn % mulNumVisibleColumns; }
+    inline unsigned long GetVisualSelectionRow() { return mulCurrentVirtualRow % mulNumVisibleRows; }
 };
 
 #endif

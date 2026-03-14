@@ -51,16 +51,18 @@ unsigned long FEMultiImage::GetTexture(unsigned long tex_num) {
 
 void FEMultiImage::SetUVs(unsigned long tex_num, FEVector2 top_left, FEVector2 bottom_right) {
     if (tex_num > 2) return;
-    FEMultiImageData* pImgData = static_cast<FEMultiImageData*>(static_cast<void*>(pData));
-    pImgData->TopLeftUV[tex_num] = top_left;
-    pImgData->BottomRightUV[tex_num] = bottom_right;
+    reinterpret_cast<FEMultiImageData*>(pData)->TopLeftUV[tex_num].x = top_left.x;
+    reinterpret_cast<FEMultiImageData*>(pData)->TopLeftUV[tex_num].y = top_left.y;
+    reinterpret_cast<FEMultiImageData*>(pData)->BottomRightUV[tex_num].x = bottom_right.x;
+    reinterpret_cast<FEMultiImageData*>(pData)->BottomRightUV[tex_num].y = bottom_right.y;
 }
 
 void FEMultiImage::GetUVs(unsigned long tex_num, FEVector2& top_left, FEVector2& bottom_right) {
     if (tex_num > 2) return;
-    FEMultiImageData* pImgData = static_cast<FEMultiImageData*>(static_cast<void*>(pData));
-    top_left = pImgData->TopLeftUV[tex_num];
-    bottom_right = pImgData->BottomRightUV[tex_num];
+    top_left.x = reinterpret_cast<FEMultiImageData*>(pData)->TopLeftUV[tex_num].x;
+    top_left.y = reinterpret_cast<FEMultiImageData*>(pData)->TopLeftUV[tex_num].y;
+    bottom_right.x = reinterpret_cast<FEMultiImageData*>(pData)->BottomRightUV[tex_num].x;
+    bottom_right.y = reinterpret_cast<FEMultiImageData*>(pData)->BottomRightUV[tex_num].y;
 }
 
 FEAnimImage::~FEAnimImage() {}
