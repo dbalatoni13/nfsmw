@@ -104,14 +104,6 @@ FEScript::FEScript(FEScript& Src, bool bReference) {
         unsigned long i = 0;
         if (TrackCount != 0) {
             do {
-                pTracks[i] = Src.pTracks[i];
-                i++;
-            } while (i < TrackCount);
-        }
-    } else {
-        unsigned long i = 0;
-        if (TrackCount != 0) {
-            do {
                 FEKeyTrack* pDst = &pTracks[i];
                 FEKeyTrack* pSrc = &Src.pTracks[i];
                 pDst->ParamType = pSrc->ParamType;
@@ -125,6 +117,14 @@ FEScript::FEScript(FEScript& Src, bool bReference) {
                     *reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(pSrc) + 7);
                 pDst->BaseKey = pSrc->BaseKey;
                 pDst->DeltaKeys.ReferenceList(&pSrc->DeltaKeys);
+                i++;
+            } while (i < TrackCount);
+        }
+    } else {
+        unsigned long i = 0;
+        if (TrackCount != 0) {
+            do {
+                pTracks[i] = Src.pTracks[i];
                 i++;
             } while (i < TrackCount);
         }

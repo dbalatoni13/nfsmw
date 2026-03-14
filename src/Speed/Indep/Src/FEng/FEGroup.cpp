@@ -14,9 +14,7 @@ FEGroup::FEGroup(const FEGroup& Object, bool bCloneChildren, bool bReference)
     }
 }
 
-FEGroup::~FEGroup() {
-    Children.Purge();
-}
+FEGroup::~FEGroup() {}
 
 FEObject* FEGroup::FindChildRecursive(unsigned long NameHash) const {
     FEObject* pChild = static_cast<FEObject*>(Children.GetHead());

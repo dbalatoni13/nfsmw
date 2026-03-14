@@ -172,5 +172,5 @@ FETypeNode* FETypeLib::FindType(unsigned long TypeID) {
         }
         pNode = pNode->GetNext();
     }
-    return nullptr;
+    return pNode;
 }
