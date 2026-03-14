@@ -22,6 +22,12 @@ extern int gPlayerNum;
 
 extern void LoadOneTexture(const char *pkg_name, unsigned int hash, void (*callback)(unsigned int), unsigned int param);
 extern bool GetIsCollectorsEdition();
+extern FEImage *FEngFindImage(const char *pkg, unsigned int hash);
+extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
+extern void FEngSetScript(const char *pkg, unsigned int obj_hash, unsigned int script_hash, bool p);
+extern bool FEngIsScriptSet(const char *pkg, unsigned int obj_hash, unsigned int script_hash);
+extern void FEngSetLanguageHash(const char *pkg, unsigned int obj_hash, unsigned int lang_hash);
+extern unsigned int FEngHashString(const char *fmt, ...);
 
 extern Timer RealTimer;
 extern int Showcase_FromIndex;
@@ -157,32 +163,81 @@ void QRCarSelectBustedManager::SetSelectedCar(FECarRecord *record) {
 }
 
 void QRCarSelectBustedManager::RefreshHeader() {
-    if (!WorkingCareerRecord) return;
+    if (!IsImpoundInfoVisible()) return;
 
-    bool isImpounded = WorkingCareerRecord->TheImpoundData.IsImpounded();
-    if (isImpounded) {
-        FEngSetVisible(FEngFindObject(ParentPkg, 0x19398802));
-        FEngSetVisible(FEngFindObject(ParentPkg, 0x1930b057));
-        FEPrintf(ParentPkg, 0x9ab6a1a5, "%d", static_cast<int>(WorkingCareerRecord->TheImpoundData.TimesBusted));
-        FEPrintf(ParentPkg, 0x9ad9c3c6, "%d", static_cast<int>(WorkingCareerRecord->TheImpoundData.MaxBusted));
+    bool bNotImpounded = false;
+    if (!ShowImpoundedTexture()) {
+        FEngSetLanguageHash(ParentPkg, 0xb94139f4, 0x2b65a216);
+        FEngSetScript(ParentPkg, 0x64f3a49c, 0x16a259, true);
     } else {
-        FEngSetInvisible(FEngFindObject(ParentPkg, 0x19398802));
-        FEngSetInvisible(FEngFindObject(ParentPkg, 0x1930b057));
-
-        if (WorkingCareerRecord->TheImpoundData.TimesBusted > 0) {
-            FEngSetVisible(FEngFindObject(ParentPkg, 0x20d113dc));
-            FEngSetVisible(FEngFindObject(ParentPkg, 0x20c83c31));
-            FEPrintf(ParentPkg, 0x9ab6a1a5, "%d", static_cast<int>(WorkingCareerRecord->TheImpoundData.TimesBusted));
-            FEPrintf(ParentPkg, 0x9ad9c3c6, "%d", static_cast<int>(WorkingCareerRecord->TheImpoundData.MaxBusted));
+        TextureInfo *texInfo = GetTextureInfo(ImpoundStampHash, 0, 0);
+        if (texInfo) {
+            FEngSetScript(ParentPkg, 0xbc7b91f, 0x6ebbfb68, true);
+            FEngSetScript(ParentPkg, 0x64f3a49c, 0x5079c8f8, true);
+            FEImage *img1 = FEngFindImage(ParentPkg, 0xce18427d);
+            FEngSetTextureHash(img1, ImpoundStampHash);
+            FEImage *img2 = FEngFindImage(ParentPkg, 0x5b8f2a45);
+            FEngSetTextureHash(img2, ImpoundStampHash);
+        }
+        unsigned int cost = WorkingCarRecord->GetReleaseFromImpoundCost();
+        int playerCash = *reinterpret_cast<int *>(reinterpret_cast<char *>(FEDatabase->GetPlayerCarStable(0)) + 0xf0);
+        int numMarkers = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_IMPOUND_RELEASE, 0);
+        if (WorkingCareerRecord->TheImpoundData.ImpoundedState == 4 && static_cast<int>(cost) <= playerCash) {
+            FEngSetLanguageHash(ParentPkg, 0xb94139f4, 0x281dee8a);
+        } else if (numMarkers < 1) {
+            FEngSetLanguageHash(ParentPkg, 0xb94139f4, 0x2b65a216);
         } else {
-            FEngSetInvisible(FEngFindObject(ParentPkg, 0x20d113dc));
-            FEngSetInvisible(FEngFindObject(ParentPkg, 0x20c83c31));
+            FEngSetLanguageHash(ParentPkg, 0xb94139f4, 0xf9c73cc2);
         }
     }
-
-    if (bWantsImpound) {
-        bWantsImpound = false;
-        MaybeAddImpoundBox();
+    if ((WorkingCareerRecord->TheImpoundData.TimesBusted & 0x80) == 0) {
+        FEngSetVisible(FEngFindObject(ParentPkg, 0x75721326));
+        int posIndex = 1;
+        unsigned int script1 = 0x16a259;
+        unsigned int script2 = 0x16a259;
+        if (WorkingCareerRecord->TheImpoundData.ImpoundedState == 4) {
+            posIndex = 2;
+            script2 = 0x1ca7c0;
+        } else if (WorkingCareerRecord->TheImpoundData.ImpoundedState == 5) {
+            posIndex = 3;
+            script2 = 0x1ca7c0;
+            script1 = 0x1ca7c0;
+        }
+        FEngSetScript(ParentPkg, 0x5bc78037, script2, true);
+        FEngSetScript(ParentPkg, 0x48095518, script1, true);
+        FEngSetScript(ParentPkg, 0xf9a5ce86, FEngHashString("POS%d", posIndex), true);
+        FEngSetScript(ParentPkg, 0xebf0016e, FEngHashString("POS%d", posIndex), true);
+        if (Flags == BUSTED_ANIM_SHOW_STRIKE) {
+            FEngSetScript(ParentPkg, FEngHashString("IMPOUND_STATE_%d", static_cast<int>(WorkingCareerRecord->TheImpoundData.TimesBusted)), 0x5a8e4ebe, true);
+            Flags = BUSTED_ANIM_NOTHING;
+        }
+        int maxBusted = WorkingCareerRecord->TheImpoundData.MaxBusted;
+        int i = 1;
+        if (maxBusted != 0) {
+            do {
+                if (WorkingCareerRecord->TheImpoundData.TimesBusted < i) {
+                    FEngSetScript(ParentPkg, FEngHashString("IMPOUND_STATE_%d", i), 0x16a259, true);
+                } else {
+                    if (!FEngIsScriptSet(ParentPkg, FEngHashString("IMPOUND_STATE_%d", i), 0x5a8e4ebe)) {
+                        FEngSetScript(ParentPkg, FEngHashString("IMPOUND_STATE_%d", i), 0x1ca7c0, true);
+                    }
+                }
+                maxBusted = WorkingCareerRecord->TheImpoundData.MaxBusted;
+                i++;
+            } while (i <= static_cast<int>(static_cast<unsigned char>(maxBusted)));
+        }
+    } else {
+        char impState = WorkingCareerRecord->TheImpoundData.ImpoundedState;
+        if (impState == 4 || impState != 0) {
+            FEngSetInvisible(FEngFindObject(ParentPkg, 0x75721326));
+        } else {
+            bNotImpounded = true;
+        }
+    }
+    if (bNotImpounded) {
+        FEngSetScript(ParentPkg, 0xbc7b91f, 0x16a259, true);
+        FEngSetInvisible(FEngFindObject(ParentPkg, 0x75721326));
+        FEngSetLanguageHash(ParentPkg, 0xb94139f4, 0x2b65a216);
     }
 }
 
