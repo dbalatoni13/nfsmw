@@ -199,6 +199,7 @@ struct SplashScreen : MenuScreen {
     SplashScreen(ScreenConstructorData *);
     ~SplashScreen() override;
     void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
+    Timer CalculateLastJoyEventTime();
     eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override {
         if (bAllowContinue) {
             return maybe;
@@ -206,8 +207,8 @@ struct SplashScreen : MenuScreen {
         return static_cast<eMenuSoundTriggers>(-1);
     }
     bool bAllowContinue;
-    unsigned int CopyrightNotice;
-    unsigned int SplashStartedTimer;
+    Timer CopyrightNotice;
+    Timer SplashStartedTimer;
 };
 
 static MenuScreen *CreateMainMenu(ScreenConstructorData *sd) {

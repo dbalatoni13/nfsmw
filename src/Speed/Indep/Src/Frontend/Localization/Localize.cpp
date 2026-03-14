@@ -14,7 +14,14 @@ extern const char *GetLocalizedString(unsigned int id);
 extern void bPrintfSetLocaleInfo(char decimal, char group, char group_len);
 extern void LoadLanguageResources(bool load_global, bool load_frontend, bool load_ingame, bool blocking);
 
-struct FontNameInfo;
+struct FontNameInfo {
+    unsigned int GlobalFonts[8];   // offset 0x0
+    unsigned int InGameFonts[8];   // offset 0x20
+    unsigned int FrontendFonts[8]; // offset 0x40
+    int GlobalFontsLoaded;         // offset 0x60
+    int InGameFontsLoaded;         // offset 0x64
+    int FrontendFontsLoaded;       // offset 0x68
+};
 struct LanguageChunkHeader {
     int HistogramTablePos;    // offset 0x0, size 0x4
     int NumStringRecords;     // offset 0x4, size 0x4
@@ -288,4 +295,53 @@ const char *GetLocalizedPercentSign() {
         szPercentUnit = " %";
     }
     return szPercentUnit;
+}
+
+struct FontSizeInfo {
+    unsigned int Hash; // offset 0x0
+    int Size;          // offset 0x4
+};
+
+extern FontSizeInfo FontSizeInfoTable[9];
+extern int LanguageMemoryPoolNumber;
+extern void *pLanguageMemoryPoolMemory;
+extern int LanguageMemoryPoolSize;
+extern bool IsKorea();
+extern int bGetFreeMemoryPoolNum();
+extern void bInitMemoryPool(int pool, void *mem, int size, const char *name);
+extern void eLoadStreamingTexturePack(const char *filename, void (*callback)(void *), void *param, int flags);
+extern void eWaitForStreamingTexturePackLoading(const char *name);
+
+void InitLocalization() {
+    LanguageInfo *info;
+    if (IsKorea()) {
+        info = GetLanguageInfo(eLANGUAGE_KOREAN);
+    } else {
+        info = GetLanguageInfo(eLANGUAGE_ENGLISH);
+    }
+    unsigned int *fonts = info->pFontNameInfo->GlobalFonts;
+    int total_font_size = 0;
+    int n = 0;
+    while (fonts[n] != 0) {
+        int font_size = -1;
+        for (int i = 0; i < 9; i++) {
+            if (FontSizeInfoTable[i].Hash == fonts[n]) {
+                font_size = FontSizeInfoTable[i].Size;
+                break;
+            }
+        }
+        if (font_size >= 0) {
+            total_font_size = total_font_size + font_size;
+        }
+        n++;
+    }
+    LanguageMemoryPoolSize = (total_font_size + 0x4080) & 0xFFFFFFC0;
+    if (LanguageMemoryPoolNumber != 0) {
+        LanguageMemoryPoolNumber = bGetFreeMemoryPoolNum();
+        pLanguageMemoryPoolMemory = bMalloc(LanguageMemoryPoolSize, 0);
+        bInitMemoryPool(LanguageMemoryPoolNumber, pLanguageMemoryPoolMemory,
+                        LanguageMemoryPoolSize, "LanguageMemoryPool");
+    }
+    eLoadStreamingTexturePack("LANGUAGES\\LANGUAGETEXTURES.BIN", nullptr, nullptr, 0);
+    eWaitForStreamingTexturePackLoading("LANGUAGES\\LANGUAGETEXTURES.BIN");
 }
