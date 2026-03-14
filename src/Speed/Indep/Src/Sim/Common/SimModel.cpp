@@ -10,6 +10,10 @@
 
 #include <types.h>
 
+#ifdef _MSC_VER
+void operator delete(void *mem, const char *, int) {}
+#endif
+
 namespace Sim {
 
 // UNSOLVED usual Sim stack problem
