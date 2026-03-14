@@ -13,15 +13,13 @@ struct FEImage;
 
 // 0x34
 struct FEWidget : public bTNode<FEWidget> {
-private:
+protected:
     bVector2 vTopLeft;        // 0x08
     bVector2 vSize;           // 0x10
     bVector2 vBackingOffset;  // 0x18
     FEObject* pBacking;       // 0x20
     bool bEnabled;            // 0x24
     bool bHidden;             // 0x28
-
-protected:
     bool bMovedLastUpdate;    // 0x2C
 
 public:
@@ -94,7 +92,7 @@ struct FEButtonWidget : public FEWidget {
 
 // 0x54
 struct FEStatWidget : public FEWidget {
-private:
+protected:
     FEString* pTitle;        // 0x34
     FEString* pData;         // 0x38
     bVector2 vMaxTitleSize;  // 0x3C
