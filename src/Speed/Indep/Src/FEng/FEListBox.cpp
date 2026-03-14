@@ -13,8 +13,8 @@ FEListBox::FEListBox()
     , mulCurrentColumn(0) //
     , mulCurrentRow(0) //
     , mpstCells(nullptr) //
-    , mfCurrentAlpha(0.0f) //
-    , mfAlphaDelta(1.0f) {
+    , mfCurrentAlpha(1.0f) //
+    , mfAlphaDelta(-1.0f / 720.0f) {
     Type = FE_List;
     mstViewDimensions.h = 0.0f;
     mstViewDimensions.v = 0.0f;
@@ -154,12 +154,12 @@ void FEListBox::CompleteScroll() {
     mstCurrentLocation = mstTargetLocation;
     mulFlags &= ~0x62;
     if (mulCurrentColumn == 0) {
-        mulFlags &= ~0x6A;
+        mulFlags &= ~0x08;
         mstCurrentLocation.h = 0.0f;
     }
     if (mulCurrentRow == 0) {
-        mstCurrentLocation.v = 0.0f;
         mulFlags &= ~0x10;
+        mstCurrentLocation.v = 0.0f;
     }
 }
 

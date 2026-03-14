@@ -17,9 +17,7 @@ struct FEPoolNode : public FEMinNode {
     FEMinList Free;
     int Used;
 
-    inline FEPoolNode() {
-        Free = FEMinList();
-        Used = 0;
+    inline FEPoolNode() : Used(0) {
         for (int i = 0; i < N; i++) {
             Free.AddTail(&Pool[i]);
         }
@@ -73,10 +71,7 @@ struct ObjectPool {
             pPool->Used--;
             if (pPool->Used == 0) {
                 Pools.RemNode(pPool);
-                if (pPool) {
-                    pPool->~FEPoolNode();
-                    FEngFree(pPool);
-                }
+                delete pPool;
             }
         }
     }
