@@ -98,20 +98,29 @@ unsigned long FEMessageResponse::FindConditionBranchTarget(unsigned long Index) 
         return Count;
     }
     int depth = 1;
-    do {
+    for (;;) {
         Index++;
         unsigned long id = pResponseList[Index].ResponseID;
-        if (id == 0x500) {
+        switch (id) {
+        case 0x300:
+        case 0x301:
+            depth++;
+            break;
+        case 0x500:
             if (depth == 1) {
                 depth = 0;
             }
-        } else if (id < 0x501) {
-            if (id > 0x2FF && id < 0x302) {
-                depth++;
-            }
-        } else if (id == 0x501) {
+            break;
+        case 0x501:
             depth--;
+            break;
         }
-    } while (Index < Count && depth != 0);
+        if (Index >= Count) {
+            break;
+        }
+        if (depth == 0) {
+            break;
+        }
+    }
     return Index;
 }

@@ -124,29 +124,24 @@ void FEListBox::RecalculateCummulative() {
     i = 0;
     FEListEntryData* pCol = mpstColumnData;
     cumulative = 0.0f;
-    if (mulNumColumns != 0) {
-        do {
-            pCol->fCummulativeValue = cumulative;
-            i++;
-            float val = pCol->fValue;
-            pCol += 1;
-            cumulative = cumulative + val;
-        } while (i < mulNumColumns);
+    while (i < mulNumColumns) {
+        pCol->fCummulativeValue = cumulative;
+        i++;
+        float val = pCol->fValue;
+        pCol += 1;
+        cumulative = cumulative + val;
     }
 
     i = 0;
     FEListEntryData* pRow = mpstRowData;
     cumulative = 0.0f;
-    if (mulNumRows == 0) {
-        return;
-    }
-    do {
+    while (i < mulNumRows) {
         pRow->fCummulativeValue = cumulative;
         i++;
         float val = pRow->fValue;
         pRow += 1;
         cumulative = cumulative + val;
-    } while (i < mulNumRows);
+    }
 }
 
 void FEListBox::CompleteScroll() {
