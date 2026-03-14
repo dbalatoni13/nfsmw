@@ -26,6 +26,9 @@ void CustomizeSetInParts(bool b) { gInParts = b; }
 #include "Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsUpgrades.hpp"
 
+namespace Attrib { namespace Gen { struct pvehicle; } }
+namespace Physics { namespace Info { float Redline(const Attrib::Gen::pvehicle &pvehicle); } }
+
 #include <types.h>
 
 struct EAXSound;
@@ -98,6 +101,14 @@ extern unsigned int bStringHash(const char *str);
 
 extern unsigned int GetNumMarkersFromCategory(eCustomizeCategory cat);
 extern unsigned int GetMarkerNameFromCategory(eCustomizeCategory cat);
+
+extern void FEngSetColor(FEObject *obj, unsigned int color);
+extern unsigned int FEngHashString(const char *fmt, ...);
+extern bool DoesStringExist(unsigned int hash);
+struct TextureInfo;
+extern TextureInfo *GetTextureInfo(unsigned int handle, int p2, int p3);
+extern void FEngSetLanguageHash(FEString *str, unsigned int hash);
+extern void eLoadStreamingTexture(unsigned int *textures, int count, void (*callback)(void *), void *param, int priority);
 
 extern const char *g_pCustomizeShowcasePkg;
 extern const char *g_pCustomizeDlgPkg;
@@ -1567,5 +1578,337 @@ void CustomizeParts::RefreshHeader() {
     }
 }
 
+// --- CustomizeMeter ---
+
+CustomizeMeter::CustomizeMeter()
+    : Min(0.0f) //
+    , Max(0.0f) //
+    , Current(0.0f) //
+    , Preview(0.0f) //
+    , PreviousPreview(0.0f) //
+    , NumStages(5) //
+    , pMeterGroup(nullptr) //
+{
+    pMultiplier = nullptr;
+    pMultiplierZoom = nullptr;
+    for (int i = 0; i < 10; i++) {
+        pBases[i] = nullptr;
+    }
+}
+
+void CustomizeMeter::Init(const char *pkg_name, const char *name, float min, float max, float current, float preview) {
+    Min = min;
+    Max = max;
+    SetCurrent(current);
+    SetPreview(preview);
+    pMultiplier = FEngFindImage(pkg_name, 0x5ffee1d8);
+    pMultiplierZoom = FEngFindImage(pkg_name, 0xe637955c);
+    pMeterGroup = FEngFindObject(pkg_name, 0xf2492598);
+    for (int i = 0; i < 10; i++) {
+        unsigned int hash = FEngHashString("METER_BASE_%d", i + 1);
+        pBases[i] = FEngFindImage(pkg_name, hash);
+    }
+}
+
+// --- CustomizeSub ---
+
+int CustomizeSub::GetRimBrandIndex(unsigned int brand) {
+    if (brand == 0x1e6a3b) return 10;
+    if (brand < 0x1e6a3c) {
+        if (brand == 0x9136) return 3;
+        if (brand < 0x9137) {
+            if (brand == 0x648) return 9;
+        } else {
+            if (brand == 0x9536) return 4;
+            if (brand == 0x1c386b) return 0xb;
+        }
+    } else {
+        if (brand == 0x352d08d1) return 2;
+        if (brand < 0x352d08d2) {
+            if (brand == 0x2b77feb) return 5;
+            if (brand == 0x324ac97) return 6;
+        } else {
+            if (brand == 0x48e25793) return 7;
+            if (brand == 0xdd544a02) return 8;
+        }
+    }
+    return 1;
+}
+
+// --- CustomizeHUDColor ---
+
+void CustomizeHUDColor::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+    if (msg == 0x9120409e || msg == 0xb5971bf1) {
+        HUDLayerOption *layer = static_cast<HUDLayerOption *>(Options.GetCurrentOption());
+        layer->SelectedPart = SelectedColor->ThePart;
+    }
+    if (msg != 0x91dfdf84) {
+        CustomizationScreen::NotificationMessage(msg, pobj, param1, param2);
+    }
+    if (msg == 0x9120409e || msg == 0xb5971bf1) {
+        BuildColorOptions();
+        RefreshHeader();
+    } else if (msg == 0x72619778) {
+        ScrollColors(eSD_PREV);
+    } else if (msg == 0x911c0a4b) {
+        ScrollColors(eSD_NEXT);
+    } else if (msg == 0x911ab364) {
+        gCarCustomizeManager.ClearTempColoredPart();
+        cFEng_mInstance->QueuePackageSwitch(g_pCustomizeHudPkg, Category | (FromCategory << 16), 0, false);
+    } else if (msg == 0xcf91aacd) {
+        gCarCustomizeManager.ClearTempColoredPart();
+        bNeedsRefresh = true;
+    } else if (msg == 0x91dfdf84) {
+        SelectablePart *temp = gCarCustomizeManager.GetTempColoredPart();
+        ShoppingCartItem *inCart = gCarCustomizeManager.IsPartTypeInCart(0x84u);
+        if (inCart && temp->ThePart == inCart->GetBuyingPart()->ThePart) {
+            int slot = 0x85;
+            do {
+                ShoppingCartItem *colorItem = gCarCustomizeManager.IsPartTypeInCart(static_cast<unsigned int>(slot));
+                slot++;
+                gCarCustomizeManager.RemoveFromCart(colorItem);
+            } while (slot < 0x88);
+        }
+        gCarCustomizeManager.AddToCart(temp);
+        gCarCustomizeManager.ClearTempColoredPart();
+        HUDColorOption *node = static_cast<HUDColorOption *>(ColorOptions.GetHead());
+        while (node != reinterpret_cast<HUDColorOption *>(&ColorOptions)) {
+            if (node->ThePart->PartState != 0) {
+                gCarCustomizeManager.AddToCart(node->ThePart);
+            }
+            node = static_cast<HUDColorOption *>(node->Next);
+        }
+        cFEng_mInstance->QueuePackageSwitch(g_pCustomizeHudPkg, Category | (FromCategory << 16), 0, false);
+    }
+}
+
+void CustomizeHUDColor::ScrollColors(eScrollDir dir) {
+    HUDColorOption *prev = SelectedColor;
+    if (dir == eSD_PREV) {
+        HUDColorOption *node = static_cast<HUDColorOption *>(prev->Prev);
+        if (node == reinterpret_cast<HUDColorOption *>(&ColorOptions)) {
+            node = static_cast<HUDColorOption *>(ColorOptions.GetTail());
+        }
+        SelectedColor = node;
+    } else if (dir == eSD_NEXT) {
+        HUDColorOption *node = static_cast<HUDColorOption *>(prev->Next);
+        if (node == reinterpret_cast<HUDColorOption *>(&ColorOptions)) {
+            node = static_cast<HUDColorOption *>(ColorOptions.GetHead());
+        }
+        SelectedColor = node;
+    }
+    if (SelectedColor != prev) {
+        HUDLayerOption *layer = static_cast<HUDLayerOption *>(Options.GetCurrentOption());
+        layer->SelectedPart = SelectedColor->ThePart;
+        FEngSetScript(prev->FEngObject, 0x7ab5521a, true);
+        FEngSetScript(SelectedColor->FEngObject, 0x249db7b7, true);
+        float x, y;
+        FEngGetTopLeft(SelectedColor->FEngObject, x, y);
+        float dx, dy;
+        FEngGetTopLeft(SelectedColor->FEngObject, dx, dy);
+        FEngSetTopLeft(Cursor, x + dx, y + dy);
+        RefreshHeader();
+    }
+}
+
+void CustomizeHUDColor::RefreshHeader() {
+    CustomizationScreen::RefreshHeader();
+    HUDColorOption *sel = SelectedColor;
+    int slotID = sel->ThePart->CarSlotID;
+    if (slotID == 0x85) {
+        FEObject *obj = FEngFindObject(GetPackageName(), 0x5d19f25);
+        FEngSetColor(obj, sel->color);
+    } else if (slotID == 0x86) {
+        FEObject *obj = FEngFindObject(GetPackageName(), 0xd312f0cb);
+        FEngSetColor(obj, sel->color);
+        FEObject *obj2 = FEngFindObject(GetPackageName(), 0x8fe2a217);
+        FEngSetColor(obj2, SelectedColor->color);
+    } else if (slotID == 0x87) {
+        FEObject *obj = FEngFindObject(GetPackageName(), 0xc0721eb9);
+        FEngSetColor(obj, sel->color);
+        FEObject *obj2 = FEngFindObject(GetPackageName(), 0xc62ad685);
+        FEngSetColor(obj2, SelectedColor->color);
+        FEObject *obj3 = FEngFindObject(GetPackageName(), 0xb8f1f802);
+        FEngSetColor(obj3, SelectedColor->color);
+    }
+}
+
+// --- CustomizeParts ---
+
+void CustomizeParts::TexturePackLoadedCallback() {
+    int idx = PacksLoadedCount;
+    int offset = idx * 5;
+    PacksLoadedCount = idx + 1;
+    CustomizeHUDTexTextureResources[offset] = FEngHashString("HUD_GAUGE_%02d", idx);
+    CustomizeHUDTexTextureResources[offset + 1] = FEngHashString("HUD_NEEDLE_%d_%02d", TachRPM, idx);
+    CustomizeHUDTexTextureResources[offset + 2] = FEngHashString("HUD_NEEDLE_TURBO_%02d", idx);
+    CustomizeHUDTexTextureResources[offset + 3] = FEngHashString("HUD_SPEEDOMETER_%02d", idx);
+    CustomizeHUDTexTextureResources[offset + 4] = FEngHashString("HUD_NOS_%02d", idx);
+    eLoadStreamingTexture(reinterpret_cast<unsigned int *>(&CustomizeHUDTexTextureResources[offset]), 5,
+                          reinterpret_cast<void (*)(void *)>(TextureLoadedCallbackAccessor),
+                          reinterpret_cast<void *>(reinterpret_cast<unsigned int>(this)), 0);
+}
+
+void CustomizeParts::SetHUDTextures() {
+    SelectablePart *sel = GetSelectedPart();
+    CarPart *part = sel->ThePart;
+    unsigned int hudStyleHash = FEngHashString("HUD_STYLE");
+    int hudStyle = part->GetAppliedAttributeIParam(hudStyleHash, 0);
+    FEImage *gauge = FEngFindImage(GetPackageName(), 0xc0721eb9);
+    FEngSetTextureHash(gauge, FEngHashString("HUD_NEEDLE_%d_%02d", TachRPM, hudStyle));
+    FEImage *needle = FEngFindImage(GetPackageName(), 0x5d19f25);
+    FEngSetTextureHash(needle, FEngHashString("HUD_GAUGE_%02d", hudStyle));
+    FEImage *speedo = FEngFindImage(GetPackageName(), 0xd312f0cb);
+    FEngSetTextureHash(speedo, FEngHashString("HUD_SPEEDOMETER_%02d", hudStyle));
+    if (!gCarCustomizeManager.IsTurbo()) {
+        FEObject *turboGroup = FEngFindObject(GetPackageName(), 0xc5d551b7);
+        FEngSetInvisible(turboGroup);
+    } else {
+        FEImage *turboNeedle = FEngFindImage(GetPackageName(), 0xc62ad685);
+        FEngSetTextureHash(turboNeedle, FEngHashString("HUD_NEEDLE_TURBO_%02d", hudStyle));
+        FEImage *nos = FEngFindImage(GetPackageName(), 0x8fe2a217);
+        FEngSetTextureHash(nos, FEngHashString("HUD_NOS_%02d", hudStyle));
+        FEObject *turboGroup = FEngFindObject(GetPackageName(), 0xc5d551b7);
+        FEngSetVisible(turboGroup);
+    }
+}
+
+void CustomizeParts::SetHUDColors() {
+    ShoppingCartItem *hudInCart = gCarCustomizeManager.IsPartTypeInCart(0x84u);
+    CarPart *installedHud = gCarCustomizeManager.GetInstalledCarPart(0x84);
+    SelectablePart *sel = GetSelectedPart();
+    if (sel->ThePart == installedHud) {
+        goto use_installed_colors;
+    } else {
+        if (hudInCart) {
+            SelectablePart *selPart = GetSelectedPart();
+            if (selPart->ThePart == hudInCart->GetBuyingPart()->ThePart) {
+                goto use_installed_colors;
+            }
+        }
+        FEngSetColor(FEngFindObject(GetPackageName(), 0x5d19f25), 0xffffc373u);
+        FEngSetColor(FEngFindObject(GetPackageName(), 0xc0721eb9), 0xffffffffu);
+        FEngSetColor(FEngFindObject(GetPackageName(), 0xc62ad685), 0xffffffffu);
+        FEngSetColor(FEngFindObject(GetPackageName(), 0xb8f1f802), 0xffffffffu);
+        FEngSetColor(FEngFindObject(GetPackageName(), 0xd312f0cb), 0xffffae40u);
+        FEngSetColor(FEngFindObject(GetPackageName(), 0x8fe2a217), 0xffffae40u);
+        return;
+    }
+use_installed_colors:
+    {
+        unsigned int colors[5];
+        int slot = 0x85;
+        int idx = 0;
+        do {
+            ShoppingCartItem *colorInCart = gCarCustomizeManager.IsPartTypeInCart(static_cast<unsigned int>(slot));
+            CarPart *colorPart;
+            if (colorInCart && hudInCart) {
+                SelectablePart *selPart = GetSelectedPart();
+                if (selPart->ThePart == hudInCart->GetBuyingPart()->ThePart) {
+                    colorPart = colorInCart->GetBuyingPart()->ThePart;
+                } else {
+                    colorPart = gCarCustomizeManager.GetInstalledCarPart(slot);
+                }
+            } else {
+                colorPart = gCarCustomizeManager.GetInstalledCarPart(slot);
+            }
+            slot++;
+            unsigned int r = colorPart->GetAppliedAttributeIParam(bStringHash("RED"), 0);
+            unsigned int g = colorPart->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
+            unsigned int b = colorPart->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
+            colors[idx] = ((r & 0xff) << 16) | ((g & 0xff) << 8) | 0xff000000 | (b & 0xff);
+            idx++;
+        } while (idx < 3);
+        FEngSetColor(FEngFindObject(GetPackageName(), 0x5d19f25), colors[0]);
+        FEngSetColor(FEngFindObject(GetPackageName(), 0xc0721eb9), colors[2]);
+        FEngSetColor(FEngFindObject(GetPackageName(), 0xc62ad685), colors[2]);
+        FEngSetColor(FEngFindObject(GetPackageName(), 0xb8f1f802), colors[2]);
+        FEngSetColor(FEngFindObject(GetPackageName(), 0xd312f0cb), colors[1]);
+        FEngSetColor(FEngFindObject(GetPackageName(), 0x8fe2a217), colors[1]);
+    }
+}
+
+// --- CustomizeHUDColor ---
+
+void CustomizeHUDColor::SetHUDTextures() {
+    float redline = Physics::Info::Redline(*reinterpret_cast<const Attrib::Gen::pvehicle *>(0x804ab3ec));
+    int rpm = static_cast<int>(redline);
+    int tachRPM;
+    if (rpm >= 0x251d) {
+        tachRPM = 10000;
+    } else if (rpm >= 0x2135) {
+        tachRPM = 9000;
+    } else if (rpm > 0x1d4c) {
+        tachRPM = 8000;
+    } else {
+        tachRPM = 7000;
+    }
+    CarPart *part = gCarCustomizeManager.GetTempColoredPart()->ThePart;
+    unsigned int hudStyleHash = FEngHashString("HUD_STYLE");
+    int hudStyle = part->GetAppliedAttributeIParam(hudStyleHash, 0);
+    FEImage *gauge = FEngFindImage(GetPackageName(), 0xc0721eb9);
+    FEngSetTextureHash(gauge, FEngHashString("HUD_NEEDLE_%d_%02d", tachRPM, hudStyle));
+    FEImage *needle = FEngFindImage(GetPackageName(), 0x5d19f25);
+    FEngSetTextureHash(needle, FEngHashString("HUD_GAUGE_%02d", hudStyle));
+    FEImage *speedo = FEngFindImage(GetPackageName(), 0xd312f0cb);
+    FEngSetTextureHash(speedo, FEngHashString("HUD_SPEEDOMETER_%02d", hudStyle));
+    if (!gCarCustomizeManager.IsTurbo()) {
+        FEObject *turboGroup = FEngFindObject(GetPackageName(), 0xc5d551b7);
+        FEngSetInvisible(turboGroup);
+    } else {
+        FEImage *turboNeedle = FEngFindImage(GetPackageName(), 0xc62ad685);
+        FEngSetTextureHash(turboNeedle, FEngHashString("HUD_NEEDLE_TURBO_%02d", hudStyle));
+        FEImage *nos = FEngFindImage(GetPackageName(), 0x8fe2a217);
+        FEngSetTextureHash(nos, FEngHashString("HUD_NOS_%02d", hudStyle));
+        FEObject *turboGroup = FEngFindObject(GetPackageName(), 0xc5d551b7);
+        FEngSetVisible(turboGroup);
+    }
+}
+
+void CustomizeHUDColor::SetInitialColors() {
+    ShoppingCartItem *hudInCart = gCarCustomizeManager.IsPartTypeInCart(0x84u);
+    CarPart *installedHud = gCarCustomizeManager.GetInstalledCarPart(0x84);
+    unsigned int colors[5];
+    colors[0] = 0xffffc373u;
+    colors[1] = 0xffffae40u;
+    colors[2] = 0xffffffffu;
+    SelectablePart *temp = gCarCustomizeManager.GetTempColoredPart();
+    if (hudInCart && temp->ThePart == hudInCart->GetBuyingPart()->ThePart) {
+        int slot = 0x85;
+        int idx = 0;
+        do {
+            ShoppingCartItem *colorItem = gCarCustomizeManager.IsPartTypeInCart(static_cast<unsigned int>(slot));
+            slot++;
+            if (colorItem) {
+                CarPart *colorPart = colorItem->GetBuyingPart()->ThePart;
+                unsigned int r = colorPart->GetAppliedAttributeIParam(bStringHash("RED"), 0);
+                unsigned int g = colorPart->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
+                unsigned int b = colorPart->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
+                colors[idx] = ((r & 0xff) << 16) | ((g & 0xff) << 8) | 0xff000000 | (b & 0xff);
+            }
+            idx++;
+        } while (idx < 3);
+    } else if (temp->ThePart == installedHud) {
+        int slot = 0x85;
+        int idx = 0;
+        do {
+            CarPart *colorPart = gCarCustomizeManager.GetInstalledCarPart(slot);
+            slot++;
+            if (colorPart) {
+                unsigned int r = colorPart->GetAppliedAttributeIParam(bStringHash("RED"), 0);
+                unsigned int g = colorPart->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
+                unsigned int b = colorPart->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
+                colors[idx] = ((r & 0xff) << 16) | ((g & 0xff) << 8) | 0xff000000 | (b & 0xff);
+            }
+            idx++;
+        } while (idx < 3);
+    }
+    FEngSetColor(FEngFindObject(GetPackageName(), 0x5d19f25), colors[0]);
+    FEngSetColor(FEngFindObject(GetPackageName(), 0xd312f0cb), colors[1]);
+    FEngSetColor(FEngFindObject(GetPackageName(), 0x8fe2a217), colors[1]);
+    FEngSetColor(FEngFindObject(GetPackageName(), 0xc0721eb9), colors[2]);
+    FEngSetColor(FEngFindObject(GetPackageName(), 0xc62ad685), colors[2]);
+    FEngSetColor(FEngFindObject(GetPackageName(), 0xb8f1f802), colors[2]);
+}
 
 #endif // FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE____CUSTOMIZE_CARCUSTOMIZE_H

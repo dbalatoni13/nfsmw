@@ -291,15 +291,18 @@ struct SetStockPartOption : public CustomizeMainOption {
 struct HUDLayerOption : public CustomizePartOption {
     HUDLayerOption(unsigned int layer, unsigned int icon_hash, unsigned int name_hash)
         : CustomizePartOption(nullptr, icon_hash, name_hash, 0, 0) //
-        , Layer(layer) {}
+        , HUDLayer(layer) //
+        , SelectedPart(nullptr) {}
 
     ~HUDLayerOption() override {}
 
     void React(const char *parent_pkg, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override {}
 
-    unsigned int GetLayer() { return Layer; }
+    unsigned int GetLayer() { return HUDLayer; }
 
-    unsigned int Layer; // offset 0x70, size 0x4
+    unsigned int HUDLayer;               // offset 0x64, size 0x4
+    bTList<SelectablePart> TheColors;    // offset 0x68, size 0x8
+    SelectablePart *SelectedPart;        // offset 0x70, size 0x4
 };
 
 // total size: 0x64
