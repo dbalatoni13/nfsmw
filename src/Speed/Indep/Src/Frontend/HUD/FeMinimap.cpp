@@ -66,7 +66,30 @@ void Minimap::AdjustForWidescreen(bool moveOutwards) {
     reinterpret_cast<FEObjData *>(mPlayerCarIndicator->pData)->Pos.y = mTrackMapCentre.y;
 }
 
-void Minimap::InitStaticMiniMapItems() {}
+void Minimap::RefreshMapItems() {
+    MiniMapItem *item = StaticMiniMapItems.GetHead();
+    while (item != StaticMiniMapItems.EndOfList()) {
+        FEngSetInvisible(item->mpIcon);
+        item = item->GetNext();
+    }
+    StaticMiniMapItems.DeleteAllElements();
+}
+
+extern bool GPS_IsEngaged();
+
+void Minimap::UpdateIconElement(FEImage *image, GIcon *icon) {
+    bVector2 pos2D;
+    bVector2 dir2D;
+    icon->GetPosition2D(pos2D);
+    dir2D.x = 1.0f;
+    dir2D.y = 0.0f;
+    if (icon->GetType() != GIcon::kType_AreaUnlock && !GPS_IsEngaged() && icon->GetIsGPSing()) {
+        icon->ClearGPSing();
+    }
+    bool pulse = icon->GetIsGPSing();
+    UpdateElementArt(&pos2D, &dir2D, image, pulse);
+    FEngSetRotationZ(image, 0.0f);
+}
 
 void Minimap::UpdateMiniMapItems() {
     bVector2 defaultDir;
@@ -84,3 +107,5 @@ void Minimap::UpdateMiniMapItems() {
         }
     }
 }
+
+void Minimap::InitStaticMiniMapItems() {}

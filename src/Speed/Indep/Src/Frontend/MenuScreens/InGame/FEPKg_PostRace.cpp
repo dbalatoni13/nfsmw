@@ -1289,3 +1289,12 @@ PostRaceMilestonesScreen::PostRaceMilestonesScreen(ScreenConstructorData *sd)
 }
 
 PostRaceMilestonesScreen::~PostRaceMilestonesScreen() {}
+
+PursuitResultsDatum::PursuitResultsDatum(PursuitResultsDatumType type, unsigned int itemName, float itemNumber, float itemGoal, PursuitResultsDatumCheckType itemChecked)
+    : ArrayDatum(0, 0) //
+    , mType(type) //
+    , mName(itemName) //
+    , mNumber(itemNumber >= 0.0f ? itemNumber : 0.0f) //
+    , mGoal(itemGoal) //
+    , mChecked(itemChecked) //
+{}
