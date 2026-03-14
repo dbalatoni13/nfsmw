@@ -1404,6 +1404,8 @@ void FEngine::ProcessResponses(FEMessageResponse* pRespList, FEObject* pObj, FEP
             pPack->SetCurrentButton(pButton, bFound);
             break;
         }
+        case 0x104:
+            break;
         case 0x105:
             QueuePackageUserTransfer(pPack, true, uControlMask);
             break;

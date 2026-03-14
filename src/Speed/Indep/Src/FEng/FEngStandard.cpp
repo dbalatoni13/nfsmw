@@ -6,6 +6,7 @@
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 
 int bStrICmp(const char* s1, const char* s2);
+bool bSetMemoryPoolDebugTracing(int pool_num, bool on_off);
 
 void FEngMemCpy(void* pDest, const void* pSrc, int Len) { memcpy(pDest, pSrc, Len); }
 
@@ -29,13 +30,7 @@ void InitFEngMemoryPool() {
             pFEngMemoryPoolMemory = bMalloc(FEngMemoryPoolSize, __FILE__, 0, 0);
         }
         bInitMemoryPool(FEngMemoryPoolNumber, pFEngMemoryPoolMemory, FEngMemoryPoolSize, __FILE__);
-        if (FEngMemoryPoolTracingEnabled) {
-            MemoryPools[FEngMemoryPoolNumber]->DebugTracingEnabled = true;
-        } else {
-            void* dummy = bMalloc(0x10, __FILE__, 0, (FEngMemoryPoolNumber & 0xf) | 0x40);
-            MemoryPools[FEngMemoryPoolNumber]->DebugTracingEnabled = false;
-            bFree(dummy);
-        }
+        bSetMemoryPoolDebugTracing(FEngMemoryPoolNumber, FEngMemoryPoolTracingEnabled);
     }
 }
 
