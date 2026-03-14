@@ -121,3 +121,60 @@ unsigned int FERenderObject::ClipAligned(FEClipInfo *pClipInfo, bVector3 *v, bVe
     if (!num_verts) return 0;
     return num_verts;
 }
+
+extern void bMemSet(void *dst, int val, unsigned int size);
+
+cFEngRender::cFEngRender() {
+    Highwater = 0;
+    FERenderObject::Initialize();
+    bMemSet(RContexts, 0, sizeof(RContexts));
+}
+
+FERenderObject *cFEngRender::CreateCachedRender(FEObject *object, TextureInfo *texture_info) {
+    FERenderObject *ret = new (mpobFERenderObjectSlotPool->Malloc()) FERenderObject(object, texture_info);
+    object->Cached = ret;
+    return ret;
+}
+
+void cFEngRender::RemoveCachedRender(FEObject *object, FEPackageRenderInfo *sp) {
+    FERenderObject *cached = FindCachedRender(object);
+    if (cached) {
+        object->Cached = nullptr;
+        cached->Clear(sp);
+        delete cached;
+    }
+}
+
+void cFEngRender::RenderObject(FEObject *object, FEPackageRenderInfo *pkg_render_info) {
+    if (object->Flags & 8) {
+        return;
+    }
+    if (object->Type == 7) {
+        object->Flags |= 0x2000000;
+    }
+    FERenderObject *cached = FindCachedRender(object);
+    if (cached && (cached->mulFlags & 2) && !(object->Flags & 0x2000000)) {
+        cached->Render();
+    } else {
+        switch (object->Type) {
+            case 1:
+                RenderImage(reinterpret_cast<FEImage *>(object), cached, pkg_render_info);
+                break;
+            case 2:
+                RenderString(reinterpret_cast<FEString *>(object), cached, pkg_render_info);
+                break;
+            case 3:
+                RenderModel(reinterpret_cast<FEModel *>(object), cached);
+                break;
+            case 7:
+                RenderMovie(reinterpret_cast<FEMovie *>(object), cached, pkg_render_info);
+                break;
+            case 9:
+                RenderCBVImage(reinterpret_cast<FEColoredImage *>(object), cached, pkg_render_info);
+                break;
+            case 12:
+                RenderMultiImage(reinterpret_cast<FEMultiImage *>(object), cached, pkg_render_info);
+                break;
+        }
+    }
+}

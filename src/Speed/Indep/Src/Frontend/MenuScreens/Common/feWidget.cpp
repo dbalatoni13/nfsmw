@@ -394,3 +394,148 @@ short *CTextScroller::FindCR(short *pText) {
 void CTextScroller::WordWrapCountLinesAndChars(short *pTextStart, short *pTextEnd, int &NumLines, int &NumChars) {
     NumChars = WordWrapAddLines(pTextStart, pTextEnd, true, nullptr);
 }
+
+extern const char *GetTranslatedString(unsigned int hash);
+extern int bStrLen(const char *str);
+extern void PackedStringToWideString(short *dst, int dstSize, const char *src);
+
+void CTextScroller::SetTextHash(unsigned int hash) {
+    const char *str = GetTranslatedString(hash);
+    int len = bStrLen(str);
+    if (len + 1 > 0) {
+        int size = (len + 1) * 2;
+        short *wideStr = new short[size];
+        PackedStringToWideString(wideStr, size, str);
+        SetText(wideStr);
+        delete[] wideStr;
+    }
+}
+
+extern unsigned long FEHashUpper(const char *str);
+extern FEString *FEngFindString(const char *pkg, int hash);
+extern void FESetString(FEString *str, short *text);
+extern int FEngSNPrintf(char *dest, int size, const char *fmt, ...);
+
+void CTextScroller::Display(int topLine) {
+    if (!m_pOwner || m_ViewVisibleLines <= 0) {
+        return;
+    }
+    for (int i = 0; i < m_ViewVisibleLines; i++) {
+        short emptyStr[1];
+        emptyStr[0] = 0;
+        char szName[32];
+        FEngSNPrintf(szName, 32, m_TextBoxNameTemplate, i);
+        FEString *feStr = FEngFindString(m_pOwner->GetPackageName(), FEHashUpper(szName));
+        short *text;
+        if (topLine < m_NumAddedLines) {
+            text = m_pLines[topLine];
+        } else {
+            text = emptyStr;
+        }
+        FESetString(feStr, text);
+        feStr->Flags |= 0x2000000;
+        topLine++;
+    }
+}
+
+extern void bMemCpy(void *dst, const void *src, unsigned int size);
+
+void CTextScroller::AddLine(short *pText, int numChars) {
+    if (m_DataBlockSize - m_DataBlockCurPos < static_cast<unsigned int>((numChars + 1) * 2)) {
+        return;
+    }
+    m_pLines[m_NumAddedLines] = reinterpret_cast<short *>(m_pRawDataBlock + m_DataBlockCurPos);
+    bMemCpy(m_pLines[m_NumAddedLines], pText, numChars * 2);
+    m_pLines[m_NumAddedLines][numChars] = 0;
+    m_NumAddedLines++;
+    m_DataBlockCurPos += (numChars + 1) * 2;
+}
+
+void CTextScroller::UpdateScrollBar() {
+    if (m_pScrollBar) {
+        int pos = m_TopLine + 1;
+        m_pScrollBar->Update(m_ViewVisibleLines, m_NumAddedLines, pos, pos);
+    }
+}
+
+void CTextScroller::SetText(short *pText) {
+    if (!m_pFont || !pText) {
+        m_NumAddedLines = 0;
+    } else {
+        m_DataBlockCurPos = 0;
+        m_NumAddedLines = 0;
+        int totalLines = 0;
+        int totalChars = 0;
+        short *lineStart = pText;
+        short *lineEnd = FindCR(pText);
+        if (!lineEnd) {
+            lineEnd = FindEND(pText);
+        }
+        while (lineEnd) {
+            if (*lineStart == 0) {
+                break;
+            }
+            if (lineEnd == lineStart) {
+                totalLines++;
+                totalChars++;
+            } else {
+                int numLines, numChars;
+                WordWrapCountLinesAndChars(lineStart, lineEnd, numLines, numChars);
+                totalLines += numLines;
+                totalChars += numChars;
+            }
+            if (*lineEnd == 0) {
+                lineEnd = nullptr;
+                if (!lineEnd) {
+                    break;
+                }
+            } else {
+                lineStart = lineEnd + 1;
+                lineEnd = FindCR(lineStart);
+                if (!lineEnd) {
+                    lineEnd = FindEND(lineStart);
+                }
+            }
+        }
+        if (totalLines > 0) {
+            if (!m_pRawDataBlock) {
+                int blockSize = totalChars * 2 + totalLines * 4;
+                m_DataBlockSize = blockSize;
+                m_pRawDataBlock = new char[blockSize];
+            }
+            m_DataBlockCurPos = totalLines * 4;
+            m_pLines = reinterpret_cast<short **>(m_pRawDataBlock);
+            lineEnd = FindCR(pText);
+            if (!lineEnd) {
+                lineEnd = FindEND(pText);
+            }
+            if (lineEnd) {
+                while (*pText != 0) {
+                    if (lineEnd == pText) {
+                        AddLine(nullptr, 0);
+                    } else {
+                        WordWrapAddLines(pText, lineEnd, false, nullptr);
+                    }
+                    if (*lineEnd == 0) {
+                        lineEnd = nullptr;
+                        if (!lineEnd) {
+                            break;
+                        }
+                    } else {
+                        pText = lineEnd + 1;
+                        lineEnd = FindCR(pText);
+                        if (!lineEnd) {
+                            lineEnd = FindEND(pText);
+                            if (!lineEnd) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    m_TopLine = 0;
+    UpdateScrollBar();
+    Display(m_TopLine);
+}

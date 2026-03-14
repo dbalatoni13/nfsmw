@@ -62,6 +62,95 @@ void Scrollerina::Update(bool print) {
     DrawScrollBar();
 }
 
+void ScrollerSlot::SetScript(unsigned int script_hash) {
+    ScrollerSlotNode *node = FEStrings.GetHead();
+    while (node != FEStrings.EndOfList()) {
+        FEngSetScript(node->String, script_hash, true);
+        node = node->GetNext();
+    }
+    if (pBacking) {
+        FEngSetScript(pBacking, script_hash, true);
+    }
+}
+
+void ScrollerSlot::Show() {
+    if (!FEStrings.IsEmpty()) {
+        ScrollerSlotNode *node = FEStrings.GetHead();
+        while (node != FEStrings.EndOfList()) {
+            FEngSetVisible(node->String);
+            node = node->GetNext();
+        }
+    }
+    FEngSetVisible(pBacking);
+}
+
+void ScrollerSlot::Hide() {
+    if (!FEStrings.IsEmpty()) {
+        ScrollerSlotNode *node = FEStrings.GetHead();
+        while (node != FEStrings.EndOfList()) {
+            FEngSetInvisible(node->String);
+            node = node->GetNext();
+        }
+    }
+    FEngSetInvisible(pBacking);
+}
+
+void Scrollerina::AddSlot(ScrollerSlot *slot) {
+    Slots.AddTail(slot);
+    iNumSlots++;
+    if (!SelectedSlot) {
+        SelectedSlot = Slots.GetHead();
+    }
+    slot->FindSize();
+}
+
+ScrollerSlot *Scrollerina::FindSlotWithDatum(ScrollerDatum *to_find) {
+    if (Slots.IsEmpty() || Data.IsEmpty()) {
+        return nullptr;
+    }
+    ScrollerSlot *slot = Slots.GetHead();
+    ScrollerDatum *datum = TopDatum;
+    while (slot != Slots.EndOfList()) {
+        if (datum == to_find) {
+            return slot;
+        }
+        if (datum == Data.EndOfList()) {
+            return nullptr;
+        }
+        datum = datum->GetNext();
+        slot = slot->GetNext();
+    }
+    return nullptr;
+}
+
+void Scrollerina::SetDisabledScripts() {
+    ScrollerSlot *slot = Slots.GetHead();
+    ScrollerDatum *datum = TopDatum;
+    while (slot != Slots.EndOfList()) {
+        if (datum->IsEnabled()) {
+            slot->bEnabled = true;
+        } else {
+            slot->bEnabled = false;
+        }
+        datum = datum->GetNext();
+        slot = slot->GetNext();
+    }
+}
+
+void Scrollerina::Enable(ScrollerDatum *datum) {
+    if (!datum) {
+        return;
+    }
+    datum->bEnabled = true;
+    if (Slots.IsEmpty() || Data.IsEmpty()) {
+        return;
+    }
+    ScrollerSlot *slot = FindSlotWithDatum(datum);
+    if (slot) {
+        slot->bEnabled = true;
+    }
+}
+
 extern FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
 extern unsigned long FEHashUpper(const char *str);
 extern int FEngSNPrintf(char *dest, int size, const char *fmt, ...);
