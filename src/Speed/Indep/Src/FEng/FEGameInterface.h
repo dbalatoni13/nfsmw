@@ -23,7 +23,6 @@ enum FEng_WarningLevel {
 
 // total size: 0x4
 struct FEGameInterface {
-    virtual ~FEGameInterface() {}
 
     // vtable order must match PS2 dump (GCC 2.95 uses declaration order)
     virtual unsigned char* GetPackageData(const char*, unsigned char**, bool&) = 0;            // [1]

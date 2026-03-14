@@ -13,13 +13,16 @@ struct FEGameInterface;
 struct FEPoint;
 
 inline int GetValidIndex(int lIndex, int lRange) {
-    if (lIndex < 0) {
-        if (lRange > 1) {
-            return lRange - (-lIndex - (-lIndex / lRange) * lRange);
-        }
-        return 0;
+    if (lIndex >= 0) {
+        return lIndex - (lIndex / lRange) * lRange;
     }
-    return lIndex - (lIndex / lRange) * lRange;
+    lIndex = -lIndex;
+    int rem = lIndex - (lIndex / lRange) * lRange;
+    int result = 0;
+    if (lRange > 1) {
+        result = lRange - rem;
+    }
+    return result;
 }
 
 // total size: 0xC8

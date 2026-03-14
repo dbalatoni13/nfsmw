@@ -190,40 +190,54 @@ void FECodeListBox::Initialize(unsigned long ulNumVisCols, unsigned long ulNumVi
 }
 
 void FECodeListBox::FillAllCells() {
-    unsigned long ulNumTotalCols = mulNumTotalColumns;
-    unsigned long ulNumTotalRows = mulNumTotalRows;
-    unsigned long ulNumVisRows = mulNumVisibleRows;
-    unsigned long ulNumVisCols = mulNumVisibleColumns;
-    if (!ulNumTotalCols || !ulNumTotalRows || !ulNumVisRows || !ulNumVisCols) {
+    if (!mulNumTotalColumns || !mulNumTotalRows || !mulNumVisibleRows || !mulNumVisibleColumns) {
         return;
+    }
+    unsigned long ulNumVisRows = mulNumVisibleRows;
+    if (ulNumVisRows > mulNumTotalRows) {
+        ulNumVisRows = mulNumTotalRows;
+    }
+    unsigned long ulNumVisCols = mulNumVisibleColumns;
+    if (ulNumVisCols > mulNumTotalColumns) {
+        ulNumVisCols = mulNumTotalColumns;
     }
     int lStartColumn = mulCurrentVirtualColumn;
     int lRow = mulCurrentVirtualRow;
-    if (ulNumTotalRows < ulNumVisRows) {
-        ulNumVisRows = ulNumTotalRows;
-    }
-    if (ulNumTotalCols < ulNumVisCols) {
-        ulNumVisCols = ulNumTotalCols;
-    }
-    if (!mpSetCellCallback) {
-        if (mpobRenderer) {
-            for (unsigned long i = 0; i < ulNumVisRows; i++) {
-                int lColumn = lStartColumn;
-                for (unsigned long j = 0; j < ulNumVisCols; j++) {
-                    mpobRenderer->SetCellData(this, lColumn, lRow);
-                    lColumn = GetValidIndex(lColumn + 1, mulNumTotalColumns);
+    if (mpSetCellCallback) {
+        unsigned long i = 0;
+        if (i < ulNumVisRows) {
+            do {
+                int lColumn = lRow;
+                unsigned long j = 0;
+                if (j < ulNumVisCols) {
+                    do {
+                        mpSetCellCallback(mpvCallbackData, this, lColumn, lStartColumn);
+                        lColumn = GetValidIndex(lColumn + 1, mulNumTotalColumns);
+                        j++;
+                    } while (j < ulNumVisCols);
                 }
-                lRow = GetValidIndex(lRow + 1, mulNumTotalRows);
-            }
+                lStartColumn = GetValidIndex(lStartColumn + 1, mulNumTotalRows);
+                i++;
+            } while (i < ulNumVisRows);
         }
     } else {
-        for (unsigned long i = 0; i < ulNumVisRows; i++) {
-            int lColumn = lStartColumn;
-            for (unsigned long j = 0; j < ulNumVisCols; j++) {
-                mpSetCellCallback(mpvCallbackData, this, lColumn, lRow);
-                lColumn = GetValidIndex(lColumn + 1, mulNumTotalColumns);
+        if (mpobRenderer) {
+            unsigned long i = 0;
+            if (i < ulNumVisRows) {
+                do {
+                    int lColumn = lRow;
+                    unsigned long j = 0;
+                    if (j < ulNumVisCols) {
+                        do {
+                            mpobRenderer->SetCellData(this, lColumn, lStartColumn);
+                            lColumn = GetValidIndex(lColumn + 1, mulNumTotalColumns);
+                            j++;
+                        } while (j < ulNumVisCols);
+                    }
+                    lStartColumn = GetValidIndex(lStartColumn + 1, mulNumTotalRows);
+                    i++;
+                } while (i < ulNumVisRows);
             }
-            lRow = GetValidIndex(lRow + 1, mulNumTotalRows);
         }
     }
 }
