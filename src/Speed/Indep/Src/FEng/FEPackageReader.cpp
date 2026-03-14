@@ -86,22 +86,22 @@ bool FEPackageReader::ReadTypeSizes() {
 
 bool FEPackageReader::ReadHeaderChunk() {
     unsigned long* pData = reinterpret_cast<unsigned long*>(pChunk);
-    if (BSwap32(pData[0]) != 0xE76E4546 || BSwap32(pData[2]) != 0x64486B50) {
-        return false;
+    if (BSwap32(pData[0]) == 0xE76E4546 && BSwap32(pData[2]) == 0x64486B50) {
+        if (BSwap32(pData[4]) > 0x1FFFF) {
+            FEPackage* pNewPack = static_cast<FEPackage*>(FEngMalloc(sizeof(FEPackage), 0, 0));
+            new (pNewPack) FEPackage();
+            pPack = pNewPack;
+            pNewPack->pCurrentButton = nullptr;
+            const char* pStrings = reinterpret_cast<const char*>(pData + 10);
+            ResourceCount = BSwap32(pData[6]);
+            ObjectCount = BSwap32(pData[7]);
+            unsigned long nameLen = BSwap32(pData[8]);
+            pPack->SetName(pStrings);
+            pPack->SetFilename(pStrings + nameLen);
+            return true;
+        }
     }
-    if (BSwap32(pData[4]) <= 0x1FFFF) {
-        return false;
-    }
-    FEPackage* pNewPack = static_cast<FEPackage*>(FEngMalloc(sizeof(FEPackage), 0, 0));
-    new (pNewPack) FEPackage();
-    pPack = pNewPack;
-    pNewPack->pCurrentButton = nullptr;
-    ResourceCount = BSwap32(pData[6]);
-    ObjectCount = BSwap32(pData[7]);
-    unsigned long nameLen = BSwap32(pData[8]);
-    pPack->SetName(reinterpret_cast<const char*>(pData + 10));
-    pPack->SetFilename(reinterpret_cast<const char*>(pData + 10) + nameLen);
-    return true;
+    return false;
 }
 
 bool FEPackageReader::ReadPackageResponseChunk() {
