@@ -60,9 +60,9 @@ FEFieldNode* FETypeNode::GetField(const char* pName) {
     FEFieldNode* pNode = GetFirstField();
     while (pNode) {
         if (FEngStrICmp(pNode->GetName(), pName) == 0) {
-            return pNode;
+            break;
         }
         pNode = pNode->GetNext();
     }
-    return nullptr;
+    return pNode;
 }

@@ -14,36 +14,40 @@ void FEKeyNode::operator delete(void* pNode) {
 }
 
 FEKeyNode* FEKeyTrack::GetKeyAt(long tTime) {
-    if (tTime > -1) {
-        FEKeyNode* pKey = GetFirstDeltaKey();
-        if (pKey) {
-            FEKeyNode* pPrev;
-            do {
-                pPrev = pKey;
-                if (!pPrev->GetNext()) {
-                    return pPrev;
-                }
-                pKey = pPrev->GetNext();
-            } while (pPrev->tTime < tTime);
-            return pPrev;
-        }
+    if (tTime < 0) {
+        return GetBaseKey();
     }
-    return GetBaseKey();
+    FEKeyNode* pPrev = GetFirstDeltaKey();
+    if (!pPrev) {
+        return GetBaseKey();
+    }
+    for (;;) {
+        FEKeyNode* pKey = pPrev->GetNext();
+        if (!pKey) {
+            break;
+        }
+        if (pPrev->tTime >= tTime) {
+            break;
+        }
+        pPrev = pKey;
+    }
+    return pPrev;
 }
 
 FEKeyNode* FEKeyTrack::GetDeltaKeyAt(long tTime) {
-    FEKeyNode* pKey = GetFirstDeltaKey();
-    FEKeyNode* pPrev;
-    if (!pKey) {
-        pPrev = nullptr;
-    } else {
-        do {
-            pPrev = pKey;
-            if (!pPrev->GetNext()) {
-                return pPrev;
-            }
-            pKey = pPrev->GetNext();
-        } while (pPrev->tTime < tTime);
+    FEKeyNode* pPrev = GetFirstDeltaKey();
+    if (!pPrev) {
+        return nullptr;
+    }
+    for (;;) {
+        FEKeyNode* pKey = pPrev->GetNext();
+        if (!pKey) {
+            break;
+        }
+        if (pPrev->tTime >= tTime) {
+            break;
+        }
+        pPrev = pKey;
     }
     return pPrev;
 }
