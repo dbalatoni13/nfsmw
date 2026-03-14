@@ -1,10 +1,26 @@
 #include "Speed/Indep/Src/Frontend/FERenderObject.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
-extern SlotPool *mpobFERenderObjectSlotPool;
 extern SlotPool *FERenderEPolySlotPool;
 extern SlotPool *FERenderEPolySlotPoolOverflow;
 extern void PSMTX44Identity(float *mtx);
+extern void FEBeginBatchRender(eView *view, int polyCount);
+extern void FEEndBatchRender(eView *view);
+extern void FERender(eView *view, ePoly *poly, TextureInfo *tex, TextureInfo *mask, int param);
+extern void FERender(eView *view, ePoly *poly, TextureInfo *tex, int param);
+
+extern unsigned int ClipTop(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
+                            bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
+                            unsigned int num_verts, float value);
+extern unsigned int ClipBottom(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
+                               bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
+                               unsigned int num_verts, float value);
+extern unsigned int ClipLeft(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
+                             bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
+                             unsigned int num_verts, float value);
+extern unsigned int ClipRight(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
+                              bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
+                              unsigned int num_verts, float value);
 
 void FERenderObject::Initialize() {
     mpobFERenderObjectSlotPool = bNewSlotPool(0x64, 0x180, "FERenderObjectSlotPool", 0);
@@ -58,4 +74,50 @@ bVector4 V4Mult(const bVector4 &v, float d) {
 
 void FERenderObject::SetTransform(bMatrix4 *pMatrix) {
     bMemCpy(&mstTransform, pMatrix, sizeof(bMatrix4));
+}
+
+void FERenderObject::Render() {
+    eView *view = &eViews[0];
+    FEBeginBatchRender(view, mPolyCount);
+    FERenderEPoly *render = mobPolyList.GetHead();
+    while (render != mobPolyList.EndOfList()) {
+        TextureInfo *texture = render->pTexture;
+        if (!texture) {
+            texture = mpobTexture;
+        }
+        if (render->EPoly.GetFlags() & 0x4) {
+            FERender(view, &render->EPoly, texture, render->pTextureMask, 0);
+        } else {
+            FERender(view, &render->EPoly, texture, 0);
+        }
+        render = render->GetNext();
+    }
+    FEEndBatchRender(view);
+    ReadyToRender();
+}
+
+void FERenderObject::Clear(FEPackageRenderInfo *pkg_render_info) {
+    while (mobPolyList.GetHead() != mobPolyList.EndOfList()) {
+        FERenderEPoly *render = mobPolyList.GetHead();
+        render->Remove();
+        delete render;
+    }
+    mulNumTimesRendered = 0;
+    mulFlags &= ~2;
+    mPolyCount = 0;
+}
+
+unsigned int FERenderObject::ClipAligned(FEClipInfo *pClipInfo, bVector3 *v, bVector2 *uv,
+                                         bVector4 *colors, bVector3 *nv, bVector2 *nuv,
+                                         bVector4 *ncolors) {
+    unsigned int num_verts;
+    num_verts = ClipLeft(nv, nuv, ncolors, v, uv, colors, 4, pClipInfo->constants[3]);
+    if (!num_verts) return 0;
+    num_verts = ClipTop(v, uv, colors, nv, nuv, ncolors, num_verts, pClipInfo->constants[0]);
+    if (!num_verts) return 0;
+    num_verts = ClipRight(nv, nuv, ncolors, v, uv, colors, num_verts, pClipInfo->constants[1]);
+    if (!num_verts) return 0;
+    num_verts = ClipBottom(v, uv, colors, nv, nuv, ncolors, num_verts, pClipInfo->constants[2]);
+    if (!num_verts) return 0;
+    return num_verts;
 }
