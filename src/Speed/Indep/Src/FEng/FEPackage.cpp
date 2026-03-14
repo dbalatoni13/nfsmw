@@ -237,51 +237,46 @@ void FEPackage::UpdateObjectTracks(FEObject* pObj, FEScript* pScript) {
     unsigned char* pData = pObj->pData;
     int CurTime = pScript->CurTime;
     FEKeyTrack* pTracks = pScript->pTracks;
-    unsigned long Flags;
 
-    if (!bExecuting) {
-        if (pTracks && pTracks[0].LongOffset == 0) {
-            FEKeyInterp(pTracks, CurTime, pData);
-        }
-        if (!*reinterpret_cast<int*>(pObj->pData + 0xC)) {
-            Flags = pObj->Flags;
-            goto setDirty;
-        }
-        {
-            unsigned char TrackCount = static_cast<unsigned char>(pScript->TrackCount);
-            for (unsigned char i = 0; i < TrackCount; i++) {
-                FEKeyInterp(&pTracks[i], CurTime,
-                            pData + pTracks[i].LongOffset * 4);
-            }
-        }
-    } else {
-        if (!pTracks || pTracks[0].LongOffset != 0) {
-            pObj->Flags &= FEPackage::uHoldDirtyFlags | 0xFF7FFFFF;
-        } else {
-            if (!(pTracks[0].InterpAction & 0x80)) {
-                pObj->Flags |= 0x800000;
-            } else {
+    if (bExecuting) {
+        if (pTracks && pTracks->LongOffset == 0) {
+            if (pTracks->InterpAction & 0x80) {
                 pObj->Flags &= FEPackage::uHoldDirtyFlags | 0xFF7FFFFF;
+            } else {
+                pObj->Flags |= 0x800000;
             }
             FEKeyInterpFast(pTracks, CurTime, pData);
+        } else {
+            pObj->Flags &= FEPackage::uHoldDirtyFlags | 0xFF7FFFFF;
         }
         unsigned char bDone = 0x80;
         if (*reinterpret_cast<int*>(pObj->pData + 0xC)) {
             unsigned char TrackCount = static_cast<unsigned char>(pScript->TrackCount);
-            for (unsigned char i = 0; i < TrackCount; i++) {
-                bDone &= pTracks[i].InterpAction;
-                FEKeyInterpFast(&pTracks[i], CurTime,
-                                pData + pTracks[i].LongOffset * 4);
+            for (unsigned char i = 0; i < TrackCount; i++, pTracks++) {
+                bDone &= pTracks->InterpAction;
+                FEKeyInterpFast(pTracks, CurTime,
+                                pData + pTracks->LongOffset * 4);
             }
         }
-        if (bDone == 0) {
-            pObj->Flags |= 0x1000000;
-        } else {
+        if (bDone) {
             pObj->Flags &= FEPackage::uHoldDirtyFlags | 0xFEFFFFFF;
+        } else {
+            pObj->Flags |= 0x1000000;
+        }
+    } else {
+        if (pTracks && pTracks->LongOffset == 0) {
+            FEKeyInterp(pTracks, CurTime, pData);
+        }
+        if (*reinterpret_cast<int*>(pObj->pData + 0xC)) {
+            unsigned char TrackCount = static_cast<unsigned char>(pScript->TrackCount);
+            for (unsigned char i = 0; i < TrackCount; i++, pTracks++) {
+                FEKeyInterp(pTracks, CurTime,
+                            pData + pTracks->LongOffset * 4);
+            }
         }
     }
-    Flags = pObj->Flags;
-setDirty:
+
+    unsigned long Flags = pObj->Flags;
     if (Flags & 0x1C00000) {
         pObj->Flags = Flags | 0x2000000;
     }
