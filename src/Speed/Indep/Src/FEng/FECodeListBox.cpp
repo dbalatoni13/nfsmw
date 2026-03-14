@@ -307,9 +307,7 @@ cleanup_ptrs:
 
 FEObject* FECodeListBox::Clone(bool bReference) {
     FECodeListBox* pNew = static_cast<FECodeListBox*>(FEngMalloc(sizeof(FECodeListBox), 0, 0));
-    if (pNew) {
-        new (pNew) FECodeListBox(*this, bReference);
-    }
+    new (pNew) FECodeListBox(*this, bReference);
     return pNew;
 }
 

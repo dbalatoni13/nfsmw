@@ -10,8 +10,12 @@ FEFieldNode::~FEFieldNode() {
 }
 
 void FEFieldNode::SetDefault(void* pSrc) {
-    if (!pDefault) {
-        pDefault = new (FEngMalloc(Size, nullptr, 0)) unsigned char[Size];
+    if (pDefault) {
+        delete[] pDefault;
+    }
+    pDefault = nullptr;
+    if (Size != 0) {
+        pDefault = static_cast<unsigned char*>(FEngMalloc(Size, nullptr, 0));
     }
     FEngMemCpy(pDefault, pSrc, Size);
 }

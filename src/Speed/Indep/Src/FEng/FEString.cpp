@@ -20,11 +20,7 @@ FEString::~FEString() {
 
 FEObject* FEString::Clone(bool bReference) {
     FEString* pString = static_cast<FEString*>(FEngMalloc(sizeof(FEString), 0, 0));
-
-    if (pString) {
-        new (pString) FEString(*this, bReference);
-    }
-
+    new (pString) FEString(*this, bReference);
     return pString;
 }
 

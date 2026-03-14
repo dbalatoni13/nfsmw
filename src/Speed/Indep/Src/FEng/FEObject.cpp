@@ -105,13 +105,10 @@ FEObject::~FEObject() {
 }
 
 void FEObject::SetDataSize(unsigned long Size) {
+    ObjDataPool.Free(pData);
+    pData = nullptr;
+    pData = ObjDataPool.Alloc(Size);
     DataSize = Size;
-    if (Size != 0) {
-        if (pData) {
-            ObjDataPool.Free(pData);
-        }
-        pData = ObjDataPool.Alloc(Size);
-    }
 }
 
 void FEObject::SetName(const char* pNewName) {
@@ -251,9 +248,7 @@ unsigned long FEObject::GetDataOffset(FEKeyTrack_Indices track) {
 
 FEObject* FEObject::Clone(bool bReference) {
     FEObject* pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEObject), nullptr, 0));
-    if (pObject) {
-        new (pObject) FEObject(*this, bReference);
-    }
+    new (pObject) FEObject(*this, bReference);
     return pObject;
 }
 
