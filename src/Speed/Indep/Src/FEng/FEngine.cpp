@@ -133,12 +133,12 @@ FEPackage* FEngine::FindIdlePackage(const char* pName) const {
 }
 
 FEPackage* FEngine::FindPackageWithControl() {
-    FEPackage* pPack = PackList.GetFirstPackage();
+    FEPackage* pPack = PackList.GetLastPackage();
     while (pPack) {
         if (pPack->Controllers) {
             return pPack;
         }
-        pPack = pPack->GetNext();
+        pPack = pPack->GetPrev();
     }
     return nullptr;
 }

@@ -102,15 +102,15 @@ void FEMinList::AddNode(FEMinNode* insertpoint, FEMinNode* node) {
     }
     if (insertpoint) {
         node->next = insertpoint->next;
-        if (insertpoint->next) {
-            insertpoint->next->prev = node;
+        if (node->next) {
+            node->next->prev = node;
         }
         node->prev = insertpoint;
         insertpoint->next = node;
     } else {
         node->next = head;
-        if (head) {
-            head->prev = node;
+        if (node->next) {
+            node->next->prev = node;
         }
         node->prev = nullptr;
         head = node;
@@ -137,8 +137,8 @@ FEMinNode* FEMinList::RemNode(FEMinNode* node) {
     if (node->next) {
         node->next->prev = node->prev;
     }
-    node->prev = reinterpret_cast<FEMinNode*>(0xABADCAFE);
     node->next = reinterpret_cast<FEMinNode*>(0xABADCAFE);
+    node->prev = reinterpret_cast<FEMinNode*>(0xABADCAFE);
     numElements--;
     return node;
 }
@@ -157,7 +157,7 @@ FEMinNode* FEMinList::FindNode(unsigned long ordinalnumber) const {
     if (!node) {
         return nullptr;
     }
-    if (ordinalnumber == 0) {
+    if (i == ordinalnumber) {
         return node;
     }
     do {

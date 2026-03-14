@@ -79,8 +79,8 @@ FEMinNode* FERefList::RemNode(FEMinNode* node) {
         ret->next->prev = ret->prev;
     }
 
-    ret->prev = kRemovedNode;
     ret->next = kRemovedNode;
+    ret->prev = kRemovedNode;
     return ret;
 }
 
