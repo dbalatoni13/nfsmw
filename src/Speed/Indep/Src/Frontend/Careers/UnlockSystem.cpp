@@ -1,8 +1,54 @@
 #include "Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 
 extern int UnlockAllThings;
+extern char TheUnlockData[0x1c8];
+extern char gMaxPartLevels[NUM_UNLOCKABLES];
+
+bool GetIsCollectorsEdition();
+eUnlockableEntity MapCarPartToUnlockable(int carslot, CarPart *part);
+eUnlockableEntity MapPerfPkgToUnlockable(Physics::Upgrades::Type type);
+const FECarPartInfo *LookupFEPartInfo(eUnlockableEntity unlockable, int level);
+
+// ============================================================
+// Free functions
+// ============================================================
+
+void DefaultUnlockData() {
+    bMemSet(&TheUnlockData, 0, 0x1c8);
+    bMemSet(&gMaxPartLevels, 0, NUM_UNLOCKABLES);
+    gMaxPartLevels[4] = 3;   // PUT_TIRES
+    gMaxPartLevels[5] = 4;   // PUT_BRAKES
+    gMaxPartLevels[6] = 3;   // PUT_CHASSIS
+    gMaxPartLevels[7] = 4;   // PUT_TRANSMISSION
+    gMaxPartLevels[8] = 4;   // PUT_ENGINE
+    gMaxPartLevels[9] = 3;   // PUT_INDUCTION
+    gMaxPartLevels[10] = 3;  // PUT_NOS
+    gMaxPartLevels[11] = 4;  // BODY_KIT
+    gMaxPartLevels[12] = 5;  // SPOILERS
+    gMaxPartLevels[13] = 6;  // RIM_BRANDS
+    gMaxPartLevels[14] = 6;  // HOODS
+    gMaxPartLevels[15] = 6;  // ROOF_SCOOPS
+    gMaxPartLevels[17] = 4;  // CUSTOM_HUD
+    gMaxPartLevels[18] = 4;  // WINDOW_TINT
+    gMaxPartLevels[23] = 3;  // PAINTABLE_BODY
+    gMaxPartLevels[40] = 6;  // VINYLS_GROUP_BODY
+}
+
+void UnlockUnlockableThing(eUnlockableEntity entity, unsigned int filter, int level, const char *part_name) {
+    level = bMax(level, 0);
+    if (filter & 1) {
+        TheUnlockData[static_cast<int>(entity) * 8 + 5] = static_cast<char>(level);
+        TheUnlockData[static_cast<int>(entity) * 8 + 4] = static_cast<char>(level);
+    } else if (filter & 2) {
+        TheUnlockData[static_cast<int>(entity) * 8 + 5] = static_cast<char>(level);
+        TheUnlockData[static_cast<int>(entity) * 8 + 1] = static_cast<char>(level);
+        TheUnlockData[static_cast<int>(entity) * 8 + 4] = static_cast<char>(level);
+        TheUnlockData[static_cast<int>(entity) * 8 + 0] = static_cast<char>(level);
+    }
+}
 
 // ============================================================
 // QuickRaceUnlocker
@@ -10,6 +56,32 @@ extern int UnlockAllThings;
 
 bool QuickRaceUnlocker::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEntity ent, int level, int player) {
     return false;
+}
+
+int QuickRaceUnlocker::IsUnlockableUnlocked(eUnlockFilters filter, eUnlockableEntity ent, int level, int player, bool backroom) {
+    bool answer = level <= TheUnlockData[static_cast<int>(ent) * 8 + 4]
+        | UnlockAllThings
+        | FEDatabase->GetUserProfile(0)->GetCareer()->HasBeatenCareer()
+        | FEDatabase->GetUserProfile(player)->CareerModeHasBeenCompletedAtLeastOnce;
+    return answer;
+}
+
+int QuickRaceUnlocker::IsCarPartUnlocked(eUnlockFilters filter, int carslot, CarPart *part, int player, bool backroom) {
+    return false;
+}
+
+int QuickRaceUnlocker::IsPerfPackageUnlocked(eUnlockFilters filter, Physics::Upgrades::Type pkg_type, int level, int player, bool backroom) {
+    bool answer = UnlockAllThings != 0;
+    eUnlockableEntity unlockable = MapPerfPkgToUnlockable(pkg_type);
+    int unlocked = QuickRaceUnlocker::IsUnlockableUnlocked(filter, unlockable, level, player, false);
+    return answer | unlocked;
+}
+
+bool QuickRaceUnlocker::IsTrackUnlocked(eUnlockFilters filter, int event_hash, int player) {
+    bool answer = UnlockAllThings != 0;
+    bool raceUnlocked = GRaceDatabase::Get().CheckRaceScoreFlags(event_hash, GRaceDatabase::kUnlocked_QuickRace);
+    unsigned int tutorialHash = Attrib::StringHash32("19.8.31");
+    return static_cast<bool>(event_hash == static_cast<int>(tutorialHash) | answer | raceUnlocked);
 }
 
 // ============================================================
@@ -48,6 +120,163 @@ bool OnlineUnlocker::IsCarUnlocked(eUnlockFilters filter, unsigned int car) {
 
 bool OnlineUnlocker::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEntity ent, int level) {
     return QuickRaceUnlocker::IsBackroomAvailable(filter, ent, level, 0);
+}
+
+// ============================================================
+// CareerUnlocker
+// ============================================================
+
+bool CareerUnlocker::IsUnlockableUnlocked(eUnlockFilters filter, eUnlockableEntity ent, int level, bool backroom) {
+    bool answer = level <= TheUnlockData[static_cast<int>(ent) * 8]
+        | UnlockAllThings
+        | FEDatabase->GetUserProfile(0)->GetCareer()->HasBeatenCareer()
+        | FEDatabase->GetUserProfile(0)->CareerModeHasBeenCompletedAtLeastOnce;
+
+    if (!backroom) return answer;
+
+    answer = level <= TheUnlockData[static_cast<int>(ent) * 8] + 1 | answer;
+
+    if (TheUnlockData[static_cast<int>(ent) * 8] != gMaxPartLevels[static_cast<int>(ent)])
+        return answer;
+
+    return level <= 7 | answer;
+}
+
+bool CareerUnlocker::IsPerfPackageUnlocked(eUnlockFilters filter, Physics::Upgrades::Type pkg_type, int level, bool backroom) {
+    bool answer = UnlockAllThings != 0;
+    eUnlockableEntity unlockable = MapPerfPkgToUnlockable(pkg_type);
+    bool unlocked = CareerUnlocker::IsUnlockableUnlocked(filter, unlockable, level, backroom);
+    return static_cast<bool>(answer | unlocked);
+}
+
+bool CareerUnlocker::IsTrackUnlocked(eUnlockFilters filter, int event_hash) {
+    bool answer = UnlockAllThings != 0;
+    bool raceUnlocked = GRaceDatabase::Get().CheckRaceScoreFlags(event_hash, GRaceDatabase::kUnlocked_Career);
+    return static_cast<bool>(answer | raceUnlocked);
+}
+
+// ============================================================
+// UnlockSystem dispatchers
+// ============================================================
+
+bool UnlockSystem::IsUnlockableUnlocked(eUnlockFilters filter, eUnlockableEntity thing, int level, int player, bool backroom) {
+    if (UnlockAllThings) return true;
+    bool answer = false;
+    if (filter & 1) {
+        answer = QuickRaceUnlocker::IsUnlockableUnlocked(filter, thing, level, player, backroom) != 0;
+    }
+    if (filter & 2) {
+        answer = static_cast<bool>(answer | CareerUnlocker::IsUnlockableUnlocked(filter, thing, level, backroom));
+    }
+    if (filter & 4) {
+        answer = static_cast<bool>(answer | OnlineUnlocker::IsUnlockableUnlocked(filter, thing, level, backroom));
+    }
+    return answer;
+}
+
+bool UnlockSystem::IsCarPartUnlocked(eUnlockFilters filter, int carslot, CarPart *part, int player, bool backroom) {
+    if (UnlockAllThings) return true;
+    bool answer = false;
+    if (filter & 1) {
+        answer = QuickRaceUnlocker::IsCarPartUnlocked(filter, carslot, part, player, backroom) != 0;
+    }
+    if (filter & 2) {
+        answer = static_cast<bool>(answer | CareerUnlocker::IsCarPartUnlocked(filter, carslot, part, backroom));
+    }
+    if (filter & 4) {
+        answer = static_cast<bool>(answer | OnlineUnlocker::IsCarPartUnlocked(filter, carslot, part, backroom));
+    }
+    return answer;
+}
+
+bool UnlockSystem::IsPerfPackageUnlocked(eUnlockFilters filter, Physics::Upgrades::Type pkg_type, int level, int player, bool backroom) {
+    if (UnlockAllThings) return true;
+    bool answer = false;
+    if (filter & 1) {
+        answer = QuickRaceUnlocker::IsPerfPackageUnlocked(filter, pkg_type, level, player, backroom) != 0;
+    }
+    if (filter & 2) {
+        answer = static_cast<bool>(answer | CareerUnlocker::IsPerfPackageUnlocked(filter, pkg_type, level, backroom));
+    }
+    if (filter & 4) {
+        answer = static_cast<bool>(answer | OnlineUnlocker::IsPerfPackageUnlocked(filter, pkg_type, level, backroom));
+    }
+    return answer;
+}
+
+bool UnlockSystem::IsTrackUnlocked(eUnlockFilters filter, int event_hash, int player) {
+    if (UnlockAllThings) return true;
+    bool answer = false;
+    if (filter & 1) {
+        answer = QuickRaceUnlocker::IsTrackUnlocked(filter, event_hash, player);
+    }
+    if (filter & 2) {
+        answer = static_cast<bool>(answer | CareerUnlocker::IsTrackUnlocked(filter, event_hash));
+    }
+    if (filter & 4) {
+        answer = static_cast<bool>(answer | OnlineUnlocker::IsTrackUnlocked(filter, event_hash));
+    }
+    return answer;
+}
+
+bool UnlockSystem::IsCarUnlocked(eUnlockFilters filter, unsigned int handle, int player) {
+    if (UnlockAllThings) return true;
+    bool answer = false;
+    if (filter & 1) {
+        answer = QuickRaceUnlocker::IsCarUnlocked(filter, handle, player);
+    }
+    if (filter & 2) {
+        answer = static_cast<bool>(answer | CareerUnlocker::IsCarUnlocked(filter, handle));
+    }
+    if (filter & 4) {
+        answer = static_cast<bool>(answer | OnlineUnlocker::IsCarUnlocked(filter, handle));
+    }
+    bool ceBonus = false;
+    if (GetIsCollectorsEdition() && UnlockSystem::IsBonusCarCEOnly(handle)) {
+        ceBonus = true;
+    }
+    return static_cast<bool>(answer | ceBonus);
+}
+
+bool UnlockSystem::IsBackroomAvailable(eUnlockFilters filter, eUnlockableEntity ent, int level) {
+    bool answer = false;
+    if (filter & 1) {
+        answer = QuickRaceUnlocker::IsBackroomAvailable(filter, ent, level, 0);
+    }
+    if (filter & 2) {
+        answer = static_cast<bool>(answer | CareerUnlocker::IsBackroomAvailable(filter, ent, level));
+    }
+    if (filter & 4) {
+        answer = static_cast<bool>(answer | OnlineUnlocker::IsBackroomAvailable(filter, ent, level));
+    }
+    return answer;
+}
+
+bool UnlockSystem::IsUnlockableNew(eUnlockFilters filter, eUnlockableEntity ent, int level) {
+    if (level == -2) {
+        char newFlag;
+        if (filter & 1) {
+            newFlag = TheUnlockData[static_cast<int>(ent) * 8 + 5];
+        } else if (filter & 2) {
+            newFlag = TheUnlockData[static_cast<int>(ent) * 8 + 1];
+        } else {
+            newFlag = TheUnlockData[static_cast<int>(ent) * 8 + 5];
+        }
+        return newFlag != -1;
+    }
+    if (filter & 2) {
+        return TheUnlockData[static_cast<int>(ent) * 8 + 1] == level;
+    }
+    return TheUnlockData[static_cast<int>(ent) * 8 + 5] == level;
+}
+
+void UnlockSystem::ClearNewUnlock(eUnlockableEntity ent, unsigned int filter) {
+    if (filter & 1) {
+        TheUnlockData[static_cast<int>(ent) * 8 + 5] = -1;
+    }
+    if (filter & 2) {
+        TheUnlockData[static_cast<int>(ent) * 8 + 1] = -1;
+    }
 }
 
 // ============================================================
