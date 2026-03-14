@@ -162,7 +162,7 @@ struct CustomizePaint : public CustomizationScreen {
 
     SelectablePart *FindInCartPart() override;
     CustomizePartOption *FindMatchingOption(SelectablePart *to_find) override;
-    SelectablePart *GetSelectedPart() override { return nullptr; }
+    SelectablePart *GetSelectedPart() override;
 
     unsigned int GetUnlockBlurb() { return 0; }
 

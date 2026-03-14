@@ -4164,6 +4164,10 @@ struct CustomizePaintDatum : public ArrayDatum {
     unsigned int UnlockBlurb;    // offset 0x28, size 0x4
 };
 
+SelectablePart *CustomizePaint::GetSelectedPart() {
+    return static_cast<CustomizePaintDatum *>(ThePaints.GetCurrentDatum())->ThePart;
+}
+
 void CustomizePaint::BuildSwatchList(unsigned int slot) {
     CarPart *matchPart = nullptr;
     ThePaints.ClearData();

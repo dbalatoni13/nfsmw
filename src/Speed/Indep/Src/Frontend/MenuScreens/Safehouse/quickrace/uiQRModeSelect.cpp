@@ -10,7 +10,7 @@ void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned i
 extern const char *gOnlineMainMenu;
 
 static void _SetQRMode(int mode) {
-    FEDatabase->RaceMode = static_cast<GRace::Type>(mode);
+    QRMode = mode;
 }
 
 struct MSOption : public IconOption {

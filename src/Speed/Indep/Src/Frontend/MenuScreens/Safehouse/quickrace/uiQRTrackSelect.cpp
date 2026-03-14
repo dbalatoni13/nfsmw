@@ -26,6 +26,7 @@ extern int IsTrackUnlocked(int filter, unsigned int hash, int param);
 extern void SetNumOpponents(void *custom, int num);
 extern void SetCopsEnabled(void *custom, bool enabled);
 extern const char *gOnlineMainMenu;
+extern int bStrICmp(const char *, const char *);
 
 struct GRaceSaveInfo {
     unsigned int mRaceHash;
@@ -96,7 +97,32 @@ void UIQRTrackSelect::SetSelectedTrack(GRaceParameters *track) {
 }
 
 bool UIQRTrackSelect::IsRaceValidForMike(GRaceParameters *parms) {
-    return true;
+    static const char *ValidForMikeMann[] = {
+        "15.2.1", "14.2.1", "16.2.3", "15.1.1", "16.1.1",
+        "14.1.2", "5.1.1", "11.4.2", "7.4.2", "5.4.14.4.1", "10.7.1"
+    };
+    static const char *goddamcrap[] = {
+        "16.1.1.r", "15.1.1"
+    };
+
+    int build = GetMikeMannBuild();
+    if (build == 1) {
+        for (int i = 0; i < 11; i++) {
+            if (bStrICmp(parms->GetEventID(), ValidForMikeMann[i]) == 0) {
+                return true;
+            }
+        }
+    } else {
+        build = GetMikeMannBuild();
+        if (build == 2) {
+            for (int i = 0; i < 2; i++) {
+                if (bStrICmp(parms->GetEventID(), goddamcrap[i]) == 0) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 void UIQRTrackSelect::TryToAddTrack(GRaceParameters *parms, int unlock_filter, int bin_num) {

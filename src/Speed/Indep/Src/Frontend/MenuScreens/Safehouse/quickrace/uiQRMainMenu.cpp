@@ -7,6 +7,7 @@ extern int QRMode;
 extern int GetMikeMannBuild();
 extern int FEngGetLastButton(const char *pkg_name);
 void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int lang_hash);
+// _SetQRMode defined in uiQRModeSelect.cpp
 static void _SetQRMode(int mode);
 
 struct QuickPlay : public IconOption {
