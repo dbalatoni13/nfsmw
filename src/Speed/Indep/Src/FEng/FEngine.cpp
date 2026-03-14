@@ -860,7 +860,7 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
     if (NumJoyPads != 0) {
         do {
             if ((pPackage->GetControlMask() & (1 << (i & 0x3F))) != 0) {
-                bSomethingActive = bSomethingActive || pJoyPad[i].WasActive();
+                bSomethingActive = bSomethingActive | pJoyPad[i].WasActive();
             }
             i = (i + 1) & 0xFF;
         } while (i < NumJoyPads);
@@ -881,7 +881,6 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
     unsigned long Pressed;
     unsigned long Released;
     unsigned long Held;
-    unsigned long JoyMask;
 
     i = 4;
     while (i < 19 && pPackage->IsInputEnabled()) {
@@ -896,7 +895,6 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
             do {
                 unsigned long PadBit = 1 << (PadIndex & 0x3F);
                 if ((Mask & PadBit) != 0) {
-                    int padOff = PadIndex * sizeof(FEJoyPad);
                     if (pJoyPad[PadIndex].WasPressed(ButtonMask)) {
                         Pressed = Pressed | ButtonMask;
                         FromPadPressed[i] = FromPadPressed[i] | static_cast<unsigned char>(PadBit);

@@ -399,32 +399,32 @@ void FEPackageReader::ProcessCodeListBoxTag(FETag* pTag) {
         case 0x444c:
             pList->Initialize(BSwap32(pTag->Getu32(0)), BSwap32(pTag->Getu32(1)));
             break;
+        case 0x764c: {
+            FEPoint pt;
+            *reinterpret_cast<unsigned long*>(&pt.h) = BSwap32(pTag->Getu32(0));
+            *reinterpret_cast<unsigned long*>(&pt.v) = BSwap32(pTag->Getu32(1));
+            pList->mstViewDimensions.h = pt.h;
+            pList->mstViewDimensions.v = pt.v;
+            break;
+        }
         case 0x4953:
             pList->AllocateStrings(BSwap32(pTag->Getu32(0)), BSwap32(pTag->Getu32(1)));
             break;
-        case 0x6343:
-            pList->SetCellColor(0, 0, BSwap32(pTag->Getu32(0)), pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
+        case 0x744c:
+            pList->mulFlags &= 1;
+            pList->mulFlags |= BSwap32(pTag->Getu32(0)) & 0xFFFFFFFE;
             break;
         case 0x6a4c:
             pList->SetCellJustification(0, 0, BSwap32(pTag->Getu32(0)), pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
             break;
+        case 0x6343:
+            pList->SetCellColor(0, 0, BSwap32(pTag->Getu32(0)), pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
+            break;
         case 0x7343: {
             FEPoint scale;
-            unsigned long sh = BSwap32(pTag->Getu32(0));
-            unsigned long sv = BSwap32(pTag->Getu32(1));
-            scale.h = *reinterpret_cast<float*>(&sh);
-            scale.v = *reinterpret_cast<float*>(&sv);
+            *reinterpret_cast<unsigned long*>(&scale.h) = BSwap32(pTag->Getu32(0));
+            *reinterpret_cast<unsigned long*>(&scale.v) = BSwap32(pTag->Getu32(1));
             pList->SetCellScale(0, 0, scale, pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
-            break;
-        }
-        case 0x744c:
-            pList->mulFlags = (pList->mulFlags & 1) | (BSwap32(pTag->Getu32(0)) & 0xFFFFFFFE);
-            break;
-        case 0x764c: {
-            unsigned long vh = BSwap32(pTag->Getu32(0));
-            unsigned long vv = BSwap32(pTag->Getu32(1));
-            pList->mstViewDimensions.h = *reinterpret_cast<float*>(&vh);
-            pList->mstViewDimensions.v = *reinterpret_cast<float*>(&vv);
             break;
         }
     }
