@@ -107,6 +107,234 @@ void FERenderObject::Clear(FEPackageRenderInfo *pkg_render_info) {
     mPolyCount = 0;
 }
 
+unsigned int ClipLeft(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
+                     bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
+                     unsigned int num_verts, float value) {
+    unsigned int new_num_verts = 0;
+    bool bFlag;
+    unsigned long last_vert;
+
+    last_vert = num_verts - 1;
+
+    if (pSrc[last_vert].x >= value) {
+        pDst[0] = pSrc[last_vert];
+        pDstUVs[0] = pSrcUVs[last_vert];
+        pDstColors[0] = pSrcColors[last_vert];
+        new_num_verts = 1;
+        bFlag = true;
+    } else {
+        bFlag = false;
+    }
+
+    if (num_verts != 0) {
+        for (unsigned long k = 0; k < num_verts; k++) {
+            if (pSrc[k].x >= value) {
+                if (!bFlag) {
+                    bVector3 diff = pSrc[k] - pSrc[last_vert];
+                    float t = (value - pSrc[last_vert].x) / diff.x;
+                    pDst[new_num_verts] = diff;
+                    pDst[new_num_verts] *= t;
+                    pDst[new_num_verts] += pSrc[last_vert];
+                    pDstUVs[new_num_verts] = (pSrcUVs[k] - pSrcUVs[last_vert]) * t + pSrcUVs[last_vert];
+                    pDstColors[new_num_verts] = V4Mult(pSrcColors[k] - pSrcColors[last_vert], t) + pSrcColors[last_vert];
+                    new_num_verts++;
+                    bFlag = true;
+                }
+                pDst[new_num_verts] = pSrc[k];
+                pDstUVs[new_num_verts] = pSrcUVs[k];
+                pDstColors[new_num_verts] = pSrcColors[k];
+                new_num_verts++;
+            } else {
+                if (bFlag) {
+                    bVector3 diff = pSrc[k] - pSrc[last_vert];
+                    float t = (value - pSrc[last_vert].x) / diff.x;
+                    pDst[new_num_verts] = diff;
+                    pDst[new_num_verts] *= t;
+                    pDst[new_num_verts] += pSrc[last_vert];
+                    pDstUVs[new_num_verts] = (pSrcUVs[k] - pSrcUVs[last_vert]) * t + pSrcUVs[last_vert];
+                    pDstColors[new_num_verts] = V4Mult(pSrcColors[k] - pSrcColors[last_vert], t) + pSrcColors[last_vert];
+                    new_num_verts++;
+                    bFlag = false;
+                }
+            }
+            last_vert = k;
+        }
+    }
+
+    return new_num_verts;
+}
+
+unsigned int ClipTop(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
+                     bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
+                     unsigned int num_verts, float value) {
+    unsigned int new_num_verts = 0;
+    bool bFlag;
+    unsigned long last_vert;
+
+    last_vert = num_verts - 1;
+
+    if (pSrc[last_vert].y >= value) {
+        pDst[0] = pSrc[last_vert];
+        pDstUVs[0] = pSrcUVs[last_vert];
+        pDstColors[0] = pSrcColors[last_vert];
+        new_num_verts = 1;
+        bFlag = true;
+    } else {
+        bFlag = false;
+    }
+
+    if (num_verts != 0) {
+        for (unsigned long k = 0; k < num_verts; k++) {
+            if (pSrc[k].y >= value) {
+                if (!bFlag) {
+                    bVector3 diff = pSrc[k] - pSrc[last_vert];
+                    float t = (value - pSrc[last_vert].y) / diff.y;
+                    pDst[new_num_verts] = diff;
+                    pDst[new_num_verts] *= t;
+                    pDst[new_num_verts] += pSrc[last_vert];
+                    pDstUVs[new_num_verts] = (pSrcUVs[k] - pSrcUVs[last_vert]) * t + pSrcUVs[last_vert];
+                    pDstColors[new_num_verts] = V4Mult(pSrcColors[k] - pSrcColors[last_vert], t) + pSrcColors[last_vert];
+                    new_num_verts++;
+                    bFlag = true;
+                }
+                pDst[new_num_verts] = pSrc[k];
+                pDstUVs[new_num_verts] = pSrcUVs[k];
+                pDstColors[new_num_verts] = pSrcColors[k];
+                new_num_verts++;
+            } else {
+                if (bFlag) {
+                    bVector3 diff = pSrc[k] - pSrc[last_vert];
+                    float t = (value - pSrc[last_vert].y) / diff.y;
+                    pDst[new_num_verts] = diff;
+                    pDst[new_num_verts] *= t;
+                    pDst[new_num_verts] += pSrc[last_vert];
+                    pDstUVs[new_num_verts] = (pSrcUVs[k] - pSrcUVs[last_vert]) * t + pSrcUVs[last_vert];
+                    pDstColors[new_num_verts] = V4Mult(pSrcColors[k] - pSrcColors[last_vert], t) + pSrcColors[last_vert];
+                    new_num_verts++;
+                    bFlag = false;
+                }
+            }
+            last_vert = k;
+        }
+    }
+
+    return new_num_verts;
+}
+
+unsigned int ClipRight(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
+                       bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
+                       unsigned int num_verts, float value) {
+    unsigned int new_num_verts = 0;
+    bool bFlag;
+    unsigned long last_vert;
+
+    last_vert = num_verts - 1;
+
+    if (pSrc[last_vert].x <= value) {
+        pDst[0] = pSrc[last_vert];
+        pDstUVs[0] = pSrcUVs[last_vert];
+        pDstColors[0] = pSrcColors[last_vert];
+        new_num_verts = 1;
+        bFlag = true;
+    } else {
+        bFlag = false;
+    }
+
+    if (num_verts != 0) {
+        for (unsigned long k = 0; k < num_verts; k++) {
+            if (pSrc[k].x <= value) {
+                if (!bFlag) {
+                    bVector3 diff = pSrc[k] - pSrc[last_vert];
+                    float t = (value - pSrc[last_vert].x) / diff.x;
+                    pDst[new_num_verts] = diff;
+                    pDst[new_num_verts] *= t;
+                    pDst[new_num_verts] += pSrc[last_vert];
+                    pDstUVs[new_num_verts] = (pSrcUVs[k] - pSrcUVs[last_vert]) * t + pSrcUVs[last_vert];
+                    pDstColors[new_num_verts] = V4Mult(pSrcColors[k] - pSrcColors[last_vert], t) + pSrcColors[last_vert];
+                    new_num_verts++;
+                    bFlag = true;
+                }
+                pDst[new_num_verts] = pSrc[k];
+                pDstUVs[new_num_verts] = pSrcUVs[k];
+                pDstColors[new_num_verts] = pSrcColors[k];
+                new_num_verts++;
+            } else {
+                if (bFlag) {
+                    bVector3 diff = pSrc[k] - pSrc[last_vert];
+                    float t = (value - pSrc[last_vert].x) / diff.x;
+                    pDst[new_num_verts] = diff;
+                    pDst[new_num_verts] *= t;
+                    pDst[new_num_verts] += pSrc[last_vert];
+                    pDstUVs[new_num_verts] = (pSrcUVs[k] - pSrcUVs[last_vert]) * t + pSrcUVs[last_vert];
+                    pDstColors[new_num_verts] = V4Mult(pSrcColors[k] - pSrcColors[last_vert], t) + pSrcColors[last_vert];
+                    new_num_verts++;
+                    bFlag = false;
+                }
+            }
+            last_vert = k;
+        }
+    }
+
+    return new_num_verts;
+}
+
+unsigned int ClipBottom(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
+                        bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
+                        unsigned int num_verts, float value) {
+    unsigned int new_num_verts = 0;
+    bool bFlag;
+    unsigned long last_vert;
+
+    last_vert = num_verts - 1;
+
+    if (pSrc[last_vert].y <= value) {
+        pDst[0] = pSrc[last_vert];
+        pDstUVs[0] = pSrcUVs[last_vert];
+        pDstColors[0] = pSrcColors[last_vert];
+        new_num_verts = 1;
+        bFlag = true;
+    } else {
+        bFlag = false;
+    }
+
+    if (num_verts != 0) {
+        for (unsigned long k = 0; k < num_verts; k++) {
+            if (pSrc[k].y <= value) {
+                if (!bFlag) {
+                    bVector3 diff = pSrc[k] - pSrc[last_vert];
+                    float t = (value - pSrc[last_vert].y) / diff.y;
+                    pDst[new_num_verts] = diff;
+                    pDst[new_num_verts] *= t;
+                    pDst[new_num_verts] += pSrc[last_vert];
+                    pDstUVs[new_num_verts] = (pSrcUVs[k] - pSrcUVs[last_vert]) * t + pSrcUVs[last_vert];
+                    pDstColors[new_num_verts] = V4Mult(pSrcColors[k] - pSrcColors[last_vert], t) + pSrcColors[last_vert];
+                    new_num_verts++;
+                    bFlag = true;
+                }
+                pDst[new_num_verts] = pSrc[k];
+                pDstUVs[new_num_verts] = pSrcUVs[k];
+                pDstColors[new_num_verts] = pSrcColors[k];
+                new_num_verts++;
+            } else {
+                if (bFlag) {
+                    bVector3 diff = pSrc[k] - pSrc[last_vert];
+                    float t = (value - pSrc[last_vert].y) / diff.y;
+                    pDst[new_num_verts] = diff;
+                    pDst[new_num_verts] *= t;
+                    pDst[new_num_verts] += pSrc[last_vert];
+                    pDstUVs[new_num_verts] = (pSrcUVs[k] - pSrcUVs[last_vert]) * t + pSrcUVs[last_vert];
+                    pDstColors[new_num_verts] = V4Mult(pSrcColors[k] - pSrcColors[last_vert], t) + pSrcColors[last_vert];
+                    new_num_verts++;
+                    bFlag = false;
+                }
+            }
+            last_vert = k;
+        }
+    }
+
+    return new_num_verts;
+}
+
 unsigned int FERenderObject::ClipAligned(FEClipInfo *pClipInfo, bVector3 *v, bVector2 *uv,
                                          bVector4 *colors, bVector3 *nv, bVector2 *nuv,
                                          bVector4 *ncolors) {
