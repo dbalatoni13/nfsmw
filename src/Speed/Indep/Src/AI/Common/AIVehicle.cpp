@@ -1965,8 +1965,12 @@ void AIPerpVehicle::Update(float dT) {
         mPursuitZoneCheck--;
         if (mPursuitZoneCheck < 0) {
             mPursuitZoneCheck = 10;
+#ifdef EA_BUILD_A124
+            if (ICopMgr::Exists() && (!GRaceStatus::Exists() || GRaceStatus::Get().GetPlayMode() == 0)) {
+#else
             if (ICopMgr::Exists() && ICopMgr::Get()->VehicleSpawningEnabled(false) &&
                 (!GRaceStatus::Exists() || GRaceStatus::Get().GetPlayMode() == 0)) {
+#endif
                 TrackPathZone *azone = TheTrackPathManager.FindZone(&pos2, TRACK_PATH_ZONE_PURSUIT_START, nullptr);
                 if (azone != nullptr) {
                     ICopMgr::Get()->LockoutCops(false);
