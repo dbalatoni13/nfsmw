@@ -101,32 +101,20 @@ FEScript::FEScript(FEScript& Src, bool bReference) {
     Flags = Src.Flags;
     SetTrackCount(Src.TrackCount);
     if (bReference) {
-        unsigned long i = 0;
-        if (TrackCount != 0) {
-            do {
-                FEKeyTrack* pDst = &pTracks[i];
-                FEKeyTrack* pSrc = &Src.pTracks[i];
-                pDst->ParamType = pSrc->ParamType;
-                pDst->ParamSize = pSrc->ParamSize;
-                pDst->InterpType = pSrc->InterpType;
-                pDst->InterpAction = pSrc->InterpAction;
-                *reinterpret_cast<unsigned long*>(reinterpret_cast<char*>(pDst) + 4) =
-                    (*reinterpret_cast<unsigned long*>(reinterpret_cast<char*>(pSrc) + 4) & 0xFFFFFF00) |
-                    (*reinterpret_cast<unsigned long*>(reinterpret_cast<char*>(pDst) + 4) & 0xFF);
-                *reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(pDst) + 7) =
-                    *reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(pSrc) + 7);
-                pDst->BaseKey = pSrc->BaseKey;
-                pDst->DeltaKeys.ReferenceList(&pSrc->DeltaKeys);
-                i++;
-            } while (i < TrackCount);
+        for (unsigned long i = 0; i < TrackCount; i++) {
+            pTracks[i].ParamType = Src.pTracks[i].ParamType;
+            pTracks[i].ParamSize = Src.pTracks[i].ParamSize;
+            pTracks[i].InterpType = Src.pTracks[i].InterpType;
+            pTracks[i].InterpAction = Src.pTracks[i].InterpAction;
+            pTracks[i].Length = Src.pTracks[i].Length;
+            *reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(&pTracks[i]) + 7) =
+                *reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(&Src.pTracks[i]) + 7);
+            pTracks[i].BaseKey = Src.pTracks[i].BaseKey;
+            pTracks[i].DeltaKeys.ReferenceList(&Src.pTracks[i].DeltaKeys);
         }
     } else {
-        unsigned long i = 0;
-        if (TrackCount != 0) {
-            do {
-                pTracks[i] = Src.pTracks[i];
-                i++;
-            } while (i < TrackCount);
+        for (unsigned long i = 0; i < TrackCount; i++) {
+            pTracks[i] = Src.pTracks[i];
         }
     }
     Events = Src.Events;
