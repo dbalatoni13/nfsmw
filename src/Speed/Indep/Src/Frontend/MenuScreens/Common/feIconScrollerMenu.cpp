@@ -1,0 +1,42 @@
+#include "IconPanel.hpp"
+#include "IconScroller.hpp"
+#include "IconScrollerMenu.hpp"
+
+extern void FEngSetTextureHash(FEImage *image, unsigned int hash);
+
+// ============================================================
+// IconPanel
+// ============================================================
+
+void IconPanel::Update() {
+    AnimateList();
+}
+
+void IconPanel::AnimateList() {
+    float list_width = 0.0f;
+    float list_height = 0.0f;
+    AnimateSelected(list_width, list_height);
+}
+
+// ============================================================
+// IconScrollerMenu
+// ============================================================
+
+void IconScrollerMenu::StorePrevNotification(unsigned int msg, FEObject *pobj, unsigned int param1, unsigned int param2) {
+    PrevButtonMessage = msg;
+    PrevButtonObj = pobj;
+    PrevParam1 = param1;
+    PrevParam2 = param2;
+}
+
+eMenuSoundTriggers IconScrollerMenu::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
+    if ((msg == 0x48122792 || msg == 0x4ac5e165) && !Options.JustScrolled()) {
+        return static_cast< eMenuSoundTriggers >(-1);
+    }
+    return maybe;
+}
+
+void IconScrollerMenu::AddOption(IconOption *option) {
+    FEImage *img = Options.AddOption(option);
+    FEngSetTextureHash(img, option->Item);
+}
