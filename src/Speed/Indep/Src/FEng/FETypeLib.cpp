@@ -167,7 +167,10 @@ bool FETypeLib::Startup() {
 
 FETypeNode* FETypeLib::FindType(unsigned long TypeID) {
     FETypeNode* pNode = GetFirstType();
-    while (pNode) {
+    for (;;) {
+        if (!pNode) {
+            break;
+        }
         if (pNode->GetID() == TypeID) {
             return pNode;
         }
