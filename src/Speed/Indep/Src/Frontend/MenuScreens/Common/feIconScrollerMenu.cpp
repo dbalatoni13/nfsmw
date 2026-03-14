@@ -40,3 +40,35 @@ void IconScrollerMenu::AddOption(IconOption *option) {
     FEImage *img = Options.AddOption(option);
     FEngSetTextureHash(img, option->Item);
 }
+
+IconOption *IconPanel::GetOption(int to_find) {
+    if (to_find < 1) {
+        return nullptr;
+    }
+    IconOption *node = Options.GetHead();
+    int i = 1;
+    while (node != Options.EndOfList()) {
+        if (to_find == i) {
+            return node;
+        }
+        i++;
+        node = node->GetNext();
+    }
+    return nullptr;
+}
+
+int IconPanel::GetOptionIndex(IconOption *to_find) {
+    if (!to_find) {
+        return -1;
+    }
+    IconOption *node = Options.GetHead();
+    int i = 1;
+    while (node != Options.EndOfList()) {
+        if (node == to_find) {
+            return i;
+        }
+        i++;
+        node = node->GetNext();
+    }
+    return -1;
+}

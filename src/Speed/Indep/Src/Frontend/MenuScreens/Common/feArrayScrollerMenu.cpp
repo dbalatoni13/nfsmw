@@ -45,3 +45,20 @@ void ArrayScrollerMenu::NotificationMessage(u32 msg, FEObject *pObj, u32 param1,
 void ArrayScrollerMenu::RefreshHeader() {
     ArrayScroller::RefreshHeader();
 }
+
+ArrayDatum::ArrayDatum(uint32 h, uint32 d)
+    : hash(h) //
+    , desc(d) //
+    , enabled(true) //
+    , greyedOut(false) //
+    , locked(false) //
+    , checked(false)
+{
+}
+
+void ImageArraySlot::Update(ArrayDatum *datum, bool isSelected) {
+    ArraySlot::Update(datum, isSelected);
+    if (datum) {
+        SetTexture(datum->GetHash());
+    }
+}

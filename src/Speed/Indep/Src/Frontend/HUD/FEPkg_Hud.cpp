@@ -47,6 +47,69 @@ extern bool bIsRestartingRace;
 
 extern FEString *FEngFindString(const char *, int);
 
+extern const char *HudSingleRaceTexturePackFilename;
+extern const char *HudDragTexturePackFilename;
+extern const char *HudSplitScreenTexturePackFilename;
+extern const char *HudDragSplitScreenTexturePackFilename;
+
+const char *HudResourceManager::GetHudTexPackFilename(ePlayerHudType ht) {
+    if (ht == PHT_DRAG) {
+        return HudDragTexturePackFilename;
+    }
+    if (static_cast<unsigned int>(ht - 3) < 2) {
+        return HudSplitScreenTexturePackFilename;
+    }
+    if (static_cast<unsigned int>(ht - 5) >= 2) {
+        return HudSingleRaceTexturePackFilename;
+    }
+    return HudDragSplitScreenTexturePackFilename;
+}
+
+const char *HudResourceManager::GetHudFengName(ePlayerHudType ht) {
+    switch (ht) {
+    case PHT_DRAG:
+        return "HUD_Drag.fng";
+    case PHT_SPLIT1:
+        return "HUD_Player1.fng";
+    case PHT_SPLIT2:
+        return "HUD_Player2.fng";
+    case PHT_DRAG_SPLIT1:
+        return "HUD_Drag_Player1.fng";
+    case PHT_DRAG_SPLIT2:
+        return "HUD_Drag_Player2.fng";
+    default:
+        return "HUD_SingleRace.fng";
+    }
+}
+
+bool HudResourceManager::AreResourcesLoaded(ePlayerHudType ht) {
+    if (mHudResourcesState == HRM_LOADED) {
+        if (ht == PHT_SPLIT2) {
+            return LoadingResourcesForHudType == PHT_SPLIT1;
+        }
+        if (ht == PHT_DRAG_SPLIT2) {
+            return LoadingResourcesForHudType == PHT_DRAG_SPLIT1;
+        }
+        if (LoadingResourcesForHudType == ht) {
+            return true;
+        }
+    }
+    return false;
+}
+
+float FEngHud::ChooseMaxRpmTextureNumber(float rpm) {
+    if (rpm < 7000.0f) {
+        return 7000.0f;
+    }
+    if (rpm < 8000.0f) {
+        return 8000.0f;
+    }
+    if (rpm < 9000.0f) {
+        return 9000.0f;
+    }
+    return 10000.0f;
+}
+
 FEngHud::FEngHud(ePlayerHudType ht, const char *pkg_name, IPlayer *player, int player_number)
     : UTL::COM::Object(0x14) //
     , IHud(this) //

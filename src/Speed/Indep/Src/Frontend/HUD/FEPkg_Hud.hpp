@@ -49,6 +49,7 @@ class FEngHud : public UTL::COM::Object, public IHud {
     bool IsSplitScreen();
     void RefreshMiniMapItems();
     OnlineHUDSupport *GetOnlineHUDSupport();
+    static float ChooseMaxRpmTextureNumber(float rpm);
 
   private:
     void SetHudFeatures(unsigned long long features);
@@ -106,10 +107,13 @@ class HudResourceManager {
     HudResourceManager();
     virtual ~HudResourceManager() {}
 
+    const char *GetHudTexPackFilename(ePlayerHudType ht);
     static const char *GetHudFengName(ePlayerHudType ht);
     void LoadRequiredResources(ePlayerHudType ht, const char *pkg_name);
     void UnloadRequiredResources(ePlayerHudType ht);
     bool AreResourcesLoaded(ePlayerHudType ht);
+
+    static ePlayerHudType LoadingResourcesForHudType;
 
   private:
     HudResourceLoadStates mHudResourcesState; // offset 0x0, size 0x4

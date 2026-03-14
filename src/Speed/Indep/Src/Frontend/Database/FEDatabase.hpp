@@ -547,7 +547,7 @@ class cFrontendDatabase {
 
     bool IsFinalEpicChase();
     unsigned int GetUserProfileSaveSize(bool bExcludeGameplay);
-    void SaveUserProfileToBuffer(void* buffer, unsigned int size);
+    void SaveUserProfileToBuffer(void* buffer, int size);
     void NotifyExitRaceToFrontend(eExitRacePlaces from_where);
     void AllocBackupDB(bool b);
     void DefaultProfile();

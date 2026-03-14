@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 extern unsigned int FEngHashString(const char *, ...);
 extern eLanguages GetCurrentLanguage();
@@ -84,7 +85,7 @@ unsigned int cFrontendDatabase::GetUserProfileSaveSize(bool bExcludeGameplay) {
     return CurrentUserProfiles[0]->GetSaveBufferSize(bExcludeGameplay);
 }
 
-void cFrontendDatabase::SaveUserProfileToBuffer(void *buffer, unsigned int size) {
+void cFrontendDatabase::SaveUserProfileToBuffer(void *buffer, int size) {
     CurrentUserProfiles[0]->SaveToBuffer(buffer, size);
 }
 
@@ -281,4 +282,25 @@ void cFrontendDatabase::NotifyExitRaceToFrontend(eExitRacePlaces from_where) {
     if (from_where == EXIT_RACE_FROM_PAUSE) {
         CurrentUserProfiles[0]->CommitHighScoresPauseQuit();
     }
+}
+
+void cFrontendDatabase::DeallocBackupDB() {
+    if (m_pDBBackup) {
+        bFree(m_pDBBackup);
+        m_pDBBackup = nullptr;
+    }
+}
+
+int UserProfile::GetSaveBufferSize(bool bExcludeGameplay) {
+    int size = TheCareerSettings.GetSaveBufferSize(bExcludeGameplay) + 0x1e4;
+    return size + PlayersCarStable.GetSaveBufferSize() + 0xc18;
+}
+
+unsigned int GetFECarNameHashFromFEKey(unsigned int feKey) {
+    if (!feKey) {
+        return 0;
+    }
+    FECarRecord rec;
+    rec.FEKey = feKey;
+    return rec.GetNameHash();
 }
