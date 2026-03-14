@@ -5,15 +5,15 @@ FEMouse::FEMouse() {
 }
 
 void FEMouse::Reset() {
-    bDragging = false;
-    HeldCount[0] = 0;
-    HeldCount[1] = 0;
-    HeldCount[2] = 0;
-    LastMask = 0;
-    CurMask = 0;
-    XPos = 0;
-    YPos = 0;
     WheelDelta = 0;
+    YPos = 0;
+    XPos = 0;
+    CurMask = 0;
+    LastMask = 0;
+    HeldCount[2] = 0;
+    HeldCount[1] = 0;
+    HeldCount[0] = 0;
+    bDragging = false;
     bMoved = false;
 }
 
