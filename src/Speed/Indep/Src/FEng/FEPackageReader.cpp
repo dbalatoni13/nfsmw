@@ -562,16 +562,22 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
             }
             return;
         case 0x774c:
-            pList->SetAutoWrap(pTag->Getu32(0) != 0);
+            pList->SetAutoWrap(BSwap32(pTag->Getu32(0)) != 0);
             return;
-        case 0x764c:
-            *reinterpret_cast<unsigned long*>(&pList->mstViewDimensions.h) = BSwap32(pTag->Getu32(0));
-            *reinterpret_cast<unsigned long*>(&pList->mstViewDimensions.v) = BSwap32(pTag->Getu32(1));
+        case 0x764c: {
+            FEPoint pt;
+            *reinterpret_cast<unsigned long*>(&pt.h) = BSwap32(pTag->Getu32(0));
+            *reinterpret_cast<unsigned long*>(&pt.v) = BSwap32(pTag->Getu32(1));
+            pList->mstViewDimensions = pt;
             return;
-        case 0x734c:
-            *reinterpret_cast<unsigned long*>(&pList->mstSelectionSpeed.h) = BSwap32(pTag->Getu32(0));
-            *reinterpret_cast<unsigned long*>(&pList->mstSelectionSpeed.v) = BSwap32(pTag->Getu32(1));
+        }
+        case 0x734c: {
+            FEPoint pt;
+            *reinterpret_cast<unsigned long*>(&pt.h) = BSwap32(pTag->Getu32(0));
+            *reinterpret_cast<unsigned long*>(&pt.v) = BSwap32(pTag->Getu32(1));
+            pList->mstSelectionSpeed = pt;
             return;
+        }
         case 0x634c:
             CurListCol++;
             val = pTag->Getu32(0);
@@ -593,11 +599,11 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
             return;
         }
         case 0x7343: {
-            unsigned long h = BSwap32(pTag->Getu32(0));
-            unsigned long v = BSwap32(pTag->Getu32(1));
+            FEPoint pt;
+            *reinterpret_cast<unsigned long*>(&pt.h) = BSwap32(pTag->Getu32(0));
+            *reinterpret_cast<unsigned long*>(&pt.v) = BSwap32(pTag->Getu32(1));
             FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
-            *reinterpret_cast<unsigned long*>(&pCell->stScale.h) = h;
-            *reinterpret_cast<unsigned long*>(&pCell->stScale.v) = v;
+            pCell->stScale = pt;
             return;
         }
         case 0x7243: {

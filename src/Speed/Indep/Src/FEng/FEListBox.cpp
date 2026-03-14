@@ -484,3 +484,7 @@ void FEListBox::Update(float dt) {
         }
     }
 }
+
+FEListBoxCell* FEListBox::GetPCellData(unsigned long ulColumn, unsigned long ulRow) {
+    return &mpstCells[ulRow * mulNumColumns + ulColumn];
+}

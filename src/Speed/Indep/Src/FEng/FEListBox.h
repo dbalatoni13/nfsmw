@@ -142,7 +142,7 @@ struct FEListBox : public FEObject {
     inline float GetAlphaHilite() const { return mfCurrentAlpha; }
     inline bool IsCurrent(unsigned long ulColumn, unsigned long ulRow) const { return ulColumn == mulCurrentColumn && ulRow == mulCurrentRow; }
     inline bool IsAutoWrap() const { return (mulFlags & 1) != 0; }
-    inline FEListBoxCell* GetPCellData(unsigned long ulColumn, unsigned long ulRow) { return &mpstCells[ulRow * mulNumColumns + ulColumn]; }
+    FEListBoxCell* GetPCellData(unsigned long ulColumn, unsigned long ulRow);
     inline FEListEntryData* GetPColumnData(unsigned long ulColumn) { return &mpstColumnData[ulColumn]; }
     inline FEListEntryData* GetPRowData(unsigned long ulRow) { return &mpstRowData[ulRow]; }
 };
