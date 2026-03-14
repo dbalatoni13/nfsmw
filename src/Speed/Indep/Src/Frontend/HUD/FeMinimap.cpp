@@ -32,9 +32,78 @@ void UnloaderMiniMap(bChunk *chunk) {
     gChoppedMiniMapManager->Unloader(chunk);
 }
 
+extern unsigned int FEngHashString(const char *, ...);
+extern void FEngGetCenter(FEObject *obj, float &x, float &y);
+extern char *bStrStr(const char *, const char *);
+
 Minimap::Minimap(const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0)
+    : HudElement(pkg_name, 0x40010000)
 {
+    for (int i = 3; i >= 0; i--) {
+        for (int j = 1; j >= 0; j--) {
+            TrackmapArtUVs[i][j].x = 0.0f;
+            TrackmapArtUVs[i][j].y = 0.0f;
+        }
+    }
+
+    mCopFlashCounter = -1;
+    mMapDefaultPos.z = 0.0f;
+    mMapDefaultPos.y = 0.0f;
+    mMapDefaultPos.x = 0.0f;
+    mSpeedZoomScale = 0.0f;
+    mPolyRotation = 0.0f;
+    MinimapPivotX = 0.0f;
+    mTrackMapCentre.x = 0.0f;
+    mTrackTargetNormalized.y = 0.0f;
+    mTrackTargetNormalized.x = 0.0f;
+    mTrackMapCentre.y = 0.0f;
+
+    for (unsigned int i = 0; i < 4; i++) {
+        TrackmapArt[i] = static_cast<FEMultiImage *>(RegisterMultiImage(FEngHashString("TRACK_MAP%d", i + 1)));
+        if (TrackmapArt[i]) {
+            TrackmapArt[i]->GetUVs(0, TrackmapArtUVs[i][0], TrackmapArtUVs[i][1]);
+        }
+    }
+
+    TrackmapLayout = RegisterObject(FEngHashString("TRACK_MAP"));
+    TrackmapNorth = RegisterImage(FEngHashString("MINIMAP_NORTH_INDICATOR"));
+    mPlayerCarIndicator = RegisterImage(FEngHashString("PLAYERCARINDICATOR"));
+    mPlayerCarIndicator2 = RegisterImage(FEngHashString("PLAYERCARINDICATOR2"));
+    RegisterObject(FEngHashString("TRACKMAPTARGETRING"));
+    RegisterObject(FEngHashString("MAP_COLOR_TINT"));
+
+    bMemSet(mGameplayIcons, 0, sizeof(mGameplayIcons));
+
+    mHeliElementArt = RegisterGroup(FEngHashString("HELICOPTER_ICON_GROUP"));
+    mHeliLineOfSiteArt = RegisterImage(FEngHashString("HELICOPTER_LINE_OF_SIGHT"));
+
+    for (unsigned int i = 0; i < 8; i++) {
+        mCopElementArt[i] = RegisterImage(FEngHashString("MMICON_COPCAR_%d", i));
+        mRacerElementArt[i] = RegisterImage(FEngHashString("MMICON_AIRACER_%d", i));
+        for (int onType = 0; onType < 17; onType++) {
+            if (kGameplayIconInfo[onType].mItemType != 0) {
+                if (i == 0 || bStrStr(kGameplayIconInfo[onType].mElementString, "%d")) {
+                    mGameplayIcons[onType][i] = RegisterImage(FEngHashString(kGameplayIconInfo[onType].mElementString, i));
+                    if (mGameplayIcons[onType][i]) {
+                        FEngSetInvisible(mGameplayIcons[onType][i]);
+                    }
+                } else {
+                    mGameplayIcons[onType][i] = nullptr;
+                }
+            }
+        }
+    }
+
+    mCheckpointElementArt = RegisterImage(FEngHashString("MMICON_CHECKPOINT"));
+    mGPSSelectionElementArt = RegisterImage(0xE8741681);
+
+    if (TrackmapLayout) {
+        mMapDefaultPos = TrackmapLayout->GetObjData()->Pos;
+        float x, y;
+        FEngGetCenter(TrackmapLayout, x, y);
+        mTrackMapCentre.x = x;
+        mTrackMapCentre.y = y;
+    }
 }
 
 Minimap::~Minimap() {

@@ -102,9 +102,9 @@ void FERenderObject::Clear(FEPackageRenderInfo *pkg_render_info) {
         render->Remove();
         delete render;
     }
-    mulNumTimesRendered = 0;
-    mulFlags &= ~2;
     mPolyCount = 0;
+    mulFlags &= ~2;
+    mulNumTimesRendered = 0;
 }
 
 unsigned int ClipLeft(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,

@@ -143,16 +143,16 @@ void cSlider::Draw() {
 }
 
 void cSlider::ToggleVisible(bool bOn) {
-    if (!bOn) {
-        FEngSetInvisible(reinterpret_cast<FEObject *>(pValue));
-        FEngSetInvisible(reinterpret_cast<FEObject *>(pBase));
-        FEngSetInvisible(reinterpret_cast<FEObject *>(pFillBar));
-        FEngSetInvisible(reinterpret_cast<FEObject *>(pHandle));
-    } else {
+    if (bOn) {
         FEngSetVisible(reinterpret_cast<FEObject *>(pBase));
         FEngSetVisible(reinterpret_cast<FEObject *>(pFillBar));
         FEngSetVisible(reinterpret_cast<FEObject *>(pValue));
         FEngSetVisible(reinterpret_cast<FEObject *>(pHandle));
+    } else {
+        FEngSetInvisible(reinterpret_cast<FEObject *>(pValue));
+        FEngSetInvisible(reinterpret_cast<FEObject *>(pBase));
+        FEngSetInvisible(reinterpret_cast<FEObject *>(pFillBar));
+        FEngSetInvisible(reinterpret_cast<FEObject *>(pHandle));
     }
 }
 
@@ -201,10 +201,10 @@ void TwoStageSlider::InitValues(float min, float max, float inc, float cur, floa
 
 void TwoStageSlider::ToggleVisible(bool bOn) {
     cSlider::ToggleVisible(bOn);
-    if (!bOn) {
-        FEngSetInvisible(reinterpret_cast<FEObject *>(pPreviewBar));
-    } else {
+    if (bOn) {
         FEngSetVisible(reinterpret_cast<FEObject *>(pPreviewBar));
+    } else {
+        FEngSetInvisible(reinterpret_cast<FEObject *>(pPreviewBar));
     }
 }
 

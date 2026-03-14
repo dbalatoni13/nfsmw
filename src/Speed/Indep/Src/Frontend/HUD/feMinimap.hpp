@@ -50,11 +50,22 @@ class Minimap : public HudElement {
     void AdjustForWidescreen(bool widescreen);
     static void InitStaticMiniMapItems();
 
+    struct GameplayIconInfo {
+        int mIconType;
+        int mItemType;
+        const char *mElementString;
+        unsigned int mWorldMapTitle;
+        unsigned int mworldIconTexHash;
+    };
+    static GameplayIconInfo kGameplayIconInfo[];
+    static GameplayIconInfo &GetGameplayIconInfo(int iconType);
+    static GameplayIconInfo &GetGameplayIconInfoByItemType(int itemType);
+
   private:
     bTList<MiniMapItem> StaticMiniMapItems;
     FEObject *TrackmapLayout;
     FEMultiImage *TrackmapArt[4];
-    FEVector2 TrackmapArtUVs[2][4];
+    FEVector2 TrackmapArtUVs[4][2];
     FEImage *TrackmapNorth;
     FEImage *mPlayerCarIndicator;
     FEImage *mPlayerCarIndicator2;
@@ -72,7 +83,7 @@ class Minimap : public HudElement {
     FEImage *mRacerElementArt[8];
     FEImage *mCheckpointElementArt;
     FEImage *mGPSSelectionElementArt;
-    FEImage *mGameplayIcons[8][17];
+    FEImage *mGameplayIcons[17][8];
 };
 
 #endif

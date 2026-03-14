@@ -120,13 +120,13 @@ void FEngSetLastButton(const char *pkg_name, unsigned char button_hash) {
     ScreenButtonDatum *sd = FindScreenButtonDatum(hash);
     if (sd) {
         sd->LastButton = button_hash;
-    } else {
-        ScreenButtonDatum *avail = FindAvailableButtonDatum();
-        if (avail) {
-            avail->ScreenHash = FEHashUpper(pkg_name);
-            avail->LastButton = button_hash;
-            avail->GameMode = FEDatabase->GetGameMode();
-        }
+        return;
+    }
+    ScreenButtonDatum *avail = FindAvailableButtonDatum();
+    if (avail) {
+        avail->ScreenHash = FEHashUpper(pkg_name);
+        avail->LastButton = button_hash;
+        avail->GameMode = FEDatabase->GetGameMode();
     }
 }
 
