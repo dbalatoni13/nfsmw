@@ -19,6 +19,16 @@
 #include "Speed/Indep/Src/Misc/LZCompress.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
+#include "Speed/Indep/Src/Generated/Events/ESndGameState.hpp"
+#include "Speed/Indep/Src/Generated/Messages/MAcceptEnterCareerEvent.h"
+#include "Speed/Indep/Src/Generated/Messages/MDeclineEnterCareerEvent.h"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FEBootFlowManager.hpp"
+#include "Speed/Indep/Src/Frontend/SubTitle.hpp"
+#include "Speed/Indep/Src/Misc/EasterEggs.hpp"
+#include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
+
+extern void SetSoundControlState(bool set, eSNDCTLSTATE state, const char *name);
+static int IsDebugPlayMovie;
 
 static const char* gLoadinScreenPackageName;
 
@@ -141,10 +151,24 @@ struct CustomizePerformance : MenuScreen { CustomizePerformance(ScreenConstructo
 struct uiCredits : MenuScreen { uiCredits(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x1C]; };
 struct UIEATraxScreen : MenuScreen { UIEATraxScreen(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0xF4]; };
 struct UIOptionsController : MenuScreen { UIOptionsController(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x128]; };
+struct UITrackMapStreamer { void UpdateAnimation(); };
 namespace nsEngageEventDialog {
-struct EngageEventDialog : MenuScreen { EngageEventDialog(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0xC]; };
+struct EngageEventDialog : MenuScreen {
+    EngageEventDialog(ScreenConstructorData *);
+    ~EngageEventDialog() override;
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
+    void NotifyTheGameAcceptEvent();
+    void NotifyTheGameDeclineEvent();
+    void *mpTrackMapStreamer; // offset 0x30
+};
 }
-struct MovieScreen : MenuScreen { MovieScreen(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x28]; };
+struct MovieScreen : MenuScreen {
+    MovieScreen(ScreenConstructorData *);
+    ~MovieScreen() override;
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
+    int mSoundState;      // offset 0x2C
+    SubTitler mSubtitler; // offset 0x30
+};
 struct SplashScreen : MenuScreen {
     SplashScreen(ScreenConstructorData *);
     ~SplashScreen() override;
@@ -709,4 +733,100 @@ unsigned int FEPackageData::GetNameHash() {
         return reinterpret_cast<unsigned int *>(MyChunk)[2];
     }
     return 0;
+}
+
+// EngageEventDialog implementations
+nsEngageEventDialog::EngageEventDialog::~EngageEventDialog() {
+    if (mpTrackMapStreamer) {
+        delete mpTrackMapStreamer;
+        mpTrackMapStreamer = nullptr;
+    }
+}
+
+void nsEngageEventDialog::EngageEventDialog::NotifyTheGameAcceptEvent() {
+    UCrc32 port(0x20d60dbf);
+    MAcceptEnterCareerEvent msg;
+    msg.Post(port);
+}
+
+void nsEngageEventDialog::EngageEventDialog::NotifyTheGameDeclineEvent() {
+    UCrc32 port(0x20d60dbf);
+    MDeclineEnterCareerEvent msg;
+    msg.Post(port);
+}
+
+void nsEngageEventDialog::EngageEventDialog::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
+    switch (msg) {
+    case 0x911ab364:
+        NotifyTheGameDeclineEvent();
+        cFEng::Get()->QueuePackagePop(1);
+        break;
+    case 0xc98356ba:
+        if (mpTrackMapStreamer) {
+            reinterpret_cast<UITrackMapStreamer *>(mpTrackMapStreamer)->UpdateAnimation();
+        }
+        break;
+    case 0x0c407210: {
+        unsigned int objHash = obj->NameHash;
+        if (objHash == 0x694b896e) {
+            NotifyTheGameDeclineEvent();
+            cFEng::Get()->QueuePackagePop(1);
+        } else if (objHash == 0xd72f002a) {
+            NotifyTheGameAcceptEvent();
+            cFEng::Get()->QueuePackagePop(1);
+        }
+        break;
+    }
+    }
+}
+
+// MovieScreen destructor
+MovieScreen::~MovieScreen() {
+}
+
+// MovieScreen NotificationMessage
+void MovieScreen::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
+    mSubtitler.Update(msg);
+    bool movie_is_finished = false;
+    if (msg != 0xb5af2461) {
+        if (msg > 0xb5af2461) {
+            if (msg == 0xc3960eb9) {
+                new ESndGameState(1, false);
+                SetSoundControlState(false, static_cast<eSNDCTLSTATE>(0xb), "MovieScreen");
+                if (!IsDebugPlayMovie) {
+                    BootFlowManager::Get()->ChangeToNextBootFlowScreen(0xff);
+                    movie_is_finished = true;
+                } else {
+                    cFEng::Get()->QueuePackagePop(1);
+                    IsDebugPlayMovie = 0;
+                    movie_is_finished = true;
+                }
+            }
+            goto end;
+        }
+        if (msg != 0x406415e3) goto end;
+    }
+    if (mSoundState != 0) {
+        new ESndGameState(1, false);
+        SetSoundControlState(false, static_cast<eSNDCTLSTATE>(0xb), "MovieScreen");
+        if (!IsDebugPlayMovie) {
+            BootFlowManager::Get()->ChangeToNextBootFlowScreen(0xff);
+            movie_is_finished = true;
+        } else {
+            movie_is_finished = true;
+            cFEng::Get()->QueuePackagePop(1);
+            IsDebugPlayMovie = 0;
+        }
+    }
+end:
+    if (movie_is_finished) {
+        mSubtitler.Update(0xc3960eb9);
+    }
+}
+
+// SplashScreen destructor
+SplashScreen::~SplashScreen() {
+    gEasterEggs.UnActivate();
+    MControlPathfinder msg(false, 9, 0, 0);
+    msg.Send("Event");
 }

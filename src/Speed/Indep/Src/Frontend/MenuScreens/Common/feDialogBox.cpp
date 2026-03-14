@@ -9,6 +9,7 @@ extern int bStrCmp(const char *, const char *);
 extern void GetLocalizedString(char *buf, unsigned int maxlen, unsigned int hash);
 extern int FEngMapJoyportToJoyParam(int);
 extern void FEngSetCreateCallback(const char *, MenuScreen *(*)(ScreenConstructorData *));
+extern FEObject *FEngGetCurrentButton(const char *);
 
 extern Timer RealTimer;
 
@@ -19,11 +20,11 @@ struct feDialogScreen : MenuScreen {
     eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override;
     void BuildFromConfig();
 
-    int mResult;                  // offset 0x2C
-    int _pad0;                    // offset 0x30
-    feDialogConfig mConfig;       // offset 0x34, size 0x248
-    unsigned int mControlMask;    // offset 0x27C
-    Timer mStartTimer;            // offset 0x280
+    unsigned int ReturnWithMessage;  // offset 0x2C
+    unsigned int mLastButtonHash;    // offset 0x30
+    feDialogConfig Config;           // offset 0x34, size 0x248
+    unsigned long ControllerPort;    // offset 0x27C
+    Timer tCountdownTimer;           // offset 0x280
 };
 
 static feDialogConfig SecretDialogInfo;
@@ -302,16 +303,39 @@ int DialogInterface::ShowThreeButtons(const char *from_pkg, const char *dlg_pkg,
 feDialogScreen::feDialogScreen(ScreenConstructorData *sd)
     : MenuScreen(sd)
 {
-    mControlMask = 0xff;
-    mResult = 0;
-    mStartTimer = Timer(0);
-    mConfig = *reinterpret_cast<feDialogConfig *>(sd->Arg);
+    ControllerPort = 0xff;
+    ReturnWithMessage = 0;
+    tCountdownTimer = Timer(0);
+    Config = *reinterpret_cast<feDialogConfig *>(sd->Arg);
     BuildFromConfig();
-    mStartTimer = RealTimer;
+    tCountdownTimer = RealTimer;
 }
 
 feDialogScreen::~feDialogScreen() {
-    if (mResult != -1) {
-        cFEng::Get()->QueueGameMessage(mResult, mConfig.ParentPackage, mControlMask);
+    if (ReturnWithMessage != static_cast<unsigned int>(-1)) {
+        cFEng::Get()->QueueGameMessage(ReturnWithMessage, Config.ParentPackage, ControllerPort);
     }
+}
+
+eMenuSoundTriggers feDialogScreen::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
+    if (msg != 0x48122792) {
+        if (msg < 0x48122793) {
+            if (msg != 0x480c9a58) {
+                return maybe;
+            }
+            if (!Config.bIsDismissable) {
+                return static_cast<eMenuSoundTriggers>(-1);
+            }
+            return maybe;
+        }
+        if (msg != 0x4ac5e165) {
+            return maybe;
+        }
+    }
+    FEObject *btn = FEngGetCurrentButton(GetPackageName());
+    if (btn && FEngGetCurrentButton(GetPackageName())->NameHash != mLastButtonHash) {
+        mLastButtonHash = FEngGetCurrentButton(GetPackageName())->NameHash;
+        return maybe;
+    }
+    return static_cast<eMenuSoundTriggers>(-1);
 }
