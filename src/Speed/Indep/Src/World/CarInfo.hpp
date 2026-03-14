@@ -44,6 +44,7 @@ class RideInfo {
     void FillWithPreset(unsigned int preset);
     struct CarPart *GetPart(int carslotid) const;
     void SetPart(int carslotid, struct CarPart *part, bool enabled);
+    void SetCompositeNameHash(int skin_number);
 
     RideInfo() {
         Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);

@@ -1,42 +1,33 @@
-// OWNED BY zFeOverlay AGENT - do not empty or overwrite
+// OWNED BY zFeOverlay AGENT - DO NOT MODIFY OR EMPTY
 #ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_CUSTOMIZE_CUSTOMIZEMANAGER_H
 #define FRONTEND_MENUSCREENS_SAFEHOUSE_CUSTOMIZE_CUSTOMIZEMANAGER_H
-
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
-
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeTypes.hpp"
-#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
-
 #include <types.h>
 
 struct FECarRecord;
-struct pvehicle;
+struct CarPart;
 
-// total size: 0x1C4
+
 struct CarCustomizeManager {
     ShoppingCartItem *GetFirstCartItem() { return static_cast<ShoppingCartItem *>(ShoppingCart.GetHead()); }
     ShoppingCartItem *GetLastCartItem() { return static_cast<ShoppingCartItem *>(ShoppingCart.GetTail()); }
     int GetNumCartItems() { return NumPartsInCart; }
-    ShoppingCartItem *GetCartItem(int index) { return nullptr; }
-    void EmptyCart() {}
+    ShoppingCartItem *GetCartItem(int index);
+    void EmptyCart();
     SelectablePart *GetTempColoredPart() { return TheTempColoredPart; }
-    CarType GetTuningCarType() { return static_cast<CarType>(0); }
-    void SetInBackRoom(bool in_back) {}
-    bool IsInBackRoom() { return false; }
-    float GetMaxRPM() { return 0.0f; }
-    void SetInPerformance(bool b) {}
-    bool IsInPerformance() { return false; }
-    void SetInParts(bool b) {}
-    bool IsInParts() { return false; }
-    float GetActualRep() { return 0.0f; }
-    float GetPreviewRep() { return 0.0f; }
+    void SetInBackRoom(bool in_back);
+    bool IsInBackRoom();
+    void SetInPerformance(bool b);
+    bool IsInPerformance();
+    void SetInParts(bool b);
+    bool IsInParts();
     const FECustomizationRecord *GetPreviewRecord() { return &PreviewRecord; }
     const FECarRecord *GetTuningCar() { return TuningCar; }
-    float GetCartRep() { return 0.0f; }
 
     void TakeControl(eCustomizeEntryPoint entry_point, FECarRecord *tuning_car);
     void RelinquishControl();
@@ -46,7 +37,7 @@ struct CarCustomizeManager {
     void AddRemovalCarPart(unsigned int slot_id);
     ShoppingCartItem *IsPartTypeInCart(SelectablePart *to_find);
     ShoppingCartItem *IsPartTypeInCart(unsigned int slot_id);
-    ShoppingCartItem *IsPartTypeInCart(enum Type type);
+    ShoppingCartItem *IsPartTypeInCart(GRace::Type type);
     ShoppingCartItem *IsPartInCart(SelectablePart *to_find);
     CarPart *GetActivePartFromSlot(unsigned int slot_id);
     int GetCartTotal(eCustomizeCartTotals type);
@@ -63,10 +54,42 @@ struct CarCustomizeManager {
     bool IsVinylColorSupported(int slot);
     void ClearVinylColors();
     float GetHeatFromParts();
+    CarPart *GetInstalledCarPart(int slot_id);
+    void PreviewPerfPkg(GRace::Type part_type, int level);
+    void InstallPerfPkg(GRace::Type part_type, int level);
+    bool IsJunkmanInstalled(GRace::Type type);
+    int GetInstalledPerfPkg(GRace::Type type);
+    int GetMaxPackages(GRace::Type type);
+    int GetNumPackages(GRace::Type type);
+    void MaxOutPerformance();
+    float GetPerformanceRating(ePerformanceRatingType type, bool preview);
+    void UpdateHeatOnVehicle(SelectablePart *part, FECarRecord *record);
+    bool IsPartInstalled(SelectablePart *part);
+    bool IsPartLocked(SelectablePart *part, int perf_unlock_level);
+    bool IsPartNew(SelectablePart *part, int perf_unlock_level);
+    bool IsCategoryNew(unsigned int cat);
+    bool IsCategoryLocked(unsigned int cat, bool backroom);
+    bool IsRimCategoryLocked(unsigned int cat, bool backroom);
+    bool IsVinylCategoryLocked(unsigned int cat, bool backroom);
+    int GetOuterRadius();
+    int GetMinInnerRadius();
+    int GetMaxInnerRadius();
+    void GetCarPartList(int car_slot, bTList<SelectablePart> &the_list, unsigned int param);
+    void GetPerformancePartsList(GRace::Type type, bTList<SelectablePart> &the_list);
+    bool CanInstallJunkman(GRace::Type type);
+    bool IsCareerMode();
+    bool IsTurbo();
+    float GetActualHeat();
+    float GetPreviewHeat(SelectablePart *part);
+    int GetNumCustomizeMarkers();
+    bool IsCastrolCar();
+    bool IsRotaryCar();
+    bool IsHeroCar();
+    float GetCartHeat();
 
     eCustomizeEntryPoint EntryPoint;              // offset 0x0, size 0x4
     FECarRecord *TuningCar;                       // offset 0x4, size 0x4
-    char ThePVehicle[0x14];                       // offset 0x8, size 0x14 (pvehicle)
+    char ThePVehicle[0x14];                       // offset 0x8, size 0x14
     FECustomizationRecord PreviewRecord;          // offset 0x1C, size 0x198
     bTList<ShoppingCartItem> ShoppingCart;         // offset 0x1B4, size 0x8
     int NumPartsInCart;                            // offset 0x1BC, size 0x4

@@ -2,6 +2,8 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp"
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/FECarLoader.hpp"
+#include "Speed/Indep/Src/World/CarLoader.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 
 struct FrontEndRenderingCar {
     char _pad[0x574];
@@ -10,14 +12,40 @@ struct FrontEndRenderingCar {
 
 extern MenuScreen *FEngFindScreen(const char *name);
 
-static const char lbl_GarageMain[] = "GarageMain.fng";
-
 extern RideInfo TopOrFullScreenRide;
 extern eSetRideInfoReasons TopOrFullScreenLoadingReason;
+
+extern CarLoader TheCarLoader;
+
+static const char lbl_GarageMain[] = "GarageMain.fng";
+
+// --- Free functions ---
 
 bool HaveAttributesChanged(Attrib::Gen::frontend &) {
     return false;
 }
+
+const char *GetCurrentGarageName() {
+    eGarageType type = FEManager::Get()->GetGarageType();
+    switch (type) {
+        case GARAGETYPE_CUSTOMIZATION_SHOP:
+            return "customization_shop";
+        case GARAGETYPE_CAREER_SAFEHOUSE:
+            return "career_safehouse";
+        case GARAGETYPE_CUSTOMIZATION_SHOP_BACKROOM:
+            return "backroom";
+        case GARAGETYPE_CAR_LOT:
+            return "car_lot";
+        default:
+            break;
+    }
+    if (FEDatabase->IsCareerManagerMode()) {
+        return "career_manager";
+    }
+    return "main_fe";
+}
+
+// --- GarageMainScreen ---
 
 GarageMainScreen *GarageMainScreen::sInstance;
 
@@ -52,6 +80,124 @@ void GarageMainScreen::CancelCarLoad() {
     CarState = 1;
     TheGarageCarLoader->CancelCarLoad();
 }
+
+void GarageMainScreen::NotificationMessage(unsigned long Message, FEObject *pObject, unsigned long Param1, unsigned long Param2) {
+    switch (Message) {
+        case 0x18883F75:
+            HideEntireScreen = 0;
+            HandleShowPackage(0x18883F75);
+            break;
+        case 0x0AD4BBDC:
+            HideEntireScreen = 1;
+            HandleHidePackage(0x0AD4BBDC);
+            break;
+        case 0xC98356BA:
+            HandleTick(0xC98356BA);
+            break;
+        case 0xD0678849:
+            HandleJoyEvents();
+            break;
+    }
+}
+
+float GarageMainScreen::GetCarRotationX() {
+    eGarageType type = FEManager::Get()->GetGarageType();
+    switch (type) {
+        case GARAGETYPE_CAREER_SAFEHOUSE:
+            return 0.0f;
+        case GARAGETYPE_CUSTOMIZATION_SHOP:
+            return 0.0f;
+        case GARAGETYPE_CAR_LOT:
+            return -0.3796229958534241f;
+        default:
+            return 0.0f;
+    }
+}
+
+float GarageMainScreen::GetCarRotationY() {
+    eGarageType type = FEManager::Get()->GetGarageType();
+    switch (type) {
+        case GARAGETYPE_CAREER_SAFEHOUSE:
+            return 0.0f;
+        case GARAGETYPE_CUSTOMIZATION_SHOP:
+            return 0.0f;
+        case GARAGETYPE_CAR_LOT:
+            return -0.00019299999985378236f;
+        default:
+            return 0.0f;
+    }
+}
+
+float GarageMainScreen::GetCarRotationZ() {
+    eGarageType type = FEManager::Get()->GetGarageType();
+    switch (type) {
+        case GARAGETYPE_CAREER_SAFEHOUSE:
+            return 304.96978759765625f;
+        case GARAGETYPE_CUSTOMIZATION_SHOP:
+            return 304.96978759765625f;
+        case GARAGETYPE_CAR_LOT:
+            return 340.0f;
+        default:
+            return 304.96978759765625f;
+    }
+}
+
+float GarageMainScreen::GetGeometryZAngle() {
+    eGarageType type = FEManager::Get()->GetGarageType();
+    switch (type) {
+        case GARAGETYPE_CAREER_SAFEHOUSE:
+            return 302.85308837890625f;
+        case GARAGETYPE_CUSTOMIZATION_SHOP:
+        case GARAGETYPE_CAR_LOT:
+            return 0.0f;
+        default:
+            return 134.41250610351562f;
+    }
+}
+
+float GarageMainScreen::GetGeometryXPos() {
+    eGarageType type = FEManager::Get()->GetGarageType();
+    switch (type) {
+        case GARAGETYPE_CAREER_SAFEHOUSE:
+            return 0.0f;
+        case GARAGETYPE_CUSTOMIZATION_SHOP:
+            return 0.0f;
+        case GARAGETYPE_CAR_LOT:
+            return 0.0f;
+        default:
+            return 0.0f;
+    }
+}
+
+float GarageMainScreen::GetGeometryYPos() {
+    eGarageType type = FEManager::Get()->GetGarageType();
+    switch (type) {
+        case GARAGETYPE_CAREER_SAFEHOUSE:
+            return 0.0f;
+        case GARAGETYPE_CUSTOMIZATION_SHOP:
+            return 0.0f;
+        case GARAGETYPE_CAR_LOT:
+            return 0.07500000298023224f;
+        default:
+            return 0.0f;
+    }
+}
+
+float GarageMainScreen::GetGeometryZPos() {
+    eGarageType type = FEManager::Get()->GetGarageType();
+    switch (type) {
+        case GARAGETYPE_CAREER_SAFEHOUSE:
+            return 0.0f;
+        case GARAGETYPE_CUSTOMIZATION_SHOP:
+            return 0.0f;
+        case GARAGETYPE_CAR_LOT:
+            return 0.0f;
+        default:
+            return 0.0f;
+    }
+}
+
+// --- CarViewer ---
 
 GarageMainScreen *CarViewer::FindWhichScreenToUpdate(eCarViewerWhichCar which_car) {
     const char *name = lbl_GarageMain;
@@ -94,6 +240,21 @@ void CarViewer::ShowCarScreen() {
 
 bool CarViewer::haveLoadedOnce;
 
+// --- Camera Info functions ---
+
+// FindGarageCameraInfo is defined later in this TU
+unsigned int FindGarageCameraInfo(const char *prefix);
+
+static unsigned int FindGarageEntryCameraInfo() {
+    return FindGarageCameraInfo("angle_entry_");
+}
+
+static unsigned int FindGarageFinalCameraInfo() {
+    return FindGarageCameraInfo("angle_final_");
+}
+
+// --- GarageCarLoader ---
+
 GarageCarLoader *GetGarageCarLoader() {
     static GarageCarLoader TheGarageCarLoader;
     return &TheGarageCarLoader;
@@ -115,6 +276,25 @@ RideInfo *GarageCarLoader::GetCurrentRideInfo() {
         return reinterpret_cast<RideInfo *>(&_pad_ride1[0]);
     }
     return nullptr;
+}
+
+void GarageCarLoader::CancelCarLoad() {
+    if (IsLoadingRide) {
+        TheCarLoader.Unload(LoadingCar);
+    }
+}
+
+void GarageCarLoader::CleanUp() {
+    if (IsLoadingRide && LoadingCar) {
+        TheCarLoader.Unload(LoadingCar);
+    }
+    if (IsCurrentRide && CurrentCar) {
+        TheCarLoader.Unload(CurrentCar);
+    }
+    IsCurrentRide = false;
+    LoadingCar = 0;
+    CurrentCar = 0;
+    IsLoadingRide = false;
 }
 
 void InitGarageCarLoaders() {
