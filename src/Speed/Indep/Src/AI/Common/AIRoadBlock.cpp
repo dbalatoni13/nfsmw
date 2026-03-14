@@ -19,6 +19,7 @@ AIRoadBlock::AIRoadBlock(Sim::Param params)
     , mNumSpikeStrips(0)
     , mPerpCheatTime(0.0f)
     , mPerpCheating(false) {
+    mPerpCheatPoint = UMath::Vector3::kZero;
 }
 
 AIRoadBlock::~AIRoadBlock() {

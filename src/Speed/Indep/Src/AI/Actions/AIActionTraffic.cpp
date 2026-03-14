@@ -141,11 +141,7 @@ void AIActionTraffic::OnAccident(HSIMABLE hobject, const UMath::Vector3 &speed, 
                     mAccidentTimer = 3.0f;
                 }
                 break;
-            case DRIVER_NONE:
-                break;
-            case DRIVER_NIS:
-                break;
-            case DRIVER_REMOTE:
+            default:
                 break;
         }
     }
