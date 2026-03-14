@@ -22,38 +22,28 @@ struct SFXCTL_Tunnel : public SFXCTL {
   public:
     SFXCTL_Tunnel();
     /* 0x28 */ bool m_bIsInTunnel;
-    /* 0x29 */ char _pad_isInTunnel[3];
     /* 0x2c */ bool m_bWasInTunnel;
-    /* 0x2d */ char _pad_wasInTunnel[3];
     /* 0x30 */ float m_LastOcclusionTest;
     /* 0x34 */ bool IsOccluded;
-    /* 0x35 */ char _pad_isOccluded[3];
     /* 0x38 */ eTrackPathZoneType FutureZoneType;
     /* 0x3c */ eTrackPathZoneType CurZoneType;
     /* 0x40 */ bool bPlayDriveBy;
-    /* 0x41 */ char _pad_playDriveBy[3];
     /* 0x44 */ bVector3 vDriveByLoc;
     /* 0x54 */ float m_fIntensity;
     /* 0x58 */ float tTimeToWaitBeforeAnotherDriveBy;
     /* 0x5c */ TrackPathZone *pLastZoneWePlayedWooshFor;
     /* 0x60 */ bool bPlayTunnelExit;
-    /* 0x61 */ char _pad_playTunnelExit[3];
     /* 0x64 */ float m_fExitIntensity;
     /* 0x68 */ float tTimeToWaitBeforeAnotherExitDriveBy;
     /* 0x6c */ TrackPathZone *pLastZoneWePlayedExitWooshFor;
     /* 0x70 */ bool bIsTunnelRamping;
-    /* 0x71 */ char _pad_isTunnelRamping[3];
     /* 0x74 */ int m_PrevReverbZone;
     /* 0x78 */ int m_CurReverbZone;
     /* 0x7c */ cInterpLine ReflRamp;
     /* 0x98 */ bool bFadingOut;
-    /* 0x99 */ char _pad_fadingOut[3];
     /* 0x9c */ bool bFadingIn;
-    /* 0x9d */ char _pad_fadingIn[3];
     /* 0xa0 */ bool bIsReadyForSwitch;
-    /* 0xa1 */ char _pad_readyForSwitch[3];
     /* 0xa4 */ bool m_IsLeadCar;
-    /* 0xa5 */ char _pad_isLeadCar[3];
     /* 0xa8 */ eREVERBFX m_ReverbType;
     /* 0xac */ float m_ReverbOffset;
     /* 0xb0 */ eREVERBFX m_TargetType;
@@ -70,7 +60,6 @@ struct SFXCTL_Tunnel : public SFXCTL {
     /* 0xdc */ int m_AEMSWetVol;
     /* 0xe0 */ int m_AEMSDryVol;
     /* 0xe4 */ bool bToggleOffset;
-    /* 0xe5 */ char _pad_toggleOffset[3];
 
     ~SFXCTL_Tunnel() override;
     TypeInfo *GetTypeInfo() const override;

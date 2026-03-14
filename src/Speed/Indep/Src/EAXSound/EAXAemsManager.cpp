@@ -651,8 +651,77 @@ void EAXAemsManager::SetupNextLoad() {
         m_nCurLoadedBankIndex++;
         m_pCurLoadSDLP = g_SndAssetList + m_nCurLoadedBankIndex;
         if (InitiateLoad() < 0) {
-            RemoveBankListing(m_nCurLoadedBankIndex);
-            SetupNextLoad();
+            Attrib::StringKey failedFile =
+                reinterpret_cast<stSndDataLoadParamsView *>(m_pCurLoadSDLP)->AssetDescription.FileName;
+
+            SndBase *sfxToDelete[32];
+            bMemSet(sfxToDelete, '\0', sizeof(sfxToDelete));
+            int deleteCount = 0;
+
+            ListNodeQueue *head = *reinterpret_cast<ListNodeQueue **>(reinterpret_cast<char *>(this) + 0xBC);
+            if (head == nullptr) {
+                RemoveBankListing(m_nCurLoadedBankIndex);
+                SetupNextLoad();
+                return;
+            }
+
+        RestartScan:
+            ListNodeQueue *match = head->next;
+            while (match != head) {
+                if (match->data.Asset.FileName == failedFile) {
+                    break;
+                }
+                match = match->next;
+            }
+
+            if (match != head) {
+                SndBase *targetThis = match->data.pThis;
+
+                for (ListNodeQueue *scan = head->next; scan != head;) {
+                    ListNodeQueue *next = scan->next;
+                    if (scan->data.pThis == targetThis && scan->data.Asset.FileName == failedFile) {
+                        scan->prev->next = scan->next;
+                        scan->next->prev = scan->prev;
+                        gFastMem.Free(scan, 0x30, nullptr);
+                    }
+                    scan = next;
+                }
+
+                if (deleteCount < 32) {
+                    sfxToDelete[deleteCount] = targetThis;
+                    ++deleteCount;
+                }
+                goto RestartScan;
+            }
+
+            for (int i = deleteCount - 1; i >= 0; --i) {
+                SndBase *targetThis = sfxToDelete[i];
+                ListNodeQueue *findThis = head->next;
+                while (findThis != head && findThis->data.pThis != targetThis) {
+                    findThis = findThis->next;
+                }
+
+                if (findThis == head) {
+                    deleteCount = i;
+                    continue;
+                }
+
+                Attrib::StringKey targetFile = findThis->data.Asset.FileName;
+                for (ListNodeQueue *scan = head->next; scan != head;) {
+                    ListNodeQueue *next = scan->next;
+                    if (scan->data.pThis == targetThis && scan->data.Asset.FileName == targetFile) {
+                        scan->prev->next = scan->next;
+                        scan->next->prev = scan->prev;
+                        gFastMem.Free(scan, 0x30, nullptr);
+                    }
+                    scan = next;
+                }
+            }
+
+            if (deleteCount <= 0) {
+                RemoveBankListing(m_nCurLoadedBankIndex);
+                SetupNextLoad();
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/EAXSound/Stream/SndStrmWrapper.hpp"
+#include "Speed/Indep/Libs/realcore/include/common/realcore/system.h"
 
 struct STREAMCHUNKHDR {
     int size;
@@ -36,10 +37,22 @@ struct STREAMHEADERtag {
     TAPSTRUCTtag taps[16];
 };
 
+struct FILEOPERATION;
+
 static STREAMHEADERtag *g_StreamTable[64];
 static int g_NextStreamHandle = 1;
 
 void AssignAudioStreamHandle(unsigned int realstrmhandle);
+extern FILEOPERATION *FILESYS_read(int fhandle, int foffset, void *buffer, int size, int priority, void *userdata);
+extern void FILESYS_callbackop(FILEOPERATION *op, int (*cb)(int, int, void *));
+extern bool IsWorldDataStreaming(unsigned int strmhandle);
+extern bool gbAudioInterruptsWorldDataRead;
+extern bool gbWorldDataBlocksAudioRead;
+extern bool bReadCallbackToggle;
+extern unsigned int utickreadcallback;
+extern unsigned int uTicksSinceLastAudioReadBailed;
+extern float bGetTickerDifference(unsigned int start_ticks);
+extern void MEM_copy(void *dest, const void *src, int bytes);
 
 static STREAMHEADERtag *GetHeader(int handle) {
     if (handle <= 0 || handle >= 64) {
@@ -198,15 +211,160 @@ int startnextrequest(STREAMHEADERtag *stream, int flags) {
     return -1;
 }
 
-int restartstream(STREAMHEADERtag *stream, int flags) {
-    if (!stream) {
-        return -1;
+void restartstream(STREAMHEADERtag *stream, int priority) {
+    char *dataStart = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x5C);
+    char *dataTail = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x60);
+
+    while (dataStart != dataTail) {
+        unsigned char *head = reinterpret_cast<unsigned char *>(dataStart);
+        int marker = (head[3] << 24) | (head[2] << 16) | (head[1] << 8) | head[0];
+        if (marker == -1) {
+            dataStart = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x3C);
+        } else {
+            if (marker != -2) {
+                break;
+            }
+            int skip = (head[7] << 24) | (head[6] << 16) | (head[5] << 8) | head[4];
+            dataStart += skip;
+        }
+        *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x5C) = dataStart;
     }
 
-    stream->state = 0;
-    stream->eof = 0;
-    (void)flags;
-    return startnextrequest(stream, 0);
+    RealSystem::Mutex *mutex = reinterpret_cast<RealSystem::Mutex *>(reinterpret_cast<char *>(stream) + 0x4);
+    mutex->Lock();
+    while (true) {
+        REQUESTSTRUCTtag *req = *reinterpret_cast<REQUESTSTRUCTtag **>(reinterpret_cast<char *>(stream) + 0x68);
+        REQUESTSTRUCTtag *next = req != nullptr ? *reinterpret_cast<REQUESTSTRUCTtag **>(reinterpret_cast<char *>(req) + 0x0C) : nullptr;
+        if (next == nullptr) {
+            break;
+        }
+
+        int nextState = *reinterpret_cast<int *>(reinterpret_cast<char *>(next) + 0x4);
+        char *nextDataStart = *reinterpret_cast<char **>(reinterpret_cast<char *>(next) + 0x120);
+        char *dataEnd = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x64);
+        if (nextState == 1 || inbetween(dataStart, dataEnd, nextDataStart - 1)) {
+            break;
+        }
+        freerequest(stream, req);
+    }
+    mutex->Unlock();
+
+    dataStart = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x5C);
+    char *dataEnd = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x64);
+    unsigned char *bytesAvailable;
+    int readBlockSize = *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x188);
+    if (dataEnd < dataStart) {
+        bytesAvailable = reinterpret_cast<unsigned char *>(dataStart - dataEnd - 0x21);
+    } else {
+        char *bufferEnd = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x40);
+        bytesAvailable = reinterpret_cast<unsigned char *>(bufferEnd - dataEnd - 0x20);
+        if (reinterpret_cast<int>(bytesAvailable) < readBlockSize) {
+            char *dataTailNow = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x60);
+            int count = dataEnd - dataTailNow;
+            REQUESTSTRUCTtag *curReq = *reinterpret_cast<REQUESTSTRUCTtag **>(reinterpret_cast<char *>(stream) + 0x6C);
+            int reqType = *reinterpret_cast<int *>(reinterpret_cast<char *>(curReq) + 0x10);
+            char *bufferStart = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x3C);
+
+            if (reqType == 1) {
+                if ((dataStart - bufferStart) < (count + 1)) {
+                    goto stream_stop;
+                }
+            } else if ((dataStart - bufferStart - 0x20) < (count + 1)) {
+                goto stream_stop;
+            }
+
+            char *actualBufferStart = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x38);
+            if ((count & 0x1F) == 0 || reqType == 1) {
+                bufferStart = actualBufferStart;
+            } else {
+                bufferStart = actualBufferStart - ((count % 0x20) - 0x20);
+            }
+
+            *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x3C) = bufferStart;
+            MEM_copy(bufferStart, dataTailNow, count);
+
+            dataTailNow[7] = '\0';
+            dataTailNow[3] = static_cast<char>(-1);
+            dataTailNow[4] = '\b';
+            dataTailNow[0] = static_cast<char>(-1);
+            dataTailNow[1] = static_cast<char>(-1);
+            dataTailNow[2] = static_cast<char>(-1);
+            dataTailNow[5] = '\0';
+            dataTailNow[6] = '\0';
+
+            char *newDataEnd = bufferStart + count;
+            *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x60) = bufferStart;
+            *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x64) = newDataEnd;
+
+            unsigned char *check = reinterpret_cast<unsigned char *>(dataStart);
+            int marker = (check[3] << 24) | (check[2] << 16) | (check[1] << 8) | check[0];
+            if (marker == -1) {
+                *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x5C) = bufferStart;
+                char *bufferEnd2 = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x40);
+                bytesAvailable = reinterpret_cast<unsigned char *>(bufferEnd2 - newDataEnd - 0x20);
+            } else {
+                bytesAvailable = reinterpret_cast<unsigned char *>(dataStart - newDataEnd - 1);
+            }
+        }
+    }
+
+    if (*reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x54) == 0 &&
+        *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x4C) < priority &&
+        IsWorldDataStreaming(*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(stream) + 0x30))) {
+        bGetTickerDifference(utickreadcallback);
+        gbWorldDataBlocksAudioRead = true;
+        *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x44) = 2;
+        uTicksSinceLastAudioReadBailed = bGetTicker();
+        return;
+    }
+
+    gbAudioInterruptsWorldDataRead = IsWorldDataStreaming(*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(stream) + 0x178));
+    gbWorldDataBlocksAudioRead = false;
+
+    if (readBlockSize <= reinterpret_cast<int>(bytesAvailable)) {
+        REQUESTSTRUCTtag *curReq = *reinterpret_cast<REQUESTSTRUCTtag **>(reinterpret_cast<char *>(stream) + 0x6C);
+        int reqType = *reinterpret_cast<int *>(reinterpret_cast<char *>(curReq) + 0x10);
+        if (reqType == 1) {
+            int reqParm = *reinterpret_cast<int *>(reinterpret_cast<char *>(curReq) + 0x118);
+            int foffset = *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x17C);
+            if (reqParm < reinterpret_cast<int>(bytesAvailable) + foffset) {
+                *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x184) = reqParm - foffset;
+            } else {
+                *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x184) = reinterpret_cast<int>(bytesAvailable);
+            }
+
+            int readSize = *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x184);
+            char *dataEndNow = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x64);
+            char *address = *reinterpret_cast<char **>(reinterpret_cast<char *>(curReq) + 0x114);
+            MEM_copy(dataEndNow, address, readSize);
+            *reinterpret_cast<char **>(reinterpret_cast<char *>(curReq) + 0x114) = address + readSize;
+            readcallback(0, 0, stream);
+            return;
+        }
+
+        if (readBlockSize < reinterpret_cast<int>(bytesAvailable)) {
+            *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x184) =
+                (reinterpret_cast<int>(bytesAvailable) / readBlockSize) * readBlockSize;
+        } else {
+            *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x184) = readBlockSize;
+        }
+
+        bReadCallbackToggle = false;
+        FILEOPERATION *op = FILESYS_read(*reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x178),
+                                         *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x17C),
+                                         *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x64),
+                                         *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x184), priority, stream);
+        *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x180) = reinterpret_cast<int>(op);
+        if (op == nullptr) {
+            return;
+        }
+
+        FILESYS_callbackop(op, readcallback);
+        return;
+    }
+
+stream_stop:
+    *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x44) = 2;
 }
 
 int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {

@@ -8,6 +8,8 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
+#include "Speed/Indep/Src/Misc/Table.hpp"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 
 enum SHIFT_STAGE {
     SHFT_NONE = 0,
@@ -25,8 +27,6 @@ enum FX_POST_SHIFT_LFO {
 };
 
 struct shiftpattern;
-struct Graph;
-struct Timer;
 
 struct SFXCTL_Engine;
 
@@ -60,7 +60,12 @@ struct SFXCTL_Shifting : public SFXCTL {
     /* 0x80 */ cInterpLine m_InterpShiftTorque;
     /* 0x9c */ cInterpLine m_InterpShiftRPM;
     /* 0xb8 */ cInterpLine m_InterpShiftVol;
-    /* 0xd4 */ char _pad_shifting0[0x120 - 0xd4]; // 0xd4 to 0x120
+    /* 0xd4 */ Graph m_RPMGraph;
+    /* 0xdc */ bVector2 m_RPMPoints[7];
+    /* 0x114 */ float t_CurStage;
+    /* 0x118 */ unsigned char m_CurStage;
+    /* 0x11a */ unsigned short RPMOffset;
+    /* 0x11c */ Timer m_timeBrakeLastMashed;
     /* 0x120 */ int m_nPostShiftFXLevel;
     /* 0x124 */ cInterpLine m_Shift_RPM_AMP_DECAY;
     /* 0x140 */ cInterpLine m_Shift_VOL_AMP_DECAY;
