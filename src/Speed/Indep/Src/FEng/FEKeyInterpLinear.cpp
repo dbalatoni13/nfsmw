@@ -65,16 +65,15 @@ void FELerpColor(FEColor& c1, FEColor& c2, float t, FEColor* pOffset, FEColor* p
     pDest->a = pOffset->a + c1.a + static_cast<int>(static_cast<float>(c2.a - c1.a) * t + 0.5f);
 }
 
-float Close(float a, float b, float epsilon) {
-    float diff = a - b;
-    if (diff < 0.0f) diff = -diff;
-    return diff < epsilon;
+bool Close(float x, float y, float epsilon) {
+    if (x + epsilon < y) {
+        return false;
+    }
+    return x - epsilon <= y;
 }
 
-long Close(long a, long b, long epsilon) {
-    long diff = a - b;
-    if (diff < 0) diff = -diff;
-    return diff < epsilon;
+bool Close(long x, long y, long epsilon) {
+    return y <= x + epsilon && x - epsilon <= y;
 }
 
 void FEInterpLinear(FEKeyTrack* pTrack, long tTime, void* pOutDataPtr) {

@@ -23,8 +23,8 @@ inline bool CloseEnoughColor(const FEColor& color1, const FEColor& color2) {
            Close(static_cast<long>(color1.a), static_cast<long>(color2.a), 1L);
 }
 
-float Close(float a, float b, float epsilon);
-long Close(long a, long b, long epsilon);
+bool Close(float a, float b, float epsilon);
+bool Close(long a, long b, long epsilon);
 
 FEObjectDestructorCallback* FEObject::pDestructorCallback;
 

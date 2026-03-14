@@ -7,9 +7,7 @@ char FEUpperCase(char val) {
         return val;
     }
 
-    char result = val - 0x20;
-
-    return result;
+    return val - 0x20;
 }
 
 unsigned long FEHash(const char* String) {

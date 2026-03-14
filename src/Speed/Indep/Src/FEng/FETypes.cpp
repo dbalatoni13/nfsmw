@@ -1,13 +1,27 @@
 #include "Speed/Indep/Src/FEng/FETypes.h"
 
-FEImageData::FEImageData()
-    : UpperLeft(),
-      LowerRight() {
-    Col = FEColor();
-    Pivot = FEVector3();
-    Pos = FEVector3();
-    Rot = FEQuaternion();
-    Size = FEVector3();
+FEImageData::FEImageData() {
+    Pivot.x = 0.0f;
+    Pivot.y = 0.0f;
+    Pivot.z = 0.0f;
+    Pos.x = 0.0f;
+    Pos.y = 0.0f;
+    Pos.z = 0.0f;
+    Rot.x = 0.0f;
+    Rot.y = 0.0f;
+    Rot.z = 0.0f;
+    Rot.w = 1.0f;
+    Size.x = 0.0f;
+    Size.y = 0.0f;
+    Size.z = 0.0f;
+    UpperLeft.x = 0.0f;
+    UpperLeft.y = 0.0f;
+    LowerRight.x = 0.0f;
+    LowerRight.y = 0.0f;
+    Col.r = 0;
+    Col.g = 0;
+    Col.b = 0;
+    Col.a = 0;
 }
 
 FEColor::FEColor(unsigned long Col) {
@@ -20,36 +34,44 @@ FEColor::FEColor(unsigned long Col) {
 FEColor::operator unsigned long() const {
     int rv, gv, bv, av;
 
-    if (r < 0) {
+    if (r >= 0) {
+        if (r > 255) {
+            rv = 255;
+        } else {
+            rv = r;
+        }
+    } else {
         rv = 0;
-    } else if (r < 256) {
-        rv = r;
-    } else {
-        rv = 255;
     }
 
-    if (g < 0) {
+    if (g >= 0) {
+        if (g > 255) {
+            gv = 255;
+        } else {
+            gv = g;
+        }
+    } else {
         gv = 0;
-    } else if (g < 256) {
-        gv = g;
-    } else {
-        gv = 255;
     }
 
-    if (b < 0) {
+    if (b >= 0) {
+        if (b > 255) {
+            bv = 255;
+        } else {
+            bv = b;
+        }
+    } else {
         bv = 0;
-    } else if (b < 256) {
-        bv = b;
-    } else {
-        bv = 255;
     }
 
-    if (a < 0) {
-        av = 0;
-    } else if (a < 256) {
-        av = a;
+    if (a >= 0) {
+        if (a > 255) {
+            av = 255;
+        } else {
+            av = a;
+        }
     } else {
-        av = 255;
+        av = 0;
     }
 
     return (av << 24) | (rv << 16) | (gv << 8) | bv;
@@ -72,12 +94,12 @@ FEColor& FEColor::operator+=(const FEColor& rhs) {
 }
 
 FEColor FEColor::operator-(const FEColor& rhs) const {
-    FEColor result;
-    result.b = b - rhs.b;
-    result.g = g - rhs.g;
-    result.r = r - rhs.r;
-    result.a = a - rhs.a;
-    return result;
+    FEColor c;
+    c.b = b - rhs.b;
+    c.g = g - rhs.g;
+    c.r = r - rhs.r;
+    c.a = a - rhs.a;
+    return c;
 }
 
 void FEQuaternion::GetMatrix(FEMatrix4* pMatrix) {
