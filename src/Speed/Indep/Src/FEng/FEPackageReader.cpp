@@ -66,14 +66,10 @@ FEChunk* FEPackageReader::FindChild(FEChunk* pCh, unsigned long ID) {
 }
 
 unsigned long FEPackageReader::GetTypeSize(unsigned long TypeID) {
-    unsigned long i = 0;
-    if (TypeSizeCount != 0) {
-        do {
-            if (BSwap32(TypeSizeList[i].ID) == TypeID) {
-                return BSwap32(TypeSizeList[i].Size);
-            }
-            i++;
-        } while (i < TypeSizeCount);
+    for (unsigned long i = 0; i < TypeSizeCount; i++) {
+        if (BSwap32(TypeSizeList[i].ID) == TypeID) {
+            return BSwap32(TypeSizeList[i].Size);
+        }
     }
     return 0;
 }

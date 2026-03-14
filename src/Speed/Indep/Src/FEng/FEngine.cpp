@@ -590,14 +590,14 @@ void FEngine::UnloadLibraryPackage(FEPackage* pLibPack) {
     if (bDelete) {
         RemoveFromLibraryList(pLibPack);
         bool bOwnsMemory;
-        if (!pInterface) {
-            bOwnsMemory = true;
-        } else {
+        if (pInterface) {
             bOwnsMemory = pInterface->PackageWillUnload(pLibPack);
+        } else {
+            bOwnsMemory = true;
         }
         pLibPack->Shutdown(pInterface);
         if (bOwnsMemory && pLibPack) {
-            pLibPack->~FEPackage();
+            delete pLibPack;
         }
     }
 }
