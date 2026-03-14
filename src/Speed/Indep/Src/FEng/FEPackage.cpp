@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/FEng/FEListBox.h"
 #include "Speed/Indep/Src/FEng/FECodeListBox.h"
 #include "Speed/Indep/Src/FEng/FEGameInterface.h"
+#include "Speed/Indep/Src/FEng/FEMovie.h"
 
 // Forward declarations for types only needed locally as pointer members.
 // Their struct definitions come from FEngine.cpp earlier in the jumbo build.
@@ -381,10 +382,10 @@ void FEPackage::UpdateObject(FEObject* pObj, long tDeltaTicks) {
     }
 
     unsigned long Flags = pObj->Flags;
-    if ((Flags & 0x1C00000) == 0) {
-        Flags &= FEPackage::uHoldDirtyFlags | 0xFDFFFFFF;
-    } else {
+    if (Flags & 0x1C00000) {
         Flags |= 0x2000000;
+    } else {
+        Flags &= FEPackage::uHoldDirtyFlags | 0xFDFFFFFF;
     }
     pObj->Flags = Flags;
 
@@ -398,7 +399,58 @@ void FEPackage::UpdateObject(FEObject* pObj, long tDeltaTicks) {
     }
 
     NewCurTime = pScript->CurTime;
-    if (NewCurTime < Length) {
+    if (NewCurTime >= Length) {
+        if (bExecuting) {
+            if (pScript->pChainTo) {
+                UpdateObjectTracks(pObj, pScript);
+                NewCurTime = pScript->CurTime - Length;
+                pScript->CurTime = 0;
+                if (pScript->Events.Count) {
+                    IssueScriptMessages(pEnginePtr, pObj, pScript, OldCurTime, Length);
+                }
+                pScript = pScript->pChainTo;
+                pObj->SetCurrentScript(pScript);
+                pScript->CurTime = NewCurTime;
+                if (pScript->Events.Count) {
+                issueFrom0:
+                    IssueScriptMessages(pEnginePtr, pObj, pScript, 0, NewCurTime);
+                }
+            } else {
+                unsigned long PlayAction = pScript->Flags & 3;
+                if (PlayAction == 1) {
+                    if (pScript->Length < 1) {
+                        pScript->CurTime = 0;
+                    } else {
+                        if (pScript->Events.Count) {
+                            IssueScriptMessages(pEnginePtr, pObj, pScript, OldCurTime, Length);
+                        }
+                        pScript->CurTime = pScript->CurTime -
+                            (pScript->CurTime / pScript->Length) * pScript->Length;
+                        if (pScript->Events.Count) {
+                            IssueScriptMessages(pEnginePtr, pObj, pScript, 0, pScript->CurTime);
+                        }
+                        pObj->SetupMoveToTracks();
+                    }
+                } else if (PlayAction == 0) {
+                    if (pScript->Events.Count) {
+                        IssueScriptMessages(pEnginePtr, pObj, pScript, OldCurTime, Length);
+                    }
+                    pScript->CurTime = pScript->Length + 1;
+                } else if (PlayAction == 2) {
+                    if (pScript->Length < 1) {
+                        pScript->CurTime = 0;
+                    } else {
+                        int doubleLen = pScript->Length * 2;
+                        pScript->CurTime = NewCurTime - (NewCurTime / doubleLen) * doubleLen;
+                    }
+                }
+            }
+            if (bExecuting && OldCurTime == pScript->CurTime &&
+                OldCurTime == pScript->Length + 1 && !(pObj->Flags & 0x400000)) {
+                goto finalize;
+            }
+        }
+    } else {
         if (bExecuting) {
             if (pScript->Events.Count != 0) {
                 unsigned long PlayAction = pScript->Flags & 3;
@@ -427,55 +479,6 @@ void FEPackage::UpdateObject(FEObject* pObj, long tDeltaTicks) {
                 goto finalize;
             }
         }
-    } else if (bExecuting) {
-        if (pScript->pChainTo) {
-            UpdateObjectTracks(pObj, pScript);
-            NewCurTime = pScript->CurTime - Length;
-            pScript->CurTime = 0;
-            if (pScript->Events.Count) {
-                IssueScriptMessages(pEnginePtr, pObj, pScript, OldCurTime, Length);
-            }
-            pScript = pScript->pChainTo;
-            pObj->SetCurrentScript(pScript);
-            pScript->CurTime = NewCurTime;
-            if (pScript->Events.Count) {
-            issueFrom0:
-                IssueScriptMessages(pEnginePtr, pObj, pScript, 0, NewCurTime);
-            }
-        } else {
-            unsigned long PlayAction = pScript->Flags & 3;
-            if (PlayAction == 1) {
-                if (pScript->Length < 1) {
-                    pScript->CurTime = 0;
-                } else {
-                    if (pScript->Events.Count) {
-                        IssueScriptMessages(pEnginePtr, pObj, pScript, OldCurTime, Length);
-                    }
-                    pScript->CurTime = pScript->CurTime -
-                        (pScript->CurTime / pScript->Length) * pScript->Length;
-                    if (pScript->Events.Count) {
-                        IssueScriptMessages(pEnginePtr, pObj, pScript, 0, pScript->CurTime);
-                    }
-                    pObj->SetupMoveToTracks();
-                }
-            } else if (PlayAction == 0) {
-                if (pScript->Events.Count) {
-                    IssueScriptMessages(pEnginePtr, pObj, pScript, OldCurTime, Length);
-                }
-                pScript->CurTime = pScript->Length + 1;
-            } else if (PlayAction == 2) {
-                if (pScript->Length < 1) {
-                    pScript->CurTime = 0;
-                } else {
-                    int doubleLen = pScript->Length * 2;
-                    pScript->CurTime = NewCurTime - (NewCurTime / doubleLen) * doubleLen;
-                }
-            }
-        }
-        if (bExecuting && OldCurTime == pScript->CurTime &&
-            OldCurTime == pScript->Length + 1 && !(pObj->Flags & 0x400000)) {
-            goto finalize;
-        }
     }
 
     UpdateObjectTracks(pObj, pScript);
@@ -483,14 +486,14 @@ void FEPackage::UpdateObject(FEObject* pObj, long tDeltaTicks) {
 finalize:
     if (pObj->Type == 5) {
         UpdateGroup(static_cast<FEGroup*>(pObj), tDeltaTicks);
-    } else if (pObj->Type < 5) {
-        if (pObj->Type == 4) {
-            static_cast<FEListBox*>(pObj)->Update(static_cast<float>(tDeltaTicks));
+    } else if (pObj->Type > 5) {
+        if (pObj->Type == 6) {
+            static_cast<FECodeListBox*>(pObj)->Update(static_cast<float>(tDeltaTicks));
+        } else if (pObj->Type == 7 && bExecuting) {
+            static_cast<FEMovie*>(pObj)->Update(tDeltaTicks);
         }
-    } else if (pObj->Type == 6) {
-        static_cast<FECodeListBox*>(pObj)->Update(static_cast<float>(tDeltaTicks));
-    } else if (pObj->Type == 7 && bExecuting) {
-        *reinterpret_cast<unsigned long*>(pObj->pData + 0x5C - 0x2C) += tDeltaTicks;
+    } else if (pObj->Type == 4) {
+        static_cast<FEListBox*>(pObj)->Update(static_cast<float>(tDeltaTicks));
     }
 
     if (bExecuting == true && OldCurTime == pScript->CurTime &&

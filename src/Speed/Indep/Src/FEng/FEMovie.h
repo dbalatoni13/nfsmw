@@ -13,7 +13,7 @@ struct FEMovie : public FEObject {
 
     FEObject* Clone(bool bReference) override;
 
-    inline void Update(unsigned long tDelta);
+    inline void Update(unsigned long tDelta) { CurTime += tDelta; }
 };
 
 #endif
