@@ -17,3 +17,7 @@ void LoadingTips::InitLoadingTipsScreen() {
 void LoadingTips::FinishLoadingTexCallback(unsigned int p) {
     ShowTipInfo();
 }
+
+MenuScreen *CreateLoadingTipsScreen(ScreenConstructorData *sd) {
+    return new (LoadingTips::mLoadingTipsScreenPtr) LoadingTips(sd);
+}

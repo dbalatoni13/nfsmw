@@ -3,6 +3,8 @@
 
 void *LoadingControllerScreen::mLoadingControllerScreenPtr;
 
+LoadingControllerScreen::LoadingControllerScreen(ScreenConstructorData *sd) : MenuScreen(sd) {}
+
 void LoadingControllerScreen::NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) {}
 
 void LoadingControllerScreen::FinishLoadingControllerTextureCallback(unsigned int p) {
@@ -17,4 +19,8 @@ void FinishLoadingControllerTextureCallbackBridge(unsigned int p) {
 
 void LoadingControllerScreen::InitLoadingControllerScreen() {
     mLoadingControllerScreenPtr = bMalloc(0x38, 0);
+}
+
+MenuScreen *CreateLoadingControllerScreen(ScreenConstructorData *sd) {
+    return new (LoadingControllerScreen::mLoadingControllerScreenPtr) LoadingControllerScreen(sd);
 }

@@ -10,11 +10,13 @@
 struct GameTipInfo;
 
 struct LoadingControllerScreen : public MenuScreen {
-    LoadingControllerScreen(ScreenConstructorData *sd) : MenuScreen(sd) {}
+    LoadingControllerScreen(ScreenConstructorData *sd);
     static void InitLoadingControllerScreen();
     void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
     void ShowControllerConfig();
     void FinishLoadingControllerTextureCallback(unsigned int p);
+
+    void *operator new(size_t, void *ptr) { return ptr; }
 
     static void *mLoadingControllerScreenPtr;
 

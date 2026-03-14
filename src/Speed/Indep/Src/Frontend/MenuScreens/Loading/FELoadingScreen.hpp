@@ -8,9 +8,11 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 
 struct LoadingScreen : public MenuScreen {
-    LoadingScreen(ScreenConstructorData *sd) : MenuScreen(sd) {}
+    LoadingScreen(ScreenConstructorData *sd);
     static void InitLoadingScreen();
     void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
+
+    void *operator new(size_t, void *ptr) { return ptr; }
 
     static void *mLoadingScreenPtr;
 };

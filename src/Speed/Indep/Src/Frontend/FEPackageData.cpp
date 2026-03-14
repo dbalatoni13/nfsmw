@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FELanguageSelect.hpp"
 
 static const char* gLoadinScreenPackageName;
 
@@ -92,7 +93,6 @@ struct EngageEventDialog : MenuScreen { EngageEventDialog(ScreenConstructorData 
 }
 struct MovieScreen : MenuScreen { MovieScreen(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x28]; };
 struct SplashScreen : MenuScreen { SplashScreen(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0xC]; };
-struct LanguageSelectScreen : MenuScreen { LanguageSelectScreen(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x144]; };
 struct SixDaysLater : MenuScreen { SixDaysLater(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x8]; };
 
 static MenuScreen *CreateMainMenu(ScreenConstructorData *sd) {

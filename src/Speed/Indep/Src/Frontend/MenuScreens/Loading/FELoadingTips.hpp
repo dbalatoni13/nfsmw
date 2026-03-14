@@ -28,6 +28,8 @@ struct LoadingTips : public MenuScreen {
     void FinishLoadingTexCallback(unsigned int p);
     static void CloseLoadingTipsScreen();
 
+    void *operator new(size_t, void *ptr) { return ptr; }
+
     static bool mDoneLoading;
     static bool mDoneShowingLoadingTips;
     static void *mLoadingTipsScreenPtr;
