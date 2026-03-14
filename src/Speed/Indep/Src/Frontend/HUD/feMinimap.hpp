@@ -8,6 +8,7 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
 #include "Speed/Indep/Src/FEng/FETypes.h"
 #include "Speed/Indep/Src/FEng/FEMultiImage.h"
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 
 struct TrackInfo;
 struct IVehicle;
@@ -23,6 +24,10 @@ struct MiniMapItem : public bTNode<MiniMapItem> {
     bVector2 mPos;
     unsigned int mItemType;
     bool mHidden;
+
+    static void operator delete(void *mem, unsigned int size) {
+        gFastMem.Free(mem, size, nullptr);
+    }
 };
 
 class Minimap : public HudElement {

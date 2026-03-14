@@ -1,12 +1,28 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeMinimap.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeMinimapStreamer.hpp"
 #include "Speed/Indep/Src/Gameplay/GIcon.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Sim/Simulation.h"
+
+#include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
 
 extern void FEngSetRotationZ(FEObject *obj, float rot);
 extern void FEngSetVisible(FEObject *obj);
 extern void FEngSetInvisible(FEObject *obj);
 extern float MinimapPivotX;
 extern float MinimapDispX;
+
+void GetVehicleVectors(bVector2 *pos, bVector2 *dir, ISimable *isimable) {
+    UMath::Vector3 position = isimable->GetPosition();
+    pos->y = -position.x;
+    pos->x = position.z;
+    ICollisionBody *irigidbody;
+    if (isimable->QueryInterface(&irigidbody)) {
+        UMath::Vector3 forwardVec = irigidbody->GetForwardVector();
+        dir->y = -forwardVec.x;
+        dir->x = forwardVec.z;
+    }
+}
 
 void LoaderMiniMap(bChunk *chunk) {
     gChoppedMiniMapManager->Loader(chunk);
@@ -19,6 +35,10 @@ void UnloaderMiniMap(bChunk *chunk) {
 Minimap::Minimap(const char *pkg_name, int player_number)
     : HudElement(pkg_name, 0)
 {
+}
+
+Minimap::~Minimap() {
+    gChoppedMiniMapManager->UncompressMaps(nullptr, 0);
 }
 
 void Minimap::Update(IPlayer *player) {
@@ -109,3 +129,16 @@ void Minimap::UpdateMiniMapItems() {
 }
 
 void Minimap::InitStaticMiniMapItems() {}
+
+void Minimap::UpdatePlayer2Element() {
+    if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
+        IPlayer *player2 = IPlayer::Last(PLAYER_LOCAL);
+        ISimable *isimable = player2->GetSimable();
+        bVector2 target_pos;
+        bVector2 target_dir;
+        bVector2 *pPos = &target_pos;
+        bVector2 *pDir = &target_dir;
+        GetVehicleVectors(pPos, pDir, isimable);
+        UpdateElementArt(pPos, pDir, mPlayerCarIndicator2, false);
+    }
+}
