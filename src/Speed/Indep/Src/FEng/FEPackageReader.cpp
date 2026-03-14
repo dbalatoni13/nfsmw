@@ -574,11 +574,56 @@ bool FEPackageReader::ReadMessageTargetListChunk() {
 void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
     FEListBox* pList = static_cast<FEListBox*>(pObj);
     FEListEntryData* pRowColData;
+    unsigned long val;
+    int idx;
     unsigned short tagID = BSwap16(pTag->GetID());
     switch (tagID) {
-        case 0x5443:
-            pList->SetCellType(BSwap32(pTag->Getu32(0)));
+        case 0x644c:
+            pList->SetNumColumns(BSwap32(pTag->Getu32(0)));
+            pList->SetNumRows(BSwap32(pTag->Getu32(1)));
+            CurListRow = 0xFFFFFFFF;
+            CurListCell = 0xFFFFFFFF;
+            CurListCol = 0xFFFFFFFF;
+            {
+                unsigned long col = 0;
+                if (pList->mulNumColumns == 0) {
+                    col = 0;
+                } else if (col >= pList->mulNumColumns) {
+                    col = pList->mulNumColumns - 1;
+                }
+                pList->mulCurrentColumn = col;
+            }
+            {
+                unsigned long row = 0;
+                if (pList->mulNumRows == 0) {
+                    row = 0;
+                } else if (row >= pList->mulNumRows) {
+                    row = pList->mulNumRows - 1;
+                }
+                pList->mulCurrentRow = row;
+            }
             return;
+        case 0x774c:
+            pList->SetAutoWrap(pTag->Getu32(0) != 0);
+            return;
+        case 0x764c:
+            *reinterpret_cast<unsigned long*>(&pList->mstViewDimensions.h) = BSwap32(pTag->Getu32(0));
+            *reinterpret_cast<unsigned long*>(&pList->mstViewDimensions.v) = BSwap32(pTag->Getu32(1));
+            return;
+        case 0x734c:
+            *reinterpret_cast<unsigned long*>(&pList->mstSelectionSpeed.h) = BSwap32(pTag->Getu32(0));
+            *reinterpret_cast<unsigned long*>(&pList->mstSelectionSpeed.v) = BSwap32(pTag->Getu32(1));
+            return;
+        case 0x634c:
+            CurListCol++;
+            val = pTag->Getu32(0);
+            pRowColData = pList->GetPColumnData(CurListCol);
+            break;
+        case 0x724c:
+            CurListRow++;
+            val = pTag->Getu32(0);
+            pRowColData = pList->GetPRowData(CurListRow);
+            break;
         case 0x6343: {
             CurListCell++;
             if (CurListCell != 0) {
@@ -589,32 +634,26 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
             pCell->ulColor = static_cast<unsigned long>(color);
             return;
         }
-        case 0x634c:
-            CurListCol++;
-            pRowColData = pList->GetPColumnData(CurListCol);
-            break;
-        case 0x644c:
-            pList->SetNumColumns(BSwap32(pTag->Getu32(0)));
-            pList->SetNumRows(BSwap32(pTag->Getu32(1)));
-            CurListCol = 0xFFFFFFFF;
-            CurListCell = 0xFFFFFFFF;
-            CurListRow = 0xFFFFFFFF;
-            if (pList->mulNumColumns == 0) {
-                pList->mulCurrentColumn = 0;
-            } else {
-                pList->mulCurrentColumn = 0;
-                if (pList->mulNumColumns == 0) {
-                    pList->mulCurrentColumn = 0xFFFFFFFF;
-                }
-            }
-            if (pList->mulNumRows == 0) {
-                pList->mulCurrentRow = 0;
-            } else {
-                pList->mulCurrentRow = 0;
-                if (pList->mulNumRows == 0) {
-                    pList->mulCurrentRow = 0xFFFFFFFF;
-                }
-            }
+        case 0x7343: {
+            unsigned long h = BSwap32(pTag->Getu32(0));
+            unsigned long v = BSwap32(pTag->Getu32(1));
+            FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
+            *reinterpret_cast<unsigned long*>(&pCell->stScale.h) = h;
+            *reinterpret_cast<unsigned long*>(&pCell->stScale.v) = v;
+            return;
+        }
+        case 0x7243: {
+            FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
+            pCell->stResource.ResourceIndex = BSwap32(pTag->Getu32(0));
+            pCell->stResource.Handle = 0;
+            pCell->stResource.UserParam = 0;
+            return;
+        }
+        case 0x5443:
+            pList->SetCellType(BSwap32(pTag->Getu32(0)));
+            return;
+        case 0x7443:
+            pList->SetCellString(reinterpret_cast<const short*>(pTag->Data()));
             return;
         case 0x6943: {
             unsigned long c0 = BSwap32(pTag->Getu32(0));
@@ -628,43 +667,12 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
             reinterpret_cast<unsigned long*>(&pCell->u)[3] = c3;
             return;
         }
-        case 0x7243: {
-            FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
-            pCell->stResource.ResourceIndex = BSwap32(pTag->Getu32(0));
-            pCell->stResource.UserParam = 0;
-            pCell->stResource.Handle = 0;
-            return;
-        }
-        case 0x724c:
-            CurListRow++;
-            pRowColData = pList->GetPRowData(CurListRow);
-            break;
-        case 0x7343: {
-            FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
-            *reinterpret_cast<unsigned long*>(&pCell->stScale.h) = pTag->Getu32(0);
-            *reinterpret_cast<unsigned long*>(&pCell->stScale.v) = pTag->Getu32(1);
-            return;
-        }
-        case 0x734c:
-            *reinterpret_cast<unsigned long*>(&pList->mstSelectionSpeed.h) = BSwap32(pTag->Getu32(0));
-            *reinterpret_cast<unsigned long*>(&pList->mstSelectionSpeed.v) = BSwap32(pTag->Getu32(1));
-            return;
-        case 0x764c:
-            *reinterpret_cast<unsigned long*>(&pList->mstViewDimensions.h) = BSwap32(pTag->Getu32(0));
-            *reinterpret_cast<unsigned long*>(&pList->mstViewDimensions.v) = BSwap32(pTag->Getu32(1));
-            return;
-        case 0x7443:
-            pList->SetCellString(reinterpret_cast<const short*>(pTag->Data()));
-            return;
-        case 0x774c:
-            pList->SetAutoWrap(pTag->Getu32(0) != 0);
-            return;
         default:
             return;
     }
     // Shared code for Lc (0x634c) and Lr (0x724c)
-    *reinterpret_cast<unsigned long*>(&pRowColData->fValue) = pTag->Getu32(0);
-    pRowColData->ulJustification = pTag->Getu32(1);
+    *reinterpret_cast<unsigned long*>(&pRowColData->fValue) = BSwap32(val);
+    pRowColData->ulJustification = BSwap32(pTag->Getu32(1));
 }
 
 bool FEPackageReader::ReadObjectChunk() {
