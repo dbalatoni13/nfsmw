@@ -1719,13 +1719,9 @@ CustomizePartOption *CustomizePaint::FindMatchingOption(SelectablePart *to_find)
 }
 
 void CustomizePaint::SetupRimPaint() {
-    bTList<SelectablePart> partList;
-    gCarCustomizeManager.GetCarPartList(0x5b, partList, 0);
-    int count = partList.TraversebList(nullptr);
-    for (int i = 0; i < count; i++) {
-        SelectablePart *cur = static_cast<SelectablePart *>(partList.GetNode(i));
-        AddPartOption(cur, 0, cur->GetPrice(), 0, 0, cur->IsLocked());
-    }
+    FEngSetInvisible(GetPackageName(), 0x2C3CC2D3);
+    FEngSetInvisible(GetPackageName(), 0x53639A10);
+    BuildSwatchList(0x4E);
 }
 
 // --- CustomizeParts helpers ---

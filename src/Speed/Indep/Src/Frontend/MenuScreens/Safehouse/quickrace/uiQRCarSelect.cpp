@@ -848,17 +848,24 @@ int UIQRCarSelect::GetBonusUnlockText(FECarRecord *fe_car) {
 }
 
 int UIQRCarSelect::GetBonusUnlockBinNumber(FECarRecord *fe_car) {
-    if (!fe_car) return 0;
-    int unlockText = GetBonusUnlockText(fe_car);
-    if (unlockText == 0x49e69969) return 1;
-    if (unlockText == 0xc58f5dbe) return 2;
-    if (unlockText == 0x3b8d38cb) return 3;
-    if (unlockText == 0xb7666ce4) return 4;
-    if (unlockText == 0x2968ad4f) return 5;
-    if (unlockText == 0xa523c938) return 6;
-    if (unlockText == 0x1b210e25) return 7;
-    if (unlockText == 0x97ea4a02) return 8;
-    return 0;
+    unsigned int handle = fe_car->Handle;
+    switch (handle) {
+    case 0x965F: return 2;
+    case 0x9660: return 3;
+    case 0x9661: return 4;
+    case 0x9662: return 5;
+    case 0x9663: return 6;
+    case 0x9664: return 7;
+    case 0x9665: return 8;
+    case 0x9666: return 9;
+    case 0x13624E: return 10;
+    case 0x13624F: return 11;
+    case 0x136250: return 12;
+    case 0x136251: return 13;
+    case 0x136252: return 14;
+    case 0x136253: return 15;
+    default: return -1;
+    }
 }
 
 void UIQRCarSelect::RefreshHeader() {
