@@ -16,6 +16,7 @@ extern int g_MaximumMaximumTimesBusted;
 extern int gPlayerNum;
 
 extern void LoadOneTexture(const char *pkg_name, unsigned int hash, void (*callback)(unsigned int), unsigned int param);
+extern bool GetIsCollectorsEdition();
 
 unsigned int UIQRCarSelect::ForceCar;
 bool QRCarSelectBustedManager::bPlayerJustGotBusted;
@@ -476,15 +477,59 @@ bool IsValidMikeMannCar(FECarRecord *car, unsigned int filterBits) {
 }
 
 void UIQRCarSelect::RefreshBonusCarList() {
-    FEPlayerCarDB *carDB = FEDatabase->GetPlayerCarStable(0);
-    int numCars = carDB->GetNumCars(0xFFFFFFFF);
-    for (int i = 0; i < numCars; i++) {
-        FECarRecord *car = carDB->GetCarByIndex(i);
-        if (!car || !car->IsValid()) continue;
-        if (!IsValidMikeMannCar(car, 0xFFFFFFFF)) continue;
-        SelectableCar *newCar = new SelectableCar(car->Handle, false);
-        FilteredCarsList.AddTail(newCar);
+    bool bCarUnlocked;
+    bCarUnlocked = UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0x136253, iPlayerNum);
+    FilteredCarsList.AddTail(new SelectableCar(0x136253, !bCarUnlocked));
+    bCarUnlocked = UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0x136252, iPlayerNum);
+    FilteredCarsList.AddTail(new SelectableCar(0x136252, !bCarUnlocked));
+    bCarUnlocked = UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0x136251, iPlayerNum);
+    FilteredCarsList.AddTail(new SelectableCar(0x136251, !bCarUnlocked));
+    bCarUnlocked = UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0x136250, iPlayerNum);
+    FilteredCarsList.AddTail(new SelectableCar(0x136250, !bCarUnlocked));
+    bCarUnlocked = UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0x13624f, iPlayerNum);
+    FilteredCarsList.AddTail(new SelectableCar(0x13624f, !bCarUnlocked));
+    bCarUnlocked = UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0x13624e, iPlayerNum);
+    FilteredCarsList.AddTail(new SelectableCar(0x13624e, !bCarUnlocked));
+    bCarUnlocked = UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0x9666, iPlayerNum);
+    FilteredCarsList.AddTail(new SelectableCar(0x9666, !bCarUnlocked));
+    bCarUnlocked = UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0x9665, iPlayerNum);
+    FilteredCarsList.AddTail(new SelectableCar(0x9665, !bCarUnlocked));
+    bCarUnlocked = UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0x9664, iPlayerNum);
+    FilteredCarsList.AddTail(new SelectableCar(0x9664, !bCarUnlocked));
+    bCarUnlocked = UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0x9663, iPlayerNum);
+    FilteredCarsList.AddTail(new SelectableCar(0x9663, !bCarUnlocked));
+    bCarUnlocked = UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0x9662, iPlayerNum);
+    FilteredCarsList.AddTail(new SelectableCar(0x9662, !bCarUnlocked));
+    bCarUnlocked = UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0x9661, iPlayerNum);
+    FilteredCarsList.AddTail(new SelectableCar(0x9661, !bCarUnlocked));
+    bCarUnlocked = UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0x9660, iPlayerNum);
+    FilteredCarsList.AddTail(new SelectableCar(0x9660, !bCarUnlocked));
+    bCarUnlocked = UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0x965f, iPlayerNum);
+    FilteredCarsList.AddTail(new SelectableCar(0x965f, !bCarUnlocked));
+    bCarUnlocked = UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0x3a94520, iPlayerNum);
+    FilteredCarsList.AddTail(new SelectableCar(0x3a94520, !bCarUnlocked));
+    bCarUnlocked = UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0xcb6aaf2f, iPlayerNum);
+    FilteredCarsList.AddTail(new SelectableCar(0xcb6aaf2f, !bCarUnlocked));
+    bCarUnlocked = UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0x2cf370f0, iPlayerNum);
+    FilteredCarsList.AddTail(new SelectableCar(0x2cf370f0, !bCarUnlocked));
+    bCarUnlocked = UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0x2cf385b2, iPlayerNum);
+    FilteredCarsList.AddTail(new SelectableCar(0x2cf385b2, !bCarUnlocked));
+    if (UnlockSystem::IsCarUnlocked(UNLOCK_QUICK_RACE, 0x34498eb2, iPlayerNum)) {
+        FilteredCarsList.AddTail(new SelectableCar(0x34498eb2, false));
     }
+    if (GetIsCollectorsEdition()) {
+        FilteredCarsList.AddTail(new SelectableCar(0x634d1bd2, false));
+        FilteredCarsList.AddTail(new SelectableCar(0xe1075862, false));
+        FilteredCarsList.AddTail(new SelectableCar(0x02d642b8, false));
+        FilteredCarsList.AddTail(new SelectableCar(0x03d3401a, false));
+        FilteredCarsList.AddTail(new SelectableCar(0x03d8a6d1, false));
+        FilteredCarsList.AddTail(new SelectableCar(0x54653c71, false));
+        FilteredCarsList.AddTail(new SelectableCar(0xe115ead0, false));
+        FilteredCarsList.AddTail(new SelectableCar(0x54655133, false));
+        FilteredCarsList.AddTail(new SelectableCar(0x582f21d9, false));
+        FilteredCarsList.AddTail(new SelectableCar(0x363a1fea, false));
+    }
+    SetupForPlayer(iPlayerNum);
 }
 
 void UIQRCarSelect::RefreshCarList() {

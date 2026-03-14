@@ -346,48 +346,7 @@ void UIQRTrackSelect::RefreshHeader() {
 }
 
 void UIQRTrackSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
-    switch (param1) {
-    case 0x9120409e:
-        ScrollTracks(eSD_PREV);
-        break;
-    case 0x5073ef13:
-        ScrollRegions(eSD_PREV);
-        break;
-    case 0x406415e3:
-        if (!pCurrentTrack) {
-            return;
-        }
-        if (pCurrentNode->bLocked) {
-            return;
-        }
-        SetSelectedTrack(pCurrentTrack);
-        if (FEDatabase->RaceMode == GRace::kRaceType_None) {
-            FEDatabase->RaceMode = pCurrentTrack->GetRaceType();
-        }
-        cFEng::Get()->QueuePackageMessage(0x2e76edfb, PackageFilename, nullptr);
-        break;
-    case 0x911ab364: {
-        GRaceDatabase::Get().ClearStartupRace();
-        RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
-        settings->EventHash = 0;
-        const char *pkg;
-        if ((FEDatabase->GetGameMode() & 8) == 0 && (FEDatabase->GetGameMode() & 0x40) == 0) {
-            pkg = "MainMenu_Sub.fng";
-        } else {
-            pkg = "OL_MAIN.fng";
-        }
-        cFEng::Get()->QueuePackageSwitch(pkg, 0, 0, false);
-        break;
-    }
-    case 0xc98356ba:
-        TrackMapStreamer.UpdateAnimation();
-        break;
-    case 0xb5971bf1:
-        ScrollTracks(eSD_NEXT);
-        break;
-    case 0xd9feec59:
-        ScrollRegions(eSD_NEXT);
-        break;
+    switch (msg) {
     case 0xe1fde1d1:
         if (pCurrentTrack) {
             bool isSplitQR = false;
@@ -407,6 +366,47 @@ void UIQRTrackSelect::NotificationMessage(unsigned long msg, FEObject *pobj, uns
         }
         cFEng::Get()->QueuePackageSwitch("Track_Options.fng", static_cast<unsigned long>(reinterpret_cast<unsigned int>(pCurrentTrack)), 0, false);
         RefreshHeader();
+        break;
+    case 0x911ab364: {
+        GRaceDatabase::Get().ClearStartupRace();
+        RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+        settings->EventHash = 0;
+        const char *pkg;
+        if ((FEDatabase->GetGameMode() & 8) == 0 && (FEDatabase->GetGameMode() & 0x40) == 0) {
+            pkg = "MainMenu_Sub.fng";
+        } else {
+            pkg = "OL_MAIN.fng";
+        }
+        cFEng::Get()->QueuePackageSwitch(pkg, 0, 0, false);
+        break;
+    }
+    case 0x406415e3:
+        if (!pCurrentTrack) {
+            return;
+        }
+        if (pCurrentNode->bLocked) {
+            return;
+        }
+        SetSelectedTrack(pCurrentTrack);
+        if (FEDatabase->RaceMode == GRace::kRaceType_None) {
+            FEDatabase->RaceMode = pCurrentTrack->GetRaceType();
+        }
+        cFEng::Get()->QueuePackageMessage(0x2e76edfb, PackageFilename, nullptr);
+        break;
+    case 0x9120409e:
+        ScrollTracks(eSD_PREV);
+        break;
+    case 0xb5971bf1:
+        ScrollTracks(eSD_NEXT);
+        break;
+    case 0xd9feec59:
+        ScrollRegions(eSD_NEXT);
+        break;
+    case 0x5073ef13:
+        ScrollRegions(eSD_PREV);
+        break;
+    case 0xc98356ba:
+        TrackMapStreamer.UpdateAnimation();
         break;
     }
 }
