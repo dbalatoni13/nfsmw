@@ -30,21 +30,17 @@ unsigned long FEHash(const char* String) {
 }
 
 unsigned long FEHashUpper(const char* String) {
-    unsigned long hash = 0xFFFFFFFF;
+    unsigned long Hash = 0xFFFFFFFF;
 
     if (String) {
-        char c = *String;
-
-        while (c != '\0') {
-            unsigned long uc = FEUpperCase(c);
-
+        while (*String) {
+            Hash = (Hash << 5) + Hash;
+            Hash += FEUpperCase(*String) & 0xFF;
             String++;
-            hash = hash * 33 + (uc & 0xFF);
-            c = *String;
         }
     }
 
-    return hash;
+    return Hash;
 }
 
 int FEStricmp(const char* s1, const char* s2) {
