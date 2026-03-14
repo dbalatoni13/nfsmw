@@ -13,6 +13,10 @@
 
 // total size: 0xA4
 class FERenderEPoly : public bTNode<FERenderEPoly> {
+  public:
+    void *operator new(unsigned int size);
+    void operator delete(void *p);
+
   private:
     ePoly EPoly;               // offset 0x8, size 0x94
     TextureInfo *pTexture;     // offset 0x9C, size 0x4
@@ -22,7 +26,10 @@ class FERenderEPoly : public bTNode<FERenderEPoly> {
 // total size: 0x64
 class FERenderObject : public bTNode<FERenderObject> {
   public:
+    FERenderObject(FEObject *obj, TextureInfo *tex);
+    ~FERenderObject();
     void SetTransform(bMatrix4 *pMatrix);
+    static void Initialize();
 
   private:
     FEObject *mpobOwner;               // offset 0x8, size 0x4

@@ -26,8 +26,12 @@ struct KeyboardEditString {
         return mEnabled && TextInputObject != nullptr;
     }
 
+    KeyboardEditString();
     void SyncEditIntoPacked();
     char *GetEditedString();
+    void EndCapture();
+    void GetStringForDisplay(char *buffer, int size);
+    void RevertToOriginalString();
 };
 
 extern KeyboardEditString gKeyboardManager;

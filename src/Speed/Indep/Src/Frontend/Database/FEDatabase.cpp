@@ -20,6 +20,33 @@ SMSMessage *CareerSettings::GetSMSMessage(unsigned int index) {
     return nullptr;
 }
 
+bool SMSMessage::IsVoice() {
+    switch (Handle) {
+    case 0x6E:
+    case 0x6F:
+    case 0x78:
+    case 0x79:
+    case 0x7A:
+    case 0x7B:
+    case 0x7C:
+    case 0x7D:
+    case 0x7E:
+    case 0x7F:
+    case 0x80:
+    case 0x81:
+    case 0x82:
+    case 0x84:
+    case 0x85:
+    case 0x86:
+    case 0x87:
+    case 0x88:
+    case 0x89:
+        return false;
+    default:
+        return true;
+    }
+}
+
 unsigned short CareerSettings::GetSMSSortOrder() {
     SMSSortOrder = SMSSortOrder + 1;
     return SMSSortOrder;
@@ -357,4 +384,21 @@ void CareerSettings::GenerateCaseFileName() {
     const char *profile_name = FEDatabase->GetUserProfile(0)->GetProfileName();
     bSNPrintf(CaseFileName, 13, "%d%s", num, profile_name);
     bToUpper(CaseFileName);
+}
+
+extern int FEngSNPrintf(char *, int, const char *, ...);
+extern unsigned long FEHashUpper(const char *);
+extern void FixDot(char *str, int len);
+
+unsigned int CalcLanguageHash(const char *prefix, GRaceParameters *pRaceParams) {
+    char buffer[64];
+    FEngSNPrintf(buffer, 0x40, "%s%s", prefix, pRaceParams->GetEventID());
+    FixDot(buffer, 0x40);
+    return FEHashUpper(buffer);
+}
+
+void InitFrontendDatabase() {
+    unsigned int alloc_params = GetVirtualMemoryAllocParams();
+    FEDatabase = new(alloc_params) cFrontendDatabase();
+    FEDatabase->Default();
 }

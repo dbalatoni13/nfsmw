@@ -10,6 +10,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitlevels.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/Src/Gameplay/GManager.h"
 
 #include "types.h"
 
@@ -1120,4 +1121,86 @@ bool FEPlayerCarDB::WriteRecordIntoPhysics(unsigned int car, Attrib::Gen::pvehic
         }
     }
     return false;
+}
+
+enum POVTypes {
+    kPOV_Far = 0,
+    kPOV_Close = 1,
+    kPOV_Bumper = 2,
+    kPOV_Hood = 3,
+    kPOV_Drift = 4,
+    kPOV_Pursuit = 5,
+    kPOV_Pullback = 6
+};
+
+POVTypes GetPOVTypeFromPlayerCamera(ePlayerSettingsCameras cam) {
+    switch (cam) {
+    case 0: return static_cast<POVTypes>(0);
+    case 1: return static_cast<POVTypes>(1);
+    case 2: return static_cast<POVTypes>(2);
+    case 3: return static_cast<POVTypes>(3);
+    case 4: return static_cast<POVTypes>(4);
+    case 5: return static_cast<POVTypes>(5);
+    case 6: return static_cast<POVTypes>(6);
+    default: return static_cast<POVTypes>(2);
+    }
+}
+
+ePlayerSettingsCameras GetPlayerCameraFromPOVType(POVTypes pov) {
+    switch (pov) {
+    case 0: return static_cast<ePlayerSettingsCameras>(0);
+    case 1: return static_cast<ePlayerSettingsCameras>(1);
+    case 2: return static_cast<ePlayerSettingsCameras>(2);
+    case 3: return static_cast<ePlayerSettingsCameras>(3);
+    case 4: return static_cast<ePlayerSettingsCameras>(4);
+    case 5: return static_cast<ePlayerSettingsCameras>(5);
+    case 6: return static_cast<ePlayerSettingsCameras>(6);
+    default: return static_cast<ePlayerSettingsCameras>(2);
+    }
+}
+
+void AdjustStableHeat_EvadePursuit(int playerNum) {
+    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(playerNum);
+    for (int i = 0; i <= 0xC7; i++) {
+        FECarRecord *fe_car = stable->GetCarByIndex(i);
+        FECareerRecord *fe_career = stable->GetCareerRecordByHandle(fe_car->CareerHandle);
+        if (fe_career) {
+            fe_career->AdjustHeatOnEvadePursuit();
+        }
+    }
+}
+
+void AdjustStableHeat_EventWin(int playerNum) {
+    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(playerNum);
+    for (int i = 0; i <= 0xC7; i++) {
+        FECarRecord *fe_car = stable->GetCarByIndex(i);
+        FECareerRecord *fe_career = stable->GetCareerRecordByHandle(fe_car->CareerHandle);
+        if (fe_career) {
+            fe_career->AdjustHeatOnEventWin();
+        }
+    }
+}
+
+void AdjustStableImpound_EventWin(int playerNum) {
+    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(playerNum);
+    for (int i = 0; i <= 0xC7; i++) {
+        FECarRecord *fe_car = stable->GetCarByIndex(i);
+        FECareerRecord *fe_career = stable->GetCareerRecordByHandle(fe_car->CareerHandle);
+        if (fe_career) {
+            if (fe_career->TheImpoundData.NotifyWin()) {
+                GManager::Get().AddSMS(0x78);
+            }
+        }
+    }
+}
+
+void AdjustStableImpound_EvadePursuit(int playerNum) {
+    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(playerNum);
+    for (int i = 0; i <= 0xC7; i++) {
+        FECarRecord *fe_car = stable->GetCarByIndex(i);
+        FECareerRecord *fe_career = stable->GetCareerRecordByHandle(fe_car->CareerHandle);
+        if (fe_career) {
+            fe_career->TheImpoundData.NotifyEvade();
+        }
+    }
 }

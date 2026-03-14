@@ -425,7 +425,9 @@ class cFrontendDatabase {
     }
 
     FEPlayerCarDB *GetPlayerCarStable(int player) {
-        return &CurrentUserProfiles[player]->PlayersCarStable;
+        if (static_cast<unsigned int>(player) <= 1)
+            return &CurrentUserProfiles[player]->PlayersCarStable;
+        return nullptr;
     }
 
     CareerSettings *GetCareerSettings() {
@@ -588,6 +590,14 @@ class cFrontendDatabase {
     bool MatchesGameMode(unsigned int mode) {
         return FEGameMode & mode;
     }
+
+    static void *operator new(unsigned int size, unsigned int alloc_params) {
+        return bMalloc(size, alloc_params);
+    }
+
+    void Default();
+    void GetRandomRaceOptions(RaceSettings *race, GRace::Type type);
+    unsigned int GetSafehouseIconHash(const char *name);
 
     unsigned char iNumPlayers; // offset 0x0, size 0x1
     bool bComingFromBoot;      // offset 0x4, size 0x1
