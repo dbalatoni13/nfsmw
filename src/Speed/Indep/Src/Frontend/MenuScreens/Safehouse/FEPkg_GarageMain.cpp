@@ -1,20 +1,24 @@
-// OWNED BY zFeOverlay AGENT - do not empty or overwrite
+// OWNED BY zFeOverlay AGENT - DO NOT MODIFY OR EMPTY
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp"
-
+#include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/FECarLoader.hpp"
 
+struct FrontEndRenderingCar {
+    char _pad[0x574];
+    int Visible;
+};
+
 extern MenuScreen *FEngFindScreen(const char *name);
-extern RideInfo TopOrFullScreenRide;
-extern eSetRideInfoReasons TopOrFullScreenLoadingReason;
 
 static const char lbl_GarageMain[] = "GarageMain.fng";
 
-// --- HaveAttributesChanged ---
+extern RideInfo TopOrFullScreenRide;
+extern eSetRideInfoReasons TopOrFullScreenLoadingReason;
+
 bool HaveAttributesChanged(Attrib::Gen::frontend &) {
     return false;
 }
 
-// --- GarageMainScreen statics ---
 GarageMainScreen *GarageMainScreen::sInstance;
 
 GarageMainScreen *GarageMainScreen::GetInstance() {
@@ -22,17 +26,15 @@ GarageMainScreen *GarageMainScreen::GetInstance() {
 }
 
 void GarageMainScreen::EnableCarRendering() {
-    if (!RenderingCar) {
-        return;
+    if (RenderingCar) {
+        RenderingCar->Visible = 1;
     }
-    RenderingCar->Visible = 1;
 }
 
 void GarageMainScreen::DisableCarRendering() {
-    if (!RenderingCar) {
-        return;
+    if (RenderingCar) {
+        RenderingCar->Visible = 0;
     }
-    RenderingCar->Visible = 0;
 }
 
 bool GarageMainScreen::IsCarRendering() {
@@ -46,24 +48,73 @@ void GarageMainScreen::HandleHidePackage(unsigned int msg) {
     RenderingCar->Visible = 0;
 }
 
-// --- GarageCarLoader ---
+void GarageMainScreen::CancelCarLoad() {
+    CarState = 1;
+    TheGarageCarLoader->CancelCarLoad();
+}
 
-RideInfo *GarageCarLoader::GetCurrentRideInfo() {
-    if (!IsCurrentRide) {
-        return nullptr;
+GarageMainScreen *CarViewer::FindWhichScreenToUpdate(eCarViewerWhichCar which_car) {
+    const char *name = lbl_GarageMain;
+    if (cFEng::mInstance->IsPackagePushed(name)) {
+        return static_cast<GarageMainScreen *>(FEngFindScreen(name));
     }
-    return &CurrentRideInfo;
+    return nullptr;
+}
+
+void CarViewer::SetRideInfo(RideInfo *ride, eSetRideInfoReasons reason, eCarViewerWhichCar which_car) {
+    GarageMainScreen *screen = FindWhichScreenToUpdate(which_car);
+    TopOrFullScreenRide = *ride;
+    TopOrFullScreenLoadingReason = reason;
+    if (screen) {
+        screen->SetRideInfo(ride, reason);
+    }
+}
+
+void CarViewer::CancelCarLoad(eCarViewerWhichCar which_car) {
+    FindWhichScreenToUpdate(which_car)->CancelCarLoad();
+}
+
+RideInfo *CarViewer::GetRideInfo(eCarViewerWhichCar which_car) {
+    return &TopOrFullScreenRide;
+}
+
+void CarViewer::HideAllCars() {
+    cFEng::mInstance->QueueGameMessage(0x0AD4BBDC, lbl_GarageMain, 0xFF);
+}
+
+void CarViewer::ShowAllCars() {
+    cFEng::mInstance->QueueGameMessage(0x18883F75, lbl_GarageMain, 0xFF);
+}
+
+void CarViewer::ShowCarScreen() {
+    if (!cFEng::mInstance->IsPackagePushed(lbl_GarageMain)) {
+        cFEng::mInstance->PushNoControlPackage(lbl_GarageMain, static_cast<FE_PACKAGE_PRIORITY>(100));
+    }
+}
+
+bool CarViewer::haveLoadedOnce;
+
+GarageCarLoader *GetGarageCarLoader() {
+    static GarageCarLoader TheGarageCarLoader;
+    return &TheGarageCarLoader;
+}
+
+void GarageCarLoader::Init() {
+    IsCurrentRide = false;
+    LoadingCar = 0;
+    CurrentCar = 0;
+    IsLoadingRide = false;
 }
 
 void GarageCarLoader::Switch() {
     IsDifferent = false;
 }
 
-// --- GarageCarLoader static access ---
-static GarageCarLoader TheGarageCarLoader;
-
-GarageCarLoader *GetGarageCarLoader() {
-    return &TheGarageCarLoader;
+RideInfo *GarageCarLoader::GetCurrentRideInfo() {
+    if (IsCurrentRide) {
+        return reinterpret_cast<RideInfo *>(&_pad_ride1[0]);
+    }
+    return nullptr;
 }
 
 void InitGarageCarLoaders() {
@@ -78,45 +129,6 @@ void UpdateGarageCarLoaders() {
     GetGarageCarLoader()->Update();
 }
 
-// --- CarViewer ---
-
-GarageMainScreen *CarViewer::FindWhichScreenToUpdate(eCarViewerWhichCar which_car) {
-    if (cFEng::Get()->IsPackagePushed(lbl_GarageMain)) {
-        return static_cast<GarageMainScreen *>(FEngFindScreen(lbl_GarageMain));
-    }
-    return nullptr;
-}
-
-void CarViewer::SetRideInfo(RideInfo *ride, eSetRideInfoReasons reason, eCarViewerWhichCar which_car) {
-    GarageMainScreen *screen = FindWhichScreenToUpdate(which_car);
-    TopOrFullScreenRide = *ride;
-    TopOrFullScreenLoadingReason = reason;
-    if (screen) {
-        screen->SetRideInfo(&TopOrFullScreenRide, reason);
-    }
-}
-
-void CarViewer::CancelCarLoad(eCarViewerWhichCar which_car) {
-    GarageMainScreen *screen = FindWhichScreenToUpdate(which_car);
-    if (screen) {
-        screen->CancelCarLoad();
-    }
-}
-
-RideInfo *CarViewer::GetRideInfo(eCarViewerWhichCar which_car) {
-    return &TopOrFullScreenRide;
-}
-
-void CarViewer::HideAllCars() {
-    cFEng::Get()->QueueGameMessage(0x0AD4BBDC, lbl_GarageMain, 0xFF);
-}
-
-void CarViewer::ShowAllCars() {
-    cFEng::Get()->QueueGameMessage(0x18883F75, lbl_GarageMain, 0xFF);
-}
-
-void CarViewer::ShowCarScreen() {
-    if (!cFEng::Get()->IsPackagePushed(lbl_GarageMain)) {
-        cFEng::Get()->PushNoControlPackage(lbl_GarageMain, FE_PACKAGE_PRIORITY_FIFTH_CLOSEST);
-    }
+MenuScreen *CreateGarageMainScreen(ScreenConstructorData *sd) {
+    return new GarageMainScreen(sd, 1, &TopOrFullScreenRide, 0);
 }

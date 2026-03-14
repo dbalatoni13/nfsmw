@@ -126,7 +126,7 @@ class FEManager {
     bool mEATraxFirstButton;         // offset 0x48, size 0x1
 };
 
-class RideInfo;
+struct RideInfo;
 
 enum eSetRideInfoReasons {
     SET_RIDE_INFO_REASON_VINYL = 0,
@@ -139,11 +139,17 @@ enum eCarViewerWhichCar {
     eCARVIEWER_PLAYER2_CAR = 1,
 };
 
+struct GarageMainScreen;
+
 struct CarViewer {
-    static void ShowCarScreen();
-    static void ShowAllCars();
+    static GarageMainScreen *FindWhichScreenToUpdate(eCarViewerWhichCar which_car);
+    static void SetRideInfo(RideInfo *ride, eSetRideInfoReasons reason, eCarViewerWhichCar which_car);
+    static void CancelCarLoad(eCarViewerWhichCar which_car);
+    static RideInfo *GetRideInfo(eCarViewerWhichCar which_car);
     static void HideAllCars();
-    static void SetRideInfo(RideInfo* ride, eSetRideInfoReasons reason, eCarViewerWhichCar which_car);
+    static void ShowAllCars();
+    static void ShowCarScreen();
+    static void UnshowCarScreen();
     static bool haveLoadedOnce;
 };
 
