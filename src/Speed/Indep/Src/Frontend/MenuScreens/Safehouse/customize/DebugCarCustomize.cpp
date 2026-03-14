@@ -8,24 +8,7 @@
 #include "Speed/Indep/Src/World/CarInfo.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
-struct CarPartAttribute;
-struct CarPart {
-    unsigned short PartNameHashBot;         // offset 0x0, size 0x2
-    unsigned short PartNameHashTop;         // offset 0x2, size 0x2
-    char PartID;                            // offset 0x4, size 0x1
-    unsigned char GroupNumber_UpgradeLevel;  // offset 0x5, size 0x1
-    char BaseModelNameHashSelector;         // offset 0x6, size 0x1
-    unsigned char CarTypeNameHashIndex;     // offset 0x7, size 0x1
-    unsigned short NameOffset;              // offset 0x8, size 0x2
-    unsigned short AttributeTableOffset;    // offset 0xA, size 0x2
-    unsigned short ModelNameHashTableOffset; // offset 0xC, size 0x2
-
-    const char *GetName();
-    unsigned int GetCarTypeNameHash();
-    unsigned int GetPartNameHash();
-    char GetPartID();
-    char GetUpgradeLevel();
-};
+// CarPart is already defined in CustomizeManager.cpp (earlier in jumbo build)
 
 extern cFrontendDatabase *FEDatabase;
 extern CarCustomizeManager gCarCustomizeManager;

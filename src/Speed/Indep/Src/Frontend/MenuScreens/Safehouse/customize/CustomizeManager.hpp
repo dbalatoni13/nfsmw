@@ -68,7 +68,8 @@ struct CarCustomizeManager {
     int GetNumPackages(Physics::Upgrades::Type type);
     void MaxOutPerformance();
     float GetPerformanceRating(ePerformanceRatingType type, bool preview);
-    void UpdateHeatOnVehicle(SelectablePart *part, FECarRecord *record);
+    void UpdateHeatOnVehicle(SelectablePart *part, FECareerRecord *record);
+    eUnlockFilters GetUnlockFilter();
     bool IsPartInstalled(SelectablePart *part);
     bool IsPartLocked(SelectablePart *part, int perf_unlock_level);
     bool IsPartNew(SelectablePart *part, int perf_unlock_level);

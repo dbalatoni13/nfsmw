@@ -59,6 +59,7 @@ void Init();
 float AerodynamicDownforce(const Attrib::Gen::chassis &chassis, const float speed);
 float EngineInertia(const Attrib::Gen::engine &engine, const bool loaded);
 eInductionType InductionType(const Attrib::Gen::induction &induction);
+eInductionType InductionType(const Attrib::Gen::pvehicle &pvehicle);
 bool HasNos(const Attrib::Gen::pvehicle &pvehicle);
 bool HasRunflatTires(const Attrib::Gen::pvehicle &pvehicle);
 float NosBoost(const Attrib::Gen::nos &nos, const Tunings *tunings);
