@@ -85,17 +85,29 @@ void FEInterpLinear(FEKeyTrack* pTrack, long tTime, void* pOutDataPtr) {
 
     unsigned long KeySize;
 
-    if (pTrack->DeltaKeys.GetNumElements() == 0) {
-        // no delta keys
-    } else {
-        unsigned char InterpAction = pTrack->InterpAction & 0x7f;
-        if (InterpAction == 1) {
-            // Loop
-            pKey = pTrack->GetDeltaKeyAt(tTime);
-            if (pKey) {
+    if (pTrack->DeltaKeys.GetNumElements() != 0) {
+        switch (pTrack->InterpAction & 0x7f) {
+            case 0: {
+                // Standard (clamp)
+                pKey = pTrack->GetDeltaKeyAt(tTime);
+                if (!pKey) goto write_base;
+                pPrevKey = pKey->GetPrev();
+                if (pPrevKey && tTime < pKey->tTime) {
+                    float div = static_cast<float>(pKey->tTime - pPrevKey->tTime);
+                    if (div > 0.0f) {
+                        t = static_cast<float>(tTime - pPrevKey->tTime) / div;
+                    }
+                } else {
+                    t = 1.0f;
+                }
+                break;
+            }
+            case 1: {
+                // Loop
+                pKey = pTrack->GetDeltaKeyAt(tTime);
+                if (!pKey) goto write_base;
                 pPrevKey = pKey;
                 if (pKey->tTime < tTime) {
-                    // Past last key - wrap to first
                     FEKeyNode* pFirstKey = pTrack->GetFirstDeltaKey();
                     float div = static_cast<float>((pTrack->Length - pKey->tTime) + pFirstKey->tTime);
                     if (div <= 0.0f) {
@@ -120,26 +132,16 @@ void FEInterpLinear(FEKeyTrack* pTrack, long tTime, void* pOutDataPtr) {
                         }
                     }
                 }
+                break;
             }
-        } else if (InterpAction == 0) {
-            // Standard (clamp)
-            pKey = pTrack->GetDeltaKeyAt(tTime);
-            if (!pKey) goto write_base;
-            pPrevKey = pKey->GetPrev();
-            if (pPrevKey && tTime < pKey->tTime) {
-                float div = static_cast<float>(pKey->tTime - pPrevKey->tTime);
-                if (div > 0.0f) {
-                    t = static_cast<float>(tTime - pPrevKey->tTime) / div;
+            case 2: {
+                // Ping-pong
+                if (pTrack->Length < tTime) {
+                    tTime = pTrack->Length * 2 - tTime;
                 }
-            } else {
-                t = 1.0f;
+                pKey = pTrack->GetDeltaKeyAt(tTime);
+                break;
             }
-        } else if (InterpAction == 2) {
-            // Ping-pong
-            if (pTrack->Length < tTime) {
-                tTime = pTrack->Length * 2 - tTime;
-            }
-            pKey = pTrack->GetDeltaKeyAt(tTime);
         }
     }
 
