@@ -263,6 +263,7 @@ void FEObject::SetTrackValue(FEKeyTrack_Indices track, const FEVector3& value, b
             } else {
                 *pKey->GetKeyData() = value;
             }
+            pTrack->InterpAction &= 0x7F;
         }
         pScript = pScript->GetNext();
     }
@@ -286,6 +287,7 @@ void FEObject::SetTrackValue(FEKeyTrack_Indices track, const FEVector2& value, b
             } else {
                 *pKey->GetKeyData() = value;
             }
+            pTrack->InterpAction &= 0x7F;
         }
         pScript = pScript->GetNext();
     }
@@ -309,6 +311,7 @@ void FEObject::SetTrackValue(FEKeyTrack_Indices track, const FEColor& value, boo
             } else {
                 *pKey->GetKeyData() = value;
             }
+            pTrack->InterpAction &= 0x7F;
         }
         pScript = pScript->GetNext();
     }
@@ -353,6 +356,7 @@ void FEObject::SetRotation(const FEQuaternion& rotation, bool bRelative) {
             } else {
                 *pKey->GetKeyData() = rotation;
             }
+            pTrack->InterpAction &= 0x7F;
         }
         pScript = pScript->GetNext();
     }
