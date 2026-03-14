@@ -17,13 +17,14 @@
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
 extern MenuScreen *FEngFindScreen(const char *name);
 extern FEString *FEngFindString(const char *pkg_name, int hash);
 extern void FEngSetLanguageHash(FEString *text, unsigned int hash);
 extern int FEPrintf(FEString *text, const char *fmt, ...);
 extern int FEngSNPrintf(char *, int, const char *, ...);
-extern unsigned int FEHashUpper(const char *str);
+extern unsigned long FEHashUpper(const char *str);
 extern int FEngMapJoyParamToJoyport(int feng_param);
 
 extern void SetSelectCarLighting(int view_id, float f, int);
@@ -83,11 +84,11 @@ static const char lbl_GarageMain[] = "GarageMain.fng";
 
 // --- Free functions ---
 
-bool HaveAttributesChanged(Attrib::Gen::frontend &) {
+static bool HaveAttributesChanged(Attrib::Gen::frontend &) {
     return false;
 }
 
-const char *GetCurrentGarageName() {
+static const char *GetCurrentGarageName() {
     eGarageType type = FEManager::Get()->GetGarageType();
     switch (type) {
         case GARAGETYPE_CUSTOMIZATION_SHOP:
@@ -304,7 +305,7 @@ bool CarViewer::haveLoadedOnce;
 
 // --- Free functions ---
 
-unsigned int FindScreenInfo(const char *pkg_name, int category) {
+static unsigned int FindScreenInfo(const char *pkg_name, int category) {
     char name[128];
     char prefix[128];
     if (!pkg_name) {
@@ -316,7 +317,7 @@ unsigned int FindScreenInfo(const char *pkg_name, int category) {
     if (len > 3) {
         name[len - 4] = 0;
         bMemSet(prefix, 0, 128);
-        unsigned int flags = FEDatabase->mUserFlags;
+        unsigned int flags = FEDatabase->GetGameMode();
         if (flags & 0x20) {
             bStrCat(prefix, "customize_", name);
             if (category > -1) {
@@ -364,7 +365,7 @@ unsigned int FindScreenInfo(const char *pkg_name, int category) {
     return 0x3b5aea62;
 }
 
-unsigned int FindGarageCameraInfo(const char *prefix) {
+static unsigned int FindGarageCameraInfo(const char *prefix) {
     char buf[64];
     bStrCpy(buf, prefix);
     const char *garage_name = GetCurrentGarageName();
@@ -381,7 +382,7 @@ unsigned int FindGarageCameraInfo(const char *prefix) {
     return key;
 }
 
-unsigned int FindScreenCameraInfo(unsigned int screen_key) {
+static unsigned int FindScreenCameraInfo(unsigned int screen_key) {
     {
         Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), screen_key), 0, nullptr);
         if (!inst.GetLayoutPointer()) {
