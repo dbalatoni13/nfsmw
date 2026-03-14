@@ -14,6 +14,7 @@ class ShiftUpdater : public HudElement, public IShiftUpdater {
   public:
     ShiftUpdater(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
+    void SetGear(GearID gear, ShiftStatus status, ShiftPotential potential, bool hasGoodEnoughTraction) override;
     void SetEngineBlown(bool blown) override;
     void SetEngineTemp(float temp) override;
 
@@ -23,10 +24,10 @@ class ShiftUpdater : public HudElement, public IShiftUpdater {
     FEGroup * pShiftMsgGroup;
     FEString * pShiftMsg;
     FEString * pShiftMsgShadow;
-    int mGear;
-    int mShiftPotential;
+    GearID mGear;
+    ShiftPotential mShiftPotential;
     int mGearChanged;
-    int mLastShiftStatus;
+    ShiftStatus mLastShiftStatus;
     bool mIsEngineBlown;
     float mEngineTemp;
 };

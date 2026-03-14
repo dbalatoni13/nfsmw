@@ -8,6 +8,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
+#include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 
 class IHud : public UTL::COM::IUnknown, public UTL::Collections::Listable<IHud, 2> {
   public:
@@ -159,7 +160,7 @@ class IShiftUpdater : public UTL::COM::IUnknown {
   protected:
     virtual ~IShiftUpdater() {}
   public:
-    virtual void SetGear(int gear, int shiftPotential);
+    virtual void SetGear(GearID gear, ShiftStatus status, ShiftPotential potential, bool hasGoodEnoughTraction);
     virtual void SetEngineBlown(bool blown);
     virtual void SetEngineTemp(float temp);
 };

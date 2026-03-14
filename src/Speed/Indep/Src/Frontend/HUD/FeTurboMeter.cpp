@@ -1,4 +1,7 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeTurboMeter.hpp"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+
+extern void FEngSetRotationZ(FEObject *object, float angle);
 
 TurboMeter::TurboMeter(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
     : HudElement(pkg_name, 0) //
@@ -7,6 +10,17 @@ TurboMeter::TurboMeter(UTL::COM::Object *pOutter, const char *pkg_name, int play
 }
 
 void TurboMeter::Update(IPlayer *player) {
+    if (!mUpdated) {
+        return;
+    }
+    mUpdated = false;
+    float angle;
+    if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceType() == GRace::kRaceType_Drag) {
+        angle = CalcNeedleAngle(mInductionPsi, 200.0f, 270.0f);
+    } else {
+        angle = CalcNeedleAngle(mInductionPsi, -45.0f, 45.0f);
+    }
+    FEngSetRotationZ(pTurboNeedle, angle);
 }
 
 float TurboMeter::CalcNeedleAngle(float psi, float min_angle, float max_angle) {
