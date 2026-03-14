@@ -531,8 +531,7 @@ bool AITrafficManager::ValidateVehicle(IVehicle *ivehicle, float density) const 
         IModel *imodel = isimable->GetModel();
         if (imodel) {
             PartChecker pc;
-            imodel->EnumerateChildren(&pc);
-            if (pc.Valid) {
+            if (static_cast<PartChecker *>(imodel->EnumerateChildren(&pc))->Valid) {
                 return true;
             }
         }

@@ -75,7 +75,7 @@ void RBVehicle::OnBeginFrame(const float dT) {
 }
 
 void RBVehicle::OnTaskSimulate(float dT) {
-    Behavior::OnTaskSimulate(dT);
+    RigidBody::OnTaskSimulate(dT);
     mFrame++;
     if ((mInvulnerableState != INVULNERABLE_NONE) && (Sim::GetTime() > mLastPenetration + 1.0f) && (mInvulnerableTimer -= dT) <= 0.0f) {
         mInvulnerableTimer = 0.0f;

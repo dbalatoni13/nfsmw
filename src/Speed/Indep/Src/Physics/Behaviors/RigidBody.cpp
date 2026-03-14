@@ -121,9 +121,17 @@ void RigidBody::InitRigidBodySystem() {}
 
 void RigidBody::ShutdownRigidBodySystem() {}
 
+#ifdef EA_PLATFORM_GAMECUBE
+extern void SAPGridRigidBodyDtor(SAP::Grid<RigidBody> *grid, int in_chrg) asm("_._Q23SAPt4Grid1Z9RigidBody");
+#endif
+
 void RBGrid::Remove(RBGrid *grid) {
     if (grid) {
+#ifdef EA_PLATFORM_GAMECUBE
+        SAPGridRigidBodyDtor(grid, 2);
+#else
         grid->~RBGrid();
+#endif
     }
 }
 

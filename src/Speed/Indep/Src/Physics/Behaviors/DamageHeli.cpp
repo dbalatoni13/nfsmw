@@ -18,10 +18,10 @@ void DamageHeli::DoAutoDestruct() {}
 void DamageHeli::Reset() {
     mAutoDestruct = 0;
     mDestroying = 0;
-    Behavior::Reset();
+    DamageVehicle::Reset();
 }
 
 void DamageHeli::OnTaskSimulate(float dT) {
     DoAutoDestruct();
-    Behavior::OnTaskSimulate(dT);
+    DamageVehicle::OnTaskSimulate(dT);
 }

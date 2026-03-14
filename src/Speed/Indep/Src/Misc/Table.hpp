@@ -236,6 +236,7 @@ struct PidError {
         return gFastMem.Alloc(size, name);
     }
 
+#ifdef _MSC_VER
     void operator delete(void *mem, const char *name) {
         if (mem) {
             gFastMem.Free(mem, sizeof(PidError), nullptr);
@@ -247,6 +248,7 @@ struct PidError {
             gFastMem.Free(mem, size, nullptr);
         }
     }
+#endif
 
     PidError(int nIntegralTerms, int nDerivativeTerms, float f_frequency)
         : aTimes(nIntegralTerms),        //

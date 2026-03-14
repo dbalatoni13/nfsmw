@@ -346,9 +346,11 @@ class Array {
         }
     }
 
+#ifdef _MSC_VER
   public:
     // TODO is this really overriden?
     void operator delete(void *ptr) {}
+#endif
 
     ~Array() {
         if (IsReferences()) {
@@ -364,7 +366,9 @@ class Array {
         return ptr;
     }
 
+#ifdef _MSC_VER
     void operator delete(void *, void *) {}
+#endif
 
   private:
     uint16_t mAlloc;
@@ -391,7 +395,9 @@ class Node {
         return ptr;
     }
 
+#ifdef _MSC_VER
     void operator delete(void *, void *) {}
+#endif
 
     Node() : mKey(0), mTypeIndex(0), mMax(0), mFlags(0), mPtr(this) {}
 

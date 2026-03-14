@@ -78,7 +78,9 @@ struct DataBlock {
         return ptr;
     }
 
+#ifdef _MSC_VER
     void operator delete(void *, void *) {}
+#endif
 
     void *mData;               // offset 0x0, size 0x4
     IGarbageCollector *mGC;    // offset 0x4, size 0x4
