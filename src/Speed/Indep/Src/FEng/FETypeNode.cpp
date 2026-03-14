@@ -18,13 +18,13 @@ void FEFieldNode::GetDefault(void* pDest) {
     }
 }
 
-void FETypeNode::AddField(const char* pName, int iType) {
+void FETypeNode::AddField(const char* pName, long iType) {
     FEFieldNode* pField;
     pField = new (static_cast<FEFieldNode*>(FEngMalloc(sizeof(FEFieldNode), nullptr, 0))) FEFieldNode();
     pField->SetName(pName);
     pField->SetType(iType);
     pField->SetSize(FEKeyTypeSize[iType]);
-    Fields.AddTail(pField);
+    Fields.AddNode(static_cast<FEMinNode*>(Fields.GetTail()), pField);
     UpdateOffsets();
 }
 

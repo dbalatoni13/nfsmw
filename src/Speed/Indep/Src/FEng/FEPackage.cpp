@@ -693,3 +693,95 @@ FEMsgTargetList* FEPackage::GetMessageTargets(unsigned long MsgID) {
     }
     return nullptr;
 }
+
+bool OffsetCalculatron(unsigned long NameHash, FEObject* pObj, FEPoint& Offset) {
+    if (NameHash == pObj->NameHash) {
+        FEObjData* pData = pObj->GetObjData();
+        Offset.h += pData->Pos.x;
+        Offset.v += pData->Pos.y;
+        return true;
+    } else if (pObj->Type == FE_Group && static_cast<FEGroup*>(pObj)->FindChildRecursive(NameHash)) {
+        FEObjData* pData = pObj->GetObjData();
+        Offset.h += pData->Pos.x;
+        Offset.v += pData->Pos.y;
+        FEObject* pChild = static_cast<FEGroup*>(pObj)->GetFirstChild();
+        while (pChild) {
+            OffsetCalculatron(NameHash, pChild, Offset);
+            pChild = static_cast<FEObject*>(pChild->GetNext());
+        }
+        return true;
+    }
+    return false;
+}
+
+void FEPackage::AddMouseObjectState(FEObject* pObj) {
+    if (!pObj) {
+        return;
+    }
+    unsigned long NameHash = pObj->NameHash;
+    FEObject* pChild = static_cast<FEObject*>(Objects.GetHead());
+    while (pChild) {
+        if (pChild->Type == FE_Group) {
+            if (static_cast<FEGroup*>(pChild)->FindChildRecursive(NameHash) || NameHash == pChild->NameHash) {
+                FEPoint offset;
+                offset.h = 0.0f;
+                offset.v = 0.0f;
+                if (OffsetCalculatron(NameHash, pChild, offset)) {
+                    FEObjectMouseState* pState = MouseObjectStates + NumMouseObjectsCounter;
+                    pState->Offset.h = offset.h;
+                    pState->Offset.v = offset.v;
+                    break;
+                }
+            }
+        } else if (NameHash == pChild->NameHash) {
+            FEPoint offset;
+            offset.h = 0.0f;
+            offset.v = 0.0f;
+            if (OffsetCalculatron(NameHash, pChild, offset)) {
+                FEObjectMouseState* pState = MouseObjectStates + NumMouseObjectsCounter;
+                pState->Offset.h = offset.h;
+                pState->Offset.v = offset.v;
+                break;
+            }
+        }
+        pChild = static_cast<FEObject*>(pChild->GetNext());
+    }
+    MouseObjectStates[NumMouseObjectsCounter].pObject = pObj;
+    NumMouseObjectsCounter++;
+}
+
+void FEPackage::UpdateMouseObjectOffsets(FEObject* pObj) {
+    if (!pObj) {
+        return;
+    }
+    unsigned long NameHash = pObj->NameHash;
+    FEObject* pChild = static_cast<FEObject*>(Objects.GetHead());
+    while (pChild) {
+        if (pChild->Type == FE_Group) {
+            if (static_cast<FEGroup*>(pChild)->FindChildRecursive(NameHash) || NameHash == pChild->NameHash) {
+                FEPoint offset;
+                offset.h = 0.0f;
+                offset.v = 0.0f;
+                if (OffsetCalculatron(NameHash, pChild, offset)) {
+                    FEObjectMouseState* pState = MouseObjectStates + NumMouseObjectsCounter;
+                    NumMouseObjectsCounter++;
+                    pState->Offset.h = offset.h;
+                    pState->Offset.v = offset.v;
+                    break;
+                }
+            }
+        } else if (NameHash == pChild->NameHash) {
+            FEPoint offset;
+            offset.h = 0.0f;
+            offset.v = 0.0f;
+            if (OffsetCalculatron(NameHash, pChild, offset)) {
+                FEObjectMouseState* pState = MouseObjectStates + NumMouseObjectsCounter;
+                NumMouseObjectsCounter++;
+                pState->Offset.h = offset.h;
+                pState->Offset.v = offset.v;
+                break;
+            }
+        }
+        pChild = static_cast<FEObject*>(pChild->GetNext());
+    }
+}

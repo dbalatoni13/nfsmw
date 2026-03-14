@@ -28,7 +28,7 @@ struct FETypeNode : public FENode {
     inline unsigned long GetID() { return TypeID; }
     inline void SetID(unsigned long ID) { TypeID = ID; }
 
-    void AddField(const char* pName, int Type);
+    void AddField(const char* pName, long Type);
     void UpdateOffsets();
     unsigned long GetTypeSize();
     FEFieldNode* GetField(const char* pName);

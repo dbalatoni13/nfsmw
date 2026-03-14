@@ -159,7 +159,7 @@ struct FEMessageNode : public FEMinNode {
     unsigned long MsgID;        // offset 0x18, size 0x4
     unsigned long ControlMask;  // offset 0x1C, size 0x4
 
-    inline ~FEMessageNode() override {}
+    ~FEMessageNode() override;
 };
 
 // total size: 0x20
@@ -168,8 +168,12 @@ struct FEPackageCommand : public FENode {
     unsigned long uControlMask; // offset 0x18, size 0x4
     FEPackage* pPackage;        // offset 0x1C, size 0x4
 
-    inline ~FEPackageCommand() override {}
+    ~FEPackageCommand() override;
 };
+
+FEMessageNode::~FEMessageNode() {}
+
+FEPackageCommand::~FEPackageCommand() {}
 
 void FEngine::SetProcessInput(FEPackage* pkg, bool bProcess) {
     if (!pkg) {

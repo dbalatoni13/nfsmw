@@ -298,3 +298,29 @@ void FEListBox::SetNumRows(unsigned long ulNumRows) {
         mpstRowData = pstNewRows;
     }
 }
+
+void FEListBox::Update(float dt) {
+    float alpha = mfCurrentAlpha + mfAlphaDelta * dt;
+    mfCurrentAlpha = alpha;
+    if (alpha < 0.0f || alpha > 1.0f) {
+        mfCurrentAlpha = alpha < 0.0f ? 0.0f : 1.0f;
+        mfAlphaDelta = -mfAlphaDelta;
+    }
+    if (mulFlags & 2) {
+        FEVector2 dir;
+        dir = reinterpret_cast<FEVector2&>(mstDirection);
+        FEVector2 vel;
+        vel = dir;
+        float speed = FEngAbs(dir.x * mstSelectionSpeed.h + dir.y * mstSelectionSpeed.v);
+        vel.x *= speed * dt;
+        vel.y *= speed * dt;
+        FEVector2 delta;
+        delta = vel;
+        mstCurrentLocation.h = mstCurrentLocation.h + delta.x;
+        mstCurrentLocation.v = mstCurrentLocation.v + delta.y;
+        if ((dir.x * mstTargetLocation.h + dir.y * mstTargetLocation.v)
+            - (dir.x * mstCurrentLocation.h + dir.y * mstCurrentLocation.v) < 0.0f) {
+            CompleteScroll();
+        }
+    }
+}
