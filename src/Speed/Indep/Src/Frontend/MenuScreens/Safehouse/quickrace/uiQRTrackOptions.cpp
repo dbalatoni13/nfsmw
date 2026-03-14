@@ -371,16 +371,17 @@ void SplitScreen::React(const char *pkg_name, unsigned int data, FEObject *obj, 
 // --- NumOpponents ---
 
 void NumOpponents::Act(const char *parent_pkg, unsigned int data) {
+    int numPlayers = FEDatabase->iNumPlayers;
     RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
-    unsigned int val = settings->NumOpponents;
+    int val = settings->NumOpponents;
     if (data == 0x9120409e) {
         val = val - 1;
-        if (static_cast<int>(val) < 1) {
-            val = 4 - FEDatabase->iNumPlayers;
+        if (val < 1) {
+            val = 4 - numPlayers;
         }
     } else if (data == 0xb5971bf1) {
         val = val + 1;
-        if (static_cast<int>(4 - FEDatabase->iNumPlayers) < static_cast<int>(val)) {
+        if (val > 4 - numPlayers) {
             val = 1;
         }
     }
@@ -406,10 +407,10 @@ void NumOpponents::Draw() {
 
 void AISkill::Act(const char *parent_pkg, unsigned int data) {
     RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
-    unsigned int val = settings->AISkill;
+    int val = settings->AISkill;
     if (data == 0x9120409e) {
         val = val - 1;
-        if (static_cast<int>(val) < 0) {
+        if (val < 0) {
             val = 2;
         }
     } else if (data == 0xb5971bf1) {
@@ -469,10 +470,10 @@ void CatchUp::Draw() {
 
 void TrafficLevel::Act(const char *parent_pkg, unsigned int data) {
     RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
-    unsigned int val = settings->TrafficDensity;
+    int val = settings->TrafficDensity;
     if (data == 0x9120409e) {
         val = val - 1;
-        if (static_cast<int>(val) < 0) {
+        if (val < 0) {
             val = 3;
         }
     } else if (data == 0xb5971bf1) {
@@ -511,10 +512,10 @@ void TrafficLevel::Draw() {
 
 void NumLaps::Act(const char *parent_pkg, unsigned int data) {
     RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
-    unsigned int val = settings->NumLaps;
+    int val = settings->NumLaps;
     if (data == 0x9120409e) {
         val = val - 1;
-        if (static_cast<int>(val) < 1) {
+        if (val < 1) {
             val = 8;
         }
     } else if (data == 0xb5971bf1) {
