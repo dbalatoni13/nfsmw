@@ -233,8 +233,8 @@ class IPursuit : public UTL::COM::IUnknown, public UTL::Collections::Listable<IP
     virtual float GetEvadeLevel() const = 0;
     virtual float GetCoolDownTimeRemaining() const = 0;
     virtual float GetCoolDownTimeRequired() const = 0;
-    virtual int IsPerpInSight() const = 0;
-    virtual int IsPursuitBailed() const = 0;
+    virtual bool IsPerpInSight() const = 0;
+    virtual bool IsPursuitBailed() const = 0;
     virtual bool IsCollapseActive() const = 0;
     virtual bool AttemptingToReAquire() const = 0;
     virtual const UMath::Vector3 &GetLastKnownLocation() const = 0;
@@ -252,7 +252,7 @@ class IPursuit : public UTL::COM::IUnknown, public UTL::Collections::Listable<IP
     virtual FormationType GetFormationType() const = 0;
     virtual void EndCurrentFormation() = 0;
     virtual bool ShouldEnd() const = 0;
-    virtual int IsPerpBusted() const = 0;
+    virtual bool IsPerpBusted() const = 0;
     virtual bool AddVehicle(IVehicle *vehicle) = 0;
     virtual bool RemoveVehicle(IVehicle *vehicle) = 0;
     virtual void AddRoadBlock(IRoadBlock *roadblock) = 0;
