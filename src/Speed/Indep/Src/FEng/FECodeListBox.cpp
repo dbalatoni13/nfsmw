@@ -315,18 +315,12 @@ FEObject* FECodeListBox::Clone(bool bReference) {
 
 void FECodeListBox::SetTotalNumColumns(unsigned long ulNumColumns) {
     mulNumTotalColumns = ulNumColumns;
-    if (mulCurrentVirtualColumn >= ulNumColumns) {
-        mulCurrentVirtualColumn = ulNumColumns - 1;
-    }
-    mulTargetColumn = mulCurrentVirtualColumn;
+    mulCurrentVirtualColumn = CalculateCurrentFromTarget(mulTargetColumn, ulNumColumns, mulNumVisibleColumns);
 }
 
 void FECodeListBox::SetTotalNumRows(unsigned long ulNumRows) {
     mulNumTotalRows = ulNumRows;
-    if (mulCurrentVirtualRow >= ulNumRows) {
-        mulCurrentVirtualRow = ulNumRows - 1;
-    }
-    mulTargetRow = mulCurrentVirtualRow;
+    mulCurrentVirtualRow = CalculateCurrentFromTarget(mulTargetRow, ulNumRows, mulNumVisibleRows);
 }
 
 void FECodeListBox::ScrollSelection(long lColumnNum, long lRowNum) {
@@ -348,56 +342,52 @@ void FECodeListBox::DeallocateString(short* psString) {
 void FECodeListBox::DefaultSelectCallback(FECodeListBox* pList) {
     unsigned long col = pList->mulCurrentVirtualColumn;
     unsigned long row = pList->mulCurrentVirtualRow;
-    unsigned long visCol = col;
-    unsigned long visRow = row;
     if (col >= pList->mulNumVisibleColumns) {
-        visCol = col % pList->mulNumVisibleColumns;
+        col = col % pList->mulNumVisibleColumns;
     }
     if (row >= pList->mulNumVisibleRows) {
-        visRow = row % pList->mulNumVisibleRows;
+        row = row % pList->mulNumVisibleRows;
     }
-    FEListBoxCell* pCell = &pList->mpstCells[visRow * pList->mulNumVisibleColumns + visCol];
+    FEListBoxCell* pCell = &pList->mpstCells[row * pList->mulNumVisibleColumns + col];
     pCell->ulColor = static_cast<unsigned long>(pList->mstSelectionColor);
 }
 
 long FECodeListBox::GetRealColumn(long lColumn) const {
-    if (lColumn < 0) {
-        lColumn += static_cast<long>(mulNumTotalColumns);
-        if (lColumn < 0) {
-            lColumn = 0;
-        }
-    } else if (lColumn >= static_cast<long>(mulNumTotalColumns)) {
-        lColumn -= static_cast<long>(mulNumTotalColumns);
-        if (lColumn >= static_cast<long>(mulNumTotalColumns)) {
-            lColumn = static_cast<long>(mulNumTotalColumns) - 1;
-        }
+    if (mulNumTotalColumns == 0) return -1;
+    if (lColumn >= static_cast<long>(mulNumTotalColumns)) {
+        lColumn = lColumn % static_cast<long>(mulNumTotalColumns);
     }
-    return lColumn;
+    long diff = lColumn - static_cast<long>(mulCurrentVirtualColumn);
+    if (diff < 0) {
+        diff += static_cast<long>(mulNumTotalColumns);
+    }
+    return GetValidIndex(static_cast<int>(diff), static_cast<int>(mulNumVisibleColumns));
 }
 
 long FECodeListBox::GetRealRow(long lRow) const {
-    if (lRow < 0) {
-        lRow += static_cast<long>(mulNumTotalRows);
-        if (lRow < 0) {
-            lRow = 0;
-        }
-    } else if (lRow >= static_cast<long>(mulNumTotalRows)) {
-        lRow -= static_cast<long>(mulNumTotalRows);
-        if (lRow >= static_cast<long>(mulNumTotalRows)) {
-            lRow = static_cast<long>(mulNumTotalRows) - 1;
-        }
+    if (mulNumTotalRows == 0) return -1;
+    if (lRow >= static_cast<long>(mulNumTotalRows)) {
+        lRow = lRow % static_cast<long>(mulNumTotalRows);
     }
-    return lRow;
+    long diff = lRow - static_cast<long>(mulCurrentVirtualRow);
+    if (diff < 0) {
+        diff += static_cast<long>(mulNumTotalRows);
+    }
+    return GetValidIndex(static_cast<int>(diff), static_cast<int>(mulNumVisibleRows));
 }
 
-void FECodeListBox::CalculateCurrentFromTarget(unsigned long ulTarget, unsigned long ulTotal, unsigned long ulVisible) {
-    if (ulTarget < ulVisible) {
-        return;
+unsigned long FECodeListBox::CalculateCurrentFromTarget(unsigned long ulTarget, unsigned long ulTotal, unsigned long ulVisible) {
+    if (ulTarget >= ulTotal) {
+        if (ulTotal == 0) {
+            ulTarget = 0;
+        } else {
+            ulTarget = ulTotal - 1;
+        }
     }
-    unsigned long ulMax = ulTotal - ulVisible;
-    if (ulTarget > ulMax) {
-        ulTarget = ulMax;
+    if (!(mulFlags & 8)) {
+        return ulTarget;
     }
+    return static_cast<unsigned long>(GetValidIndex(static_cast<int>(ulTarget) - static_cast<int>(ulVisible >> 1), static_cast<int>(ulTotal)));
 }
 
 void FECodeListBox::Update(float fNumTicks) {

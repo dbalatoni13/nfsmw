@@ -33,19 +33,16 @@ void FESlotNode::FreeBlock(unsigned char* pSlot) {
 
 unsigned char* FESlotPool::Alloc() {
     FESlotNode* pNode = static_cast<FESlotNode*>(Slots.GetHead());
-    while (true) {
-        if (!pNode) {
-            pNode = new (static_cast<FESlotNode*>(FEngMalloc(sizeof(FESlotNode), nullptr, 0))) FESlotNode(static_cast<unsigned short>(SlotSize));
-            pNode->pData = static_cast<unsigned char*>(FEngMalloc(static_cast<unsigned long>(pNode->SlotSize) << 5, nullptr, 0));
-            FEngMemSet(pNode->SlotMask, 0, 4);
-            Slots.AddNode(nullptr, pNode);
-            return pNode->AllocBlock();
-        }
-        if (pNode->SlotsUsed != 0x20) {
-            return pNode->AllocBlock();
-        }
+    while (pNode && pNode->SlotsUsed == 0x20) {
         pNode = pNode->GetNext();
     }
+    if (!pNode) {
+        pNode = new (static_cast<FESlotNode*>(FEngMalloc(sizeof(FESlotNode), nullptr, 0))) FESlotNode(static_cast<unsigned short>(SlotSize));
+        pNode->pData = static_cast<unsigned char*>(FEngMalloc(static_cast<unsigned long>(pNode->SlotSize) << 5, nullptr, 0));
+        FEngMemSet(pNode->SlotMask, 0, 4);
+        Slots.AddNode(nullptr, pNode);
+    }
+    return pNode->AllocBlock();
 }
 
 bool FESlotPool::Free(unsigned char* pSlot) {

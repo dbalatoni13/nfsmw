@@ -61,8 +61,8 @@ struct FECodeListBox : public FEObject {
     void Initialize(unsigned long ulNumColumns, unsigned long ulNumRows);
     FEObject* Clone(bool bReference);
     void FillAllCells();
-    void SetTotalNumColumns(unsigned long ulNumColumns);
-    void SetTotalNumRows(unsigned long ulNumRows);
+    void SetTotalNumColumns(unsigned long ulNumTotalColumns);
+    void SetTotalNumRows(unsigned long ulNumTotalRows);
     void AllocateStrings(unsigned long ulNumStrings, unsigned long ulStringSize);
     void ScrollSelection(long lColumnNum, long lRowNum);
     void Update(float fNumTicks);
@@ -74,7 +74,7 @@ struct FECodeListBox : public FEObject {
     bool CheckMovement(long lTargetColumn, long lTargetRow, long lOldColumn, long lOldRow, long lFlags);
     bool MakeMove(long lDirection, unsigned long& ulVirtual, unsigned long& ulTarget, unsigned long ulTotal, unsigned long ulVisible);
     void ScrollSelection(long lDirection, unsigned long& ulVirtual, unsigned long& ulTarget, unsigned long ulTotal, unsigned long ulVisible, bool bIsColumn);
-    void CalculateCurrentFromTarget(unsigned long ulTarget, unsigned long ulTotal, unsigned long ulVisible);
+    unsigned long CalculateCurrentFromTarget(unsigned long ulTarget, unsigned long ulTotal, unsigned long ulVisible);
     void SetCellColor(unsigned long ulColumn, unsigned long ulRow, unsigned long ulColor, unsigned long ulNumColumns, unsigned long ulNumRows);
     void SetCellScale(unsigned long ulColumn, unsigned long ulRow, const FEPoint& stScale, unsigned long ulNumColumns, unsigned long ulNumRows);
     void SetCellJustification(unsigned long ulColumn, unsigned long ulRow, unsigned long ulJustification, unsigned long ulNumColumns, unsigned long ulNumRows);
