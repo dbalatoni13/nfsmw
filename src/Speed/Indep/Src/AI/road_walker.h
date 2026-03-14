@@ -24,7 +24,7 @@ class road_walker {
         }
     };
 
-#ifdef EA_BUILD_A124
+#if defined(EA_BUILD_A124) || defined(_MSC_VER)
     typedef UTL::Std::vector<start_record, _type_start_vector> start_vector;
 #else
     typedef _STL::vector<start_record, _STL::allocator<start_record> > start_vector;
