@@ -121,6 +121,7 @@ class GRaceDatabase {
     static void Init();
 
     GRaceCustom *GetStartupRace();
+    void ClearStartupRace();
     void SetStartupRace(GRaceCustom *custom, Context context);
     void FreeCustomRace(GRaceCustom *custom);
     GRaceParameters *GetRaceFromHash(unsigned int hash);

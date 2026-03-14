@@ -20,29 +20,16 @@ struct Showcase : public MenuScreen {
 
     void NotificationMessage(unsigned long msg, FEObject *pObj, unsigned long param1, unsigned long param2) override;
 
-    static const char *FromPackage;      // address
-    static unsigned int FromArgs;        // address
-    static unsigned int FromIndex;       // address
-    static unsigned int BlackListNumber; // address
-    static int FromFilter;               // address
-    static void *FromColor[3];           // address
+    static const char *FromPackage;
+    static unsigned int FromArgs;
+    static unsigned int FromIndex;
+    static unsigned int BlackListNumber;
+    static int FromFilter;
+    static void *FromColor[3];
 
-    FECarRecord *car;                              // offset 0x2C, size 0x4
-    FEImage *pTagImg;                              // offset 0x30, size 0x4
-    uiRepSheetRivalStreamer RivalStreamer;           // offset 0x34, size 0x3C
-};
-
-// total size: 0x34
-struct uiQRPressStart : public MenuScreen {
-    uiQRPressStart(ScreenConstructorData *sd);
-    ~uiQRPressStart() override;
-
-    void NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) override;
-
-    void Setup();
-
-    int iPlayerNum; // offset 0x2C, size 0x4
-    int param;      // offset 0x30, size 0x4
+    FECarRecord *car;                    // offset 0x2C, size 0x4
+    FEImage *pTagImg;                    // offset 0x30, size 0x4
+    uiRepSheetRivalStreamer RivalStreamer; // offset 0x34, size 0x3C
 };
 
 #endif
