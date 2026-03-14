@@ -10,6 +10,7 @@ struct FEMinNode {
     friend class FEngine;
     friend class FESlotPool;
     friend class FEMultiPool;
+    friend struct FEPackage;
 
 protected:
     FEMinNode* next; // offset 0x0, size 0x4

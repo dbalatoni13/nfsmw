@@ -1,6 +1,60 @@
-#include "Speed/Indep/Src/FEng/fengine.h"
+#include "Speed/Indep/Src/FEng/fengine_full.h"
 #include "Speed/Indep/Src/FEng/FEJoyPad.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
+
+// Callback structs used by both FEngine and FEPackage.
+// Defined here because FEngine.cpp comes before FEPackage.cpp in the jumbo build.
+
+// total size: 0x4
+struct PackageInitStateCB : public FEObjectCallback {
+    bool Callback(FEObject* pObj) override;
+};
+
+// total size: 0xC
+struct FEFindByHash : public FEObjectCallback {
+    unsigned long Hash;      // offset 0x4, size 0x4
+    FEObject* pFound;        // offset 0x8, size 0x4
+
+    bool Callback(FEObject* pObj) override;
+};
+
+// total size: 0xC
+struct FEFindByGUID : public FEObjectCallback {
+    unsigned long GUID;      // offset 0x4, size 0x4
+    FEObject* pFound;        // offset 0x8, size 0x4
+
+    bool Callback(FEObject* pObj) override;
+};
+
+// total size: 0x8
+struct MouseStateObjectCounter : public FEObjectCallback {
+    int NumMouseObjects;     // offset 0x4, size 0x4
+
+    bool Callback(FEObject* pObj) override;
+};
+
+// total size: 0x8
+struct MouseStateArrayBuilder : public FEObjectCallback {
+    FEPackage* pPack;        // offset 0x4, size 0x4
+
+    bool Callback(FEObject* pObj) override;
+};
+
+// total size: 0x8
+struct MouseStateArrayOffsetUpdater : public FEObjectCallback {
+    FEPackage* pPack;        // offset 0x4, size 0x4
+
+    bool Callback(FEObject* pObj) override;
+};
+
+// total size: 0xC
+struct ResourceConnector : public FEObjectCallback {
+    FEPackage* pPack;                // offset 0x4, size 0x4
+    FEResourceRequest** pReqList;    // offset 0x8, size 0x4
+
+    bool Callback(FEObject* pObj) override;
+    void ConnectListBoxResources(FEListBox* pList);
+};
 
 unsigned long FEngine::SysGUID;
 

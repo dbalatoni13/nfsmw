@@ -2,8 +2,6 @@
 #define FENG_FEPACKAGE_H
 
 #include "FEObject.h"
-#include "FEObjectCallback.h"
-#include "FETypes.h"
 
 struct FEObjectCallback;
 struct FEGroup;
@@ -15,88 +13,8 @@ struct FELibraryRef;
 struct FEMessageResponse;
 struct FEPackageRenderInfo;
 struct FEListBox;
-
-// total size: 0xC
-struct FELibraryRef {
-    unsigned long ObjGUID;       // offset 0x0, size 0x4
-    unsigned long PackNameHash;  // offset 0x4, size 0x4
-    unsigned long LibGUID;       // offset 0x8, size 0x4
-};
-
-// total size: 0x10
-struct FEMsgTargetList {
-    unsigned long MsgID;       // offset 0x0, size 0x4
-    unsigned long Alloc;       // offset 0x4, size 0x4
-    unsigned long Count;       // offset 0x8, size 0x4
-    FEObject** pTargets;       // offset 0xC, size 0x4
-
-    inline FEMsgTargetList() : MsgID(0), Alloc(0), Count(0), pTargets(nullptr) {}
-    inline ~FEMsgTargetList() {}
-    inline void SetMsgID(unsigned long NewID) { MsgID = NewID; }
-    inline unsigned long GetMsgID() const { return MsgID; }
-    inline unsigned long GetCount() const { return Count; }
-    inline FEObject* GetTarget(unsigned long Index) { return pTargets[Index]; }
-    inline const FEObject* GetTarget(unsigned long Index) const { return pTargets[Index]; }
-
-    void Allocate(unsigned long NewAlloc);
-    void AppendTarget(FEObject* pObject);
-};
-
-// total size: 0x10
-struct FEObjectMouseState {
-    FEObject* pObject;   // offset 0x0, size 0x4
-    FEPoint Offset;      // offset 0x4, size 0x8
-    unsigned long Flags;  // offset 0xC, size 0x4
-
-    FEObjectMouseState();
-    ~FEObjectMouseState();
-
-    inline bool GetBit(unsigned long bit) { return (Flags & bit) != 0; }
-    inline void SetBit(unsigned long bit, bool state) {
-        if (state) Flags |= bit;
-        else Flags &= ~bit;
-    }
-};
-
-// total size: 0x18
-struct FEResourceRequest {
-    unsigned long ID;             // offset 0x0, size 0x4
-    const char* pFilename;        // offset 0x4, size 0x4
-    unsigned long Type;           // offset 0x8, size 0x4
-    unsigned long Flags;          // offset 0xC, size 0x4
-    unsigned long Handle;         // offset 0x10, size 0x4
-    unsigned long UserParam;      // offset 0x14, size 0x4
-};
-
-// total size: 0x40
-struct FEMatrix4 {
-    float m11; // offset 0x0
-    float m12; // offset 0x4
-    float m13; // offset 0x8
-    float m14; // offset 0xC
-    float m21; // offset 0x10
-    float m22; // offset 0x14
-    float m23; // offset 0x18
-    float m24; // offset 0x1C
-    float m31; // offset 0x20
-    float m32; // offset 0x24
-    float m33; // offset 0x28
-    float m34; // offset 0x2C
-    float m41; // offset 0x30
-    float m42; // offset 0x34
-    float m43; // offset 0x38
-    float m44; // offset 0x3C
-
-    inline FEMatrix4& operator=(const FEMatrix4& m) {
-        m11 = m.m11; m12 = m.m12; m13 = m.m13; m14 = m.m14;
-        m21 = m.m21; m22 = m.m22; m23 = m.m23; m24 = m.m24;
-        m31 = m.m31; m32 = m.m32; m33 = m.m33; m34 = m.m34;
-        m41 = m.m41; m42 = m.m42; m43 = m.m43; m44 = m.m44;
-        return *this;
-    }
-
-    void Identify();
-};
+struct FEPoint;
+struct FEObjectMouseState;
 
 // total size: 0x14
 struct FENode : public FEMinNode {
@@ -193,59 +111,9 @@ struct FEPackage : public FENode {
     void UpdateObject(FEObject* pObj, long tDeltaTicks);
     void UpdateObjectTracks(FEObject* pObj, FEScript* pScript);
 
+    void UpdateGroup(FEGroup* pGroup, long tDeltaTicks);
     void AddMouseObjectState(FEObject* pObj);
     void UpdateMouseObjectOffsets(FEObject* pObj);
-};
-
-// total size: 0x4
-struct PackageInitStateCB : public FEObjectCallback {
-    bool Callback(FEObject* pObj) override;
-};
-
-// total size: 0xC
-struct FEFindByHash : public FEObjectCallback {
-    unsigned long Hash;      // offset 0x4, size 0x4
-    FEObject* pFound;        // offset 0x8, size 0x4
-
-    bool Callback(FEObject* pObj) override;
-};
-
-// total size: 0xC
-struct FEFindByGUID : public FEObjectCallback {
-    unsigned long GUID;      // offset 0x4, size 0x4
-    FEObject* pFound;        // offset 0x8, size 0x4
-
-    bool Callback(FEObject* pObj) override;
-};
-
-// total size: 0x8
-struct MouseStateObjectCounter : public FEObjectCallback {
-    int NumMouseObjects;     // offset 0x4, size 0x4
-
-    bool Callback(FEObject* pObj) override;
-};
-
-// total size: 0x8
-struct MouseStateArrayBuilder : public FEObjectCallback {
-    FEPackage* pPack;        // offset 0x4, size 0x4
-
-    bool Callback(FEObject* pObj) override;
-};
-
-// total size: 0x8
-struct MouseStateArrayOffsetUpdater : public FEObjectCallback {
-    FEPackage* pPack;        // offset 0x4, size 0x4
-
-    bool Callback(FEObject* pObj) override;
-};
-
-// total size: 0xC
-struct ResourceConnector : public FEObjectCallback {
-    FEPackage* pPack;                // offset 0x4, size 0x4
-    FEResourceRequest** pReqList;    // offset 0x8, size 0x4
-
-    bool Callback(FEObject* pObj) override;
-    void ConnectListBoxResources(FEListBox* pList);
 };
 
 #endif
