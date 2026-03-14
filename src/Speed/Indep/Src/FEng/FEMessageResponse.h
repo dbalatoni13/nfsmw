@@ -6,6 +6,7 @@
 #endif
 
 #include "FEList.h"
+#include "FEngStandard.h"
 
 template <class T, int N> struct ObjectPool;
 
@@ -16,6 +17,10 @@ struct FEResponse {
     unsigned long ResponseTarget; // offset 0x8, size 0x4
 
     inline FEResponse() : ResponseID(0), ResponseParam(0), ResponseTarget(0) {}
+
+    static inline void* operator new[](unsigned int size) {
+        return FEngMalloc(size, nullptr, 0);
+    }
 
     static inline bool HasString(unsigned long ID) {
         return (ID - 0x200u < 5) && (ID != 0x203);

@@ -3,6 +3,7 @@
 
 #include "FEObject.h"
 #include "FEMsgTargetList.h"
+#include "FEngStandard.h"
 
 struct FEObjectCallback;
 struct FEGroup;
@@ -29,6 +30,10 @@ struct FEObjectMouseState {
 
     FEObjectMouseState();
     ~FEObjectMouseState();
+
+    static inline void* operator new[](unsigned int size) {
+        return FEngMalloc(size, nullptr, 0);
+    }
 
     inline bool GetBit(unsigned long bit) { return (Flags & bit) != 0; }
     inline void SetBit(unsigned long bit, bool state) {

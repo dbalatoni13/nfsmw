@@ -636,22 +636,15 @@ FELibraryRef* FEPackage::FindLibraryReference(unsigned long ObjGUID) const {
 
 void FEPackage::BuildMouseObjectStateList() {
     if (MouseObjectStates) {
-        delete[] reinterpret_cast<char*>(MouseObjectStates);
+        delete[] MouseObjectStates;
         MouseObjectStates = nullptr;
+        NumMouseObjects = 0;
     }
-    NumMouseObjects = 0;
     MouseStateObjectCounter the_counter;
     the_counter.NumMouseObjects = 0;
     ForAllObjects(the_counter);
     if (the_counter.NumMouseObjects > 0) {
-        MouseObjectStates = static_cast<FEObjectMouseState*>(
-            FEngMalloc(the_counter.NumMouseObjects * sizeof(FEObjectMouseState) + 8, nullptr, 0));
-        for (int i = 0; i < the_counter.NumMouseObjects; i++) {
-            MouseObjectStates[i].pObject = nullptr;
-            MouseObjectStates[i].Offset.h = 0.0f;
-            MouseObjectStates[i].Offset.v = 0.0f;
-            MouseObjectStates[i].Flags = 0;
-        }
+        MouseObjectStates = new FEObjectMouseState[the_counter.NumMouseObjects];
         MouseStateArrayBuilder the_builder;
         the_builder.pPack = this;
         ForAllObjects(the_builder);
