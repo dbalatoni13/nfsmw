@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/frontend.h"
 
 extern int GetCurrentLanguage();
 extern FEMarkerManager TheFEMarkerManager;
@@ -15,6 +16,7 @@ extern int CheatBustedCount;
 extern int CheatMaxBusted;
 extern int CheatReleasable;
 extern int CheatCanAddImpoundBox;
+extern int CheatReleaseFromImpoundMarker;
 extern int g_MaximumMaximumTimesBusted;
 extern int gPlayerNum;
 
@@ -29,6 +31,7 @@ extern int Showcase_FromFilter;
 
 extern int bSNPrintf(char *buf, int size, const char *fmt, ...);
 extern const char *GetLocalizedString(unsigned int hash);
+extern unsigned long FEHashUpper(const char *str);
 
 void MemcardEnter(const char *from, const char *to, unsigned int op, void (*pTermFunc)(void *),
                   void *pTermFuncParam, unsigned int msgSuccess, unsigned int msgFailed);
@@ -39,12 +42,12 @@ unsigned int UIQRCarSelect::ForceCar;
 bool QRCarSelectBustedManager::bPlayerJustGotBusted;
 
 QRCarSelectBustedManager::QRCarSelectBustedManager(const char *pkg_name, int flags) {
-    WorkingCareerRecord = nullptr;
-    WorkingCarRecord = nullptr;
     Flags = static_cast<eBustedAnimationTypes>(flags);
-    ImpoundStampHash = 0;
     ParentPkg = pkg_name;
     bWantsImpound = false;
+    ImpoundStampHash = 0;
+    WorkingCarRecord = nullptr;
+    WorkingCareerRecord = nullptr;
 }
 
 QRCarSelectBustedManager::~QRCarSelectBustedManager() {}
@@ -859,27 +862,207 @@ int UIQRCarSelect::GetBonusUnlockBinNumber(FECarRecord *fe_car) {
 }
 
 void UIQRCarSelect::RefreshHeader() {
-    FECarRecord *car = GetSelectedCarRecord();
-    if (!car) return;
+    UpdateSliders();
 
-    FEngSetTextureHash(pManuLogo, car->GetManuLogoHash());
-    FEngSetTextureHash(pCarBadge, car->GetLogoHash());
-    FEngSetLanguageHash(pCarName, car->GetNameHash());
-    FEngSetLanguageHash(pCarNameShadow, car->GetNameHash());
+    unsigned int langhash;
+    unsigned int texhash;
+    unsigned int list = filter;
+    switch (list) {
+    case 1:
+        langhash = 0xd9d6b954;
+        texhash = 0x3a541f7f;
+        break;
+    case 2:
+        langhash = 0xee053562;
+        texhash = 0xf0bddecd;
+        break;
+    case 4:
+        langhash = 0x2414de28;
+        texhash = 0x9996ca1e;
+        break;
+    case 8:
+        langhash = 0xd8a058f7;
+        texhash = 0xbe5ad8a2;
+        break;
+    case 0x10:
+        langhash = 0x0d8500c3;
+        texhash = 0x03704f3d;
+        break;
+    case 0x20:
+        langhash = 0x3ec63978;
+        texhash = 0x03704f3d;
+        break;
+    default:
+        langhash = 0;
+        texhash = 0;
+        break;
+    }
 
-    int filterType = GetFilterType();
-    if (filterType == LIST_BONUS) {
-        int unlockText = GetBonusUnlockText(car);
-        if (unlockText) {
-            FEngSetLanguageHash(pFilter, static_cast<unsigned int>(unlockText));
+    if (FEDatabase->IsCarLotMode() || !FEDatabase->IsCareerMode()) {
+        FEngSetInvisible(GetPackageName(), 0x39dc21f9);
+        FEngSetInvisible(GetPackageName(), 0xe998fe99);
+    }
+
+    FEngSetLanguageHash(GetPackageName(), 0xaa9834bc, langhash);
+    FEImage *filterImg = FEngFindImage(GetPackageName(), 0xe3b271b8);
+    FEngSetTextureHash(filterImg, texhash);
+    FEngSetScript(GetPackageName(), 0xd0f7c7cc, 0x16a259, true);
+
+    if (!pSelectedCar) {
+        FEngSetInvisible(GetPackageName(), 0x7379349b);
+    } else if (pSelectedCar->bLocked) {
+        FEngSetInvisible(GetPackageName(), 0x7379349b);
+    }
+
+    if (!pSelectedCar) {
+        FEngSetLanguageHash(GetPackageName(), 0x2d25b2c4, 0x58bbed2a);
+        cFEng::Get()->QueuePackageMessage(0xd9420cd5, GetPackageName(), nullptr);
+        if ((filter & 4) == 0) {
+            FEngSetLanguageHash(GetPackageName(), 0x36c1e04d, 0x58bbed2a);
+        } else {
+            FEngSetLanguageHash(GetPackageName(), 0x36c1e04d, 0x0da87b01);
+        }
+        FEngSetInvisible(GetPackageName(), 0x0e9ed0a2);
+        FEngSetInvisible(GetPackageName(), 0x18a4384f);
+        CarViewer::CancelCarLoad(static_cast<eCarViewerWhichCar>(0));
+        GarageMainScreen::GetInstance()->DisableCarRendering();
+        cFEng::Get()->QueuePackageMessage(0x913fa282, GetPackageName(), nullptr);
+        tLastEventTimer = 0;
+        bLoadingBarActive = false;
+        return;
+    }
+
+    if (!FEDatabase->IsOnlineMode() && !FEDatabase->IsLANMode()) {
+        FEngSetVisible(GetPackageName(), 0x0e9ed0a2);
+        FEngSetVisible(GetPackageName(), 0x18a4384f);
+    }
+
+    FEngSetVisible(GetPackageName(), 0x7379349b);
+    cFEng::Get()->QueuePackageMessage(0x7c4583dc, GetPackageName(), nullptr);
+    FEPrintf(GetPackageName(), 0x6f25a248, "%d", FilteredCarsList.TraversebList(pSelectedCar));
+    FEPrintf(GetPackageName(), 0xb2037bdc, "%d", FilteredCarsList.CountElements());
+
+    FEPlayerCarDB *stable;
+    if (iPlayerNum < 2) {
+        stable = FEDatabase->GetPlayerCarStable(iPlayerNum);
+    } else {
+        stable = nullptr;
+    }
+
+    if (pSelectedCar->bLocked) {
+        FEngSetScript(GetPackageName(), 0xd0f7c7cc, 0x1ca7c0, true);
+        FECarRecord *car = stable->GetCarRecordByHandle(pSelectedCar->mHandle);
+        if (!car->MatchesFilter(0xf0008)) {
+            Attrib::Gen::frontend fe_attrib(car->FEKey, 0, nullptr);
+            int rival_num = fe_attrib.UnlockedAt() + 1;
+            char rival_name_locdb[128];
+            bSNPrintf(rival_name_locdb, 0x80, "blacklist_rival_%02d_aka", rival_num);
+            const char *fmt = GetLocalizedString(0x4ef2a115);
+            const char *name = GetLocalizedString(FEHashUpper(rival_name_locdb));
+            FEPrintf(GetPackageName(), 0x2d25b2c4, fmt, name, rival_num);
+        } else {
+            int unlockText = GetBonusUnlockText(car);
+            if (unlockText == 0x4ef2a115) {
+                int binNum = GetBonusUnlockBinNumber(car);
+                char rival_name_locdb[128];
+                bSNPrintf(rival_name_locdb, 0x80, "blacklist_rival_%02d_aka", binNum);
+                const char *fmt = GetLocalizedString(0x4ef2a115);
+                const char *name = GetLocalizedString(FEHashUpper(rival_name_locdb));
+                FEPrintf(GetPackageName(), 0x2d25b2c4, fmt, name, binNum);
+            } else {
+                FEngSetLanguageHash(GetPackageName(), 0x2d25b2c4, static_cast<unsigned int>(unlockText));
+            }
         }
     }
 
-    if (FEDatabase->IsCareerMode()) {
-        TheBustedManager.SetSelectedCar(car);
+    FECarRecord *car = stable->GetCarRecordByHandle(pSelectedCar->mHandle);
+    FEngSetInvisible(GetPackageName(), 0xd6d32016);
+    FEngSetInvisible(GetPackageName(), 0x79d6e45c);
+    FEngSetTextureHash(pManuLogo, car->GetManuLogoHash());
+    FEngSetTextureHash(pCarBadge, car->GetLogoHash());
+
+    if (FEDatabase->IsCarLotMode()) {
+        FEPrintf(GetPackageName(), 0x1930b057, "%$d", FEDatabase->GetCareerSettings()->GetCash());
+        FEPrintf(GetPackageName(), 0x20c83c31, "%$d", car->GetCost());
+        FEngSetLanguageHash(GetPackageName(), 0xdc18c4d4, 0xa9950b93);
+        FEngSetLanguageHash(GetPackageName(), 0xb94139f4, 0x7010bbf2);
     }
 
-    UpdateSliders();
+    if (!FEDatabase->IsCareerMode() || FEDatabase->IsCarLotMode()) {
+        TheHeatMeter.SetVisibility(false);
+    } else {
+        TheHeatMeter.SetVisibility(true);
+    }
+
+    if (!car->IsCareer()) {
+        TheHeatMeter.SetVisibility(false);
+        return;
+    }
+
+    FEngSetInvisible(GetPackageName(), 0x39dc21f9);
+    FEngSetInvisible(GetPackageName(), 0xe998fe99);
+
+    FECareerRecord *career = stable->GetCareerRecordByHandle(car->CareerHandle);
+
+    int num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x14), 0);
+    if (num_markers < 1 && (!CheatCanAddImpoundBox || career->TheImpoundData.ImpoundedState != 0)) {
+        FEngSetInvisible(GetPackageName(), 0x39dc21f9);
+    } else {
+        int num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x14), 0);
+        FEngSetVisible(GetPackageName(), 0x39dc21f9);
+        FEPrintf(GetPackageName(), 0x5b875870, "%2d", num_markers);
+        FEPrintf(GetPackageName(), 0xea8aecd9, "%2d", num_markers);
+    }
+
+    if (career->TheImpoundData.ImpoundedState == FEImpoundData::IMPOUND_RELEASED) {
+        FEngSetLanguageHash(GetPackageName(), 0x72e7ea88, 0x9db4df7d);
+        FEngSetLanguageHash(GetPackageName(), 0x9d974df3, 0x073b79e0);
+        unsigned int cost = car->GetReleaseFromImpoundCost();
+        FEPrintf(GetPackageName(), 0x322b18f9, "%$0.0f", static_cast<float>(cost));
+        FEPrintf(GetPackageName(), 0x7044a5a4, "%$d", FEDatabase->GetCareerSettings()->GetCash());
+        FEngSetInvisible(GetPackageName(), 0x0e9ed0a2);
+    } else if (career->TheImpoundData.ImpoundedState == FEImpoundData::IMPOUND_REASON_NONE) {
+        FEngSetLanguageHash(GetPackageName(), 0x72e7ea88, 0x17574b0e);
+        FEngSetLanguageHash(GetPackageName(), 0x9d974df3, 0x915f4d26);
+        if (!FEDatabase->IsOnlineMode() && !FEDatabase->IsLANMode()) {
+            FEngSetVisible(GetPackageName(), 0x0e9ed0a2);
+        }
+        FECareerRecord *record = stable->GetCareerRecordByHandle(car->CareerHandle);
+        if (record) {
+            FEPrintf(GetPackageName(), 0x322b18f9, "%$d", record->GetBounty());
+            FEPrintf(GetPackageName(), 0x7044a5a4, "%$d", record->GetInfractions(true).GetFineValue());
+        }
+    } else {
+        FEngSetLanguageHash(GetPackageName(), 0x72e7ea88, 0x9db4df7d);
+        FEngSetLanguageHash(GetPackageName(), 0x9d974df3, 0x073b79e0);
+        FEngSetLanguageHash(GetPackageName(), 0x322b18f9, 0xaefedad9);
+        FEPrintf(GetPackageName(), 0x7044a5a4, "%$d", FEDatabase->GetCareerSettings()->GetCash());
+        FEngSetInvisible(GetPackageName(), 0x0e9ed0a2);
+
+        int num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x15), 0);
+        if (num_markers >= 1 || CheatReleaseFromImpoundMarker) {
+            int num_markers = TheFEMarkerManager.GetNumMarkers(static_cast<FEMarkerManager::ePossibleMarker>(0x15), 0);
+            FEngSetVisible(GetPackageName(), 0xe998fe99);
+            FEPrintf(GetPackageName(), 0xcc59b910, "%2d", num_markers);
+            FEPrintf(GetPackageName(), 0xb8f9938a, "%2d", num_markers);
+            FEngSetInvisible(GetPackageName(), 0x39dc21f9);
+        }
+    }
+
+    {
+        FECareerRecord *record = stable->GetCareerRecordByHandle(car->CareerHandle);
+        if (record) {
+            if (!FEDatabase->IsOnlineMode() && !FEDatabase->IsLANMode()) {
+                FEngSetVisible(GetPackageName(), 0x18a4384f);
+            }
+            FEPrintf(GetPackageName(), 0xd6d32016, "%$d", record->GetBounty());
+            FEPrintf(GetPackageName(), 0x79d6e45c, "%$d", record->GetInfractions(true).GetFineValue());
+        }
+    }
+
+    TheHeatMeter.SetCurrent(career->GetVehicleHeat());
+    TheHeatMeter.SetPreview(career->GetVehicleHeat());
+    TheHeatMeter.Draw();
 }
 
 void UIQRCarSelect::ChooseTransmission() {

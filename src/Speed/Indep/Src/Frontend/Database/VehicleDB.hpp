@@ -22,6 +22,7 @@ struct FECarRecord {
     unsigned short Padd;         // offset 0x12, size 0x2
     bool IsValid() { return Handle != 0xFFFFFFFF; }
     bool IsCustomized() { return Customization != 0xFF; }
+    bool IsCareer() { return CareerHandle != 0xFF; }
     FECarRecord &operator=(const FECarRecord &other_record);
     void Default();
     bool MatchesFilter(int theFilter);
