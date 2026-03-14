@@ -190,8 +190,8 @@ struct CustomizePerformance : public CustomizationScreen {
     void RefreshHeader() override;
     void Setup() override;
 
-    unsigned int GetPerfPkgDesc(GRace::Type type, int level, int line, bool turbo);
-    unsigned int GetPerfPkgBrand(GRace::Type type, int level, int line);
+    unsigned int GetPerfPkgDesc(Physics::Upgrades::Type type, int level, int line, bool turbo);
+    unsigned int GetPerfPkgBrand(Physics::Upgrades::Type type, int level, int line);
 
     FEString *DescLines[3];              // offset 0x1E4, size 0xC
     FEImage *DescBullets[3];             // offset 0x1F0, size 0xC

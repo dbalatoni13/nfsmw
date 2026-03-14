@@ -13,6 +13,11 @@ extern int bStrCmp(const char *, const char *);
 extern int bStrICmp(const char *, const char *);
 extern unsigned int FEngHashString(const char *, ...);
 extern void FEAnyTutorialScreen_LaunchMovie(const char *movie, const char *pkg);
+
+class RaceStarter {
+public:
+    static void StartRace();
+};
 extern const char *gTUTORIAL_MOVIE_TOLLBOOTH;
 
 void ChallengeDatum::NotificationMessage(unsigned long msg, FEObject *pObj, unsigned long param1, unsigned long param2) {

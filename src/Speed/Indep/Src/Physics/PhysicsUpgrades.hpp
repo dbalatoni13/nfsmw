@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+namespace Attrib { namespace Gen { struct pvehicle; } }
+
 namespace Physics {
 
 namespace Upgrades {
@@ -25,6 +27,9 @@ struct Package {
     int Part[7]; // offset 0x0, size 0x1C
     int Junkman; // offset 0x1C, size 0x4
 };
+
+int GetMaxLevel(const Attrib::Gen::pvehicle &vehicle, Type type);
+int GetLevel(const Attrib::Gen::pvehicle &vehicle, Type type);
 
 }; // namespace Upgrades
 
