@@ -78,6 +78,8 @@ struct DataBlock {
         return ptr;
     }
 
+    void operator delete(void *, void *) {}
+
     void *mData;               // offset 0x0, size 0x4
     IGarbageCollector *mGC;    // offset 0x4, size 0x4
     unsigned int mPolicyIndex; // offset 0x8, size 0x4

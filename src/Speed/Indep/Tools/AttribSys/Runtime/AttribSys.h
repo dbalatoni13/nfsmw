@@ -363,6 +363,8 @@ class Array {
         return ptr;
     }
 
+    void operator delete(void *, void *) {}
+
     uint16_t mAlloc;
     uint16_t mCount;
     uint16_t mSize;
@@ -386,6 +388,8 @@ class Node {
     void *operator new(std::size_t, void *ptr) {
         return ptr;
     }
+
+    void operator delete(void *, void *) {}
 
     Node() : mKey(0), mTypeIndex(0), mMax(0), mFlags(0), mPtr(this) {}
 
