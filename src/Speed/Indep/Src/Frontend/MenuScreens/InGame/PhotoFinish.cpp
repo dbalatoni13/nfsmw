@@ -25,7 +25,18 @@
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
+#include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
+
+extern void eLoadStreamingTexturePack(const char *filename, void (*callback)(void *), void *param,
+                                      int flags);
+extern void eUnloadStreamingTexturePack(const char *name);
+extern void eWaitForStreamingTexturePackLoading(const char *name);
+extern void eUnloadStreamingTexture(unsigned int *textures, int count);
+extern void eLoadStreamingTexture(unsigned int *textures, int count, void (*callback)(unsigned int),
+                                  unsigned int param, int pool);
+extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
+extern void FEngSetVisible(FEObject *obj);
 
 extern Timer RealTimer;
 
@@ -81,6 +92,98 @@ extern const float lbl_803E6204;
 extern const float lbl_803E6208;
 extern const float lbl_803E620C;
 extern const float lbl_803E6210;
+
+static bool gSillyTextureStreamerActive;
+
+SillyTextureStreamerManager::SillyTextureStreamerManager(const char *stream_pack) {
+    bStrNCpy(BundleFileName, stream_pack, 0x100);
+    bMemSet(LoadInfos, 0, sizeof(LoadInfos));
+    mCurrentLoadingIndex = -1;
+    mMakeSpaceInPoolComplete = false;
+    mCurrentlyLoading = true;
+    gSillyTextureStreamerActive = true;
+    TheTrackStreamer.MakeSpaceInPool(0x60000, MakeSpaceInPoolCallbackBridge,
+                                    reinterpret_cast<int>(this));
+}
+
+SillyTextureStreamerManager::~SillyTextureStreamerManager() {
+    if (!mMakeSpaceInPoolComplete) {
+        TheTrackStreamer.WaitForCurrentLoadingToComplete();
+    }
+    eWaitForStreamingTexturePackLoading(nullptr);
+    for (int i = 0; i < 4; i++) {
+        if (LoadInfos[i].LoadingTexture) {
+            unsigned int tex = LoadInfos[i].LoadingTexture;
+            eUnloadStreamingTexture(&tex, 1);
+        }
+    }
+    eUnloadStreamingTexturePack(BundleFileName);
+    gSillyTextureStreamerActive = false;
+}
+
+void SillyTextureStreamerManager::MakeSpaceInPoolCallback() {
+    mMakeSpaceInPoolComplete = true;
+    eLoadStreamingTexturePack(BundleFileName, reinterpret_cast<void (*)(void *)>(LoadCallbackBridge),
+                              reinterpret_cast<void *>(this), 0);
+}
+
+void SillyTextureStreamerManager::LoadCallback() {
+    mCurrentlyLoading = false;
+    if (mCurrentLoadingIndex > -1) {
+        int idx = mCurrentLoadingIndex;
+        FEngSetTextureHash(LoadInfos[idx].LoadIntoImage, LoadInfos[idx].LoadingTexture);
+        FEngSetVisible(reinterpret_cast<FEObject *>(LoadInfos[idx].LoadIntoImage));
+        LoadInfos[idx].IsLoaded = true;
+        mCurrentLoadingIndex = -1;
+    }
+    for (int i = 0; i < 4; i++) {
+        if (LoadInfos[i].LoadingTexture != 0 && !LoadInfos[i].IsLoaded) {
+            mCurrentlyLoading = true;
+            mCurrentLoadingIndex = i;
+            unsigned int tex = LoadInfos[i].LoadingTexture;
+            eLoadStreamingTexture(&tex, 1,
+                                  LoadCallbackBridge,
+                                  reinterpret_cast<unsigned int>(this), 7);
+            return;
+        }
+    }
+    cFEng::Get()->MakeLoadedPackagesDirty();
+}
+
+void SillyTextureStreamerManager::Load(unsigned int hash, FEImage *image) {
+    for (int i = 0; i < 4; i++) {
+        if (LoadInfos[i].LoadingTexture == 0) {
+            LoadInfos[i].LoadingTexture = hash;
+            LoadInfos[i].LoadIntoImage = image;
+            FEngSetInvisible(reinterpret_cast<FEObject *>(image));
+            if (!mCurrentlyLoading) {
+                LoadCallback();
+            }
+            return;
+        }
+    }
+}
+
+void SillyTextureStreamerManager::UnloadAll() {
+    for (int i = 0; i < 4; i++) {
+        if (LoadInfos[i].IsLoaded) {
+            unsigned int tex = LoadInfos[i].LoadingTexture;
+            eUnloadStreamingTexture(&tex, 1);
+            LoadInfos[i].LoadingTexture = 0;
+            LoadInfos[i].IsLoaded = false;
+        }
+    }
+}
+
+void SillyTextureStreamerManager::MakeSpaceInPoolCallbackBridge(int param) {
+    SillyTextureStreamerManager *mgr = reinterpret_cast<SillyTextureStreamerManager *>(param);
+    mgr->MakeSpaceInPoolCallback();
+}
+
+void SillyTextureStreamerManager::LoadCallbackBridge(unsigned int param) {
+    SillyTextureStreamerManager *mgr = reinterpret_cast<SillyTextureStreamerManager *>(param);
+    mgr->LoadCallback();
+}
 
 bool PhotoFinishScreen::mRestartSelected = false;
 float PhotoFinishScreen::mSpeedtrapSpeed = 0.0f;
