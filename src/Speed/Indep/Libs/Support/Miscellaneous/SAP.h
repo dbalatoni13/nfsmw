@@ -222,6 +222,7 @@ template <typename T> class Grid {
 
     typedef typename Axis::Node Node;
 
+#ifdef EA_PLATFORM_GAMECUBE
     void *operator new(std::size_t size) {
         return gFastMem.Alloc(size, nullptr);
     }
@@ -231,6 +232,7 @@ template <typename T> class Grid {
             gFastMem.Free(mem, size, nullptr);
         }
     }
+#endif
 
     ~Grid();
 

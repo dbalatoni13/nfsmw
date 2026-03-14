@@ -346,11 +346,8 @@ class Array {
         }
     }
 
-#ifdef _MSC_VER
-  public:
     // TODO is this really overriden?
     void operator delete(void *ptr) {}
-#endif
 
     ~Array() {
         if (IsReferences()) {
