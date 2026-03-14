@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
 #include "Speed/Indep/Src/FEng/FEListBox.h"
 #include "Speed/Indep/Src/FEng/FECodeListBox.h"
+#include "Speed/Indep/Src/FEng/FEGameInterface.h"
 
 // Forward declarations for types only needed locally as pointer members.
 // Their struct definitions come from FEngine.cpp earlier in the jumbo build.
@@ -33,22 +34,6 @@ struct FEMsgTargetList {
 
     void Allocate(unsigned long NewAlloc);
     void AppendTarget(FEObject* pObject);
-};
-
-// total size: 0x10
-struct FEObjectMouseState {
-    FEObject* pObject;   // offset 0x0, size 0x4
-    FEPoint Offset;      // offset 0x4, size 0x8
-    unsigned long Flags;  // offset 0xC, size 0x4
-
-    FEObjectMouseState();
-    ~FEObjectMouseState();
-
-    inline bool GetBit(unsigned long bit) { return (Flags & bit) != 0; }
-    inline void SetBit(unsigned long bit, bool state) {
-        if (state) Flags |= bit;
-        else Flags &= ~bit;
-    }
 };
 
 // total size: 0x18
@@ -555,5 +540,109 @@ void FEPackage::Update(FEngine* pEngine, long tDeltaTicks) {
         MouseStateArrayOffsetUpdater the_udater;
         the_udater.pPack = this;
         ForAllObjects(the_udater);
+    }
+}
+
+void FEPackage::SetFilename(const char* pName) {
+    if (pFilename) {
+        delete[] pFilename;
+    }
+    pFilename = nullptr;
+    if (pName) {
+        int Len = FEngStrLen(pName);
+        pFilename = static_cast<char*>(FEngMalloc(Len + 1, nullptr, 0));
+        FEngStrCpy(pFilename, pName);
+    }
+}
+
+bool FEPackage::Startup(FEGameInterface* pGameInterface) {
+    bool bResult = pGameInterface->LoadResources(this, NumRequests, pRequests);
+    ConnectObjectResources();
+    BuildMouseObjectStateList();
+    return bResult;
+}
+
+void FEPackage::Shutdown(FEGameInterface* pGameInterface) {
+    if (pGameInterface) {
+        pGameInterface->UnloadResources(this, NumRequests, pRequests);
+    }
+}
+
+FEMessageResponse* FEPackage::FindResponse(unsigned long MsgID) {
+    FEMessageResponse* pNode = GetFirstResponse();
+    while (pNode) {
+        if (pNode->GetMsgID() == MsgID) {
+            return pNode;
+        }
+        pNode = pNode->GetNext();
+    }
+    return nullptr;
+}
+
+void FEPackage::ConnectObjectResources() {
+    ResourceConnector resConnector;
+    resConnector.pPack = this;
+    resConnector.pResList = pRequests;
+    ForAllObjects(resConnector);
+}
+
+void FEPackage::SetNumLibraryRefs(unsigned long NewCount) {
+    if (NewCount == 0) {
+        if (pLibRefs) {
+            delete[] reinterpret_cast<char*>(pLibRefs);
+        }
+        pLibRefs = nullptr;
+    } else {
+        FELibraryRef* pNewList = static_cast<FELibraryRef*>(FEngMalloc(NewCount * sizeof(FELibraryRef), nullptr, 0));
+        for (unsigned long i = 0; i < NewCount; i++) {
+            pNewList[i].ObjGUID = 0;
+            pNewList[i].PackNameHash = 0xFFFFFFFF;
+            pNewList[i].LibGUID = 0;
+        }
+        unsigned long CopyCount = NewCount;
+        if (NumLibRefs < NewCount) {
+            CopyCount = NumLibRefs;
+        }
+        if (CopyCount != 0) {
+            FEngMemCpy(pNewList, pLibRefs, CopyCount * sizeof(FELibraryRef));
+        }
+        if (pLibRefs) {
+            delete[] reinterpret_cast<char*>(pLibRefs);
+        }
+        NumLibRefs = NewCount;
+        pLibRefs = pNewList;
+    }
+}
+
+FELibraryRef* FEPackage::FindLibraryReference(unsigned long ObjGUID) const {
+    for (unsigned long i = 0; i < NumLibRefs; i++) {
+        if (pLibRefs[i].ObjGUID == ObjGUID) {
+            return &pLibRefs[i];
+        }
+    }
+    return nullptr;
+}
+
+void FEPackage::BuildMouseObjectStateList() {
+    if (MouseObjectStates) {
+        delete[] reinterpret_cast<char*>(MouseObjectStates);
+        MouseObjectStates = nullptr;
+    }
+    NumMouseObjects = 0;
+    MouseStateObjectCounter the_counter;
+    the_counter.pPack = this;
+    ForAllObjects(the_counter);
+    if (the_counter.Count > 0) {
+        MouseObjectStates = static_cast<FEObjectMouseState*>(
+            FEngMalloc(the_counter.Count * sizeof(FEObjectMouseState) + 8, nullptr, 0));
+        for (unsigned long i = 0; i < the_counter.Count; i++) {
+            MouseObjectStates[i].pObject = nullptr;
+            MouseObjectStates[i].Offset.h = 0.0f;
+            MouseObjectStates[i].Offset.v = 0.0f;
+            MouseObjectStates[i].Flags = 0;
+        }
+        MouseStateArrayBuilder the_builder;
+        the_builder.pPack = this;
+        ForAllObjects(the_builder);
     }
 }

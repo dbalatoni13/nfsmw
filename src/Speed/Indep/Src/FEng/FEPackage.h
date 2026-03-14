@@ -14,7 +14,23 @@ struct FEMessageResponse;
 struct FEPackageRenderInfo;
 struct FEListBox;
 struct FEPoint;
-struct FEObjectMouseState;
+struct FEObjectMouseState {
+    FEObject* pObject;    // offset 0x0, size 0x4
+    FEPoint Offset;       // offset 0x4, size 0x8
+    unsigned long Flags;  // offset 0xC, size 0x4
+
+    FEObjectMouseState();
+    ~FEObjectMouseState();
+
+    inline bool GetBit(unsigned long bit) { return (Flags & bit) != 0; }
+    inline void SetBit(unsigned long bit, bool state) {
+        if (state) {
+            Flags |= bit;
+        } else {
+            Flags &= ~bit;
+        }
+    }
+};
 
 // total size: 0x14
 struct FENode : public FEMinNode {
@@ -97,6 +113,7 @@ struct FEPackage : public FENode {
     inline FEObject* GetCurrentButton() { return pCurrentButton; }
     inline FEButtonMap* GetButtonMap() { return &ButtonMap; }
     inline FEObject* GetFirstObject() { return static_cast<FEObject*>(Objects.GetHead()); }
+    inline FEMessageResponse* GetFirstResponse() { return static_cast<FEMessageResponse*>(Responses.GetHead()); }
     inline FEPackage* GetNext() { return static_cast<FEPackage*>(FENode::GetNext()); }
     inline FEPackage* GetPrev() { return static_cast<FEPackage*>(FENode::GetPrev()); }
     inline unsigned long GetControlMask() const { return Controllers; }
@@ -110,6 +127,11 @@ struct FEPackage : public FENode {
     void SetCurrentButton(FEObject* pNewButton, bool bSendMsgs);
     bool ForAllChildren(FEGroup* pGroup, FEObjectCallback& Callback);
     bool ForAllObjects(FEObjectCallback& Callback);
+    void SetFilename(const char* pName);
+    void SetNumLibraryRefs(unsigned long NewCount);
+    FELibraryRef* FindLibraryReference(unsigned long ObjGUID) const;
+    void ConnectObjectResources();
+    void BuildMouseObjectStateList();
 
     void IssueScriptMessages(FEngine* pEngine, FEObject* pObj, FEScript* pScript, long tOldTime, long tNewTime);
     void UpdateObject(FEObject* pObj, long tDeltaTicks);

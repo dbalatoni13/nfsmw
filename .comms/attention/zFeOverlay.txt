@@ -1,4 +1,0 @@
-NEW MESSAGE seq=130 from=commsManager [#live-checkin]:
-zFeOverlay: at the start of your next turn run: python tools/comms.py check zFeOverlay — it shows your latest message + the exact reply command in 2 lines.
-
-Reply: python tools/comms.py reply zFeOverlay "your reply"

@@ -536,3 +536,119 @@ void FEngine::RenderObject(FEObject* pObj, FEMatrix4& mParent, unsigned short Re
         }
     }
 }
+
+void FEngine::QueuePackageCommand(int command, unsigned long ControlMask, const char* pPackageName) {
+    FEPackage* pPackageWithControl = FindPackageWithControl(ControlMask);
+    FEPackageCommand* Node = static_cast<FEPackageCommand*>(
+        static_cast<FENode*>(new (FEngMalloc(sizeof(FEPackageCommand), nullptr, 0)) FENode()));
+    Node->iCommand = 0;
+    Node->uControlMask = 0;
+    Node->pPackage = pPackageWithControl;
+    if (pPackageWithControl) {
+        if (ControlMask == 0) {
+            Node->uControlMask = pPackageWithControl->GetControlMask();
+        } else {
+            Node->uControlMask = ControlMask;
+        }
+        pPackageWithControl->SetOldControlMask(pPackageWithControl->GetControlMask());
+        pPackageWithControl->SetControlMask(0);
+    } else {
+        FEPackageCommand* pCom = FindQueuedNodeWithControl(ControlMask);
+        if (pCom) {
+            if (ControlMask == 0) {
+                Node->uControlMask = pCom->uControlMask;
+            }
+        } else {
+            if (ControlMask == 0) {
+                Node->uControlMask = 0xFF;
+            }
+        }
+        if (ControlMask != 0) {
+            Node->uControlMask = ControlMask;
+        }
+    }
+    Node->iCommand = command;
+    Node->SetName(pPackageName);
+    PackageCommands.AddNode(static_cast<FEMinNode*>(PackageCommands.GetTail()), static_cast<FEMinNode*>(static_cast<FENode*>(Node)));
+}
+
+void FEngine::Update(const long tDeltaTicks, unsigned int lock) {
+    FEPackage* pPackage;
+    if (bDebugMessages) {
+        pInterface->DebugMessageBeginUpdate();
+    }
+    if (bExecuting) {
+        DisabledMask = 0;
+        if (bMouseEnabled) {
+            FEMouseInfo Info;
+            pInterface->GetMouseInfo(Info);
+            Mouse.Update(Info, tDeltaTicks);
+        }
+        unsigned char PadIndex = 0;
+        if (NumJoyPads != 0) {
+            do {
+                unsigned long mask = pInterface->GetJoyPadMask(PadIndex);
+                JoyPads[PadIndex].Update(mask, tDeltaTicks);
+                PadIndex = PadIndex + 1;
+            } while (PadIndex < NumJoyPads);
+        }
+        for (pPackage = PackList.GetFirstPackage(); pPackage; pPackage = pPackage->GetNext()) {
+            if (pPackage->IsInputEnabled() &&
+                (!bErrorScreenMode || pPackage->IsErrorScreen())) {
+                ProcessPadsForPackage(pPackage);
+                if (bMouseEnabled) {
+                    ProcessMouseForPackage(pPackage);
+                }
+            }
+        }
+        unsigned long i = 0;
+        unsigned long MaskBit = 1;
+        do {
+            if ((DisabledMask & MaskBit) != 0) {
+                unsigned char PadIdx = 0;
+                if (NumJoyPads != 0) {
+                    do {
+                        JoyPads[PadIdx].DecrementHold(MaskBit, HoldTimers[i]);
+                        PadIdx = PadIdx + 1;
+                    } while (PadIdx < NumJoyPads);
+                }
+            }
+            HoldTimers[i] = 0;
+            i++;
+            MaskBit <<= 1;
+        } while (i < 19);
+        LastButton = CurrentButton;
+    }
+    if (bExecuting) {
+        if (bHoldAllDirtyFlags) {
+            FEPackage::uHoldDirtyFlags = 0xFFFFFFFF;
+        } else {
+            FEPackage::uHoldDirtyFlags = 0;
+        }
+        pPackage = PackList.GetFirstPackage();
+        while (pPackage) {
+            FEPackage* pCachedNext = pPackage->GetNext();
+            if (!bErrorScreenMode || pPackage->IsErrorScreen()) {
+                pPackage->Update(this, tDeltaTicks);
+            }
+            pPackage = pCachedNext;
+        }
+        ProcessMessageQueue();
+        if (!bErrorScreenMode) {
+            ProcessPackageCommands();
+        }
+        if (MsgQ.GetHead()) {
+            ProcessMessageQueue();
+        }
+        bHoldAllDirtyFlags = false;
+    } else {
+        for (pPackage = PackList.GetFirstPackage(); pPackage; pPackage = pPackage->GetNext()) {
+            if (!bErrorScreenMode || pPackage->IsErrorScreen()) {
+                pPackage->Update(this, tDeltaTicks);
+            }
+        }
+    }
+    if (bDebugMessages) {
+        pInterface->DebugMessageEndUpdate();
+    }
+}

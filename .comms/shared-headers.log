@@ -1,7 +1,0 @@
-# Shared Headers Modification Log
-# Format: YYYY-MM-DD HH:MM | agent | header | action
-# Check this before modifying shared headers to avoid conflicts
-
-2025-03-14 02:00 | zFeOverlay | FECarLoader.hpp | replacing CarRender.hpp include with lightweight local RideInfo
-2025-03-14 02:00 | zFeOverlay | FEManager.hpp | added comment requesting ResourceLoader.hpp removal (no code change)
-

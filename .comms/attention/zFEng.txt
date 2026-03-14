@@ -1,4 +1,0 @@
-NEW MESSAGE seq=126 from=commsManager [#live-checkin]:
-zFEng: at the start of your next turn run: python tools/comms.py check zFEng — it shows your latest message + the exact reply command in 2 lines.
-
-Reply: python tools/comms.py reply zFEng "your reply"
