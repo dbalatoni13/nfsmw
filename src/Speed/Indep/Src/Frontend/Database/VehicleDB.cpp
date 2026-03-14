@@ -150,7 +150,20 @@ void FECarRecord::Default() {
 }
 
 bool FECarRecord::MatchesFilter(int theFilter) {
-    return (FilterBits & static_cast< unsigned int >(theFilter)) == static_cast< unsigned int >(theFilter);
+    int theList = theFilter & 0xFFFF;
+    bool regionCompare = true;
+    int myList = FilterBits & 0xFFFF;
+    int myRegion = FilterBits & theFilter;
+    if ((myRegion & static_cast<int>(0xFFFF0000)) == 0) {
+        regionCompare = false;
+    }
+    bool listCompare = true;
+    if ((theList & myList) == 0) {
+        listCompare = false;
+    }
+    if (!regionCompare) return false;
+    if (!listCompare) return false;
+    return true;
 }
 
 unsigned int FECarRecord::GetCost() {
@@ -919,12 +932,13 @@ bool FEPlayerCarDB::IsBonusCar(const char *preset_name) {
 }
 
 FECareerRecord *FEPlayerCarDB::GetCareerRecordByHandle(unsigned char handle) {
-    for (int i = 0; i < 25; i++) {
-        if (CareerRecords[i].Handle == handle) {
-            return &CareerRecords[i];
-        }
+    if (handle >= 26) {
+        return nullptr;
     }
-    return nullptr;
+    if (CareerRecords[handle].Handle == 0xFF) {
+        return nullptr;
+    }
+    return &CareerRecords[handle];
 }
 
 FECarRecord *FEPlayerCarDB::CreateNewCustomCar(unsigned int fromCar) {

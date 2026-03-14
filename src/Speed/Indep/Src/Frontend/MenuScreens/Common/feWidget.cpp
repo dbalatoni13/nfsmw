@@ -184,23 +184,15 @@ void FEToggleWidget::CheckMouse(const char* parent_pkg, const float mouse_x, con
 void FEToggleWidget::BlinkArrows(unsigned int data) {}
 
 void FEToggleWidget::Enable() {
-    FEWidget::Enable();
-    if (pLeftImage) {
-        FEngSetScript(static_cast<FEObject*>(pLeftImage), EnableScript, true);
-    }
-    if (pRightImage) {
-        FEngSetScript(static_cast<FEObject*>(pRightImage), EnableScript, true);
-    }
+    DisableScript = FEHashUpper("NORMAL");
+    bEnabled = true;
+    SetScript(EnableScript);
 }
 
 void FEToggleWidget::Disable() {
-    FEWidget::Disable();
-    if (pLeftImage) {
-        FEngSetScript(static_cast<FEObject*>(pLeftImage), DisableScript, true);
-    }
-    if (pRightImage) {
-        FEngSetScript(static_cast<FEObject*>(pRightImage), DisableScript, true);
-    }
+    DisableScript = FEHashUpper("GREY");
+    bEnabled = false;
+    SetScript(DisableScript);
 }
 
 void FEToggleWidget::SetScript(unsigned int script) {

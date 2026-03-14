@@ -32,10 +32,30 @@ float DragTachometer::CalcAngleForRPMDrag(float rpm, float redline) {
 }
 
 DragTachometer::DragTachometer(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0) //
+    : HudElement(pkg_name, 0x2) //
     , ITachometer(pOutter) //
     , ITachometerDrag(pOutter)
 {
+    mMaxRpm = 0.0f;
+    mGear = static_cast<GearID>(1);
+    mNeedleColourSetToPerfectLaunch = false;
+    mRpm = 0.0f;
+    mRedline = 0.0f;
+    mGearShifting = false;
+    RegisterImage(FEHashUpper("RPM_fill"));
+    RegisterImage(FEHashUpper("Drag_Turbo_Backing"));
+    RegisterImage(FEHashUpper("Drag_Turbo_Lines"));
+    RegisterImage(FEHashUpper("3rdPersonSpeedUnits"));
+    RegisterImage(FEHashUpper("SPEED_BACKING"));
+    RegisterGroup(FEHashUpper("RPM"));
+    pTachLines = RegisterImage(FEHashUpper("TAC_Lines_7500"));
+    pRedline = RegisterMultiImage(FEHashUpper("RPM_Redline"));
+    TachNeedle = RegisterImage(FEHashUpper("3rdPersonNeedle"));
+    pGearString = RegisterString(FEHashUpper("3rdPersonGear"));
+    mOriginalNeedleWidth = TachNeedle->GetObjData()->Size.x;
+    float x, y;
+    FEngGetTopLeft(TachNeedle, x, y);
+    mOriginalNeedleLeftX = x;
 }
 
 void DragTachometer::Update(IPlayer *player) {
