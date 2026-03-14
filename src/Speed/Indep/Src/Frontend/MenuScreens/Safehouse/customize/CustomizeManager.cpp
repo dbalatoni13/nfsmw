@@ -1027,25 +1027,46 @@ void CarCustomizeManager::UpdateHeatOnVehicle(SelectablePart *part, FECareerReco
 }
 
 unsigned int CarCustomizeManager::GetUnlockHash(eCustomizeCategory cat, int upgrade_lvl) {
-    unsigned int returnHash = 0;
+    const char *name = nullptr;
     switch (cat) {
-        case 0x100: returnHash = FEngHashString("MARKER_BODYKIT"); break;
-        case 0x101: returnHash = FEngHashString("MARKER_SPOILER"); break;
-        case 0x103: returnHash = FEngHashString("MARKER_RIM"); break;
-        case 0x104: returnHash = FEngHashString("MARKER_HOOD"); break;
-        case 0x105: returnHash = FEngHashString("MARKER_ROOFSCOOP"); break;
-        case 0x201: returnHash = FEngHashString("MARKER_PAINT"); break;
-        case 0x202: returnHash = FEngHashString("MARKER_VINYL"); break;
-        case 0x203: returnHash = FEngHashString("MARKER_DECAL"); break;
-        case 0x208: returnHash = FEngHashString("MARKER_NUMBERS"); break;
-        case 0x301: returnHash = FEngHashString("MARKER_WINDOW_TINT"); break;
-        case 0x302: returnHash = FEngHashString("MARKER_NEON"); break;
-        case 0x801: returnHash = FEngHashString("MARKER_PERFORMANCE"); break;
-        default: break;
+        case 0x101: name = "PARTS_BODYKITS"; break;
+        case 0x102: name = "PARTS_SPOILERS"; break;
+        case 0x104: name = "PARTS_HOODS"; break;
+        case 0x105: name = "PARTS_ROOFSCOOPS"; break;
+        case 0x201: name = "PERF_ENGINE"; break;
+        case 0x202: name = "PERF_TRANSMISSION"; break;
+        case 0x203: name = "PERF_SUSPENSION"; break;
+        case 0x204: name = "PERF_NITROUS"; break;
+        case 0x205: name = "PERF_TIRES"; break;
+        case 0x206: name = "PERF_BRAKES"; break;
+        case 0x207:
+            if (IsTurbo()) name = "PERF_TURBO";
+            else name = "PERF_SUPERCHARGER";
+            break;
+        case 0x301: name = "VISUAL_PAINT"; break;
+        case 0x303: name = "VISUAL_RIMPAINT"; break;
+        case 0x304: name = "VISUAL_WINDOWTINT"; break;
+        case 0x306: name = "VISUAL_NUMBERS"; break;
+        case 0x307: name = "VISUAL_HUDS"; break;
+        case 0x402: case 0x403: case 0x404: case 0x405:
+        case 0x406: case 0x407: case 0x408: case 0x409:
+            name = "VISUAL_VINYLS"; break;
+        case 0x501: case 0x502: case 0x503: case 0x504:
+        case 0x505: case 0x506:
+        case 0x601: case 0x602: case 0x603: case 0x604:
+        case 0x605: case 0x606:
+            name = "VISUAL_DECALS"; break;
+        case 0x701: case 0x702: case 0x703: case 0x704:
+        case 0x705: case 0x706: case 0x707: case 0x708:
+        case 0x709: case 0x70a: case 0x70b:
+            name = "PARTS_RIMS"; break;
     }
-    if (returnHash != 0) {
-        if (DoesStringExist(returnHash)) {
-            return returnHash;
+    if (name && upgrade_lvl) {
+        char buf[100];
+        FEngSNPrintf(buf, 100, "CUSTOMIZATION_%s_%d", name, upgrade_lvl);
+        unsigned int hash = FEngHashString(buf);
+        if (DoesStringExist(hash) == 1) {
+            return hash;
         }
     }
     return 0x9bb9ccc3;
