@@ -202,7 +202,8 @@ void DebugCarCustomizeScreen::Redraw() {
 }
 
 void DebugCarCustomizeScreen::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
-    if (msg == 0xb5971bf1) {
+    switch (msg) {
+    case 0xb5971bf1: {
         unsigned int hash = pobj->NameHash;
         if (hash == 0x36db742) {
             FECarRecord *car = FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(pDebugCar->mHandle);
@@ -244,7 +245,9 @@ void DebugCarCustomizeScreen::NotificationMessage(unsigned long msg, FEObject *p
             goto done;
         }
         RebuildPartsList();
-    } else if (msg == 0x9120409e) {
+        break;
+    }
+    case 0x9120409e: {
         unsigned int hash = pobj->NameHash;
         if (hash == 0x36db742) {
             FECarRecord *car = FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(pDebugCar->mHandle);
@@ -286,28 +289,30 @@ void DebugCarCustomizeScreen::NotificationMessage(unsigned long msg, FEObject *p
             goto done;
         }
         RebuildPartsList();
-    } else if (msg == 0x406415e3) {
+        break;
+    }
+    case 0x406415e3:
         InstallPreviewingPart();
         return;
-    } else if (msg == 0x911ab364) {
+    case 0x911ab364:
         gCarCustomizeManager.RelinquishControl();
         cFEng::Get()->QueuePackageSwitch("MainMenu.fng", 0, 0, false);
         return;
-    } else if (msg == 0xc519bfbf) {
+    case 0xc519bfbf:
         if (InstallableParts.IsEmpty()) return;
         gCarCustomizeManager.ResetToStockCarParts();
         NewPreviewPart();
         return;
-    } else if (msg == 0xc519bfc0) {
+    case 0xc519bfc0:
         DumpPresetRide();
         return;
-    } else if (msg == 0xc519bfc2) {
+    case 0xc519bfc2:
         iFastScroll = 10;
         return;
-    } else if (msg == 0xe086d2e6) {
+    case 0xe086d2e6:
         iFastScroll = 1;
         return;
-    } else {
+    default:
         return;
     }
 done:
