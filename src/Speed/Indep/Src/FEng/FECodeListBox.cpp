@@ -612,35 +612,34 @@ bool FECodeListBox::CheckMovement(long lNumMove, long lCurrentVirtual, long lTar
 
 bool FECodeListBox::MakeMove(long lNumMove, unsigned long& ulCurrentVirtual, unsigned long& ulTarget, unsigned long ulNumTotal, unsigned long ulNumVis) {
     if (mulFlags & 8) {
-        long lIndex = static_cast<long>(ulCurrentVirtual) + lNumMove;
-        ulCurrentVirtual = GetValidIndex(lIndex, ulNumTotal);
+        ulCurrentVirtual = GetValidIndex(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
+        ulTarget = GetValidIndex(static_cast<int>(ulTarget) + lNumMove, ulNumTotal);
     } else if ((mulFlags & 6) == 6) {
-        long lIndex = static_cast<long>(ulCurrentVirtual) + lNumMove;
-        ulCurrentVirtual = GetValidIndex(lIndex, ulNumTotal);
+        ulCurrentVirtual = GetValidIndex(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
+        ulTarget = ulCurrentVirtual;
     } else {
         unsigned long ulOldTarget = ulTarget;
-        long lIndex = static_cast<long>(ulTarget) + lNumMove;
-        ulTarget = GetValidIndex(lIndex, ulNumTotal);
+        ulTarget = GetValidIndex(static_cast<int>(ulTarget) + lNumMove, ulNumTotal);
         if (lNumMove < 0) {
-            if (ulCurrentVirtual == ulOldTarget) {
-                ulCurrentVirtual = GetValidIndex(static_cast<long>(ulCurrentVirtual) + lNumMove, ulNumTotal);
-                return true;
-            }
-        } else {
-            unsigned long ulDifference;
-            if (ulCurrentVirtual < ulTarget) {
-                ulDifference = ulTarget - ulCurrentVirtual;
-            } else {
-                ulDifference = ulTarget + ulNumTotal - ulCurrentVirtual;
-            }
-            if (ulDifference < ulNumVis) {
+            if (ulCurrentVirtual != ulOldTarget) {
                 return false;
             }
-            long lNewIndex = static_cast<long>(ulCurrentVirtual) + lNumMove;
-            ulCurrentVirtual = GetValidIndex(lNewIndex, ulNumTotal);
+            ulCurrentVirtual = ulTarget;
             return true;
         }
-        ulCurrentVirtual = ulTarget;
+        if (ulCurrentVirtual == ulOldTarget) {
+            return false;
+        }
+        unsigned long ulDifference;
+        if (ulCurrentVirtual < ulTarget) {
+            ulDifference = ulTarget - ulCurrentVirtual;
+        } else {
+            ulDifference = ulTarget + ulNumTotal - ulCurrentVirtual;
+        }
+        if (ulDifference < ulNumVis) {
+            return false;
+        }
+        ulCurrentVirtual = GetValidIndex(static_cast<int>(ulCurrentVirtual) + lNumMove, ulNumTotal);
     }
     return true;
 }
