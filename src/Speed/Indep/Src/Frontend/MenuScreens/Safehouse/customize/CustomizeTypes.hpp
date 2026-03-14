@@ -334,7 +334,7 @@ struct CustomizationScreenHelper {
     void PlayLocked() {}
     void PlayInCart() {}
     void PlayInstalled() {}
-    void DrawMeters() {}
+    void DrawMeters() { HeatMeter.Draw(); }
     void SetHeatValue(float f) { HeatMeter.SetCurrent(f); }
     void SetHeatPreview(float f) { HeatMeter.SetPreview(f); }
 

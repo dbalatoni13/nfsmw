@@ -1022,34 +1022,66 @@ void CustomizationScreenHelper::SetCashVisibility(bool visible) {
     }
 }
 
-void CustomizationScreenHelper::SetCareerStuff(SelectablePart *part, unsigned int name_hash, unsigned int desc_hash) {
-    if (!gCarCustomizeManager.IsCareerMode()) {
+void CustomizationScreenHelper::SetCareerStuff(SelectablePart *part, unsigned int cat, unsigned int tradeInValue) {
+    if (gCarCustomizeManager.IsCareerMode()) {
+        if (CustomizeIsInBackRoom()) {
+            FEngSetLanguageHash(GetPackageName(), 0x63ca8308, GetMarkerNameFromCategory(static_cast<eCustomizeCategory>(cat)));
+            FEPrintf(GetPackageName(), 0x23d918fe, "1");
+            FEPrintf(GetPackageName(), 0x83e3cd39, "%d", GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(cat)));
+        } else {
+            if (part) {
+                FEPrintf(GetPackageName(), 0xdbb80edd, "%d", part->GetPrice());
+            } else {
+                SelectablePart *tempPart = gCarCustomizeManager.GetTempColoredPart();
+                if (tempPart) {
+                    FEPrintf(GetPackageName(), 0xdbb80edd, "%d", tempPart->GetPrice());
+                } else {
+                    FEPrintf(GetPackageName(), 0xdbb80edd, "-1");
+                }
+            }
+            FEPrintf(GetPackageName(), 0xc60adcfd, "%d", FEDatabase->GetCareerSettings()->GetCash());
+            FEPrintf(GetPackageName(), 0x7a6d2f71, "%d", gCarCustomizeManager.GetCartTotal(static_cast<eCustomizeCartTotals>(2)));
+            FEPrintf(GetPackageName(), 0xa91eda8a, "%d", tradeInValue);
+        }
+        SetHeatValue(gCarCustomizeManager.GetActualHeat());
+        SetHeatPreview(gCarCustomizeManager.GetPreviewHeat(part));
+        DrawMeters();
+    } else {
+        SetCareerStatusIcon(CPS_LOCKED);
         SetCashVisibility(false);
-        FEngSetInvisible(FEngFindObject(pPackageName, 0xcffb7033));
-        return;
-    }
-    SetCashVisibility(true);
-    FEPrintf(pPackageName, 0x8531e22e, "%d", FEDatabase->GetCareerSettings()->GetCash());
-    SetCareerStatusIcon(part->GetPartState());
-    if (name_hash != 0) {
-        FEngSetLanguageHash(pPackageName, 0xd57c95e1, name_hash);
-    }
-    if (desc_hash != 0) {
-        FEngSetLanguageHash(pPackageName, 0x3cb2b36c, desc_hash);
+        HeatMeter.SetVisibility(false);
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x24c6bfad));
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0xea903012));
     }
 }
 
-void CustomizationScreenHelper::SetPartStatus(SelectablePart *part, unsigned int unlock_hash, int part_num, int max_parts) {
-    if (!gCarCustomizeManager.IsCareerMode()) {
-        return;
+void CustomizationScreenHelper::SetPartStatus(SelectablePart *part, unsigned int unlock_blurb, int part_num, int max_parts) {
+    if (part) {
+        if (part->IsInstalled()) {
+            SetPlayerCarStatusIcon(CPS_INSTALLED);
+        } else if (part->IsInCart()) {
+            SetPlayerCarStatusIcon(CPS_IN_CART);
+        } else {
+            SetPlayerCarStatusIcon(CPS_AVAILABLE);
+        }
+        if (part->IsLocked() && unlock_blurb) {
+            if (IsInitComplete()) {
+                SetUnlockOverlayState(true, unlock_blurb);
+            }
+            SetCareerStatusIcon(CPS_LOCKED);
+        } else {
+            if (bUnlockOverlayShowing) {
+                SetUnlockOverlayState(false, 0);
+            }
+            if (part->IsNew()) {
+                SetCareerStatusIcon(CPS_NEW);
+            } else {
+                SetCareerStatusIcon(CPS_AVAILABLE);
+            }
+        }
     }
-    eCustomizePartState state = part->GetPartState();
-    SetCareerStatusIcon(state);
-    if (state == CPS_LOCKED) {
-        FEngSetLanguageHash(pPackageName, 0xd57c95e1, unlock_hash);
-    } else if (max_parts > 1) {
-        FEPrintf(pPackageName, 0xd57c95e1, "%d/%d", part_num, max_parts);
-    }
+    FEPrintf(GetPackageName(), 0x6f25a248, "%d", part_num);
+    FEPrintf(GetPackageName(), 0xb2037bdc, "%d", max_parts);
 }
 
 // --- CustomizationScreen additional ---
@@ -1059,7 +1091,7 @@ void CustomizationScreen::RefreshHeader() {
     DisplayHelper.DrawTitle();
     int count = Options.CountElements();
     if (count != Options.iNumBookEnds) {
-        unsigned int tradeInValue = 0;
+        int tradeInValue = 0;
         if (gCarCustomizeManager.IsCareerMode()) {
             if (!CustomizeIsInBackRoom()) {
                 SelectablePart *part = GetSelectedPart();
@@ -1070,7 +1102,7 @@ void CustomizationScreen::RefreshHeader() {
                             eUnlockFilters filter = gCarCustomizeManager.GetUnlockFilter();
                             tradeInValue = UnlockSystem::GetCarPartCost(filter, part->GetSlotID(), installed, 0);
                         }
-                        tradeInValue = static_cast<unsigned int>(static_cast<float>(static_cast<int>(tradeInValue)) * gTradeInFactor);
+                        tradeInValue = static_cast<int>(static_cast<float>(tradeInValue) * gTradeInFactor);
                     }
                 }
             }
