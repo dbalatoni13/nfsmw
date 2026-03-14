@@ -10,6 +10,22 @@
 
 extern FEMultiPool ObjDataPool;
 
+inline bool CloseEnoughPosition(const FEVector3& vector1, const FEVector3& vector2) {
+    return Close(vector1.x, vector2.x, 0.001f) &&
+           Close(vector1.y, vector2.y, 0.001f) &&
+           Close(vector1.z, vector2.z, 0.001f);
+}
+
+inline bool CloseEnoughColor(const FEColor& color1, const FEColor& color2) {
+    return Close(static_cast<long>(color1.b), static_cast<long>(color2.b), 1L) &&
+           Close(static_cast<long>(color1.g), static_cast<long>(color2.g), 1L) &&
+           Close(static_cast<long>(color1.r), static_cast<long>(color2.r), 1L) &&
+           Close(static_cast<long>(color1.a), static_cast<long>(color2.a), 1L);
+}
+
+float Close(float a, float b, float epsilon);
+long Close(long a, long b, long epsilon);
+
 FEObjectDestructorCallback* FEObject::pDestructorCallback;
 
 FEObject::FEObject()
@@ -177,4 +193,128 @@ FEObject* FEObject::Clone(bool bReference) {
     FEObject* pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEObject), 0, 0));
     new (pObject) FEObject(*this, bReference);
     return pObject;
+}
+
+void FEObject::SetTrackValue(FEKeyTrack_Indices track, const FEVector3& value, bool bRelative) {
+    FEScript* pScript = static_cast<FEScript*>(Scripts.GetHead());
+    while (pScript) {
+        FEKeyTrack* pTrack = pScript->FindTrack(track);
+        if (pTrack) {
+            FEKeyNode* pKey = pTrack->GetBaseKey();
+            if (bRelative) {
+                reinterpret_cast<FEVector3*>(static_cast<unsigned char*>(*pKey->GetKeyData()))->operator+=(value);
+            } else {
+                *pKey->GetKeyData() = value;
+            }
+        }
+        pScript = pScript->GetNext();
+    }
+    unsigned long offset = GetDataOffset(track);
+    if (bRelative) {
+        reinterpret_cast<FEVector3*>(pData + offset)->operator+=(value);
+    } else {
+        *reinterpret_cast<FEVector3*>(pData + offset) = value;
+    }
+}
+
+void FEObject::SetTrackValue(FEKeyTrack_Indices track, const FEVector2& value, bool bRelative) {
+    FEScript* pScript = static_cast<FEScript*>(Scripts.GetHead());
+    while (pScript) {
+        FEKeyTrack* pTrack = pScript->FindTrack(track);
+        if (pTrack) {
+            FEKeyNode* pKey = pTrack->GetBaseKey();
+            if (bRelative) {
+                reinterpret_cast<FEVector2*>(static_cast<unsigned char*>(*pKey->GetKeyData()))->operator+=(value);
+            } else {
+                *pKey->GetKeyData() = value;
+            }
+        }
+        pScript = pScript->GetNext();
+    }
+    unsigned long offset = GetDataOffset(track);
+    if (bRelative) {
+        reinterpret_cast<FEVector2*>(pData + offset)->operator+=(value);
+    } else {
+        *reinterpret_cast<FEVector2*>(pData + offset) = value;
+    }
+}
+
+void FEObject::SetTrackValue(FEKeyTrack_Indices track, const FEColor& value, bool bRelative) {
+    FEScript* pScript = static_cast<FEScript*>(Scripts.GetHead());
+    while (pScript) {
+        FEKeyTrack* pTrack = pScript->FindTrack(track);
+        if (pTrack) {
+            FEKeyNode* pKey = pTrack->GetBaseKey();
+            if (bRelative) {
+                *reinterpret_cast<FEColor*>(static_cast<unsigned char*>(*pKey->GetKeyData())) += value;
+            } else {
+                *pKey->GetKeyData() = value;
+            }
+        }
+        pScript = pScript->GetNext();
+    }
+    unsigned long offset = GetDataOffset(track);
+    if (bRelative) {
+        *reinterpret_cast<FEColor*>(pData + offset) += value;
+    } else {
+        *reinterpret_cast<FEColor*>(pData + offset) = value;
+    }
+}
+
+void FEObject::SetPosition(const FEVector3& position, bool bRelative) {
+    if (GUID > 0xFF) {
+        FEVector3 zero(0.0f, 0.0f, 0.0f);
+        if (!bRelative) {
+            if (CloseEnoughPosition(position, GetObjData()->Pos)) {
+                return;
+            }
+        } else {
+            if (CloseEnoughPosition(position, zero)) {
+                return;
+            }
+        }
+        Flags |= 0x400000;
+    }
+    SetTrackValue(FETrack_Position, position, bRelative);
+}
+
+void FEObject::SetRotation(const FEQuaternion& rotation, bool bRelative) {
+    if (GUID < 0x100) {
+        Flags |= 0x400000;
+    }
+    FEScript* pScript = static_cast<FEScript*>(Scripts.GetHead());
+    while (pScript) {
+        FEKeyTrack* pTrack = pScript->FindTrack(FETrack_Rotation);
+        if (pTrack) {
+            FEKeyNode* pKey = pTrack->GetBaseKey();
+            if (bRelative) {
+                reinterpret_cast<FEQuaternion*>(static_cast<unsigned char*>(*pKey->GetKeyData()))->operator*=(rotation);
+            } else {
+                *pKey->GetKeyData() = rotation;
+            }
+        }
+        pScript = pScript->GetNext();
+    }
+    if (bRelative) {
+        GetObjData()->Rot *= rotation;
+    } else {
+        GetObjData()->Rot = rotation;
+    }
+}
+
+void FEObject::SetColor(const FEColor& color, bool bRelative) {
+    if (GUID > 0xFF) {
+        FEColor zero;
+        if (!bRelative) {
+            if (CloseEnoughColor(color, GetObjData()->Col)) {
+                return;
+            }
+        } else {
+            if (CloseEnoughColor(color, zero)) {
+                return;
+            }
+        }
+        Flags |= 0x400000;
+    }
+    SetTrackValue(FETrack_Color, color, bRelative);
 }

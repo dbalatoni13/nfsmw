@@ -39,6 +39,8 @@ struct FEVector3 {
     inline FEVector3(const FEVector3& v) { *this = v; }
 
     inline FEVector3& operator=(const FEVector3& v) { x = v.x; y = v.y; z = v.z; return *this; }
+    inline FEVector3 operator-(const FEVector3& v) const { return FEVector3(x - v.x, y - v.y, z - v.z); }
+    inline FEVector3& operator+=(const FEVector3& v) { x += v.x; y += v.y; z += v.z; return *this; }
 };
 
 // total size: 0x10
@@ -68,8 +70,10 @@ struct FEQuaternion {
     inline FEQuaternion() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
     inline FEQuaternion(float X, float Y, float Z, float W) : x(X), y(Y), z(Z), w(W) {}
     inline FEQuaternion& operator=(const FEQuaternion& q) { x = q.x; y = q.y; z = q.z; w = q.w; return *this; }
+    inline void Conjugate() { x = -x; y = -y; z = -z; }
+    inline FEQuaternion& operator*=(const FEQuaternion& q) { *this = *this * q; return *this; }
     FEQuaternion operator*(const FEQuaternion& q1);
-    void GetMatrix(FEMatrix4* pMatrix) const;
+    void GetMatrix(FEMatrix4* pMatrix);
 };
 
 inline FEQuaternion operator+(const FEQuaternion& q0, const FEQuaternion& q1) {

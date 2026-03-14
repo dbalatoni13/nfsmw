@@ -33,8 +33,8 @@ struct FEKeyTrack {
     inline FEKeyNode* GetFirstDeltaKey() { return static_cast<FEKeyNode*>(DeltaKeys.GetHead()); }
     inline bool IsReference() const { return DeltaKeys.IsReference(); }
 
-    FEKeyNode* GetKeyAt(int tTime);
-    FEKeyNode* GetDeltaKeyAt(int tTime);
+    FEKeyNode* GetKeyAt(long tTime);
+    FEKeyNode* GetDeltaKeyAt(long tTime);
 };
 
 #endif

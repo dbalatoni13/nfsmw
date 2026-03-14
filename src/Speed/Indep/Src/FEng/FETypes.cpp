@@ -79,3 +79,41 @@ FEColor FEColor::operator-(const FEColor& rhs) const {
     result.a = a - rhs.a;
     return result;
 }
+
+void FEQuaternion::GetMatrix(FEMatrix4* pMatrix) {
+    float xx2 = x * (x + x);
+    float yy2 = y * (y + y);
+    float zz2 = z * (z + z);
+    float xy2 = x * (y + y);
+    float xz2 = x * (z + z);
+    float yz2 = y * (z + z);
+    float wx2 = w * (x + x);
+    float wy2 = w * (y + y);
+    float wz2 = w * (z + z);
+
+    pMatrix->m11 = 1.0f - (yy2 + zz2);
+    pMatrix->m12 = xy2 + wz2;
+    pMatrix->m13 = xz2 - wy2;
+    pMatrix->m14 = 0.0f;
+    pMatrix->m21 = xy2 - wz2;
+    pMatrix->m22 = 1.0f - (xx2 + zz2);
+    pMatrix->m23 = yz2 + wx2;
+    pMatrix->m24 = 0.0f;
+    pMatrix->m31 = xz2 + wy2;
+    pMatrix->m32 = yz2 - wx2;
+    pMatrix->m33 = 1.0f - (xx2 + yy2);
+    pMatrix->m34 = 0.0f;
+    pMatrix->m41 = 0.0f;
+    pMatrix->m42 = 0.0f;
+    pMatrix->m43 = 0.0f;
+    pMatrix->m44 = 1.0f;
+}
+
+FEQuaternion FEQuaternion::operator*(const FEQuaternion& q1) {
+    FEQuaternion qRet;
+    qRet.x = (q1.y * z - q1.z * y) + q1.x * w + x * q1.w;
+    qRet.y = (q1.z * x - q1.x * z) + q1.y * w + y * q1.w;
+    qRet.z = (q1.x * y - q1.y * x) + q1.z * w + z * q1.w;
+    qRet.w = q1.w * w - (q1.z * z + q1.x * x + q1.y * y);
+    return qRet;
+}

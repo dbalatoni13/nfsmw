@@ -1,6 +1,6 @@
 #include "Speed/Indep/Src/FEng/FEKeyTrack.h"
 
-FEKeyNode* FEKeyTrack::GetKeyAt(int tTime) {
+FEKeyNode* FEKeyTrack::GetKeyAt(long tTime) {
     if (tTime > -1) {
         FEKeyNode* pKey = GetFirstDeltaKey();
         if (pKey) {
@@ -18,7 +18,7 @@ FEKeyNode* FEKeyTrack::GetKeyAt(int tTime) {
     return GetBaseKey();
 }
 
-FEKeyNode* FEKeyTrack::GetDeltaKeyAt(int tTime) {
+FEKeyNode* FEKeyTrack::GetDeltaKeyAt(long tTime) {
     FEKeyNode* pKey = GetFirstDeltaKey();
     FEKeyNode* pPrev;
     if (!pKey) {
