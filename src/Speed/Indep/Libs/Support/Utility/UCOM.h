@@ -177,9 +177,11 @@ _PRODUCT *Factory<_BUILD_PARAMETERS, _PRODUCT, _PRODUCT_SIGNATURE>::CreateInstan
     return nullptr;
 }
 
+#ifdef _MSC_VER
 template <class _BUILD_PARAMETERS, class _PRODUCT, class _PRODUCT_SIGNATURE>
 typename Factory<_BUILD_PARAMETERS, _PRODUCT, _PRODUCT_SIGNATURE>::Prototype *
     Factory<_BUILD_PARAMETERS, _PRODUCT, _PRODUCT_SIGNATURE>::Prototype::mHead = nullptr;
+#endif
 
 } // namespace COM
 } // namespace UTL
