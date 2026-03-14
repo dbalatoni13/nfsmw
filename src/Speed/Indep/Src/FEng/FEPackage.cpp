@@ -316,43 +316,42 @@ void FEPackage::IssueScriptMessages(FEngine* pEngine, FEObject* pObj,
 
     if (i < Count && pEvents[i].tTime < static_cast<unsigned long>(tNewTime)) {
     dispatch:
-        unsigned long Target = pEvents[i].Target;
         for (;;) {
-            switch (Target) {
-            case 0xFFFFFFFB:
-                pEngine->QueueMessage(pEvents[i].EventID, pObj, this,
-                                      reinterpret_cast<FEObject*>(0xFFFFFFFB), 0);
-                break;
+            switch (pEvents[i].Target) {
             case 0:
-                if (pEvents[i].EventID != 0x1B3909AA) {
-                    pEngine->QueueMessage(pEvents[i].EventID, pObj, this,
-                                          reinterpret_cast<FEObject*>(0), 0);
-                } else {
+                if (pEvents[i].EventID == 0x1B3909AA) {
                     FEObject* pButton = FindObjectByGUID(0);
                     SetCurrentButton(pButton, true);
+                } else {
+                    pEngine->QueueMessage(pEvents[i].EventID, pObj, this,
+                                          reinterpret_cast<FEObject*>(0), 0);
                 }
                 break;
-            case 0xFFFFFFFA:
-                pEngine->QueueMessage(pEvents[i].EventID, pObj, this,
-                                      reinterpret_cast<FEObject*>(0xFFFFFFFA), 0);
+            case 0xFFFFFFFF:
+                pEngine->SendMessageToGame(pEvents[i].EventID, pObj, this, 0);
                 break;
             case 0xFFFFFFFC:
                 pEngine->QueueMessage(pEvents[i].EventID, pObj, this,
                                       reinterpret_cast<FEObject*>(0xFFFFFFFC), 0);
                 break;
-            case 0xFFFFFFFF:
-                pEngine->SendMessageToGame(pEvents[i].EventID, pObj, this, 0);
+            case 0xFFFFFFFB:
+                pEngine->QueueMessage(pEvents[i].EventID, pObj, this,
+                                      reinterpret_cast<FEObject*>(0xFFFFFFFB), 0);
+                break;
+            case 0xFFFFFFFA:
+                pEngine->QueueMessage(pEvents[i].EventID, pObj, this,
+                                      reinterpret_cast<FEObject*>(0xFFFFFFFA), 0);
                 break;
             default: {
-                FEObject* pTarget = FindObjectByGUID(Target);
-                if (pEvents[i].EventID != 0x1B3909AA) {
-                    if (pTarget) {
-                        pEngine->QueueMessage(pEvents[i].EventID, pObj, this, pTarget, 0);
-                    }
+                FEObject* pTarget = FindObjectByGUID(pEvents[i].Target);
+                if (pEvents[i].EventID == 0x1B3909AA) {
+                    FEObject* pButton = FindObjectByGUID(pEvents[i].Target);
+                    SetCurrentButton(pButton, true);
                     break;
                 }
-                FEObject* pButton = FindObjectByGUID(Target);
-                SetCurrentButton(pButton, true);
+                if (pObj) {
+                    pEngine->QueueMessage(pEvents[i].EventID, pObj, this, pTarget, 0);
+                }
                 break;
             }
             }
@@ -363,7 +362,6 @@ void FEPackage::IssueScriptMessages(FEngine* pEngine, FEObject* pObj,
             if (pEvents[i].tTime >= static_cast<unsigned long>(tNewTime)) {
                 return;
             }
-            Target = pEvents[i].Target;
         }
     }
 }
