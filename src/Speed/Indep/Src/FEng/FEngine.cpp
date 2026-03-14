@@ -497,20 +497,12 @@ bool FEngine::ProcessListBoxResponses(FEObject* pObj, unsigned long MsgID) {
     FEListBox* pList = static_cast<FEListBox*>(pObj);
     long lCol;
     long lRow;
-    if (MsgID == 0xe10814a6) {
-        lCol = 0;
-        lRow = 1;
-    } else if (MsgID == 0x030471ac) {
-        lCol = 1;
-        lRow = 0;
-    } else if (MsgID == 0xe10c4af9) {
-        lCol = -1;
-        lRow = 0;
-    } else if (MsgID == 0xfb814f13) {
-        lCol = 0;
-        lRow = -1;
-    } else {
-        return false;
+    switch (MsgID) {
+        case 0xe10c4af9: lCol = -1; lRow = 0; break;
+        case 0x030471ac: lCol = 1; lRow = 0; break;
+        case 0xfb814f13: lCol = 0; lRow = -1; break;
+        case 0xe10814a6: lCol = 0; lRow = 1; break;
+        default: return false;
     }
     pList->ScrollSelection(lCol, lRow);
     return true;
@@ -520,20 +512,12 @@ bool FEngine::ProcessCodeListBoxResponses(FEObject* pObj, unsigned long MsgID) {
     FECodeListBox* pList = static_cast<FECodeListBox*>(pObj);
     long lCol;
     long lRow;
-    if (MsgID == 0xe10814a6) {
-        lCol = 0;
-        lRow = 1;
-    } else if (MsgID == 0x030471ac) {
-        lCol = 1;
-        lRow = 0;
-    } else if (MsgID == 0xe10c4af9) {
-        lCol = -1;
-        lRow = 0;
-    } else if (MsgID == 0xfb814f13) {
-        lCol = 0;
-        lRow = -1;
-    } else {
-        return false;
+    switch (MsgID) {
+        case 0xe10c4af9: lCol = -1; lRow = 0; break;
+        case 0x030471ac: lCol = 1; lRow = 0; break;
+        case 0xfb814f13: lCol = 0; lRow = -1; break;
+        case 0xe10814a6: lCol = 0; lRow = 1; break;
+        default: return false;
     }
     pList->ScrollSelection(lCol, lRow);
     return true;
@@ -543,20 +527,12 @@ bool FEngine::ProcessListBoxResponses(FEObject* pObj, FEPackage* pPack, unsigned
     FEListBox* pList = static_cast<FEListBox*>(pObj);
     long lCol;
     long lRow;
-    if (MsgID == 0xe10814a6) {
-        lCol = 0;
-        lRow = 1;
-    } else if (MsgID == 0x030471ac) {
-        lCol = 1;
-        lRow = 0;
-    } else if (MsgID == 0xe10c4af9) {
-        lCol = -1;
-        lRow = 0;
-    } else if (MsgID == 0xfb814f13) {
-        lCol = 0;
-        lRow = -1;
-    } else {
-        return false;
+    switch (MsgID) {
+        case 0xe10c4af9: lCol = -1; lRow = 0; break;
+        case 0x030471ac: lCol = 1; lRow = 0; break;
+        case 0xfb814f13: lCol = 0; lRow = -1; break;
+        case 0xe10814a6: lCol = 0; lRow = 1; break;
+        default: return false;
     }
     pList->ScrollSelection(lCol, lRow);
     return true;
@@ -566,20 +542,12 @@ bool FEngine::ProcessCodeListBoxResponses(FEObject* pObj, FEPackage* pPack, unsi
     FECodeListBox* pList = static_cast<FECodeListBox*>(pObj);
     long lCol;
     long lRow;
-    if (MsgID == 0xe10814a6) {
-        lCol = 0;
-        lRow = 1;
-    } else if (MsgID == 0x030471ac) {
-        lCol = 1;
-        lRow = 0;
-    } else if (MsgID == 0xe10c4af9) {
-        lCol = -1;
-        lRow = 0;
-    } else if (MsgID == 0xfb814f13) {
-        lCol = 0;
-        lRow = -1;
-    } else {
-        return false;
+    switch (MsgID) {
+        case 0xe10c4af9: lCol = -1; lRow = 0; break;
+        case 0x030471ac: lCol = 1; lRow = 0; break;
+        case 0xfb814f13: lCol = 0; lRow = -1; break;
+        case 0xe10814a6: lCol = 0; lRow = 1; break;
+        default: return false;
     }
     pList->ScrollSelection(lCol, lRow);
     return true;
