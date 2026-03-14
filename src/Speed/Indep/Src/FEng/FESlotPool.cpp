@@ -7,10 +7,8 @@ unsigned char* FESlotNode::AllocBlock() {
     }
     unsigned char* pMask = SlotMask;
     unsigned long byteIdx = 0;
-    char c = SlotMask[0];
-    while (c == -1) {
+    while (pMask[byteIdx] == 0xFF) {
         byteIdx++;
-        c = pMask[byteIdx];
     }
     unsigned long bitIdx = byteIdx << 3;
     if (pMask[byteIdx] & 1) {
