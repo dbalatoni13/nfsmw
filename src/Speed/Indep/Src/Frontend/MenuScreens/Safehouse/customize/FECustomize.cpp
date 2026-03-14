@@ -1660,15 +1660,27 @@ void CustomizeMain::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
 
 // --- Constructors ---
 
-CustomizeSub::CustomizeSub(ScreenConstructorData *sd) : CustomizeCategoryScreen(sd) {
+CustomizeSub::CustomizeSub(ScreenConstructorData *sd)
+    : CustomizeCategoryScreen(sd) //
+    , InstalledPartOptionIndex(0) //
+    , InCartPartOptionIndex(0) //
+    , TitleHash(0)
+{
     Setup();
+    gCarCustomizeManager.ResetPreview();
 }
 
 CustomizePerformance::CustomizePerformance(ScreenConstructorData *sd) : CustomizationScreen(sd) {
     Setup();
 }
 
-CustomizeRims::CustomizeRims(ScreenConstructorData *sd) : CustomizationScreen(sd) {
+CustomizeRims::CustomizeRims(ScreenConstructorData *sd)
+    : CustomizationScreen(sd) //
+    , InnerRadius(0) //
+    , MinRadius(0) //
+    , MaxRadius(0)
+{
+    Setup();
 }
 
 CustomizeDecals::CustomizeDecals(ScreenConstructorData *sd) : CustomizationScreen(sd) {
@@ -1842,16 +1854,14 @@ void CustomizeSpoiler::Setup() {
     FEImage *img2 = FEngFindImage(GetPackageName(), 0x2d145be3);
     FEngSetButtonTexture(img2, 0x682);
     CarPart *activePart = gCarCustomizeManager.GetActivePartFromSlot(0x2c);
-    if (Showcase_FromFilter == -1) {
-        if (activePart) {
-            unsigned int filter = activePart->GetGroupNumber();
-            if (filter != 4) {
-                TheFilter = filter;
-            }
-        }
-    } else {
+    if (Showcase_FromFilter != -1) {
         TheFilter = Showcase_FromFilter;
         Showcase_FromFilter = -1;
+    } else if (activePart) {
+        unsigned int filter = activePart->GetGroupNumber();
+        if (filter != 4) {
+            TheFilter = filter;
+        }
     }
     BuildPartOptionListFromFilter(activePart);
     RefreshHeader();

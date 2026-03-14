@@ -122,8 +122,12 @@ struct CustomizationScreen : public IconScrollerMenu {
 
 // total size: 0x1F4
 struct CustomizeParts : public CustomizationScreen {
-    static void TexturePackLoadedCallbackAccessor(unsigned int parts_screen) {}
-    static void TextureLoadedCallbackAccessor(unsigned int parts_screen) {}
+    static void TexturePackLoadedCallbackAccessor(unsigned int parts_screen) {
+        reinterpret_cast<CustomizeParts *>(parts_screen)->TexturePackLoadedCallback();
+    }
+    static void TextureLoadedCallbackAccessor(unsigned int parts_screen) {
+        reinterpret_cast<CustomizeParts *>(parts_screen)->TextureLoadedCallback();
+    }
 
     CustomizeParts(ScreenConstructorData *sd);
     ~CustomizeParts() override;

@@ -255,10 +255,10 @@ ShoppingCartItem *CarCustomizeManager::IsPartInCart(SelectablePart *to_find) {
 
 CarPart *CarCustomizeManager::GetActivePartFromSlot(unsigned int slot_id) {
     ShoppingCartItem *item = IsPartTypeInCart(slot_id);
-    if (!item) {
-        return GetInstalledCarPart(slot_id);
+    if (item) {
+        return item->GetBuyingPart()->GetPart();
     }
-    return item->GetBuyingPart()->GetPart();
+    return GetInstalledCarPart(slot_id);
 }
 
 int CarCustomizeManager::GetCartTotal(eCustomizeCartTotals type) {

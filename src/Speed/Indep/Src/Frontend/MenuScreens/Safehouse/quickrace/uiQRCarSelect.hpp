@@ -29,7 +29,9 @@ class QRCarSelectBustedManager {
         BUSTED_ANIM_SHOW_IMPOUNDED = 2,
     };
 
-    static void TextureLoadedCallbackAccessor(unsigned int this_screen) {}
+    static void TextureLoadedCallbackAccessor(unsigned int this_screen) {
+        reinterpret_cast<QRCarSelectBustedManager *>(this_screen)->TextureLoadedCallback();
+    }
 
     static void SetPlayerBusted() {
         bPlayerJustGotBusted = true;
