@@ -612,127 +612,303 @@ bool CarCustomizeManager::IsPartNew(SelectablePart *part, int perf_unlock_level)
 }
 
 bool CarCustomizeManager::IsCategoryNew(unsigned int cat) {
-    eUnlockableEntity ent;
-    if (cat < 0x208) {
-        if (cat < 0x105) {
-            if (cat == 0x101) {
-                ent = static_cast<eUnlockableEntity>(0x23);
-            } else if (cat > 0x101) {
+    eUnlockableEntity titty;
+
+    if (cat == 0x406) {
+        titty = static_cast<eUnlockableEntity>(0x27);
+    } else if (cat < 0x407) {
+        if (cat == 0x207) {
+            titty = static_cast<eUnlockableEntity>(9);
+        } else if (cat < 0x208) {
+            if (cat == 0x201) {
+                titty = static_cast<eUnlockableEntity>(8);
+            } else if (cat < 0x202) {
                 if (cat == 0x103) {
-                    ent = static_cast<eUnlockableEntity>(0x2b);
-                } else if (cat == 0x104) {
-                    ent = static_cast<eUnlockableEntity>(0x22);
-                } else {
+                    for (unsigned int i = 0x702; i < 0x70c; i++) {
+                        if (IsCategoryNew(i)) return true;
+                    }
                     return false;
                 }
-            } else if (cat == 0x100) {
-                ent = static_cast<eUnlockableEntity>(0x20);
+                if (cat < 0x104) {
+                    if (cat == 0x101) {
+                        titty = static_cast<eUnlockableEntity>(0xb);
+                    } else {
+                        if (cat != 0x102) return true;
+                        titty = static_cast<eUnlockableEntity>(0xc);
+                    }
+                } else if (cat == 0x104) {
+                    titty = static_cast<eUnlockableEntity>(0xe);
+                } else {
+                    if (cat != 0x105) return true;
+                    titty = static_cast<eUnlockableEntity>(0xf);
+                }
+            } else if (cat == 0x204) {
+                titty = static_cast<eUnlockableEntity>(10);
+            } else if (cat < 0x205) {
+                if (cat == 0x202) {
+                    titty = static_cast<eUnlockableEntity>(7);
+                } else {
+                    if (cat != 0x203) return true;
+                    titty = static_cast<eUnlockableEntity>(6);
+                }
+            } else if (cat == 0x205) {
+                titty = static_cast<eUnlockableEntity>(4);
             } else {
-                return false;
+                if (cat != 0x206) return true;
+                titty = static_cast<eUnlockableEntity>(5);
             }
-        } else if (cat == 0x105) {
-            ent = static_cast<eUnlockableEntity>(0x24);
-        } else if (cat > 0x105) {
-            if (cat == 0x201) {
-                ent = static_cast<eUnlockableEntity>(0x25);
-            } else if (cat == 0x202) {
-                ent = static_cast<eUnlockableEntity>(0x26);
+        } else if (cat == 0x306) {
+            titty = static_cast<eUnlockableEntity>(0x2b);
+        } else if (cat < 0x307) {
+            if (cat == 0x303) {
+                titty = static_cast<eUnlockableEntity>(0x18);
+            } else if (cat < 0x304) {
+                if (cat != 0x301) {
+                    if (cat == 0x302) {
+                        for (unsigned int i = 0x402; i <= 0x409; i++) {
+                            if (IsCategoryNew(i)) return true;
+                        }
+                    }
+                    return true;
+                }
+                titty = static_cast<eUnlockableEntity>(0x17);
             } else {
-                return false;
+                if (cat != 0x304) {
+                    if (cat != 0x305) return true;
+                    if (IsCategoryNew(0x501)) return true;
+                    if (IsCategoryNew(0x505)) return true;
+                    if (IsCategoryNew(0x503)) return true;
+                    return false;
+                }
+                titty = static_cast<eUnlockableEntity>(0x12);
+            }
+        } else if (cat == 0x403) {
+            titty = static_cast<eUnlockableEntity>(0x24);
+        } else if (cat < 0x404) {
+            if (cat == 0x307) {
+                titty = static_cast<eUnlockableEntity>(0x11);
+            } else {
+                if (cat != 0x402) return true;
+                titty = static_cast<eUnlockableEntity>(0x23);
+            }
+        } else if (cat == 0x404) {
+            titty = static_cast<eUnlockableEntity>(0x25);
+        } else {
+            if (cat != 0x405) return true;
+            titty = static_cast<eUnlockableEntity>(0x26);
+        }
+    } else if (cat == 0x702) {
+        titty = static_cast<eUnlockableEntity>(0x19);
+    } else if (cat < 0x703) {
+        if (cat < 0x505) {
+            if (cat < 0x503) {
+                if (cat == 0x409) {
+                    titty = static_cast<eUnlockableEntity>(0x2a);
+                } else if (cat < 0x40a) {
+                    if (cat == 0x407) {
+                        titty = static_cast<eUnlockableEntity>(0x28);
+                    } else {
+                        if (cat != 0x408) return true;
+                        titty = static_cast<eUnlockableEntity>(0x29);
+                    }
+                } else {
+                    if (cat < 0x501) return true;
+                    titty = static_cast<eUnlockableEntity>(0x2c);
+                }
+                goto common;
             }
         } else {
-            return false;
-        }
-    } else if (cat < 0x302) {
-        if (cat == 0x208) {
-            ent = static_cast<eUnlockableEntity>(0x2a);
-        } else if (cat > 0x208) {
-            if (cat == 0x301) {
-                ent = static_cast<eUnlockableEntity>(0x27);
-            } else {
-                return false;
+            if (cat < 0x507) {
+                titty = static_cast<eUnlockableEntity>(0x30);
+                goto common;
             }
-        } else if (cat == 0x203) {
-            ent = static_cast<eUnlockableEntity>(0x29);
-        } else {
-            return false;
+            if (cat > 0x606) return true;
+            if (cat < 0x601) return true;
         }
-    } else if (cat == 0x302) {
-        ent = static_cast<eUnlockableEntity>(0x28);
-    } else if (cat > 0x302) {
-        if (cat == 0x801) {
-            ent = static_cast<eUnlockableEntity>(0x21);
+        titty = static_cast<eUnlockableEntity>(0x2e);
+    } else if (cat == 0x708) {
+        titty = static_cast<eUnlockableEntity>(0x1f);
+    } else if (cat < 0x709) {
+        if (cat == 0x705) {
+            titty = static_cast<eUnlockableEntity>(0x1c);
+        } else if (cat < 0x706) {
+            if (cat == 0x703) {
+                titty = static_cast<eUnlockableEntity>(0x1a);
+            } else {
+                if (cat != 0x704) return true;
+                titty = static_cast<eUnlockableEntity>(0x1b);
+            }
+        } else if (cat == 0x706) {
+            titty = static_cast<eUnlockableEntity>(0x1d);
         } else {
-            return false;
+            if (cat != 0x707) return true;
+            titty = static_cast<eUnlockableEntity>(0x1e);
         }
+    } else if (cat == 0x70b) {
+        titty = static_cast<eUnlockableEntity>(0x22);
     } else {
-        return false;
+        if (cat > 0x70b) {
+            if (cat == 0x802) {
+                for (unsigned int i = 0x201; i < 0x208; i++) {
+                    if (IsCategoryNew(i)) return true;
+                }
+                return false;
+            }
+            if (cat < 0x803) {
+                if (cat != 0x801) return true;
+                for (unsigned int i = 0x101; i < 0x106; i++) {
+                    if (IsCategoryNew(i)) return true;
+                }
+                return false;
+            }
+            if (cat != 0x803) return true;
+            for (unsigned int i = 0x301; i < 0x308; i++) {
+                if (IsCategoryNew(i)) return true;
+            }
+            return false;
+        }
+        if (cat == 0x709) {
+            titty = static_cast<eUnlockableEntity>(0x20);
+        } else {
+            if (cat != 0x70a) return true;
+            titty = static_cast<eUnlockableEntity>(0x21);
+        }
     }
+common:
     eUnlockFilters filter = GetUnlockFilter();
-    return UnlockSystem::IsUnlockableNew(filter, ent, 0);
+    return UnlockSystem::IsUnlockableNew(filter, titty, -2);
 }
 
-bool CarCustomizeManager::IsCategoryLocked(unsigned int cat, bool) {
-    eUnlockableEntity ent;
+bool CarCustomizeManager::IsCategoryLocked(unsigned int cat, bool backroom) {
+    eUnlockableEntity titty;
     int level = 0;
-    if (cat < 0x208) {
-        if (cat < 0x105) {
-            if (cat == 0x101) {
-                ent = static_cast<eUnlockableEntity>(0x23);
-            } else if (cat > 0x101) {
-                if (cat == 0x103) {
-                    ent = static_cast<eUnlockableEntity>(0x2b);
-                } else if (cat == 0x104) {
-                    ent = static_cast<eUnlockableEntity>(0x22);
+
+    if (cat == 0x305) {
+        if (!IsCategoryLocked(0x501, backroom)) return false;
+        if (!IsCategoryLocked(0x505, backroom)) return false;
+        if (!IsCategoryLocked(0x503, backroom)) return false;
+        return true;
+    }
+    if (cat < 0x306) {
+        if (cat == 0x203) {
+            if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(2))) return true;
+            titty = static_cast<eUnlockableEntity>(6);
+        } else if (cat < 0x204) {
+            if (cat == 0x104) {
+                titty = static_cast<eUnlockableEntity>(0xe);
+            } else if (cat < 0x105) {
+                if (cat == 0x102) {
+                    titty = static_cast<eUnlockableEntity>(0xc);
+                } else if (cat > 0x102) {
+                    for (unsigned int i = 0x702; i < 0x70c; i++) {
+                        if (!IsRimCategoryLocked(i, backroom)) return false;
+                    }
+                    return true;
+                } else if (cat == 0x101) {
+                    titty = static_cast<eUnlockableEntity>(0xb);
                 } else {
-                    return false;
+                    return true;
                 }
-            } else if (cat == 0x100) {
-                ent = static_cast<eUnlockableEntity>(0x20);
+            } else if (cat == 0x201) {
+                if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(4))) return true;
+                titty = static_cast<eUnlockableEntity>(8);
+            } else if (cat < 0x202) {
+                if (cat != 0x105) return true;
+                titty = static_cast<eUnlockableEntity>(0xf);
             } else {
-                return false;
+                if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(3))) return true;
+                titty = static_cast<eUnlockableEntity>(7);
             }
-        } else if (cat == 0x105) {
-            ent = static_cast<eUnlockableEntity>(0x24);
-        } else if (cat > 0x105) {
-            if (cat == 0x201) {
-                ent = static_cast<eUnlockableEntity>(0x25);
-            } else if (cat == 0x202) {
-                ent = static_cast<eUnlockableEntity>(0x26);
+        } else if (cat == 0x207) {
+            if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(5))) return true;
+            titty = static_cast<eUnlockableEntity>(9);
+        } else if (cat < 0x208) {
+            if (cat == 0x205) {
+                if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(0))) return true;
+                titty = static_cast<eUnlockableEntity>(4);
+            } else if (cat < 0x206) {
+                if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(6))) return true;
+                titty = static_cast<eUnlockableEntity>(10);
             } else {
-                return false;
+                if (backroom && !CanInstallJunkman(static_cast<Physics::Upgrades::Type>(1))) return true;
+                titty = static_cast<eUnlockableEntity>(5);
             }
         } else {
-            return false;
+            if (cat == 0x302) {
+                for (unsigned int i = 0x402; i < 0x40a; i++) {
+                    if (!IsVinylCategoryLocked(i, backroom)) return false;
+                }
+                return true;
+            }
+            if (cat < 0x303) {
+                if (cat != 0x301) return true;
+                titty = static_cast<eUnlockableEntity>(0x17);
+            } else if (cat == 0x303) {
+                titty = static_cast<eUnlockableEntity>(0x18);
+            } else {
+                if (cat != 0x304) return true;
+                titty = static_cast<eUnlockableEntity>(0x12);
+            }
         }
-    } else if (cat < 0x302) {
-        if (cat == 0x208) {
-            ent = static_cast<eUnlockableEntity>(0x2a);
-        } else if (cat > 0x208) {
-            if (cat == 0x301) {
-                ent = static_cast<eUnlockableEntity>(0x27);
-            } else {
-                return false;
+    } else if (cat < 0x507) {
+        if (cat > 0x504) {
+            level = 3;
+            titty = static_cast<eUnlockableEntity>(0x30);
+        } else if (cat < 0x40a) {
+            if (cat > 0x401) {
+                return IsVinylCategoryLocked(cat, backroom);
             }
-        } else if (cat == 0x203) {
-            ent = static_cast<eUnlockableEntity>(0x29);
+            if (cat == 0x306) {
+                titty = static_cast<eUnlockableEntity>(0x2b);
+            } else {
+                if (cat != 0x307) return true;
+                titty = static_cast<eUnlockableEntity>(0x11);
+            }
+        } else if (cat < 0x501) {
+            return true;
+        } else if (cat < 0x503) {
+            level = 1;
+            titty = static_cast<eUnlockableEntity>(0x2c);
         } else {
-            return false;
-        }
-    } else if (cat == 0x302) {
-        ent = static_cast<eUnlockableEntity>(0x28);
-    } else if (cat > 0x302) {
-        if (cat == 0x801) {
-            ent = static_cast<eUnlockableEntity>(0x21);
-        } else {
-            return false;
+            level = 2;
+            titty = static_cast<eUnlockableEntity>(0x2e);
         }
     } else {
-        return false;
+        if (cat > 0x70b) {
+            if (cat == 0x802) {
+                for (unsigned int i = 0x201; i < 0x208; i++) {
+                    if (!IsCategoryLocked(i, backroom)) return false;
+                }
+                return true;
+            }
+            if (cat < 0x803) {
+                if (cat != 0x801) return true;
+                for (unsigned int i = 0x101; i < 0x106; i++) {
+                    if (!IsCategoryLocked(i, backroom)) return false;
+                }
+                return true;
+            }
+            if (cat != 0x803) return true;
+            for (unsigned int i = 0x301; i < 0x308; i++) {
+                if (!IsCategoryLocked(i, backroom)) return false;
+            }
+            return true;
+        }
+        if (cat > 0x701) {
+            return IsRimCategoryLocked(cat, backroom);
+        }
+        if (cat > 0x606) return true;
+        if (cat < 0x601) return true;
+        level = 2;
+        titty = static_cast<eUnlockableEntity>(0x2e);
     }
+
     eUnlockFilters filter = GetUnlockFilter();
-    bool backroom = CustomizeIsInBackRoom();
-    return !UnlockSystem::IsUnlockableUnlocked(filter, ent, level, 0, backroom);
+    if (!backroom) {
+        return !UnlockSystem::IsUnlockableUnlocked(filter, titty, level, 0, false);
+    } else {
+        return !UnlockSystem::IsBackroomAvailable(filter, titty, level);
+    }
 }
 
 bool CarCustomizeManager::IsRimCategoryLocked(unsigned int cat, bool backroom) {

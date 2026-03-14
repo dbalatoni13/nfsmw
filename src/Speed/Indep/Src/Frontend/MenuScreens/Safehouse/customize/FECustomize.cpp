@@ -71,8 +71,10 @@ extern int GetCurrentLanguage();
 extern const char *GetLocalizedString(unsigned int hash);
 extern void GetLocalizedString(char *buf, int size, unsigned int hash);
 extern void FEPrintf(const char *pkg, unsigned int hash, const char *fmt, ...);
+extern int FEPrintf(FEString *text, const char *fmt, ...);
 extern int bSNPrintf(char *buf, int size, const char *fmt, ...);
 extern int bSPrintf(char *buf, const char *fmt, ...);
+extern int bStrLen(const char *s);
 
 extern CarCustomizeManager gCarCustomizeManager;
 extern cFrontendDatabase *FEDatabase;
@@ -400,6 +402,7 @@ unsigned int FEShoppingCartItem::GetPerfPkgCatHash(Physics::Upgrades::Type phys_
 
 unsigned int FEShoppingCartItem::GetPerfPkgLevelHash(int level) {
     switch (level) {
+        case 0: return 0x69c270c3;
         case 1: return 0x69c270c4;
         case 2: return 0x69c270c5;
         case 3: return 0x69c270c6;
@@ -428,23 +431,339 @@ unsigned int FEShoppingCartItem::GetCarPartCatHash(unsigned int slot_id) {
         case 0x66:
         case 0x67:
         case 0x68: return 0x34367c86;
-        case 0x69:
-        case 0x6a: return 0xddf80259;
         case 0x6b:
         case 0x6c:
         case 0x6d:
         case 0x6e:
         case 0x6f:
-        case 0x70: return 0x955980bc;
+        case 0x70: return 0xddf80259;
         case 0x71: return 0x6857e5ac;
-        case 0x73: return 0x78980a6b;
+        case 0x73: return 0x8a7697d6;
         case 0x7b: return 0xb1f9b0c9;
-        case 0x84: return 0xd32729a6;
+        case 0x83: return 0xd32729a6;
+        case 0x84: return 0x78980a6b;
         default: return 0;
     }
 }
 
-// --- CustomizeShoppingCart ---
+void FEShoppingCartItem::DrawPartName() {
+    SelectablePart *buyPart = TheItem->GetBuyingPart();
+    if (buyPart->IsPerformancePkg()) {
+        Physics::Upgrades::Type phys_type = static_cast<Physics::Upgrades::Type>(static_cast<int>(buyPart->GetPhysicsType()));
+        unsigned int level = buyPart->GetUpgradeLevel();
+        if (static_cast<int>(level) == 7) {
+            if (GetCurrentLanguage() == 1) {
+                FEPrintf(GetTitleObject(), "%s : %s",
+                    GetLocalizedString(GetPerfPkgCatHash(phys_type)),
+                    GetLocalizedString(0xedd14807));
+            } else {
+                FEPrintf(GetTitleObject(), "%s: %s",
+                    GetLocalizedString(GetPerfPkgCatHash(phys_type)),
+                    GetLocalizedString(0xedd14807));
+            }
+        } else {
+            int numPkgs = gCarCustomizeManager.GetNumPackages(phys_type);
+            int displayLevel = (static_cast<int>(level) + 6) - numPkgs;
+            if (GetCurrentLanguage() == 1) {
+                FEPrintf(GetTitleObject(), "%s : %s",
+                    GetLocalizedString(GetPerfPkgCatHash(phys_type)),
+                    GetLocalizedString(GetPerfPkgLevelHash(displayLevel)));
+            } else {
+                FEPrintf(GetTitleObject(), "%s: %s",
+                    GetLocalizedString(GetPerfPkgCatHash(phys_type)),
+                    GetLocalizedString(GetPerfPkgLevelHash(displayLevel)));
+            }
+        }
+        return;
+    }
+
+    SelectablePart *part = TheItem->GetBuyingPart();
+    int slot_id = part->GetSlotID();
+
+    if (slot_id == 0x53) goto vinyl_decal;
+    if (slot_id < 0x54) {
+        if (slot_id > 0x3f) {
+            if (slot_id == 0x4c) {
+                unsigned int paint_type = part->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0);
+                unsigned int colorHash = 0x452b5481;
+                if (paint_type == 0x2daab07) {
+                    colorHash = 0xb6763cde;
+                } else if (paint_type < 0x2daab08) {
+                    if (paint_type == 0xda27) {
+                        colorHash = 0xb3100a3e;
+                    }
+                } else if (paint_type != 0x3437a52 && paint_type == 0x3797533) {
+                    colorHash = 0xb715070a;
+                }
+                if (GetCurrentLanguage() == 1) {
+                    FEPrintf(GetTitleObject(), "%s : %s %s",
+                        GetLocalizedString(GetCarPartCatHash(slot_id)),
+                        GetLocalizedString(colorHash),
+                        GetLocalizedString(part->GetPart()->GetAppliedAttributeUParam(bStringHash("SPEECHCOLOUR"), 0)));
+                } else {
+                    FEPrintf(GetTitleObject(), "%s: %s %s",
+                        GetLocalizedString(GetCarPartCatHash(slot_id)),
+                        GetLocalizedString(colorHash),
+                        GetLocalizedString(part->GetPart()->GetAppliedAttributeUParam(bStringHash("SPEECHCOLOUR"), 0)));
+                }
+                return;
+            }
+            if (slot_id < 0x4d) {
+                if (slot_id == 0x42) {
+                    CarPart *car_part = part->GetPart();
+                    CarPart *stock = gCarCustomizeManager.GetStockCarPart(0x42);
+                    if (car_part != stock) {
+                        char buf[64];
+                        bSNPrintf(buf, 64, "%s", car_part->GetName());
+                        int len = bStrLen(buf);
+                        if (len < 1) return;
+                        int trimStart = len - 6;
+                        for (; trimStart <= len; len--) {
+                            buf[len] = 0;
+                        }
+                        const char *fmt;
+                        if (GetCurrentLanguage() == 1) {
+                            fmt = "%s : %s %$d\"";
+                        } else {
+                            fmt = "%s: %s %$d\"";
+                        }
+                        FEPrintf(GetTitleObject(), fmt,
+                            GetLocalizedString(GetCarPartCatHash(slot_id)),
+                            buf,
+                            static_cast<int>(car_part->GetAppliedAttributeIParam(0xeb0101e2, 0)));
+                        return;
+                    }
+                    if (GetCurrentLanguage() == 1) {
+                        FEPrintf(GetTitleObject(), "%s : %s",
+                            GetLocalizedString(GetCarPartCatHash(slot_id)),
+                            GetLocalizedString(0x60a662f5));
+                    } else {
+                        FEPrintf(GetTitleObject(), "%s: %s",
+                            GetLocalizedString(GetCarPartCatHash(slot_id)),
+                            GetLocalizedString(0x60a662f5));
+                    }
+                    return;
+                }
+                goto default_label;
+            }
+            if (slot_id == 0x4d) {
+                CarPart *car_part = part->GetPart();
+                if (!car_part) {
+                    if (GetCurrentLanguage() == 1) {
+                        FEPrintf(GetTitleObject(), "%s : %s",
+                            GetLocalizedString(GetCarPartCatHash(slot_id)),
+                            GetLocalizedString(0x60a662f5));
+                    } else {
+                        FEPrintf(GetTitleObject(), "%s: %s",
+                            GetLocalizedString(GetCarPartCatHash(slot_id)),
+                            GetLocalizedString(0x60a662f5));
+                    }
+                    return;
+                }
+                if (car_part->HasAppliedAttribute(bStringHash("LANGUAGEHASH"))) {
+                    goto languagehash_label;
+                }
+                goto name_label;
+            }
+            if (slot_id == 0x4e) {
+                if (GetCurrentLanguage() == 1) {
+                    FEPrintf(GetTitleObject(), "%s : %s %s",
+                        GetLocalizedString(GetCarPartCatHash(slot_id)),
+                        GetLocalizedString(0xb3100a3e),
+                        GetLocalizedString(part->GetPart()->GetAppliedAttributeUParam(bStringHash("SPEECHCOLOUR"), 0)));
+                } else {
+                    FEPrintf(GetTitleObject(), "%s: %s %s",
+                        GetLocalizedString(GetCarPartCatHash(slot_id)),
+                        GetLocalizedString(0xb3100a3e),
+                        GetLocalizedString(part->GetPart()->GetAppliedAttributeUParam(bStringHash("SPEECHCOLOUR"), 0)));
+                }
+                return;
+            }
+            goto default_label;
+        }
+        if (slot_id < 0x3e) {
+            if (slot_id != 0x17) {
+                if (slot_id != 0x2c) goto default_label;
+                goto carbonfibre_check;
+            }
+            if (part->GetPart()->HasAppliedAttribute(bStringHash("LANGUAGEHASH"))) {
+                goto languagehash_label;
+            }
+            goto name_label;
+        }
+    carbonfibre_check:
+        if (part->GetPart()->HasAppliedAttribute(bStringHash("CARBONFIBRE"))) {
+            if (part->GetPart()->GetAppliedAttributeIParam(bStringHash("CARBONFIBRE"), 0) != 0) {
+                const char *fmt;
+                if (GetCurrentLanguage() == 1) {
+                    fmt = "%s : %s %s";
+                } else {
+                    fmt = "%s: %s %s";
+                }
+                FEPrintf(GetTitleObject(), fmt,
+                    GetLocalizedString(GetCarPartCatHash(slot_id)),
+                    GetLocalizedString(0x5415b874),
+                    GetLocalizedString(part->GetPart()->GetAppliedAttributeUParam(bStringHash("LANGUAGEHASH"), 0)));
+                return;
+            }
+        }
+        if (part->GetPart()->HasAppliedAttribute(bStringHash("LANGUAGEHASH"))) {
+            goto languagehash_label;
+        }
+        goto name_label;
+    }
+
+    if (slot_id < 0x71) {
+        if (slot_id < 0x6b && slot_id != 0x5b && (slot_id < 0x5b || (slot_id > 0x68 || slot_id < 99)))
+            goto default_label;
+    vinyl_decal:
+        if (!part->GetPart()) {
+            const char *fmt;
+            if (GetCurrentLanguage() == 1) {
+                fmt = "%s : %s - %s";
+            } else {
+                fmt = "%s: %s - %s";
+            }
+            FEPrintf(GetTitleObject(), fmt,
+                GetLocalizedString(0x955980bc),
+                GetLocalizedString(GetCarPartCatHash(slot_id)),
+                GetLocalizedString(0x7177dc17));
+            return;
+        }
+        {
+            unsigned int subCatHash = 0;
+            part->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0);
+            part->GetPart()->GetAppliedAttributeUParam(bStringHash("NAME"), 0);
+            int sid = part->GetSlotID();
+            if (sid == 0x68) {
+            slot_68:
+                subCatHash = 0x7d212cff;
+            } else if (sid < 0x69) {
+                if (sid == 0x65) {
+                slot_65:
+                    subCatHash = 0x7d212cfc;
+                } else if (sid < 0x66) {
+                    if (sid == 99) {
+                    slot_63:
+                        subCatHash = 0x7d212cfa;
+                    } else if (sid == 100) {
+                    slot_64:
+                        subCatHash = 0x7d212cfb;
+                    }
+                } else if (sid == 0x66) {
+                slot_66:
+                    subCatHash = 0x7d212cfd;
+                } else if (sid == 0x67) {
+                    goto slot_67;
+                }
+            } else {
+                if (sid == 0x6d) goto slot_65;
+                if (sid < 0x6e) {
+                    if (sid == 0x6b) goto slot_63;
+                    if (sid == 0x6c) goto slot_64;
+                } else if (sid == 0x6f) {
+                slot_67:
+                    subCatHash = 0x7d212cfe;
+                } else {
+                    if (sid < 0x6f) goto slot_66;
+                    if (sid == 0x70) goto slot_68;
+                }
+            }
+
+            if (subCatHash != 0) {
+                const char *fmt;
+                if (GetCurrentLanguage() == 1) {
+                    fmt = "%s : %s %s %s";
+                } else {
+                    fmt = "%s: %s %s %s";
+                }
+                FEPrintf(GetTitleObject(), fmt,
+                    GetLocalizedString(0x955980bc),
+                    GetLocalizedString(GetCarPartCatHash(slot_id)),
+                    GetLocalizedString(subCatHash),
+                    part->GetPart()->GetName());
+                return;
+            }
+            const char *fmt;
+            if (GetCurrentLanguage() == 1) {
+                fmt = "%s : %s %s";
+            } else {
+                fmt = "%s: %s %s";
+            }
+            FEPrintf(GetTitleObject(), fmt,
+                GetLocalizedString(0x955980bc),
+                GetLocalizedString(GetCarPartCatHash(slot_id)),
+                part->GetPart()->GetName());
+            return;
+        }
+    }
+
+    if (slot_id == 0x73) goto vinyl_decal;
+    if (slot_id > 0x73) {
+        if (slot_id != 0x7b) goto default_label;
+        goto vinyl_decal;
+    }
+    if (slot_id != 0x71) {
+    default_label:
+        if (part->GetPart()->HasAppliedAttribute(bStringHash("LANGUAGEHASH"))) {
+        languagehash_label:
+            if (GetCurrentLanguage() == 1) {
+                FEPrintf(GetTitleObject(), "%s : %s",
+                    GetLocalizedString(GetCarPartCatHash(slot_id)),
+                    GetLocalizedString(part->GetPart()->GetAppliedAttributeUParam(bStringHash("LANGUAGEHASH"), 0)));
+            } else {
+                FEPrintf(GetTitleObject(), "%s: %s",
+                    GetLocalizedString(GetCarPartCatHash(slot_id)),
+                    GetLocalizedString(part->GetPart()->GetAppliedAttributeUParam(bStringHash("LANGUAGEHASH"), 0)));
+            }
+            return;
+        }
+    name_label:
+        if (GetCurrentLanguage() == 1) {
+            FEPrintf(GetTitleObject(), "%s : %s",
+                GetLocalizedString(GetCarPartCatHash(slot_id)),
+                part->GetPart()->GetName());
+        } else {
+            FEPrintf(GetTitleObject(), "%s: %s",
+                GetLocalizedString(GetCarPartCatHash(slot_id)),
+                part->GetPart()->GetName());
+        }
+        return;
+    }
+
+    // Case 0x71: Number plates
+    {
+        ShoppingCartItem *leftItem = gCarCustomizeManager.IsPartTypeInCart(static_cast<unsigned int>(0x71));
+        ShoppingCartItem *rightItem = gCarCustomizeManager.IsPartTypeInCart(static_cast<unsigned int>(0x72));
+        if (!leftItem) return;
+        if (!rightItem) return;
+        CarPart *left_part = leftItem->GetBuyingPart()->GetPart();
+        CarPart *right_part = rightItem->GetBuyingPart()->GetPart();
+        if (!left_part || !right_part) {
+            if (GetCurrentLanguage() == 1) {
+                FEPrintf(GetTitleObject(), "%s : %s",
+                    GetLocalizedString(GetCarPartCatHash(slot_id)),
+                    GetLocalizedString(0xbe434a38));
+            } else {
+                FEPrintf(GetTitleObject(), "%s: %s",
+                    GetLocalizedString(GetCarPartCatHash(slot_id)),
+                    GetLocalizedString(0xbe434a38));
+            }
+            return;
+        }
+        const char *fmt;
+        if (GetCurrentLanguage() == 1) {
+            fmt = "%s : %s%s";
+        } else {
+            fmt = "%s: %s%s";
+        }
+        FEPrintf(GetTitleObject(), fmt,
+            GetLocalizedString(GetCarPartCatHash(slot_id)),
+            left_part->GetName(),
+            right_part->GetName());
+        return;
+    }
+}
 
 CustomizeShoppingCart::CustomizeShoppingCart(ScreenConstructorData *sd) : UIWidgetMenu(sd) {
     bScrollWrapped = false;
