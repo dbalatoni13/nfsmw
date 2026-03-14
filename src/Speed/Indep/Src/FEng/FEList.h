@@ -44,8 +44,8 @@ public:
 
     inline FEMinNode* GetHead() const { return head; }
     inline FEMinNode* GetTail() const { return tail; }
-    inline void AddHead(FEMinNode* n);
-    inline void AddTail(FEMinNode* n);
+    inline void AddHead(FEMinNode* n) { AddNode(nullptr, n); }
+    inline void AddTail(FEMinNode* n) { AddNode(tail, n); }
     void Purge();
     inline bool IsListEmpty() const { return numElements == 0; }
     inline unsigned long GetNumElements() const { return numElements; }

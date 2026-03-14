@@ -11,9 +11,9 @@ struct FEGroup : public FEObject {
     FEGroup(const FEGroup& Object, bool bCloneChildren, bool bReference);
     ~FEGroup() override;
 
-    inline void AddObject(FEObject* pObj);
-    inline void AddObjectAfter(FEObject* pObj, FEObject* pAddAfter);
-    inline void RemoveObject(FEObject* pObj);
+    inline void AddObject(FEObject* pObj) { Children.AddTail(pObj); }
+    inline void AddObjectAfter(FEObject* pObj, FEObject* pAddAfter) { Children.AddNode(pAddAfter, pObj); }
+    inline void RemoveObject(FEObject* pObj) { Children.RemNode(pObj); }
 
     inline unsigned long GetNumChildren() const { return Children.GetNumElements(); }
     inline FEObject* GetFirstChild() const { return static_cast<FEObject*>(Children.GetHead()); }

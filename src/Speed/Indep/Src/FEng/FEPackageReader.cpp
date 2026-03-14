@@ -22,6 +22,8 @@
 #include "FEMsgTargetList.h"
 #include "FEWideString.h"
 
+void FEKeyInterp(FEScript* pScript, unsigned char TrackNum, long tTime, FEObject* pOutObj);
+
 inline unsigned long BSwap32(unsigned long v) {
     return (v >> 24) | (v << 24) | ((v & 0xFF00) << 8) | ((v >> 8) & 0xFF00);
 }
@@ -373,73 +375,100 @@ bool FEPackageReader::ReadResourceChunk() {
 void FEPackageReader::ProcessMultiImageTag(FETag* pTag) {
     FEMultiImage* pImage = static_cast<FEMultiImage*>(pObj);
     unsigned short tagID = BSwap16(pTag->GetID());
-    if (tagID == 0x314d) {
-        pImage->hTexture[0] = BSwap32(pTag->Getu32(0));
-    } else if (tagID == 0x324d) {
-        pImage->hTexture[1] = BSwap32(pTag->Getu32(0));
-    } else if (tagID == 0x334d) {
-        pImage->hTexture[2] = BSwap32(pTag->Getu32(0));
-    } else if (tagID == 0x614d) {
-        pImage->TextureFlags[0] = BSwap32(pTag->Getu32(0));
-    } else if (tagID == 0x624d) {
-        pImage->TextureFlags[1] = BSwap32(pTag->Getu32(0));
-    } else if (tagID == 0x634d) {
-        pImage->TextureFlags[2] = BSwap32(pTag->Getu32(0));
+    switch (tagID) {
+        case 0x314d:
+            pImage->hTexture[0] = BSwap32(pTag->Getu32(0));
+            break;
+        case 0x324d:
+            pImage->hTexture[1] = BSwap32(pTag->Getu32(0));
+            break;
+        case 0x334d:
+            pImage->hTexture[2] = BSwap32(pTag->Getu32(0));
+            break;
+        case 0x614d:
+            pImage->TextureFlags[0] = BSwap32(pTag->Getu32(0));
+            break;
+        case 0x624d:
+            pImage->TextureFlags[1] = BSwap32(pTag->Getu32(0));
+            break;
+        case 0x634d:
+            pImage->TextureFlags[2] = BSwap32(pTag->Getu32(0));
+            break;
     }
 }
 
 void FEPackageReader::ProcessStringTag(FETag* pTag) {
     FEString* pString = static_cast<FEString*>(pObj);
     unsigned short tagID = BSwap16(pTag->GetID());
-    if (tagID == 0x4853) {
-        pString->SetLabelHash(BSwap32(pTag->Getu32(0)));
-    } else if (tagID == 0x4c53) {
-        if (bLoadObjectNames) {
-            pString->SetLabel(reinterpret_cast<const char*>(pTag->Data()));
-        }
-    } else if (tagID == 0x6253) {
-        pString->string.SetLength(BSwap32(pTag->Getu32(0)));
-    } else if (tagID == 0x6a53) {
-        pString->Format = BSwap32(pTag->Getu32(0));
-    } else if (tagID == 0x6c53) {
-        pString->Leading = BSwap32(pTag->Getu32(0));
-    } else if (tagID == 0x7453) {
-        pString->string = reinterpret_cast<short*>(pTag->Data());
-        short* pStr = pString->string.mpsString;
-        while (*pStr) {
-            *pStr = BSwap16(*pStr);
-            pStr++;
-        }
-    } else if (tagID == 0x7753) {
-        pString->MaxWidth = BSwap32(pTag->Getu32(0));
+    switch (tagID) {
+        case 0x6253:
+            pString->string.SetLength(BSwap32(pTag->Getu32(0)));
+            break;
+        case 0x7453:
+            pString->string = reinterpret_cast<short*>(pTag->Data());
+            {
+                short* ptr = pString->string.mpsString;
+                while (*ptr) {
+                    *ptr = BSwap16(*ptr);
+                    ptr++;
+                }
+            }
+            break;
+        case 0x6a53:
+            pString->Format = BSwap32(pTag->Getu32(0));
+            break;
+        case 0x6c53:
+            pString->Leading = BSwap32(pTag->Getu32(0));
+            break;
+        case 0x7753:
+            pString->MaxWidth = BSwap32(pTag->Getu32(0));
+            break;
+        case 0x4c53:
+            if (bLoadObjectNames) {
+                pString->SetLabel(reinterpret_cast<const char*>(pTag->Data()));
+            }
+            break;
+        case 0x4853:
+            pString->SetLabelHash(BSwap32(pTag->Getu32(0)));
+            break;
     }
 }
 
 void FEPackageReader::ProcessCodeListBoxTag(FETag* pTag) {
     FECodeListBox* pList = static_cast<FECodeListBox*>(pObj);
     unsigned short tagID = BSwap16(pTag->GetID());
-    if (tagID == 0x444c) {
-        pList->Initialize(BSwap32(pTag->Getu32(0)), BSwap32(pTag->Getu32(1)));
-    } else if (tagID == 0x4953) {
-        pList->AllocateStrings(BSwap32(pTag->Getu32(0)), BSwap32(pTag->Getu32(1)));
-    } else if (tagID == 0x6343) {
-        pList->SetCellColor(0, 0, BSwap32(pTag->Getu32(0)), pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
-    } else if (tagID == 0x6a4c) {
-        pList->SetCellJustification(0, 0, BSwap32(pTag->Getu32(0)), pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
-    } else if (tagID == 0x7343) {
-        FEPoint scale;
-        unsigned long sh = BSwap32(pTag->Getu32(0));
-        unsigned long sv = BSwap32(pTag->Getu32(1));
-        scale.h = *reinterpret_cast<float*>(&sh);
-        scale.v = *reinterpret_cast<float*>(&sv);
-        pList->SetCellScale(0, 0, scale, pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
-    } else if (tagID == 0x744c) {
-        pList->mulFlags = (pList->mulFlags & 1) | (BSwap32(pTag->Getu32(0)) & 0xFFFFFFFE);
-    } else if (tagID == 0x764c) {
-        unsigned long vh = BSwap32(pTag->Getu32(0));
-        unsigned long vv = BSwap32(pTag->Getu32(1));
-        pList->mstViewDimensions.h = *reinterpret_cast<float*>(&vh);
-        pList->mstViewDimensions.v = *reinterpret_cast<float*>(&vv);
+    switch (tagID) {
+        case 0x444c:
+            pList->Initialize(BSwap32(pTag->Getu32(0)), BSwap32(pTag->Getu32(1)));
+            break;
+        case 0x4953:
+            pList->AllocateStrings(BSwap32(pTag->Getu32(0)), BSwap32(pTag->Getu32(1)));
+            break;
+        case 0x6343:
+            pList->SetCellColor(0, 0, BSwap32(pTag->Getu32(0)), pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
+            break;
+        case 0x6a4c:
+            pList->SetCellJustification(0, 0, BSwap32(pTag->Getu32(0)), pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
+            break;
+        case 0x7343: {
+            FEPoint scale;
+            unsigned long sh = BSwap32(pTag->Getu32(0));
+            unsigned long sv = BSwap32(pTag->Getu32(1));
+            scale.h = *reinterpret_cast<float*>(&sh);
+            scale.v = *reinterpret_cast<float*>(&sv);
+            pList->SetCellScale(0, 0, scale, pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
+            break;
+        }
+        case 0x744c:
+            pList->mulFlags = (pList->mulFlags & 1) | (BSwap32(pTag->Getu32(0)) & 0xFFFFFFFE);
+            break;
+        case 0x764c: {
+            unsigned long vh = BSwap32(pTag->Getu32(0));
+            unsigned long vv = BSwap32(pTag->Getu32(1));
+            pList->mstViewDimensions.h = *reinterpret_cast<float*>(&vh);
+            pList->mstViewDimensions.v = *reinterpret_cast<float*>(&vv);
+            break;
+        }
     }
 }
 
@@ -450,36 +479,44 @@ bool FEPackageReader::ReadMessageResponseTags(FETag* pTag, unsigned long Length,
     FEResponse* pResp = nullptr;
     while (pTag < pEnd) {
         unsigned short tagID = BSwap16(pTag->GetID());
-        if (tagID == 0x694d) {
-            unsigned long MsgID = BSwap32(pTag->Getu32(0));
-            pMsgResp = nullptr;
-            if (!bPackage && pObj) {
-                pMsgResp = pObj->FindResponse(MsgID);
-            }
-            if (!pMsgResp) {
-                pMsgResp = new FEMessageResponse();
-                pMsgResp->SetMsgID(MsgID);
-                if (!bPackage) {
-                    pObj->Responses.AddNode(pObj->Responses.GetTail(), pMsgResp);
-                } else {
-                    pPack->Responses.AddNode(pPack->Responses.GetTail(), pMsgResp);
+        switch (tagID) {
+            case 0x694d: {
+                unsigned long MsgID = BSwap32(pTag->Getu32(0));
+                pMsgResp = nullptr;
+                if (!bPackage && pObj) {
+                    pMsgResp = pObj->FindResponse(MsgID);
                 }
-            } else {
-                pMsgResp->PurgeResponses();
+                if (!pMsgResp) {
+                    pMsgResp = new FEMessageResponse();
+                    pMsgResp->SetMsgID(MsgID);
+                    if (!bPackage) {
+                        pObj->Responses.AddNode(pObj->Responses.GetTail(), pMsgResp);
+                    } else {
+                        pPack->Responses.AddNode(pPack->Responses.GetTail(), pMsgResp);
+                    }
+                } else {
+                    pMsgResp->PurgeResponses();
+                }
+                CurResponse = -1;
+                break;
             }
-            CurResponse = -1;
-        } else if (tagID == 0x434d) {
-            pMsgResp->SetCount(BSwap32(pTag->Getu32(0)));
-        } else if (tagID == 0x6952) {
-            CurResponse++;
-            pResp = pMsgResp->GetResponse(CurResponse);
-            pResp->SetID(BSwap32(pTag->Getu32(0)));
-        } else if (tagID == 0x7352) {
-            pResp->SetParam(reinterpret_cast<const char*>(pTag->Data()));
-        } else if (tagID == 0x7452) {
-            pResp->ResponseTarget = BSwap32(pTag->Getu32(0));
-        } else if (tagID == 0x7552) {
-            pResp->ResponseParam = BSwap32(pTag->Getu32(0));
+            case 0x434d:
+                pMsgResp->SetCount(BSwap32(pTag->Getu32(0)));
+                break;
+            case 0x6952:
+                CurResponse++;
+                pResp = pMsgResp->GetResponse(CurResponse);
+                pResp->SetID(BSwap32(pTag->Getu32(0)));
+                break;
+            case 0x7352:
+                pResp->SetParam(reinterpret_cast<const char*>(pTag->Data()));
+                break;
+            case 0x7452:
+                pResp->ResponseTarget = BSwap32(pTag->Getu32(0));
+                break;
+            case 0x7552:
+                pResp->ResponseParam = BSwap32(pTag->Getu32(0));
+                break;
         }
         pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + BSwap16(pTag->GetSize()) + 4);
     }
@@ -530,6 +567,317 @@ bool FEPackageReader::ReadMessageTargetListChunk() {
             }
             pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + BSwap16(pTag->GetSize()) + 4);
         }
+    }
+    return true;
+}
+
+void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
+    FEListBox* pList = static_cast<FEListBox*>(pObj);
+    FEListEntryData* pRowColData;
+    unsigned short tagID = BSwap16(pTag->GetID());
+    switch (tagID) {
+        case 0x5443:
+            pList->SetCellType(BSwap32(pTag->Getu32(0)));
+            return;
+        case 0x6343: {
+            CurListCell++;
+            if (CurListCell != 0) {
+                pList->IncrementCellByColumn();
+            }
+            FEColor color(BSwap32(pTag->Getu32(0)));
+            FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
+            pCell->ulColor = static_cast<unsigned long>(color);
+            return;
+        }
+        case 0x634c:
+            CurListCol++;
+            pRowColData = pList->GetPColumnData(CurListCol);
+            break;
+        case 0x644c:
+            pList->SetNumColumns(BSwap32(pTag->Getu32(0)));
+            pList->SetNumRows(BSwap32(pTag->Getu32(1)));
+            CurListCol = 0xFFFFFFFF;
+            CurListCell = 0xFFFFFFFF;
+            CurListRow = 0xFFFFFFFF;
+            if (pList->mulNumColumns == 0) {
+                pList->mulCurrentColumn = 0;
+            } else {
+                pList->mulCurrentColumn = 0;
+                if (pList->mulNumColumns == 0) {
+                    pList->mulCurrentColumn = 0xFFFFFFFF;
+                }
+            }
+            if (pList->mulNumRows == 0) {
+                pList->mulCurrentRow = 0;
+            } else {
+                pList->mulCurrentRow = 0;
+                if (pList->mulNumRows == 0) {
+                    pList->mulCurrentRow = 0xFFFFFFFF;
+                }
+            }
+            return;
+        case 0x6943: {
+            unsigned long c0 = BSwap32(pTag->Getu32(0));
+            unsigned long c1 = BSwap32(pTag->Getu32(1));
+            unsigned long c2 = BSwap32(pTag->Getu32(2));
+            unsigned long c3 = BSwap32(pTag->Getu32(3));
+            FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
+            reinterpret_cast<unsigned long*>(&pCell->u)[0] = c0;
+            reinterpret_cast<unsigned long*>(&pCell->u)[1] = c1;
+            reinterpret_cast<unsigned long*>(&pCell->u)[2] = c2;
+            reinterpret_cast<unsigned long*>(&pCell->u)[3] = c3;
+            return;
+        }
+        case 0x7243: {
+            FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
+            pCell->stResource.ResourceIndex = BSwap32(pTag->Getu32(0));
+            pCell->stResource.UserParam = 0;
+            pCell->stResource.Handle = 0;
+            return;
+        }
+        case 0x724c:
+            CurListRow++;
+            pRowColData = pList->GetPRowData(CurListRow);
+            break;
+        case 0x7343: {
+            FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
+            *reinterpret_cast<unsigned long*>(&pCell->stScale.h) = pTag->Getu32(0);
+            *reinterpret_cast<unsigned long*>(&pCell->stScale.v) = pTag->Getu32(1);
+            return;
+        }
+        case 0x734c:
+            *reinterpret_cast<unsigned long*>(&pList->mstSelectionSpeed.h) = BSwap32(pTag->Getu32(0));
+            *reinterpret_cast<unsigned long*>(&pList->mstSelectionSpeed.v) = BSwap32(pTag->Getu32(1));
+            return;
+        case 0x764c:
+            *reinterpret_cast<unsigned long*>(&pList->mstViewDimensions.h) = BSwap32(pTag->Getu32(0));
+            *reinterpret_cast<unsigned long*>(&pList->mstViewDimensions.v) = BSwap32(pTag->Getu32(1));
+            return;
+        case 0x7443:
+            pList->SetCellString(reinterpret_cast<const short*>(pTag->Data()));
+            return;
+        case 0x774c:
+            pList->SetAutoWrap(pTag->Getu32(0) != 0);
+            return;
+        default:
+            return;
+    }
+    // Shared code for Lc (0x634c) and Lr (0x724c)
+    *reinterpret_cast<unsigned long*>(&pRowColData->fValue) = pTag->Getu32(0);
+    pRowColData->ulJustification = pTag->Getu32(1);
+}
+
+bool FEPackageReader::ReadObjectChunk() {
+    FEChunk* pObjList = FindChild(pChunk, 0xcc6a624f);
+    if (!pObjList) {
+        return true;
+    }
+
+    FEChunk* pLast = pObjList->GetLastChunk();
+    FEChunk* pObjChunk = pObjList->GetFirstChunk();
+
+    if (!pObjChunk || pLast == reinterpret_cast<FEChunk*>(-8)) {
+        return true;
+    }
+
+    while (true) {
+        unsigned long chunkID = BSwap32(pObjChunk->GetID());
+        if (chunkID == 0xea624f46) {
+            do {
+                if (pLast <= pObjChunk) {
+                    return true;
+                }
+
+                pObj = nullptr;
+                pParent = nullptr;
+
+                FEChunk* pLastSub = pObjChunk->GetLastChunk();
+                FEChunk* pSubChunk = pObjChunk->GetFirstChunk();
+
+                while (pSubChunk < pLastSub) {
+                    unsigned long subID = BSwap32(pSubChunk->GetID());
+                    switch (subID) {
+                        case 0x446a624f:
+                            if (!ReadObjectTags(reinterpret_cast<FETag*>(pSubChunk->GetData()), BSwap32(pSubChunk->GetSize()))) {
+                                return false;
+                            }
+                            break;
+                        case 0x5267734d:
+                            ReadMessageResponseTags(reinterpret_cast<FETag*>(pSubChunk->GetData()), BSwap32(pSubChunk->GetSize()), false);
+                            break;
+                        case 0x70726353:
+                            ReadScriptTags(reinterpret_cast<FETag*>(pSubChunk->GetData()), BSwap32(pSubChunk->GetSize()));
+                            break;
+                    }
+                    pSubChunk = pSubChunk->GetNext();
+                }
+
+                if (pObj) {
+                    if (pObj->Type == FE_List) {
+                        static_cast<FEListBox*>(pObj)->RecalculateCummulative();
+                    } else if (pObj->Type == FE_CodeList) {
+                        static_cast<FECodeListBox*>(pObj)->FillAllCells();
+                    }
+
+                    FEScript* pScript = pObj->GetFirstScript();
+                    while (pScript) {
+                        if (pScript->pChainTo) {
+                            pScript->pChainTo = pObj->FindScript(reinterpret_cast<unsigned long>(pScript->pChainTo));
+                        }
+                        pScript = pScript->GetNext();
+                    }
+
+                    FEScript* pDefaultScript = pObj->FindScript(0x1744b3);
+                    pObj->SetCurrentScript(pDefaultScript);
+                    pDefaultScript->CurTime = 0;
+
+                    if (!bIsLibrary) {
+                        unsigned char i = 0;
+                        if (pDefaultScript->TrackCount != 0) {
+                            do {
+                                FEKeyInterp(pDefaultScript, i, 0, pObj);
+                                i++;
+                            } while (i < pDefaultScript->TrackCount);
+                        }
+                    }
+
+                    if (pParent) {
+                        static_cast<FEGroup*>(pParent)->AddObject(pObj);
+                    } else {
+                        pPack->AddObject(pObj);
+                    }
+                }
+
+                pObjChunk = pObjChunk->GetNext();
+            } while (true);
+        }
+        pObjChunk = pObjChunk->GetNext();
+        if (pLast <= pObjChunk) {
+            return true;
+        }
+    }
+}
+
+bool FEPackageReader::ReadObjectTags(FETag* pTag, unsigned long Length) {
+    FETag* pEnd = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + Length);
+    bIsReference = false;
+
+    while (pTag < pEnd) {
+        unsigned short tagID = BSwap16(pTag->GetID());
+        switch (tagID) {
+            case 0x504f: {
+                pObj->GUID = BSwap32(pTag->Getu32(0));
+                pObj->NameHash = BSwap32(pTag->Getu32(1));
+                pObj->Flags = BSwap32(pTag->Getu32(2));
+                pObj->ResourceIndex = BSwap16(pTag->Getu16(6));
+
+                if (pObj->Flags & 0x100000) {
+                    if (!FindReferencedObject(pObj->GUID, &pRefObj, &pRefPack)) {
+                        if (pObj) {
+                            delete pObj;
+                        }
+                        pObj = nullptr;
+                        return false;
+                    }
+                    bIsReference = true;
+                    pObj->Flags |= pRefObj->Flags;
+
+                    if (static_cast<short>(pObj->ResourceIndex) == -1) {
+                        pObj->Handle = pRefObj->Handle;
+                        pObj->UserParam = pRefObj->UserParam;
+                    }
+
+                    FEObject* pClone;
+                    if (pRefObj->Type == FE_Group) {
+                        pClone = new FEGroup(static_cast<const FEGroup&>(*pRefObj), false, true);
+                    } else {
+                        pClone = pRefObj->Clone(true);
+                    }
+
+                    pClone->GUID = pObj->GUID;
+                    pClone->NameHash = pObj->NameHash;
+                    pClone->Flags = pObj->Flags;
+                    pClone->ResourceIndex = pObj->ResourceIndex;
+                    pClone->Handle = pObj->Handle;
+                    pClone->UserParam = pObj->UserParam;
+
+                    if (pObj) {
+                        delete pObj;
+                    }
+                    pObj = pClone;
+
+                    FEScript* pScript = pObj->GetFirstScript();
+                    while (pScript) {
+                        if (pScript->pChainTo) {
+                            pScript->pChainTo = reinterpret_cast<FEScript*>(pScript->pChainTo->ID);
+                        }
+                        pScript = pScript->GetNext();
+                    }
+                }
+
+                if (pObj->Flags & 0x10000000) {
+                    pPack->ButtonMap.pList[CurButton] = pObj;
+                    CurButton++;
+                }
+                break;
+            }
+            case 0x4150: {
+                unsigned long parentGUID = BSwap32(pTag->Getu32(0));
+                if (!pLastParent || pLastParent->GUID != parentGUID) {
+                    pLastParent = static_cast<FEGroup*>(pPack->FindObjectByGUID(parentGUID));
+                }
+                pParent = pLastParent;
+                break;
+            }
+            case 0x4153: {
+                unsigned long Size = BSwap16(pTag->GetSize());
+                unsigned long count = Size >> 2;
+                if (count != 0) {
+                    unsigned long i = 0;
+                    do {
+                        reinterpret_cast<unsigned long*>(pObj->pData)[i] = BSwap32(pTag->Getu32(i));
+                        i++;
+                    } while (i < count);
+                }
+                break;
+            }
+            case 0x6e4f:
+                if (bLoadObjectNames) {
+                    pObj->SetName(reinterpret_cast<const char*>(pTag->Data()));
+                }
+                break;
+            case 0x684f:
+                pObj->NameHash = pTag->Getu32(0);
+                break;
+            case 0x744f:
+                pObj = CreateObject(BSwap32(pTag->Getu32(0)));
+                break;
+            default:
+                if (pObj) {
+                    switch (pObj->Type) {
+                        case FE_Image:
+                        case FE_ColoredImage:
+                        case FE_AnimImage:
+                            ProcessImageTag(pTag);
+                            break;
+                        case FE_String:
+                            ProcessStringTag(pTag);
+                            break;
+                        case FE_List:
+                            ProcessListBoxTag(pTag);
+                            break;
+                        case FE_CodeList:
+                            ProcessCodeListBoxTag(pTag);
+                            break;
+                        case FE_MultiImage:
+                            ProcessImageTag(pTag);
+                            ProcessMultiImageTag(pTag);
+                            break;
+                    }
+                }
+                break;
+        }
+        pTag = pTag->Next();
     }
     return true;
 }
