@@ -24,11 +24,11 @@ MenuZoneTrigger::MenuZoneTrigger(UTL::COM::Object *pOutter, const char *pkg_name
     : HudElement(pkg_name, 0) //
     , IMenuZoneTrigger(pOutter)
 {
-    mCingularTimer = 0;
-    mZoneType = nullptr;
-    mpRaceActivity = nullptr;
-    mbCingularQueued = false;
     mbInsideTrigger = false;
+    mbCingularQueued = false;
+    mpRaceActivity = nullptr;
+    mZoneType = nullptr;
+    mCingularTimer = 0;
     mEngageMechanic = RegisterGroup(FEHashUpper("Engage_Mechanic"));
     mEventIcon = RegisterImage(FEHashUpper("EventIcon"));
     mCingularIcon = RegisterGroup(0xDA8141D4);
@@ -56,9 +56,9 @@ bool MenuZoneTrigger::IsPlayerInsideTrigger() {
 }
 
 void MenuZoneTrigger::ExitTrigger() {
-    mpRaceActivity = nullptr;
-    mbInsideTrigger = false;
     mZoneType = nullptr;
+    mbInsideTrigger = false;
+    mpRaceActivity = nullptr;
     HideDPadButton();
 }
 

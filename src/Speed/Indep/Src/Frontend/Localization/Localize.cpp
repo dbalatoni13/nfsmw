@@ -216,9 +216,9 @@ int LoaderLanguage(bChunk *chunk) {
     if (chunk->GetID() == 0x39000) {
         LanguageChunkHeader *header = reinterpret_cast<LanguageChunkHeader *>(chunk->GetData());
         header->PlatEndianSwap();
+        RecordTable = reinterpret_cast<StringRecord *>(reinterpret_cast<char *>(header) + header->StringRecordTablePos);
         PackedStringTable = reinterpret_cast<unsigned char *>(header) + header->StringTablePos;
         pWideCharHistogram = reinterpret_cast<WideCharHistogram *>(reinterpret_cast<char *>(header) + header->HistogramTablePos);
-        RecordTable = reinterpret_cast<StringRecord *>(reinterpret_cast<char *>(header) + header->StringRecordTablePos);
         NumStringRecords = header->NumStringRecords;
         pWideCharHistogram->PlatEndianSwap();
         for (unsigned int i = 0; i < NumStringRecords; i++) {
