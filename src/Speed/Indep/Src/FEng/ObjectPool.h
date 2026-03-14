@@ -35,14 +35,6 @@ FEPoolNode<T, N>::~FEPoolNode() {
     while (Free.GetNumElements() != 0) {
         Free.RemHead();
     }
-    Free.~FEMinList();
-
-    T* pEnd = &Pool[0];
-    T* p = &Pool[N - 1];
-    while (p >= pEnd) {
-        p->~T();
-        p--;
-    }
 }
 
 template <class T, int N>
