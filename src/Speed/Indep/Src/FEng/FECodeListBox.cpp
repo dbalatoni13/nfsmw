@@ -587,24 +587,30 @@ void FECodeListBox::SetCellJustification(unsigned long ulStartColumn, unsigned l
 }
 
 bool FECodeListBox::CheckMovement(long lNumMove, long lCurrentVirtual, long lTarget, long lNumTotal, long lNumVis) {
-    if ((mulFlags & 4) && lNumVis >= lNumTotal) {
+    if ((mulFlags & 4) && lNumTotal <= lNumVis) {
         mpobRenderer->NotificationMessage(FEHashUpper("ListBound"), this, 0xFF, 0);
-    } else if (mulFlags & 2) {
-        if (!(mulFlags & 4)) {
-            if (lCurrentVirtual + lNumMove < 0) {
-                mpobRenderer->NotificationMessage(FEHashUpper("ListBound"), this, 0xFF, 0);
-            } else if (lCurrentVirtual + lNumMove < lNumTotal) {
-                return true;
-            }
-        } else {
-            if (lTarget + lNumMove < 0) {
-                mpobRenderer->NotificationMessage(FEHashUpper("ListBound"), this, 0xFF, 0);
-            } else if (lTarget + lNumMove < lNumTotal - lNumVis) {
-                return true;
-            }
+        mpobRenderer->NotificationMessage(FEHashUpper("ListEnd"), this, 0xFF, 0);
+        return false;
+    }
+    if (!(mulFlags & 2)) {
+        return true;
+    }
+    if (mulFlags & 4) {
+        if (lCurrentVirtual + lNumMove < 0) {
+            mpobRenderer->NotificationMessage(FEHashUpper("ListBound"), this, 0xFF, 0);
+            return false;
+        }
+        if (lCurrentVirtual + lNumMove < lNumTotal - lNumVis) {
+            return true;
         }
     } else {
-        return true;
+        if (lNumMove + lTarget < 0) {
+            mpobRenderer->NotificationMessage(FEHashUpper("ListBound"), this, 0xFF, 0);
+            return false;
+        }
+        if (lNumMove + lTarget < lNumTotal) {
+            return true;
+        }
     }
     mpobRenderer->NotificationMessage(FEHashUpper("ListEnd"), this, 0xFF, 0);
     return false;
