@@ -54,12 +54,8 @@ FEPackage::FEPackage()
     , pCurrentButton(nullptr) //
     , pResourceNames(nullptr) //
     , MouseObjectStates(nullptr) //
-    , NumMouseObjects(0) //
-    , NumMouseObjectsCounter(0) //
+    , NumMouseObjects(0)
 {
-    VersionNumber = 0;
-    pEnginePtr = nullptr;
-    iTickIncrement = 0;
 }
 
 FEPackage::~FEPackage() {
