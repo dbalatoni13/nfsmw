@@ -475,6 +475,33 @@ void IconScroller::ClipEdges(IconOption *option, float pos) {
     }
 }
 
+float IconScroller::Scale(float x, float center, float scroll_size, float thumb_size) {
+    float neg_far_clip = center - scroll_size * 0.5f;
+    float pos_far_clip = center + scroll_size * 0.5f;
+
+    if (x < neg_far_clip || x > pos_far_clip) {
+        return 0.0f;
+    }
+    if (x >= neg_far_clip && x < center - 1.5f) {
+        return (x - neg_far_clip) / (scroll_size * 0.5f);
+    }
+    if (x <= pos_far_clip && x > center + 1.5f) {
+        return (pos_far_clip - x) / (scroll_size * 0.5f);
+    }
+    return 1.0f;
+}
+
+void IconScroller::UpdateArrows() {
+    if (pCurrentNode == Options.GetHead()) {
+        ScrollBar.SetArrowVisibility(1, false);
+    } else if (pCurrentNode == Options.GetTail()) {
+        ScrollBar.SetArrowVisibility(2, false);
+    } else {
+        ScrollBar.SetArrowVisibility(1, true);
+        ScrollBar.SetArrowVisibility(2, true);
+    }
+}
+
 // ============================================================
 // IconScrollerMenu
 // ============================================================
