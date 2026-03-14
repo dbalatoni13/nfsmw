@@ -1683,6 +1683,154 @@ int CustomizeSub::GetRimBrandIndex(unsigned int brand) {
     return 1;
 }
 
+void CustomizeSub::SetupRimBrands() {
+    BackToPkg = g_pCustomizeSubPkg;
+    TitleHash = 0xe032d89e;
+    CarPart *stockCarPart = gCarCustomizeManager.GetStockCarPart(0x42);
+    SelectablePart *stockPart = new SelectablePart(
+        stockCarPart, 0x42, 0, static_cast<GRace::Type>(7), false, CPS_AVAILABLE, 0, false);
+    if (gCarCustomizeManager.IsPartInstalled(stockPart)) {
+        stockPart->SetPartState(CPS_INSTALLED);
+    }
+    SetStockPartOption *stockOpt = new SetStockPartOption(stockPart, 0xf3990b6, 0x701);
+    AddOption(stockOpt);
+
+    AddCustomOption(g_pCustomizeRimsPkg, 0xb0da3de4, 0x56b51a0e, 0x702);
+    AddCustomOption(g_pCustomizeRimsPkg, 0xf224a729, 0xf93f2d34, 0x703);
+    AddCustomOption(g_pCustomizeRimsPkg, 0xf224ab29, 0xf93f3134, 0x704);
+    AddCustomOption(g_pCustomizeRimsPkg, 0xe38de9e, 0x460d1369, 0x705);
+    AddCustomOption(g_pCustomizeRimsPkg, 0xea60b4a, 0x467a4015, 0x706);
+    AddCustomOption(g_pCustomizeRimsPkg, 0xafc6b9cb, 0x9bb17a11, 0x707);
+    AddCustomOption(g_pCustomizeRimsPkg, 0x27ebd095, 0xcca3063f, 0x708);
+    AddCustomOption(g_pCustomizeRimsPkg, 0x6c2fa9db, 0xc1bc1a86, 0x709);
+    AddCustomOption(g_pCustomizeRimsPkg, 0x36c53e8e, 0x213085f9, 0x70a);
+    AddCustomOption(g_pCustomizeRimsPkg, 0x36c2d130, 0x212e5429, 0x70b);
+
+    ShoppingCartItem *inCart = gCarCustomizeManager.IsPartTypeInCart(static_cast<unsigned int>(0x42));
+    if (inCart) {
+        InCartPartOptionIndex = GetRimBrandIndex(inCart->GetBuyingPart()->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0));
+    }
+    CarPart *installed = gCarCustomizeManager.GetInstalledCarPart(0x42);
+    if (installed) {
+        InstalledPartOptionIndex = GetRimBrandIndex(installed->GetAppliedAttributeUParam(0xebb03e66, 0));
+    }
+
+    if (FromCategory == 0x801) {
+        int pos = InCartPartOptionIndex;
+        if (pos == 0) {
+            pos = InstalledPartOptionIndex;
+            if (pos == 0) {
+                if (bFadeInIconsImmediately) {
+                    Options.bFadingIn = true;
+                    Options.bFadingOut = false;
+                    Options.bDelayUpdate = false;
+                    Options.fCurFadeTime = 0.0f;
+                }
+                Options.SetInitialPos(1);
+                goto done_rims;
+            }
+        }
+        if (bFadeInIconsImmediately) {
+            Options.bFadingIn = true;
+            Options.bFadingOut = false;
+            Options.bDelayUpdate = false;
+            Options.fCurFadeTime = 0.0f;
+        }
+        Options.SetInitialPos(pos);
+    } else {
+        if (bFadeInIconsImmediately) {
+            Options.bFadingIn = true;
+            Options.bFadingOut = false;
+            Options.bDelayUpdate = false;
+            Options.fCurFadeTime = 0.0f;
+        }
+        Options.SetInitialPos(FromCategory & 0xFFFF00FF);
+    }
+done_rims:
+    if (FromCategory - 0x701u < 0xbu) {
+        FromCategory = 0x801;
+    }
+}
+
+void CustomizeSub::SetupVinylGroups() {
+    TitleHash = 0xda129752;
+    BackToPkg = g_pCustomizeSubPkg;
+    SelectablePart *stockPart = new SelectablePart(
+        static_cast<CarPart *>(nullptr), 0x4d, 0,
+        static_cast<GRace::Type>(7), false, CPS_AVAILABLE, 0, false);
+    if (gCarCustomizeManager.IsPartInstalled(stockPart)) {
+        stockPart->SetPartState(CPS_INSTALLED);
+    }
+    SetStockPartOption *stockOpt = new SetStockPartOption(stockPart, 0x21f3d114, 0x401);
+    AddOption(stockOpt);
+
+    AddCustomOption(g_pCustomizePartsPkg, 0xf8148554, 0xd9228fc6, 0x402);
+    AddCustomOption(g_pCustomizePartsPkg, 0x192d84da, 0x1e8d885f, 0x403);
+    AddCustomOption(g_pCustomizePartsPkg, 0xf7352706, 0x1c619fd8, 0x404);
+    AddCustomOption(g_pCustomizePartsPkg, 0x1223cc89, 0x9c1b8935, 0x405);
+    AddCustomOption(g_pCustomizePartsPkg, 0xbc44bbcb, 0x7956f7b0, 0x406);
+    AddCustomOption(g_pCustomizePartsPkg, 0x694ca0ca, 0x2d5bff0f, 0x407);
+    AddCustomOption(g_pCustomizePartsPkg, 0x1b3a8dd3, 0x209a9158, 0x408);
+    AddCustomOption(g_pCustomizePartsPkg, 0x1ba508fc, 0xcd057d21, 0x409);
+
+    ShoppingCartItem *inCart = gCarCustomizeManager.IsPartTypeInCart(static_cast<unsigned int>(0x4d));
+    if (inCart && inCart->GetBuyingPart()) {
+        CarPart *part = inCart->GetBuyingPart()->GetPart();
+        if (!part) {
+            InCartPartOptionIndex = 1;
+        } else {
+            InCartPartOptionIndex = GetVinylGroupIndex(part->GetGroupNumber());
+        }
+    }
+    CarPart *installed = gCarCustomizeManager.GetInstalledCarPart(0x4d);
+    if (!installed) {
+        InstalledPartOptionIndex = 1;
+    } else {
+        InstalledPartOptionIndex = GetVinylGroupIndex(installed->GetGroupNumber());
+    }
+
+    if (FromCategory == 0x803) {
+        int pos = InCartPartOptionIndex;
+        if (pos == 0) {
+            pos = InstalledPartOptionIndex;
+            if (pos == 0) {
+                if (bFadeInIconsImmediately) {
+                    Options.bFadingOut = false;
+                    Options.bFadingIn = true;
+                    Options.bDelayUpdate = false;
+                    Options.fCurFadeTime = 0.0f;
+                }
+                Options.SetInitialPos(1);
+                goto done_vinyl;
+            }
+            if (bFadeInIconsImmediately) {
+                Options.bFadingOut = false;
+                Options.bFadingIn = true;
+                Options.bDelayUpdate = false;
+                Options.fCurFadeTime = 0.0f;
+            }
+        } else if (bFadeInIconsImmediately) {
+            Options.bFadingIn = true;
+            Options.bFadingOut = false;
+            Options.bDelayUpdate = false;
+            Options.fCurFadeTime = 0.0f;
+        }
+        Options.SetInitialPos(pos);
+    } else {
+        if (bFadeInIconsImmediately) {
+            Options.bFadingIn = true;
+            Options.bFadingOut = false;
+            Options.bDelayUpdate = false;
+            Options.fCurFadeTime = 0.0f;
+        }
+        Options.SetInitialPos(FromCategory & 0xFFFF00FF);
+    }
+done_vinyl:
+    if (FromCategory - 0x401u < 9u) {
+        FromCategory = 0x803;
+    }
+}
+
 // --- CustomizeHUDColor ---
 
 void CustomizeHUDColor::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {

@@ -276,8 +276,10 @@ struct CustomizeMainOption : public IconOption {
 // total size: 0x6C
 struct SetStockPartOption : public CustomizeMainOption {
     SetStockPartOption(SelectablePart *part, unsigned int icon, unsigned int to_cat)
-        : CustomizeMainOption(nullptr, icon, 0, to_cat, 0) //
-        , ThePart(part) {}
+        : CustomizeMainOption("", icon, 0x60a662f5, to_cat, to_cat) //
+        , ThePart(part) {
+        SetReactImmediately(true);
+    }
 
     ~SetStockPartOption() override {}
 
