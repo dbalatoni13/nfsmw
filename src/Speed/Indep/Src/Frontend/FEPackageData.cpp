@@ -93,7 +93,6 @@ struct EngageEventDialog : MenuScreen { EngageEventDialog(ScreenConstructorData 
 }
 struct MovieScreen : MenuScreen { MovieScreen(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x28]; };
 struct SplashScreen : MenuScreen { SplashScreen(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0xC]; };
-struct SixDaysLater : MenuScreen { SixDaysLater(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x8]; };
 
 static MenuScreen *CreateMainMenu(ScreenConstructorData *sd) {
     return new ("", 0) UIMain(sd);

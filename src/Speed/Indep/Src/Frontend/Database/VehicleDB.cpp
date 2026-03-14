@@ -35,6 +35,8 @@ class CarPartDatabase {
     struct CarPart *GetCarPartByIndex(int index);
     int GetPartIndex(struct CarPart *part);
     struct CarPart *NewGetCarPart(CarType cartype, int slot, unsigned int part_name_hash, struct CarPart *fallback, int index);
+    struct CarPart *NewGetFirstCarPart(CarType car_type, int car_slot_id, unsigned int car_part_namehash, int upg_level);
+    struct CarPart *NewGetNextCarPart(struct CarPart *car_part, CarType car_type, int car_slot_id, unsigned int car_part_namehash, int upg_level);
 };
 
 extern CarPartDatabase CarPartDB;
@@ -155,7 +157,7 @@ unsigned int FECarRecord::GetCost() {
     return frontend.Cost();
 }
 
-const char *FECarRecord::GetDebugName() {
+const char *FECarRecord::GetDebugName() const {
     Attrib::Gen::pvehicle vehicle(VehicleKey, 0, 0);
     const unsigned char *vehicleLayout = reinterpret_cast< const unsigned char * >(vehicle.GetLayoutPointer());
 
@@ -170,7 +172,7 @@ unsigned int FECarRecord::GetReleaseFromImpoundCost() {
     return static_cast< unsigned int >(static_cast< float >(GetCost()) * g_fImpoundPercentageOfOriginalCost);
 }
 
-CarType FECarRecord::GetType() {
+CarType FECarRecord::GetType() const {
     Attrib::Gen::pvehicle vehicle(VehicleKey, 0, 0);
 
     return CarPartDB.GetCarType(vehicle.MODEL().GetHash32());

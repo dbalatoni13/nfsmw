@@ -33,6 +33,7 @@ struct CTextScroller {
     void Initialise(MenuScreen* pOwner, int ViewWidth, int ViewLines, char* pTextDisplayNameTempl, FEngFont* pFont);
     void SetTextHash(unsigned int language_hash);
     bool HandleNotificationMessage(unsigned int Msg);
+    short *FindEND(short *pText);
 };
 
 #endif

@@ -1,4 +1,5 @@
 #include "feWidget.hpp"
+#include "CTextScroller.hpp"
 
 struct FEObject;
 void FEngSetVisible(FEObject* obj);
@@ -302,4 +303,11 @@ void FESliderWidget::UpdateSlider(unsigned int msg) {
 
 void FESliderWidget::Enable() {
     FEWidget::Enable();
+}
+
+short *CTextScroller::FindEND(short *pText) {
+    while (*pText != 0) {
+        pText++;
+    }
+    return pText;
 }

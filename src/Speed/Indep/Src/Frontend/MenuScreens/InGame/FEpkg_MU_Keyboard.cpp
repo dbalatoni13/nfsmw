@@ -1,10 +1,13 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feKeyboardInput.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 extern int FEPrintf(FEString *text, const char *fmt, ...);
 extern Timer RealTimer;
 extern Timer KBCreationTimer;
+extern FEKeyboard *gFEKeyboard;
+extern bool KeyboardActive;
 
 FEKeyboard::FEKeyboard(ScreenConstructorData *sd)
     : MenuScreen(sd)
@@ -132,6 +135,49 @@ void FEKeyboard::AppendSpace() {
     if (mnMode == MODE_ALL_KEYS) {
         AppendChar(0x20);
     }
+}
+
+void FEKeyboard::ToggleCapsLock() {
+    if (mnMode != MODE_PROFILE_ENTRY) {
+        mbCaps = mbCaps != 1;
+        mbShift = false;
+        if (mnMode == MODE_FILENAME) {
+            mbCaps = true;
+        }
+        UpdateVisuals();
+    }
+}
+
+void FEKeyboard::ToggleShift() {
+    mbShift = mbShift != 1;
+    if (mnMode == MODE_FILENAME) {
+        mbShift = false;
+    }
+    UpdateVisuals();
+}
+
+bool FEKeyboard::IsNumericSymbol(char character) {
+    char symbols[10] = "!@#$%^&*(";
+    for (unsigned int i = 0; i <= 9; i++) {
+        if (character == symbols[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void FEKeyboard::Dispose(bool bBack) {
+    if (bBack) {
+        bMemSet(mString, 0, 0x9c);
+    }
+    if (bBack == true) {
+        cFEng::Get()->QueueGameMessage(mnDeclineHash, mThis->GetParentPackage()->GetName(), 0xff);
+    } else {
+        cFEng::Get()->QueueGameMessage(mnAcceptHash, mThis->GetParentPackage()->GetName(), 0xff);
+    }
+    cFEng::Get()->QueuePackagePop(1);
+    gFEKeyboard = nullptr;
+    KeyboardActive = false;
 }
 
 MenuScreen *CreateFEKeyboard(ScreenConstructorData *sd) {
