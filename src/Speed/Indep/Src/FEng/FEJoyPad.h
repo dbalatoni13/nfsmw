@@ -23,7 +23,7 @@ struct FEJoyPad {
     bool WasReleased(unsigned long Mask);
     void DecrementHold(unsigned long Mask, unsigned long Amount);
 
-    inline bool WasActive() const { return CurMask != 0; }
+    inline bool WasActive() const { return (LastMask | CurMask) != 0; }
 };
 
 #endif

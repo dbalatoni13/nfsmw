@@ -68,15 +68,12 @@ FECodeListBox::FECodeListBox(const FECodeListBox& Object, bool bReference)
 FECodeListBox::~FECodeListBox() {
     if (mpstCells) {
         delete[] mpstCells;
-        mpstCells = nullptr;
-    }
-    if (mppsStringData) {
-        delete[] mppsStringData;
-        mppsStringData = nullptr;
     }
     if (mpsStrings) {
         delete[] mpsStrings;
-        mpsStrings = nullptr;
+    }
+    if (mppsStringData) {
+        delete[] mppsStringData;
     }
 }
 
