@@ -10,6 +10,8 @@ extern char TheUnlockData[0x1c8];
 extern char gMaxPartLevels[NUM_UNLOCKABLES];
 extern EasterEggs gEasterEggs;
 extern bool gVerboseTesterOutput;
+extern int SkipFE;
+extern int SkipFESplitScreen;
 
 // GRaceDatabase inline methods (can't add bodies to header - DWARF crash)
 inline GRaceSaveInfo *GRaceDatabase::GetScoreInfo() {
@@ -864,4 +866,115 @@ char *CareerSettings::LoadRaceData(void *load_from_here, void *maxptr) {
         GRaceDatabase::Get().LoadBestScores(saveInfoEntries, nEntries);
     }
     return static_cast<char *>(load_from_here) + 0x12C8;
+}
+
+// ==================== cFrontendDatabase implementations ====================
+
+void cFrontendDatabase::DefaultRaceSettings() {
+    unsigned int default_car = GetDefaultCar();
+    for (unsigned int i = 0; i < 11; i++) {
+        RaceSettings &settings = TheQuickRaceSettings[i];
+        settings.Default();
+        settings.SetSelectedCar(default_car, 0);
+        settings.SetSelectedCar(default_car, 1);
+    }
+    TheQuickRaceSettings[5].NumLaps = 1;
+    TheQuickRaceSettings[2].NumLaps = 1;
+    TheQuickRaceSettings[0].NumLaps = 1;
+    TheQuickRaceSettings[3].NumLaps = TheQuickRaceSettings[3].NumOpponents;
+    TheQuickRaceSettings[4].NumOpponents = 0;
+    TheQuickRaceSettings[4].NumLaps = 1;
+}
+
+void cFrontendDatabase::NotifyDeleteCar(unsigned int handle) {
+    unsigned int default_car = GetDefaultCar();
+    for (unsigned int i = 0; i < 11; i++) {
+        RaceSettings &settings = TheQuickRaceSettings[i];
+        if (settings.GetSelectedCar(0) == handle) {
+            settings.SetSelectedCar(default_car, 0);
+        }
+        if (settings.GetSelectedCar(1) == handle) {
+            settings.SetSelectedCar(default_car, 0);
+        }
+    }
+}
+
+void cFrontendDatabase::RestoreFromBackupDB() {
+    char *backup = m_pDBBackup;
+    if (backup) {
+        int size = GetUserProfileSaveSize(false);
+        LoadUserProfileFromBuffer(backup, size, 0);
+        DeallocBackupDB();
+    }
+}
+
+void cFrontendDatabase::CreateMultiplayerProfile(int player) {
+    if (!CurrentUserProfiles[player]) {
+        CurrentUserProfiles[player] = new(__FILE__, __LINE__) UserProfile;
+        CurrentUserProfiles[player]->Default(player, true);
+    }
+}
+
+void cFrontendDatabase::DeleteMultiplayerProfile(int player) {
+    if (player == 1 && CurrentUserProfiles[1]) {
+        RaceSettings *settings = GetQuickRaceSettings(static_cast<GRace::Type>(11));
+        FEPlayerCarDB *stable = GetPlayerCarStable(1);
+        FECarRecord *record = stable->GetCarRecordByHandle(settings->GetSelectedCar(1));
+        FECustomizationRecord *customization = stable->GetCustomizationRecordByHandle(record->Customization);
+        bStrCpy(SplitScreenCarType, record->GetDebugName());
+        if (!customization) {
+            SplitScreenCustomization = nullptr;
+        } else {
+            SplitScreenCustomization = static_cast<FECustomizationRecord *>(bMalloc(sizeof(FECustomizationRecord), 0x47));
+            bMemCpy(SplitScreenCustomization, customization, sizeof(FECustomizationRecord));
+        }
+        if (CurrentUserProfiles[1]) {
+            delete CurrentUserProfiles[1];
+        }
+        CurrentUserProfiles[1] = nullptr;
+    }
+}
+
+void cFrontendDatabase::DefaultProfile() {
+    CurrentUserProfiles[0]->Default(0, true);
+    bAutoSaveOverwriteConfirmed = false;
+    DefaultRaceSettings();
+    unsigned int default_car = GetDefaultCar();
+    GetCareerSettings()->SetCurrentCar(default_car);
+    bIsOptionsDirty = false;
+    GetPlayerCarStable(0)->Default();
+    MemoryCard::GetInstance()->SetCardRemovedWithAutoSaveEnabled(false);
+    DefaultUnlockData();
+    TheFEMarkerManager.Default();
+    if (GRaceDatabase::Exists()) {
+        GRaceDatabase::Get().ClearRaceScores();
+    }
+    if (GManager::Exists()) {
+        GManager::Get().ResetAllGameplayData();
+    }
+}
+
+bool cFrontendDatabase::LoadUserProfileFromBuffer(void *buffer, int bufsize, int player) {
+    if (player == 0) {
+        return CurrentUserProfiles[0]->LoadFromBuffer(buffer, bufsize, true, 0);
+    } else {
+        bool result = CurrentUserProfiles[player]->LoadFromBuffer(buffer, bufsize, false, player);
+        bMemCpy(&CurrentUserProfiles[0]->GetOptions()->ThePlayerSettings[1],
+                &CurrentUserProfiles[1]->GetOptions()->ThePlayerSettings[0],
+                sizeof(PlayerSettings));
+        return result;
+    }
+}
+
+void cFrontendDatabase::RefreshCurrentRide() {
+    RideInfo ride;
+    FEPlayerCarDB *stable = GetPlayerCarStable(0);
+    if (IsCareerMode() || IsSafehouseMode() || IsCareerManagerMode()) {
+        BuildCurrentRideForPlayer(0, &ride);
+    } else {
+        RaceSettings *settings = GetQuickRaceSettings(static_cast<GRace::Type>(11));
+        unsigned int handle = settings->GetSelectedCar(0);
+        stable->BuildRideForPlayer(handle, 0, &ride);
+    }
+    CarViewer::SetRideInfo(&ride, static_cast<eSetRideInfoReasons>(2), static_cast<eCarViewerWhichCar>(0));
 }

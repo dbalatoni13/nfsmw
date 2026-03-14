@@ -161,6 +161,7 @@ class GRaceDatabase {
     unsigned int GetScoreInfoCount();
     void LoadBestScores(struct GRaceSaveInfo *entries, unsigned int count);
     void SimulateDDayComplete();
+    void ClearRaceScores();
 
     unsigned int GetBinCount();
     GRaceBin* GetBin(unsigned int index);

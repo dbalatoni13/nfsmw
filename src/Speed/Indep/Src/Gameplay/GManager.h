@@ -172,6 +172,7 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
     void LoadSMSInfo(int *loadInfo, unsigned int count);
     void SaveGameplayData(unsigned char *buf, unsigned int size);
     void LoadGameplayData(unsigned char *buf, unsigned int size);
+    void ResetAllGameplayData();
     bool GetHasPendingSMS() const;
     bool CanPlaySMS() const;
     void AddSMS(int smsID);

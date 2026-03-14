@@ -319,6 +319,8 @@ struct JukeboxEntry {
 // total size: 0x9CF4
 class UserProfile {
   public:
+    UserProfile();
+    ~UserProfile();
     void SetProfileName(const char *pName, bool isP1);
     const char *GetProfileName();
     bool IsProfileNamed();
@@ -573,6 +575,7 @@ class cFrontendDatabase {
     void NotifyExitRaceToFrontend(eExitRacePlaces from_where);
     void AllocBackupDB(bool b);
     void DefaultProfile();
+    unsigned int GetDefaultCar();
     bool LoadUserProfileFromBuffer(void* buffer, int size, int player);
     void RestoreFromBackupDB();
     void DeallocBackupDB();
