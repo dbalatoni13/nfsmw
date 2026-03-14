@@ -17,6 +17,9 @@ struct PostPursuitInfractionsScreen : MenuScreen {
     void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
     void NotifyBustedTextureLoaded();
     unsigned int CalcBustedTexture();
+    static void TextureLoadedCallback(unsigned int arg) {
+        reinterpret_cast<PostPursuitInfractionsScreen *>(arg)->NotifyBustedTextureLoaded();
+    }
 
     FECareerRecord *WorkingCareerRecord; // offset 0x2C
     bool bStrikeLimitReached;            // offset 0x30

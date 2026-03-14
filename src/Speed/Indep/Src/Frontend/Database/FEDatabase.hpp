@@ -282,6 +282,18 @@ class CareerSettings {
     void StartNewCareer(bool bEnterGameplay);
     char *SaveUnlockData(void *save_to, void *maxptr);
     char *LoadUnlockData(void *load_from, void *maxptr);
+    void Default();
+    void TryAwardDemoMarker();
+    void GenerateCaseFileName();
+    char *SaveToBuffer(void *buffer, void *maxbuf);
+    char *LoadFromBuffer(void *buffer, void *maxbuf);
+    char *SaveRaceData(void *save_to, void *maxptr);
+    char *SaveGameplayData(void *save_to, void *maxptr);
+    char *LoadRaceData(void *load_from, void *maxptr);
+    char *LoadGameplayData(void *load_from, void *maxptr);
+    void SetCurrentCar(unsigned int car);
+    bool HasBeenAwardedDemoMarker();
+    void SetAwardedDemoMarker();
 
     bool HasBeenAwardedBKReward() {
         return GetCurrentBin() >= 16;

@@ -328,3 +328,33 @@ bool cFrontendDatabase::IsCarStableDirty() {
     m_pCarStableBackup = nullptr;
     return result;
 }
+
+extern unsigned int FEngHashString(const char *, unsigned char);
+extern bool DoesStringExist(unsigned int);
+extern bool gVerboseTesterOutput;
+extern void bToUpper(char *);
+
+void CareerSettings::Default() {
+    CurrentCash = 0;
+    CurrentBin = 0x10;
+    CurrentCar = 0;
+    SpecialFlags = 0;
+    AdaptiveDifficulty = 0;
+    for (int i = 0; i < 150; i++) {
+        SMSMessages[i].SetHandle(static_cast<unsigned char>(i));
+        if (!DoesStringExist(FEngHashString("", SMSMessages[i].GetHandle()))) {
+            SMSMessages[i].SetHandle(0xFF);
+        }
+        SMSMessages[i].ClearFlags();
+    }
+    SMSSortOrder = 0;
+}
+
+void CareerSettings::GenerateCaseFileName() {
+    const int SCOTTS_RAND_CASE_FILE_NUMBER_RANGE = 0x19B3;
+    const int SCOTTS_RAND_CASE_FILE_NUMBER_START = 0x42D;
+    unsigned int num = bRandom(SCOTTS_RAND_CASE_FILE_NUMBER_RANGE) + SCOTTS_RAND_CASE_FILE_NUMBER_START;
+    const char *profile_name = FEDatabase->GetUserProfile(0)->GetProfileName();
+    bSNPrintf(CaseFileName, 13, "%d%s", num, profile_name);
+    bToUpper(CaseFileName);
+}

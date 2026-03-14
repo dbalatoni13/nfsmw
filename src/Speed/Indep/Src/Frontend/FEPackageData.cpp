@@ -92,7 +92,20 @@ namespace nsEngageEventDialog {
 struct EngageEventDialog : MenuScreen { EngageEventDialog(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0xC]; };
 }
 struct MovieScreen : MenuScreen { MovieScreen(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x28]; };
-struct SplashScreen : MenuScreen { SplashScreen(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0xC]; };
+struct SplashScreen : MenuScreen {
+    SplashScreen(ScreenConstructorData *);
+    ~SplashScreen() override;
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
+    eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override {
+        if (bAllowContinue) {
+            return maybe;
+        }
+        return static_cast<eMenuSoundTriggers>(-1);
+    }
+    bool bAllowContinue;
+    unsigned int CopyrightNotice;
+    unsigned int SplashStartedTimer;
+};
 
 static MenuScreen *CreateMainMenu(ScreenConstructorData *sd) {
     return new ("", 0) UIMain(sd);

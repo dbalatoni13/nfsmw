@@ -9,6 +9,25 @@ extern int UnlockAllThings;
 extern char TheUnlockData[0x1c8];
 extern char gMaxPartLevels[NUM_UNLOCKABLES];
 extern EasterEggs gEasterEggs;
+extern bool gVerboseTesterOutput;
+
+// GRaceDatabase inline methods (can't add bodies to header - DWARF crash)
+inline GRaceSaveInfo *GRaceDatabase::GetScoreInfo() {
+    return mRaceScoreInfo;
+}
+
+inline unsigned int GRaceDatabase::GetScoreInfoCount() {
+    return mRaceCountStatic;
+}
+
+// total size: 0x10
+struct GRaceSaveInfo {
+    unsigned int mRaceHash;                              // offset 0x0, size 0x4
+    unsigned int mFlags;                                 // offset 0x4, size 0x4
+    float mHighScores;                                   // offset 0x8, size 0x4
+    unsigned short mTopSpeed;                            // offset 0xC, size 0x2
+    unsigned short mAverageSpeed;                        // offset 0xE, size 0x2
+};
 
 struct CarPart {
     unsigned short PartNameHashBot;
@@ -742,4 +761,107 @@ void AwardUnlockUpgrade(Attrib::Gen::gameplay &inst) {
         }
         UnlockUnlockableThing(entity, 2, upgradeLevel, "");
     }
+}
+
+inline bool CareerSettings::HasBeenAwardedDemoMarker() {
+    return SpecialFlags & 0x20000;
+}
+
+inline void CareerSettings::SetAwardedDemoMarker() {
+    SpecialFlags |= 0x20000;
+}
+
+void CareerSettings::TryAwardDemoMarker() {
+    if (!HasBeenAwardedDemoMarker() && gEasterEggs.IsEasterEggUnlocked(static_cast<EasterEggsSpecial>(5))) {
+        TheFEMarkerManager.AddMarkerToInventory(FEMarkerManager::ePossibleMarker(2), 0);
+        SetAwardedDemoMarker();
+    }
+}
+
+char *CareerSettings::SaveToBuffer(void *buffer, void *maxbuf) {
+    char *buf = SaveGameplayData(buffer, maxbuf);
+    buf = SaveSomeData(buf, &CurrentCar, 4, maxbuf);
+    buf = SaveSomeData(buf, &CurrentBin, 1, maxbuf);
+    buf = SaveSomeData(buf, &CurrentCash, 4, maxbuf);
+    buf = SaveSomeData(buf, &AdaptiveDifficulty, 2, maxbuf);
+    buf = SaveSomeData(buf, &SpecialFlags, 4, maxbuf);
+    buf = SaveSomeData(buf, SMSMessages, 600, maxbuf);
+    buf = SaveSomeData(buf, &SMSSortOrder, 2, maxbuf);
+    buf = SaveSomeData(buf, CaseFileName, 16, maxbuf);
+    buf = SaveRaceData(buf, maxbuf);
+    buf = SaveUnlockData(buf, maxbuf);
+    TheFEMarkerManager.SaveToBuffer(buf);
+    return buf;
+}
+
+char *CareerSettings::LoadFromBuffer(void *buffer, void *maxbuf) {
+    char *buf = LoadGameplayData(buffer, maxbuf);
+    buf = LoadSomeData(&CurrentCar, buf, 4, maxbuf);
+    buf = LoadSomeData(&CurrentBin, buf, 1, maxbuf);
+    buf = LoadSomeData(&CurrentCash, buf, 4, maxbuf);
+    buf = LoadSomeData(&AdaptiveDifficulty, buf, 2, maxbuf);
+    buf = LoadSomeData(&SpecialFlags, buf, 4, maxbuf);
+    buf = LoadSomeData(SMSMessages, buf, 600, maxbuf);
+    buf = LoadSomeData(&SMSSortOrder, buf, 2, maxbuf);
+    buf = LoadSomeData(CaseFileName, buf, 16, maxbuf);
+    buf = LoadRaceData(buf, maxbuf);
+    buf = LoadUnlockData(buf, maxbuf);
+    TheFEMarkerManager.LoadFromBuffer(buf);
+    return buf;
+}
+
+char *CareerSettings::SaveGameplayData(void *save_to, void *maxptr) {
+    char *buf = static_cast<char *>(save_to);
+    if (!GManager::Exists()) {
+        bMemSet(buf, 0, 0x4000);
+    } else {
+        GManager::Get().SaveGameplayData(reinterpret_cast<unsigned char *>(buf), 0x4000);
+    }
+    return buf + 0x4000;
+}
+
+char *CareerSettings::LoadGameplayData(void *load_from_here, void *maxptr) {
+    char *buf = static_cast<char *>(load_from_here);
+    if (GManager::Exists()) {
+        GManager::Get().LoadGameplayData(reinterpret_cast<unsigned char *>(buf), 0x4000);
+    }
+    return buf + 0x4000;
+}
+
+char *CareerSettings::SaveRaceData(void *save_to, void *maxptr) {
+    char *buf = static_cast<char *>(save_to);
+    if (GRaceDatabase::Exists()) {
+        unsigned int nEntries = GRaceDatabase::Get().GetScoreInfoCount();
+        nEntries = bMin(static_cast<int>(nEntries), 300);
+        buf = SaveSomeData(buf, &nEntries, 4, maxptr);
+        GRaceSaveInfo *current = GRaceDatabase::Get().GetScoreInfo();
+        for (unsigned int index = 0; index < nEntries; index++) {
+            if (gVerboseTesterOutput && current->mRaceHash != 0 && (current->mFlags & 2)) {
+                GRaceDatabase::Get().GetRaceFromHash(current->mRaceHash);
+            }
+            buf = SaveSomeData(buf, current, 0x10, maxptr);
+            current++;
+        }
+    }
+    return static_cast<char *>(save_to) + 0x12C8;
+}
+
+char *CareerSettings::LoadRaceData(void *load_from_here, void *maxptr) {
+    char *buf = static_cast<char *>(load_from_here);
+    if (GRaceDatabase::Exists()) {
+        unsigned int nEntries = 0;
+        buf = LoadSomeData(&nEntries, buf, 4, maxptr);
+        nEntries = bMin(static_cast<int>(nEntries), 300);
+        GRaceSaveInfo saveInfoEntries[300];
+        GRaceSaveInfo *current = saveInfoEntries;
+        for (unsigned int index = 0; index < nEntries; index++) {
+            buf = LoadSomeData(current, buf, 0x10, maxptr);
+            if (gVerboseTesterOutput && current->mRaceHash != 0 && (current->mFlags & 2)) {
+                GRaceDatabase::Get().GetRaceFromHash(current->mRaceHash);
+            }
+            current++;
+        }
+        GRaceDatabase::Get().LoadBestScores(saveInfoEntries, nEntries);
+    }
+    return static_cast<char *>(load_from_here) + 0x12C8;
 }

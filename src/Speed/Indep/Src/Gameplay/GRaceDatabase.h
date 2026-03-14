@@ -157,6 +157,10 @@ class GRaceDatabase {
     bool CheckRaceScoreFlags(unsigned int eventHash, ScoreFlags mask);
     const char *GetNextDDayRace();
     struct GRaceSaveInfo* GetScoreInfo(unsigned int eventHash);
+    struct GRaceSaveInfo *GetScoreInfo();
+    unsigned int GetScoreInfoCount();
+    void LoadBestScores(struct GRaceSaveInfo *entries, unsigned int count);
+    void SimulateDDayComplete();
 
     unsigned int GetBinCount();
     GRaceBin* GetBin(unsigned int index);

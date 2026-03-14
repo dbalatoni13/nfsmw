@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeMinimap.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeMinimapStreamer.hpp"
+#include "Speed/Indep/Src/Gameplay/GIcon.h"
 
 void LoaderMiniMap(bChunk *chunk) {
     gChoppedMiniMapManager->Loader(chunk);
