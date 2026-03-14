@@ -241,7 +241,7 @@ void CarDatum::NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 para
             FECarRecord *carRecord = stable->GetCarRecordByHandle(Handle);
             if (carRecord) {
                 if (!carRecord->IsCustomized()) {
-                    carRecord = stable->CreateNewCustomCar(carRecord->VehicleKey);
+                    carRecord = stable->CreateNewCustomCar(carRecord->Handle);
                 }
                 BeginCarCustomize(static_cast<eCustomizeEntryPoint>(1), carRecord);
             }

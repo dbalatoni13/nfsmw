@@ -568,8 +568,8 @@ void CustomizeParts::TextureLoadedCallback() {
 
 CustomizeMain::CustomizeMain(ScreenConstructorData *sd) : CustomizeCategoryScreen(sd) {
     int entryPoint = g_TheCustomizeEntryPoint;
-    invalidMarkers = 0;
     iPerfIndex = 0;
+    invalidMarkers = 0;
     if (entryPoint == 0) {
         CarViewer_haveLoadedOnce = 0;
     }
@@ -1354,7 +1354,7 @@ void CustomizeMain::BuildOptionsList() {
     if (!CustomizeIsInBackRoom()) {
         if (!isHero) {
             AddCustomOption(g_pCustomizeSubPkg, 0x6e0ca66c, 0x55dce1a, 0x801);
-            invalidMarkers = AddCustomOption(g_pCustomizeSubPkg, 0x3987d054, 0xbaef8282, 0x802);
+            iPerfIndex = AddCustomOption(g_pCustomizeSubPkg, 0x3987d054, 0xbaef8282, 0x802);
         }
         AddCustomOption(g_pCustomizeSubPkg, 0x3e31ba56, 0xbfa7d7c4, 0x803);
     } else {

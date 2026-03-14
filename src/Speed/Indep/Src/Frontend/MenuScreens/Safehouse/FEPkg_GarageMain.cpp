@@ -895,8 +895,8 @@ void GarageCarLoader::Update() {
         CurrentCar = LoadingCar;
         *reinterpret_cast<RideInfo *>(_pad_ride1) = *reinterpret_cast<RideInfo *>(_pad_ride0);
         IsDifferent = true;
-        IsLoadingRide = false;
         LoadingCar = 0;
+        IsLoadingRide = false;
         UseFirstDummyTexturesForNextLoad = (UseFirstDummyTexturesForNextLoad != 1);
     }
 }
