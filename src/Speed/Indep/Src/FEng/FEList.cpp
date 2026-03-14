@@ -166,18 +166,21 @@ FEMinNode* FEMinList::FindNode(unsigned long ordinalnumber) const {
 }
 
 FENode* FEList::FindNode(const char* pName, FENode* node) const {
+    FENode* result = nullptr;
     unsigned long hash = FEHashUpper(pName);
     while (node) {
-        if (!node->name) {
-            if (!pName) {
-                return node;
+        if (node->name) {
+            if (hash == node->nameHash && FEStricmp(node->name, pName) == 0) {
+                result = node;
+                break;
             }
-        } else if (hash == node->nameHash && FEStricmp(node->name, pName) == 0) {
-            return node;
+        } else if (!pName) {
+            result = node;
+            break;
         }
         node = node->GetNext();
     }
-    return nullptr;
+    return result;
 }
 
 FENode* FEList::FindNode(const char* pName) const {
