@@ -471,12 +471,12 @@ int FEngine::GetNumPackagesBelowPriority(unsigned char priority) {
 
 void FEngine::ProcessObjectMessage(FEObject* pObj, FEPackage* pPack, unsigned long MsgID, unsigned long uControlMask) {
     if (pObj->Type == FE_List) {
-        if (ProcessListBoxResponses(pObj, MsgID)) {
+        if (ProcessListBoxResponses(pObj, pPack, MsgID)) {
             return;
         }
     }
     if (pObj->Type == FE_CodeList) {
-        if (ProcessCodeListBoxResponses(pObj, MsgID)) {
+        if (ProcessCodeListBoxResponses(pObj, pPack, MsgID)) {
             return;
         }
     }
@@ -1299,7 +1299,8 @@ void FEngine::ProcessMessageQueue() {
         }
         FEObject* pTarget = pNode->pMsgTarget;
         unsigned long target = reinterpret_cast<unsigned long>(pTarget);
-        if (target == 0xFFFFFFFC) {
+        switch (target) {
+        case 0xFFFFFFFC: {
             FEPackage* pPack = PackList.GetFirstPackage();
             while (pPack) {
                 if (pPack == pNode->pFromPackage) {
@@ -1322,7 +1323,9 @@ void FEngine::ProcessMessageQueue() {
                 }
                 pPack = pPack->GetNext();
             }
-        } else if (target == 0) {
+            break;
+        }
+        case 0: {
             for (FEPackage* pPack = PackList.GetFirstPackage(); pPack; pPack = pPack->GetNext()) {
                 ProcessGlobalMessage(pPack, pNode->MsgID, pNode->ControlMask);
                 FEMsgTargetList* pTargets = pPack->GetMessageTargets(pNode->MsgID);
@@ -1338,24 +1341,32 @@ void FEngine::ProcessMessageQueue() {
                     }
                 }
             }
-        } else if (target == 0xFFFFFFFB) {
+            break;
+        }
+        case 0xFFFFFFFB:
             pInterface->NotificationMessage(pNode->MsgID, pNode->pMsgFrom, pNode->ControlMask, reinterpret_cast<unsigned long>(pNode->pFromPackage));
-        } else if (target == 0xFFFFFFFE) {
+            break;
+        case 0xFFFFFFFE:
             for (FEPackage* pPack = PackList.GetFirstPackage(); pPack; pPack = pPack->GetNext()) {
                 ProcessGlobalMessage(pPack, pNode->MsgID, pNode->ControlMask);
             }
-        } else if (target == 0xFFFFFFFF) {
+            break;
+        case 0xFFFFFFFF:
             pInterface->NotifySoundMessage(pNode->MsgID, pNode->pMsgFrom, pNode->ControlMask, reinterpret_cast<unsigned long>(pNode->pFromPackage));
-        } else if (target == 0xFFFFFFFD) {
+            break;
+        case 0xFFFFFFFD:
             ProcessGlobalMessage(pNode->pFromPackage, pNode->MsgID, pNode->ControlMask);
-        } else if (target == 0xFFFFFFFA) {
+            break;
+        case 0xFFFFFFFA:
             if (pNode->MsgID == 0x59bed120) {
                 SetProcessInput(pNode->pFromPackage, true);
             } else if (pNode->MsgID == 0x5d4ce32d) {
                 SetProcessInput(pNode->pFromPackage, false);
             }
-        } else {
+            break;
+        default:
             ProcessObjectMessage(pTarget, pNode->pFromPackage, pNode->MsgID, pNode->ControlMask);
+            break;
         }
         if (pNode) {
             delete pNode;

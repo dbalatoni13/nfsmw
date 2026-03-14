@@ -16,8 +16,8 @@ void FEEventList::SetCount(long NewCount) {
         if (pEvent) {
             delete pEvent;
         }
-        Count = 0;
         pEvent = nullptr;
+        Count = 0;
     } else {
         FEEvent* pNewList = static_cast<FEEvent*>(FEngMalloc(NewCount * sizeof(FEEvent), nullptr, 0));
         if (NewCount < Count) {
@@ -29,7 +29,7 @@ void FEEventList::SetCount(long NewCount) {
         if (pEvent) {
             delete[] pEvent;
         }
-        Count = NewCount;
         pEvent = pNewList;
+        Count = NewCount;
     }
 }

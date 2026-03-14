@@ -1,4 +1,16 @@
 extern void WideStringToPackedString(char *dest, int destSize, const unsigned short *src);
+extern void PackedStringToWideString(unsigned short *wide_string, int wide_string_buffer_size, const char *packed_string);
+extern void FEngSNMakeHidden(char *dest, int destSize, unsigned short *src);
+
+KeyboardEditString::KeyboardEditString() {
+    TextInputObject = nullptr;
+    MaxTextLength = 0;
+    bMemSet(EditStringUCS2, 0, 0x200);
+    CursorPosUCS2 = 0;
+    bMemSet(EditStringPacked, 0, 0x100);
+    bMemSet(InitialString, 0, 0x100);
+    mEnabled = false;
+}
 
 void KeyboardEditString::SyncEditIntoPacked() {
     WideStringToPackedString(EditStringPacked, 0x100, EditStringUCS2);
@@ -7,4 +19,26 @@ void KeyboardEditString::SyncEditIntoPacked() {
 char *KeyboardEditString::GetEditedString() {
     SyncEditIntoPacked();
     return EditStringPacked;
+}
+
+void KeyboardEditString::EndCapture() {
+    TextInputObject = nullptr;
+    bMemSet(EditStringUCS2, 0, 0x200);
+    mEnabled = false;
+    bMemSet(EditStringPacked, 0, 0x100);
+    bMemSet(InitialString, 0, 0x100);
+}
+
+void KeyboardEditString::GetStringForDisplay(char *buffer, int size) {
+    SyncEditIntoPacked();
+    if (ModeFlags == 5) {
+        FEngSNMakeHidden(buffer, size, EditStringUCS2);
+    } else {
+        bStrNCpy(buffer, EditStringPacked, size);
+    }
+}
+
+void KeyboardEditString::RevertToOriginalString() {
+    PackedStringToWideString(EditStringUCS2, 0x200, InitialString);
+    SyncEditIntoPacked();
 }

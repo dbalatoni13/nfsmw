@@ -158,7 +158,7 @@ unsigned int FECarRecord::GetCost() {
     return frontend.Cost();
 }
 
-const char *FECarRecord::GetDebugName() const {
+const char *FECarRecord::GetDebugName() {
     Attrib::Gen::pvehicle vehicle(VehicleKey, 0, 0);
     const unsigned char *vehicleLayout = reinterpret_cast< const unsigned char * >(vehicle.GetLayoutPointer());
 
@@ -173,7 +173,7 @@ unsigned int FECarRecord::GetReleaseFromImpoundCost() {
     return static_cast< unsigned int >(static_cast< float >(GetCost()) * g_fImpoundPercentageOfOriginalCost);
 }
 
-CarType FECarRecord::GetType() const {
+CarType FECarRecord::GetType() {
     Attrib::Gen::pvehicle vehicle(VehicleKey, 0, 0);
 
     return CarPartDB.GetCarType(vehicle.MODEL().GetHash32());

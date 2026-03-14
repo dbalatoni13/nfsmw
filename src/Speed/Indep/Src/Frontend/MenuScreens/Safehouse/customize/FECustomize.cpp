@@ -81,7 +81,8 @@ extern float gTradeInFactor;
 extern int Showcase_FromIndex;
 extern const char *Showcase_FromPackage;
 extern unsigned int Showcase_FromArgs;
-extern int Showcase_FromColor;
+extern int Showcase_FromFilter;
+extern SelectablePart *_8Showcase_FromColor;
 
 extern int eLoadStreamingTexturePack(const char *name, void (*callback)(void *), void *param, int priority);
 extern void eUnloadStreamingTexturePack(const char *name);
@@ -2448,6 +2449,264 @@ void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, un
         }
         CustomizeShoppingCart::ExitShoppingCart();
     }
+}
+
+// --- CustomizeDecals ---
+
+unsigned int CustomizeDecals::GetSlotIDFromCategory() {
+    if (CurrentDecalLocation == 0x503) {
+        switch (Category) {
+        case 0x601: return 99;
+        case 0x602: return 100;
+        case 0x603: return 0x65;
+        case 0x604: return 0x66;
+        case 0x605: return 0x67;
+        case 0x606: return 0x68;
+        default: break;
+        }
+    } else if (CurrentDecalLocation == 0x501) {
+        return 0x53;
+    } else if (CurrentDecalLocation == 0x502) {
+        return 0x5b;
+    } else if (CurrentDecalLocation == 0x505) {
+        return 0x73;
+    } else if (CurrentDecalLocation == 0x506) {
+        return 0x7b;
+    } else if (CurrentDecalLocation == 0x504) {
+        switch (Category) {
+        case 0x601: return 0x6b;
+        case 0x602: return 0x6c;
+        case 0x603: return 0x6d;
+        case 0x604: return 0x6e;
+        case 0x605: return 0x6f;
+        case 0x606: return 0x70;
+        default: break;
+        }
+    } else {
+        return 0x53;
+    }
+    return 0x73;
+}
+
+void CustomizeDecals::Setup() {
+    unsigned int slotID = GetSlotIDFromCategory();
+    FEImage *leftBtn = FEngFindImage(GetPackageName(), 0x91c4a50);
+    FEngSetButtonTexture(leftBtn, 0x5bc);
+    FEImage *rightBtn = FEngFindImage(GetPackageName(), 0x2d145be3);
+    FEngSetButtonTexture(rightBtn, 0x682);
+    unsigned int titleHash = 0;
+    switch (Category) {
+    case 0x501: titleHash = 0x301dedd3; break;
+    case 0x502: titleHash = 0x48e6ca49; break;
+    case 0x505: titleHash = 0x8a7697d6; break;
+    case 0x506: titleHash = 0xb1f9b0c9; break;
+    case 0x601: titleHash = 0x7d212cfa; break;
+    case 0x602: titleHash = 0x7d212cfb; break;
+    case 0x603: titleHash = 0x7d212cfc; break;
+    case 0x604: titleHash = 0x7d212cfd; break;
+    case 0x605: titleHash = 0x7d212cfe; break;
+    case 0x606: titleHash = 0x7d212cff; break;
+    default: break;
+    }
+    DisplayHelper.TitleHash = titleHash;
+    ShoppingCartItem *cartItem = gCarCustomizeManager.IsPartTypeInCart(slotID);
+    unsigned int selectedHash = 0;
+    CarPart *activePart = nullptr;
+    if (cartItem && (activePart = cartItem->GetBuyingPart()->GetPart(), activePart)) {
+    } else {
+        activePart = gCarCustomizeManager.GetInstalledCarPart(slotID);
+    }
+    if (activePart) {
+        unsigned int brand = activePart->GetAppliedAttributeUParam(0xebb03e66, 0);
+        unsigned int mirrorHash = activePart->GetAppliedAttributeUParam(bStringHash("DECAL_MIRROR_HASH"), 0);
+        bIsBlack = (brand == mirrorHash);
+        selectedHash = activePart->GetAppliedAttributeUParam(0xebb03e66, 0);
+    }
+    if (Showcase_FromFilter != -1) {
+        bIsBlack = (Showcase_FromFilter != 0);
+        Showcase_FromFilter = -1;
+    }
+    BuildDecalList(selectedHash);
+    RefreshHeader();
+}
+
+void CustomizeDecals::BuildDecalList(unsigned int selected_name_hash) {
+    int matchIdx = 0;
+    int curIdx = 1;
+    CarPart *activeMatch = nullptr;
+    unsigned int slotID = GetSlotIDFromCategory();
+    bTList<SelectablePart> tempList;
+    unsigned int filterHash = 0;
+    if (bIsBlack) {
+        filterHash = bStringHash("DECAL_MIRROR_HASH");
+    }
+    gCarCustomizeManager.GetCarPartList(slotID, tempList, filterHash);
+    if (Showcase_FromIndex == 0) {
+        activeMatch = gCarCustomizeManager.GetActivePartFromSlot(slotID);
+    }
+    SetStockPartOption *stockOpt = new SetStockPartOption(nullptr, 0x21f3d114, 0x60a662f5);
+    SelectablePart *stockPart = new SelectablePart(nullptr, slotID, 0, static_cast<GRace::Type>(7), false, static_cast<eCustomizePartState>(1), 0, false);
+    if (gCarCustomizeManager.IsPartInstalled(stockPart)) {
+        stockPart->PartState = static_cast<eCustomizePartState>(0x10);
+    }
+    stockOpt->ThePart = stockPart;
+    AddOption(stockOpt);
+    SelectablePart *node = tempList.GetHead();
+    while (node != reinterpret_cast<SelectablePart *>(&tempList)) {
+        SelectablePart *next = static_cast<SelectablePart *>(static_cast<bTNode<SelectablePart> *>(node)->GetNext());
+        unsigned int nameHash = node->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0);
+        if (selected_name_hash != 0 && nameHash == selected_name_hash) {
+            matchIdx = curIdx;
+        }
+        unsigned char gl = *reinterpret_cast<unsigned char *>(reinterpret_cast<int>(node->ThePart) + 5);
+        unsigned int unlockHash = gCarCustomizeManager.GetUnlockHash(static_cast<eCustomizeCategory>(Category), gl >> 5);
+        bool locked = gCarCustomizeManager.IsPartLocked(node, 0);
+        AddPartOption(node, 0x294d2a3, gl >> 5, 0, unlockHash, locked);
+        curIdx++;
+        node = next;
+    }
+    if (Showcase_FromIndex == 0) {
+        if (bFadeInIconsImmediately) {
+            Options.bFadingOut = false;
+            Options.bFadingIn = true;
+            Options.bDelayUpdate = false;
+            Options.fCurFadeTime = 0.0f;
+        }
+        Options.SetInitialPos(matchIdx);
+    } else {
+        if (bFadeInIconsImmediately) {
+            Options.bFadingIn = true;
+            Options.bFadingOut = false;
+            Options.bDelayUpdate = false;
+            Options.fCurFadeTime = 0.0f;
+        }
+        Options.SetInitialPos(Showcase_FromIndex - 1);
+        Showcase_FromIndex = 0;
+    }
+    RefreshHeader();
+}
+
+void CustomizeDecals::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+    CustomizationScreen::NotificationMessage(msg, pobj, param1, param2);
+    if (msg == 0x911ab364) {
+        cFEng::Get()->QueuePackageSwitch(g_pCustomizeSubTopPkg, FromCategory | Category << 16, 0, false);
+    } else if (msg == 0x5a928018) {
+        SelectablePart *sel = GetSelectedPart();
+        if (sel) {
+            if (gCarCustomizeManager.IsPartInCart(sel)) {
+                return;
+            }
+            sel->PartState = static_cast<eCustomizePartState>(sel->PartState & 0xf);
+            RefreshHeader();
+        }
+    } else if (msg == 0x5073ef13) {
+        // do nothing
+    } else if (msg == 0xc519bfbf) {
+        Showcase_FromFilter = bIsBlack;
+    } else if (msg == 0xc519bfc3) {
+        return;
+    } else if (msg == 0xd9feec59) {
+        bIsBlack ^= 1;
+        CustomizePartOption *opt = GetSelectedOption();
+        if (!opt->GetPart()) {
+            BuildDecalList(0);
+        } else {
+            unsigned int nameHash = opt->GetPart()->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0);
+            BuildDecalList(nameHash);
+        }
+        RefreshHeader();
+    } else {
+        return;
+    }
+}
+
+void CustomizeDecals::RefreshHeader() {
+    DisplayHelper.DrawTitle();
+    CustomizationScreen::RefreshHeader();
+    CustomizePartOption *opt = GetSelectedOption();
+    if (opt) {
+        SelectablePart *sel = opt->GetPart();
+        if (sel) {
+            gCarCustomizeManager.PreviewPart(sel->CarSlotID, sel->GetPart());
+        } else {
+            gCarCustomizeManager.PreviewPart(GetSlotIDFromCategory(), nullptr);
+        }
+    }
+}
+
+// --- CustomizePaint helpers ---
+
+unsigned int CustomizePaint::CalcBrandHash(CarPart *part) {
+    if (!part) {
+        if (Category == 0x301 || Category == 0x303) {
+            return 0;
+        }
+        return 0;
+    }
+    return part->GetAppliedAttributeUParam(0xebb03e66, 0);
+}
+
+CustomizePaint::CustomizePaint(ScreenConstructorData *sd)
+    : CustomizationScreen(sd) //
+    , TheFilter(-1) //
+    , MatchingPaint(nullptr, 0, 0, 0, 0) //
+    , ThePaints(GetPackageName(), 5, 16, false) {
+    VinylColors[0] = nullptr;
+    VinylColors[1] = nullptr;
+    VinylColors[2] = nullptr;
+    NumRemapColors = 0;
+}
+
+void CustomizePaint::Setup() {
+    FEImage *leftBtn = FEngFindImage(GetPackageName(), 0x91c4a50);
+    FEngSetButtonTexture(leftBtn, 0x5bc);
+    FEImage *rightBtn = FEngFindImage(GetPackageName(), 0x2d145be3);
+    FEngSetButtonTexture(rightBtn, 0x682);
+    for (int i = 1; i <= 0x50; i++) {
+        ArraySlot *slot = new ArraySlot(FEngFindImage(GetPackageName(), FEngHashString("COLOUR_%d", i)));
+        ThePaints.AddSlot(slot);
+    }
+    for (int i = 0; i < 3; i++) {
+        SelectedIndex[i] = -1;
+    }
+    if (Showcase_FromFilter != -1) {
+        TheFilter = Showcase_FromFilter;
+    }
+    if (Category == 0x303) {
+        DisplayHelper.TitleHash = 0xe126ff53;
+        SetupRimPaint();
+    } else if (Category == 0x301) {
+        cFEng::Get()->QueuePackageMessage(0x1a7240f3, GetPackageName(), nullptr);
+        DisplayHelper.TitleHash = 0x55da70c;
+        SetupBasePaint();
+    } else if (static_cast<unsigned int>(Category) > 0x401 && static_cast<unsigned int>(Category) < 0x40a) {
+        DisplayHelper.TitleHash = 0xd8ee1a80;
+        SetupVinylColor();
+    }
+    Showcase_FromFilter = -1;
+    Options.bFadingIn = true;
+    RefreshHeader();
+}
+
+void CustomizePaint::AddVinylAndColorsToCart() {
+    SelectablePart *mainPart = gCarCustomizeManager.GetTempColoredPart();
+    gCarCustomizeManager.AddToCart(mainPart);
+    for (int i = 0; i < NumRemapColors; i++) {
+        if (VinylColors[i]) {
+            gCarCustomizeManager.AddToCart(VinylColors[i]);
+            VinylColors[i] = nullptr;
+        }
+    }
+}
+
+eMenuSoundTriggers CustomizePaint::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
+    CustomizationScreen::NotifySoundMessage(msg, maybe);
+    if (Category != 0x301 && Category != 0x303) {
+        if (msg == 0xc407210 || msg == 0xd9feec59 || msg == 0x5073ef13) {
+            return static_cast<eMenuSoundTriggers>(0);
+        }
+    }
+    return maybe;
 }
 
 #endif // FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE____CUSTOMIZE_CARCUSTOMIZE_H

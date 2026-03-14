@@ -1,11 +1,16 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 extern unsigned int FEngHashString(const char *, ...);
 extern eLanguages GetCurrentLanguage();
 extern EAXSound *g_pEAXSound;
+extern unsigned int bCalculateCrc32(const void *data, int size, unsigned int prev_crc32);
+extern int SkipFE;
+extern int SkipFESplitScreen;
 
 const char* UserProfile::GetProfileName() {}
 
@@ -401,4 +406,139 @@ void InitFrontendDatabase() {
     unsigned int alloc_params = GetVirtualMemoryAllocParams();
     FEDatabase = new(alloc_params) cFrontendDatabase();
     FEDatabase->Default();
+}
+
+bool cFrontendDatabase::IsFinalEpicChase() {
+    if (!GRaceStatus::Exists()) {
+        return false;
+    }
+    if (!GRaceStatus::Get().GetRaceParameters()) {
+        return false;
+    }
+    unsigned int event_hash = GRaceStatus::Get().GetRaceParameters()->GetEventHash();
+    unsigned int final_hash = Attrib::StringHash32("1.8.1");
+    return event_hash == final_hash;
+}
+
+unsigned int cFrontendDatabase::GetRaceNameHash(GRace::Type type) {
+    switch (type) {
+    case GRace::kRaceType_P2P:
+        return 0xb94fd70e;
+    case GRace::kRaceType_Circuit:
+        return 0x034fa2c1;
+    case GRace::kRaceType_Drag:
+        return 0x6f547e4c;
+    case GRace::kRaceType_Knockout:
+        return 0x4930f5fc;
+    case GRace::kRaceType_Tollbooth:
+        return 0xa15e4505;
+    case GRace::kRaceType_SpeedTrap:
+        return 0xee1edc76;
+    case GRace::kRaceType_Challenge:
+        return 0x213cc8d1;
+    default:
+        return 0x7818f85e;
+    }
+}
+
+unsigned int cFrontendDatabase::GetRaceIconHash(GRace::Type type) {
+    switch (type) {
+    case GRace::kRaceType_P2P:
+        return 0x2521e5eb;
+    case GRace::kRaceType_Circuit:
+        return 0xe9638d3e;
+    case GRace::kRaceType_Drag:
+        return 0xaaab31e9;
+    case GRace::kRaceType_Knockout:
+        return 0x3a015595;
+    case GRace::kRaceType_Tollbooth:
+        return 0x1a091045;
+    case GRace::kRaceType_SpeedTrap:
+        return 0x66c9a7b6;
+    case GRace::kRaceType_JumpToSpeedTrap:
+        return 0x66c9a7b6;
+    case GRace::kRaceType_JumpToMilestone:
+        return 0x1a091045;
+    default:
+        break;
+    }
+    return 0;
+}
+
+unsigned int cFrontendDatabase::GetSafehouseIconHash(const char *name) {
+    unsigned int result = 0;
+    if (bStrICmp(name, "carlot") == 0) {
+        result = 0x4eaee18b;
+    } else if (bStrICmp(name, "safehouse") == 0) {
+        result = 0x0ed39f69;
+    } else if (bStrICmp(name, "customshop") == 0) {
+        result = 0x0cf07089;
+    }
+    return result;
+}
+
+void cFrontendDatabase::GetRandomRaceOptions(RaceSettings *race, GRace::Type type) {
+    race->CatchUp = true;
+    race->CopDensity = static_cast< uint8 >(bRandom(4));
+    race->AISkill = 1;
+    race->NumOpponents = static_cast< uint8 >(bRandom(3) + 1);
+    if (type == GRace::kRaceType_Circuit) {
+        race->NumLaps = static_cast< uint8 >(bRandom(5) + 1);
+    } else if (type == GRace::kRaceType_Knockout) {
+        race->NumLaps = static_cast< uint8 >(bRandom(3) + 1);
+    } else {
+        race->NumLaps = 1;
+    }
+    race->TrafficDensity = static_cast< uint8 >(bRandom(4));
+    race->TrackDirection = static_cast< uint8 >(bRandom(1));
+}
+
+void cFrontendDatabase::BuildCurrentRideForPlayer(int player, RideInfo *ride) {
+    FEPlayerCarDB *stable;
+    if (static_cast< unsigned int >(player) < 2) {
+        stable = &GetUserProfile(player)->PlayersCarStable;
+    } else {
+        stable = nullptr;
+    }
+    unsigned int car;
+    unsigned int mode = FEGameMode;
+    if ((mode & 4) != 0 || (mode & 0x40) != 0 || (mode & 8) != 0) {
+        RaceSettings *settings = GetQuickRaceSettings(GRace::kRaceType_NumTypes);
+        car = settings->SelectedCar[player];
+    } else {
+        car = GetUserProfile(0)->GetCareer()->GetCurrentCar();
+    }
+    stable->BuildRideForPlayer(car, player, ride);
+}
+
+void cFrontendDatabase::Default() {
+    bProfileLoaded = false;
+    bIsOptionsDirty = false;
+    bAutoSaveOverwriteConfirmed = false;
+    iNumPlayers = 1;
+    bComingFromBoot = true;
+    GetUserProfile(0)->Default(0, true);
+    FEGameMode = 0;
+    iCurPauseSubOptionType = 0;
+    iCurPauseOptionType = 0;
+    if (SkipFE && SkipFESplitScreen) {
+        FEGameMode = 4;
+        iNumPlayers = 2;
+    }
+    PlayerJoyports[0] = 0;
+    PlayerJoyports[1] = -1;
+    RaceMode = static_cast< GRace::Type >(1);
+    unsigned int default_car = GetDefaultCar();
+    DefaultRaceSettings();
+    GetUserProfile(0)->GetCareer()->SetCurrentCar(default_car);
+    if (!iDefaultStableHash) {
+        FEPlayerCarDB *stable = &GetUserProfile(0)->PlayersCarStable;
+        int buf_size = stable->GetSaveBufferSize();
+        char *buf = static_cast< char * >(bMalloc(buf_size, 0x40));
+        int save_size = stable->GetSaveBufferSize();
+        stable->SaveToBuffer(buf, save_size);
+        int crc_size = stable->GetSaveBufferSize();
+        iDefaultStableHash = bCalculateCrc32(buf, crc_size, 0xFFFFFFFF);
+        bFree(buf);
+    }
 }
