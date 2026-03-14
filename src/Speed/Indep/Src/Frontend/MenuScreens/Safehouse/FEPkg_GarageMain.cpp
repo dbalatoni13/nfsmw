@@ -436,6 +436,80 @@ after_camera:
     RefreshBackground();
 }
 
+void GarageMainScreen::UpdateRenderingCarParameters(FrontEndRenderingCar *fe_car) {
+    if (reinterpret_cast<int>(fe_car) == -8 || fe_car->GetRideInfo()->Type == static_cast<CarType>(-1) || HideEntireScreen) {
+        fe_car->Visible = 0;
+        return;
+    }
+
+    if (CarTypeInfoArrayUpdated) {
+        CarTypeInfoArrayUpdated = 0;
+    }
+
+    bVector4 wheel_positions[4];
+    float wheel_radius[4];
+    float average_wheel_radius = 0.0f;
+    float average_wheel_z = 0.0f;
+
+    for (unsigned int i = 0; i <= 3; i++) {
+        if (!fe_car->LookupWheelPosition(i, &wheel_positions[i])) {
+            wheel_positions[i] = bVector4(0.0f, 0.0f, 0.0f, 1.0f);
+        }
+        if (!fe_car->LookupWheelRadius(i, wheel_radius[i])) {
+            wheel_radius[i] = 1.5f;
+        }
+        average_wheel_radius += wheel_radius[i];
+        average_wheel_z += wheel_positions[i].z;
+        wheel_positions[i].w = 1.0f;
+    }
+
+    average_wheel_z *= 0.25f;
+    fe_car->LightsOn = 0;
+    float height = average_wheel_radius * 0.25f - average_wheel_z + (-0.025f);
+    bVector3 position(carPosX, carPosY, height);
+    fe_car->CopLightsOn = 0;
+
+    bMatrix4 temp;
+    PSMTX44Identity(&temp);
+    eRotateZ(&temp, &temp, static_cast<int>(GetGeometryZAngle() * 65536.0f) / 360 & 0xffff);
+    eMulVector(&position, &temp, &position);
+    fe_car->SetPosition(&position);
+
+    bMatrix4 body_matrix;
+    PSMTX44Identity(&body_matrix);
+    eRotateZ(&body_matrix, &body_matrix, static_cast<int>(GetCarRotationZ() * 65536.0f) / 360 & 0xffff);
+    eRotateX(&body_matrix, &body_matrix, static_cast<int>(GetCarRotationX() * 65536.0f) / 360 & 0xffff);
+    eRotateY(&body_matrix, &body_matrix, static_cast<int>(GetCarRotationY() * 65536.0f) / 360 & 0xffff);
+    fe_car->SetBodyMatrix(&body_matrix);
+
+    bMatrix4 tire_matrices[4];
+    bMatrix4 brake_matrices[4];
+    unsigned short front_tire_angle = static_cast<int>(CarSelectTireSteerAngle * 65536.0f) / 360 & 0xffff;
+
+    for (int tire_num = 0; tire_num < 4; tire_num++) {
+        PSMTX44Identity(&tire_matrices[tire_num]);
+        PSMTX44Identity(&brake_matrices[tire_num]);
+        if (tire_num < 2) {
+            eRotateZ(&brake_matrices[tire_num], &brake_matrices[tire_num], front_tire_angle);
+            eRotateZ(&tire_matrices[tire_num], &tire_matrices[tire_num], front_tire_angle);
+        }
+        tire_matrices[tire_num].v3 = wheel_positions[tire_num];
+        brake_matrices[tire_num].v3 = wheel_positions[tire_num];
+    }
+
+    fe_car->SetTireMatrices(tire_matrices);
+    fe_car->SetBrakeMatrices(brake_matrices);
+
+    if (g_pEAXSound->GetFrontEnd()) {
+        RideInfo *CurrentRideInfo = TheGarageCarLoader->GetCurrentRideInfo();
+        if (CurrentRideInfo) {
+            bVector3 car_velocity(0.0f, 0.0f, 0.0f);
+            Camera *camera = eViews[0].GetCamera();
+            SetFEDrivingCarState(g_pEAXSound->GetFrontEnd(), &position, &car_velocity, camera, ViewID);
+        }
+    }
+}
+
 void GarageMainScreen::UpdateCurrentCameraView(bool bForce) {
     if (CameraPushRequested || bForce) {
         unsigned int entryKey = FindGarageEntryCameraInfo();
@@ -607,42 +681,48 @@ void GarageMainScreen::HandleJoyEvents() {
 float GarageMainScreen::GetCarRotationX() {
     eGarageType type = FEManager::Get()->GetGarageType();
     switch (type) {
+        case GARAGETYPE_NONE:
+        case GARAGETYPE_MAIN_FE:
+        default:
+            return 0.0f;
         case GARAGETYPE_CAREER_SAFEHOUSE:
             return 0.0f;
         case GARAGETYPE_CUSTOMIZATION_SHOP:
             return 0.0f;
         case GARAGETYPE_CAR_LOT:
             return -0.3796229958534241f;
-        default:
-            return 0.0f;
     }
 }
 
 float GarageMainScreen::GetCarRotationY() {
     eGarageType type = FEManager::Get()->GetGarageType();
     switch (type) {
+        case GARAGETYPE_NONE:
+        case GARAGETYPE_MAIN_FE:
+        default:
+            return 0.0f;
         case GARAGETYPE_CAREER_SAFEHOUSE:
             return 0.0f;
         case GARAGETYPE_CUSTOMIZATION_SHOP:
             return 0.0f;
         case GARAGETYPE_CAR_LOT:
             return -0.00019299999985378236f;
-        default:
-            return 0.0f;
     }
 }
 
 float GarageMainScreen::GetCarRotationZ() {
     eGarageType type = FEManager::Get()->GetGarageType();
     switch (type) {
+        case GARAGETYPE_NONE:
+        case GARAGETYPE_MAIN_FE:
+        default:
+            return 304.96978759765625f;
         case GARAGETYPE_CAREER_SAFEHOUSE:
             return 304.96978759765625f;
         case GARAGETYPE_CUSTOMIZATION_SHOP:
             return 304.96978759765625f;
         case GARAGETYPE_CAR_LOT:
             return 340.0f;
-        default:
-            return 304.96978759765625f;
     }
 }
 
@@ -680,14 +760,16 @@ float GarageMainScreen::GetGeometryXPos() {
 float GarageMainScreen::GetGeometryYPos() {
     eGarageType type = FEManager::Get()->GetGarageType();
     switch (type) {
-        case GARAGETYPE_CAR_LOT:
-            return 0.07500000298023224f;
-        case GARAGETYPE_CAREER_SAFEHOUSE:
-        case GARAGETYPE_CUSTOMIZATION_SHOP:
         case GARAGETYPE_NONE:
         case GARAGETYPE_MAIN_FE:
         default:
             return 0.0f;
+        case GARAGETYPE_CAREER_SAFEHOUSE:
+            return 0.0f;
+        case GARAGETYPE_CUSTOMIZATION_SHOP:
+            return 0.0f;
+        case GARAGETYPE_CAR_LOT:
+            return 0.07500000298023224f;
     }
 }
 

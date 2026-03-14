@@ -1117,22 +1117,24 @@ float CarCustomizeManager::GetPreviewHeat(SelectablePart *part) {
 }
 
 float CarCustomizeManager::GetCartHeat() {
-    if (!DoesCartHaveActiveParts() || !IsCareerMode()) {
-        return GetActualHeat();
-    }
-    FECareerRecord temp_record;
-    FECareerRecord *career_record = FEDatabase->GetPlayerCarStable(0)->GetCareerRecordByHandle(TuningCar->CareerHandle);
-    if (!career_record) return 0.0f;
-    float heat = career_record->GetVehicleHeat();
-    temp_record.SetVehicleHeat(heat);
-    ShoppingCartItem *item = ShoppingCart.GetHead();
-    while (item != ShoppingCart.EndOfList()) {
-        if (item->IsActive()) {
-            UpdateHeatOnVehicle(item->GetBuyingPart(), &temp_record);
+    if (DoesCartHaveActiveParts()) {
+        if (IsCareerMode()) {
+            FECareerRecord temp_record;
+            FECareerRecord *career_record = FEDatabase->GetPlayerCarStable(0)->GetCareerRecordByHandle(TuningCar->CareerHandle);
+            if (!career_record) return 0.0f;
+            float heat = career_record->GetVehicleHeat();
+            temp_record.SetVehicleHeat(heat);
+            ShoppingCartItem *item = ShoppingCart.GetHead();
+            while (item != ShoppingCart.EndOfList()) {
+                if (item->IsActive()) {
+                    UpdateHeatOnVehicle(item->GetBuyingPart(), &temp_record);
+                }
+                item = static_cast<ShoppingCartItem *>(item->GetNext());
+            }
+            return temp_record.GetVehicleHeat();
         }
-        item = static_cast<ShoppingCartItem *>(item->GetNext());
     }
-    return temp_record.GetVehicleHeat();
+    return GetActualHeat();
 }
 
 void CarCustomizeManager::MaxOutPerformance() {
