@@ -306,6 +306,11 @@ struct PostRaceMilestonesScreen : MenuScreen {
     ~PostRaceMilestonesScreen() override;
     void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
     void StartMilestoneDoneAnimations();
+    void StartAnimations(bool isMilestone, int typeKey, float bountyEarned, const char *descriptionStr);
+    bool StartBountyAnimations(bool copDestruction);
+    bool SetMilestoneAnimationScriptHash(bool isMilestone, int type);
+    bool StartMilestoneAnimations();
+    bool StartChallengeAnimations();
     FEImage *mpDataBigIcon;          // offset 0x2C
     float mBountyEarned;             // offset 0x30
     bool mCopDestructionBountyShown; // offset 0x34
