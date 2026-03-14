@@ -139,13 +139,17 @@ inline float QuaternionMagnitude(const FEQuaternion& q) {
 }
 
 inline void NormalizeQuaternion(FEQuaternion& q) {
-    float fMagnitude = QuaternionMagnitude(q);
-    if (fMagnitude > 0.0f) {
-        float fInvMagnitude = 1.0f / fMagnitude;
-        q.x *= fInvMagnitude;
-        q.y *= fInvMagnitude;
-        q.z *= fInvMagnitude;
-        q.w *= fInvMagnitude;
+    float fMagnitude = 1.0f / QuaternionMagnitude(q);
+    if (fMagnitude > 0.00001f) {
+        q.x *= fMagnitude;
+        q.y *= fMagnitude;
+        q.z *= fMagnitude;
+        q.w *= fMagnitude;
+    } else {
+        q.x = 0.0f;
+        q.y = 0.0f;
+        q.z = 0.0f;
+        q.w = 1.0f;
     }
 }
 

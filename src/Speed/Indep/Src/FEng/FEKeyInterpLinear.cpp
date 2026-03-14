@@ -31,15 +31,14 @@ void FELerpVector3(FEVector3& v1, FEVector3& v2, float t, FEVector3* pOffset, FE
 }
 
 void FELerpQuaternion(FEQuaternion& q1, FEQuaternion& q2, float t, FEQuaternion* pOffset, FEQuaternion* pDest) {
-    FEQuaternion q;
-    FEQuaternion q2copy = q2;
-    float Dot = QuaternionDot(q1, q2copy);
+    FEQuaternion q = q2;
+    float Dot = QuaternionDot(q1, q);
 
     if (Dot < 0.0f) {
-        q2copy.x = -q2copy.x;
-        q2copy.y = -q2copy.y;
-        q2copy.z = -q2copy.z;
-        q2copy.w = -q2copy.w;
+        q.x = -q.x;
+        q.y = -q.y;
+        q.z = -q.z;
+        q.w = -q.w;
         Dot = -Dot;
     }
 
@@ -48,10 +47,10 @@ void FELerpQuaternion(FEQuaternion& q1, FEQuaternion& q2, float t, FEQuaternion*
         float SinA = FEngSin(Angle);
         float SinAT = FEngSin(Angle * t);
         float SinAInvT = FEngSin(Angle * (1.0f - t));
-        FEQuaternion r = operator+(operator*(q1, SinAInvT / SinA), operator*(q2copy, SinAT / SinA));
-        q = operator*(r, 1.0f);
+        FEQuaternion r = operator+(operator*(q1, SinAInvT), operator*(q, SinAT));
+        q = operator*(r, 1.0f / SinA);
     } else {
-        FEQuaternion r = operator+(q1, operator*(operator-(q2copy, q1), t));
+        FEQuaternion r = operator+(q1, operator*(operator-(q, q1), t));
         NormalizeQuaternion(r);
         q = r;
     }
