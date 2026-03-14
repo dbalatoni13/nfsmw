@@ -33,14 +33,15 @@ python tools/code_style.py audit --base origin/main
 - `audit` warns on touched type members that look like invented padding or placeholder names such as `pad`, `unk`, or `field_1234`.
 - `audit` also checks touched style-guide rules that clang-format cannot enforce for you, such as cast spacing, `using namespace`, `NULL`, and missing `EA_PRAGMA_ONCE_SUPPORTED` guard blocks when a header's guard region is touched.
 - `audit` groups repeated findings by file so branch-wide output stays readable.
-- Use `audit --category safe-cpp` for the tool's intentionally tiny Frontend/FEng default-format bucket and `audit --category match-sensitive-cpp` when you want a conservative review queue for decomp code.
-- `format --check` is an opt-in wrapper around the repo's `.clang-format`, but it only targets the tool's default allowlisted C/C++ files by default.
+- Use `audit --category safe-cpp` when you want a smaller Frontend/FEng-focused subset and `audit --category match-sensitive-cpp` when you want a conservative review queue for decomp code.
+- `format --check` is an opt-in wrapper around the repo's `.clang-format`, and by default it targets eligible changed C/C++ files, including match-sensitive code.
+- Use `format --check --base origin/main` for a branch-wide formatter pass over all changed C/C++ files.
 - Use `format --check --base origin/main --category safe-cpp` when you want a branch-level formatter probe instead of spelling every file path out.
 - `format --check` labels whitespace-only formatter output separately from other non-whitespace changes.
-- `format` never targets `SourceLists/z*.cpp`; those files stay audit-only even when you opt into risky formatting.
-- `format` skips files that use initializer-list guard comments (`//`) unless you explicitly override that, because clang-format fights this repo-specific layout convention.
+- `format` also accepts `SourceLists/z*.cpp` and other repo C/C++ files; if a formatting pass touches match-sensitive code, verify the affected unit afterwards.
+- Files that use initializer-list guard comments (`//`) are still formatter targets; if a formatting pass touches match-sensitive code, verify the affected unit afterwards.
 - `clang-format` itself is optional. If it is not on `PATH`, install it locally or point the helper at it with `CLANG_FORMAT=/path/to/clang-format`.
-- Do not pass `--include-match-sensitive` unless you are deliberately taking on verification work afterwards.
+- Do not assume a formatting-only change is automatically byte-stable; verify affected units when the formatter touches match-sensitive code.
 
 ## Phase 1: Classify the File Before Cleaning
 
