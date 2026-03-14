@@ -31,8 +31,11 @@ extern float GRaceStatusGetRaceTimeElapsed(const GRaceStatus *race_status) asm("
 extern float GRacerInfoCalcAverageSpeed(const GRacerInfo *racer_info) asm("CalcAverageSpeed__C10GRacerInfo");
 extern bool GRacerInfoAreStatsReady(const GRacerInfo *racer_info) asm("AreStatsReady__C10GRacerInfo");
 
-extern const char lbl_803E4CB4[];
-extern const char lbl_803E4CF0[];
+extern const char lbl_803E4CB4[];  // "%d"
+extern const char lbl_803E4CF0[];  // "%s"
+
+int bSNPrintf(char *buf, int max_len, const char *format, ...);
+const char *GetLocalizedString(unsigned int hash);
 extern const char lbl_803E5074[];
 extern const char lbl_803E507C[];
 extern const char lbl_803E5084[];
@@ -1197,6 +1200,62 @@ void PursuitData::ClearData() {
     for (int i = 0; i <= 0x1F; i++) {
         mMilestonesCompleted[i] = nullptr;
     }
+}
+
+void InfoStat::Draw() {
+    FEngSetLanguageHash(GetTitleObject(), TitleHash);
+    FEngSetLanguageHash(GetDataObject(), InfoHash);
+}
+
+void GenericStat::Draw() {
+    char text[0x20];
+    FEngSetLanguageHash(GetTitleObject(), TitleHash);
+    bSNPrintf(text, 0x20, Format, StatData);
+    if (UnitsHash != 0) {
+        FEString *data = GetDataObject();
+        const char *units = GetLocalizedString(UnitsHash);
+        FEPrintf(data, "%s %s", text, units);
+    } else {
+        FEPrintf(GetDataObject(), lbl_803E4CF0, text);
+    }
+}
+
+void TimerStat::Draw() {
+    char text[0x20];
+    FEngSetLanguageHash(GetTitleObject(), TitleHash);
+    Seconds.PrintToString(text, 0);
+    FEPrintf(GetDataObject(), lbl_803E4CF0, text);
+}
+
+void GenericResult::Draw() {
+    char text[0x20];
+
+    FEPrintf(GetTitleObject(), lbl_803E4CF0, RacerInfo->GetName());
+
+    if (!RacerInfo->IsFinishedRacing()) {
+        bool showData = false;
+        if (GRaceStatus::Exists()) {
+            if (GRaceStatus::Get().GetRaceType() == GRace::kRaceType_SpeedTrap) {
+                showData = true;
+            }
+        }
+        if (!showData) {
+            FEngSetLanguageHash(GetDataObject(), 0x0FC1BF40);
+            goto show_position;
+        }
+    }
+
+    bSNPrintf(text, 0x20, Format, FData);
+    if (UnitsHash != 0) {
+        FEString *data = GetDataObject();
+        const char *units = GetLocalizedString(UnitsHash);
+        FEPrintf(data, "%s %s", text, units);
+    } else {
+        FEPrintf(GetDataObject(), lbl_803E4CF0, text);
+    }
+
+show_position:
+    FEPrintf(Position, lbl_803E4CB4, RacerInfo->GetRanking());
 }
 
 FEImage *FEngFindImage(const char *pkg_name, int name_hash);

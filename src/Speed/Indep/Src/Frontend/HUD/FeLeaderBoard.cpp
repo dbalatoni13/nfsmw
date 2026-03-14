@@ -38,6 +38,16 @@ void LeaderBoard::SetRacerHasHeadset(int pos, bool racerHasHeadset) {
     mTopRacers[pos].mHasHeadset = racerHasHeadset;
 }
 
+void LeaderBoard::SetRacerNumLapsCompleted(int pos, int numLaps, float time, IPlayer *player) {
+    if (pos > 3) return;
+    if (numLaps > 0 && numLaps < mNumLaps &&
+        numLaps > mTopRacers[pos].mNumLapsCompleted && pos == mPlayerIndex) {
+        ShowLapTime(player);
+    }
+    mTopRacers[pos].mRaceTimeOfLastLap = time;
+    mTopRacers[pos].mNumLapsCompleted = numLaps;
+}
+
 void LeaderBoard::SetRacerName(int pos, const char *name) {
     if (pos > 3) return;
     bStrCpy(mTopRacers[pos].mRacerName, name);

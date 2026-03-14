@@ -38,6 +38,8 @@ struct GRacerInfo {
     bool GetIsTotalled() const { return mTotalled; }
     bool GetIsEngineBlown() const { return mEngineBlown; }
     bool IsFinishedRacing() const { return mFinishedRacing; }
+    const char *GetName() const { return mName; }
+    int GetRanking() const { return mRanking; }
 
   private:
     HSIMABLE mhSimable;              // offset 0x0, size 0x4

@@ -36,6 +36,7 @@ struct GIcon {
     bool IsFlagClear(unsigned int mask) const { return (mFlags & mask) == 0; }
     void SetGPSing() { SetFlag(0x80); }
     void ClearGPSing() { ClearFlag(0x80); }
+    bool GetIsGPSing() const { return IsFlagSet(0x80); }
     Type GetType() const { return static_cast< Type >(mType); }
     int GetSectionID() const { return mSectionID; }
     int GetCombinedSectionID() const { return mCombSectionID; }

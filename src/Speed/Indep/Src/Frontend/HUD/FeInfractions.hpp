@@ -14,6 +14,7 @@ class Infractions : public HudElement, public IInfractions {
   public:
     Infractions(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
+    void RequestInfraction(const char *infractionString) override;
 
   private:
     FEObject * mpDataGenericIcon;
