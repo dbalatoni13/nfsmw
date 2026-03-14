@@ -3,15 +3,28 @@
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Misc/Gameflow.hpp"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 
 extern int bStrCmp(const char *, const char *);
 extern void GetLocalizedString(char *buf, unsigned int maxlen, unsigned int hash);
 extern int FEngMapJoyportToJoyParam(int);
 extern void FEngSetCreateCallback(const char *, MenuScreen *(*)(ScreenConstructorData *));
 
-struct MenuScreen;
-struct ScreenConstructorData;
-struct feDialogScreen : MenuScreen { feDialogScreen(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x258]; };
+extern Timer RealTimer;
+
+struct feDialogScreen : MenuScreen {
+    feDialogScreen(ScreenConstructorData *sd);
+    ~feDialogScreen() override;
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
+    eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override;
+    void BuildFromConfig();
+
+    int mResult;                  // offset 0x2C
+    int _pad0;                    // offset 0x30
+    feDialogConfig mConfig;       // offset 0x34, size 0x248
+    unsigned int mControlMask;    // offset 0x27C
+    Timer mStartTimer;            // offset 0x280
+};
 
 static feDialogConfig SecretDialogInfo;
 static int gDialogHandle = 4;
@@ -284,4 +297,21 @@ int DialogInterface::ShowThreeButtons(const char *from_pkg, const char *dlg_pkg,
                                   button3_pressed_message, cancel_message, first_button, fmt, arg_list);
     va_end(arg_list);
     return result;
+}
+
+feDialogScreen::feDialogScreen(ScreenConstructorData *sd)
+    : MenuScreen(sd)
+{
+    mControlMask = 0xff;
+    mResult = 0;
+    mStartTimer = Timer(0);
+    mConfig = *reinterpret_cast<feDialogConfig *>(sd->Arg);
+    BuildFromConfig();
+    mStartTimer = RealTimer;
+}
+
+feDialogScreen::~feDialogScreen() {
+    if (mResult != -1) {
+        cFEng::Get()->QueueGameMessage(mResult, mConfig.ParentPackage, mControlMask);
+    }
 }

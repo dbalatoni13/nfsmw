@@ -14,6 +14,32 @@ extern int SkipFESplitScreen;
 
 const char* UserProfile::GetProfileName() {}
 
+UserProfile::UserProfile() {
+    TheOptionsSettings.TheVideoSettings.Default();
+    TheOptionsSettings.TheGameplaySettings.Default();
+    TheOptionsSettings.TheAudioSettings.Default();
+    for (int i = 0; i < 2; i++) {
+        TheOptionsSettings.ThePlayerSettings[i].Default();
+    }
+    TheOptionsSettings.Default();
+    for (int i = 0; i < 150; i++) {
+        TheCareerSettings.SMSMessages[i].Handle = 0xFF;
+        TheCareerSettings.SMSMessages[i].Flags = 0;
+        TheCareerSettings.SMSMessages[i].SortOrder = 0;
+    }
+    for (int i = 0; i < 5; i++) {
+        bMemSet(&HighScores.TopEvadedPursuitScores[i], 0, 0x38);
+    }
+    bMemSet(&HighScores.CareerPursuitDetails, 0, 0x20);
+    for (int i = 0; i < 10; i++) {
+        bMemSet(&HighScores.BestPursuitRankings[i], 0, 8);
+    }
+    bMemSet(&HighScores.CostToStateDetails, 0, 0x20);
+}
+
+UserProfile::~UserProfile() {
+}
+
 bool UserProfile::IsProfileNamed() {
     return m_bNamed;
 }

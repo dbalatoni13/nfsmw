@@ -63,3 +63,15 @@ void FEngTextInputObject::EscapePressed() {
     gKeyboardManager.EndCapture();
     ParentPackage->FEngEndTextInput();
 }
+
+FEngTextInputObject::~FEngTextInputObject() {
+    gKeyboardManager.EndCapture();
+}
+
+void FEngTextInputObject::Notify(unsigned int msg) {
+    if (msg == 0xc98356ba) {
+        RedrawString(true);
+    } else if (msg == 0x0c407210) {
+        ReturnPressed();
+    }
+}
