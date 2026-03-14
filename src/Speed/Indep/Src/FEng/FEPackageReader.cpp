@@ -11,12 +11,19 @@
 #include "FEMovie.h"
 #include "FEListBox.h"
 #include "FECodeListBox.h"
+#include "FEGroup.h"
 #include "FETypes.h"
 #include "FEKeyTrack.h"
 #include "FEngStandard.h"
 #include "fengine.h"
 
 struct FEColoredImage : public FEImage {
+};
+
+struct FEAnimImage : public FEImage {
+};
+
+struct FESimpleImage : public FEObject {
 };
 
 inline unsigned long BSwap32(unsigned long v) {
@@ -134,4 +141,91 @@ FEPackage* FEPackageReader::Load(const void* pDataPtr, FEGameInterface* pInt, FE
         pPack = nullptr;
     }
     return pResult;
+}
+
+FEObject* FEPackageReader::CreateObject(unsigned long ObjectType) {
+    FEObject* pObject;
+    if (ObjectType == FE_CodeList) {
+        pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FECodeListBox), 0, 0));
+        new (static_cast<FECodeListBox*>(pObject)) FECodeListBox();
+        static_cast<FECodeListBox*>(pObject)->mpobRenderer = pInterface;
+    } else if (ObjectType < FE_CodeList) {
+        if (ObjectType == FE_String) {
+            pObject = static_cast<FEObject*>(FEngMalloc(0x78, 0, 0));
+            new (pObject) FEObject();
+            pObject->pData = nullptr;
+            static_cast<FEString*>(pObject)->SetLabelHash(0xFFFFFFFF);
+            new (&static_cast<FEString*>(pObject)->string) FEWideString();
+            static_cast<FEString*>(pObject)->MaxWidth = 0;
+            static_cast<FEString*>(pObject)->Leading = 0;
+            static_cast<FEString*>(pObject)->Format = 0;
+            pObject->Type = static_cast<FEObjType>(ObjectType);
+        } else if (ObjectType < FE_String) {
+            if (ObjectType == FE_None) {
+                return nullptr;
+            }
+            if (ObjectType == FE_Image) {
+                pObject = static_cast<FEObject*>(FEngMalloc(0x60, 0, 0));
+                new (pObject) FEObject();
+                pObject->pData = nullptr;
+                pObject->Type = static_cast<FEObjType>(ObjectType);
+            } else {
+                goto make_default;
+            }
+        } else {
+            if (ObjectType == FE_List) {
+                pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEListBox), 0, 0));
+                new (static_cast<FEListBox*>(pObject)) FEListBox();
+            } else if (ObjectType == FE_Group) {
+                pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEGroup), 0, 0));
+                new (pObject) FEObject();
+                pObject->pData = nullptr;
+                pObject->Type = static_cast<FEObjType>(ObjectType);
+            } else {
+                goto make_default;
+            }
+        }
+    } else {
+        if (ObjectType == FE_AnimImage) {
+            pObject = static_cast<FEObject*>(FEngMalloc(0x60, 0, 0));
+            new (pObject) FEObject();
+            pObject->pData = nullptr;
+            pObject->Type = static_cast<FEObjType>(ObjectType);
+        } else if (ObjectType > FE_AnimImage) {
+            if (ObjectType == FE_SimpleImage) {
+                pObject = static_cast<FEObject*>(FEngMalloc(0x5C, 0, 0));
+                new (pObject) FEObject();
+                pObject->Type = static_cast<FEObjType>(ObjectType);
+            } else if (ObjectType == FE_MultiImage) {
+                pObject = static_cast<FEObject*>(FEngMalloc(0x78, 0, 0));
+                new (pObject) FEObject();
+                pObject->pData = nullptr;
+                pObject->Type = static_cast<FEObjType>(ObjectType);
+            } else {
+                goto make_default;
+            }
+        } else {
+            if (ObjectType == FE_Movie) {
+                pObject = static_cast<FEObject*>(FEngMalloc(0x60, 0, 0));
+                new (pObject) FEObject();
+                pObject->pData = nullptr;
+                pObject->Type = static_cast<FEObjType>(ObjectType);
+            } else if (ObjectType == FE_ColoredImage) {
+                pObject = static_cast<FEObject*>(FEngMalloc(0x60, 0, 0));
+                new (pObject) FEObject();
+                pObject->pData = nullptr;
+                pObject->Type = static_cast<FEObjType>(ObjectType);
+            } else {
+                goto make_default;
+            }
+        }
+    }
+    goto set_data;
+make_default:
+    pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEObject), 0, 0));
+    new (pObject) FEObject();
+set_data:
+    pObject->Type = static_cast<FEObjType>(ObjectType);
+    pObject->SetDataSize(GetTypeSize(ObjectType));
+    return pObject;
 }
