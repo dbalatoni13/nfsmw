@@ -61,6 +61,18 @@ extern void FEngSetLanguageHash(const char *pkg, unsigned int obj_hash, unsigned
 extern void FEngSetCurrentButton(const char *pkg, unsigned int hash);
 extern void FEngSetTopLeft(FEObject *obj, float x, float y);
 extern void FEngGetTopLeft(FEObject *obj, float &x, float &y);
+
+inline float FEngGetTopLeftX(FEObject *obj) {
+    float x, y;
+    FEngGetTopLeft(obj, x, y);
+    return x;
+}
+
+inline float FEngGetTopLeftY(FEObject *obj) {
+    float x, y;
+    FEngGetTopLeft(obj, x, y);
+    return y;
+}
 extern void FEngSetBottomRight(FEObject *obj, float x, float y);
 extern void FEngGetBottomRight(FEObject *obj, float &x, float &y);
 extern bool CustomizeIsInPerformance();
@@ -2872,6 +2884,63 @@ void CustomizeHUDColor::RefreshHeader() {
         FEngSetColor(obj2, SelectedColor->color);
         FEObject *obj3 = FEngFindObject(GetPackageName(), 0xb8f1f802);
         FEngSetColor(obj3, SelectedColor->color);
+    }
+}
+
+void CustomizeHUDColor::BuildColorOptions() {
+    if (SelectedColor) {
+        FEngSetScript(SelectedColor->FEngObject, 0x7ab5521a, true);
+        SelectedColor = nullptr;
+    }
+    HUDLayerOption *opt = static_cast<HUDLayerOption *>(Options.GetCurrentOption());
+    if (opt && !opt->TheColors.IsEmpty()) {
+        ColorOptions.DeleteAllElements();
+        int i = 0;
+        ShoppingCartItem *cart_item = gCarCustomizeManager.IsPartTypeInCart(0x84u);
+        CarPart *installed_hud = gCarCustomizeManager.GetInstalledCarPart(0x84);
+        SelectablePart *part = opt->TheColors.GetHead();
+        while (part != opt->TheColors.EndOfList()) {
+            i++;
+            HUDColorOption *color_option = new HUDColorOption(part);
+            FEImage *obj = FEngFindImage(GetPackageName(), FEngHashString("COLOR_%d", i));
+            color_option->SetFEngObject(obj);
+            ColorOptions.AddTail(color_option);
+            unsigned char r = part->GetPart()->GetAppliedAttributeIParam(bStringHash("RED"), 0);
+            unsigned char g = part->GetPart()->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
+            unsigned char b = part->GetPart()->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
+            unsigned int color = static_cast<unsigned int>(g) << 8;
+            color |= 0xFF000000;
+            color |= static_cast<unsigned int>(r) << 16;
+            color |= static_cast<unsigned int>(b);
+            color_option->color = color;
+            FEngSetColor(obj, color);
+            if (!opt->SelectedPart) {
+                if (cart_item && gCarCustomizeManager.GetTempColoredPart()->GetPart() == cart_item->GetBuyingPart()->GetPart()) {
+                    if (gCarCustomizeManager.IsPartInCart(part)) {
+                        SelectedColor = color_option;
+                        opt->SelectedPart = part;
+                    }
+                } else if (gCarCustomizeManager.GetTempColoredPart()->GetPart() == installed_hud) {
+                    if (gCarCustomizeManager.IsPartInstalled(part)) {
+                        SelectedColor = color_option;
+                        opt->SelectedPart = part;
+                    }
+                }
+            } else if (opt->SelectedPart == part) {
+                SelectedColor = color_option;
+            }
+            part = part->GetNext();
+        }
+        if (!SelectedColor) {
+            SelectedColor = ColorOptions.GetHead();
+        }
+        float x_offset = 69.0f;
+        float y_offset = 56.0f;
+        FEObject *cursor_obj = Cursor;
+        float x = FEngGetTopLeftX(SelectedColor->FEngObject);
+        x += x_offset;
+        float y = FEngGetTopLeftY(SelectedColor->FEngObject);
+        FEngSetTopLeft(cursor_obj, x, y + y_offset);
     }
 }
 

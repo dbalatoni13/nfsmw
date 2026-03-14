@@ -39,6 +39,9 @@ void BootFlowManager::Destroy() {
     g_pEAXSound->PlayFEMusic(-1);
 }
 
+BootFlowManager::~BootFlowManager() {
+}
+
 BootFlowManager::BootFlowManager() {
     if (!BuildRegion_IsPal()) {
         if (eIsWidescreen()) {

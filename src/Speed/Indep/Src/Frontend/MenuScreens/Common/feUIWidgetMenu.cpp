@@ -272,3 +272,6 @@ unsigned int UIWidgetMenu::AddButtonOption(FEButtonWidget *option) {
     option->SetHeight(bAbs(vWidgetSize.y));
     return iIndexToAdd - 1;
 }
+
+UIWidgetMenu::~UIWidgetMenu() {
+}

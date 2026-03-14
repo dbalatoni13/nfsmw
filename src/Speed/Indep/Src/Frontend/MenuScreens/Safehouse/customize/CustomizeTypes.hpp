@@ -310,8 +310,7 @@ struct HUDLayerOption : public CustomizePartOption {
 struct HUDColorOption : public IconOption {
     HUDColorOption(SelectablePart *part)
         : IconOption(0, 0, 0) //
-        , ThePart(part) //
-        , color(0) {}
+        , ThePart(part) {}
 
     ~HUDColorOption() override {}
 

@@ -115,7 +115,7 @@ struct TimerStat : public RaceStat {
     ~TimerStat() override {}
     void Draw() override;
 
-    float Seconds;
+    Timer Seconds;
     unsigned int TitleHash;
 };
 
@@ -272,8 +272,33 @@ struct PursuitResultsDatum : public ArrayDatum {
         PursuitResultsDatumCheckType_Greyed = 2,
     };
 
-    PursuitResultsDatum(PursuitResultsDatumType type, unsigned int headerHash, int value, float fvalue, PursuitResultsDatumCheckType checkType);
+    PursuitResultsDatum(PursuitResultsDatumType type, unsigned int itemName, float itemNumber, float itemGoal, PursuitResultsDatumCheckType itemChecked);
     void NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) override {}
+
+    PursuitResultsDatumType GetType() { return mType; }
+    unsigned int GetName() { return mName; }
+    float GetNumber() { return mNumber; }
+    float GetGoal() { return mGoal; }
+    bool GetChecked() { return mChecked == PursuitResultsDatumCheckType_On; }
+    bool GetGreyed() { return mChecked == PursuitResultsDatumCheckType_Greyed; }
+
+    PursuitResultsDatumType mType;           // offset 0x24, size 0x4
+    unsigned int mName;                       // offset 0x28, size 0x4
+    float mNumber;                            // offset 0x2C, size 0x4
+    float mGoal;                              // offset 0x30, size 0x4
+    PursuitResultsDatumCheckType mChecked;    // offset 0x34, size 0x4
+};
+
+struct PursuitResultsArraySlot : public ArraySlot {
+    PursuitResultsArraySlot(FEObject *obj, FEString *itemName, FEString *itemNumber, FEImage *itemChecked, FEImage *itemEmpty);
+    ~PursuitResultsArraySlot() override {}
+    void Update(ArrayDatum *datum, bool isSelected) override;
+
+    FEObject *mLine;          // offset 0x14, size 0x4
+    FEString *mItemName;      // offset 0x18, size 0x4
+    FEString *mItemNumber;    // offset 0x1C, size 0x4
+    FEImage *mItemChecked;    // offset 0x20, size 0x4
+    FEImage *mItemEmpty;      // offset 0x24, size 0x4
 };
 
 struct PostRaceMilestonesScreen : MenuScreen {

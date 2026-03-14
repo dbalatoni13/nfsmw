@@ -602,3 +602,6 @@ bool IconScroller::IsTail(IconOption *option) {
 bool IconScroller::IsEndOfList(IconOption *option) {
     return option == HeadBookEnd || option == TailBookEnd;
 }
+
+IconScrollerMenu::~IconScrollerMenu() {
+}
