@@ -376,7 +376,8 @@ void FEPackageReader::ProcessStringTag(FETag* pTag) {
             {
                 short* ptr = pString->string.mpsString;
                 while (*ptr) {
-                    *ptr = BSwap16(*ptr);
+                    short s = *ptr;
+                    *ptr = static_cast<short>(((s >> 8) & 0xFF) | (s << 8));
                     ptr++;
                 }
             }
