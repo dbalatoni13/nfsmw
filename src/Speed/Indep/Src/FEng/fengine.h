@@ -97,7 +97,9 @@ struct FEngine {
     void ProcessMessageQueue();
     void ProcessPackageCommands();
     bool ProcessListBoxResponses(FEObject* pObj, unsigned long MsgID);
+    bool ProcessListBoxResponses(FEObject* pObj, FEPackage* pPack, unsigned long MsgID);
     bool ProcessCodeListBoxResponses(FEObject* pObj, unsigned long MsgID);
+    bool ProcessCodeListBoxResponses(FEObject* pObj, FEPackage* pPack, unsigned long MsgID);
     void ProcessObjectMessage(FEObject* pObj, FEPackage* pPack, unsigned long MsgID, unsigned long uControlMask);
     void ProcessGlobalMessage(FEPackage* pPack, unsigned long MsgID, unsigned long uControlMask);
     FEPackage* FindLibraryPackage(unsigned long NameHash) const;

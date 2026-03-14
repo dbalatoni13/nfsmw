@@ -320,6 +320,108 @@ FEPackage* FEngine::LoadPackage(const void* pPackageData, bool bLoadAsLibrary) {
     return pPack;
 }
 
+bool FEngine::UnloadPackage(FEPackage* pPackage) {
+    FEPackage* pPack = PackList.GetFirstPackage();
+    while (pPack) {
+        if (pPack == pPackage) {
+            break;
+        }
+        pPack = pPack->GetNext();
+    }
+    if (!pPack) {
+        return false;
+    }
+    bool bOwnsMemory;
+    if (!pInterface) {
+        bOwnsMemory = true;
+    } else {
+        bOwnsMemory = pInterface->PackageWillUnload(pPack);
+    }
+    PackList.RemovePackage(pPackage);
+    FEPackageCommand* pCmd = static_cast<FEPackageCommand*>(PackageCommands.GetHead());
+    while (pCmd) {
+        FEPackageCommand* pNext = static_cast<FEPackageCommand*>(pCmd->GetNext());
+        if (pCmd->pPackage == pPackage) {
+            PackageCommands.RemNode(pCmd);
+            if (pCmd) {
+                delete pCmd;
+            }
+        }
+        pCmd = pNext;
+    }
+    if (!pPack->bIsLibrary) {
+        FENode* pLibNode = static_cast<FENode*>(pPack->LibrariesUsed.GetHead());
+        while (pLibNode) {
+            FEPackage* pLib = FindLibraryPackage(pLibNode->GetNameHash());
+            if (pLib) {
+                int RefCount = pLib->NumLibRefs - 1;
+                if (RefCount < 1) {
+                    UnloadLibraryPackage(pLib);
+                } else {
+                    pLib->NumLibRefs = RefCount;
+                }
+            }
+            pLibNode = pLibNode->GetNext();
+        }
+        pPack->Shutdown(pInterface);
+        if (bOwnsMemory && pPack) {
+            delete pPack;
+        }
+    } else {
+        AddToIdleList(pPackage);
+    }
+    return true;
+}
+
+FEPackage* FEngine::PushPackage(const char* pPackageName, const unsigned char Level, const unsigned long ControlMask) {
+    FEPackage* pPack = FindIdlePackage(pPackageName);
+    if (!pPack) {
+        int len = FEngStrLen(pPackageName);
+        const char* pBaseName = pPackageName + len - 1;
+        char c = *pBaseName;
+        while (c != '/' && c != '\\' && len > 0) {
+            len--;
+            pBaseName--;
+            c = *pBaseName;
+        }
+        if (len != 0) {
+            pBaseName++;
+        }
+        pPack = FindIdlePackage(pBaseName);
+        if (!pPack) {
+            unsigned char* pBlockStart;
+            bool bDeleteBlock;
+            unsigned char* pPackData = pInterface->GetPackageData(pPackageName, &pBlockStart, bDeleteBlock);
+            if (!pPackData) {
+                return nullptr;
+            }
+            pPack = LoadPackage(pPackData, false);
+            if (bDeleteBlock && pBlockStart) {
+                delete[] pBlockStart;
+            }
+            if (!pPack) {
+                return nullptr;
+            }
+            goto loaded;
+        }
+    }
+    {
+        PackageInitStateCB cb;
+        pPack->bUseIdleList = true;
+        pPack->ForAllObjects(cb);
+        IdleList.RemNode(pPack);
+    }
+loaded:
+    pPack->Controllers = ControlMask;
+    pPack->Priority = Level;
+    pPack->bExecuting = bExecuting;
+    if (pInterface) {
+        pInterface->PackageWasLoaded(pPack);
+    }
+    PackList.AddPackage(pPack);
+    return pPack;
+}
+
 void FEngine::QueuePackageUserTransfer(FEPackage* pPack, bool bPush, unsigned long ControlMask) {
     FEPackageCommand* pCmd = static_cast<FEPackageCommand*>(FEngMalloc(sizeof(FEPackageCommand), nullptr, 0));
     pCmd->prev = reinterpret_cast<FEMinNode*>(0xABADCAFE);
@@ -408,6 +510,52 @@ bool FEngine::ProcessListBoxResponses(FEObject* pObj, unsigned long MsgID) {
 }
 
 bool FEngine::ProcessCodeListBoxResponses(FEObject* pObj, unsigned long MsgID) {
+    FECodeListBox* pList = static_cast<FECodeListBox*>(pObj);
+    long lCol;
+    long lRow;
+    if (MsgID == 0xe10814a6) {
+        lCol = 0;
+        lRow = 1;
+    } else if (MsgID == 0x030471ac) {
+        lCol = 1;
+        lRow = 0;
+    } else if (MsgID == 0xe10c4af9) {
+        lCol = -1;
+        lRow = 0;
+    } else if (MsgID == 0xfb814f13) {
+        lCol = 0;
+        lRow = -1;
+    } else {
+        return false;
+    }
+    pList->ScrollSelection(lCol, lRow);
+    return true;
+}
+
+bool FEngine::ProcessListBoxResponses(FEObject* pObj, FEPackage* pPack, unsigned long MsgID) {
+    FEListBox* pList = static_cast<FEListBox*>(pObj);
+    long lCol;
+    long lRow;
+    if (MsgID == 0xe10814a6) {
+        lCol = 0;
+        lRow = 1;
+    } else if (MsgID == 0x030471ac) {
+        lCol = 1;
+        lRow = 0;
+    } else if (MsgID == 0xe10c4af9) {
+        lCol = -1;
+        lRow = 0;
+    } else if (MsgID == 0xfb814f13) {
+        lCol = 0;
+        lRow = -1;
+    } else {
+        return false;
+    }
+    pList->ScrollSelection(lCol, lRow);
+    return true;
+}
+
+bool FEngine::ProcessCodeListBoxResponses(FEObject* pObj, FEPackage* pPack, unsigned long MsgID) {
     FECodeListBox* pList = static_cast<FECodeListBox*>(pObj);
     long lCol;
     long lRow;
