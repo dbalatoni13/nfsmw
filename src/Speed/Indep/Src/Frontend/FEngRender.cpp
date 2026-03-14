@@ -6,6 +6,8 @@
 extern float ObjectSortLastZ;
 extern FEPackage *ObjectSortRenderingPackage;
 extern void GCDrawMovie(FEObject *obj, FERenderObject *renderObj);
+extern void FinishedRenderingFEngLayer();
+extern FEPackageRenderInfo *HACK_FEPkgMgr_GetPackageRenderInfo(FEPackage *pkg);
 
 unsigned int FEngColorToEpolyColor(FEColor c) {
     return (c.a / 2) | ((c.b / 2) << 8) | ((c.g / 2) << 16) | ((c.r / 2) << 24);
@@ -79,4 +81,56 @@ static void rotate_uvs(bVector2 *uvs, float angle_radians, float px, float py) {
     uvs[2].y = t4r * cos_angle - s4r * sin_angle + py + half_height;
     uvs[3].x = s5r * cos_angle + t5r * sin_angle + px + half_width;
     uvs[3].y = t5r * cos_angle - s5r * sin_angle + py + half_height;
+}
+
+void cFEngRender::AddToRenderList(FEObject *obj) {
+    float z = reinterpret_cast<FEObjData *>(obj->pData)->Pos.z;
+    if (obj->RenderContext != 0) {
+        RenderContext *pctx = &RContexts[obj->RenderContext];
+        z += pctx->matrix.v3.z;
+    }
+    bool visible = obj && !(obj->Flags & 1);
+    if (visible) {
+        if (z != ObjectSortLastZ) {
+            ObjectSortLastZ = z;
+            FinishedRenderingFEngLayer();
+        }
+        FEPackageRenderInfo *info = HACK_FEPkgMgr_GetPackageRenderInfo(ObjectSortRenderingPackage);
+        RenderObject(obj, info);
+    }
+}
+
+void cFEngRender::GenerateRenderContext(unsigned short ctx, FEObject *obj) {
+    if (Highwater < ctx) {
+        Highwater = ctx;
+    }
+    RenderContext *rc = &RContexts[ctx];
+    FEColor color;
+    MakeRenderMatrix(reinterpret_cast<FEObjData *>(obj->pData), &rc->matrix, color,
+                     obj->RenderContext, 1.0f);
+    int val;
+    val = 0;
+    if (color.b > 0) val = color.b;
+    if (val > 0xff) val = 0xff;
+    rc->b = static_cast<unsigned char>(val);
+    val = 0;
+    if (color.g > 0) val = color.g;
+    if (val > 0xff) val = 0xff;
+    rc->g = static_cast<unsigned char>(val);
+    val = 0;
+    if (color.r > 0) val = color.r;
+    if (val > 0xff) val = 0xff;
+    rc->r = static_cast<unsigned char>(val);
+    val = 0;
+    if (color.a > 0) val = color.a;
+    if (val > 0xff) val = 0xff;
+    rc->a = static_cast<unsigned char>(val);
+    if (rc->group != reinterpret_cast<FEGroup *>(obj)) {
+        rc->group = reinterpret_cast<FEGroup *>(obj);
+        rc->clipObject = nullptr;
+        FEMinNode *child =
+            *reinterpret_cast<FEMinNode **>(reinterpret_cast<char *>(obj) + 0x60);
+        for (; child; child = child->GetNext()) {
+        }
+    }
 }

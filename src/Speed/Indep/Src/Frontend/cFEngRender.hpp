@@ -48,6 +48,7 @@ struct cFEngRender {
 
     RenderContext* GetRenderContext(unsigned short ctx);
     void GenerateRenderContext(unsigned short ctx, FEObject* obj);
+    void MakeRenderMatrix(FEObjData* data, bMatrix4* matrix, FEColor& color, int parentCtx, float scale);
     void PrepForPackage(FEPackage* pkg);
     void PackageFinished(FEPackage* pkg);
     void AddToRenderList(FEObject* obj);

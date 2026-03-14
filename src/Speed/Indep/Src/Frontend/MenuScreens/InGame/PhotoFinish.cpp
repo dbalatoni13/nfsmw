@@ -129,7 +129,7 @@ void SillyTextureStreamerManager::MakeSpaceInPoolCallback() {
 
 void SillyTextureStreamerManager::LoadCallback() {
     mCurrentlyLoading = false;
-    if (mCurrentLoadingIndex > -1) {
+    if (mCurrentLoadingIndex >= 0) {
         int idx = mCurrentLoadingIndex;
         FEngSetTextureHash(LoadInfos[idx].LoadIntoImage, LoadInfos[idx].LoadingTexture);
         FEngSetVisible(reinterpret_cast<FEObject *>(LoadInfos[idx].LoadIntoImage));
