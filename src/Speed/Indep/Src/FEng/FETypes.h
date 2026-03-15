@@ -88,10 +88,10 @@ struct FEQuaternion {
     inline FEQuaternion& operator*=(const FEQuaternion& q) { *this = *this * q; return *this; }
     inline FEQuaternion operator*(const FEQuaternion& q1) {
         FEQuaternion qRet;
-        qRet.x = (q1.y * z - q1.z * y) + q1.x * w + x * q1.w;
-        qRet.y = (q1.z * x - q1.x * z) + q1.y * w + y * q1.w;
-        qRet.z = (q1.x * y - q1.y * x) + q1.z * w + z * q1.w;
-        qRet.w = q1.w * w - (q1.z * z + q1.x * x + q1.y * y);
+        qRet.x = (y * q1.z - z * q1.y) + (q1.x * w + x * q1.w);
+        qRet.y = (z * q1.x - x * q1.z) + (q1.y * w + y * q1.w);
+        qRet.z = (x * q1.y - y * q1.x) + (q1.z * w + z * q1.w);
+        qRet.w = q1.w * w - (q1.y * y + q1.x * x + q1.z * z);
         return qRet;
     }
     void GetMatrix(FEMatrix4* pMatrix);
