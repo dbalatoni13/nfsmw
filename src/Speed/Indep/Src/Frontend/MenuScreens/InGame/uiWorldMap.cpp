@@ -336,10 +336,10 @@ WorldMap::~WorldMap() {
     delete MapStreamer;
     MapStreamer = nullptr;
 
-    IPlayer* player = IPlayer::First(PLAYER_LOCAL);
-    if (player != nullptr) {
-        IHud* hud;
-        if ((hud = player->GetHud()) != nullptr) {
+    IPlayer* iplayer = IPlayer::First(PLAYER_LOCAL);
+    if (iplayer != nullptr) {
+        {
+            IHud* hud = iplayer->GetHud();
             hud->RefreshMiniMapItems();
         }
     }
