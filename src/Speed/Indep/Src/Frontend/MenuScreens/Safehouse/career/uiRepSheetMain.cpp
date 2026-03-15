@@ -93,20 +93,8 @@ void uiRepSheetMain::NotificationMessage(unsigned long msg, FEObject* obj, unsig
             return;
         }
         const char* packageName;
-        unsigned int packageFlags;
-        if (msg == 0xc519bfc3) {
-            if (bBossBeaten) {
-                return;
-            }
-            if (!bBossAvailable) {
-                return;
-            }
-            if (bIsInGame) {
-                cFEng::Get()->QueuePackageSwitch("InGameRivalChallenge.fng", 1, 0, false);
-                return;
-            }
-            packageName = "SafeHouseRivalChallenge.fng";
-        } else {
+        unsigned int packageFlags = 0;
+        if (msg != 0xc519bfc3) {
             if (msg != 0xe1fde1d1) {
                 return;
             }
@@ -157,8 +145,19 @@ void uiRepSheetMain::NotificationMessage(unsigned long msg, FEObject* obj, unsig
                 }
                 packageName = "MainMenu_Sub.fng";
             }
+        } else {
+            if (bBossBeaten) {
+                return;
+            }
+            if (!bBossAvailable) {
+                return;
+            }
+            if (bIsInGame) {
+                cFEng::Get()->QueuePackageSwitch("InGameRivalChallenge.fng", 1, 0, false);
+                return;
+            }
+            packageName = "SafeHouseRivalChallenge.fng";
         }
-        packageFlags = 0;
     queue_switch:
         cFEng::Get()->QueuePackageSwitch(packageName, packageFlags, 0, false);
         return;
