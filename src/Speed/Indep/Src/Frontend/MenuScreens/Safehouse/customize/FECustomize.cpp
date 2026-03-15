@@ -3103,26 +3103,14 @@ void CustomizeParts::SetHUDColors() {
     ShoppingCartItem *hudInCart = gCarCustomizeManager.IsPartTypeInCart(0x84u);
     CarPart *installedHud = gCarCustomizeManager.GetInstalledCarPart(0x84);
     SelectablePart *sel = GetSelectedPart();
-    if (sel->ThePart == installedHud) {
-        goto use_installed_colors;
-    } else {
-        if (hudInCart) {
-            SelectablePart *selPart = GetSelectedPart();
-            if (selPart->ThePart == hudInCart->GetBuyingPart()->ThePart) {
-                goto use_installed_colors;
-            }
-        }
-        FEngSetColor(FEngFindObject(GetPackageName(), 0x5d19f25), 0xffffc373u);
-        FEngSetColor(FEngFindObject(GetPackageName(), 0xc0721eb9), 0xffffffffu);
-        FEngSetColor(FEngFindObject(GetPackageName(), 0xc62ad685), 0xffffffffu);
-        FEngSetColor(FEngFindObject(GetPackageName(), 0xb8f1f802), 0xffffffffu);
-        FEngSetColor(FEngFindObject(GetPackageName(), 0xd312f0cb), 0xffffae40u);
-        FEngSetColor(FEngFindObject(GetPackageName(), 0x8fe2a217), 0xffffae40u);
-        return;
+    if (sel->ThePart != installedHud) {
+        if (!hudInCart) goto not_installed;
+        SelectablePart *selPart = GetSelectedPart();
+        if (selPart->ThePart != hudInCart->GetBuyingPart()->ThePart)
+            goto not_installed;
     }
-use_installed_colors:
     {
-        unsigned int colors[5];
+        unsigned int colors[3];
         int slot = 0x85;
         int idx = 0;
         do {
@@ -3138,11 +3126,11 @@ use_installed_colors:
             } else {
                 colorPart = gCarCustomizeManager.GetInstalledCarPart(slot);
             }
-            slot++;
-            unsigned int r = colorPart->GetAppliedAttributeIParam(bStringHash("RED"), 0);
-            unsigned int g = colorPart->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
+            unsigned char r = colorPart->GetAppliedAttributeIParam(bStringHash("RED"), 0);
+            unsigned char g = colorPart->GetAppliedAttributeIParam(bStringHash("GREEN"), 0);
             unsigned int b = colorPart->GetAppliedAttributeIParam(bStringHash("BLUE"), 0);
-            colors[idx] = ((r & 0xff) << 16) | ((g & 0xff) << 8) | 0xff000000 | (b & 0xff);
+            colors[idx] = (static_cast<unsigned int>(r) << 16) | (static_cast<unsigned int>(g) << 8) | 0xff000000 | (b & 0xff);
+            slot++;
             idx++;
         } while (idx < 3);
         FEngSetColor(FEngFindObject(GetPackageName(), 0x5d19f25), colors[0]);
@@ -3151,7 +3139,15 @@ use_installed_colors:
         FEngSetColor(FEngFindObject(GetPackageName(), 0xb8f1f802), colors[2]);
         FEngSetColor(FEngFindObject(GetPackageName(), 0xd312f0cb), colors[1]);
         FEngSetColor(FEngFindObject(GetPackageName(), 0x8fe2a217), colors[1]);
+        return;
     }
+not_installed:
+    FEngSetColor(FEngFindObject(GetPackageName(), 0x5d19f25), 0xffffc373u);
+    FEngSetColor(FEngFindObject(GetPackageName(), 0xc0721eb9), 0xffffffffu);
+    FEngSetColor(FEngFindObject(GetPackageName(), 0xc62ad685), 0xffffffffu);
+    FEngSetColor(FEngFindObject(GetPackageName(), 0xb8f1f802), 0xffffffffu);
+    FEngSetColor(FEngFindObject(GetPackageName(), 0xd312f0cb), 0xffffae40u);
+    FEngSetColor(FEngFindObject(GetPackageName(), 0x8fe2a217), 0xffffae40u);
 }
 
 // --- CustomizeHUDColor ---
