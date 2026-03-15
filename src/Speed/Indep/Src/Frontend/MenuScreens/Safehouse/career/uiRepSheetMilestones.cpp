@@ -272,25 +272,25 @@ void uiRepSheetMilestones::AddSpeedtrap(GSpeedTrap* trap) {
 
 void uiRepSheetMilestones::RefreshHeader() {
     ArrayScrollerMenu::RefreshHeader();
-    FEPrintf(GetPackageName(), 0x5a856a34, "%d/%d", GetCurrentDatumNum());
-    FEPrintf(GetPackageName(), 0x2d4d22c8, "%d/%d", GetNumDatum());
-    FEPlayerCarDB* stable = FEDatabase->GetPlayerCarStable(0);
-    FEPrintf(GetPackageName(), 0xb514e2d8, "%s %d", GetLocalizedString(0xce6b99b1), stable->GetTotalBounty());
-    FEPrintf(GetPackageName(), 0xf91a59f6, "%s %d", GetLocalizedString(0x73b79e0), FEDatabase->GetCareerSettings()->GetCash());
     ArrayDatum* currentDatum = GetCurrentDatum();
+    FEPrintf(GetPackageName(), 0x5a856a34, "%d", data.GetNodeNumber(currentDatum));
+    FEPrintf(GetPackageName(), 0x2d4d22c8, "%d", data.CountElements());
+    FEPlayerCarDB* stable = FEDatabase->GetPlayerCarStable(0);
+    FEPrintf(GetPackageName(), 0xb514e2d8, "%s %$d", GetLocalizedString(0xce6b99b1), stable->GetTotalBounty());
+    FEPrintf(GetPackageName(), 0xf91a59f6, "%s %$d", GetLocalizedString(0x73b79e0), FEDatabase->GetCareerSettings()->GetCash());
     if (currentDatum != nullptr) {
         MilestoneDatum* d = static_cast<MilestoneDatum*>(currentDatum);
         if (d->GetType() == 0) {
             GMilestone* pMilestone = d->my_milestone;
             FEngSetTextureHash(GetPackageName(), 0xf97ec5d5,
                                FEDatabase->GetMilestoneIconHash(pMilestone->GetTypeKey(), true));
-            FEPrintf(GetPackageName(), 0xb21d69bd, "%d", pMilestone->GetBounty());
+            FEPrintf(GetPackageName(), 0xb21d69bd, "%$0.0f", pMilestone->GetBounty());
             float goal = pMilestone->GetRequiredValue();
             if (FEDatabase->IsMilestoneTimeFormat(pMilestone->GetTypeKey())) {
                 goal = goal * 0.001f;
             }
             char buf[32];
-            bSNPrintf(buf, 32, "%d", static_cast<int>(goal));
+            bSNPrintf(buf, 32, "%$0.0f", goal);
             FEPrintf(GetPackageName(), 0x28049d6, "%s %s",
                      GetLocalizedString(FEDatabase->GetMilestoneDescHash(pMilestone->GetLocalizationTag())),
                      buf, buf);
@@ -299,7 +299,7 @@ void uiRepSheetMilestones::RefreshHeader() {
             GSpeedTrap* pSpeedTrap = p->my_speedtrap;
             FEngSetTextureHash(GetPackageName(), 0xf97ec5d5,
                                FEDatabase->GetRaceIconHash(GRace::kRaceType_SpeedTrap));
-            FEPrintf(GetPackageName(), 0xb21d69bd, "%d", pSpeedTrap->GetBounty());
+            FEPrintf(GetPackageName(), 0xb21d69bd, "%$0.0f", pSpeedTrap->GetBounty());
             float value;
             const char* distUnits;
             if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
@@ -310,26 +310,24 @@ void uiRepSheetMilestones::RefreshHeader() {
                 distUnits = GetLocalizedString(0x8569ab44);
             }
             char buf[32];
-            bSNPrintf(buf, 32, "%d %s", static_cast<int>(value), distUnits);
+            bSNPrintf(buf, 32, "%$0.0f %s", value, distUnits);
             FEPrintf(GetPackageName(), 0x28049d6, "%s %s",
                      GetLocalizedString(0xb14018bd), buf);
         }
         for (int i = 0; i < GetNumSlots(); i++) {
             ArrayDatum* datum = GetDatumAt(i + GetStartDatumNum());
-            unsigned int check_hash = FEngHashString("CHECK_ICON_%d", i + 1);
+            unsigned int check_hash = FEngHashString("MEDAL_THUMB_%d", i + 1);
             FEngSetInvisible(GetPackageName(), check_hash);
             if (datum == nullptr) {
                 FEngSetInvisible(GetPackageName(), check_hash);
-            } else if (!datum->IsLocked()) {
-                if (!datum->IsChecked()) {
-                    FEngSetInvisible(GetPackageName(), check_hash);
-                } else {
-                    FEngSetVisible(GetPackageName(), check_hash);
-                    FEngSetTextureHash(GetPackageName(), check_hash, 0x28feadd);
-                }
-            } else {
+            } else if (datum->IsLocked()) {
                 FEngSetVisible(GetPackageName(), check_hash);
                 FEngSetTextureHash(GetPackageName(), check_hash, 0x18ed48);
+            } else if (datum->IsChecked()) {
+                FEngSetVisible(GetPackageName(), check_hash);
+                FEngSetTextureHash(GetPackageName(), check_hash, 0x28feadd);
+            } else {
+                FEngSetInvisible(GetPackageName(), check_hash);
             }
         }
     }
