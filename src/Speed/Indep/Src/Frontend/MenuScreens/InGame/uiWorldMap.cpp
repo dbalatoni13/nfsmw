@@ -228,17 +228,17 @@ void ItemTypeToggle::Position() {
 }
 
 void ItemTypeToggle::UnsetFocus() {
-    if (!GetVisibility() && !bExiting) {
-        const unsigned long FEObj_NORMAL = 0x163c76;
-        FEngSetScript(static_cast< FEObject* >(GetTitleObject()), FEObj_NORMAL, true);
-        FEngSetScript(pIconGroup, FEObj_NORMAL, true);
-        if (GetBacking() != nullptr) {
-            FEngSetScript(GetBacking(), FEObj_NORMAL, true);
-        }
-    } else {
+    if (GetVisibility() || bExiting) {
         const unsigned long FEObj_GREY = 0x6ebbfb68;
         FEButtonWidget::UnsetFocus();
         FEngSetScript(pIconGroup, FEObj_GREY, true);
+    } else {
+        const unsigned long FEObj_NORMAL = 0x163c76;
+        FEngSetScript(static_cast<FEObject *>(GetTitleObject()), FEObj_NORMAL, true);
+        FEngSetScript(pIconGroup, FEObj_NORMAL, true);
+        if (GetBacking()) {
+            FEngSetScript(GetBacking(), FEObj_NORMAL, true);
+        }
     }
 }
 
