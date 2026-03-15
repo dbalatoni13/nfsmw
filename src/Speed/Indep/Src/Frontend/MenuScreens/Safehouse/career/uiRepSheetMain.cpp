@@ -55,16 +55,17 @@ uiRepSheetMain::uiRepSheetMain(ScreenConstructorData* sd)
       bBossAvailable(false), //
       bBossBeaten(false), //
       DefeatedTextureHash(0), //
-      RivalStreamer(sd->PackageFilename, sd->Arg != 0) {
-    if (!bIsInGame) {
-        RideInfo ride;
-        FEDatabase->GetPlayerCarStable(0)->BuildRideForPlayer(FEDatabase->GetCareerSettings()->GetCurrentCar(), 0, &ride);
-        CarViewer::SetRideInfo(&ride, SET_RIDE_INFO_REASON_LOAD_CAR, eCARVIEWER_PLAYER1_CAR);
-        GarageMainScreen::GetInstance()->CameraPushRequested = false;
-    } else {
-        Options.IdleColor = 0xffffae40;
-        Options.FadeColor = 0x00ffae40;
+      RivalStreamer(sd->PackageFilename, bIsInGame) {
+    if (bIsInGame) {
+        Options.SetIdleColor(0xffffae40);
+        Options.SetFadeColor(0x00ffae40);
         new EFadeScreenOff(0x14035fb);
+    } else {
+        RideInfo ride;
+        FEPlayerCarDB* stable = FEDatabase->GetPlayerCarStable(0);
+        stable->BuildRideForPlayer(FEDatabase->GetCareerSettings()->GetCurrentCar(), 0, &ride);
+        CarViewer::SetRideInfo(&ride, SET_RIDE_INFO_REASON_LOAD_CAR, eCARVIEWER_PLAYER1_CAR);
+        GarageMainScreen::GetInstance()->CancelCameraPush();
     }
     Setup();
 }

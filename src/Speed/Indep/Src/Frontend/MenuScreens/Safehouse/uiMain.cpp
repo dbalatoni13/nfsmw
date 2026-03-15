@@ -20,6 +20,7 @@ struct GarageMainScreen : public MenuScreen {
     void CancelCameraPush() { CameraPushRequested = false; }
     void UpdateCurrentCameraView(bool b);
     void EnableCarRendering();
+    void DisableCarRendering();
     static GarageMainScreen* GetInstance();
 };
 

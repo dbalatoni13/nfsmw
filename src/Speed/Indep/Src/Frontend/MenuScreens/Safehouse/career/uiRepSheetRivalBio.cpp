@@ -11,7 +11,6 @@
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
 struct FEObject;
-
 FEImage* FEngFindImage(const char* pkg_name, int hash);
 void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned int lang_hash);
 unsigned int FEngHashString(const char* format, ...);
@@ -29,16 +28,20 @@ extern int BlackListNumber;
 
 uiRepSheetRivalBio::uiRepSheetRivalBio(ScreenConstructorData* sd)
     : MenuScreen(sd)
-    , RivalStreamer(sd->PackageFilename, sd->Arg != 0) {
-    bIsInGame = sd->Arg != 0;
-    if ((FEDatabase->GetGameMode() & 0x20000) == 0) {
-        cFEng::Get()->QueuePackageMessage(0xaf922178, PackageFilename, nullptr);
-    } else {
+    , bIsInGame(sd->Arg != 0)
+    , RivalStreamer(sd->PackageFilename, bIsInGame) {
+    if (FEDatabase->IsPostRivalMode()) {
+        CarViewer::HideAllCars();
         if (FEDatabase->GetCareerSettings()->GetCurrentBin() == 16) {
             new EEnterBin(FEDatabase->GetCareerSettings()->GetCurrentBin() - 1);
         }
         iCurrentViewBin = FEDatabase->GetCareerSettings()->GetCurrentBin();
-        cFEng::Get()->QueuePackageMessage(0xb21a45f, PackageFilename, nullptr);
+        cFEng::Get()->QueuePackageMessage(0xb21a45f, GetPackageName(), nullptr);
+    } else {
+        cFEng::Get()->QueuePackageMessage(0xaf922178, GetPackageName(), nullptr);
+        if (!bIsInGame) {
+            GarageMainScreen::GetInstance()->DisableCarRendering();
+        }
     }
     Setup();
 }
