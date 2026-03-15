@@ -745,10 +745,6 @@ void UIMemcardBase::ExitComplete() {
     } else {
         unsigned int cmd = gMemcardSetup.mOp & 0xf;
         switch (cmd) {
-        case 2:
-            cFEng::Get()->QueuePackageSwitch(gMemcardSetup.mToScreen,
-                MemoryCard::GetInstance()->GetPlayerNum(), 0, false);
-            break;
         case 1: {
             bool popExtra;
             if (!m_SimPausedForMemcard) {
@@ -760,6 +756,10 @@ void UIMemcardBase::ExitComplete() {
             cFEng::Get()->QueuePackagePop(popExtra ? 1 : 0);
             break;
         }
+        case 2:
+            cFEng::Get()->QueuePackageSwitch(gMemcardSetup.mToScreen,
+                MemoryCard::GetInstance()->GetPlayerNum(), 0, false);
+            break;
         case 3:
             cFEng::Get()->QueuePackagePop(1);
             cFEng::Get()->QueuePackageSwitch(gMemcardSetup.mToScreen,
