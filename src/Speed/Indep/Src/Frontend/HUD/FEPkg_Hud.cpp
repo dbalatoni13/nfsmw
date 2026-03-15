@@ -45,6 +45,8 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/engine.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Generated/Events/EPause.hpp"
 #include "Speed/Indep/Src/Generated/Events/ERaceSheetOn.hpp"
 #include "Speed/Indep/Src/Generated/Events/EShowResults.hpp"
@@ -63,6 +65,8 @@ struct FadeScreen : MenuScreen {
 };
 
 extern bool bIsRestartingRace;
+extern int SkipFE;
+extern const char *SkipFEPlayerCar;
 
 extern FEString *FEngFindString(const char *, int);
 extern unsigned int bStringHash(const char *str);
@@ -272,6 +276,97 @@ bool HudResourceManager::ChooseMinimapTextureName(ePlayerHudType hudType, char *
     }
 
     return false;
+}
+
+void HudResourceManager::ChooseLoadableTextures(ePlayerHudType hudType, int &textureHash,
+                                                float &redlineRotation) {
+    unsigned int vehicleKey;
+
+    if (SkipFE) {
+        vehicleKey = Attrib::StringToKey(SkipFEPlayerCar);
+    } else {
+        unsigned int vehicleHandle;
+        FEPlayerCarDB *stable;
+
+        if (GRaceStatus::Exists() &&
+            GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
+            vehicleHandle = FEDatabase->GetCareerSettings()->GetCurrentCar();
+        } else {
+            vehicleHandle =
+                FEDatabase->GetQuickRaceSettings(GRace::kRaceType_NumTypes)->GetSelectedCar(0);
+        }
+
+        stable = FEDatabase->GetPlayerCarStable(0);
+        FECarRecord *car = stable->GetCarRecordByHandle(vehicleHandle);
+        vehicleKey = car->VehicleKey;
+    }
+
+    Attrib::Gen::pvehicle atr(vehicleKey, 0, nullptr);
+    const Attrib::RefSpec &engineRef = atr.engine(0);
+    Attrib::Gen::engine atr_engine(engineRef, 0, nullptr);
+
+    float MaxRPM = atr_engine.MAX_RPM();
+    float RedLineRPM = atr_engine.RED_LINE();
+    bool isDrag = (hudType == PHT_DRAG);
+
+    float maxRpmTextureNum = FEngHud::ChooseMaxRpmTextureNumber(MaxRPM);
+
+    char textureHashString[32];
+    if (isDrag) {
+        bSPrintf(textureHashString, "DRAG_RPM_%d_LINES", static_cast<int>(maxRpmTextureNum));
+    } else {
+        bSPrintf(textureHashString, "%d_LINES_%2.2d", static_cast<int>(maxRpmTextureNum),
+                 mCustIndex);
+    }
+    textureHash = bStringHash(textureHashString);
+
+    if (MaxRPM < 7000.0f) {
+        if (RedLineRPM >= 6500.0f) {
+            redlineRotation = isDrag ? 39.25f : 164.5f;
+        } else if (RedLineRPM >= 6000.0f) {
+            redlineRotation = isDrag ? 32.25f : 149.5f;
+        } else if (RedLineRPM >= 5500.0f) {
+            redlineRotation = isDrag ? 26.0f : 131.5f;
+        } else {
+            redlineRotation = isDrag ? 19.25f : 113.5f;
+        }
+    } else if (MaxRPM < 8000.0f) {
+        if (RedLineRPM >= 7500.0f) {
+            redlineRotation = isDrag ? 40.0f : 165.0f;
+        } else if (RedLineRPM >= 7000.0f) {
+            redlineRotation = isDrag ? 34.0f : 152.0f;
+        } else if (RedLineRPM >= 6500.0f) {
+            redlineRotation = isDrag ? 28.25f : 138.0f;
+        } else if (RedLineRPM < 6000.0f) {
+            redlineRotation = isDrag ? 17.25f : 110.0f;
+        } else {
+            redlineRotation = isDrag ? 22.5f : 123.0f;
+        }
+    } else if (MaxRPM < 9000.0f) {
+        if (RedLineRPM >= 8500.0f) {
+            redlineRotation = isDrag ? 42.0f : 166.0f;
+        } else if (RedLineRPM >= 8000.0f) {
+            redlineRotation = isDrag ? 37.0f : 154.0f;
+        } else if (RedLineRPM >= 7500.0f) {
+            redlineRotation = isDrag ? 32.25f : 140.5f;
+        } else if (RedLineRPM >= 7000.0f) {
+            redlineRotation = isDrag ? 27.0f : 127.0f;
+        } else {
+            redlineRotation = isDrag ? 22.0f : 115.0f;
+        }
+    } else {
+        if (RedLineRPM >= 9500.0f) {
+            redlineRotation = isDrag ? 41.5f : 167.0f;
+        } else if (RedLineRPM >= 9000.0f) {
+            redlineRotation = isDrag ? 37.0f : 156.0f;
+        } else if (RedLineRPM >= 8500.0f) {
+            redlineRotation = isDrag ? 31.5f : 145.0f;
+        } else if (RedLineRPM >= 8000.0f) {
+            redlineRotation = isDrag ? 27.0f : 134.0f;
+        } else {
+            redlineRotation = isDrag ? 22.75f : 123.0f;
+        }
+    }
 }
 
 void HudResourceManager::LoadRequiredResources(ePlayerHudType ht, const char *pkg_name) {
