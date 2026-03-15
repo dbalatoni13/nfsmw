@@ -90,15 +90,15 @@ void uiRepSheetBounty::NotificationMessage(unsigned long msg, FEObject* obj, uns
     case 0xd05fc3a3: {
         CareerSettings* career = FEDatabase->GetCareerSettings();
         if ((career->SpecialFlags & 0x400) == 0) {
-            if (!bIsInGame) {
-                FEAnyTutorialScreen::LaunchMovie(gTUTORIAL_MOVIE_BOUNTY, GetPackageName());
-            } else {
+            if (bIsInGame) {
                 if (TrackMapStreamer != nullptr) {
                     delete TrackMapStreamer;
                 }
                 TrackMapStreamer = nullptr;
                 InGameAnyTutorialScreenLaunchMovie(gTUTORIAL_MOVIE_BOUNTY, GetPackageName());
                 FEngSetInvisible("IG_BL_TRACKMAP.fng", 0x2716cdbf);
+            } else {
+                FEAnyTutorialScreen::LaunchMovie(gTUTORIAL_MOVIE_BOUNTY, GetPackageName());
             }
             FEngSetScript(GetPackageName(), 0x99344537, 0x16a259, true);
             FEngSetInvisible(GetPackageName(), FEngHashString("MASTERBLASTER"));
