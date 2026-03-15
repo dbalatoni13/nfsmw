@@ -14,6 +14,7 @@
 #include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Gameplay/GTimer.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
@@ -1189,6 +1190,39 @@ eMenuSoundTriggers PostRaceResultsScreen::NotifySoundMessage(unsigned long msg, 
 
 static MenuScreen *CreatePostRaceResultsScreen(ScreenConstructorData *sd) {
     return new ("", 0) PostRaceResultsScreen(sd);
+}
+
+// Range: 0x80155F40 -> 0x801560EC
+void PursuitData::PopulateData(IPursuit *ipursuit, IPerpetrator *iperpetrator, int exitToSafehouse) {
+    bool pursuitActive = false;
+    if (ipursuit) {
+        pursuitActive = ipursuit->IsPursuitBailed() == false;
+    }
+    mPursuitIsActive = pursuitActive;
+
+    if (ipursuit) {
+        mPursuitLength = ipursuit->GetPursuitDuration();
+        mNumCopsDamaged = ipursuit->GetNumCopsDamaged();
+        mNumCopsDestroyed = ipursuit->GetNumCopsDestroyed();
+        mNumSpikeStripsDodged = ipursuit->GetNumSpikeStripsDodged();
+        mNumRoadblocksDodged = ipursuit->GetNumRoadblocksDodged();
+        mCostToStateAchieved = ipursuit->CalcTotalCostToState();
+    }
+
+    if (iperpetrator) {
+        int repNormal = iperpetrator->GetPendingRepPointsNormal();
+        if (repNormal > 0) {
+            mRepAchievedNormal = iperpetrator->GetPendingRepPointsNormal();
+        }
+        int repCopDestruction = iperpetrator->GetPendingRepPointsFromCopDestruction();
+        if (repCopDestruction > 0) {
+            mRepAchievedCopDestruction = iperpetrator->GetPendingRepPointsFromCopDestruction();
+        }
+    }
+
+    if (exitToSafehouse >= 0) {
+        mExitToSafehouse = exitToSafehouse;
+    }
 }
 
 bool PursuitData::AddMilestone(GMilestone *milestone) {
