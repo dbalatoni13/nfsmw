@@ -35,6 +35,10 @@ inline Mph MPS2MPH(const Mps _mps_) {
     return _mps_ * 2.23699f;
 }
 
+inline Kph MPS2KPH(const Mps _mps_) {
+    return _mps_ * 3.6f;
+}
+
 inline Mps MPH2MPS(const Mph _mph_) {
     return _mph_ * 0.44703001f;
 }
