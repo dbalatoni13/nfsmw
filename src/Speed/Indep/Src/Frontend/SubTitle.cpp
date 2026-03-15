@@ -24,6 +24,23 @@ extern int bStrCmp(const char*, const char*);
 extern unsigned int bStringHash(const char*, int);
 extern int DoesStringExist(unsigned int);
 
+inline float FEngGetTopLeftX(FEObject* obj) {
+    float x, y;
+    FEngGetTopLeft(obj, x, y);
+    return x;
+}
+
+inline float FEngGetTopLeftY(FEObject* obj) {
+    float x, y;
+    FEngGetTopLeft(obj, x, y);
+    return y;
+}
+
+inline void FEngSetTopLeftY(FEObject* obj, float y) {
+    float x = FEngGetTopLeftX(obj);
+    FEngSetTopLeft(obj, x, y);
+}
+
 SubTitler* SubTitler::gCurrentSubtitler_;
 
 SubTitler::SubTitler() {
@@ -150,15 +167,9 @@ void SubTitler::RefreshText() {
         if (data_[next_].stringHash != 0x1A20BA &&
             bStrCmp("", GetLocalizedString(data_[next_].stringHash)) != 0) {
             FEngSetLanguageHash(str_, data_[next_].stringHash);
-            float x, y;
-            FEngGetTopLeft(str_, x, y);
-            float x2, y2;
-            FEngGetTopLeft(back_, x2, y2);
-            FEngSetTopLeft(back_, x2, y);
+            FEngSetTopLeftY(back_, FEngGetTopLeftY(str_));
         } else {
-            float x, y;
-            FEngGetTopLeft(back_, x, y);
-            FEngSetTopLeft(back_, x, 6000.0f);
+            FEngSetTopLeftY(back_, 6000.0f);
             FEPrintf(str_, "");
         }
     } else {
