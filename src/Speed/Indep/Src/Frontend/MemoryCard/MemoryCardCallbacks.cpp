@@ -52,32 +52,33 @@ void MemcardCallbacks::ShowMessage(const wchar_t* msg, unsigned int nOptions,
     }
     DisplayMessage(msg, nOptions, options);
     GetMemcard()->SetWaitingForResponse(true);
-    if (!GetMemcard()->IsAutoSaving() || gMemcardSetup.GetMethod() == 0xb0) {
-        if ((GetMemcard()->GetOp() != MemoryCard::MO_FakeLoad &&
-             GetMemcard()->GetOp() != MemoryCard::MO_LoadYNCF) ||
-            nOptions != 0) {
-            UIMemcardBase* pScreen = GetScreen();
-            if (pScreen != nullptr) {
-                if (!pScreen->IsInButtonAnimation()) {
-                    GetScreen()->ShowMessage(msg, nOptions, options[0],
-                                             options[1], options[2]);
-                } else {
-                    if (GetMemcard()->GetPendingMessage() != nullptr) {
-                        GetMemcard()->ReleasePendingMessage();
-                    }
-                    GetMemcard()->m_PendingMessage =
-                        new (__FILE__, __LINE__)
-                            MemoryCardMessage(msg, nOptions, options);
-                }
-            }
-        }
-    } else {
+    if (GetMemcard()->IsAutoSaving() && gMemcardSetup.GetMethod() != 0xb0) {
         if (nOptions == 0) {
             GetMemcard()->SetWaitingForResponse(false);
         } else {
             GetMemcard()->m_PendingMessage =
                 new (__FILE__, __LINE__) MemoryCardMessage(msg, nOptions, options);
             GetMemcard()->HandleAutoSaveError();
+        }
+    } else {
+        int op = GetMemcard()->GetOp();
+        if (op > MemoryCard::MO_LoadYNCF ||
+            op < MemoryCard::MO_FakeLoad ||
+            nOptions != 0) {
+            UIMemcardBase* pScreen = GetScreen();
+            if (pScreen != nullptr) {
+                if (pScreen->IsInButtonAnimation()) {
+                    if (GetMemcard()->GetPendingMessage() != nullptr) {
+                        GetMemcard()->ReleasePendingMessage();
+                    }
+                    GetMemcard()->m_PendingMessage =
+                        new (__FILE__, __LINE__)
+                            MemoryCardMessage(msg, nOptions, options);
+                } else {
+                    GetScreen()->ShowMessage(msg, nOptions, options[0],
+                                             options[1], options[2]);
+                }
+            }
         }
     }
 }
