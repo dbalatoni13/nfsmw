@@ -89,7 +89,7 @@ void uiRepSheetBounty::NotificationMessage(unsigned long msg, FEObject* obj, uns
         return;
     case 0xd05fc3a3: {
         CareerSettings* career = FEDatabase->GetCareerSettings();
-        if ((career->SpecialFlags & 0x400) == 0) {
+        if (((career->SpecialFlags >> 10) & 1) == 0) {
             if (bIsInGame) {
                 if (TrackMapStreamer != nullptr) {
                     delete TrackMapStreamer;
