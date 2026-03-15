@@ -162,9 +162,7 @@ void SubTitler::RefreshText() {
             FEPrintf(str_, "");
         }
     } else {
-        if (data_[next_].stringHash == 0x1A20BA) {
-            cFEng::Get()->QueuePackageMessage(0xDBDF2888, nullptr, nullptr);
-        } else {
+        if (data_[next_].stringHash != 0x1A20BA) {
             FEngSetScript(str_, 0x16A259, true);
             FEngSetScript(str2_, 0x16A259, true);
             unsigned int text_hash = bStringHash("_A", data_[next_].stringHash);
@@ -177,6 +175,8 @@ void SubTitler::RefreshText() {
                 FEngSetLanguageHash(str2_, text_hash);
                 FEngSetScript(str2_, 0xBCBF0306, true);
             }
+        } else {
+            cFEng::Get()->QueuePackageMessage(0xDBDF2888, nullptr, nullptr);
         }
     }
 }
