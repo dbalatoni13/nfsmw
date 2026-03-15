@@ -183,10 +183,9 @@ void UISafehouseRaceSheet::RefreshHeader() {
     FEngSetInvisible(FEngFindObject(GetPackageName(), 0x7af67920));
     FEngSetInvisible(FEngFindObject(GetPackageName(), 0xbbf970cd));
     GRaceSaveInfo* info = GRaceDatabase::Get().GetScoreInfo(race->GetEventHash());
-    GRace::Type raceType = race->GetRaceType();
-    if (raceType == GRace::kRaceType_P2P || raceType == GRace::kRaceType_Circuit ||
-        raceType == GRace::kRaceType_Drag || raceType == GRace::kRaceType_Knockout ||
-        raceType == GRace::kRaceType_Tollbooth) {
+    if (race->GetRaceType() == GRace::kRaceType_P2P || race->GetRaceType() == GRace::kRaceType_Circuit ||
+        race->GetRaceType() == GRace::kRaceType_Drag || race->GetRaceType() == GRace::kRaceType_Knockout ||
+        race->GetRaceType() == GRace::kRaceType_Tollbooth) {
         if (info->mHighScores == 0.0f) {
             FEPrintf(GetPackageName(), 0x8fd41bb4, GetLocalizedString(0x472aa00a));
         } else {
