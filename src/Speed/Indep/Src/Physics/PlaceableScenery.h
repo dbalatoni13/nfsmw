@@ -28,11 +28,15 @@ class PlaceableScenery : public HeirarchyModel, public IPlaceableScenery {
     // IPlaceableScenery
     void PickUp() override;
     bool Place(const UMath::Matrix4 &transform, bool snap_to_ground) override;
-    void Destroy() override;
+    void Destroy() override {
+        Sim::Model::ReleaseModel();
+    }
 
     // IModel
     void ReleaseModel() override;
-    bool OnRemoveOffScreen(float time) override;
+    bool OnRemoveOffScreen(float dT) override {
+        return false;
+    }
 };
 
 #endif

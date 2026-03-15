@@ -397,14 +397,6 @@ bool Smackable::InView() const {
 
 bool Smackable::IsRenderable() const { return mModel != nullptr; }
 
-HMODEL Smackable::GetModelHandle() const {
-    HMODEL result = nullptr;
-    if (mModel != nullptr) {
-        result = mModel->GetInstanceHandle();
-    }
-    return result;
-}
-
 const IModel *Smackable::GetModel() const { return mModel; }
 IModel *Smackable::GetModel() { return mModel; }
 
@@ -631,13 +623,6 @@ void Smackable::OnTaskSimulate(float dT) {
         UMath::Scale(gravity, irb->GetMass(), gravity);
         irb->ResolveForce(gravity);
     }
-}
-
-EventSequencer::IEngine *Smackable::GetEventSequencer() {
-    if (mModel != nullptr) {
-        return mModel->GetEventSequencer();
-    }
-    return nullptr;
 }
 
 Smackable::Manager::Manager(float rate) : Sim::Activity(0) {
@@ -1121,7 +1106,6 @@ bool Smackable::SimplifySort(const Smackable *lhs, const Smackable *rhs) {
     return lhs->GetInstanceHandle() < rhs->GetInstanceHandle();
 }
 
-bool Smackable::IsRequired() const { return false; }
 void Smackable::HidePart(const UCrc32 &name) {}
 void Smackable::ShowPart(const UCrc32 &name) {}
 bool Smackable::IsPartVisible(const UCrc32 &name) const { return true; }
@@ -1139,20 +1123,4 @@ void HeirarchyModel::GetDimension(UMath::Vector3 &dim) const {
 const Attrib::Instance &HeirarchyModel::GetAttributes() const {
     return *static_cast<const Attrib::Instance *>(
         static_cast<const Attrib::Gen::smackable *>(this));
-}
-
-unsigned int HeirarchyModel::GetWorldID() const {
-    return Sim::Model::GetWorldID();
-}
-
-void HeirarchyModel::GetLinearVelocity(UMath::Vector3 &velocity) const {
-    Sim::Model::GetLinearVelocity(velocity);
-}
-
-void PlaceableScenery::Destroy() {
-    Sim::Model::ReleaseModel();
-}
-
-bool PlaceableScenery::OnRemoveOffScreen(float time) {
-    return false;
 }

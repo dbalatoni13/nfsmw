@@ -94,10 +94,16 @@ class Smackable : public PhysicsObject,
               bool simple_physics, bool is_persistant);
     virtual ~Smackable();
 
-    bool IsRequired() const override;
+    bool IsRequired() const override { return false; }
     bool InView() const override;
     bool IsRenderable() const override;
-    HMODEL GetModelHandle() const override;
+    HMODEL GetModelHandle() const override {
+        HMODEL result = nullptr;
+        if (mModel != nullptr) {
+            result = mModel->GetInstanceHandle();
+        }
+        return result;
+    }
     const IModel *GetModel() const override;
     IModel *GetModel() override;
     float DistanceToView() const override;
@@ -107,7 +113,12 @@ class Smackable : public PhysicsObject,
     void Kill() override;
     bool OnTask(HSIMTASK htask, float dT) override;
     void OnDetached(IAttachable *pOther) override;
-    EventSequencer::IEngine *GetEventSequencer() override;
+    EventSequencer::IEngine *GetEventSequencer() override {
+        if (mModel != nullptr) {
+            return mModel->GetEventSequencer();
+        }
+        return nullptr;
+    }
 
     virtual void HidePart(const UCrc32 &name);
     virtual void ShowPart(const UCrc32 &name);

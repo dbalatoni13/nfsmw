@@ -105,11 +105,12 @@ struct SceneryOverrideInfo {
     }
 
     void EnableRendering() {
-        SetExcludeFlags(0x8000, 0);
+        ExcludeFlags &= ~0x10;
+        SetExcludeFlags(0, 0);
     }
 
     void DisableRendering() {
-        SetExcludeFlags(0x8000, 0x8000);
+        SetExcludeFlags(0x10, 0x10);
     }
 
     void AssignOverrides();

@@ -35,11 +35,15 @@ class HeirarchyModel : public Sim::Model, public IBody, public ITriggerableModel
     void OnEndSimulation() override;
 
     void GetTransform(UMath::Matrix4 &matrix) const override;
-    void GetLinearVelocity(UMath::Vector3 &velocity) const override;
+    void GetLinearVelocity(UMath::Vector3 &velocity) const override {
+        Sim::Model::GetLinearVelocity(velocity);
+    }
     void GetAngularVelocity(UMath::Vector3 &velocity) const override;
     void GetDimension(UMath::Vector3 &dim) const override;
     const Attrib::Instance &GetAttributes() const override;
-    unsigned int GetWorldID() const override;
+    unsigned int GetWorldID() const override {
+        return Sim::Model::GetWorldID();
+    }
 
     IModel *SpawnModel(UCrc32 rendernode, UCrc32 collisionnode, UCrc32 attributes) override;
     void HidePart(const UCrc32 &nodename) override;

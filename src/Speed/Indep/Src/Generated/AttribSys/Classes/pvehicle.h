@@ -501,8 +501,7 @@ struct pvehicle : Instance {
     }
 
     const RefSpec &induction(unsigned int index) const {
-        const RefSpec *resultptr;
-        resultptr = reinterpret_cast<const RefSpec *>(GetAttributePointer(0xc92a0142, index));
+        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(GetAttributePointer(0xc92a0142, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const RefSpec *>(DefaultDataArea(sizeof(RefSpec)));
         }
@@ -514,8 +513,7 @@ struct pvehicle : Instance {
     }
 
     const int &junkman_current() const {
-        const int *resultptr;
-        resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xcdc136e8, 0));
+        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xcdc136e8, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
         }
@@ -595,8 +593,7 @@ struct pvehicle : Instance {
     }
 
     const RefSpec &engine(unsigned int index) const {
-        const RefSpec *resultptr;
-        resultptr = reinterpret_cast<const RefSpec *>(GetAttributePointer(0xf1f5fbc7, index));
+        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(GetAttributePointer(0xf1f5fbc7, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const RefSpec *>(DefaultDataArea(sizeof(RefSpec)));
         }

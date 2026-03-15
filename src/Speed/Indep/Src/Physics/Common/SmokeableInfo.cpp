@@ -358,7 +358,7 @@ bHash32 SmokeableSpawner::GetRenderMesh() const {
 void SmokeableSpawner::ShowInstance() const {
     SceneryOverrideInfo *info = GetSceneryOverrideInfo(mSceneryOverrideInfoNumber);
     if (info != nullptr) {
-        info->ExcludeFlags &= ~0x10;
+        info->EnableRendering();
         info->AssignOverrides();
     }
 }
@@ -374,7 +374,7 @@ bool SmokeableSpawner::IsInstanceVisible() const {
 void SmokeableSpawner::HideInstance() const {
     SceneryOverrideInfo *info = GetSceneryOverrideInfo(mSceneryOverrideInfoNumber);
     if (info != nullptr) {
-        info->ExcludeFlags |= 0x10;
+        info->DisableRendering();
         info->AssignOverrides();
     }
 }
@@ -433,20 +433,20 @@ int SmokeableSpawnerPack::Unloader(bChunk *chunk) {
 
 bChunkLoader SmokeableSpawnerPack::mLoader(0x34027, SmokeableSpawnerPack::Loader, SmokeableSpawnerPack::Unloader);
 
-bool SceneryModel::IsHidden() const {
+inline bool SceneryModel::IsHidden() const {
     bool visible = mInstanceVisible || !Sim::Model::IsHidden();
     return !visible;
 }
 
-bool SceneryModel::IsExcluded(unsigned int scenery_exclusion_flag) const {
-    unsigned int flags = 0;
+inline bool SceneryModel::IsExcluded(unsigned int scenery_exclusion_flag) const {
+    unsigned int my_flags = 0;
     if (mSpawner != nullptr) {
-        flags = mSpawner->GetExcludeFlags();
+        my_flags = mSpawner->GetExcludeFlags();
     }
-    return (flags & scenery_exclusion_flag) != 0;
+    return (my_flags & scenery_exclusion_flag) != 0;
 }
 
-unsigned int SceneryModel::GetSpawnerID() const {
+inline unsigned int SceneryModel::GetSpawnerID() const {
     if (mSpawner != nullptr) {
         return mSpawner->GetUniqueID();
     }

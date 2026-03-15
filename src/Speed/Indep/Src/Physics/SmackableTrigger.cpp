@@ -42,8 +42,8 @@ void SmackableTrigger::Enable() {
 }
 
 bool SmackableTrigger::IsEnabled() const {
-    unsigned int flags = mTrigger->fFlags;
-    if (flags & 1)
+    if (mTrigger->IsEnabled()) {}
+    if (mTrigger->fFlags & 1)
         return true;
     return false;
 }
