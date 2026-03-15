@@ -27,6 +27,10 @@ struct audiosystem : Instance {
         Attrib::Free(ptr, bytes, "audiosystem");
     }
 
+    void *operator new(unsigned int bytes) {
+        return Attrib::Alloc(bytes, "audiosystem");
+    }
+
     audiosystem(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
@@ -163,7 +167,8 @@ struct audiosystem : Instance {
     }
 
     const RefSpec &Locales(unsigned int index) const {
-        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(this->GetAttributePointer(0xc243117c, index));
+        const RefSpec *resultptr;
+        resultptr = reinterpret_cast<const RefSpec *>(this->GetAttributePointer(0xc243117c, index));
         if (!resultptr) {
             resultptr = reinterpret_cast<const RefSpec *>(DefaultDataArea(sizeof(RefSpec)));
         }

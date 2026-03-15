@@ -7,6 +7,13 @@ class NFSMixShape {
     static int GetCurveOutput(eMIXTABLEID id, int nQ15Ratio, bool invert);
 };
 
+namespace {
+struct EAX_CarStateRadiusView {
+    char _pad0[0x44];
+    bVector3 mPosition; // offset 0x44
+};
+} // namespace
+
 cPathLine::cPathLine() {
     ClearStages();
     bComplete = true;
@@ -252,6 +259,7 @@ bool IsCarInRadius(EAX_CarState *pCar, const bVector3 *vPos, float fRadius) {
     if (pCar == nullptr) {
         return false;
     }
-    float dist = bDistBetween(vPos, reinterpret_cast<const bVector3 *>(reinterpret_cast<const char *>(pCar) + 0x44));
+    const EAX_CarStateRadiusView *carView = static_cast<const EAX_CarStateRadiusView *>(static_cast<const void *>(pCar));
+    float dist = bDistBetween(vPos, &carView->mPosition);
     return dist < fRadius;
 }

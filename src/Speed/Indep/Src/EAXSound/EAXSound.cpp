@@ -46,6 +46,24 @@ struct Cache {
     void Validate();
 };
 struct Module {
+    virtual void Init(int channel);
+    virtual void LoadBanks();
+    virtual int TestSentenceRuleCallback(int eventID, int ruleID, int parmValue);
+    virtual int SetSentenceRuleCallback(int eventID, int ruleID, int parmValue);
+    virtual int EventRuleCallback(int eventID);
+    virtual int GetNumBanks();
+    virtual unsigned int GetBankOffset(int bnum);
+    virtual void Update();
+    virtual const char *GetFilename();
+    virtual bool QueStream(int stream_type, void (*callback)(), bool trigger_play_after_callback);
+    virtual unsigned int SampleRequestCallback(void *data);
+    virtual bool IsStreamQueued();
+    virtual char *GetCSIptr();
+    virtual int GetChannel();
+    virtual char *GetEventDat();
+    virtual bool IsDataLoaded();
+    virtual bool PlayStream(int stream_id);
+    virtual void UnknownVirtual();
     virtual void ReleaseResource();
     void PurgeSpeech();
 };
@@ -542,12 +560,18 @@ void g_LoadSndAsset(Attrib::StringKey filename, eSNDDATAPATH path, eSNDDATATYPE 
 }
 
 void EAXSound::START_321Countdown() {
+    int id;
+    SFXObj_Pathfinder *ppf;
+    SFXObj_NISStream *pnis;
+
     if (IsSoundEnabled && IsAudioStreamingEnabled) {
-        SFXObj_Pathfinder *ppf = static_cast<SFXObj_Pathfinder *>(GetSFXBase_Object(0x40010010));
+        id = 0x40010010;
+        ppf = static_cast<SFXObj_Pathfinder *>(GetSFXBase_Object(id));
         if (ppf) {
             ppf->Set321(true);
         }
-        SFXObj_NISStream *pnis = static_cast<SFXObj_NISStream *>(GetSFXBase_Object(0x40000050));
+        id = 0x40000050;
+        pnis = static_cast<SFXObj_NISStream *>(GetSFXBase_Object(id));
         if (pnis) {
             pnis->StartNIS();
         }
@@ -559,55 +583,66 @@ bool EAXSound::AreResourceLoadsPending() {
 }
 
 void EAXSound::QueueNISButtonThrough(unsigned int anim_id, int camera_track_number) {
+    int id;
+    SFXObj_NISStream *pnis;
+    Speech::Module *cop_speech;
+
     if (!IsSoundEnabled || !IsAudioStreamingEnabled) {
         return;
     }
 
-    SFXObj_NISStream *pnis = static_cast<SFXObj_NISStream *>(GetSFXBase_Object(0x40000050));
-    if (pnis == nullptr) {
-        return;
-    }
-
+    id = 0x40000050;
+    pnis = static_cast<SFXObj_NISStream *>(GetSFXBase_Object(id));
     if (camera_track_number == -1) {
-        if (g_laststartanimid == 0x0D0E5A9D || g_laststartanimid == 0xCBFF6594) {
-            goto clear_playback;
+        if (g_laststartanimid != 0x0D0E5A9D && g_laststartanimid != 0xCBFF6594) {
+            pnis->QueueNISStream(g_laststartanimid, -1, true, false);
         }
-        anim_id = g_laststartanimid;
-    } else if (!g_bWasLastNISaStart) {
+    } else if (g_bWasLastNISaStart) {
+        pnis->QueueNISStream(anim_id, camera_track_number, true, false);
+    } else {
         pnis->StopStream();
-        goto clear_playback;
     }
 
-    pnis->QueueNISStream(anim_id, camera_track_number, true, false);
-
-clear_playback:
     Speech::Manager::ClearPlayback();
-    Speech::Module *module = Speech::Manager::GetSpeechModule(COPSPEECH_MODULE);
-    if (module != nullptr) {
-        module->ReleaseResource();
+    id = COPSPEECH_MODULE;
+    cop_speech = Speech::Manager::GetSpeechModule(id);
+    if (cop_speech != nullptr) {
+        cop_speech->ReleaseResource();
     }
 }
 
 void EAXSound::QueueNISStream(unsigned int anim_id, int camera_track_number, void (*setmstimecb)(unsigned int, int)) {
+    int id;
+    SFXObj_NISStream *pnis;
+
     if (IsSoundEnabled && IsAudioStreamingEnabled) {
-        SFXObj_NISStream *pnis = static_cast<SFXObj_NISStream *>(GetSFXBase_Object(0x40000050));
+        id = 0x40000050;
+        pnis = static_cast<SFXObj_NISStream *>(GetSFXBase_Object(id));
         pnis->QueueNISStream(anim_id, camera_track_number, setmstimecb, false);
     }
 }
 
 bool EAXSound::IsNISStreamQueued() {
+    int id;
+    SFXObj_NISStream *pnis;
+
     if (!IsSoundEnabled || !IsAudioStreamingEnabled) {
         return true;
     }
-    SFXObj_NISStream *pnis = static_cast<SFXObj_NISStream *>(GetSFXBase_Object(0x40000050));
+    id = 0x40000050;
+    pnis = static_cast<SFXObj_NISStream *>(GetSFXBase_Object(id));
     return pnis->IsNISStreamReady();
 }
 
 // NISFinished goes here when implemented
 
 void EAXSound::NISFinished() {
+    int id;
+    SFXObj_NISStream *pnis;
+
     if (IsSoundEnabled && IsAudioStreamingEnabled) {
-        SFXObj_NISStream *pnis = static_cast<SFXObj_NISStream *>(GetSFXBase_Object(0x40000050));
+        id = 0x40000050;
+        pnis = static_cast<SFXObj_NISStream *>(GetSFXBase_Object(id));
         pnis->NISActivityDone();
         SoundPause(false, eSNDPAUSE_NISON);
         SetSoundControlState(false, SNDSTATE_NIS_STORY, "EAXSound::NISFinished");
@@ -618,8 +653,12 @@ void EAXSound::NISFinished() {
 }
 
 void EAXSound::PlayNIS() {
+    int id;
+    SFXObj_NISStream *pnis;
+
     if (IsSoundEnabled && IsAudioStreamingEnabled) {
-        SFXObj_NISStream *pnis = static_cast<SFXObj_NISStream *>(GetSFXBase_Object(0x40000050));
+        id = 0x40000050;
+        pnis = static_cast<SFXObj_NISStream *>(GetSFXBase_Object(id));
         pnis->StartNIS();
         SoundPause(true, eSNDPAUSE_NISON);
     }
@@ -668,6 +707,8 @@ void EAXSound::SetCsisName(char *pcsAllocName) {
 }
 
 EAXSound::EAXSound() {
+    int nloop;
+
     m_pcsCsisName = "SOUND";
     bPlayCarSounds = true;
     mAttributes = nullptr;
@@ -697,6 +738,7 @@ EAXSound::EAXSound() {
     m_bPause_MainFNG = false;
     mEventID = 0;
     mData.fEventID = 0xF2D10992; // TODO magic
+    nloop = 0;
 }
 
 EAXSound::~EAXSound() {
@@ -734,14 +776,10 @@ EAXSound::~EAXSound() {
 
 int *EAXSound::GetPointerCallback(int nid) {
     SndBase *pbs = GetSndBase_Object(nid);
-    if (pbs == nullptr) {
-        return g_DMIX_DummyInputBlock;
+    if (pbs != nullptr) {
+        return pbs->GetOutputBlockPtr() != nullptr ? pbs->GetOutputBlockPtr() : nullptr;
     }
-    int *ptr = pbs->GetOutputBlockPtr();
-    if (ptr == nullptr) {
-        return nullptr;
-    }
-    return ptr;
+    return g_DMIX_DummyInputBlock;
 }
 
 void EAXSound::SetSFXOutCallback(int nid, int *ptr) {
@@ -804,13 +842,12 @@ void EAXSound::SetSFXBaseObject(SFX_Base *psb, eMAINMAPSTATES estate, int ntype,
 }
 
 SFX_Base *EAXSound::GetSFXBase_Object(int nID) {
-    int nState = (static_cast<unsigned int>(nID) >> 16) & 0xFF;
     SFX_Base *ReturnObj = nullptr;
+    int nState = (static_cast<unsigned int>(nID) >> 16) & 0xFF;
     if (m_pStateMgr[nState] != nullptr) {
         int nInstanceID = (static_cast<unsigned int>(nID) >> 11) & 0x1F;
         int SFXID_Number = (static_cast<unsigned int>(nID) >> 4) & 0x7F;
-        CSTATE_Base *pstate = m_pStateMgr[nState]->GetStateObj(nInstanceID);
-        if (pstate == nullptr) {
+        if (m_pStateMgr[nState]->GetStateObj(nInstanceID) == nullptr) {
             return nullptr;
         }
         if ((nID & 0xE0000000) == 0x40000000) {
@@ -821,8 +858,8 @@ SFX_Base *EAXSound::GetSFXBase_Object(int nID) {
 }
 
 SndBase *EAXSound::GetSndBase_Object(int nID) {
-    int nState = (static_cast<unsigned int>(nID) >> 16) & 0xFF;
     SndBase *ReturnObj = nullptr;
+    int nState = (static_cast<unsigned int>(nID) >> 16) & 0xFF;
     if (m_pStateMgr[nState] != nullptr) {
         int nInstanceID = (static_cast<unsigned int>(nID) >> 11) & 0x1F;
         int SFXID_Number = (static_cast<unsigned int>(nID) >> 4) & 0x7F;
@@ -849,7 +886,9 @@ float EAXSound::GetCurMusicVolume() {
     return m_pCurAudioSettings->GetMasteredIGMusicVol();
 }
 
-void EAXSound::ReInitMasterVolumes() {}
+void EAXSound::ReInitMasterVolumes() {
+    int i;
+}
 
 void EAXSound::UpdateVolumes(AudioSettings *paudiosettings, float NewValue) {
     m_pCurAudioSettings = paudiosettings;
@@ -939,35 +978,26 @@ void EAXSound::RefreshLocalAttr() {
         mLocalAttr = nullptr;
     }
 
-    int language = SkipFELanguage;
-    if (SkipFE == 0) {
-        language = GetCurrentLanguage();
-    }
-
-    unsigned int localeIndex = 0;
-    switch (language) {
+    switch ((SkipFE == 0) ? GetCurrentLanguage() : SkipFELanguage) {
     case 1:
-        localeIndex = 1;
+        mLocalAttr = new Attrib::Gen::audiosystem(mAttributes->Locales(1).GetCollectionWithDefault(), 0, nullptr);
         break;
     case 2:
-        localeIndex = 2;
+        mLocalAttr = new Attrib::Gen::audiosystem(mAttributes->Locales(2).GetCollectionWithDefault(), 0, nullptr);
         break;
     case 3:
-        localeIndex = 3;
+        mLocalAttr = new Attrib::Gen::audiosystem(mAttributes->Locales(3).GetCollectionWithDefault(), 0, nullptr);
         break;
     case 4:
-        localeIndex = 4;
+        mLocalAttr = new Attrib::Gen::audiosystem(mAttributes->Locales(4).GetCollectionWithDefault(), 0, nullptr);
         break;
-    case 5:
-        localeIndex = 5;
+    case 10:
+        mLocalAttr = new Attrib::Gen::audiosystem(mAttributes->Locales(5).GetCollectionWithDefault(), 0, nullptr);
         break;
+    case 0:
     default:
-        localeIndex = 0;
+        mLocalAttr = new Attrib::Gen::audiosystem(mAttributes->Locales(0).GetCollectionWithDefault(), 0, nullptr);
         break;
-    }
-
-    if (mAttributes != nullptr) {
-        mLocalAttr = new Attrib::Gen::audiosystem(mAttributes->Locales(localeIndex).GetCollectionWithDefault(), 0, nullptr);
     }
 }
 
@@ -1289,7 +1319,7 @@ EAX_HeliState::EAX_HeliState(const Attrib::Collection *atr, unsigned int wuid)
 
 EAX_CarState::EAX_CarState(const Attrib::Collection *atr, Sound::Context context, unsigned int wuid, HSIMABLE__ *handle)
 {
-    EAX_CarStateCtorView &state = *reinterpret_cast<EAX_CarStateCtorView *>(this);
+    EAX_CarStateCtorView &state = *static_cast<EAX_CarStateCtorView *>(static_cast<void *>(this));
     static int PlayerUpgrade;
 
     state.mEBrake = 0.0f;
@@ -1352,23 +1382,24 @@ EAX_CarState::EAX_CarState(const Attrib::Collection *atr, Sound::Context context
     state.mVisualRPM = 0.0f;
     PSMTX44Identity((Mtx44)&state.mMatrix);
 
-    Attrib::Gen::pvehicle &attributes = reinterpret_cast<Attrib::Gen::pvehicle &>(state.mAttributes);
-    Attrib::Gen::engineaudio &engineInfo = reinterpret_cast<Attrib::Gen::engineaudio &>(state.mEngineInfo);
+    Attrib::Gen::pvehicle &attributes =
+        *static_cast<Attrib::Gen::pvehicle *>(static_cast<void *>(&state.mAttributes));
+    Attrib::Gen::engineaudio &engineInfo =
+        *static_cast<Attrib::Gen::engineaudio *>(static_cast<void *>(&state.mEngineInfo));
     Attrib::Gen::pvehicle vehicleinfo(attributes);
     vehicleinfo.SetDefaultLayout(0x50);
 
-    const Attrib::RefSpec *engineRef =
-        reinterpret_cast<const Attrib::RefSpec *>(vehicleinfo.GetAttributePointer(0xF1F5FBC7, 0));
+    const Attrib::RefSpec *engineRef = static_cast<const Attrib::RefSpec *>(vehicleinfo.GetAttributePointer(0xF1F5FBC7, 0));
     if (!engineRef) {
-        engineRef = reinterpret_cast<const Attrib::RefSpec *>(Attrib::DefaultDataArea(0xC));
+        engineRef = static_cast<const Attrib::RefSpec *>(Attrib::DefaultDataArea(0xC));
     }
 
     Attrib::Gen::engine engine(engineRef->GetCollectionWithDefault(), 0, nullptr);
 
     if (state.mContext == Sound::kRaceContext_QuickRace) {
-        const int *physCurUpgrade = reinterpret_cast<const int *>(attributes.GetAttributePointer(0xB12CCB69, 0));
+        const int *physCurUpgrade = static_cast<const int *>(attributes.GetAttributePointer(0xB12CCB69, 0));
         if (!physCurUpgrade) {
-            physCurUpgrade = reinterpret_cast<const int *>(Attrib::DefaultDataArea(4));
+            physCurUpgrade = static_cast<const int *>(Attrib::DefaultDataArea(4));
         }
 
         int baseUpgrade = 4 - attributes.engine_upgrades();
@@ -1640,8 +1671,7 @@ void EAXSound::DestroyEAXCar(EAX_CarState *pCar) {
 }
 
 void LoadCommonIngameFiles() {
-    Attrib::Gen::audiosystem *attributes =
-        *reinterpret_cast<Attrib::Gen::audiosystem **>(reinterpret_cast<char *>(g_pEAXSound) + 0xA8);
+    Attrib::Gen::audiosystem *attributes = g_pEAXSound->GetAttributes();
     if (attributes == nullptr) {
         return;
     }
@@ -1722,8 +1752,8 @@ void EAXSound::LoadFrontEndSoundBanks(void (*callback)(int), int callback_param)
         m_pNFSMixMaster->InitMixMap(0);
     }
 
-    *reinterpret_cast<void (**)(int)>(reinterpret_cast<char *>(&gAEMSMgr) + 0x130) = callback;
-    *reinterpret_cast<int *>(reinterpret_cast<char *>(&gAEMSMgr) + 0x134) = callback_param;
+    gAEMSMgr.m_ExternalLoadCallback = callback;
+    gAEMSMgr.m_ExternalLoadParam = callback_param;
 
     ReInitMasterVolumes();
     bSyncTaskRun();
@@ -1870,8 +1900,8 @@ void EAXSound::LoadInGameSoundBanks(void (*callback)(int), int callback_param) {
         g_PrevActiveSFXStates = 0;
     }
 
-    *reinterpret_cast<void (**)(int)>(reinterpret_cast<char *>(&gAEMSMgr) + 0x130) = callback;
-    *reinterpret_cast<int *>(reinterpret_cast<char *>(&gAEMSMgr) + 0x134) = callback_param;
+    gAEMSMgr.m_ExternalLoadCallback = callback;
+    gAEMSMgr.m_ExternalLoadParam = callback_param;
 
     if (IsSpeechEnabled) {
         gSpeechCache.Validate();
@@ -2003,7 +2033,7 @@ void FESoundControl(bool bOn, const char *name) {
         iVar1 = n;
     } while (iVar1 < 37);
 
-    if (static_cast<eSndGameMode>(*reinterpret_cast<int *>(reinterpret_cast<char *>(g_pEAXSound) + 0x84)) == SND_FRONTEND) {
+    if (g_pEAXSound->GetSoundGameMode() == SND_FRONTEND) {
         if (index != 10 && index < 14) {
             return;
         }
@@ -2028,8 +2058,7 @@ void FESoundControl(bool bOn, const char *name) {
                         goto FE_UPSCREEN;
                     }
 
-                    *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(g_pEAXSound) + 0x38) =
-                        static_cast<unsigned int>(bOn);
+                    g_pEAXSound->SetPauseMainFNG(bOn);
                     SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
                     return;
                 }
@@ -2038,8 +2067,7 @@ void FESoundControl(bool bOn, const char *name) {
             }
 
             if (index == 11) {
-                *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(g_pEAXSound) + 0x38) =
-                    static_cast<unsigned int>(bOn);
+                g_pEAXSound->SetPauseMainFNG(bOn);
                 SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
                 return;
             }
@@ -2058,7 +2086,7 @@ void FESoundControl(bool bOn, const char *name) {
                 goto FE_UPSCREEN;
             }
 
-            if (*reinterpret_cast<int *>(reinterpret_cast<char *>(g_pEAXSound) + 0x38) != 0) {
+            if (g_pEAXSound->IsPauseMainFNG()) {
                 return;
             }
             SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
@@ -2114,7 +2142,7 @@ void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
     }
 
     bool turningOff = !on;
-    bool pauseMainFNG = (*reinterpret_cast<int *>(reinterpret_cast<char *>(g_pEAXSound) + 0x38) != 0);
+    bool pauseMainFNG = g_pEAXSound->IsPauseMainFNG();
     if (pauseMainFNG && turningOff && state != SNDSTATE_MINILOAD && !(state > SNDSTATE_FE_SMS_MESSAGE && state < SNDSTATE_FMV)) {
         return;
     }
@@ -2144,8 +2172,7 @@ void SetSoundControlState(bool on, eSNDCTLSTATE state, const char *caller) {
         }
     }
 
-    EAXS_StreamManager *streamManager =
-        *reinterpret_cast<EAXS_StreamManager **>(reinterpret_cast<char *>(g_pEAXSound) + 0x94);
+    EAXS_StreamManager *streamManager = g_pEAXSound->GetStreamManager();
 
     for (unsigned int s = 0; s < 13; s++) {
         unsigned int sBit = 1u << (s & 0x1F);

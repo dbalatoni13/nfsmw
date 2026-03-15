@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/sfxctl_mastervol.hpp"
 #include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MPursuitBreaker.h"
 
 struct MoviePlayer {
@@ -23,7 +24,7 @@ SFXCTL_MasterVol::SFXCTL_MasterVol() {}
 SFXCTL_MasterVol::~SFXCTL_MasterVol() {}
 
 SndBase *SFXCTL_MasterVol::CreateObject(unsigned int allocator) {
-    SFXCTL_MasterVol *object = reinterpret_cast< SFXCTL_MasterVol * >(
+    SFXCTL_MasterVol *object = static_cast<SFXCTL_MasterVol *>(
       gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_MasterVol), SFXCTL_MasterVol::s_TypeInfo.typeName, allocator != 0));
     return new (object) SFXCTL_MasterVol();
 }
@@ -38,28 +39,30 @@ void SFXCTL_MasterVol::UpdateParams(float t) {
     (void)t;
 
     int *outputs = GetOutputBlockPtr();
-    const char *eaxSound = reinterpret_cast<const char *>(g_pEAXSound);
-    const char *audioSettings = *reinterpret_cast<const char *const *>(eaxSound + 0x34);
+    const char *eaxSound = static_cast<const char *>(static_cast<const void *>(g_pEAXSound));
+    const AudioSettings *audioSettings =
+        *static_cast<const AudioSettings *const *>(static_cast<const void *>(eaxSound + 0x34));
 
     if (audioSettings != nullptr) {
-        const float masterVol = *reinterpret_cast<const float *>(audioSettings + 0x0);
+        const char *settings = static_cast<const char *>(static_cast<const void *>(audioSettings));
+        const float masterVol = *static_cast<const float *>(static_cast<const void *>(settings + 0x0));
         const int nVol = static_cast<int>(masterVol * 32767.0f);
         const int curve =
             NFSMixShape::GetCurveOutput(static_cast<NFSMixShape::eMIXTABLEID>(1), nVol, false);
         const float curveScale = static_cast<float>(curve) * 3.051851e-05f;
 
-        outputs[0] = static_cast<int>((1.0f - masterVol * *reinterpret_cast<const float *>(audioSettings + 0x8) * curveScale) * 32767.0f);
-        outputs[1] = static_cast<int>((1.0f - masterVol * *reinterpret_cast<const float *>(audioSettings + 0xC) * curveScale) * 32767.0f);
-        outputs[2] = static_cast<int>((1.0f - masterVol * *reinterpret_cast<const float *>(audioSettings + 0x4) * curveScale) * 32767.0f);
-        outputs[3] = static_cast<int>((1.0f - masterVol * *reinterpret_cast<const float *>(audioSettings + 0x10) * curveScale) * 32767.0f);
+        outputs[0] = static_cast<int>((1.0f - masterVol * *static_cast<const float *>(static_cast<const void *>(settings + 0x8)) * curveScale) * 32767.0f);
+        outputs[1] = static_cast<int>((1.0f - masterVol * *static_cast<const float *>(static_cast<const void *>(settings + 0xC)) * curveScale) * 32767.0f);
+        outputs[2] = static_cast<int>((1.0f - masterVol * *static_cast<const float *>(static_cast<const void *>(settings + 0x4)) * curveScale) * 32767.0f);
+        outputs[3] = static_cast<int>((1.0f - masterVol * *static_cast<const float *>(static_cast<const void *>(settings + 0x10)) * curveScale) * 32767.0f);
 
         const int carVol =
-            static_cast<int>((1.0f - masterVol * *reinterpret_cast<const float *>(audioSettings + 0x18) * curveScale) * 32767.0f);
+            static_cast<int>((1.0f - masterVol * *static_cast<const float *>(static_cast<const void *>(settings + 0x18)) * curveScale) * 32767.0f);
         outputs[4] = carVol;
         outputs[5] = carVol;
     }
 
-    const int gameMode = *reinterpret_cast<const int *>(eaxSound + 0x84);
+    const int gameMode = *static_cast<const int *>(static_cast<const void *>(eaxSound + 0x84));
     if (gameMode == 1) {
         outputs[6] = g_EAXIsPaused() ? 0x7fff : 0;
     } else {
@@ -72,7 +75,7 @@ void SFXCTL_MasterVol::UpdateParams(float t) {
         outputs[7] = 0;
     }
 
-    const int previousGameMode = *reinterpret_cast<const int *>(eaxSound + 0x88);
+    const int previousGameMode = *static_cast<const int *>(static_cast<const void *>(eaxSound + 0x88));
     if (gameMode == 10) {
         outputs[8] = 0x7fff;
         if (previousGameMode != 10) {
@@ -96,7 +99,7 @@ void SFXCTL_MasterVol::UpdateParams(float t) {
 SFXCTL_GameState::SFXCTL_GameState() {}
 
 SndBase *SFXCTL_GameState::CreateObject(unsigned int allocator) {
-    SFXCTL_GameState *object = reinterpret_cast< SFXCTL_GameState * >(
+    SFXCTL_GameState *object = static_cast<SFXCTL_GameState *>(
       gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_GameState), SFXCTL_GameState::s_TypeInfo.typeName, allocator != 0));
     return new (object) SFXCTL_GameState();
 }

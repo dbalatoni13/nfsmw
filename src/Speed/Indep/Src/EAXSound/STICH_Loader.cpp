@@ -95,13 +95,14 @@ int LoaderSoundStichs(bChunk *chunk) {
     }
 
     bChunk *cur = chunk + 1;
-    bChunk *end = reinterpret_cast< bChunk * >(reinterpret_cast< char * >(&chunk[1].ID) + chunk->Size);
+    bChunk *end = static_cast<bChunk *>(
+        static_cast<void *>(static_cast<char *>(static_cast<void *>(&chunk[1].ID)) + chunk->Size));
     while (cur < end && cur->ID == 0x3b502) {
-        SND_Stich *stitch = reinterpret_cast< SND_Stich * >(cur + 1);
+        SND_Stich *stitch = static_cast<SND_Stich *>(static_cast<void *>(cur + 1));
         bEndianSwap32(stitch);
         bEndianSwap16(&cur[1].Size);
-        bEndianSwap16(reinterpret_cast< char * >(&cur[1].Size) + 2);
-        bEndianSwap16(reinterpret_cast< char * >(&cur[2].ID) + 2);
+        bEndianSwap16(static_cast<char *>(static_cast<void *>(&cur[1].Size)) + 2);
+        bEndianSwap16(static_cast<char *>(static_cast<void *>(&cur[2].ID)) + 2);
         bEndianSwap16(&cur[2].Size);
 
         if (g_pEAXSound != nullptr) {
@@ -111,9 +112,10 @@ int LoaderSoundStichs(bChunk *chunk) {
             }
         }
 
-        stitch->pSampleRefList = reinterpret_cast< SND_SampleRef * >(reinterpret_cast< char * >(&cur[2].ID) + cur->Size);
+        stitch->pSampleRefList = static_cast<SND_SampleRef *>(
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(&cur[2].ID)) + cur->Size));
         for (int i = 0; i < static_cast< int >(stitch->Num_SampleRefs); i++) {
-            char *sample = reinterpret_cast< char * >(stitch->pSampleRefList + i);
+            char *sample = static_cast<char *>(static_cast<void *>(stitch->pSampleRefList + i));
             GlobalStichSizes += 0x10;
             bEndianSwap16(sample + 2);
             bEndianSwap16(sample + 4);

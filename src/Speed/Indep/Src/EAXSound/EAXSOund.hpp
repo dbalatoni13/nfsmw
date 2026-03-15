@@ -182,6 +182,10 @@ class EAXSound : public AudioMemBase {
     cSTICH_PlayBack *GetSTICHPlayback() const { return m_pSTICH_Playback; }
     struct AudioSettings *GetCurrentAudioSettings() const { return m_pCurAudioSettings; }
     Attrib::Gen::audiosystem *GetAttributes() const { return mAttributes; }
+    eSndGameMode GetSoundGameMode() const { return m_eSndGameMode; }
+    bool IsPauseMainFNG() const { return m_bPause_MainFNG; }
+    void SetPauseMainFNG(bool pauseMainFNG) { m_bPause_MainFNG = pauseMainFNG; }
+    struct EAXS_StreamManager *GetStreamManager() const { return m_pStreamManager; }
 
     static CSTATEMGR_Base *m_pStateMgr[13];
 

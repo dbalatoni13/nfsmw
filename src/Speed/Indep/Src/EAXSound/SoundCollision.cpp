@@ -1,3 +1,4 @@
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
@@ -5,7 +6,6 @@
 
 struct CSTATE_Base;
 struct EAX_CarState;
-struct EAXSound;
 
 extern EAXSound *g_pEAXSound;
 
@@ -193,10 +193,10 @@ void CollisionEvent::InitAsScrape(const Attrib::Gen::audioscrape &) {}
 void CollisionEvent::InitAsImpact(const Attrib::Gen::audioimpact &audioFx) {
     static unsigned int sCollisionCounter;
 
-    const Attrib::Instance *instance = reinterpret_cast<const Attrib::Instance *>(&audioFx);
+    const Attrib::Instance *instance = static_cast<const Attrib::Instance *>(static_cast<const void *>(&audioFx));
     int levels[5];
 
-    *reinterpret_cast<Attrib::Key *>(reinterpret_cast<char *>(this) + 0x100) = instance->GetCollection();
+    mAudioFX = instance->GetCollection();
 
     {
         Attrib::Attribute attribute = instance->Get(0xc15856df);
@@ -229,7 +229,7 @@ void CollisionEvent::InitAsImpact(const Attrib::Gen::audioimpact &audioFx) {
         return;
     }
 
-    float magnitude = *reinterpret_cast<float *>(reinterpret_cast<char *>(this) + 0x40);
+    float magnitude = mParams.magnitude;
     if (magnitude > 1.0f) {
         magnitude = 1.0f;
     }
@@ -291,10 +291,10 @@ void CollisionEvent::InitAsImpact(const Attrib::Gen::audioimpact &audioFx) {
         volume = static_cast<int>(volumes[0]);
     }
 
-    *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + 0xd0) = volume;
+    mVolume = volume;
 
-    cSTICH_PlayBack *playback = *reinterpret_cast<cSTICH_PlayBack **>(reinterpret_cast<char *>(g_pEAXSound) + 0x9c);
-    *reinterpret_cast<SND_Stich **>(reinterpret_cast<char *>(this) + 0xd8) = &playback->GetStich(STICH_TYPE_COLLISION, stitchIndex);
+    cSTICH_PlayBack *playback = g_pEAXSound->GetSTICHPlayback();
+    ImpactStich = &playback->GetStich(STICH_TYPE_COLLISION, stitchIndex);
 }
 
 void CollisionEvent::Release() {}

@@ -203,7 +203,7 @@ void SndAIStateManager::Update(float t) {
         return;
     }
 
-    CSTATE_Base_AIView *stateBase = reinterpret_cast< CSTATE_Base_AIView * >(m_pPhysicsCTL->GetStateBase());
+    CSTATE_Base_AIView *stateBase = static_cast<CSTATE_Base_AIView *>(static_cast<void *>(m_pPhysicsCTL->GetStateBase()));
     EAX_CarState_AIView *car = stateBase->m_pCar;
 
     float steering = static_cast< float >(car->mSteering) * 0.005493248f;

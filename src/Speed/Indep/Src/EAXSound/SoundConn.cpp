@@ -115,7 +115,7 @@ typedef char CarDrivelineStateSizeCheck[(sizeof(CarDrivelineState) == 0x8) ? 1 :
 typedef char CarStateViewSizeCheck[(sizeof(CarStateView) == 0x248) ? 1 : -1];
 
 inline const bVector3 *GetWorldVelocity(const WorldConn::Reference &ref) {
-    return reinterpret_cast<const WorldRefView *>(&ref)->mVelocity;
+    return static_cast<const WorldRefView *>(static_cast<const void *>(&ref))->mVelocity;
 }
 
 } // namespace
@@ -227,7 +227,8 @@ CarSoundConn::CarSoundConn(const Sim::ConnectionData &data)
         modelData = Attrib::DefaultDataArea(0x10);
     }
 
-    const char *modelName = *reinterpret_cast<const char *const *>(reinterpret_cast<const char *>(modelData) + 0xC);
+    const char *modelName = *static_cast<const char *const *>(
+        static_cast<const void *>(static_cast<const char *>(modelData) + 0xC));
     if (modelName == nullptr) {
         modelName = "";
     }
@@ -317,7 +318,7 @@ void CarSoundConn::UpdateState(float dT) {
         return;
     }
 
-    CarStateView &state = *reinterpret_cast<CarStateView *>(mState);
+    CarStateView &state = *static_cast<CarStateView *>(static_cast<void *>(mState));
     if (state.mAssetsLoaded == 0) {
         return;
     }
@@ -402,7 +403,7 @@ void CarSoundConn::UpdateState(float dT) {
     eBrake = data.mEBrakePercent;
     steering = static_cast<unsigned short>(static_cast<int>(data.mSteering * 10430.378f));
     siren = data.mSirenState;
-    hotPursuitWord = *reinterpret_cast<const int *>(&data.mHotPursuit);
+    hotPursuitWord = *static_cast<const int *>(static_cast<const void *>(&data.mHotPursuit));
     oversteer = data.mOversteer;
     understeer = data.mUndersteer;
     slipAngle = -data.mSlipAngle;

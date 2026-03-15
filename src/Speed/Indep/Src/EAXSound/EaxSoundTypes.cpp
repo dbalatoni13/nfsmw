@@ -368,8 +368,8 @@ bool ScheduledSpeechEvent::sort_nested_priority(const ScheduledSpeechEvent *lhs,
         return rhs->priority < lhs->priority;
     }
 
-    int lhsEntryTime = *reinterpret_cast<const int *>(&lhs->entry_time);
-    int rhsEntryTime = *reinterpret_cast<const int *>(&rhs->entry_time);
+    int lhsEntryTime = const_cast<Timer &>(lhs->entry_time).GetPackedTime();
+    int rhsEntryTime = const_cast<Timer &>(rhs->entry_time).GetPackedTime();
     if (lhsEntryTime == rhsEntryTime) {
         return lhs->frameindex < rhs->frameindex;
     }
@@ -389,7 +389,7 @@ void ScheduledSpeechEvent::AddSample(SpeechSampleData *sample, unsigned char spe
 }
 
 void *ScheduledSpeechEvent::GetData(unsigned int *datasize) {
-    void *data = reinterpret_cast<char *>(this) + 0x40;
+    void *data = static_cast<char *>(static_cast<void *>(this)) + 0x40;
     if (datasize != nullptr) {
         *datasize = 0x40;
     }

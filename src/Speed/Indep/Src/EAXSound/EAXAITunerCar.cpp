@@ -183,13 +183,16 @@ void EAXAITunerCar::UpdatAIDriveBy(float t) {
         return;
     }
 
-    ClosestPlayer = GetClosestPlayerCar(reinterpret_cast< bVector3 * >(reinterpret_cast< char * >(m_pCar) + 0x44));
-    if (!IsCarInRadius(ClosestPlayer, reinterpret_cast< bVector3 * >(reinterpret_cast< char * >(m_pCar) + 0x44), 12.0f)) {
+    ClosestPlayer = GetClosestPlayerCar(static_cast<bVector3 *>(
+        static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCar)) + 0x44)));
+    if (!IsCarInRadius(ClosestPlayer, static_cast<bVector3 *>(
+                            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCar)) + 0x44)), 12.0f)) {
         return;
     }
 
-    vVelDiff = bSub(*reinterpret_cast< bVector3 * >(reinterpret_cast< char * >(m_pCar) + 0x54),
-                    *reinterpret_cast< bVector3 * >(reinterpret_cast< char * >(ClosestPlayer) + 0x54));
+    vVelDiff = bSub(
+        *static_cast<bVector3 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCar)) + 0x54)),
+        *static_cast<bVector3 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(ClosestPlayer)) + 0x54)));
     fRelativeVel = bLength(vVelDiff);
     if (fRelativeVel < 15.0f) {
         return;
@@ -197,13 +200,16 @@ void EAXAITunerCar::UpdatAIDriveBy(float t) {
 
     TmpDriveByPackage.eDriveByType = AIDriveBy::DRIVE_BY_AI_CAR;
     TmpDriveByPackage.ClosingVelocity = fRelativeVel;
-    TmpDriveByPackage.vLocation = *reinterpret_cast< bVector3 * >(reinterpret_cast< char * >(m_pCar) + 0x44);
+    TmpDriveByPackage.vLocation =
+        *static_cast<bVector3 *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCar)) + 0x44));
     TmpDriveByPackage.pEAXCar = this;
     TmpDriveByPackage.UniqueID = reinterpret_cast< unsigned int >(this);
 
-    if (*reinterpret_cast< int * >(reinterpret_cast< char * >(m_pCar) + 0x210) == 2) {
+    if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCar)) + 0x210)) == 2) {
         MGamePlayMoment moment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero,
-                               *reinterpret_cast< unsigned int * >(reinterpret_cast< char * >(m_pCar) + 0x21C), 0);
+                               *static_cast<unsigned int *>(
+                                   static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCar)) + 0x21C)),
+                               0);
         moment.Send(UCrc32("BlewByCop"));
     }
 
