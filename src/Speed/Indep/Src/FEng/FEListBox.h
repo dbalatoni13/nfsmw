@@ -27,7 +27,7 @@ struct ListBoxResource {
     unsigned long UserParam;     // offset 0x4, size 0x4
     unsigned long ResourceIndex; // offset 0x8, size 0x4
 
-    inline ListBoxResource() : Handle(0), UserParam(0), ResourceIndex(0) {}
+    inline ListBoxResource() {}
 };
 
 // total size: 0x30
@@ -52,9 +52,13 @@ struct FEListBoxCell {
     unsigned long ulJustification;  // offset 0x1C, size 0x4
     _u u;                           // offset 0x20, size 0x10
 
-    inline FEListBoxCell() : ulColor(0xffffffff), ulType(0), ulJustification(0) {
-        stScale.h = 1.0f;
-        stScale.v = 1.0f;
+    inline FEListBoxCell() : ulColor(0), stScale(1.0f, 1.0f) {
+        stResource.Handle = 0;
+        stResource.UserParam = 0;
+        stResource.ResourceIndex = 0;
+        ulType = 0;
+        u.string.pStr = nullptr;
+        u.string.Label = 0xFFFFFFFF;
     }
 
     inline unsigned long GetLabelHash() const { return u.string.Label; }

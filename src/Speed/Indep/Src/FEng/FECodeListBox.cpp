@@ -129,20 +129,7 @@ void FECodeListBox::Initialize(unsigned long ulNumVisCols, unsigned long ulNumVi
     mulNumVisibleColumns = ulNumVisCols;
     mulNumVisibleRows = ulNumVisRows;
     long ulNumCells = ulNumVisCols * ulNumVisRows;
-    mpstCells = static_cast<FEListBoxCell*>(FEngMalloc(ulNumCells * sizeof(FEListBoxCell), 0, 0));
-    FEListBoxCell* pCell = mpstCells;
-    for (long n = ulNumCells; n != 0; n--) {
-        pCell->ulColor = 0;
-        pCell->stScale.h = 1.0f;
-        pCell->stScale.v = 1.0f;
-        pCell->stResource.Handle = 0;
-        pCell->stResource.UserParam = 0;
-        pCell->stResource.ResourceIndex = 0;
-        pCell->ulType = 0;
-        pCell->u.string.pStr = nullptr;
-        pCell->u.string.Label = 0xFFFFFFFF;
-        pCell++;
-    }
+    mpstCells = FENG_NEW FEListBoxCell[ulNumCells];
     FEListBox::InitializeCell(mpstCells, mulNumVisibleRows * mulNumVisibleColumns);
     SetTotalNumColumns(mulNumVisibleColumns);
     SetTotalNumRows(mulNumVisibleRows);

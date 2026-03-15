@@ -203,21 +203,7 @@ void FEListBox::SetNumColumns(unsigned long ulNumColumns) {
         unsigned long ulNumCells = ulNumColumns * mulNumRows;
         FEListBoxCell* pstCells = nullptr;
         if (ulNumCells != 0) {
-            pstCells = static_cast<FEListBoxCell*>(FEngMalloc(ulNumCells * sizeof(FEListBoxCell), 0, 0));
-            FEListBoxCell* pCell = pstCells;
-            unsigned long i = ulNumCells;
-            do {
-                pCell->ulColor = 0;
-                pCell->stScale.h = 1.0f;
-                pCell->stScale.v = 1.0f;
-                pCell->stResource.Handle = 0;
-                pCell->stResource.UserParam = 0;
-                pCell->stResource.ResourceIndex = 0;
-                pCell->ulType = 0;
-                pCell->u.string.pStr = nullptr;
-                pCell->u.string.Label = 0xFFFFFFFF;
-                pCell = pCell + 1;
-            } while (--i);
+            pstCells = FENG_NEW FEListBoxCell[ulNumCells];
             if (mpstCells) {
                 unsigned long c = 0;
                 if (mulNumRows != 0) {
@@ -264,21 +250,7 @@ void FEListBox::SetNumRows(unsigned long ulNumRows) {
         unsigned long ulNumCells = mulNumColumns * ulNumRows;
         FEListBoxCell* pstCells = nullptr;
         if (ulNumCells != 0) {
-            pstCells = static_cast<FEListBoxCell*>(FEngMalloc(ulNumCells * sizeof(FEListBoxCell), 0, 0));
-            FEListBoxCell* pCell = pstCells;
-            unsigned long i = ulNumCells;
-            do {
-                pCell->ulColor = 0;
-                pCell->stScale.h = 1.0f;
-                pCell->stScale.v = 1.0f;
-                pCell->stResource.Handle = 0;
-                pCell->stResource.UserParam = 0;
-                pCell->stResource.ResourceIndex = 0;
-                pCell->ulType = 0;
-                pCell->u.string.pStr = nullptr;
-                pCell->u.string.Label = 0xFFFFFFFF;
-                pCell = pCell + 1;
-            } while (--i);
+            pstCells = FENG_NEW FEListBoxCell[ulNumCells];
             if (mpstCells) {
                 FEngMemCpy(pstCells, mpstCells, ulNumCopy * mulNumColumns * sizeof(FEListBoxCell));
                 InitializeCell(pstCells + ulNumCopy * mulNumColumns, (ulNumRows - ulNumCopy) * mulNumColumns);

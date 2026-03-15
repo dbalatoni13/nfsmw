@@ -88,8 +88,7 @@ bool FEPackageReader::ReadHeaderChunk() {
     unsigned long* pData = reinterpret_cast<unsigned long*>(pChunk);
     if (BSwap32(pData[0]) == 0xE76E4546 && BSwap32(pData[2]) == 0x64486B50) {
         if (BSwap32(pData[4]) > 0x1FFFF) {
-            FEPackage* pNewPack = static_cast<FEPackage*>(FEngMalloc(sizeof(FEPackage), 0, 0));
-            new (pNewPack) FEPackage();
+            FEPackage* pNewPack = FENG_NEW FEPackage();
             pPack = pNewPack;
             pNewPack->pCurrentButton = nullptr;
             const char* pStrings = reinterpret_cast<const char*>(pData + 10);
