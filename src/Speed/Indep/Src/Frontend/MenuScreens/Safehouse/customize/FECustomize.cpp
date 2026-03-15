@@ -1040,7 +1040,7 @@ void CustomizationScreenHelper::SetCareerStuff(SelectablePart *part, unsigned in
         SetHeatPreview(gCarCustomizeManager.GetPreviewHeat(part));
         DrawMeters();
     } else {
-        SetCareerStatusIcon(CPS_LOCKED);
+        SetCareerStatusIcon(CPS_AVAILABLE);
         SetCashVisibility(false);
         HeatMeter.SetVisibility(false);
         FEngSetInvisible(FEngFindObject(GetPackageName(), 0x24c6bfad));
@@ -1276,59 +1276,53 @@ void CustomizeShoppingCart::ClearUncheckedItems() {
 void CustomizeShoppingCart::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     UIWidgetMenu::NotificationMessage(msg, pobj, param1, param2);
     switch (msg) {
+    case 0xc519bfc3:
+        ToggleChecked();
+        RefreshHeader();
+        break;
     case 0x406415e3:
-        if (gCarCustomizeManager.DoesCartHaveActiveParts()) {
-            if (CanCheckout()) {
-                unsigned int dialog_hash;
-                if (gCarCustomizeManager.IsCareerMode()) {
-                    if (CustomizeIsInBackRoom()) {
-                        dialog_hash = 0x4810898;
-                    } else {
-                        dialog_hash = 0x8ebaa44b;
-                    }
-                } else {
-                    dialog_hash = 0x71d9e710;
-                }
-                DialogInterface::ShowTwoButtons(GetPackageName(), g_pCustomizeDlgPkg, static_cast<eDialogTitle>(1),
-                    0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf, static_cast<eDialogFirstButtons>(1), dialog_hash);
-            } else {
-                DialogInterface::ShowOk(GetPackageName(), g_pCustomizeDlgPkg, static_cast<eDialogTitle>(1), 0xa984a42);
-            }
-        } else {
+        if (!gCarCustomizeManager.DoesCartHaveActiveParts()) {
             gCarCustomizeManager.EmptyCart();
             gCarCustomizeManager.ResetPreview();
             gCarCustomizeManager.ResetPreview();
             cFEng_mInstance->QueueGameMessage(0xcf91aacd, pParentPkg, 0xFF);
             cFEng_mInstance->QueuePackagePop(1);
+            break;
         }
-        break;
-    case 0x72619778:
-        gCarCustomizeManager.EmptyCart();
-        gCarCustomizeManager.ResetPreview();
-        gCarCustomizeManager.ResetPreview();
-        cFEng_mInstance->QueueGameMessage(0xcf91aacd, pParentPkg, 0xFF);
-        cFEng_mInstance->QueuePackagePop(1);
-        break;
-    case 0x911ab364:
-        ClearUncheckedItems();
-        cFEng_mInstance->QueueGameMessage(0x5a928018, pParentPkg, 0xFF);
-        cFEng_mInstance->QueuePackagePop(1);
-        break;
-    case 0xc519bfc4:
-        UncheckAllItems();
-        RefreshHeader();
-        break;
-    case 0xc519bfc3:
-        ToggleChecked();
-        RefreshHeader();
+        if (CanCheckout()) {
+            unsigned int dialog_hash;
+            if (gCarCustomizeManager.IsCareerMode()) {
+                if (CustomizeIsInBackRoom()) {
+                    dialog_hash = 0x4810898;
+                } else {
+                    dialog_hash = 0x8ebaa44b;
+                }
+            } else {
+                dialog_hash = 0x71d9e710;
+            }
+            DialogInterface::ShowTwoButtons(GetPackageName(), g_pCustomizeDlgPkg, static_cast<eDialogTitle>(1),
+                0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf, static_cast<eDialogFirstButtons>(1), dialog_hash);
+        } else {
+            DialogInterface::ShowOk(GetPackageName(), g_pCustomizeDlgPkg, static_cast<eDialogTitle>(1), 0xa984a42);
+        }
         break;
     case 0xd05fc3a3:
         gCarCustomizeManager.Checkout();
         cFEng_mInstance->QueueGameMessage(0xcf91aacd, pParentPkg, 0xFF);
         cFEng_mInstance->QueuePackagePop(1);
         break;
+    case 0xc519bfc4:
+        UncheckAllItems();
+        RefreshHeader();
+        break;
+    case 0x72619778:
     case 0x911c0a4b:
         RefreshHeader();
+        break;
+    case 0x911ab364:
+        ClearUncheckedItems();
+        cFEng_mInstance->QueueGameMessage(0x5a928018, pParentPkg, 0xFF);
+        cFEng_mInstance->QueuePackagePop(1);
         break;
     }
 }
@@ -2522,9 +2516,9 @@ after_switch:
 
     bTList<SelectablePart> part_list;
     if (is_vinyl) {
-        gCarCustomizeManager.GetCarPartList(car_slot_id, part_list, 0);
-    } else {
         gCarCustomizeManager.GetCarPartList(car_slot_id, part_list, vinyl_group_number);
+    } else {
+        gCarCustomizeManager.GetCarPartList(car_slot_id, part_list, 0);
     }
 
     int installed_index = 0;

@@ -96,13 +96,13 @@ struct CustomizationScreen : public IconScrollerMenu {
     void RefreshHeader() override;
 
     void AddPartOption(SelectablePart *part, unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash, unsigned int unlock_hash, bool locked);
+    CustomizePartOption *GetSelectedOption() { return static_cast<CustomizePartOption *>(Options.GetCurrentOption()); }
+    virtual SelectablePart *GetSelectedPart() { return GetSelectedOption()->GetPart(); }
     virtual SelectablePart *FindInCartPart();
     virtual CustomizePartOption *FindMatchingOption(SelectablePart *to_find);
 
     void SetCareerStatusIcon(eCustomizePartState state) { DisplayHelper.SetCareerStatusIcon(state); }
     void SetPlayerCarStatusIcon(eCustomizePartState state) { DisplayHelper.SetPlayerCarStatusIcon(state); }
-    CustomizePartOption *GetSelectedOption() { return static_cast<CustomizePartOption *>(Options.GetCurrentOption()); }
-    virtual SelectablePart *GetSelectedPart() { return GetSelectedOption()->GetPart(); }
     void SetTitleHash(unsigned int title_hash) { DisplayHelper.SetTitleHash(title_hash); }
     unsigned int GetCategory() { return Category; }
     unsigned int GetFromCategory() { return FromCategory; }
