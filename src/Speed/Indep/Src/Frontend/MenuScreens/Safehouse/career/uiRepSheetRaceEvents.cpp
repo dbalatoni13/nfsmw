@@ -145,8 +145,8 @@ void UISafehouseRaceSheet::NotificationMessage(unsigned long msg, FEObject* obj,
 
 void UISafehouseRaceSheet::RefreshHeader() {
     ArrayScrollerMenu::RefreshHeader();
-    FEPrintf(GetPackageName(), 0x5a856a34, "%d", GetCurrentDatumNum());
-    FEPrintf(GetPackageName(), 0x2d4d22c8, "%d", GetNumDatum());
+    FEPrintf(GetPackageName(), 0x5a856a34, "%d", data.TraversebList(currentDatum));
+    FEPrintf(GetPackageName(), 0x2d4d22c8, "%d", data.TraversebList(nullptr));
     unsigned int eventsHash = 0x6475236d;
     if (currentEvents) {
         eventsHash = 0xc948ef80;
@@ -157,11 +157,11 @@ void UISafehouseRaceSheet::RefreshHeader() {
              GetLocalizedString(0xce6b99b1), stable->GetTotalBounty());
     FEPrintf(GetPackageName(), 0xf91a59f6, "%s %",
              GetLocalizedString(0x73b79e0), FEDatabase->GetCareerSettings()->GetCash());
-    ArrayDatum* datum = GetCurrentDatum();
+    ArrayDatum* datum = currentDatum;
     if (datum == nullptr) {
         return;
     }
-    GRaceParameters* race = static_cast< RaceDatum* >(GetCurrentDatum())->race;
+    GRaceParameters* race = static_cast< RaceDatum* >(datum)->race;
     FEPrintf(GetPackageName(), 0x13c45e, "%.0f", race->GetCashValue());
     const char* distUnits;
     if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
@@ -228,10 +228,10 @@ void UISafehouseRaceSheet::RefreshHeader() {
             FEngSetTextureHash(FEngFindImage(GetPackageName(), check_hash), 0x28feadd);
         }
     }
-    if (currentIndex != GetCurrentDatumNum() - 1 && GetCurrentDatum() != nullptr) {
-        TrackMapStreamer.Init(static_cast< RaceDatum* >(GetCurrentDatum())->race,
+    if (currentIndex != data.TraversebList(currentDatum) - 1 && currentDatum != nullptr) {
+        TrackMapStreamer.Init(static_cast< RaceDatum* >(currentDatum)->race,
                              TrackMap, 0, 0);
-        currentIndex = GetCurrentDatumNum() - 1;
+        currentIndex = data.TraversebList(currentDatum) - 1;
     }
 }
 
