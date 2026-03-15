@@ -208,10 +208,10 @@ FEObject* FEPackageReader::CreateObject(unsigned long ObjectType) {
 
 void FEPackageReader::ProcessImageTag(FETag* pTag) {
     FEImage* pImage = static_cast<FEImage*>(pObj);
-    if (BSwap16(pTag->GetID()) != 0x6649) {
+    if (pTag->GetID() != 0x6649) {
         return;
     }
-    pImage->ImageFlags = BSwap32(pTag->Getu32(0));
+    pImage->ImageFlags = pTag->Getu32(0);
 }
 
 bool FEPackageReader::FindReferencedObject(unsigned long ObjGUID, FEObject** ppRefObj, FEPackage** ppRefPack) {
@@ -334,35 +334,35 @@ bool FEPackageReader::ReadResourceChunk() {
 
 void FEPackageReader::ProcessMultiImageTag(FETag* pTag) {
     FEMultiImage* pImage = static_cast<FEMultiImage*>(pObj);
-    unsigned short tagID = BSwap16(pTag->GetID());
+    unsigned short tagID = pTag->GetID();
     switch (tagID) {
         case 0x314d:
-            pImage->hTexture[0] = BSwap32(pTag->Getu32(0));
+            pImage->hTexture[0] = pTag->Getu32(0);
             break;
         case 0x324d:
-            pImage->hTexture[1] = BSwap32(pTag->Getu32(0));
+            pImage->hTexture[1] = pTag->Getu32(0);
             break;
         case 0x334d:
-            pImage->hTexture[2] = BSwap32(pTag->Getu32(0));
+            pImage->hTexture[2] = pTag->Getu32(0);
             break;
         case 0x614d:
-            pImage->TextureFlags[0] = BSwap32(pTag->Getu32(0));
+            pImage->TextureFlags[0] = pTag->Getu32(0);
             break;
         case 0x624d:
-            pImage->TextureFlags[1] = BSwap32(pTag->Getu32(0));
+            pImage->TextureFlags[1] = pTag->Getu32(0);
             break;
         case 0x634d:
-            pImage->TextureFlags[2] = BSwap32(pTag->Getu32(0));
+            pImage->TextureFlags[2] = pTag->Getu32(0);
             break;
     }
 }
 
 void FEPackageReader::ProcessStringTag(FETag* pTag) {
     FEString* pString = static_cast<FEString*>(pObj);
-    unsigned short tagID = BSwap16(pTag->GetID());
+    unsigned short tagID = pTag->GetID();
     switch (tagID) {
         case 0x6253:
-            pString->string.SetLength(BSwap32(pTag->Getu32(0)));
+            pString->string.SetLength(pTag->Getu32(0));
             break;
         case 0x7453:
             pString->string = reinterpret_cast<short*>(pTag->Data());
@@ -376,13 +376,13 @@ void FEPackageReader::ProcessStringTag(FETag* pTag) {
             }
             break;
         case 0x6a53:
-            pString->Format = BSwap32(pTag->Getu32(0));
+            pString->Format = pTag->Getu32(0);
             break;
         case 0x6c53:
-            pString->Leading = BSwap32(pTag->Getu32(0));
+            pString->Leading = pTag->Getu32(0);
             break;
         case 0x7753:
-            pString->MaxWidth = BSwap32(pTag->Getu32(0));
+            pString->MaxWidth = pTag->Getu32(0);
             break;
         case 0x4c53:
             if (bLoadObjectNames) {
@@ -390,43 +390,43 @@ void FEPackageReader::ProcessStringTag(FETag* pTag) {
             }
             break;
         case 0x4853:
-            pString->SetLabelHash(BSwap32(pTag->Getu32(0)));
+            pString->SetLabelHash(pTag->Getu32(0));
             break;
     }
 }
 
 void FEPackageReader::ProcessCodeListBoxTag(FETag* pTag) {
     FECodeListBox* pList = static_cast<FECodeListBox*>(pObj);
-    unsigned short tagID = BSwap16(pTag->GetID());
+    unsigned short tagID = pTag->GetID();
     switch (tagID) {
         case 0x444c:
-            pList->Initialize(BSwap32(pTag->Getu32(0)), BSwap32(pTag->Getu32(1)));
+            pList->Initialize(pTag->Getu32(0), pTag->Getu32(1));
             break;
         case 0x764c: {
             FEPoint pt;
-            *reinterpret_cast<unsigned long*>(&pt.h) = BSwap32(pTag->Getu32(0));
-            *reinterpret_cast<unsigned long*>(&pt.v) = BSwap32(pTag->Getu32(1));
+            pt.h = pTag->Getf32(0);
+            pt.v = pTag->Getf32(1);
             pList->mstViewDimensions.h = pt.h;
             pList->mstViewDimensions.v = pt.v;
             break;
         }
         case 0x4953:
-            pList->AllocateStrings(BSwap32(pTag->Getu32(0)), BSwap32(pTag->Getu32(1)));
+            pList->AllocateStrings(pTag->Getu32(0), pTag->Getu32(1));
             break;
         case 0x744c:
             pList->mulFlags &= 1;
-            pList->mulFlags |= BSwap32(pTag->Getu32(0)) & 0xFFFFFFFE;
+            pList->mulFlags |= pTag->Getu32(0) & 0xFFFFFFFE;
             break;
         case 0x6a4c:
-            pList->SetCellJustification(0, 0, BSwap32(pTag->Getu32(0)), pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
+            pList->SetCellJustification(0, 0, pTag->Getu32(0), pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
             break;
         case 0x6343:
-            pList->SetCellColor(0, 0, BSwap32(pTag->Getu32(0)), pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
+            pList->SetCellColor(0, 0, pTag->Getu32(0), pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
             break;
         case 0x7343: {
             FEPoint scale;
-            *reinterpret_cast<unsigned long*>(&scale.h) = BSwap32(pTag->Getu32(0));
-            *reinterpret_cast<unsigned long*>(&scale.v) = BSwap32(pTag->Getu32(1));
+            scale.h = pTag->Getf32(0);
+            scale.v = pTag->Getf32(1);
             pList->SetCellScale(0, 0, scale, pList->mulNumVisibleColumns, pList->mulNumVisibleRows);
             break;
         }
@@ -439,10 +439,10 @@ bool FEPackageReader::ReadMessageResponseTags(FETag* pTag, unsigned long Length,
     FEResponse* pResp = nullptr;
     int CurResponse = -1;
     while (pTag < pEnd) {
-        unsigned short tagID = BSwap16(pTag->GetID());
+        unsigned short tagID = pTag->GetID();
         switch (tagID) {
             case 0x694d: {
-                unsigned long MsgID = BSwap32(pTag->Getu32(0));
+                unsigned long MsgID = pTag->Getu32(0);
                 pMsgResp = nullptr;
                 if (!bPackage && bIsReference) {
                     pMsgResp = pObj->FindResponse(MsgID);
@@ -462,24 +462,24 @@ bool FEPackageReader::ReadMessageResponseTags(FETag* pTag, unsigned long Length,
                 break;
             }
             case 0x434d:
-                pMsgResp->SetCount(BSwap32(pTag->Getu32(0)));
+                pMsgResp->SetCount(pTag->Getu32(0));
                 break;
             case 0x6952:
                 CurResponse++;
                 pResp = pMsgResp->GetResponse(CurResponse);
-                pResp->SetID(BSwap32(pTag->Getu32(0)));
+                pResp->SetID(pTag->Getu32(0));
                 break;
             case 0x7552:
-                pResp->ResponseTarget = BSwap32(pTag->Getu32(0));
+                pResp->ResponseTarget = pTag->Getu32(0);
                 break;
             case 0x7352:
                 pResp->SetParam(reinterpret_cast<const char*>(pTag->Data()));
                 break;
             case 0x7452:
-                pResp->ResponseParam = BSwap32(pTag->Getu32(0));
+                pResp->ResponseParam = pTag->Getu32(0);
                 break;
         }
-        pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + 4 + BSwap16(pTag->GetSize()));
+        pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + 4 + pTag->GetSize());
     }
     return true;
 }
@@ -491,17 +491,17 @@ bool FEPackageReader::ReadMessageTargetListChunk() {
         FETag* pLast = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + BSwap32(pTargetsChunk->GetSize()));
         unsigned long CurMsgTarg = 0;
         while (pTag < pLast) {
-            unsigned short tagID = BSwap16(pTag->GetID());
+            unsigned short tagID = pTag->GetID();
             switch (tagID) {
             case 0x6354: {
-                unsigned long NumMsgs = BSwap32(pTag->Getu32(0));
+                unsigned long NumMsgs = pTag->Getu32(0);
                 pPack->NumMsgTargets = NumMsgs;
                 pPack->pMsgTargets = FENG_NEW FEMsgTargetList[NumMsgs];
                 break;
             }
             case 0x744d: {
-                pPack->pMsgTargets[CurMsgTarg].MsgID = BSwap32(pTag->Getu32(0));
-                unsigned long NumTargets = (BSwap16(pTag->GetSize()) >> 2) - 1;
+                pPack->pMsgTargets[CurMsgTarg].MsgID = pTag->Getu32(0);
+                unsigned long NumTargets = (pTag->GetSize() >> 2) - 1;
                 pPack->pMsgTargets[CurMsgTarg].Allocate(NumTargets);
                 unsigned long* pData = reinterpret_cast<unsigned long*>(reinterpret_cast<char*>(pTag) + 8);
                 for (unsigned long i = 0; i < NumTargets; i++) {
@@ -512,7 +512,7 @@ bool FEPackageReader::ReadMessageTargetListChunk() {
                 break;
             }
             }
-            pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + (BSwap16(pTag->GetSize()) + 4));
+            pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + (pTag->GetSize() + 4));
         }
     }
     return true;
@@ -523,11 +523,11 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
     FEListEntryData* pRowColData;
     unsigned long val;
     int idx;
-    unsigned short tagID = BSwap16(pTag->GetID());
+    unsigned short tagID = pTag->GetID();
     switch (tagID) {
         case 0x644c:
-            pList->SetNumColumns(BSwap32(pTag->Getu32(0)));
-            pList->SetNumRows(BSwap32(pTag->Getu32(1)));
+            pList->SetNumColumns(pTag->Getu32(0));
+            pList->SetNumRows(pTag->Getu32(1));
             CurListCell = 0xFFFFFFFF;
             CurListRow = 0xFFFFFFFF;
             CurListCol = 0xFFFFFFFF;
@@ -551,19 +551,19 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
             }
             return;
         case 0x774c:
-            pList->SetAutoWrap(BSwap32(pTag->Getu32(0)) != 0);
+            pList->SetAutoWrap(pTag->Getu32(0) != 0);
             return;
         case 0x764c: {
             FEPoint pt;
-            *reinterpret_cast<unsigned long*>(&pt.h) = BSwap32(pTag->Getu32(0));
-            *reinterpret_cast<unsigned long*>(&pt.v) = BSwap32(pTag->Getu32(1));
+            pt.h = pTag->Getf32(0);
+            pt.v = pTag->Getf32(1);
             pList->mstViewDimensions = pt;
             return;
         }
         case 0x734c: {
             FEPoint pt;
-            *reinterpret_cast<unsigned long*>(&pt.h) = BSwap32(pTag->Getu32(0));
-            *reinterpret_cast<unsigned long*>(&pt.v) = BSwap32(pTag->Getu32(1));
+            pt.h = pTag->Getf32(0);
+            pt.v = pTag->Getf32(1);
             pList->mstSelectionSpeed = pt;
             return;
         }
@@ -582,15 +582,15 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
             if (CurListCell != 0) {
                 pList->IncrementCellByColumn();
             }
-            FEColor color(BSwap32(pTag->Getu32(0)));
+            FEColor color(pTag->Getu32(0));
             FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
             pCell->ulColor = static_cast<unsigned long>(color);
             return;
         }
         case 0x7343: {
             FEPoint pt;
-            *reinterpret_cast<unsigned long*>(&pt.h) = BSwap32(pTag->Getu32(0));
-            *reinterpret_cast<unsigned long*>(&pt.v) = BSwap32(pTag->Getu32(1));
+            pt.h = pTag->Getf32(0);
+            pt.v = pTag->Getf32(1);
             FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
             pCell->stScale = pt;
             return;
@@ -600,20 +600,20 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
             FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
             pCell->stResource.UserParam = 0;
             pCell->stResource.Handle = 0;
-            pCell->stResource.ResourceIndex = BSwap32(rawVal);
+            pCell->stResource.ResourceIndex = rawVal;
             return;
         }
         case 0x5443:
-            pList->SetCellType(BSwap32(pTag->Getu32(0)));
+            pList->SetCellType(pTag->Getu32(0));
             return;
         case 0x7443:
             pList->SetCellString(reinterpret_cast<const short*>(pTag->Data()));
             return;
         case 0x6943: {
-            unsigned long c0 = BSwap32(pTag->Getu32(0));
-            unsigned long c1 = BSwap32(pTag->Getu32(1));
-            unsigned long c2 = BSwap32(pTag->Getu32(2));
-            unsigned long c3 = BSwap32(pTag->Getu32(3));
+            unsigned long c0 = pTag->Getu32(0);
+            unsigned long c1 = pTag->Getu32(1);
+            unsigned long c2 = pTag->Getu32(2);
+            unsigned long c3 = pTag->Getu32(3);
             FERect rect;
             *reinterpret_cast<unsigned long*>(&rect.left) = c0;
             *reinterpret_cast<unsigned long*>(&rect.top) = c1;
@@ -627,8 +627,8 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
             return;
     }
     // Shared code for Lc (0x634c) and Lr (0x724c)
-    *reinterpret_cast<unsigned long*>(&pRowColData->fValue) = BSwap32(val);
-    pRowColData->ulJustification = BSwap32(pTag->Getu32(1));
+    *reinterpret_cast<unsigned long*>(&pRowColData->fValue) = val;
+    pRowColData->ulJustification = pTag->Getu32(1);
 }
 
 bool FEPackageReader::ReadObjectChunk() {
@@ -729,10 +729,10 @@ bool FEPackageReader::ReadObjectTags(FETag* pTag, unsigned long Length) {
     bIsReference = false;
 
     while (pTag < pEnd) {
-        unsigned short tagID = BSwap16(pTag->GetID());
+        unsigned short tagID = pTag->GetID();
         switch (tagID) {
             case 0x744f:
-                pObj = CreateObject(BSwap32(pTag->Getu32(0)));
+                pObj = CreateObject(pTag->Getu32(0));
                 break;
             case 0x6e4f:
                 if (bLoadObjectNames) {
@@ -740,13 +740,13 @@ bool FEPackageReader::ReadObjectTags(FETag* pTag, unsigned long Length) {
                 }
                 break;
             case 0x684f:
-                pObj->NameHash = BSwap32(pTag->Getu32(0));
+                pObj->NameHash = pTag->Getu32(0);
                 break;
             case 0x504f: {
-                pObj->GUID = BSwap32(pTag->Getu32(0));
-                pObj->NameHash = BSwap32(pTag->Getu32(1));
-                pObj->Flags = BSwap32(pTag->Getu32(2));
-                pObj->ResourceIndex = static_cast<unsigned short>(BSwap32(pTag->Getu32(3)));
+                pObj->GUID = pTag->Getu32(0);
+                pObj->NameHash = pTag->Getu32(1);
+                pObj->Flags = pTag->Getu32(2);
+                pObj->ResourceIndex = static_cast<unsigned short>(pTag->Getu32(3));
 
                 if (pObj->Flags & 0x100000) {
                     if (!FindReferencedObject(pObj->GUID, &pRefObj, &pRefPack)) {
@@ -799,15 +799,15 @@ bool FEPackageReader::ReadObjectTags(FETag* pTag, unsigned long Length) {
                 break;
             }
             case 0x4150:
-                if (!pLastParent || pLastParent->GUID != BSwap32(pTag->Getu32(0))) {
-                    pLastParent = static_cast<FEGroup*>(pPack->FindObjectByGUID(BSwap32(pTag->Getu32(0))));
+                if (!pLastParent || pLastParent->GUID != pTag->Getu32(0)) {
+                    pLastParent = static_cast<FEGroup*>(pPack->FindObjectByGUID(pTag->Getu32(0)));
                 }
                 pParent = pLastParent;
                 break;
             case 0x4153: {
-                unsigned long count = BSwap16(pTag->GetSize()) >> 2;
+                unsigned long count = pTag->GetSize() >> 2;
                 for (unsigned long i = 0; i < count; i++) {
-                    reinterpret_cast<unsigned long*>(pObj->pData)[i] = BSwap32(pTag->Getu32(i));
+                    reinterpret_cast<unsigned long*>(pObj->pData)[i] = pTag->Getu32(i);
                 }
                 break;
             }
@@ -836,7 +836,7 @@ bool FEPackageReader::ReadObjectTags(FETag* pTag, unsigned long Length) {
                 }
                 break;
         }
-        pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + BSwap16(pTag->GetSize()) + 4);
+        pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + pTag->GetSize() + 4);
     }
     return true;
 }
@@ -849,7 +849,7 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
     int RunningTrackOffset = 0;
 
     while (pTag < pEnd) {
-        unsigned short tagID = BSwap16(pTag->GetID());
+        unsigned short tagID = pTag->GetID();
         switch (tagID) {
             case 0x6e53: {
                 pScript = new FEScript();
@@ -870,28 +870,28 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                     pScript->Init();
                     pScript->CurTime = 0;
                 }
-                pScript->ID = BSwap32(pTag->Getu32(0));
-                pScript->Length = static_cast<int>(BSwap32(pTag->Getu32(1)));
-                pScript->Flags = BSwap32(pTag->Getu32(2));
-                pScript->SetTrackCount(static_cast<long>(BSwap32(pTag->Getu32(3))));
+                pScript->ID = pTag->Getu32(0);
+                pScript->Length = static_cast<int>(pTag->Getu32(1));
+                pScript->Flags = pTag->Getu32(2);
+                pScript->SetTrackCount(static_cast<long>(pTag->Getu32(3)));
                 break;
             }
             case 0x6353: {
-                pScript->pChainTo = reinterpret_cast<FEScript*>(BSwap32(pTag->Getu32(0)));
+                pScript->pChainTo = reinterpret_cast<FEScript*>(pTag->Getu32(0));
                 break;
             }
             case 0x4953: {
                 pTrack = nullptr;
-                pScript = pObj->FindScript(BSwap32(pTag->Getu32(0)));
+                pScript = pObj->FindScript(pTag->Getu32(0));
                 break;
             }
             case 0x6c53: {
-                pScript->Length = static_cast<int>(BSwap32(pTag->Getu32(0)));
+                pScript->Length = static_cast<int>(pTag->Getu32(0));
                 break;
             }
             case 0x6653: {
                 if (pScript) {
-                    pScript->Flags = BSwap32(pTag->Getu32(0));
+                    pScript->Flags = pTag->Getu32(0);
                 }
                 break;
             }
@@ -903,7 +903,7 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                 pTrack->ParamSize = paramSize;
                 pTrack->InterpType = pTag->Data()[2];
                 pTrack->InterpAction = pTag->Data()[3];
-                pTrack->Length = static_cast<int>(BSwap32(pTag->Getu32(1)));
+                pTrack->Length = static_cast<int>(pTag->Getu32(1));
                 pTrack->LongOffset = RunningTrackOffset;
                 RunningTrackOffset += pTrack->ParamSize >> 2;
                 break;
@@ -974,12 +974,12 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
             case 0x6254: {
                 {
                     unsigned long KeyLongs = pTrack->ParamSize >> 2;
-                    pTrack->BaseKey.tTime = static_cast<int>(BSwap32(pTag->Getu32(0)));
+                    pTrack->BaseKey.tTime = static_cast<int>(pTag->Getu32(0));
                     {
                         unsigned long i = 0;
                         if (KeyLongs != 0) {
                             do {
-                                reinterpret_cast<unsigned long*>(&pTrack->BaseKey.Val)[i] = BSwap32(pTag->Getu32(i + 1));
+                                reinterpret_cast<unsigned long*>(&pTrack->BaseKey.Val)[i] = pTag->Getu32(i + 1);
                                 i++;
                             } while (i < KeyLongs);
                         }
@@ -991,7 +991,7 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                 {
                     unsigned long CurKey = 0;
                     unsigned long KeySize = pTrack->ParamSize + 4;
-                    unsigned long NumKeys = BSwap16(pTag->GetSize()) / KeySize;
+                    unsigned long NumKeys = pTag->GetSize() / KeySize;
                     unsigned char* pKeyData = pTag->Data();
                     FEKeyNode* pKey;
                     unsigned long* pSrc;
@@ -1029,7 +1029,7 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
             }
             case 0x5645: {
                 {
-                    unsigned long NumEvents = BSwap16(pTag->GetSize()) / sizeof(FEEvent);
+                    unsigned long NumEvents = pTag->GetSize() / sizeof(FEEvent);
                     pScript->Events.SetCount(static_cast<long>(NumEvents));
                     FEEvent* pEvent = &pScript->Events[0];
                     unsigned long* pData = reinterpret_cast<unsigned long*>(pTag->Data());
@@ -1045,7 +1045,7 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                 break;
             }
         }
-        pTag = reinterpret_cast<FETag*>(reinterpret_cast<unsigned char*>(pTag) + BSwap16(pTag->GetSize()) + 4);
+        pTag = reinterpret_cast<FETag*>(reinterpret_cast<unsigned char*>(pTag) + pTag->GetSize() + 4);
     }
 
     if (!bIsReference) {
