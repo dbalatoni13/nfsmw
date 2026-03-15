@@ -462,8 +462,8 @@ void FECodeListBox::ScrollSelection(long lColumnNum, long lRowNum) {
 }
 
 short* FECodeListBox::AllocateString() {
-    short* psRet = mppsStringData[mulCurrentString];
-    mulCurrentString++;
+    short* psRet = mppsStringData[mulCurrentString++];
+    *psRet = 0;
     return psRet;
 }
 
