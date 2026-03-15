@@ -184,19 +184,20 @@ RealmcIface::DataStatus MemcardCallbacks::CheckLoadedData(const char* data) {
 void MemcardCallbacks::LoadDone(const char* filename) {
     JLog(MJ_LoadDone);
     Joylog::AddOrGetData(const_cast<char*>(filename), JOYLOG_CHANNEL_MEMORY_CARD);
-    MemoryCard* mc = GetMemcard();
+    char* header = GetMemcard()->GetHeader();
     if (Joylog::IsReplaying()) {
-        Joylog::GetData(mc->GetHeader(), 8, JOYLOG_CHANNEL_MEMORY_CARD);
+        Joylog::GetData(header, 8, JOYLOG_CHANNEL_MEMORY_CARD);
     }
     if (Joylog::IsCapturing()) {
-        Joylog::AddData(mc->GetHeader(), 8, JOYLOG_CHANNEL_MEMORY_CARD);
+        Joylog::AddData(header, 8, JOYLOG_CHANNEL_MEMORY_CARD);
     }
-    mc = GetMemcard();
+    char* data = GetMemcard()->GetData();
+    unsigned int size = GetMemcard()->GetSize();
     if (Joylog::IsReplaying()) {
-        Joylog::GetData(mc->GetData(), mc->GetSize(), JOYLOG_CHANNEL_MEMORY_CARD);
+        Joylog::GetData(data, size, JOYLOG_CHANNEL_MEMORY_CARD);
     }
     if (Joylog::IsCapturing()) {
-        Joylog::AddData(mc->GetData(), mc->GetSize(), JOYLOG_CHANNEL_MEMORY_CARD);
+        Joylog::AddData(data, size, JOYLOG_CHANNEL_MEMORY_CARD);
     }
     unsigned int* pHeader =
         reinterpret_cast<unsigned int*>(GetMemcard()->GetHeader());
