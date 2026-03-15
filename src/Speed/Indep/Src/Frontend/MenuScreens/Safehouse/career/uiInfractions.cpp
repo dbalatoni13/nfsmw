@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 #include "Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
 
 struct FECareerRecord;
 void eUnloadStreamingTexture(unsigned int *textures, int count);
@@ -9,6 +10,7 @@ FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
 void FEngSetVisible(FEObject *obj);
 extern void FEngSetButtonState(const char *pkg_name, unsigned int button_hash, bool enabled);
 extern void eLoadStreamingTexture(unsigned int *textures, int count, void (*callback)(unsigned int), unsigned int param0, int priority);
+extern void FEngSetCurrentButton(const char *pkg_name, unsigned int button_hash);
 
 inline void eUnloadStreamingTexture(unsigned int name_hash) {
     eUnloadStreamingTexture(&name_hash, 1);
@@ -172,4 +174,75 @@ PostPursuitInfractionsScreen::PostPursuitInfractionsScreen(ScreenConstructorData
     AmountPlayerHas = FEDatabase->GetCareerSettings()->GetCash();
     const unsigned long FEObj_CASHDATA = 0x1930B057;
     FEPrintf(GetPackageName(), FEObj_CASHDATA, "%$d", AmountPlayerHas);
+}
+
+void PostPursuitInfractionsScreen::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+    switch (msg) {
+    case 0x35f8620b: {
+        const unsigned long FEObj_Button2 = 0xB8A7C6CC;
+        const unsigned long FEObj_Button1 = 0xB8A7C6CD;
+        if (bFirstTimeBusted) {
+            FEngSetCurrentButton(GetPackageName(), FEObj_Button2);
+            DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x417b2601, 0xb4edeb6d, 0x9c14b5f1);
+        } else {
+            FEngSetCurrentButton(GetPackageName(), FEObj_Button1);
+        }
+        break;
+    }
+    case 0x0c407210: {
+        bool paid_with_cash = (pobj->NameHash == 0xB8A7C6CD);
+        bool paid_with_marker = (pobj->NameHash == 0xB8A7C6CC);
+        bool not_enough_cash;
+        bool busted_by_cross;
+
+        if (paid_with_cash) {
+            FEDatabase->GetCareerSettings()->SpendCash(AmountToPay);
+            bStrikeLimitReached = WorkingCareerRecord->TheImpoundData.NotifyBusted();
+            WorkingCareerRecord->ServeAllIncractions();
+            WorkingCareerRecord->SetVehicleHeat(1.0f);
+        } else if (paid_with_marker) {
+            TheFEMarkerManager.UtilizeMarker(FEMarkerManager::MARKER_GET_OUT_OF_JAIL, 0);
+            int num_markers = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_GET_OUT_OF_JAIL, 0);
+            FEPrintf(GetPackageName(), 0x5b875870, "%d", num_markers);
+            FEPrintf(GetPackageName(), 0xea8aecd9, "%d", num_markers);
+            if (num_markers <= 0) {
+                const unsigned long GREY = 0x163c76;
+                const unsigned long FEObj_MARKER = 0x6b6973c1;
+                FEngSetScript(GetPackageName(), FEObj_MARKER, GREY, true);
+                FEngSetScript(GetPackageName(), 0x39f11e5c, GREY, true);
+            }
+            WorkingCareerRecord->WaiveIncractions(GInfractionManager::Get().GetInfractions());
+        }
+
+        not_enough_cash = false;
+        if (!paid_with_marker) {
+            not_enough_cash = (AmountToPay > AmountPlayerHas);
+        }
+
+        FEImpoundData::eImpoundReasons impound_reason = FEImpoundData::IMPOUND_REASON_NONE;
+        unsigned int message_hash = 0;
+        if (bStrikeLimitReached) {
+            message_hash = 0x78f0e298;
+            impound_reason = FEImpoundData::IMPOUND_REASON_STRIKE_LIMIT_REACHED;
+        } else if (not_enough_cash) {
+            message_hash = 0x1ecffa6e;
+            impound_reason = FEImpoundData::IMPOUND_REASON_INSUFFICIENT_FUNDS;
+        }
+
+        if (message_hash != 0) {
+            WorkingCareerRecord->TheImpoundData.BecomeImpounded(impound_reason);
+            DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x417b2601, 0x34dc1bec, message_hash);
+        } else {
+            if (paid_with_marker) {
+                cFEng::Get()->QueuePackageSwitch("Car_Select.fng", 0, 0, false);
+            } else {
+                cFEng::Get()->QueuePackageSwitch("Car_Select.fng", 0x100, 0, false);
+            }
+        }
+        break;
+    }
+    case 0x34dc1bec:
+        cFEng::Get()->QueuePackageSwitch("Car_Select.fng", 0x200, 0, false);
+        break;
+    }
 }
