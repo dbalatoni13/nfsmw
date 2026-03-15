@@ -105,6 +105,14 @@ enum CopDensity {
     kRaceCops_NumDensities = 4,
 };
 
+enum Region {
+    kRaceRegion_None = -1,
+    kRaceRegion_College = 0,
+    kRaceRegion_Coastal = 1,
+    kRaceRegion_City = 2,
+    kRaceRegion_NumRegions = 3,
+};
+
 // total size: 0x14
 class GRaceParameters {
   public:
@@ -253,6 +261,7 @@ class GRaceParameters {
     GRace::Type GetRaceType() const;
 
     // enum Region GetRegion() const;
+    Region GetRegion() const;
 
     void ExtractPosition(Attrib::Gen::gameplay &collection, UMath::Vector3 &pos) const;
 

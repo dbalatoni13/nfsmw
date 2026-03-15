@@ -65,6 +65,10 @@ extern FEString *FEngFindString(const char *, int);
 extern unsigned int bStringHash(const char *str);
 extern unsigned int FEngHashString(const char *, ...);
 extern int bSPrintf(char *, const char *, ...);
+extern int bSNPrintf(char *buf, int max_len, const char *format, ...);
+extern void FixDot(char *buf, int size);
+extern void bToUpper(char *);
+extern int bFileExists(const char *f);
 
 int HudResourceManager::mCustIndex;
 
@@ -170,6 +174,50 @@ bool HudResourceManager::GetCustomHudTexPackFilename(ePlayerHudType ht, char *hu
     }
 
     bSPrintf(hudTexturePackName, "");
+    return false;
+}
+
+bool HudResourceManager::ChooseMinimapTextureName(ePlayerHudType hudType, char *texture_name,
+                                                   unsigned int texture_name_size,
+                                                   char *minimap_texture_name,
+                                                   unsigned int minimap_texture_name_size) {
+    if (hudType != PHT_DRAG) {
+        if (GRaceStatus::Exists()) {
+            if (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming) {
+                unsigned char bin = FEDatabase->GetCareerSettings()->GetCurrentBin();
+                if (bin >= 13) {
+                    bSNPrintf(texture_name, texture_name_size, "MINI_MAP_UNLOCK_1");
+                } else if (bin >= 9) {
+                    bSNPrintf(texture_name, texture_name_size, "MINI_MAP_UNLOCK_2");
+                } else {
+                    bSNPrintf(texture_name, texture_name_size, "MINI_MAP");
+                }
+            } else {
+                GRaceParameters *raceParams = GRaceStatus::Get().GetRaceParameters();
+                if (raceParams) {
+                    if (raceParams->GetIsPursuitRace()) {
+                        if (raceParams->GetRegion() == kRaceRegion_College) {
+                            bSNPrintf(texture_name, texture_name_size, "MINI_MAP_UNLOCK_1");
+                        } else if (raceParams->GetRegion() == kRaceRegion_Coastal) {
+                            bSNPrintf(texture_name, texture_name_size, "MINI_MAP_UNLOCK_2");
+                        } else {
+                            bSNPrintf(texture_name, texture_name_size, "MINI_MAP");
+                        }
+                    } else {
+                        bSNPrintf(texture_name, texture_name_size, "MINI_MAP_%s", raceParams->GetEventID());
+                    }
+                }
+            }
+            FixDot(texture_name, texture_name_size);
+            bToUpper(texture_name);
+            bSNPrintf(minimap_texture_name, minimap_texture_name_size, "TRACKS\\L2RA\\%s.BIN", texture_name);
+        }
+
+        if (bFileExists(minimap_texture_name)) {
+            return true;
+        }
+    }
+
     return false;
 }
 

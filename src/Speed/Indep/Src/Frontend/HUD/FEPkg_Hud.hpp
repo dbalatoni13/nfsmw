@@ -132,7 +132,10 @@ class HudResourceManager {
     static CarPart *GetCarPart(ePlayerHudType ht, CAR_SLOT_ID carSlotId);
     static int GetCustomHudColour(ePlayerHudType ht, CAR_SLOT_ID carSlotId);
     static bool GetCustomHudTexPackFilename(ePlayerHudType ht, char *hudTexturePackName);
-    static bool ChooseMinimapTextureName(char *name, unsigned int size);
+    static bool ChooseMinimapTextureName(ePlayerHudType hudType, char *texture_name,
+                                         unsigned int texture_name_size,
+                                         char *minimap_texture_name,
+                                         unsigned int minimap_texture_name_size);
 
     static ePlayerHudType LoadingResourcesForHudType;
     static int mCustIndex;
