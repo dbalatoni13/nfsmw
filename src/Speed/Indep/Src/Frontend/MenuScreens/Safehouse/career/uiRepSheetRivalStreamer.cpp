@@ -122,28 +122,28 @@ int uiRepSheetRivalStreamer::CalcTexturesToLoad(unsigned int* temp, int bin) {
 void uiRepSheetRivalStreamer::TexturesLoadedCallback() {
     int idx;
     LoadingInProgress = false;
-    if (LoadedBin == DesiredBin) {
-        idx = 0;
-        if (Rival != nullptr) {
-            GetTextureInfo(LoadedTextures[idx], 0, 0);
-            FEngSetTextureHash(Rival, LoadedTextures[idx]);
-            FEngSetVisible(reinterpret_cast<FEObject*>(Rival));
-            idx++;
-        }
-        if (Tag != nullptr) {
-            GetTextureInfo(LoadedTextures[idx], 0, 0);
-            FEngSetTextureHash(Tag, LoadedTextures[idx]);
-            FEngSetVisible(reinterpret_cast<FEObject*>(Tag));
-            idx++;
-        }
-        if (BG != nullptr) {
-            GetTextureInfo(LoadedTextures[idx], 0, 0);
-            FEngSetTextureHash(BG, LoadedTextures[idx]);
-            FEngSetVisible(reinterpret_cast<FEObject*>(BG));
-            cFEng::Get()->QueuePackageMessage(0x30f59dd4, pkg_name, nullptr);
-        }
-    } else {
+    if (LoadedBin != DesiredBin) {
         LoadTextures();
+        return;
+    }
+    idx = 0;
+    if (Rival != nullptr) {
+        cFEng::Get()->QueuePackageMessage(0xC0942E85, pkg_name, nullptr);
+        GetTextureInfo(LoadedTextures[0], false, false);
+        FEngSetTextureHash(Rival, LoadedTextures[0]);
+        FEngSetVisible(reinterpret_cast<FEObject*>(Rival));
+        idx = 1;
+    }
+    if (Tag != nullptr) {
+        cFEng::Get()->QueuePackageMessage(0x8C9D4547, pkg_name, nullptr);
+        FEngSetTextureHash(Tag, LoadedTextures[idx]);
+        idx++;
+        FEngSetVisible(reinterpret_cast<FEObject*>(Tag));
+    }
+    if (BG != nullptr) {
+        cFEng::Get()->QueuePackageMessage(0xD22B95D0, pkg_name, nullptr);
+        FEngSetTextureHash(BG, LoadedTextures[idx]);
+        FEngSetVisible(reinterpret_cast<FEObject*>(BG));
     }
 }
 
