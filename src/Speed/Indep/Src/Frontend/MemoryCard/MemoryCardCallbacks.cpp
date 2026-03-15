@@ -62,9 +62,9 @@ void MemcardCallbacks::ShowMessage(const wchar_t* msg, unsigned int nOptions,
         }
     } else {
         int op = GetMemcard()->GetOp();
-        if (op > MemoryCard::MO_LoadYNCF ||
-            op < MemoryCard::MO_FakeLoad ||
-            nOptions != 0) {
+        if (nOptions != 0 ||
+            op > MemoryCard::MO_LoadYNCF ||
+            op < MemoryCard::MO_FakeLoad) {
             UIMemcardBase* pScreen = GetScreen();
             if (pScreen != nullptr) {
                 if (pScreen->IsInButtonAnimation()) {
