@@ -158,7 +158,6 @@ unsigned int uiRepSheetRival::GetDefeatedTexture() {
 }
 
 void uiRepSheetRival::RefreshHeader() {
-    char buf[64];
     GRaceBin* bin = GRaceDatabase::Get().GetBinNumber(iCurrentViewBin);
     unsigned int num_boss_races = bin->GetBossRaceCount();
     if (num_boss_races >= 5) {
@@ -170,29 +169,22 @@ void uiRepSheetRival::RefreshHeader() {
     } else {
         cFEng::Get()->QueuePackageMessage(0x0028c0be, GetPackageName(), nullptr);
     }
-    unsigned int i = 0;
-    while (i < bin->GetBossRaceCount()) {
+    for (unsigned int i = 0; i < bin->GetBossRaceCount(); i++) {
         unsigned int raceHash = bin->GetBossRaceHash(i);
         GRaceParameters* race = GRaceDatabase::mObj->GetRaceFromHash(raceHash);
         if (launch_race == nullptr) {
             launch_race = race;
         }
-        GRaceDatabase* db = &GRaceDatabase::Get();
-        unsigned int eventHash = race->GetEventHash();
-        i++;
-        if (db->CheckRaceScoreFlags(eventHash, static_cast< GRaceDatabase::ScoreFlags >(2))) {
-            bSNPrintf(buf, 64, "CROSSOUT_%d", i);
+        if ((GRaceDatabase::Get(), GRaceDatabase::Get().IsCareerRaceComplete(race->GetEventHash()))) {
+            char buf[64];
+            bSNPrintf(buf, 64, "CROSSOUT_%d", i + 1);
             cFEng::Get()->QueuePackageMessage(FEHashUpper(buf), GetPackageName(), nullptr);
         }
-        SetupRace(i, race);
+        SetupRace(i + 1, race);
     }
     FEPlayerCarDB* stable = FEDatabase->GetPlayerCarStable(0);
-    const char* pkgName = GetPackageName();
-    const char* label = GetLocalizedString(0xce6b99b1);
-    unsigned int totalBounty = stable->GetTotalBounty();
-    FEPrintf(pkgName, 0xb514e2d8, "%s %$d", label, totalBounty);
-    pkgName = GetPackageName();
-    FEPrintf(pkgName, 0xf91a59f6, "%s %$d", GetLocalizedString(0x073b79e0), FEDatabase->GetCareerSettings()->GetCash());
+    FEPrintf(GetPackageName(), 0xb514e2d8, "%s %$d", GetLocalizedString(0xce6b99b1), stable->GetTotalBounty());
+    FEPrintf(GetPackageName(), 0xf91a59f6, "%s %$d", GetLocalizedString(0x073b79e0), FEDatabase->GetCareerSettings()->GetCash());
 }
 
 void uiRepSheetRival::SetupRace(unsigned int num, GRaceParameters* race) {
