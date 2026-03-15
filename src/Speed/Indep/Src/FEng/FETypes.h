@@ -163,6 +163,7 @@ struct FERect {
     inline FERect() : left(0.0f), top(0.0f), right(0.0f), bottom(0.0f) {}
     inline FERect(float Value) : left(Value), top(Value), right(Value), bottom(Value) {}
     inline FERect(float l, float t, float r, float b) : left(l), top(t), right(r), bottom(b) {}
+    inline FERect& operator=(const FERect& r) { left = r.left; top = r.top; right = r.right; bottom = r.bottom; return *this; }
 };
 
 // total size: 0x44

@@ -624,11 +624,13 @@ void FEPackageReader::ProcessListBoxTag(FETag* pTag) {
             unsigned long c1 = BSwap32(pTag->Getu32(1));
             unsigned long c2 = BSwap32(pTag->Getu32(2));
             unsigned long c3 = BSwap32(pTag->Getu32(3));
+            FERect rect;
+            *reinterpret_cast<unsigned long*>(&rect.left) = c0;
+            *reinterpret_cast<unsigned long*>(&rect.top) = c1;
+            *reinterpret_cast<unsigned long*>(&rect.right) = c2;
+            *reinterpret_cast<unsigned long*>(&rect.bottom) = c3;
             FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
-            reinterpret_cast<unsigned long*>(&pCell->u)[0] = c0;
-            reinterpret_cast<unsigned long*>(&pCell->u)[1] = c1;
-            reinterpret_cast<unsigned long*>(&pCell->u)[2] = c2;
-            reinterpret_cast<unsigned long*>(&pCell->u)[3] = c3;
+            pCell->SetUV() = rect;
             return;
         }
         default:
