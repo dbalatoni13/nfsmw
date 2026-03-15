@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
+#include "Speed/Indep/Src/Generated/Events/ERaceSheetOff.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
 struct FEObject;
@@ -74,42 +75,77 @@ eMenuSoundTriggers uiRepSheetMain::NotifySoundMessage(unsigned long msg, eMenuSo
 
 void uiRepSheetMain::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) {
     IconScrollerMenu::NotificationMessage(msg, obj, param1, param2);
-    switch (msg) {
-    case 0x406415e3:
-        if (selection == 0) {
-            if (bIsInGame) {
-                cFEng::Get()->QueuePackageSwitch("IG_BL_CHALLENGE", 1, 0, false);
-            } else {
-                cFEng::Get()->QueuePackageSwitch("BL_CHALLENGE", 0, 0, false);
-            }
-        } else if (selection == 1) {
-            if (bIsInGame) {
-                cFEng::Get()->QueuePackageSwitch("IG_BL_MILESTONES", 1, 0, false);
-            } else {
-                cFEng::Get()->QueuePackageSwitch("BL_MILESTONES", 0, 0, false);
-            }
-        } else if (selection == 2) {
-            if (bIsInGame) {
-                cFEng::Get()->QueuePackageSwitch("IG_BL_BOUNTY", 1, 0, false);
-            } else {
-                cFEng::Get()->QueuePackageSwitch("BL_BOUNTY", 0, 0, false);
-            }
-        } else if (selection == 3) {
-            if (bIsInGame) {
-                cFEng::Get()->QueuePackageSwitch("IG_BL_BIO", 1, 0, false);
-            } else {
-                cFEng::Get()->QueuePackageSwitch("BL_BIO", 0, 0, false);
-            }
-        }
-        break;
-    case 0x911ab364:
-        if (bIsInGame) {
-            cFEng::Get()->QueuePackageSwitch("IG_PAUSEMENU", 1, 0, false);
-        } else {
-            cFEng::Get()->QueuePackageSwitch("FE_CAREER", 0, 0, false);
-        }
-        break;
+    if (msg == 0x911c0a4b) {
+        ScrollRival(static_cast<eScrollDir>(1));
+        return;
     }
+    if (msg < 0x911c0a4c) {
+        if (msg == 0x72619778) {
+            ScrollRival(static_cast<eScrollDir>(-1));
+        }
+        return;
+    }
+    const char* packageName;
+    int packageFlags = 0;
+    if (msg == 0xc519bfc3) {
+        if (bBossBeaten || !bBossAvailable) {
+            return;
+        }
+        if (bIsInGame) {
+            cFEng::Get()->QueuePackageSwitch("InGameRivalChallenge.fng", 1, 0, false);
+            return;
+        }
+        packageName = "SafeHouseRivalChallenge.fng";
+    } else {
+        if (msg != 0xe1fde1d1) {
+            return;
+        }
+        if (PrevButtonMessage == 0xc407210) {
+            if (selection == 0) {
+                if (bIsInGame) {
+                    packageName = "InGameRaceSheet.fng";
+                    packageFlags = 1;
+                    goto queue_switch;
+                }
+                packageName = "SafeHouseRaceSheet.fng";
+            } else if (selection == 1) {
+                if (bIsInGame) {
+                    packageName = "InGameMilestones.fng";
+                    packageFlags = 1;
+                    goto queue_switch;
+                }
+                packageName = "SafeHouseMilestones.fng";
+            } else if (selection == 2) {
+                if (bIsInGame) {
+                    packageName = "InGameBounty.fng";
+                    packageFlags = 1;
+                    goto queue_switch;
+                }
+                packageName = "SafeHouseBounty.fng";
+            } else {
+                if (selection != 4) {
+                    return;
+                }
+                if (bIsInGame) {
+                    packageName = "InGameRivalBio.fng";
+                    packageFlags = 1;
+                    goto queue_switch;
+                }
+                packageName = "SafeHouseRivalBio.fng";
+            }
+        } else {
+            if (PrevButtonMessage != 0x911ab364) {
+                return;
+            }
+            if (bIsInGame) {
+                new ERaceSheetOff();
+                return;
+            }
+            packageName = "MainMenu_Sub.fng";
+        }
+    }
+queue_switch:
+    cFEng::Get()->QueuePackageSwitch(packageName, packageFlags, 0, false);
 }
 
 void uiRepSheetMain::Setup() {

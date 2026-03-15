@@ -72,7 +72,7 @@ eMenuSoundTriggers uiRepSheetMilestones::NotifySoundMessage(unsigned long msg, e
 }
 
 void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) {
-    int currentIndex = GetCurrentDatumNum();
+    int currentIndex = data.TraversebList(currentDatum) - 1;
     ArrayScrollerMenu::NotificationMessage(msg, obj, param1, param2);
     switch (msg) {
     case 0xc407210: {
@@ -184,8 +184,8 @@ void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj,
     default:
         return;
     }
-    int newIndex = GetCurrentDatumNum();
-    if (currentIndex != newIndex && GetCurrentDatum() != nullptr) {
+    int newIndex = data.TraversebList(currentDatum) - 1;
+    if (currentIndex != newIndex && currentDatum != nullptr) {
         RefreshTrack();
     }
 }
