@@ -210,23 +210,24 @@ void uiRepSheetBounty::RefreshTrack() {
 
 void uiRepSheetBounty::RefreshHeader() {
     ArrayScrollerMenu::RefreshHeader();
-    FEPrintf(GetPackageName(), 0x5a856a34, "%d/%d", GetCurrentDatumNum());
-    FEPrintf(GetPackageName(), 0x2d4d22c8, "%d/%d", GetNumDatum());
+    ArrayDatum* currentDatum = GetCurrentDatum();
+    FEPrintf(GetPackageName(), 0x5a856a34, "%d", data.GetNodeNumber(currentDatum));
+    FEPrintf(GetPackageName(), 0x2d4d22c8, "%d", GetNumDatum());
     FEPlayerCarDB* stable = FEDatabase->GetPlayerCarStable(0);
     FEPrintf(GetPackageName(), 0xb514e2d8, "%s %d", GetLocalizedString(0xce6b99b1), stable->GetTotalBounty());
     FEPrintf(GetPackageName(), 0xf91a59f6, "%s %d", GetLocalizedString(0x73b79e0), FEDatabase->GetCareerSettings()->GetCash());
-    int loc_tag = GManager::Get().GetBountySpawnMarkerTag(GetCurrentDatumNum() - 1);
+    int loc_tag = GManager::Get().GetBountySpawnMarkerTag(data.GetNodeNumber(currentDatum) - 1);
     FEngSetTextureHash(GetPackageName(), 0xf97ec5d5,
                        FEDatabase->GetBountyIconHash(loc_tag));
-    BountyDatum* d = static_cast<BountyDatum*>(GetCurrentDatum());
+    BountyDatum* d = static_cast<BountyDatum*>(currentDatum);
     if (d != nullptr) {
-        if (d->IsLocked()) {
-            cFEng::Get()->QueuePackageMessage(0xc5dd9d68, GetPackageName(), nullptr);
-        } else {
+        if (!d->IsLocked()) {
             cFEng::Get()->QueuePackageMessage(0x38091fa1, GetPackageName(), nullptr);
+        } else {
+            cFEng::Get()->QueuePackageMessage(0xc5dd9d68, GetPackageName(), nullptr);
         }
         FEngSetLanguageHash(GetPackageName(), 0x28049d6,
-                            FEDatabase->GetBountyDescHash(GetCurrentDatumNum()));
+                            FEDatabase->GetBountyDescHash(data.GetNodeNumber(currentDatum)));
         for (int i = 0; i < GetNumSlots(); i++) {
             ArrayDatum* datum = GetDatumAt(i + GetStartDatumNum());
             unsigned int check_hash = FEngHashString("CHECK_ICON_%d", i + 1);
