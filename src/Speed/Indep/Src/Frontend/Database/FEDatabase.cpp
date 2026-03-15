@@ -424,6 +424,70 @@ unsigned int cFrontendDatabase::GetMilestoneDescHash(unsigned int tag) {
     return FEngHashString("BLACKLIST_PURSUIT_MILESTONES_%02d", tag);
 }
 
+void cFrontendDatabase::SetMilestoneDescriptionString(char *outputStr, int milestoneType, float currVal, float goalVal, bool showCurrVal) const {
+    if (showCurrVal && currVal > goalVal) {
+        currVal = goalVal;
+    }
+    switch (milestoneType) {
+    case 0x33fa23a: {
+        char currValTimeToPrint[16];
+        char goalValTimeToPrint[16];
+        Timer currValTimer(currVal);
+        currValTimer.PrintToString(currValTimeToPrint, 4);
+        Timer goalValTimer(goalVal);
+        goalValTimer.PrintToString(goalValTimeToPrint, 4);
+        if (showCurrVal) {
+            bSPrintf(outputStr, "%s/%s", currValTimeToPrint, goalValTimeToPrint);
+        } else {
+            bSPrintf(outputStr, "%s", goalValTimeToPrint);
+        }
+        break;
+    }
+    case 0x5392e4fd: {
+        float printTime = currVal;
+        char currValTimeToPrint[16];
+        char goalValTimeToPrint[16];
+        if (currVal == 0.0f) {
+            IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+            if (player) {
+                ISimable *simable = player->GetSimable();
+                if (simable) {
+                    IVehicle *vehicle;
+                    if (simable->QueryInterface(&vehicle)) {
+                        IVehicleAI *vehicleai = vehicle->GetAIVehiclePtr();
+                        if (vehicleai) {
+                            IPursuit *ipursuit = vehicleai->GetPursuit();
+                            if (ipursuit) {
+                                float pursuitElapsedTime = ipursuit->GetPursuitDuration();
+                                float timeRemaining = goalVal - pursuitElapsedTime;
+                                printTime = UMath::Max(timeRemaining, 0.0f);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Timer currValTimer(printTime);
+        currValTimer.PrintToString(currValTimeToPrint, 4);
+        Timer goalValTimer(goalVal);
+        goalValTimer.PrintToString(goalValTimeToPrint, 4);
+        if (showCurrVal) {
+            bSPrintf(outputStr, "%s/%s", currValTimeToPrint, goalValTimeToPrint);
+        } else {
+            bSPrintf(outputStr, "%s", goalValTimeToPrint);
+        }
+        break;
+    }
+    default:
+        if (showCurrVal) {
+            bSPrintf(outputStr, "%$0.0f/%$0.0f", currVal, goalVal);
+        } else {
+            bSPrintf(outputStr, "%$0.0f", goalVal);
+        }
+        break;
+    }
+}
+
 bool cFrontendDatabase::IsMilestoneTimeFormat(int typeKey) const {
     if (typeKey == 0x33fa23a || typeKey == 0x5392e4fd) {
         return true;
