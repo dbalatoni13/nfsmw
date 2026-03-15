@@ -32,7 +32,7 @@ class MenuZoneTrigger : public HudElement, public IMenuZoneTrigger {
     bool IsPlayerInsideTrigger() override;
     void EnterTrigger(GRuntimeInstance *pRaceActivity) override;
     void EnterTrigger(const char *zoneType) override;
-    void ExitTrigger() override;
+    void ExitTrigger(int port) override;
     void RequestEventInfoDialog(int port) override;
     void RequestZoneInfoDialog(int port) override;
     bool IsType(const char *t) override;

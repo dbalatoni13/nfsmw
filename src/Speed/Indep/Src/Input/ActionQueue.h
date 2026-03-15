@@ -44,6 +44,7 @@ class ActionQueue : public UTL::Collections::Listable<ActionQueue, 20> {
     // void operator delete(void *mem, void *ptr) {}
 
     const char *GetName() const { return mQueueName; }
+    int GetPort() const { return mPort; }
 
     // bool IsRequired() const {}
 

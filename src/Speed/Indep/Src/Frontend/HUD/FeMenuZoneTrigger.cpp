@@ -55,7 +55,7 @@ bool MenuZoneTrigger::IsPlayerInsideTrigger() {
     return FEngIsScriptSet(mEventIcon, 0x280164f);
 }
 
-void MenuZoneTrigger::ExitTrigger() {
+void MenuZoneTrigger::ExitTrigger(int /* port */) {
     mZoneType = nullptr;
     mbInsideTrigger = false;
     mpRaceActivity = nullptr;

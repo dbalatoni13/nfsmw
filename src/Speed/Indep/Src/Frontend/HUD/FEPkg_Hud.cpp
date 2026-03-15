@@ -41,6 +41,12 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/Generated/Events/EPause.hpp"
+#include "Speed/Indep/Src/Generated/Events/ERaceSheetOn.hpp"
+#include "Speed/Indep/Src/Generated/Events/EShowResults.hpp"
+#include "Speed/Indep/Src/Generated/Events/EShowSMS.hpp"
+#include "Speed/Indep/Src/Generated/Events/EWorldMapOn.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/TrackInfo.hpp"
@@ -397,6 +403,108 @@ void FEngHud::Update(IPlayer *player, float dT) {
 void FEngHud::SetInPursuit(bool inPursuit) {
     if (mInPursuit != inPursuit) {
         mInPursuit = inPursuit;
+    }
+}
+
+void FEngHud::JoyHandle(IPlayer *player) {
+    if (!player || !player->GetSettings()) {
+        mActionQ.SetPort(-1);
+        mActionQ.SetConfig(0, "FEngHud");
+        return;
+    }
+
+    {
+        bool wheel_connected = false;
+        if (player->GetSteeringDevice()) {
+            if (player->GetSteeringDevice()->IsConnected()) {
+                wheel_connected = true;
+            }
+        }
+
+        mActionQ.SetPort(player->GetControllerPort());
+        mActionQ.SetConfig(player->GetSettings()->GetControllerAttribs(CA_HUD, wheel_connected), "FEngHud");
+
+        if (mActionQ.IsEmpty()) goto drain;
+        if (MemoryCard::GetInstance()->IsAutoSaving()) goto drain;
+        if (MemoryCard::GetInstance()->AutoSaveRequested()) goto drain;
+
+        {
+            ActionRef aRef = mActionQ.GetAction();
+
+            if (!CurrentHudFeatures) goto drain;
+
+            switch (aRef.ID()) {
+                case HUDACTION_PAUSEREQUEST:
+                    new EPause(player->GetSettingsIndex(), 0, 0);
+                    break;
+
+                case HUDACTION_ENGAGE_EVENT:
+                    if (!FEDatabase->IsLANMode() && !FEDatabase->IsOnlineMode()) {
+                        ISimable *isimable = player->GetSimable();
+                        IVehicleAI *vehicleai;
+                        IMenuZoneTrigger *izone;
+                        ePursuitStatus pursuitStatus;
+                        IPursuit *ipursuit;
+
+                        if (isimable->QueryInterface(&vehicleai)) {
+                            ipursuit = vehicleai->GetPursuit();
+                            if (ipursuit) {
+                                pursuitStatus = ipursuit->GetPursuitStatus();
+                                if (pursuitStatus == PS_COOL_DOWN) {
+                                    if (QueryInterface(&izone)) {
+                                        if (izone->IsPlayerInsideTrigger()) {
+                                            if (izone->IsType("safehouse")) {
+                                                ipursuit->EndPursuitEnteringSafehouse();
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing &&
+                            !GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace()) {
+                            new EShowResults(FERESULTTYPE_RACE, true);
+                        } else if (mInPursuit) {
+                            new EShowResults(FERESULTTYPE_PURSUIT, true);
+                        } else {
+                            if (QueryInterface(&izone)) {
+                                if (izone->IsPlayerInsideTrigger()) {
+                                    izone->ExitTrigger(mActionQ.GetPort());
+                                    izone->RequestEventInfoDialog(mActionQ.GetPort());
+                                }
+                            }
+                        }
+                    }
+                    break;
+
+                case HUDACTION_PAD_LEFT:
+                    if (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming) {
+                        new EWorldMapOn();
+                    }
+                    break;
+
+                case HUDACTION_PAD_DOWN:
+                    if (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming) {
+                        if (!FEDatabase->IsDDay()) {
+                            new ERaceSheetOn(0);
+                        }
+                    }
+                    break;
+
+                case HUDACTION_PAD_RIGHT:
+                    if (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming) {
+                        new EShowSMS(-1);
+                    }
+                    break;
+            }
+        }
+
+    drain:
+        while (!mActionQ.IsEmpty()) {
+            mActionQ.PopAction();
+        }
     }
 }
 
