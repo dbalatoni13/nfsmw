@@ -376,51 +376,52 @@ void WorldMap::NotificationMessage(unsigned long msg, FEObject* obj, unsigned lo
                     }
                     return;
                 }
-                if (msg > 0x35f8620b) {
+                if (msg <= 0x35f8620b) {
+                    if (msg != 0xc407210) {
+                        return;
+                    }
+                    if (!bInToggleMode) {
+                        IPlayer* iplayer = IPlayer::First(PLAYER_LOCAL);
+                        if (iplayer != nullptr) {
+                            ISimable* isimable = iplayer->GetSimable();
+                            if (isimable != nullptr) {
+                                unsigned int title_hash;
+                                unsigned int message_hash;
+                                unsigned int button_hash;
+                                if (SelectedItem == nullptr || SelectedItem->GetIcon() == nullptr) {
+                                    if (mGPSingIcon == nullptr) {
+                                        return;
+                                    }
+                                    title_hash = 0x417b2601;
+                                    message_hash = 0x1a294dad;
+                                    button_hash = 0xa6be2ebb;
+                                } else {
+                                    title_hash = 0x70e01038;
+                                    message_hash = 0x417b25e4;
+                                    button_hash = 0x96ac0a32;
+                                }
+                                DialogInterface::ShowTwoButtons(
+                                    GetPackageName(), "InGameDialog.fng",
+                                    static_cast< eDialogTitle >(3), title_hash, message_hash,
+                                    0xa16ca7bd, 0xb4edeb6d, 0xb4edeb6d,
+                                    static_cast< eDialogFirstButtons >(1), button_hash);
+                            }
+                        }
+                        return;
+                    }
+                    FEWidget* w = pCurrentOption;
+                    if (w == nullptr) {
+                        return;
+                    }
+                    static_cast< ItemTypeToggle* >(w)->Act(GetPackageName(), 0xc407210);
+                    UpdateIconVisibility(static_cast< ItemTypeToggle* >(pCurrentOption)->GetType(),
+                                         static_cast< ItemTypeToggle* >(pCurrentOption)->GetVisibility());
+                } else {
                     if (msg == 0x5073ef13 && !bInToggleMode) {
                         ScrollZoom(eSD_PREV);
                     }
                     return;
                 }
-                if (msg != 0xc407210) {
-                    return;
-                }
-                if (!bInToggleMode) {
-                    IPlayer* iplayer = IPlayer::First(PLAYER_LOCAL);
-                    if (iplayer != nullptr) {
-                        ISimable* isimable = iplayer->GetSimable();
-                        if (isimable != nullptr) {
-                            unsigned int title_hash;
-                            unsigned int message_hash;
-                            unsigned int button_hash;
-                            if (SelectedItem == nullptr || SelectedItem->GetIcon() == nullptr) {
-                                if (mGPSingIcon == nullptr) {
-                                    return;
-                                }
-                                title_hash = 0x417b2601;
-                                message_hash = 0x1a294dad;
-                                button_hash = 0xa6be2ebb;
-                            } else {
-                                title_hash = 0x70e01038;
-                                message_hash = 0x417b25e4;
-                                button_hash = 0x96ac0a32;
-                            }
-                            DialogInterface::ShowTwoButtons(
-                                GetPackageName(), "InGameDialog.fng",
-                                static_cast< eDialogTitle >(3), title_hash, message_hash,
-                                0xa16ca7bd, 0xb4edeb6d, 0xb4edeb6d,
-                                static_cast< eDialogFirstButtons >(1), button_hash);
-                        }
-                    }
-                    return;
-                }
-                FEWidget* w = pCurrentOption;
-                if (w == nullptr) {
-                    return;
-                }
-                static_cast< ItemTypeToggle* >(w)->Act(GetPackageName(), 0xc407210);
-                UpdateIconVisibility(static_cast< ItemTypeToggle* >(pCurrentOption)->GetType(),
-                                     static_cast< ItemTypeToggle* >(pCurrentOption)->GetVisibility());
             } else if (msg != 0x911c0a4b) {
                 if (msg < 0x911c0a4c) {
                     if (msg != 0x911ab364) {
