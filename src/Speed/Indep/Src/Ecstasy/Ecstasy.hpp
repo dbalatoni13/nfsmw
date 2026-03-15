@@ -104,6 +104,10 @@ inline void eSwizzleWorldVector(const bVector3 &inVec, bVector3 &outVec) {
     bConvertFromBond(outVec, inVec);
 }
 
+inline void eSwizzleWorldMatrix(const bMatrix4 &inMat, bMatrix4 &outMat) {
+    bConvertFromBond(outMat, inMat);
+}
+
 inline void eUnSwizzleWorldVector(const bVector3 &inVec, bVector3 &outVec) {
     bConvertToBond(outVec, inVec);
 }

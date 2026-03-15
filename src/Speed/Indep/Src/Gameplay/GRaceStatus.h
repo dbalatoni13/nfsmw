@@ -472,6 +472,10 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         return Exists() && Get().GetRaceType() == GRace::kRaceType_Challenge;
     }
 
+    static bool IsDragRace() {
+        return Exists() && Get().GetRaceType() == GRace::kRaceType_Drag;
+    }
+
     PlayMode GetPlayMode() {
         return mPlayMode;
     }

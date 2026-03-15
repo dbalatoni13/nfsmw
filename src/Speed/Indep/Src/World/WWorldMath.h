@@ -5,9 +5,99 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
+
+void VU0_v4crossprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r);
+
 namespace WWorldMath {
 
+inline float pow2(float a) { return a * a; }
+
+inline float wmin(const float &a, const float &b) {
+    if (a < b) return a;
+    return b;
+}
+
+inline float wmax(const float &a, const float &b) {
+    if (a < b) return b;
+    return a;
+}
+
+inline bool InCircle(float x, float y, float cx, float cy, float r) {
+    return pow2(cx - x) + pow2(cy - y) < pow2(r);
+}
+
+inline float InvSqrt(const float f) {
+    return VU0_rsqrt(f);
+}
+
+inline float wwfabs(float a) {
+#if defined(__GNUC__) && !defined(EA_PLATFORM_PLAYSTATION2)
+    float r;
+    asm("fabs %0, %1" : "=f"(r) : "f"(a));
+    return r;
+#else
+    return a < 0.0f ? -a : a;
+#endif
+}
+
+inline bool PtsEqual(const UMath::Vector3 &p0, const UMath::Vector3 &p1, float tolerance) {
+    const float kTolerance = tolerance;
+    return wwfabs(p0.x - p1.x) < kTolerance && wwfabs(p0.y - p1.y) < kTolerance && wwfabs(p0.z - p1.z) < kTolerance;
+}
+
+inline void Crossxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r) {
+    VU0_v4crossprodxyz(a, b, r);
+}
+
+inline float PtDir4(const UMath::Vector4 &p1, const UMath::Vector4 &p2, const UMath::Vector3 &tp) {
+    return (p1.x - p2.x) * (tp.z - p2.z) - (tp.x - p2.x) * (p1.z - p2.z);
+}
+
+inline bool InTri(const UMath::Vector3 &pt, const UMath::Vector4 *pts) {
+    bool result;
+    float d = PtDir4(pts[0], pts[1], pt);
+    if (d <= 0.0f) {
+        result = false;
+        if (PtDir4(pts[1], pts[2], pt) <= 0.0f) {
+            result = PtDir4(pts[2], pts[0], pt) <= 0.0f;
+        }
+    } else {
+        result = false;
+        if (0.0f <= PtDir4(pts[1], pts[2], pt)) {
+            result = 0.0f <= PtDir4(pts[2], pts[0], pt);
+        }
+    }
+    return result;
+}
+
+inline bool InTriR(const UMath::Vector3 &pt, const UMath::Vector4 *pts) {
+    bool result = false;
+    if (PtDir4(pts[0], pts[1], pt) <= 0.0f) {
+        if (PtDir4(pts[1], pts[2], pt) <= 0.0f) {
+            result = PtDir4(pts[2], pts[0], pt) <= 0.0f;
+        }
+    }
+    return result;
+}
+
+inline bool InTriL(const UMath::Vector3 &pt, const UMath::Vector4 *pts) {
+    bool result = false;
+    if (0.0f <= PtDir4(pts[0], pts[1], pt)) {
+        if (0.0f <= PtDir4(pts[1], pts[2], pt)) {
+            result = 0.0f <= PtDir4(pts[2], pts[0], pt);
+        }
+    }
+    return result;
+}
+
 bool IntersectCircle(float x1, float y1, float x2, float y2, float cx, float cy, float r, float &u1, float &u2);
+bool MakeSegSpaceMatrix(const UMath::Vector3 &startPt, const UMath::Vector3 &endPt, UMath::Matrix4 &mat);
+float GetPlaneY(const UMath::Vector3 &normal, const UMath::Vector3 &pointOnPlane, const UMath::Vector3 &testPoint);
+void NearestPointLine2D(const UMath::Vector4 &pt, const UMath::Vector4 *line, UMath::Vector4 &nearPt);
+void NearestPointLine2D3(const UMath::Vector3 &pt, const UMath::Vector3 &p0, const UMath::Vector3 &p1, UMath::Vector3 &nearPt);
+bool IntersectSegPlane(const UMath::Vector3 &P1, const UMath::Vector3 &P2, const UMath::Vector3 &PtOnPlane, const UMath::Vector3 &Normal, UMath::Vector3 &intersectionPt, float &t);
+bool SegmentIntersect(const UMath::Vector4 *line1, const UMath::Vector4 *line2, UMath::Vector4 *intersectPt);
 
 };
 

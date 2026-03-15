@@ -29,33 +29,28 @@ class WWorld {
 
     void Close();
 
-    // static void *operator new(unsigned int size, void *ptr) {}
+    static void *operator new(unsigned int size) { return gFastMem.Alloc(size, nullptr); }
+    static void operator delete(void *mem, unsigned int size) { gFastMem.Free(mem, size, nullptr); }
 
-    // static void operator delete(void *mem, void *ptr) {}
-
-    // static void *operator new(unsigned int size) {}
-
-    // static void operator delete(void *mem, unsigned int size) {}
-
-    // static void *operator new(unsigned int size, const char *name) {}
-
-    // static void operator delete(void *mem, const char *name) {}
-
-    // static void operator delete(void *mem, unsigned int size, const char *name) {}
-
-    // static bool IsPresent() {}
-
-    // static struct WWorld &Get() {}
+    static WWorld &Get() {
+        return *fgWorld;
+    }
 
     // static void Shutdown() {}
 
     // const struct world &GetAttributes() const {}
 
-    // bool IsValid() {}
+    bool IsValid() {
+        return fRootWorldGroup != nullptr;
+    }
 
-    // const struct UGroup &GetMapGroup() const {}
+    const UGroup &GetMapGroup() const {
+        return *fRootWorldGroup;
+    }
 
-    // const struct UGroup *GetMapGroup() {}
+    const UGroup *GetMapGroup() {
+        return fRootWorldGroup;
+    }
 
   private:
     static WWorld *fgWorld;               // size: 0x4

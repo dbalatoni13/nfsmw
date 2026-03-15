@@ -19,15 +19,15 @@ struct CollisionSurface {
 
 struct CollisionObject {
     // total size: 0x70
-    bVector4 fPosRadius;               // offset 0x0, size 0x10
-    bVector4 fDimensions;              // offset 0x10, size 0x10
+    UMath::Vector4 fPosRadius;         // offset 0x0, size 0x10
+    UMath::Vector4 fDimensions;        // offset 0x10, size 0x10
     unsigned char fType;               // offset 0x20, size 0x1
     unsigned char fShape;              // offset 0x21, size 0x1
     unsigned short fFlags;             // offset 0x22, size 0x2
     unsigned short fRenderInstanceInd; // offset 0x24, size 0x2
     CollisionSurface fSurface;         // offset 0x26, size 0x2
     float fPAD[2];                     // offset 0x28, size 0x8
-    bMatrix4 fMat;                     // offset 0x30, size 0x40
+    UMath::Matrix4 fMat;               // offset 0x30, size 0x40
 };
 
 // TODO move to CARP?
@@ -70,6 +70,7 @@ class Geometry {
     static bool FindIntersection(const Geometry *A, const Geometry *B, Geometry *result);
 
     Geometry();
+    Geometry(const UMath::Matrix4 &orient, const UMath::Vector3 &position, const UMath::Vector3 &dimension, Shape shape, const UMath::Vector3 &delta);
     void Set(const UMath::Matrix4 &orient, const UMath::Vector3 &position, const UMath::Vector3 &dimension, Shape shape, const UMath::Vector3 &delta);
 
     const UMath::Vector3 &GetPosition() const {
@@ -99,6 +100,12 @@ class Geometry {
     float GetOverlap() const {
         return mOverlap;
     }
+
+    Shape GetShape() const {
+        return static_cast<Shape>(mShape);
+    }
+
+    void Move(const UMath::Vector3 &deltaP);
 
   private:
     UMath::Vector4 mPosition;         // offset 0x0, size 0x10

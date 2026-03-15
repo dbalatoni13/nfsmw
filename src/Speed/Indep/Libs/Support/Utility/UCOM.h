@@ -139,6 +139,7 @@ template <typename T, typename U, typename V> class Factory {
         Prototype(const _PRODUCT_SIGNATURE &classsig, _CONSTRUCTOR constructor) {
             mSignature = classsig;
             mConstructor = constructor;
+            mTail = mHead;
             mHead = this;
         }
 

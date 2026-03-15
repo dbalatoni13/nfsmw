@@ -223,11 +223,11 @@ struct bVector2 {
 
     bVector2(float _x, float _y);
 
-    bVector2(const bVector2 &v) {}
+    bVector2(const bVector2 &v);
 
     bVector2 operator-(const bVector2 &v);
 
-    bVector2 &operator=(const bVector2 &v) {}
+    bVector2 &operator=(const bVector2 &v);
 
     bVector2 &operator*=(float scale) {}
 
@@ -258,8 +258,24 @@ inline bVector2 *bFill(bVector2 *dest, float x, float y) {
     return dest;
 }
 
+inline bVector2 *bCopy(bVector2 *dest, const bVector2 *v) {
+    float x = v->x;
+    float y = v->y;
+    bFill(dest, x, y);
+    return dest;
+}
+
 inline bVector2::bVector2(float _x, float _y) {
     bFill(this, _x, _y);
+}
+
+inline bVector2::bVector2(const bVector2 &v) {
+    bCopy(this, &v);
+}
+
+inline bVector2 &bVector2::operator=(const bVector2 &v) {
+    bCopy(this, &v);
+    return *this;
 }
 
 inline bVector2 bVector2::operator-(const bVector2 &v) {
@@ -288,6 +304,14 @@ int bEqual(const bVector2 *v1, const bVector2 *v2, float epsilon);
 
 inline float bDot(const bVector2 *v1, const bVector2 *v2) {
     return v1->x * v2->x + v1->y * v2->y;
+}
+
+inline float bCross(const bVector2 *a, const bVector2 *b) {
+    return a->x * b->y - a->y * b->x;
+}
+
+inline float bDot(const bVector2 &v1, const bVector2 &v2) {
+    return bDot(&v1, &v2);
 }
 
 struct ALIGN_16 bVector3 {
@@ -836,6 +860,9 @@ inline void bIdentity(bMatrix4 *a) {
 #error Choose a platform
 #endif
 }
+
+void bConvertFromBond(bMatrix4 &dest, const bMatrix4 &m);
+void bConvertToBond(bMatrix4 &dest, const bMatrix4 &m);
 
 inline void eIdentity(bMatrix4 *a) {
     bIdentity(a);

@@ -11,6 +11,7 @@
 class GRuntimeInstance : public Attrib::Gen::gameplay {
   public:
     GRuntimeInstance(const Attrib::Key &key, GameplayObjType type);
+    virtual ~GRuntimeInstance();
 
   private:
     unsigned short mFlags;                // offset 0x14, size 0x2

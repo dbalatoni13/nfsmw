@@ -54,6 +54,24 @@ class TrackPathZone {
     }
 };
 
+
+bool DoLinesIntersect(const bVector2 &a, const bVector2 &b, const bVector2 &c, const bVector2 &d);
+
+struct TrackPathBarrier {
+    bVector2 Points[2];     // offset 0x0, size 0x10
+    char Enabled;           // offset 0x10, size 0x1
+    char Pad;               // offset 0x11, size 0x1
+    char PlayerBarrier;     // offset 0x12, size 0x1
+    char LeftHanded;        // offset 0x13, size 0x1
+    unsigned int GroupHash; // offset 0x14, size 0x4
+
+    bool IsEnabled() { return Enabled != 0; }
+    bool IsPlayerBarrier() { return PlayerBarrier != 0; }
+    bool Intersects(bVector2 *pointa, bVector2 *pointb) {
+        return DoLinesIntersect(Points[0], Points[1], *pointa, *pointb);
+    }
+};
+
 class TrackPathManager {
     struct ZoneInfo {
         // total size: 0x4C
@@ -79,6 +97,8 @@ class TrackPathManager {
     struct TrackPathBarrier *pBarriers; // offset 0x488, size 0x4
 
   public:
+    int GetNumBarriers() const { return NumBarriers; }
+    TrackPathBarrier *GetBarrier(int index) { return &pBarriers[index]; }
     void EnableBarriers(const char *group_name);
     void BuildZoneInfoTable();
     TrackPathZone *FindZone(const bVector2 *position, eTrackPathZoneType zone_type, TrackPathZone *prev_zone);

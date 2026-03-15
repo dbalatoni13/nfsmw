@@ -32,6 +32,10 @@ class Connection : public UTL::COM::Factory<const ConnectionData &, Connection, 
     void Close();
     bool Service(Packet *pkt);
 
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
     void operator delete(void *mem, std::size_t size) {
         if (mem) {
             gFastMem.Free(mem, size, nullptr);
