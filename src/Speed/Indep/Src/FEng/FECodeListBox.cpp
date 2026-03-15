@@ -140,7 +140,7 @@ void FECodeListBox::Initialize(unsigned long ulNumVisCols, unsigned long ulNumVi
         pCell->stResource.ResourceIndex = 0;
         pCell->ulType = 0;
         pCell->u.string.pStr = nullptr;
-        pCell->ulJustification = 0xFFFFFFFF;
+        pCell->u.string.Label = 0xFFFFFFFF;
         pCell++;
     }
     FEListBox::InitializeCell(mpstCells, mulNumVisibleRows * mulNumVisibleColumns);

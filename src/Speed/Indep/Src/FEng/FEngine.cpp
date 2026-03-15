@@ -335,10 +335,10 @@ bool FEngine::UnloadPackage(FEPackage* pPackage) {
         return false;
     }
     bool bOwnsMemory;
-    if (!pInterface) {
-        bOwnsMemory = true;
-    } else {
+    if (pInterface) {
         bOwnsMemory = pInterface->PackageWillUnload(pPack);
+    } else {
+        bOwnsMemory = true;
     }
     PackList.RemovePackage(pPackage);
     FEPackageCommand* pCmd = static_cast<FEPackageCommand*>(PackageCommands.GetHead());
@@ -369,8 +369,10 @@ bool FEngine::UnloadPackage(FEPackage* pPackage) {
             pLibNode = pLibNode->GetNext();
         }
         pPack->Shutdown(pInterface);
-        if (bOwnsMemory && pPack) {
-            delete pPack;
+        if (bOwnsMemory) {
+            if (pPack) {
+                delete pPack;
+            }
         }
     }
     return true;
