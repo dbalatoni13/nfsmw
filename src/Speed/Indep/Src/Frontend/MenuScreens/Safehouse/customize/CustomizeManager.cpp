@@ -147,7 +147,6 @@ void CarCustomizeManager::TakeControl(eCustomizeEntryPoint entry_point, FECarRec
         stable->WriteRecordIntoPhysics(TuningCar->Handle, pveh);
         ThePVehicle = pveh;
         RideInfo ride;
-        ride.Init(static_cast<CarType>(-1), static_cast<CarRenderUsage>(0), 0, 0);
         stable->BuildRideForPlayer(TuningCar->Handle, 0, &ride);
         CarViewer::SetRideInfo(&ride, SET_RIDE_INFO_REASON_LOAD_CAR, eCARVIEWER_PLAYER1_CAR);
         TheTempColoredPart = nullptr;
@@ -189,24 +188,23 @@ bool CarCustomizeManager::CanTradeIn(SelectablePart *part) {
 void CarCustomizeManager::AddToCart(SelectablePart *part) {
     ShoppingCartItem *existing = IsPartTypeInCart(part);
     SelectablePart *trade_in = nullptr;
-    if (!existing) {
-        if (!part->IsPerformancePkg()) {
+    if (existing) {
+        if (CanTradeIn(part) && existing->TradeIn) {
+            trade_in = new SelectablePart(existing->TradeIn);
+        }
+        RemoveFromCart(existing);
+    } else {
+        if (!part->PerformancePkg) {
             if (CanTradeIn(part)) {
-                CarPart *installed = GetInstalledCarPart(part->GetSlotID());
+                CarPart *installed = GetInstalledCarPart(part->CarSlotID);
                 if (installed) {
-                    trade_in = new SelectablePart(installed, part->GetSlotID(),
+                    trade_in = new SelectablePart(installed, part->CarSlotID,
                         installed->GetUpgradeLevel(), static_cast<GRace::Type>(7), false,
                         CPS_INSTALLED, 0, false);
                     trade_in->SetPrice(GetPartPrice(trade_in));
                 }
             }
         }
-    } else {
-        if (CanTradeIn(part) && existing->GetTradeInPart()) {
-            SelectablePart *old_trade = existing->GetTradeInPart();
-            trade_in = new SelectablePart(old_trade);
-        }
-        RemoveFromCart(existing);
     }
     SelectablePart *to_buy = new SelectablePart(part);
     to_buy->SetInCart();
@@ -244,12 +242,8 @@ ShoppingCartItem *CarCustomizeManager::IsPartTypeInCart(SelectablePart *to_find)
 }
 
 ShoppingCartItem *CarCustomizeManager::IsPartTypeInCart(unsigned int slot_id) {
-    for (ShoppingCartItem *item = GetFirstCartItem(); item != reinterpret_cast<ShoppingCartItem *>(&ShoppingCart); item = item->GetNext()) {
-        if (item->GetBuyingPart()->GetSlotID() == static_cast<int>(slot_id)) {
-            return item;
-        }
-    }
-    return nullptr;
+    SelectablePart temp(nullptr, slot_id, 0, static_cast<GRace::Type>(static_cast<int>(Physics::Upgrades::kType_Count)), false, CPS_AVAILABLE, 0, false);
+    return IsPartTypeInCart(&temp);
 }
 
 ShoppingCartItem *CarCustomizeManager::IsPartTypeInCart(Physics::Upgrades::Type type) {
@@ -388,19 +382,15 @@ void CarCustomizeManager::ClearTempColoredPart() {
 }
 
 CarPart *CarCustomizeManager::GetStockCarPart(unsigned int slot_id) {
-    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
     RideInfo ride;
-    ride.Init(static_cast<CarType>(-1), static_cast<CarRenderUsage>(0), 0, 0);
-    stable->BuildRideForPlayer(TuningCar->Handle, 0, &ride);
+    FEDatabase->GetPlayerCarStable(0)->BuildRideForPlayer(TuningCar->Handle, 0, &ride);
     ride.SetStockParts();
     return ride.GetPart(slot_id);
 }
 
 void CarCustomizeManager::ResetToStockCarParts() {
-    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
     RideInfo ride;
-    ride.Init(static_cast<CarType>(-1), static_cast<CarRenderUsage>(0), 0, 0);
-    stable->BuildRideForPlayer(TuningCar->Handle, 0, &ride);
+    FEDatabase->GetPlayerCarStable(0)->BuildRideForPlayer(TuningCar->Handle, 0, &ride);
     ride.SetStockParts();
     PreviewRecord.WriteRideIntoRecord(&ride);
     CarViewer::SetRideInfo(&ride, SET_RIDE_INFO_REASON_LOAD_CAR, eCARVIEWER_PLAYER1_CAR);
@@ -411,26 +401,23 @@ void CarCustomizeManager::ResetPreview() {
     FECustomizationRecord *src = stable->GetCustomizationRecordByHandle(TuningCar->Customization);
     PreviewRecord = *src;
     RideInfo ride;
-    ride.Init(static_cast<CarType>(-1), static_cast<CarRenderUsage>(0), 0, 0);
     stable->BuildRideForPlayer(TuningCar->Handle, 0, &ride);
     PreviewRecord.WriteRecordIntoRide(&ride);
     CarViewer::SetRideInfo(&ride, SET_RIDE_INFO_REASON_LOAD_CAR, eCARVIEWER_PLAYER1_CAR);
     for (ShoppingCartItem *item = GetFirstCartItem(); item != reinterpret_cast<ShoppingCartItem *>(&ShoppingCart); item = item->GetNext()) {
         SelectablePart *buy = item->GetBuyingPart();
-        if (!buy->IsPerformancePkg()) {
-            PreviewPart(buy->GetSlotID(), buy->GetPart());
-        } else {
+        if (buy->IsPerformancePkg()) {
             PreviewPerfPkg(static_cast<Physics::Upgrades::Type>(static_cast<int>(buy->GetPhysicsType())), buy->GetUpgradeLevel());
+        } else {
+            PreviewPart(buy->GetSlotID(), buy->GetPart());
         }
     }
 }
 
 void CarCustomizeManager::PreviewPart(int slot_id, CarPart *part) {
     PreviewRecord.SetInstalledPart(slot_id, part);
-    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
     RideInfo ride;
-    ride.Init(static_cast<CarType>(-1), static_cast<CarRenderUsage>(0), 0, 0);
-    stable->BuildRideForPlayer(TuningCar->Handle, 0, &ride);
+    FEDatabase->GetPlayerCarStable(0)->BuildRideForPlayer(TuningCar->Handle, 0, &ride);
     PreviewRecord.WriteRecordIntoRide(&ride);
     CarViewer::SetRideInfo(&ride, SET_RIDE_INFO_REASON_LOAD_CAR, eCARVIEWER_PLAYER1_CAR);
 }
@@ -942,10 +929,10 @@ bool CarCustomizeManager::IsCategoryLocked(unsigned int cat, bool backroom) {
     }
 
     eUnlockFilters filter = GetUnlockFilter();
-    if (!backroom) {
-        return !UnlockSystem::IsUnlockableUnlocked(filter, titty, level, 0, false);
-    } else {
+    if (backroom) {
         return !UnlockSystem::IsBackroomAvailable(filter, titty, level);
+    } else {
+        return !UnlockSystem::IsUnlockableUnlocked(filter, titty, level, 0, false);
     }
 }
 

@@ -109,11 +109,6 @@ extern void PlayUISoundFX(EAXSound *snd, int trigger);
 extern Timer RealTimer;
 extern float gTradeInFactor;
 
-extern int Showcase_FromIndex;
-extern const char *Showcase_FromPackage;
-extern unsigned int Showcase_FromArgs;
-extern int Showcase_FromFilter;
-extern SelectablePart *_8Showcase_FromColor;
 
 extern int eLoadStreamingTexturePack(const char *name, void (*callback)(void *), void *param, int priority);
 extern void eUnloadStreamingTexturePack(const char *name);
@@ -1212,12 +1207,12 @@ void CustomizationScreen::NotificationMessage(unsigned long msg, FEObject *pobj,
             return;
         }
         if (Options.pCurrentNode == nullptr) {
-            Showcase_FromIndex = 0;
+            Showcase::FromIndex = 0;
         } else {
-            Showcase_FromIndex = Options.GetCurrentIndex();
+            Showcase::FromIndex = Options.GetCurrentIndex();
         }
-        Showcase_FromPackage = GetPackageName();
-        Showcase_FromArgs = Category | (FromCategory << 16);
+        Showcase::FromPackage = GetPackageName();
+        Showcase::FromArgs = Category | (FromCategory << 16);
         cFEng_mInstance->QueuePackageSwitch(g_pCustomizeShowcasePkg, 0, 0, false);
         break;
     }
@@ -1237,7 +1232,11 @@ void CustomizeShoppingCart::ShowShoppingCart(const char *pkg) {
 }
 
 void CustomizeShoppingCart::ExitShoppingCart() {
-    cFEng_mInstance->QueuePackageMessage(0xcf91aacd, pParentPkg, nullptr);
+    if (CustomizeIsInBackRoom()) {
+        CustomizeSetInBackRoom(false);
+        FEManager::Get()->SetGarageType(GARAGETYPE_CUSTOMIZATION_SHOP);
+    }
+    cFEng_mInstance->QueuePackageSwitch(g_pCustomizeMainPkg, 0, 0, false);
 }
 
 bool CustomizeShoppingCart::IsSlotIDNumberDecal(int slot_id) {
@@ -1590,8 +1589,8 @@ void CustomizeCategoryScreen::NotificationMessage(unsigned long msg, FEObject *p
         Options.bReactToInput = true;
         break;
     case 0xc519bfbf:
-        Showcase_FromPackage = GetPackageName();
-        Showcase_FromArgs = Category | (Options.GetCurrentIndex() << 16);
+        Showcase::FromPackage = GetPackageName();
+        Showcase::FromArgs = Category | (Options.GetCurrentIndex() << 16);
         cFEng_mInstance->QueuePackageSwitch(g_pCustomizeShowcasePkg, 0, 0, false);
         break;
     case 0xe1fde1d1:
@@ -1867,7 +1866,6 @@ void CustomizeNumbers::UnsetShoppingCart() {
 
 extern const char *g_pCustomizeHudColorPkg;
 extern const char *g_pCustomizeShoppingCartPkg;
-extern int Showcase_FromFilter;
 
 void CustomizeMain::SetScreenNames() {
     if (!CustomizeIsInBackRoom()) {
@@ -1934,7 +1932,7 @@ void CustomizeSpoiler::NotificationMessage(unsigned long msg, FEObject *pobj, un
         SelectedIndex[TheFilter] = Options.GetCurrentIndex();
         break;
     case 0xc519bfbf:
-        Showcase_FromFilter = TheFilter;
+        Showcase::FromFilter = TheFilter;
         break;
     case 0x5a928018: {
         SelectablePart *sel = FindInCartPart();
@@ -1961,9 +1959,9 @@ void CustomizeSpoiler::Setup() {
     FEImage *img2 = FEngFindImage(GetPackageName(), 0x2d145be3);
     FEngSetButtonTexture(img2, 0x682);
     CarPart *activePart = gCarCustomizeManager.GetActivePartFromSlot(0x2c);
-    if (Showcase_FromFilter != -1) {
-        TheFilter = Showcase_FromFilter;
-        Showcase_FromFilter = -1;
+    if (Showcase::FromFilter != -1) {
+        TheFilter = Showcase::FromFilter;
+        Showcase::FromFilter = -1;
     } else if (activePart) {
         unsigned int filter = activePart->GetGroupNumber();
         if (filter != 4) {
@@ -2038,12 +2036,12 @@ void CustomizeSpoiler::BuildPartOptionListFromFilter(CarPart *activePart) {
             delete cur;
         }
     }
-    if (Showcase_FromIndex == 0) {
+    if (Showcase::FromIndex == 0) {
         Options.SetInitialPos(SelectedIndex[TheFilter]);
     } else {
-        SelectedIndex[TheFilter] = Showcase_FromIndex;
-        Options.SetInitialPos(Showcase_FromIndex);
-        Showcase_FromIndex = 0;
+        SelectedIndex[TheFilter] = Showcase::FromIndex;
+        Options.SetInitialPos(Showcase::FromIndex);
+        Showcase::FromIndex = 0;
     }
 }
 
@@ -2580,11 +2578,11 @@ after_switch:
         part = next;
     }
 
-    if (Showcase_FromIndex == 0) {
+    if (Showcase::FromIndex == 0) {
         SetInitialOption(installed_index);
     } else {
         SetInitialOption(0);
-        Showcase_FromIndex = 0;
+        Showcase::FromIndex = 0;
     }
     RefreshHeader();
 
@@ -3179,7 +3177,7 @@ void CustomizeRims::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
     CustomizationScreen::NotificationMessage(msg, pobj, param1, param2);
     switch (msg) {
     case 0xc519bfbf:
-        Showcase_FromFilter = InnerRadius;
+        Showcase::FromFilter = InnerRadius;
         break;
     case 0x5073ef13:
         ScrollRimSizes(eSD_PREV);
@@ -3241,14 +3239,14 @@ void CustomizeRims::Setup() {
     MinRadius = gCarCustomizeManager.GetMinInnerRadius();
     InnerRadius = MinRadius;
     MaxRadius = gCarCustomizeManager.GetMaxInnerRadius();
-    if (Showcase_FromFilter == -1) {
+    if (Showcase::FromFilter == -1) {
         CarPart *activePart = gCarCustomizeManager.GetActivePartFromSlot(0x42);
         if (activePart) {
             InnerRadius = static_cast<int>(activePart->GetAppliedAttributeIParam(0xeb0101e2, 0));
         }
     } else {
-        InnerRadius = Showcase_FromFilter;
-        Showcase_FromFilter = -1;
+        InnerRadius = Showcase::FromFilter;
+        Showcase::FromFilter = -1;
     }
     BuildRimsList(-1);
     RefreshHeader();
@@ -3291,11 +3289,11 @@ void CustomizeRims::BuildRimsList(int selected_index) {
     } else if (selected_index == -1) {
         selected_index = 1;
     }
-    if (Showcase_FromIndex == 0) {
+    if (Showcase::FromIndex == 0) {
         SetInitialOption(selected_index);
     } else {
         SetInitialOption(0);
-        Showcase_FromIndex = 0;
+        Showcase::FromIndex = 0;
     }
     // Clean up remaining temp list nodes
     while (tempList.GetHead() != reinterpret_cast<bNode *>(&tempList)) {
@@ -3493,14 +3491,14 @@ void CustomizeNumbers::Setup() {
         unsigned int expectedHash = bStringHash("NUMBER_LEFT");
         if (attrVal == expectedHash) {
             if (!leftFound) {
-                if (bShowcaseOn == 1 && Showcase_FromIndex == leftIdx) {
+                if (bShowcaseOn == 1 && Showcase::FromIndex == leftIdx) {
                     TheLeftNumber = node;
                     if (gCarCustomizeManager.IsPartInCart(node)) {
                         TheLeftNumber->PartState = static_cast<eCustomizePartState>(TheLeftNumber->PartState | CPS_IN_CART);
                     }
                     LeftDisplayValue = static_cast<short>(leftIdx);
                     leftFound = true;
-                    Showcase_FromIndex = 0;
+                    Showcase::FromIndex = 0;
                 } else if (node->ThePart == activeLeft) {
                     TheLeftNumber = node;
                     if (gCarCustomizeManager.IsPartInCart(node)) {
@@ -3533,14 +3531,14 @@ void CustomizeNumbers::Setup() {
         unsigned int expectedHash = bStringHash("NUMBER_RIGHT");
         if (attrVal == expectedHash) {
             if (!rightFound) {
-                if (bShowcaseOn == 1 && Showcase_FromFilter == rightIdx) {
+                if (bShowcaseOn == 1 && Showcase::FromFilter == rightIdx) {
                     TheRightNumber = node;
                     if (gCarCustomizeManager.IsPartInCart(node)) {
                         TheRightNumber->PartState = static_cast<eCustomizePartState>(TheRightNumber->PartState | CPS_IN_CART);
                     }
                     RightDisplayValue = static_cast<short>(rightIdx);
                     rightFound = true;
-                    Showcase_FromFilter = -1;
+                    Showcase::FromFilter = -1;
                 } else if (node->ThePart == activeRight) {
                     TheRightNumber = node;
                     if (gCarCustomizeManager.IsPartInCart(node)) {
@@ -3573,10 +3571,10 @@ void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, un
         FEngSetCurrentButton(GetPackageName(), 0x2a08ba92);
         break;
     case 0xc519bfbf:
-        Showcase_FromFilter = static_cast<int>(RightDisplayValue);
-        Showcase_FromIndex = static_cast<int>(LeftDisplayValue);
-        Showcase_FromArgs = Category | (FromCategory << 16);
-        Showcase_FromPackage = GetPackageName();
+        Showcase::FromFilter = static_cast<int>(RightDisplayValue);
+        Showcase::FromIndex = static_cast<int>(LeftDisplayValue);
+        Showcase::FromArgs = Category | (FromCategory << 16);
+        Showcase::FromPackage = GetPackageName();
         bShowcaseOn = 1;
         cFEng_mInstance->QueuePackageSwitch("Showcase.fng", gCarCustomizeManager.TuningCar->FEKey, 0, false);
         break;
@@ -3585,14 +3583,11 @@ void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, un
         break;
     case 0x9120409e:
     case 0xb5971bf1: {
-        unsigned int newSide;
-        newSide = bLeft ^ 1;
+        unsigned int hash = 0x1a88dc05;
+        unsigned int newSide = bLeft ^ 1;
         bLeft = newSide;
-        unsigned int hash;
         if (newSide) {
             hash = 0x2a08ba92;
-        } else {
-            hash = 0x1a88dc05;
         }
         FEngSetCurrentButton(GetPackageName(), hash);
         break;
@@ -3799,9 +3794,9 @@ void CustomizeDecals::Setup() {
         bIsBlack = (brand == mirrorHash);
         selectedHash = activePart->GetAppliedAttributeUParam(0xebb03e66, 0);
     }
-    if (Showcase_FromFilter != -1) {
-        bIsBlack = (Showcase_FromFilter != 0);
-        Showcase_FromFilter = -1;
+    if (Showcase::FromFilter != -1) {
+        bIsBlack = (Showcase::FromFilter != 0);
+        Showcase::FromFilter = -1;
     }
     BuildDecalList(selectedHash);
     RefreshHeader();
@@ -3818,7 +3813,7 @@ void CustomizeDecals::BuildDecalList(unsigned int selected_name_hash) {
         filterHash = bStringHash("DECAL_MIRROR_HASH");
     }
     gCarCustomizeManager.GetCarPartList(slotID, tempList, filterHash);
-    if (Showcase_FromIndex == 0) {
+    if (Showcase::FromIndex == 0) {
         activeMatch = gCarCustomizeManager.GetActivePartFromSlot(slotID);
     }
     SetStockPartOption *stockOpt = new SetStockPartOption(nullptr, 0x21f3d114, 0x60a662f5);
@@ -3842,11 +3837,11 @@ void CustomizeDecals::BuildDecalList(unsigned int selected_name_hash) {
         curIdx++;
         node = next;
     }
-    if (Showcase_FromIndex == 0) {
+    if (Showcase::FromIndex == 0) {
         SetInitialOption(matchIdx);
     } else {
-        SetInitialOption(Showcase_FromIndex - 1);
-        Showcase_FromIndex = 0;
+        SetInitialOption(Showcase::FromIndex - 1);
+        Showcase::FromIndex = 0;
     }
     RefreshHeader();
 }
@@ -3871,7 +3866,7 @@ void CustomizeDecals::NotificationMessage(unsigned long msg, FEObject *pobj, uns
     case 0x5073ef13:
         break;
     case 0xc519bfbf:
-        Showcase_FromFilter = bIsBlack;
+        Showcase::FromFilter = bIsBlack;
         break;
     case 0xc519bfc3:
         return;
@@ -3948,8 +3943,8 @@ void CustomizePaint::Setup() {
     for (int i = 0; i < 3; i++) {
         SelectedIndex[i] = -1;
     }
-    if (Showcase_FromFilter != -1) {
-        TheFilter = Showcase_FromFilter;
+    if (Showcase::FromFilter != -1) {
+        TheFilter = Showcase::FromFilter;
     }
     if (Category == 0x303) {
         DisplayHelper.TitleHash = 0xe126ff53;
@@ -3962,7 +3957,7 @@ void CustomizePaint::Setup() {
         DisplayHelper.TitleHash = 0xd8ee1a80;
         SetupVinylColor();
     }
-    Showcase_FromFilter = -1;
+    Showcase::FromFilter = -1;
     Options.bFadingIn = true;
     RefreshHeader();
 }
@@ -4044,10 +4039,10 @@ void CustomizePaint::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
         RefreshHeader();
         break;
     case 0xc519bfbf:
-        Showcase_FromFilter = TheFilter;
-        Showcase_FromIndex = ThePaints.GetCurrentDatumNum();
+        Showcase::FromFilter = TheFilter;
+        Showcase::FromIndex = ThePaints.GetCurrentDatumNum();
         for (int i = 0; i < 3; i++) {
-            (&_8Showcase_FromColor)[i] = VinylColors[i];
+            Showcase::FromColor[i] = VinylColors[i];
         }
         break;
     case 0xcf91aacd:
@@ -4087,7 +4082,7 @@ void CustomizePaint::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
                 delete VinylColors[i];
             }
             VinylColors[i] = nullptr;
-            (&_8Showcase_FromColor)[i] = nullptr;
+            Showcase::FromColor[i] = nullptr;
         }
         gCarCustomizeManager.ResetPreview();
         {
@@ -4148,13 +4143,13 @@ void CustomizePaint::ScrollFilters(eScrollDir dir) {
 
 void CustomizePaint::SetupVinylColor() {
     unsigned int slot = 0x4f;
-    if (Showcase_FromFilter != -1) {
-        if (Showcase_FromFilter == 1) {
+    if (Showcase::FromFilter != -1) {
+        if (Showcase::FromFilter == 1) {
             slot = 0x50;
-        } else if (Showcase_FromFilter == 2) {
+        } else if (Showcase::FromFilter == 2) {
             slot = 0x51;
         }
-        Showcase_FromFilter = -1;
+        Showcase::FromFilter = -1;
     }
     BuildSwatchList(slot);
     CarPart *activePart = gCarCustomizeManager.GetActivePartFromSlot(0x4d);
@@ -4169,7 +4164,7 @@ void CustomizePaint::SetupVinylColor() {
     }
     for (int i = 0; i < 3; i++) {
         int slotID = i + 0x4f;
-        if ((&_8Showcase_FromColor)[i] == nullptr) {
+        if (!Showcase::FromColor[i]) {
             CarPart *active = gCarCustomizeManager.GetActivePartFromSlot(slotID);
             if (!active) {
                 VinylColors[i] = nullptr;
@@ -4180,8 +4175,8 @@ void CustomizePaint::SetupVinylColor() {
                 VinylColors[i] = sp;
             }
         } else {
-            VinylColors[i] = (&_8Showcase_FromColor)[i];
-            (&_8Showcase_FromColor)[i] = nullptr;
+            VinylColors[i] = static_cast<SelectablePart *>(Showcase::FromColor[i]);
+            Showcase::FromColor[i] = nullptr;
         }
     }
 }
@@ -4212,8 +4207,8 @@ void CustomizePaint::BuildSwatchList(unsigned int slot) {
         } else if (slot == 0x51) {
             colorIndex = 2;
         }
-        if ((&_8Showcase_FromColor)[colorIndex] && !VinylColors[colorIndex]) {
-            matchPart = (&_8Showcase_FromColor)[colorIndex]->GetPart();
+        if (Showcase::FromColor[colorIndex] && !VinylColors[colorIndex]) {
+            matchPart = static_cast<SelectablePart *>(Showcase::FromColor[colorIndex])->GetPart();
         }
     }
     if (!matchPart) {
@@ -4260,16 +4255,16 @@ void CustomizePaint::BuildSwatchList(unsigned int slot) {
             delete sp;
         }
     }
-    if (Showcase_FromIndex == 0) {
+    if (Showcase::FromIndex == 0) {
         if (SelectedIndex[TheFilter] == -1) {
             SelectedIndex[TheFilter] = 0;
         }
         ThePaints.SetInitialPosition(SelectedIndex[TheFilter]);
     } else {
-        int idx = Showcase_FromIndex - 1;
+        int idx = Showcase::FromIndex - 1;
         SelectedIndex[TheFilter] = idx;
         ThePaints.SetInitialPosition(idx);
-        Showcase_FromIndex = 0;
+        Showcase::FromIndex = 0;
     }
     RefreshHeader();
     while (partList.GetHead() != partList.EndOfList()) {
