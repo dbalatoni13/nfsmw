@@ -29,7 +29,11 @@ bool FEGameInterface::UnloadUnreferencedLibrary(FEPackage*) {
     return false;
 }
 
-void FEGameInterface::RenderObjectList(FEObjectListEntry*, unsigned long) {
+void FEGameInterface::RenderObjectList(FEObjectListEntry *pList, unsigned long Count) {
+    while (Count) {
+        Count--;
+        RenderObject(pList[Count].pObject);
+    }
 }
 
 bool FEGameInterface::SetCellData(FECodeListBox*, unsigned long, unsigned long) {

@@ -10,7 +10,11 @@
 
 struct FEPackage;
 struct FEObject;
-struct FEObjectListEntry;
+// total size: 0x8
+struct FEObjectListEntry {
+    FEObject *pObject; // offset 0x0
+    unsigned long ulKey; // offset 0x4
+};
 struct FEMouse;
 struct FEMouseInfo;
 struct FEResourceRequest;
