@@ -53,17 +53,31 @@ void uiRapSheetUS::Setup() {
     RefreshHeader();
 }
 void uiRapSheetUS::RefreshHeader() {
+    const char* packageName = GetPackageName();
     UserProfile* prof = FEDatabase->GetUserProfile(0);
     FEPlayerCarDB* stable = FEDatabase->GetPlayerCarStable(0);
-    FEPrintf(GetPackageName(), 0x1232703A, GetLocalizedString(0xE21D083C), prof->GetCareer()->GetCaseFileName());
-    FEPrintf(GetPackageName(), 0x1FFFB988, GetLocalizedString(0x6031106E), prof->GetProfileName());
-    unsigned int infract_string = view_unserved ? 0xBDFE114C : 0xAD0B7F09;
-    FEPrintf(GetPackageName(), 0x1FFFB989, GetLocalizedString(infract_string), stable->GetTotalNumInfractions(view_unserved));
-    FEPrintf(GetPackageName(), 0x1FFFB98A, GetLocalizedString(0x364E4525), stable->GetTotalBounty());
-    unsigned int fine_string = view_unserved ? 0x1FF24DD3 : 0x1E424873;
-    FEPrintf(GetPackageName(), 0x1FFFB98B, GetLocalizedString(fine_string), stable->GetTotalFines(view_unserved));
-    unsigned int total_string = view_unserved ? 0x8422B22A : 0x3177BB0D;
-    FEPrintf(GetPackageName(), 0x2ECAFA80, GetLocalizedString(total_string), stable->GetTotalNumInfractions(view_unserved));
-    FEPrintf(GetPackageName(), 0xBBE88932, GetLocalizedString(total_string), stable->GetTotalNumInfractions(view_unserved));
+    FEPrintf(packageName, 0x1232703A, GetLocalizedString(0xE21D083C), prof->GetCareer()->GetCaseFileName());
+    FEPrintf(packageName, 0x1FFFB988, GetLocalizedString(0x6031106E), prof->GetProfileName());
+    unsigned int infract_string = 0xAD0B7F09;
+    if (view_unserved) {
+        infract_string = 0xBDFE114C;
+    }
+    FEPrintf(packageName, 0x1FFFB989, GetLocalizedString(infract_string), stable->GetTotalNumInfractions(view_unserved));
+    FEPrintf(packageName, 0x1FFFB98A, GetLocalizedString(0x364E4525), stable->GetTotalBounty());
+    unsigned int fine_string = 0x1E424873;
+    if (view_unserved) {
+        fine_string = 0x1FF24DD3;
+    }
+    FEPrintf(packageName, 0x1FFFB98B, GetLocalizedString(fine_string), stable->GetTotalFines(view_unserved));
+    unsigned int total_string = 0x3177BB0D;
+    if (view_unserved) {
+        total_string = 0x8422B22A;
+    }
+    FEPrintf(packageName, 0x2ECAFA80, GetLocalizedString(total_string), stable->GetTotalNumInfractions(view_unserved));
+    total_string = 0x3177BB0D;
+    if (view_unserved) {
+        total_string = 0x8422B22A;
+    }
+    FEPrintf(packageName, 0xBBE88932, GetLocalizedString(total_string), stable->GetTotalNumInfractions(view_unserved));
     ArrayScrollerMenu::RefreshHeader();
 }
