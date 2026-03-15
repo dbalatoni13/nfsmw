@@ -263,7 +263,7 @@ void UIMemcardMain::NotificationMessage(unsigned long msg, FEObject* obj, unsign
         MemcardExit(0x461a18ee);
         break;
     case 0xa643dee3:
-        if (!MemoryCard::GetInstance()->IsAutoLoadDone()) {
+        if (MemoryCard::GetInstance()->IsAutoLoading()) {
             return;
         }
         cFEng::Get()->QueueGameMessage(0x461a18ee, GetPackageName(), 0xff);
@@ -277,19 +277,19 @@ void UIMemcardMain::NotificationMessage(unsigned long msg, FEObject* obj, unsign
     case 0x8867412d:
     case 0xdc12af2e:
         PopChild();
-        if ((gMemcardSetup.mOp & 0x800) != 0 &&
-            FEDatabase->CurrentUserProfiles[0]->IsProfileNamed()) {
+        if ((gMemcardSetup.GetExtraOptions() & 8) != 0 &&
+            FEDatabase->GetUserProfile(0)->IsProfileNamed()) {
             cFEng::Get()->QueueGameMessage(0x461a18ee, GetPackageName(), 0xff);
         } else {
-            if (FEDatabase->MatchesGameMode(0x100) &&
+            if (FEDatabase->IsCareerManagerMode() &&
                 FEDatabase->bProfileLoaded &&
-                FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheAudioSettings.AudioMode != 0 &&
+                FEDatabase->GetGameplaySettings()->AutoSaveOn != 0 &&
                 (gMemcardSetup.mOp & 0xf0) != 0x10 &&
                 msg != 0xdc12af2e) {
                 MemoryCard::GetInstance()->SetAutoSaveEnabled(true);
             } else {
                 if ((gMemcardSetup.mOp & 0xf0) == 0x60 && msg == 0xdc12af2e) {
-                    FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheAudioSettings.AudioMode = 0;
+                    FEDatabase->GetGameplaySettings()->AutoSaveOn = 0;
                     ShowOK(0xb04da4ad, 0x7000000);
                 } else {
                     MemcardExit(msg);
