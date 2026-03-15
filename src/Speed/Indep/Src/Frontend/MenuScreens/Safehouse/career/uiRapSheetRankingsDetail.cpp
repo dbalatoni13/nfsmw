@@ -162,7 +162,10 @@ void uiRapSheetRankingsDetail::Setup() {
         }
         value_label = 0x48B4B99C;
         break;
-    default: break;
+    default:
+        key = 0;
+        value_label = 0;
+        break;
     }
     Attrib::Gen::frontend rankingsData(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
     if (rankingsData.IsValid()) {
@@ -191,7 +194,7 @@ void uiRapSheetRankingsDetail::Setup() {
 
                     float value = static_cast<float>(player_value);
                     if (rank_type == ePDT_CostToState) {
-                        value = Timer(player_value).GetSeconds();
+                        value *= 0.00025f;
                     }
 
                     AddDatum(new(__FILE__, __LINE__) RapSheetRankingsDatum(player_rank, 1, car_hash, value));
