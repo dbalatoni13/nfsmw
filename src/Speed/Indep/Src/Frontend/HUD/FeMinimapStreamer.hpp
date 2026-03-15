@@ -39,6 +39,10 @@ struct ChoppedMiniMapManager {
         return LoadingChopNum > 0;
     }
 
+    void RemoveUncompressedMaps() {
+        UncompressMaps(nullptr, 0);
+    }
+
     int LoadingChopNum;                     // offset 0x0
     int NumSections;                        // offset 0x4
     char map_header[64];                    // offset 0x8

@@ -137,8 +137,17 @@ class HudResourceManager {
                                          char *minimap_texture_name,
                                          unsigned int minimap_texture_name_size);
 
+    static void ChooseLoadableTextures(ePlayerHudType hudType, int &textureHash,
+                                       float &redlineRotation);
+
     static ePlayerHudType LoadingResourcesForHudType;
     static int mCustIndex;
+    static int mPhase;
+    static int mTachLinesHash;
+    static ResourceFile *pMiniMapTexture;
+    static const char *mPackageName;
+    static char mCustHudTexPackName[32];
+    static unsigned int mCustomizeHUDTexTextureResources[5];
 
   private:
     HudResourceLoadStates mHudResourcesState; // offset 0x0, size 0x4

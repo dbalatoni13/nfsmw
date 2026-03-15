@@ -36,6 +36,9 @@
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
 
+#include "Speed/Indep/Src/World/TrackStreamer.hpp"
+#include "Speed/Indep/Src/Misc/bFile.hpp"
+
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
@@ -69,8 +72,58 @@ extern int bSNPrintf(char *buf, int max_len, const char *format, ...);
 extern void FixDot(char *buf, int size);
 extern void bToUpper(char *);
 extern int bFileExists(const char *f);
+extern int bStrCmp(const char *, const char *);
+
+extern void eWaitUntilRenderingDone();
+extern void eLoadStreamingTexture(unsigned int *textures, int count,
+                                  void (*callback)(void *), void *param, int pool);
+extern void eLoadStreamingTexturePack(const char *filename,
+                                      void (*callback)(void *), void *param, int pool);
+extern void eUnloadStreamingTexture(unsigned int *textures, int count);
+extern void eUnloadAllStreamingTextures(const char *);
+extern void eWaitForStreamingTexturePackLoading(const char *);
+extern void eUnloadStreamingTexturePack(const char *);
+extern void SetSoundControlState(bool bON, int esndstate, const char *Reason);
+
+extern FEObject *FEngFindObject(const char *, unsigned int);
+extern FEImage *FEngFindImage(const char *, int);
+extern void FEngSetTextureHash(FEImage *, unsigned int);
+extern void FEngSetColor(FEObject *, unsigned int);
+extern void FEngSetMultiImageRot(FEMultiImage *, float);
+
+inline void eLoadStreamingTexture(unsigned int *textures, int count,
+                                  void (*callback)(unsigned int), unsigned int param0,
+                                  int pool) {
+    eLoadStreamingTexture(textures, count,
+                          reinterpret_cast<void (*)(void *)>(callback),
+                          reinterpret_cast<void *>(param0), pool);
+}
+
+inline void eLoadStreamingTexture(unsigned int name_hash, void (*callback)(unsigned int),
+                                  unsigned int param0, int pool) {
+    eLoadStreamingTexture(&name_hash, 1, callback, param0, pool);
+}
+
+inline void eUnloadStreamingTexture(unsigned int name_hash) {
+    eUnloadStreamingTexture(&name_hash, 1);
+}
+
+inline void FEngSetTextureHash(const char *pkg_name, unsigned int obj_hash,
+                               unsigned int texture_hash) {
+    FEngSetTextureHash(FEngFindImage(pkg_name, obj_hash), texture_hash);
+}
+
+inline void FEngSetColor(const char *pkg_name, unsigned int obj_hash, unsigned int color) {
+    FEngSetColor(FEngFindObject(pkg_name, obj_hash), color);
+}
 
 int HudResourceManager::mCustIndex;
+int HudResourceManager::mPhase;
+int HudResourceManager::mTachLinesHash;
+ResourceFile *HudResourceManager::pMiniMapTexture;
+const char *HudResourceManager::mPackageName;
+char HudResourceManager::mCustHudTexPackName[32];
+unsigned int HudResourceManager::mCustomizeHUDTexTextureResources[5];
 
 extern const char *HudSingleRaceTexturePackFilename;
 extern const char *HudDragTexturePackFilename;
@@ -219,6 +272,160 @@ bool HudResourceManager::ChooseMinimapTextureName(ePlayerHudType hudType, char *
     }
 
     return false;
+}
+
+void HudResourceManager::LoadRequiredResources(ePlayerHudType ht, const char *pkg_name) {
+    mPhase = 0;
+    const char *hud_tex_file = GetHudTexPackFilename(ht);
+    int allocation_params = 0x2000;
+    eWaitUntilRenderingDone();
+    if (ht == PHT_DRAG) {
+        allocation_params = 0x2047;
+        TheTrackStreamer.MakeSpaceInPool(bFileSize(hud_tex_file), true);
+    }
+    pHudTextures = CreateResourceFile(hud_tex_file, RESOURCE_FILE_INGAME, 0, 0, 0);
+    pHudTextures->SetAllocationParams(allocation_params, hud_tex_file);
+    pHudTextures->BeginLoading(LoadingCompleteCallbackBridge, reinterpret_cast<int>(this));
+    mHudResourcesState = HRM_LOADING_IN_PROGRESS;
+    LoadingResourcesForHudType = ht;
+    mPackageName = pkg_name;
+}
+
+void HudResourceManager::LoadingCompleteCallback() {
+    mPhase++;
+    if (mPhase == 1) {
+        char minimap_texture_name[64];
+        char texture_name[32];
+        bSPrintf(minimap_texture_name, "");
+        bSPrintf(texture_name, "");
+        if (!ChooseMinimapTextureName(LoadingResourcesForHudType, texture_name, 0x20,
+                                      minimap_texture_name, 0x40)) {
+            LoadingCompleteCallback();
+            return;
+        }
+        gChoppedMiniMapManager->SetMapHeader(texture_name);
+        pMiniMapTexture = LoadResourceFile(minimap_texture_name, RESOURCE_FILE_TRACK, 0);
+        unsigned int textures_to_load[16];
+        textures_to_load[0] = bStringHash(texture_name);
+        eLoadStreamingTexture(textures_to_load, 1, LoadingCompleteCallbackBridge,
+                              reinterpret_cast<unsigned int>(this), 0);
+    } else if (mPhase == 2) {
+        if (GetCustomHudTexPackFilename(LoadingResourcesForHudType, mCustHudTexPackName)) {
+            float redlineRotation;
+            ChooseLoadableTextures(LoadingResourcesForHudType, mTachLinesHash, redlineRotation);
+            FEngSetMultiImageRot(static_cast<FEMultiImage *>(FEngFindObject(mPackageName, 0xcdfce1b0)),
+                                 redlineRotation);
+            eLoadStreamingTexturePack(mCustHudTexPackName,
+                                      reinterpret_cast<void (*)(void *)>(LoadedCustomHudTexturePackCallbackBridge),
+                                      reinterpret_cast<void *>(this), 0);
+        } else {
+            float redlineRotation;
+            ChooseLoadableTextures(LoadingResourcesForHudType, mTachLinesHash, redlineRotation);
+            FEngSetMultiImageRot(static_cast<FEMultiImage *>(FEngFindObject(mPackageName, 0xcdfce1b0)),
+                                 redlineRotation);
+            FEngSetTextureHash(mPackageName, 0x309878bc,
+                               static_cast<unsigned int>(mTachLinesHash));
+            eLoadStreamingTexture(static_cast<unsigned int>(mTachLinesHash),
+                                  LoadingCompleteCallbackBridge,
+                                  reinterpret_cast<unsigned int>(this), 0);
+        }
+    } else if (mPhase == 3) {
+        mHudResourcesState = HRM_LOADED;
+        cFEng::Get()->MakeLoadedPackagesDirty();
+        SetSoundControlState(false, 0xc, "HUDLoaded");
+    }
+}
+
+void HudResourceManager::LoadedCustomHudTexturePackCallback() {
+    int hud_num = mCustIndex;
+    mCustomizeHUDTexTextureResources[0] = FEngHashString("CUSTOMHUD_TACH_%2.2d", hud_num);
+    mCustomizeHUDTexTextureResources[1] = mTachLinesHash;
+    mCustomizeHUDTexTextureResources[2] = FEngHashString("CUSTOMHUD_SPEEDO_%2.2d", hud_num);
+    mCustomizeHUDTexTextureResources[3] = FEngHashString("CUSTOMHUD_RPMNEEDLE_%2.2d", hud_num);
+    mCustomizeHUDTexTextureResources[4] = FEngHashString("CUSTOMHUD_SPEEDNEEDLE_%2.2d", hud_num);
+    eLoadStreamingTexture(mCustomizeHUDTexTextureResources, 5,
+                          LoadedCustomHudTexturesCallbackBridge,
+                          reinterpret_cast<unsigned int>(this), 0);
+}
+
+void HudResourceManager::LoadedCustomHudTexturesCallback() {
+    int custColour = GetCustomHudColour(LoadingResourcesForHudType,
+                                        static_cast<CAR_SLOT_ID>(0x85));
+    for (int mPhaseCust = 0; mPhaseCust < 5; mPhaseCust++) {
+        int fengObjHash;
+        CAR_SLOT_ID carSlotIdForColour;
+        switch (mPhaseCust) {
+        case 0:
+            carSlotIdForColour = static_cast<CAR_SLOT_ID>(0x85);
+            fengObjHash = 0x05d19f25;
+            break;
+        case 1:
+            carSlotIdForColour = static_cast<CAR_SLOT_ID>(0x87);
+            fengObjHash = 0x309878bc;
+            break;
+        case 2:
+            carSlotIdForColour = static_cast<CAR_SLOT_ID>(0x87);
+            fengObjHash = 0xc62ad685;
+            break;
+        case 3:
+            carSlotIdForColour = static_cast<CAR_SLOT_ID>(0x86);
+            fengObjHash = 0xf0250dac;
+            break;
+        case 4:
+            carSlotIdForColour = static_cast<CAR_SLOT_ID>(0x86);
+            fengObjHash = 0x6d5ece44;
+            break;
+        }
+        int custColour = GetCustomHudColour(LoadingResourcesForHudType, carSlotIdForColour);
+        if (custColour) {
+            FEngSetColor(mPackageName, fengObjHash, custColour);
+        }
+        FEngSetTextureHash(mPackageName, fengObjHash, mCustomizeHUDTexTextureResources[mPhaseCust]);
+    }
+    custColour = GetCustomHudColour(LoadingResourcesForHudType, static_cast<CAR_SLOT_ID>(0x87));
+    if (custColour) {
+        FEngSetColor(mPackageName, 0xc3383b63, custColour);
+    }
+    LoadingCompleteCallback();
+}
+
+void HudResourceManager::UnloadRequiredResources(ePlayerHudType ht) {
+    eWaitForStreamingTexturePackLoading(nullptr);
+    mHudResourcesState = HRM_UNLOADING_IN_PROGRESS;
+    eWaitUntilRenderingDone();
+    cFEng::Get()->MakeLoadedPackagesDirty();
+
+    eUnloadAllStreamingTextures(HudSingleRaceTexturePackFilename);
+    eUnloadAllStreamingTextures(HudDragTexturePackFilename);
+    eUnloadAllStreamingTextures(HudSplitScreenTexturePackFilename);
+    eUnloadAllStreamingTextures(HudDragSplitScreenTexturePackFilename);
+
+    if (pHudTextures) {
+        UnloadResourceFile(pHudTextures);
+    }
+    if (pMiniMapTexture) {
+        UnloadResourceFile(pMiniMapTexture);
+    }
+
+    gChoppedMiniMapManager->RemoveUncompressedMaps();
+
+    if (mCustHudTexPackName[0] == '\0') {
+        if (mTachLinesHash) {
+            eUnloadStreamingTexture(static_cast<unsigned int>(mTachLinesHash));
+        }
+    } else {
+        for (int i = 0; i < 5; i++) {
+            mCustomizeHUDTexTextureResources[i] = 0;
+        }
+        eUnloadStreamingTexture(mCustomizeHUDTexTextureResources, 5);
+        eUnloadStreamingTexturePack(mCustHudTexPackName);
+        bSPrintf(mCustHudTexPackName, "");
+    }
+
+    eWaitUntilRenderingDone();
+    mHudResourcesState = HRM_NOT_LOADED;
+    pHudTextures = nullptr;
+    mPackageName = nullptr;
 }
 
 bool FEngHud::ShouldRearViewMirrorBeVisible(EVIEW_ID viewId) {
