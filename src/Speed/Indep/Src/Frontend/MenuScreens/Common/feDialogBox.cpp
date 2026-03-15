@@ -1,17 +1,42 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
 #include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/FEng/FEString.h"
+#include "Speed/Indep/Src/FEng/feimage.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEngFont.hpp"
 #include "Speed/Indep/Src/Misc/Gameflow.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
 extern int bStrCmp(const char *, const char *);
+extern int bStrLen(const char *);
 extern void GetLocalizedString(char *buf, unsigned int maxlen, unsigned int hash);
 extern int FEngMapJoyportToJoyParam(int);
 extern void FEngSetCreateCallback(const char *, MenuScreen *(*)(ScreenConstructorData *));
 extern FEObject *FEngGetCurrentButton(const char *);
+extern FEObject *FEngFindObject(const char *, unsigned int);
+extern void FEngSetInvisible(FEObject *);
+extern FEImage *FEngFindImage(const char *, int);
+extern void FEngSetTextureHash(FEImage *, unsigned int);
+extern FEString *FEngFindString(const char *, int);
+extern void FEngSetLanguageHash(const char *, unsigned int, unsigned int);
+extern int FEPrintf(const char *, int, const char *, ...);
+extern void FEngSetCurrentButton(const char *, unsigned int);
+extern void FEngSetButtonState(const char *, unsigned int, bool);
 
 extern Timer RealTimer;
+
+inline void FEngDisableButton(const char *pkg_name, unsigned int button_hash) {
+    FEngSetButtonState(pkg_name, button_hash, false);
+}
+
+inline void FEngSetInvisible(const char *pkg_name, unsigned int obj_hash) {
+    FEngSetInvisible(FEngFindObject(pkg_name, obj_hash));
+}
+
+inline void FEngSetTextureHash(const char *pkg_name, unsigned int obj_hash, unsigned int texture_hash) {
+    FEngSetTextureHash(FEngFindImage(pkg_name, obj_hash), texture_hash);
+}
 
 struct feDialogScreen : MenuScreen {
     feDialogScreen(ScreenConstructorData *sd);
@@ -338,4 +363,166 @@ eMenuSoundTriggers feDialogScreen::NotifySoundMessage(unsigned long msg, eMenuSo
         return maybe;
     }
     return static_cast<eMenuSoundTriggers>(-1);
+}
+
+void feDialogScreen::BuildFromConfig() {
+    const unsigned long FEObj_messageblurb = 0x1e2640fa;
+
+    if (Config.bBlurbIsUTF8) {
+        FEString *pFEStr = FEngFindString(GetPackageName(), FEObj_messageblurb);
+        pFEStr->SetStringFromUTF8(Config.BlurbString);
+    } else {
+        FEPrintf(GetPackageName(), FEObj_messageblurb, Config.BlurbString);
+    }
+
+    if (Config.NumButtons == 3) {
+        FEngSetLanguageHash(GetPackageName(), 0xf9363f30, Config.Button1TextHash);
+        FEngSetLanguageHash(GetPackageName(), 0xfb8b67d1, Config.Button2TextHash);
+        FEngSetLanguageHash(GetPackageName(), 0xfde09072, Config.Button3TextHash);
+    } else if (Config.NumButtons == 2) {
+        FEngDisableButton(GetPackageName(), 0xb8a7c6ce);
+        FEngSetInvisible(GetPackageName(), 0xb8a7c6ce);
+        FEPrintf(GetPackageName(), 0xfde09072, "");
+        FEngSetLanguageHash(GetPackageName(), 0xf9363f30, Config.Button1TextHash);
+        FEngSetLanguageHash(GetPackageName(), 0xfb8b67d1, Config.Button2TextHash);
+    } else if (Config.NumButtons == 1) {
+        FEngDisableButton(GetPackageName(), 0xb8a7c6ce);
+        FEngDisableButton(GetPackageName(), 0xb8a7c6cd);
+        FEngSetInvisible(GetPackageName(), 0xb8a7c6ce);
+        FEngSetInvisible(GetPackageName(), 0xb8a7c6cd);
+        FEPrintf(GetPackageName(), 0xfde09072, "");
+        FEPrintf(GetPackageName(), 0xfb8b67d1, "");
+        FEngSetLanguageHash(GetPackageName(), 0xf9363f30, Config.Button1TextHash);
+    } else {
+        FEngDisableButton(GetPackageName(), 0xb8a7c6cc);
+        FEngDisableButton(GetPackageName(), 0xb8a7c6cd);
+        FEngDisableButton(GetPackageName(), 0xb8a7c6ce);
+        FEngSetInvisible(GetPackageName(), 0xb8a7c6cc);
+        FEngSetInvisible(GetPackageName(), 0xb8a7c6cd);
+        FEngSetInvisible(GetPackageName(), 0xb8a7c6ce);
+        FEngSetInvisible(GetPackageName(), 0x7f9dca9);
+        FEPrintf(GetPackageName(), 0xf9363f30, "");
+        FEPrintf(GetPackageName(), 0xfb8b67d1, "");
+        FEPrintf(GetPackageName(), 0xfde09072, "");
+    }
+
+    FEngFont *font = FindFont(0x545570c6);
+    float numLines = static_cast<float>(bStrLen(Config.BlurbString)) * font->GetHeight();
+
+    const int MAX_SIZE_SMALL = 2200;
+    const int MAX_SIZE_MED = 4400;
+    const unsigned long FEObj_dialogsmall = 0x79b0c1c7;
+    const unsigned long FEObj_dialogmedium = 0xa13adcaf;
+    const unsigned long FEObj_dialoglarge = 0x792bc959;
+
+    if (numLines < MAX_SIZE_SMALL) {
+        cFEng::Get()->QueuePackageMessage(FEObj_dialogsmall, GetPackageName(), nullptr);
+    } else if (numLines < MAX_SIZE_MED) {
+        cFEng::Get()->QueuePackageMessage(FEObj_dialogmedium, GetPackageName(), nullptr);
+    } else {
+        cFEng::Get()->QueuePackageMessage(FEObj_dialoglarge, GetPackageName(), nullptr);
+    }
+
+    switch (Config.Title) {
+    case dialog_alert:
+    case dialog_fatalerror:
+        if (TheGameFlowManager.IsInGame()) {
+            FEngSetLanguageHash(GetPackageName(), 0x42adb44c, 0x2bd146d3);
+        } else {
+            FEngSetLanguageHash(GetPackageName(), 0x42adb44c, 0x6fd91524);
+        }
+        FEngSetTextureHash(GetPackageName(), 0xd4f4069, 0x6948e2b3);
+        FEngSetTextureHash(GetPackageName(), 0xfac88427, 0x6948e2b3);
+        break;
+    case dialog_none:
+    case dialog_info:
+    case dialog_countdown:
+        FEngSetLanguageHash(GetPackageName(), 0x42adb44c, 0xdbe419d4);
+        FEngSetTextureHash(GetPackageName(), 0xd4f4069, 0x1a7afe27);
+        FEngSetTextureHash(GetPackageName(), 0xfac88427, 0x1a7afe27);
+        break;
+    case dialog_confirmation:
+        FEngSetLanguageHash(GetPackageName(), 0x42adb44c, 0x60249a74);
+        FEngSetTextureHash(GetPackageName(), 0xd4f4069, 0x39949433);
+        FEngSetTextureHash(GetPackageName(), 0xfac88427, 0x39949433);
+        break;
+    }
+}
+
+void feDialogScreen::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
+    switch (msg) {
+    case 0x35f8620b:
+        if (Config.NumButtons != 0) {
+            if (Config.FirstButton == 0) {
+                FEngSetCurrentButton(GetPackageName(), 0xb8a7c6cc);
+            } else if (Config.FirstButton == 1) {
+                FEngSetCurrentButton(GetPackageName(), 0xb8a7c6cd);
+            } else if (Config.FirstButton == 2) {
+                FEngSetCurrentButton(GetPackageName(), 0xb8a7c6ce);
+            }
+            mLastButtonHash = Config.FirstButton;
+        }
+        break;
+
+    case 0xc98356ba:
+        if (Config.Title == dialog_countdown) {
+            const unsigned long FEObj_messageblurb = 0x1e2640fa;
+            int elapsed = static_cast<int>((RealTimer - tCountdownTimer).GetSeconds());
+            FEPrintf(GetPackageName(), FEObj_messageblurb, Config.BlurbString, static_cast<int>(Config.fCountdown) - elapsed);
+            if (static_cast<float>(elapsed) >= Config.fCountdown) {
+                NotificationMessage(0x911ab364, nullptr, 0, 0);
+            }
+        }
+        break;
+
+    case 0x911ab364:
+        if (Config.bIsDismissable) {
+            ReturnWithMessage = Config.DialogCancelledMessage;
+            DialogInterface::DismissDialog(Config.DialogHandle);
+        }
+        break;
+
+    case 0x72619778:
+        if (obj->NameHash == 0xb8a7c6cd && Config.NumButtons == 3) {
+            FEngSetCurrentButton(GetPackageName(), 0xb8a7c6cc);
+        } else if (obj->NameHash == 0xb8a7c6ce && Config.NumButtons != 1) {
+            FEngSetCurrentButton(GetPackageName(), 0xb8a7c6cd);
+        }
+        break;
+
+    case 0x911c0a4b:
+        if (obj->NameHash == 0xb8a7c6cc) {
+            FEngSetCurrentButton(GetPackageName(), 0xb8a7c6cd);
+        } else if (obj->NameHash == 0xb8a7c6cd) {
+            FEngSetCurrentButton(GetPackageName(), 0xb8a7c6ce);
+        }
+        break;
+
+    case 0x1b91ebf4:
+        ControllerPort = param1;
+        break;
+
+    case 0x0c407210:
+        switch (obj->NameHash) {
+        case 0xb8a7c6cc:
+            if (Config.NumButtons != 0) {
+                ReturnWithMessage = Config.Button1PressedMessage;
+                DialogInterface::DismissDialog(Config.DialogHandle);
+            }
+            break;
+        case 0xb8a7c6cd:
+            if (Config.NumButtons != 0) {
+                ReturnWithMessage = Config.Button2PressedMessage;
+                DialogInterface::DismissDialog(Config.DialogHandle);
+            }
+            break;
+        case 0xb8a7c6ce:
+            if (Config.NumButtons != 0) {
+                ReturnWithMessage = Config.Button3PressedMessage;
+                DialogInterface::DismissDialog(Config.DialogHandle);
+            }
+            break;
+        }
+        break;
+    }
 }

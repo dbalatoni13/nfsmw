@@ -36,7 +36,7 @@ public:
     inline short* GetString();
     inline void SetString(short* pNewText);
     inline void SetString(const char* pcString);
-    inline void SetStringFromUTF8(const char* pUTF8String);
+    inline void SetStringFromUTF8(const char* pUTF8String) {}
     inline const char* GetLabel() const;
     inline unsigned long GetLabelHash();
     inline void SetLabelHash(unsigned long Hash);
