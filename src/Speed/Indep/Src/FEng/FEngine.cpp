@@ -172,12 +172,6 @@ struct FEMessageNode : public FEMinNode {
 
 // total size: 0x20
 struct FEPackageCommand : public FENode {
-    FEPackageCommand()
-        : iCommand(0) //
-        , uControlMask(0)
-    {}
-    ~FEPackageCommand() override {}
-
     int iCommand;               // offset 0x14, size 0x4
     unsigned long uControlMask; // offset 0x18, size 0x4
     FEPackage* pPackage;        // offset 0x1C, size 0x4
@@ -621,6 +615,8 @@ void FEngine::QueuePackageCommand(long command, unsigned long ControlMask, const
     FEPackageCommand* pCom = nullptr;
     FEPackage* pPackageWithControl = FindPackageWithControl();
     FEPackageCommand* Node = FENG_NEW FEPackageCommand();
+    Node->iCommand = 0;
+    Node->uControlMask = 0;
     Node->pPackage = pPackageWithControl;
     if (pPackageWithControl) {
         if (ControlMask == 0) {
