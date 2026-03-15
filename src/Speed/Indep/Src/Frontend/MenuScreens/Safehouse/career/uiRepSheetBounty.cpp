@@ -223,10 +223,10 @@ void uiRepSheetBounty::RefreshHeader() {
                        FEDatabase->GetBountyIconHash(loc_tag));
     BountyDatum* d = static_cast<BountyDatum*>(currentDatum);
     if (d != nullptr) {
-        if (!d->IsLocked()) {
-            cFEng::Get()->QueuePackageMessage(0x38091fa1, GetPackageName(), nullptr);
-        } else {
+        if (d->IsLocked()) {
             cFEng::Get()->QueuePackageMessage(0xc5dd9d68, GetPackageName(), nullptr);
+        } else {
+            cFEng::Get()->QueuePackageMessage(0x38091fa1, GetPackageName(), nullptr);
         }
         FEngSetLanguageHash(GetPackageName(), 0x28049d6,
                             FEDatabase->GetBountyDescHash(data.GetNodeNumber(currentDatum)));

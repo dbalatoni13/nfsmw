@@ -118,12 +118,12 @@ inline MapItem::MapItem(eWorldMapItemType type, FEObject* iconObj, bVector2& map
     TheType = type;
     TheIcon = icon;
     bHidden = false;
-    if (FEDatabase->GetGameplaySettings()->IsMapItemEnabled(type)) {
-        bHidden = false;
-        Show();
-    } else {
+    if (!FEDatabase->GetGameplaySettings()->IsMapItemEnabled(type)) {
         bHidden = true;
         Hide();
+    } else {
+        bHidden = false;
+        Show();
     }
     FEngGetSize(pIcon, InitialSize.x, InitialSize.y);
     FEngSetCenter(pIcon, InitialPos.x, InitialPos.y);
