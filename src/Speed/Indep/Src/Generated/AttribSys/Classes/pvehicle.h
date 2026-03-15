@@ -99,6 +99,11 @@ struct pvehicle : Instance {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
+    pvehicle(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner)
+        : Instance(refspec, msgPort, owner) {
+        this->SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
     ~pvehicle() {}
 
     void Change(const Collection *c) {

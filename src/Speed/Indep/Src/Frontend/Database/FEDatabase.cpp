@@ -2,6 +2,8 @@
 #include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/frontend.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
@@ -785,4 +787,22 @@ void cFrontendDatabase::Default() {
         iDefaultStableHash = bCalculateCrc32(buf, crc_size, 0xFFFFFFFF);
         bFree(buf);
     }
+}
+
+unsigned int cFrontendDatabase::GetDefaultCar() {
+    Attrib::Gen::frontend TheFrontend(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), 0xeec2271a), 0, nullptr);
+    Attrib::RefSpec refSpec;
+    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
+    refSpec = TheFrontend.default_car();
+    Attrib::Gen::pvehicle vehicle(refSpec, 0, nullptr);
+    unsigned int default_car = 0;
+    unsigned int key = vehicle.GetCollection();
+    for (int i = 0; i <= 199; i++) {
+        FECarRecord *car = stable->GetCarByIndex(i);
+        if (car->IsValid() && car->VehicleKey == key) {
+            default_car = car->Handle;
+            break;
+        }
+    }
+    return default_car;
 }
