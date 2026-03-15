@@ -492,143 +492,24 @@ void FEShoppingCartItem::DrawPartName() {
     SelectablePart *part = TheItem->GetBuyingPart();
     int slot_id = part->GetSlotID();
 
-    switch (slot_id) {
-    case 0x53:
-    case 0x5b:
-    case 0x63: case 0x64: case 0x65: case 0x66: case 0x67: case 0x68:
-    case 0x6b: case 0x6c: case 0x6d: case 0x6e: case 0x6f: case 0x70:
-    case 0x73:
-    case 0x7b:
-        goto vinyl_decal;
-    case 0x4c: {
-        unsigned int paint_type = part->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0);
-        unsigned int colorHash = 0x452b5481;
-        if (paint_type == 0x2daab07) {
-            colorHash = 0xb6763cde;
-        } else if (paint_type < 0x2daab08) {
-            if (paint_type == 0xda27) {
-                colorHash = 0xb3100a3e;
-            }
-        } else if (paint_type != 0x3437a52 && paint_type == 0x3797533) {
-            colorHash = 0xb715070a;
-        }
-        if (GetCurrentLanguage() == 1) {
-            FEPrintf(GetTitleObject(), "%s : %s %s",
-                GetLocalizedString(GetCarPartCatHash(slot_id)),
-                GetLocalizedString(colorHash),
-                GetLocalizedString(part->GetPart()->GetAppliedAttributeUParam(bStringHash("SPEECHCOLOUR"), 0)));
-        } else {
-            FEPrintf(GetTitleObject(), "%s: %s %s",
-                GetLocalizedString(GetCarPartCatHash(slot_id)),
-                GetLocalizedString(colorHash),
-                GetLocalizedString(part->GetPart()->GetAppliedAttributeUParam(bStringHash("SPEECHCOLOUR"), 0)));
-        }
-        return;
-    }
-    case 0x42: {
-        CarPart *car_part = part->GetPart();
-        CarPart *stock = gCarCustomizeManager.GetStockCarPart(0x42);
-        if (car_part != stock) {
-            char buf[64];
-            bSNPrintf(buf, 64, "%s", car_part->GetName());
-            int len = bStrLen(buf);
-            if (len < 1) return;
-            int trimStart = len - 6;
-            for (; trimStart <= len; len--) {
-                buf[len] = 0;
-            }
-            const char *fmt;
-            if (GetCurrentLanguage() == 1) {
-                fmt = "%s : %s %$d\"";
-            } else {
-                fmt = "%s: %s %$d\"";
-            }
-            FEPrintf(GetTitleObject(), fmt,
-                GetLocalizedString(GetCarPartCatHash(slot_id)),
-                buf,
-                static_cast<int>(car_part->GetAppliedAttributeIParam(0xeb0101e2, 0)));
-            return;
-        }
-        if (GetCurrentLanguage() == 1) {
-            FEPrintf(GetTitleObject(), "%s : %s",
-                GetLocalizedString(GetCarPartCatHash(slot_id)),
-                GetLocalizedString(0x60a662f5));
-        } else {
-            FEPrintf(GetTitleObject(), "%s: %s",
-                GetLocalizedString(GetCarPartCatHash(slot_id)),
-                GetLocalizedString(0x60a662f5));
-        }
-        return;
-    }
-    case 0x4d: {
-        CarPart *car_part = part->GetPart();
-        if (!car_part) {
-            if (GetCurrentLanguage() == 1) {
-                FEPrintf(GetTitleObject(), "%s : %s",
-                    GetLocalizedString(GetCarPartCatHash(slot_id)),
-                    GetLocalizedString(0x60a662f5));
-            } else {
-                FEPrintf(GetTitleObject(), "%s: %s",
-                    GetLocalizedString(GetCarPartCatHash(slot_id)),
-                    GetLocalizedString(0x60a662f5));
-            }
-            return;
-        }
-        if (car_part->HasAppliedAttribute(bStringHash("LANGUAGEHASH"))) {
-            goto languagehash_label;
-        }
-        goto name_label;
-    }
-    case 0x4e:
-        if (GetCurrentLanguage() == 1) {
-            FEPrintf(GetTitleObject(), "%s : %s %s",
-                GetLocalizedString(GetCarPartCatHash(slot_id)),
-                GetLocalizedString(0xb3100a3e),
-                GetLocalizedString(part->GetPart()->GetAppliedAttributeUParam(bStringHash("SPEECHCOLOUR"), 0)));
-        } else {
-            FEPrintf(GetTitleObject(), "%s: %s %s",
-                GetLocalizedString(GetCarPartCatHash(slot_id)),
-                GetLocalizedString(0xb3100a3e),
-                GetLocalizedString(part->GetPart()->GetAppliedAttributeUParam(bStringHash("SPEECHCOLOUR"), 0)));
-        }
-        return;
-    case 0x17:
-        if (part->GetPart()->HasAppliedAttribute(bStringHash("LANGUAGEHASH"))) {
-            goto languagehash_label;
-        }
-        goto name_label;
-    case 0x2c:
-    case 0x3e:
-    case 0x3f:
-        goto carbonfibre_check;
-    case 0x71:
-        goto numplate_label;
-    default:
-        goto default_label;
-    }
-
-carbonfibre_check:
-    if (part->GetPart()->HasAppliedAttribute(bStringHash("CARBONFIBRE"))) {
-        if (part->GetPart()->GetAppliedAttributeIParam(bStringHash("CARBONFIBRE"), 0) != 0) {
-            const char *fmt;
-            if (GetCurrentLanguage() == 1) {
-                fmt = "%s : %s %s";
-            } else {
-                fmt = "%s: %s %s";
-            }
-            FEPrintf(GetTitleObject(), fmt,
-                GetLocalizedString(GetCarPartCatHash(slot_id)),
-                GetLocalizedString(0x5415b874),
-                GetLocalizedString(part->GetPart()->GetAppliedAttributeUParam(bStringHash("LANGUAGEHASH"), 0)));
-            return;
-        }
-    }
-    if (part->GetPart()->HasAppliedAttribute(bStringHash("LANGUAGEHASH"))) {
-        goto languagehash_label;
-    }
-    goto name_label;
-
-vinyl_decal:
+    if (slot_id == 0x53) goto vinyl_decal;
+    if (slot_id < 0x54) {
+        if (slot_id > 0x3f) {
+            if (slot_id == 0x4c) {
+                unsigned int paint_type = part->GetPart()->GetAppliedAttributeUParam(0xebb03e66, 0);
+                unsigned int colorHash = 0x452b5481;
+                if (paint_type == 0x2daab07) {
+                    colorHash = 0xb6763cde;
+                } else if (paint_type < 0x2daab08) {
+                    if (paint_type == 0xda27) {
+                        colorHash = 0xb3100a3e;
+                    }
+                } else if (paint_type != 0x3437a52 && paint_type == 0x3797533) {
+                    colorHash = 0xb715070a;
+                }
+                if (GetCurrentLanguage() == 1) {
+                    FEPrintf(GetTitleObject(), "%s : %s %s",
+                        GetLocalizedString(GetCarPartCatHash(slot_id)),
                         GetLocalizedString(colorHash),
                         GetLocalizedString(part->GetPart()->GetAppliedAttributeUParam(bStringHash("SPEECHCOLOUR"), 0)));
                 } else {
