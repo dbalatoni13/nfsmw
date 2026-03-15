@@ -29,10 +29,12 @@
 #include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
 
 extern void SetSoundControlState(bool set, eSNDCTLSTATE state, const char *name);
+extern int GetVideoMode();
 static int IsDebugPlayMovie;
 
 struct FEMovie;
 extern FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
+extern void FEngSetVisible(FEObject *pObject);
 extern void FEngSetMovieName(FEMovie *movie, const char *name);
 extern int bStrICmp(const char *a, const char *b);
 
@@ -868,7 +870,66 @@ end:
     }
 }
 
-// SplashScreen destructor
+SplashScreen::SplashScreen(ScreenConstructorData *sd) : MenuScreen(sd), //
+                                                       bAllowContinue(false), //
+                                                       CopyrightNotice(0), //
+                                                       SplashStartedTimer(0) {
+    const unsigned long FEObj_HDGROUP = 0x534cc377;
+    const unsigned long FEObj_startclick = 0x13cf446d;
+    const unsigned long FEObj_mouseclick = 0x8c0bd743;
+    const unsigned long FEObj_mousebutton = 0x4b98c4b9;
+    FEObject *pObject;
+    const unsigned long FEObj_LicenseBlurb = 0xc4df3ff2;
+
+    if (eIsWidescreen()) {
+        cFEng::Get()->QueuePackageMessage(bStringHash("CURRENT_GEN_WIDESCREEN"), GetPackageName(), nullptr);
+    }
+
+    FEngSetInvisible(GetPackageName(), FEObj_HDGROUP);
+
+    if (GetVideoMode() == 0) {
+        const unsigned long FEObj_ESRBicon = 0x43d41f73;
+        FEngSetInvisible(GetPackageName(), FEObj_ESRBicon);
+    }
+
+    FEngSetVisible(FEngFindObject(GetPackageName(), FEObj_LicenseBlurb));
+    FEngSetInvisible(GetPackageName(), FEObj_startclick);
+    FEngSetInvisible(GetPackageName(), FEObj_mouseclick);
+
+    pObject = FEngFindObject(GetPackageName(), FEObj_mouseclick);
+
+    FEngSetInvisible(GetPackageName(), FEObj_mousebutton);
+    FEngSetVisible(FEngFindObject(GetPackageName(), FEObj_mousebutton));
+
+    FEngSetLanguageHash(GetPackageName(), FEObj_mousebutton, 0x9ba134fc);
+    FEngSetLanguageHash(GetPackageName(), FEObj_LicenseBlurb, 0x9b580a55);
+
+    if (pObject) {
+        if ((pObject->Flags & 0x10000000) != 0) {
+            pObject->Flags &= ~0x10000000;
+        }
+        pObject->Flags |= 0x400000;
+    }
+
+    SplashStartedTimer = RealTimer;
+    CopyrightNotice = RealTimer;
+
+    {
+        MControlPathfinder msg(false, 16, 0, 0);
+        msg.Send("Event");
+    }
+
+    gEasterEggs.Activate();
+
+    if (!CarViewer::haveLoadedOnce) {
+        RideInfo ride;
+        FEDatabase->BuildCurrentRideForPlayer(0, &ride);
+        CarViewer::SetRideInfo(&ride, SET_RIDE_INFO_REASON_CATCHALL, eCARVIEWER_PLAYER1_CAR);
+        CarViewer::ShowCarScreen();
+        CarViewer::haveLoadedOnce = true;
+    }
+}
+
 SplashScreen::~SplashScreen() {
     gEasterEggs.UnActivate();
     MControlPathfinder msg(false, 9, 0, 0);

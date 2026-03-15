@@ -22,6 +22,7 @@ enum EasterEggsSpecial {
 struct EasterEggs {
     void HandleJoy();
     bool IsEasterEggUnlocked(EasterEggsSpecial egg);
+    void Activate();
     void UnActivate();
     virtual ~EasterEggs();
 };
