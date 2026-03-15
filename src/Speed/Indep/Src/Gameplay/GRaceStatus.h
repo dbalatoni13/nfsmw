@@ -29,6 +29,22 @@ struct GRacerInfo {
         return mPctRaceComplete;
     }
 
+    ISimable *GetSimable() const {
+        return ISimable::FindInstance(mhSimable);
+    }
+
+    int GetRanking() const {
+        return mRanking;
+    }
+
+    bool IsFinishedRacing() const {
+        return mFinishedRacing;
+    }
+
+    bool GetCameraDetached() const {
+        return mCameraDetached;
+    }
+
   private:
     HSIMABLE mhSimable;              // offset 0x0, size 0x4
     GCharacter *mGameCharacter;      // offset 0x4, size 0x4
@@ -464,8 +480,16 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         return fObj != nullptr;
     }
 
+    bool GetIsScriptWaitingForLoading() const {
+        return mScriptWaitingForLoad;
+    }
+
     GRace::Type GetRaceType() const {
         return mRaceParms ? mRaceParms->GetRaceType() : GRace::kRaceType_None;
+    }
+
+    bool GetIsTimeLimited() const {
+        return mRaceParms != nullptr && mRaceParms->GetTimeLimit() > 0.0f;
     }
 
     static bool IsChallengeRace() {

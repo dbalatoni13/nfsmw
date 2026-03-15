@@ -18,7 +18,12 @@ struct AnimFileLoadInfo {
 
 // total size: 0x8
 struct AnimSceneLoadInfo {
-    AnimSceneLoadInfo() {}
+    AnimSceneLoadInfo()
+        : mAnimSceneHash(0) //
+        , mSharedFileCount(0) //
+        , mSharedFileStartIndex(0) //
+        , mSceneFileCount(0) //
+        , mSceneFileStartIndex(0) {}
 
     unsigned int mAnimSceneHash;         // offset 0x0, size 0x4
     unsigned char mSharedFileCount;      // offset 0x4, size 0x1
@@ -34,15 +39,15 @@ class AnimDirectory {
 
     ~AnimDirectory() {}
 
-    unsigned int GetFileCount() {}
+    unsigned int GetFileCount() { return mAnimFileLoadInfo.mAnimFileCount; }
 
-    char *GetFileName(unsigned int file_slot_position) {}
+    char *GetFileName(unsigned int file_slot_position) { return mAnimFileLoadInfo.mAnimFileNameTable[file_slot_position]; }
 
-    unsigned int GetSceneCount() {}
+    unsigned int GetSceneCount() { return mAnimSceneCount; }
 
-    void GetSceneLoadInfo(unsigned int scene_slot_position, AnimSceneLoadInfo &info) {}
+    void GetSceneLoadInfo(unsigned int scene_slot_position, AnimSceneLoadInfo &info) { info = mAnimSceneLoadInfo[scene_slot_position]; }
 
-    AnimSceneLoadInfo *GetSceneLoadInfo(int slot) {}
+    AnimSceneLoadInfo *GetSceneLoadInfo(int slot) { return &mAnimSceneLoadInfo[slot]; }
 
     void GetNameOfSceneNumber(int scene_slot_position, char *buffer) {}
 
@@ -52,9 +57,9 @@ class AnimDirectory {
 
     void SetFileName(unsigned int file_slot_position, char *file_name) {}
 
-    void SetSceneCount(unsigned int count) {}
+    void SetSceneCount(unsigned int count) { mAnimSceneCount = count; }
 
-    void SetSceneLoadInfo(unsigned int scene_slot_position, const AnimSceneLoadInfo &info) {}
+    void SetSceneLoadInfo(unsigned int scene_slot_position, const AnimSceneLoadInfo &info) { mAnimSceneLoadInfo[scene_slot_position] = info; }
 
     void EndianSwap() {
         bPlatEndianSwap(&mAnimSceneCount);

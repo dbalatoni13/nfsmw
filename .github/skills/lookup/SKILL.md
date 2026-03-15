@@ -127,26 +127,21 @@ python tools/lookup.py ./symbols/Dwarf typedef HHANDLER
 
 ## Checking for Existing Definitions
 
-**Before declaring any new symbol** (struct, class, enum, global variable, typedef, or any other type), use clangd to search for an existing definition in the source tree. Only declare it yourself if clangd finds nothing.
+**Before declaring any new symbol** (struct, class, enum, global variable, typedef, or any other type), search for an existing definition in the source tree using `find-symbol.py`. Only declare it yourself if the script finds nothing.
 
-Use clangd's workspace symbol search to look up the name:
-
-```
-clangd: workspace/symbol { "query": "AIGoal" }
-```
-
-Or equivalently via any LSP-capable tool:
-
-```
-clangd: textDocument/definition  (on any usage of the symbol)
+```bash
+python tools/find-symbol.py AIGoal
+python tools/find-symbol.py CEntity --type class
+python tools/find-symbol.py EState --type enum
+python tools/find-symbol.py HHANDLER --type typedef
 ```
 
-If clangd returns a definition inside `./src/`:
+If the script prints results inside `./src/`:
 
-- **Do not redeclare it.** Include the header that contains it instead.
+- **Do not redeclare it.** Include the header shown in the output instead.
 - Note the file path and `#include` it in your translation unit.
 
-If clangd finds nothing in `./src/`:
+If the script prints "Not found ... Safe to declare":
 
 - Declare it yourself, using the Dwarf and PS2 dumps as the source of truth for layout and `struct` vs `class`.
 
@@ -167,7 +162,7 @@ This applies to **all** of the following before writing them:
 - **Always use `./symbols/Dwarf` as the primary source** for all decompilation work.
 - **Always check `./symbols/PS2/PS2_types.nothpp`** for every type to determine `struct` vs `class` and vtable layout.
 - **`struct` vs `class` rule:** no visibility modifiers in PS2 dump → `struct`; any visibility modifier present → `class`.
-- **Never declare a symbol without first searching for it with clangd.** If it exists in `./src/`, include that header instead.
+- **Never declare a symbol without first running `find-symbol.py`.** If it exists in `./src/`, include that header instead.
 - **Never guess field offsets or sizes.** Look them up.
 - **Nested enums** must be queried as `StructName::EnumName`, not just `EnumName`.
 - **Function addresses** are hex. Always include the `0x` prefix.

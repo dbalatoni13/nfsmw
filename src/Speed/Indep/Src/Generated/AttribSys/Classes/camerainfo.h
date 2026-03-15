@@ -72,9 +72,7 @@ struct camerainfo : Instance {
         Change(FindCollection(ClassKey(), collectionkey));
     }
 
-    static Key ClassKey() {
-        return 0x93c171e4;
-    }
+    static Key ClassKey();
 
     const float &STIFFNESS(unsigned int index) const {
         const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());

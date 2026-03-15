@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
-
+struct Observer {
+    void NotifyAirborne(float alt, float t);
+};
 
 #endif

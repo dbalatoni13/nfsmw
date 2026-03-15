@@ -9,7 +9,7 @@
 #include <cstddef>
 
 namespace UTL {
-template <typename T, unsigned int Alignment = 16> class Vector {
+template <typename T, int Alignment = 16> class Vector {
   public:
     typedef T value_type;
     typedef value_type *pointer;
@@ -59,6 +59,22 @@ template <typename T, unsigned int Alignment = 16> class Vector {
         return mBegin + mSize;
     }
 
+    const_reference operator[](unsigned int idx) const {
+        return mBegin[idx];
+    }
+
+    reference operator[](unsigned int idx) {
+        return mBegin[idx];
+    }
+
+    void push_back() {
+        if (size() >= capacity()) {
+            reserve(GetGrowSize(size() + 1));
+        }
+        new (&mBegin[size()]) T();
+        mSize++;
+    }
+
     void push_back(value_type const &val) {
         if (size() >= capacity()) {
             reserve(GetGrowSize(size() + 1));
@@ -69,6 +85,60 @@ template <typename T, unsigned int Alignment = 16> class Vector {
 
     void pop_back() {
         mSize = size() - 1;
+    }
+
+    void resize(size_type num) {
+        while (size() > num) {
+            pop_back();
+        }
+        while (size() < num) {
+            reserve(GetGrowSize(size() + 1));
+            push_back();
+        }
+    }
+
+    bool Contains(pointer p) {
+        size_type index = p - mBegin;
+        return index < capacity();
+    }
+
+    void assign(const Vector &src) {
+        assign(src.begin(), src.end());
+    }
+
+    void assign(const_iterator srcBeg, const_iterator srcEnd) {
+        size_type minSize = srcEnd - srcBeg;
+        const_iterator srcIt = srcBeg;
+        iterator destIt = begin();
+
+        resize(minSize);
+
+        if (capacity() < minSize || !Contains(destIt)) {
+            make_empty();
+            reserve(minSize);
+        }
+
+        destIt = begin();
+        srcIt = srcBeg;
+
+        iterator endIt = end();
+        while (destIt != endIt && srcIt != srcEnd) {
+            value_type &dest = *destIt;
+            const value_type &src = *srcIt;
+            dest = src;
+            ++destIt;
+            ++srcIt;
+        }
+
+        while (end() != destIt) {
+            pop_back();
+        }
+
+        while (srcIt != srcEnd) {
+            const value_type &val = *srcIt;
+            push_back(val);
+            ++srcIt;
+        }
     }
 
     void reserve(size_type num) {
@@ -150,12 +220,12 @@ template <typename T, unsigned int Alignment = 16> class Vector {
     virtual void FreeVectorSpace(pointer buffer, size_type num) {}
 
     virtual size_type GetGrowSize(size_type minSize) const {
-        return UMath::Max(minSize, mCapacity + ((mCapacity + 1) >> 1)); // TODO is this right?
+        size_type grow = mCapacity + ((mCapacity + 1) >> 1);
+        return grow < minSize ? minSize : grow;
     }
 
-    // Unfinished
     virtual size_type GetMaxCapacity() const {
-        return 0;
+        return 0x7FFFFFFF;
     }
 
     virtual void OnGrowRequest(size_type newSize) {}
@@ -167,9 +237,19 @@ template <typename T, unsigned int Alignment = 16> class Vector {
     size_type mSize;     // offset 0x8, size 0x4
 };
 
-template <typename T, std::size_t Size, unsigned int Alignment = 16> class FixedVector : public Vector<T, Alignment> {
+template <typename T, int Size, int Alignment = 16> class FixedVector : public Vector<T, Alignment> {
   public:
     FixedVector() {}
+
+    FixedVector(const FixedVector &src) : Vector<T, Alignment>() {
+        Vector<T, Alignment>::Init();
+        *this = src;
+    }
+
+    FixedVector &operator=(const FixedVector &rhs) {
+        Vector<T, Alignment>::assign(rhs);
+        return *this;
+    }
 
     ~FixedVector() override {
         // clang is being annoying
@@ -179,21 +259,18 @@ template <typename T, std::size_t Size, unsigned int Alignment = 16> class Fixed
     // TODO also put the typedefs here according to the dwarf?
 
   protected:
-    // Unfinished
     virtual std::size_t GetGrowSize(std::size_t minSize) const {
-        return 0;
+        return Size;
     }
 
-    // Unfinished
     virtual typename Vector<T, Alignment>::pointer AllocVectorSpace(std::size_t num, unsigned int alignment) {
-        return nullptr;
+        return reinterpret_cast<typename Vector<T, Alignment>::pointer>(mVectorSpace);
     }
 
     virtual void FreeVectorSpace(typename Vector<T, Alignment>::pointer buffer, std::size_t) {}
 
-    // Unfinished
     virtual std::size_t GetMaxCapacity() const {
-        return 0;
+        return Size;
     }
 
   private:

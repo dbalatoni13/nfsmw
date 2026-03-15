@@ -139,6 +139,10 @@ class AudioSettings {
 // total size: 0xC0
 class OptionsSettings {
   public:
+    GameplaySettings *GetGameplaySettings() {
+        return &TheGameplaySettings;
+    }
+
     eOptionsCategory CurrentCategory;     // offset 0x0, size 0x4
     VideoSettings TheVideoSettings;       // offset 0x4, size 0x10
     GameplaySettings TheGameplaySettings; // offset 0x14, size 0x20
@@ -276,6 +280,18 @@ class cFrontendDatabase {
 
     bool IsCareerMode() {
         return FEGameMode & 1;
+    }
+
+    bool IsOnlineMode() {
+        return FEGameMode & 0x40;
+    }
+
+    bool IsLANMode() {
+        return FEGameMode & 8;
+    }
+
+    GameplaySettings *GetGameplaySettings() {
+        return CurrentUserProfiles[0]->GetOptions()->GetGameplaySettings();
     }
 
     unsigned char iNumPlayers; // offset 0x0, size 0x1

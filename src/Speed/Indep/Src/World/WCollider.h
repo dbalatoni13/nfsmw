@@ -31,6 +31,7 @@ class WCollider : public UTL::Collections::Listable<WCollider, 100> {
     };
 
     static void Destroy(WCollider *col);
+    static WCollider *Create(unsigned int wuid, eColliderShape shape, unsigned int typeCheckMask, unsigned int exclusionMask);
 
     void Clear();
     bool IsEmpty() const;

@@ -21,7 +21,7 @@ template <typename T, int U> class Listable {
     typedef value_type *pointer;
     typedef value_type const *const_pointer;
 
-    class List : public FixedVector<pointer, U> {
+    class List : public _Storage<pointer, U> {
       public:
         typedef T value_type;
         typedef value_type *pointer;
@@ -29,7 +29,7 @@ template <typename T, int U> class Listable {
 
         // List(const List &);
         List();
-        virtual ~List();
+        virtual ~List() {}
 
         // List &operator=(List &);
     };
@@ -70,6 +70,9 @@ template <typename T, int U> class Listable {
     static List _mTable;
 };
 
+template <typename T, int U>
+Listable<T, U>::List::List() {}
+
 template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class ListableSet {
   public:
     typedef T value_type;
@@ -103,7 +106,7 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
             _buckets[idx].push_back(t);
         }
 
-        void _remove(iterator t, std::size_t idx) {
+        void _remove(pointer t, std::size_t idx) {
             List &bucket = _buckets[idx];
             typename List::iterator newend = std::remove(bucket.begin(), bucket.end(), t);
             if (newend != bucket.end()) {
@@ -130,7 +133,7 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
 
     void UnList() {
         for (std::size_t i = 0; i < EnumMax; i++) {
-            _mLists._remove(static_cast<iterator>(this), i);
+            _mLists._remove(static_cast<pointer>(this), i);
         }
     }
 
@@ -147,6 +150,11 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
   private:
     static _ListSet _mLists;
 };
+
+template <typename T, int ListSize, typename Enum, std::size_t EnumMax>
+int ListableSet<T, ListSize, Enum, EnumMax>::Count(Enum idx) {
+    return static_cast<int>(_mLists._buckets[idx].size());
+}
 
 template <typename T> class Countable {
     static int _mCount;

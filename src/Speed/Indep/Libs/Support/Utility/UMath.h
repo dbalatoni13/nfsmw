@@ -83,6 +83,12 @@ inline void Copy(const Vector4 &a, Vector4 &r) {
     VU0_v4Copy(a, r);
 }
 
+inline void Copy(const Vector3 &a, Vector3 &r) {
+    r.x = a.x;
+    r.y = a.y;
+    r.z = a.z;
+}
+
 #ifdef EA_PLATFORM_XENON
 void Transpose(const Matrix4 &m, Matrix4 &r);
 #else
@@ -249,6 +255,10 @@ inline void Subxyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
     VU0_v4subxyz(a, b, r);
 }
 
+inline void Sub(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4sub(a, b, r);
+}
+
 inline void SetYRot(Matrix4 &r, float a) {
     VU0_MATRIX4setyrot(r, a);
 }
@@ -280,6 +290,10 @@ inline void Rotate(const Vector3 &a, const Matrix4 &m, Vector3 &r) {
 #else
     VU0_MATRIX3x4_vect3mult(a, m, r);
 #endif
+}
+
+inline void Rotate(const Vector4 &a, const Matrix4 &m, Vector4 &r) {
+    VU0_MATRIX3x4_vect4mult(a, m, r);
 }
 
 inline float Dot(const Vector3 &a, const Vector3 &b) {
@@ -383,6 +397,10 @@ inline float Length(const Vector3 &a) {
 #endif
 }
 
+inline float Length(const Vector4 &a) {
+    return VU0_v4length(a);
+}
+
 inline void Matrix4ToQuaternion(const Matrix4 &m, Vector4 &q) {
     VU0_m4toquat(m, q);
 }
@@ -410,6 +428,10 @@ inline float Ramp(const float a, const float amin, const float amax) {
 
 inline float Lerp(const float a, const float b, const float t) {
     return a + (b - a) * t;
+}
+
+inline void Lerp(const Vector3 &a, const Vector3 &b, const float t, Vector3 &r) {
+    VU0_v3lerp(a, b, t, r);
 }
 
 inline void Negate(Vector3 &r) {

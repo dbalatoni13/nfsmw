@@ -23,7 +23,7 @@ class Message {
   public:
     Message() {}
 
-    Message(UCrc32 kind, std::size_t size, unsigned int id) : mKind(kind), mSize(size), mID(id) {}
+    Message(UCrc32 kind, unsigned int size, unsigned int id) : mKind(kind), mSize(size), mID(id) {}
 
     ~Message() {}
 
@@ -35,7 +35,7 @@ class Message {
         Deliver();
     }
 
-    std::size_t GetSize() const {
+    unsigned int GetSize() const {
         return mSize;
     }
 
@@ -55,7 +55,7 @@ class Message {
   private:
     UCrc32 mKind;      // offset 0x0, size 0x4
     UCrc32 mPort;      // offset 0x4, size 0x4
-    std::size_t mSize; // offset 0x8, size 0x4
+    unsigned int mSize; // offset 0x8, size 0x4
     unsigned int mID;  // offset 0xC, size 0x4
 };
 
