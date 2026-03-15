@@ -205,15 +205,11 @@ void FEListBox::SetNumColumns(unsigned long ulNumColumns) {
         if (ulNumCells != 0) {
             pstCells = FENG_NEW FEListBoxCell[ulNumCells];
             if (mpstCells) {
-                unsigned long c = 0;
-                if (mulNumRows != 0) {
-                    do {
-                        unsigned long dstOff = c * ulNumColumns;
-                        unsigned long srcOff = c * mulNumColumns;
-                        c++;
-                        FEngMemCpy(pstCells + dstOff, mpstCells + srcOff, ulNumCopy * sizeof(FEListBoxCell));
-                        InitializeCell(pstCells + dstOff + ulNumCopy, ulNumColumns - ulNumCopy);
-                    } while (c < mulNumRows);
+                for (unsigned long c = 0; c < mulNumRows; c++) {
+                    unsigned long dstOff = c * ulNumColumns;
+                    unsigned long srcOff = c * mulNumColumns;
+                    FEngMemCpy(pstCells + dstOff, mpstCells + srcOff, ulNumCopy);
+                    InitializeCell(pstCells + dstOff + ulNumCopy, ulNumColumns - ulNumCopy);
                 }
                 if (mpstCells) {
                     delete[] mpstCells;
@@ -222,9 +218,9 @@ void FEListBox::SetNumColumns(unsigned long ulNumColumns) {
                 InitializeCell(pstCells, ulNumCells);
             }
         }
-        mpstCells = pstCells;
         mulNumColumns = ulNumColumns;
         mpstColumnData = pstNewColumns;
+        mpstCells = pstCells;
     }
 }
 
@@ -252,7 +248,7 @@ void FEListBox::SetNumRows(unsigned long ulNumRows) {
         if (ulNumCells != 0) {
             pstCells = FENG_NEW FEListBoxCell[ulNumCells];
             if (mpstCells) {
-                FEngMemCpy(pstCells, mpstCells, ulNumCopy * mulNumColumns * sizeof(FEListBoxCell));
+                FEngMemCpy(pstCells, mpstCells, ulNumCopy * mulNumColumns);
                 InitializeCell(pstCells + ulNumCopy * mulNumColumns, (ulNumRows - ulNumCopy) * mulNumColumns);
                 if (mpstCells) {
                     delete[] mpstCells;
@@ -261,9 +257,9 @@ void FEListBox::SetNumRows(unsigned long ulNumRows) {
                 InitializeCell(pstCells, ulNumCells);
             }
         }
-        mpstCells = pstCells;
         mulNumRows = ulNumRows;
         mpstRowData = pstNewRows;
+        mpstCells = pstCells;
     }
 }
 
