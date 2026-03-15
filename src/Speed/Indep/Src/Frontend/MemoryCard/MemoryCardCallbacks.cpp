@@ -278,6 +278,8 @@ void MemcardCallbacks::FoundEntry(const RealmcIface::EntryInfo* info) {
         Joylog::AddOrGetData(info->mEntryBlocks, 0x20, JOYLOG_CHANNEL_MEMORY_CARD);
     const_cast<RealmcIface::EntryInfo*>(info)->mUserDataSize =
         Joylog::AddOrGetData(info->mUserDataSize, 0x20, JOYLOG_CHANNEL_MEMORY_CARD);
+    const_cast<RealmcIface::EntryInfo*>(info)->mTime.mCreated =
+        Joylog::AddOrGetData(info->mTime.mCreated, 0x20, JOYLOG_CHANNEL_MEMORY_CARD);
     const_cast<RealmcIface::EntryInfo*>(info)->mTime.mLastAccessed =
         Joylog::AddOrGetData(info->mTime.mLastAccessed, 0x20,
                              JOYLOG_CHANNEL_MEMORY_CARD);
@@ -295,11 +297,13 @@ void MemcardCallbacks::FoundEntry(const RealmcIface::EntryInfo* info) {
     } else {
         if (bStrNCmp(g_GC_Disk_GameName, info->mGameCode, 4) == 0) {
             unsigned int fDefault = 0;
+            unsigned int iSize = GetMemcard()->GetSize();
             int iGuessSize = info->mUserDataSize;
             if (info->mStatus != RealmcIface::STATUS_OK) {
                 fDefault = 2;
             }
             if (GetMemcard()->IsTypeProfile()) {
+                unsigned int sec = GetMemcard()->GetSize();
                 GetScreen()->AddItem(info->mName, "", iGuessSize, fDefault);
             } else {
                 if (info->mStatus != RealmcIface::STATUS_OK) {
