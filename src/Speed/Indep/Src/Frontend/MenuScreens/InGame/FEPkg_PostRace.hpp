@@ -47,15 +47,28 @@ struct PursuitData {
     GMilestone *mMilestonesCompleted[32]; // offset 0x2C
 };
 
-struct PostRacePursuitScreen : MenuScreen {
+enum PostPursuitScreenMode {
+    POSTPURSUITSCREENMODE_PURSUIT = 0,
+    POSTPURSUITSCREENMODE_INFRACTIONS = 1,
+    POSTPURSUITSCREENMODE_MILESTONES = 2,
+};
+
+struct PostRacePursuitScreen : ArrayScrollerMenu {
     PostRacePursuitScreen(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    ~PostRacePursuitScreen() override;
+    void Initialize();
+    void SetupInfractions();
+    void SetupMilestones();
+    void SetupPursuit();
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
     static PursuitData mPursuitData;
-    char _pad[0xC4];
 
     static PursuitData &GetPursuitData() {
         return mPursuitData;
     }
+
+    PostPursuitScreenMode mPostPursuitScreenMode; // offset 0xE8
+    unsigned int m_RaceButtonHash;                 // offset 0xEC
 };
 
 struct RaceStat : public FEStatWidget {

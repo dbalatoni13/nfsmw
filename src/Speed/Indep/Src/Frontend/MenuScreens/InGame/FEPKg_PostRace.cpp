@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Generated/Events/EUnPause.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyRaceAbandoned.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
+#include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Gameplay/GTimer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
@@ -1530,4 +1531,65 @@ void PursuitResultsArraySlot::Update(ArrayDatum *datum, bool isSelected) {
             FEngSetScript(mItemChecked, 0x163C76, true);
         }
     }
+}
+
+void PostRacePursuitScreen::SetupInfractions() {
+    PursuitResultsDatum::PursuitResultsDatumCheckType checkType = PursuitResultsDatum::PursuitResultsDatumCheckType_Off;
+
+    if (GInfractionManager::Get().DidInfractionOccur(GInfractionManager::kInfraction_Racing)) {
+        checkType = PursuitResultsDatum::PursuitResultsDatumCheckType_On;
+    }
+    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Check, 0x4b0ff103, 0.0f, 0.0f, checkType));
+
+    checkType = PursuitResultsDatum::PursuitResultsDatumCheckType_Off;
+    if (GInfractionManager::Get().DidInfractionOccur(GInfractionManager::kInfraction_Speeding)) {
+        checkType = PursuitResultsDatum::PursuitResultsDatumCheckType_On;
+    }
+    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Check, 0x8ec1a6ec, 0.0f, 0.0f, checkType));
+
+    checkType = PursuitResultsDatum::PursuitResultsDatumCheckType_Off;
+    if (GInfractionManager::Get().DidInfractionOccur(GInfractionManager::kInfraction_Reckless)) {
+        checkType = PursuitResultsDatum::PursuitResultsDatumCheckType_On;
+    }
+    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Check, 0x370f331d, 0.0f, 0.0f, checkType));
+
+    checkType = PursuitResultsDatum::PursuitResultsDatumCheckType_Off;
+    if (GInfractionManager::Get().DidInfractionOccur(GInfractionManager::kInfraction_Assault)) {
+        checkType = PursuitResultsDatum::PursuitResultsDatumCheckType_On;
+    }
+    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Check, 0x8462a784, 0.0f, 0.0f, checkType));
+
+    checkType = PursuitResultsDatum::PursuitResultsDatumCheckType_Off;
+    if (GInfractionManager::Get().DidInfractionOccur(GInfractionManager::kInfraction_HitAndRun)) {
+        checkType = PursuitResultsDatum::PursuitResultsDatumCheckType_On;
+    }
+    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Check, 0xdff254ba, 0.0f, 0.0f, checkType));
+
+    checkType = PursuitResultsDatum::PursuitResultsDatumCheckType_Off;
+    if (GInfractionManager::Get().DidInfractionOccur(GInfractionManager::kInfraction_Damage)) {
+        checkType = PursuitResultsDatum::PursuitResultsDatumCheckType_On;
+    }
+    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Check, 0x7dbd5b34, 0.0f, 0.0f, checkType));
+
+    checkType = PursuitResultsDatum::PursuitResultsDatumCheckType_Off;
+    if (GInfractionManager::Get().DidInfractionOccur(GInfractionManager::kInfraction_Resist)) {
+        checkType = PursuitResultsDatum::PursuitResultsDatumCheckType_On;
+    }
+    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Check, 0x2b1de2a9, 0.0f, 0.0f, checkType));
+
+    checkType = PursuitResultsDatum::PursuitResultsDatumCheckType_Off;
+    if (GInfractionManager::Get().DidInfractionOccur(GInfractionManager::kInfraction_OffRoad)) {
+        checkType = PursuitResultsDatum::PursuitResultsDatumCheckType_On;
+    }
+    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Check, 0xb0ef5c12, 0.0f, 0.0f, checkType));
+}
+
+void PostRacePursuitScreen::SetupPursuit() {
+    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Time, 0x4d64888d, mPursuitData.mPursuitLength, 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xa999f6e2, static_cast<float>(mPursuitData.mNumCopsDamaged), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x23f6e732, static_cast<float>(mPursuitData.mNumCopsDestroyed), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x0291c816, static_cast<float>(mPursuitData.mNumSpikeStripsDodged), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x2df2ba15, static_cast<float>(mPursuitData.mNumRoadblocksDodged), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xd9bb7d2d, static_cast<float>(mPursuitData.mCostToStateAchieved), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xb7dfff96, static_cast<float>(GInfractionManager::Get().GetNumInfractions()), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
 }
