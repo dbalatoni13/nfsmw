@@ -59,7 +59,9 @@ uiRepSheetBounty::uiRepSheetBounty(ScreenConstructorData* sd)
 }
 
 eMenuSoundTriggers uiRepSheetBounty::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
-    return ArrayScrollerMenu::NotifySoundMessage(msg, maybe);
+    if (msg == 0x7b6b89d7 && bIsInGame) return static_cast<eMenuSoundTriggers>(-1);
+    if (currentDatum->IsLocked()) return static_cast<eMenuSoundTriggers>(7);
+    return maybe;
 }
 
 void uiRepSheetBounty::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) {

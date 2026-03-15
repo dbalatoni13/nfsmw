@@ -80,8 +80,8 @@ UISafehouseRaceSheet::~UISafehouseRaceSheet() {
 
 eMenuSoundTriggers UISafehouseRaceSheet::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
     eMenuSoundTriggers result = ArrayScrollerMenu::NotifySoundMessage(msg, maybe);
-    if (msg == 0x7b6b89d7 && bIsInGame) {
-        return static_cast<eMenuSoundTriggers>(-1);
+    if (msg == 0x7b6b89d7 && !theRace) {
+        return static_cast<eMenuSoundTriggers>(7);
     }
     return result;
 }
