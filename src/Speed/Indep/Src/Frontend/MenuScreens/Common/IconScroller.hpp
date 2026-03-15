@@ -65,9 +65,15 @@ struct IconScroller : public IconPanel {
     IconOption* GetHead() override {
         return static_cast< IconOption * >(HeadBookEnd->GetNext());
     }
-    bool IsHead(IconOption* option) override;
-    bool IsTail(IconOption* option) override;
-    bool IsEndOfList(IconOption* opt) override;
+    bool IsHead(IconOption* option) override {
+        return option == static_cast<IconOption *>(HeadBookEnd->GetNext());
+    }
+    bool IsTail(IconOption* option) override {
+        return option == static_cast<IconOption *>(TailBookEnd->GetPrev());
+    }
+    bool IsEndOfList(IconOption* opt) override {
+        return opt == TailBookEnd || opt == HeadBookEnd;
+    }
 
     void DelayUpdate() {
         bDelayUpdate = true;

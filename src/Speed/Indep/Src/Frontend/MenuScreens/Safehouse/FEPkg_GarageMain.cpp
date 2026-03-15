@@ -366,7 +366,7 @@ void GarageMainScreen::HandleTick(unsigned long msg) {
     if (have_new_car) {
         RideInfo *CurrentRideInfo = TheGarageCarLoader->GetCurrentRideInfo();
         if (CurrentRideInfo) {
-            RenderingCar->ReInit(TheGarageCarLoader->GetCurrentRideInfo());
+            RenderingCar->ReInit(CurrentRideInfo);
             RenderingCar->Visible = 1;
             cFEng::Get()->QueuePackageMessage(0x913fa282, nullptr, nullptr);
         }
@@ -384,8 +384,8 @@ void GarageMainScreen::HandleTick(unsigned long msg) {
     if (bTimeToRotate && bPass1) {
         bTimeToRotate = false;
         SetHRotateSpeed(pCameraMover, CarRotateSpeed);
-        bPass1 = 0;
         bAutoMovement = 1;
+        bPass1 = 0;
     }
 
     FEPackage *currentControllingPackage = cFEng::Get()->FindPackageAtBase();
@@ -402,7 +402,19 @@ void GarageMainScreen::HandleTick(unsigned long msg) {
             screen.SetDefaultLayout(sizeof(Attrib::Gen::frontend::_LayoutStruct));
         }
 
-        if (screenKey == mScreenKeyCamIsSetTo) {
+        if (screenKey != mScreenKeyCamIsSetTo) {
+            float anim_speed = camera.cam_anim_speed();
+            bAutoMovement = 0;
+            bPass1 = 0;
+            sNumTicksSinceUserMovedCamera = static_cast<int>(anim_speed * 60.0f);
+            mScreenKeyCamIsSetTo = screenKey;
+            bUserRotate = screen.cam_user_rotate();
+            if (!CameraPushRequested) {
+                bVector3 orbit(camera.cam_orbit_vertical(), camera.cam_orbit_horizontal(), camera.cam_orbit_radius());
+                bVector3 lookat(camera.cam_lookat_x(), camera.cam_lookat_y(), camera.cam_lookat_z());
+                SetDesiredOrientation(pCameraMover, &orbit, camera.cam_roll_angle(), camera.cam_fov(), camera.cam_anim_speed(), camera.cam_damping(), &lookat, camera.cam_periods());
+            }
+        } else {
             if (bTimeToRotate) {
                 float anim_speed = camera.cam_anim_speed();
                 bPass1 = 1;
@@ -420,18 +432,6 @@ void GarageMainScreen::HandleTick(unsigned long msg) {
                     bVector3 lookat(camera.cam_lookat_x(), camera.cam_lookat_y(), camera.cam_lookat_z());
                     SetCurrentOrientation(pCameraMover, &orbit, camera.cam_roll_angle(), camera.cam_fov(), &lookat);
                 }
-            }
-        } else {
-            float anim_speed = camera.cam_anim_speed();
-            bAutoMovement = 0;
-            bPass1 = 0;
-            sNumTicksSinceUserMovedCamera = static_cast<int>(anim_speed * 60.0f);
-            mScreenKeyCamIsSetTo = screenKey;
-            bUserRotate = screen.cam_user_rotate();
-            if (!CameraPushRequested) {
-                bVector3 orbit(camera.cam_orbit_vertical(), camera.cam_orbit_horizontal(), camera.cam_orbit_radius());
-                bVector3 lookat(camera.cam_lookat_x(), camera.cam_lookat_y(), camera.cam_lookat_z());
-                SetDesiredOrientation(pCameraMover, &orbit, camera.cam_roll_angle(), camera.cam_fov(), camera.cam_anim_speed(), camera.cam_damping(), &lookat, camera.cam_periods());
             }
         }
     }
@@ -1001,10 +1001,10 @@ GarageCarLoader *GetGarageCarLoader() {
 }
 
 void GarageCarLoader::Init() {
-    IsCurrentRide = false;
+    IsLoadingRide = false;
     LoadingCar = 0;
     CurrentCar = 0;
-    IsLoadingRide = false;
+    IsCurrentRide = false;
 }
 
 void GarageCarLoader::Switch() {

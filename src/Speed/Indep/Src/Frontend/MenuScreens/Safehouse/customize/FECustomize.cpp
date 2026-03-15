@@ -287,12 +287,12 @@ CustomizePartOption *CustomizationScreen::FindMatchingOption(SelectablePart *to_
     IconOption *cur = Options.GetHead();
     while (!Options.IsEndOfList(cur)) {
         SelectablePart *part = static_cast<CustomizePartOption *>(cur)->GetPart();
-        if (!to_find->PerformancePkg) {
-            if (part->ThePart == to_find->ThePart) {
+        if (to_find->PerformancePkg) {
+            if (part->PhysicsType == to_find->PhysicsType && part->UpgradeLevel == to_find->UpgradeLevel) {
                 return static_cast<CustomizePartOption *>(cur);
             }
         } else {
-            if (part->PhysicsType == to_find->PhysicsType && part->UpgradeLevel == to_find->UpgradeLevel) {
+            if (part->ThePart == to_find->ThePart) {
                 return static_cast<CustomizePartOption *>(cur);
             }
         }
@@ -1114,8 +1114,9 @@ SelectablePart *CustomizationScreen::FindInCartPart() {
     IconOption *cur = Options.GetHead();
     while (!Options.IsEndOfList(cur)) {
         CustomizePartOption *opt = static_cast<CustomizePartOption *>(cur);
-        if ((opt->GetPart()->GetPartState() & 0xF0) == CPS_IN_CART) {
-            return opt->GetPart();
+        SelectablePart *part = opt->GetPart();
+        if (part && (part->GetPartState() & 0xF0) == CPS_IN_CART) {
+            return part;
         }
         cur = cur->GetNext();
     }

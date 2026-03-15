@@ -591,16 +591,5 @@ bool IconPanel::IsEndOfList(IconOption *opt) {
     return opt == Options.EndOfList();
 }
 
-bool IconScroller::IsHead(IconOption *option) {
-    return option == static_cast<IconOption *>(HeadBookEnd->GetNext());
-}
-
-bool IconScroller::IsTail(IconOption *option) {
-    return option == static_cast<IconOption *>(TailBookEnd->GetPrev());
-}
-
-bool IconScroller::IsEndOfList(IconOption *option) {
-    return option == TailBookEnd || option == HeadBookEnd;
-}
 
 

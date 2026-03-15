@@ -38,10 +38,10 @@ public:
     }
 
     void SetInitialOption(int index) {
-        Options.SetInitialPos(index);
         if (bFadeInIconsImmediately) {
             Options.StartFadeIn();
         }
+        Options.SetInitialPos(index);
     }
 
     void StartInput() {
