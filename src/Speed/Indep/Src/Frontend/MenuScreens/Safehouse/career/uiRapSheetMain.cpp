@@ -26,13 +26,35 @@ void uiRapSheetMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsi
         break;
     case 0xE1FDE1D1: {
         int button_num = 1;
-        if (button_pressed == 0xCDA0A66D) { button_num = 3; cFEng::Get()->QueuePackageSwitch("RapSheetCTS.fng", 0, 0, false); }
-        else if (button_pressed == 0xCDA0A66B) { cFEng::Get()->QueuePackageSwitch("RapSheetRS.fng", 0, 0, false); }
-        else if (button_pressed == 0xCDA0A66C) { button_num = 2; cFEng::Get()->QueuePackageSwitch("RapSheetUS.fng", 0, 0, false); }
-        else if (button_pressed == 0xCDA0A66F) { button_num = 5; cFEng::Get()->QueuePackageSwitch("RapSheetRankings.fng", 0, 0, false); }
-        else if (button_pressed == 0xCDA0A66E) { button_num = 4; cFEng::Get()->QueuePackageSwitch("RapSheetTEP.fng", 0, 0, false); }
-        else if (button_pressed == 0xCDA0A670) { button_num = 6; cFEng::Get()->QueuePackageSwitch("RapSheetVD.fng", 0, 0, false); }
-        else { button_num = 1; cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false); FEDatabase->ClearGameMode(eFE_GAME_MODE_RAP_SHEET); }
+        switch (button_pressed) {
+        case 0xCDA0A66D:
+            button_num = 3;
+            cFEng::Get()->QueuePackageSwitch("RapSheetCTS.fng", 0, 0, false);
+            break;
+        case 0xCDA0A66B:
+            cFEng::Get()->QueuePackageSwitch("RapSheetRS.fng", 0, 0, false);
+            break;
+        case 0xCDA0A66C:
+            button_num = 2;
+            cFEng::Get()->QueuePackageSwitch("RapSheetUS.fng", 0, 0, false);
+            break;
+        case 0xCDA0A66F:
+            button_num = 5;
+            cFEng::Get()->QueuePackageSwitch("RapSheetRankings.fng", 0, 0, false);
+            break;
+        case 0xCDA0A66E:
+            button_num = 4;
+            cFEng::Get()->QueuePackageSwitch("RapSheetTEP.fng", 0, 0, false);
+            break;
+        case 0xCDA0A670:
+            button_num = 6;
+            cFEng::Get()->QueuePackageSwitch("RapSheetVD.fng", 0, 0, false);
+            break;
+        default:
+            cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+            FEDatabase->ClearGameMode(eFE_GAME_MODE_RAP_SHEET);
+            break;
+        }
         FEngSetLastButton(GetPackageName(), static_cast<unsigned char>(button_num));
         break;
     }
