@@ -281,28 +281,28 @@ void UIMemcardMain::NotificationMessage(unsigned long msg, FEObject* obj, unsign
         if ((gMemcardSetup.mOp & 0x800) != 0 &&
             FEDatabase->GetUserProfile(0)->IsProfileNamed()) {
             cFEng::Get()->QueueGameMessage(0x461a18ee, GetPackageName(), 0xff);
-        } else {
-            if (FEDatabase->IsCareerManagerMode() &&
-                FEDatabase->bProfileLoaded &&
-                FEDatabase->GetGameplaySettings()->AutoSaveOn != 0 &&
-                (gMemcardSetup.mOp & 0xf0) != 0x10 &&
-                msg != 0xdc12af2e) {
-                MemoryCard::GetInstance()->SetAutoSaveEnabled(true);
-            } else {
-                if ((gMemcardSetup.mOp & 0xf0) == 0x60 && msg == 0xdc12af2e) {
-                    FEDatabase->GetGameplaySettings()->AutoSaveOn = 0;
-                    ShowOK(0xb04da4ad, 0x7000000);
-                } else {
-                    MemcardExit(msg);
-                }
-            }
-            if (MemoryCard::GetInstance()->IsCheckingCardForAutoSave() ||
-                MemoryCard::GetInstance()->IsAutoSaving()) {
-                MemoryCard::GetInstance()->EndAutoSave();
-            }
-            FEDatabase->DeallocBackupDB();
+            goto hide_loader;
         }
-        break;
+        if (FEDatabase->IsCareerManagerMode() &&
+            FEDatabase->bProfileLoaded &&
+            FEDatabase->GetGameplaySettings()->AutoSaveOn != 0 &&
+            (gMemcardSetup.mOp & 0xf0) != 0x10 &&
+            msg != 0xdc12af2e) {
+            MemoryCard::GetInstance()->SetAutoSaveEnabled(true);
+        } else {
+            if ((gMemcardSetup.mOp & 0xf0) == 0x60 && msg == 0xdc12af2e) {
+                FEDatabase->GetGameplaySettings()->AutoSaveOn = 0;
+                ShowOK(0xb04da4ad, 0x7000000);
+            } else {
+                MemcardExit(msg);
+            }
+        }
+        if (MemoryCard::GetInstance()->IsCheckingCardForAutoSave() ||
+            MemoryCard::GetInstance()->IsAutoSaving()) {
+            MemoryCard::GetInstance()->EndAutoSave();
+        }
+        FEDatabase->DeallocBackupDB();
+        goto hide_loader;
     case 0xb57fdb17:
         SetupPromptAutoSaveEnableFailedNoCard();
         break;
