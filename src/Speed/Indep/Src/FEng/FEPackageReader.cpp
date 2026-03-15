@@ -489,26 +489,28 @@ bool FEPackageReader::ReadMessageTargetListChunk() {
         int idx = 0;
         while (pTag < pEnd) {
             unsigned short tagID = BSwap16(pTag->GetID());
-            if (tagID == 0x6354) {
+            switch (tagID) {
+            case 0x6354: {
                 unsigned long NumTargets = BSwap32(pTag->Getu32(0));
                 pPack->NumMsgTargets = NumTargets;
                 unsigned long* pMem = static_cast<unsigned long*>(FEngMalloc(NumTargets * 0x10 + 0x10, nullptr, 0));
                 FEMsgTargetList* pEntries = reinterpret_cast<FEMsgTargetList*>(pMem + 4);
                 *pMem = NumTargets;
-                unsigned long i = NumTargets;
-                if (i != 0) {
+                if (NumTargets != 0) {
                     FEMsgTargetList* pCur = pEntries;
                     do {
-                        i--;
                         pCur->MsgID = 0;
                         pCur->Alloc = 0;
                         pCur->Count = 0;
                         pCur->pTargets = nullptr;
                         pCur++;
-                    } while (i != 0);
+                        NumTargets--;
+                    } while (NumTargets != 0);
                 }
                 pPack->pMsgTargets = pEntries;
-            } else if (tagID == 0x744d) {
+                break;
+            }
+            case 0x744d: {
                 FEMsgTargetList* pCurTarget = &pPack->pMsgTargets[idx];
                 pCurTarget->MsgID = BSwap32(pTag->Getu32(0));
                 unsigned long NumObjs = (BSwap16(pTag->GetSize()) >> 2) - 1;
@@ -522,6 +524,8 @@ bool FEPackageReader::ReadMessageTargetListChunk() {
                         i++;
                     } while (i < NumObjs);
                 }
+                break;
+            }
             }
             pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + BSwap16(pTag->GetSize()) + 4);
         }

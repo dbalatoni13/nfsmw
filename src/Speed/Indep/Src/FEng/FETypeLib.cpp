@@ -26,9 +26,18 @@ FETypeNode* FETypeLib::CreateBaseObjectType(const char* pName) {
     pType->AddField("Rotation", 5);
     pType->AddField("Size", 4);
 
-    SizeVect.x = 0.0f;
-    SizeVect.y = 0.0f;
+    ZeroVect.x = 0.0f;
+    ZeroVect.y = 0.0f;
+    ZeroVect.z = 0.0f;
+
+    SizeVect.x = 1.0f;
+    SizeVect.y = 1.0f;
     SizeVect.z = 1.0f;
+
+    ZeroQuat.x = 0.0f;
+    ZeroQuat.y = 0.0f;
+    ZeroQuat.z = 0.0f;
+    ZeroQuat.w = 1.0f;
 
     White = FEColor(0xFFFFFFFF);
     FEFieldNode* pField = pType->GetFirstField();

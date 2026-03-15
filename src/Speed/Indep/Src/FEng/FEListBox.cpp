@@ -359,13 +359,13 @@ void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
             } while (i < mulNumColumns);
         }
 
-        if ((mulFlags & 4) == 0) {
+        if ((mulFlags & 4) != 0) {
             if (fNewWidth < fViewWidth) {
-                mulFlags = mulFlags | 8;
+                mstTargetLocation.h = mstTargetLocation.h - (fViewWidth - fNewWidth);
             }
         } else {
             if (fNewWidth < fViewWidth) {
-                mstTargetLocation.h = mstTargetLocation.h - (fViewWidth - fNewWidth);
+                mulFlags = mulFlags | 8;
             }
         }
         mulFlags = mulFlags | 0x20;
@@ -425,13 +425,13 @@ void FEListBox::ScrollSelection(long lColumnNum, long lRowNum) {
             } while (i < mulNumRows);
         }
 
-        if ((mulFlags & 4) == 0) {
+        if ((mulFlags & 4) != 0) {
             if (fNewHeight < fViewHeight) {
-                mulFlags = mulFlags | 0x10;
+                mstTargetLocation.v = mstTargetLocation.v - (fViewHeight - fNewHeight);
             }
         } else {
             if (fNewHeight < fViewHeight) {
-                mstTargetLocation.v = mstTargetLocation.v - (fViewHeight - fNewHeight);
+                mulFlags = mulFlags | 0x10;
             }
         }
         mulFlags = mulFlags | 0x40;
@@ -443,13 +443,13 @@ compute_direction:
     mulFlags = mulFlags | 2;
     reinterpret_cast<FEVector2&>(mstDirection) = obDirection;
     float fLength = obDirection.Length();
-    if (fLength >= 0.1f) {
+    if (fLength < 0.1f) {
+        CompleteScroll();
+    } else {
         FEVector2 dir;
         dir = reinterpret_cast<FEVector2&>(mstDirection);
         dir.Normalize();
         reinterpret_cast<FEVector2&>(mstDirection) = dir;
-    } else {
-        CompleteScroll();
     }
 }
 

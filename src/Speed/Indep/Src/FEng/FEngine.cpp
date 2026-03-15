@@ -1144,23 +1144,19 @@ void FEngine::UpdateMouseState(FEPackage* pPackage, FEObjectMouseState* pState, 
     bool bWasLeftDown = (flags & 2) != 0;
     bool bWasRightDown = (flags & 4) != 0;
 
-    if (!bTouching) {
-        if (bWasOver) {
-            cFEng::mInstance->QueuePackageMessage(0xb30793c1, pPackage->GetFilename(), pObj);
-        }
-    } else {
+    if (bTouching) {
         unsigned int msg = 0x13f4bd45;
         if (bWasOver) {
             msg = 0xb30d0683;
         }
         cFEng::mInstance->QueuePackageMessage(msg, pPackage->GetFilename(), pObj);
+    } else {
+        if (bWasOver) {
+            cFEng::mInstance->QueuePackageMessage(0xb30793c1, pPackage->GetFilename(), pObj);
+        }
     }
 
-    if (!bLeftDown) {
-        if (bWasLeftDown && bTouching) {
-            cFEng::mInstance->QueuePackageMessage(0x7eabca56, pPackage->GetFilename(), pObj);
-        }
-    } else {
+    if (bLeftDown) {
         if (!bWasLeftDown) {
             if (!bTouching) {
                 goto skip_left;
@@ -1169,21 +1165,14 @@ void FEngine::UpdateMouseState(FEPackage* pPackage, FEObjectMouseState* pState, 
         } else {
             cFEng::mInstance->QueuePackageMessage(0x1e646b2e, pPackage->GetFilename(), pObj);
         }
+    } else {
+        if (bWasLeftDown && bTouching) {
+            cFEng::mInstance->QueuePackageMessage(0x7eabca56, pPackage->GetFilename(), pObj);
+        }
     }
 skip_left:
 
-    if (!bRightDown) {
-        if (bWasRightDown) {
-            if (!bTouching) {
-                goto set_not_over;
-            }
-            cFEng::mInstance->QueuePackageMessage(0x98adf589, pPackage->GetFilename(), pObj);
-        }
-        if (!bTouching) {
-            goto set_not_over;
-        }
-        flags = pState->Flags | 1;
-    } else {
+    if (bRightDown) {
         if (bWasRightDown) {
             cFEng::mInstance->QueuePackageMessage(0x0da2f4e1, pPackage->GetFilename(), pObj);
         } else if (bTouching) {
@@ -1196,6 +1185,17 @@ skip_left:
         }
         flags = pState->Flags | 1;
         goto set_flags;
+    } else {
+        if (bWasRightDown) {
+            if (!bTouching) {
+                goto set_not_over;
+            }
+            cFEng::mInstance->QueuePackageMessage(0x98adf589, pPackage->GetFilename(), pObj);
+        }
+        if (!bTouching) {
+            goto set_not_over;
+        }
+        flags = pState->Flags | 1;
     }
     goto set_flags;
 
@@ -1203,16 +1203,16 @@ set_not_over:
     flags = pState->Flags & ~1u;
 set_flags:
     pState->Flags = flags;
-    if (!bLeftDown) {
-        flags = pState->Flags & ~2u;
-    } else {
+    if (bLeftDown) {
         flags = pState->Flags | 2;
+    } else {
+        flags = pState->Flags & ~2u;
     }
     pState->Flags = flags;
-    if (!bRightDown) {
-        flags = pState->Flags & ~4u;
-    } else {
+    if (bRightDown) {
         flags = pState->Flags | 4;
+    } else {
+        flags = pState->Flags & ~4u;
     }
     pState->Flags = flags;
 }
