@@ -348,7 +348,6 @@ void MemcardCallbacks::Retry(RealmcIface::CardStatus status) {
 void MemcardCallbacks::Failed(RealmcIface::TaskResult result,
                               RealmcIface::CardStatus status) {
     JLog(MJ_Failed);
-    unsigned int msg = 0x8867412d;
     status = static_cast<RealmcIface::CardStatus>(
         Joylog::AddOrGetData(static_cast<unsigned int>(status), 0x10,
                              JOYLOG_CHANNEL_MEMORY_CARD));
@@ -366,6 +365,7 @@ void MemcardCallbacks::Failed(RealmcIface::TaskResult result,
         }
         return;
     }
+    unsigned int msg = 0x8867412d;
     if (GetMemcard()->m_pBuffer != nullptr) {
         bFree(GetMemcard()->m_pBuffer);
         GetMemcard()->m_pBuffer = nullptr;
@@ -405,32 +405,41 @@ void MemcardCallbacks::Failed(RealmcIface::TaskResult result,
         return;
     }
     int op = GetMemcard()->GetOp();
-    if (op == MemoryCard::MO_AutoSave) {
-    } else if (op == MemoryCard::MO_BootUp) {
-        GetMemcard()->m_pImp->DestructSaveInfo();
-    } else if (op == MemoryCard::MO_Save) {
-        if ((status == RealmcIface::STATUS_NO_CARD ||
-             (status != RealmcIface::STATUS_OK &&
-              static_cast<unsigned int>(status) < 7 &&
-              static_cast<unsigned int>(status) > 4)) &&
-            gMemcardSetup.GetMethod() == 0x60) {
+    unsigned short short_status = static_cast<unsigned short>(status);
+    switch (op) {
+        case MemoryCard::MO_AutoSave:
+            break;
+
+        case MemoryCard::MO_BootUp:
+            GetMemcard()->m_pImp->DestructSaveInfo();
+            break;
+
+        case MemoryCard::MO_Save:
+            if ((status == RealmcIface::STATUS_NO_CARD ||
+                 (status != RealmcIface::STATUS_OK &&
+                  static_cast<unsigned int>(status) < 7 &&
+                  static_cast<unsigned int>(status) > 4)) &&
+                gMemcardSetup.GetMethod() == 0x60) {
+                FEDatabase->GetGameplaySettings()->AutoSaveOn = false;
+            }
+            msg = 0xdc12af2e;
             FEDatabase->GetGameplaySettings()->AutoSaveOn = false;
-        }
-        msg = 0xdc12af2e;
-        FEDatabase->GetGameplaySettings()->AutoSaveOn = false;
-    } else if (op == MemoryCard::MO_Load) {
-    } else if (op == MemoryCard::MO_List &&
-               GetMemcard()->InBootSequence()) {
-        msg = 0x8867412d;
+
+        case MemoryCard::MO_Load:
+            if (GetMemcard()->IsTypeProfile()) {
+                bFree(GetMemcard()->m_pBuffer);
+            }
+            GetMemcard()->m_pBuffer = nullptr;
+            GetMemcard()->m_SpecialError = short_status;
+            break;
+
+        case MemoryCard::MO_List:
+            if (GetMemcard()->InBootSequence()) {
+                msg = 0x8867412d;
+            }
+            break;
     }
-    if (op == MemoryCard::MO_Load || op == MemoryCard::MO_Save) {
-        if (GetMemcard()->IsTypeProfile()) {
-            bFree(GetMemcard()->m_pBuffer);
-        }
-        GetMemcard()->m_pBuffer = nullptr;
-        GetMemcard()->m_SpecialError = static_cast<unsigned short>(status);
-    }
-    GetMemcard()->m_LastError = static_cast<unsigned short>(status);
+    GetMemcard()->m_LastError = short_status;
     GetMemcard()->m_MemOp = MemoryCard::MO_NONE;
     DisplayStatus(static_cast<int>(status));
     if (status == RealmcIface::STATUS_FILE_CORRUPTED) {
