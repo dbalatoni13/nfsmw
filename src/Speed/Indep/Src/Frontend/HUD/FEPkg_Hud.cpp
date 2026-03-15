@@ -298,17 +298,17 @@ void HudResourceManager::LoadingCompleteCallback() {
         char texture_name[32];
         bSPrintf(minimap_texture_name, "");
         bSPrintf(texture_name, "");
-        if (!ChooseMinimapTextureName(LoadingResourcesForHudType, texture_name, 0x20,
+        if (ChooseMinimapTextureName(LoadingResourcesForHudType, texture_name, 0x20,
                                       minimap_texture_name, 0x40)) {
+            gChoppedMiniMapManager->SetMapHeader(texture_name);
+            pMiniMapTexture = LoadResourceFile(minimap_texture_name, RESOURCE_FILE_TRACK, 0);
+            unsigned int textures_to_load[16];
+            textures_to_load[0] = bStringHash(texture_name);
+            eLoadStreamingTexture(textures_to_load, 1, LoadingCompleteCallbackBridge,
+                                  reinterpret_cast<unsigned int>(this), 0);
+        } else {
             LoadingCompleteCallback();
-            return;
         }
-        gChoppedMiniMapManager->SetMapHeader(texture_name);
-        pMiniMapTexture = LoadResourceFile(minimap_texture_name, RESOURCE_FILE_TRACK, 0);
-        unsigned int textures_to_load[16];
-        textures_to_load[0] = bStringHash(texture_name);
-        eLoadStreamingTexture(textures_to_load, 1, LoadingCompleteCallbackBridge,
-                              reinterpret_cast<unsigned int>(this), 0);
     } else if (mPhase == 2) {
         if (GetCustomHudTexPackFilename(LoadingResourcesForHudType, mCustHudTexPackName)) {
             float redlineRotation;
@@ -330,7 +330,7 @@ void HudResourceManager::LoadingCompleteCallback() {
                                   reinterpret_cast<unsigned int>(this), 0);
         }
     } else if (mPhase == 3) {
-        mHudResourcesState = HRM_LOADED;
+        TheHudResourceManager.mHudResourcesState = HRM_LOADED;
         cFEng::Get()->MakeLoadedPackagesDirty();
         SetSoundControlState(false, 0xc, "HUDLoaded");
     }
@@ -349,11 +349,10 @@ void HudResourceManager::LoadedCustomHudTexturePackCallback() {
 }
 
 void HudResourceManager::LoadedCustomHudTexturesCallback() {
-    int custColour = GetCustomHudColour(LoadingResourcesForHudType,
-                                        static_cast<CAR_SLOT_ID>(0x85));
-    for (int mPhaseCust = 0; mPhaseCust < 5; mPhaseCust++) {
-        int fengObjHash;
-        CAR_SLOT_ID carSlotIdForColour;
+    int mPhaseCust = 0;
+    do {
+        unsigned int fengObjHash = 0;
+        CAR_SLOT_ID carSlotIdForColour = static_cast<CAR_SLOT_ID>(0);
         switch (mPhaseCust) {
         case 0:
             carSlotIdForColour = static_cast<CAR_SLOT_ID>(0x85);
@@ -381,8 +380,9 @@ void HudResourceManager::LoadedCustomHudTexturesCallback() {
             FEngSetColor(mPackageName, fengObjHash, custColour);
         }
         FEngSetTextureHash(mPackageName, fengObjHash, mCustomizeHUDTexTextureResources[mPhaseCust]);
-    }
-    custColour = GetCustomHudColour(LoadingResourcesForHudType, static_cast<CAR_SLOT_ID>(0x87));
+        mPhaseCust++;
+    } while (static_cast<unsigned int>(mPhaseCust) <= 4);
+    int custColour = GetCustomHudColour(LoadingResourcesForHudType, static_cast<CAR_SLOT_ID>(0x87));
     if (custColour) {
         FEngSetColor(mPackageName, 0xc3383b63, custColour);
     }
@@ -395,36 +395,41 @@ void HudResourceManager::UnloadRequiredResources(ePlayerHudType ht) {
     eWaitUntilRenderingDone();
     cFEng::Get()->MakeLoadedPackagesDirty();
 
-    eUnloadAllStreamingTextures(HudSingleRaceTexturePackFilename);
     eUnloadAllStreamingTextures(HudDragTexturePackFilename);
+    eUnloadAllStreamingTextures(HudSingleRaceTexturePackFilename);
     eUnloadAllStreamingTextures(HudSplitScreenTexturePackFilename);
     eUnloadAllStreamingTextures(HudDragSplitScreenTexturePackFilename);
 
     if (pHudTextures) {
         UnloadResourceFile(pHudTextures);
+        pHudTextures = nullptr;
     }
     if (pMiniMapTexture) {
         UnloadResourceFile(pMiniMapTexture);
+        pMiniMapTexture = nullptr;
     }
 
-    gChoppedMiniMapManager->RemoveUncompressedMaps();
+    if (gChoppedMiniMapManager) {
+        gChoppedMiniMapManager->RemoveUncompressedMaps();
+    }
 
-    if (mCustHudTexPackName[0] == '\0') {
+    if (!bStrCmp(mCustHudTexPackName, "")) {
         if (mTachLinesHash) {
             eUnloadStreamingTexture(static_cast<unsigned int>(mTachLinesHash));
+            mTachLinesHash = 0;
         }
     } else {
-        for (int i = 0; i < 5; i++) {
+        eUnloadStreamingTexture(mCustomizeHUDTexTextureResources, 5);
+        for (unsigned int i = 0; i <= 4; i++) {
             mCustomizeHUDTexTextureResources[i] = 0;
         }
-        eUnloadStreamingTexture(mCustomizeHUDTexTextureResources, 5);
         eUnloadStreamingTexturePack(mCustHudTexPackName);
         bSPrintf(mCustHudTexPackName, "");
     }
 
     eWaitUntilRenderingDone();
-    mHudResourcesState = HRM_NOT_LOADED;
     pHudTextures = nullptr;
+    mHudResourcesState = HRM_NOT_LOADED;
     mPackageName = nullptr;
 }
 

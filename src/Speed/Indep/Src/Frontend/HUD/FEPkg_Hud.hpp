@@ -157,16 +157,16 @@ class HudResourceManager {
 extern HudResourceManager TheHudResourceManager;
 
 inline void HudResourceManager::LoadingCompleteCallbackBridge(int param) {
-    TheHudResourceManager.LoadingCompleteCallback();
+    reinterpret_cast<HudResourceManager *>(param)->LoadingCompleteCallback();
 }
 inline void HudResourceManager::LoadingCompleteCallbackBridge(unsigned int param) {
-    TheHudResourceManager.LoadingCompleteCallback();
+    reinterpret_cast<HudResourceManager *>(param)->LoadingCompleteCallback();
 }
 inline void HudResourceManager::LoadedCustomHudTexturePackCallbackBridge(unsigned int param) {
-    TheHudResourceManager.LoadedCustomHudTexturePackCallback();
+    reinterpret_cast<HudResourceManager *>(param)->LoadedCustomHudTexturePackCallback();
 }
 inline void HudResourceManager::LoadedCustomHudTexturesCallbackBridge(unsigned int param) {
-    TheHudResourceManager.LoadedCustomHudTexturesCallback();
+    reinterpret_cast<HudResourceManager *>(param)->LoadedCustomHudTexturesCallback();
 }
 
 #endif
