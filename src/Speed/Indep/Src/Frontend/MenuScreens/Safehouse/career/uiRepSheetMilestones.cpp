@@ -87,11 +87,9 @@ void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj,
             int joyPort = FEngMapJoyParamToJoyport(param2);
             FEDatabase->SetPlayersJoystickPort(0, static_cast<signed char>(joyPort));
         }
-        const char* dialog;
+        const char* dialog = "DIALOG.fng";
         if (bIsInGame) {
             dialog = "IG_DIALOG.fng";
-        } else {
-            dialog = "DIALOG.fng";
         }
         unsigned int messageHash = 0xa5a8409a;
         if (theMilestone->GetType() != 0) {
@@ -126,16 +124,16 @@ void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject* obj,
             return;
         }
         unsigned int marker;
-        bool pursuit;
-        if (theMilestone->GetType() != 0) {
+        bool pursuit = false;
+        if (theMilestone->GetType() == 0) {
+            GMilestone* pMilestone = theMilestone->my_milestone;
+            marker = pMilestone->GetJumpMarkerKey();
+            pursuit = true;
+        } else {
             SpeedTrapDatum* st = static_cast<SpeedTrapDatum*>(theMilestone);
             GSpeedTrap* pSpeedTrap = st->my_speedtrap;
             marker = pSpeedTrap->GetJumpMarkerKey();
-        } else {
-            GMilestone* pMilestone = theMilestone->my_milestone;
-            marker = pMilestone->GetJumpMarkerKey();
         }
-        pursuit = theMilestone->GetType() == 0;
         if (bIsInGame) {
             new ERaceSheetOff();
             GManager::Get().WarpToMarker(marker, pursuit);
