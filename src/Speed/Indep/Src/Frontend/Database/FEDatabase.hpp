@@ -149,8 +149,8 @@ class GameplaySettings {
     unsigned char RacingMiniMapMode;    // offset 0xD, size 0x1
     unsigned char ExploringMiniMapMode; // offset 0xE, size 0x1
     unsigned int MapItems;              // offset 0x10, size 0x4
-    unsigned char LastMapZoom;          // offset 0x14, size 0x1
-    unsigned char LastPursuitMapZoom;   // offset 0x15, size 0x1
+    unsigned char LastPursuitMapZoom;   // offset 0x14, size 0x1
+    unsigned char LastMapZoom;          // offset 0x15, size 0x1
     unsigned char LastMapView;          // offset 0x16, size 0x1
     int JumpCam;                        // offset 0x18, size 0x1
     float HighlightCam;                 // offset 0x1C, size 0x4

@@ -597,15 +597,19 @@ void WorldMap::ScrollZoom(eScrollDir dir) {
     if (zoom != CurrentZoom) {
         CurrentZoom = zoom;
         RefreshHeader();
-        float factor = GetZoomFactor(static_cast< eWorldMapZoomLevels >(zoom));
+        float factor = GetZoomFactor(static_cast<eWorldMapZoomLevels>(zoom));
         float factorInv = 1.0f / factor;
-        bVector2 scale(factorInv, factorInv);
+        bVector2 scale;
+        scale.x = factorInv;
+        scale.y = factorInv;
         MapStreamer->ZoomTo(scale);
         PanToCursor(factor);
-        if (CurrentView <= 1) {
-            FEDatabase->GetGameplaySettings()->LastMapZoom = static_cast< unsigned char >(CurrentZoom);
-        } else if (CurrentView == 3) {
-            FEDatabase->GetGameplaySettings()->LastPursuitMapZoom = static_cast< unsigned char >(CurrentZoom);
+        if (CurrentView > 1) {
+            if (CurrentView == 3) {
+                FEDatabase->GetGameplaySettings()->LastPursuitMapZoom = static_cast<unsigned char>(CurrentZoom);
+            }
+        } else {
+            FEDatabase->GetGameplaySettings()->LastMapZoom = static_cast<unsigned char>(CurrentZoom);
         }
     }
 }
