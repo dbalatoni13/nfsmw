@@ -304,20 +304,31 @@ WorldMap::WorldMap(ScreenConstructorData* sd)
     : UIWidgetMenu(sd) {
     Cursor = nullptr;
     mActionQ = nullptr;
+    CurrentVelocity.x = 0.0f;
+    CurrentVelocity.y = 0.0f;
+    CursorMoveFrom.x = 0.0f;
+    CursorMoveFrom.y = 0.0f;
     pCurrentTrack = nullptr;
     TrackMap = nullptr;
+    MapTopLeft.x = 0.0f;
+    MapTopLeft.y = 0.0f;
+    MapSize.x = 0.0f;
+    MapSize.y = 0.0f;
     SelectedItem = nullptr;
     MapStreamer = nullptr;
     CurrentView = 0;
     CurrentZoom = 0;
-    CurrentRaceType = 0;
+    CurrentRaceType = -1;
     bInToggleMode = false;
     bCursorOn = false;
     bCursorMoving = false;
     bLeftHeldOnMap = false;
     fSnapDist = 30.0f;
-    MapStreamer = new UITrackMapStreamer();
+    mActionQ = new ActionQueue(FEDatabase->PlayerJoyports[0], 0x82d21520, "WorldMapMain", false);
+    mActionQ->Enable(true);
+    iMaxWidgetsOnScreen = 10;
     Setup();
+    RefreshHeader();
 }
 
 WorldMap::~WorldMap() {
@@ -589,20 +600,50 @@ void WorldMap::UpdateIconVisibility(eWorldMapItemType type, bool visible) {
 
 void WorldMap::ClearItems() {
     MapItem* item = TheMapItems.GetHead();
-    while (item != nullptr) {
-        MapItem* next = item->GetNext();
-        delete item;
-        item = next;
+    while (item != TheMapItems.EndOfList()) {
+        item->Hide();
+        item->ResetSize();
+        item = item->GetNext();
     }
+
+    while (!TheMapItems.IsEmpty()) {
+        delete TheMapItems.RemoveHead();
+    }
+
+    FEWidget* widget = Options.GetHead();
+    while (widget != Options.EndOfList()) {
+        static_cast< ItemTypeToggle* >(widget)->StartExit();
+        widget = widget->GetNext();
+    }
+
+    ClearWidgets();
 }
 
 bool WorldMap::ClampToMapBounds(float& x, float& y) {
-    bool clamped = false;
-    if (x < MapTopLeft.x) { x = MapTopLeft.x; clamped = true; }
-    if (x > MapTopLeft.x + MapSize.x) { x = MapTopLeft.x + MapSize.x; clamped = true; }
-    if (y < MapTopLeft.y) { y = MapTopLeft.y; clamped = true; }
-    if (y > MapTopLeft.y + MapSize.y) { y = MapTopLeft.y + MapSize.y; clamped = true; }
-    return clamped;
+    float bottom_right_x;
+    float bottom_right_y;
+    FEngGetBottomRight(static_cast< FEObject* >(TrackMap), bottom_right_x, bottom_right_y);
+
+    float min_x = MapTopLeft.x + 8.0f;
+    if (min_x <= x) {
+        if (x <= bottom_right_x - 8.0f) {
+            float min_y = MapTopLeft.y + 26.0f;
+            if (min_y <= y) {
+                float max_y = bottom_right_y - 32.0f;
+                if (y <= max_y) {
+                    return false;
+                }
+                y = max_y;
+            } else {
+                y = min_y;
+            }
+        } else {
+            x = bottom_right_x - 8.0f;
+        }
+    } else {
+        x = min_x;
+    }
+    return true;
 }
 
 void WorldMap::UpdateAnalogInput() {
@@ -972,6 +1013,9 @@ void WorldMap::AddRoadBlocks() {
         img_num++;
         MapItem* item = new MapItem(WMIT_ROADBLOCK, static_cast< FEObject* >(icon), target_pos, world_pos, rot, nullptr);
         TheMapItems.AddTail(item);
+    }
+    if (img_num > 0) {
+        AddMapItemOption(0x411f1f86, WMIT_ROADBLOCK);
     }
 }
 
