@@ -487,8 +487,8 @@ bool FEPackageReader::ReadMessageTargetListChunk() {
             case 0x6354: {
                 unsigned long NumTargets = BSwap32(pTag->Getu32(0));
                 pPack->NumMsgTargets = NumTargets;
-                unsigned long* pMem = static_cast<unsigned long*>(FEngMalloc(NumTargets * 0x10 + 0x10, nullptr, 0));
-                FEMsgTargetList* pEntries = reinterpret_cast<FEMsgTargetList*>(pMem + 4);
+                unsigned long* pMem = static_cast<unsigned long*>(FEngMalloc((NumTargets << 4) | 8, nullptr, 0));
+                FEMsgTargetList* pEntries = reinterpret_cast<FEMsgTargetList*>(pMem + 2);
                 *pMem = NumTargets;
                 if (NumTargets != 0) {
                     FEMsgTargetList* pCur = pEntries;
@@ -505,23 +505,22 @@ bool FEPackageReader::ReadMessageTargetListChunk() {
                 break;
             }
             case 0x744d: {
-                FEMsgTargetList* pCurTarget = &pPack->pMsgTargets[idx];
-                pCurTarget->MsgID = BSwap32(pTag->Getu32(0));
+                pPack->pMsgTargets[idx].MsgID = BSwap32(pTag->Getu32(0));
                 unsigned long NumObjs = (BSwap16(pTag->GetSize()) >> 2) - 1;
-                pCurTarget->Allocate(NumObjs);
-                idx++;
+                pPack->pMsgTargets[idx].Allocate(NumObjs);
                 unsigned long i = 0;
                 if (NumObjs != 0) {
                     do {
                         FEObject* pTarget = pPack->FindObjectByGUID(BSwap32(pTag->Getu32(1 + i)));
-                        pCurTarget->AppendTarget(pTarget);
+                        pPack->pMsgTargets[idx].AppendTarget(pTarget);
                         i++;
                     } while (i < NumObjs);
                 }
+                idx++;
                 break;
             }
             }
-            pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + BSwap16(pTag->GetSize()) + 4);
+            pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + (BSwap16(pTag->GetSize()) + 4));
         }
     }
     return true;
