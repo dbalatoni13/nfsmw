@@ -169,14 +169,17 @@ void uiRapSheetRankingsDetail::Setup() {
     }
     Attrib::Gen::frontend rankingsData(key, 0, nullptr);
     if (rankingsData.IsValid()) {
-        if (rankingsData.Num_RapSheetRanks() == 15) {
-            int num_rows = 15;
-            int rank_shift = 0;
+        int last = rankingsData.Num_RapSheetRanks();
+        if (last == 15) {
+            bool is_time = rank_type == ePDT_CostToState;
+            int player_rank_index = player_rank - 1;
+            int num_rankings_to_show = last;
+            int rival_offset = 0;
             if (player_rank == 0x10) {
-                num_rows = 0x10;
+                num_rankings_to_show = 0x10;
             }
-            for (int i = 0; i < num_rows; i++) {
-                if (i == player_rank - 1) {
+            for (int i = 0; i < num_rankings_to_show; i++) {
+                if (i == player_rank_index) {
                     unsigned int car_hash;
                     int player_value;
                     if (career_view) {
@@ -191,13 +194,13 @@ void uiRapSheetRankingsDetail::Setup() {
                     if (rank_type == ePDT_CostToState) {
                         value = static_cast<float>(player_value) * 0.00025f;
                     } else {
-                        value = static_cast<float>(player_value);
+                            value = static_cast<float>(player_value);
                     }
 
                     AddDatum(new(__FILE__, __LINE__) RapSheetRankingsDatum(player_rank, 1, car_hash, value));
-                    rank_shift--;
+                    rival_offset--;
                 } else {
-                    int rank_index = i + rank_shift;
+                    int rank_index = i + rival_offset;
                     unsigned int name_hash = FEngHashString("BLACKLIST_RIVAL_%.2d_AKA", static_cast<int>(rankingsData.NameId(rank_index)));
                     unsigned int car_hash;
                     if (career_view) {
@@ -211,7 +214,8 @@ void uiRapSheetRankingsDetail::Setup() {
             }
 
             SetInitialPosition(0);
-            for (int i = player_rank - GetHeight() + 4; i > 0; i--) {
+            int dist_off_screen = player_rank - GetHeight() + 4;
+            for (; dist_off_screen > 0; dist_off_screen--) {
                 ScrollDown();
             }
         }
