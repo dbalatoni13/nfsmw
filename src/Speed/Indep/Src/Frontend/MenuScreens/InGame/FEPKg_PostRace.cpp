@@ -9,7 +9,10 @@
 #include "Speed/Indep/Src/Generated/Events/ERestartRace.hpp"
 #include "Speed/Indep/Src/Generated/Events/EShowResults.hpp"
 #include "Speed/Indep/Src/Generated/Events/EUnPause.hpp"
+#include "Speed/Indep/Src/Generated/Messages/MEnterSafeHouse.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyRaceAbandoned.h"
+#include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
@@ -20,6 +23,10 @@
 
 extern FEString *FEngFindString(const char *pkg_name, int hash);
 extern FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
+extern FEImage *FEngFindImage(const char *pkg_name, int hash);
+extern int FEngSNPrintf(char *, int, const char *, ...);
+extern unsigned long FEHashUpper(const char *);
+extern void MemcardEnter(const char *, const char *, unsigned int, void (*)(void *), void *, unsigned int, unsigned int);
 extern void FEngSetInvisible(FEObject *obj);
 extern void FEngSetVisible(FEObject *obj);
 extern bool FEngIsScriptSet(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash);
@@ -73,6 +80,12 @@ extern const char lbl_803E5E24[];
 extern const char lbl_803E5EEC[];
 extern const char lbl_803E5F00[];
 extern const char lbl_803E5F18[];
+extern const char lbl_803E5F38[];
+extern const char lbl_803E5F48[];
+extern const char lbl_803E5F50[];
+extern const char lbl_803E5FA0[];
+extern const char lbl_803E52A0[];
+extern const char lbl_803E52D4[];
 
 template <typename T> static T ReadField(const void *base, int offset) {
     return *reinterpret_cast< const T * >(reinterpret_cast< const char * >(base) + offset);
@@ -1564,6 +1577,119 @@ void PursuitResultsArraySlot::Update(ArrayDatum *datum, bool isSelected) {
         } else {
             FEngSetScript(mItemChecked, 0x163C76, true);
         }
+    }
+}
+
+PostRacePursuitScreen::PostRacePursuitScreen(ScreenConstructorData *sd)
+    : ArrayScrollerMenu(sd, 1, 9, false) //
+    , mPostPursuitScreenMode(POSTPURSUITSCREENMODE_PURSUIT) //
+    , m_RaceButtonHash(0x5CED1D04) {
+    int i = 0;
+    while (i < GetHeight()) {
+        i++;
+        char sztemp[32];
+        FEngSNPrintf(sztemp, 0x20, lbl_803E5DB0, i);
+        FEObject *wrapperGroup = FEngFindObject(GetPackageName(), FEHashUpper(sztemp));
+        FEngSNPrintf(sztemp, 0x20, lbl_803E5F38, i);
+        FEString *itemName = FEngFindString(GetPackageName(), FEHashUpper(sztemp));
+        FEngSNPrintf(sztemp, 0x20, lbl_803E5E04, i);
+        FEString *itemValue = FEngFindString(GetPackageName(), FEHashUpper(sztemp));
+        FEngSNPrintf(sztemp, 0x20, lbl_803E5F48, i);
+        FEImage *checkMark = FEngFindImage(GetPackageName(), FEHashUpper(sztemp));
+        FEngSNPrintf(sztemp, 0x20, lbl_803E5F50, i);
+        FEImage *emptyMark = FEngFindImage(GetPackageName(), FEHashUpper(sztemp));
+        AddSlot(new PursuitResultsArraySlot(wrapperGroup, itemName, itemValue, checkMark, emptyMark));
+    }
+    Initialize();
+}
+
+PostRacePursuitScreen::~PostRacePursuitScreen() {
+    if (GetPursuitData().mExitToSafehouse != 0) {
+        GetPursuitData().mExitToSafehouse = 0;
+        UCrc32 postCrc(0x20D60DBF);
+        MEnterSafeHouse msg(lbl_803E52A0);
+        msg.Post(postCrc);
+    }
+}
+
+void PostRacePursuitScreen::Initialize() {
+    ClearData();
+    if (mPostPursuitScreenMode == POSTPURSUITSCREENMODE_INFRACTIONS) {
+        FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0xFB415E78);
+        if (TheGameFlowManager.IsInFrontend()) {
+            FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0x7448870B);
+        } else {
+            FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0x74413352);
+            if (GRaceStatus::Exists()) {
+                GRaceParameters *raceParams = GRaceStatus::Get().GetRaceParameters();
+                if (raceParams && raceParams->GetIsPursuitRace() && !FEDatabase->IsFinalEpicChase()) {
+                    FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0x9145A5F2);
+                }
+            }
+        }
+        SetupInfractions();
+    } else if (mPostPursuitScreenMode == POSTPURSUITSCREENMODE_MILESTONES) {
+        FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0x578B767B);
+        if (GRaceStatus::Exists()) {
+            GRaceParameters *raceParams = GRaceStatus::Get().GetRaceParameters();
+            if (raceParams && raceParams->GetIsPursuitRace() && !FEDatabase->IsFinalEpicChase()) {
+                FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0x334FA7FB);
+            }
+        }
+        FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0x7448870B);
+        SetupMilestones();
+    } else {
+        FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0xFEA872D4);
+        FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xAEAEB62F);
+        SetupPursuit();
+    }
+    SetInitialPosition(0);
+    ArrayScroller::RefreshHeader();
+}
+
+void PostRacePursuitScreen::NotificationMessage(unsigned long msg, FEObject *pObject, unsigned long Param1, unsigned long Param2) {
+    ArrayScrollerMenu::NotificationMessage(msg, pObject, Param1, Param2);
+    switch (msg) {
+    case 0x406415E3:
+        if (TheGameFlowManager.IsInFrontend()) {
+            if (FEDatabase->IsQuickRaceMode()) {
+                cFEng::Get()->QueuePackageSwitch(lbl_803E5FA0, 0, 0, false);
+            } else {
+                cFEng::Get()->QueuePackageSwitch(lbl_803E52D4, 0, 0, false);
+            }
+        } else if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing) {
+            GRacerInfo &info = GRaceStatus::Get().GetRacerInfo(0);
+            if (info.IsFinishedRacing() && GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace()) {
+                if (FEDatabase->IsChallengeMode() && MemoryCard::GetInstance()->ShouldDoAutoSave(false)) {
+                    MemcardEnter(nullptr, nullptr, 0x100B1, nullptr, nullptr, 0, 0);
+                } else {
+                    new EQuitToFE(static_cast<eGarageType>(1), nullptr);
+                }
+            } else {
+                new EUnPause();
+            }
+        } else {
+            new EUnPause();
+        }
+        break;
+    case 0xC519BFC3:
+        if (TheGameFlowManager.IsInFrontend()) {
+            if (mPostPursuitScreenMode == POSTPURSUITSCREENMODE_INFRACTIONS) {
+                mPostPursuitScreenMode = POSTPURSUITSCREENMODE_PURSUIT;
+            } else {
+                mPostPursuitScreenMode = POSTPURSUITSCREENMODE_INFRACTIONS;
+            }
+        } else {
+            if (mPostPursuitScreenMode == POSTPURSUITSCREENMODE_INFRACTIONS) {
+                mPostPursuitScreenMode = POSTPURSUITSCREENMODE_MILESTONES;
+            } else if (mPostPursuitScreenMode == POSTPURSUITSCREENMODE_MILESTONES) {
+                mPostPursuitScreenMode = POSTPURSUITSCREENMODE_PURSUIT;
+            } else {
+                mPostPursuitScreenMode = POSTPURSUITSCREENMODE_INFRACTIONS;
+            }
+        }
+        Initialize();
+        break;
     }
 }
 
