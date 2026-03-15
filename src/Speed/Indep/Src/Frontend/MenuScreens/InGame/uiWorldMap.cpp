@@ -390,22 +390,26 @@ void WorldMap::NotificationMessage(unsigned long msg, FEObject* obj, unsigned lo
                     if (iplayer != nullptr) {
                         ISimable* isimable = iplayer->GetSimable();
                         if (isimable != nullptr) {
+                            unsigned int title_hash;
+                            unsigned int message_hash;
+                            unsigned int button_hash;
                             if (SelectedItem == nullptr || SelectedItem->GetIcon() == nullptr) {
                                 if (mGPSingIcon == nullptr) {
                                     return;
                                 }
-                                DialogInterface::ShowTwoButtons(
-                                    GetPackageName(), "InGameDialog.fng",
-                                    static_cast< eDialogTitle >(3), 0x417b2601, 0x1a294dad,
-                                    0xa16ca7bd, 0xb4edeb6d, 0xb4edeb6d,
-                                    static_cast< eDialogFirstButtons >(1), 0xa6be2ebb);
+                                title_hash = 0x417b2601;
+                                message_hash = 0x1a294dad;
+                                button_hash = 0xa6be2ebb;
                             } else {
-                                DialogInterface::ShowTwoButtons(
-                                    GetPackageName(), "InGameDialog.fng",
-                                    static_cast< eDialogTitle >(3), 0x70e01038, 0x417b25e4,
-                                    0xa16ca7bd, 0xb4edeb6d, 0xb4edeb6d,
-                                    static_cast< eDialogFirstButtons >(1), 0x96ac0a32);
+                                title_hash = 0x70e01038;
+                                message_hash = 0x417b25e4;
+                                button_hash = 0x96ac0a32;
                             }
+                            DialogInterface::ShowTwoButtons(
+                                GetPackageName(), "InGameDialog.fng",
+                                static_cast< eDialogTitle >(3), title_hash, message_hash,
+                                0xa16ca7bd, 0xb4edeb6d, 0xb4edeb6d,
+                                static_cast< eDialogFirstButtons >(1), button_hash);
                         }
                     }
                     return;
