@@ -328,8 +328,8 @@ void MemoryCard::SetMessageMode(unsigned int msg, bool flag) {
 void MemoryCard::Tick(int TickCount) {
     if (m_MemOp == 0 && m_ReqOp != 0) ProcessTask();
     if (m_bAutoSaveRequested && m_bHUDLoaded && GManager::Exists() && !GManager::Get().GetHasPendingSMS()) {
-        m_bAutoSaveRequested = false;
         m_bHUDLoaded = false;
+        m_bAutoSaveRequested = false;
         StartAutoSave(false);
     }
     if (Joylog::IsReplaying()) {
@@ -341,22 +341,22 @@ void MemoryCard::Tick(int TickCount) {
     }
     if (FEDatabase == nullptr) return;
     if (FEDatabase->IsOptionsMode()) return;
-    if (!cFEng::Get()->IsPackagePushed("ScreenPrintf")
-        && !cFEng::Get()->IsPackagePushed("MemoryCard.fng")
-        && !IsAutoSaveIconVisible()) {
-        if (!m_bNeedToAllowControllerErrors) return;
-        m_bNeedToAllowControllerErrors = false;
-        if (FEManager::Get()->IsAllowingControllerError()) return;
-        if (m_bNonSilentAutoSave) { m_bNonSilentAutoSave = false; return; }
-        FEManager::Get()->AllowControllerError(true);
-        FEManager::Get()->SuppressControllerError(false);
-    } else {
+    if (cFEng::Get()->IsPackagePushed("ScreenPrintf")
+        || cFEng::Get()->IsPackagePushed("MemoryCard.fng")
+        || IsAutoSaveIconVisible()) {
         if (!FEManager::Get()->IsAllowingControllerError() && TheGameFlowManager.GetState() != 6) return;
         if (cFEng::Get()->IsPackagePushed("IG_Pause.fng") || cFEng::Get()->IsPackagePushed("AutoSaveIcon.fng"))
             m_bNonSilentAutoSave = true;
         m_bNeedToAllowControllerErrors = true;
         FEManager::Get()->AllowControllerError(false);
         FEManager::Get()->SuppressControllerError(true);
+    } else {
+        if (!m_bNeedToAllowControllerErrors) return;
+        m_bNeedToAllowControllerErrors = false;
+        if (FEManager::Get()->IsAllowingControllerError()) return;
+        if (m_bNonSilentAutoSave) { m_bNonSilentAutoSave = false; return; }
+        FEManager::Get()->AllowControllerError(true);
+        FEManager::Get()->SuppressControllerError(false);
     }
 }
 
