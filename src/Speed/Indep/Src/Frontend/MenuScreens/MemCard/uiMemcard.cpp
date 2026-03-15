@@ -430,14 +430,17 @@ void UIMemcardList::NotificationMessage(unsigned long msg, FEObject* obj, unsign
         m_SaveGameList.ScrollNext();
         break;
     case 0x406415e3: {
+        cFrontendDatabase* database = FEDatabase;
         bool isMultitap = false;
-        if (FEDatabase->MatchesGameMode(4)) {
-            isMultitap = FEDatabase->iNumPlayers == 2;
-        }
         gMemcardSetup.mLastController = param1;
+        if (database->MatchesGameMode(4)) {
+            isMultitap = database->iNumPlayers == 2;
+        }
         if (!isMultitap) {
+            MemoryCard* memoryCard = MemoryCard::GetInstance();
+            int playerNum = memoryCard->GetPlayerNum();
             signed char port = static_cast< signed char >(FEngMapJoyParamToJoyport(static_cast< int >(param1)));
-            FEDatabase->SetPlayersJoystickPort(MemoryCard::GetInstance()->GetPlayerNum(), port);
+            database->SetPlayersJoystickPort(playerNum, port);
         }
         MemoryCard::GetInstance()->SetMonitor(false);
         break;
