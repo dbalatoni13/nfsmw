@@ -84,77 +84,86 @@ eMenuSoundTriggers uiRepSheetMain::NotifySoundMessage(unsigned long msg, eMenuSo
 
 void uiRepSheetMain::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) {
     IconScrollerMenu::NotificationMessage(msg, obj, param1, param2);
-    if (msg == 0x911c0a4b) {
-        ScrollRival(static_cast<eScrollDir>(1));
-        return;
-    }
-    if (msg < 0x911c0a4c) {
-        if (msg == 0x72619778) {
-            ScrollRival(static_cast<eScrollDir>(-1));
-        }
-        return;
-    }
-    const char* packageName;
-    int packageFlags = 0;
-    if (msg == 0xc519bfc3) {
-        if (bBossBeaten || !bBossAvailable) {
-            return;
-        }
-        if (bIsInGame) {
-            cFEng::Get()->QueuePackageSwitch("InGameRivalChallenge.fng", 1, 0, false);
-            return;
-        }
-        packageName = "SafeHouseRivalChallenge.fng";
-    } else {
-        if (msg != 0xe1fde1d1) {
-            return;
-        }
-        if (PrevButtonMessage == 0xc407210) {
-            if (selection == 0) {
-                if (bIsInGame) {
-                    packageName = "InGameRaceSheet.fng";
-                    packageFlags = 1;
-                    goto queue_switch;
-                }
-                packageName = "SafeHouseRaceSheet.fng";
-            } else if (selection == 1) {
-                if (bIsInGame) {
-                    packageName = "InGameMilestones.fng";
-                    packageFlags = 1;
-                    goto queue_switch;
-                }
-                packageName = "SafeHouseMilestones.fng";
-            } else if (selection == 2) {
-                if (bIsInGame) {
-                    packageName = "InGameBounty.fng";
-                    packageFlags = 1;
-                    goto queue_switch;
-                }
-                packageName = "SafeHouseBounty.fng";
-            } else {
-                if (selection != 4) {
-                    return;
-                }
-                if (bIsInGame) {
-                    packageName = "InGameRivalBio.fng";
-                    packageFlags = 1;
-                    goto queue_switch;
-                }
-                packageName = "SafeHouseRivalBio.fng";
+    if (msg != 0x911c0a4b) {
+        if (msg < 0x911c0a4c) {
+            if (msg != 0x72619778) {
+                return;
             }
-        } else {
-            if (PrevButtonMessage != 0x911ab364) {
+            ScrollRival(static_cast<eScrollDir>(-1));
+            return;
+        }
+        const char* packageName;
+        unsigned int packageFlags;
+        if (msg == 0xc519bfc3) {
+            if (bBossBeaten) {
+                return;
+            }
+            if (!bBossAvailable) {
                 return;
             }
             if (bIsInGame) {
-                new ERaceSheetOff();
+                cFEng::Get()->QueuePackageSwitch("InGameRivalChallenge.fng", 1, 0, false);
                 return;
             }
-            packageName = "MainMenu_Sub.fng";
+            packageName = "SafeHouseRivalChallenge.fng";
+        } else {
+            if (msg != 0xe1fde1d1) {
+                return;
+            }
+            if (PrevButtonMessage == 0xc407210) {
+                if (selection == 0) {
+                    if (!bIsInGame) {
+                        packageName = "SafeHouseRaceSheet.fng";
+                    } else {
+                        packageName = "InGameRaceSheet.fng";
+                        packageFlags = 1;
+                        goto queue_switch;
+                    }
+                } else if (selection == 1) {
+                    if (!bIsInGame) {
+                        packageName = "SafeHouseMilestones.fng";
+                    } else {
+                        packageName = "InGameMilestones.fng";
+                        packageFlags = 1;
+                        goto queue_switch;
+                    }
+                } else if (selection == 2) {
+                    if (!bIsInGame) {
+                        packageName = "SafeHouseBounty.fng";
+                    } else {
+                        packageName = "InGameBounty.fng";
+                        packageFlags = 1;
+                        goto queue_switch;
+                    }
+                } else {
+                    if (selection != 4) {
+                        return;
+                    }
+                    if (!bIsInGame) {
+                        packageName = "SafeHouseRivalBio.fng";
+                    } else {
+                        packageName = "InGameRivalBio.fng";
+                        packageFlags = 1;
+                        goto queue_switch;
+                    }
+                }
+            } else {
+                if (PrevButtonMessage != 0x911ab364) {
+                    return;
+                }
+                if (bIsInGame) {
+                    new ERaceSheetOff();
+                    return;
+                }
+                packageName = "MainMenu_Sub.fng";
+            }
         }
+        packageFlags = 0;
+    queue_switch:
+        cFEng::Get()->QueuePackageSwitch(packageName, packageFlags, 0, false);
+        return;
     }
-queue_switch:
-    cFEng::Get()->QueuePackageSwitch(packageName, packageFlags, 0, false);
+    ScrollRival(static_cast<eScrollDir>(1));
 }
 
 void uiRepSheetMain::Setup() {
@@ -311,8 +320,8 @@ void uiRepSheetMain::UpdateInfo() {
 }
 
 void uiRepSheetMain::ScrollRival(eScrollDir dir) {
+    unsigned char currentBin = FEDatabase->GetCareerSettings()->GetCurrentBin();
     unsigned int oldViewBin = iCurrentViewBin;
-    unsigned int currentBin = FEDatabase->GetCareerSettings()->GetCurrentBin();
     if (currentBin == 15) {
         return;
     }
