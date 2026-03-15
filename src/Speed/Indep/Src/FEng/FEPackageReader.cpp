@@ -433,24 +433,24 @@ void FEPackageReader::ProcessCodeListBoxTag(FETag* pTag) {
 bool FEPackageReader::ReadMessageResponseTags(FETag* pTag, unsigned long Length, bool bPackage) {
     FETag* pEnd = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + Length);
     FEMessageResponse* pMsgResp = nullptr;
-    int CurResponse = -1;
     FEResponse* pResp = nullptr;
+    int CurResponse = -1;
     while (pTag < pEnd) {
         unsigned short tagID = BSwap16(pTag->GetID());
         switch (tagID) {
             case 0x694d: {
                 unsigned long MsgID = BSwap32(pTag->Getu32(0));
                 pMsgResp = nullptr;
-                if (!bPackage && pObj) {
+                if (!bPackage && bIsReference) {
                     pMsgResp = pObj->FindResponse(MsgID);
                 }
                 if (!pMsgResp) {
                     pMsgResp = new FEMessageResponse();
                     pMsgResp->SetMsgID(MsgID);
-                    if (!bPackage) {
-                        pObj->Responses.AddNode(pObj->Responses.GetTail(), pMsgResp);
-                    } else {
+                    if (bPackage) {
                         pPack->Responses.AddNode(pPack->Responses.GetTail(), pMsgResp);
+                    } else {
+                        pObj->Responses.AddNode(pObj->Responses.GetTail(), pMsgResp);
                     }
                 } else {
                     pMsgResp->PurgeResponses();
@@ -470,10 +470,10 @@ bool FEPackageReader::ReadMessageResponseTags(FETag* pTag, unsigned long Length,
                 pResp->SetParam(reinterpret_cast<const char*>(pTag->Data()));
                 break;
             case 0x7452:
-                pResp->ResponseTarget = BSwap32(pTag->Getu32(0));
+                pResp->ResponseParam = BSwap32(pTag->Getu32(0));
                 break;
             case 0x7552:
-                pResp->ResponseParam = BSwap32(pTag->Getu32(0));
+                pResp->ResponseTarget = BSwap32(pTag->Getu32(0));
                 break;
         }
         pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + BSwap16(pTag->GetSize()) + 4);
@@ -656,79 +656,86 @@ bool FEPackageReader::ReadObjectChunk() {
 
     while (true) {
         unsigned long chunkID = BSwap32(pObjChunk->GetID());
-        if (chunkID == 0xea624f46) {
-            do {
-                if (pLast <= pObjChunk) {
-                    return true;
-                }
-
-                pObj = nullptr;
-                pParent = nullptr;
-
-                FEChunk* pLastSub = pObjChunk->GetLastChunk();
-                FEChunk* pSubChunk = pObjChunk->GetFirstChunk();
-
-                while (pSubChunk < pLastSub) {
-                    unsigned long subID = BSwap32(pSubChunk->GetID());
-                    switch (subID) {
-                        case 0x446a624f:
-                            if (!ReadObjectTags(reinterpret_cast<FETag*>(pSubChunk->GetData()), BSwap32(pSubChunk->GetSize()))) {
-                                return false;
-                            }
-                            break;
-                        case 0x5267734d:
-                            ReadMessageResponseTags(reinterpret_cast<FETag*>(pSubChunk->GetData()), BSwap32(pSubChunk->GetSize()), false);
-                            break;
-                        case 0x70726353:
-                            ReadScriptTags(reinterpret_cast<FETag*>(pSubChunk->GetData()), BSwap32(pSubChunk->GetSize()));
-                            break;
-                    }
-                    pSubChunk = pSubChunk->GetNext();
-                }
-
-                if (pObj) {
-                    if (pObj->Type == FE_List) {
-                        static_cast<FEListBox*>(pObj)->RecalculateCummulative();
-                    } else if (pObj->Type == FE_CodeList) {
-                        static_cast<FECodeListBox*>(pObj)->FillAllCells();
-                    }
-
-                    FEScript* pScript = pObj->GetFirstScript();
-                    while (pScript) {
-                        if (pScript->pChainTo) {
-                            pScript->pChainTo = pObj->FindScript(reinterpret_cast<unsigned long>(pScript->pChainTo));
-                        }
-                        pScript = pScript->GetNext();
-                    }
-
-                    FEScript* pDefaultScript = pObj->FindScript(0x1744b3);
-                    pObj->SetCurrentScript(pDefaultScript);
-                    pDefaultScript->CurTime = 0;
-
-                    if (!bIsLibrary) {
-                        unsigned char i = 0;
-                        if (pDefaultScript->TrackCount != 0) {
-                            do {
-                                FEKeyInterp(pDefaultScript, i, 0, pObj);
-                                i++;
-                            } while (i < pDefaultScript->TrackCount);
-                        }
-                    }
-
-                    if (pParent) {
-                        static_cast<FEGroup*>(pParent)->AddObject(pObj);
-                    } else {
-                        pPack->AddObject(pObj);
-                    }
-                }
-
-                pObjChunk = pObjChunk->GetNext();
-            } while (true);
+        if (chunkID != 0xea624f46) {
+            if (pObjChunk >= pLast) {
+                return true;
+            }
+            if (chunkID == 0x6e747542) {
+                unsigned long count = BSwap32(*reinterpret_cast<unsigned long*>(pObjChunk->GetData()));
+                ButtonCount = count;
+                pPack->ButtonMap.SetCount(count);
+            }
+            pObjChunk = pObjChunk->GetNext();
+            continue;
         }
-        pObjChunk = pObjChunk->GetNext();
-        if (pLast <= pObjChunk) {
+        if (pObjChunk >= pLast) {
             return true;
         }
+        do {
+
+            pObj = nullptr;
+            pParent = nullptr;
+
+            FEChunk* pLastSub = pObjChunk->GetLastChunk();
+            FEChunk* pSubChunk = pObjChunk->GetFirstChunk();
+
+            while (pSubChunk < pLastSub) {
+                unsigned long subID = BSwap32(pSubChunk->GetID());
+                switch (subID) {
+                    case 0x446a624f:
+                        if (!ReadObjectTags(reinterpret_cast<FETag*>(pSubChunk->GetData()), BSwap32(pSubChunk->GetSize()))) {
+                            return false;
+                        }
+                        break;
+                    case 0x5267734d:
+                        ReadMessageResponseTags(reinterpret_cast<FETag*>(pSubChunk->GetData()), BSwap32(pSubChunk->GetSize()), false);
+                        break;
+                    case 0x70726353:
+                        ReadScriptTags(reinterpret_cast<FETag*>(pSubChunk->GetData()), BSwap32(pSubChunk->GetSize()));
+                        break;
+                }
+                pSubChunk = pSubChunk->GetNext();
+            }
+
+            if (pObj) {
+                if (pObj->Type == FE_List) {
+                    static_cast<FEListBox*>(pObj)->RecalculateCummulative();
+                } else if (pObj->Type == FE_CodeList) {
+                    static_cast<FECodeListBox*>(pObj)->FillAllCells();
+                }
+
+                FEScript* pScript = pObj->GetFirstScript();
+                while (pScript) {
+                    if (pScript->pChainTo) {
+                        pScript->pChainTo = pObj->FindScript(reinterpret_cast<unsigned long>(pScript->pChainTo));
+                    }
+                    pScript = pScript->GetNext();
+                }
+
+                FEScript* pDefaultScript = pObj->FindScript(0x1744b3);
+                pObj->SetCurrentScript(pDefaultScript);
+                pDefaultScript->CurTime = 0;
+
+                if (!bIsLibrary) {
+                    unsigned char i = 0;
+                    if (pDefaultScript->TrackCount != 0) {
+                        do {
+                            FEKeyInterp(pDefaultScript, i, 0, pObj);
+                            i++;
+                        } while (i < pDefaultScript->TrackCount);
+                    }
+                }
+
+                if (pParent) {
+                    static_cast<FEGroup*>(pParent)->AddObject(pObj);
+                } else {
+                    pPack->AddObject(pObj);
+                }
+            }
+
+            pObjChunk = pObjChunk->GetNext();
+        } while (pObjChunk < pLast);
+        return true;
     }
 }
 

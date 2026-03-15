@@ -17,6 +17,11 @@ struct FELibraryRef {
     unsigned long ObjGUID;       // offset 0x0, size 0x4
     unsigned long PackNameHash;  // offset 0x4, size 0x4
     unsigned long LibGUID;       // offset 0x8, size 0x4
+
+    FELibraryRef()
+        : ObjGUID(0) //
+        , PackNameHash(0xFFFFFFFF) //
+        , LibGUID(0) {}
 };
 
 // total size: 0x14
@@ -589,14 +594,7 @@ void FEPackage::SetNumLibraryRefs(unsigned long NewCount) {
         }
         pLibRefs = nullptr;
     } else {
-        FELibraryRef* pNewList = static_cast<FELibraryRef*>(FEngMalloc(NewCount * sizeof(FELibraryRef), nullptr, 0));
-        FELibraryRef* p = pNewList;
-        for (unsigned long i = 0; i < NewCount; i++) {
-            p->ObjGUID = 0;
-            p->PackNameHash = 0xFFFFFFFF;
-            p->LibGUID = 0;
-            p++;
-        }
+        FELibraryRef* pNewList = new FELibraryRef[NewCount];
         unsigned long CopyCount = NewCount;
         if (NewCount > NumLibRefs) {
             CopyCount = NumLibRefs;
