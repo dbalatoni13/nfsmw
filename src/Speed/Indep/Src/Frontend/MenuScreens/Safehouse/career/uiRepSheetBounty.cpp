@@ -41,11 +41,19 @@ uiRepSheetBounty::uiRepSheetBounty(ScreenConstructorData* sd)
     TrackMapStreamer = nullptr;
     TrackMap = nullptr;
     tutorialPlaying = false;
-    TrackMapStreamer = new UITrackMapStreamer();
-    if (!bIsInGame) {
-        FEngSetLanguageHash(GetPackageName(), 0xbde82fcc, 0x216f1b81);
+    TrackMapStreamer = new (__FILE__, __LINE__) UITrackMapStreamer();
+    for (int i = 0; i < GetWidth() * GetHeight(); i++) {
+        FEImage* img = FEngFindImage(GetPackageName(), FEngHashString("EVENT_ICON_%d", i + 1));
+        if (img) {
+            AddSlot(new (__FILE__, __LINE__) ImageArraySlot(img));
+        }
+    }
+    TrackMap = reinterpret_cast< FEMultiImage* >(
+        FEngFindObject(GetPackageName(), FEngHashString("TRACK_MAP")));
+    if (bIsInGame) {
+        FEngSetLanguageHash(GetPackageName(), 0xbde82fcc, 0x6ddfa694);
     } else {
-        FEngSetLanguageHash(GetPackageName(), 0xbde82fcc, 0x578b767b);
+        FEngSetLanguageHash(GetPackageName(), 0xbde82fcc, 0xe451941e);
     }
     Setup();
 }
