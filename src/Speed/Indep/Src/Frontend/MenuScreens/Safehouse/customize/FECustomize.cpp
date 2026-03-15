@@ -138,7 +138,7 @@ extern void FEngSetLanguageHash(FEString *str, unsigned int hash);
 extern void eLoadStreamingTexture(unsigned int *textures, int count, void (*callback)(void *), void *param, int priority);
 
 extern const char *g_pCustomizeShowcasePkg;
-extern const char *g_pCustomizeDlgPkg;
+extern const char g_pCustomizeDlgPkg[];
 extern void StartCareerFreeRoam();
 extern char FEngMapJoyParamToJoyport(unsigned long param);
 extern void *MemoryCard_s_pThis;
@@ -225,24 +225,25 @@ void CustomizeCategoryScreen::RefreshHeader() {
     if (status == 2) {
         FEngSetVisible(FEngFindObject(GetPackageName(), 0xcffb7033));
         FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xcffb7033), 0xf0574bb2);
+        FEngSetScript(GetPackageName(), 0xcffb7033, 0x5079c8f8, true);
     } else if (status == 3) {
         FEngSetVisible(FEngFindObject(GetPackageName(), 0xcffb7033));
         FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xcffb7033), 0xcffb7033);
+        FEngSetScript(GetPackageName(), 0xcffb7033, 0x5079c8f8, true);
     } else {
         FEngSetInvisible(FEngFindObject(GetPackageName(), 0xcffb7033));
-        goto after_icon;
     }
-    FEngSetScript(GetPackageName(), 0xcffb7033, 0x5079c8f8, true);
-after_icon:
     CarCustomizeManager &mgr = gCarCustomizeManager;
     if (mgr.IsCareerMode()) {
-        HeatMeter.SetCurrent(mgr.GetActualHeat());
-        HeatMeter.SetPreview(mgr.GetCartHeat());
-        HeatMeter.Draw();
+        CustomizeMeter *meter = &HeatMeter;
+        meter->SetCurrent(mgr.GetActualHeat());
+        meter->SetPreview(mgr.GetCartHeat());
+        meter->Draw();
         if (CustomizeIsInBackRoom()) {
             FEngSetLanguageHash(GetPackageName(), 0x63ca8308, GetMarkerNameFromCategory(static_cast<eCustomizeCategory>(Category)));
-            FEPrintf(GetPackageName(), 0x83e3cd39, "%d", GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(Category)));
-            FEPrintf(GetPackageName(), 0x23d918fe, "%d", TheFEMarkerManager.GetNumCustomizeMarkers());
+            const char *fmt = "%d";
+            FEPrintf(GetPackageName(), 0x83e3cd39, fmt, GetNumMarkersFromCategory(static_cast<eCustomizeCategory>(Category)));
+            FEPrintf(GetPackageName(), 0x23d918fe, fmt, TheFEMarkerManager.GetNumCustomizeMarkers());
         } else {
             FEPrintf(GetPackageName(), 0x7a6d2f71, "%d", mgr.GetCartTotal(CCT_TOTAL));
             FEPrintf(GetPackageName(), 0xc60adcfd, "%d", FEDatabase->GetCareerSettings()->GetCash());
@@ -1752,28 +1753,17 @@ void CustomizeMain::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
         CustomizeCategoryScreen::NotificationMessage(msg, pobj, param1, param2);
     }
     switch (msg) {
-    case 0x34dc1bec:
-        if (invalidMarkers < TheFEMarkerManager.GetNumCustomizeMarkers()) {
-            SwitchRooms();
-        }
-        invalidMarkers = 0;
-        break;
     case 0x1265ece9: {
-        GarageMainScreen *gms = GetInstance_GarageMainScreen();
-        gms->UpdateCurrentCameraView(false);
-        unsigned int qmsg;
+        GetInstance_GarageMainScreen()->UpdateCurrentCameraView(false);
         if (CustomizeIsInBackRoom()) {
-            qmsg = 0xa1caff8d;
+            cFEng_mInstance->QueuePackageMessage(0xa1caff8d, GetPackageName(), nullptr);
         } else {
-            qmsg = 0x5c01c5;
+            cFEng_mInstance->QueuePackageMessage(0x5c01c5, GetPackageName(), nullptr);
         }
-        cFEng_mInstance->QueuePackageMessage(qmsg, GetPackageName(), nullptr);
         break;
     }
     case 0x911ab364:
-        if (!gCarCustomizeManager.IsCareerMode()) {
-            cFEng_mInstance->QueuePackageMessage(0x6d5d86a1, GetPackageName(), nullptr);
-        } else {
+        if (gCarCustomizeManager.IsCareerMode()) {
             if (CustomizeIsInBackRoom()) {
                 SwitchRooms();
                 return;
@@ -1788,26 +1778,35 @@ void CustomizeMain::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
             }
             CarViewer_haveLoadedOnce = 0;
             StartCareerFreeRoam();
+        } else {
+            cFEng_mInstance->QueuePackageMessage(0x6d5d86a1, GetPackageName(), nullptr);
         }
         gCarCustomizeManager.RelinquishControl();
         break;
+    case 0x34dc1bec:
+        if (gCarCustomizeManager.GetNumCustomizeMarkers() > invalidMarkers) {
+            SwitchRooms();
+        }
+        invalidMarkers = 0;
+        break;
     case 0xc519bfc4:
-        if ((!gCarCustomizeManager.IsCareerMode() || TheFEMarkerManager.GetNumCustomizeMarkers() != 0) &&
-            gCarCustomizeManager.IsCareerMode() && !CustomizeIsInBackRoom() && !gCarCustomizeManager.IsHeroCar()) {
-            invalidMarkers = 0;
-            if (TheFEMarkerManager.IsMarkerAvailable(FEMarkerManager::MARKER_INDUCTION, 0) &&
-                !gCarCustomizeManager.CanInstallJunkman(Physics::Upgrades::kType_Brakes)) {
-                invalidMarkers++;
-            }
-            if (TheFEMarkerManager.IsMarkerAvailable(FEMarkerManager::MARKER_NOS, 0) &&
-                !gCarCustomizeManager.CanInstallJunkman(Physics::Upgrades::kType_Induction)) {
-                invalidMarkers++;
-            }
-            if (invalidMarkers < 1) {
-                SwitchRooms();
-            } else {
-                DialogInterface::ShowOneButton(GetPackageName(), g_pCustomizeDlgPkg, static_cast<eDialogTitle>(2),
-                    0x417b2601, 0x34dc1bec, 0x3b3e83);
+        if (!gCarCustomizeManager.IsCareerMode() || gCarCustomizeManager.GetNumCustomizeMarkers() != 0) {
+            if (gCarCustomizeManager.IsCareerMode() && !CustomizeIsInBackRoom() && !gCarCustomizeManager.IsHeroCar()) {
+                invalidMarkers = 0;
+                if (TheFEMarkerManager.IsMarkerAvailable(FEMarkerManager::MARKER_INDUCTION, 0) &&
+                    !gCarCustomizeManager.CanInstallJunkman(Physics::Upgrades::kType_Brakes)) {
+                    invalidMarkers++;
+                }
+                if (TheFEMarkerManager.IsMarkerAvailable(FEMarkerManager::MARKER_NOS, 0) &&
+                    !gCarCustomizeManager.CanInstallJunkman(Physics::Upgrades::kType_Induction)) {
+                    invalidMarkers++;
+                }
+                if (invalidMarkers > 0) {
+                    DialogInterface::ShowOneButton(GetPackageName(), g_pCustomizeDlgPkg, static_cast<eDialogTitle>(2),
+                        0x417b2601, 0x34dc1bec, 0x3b3e83);
+                } else {
+                    SwitchRooms();
+                }
             }
         }
         break;
