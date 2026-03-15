@@ -1,26 +1,18 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeEngineTempGauge.hpp"
 
 #include "Speed/Indep/Src/FEng/FEMultiImage.h"
-#include "Speed/Indep/Src/Sim/Simulation.h"
 
 void FEngSetMultiImageRot(FEMultiImage *image, float angle_degrees);
 void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
 bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
 FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
 unsigned long FEHashUpper(const char *name);
-int bStrICmp(const char *s1, const char *s2);
 
-extern const char lbl_803E4D20[];
 extern const char lbl_803E4DB0[];
 extern const char lbl_803E4DC8[];
 extern const char lbl_803E4DE0[];
 extern const float lbl_803E4DF0;
-extern const float lbl_803E4DF4;
-extern const float lbl_803E4DF8;
-extern const float lbl_803E4DFC;
-extern const float lbl_803E4E00;
-extern const float lbl_803E4E04;
-extern const float lbl_803E4E08;
+extern float warningPulseMinRpm;
 
 EngineTempGauge::EngineTempGauge(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
     : HudElement(pkg_name, 0x40) //
@@ -39,32 +31,37 @@ void EngineTempGauge::Update(IPlayer *player) {
     }
     mEngineTempChanged = false;
 
-    float maxAngle = lbl_803E4DF4;
-    if (bStrICmp(pPackageName, lbl_803E4D20) != 0) {
-        if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
-            maxAngle = lbl_803E4E00;
-        }
-    } else {
-        maxAngle = lbl_803E4DF8;
-    }
+    if (mpEngineTempGaugeBar) {
+        const float min_angle = -26.5f;
+        const float max_angle = 26.5f;
+        FEngSetMultiImageRot(mpEngineTempGaugeBar, mEngineTemp * max_angle + min_angle);
 
-    if (mpEngineTempGaugeBar != nullptr) {
-        FEngSetMultiImageRot(mpEngineTempGaugeBar, mEngineTemp * -maxAngle + maxAngle);
-    }
-
-    if (mEngineTemp < lbl_803E4DFC) {
-        if (!FEngIsScriptSet(mpWarningLight, 0x1744B3)) {
-            FEngSetScript(mpWarningLight, 0x1744B3, true);
-        }
-    } else {
-        if (mEngineTemp < lbl_803E4E04) {
-            if (!FEngIsScriptSet(mpWarningLight, 0x77031C70)) {
-                FEngSetScript(mpWarningLight, 0x77031C70, true);
+        if (mEngineTemp > warningPulseMinRpm) {
+            if (!FEngIsScriptSet(mpEngineTempGaugeBar, FEHashUpper("OVERHEAT_PULSE"))) {
+                FEngSetScript(mpEngineTempGaugeBar, FEHashUpper("OVERHEAT_PULSE"), true);
             }
         } else {
-            if (!FEngIsScriptSet(mpWarningLight, 0xDA600155)) {
-                FEngSetScript(mpWarningLight, 0xDA600155, true);
+            if (!FEngIsScriptSet(mpEngineTempGaugeBar, FEHashUpper("INIT"))) {
+                FEngSetScript(mpEngineTempGaugeBar, FEHashUpper("INIT"), true);
             }
+        }
+    }
+
+    if (mpWarningLight) {
+        const char *script;
+        if (mEngineTemp > warningPulseMinRpm) {
+            script = "OVERHEAT_PULSE";
+        } else if (mEngineTemp > 0.1f) {
+            script = "ACTIVATE";
+        } else {
+            if (FEngIsScriptSet(mpWarningLight, FEHashUpper("INIT"))) {
+                return;
+            }
+            FEngSetScript(mpWarningLight, FEHashUpper("INIT"), true);
+            return;
+        }
+        if (!FEngIsScriptSet(mpWarningLight, FEHashUpper(script))) {
+            FEngSetScript(mpWarningLight, FEHashUpper(script), true);
         }
     }
 }
