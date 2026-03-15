@@ -38,11 +38,11 @@ void* FEngMalloc(unsigned int size, const char* pFilename, int Line) {
     int pool_num = 0;
     if (FEngMemoryPoolNumber != -1) {
         int largest = bLargestMalloc(FEngMemoryPoolNumber);
-        if (static_cast<int>(size) + 0x40 < largest) {
+        if (largest > static_cast<int>(size) + 0x40) {
             pool_num = FEngMemoryPoolNumber;
         }
     }
-    void* ptr = bMalloc(size, pFilename, Line, (pool_num & 0xf) | 0x400);
+    void* ptr = bMalloc(size, pFilename, Line, (pool_num & 0xf) | 0x100);
     return ptr;
 }
 

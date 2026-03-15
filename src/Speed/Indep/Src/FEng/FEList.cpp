@@ -18,9 +18,7 @@ unsigned long FEHash(const char* String) {
 
         while (c != 0) {
             hash += hash << 5;
-
-            unsigned long uc = c;
-            hash = uc + hash;
+            hash += c;
             String++;
             c = *reinterpret_cast<const unsigned char*>(String);
         }
