@@ -921,13 +921,7 @@ void CustomizeMain::Setup() {
     CustomizeSetInParts(false);
     Category = 0;
     BuildOptionsList();
-    if (bFadeInIconsImmediately) {
-        Options.bFadingOut = false;
-        Options.bFadingIn = true;
-        Options.bDelayUpdate = false;
-        Options.fMaxFadeTime = 0.0f;
-    }
-    SetInitialOption(FromCategory & 0xFF);
+    SetInitialOption(FromCategory & 0xFFFF00FF);
     RefreshHeader();
 }
 
@@ -1599,7 +1593,7 @@ void CustomizeCategoryScreen::NotificationMessage(unsigned long msg, FEObject *p
     IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
     switch (msg) {
     case 0xb4edeb6d:
-        bBackingOut = true;
+        Options.bReactToInput = true;
         break;
     case 0xc519bfbf:
         Showcase_FromPackage = GetPackageName();
@@ -1613,6 +1607,8 @@ void CustomizeCategoryScreen::NotificationMessage(unsigned long msg, FEObject *p
         cFEng_mInstance->QueuePackageSwitch(BackToPkg, FromCategory | (Category << 16), 0, false);
         break;
     case 0xb5af2461:
+        CustomizeShoppingCart::ShowShoppingCart(GetPackageName());
+        break;
     case 0x1720b124:
         CustomizeShoppingCart::ShowShoppingCart(GetPackageName());
         break;
@@ -1624,12 +1620,13 @@ void CustomizeCategoryScreen::NotificationMessage(unsigned long msg, FEObject *p
     case 0x911ab364: {
         bool shouldPop = true;
         if (Category > 0x800 && Category < 0x804) {
-            if (gCarCustomizeManager.DoesCartHaveActiveParts()) {
+            if (!gCarCustomizeManager.DoesCartHaveActiveParts()) {
                 gCarCustomizeManager.EmptyCart();
                 gCarCustomizeManager.ResetPreview();
+            } else {
                 shouldPop = false;
                 cFEng_mInstance->QueueGameMessage(0x1720b124, GetPackageName(), 0xFF);
-                bBackingOut = true;
+                Options.bReactToInput = true;
             }
         }
         if (shouldPop) {
@@ -2590,21 +2587,9 @@ after_switch:
     }
 
     if (Showcase_FromIndex == 0) {
-        if (bFadeInIconsImmediately) {
-            Options.bFadingOut = false;
-            Options.bFadingIn = true;
-            Options.bDelayUpdate = false;
-            Options.fCurFadeTime = 0.0f;
-        }
-        Options.SetInitialPos(installed_index);
+        SetInitialOption(installed_index);
     } else {
-        if (bFadeInIconsImmediately) {
-            Options.bFadingIn = true;
-            Options.bFadingOut = false;
-            Options.bDelayUpdate = false;
-            Options.fCurFadeTime = 0.0f;
-        }
-        Options.SetInitialPos(0);
+        SetInitialOption(0);
         Showcase_FromIndex = 0;
     }
     RefreshHeader();
@@ -2785,31 +2770,13 @@ void CustomizeSub::SetupRimBrands() {
         if (pos == 0) {
             pos = InstalledPartOptionIndex;
             if (pos == 0) {
-                if (bFadeInIconsImmediately) {
-                    Options.bFadingIn = true;
-                    Options.bFadingOut = false;
-                    Options.bDelayUpdate = false;
-                    Options.fCurFadeTime = 0.0f;
-                }
-                Options.SetInitialPos(1);
+                SetInitialOption(1);
                 goto done_rims;
             }
         }
-        if (bFadeInIconsImmediately) {
-            Options.bFadingIn = true;
-            Options.bFadingOut = false;
-            Options.bDelayUpdate = false;
-            Options.fCurFadeTime = 0.0f;
-        }
-        Options.SetInitialPos(pos);
+        SetInitialOption(pos);
     } else {
-        if (bFadeInIconsImmediately) {
-            Options.bFadingIn = true;
-            Options.bFadingOut = false;
-            Options.bDelayUpdate = false;
-            Options.fCurFadeTime = 0.0f;
-        }
-        Options.SetInitialPos(FromCategory & 0xFFFF00FF);
+        SetInitialOption(FromCategory & 0xFFFF00FF);
     }
 done_rims:
     if (FromCategory - 0x701u < 0xbu) {
@@ -2859,36 +2826,13 @@ void CustomizeSub::SetupVinylGroups() {
         if (pos == 0) {
             pos = InstalledPartOptionIndex;
             if (pos == 0) {
-                if (bFadeInIconsImmediately) {
-                    Options.bFadingOut = false;
-                    Options.bFadingIn = true;
-                    Options.bDelayUpdate = false;
-                    Options.fCurFadeTime = 0.0f;
-                }
-                Options.SetInitialPos(1);
+                SetInitialOption(1);
                 goto done_vinyl;
             }
-            if (bFadeInIconsImmediately) {
-                Options.bFadingOut = false;
-                Options.bFadingIn = true;
-                Options.bDelayUpdate = false;
-                Options.fCurFadeTime = 0.0f;
-            }
-        } else if (bFadeInIconsImmediately) {
-            Options.bFadingIn = true;
-            Options.bFadingOut = false;
-            Options.bDelayUpdate = false;
-            Options.fCurFadeTime = 0.0f;
         }
-        Options.SetInitialPos(pos);
+        SetInitialOption(pos);
     } else {
-        if (bFadeInIconsImmediately) {
-            Options.bFadingIn = true;
-            Options.bFadingOut = false;
-            Options.bDelayUpdate = false;
-            Options.fCurFadeTime = 0.0f;
-        }
-        Options.SetInitialPos(FromCategory & 0xFFFF00FF);
+        SetInitialOption(FromCategory & 0xFFFF00FF);
     }
 done_vinyl:
     if (FromCategory - 0x401u < 9u) {
@@ -3354,21 +3298,9 @@ void CustomizeRims::BuildRimsList(int selected_index) {
         selected_index = 1;
     }
     if (Showcase_FromIndex == 0) {
-        if (bFadeInIconsImmediately) {
-            Options.bFadingOut = false;
-            Options.bFadingIn = true;
-            Options.bDelayUpdate = false;
-            Options.fCurFadeTime = 0.0f;
-        }
-        Options.SetInitialPos(selected_index);
+        SetInitialOption(selected_index);
     } else {
-        if (bFadeInIconsImmediately) {
-            Options.bFadingIn = true;
-            Options.bFadingOut = false;
-            Options.bDelayUpdate = false;
-            Options.fCurFadeTime = 0.0f;
-        }
-        Options.SetInitialPos(0);
+        SetInitialOption(0);
         Showcase_FromIndex = 0;
     }
     // Clean up remaining temp list nodes
@@ -3643,7 +3575,7 @@ void CustomizeNumbers::Setup() {
 void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     switch (msg) {
     case 0x35f8620b:
-        bLeft = 1;
+        DisplayHelper.SetInitComplete(true);
         FEngSetCurrentButton(GetPackageName(), 0x2a08ba92);
         break;
     case 0xc519bfbf:
@@ -3680,21 +3612,15 @@ void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, un
     case 0x406415e3:
         if (LeftDisplayValue == -1 || RightDisplayValue == -1) return;
         if (!TheLeftNumber || !TheRightNumber) return;
-        {
-            eCustomizePartState leftState = TheLeftNumber->PartState;
-            eCustomizePartState rightState = TheRightNumber->PartState;
-            eCustomizePartState status;
-            if ((leftState & CPS_GAME_STATE_MASK) == CPS_LOCKED && (rightState & CPS_GAME_STATE_MASK) == CPS_LOCKED) {
-                status = CPS_LOCKED;
-            } else if ((leftState & CPS_IN_CART) != 0 && (rightState & CPS_IN_CART) != 0) {
-                status = CPS_IN_CART;
-            } else if ((leftState & CPS_INSTALLED) != 0 && (rightState & CPS_INSTALLED) != 0) {
-                status = CPS_INSTALLED;
-            } else {
-                cFEng_mInstance->QueueGameMessage(0x91dfdf84, GetPackageName(), 0xff);
-                return;
-            }
-            DisplayHelper.FlashStatusIcon(status, true);
+        if (TheLeftNumber->IsLocked() && TheRightNumber->IsLocked()) {
+            DisplayHelper.PlayLocked();
+        } else if (TheLeftNumber->IsInCartX() && TheRightNumber->IsInCartX()) {
+            DisplayHelper.PlayInCart();
+        } else if (TheLeftNumber->IsInstalledX() && TheRightNumber->IsInstalledX()) {
+            DisplayHelper.PlayInstalled();
+        } else {
+            cFEng_mInstance->QueueGameMessage(0x91dfdf84, GetPackageName(), 0xff);
+            return;
         }
         break;
     case 0xc519bfc3: {
@@ -3923,21 +3849,9 @@ void CustomizeDecals::BuildDecalList(unsigned int selected_name_hash) {
         node = next;
     }
     if (Showcase_FromIndex == 0) {
-        if (bFadeInIconsImmediately) {
-            Options.bFadingOut = false;
-            Options.bFadingIn = true;
-            Options.bDelayUpdate = false;
-            Options.fCurFadeTime = 0.0f;
-        }
-        Options.SetInitialPos(matchIdx);
+        SetInitialOption(matchIdx);
     } else {
-        if (bFadeInIconsImmediately) {
-            Options.bFadingIn = true;
-            Options.bFadingOut = false;
-            Options.bDelayUpdate = false;
-            Options.fCurFadeTime = 0.0f;
-        }
-        Options.SetInitialPos(Showcase_FromIndex - 1);
+        SetInitialOption(Showcase_FromIndex - 1);
         Showcase_FromIndex = 0;
     }
     RefreshHeader();

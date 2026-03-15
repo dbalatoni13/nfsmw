@@ -79,6 +79,8 @@ struct IconScroller : public IconPanel {
 
     void StartFadeIn() {
         bFadingIn = true;
+        bDelayUpdate = false;
+        bFadingOut = false;
         fCurFadeTime = 0.0f;
     }
 

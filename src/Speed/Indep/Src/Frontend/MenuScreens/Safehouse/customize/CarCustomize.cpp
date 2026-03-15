@@ -131,13 +131,7 @@ void CustomizeSub::SetupParts() {
         AddCustomOption(g_pCustomizePartsPkg, 0xf375276e, 0x04d4a88d, 0x104);
         AddCustomOption(g_pCustomizePartsPkg, 0x25a4375e, 0x61e8f83c, 0x105);
     }
-    if (bFadeInIconsImmediately) {
-        Options.bFadingIn = true;
-        Options.bFadingOut = false;
-        Options.bDelayUpdate = false;
-        Options.fCurFadeTime = 0.0f;
-    }
-    SetInitialOption(FromCategory & 0xFF);
+    SetInitialOption(FromCategory & 0xFFFF00FF);
 }
 
 void CustomizeSub::SetupPerformance() {
@@ -173,13 +167,7 @@ void CustomizeSub::SetupPerformance() {
             AddCustomOption(g_pCustomizePerfPkg, 0x630071e4, 0xbb6812bb, 0x207);
         }
     }
-    if (bFadeInIconsImmediately) {
-        Options.bFadingIn = true;
-        Options.bFadingOut = false;
-        Options.bDelayUpdate = false;
-        Options.fCurFadeTime = 0.0f;
-    }
-    SetInitialOption(FromCategory & 0xFF);
+    SetInitialOption(FromCategory & 0xFFFF00FF);
 }
 
 void CustomizeSub::SetupVisual() {
@@ -205,13 +193,7 @@ void CustomizeSub::SetupVisual() {
         AddCustomOption(g_pCustomizeSubTopPkg, 0xa9135927, 0x955980bc, 0x305);
         AddCustomOption(g_pCustomizeHudPkg, 0x8ba602fc, 0x78980a6b, 0x307);
     }
-    if (bFadeInIconsImmediately) {
-        Options.bFadingIn = true;
-        Options.bFadingOut = false;
-        Options.bDelayUpdate = false;
-        Options.fCurFadeTime = 0.0f;
-    }
-    SetInitialOption(FromCategory & 0xFF);
+    SetInitialOption(FromCategory & 0xFFFF00FF);
 }
 
 void CustomizeSub::SetupDecalLocations() {
@@ -224,21 +206,9 @@ void CustomizeSub::SetupDecalLocations() {
     AddCustomOption(g_pCustomizeDecalsPkg, 0x2c710c4d, 0x8a7697d6, 0x505);
     AddCustomOption(g_pCustomizeDecalsPkg, 0xffa7d360, 0xb1f9b0c9, 0x506);
     if (FromCategory == 0x803) {
-        if (bFadeInIconsImmediately) {
-            Options.bFadingIn = true;
-            Options.bFadingOut = false;
-            Options.bDelayUpdate = false;
-            Options.fCurFadeTime = 0.0f;
-        }
         SetInitialOption(1);
     } else {
-        if (bFadeInIconsImmediately) {
-            Options.bFadingIn = true;
-            Options.bFadingOut = false;
-            Options.bDelayUpdate = false;
-            Options.fCurFadeTime = 0.0f;
-        }
-        SetInitialOption(FromCategory & 0xFF);
+        SetInitialOption(FromCategory & 0xFFFF00FF);
     }
     if (FromCategory - 0x501u < 6u) {
         FromCategory = 0x803;
@@ -264,21 +234,9 @@ void CustomizeSub::SetupDecalPositions() {
         AddCustomOption(g_pCustomizeDecalsPkg, 0x2e40eae0, 0x7d212cff, 0x606);
     }
     if (FromCategory == 0x305) {
-        if (bFadeInIconsImmediately) {
-            Options.bFadingIn = true;
-            Options.bFadingOut = false;
-            Options.bDelayUpdate = false;
-            Options.fCurFadeTime = 0.0f;
-        }
         SetInitialOption(1);
     } else {
-        if (bFadeInIconsImmediately) {
-            Options.bFadingIn = true;
-            Options.bFadingOut = false;
-            Options.bDelayUpdate = false;
-            Options.fCurFadeTime = 0.0f;
-        }
-        SetInitialOption(FromCategory & 0xFF);
+        SetInitialOption(FromCategory & 0xFFFF00FF);
         FromCategory = 0x305;
     }
 }
