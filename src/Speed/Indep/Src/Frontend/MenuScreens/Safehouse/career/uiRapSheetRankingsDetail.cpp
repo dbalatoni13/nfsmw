@@ -84,7 +84,7 @@ void uiRapSheetRankingsDetail::Setup() {
     unsigned int value_label = 0;
     switch (static_cast<int>(rank_type)) {
     case 0:
-        if (!career_view) {
+        if (career_view) {
             attrib_name = "pursuit_length_in_pursuit";
         } else {
             attrib_name = "pursuit_length";
@@ -93,7 +93,7 @@ void uiRapSheetRankingsDetail::Setup() {
         value_label = 0xD70811D1;
         break;
     case 1:
-        if (!career_view) {
+        if (career_view) {
             attrib_name = "cops_involved_in_pursuit";
         } else {
             attrib_name = "cops_involved";
@@ -102,7 +102,7 @@ void uiRapSheetRankingsDetail::Setup() {
         value_label = 0xC6113FCF;
         break;
     case 2:
-        if (!career_view) {
+        if (career_view) {
             attrib_name = "cops_damaged_in_pursuit";
         } else {
             attrib_name = "cops_damaged";
@@ -111,7 +111,7 @@ void uiRapSheetRankingsDetail::Setup() {
         value_label = 0x2A1815D9;
         break;
     case 3:
-        if (!career_view) {
+        if (career_view) {
             attrib_name = "cops_destroyed_in_pursuit";
         } else {
             attrib_name = "cops_destroyed";
@@ -120,7 +120,7 @@ void uiRapSheetRankingsDetail::Setup() {
         value_label = 0x189EAF7B;
         break;
     case 4:
-        if (!career_view) {
+        if (career_view) {
             attrib_name = "tire_spikes_dodged_in_pursuit";
         } else {
             attrib_name = "tire_spikes_dodged";
@@ -129,7 +129,7 @@ void uiRapSheetRankingsDetail::Setup() {
         value_label = 0xDCD6B9BA;
         break;
     case 5:
-        if (!career_view) {
+        if (career_view) {
             attrib_name = "roadblocks_dodged_in_pursuit";
         } else {
             attrib_name = "roadblocks_dodged";
@@ -138,7 +138,7 @@ void uiRapSheetRankingsDetail::Setup() {
         value_label = 0x9EF589BE;
         break;
     case 6:
-        if (!career_view) {
+        if (career_view) {
             attrib_name = "helis_involved_in_pursuit";
         } else {
             attrib_name = "helis_involved";
@@ -147,25 +147,25 @@ void uiRapSheetRankingsDetail::Setup() {
         value_label = 0x39A1413C;
         break;
     case 7:
-        if (!career_view) {
+        if (career_view) {
             attrib_name = "cost_to_state_in_pursuit";
         } else {
             attrib_name = "cost_to_state";
         }
         key = Attrib::StringToKey(attrib_name);
-        value_label = 0xE34B2E6F;
+        value_label = 0xB3F963F8;
         break;
     case 8:
-        if (!career_view) {
+        if (career_view) {
             attrib_name = "total_infractions_in_pursuit";
         } else {
             attrib_name = "total_infractions";
         }
         key = Attrib::StringToKey(attrib_name);
-        value_label = 0xB3F963F8;
+        value_label = 0xE34B2E6F;
         break;
     case 9:
-        if (!career_view) {
+        if (career_view) {
             attrib_name = "bounty_in_pursuit";
         } else {
             attrib_name = "bounty";
