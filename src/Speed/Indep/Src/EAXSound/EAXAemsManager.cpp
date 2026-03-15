@@ -153,6 +153,15 @@ class BankSlotSystem {
     BankSlotNode *mNode;
 };
 
+DECLARE_CONTAINER_TYPE(ResAllocList);
+DECLARE_CONTAINER_TYPE(RefCountList);
+DECLARE_CONTAINER_TYPE(SndAssetQueue);
+
+typedef UTL::Std::vector<unsigned int, _type_ResAllocList> ResAllocList;
+typedef UTL::Std::vector<EAX_CarState *, _type_RefCountList> RefCountList;
+typedef UTL::Std::list<stSndAssetQueue, _type_SndAssetQueue> SndAssetQueue;
+typedef void (*ExternalLoadCallbackFn)(int);
+
 namespace {
 typedef BankSlotNode ListNodeBankSlot;
 
@@ -196,15 +205,6 @@ enum eSndDataType {
     SDT_GENERIC_DATA = 5,
 };
 
-DECLARE_CONTAINER_TYPE(ResAllocList);
-DECLARE_CONTAINER_TYPE(RefCountList);
-DECLARE_CONTAINER_TYPE(SndAssetQueue);
-
-typedef UTL::Std::vector<unsigned int, _type_ResAllocList> ResAllocList;
-typedef UTL::Std::vector<EAX_CarState *, _type_RefCountList> RefCountList;
-typedef UTL::Std::list<stSndAssetQueue, _type_SndAssetQueue> SndAssetQueue;
-typedef void (*ExternalLoadCallbackFn)(int);
-
 template <typename T> struct RawVector {
     T *start;
     T *finish;
@@ -226,8 +226,8 @@ struct stSndDataLoadParamsView {
     char _pad3d[3];
     ResAllocList resallocs;
     RefCountList RefCount;
-    int t_req;
-    int t_load;
+    Timer t_req;
+    Timer t_load;
 };
 
 template <typename T, typename Tag> static RawVector<T> &AsRawVector(UTL::Std::vector<T, Tag> &vec) {
@@ -349,19 +349,20 @@ void stBankSlot::Clear() {
 }
 
 void stSndDataLoadParams::Clear() {
-    char *base = reinterpret_cast<char *>(this);
-    reinterpret_cast<stAssetDescription *>(base)->Clear();
-    *reinterpret_cast<stBankSlot **>(base + 0x24) = nullptr;
-    *reinterpret_cast<void **>(base + 0x28) = nullptr;
-    *reinterpret_cast<void **>(base + 0x2C) = nullptr;
-    *reinterpret_cast<int *>(base + 0x30) = 0;
-    Handle = -1;
-    bResolvedAsync = 0;
-    bResolvedSync = 0;
-    *reinterpret_cast<void **>(base + 0x44) = *reinterpret_cast<void **>(base + 0x40);
-    *reinterpret_cast<void **>(base + 0x54) = *reinterpret_cast<void **>(base + 0x50);
-    t_req = 0;
-    t_load = 0;
+    reinterpret_cast<stSndDataLoadParamsView *>(this)->AssetDescription.eDataType = -1;
+    reinterpret_cast<stSndDataLoadParamsView *>(this)->AssetDescription.FileName = Attrib::StringKey("");
+    reinterpret_cast<stSndDataLoadParamsView *>(this)->Handle = -1;
+    reinterpret_cast<stSndDataLoadParamsView *>(this)->MemLocation = static_cast<eTEMPALLOCLOCATION>(0);
+    reinterpret_cast<stSndDataLoadParamsView *>(this)->mBankSlot = nullptr;
+    reinterpret_cast<stSndDataLoadParamsView *>(this)->pmem = nullptr;
+    reinterpret_cast<stSndDataLoadParamsView *>(this)->plocmem = nullptr;
+    reinterpret_cast<stSndDataLoadParamsView *>(this)->nSize = 0;
+    *reinterpret_cast<unsigned int *>(&reinterpret_cast<stSndDataLoadParamsView *>(this)->bResolvedAsync) = 0;
+    *reinterpret_cast<unsigned int *>(&reinterpret_cast<stSndDataLoadParamsView *>(this)->bResolvedSync) = 0;
+    reinterpret_cast<stSndDataLoadParamsView *>(this)->resallocs.clear();
+    reinterpret_cast<stSndDataLoadParamsView *>(this)->RefCount.clear();
+    reinterpret_cast<stSndDataLoadParamsView *>(this)->t_load = Timer(0);
+    reinterpret_cast<stSndDataLoadParamsView *>(this)->t_req = Timer(0);
 }
 
 stBankSlot *BankSlotSystem::GetFreeSlot(eBANK_SLOT_TYPE Type) {
