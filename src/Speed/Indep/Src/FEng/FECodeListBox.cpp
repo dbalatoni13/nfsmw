@@ -21,7 +21,7 @@ FECodeListBox::FECodeListBox()
     , mulCurrentVirtualRow(0) //
     , mulTargetColumn(0) //
     , mulTargetRow(0) //
-    , mstViewDimensions(0.0f) //
+    , mstViewDimensions(0.0f, 0.0f) //
     , mpstCells(nullptr) //
     , mulNumStrings(0) //
     , mulStringSize(0) //
