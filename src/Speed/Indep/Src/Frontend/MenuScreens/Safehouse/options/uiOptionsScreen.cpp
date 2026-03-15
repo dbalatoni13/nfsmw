@@ -100,8 +100,9 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
         if (OptionsDidNotChange()) {
             cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
         } else {
+            const char* pkg_name = GetPackageName();
             const char* prompt = GetLocalizedString(0xE9CB802F);
-            DialogInterface::ShowTwoButtons(GetPackageName(),
+            DialogInterface::ShowTwoButtons(pkg_name,
                                             mCalledFromPauseMenu ? "InGameDialog.fng" : "Dialog.fng",
                                             static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4,
                                             0x775DBA97, 0x34DC1BCF, 0x34DC1BCF,
@@ -114,8 +115,9 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
         cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
         break;
     case 0xC519BFC4: {
+        const char* pkg_name = GetPackageName();
         const char* prompt = GetLocalizedString(0x8AEF5AE8);
-        DialogInterface::ShowTwoButtons(GetPackageName(),
+        DialogInterface::ShowTwoButtons(pkg_name,
                                         mCalledFromPauseMenu ? "InGameDialog.fng" : "Dialog.fng",
                                         static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4,
                                         0xD05FC3A3, 0x34DC1BCF, 0x34DC1BCF,
@@ -128,17 +130,18 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
             return;
         }
         {
+            const char* pkg_name = GetPackageName();
             cFEng* eng = cFEng::Get();
             unsigned int snd = 0xF4B32D4D;
             if (msg == 0x5073EF13) {
                 snd = 0x6B283007;
             }
-            eng->QueueSoundMessage(snd, GetPackageName());
+            eng->QueueSoundMessage(snd, pkg_name);
             if (!OptionsDidNotChange()) {
                 char buf[128];
                 const char* fmt = GetLocalizedString(0xBA463431);
                 FEngSNPrintf(buf, 128, fmt, GetPlayerToEditForOptions() + 1);
-                DialogInterface::ShowTwoButtons(GetPackageName(),
+                DialogInterface::ShowTwoButtons(pkg_name,
                                                 mCalledFromPauseMenu ? "InGameDialog.fng" : "Dialog.fng",
                                                 static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4,
                                                 0x9A5AD46D, 0xA2A07AC4, 0x34DC1BCF,
@@ -157,7 +160,8 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
     case 0xD05FC3A3:
         {
             OptionsSettings* options_settings = FEDatabase->GetOptionsSettings();
-            if (!FEDatabase->IsOptionsDirty() && options_settings->CurrentCategory == OC_GAMEPLAY) {
+            if (!FEDatabase->GetGameplaySettings()->AutoSaveOn &&
+                options_settings->CurrentCategory == OC_GAMEPLAY) {
                 MemcardEnter(GetPackageName(), GetPackageName(), 0xA1, 0, 0, 0, 0);
             }
         }
@@ -170,13 +174,12 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
         }
         FEDatabase->SetOptionsDirty(dirty);
 
-        cFEng* eng = cFEng::Get();
         if (mCalledFromPauseMenu) {
-            eng->QueuePackageSwitch("Pause_Main.fng", 1, 0, false);
+            cFEng::Get()->QueuePackageSwitch("Pause_Main.fng", 1, 0, false);
         } else if (FEDatabase->IsOnlineMode()) {
-            eng->QueuePackageSwitch("OL_MAIN.fng", 0, 0, false);
+            cFEng::Get()->QueuePackageSwitch("OL_MAIN.fng", 0, 0, false);
         } else {
-            eng->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+            cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
         }
 
         OptionsSettings* options_settings = FEDatabase->GetOptionsSettings();
