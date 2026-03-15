@@ -30,10 +30,7 @@ class FEGenericVal {
         return *this;
     }
     inline FEGenericVal& operator=(const FEColor& Val) {
-        reinterpret_cast<int*>(Data)[0] = Val.b;
-        reinterpret_cast<int*>(Data)[1] = Val.g;
-        reinterpret_cast<int*>(Data)[2] = Val.r;
-        reinterpret_cast<int*>(Data)[3] = Val.a;
+        *reinterpret_cast<FEColor*>(Data) = Val;
         return *this;
     }
   private:
