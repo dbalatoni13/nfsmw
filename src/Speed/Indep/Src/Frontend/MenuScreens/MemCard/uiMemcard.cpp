@@ -481,7 +481,6 @@ MenuScreen* CreateMemcardListFiles(ScreenConstructorData* sd) {
 void MemcardEnter(const char* from, const char* to, unsigned int op,
                   void (*termFunc)(void*), void* termParam,
                   unsigned int successMsg, unsigned int failedMsg) {
-    gMemcardSetup.mMemScreen = nullptr;
     gMemcardSetup.mOp = op;
     gMemcardSetup.mFromScreen = from;
     gMemcardSetup.mToScreen = to;
@@ -489,6 +488,7 @@ void MemcardEnter(const char* from, const char* to, unsigned int op,
     gMemcardSetup.mTermFuncParam = termParam;
     gMemcardSetup.mSuccessMsg = successMsg;
     gMemcardSetup.mFailedMsg = failedMsg;
+    gMemcardSetup.mMemScreen = nullptr;
     MemoryCard::GetInstance()->ShowMessages(true);
     MemoryCard::GetInstance()->SetPlayerNum((op >> 17) & 1);
     if (TheGameFlowManager.GetState() == GAMEFLOW_STATE_IN_FRONTEND) {
@@ -497,17 +497,21 @@ void MemcardEnter(const char* from, const char* to, unsigned int op,
         gMemcardSetup.mMemScreen = "InGame_MC_Main_GC.fng";
     }
     int cmd = gMemcardSetup.mOp & 0xf;
-    if (cmd == 2) {
+    switch (cmd) {
+    case 2:
         cFEng::Get()->QueuePackageSwitch(gMemcardSetup.mMemScreen, 0, 0, false);
-    } else if (cmd == 1 || cmd == 3) {
+        break;
+    case 1:
+    case 3:
         cFEng::Get()->QueuePackagePush(gMemcardSetup.mMemScreen, 0, 0, false);
+        break;
     }
     MemoryCard::GetInstance()->SetMemcardScreenShowing(true);
 }
 
 void MemcardExit(unsigned int msg) {
     gMemcardSetup.mLastMessage = msg;
-    if (!MemoryCard::GetInstance()->m_bHUDLoaded) {
+    if (!MemoryCard::GetInstance()->m_bInitialized) {
         unsigned long hash = FEHashUpper("EXIT_COMPLETE");
         cFEng::Get()->QueueGameMessage(hash, gMemcardSetup.mMemScreen, 0xff);
     } else {
@@ -515,5 +519,5 @@ void MemcardExit(unsigned int msg) {
         cFEng::Get()->QueuePackageMessage(hash, gMemcardSetup.mMemScreen, nullptr);
     }
     MemoryCard::GetInstance()->SetMemcardScreenExiting(true);
-    MemoryCard::GetInstance()->m_bHUDLoaded = false;
+    MemoryCard::GetInstance()->m_bInitialized = false;
 }
