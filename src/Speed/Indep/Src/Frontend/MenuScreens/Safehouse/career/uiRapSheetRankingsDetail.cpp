@@ -169,12 +169,7 @@ void uiRapSheetRankingsDetail::Setup() {
     }
     Attrib::Gen::frontend rankingsData(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
     if (rankingsData.IsValid()) {
-        unsigned int numRanks;
-        {
-            Attrib::Attribute ranks = rankingsData.Get(0xF9A7D5F7);
-            numRanks = ranks.GetLength();
-        }
-        if (numRanks == 15) {
+        if (rankingsData.Num_RapSheetRanks() == 15) {
             int num_rows = 15;
             int rank_shift = 0;
             if (player_rank == 0x10) {
@@ -201,26 +196,14 @@ void uiRapSheetRankingsDetail::Setup() {
                     rank_shift--;
                 } else {
                     int rank_index = i + rank_shift;
-                    const char* rival_id = reinterpret_cast<const char*>(rankingsData.GetAttributePointer(0x2C3C7FEB, rank_index));
-                    if (!rival_id) {
-                        rival_id = reinterpret_cast<const char*>(Attrib::DefaultDataArea(sizeof(char)));
-                    }
-                    unsigned int name_hash = FEngHashString("BLACKLIST_RIVAL_%.2d_AKA", static_cast<int>(*rival_id));
+                    unsigned int name_hash = FEngHashString("BLACKLIST_RIVAL_%.2d_AKA", static_cast<int>(rankingsData.NameId(rank_index)));
                     unsigned int car_hash;
                     if (career_view) {
                         car_hash = 0;
                     } else {
-                        const char* rival_car = reinterpret_cast<const char*>(rankingsData.GetAttributePointer(0x2C3C7FEB, rank_index));
-                        if (!rival_car) {
-                            rival_car = reinterpret_cast<const char*>(Attrib::DefaultDataArea(sizeof(char)));
-                        }
-                        car_hash = FEngHashString("BLACKLIST_RIVAL_%.2d_CAR", static_cast<int>(*rival_car));
+                        car_hash = FEngHashString("BLACKLIST_RIVAL_%.2d_CAR", static_cast<int>(rankingsData.NameId(rank_index)));
                     }
-                    const float* value_ptr = reinterpret_cast<const float*>(rankingsData.GetAttributePointer(0xF9A7D5F7, rank_index));
-                    if (!value_ptr) {
-                        value_ptr = reinterpret_cast<const float*>(Attrib::DefaultDataArea(sizeof(float)));
-                    }
-                    float value = *value_ptr;
+                    float value = rankingsData.RapSheetRanks(rank_index);
                     AddDatum(new(__FILE__, __LINE__) RapSheetRankingsDatum(i + 1, name_hash, car_hash, value));
                 }
             }
