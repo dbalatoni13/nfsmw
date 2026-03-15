@@ -36,10 +36,10 @@ public:
     void Decrement();
     virtual void Highlight();
     virtual void UnHighlight();
-    float GetMax();
-    float GetMin();
+    float GetMax() { return fMaxValue; }
+    float GetMin() { return fMinValue; }
     float GetValue() { return fCurValue; }
-    float GetPrevValue();
+    float GetPrevValue() { return fPrevValue; }
     float GetBaseWidth();
     float GetBaseHeight();
     virtual void SetPos(float x, float y);

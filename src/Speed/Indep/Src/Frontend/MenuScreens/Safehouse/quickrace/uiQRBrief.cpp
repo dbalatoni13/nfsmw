@@ -88,22 +88,22 @@ void UIQRBrief::Setup() {
 void UIQRBrief::RefreshHeader() {
     FECarRecord *car_rec = FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(pSelectedCar->mHandle);
     unsigned int manu_logo = car_rec->GetManuLogoHash();
-    if (!GetTextureInfo(manu_logo, 0, 0)) {
-        unsigned int placeholder = FEHashUpper("GENERICPLACEHOLDER");
-        FEImage *img = FEngFindImage(PackageFilename, 0x3e01ad1d);
-        FEngSetTextureHash(img, placeholder);
-    } else {
+    if (GetTextureInfo(manu_logo, 0, 0)) {
         FEImage *img = FEngFindImage(PackageFilename, 0x3e01ad1d);
         FEngSetTextureHash(img, manu_logo);
+    } else {
+        unsigned int placeholder = FEHashUpper("GENERICPLACEHOLDER");
+        FEImage *img = FEngFindImage(PackageFilename, 0x3e01ad1d);
+        FEngSetTextureHash(img, placeholder);
     }
     unsigned int car_logo = car_rec->GetLogoHash();
-    if (!GetTextureInfo(car_logo, 0, 0)) {
+    if (GetTextureInfo(car_logo, 0, 0)) {
+        FEImage *img = FEngFindImage(PackageFilename, 0xb05dd708);
+        FEngSetTextureHash(img, car_logo);
+    } else {
         unsigned int placeholder = FEHashUpper("GENERICPLACEHOLDER");
         FEImage *img = FEngFindImage(PackageFilename, 0xb05dd708);
         FEngSetTextureHash(img, placeholder);
-    } else {
-        FEImage *img = FEngFindImage(PackageFilename, 0xb05dd708);
-        FEngSetTextureHash(img, car_logo);
     }
     GRaceParameters *track_params = pSelectedTrack->pRaceParams;
     unsigned int race_name = FEDatabase->GetRaceNameHash(track_params->GetRaceType());
@@ -125,7 +125,7 @@ void UIQRBrief::RefreshHeader() {
     }
     const char *unit_str = GetLocalizedString(unit_hash);
     float race_length = track_params->GetRaceLengthMeters() * 0.001f;
-    FEPrintf(PackageFilename, 0xb515499a, "%$0.1f %s", unit_str, race_length);
+    FEPrintf(PackageFilename, 0xb515499a, "%$0.1f %s", race_length, unit_str);
     GRace::Type race_type = track_params->GetRaceType();
     if (race_type == static_cast<GRace::Type>(1) || race_type == static_cast<GRace::Type>(3)) {
         FEPrintf(PackageFilename, 0xb515499b, "%d", raceSettings.NumLaps);
@@ -164,13 +164,12 @@ void UIQRBrief::RefreshHeader() {
 
 void UIQRBrief::UpdateSliders() {
     Physics::Info::Performance stock_perf;
-    stock_perf.Default();
     Physics::Info::Performance tuned_perf;
-    tuned_perf.Default();
     FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
     FECarRecord *car_rec = stable->GetCarRecordByHandle(pSelectedCar->mHandle);
     Attrib::Gen::pvehicle pveh(Attrib::FindCollection(Attrib::Gen::pvehicle::ClassKey(), car_rec->VehicleKey), 0, nullptr);
-    if (car_rec->Customization != 0xff) {
+    bool hasCustomization = (car_rec->Customization != 0xff);
+    if (hasCustomization) {
         FECustomizationRecord *cust = stable->GetCustomizationRecordByHandle(car_rec->Customization);
         cust->WriteRecordIntoPhysics(pveh);
     }
@@ -178,25 +177,31 @@ void UIQRBrief::UpdateSliders() {
 
     AccelerationSlider.SetValue(stock_perf.Acceleration);
     float acc_val = stock_perf.Acceleration;
-    if (acc_val - AccelerationSlider.GetMin() < 0.0f) acc_val = AccelerationSlider.GetMin();
-    float acc_preview = AccelerationSlider.GetMax();
-    if (acc_val - AccelerationSlider.GetMax() < 0.0f) acc_preview = acc_val;
+    float acc_min = AccelerationSlider.GetMin();
+    float acc_max = AccelerationSlider.GetMax();
+    if (acc_val - acc_min < 0.0f) acc_val = acc_min;
+    float acc_preview = acc_max;
+    if (acc_val - acc_max < 0.0f) acc_preview = acc_val;
     AccelerationSlider.SetPreviewValue(acc_preview);
     AccelerationSlider.Draw();
 
     TopSpeedSlider.SetValue(stock_perf.TopSpeed);
     float top_val = stock_perf.TopSpeed;
-    if (top_val - TopSpeedSlider.GetMin() < 0.0f) top_val = TopSpeedSlider.GetMin();
-    float top_preview = TopSpeedSlider.GetMax();
-    if (top_val - TopSpeedSlider.GetMax() < 0.0f) top_preview = top_val;
+    float top_min = TopSpeedSlider.GetMin();
+    float top_max = TopSpeedSlider.GetMax();
+    if (top_val - top_min < 0.0f) top_val = top_min;
+    float top_preview = top_max;
+    if (top_val - top_max < 0.0f) top_preview = top_val;
     TopSpeedSlider.SetPreviewValue(top_preview);
     TopSpeedSlider.Draw();
 
     HandlingSlider.SetValue(stock_perf.Handling);
     float hdl_val = stock_perf.Handling;
-    if (hdl_val - HandlingSlider.GetMin() < 0.0f) hdl_val = HandlingSlider.GetMin();
-    float hdl_preview = HandlingSlider.GetMax();
-    if (hdl_val - HandlingSlider.GetMax() < 0.0f) hdl_preview = hdl_val;
+    float hdl_min = HandlingSlider.GetMin();
+    float hdl_max = HandlingSlider.GetMax();
+    if (hdl_val - hdl_min < 0.0f) hdl_val = hdl_min;
+    float hdl_preview = hdl_max;
+    if (hdl_val - hdl_max < 0.0f) hdl_preview = hdl_val;
     HandlingSlider.SetPreviewValue(hdl_preview);
     HandlingSlider.Draw();
 }
