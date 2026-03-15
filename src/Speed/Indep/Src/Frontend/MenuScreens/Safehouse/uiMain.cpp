@@ -135,26 +135,23 @@ void UIMain::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long
         }
         break;
     case 0xe1fde1d1:
-        if (PrevButtonMessage == 0x0c407210) {
-            const char* pkg;
-            if (FEDatabase->IsCareerMode()) {
-                pkg = "MainMenu_Sub.fng";
-            } else if (FEDatabase->IsCareerManagerMode()) {
-                pkg = "MainMenu_Sub.fng";
-            } else if (FEDatabase->IsQuickRaceMode()) {
-                pkg = "MainMenu_Sub.fng";
-            } else if (FEDatabase->IsOptionsMode()) {
-                pkg = "MainMenu_Sub.fng";
-            } else if (FEDatabase->IsProfileManagerMode()) {
-                pkg = "MC_ProfileManager.fng";
-            } else if (FEDatabase->IsChallengeMode()) {
-                pkg = "ChallengeSeries.fng";
-            } else if (FEDatabase->IsCustomizeMode()) {
-                pkg = "MyCarsManager.fng";
-            } else {
-                return;
-            }
-            cFEng::Get()->QueuePackageSwitch(pkg, 0, 0, false);
+        if (PrevButtonMessage != 0x0c407210) {
+            break;
+        }
+        if (FEDatabase->IsCareerMode()) {
+            cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+        } else if (FEDatabase->IsCareerManagerMode()) {
+            cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+        } else if (FEDatabase->IsQuickRaceMode()) {
+            cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+        } else if (FEDatabase->IsOptionsMode()) {
+            cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+        } else if (FEDatabase->IsProfileManagerMode()) {
+            cFEng::Get()->QueuePackageSwitch("MC_ProfileManager.fng", 0, 0, false);
+        } else if (FEDatabase->IsChallengeMode()) {
+            cFEng::Get()->QueuePackageSwitch("ChallengeSeries.fng", 0, 0, false);
+        } else if (FEDatabase->IsCustomizeMode()) {
+            cFEng::Get()->QueuePackageSwitch("MyCarsManager.fng", 0, 0, false);
         }
         break;
     case 0xc519bfc4:
