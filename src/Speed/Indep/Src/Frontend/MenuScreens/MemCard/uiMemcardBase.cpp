@@ -881,8 +881,10 @@ void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject* obj, unsign
     case 0x1000000:
         if (isSecondBtn) {
             FEDatabase->AllocBackupDB(true);
-            if ((gMemcardSetup.mOp & 0x40000) == 0 && (gMemcardSetup.mOp & 0x200000) == 0) {
-                FEDatabase->DefaultProfile();
+            if ((gMemcardSetup.mOp & 0x40000) == 0) {
+                if ((gMemcardSetup.mOp & 0x200000) == 0) {
+                    FEDatabase->DefaultProfile();
+                }
             }
             if ((gMemcardSetup.mOp & 0x80000) != 0) {
                 StartNewCareer__14CareerSettingsb(
@@ -904,7 +906,7 @@ void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject* obj, unsign
             DoSaveFlow(12);
         } else {
             if ((gMemcardSetup.mOp & 0xf0) == 0x60) {
-                FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheAudioSettings.AudioMode = 0;
+                FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheGameplaySettings.AutoSaveOn = 0;
             }
             cFEng::Get()->QueueGameMessage(0xdc12af2e, GetPackageName(), 0xff);
         }
@@ -912,8 +914,10 @@ void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject* obj, unsign
     case 0x5000000:
         if (isSecondBtn) {
             FEDatabase->AllocBackupDB(true);
-            if ((gMemcardSetup.mOp & 0x40000) == 0 && (gMemcardSetup.mOp & 0x200000) == 0) {
-                FEDatabase->DefaultProfile();
+            if ((gMemcardSetup.mOp & 0x40000) == 0) {
+                if ((gMemcardSetup.mOp & 0x200000) == 0) {
+                    FEDatabase->DefaultProfile();
+                }
             }
             DoSaveFlow(10);
         } else {
@@ -939,11 +943,11 @@ void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject* obj, unsign
         break;
     case 0xa000000:
         if (isSecondBtn) {
-            FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheAudioSettings.AudioMode = 0;
+            FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheGameplaySettings.AutoSaveOn = 0;
             cFEng::Get()->QueueGameMessage(0x8867412d, GetPackageName(), 0xff);
         } else {
             MemoryCard::GetInstance()->SetRetryAutoSave(true);
-            FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheAudioSettings.AudioMode = 1;
+            FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheGameplaySettings.AutoSaveOn = 1;
             gMemcardSetup.mPreviousCommand = gMemcardSetup.mOp & 0xf0;
             gMemcardSetup.mOp = gMemcardSetup.mOp & ~0xf0;
             MemoryCard::GetInstance()->ShowMessages(true);
@@ -952,8 +956,10 @@ void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject* obj, unsign
         }
         break;
     case 0xb000000:
-        if ((gMemcardSetup.mOp & 0xf0) == 0xa0 && (gMemcardSetup.mOp & 0x8000) == 0) {
-            gMemcardSetup.mOp = (gMemcardSetup.mOp & ~0xf) | 1;
+        if ((gMemcardSetup.mOp & 0xf0) == 0xa0) {
+            if ((gMemcardSetup.mOp & 0x8000) == 0) {
+                gMemcardSetup.mOp = (gMemcardSetup.mOp & ~0xf) | 1;
+            }
         }
         cFEng::Get()->QueueGameMessage(0x7e998e5e, nullptr, 0xff);
         cFEng::Get()->QueueGameMessage(0x461a18ee, nullptr, 0xff);
@@ -962,7 +968,7 @@ void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject* obj, unsign
         if (isSecondBtn) {
             MemoryCard::GetInstance()->SetAutoSaveEnabled(true);
         } else {
-            FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheAudioSettings.AudioMode = 0;
+            FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheGameplaySettings.AutoSaveOn = 0;
             cFEng::Get()->QueueGameMessage(0x7e998e5e, nullptr, 0xff);
             cFEng::Get()->QueueGameMessage(0x461a18ee, nullptr, 0xff);
         }
