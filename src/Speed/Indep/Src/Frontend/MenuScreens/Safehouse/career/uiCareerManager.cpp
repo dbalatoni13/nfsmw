@@ -115,9 +115,9 @@ void CResumeCareer::React(const char* pkg_name, unsigned int data, FEObject* obj
         FEDatabase->GetCareerSettings()->ResumeCareer();
 
         if (!FEDatabase->GetCareerSettings()->HasBeatenCareer()) {
-            GRaceParameters* parms =
-                GRaceDatabase::Get().GetRaceFromName(GRaceDatabase::Get().GetFinalBossRace());
-            if (GRaceDatabase::Get().IsCareerRaceComplete(parms->GetEventHash()))
+            GRaceDatabase &rdb = GRaceDatabase::Get();
+            GRaceParameters* parms = rdb.GetRaceFromName(rdb.GetFinalBossRace());
+            if (rdb.IsCareerRaceComplete(parms->GetEventHash()))
                 should_go_into_epic_pursuit = true;
         }
 

@@ -148,11 +148,11 @@ struct HeliItem : public CopItem {
     }
     void Draw() override;
     void Show() override {
-        MapItem::Show();
+        FEngSetVisible(pIcon);
         FEngSetVisible(static_cast< FEObject* >(pViewCone));
     }
     void Hide() override {
-        MapItem::Hide();
+        FEngSetInvisible(pIcon);
         FEngSetInvisible(static_cast< FEObject* >(pViewCone));
     }
     void ResetSize() override {
