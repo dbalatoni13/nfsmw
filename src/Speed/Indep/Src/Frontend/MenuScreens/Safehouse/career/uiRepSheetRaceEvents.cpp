@@ -58,7 +58,20 @@ UISafehouseRaceSheet::UISafehouseRaceSheet(ScreenConstructorData* sd)
     bIsInGame = sd->Arg != 0;
     currentEvents = true;
     currentIndex = 0;
-    TrackMap = nullptr;
+    theRace = nullptr;
+    for (int i = 0; i < GetWidth() * GetHeight(); i++) {
+        FEImage* image = FEngFindImage(GetPackageName(), FEngHashString("EVENT_ICON_%d", i + 1));
+        if (image) {
+            AddSlot(new ImageArraySlot(image));
+        }
+    }
+    TrackMap = reinterpret_cast<FEMultiImage*>(
+        FEngFindObject(GetPackageName(), FEngHashString("TRACK_MAP")));
+    if (bIsInGame) {
+        FEngSetLanguageHash(GetPackageName(), 0xbde82fcc, 0x2f32a021);
+    } else {
+        FEngSetLanguageHash(GetPackageName(), 0xbde82fcc, 0x84e4a54c);
+    }
     Setup();
 }
 
