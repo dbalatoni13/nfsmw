@@ -969,7 +969,7 @@ void WorldMap::AddCops() {
         if (!(*iter)->IsActive()) {
             continue;
         }
-        IPursuitAI* ipursuitai;
+        IPursuitAI* ipursuitai = nullptr;
         (*iter)->QueryInterface(&ipursuitai);
         ISimable* isimable = (*iter)->GetSimable();
         bVector2 target_pos;
@@ -983,8 +983,8 @@ void WorldMap::AddCops() {
             const UCrc32& vehicleClass = (*iter)->GetVehicleClass();
             if (vehicleClass == VehicleClass::CHOPPER) {
                 AddMapItemOption(0xead9bd85, WMIT_COP_HELI);
-                FEObject* icon = FEngFindObject(GetPackageName(), 0xe26be422);
                 FEImage* view = FEngFindImage(GetPackageName(), 0x21390e47);
+                FEObject* icon = FEngFindObject(GetPackageName(), 0xe26be422);
                 HeliItem* item = new HeliItem(view, icon, target_pos, world_pos, rot);
                 TheMapItems.AddTail(item);
             } else {
