@@ -46,10 +46,11 @@ uiRepSheetRivalBio::uiRepSheetRivalBio(ScreenConstructorData* sd)
 void uiRepSheetRivalBio::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
                                               unsigned long param2) {
     switch (msg) {
-    case 0xc519bfbf: {
-        if ((FEDatabase->GetGameMode() & 0x20000) != 0) {
+    case 0xc519bfbf:
+        if (FEDatabase->IsPostRivalMode()) {
             break;
         }
+    {
         char buf[64];
         if (iCurrentViewBin == 1) {
             bSNPrintf(buf, 64, "E3_DEMO_BMW");
@@ -64,24 +65,24 @@ void uiRepSheetRivalBio::NotificationMessage(unsigned long msg, FEObject* obj, u
         RideInfo ride;
         stable->BuildRideForPlayer(pCar->Handle, 0, &ride);
         CarViewer::SetRideInfo(&ride, SET_RIDE_INFO_REASON_LOAD_CAR, eCARVIEWER_PLAYER1_CAR);
-        cFEng* feng = cFEng::Get();
-        Showcase::BlackListNumber = iCurrentViewBin;
         Showcase::FromArgs = 0;
-        Showcase::FromPackage = PackageFilename;
-        feng->QueuePackageSwitch("Showcase.fng", reinterpret_cast< int >(pCar), 0, false);
+        Showcase::FromPackage = GetPackageName();
+        Showcase::BlackListNumber = iCurrentViewBin;
+        cFEng::Get()->QueuePackageSwitch("Showcase.fng", reinterpret_cast< int >(pCar), 0, false);
         break;
     }
-    case 0xc519bfc3: {
-        if ((FEDatabase->GetGameMode() & 0x20000) != 0) {
+    case 0xc519bfc3:
+        if (FEDatabase->IsPostRivalMode()) {
             break;
         }
+    {
         char buf[64];
         bSNPrintf(buf, 64, "blacklist_%02d", iCurrentViewBin);
         FEAnyMovieScreen::LaunchMovie(GetPackageName(), buf);
         break;
     }
     case 0x406415e3:
-        if ((FEDatabase->GetGameMode() & 0x20000) == 0) {
+        if (!FEDatabase->IsPostRivalMode()) {
             break;
         }
         if (uiRepSheetRivalFlow::Get()->GetStage() == -1) {
@@ -91,7 +92,7 @@ void uiRepSheetRivalBio::NotificationMessage(unsigned long msg, FEObject* obj, u
         }
         break;
     case 0x911ab364:
-        if ((FEDatabase->GetGameMode() & 0x20000) != 0) {
+        if (FEDatabase->IsPostRivalMode()) {
             break;
         }
         if (bIsInGame) {
