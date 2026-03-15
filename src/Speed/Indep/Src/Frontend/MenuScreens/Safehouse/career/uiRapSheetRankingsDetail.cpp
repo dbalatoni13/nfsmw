@@ -84,16 +84,16 @@ void uiRapSheetRankingsDetail::Setup() {
     const char* attrib_name = nullptr;
     unsigned int value_label = 0;
     switch (static_cast<int>(rank_type)) {
-    case 0: attrib_name = career_view ? "rap_sheet_cost_to_state_career" : "rap_sheet_cost_to_state_all"; value_label = 0xD70811D1; break;
-    case 1: attrib_name = career_view ? "rap_sheet_bounty_career" : "rap_sheet_bounty_all"; value_label = 0xC6113FCF; break;
-    case 2: attrib_name = career_view ? "rap_sheet_infractions_career" : "rap_sheet_infractions_all"; value_label = 0x2A1815D9; break;
-    case 3: attrib_name = career_view ? "rap_sheet_speeding_career" : "rap_sheet_speeding_all"; value_label = 0x189EAF7B; break;
-    case 4: attrib_name = career_view ? "rap_sheet_roadblocks_career" : "rap_sheet_roadblocks_all"; value_label = 0xDCD6B9BA; break;
-    case 5: attrib_name = career_view ? "rap_sheet_cops_disabled_career" : "rap_sheet_cops_disabled_all"; value_label = 0x9EF589BE; break;
-    case 6: attrib_name = career_view ? "rap_sheet_spike_strips_career" : "rap_sheet_spike_strips_all"; value_label = 0x39A1413C; break;
-    case 7: attrib_name = career_view ? "rap_sheet_cops_deployed_career" : "rap_sheet_cops_deployed_all"; value_label = 0xE34B2E6F; break;
-    case 8: attrib_name = career_view ? "rap_sheet_helicopters_career" : "rap_sheet_helicopters_all"; value_label = 0xB3F963F8; break;
-    case 9: attrib_name = career_view ? "rap_sheet_pursuit_length" : "rap_sheet_pursuit_length"; value_label = 0x48B4B99C; break;
+    case 0: attrib_name = career_view ? "pursuit_length" : "pursuit_length_in_pursuit"; value_label = 0xD70811D1; break;
+    case 1: attrib_name = career_view ? "cops_involved" : "cops_involved_in_pursuit"; value_label = 0xC6113FCF; break;
+    case 2: attrib_name = career_view ? "cops_damaged" : "cops_damaged_in_pursuit"; value_label = 0x2A1815D9; break;
+    case 3: attrib_name = career_view ? "cops_destroyed" : "cops_destroyed_in_pursuit"; value_label = 0x189EAF7B; break;
+    case 4: attrib_name = career_view ? "tire_spikes_dodged" : "tire_spikes_dodged_in_pursuit"; value_label = 0xDCD6B9BA; break;
+    case 5: attrib_name = career_view ? "roadblocks_dodged" : "roadblocks_dodged_in_pursuit"; value_label = 0x9EF589BE; break;
+    case 6: attrib_name = career_view ? "helis_involved" : "helis_involved_in_pursuit"; value_label = 0x39A1413C; break;
+    case 7: attrib_name = career_view ? "cost_to_state" : "cost_to_state_in_pursuit"; value_label = 0xE34B2E6F; break;
+    case 8: attrib_name = career_view ? "total_infractions" : "total_infractions_in_pursuit"; value_label = 0xB3F963F8; break;
+    case 9: attrib_name = career_view ? "bounty" : "bounty_in_pursuit"; value_label = 0x48B4B99C; break;
     default: break;
     }
     Attrib::Key key = attrib_name ? Attrib::StringToKey(attrib_name) : 0;
