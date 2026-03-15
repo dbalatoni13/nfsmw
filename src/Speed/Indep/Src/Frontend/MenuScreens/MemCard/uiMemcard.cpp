@@ -244,14 +244,15 @@ void UIMemcardMain::NotificationMessage(unsigned long msg, FEObject* obj, unsign
     UIMemcardBase::NotificationMessage(msg, obj, param1, param2);
     switch (msg) {
     case 0x5a051729: {
+        cFEng* feng = cFEng::Get();
         unsigned long hideHash = FEHashUpper("HIDE LOADER");
-        cFEng::Get()->QueuePackageMessage(hideHash, GetPackageName(), nullptr);
+        feng->QueuePackageMessage(hideHash, GetPackageName(), nullptr);
         ListDone();
         break;
     }
     case 0xa4bb7ae1:
         cFEng::Get()->QueueGameMessage(0x461a18ee, nullptr, 0xff);
-        break;
+        goto hide_loader;
     case 0xfe202e3b:
         DoSaveFlow(4);
         break;
@@ -261,7 +262,7 @@ void UIMemcardMain::NotificationMessage(unsigned long msg, FEObject* obj, unsign
         }
         FEDatabase->DeallocBackupDB();
         MemcardExit(0x461a18ee);
-        break;
+        goto hide_loader;
     case 0xa643dee3:
         if (MemoryCard::GetInstance()->IsAutoLoading()) {
             return;
@@ -277,7 +278,7 @@ void UIMemcardMain::NotificationMessage(unsigned long msg, FEObject* obj, unsign
     case 0x8867412d:
     case 0xdc12af2e:
         PopChild();
-        if ((gMemcardSetup.GetExtraOptions() & 8) != 0 &&
+        if ((gMemcardSetup.mOp & 0x800) != 0 &&
             FEDatabase->GetUserProfile(0)->IsProfileNamed()) {
             cFEng::Get()->QueueGameMessage(0x461a18ee, GetPackageName(), 0xff);
         } else {
@@ -320,10 +321,17 @@ void UIMemcardMain::NotificationMessage(unsigned long msg, FEObject* obj, unsign
             if (!FEngIsScriptSet(GetPackageName(), handlerHash, appearHash)) {
                 return;
             }
-            unsigned long hideHash = FEHashUpper("HIDE LOADER");
-            cFEng::Get()->QueuePackageMessage(hideHash, GetPackageName(), nullptr);
+            goto hide_loader;
         }
         break;
+    }
+    return;
+
+hide_loader: {
+        cFEng* feng = cFEng::Get();
+        unsigned long hideHash = FEHashUpper("HIDE LOADER");
+        feng->QueuePackageMessage(hideHash, GetPackageName(), nullptr);
+        return;
     }
 }
 
