@@ -200,10 +200,10 @@ void cFEngJoyInput::HandleJoy() {
                     bool bIsSplit;
                     if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
                         bIsSplit = true;
-                    } else if (is_splitscreen) {
-                        bIsSplit = true;
-                    } else {
+                    } else if (!is_splitscreen) {
                         bIsSplit = false;
+                    } else {
+                        bIsSplit = true;
                     }
                     JoystickPort player_port2 = static_cast<JoystickPort>(-1);
                     JoystickPort player_port1 = static_cast<JoystickPort>(FEDatabase->GetPlayersJoystickPort(0));
