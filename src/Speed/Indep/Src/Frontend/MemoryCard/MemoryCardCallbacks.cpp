@@ -425,13 +425,19 @@ void MemcardCallbacks::Failed(RealmcIface::TaskResult result,
             break;
 
         case MemoryCard::MO_Save:
-            if ((status == RealmcIface::STATUS_NO_CARD ||
-                 (status != RealmcIface::STATUS_OK &&
-                  static_cast<unsigned int>(status) < 7 &&
-                  static_cast<unsigned int>(status) > 4)) &&
-                gMemcardSetup.GetMethod() == 0x60) {
+            if (status == RealmcIface::STATUS_NO_CARD)
+                goto failed_check_autosave;
+            if (static_cast<unsigned int>(status) < 1)
+                goto failed_skip_autosave;
+            if (static_cast<unsigned int>(status) > 6)
+                goto failed_skip_autosave;
+            if (static_cast<unsigned int>(status) < 5)
+                goto failed_skip_autosave;
+        failed_check_autosave:
+            if (gMemcardSetup.GetMethod() == 0x60) {
                 FEDatabase->GetGameplaySettings()->AutoSaveOn = false;
             }
+        failed_skip_autosave:
             msg = 0xdc12af2e;
             FEDatabase->GetGameplaySettings()->AutoSaveOn = false;
 
