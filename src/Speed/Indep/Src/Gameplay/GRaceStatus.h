@@ -97,6 +97,14 @@ struct GRacerInfo {
 
 DECLARE_CONTAINER_TYPE(ID_GRaceStatusTriggerList);
 
+enum CopDensity {
+    kRaceCops_Off = 0,
+    kRaceCops_Light = 1,
+    kRaceCops_Medium = 2,
+    kRaceCops_Heavy = 3,
+    kRaceCops_NumDensities = 4,
+};
+
 // total size: 0x14
 class GRaceParameters {
   public:
@@ -264,7 +272,7 @@ class GRaceParameters {
 
     // enum Difficulty GetDifficulty() const;
 
-    // enum CopDensity GetCopDensity() const;
+    CopDensity GetCopDensity() const;
 
     bool GetCanBeReversed() const;
 

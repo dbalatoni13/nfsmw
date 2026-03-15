@@ -180,17 +180,7 @@ struct CustomizePerformance : MenuScreen { CustomizePerformance(ScreenConstructo
 struct uiCredits : MenuScreen { uiCredits(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x1C]; };
 struct UIEATraxScreen : MenuScreen { UIEATraxScreen(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0xF4]; };
 struct UIOptionsController : MenuScreen { UIOptionsController(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x128]; };
-struct UITrackMapStreamer { void UpdateAnimation(); };
-namespace nsEngageEventDialog {
-struct EngageEventDialog : MenuScreen {
-    EngageEventDialog(ScreenConstructorData *);
-    ~EngageEventDialog() override;
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
-    void NotifyTheGameAcceptEvent();
-    void NotifyTheGameDeclineEvent();
-    void *mpTrackMapStreamer; // offset 0x30
-};
-}
+// nsEngageEventDialog::EngageEventDialog defined in FEPkg_EngageEventDialog.cpp (jumbo line 89)
 struct MovieScreen : MenuScreen {
     MovieScreen(ScreenConstructorData *);
     ~MovieScreen() override;
@@ -767,9 +757,9 @@ unsigned int FEPackageData::GetNameHash() {
 
 // EngageEventDialog implementations
 nsEngageEventDialog::EngageEventDialog::~EngageEventDialog() {
-    if (mpTrackMapStreamer) {
-        delete mpTrackMapStreamer;
-        mpTrackMapStreamer = nullptr;
+    if (MapStreamer) {
+        delete MapStreamer;
+        MapStreamer = nullptr;
     }
 }
 
@@ -792,8 +782,8 @@ void nsEngageEventDialog::EngageEventDialog::NotificationMessage(unsigned long m
         cFEng::Get()->QueuePackagePop(1);
         break;
     case 0xc98356ba:
-        if (mpTrackMapStreamer) {
-            reinterpret_cast<UITrackMapStreamer *>(mpTrackMapStreamer)->UpdateAnimation();
+        if (MapStreamer) {
+            MapStreamer->UpdateAnimation();
         }
         break;
     case 0x0c407210: {

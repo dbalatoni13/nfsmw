@@ -26,6 +26,8 @@ inline unsigned int GRaceDatabase::GetScoreInfoCount() {
 }
 
 // total size: 0x10
+#ifndef GRACESAVEINFO_DEFINED
+#define GRACESAVEINFO_DEFINED
 struct GRaceSaveInfo {
     unsigned int mRaceHash;                              // offset 0x0, size 0x4
     unsigned int mFlags;                                 // offset 0x4, size 0x4
@@ -33,6 +35,7 @@ struct GRaceSaveInfo {
     unsigned short mTopSpeed;                            // offset 0xC, size 0x2
     unsigned short mAverageSpeed;                        // offset 0xE, size 0x2
 };
+#endif
 
 struct CarPart {
     unsigned short PartNameHashBot;
