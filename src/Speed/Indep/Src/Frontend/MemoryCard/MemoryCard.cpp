@@ -200,9 +200,12 @@ MemoryCard::MemoryCard() {
 }
 
 bool MemoryCard::IsCardAvailable() {
-    if (s_pThis == nullptr) return false;
-    if (s_pThis->m_LastError != 0 && s_pThis->m_LastError != 11) return false;
-    return true;
+    if (s_pThis) {
+        if (s_pThis->m_LastError == 0 || s_pThis->m_LastError == 11)
+            return true;
+        return false;
+    }
+    return false;
 }
 
 void MemoryCard::SetExtraParam(SaveType t, const char* filename, void* buf, unsigned int size) {
