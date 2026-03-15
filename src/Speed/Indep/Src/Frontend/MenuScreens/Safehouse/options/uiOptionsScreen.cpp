@@ -130,18 +130,17 @@ void UIOptionsScreen::NotificationMessage(unsigned long msg, FEObject* pobj, uns
             return;
         }
         {
-            const char* pkg_name = GetPackageName();
             cFEng* eng = cFEng::Get();
             unsigned int snd = 0xF4B32D4D;
             if (msg == 0x5073EF13) {
                 snd = 0x6B283007;
             }
-            eng->QueueSoundMessage(snd, pkg_name);
+            eng->QueueSoundMessage(snd, GetPackageName());
             if (!OptionsDidNotChange()) {
                 char buf[128];
                 const char* fmt = GetLocalizedString(0xBA463431);
                 FEngSNPrintf(buf, 128, fmt, GetPlayerToEditForOptions() + 1);
-                DialogInterface::ShowTwoButtons(pkg_name,
+                DialogInterface::ShowTwoButtons(GetPackageName(),
                                                 mCalledFromPauseMenu ? "InGameDialog.fng" : "Dialog.fng",
                                                 static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4,
                                                 0x9A5AD46D, 0xA2A07AC4, 0x34DC1BCF,
