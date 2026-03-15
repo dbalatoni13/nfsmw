@@ -138,7 +138,7 @@ bool IconPanel::SetSelection(IconOption *option) {
 }
 
 void IconPanel::SetInitialPos() {
-    float num_opts = static_cast<float>(Options.Options.CountElements());
+    float num_opts = static_cast<float>(Options.CountElements());
     float size_x, size_y;
     FEngGetSize(Options.GetHead()->FEngObject, size_x, size_y);
     float master_x;
@@ -159,7 +159,7 @@ void IconPanel::SetInitialPos() {
 }
 
 void IconPanel::Scroll(eScrollDir dir) {
-    if (Options.Options.CountElements() == 0) {
+    if (Options.CountElements() == 0) {
         return;
     }
     IconOption *new_option = pCurrentNode;
@@ -190,7 +190,7 @@ check:
 }
 
 void IconPanel::ScrollWrapped(eScrollDir dir) {
-    if (Options.Options.CountElements() == 0) {
+    if (Options.CountElements() == 0) {
         return;
     }
     IconOption *new_option = pCurrentNode;
@@ -405,7 +405,7 @@ int IconScroller::GetOptionIndex(IconOption *to_find) {
 }
 
 void IconScroller::Scroll(eScrollDir dir) {
-    if (Options.Options.CountElements() - iNumBookEnds < 1) {
+    if (Options.CountElements() - iNumBookEnds < 1) {
         return;
     }
     IconOption *new_option = pCurrentNode;
@@ -439,7 +439,7 @@ done:
 }
 
 void IconScroller::ScrollWrapped(eScrollDir dir) {
-    if (Options.Options.CountElements() - iNumBookEnds <= 0) {
+    if (Options.CountElements() - iNumBookEnds <= 0) {
         return;
     }
     IconOption *new_option = pCurrentNode;

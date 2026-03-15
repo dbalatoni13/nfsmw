@@ -23,13 +23,13 @@ class IHud : public UTL::COM::IUnknown, public UTL::Collections::Listable<IHud, 
     virtual void Update(class IPlayer *player, float dT);
     virtual void Release();
     virtual void HideAll();
+    virtual void FadeAll(bool fadeIn);
     virtual bool AreResourcesLoaded();
     virtual bool IsHudVisible();
     virtual void SetInPursuit(bool inPursuit);
     virtual void SetHasTurbo(bool hasTurbo);
     virtual void JoyEnable();
     virtual void JoyDisable();
-    virtual void FadeAll(bool fadeIn);
     virtual void RefreshMiniMapItems();
 };
 
@@ -245,7 +245,7 @@ class IMenuZoneTrigger : public UTL::COM::IUnknown {
     virtual void ExitTriggerForAutoSave();
     virtual void EnterTrigger(class GRuntimeInstance *activity);
     virtual void EnterTrigger(const char *zoneType);
-    virtual void ExitTrigger();
+    virtual void ExitTrigger(int port);
     virtual void RequestEventInfoDialog(int index);
     virtual void RequestZoneInfoDialog(int index);
     virtual void RequestDoAction();

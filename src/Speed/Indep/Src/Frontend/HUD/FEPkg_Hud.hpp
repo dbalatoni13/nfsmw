@@ -50,6 +50,7 @@ class FEngHud : public UTL::COM::Object, public IHud {
     void RefreshMiniMapItems();
     OnlineHUDSupport *GetOnlineHUDSupport();
     static float ChooseMaxRpmTextureNumber(float rpm);
+    static bool ShouldRearViewMirrorBeVisible(EVIEW_ID viewId);
 
   private:
     void SetHudFeatures(unsigned long long features);

@@ -39,6 +39,7 @@
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Events/EPause.hpp"
@@ -110,6 +111,48 @@ bool HudResourceManager::AreResourcesLoaded(ePlayerHudType ht) {
         }
     }
     return false;
+}
+
+bool FEngHud::ShouldRearViewMirrorBeVisible(EVIEW_ID viewId) {
+    eView *view = eGetView(viewId, false);
+    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+
+    if (player) {
+        IHud *hud = player->GetHud();
+        if (hud && !player->GetHud()->IsHudVisible()) {
+            return false;
+        }
+    }
+
+    CameraMover *camMover = nullptr;
+    if (view) {
+        camMover = view->GetCameraMover();
+    }
+
+    if (camMover && camMover->GetType() == CM_DRIVE_CUBIC) {
+        if (camMover->GetLookbackAngle()) {
+            return false;
+        }
+    }
+
+    if (FEManager::ShouldPauseSimulation(true)) {
+        return false;
+    }
+
+    if (!FEDatabase) {
+        return false;
+    }
+
+    if (!FEDatabase->GetGameplaySettings()->RearviewOn) {
+        return false;
+    }
+
+    ePlayerSettingsCameras playerCam = FEDatabase->GetPlayerSettings(viewId - 1)->CurCam;
+    if (playerCam >= PSC_CLOSE && playerCam <= PSC_PURSUIT) {
+        return false;
+    }
+
+    return cFEng::Get()->IsPackagePushed("HUD_SingleRace.fng");
 }
 
 float FEngHud::ChooseMaxRpmTextureNumber(float rpm) {
