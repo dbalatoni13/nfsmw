@@ -926,7 +926,7 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                 pTrack->InterpAction = pTag->Data()[3];
                 pTrack->Length = static_cast<int>(BSwap32(pTag->Getu32(1)));
                 pTrack->LongOffset = RunningTrackOffset;
-                RunningTrackOffset += paramSize >> 2;
+                RunningTrackOffset += pTrack->ParamSize >> 2;
                 break;
             }
             case 0x6f54: {
@@ -947,17 +947,7 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                         {
                             unsigned long DestIndex = 0;
                             do {
-                                if (!pSrcTrack || pScript->TrackCount <= SrcIndex) {
-                                insert_track:
-                                    pNewArray[DestIndex].ParamType = static_cast<unsigned char>(pField->GetType());
-                                    pTrack = &pNewArray[DestIndex];
-                                    pTrack->InterpType = 1;
-                                    pTrack->ParamSize = static_cast<unsigned char>(pField->GetSize());
-                                    pTrack->InterpAction = 0;
-                                    pTrack->Length = pScript->Length;
-                                    pTrack->LongOffset = static_cast<int>(pField->GetOffset() >> 2);
-                                    pField = nullptr;
-                                } else {
+                                if (pSrcTrack && SrcIndex < pScript->TrackCount) {
                                     if (pField) {
                                         int fieldOffset = static_cast<int>(pField->GetOffset());
                                         if (fieldOffset < 0) {
@@ -969,6 +959,16 @@ bool FEPackageReader::ReadScriptTags(FETag* pTag, unsigned long Length) {
                                     }
                                     pNewArray[DestIndex] = pSrcTrack[SrcIndex];
                                     SrcIndex++;
+                                } else {
+                                insert_track:
+                                    pNewArray[DestIndex].ParamType = static_cast<unsigned char>(pField->GetType());
+                                    pTrack = &pNewArray[DestIndex];
+                                    pTrack->InterpType = 1;
+                                    pTrack->ParamSize = static_cast<unsigned char>(pField->GetSize());
+                                    pTrack->InterpAction = 0;
+                                    pTrack->Length = pScript->Length;
+                                    pTrack->LongOffset = static_cast<int>(pField->GetOffset() >> 2);
+                                    pField = nullptr;
                                 }
                                 DestIndex++;
                             } while (DestIndex <= pScript->TrackCount);
