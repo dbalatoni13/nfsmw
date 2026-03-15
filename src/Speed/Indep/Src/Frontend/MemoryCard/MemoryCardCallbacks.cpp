@@ -44,7 +44,8 @@ void MemcardCallbacks::ShowMessage(const wchar_t* msg, unsigned int nOptions,
     Joylog::AddOrGetData(
         reinterpret_cast<unsigned short*>(const_cast<wchar_t*>(msg)),
         JOYLOG_CHANNEL_MEMORY_CARD);
-    nOptions = Joylog::AddOrGetData(nOptions, 0x20, JOYLOG_CHANNEL_MEMORY_CARD);
+    unsigned int loggedOptions = Joylog::AddOrGetData(nOptions, 0x20, JOYLOG_CHANNEL_MEMORY_CARD);
+    nOptions = loggedOptions;
     for (unsigned int i = 0; i < nOptions; i++) {
         Joylog::AddOrGetData(
             reinterpret_cast<unsigned short*>(const_cast<wchar_t*>(options[i])),
