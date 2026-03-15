@@ -112,6 +112,7 @@ struct FEPackage : public FENode {
     unsigned long NumMsgTargets;          // offset 0x78, size 0x4
     FEMsgTargetList* pMsgTargets;         // offset 0x7C, size 0x4
     FEList LibrariesUsed;                 // offset 0x80, size 0x10
+    inline FEList& GetLibraryList() { return LibrariesUsed; }
     unsigned long NumLibRefs;             // offset 0x90, size 0x4
     FELibraryRef* pLibRefs;              // offset 0x94, size 0x4
     FEObject* pCurrentButton;            // offset 0x98, size 0x4

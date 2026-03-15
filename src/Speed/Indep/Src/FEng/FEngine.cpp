@@ -320,56 +320,53 @@ FEPackage* FEngine::LoadPackage(const void* pPackageData, bool bLoadAsLibrary) {
 bool FEngine::UnloadPackage(FEPackage* pPackage) {
     FEPackage* pPack = PackList.GetFirstPackage();
     while (pPack) {
-        if (pPack == pPackage) {
-            break;
+        if (pPackage == pPack) {
+            bool bDelete;
+            if (pInterface) {
+                bDelete = pInterface->PackageWillUnload(pPack);
+            } else {
+                bDelete = true;
+            }
+            PackList.RemovePackage(pPackage);
+            FEPackageCommand* pTempNode = static_cast<FEPackageCommand*>(PackageCommands.GetHead());
+            while (pTempNode) {
+                FEPackageCommand* pNextNode = static_cast<FEPackageCommand*>(pTempNode->GetNext());
+                if (pTempNode->pPackage == pPackage) {
+                    PackageCommands.RemNode(pTempNode);
+                    if (pTempNode) {
+                        delete pTempNode;
+                    }
+                }
+                pTempNode = pNextNode;
+            }
+            if (pPack->UsesIdleList()) {
+                AddToIdleList(pPackage);
+            } else {
+                FENode* pLibName = static_cast<FENode*>(pPack->GetLibraryList().GetHead());
+                while (pLibName) {
+                    FEPackage* pLibPack = FindLibraryPackage(pLibName->GetNameHash());
+                    if (pLibPack) {
+                        int Pri = pLibPack->GetPriority() - 1;
+                        if (Pri < 1) {
+                            UnloadLibraryPackage(pLibPack);
+                        } else {
+                            pLibPack->SetPriority(Pri);
+                        }
+                    }
+                    pLibName = pLibName->GetNext();
+                }
+                pPack->Shutdown(pInterface);
+                if (bDelete) {
+                    if (pPack) {
+                        delete pPack;
+                    }
+                }
+            }
+            return true;
         }
         pPack = pPack->GetNext();
     }
-    if (!pPack) {
-        return false;
-    }
-    bool bOwnsMemory;
-    if (pInterface) {
-        bOwnsMemory = pInterface->PackageWillUnload(pPack);
-    } else {
-        bOwnsMemory = true;
-    }
-    PackList.RemovePackage(pPackage);
-    FEPackageCommand* pCmd = static_cast<FEPackageCommand*>(PackageCommands.GetHead());
-    while (pCmd) {
-        FEPackageCommand* pNext = static_cast<FEPackageCommand*>(pCmd->GetNext());
-        if (pCmd->pPackage == pPackage) {
-            PackageCommands.RemNode(pCmd);
-            if (pCmd) {
-                delete pCmd;
-            }
-        }
-        pCmd = pNext;
-    }
-    if (pPack->bUseIdleList) {
-        AddToIdleList(pPackage);
-    } else {
-        FENode* pLibNode = static_cast<FENode*>(pPack->LibrariesUsed.GetHead());
-        while (pLibNode) {
-            FEPackage* pLib = FindLibraryPackage(pLibNode->GetNameHash());
-            if (pLib) {
-                int RefCount = pLib->Priority - 1;
-                if (RefCount < 1) {
-                    UnloadLibraryPackage(pLib);
-                } else {
-                    pLib->Priority = RefCount;
-                }
-            }
-            pLibNode = pLibNode->GetNext();
-        }
-        pPack->Shutdown(pInterface);
-        if (bOwnsMemory) {
-            if (pPack) {
-                delete pPack;
-            }
-        }
-    }
-    return true;
+    return false;
 }
 
 FEPackage* FEngine::PushPackage(const char* pPackageName, const unsigned char Level, const unsigned long ControlMask) {
@@ -687,27 +684,32 @@ void FEngine::Update(const long tDeltaTicks, unsigned int lock) {
         FastRep = FastRepCache;
     }
     if (bExecuting) {
-        if (!bRenderedRecently) {
-            FEPackage::uHoldDirtyFlags = 0xFFFFFFFF;
-        } else {
-            FEPackage::uHoldDirtyFlags = 0;
-        }
-        pPackage = PackList.GetFirstPackage();
-        while (pPackage) {
-            FEPackage* pCachedNext = pPackage->GetNext();
-            if (!bErrorScreenMode || pPackage->IsErrorScreen()) {
-                pPackage->Update(this, tDeltaTicks);
+        int iTicksRemaining = tDeltaTicks;
+        do {
+            int iIterationTicks;
+            if (!bRenderedRecently) {
+                FEPackage::uHoldDirtyFlags = 0xFFFFFFFF;
+            } else {
+                FEPackage::uHoldDirtyFlags = 0;
             }
-            pPackage = pCachedNext;
-        }
-        ProcessMessageQueue();
-        if (!bErrorScreenMode) {
-            ProcessPackageCommands();
-        }
-        if (MsgQ.GetHead()) {
+            pPackage = PackList.GetFirstPackage();
+            while (pPackage) {
+                FEPackage* pCachedNext = pPackage->GetNext();
+                if (!bErrorScreenMode || pPackage->IsErrorScreen()) {
+                    pPackage->Update(this, iTicksRemaining);
+                }
+                pPackage = pCachedNext;
+            }
             ProcessMessageQueue();
-        }
-        bRenderedRecently = false;
+            if (!bErrorScreenMode) {
+                ProcessPackageCommands();
+            }
+            if (MsgQ.GetHead()) {
+                ProcessMessageQueue();
+            }
+            bRenderedRecently = false;
+            iTicksRemaining = 0;
+        } while (iTicksRemaining);
     } else {
         for (pPackage = PackList.GetFirstPackage(); pPackage; pPackage = pPackage->GetNext()) {
             if (!bErrorScreenMode || pPackage->IsErrorScreen()) {
