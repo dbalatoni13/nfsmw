@@ -108,29 +108,30 @@ void MemcardCallbacks::BootupCheckDone(RealmcIface::CardStatus status,
                              JOYLOG_CHANNEL_MEMORY_CARD) != 0;
     GetMemcard()->m_MemOp = MemoryCard::MO_NONE;
     GetMemcard()->m_pImp->DestructSaveInfo();
-    unsigned short short_status = static_cast<unsigned short>(status);
-    GetMemcard()->m_LastError = short_status;
-    GetMemcard()->m_SpecialError = short_status;
+    GetMemcard()->m_LastError = static_cast<unsigned short>(status);
+    GetMemcard()->m_SpecialError = static_cast<unsigned short>(status);
     if ((status != RealmcIface::STATUS_OK &&
          GetMemcard()->GetPendingMessage() != nullptr) ||
         status == RealmcIface::STATUS_UNKNOWN) {
         GetMemcard()->ReleasePendingMessage();
         MemoryCard* mc = GetMemcard();
-        const char* entry = nullptr;
+        const char* entry;
         if (GetMemcard()->IsAutoLoading() && !FEDatabase->bProfileLoaded) {
             entry = GetScreen()->m_FileName;
+        } else {
+            entry = nullptr;
         }
         mc->BootupCheck(entry);
         return;
     }
     GetMemcard()->m_pImp->BootupCheckDone(status, &res);
     GetMemcard()->SetBootFound(res.mEntryFound);
-    if (!GetMemcard()->m_bRetryBootCheck) {
-        UIMemcardBase* scr = GetScreen();
-        cFEng::Get()->QueueGameMessage(0x461a18ee, scr->GetPackageName(),
-                                       0xff);
-    } else {
+    if (GetMemcard()->m_bRetryBootCheck) {
         GetScreen()->SetStringCheckingCard();
+    } else {
+        cFEng* feng = cFEng::Get();
+        UIMemcardBase* scr = GetScreen();
+        feng->QueueGameMessage(0x461a18ee, scr->GetPackageName(), 0xff);
     }
 }
 
