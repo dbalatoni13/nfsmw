@@ -12,12 +12,12 @@ void RapSheetVDArraySlot::Update(ArrayDatum* datum, bool isSelected) {
     if (datum != nullptr) {
         RapSheetVDDatum* d = static_cast<RapSheetVDDatum*>(datum);
         FEngSetLanguageHash(pCar, d->getCarHash());
-        FEngSetLanguageHash(pToDrive, d->getStatusHash());
-        FEPrintf(pBounty, "%d", d->getBounty());
-        FEPrintf(pFines, "%d", d->getFines());
-        FEPrintf(pUnserved, "%d", d->getUnserved());
-        FEPrintf(pEvaded, "%d", d->getEvaded());
-        FEPrintf(pBusted, "%d", d->getBusted());
+        FEPrintf(pBounty, GetLocalizedString(0xDFC1111B), d->getBounty());
+        FEPrintf(pFines, GetLocalizedString(0x092D727E), d->getFines());
+        FEPrintf(pUnserved, GetLocalizedString(0x71DAD325), d->getUnserved());
+        FEPrintf(pToDrive, "%s", GetLocalizedString(d->getStatusHash()));
+        FEPrintf(pEvaded, GetLocalizedString(0x49F29E04), d->getEvaded());
+        FEPrintf(pBusted, GetLocalizedString(0x42EB2E82), d->getBusted());
     }
 }
 uiRapSheetVD::uiRapSheetVD(ScreenConstructorData* sd) : ArrayScrollerMenu(sd, 1, 2, false) {
