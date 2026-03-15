@@ -82,27 +82,24 @@ void PauseMenu::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned 
         return;
     case 0xE1FDE1D1:
         if (PrevButtonMessage != 0x911AB364) {
-            if (mSelectionHash == 0x85162CB0) {
+            switch (mSelectionHash) {
+            case 0x85162CB0:
                 if (GRaceStatus::Exists()) {
                     GRaceStatus::Get().RaceAbandoned();
                 }
                 new EQuitToFE(static_cast<eGarageType>(1), "MainMenu.fng");
                 return;
-            }
-            if (mSelectionHash == 0x33195CF0) {
+            case 0x33195CF0:
                 FEDatabase->SetGameMode(eFE_GAME_MODE_OPTIONS);
                 cFEng::Get()->QueuePackageSwitch("Pause_Main.fng", 1, 0, false);
                 return;
-            }
-            if (mSelectionHash == 0x0506202D) {
+            case 0x0506202D:
                 new EQuitDemo(DEMO_DISC_ENDREASON_PLAYABLE_QUIT);
                 return;
-            }
-            if (mSelectionHash == 0x78F1C035) {
+            case 0x78F1C035:
                 cFEng::Get()->QueuePackageSwitch("Pause_Performance_Tuning.fng", 0, 0, false);
                 return;
-            }
-            if (mSelectionHash == 0xE5C9C609) {
+            case 0xE5C9C609: {
                 if (GRaceStatus::Exists()) {
                     GRaceStatus::Get().RaceAbandoned();
                 }
@@ -113,7 +110,7 @@ void PauseMenu::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned 
                 new EQuitToFE(garageType, static_cast<const char*>(0));
                 return;
             }
-            if (mSelectionHash == 0xCDD2635A) {
+            case 0xCDD2635A: {
                 new EUnPause();
                 if (GRaceStatus::Exists()) {
                     GRaceStatus::Get().RaceAbandoned();
@@ -122,13 +119,16 @@ void PauseMenu::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned 
                 abandoned.Post(MNotifyRaceAbandoned::_GetKind());
                 return;
             }
-            if (mSelectionHash == 0xFBDF2EE3) {
+            case 0xFBDF2EE3:
                 if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() &&
                     GRaceStatus::Get().GetRaceParameters()->GetIsDDayRace()) {
                     MemoryCard::GetInstance()->CancelNextAutoSave();
                 }
                 new ERestartRace();
-            } else if (mSelectionHash != 0xFDAE152F) {
+                break;
+            case 0xFDAE152F:
+                break;
+            default:
                 return;
             }
         }
