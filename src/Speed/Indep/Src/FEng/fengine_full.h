@@ -42,7 +42,7 @@ struct FEFieldNode : public FENode {
     unsigned long Offset;  // offset 0x1C, size 0x4
     unsigned char* pDefault; // offset 0x20, size 0x4
 
-    inline FEFieldNode() : Type(0), Size(0), Offset(0), pDefault(nullptr) {}
+    inline FEFieldNode() : Size(0), Offset(0), pDefault(nullptr) {}
     ~FEFieldNode() override;
 
     inline int GetType() const { return Type; }

@@ -176,6 +176,8 @@ void FECodeListBox::FillAllCells() {
         return;
     }
     unsigned long ulNumVisRows = mulNumVisibleRows;
+    int lRow = mulCurrentVirtualRow;
+    int lStartColumn = mulCurrentVirtualColumn;
     if (ulNumVisRows > mulNumTotalRows) {
         ulNumVisRows = mulNumTotalRows;
     }
@@ -183,8 +185,6 @@ void FECodeListBox::FillAllCells() {
     if (ulNumVisCols > mulNumTotalColumns) {
         ulNumVisCols = mulNumTotalColumns;
     }
-    int lStartColumn = mulCurrentVirtualColumn;
-    int lRow = mulCurrentVirtualRow;
     if (mpSetCellCallback) {
         unsigned long i = 0;
         if (i < ulNumVisRows) {
@@ -264,7 +264,7 @@ void FECodeListBox::AllocateStrings(unsigned long ulNumStrings, unsigned long ul
                     unsigned long j = 0;
                     if (mulNumVisibleColumns != 0) {
                         do {
-                            FEListBoxCell* pstCell = GetRealCellData(j, i);
+                            FEListBoxCell* pstCell = GetCellData(j, i);
                             if (pstCell->ulType == 2) {
                                 short* psString = pstCell->u.string.pStr;
                                 pstCell->u.string.pStr = AllocateString();

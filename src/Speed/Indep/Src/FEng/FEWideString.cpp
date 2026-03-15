@@ -39,8 +39,6 @@ template <class T> void CopyString(short* pDst, const T* pSrc) {
 }
 
 template <class T> void CopyString(short* pDst, const T* pSrc, unsigned long ulMaxLength) {
-    unsigned long length = 0;
-
     if (!pDst) {
         return;
     }
@@ -50,7 +48,10 @@ template <class T> void CopyString(short* pDst, const T* pSrc, unsigned long ulM
     }
 
     if (pSrc) {
-        if (*pSrc != 0 && ulMaxLength != 1) {
+        T ch = *pSrc;
+        unsigned long length = 0;
+        ulMaxLength--;
+        if (ch != 0 && ulMaxLength != 0) {
             do {
                 length++;
                 *pDst = *pSrc;
@@ -59,7 +60,7 @@ template <class T> void CopyString(short* pDst, const T* pSrc, unsigned long ulM
                 if (*pSrc == 0) {
                     break;
                 }
-            } while (ulMaxLength - 1 != length);
+            } while (ulMaxLength != length);
         }
     }
 
