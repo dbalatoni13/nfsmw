@@ -292,6 +292,12 @@ class CareerSettings {
     bool HasBeatenCareer() {
         return SpecialFlags & 0x4000;
     }
+    bool HasBeenBustedOnce() {
+        return SpecialFlags & 0x1000;
+    }
+    void SetBeenBustedOnce() {
+        SpecialFlags |= 0x1000;
+    }
     int GetCash() {
         return CurrentCash;
     }

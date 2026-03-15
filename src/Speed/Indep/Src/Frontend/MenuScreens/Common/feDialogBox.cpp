@@ -26,18 +26,6 @@ extern void FEngSetButtonState(const char *, unsigned int, bool);
 
 extern Timer RealTimer;
 
-inline void FEngDisableButton(const char *pkg_name, unsigned int button_hash) {
-    FEngSetButtonState(pkg_name, button_hash, false);
-}
-
-inline void FEngSetInvisible(const char *pkg_name, unsigned int obj_hash) {
-    FEngSetInvisible(FEngFindObject(pkg_name, obj_hash));
-}
-
-inline void FEngSetTextureHash(const char *pkg_name, unsigned int obj_hash, unsigned int texture_hash) {
-    FEngSetTextureHash(FEngFindImage(pkg_name, obj_hash), texture_hash);
-}
-
 struct feDialogScreen : MenuScreen {
     feDialogScreen(ScreenConstructorData *sd);
     ~feDialogScreen() override;
