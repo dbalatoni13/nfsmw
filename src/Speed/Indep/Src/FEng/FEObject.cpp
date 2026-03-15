@@ -247,9 +247,7 @@ unsigned long FEObject::GetDataOffset(FEKeyTrack_Indices track) {
 }
 
 FEObject* FEObject::Clone(bool bReference) {
-    FEObject* pObject = static_cast<FEObject*>(FEngMalloc(sizeof(FEObject), nullptr, 0));
-    new (pObject) FEObject(*this, bReference);
-    return pObject;
+    return FENG_NEW FEObject(*this, bReference);
 }
 
 void FEObject::SetTrackValue(FEKeyTrack_Indices track, const FEVector3& value, bool bRelative) {

@@ -14,9 +14,7 @@ FEImage::FEImage(const FEImage& Object, bool bReference)
 FEImage::~FEImage() {}
 
 FEObject* FEImage::Clone(bool bReference) {
-    FEImage* pImage = static_cast<FEImage*>(FEngMalloc(sizeof(FEImage), 0, 0));
-    new (pImage) FEImage(*this, bReference);
-    return pImage;
+    return FENG_NEW FEImage(*this, bReference);
 }
 
 FEMultiImage::FEMultiImage(const FEMultiImage& Object, bool bReference)
@@ -25,9 +23,7 @@ FEMultiImage::FEMultiImage(const FEMultiImage& Object, bool bReference)
 FEMultiImage::~FEMultiImage() {}
 
 FEObject* FEMultiImage::Clone(bool bReference) {
-    FEMultiImage* pImage = static_cast<FEMultiImage*>(FEngMalloc(sizeof(FEMultiImage), 0, 0));
-    new (pImage) FEMultiImage(*this, bReference);
-    return pImage;
+    return FENG_NEW FEMultiImage(*this, bReference);
 }
 
 FEMovie::FEMovie(const FEMovie& Object, bool bReference)
@@ -36,9 +32,7 @@ FEMovie::FEMovie(const FEMovie& Object, bool bReference)
 FEMovie::~FEMovie() {}
 
 FEObject* FEMovie::Clone(bool bReference) {
-    FEMovie* pMovie = static_cast<FEMovie*>(FEngMalloc(sizeof(FEMovie), 0, 0));
-    new (pMovie) FEMovie(*this, bReference);
-    return pMovie;
+    return FENG_NEW FEMovie(*this, bReference);
 }
 
 unsigned long FEMultiImage::GetTexture(unsigned long tex_num) {
@@ -68,23 +62,17 @@ void FEMultiImage::GetUVs(unsigned long tex_num, FEVector2& top_left, FEVector2&
 FEAnimImage::~FEAnimImage() {}
 
 FEObject* FEAnimImage::Clone(bool bReference) {
-    FEAnimImage* pImage = static_cast<FEAnimImage*>(FEngMalloc(sizeof(FEAnimImage), 0, 0));
-    new (pImage) FEAnimImage(*this, bReference);
-    return pImage;
+    return FENG_NEW FEAnimImage(*this, bReference);
 }
 
 FEColoredImage::~FEColoredImage() {}
 
 FEObject* FEColoredImage::Clone(bool bReference) {
-    FEColoredImage* pImage = static_cast<FEColoredImage*>(FEngMalloc(sizeof(FEColoredImage), 0, 0));
-    new (pImage) FEColoredImage(*this, bReference);
-    return pImage;
+    return FENG_NEW FEColoredImage(*this, bReference);
 }
 
 FESimpleImage::~FESimpleImage() {}
 
 FEObject* FESimpleImage::Clone(bool bReference) {
-    FESimpleImage* pImage = static_cast<FESimpleImage*>(FEngMalloc(sizeof(FESimpleImage), 0, 0));
-    new (pImage) FESimpleImage(*this, bReference);
-    return pImage;
+    return FENG_NEW FESimpleImage(*this, bReference);
 }

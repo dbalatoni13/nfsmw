@@ -31,14 +31,14 @@ void FESlotNode::FreeBlock(unsigned char* pSlot) {
 
 unsigned char* FESlotPool::Alloc() {
     FESlotNode* pNode = static_cast<FESlotNode*>(Slots.GetHead());
-    while (pNode && pNode->SlotsUsed == 0x20) {
+    while (pNode && pNode->IsFull()) {
         pNode = pNode->GetNext();
     }
     if (!pNode) {
-        pNode = new (static_cast<FESlotNode*>(FEngMalloc(sizeof(FESlotNode), nullptr, 0))) FESlotNode(static_cast<unsigned short>(SlotSize));
+        pNode = FENG_NEW FESlotNode(static_cast<unsigned short>(SlotSize));
         pNode->pData = static_cast<unsigned char*>(FEngMalloc(static_cast<unsigned long>(pNode->SlotSize) << 5, nullptr, 0));
         FEngMemSet(pNode->SlotMask, 0, 4);
-        Slots.AddNode(nullptr, pNode);
+        Slots.AddHead(pNode);
     }
     return pNode->AllocBlock();
 }
@@ -84,8 +84,8 @@ unsigned char* FEMultiPool::Alloc(unsigned long Size) {
         pPool = pPool->GetNext();
     }
     if (!pPool) {
-        pPool = new (static_cast<FESlotPool*>(FEngMalloc(sizeof(FESlotPool), nullptr, 0))) FESlotPool(Size);
-        Pools.AddNode(nullptr, pPool);
+        pPool = FENG_NEW FESlotPool(Size);
+        Pools.AddHead(pPool);
     }
     return pPool->Alloc();
 }

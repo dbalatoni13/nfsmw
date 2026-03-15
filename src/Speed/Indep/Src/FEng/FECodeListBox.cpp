@@ -308,9 +308,7 @@ cleanup_ptrs:
 }
 
 FEObject* FECodeListBox::Clone(bool bReference) {
-    FECodeListBox* pNew = static_cast<FECodeListBox*>(FEngMalloc(sizeof(FECodeListBox), 0, 0));
-    new (pNew) FECodeListBox(*this, bReference);
-    return pNew;
+    return FENG_NEW FECodeListBox(*this, bReference);
 }
 
 void FECodeListBox::SetTotalNumColumns(unsigned long ulNumColumns) {

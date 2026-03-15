@@ -35,7 +35,5 @@ FEObject* FEGroup::FindChildRecursive(unsigned long NameHash) const {
 }
 
 FEObject* FEGroup::Clone(bool bReference) {
-    FEGroup* pGroup = static_cast<FEGroup*>(FEngMalloc(sizeof(FEGroup), nullptr, 0));
-    new (pGroup) FEGroup(*this, true, bReference);
-    return pGroup;
+    return FENG_NEW FEGroup(*this, true, bReference);
 }

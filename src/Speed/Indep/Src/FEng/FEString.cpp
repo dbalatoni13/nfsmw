@@ -19,9 +19,7 @@ FEString::~FEString() {
 }
 
 FEObject* FEString::Clone(bool bReference) {
-    FEString* pString = static_cast<FEString*>(FEngMalloc(sizeof(FEString), 0, 0));
-    new (pString) FEString(*this, bReference);
-    return pString;
+    return FENG_NEW FEString(*this, bReference);
 }
 
 void FEString::SetLabel(const char* pString) {
