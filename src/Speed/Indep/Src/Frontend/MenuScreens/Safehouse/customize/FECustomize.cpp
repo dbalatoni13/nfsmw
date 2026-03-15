@@ -8,7 +8,7 @@ static bool gInBackRoom;
 static bool gInPerformance;
 static bool gInParts;
 
-int CustomizeIsInBackRoom() { return gInBackRoom; }
+bool CustomizeIsInBackRoom() { return gInBackRoom; }
 void CustomizeSetInBackRoom(bool b) { gInBackRoom = b; }
 bool CustomizeIsInPerformance() { return gInPerformance; }
 void CustomizeSetInPerformance(bool b) { gInPerformance = b; }
@@ -1730,21 +1730,25 @@ void CustomizeMain::RefreshHeader() {
 }
 
 void CustomizeMain::SwitchRooms() {
-    bool newState = CustomizeIsInBackRoom() ^ 1;
+    bool newState = !CustomizeIsInBackRoom();
     CustomizeSetInBackRoom(newState);
     SetTitle(newState);
-    if (!newState) {
-        cFEng_mInstance->QueuePackageMessage(0x5c01c5, GetPackageName(), nullptr);
-        FEManager::Get()->SetGarageType(static_cast<eGarageType>(3));
-    } else {
+    int savedIdx = Options.GetCurrentIndex();
+    if (newState) {
         cFEng_mInstance->QueuePackageMessage(0xa1caff8d, GetPackageName(), nullptr);
         FEManager::Get()->SetGarageType(static_cast<eGarageType>(4));
+    } else {
+        cFEng_mInstance->QueuePackageMessage(0x5c01c5, GetPackageName(), nullptr);
+        FEManager::Get()->SetGarageType(static_cast<eGarageType>(3));
     }
     SetScreenNames();
     Options.RemoveAll();
     Options.AddInitialBookEnds();
     BuildOptionsList();
-    Options.SetInitialPos(0);
+    if (bFadeInIconsImmediately) {
+        Options.StartFadeIn();
+    }
+    Options.SetInitialPos(savedIdx);
     RefreshHeader();
 }
 

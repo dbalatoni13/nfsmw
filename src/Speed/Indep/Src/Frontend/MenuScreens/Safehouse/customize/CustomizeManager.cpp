@@ -24,7 +24,7 @@ extern int g_bTestCareerCustomization;
 extern int g_bCustomizeManagerHasControl;
 extern SelectablePart *_8Showcase_FromColor;
 extern float gTradeInFactor;
-extern int CustomizeIsInBackRoom();
+extern bool CustomizeIsInBackRoom();
 extern CarPart *GetCarPart(RideInfo *ride, unsigned int slot_id);
 extern unsigned int GetVinylLayerHash(CarPart *part, CarType type, int param);
 extern bool GetIsCollectorsEdition();

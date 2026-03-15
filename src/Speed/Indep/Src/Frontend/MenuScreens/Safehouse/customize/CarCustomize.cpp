@@ -12,7 +12,7 @@ extern void FEngSetInvisible(FEObject *obj);
 extern FEObject *FEngFindObject(const char *pkg, unsigned int hash);
 extern FEImage *FEngFindImage(const char *pkg, unsigned int hash);
 extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
-extern int CustomizeIsInBackRoom();
+extern bool CustomizeIsInBackRoom();
 extern void CustomizeSetInParts(bool b);
 extern void CustomizeSetInPerformance(bool b);
 extern int GetCurrentLanguage();
