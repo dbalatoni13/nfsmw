@@ -795,34 +795,22 @@ bool FEPackageReader::ReadObjectTags(FETag* pTag, unsigned long Length) {
                 }
                 break;
             }
-            case 0x4150: {
-                unsigned long parentGUID = BSwap32(pTag->Getu32(0));
-                if (!pLastParent || pLastParent->GUID != parentGUID) {
-                    pLastParent = static_cast<FEGroup*>(pPack->FindObjectByGUID(parentGUID));
+            case 0x4150:
+                if (!pLastParent || pLastParent->GUID != BSwap32(pTag->Getu32(0))) {
+                    pLastParent = static_cast<FEGroup*>(pPack->FindObjectByGUID(BSwap32(pTag->Getu32(0))));
                 }
                 pParent = pLastParent;
                 break;
-            }
             case 0x4153: {
-                unsigned long Size = BSwap16(pTag->GetSize());
-                unsigned long count = Size >> 2;
-                if (count != 0) {
-                    unsigned long i = 0;
-                    do {
-                        reinterpret_cast<unsigned long*>(pObj->pData)[i] = BSwap32(pTag->Getu32(i));
-                        i++;
-                    } while (i < count);
+                unsigned long count = BSwap16(pTag->GetSize()) >> 2;
+                for (unsigned long i = 0; i < count; i++) {
+                    reinterpret_cast<unsigned long*>(pObj->pData)[i] = BSwap32(pTag->Getu32(i));
                 }
                 break;
             }
             default:
                 if (pObj) {
                     switch (pObj->Type) {
-                        case FE_Image:
-                        case FE_ColoredImage:
-                        case FE_AnimImage:
-                            ProcessImageTag(pTag);
-                            break;
                         case FE_String:
                             ProcessStringTag(pTag);
                             break;
@@ -832,6 +820,11 @@ bool FEPackageReader::ReadObjectTags(FETag* pTag, unsigned long Length) {
                         case FE_CodeList:
                             ProcessCodeListBoxTag(pTag);
                             break;
+                        case FE_Image:
+                        case FE_ColoredImage:
+                        case FE_AnimImage:
+                            ProcessImageTag(pTag);
+                            break;
                         case FE_MultiImage:
                             ProcessImageTag(pTag);
                             ProcessMultiImageTag(pTag);
@@ -840,7 +833,7 @@ bool FEPackageReader::ReadObjectTags(FETag* pTag, unsigned long Length) {
                 }
                 break;
         }
-        pTag = pTag->Next();
+        pTag = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + BSwap16(pTag->GetSize()) + 4);
     }
     return true;
 }
