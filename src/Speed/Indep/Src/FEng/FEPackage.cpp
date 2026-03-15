@@ -539,13 +539,23 @@ FEMessageResponse* FEPackage::FindResponse(unsigned long MsgID) {
 }
 
 bool ResourceConnector::Callback(FEObject* pObj) {
-    if (pObj->Type == FE_List) {
-        ConnectListBoxResources(static_cast<FEListBox*>(pObj));
-    } else if ((pObj->Type < FE_List || pObj->Type > FE_CodeList) && pObj->ResourceIndex != 0xFFFF) {
+    if (pObj->Type == FE_List)
+        goto connect;
+    if (pObj->Type < FE_List)
+        goto check_resource;
+    if (pObj->Type > FE_CodeList)
+        goto check_resource;
+    goto done;
+connect:
+    ConnectListBoxResources(static_cast<FEListBox*>(pObj));
+    goto done;
+check_resource:
+    if (pObj->ResourceIndex != 0xFFFF) {
         unsigned long idx = static_cast<unsigned long>(pObj->ResourceIndex);
         pObj->UserParam = (*pReqList)[idx].UserParam;
         pObj->Handle = (*pReqList)[idx].Handle;
     }
+done:
     return true;
 }
 
