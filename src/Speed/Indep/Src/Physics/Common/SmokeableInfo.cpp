@@ -155,7 +155,7 @@ bool SceneryModel::GetSceneryTransform(UMath::Matrix4 &matrix) const {
         bounds->GetPivot(pivot);
         UMath::QuaternionToMatrix4(mSpawner->GetOrientation(), matrix);
         UMath::Rotate(pivot, matrix, UMath::Vector4To3(matrix.v3));
-        VU0_v4addxyz(matrix.v3, mSpawner->GetPosition(), matrix.v3);
+        UMath::Addxyz(matrix.v3, mSpawner->GetPosition(), matrix.v3);
         return true;
     }
     return false;
@@ -222,20 +222,21 @@ void ResetPropTimers() {
 static const Attrib::Class *TheSmackableClass;
 
 void SmokeableSpawnerPack::OnUnload() {
-    int n = 0;
     SmokeableSection *section = TheSmokeableSections.FindOrAdd(static_cast<int>(ScenerySectionNumber));
     section->LastLoadTime = Sim::GetTime();
 
-    for (; n < NumSmokeableSpawners; n++) {
-        SmokeableSpawner *spawner = &SmokeableSpawners[n];
-        if (static_cast<unsigned int>(n) < 256) {
-            if (!spawner->IsInstanceVisible()) {
-                section->Rebuilds.Set(static_cast<unsigned int>(n));
-            } else {
-                section->Rebuilds.Clear(static_cast<unsigned int>(n));
+    for (int n = 0; n < NumSmokeableSpawners; n++) {
+        {
+            SmokeableSpawner *spawner = &SmokeableSpawners[n];
+            if (static_cast<unsigned int>(n) < 256) {
+                if (!spawner->IsInstanceVisible()) {
+                    section->Rebuilds.Set(static_cast<unsigned int>(n));
+                } else {
+                    section->Rebuilds.Clear(static_cast<unsigned int>(n));
+                }
             }
+            spawner->OnUnload();
         }
-        spawner->OnUnload();
     }
 }
 
@@ -292,14 +293,8 @@ void SmokeableSpawner::Init() {
 }
 
 void SmokeableSpawner::EndianSwap() {
-    bEndianSwap32(&mOrientation.x);
-    bEndianSwap32(&mOrientation.y);
-    bEndianSwap32(&mOrientation.z);
-    bEndianSwap32(&mOrientation.w);
-    bEndianSwap32(&mPosition.x);
-    bEndianSwap32(&mPosition.y);
-    bEndianSwap32(&mPosition.z);
-    bEndianSwap32(&mPosition.w);
+    bPlatEndianSwap(&mOrientation);
+    bPlatEndianSwap(&mPosition);
     bPlatEndianSwap(&mModel);
     bPlatEndianSwap(&mCollisionName);
     bPlatEndianSwap(&mAttributes);

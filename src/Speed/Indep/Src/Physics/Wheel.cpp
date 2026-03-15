@@ -27,12 +27,14 @@ void Wheel::UpdateTime(float dT) {
 void Wheel::UpdateSurface(const SimSurface &surface) {
     if (mSurfaceStick <= 0.0f) {
         mSurface = surface;
+        surface.STICK();
     } else {
-        if (surface.GetConstCollection() != mSurface.GetConstCollection()) {
+        if (!(surface == mSurface)) {
             return;
         }
     }
     mSurfaceStick = surface.STICK();
+    mSurface.DebugOverride();
 }
 
 void Wheel::Reset() {

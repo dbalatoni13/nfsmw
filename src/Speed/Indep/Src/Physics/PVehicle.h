@@ -68,6 +68,12 @@ class PVehicle : public PhysicsObject,
                  public IExplodeable,
                  public IAttributeable {
   public:
+    static void operator delete(void *mem, unsigned int size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+
     struct LaunchState {
         LaunchState() : Time(0.0f), Amount(0.0f) {}
         void Clear() { Time = 0.0f; Amount = 0.0f; }
@@ -177,16 +183,13 @@ class PVehicle : public PhysicsObject,
     virtual IModel *GetModel() override;
     virtual const IModel *GetModel() const override;
     virtual const UMath::Vector3 &GetPosition() const override {
-        if (mRigidBody == nullptr) {
-            return UMath::Vector3::kZero;
-        }
-        return mRigidBody->GetPosition();
+        return PhysicsObject::GetPosition();
     }
     virtual void OnDebugDraw();
     virtual const ISimable *GetSimable() const override;
     virtual ISimable *GetSimable() override;
-    virtual Attrib::Gen::pvehicle &GetVehicleAttributes() const override {
-        return const_cast<Attrib::Gen::pvehicle &>(mAttributes);
+    virtual const Attrib::Gen::pvehicle &GetVehicleAttributes() const override {
+        return mAttributes;
     }
     virtual const UCrc32 &GetVehicleClass() const override {
         return mClass;
@@ -197,7 +200,7 @@ class PVehicle : public PhysicsObject,
     virtual unsigned int GetVehicleKey() const override {
         return mAttributes.GetCollection();
     }
-    virtual void SetDriverClass(DriverClass dc) override;
+    virtual void SetDriverClass(DriverClass cclass) override;
     virtual DriverClass GetDriverClass() const override {
         return mDriverClass;
     }

@@ -23,6 +23,12 @@ struct FECustomizationRecord {
     int Preset;                                            // offset 0x190, size 0x4
     unsigned char Handle;                                  // offset 0x194, size 0x1
 
+    static void operator delete(void *mem, unsigned int size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+
     void SetTuning(Physics::Tunings::Path id, float value) {
         Tunings[ActiveTuning].Value[id] = value;
     }

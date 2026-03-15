@@ -56,8 +56,7 @@ void SmackableTrigger::GetObjectMatrix(UMath::Matrix4 &matrix) const {
 
 void SmackableTrigger::Move(const UMath::Matrix4 &matrix, const UMath::Vector3 &dim, bool virgin) {
     mTrigger->UpdateBox(&matrix, &dim);
-    Event::StaticData *es = mEventData;
-    es[9].fEventID = static_cast<unsigned int>(virgin);
+    mEventData[9].fEventID = static_cast<unsigned int>(virgin);
     UMath::Matrix4ToQuaternion(matrix,
                                *reinterpret_cast<UMath::Vector4 *>(&mEventData[5]));
     *reinterpret_cast<UMath::Vector3 *>(&mEventData[1]) = Vector4To3(matrix.v3);

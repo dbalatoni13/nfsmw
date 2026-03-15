@@ -245,9 +245,7 @@ inline void ScaleAddxyz(const Vector4 &a, const float s, const Vector4 &b, Vecto
 }
 
 inline void Addxyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
-    r.x = a.x + b.x;
-    r.y = a.y + b.y;
-    r.z = a.z + b.z;
+    VU0_v4addxyz(a, b, r);
 }
 
 inline void AddScale(const Vector3 &a, const Vector3 &b, const float s, Vector3 &r) {

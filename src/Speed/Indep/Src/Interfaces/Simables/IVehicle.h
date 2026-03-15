@@ -154,7 +154,7 @@ class IVehicle : public UTL::COM::IUnknown, public UTL::Collections::ListableSet
     virtual CarType GetModelType() const = 0;
     virtual bool IsSpooled() const = 0;
     virtual const UCrc32 &GetVehicleClass() const = 0;
-    virtual Attrib::Gen::pvehicle &GetVehicleAttributes() const = 0;
+    virtual const Attrib::Gen::pvehicle &GetVehicleAttributes() const = 0;
     virtual const char *GetVehicleName() const = 0;
     virtual unsigned int GetVehicleKey() const = 0;
     virtual void SetDriverClass(DriverClass dc) = 0;

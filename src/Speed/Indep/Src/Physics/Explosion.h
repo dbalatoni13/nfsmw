@@ -41,11 +41,7 @@ class Explosion : public PhysicsObject, public IExplosion {
     }
 
     virtual const UMath::Vector3 &GetOrigin() const override {
-        if (mRigidBody == nullptr) {
-            const UMath::Vector3 *origin = &UMath::Vector3::kZero;
-            return *origin;
-        }
-        return mRigidBody->GetPosition();
+        return PhysicsObject::GetPosition();
     }
 
     virtual float GetExpansionSpeed() const override {

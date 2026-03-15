@@ -22,7 +22,7 @@ void Physics::Info::Performance::Default() {
     Acceleration = 0.0f;
 }
 
-float Physics::Info::AerodynamicDownforce(const Attrib::Gen::chassis &chassis, const float speed) {
+float Physics::Info::AerodynamicDownforce(const Attrib::Gen::chassis &chassis, float speed) {
     return speed * 2 * chassis.AERO_COEFFICIENT() * 1000.0f;
 }
 
@@ -558,9 +558,9 @@ void PerfLevel::Rate() {
     Stock.TopSpeed = UMath::Ramp(Stats.TopSpeed, bottom_stats.TopSpeed, top_stats.TopSpeed);
 }
 
-bool PerfLevel::Analyze(const Attrib::Gen::pvehicle &vehicle) {
+bool PerfLevel::Analyze(const Attrib::Gen::pvehicle &pvehicle) {
     Analyzed = false;
-    if (!Stats.Fetch(vehicle, nullptr, nullptr)) {
+    if (!Stats.Fetch(pvehicle, nullptr, nullptr)) {
         return false;
     }
     Analyzed = true;

@@ -16,17 +16,14 @@ template <typename T, int U> class UCircularQueue {
     UCircularQueue() : Size(0), Head(-1), Tail(0), MaxSize(U) {}
 
     void enqueue(const T &insert) {
-        int new_head = Head + 1;
-        Head = new_head;
-        if (new_head > MaxSize - 1) {
+        Head = Head + 1;
+        if (Head > MaxSize - 1) {
             Head = 0;
         }
-        int new_size = Size + 1;
-        Size = new_size;
-        if (new_size > MaxSize) {
-            int new_tail = Tail + 1;
-            Tail = new_tail;
-            if (new_tail > MaxSize - 1) {
+        Size = Size + 1;
+        if (Size > MaxSize) {
+            Tail = Tail + 1;
+            if (Tail > MaxSize - 1) {
                 Tail = 0;
             }
             Size = MaxSize;
@@ -35,9 +32,8 @@ template <typename T, int U> class UCircularQueue {
     }
 
     void dequeue() {
-        int new_tail = Tail + 1;
-        Tail = new_tail;
-        if (new_tail > MaxSize - 1) {
+        Tail = Tail + 1;
+        if (Tail > MaxSize - 1) {
             Tail = 0;
         }
         Size = Size - 1;

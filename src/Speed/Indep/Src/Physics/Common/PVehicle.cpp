@@ -133,9 +133,9 @@ void PVehicle::Reset() {
     mBrakeTime = 0.0f;
 }
 
-void PVehicle::SetDriverClass(DriverClass dc) {
-    if (mDriverClass != dc) {
-        mDriverClass = dc;
+void PVehicle::SetDriverClass(DriverClass cclass) {
+    if (mDriverClass != cclass) {
+        mDriverClass = cclass;
         UpdateListing();
         ReloadBehaviors();
     }
@@ -217,7 +217,8 @@ void PVehicle::SetTunings(const Physics::Tunings &tunings) {
         return;
     }
     for (unsigned int i = 0; i < Physics::Tunings::MAX_TUNINGS; i++) {
-        mCustomization->SetTuning(static_cast<Physics::Tunings::Path>(i), tunings.Value[i]);
+        Physics::Tunings::Path path = static_cast<Physics::Tunings::Path>(i);
+        mCustomization->SetTuning(path, tunings.Value[i]);
     }
 }
 
@@ -598,11 +599,6 @@ const Physics::Tunings *PVehicle::GetTunings() const {
     }
     if (Tweak_UseTweakerTunings) {
         static Physics::Tunings tunings;
-        static bool __tmp = false;
-        if (!__tmp) {
-            tunings.Default();
-            __tmp = true;
-        }
         tunings.Value[Physics::Tunings::STEERING] = 0.0f;
         tunings.Value[Physics::Tunings::HANDLING] = 0.0f;
         tunings.Value[Physics::Tunings::BRAKES] = 0.0f;
@@ -803,20 +799,21 @@ bool PVehicle::OnExplosion(const UMath::Vector3 &normal, const UMath::Vector3 &p
         }
     }
     if (static_cast<ISimable *>(this)->GetCausality() == nullptr && explosion->GetCausality() != nullptr) {
-        HCAUSE causality = explosion->GetCausality();
-        ICause *cause = ICause::FindInstance(causality);
+        ICause *cause = ICause::FindInstance(explosion->GetCausality());
         if (cause != nullptr) {
             cause->OnCausedExplosion(explosion, static_cast<ISimable *>(this));
         }
     }
     IRigidBody *irb = static_cast<ISimable *>(this)->GetRigidBody();
-    float factor = 1.0f / irb->GetMass();
-    factor *= explosion->GetExpansionSpeed();
+    float factor;
+    float targetspeed = 1.0f / irb->GetMass();
+    factor = explosion->GetExpansionSpeed() * targetspeed;
+    targetspeed = factor;
     UMath::Vector3 point_velocity;
     irb->GetPointVelocity(position, point_velocity);
     float speed = UMath::Dot(point_velocity, normal);
-    if (speed < factor) {
-        float deltaspeed = factor - speed;
+    if (speed < targetspeed) {
+        float deltaspeed = targetspeed - speed;
         UMath::Vector3 impactvel;
         UMath::Scale(normal, deltaspeed, impactvel);
         UMath::Vector3 force;
@@ -1003,8 +1000,9 @@ PVehicle::PVehicle(DriverClass dc, const Attrib::Gen::pvehicle &attribs, const U
 PVehicle::~PVehicle() {
     PhysicsObject::DetachAll();
     AITarget::UnRegister(static_cast<ISimable *>(this));
+    IAttributeable::UnRegister(this);
     if (mCustomization != nullptr) {
-        gFastMem.Free(mCustomization, sizeof(FECustomizationRecord), nullptr);
+        delete static_cast<FECustomizationRecord *>(mCustomization);
         mCustomization = nullptr;
     }
     ReleaseBehaviors();

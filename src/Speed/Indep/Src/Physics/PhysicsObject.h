@@ -77,7 +77,12 @@ class PhysicsObject : public Sim::Object,
     virtual void Kill() override;
     virtual bool Attach(UTL::COM::IUnknown *object) override;
     virtual bool Detach(UTL::COM::IUnknown *object) override;
-    virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const override;
+    virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const override {
+        if (mAttachments == nullptr) {
+            return nullptr;
+        }
+        return &mAttachments->GetList();
+    }
     virtual void AttachEntity(Sim::IEntity *e) override;
     virtual void DetachEntity() override;
     virtual struct IPlayer *GetPlayer() const override {
@@ -116,10 +121,7 @@ class PhysicsObject : public Sim::Object,
         return !IsRigidBodySimple();
     }
     virtual const UMath::Vector3 &GetPosition() const override {
-        if (mRigidBody == nullptr) {
-            return UMath::Vector3::kZero;
-        }
-        return mRigidBody->GetPosition();
+        return mRigidBody != nullptr ? mRigidBody->GetPosition() : UMath::Vector3::kZero;
     }
     virtual void GetTransform(UMath::Matrix4 &matrix) const override;
     virtual void GetLinearVelocity(UMath::Vector3 &velocity) const override;

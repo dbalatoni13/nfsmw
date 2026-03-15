@@ -3,13 +3,6 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
-inline void bEndianSwap16(void *value) {
-    unsigned char *b = static_cast< unsigned char * >(value);
-    unsigned char tmp = b[0];
-    b[0] = b[1];
-    b[1] = tmp;
-}
-
 inline void bPlatEndianSwap(UCrc32 *c) {
     unsigned int val = c->GetValue();
     ::bPlatEndianSwap(&val);
@@ -52,9 +45,8 @@ BoundsPack::BoundsPack(bChunk *pack) : mChunk(pack) {
     }
 }
 
-Collection *BoundsPack::Table::Find(UCrc32 name) {
-    Pair search(name, nullptr);
-    Pair *iter = _STL::lower_bound(begin(), end(), search);
+inline Collection *BoundsPack::Table::Find(UCrc32 name) {
+    Pair *iter = _STL::lower_bound(begin(), end(), Pair(name, nullptr));
     if (iter != end() && iter->Name == name) {
         return iter->Collection;
     }

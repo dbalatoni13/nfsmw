@@ -27,15 +27,15 @@ struct SmokeableSection {
         , SectionID(section_id)
         , Rebuilds() {}
 
-    SmokeableSection(const SmokeableSection &src)
-        : LastLoadTime(src.LastLoadTime) //
-        , SectionID(src.SectionID)
-        , Rebuilds(src.Rebuilds) {}
+    SmokeableSection(const SmokeableSection &_ctor_arg)
+        : LastLoadTime(_ctor_arg.LastLoadTime) //
+        , SectionID(_ctor_arg.SectionID)
+        , Rebuilds(_ctor_arg.Rebuilds) {}
 
-    SmokeableSection &operator=(const SmokeableSection &src) {
-        LastLoadTime = src.LastLoadTime;
-        SectionID = src.SectionID;
-        Rebuilds = src.Rebuilds;
+    SmokeableSection &operator=(const SmokeableSection &_ctor_arg) {
+        LastLoadTime = _ctor_arg.LastLoadTime;
+        SectionID = _ctor_arg.SectionID;
+        Rebuilds = _ctor_arg.Rebuilds;
         return *this;
     }
 };

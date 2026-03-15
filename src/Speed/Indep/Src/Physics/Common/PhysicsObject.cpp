@@ -376,20 +376,19 @@ bool PhysicsObject::Attach(UTL::COM::IUnknown *object) {
     if (mAttachments == nullptr) {
         return false;
     }
+    UTL::COM::ValidatePtr(object);
     if (UTL::COM::ComparePtr(mEntity, object)) {
         return false;
     }
-    Sim::IEntity *e = nullptr;
-    if (object->QueryInterface(&e)) {
+    Sim::IEntity *ientity = nullptr;
+    if (object->QueryInterface(&ientity)) {
         if (mEntity != nullptr) {
             Detach(mEntity);
             mEntity = nullptr;
             mPlayer = nullptr;
         }
-        mEntity = e;
-        IPlayer *p = nullptr;
-        e->QueryInterface(&p);
-        mPlayer = p;
+        mEntity = ientity;
+        ientity->QueryInterface(&mPlayer);
     }
     return mAttachments->Attach(object);
 }
@@ -406,6 +405,7 @@ bool PhysicsObject::Detach(UTL::COM::IUnknown *object) {
     if (!mAttachments) {
         return false;
     }
+    UTL::COM::ValidatePtr(object);
     if (UTL::COM::ComparePtr(mEntity, object)) {
         mEntity = nullptr;
         mPlayer = nullptr;
@@ -451,13 +451,6 @@ IRigidBody *PhysicsObject::GetRigidBody() {
     return mRigidBody;
 }
 
-
-const UTL::Std::list<IAttachable *, _type_IAttachableList> *PhysicsObject::GetAttachments() const {
-    if (mAttachments == nullptr) {
-        return nullptr;
-    }
-    return &mAttachments->GetList();
-}
 
 void PhysicsObject::Behaviors::Reset() {
     for (const_iterator iter = begin(); iter != end(); ++iter) {
