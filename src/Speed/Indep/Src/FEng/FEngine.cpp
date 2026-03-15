@@ -1097,16 +1097,13 @@ void FEngine::ProcessPadsForPackage(FEPackage* pPackage) {
 }
 
 void FEngine::ProcessMouseForPackage(FEPackage* pPackage) {
-    if (pPackage->Controllers != 0 && (pPackage->Controllers & 1) && pPackage->NumMouseObjects != 0) {
-        int NumMO = pPackage->NumMouseObjects;
-        int i = 0;
+    if (pPackage->Controllers != 0 && (pPackage->Controllers & 1) && pPackage->bInputEnabled) {
         float mx = static_cast<float>(Mouse.XPos);
         float my = static_cast<float>(Mouse.YPos);
-        if (NumMO > 0) {
-            do {
-                UpdateMouseState(pPackage, pPackage->MouseObjectStates + i, mx, my);
-                i++;
-            } while (i < NumMO);
+        int NumMO = pPackage->NumMouseObjects;
+        FEObjectMouseState* pStates = pPackage->MouseObjectStates;
+        for (int i = 0; i < NumMO; i++) {
+            UpdateMouseState(pPackage, pStates + i, mx, my);
         }
     }
 }
