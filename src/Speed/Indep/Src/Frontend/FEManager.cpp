@@ -182,10 +182,10 @@ bool FEManager::IsOkayToRequestPauseSimulation(int playerIndex, bool useControll
         ISimable *simable =
             IPlayer::GetList(PLAYER_LOCAL)[static_cast< unsigned int >(playerIndex)]->GetSimable();
         GRacerInfo *racerInfo;
-        if (!simable) {
-            racerInfo = nullptr;
-        } else {
+        if (simable) {
             racerInfo = GRaceStatus::Get().GetRacerInfo(simable);
+        } else {
+            racerInfo = nullptr;
         }
 
         if (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing) {
@@ -198,15 +198,14 @@ bool FEManager::IsOkayToRequestPauseSimulation(int playerIndex, bool useControll
                 }
 
                 if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
-                    int other_player = playerIndex != 1 ? 0 : 0;
                     ISimable *other_simable =
                         IPlayer::GetList(PLAYER_LOCAL)[static_cast< unsigned int >(playerIndex != 1)]
                             ->GetSimable();
                     GRacerInfo *other_racerInfo;
-                    if (!other_simable) {
-                        other_racerInfo = nullptr;
-                    } else {
+                    if (other_simable) {
                         other_racerInfo = GRaceStatus::Get().GetRacerInfo(other_simable);
+                    } else {
+                        other_racerInfo = nullptr;
                     }
                     if (!other_racerInfo ||
                         (!other_racerInfo->GetIsEngineBlown() &&
