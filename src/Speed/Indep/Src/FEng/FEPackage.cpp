@@ -722,8 +722,6 @@ void FEPackage::UpdateMouseObjectOffsets(FEObject* pObj) {
         if (pChild->Type == FE_Group) {
             if (static_cast<FEGroup*>(pChild)->FindChildRecursive(NameHash) || NameHash == pChild->NameHash) {
                 FEPoint offset;
-                offset.h = 0.0f;
-                offset.v = 0.0f;
                 if (OffsetCalculatron(NameHash, pChild, offset)) {
                     FEObjectMouseState* pState = MouseObjectStates + NumMouseObjectsCounter;
                     NumMouseObjectsCounter++;
@@ -734,8 +732,6 @@ void FEPackage::UpdateMouseObjectOffsets(FEObject* pObj) {
             }
         } else if (NameHash == pChild->NameHash) {
             FEPoint offset;
-            offset.h = 0.0f;
-            offset.v = 0.0f;
             if (OffsetCalculatron(NameHash, pChild, offset)) {
                 FEObjectMouseState* pState = MouseObjectStates + NumMouseObjectsCounter;
                 NumMouseObjectsCounter++;
