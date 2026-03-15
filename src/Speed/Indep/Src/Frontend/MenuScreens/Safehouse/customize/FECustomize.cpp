@@ -2307,6 +2307,9 @@ HUDLayerOption::HUDLayerOption(unsigned int layer, unsigned int icon_hash, unsig
 }
 
 CustomizeHUDColor::~CustomizeHUDColor() {
+    if (CustomizeParts::TexturePackLoaded && bTexturesNeedUnload) {
+        UnLoadCustomHUDPacksAndTextures();
+    }
 }
 
 void CustomizeHUDColor::AddLayerOption(unsigned int layer, unsigned int icon_hash, unsigned int name_hash) {
@@ -4434,6 +4437,7 @@ void CustomizePaint::RefreshHeader() {
 }
 
 CustomizePaint::~CustomizePaint() {
+    MatchingPaint.ThePart = nullptr;
 }
 
 CustomizePaintDatum::~CustomizePaintDatum() {

@@ -59,7 +59,9 @@ extern float carPosY;
 extern float CarSelectTireSteerAngle;
 extern int CarTypeInfoArrayUpdated;
 
-struct SelectCarCameraMover;
+struct SelectCarCameraMover : CameraMover {
+    ~SelectCarCameraMover() override;
+};
 extern void SetHRotateSpeed(SelectCarCameraMover *mover, float speed);
 extern void SetVRotateSpeed(SelectCarCameraMover *mover, float speed);
 extern void SetZoomSpeed(SelectCarCameraMover *mover, float speed);
@@ -321,7 +323,7 @@ GarageMainScreen::GarageMainScreen(ScreenConstructorData *sd, int eview_id, Ride
 
 GarageMainScreen::~GarageMainScreen() {
     if (pCameraMover) {
-        DeleteSelectCarCameraMover(pCameraMover);
+        delete pCameraMover;
     }
     if (RenderingCar) {
         delete RenderingCar;

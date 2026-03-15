@@ -9,6 +9,8 @@
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/frontend.h"
 
+extern void eLoadStreamingTexture(unsigned int *textures, int count, void (*callback)(unsigned int), void *user, int priority);
+extern void eUnloadStreamingTexture(unsigned int *textures, int count);
 extern int GetCurrentLanguage();
 extern FEMarkerManager TheFEMarkerManager;
 extern int CheatImpounded;
@@ -58,7 +60,13 @@ QRCarSelectBustedManager::QRCarSelectBustedManager(const char *pkg_name, int fla
     WorkingCareerRecord = nullptr;
 }
 
-QRCarSelectBustedManager::~QRCarSelectBustedManager() {}
+QRCarSelectBustedManager::~QRCarSelectBustedManager() {
+    if (ImpoundStampHash) {
+        unsigned int hash = ImpoundStampHash;
+        eUnloadStreamingTexture(&hash, 1);
+        ImpoundStampHash = 0;
+    }
+}
 
 bool QRCarSelectBustedManager::IsImpoundInfoVisible() {
     unsigned int mode = FEDatabase->GetGameMode();
@@ -71,29 +79,40 @@ bool QRCarSelectBustedManager::ShowImpoundedTexture() {
 }
 
 void QRCarSelectBustedManager::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
-    if (msg == 0xe47966ea) {
-        if (param1 == 0xa0fc39f9) {
+    switch (msg) {
+    case 0x8defa48b:
+        TheFEMarkerManager.UtilizeMarker(FEMarkerManager::MARKER_ADD_IMPOUND_BOX, 0);
+        WorkingCareerRecord->TheImpoundData.AddMaxBusted();
+        break;
+    case 0xa0fc39f9:
+        WorkingCareerRecord->TheImpoundData.NotifyPlayerPaidToRelease();
+        WorkingCareerRecord->SetVehicleHeat(0.0f);
+        {
             unsigned int cost = WorkingCarRecord->GetReleaseFromImpoundCost();
             FEDatabase->GetCareerSettings()->SpendCash(cost);
-            WorkingCareerRecord->TheImpoundData.NotifyPlayerPaidToRelease();
-            RefreshHeader();
-        } else if (param1 == 0xcad5722e) {
-            TheFEMarkerManager.UtilizeMarker(FEMarkerManager::MARKER_IMPOUND_RELEASE, 0);
-            WorkingCareerRecord->TheImpoundData.NotifyPlayerUsedMarkerToRelease();
-            RefreshHeader();
-        } else if (param1 == 0x8defa48b) {
-            TheFEMarkerManager.UtilizeMarker(FEMarkerManager::MARKER_ADD_IMPOUND_BOX, 0);
-            WorkingCareerRecord->TheImpoundData.AddMaxBusted();
-            RefreshHeader();
-        } else if (param1 == 0xb4edeb6d || param1 == 0x5ee58948) {
-            if (CalcGameOver()) {
-                DialogInterface::ShowOneButton(ParentPkg, "", static_cast<eDialogTitle>(1),
-                    0x417b2601, 0x5ee58948, 0xe96fa0c5);
-            }
-        } else if (param1 == 0xe96fa0c5) {
-            FEDatabase->GetCareerSettings()->SetGameOver();
         }
+        break;
+    case 0xe845bc1c:
+        WorkingCareerRecord->TheImpoundData.NotifyPlayerUsedMarkerToRelease();
+        WorkingCareerRecord->SetVehicleHeat(0.0f);
+        TheFEMarkerManager.UtilizeMarker(FEMarkerManager::MARKER_IMPOUND_RELEASE, 0);
+        break;
+    case 0x3fdc64c1:
+        FEManager::Get()->SetGarageType(static_cast<eGarageType>(1));
+        FEDatabase->ClearGameMode(static_cast<eFEGameModes>(1));
+        FEDatabase->SetGameMode(static_cast<eFEGameModes>(0x100));
+        cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+        return;
+    case 0xe0b38195:
+        if (!CalcGameOver()) return;
+        FEDatabase->GetCareerSettings()->SetGameOver();
+        DialogInterface::ShowOneButton(ParentPkg, "GameOver.fng", static_cast<eDialogTitle>(1),
+            0x417b2601, 0x3fdc64c1, 0x164bed94);
+        return;
+    default:
+        return;
     }
+    RefreshHeader();
 }
 
 void QRCarSelectBustedManager::TextureLoadedCallback() {
@@ -116,29 +135,26 @@ void QRCarSelectBustedManager::TextureLoadedCallback() {
 void QRCarSelectBustedManager::LoadImpoundTexture() {
     int lang = GetCurrentLanguage();
     unsigned int hash;
-    if (lang == 7) {
-        hash = 0xce183c96;
-    } else if (lang == 3) {
-        hash = 0xce185441;
-    } else if (lang == 5) {
-        hash = 0xce183f30;
-    } else if (lang == 4) {
-        hash = 0xce187e47;
-    } else if (lang == 6) {
-        hash = 0xce187f32;
-    } else if (lang == 1) {
-        hash = 0xce184740;
-    } else if (lang == 2) {
-        hash = 0xce1849e1;
-    } else if (lang == 10) {
-        hash = 0xce18561e;
-    } else if (lang == 8) {
-        hash = 0xce185c2f;
-    } else {
-        hash = 0xce184740;
+    switch (lang) {
+    case 1:  hash = 0xce184740; break;
+    case 2:  hash = 0xce1849e1; break;
+    case 3:  hash = 0xce185441; break;
+    case 4:  hash = 0xce187e47; break;
+    case 5:  hash = 0xce183f30; break;
+    case 6:  hash = 0xce187f32; break;
+    case 7:  hash = 0xce183c96; break;
+    case 8:  hash = 0xce185c2f; break;
+    case 9:  hash = 0xce183937; break;
+    case 10: hash = 0xce18561e; break;
+    case 11: hash = 0xce188180; break;
+    case 12: hash = 0xce18716e; break;
+    case 13: hash = 0xce184620; break;
+    default: hash = 0xce18427d; break;
     }
     ImpoundStampHash = hash;
-    LoadOneTexture(ParentPkg, hash, TextureLoadedCallbackAccessor, reinterpret_cast<unsigned int>(this));
+    unsigned int texArray[1];
+    texArray[0] = ImpoundStampHash;
+    eLoadStreamingTexture(texArray, 1, TextureLoadedCallbackAccessor, reinterpret_cast<void *>(this), 0);
 }
 
 void QRCarSelectBustedManager::SetSelectedCar(FECarRecord *record) {
@@ -360,7 +376,6 @@ UIQRCarSelect::UIQRCarSelect(ScreenConstructorData *sd) : MenuScreen(sd) //
 }
 
 UIQRCarSelect::~UIQRCarSelect() {
-    ClearCarList();
 }
 
 bool UIQRCarSelect::IsCarImpounded(unsigned int handle) {
@@ -846,35 +861,32 @@ void UIQRCarSelect::Setup() {
         goto queue_msg;
     }
 
-    {
-        bool isSplit = (mode & 4) != 0;
-        if (isSplit) {
-            bool isTwoPlayer = false;
-            if (isSplit) {
-                isTwoPlayer = FEDatabase->iNumPlayers == 2;
-            }
-            if (isTwoPlayer) {
-                pkgMsg = 0x2cf6c390;
-            } else {
-                pkgMsg = 0xde511657;
-            }
-            goto queue_msg;
+    if ((mode & 4) != 0) {
+        bool isTwoPlayer = false;
+        if ((mode & 4) != 0) {
+            isTwoPlayer = FEDatabase->iNumPlayers == 2;
         }
-        if ((mode & 8) != 0) {
-        online_lan:
-            pkgMsg = 0x70fbb1e4;
-            goto queue_msg;
+        if (isTwoPlayer) {
+            pkgMsg = 0x2cf6c390;
+        } else {
+            pkgMsg = 0xde511657;
         }
-        if ((mode & 0x40) != 0) goto online_lan;
-        if ((mode & 0x20) != 0) {
-            pkgMsg = 0xa936c3a2;
-            goto queue_msg;
-        }
-        if ((mode & 1) != 0) {
-            cFEng::Get()->QueuePackageMessage(0x5415c3f1, GetPackageName(), nullptr);
-        }
-        goto after_queue;
+        goto queue_msg;
     }
+    if ((mode & 8) != 0) {
+    online_lan:
+        pkgMsg = 0x70fbb1e4;
+        goto queue_msg;
+    }
+    if ((mode & 0x40) != 0) goto online_lan;
+    if ((mode & 0x20) != 0) {
+        pkgMsg = 0xa936c3a2;
+        goto queue_msg;
+    }
+    if ((mode & 1) != 0) {
+        cFEng::Get()->QueuePackageMessage(0x5415c3f1, GetPackageName(), nullptr);
+    }
+    goto after_queue;
 
 queue_msg:
     cFEng::Get()->QueuePackageMessage(pkgMsg, GetPackageName(), nullptr);
@@ -1295,12 +1307,28 @@ FECarRecord *UIQRCarSelect::GetSelectedCarRecord() {
 
 void UIQRCarSelect::SetSelectedCar(SelectableCar *newCar, int player_num) {
     pSelectedCar = newCar;
-    if (newCar) {
-        RaceSettings *settings = FEDatabase->GetQuickRaceSettings(FEDatabase->RaceMode);
-        settings->SetSelectedCar(newCar->mHandle, player_num);
+    if (TheBustedManager.IsImpoundInfoVisible() && pSelectedCar != nullptr) {
+        FECarRecord *rec = GetSelectedCarRecord();
+        TheBustedManager.SetSelectedCar(rec);
     }
-    RefreshHeader();
-    UpdateSliders();
+    if (newCar != nullptr) {
+        int filterIdx = GetFilterType();
+        ListHandles[filterIdx] = newCar->mHandle;
+        GarageMainScreen::GetInstance()->DisableCarRendering();
+        cFEng::Get()->QueuePackageMessage(0xa05a328e, nullptr, nullptr);
+        cFEng::Get()->QueuePackageMessage(0x9c0a27eb, GetPackageName(), nullptr);
+        bLoadingBarActive = true;
+        unsigned int mode = FEDatabase->GetGameMode();
+        if ((mode & 1) != 0) {
+            if ((mode & 0x8000) == 0) {
+                FEDatabase->GetCareerSettings()->SetCurrentCar(newCar->mHandle);
+            }
+        } else if ((mode & 0x20) == 0) {
+            RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+            settings->SelectedCar[player_num] = newCar->mHandle;
+        }
+        tLastEventTimer = RealTimer;
+    }
 }
 
 int SortCarsByUnlock(SelectableCar *a, SelectableCar *b) {
