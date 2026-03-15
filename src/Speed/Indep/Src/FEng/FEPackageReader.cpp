@@ -482,47 +482,30 @@ bool FEPackageReader::ReadMessageResponseTags(FETag* pTag, unsigned long Length,
 }
 
 bool FEPackageReader::ReadMessageTargetListChunk() {
-    FEChunk* pChild = FindChild(pChunk, 0x67726154);
-    if (pChild) {
-        FETag* pTag = reinterpret_cast<FETag*>(pChild->GetData());
-        FETag* pEnd = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + BSwap32(pChild->GetSize()));
-        int idx = 0;
-        while (pTag < pEnd) {
+    FEChunk* pTargetsChunk = FindChild(pChunk, 0x67726154);
+    if (pTargetsChunk) {
+        FETag* pTag = reinterpret_cast<FETag*>(pTargetsChunk->GetData());
+        FETag* pLast = reinterpret_cast<FETag*>(reinterpret_cast<char*>(pTag) + BSwap32(pTargetsChunk->GetSize()));
+        unsigned long CurMsgTarg = 0;
+        while (pTag < pLast) {
             unsigned short tagID = BSwap16(pTag->GetID());
             switch (tagID) {
             case 0x6354: {
-                unsigned long NumTargets = BSwap32(pTag->Getu32(0));
-                pPack->NumMsgTargets = NumTargets;
-                unsigned long* pMem = static_cast<unsigned long*>(FEngMalloc((NumTargets << 4) | 8, nullptr, 0));
-                FEMsgTargetList* pEntries = reinterpret_cast<FEMsgTargetList*>(pMem + 2);
-                *pMem = NumTargets;
-                if (NumTargets != 0) {
-                    FEMsgTargetList* pCur = pEntries;
-                    do {
-                        pCur->MsgID = 0;
-                        pCur->Alloc = 0;
-                        pCur->Count = 0;
-                        pCur->pTargets = nullptr;
-                        pCur++;
-                        NumTargets--;
-                    } while (NumTargets != 0);
-                }
-                pPack->pMsgTargets = pEntries;
+                unsigned long NumMsgs = BSwap32(pTag->Getu32(0));
+                pPack->NumMsgTargets = NumMsgs;
+                pPack->pMsgTargets = FENG_NEW FEMsgTargetList[NumMsgs];
                 break;
             }
             case 0x744d: {
-                pPack->pMsgTargets[idx].MsgID = BSwap32(pTag->Getu32(0));
-                unsigned long NumObjs = (BSwap16(pTag->GetSize()) >> 2) - 1;
-                pPack->pMsgTargets[idx].Allocate(NumObjs);
-                unsigned long i = 0;
-                if (NumObjs != 0) {
-                    do {
-                        FEObject* pTarget = pPack->FindObjectByGUID(BSwap32(pTag->Getu32(1 + i)));
-                        pPack->pMsgTargets[idx].AppendTarget(pTarget);
-                        i++;
-                    } while (i < NumObjs);
+                pPack->pMsgTargets[CurMsgTarg].MsgID = BSwap32(pTag->Getu32(0));
+                unsigned long NumTargets = (BSwap16(pTag->GetSize()) >> 2) - 1;
+                pPack->pMsgTargets[CurMsgTarg].Allocate(NumTargets);
+                unsigned long* pData = reinterpret_cast<unsigned long*>(reinterpret_cast<char*>(pTag) + 8);
+                for (unsigned long i = 0; i < NumTargets; i++) {
+                    FEObject* pTarg = pPack->FindObjectByGUID(BSwap32(pData[i]));
+                    pPack->pMsgTargets[CurMsgTarg].AppendTarget(pTarg);
                 }
-                idx++;
+                CurMsgTarg++;
                 break;
             }
             }
