@@ -171,10 +171,11 @@ float FEngHud::ChooseMaxRpmTextureNumber(float rpm) {
 FEngHud::FEngHud(ePlayerHudType ht, const char *pkg_name, IPlayer *player, int player_number)
     : UTL::COM::Object(0x14) //
     , IHud(this) //
-    , mActionQ(true)
+    , mPlayerHudType(ht) //
+    , PlayerNumber(player_number) //
+    , mActionQ(true) //
+    , mCurrentWidescreenSetting(false)
 {
-    mPlayerHudType = ht;
-    PlayerNumber = player_number;
     pPlayer = player;
     mInPursuit = false;
     mHasTurbo = false;
@@ -191,7 +192,6 @@ FEngHud::FEngHud(ePlayerHudType ht, const char *pkg_name, IPlayer *player, int p
     pSpeedBreakerMeter = nullptr;
     pRaceOverMessage = nullptr;
     pGenericMessage = nullptr;
-    pAutoSaveIcon = nullptr;
     pRaceInformation = nullptr;
     pLeaderBoard = nullptr;
     pPursuitBoard = nullptr;
@@ -206,12 +206,10 @@ FEngHud::FEngHud(ePlayerHudType ht, const char *pkg_name, IPlayer *player, int p
     pGetAwayMeter = nullptr;
     pMenuZoneTrigger = nullptr;
     pInfractions = nullptr;
-    mCurrentWidescreenSetting = false;
-    CurrentHudFeatures = 0;
     pPackageName = pkg_name;
 
-    if (ht != PHT_SPLIT2 && ht != PHT_DRAG_SPLIT2) {
-        TheHudResourceManager.LoadRequiredResources(ht, pkg_name);
+    if (mPlayerHudType != PHT_SPLIT2 && mPlayerHudType != PHT_DRAG_SPLIT2) {
+        TheHudResourceManager.LoadRequiredResources(mPlayerHudType, pkg_name);
     }
 
     cFEng::mInstance->PushNoControlPackage(pkg_name, static_cast< FE_PACKAGE_PRIORITY >(0x66));
@@ -236,9 +234,11 @@ FEngHud::FEngHud(ePlayerHudType ht, const char *pkg_name, IPlayer *player, int p
         pTachometer = new Tachometer(this, pPackageName, player_number);
 
         if (mPlayerHudType == PHT_STANDARD) {
+            if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == 2) {
+                pReputation = new Reputation(this, pkg_name, player_number);
+            }
             pHeatMeter = new HeatMeter(this, pkg_name, player_number);
             pCostToState = new CostToState(this, pkg_name, player_number);
-            pReputation = new Reputation(this, pkg_name, player_number);
             pPursuitBoard = new PursuitBoard(this, pkg_name, player_number);
             pMilestoneBoard = new MilestoneBoard(this, pkg_name, player_number);
             pBustedMeter = new BustedMeter(this, pkg_name, player_number);
@@ -255,7 +255,6 @@ FEngHud::FEngHud(ePlayerHudType ht, const char *pkg_name, IPlayer *player, int p
     if (mPlayerHudType == PHT_STANDARD || mPlayerHudType == PHT_DRAG) {
         pSpeedBreakerMeter = new SpeedBreakerMeter(this, pkg_name, player_number);
         pGetAwayMeter = new GetAwayMeter(this, pkg_name, player_number);
-        pAutoSaveIcon = new AutoSaveIcon(this, pkg_name, player_number);
     }
 
     if (TheOnlineManager.IsOnlineRace()) {
