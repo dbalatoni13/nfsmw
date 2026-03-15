@@ -226,8 +226,7 @@ CustomizeCategoryScreen::~CustomizeCategoryScreen() {
 
 void CustomizeCategoryScreen::RefreshHeader() {
     IconScrollerMenu::RefreshHeader();
-    CustomizeMainOption *curOpt = static_cast<CustomizeMainOption *>(Options.GetCurrentOption());
-    int status = curOpt ? curOpt->UnlockStatus : 0;
+    int status = static_cast<CustomizeMainOption *>(pCurrentOption)->UnlockStatus;
     if (status == 2) {
         FEngSetVisible(FEngFindObject(GetPackageName(), 0xcffb7033));
         FEngSetTextureHash(FEngFindImage(GetPackageName(), 0xcffb7033), 0xf0574bb2);
@@ -349,27 +348,27 @@ void FEShoppingCartItem::SetActiveScripts() {
 }
 
 void FEShoppingCartItem::Draw() {
-    if (!TheItem->IsActive()) {
-        FEngSetTextureHash(pCheckIcon, 0xe719881c);
-    } else {
+    if (TheItem->IsActive()) {
         FEngSetTextureHash(pCheckIcon, 0x696ae039);
+    } else {
+        FEngSetTextureHash(pCheckIcon, 0xe719881c);
     }
     DrawPartName();
-    if (!TheItem->GetBuyingPart() || !gCarCustomizeManager.IsCareerMode() || CustomizeIsInBackRoom()) {
-        FEPrintf(pTradeInPrice, "");
-    } else {
-        int tradeIn = TheItem->GetBuyingPart()->GetPrice();
+    if (TheItem->GetTradeInPart() && gCarCustomizeManager.IsCareerMode() && !CustomizeIsInBackRoom()) {
+        int tradeIn = TheItem->GetTradeInPart()->GetPrice();
         if (tradeIn == 0) {
             tradeIn = 0;
         } else {
             tradeIn = static_cast<int>(static_cast<float>(tradeIn) * gTradeInFactor);
         }
         FEPrintf(pTradeInPrice, "%d", tradeIn);
-    }
-    if (!gCarCustomizeManager.IsCareerMode() || CustomizeIsInBackRoom()) {
-        FEPrintf(pData, "");
     } else {
+        FEPrintf(pTradeInPrice, "");
+    }
+    if (gCarCustomizeManager.IsCareerMode() && !CustomizeIsInBackRoom()) {
         FEPrintf(pData, "%d", TheItem->GetBuyingPart()->GetPrice());
+    } else {
+        FEPrintf(pData, "");
     }
 }
 
@@ -1255,13 +1254,29 @@ bool CustomizeShoppingCart::IsSlotIDNumberDecal(int slot_id) {
 }
 
 void CustomizeShoppingCart::ClearUncheckedItems() {
-    int count = Options.TraversebList(nullptr);
-    for (int i = 0; i < count; i++) {
-        FEShoppingCartItem *widget = static_cast<FEShoppingCartItem *>(Options.GetNode(i));
-        if (!widget->GetItem()->IsActive()) {
-            gCarCustomizeManager.RemoveFromCart(widget->GetItem());
+    ShoppingCartItem *item = gCarCustomizeManager.ShoppingCart.GetHead();
+    while (item != gCarCustomizeManager.ShoppingCart.EndOfList()) {
+        if (!item->IsActive()) {
+            if (item->GetBuyingPart()->GetSlotID() == 0x4d) {
+                ShoppingCartItem *inner = gCarCustomizeManager.ShoppingCart.GetHead();
+                while (inner != gCarCustomizeManager.ShoppingCart.EndOfList()) {
+                    if (inner->GetBuyingPart()->GetSlotID() < 0x53 && inner->GetBuyingPart()->GetSlotID() > 0x4e) {
+                        ShoppingCartItem *next_inner = static_cast<ShoppingCartItem *>(inner->Next);
+                        gCarCustomizeManager.RemoveFromCart(inner);
+                        inner = next_inner;
+                    } else {
+                        inner = static_cast<ShoppingCartItem *>(inner->Next);
+                    }
+                }
+            }
+            ShoppingCartItem *next = static_cast<ShoppingCartItem *>(item->Next);
+            gCarCustomizeManager.RemoveFromCart(item);
+            item = next;
+        } else {
+            item = static_cast<ShoppingCartItem *>(item->Next);
         }
     }
+    gCarCustomizeManager.ResetPreview();
 }
 
 void CustomizeShoppingCart::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
@@ -1325,69 +1340,67 @@ void CustomizeShoppingCart::NotificationMessage(unsigned long msg, FEObject *pob
 }
 
 void CustomizeShoppingCart::RefreshHeader() {
-    if (pCurrentOption == nullptr) {
-        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x842b0e89));
-    } else {
+    if (pCurrentOption) {
         FEngSetVisible(FEngFindObject(GetPackageName(), 0x842b0e89));
         ShoppingCartItem *item = static_cast<FEShoppingCartItem *>(pCurrentOption)->GetItem();
-        if (item->GetBuyingPart()->IsPerformancePkg()) {
-            FEngSetLanguageHash(GetPackageName(), 0xd57c95e1, 0x28feadd);
-        } else {
+        if (item->IsActive()) {
             FEngSetLanguageHash(GetPackageName(), 0xd57c95e1, 0x5dabcbc0);
+        } else {
+            FEngSetLanguageHash(GetPackageName(), 0xd57c95e1, 0x28feadd);
         }
+    } else {
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x842b0e89));
     }
     HeatMeter.SetCurrent(gCarCustomizeManager.GetActualHeat());
     HeatMeter.SetPreview(gCarCustomizeManager.GetCartHeat());
     HeatMeter.Draw();
-    if (!gCarCustomizeManager.IsCareerMode()) {
-        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x9ea22e0b));
-    } else {
-        if (!CustomizeIsInBackRoom()) {
+    if (gCarCustomizeManager.IsCareerMode()) {
+        if (CustomizeIsInBackRoom()) {
+            SetMarkerAmounts();
+            int total;
+            FEMarkerManager::ePossibleMarker availableMarker;
+            if (CustomizeIsInParts()) {
+                FEngSetLanguageHash(GetPackageName(), 0x8cdcb8ed, 0xa03a752f);
+                FEngSetLanguageHash(GetPackageName(), 0xd3d3b1f4, 0x4ac68298);
+                total = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_BODY, 0);
+                total += TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_HOOD, 0);
+                total += TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_SPOILER, 0);
+                total += TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_RIMS, 0);
+                availableMarker = FEMarkerManager::MARKER_ROOF_SCOOP;
+            } else if (CustomizeIsInPerformance()) {
+                FEngSetLanguageHash(GetPackageName(), 0x8cdcb8ed, 0x358db897);
+                FEngSetLanguageHash(GetPackageName(), 0xd3d3b1f4, 0x68342700);
+                total = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_BRAKES, 0);
+                total += TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_ENGINE, 0);
+                total += TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_NOS, 0);
+                total += TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_INDUCTION, 0);
+                total += TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_CHASSIS, 0);
+                total += TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_TIRES, 0);
+                availableMarker = FEMarkerManager::MARKER_TRANSMISSION;
+            } else {
+                FEngSetLanguageHash(GetPackageName(), 0x8cdcb8ed, 0x93296e59);
+                FEngSetLanguageHash(GetPackageName(), 0xd3d3b1f4, 0x78f1c602);
+                total = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_VINYL, 0);
+                total += TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_DECAL, 0);
+                total += TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_PAINT, 0);
+                availableMarker = FEMarkerManager::MARKER_CUSTOM_HUD;
+            }
+            int available = TheFEMarkerManager.GetNumMarkers(availableMarker, 0);
+            FEPrintf(GetPackageName(), 0xd1497a06, "%d", gCarCustomizeManager.GetCartTotal(static_cast<eCustomizeCartTotals>(0)));
+            int cartCost = gCarCustomizeManager.GetCartTotal(static_cast<eCustomizeCartTotals>(0));
+            FEPrintf(GetPackageName(), 0x18661565, "%d", (total + available) - cartCost);
+        } else {
             FEPrintf(GetPackageName(), 0xd1497a06, "%d", gCarCustomizeManager.GetCartTotal(static_cast<eCustomizeCartTotals>(0)));
             FEPrintf(GetPackageName(), 0x34f7c0e8, "%d", gCarCustomizeManager.GetCartTotal(static_cast<eCustomizeCartTotals>(1)));
             int totalCost = gCarCustomizeManager.GetCartTotal(static_cast<eCustomizeCartTotals>(2));
             FEPrintf(GetPackageName(), 0x18661565, "%d", totalCost);
             FEPrintf(GetPackageName(), 0x8531e22e, "%d", FEDatabase->GetCareerSettings()->GetCash() - totalCost);
-        } else {
-            SetMarkerAmounts();
-            if (CustomizeIsInParts()) {
-                FEngSetLanguageHash(GetPackageName(), 0x8cdcb8ed, 0xa03a752f);
-                FEngSetLanguageHash(GetPackageName(), 0xd3d3b1f4, 0x4ac68298);
-                int total = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_BODY, 0)
-                    + TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_SPOILER, 0)
-                    + TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_HOOD, 0)
-                    + TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_ROOF_SCOOP, 0);
-                int available = 0;
-                int cartCost = gCarCustomizeManager.GetCartTotal(static_cast<eCustomizeCartTotals>(0));
-                FEPrintf(GetPackageName(), 0xd1497a06, "%d", cartCost);
-                FEPrintf(GetPackageName(), 0x18661565, "%d", (total + available) - cartCost);
-            } else if (CustomizeIsInPerformance()) {
-                FEngSetLanguageHash(GetPackageName(), 0x8cdcb8ed, 0x358db897);
-                FEngSetLanguageHash(GetPackageName(), 0xd3d3b1f4, 0x68342700);
-                int total = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_BRAKES, 0)
-                    + TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_ENGINE, 0)
-                    + TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_NOS, 0)
-                    + TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_INDUCTION, 0)
-                    + TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_TIRES, 0)
-                    + TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_TRANSMISSION, 0);
-                int available = 0;
-                int cartCost = gCarCustomizeManager.GetCartTotal(static_cast<eCustomizeCartTotals>(0));
-                FEPrintf(GetPackageName(), 0xd1497a06, "%d", cartCost);
-                FEPrintf(GetPackageName(), 0x18661565, "%d", (total + available) - cartCost);
-            } else {
-                FEngSetLanguageHash(GetPackageName(), 0x8cdcb8ed, 0x93296e59);
-                FEngSetLanguageHash(GetPackageName(), 0xd3d3b1f4, 0x78f1c602);
-                int total = TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_PAINT, 0)
-                    + TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_VINYL, 0)
-                    + TheFEMarkerManager.GetNumMarkers(FEMarkerManager::MARKER_PAINT, 0);
-                int available = 0;
-                int cartCost = gCarCustomizeManager.GetCartTotal(static_cast<eCustomizeCartTotals>(0));
-                FEPrintf(GetPackageName(), 0xd1497a06, "%d", cartCost);
-                FEPrintf(GetPackageName(), 0x18661565, "%d", (total + available) - cartCost);
-            }
         }
+    } else {
+        FEngSetInvisible(FEngFindObject(GetPackageName(), 0x9ea22e0b));
     }
 }
+
 
 void CustomizeShoppingCart::SetMarkerAmounts() {
     if (CustomizeIsInPerformance()) {
@@ -1984,11 +1997,11 @@ void CustomizeSpoiler::RefreshHeader() {
         bNeedsRefresh = true;
     }
     CarPart *part = opt->GetPart()->GetPart();
-    if (!part->HasAppliedAttribute(bStringHash("BRAND_NAME"))) {
+    if (!part->HasAppliedAttribute(bStringHash("LANGUAGEHASH"))) {
         FEPrintf(GetPackageName(), 0x5e7b09c9, "%s", part->GetName());
     } else {
-        unsigned int brandHash = part->GetAppliedAttributeUParam(bStringHash("BRAND_NAME"), 0);
-        FEngSetLanguageHash(GetPackageName(), 0x5e7b09c9, brandHash);
+        unsigned int langHash = part->GetAppliedAttributeUParam(bStringHash("LANGUAGEHASH"), 0);
+        FEngSetLanguageHash(GetPackageName(), 0x5e7b09c9, langHash);
     }
 }
 
@@ -2041,10 +2054,18 @@ void CustomizeSpoiler::BuildPartOptionListFromFilter(CarPart *activePart) {
 void CustomizePerformance::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     CustomizationScreen::NotificationMessage(msg, pobj, param1, param2);
     switch (msg) {
-    case 0x406415e3:
+    case 0xe1fde1d1:
         cFEng_mInstance->QueuePackageSwitch(g_pCustomizeSubPkg, FromCategory | (Category << 16), 0, false);
         break;
-    case 0xc407210:
+    case 0x5a928018: {
+        SelectablePart *sel = FindInCartPart();
+        if (!sel) return;
+        if (gCarCustomizeManager.IsPartInCart(sel)) return;
+        sel->PartState = static_cast<eCustomizePartState>(sel->PartState & CPS_GAME_STATE_MASK);
+        RefreshHeader();
+        break;
+    }
+    case 0x911ab364:
         cFEng_mInstance->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
         break;
     }
@@ -2392,40 +2413,38 @@ void CustomizeParts::Setup() {
 
     unsigned int cat = Category;
 
-    if (cat == 0x403) {
-        SetTitleHash(0x192d84da);
-        vinyl_group_number = 1;
-    } else if (cat == 0x105) {
-        SetTitleHash(0x79165861);
-        if (CustomizeIsInBackRoom()) {
-            icon_hash = 0x25a4375e;
-        } else {
-            icon_hash = 0x79165861;
-        }
-        DisplayHelper.TitleHash = 0x61e8f83c;
-        car_slot_id = 0x3e;
-        goto after_switch;
-    } else if (cat == 0x101) {
+    switch (cat) {
+    case 0x101:
+        DisplayHelper.TitleHash = 0x6134c218;
         SetTitleHash(0x28c24f6);
         if (CustomizeIsInBackRoom()) {
             icon_hash = 0xaf393dba;
         } else {
             icon_hash = 0x28c24f6;
         }
-        DisplayHelper.TitleHash = 0x6134c218;
         car_slot_id = 0x17;
         goto after_switch;
-    } else if (cat == 0x104) {
+    case 0x104:
+        DisplayHelper.TitleHash = 0x4d4a88d;
         SetTitleHash(0x28f7092);
         if (CustomizeIsInBackRoom()) {
             icon_hash = 0xf375276e;
         } else {
             icon_hash = 0x28f7092;
         }
-        DisplayHelper.TitleHash = 0x4d4a88d;
         car_slot_id = 0x3f;
         goto after_switch;
-    } else if (cat == 0x307) {
+    case 0x105:
+        DisplayHelper.TitleHash = 0x61e8f83c;
+        SetTitleHash(0x79165861);
+        if (CustomizeIsInBackRoom()) {
+            icon_hash = 0x25a4375e;
+        } else {
+            icon_hash = 0x79165861;
+        }
+        car_slot_id = 0x3e;
+        goto after_switch;
+    case 0x307:
         if (!CustomizeParts::TexturePackLoaded) {
             cFEng::Get()->QueuePackageMessage(0x13fd3296, GetPackageName(), nullptr);
             LoadHudTextures();
@@ -2437,49 +2456,60 @@ void CustomizeParts::Setup() {
         if (gCarCustomizeManager.GetTempColoredPart()) {
             installed_part = gCarCustomizeManager.GetTempColoredPart()->GetPart();
         }
+        DisplayHelper.TitleHash = 0x78980a6b;
         SetTitleHash(0x28f88bc);
         if (CustomizeIsInBackRoom()) {
             icon_hash = 0x8ba602fc;
         } else {
             icon_hash = 0x28f88bc;
         }
-        DisplayHelper.TitleHash = 0x78980a6b;
         car_slot_id = 0x84;
         goto after_switch;
-    } else if (cat == 0x304) {
-        SetTitleHash(0x3f23165c);
+    case 0x304:
         DisplayHelper.TitleHash = 0xd32729a6;
+        SetTitleHash(0x3f23165c);
         car_slot_id = 0x83;
         goto after_switch;
-    } else if (cat == 0x402) {
+    case 0x402:
+        DisplayHelper.TitleHash = 0xd9228fc6;
         SetTitleHash(0xf8148554);
         vinyl_group_number = 0;
-        DisplayHelper.TitleHash = 0xd9228fc6;
-    } else if (cat == 0x406) {
-        SetTitleHash(0xbc44bbcb);
-        vinyl_group_number = 4;
-        DisplayHelper.TitleHash = 0x7956f7b0;
-    } else if (cat == 0x404) {
+        break;
+    case 0x403:
+        SetTitleHash(0x192d84da);
+        vinyl_group_number = 1;
+        break;
+    case 0x404:
+        DisplayHelper.TitleHash = 0x1c619fd8;
         SetTitleHash(0xf7352706);
         vinyl_group_number = 2;
-        DisplayHelper.TitleHash = 0x1c619fd8;
-    } else if (cat == 0x405) {
+        break;
+    case 0x405:
+        DisplayHelper.TitleHash = 0x9c1b8935;
         SetTitleHash(0x1223cc89);
         vinyl_group_number = 3;
-        DisplayHelper.TitleHash = 0x9c1b8935;
-    } else if (cat == 0x408) {
-        SetTitleHash(0x1b3a8dd3);
-        vinyl_group_number = 6;
-        DisplayHelper.TitleHash = 0x209a9158;
-    } else if (cat == 0x407) {
+        break;
+    case 0x406:
+        DisplayHelper.TitleHash = 0x7956f7b0;
+        SetTitleHash(0xbc44bbcb);
+        vinyl_group_number = 4;
+        break;
+    case 0x407:
+        DisplayHelper.TitleHash = 0x2d5bff0f;
         SetTitleHash(0x694ca0ca);
         vinyl_group_number = 5;
-        DisplayHelper.TitleHash = 0x2d5bff0f;
-    } else if (cat == 0x409) {
+        break;
+    case 0x408:
+        DisplayHelper.TitleHash = 0x209a9158;
+        SetTitleHash(0x1b3a8dd3);
+        vinyl_group_number = 6;
+        break;
+    case 0x409:
+        DisplayHelper.TitleHash = 0xcd057d21;
         SetTitleHash(0x1ba508fc);
         vinyl_group_number = 7;
-        DisplayHelper.TitleHash = 0xcd057d21;
-    } else {
+        break;
+    default:
         goto after_switch;
     }
     car_slot_id = 0x4d;
@@ -2614,11 +2644,11 @@ void CustomizeParts::RefreshHeader() {
                 gCarCustomizeManager.PreviewPart(opt->GetPart()->GetSlotID(), opt->GetPart()->GetPart());
             }
         }
-        if (!part->HasAppliedAttribute(bStringHash("BRAND_NAME"))) {
+        if (!part->HasAppliedAttribute(bStringHash("LANGUAGEHASH"))) {
             FEPrintf(GetPackageName(), 0x5e7b09c9, "%s", part->GetName());
         } else {
-            unsigned int brandHash = part->GetAppliedAttributeUParam(bStringHash("BRAND_NAME"), 0);
-            FEngSetLanguageHash(GetPackageName(), 0x5e7b09c9, brandHash);
+            unsigned int langHash = part->GetAppliedAttributeUParam(bStringHash("LANGUAGEHASH"), 0);
+            FEngSetLanguageHash(GetPackageName(), 0x5e7b09c9, langHash);
         }
     }
 }
@@ -2956,22 +2986,19 @@ void CustomizeHUDColor::ScrollColors(eScrollDir dir) {
 void CustomizeHUDColor::RefreshHeader() {
     CustomizationScreen::RefreshHeader();
     HUDColorOption *sel = SelectedColor;
-    int slotID = sel->ThePart->CarSlotID;
-    if (slotID == 0x85) {
-        FEObject *obj = FEngFindObject(GetPackageName(), 0x5d19f25);
-        FEngSetColor(obj, sel->color);
-    } else if (slotID == 0x86) {
-        FEObject *obj = FEngFindObject(GetPackageName(), 0xd312f0cb);
-        FEngSetColor(obj, sel->color);
-        FEObject *obj2 = FEngFindObject(GetPackageName(), 0x8fe2a217);
-        FEngSetColor(obj2, SelectedColor->color);
-    } else if (slotID == 0x87) {
-        FEObject *obj = FEngFindObject(GetPackageName(), 0xc0721eb9);
-        FEngSetColor(obj, sel->color);
-        FEObject *obj2 = FEngFindObject(GetPackageName(), 0xc62ad685);
-        FEngSetColor(obj2, SelectedColor->color);
-        FEObject *obj3 = FEngFindObject(GetPackageName(), 0xb8f1f802);
-        FEngSetColor(obj3, SelectedColor->color);
+    switch (sel->ThePart->CarSlotID) {
+    case 0x85:
+        FEngSetColor(FEngFindObject(GetPackageName(), 0x5d19f25), sel->color);
+        break;
+    case 0x86:
+        FEngSetColor(FEngFindObject(GetPackageName(), 0xd312f0cb), sel->color);
+        FEngSetColor(FEngFindObject(GetPackageName(), 0x8fe2a217), SelectedColor->color);
+        break;
+    case 0x87:
+        FEngSetColor(FEngFindObject(GetPackageName(), 0xc0721eb9), sel->color);
+        FEngSetColor(FEngFindObject(GetPackageName(), 0xc62ad685), SelectedColor->color);
+        FEngSetColor(FEngFindObject(GetPackageName(), 0xb8f1f802), SelectedColor->color);
+        break;
     }
 }
 
@@ -3215,25 +3242,30 @@ void CustomizeHUDColor::SetInitialColors() {
 void CustomizeRims::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     CustomizationScreen::NotificationMessage(msg, pobj, param1, param2);
     switch (msg) {
+    case 0xc519bfbf:
+        Showcase_FromFilter = InnerRadius;
+        break;
+    case 0x5073ef13:
+        ScrollRimSizes(eSD_PREV);
+        break;
+    case 0xd9feec59:
+        ScrollRimSizes(eSD_NEXT);
+        break;
     case 0x5a928018: {
-        SelectablePart *sel = GetSelectedPart();
+        SelectablePart *sel = FindInCartPart();
         if (sel && !gCarCustomizeManager.IsPartInCart(sel)) {
-            sel->UnSetInCart();
+            sel->PartState = static_cast<eCustomizePartState>(sel->PartState & CPS_GAME_STATE_MASK);
             RefreshHeader();
         }
         break;
     }
-    case 0x5073ef13:
-        ScrollRimSizes(eSD_PREV);
+    case 0x406415e3:
         break;
-    case 0xc519bfbf:
-        Showcase_FromFilter = InnerRadius;
+    case 0x9120409e:
+    case 0xb5971bf1:
         break;
     case 0x911ab364:
-        cFEng_mInstance->QueuePackageSwitch(g_pCustomizeSubTopPkg, Category | (FromCategory << 16), 0, false);
-        break;
-    case 0xd9feec59:
-        ScrollRimSizes(eSD_NEXT);
+        cFEng_mInstance->QueuePackageSwitch(g_pCustomizeSubTopPkg, FromCategory | (Category << 16), 0, false);
         break;
     }
 }
@@ -3959,7 +3991,7 @@ void CustomizeDecals::RefreshHeader() {
     if (sel->GetPart() == nullptr) {
         FEngSetLanguageHash(GetPackageName(), 0x5e7b09c9, Options.GetCurrentName());
     } else {
-        FEPrintf(GetPackageName(), 0x5e7b09c9, "%s", sel->GetPart()->GetName());
+        FEPrintf(GetPackageName(), 0x5e7b09c9, "%s", GetSelectedPart()->GetPart()->GetName());
     }
     unsigned int hash = 0x436a98e9;
     if (bIsBlack) {
