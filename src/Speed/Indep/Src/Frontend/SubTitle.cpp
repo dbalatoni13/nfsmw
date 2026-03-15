@@ -64,10 +64,10 @@ bool SubTitler::ShouldShowSubTitles(const char* movie_name) {
     if (GetCurrentLanguage() != 0) {
         return true;
     }
-    if (mIsTutorial) {
-        return true;
+    if (!mIsTutorial) {
+        return false;
     }
-    return false;
+    return true;
 }
 
 void SubTitler::BeginningMovie(const char* moviename, const char* packagename) {
