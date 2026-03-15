@@ -2,10 +2,12 @@
 
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 #include "Speed/Indep/Src/Generated/Events/ERaceSheetOff.hpp"
+#include "Speed/Indep/Src/World/CarInfo.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
 struct FEObject;
@@ -49,14 +51,21 @@ void RepSheetIcon::React(const char* pkg, unsigned int data, FEObject* obj, unsi
 
 uiRepSheetMain::uiRepSheetMain(ScreenConstructorData* sd)
     : IconScrollerMenu(sd)
-    , RivalStreamer(sd->PackageFilename, sd->Arg != 0) {
-    bIsInGame = sd->Arg != 0;
-    bBossAvailable = false;
-    bBossBeaten = false;
-    pRivalImg = nullptr;
-    pTagImg = nullptr;
-    DefeatedTextureHash = 0;
-    new EFadeScreenOff(0x161a918);
+    , bIsInGame(sd->Arg != 0), //
+      bBossAvailable(false), //
+      bBossBeaten(false), //
+      DefeatedTextureHash(0), //
+      RivalStreamer(sd->PackageFilename, sd->Arg != 0) {
+    if (!bIsInGame) {
+        RideInfo ride;
+        FEDatabase->GetPlayerCarStable(0)->BuildRideForPlayer(FEDatabase->GetCareerSettings()->GetCurrentCar(), 0, &ride);
+        CarViewer::SetRideInfo(&ride, SET_RIDE_INFO_REASON_LOAD_CAR, eCARVIEWER_PLAYER1_CAR);
+        GarageMainScreen::GetInstance()->CameraPushRequested = false;
+    } else {
+        Options.IdleColor = 0xffffae40;
+        Options.FadeColor = 0x00ffae40;
+        new EFadeScreenOff(0x14035fb);
+    }
     Setup();
 }
 
