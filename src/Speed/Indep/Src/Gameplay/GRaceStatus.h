@@ -29,6 +29,13 @@ struct GRacerInfo {
         return mPctRaceComplete;
     }
 
+    ISimable *GetSimable() const;
+
+    bool GetIsKnockedOut() const { return mKnockedOut; }
+    bool GetIsTotalled() const { return mTotalled; }
+    bool GetIsEngineBlown() const { return mEngineBlown; }
+    bool IsFinishedRacing() const { return mFinishedRacing; }
+
   private:
     HSIMABLE mhSimable;              // offset 0x0, size 0x4
     GCharacter *mGameCharacter;      // offset 0x4, size 0x4
@@ -238,7 +245,7 @@ class GRaceParameters {
 
     unsigned int GetEventHash() const;
 
-    // bool GetIsAvailable(enum Context context) const;
+    bool GetIsAvailable(GRace::Context context) const;
 
     bool GetIsSunsetRace() const;
 
@@ -472,8 +479,20 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         return Exists() && Get().GetRaceType() == GRace::kRaceType_Challenge;
     }
 
+    static bool IsDragRace() {
+        return Exists() && Get().GetRaceType() == GRace::kRaceType_Drag;
+    }
+
+    static bool IsTollboothRace() {
+        return Exists() && Get().GetRaceType() == GRace::kRaceType_Tollbooth;
+    }
+
     PlayMode GetPlayMode() {
         return mPlayMode;
+    }
+
+    bool GetIsTimeLimited() const {
+        return mRaceParms && mRaceParms->GetTimeLimit() > 0.0f;
     }
 
     unsigned int GetTrafficPattern() const {

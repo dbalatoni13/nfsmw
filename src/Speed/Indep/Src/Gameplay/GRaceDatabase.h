@@ -38,7 +38,9 @@ class GRaceBin {
 
     GVault *GetChildVault() const;
 
+    GRaceBin* GetBin(unsigned int index);
     int GetBinNumber() const;
+    int GetBinNumber(int index);
 
     int GetBossReputation() const;
 
@@ -136,6 +138,28 @@ class GRaceDatabase {
         return GetRaceFromHash(Attrib::StringHash32(name));
     }
 
+    bool IsCareerRaceComplete(unsigned int eventHash) {
+        return CheckRaceScoreFlags(eventHash, kCompleted_ContextCareer);
+    }
+
+    const char *GetDDayEndRace() const {
+        return sDDayRaces[7];
+    }
+
+    const char *GetFinalBossRace() const {
+        return sDDayRaces[4];
+    }
+
+    bool CheckRaceScoreFlags(unsigned int eventHash, ScoreFlags mask);
+    const char *GetNextDDayRace();
+    struct GRaceSaveInfo* GetScoreInfo(unsigned int eventHash);
+
+    unsigned int GetBinCount();
+    GRaceBin* GetBin(unsigned int index);
+    GRaceBin* GetBinNumber(int number);
+
+    static const char sDDayRaces[8][5];
+
   private:
     unsigned int mRaceCountStatic;           // offset 0x0, size 0x4
     unsigned int mRaceCountDynamic;          // offset 0x4, size 0x4
@@ -151,6 +175,7 @@ class GRaceDatabase {
     unsigned int *mInitialUnlockHash;        // offset 0x38, size 0x4
     struct GRaceSaveInfo *mRaceScoreInfo;    // offset 0x3C, size 0x4
 
+  public:
     static GRaceDatabase *mObj;
 };
 

@@ -193,6 +193,19 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
         return mStartFreeRoamPursuit;
     }
 
+    void SetStartingFreeRoamFromSafeHouse() {
+        mStartFreeRoamFromSafeHouse = true;
+    }
+
+    void OverrideFreeRoamStartMarker(unsigned int markerKey) {
+        mOverrideFreeRoamStartMarker = markerKey;
+    }
+
+    void QueueFreeRoamPursuit(float minHeat) {
+        mStartFreeRoamPursuit = true;
+        mQueuedPursuitMinHeat = minHeat;
+    }
+
     void TrackValue(const char *valueName, int value) {
         TrackValue(valueName, static_cast<float>(value));
     }
@@ -200,8 +213,10 @@ class GManager : public UTL::COM::Object, public IVehicleCache {
   private:
     GManager(const char *vaultPackName);
 
+  public:
     static GManager *mObj;
 
+  private:
     const char *mVaultPackFileName;                 // offset 0x1C, size 0x4
     bFile *mVaultPackFile;                          // offset 0x20, size 0x4
     unsigned int mVaultCount;                       // offset 0x24, size 0x4

@@ -64,33 +64,46 @@ class FEManager {
 
     void ExitOnlineGameplayBasedOnConnection();
 
-    //  void SetFirstScreen(const char *pPackageName, int arg, unsigned int controlMask) {}
+    void SetFirstScreen(const char *pPackageName, int arg, unsigned int controlMask) {
+        mFirstScreen = pPackageName;
+        mFirstScreenArg = arg;
+        mFirstScreenMask = controlMask;
+    }
 
-    //  void RequestBootFlow() {}
+    void RequestBootFlow() { mFirstBoot = true; }
 
-    //  eGarageType GetPreviousGarageType() {}
+    eGarageType GetPreviousGarageType() { return mPreviousGarageType; }
 
-    //  ResourceFile *GetGarageBackground() {}
+    ResourceFile *GetGarageBackground() { return mGarageBackground; }
 
-    //  void SetGarageBackground(ResourceFile *pBackground) {}
+    void SetGarageBackground(ResourceFile *pBackground) { mGarageBackground = pBackground; }
 
-    //  void SetEATraxFirstButton(bool onOff) {}
+    void SetEATraxFirstButton(bool onOff) { mEATraxFirstButton = onOff; }
 
-    // static  bool IsPaused() {}
+    static inline bool IsPaused() { return mInstance->mPauseRequest > 0; }
 
-    // static  int GetNumPauseRequests() {}
+    static int GetNumPauseRequests() { return mPauseRequest; }
 
     // static  const char *GetPauseReason(int idx) {}
 
-    //  void ClearControllerError(int port) {}
+    void ClearControllerError(int port) {
+        if (port == -1) return;
+        if (port == 4) {
+            for (int i = 0; i <= 7; i++) {
+                bWantControllerError[i] = false;
+            }
+        } else {
+            bWantControllerError[port] = false;
+        }
+    }
 
-    //  void SuppressControllerError(bool b) {}
+    void SuppressControllerError(bool b) { bSuppressControllerError = b; }
 
-    //  void AllowControllerError(bool b) {}
+    void AllowControllerError(bool b) { bAllowControllerError = b; }
 
-    //  bool IsAllowingControllerError() {}
+    bool IsAllowingControllerError() { return bAllowControllerError; }
 
-    //  bool IsFirstBoot() {}
+    bool IsFirstBoot() { return mFirstBoot; }
 
     //  ~FEManager() {}
 
@@ -111,6 +124,27 @@ class FEManager {
     bool mFirstBoot;                 // offset 0x40, size 0x1
     int mEATraxDelay;                // offset 0x44, size 0x4
     bool mEATraxFirstButton;         // offset 0x48, size 0x1
+};
+
+class RideInfo;
+
+enum eSetRideInfoReasons {
+    SET_RIDE_INFO_REASON_VINYL = 0,
+    SET_RIDE_INFO_REASON_LOAD_CAR = 1,
+    SET_RIDE_INFO_REASON_CATCHALL = 2,
+};
+
+enum eCarViewerWhichCar {
+    eCARVIEWER_PLAYER1_CAR = 0,
+    eCARVIEWER_PLAYER2_CAR = 1,
+};
+
+struct CarViewer {
+    static void ShowCarScreen();
+    static void ShowAllCars();
+    static void HideAllCars();
+    static void SetRideInfo(RideInfo* ride, eSetRideInfoReasons reason, eCarViewerWhichCar which_car);
+    static bool haveLoadedOnce;
 };
 
 #endif

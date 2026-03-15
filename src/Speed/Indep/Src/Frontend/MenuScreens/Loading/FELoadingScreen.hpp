@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
-
+struct LoadingScreen {
+    static void InitLoadingScreen();
+};
 
 #endif

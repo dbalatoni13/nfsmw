@@ -153,9 +153,17 @@ class TrackStreamer {
     void BlockUntilLoadingComplete();
     void *AllocateUserMemory(int size, const char *debug_name, int offset);
     void FreeUserMemory(void *mem);
+    bool IsUserMemory(void *mem);
+    bool HasMemoryPool() {
+        return pMemoryPoolMem != nullptr;
+    }
 
     void DisableZoneSwitching() {
         ZoneSwitchingDisabled = true;
+    }
+
+    void EnableZoneSwitching() {
+        ZoneSwitchingDisabled = false;
     }
 
     int IsSectionVisible(int section_number) {
@@ -215,6 +223,12 @@ class TrackStreamer {
     void (*MakeSpaceInPoolCallback)(int);                 // offset 0x87C, size 0x4
     int MakeSpaceInPoolCallbackParam;                     // offset 0x880, size 0x4
     int MakeSpaceInPoolSize;                              // offset 0x884, size 0x4
+
+  public:
+    void MakeSpaceInPool(int size, void (*callback)(int), int param);
+    bool MakeSpaceInPool(int size, bool force_unloading);
+    void WaitForCurrentLoadingToComplete();
+    void RefreshLoading();
 };
 
 extern TrackStreamer TheTrackStreamer;

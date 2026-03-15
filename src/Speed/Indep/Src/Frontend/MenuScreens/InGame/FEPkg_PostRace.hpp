@@ -33,6 +33,8 @@ class PursuitData {
   private:
     static const int mMaxNumMilestones; // size: 0x4, address: 0xFFFFFFFF
 
+  public:
+
     bool mPursuitIsActive;                       // offset 0x0, size 0x1
     float mPursuitLength;                        // offset 0x4, size 0x4
     int mNumCopsDamaged;                         // offset 0x8, size 0x4

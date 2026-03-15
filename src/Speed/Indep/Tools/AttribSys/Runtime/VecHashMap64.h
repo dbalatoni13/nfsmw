@@ -228,7 +228,6 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
 
         std::size_t maxSearch = mTable[targetIndex].MaxSearch();
         std::size_t worstIndex = Policy::WrapIndex(targetIndex + maxSearch, mTableSize, 0);
-
         if (mTable[worstIndex].IsValid()) {
             Policy::KeyIndex(mTable[worstIndex].Key(), mTableSize, 0);
         }

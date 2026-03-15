@@ -97,6 +97,28 @@ sudo xattr -rd com.apple.quarantine '/Applications/Wine Crossover.app'
 
   - PS2: Copy `NSF.ELF` to `./orig/SLES-53558-A124/`
 
+- Sharing large assets across git worktrees
+
+  If you use multiple git worktrees, you can deduplicate the large immutable inputs
+  and downloaded tool binaries while keeping each worktree's generated build files
+  separate:
+
+  ```sh
+  python tools/share_worktree_assets.py link --all
+  ```
+
+  This shares the ignored debug/tool assets under the git common directory, including
+  extracted `orig/*` contents, `symbols/*`, root ELF / MAP files, and downloaded
+  tool binaries under `build/`. It intentionally does **not** share `build.ninja`,
+  `objdiff.json`, `compile_commands.json`, or per-worktree object outputs.
+
+  After linking shared assets into a worktree, regenerate that worktree's local build
+  files with:
+
+  ```sh
+  python configure.py
+  ```
+
 # Diffing
 
 Once the initial build succeeds, an `objdiff.json` should exist in the project root.

@@ -5,6 +5,12 @@
 #pragma once
 #endif
 
-
+struct BootFlowManager {
+    static void Init();
+    static void Destroy();
+    static BootFlowManager *Get();
+    virtual ~BootFlowManager();
+    void JumpToHead();
+};
 
 #endif
