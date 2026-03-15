@@ -206,6 +206,7 @@ void uiSMS::AddSMSDatum(SMSMessage* msg) {
 }
 
 void uiSMS::AddSMSSlot(unsigned int index) {
+    ArrayScroller* scroller = this;
     unsigned int grp_hash = FEngHashString("SMS_GROUP_%d", index);
     unsigned int img_hash = FEngHashString("SMS_ICON_%d", index);
     unsigned int txt_hash = FEngHashString("SMS_TEXT_%d", index);
@@ -213,7 +214,7 @@ void uiSMS::AddSMSSlot(unsigned int index) {
     FEImage* img = FEngFindImage(GetPackageName(), img_hash);
     FEString* txt = FEngFindString(GetPackageName(), txt_hash);
     SMSSlot* slot = new (__FILE__, __LINE__) SMSSlot(reinterpret_cast<FEGroup*>(grp), img, txt);
-    AddSlot(slot);
+    scroller->AddSlot(slot);
 }
 
 void uiSMS::RefreshHeader() {
