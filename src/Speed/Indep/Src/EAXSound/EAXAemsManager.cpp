@@ -1079,10 +1079,13 @@ void EAXAemsManager::UnloadSndData(int Index) {
 }
 
 void *EAXAemsManager::AsyncResidentAllocCB(int size) {
-    stSndDataLoadParams *m_pCurrentlyLoading = gAEMSMgr.m_pAsyncLoadSDLP;
+    stSndDataLoadParams *tmpLoading = gAEMSMgr.m_pAsyncLoadSDLP;
+    stSndDataLoadParams *m_pCurrentlyLoading;
     void *newresalloc;
-    if (m_pCurrentlyLoading == nullptr) {
+    if (tmpLoading == nullptr) {
         m_pCurrentlyLoading = gAEMSMgr.m_pCurLoadSDLP;
+    } else {
+        m_pCurrentlyLoading = tmpLoading;
     }
 
     char *currentLoad = reinterpret_cast<char *>(m_pCurrentlyLoading);
