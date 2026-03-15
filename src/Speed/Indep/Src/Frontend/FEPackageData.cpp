@@ -955,3 +955,52 @@ Timer SplashScreen::CalculateLastJoyEventTime() {
     }
     return lowesttimer;
 }
+
+extern float SplashScreenMovieTimeout;
+extern float SplashScreenTotalTimeout;
+
+void SplashScreen::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1,
+                                       unsigned long param2) {
+    switch (msg) {
+    case 0x98257537:
+        DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1),
+                                       0x417b2601, 0x1fab5998, 0x53f13fd1);
+        break;
+    case 0x6521e5c2:
+        DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1),
+                                       0x417b2601, 0x1fab5998, 0x6521e5c2);
+        break;
+    case 0xa6813b08:
+        DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1),
+                                       0x417b2601, 0x1fab5998, 0xa1161aaf);
+        break;
+    case 0xc98356ba: {
+        Timer lastJoyTime = CalculateLastJoyEventTime();
+        Timer elapsed = RealTimer - lastJoyTime;
+        bool timed_out = elapsed.GetSeconds() > SplashScreenMovieTimeout ||
+            (SplashScreenTotalTimeout != 0.0f &&
+             (RealTimer - SplashStartedTimer).GetSeconds() > SplashScreenTotalTimeout);
+        if (TheTrackStreamer.IsPermFileLoading()) {
+            timed_out = false;
+        }
+        if (timed_out) {
+            if (!BootFlowManager::Get()->DoAttract()) {
+                SplashStartedTimer.ResetHigh();
+            }
+        }
+        break;
+    }
+    case 0x406415e3:
+    case 0xb5af2461:
+        if (bAllowContinue) {
+            BootFlowManager::Get()->ChangeToNextBootFlowScreen(0xff);
+        }
+        break;
+    case 0x35f8620b:
+        bAllowContinue = true;
+        break;
+    }
+}
+
+float SplashScreenMovieTimeout = 8.0f;
+float SplashScreenTotalTimeout = 0.0f;

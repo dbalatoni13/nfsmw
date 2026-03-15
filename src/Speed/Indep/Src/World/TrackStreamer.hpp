@@ -170,6 +170,10 @@ class TrackStreamer {
         return CurrentVisibleSectionTable.IsSet(section_number);
     }
 
+    bool IsPermFileLoading() {
+        return PermFileLoading;
+    }
+
   private:
     TrackStreamingSection *pTrackStreamingSections;       // offset 0x0, size 0x4
     int NumTrackStreamingSections;                        // offset 0x4, size 0x4
