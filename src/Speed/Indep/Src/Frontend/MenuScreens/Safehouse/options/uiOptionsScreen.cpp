@@ -311,7 +311,9 @@ void UIOptionsScreen::SetupGameplay() {
     AddToggleOption(new GORearview(true), true);
     AddToggleOption(new GOSpeedoUnits(true), true);
 
-    if (!mCalledFromPauseMenu || Sim::GetUserMode() != Sim::USER_SPLIT_SCREEN) {
+    bool is_split = Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN;
+    if (!mCalledFromPauseMenu) is_split = false;
+    if (!is_split) {
         if (!FEDatabase->IsOnlineMode() && !FEDatabase->IsLANMode()) {
             AddToggleOption(new GOExploringMiniMap(true), true);
         }
