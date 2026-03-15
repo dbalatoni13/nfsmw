@@ -45,7 +45,9 @@ void uiRapSheetLogin::NotificationMessage(unsigned long msg, FEObject* pobj, uns
 
 void uiRapSheetLogin::Setup() {
     if (screen == 2) {
-        const char* name = FEDatabase->CurrentUserProfiles[0]->GetProfileName();
-        FEPrintf(GetPackageName(), 0x3CC94D6, "> %s", name);
+        const char *pkg = GetPackageName();
+        const char *fmt = "> %s";
+        const char *name = FEDatabase->CurrentUserProfiles[0]->GetProfileName();
+        FEPrintf(pkg, 0x3CC94D6, fmt, name);
     }
 }
