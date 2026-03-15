@@ -252,19 +252,19 @@ void GarageMainScreen::CancelCarLoad() {
 
 void GarageMainScreen::NotificationMessage(unsigned long Message, FEObject *pObject, unsigned long Param1, unsigned long Param2) {
     switch (Message) {
-        case 0x18883F75:
-            HideEntireScreen = 0;
-            HandleShowPackage(0x18883F75);
-            break;
         case 0x0AD4BBDC:
             HideEntireScreen = 1;
             HandleHidePackage(0x0AD4BBDC);
             break;
-        case 0xC98356BA:
-            HandleTick(0xC98356BA);
+        case 0x18883F75:
+            HideEntireScreen = 0;
+            HandleShowPackage(0x18883F75);
             break;
         case 0xD0678849:
             HandleJoyEvents();
+            break;
+        case 0xC98356BA:
+            HandleTick(0xC98356BA);
             break;
     }
 }

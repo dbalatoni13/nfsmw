@@ -1800,29 +1800,46 @@ CustomizeHUDColor::CustomizeHUDColor(ScreenConstructorData *sd) : CustomizationS
 
 // --- CustomizePaint helpers ---
 
+struct CustomizePaintDatum : public ArrayDatum {
+    CustomizePaintDatum(SelectablePart *part, unsigned int unlock_blurb)
+        : ArrayDatum(0xc6afdd7e, 0) //
+        , ThePart(part) //
+        , UnlockBlurb(unlock_blurb) {}
+
+    ~CustomizePaintDatum() override;
+
+    SelectablePart *ThePart;     // offset 0x24, size 0x4
+    unsigned int UnlockBlurb;    // offset 0x28, size 0x4
+};
+
 SelectablePart *CustomizePaint::FindInCartPart() {
-    IconOption *cur = Options.GetHead();
-    while (!Options.IsEndOfList(cur)) {
-        CustomizePartOption *opt = static_cast<CustomizePartOption *>(cur);
-        SelectablePart *part = opt->GetPart();
+    int count = ThePaints.GetNumDatum();
+    for (int i = 0; i < count; i++) {
+        CustomizePaintDatum *datum = static_cast<CustomizePaintDatum *>(ThePaints.GetDatumAt(i));
+        SelectablePart *part = datum->ThePart;
         if ((part->GetPartState() & 0xF0) == CPS_IN_CART) {
             return part;
         }
-        cur = cur->GetNext();
     }
     return nullptr;
 }
 
 CustomizePartOption *CustomizePaint::FindMatchingOption(SelectablePart *to_find) {
-    IconOption *cur = Options.GetHead();
-    while (!Options.IsEndOfList(cur)) {
-        CustomizePartOption *opt = static_cast<CustomizePartOption *>(cur);
-        if (opt->GetPart()->GetPart() == to_find->GetPart()) {
-            return opt;
+    int count = ThePaints.GetNumDatum();
+    CustomizePaintDatum *found = nullptr;
+    for (int i = 0; i < count; i++) {
+        CustomizePaintDatum *datum = static_cast<CustomizePaintDatum *>(ThePaints.GetDatumAt(i));
+        if (datum->ThePart->GetPart() == to_find->GetPart()) {
+            found = datum;
+            break;
         }
-        cur = cur->GetNext();
     }
-    return nullptr;
+    if (found) {
+        MatchingPaint.SetPart(found->ThePart);
+        return &MatchingPaint;
+    } else {
+        return nullptr;
+    }
 }
 
 void CustomizePaint::SetupRimPaint() {
@@ -1865,23 +1882,7 @@ extern const char *g_pCustomizeHudColorPkg;
 extern const char *g_pCustomizeShoppingCartPkg;
 
 void CustomizeMain::SetScreenNames() {
-    if (!CustomizeIsInBackRoom()) {
-        g_pCustomizeSubPkg = "CustomizeCategory.fng";
-        g_pCustomizeSubTopPkg = "CustomizeGenericTop.fng";
-        g_pCustomizePartsPkg = "CustomizeParts.fng";
-        g_pCustomizePerfPkg = "CustomizePerformance.fng";
-        g_pCustomizeDecalsPkg = "Decals.fng";
-        g_pCustomizePaintPkg = "Paint.fng";
-        g_pCustomizeRimsPkg = "Rims.fng";
-        g_pCustomizeHudColorPkg = "CustomHUDColor.fng";
-        if (!gCarCustomizeManager.IsCareerMode()) {
-            g_pCustomizeShoppingCartPkg = "ShoppingCart_QR.fng";
-        } else {
-            g_pCustomizeShoppingCartPkg = "ShoppingCart.fng";
-        }
-        g_pCustomizeHudPkg = "CustomHUD.fng";
-        g_pCustomizeSpoilerPkg = "Spoilers.fng";
-    } else {
+    if (CustomizeIsInBackRoom()) {
         g_pCustomizeSubPkg = "CustomizeCategory_BACKROOM.fng";
         g_pCustomizeSubTopPkg = "CustomizeGenericTop_BACKROOM.fng";
         g_pCustomizePartsPkg = "CustomizeParts_BACKROOM.fng";
@@ -1893,6 +1894,22 @@ void CustomizeMain::SetScreenNames() {
         g_pCustomizeShoppingCartPkg = "ShoppingCart_BACKROOM.fng";
         g_pCustomizeHudPkg = "CustomHUD_BACKROOM.fng";
         g_pCustomizeSpoilerPkg = "Spoilers_BACKROOM.fng";
+    } else {
+        g_pCustomizeSubPkg = "CustomizeCategory.fng";
+        g_pCustomizeSubTopPkg = "CustomizeGenericTop.fng";
+        g_pCustomizePartsPkg = "CustomizeParts.fng";
+        g_pCustomizePerfPkg = "CustomizePerformance.fng";
+        g_pCustomizeDecalsPkg = "Decals.fng";
+        g_pCustomizePaintPkg = "Paint.fng";
+        g_pCustomizeRimsPkg = "Rims.fng";
+        g_pCustomizeHudColorPkg = "CustomHUDColor.fng";
+        if (gCarCustomizeManager.IsCareerMode()) {
+            g_pCustomizeShoppingCartPkg = "ShoppingCart.fng";
+        } else {
+            g_pCustomizeShoppingCartPkg = "ShoppingCart_QR.fng";
+        }
+        g_pCustomizeHudPkg = "CustomHUD.fng";
+        g_pCustomizeSpoilerPkg = "Spoilers.fng";
     }
 }
 
@@ -3188,9 +3205,6 @@ void CustomizeRims::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
     }
     case 0x406415e3:
         break;
-    case 0x9120409e:
-    case 0xb5971bf1:
-        break;
     case 0x911ab364:
         cFEng_mInstance->QueuePackageSwitch(g_pCustomizeSubTopPkg, FromCategory | (Category << 16), 0, false);
         break;
@@ -4173,18 +4187,6 @@ void CustomizePaint::SetupVinylColor() {
         }
     }
 }
-
-struct CustomizePaintDatum : public ArrayDatum {
-    CustomizePaintDatum(SelectablePart *part, unsigned int unlock_blurb)
-        : ArrayDatum(0xc6afdd7e, 0) //
-        , ThePart(part) //
-        , UnlockBlurb(unlock_blurb) {}
-
-    ~CustomizePaintDatum() override;
-
-    SelectablePart *ThePart;     // offset 0x24, size 0x4
-    unsigned int UnlockBlurb;    // offset 0x28, size 0x4
-};
 
 SelectablePart *CustomizePaint::GetSelectedPart() {
     return static_cast<CustomizePaintDatum *>(ThePaints.GetCurrentDatum())->ThePart;
