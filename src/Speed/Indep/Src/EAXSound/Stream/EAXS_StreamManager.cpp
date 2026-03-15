@@ -8,8 +8,8 @@ EAXS_StreamManager *gpEAXS_StrmMgr = nullptr;
 bool IsWorldDataStreaming(unsigned int strmhandle) {
     bool bStreamBlock = false;
     unsigned int poolStart = reinterpret_cast<unsigned int>(gAudioMemoryManager.GetMemPoolMem());
-    unsigned int poolEnd = poolStart + static_cast<unsigned int>(*reinterpret_cast<int *>(reinterpret_cast<char *>(&gAudioMemoryManager) + 0x8));
-    int loadingPhase = *reinterpret_cast<int *>(reinterpret_cast<char *>(&TheTrackStreamer) + 0x194);
+    unsigned int poolEnd = poolStart + static_cast<unsigned int>(gAudioMemoryManager.GetMemoryPoolSize());
+    int loadingPhase = TheTrackStreamer.GetLoadingPhase();
 
     if ((strmhandle == 0 || (poolStart < strmhandle && strmhandle < poolEnd)) &&
         (TheCarLoader.IsLoadingInProgress() != 0 || loadingPhase != 0)) {
@@ -76,6 +76,6 @@ void EAXS_StreamManager::AddStreamChannel(EAXS_StreamChannel *pstrmchannel, eSTR
 void EAXS_StreamManager::RemoveStreamChannel(eSTRMTYPE strmtype) {}
 
 void AssignAudioStreamHandle(unsigned int realstrmhandle) {
-    unsigned int nStartAudioMemPool = *reinterpret_cast<unsigned int *>(&gAudioMemoryManager);
+    unsigned int nStartAudioMemPool = reinterpret_cast<unsigned int>(gAudioMemoryManager.GetMemPoolMem());
     asm volatile("cmplw %0, %1" : : "r"(realstrmhandle), "r"(nStartAudioMemPool));
 }

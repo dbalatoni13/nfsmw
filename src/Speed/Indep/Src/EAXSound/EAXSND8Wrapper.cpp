@@ -129,7 +129,7 @@ void EAXSND8Wrapper::ReInit() {
         IsNISAudioEnabled = IsSoundEnabled;
         IsSpeechEnabled = IsSoundEnabled;
     } else {
-        AudioSettings *settings = *reinterpret_cast<AudioSettings **>(reinterpret_cast<char *>(g_pEAXSound) + 0x34);
+        AudioSettings *settings = g_pEAXSound->GetCurrentAudioSettings();
         eSndAudioMode mode = static_cast<eSndAudioMode>(settings->AudioMode);
         m_eCurrentAudioMode = mode;
         SetSnd8RenderMode(mode);

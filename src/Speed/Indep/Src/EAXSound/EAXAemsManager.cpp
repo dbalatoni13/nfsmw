@@ -298,32 +298,28 @@ static void ResetSndAssetParams(stSndDataLoadParamsView &params) {
     params.t_req = 0;
 }
 
-static ListNodeQueue *&GetWaitQueueHead(EAXAemsManager *mgr) {
-    return *reinterpret_cast<ListNodeQueue **>(reinterpret_cast<char *>(mgr) + 0xBC);
-}
-
-static ExternalLoadCallbackFn &GetExternalLoadCallback(EAXAemsManager *mgr) {
-    return *reinterpret_cast<ExternalLoadCallbackFn *>(reinterpret_cast<char *>(mgr) + 0x4);
-}
-
-static int &GetExternalLoadCallbackParam(EAXAemsManager *mgr) {
-    return *reinterpret_cast<int *>(reinterpret_cast<char *>(mgr) + 0x8);
-}
-
 static char *&GetAsyncBuffer(EAXAemsManager *mgr) {
-    return *reinterpret_cast<char **>(reinterpret_cast<char *>(mgr) + 0x94);
+    return mgr->m_AsyncBuffer;
 }
 
 static int &GetAsyncBufferSize(EAXAemsManager *mgr) {
-    return *reinterpret_cast<int *>(reinterpret_cast<char *>(mgr) + 0x90);
+    return mgr->m_AsyncBufferSize;
 }
 
 static eTEMPALLOCLOCATION &GetAsyncBufferLocation(EAXAemsManager *mgr) {
-    return *reinterpret_cast<eTEMPALLOCLOCATION *>(reinterpret_cast<char *>(mgr) + 0x98);
+    return *reinterpret_cast<eTEMPALLOCLOCATION *>(&mgr->m_AsyncBufferLocation);
 }
 
-static int &GetBulkLoadFlag(EAXAemsManager *mgr) {
-    return *reinterpret_cast<int *>(reinterpret_cast<char *>(mgr) + 0x128);
+static stSndDataLoadParamsView &AsLoadParamsView(stSndDataLoadParams *params) {
+    return *reinterpret_cast<stSndDataLoadParamsView *>(params);
+}
+
+static const stSndDataLoadParamsView &AsLoadParamsView(const stSndDataLoadParams *params) {
+    return *reinterpret_cast<const stSndDataLoadParamsView *>(params);
+}
+
+static const char *GetStringKeyChars(const Attrib::StringKey &key) {
+    return *reinterpret_cast<const char *const *>(reinterpret_cast<const char *>(&key) + 0xC);
 }
 } // namespace
 
@@ -410,28 +406,28 @@ EAXAemsManager::EAXAemsManager() {
         bankSlots->next = bankSlots;
         bankSlots->prev = bankSlots;
     }
-    *reinterpret_cast<ListNodeBankSlot **>(reinterpret_cast<char *>(this) + 0xA4) = bankSlots;
+    m_pMainSlotHead = bankSlots;
 
     ListNodeBankSlot *pfSlots = reinterpret_cast<ListNodeBankSlot *>(gFastMem.Alloc(0x2C, nullptr));
     if (pfSlots != nullptr) {
         pfSlots->next = pfSlots;
         pfSlots->prev = pfSlots;
     }
-    *reinterpret_cast<ListNodeBankSlot **>(reinterpret_cast<char *>(this) + 0xAC) = pfSlots;
+    m_pPfSlotHead = pfSlots;
 
-    ListNodeBankSlot *waitSlots = reinterpret_cast<ListNodeBankSlot *>(gFastMem.Alloc(0x30, nullptr));
+    ListNodeQueue *waitSlots = reinterpret_cast<ListNodeQueue *>(gFastMem.Alloc(0x30, nullptr));
     if (waitSlots != nullptr) {
         waitSlots->next = waitSlots;
         waitSlots->prev = waitSlots;
     }
-    *reinterpret_cast<ListNodeBankSlot **>(reinterpret_cast<char *>(this) + 0xBC) = waitSlots;
+    m_pQueuedFileHead = waitSlots;
 
     m_pEvtSystems_start = nullptr;
     m_pEvtSystems_end = nullptr;
     m_pEvtSystems_end_of_storage = nullptr;
-    *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + 0x108) = 0;
-    *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + 0x10C) = -1;
-    *reinterpret_cast<void **>(reinterpret_cast<char *>(this) + 0x110) = nullptr;
+    m_nEvtSysQueued = 0;
+    m_nEvtSysCount = -1;
+    m_pEvtSysUserData = nullptr;
     m_nCallbackEvtSys = -1;
     m_pCurLoadSDLP = nullptr;
     m_pAsyncLoadSDLP = nullptr;
@@ -443,7 +439,7 @@ EAXAemsManager::EAXAemsManager() {
 
 EAXAemsManager::~EAXAemsManager() {
     int n = 0;
-    int numEvtSysLoaded = *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + 0x108);
+    int numEvtSysLoaded = m_nEvtSysQueued;
     while (n < numEvtSysLoaded) {
         gAudioMemoryManager.FreeMemory(m_pEvtSystems_start[n]);
         n++;
@@ -458,20 +454,20 @@ EAXAemsManager::~EAXAemsManager() {
     m_pEvtSystems_end = nullptr;
     m_pEvtSystems_end_of_storage = nullptr;
 
-    ClearSndAssetQueue(*reinterpret_cast<ListNodeQueue **>(reinterpret_cast<char *>(this) + 0xBC));
-    ListNodeBankSlot *waitSlotHead = *reinterpret_cast<ListNodeBankSlot **>(reinterpret_cast<char *>(this) + 0xBC);
+    ClearSndAssetQueue(static_cast<ListNodeQueue *>(m_pQueuedFileHead));
+    ListNodeQueue *waitSlotHead = static_cast<ListNodeQueue *>(m_pQueuedFileHead);
     if (waitSlotHead != nullptr) {
         gFastMem.Free(waitSlotHead, 0x30, nullptr);
     }
 
-    reinterpret_cast<BankSlotSystem *>(reinterpret_cast<char *>(this) + 0xAC)->DestroySlots();
-    ListNodeBankSlot *pfSlotHead = *reinterpret_cast<ListNodeBankSlot **>(reinterpret_cast<char *>(this) + 0xAC);
+    reinterpret_cast<BankSlotSystem *>(&m_pPfSlotHead)->DestroySlots();
+    ListNodeBankSlot *pfSlotHead = static_cast<ListNodeBankSlot *>(m_pPfSlotHead);
     if (pfSlotHead != nullptr) {
         gFastMem.Free(pfSlotHead, 0x2C, nullptr);
     }
 
-    reinterpret_cast<BankSlotSystem *>(reinterpret_cast<char *>(this) + 0xA4)->DestroySlots();
-    ListNodeBankSlot *slotHead = *reinterpret_cast<ListNodeBankSlot **>(reinterpret_cast<char *>(this) + 0xA4);
+    reinterpret_cast<BankSlotSystem *>(&m_pMainSlotHead)->DestroySlots();
+    ListNodeBankSlot *slotHead = static_cast<ListNodeBankSlot *>(m_pMainSlotHead);
     if (slotHead != nullptr) {
         gFastMem.Free(slotHead, 0x2C, nullptr);
     }
@@ -481,9 +477,9 @@ void EAXAemsManager::Init() {
     Attrib::Gen::audiosystem *attrs =
         *reinterpret_cast<Attrib::Gen::audiosystem **>(reinterpret_cast<char *>(g_pEAXSound) + 0xA8);
     unsigned int numEvtSys = attrs->Num_EvtSys();
-    *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + 0x10C) = static_cast<int>(numEvtSys);
-    *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + 0x104) = 0;
-    *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + 0x108) = 0;
+    m_nEvtSysCount = static_cast<int>(numEvtSys);
+    m_nResidentAllocs = 0;
+    m_nEvtSysQueued = 0;
     if (static_cast<int>(numEvtSys) > 0) {
         if (m_pEvtSystems_start != nullptr) {
             int oldByteCount = static_cast<int>(reinterpret_cast<char *>(m_pEvtSystems_end_of_storage) -
@@ -520,18 +516,18 @@ int EAXAemsManager::AddEventSystem(eEVTSYS eESIndex, eSNDDATAPATH eSDP) {
     int filesize = bFileSize(tempPath);
     m_pEvtSystems_start[eESIndex] = gAudioMemoryManager.AllocateMemoryChar(filesize, evtName, false);
 
-    int callback_param = *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + 0x108);
+    int callback_param = m_nEvtSysQueued;
     AddQueuedFile(m_pEvtSystems_start[callback_param], tempPath, 0, filesize, EvtSysLoadCallback, callback_param, nullptr);
-    *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + 0x108) = callback_param + 1;
+    m_nEvtSysQueued = callback_param + 1;
     return callback_param;
 }
 
 void EAXAemsManager::InitializeSlots(bool bDoPFSlot) {
     if (DISABLE_SLOT_LOADING == 0) {
         if (bDoPFSlot) {
-            reinterpret_cast<BankSlotSystem *>(reinterpret_cast<char *>(this) + 0xAC)->DestroySlots();
+            reinterpret_cast<BankSlotSystem *>(&m_pPfSlotHead)->DestroySlots();
         }
-        reinterpret_cast<BankSlotSystem *>(reinterpret_cast<char *>(this) + 0xA4)->DestroySlots();
+        reinterpret_cast<BankSlotSystem *>(&m_pMainSlotHead)->DestroySlots();
         m_SPUMainAllocsEnd = m_SPU_UpperAddress;
         for (int n = 0; n < 4; n++) {
             RegisterSlots(static_cast<eBANK_SLOT_TYPE>(n), m_RequiredSlots[n], m_SlotSizes[n][0], m_SlotSizes[n][1], bDoPFSlot);
@@ -615,8 +611,8 @@ int EAXAemsManager::InitiateLoad() {
     if (fileString == nullptr) {
         fileString = "";
     }
-    bStrCat(reinterpret_cast<char *>(this) + 0x10, g_DataPaths[currentLoad->AssetDescription.DataPath], fileString);
-    result = bFileSize(reinterpret_cast<char *>(this) + 0x10);
+    bStrCat(m_LoadFilename, g_DataPaths[currentLoad->AssetDescription.DataPath], fileString);
+    result = bFileSize(m_LoadFilename);
     currentLoad->nSize = result;
     result = AudioMemoryPool;
     if (currentLoad->nSize < 1) {
@@ -666,7 +662,7 @@ HaveQueueParams:
             }
             allocatedMemory = bMalloc(loadSize, 0x1040);
             currentLoad->pmem = allocatedMemory;
-            AddQueuedFile(currentLoad->pmem, reinterpret_cast<char *>(this) + 0x10, 0, currentLoad->nSize, DataLoadCB,
+            AddQueuedFile(currentLoad->pmem, m_LoadFilename, 0, currentLoad->nSize, DataLoadCB,
                           reinterpret_cast<int>(currentLoad), &queuedFileParams);
 SetWaitingState:
             *reinterpret_cast<eTEMPALLOCLOCATION *>(&m_IsWaitingForFileCB) = memLocation;
@@ -721,7 +717,7 @@ SetWaitingState:
                     result = currentLoad->nSize;
                 }
             }
-            AddQueuedFile(fileString, reinterpret_cast<char *>(this) + 0x10, 0, result, DataLoadCB,
+            AddQueuedFile(fileString, m_LoadFilename, 0, result, DataLoadCB,
                           reinterpret_cast<int>(currentLoad), &queuedFileParams);
             *reinterpret_cast<unsigned int *>(&m_IsWaitingForFileCB) = 1;
         }
@@ -734,7 +730,7 @@ CheckAsyncSpuLoad:
             } else {
                 SNDmemlimits(pBankSlot->BANKmemLocation, pBankSlot->BANKmemLocation + pBankSlot->BANKMemSize);
             }
-            result = SNDAEMS_asyncloadmodulebank(reinterpret_cast<char *>(this) + 0x10, 0, nullptr, 0, GetAsyncBuffer(this),
+            result = SNDAEMS_asyncloadmodulebank(m_LoadFilename, 0, nullptr, 0, GetAsyncBuffer(this),
                                                  GetAsyncBufferSize(this), AsyncResidentAllocCB);
             currentLoad->Handle = result;
         }
@@ -767,7 +763,7 @@ void EAXAemsManager::SetupNextLoad() {
             bMemSet(sfxToDelete, '\0', sizeof(sfxToDelete));
             int deleteCount = 0;
 
-            ListNodeQueue *head = *reinterpret_cast<ListNodeQueue **>(reinterpret_cast<char *>(this) + 0xBC);
+            ListNodeQueue *head = static_cast<ListNodeQueue *>(m_pQueuedFileHead);
             if (head == nullptr) {
                 RemoveBankListing(m_nCurLoadedBankIndex);
                 SetupNextLoad();
@@ -837,7 +833,7 @@ void EAXAemsManager::SetupNextLoad() {
 
 void EAXAemsManager::Update() {
 ReprocessQueue:
-    ListNodeQueue *head = *reinterpret_cast<ListNodeQueue **>(reinterpret_cast<char *>(this) + 0xBC);
+    ListNodeQueue *head = static_cast<ListNodeQueue *>(m_pQueuedFileHead);
     ListNodeQueue *iter = head->next;
     while (iter != head) {
         stSndAssetQueue currentRequest = iter->data;
@@ -871,8 +867,7 @@ ReprocessQueue:
         goto ReprocessQueue;
     }
 
-    if (m_ItemsPendingAsyncResolve != 0 &&
-        *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + 0x128) != 0) {
+    if (m_ItemsPendingAsyncResolve != 0 && m_HasExternalLoadPending != 0) {
         ResolvePendingAsyncLoads();
     }
 
@@ -885,10 +880,9 @@ ReprocessQueue:
             return;
         }
 
-        char *mem = *reinterpret_cast<char **>(reinterpret_cast<char *>(this) + 0x94);
+        char *mem = m_AsyncBuffer;
         if (mem != nullptr) {
-            eTEMPALLOCLOCATION location =
-                *reinterpret_cast<eTEMPALLOCLOCATION *>(reinterpret_cast<char *>(this) + 0x98);
+            eTEMPALLOCLOCATION location = static_cast<eTEMPALLOCLOCATION>(m_AsyncBufferLocation);
             if (location == TMP_ALLOC_AUDIO) {
                 gAudioMemoryManager.FreeMemory(mem);
             } else if (location == TMP_ALLOC_MAIN) {
@@ -896,11 +890,10 @@ ReprocessQueue:
             } else if (location == TMP_ALLOC_TRACKSTREAMER) {
                 TheTrackStreamer.FreeUserMemory(mem);
             }
-            *reinterpret_cast<char **>(reinterpret_cast<char *>(this) + 0x94) = nullptr;
+            m_AsyncBuffer = nullptr;
         }
 
-        ExternalLoadCallbackFn callback =
-            *reinterpret_cast<ExternalLoadCallbackFn *>(reinterpret_cast<char *>(this) + 0x4);
+        ExternalLoadCallbackFn callback = reinterpret_cast<ExternalLoadCallbackFn>(m_ExternalLoadCallback);
         if (callback == nullptr) {
             return;
         }
@@ -944,10 +937,10 @@ ReprocessQueue:
         Csis::gAEMS_StichWooshHandle.Set(&Csis::AEMS_StichWooshId);
         Csis::gAEMS_StichStaticHandle.Set(&Csis::AEMS_StichStaticId);
 
-        callback(*reinterpret_cast<int *>(reinterpret_cast<char *>(this) + 0x8));
-        *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + 0x128) = 0;
-        *reinterpret_cast<ExternalLoadCallbackFn *>(reinterpret_cast<char *>(this) + 0x4) = nullptr;
-        *reinterpret_cast<int *>(reinterpret_cast<char *>(this) + 0x8) = 0;
+        callback(m_ExternalLoadParam);
+        m_HasExternalLoadPending = 0;
+        m_ExternalLoadCallback = nullptr;
+        m_ExternalLoadParam = 0;
         return;
     }
 
@@ -1254,9 +1247,9 @@ void EAXAemsManager::QueueFileLoad(stSndAssetQueue &queueitem, eBANK_SLOT_TYPE S
         if (SlotType != eBANK_SLOT_NONE) {
             stBankSlot *slot = nullptr;
             if (SlotType == eBANK_SLOT_PATHFINDER) {
-                slot = *reinterpret_cast<stBankSlot **>(reinterpret_cast<char *>(this) + 0xAC);
+                slot = reinterpret_cast<BankSlotSystem *>(&m_pPfSlotHead)->GetFreeSlot(SlotType);
             } else {
-                slot = *reinterpret_cast<stBankSlot **>(reinterpret_cast<char *>(this) + 0xA4);
+                slot = reinterpret_cast<BankSlotSystem *>(&m_pMainSlotHead)->GetFreeSlot(SlotType);
             }
             if (slot != nullptr) {
                 slot->pAssetParams = &g_SndAssetList[bankIndex];
@@ -1265,7 +1258,7 @@ void EAXAemsManager::QueueFileLoad(stSndAssetQueue &queueitem, eBANK_SLOT_TYPE S
         }
     }
 
-    ListNodeQueue *head = *reinterpret_cast<ListNodeQueue **>(reinterpret_cast<char *>(this) + 0xBC);
+    ListNodeQueue *head = static_cast<ListNodeQueue *>(m_pQueuedFileHead);
     ListNodeQueue *node = reinterpret_cast<ListNodeQueue *>(gFastMem.Alloc(0x30, nullptr));
     if (node == nullptr || head == nullptr) {
         return;
@@ -1330,9 +1323,8 @@ Pending:
 }
 
 void EAXAemsManager::CompleteAsyncLoad() {
-    int pAsyncLoad = reinterpret_cast<int>(gAEMSMgr.m_pAsyncLoadSDLP);
-    stSndDataLoadParams *m_pCurrentlyLoading = reinterpret_cast<stSndDataLoadParams *>(pAsyncLoad);
-    if (pAsyncLoad == 0) {
+    stSndDataLoadParams *m_pCurrentlyLoading = gAEMSMgr.m_pAsyncLoadSDLP;
+    if (m_pCurrentlyLoading == nullptr) {
         m_pCurrentlyLoading = gAEMSMgr.m_pCurLoadSDLP;
     }
     *reinterpret_cast<int *>(reinterpret_cast<char *>(m_pCurrentlyLoading) + 0x38) = 1;
@@ -1344,15 +1336,15 @@ void EAXAemsManager::CompleteAsyncLoad() {
 void EAXAemsManager::ResetBankLoadParams() {
     m_nCurLoadedBankIndex = -1;
     m_nEndOfList = 0;
-    ClearSndAssetQueue(*reinterpret_cast<ListNodeQueue **>(reinterpret_cast<char *>(this) + 0xBC));
+    ClearSndAssetQueue(static_cast<ListNodeQueue *>(m_pQueuedFileHead));
     DestroySlots(true);
 }
 
 void EAXAemsManager::DestroySlots(bool bDoPFSlot) {
     if (bDoPFSlot == true) {
-        reinterpret_cast<BankSlotSystem *>(reinterpret_cast<char *>(this) + 0xAC)->DestroySlots();
+        reinterpret_cast<BankSlotSystem *>(&m_pPfSlotHead)->DestroySlots();
     }
-    reinterpret_cast<BankSlotSystem *>(reinterpret_cast<char *>(this) + 0xA4)->DestroySlots();
+    reinterpret_cast<BankSlotSystem *>(&m_pMainSlotHead)->DestroySlots();
     m_SPUMainAllocsEnd = m_SPU_UpperAddress;
     SNDmemlimits(-1, m_SPU_UpperAddress);
     bMemSet(EAXAemsManager::m_RequiredSlots, 0, 0x10);
@@ -1414,14 +1406,13 @@ void EAXAemsManager::AddAemsBank() {
 
 void EAXAemsManager::CheckForCompleteAsyncLoad() {
     if (*reinterpret_cast<int *>(reinterpret_cast<char *>(m_pCurLoadSDLP) + 0x38) == 0) {
-        int eDataType = *reinterpret_cast<int *>(reinterpret_cast<char *>(m_pCurLoadSDLP) + 0x0);
-        if (eDataType == 3) {
-            int Result = SNDAEMS_asyncloadmodulebankdone();
-            if (Result > 0) {
+        if (*reinterpret_cast<int *>(reinterpret_cast<char *>(m_pCurLoadSDLP) + 0x0) == 3) {
+            if (SNDAEMS_asyncloadmodulebankdone() > 0) {
                 CompleteAsyncLoad();
             }
-        } else if ((eDataType > 3) && (eDataType == 4) && ((SNDAEMS_asyncloadmodulebankmemdone() > 0)) &&
-                   (m_IsWaitingForFileCB == 0)) {
+        } else if ((*reinterpret_cast<int *>(reinterpret_cast<char *>(m_pCurLoadSDLP) + 0x0) > 3) &&
+                   (*reinterpret_cast<int *>(reinterpret_cast<char *>(m_pCurLoadSDLP) + 0x0) == 4) &&
+                   ((SNDAEMS_asyncloadmodulebankmemdone() > 0)) && (m_IsWaitingForFileCB == 0)) {
             CompleteAsyncLoad();
         }
     }

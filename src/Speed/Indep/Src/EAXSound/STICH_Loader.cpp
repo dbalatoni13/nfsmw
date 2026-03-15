@@ -27,21 +27,21 @@ cStitchLoop::cStitchLoop(unsigned int attrib)
     Attrib::Instance loopdata(Attrib::FindCollection(0x3473edcd, attrib), 0, nullptr);
     cSTICH_PlayBack *playback = nullptr;
     if (g_pEAXSound != nullptr) {
-        playback = *reinterpret_cast< cSTICH_PlayBack ** >(reinterpret_cast< char * >(g_pEAXSound) + 0x9C);
+        playback = g_pEAXSound->GetSTICHPlayback();
     }
 
-    const int *stitchIndex = reinterpret_cast< const int * >(loopdata.GetAttributePointer(0x1553cd23, 0));
+    const int *stitchIndex = static_cast< const int * >(loopdata.GetAttributePointer(0x1553cd23, 0));
     if (!stitchIndex) {
-        stitchIndex = reinterpret_cast< const int * >(Attrib::DefaultDataArea(sizeof(int)));
+        stitchIndex = static_cast< const int * >(Attrib::DefaultDataArea(sizeof(int)));
     }
 
     if (playback != nullptr) {
         m_StichData = &playback->GetStich(STICH_TYPE_COLLISION, *stitchIndex);
     }
 
-    const int *overlap = reinterpret_cast< const int * >(loopdata.GetAttributePointer(0xad8c27f5, 0));
+    const int *overlap = static_cast< const int * >(loopdata.GetAttributePointer(0xad8c27f5, 0));
     if (!overlap) {
-        overlap = reinterpret_cast< const int * >(Attrib::DefaultDataArea(sizeof(int)));
+        overlap = static_cast< const int * >(Attrib::DefaultDataArea(sizeof(int)));
     }
 
     m_tTimeBeforeRepeat = static_cast< short >(*overlap);
@@ -105,7 +105,7 @@ int LoaderSoundStichs(bChunk *chunk) {
         bEndianSwap16(&cur[2].Size);
 
         if (g_pEAXSound != nullptr) {
-            cSTICH_PlayBack *playback = *reinterpret_cast< cSTICH_PlayBack ** >(reinterpret_cast< char * >(g_pEAXSound) + 0x9C);
+            cSTICH_PlayBack *playback = g_pEAXSound->GetSTICHPlayback();
             if (playback != nullptr) {
                 playback->AddStich(static_cast< STICH_TYPE >(stitch->eStichType), *stitch);
             }
@@ -135,7 +135,7 @@ int UnloaderSoundStichs(bChunk *chunk) {
     }
 
     if (IsSoundEnabled && g_pEAXSound != nullptr) {
-        cSTICH_PlayBack *playback = *reinterpret_cast< cSTICH_PlayBack ** >(reinterpret_cast< char * >(g_pEAXSound) + 0x9C);
+        cSTICH_PlayBack *playback = g_pEAXSound->GetSTICHPlayback();
         if (playback != nullptr) {
             playback->DestroyAllStichs();
         }

@@ -222,23 +222,36 @@ struct EAXAemsManager : public AudioMemBase {
     static int m_RequiredSlots[4];
     static int m_SlotSizes[4][2];
 
-    /* 0x004 */ char _pad0[0x9c - 0x4];
+    /* 0x004 */ void (*m_ExternalLoadCallback)(int);
+    /* 0x008 */ int m_ExternalLoadParam;
+    /* 0x00c */ int m_Unknown0C;
+    /* 0x010 */ char m_LoadFilename[0x80];
+    /* 0x090 */ int m_AsyncBufferSize;
+    /* 0x094 */ char *m_AsyncBuffer;
+    /* 0x098 */ int m_AsyncBufferLocation;
     /* 0x09c */ int m_nCurLoadedBankIndex;
     /* 0x0a0 */ int m_nEndOfList;
-    /* 0x0a4 */ char _pad0xA4[0x10];
+    /* 0x0a4 */ void *m_pMainSlotHead;
+    /* 0x0a8 */ int m_UnknownA8;
+    /* 0x0ac */ void *m_pPfSlotHead;
+    /* 0x0b0 */ int m_UnknownB0;
     /* 0x0b4 */ int m_SPUMainAllocsEnd;
     /* 0x0b8 */ int m_SPU_UpperAddress;
-    /* 0x0bc */ char _pad0a[0xF8 - 0xbc]; // padding to m_pEvtSystems
+    /* 0x0bc */ void *m_pQueuedFileHead;
+    /* 0x0c0 */ char _pad0c0[0xF8 - 0xc0];
     /* 0x0f8 */ void **m_pEvtSystems_start;
     /* 0x0fc */ void **m_pEvtSystems_end;
     /* 0x100 */ void **m_pEvtSystems_end_of_storage;
-    /* 0x104 */ char _pad1[0x10]; // skip to m_nCallbackEvtSys
+    /* 0x104 */ int m_nResidentAllocs;
+    /* 0x108 */ int m_nEvtSysQueued;
+    /* 0x10c */ int m_nEvtSysCount;
+    /* 0x110 */ void *m_pEvtSysUserData;
     /* 0x114 */ int m_nCallbackEvtSys;
     /* 0x118 */ stSndDataLoadParams *m_pCurLoadSDLP;
     /* 0x11c */ stSndDataLoadParams *m_pCurUNLOADSDLP;
     /* 0x120 */ stSndDataLoadParams *m_pAsyncLoadSDLP;
     /* 0x124 */ int m_ItemsPendingAsyncResolve;
-    /* 0x128 */ char _pad0x128[0x4];
+    /* 0x128 */ int m_HasExternalLoadPending;
     /* 0x12c */ int m_IsWaitingForFileCB;
 
     EAXAemsManager();

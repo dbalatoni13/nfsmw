@@ -20,6 +20,7 @@ class AudioMemoryManager {
     void FreeMemory(void *);
 
     void *GetMemPoolMem() const { return m_pMemoryPoolMem; }
+    int GetMemoryPoolSize() const { return m_memoryPoolSize; }
 
   private:
     void *m_pMemoryPoolMem;     // offset 0x0, size 0x4

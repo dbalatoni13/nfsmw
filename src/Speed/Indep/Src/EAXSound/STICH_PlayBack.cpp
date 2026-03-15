@@ -8,8 +8,6 @@
 
 #include <algorithm>
 
-struct Attrib__Class;
-
 namespace Csis {
 struct InterfaceId;
 struct ClassHandle;
@@ -44,7 +42,7 @@ struct AEMS_StichData {
 };
 
 struct AEMS_StichCollision {
-    Attrib__Class *mpClass;
+    Csis::Class *mpClass;
     AEMS_StichData mData;
 
     AEMS_StichCollision(int type, int iD, int vol, int pitch, int az, int offset, int filter_DryFX, int filter_WetFX,
@@ -59,7 +57,7 @@ struct AEMS_StichCollision {
 };
 
 struct AEMS_StichWoosh {
-    Attrib__Class *mpClass;
+    Csis::Class *mpClass;
     AEMS_StichData mData;
 
     AEMS_StichWoosh(int type, int iD, int vol, int pitch, int az, int offset, int filter_DryFX, int filter_WetFX,
@@ -74,7 +72,7 @@ struct AEMS_StichWoosh {
 };
 
 struct AEMS_StichStatic {
-    Attrib__Class *mpClass;
+    Csis::Class *mpClass;
     AEMS_StichData mData;
 
     AEMS_StichStatic(int type, int iD, int vol, int pitch, int az, int offset, int filter_DryFX, int filter_WetFX,
@@ -202,7 +200,7 @@ bPList<SND_Stich> &cSTICH_PlayBack::GetStichList(STICH_TYPE StichType) {
 }
 
 SND_Stich &cSTICH_PlayBack::GetStich(STICH_TYPE StichType, int Index) {
-    return *reinterpret_cast<SND_Stich *>(GetStichList(StichType).GetNode(Index)->GetpObject());
+    return *static_cast<SND_Stich *>(GetStichList(StichType).GetNode(Index)->GetpObject());
 }
 
 void cSTICH_PlayBack::Update(float t) {
@@ -334,12 +332,12 @@ void cSampleWarpper::Update(const SND_Params *Params) {
         }
         AEMS_ActiveSampleWsh->mData.filter_WetFX = wetFX;
 
-        Csis::Class *cls = reinterpret_cast<Csis::Class *>(AEMS_ActiveSampleWsh->mpClass);
+        Csis::Class *cls = AEMS_ActiveSampleWsh->mpClass;
         if (cls != nullptr) {
             cls->SetMemberData(&AEMS_ActiveSampleWsh->mData);
         }
         refCountWsh = 0;
-        cls = reinterpret_cast<Csis::Class *>(AEMS_ActiveSampleWsh->mpClass);
+        cls = AEMS_ActiveSampleWsh->mpClass;
         if (cls != nullptr) {
             cls->GetRefCount(&refCountWsh);
         }
@@ -386,12 +384,12 @@ void cSampleWarpper::Update(const SND_Params *Params) {
         }
         AEMS_ActiveSampleCol->mData.filter_WetFX = wetFX;
 
-        Csis::Class *cls = reinterpret_cast<Csis::Class *>(AEMS_ActiveSampleCol->mpClass);
+        Csis::Class *cls = AEMS_ActiveSampleCol->mpClass;
         if (cls != nullptr) {
             cls->SetMemberData(&AEMS_ActiveSampleCol->mData);
         }
         refCountCol = 0;
-        cls = reinterpret_cast<Csis::Class *>(AEMS_ActiveSampleCol->mpClass);
+        cls = AEMS_ActiveSampleCol->mpClass;
         if (cls != nullptr) {
             cls->GetRefCount(&refCountCol);
         }
@@ -436,12 +434,12 @@ void cSampleWarpper::Update(const SND_Params *Params) {
         }
         AEMS_ActiveSampleStatic->mData.filter_WetFX = wetFX;
 
-        Csis::Class *cls = reinterpret_cast<Csis::Class *>(AEMS_ActiveSampleStatic->mpClass);
+        Csis::Class *cls = AEMS_ActiveSampleStatic->mpClass;
         if (cls != nullptr) {
             cls->SetMemberData(&AEMS_ActiveSampleStatic->mData);
         }
         refCountStatic = 0;
-        cls = reinterpret_cast<Csis::Class *>(AEMS_ActiveSampleStatic->mpClass);
+        cls = AEMS_ActiveSampleStatic->mpClass;
         if (cls != nullptr) {
             cls->GetRefCount(&refCountStatic);
         }
@@ -549,18 +547,16 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         sample->mData.filter_LoPass = 25000;
         sample->mData.filter_HiPass = 0;
 
-        int createResult = Csis::Class::CreateInstance(
-            &Csis::gAEMS_StichCollisionHandle, &sample->mData, reinterpret_cast<Csis::Class **>(sample));
+        int createResult = Csis::Class::CreateInstance(&Csis::gAEMS_StichCollisionHandle, &sample->mData, &sample->mpClass);
         if (createResult < 0) {
             Csis::gAEMS_StichCollisionHandle.Set(&Csis::AEMS_StichCollisionId);
-            Csis::Class::CreateInstance(
-                &Csis::gAEMS_StichCollisionHandle, &sample->mData, reinterpret_cast<Csis::Class **>(sample));
+            Csis::Class::CreateInstance(&Csis::gAEMS_StichCollisionHandle, &sample->mData, &sample->mpClass);
         }
 
         AEMS_ActiveSampleCol = sample;
         if (AEMS_ActiveSampleCol != nullptr) {
             int refCount0 = 0;
-            Csis::Class *cls = reinterpret_cast<Csis::Class *>(AEMS_ActiveSampleCol->mpClass);
+            Csis::Class *cls = AEMS_ActiveSampleCol->mpClass;
             if (cls != nullptr) {
                 cls->GetRefCount(&refCount0);
             }
@@ -639,18 +635,16 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         sample->mData.filter_LoPass = 25000;
         sample->mData.filter_HiPass = 0;
 
-        int createResult = Csis::Class::CreateInstance(
-            &Csis::gAEMS_StichWooshHandle, &sample->mData, reinterpret_cast<Csis::Class **>(sample));
+        int createResult = Csis::Class::CreateInstance(&Csis::gAEMS_StichWooshHandle, &sample->mData, &sample->mpClass);
         if (createResult < 0) {
             Csis::gAEMS_StichWooshHandle.Set(&Csis::AEMS_StichWooshId);
-            Csis::Class::CreateInstance(
-                &Csis::gAEMS_StichWooshHandle, &sample->mData, reinterpret_cast<Csis::Class **>(sample));
+            Csis::Class::CreateInstance(&Csis::gAEMS_StichWooshHandle, &sample->mData, &sample->mpClass);
         }
 
         AEMS_ActiveSampleWsh = sample;
         if (AEMS_ActiveSampleWsh != nullptr) {
             int refCount1 = 0;
-            Csis::Class *cls = reinterpret_cast<Csis::Class *>(AEMS_ActiveSampleWsh->mpClass);
+            Csis::Class *cls = AEMS_ActiveSampleWsh->mpClass;
             if (cls != nullptr) {
                 cls->GetRefCount(&refCount1);
             }
@@ -723,18 +717,16 @@ void cSampleWarpper::Play(const SND_Params *Params) {
         sample->mData.filter_LoPass = 25000;
         sample->mData.filter_HiPass = 0;
 
-        int createResult = Csis::Class::CreateInstance(
-            &Csis::gAEMS_StichStaticHandle, &sample->mData, reinterpret_cast<Csis::Class **>(sample));
+        int createResult = Csis::Class::CreateInstance(&Csis::gAEMS_StichStaticHandle, &sample->mData, &sample->mpClass);
         if (createResult < 0) {
             Csis::gAEMS_StichStaticHandle.Set(&Csis::AEMS_StichStaticId);
-            Csis::Class::CreateInstance(
-                &Csis::gAEMS_StichStaticHandle, &sample->mData, reinterpret_cast<Csis::Class **>(sample));
+            Csis::Class::CreateInstance(&Csis::gAEMS_StichStaticHandle, &sample->mData, &sample->mpClass);
         }
 
         AEMS_ActiveSampleStatic = sample;
         if (AEMS_ActiveSampleStatic != nullptr) {
             int refCount2 = 0;
-            Csis::Class *cls = reinterpret_cast<Csis::Class *>(AEMS_ActiveSampleStatic->mpClass);
+            Csis::Class *cls = AEMS_ActiveSampleStatic->mpClass;
             if (cls != nullptr) {
                 cls->GetRefCount(&refCount2);
             }
