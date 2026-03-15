@@ -385,9 +385,9 @@ void UIMemcardList::NotificationMessage(unsigned long msg, FEObject* obj, unsign
                                          unsigned long param2) {
     switch (msg) {
     case 0x35f8620b:
-        m_SaveGameList.SetSelected(m_SaveGameList.GetFirstSlot());
-        if (m_SaveGameList.GetSelectedSlot() != nullptr) {
-            m_SaveGameList.GetSelectedSlot()->SetScript(0x249db7b7);
+        m_SaveGameList.SetSelected(m_SaveGameList.Slots.GetHead());
+        if (m_SaveGameList.SelectedSlot != nullptr) {
+            m_SaveGameList.SelectedSlot->SetScript(0x249db7b7);
         }
         MemoryCard::GetInstance()->GetScreen()->m_ExpectingInput = true;
         m_Initialized++;
