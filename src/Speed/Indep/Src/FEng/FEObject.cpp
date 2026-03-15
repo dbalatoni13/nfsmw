@@ -11,16 +11,16 @@
 extern FEMultiPool ObjDataPool;
 
 inline bool CloseEnoughPosition(const FEVector3& vector1, const FEVector3& vector2) {
-    return Close(vector1.x, vector2.x, 0.001f) &&
-           Close(vector1.y, vector2.y, 0.001f) &&
-           Close(vector1.z, vector2.z, 0.001f);
+    if (!Close(vector1.x, vector2.x, 0.001f)) return false;
+    if (!Close(vector1.y, vector2.y, 0.001f)) return false;
+    return Close(vector1.z, vector2.z, 0.001f);
 }
 
 inline bool CloseEnoughColor(const FEColor& color1, const FEColor& color2) {
-    return Close(static_cast<long>(color1.r), static_cast<long>(color2.r), 1L) &&
-           Close(static_cast<long>(color1.g), static_cast<long>(color2.g), 1L) &&
-           Close(static_cast<long>(color1.b), static_cast<long>(color2.b), 1L) &&
-           Close(static_cast<long>(color1.a), static_cast<long>(color2.a), 1L);
+    if (!Close(static_cast<long>(color1.r), static_cast<long>(color2.r), 1L)) return false;
+    if (!Close(static_cast<long>(color1.g), static_cast<long>(color2.g), 1L)) return false;
+    if (!Close(static_cast<long>(color1.b), static_cast<long>(color2.b), 1L)) return false;
+    return Close(static_cast<long>(color1.a), static_cast<long>(color2.a), 1L);
 }
 
 bool Close(float a, float b, float epsilon);
@@ -328,12 +328,12 @@ void FEObject::SetPosition(const FEVector3& position, bool bRelative) {
     }
     if (bRelative) {
         FEVector3 zero(0.0f, 0.0f, 0.0f);
-        if (!(Close(position.x, zero.x, 0.001f) && Close(position.y, zero.y, 0.001f) && Close(position.z, zero.z, 0.001f))) {
+        if (!CloseEnoughPosition(position, zero)) {
             Flags |= 0x400000;
         }
     } else {
         FEObjData* pData = GetObjData();
-        if (!(Close(position.x, pData->Pos.x, 0.001f) && Close(position.y, pData->Pos.y, 0.001f) && Close(position.z, pData->Pos.z, 0.001f))) {
+        if (!CloseEnoughPosition(position, pData->Pos)) {
             Flags |= 0x400000;
         }
     }
@@ -372,12 +372,12 @@ void FEObject::SetColor(const FEColor& color, bool bRelative) {
     }
     if (bRelative) {
         FEColor zero(0);
-        if (!(Close(static_cast<long>(color.r), static_cast<long>(zero.r), 1L) && Close(static_cast<long>(color.g), static_cast<long>(zero.g), 1L) && Close(static_cast<long>(color.b), static_cast<long>(zero.b), 1L) && Close(static_cast<long>(color.a), static_cast<long>(zero.a), 1L))) {
+        if (!CloseEnoughColor(color, zero)) {
             Flags |= 0x400000;
         }
     } else {
         FEObjData* pData = GetObjData();
-        if (!(Close(static_cast<long>(color.r), static_cast<long>(pData->Col.r), 1L) && Close(static_cast<long>(color.g), static_cast<long>(pData->Col.g), 1L) && Close(static_cast<long>(color.b), static_cast<long>(pData->Col.b), 1L) && Close(static_cast<long>(color.a), static_cast<long>(pData->Col.a), 1L))) {
+        if (!CloseEnoughColor(color, pData->Col)) {
             Flags |= 0x400000;
         }
     }

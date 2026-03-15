@@ -560,7 +560,7 @@ bool FECodeListBox::CheckMovement(long lNumMove, long lCurrentVirtual, long lTar
         return false;
     }
     if (!(mulFlags & 2)) {
-        return true;
+        goto success;
     }
     if (mulFlags & 4) {
         if (lCurrentVirtual + lNumMove < 0) {
@@ -568,7 +568,7 @@ bool FECodeListBox::CheckMovement(long lNumMove, long lCurrentVirtual, long lTar
             return false;
         }
         if (lCurrentVirtual + lNumMove < lNumTotal - lNumVis) {
-            return true;
+            goto success;
         }
     } else {
         if (lNumMove + lTarget < 0) {
@@ -576,11 +576,14 @@ bool FECodeListBox::CheckMovement(long lNumMove, long lCurrentVirtual, long lTar
             return false;
         }
         if (lNumMove + lTarget < lNumTotal) {
-            return true;
+            goto success;
         }
     }
     mpobRenderer->NotificationMessage(FEHashUpper("ListEnd"), this, 0xFF, 0);
     return false;
+
+success:
+    return true;
 }
 
 bool FECodeListBox::MakeMove(long lNumMove, unsigned long& ulCurrentVirtual, unsigned long& ulTarget, unsigned long ulNumTotal, unsigned long ulNumVis) {
