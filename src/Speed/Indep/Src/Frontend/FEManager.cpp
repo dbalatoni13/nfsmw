@@ -293,7 +293,10 @@ bool FEManager::WaitingForControllerError() {
 }
 
 void FEManager::StartFE() {
-    if (!mFirstBoot) {
+    if (mFirstBoot) {
+        mFirstBoot = false;
+        BootFlowManager::Init();
+    } else {
         g_pEAXSound->PlayFEMusic(-1);
         if (!CarViewer::haveLoadedOnce) {
             RideInfo ride;
@@ -303,13 +306,10 @@ void FEManager::StartFE() {
             CarViewer::haveLoadedOnce = true;
         }
         CarViewer::ShowAllCars();
-    } else {
-        mFirstBoot = false;
-        BootFlowManager::Init();
     }
 
-    bAllowControllerError = false;
     bSuppressControllerError = false;
+    bAllowControllerError = false;
     for (int port = 0; port < 8; port++) {
         bWantControllerError[port] = false;
     }
