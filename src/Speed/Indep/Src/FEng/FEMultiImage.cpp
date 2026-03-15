@@ -8,9 +8,6 @@
 #include "Speed/Indep/Src/FEng/FETypes.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
 
-FEImage::FEImage(const FEImage& Object, bool bReference)
-    : FEObject(Object, bReference), ImageFlags(Object.ImageFlags) {}
-
 FEImage::~FEImage() {}
 
 FEObject* FEImage::Clone(bool bReference) {

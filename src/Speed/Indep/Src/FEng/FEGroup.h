@@ -9,7 +9,6 @@ struct FEGroup : public FEObject {
 
     inline FEGroup() : FEObject(), Children() {}
     FEGroup(const FEGroup& Object, bool bCloneChildren, bool bReference);
-    ~FEGroup() override;
 
     inline void AddObject(FEObject* pObj) { Children.AddTail(pObj); }
     inline void AddObjectAfter(FEObject* pObj, FEObject* pAddAfter) { Children.AddNode(pAddAfter, pObj); }

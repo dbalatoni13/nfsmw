@@ -38,7 +38,6 @@ struct FESlotPool : public FEMinNode {
     inline bool IsEmpty() { return Slots.GetNumElements() == 0; }
     inline FESlotPool* GetNext() { return static_cast<FESlotPool*>(FEMinNode::GetNext()); }
 
-    ~FESlotPool() override;
     unsigned char* Alloc();
     bool Free(unsigned char* pSlot);
 };

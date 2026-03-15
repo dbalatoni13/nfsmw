@@ -72,9 +72,6 @@ FESlotNode::~FESlotNode() {
     }
 }
 
-FESlotPool::~FESlotPool() {
-}
-
 unsigned char* FEMultiPool::Alloc(unsigned long Size) {
     if (Size == 0) {
         return nullptr;
