@@ -167,7 +167,7 @@ void uiRapSheetRankingsDetail::Setup() {
         value_label = 0;
         break;
     }
-    Attrib::Gen::frontend rankingsData(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
+    Attrib::Gen::frontend rankingsData(key, 0, nullptr);
     if (rankingsData.IsValid()) {
         if (rankingsData.Num_RapSheetRanks() == 15) {
             int num_rows = 15;
