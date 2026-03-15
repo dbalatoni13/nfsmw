@@ -24,6 +24,7 @@ from _common import (
     build_objdiff_symbol_rows,
     fail,
     run_objdiff_json,
+    RELOC_DIFF_CHOICES
 )
 
 root_dir = ROOT_DIR
