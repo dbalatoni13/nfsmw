@@ -1554,11 +1554,20 @@ void CustomizeShoppingCart::AddItem(ShoppingCartItem *item) {
 // --- CustomizeCategoryScreen additional ---
 
 CustomizeCategoryScreen::CustomizeCategoryScreen(ScreenConstructorData *sd) : IconScrollerMenu(sd) //
+    , bBackingOut(false) //
+    , BackToPkg(nullptr) //
     , HeatMeter() {
-    bBackingOut = false;
-    BackToPkg = nullptr;
     Category = sd->Arg & 0xFFFF;
     FromCategory = static_cast<int>(static_cast<short>(sd->Arg >> 16));
+    if (Category != 0 || !CustomizeIsInBackRoom()) {
+        GarageMainScreen::GetInstance()->SetCustomizationCategory(Category);
+    }
+    const char *meter_name = "HEAT_METER";
+    const char *pkg = GetPackageName();
+    float actual = gCarCustomizeManager.GetActualHeat();
+    CustomizeMeter *meter = &HeatMeter;
+    float cart = gCarCustomizeManager.GetCartHeat();
+    meter->Init(pkg, meter_name, 1.0f, 5.0f, actual, cart);
 }
 
 int CustomizeCategoryScreen::AddCustomOption(const char *to_pkg, unsigned int tex_hash, unsigned int name_hash, unsigned int to_cat) {

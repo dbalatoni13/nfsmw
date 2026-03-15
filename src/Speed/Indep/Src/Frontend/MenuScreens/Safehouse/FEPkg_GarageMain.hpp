@@ -33,7 +33,7 @@ struct GarageMainScreen : public MenuScreen {
     void NotificationMessage(unsigned long Message, FEObject *pObject, unsigned long Param1, unsigned long Param2) override;
     void RequestCameraPush() {}
     void CancelCameraPush() {}
-    void SetCustomizationCategory(int category) {}
+    void SetCustomizationCategory(int category) { mCustomizationCategory = category; }
     bool IsVisable() {}
     static GarageMainScreen *GetInstance();
     void EnableCarRendering();
