@@ -212,6 +212,20 @@ template <typename T> struct RawVector {
     T *end_of_storage;
 };
 
+struct StringKeyView {
+    unsigned long long mHash64;
+    unsigned int mHash32;
+    const char *mString;
+};
+
+struct stAssetDescriptionClearView {
+    int eDataType;
+    int _pad4;
+    StringKeyView FileName;
+    int DataPath;
+    int bLoadToTop;
+};
+
 struct stSndDataLoadParamsView {
     stAssetDescription AssetDescription;
     eTEMPALLOCLOCATION MemLocation;
@@ -230,6 +244,22 @@ struct stSndDataLoadParamsView {
     Timer t_load;
 };
 
+struct stSndDataLoadParamsClearView {
+    stAssetDescriptionClearView AssetDescription;
+    eTEMPALLOCLOCATION MemLocation;
+    stBankSlot *mBankSlot;
+    void *pmem;
+    void *plocmem;
+    int nSize;
+    int Handle;
+    int bResolvedAsync;
+    int bResolvedSync;
+    ResAllocList resallocs;
+    RefCountList RefCount;
+    Timer t_req;
+    Timer t_load;
+};
+
 struct stSndDataLoadParamsAllocView {
     char _assetDescription[0x20];
     eTEMPALLOCLOCATION MemLocation;
@@ -239,7 +269,7 @@ struct stSndDataLoadParamsAllocView {
 };
 
 template <typename T, typename Tag> static RawVector<T> &AsRawVector(UTL::Std::vector<T, Tag> &vec) {
-    return *reinterpret_cast<RawVector<T> *>(&vec);
+    return *static_cast<RawVector<T> *>(static_cast<void *>(&vec));
 }
 
 template <typename T> static int RawVectorSize(const RawVector<T> &vec) {
@@ -329,7 +359,8 @@ static const stSndDataLoadParamsView &AsLoadParamsView(const stSndDataLoadParams
 }
 
 static const char *GetStringKeyChars(const Attrib::StringKey &key) {
-    return *reinterpret_cast<const char *const *>(reinterpret_cast<const char *>(&key) + 0xC);
+    return *static_cast<const char *const *>(
+        static_cast<const void *>(static_cast<const char *>(static_cast<const void *>(&key)) + 0xC));
 }
 } // namespace
 
@@ -357,21 +388,29 @@ void stBankSlot::Clear() {
 }
 
 void stSndDataLoadParams::Clear() {
-    stSndDataLoadParamsView &view = AsLoadParamsView(this);
+    stSndDataLoadParamsClearView &view = *static_cast<stSndDataLoadParamsClearView *>(static_cast<void *>(this));
     view.AssetDescription.eDataType = -1;
-    view.AssetDescription.FileName = Attrib::StringKey("");
+    const char *empty = "";
+    StringKeyView key;
+    key.mHash64 = Attrib::StringHash64(empty);
+    key.mHash32 = Attrib::StringHash32(empty);
+    key.mString = empty;
+    view.AssetDescription.FileName.mString = key.mString;
+    view.AssetDescription.FileName.mHash64 = key.mHash64;
+    view.AssetDescription.FileName.mHash32 = key.mHash32;
     view.Handle = -1;
+    view.bResolvedSync = 0;
+    view.AssetDescription.DataPath = 0;
     view.MemLocation = static_cast<eTEMPALLOCLOCATION>(0);
     view.mBankSlot = nullptr;
     view.pmem = nullptr;
     view.plocmem = nullptr;
     view.nSize = 0;
-    view.bResolvedAsync = false;
-    view.bResolvedSync = false;
+    view.bResolvedAsync = 0;
     view.resallocs.clear();
     view.RefCount.clear();
-    view.t_load = Timer(0);
     view.t_req = Timer(0);
+    view.t_load = Timer(0);
 }
 
 stBankSlot *BankSlotSystem::GetFreeSlot(eBANK_SLOT_TYPE Type) {
@@ -520,7 +559,8 @@ int EAXAemsManager::AddEventSystem(eEVTSYS eESIndex, eSNDDATAPATH eSDP) {
     char tempPath[256];
     Attrib::Gen::audiosystem *attrs = g_pEAXSound->GetAttributes();
     const Attrib::StringKey &evtStringKey = attrs->EvtSys(eESIndex);
-    const char *evtName = *reinterpret_cast<const char *const *>(reinterpret_cast<const char *>(&evtStringKey) + 0xC);
+    const char *evtName = *static_cast<const char *const *>(
+        static_cast<const void *>(static_cast<const char *>(static_cast<const void *>(&evtStringKey)) + 0xC));
     if (evtName == nullptr) {
         evtName = "";
     }
@@ -1200,68 +1240,38 @@ LoadDone:
 }
 
 int EAXAemsManager::AddBankListing(stAssetDescription &asset) {
-    int index = m_nEndOfList;
-    char *entry = static_cast<char *>(static_cast<void *>(&g_SndAssetList[index]));
-    unsigned long long hash64 = Attrib::StringHash64("");
-    unsigned int hash32 = Attrib::StringHash32("");
-    *static_cast<int *>(static_cast<void *>(entry + 0x34)) = -1;
-    *static_cast<int *>(static_cast<void *>(entry + 0x0)) = SDT_NONE;
-    *static_cast<unsigned int *>(static_cast<void *>(entry + 0x8)) = static_cast<unsigned int>(hash64 >> 32);
-    *static_cast<unsigned int *>(static_cast<void *>(entry + 0xC)) = static_cast<unsigned int>(hash64);
-    *static_cast<unsigned int *>(static_cast<void *>(entry + 0x10)) = hash32;
-    *static_cast<const char **>(static_cast<void *>(entry + 0x14)) = "";
-    *static_cast<int *>(static_cast<void *>(entry + 0x18)) = SNDPATH_ROUTE;
-    *static_cast<int *>(static_cast<void *>(entry + 0x20)) = TMP_ALLOC_NONE;
-    *static_cast<stBankSlot **>(static_cast<void *>(entry + 0x24)) = nullptr;
-    *static_cast<void **>(static_cast<void *>(entry + 0x28)) = nullptr;
-    *static_cast<void **>(static_cast<void *>(entry + 0x2C)) = nullptr;
-    *static_cast<int *>(static_cast<void *>(entry + 0x30)) = 0;
-    *static_cast<unsigned int *>(static_cast<void *>(entry + 0x38)) = 0;
-    *static_cast<unsigned int *>(static_cast<void *>(entry + 0x3C)) = 0;
+    stSndDataLoadParamsView *entry =
+        static_cast<stSndDataLoadParamsView *>(static_cast<void *>(g_SndAssetList + m_nEndOfList));
 
-    RawVector<unsigned int> &resallocs = AsRawVector(*static_cast<ResAllocList *>(static_cast<void *>(entry + 0x40)));
-    unsigned int *resallocsEnd = resallocs.finish;
-    unsigned int *resallocsSrc = resallocs.finish;
-    unsigned int *resallocsDst = resallocs.start;
-    if (resallocsEnd != resallocsSrc) {
-        size_t bytes = static_cast<char *>(static_cast<void *>(resallocsEnd)) -
-                       static_cast<char *>(static_cast<void *>(resallocsSrc));
-        void *copied = memmove(resallocsDst, resallocsSrc, bytes);
-        resallocsDst = static_cast<unsigned int *>(static_cast<void *>(static_cast<char *>(copied) + bytes));
-    }
-    resallocs.finish = resallocsDst;
+    entry->AssetDescription.eDataType = -1;
+    entry->AssetDescription.FileName = Attrib::StringKey("");
+    entry->Handle = -1;
+    entry->bResolvedSync = 0;
+    entry->AssetDescription.DataPath = static_cast<eSNDDATAPATH>(0);
+    entry->MemLocation = static_cast<eTEMPALLOCLOCATION>(0);
+    entry->mBankSlot = nullptr;
+    entry->pmem = nullptr;
+    entry->plocmem = nullptr;
+    entry->nSize = 0;
+    entry->bResolvedAsync = 0;
+    entry->resallocs.clear();
+    entry->RefCount.clear();
+    entry->t_req = Timer(0);
+    entry->t_load = Timer(0);
 
-    RawVector<EAX_CarState *> &refCount = AsRawVector(*static_cast<RefCountList *>(static_cast<void *>(entry + 0x50)));
-    EAX_CarState **refCountEnd = refCount.finish;
-    EAX_CarState **refCountSrc = refCount.finish;
-    EAX_CarState **refCountDst = refCount.start;
-    if (refCountEnd != refCountSrc) {
-        size_t bytes = static_cast<char *>(static_cast<void *>(refCountEnd)) -
-                       static_cast<char *>(static_cast<void *>(refCountSrc));
-        void *copied = memmove(refCountDst, refCountSrc, bytes);
-        refCountDst = static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(copied) + bytes));
-    }
-    refCount.finish = refCountDst;
+    stSndDataLoadParamsView &dst =
+        *static_cast<stSndDataLoadParamsView *>(static_cast<void *>(g_SndAssetList + m_nEndOfList));
+    dst.AssetDescription.eDataType = asset.eDataType;
+    static_cast<StringKeyView *>(static_cast<void *>(&dst.AssetDescription.FileName))->mString =
+        static_cast<const StringKeyView *>(static_cast<const void *>(&asset.FileName))->mString;
+    static_cast<StringKeyView *>(static_cast<void *>(&dst.AssetDescription.FileName))->mHash64 =
+        static_cast<const StringKeyView *>(static_cast<const void *>(&asset.FileName))->mHash64;
+    static_cast<StringKeyView *>(static_cast<void *>(&dst.AssetDescription.FileName))->mHash32 =
+        static_cast<const StringKeyView *>(static_cast<const void *>(&asset.FileName))->mHash32;
+    dst.AssetDescription.DataPath = asset.DataPath;
+    dst.AssetDescription.bLoadToTop = asset.bLoadToTop;
 
-    *static_cast<int *>(static_cast<void *>(entry + 0x64)) = 0;
-    *static_cast<int *>(static_cast<void *>(entry + 0x60)) = 0;
-
-    char *assetBytes = static_cast<char *>(static_cast<void *>(&asset));
-    *static_cast<int *>(static_cast<void *>(entry + 0x0)) = *static_cast<int *>(static_cast<void *>(assetBytes + 0x0));
-    *static_cast<unsigned int *>(static_cast<void *>(entry + 0x8)) =
-        *static_cast<unsigned int *>(static_cast<void *>(assetBytes + 0x8));
-    *static_cast<unsigned int *>(static_cast<void *>(entry + 0xC)) =
-        *static_cast<unsigned int *>(static_cast<void *>(assetBytes + 0xC));
-    *static_cast<unsigned int *>(static_cast<void *>(entry + 0x10)) =
-        *static_cast<unsigned int *>(static_cast<void *>(assetBytes + 0x10));
-    *static_cast<const char **>(static_cast<void *>(entry + 0x14)) =
-        *static_cast<const char **>(static_cast<void *>(assetBytes + 0x14));
-    *static_cast<int *>(static_cast<void *>(entry + 0x18)) = *static_cast<int *>(static_cast<void *>(assetBytes + 0x18));
-    *static_cast<unsigned int *>(static_cast<void *>(entry + 0x1C)) =
-        *static_cast<unsigned int *>(static_cast<void *>(assetBytes + 0x1C));
-
-    m_nEndOfList = index + 1;
-    return index;
+    return m_nEndOfList++;
 }
 
 void EAXAemsManager::QueueFileLoad(stSndAssetQueue &queueitem, eBANK_SLOT_TYPE SlotType) {
@@ -1353,17 +1363,18 @@ Pending:
 }
 
 void EAXAemsManager::CompleteAsyncLoad() {
-    register stSndDataLoadParams *m_pCurrentlyLoading;
+    stSndDataLoadParams *m_pCurrentlyLoading;
     int Result;
     float delta;
-    if ((m_pCurrentlyLoading = gAEMSMgr.m_pAsyncLoadSDLP) == nullptr) {
+    m_pCurrentlyLoading = gAEMSMgr.m_pAsyncLoadSDLP;
+    if (gAEMSMgr.m_pAsyncLoadSDLP == nullptr) {
         m_pCurrentlyLoading = gAEMSMgr.m_pCurLoadSDLP;
     }
     *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCurrentlyLoading)) + 0x38)) = 1;
     SNDmemlimits(-1, gAEMSMgr.m_SPUMainAllocsEnd);
     *static_cast<Timer *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pCurrentlyLoading)) + 0x64)) =
         WorldTimer;
-    delta = (WorldTimer - *reinterpret_cast<Timer *>(&StartBankLoadTicks)).GetSeconds();
+    delta = (WorldTimer - *static_cast<Timer *>(static_cast<void *>(&StartBankLoadTicks))).GetSeconds();
 }
 
 void EAXAemsManager::ResetBankLoadParams() {

@@ -122,13 +122,13 @@ typedef char StreamFilterViewSizeCheck[(sizeof(StreamFilterView) == 0xC) ? 1 : -
 typedef char StreamHeaderViewSizeCheck[(sizeof(StreamHeaderView) == 0x18C) ? 1 : -1];
 
 inline int ReadChunkWord(const int *field) {
-    const unsigned char *bytes = reinterpret_cast<const unsigned char *>(field);
+    const unsigned char *bytes = static_cast<const unsigned char *>(static_cast<const void *>(field));
     return (static_cast<int>(bytes[3]) << 24) | (static_cast<int>(bytes[2]) << 16) | (static_cast<int>(bytes[1]) << 8) |
            static_cast<int>(bytes[0]);
 }
 
 inline void WriteChunkWord(int *field, int value) {
-    unsigned char *bytes = reinterpret_cast<unsigned char *>(field);
+    unsigned char *bytes = static_cast<unsigned char *>(static_cast<void *>(field));
     bytes[0] = static_cast<unsigned char>(value);
     bytes[1] = static_cast<unsigned char>(static_cast<unsigned int>(value) >> 8);
     bytes[2] = static_cast<unsigned char>(static_cast<unsigned int>(value) >> 16);
@@ -479,14 +479,15 @@ void startnextrequest(STREAMHEADERtag *stream, int priority) {
 }
 
 void restartstream(STREAMHEADERtag *stream, int priority) {
-    char *dataStart = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x5C);
-    char *dataTail = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x60);
+    StreamHeaderView *strm = reinterpret_cast<StreamHeaderView *>(stream);
+    char *dataStart = strm->datastart;
+    char *dataTail = strm->datatail;
 
     while (dataStart != dataTail) {
         unsigned char *head = reinterpret_cast<unsigned char *>(dataStart);
         int marker = (head[3] << 24) | (head[2] << 16) | (head[1] << 8) | head[0];
         if (marker == -1) {
-            dataStart = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x3C);
+            dataStart = strm->bufferstart;
         } else {
             if (marker != -2) {
                 break;
@@ -494,24 +495,24 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
             int skip = (head[7] << 24) | (head[6] << 16) | (head[5] << 8) | head[4];
             dataStart += skip;
         }
-        *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x5C) = dataStart;
+        strm->datastart = dataStart;
     }
 
-    RealSystem::Mutex *mutex = reinterpret_cast<RealSystem::Mutex *>(reinterpret_cast<char *>(stream) + 0x4);
+    RealSystem::Mutex *mutex = reinterpret_cast<RealSystem::Mutex *>(&strm->mutex);
     mutex->Lock();
     while (true) {
-        REQUESTSTRUCTtag *req = *reinterpret_cast<REQUESTSTRUCTtag **>(reinterpret_cast<char *>(stream) + 0x68);
-        REQUESTSTRUCTtag *next = req != nullptr ? *reinterpret_cast<REQUESTSTRUCTtag **>(reinterpret_cast<char *>(req) + 0x0C) : nullptr;
+        StreamRequestView *req = strm->firstreq;
+        StreamRequestView *next = req != nullptr ? req->next : nullptr;
         if (next == nullptr) {
             break;
         }
 
-        int nextState = *reinterpret_cast<int *>(reinterpret_cast<char *>(next) + 0x4);
+        int nextState = next->state;
         if (nextState != 1) {
-            char *nextDataStart = *reinterpret_cast<char **>(reinterpret_cast<char *>(next) + 0x120);
-            char *dataEnd = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x64);
+            char *nextDataStart = next->datastart;
+            char *dataEnd = strm->dataend;
             if (!inbetween(dataStart, dataEnd, nextDataStart - 1)) {
-                freerequest(stream, req);
+                freerequest(stream, reinterpret_cast<REQUESTSTRUCTtag *>(req));
                 continue;
             }
         }
@@ -519,21 +520,21 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
     }
     mutex->Unlock();
 
-    dataStart = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x5C);
-    char *dataEnd = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x64);
+    dataStart = strm->datastart;
+    char *dataEnd = strm->dataend;
     unsigned char *bytesAvailable;
-    int readBlockSize = *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x188);
+    int readBlockSize = strm->readblocksize;
     if (dataEnd < dataStart) {
         bytesAvailable = reinterpret_cast<unsigned char *>(dataStart - dataEnd - 0x21);
     } else {
-        char *bufferEnd = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x40);
+        char *bufferEnd = strm->bufferend;
         bytesAvailable = reinterpret_cast<unsigned char *>(bufferEnd - dataEnd - 0x20);
         if (reinterpret_cast<int>(bytesAvailable) < readBlockSize) {
-            char *dataTailNow = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x60);
+            char *dataTailNow = strm->datatail;
             int count = dataEnd - dataTailNow;
-            REQUESTSTRUCTtag *curReq = *reinterpret_cast<REQUESTSTRUCTtag **>(reinterpret_cast<char *>(stream) + 0x6C);
-            int reqType = *reinterpret_cast<int *>(reinterpret_cast<char *>(curReq) + 0x10);
-            char *bufferStart = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x3C);
+            StreamRequestView *curReq = strm->curreq;
+            int reqType = curReq->type;
+            char *bufferStart = strm->bufferstart;
 
             if (reqType == 1) {
                 if ((dataStart - bufferStart) < (count + 1)) {
@@ -543,14 +544,14 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
                 goto stream_stop;
             }
 
-            char *actualBufferStart = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x38);
+            char *actualBufferStart = strm->actualbufferstart;
             if ((count & 0x1F) == 0 || reqType == 1) {
                 bufferStart = actualBufferStart;
             } else {
                 bufferStart = actualBufferStart - ((count % 0x20) - 0x20);
             }
 
-            *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x3C) = bufferStart;
+            strm->bufferstart = bufferStart;
             MEM_copy(bufferStart, dataTailNow, count);
 
             dataTailNow[7] = '\0';
@@ -563,14 +564,14 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
             dataTailNow[6] = '\0';
 
             char *newDataEnd = bufferStart + count;
-            *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x60) = bufferStart;
-            *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x64) = newDataEnd;
+            strm->datatail = bufferStart;
+            strm->dataend = newDataEnd;
 
             unsigned char *check = reinterpret_cast<unsigned char *>(dataStart);
             int marker = (check[3] << 24) | (check[2] << 16) | (check[1] << 8) | check[0];
             if (marker == -1) {
-                *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x5C) = bufferStart;
-                char *bufferEnd2 = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x40);
+                strm->datastart = bufferStart;
+                char *bufferEnd2 = strm->bufferend;
                 bytesAvailable = reinterpret_cast<unsigned char *>(bufferEnd2 - newDataEnd - 0x20);
             } else {
                 bytesAvailable = reinterpret_cast<unsigned char *>(dataStart - newDataEnd - 1);
@@ -578,17 +579,17 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
         }
     }
 
-    if (*reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x54) == 0 &&
-        *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x4C) < priority &&
-        IsWorldDataStreaming(*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(stream) + 0x30))) {
+    if (strm->greedystate == 0 &&
+        strm->prioritylow < priority &&
+        IsWorldDataStreaming(reinterpret_cast<unsigned int>(strm->actualbufferstart))) {
         bGetTickerDifference(utickreadcallback);
         gbWorldDataBlocksAudioRead = true;
-        *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x44) = 2;
+        strm->state = 2;
         uTicksSinceLastAudioReadBailed = bGetTicker();
         return;
     }
 
-    if (IsWorldDataStreaming(*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(stream) + 0x178))) {
+    if (IsWorldDataStreaming(static_cast<unsigned int>(strm->fhandle))) {
         gbAudioInterruptsWorldDataRead = true;
     } else {
         gbAudioInterruptsWorldDataRead = false;
@@ -596,39 +597,35 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
     gbWorldDataBlocksAudioRead = false;
 
     if (reinterpret_cast<int>(bytesAvailable) >= readBlockSize) {
-        REQUESTSTRUCTtag *curReq = *reinterpret_cast<REQUESTSTRUCTtag **>(reinterpret_cast<char *>(stream) + 0x6C);
-        int reqType = *reinterpret_cast<int *>(reinterpret_cast<char *>(curReq) + 0x10);
+        StreamRequestView *curReq = strm->curreq;
+        int reqType = curReq->type;
         if (reqType == 1) {
-            int reqParm = *reinterpret_cast<int *>(reinterpret_cast<char *>(curReq) + 0x118);
-            int foffset = *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x17C);
+            int reqParm = curReq->parm;
+            int foffset = strm->foffset;
             if (reqParm < reinterpret_cast<int>(bytesAvailable) + foffset) {
-                *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x184) = reqParm - foffset;
+                strm->readsize = reqParm - foffset;
             } else {
-                *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x184) = reinterpret_cast<int>(bytesAvailable);
+                strm->readsize = reinterpret_cast<int>(bytesAvailable);
             }
 
-            int readSize = *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x184);
-            char *dataEndNow = *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x64);
-            char *address = *reinterpret_cast<char **>(reinterpret_cast<char *>(curReq) + 0x114);
+            int readSize = strm->readsize;
+            char *dataEndNow = strm->dataend;
+            char *address = curReq->address;
             MEM_copy(dataEndNow, address, readSize);
-            *reinterpret_cast<char **>(reinterpret_cast<char *>(curReq) + 0x114) = address + readSize;
+            curReq->address = address + readSize;
             readcallback(0, 0, stream);
             return;
         }
 
         if (readBlockSize < reinterpret_cast<int>(bytesAvailable)) {
-            *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x184) =
-                (reinterpret_cast<int>(bytesAvailable) / readBlockSize) * readBlockSize;
+            strm->readsize = (reinterpret_cast<int>(bytesAvailable) / readBlockSize) * readBlockSize;
         } else {
-            *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x184) = readBlockSize;
+            strm->readsize = readBlockSize;
         }
 
         bReadCallbackToggle = false;
-        FILEOPERATION *op = FILESYS_read(*reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x178),
-                                         *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x17C),
-                                         *reinterpret_cast<char **>(reinterpret_cast<char *>(stream) + 0x64),
-                                         *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x184), priority, stream);
-        *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x180) = reinterpret_cast<int>(op);
+        FILEOPERATION *op = FILESYS_read(strm->fhandle, strm->foffset, strm->dataend, strm->readsize, priority, stream);
+        strm->fop = reinterpret_cast<int>(op);
         if (op == nullptr) {
             return;
         }
@@ -638,7 +635,7 @@ void restartstream(STREAMHEADERtag *stream, int priority) {
     }
 
 stream_stop:
-    *reinterpret_cast<int *>(reinterpret_cast<char *>(stream) + 0x44) = 2;
+    strm->state = 2;
 }
 
 int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
@@ -648,14 +645,15 @@ int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
         return 0;
     }
 
-    StreamHeaderView *stream = reinterpret_cast<StreamHeaderView *>(buffer);
+    StreamHeaderView *stream = static_cast<StreamHeaderView *>(buffer);
     stream->id = 0x4D525453;
     MUTEX_create(&stream->mutex);
 
-    StreamRequestView *requestBase =
-        reinterpret_cast<StreamRequestView *>(reinterpret_cast<char *>(buffer) + sizeof(StreamHeaderView));
+    StreamRequestView *requestBase = static_cast<StreamRequestView *>(
+        static_cast<void *>(static_cast<char *>(buffer) + sizeof(StreamHeaderView)));
     StreamFilterView *filterBase = reinterpret_cast<StreamFilterView *>(requestBase + requests);
-    StreamTapView *tapBase = reinterpret_cast<StreamTapView *>(reinterpret_cast<char *>(filterBase) + filters * sizeof(StreamFilterView));
+    StreamTapView *tapBase = static_cast<StreamTapView *>(
+        static_cast<void *>(static_cast<char *>(static_cast<void *>(filterBase)) + filters * sizeof(StreamFilterView)));
 
     char *dataBase =
         reinterpret_cast<char *>((reinterpret_cast<unsigned int>(reinterpret_cast<char *>(tapBase) + taps * sizeof(StreamTapView)) &
@@ -670,7 +668,7 @@ int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
     stream->taps = taps;
     stream->actualbufferstart = dataBase;
     stream->bufferstart = dataBase;
-    stream->bufferend = reinterpret_cast<char *>(buffer) + size;
+    stream->bufferend = static_cast<char *>(buffer) + size;
     stream->state = STREAM_IDLE_STATE;
     stream->prioritylow = 0x96;
     stream->priorityhigh = 0x32;
@@ -704,10 +702,12 @@ int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
     }
 
     for (int i = 0; i < requests; ++i) {
-        StreamRequestView *request = reinterpret_cast<StreamRequestView *>(reinterpret_cast<char *>(requestBase) + i * sizeof(StreamRequestView));
+        StreamRequestView *request = static_cast<StreamRequestView *>(
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(requestBase)) + i * sizeof(StreamRequestView)));
         request->id = i;
         request->state = STREAMREQUEST_FREE;
-        request->next = reinterpret_cast<StreamRequestView *>(reinterpret_cast<char *>(request) + sizeof(StreamRequestView));
+        request->next = static_cast<StreamRequestView *>(
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(request)) + sizeof(StreamRequestView)));
     }
     if (requests > 0) {
         requestBase[requests - 1].next = nullptr;
@@ -720,7 +720,7 @@ int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
     }
 
     for (int i = 0; i < taps; ++i) {
-        tapBase[i].stream = reinterpret_cast<STREAMHEADERtag *>(buffer);
+        tapBase[i].stream = static_cast<STREAMHEADERtag *>(buffer);
         tapBase[i].tapnum = i + 1;
         tapBase[i].gettable = 0;
     }
@@ -737,7 +737,7 @@ void STREAM_setfilter(int sndstreamhandle, int filternum, int mask, int value, i
         return;
     }
 
-    StreamHeaderView *stream = reinterpret_cast<StreamHeaderView *>(streamRaw);
+    StreamHeaderView *stream = static_cast<StreamHeaderView *>(static_cast<void *>(streamRaw));
     if (filternum <= 0 || filternum > stream->filters) {
         return;
     }
@@ -756,7 +756,8 @@ void STREAM_setfilter(int sndstreamhandle, int filternum, int mask, int value, i
         return;
     }
 
-    StreamFilterView *filter = reinterpret_cast<StreamFilterView *>(stream->filter) + (filternum - 1);
+    StreamFilterView *filter =
+        static_cast<StreamFilterView *>(static_cast<void *>(stream->filter)) + (filternum - 1);
     filter->tapnum = tapnum;
     filter->mask = mask;
     filter->value = value;
@@ -890,10 +891,11 @@ int STREAM_queuemem(int sndstreamhandle, void *address, int length, int holdtime
         if (requestRaw != nullptr) {
             if (length == 0) {
                 int totalLength = 0;
-                STREAMCHUNKHDR *chunk = reinterpret_cast<STREAMCHUNKHDR *>(address);
+                STREAMCHUNKHDR *chunk = static_cast<STREAMCHUNKHDR *>(address);
                 while (ReadChunkWord(&chunk->type) != holdtime) {
                     int chunkLength = ReadChunkWord(&chunk->size);
-                    chunk = reinterpret_cast<STREAMCHUNKHDR *>(reinterpret_cast<char *>(&chunk->type) + chunkLength);
+                    chunk = static_cast<STREAMCHUNKHDR *>(
+                        static_cast<void *>(static_cast<char *>(static_cast<void *>(&chunk->type)) + chunkLength));
                     totalLength += chunkLength;
                 }
                 length = totalLength + ReadChunkWord(&chunk->size);
@@ -901,7 +903,7 @@ int STREAM_queuemem(int sndstreamhandle, void *address, int length, int holdtime
 
             StreamRequestView *request = reinterpret_cast<StreamRequestView *>(requestRaw);
             request->parm = length;
-            request->address = reinterpret_cast<char *>(address);
+            request->address = static_cast<char *>(address);
             request->endchunkid = holdtime;
             request->type = 1;
             queuerequest(streamRaw, requestRaw);
@@ -970,7 +972,7 @@ void STREAM_cancelrequest(int sndstreamhandle, int requesthandle) {
                     if (inRange == 0) {
                         inRange = inbetween(requestStart, requestEnd, tap->getptr);
                         while (inRange != 0) {
-                            chunk = reinterpret_cast<STREAMCHUNKHDR *>(STREAM_get(reinterpret_cast<int>(tap)));
+                            chunk = STREAM_get(reinterpret_cast<int>(tap));
                             STREAM_release(reinterpret_cast<int>(tap), chunk);
                             if (tap->gettable < 1) {
                                 break;
@@ -995,9 +997,11 @@ void STREAM_cancelrequest(int sndstreamhandle, int requesthandle) {
                                         decbufferusage(streamRaw, static_cast<int>(amount));
                                         cursor[1] = static_cast<int>(amount);
                                         cursor[0] = -2;
-                                        cursor = reinterpret_cast<int *>(reinterpret_cast<char *>(cursor) + amount);
+                                        cursor = static_cast<int *>(
+                                            static_cast<void *>(static_cast<char *>(static_cast<void *>(cursor)) + amount));
                                     } else {
-                                        cursor = reinterpret_cast<int *>(reinterpret_cast<char *>(cursor) + amount);
+                                        cursor = static_cast<int *>(
+                                            static_cast<void *>(static_cast<char *>(static_cast<void *>(cursor)) + amount));
                                     }
                                 }
                                 if (reinterpret_cast<char *>(cursor) == requestEnd) {
@@ -1064,7 +1068,8 @@ void STREAM_kill(int sndstreamhandle) {
                         reinterpret_cast<unsigned char *>(&chunk->size)[3] = 0;
                         reinterpret_cast<unsigned char *>(&chunk->type)[3] = 0xFF;
                         reinterpret_cast<unsigned char *>(&chunk->size)[0] = b3;
-                        chunk = reinterpret_cast<STREAMCHUNKHDR *>(reinterpret_cast<char *>(&chunk->type) + chunkSize);
+                        chunk = static_cast<STREAMCHUNKHDR *>(
+                            static_cast<void *>(static_cast<char *>(static_cast<void *>(&chunk->type)) + chunkSize));
                     }
                 } while (chunk != reinterpret_cast<STREAMCHUNKHDR *>(stream->datatail));
             }
@@ -1117,7 +1122,8 @@ STREAMCHUNKHDR *STREAM_get(int sndstreamhandle) {
     MUTEX_unlock(&stream->mutex);
 
     if (bytesLeft > 0) {
-        int *nextChunk = reinterpret_cast<int *>(reinterpret_cast<char *>(&chunk->type) + amount);
+        int *nextChunk =
+            static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(&chunk->type)) + amount));
         unsigned int encodedSize = static_cast<unsigned int>(nextChunk[1]);
         unsigned int tapMask = static_cast<unsigned int>(tap->tapnum) << 24;
         if ((encodedSize & 0xFF000000) == tapMask) {
@@ -1128,7 +1134,8 @@ STREAMCHUNKHDR *STREAM_get(int sndstreamhandle) {
                 if (type == -1) {
                     nextChunk = reinterpret_cast<int *>(stream->bufferstart);
                 } else {
-                    nextChunk = reinterpret_cast<int *>(reinterpret_cast<char *>(nextChunk) + (encodedSize & 0xFFFFFF));
+                    nextChunk = static_cast<int *>(
+                        static_cast<void *>(static_cast<char *>(static_cast<void *>(nextChunk)) + (encodedSize & 0xFFFFFF)));
                 }
                 encodedSize = static_cast<unsigned int>(nextChunk[1]);
                 if ((encodedSize & 0xFF000000) == tapMask) {
@@ -1215,6 +1222,6 @@ int STREAM_buffersize(int sndstreamhandle) {
         return 0;
     }
 
-    StreamHeaderView *stream = reinterpret_cast<StreamHeaderView *>(streamRaw);
+    StreamHeaderView *stream = static_cast<StreamHeaderView *>(static_cast<void *>(streamRaw));
     return static_cast<int>(stream->bufferend - stream->actualbufferstart);
 }

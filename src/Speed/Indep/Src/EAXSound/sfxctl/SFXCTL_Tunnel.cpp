@@ -70,14 +70,17 @@ struct stDriveByInfo {
 };
 
 static EAX_CarState *GetCarStateFromEAXCar(EAXCar *car) {
-    return car != nullptr ? *reinterpret_cast<EAX_CarState **>(reinterpret_cast<char *>(car) + 0x34) : nullptr;
+    return car != nullptr
+               ? *static_cast<EAX_CarState **>(
+                     static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x34))
+               : nullptr;
 }
 
-static float GetCarStateFloat(EAX_CarState *car, int offset) {
-    return *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + offset);
+static inline float GetCarStateFloat(EAX_CarState *car, int offset) {
+    return *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + offset));
 }
 
-static float GetCarSpeedMagnitude(EAX_CarState *car) {
+static inline float GetCarSpeedMagnitude(EAX_CarState *car) {
     float vx = GetCarStateFloat(car, 0x54);
     float vy = GetCarStateFloat(car, 0x58);
     float vz = GetCarStateFloat(car, 0x5C);
@@ -131,15 +134,15 @@ SFXCTL_Tunnel::SFXCTL_Tunnel() {
     m_CurDryGinsuTarget = kOne;
     m_CurDryAemsTarget = kOne;
     m_PrevReverbZone = 0;
-    *reinterpret_cast< int * >(&bPlayDriveBy) = 0;
+    bPlayDriveBy = false;
     pLastZoneWePlayedWooshFor = nullptr;
     pLastZoneWePlayedExitWooshFor = nullptr;
-    *reinterpret_cast< int * >(&bFadingOut) = 0;
-    *reinterpret_cast< int * >(&bFadingIn) = 0;
-    *reinterpret_cast< int * >(&bIsReadyForSwitch) = 0;
+    bFadingOut = false;
+    bFadingIn = false;
+    bIsReadyForSwitch = false;
     ReflRamp.Initialize(kZero, kZero, 1, LINEAR);
-    *reinterpret_cast< int * >(&bToggleOffset) = 0;
-    *reinterpret_cast< int * >(&m_IsLeadCar) = 0;
+    bToggleOffset = false;
+    m_IsLeadCar = false;
     m_LastOcclusionTest = g_pEAXSound->Random(kOne);
     TickerTimeStart = bGetTicker();
     TickerTimeAccum = 0;
@@ -150,11 +153,11 @@ SFXCTL_Tunnel::~SFXCTL_Tunnel() {}
 SndBase *SFXCTL_Tunnel::CreateObject(unsigned int allocator) {
     SFXCTL_Tunnel *object;
     if (allocator != 0) {
-        object = reinterpret_cast< SFXCTL_Tunnel * >(
-          gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_Tunnel), SFXCTL_Tunnel::s_TypeInfo.typeName, true));
+        object = static_cast<SFXCTL_Tunnel *>(
+            gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_Tunnel), SFXCTL_Tunnel::s_TypeInfo.typeName, true));
     } else {
-        object = reinterpret_cast< SFXCTL_Tunnel * >(
-          gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_Tunnel), SFXCTL_Tunnel::s_TypeInfo.typeName, false));
+        object = static_cast<SFXCTL_Tunnel *>(
+            gAudioMemoryManager.AllocateMemory(sizeof(SFXCTL_Tunnel), SFXCTL_Tunnel::s_TypeInfo.typeName, false));
     }
     if (object != nullptr) {
         object = new (object) SFXCTL_Tunnel();
@@ -168,32 +171,38 @@ char *SFXCTL_Tunnel::GetTypeName() const { return s_TypeInfo.typeName; }
 
 void SFXCTL_Tunnel::InitSFX() {
     SFXCTL::InitSFX();
-    *reinterpret_cast< int * >(&m_bIsInTunnel) = 0;
-    *reinterpret_cast< int * >(&m_bWasInTunnel) = 0;
+    m_bIsInTunnel = false;
+    m_bWasInTunnel = false;
 
-    int context = *reinterpret_cast< int * >(
-      reinterpret_cast< char * >(*reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34)) + 0x210);
+    int context = *static_cast<int *>(static_cast<void *>(
+        static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
+        0x210));
     int isLeadCar = 0;
-    if (context == 0 && *reinterpret_cast< int * >(reinterpret_cast< char * >(m_pStateBase) + 0x10) == 0) {
+    if (context == 0 &&
+        *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x10)) == 0) {
         isLeadCar = 1;
     }
 
-    *reinterpret_cast< int * >(&m_IsLeadCar) = isLeadCar;
-    *reinterpret_cast< int * >(&IsOccluded) = 0;
+    m_IsLeadCar = isLeadCar;
+    IsOccluded = 0;
 }
 
 void SFXCTL_Tunnel::UpdateParams(float t) {
     SFXCTL::UpdateParams(t);
 
-    g_pEAXSound->GetPlayerTunerCar(*reinterpret_cast< int * >(reinterpret_cast< char * >(m_pStateBase) + 0x10));
+    g_pEAXSound->GetPlayerTunerCar(
+        *static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x10)));
 
     UpdateIsInTunnel(t);
     UpdateDriveBySnds(t);
     UpdateCityVerb(t);
     UpdateReflectionParams(t);
 
-    int context = *reinterpret_cast< int * >(
-      reinterpret_cast< char * >(*reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34)) + 0x210);
+    int context = *static_cast<int *>(static_cast<void *>(
+        static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
+        0x210));
     if (context == 1 || context == 2) {
         UpdateOcclusion(t);
     }
@@ -205,15 +214,17 @@ void SFXCTL_Tunnel::UpdateMixerOutputs() {
     SetDMIX_Input(2, 0);
     SetDMIX_Input(3, 0);
 
-    SetDMIX_Input(4, *reinterpret_cast< int * >(&IsOccluded) != 0 ? 0x7FFF : 0);
+    SetDMIX_Input(4, IsOccluded != 0 ? 0x7FFF : 0);
 
-    if (*reinterpret_cast< int * >(
-          reinterpret_cast< char * >(*reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34)) + 0x210) == 0) {
+    if (*static_cast<int *>(static_cast<void *>(
+            static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
+                static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
+            0x210)) == 0) {
         SetDMIX_Input(5, m_AEMSDryVol);
         SetDMIX_Input(6, m_AEMSWetVol);
     }
 
-    if (*reinterpret_cast< int * >(&m_bIsInTunnel) == 0) {
+    if (!m_bIsInTunnel) {
         return;
     }
 
@@ -247,15 +258,17 @@ void SFXCTL_Tunnel::SetupSFX(CSTATE_Base *_StateBase) {
 TrackPathZone *SFXCTL_Tunnel::GetTunnelType(bVector3 &pos, eTrackPathZoneType zonetype) {
     TrackPathZone *zone = nullptr;
     while (true) {
-        zone = TheTrackPathManager.FindZone(reinterpret_cast< bVector2 * >(&pos), zonetype, zone);
+        zone = TheTrackPathManager.FindZone(static_cast<bVector2 *>(static_cast<void *>(&pos)), zonetype, zone);
         if (zone == nullptr) {
             return nullptr;
         }
         if (zone->Elevation == 0.0f) {
             break;
         }
-        if (*reinterpret_cast< float * >(
-              reinterpret_cast< char * >(*reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34)) + 0x4C) <=
+        if (*static_cast<float *>(static_cast<void *>(
+                static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
+                    static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
+                0x4C)) <=
             zone->Elevation) {
             return zone;
         }
@@ -270,33 +283,38 @@ void SFXCTL_Tunnel::UpdateIsInTunnel(float t) {
     bool InTunnel;
 
     CurZoneType = TRACK_PATH_ZONE_TUNNEL;
-    zone = GetTunnelType(*reinterpret_cast< bVector3 * >(
-                             reinterpret_cast< char * >(*reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34)) +
-                             0x44),
+    zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(
+                             static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
+                                 static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
+                             0x44)),
                          TRACK_PATH_ZONE_TUNNEL);
     if (zone == nullptr) {
         CurZoneType = TRACK_PATH_ZONE_OVERPASS;
-        zone = GetTunnelType(*reinterpret_cast< bVector3 * >(
-                                 reinterpret_cast< char * >(*reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34)) +
-                                 0x44),
+        zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(
+                                 static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
+                                     static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
+                                 0x44)),
                              TRACK_PATH_ZONE_OVERPASS);
         if (zone == nullptr) {
             CurZoneType = TRACK_PATH_ZONE_OVERPASS_SMALL;
-            zone = GetTunnelType(*reinterpret_cast< bVector3 * >(
-                                     reinterpret_cast< char * >(*reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34)) +
-                                     0x44),
+            zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(
+                                     static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
+                                         static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
+                                     0x44)),
                                  TRACK_PATH_ZONE_OVERPASS_SMALL);
             if (zone == nullptr) {
                 CurZoneType = TRACK_PATH_ZONE_GARAGE;
-                zone = GetTunnelType(*reinterpret_cast< bVector3 * >(
-                                         reinterpret_cast< char * >(*reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34)) +
-                                         0x44),
+                zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(
+                                         static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
+                                             static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
+                                         0x44)),
                                      TRACK_PATH_ZONE_GARAGE);
                 if (zone == nullptr) {
                     CurZoneType = TRACK_PATH_ZONE_DYNAMIC;
-                    zone = GetTunnelType(*reinterpret_cast< bVector3 * >(
-                                             reinterpret_cast< char * >(*reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34)) +
-                                             0x44),
+                    zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(
+                                             static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
+                                                 static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
+                                             0x44)),
                                          TRACK_PATH_ZONE_DYNAMIC);
                     if (zone != nullptr) {
                         if (zone->VisitInfo == 1) {
@@ -318,8 +336,10 @@ LAB_IN_TUNNEL:
     InTunnel = true;
     if (m_bIsInTunnel == 0) {
         m_bIsInTunnel = true;
-        int carContext = *reinterpret_cast< int * >(
-            reinterpret_cast< char * >(*reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34)) + 0x210);
+        int carContext = *static_cast<int *>(static_cast<void *>(
+            static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
+                static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
+            0x210));
         if (carContext == 0) {
             MMiscSound(1).Send(UCrc32("TunnelUpdate"));
 
@@ -343,8 +363,10 @@ LAB_DEFAULT_VERB:
 LAB_UPDATE_END:
     if (!InTunnel && m_bIsInTunnel) {
         m_bIsInTunnel = false;
-        int carContext = *reinterpret_cast< int * >(
-            reinterpret_cast< char * >(*reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34)) + 0x210);
+        int carContext = *static_cast<int *>(static_cast<void *>(
+            static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
+                static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
+            0x210));
         if (carContext == 0) {
             MMiscSound(0).Send(UCrc32("TunnelUpdate"));
             EndTunnelVerb();
@@ -352,14 +374,16 @@ LAB_UPDATE_END:
     }
 
     m_bWasInTunnel = m_bIsInTunnel;
-    if (*reinterpret_cast< int * >(reinterpret_cast< char * >(*reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34)) +
-                                   0x210) == 0) {
+    if (*static_cast<int *>(static_cast<void *>(
+            static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
+                static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
+            0x210)) == 0) {
         m_PlayerZoneType = CurZoneType;
     }
 }
 
 void SFXCTL_Tunnel::SetCurrentReverbType(eREVERBFX type, int reverboffset) {
-    *reinterpret_cast< int * >(&bFadingOut) = 1;
+    *static_cast<int *>(static_cast<void *>(&bFadingOut)) = 1;
     m_ReverbOffset = static_cast< float >(reverboffset);
     m_TargetType = type;
     ReflRamp.Initialize(0.0f, 1.0f, g_REVERBFXMODULES[m_ReverbType].FadeOut, LINEAR);
@@ -382,11 +406,13 @@ void SFXCTL_Tunnel::UpdateCityVerb(float t) {
 
     if ((isValid != 0) &&
         (m_pEAXCar != nullptr) &&
-        (*reinterpret_cast< unsigned char * >(reinterpret_cast< char * >(this) + 0x21) == 2)) {
-        EAX_CarState *pcar = *reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pEAXCar) + 0x34);
+        (*static_cast<unsigned char *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(this)) + 0x21)) == 2)) {
+        EAX_CarState *pcar = *static_cast<EAX_CarState **>(
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x34));
         if (pcar != nullptr) {
-            ReverbAccessor.CaptureData(*reinterpret_cast< float * >(reinterpret_cast< char * >(pcar) + 0x44),
-                                       *reinterpret_cast< float * >(reinterpret_cast< char * >(pcar) + 0x48));
+            ReverbAccessor.CaptureData(
+                *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pcar)) + 0x44)),
+                *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(pcar)) + 0x48)));
             m_CurReverbZone = ReverbAccessor.GetDataInt(0);
             ncurrentoffset = ReverbAccessor.GetDataInt(2);
         }
@@ -394,7 +420,7 @@ void SFXCTL_Tunnel::UpdateCityVerb(float t) {
 
     if (static_cast< unsigned int >(m_CurReverbZone) > 0xB) {
         register int zone asm("r0");
-        if (*reinterpret_cast< int * >(reinterpret_cast< char * >(g_pEAXSound) + 0x84) == SND_FRONTEND) {
+        if (*static_cast<int *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(g_pEAXSound)) + 0x84)) == SND_FRONTEND) {
             zone = 0;
         } else {
             zone = 9;
@@ -415,7 +441,8 @@ void SFXCTL_Tunnel::UpdateCityVerb(float t) {
 }
 
 void SFXCTL_Tunnel::AdjustReverbOffset(int reverboffset) {
-    if (*reinterpret_cast< int * >(&bFadingOut) == 0 && *reinterpret_cast< int * >(&bFadingIn) == 0) {
+    if (*static_cast<int *>(static_cast<void *>(&bFadingOut)) == 0 &&
+        *static_cast<int *>(static_cast<void *>(&bFadingIn)) == 0) {
         m_ReverbOffset = static_cast< float >(reverboffset);
 
         int ndBGinsu = -10000;
@@ -442,17 +469,18 @@ void SFXCTL_Tunnel::AdjustReverbOffset(int reverboffset) {
 }
 
 void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
-    *reinterpret_cast<int *>(&bIsReadyForSwitch) = 0;
+    *static_cast<int *>(static_cast<void *>(&bIsReadyForSwitch)) = 0;
     ReflRamp.Update(t);
 
-    if (*reinterpret_cast<int *>(&bFadingOut) != 0) {
-        if (*reinterpret_cast<int *>(&ReflRamp.bComplete) != 0 && *reinterpret_cast<int *>(&bIsTunnelRamping) == 0) {
-            if (*reinterpret_cast<int *>(&m_IsLeadCar) != 0) {
-                *reinterpret_cast<int *>(&bIsReadyForSwitch) = 1;
+    if (*static_cast<int *>(static_cast<void *>(&bFadingOut)) != 0) {
+        if (*static_cast<int *>(static_cast<void *>(&ReflRamp.bComplete)) != 0 &&
+            *static_cast<int *>(static_cast<void *>(&bIsTunnelRamping)) == 0) {
+            if (m_IsLeadCar != 0) {
+                *static_cast<int *>(static_cast<void *>(&bIsReadyForSwitch)) = 1;
             }
-            *reinterpret_cast<int *>(&bFadingIn) = 1;
+            *static_cast<int *>(static_cast<void *>(&bFadingIn)) = 1;
             m_ReverbType = m_TargetType;
-            *reinterpret_cast<int *>(&bFadingOut) = *reinterpret_cast<int *>(&bIsTunnelRamping);
+            *static_cast<int *>(static_cast<void *>(&bFadingOut)) = *static_cast<int *>(static_cast<void *>(&bIsTunnelRamping));
             ReflRamp.Initialize(0.0f, 1.0f, g_REVERBFXMODULES[m_TargetType].FadeIn, LINEAR);
 
             m_CurWetGinsu = m_CurWetGinsuTarget;
@@ -471,15 +499,17 @@ void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
             m_CurDryGinsuTarget = GetFloatFromHundredthsdB__11NFSMixShapei(g_REVERBFXMODULES[m_ReverbType].GinsuDry);
             m_CurDryAemsTarget = GetFloatFromHundredthsdB__11NFSMixShapei(g_REVERBFXMODULES[m_ReverbType].AemsDry);
         }
-    } else if (*reinterpret_cast<int *>(&bFadingIn) != 0 && *reinterpret_cast<int *>(&ReflRamp.bComplete) != 0) {
+    } else if (*static_cast<int *>(static_cast<void *>(&bFadingIn)) != 0 &&
+               *static_cast<int *>(static_cast<void *>(&ReflRamp.bComplete)) != 0) {
         m_CurWetGinsu = m_CurWetGinsuTarget;
         m_CurDryGinsu = m_CurDryGinsuTarget;
         m_CurWetAems = m_CurWetAemsTarget;
         m_CurDryAems = m_CurDryAemsTarget;
-        *reinterpret_cast<int *>(&bFadingIn) = 0;
+        *static_cast<int *>(static_cast<void *>(&bFadingIn)) = 0;
     }
 
-    if (*reinterpret_cast<int *>(&bFadingOut) != 0 || *reinterpret_cast<int *>(&bFadingIn) != 0) {
+    if (*static_cast<int *>(static_cast<void *>(&bFadingOut)) != 0 ||
+        *static_cast<int *>(static_cast<void *>(&bFadingIn)) != 0) {
         float ramp = ReflRamp.CurValue;
         m_GinsuWetVol = static_cast<int>(((m_CurWetGinsuTarget - m_CurWetGinsu) * ramp + m_CurWetGinsu) * 32767.0f);
         m_GinsuDryVol = static_cast<int>(((m_CurDryGinsuTarget - m_CurDryGinsu) * ramp + m_CurDryGinsu) * 32767.0f);
@@ -498,7 +528,7 @@ void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
     }
 
     int toggleValue;
-    if (*reinterpret_cast<int *>(&bToggleOffset) == 0) {
+    if (*static_cast<int *>(static_cast<void *>(&bToggleOffset)) == 0) {
         toggleValue = 1;
     } else {
         int aemsWet = m_AEMSWetVol + 1;
@@ -525,8 +555,9 @@ void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
         toggleValue = 0;
     }
 
-    *reinterpret_cast<int *>(&bToggleOffset) = toggleValue;
-    *reinterpret_cast<int *>(&bIsTunnelRamping) = *reinterpret_cast<int *>(&ReflRamp.bComplete) ^ 1;
+    *static_cast<int *>(static_cast<void *>(&bToggleOffset)) = toggleValue;
+    *static_cast<int *>(static_cast<void *>(&bIsTunnelRamping)) =
+        *static_cast<int *>(static_cast<void *>(&ReflRamp.bComplete)) ^ 1;
 }
 
 void SFXCTL_Tunnel::UpdateOcclusion(float t) {
@@ -543,12 +574,12 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
 
     m_LastOcclusionTest = TimeBetweenOcclusionTests;
     if (m_PlayerZoneType == CurZoneType) {
-        *reinterpret_cast< int * >(&IsOccluded) = 0;
+        IsOccluded = 0;
         return;
     }
     if (m_PlayerZoneType != TRACK_PATH_ZONE_TUNNEL) {
         if (CurZoneType != TRACK_PATH_ZONE_TUNNEL) {
-            *reinterpret_cast< int * >(&IsOccluded) = 0;
+            IsOccluded = 0;
             return;
         }
     }
@@ -560,15 +591,18 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
     originToBarrier[0].y = SndCamera::m_v3WorldCarPos[0].z;
     originToBarrier[0].z = SndCamera::m_v3WorldCarPos[0].x;
 
-    originToBarrier[1].z = *reinterpret_cast< float * >(
-        reinterpret_cast< char * >(*reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34)) + 0x44
-    );
-    originToBarrier[1].x = -*reinterpret_cast< float * >(
-        reinterpret_cast< char * >(*reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34)) + 0x48
-    );
-    originToBarrier[1].y = *reinterpret_cast< float * >(
-        reinterpret_cast< char * >(*reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34)) + 0x4C
-    );
+    originToBarrier[1].z = *static_cast<float *>(static_cast<void *>(
+        static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
+        0x44));
+    originToBarrier[1].x = -*static_cast<float *>(static_cast<void *>(
+        static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
+        0x48));
+    originToBarrier[1].y = *static_cast<float *>(static_cast<void *>(
+        static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
+        0x4C));
 
     float testDist = Distancexyz(originToBarrier[0], originToBarrier[1]);
     if (MaxDistanceToOccludeTest < testDist) {
@@ -585,20 +619,20 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
 
     WCollisionMgr collisionMgr(0, 3);
     if (!collisionMgr.CheckHitWorld(originToBarrier, cInfo, 2)) {
-        *reinterpret_cast< int * >(&IsOccluded) = 0;
+        IsOccluded = 0;
         return;
     }
 
     if (VU0_v4distancesquarexyz(originToBarrier[0], cInfo.fCollidePt) < testDist * testDist - 9.0f) {
-        *reinterpret_cast< int * >(&IsOccluded) = 1;
+        IsOccluded = 1;
         return;
     }
 
-    *reinterpret_cast< int * >(&IsOccluded) = 0;
+    IsOccluded = 0;
 }
 
 void SFXCTL_Tunnel::EndTunnelVerb() {
-    if (*reinterpret_cast< int * >(&m_IsLeadCar) != 0) {
+    if (m_IsLeadCar != 0) {
         eREVERBFX reverbType = static_cast< eREVERBFX >(ReverbZoneCrossMap[m_CurReverbZone]);
         if (static_cast< int >(reverbType) > 0xB) {
             reverbType = static_cast< eREVERBFX >(9);
@@ -608,8 +642,8 @@ void SFXCTL_Tunnel::EndTunnelVerb() {
 }
 
 void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
-    *reinterpret_cast<int *>(&bPlayDriveBy) = 0;
-    *reinterpret_cast<int *>(&bPlayTunnelExit) = 0;
+    *static_cast<int *>(static_cast<void *>(&bPlayDriveBy)) = 0;
+    *static_cast<int *>(static_cast<void *>(&bPlayTunnelExit)) = 0;
 
     tTimeToWaitBeforeAnotherDriveBy -= t;
     if (tTimeToWaitBeforeAnotherDriveBy < 0.0f) {
@@ -622,7 +656,8 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
 
     FutureZoneType = TRACK_PATH_ZONE_RESET;
 
-    EAX_CarState *car = *reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pEAXCar) + 0x34);
+    EAX_CarState *car =
+        *static_cast<EAX_CarState **>(static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pEAXCar)) + 0x34));
     bVector3 futureCarPos;
     bVector2 futureCarPos2D;
     bVector2 futureCarPos2DCopy;
@@ -633,23 +668,25 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
     bVector2 unNormalizedCurCarDir;
     bVector2 curCarDir;
 
-    unNormalizedCurCarDir.x = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x14);
-    unNormalizedCurCarDir.y = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x18);
+    unNormalizedCurCarDir.x = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x14));
+    unNormalizedCurCarDir.y = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x18));
     unNormalizedCurCarDirCopy = unNormalizedCurCarDir;
     bNormalize(&curCarDir, &unNormalizedCurCarDirCopy);
 
-    float futureDistance = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x90) * 0.4f;
+    float futureDistance = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x90)) * 0.4f;
     futureCarDir = curCarDir;
     scaledFutureCarDir.x = futureCarDir.x * futureDistance;
     scaledFutureCarDir.y = futureCarDir.y * futureDistance;
     scaledFutureCarDirCopy = scaledFutureCarDir;
-    futureCarPos2D.x = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x44) + scaledFutureCarDirCopy.x;
-    futureCarPos2D.y = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x48) + scaledFutureCarDirCopy.y;
+    futureCarPos2D.x = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x44)) + scaledFutureCarDirCopy.x;
+    futureCarPos2D.y = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x48)) + scaledFutureCarDirCopy.y;
     futureCarPos2DCopy = futureCarPos2D;
     futureCarPos.x = futureCarPos2DCopy.x;
     futureCarPos.y = futureCarPos2DCopy.y;
-    futureCarPos.z = *reinterpret_cast< float * >(
-        reinterpret_cast< char * >(*reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34)) + 0x4C);
+    futureCarPos.z = *static_cast<float *>(static_cast<void *>(
+        static_cast<char *>(static_cast<void *>(*static_cast<EAX_CarState **>(
+            static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34)))) +
+        0x4C));
 
     FutureZoneType = TRACK_PATH_ZONE_TUNNEL;
     TrackPathZone *futureZone = GetTunnelType(futureCarPos, TRACK_PATH_ZONE_TUNNEL);
@@ -674,38 +711,39 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
 
         if (shouldCheckDriveBy) {
             if (g_WooshVol_vs_Vel.GetValue(
-                    bSqrt(*reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x54) *
-                              *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x54) +
-                          *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x58) *
-                              *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x58) +
-                          *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x5C) *
-                              *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x5C))) > 0.01f) {
+                    bSqrt(*static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x54)) *
+                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x54)) +
+                          *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x58)) *
+                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x58)) +
+                          *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x5C)) *
+                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x5C)))) > 0.01f) {
                 bPlayDriveBy = true;
                 tTimeToWaitBeforeAnotherDriveBy = 3.0f;
                 pLastZoneWePlayedWooshFor = futureZone;
 
                 vDriveByLoc.x = futureCarPos.x;
                 vDriveByLoc.y = futureCarPos.y;
-                vDriveByLoc.z = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x4C) + 10.0f;
+                vDriveByLoc.z = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x4C)) + 10.0f;
                 m_fIntensity = g_WooshVol_vs_Vel.GetValue(
-                    bSqrt(*reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x54) *
-                              *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x54) +
-                          *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x58) *
-                              *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x58) +
-                          *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x5C) *
-                              *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x5C)));
+                    bSqrt(*static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x54)) *
+                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x54)) +
+                          *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x58)) *
+                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x58)) +
+                          *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x5C)) *
+                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x5C))));
 
                 stDriveByInfo driveByInfo;
                 driveByInfo.eDriveByType = DRIVE_BY_TUNNEL_IN;
                 driveByInfo.pEAXCar = m_pEAXCar;
-                EAX_CarState *stateCar = *reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34);
+                EAX_CarState *stateCar = *static_cast<EAX_CarState **>(
+                    static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34));
                 driveByInfo.ClosingVelocity = bSqrt(
-                    *reinterpret_cast< float * >(reinterpret_cast< char * >(stateCar) + 0x54) *
-                        *reinterpret_cast< float * >(reinterpret_cast< char * >(stateCar) + 0x54) +
-                    *reinterpret_cast< float * >(reinterpret_cast< char * >(stateCar) + 0x58) *
-                        *reinterpret_cast< float * >(reinterpret_cast< char * >(stateCar) + 0x58) +
-                    *reinterpret_cast< float * >(reinterpret_cast< char * >(stateCar) + 0x5C) *
-                        *reinterpret_cast< float * >(reinterpret_cast< char * >(stateCar) + 0x5C));
+                    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x54)) *
+                        *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x54)) +
+                    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x58)) *
+                        *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x58)) +
+                    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x5C)) *
+                        *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x5C)));
                 driveByInfo.vLocation = vDriveByLoc;
                 driveByInfo.UniqueID = 0;
                 CSTATE_Base *state = EAXSound::m_pStateMgr[eMM_DRIVEBY]->GetFreeState(&driveByInfo);
@@ -725,38 +763,39 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
 
         if (shouldCheckExitDriveBy) {
             if (g_WooshVol_vs_Vel.GetValue(
-                    bSqrt(*reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x54) *
-                              *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x54) +
-                          *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x58) *
-                              *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x58) +
-                          *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x5C) *
-                              *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x5C))) > 0.01f) {
+                    bSqrt(*static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x54)) *
+                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x54)) +
+                          *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x58)) *
+                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x58)) +
+                          *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x5C)) *
+                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x5C)))) > 0.01f) {
                 bPlayTunnelExit = true;
                 tTimeToWaitBeforeAnotherExitDriveBy = 3.0f;
                 pLastZoneWePlayedExitWooshFor = futureZone;
 
                 vDriveByLoc.x = futureCarPos.x;
                 vDriveByLoc.y = futureCarPos.y;
-                vDriveByLoc.z = *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x4C) + 10.0f;
+                vDriveByLoc.z = *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x4C)) + 10.0f;
                 m_fExitIntensity = g_WooshVol_vs_Vel.GetValue(
-                    bSqrt(*reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x54) *
-                              *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x54) +
-                          *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x58) *
-                              *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x58) +
-                          *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x5C) *
-                              *reinterpret_cast<float *>(reinterpret_cast<char *>(car) + 0x5C)));
+                    bSqrt(*static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x54)) *
+                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x54)) +
+                          *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x58)) *
+                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x58)) +
+                          *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x5C)) *
+                              *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(car)) + 0x5C))));
 
                 stDriveByInfo driveByInfo;
                 driveByInfo.eDriveByType = DRIVE_BY_TUNNEL_OUT;
                 driveByInfo.pEAXCar = m_pEAXCar;
-                EAX_CarState *stateCar = *reinterpret_cast< EAX_CarState ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34);
+                EAX_CarState *stateCar = *static_cast<EAX_CarState **>(
+                    static_cast<void *>(static_cast<char *>(static_cast<void *>(m_pStateBase)) + 0x34));
                 driveByInfo.ClosingVelocity = bSqrt(
-                    *reinterpret_cast< float * >(reinterpret_cast< char * >(stateCar) + 0x54) *
-                        *reinterpret_cast< float * >(reinterpret_cast< char * >(stateCar) + 0x54) +
-                    *reinterpret_cast< float * >(reinterpret_cast< char * >(stateCar) + 0x58) *
-                        *reinterpret_cast< float * >(reinterpret_cast< char * >(stateCar) + 0x58) +
-                    *reinterpret_cast< float * >(reinterpret_cast< char * >(stateCar) + 0x5C) *
-                        *reinterpret_cast< float * >(reinterpret_cast< char * >(stateCar) + 0x5C));
+                    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x54)) *
+                        *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x54)) +
+                    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x58)) *
+                        *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x58)) +
+                    *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x5C)) *
+                        *static_cast<float *>(static_cast<void *>(static_cast<char *>(static_cast<void *>(stateCar)) + 0x5C)));
                 driveByInfo.vLocation = vDriveByLoc;
                 driveByInfo.UniqueID = 0;
                 CSTATE_Base *state = EAXSound::m_pStateMgr[eMM_DRIVEBY]->GetFreeState(&driveByInfo);
