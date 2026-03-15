@@ -62,13 +62,13 @@ void uiRepSheetRivalBio::NotificationMessage(unsigned long msg, FEObject* obj, u
             break;
         }
         RideInfo ride;
-        ride.Init(static_cast< CarType >(-1), static_cast< CarRenderUsage >(0), 0, 0);
         stable->BuildRideForPlayer(pCar->Handle, 0, &ride);
         CarViewer::SetRideInfo(&ride, SET_RIDE_INFO_REASON_LOAD_CAR, eCARVIEWER_PLAYER1_CAR);
-        Showcase::FromPackage = PackageFilename;
+        cFEng* feng = cFEng::Get();
         Showcase::BlackListNumber = iCurrentViewBin;
         Showcase::FromArgs = 0;
-        cFEng::Get()->QueuePackageSwitch("Showcase.fng", reinterpret_cast< int >(pCar), 0, false);
+        Showcase::FromPackage = PackageFilename;
+        feng->QueuePackageSwitch("Showcase.fng", reinterpret_cast< int >(pCar), 0, false);
         break;
     }
     case 0xc519bfc3: {
