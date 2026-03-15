@@ -55,7 +55,7 @@ eMenuSoundTriggers uiRepSheetBounty::NotifySoundMessage(unsigned long msg, eMenu
 }
 
 void uiRepSheetBounty::NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1, unsigned long param2) {
-    int currentIndex = GetCurrentDatumNum();
+    int currentIndex = data.TraversebList(currentDatum) - 1;
     ArrayScrollerMenu::NotificationMessage(msg, obj, param1, param2);
     switch (msg) {
     case 0xc407210: {
@@ -67,14 +67,12 @@ void uiRepSheetBounty::NotificationMessage(unsigned long msg, FEObject* obj, uns
             return;
         }
         if (!bIsInGame) {
-            int joyPort = FEngMapJoyParamToJoyport(param2);
-            FEDatabase->SetPlayersJoystickPort(0, static_cast<signed char>(joyPort));
+            signed char joyPort = static_cast<signed char>(FEngMapJoyParamToJoyport(param1));
+            FEDatabase->SetPlayersJoystickPort(0, joyPort);
         }
-        const char* dialog;
+        const char* dialog = "";
         if (bIsInGame) {
-            dialog = "IG_DIALOG.fng";
-        } else {
-            dialog = "DIALOG.fng";
+            dialog = "InGameDialog.fng";
         }
         DialogInterface::ShowTwoButtons(GetPackageName(), dialog, static_cast<eDialogTitle>(1),
                                         0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf,
@@ -149,8 +147,8 @@ void uiRepSheetBounty::NotificationMessage(unsigned long msg, FEObject* obj, uns
     default:
         return;
     }
-    int newIndex = GetCurrentDatumNum();
-    if (currentIndex != newIndex && GetCurrentDatum() != nullptr) {
+    int newIndex = data.TraversebList(currentDatum) - 1;
+    if (currentIndex != newIndex && currentDatum != nullptr) {
         RefreshTrack();
     }
 }
