@@ -94,30 +94,28 @@ unsigned long FEMessageResponse::FindConditionBranchTarget(unsigned long Index) 
     if (Index == Count - 1) {
         return Count;
     }
-    int depth = 1;
-    for (;;) {
+    unsigned long Nest = 1;
+    goto body;
+    do {
+        if (Nest == 0)
+            break;
+body:
         Index++;
         unsigned long id = pResponseList[Index].ResponseID;
         switch (id) {
         case 0x300:
         case 0x301:
-            depth++;
+            Nest++;
             break;
         case 0x500:
-            if (depth == 1) {
-                depth = 0;
+            if (Nest == 1) {
+                Nest = 0;
             }
             break;
         case 0x501:
-            depth--;
+            Nest--;
             break;
         }
-        if (Index >= Count) {
-            break;
-        }
-        if (depth == 0) {
-            break;
-        }
-    }
+    } while (Index < Count);
     return Index;
 }
