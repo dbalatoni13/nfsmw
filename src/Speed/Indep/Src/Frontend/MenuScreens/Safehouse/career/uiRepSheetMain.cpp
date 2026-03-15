@@ -291,7 +291,7 @@ void uiRepSheetMain::UpdateInfo() {
 
     bBossBeaten = false;
     if (FEDatabase->GetCareerSettings()->HasBeatenCareer() ||
-        static_cast<int>(FEDatabase->GetCareerSettings()->GetCurrentBin()) > static_cast<int>(iCurrentViewBin)) {
+        static_cast<int>(iCurrentViewBin) > static_cast<int>(FEDatabase->GetCareerSettings()->GetCurrentBin())) {
         bBossBeaten = true;
     }
 

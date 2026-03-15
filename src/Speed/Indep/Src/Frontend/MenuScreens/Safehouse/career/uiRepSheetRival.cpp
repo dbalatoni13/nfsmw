@@ -205,8 +205,7 @@ void uiRepSheetRival::SetupRace(unsigned int num, GRaceParameters* race) {
     FEngSetTextureHash(GetPackageName(), icon_hash, FEDatabase->GetRaceIconHash(race->GetRaceType()));
     FEngSetLanguageHash(GetPackageName(), type_hash, FEDatabase->GetRaceNameHash(race->GetRaceType()));
     FEngSetLanguageHash(GetPackageName(), name_hash, CalcLanguageHash("TRACKNAME_", race));
-    Timer t;
-    t.SetTime(race->GetRivalBestTime());
+    Timer t(race->GetRivalBestTime());
     char buf[64];
     t.PrintToString(buf, 0);
     FEPrintf(GetPackageName(), best_hash, "%s", buf);
