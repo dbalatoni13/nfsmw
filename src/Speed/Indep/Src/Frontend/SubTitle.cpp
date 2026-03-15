@@ -135,9 +135,8 @@ void SubTitler::Update(unsigned int msg) {
             if (data_ != nullptr && lastTime != 0) {
                 float timenow = GetElapsedTime();
                 if (IsMovieTimerPrintf) {
-                    Timer timer;
+                    Timer timer(static_cast< int >(timenow * 4000.0f + 0.5f));
                     char timer_str[100];
-                    timer.SetTime(timenow);
                     timer.PrintToString(timer_str, 0);
                 }
                 unsigned short delta = static_cast< unsigned short >(timenow * 10.0f);
