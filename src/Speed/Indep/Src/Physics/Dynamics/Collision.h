@@ -70,6 +70,7 @@ class Geometry {
     static bool FindIntersection(const Geometry *A, const Geometry *B, Geometry *result);
 
     Geometry();
+    Geometry(const UMath::Matrix4 &orient, const UMath::Vector3 &position, const UMath::Vector3 &dimension, Shape shape, const UMath::Vector3 &delta);
     void Set(const UMath::Matrix4 &orient, const UMath::Vector3 &position, const UMath::Vector3 &dimension, Shape shape, const UMath::Vector3 &delta);
 
     const UMath::Vector3 &GetPosition() const {

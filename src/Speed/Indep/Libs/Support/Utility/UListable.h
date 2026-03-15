@@ -35,7 +35,7 @@ template <typename T, int U> class Listable {
     };
 
     typedef void (*ForEachFunc)(pointer);
-    typedef bool (*ComparisonFunc)(pointer, pointer);
+    typedef bool (*ComparisonFunc)(const_pointer, const_pointer);
 
   protected:
     Listable() {
@@ -66,9 +66,16 @@ template <typename T, int U> class Listable {
         std::sort(_mTable.begin(), _mTable.end(), pred);
     }
 
+    static int Count() {
+        return _mTable.size();
+    }
+
   private:
     static List _mTable;
 };
+
+template <typename T, int N>
+typename Listable<T, N>::List Listable<T, N>::_mTable;
 
 template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class ListableSet {
   public:
@@ -134,6 +141,10 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
         }
     }
 
+    void UnList(Enum from) {
+        _mLists._remove(static_cast<iterator>(this), from);
+    }
+
     ~ListableSet() {
         UnList();
     }
@@ -165,6 +176,12 @@ template <typename T> class Countable {
         return _mCount;
     }
 };
+
+template <typename T>
+int Countable<T>::_mCount;
+
+template <typename T, int ListSize, typename Enum, std::size_t EnumMax>
+typename ListableSet<T, ListSize, Enum, EnumMax>::_ListSet ListableSet<T, ListSize, Enum, EnumMax>::_mLists;
 
 }; // namespace Collections
 }; // namespace UTL

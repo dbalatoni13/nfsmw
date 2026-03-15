@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Src/Interfaces/IBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Sim/SimAttachable.h"
@@ -24,7 +25,43 @@ class PhysicsObject : public Sim::Object,
     typedef UTL::Std::map<unsigned int, Behavior *, _type_ID_POMechanics> Mechanics;
 
     struct Behaviors : protected UTL::Std::list<Behavior *, _type_ID_POBehaviors> {
+        typedef UTL::Std::list<Behavior *, _type_ID_POBehaviors> _Base;
+        using _Base::begin;
+        using _Base::end;
+        using _Base::const_iterator;
+        using _Base::iterator;
+
         // total size: 0x8
+        void Add(Behavior *beh);
+        void Remove(Behavior *beh);
+        void Reset();
+
+        void OnAttach(IAttachable *iother) {
+            for (const_iterator iter = begin(); iter != end(); ++iter) {
+                (*iter)->OnOwnerAttached(iother);
+            }
+        }
+
+        void OnDetach(IAttachable *iother) {
+            for (const_iterator iter = begin(); iter != end(); ++iter) {
+                (*iter)->OnOwnerDetached(iother);
+            }
+        }
+
+        void Simulate(float dT) {
+            for (const_iterator iter = begin(); iter != end(); ++iter) {
+                Behavior *beh = *iter;
+                if (!beh->IsPaused()) {
+                    beh->DoSimulate(dT);
+                }
+            }
+        }
+
+        void Changed(const UCrc32 &mechanic) {
+            for (const_iterator iter = begin(); iter != end(); ++iter) {
+                (*iter)->BehaviorChanged(mechanic);
+            }
+        }
     };
 
     PhysicsObject(const Attrib::Instance &attribs, SimableType objType, WUID wuid, unsigned int num_interfaces);
@@ -33,7 +70,76 @@ class PhysicsObject : public Sim::Object,
     // Overrides
     virtual ~PhysicsObject();
 
-  private:
+    // ISimable overrides
+    virtual SimableType GetSimableType() const override;
+    virtual void Kill() override;
+    virtual bool Attach(UTL::COM::IUnknown *object) override;
+    virtual bool Detach(UTL::COM::IUnknown *object) override;
+    virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const override;
+    virtual void AttachEntity(Sim::IEntity *e) override;
+    virtual void DetachEntity() override;
+    virtual struct IPlayer *GetPlayer() const override;
+    virtual bool IsPlayer() const override;
+    virtual bool IsOwnedByPlayer() const override;
+    virtual Sim::IEntity *GetEntity() const override;
+    virtual void DebugObject() override;
+    virtual HSIMABLE GetOwnerHandle() const override;
+    virtual ISimable *GetOwner() const override;
+    virtual bool IsOwnedBy(ISimable *queriedOwner) const override;
+    virtual void SetOwnerObject(ISimable *pOwner) override;
+    virtual const Attrib::Instance &GetAttributes() const override;
+    virtual WWorldPos &GetWPos() override;
+    virtual const WWorldPos &GetWPos() const override;
+    virtual class IRigidBody *GetRigidBody() override;
+    virtual const class IRigidBody *GetRigidBody() const override { return mRigidBody; }
+    virtual bool IsRigidBodySimple() const override;
+    virtual bool IsRigidBodyComplex() const override;
+    virtual const UMath::Vector3 &GetPosition() const override {
+        if (mRigidBody == nullptr) {
+            return UMath::Vector3::kZero;
+        }
+        return mRigidBody->GetPosition();
+    }
+    virtual void GetTransform(UMath::Matrix4 &matrix) const override;
+    virtual void GetLinearVelocity(UMath::Vector3 &velocity) const override;
+    virtual void GetAngularVelocity(UMath::Vector3 &velocity) const override;
+    virtual unsigned int GetWorldID() const override;
+    virtual EventSequencer::IEngine *GetEventSequencer() override;
+    virtual void ProcessStimulus(unsigned int stimulus) override;
+    virtual IModel *GetModel() override;
+    virtual const IModel *GetModel() const override;
+    virtual void SetCausality(HCAUSE from, float time) override;
+    virtual HCAUSE GetCausality() const override;
+    virtual float GetCausalityTime() const override;
+
+    // IAttachable overrides
+    virtual void OnAttached(IAttachable *pOther) override;
+    virtual void OnDetached(IAttachable *pOther) override;
+    virtual bool IsAttached(const UTL::COM::IUnknown *pOther) const override;
+
+    // IBody overrides
+    virtual void GetDimension(UMath::Vector3 &dim) const override;
+
+    // Sim::Object overrides
+    virtual bool OnService(HSIMSERVICE hCon, Sim::Packet *pkt) override;
+    virtual bool OnTask(HSIMTASK htask, float dT) override;
+
+    // Other public methods
+    bool IsBehaviorActive(const UCrc32 &mechanic) const;
+    void PauseBehavior(const UCrc32 &mechanic, bool pause);
+    bool ResetBehavior(const UCrc32 &mechanic);
+    Behavior *FindBehavior(const UCrc32 &mechanic);
+    void DetachAll();
+    void ReleaseBehaviors();
+    virtual void Reset();
+
+  protected:
+    Behavior *LoadBehavior(const UCrc32 &mechanic, const UCrc32 &behavior, Sim::Param params);
+    void ReleaseBehavior(const UCrc32 &mechanic);
+    virtual void OnTaskSimulate(float dT);
+    virtual void OnBehaviorChange(const UCrc32 &mechanic);
+
+  protected:
     WWorldPos *mWPos;               // offset 0x58, size 0x4
     SimableType mObjType;           // offset 0x5C, size 0x4
     HSIMABLE mOwner;                // offset 0x60, size 0x4

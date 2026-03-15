@@ -19,35 +19,20 @@ import os
 import subprocess
 import sys
 from typing import Any, Dict, List, Optional, Tuple
+from _common import ROOT_DIR, ToolError, fail, run_objdiff_json
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
-root_dir = os.path.abspath(os.path.join(script_dir, ".."))
-
+root_dir = ROOT_DIR
 OBJDIFF_CLI = os.path.join(root_dir, "build", "tools", "objdiff-cli")
 
 
-def run_objdiff(unit: str) -> Dict[str, Any]:
-    """Run objdiff-cli diff and return parsed JSON."""
-    result = subprocess.run(
-        [
-            OBJDIFF_CLI,
-            "diff",
-            "-c",
-            "functionRelocDiffs=none",
-            "-u",
-            unit,
-            "-o",
-            "-",
-            "--format",
-            "json",
-        ],
-        capture_output=True,
-        cwd=root_dir,
+def run_objdiff(unit: str, base_obj: Optional[str] = None) -> Dict[str, Any]:
+    return run_objdiff_json(
+        OBJDIFF_CLI,
+        unit,
+        base_obj=base_obj,
+        extra_args=["-c", "functionRelocDiffs=none", "ppc.calculatePoolRelocations=false"],
+        root_dir=root_dir,
     )
-    if result.returncode != 0:
-        print(f"objdiff-cli error: {result.stderr.decode()}", file=sys.stderr)
-        sys.exit(1)
-    return json.loads(result.stdout)
 
 
 def classify_symbol(sym: Dict[str, Any]) -> str:
@@ -87,6 +72,24 @@ def symbol_section(sym: Dict[str, Any], sections: List[Dict[str, Any]]) -> str:
 def fuzzy_match(pattern: str, name: str) -> bool:
     """Case-insensitive substring match."""
     return pattern.lower() in name.lower()
+
+
+def describe_pair_status(
+    left_sym: Optional[Dict[str, Any]], right_sym: Optional[Dict[str, Any]]
+) -> str:
+    if left_sym is not None and right_sym is None:
+        return "missing in decomp"
+    if left_sym is None and right_sym is not None:
+        return "extra in decomp"
+
+    sym = left_sym if left_sym is not None else right_sym
+    if sym is None:
+        return "not found"
+
+    mp = sym.get("match_percent")
+    if mp is not None:
+        return f"{mp:.1f}% match"
+    return "paired"
 
 
 def build_overview(data: Dict[str, Any], args) -> None:
@@ -157,6 +160,9 @@ def build_overview(data: Dict[str, Any], args) -> None:
 
     if args.search:
         rows = [r for r in rows if fuzzy_match(args.search, r[5])]
+
+    if args.limit is not None:
+        rows = rows[: args.limit]
 
     if not rows:
         print("No symbols match the given filters.")
@@ -291,8 +297,8 @@ def build_diff(data: Dict[str, Any], symbol_name: str, args) -> None:
     right_insts = (right_sym or {}).get("instructions", [])
     n_insts = max(len(left_insts), len(right_insts))
 
-    mp_str = f"{mp:.1f}%" if mp is not None else "N/A"
-    print(f"{display_name}: {mp_str} match ({size}B, {n_insts} instructions)")
+    status_str = describe_pair_status(left_sym, right_sym)
+    print(f"{display_name}: {status_str} ({size}B, {n_insts} instructions)")
     print()
 
     if n_insts == 0:
@@ -447,6 +453,11 @@ def main():
     )
     parser.add_argument("--section", help="Filter by section name (e.g. .text)")
     parser.add_argument("--search", help="Fuzzy search on demangled symbol name")
+    parser.add_argument(
+        "--limit",
+        type=int,
+        help="Limit overview output to the first N matching rows",
+    )
 
     # Diff options
     parser.add_argument(
@@ -465,9 +476,20 @@ def main():
         help="Don't collapse matching instruction runs",
     )
 
+    parser.add_argument(
+        "--base-obj",
+        metavar="PATH",
+        help=(
+            "Use this .o file as the decomp base instead of the one from objdiff.json."
+        ),
+    )
+
     args = parser.parse_args()
 
-    data = run_objdiff(args.unit)
+    try:
+        data = run_objdiff(args.unit, base_obj=args.base_obj)
+    except ToolError as e:
+        fail(str(e))
 
     if args.diff:
         build_diff(data, args.diff, args)

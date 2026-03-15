@@ -23,7 +23,7 @@ class IRenderable : public UTL::COM::IUnknown {
     virtual HMODEL GetModelHandle() const = 0;
     virtual const IModel *GetModel() const = 0;
     virtual IModel *GetModel() = 0;
-    virtual float DistanceToView() = 0;
+    virtual float DistanceToView() const = 0;
 };
 
 #endif

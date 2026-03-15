@@ -1,0 +1,38 @@
+#ifndef PHYSICS_PLACEABLESCENERY_H
+#define PHYSICS_PLACEABLESCENERY_H
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+#include "Speed/Indep/Src/Interfaces/SimModels/IPlaceableScenery.h"
+#include "Speed/Indep/Src/Physics/HeirarchyModel.h"
+
+class PlaceableScenery : public HeirarchyModel, public IPlaceableScenery {
+  public:
+    PlaceableScenery(bHash32 rendermesh, const CollisionGeometry::Bounds *geometry,
+                     const Attrib::Collection *attribs, const ModelHeirarchy *heirarchy);
+    ~PlaceableScenery() override;
+
+    void *operator new(std::size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
+    void operator delete(void *mem, std::size_t size) {
+        if (mem) { gFastMem.Free(mem, size, nullptr); }
+    }
+
+    static PlaceableScenery *Construct(const char *name, unsigned int node);
+
+    // IPlaceableScenery
+    void PickUp() override;
+    bool Place(const UMath::Matrix4 &transform, bool snap_to_ground) override;
+    void Destroy() override;
+
+    // IModel
+    void ReleaseModel() override;
+    bool OnRemoveOffScreen(float time) override;
+};
+
+#endif

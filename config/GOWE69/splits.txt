@@ -159,21 +159,21 @@ Speed/Indep/SourceLists/zMiscSmall.cpp:
 Speed/Indep/SourceLists/zMission.cpp:
 	.text       start:0x8020DF1C end:0x8020DF98
 	.ctors      start:0x803C8BB8 end:0x803C8BBC
-	.bss        start:0x804801AC end:0x804801D8
+	.bss        start:0x804801AC end:0x80480504
 
 Speed/Indep/SourceLists/zPhysics.cpp:
 	.text       start:0x8020DF98 end:0x80231A64
 	.ctors      start:0x803C8BBC end:0x803C8BC0
 	.rodata     start:0x803F9804 end:0x803FAB04
-	.data       start:0x8041EFE8 end:0x8041F358
-	.bss        start:0x804801D8 end:0x8048A1A8
+	.data       start:0x8041EFE8 end:0x8041F054
+	.bss        start:0x80480504 end:0x80485020
 
 Speed/Indep/SourceLists/zPhysicsBehaviors.cpp:
 	.text       start:0x80231A64 end:0x8026B4F4
 	.ctors      start:0x803C8BC0 end:0x803C8BC4
 	.rodata     start:0x803FAB04 end:0x80403B1C
-	.data       start:0x8041F358 end:0x8041F7F4
-	.bss        start:0x8048A1A8 end:0x8048BD18
+	.data       start:0x8041F054 end:0x8041F7F4
+	.bss        start:0x80485020 end:0x8048BD18
 
 Speed/Indep/SourceLists/zPlatform.cpp:
 	.text       start:0x8026B4F4 end:0x802727B8

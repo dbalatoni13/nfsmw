@@ -117,20 +117,23 @@ template <typename T, unsigned int Alignment = 16> class Vector {
     }
 
     iterator erase(iterator begIt, iterator endIt) {
+        iterator e = end();
+        if (begIt == e) {
+            return e;
+        }
         size_type iPos = indexof(begIt);
-        size_type num = endIt - begIt;
-        for (iterator it = begIt; it != endIt; ++it) {
+        size_type num = e - begIt;
+        for (iterator it = begIt; it != e; ++it) {
             value_type &obj = *it;
             obj.~T();
         }
 
-        for (size_type ii = 0; ii < size() - (iPos + num); ++ii) {
-            size_type src = iPos + num + ii;
-            size_type dest = iPos + ii;
-
-            new (&mBegin[dest]) T(mBegin[src]);
+        size_type ii = 0;
+        while (ii < size() - (iPos + num)) {
+            new (&mBegin[iPos + ii]) T(mBegin[iPos + num + ii]);
+            ++ii;
         }
-        mSize = size() - num;
+        mSize -= num;
         return end();
     }
 

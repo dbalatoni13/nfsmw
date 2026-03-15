@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/FE/FECustomizationRecord.h"
 #include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
 #include "Speed/Indep/Src/Physics/PhysicsTunings.h"
 #include "Speed/Indep/Src/Physics/PhysicsUpgrades.hpp"
@@ -19,16 +20,6 @@ struct FECarRecord {
     unsigned char Customization; // offset 0x10, size 0x1
     unsigned char CareerHandle;  // offset 0x11, size 0x1
     unsigned short Padd;         // offset 0x12, size 0x2
-};
-
-// total size: 0x198
-struct FECustomizationRecord {
-    short InstalledPartIndices[139];             // offset 0x0, size 0x116
-    Physics::Upgrades::Package InstalledPhysics; // offset 0x118, size 0x20
-    Physics::Tunings Tunings[3];                 // offset 0x138, size 0x54
-    Physics::eCustomTuningType ActiveTuning;     // offset 0x18C, size 0x4
-    int Preset;                                  // offset 0x190, size 0x4
-    unsigned char Handle;                        // offset 0x194, size 0x1
 };
 
 // total size: 0x8

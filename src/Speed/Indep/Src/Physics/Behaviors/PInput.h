@@ -131,6 +131,7 @@ class InputPlayerDrag : public InputPlayer {
 
 // total size: 0x7C
 class InputNIS : public PInput {
+  public:
     static Behavior *Construct(const BehaviorParams &params);
 
     InputNIS(const BehaviorParams &bp);

@@ -10,26 +10,64 @@ template <typename T, int U> class UCircularQueue {
     int Head;      // offset 0x4, size 0x4
     int Tail;      // offset 0x8, size 0x4
     int MaxSize;   // offset 0xC, size 0x4
-    T Elements[U]; // offset 0x10, size 0x258
+    T Elements[U]; // offset 0x10, size varies
 
   public:
-    // UCircularQueue() {}
+    UCircularQueue() : Size(0), Head(-1), Tail(0), MaxSize(U) {}
 
-    // void enqueue(const T &insert) {}
+    void enqueue(const T &insert) {
+        int new_head = Head + 1;
+        Head = new_head;
+        if (new_head > MaxSize - 1) {
+            Head = 0;
+        }
+        int new_size = Size + 1;
+        Size = new_size;
+        if (new_size > MaxSize) {
+            int new_tail = Tail + 1;
+            Tail = new_tail;
+            if (new_tail > MaxSize - 1) {
+                Tail = 0;
+            }
+            Size = MaxSize;
+        }
+        Elements[Head] = insert;
+    }
 
-    // void dequeue() {}
+    void dequeue() {
+        int new_tail = Tail + 1;
+        Tail = new_tail;
+        if (new_tail > MaxSize - 1) {
+            Tail = 0;
+        }
+        Size = Size - 1;
+    }
 
-    // T &tail() {}
+    T &tail() {
+        return Elements[Tail];
+    }
 
-    // T &head() {}
+    T &head() {
+        return Elements[Head];
+    }
 
-    // T &operator[](int i) {
-    // int newindex;
-    // }
+    T &operator[](int i) {
+        int newindex = Head - i;
+        if (newindex < 0) {
+            newindex = newindex + MaxSize;
+        }
+        return Elements[newindex];
+    }
 
-    // void reset() {}
+    void reset() {
+        Size = 0;
+        Head = -1;
+        Tail = 0;
+    }
 
-    // int size() const {}
+    int size() const {
+        return Size;
+    }
 };
 
 #endif

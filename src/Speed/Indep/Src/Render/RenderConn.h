@@ -14,6 +14,15 @@ namespace RenderConn {
 
 class Pkt_Smackable_Open : public Sim::Packet {
   public:
+    Pkt_Smackable_Open(bHash32 rendermesh, unsigned int objectworldid,
+                       const CollisionGeometry::Bounds *collisionNode,
+                       const ModelHeirarchy *heirarchy, unsigned int rendernode)
+        : mModelHash(rendermesh) //
+        , mObjectWUID(objectworldid) //
+        , mCollisionNode(collisionNode) //
+        , mHeirarchy(heirarchy) //
+        , mRenderNode(rendernode) {}
+
     // total size: 0x18
     bHash32 mModelHash;                              // offset 0x4, size 0x4
     unsigned int mObjectWUID;                        // offset 0x8, size 0x4

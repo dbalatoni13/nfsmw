@@ -64,7 +64,7 @@ void AIVehiclePursuit::StartPatrol() {
 
 void AIVehiclePursuit::StartFlee() {
     IVehicle *ivehicle;
-    GetVehicle()->GlareOff(LIGHT_COPS);
+    GetVehicle()->GlareOff(VehicleFX::LIGHT_COPS);
 
     UCrc32 goal("AIGoalFleePursuit");
     if (GetSimable()->QueryInterface(&ivehicle) && ivehicle->GetVehicleClass() == VehicleClass::CHOPPER) {
@@ -78,7 +78,7 @@ void AIVehiclePursuit::StartFlee() {
 
 void AIVehiclePursuit::StartRoadBlock() {
     IVehicle *ivehicle;
-    GetVehicle()->GlareOn(LIGHT_COPS);
+    GetVehicle()->GlareOn(VehicleFX::LIGHT_COPS);
     SetInPursuit(true);
     GetTarget()->Clear();
     if (GetVehicle()->GetVehicleClass() == VehicleClass::CHOPPER) {
@@ -89,7 +89,7 @@ void AIVehiclePursuit::StartRoadBlock() {
 }
 
 void AIVehiclePursuit::StartPursuit(AITarget *target, ISimable *itargetSimable) {
-    GetVehicle()->GlareOn(LIGHT_COPS);
+    GetVehicle()->GlareOn(VehicleFX::LIGHT_COPS);
     if (target) {
         GetTarget()->Aquire(target);
     } else if (itargetSimable) {
@@ -110,7 +110,7 @@ void AIVehiclePursuit::DoInPositionGoal() {
 
 void AIVehiclePursuit::EndPursuit() {
     SetInPursuit(false);
-    GetVehicle()->GlareOff(LIGHT_COPS);
+    GetVehicle()->GlareOff(VehicleFX::LIGHT_COPS);
 }
 
 bool AIVehiclePursuit::StartSupportGoal() {

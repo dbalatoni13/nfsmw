@@ -41,6 +41,11 @@ void VU0_v4scale(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &r
 void VU0_v4scalexyz(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &result);
 float VU0_v4distancesquarexyz(const UMath::Vector4 &p1, const UMath::Vector4 &p2);
 void VU0_MATRIX3x4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 &m, UMath::Vector3 &result);
+void VU0_v4addxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r);
+void VU0_v4add(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r);
+void VU0_v4addscale(const UMath::Vector4 &a, const UMath::Vector4 &b, const float scaleby, UMath::Vector4 &result);
+void VU0_v4addscalexyz(const UMath::Vector4 &a, const UMath::Vector4 &b, const float scaleby, UMath::Vector4 &result);
+void VU0_MATRIX3x4_vect4mult(const UMath::Vector4 &v, const UMath::Matrix4 &m, UMath::Vector4 &result);
 void VU0_qmul(const UMath::Vector4 &b, const UMath::Vector4 &a, UMath::Vector4 &dest);
 
 void VU0_v3quatrotate(const UMath::Vector4 &q, const UMath::Vector3 &v, UMath::Vector3 &result);
@@ -208,6 +213,14 @@ inline void VU0_v4scale(const UMath::Vector4 &a, const float scaleby, UMath::Vec
 }
 
 inline void VU0_v4scalexyz(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &result) {}
+
+inline void VU0_v4add(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r) {}
+
+inline void VU0_v4addscale(const UMath::Vector4 &a, const UMath::Vector4 &b, const float scaleby, UMath::Vector4 &result) {}
+
+inline void VU0_v4addscalexyz(const UMath::Vector4 &a, const UMath::Vector4 &b, const float scaleby, UMath::Vector4 &result) {}
+
+inline void VU0_MATRIX3x4_vect4mult(const UMath::Vector4 &v, const UMath::Matrix4 &m, UMath::Vector4 &result) {}
 
 inline float VU0_v4distancesquarexyz(const UMath::Vector4 &p1, const UMath::Vector4 &p2) {}
 
@@ -378,6 +391,15 @@ inline void VU0_v3unitcrossprod(const UMath::Vector3 &a, const UMath::Vector3 &b
 #else
     VU0_v3crossprod(a, b, dest);
     VU0_v3unit(dest, dest);
+#endif
+}
+
+inline void VU0_v4unitcrossprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &dest) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    // PS2 asm not needed for GC target
+#else
+    VU0_v3crossprod(UMath::Vector4To3(a), UMath::Vector4To3(b), UMath::Vector4To3(dest));
+    VU0_v3unit(UMath::Vector4To3(dest), UMath::Vector4To3(dest));
 #endif
 }
 

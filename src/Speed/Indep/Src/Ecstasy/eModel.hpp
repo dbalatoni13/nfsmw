@@ -41,6 +41,12 @@ struct eModel : public bTNode<eModel> {
 
     eModel() {}
 
+    eModel(unsigned int name_hash) {
+        Solid = nullptr;
+        NameHash = 0;
+        Init(name_hash);
+    }
+
     ~eModel() {
         this->UnInit();
     }

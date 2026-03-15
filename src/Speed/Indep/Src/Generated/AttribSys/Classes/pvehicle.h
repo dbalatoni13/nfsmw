@@ -60,7 +60,7 @@ struct pvehicle : Instance {
         UMath::Vector4 TENSOR_SCALE;    // offset 0x0, size 0x10
         Attrib::StringKey MODEL;        // offset 0x10, size 0x10
         char DefaultPresetRide[4];      // offset 0x20, size 0x4
-        char CollectionName[4];         // offset 0x24, size 0x4
+        const char *CollectionName;         // offset 0x24, size 0x4
         int engine_upgrades;            // offset 0x28, size 0x4
         int transmission_upgrades;      // offset 0x2c, size 0x4
         int nos_upgrades;               // offset 0x30, size 0x4
@@ -111,6 +111,25 @@ struct pvehicle : Instance {
 
     static Key ClassKey() {
         return 0x4a97ec8f;
+    }
+
+    Instance &GetBase() {
+        return *this;
+    }
+
+    const Instance &GetBase() const {
+        return *this;
+    }
+
+    const pvehicle &operator=(const pvehicle &rhs) {
+        operator=(rhs.GetBase());
+        return *this;
+    }
+
+    const pvehicle &operator=(const Instance &rhs);
+
+    void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
+        Instance::Modify(dynamicCollectionKey, spaceForAdditionalAttributes);
     }
 
     const RefSpec &transmission(unsigned int index) const {
@@ -663,6 +682,7 @@ struct pvehicle : Instance {
 };
 
 } // namespace Gen
+
 } // namespace Attrib
 
 #endif

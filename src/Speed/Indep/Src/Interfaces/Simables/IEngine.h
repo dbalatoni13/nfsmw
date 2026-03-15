@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Src/Sim/SimTypes.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 // Credits: Brawltendo
@@ -35,6 +36,17 @@ class IEngine : public UTL::COM::IUnknown {
     virtual float GetMaxHorsePower() const;
     virtual Hp GetMinHorsePower() const;
     virtual float GetHorsePower() const;
+};
+
+struct EngineParams : public Sim::Param {
+    EngineParams(const EngineParams &_ctor_arg) : Sim::Param(_ctor_arg) {}
+
+    EngineParams() : Sim::Param(TypeName(), static_cast<EngineParams *>(nullptr)) {}
+
+    static UCrc32 TypeName() {
+        static UCrc32 value = "EngineParams";
+        return value;
+    }
 };
 
 class IDragEngine : public UTL::COM::IUnknown {
