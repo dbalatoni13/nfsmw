@@ -1672,30 +1672,35 @@ void CustomizeCategoryScreen::NotificationMessage(unsigned long msg, FEObject *p
 
 // SetStockPartOption::React is out-of-line (not inline)
 void SetStockPartOption::React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) {
-    cFEng_mInstance->QueueGameMessage(0x406415e3, pkg_name, 0xFF);
+    if (!ThePart->IsInstalled()) {
+        gCarCustomizeManager.AddToCart(ThePart);
+        ThePart->SetInCart();
+    }
 }
 
 // --- CustomizeMain additional ---
 
 void CustomizeMain::SetTitle(bool isInBackroom) {
     char local_48[64];
-    if (!isInBackroom) {
-        const char *str = GetLocalizedString(0x1f242e03);
-        bSNPrintf(local_48, 0x40, "%s", str);
-    } else {
+    if (isInBackroom) {
+        const char *fmt = "%s";
         const char *str = GetLocalizedString(0x92fcdbf0);
-        bSNPrintf(local_48, 0x40, "%s", str);
+        bSNPrintf(local_48, 0x40, fmt, str);
+    } else {
+        const char *fmt = "%s";
+        const char *str = GetLocalizedString(0x1f242e03);
+        bSNPrintf(local_48, 0x40, fmt, str);
     }
     int lang = GetCurrentLanguage();
     if (lang != 2 && lang != 0xd) {
-        int i = 0;
-        while (local_48[i] != 0) {
-            unsigned char c = local_48[i];
-            if (static_cast<unsigned int>(static_cast<char>(c) - 0x41) < 0x1a) {
+        int n = 0;
+        while (local_48[n] != 0) {
+            char c = local_48[n];
+            if (static_cast<unsigned int>(c - 0x41) < 0x1a) {
                 c = c | 0x20;
             }
-            local_48[i] = c;
-            i++;
+            local_48[n] = c;
+            n++;
         }
     }
     FEPrintf(GetPackageName(), 0xb71b576d, "%s", local_48);
@@ -2680,9 +2685,11 @@ void CustomizeParts::RefreshHeader() {
                 bNeedsRefresh = true;
             }
         }
-        if (sel->GetPart()->HasAppliedAttribute(bStringHash("LANGUAGEHASH"))) {
-            unsigned int langHash = sel->GetPart()->GetAppliedAttributeUParam(bStringHash("LANGUAGEHASH"), 0);
-            FEngSetLanguageHash(GetPackageName(), 0x5e7b09c9, langHash);
+        const char *lang_str = "LANGUAGEHASH";
+        if (sel->GetPart()->HasAppliedAttribute(bStringHash(lang_str))) {
+            const char *pkg = GetPackageName();
+            unsigned int langHash = sel->GetPart()->GetAppliedAttributeUParam(bStringHash(lang_str), 0);
+            FEngSetLanguageHash(pkg, 0x5e7b09c9, langHash);
         } else {
             FEPrintf(GetPackageName(), 0x5e7b09c9, "%s", sel->GetPart()->GetName());
         }
