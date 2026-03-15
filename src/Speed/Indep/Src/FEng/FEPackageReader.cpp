@@ -54,13 +54,14 @@ void FEPackageReader::Reset() {
     ButtonCount = 0;
 }
 
-FEChunk* FEPackageReader::FindChild(FEChunk* pCh, unsigned long ID) {
-    FEChunk* pChild = pCh->GetFirstChunk();
-    while (BSwap32(pChild->GetID()) != ID && pChild != pCh->GetLastChunk()) {
-        pChild = pChild->GetNext();
+FEChunk* FEPackageReader::FindChild(FEChunk* pChunk, unsigned long ID) {
+    FEChunk* pLast = pChunk->GetLastChunk();
+    FEChunk* pCur = pChunk->GetFirstChunk();
+    while (pCur->GetID() != ID && pCur != pLast) {
+        pCur = pCur->GetNext();
     }
-    if (BSwap32(pChild->GetID()) == ID) {
-        return pChild;
+    if (pCur->GetID() == ID) {
+        return pCur;
     }
     return nullptr;
 }
@@ -86,11 +87,11 @@ bool FEPackageReader::ReadTypeSizes() {
 }
 
 bool FEPackageReader::ReadHeaderChunk() {
-    if (BSwap32(pChunk->GetID()) != 0xE76E4546) {
+    if (pChunk->GetID() != 0xE76E4546) {
         return false;
     }
     FEChunk* pHeadChunk = pChunk->GetFirstChunk();
-    if (BSwap32(pHeadChunk->GetID()) != 0x64486B50) {
+    if (pHeadChunk->GetID() != 0x64486B50) {
         return false;
     }
     unsigned long* pData = reinterpret_cast<unsigned long*>(pHeadChunk->GetData());
@@ -128,24 +129,26 @@ FEPackage* FEPackageReader::Load(const void* pDataPtr, FEGameInterface* pInt, FE
     pChunk = reinterpret_cast<FEChunk*>(const_cast<void*>(pDataPtr));
     pInterface = pInt;
     pEngine = pEng;
-    if (ReadHeaderChunk() &&
-        ReadTypeSizes() &&
-        ReadReferencedPackagesChunk() &&
-        ReadLibraryRefsChunk() &&
-        ReadResourceChunk() &&
-        ReadObjectChunk() &&
-        ReadPackageResponseChunk() &&
-        ReadMessageTargetListChunk()) {
-        pPack->bIsLibrary = bIsLibrary;
-        if (pPack->Startup(pInterface)) {
-            pResult = pPack;
-            pPack = nullptr;
-        }
+    if (!ReadHeaderChunk() ||
+        !ReadTypeSizes() ||
+        !ReadReferencedPackagesChunk() ||
+        !ReadLibraryRefsChunk() ||
+        !ReadResourceChunk() ||
+        !ReadObjectChunk() ||
+        !ReadPackageResponseChunk() ||
+        !ReadMessageTargetListChunk()) {
+        goto Error;
     }
-    if (pPack) {
-        delete pPack;
+    pPack->bIsLibrary = bIsLibrary;
+    if (pPack->Startup(pInterface)) {
+        pResult = pPack;
         pPack = nullptr;
     }
+Error:
+    if (pPack) {
+        delete pPack;
+    }
+    pPack = nullptr;
     return pResult;
 }
 
@@ -298,11 +301,11 @@ bool FEPackageReader::ReadResourceChunk() {
         return false;
     }
     FEChunk* pNameChunk = pChild->GetFirstChunk();
-    if (BSwap32(pNameChunk->GetID()) != 0x6d4e7352) {
+    if (pNameChunk->GetID() != 0x6d4e7352) {
         return false;
     }
     FEChunk* pResReqChunk = pNameChunk->GetNext();
-    if (BSwap32(pResReqChunk->GetID()) != 0x71527352) {
+    if (pResReqChunk->GetID() != 0x71527352) {
         return false;
     }
     unsigned long* pData = reinterpret_cast<unsigned long*>(pResReqChunk->GetData()) + 1;
@@ -642,7 +645,7 @@ bool FEPackageReader::ReadObjectChunk() {
     }
 
     while (true) {
-        unsigned long chunkID = BSwap32(pObjChunk->GetID());
+        unsigned long chunkID = pObjChunk->GetID();
         if (chunkID != 0xea624f46) {
             if (pObjChunk >= pLast) {
                 return true;
@@ -666,7 +669,7 @@ bool FEPackageReader::ReadObjectChunk() {
             pParent = nullptr;
 
             while (pSubChunk < pLastSub) {
-                unsigned long subID = BSwap32(pSubChunk->GetID());
+                unsigned long subID = pSubChunk->GetID();
                 switch (subID) {
                     case 0x446a624f:
                         if (!ReadObjectTags(reinterpret_cast<FETag*>(pSubChunk->GetData()), BSwap32(pSubChunk->GetSize()))) {

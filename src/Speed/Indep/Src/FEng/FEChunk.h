@@ -5,8 +5,8 @@
 #pragma once
 #endif
 
-inline unsigned long FEChunkBSwap32(unsigned long v) {
-    return (v >> 24) | (v << 24) | ((v & 0xFF00) << 8) | ((v >> 8) & 0xFF00);
+inline unsigned long FEngGetu32(unsigned long Val) {
+    return (Val >> 24) | (Val << 24) | ((Val & 0xFF00) << 8) | ((Val >> 8) & 0xFF00);
 }
 
 // total size: 0x4
@@ -30,14 +30,14 @@ struct FEChunk {
     unsigned long ID;   // offset 0x0, size 0x4
     unsigned long Size; // offset 0x4, size 0x4
 
-    inline unsigned long GetID() { return ID; }
+    inline unsigned long GetID() { return FEngGetu32(ID); }
     inline unsigned long GetSize() { return Size; }
     inline bool IsNestedChunk() { return (ID & 0x10000) != 0; }
     inline bool IsDataChunk() { return (ID & 0x10000) == 0; }
     inline char* GetData() { return reinterpret_cast<char*>(this) + 8; }
-    inline FEChunk* GetFirstChunk() { return reinterpret_cast<FEChunk*>(GetData()); }
-    inline FEChunk* GetLastChunk() { return reinterpret_cast<FEChunk*>(reinterpret_cast<char*>(this) + FEChunkBSwap32(Size) + 8); }
-    inline FEChunk* GetNext() { return reinterpret_cast<FEChunk*>(reinterpret_cast<char*>(this) + FEChunkBSwap32(Size) + 8); }
+    inline FEChunk* GetFirstChunk() { return reinterpret_cast<FEChunk*>(reinterpret_cast<char*>(this) + 8); }
+    inline FEChunk* GetLastChunk() { return reinterpret_cast<FEChunk*>(reinterpret_cast<char*>(this) + FEngGetu32(Size) + 8); }
+    inline FEChunk* GetNext() { return GetLastChunk(); }
 
     inline unsigned long CountChildren() {
         unsigned long count = 0;
