@@ -735,8 +735,12 @@ void WorldMap::UpdateCursor(bool zoom_thing) {
 }
 
 void WorldMap::MoveCursor(float x, float y) {
-    float dx = FEngGetCenterX(Cursor) + x;
-    float dy = FEngGetCenterY(Cursor) + y;
+    bVector2 cursor_x;
+    FEngGetCenter(Cursor, cursor_x.x, cursor_x.y);
+    float dx = cursor_x.x + x;
+    bVector2 cursor_y;
+    FEngGetCenter(Cursor, cursor_y.x, cursor_y.y);
+    float dy = cursor_y.y + y;
     bVector2 excess(0.0f, 0.0f);
     bVector2 bottom_right;
     FEngGetBottomRight(static_cast< FEObject* >(TrackMap), bottom_right.x, bottom_right.y);
