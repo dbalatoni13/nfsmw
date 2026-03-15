@@ -66,16 +66,16 @@ struct SFXCTL_Engine : public SFXCTL {
     void MessageVehicleDestroyed(const MNotifyVehicleDestroyed &message);
     void UpdateFilterFX();
     void UpdateCompression(float t);
-    void UpdateRedlining(float t);
-    void UpdateVolume(float t);
-    void UpdateRPM(float t);
-    void UpdateTorque(float t);
-    void UpdateEngineLFO_FX(float t);
+    virtual void UpdateRPM(float t);
+    virtual void UpdateTorque(float t);
+    virtual void UpdateVolume(float t);
+    virtual void UpdateRedlining(float t);
 
     virtual float GetEngRPM();
     virtual float GetSmoothedEngRPM();
     virtual float GetEngTorque();
     virtual float GetSmoothedEngTorque();
+    virtual void UpdateEngineLFO_FX(float t);
 
     void MsgCountdownDone(const MCountdownDone &message);
     void UpdateClutchState();

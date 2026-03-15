@@ -338,7 +338,68 @@ void SFXCTL_HybridMotor::UpdateVolumeRedlining() {
 }
 
 void SFXCTL_HybridMotor::UpdateMixerOutputs() {
-    SetDMIX_Input(DMX_VOL, m_EngVolAEMS);
-    SetDMIX_Input(DMX_FREQ, m_EngVolAccelGinsu);
-    SetDMIX_Input(DMX_PITCH, m_EngVolDecelGinsu);
+    bool bOutputOn = false;
+    float AvgDeltaRPM;
+    float PercentOfThreshold;
+    int output;
+
+    char *physCar = reinterpret_cast< char * >(*reinterpret_cast< void ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34));
+    float speedMph =
+        bSqrt(*reinterpret_cast< float * >(physCar + 0x54) * *reinterpret_cast< float * >(physCar + 0x54) +
+              *reinterpret_cast< float * >(physCar + 0x58) * *reinterpret_cast< float * >(physCar + 0x58) +
+              *reinterpret_cast< float * >(physCar + 0x5C) * *reinterpret_cast< float * >(physCar + 0x5C)) *
+        2.23699f;
+
+    if (speedMph <= 30.0f || 30.0f <= bAbs(m_AvgDeltaRPM.GetValue())) {
+        tSteadyDuration = SndBase::m_fRunningTime;
+    } else if (tSteadyDuration + 3.0f < SndBase::m_fRunningTime) {
+        bOutputOn = true;
+    }
+
+    if (bOutputOn) {
+        if (SteadyFrameCnt == 0) {
+            SteadyFrameCnt = static_cast< unsigned short >(g_pEAXSound->Random(0x96) + 0x3C);
+            *reinterpret_cast< int * >(reinterpret_cast< char * >(m_pEngineCtl) + 0x14C) = 1;
+        }
+        SteadyFrameCnt = static_cast< unsigned short >(SteadyFrameCnt - 1);
+    } else {
+        tSteadyDuration = SndBase::m_fRunningTime;
+    }
+
+    int *outputs = GetOutputBlockPtr();
+    output = smooth(outputs[0], bOutputOn ? 0x7FFF : 0, 0x3D7, 0xC4);
+    outputs[0] = output;
+
+    AvgDeltaRPM = m_AvgDeltaRPM.GetLastRecordedValue();
+    float accelThreshold =
+        *reinterpret_cast< float * >(*reinterpret_cast< char ** >(reinterpret_cast< char * >(m_pEAXCar) + 0xCC) + 0x78);
+    PercentOfThreshold = 1.0f - (accelThreshold - bAbs(AvgDeltaRPM)) / accelThreshold;
+    PercentOfThreshold = bClamp(PercentOfThreshold, 0.0f, 1.0f);
+    output = smooth(outputs[1], static_cast< int >(PercentOfThreshold * 32767.0f), 3000);
+
+    if (*reinterpret_cast< int * >(reinterpret_cast< char * >(m_pEngineCtl) + 0xD0) == 0 &&
+        *reinterpret_cast< int * >(reinterpret_cast< char * >(m_pEngineCtl) + 0xCC) != 0) {
+        mPrevDeltaRPM = output / 2;
+    }
+
+    int shiftActive = 0;
+    if ((m_pShiftingCtl->eShiftState == SHFT_UP_LFO) || (m_pShiftingCtl->eShiftState != SHFT_NONE)) {
+        shiftActive = 1;
+    }
+    if (shiftActive == 0) {
+        int wheelsOnGround = 0;
+        for (int i = 0; i < 4; i++) {
+            if (*reinterpret_cast< int * >(physCar + 0xB8 + i * 0x44) != 0) {
+                wheelsOnGround++;
+            }
+        }
+
+        if (wheelsOnGround > 0) {
+            outputs[1] = output;
+        }
+    }
+
+    if (*reinterpret_cast< int * >(reinterpret_cast< char * >(m_pEngineCtl) + 0xCC) != 0) {
+        outputs[1] = mPrevDeltaRPM;
+    }
 }

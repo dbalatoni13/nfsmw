@@ -1,18 +1,8 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DObjPos.hpp"
+#include "Speed/Indep/Src/EAXSound/SndCamera.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-struct Camera;
-
-namespace SndCamera {
-Camera *GetCam(int);
-extern bVector2 m_AvergeCamDir[2];
-extern bVector2 m_WorldCamPos[2];
-extern bVector2 m_NormCamDir[2];
-extern bVector2 m_AveragedCamPos[2];
-extern bVector2 m_NormCarDir[2];
-extern bVector2 m_WorldCarPos[2];
-extern bVector2 m_CenteredCarPos[2];
-} // namespace SndCamera
+extern bool g_EAXIsPaused(void);
 
 enum ePOSMIXTYPE {
     SINGLE_PLAYER = 0,
@@ -171,23 +161,47 @@ done_mix:
     }
 }
 
-void SFXCTL_3DObjPos::UpdateDoppler(int outIndex, float t) {
-    if (m_pV3ObjVel == nullptr) {
-        SetDMIX_Input(outIndex, 0);
+void SFXCTL_3DObjPos::UpdateDoppler(int PlayerNum, float t) {
+    if (g_EAXIsPaused() || m_pV3ObjVel == nullptr) {
         return;
     }
 
-    float velMag = bSqrt(m_pV3ObjVel->x * m_pV3ObjVel->x + m_pV3ObjVel->y * m_pV3ObjVel->y +
-                         m_pV3ObjVel->z * m_pV3ObjVel->z);
-    if (m_PlayerRef < 0) {
-        m_PlayerRef = 0;
-    } else if (m_PlayerRef > 1) {
-        m_PlayerRef = 1;
+    bVector3 vel_to_car = *m_pV3ObjVel - *SndCamera::GetV3WorldCarVel(m_PlayerRef);
+    bVector3 vel_to_cam = *m_pV3ObjVel - *SndCamera::GetWorldCamVel(m_PlayerRef);
+
+    m_fDistToRef[0][1] = m_fDistToRef[0][0];
+    t = bDistBetween(SndCamera::GetV3WorldCarPos(m_PlayerRef), m_pV3ObjPos);
+    m_fDistToRef[1][1] = m_fDistToRef[1][0];
+    m_fDistToRef[0][0] = t;
+    m_fDistToRef[1][0] = bDistBetween(SndCamera::GetCamPos(m_PlayerRef), m_pV3ObjPos);
+
+    m_fdvelmag_car[1] = m_fdvelmag_car[0];
+    m_fdvelmag_car[0] = bLength(&vel_to_car);
+    m_fdvelmag_cam[1] = m_fdvelmag_cam[0];
+    m_fdvelmag_cam[0] = bLength(&vel_to_cam);
+
+    if (m_fDistToRef[0][1] > m_fDistToRef[0][0]) {
+        m_fdvelmag_car[0] = -m_fdvelmag_car[0];
     }
 
-    float oldMag = m_fdvelmag_car[m_PlayerRef];
-    m_fdvelmag_car[m_PlayerRef] = oldMag + (velMag - oldMag) * t;
-    SetDMIX_Input(outIndex, static_cast<int>(m_fdvelmag_car[m_PlayerRef] * 4096.0f));
+    if (m_fDistToRef[1][1] > m_fDistToRef[1][0]) {
+        m_fdvelmag_cam[0] = -m_fdvelmag_cam[0];
+    }
+
+    if (((m_fdvelmag_car[1] < 0.0f) && (0.0f < m_fdvelmag_car[0])) ||
+        ((0.0f < m_fdvelmag_car[1]) && (m_fdvelmag_car[0] < 0.0f))) {
+        register int nvar asm("r0") = GetDMIX_InputValue(15);
+        SetDMIX_Input(15, nvar | 0x80000000);
+    }
+
+    if (((m_fdvelmag_cam[1] < 0.0f) && (0.0f < m_fdvelmag_cam[0])) ||
+        ((0.0f < m_fdvelmag_cam[1]) && (m_fdvelmag_cam[0] < 0.0f))) {
+        register int nvar asm("r0") = GetDMIX_InputValue(15);
+        SetDMIX_Input(15, nvar | 0x40000000);
+    }
+
+    SetDMIX_Input(13, static_cast<int>(m_fdvelmag_car[0] * 100.0f));
+    SetDMIX_Input(14, static_cast<int>(m_fdvelmag_cam[0] * 100.0f));
 }
 
 void SFXCTL_3DObjPos::UpdateParams(float t) {

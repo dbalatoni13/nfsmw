@@ -7,9 +7,21 @@
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyVehicleDestroyed.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
+#include "Speed/Indep/Src/EAXSound/OldSoundTemplates.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 extern float lbl_803D726C;
+extern float lbl_803D72D0;
+extern float lbl_803D72D4;
+extern float lbl_803D72D8;
+extern float lbl_803D72DC;
+extern float lbl_803D72E0;
+extern float lbl_803D72E4;
+extern float lbl_803D72E8;
+extern float lbl_803D72EC;
+extern float lbl_803D72F0;
+extern float lbl_803D72F4;
+extern float lbl_803D72F8;
 
 struct HSIMABLE__;
 
@@ -326,11 +338,95 @@ void SFXCTL_Engine::UpdateVolume(float t) {
 }
 
 void SFXCTL_Engine::UpdateRPM(float t) {
-    (void)t;
-    if (m_pPhysicsCtl != nullptr) {
-        m_fEng_RPM = m_pPhysicsCtl->PhysicsRPM;
+    float VisualRPM;
+    float NormalRPM;
+    float PhysicsNewAudioRPM;
+
+    if (m_pShiftCtl != nullptr) {
+        int shiftActive = 1;
+        if (m_pShiftCtl->eShiftState == SHFT_NONE) {
+            shiftActive = 0;
+        }
+        if (shiftActive != 0) {
+            VisualRPM = m_pShiftCtl->GetShiftingRPM();
+            goto have_cur_rpm;
+        }
     }
-    m_fSmoothedEng_RPM = m_fEng_RPM;
+
+    if (m_pAccelTransitionCtl != nullptr) {
+        int accelActive = 1;
+        if (m_pAccelTransitionCtl->eAccelTransFxState == 0) {
+            accelActive = 0;
+        }
+        if (accelActive != 0) {
+            VisualRPM = m_pAccelTransitionCtl->m_InterpEngRPM.GetValue();
+            goto have_cur_rpm;
+        }
+    }
+
+    VisualRPM = *reinterpret_cast< float * >(reinterpret_cast< char * >(m_pEAXCar) + 0x64);
+
+have_cur_rpm:
+    if (*reinterpret_cast< int * >(&bClutchStateOn) != 0) {
+        int shiftActive = 1;
+        if (m_pShiftCtl->eShiftState == SHFT_NONE) {
+            shiftActive = 0;
+        }
+        if (shiftActive == 0) {
+            VisualRPM = smooth(GetEngRPM(), *reinterpret_cast< float * >(reinterpret_cast< char * >(m_pEAXCar) + 0x64), lbl_803D72D4,
+                               lbl_803D72D8);
+        }
+    }
+
+    NormalRPM = VisualRPM + m_RPM_LFO + m_ComppressionRPM.CurValue + m_RPM_LFO;
+    m_fPrevRPM = m_fEng_RPM;
+    m_fEng_RPM = NormalRPM;
+    m_fSmoothedEng_RPM = m_fSmoothedEng_RPM * lbl_803D72DC + NormalRPM * lbl_803D72E0;
+
+    if (static_cast< unsigned int >(m_pShiftCtl->eShiftState - SHFT_UP_DISENGAGE) < 2u) {
+        VisualRPM = m_pShiftCtl->m_VisualRPM.GetValue();
+    } else if (m_pAccelTransitionCtl->eAccelTransFxState == 1) {
+        VisualRPM = *reinterpret_cast< float * >(reinterpret_cast< char * >(m_pEAXCar) + 0x64);
+    } else {
+        if (*reinterpret_cast< int * >(&bIsRedlining) != 0) {
+            float target = lbl_803D72E4;
+            if (*reinterpret_cast< int * >(&_pad_eng2[0]) != 0) {
+                float offset = smooth(*reinterpret_cast< float * >(&_pad_eng2[4]), target, lbl_803D72E8);
+                *reinterpret_cast< float * >(&_pad_eng2[4]) = offset;
+                if (offset == target) {
+                    *reinterpret_cast< int * >(&_pad_eng2[0]) = 0;
+                }
+            } else {
+                float offset = smooth(*reinterpret_cast< float * >(&_pad_eng2[4]), lbl_803D72D0, lbl_803D72E8);
+                *reinterpret_cast< float * >(&_pad_eng2[4]) = offset;
+                if (offset == lbl_803D72D0) {
+                    *reinterpret_cast< int * >(&_pad_eng2[0]) = 1;
+                }
+            }
+            VisualRPM = VisualRPM - *reinterpret_cast< float * >(&_pad_eng2[4]);
+        }
+    }
+
+    VisRpmAvg.Record(VisualRPM);
+    VisRpmAvg.Recalculate();
+
+    PhysicsNewAudioRPM = (VisRpmAvg.GetValue() - lbl_803D72EC) * lbl_803D72F0;
+    char *car = reinterpret_cast< char * >(*reinterpret_cast< EAX_CarState_View ** >(reinterpret_cast< char * >(m_pStateBase) + 0x34));
+    if (*reinterpret_cast< int * >(car + 0x210) == 0) {
+        if (bPreRace != 0) {
+            PhysicsNewAudioRPM = *reinterpret_cast< float * >(car + 0x1C8);
+        } else if (tMergeWithPhysicsOffStart > lbl_803D72D0) {
+            tMergeWithPhysicsOffStart -= t;
+            if (tMergeWithPhysicsOffStart < lbl_803D72D0) {
+                tMergeWithPhysicsOffStart = lbl_803D72D0;
+            }
+            float PercentInterp = (lbl_803D72F4 - tMergeWithPhysicsOffStart) * lbl_803D72F8;
+            PhysicsNewAudioRPM =
+                (PhysicsNewAudioRPM - *reinterpret_cast< float * >(car + 0x1C8)) * PercentInterp + *reinterpret_cast< float * >(car + 0x1C8);
+        }
+    }
+
+    *reinterpret_cast< float * >(reinterpret_cast< char * >(m_pEAXCar) + 0x74) = PhysicsNewAudioRPM;
 }
 
 void SFXCTL_Engine::UpdateTorque(float t) {

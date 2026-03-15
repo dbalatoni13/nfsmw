@@ -1,10 +1,43 @@
 #include "Speed/Indep/Src/EAXSound/States/STATE_Base.hpp"
 #include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
+#include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include <new>
 #include <types.h>
 
 struct emEvent;
 struct bVector3;
+
+bool IsCarInRadius(EAX_CarState *pCar, const bVector3 *vPos, float fRadius);
+
+namespace AIDriveBy {
+enum eAIDRIVE_BY_TYPE {
+    DRIVE_BY_UNKNOWN = 0,
+    DRIVE_BY_TREE = 1,
+    DRIVE_BY_LAMPPOST = 2,
+    DRIVE_BY_SMOKABLE = 3,
+    DRIVE_BY_TUNNEL_IN = 4,
+    DRIVE_BY_TUNNEL_OUT = 5,
+    DRIVE_BY_OVERPASS_IN = 6,
+    DRIVE_BY_OVERPASS_OUT = 7,
+    DRIVE_BY_AI_CAR = 8,
+    DRIVE_BY_TRAFFIC = 9,
+    DRIVE_BY_BRIDGE = 10,
+    DRIVE_BY_PRE_COL = 11,
+    DRIVE_BY_CAMERA_BY = 12,
+    MAX_DRIVE_BY_TYPES = 13,
+};
+
+struct stAIDriveByInfo {
+    eAIDRIVE_BY_TYPE eDriveByType;
+    EAXCar *pEAXCar;
+    float ClosingVelocity;
+    bVector3 vLocation;
+    unsigned int UniqueID;
+};
+} // namespace AIDriveBy
 
 enum eSFXMessageType {
     SFX_NONE = 0,
@@ -138,12 +171,45 @@ void EAXAITunerCar::UpdateCarPhysics() {
 }
 
 void EAXAITunerCar::UpdatAIDriveBy(float t) {
+    EAX_CarState *ClosestPlayer;
+    bVector3 vVelDiff;
+    float fRelativeVel;
+    AIDriveBy::stAIDriveByInfo TmpDriveByPackage;
+    CSTATE_Base *ReturnedObj;
+
     (void)t;
+
     if (m_pCar == nullptr) {
         return;
     }
-    if (mPhysicsChangedGear != 0) {
-        mPhysicsChangedGear = 0;
+
+    ClosestPlayer = GetClosestPlayerCar(reinterpret_cast< bVector3 * >(reinterpret_cast< char * >(m_pCar) + 0x44));
+    if (!IsCarInRadius(ClosestPlayer, reinterpret_cast< bVector3 * >(reinterpret_cast< char * >(m_pCar) + 0x44), 12.0f)) {
+        return;
+    }
+
+    vVelDiff = bSub(*reinterpret_cast< bVector3 * >(reinterpret_cast< char * >(m_pCar) + 0x54),
+                    *reinterpret_cast< bVector3 * >(reinterpret_cast< char * >(ClosestPlayer) + 0x54));
+    fRelativeVel = bLength(vVelDiff);
+    if (fRelativeVel < 15.0f) {
+        return;
+    }
+
+    TmpDriveByPackage.eDriveByType = AIDriveBy::DRIVE_BY_AI_CAR;
+    TmpDriveByPackage.ClosingVelocity = fRelativeVel;
+    TmpDriveByPackage.vLocation = *reinterpret_cast< bVector3 * >(reinterpret_cast< char * >(m_pCar) + 0x44);
+    TmpDriveByPackage.pEAXCar = this;
+    TmpDriveByPackage.UniqueID = reinterpret_cast< unsigned int >(this);
+
+    if (*reinterpret_cast< int * >(reinterpret_cast< char * >(m_pCar) + 0x210) == 2) {
+        MGamePlayMoment moment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero,
+                               *reinterpret_cast< unsigned int * >(reinterpret_cast< char * >(m_pCar) + 0x21C), 0);
+        moment.Send(UCrc32("BlewByCop"));
+    }
+
+    ReturnedObj = EAXSound::m_pStateMgr[eMM_DRIVEBY]->GetFreeState(&TmpDriveByPackage);
+    if (ReturnedObj != nullptr) {
+        ReturnedObj->Attach(&TmpDriveByPackage);
     }
 }
 

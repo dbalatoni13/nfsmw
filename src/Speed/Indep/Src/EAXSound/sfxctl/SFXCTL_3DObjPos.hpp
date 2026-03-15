@@ -36,7 +36,7 @@ struct SFXCTL_3DObjPos : public SFXCTL {
     void Detach() override;
     void SetCameraAngle();
     void UpdateParams(float t) override;
-    void UpdateDoppler(int outIndex, float t);
+    void UpdateDoppler(int PlayerNum, float t);
 
     virtual void Generate3DParams(int) {}
     void GenerateSinglePlayerMix();
