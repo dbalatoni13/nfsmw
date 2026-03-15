@@ -6,6 +6,8 @@
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 #include "Speed/Indep/Src/Misc/Config.h"
 
+const char* gOnlineMainMenu = "OL_MAIN.fng";
+
 // GarageMainScreen forward definition (full definition in FEAnyMovieScreen.cpp later in TU)
 struct GarageMainScreen : public MenuScreen {
     char _pad_2c[0x2C];             // offset 0x2C to 0x58
