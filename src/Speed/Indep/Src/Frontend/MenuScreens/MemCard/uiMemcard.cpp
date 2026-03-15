@@ -344,21 +344,25 @@ UIMemcardList::UIMemcardList(ScreenConstructorData* sd)
     FEPrintf(GetPackageName(), 0xeb406fec, profileName);
 
     for (int i = 1; i < 9; i++) {
-        char nameBuf[32];
-        char dataBuf[32];
-        char mouseBuf[32];
+        char buffer[32];
+        ScrollerSlot* slot = new (__FILE__, __LINE__) ScrollerSlot();
+        slot->pBacking = nullptr;
+        slot->vTopLeft.x = 0.0f;
+        slot->vTopLeft.y = 0.0f;
+        slot->vSize.x = 0.0f;
+        slot->vSize.y = 0.0f;
+        slot->bEnabled = true;
 
-        FEngSNPrintf(nameBuf, 0x20, "option_name_%d", i);
-        unsigned long nameHash = FEHashUpper(nameBuf);
-        FEngFindString(GetPackageName(), nameHash);
+        FEngSNPrintf(buffer, 0x20, "option_name_%d", i);
+        slot->AddData(FEngFindString(GetPackageName(), FEHashUpper(buffer)));
 
-        FEngSNPrintf(dataBuf, 0x20, "option_data_%d", i);
-        unsigned long dataHash = FEHashUpper(dataBuf);
-        FEngFindString(GetPackageName(), dataHash);
+        FEngSNPrintf(buffer, 0x20, "option_data_%d", i);
+        slot->AddData(FEngFindString(GetPackageName(), FEHashUpper(buffer)));
 
-        FEngSNPrintf(mouseBuf, 0x20, "option_mouse_%d", i);
-        unsigned long mouseHash = FEHashUpper(mouseBuf);
-        FEngFindObject(GetPackageName(), mouseHash);
+        FEngSNPrintf(buffer, 0x20, "option_mouse_%d", i);
+        slot->SetBacking(FEngFindObject(GetPackageName(), FEHashUpper(buffer)));
+        slot->Hide();
+        m_SaveGameList.AddSlot(slot);
     }
 
     m_ListOp = static_cast< int >((gMemcardSetup.mOp & 0xf0) == 0x30);
