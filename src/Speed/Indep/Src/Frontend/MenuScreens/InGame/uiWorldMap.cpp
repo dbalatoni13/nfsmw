@@ -702,26 +702,31 @@ void WorldMap::UpdateCursor(bool zoom_thing) {
         MapStreamer->GetPan(pan);
         bVector2 map_center;
         FEngGetCenter(static_cast< FEObject* >(TrackMap), map_center.x, map_center.y);
-        bVector2 map_br;
         FEngGetTopLeft(static_cast< FEObject* >(TrackMap), MapTopLeft.x, MapTopLeft.y);
         bVector2 pos(CursorMoveFrom.x, CursorMoveFrom.y);
-        bVector2 delta = pos - map_center;
-        delta *= zoom;
-        pos = delta + map_center;
-        bVector2 dpan(pan.x * MapSize.x, pan.y * MapSize.y);
-        dpan = dpan * zoom;
-        pos -= dpan;
+        bVector2 delta;
+        delta.x = pos.x - map_center.x;
+        delta.y = pos.y - map_center.y;
+        delta.x *= zoom;
+        delta.y *= zoom;
+        pos.x = delta.x + map_center.x;
+        pos.y = delta.y + map_center.y;
+        bVector2 dpan;
+        dpan.x = pan.x * MapSize.x;
+        dpan.y = pan.y * MapSize.y;
+        dpan.x *= zoom;
+        dpan.y *= zoom;
+        pos.x -= dpan.x;
+        pos.y -= dpan.y;
         ClampToMapBounds(pos.x, pos.y);
         FEngSetCenter(Cursor, pos.x, pos.y);
     } else if (!zoom_thing) {
-        float vel_x = CurrentVelocity.x;
-        float vel_y = CurrentVelocity.y;
-        if (vel_x != 0.0f || vel_y != 0.0f) {
+        if (CurrentVelocity.x != 0.0f || CurrentVelocity.y != 0.0f) {
             if (!bCursorMoving) {
                 cFEng::Get()->QueuePackageMessage(0x9f710838, GetPackageName(), nullptr);
                 bCursorMoving = true;
             }
-            MoveCursor(vel_x, vel_y);
+            MoveCursor(CurrentVelocity.x, CurrentVelocity.y);
             if (SelectedItem != nullptr) {
                 bVector2 cursor;
                 bVector2 pos;
@@ -738,7 +743,7 @@ void WorldMap::UpdateCursor(bool zoom_thing) {
         } else {
             if (bCursorMoving) {
                 cFEng::Get()->QueuePackageMessage(0x7e6687da, GetPackageName(), nullptr);
-                bCursorMoving = zoom_thing;
+                bCursorMoving = false;
             }
             if (SnapCursor()) {
                 RefreshHeader();
