@@ -402,8 +402,9 @@ void FEManager::Update() {
                     }
 
                     if (!cFEng::Get()->IsPackagePushed("ControllerUnplugged.fng")) {
+                        cFEng *eng = cFEng::Get();
                         unsigned long joyParam = FEngMapJoyportToJoyParam(port);
-                        cFEng::Get()->PushErrorPackage("ControllerUnplugged.fng", port, joyParam);
+                        eng->PushErrorPackage("ControllerUnplugged.fng", port, joyParam);
                     }
                 }
             }
