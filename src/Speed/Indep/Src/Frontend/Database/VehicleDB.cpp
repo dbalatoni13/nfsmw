@@ -220,6 +220,67 @@ unsigned int FECarRecord::GetManuLogoHash() {
     return FEHashUpper("GENERIC_LOGO_128");
 }
 
+const char *FECarRecord::GetManufacturerName() {
+    Attrib::Gen::frontend fe(FEKey, 0, 0);
+    unsigned char Manufacturer = static_cast<unsigned char>(fe.manufacturer());
+    switch (Manufacturer) {
+    case 0:
+        return "";
+    case 1:
+        return "BMW";
+    case 2:
+        return "FORD";
+    case 3:
+        return "SUBARU";
+    case 4:
+        return "PORSCHE";
+    case 5:
+        return "AUDI";
+    case 6:
+        return "MAZDA";
+    case 7:
+        return "GENERAL_MOTORS";
+    case 8:
+        return "DODGE";
+    case 9:
+        return "TOYOTA";
+    case 10:
+        return "MITSUBISHI";
+    case 11:
+        return "MCLAREN";
+    case 12:
+        return "MERCEDES";
+    case 13:
+        return "NISSAN";
+    case 14:
+        return "LOTUS";
+    case 15:
+        return "LAMBORGHINI";
+    case 16:
+        return "RENAULT";
+    case 17:
+        return "LEXUS";
+    case 18:
+        return "PONTIAC";
+    case 19:
+        return "CHEVROLET";
+    case 20:
+        return "VAUXHALL";
+    case 21:
+        return "ASTONMARTIN";
+    case 22:
+        return "VOLKSWAGEN";
+    case 23:
+        return "FIAT";
+    case 24:
+        return "CADILLAC";
+    case 25:
+        return "CORVETTE";
+    default:
+        return "";
+    }
+}
+
 void FECustomizationRecord::Default() {
     for (int i = 0; i < 139; i++) {
         InstalledPartIndices[i] = -1;
