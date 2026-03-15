@@ -574,10 +574,9 @@ void POScore::Draw() {
 
 void POSplitTime::Act(const char* parent_pkg, unsigned int data) {
     if (data == 0x9120409E || data == 0xB5971BF1) {
-        int player = GetPlayerToEditForOptions();
-        unsigned char splitTime = FEDatabase->GetPlayerSettings(player)->SplitTimeType;
-        player = GetPlayerToEditForOptions();
-        FEDatabase->GetPlayerSettings(player)->SplitTimeType = (!splitTime) << 2;
+        int type = (!FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->SplitTimeType)
+                   << 2;
+        FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->SplitTimeType = type;
     }
     Update(data);
 }
