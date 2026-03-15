@@ -255,19 +255,21 @@ void uiRepSheetMilestones::RefreshTrack() {
 }
 
 void uiRepSheetMilestones::AddMilestone(GMilestone* milestone) {
+    ArrayScroller* scroller = this;
     MilestoneDatum* datum = new MilestoneDatum(
         FEDatabase->GetMilestoneIconHash(milestone->GetTypeKey(), true),
         FEDatabase->GetMilestoneHeaderHash(milestone->GetLocalizationTag()),
         milestone);
-    AddDatum(datum);
+    scroller->AddDatum(datum);
 }
 
 void uiRepSheetMilestones::AddSpeedtrap(GSpeedTrap* trap) {
+    ArrayScroller* scroller = this;
     SpeedTrapDatum* datum = new SpeedTrapDatum(
         FEDatabase->GetRaceIconHash(static_cast<GRace::Type>(5)),
         0xF3B3D8DC,
         trap);
-    AddDatum(datum);
+    scroller->AddDatum(datum);
 }
 
 void uiRepSheetMilestones::RefreshHeader() {

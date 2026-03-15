@@ -356,10 +356,10 @@ UIMemcardList::UIMemcardList(ScreenConstructorData* sd)
         char buffer[32];
         ScrollerSlot* slot = new (__FILE__, __LINE__) ScrollerSlot();
         slot->pBacking = nullptr;
-        slot->vTopLeft.x = 0.0f;
-        slot->vTopLeft.y = 0.0f;
-        slot->vSize.x = 0.0f;
         slot->vSize.y = 0.0f;
+        slot->vSize.x = 0.0f;
+        slot->vTopLeft.y = 0.0f;
+        slot->vTopLeft.x = 0.0f;
         slot->bEnabled = true;
 
         FEngSNPrintf(buffer, 0x20, "option_name_%d", i);
