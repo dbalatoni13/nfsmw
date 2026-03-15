@@ -448,10 +448,9 @@ void UIMemcardList::NotificationMessage(unsigned long msg, FEObject* obj, unsign
     case 0xeb29392a:
         if (m_LastMsg == 0x406415e3) {
             UIMemcardBase* parent = MemoryCard::GetInstance()->GetScreen();
-            ScrollerDatum* datum = m_SaveGameList.GetSelectedDatum();
+            ScrollerDatum* datum = m_SaveGameList.SelectedDatum;
             if (datum != nullptr) {
-                const char* fileName = datum->GetTopDatumModeString();
-                parent->DoSelect(fileName);
+                parent->DoSelect(datum->Strings.GetNode(0)->String);
             }
         }
         break;
