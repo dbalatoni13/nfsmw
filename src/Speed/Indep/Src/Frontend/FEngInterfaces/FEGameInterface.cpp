@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/FEng/FEGameInterface.h"
+#include "Speed/Indep/Src/FEng/FEResourceRequest.h"
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/Frontend/cFEngRender.hpp"
@@ -23,6 +24,17 @@ static FEColor gTint;
 static FEColor gRapsheet;
 
 cFEngGameInterface* cFEngGameInterface::pInstance;
+
+bool FEGameInterface::UnloadUnreferencedLibrary(FEPackage*) {
+    return false;
+}
+
+void FEGameInterface::RenderObjectList(FEObjectListEntry*, unsigned long) {
+}
+
+bool FEGameInterface::SetCellData(FECodeListBox*, unsigned long, unsigned long) {
+    return false;
+}
 
 cFEngGameInterface::cFEngGameInterface() {
     RenderThisPackage = true;

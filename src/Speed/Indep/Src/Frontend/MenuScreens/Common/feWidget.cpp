@@ -50,7 +50,7 @@ void FEButtonWidget::Position() {
     vTopLeft.x = x;
     vTopLeft.y = y;
     if (pTitle) {
-        FEngGetTopLeft(static_cast<FEObject*>(pTitle), x, y);
+        FEngGetTopLeft(reinterpret_cast<FEObject*>(pTitle), x, y);
         vMaxTitleSize.x = x;
         vMaxTitleSize.y = y;
     }
@@ -59,14 +59,14 @@ void FEButtonWidget::Position() {
 void FEButtonWidget::Show() {
     FEWidget::Show();
     if (pTitle) {
-        FEngSetVisible(static_cast<FEObject*>(pTitle));
+        FEngSetVisible(reinterpret_cast<FEObject*>(pTitle));
     }
 }
 
 void FEButtonWidget::Hide() {
     FEWidget::Hide();
     if (pTitle) {
-        FEngSetInvisible(static_cast<FEObject*>(pTitle));
+        FEngSetInvisible(reinterpret_cast<FEObject*>(pTitle));
     }
 }
 
@@ -110,12 +110,12 @@ void FEStatWidget::Position() {
     vTopLeft.x = x;
     vTopLeft.y = y;
     if (pTitle) {
-        FEngGetTopLeft(static_cast<FEObject*>(pTitle), x, y);
+        FEngGetTopLeft(reinterpret_cast<FEObject*>(pTitle), x, y);
         vMaxTitleSize.x = x;
         vMaxTitleSize.y = y;
     }
     if (pData) {
-        FEngGetTopLeft(static_cast<FEObject*>(pData), x, y);
+        FEngGetTopLeft(reinterpret_cast<FEObject*>(pData), x, y);
         vDataPos.x = x;
         vDataPos.y = y;
     }
@@ -124,20 +124,20 @@ void FEStatWidget::Position() {
 void FEStatWidget::Show() {
     FEWidget::Show();
     if (pTitle) {
-        FEngSetVisible(static_cast<FEObject*>(pTitle));
+        FEngSetVisible(reinterpret_cast<FEObject*>(pTitle));
     }
     if (pData) {
-        FEngSetVisible(static_cast<FEObject*>(pData));
+        FEngSetVisible(reinterpret_cast<FEObject*>(pData));
     }
 }
 
 void FEStatWidget::Hide() {
     FEWidget::Hide();
     if (pTitle) {
-        FEngSetInvisible(static_cast<FEObject*>(pTitle));
+        FEngSetInvisible(reinterpret_cast<FEObject*>(pTitle));
     }
     if (pData) {
-        FEngSetInvisible(static_cast<FEObject*>(pData));
+        FEngSetInvisible(reinterpret_cast<FEObject*>(pData));
     }
 }
 
@@ -196,10 +196,10 @@ void FEToggleWidget::Disable() {
 }
 
 void FEToggleWidget::SetScript(unsigned int script) {
-    FEngSetScript(static_cast<FEObject*>(pTitle), script, true);
-    FEngSetScript(static_cast<FEObject*>(pData), script, true);
-    FEngSetScript(static_cast<FEObject*>(pLeftImage), script, true);
-    FEngSetScript(static_cast<FEObject*>(pRightImage), script, true);
+    FEngSetScript(reinterpret_cast<FEObject*>(pTitle), script, true);
+    FEngSetScript(reinterpret_cast<FEObject*>(pData), script, true);
+    FEngSetScript(reinterpret_cast<FEObject*>(pLeftImage), script, true);
+    FEngSetScript(reinterpret_cast<FEObject*>(pRightImage), script, true);
     if (pBacking) {
         FEngSetScript(pBacking, script, true);
     }
@@ -208,20 +208,20 @@ void FEToggleWidget::SetScript(unsigned int script) {
 void FEToggleWidget::Show() {
     FEStatWidget::Show();
     if (pLeftImage) {
-        FEngSetVisible(static_cast<FEObject*>(pLeftImage));
+        FEngSetVisible(reinterpret_cast<FEObject*>(pLeftImage));
     }
     if (pRightImage) {
-        FEngSetVisible(static_cast<FEObject*>(pRightImage));
+        FEngSetVisible(reinterpret_cast<FEObject*>(pRightImage));
     }
 }
 
 void FEToggleWidget::Hide() {
     FEStatWidget::Hide();
     if (pLeftImage) {
-        FEngSetInvisible(static_cast<FEObject*>(pLeftImage));
+        FEngSetInvisible(reinterpret_cast<FEObject*>(pLeftImage));
     }
     if (pRightImage) {
-        FEngSetInvisible(static_cast<FEObject*>(pRightImage));
+        FEngSetInvisible(reinterpret_cast<FEObject*>(pRightImage));
     }
 }
 
@@ -237,11 +237,11 @@ void FEToggleWidget::Position() {
     FEStatWidget::Position();
     if (pLeftImage) {
         float x, y;
-        FEngGetTopLeft(static_cast<FEObject*>(pLeftImage), x, y);
+        FEngGetTopLeft(reinterpret_cast<FEObject*>(pLeftImage), x, y);
     }
     if (pRightImage) {
         float x, y;
-        FEngGetTopLeft(static_cast<FEObject*>(pRightImage), x, y);
+        FEngGetTopLeft(reinterpret_cast<FEObject*>(pRightImage), x, y);
     }
 }
 
@@ -425,7 +425,7 @@ void CTextScroller::Display(int topLine) {
             text = emptyStr;
         }
         FESetString(feStr, text);
-        feStr->Flags |= 0x2000000;
+        reinterpret_cast<FEObject*>(feStr)->Flags |= 0x2000000;
         topLine++;
     }
 }

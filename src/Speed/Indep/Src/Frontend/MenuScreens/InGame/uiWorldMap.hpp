@@ -31,6 +31,8 @@ struct ActionQueue;
 struct TrackInfo;
 struct UITrackMapStreamer;
 
+#ifndef FRONTEND_DATABASE_EWORLDMAPITEMTYPE_DEFINED
+#define FRONTEND_DATABASE_EWORLDMAPITEMTYPE_DEFINED
 enum eWorldMapItemType {
     WMIT_NONE = 0,
     WMIT_PLAYER_CAR = 1,
@@ -62,6 +64,7 @@ enum eWorldMapItemType {
     WMIT_HIDING_SPOT = 33554432,
     WMIT_PURSUIT_BREAKER = 67108864,
 };
+#endif
 
 enum eWorldMapZoomLevels {
     WMZ_ALL = 0,

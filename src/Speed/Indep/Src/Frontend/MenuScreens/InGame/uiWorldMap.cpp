@@ -649,20 +649,14 @@ void WorldMap::UpdateCursor(bool zoom_thing) {
         ClampToMapBounds(pos.x, pos.y);
         FEngSetCenter(Cursor, pos.x, pos.y);
     } else if (!zoom_thing) {
-        if (CurrentVelocity.x == 0.0f && CurrentVelocity.y == 0.0f) {
-            if (bCursorMoving) {
-                cFEng::Get()->QueuePackageMessage(0x7e6687da, GetPackageName(), nullptr);
-                bCursorMoving = false;
-            }
-            if (SnapCursor()) {
-                RefreshHeader();
-            }
-        } else {
+        float vel_x = CurrentVelocity.x;
+        float vel_y = CurrentVelocity.y;
+        if (vel_x != 0.0f || vel_y != 0.0f) {
             if (!bCursorMoving) {
                 cFEng::Get()->QueuePackageMessage(0x9f710838, GetPackageName(), nullptr);
                 bCursorMoving = true;
             }
-            MoveCursor(CurrentVelocity.x, CurrentVelocity.y);
+            MoveCursor(vel_x, vel_y);
             if (SelectedItem != nullptr) {
                 bVector2 cursor;
                 bVector2 pos;
@@ -675,6 +669,14 @@ void WorldMap::UpdateCursor(bool zoom_thing) {
                     SelectedItem = nullptr;
                     RefreshHeader();
                 }
+            }
+        } else {
+            if (bCursorMoving) {
+                cFEng::Get()->QueuePackageMessage(0x7e6687da, GetPackageName(), nullptr);
+                bCursorMoving = zoom_thing;
+            }
+            if (SnapCursor()) {
+                RefreshHeader();
             }
         }
     }

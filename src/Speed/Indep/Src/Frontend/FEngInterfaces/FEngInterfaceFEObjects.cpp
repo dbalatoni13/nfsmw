@@ -26,26 +26,6 @@ int GetLocalizedWideString(short* buffer, int bufSize, unsigned int hash);
 TextureInfo* GetTextureInfo(unsigned int handle, int param2, int param3);
 void bMatrixToQuaternion(bQuaternion& quat, const bMatrix4& m);
 
-inline FEObjData* FEObject::GetObjData() const {
-    return reinterpret_cast<FEObjData*>(pData);
-}
-
-inline FEObject* FEObject::GetNext() const {
-    return static_cast<FEObject*>(FEMinNode::GetNext());
-}
-
-inline FEImageData* FEImage::GetImageData() {
-    return static_cast<FEImageData*>(GetObjData());
-}
-
-inline short* FEString::GetString() {
-    return string;
-}
-
-inline unsigned long FEString::GetLabelHash() {
-    return LabelHash;
-}
-
 #include "Speed/Indep/Src/Frontend/FEObjectCallbacks.hpp"
 
 FEObject* FEngFindObject(const char* pkg_name, unsigned int obj_hash) {

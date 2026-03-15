@@ -1603,7 +1603,7 @@ void CustomizeCategoryScreen::NotificationMessage(unsigned long msg, FEObject *p
         if (!bBackingOut) {
             return;
         }
-        cFEng_mInstance->QueuePackageSwitch(BackToPkg, Category | (FromCategory << 16), 0, false);
+        cFEng_mInstance->QueuePackageSwitch(BackToPkg, FromCategory | (Category << 16), 0, false);
         break;
     case 0xb5af2461:
     case 0x1720b124:
@@ -2416,7 +2416,6 @@ void CustomizeParts::Setup() {
     switch (cat) {
     case 0x101:
         DisplayHelper.TitleHash = 0x6134c218;
-        SetTitleHash(0x28c24f6);
         if (CustomizeIsInBackRoom()) {
             icon_hash = 0xaf393dba;
         } else {
@@ -2426,7 +2425,6 @@ void CustomizeParts::Setup() {
         goto after_switch;
     case 0x104:
         DisplayHelper.TitleHash = 0x4d4a88d;
-        SetTitleHash(0x28f7092);
         if (CustomizeIsInBackRoom()) {
             icon_hash = 0xf375276e;
         } else {
@@ -2436,7 +2434,6 @@ void CustomizeParts::Setup() {
         goto after_switch;
     case 0x105:
         DisplayHelper.TitleHash = 0x61e8f83c;
-        SetTitleHash(0x79165861);
         if (CustomizeIsInBackRoom()) {
             icon_hash = 0x25a4375e;
         } else {
@@ -2457,7 +2454,6 @@ void CustomizeParts::Setup() {
             installed_part = gCarCustomizeManager.GetTempColoredPart()->GetPart();
         }
         DisplayHelper.TitleHash = 0x78980a6b;
-        SetTitleHash(0x28f88bc);
         if (CustomizeIsInBackRoom()) {
             icon_hash = 0x8ba602fc;
         } else {
@@ -2472,7 +2468,6 @@ void CustomizeParts::Setup() {
         goto after_switch;
     case 0x402:
         DisplayHelper.TitleHash = 0xd9228fc6;
-        SetTitleHash(0xf8148554);
         vinyl_group_number = 0;
         break;
     case 0x403:
@@ -2481,32 +2476,26 @@ void CustomizeParts::Setup() {
         break;
     case 0x404:
         DisplayHelper.TitleHash = 0x1c619fd8;
-        SetTitleHash(0xf7352706);
         vinyl_group_number = 2;
         break;
     case 0x405:
         DisplayHelper.TitleHash = 0x9c1b8935;
-        SetTitleHash(0x1223cc89);
         vinyl_group_number = 3;
         break;
     case 0x406:
         DisplayHelper.TitleHash = 0x7956f7b0;
-        SetTitleHash(0xbc44bbcb);
         vinyl_group_number = 4;
         break;
     case 0x407:
         DisplayHelper.TitleHash = 0x2d5bff0f;
-        SetTitleHash(0x694ca0ca);
         vinyl_group_number = 5;
         break;
     case 0x408:
         DisplayHelper.TitleHash = 0x209a9158;
-        SetTitleHash(0x1b3a8dd3);
         vinyl_group_number = 6;
         break;
     case 0x409:
         DisplayHelper.TitleHash = 0xcd057d21;
-        SetTitleHash(0x1ba508fc);
         vinyl_group_number = 7;
         break;
     default:

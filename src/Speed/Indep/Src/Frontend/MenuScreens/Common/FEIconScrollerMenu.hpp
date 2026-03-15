@@ -11,19 +11,25 @@ struct FEObject;
 struct FEImage;
 struct FEString;
 struct FEGroup;
+int FEngSNPrintf(char* dest, int size, const char* fmt, ...);
 
 struct ScrollerDatumNode : public bTNode<ScrollerDatumNode> {
     char String[128];           // offset 0x8
     unsigned int LanguageHash;  // offset 0x88
 
-    ScrollerDatumNode(const char* string, unsigned int hash);
+    ScrollerDatumNode(const char* string, unsigned int hash) {
+        FEngSNPrintf(String, 0x80, string);
+        LanguageHash = hash;
+    }
     virtual ~ScrollerDatumNode() {}
 };
 
 struct ScrollerSlotNode : public bTNode<ScrollerSlotNode> {
     FEObject* String; // offset 0x8
 
-    ScrollerSlotNode(FEObject* string);
+    ScrollerSlotNode(FEObject* string) {
+        String = string;
+    }
     virtual ~ScrollerSlotNode() {}
 };
 
@@ -34,7 +40,9 @@ struct ScrollerDatum : public bTNode<ScrollerDatum> {
     ScrollerDatum() {}
     ScrollerDatum(const char* string, unsigned int hash);
     virtual ~ScrollerDatum() {}
-    void AddData(const char* string, unsigned int hash);
+    void AddData(const char* string, unsigned int hash) {
+        Strings.AddTail(new(__FILE__, __LINE__) ScrollerDatumNode(string, hash));
+    }
     ScrollerDatumNode* Find(const char* to_find);
     ScrollerDatumNode* Find(unsigned int hash);
     void Printf();
@@ -54,7 +62,9 @@ struct ScrollerSlot : public bTNode<ScrollerSlot> {
     ScrollerSlot() {}
     ScrollerSlot(FEObject* string);
     virtual ~ScrollerSlot() {}
-    void AddData(FEObject* string);
+    void AddData(FEObject* string) {
+        FEStrings.AddTail(new(__FILE__, __LINE__) ScrollerSlotNode(string));
+    }
     void SetBacking(FEObject* obj) { pBacking = obj; }
     void Highlight();
     void UnHighlight();

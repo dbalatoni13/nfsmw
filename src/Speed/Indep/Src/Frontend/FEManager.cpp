@@ -22,6 +22,7 @@
 #include "Speed/Indep/Src/Input/IOModule.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/IFengHud.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Misc/EasterEggs.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
@@ -34,17 +35,6 @@ struct ChoppedMiniMapManager {
 
 struct FadeScreen {
     static bool IsFadeScreenOn();
-};
-
-struct ICountdown : public UTL::COM::IUnknown {
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-    ICountdown(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-    virtual ~ICountdown() {}
-    virtual void BeginCountdown();
-    virtual bool IsActive();
-    virtual float GetSecondsBeforeRaceStart();
 };
 
 extern bool DrawFEng;

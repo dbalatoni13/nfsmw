@@ -8,6 +8,7 @@ int FEPrintf(FEString* text, const char* fmt, ...);
 void FEngSetLanguageHash(FEString* text, unsigned int hash);
 void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned int lang_hash);
 unsigned int FEngHashString(const char* format, ...);
+unsigned int GetFECarNameHashFromFEKey(unsigned int feKey);
 const char* GetLocalizedString(unsigned int hash);
 bool uiRapSheetRankingsDetail::career_view = false;
 void RapSheetRankingsArraySlot::Update(ArrayDatum* datum, bool isSelected) {
@@ -77,7 +78,8 @@ void uiRapSheetRankingsDetail::NotificationMessage(unsigned long msg, FEObject* 
 void uiRapSheetRankingsDetail::Setup() {
     ClearData();
     UserProfile* prof = FEDatabase->GetUserProfile(0);
-    int rank = prof->GetHighScores()->CalcPursuitRank(rank_type, career_view);
+    HighScoresDatabase* scores = prof->GetHighScores();
+    int rank = scores->CalcPursuitRank(rank_type, career_view);
     player_rank = rank;
     const char* attrib_name = nullptr;
     unsigned int value_label = 0;
@@ -99,28 +101,56 @@ void uiRapSheetRankingsDetail::Setup() {
     if (rankingsData.IsValid()) {
         unsigned int numRanks = rankingsData.Num_RapSheetRanks();
         if (numRanks == 15) {
-            for (int i = 0; i < 15; i++) {
-                unsigned int item_num;
-                unsigned int player_name;
-                unsigned int car_hash = 0;
-                float val = rankingsData.RapSheetRanks(static_cast<unsigned int>(i));
-                if (player_rank == 0x10 || i < player_rank) {
-                    item_num = i + 1;
-                    player_name = rankingsData.Num_NameId() > static_cast<unsigned int>(i) ? *reinterpret_cast<const unsigned int*>(&rankingsData.NameId(static_cast<unsigned int>(i))) : 0;
-                } else if (i == player_rank) {
-                    item_num = i + 1;
-                    player_name = 1;
+            int num_rows = 15;
+            int rank_shift = 0;
+            if (player_rank == 0x10) {
+                num_rows = 0x10;
+            }
+            for (int i = 0; i < num_rows; i++) {
+                if (i == player_rank - 1) {
+                    unsigned int car_hash = 0;
+                    int player_value;
+                    if (career_view) {
+                        player_value = scores->GetCareerPursuitScore(rank_type);
+                    } else {
+                        const PursuitScore& best_score = scores->GetBestPursuitScore(rank_type);
+                        car_hash = GetFECarNameHashFromFEKey(best_score.CarFEKey);
+                        player_value = best_score.Value;
+                    }
+
+                    float value = static_cast<float>(player_value);
+                    if (rank_type == ePDT_CostToState) {
+                        value = Timer(player_value).GetSeconds();
+                    }
+
+                    AddDatum(new(__FILE__, __LINE__) RapSheetRankingsDatum(i + 1, 1, car_hash, value));
+                    rank_shift--;
                 } else {
-                    item_num = i + 1;
-                    player_name = rankingsData.Num_NameId() > static_cast<unsigned int>(i - 1) ? *reinterpret_cast<const unsigned int*>(&rankingsData.NameId(static_cast<unsigned int>(i - 1))) : 0;
+                    int rank_index = i + rank_shift;
+                    unsigned int name_hash = 0;
+                    unsigned int car_hash = 0;
+                    if (rankingsData.Num_NameId() > static_cast<unsigned int>(rank_index)) {
+                        int rival_id = rankingsData.NameId(static_cast<unsigned int>(rank_index));
+                        name_hash = FEngHashString("BLACKLIST_RIVAL_%.2d_AKA", rival_id);
+                        if (!career_view) {
+                            car_hash = FEngHashString("BLACKLIST_RIVAL_%.2d_CAR", rival_id);
+                        }
+                    }
+                    float value = rankingsData.RapSheetRanks(static_cast<unsigned int>(rank_index));
+                    AddDatum(new(__FILE__, __LINE__) RapSheetRankingsDatum(i + 1, name_hash, car_hash, value));
                 }
-                AddDatum(new(__FILE__, __LINE__) RapSheetRankingsDatum(item_num, player_name, car_hash, val));
+            }
+
+            SetInitialPosition(0);
+            for (int i = player_rank - GetHeight() + 4; i > 0; i--) {
+                ScrollDown();
             }
         }
     }
-    FEngSetLanguageHash(GetPackageName(), 0x9D974DF3, value_label);
-    SetInitialPosition(0);
-    RefreshHeader();
+    FEngSetLanguageHash(GetPackageName(), 0x8224E17C, value_label);
+    UpdateHighlight();
+    ArrayScroller* scroller = this;
+    scroller->RefreshHeader();
 }
 void uiRapSheetRankingsDetail::RefreshHeader() {
     UserProfile* prof = FEDatabase->GetUserProfile(0);

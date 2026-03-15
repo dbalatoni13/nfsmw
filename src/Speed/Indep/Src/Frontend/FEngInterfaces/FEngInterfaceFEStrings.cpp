@@ -1,18 +1,5 @@
 #include <stdarg.h>
 
-struct FELabelCallback {
-    virtual void OnLabelChanged(FEString* text) = 0;
-};
-
-inline void FEString::SetLabelHash(unsigned long Hash) {
-    LabelHash = Hash;
-    Flags |= 0x400000;
-    if (pLabelCallback != nullptr) {
-        pLabelCallback->OnLabelChanged(this);
-    }
-    Flags = (Flags & ~2) | 0x400000;
-}
-
 inline void FEString::SetString(short* pNewText) {
     string = pNewText;
 }

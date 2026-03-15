@@ -31,10 +31,6 @@ unsigned int CalcLanguageHash(const char* prefix, GRaceParameters* pRaceParams);
 int FEngMapJoyParamToJoyport(int feng_param);
 void StartRace();
 
-inline float MPS2KPH(const float mps) {
-    return mps * 3.6f;
-}
-
 extern unsigned int FEDBGetRaceIconHash(cFrontendDatabase*, GRace::Type) asm("GetRaceIconHash__17cFrontendDatabaseQ25GRace4Type");
 extern unsigned int FEDBGetRaceNameHash(cFrontendDatabase*, GRace::Type) asm("GetRaceNameHash__17cFrontendDatabaseQ25GRace4Type");
 
