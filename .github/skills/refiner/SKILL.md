@@ -18,7 +18,19 @@ approaches that were tried before — instead, apply systematic lateral analysis
 
 ## Phase 1: Read the full diff without collapsing
 
-First rebuild the unit normally, then diff:
+Preferred shortcut:
+
+```sh
+python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName --no-collapse
+```
+
+If the shared unit object is missing, the wrapper now rebuilds it automatically before
+running `diff`.
+
+Stay in the wrapper flow for refiner passes unless you hit a wrapper limitation and need a
+backend-only option.
+
+If you need the raw backend form instead of the wrapper, rebuild the unit and then run:
 
 ```sh
 python tools/decomp-workflow.py build -u main/Path/To/TU
@@ -34,11 +46,10 @@ Read every instruction pair. Categorize each mismatch:
 | **Stack frame size** | Wrong frame size in prologue | Count locals in DWARF; remove temporaries not in DWARF |
 | **Float vs int sequence** | `xoris` present → field is `int`; absent → `uint` | Check field type in DWARF; change cast |
 | **`fmuls` operand order** | `fmuls fX, fX, fY` or `fmuls fX, fY, fX` | Try `v *= fY` vs `fY * v` explicitly |
-| **Relocation offset** | `@stringBase0` or data offset differs | More string literals will shift this; add them in order |
+| **Relocation offset** | `@stringBase0` or data offset differs | More string literals will shift this; add them in order. Use `python tools/elf_lookup.py 0xADDR` when you need to confirm the original string/rodata at a virtual address |
 | **Virtual vs direct call** | `bl` vs indirect through vtable | Check const-qualifier; use `GetFoo()` vs `Foo()` |
 | **Inline vs outlined** | Extra call to helper vs inlined sequence | Force inline by rewriting the expression without calling the helper |
-| **Missing `this->` dereference** | Wrong address in load/store | Ensure member access goes through the correct `this` pointer |
-| **Loop structure** | `do/while` vs `for` vs `while` | Try all three forms; compiler emits different branch sequences |
+| **Loop structure** | Guarded `do/while` from Ghidra or mismatched loop branches | Rewrite to the natural source form suggested by the control flow; in particular, a guarded `do/while` often needs to become a plain `for` loop |
 
 ## Phase 2: Systematic permutation strategies
 
@@ -90,14 +101,37 @@ python tools/lookup.py ./symbols/Dwarf struct bMath
 
 Replace hand-rolled sequences with the correct inline call.
 
-### 2e. Cast type
+### 2e. Constructor initialization placement
+
+Only do this for constructors. Compare which members are initialized in the
+initializer list versus the function body, and in what order. Initializer-list use
+often stabilizes store order, but forcing every member into the initializer list can
+also make the match worse.
+
+### 2f. Cast type
 
 `static_cast<int>` vs `static_cast<unsigned int>` produces different assembly
 sequences on PPC (see `xoris` pattern in AGENTS.md). Check all casts.
 
 ## Phase 3: DWARF verification
 
-After any instruction match, verify the DWARF also matches.
+After any instruction match, verify the DWARF also matches. The function is not done
+until both objdiff and normalized DWARF are exact.
+
+Preferred shortcut:
+
+```bash
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+```
+
+If the combined gate fails because of DWARF, inspect the DWARF diff directly with:
+
+```bash
+python tools/decomp-workflow.py dwarf -u main/Path/To/TU -f FunctionName
+```
+
+Manual fallback:
+
 Use the rebuilt shared object from Phase 1 (or rebuild again if you've changed the source):
 
 ```bash
@@ -125,5 +159,5 @@ Summarize:
 - What was blocking the match (the root cause category from Phase 1)
 - The specific source change that resolved it
 - Any new generalizable assembly pattern discovered (add to AGENTS.md if so)
-- DWARF match status
+- DWARF match status and whether `verify` passes
 - If still not matching: the exact diff lines that remain and your best theory

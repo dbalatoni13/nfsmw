@@ -21,7 +21,7 @@ def parse_map_file(filepath):
     with open(filepath, "r") as f:
         for line in f:
             line = line.rstrip("\n")
-            match = re.match(r"^\s*(0x[0-9A-Fa-f]+)\s*:", line)
+            match = re.match(r"^\s*((?:0x)?[0-9A-Fa-f]+)\s*:", line)
             if match:
                 addr = int(match.group(1), 16)
                 entries.append((addr, line))
