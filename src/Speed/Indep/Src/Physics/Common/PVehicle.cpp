@@ -151,14 +151,8 @@ void PVehicle::Deactivate() { SetPhysicsMode(PHYSICS_MODE_INACTIVE); }
 
 void PVehicle::Kill() {
     PhysicsObject::Kill();
-    {
-        UCrc32 mechanic(BEHAVIOR_MECHANIC_DRAW);
-        ReleaseBehavior(mechanic);
-    }
-    {
-        UCrc32 mechanic(BEHAVIOR_MECHANIC_AUDIO);
-        ReleaseBehavior(mechanic);
-    }
+    ReleaseBehavior(UCrc32(BEHAVIOR_MECHANIC_DRAW));
+    ReleaseBehavior(UCrc32(BEHAVIOR_MECHANIC_AUDIO));
     mResources.Invalidate();
 }
 
@@ -223,6 +217,7 @@ void PVehicle::SetTunings(const Physics::Tunings &tunings) {
 }
 
 bool PVehicle::OnTask(HSIMTASK htask, float dT) {
+    ProfileNode profile_node("OnTask", 0);
     if (mTaskFX == htask) {
         OnTaskFX(dT);
         return true;
@@ -253,12 +248,12 @@ void PVehicle::Launch() {
     if (mEngine == nullptr) {
         return;
     }
-    if (mPerfectLaunch.Time > 0.0f) {
+    if (mPerfectLaunch.IsSet()) {
         return;
     }
     if (mDriverClass == DRIVER_HUMAN) {
         if (mPerfectLaunch.Amount > 0.0f) {
-            mPerfectLaunch.Time = 10.0f;
+            mPerfectLaunch.Set(10.0f);
             new EPerfectLaunch(ISimable::GetInstanceHandle(), mPerfectLaunch.Amount);
         }
     } else {
@@ -639,26 +634,29 @@ unsigned int PVehicle::CountResources() {
 }
 
 void PVehicle::OnTaskFX(float dT) {
-    static_cast<ISimable *>(this)->GetRigidBody();
-    if (INIS::Get() == nullptr) {
-        GlareOn(static_cast<VehicleFX::ID>(7));
-    }
-    bool do_brake = false;
-    if (mInput != nullptr) {
-        do_brake = mInput->GetControls().fBrake > 0.0f;
-    }
-    if (!static_cast<ISimable *>(this)->IsPlayer()) {
-        if (do_brake) {
-            mBrakeTime = mBrakeTime + dT;
-        } else {
-            mBrakeTime = 0.0f;
+    IRigidBody &rigidBody = *static_cast<ISimable *>(this)->GetRigidBody();
+    if (&rigidBody) {}
+    {
+        if (INIS::Get() == nullptr) {
+            GlareOn(static_cast<VehicleFX::ID>(7));
         }
-        do_brake = mBrakeTime > 0.5f;
-    }
-    if (do_brake) {
-        GlareOn(static_cast<VehicleFX::ID>(0x38));
-    } else {
-        GlareOff(static_cast<VehicleFX::ID>(0x38));
+        bool do_brake = false;
+        if (mInput != nullptr) {
+            do_brake = mInput->GetControls().fBrake > 0.0f;
+        }
+        if (!static_cast<ISimable *>(this)->IsPlayer()) {
+            if (do_brake) {
+                mBrakeTime = mBrakeTime + dT;
+            } else {
+                mBrakeTime = 0.0f;
+            }
+            do_brake = mBrakeTime > 0.5f;
+        }
+        if (do_brake) {
+            GlareOn(static_cast<VehicleFX::ID>(0x38));
+        } else {
+            GlareOff(static_cast<VehicleFX::ID>(0x38));
+        }
     }
     if (mTranny != nullptr && mTranny->IsReversing()) {
         GlareOn(static_cast<VehicleFX::ID>(0xc0));
@@ -667,7 +665,7 @@ void PVehicle::OnTaskFX(float dT) {
     }
 }
 
-void PVehicle::OnBeginMode(PhysicsMode mode) {
+void PVehicle::OnBeginMode(const PhysicsMode mode) {
     if (mode == PHYSICS_MODE_INACTIVE) {
         IVehicle::AddToList(VEHICLE_INACTIVE);
         if (mCollisionBody != nullptr) {
@@ -715,7 +713,7 @@ void PVehicle::OnBeginMode(PhysicsMode mode) {
     }
 }
 
-void PVehicle::OnEndMode(PhysicsMode mode) {
+void PVehicle::OnEndMode(const PhysicsMode mode) {
     if (mode == PHYSICS_MODE_INACTIVE) {
         if (mCollisionBody != nullptr) {
             mCollisionBody->EnableTriggering();

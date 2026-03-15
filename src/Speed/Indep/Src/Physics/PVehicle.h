@@ -78,7 +78,7 @@ class PVehicle : public PhysicsObject,
         LaunchState() : Time(0.0f), Amount(0.0f) {}
         void Clear() { Time = 0.0f; Amount = 0.0f; }
         bool IsSet() const { return Time > 0.0f; }
-        void Set(float time) { Time = time; Amount = 0.0f; }
+        void Set(float time) { Time = time; }
         void Tick(float dT) {
             Time -= dT;
         }
@@ -310,8 +310,8 @@ class PVehicle : public PhysicsObject,
     static bTList<PVehicle> mInstances;
 
   private:
-    void OnBeginMode(PhysicsMode mode);
-    void OnEndMode(PhysicsMode mode);
+    void OnBeginMode(const PhysicsMode mode);
+    void OnEndMode(const PhysicsMode mode);
     void DoDebug(float dT);
     void DoStaging(float dT);
     void CheckOffWorld();

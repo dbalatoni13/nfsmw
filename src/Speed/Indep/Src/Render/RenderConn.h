@@ -39,6 +39,18 @@ class Pkt_Smackable_Service : public Sim::Packet {
         this->mChildVisibility = 0xFFFFFF;
     }
 
+    bool IsVisible() const {
+        return mVisible;
+    }
+
+    float DistanceToView() const {
+        return mDistanceToView;
+    }
+
+    void SetChildVisibility(unsigned int visiblility) {
+        mChildVisibility = visiblility;
+    }
+
     // total size: 0x10
     bool mVisible;                 // offset 0x4, size 0x1
     float mDistanceToView;         // offset 0x8, size 0x4

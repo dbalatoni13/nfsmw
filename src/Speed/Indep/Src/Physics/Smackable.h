@@ -186,6 +186,9 @@ class SmackableAvoidable : public AIAvoidable {
         if (mem) { gFastMem.Free(mem, size, nullptr); }
     }
     SmackableAvoidable(HeirarchyModel *model);
+    void SetRefrence(UTL::COM::IUnknown *pUnk) {
+        SetAvoidableObject(pUnk);
+    }
     bool OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) override;
 
   private:

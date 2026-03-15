@@ -329,8 +329,12 @@ void Smackable::DoImpactStimulus(unsigned int systemid, float intensity) {
 
 void Smackable::OnImpact(float acceleration, float speed,
                          Sim::Collision::Info::CollisionType type, ISimable *iother) {
-    Sim::GetTime();
-    EventSequencer::IEngine *iev = static_cast<ISimable *>(this)->GetEventSequencer();
+    float time;
+    EventSequencer::IEngine *iev;
+    EventSequencer::System *system;
+    float intensity;
+    time = Sim::GetTime();
+    iev = static_cast<ISimable *>(this)->GetEventSequencer();
     if (iev != nullptr) {
         switch (type) {
         case Sim::Collision::Info::OBJECT:
@@ -367,24 +371,17 @@ void Smackable::OnCollision(const Sim::Collision::Info &cinfo) {
         return;
     }
     mLastCollisionPosition = UMath::Vector4Make(cinfo.position, 0.0f);
-    HSIMABLE myHandle = static_cast<ISimable *>(this)->GetInstanceHandle();
-    if (cinfo.objA == myHandle) {
+    if (cinfo.objA == static_cast<ISimable *>(this)->GetInstanceHandle()) {
         UMath::Vector3 normal = cinfo.normal;
         mLastImpactSpeed = cinfo.objAVel;
         float impact_acceleration = cinfo.impulseA;
-        Sim::Collision::Info::CollisionType collisionType =
-            static_cast<Sim::Collision::Info::CollisionType>(cinfo.type);
-        ISimable *other = ISimable::FindInstance(cinfo.objB);
-        OnImpact(impact_acceleration, speed, collisionType, other);
-    } else if (cinfo.objB == myHandle) {
+        OnImpact(impact_acceleration, speed, cinfo.Type(), ISimable::FindInstance(cinfo.objB));
+    } else if (cinfo.objB == static_cast<ISimable *>(this)->GetInstanceHandle()) {
         UMath::Vector3 normal;
         UMath::Scale(cinfo.normal, -1.0f, normal);
         mLastImpactSpeed = cinfo.objBVel;
         float impact_acceleration = cinfo.impulseB;
-        Sim::Collision::Info::CollisionType collisionType =
-            static_cast<Sim::Collision::Info::CollisionType>(cinfo.type);
-        ISimable *other = ISimable::FindInstance(cinfo.objA);
-        OnImpact(impact_acceleration, speed, collisionType, other);
+        OnImpact(impact_acceleration, speed, cinfo.Type(), ISimable::FindInstance(cinfo.objA));
     }
 }
 
@@ -640,7 +637,7 @@ bool Smackable::Manager::OnTask(HSIMTASK htask, float dT) {
         }
         return true;
     }
-    return false;
+    return Sim::Object::OnTask(htask, dT);
 }
 
 Behavior *RBSmackable::Construct(const BehaviorParams &parms) {
@@ -756,11 +753,9 @@ void HeirarchyModel::SetCameraAvoidable(bool b) {
 
 bool HeirarchyModel::OnRemoveOffScreen(float dT) {
     if (0.0f < mOffScreenTimer) {
-        IModel *model = static_cast<IModel *>(this);
-        if (!model->InView()) {
-            float timer = mOffScreenTimer - dT;
-            mOffScreenTimer = timer;
-            if (timer < 0.0f) {
+        if (!static_cast<IModel *>(this)->InView()) {
+            mOffScreenTimer = mOffScreenTimer - dT;
+            if (mOffScreenTimer < 0.0f) {
                 mOffScreenTimer = 0.0f;
                 return true;
             }
@@ -880,28 +875,18 @@ void HeirarchyModel::OnEndDraw() {
 }
 
 void HeirarchyModel::GetTransform(UMath::Matrix4 &matrix) const {
-    IModel *model = const_cast<IModel *>(static_cast<const IModel *>(this));
-    ISimable *simable = model->GetSimable();
-    if (simable != nullptr) {
-        ISimable *sim = model->GetSimable();
-        sim->GetTransform(matrix);
+    if (static_cast<const IModel *>(this)->GetSimable()) {
+        static_cast<const IModel *>(this)->GetSimable()->GetTransform(matrix);
+    } else if (mTrigger != nullptr) {
+        mTrigger->GetObjectMatrix(matrix);
     } else {
-        if (mTrigger != nullptr) {
-            mTrigger->GetObjectMatrix(matrix);
-        } else {
-            UMath::Copy(UMath::Matrix4::kIdentity, matrix);
-        }
+        matrix = UMath::Matrix4::kIdentity;
     }
 }
 
 void HeirarchyModel::GetAngularVelocity(UMath::Vector3 &velocity) const {
-    IModel *model = const_cast<IModel *>(static_cast<const IModel *>(this));
-    ISimable *simable = model->GetSimable();
-    if (simable != nullptr) {
-        ISimable *sim = model->GetSimable();
-        IRigidBody *irb = sim->GetRigidBody();
-        const UMath::Vector3 &av = irb->GetAngularVelocity();
-        velocity = av;
+    if (static_cast<const IModel *>(this)->GetSimable()) {
+        velocity = static_cast<const IModel *>(this)->GetSimable()->GetRigidBody()->GetAngularVelocity();
     } else {
         velocity = UMath::Vector3::kZero;
     }
@@ -972,19 +957,19 @@ void HeirarchyModel::PlaceTrigger(const UMath::Matrix4 &matrix, bool enable) {
 
 void HeirarchyModel::OnEndSimulation() {
     if (mAvoidable != nullptr) {
-        mAvoidable->SetAvoidableObject(static_cast<IBody *>(this));
+        mAvoidable->SetRefrence(static_cast<IBody *>(this));
     }
 }
 
 void HeirarchyModel::OnBeginSimulation() {
     DisableTrigger();
     if (mAvoidable != nullptr) {
-        IModel *model = static_cast<IModel *>(this);
-        mAvoidable->SetAvoidableObject(model->GetSimable());
+        mAvoidable->SetRefrence(static_cast<IModel *>(this)->GetSimable());
     }
-    IModel *model = static_cast<IModel *>(this);
-    RenderConn::Pkt_Smackable_Open pkt(mRenderMesh, model->GetWorldID(),
-                                       model->GetCollisionGeometry(), mHeirarchy,
+    RenderConn::Pkt_Smackable_Open pkt(mRenderMesh,
+                                       static_cast<IModel *>(this)->GetWorldID(),
+                                       static_cast<IModel *>(this)->GetCollisionGeometry(),
+                                       mHeirarchy,
                                        mHeirarchyNode);
     BeginDraw(UCrc32(0x804c146e), &pkt);
 }
@@ -992,8 +977,8 @@ void HeirarchyModel::OnBeginSimulation() {
 bool HeirarchyModel::OnDraw(Sim::Packet *service) {
     RenderConn::Pkt_Smackable_Service *pss =
         static_cast<RenderConn::Pkt_Smackable_Service *>(service);
-    UpdateVisibility(pss->mVisible, pss->mDistanceToView);
-    pss->mChildVisibility = mChildVisibility;
+    UpdateVisibility(pss->IsVisible(), pss->DistanceToView());
+    pss->SetChildVisibility(mChildVisibility);
     return true;
 }
 
