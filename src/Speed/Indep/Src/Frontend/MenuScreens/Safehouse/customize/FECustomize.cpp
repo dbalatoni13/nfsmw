@@ -3650,9 +3650,8 @@ void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, un
     case 0x9120409e:
     case 0xb5971bf1: {
         unsigned int hash = 0x1a88dc05;
-        unsigned int newSide = bLeft ^ 1;
-        bLeft = newSide;
-        if (newSide) {
+        bLeft ^= 1;
+        if (bLeft) {
             hash = 0x2a08ba92;
         }
         FEngSetCurrentButton(GetPackageName(), hash);
@@ -3668,11 +3667,11 @@ void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, un
         if (LeftDisplayValue == -1 || RightDisplayValue == -1) return;
         if (!TheLeftNumber || !TheRightNumber) return;
         if (TheLeftNumber->IsLocked() && TheRightNumber->IsLocked()) {
-            DisplayHelper.PlayLocked();
+            DisplayHelper.FlashStatusIcon(CPS_LOCKED, true);
         } else if (TheLeftNumber->IsInCartX() && TheRightNumber->IsInCartX()) {
-            DisplayHelper.PlayInCart();
+            DisplayHelper.FlashStatusIcon(CPS_IN_CART, true);
         } else if (TheLeftNumber->IsInstalledX() && TheRightNumber->IsInstalledX()) {
-            DisplayHelper.PlayInstalled();
+            DisplayHelper.FlashStatusIcon(CPS_INSTALLED, true);
         } else {
             cFEng_mInstance->QueueGameMessage(0x91dfdf84, GetPackageName(), 0xff);
             return;
@@ -3680,23 +3679,7 @@ void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, un
         break;
     case 0xc519bfc3: {
         CarPart *installed = gCarCustomizeManager.GetInstalledCarPart(0x71);
-        if (!installed) {
-            if ((TheLeftNumber->PartState & CPS_PLAYER_STATE_MASK) == CPS_IN_CART ||
-                (TheRightNumber->PartState & CPS_PLAYER_STATE_MASK) == CPS_IN_CART) {
-                UnsetShoppingCart();
-                ShoppingCartItem *cartNode = gCarCustomizeManager.ShoppingCart.GetHead();
-                while (cartNode) {
-                    ShoppingCartItem *nextCart = static_cast<ShoppingCartItem *>(cartNode->Next);
-                    int slotID = cartNode->GetBuyingPart()->GetSlotID();
-                    if (slotID == 0x71 || slotID == 0x72 || slotID == 0x69 || slotID == 0x6a) {
-                        gCarCustomizeManager.RemoveFromCart(cartNode);
-                    }
-                    bool more = (cartNode != gCarCustomizeManager.ShoppingCart.GetTail());
-                    cartNode = nextCart;
-                    if (!more) break;
-                }
-            }
-        } else {
+        if (installed) {
             UnsetShoppingCart();
             SelectablePart stockPart(nullptr, 0x71, 0, static_cast<GRace::Type>(7), false, CPS_AVAILABLE, 0, false);
             gCarCustomizeManager.AddToCart(&stockPart);
@@ -3706,6 +3689,22 @@ void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, un
             gCarCustomizeManager.AddToCart(&stockPart);
             stockPart.CarSlotID = 0x6a;
             gCarCustomizeManager.AddToCart(&stockPart);
+        } else {
+            if ((TheLeftNumber->PartState & CPS_PLAYER_STATE_MASK) == CPS_IN_CART ||
+                (TheRightNumber->PartState & CPS_PLAYER_STATE_MASK) == CPS_IN_CART) {
+                UnsetShoppingCart();
+                ShoppingCartItem *current = gCarCustomizeManager.GetFirstCartItem();
+                ShoppingCartItem *last = gCarCustomizeManager.GetLastCartItem();
+                while (current) {
+                    ShoppingCartItem *next = static_cast<ShoppingCartItem *>(current->Next);
+                    int slotID = current->GetBuyingPart()->GetSlotID();
+                    if (slotID == 0x71 || slotID == 0x72 || slotID == 0x69 || slotID == 0x6a) {
+                        gCarCustomizeManager.RemoveFromCart(current);
+                    }
+                    if (current == last) break;
+                    current = next;
+                }
+            }
         }
         RightDisplayValue = -1;
         TheLeftNumber = static_cast<SelectablePart *>(LeftNumberList.GetHead());
@@ -3739,18 +3738,16 @@ void CustomizeNumbers::NotificationMessage(unsigned long msg, FEObject *pobj, un
     case 0xcf91aacd: {
         SelectablePart *lnode = static_cast<SelectablePart *>(LeftNumberList.GetHead());
         while (lnode != reinterpret_cast<SelectablePart *>(&LeftNumberList)) {
-            CarPart *lpart = lnode->ThePart;
-            if (lpart == gCarCustomizeManager.GetInstalledCarPart(0x69) ||
-                lpart == gCarCustomizeManager.GetInstalledCarPart(0x6a)) {
+            if (lnode->ThePart == gCarCustomizeManager.GetInstalledCarPart(0x69) ||
+                lnode->ThePart == gCarCustomizeManager.GetInstalledCarPart(0x6a)) {
                 lnode->PartState = static_cast<eCustomizePartState>((lnode->PartState & CPS_GAME_STATE_MASK) | CPS_INSTALLED);
             }
             lnode = static_cast<SelectablePart *>(lnode->Next);
         }
         SelectablePart *rnode = static_cast<SelectablePart *>(RightNumberList.GetHead());
         while (rnode != reinterpret_cast<SelectablePart *>(&RightNumberList)) {
-            CarPart *rpart = rnode->ThePart;
-            if (rpart == gCarCustomizeManager.GetInstalledCarPart(0x71) ||
-                rpart == gCarCustomizeManager.GetInstalledCarPart(0x72)) {
+            if (rnode->ThePart == gCarCustomizeManager.GetInstalledCarPart(0x71) ||
+                rnode->ThePart == gCarCustomizeManager.GetInstalledCarPart(0x72)) {
                 rnode->PartState = static_cast<eCustomizePartState>((rnode->PartState & CPS_GAME_STATE_MASK) | CPS_INSTALLED);
             }
             rnode = static_cast<SelectablePart *>(rnode->Next);
