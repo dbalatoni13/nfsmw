@@ -36,6 +36,15 @@
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
 
+#include "Speed/Indep/Src/Camera/CameraMover.hpp"
+#include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/World/TrackInfo.hpp"
+
 struct FadeScreen : MenuScreen {
     static bool IsFadeScreenOn();
     FadeScreen(ScreenConstructorData *);
@@ -405,6 +414,161 @@ void FEngHud::HideAll() {
 
 void FEngHud::Release() {
     delete this;
+}
+
+unsigned long long FEngHud::DetermineHudFeatures(IPlayer *player) {
+    unsigned long long hud_features = 0;
+
+    eView *view = eGetView(player->GetRenderPort(), false);
+    CameraMover *cammover = nullptr;
+    if (view) {
+        cammover = view->GetCameraMover();
+    }
+
+    if (!cammover) {
+        return 0;
+    }
+    if (cammover->GetType() != CM_DRIVE_CUBIC) {
+        return 0;
+    }
+    if (cammover->GetLookbackAngle()) {
+        return 0;
+    }
+
+    if (GRaceStatus::Exists()) {
+        if (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing && bIsRestartingRace) {
+            return 0;
+        }
+    }
+
+    if (FEManager::IsPaused()) {
+        return 0;
+    }
+    if (Sim::GetState() != Sim::STATE_ACTIVE) {
+        return 0;
+    }
+    if (cFEng::Get()->IsPackagePushed("Pause_Main.fng")) {
+        return 0;
+    }
+    if (cFEng::Get()->IsPackagePushed("MC_Main_GC.fng")) {
+        return 0;
+    }
+    if (cFEng::Get()->IsPackagePushed("PostRace_Results.fng")) {
+        return 0;
+    }
+    if (!TheHudResourceManager.AreResourcesLoaded(mPlayerHudType)) {
+        return 0;
+    }
+    if (UTL::Collections::Singleton< INIS >::Get()) {
+        return 0;
+    }
+    if (mCurrentWidescreenSetting != FEDatabase->GetVideoSettings()->WideScreen) {
+        return 0;
+    }
+    if (TheICEManager.IsEditorOn()) {
+        return 0;
+    }
+    if (TheGameFlowManager.IsLoading()) {
+        return 0;
+    }
+
+    bool EnableMinimap = (LoadedTrackInfo->TrackNumber == 2000);
+    if (!GRaceStatus::Get().GetRaceParameters()) {
+        if (FEDatabase->GetGameplaySettings()->ExploringMiniMapMode == 2) {
+            EnableMinimap = false;
+        }
+    } else {
+        if (FEDatabase->GetGameplaySettings()->RacingMiniMapMode == 2) {
+            EnableMinimap = false;
+        }
+    }
+
+    if (EnableMinimap) {
+        hud_features |= 0x10000;
+        hud_features |= 0x4000;
+    }
+
+    if (GRaceStatus::IsDragRace()) {
+        if (FEDatabase->GetPlayerSettings(PlayerNumber)->PositionOn) {
+            hud_features |= 0x8000000;
+        }
+    } else {
+        if (FEDatabase->GetPlayerSettings(PlayerNumber)->GaugesOn) {
+            hud_features |= 0x8000000;
+        }
+    }
+
+    if (FEDatabase->GetPlayerSettings(PlayerNumber)->GaugesOn) {
+        hud_features |= 0x2;
+
+        if (mHasTurbo) {
+            hud_features |= 0x20000;
+        }
+
+        if (GRaceStatus::IsDragRace()) {
+            hud_features |= 0x40;
+        }
+
+        hud_features |= 0x800;
+        hud_features |= 0x40000;
+    }
+
+    bool pursuitRace = false;
+    if (GRaceStatus::Get().GetRaceParameters()) {
+        pursuitRace = GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace();
+    }
+
+    if (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing && !pursuitRace) {
+        if (FEDatabase->GetPlayerSettings(PlayerNumber)->LeaderboardOn) {
+            hud_features |= 0x8;
+        }
+        if (FEDatabase->GetPlayerSettings(PlayerNumber)->PositionOn) {
+            hud_features |= 0x4000000;
+        }
+    } else {
+        hud_features |= 0x100000;
+        hud_features |= 0x400000000ULL;
+    }
+
+    if (FEDatabase->GetPlayerSettings(PlayerNumber)->SplitTimeType != 4) {
+        hud_features |= 0x10;
+    }
+
+    if (GRaceStatus::IsTollboothRace()) {
+        hud_features |= 0x2000000;
+    }
+
+    if (player->GetSettings()->ScoreOn) {
+        if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career
+            || (GRaceStatus::Get().GetRaceParameters()
+                && GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace())) {
+            hud_features |= 0x1000;
+        }
+    }
+
+    if (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing) {
+        hud_features |= 0x20;
+    }
+
+    IRaceOverMessage *iraceover;
+    if (QueryInterface(&iraceover)) {
+        if (iraceover->ShouldShowRaceOverMessage()) {
+            hud_features |= 0x4;
+        }
+    }
+
+    hud_features |= 0x1000000;
+    hud_features |= 0x10000000;
+    hud_features |= 0x100000000ULL;
+    hud_features |= 0x80000;
+    hud_features |= 0x400;
+    hud_features |= 0x20000000;
+    hud_features |= 0x400000;
+    hud_features |= 0x200000000ULL;
+    hud_features |= 0x800000;
+    hud_features |= 0x200000;
+
+    return hud_features;
 }
 
 bool FEngHud::AreResourcesLoaded() {

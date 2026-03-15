@@ -63,9 +63,9 @@ class IGenericMessage : public UTL::COM::IUnknown {
 
 class IRaceOverMessage : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle();
+    static HINTERFACE _IHandle() { return (HINTERFACE)_IHandle; }
 
-    IRaceOverMessage(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, (HINTERFACE)_IHandle) {}
+    IRaceOverMessage(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   protected:
     virtual ~IRaceOverMessage() {}
