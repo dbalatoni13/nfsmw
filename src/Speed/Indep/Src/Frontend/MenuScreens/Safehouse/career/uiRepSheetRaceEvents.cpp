@@ -174,9 +174,11 @@ void UISafehouseRaceSheet::RefreshHeader() {
              race->GetRaceLengthMeters() * 0.001f, distUnits);
     unsigned int trackNameHash = CalcLanguageHash("TRACKNAME_", race);
     FEngSetLanguageHash(GetPackageName(), 0xf2cd475, trackNameHash);
-    unsigned int copsHash = 0x73c615a3;
+    unsigned int copsHash;
     if (race->GetCopsEnabled()) {
         copsHash = 0x61d1c5a5;
+    } else {
+        copsHash = 0x73c615a3;
     }
     FEngSetLanguageHash(GetPackageName(), 0x9b21, copsHash);
     FEngSetInvisible(FEngFindObject(GetPackageName(), 0x1c8fc866));
@@ -201,18 +203,19 @@ void UISafehouseRaceSheet::RefreshHeader() {
     float avg_speed;
     if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
         distUnits = GetLocalizedString(0x8569a25f);
-        top_speed = MPS2KPH(static_cast< float >(info->mTopSpeed));
         avg_speed = MPS2KPH(static_cast< float >(info->mAverageSpeed));
+        top_speed = MPS2KPH(static_cast< float >(info->mTopSpeed));
     } else {
         distUnits = GetLocalizedString(0x8569ab44);
-        top_speed = MPS2MPH(static_cast< float >(info->mTopSpeed));
         avg_speed = MPS2MPH(static_cast< float >(info->mAverageSpeed));
+        top_speed = MPS2MPH(static_cast< float >(info->mTopSpeed));
     }
     FEPrintf(GetPackageName(), 0xebd7f926, "%ash.2f %s", top_speed, distUnits);
     FEPrintf(GetPackageName(), 0xde9145fb, "%ash.2f %s", avg_speed, distUnits);
     FEPrintf(GetPackageName(), 0x763f4b5b, "%ash.0f", race->GetCashValue());
+    unsigned int iconHash = FEDBGetRaceIconHash(FEDatabase, race->GetRaceType());
     FEImage* img = FEngFindImage(GetPackageName(), 0xf97ec5d5);
-    FEngSetTextureHash(img, FEDBGetRaceIconHash(FEDatabase, race->GetRaceType()));
+    FEngSetTextureHash(img, iconHash);
     for (int i = 0; i < GetNumSlots(); i++) {
         RaceDatum* rdatum = static_cast< RaceDatum* >(GetDatumAt(i + GetStartDatumNum()));
         unsigned int check_hash = FEngHashString("MEDAL_THUMB_%d", i + 1);
