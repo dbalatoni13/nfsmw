@@ -480,6 +480,10 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         return mRaceParms ? mRaceParms->GetRaceType() : GRace::kRaceType_None;
     }
 
+    float GetRaceLength() const {
+        return fRaceLength;
+    }
+
     static bool IsChallengeRace() {
         return Exists() && Get().GetRaceType() == GRace::kRaceType_Challenge;
     }

@@ -6,13 +6,20 @@
 #include "Speed/Indep/Src/Gameplay/GRace.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 extern char *GetTranslatedString(int hash);
+extern const char *GetLocalizedString(unsigned int hash);
 int bSNPrintf(char *dest, int maxlen, const char *fmt, ...);
 int FEngSNPrintf(char *dest, int size, const char *fmt, ...);
 unsigned long FEHashUpper(const char *String);
 FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
 unsigned int bStringHash(const char *str);
+int FEPrintf(FEString *str, const char *fmt, ...);
+bool FEngIsScriptSet(FEObject *obj, unsigned int hash);
+bool FEngIsScriptRunning(FEObject *obj, unsigned int hash);
+void FEngSetScript(FEObject *obj, unsigned int hash, bool set);
+void FEngSetInvisible(FEObject *obj);
 
 LeaderBoard::LeaderBoard(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
     : HudElement(pkg_name, 0x18) //
@@ -53,7 +60,115 @@ LeaderBoard::LeaderBoard(UTL::COM::Object *pOutter, const char *pkg_name, int pl
     }
 }
 
+extern const char lbl_803E4CF0[];
+extern const char lbl_803E48C8[];
+extern const char lbl_803E4FF8[];
+extern const char lbl_803E5004[];
+extern const char lbl_803E500C[];
+extern const char lbl_803E5018[];
+
 void LeaderBoard::Update(IPlayer *player) {
+    if (player->GetSettings()->LeaderboardOn) {
+        if (!FEngIsScriptSet(mDataLeaderboardGroup, 0x001744B3)) {
+            FEngSetScript(mDataLeaderboardGroup, 0x001744B3, true);
+        }
+
+        --mNumFramesBeforeTogglingPlayerTimes;
+        if (mNumFramesBeforeTogglingPlayerTimes <= 0) {
+            bool toggleRacerTimesNow = false;
+            for (int i = 0; i < mNumRacers && i < 4; i++) {
+                if (mNumFramesBeforeTogglingPlayerTimes == 0) {
+                    FEngSetScript(mDataRacerText[i], 0x033113AC, true);
+                } else {
+                    if (FEngIsScriptSet(mDataRacerText[i], 0x033113AC) &&
+                        !FEngIsScriptRunning(mDataRacerText[i], 0x033113AC) &&
+                        !FEngIsScriptSet(mDataRacerText[i], 0x5079C8F8)) {
+                        FEngSetScript(mDataRacerText[i], 0x5079C8F8, true);
+                        toggleRacerTimesNow = true;
+                    }
+                }
+            }
+            if (toggleRacerTimesNow) {
+                mShowingRacerTimes ^= 1;
+                mNumFramesBeforeTogglingPlayerTimes = 90;
+            }
+        }
+
+        int numRacerNumToClearFrom;
+        if (mNumRacers > 1) {
+            for (int i = 0; i < mNumRacers && i < 4; i++) {
+                if (mShowingRacerTimes) {
+                    if (mTopRacers[i].mIsBusted) {
+                        FEPrintf(mDataRacerText[i], lbl_803E4CF0, GetTranslatedString(0x532b5186));
+                    } else if (mTopRacers[i].mIsKoed) {
+                        FEPrintf(mDataRacerText[i], lbl_803E4CF0, GetTranslatedString(0x5d82dba2));
+                    } else if (GRaceStatus::Get().GetRaceType() == GRace::kRaceType_SpeedTrap) {
+                        float val = mTopRacers[i].mTotalPoints;
+                        unsigned int unit = 0x8569a25f;
+                        if (!FEDatabase->GetGameplaySettings()->SpeedoUnits) {
+                            val = MPS2MPH(KPH2MPS(val));
+                            unit = 0x8569ab44;
+                        }
+                        FEPrintf(mDataRacerText[i], lbl_803E4FF8, val, GetLocalizedString(unit));
+                    } else if (i == mPlayerIndex) {
+                        FEPrintf(mDataRacerText[i], lbl_803E5004);
+                    } else {
+                        int unit = 0xe2078322;
+                        float totalRaceLenMetres = GRaceStatus::Get().GetRaceLength();
+                        if (!FEDatabase->GetGameplaySettings()->SpeedoUnits) {
+                            totalRaceLenMetres = METERS2FT(totalRaceLenMetres);
+                            unit = 0x2e8496b1;
+                        }
+                        if (mTopRacers[i].mPercentComplete >= mTopRacers[mPlayerIndex].mPercentComplete) {
+                            float pctDiff = (mTopRacers[i].mPercentComplete - mTopRacers[mPlayerIndex].mPercentComplete) * 0.01f;
+                            pctDiff = totalRaceLenMetres * pctDiff;
+                            FEPrintf(mDataRacerText[i], lbl_803E500C, pctDiff, GetTranslatedString(unit));
+                        } else {
+                            float pctDiff = (mTopRacers[mPlayerIndex].mPercentComplete - mTopRacers[i].mPercentComplete) * 0.01f;
+                            pctDiff = totalRaceLenMetres * pctDiff;
+                            FEPrintf(mDataRacerText[i], lbl_803E5018, pctDiff, GetTranslatedString(unit));
+                        }
+                    }
+                } else {
+                    FEPrintf(mDataRacerText[i], lbl_803E4CF0, mTopRacers[i].mRacerName);
+                    FEPrintf(mDataRacerNum[i], lbl_803E48C8, mTopRacers[i].mRacerNum);
+                }
+            }
+            numRacerNumToClearFrom = mNumRacers;
+            if (numRacerNumToClearFrom <= 1) {
+                numRacerNumToClearFrom = 0;
+            }
+        } else {
+            numRacerNumToClearFrom = 0;
+        }
+
+        for (int i = numRacerNumToClearFrom; i <= 3; i++) {
+            FEngSetInvisible(mDataRacerText[i]);
+            FEngSetInvisible(mDataRacerNum[i]);
+            FEngSetInvisible(mDataRacerIcon[i]);
+            FEngSetInvisible(mDataRacerTextBackings[i]);
+        }
+
+        for (int i = 0; i <= 3; i++) {
+            if (i == mPlayerIndex) {
+                if (!FEngIsScriptSet(mDataRacerTextBackings[i], 0x249db7b7)) {
+                    FEngSetScript(mDataRacerTextBackings[i], 0x249db7b7, true);
+                }
+            } else {
+                if (!FEngIsScriptSet(mDataRacerTextBackings[i], 0x001744B3)) {
+                    FEngSetScript(mDataRacerTextBackings[i], 0x001744B3, true);
+                }
+            }
+        }
+    } else {
+        if (!FEngIsScriptSet(mDataLeaderboardGroup, 0x0016A259)) {
+            FEngSetScript(mDataLeaderboardGroup, 0x0016A259, true);
+        }
+    }
+
+    if (mSplitTimeQueued && ShowSplitTime(player)) {
+        mSplitTimeQueued = false;
+    }
 }
 
 void LeaderBoard::SetNumRacers(int numRacers) {

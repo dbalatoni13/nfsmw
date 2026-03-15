@@ -103,4 +103,8 @@ inline Mps KPH2MPS(Kph x) {
     return x / 3.6f;
 }
 
+inline Meters METERS2FT(const Meters _meters_) {
+    return _meters_ * 3.28080f;
+}
+
 #endif

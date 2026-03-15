@@ -49,7 +49,7 @@ class LeaderBoard : public HudElement, public ILeaderBoard {
     bool mSplitTimeQueued;                     // offset 0x3C
     LeaderBoardRacerData mTopRacers[4];        // offset 0x40
     int mNumFramesBeforeTogglingPlayerTimes;   // offset 0x240
-    bool mShowingRacerTimes;                   // offset 0x244
+    int mShowingRacerTimes;                    // offset 0x244
     FEGroup *mDataLeaderboardGroup;            // offset 0x248
     FEString *mDataRacerText[4];               // offset 0x24C
     FEString *mDataRacerNum[4];                // offset 0x25C
